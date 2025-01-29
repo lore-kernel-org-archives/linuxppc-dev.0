@@ -1,104 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-5691-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5692-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4CD2C0218D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2025 21:57:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A3D1C0218D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2025 21:57:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yjwx21ghJz2yDT;
-	Thu, 30 Jan 2025 08:57:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.165.32 arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738184576;
-	cv=pass; b=jFFAy7M1QRXHY8rvl/aC9KUSrPsXRKc/hIjadREvjTb9/VkF/kPIco7qEK8eKIUfIrblgP5QB9OtbDEU4fYTEOfoUzrNx29TjPCZCyFOKTQIF02f8H0iFS01WVffgxWjUrxW7SwFb5js0jDfDLBgaps73MYB+NyBDrlEoraeSYpxgRwmf8MyZDe3m7NQGLHJEIPRahKDZKQxk+1vrNTGZvKSmyp72kOTspI4duM4Vv6VuTXCSkhOfMcAk/GC3InVzM6m732L5JYl4zL6becH7HDxVpZ6IMWtwahMaSt4nmQkjmRHKGNVqGaQ+/mx8b2emEQbiG6tU5pEnos2ZvJ3CQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738184576; c=relaxed/relaxed;
-	bh=Wwk1QjUXTIb1F3EFAtLCGDKlwOb7AjmhElP7ECs8Wro=;
-	h=Message-ID:Date:To:Cc:References:Subject:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=FwOnDKRUmLDf4anM/z0T0pOUhzlOCl/WmYiRJX+zj4rxg4QuRAOunTXM8q2heXUhlRnTvFLc4NXq/mQMXCnWfhSlk1OHqDR6eR25WryHjwbjH7BnOQ6GwklJ65sZaVtsnV3o9OANnpkuykTDruiSWw5Jv7Y6xjUVfbRsI98Y09nnSVdldOn2H7Ix0Z3WVtPFBXXRSWHHr0E7/po6+RKh3XDEhuu03erWmz+fwHOKYWuILYBmM7+IViBzEk1frEC1YGWcRa6d4YtfZy34/YYcuPwnJS5ZZ3qGKXRHsc+YCGlDPyQqCR7xMCaXDQyzhehJVdHFb7xMMK7E73HIv+Jklg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=fXalxs9Y; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=wEcZL7z3; dkim-atps=neutral; spf=pass (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=sidhartha.kumar@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yjwxf2wNpz2yZ6;
+	Thu, 30 Jan 2025 08:57:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::230"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738186156;
+	cv=none; b=EkFbrkeCeY1ggO1BNUdKexYztgamg/YdbKlL5e9wNVu1kQL/32zrqt3uUzsh+0DfwR4geez7xNUtC/PR0poFdpRcvJZlpaTJgz6MMtEt+HoAolz98tGEJWITB1p//6PNITipahv420CTlJ4LVZACC0vNFtnn3vv7SDLhBu9xD6j99uYwhe+LHe+z9uVhrVU+o9+IKuxeFyldL76GOEnMek+SmahfMUq+75TiygcYcFSgH2sMxz30QXFG9703dy4hF5NanbjeJBQMV3cKxbu/NMQNefMDX44XIjmMt/pZPHzhv5SafYHf80XSH2hAtBTtaL32QckZifyUIvIS3ps7Rg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1738186156; c=relaxed/relaxed;
+	bh=GT0rFmaKToeuXSjRSzkL/lRENUooY068EpzaG7EWYO0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Content-Type; b=dCRnd7Tsq848YAYnsGOPyWkIykUcmIkO6tOk5FbIlL2quqyluNvQLAP58PdQDzYqnklijvnLXFXNlnxFFvDngklzvcqvlZdwFlipwTmt03SX4diuu3CVCzivIOOoVVubYmZ1BK/DTUHFlWfEPHDJs07Bp3LeT98Z4LNvJJi7xFfPovvt8LIb8pohISQS9upvVN7698cTCw41+p7AVxIldkhk3Z3vrpQmpgRci5bSbTnP5QdMbUGgxLq9r6Xbt2y6ncZJeueyXgieg9nOQanfxWqQ8SyB/XP7pzLU8Etq8LxN1PiGO2Dyx8pBVls5d8uRD/vrQr3qzaqA7y5FK4RIbw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RTs4HpgP; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::230; helo=mail-lj1-x230.google.com; envelope-from=tamird@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=fXalxs9Y;
-	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=wEcZL7z3;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RTs4HpgP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=sidhartha.kumar@oracle.com; receiver=lists.ozlabs.org)
-Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::230; helo=mail-lj1-x230.google.com; envelope-from=tamird@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lj1-x230.google.com (mail-lj1-x230.google.com [IPv6:2a00:1450:4864:20::230])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YjvkR4H0Fz2xGw
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2025 08:02:54 +1100 (AEDT)
-Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50TKttLT011994;
-	Wed, 29 Jan 2025 21:02:22 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=
-	corp-2023-11-20; bh=Wwk1QjUXTIb1F3EFAtLCGDKlwOb7AjmhElP7ECs8Wro=; b=
-	fXalxs9YxEKXYd8iqgChkDEKSuR8+A5mLxgrrwEpAHMnqsWP1girijWxLqpztRZt
-	rsubzHH0hw2eH3ka4vO92Qlc0dP+8wk5+3xMUqUq7dXFosyJNPpbuarAf8XFhHH0
-	lc5Htltccz3QN7MlOesBrrBq8rmUNwmqrJAm1pEGoNzt0ylRJCaNDCh8T4xvQyox
-	9urJS+Rvj8bEcYskpqxwZiqWZRYKTKMgi5IZahI3ig1NGu21NEKu8FZWg+VdguCg
-	WO9HaDCWFxo1OEuzQ2x/GmzzKHT49KldbK7/3VkltvyNmpGvVPfzLM/ZnJEFg6xh
-	iT5GTRiTQ1JqY+DWVdjKtQ==
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 44fsfh8jq2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 29 Jan 2025 21:02:22 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 50TKQhX4023978;
-	Wed, 29 Jan 2025 21:02:21 GMT
-Received: from nam12-mw2-obe.outbound.protection.outlook.com (mail-mw2nam12lp2046.outbound.protection.outlook.com [104.47.66.46])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 44cpdaaqrn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 29 Jan 2025 21:02:21 +0000
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=F+qeIepkbe5WX7E9DExp7Sn8y4crQDVf8O8uexxavXkD9Cq65IO9jJyJhPiDE1Fu9zYxDLghqsdrsefXtrHn7xMcZmrlnQVQAn64pg3Tg8A3NPNgtB5T44YT0irYb1HZP1qOzRk7LFXSUIUACBiQ6vwBY4fgKBjbyaecqQQ9uCl+52FDrv4YtNJB6TR2H2sE6/SifE+gpsfgYw7N6XYnrrcWreRJbxtM9VWljqQxnFNteJaWw4Ym0DjgwfdVzAQhvr7FCnt69BkYczVWIYKO7+DZ61Oiq+k1crNnk/bHvRmSZ6mTEEfsTDOKT9bgB/V0pFKlCBDOm602Iw4xRZ5xVg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=Wwk1QjUXTIb1F3EFAtLCGDKlwOb7AjmhElP7ECs8Wro=;
- b=k90fRZnbs9cwT0+L7jxDgLyyOjn2GALr+vYRDyoy6+l4XBjAV2Kwd2f4Nm6xO6IdCxIT9LhUJLcUNdu9kEKgqYZiWaGU49+vbyquUD8hZMF5Yw6SQat0gRFklJQ2DHZ/QhIra8uHSPBYnUNE3XJf6Gq3ztaTYJzJnJlNlsDLmeDilzIhY6h2YgEijHAcfvn0Zfp8rKceg1AcBCKTSh19DEWALHWxWWXVYFYyYoxX+X4IsXMXY4jB/JdCJ1yGF2ICo+1KQGSyqoZl9Ck/8RXuVLwGSQArPbFRcLoH3S/amiD5uosViCE+N2VCJZMimRK2/gV2AFoZgNsJq5bTn9hMKg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
- dkim=pass header.d=oracle.com; arc=none
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YjwJp6HK3z2xk7
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2025 08:29:14 +1100 (AEDT)
+Received: by mail-lj1-x230.google.com with SMTP id 38308e7fff4ca-30229d5b229so724261fa.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Jan 2025 13:29:14 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
- d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=Wwk1QjUXTIb1F3EFAtLCGDKlwOb7AjmhElP7ECs8Wro=;
- b=wEcZL7z3KAfHmtXMpxCKtAitKuZljrUcTCy5qze/433MwXJTXLZTqGcHjQDrfMFqpvxRvFFMRtDQKy6AoxkllL2i2H/K5bcS+XJeMJmCUPTAjC6sLilYR3oitx5LPB4Sg+svogDYYlDtV5Q9KJtW7Kbha0YXiYfE6hweyCWX4O0=
-Received: from CH0PR10MB5113.namprd10.prod.outlook.com (2603:10b6:610:c9::8)
- by MN6PR10MB8144.namprd10.prod.outlook.com (2603:10b6:208:4fa::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8398.18; Wed, 29 Jan
- 2025 21:02:18 +0000
-Received: from CH0PR10MB5113.namprd10.prod.outlook.com
- ([fe80::eab6:6dcc:f05f:5cb2]) by CH0PR10MB5113.namprd10.prod.outlook.com
- ([fe80::eab6:6dcc:f05f:5cb2%3]) with mapi id 15.20.8398.017; Wed, 29 Jan 2025
- 21:02:18 +0000
-Message-ID: <07cf896e-adf8-414f-a629-a808fc26014a@oracle.com>
-Date: Wed, 29 Jan 2025 16:02:16 -0500
-User-Agent: Mozilla Thunderbird
-To: tamird@gmail.com
-Cc: akpm@linux-foundation.org, christophe.leroy@csgroup.eu,
-        geert@linux-m68k.org, justinstitt@google.com,
-        linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
-        linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev,
-        maddy@linux.ibm.com, morbo@google.com, mpe@ellerman.id.au,
-        nathan@kernel.org, naveen@kernel.org, ndesaulniers@google.com,
-        npiggin@gmail.com, "Liam R . Howlett" <Liam.Howlett@oracle.com>,
-        Matthew Wilcox <willy@infradead.org>
-References: <20241205-xarray-kunit-port-v1-1-ee44bc7aa201@gmail.com>
-Subject: Re: [PATCH] xarray: port tests to kunit
-Content-Language: en-US
-From: Sidhartha Kumar <sidhartha.kumar@oracle.com>
-In-Reply-To: <20241205-xarray-kunit-port-v1-1-ee44bc7aa201@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: BN9PR03CA0319.namprd03.prod.outlook.com
- (2603:10b6:408:112::24) To CH0PR10MB5113.namprd10.prod.outlook.com
- (2603:10b6:610:c9::8)
+        d=gmail.com; s=20230601; t=1738186149; x=1738790949; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=GT0rFmaKToeuXSjRSzkL/lRENUooY068EpzaG7EWYO0=;
+        b=RTs4HpgPEFQt7/XxmLEdCQ8kEwZre1z8RAQkzKzR68wCsA+pJdmd2TPlbM9lXYRefo
+         KnDylhovdR43zEPmZdIzHrPC/crlxzANHn8aZLJefU1qBXOh8SZ90seCqKH1uGOLJ8rE
+         CAHdEjrEo8SjzUth+aA7lDsmFAzKtfNMQ7fSZDXr88Nd0NOAmAHzLiqffCX/apMDje3S
+         tLQRi/gRDtsqcZO9nMWdObS91afNhzyX6eAUFtWBCLs7Uxc3KewSL/djOF+CRWNOcYh2
+         yVTfCwpTu4KDjSPh58tBQ01Vbk3NJL0Lro6EKpMtWVRbyvKB9JVpOFtdSyOvl7/ZHl7Z
+         oQNA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1738186149; x=1738790949;
+        h=content-transfer-encoding:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=GT0rFmaKToeuXSjRSzkL/lRENUooY068EpzaG7EWYO0=;
+        b=UyU60OXgZ/w8ePF+NflmqQ3LGqdwWA2yetqR2dFweclNVczboGevUV4jSoK5WlDb1i
+         y6YH3jtjP+G98xeHezP3iEj9/FKph3PFKIqAhJI71V9cUiT3S1uV/aO4Gds5Br4NgeoL
+         eMsdpIQSRVKpgGx57jiKM0tKgtCCJyLO9JwZSUFcnr8R5t01hoKPbTYh1vcXLoWR2dZm
+         fcBplnKlzlfblcxy+MQ0TQiVqflUHjS6HE5pNgMYC0GtOxTUl3ZXwZUZsr5qC5dwgYkF
+         EhGAwdk1z6b7TXCxiCkBhkSO8HWbJFyyKK6o+MfZopW6dOEG4Y29G47kofEyw/c0E9d/
+         uvpA==
+X-Forwarded-Encrypted: i=1; AJvYcCW7eEGCV5qvWVExNFrowh2M79OyxFT/4ae+IEmKxGkJOdfeVhj6YGenLoZpUyepe/wumL3V1iuBVWx1zL8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YztXL3Wsu1e9zyt8jjL0usSU21p+579IUaHWz5RR7jMo+zJkaVk
+	jgvk9Co/100reGtyq4qXu2aIq9Jj6ZNHl49P7S/Vb1oibtGuppIncOxBUZP4uoJM1f4H6xdIoDY
+	ekwG55jX7CGd+1sfpIGKew92NW6k=
+X-Gm-Gg: ASbGncteI8293pUSwFq5af+tgEKWlAZWvGsqiQCf8THXfecKf8xV73YNFDT6duIkLox
+	/63a9ERrm4QV4F3M/QWOiDrgQJHUBxDluJjUpwogWkO+ZyjKgYLBhM+ECdRgOdWiROT2vkE2U1C
+	6jRmp5dmRCwYvYOFpQI9vAzgiQTqdDMA==
+X-Google-Smtp-Source: AGHT+IEini7TIAvHWFfZWJAA/DIhlgY7ELxTDYTMmVhvFmOP3+WEeVrbZSpqp7JMDeFBEGMKPTMSdGVLiQ0G7+RO3zE=
+X-Received: by 2002:a2e:bc26:0:b0:302:49ba:2550 with SMTP id
+ 38308e7fff4ca-307968572cemr17704121fa.21.1738186149080; Wed, 29 Jan 2025
+ 13:29:09 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -111,128 +78,77 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CH0PR10MB5113:EE_|MN6PR10MB8144:EE_
-X-MS-Office365-Filtering-Correlation-Id: bbc1e7f3-bde0-4f68-8491-08dd40a8374c
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|10070799003|366016|376014|1800799024;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?N0Jud1RGSmhyeWhtblBRc0RLcDNza3I1RzhiWVNSeTZZWnkxRFBIbjZmbXdp?=
- =?utf-8?B?MUc0VmIzRDlqa1kzTkM0ZWRFRk9CWGN1dTJxQkllQTlXMzV2Mmw5SHY1cWox?=
- =?utf-8?B?NGlrL0J3T3pHRWowUHJKK1lFYm9PZWp2dFVRUjlNdUhwRXZHYVN3Ylk1M1Vu?=
- =?utf-8?B?MXYxOCtvbmpPdlFTaVdYa3gxM05wQWV6Ny9GRVdXVksvZ1c3ajlremR4bzdJ?=
- =?utf-8?B?U2NWZHN3TjNKY2FoakRRdmZOSjBMNEsyZVIzQ0tjb0hyNHBUMmU4UE9aRXQ3?=
- =?utf-8?B?V2t0bEJHcG9Pc3NYaE5scm44d2VTbGlkUFFkREh6V3RTeGZRNHYyM2Z3cEQ1?=
- =?utf-8?B?VjF1TVhiRU0xbmxrOVV0M0FKRzNkbGZlYUpKV21KcFZHdmJYOEZVcWI1bWZ0?=
- =?utf-8?B?aTFJSGs3MzE1TGxwT1BRY2tYa1puU2lPVkdwY0ppN2dJR2QxaW10eU02Q3JE?=
- =?utf-8?B?Wlg1MzRQQ0dGM1E5MEl2dDl1TWdLVmN0YW8yUnZRU2h3a0cxTXRIbDNPcjc1?=
- =?utf-8?B?MUVVN0dzbzFZR1Q5UEJ2c2Z1bHY4S1ZmdXBwTVArZnNnU25hblNxakswUHMy?=
- =?utf-8?B?T1ZlVjBsQkFxS2hmU3oyRDloaTlxM1pINnVObEdLcFJiMUIrMW5xVHNZWG1O?=
- =?utf-8?B?NjFzMEJIMXRZcXRNRjdmWmUyVCt1K0w5RGNJbHpBYXNMTDZLd3VPSFVKdFky?=
- =?utf-8?B?TTVDSkZCWjhpeXIrVlZ2eGVyUjNIM3ovdzRwT1JkK2F4eVgzZ3hQL1VHNGtp?=
- =?utf-8?B?SllOaDhBYWRuY3VoMzlXaVhpdkZEaVMzS2J2OU1kZDloQ0drdzR5a1pMelVD?=
- =?utf-8?B?V21qc2NDcC9HVlJEUUdOQXh3N2JxYVlBOWsvUnpFTzBqRFY5V0RnYTZxRFhu?=
- =?utf-8?B?Q2NLNUNBWElpN25jOHVJK0NKR3UxcEdBUVc4c21PZURtUWFVclh3cXAvNTQy?=
- =?utf-8?B?WFNnR1hhdVo5TVRCalFYU1N6aUI3Q2dCWmtYR3d4alloa1FUUS82ZkFXNGxx?=
- =?utf-8?B?NEV0SXB6SGF6dm9BcXJacHFROGF1dGxxZnpHVmFDUTJnaGVheHF3Z3pmZVlH?=
- =?utf-8?B?MU9yZGppOTRHeDlUejZDcUttRkdLUkdGcDh3VVdWM3hGZCtiN3k0SWpYSGkz?=
- =?utf-8?B?V1F6NGtrZm1jajJjaVIwUmNuS0pxYkdORE1JcFVvaTVkMUdUeHhzK21qKzl1?=
- =?utf-8?B?QXZBSEpsUzJ1VW9GeXZRYmhPcVpianFxZzRKUDRuKzhBOWpodmkwdFJzQ2Y3?=
- =?utf-8?B?WjZ2dXA0SW1FN2YyYjNzSHd4QzVMZU9yeU5uYmw2Y0V5WlVsVU9ZVzRaZStN?=
- =?utf-8?B?MEhDRmszaHpPOWswNEJKUEdXVVBhaDhkOHJuTmtENHNWZVd4Qy9WOEl4bnJK?=
- =?utf-8?B?amRCeWIwV2pSUFJaRTNZRVRzQ2JkVDZudzlqYS9ZWkZwMmdwZ1dZc2tMZTB6?=
- =?utf-8?B?a0pzMGQ4ZVVDeVY0Mm91Rkhvak10aFlFZ3dIUUg5TnJHbXFMUy9yUWZ6MWFL?=
- =?utf-8?B?V24xWTczbzVWa0orWHArTEV1bmxZd2NqZUhoZXYvTkVqUDZRMnc5T21qUkxq?=
- =?utf-8?B?U1VZenlWWkdLOWFDN3FoWTdyTHI5K0VnSE9SaGNkWUpzNDEzTHFhMjFFaUlh?=
- =?utf-8?B?SFM4dmVMWlVuUlJxRWExWkZBWEgyZS9Cbk9paVJpektleUMwUHZsRVhyRWhF?=
- =?utf-8?B?N0l3cmJlK3lQSWJKZlN3ODM5emRvY28yN2FPT04rSlVFemk1SDVCSTZxZGtN?=
- =?utf-8?B?MlVuMFNNODloaVA5ak1kb0g2eHdqTVJOMk9FSFBMRWVPNXU2VitqaG4vRWMv?=
- =?utf-8?Q?EvH9ZQrj2PKIOIql7AoQUchT/hlv2MUHnhINw=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH0PR10MB5113.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(10070799003)(366016)(376014)(1800799024);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?V0hGaURlS2NVSDJ2Z1ZIZ2pTcVN1WXA2Mk4xVDVGQW41bytpVXc5OFBXQmRp?=
- =?utf-8?B?VGxiV3M4cXFRaHgweGR4b2xWVm8yU1dZTTdCRC9hVlp1TzhEWmRTalNPbVdU?=
- =?utf-8?B?OEtJTDlHL3YwWXdwTE5MeWRsUWZQWklmcDc4Q1Ria2ZLeUhUZEowR0hBdWt1?=
- =?utf-8?B?OVBFZzNvVHYrR2xIeUg3bVhWZDRGN2R0U1lvcEFuL2dBRlkzWHZqM2RCUFBU?=
- =?utf-8?B?SjBiMGVzU2tvOTRQelBSaXl0WGN4eFhTVU12K0tIekFCQ3ROVWpCaXRkejcv?=
- =?utf-8?B?c0R5NU5ObTQ3eEphV1YzdHpFYXphUlFZamRtWU5TejA2a0RvL2RXaUxvNEZh?=
- =?utf-8?B?dmc2WDJGK1ZGWHRqTXFxM1V6a1NnRlluZkJ2THFycEMzdTd1S2NnM2RIZjRi?=
- =?utf-8?B?eTZGUTVuY2hEaGkvNUdlVElGczNKditKeGNGRHNJOWI3OWRobnJ3TW51aS92?=
- =?utf-8?B?SldOSHY0QUlLNnNOR0hTSHozUUtMWW5DcC9HUEFCM2ozNEVWQ0dnTW1oRktU?=
- =?utf-8?B?VklvNXhKc2l6M2JTNDl4TzdsMTllMTU1U3VjU3FBK3FwS09aMkQzNjUyV21a?=
- =?utf-8?B?OUtkMndJSlVDS1M0NFdNY1ZweHV0eGNNODRzNVp5cElYTFVEVmc2SGxtdFg4?=
- =?utf-8?B?Z2RlMHcvS3UwamdXbTZSK3h0ejFmS0RrNURhRkh5K205bmxUWGxBcjZaejN5?=
- =?utf-8?B?TGFuVFp2aVIvaDlLSlNnVDBYWndKV1ZTTmpaRWhLcmpHVkJBU25SZzBsOVFH?=
- =?utf-8?B?T2NieVEvTFZnMno0UG9CdXpNMi9VYktidmFIcDNuUDhoOW1hdDFoZlJVZ1U0?=
- =?utf-8?B?d2wxcDl5MWlUOGRmY2VOdDVDMllOcGx3SE1GUDE2Y2RlNmlmbW1UbWZaOXE0?=
- =?utf-8?B?bC91YWFEbTdwUGFEU1k1RTk1VGZTeGYxTjJ6Vmc3K3VSVXQxVS8zaW9kNFp4?=
- =?utf-8?B?N3RnR1N2VTlMYXZQYnVPSzd6aVVESmN6eUpzN012UDVpTFBOaHVmUFhGUFdJ?=
- =?utf-8?B?eVdGcEVER0plNUlUcDlxcFlGZVE1NUdpQnVVQlRnc01nMVBtR3NidXhpblhn?=
- =?utf-8?B?cGJPZDIyQUE5b2JBSUszMGlqVFdzY2NrMExkTmFyZVloaU1FOUFRMllKSHZm?=
- =?utf-8?B?M3FadjFWS3dtdWI1UlV6REIzM2t5c2ExMlpveEVVaEl2M2xZdW1SMkZRRTZv?=
- =?utf-8?B?K0Y5cFpjb0Foc21iMmRjbDBjZS93ekVGRGJiS3RBNG5XYXdYd09iMTVQRjEx?=
- =?utf-8?B?Yy9ydWp1TUZOZGoraTYwSXRPYUYvUFhsVjZmZnYxdE9zU2FIU1JsTW16REVF?=
- =?utf-8?B?UVRERVN0U2FSeVlGQ2c3ZXdpdHJmYmNZU09HWk1neVFQN3NSMktmT1dnckxo?=
- =?utf-8?B?bnVxcm80cDlxeElEWEM2K3VxeU5IR3l2OXdZMUtQcUVKQ29QUHVHS1ZtMXJo?=
- =?utf-8?B?NWxCU0hHZHVUT1BEWFpnUmhuWHROQytyV1BCYVJEUkZ5QVl2WHB1VllwQlhQ?=
- =?utf-8?B?MVZsbGg2c3lCMll0NTdHTTJtWmNLNWtZT0xBYUpFWXh1eTEwWFhtY0JQUmNH?=
- =?utf-8?B?Lzh3YmNXdDVrTmR3cVBnOEg1ZWkrWXJla2gwVXM5Um9kZ2daMjBTd25xeVhN?=
- =?utf-8?B?cWpJY1pZazZxWURWanZXMkg1NVNTRnFBbkY5MTJWWkNjVTlQZ2t5RXlqRFNo?=
- =?utf-8?B?UWlqMXlBUWh1OU85VnFQanFwTWJxaFNTb2pUZURkb1czT2xqcUhXdFFGV3g1?=
- =?utf-8?B?STlaNWVURHl2RWx1SEEyTXNvNFRGek50ejJJR0hHSnZSWVBCdmFobjErSUgx?=
- =?utf-8?B?TSs3YzdjR0xWRnFpLzNZOWJ6Q1pMeVR2T2pYaHVJYXZxNXAyazJWODRHSjFw?=
- =?utf-8?B?cFYwN3p2RzVMWk1NZUNJc284LzZxZ092dWhwWkg1V3Bzckg1NndPUDhQMXN6?=
- =?utf-8?B?WVVQUUUwNGZ4WkdOUkNnZk4wNTRXSkRwaUlCa0VDamJva0xoaUdQOXBuYUNq?=
- =?utf-8?B?MFhrQjVLa3dkTytpM2g1ZmxubmJlU1ZDZmdORnZUQmVNbWRGYjFWUjVhMTl5?=
- =?utf-8?B?aDVnNjlrdlhvK1M1YWN2YmxmVXZETlB4M21tZWVCeUJNRXN6OWt6KzZ5ZnRi?=
- =?utf-8?B?SldwU2hHa1NpR2VJTEFNRGU5QW5EVWVBaTc0NmdEazRoOVU3UVRPT2R1NUJv?=
- =?utf-8?Q?3EMvZaPAR8uo6cygeGh3KyQ=3D?=
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
-	QqTNsoP2idFxRI+LFLU0eCxYaBC6QR8w7oQaukG4wSeyBhuQQNSp8XzLg9GWlVQO993XOI1aziaCLVuXwLrSYK2xUnvDoys6S/wDO899ZWWsoDwuJIoq/S2AMRgg1JUbKF6g8h1Lq9VEOG81cV1rDBg/TyFBQcpoOwVr2Tjb1X9OnPPUfiO+ra0NMmqQYAHOucKiJdffCNze2hOn4RHbAY9VLFvOI6PpTa/QDRpeY7IsnkZMd4bsyNzOJsXkkJFw8Rn308MKyM3lC90fMFAnrii0JR4M41RyO5Na+QdwI0mAi9uQ1jGPuy48vFGS7YqHA83EmE90qIPsZlzfEZ0jPHUP0wkqPtNTJCERMN30SJ8ta2i0IyMxiDHCvVtqGlF+gxb2SE4SQYZ1UkXRbFc2zLwAis2FvCqMneTarcGR46YDmk0Uob9qzxbYNVtsp3f1TU06dcn1kPsb6ZMitYU7aEMZF9nzQOu1hchhS8xhjT6+WjUt5OIHTdrYrt5l6WlTmzoiwzCoQwULcPyYXcdefy1QlEPyT3CIdXf6//vYitI6cIA7LZHevScsrQk1S0AhTFmDgM1+OJsFZaRV8XDmz2UKKPPBXBG0poO303zt1KI=
-X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: bbc1e7f3-bde0-4f68-8491-08dd40a8374c
-X-MS-Exchange-CrossTenant-AuthSource: CH0PR10MB5113.namprd10.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Jan 2025 21:02:18.4504
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: A5zLCXgPjAM13XuUL+lETYFWBHG+0y4M2Mmu9IqvCQ4LIcisio1i+XfaMXrjKT+ndVq11GkXY9EDlJLe0m+Bnot2Sw5lcJgUsMQa2gAZNmU=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: MN6PR10MB8144
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-01-29_04,2025-01-29_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 adultscore=0 suspectscore=0
- mlxlogscore=942 bulkscore=0 phishscore=0 mlxscore=0 spamscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2411120000 definitions=main-2501290160
-X-Proofpoint-ORIG-GUID: k-XGJ0CyNFA6_MNot6W7Q4wBu6yQ_ufp
-X-Proofpoint-GUID: k-XGJ0CyNFA6_MNot6W7Q4wBu6yQ_ufp
+References: <20241205-xarray-kunit-port-v1-1-ee44bc7aa201@gmail.com>
+ <07cf896e-adf8-414f-a629-a808fc26014a@oracle.com> <qdq4k6323orqifgzo7pbg5vakezr3gptfdehghxsyfrhc4kwvb@d4fxbwcl4gjm>
+In-Reply-To: <qdq4k6323orqifgzo7pbg5vakezr3gptfdehghxsyfrhc4kwvb@d4fxbwcl4gjm>
+From: Tamir Duberstein <tamird@gmail.com>
+Date: Wed, 29 Jan 2025 16:28:32 -0500
+X-Gm-Features: AWEUYZm30qzC7OYicUCyM7022EFlqK5dvrSLqA0Ri2_QEk_6Vs9gveN9uXDYy-8
+Message-ID: <CAJ-ks9=U4PZv4NgyH8B7SbHkecGLy+M=G639hSTv-hnPySqk6w@mail.gmail.com>
+Subject: Re: [PATCH] xarray: port tests to kunit
+To: "Liam R. Howlett" <Liam.Howlett@oracle.com>, Sidhartha Kumar <sidhartha.kumar@oracle.com>, 
+	tamird@gmail.com, akpm@linux-foundation.org, christophe.leroy@csgroup.eu, 
+	geert@linux-m68k.org, justinstitt@google.com, linux-kernel@vger.kernel.org, 
+	linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org, 
+	llvm@lists.linux.dev, maddy@linux.ibm.com, morbo@google.com, 
+	mpe@ellerman.id.au, nathan@kernel.org, naveen@kernel.org, 
+	ndesaulniers@google.com, npiggin@gmail.com, 
+	Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-+ Liam, Matthew
+On Wed, Jan 29, 2025 at 4:26=E2=80=AFPM Liam R. Howlett <Liam.Howlett@oracl=
+e.com> wrote:
+>
+> * Sidhartha Kumar <sidhartha.kumar@oracle.com> [250129 16:02]:
+> > + Liam, Matthew
+>
+> + linux-mm
+>
+> Thank you Sid.
+>
+> >
+> > Hello,
+> >
+> > I believe this patch needs to be reverted for now as it breaks the
+> > user-space build of /tools/testing/radix-tree with:
+> >
+> > In file included from xarray.c:11:
+> > ../../../lib/test_xarray.c:9:10: fatal error: kunit/test.h: No such fil=
+e
+> > or directory
+> >      9 | #include <kunit/test.h>
+> >        |          ^~~~~~~~~~~~~~
+> > compilation terminated.
+> > make: *** [<builtin>: xarray.o] Error 1
+> > make: *** Waiting for unfinished jobs....
+> >
+> > this then prevents the maple tree test suite from building.
+>
+> How are grammar corrections going to the right person (but not the
+> mailing list) while an entire conversion to kunit is not [1]?
 
-Hello,
+Very simple: the tests are not properly included in MAINTAINERS. I
+sent https://lore.kernel.org/all/20250129-xarray-test-maintainer-v1-1-482e3=
+1f30f47@gmail.com/
+a few minutes ago for this reason.
 
-I believe this patch needs to be reverted for now as it breaks the 
-user-space build of /tools/testing/radix-tree with:
+> Does the patch really need to drop the module testing too?
+>
+> What exactly is the point of converting one testing system to another
+> besides disruption of actual work?  Who asked for this?  What is the
+> point?
 
-In file included from xarray.c:11:
-../../../lib/test_xarray.c:9:10: fatal error: kunit/test.h: No such file
-or directory
-      9 | #include <kunit/test.h>
-        |          ^~~~~~~~~~~~~~
-compilation terminated.
-make: *** [<builtin>: xarray.o] Error 1
-make: *** Waiting for unfinished jobs....
+All this is described in the commit message.
 
-this then prevents the maple tree test suite from building.
+> Is anyone doing work on the xarray running the kunit tests?
 
-Thanks,
-Sid
+I was doing work on xarray and I was running the kunit tests.
+
+> This should be reverted as it should never have been merged.
+>
+> Regards,
+> Liam
+>
+> [1]. https://lore.kernel.org/all/20241009193602.41797-2-tamird@gmail.com/
 
