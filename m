@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-5701-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5702-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBF9CC0218D
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2025 23:03:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 435FFC0218D
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 29 Jan 2025 23:11:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YjyNz3hF9z30T3;
-	Thu, 30 Jan 2025 10:02:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YjyZm61BVz30TP;
+	Thu, 30 Jan 2025 10:11:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738191779;
-	cv=none; b=T4O11QNIMAjYeggm+K9LLq+MtvdOJGnZZ27m9fLsVUrj968BjrEAxbW9QIJEcD4NKxn09tfIqG+zDb1vnHgERYv+SFU63DKzycp1JNi4xBcm5irh3tzZsnA9RWSAzMoJ51j17FFNeuAaU6x4FFFOS+HPRu5Ans2bFmnUNgd/pffzM3kEVoKI5YgieA6IEUtKCCq0HKaIN4qmG2HW/dEVNDfaNNY0BYsvcfKJESFR/OObxRdLqe9Pykev7Bd5sBF+Dmz06nUXWmk46i9Es4vQF29P2HzCCHl4lFuUSdqMeK7bMSg4e2E2tBMAftVNhmy197k6jKm2R5J/eNJ+BZKHHw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738192288;
+	cv=none; b=ADXBVPl7mX9jbmIdEa0rr1a25ri2HP309TPopDGh6dWiKI/Jw3CC1NHes7TAf8kL9tiThwy5sflOKY5EfwBjfau3JuaGgKBRD/YLiD/6K7rRoQCCpQjv/ehWafegSKgo9TdQY9gznh8xTNe1j+GRkvYk5i6mXeHVGsBWeIEImdGOZ5N//TrLFe9u/7uffU1ppWke8+eOz3Ajwr3O/M20EELOAtZUmRH6+G8BUlA/q9RVD+ABdpy0eJpHSjVH2Ne6XVVqmSLigA/71UsvVlRNE6jU0280HCawa+aS2/usBKOkz8hgOOddAFCNUzY1+vepJk/QeIQSrHnBG0nkKpMGNQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738191779; c=relaxed/relaxed;
-	bh=KfRVwiVvoIL5yKlVMJTKUtLAc62tnU62cuq5lssPDUQ=;
+	t=1738192288; c=relaxed/relaxed;
+	bh=QKrCOl8m/rCgj2HwdpxvnpKCmh7wiUqfd/v4l4GcjUc=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dX0/GMOg6D/Os2QdZZ9RlO7oAs0ddiGvVApLDihAqCYUfSOLi6tTBJ/2maTZxkTOLJEDTZxCgp1JnrNosbi3DZuwhK+Ud+kRpJq2ikdmTK6vH/e+fGxePtLvC51NP3LP+48r0E30wEYNZQi46gfSqDSS+RXcvXC2918e7uatZUXW1QE5yhqOe5wnONzO95NyGQr3M+HilSDc2R7smDZS6RhVG7f+ro+1C+ntcXYLgKGeFEARUjiT59Tnzlv/8mTyxLMLSozNlOGQerY7rxUX56Y8IlC3+MzJpANp3ve3gNOEbEH/urzo3cu8ZNOIaIEs6T6JTQ3yBAr0hKI9vLL7jg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=itWlX2OR; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=SEqN/Afu+yKUIIx20sFt/X0y5IjOUmFltDSZHnFKCTaCCI0bOSWX8F6uWYLY+mxrDEjBqpUCuEOEVOyLv37fdYP8JVEQoaaNToiruWvSaiq6uqwKSrJUnxKzTT9wS2zgiuxuIS45BYTsV+JpHF4HVV7yqj2edV1wwoCfeU+GWkfOQ0shO7cHmDEzu/xC2O8FJcrR0vrxITvctFeGwMzkfaFcJx9roHotmsdIVh1PfQN2XtFZ8+VxJsKqxqV/qWJIaGO1WsZjhMM2kcqWIVjFaP3r9dpPwaAFBFVOm+WNfTeVvRepDGL4U2/32+u6NB2vQkjkfOWBYHu321AoIGlhow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=XAlzvbpm; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=itWlX2OR;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=XAlzvbpm;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YjyNs5zjyz2yYy
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2025 10:02:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YjyZm0ykHz2yYy
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 30 Jan 2025 10:11:28 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
 	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
 	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=KfRVwiVvoIL5yKlVMJTKUtLAc62tnU62cuq5lssPDUQ=; b=itWlX2ORYkxDIMR7KkPfVOS3of
-	mA85c29LcGu6a4faK14Mlody6Myv+SWb1GHg19xlyJhbt5kNYKL2B6FpdlCzEbLARSUcwIQ41cQp2
-	X3vUGRs2gB+fEnK2awaGyv8k71Lho6DGBejeORiCL09uQN8gi/TjYFeHTA8uo4HmrpRscM4j6aLIz
-	P3lIYaOUS7rd0pVqvJZizXk+7R5iOVbXpM+PqOLscrJzqevkL7Q7zxDqivU4iNaKk9v71jIu7WHqj
-	TR4S7YHpuau7rMlzD3CKsqBglLYiS4B7CSyb0omVXOzya/c7BmEEinKDhwyRgTc5VhdLT/3KJbYAk
-	J771SZTQ==;
+	bh=QKrCOl8m/rCgj2HwdpxvnpKCmh7wiUqfd/v4l4GcjUc=; b=XAlzvbpm4PcdqKCBNo8ChFEShx
+	lqZp17NxxDoP4sob5u58w7AX+GnxbL96EhyRp5zw+EiRrPm9v/XqNrH4/nrejYuxVIjqsPCqz9YwP
+	WMKOB9JSXo8Hm3gkO35cRfNjT4Y2eBvLdqz52evfls3I1nKZpV3NZx6BhuUKxl+NCEw2Jrh7gm6Bj
+	8gZFqrfU1pvJtZ54J3RtryoRnnuNleBENVgW56ivU/gcjhbOU3SySG1FLFC3cntYHzmArpoHIkYaR
+	detcDBHbIfOt7GkEL/RaJcrVpTK6ZZv1uSHlI9GlsJSld2ZLb2LwbjPlRNQNeyLSNHcSHQayK269J
+	wbFRDBMw==;
 Received: from willy by casper.infradead.org with local (Exim 4.98 #2 (Red Hat Linux))
-	id 1tdH51-0000000CYOC-1aDq;
-	Wed, 29 Jan 2025 23:02:43 +0000
-Date: Wed, 29 Jan 2025 23:02:43 +0000
+	id 1tdHDP-0000000CYqS-0Mah;
+	Wed, 29 Jan 2025 23:11:23 +0000
+Date: Wed, 29 Jan 2025 23:11:22 +0000
 From: Matthew Wilcox <willy@infradead.org>
 To: Tamir Duberstein <tamird@gmail.com>
 Cc: "Liam R. Howlett" <Liam.Howlett@oracle.com>,
@@ -55,13 +55,15 @@ Cc: "Liam R. Howlett" <Liam.Howlett@oracle.com>,
 	nathan@kernel.org, naveen@kernel.org, ndesaulniers@google.com,
 	npiggin@gmail.com, linux-mm@kvack.org
 Subject: Re: [PATCH] xarray: port tests to kunit
-Message-ID: <Z5qzk_92KU0xoLcP@casper.infradead.org>
+Message-ID: <Z5q1mkliUUM5Xlod@casper.infradead.org>
 References: <20241205-xarray-kunit-port-v1-1-ee44bc7aa201@gmail.com>
  <07cf896e-adf8-414f-a629-a808fc26014a@oracle.com>
  <qdq4k6323orqifgzo7pbg5vakezr3gptfdehghxsyfrhc4kwvb@d4fxbwcl4gjm>
  <CAJ-ks9=U4PZv4NgyH8B7SbHkecGLy+M=G639hSTv-hnPySqk6w@mail.gmail.com>
  <xf3445vgszstqfwycf5wc5owhnifxb3mny5xjjaihghqgnozmd@3h7hnifir4vu>
  <CAJ-ks9=hNGRFbr3sTQBma3u84Yhog7i33Oc=16FqFjE_JYNERA@mail.gmail.com>
+ <Z5qzk_92KU0xoLcP@casper.infradead.org>
+ <CAJ-ks9ksSh-r6SmKsm7iJA6nCqvrhXZ8jtjP-YoeMNB6tF5a=g@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,33 +78,29 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <CAJ-ks9=hNGRFbr3sTQBma3u84Yhog7i33Oc=16FqFjE_JYNERA@mail.gmail.com>
+In-Reply-To: <CAJ-ks9ksSh-r6SmKsm7iJA6nCqvrhXZ8jtjP-YoeMNB6tF5a=g@mail.gmail.com>
 
-On Wed, Jan 29, 2025 at 05:33:06PM -0500, Tamir Duberstein wrote:
-> >  $ ./scripts/get_maintainer.pl --git lib/xarray.c
-> > Matthew Wilcox <willy@infradead.org> (supporter:XARRAY,commit_signer:1/3=33%,authored:1/3=33%,added_lines:19/52=37%,removed_lines:4/23=17%)
-> > Andrew Morton <akpm@linux-foundation.org> (supporter:LIBRARY CODE,commit_signer:3/3=100%)
+On Wed, Jan 29, 2025 at 06:08:22PM -0500, Tamir Duberstein wrote:
+> The whole point of tools is to liberate stupid humans' brains like
+> mine from mundane tasks like working out who to email. The tool wasn't
+> wrong; it did exactly what you told it to do in your MAINTAINERS
+> entry.
+
+Tools do get things wrong.  So do humans.  When you take your hands off
+the steering wheel and the car crashes, it's still your fault.
+
+> > > For what it's worth the kunit invocation, while obscure, is
+> > > self-documenting. There's usage information that's reasonably
+> > > understandable embedded in the tool itself. I looked for the userspace
+> > > testing initially but failed to find
+> > > tools/testing/radix-tree/xarray.c. Even now, I'm not sure how I'm
+> > > meant to compile this.
+> >
+> > kunit is useless.  The test_xarray.c module is useless.  If you break
+> > xarray, the kernel won't boot far enough to load any modules.  You
+> > haven't thought about this AT ALL.
 > 
-> I'm not sure what you're asking. I used `b4 prep --auto-to-cc`. It
-> doesn't know that test_xarray.c and xarray.c have the same maintainer.
+> I don't understand what you're saying here.
 
-You need to use your brain.  You can't just say "I used the tool".
-Tools are just tools.  Sometimes they're wrong.  My email address is
-listed as the Author: of test_xarray.c.  You should have noticed that.
-
-> For what it's worth the kunit invocation, while obscure, is
-> self-documenting. There's usage information that's reasonably
-> understandable embedded in the tool itself. I looked for the userspace
-> testing initially but failed to find
-> tools/testing/radix-tree/xarray.c. Even now, I'm not sure how I'm
-> meant to compile this.
-
-kunit is useless.  The test_xarray.c module is useless.  If you break
-xarray, the kernel won't boot far enough to load any modules.  You
-haven't thought about this AT ALL.
-
-cd tools/testing/radix-tree
-make
-
-Then you can run the tests, whichever ones make sense for you to run.
+Then I don't want to see any more patches from you until you do.
 
