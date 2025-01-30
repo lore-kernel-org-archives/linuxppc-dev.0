@@ -1,96 +1,102 @@
-Return-Path: <linuxppc-dev+bounces-5717-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5718-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E929C0218A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2025 15:08:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE032C0218A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 30 Jan 2025 15:17:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YkMqH5kRhz30Tq;
-	Fri, 31 Jan 2025 02:08:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.177.32 arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738249723;
-	cv=pass; b=Et2DJxyvLivnQSNXxLebNFNVIWxEy1HypCbOSlf0xW/+1Hn1dZmhXjRl0iBP9cLUEOSyCCYdy+kJXYnq/PC9+Ba1g0l4C4BhY615bddEov35VVzVGaYyShDhTHFKBwku97ppr5xJ5TOAjR/T5Df5l6KsFwTi7Aj5iSnxuicB6BUbpMR5fHWtU1Yh+Cwa+bm9YkHZucvlNBf0k95Gvu1EkmV6LXyhWbyBb+g2oW1Fn7YC/rW8Xa7tEohzWJfFQuMBt6g010FAoUuFt5PPG2QIqEK/GCZ6gC1aw+aW7sH2fyWlFByJq1l66XddsuIcqz7eFSjWprT7qETaIF4RxbLmag==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YkN182Wy3z2xy0;
+	Fri, 31 Jan 2025 02:17:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.165.32 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738250236;
+	cv=pass; b=QT6lZhmSW6JG0WgCUr0S3FBb4WVCJOGrdsDWXYrdwbRmMOht3KBrJurc4Q/wB9TFnOA0GyPjgN2UL6HScCvqT43Irr3PJ0JuwZChPlXgozQo6UdgntClXX1Nh+K5feJyXxoE3ZArcFswh+Vi7dKfcWPz4QnDO7a1GHIC2zQ98GV0L3AxqbMQ3+uAR5qaUyLIvf4w1m8tSnT85PMp4nLj8lpLo8LdA0qhmJBOEBBf1344TEjRJxlDyJBoMPFEpkTuPALz54EeeNb5SiFNxqJ7dDHz+WJihl5SwX2EVvW92W6UloA9CI92c7kxpUOLcZmhFEj9frmPgNXKCzsIzAqjsA==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738249723; c=relaxed/relaxed;
-	bh=fRh1oi45ZjpNVV7nwZ3PkFdiHeGlZnaUVi31NxtRQYM=;
+	t=1738250236; c=relaxed/relaxed;
+	bh=eeE6RRX/yh3JBAduczfxh3a+VqxNbKPb14L+p6Q9zTw=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=HLAQ7I4UGefwmn+ABcZIdMatEUnaseUgIbMEhyDmt8ApKtpyOp1SZeCg0xwf0KSXjWSXKeuJ1uiYqL9B58FGtexsBkLqaDmg55hITqykfszYl0EFouOEUqGXJX/1rvTtbig52/F0ZFCV3EnKoei9VjdjiKmjmZ7D6Ewg5wnVKgTlB9WwrwNkDVWOEGzCz8q1vUJCtsnFQIxPieUOdEWKyBXvJoMggFLGzxi2ysDv8X1GozMhaiNmcwNx4JGNSsNRzF7O3TzgVgrM3gNWOs5st0+SdqekWqSxOIGO+aJLK5OSb9yMl5i6G/OD4InNwKrlOFMaSTEBs8ileMYB7OEvZg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=fkjRLp02; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=uwm8T7EL; dkim-atps=neutral; spf=pass (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=lorenzo.stoakes@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
+	 Content-Disposition:In-Reply-To:MIME-Version; b=DyGQMY2XrYyNv/BXohkivbiD7FWB1OTdE3Pq2085Mn5Map2nzzIJlMCSrkSa8K93DGO1gWx731I245IqcJ1A0LvHyTHdKzI1wehJhWFeZEYda4pDciwgHMlHzJzxNmo62h87l4lbDT+CoHvhj3foHbrrytNgnSygEv1v406FdzmWA9eHSfahg4QklMzoYtDObkKLfY5qWKYQqaastYtYA/aNxgvQhjA4gosMTf2QGZ3CVz2UxOUebzPVkko2nut59U0vhDzYrMzh1BWXAwuP3wGQClc0JhH3aPHBlAGwnMZOmKxw3pNk6RJ061vzAyCmnR7dc5J/HQ1DyO2CaLeTKg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=UrooE4tY; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=Xn5iGn2O; dkim-atps=neutral; spf=pass (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=liam.howlett@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=fkjRLp02;
-	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=uwm8T7EL;
+	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=UrooE4tY;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=Xn5iGn2O;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=lorenzo.stoakes@oracle.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1098 seconds by postgrey-1.37 at boromir; Fri, 31 Jan 2025 02:08:42 AEDT
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=liam.howlett@oracle.com; receiver=lists.ozlabs.org)
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YkMqG0qJVz2yLr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 02:08:41 +1100 (AEDT)
-Received: from pps.filterd (m0246631.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50UC66iY003869;
-	Thu, 30 Jan 2025 14:49:54 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YkN1704Pyz2xxx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 02:17:14 +1100 (AEDT)
+Received: from pps.filterd (m0246617.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50UEj0b7011792;
+	Thu, 30 Jan 2025 15:16:41 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=corp-2023-11-20; bh=fRh1oi45ZjpNVV7nwZ
-	3PkFdiHeGlZnaUVi31NxtRQYM=; b=fkjRLp02R4AlDWpSq/3EO29JKQm9+PgLOm
-	yAIr3N8WskkdZqZE3fME+iUgv9DNRRSCoxq1s7USHspzfyad8JpQDfDI01KO2c93
-	+IV86JgNQ1pSNPiG9KplE38iO2V78LHcycyjWlec95tz9FM8sleczuotsX/qh8lG
-	90EZGmrowAlC3SsFF9aorQ8lPCKG/AqY7BNNwfxXJbAm3NltiSapJ3Ix9GvQy3E2
-	GGkXYWkAPs/FcXni9E2NP3THVEexki2AUMQfA07WEkPE5VJfLIsFck+2TN1Rb1Be
-	2FZYJ1sqvK9fcEKZto+aIMG9qVw5pPHXhEd+nvs9r+qbQKPIJG3g==
-Received: from iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta02.appoci.oracle.com [147.154.18.20])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 44g94jgaec-1
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=
+	corp-2023-11-20; bh=eeE6RRX/yh3JBAduczfxh3a+VqxNbKPb14L+p6Q9zTw=; b=
+	UrooE4tYL7CF4ix5xL6/UnOb9TU0HqAwJSxlDnSOLR0ny8w9k4a/ffFx0toY7iMS
+	O8UFRdoLefGlUxyd+MIAHY5jbnPPqcAtD2XzeOXnttpWXr2wdzPCMrvanHzObLhM
+	9G69sUldErMXTE5/0ikDYDDUCeXiPm9TlesZkJFksXL6qPnquyOBvf2i/jNWNMqW
+	QjwzgXehQzO4WY+NYiSLoF2YuldBzbjCGqv5sTpm//B0vcM2nHwO7Ee+rZiQdO4m
+	E5lR3p8OjTXxLfAn4YZySgqTi7WhU1xEqky1n3qYTs64luEiC9b+f/piP/oJsJw7
+	AmFowcGCtfgQbiHClRateg==
+Received: from phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta01.appoci.oracle.com [138.1.114.2])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 44gbf6r2t3-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 30 Jan 2025 14:49:54 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 50UDs5SF005356;
-	Thu, 30 Jan 2025 14:49:53 GMT
-Received: from nam11-co1-obe.outbound.protection.outlook.com (mail-co1nam11lp2177.outbound.protection.outlook.com [104.47.56.177])
-	by iadpaimrmta02.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 44cpdbadvn-1
+	Thu, 30 Jan 2025 15:16:40 +0000 (GMT)
+Received: from pps.filterd (phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 50UEqQ6c036447;
+	Thu, 30 Jan 2025 15:16:40 GMT
+Received: from nam12-mw2-obe.outbound.protection.outlook.com (mail-mw2nam12lp2047.outbound.protection.outlook.com [104.47.66.47])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 44cpdb6e73-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 30 Jan 2025 14:49:53 +0000
+	Thu, 30 Jan 2025 15:16:40 +0000
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=dRpf20qB9qECU1iYWYPImJXmC+cMVZUTIxB4GW1zcmpzRKVsMBbxrMNh90gA2zX6RcaCYj6qRkYjVI9Bt6s+tv0FRnnR4Iv4BtpPkVqQJSUHRbTcjXGUiZjiXmQUDaGq5GkJqnmrLAC68u3XTsWn/0sf8I9qC5JMcqlbxp3w26o3z6Ut/MyDbgB2tcWpoQJMJXvn+EH+MvAJMQgN1LMbq0LkKcHoEQuut51awBFxyMyYHKhBT7Ddkxsjq1LSQIscPl+RoQyLD4bH1DMJMeHJJK9mCWWQDMhQ2N13CtfvhzxSY1ko0LXsImuUj3XnD+1TG7tvllprxfXA6PpwUFDDAA==
+ b=JqdVUvUFjS73eKXeOCjb515yhjI1O4oVWCiz9TYQ8OK1BWIj5itJnEN9o7g7hWGM3dFeSw5ydUxBl8TLUEa+xEro4IlCjcndPYTnSZT0uE3+C1vpYGR2SYujuBwVdhRvh/5OPdpVWvvhGZHsrEb7aGccUpASP4Hmc1UxL9hU1haYN/hUeiZZQHtelZmEPtlKwkM1H9RQbUSoxoIiT/gV/Ntip6NQtUtccS1sW98oGpyvsrJSlf5hh1w2P8I0wENHBKlbgMIhagGH/sIEP90eOE+yDDJzUHpRn1JKIlCoqjDV+xzAFbvQhO1ysVmsuMF8yH+TWm2w+SWcZaxp+7O2ug==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=fRh1oi45ZjpNVV7nwZ3PkFdiHeGlZnaUVi31NxtRQYM=;
- b=RbHivGozyriSHAo6cLHUg+obRi6otKq2P5j93aRRatJxh1pdiHsFhmzTLuZpdutIc1EiRdZTxmcny8a9G3OJH/Dh8c0bToCnbgl/2+NzIi7RuwOTC7WnlVGHystJLCzpTkB1CNjn1paL7kxAnJivRd+ruqSAjQOb8/DjhdMTpSG9axI07M3Lny9JhpXc/TyAuH9dHFaXYGofnRZH1oWv+A1QOCiO800bxIZriZ3eGlToJxONfw0/wrFvCYmE9UVf+WwPnJs4ozYo0PSBZFHq0lFH2KqyO1NQYQJTOAHMsd3KxSgIAnDPMWq/vEnDW9/PVzA45tqCtp1Ece/8J9GWIA==
+ bh=eeE6RRX/yh3JBAduczfxh3a+VqxNbKPb14L+p6Q9zTw=;
+ b=mwCX6lNLzTs6DzgPYYyOFsjFp/Bw/VYM+rsDG1RSGUk/q533/u9ECYlQXS/nK8iN0kkCT8Hx6SIwBejwl0f8U1xnGlD1gH/PhaBD1+LZITPPGZCv3ErB8iL83yUuycKzkyM8W+QDrCXbYJXwbdwQOtWsd8LnUXCZaQzCJLF3jg+Lss79Com7vJZgFiU+Wtiwu9sD8pPZW7IH4705sOKb9G1CBUIh6Hrs6Jt8hLFJ0o7JO/HJ7i5M7MvfWH9WdLSTjsuo9+8nCAgNHC8Xv+f/k42vOGSiUPkzkhSok5xnvx21v9pxQqC21FjPW2EaPjb01h4SobK58xuLcb+2f2WJ0Q==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
  dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=fRh1oi45ZjpNVV7nwZ3PkFdiHeGlZnaUVi31NxtRQYM=;
- b=uwm8T7ELidgQmvjEAprDdOYgJ1l4PT0/2GhBwEtJKGR9LEcKLBR57AULCEXjJ+PPkEnCpuU30KEML5xx92I7ICBRcNGgx2b5JLwPd2LXSkB4+BVsLdUgEXtlr+R3mB+pn4pXxDBvH2prYrqe5cPKFMPcsoFhkStFbO546BfqOJY=
-Received: from BYAPR10MB3366.namprd10.prod.outlook.com (2603:10b6:a03:14f::25)
- by IA0PR10MB6843.namprd10.prod.outlook.com (2603:10b6:208:435::7) with
+ bh=eeE6RRX/yh3JBAduczfxh3a+VqxNbKPb14L+p6Q9zTw=;
+ b=Xn5iGn2OiHObDB20PH2QlMrbSzAdMUrRIPAHMj7HZnjQpPi19EVuUJWFZxg0LZJzQkMMHYwFJFBEYWc5R0DNsXHSxV2jlDcK4PEMSE93SKr/BFV1aEaYyam5zxUPhY/qTdfxHGS2Z5pbNr8THhmwQnUc8f95+JbZ2sR3wbyHWs0=
+Received: from PH0PR10MB5777.namprd10.prod.outlook.com (2603:10b6:510:128::16)
+ by SJ2PR10MB7057.namprd10.prod.outlook.com (2603:10b6:a03:4c8::5) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8398.20; Thu, 30 Jan
- 2025 14:49:50 +0000
-Received: from BYAPR10MB3366.namprd10.prod.outlook.com
- ([fe80::baf2:dff1:d471:1c9]) by BYAPR10MB3366.namprd10.prod.outlook.com
- ([fe80::baf2:dff1:d471:1c9%6]) with mapi id 15.20.8398.018; Thu, 30 Jan 2025
- 14:49:50 +0000
-Date: Thu, 30 Jan 2025 14:49:47 +0000
-From: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8377.22; Thu, 30 Jan
+ 2025 15:16:37 +0000
+Received: from PH0PR10MB5777.namprd10.prod.outlook.com
+ ([fe80::75a8:21cc:f343:f68c]) by PH0PR10MB5777.namprd10.prod.outlook.com
+ ([fe80::75a8:21cc:f343:f68c%4]) with mapi id 15.20.8398.018; Thu, 30 Jan 2025
+ 15:16:37 +0000
+Date: Thu, 30 Jan 2025 10:16:18 -0500
+From: "Liam R. Howlett" <Liam.Howlett@oracle.com>
 To: Geert Uytterhoeven <geert@linux-m68k.org>
-Cc: "Liam R. Howlett" <Liam.Howlett@oracle.com>,
-        Sidhartha Kumar <sidhartha.kumar@oracle.com>,
-        akpm@linux-foundation.org, christophe.leroy@csgroup.eu,
-        justinstitt@google.com, linux-kernel@vger.kernel.org,
-        linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org,
-        llvm@lists.linux.dev, maddy@linux.ibm.com, morbo@google.com,
-        mpe@ellerman.id.au, nathan@kernel.org, naveen@kernel.org,
-        ndesaulniers@google.com, npiggin@gmail.com,
-        Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org
+Cc: Sidhartha Kumar <sidhartha.kumar@oracle.com>, akpm@linux-foundation.org,
+        christophe.leroy@csgroup.eu, justinstitt@google.com,
+        linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+        linuxppc-dev@lists.ozlabs.org, llvm@lists.linux.dev,
+        maddy@linux.ibm.com, morbo@google.com, mpe@ellerman.id.au,
+        nathan@kernel.org, naveen@kernel.org, ndesaulniers@google.com,
+        npiggin@gmail.com, Matthew Wilcox <willy@infradead.org>,
+        linux-mm@kvack.org
 Subject: Re: [PATCH] xarray: port tests to kunit
-Message-ID: <cd0cd863-9201-44ea-98c8-334ef5eab97d@lucifer.local>
+Message-ID: <ihl4bxs65uphmepoyw4xoa26mr4f3gci2mgtoq4osrzeyh3mup@hww2utbkxkfn>
+Mail-Followup-To: "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, Sidhartha Kumar <sidhartha.kumar@oracle.com>, 
+	akpm@linux-foundation.org, christophe.leroy@csgroup.eu, justinstitt@google.com, 
+	linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org, 
+	llvm@lists.linux.dev, maddy@linux.ibm.com, morbo@google.com, mpe@ellerman.id.au, 
+	nathan@kernel.org, naveen@kernel.org, ndesaulniers@google.com, npiggin@gmail.com, 
+	Matthew Wilcox <willy@infradead.org>, linux-mm@kvack.org
 References: <20241205-xarray-kunit-port-v1-1-ee44bc7aa201@gmail.com>
  <07cf896e-adf8-414f-a629-a808fc26014a@oracle.com>
  <qdq4k6323orqifgzo7pbg5vakezr3gptfdehghxsyfrhc4kwvb@d4fxbwcl4gjm>
@@ -99,14 +105,16 @@ References: <20241205-xarray-kunit-port-v1-1-ee44bc7aa201@gmail.com>
  <CAMuHMdVcuhzO57Qn-kcUJDM=HmkSwuheyNJPF1tx+gxRKnKZXA@mail.gmail.com>
  <mp6lnt3stfnfd74rwaza5xffh2ya5gylqnxotgrnqaqo3eh2zl@5g257jeiugfn>
  <CAMuHMdWDRLi8AE0PgfAnXundbS0hyTyovUH7yScrY7GtmYYPOQ@mail.gmail.com>
- <9636ed9d-3bfb-4dda-98dc-f945c9d53698@lucifer.local>
- <CAMuHMdUFbhzi8J3rmyvVn7HmrxbeyoOwu97w8cnuKJxksa8iaw@mail.gmail.com>
-Content-Type: text/plain; charset=us-ascii
+ <zlcagbwyskb4nkl4usbq4foc4vjcau3exp42zpfsl5b4tabr7u@o42mpfcsfygr>
+ <CAMuHMdVUZQTgLpa9L9R117s39nEqxdGy=CJLyLQaTv_16EDhZg@mail.gmail.com>
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <CAMuHMdUFbhzi8J3rmyvVn7HmrxbeyoOwu97w8cnuKJxksa8iaw@mail.gmail.com>
-X-ClientProxiedBy: LO4P123CA0593.GBRP123.PROD.OUTLOOK.COM
- (2603:10a6:600:295::8) To BYAPR10MB3366.namprd10.prod.outlook.com
- (2603:10b6:a03:14f::25)
+Content-Transfer-Encoding: quoted-printable
+In-Reply-To: <CAMuHMdVUZQTgLpa9L9R117s39nEqxdGy=CJLyLQaTv_16EDhZg@mail.gmail.com>
+User-Agent: NeoMutt/20240425
+X-ClientProxiedBy: YT4PR01CA0072.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:b01:111::26) To PH0PR10MB5777.namprd10.prod.outlook.com
+ (2603:10b6:510:128::16)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -120,214 +128,234 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: BYAPR10MB3366:EE_|IA0PR10MB6843:EE_
-X-MS-Office365-Filtering-Correlation-Id: 0282bf40-f1b3-4328-1a83-08dd413d593b
+X-MS-TrafficTypeDiagnostic: PH0PR10MB5777:EE_|SJ2PR10MB7057:EE_
+X-MS-Office365-Filtering-Correlation-Id: 0ce557e2-e7a3-4ded-cf63-08dd4141171d
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|7416014|366016|1800799024;
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|366016|7416014|376014|7053199007;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?4kH9qgtNlhtxh86jfHplmBlA0S8fdtpUlvngQsIG5xx2eRq8GxPWi4CYWqRn?=
- =?us-ascii?Q?au9uz3h3C0Zs2dkghQFpX+2I/9O6rAFhZgEm/UT2OIDFrGMaA5PbX7ozsS7T?=
- =?us-ascii?Q?h1jO9DpL3jGjMUBDFwXoHRrY8BIMEUAIzBFXViPct91y091JDZN8qnkAar7s?=
- =?us-ascii?Q?d3ymBrAY7+ID1cziiwyVAibiPAskSbmxkmUwaJazCyMgoUju7la/VYooS7wE?=
- =?us-ascii?Q?EVRUevqbrQC3oA5LmZ9ldSuPDkRSrRINKltLl/Nv96E34oTAUDMRcVQUbTZE?=
- =?us-ascii?Q?1d8EyY4DSsR3jAL1r/gmLkjvSWCJA3A8G2BJCIPGYvc+Oq/NxGokQ2hML/6y?=
- =?us-ascii?Q?xiXbOFJecUbQi3fqpS4PoF/DdCQ200Th+G1KiVFbvTz/9SwYNylCfE9Oc7Ic?=
- =?us-ascii?Q?yuPycdFPxsi+CGi8jiZV195o7LAsKbg9wRqITkKM4H9DhCaCVVwW6v0y+37A?=
- =?us-ascii?Q?TcTxXkw1E/kLa272ZYZwO2WUjkYFGA9ZBdf1r4bpOkNyz8Gcl8JCC62PGiTs?=
- =?us-ascii?Q?8Kj0vlSGFD3Le8rr6bQqU2jMxGmjnFXggNsUZgzsqcEDFDiroRQOc3RIkTXK?=
- =?us-ascii?Q?mpuyxOrzipNzVoCpUc3W4THVmMRBS/5YHfzu2BQbZPz8fqd6girpnbddJsFI?=
- =?us-ascii?Q?lVFTFTkMpd8iwqf32HLCaiUooZsKujEQdvvBpTiBlLLhMAMm+JIMRNAQHPTC?=
- =?us-ascii?Q?7qeL7/MrhESnO2xaQw2p/5DVnSXVC/PCQIUhffP/q5O0Pljs04onrTaK/7bT?=
- =?us-ascii?Q?KJHsz9/fVA0BznvfnIS7q87nezNyMzuUvPIacEjzXzESNMgt4twTtXaSLsdJ?=
- =?us-ascii?Q?Jfj9yhHHtXFyLOvslxriepnhNCemmwr+nLEPAZWZxFwxYI4W/YirOSod5Fqb?=
- =?us-ascii?Q?XpQqPAk7rkpBhUQvPNsrIXL6xmq48qc2y5o9EO8y4K7hkm75a18S9zcrxnoT?=
- =?us-ascii?Q?7c6QSprSwybKS5JdoNs2gPXl6pY205SOVjjHc6cOnpbkBWdWzJBs1QvsdORJ?=
- =?us-ascii?Q?3Z8Ox11i7XpHpG72lp2mjVz1ije1boE9SV/2S8UWPLkhiIwqLbC9HZlNruRB?=
- =?us-ascii?Q?xkSOHDIolaqAHnr9IQry9KebqeKHYYU8cdBw0dPwROxrumjZPugDWywGrA+u?=
- =?us-ascii?Q?1m28AGv9HqUKQmXX36dbXQL5WX/0xhvotPrVE0gbF9cK0UV25U71fBuw3V6b?=
- =?us-ascii?Q?IyZhFLeDLl+Q88veHDjq4p+2KAYEOaoV+se2fvgBFtnA55vDTxuM9J8CrBku?=
- =?us-ascii?Q?mOb+t18YJWqZCq1AGdvZUQQIVEnaNPGCWxEYDykGd8Ms4P7S8QKAUcaYVUue?=
- =?us-ascii?Q?70xFIy9Fd7TTrFYP9q4PE0qxvMhptkpkV8HcXC3if3fcoe4ZdLiPTwdX6LFR?=
- =?us-ascii?Q?7f97iu96X1xx131HsThZpnB07Yzm?=
+	=?utf-8?B?TG1ZbVpsc3M1RkkxOTUzOGNybjJ1emNZR1J1WUlEaWpDbTU1SFRKRUFxUS9S?=
+ =?utf-8?B?YnJRclBOdDFDS29ZM1ljTm50TFQvVWVibWFUd0JpL3N4MmhFSVU0K1R5T3hn?=
+ =?utf-8?B?dEVtT2V5RGNUSFErdTczRTZiTFVIcjNpNnI5SWE3S3lwdFd3NnowQ2ZZSG1t?=
+ =?utf-8?B?Y0h3RHFvOVh1Q1gxd3luQUNKcERiZDQ3Szd4OHJQRVlQUUlVWTlseFEvWWRt?=
+ =?utf-8?B?WFBxbHl0ZmNyU3JTMWZXOFVBRWE1RGQrK1JLWkczWVg0clM4emdOcUZOT2xH?=
+ =?utf-8?B?SGh6Rlc5dGhLSTN0VWsvY2VrRWV2YU5rNmdVSHN0SmtLNGRqdGRyKzJIUDNi?=
+ =?utf-8?B?Q0UvVmc0V2lYNGUrTEFlN2tLZ0JzUFE1WVMvaVFVbldZa3B3MFcwbXpKYXcz?=
+ =?utf-8?B?dStid0YzcngxS202THdkTU9HdjFoRytybHFFZXVtbFNiMUFQSTF1VDU3bzVr?=
+ =?utf-8?B?b2RiSHJGTzhhNmJxa1JZcWNuT2FSWnlDYnJDRHltWC80LzAzdERwNFB1Umds?=
+ =?utf-8?B?bHN2Yzg3bFBWcnkwZzhzMTM2UVNYV2VQVGM5UXZOZzNvS0R5TTZWazNVNWth?=
+ =?utf-8?B?RjROaFFaZytwb09QRnpVZEdoL3pFYzdFTjRVcmpKSTdFTXVZZXg0RjEwVHN3?=
+ =?utf-8?B?SE0vVHFBNUwyVnJvckZJdnRhWkFSM29XNko0anR1RVBZYU92TWlRQ1k0Z0hX?=
+ =?utf-8?B?N3hndU5pL3Y1MFhxT1NYdGVZeDZKZ1VSVGdhdDdtaHM1ZFZoRWxnVFUxZlBN?=
+ =?utf-8?B?Y0dqMU8zL2NuNFBqeFBTdlVUVVlqSjNWbnRpYXdMREEyRi9IL3FMbjN4dCs5?=
+ =?utf-8?B?MTQzMnByQU9oRjl2cEc1Z09VYlFYVGNPMk1CU3V4RklaNFgwbHIxcmZaM3pF?=
+ =?utf-8?B?THZ2a0dBU1lnc254QU5FZWJsdXo3OGpYeVZFSllZZEIyMUFIYy9NRkhpTnVM?=
+ =?utf-8?B?RlByREhDeWkrNVU4WEw0VlphOVNsc3pPUFkzY3JpV1dhTStnblVHczBvblBR?=
+ =?utf-8?B?VC9KUndBZ01wMnM5QmF4ZG0rMUU2dDhTNWl6TWhNdFRsV0dQMVkyUmxGeEhu?=
+ =?utf-8?B?UFhUT2cvMGZFNG8zeWtzSXNtbGozWGJ2ZEJwMzhiNjhhRGd5bWExelEwUUUz?=
+ =?utf-8?B?NGNOcVRwK2N6Q0toRTJBZkZmeXdGWjJrMFJuNzNRQmhwdzVlU3VVVTFBYmZU?=
+ =?utf-8?B?MERESWMrS2srcEd0RW1WbDZjVlUxNk0xRi9aYVVZcFFSc3VMNXovUU1TTVp4?=
+ =?utf-8?B?dHlPUDBQWXc5RFhuUGVyUVV0dDRqZjRhMzlHMWt1a1YxaFlxMklhL2dKVmUx?=
+ =?utf-8?B?VFMweU1zSktoUVJJbjJ5aEh2aUxwSDRFNS93U3FXMko1Q0FnV29MSWdQR3kx?=
+ =?utf-8?B?Ulhvd01BMXI5Z29tbmFpWUxkYkI0ZTFhUlNFa1FLUmxkMFlEWGM2cCszbTdk?=
+ =?utf-8?B?SkhodlROTFE1NDJkK0lvN0N6djZBVXM0Q0d1MEJ6ZWVDNjhYYitLYjl3QUcy?=
+ =?utf-8?B?QkNJb0xnTGdYWmVleEViNlpGOFNQS3BFMFUreVNtRjU4SElwb1lweEJ4VFdk?=
+ =?utf-8?B?M0ExRmJ5SXRRWnhiTlBEV3NKNGc1dXdidFRvd3Z3SU9ZTTJ1ZEdvb0ZhbmQv?=
+ =?utf-8?B?ZFdzbUFubldkaVhMQlBTZ01QcjVtWEZjOTE0Q0FhcmpjTFVxVnZQOGtlR2xC?=
+ =?utf-8?B?M3JFcE9kOVRvQjNrV1I0VnhRZWt0YVpjWG9VR3VWV1ovSlk2c2pqa1JVTGow?=
+ =?utf-8?B?bm9OU0dSeGZtOTBCelFKWVY5encrK2tldUtFdU82MktSLzVIWjM0NHcwYWtQ?=
+ =?utf-8?B?eHNvZnhoQ1hrS3JDWEsxUT09?=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BYAPR10MB3366.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH0PR10MB5777.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(7053199007);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?Csfjd2NflO/QsjBfrvrLEhKvo8P4G3gKgtjSJM9Wecz7L0jA4+C98e73jeVC?=
- =?us-ascii?Q?pnQKh+Zn/F3wFt8/0S25edstaVUtnFdX2g1wDEqJS96C3qbTMRmHEZgAGe2u?=
- =?us-ascii?Q?AkeN5+Umd4w1ER21GyWYAAZhn0iYwnqpomVifSNxnvgtKJZCeUTffaJ8S2fm?=
- =?us-ascii?Q?aarH5kq4/KojzRlfixHwR7WEaZoJEi5FLVJf81/ZOkTKiZgpOKo79lsOrX7V?=
- =?us-ascii?Q?LlA85okF3seVlnlhUzgzV0zVnNoyZDr3vhnogw537wO5XMhThjp6hexDeu65?=
- =?us-ascii?Q?9lITvcjmN8JerfJE5t0tTzrom/R/QfX8uLSWOjr+zr9nUm349cgWOVHUwaB4?=
- =?us-ascii?Q?vxaoUtVqkFRdQgh3xJ4E50uQD+fVu0uTkSL5L4xE6upnV2bGf0go69QLSMlw?=
- =?us-ascii?Q?pYtKr1i+1CPBJ0ArLfg+dKEMdTRZfIJXg3HXLywAbGyJCffKPerZVbAolT/8?=
- =?us-ascii?Q?q8AvuqHhduKgWju0oSJP1BKoxDaybLuuqV8nDT1INBsf4khppgaTHUCNx2he?=
- =?us-ascii?Q?e7NOeB2ex6Rl9IkzOu+/NiK/mvfpDzFaid7WpS9zHJBCDreVY3zWW8/SV/Id?=
- =?us-ascii?Q?sASOl5BZqCX58rzgYejcXGxBIPE3/J/mFZted/daqYO4H1QQWsxe06877/57?=
- =?us-ascii?Q?iayi6i4znwqXWuNcH7wILiSUetLjt0r8EPB3/5IpZnmimGz0eg+xBmMo0mdi?=
- =?us-ascii?Q?d8A8egx0Xn3A6//neIZsE+gkFzd20wVB69W3hO+rEGmTQ3yVtlv3SxuLXggP?=
- =?us-ascii?Q?0KyYQa+G8EjxidihK0X9hJyQODqMgs/WIqIp9sLTwmD5yWPBfDtsx81puy8X?=
- =?us-ascii?Q?n5EXUN1MDkUtpPWLSBO2T85YwwOQdwwcnYoL6zNZ1t0JlnJF71lDyas0ECnt?=
- =?us-ascii?Q?yIxv8E+OB+6F6N83ZOFq++7rvit6yjeBGwndKiYNKyFPM4DpFxlbObTJIWeK?=
- =?us-ascii?Q?bn7IOY6AU6R9ZLeco70WOIINBc9tJ9ZBh7WKAwKMRhxgWzuBvbtfM+8UlOmo?=
- =?us-ascii?Q?LsXRhTjOOrOjKWcT8tSOA2PWNQBlpIjq0yLR63HzhcUcw1Je/3+JeeJv4tjf?=
- =?us-ascii?Q?5m7vmAGnbqdH6g8j9Nw448GRdVAwcuzYkCzXJZeC3NG31pMV9Il1zLEUrgup?=
- =?us-ascii?Q?oSCtIRpgqlt6pOy6CUYEmsZt0pdC4mWjoEZeeQ7c6Jz7Gb6wxXT/QSOa5ftY?=
- =?us-ascii?Q?0Z2J0Cw6Jz8f0p4TPaCqNNUK3cyMzan+VXMYZNYmIcwsWz5L9tLyU7yOrUPa?=
- =?us-ascii?Q?+uWU9vJQF8KcSRr4b7nIvqWT2pQ/A/4+cdL5mszEbNjZqbxit1dw9ZIwI0Tm?=
- =?us-ascii?Q?yEAQJtF8BlS/GC4J4NWM5LhXV5K6eBtVCmOHfqvY2xpupn6mYN6C2JZslfqK?=
- =?us-ascii?Q?B4uvjzuIAXkdEDvVH/a+W9to+E4yiODYytUOtHvl4tFNoEn+9QghBUoxO5mR?=
- =?us-ascii?Q?rOKa+Z1HhjV7o+OE7kbLFKY9nl+XuwKAqMs13OvUke3dHKBWk64iOVs/6Uar?=
- =?us-ascii?Q?04iFA23GadBS96+w1PoN73egDO5p/ZCyH75awA6S/4tQGz3i+cGf9660L7jB?=
- =?us-ascii?Q?wkHSbW4EqsarDNuI7fq1sVboSgYWvXD1VGUsn2x7Q8bFr1kIF/M4aORQEBdi?=
- =?us-ascii?Q?jg=3D=3D?=
+	=?utf-8?B?RE1MQWhydGFkSWFnOFVMMmQ5SHppZ3Y2dnhVS1RFcUpVU2xwNWo4KzZxdjhJ?=
+ =?utf-8?B?UC9EV2lnRGx1M3JVandXNFBqMDhkak56MnBNZ3c2NWVXM1VUcFBBR3pNajBa?=
+ =?utf-8?B?Qk94RFhSaFFwL1B3cXF2d1h6VUEwNjd6TDRyKzVmeUdPTXpDZnFDNHQvTlJD?=
+ =?utf-8?B?aG1HcVRmVmgzWDZUNjcrem4yRmVjKytIOC95NlE5MXY4OElvbmJMcE1GOExh?=
+ =?utf-8?B?TmorVndKVkY3UDVGY2phWEdOcGRtTnNHVG9ibEpubkN0OUl0Ynp2VDZzU3hE?=
+ =?utf-8?B?QmphSVFxNENsNTJ0MCtwT3VDNUo1Rk5EQnAwNjlid1VKQzBzYk5YOXVQRDRr?=
+ =?utf-8?B?N2RnMjV6b2haeWE3NHlxQkhiWjlTOGpRSmRiZG43QTRraDdVNGVQQ0dTajRn?=
+ =?utf-8?B?NHdlZWo3QWNDQ1V0SXk4MGRoODU1YTFyVy9tdzNvN2VxNFIvVS9pV3ZLNytJ?=
+ =?utf-8?B?N2V6L0hFa3c5ZWFPYnRDcGVZM3NrdFBDMStZR3pId21tRVZ6cjNnRlZtQWg4?=
+ =?utf-8?B?eFdhRnE3QUdiSVVzS29MVjFtTkw3R1NaQ0EydFVnb1dsVHg3TXZrcDNqRmRT?=
+ =?utf-8?B?WnhhdWg0a3FYMVJTK1l1eUEzeXp1bk1QUGk0Zmh0dGVQeTZLQnd0OWdtZkxF?=
+ =?utf-8?B?QmwrWkJKLzdCMXl6K2NSS2ZwdEIrejlnMkJOV0EzOXdFVGFKcWpDL2E5bmZh?=
+ =?utf-8?B?cW5UdTZ1UFgzaGs2TzdVcnlzSE1YaFIzMDd0Z1RLS05RUGpJYjVoOVJDQlFs?=
+ =?utf-8?B?MlZWTnpLVlZyQUFtT1RvZnpQRnRReFIyc3VLSlRTYlJNY1Z2OG90VUx2L0JL?=
+ =?utf-8?B?SDV5RVUvaWtiZEZvVjlDbUxjRVd6bWEwbkYybXY3Ny9yZnZnTUlsTUM0SVlU?=
+ =?utf-8?B?a0F3OFJkTDZLSDV2LzM1clltMytXckhCcUhJeXlhbU1tZVVLYXRXOW1WODY1?=
+ =?utf-8?B?ejhuYThEa2phOTBQd0pqb3dpZFZCQjRLaHJtcEorcDhsZ0lBbVZabmt5TzhD?=
+ =?utf-8?B?YUllK1NtVlNMRExucG93UzdPcEdxUlpyL3lUSmhjMmJQU2Iyc0NRYmVxQWF3?=
+ =?utf-8?B?ckdpY051cXN2aGVuVWN6SWFxOGRhalFyZjhXRk1Ib2ZDN3JDM2hvbGxaMjhB?=
+ =?utf-8?B?bmRybHBleXlZTFFOSzllbHMraDcrVUQxdEpBUFlZWUxFMUg4YlVxQlpFNkhO?=
+ =?utf-8?B?d0Y1VHJINURPcVNESTVGQzYyeXBLZEhlU0VLN3VGSnEzakR6NExXZDhGcUhl?=
+ =?utf-8?B?L3lwRi96SmR1ZkszcGtuVHdJVExRWXJjbTV6MU9rVk8yRGUwS0VnUTBjb3hh?=
+ =?utf-8?B?QVV1RllBVkZ2Y3JFakZNNGY5clU1alh0WldBRTFmeDFDV0JUWlBHWDBmS1hj?=
+ =?utf-8?B?djhmZ3ArSjk1WHRCYjNsMkVGU2g5UVRkMjU4anQrZG8vLzIyL01FSzg4U3RF?=
+ =?utf-8?B?SnNsMzc1VzJwQkpvM1Q1RS9NN1M2N0ZiVW42cTNGaWczYVMzdVhlMXQvN0FI?=
+ =?utf-8?B?eUlkOXp1VHYvWWNVdW9ROTFhT2piS1dPU2xlUTZiSHR5REZ2L3ozejJVeGpQ?=
+ =?utf-8?B?eVlkSURLVmNiNjlGTGlPVmt6NW0rUnNaYTJWSzdXNjBFM2FaSlRjNjVYa1VP?=
+ =?utf-8?B?NkhkZmJlenFYQ2hPWUhJd2ZuaHdGczUyUjFwM0VFbngzSGNpVmpWWFVNWTlw?=
+ =?utf-8?B?NmVJU3lWZ0xNbnBqRFRZRjY3UHkxS3dNekhoTk1jR2FZMDlZTmtuS09nMlQx?=
+ =?utf-8?B?UjJVdEMrczdFd2pFVXdia3lQeFlmbWxzMlpGVTAxYmpRUE5nZDhteGF4aXV3?=
+ =?utf-8?B?dXY0eGgraWZ1MDhBUEN5R0pKSVkrUHptdGk3dlBqMnJvenVEVkRsZDJTdU1V?=
+ =?utf-8?B?RGFYVXdrbDREYUxiSVJPYmVXNG90R3h2M3ZDNVNhenZTWTVtZ1c3SElZdk9i?=
+ =?utf-8?B?eXdPSC8yMEZrOWxOaVBHYi9oSWk3OXRIa3dvak9RUEtEK2ZYRTgyc0xKclk3?=
+ =?utf-8?B?bzF3SmVIWmIrTVBidHdHc1IxZS9lMENDT1hLMU9vb0laZXhodTBqQU1wQUNN?=
+ =?utf-8?B?VkFlOTJlZ0gvNXlad3RDelZUUVpnQkhudHorT1NuQlpsWE9IYU82elhHVkd0?=
+ =?utf-8?Q?H10YuxsEokss1MtSKTSSBeKdb?=
 X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
-	vIDixoJLr3e6DJieglcPOfGjPBrZwJ8BiFuZkEw0Qr8TwZYTyYdJS0fWQZYBPwRSCsfdKl/s+jsgeGoQ5XH9JTq5+XKyhjTZgVCONTCGHP2dRL3EqApAGtG0ouOdFxGHCeBgEx+wx9Vc+77RSk1khIv5T/rJhGrDNSDEJM0/1F3Ppzant00I4Gh8joDhennvswxN01lEYlcjMK3QGVEeWFLT/KEWjBcYXMzfrKZNehiHqyalLLOl34wgzq0yuWycDK84tiR8vxJFBTjIixMtklb449mKPfyhigY6HGlPQRC9zIz44RGF5FiLaIR73+aW5R1hpKMmHWI6omZkM/NsHWj8MpQn8MHP6AUyC0yu4ybbVO/tb2dG/+25LKvi61aEM5T/Z8P4P2MU45N2FtR5yJEwYpzvI+PeZx7sqfsJ9GW2uTWcOcT33OxozwE+2944uPYBGNmOJ7vvT9MSMro69yQEgaBdFgbfbraYPoE71KHJOTLxmI5u67gIeJ97TCDEW//e3DBcbpHyJyrdaaJTK/hxW2ph9v87VC0d+rMWVm0xcrYLrf+OHCuq8AE3FYDs/vsp/rqQuj7kzhifqrSVez8jLTZLP96r+UWLCIy5Tog=
+	d0wf99TdyoPd99ltSbowltGXnjlCCFOD4yRjgdA/pCYpLCu9OBcXj8KPdOBkBRv3yK0sF2ArG+gPs0fSpNEN72F83h9h1tqH3gwb345OlJrC6FFYf4sLJkHCkgjcFyvveZkcu3W1aysplJl7XB7u9zDFF4p/tNY6eox8CAb13Q2/U0Y8JGH5h0VvlXTPMtNGRUfTZR1sZiX+Y+s6U+Wbwt59PHeInVNEURMb96osRgUXw22y1LwWtV8MeEIej1nB1/orRRk7YpCFNhLDozHNjD+nJVai9Je6pAlKD8iFOwLjMRvaVkapGrsRlP1JEAO1hYK/rxtGqHvQzrar+9x8lmgEkiE1DzlPeZguXaLWzmhjPjThlRKR9PH6rjvxIY+VMcmju5qZ+IXiCjx9M3HA4WzWRTXLDowc3h4yhRzXmloAQYedjm1eC3iFnS/uzKvZKjs1hfm4FTX58mi0/nlqHe/B8j8PaYfx0OjxFiTLHVZWFRmrqMeOzTlplhqccjJq7tQ9pO02PZixpy01Fg7G8JJbApzkFwSvwhv9AXi919sCibKvOqw82D2ac3eS8/TNqpNy+9+E1r++CbP4GaW6qKQ2JArAQOaX6DYljDGFhis=
 X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 0282bf40-f1b3-4328-1a83-08dd413d593b
-X-MS-Exchange-CrossTenant-AuthSource: BYAPR10MB3366.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 0ce557e2-e7a3-4ded-cf63-08dd4141171d
+X-MS-Exchange-CrossTenant-AuthSource: PH0PR10MB5777.namprd10.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Jan 2025 14:49:50.3681
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 Jan 2025 15:16:37.4955
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 3xFx/ak1QTCHVBKQzsMlrsXeMmKxPI4Z1anZYMoU6BBf3YanQHnGgCshca3e0YwVepIkt4xTtGTSlueWYQpdoummSJI/sZguoPywLJZ/B5E=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR10MB6843
+X-MS-Exchange-CrossTenant-UserPrincipalName: DwnYZloBuKs0jAMFzRxqCxfy5zLvpqhEt4Bgdd1hGeeSMSmfcHhrHws3dnTrAei5+6c2nMOqzhkZ1+yowvxh/Q==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SJ2PR10MB7057
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
  definitions=2025-01-30_06,2025-01-30_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 mlxscore=0 adultscore=0
- malwarescore=0 spamscore=0 bulkscore=0 mlxlogscore=999 suspectscore=0
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 phishscore=0 bulkscore=0 malwarescore=0
+ mlxlogscore=999 suspectscore=0 spamscore=0 mlxscore=0 adultscore=0
  classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2411120000
- definitions=main-2501300113
-X-Proofpoint-GUID: YbWELAG0gndfcHAGNFShPNTT2j8LUmW7
-X-Proofpoint-ORIG-GUID: YbWELAG0gndfcHAGNFShPNTT2j8LUmW7
+ definitions=main-2501300115
+X-Proofpoint-GUID: l6ftgpnz9PumzRzqUoa5dadiST4EcI2R
+X-Proofpoint-ORIG-GUID: l6ftgpnz9PumzRzqUoa5dadiST4EcI2R
 
-On Thu, Jan 30, 2025 at 03:38:36PM +0100, Geert Uytterhoeven wrote:
-> Hi Lorenzo,
->
-> On Thu, 30 Jan 2025 at 15:09, Lorenzo Stoakes
-> <lorenzo.stoakes@oracle.com> wrote:
-> > Having written a ton of test code, I've unfortunately encountered a lot of
-> > this sort of push-back and it's HUGELY off-putting. Writing test code
-> > should be ENCOURAGED not litigated against.
->
-> I am not discouraging nor pushing back on any testing code (on the
-> contrary, I test every single new kunit test that appears upstream).
-> My apologies if I gave the impression.
+* Geert Uytterhoeven <geert@linux-m68k.org> [250130 09:25]:
+> Hi Liam,
 
-My point is what comes across as pedantry often seems to arrive (in my
-experience) in response to test code submissions.
+Hi Geert,
 
-A wag would say 'isn't that true of all kernel code?' :) but my experience
-has been that there has been poor RoI on the kind of feedback you get
-vs. meaningful benefits to the point that it feels like letting yourself in
-for yak shaving.
+I'd like to say sorry for getting upset about this.
 
-We may be terribly misreading you in this thread, but it's in any case how
-it comes across. Obviously this isn't helped by the context of this
-discussion!
-
->
-> > The truth is far too little kernel code is tested to any degree, and this
-> > is part of why.
+>=20
+> On Thu, 30 Jan 2025 at 15:06, Liam R. Howlett <Liam.Howlett@oracle.com> w=
+rote:
 > >
-> > On kunit collaboration, I attended an in-person talk at LPC on kunit
-> > userland testing where it was broadly agreed that at this point in time,
-> > the xarray/radix tree tests weren't really suited to the framework.
+> > I'll await your patch to link all this together.  Please Cc the authors=
+.
+>=20
+> I gave it a try for kselftests a few years ago.
+> https://lore.kernel.org/all/20190114135144.26096-1-geert+renesas@glider.b=
+e
+> Unfortunately only one patch was applied...
+
+It is difficult to integrate the test framework due to the nature of it
+stubbing out a lot of the kernel code it uses.
+
+This is also a strength as it can be used to test unlikely failure
+scenarios that are difficult or impossible to recreate in kunit or a
+running kernel - even with injections of failures.
+
+It can also be used to isolate issues for recreating, which is very
+valuable in larger, longer running issues.
+
+I also use the userspace testing to test rcu using threads and I think
+that would be even more challenging on a booted system.
+
+>=20
+> > > > it is to get m68k to build, you should probably know how to read a
+> > > > makefile.
+> > >
+> > > Like all other kernel cross-compilation? Usually you don't even have
+> > > to know where your cross-compiler is living:
+> > >
+> > >     make ARCH=3Dm68k
 > >
-> > Therefore I think the healthy means of pushing forward with integration is
-> > in sensible discussion and if patches, RFC patches in collaboration with
-> > authors.
->
-> Good.
->
-> > The unhealthy approach is to needle one of the biggest contributors to core
-> > test code in the kernel on a thread because you don't seem to want to cd to
-> > a directory and run make.
->
-> My initial issue was that I could not find out where that is documented.
->
->     $ make help
->     ...
->     Userspace tools targets:
->       use "make tools/help"
->       or  "cd tools; make help"
->
->     $ make tools/help
->     Possible targets:
->     ...
->     You can do:
->       ...
->       $ make tools/all
->
->       builds all tools.
->
-> But that command does not build tools/testing/radix-tree, so I was
-> completely lost.
+> > Ignoring that I had to make a config - which asked challenging
+> > questions...
+>=20
+> make ARCH=3Dm68k defconfig
 
-Right, I mean this should be easy enough to fix.
+That also prompts, defoldconfig did not.
 
-If what you're saying is - make this more discoverable, make this easily
-buildable from the top of the tree - then sure, and I expect this shouldn't
-be too challenging.
+>=20
+> > And ignoring the steps to get m68k compiler...
+>=20
+> apt install gcc-m68k-linux-gnu?
 
->
-> > Why is this relevant to me? I am the author of the VMA test suite, on which
-> > I spent countless hours + relied heavily on Liam's work to do so, and
-> > equally there you have to cd to a directory and run make.
->
-> Thanks for your work!  One suggestion for improvement: tools/testing/vma
-> does not seem to be built by "make tools/all" either.
+There are a few compilers, multilib or such?  I've had issues with
+getting all the archs working for cross compile on the same machine
+(arm, arm64, riscv, m68k, ppc, ppc64, parisc).
 
-You're welcome, and right yeah, should be relatively simple to fix.
-
-This kind of straightforward practical thing is fine. 'You must use the
-space wombat with extra fireworks' type feedback is not so much...
-
->
-> > But at the same time in both cases, testability of key internal components
-> > is ENORMOUSLY improved and allows for REALLY exciting possibilities in test
-> > coverage, really isolating functions for unit testing, enormously fast
-> > iteration speed, etc. etc.
+>=20
+> > > > > When trying the above, and ignoring failures due to missing packa=
+ges
+> > > > > on my host:
+> > > > >   - there are several weird build errors,
+> > > > >   - this doesn't play well with O=3D,
+> > > > >   - lots of scary warnings when building for 32-bit,
+> > > > >   - ...
+> > > > >
 > >
-> > I ask you to weigh up the desire to enumerate your misgivings about the
-> > testing approach used here vs. all of the above.
->
-> I repeat: I am not against these tests.
+> > In file included from ./include/linux/sched.h:12,
+> >                  from arch/m68k/kernel/asm-offsets.c:15:
+> > ./arch/m68k/include/asm/current.h:7:30: error: invalid register name fo=
+r =E2=80=98current=E2=80=99
+> >     7 | register struct task_struct *current __asm__("%a2");
+>=20
+> Which compiler are you using?
 
-Good, but I would also emphasise what I'm trying to get across with the
-wall of text here (sorry, that's very me) - let's not get bogged down in
-the framework or whether it might be preferable to have it under kunit or
-this that or the other thing vs. the enormous benefits this stuff brings.
+I've had a hard time getting m68k to boot in qemu because of the lack of
+userspace.  I use m68k for nommu testing, but have a hard time getting
+the buildroot to work correctly to build what I need.
 
-Sometimes, esp. with new approaches to testing, it has to be at the very
-least incremental.
+This was a grumpy, pre-coffee way of saying that some tasks are not
+straight forward and are extremely difficult to make straight forward.
 
-If you're saying 'just get it documented in a make help and make it
-buildable from the top of the tree' then fair enough and hopefully not too
-difficult.
+Sorry, I should not have made such rash comments.  I respect you and
+your work and appreciate the help you have given me in the past.
 
-In other words - we are all after the same thing here, let's work towards
-making everything better, and not unnecessarily throw unshaved yaks in the
-way :)
+I would also like to thank you for your earlier statements.  After
+rereading them, I believe I misunderstood what you were saying.  I've
+been trying to make these tests a part of automatic testing somehow,
+even getting them to run in userspace.
 
->
-> Thanks!
->
-> Gr{oetje,eeting}s,
->
->                         Geert
->
-> --
-> Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
->
-> In personal conversations with technical people, I call myself a hacker. But
-> when I'm talking to journalists I just say "programmer" or something like that.
->                                 -- Linus Torvalds
+>=20
+> > > > > At least the kunit tests build (and run[1] ;-) most of the time..=
+.
+> > > >
+> > > > Do they?  How about you break something in xarray and then try to b=
+oot
+> > > > the kunit, or try to boot to load that module.
+> > >
+> > > If you break the kernel beyond the point of booting, you can indeed
+> > > not run any test modules...
+> >
+> > Which is extremely easy when you are changing code that runs so early i=
+n
+> > the boot.
+> >
+> > My code found a compiler issue because it's the first function that
+> > returns a boolean.  This is stupid.
+>=20
+> Sorry. I don't understand this comment.
 
-Cheers, Lorenzo
+I had a bug a few years ago that turned out to be a clang compiler issue
+with booleans.  It turns out my code was the first function to return
+a boolean and that wasn't being properly handled by the compiler (thanks
+to mitigation of clearing registers with certain .config/compiler
+flags).. it's not important.
+
+More importantly, I think I get your point, you think that the testing
+should be integrated and complain if it's broken - at least by bots.  I
+don't think this is practical in all cases, unfortunately.
+
+Although I would like to strive for this - and I do by keeping any tests
+I can as a kernel module while keeping the harder to recreate issues as
+user space.  I think we do a good job keeping testing up to date and
+adding testcases as new issues are discovered.
+
+Thanks,
+Liam
+
 
