@@ -1,87 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-5738-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5739-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56A64C0218D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2025 11:34:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B11DBC0218D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2025 11:39:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ykv122p7Rz30VV;
-	Fri, 31 Jan 2025 22:33:58 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.67.36.65
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738323238;
-	cv=none; b=cxNbC8Z2eJJIbuKRP50SqJ1/5TBGvVWWemMPSimwxHBOOhCJLSaJxT1sMw+cI9I/WOLl/cOqou5IAPVPCn0YCIbzFk3mj9zc1ObD0WOjRF+pSpVZZ80X5NLRTF5v14CPZa9FtvyGLgWvzNwWeuG98epm6J9TLeLjOB7Zewm+D5jGdLeg6Z4qah3Y7evKoxIfe8F8GBKj5t4+uEhk0FDSTXhI3kLy/5diN/6+0iPaAiSdCeK7Q6I7WuUqsU2rmhw8+zthDm1I6IYeEV1IaUKebjRWld8avT2ZID6xJ+P04uLCanWA0Pta976yHMw246ZaQT129wA66OmRzh16wOH9ew==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ykv6z1cdJz30Vg;
+	Fri, 31 Jan 2025 22:39:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738323547;
+	cv=none; b=DTBcyQTRIwk57CqBZwycmgtrpsHN4miBYeS+y42CCqZiiiOZSGLYxZBDS5Y0YzvuwDB6VcH5MKD6TyNpmntCOyLY934JSBGuL5wdmMVPOWrSvTrHofqaCUSqRWg2KXkiVpHmlWUgAHVIDqKBjob4R5qMXv8zs15DtcKW33JUd1F0AX7Tiy/hkYWbpfrnLlCpjzytlg1f3grdUtSxbUdBUEUUQ1BOlKxBQLW0LFWwEOZWkC4AWC5f05F0KA8a/7mOgfGplUhXQQmcuePviwUstqajH7rnET+oW7N66n6Sa2NfmaPMMot9y+IauoduMw5/bsNnxnmlhoZi893r9kRPaw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738323238; c=relaxed/relaxed;
-	bh=qQs7oU43E7+3t4qOpoSVpFx4mhxfSchhsfuB9dh0v8Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=cVFRz/gF05wa+tJm8+wmeTAII0ylBds66mph6VcCIhcLcnyBycjJjYMwAFdURtIuWiURTofAzoa0Egtrizeb3GhFhRi057MVESSsu4BpSXQY6i8b2GKCEqpNreGBp1eDcd/UshxXImCJceObrM4w5xBIoLNfsf7z8YirTCyGg9P7MZmerwnsStdi5Rg7KLjmQncnbS/GmdUnaHica0Oc7liMEDYuXLcJKezVPXDLmtEzm53UWCIOr5Z+xEO54RoDeckQve8/VHtt5MAUy62n6UAZ6/sU6dJmNNc0DL4j/NxVgZ9kDXknqblG5/rxVfft2/k5IQba/i1MOyxkd4p2mw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net; dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=Yz9CI78/; dkim-atps=neutral; spf=pass (client-ip=185.67.36.65; helo=mout01.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org) smtp.mailfrom=posteo.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net
+	t=1738323547; c=relaxed/relaxed;
+	bh=+xQnazq6BY+BbNdfnPg4tW9sHYRXsv1VFvJEAhmOoL0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Eo7WF7j+9tViyVsa/C4tGzbDLJEuXE1B/qBIWk1P6+0eaEF+cl81fYDknzcEMq/zqg4uUIi+F8ojuw/afCmVqW1hX6sZ5vtkpNZZVZSSbZXG9dxp5EfxMDSFlrftGnW3C5TkKhcbKdHjW4XM1Ye8SrRdX5AJnSocQSmd7kx7vgjmVDZOO/cYnJPTzgxk7wsFxPg3O+NGQhiTjhu/IFJRpYgzSW6s1Tk6hXkjsa3tH3c5+oUBzDf4kkTzc0EqOcBpvS+x+p+IzKNJtwMHyBmbms0+NAv3E/HaolZnS704ffVoTNJN89okpqx4Ssx+KRk0d6uZCtTrXgCtloNJaTKh/g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b+TjQDV2; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=Yz9CI78/;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b+TjQDV2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=posteo.net (client-ip=185.67.36.65; helo=mout01.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org)
-Received: from mout01.posteo.de (mout01.posteo.de [185.67.36.65])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ykv0y71kYz30MM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 22:33:53 +1100 (AEDT)
-Received: from submission (posteo.de [185.67.36.169]) 
-	by mout01.posteo.de (Postfix) with ESMTPS id B1587240028
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 12:33:46 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=posteo.net; s=2017;
-	t=1738323226; bh=476EBTGgcI5xdYOaJ6LQa3tfmwSruyF9mYzvA+HovWU=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:Content-Transfer-Encoding:From;
-	b=Yz9CI78/fovWb2L5arMhqzICRpUn5PDCJglnqxot979BF/cz24B57yuu4aqG+WEsA
-	 SwkGWcjgcrBU0WNZOH5ITMaS93rkXZ5MKtflImxIJt3OEmQhmszJJZmMatbXyhZ4bj
-	 9eN6uGxkTzbO3lC3ZbMVIteudpPKS6+AdjcAQogx5QcbvxPI4VmDx8o1g4HJVTxM3n
-	 wFVcW3I0tdDAt9EwDVnVPV8xr9ykgPT5lxzvCP/k4JSgJgzI22+ncddHWp5ZTvMMz0
-	 Xps9MsPE2HzxePqW35oCBQWUWRgqSQV/OvOk7usYRAPfrme2gy7aX9OnJUFBT91Osg
-	 whcxqOR2a8c7w==
-Received: from customer (localhost [127.0.0.1])
-	by submission (posteo.de) with ESMTPSA id 4Ykv0g42F0z9rxF;
-	Fri, 31 Jan 2025 12:33:39 +0100 (CET)
-Date: Fri, 31 Jan 2025 11:33:39 +0000
-From: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
-To: Frank Li <Frank.li@nxp.com>
-Cc: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>,
-	devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Scott Wood <oss@buserror.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Damien Le Moal <dlemoal@kernel.org>,
-	Niklas Cassel <cassel@kernel.org>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>, Lee Jones <lee@kernel.org>,
-	Vinod Koul <vkoul@kernel.org>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
-	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	=?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
-	Wim Van Sebroeck <wim@linux-watchdog.org>,
-	Guenter Roeck <linux@roeck-us.net>, Mark Brown <broonie@kernel.org>,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org,
-	dmaengine@vger.kernel.org, linux-pci@vger.kernel.org,
-	linux-watchdog@vger.kernel.org, linux-spi@vger.kernel.org,
-	linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 0/9] YAML conversion of several Freescale/PowerPC DT
- bindings
-Message-ID: <Z5y1E6TUclqzV2Rp@probook>
-References: <20250126-ppcyaml-v1-0-50649f51c3dd@posteo.net>
- <Z5qr1VkKSlyBE/E4@lizhi-Precision-Tower-5810>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ykv6y2DPmz30Vd
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 22:39:05 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50V5O9aX013392;
+	Fri, 31 Jan 2025 11:38:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=+xQnazq6BY+BbNdfn
+	Pg4tW9sHYRXsv1VFvJEAhmOoL0=; b=b+TjQDV2g6vaxMH16C6AwMZ00ol+2tWA5
+	kpvXV+U2zCQfXizrVivtWf04eXJDs0TP7+ODR8jYvaWqWNlnruKAsVqiemx7sB1B
+	SlWHZdj1PhYpw3SdjMdr/4J0/LdKQEz/48BHxQZ88bB4wMikrL9jYvMtx3dIvrz4
+	9Q122M8KWs9zrim8XY34KnzMf3374ELYt15ZeRoMIw9TJyOsJnCR3IJDl3W/v2i+
+	hSLz88gHnsM8EL6NzGqGLoW8eMFWwihkTKNq2VGwzh69T5TnzhS/02OVGay1eySm
+	PNsnzmGKFIjalqbxWpVKGSoP3qnLAPvQPLHQdprp5nQ5ADHF4YZuw==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44grb79cr0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 Jan 2025 11:38:55 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50V8M9Va017200;
+	Fri, 31 Jan 2025 11:38:54 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 44gfaybb2y-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 Jan 2025 11:38:54 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50VBcpbI35717712
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 31 Jan 2025 11:38:51 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 465D120101;
+	Fri, 31 Jan 2025 11:38:51 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 174D2200FD;
+	Fri, 31 Jan 2025 11:38:48 +0000 (GMT)
+Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.com (unknown [9.43.16.21])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 31 Jan 2025 11:38:47 +0000 (GMT)
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>, kexec@lists.infradead.org,
+        linux-kernel@vger.kernel.org, Hari Bathini <hbathini@linux.ibm.com>,
+        Baoquan He <bhe@redhat.com>
+Subject: [PATCH v3 2/7] crash: remove an unused argument from reserve_crashkernel_generic()
+Date: Fri, 31 Jan 2025 17:08:25 +0530
+Message-ID: <20250131113830.925179-3-sourabhjain@linux.ibm.com>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250131113830.925179-1-sourabhjain@linux.ibm.com>
+References: <20250131113830.925179-1-sourabhjain@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,29 +91,197 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <Z5qr1VkKSlyBE/E4@lizhi-Precision-Tower-5810>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: aWiQIBa5wuHjt2OnCeD5_pYFmlkYyzqs
+X-Proofpoint-ORIG-GUID: aWiQIBa5wuHjt2OnCeD5_pYFmlkYyzqs
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-01-31_04,2025-01-31_02,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0
+ priorityscore=1501 spamscore=0 lowpriorityscore=0 clxscore=1015
+ impostorscore=0 malwarescore=0 mlxscore=0 mlxlogscore=853 bulkscore=0
+ suspectscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2501170000 definitions=main-2501310087
 
-On Wed, Jan 29, 2025 at 05:29:41PM -0500, Frank Li wrote:
-> On Sun, Jan 26, 2025 at 07:58:55PM +0100, J. Neuschäfer wrote:
-> > This is a spin-off of the series titled
-> > "powerpc: MPC83xx cleanup and LANCOM NWAPP2 board".
-> >
-> > During the development of that series, it became clear that many
-> > devicetree bindings for Freescale MPC8xxx platforms are still in the old
-> > plain-text format, or don't exist at all, and in any case don't mention
-> > all valid compatible strings.
-> >
-> > Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
-> 
-> Please cc imx@lists.linux.dev next time
-> 
-> Frank
+cmdline argument is not used in reserve_crashkernel_generic() so remove
+it. Correspondingly, all the callers have been updated as well.
 
-Will do.
+No functional change intended.
 
-Best regards,
-J. Neuschäfer
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: kexec@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Acked-by: Hari Bathini <hbathini@linux.ibm.com>
+Acked-by: Baoquan He <bhe@redhat.com>
+Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+---
+ arch/arm64/mm/init.c          |  6 ++----
+ arch/loongarch/kernel/setup.c |  5 ++---
+ arch/riscv/mm/init.c          |  6 ++----
+ arch/x86/kernel/setup.c       |  6 ++----
+ include/linux/crash_reserve.h | 11 +++++------
+ kernel/crash_reserve.c        |  9 ++++-----
+ 6 files changed, 17 insertions(+), 26 deletions(-)
+
+diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
+index ccdef53872a0..2e496209af80 100644
+--- a/arch/arm64/mm/init.c
++++ b/arch/arm64/mm/init.c
+@@ -98,21 +98,19 @@ static void __init arch_reserve_crashkernel(void)
+ {
+ 	unsigned long long low_size = 0;
+ 	unsigned long long crash_base, crash_size;
+-	char *cmdline = boot_command_line;
+ 	bool high = false;
+ 	int ret;
+ 
+ 	if (!IS_ENABLED(CONFIG_CRASH_RESERVE))
+ 		return;
+ 
+-	ret = parse_crashkernel(cmdline, memblock_phys_mem_size(),
++	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
+ 				&crash_size, &crash_base,
+ 				&low_size, &high);
+ 	if (ret)
+ 		return;
+ 
+-	reserve_crashkernel_generic(cmdline, crash_size, crash_base,
+-				    low_size, high);
++	reserve_crashkernel_generic(crash_size, crash_base, low_size, high);
+ }
+ 
+ static phys_addr_t __init max_zone_phys(phys_addr_t zone_limit)
+diff --git a/arch/loongarch/kernel/setup.c b/arch/loongarch/kernel/setup.c
+index 56934fe58170..ece9c4266c3f 100644
+--- a/arch/loongarch/kernel/setup.c
++++ b/arch/loongarch/kernel/setup.c
+@@ -259,18 +259,17 @@ static void __init arch_reserve_crashkernel(void)
+ 	int ret;
+ 	unsigned long long low_size = 0;
+ 	unsigned long long crash_base, crash_size;
+-	char *cmdline = boot_command_line;
+ 	bool high = false;
+ 
+ 	if (!IS_ENABLED(CONFIG_CRASH_RESERVE))
+ 		return;
+ 
+-	ret = parse_crashkernel(cmdline, memblock_phys_mem_size(),
++	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
+ 				&crash_size, &crash_base, &low_size, &high);
+ 	if (ret)
+ 		return;
+ 
+-	reserve_crashkernel_generic(cmdline, crash_size, crash_base, low_size, high);
++	reserve_crashkernel_generic(crash_size, crash_base, low_size, high);
+ }
+ 
+ static void __init fdt_setup(void)
+diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
+index fc53ce748c80..750991df9e52 100644
+--- a/arch/riscv/mm/init.c
++++ b/arch/riscv/mm/init.c
+@@ -1377,21 +1377,19 @@ static void __init arch_reserve_crashkernel(void)
+ {
+ 	unsigned long long low_size = 0;
+ 	unsigned long long crash_base, crash_size;
+-	char *cmdline = boot_command_line;
+ 	bool high = false;
+ 	int ret;
+ 
+ 	if (!IS_ENABLED(CONFIG_CRASH_RESERVE))
+ 		return;
+ 
+-	ret = parse_crashkernel(cmdline, memblock_phys_mem_size(),
++	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
+ 				&crash_size, &crash_base,
+ 				&low_size, &high);
+ 	if (ret)
+ 		return;
+ 
+-	reserve_crashkernel_generic(cmdline, crash_size, crash_base,
+-				    low_size, high);
++	reserve_crashkernel_generic(crash_size, crash_base, low_size, high);
+ }
+ 
+ void __init paging_init(void)
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index f1fea506e20f..15b6823556c8 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -469,14 +469,13 @@ static void __init memblock_x86_reserve_range_setup_data(void)
+ static void __init arch_reserve_crashkernel(void)
+ {
+ 	unsigned long long crash_base, crash_size, low_size = 0;
+-	char *cmdline = boot_command_line;
+ 	bool high = false;
+ 	int ret;
+ 
+ 	if (!IS_ENABLED(CONFIG_CRASH_RESERVE))
+ 		return;
+ 
+-	ret = parse_crashkernel(cmdline, memblock_phys_mem_size(),
++	ret = parse_crashkernel(boot_command_line, memblock_phys_mem_size(),
+ 				&crash_size, &crash_base,
+ 				&low_size, &high);
+ 	if (ret)
+@@ -487,8 +486,7 @@ static void __init arch_reserve_crashkernel(void)
+ 		return;
+ 	}
+ 
+-	reserve_crashkernel_generic(cmdline, crash_size, crash_base,
+-				    low_size, high);
++	reserve_crashkernel_generic(crash_size, crash_base, low_size, high);
+ }
+ 
+ static struct resource standard_io_resources[] = {
+diff --git a/include/linux/crash_reserve.h b/include/linux/crash_reserve.h
+index 5a9df944fb80..1fe7e7d1b214 100644
+--- a/include/linux/crash_reserve.h
++++ b/include/linux/crash_reserve.h
+@@ -32,13 +32,12 @@ int __init parse_crashkernel(char *cmdline, unsigned long long system_ram,
+ #define CRASH_ADDR_HIGH_MAX		memblock_end_of_DRAM()
+ #endif
+ 
+-void __init reserve_crashkernel_generic(char *cmdline,
+-		unsigned long long crash_size,
+-		unsigned long long crash_base,
+-		unsigned long long crash_low_size,
+-		bool high);
++void __init reserve_crashkernel_generic(unsigned long long crash_size,
++					unsigned long long crash_base,
++					unsigned long long crash_low_size,
++					bool high);
+ #else
+-static inline void __init reserve_crashkernel_generic(char *cmdline,
++static inline void __init reserve_crashkernel_generic(
+ 		unsigned long long crash_size,
+ 		unsigned long long crash_base,
+ 		unsigned long long crash_low_size,
+diff --git a/kernel/crash_reserve.c b/kernel/crash_reserve.c
+index a620fb4b2116..aff7c0fdbefa 100644
+--- a/kernel/crash_reserve.c
++++ b/kernel/crash_reserve.c
+@@ -375,11 +375,10 @@ static int __init reserve_crashkernel_low(unsigned long long low_size)
+ 	return 0;
+ }
+ 
+-void __init reserve_crashkernel_generic(char *cmdline,
+-			     unsigned long long crash_size,
+-			     unsigned long long crash_base,
+-			     unsigned long long crash_low_size,
+-			     bool high)
++void __init reserve_crashkernel_generic(unsigned long long crash_size,
++					unsigned long long crash_base,
++					unsigned long long crash_low_size,
++					bool high)
+ {
+ 	unsigned long long search_end = CRASH_ADDR_LOW_MAX, search_base = 0;
+ 	bool fixed_base = false;
+-- 
+2.48.1
+
 
