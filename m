@@ -1,50 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-5731-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5732-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73AB0C02190
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2025 06:30:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA650C0218D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2025 06:30:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YkmGl55C7z30Vb;
-	Fri, 31 Jan 2025 17:30:23 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738305023;
-	cv=none; b=XD93D3ilTO1pIRsBo427hOdYXtRVnYjUgr4XnwGaA5i/JNbGtErSdpZ0u+elpRFgohx5Rm890cqY8T/9IkL2bO/tBwnTpvyhzo7ICTEL2I+RKtud/koEmFfjmxGYVtXhw/Ui6PybPQRngDqT9HFf9NvKyAsRWn9ku1eUKvAa9PiuqSHJa3rX5dGQnxsP3m05VHNjIzmtDOqJHUWHxEV+IpwPXGDBUBKAXs4efMwMyukLYG13dL3cvajT1ZE/NPwzKASxI2bKEBOfbgOfI3FGZqs92Cu29XbN25KLk4Nc6R2/l6dVhA97hUlRxXG07z/sAO8ZvZo5dkLLLyguMKdKgw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YkmGm1pttz30Vn;
+	Fri, 31 Jan 2025 17:30:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738305024;
+	cv=none; b=Esjsq36f6ZVED0rVZdlGaNT7BSHe+Ou7AEvUG0FB71m40/Pa0TnTonz4Y04ZdS7X/5+R1z5z+IOAOu9cf+j/GomJETUUyCt5u8nIArROZNvth+hAoghwk42riObGMDpmG6ElqWVoKI4TwE2/pjLBpBBMqoBEi7BT5iXtxFw95ElFbgTUZKP7lIpCJ21yf2+NIFn6BCR+qqbl5B0iLyrTGKaW/EntzWplqHixLdw2iuPE7xKQlGpt+1E8dPXZsd/xKa/F+rFg4nVRwH7hc5F0TlQIO1a5AL+mvCL+LHPTa8kP/CkslIGYROeU+fu3BaVdXDIjIjWyePO1GTAesOB94A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738305023; c=relaxed/relaxed;
-	bh=/nTeQ6BRKscUQiVug/BIsBoSy7fOq/deRVpWJxKn5Ng=;
-	h=Date:From:To:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=X/BMrFAtEqgjzdCCeACwaK9r7MH01uHxmzAjXvPKS6v6hfZ80xer10kkT4gjPe+pFEH62m79ksGnwecyP1kNFsHsxJtQaD2Ti5pIlbL1siuwZ+dO76CZI9jxSdKs3w0pR/eqD11litHTDzBwqlKyQ8PwEvGX/gt/7w6Guf8EpwzRs3spDc7f0dQWa+a4b1RD3eXSraPOWaX3fSsOJ5t75YbQAPcY8ldrwoD5O1duzhXuwApWzIz06S3UjZKiWblTAwnD9rjHHG1i/9vaUFmTV1yGAKLGWh3IrhCZcy+Yk7y9Zxr4a94N97uAyVM6cCgQEGKs5hzMsPT5NWG1joycNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org; dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=OuXm5+T7; dkim-atps=neutral
+	t=1738305024; c=relaxed/relaxed;
+	bh=UvZz56ssisQx9HVK8XsyRQh4x5oWqkj3G9is77DCAGc=;
+	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=MSCfPS8JsejLTQuiXBXuBnVBgmW4YvDtUMPxcUtoa/gEZ0/f7fIqai+gP22yAURNT07qVaO3lyNjTGlj00cAaiRS4LZ27hlEDbNpMyNJlrXWooE2bdiAeREdduj1yI6ESRMU3Ykx5iTPCVCmC+84Dc1iAEZuXWw3egL1B84lYnlHvzHt9ONJwJX7D2OMLssj9XC09sy5nLwZqTosxejfZIygvxX/0viqOrFNMmvEQ0mYo1cR4j6rN3+WzKVcnl6wWkvj57+a/W6OMoA8J2M/hYlTOR9DVkJOdU9iE8Zuo/y9u27cFzs+mgqnuE2F/yeEopOh9hH6GSYcHt5QhtYYJA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org; dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=HWp5dJy/; dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=OuXm5+T7;
+	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=HWp5dJy/;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YkmGk2hdkz30VN
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 17:30:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YkmGj2Hq6z2yMF
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 17:30:21 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ozlabs.org;
 	s=201707; t=1738305012;
-	bh=/nTeQ6BRKscUQiVug/BIsBoSy7fOq/deRVpWJxKn5Ng=;
-	h=Date:From:To:Subject:From;
-	b=OuXm5+T7VzmHQS6S0RCpiFD/Dxmj6St+YfDc7TXabgWvJqaPu51lMe31oyntKvgZ8
-	 L2xFr+3Q32N2D/eqzM43ZGVBwJS6CnqA/f+0pZnnPXKsTBXMnmOCK4yTGMM7MrN42u
-	 avPzFw6YmbFn3xw0xkhp+Kpz5DHSubA0ELukY9S2nxwDlGFqpCu6SN5ccIceSp6NEE
-	 NF3dCv+Fgy3nho86z/B8cQj3AIye0cH6nN90NTDq5udoLR/ml/uWshiRLDfQ4lJTf/
-	 +lsdzAaqiipoEYhO6XM+L1qhLz0HQNVIIroV9qhBfyxOxqA60OILflhLX0XoPTyoMW
-	 tCW3ygOx6hQrA==
+	bh=UvZz56ssisQx9HVK8XsyRQh4x5oWqkj3G9is77DCAGc=;
+	h=Date:From:To:Subject:References:In-Reply-To:From;
+	b=HWp5dJy/BI32jvZgpHgjfVGPMM8lC196H5vd3F6nGZ9g7vmqJdDV5gOOYnMsLF9Yq
+	 2m3e5LbVSFkwnM8nq1levUx/nIqB4ixeyihxjs+Tdv+iZmTIxPe1aM3iXqsPfS5QVY
+	 CiBgudRfRIFMeUv65ogjr+ekCk/ThZhUuEqznoqJ4ZZ5FgFrqwS2UrMa/9NzZhJdeK
+	 H3kn3Jt59ZKt3Y/phUvXJvP/FXs6m/bMsRp+bxjUnXlUFicCaBJZhdu+tW+y+dUGL7
+	 X2rTTfx91EtGsPUzOx7NrxNxhCZqEpZYf4jKbt7ZoOp2Fg8sr1ojTmp4pdcQ+zN7a0
+	 CRD+zP9lnjfWQ==
 Received: by gandalf.ozlabs.org (Postfix, from userid 1003)
-	id 4YkmGX1qJKz4x6g; Fri, 31 Jan 2025 17:30:12 +1100 (AEDT)
-Date: Fri, 31 Jan 2025 17:26:41 +1100
+	id 4YkmGX1kHPz4x6V; Fri, 31 Jan 2025 17:30:12 +1100 (AEDT)
+Date: Fri, 31 Jan 2025 17:29:17 +1100
 From: Paul Mackerras <paulus@ozlabs.org>
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 0/5] Microwatt updates
-Message-ID: <Z5xtIVa0y7lTDTU3@thinks.paulus.ozlabs.org>
+Subject: [PATCH v2 4/5] powerpc: Define config option for processors with
+ broadcast TLBIE
+Message-ID: <Z5xtvdozEfEmRyeI@thinks.paulus.ozlabs.org>
+References: <Z5xtIVa0y7lTDTU3@thinks.paulus.ozlabs.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,40 +61,101 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <Z5xtIVa0y7lTDTU3@thinks.paulus.ozlabs.org>
 
-This patch series updates the kernel support for the Microwatt
-soft-core and its implementation on FPGA systems, particularly the
-Digilent Arty A7-100 FPGA development board.
+Power ISA v3.0 (and later) implementations in the Linux Compliancy
+Subset and lower are not required to implement broadcast TLBIE, and in
+fact Microwatt doesn't.
 
-Microwatt now supports almost all of the features of the SFFS (Scalar
-Fixed-point and Floating-point Subset) compliancy subset of Power ISA
-version 3.1C, including prefixed instructions and the fixed-point hash
-(ROP mitigation) instructions.  It is also now SMP-capable, and a
-dual-core system will fit on the Arty A7-100 board.
+To avoid the need to specify "disable_tlbie" on the kernel command
+line on SMP Microwatt systems, this defines a config option that
+asserts that the platform implements broadcast TLBIE.  This option is
+selected by the pseries and powernv platforms, but not by microwatt.
+Note that this option is only relevant when the radix MMU is being
+used, so platforms without a radix MMU don't need it.
 
-Microwatt does not have broadcast TLB invalidations in SMP systems;
-the kernel already has code to deal with this.  One of the patches in
-this series provides a config option to allow platforms to select
-unconditionally the behaviour where cross-CPU TLB invalidations are
-handled using inter-processor interrupts.
-
-Tested on an Arty A7-100 FPGA board with 2 CPUs.  Compile-tested for
-pseries and powernv.
-
-Paul.
+Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
 ---
-v2: Address review comments
+v2: Made the option positive (has broadcast) rather than negative
 
- arch/powerpc/boot/dts/microwatt.dts          | 107 +++++++++++++++++++++++----
- arch/powerpc/mm/book3s64/pgtable.c           |   4 +-
- arch/powerpc/platforms/Kconfig.cputype       |  13 ++++
- arch/powerpc/platforms/microwatt/Kconfig     |   3 +-
- arch/powerpc/platforms/microwatt/Makefile    |   1 +
- arch/powerpc/platforms/microwatt/microwatt.h |   1 +
- arch/powerpc/platforms/microwatt/setup.c     |  18 +++++
- arch/powerpc/platforms/microwatt/smp.c       |  80 ++++++++++++++++++++
- arch/powerpc/platforms/powernv/Kconfig       |   1 +
- arch/powerpc/platforms/pseries/Kconfig       |   1 +
- 10 files changed, 213 insertions(+), 16 deletions(-)
+ arch/powerpc/mm/book3s64/pgtable.c     |  4 ++--
+ arch/powerpc/platforms/Kconfig.cputype | 13 +++++++++++++
+ arch/powerpc/platforms/powernv/Kconfig |  1 +
+ arch/powerpc/platforms/pseries/Kconfig |  1 +
+ 4 files changed, 17 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/mm/book3s64/pgtable.c b/arch/powerpc/mm/book3s64/pgtable.c
+index 374542528080..da0bba29a9d7 100644
+--- a/arch/powerpc/mm/book3s64/pgtable.c
++++ b/arch/powerpc/mm/book3s64/pgtable.c
+@@ -591,7 +591,7 @@ int pmd_move_must_withdraw(struct spinlock *new_pmd_ptl,
+ /*
+  * Does the CPU support tlbie?
+  */
+-bool tlbie_capable __read_mostly = true;
++bool tlbie_capable __read_mostly = IS_ENABLED(CONFIG_PPC_RADIX_BROADCAST_TLBIE);
+ EXPORT_SYMBOL(tlbie_capable);
+ 
+ /*
+@@ -599,7 +599,7 @@ EXPORT_SYMBOL(tlbie_capable);
+  * address spaces? tlbie may still be used for nMMU accelerators, and for KVM
+  * guest address spaces.
+  */
+-bool tlbie_enabled __read_mostly = true;
++bool tlbie_enabled __read_mostly = IS_ENABLED(CONFIG_PPC_RADIX_BROADCAST_TLBIE);
+ 
+ static int __init setup_disable_tlbie(char *str)
+ {
+diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/platforms/Kconfig.cputype
+index 1453ccc900c4..613b383ed8b3 100644
+--- a/arch/powerpc/platforms/Kconfig.cputype
++++ b/arch/powerpc/platforms/Kconfig.cputype
+@@ -449,6 +449,19 @@ config PPC_RADIX_MMU_DEFAULT
+ 
+ 	  If you're unsure, say Y.
+ 
++config PPC_RADIX_BROADCAST_TLBIE
++	bool
++	depends on PPC_RADIX_MMU
++	help
++	  Power ISA v3.0 and later implementations in the Linux Compliancy Subset
++	  and lower are not required to implement broadcast TLBIE instructions.
++	  Platforms with CPUs that do implement TLBIE broadcast, that is, where
++	  a TLB invalidation instruction performed on one CPU operates on the
++	  TLBs of all CPUs in the system, should select this option.  If this
++	  option is selected, the disable_tlbie kernel command line option can
++	  be used to cause global TLB invalidations to be done via IPIs; without
++	  it, IPIs will be used unconditionally.
++
+ config PPC_KERNEL_PREFIXED
+ 	depends on PPC_HAVE_PREFIXED_SUPPORT
+ 	depends on CC_HAS_PREFIXED
+diff --git a/arch/powerpc/platforms/powernv/Kconfig b/arch/powerpc/platforms/powernv/Kconfig
+index 70a46acc70d6..3fbe0295ce14 100644
+--- a/arch/powerpc/platforms/powernv/Kconfig
++++ b/arch/powerpc/platforms/powernv/Kconfig
+@@ -17,6 +17,7 @@ config PPC_POWERNV
+ 	select MMU_NOTIFIER
+ 	select FORCE_SMP
+ 	select ARCH_SUPPORTS_PER_VMA_LOCK
++	select PPC_RADIX_BROADCAST_TLBIE
+ 	default y
+ 
+ config OPAL_PRD
+diff --git a/arch/powerpc/platforms/pseries/Kconfig b/arch/powerpc/platforms/pseries/Kconfig
+index 42fc66e97539..206dfa0a3b33 100644
+--- a/arch/powerpc/platforms/pseries/Kconfig
++++ b/arch/powerpc/platforms/pseries/Kconfig
+@@ -23,6 +23,7 @@ config PPC_PSERIES
+ 	select FORCE_SMP
+ 	select SWIOTLB
+ 	select ARCH_SUPPORTS_PER_VMA_LOCK
++	select PPC_RADIX_BROADCAST_TLBIE
+ 	default y
+ 
+ config PARAVIRT
+-- 
+2.47.1
+
 
 
