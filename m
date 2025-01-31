@@ -1,85 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-5745-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5746-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53F6DC02192
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2025 12:23:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 579E0C02194
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2025 12:25:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ykw655PBdz30Vm;
-	Fri, 31 Jan 2025 23:23:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.67.36.66
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738326205;
-	cv=none; b=iZfMJnMKAUzhCMAOiXPBGrdt0qn3UCR1NfPF5V2O+wI9jf8C9HjmXv522k0xdPKJmoNG3YZElhLqT5B76gchy/DSSlR0ITFfd/UjbfUXUMcOG1caUD7zMqI9SgDBQgy6jXQHdq0ynca9g7hXX/cqV5ozo0xT2Lplo5sEV8ci2suNp3ypdV1LY4ywIfVTRGHMSiDXFXo5URdgNhVmIxOpWahQvKO8aSIK0BVUBN57nA7tdkprUxWMWgGicLCeFAbKBribdQ9USTd4k1RgmDRN9hclhg2QabSKn2xmk03VzvgBHWhu6j55ySECbdrkgymOQGt6xiLojRwbKhZftrvcKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ykw8q4V6kz30Vr;
+	Fri, 31 Jan 2025 23:25:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738326347;
+	cv=none; b=iCGR0LciYafu9uPZxDgo5GdXZvNyyBtz2O5XhGG5wE3B7yBIffUwS+N4gkcD8exuDZbwCZ7sSUrVrkd0RKAzoa3XE4T4Zg9e3FVgucqiyBapQGEtSPy5bPrGQz505cxeMFY351axtK+8R3suU4p1h+0BFxaKqZa+CJp9NCbywgyzWNZHtyxkTHfOmbo9RO6Dr/VVpPLgCEsq6eH7CKNSJgH5el/IMC7HpLTljmikGZgdGz22N4Yq+4xIZJJJL0/qSI8ieQSs0l4Zfkr7oEIGy48a6DL47sG5Kiy2HHSpSFQSU/obQn8zTqeK516kxB5m0TR2bIKQ2pBocUgRZzv4cQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738326205; c=relaxed/relaxed;
-	bh=CVrmTJqjbFMs57opB2+oT/VZnnL0V528B4LGKZGKziM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LkiBbI9xHDJZDm6x+KoeuZWJULfeav7juNdM/W1IIltuckTEianCl71IqEcAJiTWdoaP7fClcMFHf3vm4+AeUb5HViRv933rqF0HScXvuIM99Zlz+PaEUIiSUmxZeXBOfpAAKz9O+N9XC6n2QY009+CK3sEstUcSs1UeI6b4wZpmsw/GY08v1pxyHfQJUvVW6kZxmBF8xvqOa5HD67FDats7jo8MNdJ+XhDmJs5tAPouF/+YomJNS8THVSlvcs6NSifI0FrA+05m5d3S3oRUr9TOd6b5zf7hIHpmPpuUtOW5jPw8XhR6MSbUvBqvXCIshEhyQbG3r+ERFkryEHYIbQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net; dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=ZH/QrR6C; dkim-atps=neutral; spf=pass (client-ip=185.67.36.66; helo=mout02.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org) smtp.mailfrom=posteo.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net
+	t=1738326347; c=relaxed/relaxed;
+	bh=9ccUDYc1EcHDH2NmxewPM72NWsh2GLRbN3XP7uqVYz4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=LIcmdpYFdhj0S8bn8/Ght8s1ny0I9EaIWYDB86wFgeoOBiT6HolEJnsHxpAK5hpp5TUYChYBYAHV13ZyZ3uMjpZVJCPdGHZOQgePy7WcFXw4lScqw9wflJ/gYiQfv51NIU5FBS9KRDpELnjmmICoxqDHyu4MrcY9ZRssXjDNM6Uj9cWpJAnLbHmgOEvni+NvwvS3gwYhqJx22hy885jh19ANs3MWtReDWakxRPCKXMd/8lkxc4zdIvoGNmtm3lVE03YZGHkeYe2NZ1gE6HqbW9RJ3nH2YKVgQrhUriPEIk4x5gj2Y/JFnfIAKtXupsM6tb7+cY19GRgWqWSz4fdp4A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mibX7pez; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=ZH/QrR6C;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mibX7pez;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=posteo.net (client-ip=185.67.36.66; helo=mout02.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org)
-Received: from mout02.posteo.de (mout02.posteo.de [185.67.36.66])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ykw626KK8z30Vl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 23:23:20 +1100 (AEDT)
-Received: from submission (posteo.de [185.67.36.169]) 
-	by mout02.posteo.de (Postfix) with ESMTPS id D8887240101
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 13:23:12 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=posteo.net; s=2017;
-	t=1738326192; bh=2qfaRTO5iG5mOYJ+RvO6+d2r0hfl5IUM+PXTysg9LQQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:Content-Transfer-Encoding:From;
-	b=ZH/QrR6CDzrfRyOcDdDH1yAPCkywXurHgOK68RDcFhhdhoq8xD44Fh+6uUGh+dwWw
-	 UBOzkZwnU3ddtLRTeU9gq3Ro9Pye5t/VIvS47EuiR6p52UR5Egh3g+CwT4bretriRL
-	 9P1/U02bGR2CHxLzixwpkWxHjV7Zcn5ENGNT8IMCsYNGV7EkvrLpD208SD1pV3iCbJ
-	 YJpiFVWgIAxaRW3ZJfEeJKJ2G+bPdrPU3tXn5FZ2drudvcOkXIkQH7TlekHEnIB4sg
-	 LdJzUnEBnSD/51ERodPs5mvutRoWmEeP0pN0ROgbkERvi/mrMIgITeGplhnDse7Plf
-	 4sz+RCqcxm1yg==
-Received: from customer (localhost [127.0.0.1])
-	by submission (posteo.de) with ESMTPSA id 4Ykw5h1ywDz6typ;
-	Fri, 31 Jan 2025 13:23:03 +0100 (CET)
-Date: Fri, 31 Jan 2025 12:23:03 +0000
-From: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
-To: Damien Le Moal <dlemoal@kernel.org>
-Cc: j.ne@posteo.net, devicetree@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, Scott Wood <oss@buserror.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Niklas Cassel <cassel@kernel.org>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>, Lee Jones <lee@kernel.org>,
-	Vinod Koul <vkoul@kernel.org>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
-	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	=?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
-	Wim Van Sebroeck <wim@linux-watchdog.org>,
-	Guenter Roeck <linux@roeck-us.net>, Mark Brown <broonie@kernel.org>,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org,
-	dmaengine@vger.kernel.org, linux-pci@vger.kernel.org,
-	linux-watchdog@vger.kernel.org, linux-spi@vger.kernel.org,
-	linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 2/9] dt-bindings: ata: Convert fsl,pq-sata binding to YAML
-Message-ID: <Z5zAp3X7U0oftneH@probook>
-References: <20250126-ppcyaml-v1-0-50649f51c3dd@posteo.net>
- <20250126-ppcyaml-v1-2-50649f51c3dd@posteo.net>
- <a9df1ae6-8779-4dc0-8f03-eda939c0e533@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ykw8p65fFz30Vq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 23:25:46 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50V2OJkW016476;
+	Fri, 31 Jan 2025 12:25:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=9ccUDYc1EcHDH2NmxewPM72NWsh2GLRbN3XP7uqVY
+	z4=; b=mibX7pezBgydwGC9klaT6XtbjGxjTRnUifweGaIlRaq8N2Utgw6kzIIeu
+	Wz9aU/SaN4b8tNyv6boj11TDEk+NWbj9ck//AZ9Oge2mvey8uFSbmGHHlz8k4Ju/
+	wima7q3AhAzk0pA4I5q3nU58FPIrsBnU/w2h5In+ys38YXK2MFZlzIOeajTBvvfz
+	bSYVtuuTPW+g8IyuE+3aSxaVzGH4laW2JRWjVb9h4wfgnqUYBr87CGSUUj8PmzZ6
+	Ct2hkRhHPx1nIKKxBum+CJqz/deMFW+EPiluEp7w80oZzBYVbK5juGupwVXGEWZK
+	Vm/4X3nfOf+KwxP1VsPi27XPB909g==
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44gmk92css-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 Jan 2025 12:25:37 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50VCAvcP017237;
+	Fri, 31 Jan 2025 12:25:36 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 44gfaybgwh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 Jan 2025 12:25:36 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50VCPWuO35193348
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 31 Jan 2025 12:25:32 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9A1EE200F6;
+	Fri, 31 Jan 2025 11:38:36 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 881FF200F0;
+	Fri, 31 Jan 2025 11:38:33 +0000 (GMT)
+Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.com (unknown [9.43.16.21])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 31 Jan 2025 11:38:33 +0000 (GMT)
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
+        Andrew Morton <akpm@linux-foundation.org>, Baoquan he <bhe@redhat.com>,
+        Hari Bathini <hbathini@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>, kexec@lists.infradead.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v3 0/7] powerpc/crash: use generic crashkernel reservation
+Date: Fri, 31 Jan 2025 17:08:23 +0530
+Message-ID: <20250131113830.925179-1-sourabhjain@linux.ibm.com>
+X-Mailer: git-send-email 2.48.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,67 +87,115 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <a9df1ae6-8779-4dc0-8f03-eda939c0e533@kernel.org>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: IpMBxVikNIkI1ge4T6Sppr_sgL2rkU2_
+X-Proofpoint-ORIG-GUID: IpMBxVikNIkI1ge4T6Sppr_sgL2rkU2_
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-01-31_04,2025-01-31_02,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ suspectscore=0 impostorscore=0 mlxscore=0 bulkscore=0 clxscore=1015
+ adultscore=0 spamscore=0 phishscore=0 priorityscore=1501 mlxlogscore=999
+ malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2501170000 definitions=main-2501310091
 
-On Mon, Jan 27, 2025 at 08:22:55AM +0900, Damien Le Moal wrote:
-> On 1/27/25 03:58, J. Neuschäfer via B4 Relay wrote:
-> > From: "J. Neuschäfer" <j.ne@posteo.net>
-> > 
-> > Convert the Freescale PowerQUICC SATA controller binding from text form
-> > to YAML. The list of compatible strings reflects current usage.
-> > 
-> > Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
-> > ---
-> >  .../devicetree/bindings/ata/fsl,pq-sata.yaml       | 59 ++++++++++++++++++++++
-[...]
-> > +description: |
-> > +  SATA nodes are defined to describe on-chip Serial ATA controllers.
-> > +  Each SATA port should have its own node.
-> 
-> Very unclear. The SATA nodes define ports or controllers ? Normally, a single
-> controller can have multiple ports, so the distinction is important.
+Commit 0ab97169aa05 ("crash_core: add generic function to do
+reservation") added a generic function to reserve crashkernel memory.
+So let's use the same function on powerpc and remove the
+architecture-specific code that essentially does the same thing.
 
-I'll change it to "Each SATA controller ...", see below.
+The generic crashkernel reservation also provides a way to split the
+crashkernel reservation into high and low memory reservations, which can
+be enabled for powerpc in the future.
 
+Additionally move powerpc to use generic APIs to locate memory hole for
+kexec segments while loading kdump kernel.
 
-> > +  cell-index:
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > +    enum: [1, 2, 3, 4]
-> > +    description: |
-> > +      1 for controller @ 0x18000
-> > +      2 for controller @ 0x19000
-> > +      3 for controller @ 0x1a000
-> > +      4 for controller @ 0x1b000
-> 
-> Are you sure these are different controllers ? Are they not different ports of
-> the same controller ? Given that the previous text description define this as
-> "controller index", I suspect these are the port offsets and you SATA nodes
-> define ports, and not controllers.
+Patch series summary:
+=====================
+Patch 1-3: generic changes
+Patch 4-7: powerpc changes
 
-They have no shared registers, and each instance has the same register
-set (at a different base address).
+Changelog:
 
-The MPC8315E reference manual (for example) documents them as:
+v1:
+ https://lore.kernel.org/all/20241217064613.1042866-1-sourabhjain@linux.ibm.com/
 
-	SATA 1 Controller—Block Base Address 0x1_8000
-	SATA 2 Controller—Block Base Address 0x1_9000
+v1 Resend:
+ https://lore.kernel.org/all/20250108101458.406806-1-sourabhjain@linux.ibm.com/
+ - Rebased on top of 6.13-rc6
 
-(table A.24 Serial ATA (SATA) Controller)
+v2:
+ https://lore.kernel.org/all/20250121115442.1278458-1-sourabhjain@linux.ibm.com/
+ - 01/06 new patch, fixes a bug with ELF load address
+   It was posted in community as individual path but
+   since it align with this patch series so include here:
+   https://lore.kernel.org/all/20241210091314.185785-1-sourabhjain@linux.ibm.com/
+ - Fixed a typo 06/06
 
-Section 15.2 Command Operation implies that each SATA controller
-supports a single port:
+ - Added Acked-by and Reviewed-by tags
 
-	The SATA controller maintains a queue consisting of up to 16
-	commands. These commands can be distributed to a single attached
-	device or, if the system contains a port multiplier, over each
-	of the attached devices.
+ - Rebased it on 6.13
 
-So, in conclusion, I'm fairly sure "controller" is the right description.
+ - It was suggested to try HAVE_ARCH_ADD_CRASH_RES_TO_IOMEM_EARLY and
+   see if 03/06 patch can be avoided:
+   https://lore.kernel.org/all/Z35gnO2N%2FLFt1E7E@MiWiFi-R3L-srv/
+   But after adding HAVE_ARCH_ADD_CRASH_RES_TO_IOMEM_EARLY the issue
+   persisted and kernel prints below logs on boot:
+   ...snip ...
 
+v3:
+ - Split the patch that adds the arch hook to handle special regions in
+   crashkernel reserved: Now 03/07 and 04/07.
 
-Best regards,
-J. Neuschäfer
+ - Dropped the patch that adds arch hooks to skip `Crash Kernel` from
+   iomem_resource (/proc/iomem). Instead, a patch is added to include
+   both `System RAM` and `Crash Kernel` memory ranges in iomem_resource: 06/07.
+
+ - Rearranged the patches to ensure that generic patches come first,
+   followed by PowerPC-specific patches.
+
+ - Added Acked-by tags.
+
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Baoquan he <bhe@redhat.com>
+Cc: Hari Bathini <hbathini@linux.ibm.com>
+CC: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: kexec@lists.infradead.org
+Cc: linux-kernel@vger.kernel.org
+Cc: sourabhjain@linux.ibm.com
+
+Sourabh Jain (7):
+  kexec: Initialize ELF lowest address to ULONG_MAX
+  crash: remove an unused argument from reserve_crashkernel_generic()
+  crash: Let arch decide usable memory range in reserved area
+  powerpc/crash: Use generic APIs to locate memory hole for kdump
+  powerpc/crash: preserve user-specified memory limit
+  powerpc: insert System RAM resource to prevent crashkernel conflict
+  powerpc/crash: use generic crashkernel reservation
+
+ arch/arm64/mm/init.c                     |   6 +-
+ arch/loongarch/kernel/setup.c            |   5 +-
+ arch/powerpc/Kconfig                     |   3 +
+ arch/powerpc/include/asm/crash_reserve.h |   8 +
+ arch/powerpc/include/asm/kexec.h         |  10 +-
+ arch/powerpc/kernel/prom.c               |   2 +-
+ arch/powerpc/kexec/core.c                |  96 ++++-----
+ arch/powerpc/kexec/file_load_64.c        | 259 +----------------------
+ arch/powerpc/mm/mem.c                    |   2 +-
+ arch/riscv/mm/init.c                     |   6 +-
+ arch/x86/kernel/setup.c                  |   6 +-
+ include/linux/crash_reserve.h            |  11 +-
+ include/linux/kexec.h                    |   9 +
+ kernel/crash_reserve.c                   |   9 +-
+ kernel/kexec_elf.c                       |   2 +-
+ kernel/kexec_file.c                      |  12 ++
+ 16 files changed, 105 insertions(+), 341 deletions(-)
+ create mode 100644 arch/powerpc/include/asm/crash_reserve.h
+
+-- 
+2.48.1
+
 
