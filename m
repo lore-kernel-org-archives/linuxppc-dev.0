@@ -1,51 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-5734-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5735-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADBE0C02190
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2025 06:30:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4CFCC0218D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2025 06:54:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YkmGm66Xxz2ywS;
-	Fri, 31 Jan 2025 17:30:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738305024;
-	cv=none; b=kxSMMQmCDDB4+Fu/cjkLeFTNI+HHsX6yC2JqgBJgQ+y4C2ryLl6Cfu46n56dBH/dVx5FVb6Xziwmjt24jmfP8Vz24Jsnmr9AdQ8YBGQz+/9mDLyAOclJjPqIVjTEwv0jEI6M4xKTq2ZSpAGl84nylZ31q9kMXCtBM49/J3gFh72RbkA0GUzahu+hbKzpBbWoVJAa5gxQB8NwlsWuwyg+mJ4PdmCjZwZPfE3loBskZa8Y5ObehuFyjIaRZZRXAe/m12/ZtPuhYqDC/MI7+YP4zGfWGnjWIbBfRwP09OYUWKY6V/7WVG9w5n7A1XSLuf7Ts9wy5TkSxFcCjx0F+MG1XA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ykmq238c5z30VN;
+	Fri, 31 Jan 2025 17:54:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738306494;
+	cv=none; b=P9kkrf24KzdJOoBWE4Sx3h86rncgO/d5tI2ub6tC2uLHint5vUpfCrtuQ041QPALr2bltnZIWyh4tRLtwn1WiP4mZnQ79TFODfoKdNYJ3BFZnyojIMx3tyf6EIK+PA2FSa7b/JZac2Q2DwyAFrcFDdnKdJv65RvwOHjb2mU7xf6jtJb1rn64kBh8guHDcXS4fdy8L3pa4Plmn6twjPqmf80JdskBfHKbvR416E1Xf49SkVhBgwHP8C19tCHrDnj/7oMGCK0uNeX4H43iKniIJGAIGf6ChkdB4IrusJDL1gzkx6kdsXducOWo1MdnNtxXUnsCerfqL4EKtiyyNceNbw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738305024; c=relaxed/relaxed;
-	bh=/mpIwX678fPgIiopsIo5Zu/sr3xC+E5RKWOUKEybHis=;
-	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Bw2s68Uhl+dfPR+4IfOZIlb9ysydRl7P/yHQbYoc/aKo3paiORNa5FUIA/d/6w8rbo3XeYneSIe5D0ZlqrlS5M7pVKdxz/9spV2qNOeFi8wHqPP1E2gRqBDkQ5SNIUd3y609DpbPJ9dJSUavS/6R9ked6pzG6n4SdSYKZN5zbyA8+b26eiFeKiAOb/+3gpfDZo7vloOltxCrP6gu1CrCleRg9Goxf54UASK4f4zBqPB6WfHltOdoKn5N9u7RLyHBMypb4lf8Lim3sYWI2blJJk/CaD+e9HNbB0VVX+mqjPU9wNwctRtB0xTudSxqnfP0tfCsXIll0l2V95zfVRZ0PA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org; dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=KPFPKVUn; dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ozlabs.org
+	t=1738306494; c=relaxed/relaxed;
+	bh=pdT6BWuty8tFs7wtb0wObYnkLDYoD1Aszv9GuAcjP0I=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=aQ41rrsfYm0/xVAPLXrxFEc24MjqGqANymHraYjZesS7AlScUPpqkphAsQx24vmkUNVPYoP+lWB1A+wUrFWgHMMH0tTspj+q6mlwR7Yt1qmJuMHFYYy2s8Dts9Ry12P3YGPrEs43U8g3YH1zrXsqyzD66akXmv6ouGjERimdpYFjdIbfOVBkQSdbrUASgyZR98m6hm4JI+1ND8zH8uo5nsREYwRTa1r4VannKc9CB1JP6xNbqi4QKuthGjlcOUMaU5vYHoaMJcy1ypwyOfF2On6OB9ZtA0xoXLq+2FoHyeqbsNYNJPZy3he3mmN73w0PLqEzpYoLm1cs6HIKtcWoDw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ASm5xZBC; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ozlabs.org header.i=@ozlabs.org header.a=rsa-sha256 header.s=201707 header.b=KPFPKVUn;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ASm5xZBC;
 	dkim-atps=neutral
-Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YkmGl02TJz30VV
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 17:30:23 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ozlabs.org;
-	s=201707; t=1738305012;
-	bh=/mpIwX678fPgIiopsIo5Zu/sr3xC+E5RKWOUKEybHis=;
-	h=Date:From:To:Subject:References:In-Reply-To:From;
-	b=KPFPKVUnYXMJRILvfcsD/acjnQAiW+dOx7EVfWjl5QRu82Msx1X/9V7qY6hbxUCTX
-	 xqXj5EaiIURcz2R5BmGCdAeISRIEq11G0ibjRCTy2RVEJhsv7k3PUO5A2zHes9BxlU
-	 5ESpzTOtYUcvguQAKJ4EpSnMUACVEPb/L4Gbnk7NYUHvvkTcnQCw+OdOeSSzDigL9D
-	 NlfGSg5aOq7bMcDSdp4TvIzM2imJtUr9fS/E6F0FAufod7S1VhUiCznk5jFZcra1v4
-	 0OE3WEqkzM7ZSn/aci3GdzHCiG6unQNccIz7GMPRK5llB1Q2RKYo5rZfn944yJMS1y
-	 bCHDD13OaA2cA==
-Received: by gandalf.ozlabs.org (Postfix, from userid 1003)
-	id 4YkmGX1wQ7z4x6n; Fri, 31 Jan 2025 17:30:12 +1100 (AEDT)
-Date: Fri, 31 Jan 2025 17:28:04 +1100
-From: Paul Mackerras <paulus@ozlabs.org>
-To: linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2 2/5] powerpc/microwatt: Device-tree updates
-Message-ID: <Z5xtdGSacrWz7swi@thinks.paulus.ozlabs.org>
-References: <Z5xtIVa0y7lTDTU3@thinks.paulus.ozlabs.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ykmq11v95z30MM
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 17:54:52 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50V5NoTT013241;
+	Fri, 31 Jan 2025 06:54:38 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=pdT6BW
+	uty8tFs7wtb0wObYnkLDYoD1Aszv9GuAcjP0I=; b=ASm5xZBClDDEXXguDOe2tH
+	d7GQEw2tlLeCk8jGO3rmCfrGML9PKK5aig9lgbGRFvZDDxxOJgcQkNE4TMBoBYwj
+	06J3V0TpaQ7R6/CxmsX/e6GQHoBSiu8Yliv+UaZuMj5n5i8XHVweAargM/m7KLPy
+	I2PK43d9Lu0Kvzl237xKHC9IEV6HnzngpbRVMczFFbHVOmd8W9+6dSgfnJetDL1k
+	uG9FoqmXWieBNS1b3qDVUFWfUHRS9DrFtmen9xmQRk8EsGFTyPJvdX2AR/jjQ6xd
+	Ys4Um0k8sfLrC2FIZ4uYId7Akf8MmAIJn/aBUxb81NGZLnvgm/eyxcs7Iadg6luw
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44grb7898t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 Jan 2025 06:54:37 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 50V6sbUl002694;
+	Fri, 31 Jan 2025 06:54:37 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44grb7898r-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 Jan 2025 06:54:36 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50V3faCQ024517;
+	Fri, 31 Jan 2025 06:54:35 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 44gf912bx4-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 31 Jan 2025 06:54:35 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50V6sXNb16515536
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 31 Jan 2025 06:54:33 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B414F200D3;
+	Fri, 31 Jan 2025 06:54:33 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2BA7B200D1;
+	Fri, 31 Jan 2025 06:54:32 +0000 (GMT)
+Received: from [9.124.214.179] (unknown [9.124.214.179])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 31 Jan 2025 06:54:31 +0000 (GMT)
+Message-ID: <5c47950a-0102-4555-b056-e85f2abc2011@linux.ibm.com>
+Date: Fri, 31 Jan 2025 12:24:31 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,170 +86,189 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <Z5xtIVa0y7lTDTU3@thinks.paulus.ozlabs.org>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 1/1] powerpc: Enable dynamic preemption
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Cc: mpe@ellerman.id.au, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
+        npiggin@gmail.com, linux-kernel@vger.kernel.org
+References: <20250106051919.55020-1-sshegde@linux.ibm.com>
+ <20250106051919.55020-2-sshegde@linux.ibm.com>
+ <20250130145409.D_so_mR1@linutronix.de>
+ <b73b5143-1a7f-4032-ac06-43db3bf4abea@linux.ibm.com>
+ <20250130202634.eeb9TfkW@linutronix.de>
+ <01bc9e5c-fd47-4c26-8af3-59f10f3b9c76@csgroup.eu>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <01bc9e5c-fd47-4c26-8af3-59f10f3b9c76@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: Cwn0zcJz5QuZgr2YkEjkhu31-Jb-mGvY
+X-Proofpoint-ORIG-GUID: 12JBoN9nPZsP7JSMdhEY3--Tq7KDkLFs
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-01-31_02,2025-01-30_01,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0
+ priorityscore=1501 spamscore=0 lowpriorityscore=0 clxscore=1015
+ impostorscore=0 malwarescore=0 mlxscore=0 mlxlogscore=999 bulkscore=0
+ suspectscore=0 phishscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2501170000 definitions=main-2501310047
 
-Microwatt now implements ISA v3.1 (SFFS compliancy subset), including
-prefixed instructions, scv/rfscv, and the FSCR, HFSCR, TAR, and CTRL
-registers.  The privileged mode of operation is now hypervisor mode
-and there is no privileged non-hypervisor mode; the MSR[HV] bit is
-forced to 1.
 
-Besides updating the ibm,powerpc-cpu-features property to reflect the
-above, this also makes the following changes relating to peripheral
-devices:
 
-- Add gpio controller.
-- Remove high-speed property from SD controller, for the case where
-  the interface is connected through 200 ohm protection resisters.
-- Put an alias for the ethernet in /chosen.
+On 1/31/25 11:39, Christophe Leroy wrote:
+> 
+> 
+> Le 30/01/2025 à 21:26, Sebastian Andrzej Siewior a écrit :
+>> On 2025-01-30 22:27:07 [+0530], Shrikanth Hegde wrote:
+>>>> | #DEFINE need_irq_preemption() \
+>>>> |          
+>>>> (static_branch_unlikely(&sk_dynamic_irqentry_exit_cond_resched))
+>>>> |
+>>>> |     if (need_irq_preemption()) {
+>>>>
+>>>> be a bit smaller/ quicker? This could be a fast path ;)
+>>>
+>>> I am okay with either way. I did try both[1], there wasn't any 
+>>> significant difference,
+>>> hence chose a simpler one. May be system size, workload pattern might 
+>>> matter.
+>>>
+>>> Let me do some more testing to see which one wins.
+>>> Is there any specific benchmark which might help here?
+>>
+>> No idea. As per bean counting: preempt_model_preemptible() should
+>> resolve in two function calls + conditional in the dynamic case. This
+>> should be more expensive compared to a nop/ branch ;)
+> 
+> I did a build comparison on pmac32_defconfig + dynamic preemption, the 
+> static branch looks definitely more optimal:
+> 
+> Without static branch:
+> 
+> ...
+>   294:    7c 08 02 a6     mflr    r0
+>   298:    90 01 00 24     stw     r0,36(r1)
+>   29c:    48 00 00 01     bl      29c <interrupt_exit_kernel_prepare+0x50>
+>              29c: R_PPC_REL24    preempt_model_full
+>   2a0:    2c 03 00 00     cmpwi   r3,0
+>   2a4:    41 82 00 a4     beq     348 <interrupt_exit_kernel_prepare+0xfc>
+> ...
+>   2a8:    81 22 00 4c     lwz     r9,76(r2)
+>   2ac:    71 29 00 04     andi.   r9,r9,4
+>   2b0:    40 82 00 d4     bne     384 <interrupt_exit_kernel_prepare+0x138>
+> ...
+>   2b4:    7d 20 00 a6     mfmsr   r9
+>   2b8:    55 29 07 fa     rlwinm  r9,r9,0,31,29
+> ...
+>   348:    48 00 00 01     bl      348 <interrupt_exit_kernel_prepare+0xfc>
+>              348: R_PPC_REL24    preempt_model_lazy
+>   34c:    2c 03 00 00     cmpwi   r3,0
+>   350:    40 a2 ff 58     bne     2a8 <interrupt_exit_kernel_prepare+0x5c>
+>   354:    4b ff ff 60     b       2b4 <interrupt_exit_kernel_prepare+0x68>
+> 
+> With the static branch:
+> 
+> ...
+>   294:    48 00 00 58     b       2ec <interrupt_exit_kernel_prepare+0xa0>
+> ...
+>   298:    7d 20 00 a6     mfmsr   r9
+>   29c:    55 29 07 fa     rlwinm  r9,r9,0,31,29
+> ...
+>   2ec:    81 22 00 4c     lwz     r9,76(r2)
+>   2f0:    71 29 00 04     andi.   r9,r9,4
+>   2f4:    41 82 ff a4     beq     298 <interrupt_exit_kernel_prepare+0x4c>
+> ...
+> 
+> With the static branch it is just an unconditional branch being later 
+> replaced by a NOP. It must be more efficient.
+> 
+> So in first case we need to get and save LR, call preempt_model_full(), 
+> compare with 0, call preempt_model_lazy() and compare again, and at some 
+> point read and restore LR.
+> 
+> And the preempt_model_() functions are not tiny functions:
+> 
+> 00003620 <preempt_model_full>:
+>      3620:    3d 20 00 00     lis     r9,0
+>              3622: R_PPC_ADDR16_HA    preempt_dynamic_mode
+>      3624:    94 21 ff f0     stwu    r1,-16(r1)
+>      3628:    80 69 00 00     lwz     r3,0(r9)
+>              362a: R_PPC_ADDR16_LO    preempt_dynamic_mode
+>      362c:    2c 03 ff ff     cmpwi   r3,-1
+>      3630:    41 82 00 18     beq     3648 <preempt_model_full+0x28>
+>      3634:    68 63 00 02     xori    r3,r3,2
+>      3638:    38 21 00 10     addi    r1,r1,16
+>      363c:    7c 63 00 34     cntlzw  r3,r3
+>      3640:    54 63 d9 7e     srwi    r3,r3,5
+>      3644:    4e 80 00 20     blr
+> ...
+>      3648:    0f e0 00 00     twui    r0,0
+>      364c:    68 63 00 02     xori    r3,r3,2
+>      3650:    38 21 00 10     addi    r1,r1,16
+>      3654:    7c 63 00 34     cntlzw  r3,r3
+>      3658:    54 63 d9 7e     srwi    r3,r3,5
+>      365c:    4e 80 00 20     blr
+> 
+> 00003660 <preempt_model_lazy>:
+>      3660:    3d 20 00 00     lis     r9,0
+>              3662: R_PPC_ADDR16_HA    preempt_dynamic_mode
+>      3664:    94 21 ff f0     stwu    r1,-16(r1)
+>      3668:    80 69 00 00     lwz     r3,0(r9)
+>              366a: R_PPC_ADDR16_LO    preempt_dynamic_mode
+>      366c:    2c 03 ff ff     cmpwi   r3,-1
+>      3670:    41 82 00 18     beq     3688 <preempt_model_lazy+0x28>
+>      3674:    68 63 00 03     xori    r3,r3,3
+>      3678:    38 21 00 10     addi    r1,r1,16
+>      367c:    7c 63 00 34     cntlzw  r3,r3
+>      3680:    54 63 d9 7e     srwi    r3,r3,5
+>      3684:    4e 80 00 20     blr
+> ...
+>      3688:    0f e0 00 00     twui    r0,0
+>      368c:    68 63 00 03     xori    r3,r3,3
+>      3690:    38 21 00 10     addi    r1,r1,16
+>      3694:    7c 63 00 34     cntlzw  r3,r3
+>      3698:    54 63 d9 7e     srwi    r3,r3,5
+>      369c:    4e 80 00 20     blr
+> 
+> 
+> 
 
-Signed-off-by: Paul Mackerras <paulus@ozlabs.org>
-Acked-by: Nicholas Piggin <npiggin@gmail.com>
----
-v2: scv node specifies ISA v3.0
+That's convincing. Thanks for the pointers. I will move it into static 
+branch method.
 
- arch/powerpc/boot/dts/microwatt.dts | 73 ++++++++++++++++++++++++-----
- 1 file changed, 62 insertions(+), 11 deletions(-)
+That makes the code same for arm64/powerpc. Maybe its worth moving it 
+into sched/core. Let me try that as well.
 
-diff --git a/arch/powerpc/boot/dts/microwatt.dts b/arch/powerpc/boot/dts/microwatt.dts
-index 269e930b3b0b..833d22822189 100644
---- a/arch/powerpc/boot/dts/microwatt.dts
-+++ b/arch/powerpc/boot/dts/microwatt.dts
-@@ -1,4 +1,5 @@
- /dts-v1/;
-+#include <dt-bindings/gpio/gpio.h>
- 
- / {
- 	#size-cells = <0x02>;
-@@ -8,6 +9,7 @@ / {
- 
- 	aliases {
- 		serial0 = &UART0;
-+		ethernet = &enet0;
- 	};
- 
- 	reserved-memory {
-@@ -35,40 +37,79 @@ cpus {
- 
- 		ibm,powerpc-cpu-features {
- 			display-name = "Microwatt";
--			isa = <3000>;
-+			isa = <3010>;
- 			device_type = "cpu-features";
- 			compatible = "ibm,powerpc-cpu-features";
- 
- 			mmu-radix {
- 				isa = <3000>;
--				usable-privilege = <2>;
-+				usable-privilege = <6>;
-+				os-support = <0>;
- 			};
- 
- 			little-endian {
--				isa = <2050>;
--				usable-privilege = <3>;
-+				isa = <0>;
-+				usable-privilege = <7>;
-+				os-support = <0>;
- 				hwcap-bit-nr = <1>;
- 			};
- 
- 			cache-inhibited-large-page {
--				isa = <2040>;
--				usable-privilege = <2>;
-+				isa = <0>;
-+				usable-privilege = <6>;
-+				os-support = <0>;
- 			};
- 
- 			fixed-point-v3 {
- 				isa = <3000>;
--				usable-privilege = <3>;
-+				usable-privilege = <7>;
- 			};
- 
- 			no-execute {
--				isa = <2010>;
-+				isa = <0x00>;
- 				usable-privilege = <2>;
-+				os-support = <0>;
- 			};
- 
- 			floating-point {
-+				hfscr-bit-nr = <0>;
- 				hwcap-bit-nr = <27>;
- 				isa = <0>;
--				usable-privilege = <3>;
-+				usable-privilege = <7>;
-+				hv-support = <1>;
-+				os-support = <0>;
-+			};
-+
-+			prefixed-instructions {
-+				hfscr-bit-nr = <13>;
-+				fscr-bit-nr = <13>;
-+				isa = <3010>;
-+				usable-privilege = <7>;
-+				os-support = <1>;
-+				hv-support = <1>;
-+			};
-+
-+			tar {
-+				hfscr-bit-nr = <8>;
-+				fscr-bit-nr = <8>;
-+				isa = <2070>;
-+				usable-privilege = <7>;
-+				os-support = <1>;
-+				hv-support = <1>;
-+				hwcap-bit-nr = <58>;
-+			};
-+
-+			control-register {
-+				isa = <0>;
-+				usable-privilege = <7>;
-+			};
-+
-+			system-call-vectored {
-+				isa = <3000>;
-+				usable-privilege = <7>;
-+				os-support = <1>;
-+				fscr-bit-nr = <12>;
-+				hwcap-bit-nr = <52>;
- 			};
- 		};
- 
-@@ -138,7 +179,18 @@ UART0: serial@2000 {
- 			interrupts = <0x10 0x1>;
- 		};
- 
--		ethernet@8020000 {
-+		gpio: gpio@7000 {
-+			device_type = "gpio";
-+			compatible = "faraday,ftgpio010";
-+			gpio-controller;
-+			#gpio-cells = <2>;
-+			reg = <0x7000 0x80>;
-+			interrupts = <0x14 1>;
-+			interrupt-controller;
-+			#interrupt-cells = <2>;
-+		};
-+
-+		enet0: ethernet@8020000 {
- 			compatible = "litex,liteeth";
- 			reg = <0x8021000 0x100
- 				0x8020800 0x100
-@@ -160,7 +212,6 @@ mmc@8040000 {
- 			reg-names = "phy", "core", "reader", "writer", "irq";
- 			bus-width = <4>;
- 			interrupts = <0x13 1>;
--			cap-sd-highspeed;
- 			clocks = <&sys_clk>;
- 		};
- 	};
--- 
-2.47.1
+PS: on leave next week, so will be sending the patches after i get back.
 
+>> But you would still need preempt_model_preemptible() for the !DYN case.
+>>
+>>>>> +           preempt_model_voluntary() ? "voluntary" :
+>>>>> +           preempt_model_full()      ? "full" :
+>>>>> +           preempt_model_lazy()      ? "lazy" :
+>>>>> +           "",
+>>>>
+>>>> So intend to rework this part. I have patches stashed at
+>>>>     https://eur01.safelinks.protection.outlook.com/? 
+>>>> url=https%3A%2F%2Fgit.kernel.org%2Fpub%2Fscm%2Flinux%2Fkernel%2Fgit%2Fbigeasy%2Fstaging.git%2Flog%2F%3Fh%3Dpreemption_string&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C553a8f640a9c4514597d08dd416c6534%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638738655988556429%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=ZfVQi1iRYaVCTrZ5vIhOQ7yAKaDnOwFi0NRjycfrI5A%3D&reserved=0
+>>>>
+>>>> which I didn't sent yet due to the merge window. Just a heads up ;)
+>>>
+>>> Makes sense. I had seen at-least two places where this code was 
+>>> there, ftrace/powerpc.
+>>> There were way more places..
+>>>
+>>> You want me to remove this part?
+>>
+>> No, just be aware.
+>> I don't know how this will be routed I guess we merge the sched pieces
+>> first and then I submit the other pieces via the relevant maintainer
+>> tree. In that case please be aware that all parts get removed/ replaced
+>> properly.
+>>
+>> Sebastian
+> 
 
 
