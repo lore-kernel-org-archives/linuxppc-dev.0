@@ -1,83 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-5747-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5748-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0199CC02195
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2025 12:25:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50123C0218F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Jan 2025 14:03:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ykw8q50lCz30Vw;
-	Fri, 31 Jan 2025 23:25:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738326347;
-	cv=none; b=NGgnop0nJwp2Bb0xIc96+ZqhSc9mHJkmS58gBz2oiEIXxPxlmnC1tiD7dZM2GvMi6abpX6JwmWln3+UPahBCsqb488XrrJsDesAocn9dtSdXT9uQJJ/9awGtHDRc3lTWxlY/+Oc20I6ihZEiEcoHgTbKYVqbyxpO6brjyXCFnm8tF2PQa+0yFJahmbiEBhXXv2XskkoUudlIXS3x4q2YUBWRIHFhE+SEVZu1L0gnMVJXPt2K33o/aYyt9tP58qbpywYbYGryhgLf0r6eJ3th3rHCXzxLWQnC5hhA4fdVt2r7kImHnlYVbVg38VLCWUXuD4pSw5yp8gfurB/l1n4ymA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YkyKX6hqkz2yLJ;
+	Sat,  1 Feb 2025 01:03:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.67.36.65
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738332208;
+	cv=none; b=kEfSYLmodDKnwLGP5k9Wnpg/pQNK+4CiY2g/vPKjSej7l+/nyRF8HWYAe3/41nxUkLZKSxJzFnEbVOEx95GUSD+4glFBK11pkrmigzyiUmS3W3SmWP9LzRBM+GrK8QB3hPaXUxxNCDPdz02kgoOsZot7QZjq5NjQRnZi+2gLB3ptCaff+nc2EwWx4AcKQbAnurq58U6wEPNrXm+FYdvzyV768lammfpXJqufDn+hPcyH25AEvUMBvsKKBa+FvUtF2o3VIEv/P+dIk0bH4LZWLqgkI55oRjzu7qYASVIWFUM7tHsjURAI2EbMC3+6fMgyrTMjCteCxTWIULvW6zrnBQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738326347; c=relaxed/relaxed;
-	bh=jBDlLH2LZNzPNbkkI8AcAIBcX6XfUJPGxSOUXJXt/V8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fKmFNitoTHK6z+1yaEC3OQp7wbGrKyeYRZhnw+bFICg1/hSkK4AgWYPbVfBcczgW+iqBMlNc4FdtMXpZvFxhibvsqKuVteO3XT0QS/0d/rzAaMLjAYKw57RGlj8muF7QIocKpZOkPVebpkAg4bgfFSWw6PZc9WuD2+UVm2QVXxzAkCj2bKo2OBPkUhXqJCrxdxvD7jBPAMP/sRixCamMFXkY+8e01t42FnZjQ81F/YWXMsm6VWTduGZLHpMwJUr0UwMXH/gR9yuIGXTZAiknMLhc24/rOrVSKj9DV70uVxpJBJ8TPwvCDBkGQi8MSZrYwSz+L2keEMXX9gLaiD5KiQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ICjSAuJN; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1738332208; c=relaxed/relaxed;
+	bh=xFTui1TtNOoqCI5QawHUUAmqQyPVbfhu2Aj4ZUK2N1E=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=GH9KxXeO5qxMZPA07mM16JEoi8gQHxmzF9IpA7JnNf8WJLONKltj/Fcxo2HseHgGbn/WeeOFreWeXMHu5l9ppETRjnZ/ZriRvlaJt3XyfKeAahHkn2El1pDYW0CCsvbZuqrznIU3vrjHbR0sjrIkV+DQgj30rybWOheusvus/XGW/lo2wWqjJjkEzD0eEksIb+KxEx0QYXgX4EU8ig7iar2WTC98PPdp81n2FDyIVqC/956KdgM5KpBSRzyXYy3VNBTvYAd8qfYCl8nD+cvhc1MXPEYS3i9EottgWizPfWEVmy5vPydw7Is0CqJpiWqU2Tt/1i4fSS1NceWhwkiadA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net; dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=U01V4Z6O; dkim-atps=neutral; spf=pass (client-ip=185.67.36.65; helo=mout01.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org) smtp.mailfrom=posteo.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ICjSAuJN;
+	dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=U01V4Z6O;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=posteo.net (client-ip=185.67.36.65; helo=mout01.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org)
+Received: from mout01.posteo.de (mout01.posteo.de [185.67.36.65])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ykw8p4b70z30Vl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 23:25:46 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 50V2Q1ci017251;
-	Fri, 31 Jan 2025 12:25:36 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=jBDlLH2LZNzPNbkkI
-	8AcAIBcX6XfUJPGxSOUXJXt/V8=; b=ICjSAuJNY0BVWmGKsHCMXYYedO3d8EQ65
-	E4Heeq0rKAqzFBBLmU9tYrxILYmXucqDAOY/u8fxafCJYGAl0AJzpmWhOtaNb4Wf
-	zEFhPallD41gkvWw6MOztFRRp5l9a4c+8Rrs8KgtIz5YTZx9p3mhs3FQ1v7GAcoE
-	lHq8fog+7bCN7SR9qrt5GxGnTJlqSi46Alj0ypFPRqVZmDLSz9e9YCfKaA8zCym9
-	jMalninliI5jTaiPARR3439gA7aKaNTq83X8cpObeCfwXXYrRgIGa3Of1aYXQnvW
-	kuxRvnGtnQVkPrr4/83Aa4mm621nCMyEBKxhbQPHr1i+e+S0pZymA==
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44gfn4upvk-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 31 Jan 2025 12:25:36 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 50V8RIYT016065;
-	Fri, 31 Jan 2025 12:25:35 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 44gfaubg3f-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 31 Jan 2025 12:25:35 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 50VCPVhH22086114
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 31 Jan 2025 12:25:31 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B583D20106;
-	Fri, 31 Jan 2025 11:39:04 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7C18620104;
-	Fri, 31 Jan 2025 11:39:01 +0000 (GMT)
-Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.com (unknown [9.43.16.21])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 31 Jan 2025 11:39:01 +0000 (GMT)
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
-        Andrew Morton <akpm@linux-foundation.org>, Baoquan he <bhe@redhat.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>, kexec@lists.infradead.org,
-        linux-kernel@vger.kernel.org, Hari Bathini <hbathini@linux.ibm.com>,
-        Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Subject: [PATCH v3 5/7] powerpc/crash: preserve user-specified memory limit
-Date: Fri, 31 Jan 2025 17:08:28 +0530
-Message-ID: <20250131113830.925179-6-sourabhjain@linux.ibm.com>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250131113830.925179-1-sourabhjain@linux.ibm.com>
-References: <20250131113830.925179-1-sourabhjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YkyKS6hMPz2yK7
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Feb 2025 01:03:21 +1100 (AEDT)
+Received: from submission (posteo.de [185.67.36.169]) 
+	by mout01.posteo.de (Postfix) with ESMTPS id 5AEB4240027
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Jan 2025 15:03:11 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=posteo.net; s=2017;
+	t=1738332192; bh=k6iepJ3khtCHe4wAP+Co9RM2WKV6wPbtel3+iGpB+ZM=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:Content-Transfer-Encoding:From;
+	b=U01V4Z6OZulu42RAyuhImUM7a4bKoe0MgxbzYtZ5Gtv3IQrM8v608XW6/eU8W1NPh
+	 0t/gSDEdIYRPW7vnEa11pXSviVtdikX48Q82whS+CWfyd0UJeXt6rBD0fzF8KVfKTX
+	 0Z03SYRn2Uu6IQP/L3bQo1aUJLI7+xN0KIfAIHVkK9eX5ItMwz6M+cxbDmy672oS74
+	 Ci1CAAuttEEzIB8kkfBe89QxG3GD24LegtRlStjnbw6LmLN0kOJgA12M6XWLDU/om0
+	 0GU6bntTsoAjFW2kCo3ZvOHG6G4u/oVw4TFTi6xdV9jF6Jo61OrWwlqWw5s5EDKsSb
+	 1HFTZr/jTX1+Q==
+Received: from customer (localhost [127.0.0.1])
+	by submission (posteo.de) with ESMTPSA id 4YkyK53T11z6v08;
+	Fri, 31 Jan 2025 15:03:05 +0100 (CET)
+Date: Fri, 31 Jan 2025 14:03:05 +0000
+From: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+To: Rob Herring <robh@kernel.org>
+Cc: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>,
+	devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Scott Wood <oss@buserror.net>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Damien Le Moal <dlemoal@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>, Lee Jones <lee@kernel.org>,
+	Vinod Koul <vkoul@kernel.org>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	=?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	Guenter Roeck <linux@roeck-us.net>, Mark Brown <broonie@kernel.org>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Richard Weinberger <richard@nod.at>,
+	Vignesh Raghavendra <vigneshr@ti.com>, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org,
+	dmaengine@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-watchdog@vger.kernel.org, linux-spi@vger.kernel.org,
+	linux-mtd@lists.infradead.org
+Subject: Re: [PATCH 5/9] dt-bindings: dma: Convert fsl,elo*-dma bindings to
+ YAML
+Message-ID: <Z5zYGdZU-IXwIuR6@probook>
+References: <20250126-ppcyaml-v1-0-50649f51c3dd@posteo.net>
+ <20250126-ppcyaml-v1-5-50649f51c3dd@posteo.net>
+ <20250127044735.GD3106458-robh@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,62 +95,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: zIcQfU6K-k387vFosKZC_TETEcc9Lcb_
-X-Proofpoint-ORIG-GUID: zIcQfU6K-k387vFosKZC_TETEcc9Lcb_
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-01-31_04,2025-01-31_02,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- adultscore=0 clxscore=1015 impostorscore=0 mlxlogscore=999 malwarescore=0
- phishscore=0 lowpriorityscore=0 bulkscore=0 suspectscore=0 spamscore=0
- mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2501170000 definitions=main-2501310091
+In-Reply-To: <20250127044735.GD3106458-robh@kernel.org>
 
-Commit 59d58189f3d9 ("crash: fix crash memory reserve exceed system
-memory bug") fails crashkernel parsing if the crash size is found to be
-higher than system RAM, which makes the memory_limit adjustment code
-ineffective due to an early exit from reserve_crashkernel().
+On Sun, Jan 26, 2025 at 10:47:35PM -0600, Rob Herring wrote:
+> On Sun, Jan 26, 2025 at 07:59:00PM +0100, J. Neuschäfer wrote:
+> > The devicetree bindings for Freescale DMA engines have so far existed as
+> > a text file. This patch converts them to YAML, and specifies all the
+> > compatible strings currently in use in arch/powerpc/boot/dts.
+> > 
+> > Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
+> > ---
+> >  .../devicetree/bindings/dma/fsl,elo-dma.yaml       | 129 +++++++++++++
+> >  .../devicetree/bindings/dma/fsl,elo3-dma.yaml      | 105 +++++++++++
+> >  .../devicetree/bindings/dma/fsl,eloplus-dma.yaml   | 120 ++++++++++++
+> >  .../devicetree/bindings/powerpc/fsl/dma.txt        | 204 ---------------------
+> >  4 files changed, 354 insertions(+), 204 deletions(-)
+[...]
+> > +patternProperties:
+> > +  "^dma-channel@.*$":
+> > +    type: object
+> 
+>        additionalProperties: false
 
-Regardless lets not violate the user-specified memory limit by
-adjusting it. Remove this adjustment to ensure all reservations stay
-within the limit. Commit f94f5ac07983 ("powerpc/fadump: Don't update
-the user-specified memory limit") did the same for fadump.
+I'll add it.
 
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Baoquan he <bhe@redhat.com>
-CC: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: kexec@lists.infradead.org
-Cc: linux-kernel@vger.kernel.org
-Acked-by: Hari Bathini <hbathini@linux.ibm.com>
-Reviewed-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
----
- arch/powerpc/kexec/core.c | 8 --------
- 1 file changed, 8 deletions(-)
+> (The tools should have highlighted this)
 
-diff --git a/arch/powerpc/kexec/core.c b/arch/powerpc/kexec/core.c
-index b8333a49ea5d..4945b33322ae 100644
---- a/arch/powerpc/kexec/core.c
-+++ b/arch/powerpc/kexec/core.c
-@@ -150,14 +150,6 @@ void __init reserve_crashkernel(void)
- 		return;
- 	}
- 
--	/* Crash kernel trumps memory limit */
--	if (memory_limit && memory_limit <= crashk_res.end) {
--		memory_limit = crashk_res.end + 1;
--		total_mem_sz = memory_limit;
--		printk("Adjusted memory limit for crashkernel, now 0x%llx\n",
--		       memory_limit);
--	}
--
- 	printk(KERN_INFO "Reserving %ldMB of memory at %ldMB "
- 			"for crashkernel (System RAM: %ldMB)\n",
- 			(unsigned long)(crash_size >> 20),
--- 
-2.48.1
+With dtschema 2024.11 installed, "make dt_binding_check
+DT_SCHEMA_FILES=fsl,elo-dma.yaml" does not highlight this.
 
+> > +
+> > +    properties:
+> > +      compatible:
+> > +        items:
+> > +          - enum:
+> > +              - fsl,mpc8315-dma-channel
+> > +              - fsl,mpc8323-dma-channel
+> > +              - fsl,mpc8347-dma-channel
+> > +              - fsl,mpc8349-dma-channel
+> > +              - fsl,mpc8360-dma-channel
+> > +              - fsl,mpc8377-dma-channel
+> > +              - fsl,mpc8378-dma-channel
+> > +              - fsl,mpc8379-dma-channel
+> > +          - const: fsl,elo-dma-channel
+> > +
+> > +      reg:
+> > +        maxItems: 1
+> > +
+> > +      cell-index:
+> > +        description: DMA channel index starts at 0.
+> > +
+> > +      interrupts: true
+> 
+> You have to define how many interrupts and what they are.
+
+Will do.
+
+(and the same for the other two files)
+
+
+Best regards,
+J. Neuschäfer
 
