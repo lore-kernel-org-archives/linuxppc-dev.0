@@ -1,93 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-5783-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5784-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F372C02196
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Feb 2025 09:54:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 235FBC02192
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Feb 2025 10:35:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YmhfM0z7Tz2xt7;
-	Mon,  3 Feb 2025 20:54:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738576443;
-	cv=none; b=XPbQPCwd2kMqQkqsSodYOFTMggaar/+Eu6Oizy0Aj2dN5UEsAOBzyUptVf/ROyd4yNs4hwACtuRerCo4IBg9wl9h1RRC7cVXf3OrtAT3PdabfILS/fa+zYUUtqDxMhPlKD+eXPa8EgHGakCFS9OYv4go2wjaYKC1Uacu+7HjA1xJQV5Ir+6zF6eV01reB/q7T1gTwfSy01/dHtkuvkxKjFDdedc41AtsXrLuNeqFF0BAiJ9yZ6ARpVEAyfEwVKLqz4RMUmIZG7HoeapbCt+F75u8yss/yZ5C9BCbU/3PYCuwTCip4mQow5eBrm0Ucra5/TXb50vY4wAQkJrNnziXCw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YmjZW2Q1Vz2yDk;
+	Mon,  3 Feb 2025 21:35:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=194.107.17.57
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738578947;
+	cv=none; b=YGqAYpOCoSCOfg/DByRqZiKa19iqGqQfkXVMTsIQW6ZbPJzQSJFif+a2iEC/H9diNpnMPN0tYQg6sqvhiiXLCU0Jdpi3ZcLz1TeANvNB+8eWuKhjMoyVU6AOvKpX0hOolJFLajU1qtuH3aTFGoeAOKQsHsKVZGBzGzQsYdYp5dA24ZfPHvVshcQP2ZHhZg9xA2w/8E/HjKCrVmKnj+Qk7NT89oIgg0jjhsok9yEu0rRfhllkuh+t1yeUpRQWFURWRx4DPpSAKphq4/5i7jrJw+E2OzHeqf1hftvZUpTXdqN2gyGOqiS/sJSPCWOBTV6NY3Vte9cunQ7XQb3Zfj1aDQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738576443; c=relaxed/relaxed;
-	bh=oGm/bq6SKySYHYDc9Teum4UAC1vMAmPVFWHcwcmi784=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=dlrHOXVKaiywhUxKzE7XLSKVeAYtBE+ETHruFfBsvFEicLp37dTieOX73QaaEPdFDc/StVGjrPvY+b+51Gmh8OMbJSWhuZA4x1Tk0Qjn6KhbvaNWduGQzwCJ1GVtLssoErNz/zywBcueSKxVn6C8GIBm8w9k7aX4UE6turu+GMVQCCJB/o1jBdvR53Y0JldHLVZ4xulC1AjcfsKmhfaTejVcQfmIk+e4HlkaTZM47/ZaSz473UzXD9iRVthZihAVpyNc3kjcKOL7w/FYw0mceWFhdpritvd2XWcYQ5lKhfXlUzQbxHhrhCNbmiYJXo4jy+XSeuIXANzgFqwFgVXOAg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=XCXSAIsz; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=viresh.kumar@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=XCXSAIsz;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::62b; helo=mail-pl1-x62b.google.com; envelope-from=viresh.kumar@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62b.google.com (mail-pl1-x62b.google.com [IPv6:2607:f8b0:4864:20::62b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YmhfL1Qcnz2xYg
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Feb 2025 20:54:01 +1100 (AEDT)
-Received: by mail-pl1-x62b.google.com with SMTP id d9443c01a7336-21649a7bcdcso69534675ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Feb 2025 01:54:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1738576439; x=1739181239; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=oGm/bq6SKySYHYDc9Teum4UAC1vMAmPVFWHcwcmi784=;
-        b=XCXSAIszNXGU7gEAXQOSROYYKeLQJlkpzS4+10O+vCrMLC25ZElMuj94L8jcZu7U/1
-         eskfqajLyDzFE90kiHvGIij7J0cEjBc5PNDre+8+0kVGHUFiZ0woqqHZRChBiCvndgXO
-         IrEueubzWPgDBCoG7PEI5QvzAtD753L7c2ennm8fI07ajtkIJYN2XOzpEemPyXsi0CHP
-         WDexIG8W0igyeWlM1Wpa3HseiaL1TOD585sjm3Dey6FvVFhZv35cmLHdjvIP+i0gSVsY
-         wJeHf2w7/rKVbfvRFUqqRzBLhzy3TwZJHLB9VAlBPtUWymEwkvMDi4VLY46JoEgGag94
-         3zEQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1738576439; x=1739181239;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=oGm/bq6SKySYHYDc9Teum4UAC1vMAmPVFWHcwcmi784=;
-        b=tNoo9UV7cpLCsouMJhJdcgTcDSPLsQobbYKLxP1ePCaky0LlUqrBslQbPbjatPt8q6
-         D0O8cxGCQsZo/nemGEGErNuAnVGHSy6BC3A6TTgNU7PFbEvUfPB1qdRjLt4SrI/bSnKN
-         45jnppMNE95v8nLZT39AMLe9D0pZ94oLd6NOMedrjem6TfJuIJtURKUMzMncUABGEGcL
-         kV+60dfCJ+MTjRPjiFKWpjSQjEHycROMkLjbEvYMqiH0Iqe4zowsgFipTYd4+3xOOmNS
-         eAkt3YTIB0A65hVb5RgXziI3UT+WNMyTVokVQQ45pb5LftjRRFU5zAZPidsqUaRuxEvI
-         eM9w==
-X-Forwarded-Encrypted: i=1; AJvYcCXUyh835Sy299MOeoOOfNUQjgnGbw/8FdJAb23/9l4uUvMEWfYLduII4sVw2WnsQcolDyDJ5iS2xPOSZlo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzBtSMVAQQvA6jvKtS+9qiVSurzVLJkDOrFD4gav8thrwwmfTTf
-	DoybhDXxpBI4BzgUCKGMdo7G05bwQdjzjjyxcTxxz9wdIrEqK715JFkBxPq/b9M=
-X-Gm-Gg: ASbGncs1JZ/UPzUroWfvd+ecxgstY2n87frvfnjNwuNdH9SMaMovyZq6O9AC6zQf2EY
-	/egZp45Zes7OqsdTC1BW95RqZvuurmd+U/vWMqOApeCbsL0BUTpyA0Eb/5NlFia8C5QvkcnNCbU
-	gKzrVaJZmm2hzoSvg2DabNSMpZ5vwwta4lY40I0VcVJ0pZPrPfDm1QRPfBZaLeangRQ78PZ+Q3G
-	dllT+uGfWlielHNrT43YJlLTkhCBOlx2lqLUv7GtykeFJ5ZE674Loddo2K6dVZUe/Gj5kZPvHur
-	FAK/GwBGJlZTkxzVLA==
-X-Google-Smtp-Source: AGHT+IFwo05BiIt05ICb4MDKGKrGGWOHvgZo0+KY9Q0VF4jPxeMFSPJcZ0MPvxF/KghXhf5T9qIi1A==
-X-Received: by 2002:a17:903:947:b0:212:4c82:e3d4 with SMTP id d9443c01a7336-21dd7df2d2cmr345490545ad.46.1738576438710;
-        Mon, 03 Feb 2025 01:53:58 -0800 (PST)
-Received: from localhost ([122.172.84.139])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-21de33206besm71659285ad.241.2025.02.03.01.53.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 03 Feb 2025 01:53:58 -0800 (PST)
-From: Viresh Kumar <viresh.kumar@linaro.org>
-To: "Rafael J. Wysocki" <rafael@kernel.org>,
-	Viresh Kumar <viresh.kumar@linaro.org>,
+	t=1738578947; c=relaxed/relaxed;
+	bh=FEmiugC6rBX2OLCTg0Nwo4vFpIRSKT7Cs1VYExDtmL0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=eymB959A06em8EK+SEA2hNMtVNRVfxqURq5PMm0um01cSnUHrxx7uQzfcX1EPHID6tqwaCiQmCxa7yH+iFlrF4EzJmmaffX3ZwsKwkrPZN6gfJBX7txlM+i/gSocPW2bo2u7Lrx8z82BNVbk6KRUmwZ9/IIufsnV4kcmd/u9ZS8nI9V0WaVFL3cL1y5K8hdGpw9vZYndjCxq0nfWhVypX0vBbfkaFDae33XamtPobNuxz0jNn6fP+1vJN2Sfv4b60mkDrbpaGbT55hKnhd9l7TUwWwBN1OFEN5FKQcz8SAqh3vzbQSOB+idxA+f2P4ijQFAt4e464kSgxdfr5nuqfg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io; spf=pass (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org) smtp.mailfrom=altlinux.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=strace.io
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=altlinux.org (client-ip=194.107.17.57; helo=vmicros1.altlinux.org; envelope-from=ldv@altlinux.org; receiver=lists.ozlabs.org)
+Received: from vmicros1.altlinux.org (vmicros1.altlinux.org [194.107.17.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YmjZT5lJxz2xk7
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Feb 2025 21:35:45 +1100 (AEDT)
+Received: from mua.local.altlinux.org (mua.local.altlinux.org [192.168.1.14])
+	by vmicros1.altlinux.org (Postfix) with ESMTP id 33C4872C8CC;
+	Mon,  3 Feb 2025 13:35:43 +0300 (MSK)
+Received: by mua.local.altlinux.org (Postfix, from userid 508)
+	id 1956F7CCB3A; Mon,  3 Feb 2025 12:35:43 +0200 (IST)
+Date: Mon, 3 Feb 2025 12:35:43 +0200
+From: "Dmitry V. Levin" <ldv@strace.io>
+To: Alexander Gordeev <agordeev@linux.ibm.com>
+Cc: linux-snps-arc@lists.infradead.org, Rich Felker <dalias@libc.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Andreas Larsson <andreas@gaisler.com>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	x86@kernel.org, linux-kernel@vger.kernel.org,
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+	Guo Ren <guoren@kernel.org>, linux-csky@vger.kernel.org,
+	linux-kselftest@vger.kernel.org, "H. Peter Anvin" <hpa@zytor.com>,
+	sparclinux@vger.kernel.org, linux-hexagon@vger.kernel.org,
+	WANG Xuerui <kernel@xen0n.name>, linux-api@vger.kernel.org,
+	Will Deacon <will@kernel.org>,
+	Eugene Syromyatnikov <evgsyr@gmail.com>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Jonas Bonn <jonas@southpole.se>, linux-s390@vger.kernel.org,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	linux-sh@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
+	Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
+	Russell King <linux@armlinux.org.uk>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>
-Cc: linux-pm@vger.kernel.org,
-	Vincent Guittot <vincent.guittot@linaro.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH V1.1 20/33] cpufreq: powernv: Stop setting common freq attributes
-Date: Mon,  3 Feb 2025 15:23:32 +0530
-Message-Id: <fa304da30d5f10e7ff069d72fb3aff2741630ca4.1738576306.git.viresh.kumar@linaro.org>
-X-Mailer: git-send-email 2.31.1.272.g89b43f80a514
-In-Reply-To: <1f5393d54b2c04206afefd521ebdf3fc03004a11.1737631669.git.viresh.kumar@linaro.org>
-References: <1f5393d54b2c04206afefd521ebdf3fc03004a11.1737631669.git.viresh.kumar@linaro.org>
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Vineet Gupta <vgupta@kernel.org>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Arnd Bergmann <arnd@arndb.de>, linux-arch@vger.kernel.org,
+	Shuah Khan <shuah@kernel.org>, Albert Ou <aou@eecs.berkeley.edu>,
+	Mike Frysinger <vapier@gentoo.org>,
+	Davide Berardi <berardi.dav@gmail.com>,
+	Renzo Davoli <renzo@cs.unibo.it>, linux-um@lists.infradead.org,
+	Heiko Carstens <hca@linux.ibm.com>, strace-devel@lists.strace.io,
+	Charlie Jenkins <charlie@rivosinc.com>,
+	Naveen N Rao <naveen@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+	linux-m68k@lists.linux-m68k.org, Borislav Petkov <bp@alien8.de>,
+	loongarch@lists.linux.dev, Paul Walmsley <paul.walmsley@sifive.com>,
+	Stafford Horne <shorne@gmail.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	linux-arm-kernel@lists.infradead.org,
+	Brian Cain <bcain@quicinc.com>, Michal Simek <monstr@monstr.eu>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	linux-parisc@vger.kernel.org, linux-openrisc@vger.kernel.org,
+	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Oleg Nesterov <oleg@redhat.com>, Dinh Nguyen <dinguyen@kernel.org>,
+	linux-riscv@lists.infradead.org,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Richard Weinberger <richard@nod.at>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Alexey Gladkov <legion@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>
+Subject: Re: [PATCH v4 0/7] ptrace: introduce PTRACE_SET_SYSCALL_INFO API
+Message-ID: <20250203103542.GA16165@strace.io>
+References: <20250203065849.GA14120@strace.io>
+ <Z6CMgVm8QKEMRf8L@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,46 +100,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Z6CMgVm8QKEMRf8L@li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com>
 
-The cpufreq core handles this now, the driver can skip setting it.
+On Mon, Feb 03, 2025 at 10:29:37AM +0100, Alexander Gordeev wrote:
+> On Mon, Feb 03, 2025 at 08:58:49AM +0200, Dmitry V. Levin wrote:
+> 
+> Hi Dmitry,
+> 
+> > PTRACE_SET_SYSCALL_INFO is a generic ptrace API that complements
+> > PTRACE_GET_SYSCALL_INFO by letting the ptracer modify details of
+> > system calls the tracee is blocked in.
+> ...
+> 
+> FWIW, I am getting these on s390:
+> 
+> # ./tools/testing/selftests/ptrace/set_syscall_info 
+> TAP version 13
+> 1..1
+> # Starting 1 tests from 1 test cases.
+> #  RUN           global.set_syscall_info ...
+> # set_syscall_info.c:87:set_syscall_info:Expected exp_entry->nr (-1) == info->entry.nr (65535)
+> # set_syscall_info.c:88:set_syscall_info:wait #3: PTRACE_GET_SYSCALL_INFO #2: syscall nr mismatch
+> # set_syscall_info: Test terminated by assertion
+> #          FAIL  global.set_syscall_info
+> not ok 1 global.set_syscall_info
+> # FAILED: 0 / 1 tests passed.
+> # Totals: pass:0 fail:1 xfail:0 xpass:0 skip:0 error:0
+> 
+> I remember one of the earlier versions (v1 or v2) was working for me.
+> 
+> Thanks!
 
-Signed-off-by: Viresh Kumar <viresh.kumar@linaro.org>
-Acked-by: Rafael J. Wysocki <rafael@kernel.org>
----
-V1.1:
-- Drop runtime updates to freq attr.
+In v3, this test was extended to check whether PTRACE_GET_SYSCALL_INFO
+called immediately after PTRACE_SET_SYSCALL_INFO returns the same syscall
+number, and on s390 it apparently doesn't, thanks to its implementation
+of syscall_get_nr() that returns 0xffff in this case.
 
- drivers/cpufreq/powernv-cpufreq.c | 6 ------
- 1 file changed, 6 deletions(-)
+To workaround this, we could either change syscall_get_nr() to return -1
+in this case, or add an #ifdef __s390x__ exception to the test.
 
-diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-index ae79d909943b..0631284c4cfb 100644
---- a/drivers/cpufreq/powernv-cpufreq.c
-+++ b/drivers/cpufreq/powernv-cpufreq.c
-@@ -386,12 +386,8 @@ static ssize_t cpuinfo_nominal_freq_show(struct cpufreq_policy *policy,
- static struct freq_attr cpufreq_freq_attr_cpuinfo_nominal_freq =
- 	__ATTR_RO(cpuinfo_nominal_freq);
- 
--#define SCALING_BOOST_FREQS_ATTR_INDEX		2
--
- static struct freq_attr *powernv_cpu_freq_attr[] = {
--	&cpufreq_freq_attr_scaling_available_freqs,
- 	&cpufreq_freq_attr_cpuinfo_nominal_freq,
--	&cpufreq_freq_attr_scaling_boost_freqs,
- 	NULL,
- };
- 
-@@ -1129,8 +1125,6 @@ static int __init powernv_cpufreq_init(void)
- 
- 	if (powernv_pstate_info.wof_enabled)
- 		powernv_cpufreq_driver.boost_enabled = true;
--	else
--		powernv_cpu_freq_attr[SCALING_BOOST_FREQS_ATTR_INDEX] = NULL;
- 
- 	rc = cpufreq_register_driver(&powernv_cpufreq_driver);
- 	if (rc) {
+What would you prefer?
+
+
 -- 
-2.31.1.272.g89b43f80a514
-
+ldv
 
