@@ -1,87 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-5850-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5851-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A3E9C02196
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2025 23:34:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15A90C02193
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2025 23:42:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ynfph6xBQz30NP;
-	Wed,  5 Feb 2025 10:34:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.67.36.65
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738712076;
-	cv=none; b=iiiQqIDuUk55FvWkkbNRHVJ2+GfINuS8ZzFycAwvVMor+9Xk0Db7qzBQ0iu7kFHmB4U05Mx7WCofWiBPtW4AnpnHXr1CQQjboIbbCcohZnWUI7GI5kN7Xso7XCT9Bwa/WB64mJtESx97AyBGTr6JvdDvuFQLESeRuS4o6xd2pCtLwP8LOcUGJAQ7VlAIHw5LX38Z5cva1Bgye5b3N4SE2HzS1MCMzu5CspwioVFZ6rjz52k9OiW2bzDL1mpM5OoRfvHsq6I/Yksl43vr3ff/rqCX5B+RRSZe4C7iUsrrqRKdvCoqNwDu6CR9QFFZSqEUZ1LK24F3pCLkJMBUvHgBug==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YnfzV4YkWz302D;
+	Wed,  5 Feb 2025 10:42:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738711117;
+	cv=none; b=RamXma6Vr/PS3m/wc4ru2OMg6l/6RUoMo+JiYi8U3dcuQRdB1SN8z3Wkud0cER5iLh4Z577UC6wB/XetoKMos3q3eP01QSY9DXQ5JoyvyfveAYWjDMb1t98QoFsijx5wxxFtCyUeiI3HzBEsB6WR1rFfMKrIQvjTCjvqWndyJfLQh5MlaeD/CfPMA8+Ocl8VNdcJFRzM9si0CHNGlyzCCSqC5qquVFLISEM5ghEOMViaOAJK8ekq5OZO2ym5DvyxvdZp4ZkERhGddA4pFV/ZiOV4ZnmnqqsNXtRyXA6crTHxFsOkfeWwuugkegrOTWircJ8W+DKTc8XY2VGmDGpSrA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738712076; c=relaxed/relaxed;
-	bh=3FHL4pL5hRIQjRqgOl7fmqz04t/eMn2ruZMxdeEZJmw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=NroJ5cMhgbKJkDKBzM5VYYVeLV99pyKNaIRJt/qTQD9nvDlIWWUS+Axet0klWP+7gEHtkzfPzO6XtMuwvgN7NODngcmuqjGVvAYWBWztVcHOEFFJZbjSgF7etZUoY0dvWS2YZvMY+aIYByBY2n9VebAlo00wguDefy7rlFxKvcib3M9HPOvtDlisjGyjNrSa64gRpdiTefoa36Cm9zr3hYkAK340NYdt5+3QKfT+/ljyeQYeKe1e1qmOBrjJ/ac7jTyuynUEmYLCsel4esGAgO/Jo8hcarlaAsXnomXI6uWxiXxv/jJ/MUkCwRYo0ownNxm8yfIcARoG54LxECXW/g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net; dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=X3B5ghUA; dkim-atps=neutral; spf=pass (client-ip=185.67.36.65; helo=mout01.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org) smtp.mailfrom=posteo.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net
+	t=1738711117; c=relaxed/relaxed;
+	bh=W2zDfhuqWd+jazrB8zXGTb+ziTtldHXymsK1G6Xuz4E=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=imaV51r9ThFiosCzqt3k5dBdh9OY0YfJ+P57F5nZI2cg9npf8OIw3LMnAq6fPfN1W03YmM6i7lWKqkBpr/Ox3JjK50YpoOptmrldyMS5yQ9MwOB9oqLXcD7M4TlhRd0b4tIjs3whE5DVgcO5DmX+gAbnuFcv+q8cpH1b6YJuu1Z+56KPqDoNntLyCeUUC9SQSmWntbuVTagr+ByUbNQ3EjM/JQkece/FFDy4vIc8GLJ/jqKH/s8jN/uDayp39tPmzarx6xVdBmWDtZjRdDwf9gNAAweJsYPwfy09EX2iIzRIzxuchUapbwDV5s3WHcizFmZ4s/nZG1AyUAdr6iWNag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=oXtRpJ/d; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=oXtRpJ/d; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=ailiop@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=X3B5ghUA;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=oXtRpJ/d;
+	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=oXtRpJ/d;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=posteo.net (client-ip=185.67.36.65; helo=mout01.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org)
-Received: from mout01.posteo.de (mout01.posteo.de [185.67.36.65])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=ailiop@suse.com; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ynfph088Dz30MR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2025 10:34:36 +1100 (AEDT)
-Received: from submission (posteo.de [185.67.36.169]) 
-	by mout01.posteo.de (Postfix) with ESMTPS id 09454240027
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2025 00:34:31 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=posteo.net; s=2017;
-	t=1738712072; bh=ZyVExCqzB2iyA3bGQRpDduhuvKS4WRQAEUDFtlqCUyc=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:Content-Transfer-Encoding:From;
-	b=X3B5ghUATVfidVkzCioxvsw6PgUSFM99XhmDnCgGcqBgi0Mxvy4xniTB2fhNFRvch
-	 0EUwiUBdnbgn9wJ9nSOC1btV8mIssMpkAJKCoJxN7jCQgbcwuov8HZ93D4DbplDk/d
-	 mnpVbWwHz393REo7TCAc4dmTV7uk6iFEeeIRXS5mGbzAq05sAW+7LS9QFY3ZlNTMMQ
-	 BQ8MQaN3Idt1zc4g41Ao6yolcJ2HgyJzxumslueoyQZvebdyjZmJ/FZ8G9aafEst79
-	 eSrcFikp9vJoFKBJxJGvlk2lKoFbr6pEPmoV2u1fCnSsw8GB6n7MARUZj3iVG5K3h9
-	 49NKOeUFcXYDw==
-Received: from customer (localhost [127.0.0.1])
-	by submission (posteo.de) with ESMTPSA id 4YnfpX3DL2z6tyt;
-	Wed,  5 Feb 2025 00:34:28 +0100 (CET)
-Date: Tue,  4 Feb 2025 23:34:28 +0000
-From: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
-To: Frank Li <Frank.li@nxp.com>
-Cc: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>,
-	devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Scott Wood <oss@buserror.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>, Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Damien Le Moal <dlemoal@kernel.org>,
-	Niklas Cassel <cassel@kernel.org>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>, Lee Jones <lee@kernel.org>,
-	Vinod Koul <vkoul@kernel.org>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
-	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	=?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
-	Wim Van Sebroeck <wim@linux-watchdog.org>,
-	Guenter Roeck <linux@roeck-us.net>, Mark Brown <broonie@kernel.org>,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org,
-	dmaengine@vger.kernel.org, linux-pci@vger.kernel.org,
-	linux-watchdog@vger.kernel.org, linux-spi@vger.kernel.org,
-	linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 6/9] dt-bindings: pci: Add fsl,mpc83xx-pcie bindings
-Message-ID: <Z6KkBEaGTkSyWiE_@probook>
-References: <20250126-ppcyaml-v1-0-50649f51c3dd@posteo.net>
- <20250126-ppcyaml-v1-6-50649f51c3dd@posteo.net>
- <Z5qx3jAFE81Ni2cJ@lizhi-Precision-Tower-5810>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YnfSD5JRLz30BG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2025 10:18:36 +1100 (AEDT)
+Received: from kunlun.arch.suse.cz (unknown [10.100.128.76])
+	by smtp-out2.suse.de (Postfix) with ESMTP id 70C861F381;
+	Tue,  4 Feb 2025 23:18:32 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1738711112; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=W2zDfhuqWd+jazrB8zXGTb+ziTtldHXymsK1G6Xuz4E=;
+	b=oXtRpJ/dOPnRyXjk93k2nX9ZWhTrLZQEcJ4ipHU6UExkYYywGX6a6HwNNAIT9FZRfICkAJ
+	0WfDABpNwYVO+WJTmuJoK0SXfCabSWRXSezKnvSj7AEZMkgzeT1k77LI77xM6qKJWIaDOK
+	3hFfbTbGrElm/XbU+GGYvLlK3+ZqyR8=
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1738711112; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=W2zDfhuqWd+jazrB8zXGTb+ziTtldHXymsK1G6Xuz4E=;
+	b=oXtRpJ/dOPnRyXjk93k2nX9ZWhTrLZQEcJ4ipHU6UExkYYywGX6a6HwNNAIT9FZRfICkAJ
+	0WfDABpNwYVO+WJTmuJoK0SXfCabSWRXSezKnvSj7AEZMkgzeT1k77LI77xM6qKJWIaDOK
+	3hFfbTbGrElm/XbU+GGYvLlK3+ZqyR8=
+From: Anthony Iliopoulos <ailiop@suse.com>
+To: <linuxppc-dev@lists.ozlabs.org>
+Cc: <linux-kernel@vger.kernel.org>,
+	Naveen N Rao <naveen@kernel.org>
+Subject: [PATCH] powerpc64/ftrace: fix module loading without patchable function entries
+Date: Wed,  5 Feb 2025 00:18:21 +0100
+Message-ID: <20250204231821.39140-1-ailiop@suse.com>
+X-Mailer: git-send-email 2.47.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,32 +68,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <Z5qx3jAFE81Ni2cJ@lizhi-Precision-Tower-5810>
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	TO_DN_SOME(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	ARC_NA(0.00)[];
+	RCVD_COUNT_ZERO(0.00)[0];
+	DKIM_SIGNED(0.00)[suse.com:s=susede1];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	RCPT_COUNT_THREE(0.00)[3];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	FROM_HAS_DN(0.00)[]
 
-On Wed, Jan 29, 2025 at 05:55:26PM -0500, Frank Li wrote:
-> On Sun, Jan 26, 2025 at 07:59:01PM +0100, J. Neuschäfer wrote:
-> > Supplement Documentation/devicetree/bindings/pci/fsl,pci.txt with a more
-> > formal binding in YAML format.
-> >
-> > Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
-> > ---
-> >  .../devicetree/bindings/pci/fsl,mpc8xxx-pci.yaml   | 83 ++++++++++++++++++++++
-> >  1 file changed, 83 insertions(+)
-[...]
-> > +examples:
-> > +  - |
-> > +    #include <dt-bindings/interrupt-controller/irq.h>
-> > +
-> > +    pci1: pcie@e0009000 {
-> 
-> needn't label here
+get_stubs_size assumes that there must always be at least one patchable
+function entry, which is not always the case (modules that export data
+but no code), otherwise it returns -ENOEXEC and thus the section header
+sh_size is set to that value. During module_memory_alloc() the size is
+passed to execmem_alloc() after being page-aligned and thus set to zero
+which will cause it to fail the allocation (and thus module loading) as
+__vmalloc_node_range() checks for zero-sized allocs and returns null:
 
-Will change.
+[  115.466896] module_64: cast_common: doesn't contain __patchable_function_entries.
+[  115.469189] ------------[ cut here ]------------
+[  115.469496] WARNING: CPU: 0 PID: 274 at mm/vmalloc.c:3778 __vmalloc_node_range_noprof+0x8b4/0x8f0
+...
+[  115.478574] ---[ end trace 0000000000000000 ]---
+[  115.479545] execmem: unable to allocate memory
 
+Fix this by removing the check completely, since it is anyway not
+helpful to propagate this as an error upwards.
 
-Thanks,
-J. Neuschäfer
+Fixes: eec37961a56a ("powerpc64/ftrace: Move ftrace sequence out of line")
+Signed-off-by: Anthony Iliopoulos <ailiop@suse.com>
+---
+ arch/powerpc/kernel/module_64.c | 4 ----
+ 1 file changed, 4 deletions(-)
+
+diff --git a/arch/powerpc/kernel/module_64.c b/arch/powerpc/kernel/module_64.c
+index 34a5aec4908f..126bf3b06ab7 100644
+--- a/arch/powerpc/kernel/module_64.c
++++ b/arch/powerpc/kernel/module_64.c
+@@ -258,10 +258,6 @@ static unsigned long get_stubs_size(const Elf64_Ehdr *hdr,
+ 			break;
+ 		}
+ 	}
+-	if (i == hdr->e_shnum) {
+-		pr_err("%s: doesn't contain __patchable_function_entries.\n", me->name);
+-		return -ENOEXEC;
+-	}
+ #endif
+ 
+ 	pr_debug("Looks like a total of %lu stubs, max\n", relocs);
+-- 
+2.47.0
+
 
