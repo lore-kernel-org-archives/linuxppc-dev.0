@@ -1,59 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-5814-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5815-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1D47C02194
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2025 12:07:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E8A9C02194
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Feb 2025 12:07:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YnMXZ5RKXz303d;
-	Tue,  4 Feb 2025 23:06:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YnMXb4lFTz2yyJ;
+	Tue,  4 Feb 2025 23:06:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738670782;
-	cv=none; b=Fdhr26mI6IOieEvUePLBMql63nb1qHJPqP5qjnTAGR4JjKqjMtqIsPPWywl8eHT5DP5G/9WsZst8gRvoVL38eoQ0SWA+dtLSbNXYqp/iB0dkOZH8p1ikMMx58o5rrGO/CyY4GXp71435obrDYnoNRkdpOEDa/Y3yQkTznlmsOkfWeeUsDnIwUmLohi0V93R2Yem+227a6hLvPOHN4DyBlrL7avRJxf8rNJoGS1aGBql/Gx0//JwPJZC6k2hf8zeDxbPMVF+YcWZh1Dx40PH3y6RrVd4YFfFrprXqAtiFdMc9rCimHhIx1AWQBy5tmY9McThL2lDYAtGQiNUlLQOJ6w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738670783;
+	cv=none; b=NTZ/kp6ZN8eGgPSPpFjfDB9aCtRTlvJHPZv1CRV51zNXxQ9HLUqTLe++J2tkhO8AxqwlFsnfvFdElRATjdBbaPWVwGA2iNTKl+ghdLC7W1fRMJA4ai4fksme0Q+XrijFL5dWs6UWOABjJsAiun/UZSrHoyXCOfzHz1Y5XM4rAfccmOKbyMtkfF522KPqVV5PXstlszx81+hKvLr3LWjluqb9WyOcv1qflTDZ6ODKP9XNzztc4nZIOYSQbvrpdhQDqjx1tAfscLhwNIUf9l03IOS5fpIQf0zUecAdB7Mdpp27M4/jIQMY5gUlG6NC0xQKqHwpx+hRZifnjFYPMq9Ahg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738670782; c=relaxed/relaxed;
-	bh=x8G0yIY64HYG9meTuD/LImFvznhCsn4WURPYmm4+a9M=;
+	t=1738670783; c=relaxed/relaxed;
+	bh=rmAiSfcB/iu388ExbM8SXpR/2u8mn0HvfLk2LT7e0Wk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=VeqAXN0VuVBe1YFKgLelYMApJ8604skHe+fiHQdwQ4u09uEwYt5RgZWRYQEFMvJ+kQjFFcVgX4j2+bd3iakgIX8OsZsSCcKVlmkYXYnjb5x4SxiS43kqba1f6kN5L984X7FskuCmgkSn7kiitYv2KfNBbbnX7f4NivgdIoo4oTJv8ggVFI0lxJNoy1LJCAX4Tr7ZxMoRRi7gOlVhTGuUlNfwjUs689AEWb9aSPBrIk18+/v6VVz90Zj6EJI15XA4tAHV7dP9PhubgPKZlA40N1KCJoiQTlLWFWFP5K160P8PrCkZlHv77GrKYcQxJH9TSuK1NK+sHUCu+bpLrKE0dg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=G7uwcVyd; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=+k7zus5F; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=PITnu1RIkGFgCkZtqXHBPJin2eQ/Vwo38BUzH2edYbqPlugMO10tXvELTyj+rbNNKafWtsIzNfSRVJ0KU0iDnhnYkGbqWJ2NB4txVgDfhDyz1nq0igOCIEoXQF8/v0Q+lqOPYMeE1vNeYpnTlttlh4NM8AJrPlrTv+yCAbs9nuH5Ue887oC5Ha8RkwCduN1H4ntTiM5k37bXCmlkvHzaeiwsVR7M1xannGkxAFx5rfYibeIxBHDSxX43xJRqpTzRjMcKa34HLHCDcXiz34FHTbHemAcUdlZqJSb5VLgw15q/FFSqQRXPU9R9Jixwh0GB2pKrKC/6Jo1u3Q9I8UloKg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=zT22X0Gf; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=NINkwCgL; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=G7uwcVyd;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=+k7zus5F;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=zT22X0Gf;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=NINkwCgL;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4YnMXV0MTvz2yyJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2025 23:06:17 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4YnMXX14Fjz3013
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Feb 2025 23:06:20 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1738670768;
+	s=2020; t=1738670774;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=x8G0yIY64HYG9meTuD/LImFvznhCsn4WURPYmm4+a9M=;
-	b=G7uwcVydPa4DzmWKV6PswWMM2w+hiATGLSYtWjIKUooYRrJ4UZjRDtx+8a+UTRBnZQtPSU
-	aayoXwgDImalKysYf61dKSCvBs7MNVvyKbcd6YAgvKIfI6H4VC+GN2PcUTJ0GkBw/KmkhM
-	IErjL05X2z4tpIjC3Q7ppyRcEpQjNm/vUlQjDYycPy0SRuFmuJ7OHJQUlt68UwvjFVpHuM
-	U00d4iDYYxtpXfpjJIpywFXE4bShkbpInNbSGuqrbuOGaYKwsUrr/nM4d2AxQ8mJgRTBMa
-	x7dYby7lFhWjYVul1GUW2Rm8ePpKVM/CnU5iM8NGOos7l2gP9pZYn2P7TwQWFA==
+	bh=rmAiSfcB/iu388ExbM8SXpR/2u8mn0HvfLk2LT7e0Wk=;
+	b=zT22X0Gf6BOhN2f+tt9UaESU0MteGZya3b43smadGhkqYKZ3mzJFh8ZRKYFfhuLW5hvISx
+	EoXYueN0dgT3cgIjkwo9myX4u+bXlLhaMWkCXFV02Plm+Rze2JVtHpoEUK8RVAFs9E1zzf
+	9KJk72oCSasyw1zpPMbfDVvRnqP17haT06cZwidVyYclLjCe0ecyD+z/AJhBHNPIVkZD8W
+	DP2uqVKtRzZqpdnWXmsBFFdWC0gMBld1/GKLh3ll4DX6WrM/2nAgshRnpyx5eCVxr3dKAN
+	b1fwYRIkREz9wjUoexYszybw8Vlv5vtFWFJwE2y1FuznAJtElKKEjE24d20ChQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1738670768;
+	s=2020e; t=1738670774;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=x8G0yIY64HYG9meTuD/LImFvznhCsn4WURPYmm4+a9M=;
-	b=+k7zus5Fm0hytn2n3TPAnL2iqkw90auG49VxpA7E380kA16Tpq4fOq5xBUgraKb9E7z6Gg
-	F/A3LY7xSZq7s6Dw==
-Date: Tue, 04 Feb 2025 13:05:37 +0100
-Subject: [PATCH v3 05/18] vdso: Add generic time data storage
+	bh=rmAiSfcB/iu388ExbM8SXpR/2u8mn0HvfLk2LT7e0Wk=;
+	b=NINkwCgLul4YFUZd6B6OKZVLWQAXcPqcwi7FisxeJdOHcVajcrj54QGSb5CriUU0WrAPRw
+	rvvRM33LfoyX5eAQ==
+Date: Tue, 04 Feb 2025 13:05:45 +0100
+Subject: [PATCH v3 13/18] MIPS: vdso: Switch to generic storage
+ implementation
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,7 +69,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250204-vdso-store-rng-v3-5-13a4669dfc8c@linutronix.de>
+Message-Id: <20250204-vdso-store-rng-v3-13-13a4669dfc8c@linutronix.de>
 References: <20250204-vdso-store-rng-v3-0-13a4669dfc8c@linutronix.de>
 In-Reply-To: <20250204-vdso-store-rng-v3-0-13a4669dfc8c@linutronix.de>
 To: "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
@@ -103,482 +104,294 @@ Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-arch@vger.kernel.org, Nam Cao <namcao@linutronix.de>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, 
  linux-csky@vger.kernel.org
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1738670761; l=16601;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1738670761; l=9616;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=cfF67D2q6aZvIqMtUCgX0c+7s5eeGIAkdjGlP2nViTo=;
- b=35+rOfo0SUf8tBbkbSi+leFDRDh2uULlmo2usbhnUv+Pp3aOu/bqmsQL3HgV3IHaQK9VPsGz8
- m34+2tc89mcAva6jIiA9fosCv6DCsz95f1wRZWM6StSDKrNjIJPAymR
+ bh=eMDFQ7D52EkzXyX+5y7UBsIbOtBUV7hQNlDi8P6djz0=;
+ b=A/bko4CKMxbYJTxFEpa1IcAI/JwE1GspBSvVuhkd/r+KfvF8WbV63c5uuMr0I8dlQ1Z+nUPxn
+ 8CH1RxWQ5PVBdqZw01u6G+54mdm90r0lXFQMs59EOhLPXfbDjmrGn1o
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-Historically each architecture defined their own way to store the vDSO
-data page. Add a generic mechanism to provide storage for that page.
-
-Furthermore this generic storage will be extended to also provide
-uniform storage for *non*-time-related data, like the random state or
-architecture-specific data. These will have their own pages and data
-structures, so rename 'vdso_data' into 'vdso_time_data' to make that
-split clear from the name.
-
-Also introduce a new consistent naming scheme for the symbols related to
-the vDSO, which makes it clear if the symbol is accessible from
-userspace or kernel space and the type of data behind the symbol.
-
-The generic fault handler contains an optimization to prefault the vvar
-page when the timens page is accessed. This was lifted from s390 and x86.
+The generic storage implementation provides the same features as the
+custom one. However it can be shared between architectures, making
+maintenance easier.
 
 Co-developed-by: Nam Cao <namcao@linutronix.de>
 Signed-off-by: Nam Cao <namcao@linutronix.de>
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- include/asm-generic/vdso/vsyscall.h |  16 ++++++
- include/linux/time_namespace.h      |   1 +
- include/linux/vdso_datastore.h      |  10 ++++
- include/vdso/datapage.h             |  41 +++++++++++---
- kernel/time/vsyscall.c              |   8 +--
- lib/Makefile                        |   2 +-
- lib/vdso/Kconfig                    |   5 ++
- lib/vdso/Makefile                   |   3 ++
- lib/vdso/datastore.c                | 103 ++++++++++++++++++++++++++++++++++++
- lib/vdso/gettimeofday.c             |  25 ++++++---
- 10 files changed, 195 insertions(+), 19 deletions(-)
+ arch/mips/Kconfig                         |  1 +
+ arch/mips/include/asm/vdso/gettimeofday.h |  9 +++---
+ arch/mips/include/asm/vdso/vdso.h         | 19 ++++++-------
+ arch/mips/include/asm/vdso/vsyscall.h     | 14 ++-------
+ arch/mips/kernel/vdso.c                   | 47 ++++++++++++-------------------
+ arch/mips/vdso/vdso.lds.S                 |  5 +++-
+ 6 files changed, 38 insertions(+), 57 deletions(-)
 
-diff --git a/include/asm-generic/vdso/vsyscall.h b/include/asm-generic/vdso/vsyscall.h
-index 01dafd604188fb0512d21c4ce4b027f7da54f5a0..ac5b93b91993224da245e80031b9f51e0c083f3c 100644
---- a/include/asm-generic/vdso/vsyscall.h
-+++ b/include/asm-generic/vdso/vsyscall.h
-@@ -4,12 +4,28 @@
+diff --git a/arch/mips/Kconfig b/arch/mips/Kconfig
+index 1924f2d839323243e378e32ef7d12640560a7be3..b51168e319ea3aa376e7016fe72e8db9a28fc979 100644
+--- a/arch/mips/Kconfig
++++ b/arch/mips/Kconfig
+@@ -51,6 +51,7 @@ config MIPS
+ 	select GENERIC_SMP_IDLE_THREAD
+ 	select GENERIC_IDLE_POLL_SETUP
+ 	select GENERIC_TIME_VSYSCALL
++	select GENERIC_VDSO_DATA_STORE
+ 	select GUP_GET_PXX_LOW_HIGH if CPU_MIPS32 && PHYS_ADDR_T_64BIT
+ 	select HAS_IOPORT if !NO_IOPORT_MAP || ISA
+ 	select HAVE_ARCH_COMPILER_H
+diff --git a/arch/mips/include/asm/vdso/gettimeofday.h b/arch/mips/include/asm/vdso/gettimeofday.h
+index 44a45f3fa4b01026e39efb7f8f51051ec464340c..fd32baa30e172cbabe2657d9debe67a5b9061f90 100644
+--- a/arch/mips/include/asm/vdso/gettimeofday.h
++++ b/arch/mips/include/asm/vdso/gettimeofday.h
+@@ -167,7 +167,7 @@ static __always_inline u64 read_r4k_count(void)
+ 
+ #ifdef CONFIG_CLKSRC_MIPS_GIC
+ 
+-static __always_inline u64 read_gic_count(const struct vdso_data *data)
++static __always_inline u64 read_gic_count(const struct vdso_time_data *data)
+ {
+ 	void __iomem *gic = get_gic(data);
+ 	u32 hi, hi2, lo;
+@@ -184,7 +184,7 @@ static __always_inline u64 read_gic_count(const struct vdso_data *data)
+ #endif
+ 
+ static __always_inline u64 __arch_get_hw_counter(s32 clock_mode,
+-						 const struct vdso_data *vd)
++						 const struct vdso_time_data *vd)
+ {
+ #ifdef CONFIG_CSRC_R4K
+ 	if (clock_mode == VDSO_CLOCKMODE_R4K)
+@@ -209,10 +209,11 @@ static inline bool mips_vdso_hres_capable(void)
+ }
+ #define __arch_vdso_hres_capable mips_vdso_hres_capable
+ 
+-static __always_inline const struct vdso_data *__arch_get_vdso_data(void)
++static __always_inline const struct vdso_time_data *__arch_get_vdso_u_time_data(void)
+ {
+-	return get_vdso_data();
++	return get_vdso_time_data();
+ }
++#define __arch_get_vdso_u_time_data __arch_get_vdso_u_time_data
+ 
+ #endif /* !__ASSEMBLY__ */
+ 
+diff --git a/arch/mips/include/asm/vdso/vdso.h b/arch/mips/include/asm/vdso/vdso.h
+index 6cd88191fefa9ce6d8323dd70d45aa9a198ac9d0..acd0efcd3d93ef7e71107302a40d24b4b51aae99 100644
+--- a/arch/mips/include/asm/vdso/vdso.h
++++ b/arch/mips/include/asm/vdso/vdso.h
+@@ -5,16 +5,18 @@
+  */
+ 
+ #include <asm/sgidefs.h>
++#include <vdso/page.h>
++
++#define __VDSO_PAGES 4
  
  #ifndef __ASSEMBLY__
  
-+#ifdef CONFIG_GENERIC_VDSO_DATA_STORE
-+
-+#ifndef __arch_get_vdso_u_time_data
-+static __always_inline const struct vdso_time_data *__arch_get_vdso_u_time_data(void)
-+{
-+	return vdso_u_time_data;
-+}
-+#endif
-+
-+#else  /* !CONFIG_GENERIC_VDSO_DATA_STORE */
-+
- #ifndef __arch_get_k_vdso_data
- static __always_inline struct vdso_data *__arch_get_k_vdso_data(void)
+ #include <asm/asm.h>
+-#include <asm/page.h>
+ #include <asm/vdso.h>
+ 
+-static inline unsigned long get_vdso_base(void)
++static inline const struct vdso_time_data *get_vdso_time_data(void)
  {
- 	return NULL;
+-	unsigned long addr;
++	const struct vdso_time_data *addr;
+ 
+ 	/*
+ 	 * We can't use cpu_has_mips_r6 since it needs the cpu_data[]
+@@ -27,7 +29,7 @@ static inline unsigned long get_vdso_base(void)
+ 	 * We can't use addiupc because there is no label-label
+ 	 * support for the addiupc reloc
+ 	 */
+-	__asm__("lapc	%0, _start			\n"
++	__asm__("lapc	%0, vdso_u_time_data		\n"
+ 		: "=r" (addr) : :);
+ #else
+ 	/*
+@@ -46,7 +48,7 @@ static inline unsigned long get_vdso_base(void)
+ 	"	.set noreorder				\n"
+ 	"	bal	1f				\n"
+ 	"	 nop					\n"
+-	"	.word	_start - .			\n"
++	"	.word	vdso_u_time_data - .		\n"
+ 	"1:	lw	%0, 0($31)			\n"
+ 	"	" STR(PTR_ADDU) " %0, $31, %0		\n"
+ 	"	.set pop				\n"
+@@ -58,14 +60,9 @@ static inline unsigned long get_vdso_base(void)
+ 	return addr;
  }
- #endif /* __arch_get_k_vdso_data */
-+#define vdso_k_time_data __arch_get_k_vdso_data()
-+
-+#define __arch_get_vdso_u_time_data __arch_get_vdso_data
-+
-+#endif /* CONFIG_GENERIC_VDSO_DATA_STORE */
  
- #ifndef __arch_update_vsyscall
- static __always_inline void __arch_update_vsyscall(struct vdso_data *vdata)
-diff --git a/include/linux/time_namespace.h b/include/linux/time_namespace.h
-index 876e31b4461d0ee01fe2bd3d136acdea2611789f..4b81db223f5450218dfaf553b24195be9ba97c08 100644
---- a/include/linux/time_namespace.h
-+++ b/include/linux/time_namespace.h
-@@ -8,6 +8,7 @@
- #include <linux/ns_common.h>
- #include <linux/err.h>
- #include <linux/time64.h>
-+#include <vdso/datapage.h>
+-static inline const struct vdso_data *get_vdso_data(void)
+-{
+-	return (const struct vdso_data *)(get_vdso_base() - PAGE_SIZE);
+-}
+-
+ #ifdef CONFIG_CLKSRC_MIPS_GIC
  
- struct user_namespace;
- extern struct user_namespace init_user_ns;
-diff --git a/include/linux/vdso_datastore.h b/include/linux/vdso_datastore.h
-new file mode 100644
-index 0000000000000000000000000000000000000000..a91fa24b06e09321fdff8c2c7bdfbc1b206db574
---- /dev/null
-+++ b/include/linux/vdso_datastore.h
-@@ -0,0 +1,10 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef _LINUX_VDSO_DATASTORE_H
-+#define _LINUX_VDSO_DATASTORE_H
-+
-+#include <linux/mm_types.h>
-+
-+extern const struct vm_special_mapping vdso_vvar_mapping;
-+struct vm_area_struct *vdso_install_vvar_mapping(struct mm_struct *mm, unsigned long addr);
-+
-+#endif /* _LINUX_VDSO_DATASTORE_H */
-diff --git a/include/vdso/datapage.h b/include/vdso/datapage.h
-index d967baa0cd0c65784e38dc4fcd7b9e8273923947..b3d8087488ff35fbbc4d5058ae21e2c6cc58ed9c 100644
---- a/include/vdso/datapage.h
-+++ b/include/vdso/datapage.h
-@@ -45,11 +45,11 @@ struct arch_vdso_time_data {};
-  *
-  * There is one vdso_timestamp object in vvar for each vDSO-accelerated
-  * clock_id. For high-resolution clocks, this encodes the time
-- * corresponding to vdso_data.cycle_last. For coarse clocks this encodes
-+ * corresponding to vdso_time_data.cycle_last. For coarse clocks this encodes
-  * the actual time.
-  *
-  * To be noticed that for highres clocks nsec is left-shifted by
-- * vdso_data.cs[x].shift.
-+ * vdso_time_data[x].shift.
-  */
- struct vdso_timestamp {
- 	u64	sec;
-@@ -57,7 +57,7 @@ struct vdso_timestamp {
- };
- 
- /**
-- * struct vdso_data - vdso datapage representation
-+ * struct vdso_time_data - vdso datapage representation
-  * @seq:		timebase sequence counter
-  * @clock_mode:		clock mode
-  * @cycle_last:		timebase at clocksource init
-@@ -74,7 +74,7 @@ struct vdso_timestamp {
-  * @arch_data:		architecture specific data (optional, defaults
-  *			to an empty struct)
-  *
-- * vdso_data will be accessed by 64 bit and compat code at the same time
-+ * vdso_time_data will be accessed by 64 bit and compat code at the same time
-  * so we should be careful before modifying this structure.
-  *
-  * The ordering of the struct members is optimized to have fast access to the
-@@ -92,7 +92,7 @@ struct vdso_timestamp {
-  * For clocks which are not affected by time namespace adjustment the
-  * offset must be zero.
-  */
--struct vdso_data {
-+struct vdso_time_data {
- 	u32			seq;
- 
- 	s32			clock_mode;
-@@ -117,6 +117,8 @@ struct vdso_data {
- 	struct arch_vdso_time_data arch_data;
- };
- 
-+#define vdso_data vdso_time_data
-+
- /**
-  * struct vdso_rng_data - vdso RNG state information
-  * @generation:	counter representing the number of RNG reseeds
-@@ -136,18 +138,34 @@ struct vdso_rng_data {
-  * With the hidden visibility, the compiler simply generates a PC-relative
-  * relocation, and this is what we need.
-  */
--extern struct vdso_data _vdso_data[CS_BASES] __attribute__((visibility("hidden")));
--extern struct vdso_data _timens_data[CS_BASES] __attribute__((visibility("hidden")));
-+#ifndef CONFIG_GENERIC_VDSO_DATA_STORE
-+extern struct vdso_time_data _vdso_data[CS_BASES] __attribute__((visibility("hidden")));
-+extern struct vdso_time_data _timens_data[CS_BASES] __attribute__((visibility("hidden")));
- extern struct vdso_rng_data _vdso_rng_data __attribute__((visibility("hidden")));
-+#else
-+extern struct vdso_time_data vdso_u_time_data[CS_BASES] __attribute__((visibility("hidden")));
-+
-+extern struct vdso_time_data *vdso_k_time_data;
-+#endif
- 
- /**
-  * union vdso_data_store - Generic vDSO data page
-  */
- union vdso_data_store {
--	struct vdso_data	data[CS_BASES];
-+	struct vdso_time_data	data[CS_BASES];
- 	u8			page[1U << CONFIG_PAGE_SHIFT];
- };
- 
-+#ifdef CONFIG_GENERIC_VDSO_DATA_STORE
-+
-+enum vdso_pages {
-+	VDSO_TIME_PAGE_OFFSET,
-+	VDSO_TIMENS_PAGE_OFFSET,
-+	VDSO_NR_PAGES
-+};
-+
-+#endif /* CONFIG_GENERIC_VDSO_DATA_STORE */
-+
- /*
-  * The generic vDSO implementation requires that gettimeofday.h
-  * provides:
-@@ -164,6 +182,13 @@ union vdso_data_store {
- #include <asm/vdso/gettimeofday.h>
- #endif /* ENABLE_COMPAT_VDSO */
- 
-+#else /* !__ASSEMBLY__ */
-+
-+#define VDSO_VVAR_SYMS						\
-+	PROVIDE(vdso_u_data = . - __VDSO_PAGES * PAGE_SIZE);	\
-+	PROVIDE(vdso_u_time_data = vdso_u_data);		\
-+
-+
- #endif /* !__ASSEMBLY__ */
- 
- #endif /* __VDSO_DATAPAGE_H */
-diff --git a/kernel/time/vsyscall.c b/kernel/time/vsyscall.c
-index 05d3831431658227c080a89202f45e7a0af88895..09c1e39a6dd8e24aa161982c04078e78d52fa737 100644
---- a/kernel/time/vsyscall.c
-+++ b/kernel/time/vsyscall.c
-@@ -77,7 +77,7 @@ static inline void update_vdso_data(struct vdso_data *vdata,
- 
- void update_vsyscall(struct timekeeper *tk)
+-static inline void __iomem *get_gic(const struct vdso_data *data)
++static inline void __iomem *get_gic(const struct vdso_time_data *data)
  {
--	struct vdso_data *vdata = __arch_get_k_vdso_data();
-+	struct vdso_data *vdata = vdso_k_time_data;
- 	struct vdso_timestamp *vdso_ts;
- 	s32 clock_mode;
- 	u64 nsec;
-@@ -128,7 +128,7 @@ void update_vsyscall(struct timekeeper *tk)
+ 	return (void __iomem *)((unsigned long)data & PAGE_MASK) - PAGE_SIZE;
+ }
+diff --git a/arch/mips/include/asm/vdso/vsyscall.h b/arch/mips/include/asm/vdso/vsyscall.h
+index a4582870aaea49ac288d62ec4fa1338a98621918..2b1debb62dee07bb49ab64f755ff9120d512458a 100644
+--- a/arch/mips/include/asm/vdso/vsyscall.h
++++ b/arch/mips/include/asm/vdso/vsyscall.h
+@@ -2,22 +2,12 @@
+ #ifndef __ASM_VDSO_VSYSCALL_H
+ #define __ASM_VDSO_VSYSCALL_H
  
- void update_vsyscall_tz(void)
- {
--	struct vdso_data *vdata = __arch_get_k_vdso_data();
-+	struct vdso_data *vdata = vdso_k_time_data;
++#include <asm/page.h>
++
+ #ifndef __ASSEMBLY__
  
- 	vdata[CS_HRES_COARSE].tz_minuteswest = sys_tz.tz_minuteswest;
- 	vdata[CS_HRES_COARSE].tz_dsttime = sys_tz.tz_dsttime;
-@@ -150,7 +150,7 @@ void update_vsyscall_tz(void)
-  */
- unsigned long vdso_update_begin(void)
- {
--	struct vdso_data *vdata = __arch_get_k_vdso_data();
-+	struct vdso_data *vdata = vdso_k_time_data;
- 	unsigned long flags = timekeeper_lock_irqsave();
- 
- 	vdso_write_begin(vdata);
-@@ -167,7 +167,7 @@ unsigned long vdso_update_begin(void)
-  */
- void vdso_update_end(unsigned long flags)
- {
--	struct vdso_data *vdata = __arch_get_k_vdso_data();
-+	struct vdso_data *vdata = vdso_k_time_data;
- 
- 	vdso_write_end(vdata);
- 	__arch_sync_vdso_data(vdata);
-diff --git a/lib/Makefile b/lib/Makefile
-index d5cfc7afbbb8215cdb8d03c26fe7b7be13d75d24..fcdee83deb5c6390451a1634ab3b776cf149681f 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -132,7 +132,7 @@ endif
- obj-$(CONFIG_DEBUG_INFO_REDUCED) += debug_info.o
- CFLAGS_debug_info.o += $(call cc-option, -femit-struct-debug-detailed=any)
- 
--obj-y += math/ crypto/
-+obj-y += math/ crypto/ vdso/
- 
- obj-$(CONFIG_GENERIC_IOMAP) += iomap.o
- obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o
-diff --git a/lib/vdso/Kconfig b/lib/vdso/Kconfig
-index 82fe827af5426d8b644bff00e9097e3228d0ebaa..45df764b49ad62479e6456e00c053e46131936a3 100644
---- a/lib/vdso/Kconfig
-+++ b/lib/vdso/Kconfig
-@@ -43,3 +43,8 @@ config VDSO_GETRANDOM
- 	bool
- 	help
- 	  Selected by architectures that support vDSO getrandom().
-+
-+config GENERIC_VDSO_DATA_STORE
-+	bool
-+	help
-+	  Selected by architectures that use the generic vDSO data store.
-diff --git a/lib/vdso/Makefile b/lib/vdso/Makefile
-new file mode 100644
-index 0000000000000000000000000000000000000000..aedd40aaa950c86f1454d095d9d46992b0cc0abd
---- /dev/null
-+++ b/lib/vdso/Makefile
-@@ -0,0 +1,3 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+
-+obj-$(CONFIG_GENERIC_VDSO_DATA_STORE) += datastore.o
-diff --git a/lib/vdso/datastore.c b/lib/vdso/datastore.c
-new file mode 100644
-index 0000000000000000000000000000000000000000..d3181768424cc3ee2e980bd537ac5ca14dfcb304
---- /dev/null
-+++ b/lib/vdso/datastore.c
-@@ -0,0 +1,103 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+
-+#include <linux/linkage.h>
-+#include <linux/mmap_lock.h>
-+#include <linux/mm.h>
-+#include <linux/time_namespace.h>
-+#include <linux/types.h>
-+#include <linux/vdso_datastore.h>
-+#include <vdso/datapage.h>
-+
-+/*
-+ * The vDSO data page.
-+ */
-+#ifdef CONFIG_HAVE_GENERIC_VDSO
-+static union vdso_data_store vdso_time_data_store __page_aligned_data;
-+struct vdso_time_data *vdso_k_time_data = vdso_time_data_store.data;
-+static_assert(sizeof(vdso_time_data_store) == PAGE_SIZE);
-+#endif /* CONFIG_HAVE_GENERIC_VDSO */
-+
-+static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
-+			     struct vm_area_struct *vma, struct vm_fault *vmf)
-+{
-+	struct page *timens_page = find_timens_vvar_page(vma);
-+	unsigned long addr, pfn;
-+	vm_fault_t err;
-+
-+	switch (vmf->pgoff) {
-+	case VDSO_TIME_PAGE_OFFSET:
-+		if (!IS_ENABLED(CONFIG_HAVE_GENERIC_VDSO))
-+			return VM_FAULT_SIGBUS;
-+		pfn = __phys_to_pfn(__pa_symbol(vdso_k_time_data));
-+		if (timens_page) {
-+			/*
-+			 * Fault in VVAR page too, since it will be accessed
-+			 * to get clock data anyway.
-+			 */
-+			addr = vmf->address + VDSO_TIMENS_PAGE_OFFSET * PAGE_SIZE;
-+			err = vmf_insert_pfn(vma, addr, pfn);
-+			if (unlikely(err & VM_FAULT_ERROR))
-+				return err;
-+			pfn = page_to_pfn(timens_page);
-+		}
-+		break;
-+	case VDSO_TIMENS_PAGE_OFFSET:
-+		/*
-+		 * If a task belongs to a time namespace then a namespace
-+		 * specific VVAR is mapped with the VVAR_DATA_PAGE_OFFSET and
-+		 * the real VVAR page is mapped with the VVAR_TIMENS_PAGE_OFFSET
-+		 * offset.
-+		 * See also the comment near timens_setup_vdso_data().
-+		 */
-+		if (!IS_ENABLED(CONFIG_TIME_NS) || !timens_page)
-+			return VM_FAULT_SIGBUS;
-+		pfn = __phys_to_pfn(__pa_symbol(vdso_k_time_data));
-+		break;
-+	default:
-+		return VM_FAULT_SIGBUS;
-+	}
-+
-+	return vmf_insert_pfn(vma, vmf->address, pfn);
-+}
-+
-+const struct vm_special_mapping vdso_vvar_mapping = {
-+	.name	= "[vvar]",
-+	.fault	= vvar_fault,
-+};
-+
-+struct vm_area_struct *vdso_install_vvar_mapping(struct mm_struct *mm, unsigned long addr)
-+{
-+	return _install_special_mapping(mm, addr, VDSO_NR_PAGES * PAGE_SIZE,
-+					VM_READ | VM_MAYREAD | VM_IO | VM_DONTDUMP | VM_PFNMAP,
-+					&vdso_vvar_mapping);
-+}
-+
-+#ifdef CONFIG_TIME_NS
-+/*
-+ * The vvar page layout depends on whether a task belongs to the root or
-+ * non-root time namespace. Whenever a task changes its namespace, the VVAR
-+ * page tables are cleared and then they will be re-faulted with a
-+ * corresponding layout.
-+ * See also the comment near timens_setup_vdso_data() for details.
-+ */
-+int vdso_join_timens(struct task_struct *task, struct time_namespace *ns)
-+{
-+	struct mm_struct *mm = task->mm;
-+	struct vm_area_struct *vma;
-+	VMA_ITERATOR(vmi, mm, 0);
-+
-+	mmap_read_lock(mm);
-+	for_each_vma(vmi, vma) {
-+		if (vma_is_special_mapping(vma, &vdso_vvar_mapping))
-+			zap_vma_pages(vma);
-+	}
-+	mmap_read_unlock(mm);
-+
-+	return 0;
-+}
-+
-+struct vdso_time_data *arch_get_vdso_data(void *vvar_page)
-+{
-+	return (struct vdso_time_data *)vvar_page;
-+}
-+#endif
-diff --git a/lib/vdso/gettimeofday.c b/lib/vdso/gettimeofday.c
-index c01eaafd8041916878f3f407f7f4fc3e0a0611ca..20c5b8752fcc81d9a044169b9a3ae534d840ef91 100644
---- a/lib/vdso/gettimeofday.c
-+++ b/lib/vdso/gettimeofday.c
-@@ -5,6 +5,9 @@
  #include <vdso/datapage.h>
+ 
+-extern struct vdso_data *vdso_data;
+-
+-/*
+- * Update the vDSO data page to keep in sync with kernel timekeeping.
+- */
+-static __always_inline
+-struct vdso_data *__mips_get_k_vdso_data(void)
+-{
+-	return vdso_data;
+-}
+-#define __arch_get_k_vdso_data __mips_get_k_vdso_data
+-
+ /* The asm-generic header needs to be included after the definitions above */
+ #include <asm-generic/vdso/vsyscall.h>
+ 
+diff --git a/arch/mips/kernel/vdso.c b/arch/mips/kernel/vdso.c
+index 75c9d3618f58856933ba25adb4933cda25d16cbf..de096777172f082b5b7847a5c14cae5ddaee0430 100644
+--- a/arch/mips/kernel/vdso.c
++++ b/arch/mips/kernel/vdso.c
+@@ -15,6 +15,7 @@
+ #include <linux/random.h>
+ #include <linux/sched.h>
+ #include <linux/slab.h>
++#include <linux/vdso_datastore.h>
+ 
+ #include <asm/abi.h>
+ #include <asm/mips-cps.h>
+@@ -23,20 +24,7 @@
  #include <vdso/helpers.h>
+ #include <vdso/vsyscall.h>
  
-+/* Bring in default accessors */
-+#include <vdso/vsyscall.h>
+-/* Kernel-provided data used by the VDSO. */
+-static union vdso_data_store mips_vdso_data __page_aligned_data;
+-struct vdso_data *vdso_data = mips_vdso_data.data;
+-
+-/*
+- * Mapping for the VDSO data/GIC pages. The real pages are mapped manually, as
+- * what we map and where within the area they are mapped is determined at
+- * runtime.
+- */
+-static struct page *no_pages[] = { NULL };
+-static struct vm_special_mapping vdso_vvar_mapping = {
+-	.name = "[vvar]",
+-	.pages = no_pages,
+-};
++static_assert(VDSO_NR_PAGES == __VDSO_PAGES);
+ 
+ static void __init init_vdso_image(struct mips_vdso_image *image)
+ {
+@@ -90,7 +78,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ {
+ 	struct mips_vdso_image *image = current->thread.abi->vdso;
+ 	struct mm_struct *mm = current->mm;
+-	unsigned long gic_size, vvar_size, size, base, data_addr, vdso_addr, gic_pfn, gic_base;
++	unsigned long gic_size, size, base, data_addr, vdso_addr, gic_pfn, gic_base;
+ 	struct vm_area_struct *vma;
+ 	int ret;
+ 
+@@ -119,8 +107,7 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 	 * the counter registers at the start.
+ 	 */
+ 	gic_size = mips_gic_present() ? PAGE_SIZE : 0;
+-	vvar_size = gic_size + PAGE_SIZE;
+-	size = vvar_size + image->size;
++	size = gic_size + VDSO_NR_PAGES * PAGE_SIZE + image->size;
+ 
+ 	/*
+ 	 * Find a region that's large enough for us to perform the
+@@ -143,15 +130,13 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 	 */
+ 	if (cpu_has_dc_aliases) {
+ 		base = __ALIGN_MASK(base, shm_align_mask);
+-		base += ((unsigned long)vdso_data - gic_size) & shm_align_mask;
++		base += ((unsigned long)vdso_k_time_data - gic_size) & shm_align_mask;
+ 	}
+ 
+ 	data_addr = base + gic_size;
+-	vdso_addr = data_addr + PAGE_SIZE;
++	vdso_addr = data_addr + VDSO_NR_PAGES * PAGE_SIZE;
+ 
+-	vma = _install_special_mapping(mm, base, vvar_size,
+-				       VM_READ | VM_MAYREAD,
+-				       &vdso_vvar_mapping);
++	vma = vdso_install_vvar_mapping(mm, data_addr);
+ 	if (IS_ERR(vma)) {
+ 		ret = PTR_ERR(vma);
+ 		goto out;
+@@ -161,6 +146,17 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 	if (gic_size) {
+ 		gic_base = (unsigned long)mips_gic_base + MIPS_GIC_USER_OFS;
+ 		gic_pfn = PFN_DOWN(__pa(gic_base));
++		static const struct vm_special_mapping gic_mapping = {
++			.name	= "[gic]",
++			.pages	= (struct page **) { NULL },
++		};
 +
- #ifndef vdso_calc_ns
++		vma = _install_special_mapping(mm, base, gic_size, VM_READ | VM_MAYREAD,
++					       &gic_mapping);
++		if (IS_ERR(vma)) {
++			ret = PTR_ERR(vma);
++			goto out;
++		}
  
- #ifdef VDSO_DELTA_NOMASK
-@@ -69,6 +72,16 @@ static inline bool vdso_cycles_ok(u64 cycles)
- #endif
+ 		ret = io_remap_pfn_range(vma, base, gic_pfn, gic_size,
+ 					 pgprot_noncached(vma->vm_page_prot));
+@@ -168,13 +164,6 @@ int arch_setup_additional_pages(struct linux_binprm *bprm, int uses_interp)
+ 			goto out;
+ 	}
  
- #ifdef CONFIG_TIME_NS
+-	/* Map data page. */
+-	ret = remap_pfn_range(vma, data_addr,
+-			      virt_to_phys(vdso_data) >> PAGE_SHIFT,
+-			      PAGE_SIZE, vma->vm_page_prot);
+-	if (ret)
+-		goto out;
+-
+ 	/* Map VDSO image. */
+ 	vma = _install_special_mapping(mm, vdso_addr, image->size,
+ 				       VM_READ | VM_EXEC |
+diff --git a/arch/mips/vdso/vdso.lds.S b/arch/mips/vdso/vdso.lds.S
+index 836465e3bcb8a15cb3f0f96d852d2b252c9d5e2a..c8bbe56d89cb095da21ac1f56d9999914defc305 100644
+--- a/arch/mips/vdso/vdso.lds.S
++++ b/arch/mips/vdso/vdso.lds.S
+@@ -5,6 +5,8 @@
+  */
+ 
+ #include <asm/sgidefs.h>
++#include <asm/vdso/vdso.h>
++#include <vdso/datapage.h>
+ 
+ #if _MIPS_SIM == _MIPS_SIM_ABI64
+ OUTPUT_FORMAT("elf64-tradlittlemips", "elf64-tradbigmips", "elf64-tradlittlemips")
+@@ -18,7 +20,8 @@ OUTPUT_ARCH(mips)
+ 
+ SECTIONS
+ {
+-	PROVIDE(_start = .);
++	VDSO_VVAR_SYMS
 +
-+#ifdef CONFIG_GENERIC_VDSO_DATA_STORE
-+static __always_inline
-+const struct vdso_time_data *__arch_get_vdso_u_timens_data(const struct vdso_time_data *vd)
-+{
-+	return (void *)vd + PAGE_SIZE;
-+}
-+#define __arch_get_timens_vdso_data(vd) __arch_get_vdso_u_timens_data(vd)
-+#endif /* CONFIG_GENERIC_VDSO_DATA_STORE */
-+
- static __always_inline int do_hres_timens(const struct vdso_data *vdns, clockid_t clk,
- 					  struct __kernel_timespec *ts)
- {
-@@ -282,7 +295,7 @@ __cvdso_clock_gettime_data(const struct vdso_data *vd, clockid_t clock,
- static __maybe_unused int
- __cvdso_clock_gettime(clockid_t clock, struct __kernel_timespec *ts)
- {
--	return __cvdso_clock_gettime_data(__arch_get_vdso_data(), clock, ts);
-+	return __cvdso_clock_gettime_data(__arch_get_vdso_u_time_data(), clock, ts);
- }
+ 	. = SIZEOF_HEADERS;
  
- #ifdef BUILD_VDSO32
-@@ -308,7 +321,7 @@ __cvdso_clock_gettime32_data(const struct vdso_data *vd, clockid_t clock,
- static __maybe_unused int
- __cvdso_clock_gettime32(clockid_t clock, struct old_timespec32 *res)
- {
--	return __cvdso_clock_gettime32_data(__arch_get_vdso_data(), clock, res);
-+	return __cvdso_clock_gettime32_data(__arch_get_vdso_u_time_data(), clock, res);
- }
- #endif /* BUILD_VDSO32 */
- 
-@@ -342,7 +355,7 @@ __cvdso_gettimeofday_data(const struct vdso_data *vd,
- static __maybe_unused int
- __cvdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
- {
--	return __cvdso_gettimeofday_data(__arch_get_vdso_data(), tv, tz);
-+	return __cvdso_gettimeofday_data(__arch_get_vdso_u_time_data(), tv, tz);
- }
- 
- #ifdef VDSO_HAS_TIME
-@@ -365,7 +378,7 @@ __cvdso_time_data(const struct vdso_data *vd, __kernel_old_time_t *time)
- 
- static __maybe_unused __kernel_old_time_t __cvdso_time(__kernel_old_time_t *time)
- {
--	return __cvdso_time_data(__arch_get_vdso_data(), time);
-+	return __cvdso_time_data(__arch_get_vdso_u_time_data(), time);
- }
- #endif /* VDSO_HAS_TIME */
- 
-@@ -425,7 +438,7 @@ int __cvdso_clock_getres_data(const struct vdso_data *vd, clockid_t clock,
- static __maybe_unused
- int __cvdso_clock_getres(clockid_t clock, struct __kernel_timespec *res)
- {
--	return __cvdso_clock_getres_data(__arch_get_vdso_data(), clock, res);
-+	return __cvdso_clock_getres_data(__arch_get_vdso_u_time_data(), clock, res);
- }
- 
- #ifdef BUILD_VDSO32
-@@ -451,7 +464,7 @@ __cvdso_clock_getres_time32_data(const struct vdso_data *vd, clockid_t clock,
- static __maybe_unused int
- __cvdso_clock_getres_time32(clockid_t clock, struct old_timespec32 *res)
- {
--	return __cvdso_clock_getres_time32_data(__arch_get_vdso_data(),
-+	return __cvdso_clock_getres_time32_data(__arch_get_vdso_u_time_data(),
- 						clock, res);
- }
- #endif /* BUILD_VDSO32 */
+ 	/*
 
 -- 
 2.48.1
