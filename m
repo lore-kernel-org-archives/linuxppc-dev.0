@@ -1,73 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-5864-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5865-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3044FC02194
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2025 14:11:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1FC18C02198
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2025 14:23:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yp2Gd34D7z2ywR;
-	Thu,  6 Feb 2025 01:11:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738764697;
-	cv=none; b=HQDIOL93FgxJ8F61hkVhKkoT2C2g7Z7txyXSX/9cAJ1jGMKXf8MPtYUSL8TF/zEmLDKQAk0KjfqhFcpZWCSzAb1kLKLWwqLOlx+2Fry8jFVyEGXQN2ikETi9s4kBjLRWaXArneCmToKGaMabt55g5++bplmu2ESjyMLFMC52K4QPE72SlyS7biLrlVoJ005FdqIIIV/UPlT5wFLgd+PvtWke4o2LIxlcoWv14b04LM30Vaht2SL2M+ElJYQUICLf6yuUDCm5T+K0mYxdYuJimmCi0LeE1ssu+BMvSXQm36tyq2jXSXEjKzUBN+dmTY2tqsD65QBihyWAtJ851OdvNg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yp2X44S1Dz2ywh;
+	Thu,  6 Feb 2025 01:23:16 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a02:1800:120:4::f00:10"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738765396;
+	cv=none; b=fZ32hhC4+PfuqbieXmCrnG1RtIjLmuDLYG6Jc7o27CavMbkRWAgIPu4zML3dT3b5ngEmcC9y6RmpRBCnqnGRvJNLMRvlaDqIih0LBK7F9rDHcLk1mB4jTyerdrJt2DIV8uuZl2bPRCiSOJkXht5TFK7xDq2zeOcOnP/H844lsABqNZFY3wHl6mRxe2qGQz+lzfHDFmjrbmP27M+fmDFl/OFWupxAzghExgW+L0uOovM2vD5sHz06wYrT1Tww84uC8mvJxsViBgkZ4y2pKDVwoxJAaq1i+hJkyO0Ykmnp7d+Y7WrFEw2VaCeUsi9Iz8LksUJjryxHnXsmpP6nWERWbw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738764697; c=relaxed/relaxed;
-	bh=+3u9jwQp6DYXi+I+Qmy9Asm9KgUzeu1P0QKBZqRTHBY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TYWRt6MP8hXmdDBAviAjwzvMoTqnmPXBRAe2KCM5KQNTRqRt4IXxEPT7//qPzWtKYZgB1wHvsZdLm9livK1UqMUTDhn44uKrqpJMcrAdbfK/yY8jlPfabpJ9GZNaPVTV2z+Mr4UUmBN0gxKUaqkahW/FisyuJW97U4Dk4Os5mH5BLi5XyfdWgGVdSzI4ugPKZqehvdgMQyhWOg9mRPbvhwsM9ZQozwDzN4UG2MzW4HNvLQDwfE+K8SbG9M2C+2nAONqDkn6oBDKpeJ9ZHhCcH6rrLOjf+774uOSx4Wluce38uouNjYF1zHLXmPg/Jqov+TKKZVdjZLVVP/mw/2rvqw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=tSEI9Az5; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=tSEI9Az5;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+	t=1738765396; c=relaxed/relaxed;
+	bh=a/8PdkwfBTst9U9oxIPQp141IYCfq5FliGP36NKg2Rs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gmAIXzDWfVpFNWqlhBKyNjTXutjdhJFPgPcCDw9J+I1zmZUCStZ/nC1Z0IGwEDKsJDRuc8l6qBCpRLVMpRQQLjvCzp1sDLbfGv31waBH9Nz2R6Vv3U/lej5HU020eXR5/KE6ZQSh0QLWuV4xzLn02SIp//aHMxi3IQM66gPTZbvD5yc6xXPp8fUlH074WLMnhtanZYRFr9o8ctIbooFaZhgwBj1ME1Ej5eOJLqGpGE25RP5K+2WxA9raCBgU1LuxvGV5nlvVigQ5+ptT9Lk+TNaKJSvkKUiA78NvGNXBLD2Z+7dbnNnjVo4r4QCBOKk5wAwcWC1vybpLung0tL4iiQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be; spf=pass (client-ip=2a02:1800:120:4::f00:10; helo=cantor.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org) smtp.helo=cantor.telenet-ops.be
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=glider.be
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=cantor.telenet-ops.be (client-ip=2a02:1800:120:4::f00:10; helo=cantor.telenet-ops.be; envelope-from=geert@linux-m68k.org; receiver=lists.ozlabs.org)
+Received: from cantor.telenet-ops.be (cantor.telenet-ops.be [IPv6:2a02:1800:120:4::f00:10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yp2Gc41yYz2yHL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2025 01:11:36 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id C7B36A43694;
-	Wed,  5 Feb 2025 14:09:47 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DE5DDC4CED1;
-	Wed,  5 Feb 2025 14:11:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1738764693;
-	bh=FyH55BMYbGrv8HcLmuHvOdnASara61BhkuyQEwsCI7Y=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=tSEI9Az59mH6oVv6oCXN+7+HyrQqvG9C2IBrv7TNdEQ12dz89agDz61aEZ13v+T7w
-	 YMK1jIvEbgeg2ITAHbHLZIhzVicW0q+VjNFPYn4FQhKKHXWgfy/LjVzXgpKeMSN0jE
-	 KQ2IMbtQtaUiXkqNU4xY4gGornw3S5iA9fSSyAvE=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	patches@lists.linux.dev,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yp2X33TgQz2ywS
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2025 01:23:15 +1100 (AEDT)
+Received: from andre.telenet-ops.be (andre.telenet-ops.be [IPv6:2a02:1800:120:4::f00:15])
+	by cantor.telenet-ops.be (Postfix) with ESMTPS id 4Yp2Wr2gtwz4x2sT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Feb 2025 15:23:04 +0100 (CET)
+Received: from ramsan.of.borg ([IPv6:2a02:1810:ac12:ed80:fa11:c14e:2df5:5273])
+	by andre.telenet-ops.be with cmsmtp
+	id 9qNz2E0013f221S01qNzia; Wed, 05 Feb 2025 15:23:03 +0100
+Received: from rox.of.borg ([192.168.97.57])
+	by ramsan.of.borg with esmtp (Exim 4.97)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1tfgIg-0000000FvzO-3MeQ;
+	Wed, 05 Feb 2025 15:22:58 +0100
+Received: from geert by rox.of.borg with local (Exim 4.97)
+	(envelope-from <geert@linux-m68k.org>)
+	id 1tfgIs-00000006bFa-3Ylm;
+	Wed, 05 Feb 2025 15:22:58 +0100
+From: Geert Uytterhoeven <geert+renesas@glider.be>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Adrian Hunter <adrian.hunter@intel.com>,
-	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
-	Ian Rogers <irogers@google.com>,
-	Ingo Molnar <mingo@redhat.com>,
-	Jiri Olsa <jolsa@kernel.org>,
-	Kan Liang <kan.liang@linux.intel.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	Mark Rutland <mark.rutland@arm.com>,
-	Namhyung Kim <namhyung@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Song Liu <songliubraving@fb.com>,
-	Arnaldo Carvalho de Melo <acme@redhat.com>,
-	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.6 175/393] perf machine: Dont ignore _etext when not a text symbol
-Date: Wed,  5 Feb 2025 14:41:34 +0100
-Message-ID: <20250205134426.990638038@linuxfoundation.org>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250205134420.279368572@linuxfoundation.org>
-References: <20250205134420.279368572@linuxfoundation.org>
-User-Agent: quilt/0.68
-X-stable: review
-X-Patchwork-Hint: ignore
+	Naveen N Rao <naveen@kernel.org>,
+	=?UTF-8?q?Marek=20Beh=C3=BAn?= <kabel@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Bjorn Andersson <andersson@kernel.org>,
+	Konrad Dybcio <konradybcio@kernel.org>,
+	David Wang <00107082@163.com>
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Geert Uytterhoeven <geert+renesas@glider.be>
+Subject: [PATCH resend] genirq: Remove leading space from .irq_print_chip() callbacks
+Date: Wed,  5 Feb 2025 15:22:56 +0100
+Message-ID: <893f7e9646d8933cd6786d5a1ef3eb076d263768.1738764803.git.geert+renesas@glider.be>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,73 +73,72 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-6.6-stable review patch.  If anyone has any objections, please let me know.
+The space separator was factored out from the multiple chip name prints,
+but several irq_chip.irq_print_chip() callbacks still print a leading
+space.  Remove the superfluous double spaces.
 
-------------------
-
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-
-[ Upstream commit 7a93786c306296f15e728b1dbd949a319e4e3d19 ]
-
-Depending on how vmlinux.lds is written, _etext might be the very first
-data symbol instead of the very last text symbol.
-
-Don't require it to be a text symbol, accept any symbol type.
-
-Comitter notes:
-
-See the first Link for further discussion, but it all boils down to
-this:
-
- ---
-  # grep -e _stext -e _etext -e _edata /proc/kallsyms
-  c0000000 T _stext
-  c08b8000 D _etext
-
-  So there is no _edata and _etext is not text
-
-  $ ppc-linux-objdump -x vmlinux | grep -e _stext -e _etext -e _edata
-  c0000000 g       .head.text	00000000 _stext
-  c08b8000 g       .rodata	00000000 _etext
-  c1378000 g       .sbss	00000000 _edata
- ---
-
-Fixes: ed9adb2035b5be58 ("perf machine: Read also the end of the kernel")
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Adrian Hunter <adrian.hunter@intel.com>
-Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
-Cc: Ian Rogers <irogers@google.com>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Jiri Olsa <jolsa@kernel.org>
-Cc: Kan Liang <kan.liang@linux.intel.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Mark Rutland <mark.rutland@arm.com>
-Cc: Namhyung Kim <namhyung@kernel.org>
-Cc: Peter Zijlstra <peterz@infradead.org>
-Cc: Song Liu <songliubraving@fb.com>
-Link: https://lore.kernel.org/r/b3ee1994d95257cb7f2de037c5030ba7d1bed404.1736327613.git.christophe.leroy@csgroup.eu
-Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Fixes: 9d9f204bdf7243bf ("genirq/proc: Add missing space separator back")
+Signed-off-by: Geert Uytterhoeven <geert+renesas@glider.be>
 ---
- tools/perf/util/machine.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/sysdev/fsl_msi.c          | 2 +-
+ drivers/bus/moxtet.c                   | 2 +-
+ drivers/irqchip/irq-partition-percpu.c | 2 +-
+ drivers/soc/qcom/smp2p.c               | 2 +-
+ 4 files changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/tools/perf/util/machine.c b/tools/perf/util/machine.c
-index 7c6874804660e..e2a6facd1c4e2 100644
---- a/tools/perf/util/machine.c
-+++ b/tools/perf/util/machine.c
-@@ -1217,7 +1217,7 @@ static int machine__get_running_kernel_start(struct machine *machine,
+diff --git a/arch/powerpc/sysdev/fsl_msi.c b/arch/powerpc/sysdev/fsl_msi.c
+index 1aa0cb097c9c9d7c..7b9a5ea9cad9d3c7 100644
+--- a/arch/powerpc/sysdev/fsl_msi.c
++++ b/arch/powerpc/sysdev/fsl_msi.c
+@@ -75,7 +75,7 @@ static void fsl_msi_print_chip(struct irq_data *irqd, struct seq_file *p)
+ 	srs = (hwirq >> msi_data->srs_shift) & MSI_SRS_MASK;
+ 	cascade_virq = msi_data->cascade_array[srs]->virq;
  
- 	err = kallsyms__get_symbol_start(filename, "_edata", &addr);
- 	if (err)
--		err = kallsyms__get_function_start(filename, "_etext", &addr);
-+		err = kallsyms__get_symbol_start(filename, "_etext", &addr);
- 	if (!err)
- 		*end = addr;
+-	seq_printf(p, " fsl-msi-%d", cascade_virq);
++	seq_printf(p, "fsl-msi-%d", cascade_virq);
+ }
  
+ 
+diff --git a/drivers/bus/moxtet.c b/drivers/bus/moxtet.c
+index 6276551d79680e85..1e57ebfb76229aa0 100644
+--- a/drivers/bus/moxtet.c
++++ b/drivers/bus/moxtet.c
+@@ -657,7 +657,7 @@ static void moxtet_irq_print_chip(struct irq_data *d, struct seq_file *p)
+ 
+ 	id = moxtet->modules[pos->idx];
+ 
+-	seq_printf(p, " moxtet-%s.%i#%i", mox_module_name(id), pos->idx,
++	seq_printf(p, "moxtet-%s.%i#%i", mox_module_name(id), pos->idx,
+ 		   pos->bit);
+ }
+ 
+diff --git a/drivers/irqchip/irq-partition-percpu.c b/drivers/irqchip/irq-partition-percpu.c
+index 8e76d2913e6bebbf..4441ffe149ea0d96 100644
+--- a/drivers/irqchip/irq-partition-percpu.c
++++ b/drivers/irqchip/irq-partition-percpu.c
+@@ -98,7 +98,7 @@ static void partition_irq_print_chip(struct irq_data *d, struct seq_file *p)
+ 	struct irq_chip *chip = irq_desc_get_chip(part->chained_desc);
+ 	struct irq_data *data = irq_desc_get_irq_data(part->chained_desc);
+ 
+-	seq_printf(p, " %5s-%lu", chip->name, data->hwirq);
++	seq_printf(p, "%5s-%lu", chip->name, data->hwirq);
+ }
+ 
+ static struct irq_chip partition_irq_chip = {
+diff --git a/drivers/soc/qcom/smp2p.c b/drivers/soc/qcom/smp2p.c
+index 4783ab1adb8d953b..a3e88ced328a91f1 100644
+--- a/drivers/soc/qcom/smp2p.c
++++ b/drivers/soc/qcom/smp2p.c
+@@ -365,7 +365,7 @@ static void smp2p_irq_print_chip(struct irq_data *irqd, struct seq_file *p)
+ {
+ 	struct smp2p_entry *entry = irq_data_get_irq_chip_data(irqd);
+ 
+-	seq_printf(p, " %8s", dev_name(entry->smp2p->dev));
++	seq_printf(p, "%8s", dev_name(entry->smp2p->dev));
+ }
+ 
+ static struct irq_chip smp2p_irq_chip = {
 -- 
-2.39.5
-
-
+2.43.0
 
 
