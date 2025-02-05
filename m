@@ -1,57 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-5860-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5861-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A387C02194
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2025 10:01:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D3C0C02192
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2025 10:20:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YnwkH6vYXz2yvs;
-	Wed,  5 Feb 2025 21:01:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738749703;
-	cv=none; b=bQmY0UTMA/BQrGDBiYcEHN2Po8IQM7jIpvuSe6VPHlNa/duLGIxyKp8Bno0UVWzWv67HdpaA0owgMr934rVJ4za37XMkzV53tVWorQGiDqnmExDmAqEpP7oRsMQ6EAczF8k4b4DU5CZp5yP2K8wzXHBk8Jy5RY5lb+JuGef5uti15yhSga5miB6xfORezVixRTfW6tmOC0Pg6l0TwcPHchVbJDv0GlNBKoju4gnMAvWqF+JJqoaRqp9Ngqfqh2iNhxBwEc78HUmGMRwFOBXX5lVFgaFgNI07TAVacFPsvFynxZXJft3IgicRLsPg8/YYbEi3SwMb3Q/dQBQaYZMrGQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ynx7X4wBMz2yvv;
+	Wed,  5 Feb 2025 21:20:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738750808;
+	cv=none; b=OueNCQLE55ddLJ1rhiZSBNU5RyhrwaKE2xOmfJGWjQEx7PsrKEfRBN9CLRgK/eO6Yo6ES8hiYMiW0pO3atsf+pIV3hT3ZyKVnmZRSoWP3d8LSyabR3BwIK1q7++kZr7SnClDx66xNhdGjMuEYrAQjNGgJwbOwYp0C/O22LiWuqLPUOgqU1lyCUjinqd7Qo8xF5NdC0LJMEIk1EdrtK6QQ7dGoVE6Pyxx04D3OIkakKlTOtxc7QDWv8Vef2upfNW0FJ5J4VOkpe77ODqLmFIDTtEkR+/1gasrtkcpyh5Zuv7xM6sWi0qNYrL7SoUDCd0/ZHGjjTDdmdKly/vTfiJDAw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738749703; c=relaxed/relaxed;
-	bh=rmZQTxMDm0TWEQC6Sb4VCa8/8KLqxODBUuE5383WBS4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=inV+xo0YkCCSFb4znOh6bE+tlMduSZnecc7/2QWGyjzkJT/EJOPMcazgaMFJDCep3x0fThTKyFqXoE/lzQ5Iz0tDSA588g8xMVjjCHMPKLe2BOM/RvwwDWqIrcokp1VII3fSefKeaOJrB49WM1JAsHSbefuzPd6aOgD1jEN5PfKaSnZyfB1ajVZ7UdTSBXe5ap8LbVUuWWqYioSpX5XSIy0BQ6YPFgo+J/+SQADfA1KIXEXR7AHBOClrpfkE1jbdPeXBE3x0+eBGOJkCTmCJzQdLYGpifzFSNyNI7e4OM1faGvMR6+WIaXBhlF17Tz0GLWNo24BFdROFED9Rk6Z9vA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YnwkG5jwLz2yHL
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2025 21:01:41 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8085111FB;
-	Wed,  5 Feb 2025 02:01:32 -0800 (PST)
-Received: from J2N7QTR9R3 (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 648383F5A1;
-	Wed,  5 Feb 2025 02:01:04 -0800 (PST)
-Date: Wed, 5 Feb 2025 10:01:01 +0000
-From: Mark Rutland <mark.rutland@arm.com>
-To: Anshuman Khandual <anshuman.khandual@arm.com>
-Cc: linux-mm@kvack.org, steven.price@arm.com, christophe.leroy@csgroup.eu,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Jonathan Corbet <corbet@lwn.net>,
-	Marc Zyngier <maz@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
+	t=1738750808; c=relaxed/relaxed;
+	bh=UmRS0TQ9cmsMW3/S89e4rLuoWMYkTd9SH2ZKjN67w7k=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aW6irvKIGpc4v0E94xCVDxO0kHbBJa6SqGBhu8l64xStVCZglke/JJSEnK7cGbZxdYk3D5BMKa+vSp3aEwsUTg8pWKVR4qIsZxjk0crfix66gvK6mApUjLUkzOi0h0Rd5m9Vt/+hLcHbIZNlaMeqz2Ri4Z9jaGoNNek5LpveZsqXSL/9nHaHbdd1/hmW6Pswf3peZTyOk6bg9oJUGxHiQQyoQ1rashpK42CfgIAKYrwxsU3GRuT/7sQbjKXNHDxZggxe7dFnggxidEM65LetFQKJzoFBp6oZKGCpnAc3hZK1gL4PPqYL42mSwU4ptT08a2ZMS8d6QBT9NCpgEPFZDw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ynx7V5fr3z2yhG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2025 21:20:06 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4YnwZ26rWfz9sRy;
+	Wed,  5 Feb 2025 10:54:34 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id M-KKv11BQlIr; Wed,  5 Feb 2025 10:54:34 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4YnwZ25znhz9sRs;
+	Wed,  5 Feb 2025 10:54:34 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id BE9F78B765;
+	Wed,  5 Feb 2025 10:54:34 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id wXrCb1ZKHXqu; Wed,  5 Feb 2025 10:54:34 +0100 (CET)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.138])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8F3188B763;
+	Wed,  5 Feb 2025 10:54:34 +0100 (CET)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org
-Subject: Re: [PATCH V2] mm/ptdump: Drop GENERIC_PTDUMP
-Message-ID: <Z6M23dR5wvZKW4JE@J2N7QTR9R3>
-References: <20250205050039.1506377-1-anshuman.khandual@arm.com>
+	Naveen N Rao <naveen@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/time: Define div128_by_32() static and __init
+Date: Wed,  5 Feb 2025 10:54:26 +0100
+Message-ID: <50810349bf1eee378fbeab72a36e4b6553a60c3d.1738749246.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.47.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,133 +66,138 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250205050039.1506377-1-anshuman.khandual@arm.com>
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1738749266; l=4498; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=f/KudvDb/LpLUE7WgOFEb5XQshqKSdc0rKHj8lp4Q8E=; b=cdqu6OPzHtRCATddCKCHRp6u+8nN0lIO6F+X99psIAbZ/S3lfy5pCsRzy+0ofVOA68tymV2yF aZjsgJYAF58CWUpPiuDyr1MtZMZwQXNGPHao31ikXSlkOeuWK+kUjP8
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 
-On Wed, Feb 05, 2025 at 10:30:39AM +0530, Anshuman Khandual wrote:
-> GENERIC_PTDUMP does not guard any code but instead just used for platform's
-> subscription into core ptdump defined under PTDUMP_CORE, which is selected.
+div128_by_32() used to be called from outside time.c in the old days
+but since v2.6.15 it hasn't been used outside time.c
 
-Selected by what?
+$ git grep div128_by_32 v2.6.14
+v2.6.14:arch/ppc64/kernel/iSeries_setup.c:	div128_by_32(1024 * 1024, 0, tb_ticks_per_sec, &divres);
+v2.6.14:arch/ppc64/kernel/pmac_time.c:	div128_by_32( 1024*1024, 0, tb_ticks_per_sec, &divres );
+v2.6.14:arch/ppc64/kernel/time.c:				div128_by_32( XSEC_PER_SEC, 0, tb_ticks_per_sec, &divres );
+v2.6.14:arch/ppc64/kernel/time.c:	div128_by_32(1024*1024, 0, tb_ticks_per_sec, &divres);
+v2.6.14:arch/ppc64/kernel/time.c:	div128_by_32(1000000000, 0, tb_ticks_per_sec, &res);
+v2.6.14:arch/ppc64/kernel/time.c:	div128_by_32( 1024*1024, 0, new_tb_ticks_per_sec, &divres );
+v2.6.14:arch/ppc64/kernel/time.c:void div128_by_32( unsigned long dividend_high, unsigned long dividend_low,
+v2.6.14:include/asm-ppc64/time.h:void div128_by_32( unsigned long dividend_high, unsigned long dividend_low,
 
-> Instead use PTDUMP_CORE for platform subscription and drop GENERIC_PTDUMP.
-> Cc: Catalin Marinas <catalin.marinas@arm.com>
-> Cc: Will Deacon <will@kernel.org>
-> Cc: Jonathan Corbet <corbet@lwn.net>
-> Cc: Marc Zyngier <maz@kernel.org>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: Paul Walmsley <paul.walmsley@sifive.com>
-> Cc: Palmer Dabbelt <palmer@dabbelt.com>
-> Cc: Heiko Carstens <hca@linux.ibm.com>
-> Cc: Vasily Gorbik <gor@linux.ibm.com>
-> Cc: Thomas Gleixner <tglx@linutronix.de>
-> Cc: Ingo Molnar <mingo@redhat.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: linux-arm-kernel@lists.infradead.org
-> Cc: linux-doc@vger.kernel.org
-> Cc: linux-kernel@vger.kernel.org
-> Cc: kvmarm@lists.linux.dev
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-riscv@lists.infradead.org
-> Cc: linux-s390@vger.kernel.org
-> Cc: linux-mm@kvack.org
-> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
-> ---
-> This patch applies on v6.14-rc1
-> 
-> Changes in V2:
-> 
-> - Keep arch/powerpc/Kconfig alphabetically sorted per Christophe
-> 
-> Changes in V1:
-> 
-> https://lore.kernel.org/all/20241217034807.2541349-1-anshuman.khandual@arm.com/
-> 
->  Documentation/arch/arm64/ptdump.rst       | 1 -
->  arch/arm64/Kconfig                        | 2 +-
->  arch/arm64/kvm/Kconfig                    | 3 +--
->  arch/powerpc/Kconfig                      | 2 +-
->  arch/powerpc/configs/mpc885_ads_defconfig | 1 -
->  arch/riscv/Kconfig                        | 2 +-
->  arch/s390/Kconfig                         | 2 +-
->  arch/x86/Kconfig                          | 2 +-
->  arch/x86/Kconfig.debug                    | 2 +-
->  kernel/configs/debug.config               | 1 -
->  mm/Kconfig.debug                          | 8 ++------
->  11 files changed, 9 insertions(+), 17 deletions(-)
-> 
-> diff --git a/Documentation/arch/arm64/ptdump.rst b/Documentation/arch/arm64/ptdump.rst
-> index 5dcfc5d7cddf..61ca040a885b 100644
-> --- a/Documentation/arch/arm64/ptdump.rst
-> +++ b/Documentation/arch/arm64/ptdump.rst
-> @@ -22,7 +22,6 @@ offlining of memory being accessed by the ptdump code.
->  In order to dump the kernel page tables, enable the following
->  configurations and mount debugfs::
->  
-> - CONFIG_GENERIC_PTDUMP=y
->   CONFIG_PTDUMP_CORE=y
->   CONFIG_PTDUMP_DEBUGFS=y
->  
-> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-> index fcdd0ed3eca8..1f516bed81dd 100644
-> --- a/arch/arm64/Kconfig
-> +++ b/arch/arm64/Kconfig
-> @@ -157,7 +157,7 @@ config ARM64
->  	select GENERIC_IRQ_SHOW_LEVEL
->  	select GENERIC_LIB_DEVMEM_IS_ALLOWED
->  	select GENERIC_PCI_IOMAP
-> -	select GENERIC_PTDUMP
-> +	select PTDUMP_CORE
->  	select GENERIC_SCHED_CLOCK
->  	select GENERIC_SMP_IDLE_THREAD
->  	select GENERIC_TIME_VSYSCALL
+$ git grep div128_by_32 v2.6.15
+v2.6.15:arch/powerpc/kernel/time.c:				div128_by_32( XSEC_PER_SEC, 0, tb_ticks_per_sec, &divres );
+v2.6.15:arch/powerpc/kernel/time.c:	div128_by_32(1024*1024, 0, tb_ticks_per_sec, &res);
+v2.6.15:arch/powerpc/kernel/time.c:	div128_by_32(1000000000, 0, tb_ticks_per_sec, &res);
+v2.6.15:arch/powerpc/kernel/time.c:	div128_by_32(1024*1024, 0, new_tb_ticks_per_sec, &divres);
+v2.6.15:arch/powerpc/kernel/time.c:void div128_by_32(u64 dividend_high, u64 dividend_low,
+v2.6.15:include/asm-powerpc/time.h:extern void div128_by_32(u64 dividend_high, u64 dividend_low,
 
-This change means that the ptdump core code will be built regardless of
-whether any users are selected:
+Move it above its only caller which is time_init() and define it
+static and __init.
 
-  [mark@lakrids:~/src/linux]% git grep CONFIG_PTDUMP_CORE
-  Documentation/arch/arm64/ptdump.rst: CONFIG_PTDUMP_CORE=y
-  arch/arm64/include/asm/ptdump.h:#ifdef CONFIG_PTDUMP_CORE
-  arch/arm64/include/asm/ptdump.h:#endif /* CONFIG_PTDUMP_CORE */
-  arch/arm64/mm/Makefile:obj-$(CONFIG_PTDUMP_CORE)        += ptdump.o
-  arch/powerpc/mm/Makefile:obj-$(CONFIG_PTDUMP_CORE)      += ptdump/
-  arch/riscv/mm/Makefile:obj-$(CONFIG_PTDUMP_CORE) += ptdump.o
-  arch/s390/mm/Makefile:obj-$(CONFIG_PTDUMP_CORE) += dump_pagetables.o
-  arch/x86/mm/Makefile:obj-$(CONFIG_PTDUMP_CORE)  += dump_pagetables.o
-  mm/Makefile:obj-$(CONFIG_PTDUMP_CORE) += ptdump.o
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/time.h |  3 --
+ arch/powerpc/kernel/time.c      | 65 ++++++++++++++++-----------------
+ 2 files changed, 32 insertions(+), 36 deletions(-)
 
-GENERIC_PTDUMP means "this architecture uses generic ptdump code for
-ptdump", i.e. the architecture implements all the necessary bits for
-that to work *IF* it is built.
+diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
+index 9bdd8080299b..f8885586efaf 100644
+--- a/arch/powerpc/include/asm/time.h
++++ b/arch/powerpc/include/asm/time.h
+@@ -89,9 +89,6 @@ static inline unsigned long tb_ticks_since(unsigned long tstamp)
+ #define mulhdu(x, y)	mul_u64_u64_shr(x, y, 64)
+ #endif
+ 
+-extern void div128_by_32(u64 dividend_high, u64 dividend_low,
+-			 unsigned divisor, struct div_result *dr);
+-
+ extern void secondary_cpu_time_init(void);
+ extern void __init time_init(void);
+ 
+diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
+index 0727332ad86f..0be53642501b 100644
+--- a/arch/powerpc/kernel/time.c
++++ b/arch/powerpc/kernel/time.c
+@@ -901,6 +901,38 @@ void secondary_cpu_time_init(void)
+ 	register_decrementer_clockevent(smp_processor_id());
+ }
+ 
++/*
++ * Divide a 128-bit dividend by a 32-bit divisor, leaving a 128 bit
++ * result.
++ */
++static __init void div128_by_32(u64 dividend_high, u64 dividend_low,
++				unsigned int divisor, struct div_result *dr)
++{
++	unsigned long a, b, c, d;
++	unsigned long w, x, y, z;
++	u64 ra, rb, rc;
++
++	a = dividend_high >> 32;
++	b = dividend_high & 0xffffffff;
++	c = dividend_low >> 32;
++	d = dividend_low & 0xffffffff;
++
++	w = a / divisor;
++	ra = ((u64)(a - (w * divisor)) << 32) + b;
++
++	rb = ((u64)do_div(ra, divisor) << 32) + c;
++	x = ra;
++
++	rc = ((u64)do_div(rb, divisor) << 32) + d;
++	y = rb;
++
++	do_div(rc, divisor);
++	z = rc;
++
++	dr->result_high = ((u64)w << 32) + x;
++	dr->result_low  = ((u64)y << 32) + z;
++}
++
+ /* This function is only called on the boot processor */
+ void __init time_init(void)
+ {
+@@ -974,39 +1006,6 @@ void __init time_init(void)
+ 	enable_sched_clock_irqtime();
+ }
+ 
+-/*
+- * Divide a 128-bit dividend by a 32-bit divisor, leaving a 128 bit
+- * result.
+- */
+-void div128_by_32(u64 dividend_high, u64 dividend_low,
+-		  unsigned divisor, struct div_result *dr)
+-{
+-	unsigned long a, b, c, d;
+-	unsigned long w, x, y, z;
+-	u64 ra, rb, rc;
+-
+-	a = dividend_high >> 32;
+-	b = dividend_high & 0xffffffff;
+-	c = dividend_low >> 32;
+-	d = dividend_low & 0xffffffff;
+-
+-	w = a / divisor;
+-	ra = ((u64)(a - (w * divisor)) << 32) + b;
+-
+-	rb = ((u64) do_div(ra, divisor) << 32) + c;
+-	x = ra;
+-
+-	rc = ((u64) do_div(rb, divisor) << 32) + d;
+-	y = rb;
+-
+-	do_div(rc, divisor);
+-	z = rc;
+-
+-	dr->result_high = ((u64)w << 32) + x;
+-	dr->result_low  = ((u64)y << 32) + z;
+-
+-}
+-
+ /* We don't need to calibrate delay, we use the CPU timebase for that */
+ void calibrate_delay(void)
+ {
+-- 
+2.47.0
 
-PTDUMP_CORE means "actually build the core ptdump code".
-
-If everyone uses the generic ptdump code now, maybe it's worth renaming
-GENERIC_PTDUMP to ARCH_HAS_PTDUMP or something like that, but I don't
-think this change makes sense as-is.
-
-[...]
-
-> diff --git a/kernel/configs/debug.config b/kernel/configs/debug.config
-> index 20552f163930..8aafd050b754 100644
-> --- a/kernel/configs/debug.config
-> +++ b/kernel/configs/debug.config
-> @@ -73,7 +73,6 @@ CONFIG_DEBUG_VM=y
->  CONFIG_DEBUG_VM_PGFLAGS=y
->  CONFIG_DEBUG_VM_RB=y
->  CONFIG_DEBUG_VM_VMACACHE=y
-> -CONFIG_GENERIC_PTDUMP=y
->  CONFIG_KASAN=y
->  CONFIG_KASAN_GENERIC=y
->  CONFIG_KASAN_INLINE=y
-
-I think this is wrong today, and removing it is the right thing to do.
-
-Architectures with support will select this themselves, and on
-architectures without support this either does nothing or causes a build
-failure.
-
-Mark.
 
