@@ -1,71 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-5868-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5869-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD403C02192
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2025 14:31:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1828C02192
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2025 14:32:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yp2jc23qrz3013;
-	Thu,  6 Feb 2025 01:31:32 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yp2km437cz301n;
+	Thu,  6 Feb 2025 01:32:32 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738765892;
-	cv=none; b=mqOtCVXWIhj/GGt6t4gI8uZ9TSHN4BwDXdSqmwFSdVA4XLD1L8NwiheivSl0dZy2dyli9Ybc5UISopVpHi+5BpDi0xQP9LPcerUq8nfYzzrp23lAi3nAEOz2X2dhbcNAGWETElRhbr2mzcHYUrklC2TS/is/2uPnmdxCYEzOdDoixrtDGW4Gb7ER043Fi2+x4aiHn7sHKgkX+PL0pHoMKCTE0z/jV+qXPsjSR5DdV/ItA+lY76ZCaS2n8qmQv75xIza+Qw2kKyw5N+W4F0uN3p8Bb/7LSJJAWbYIBM/MMqHcUTfjss3PWc9idv5TAr1kmh0jkSJQwmXE/liMBkj89Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738765952;
+	cv=none; b=hW+CGnlLoWtF8dRJLE/Bp0BLEzr113lmUwX/jJ3ziaZkMwVJv8U/HXG37dWL2zVlIkEK9f7bsRpJWpZsWqRC5P3l/MF2GDv4+E19qKVVnLARqe0llbUCaa4XnxS9AHYQ5UFLnW3ejKKRl3Dw3Lf29Kje1KdXOuT7FexMVGxRX+tVXFPtvAfHZxpaz0JFWm93/03GXuQsqCZRY6csFnVpgnywUHnd+gpwS1nr97uOms0+zAeARCn8guakZ6Q2/NNJtI5r7d6oDaL+9h3Mz8olpP+Hpas3ZslkJ9Sv3Oc9VRc71X2ytB+w3AV1DtCVV279YFpz0g5oL436HL6SD7UTNQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738765892; c=relaxed/relaxed;
-	bh=i6kHd7wpWMdNgzHRU81o3c8WeS710W5wrzyYmaB3fD8=;
+	t=1738765952; c=relaxed/relaxed;
+	bh=DLWeFdsIBCDsf+zlj+hs/bqANgug7c5/K20RtzlHSeU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=C6QY8GB0M29MInbecnPIYUI4qWAKP1ToYknDWalamRUeVtbouZ3p7UKWX1JKXb/49AmT9cgk8YaRzlrtREdkhzSkg5R4NOt1JvwCP624UoxsjbAmQFHoGycbv1y6vC4lnn2Rk0B7E3A907ktS3DL7WqAl0aSE8nMovU0IU1VFe+3QAUX/YLVOfKsU4oeijJMmLrKHDe9Jzb6pRNmgiThe0plk2g9lOEnKNe1i1yvq2awkGNzZtLmXMDtUHuSGqviHOQO88oKrPNE7b8z20z+ZREqNPjWLDl9JU8DzbCsZggCXbJUGqoGBdD83aE2i4NoKKMWWPgqeBebrUs/LOWZwA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=X9d+FXZr; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+	 MIME-Version; b=EjEkPxKsj1CePJQSwL/3QVoYG/nhuICzjUW2kNezgZYZKazCQaDDlbVmE64h1vlkqdQtONk458iDRuT7L2k58GE6pja/SKk0RpRa7ASTVMx3cve1FUhGPbr2/YqdlH6BWh6dYajcqY2FEleOHv7HnjAB1AED1HZkVlLjepg0WaoMfz41VjCKDVcFLzeP6TTrjxr6SGoclg/iPvyDBixrxMblbRNfOzUaDn47twcgNSyiXjKkw3ytk/8NpioLzgRTz00Ex6bUh4qruijB6xHm2GIyy7mgqxKtAUHPtNBngkZ6sLGp2Zk7X4Nbjh3CTKhbItjmvV7oLvPIHfN0LOuE2A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=kfHFbtYO; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=X9d+FXZr;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=kfHFbtYO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yp2jb36HSz2ydW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2025 01:31:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yp2kl4ScNz2xjd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2025 01:32:31 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 18E085C5C58;
-	Wed,  5 Feb 2025 14:30:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id DB6C0C4CED1;
-	Wed,  5 Feb 2025 14:31:26 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 051CF5C5C32;
+	Wed,  5 Feb 2025 14:31:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7D8FC4CED1;
+	Wed,  5 Feb 2025 14:32:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1738765887;
-	bh=nSU1N/H7Kbw4NWQWtDGR2D+RngV5y/67tsTzqxG2RQQ=;
+	s=korg; t=1738765949;
+	bh=sgg1ktQLV5/V2rSwnYMaMJmvjkWDMlls7oM0dhDcbhA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=X9d+FXZrRh8SRtZt5l77axtbpK/UpnirP/YGmW0VcLN2Fv+YZ3+9tRA36J+yXg93J
-	 rXyZB58EAMg4VnA+S2j2kuwcOpVjkM7gq9tKAqVVThOWQSPrfzppAIGWEcgT+YQdND
-	 UARy21Y+KJqlr6P5jt1/e8RqDYEzrxjbbxFDuJ+Y=
+	b=kfHFbtYOA3WDuH9jfQ14Ql1+E0q9FZW66bR3nF0pjyYx9ZItcCUrV29O5gRJQ00eS
+	 ro07cHxikyK3KTcciH7tcml4Zaz4lPbvk/GTtrDQUMUrUIP5uxe+zjXGhwyldzTQIQ
+	 XEK8V/R4KVyZPs9EZW5udwsWymsil9tXgZL5+8U8=
 From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 To: stable@vger.kernel.org
 Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 	patches@lists.linux.dev,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Helge Deller <deller@gmx.de>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Naveen N Rao <naveen@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
-	linux-parisc@vger.kernel.org,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Ian Rogers <irogers@google.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	Jiri Olsa <jolsa@kernel.org>,
+	Kan Liang <kan.liang@linux.intel.com>,
 	linuxppc-dev@lists.ozlabs.org,
-	Sergey Senozhatsky <senozhatsky@chromium.org>,
-	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	Petr Pavlu <petr.pavlu@suse.com>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Song Liu <songliubraving@fb.com>,
+	Arnaldo Carvalho de Melo <acme@redhat.com>,
 	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 6.6 309/393] module: Extend the preempt disabled section in dereference_symbol_descriptor().
-Date: Wed,  5 Feb 2025 14:43:48 +0100
-Message-ID: <20250205134432.131530756@linuxfoundation.org>
+Subject: [PATCH 6.12 270/590] perf machine: Dont ignore _etext when not a text symbol
+Date: Wed,  5 Feb 2025 14:40:25 +0100
+Message-ID: <20250205134505.603797915@linuxfoundation.org>
 X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250205134420.279368572@linuxfoundation.org>
-References: <20250205134420.279368572@linuxfoundation.org>
+In-Reply-To: <20250205134455.220373560@linuxfoundation.org>
+References: <20250205134455.220373560@linuxfoundation.org>
 User-Agent: quilt/0.68
 X-stable: review
 X-Patchwork-Hint: ignore
@@ -83,60 +82,70 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-6.6-stable review patch.  If anyone has any objections, please let me know.
+6.12-stable review patch.  If anyone has any objections, please let me know.
 
 ------------------
 
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-[ Upstream commit a145c848d69f9c6f32008d8319edaa133360dd74 ]
+[ Upstream commit 7a93786c306296f15e728b1dbd949a319e4e3d19 ]
 
-dereference_symbol_descriptor() needs to obtain the module pointer
-belonging to pointer in order to resolve that pointer.
-The returned mod pointer is obtained under RCU-sched/ preempt_disable()
-guarantees and needs to be used within this section to ensure that the
-module is not removed in the meantime.
+Depending on how vmlinux.lds is written, _etext might be the very first
+data symbol instead of the very last text symbol.
 
-Extend the preempt_disable() section to also cover
-dereference_module_function_descriptor().
+Don't require it to be a text symbol, accept any symbol type.
 
-Fixes: 04b8eb7a4ccd9 ("symbol lookup: introduce dereference_symbol_descriptor()")
-Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Helge Deller <deller@gmx.de>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Naveen N Rao <naveen@kernel.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: linux-parisc@vger.kernel.org
+Comitter notes:
+
+See the first Link for further discussion, but it all boils down to
+this:
+
+ ---
+  # grep -e _stext -e _etext -e _edata /proc/kallsyms
+  c0000000 T _stext
+  c08b8000 D _etext
+
+  So there is no _edata and _etext is not text
+
+  $ ppc-linux-objdump -x vmlinux | grep -e _stext -e _etext -e _edata
+  c0000000 g       .head.text	00000000 _stext
+  c08b8000 g       .rodata	00000000 _etext
+  c1378000 g       .sbss	00000000 _edata
+ ---
+
+Fixes: ed9adb2035b5be58 ("perf machine: Read also the end of the kernel")
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Adrian Hunter <adrian.hunter@intel.com>
+Cc: Alexander Shishkin <alexander.shishkin@linux.intel.com>
+Cc: Ian Rogers <irogers@google.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Jiri Olsa <jolsa@kernel.org>
+Cc: Kan Liang <kan.liang@linux.intel.com>
 Cc: linuxppc-dev@lists.ozlabs.org
-Reviewed-by: Sergey Senozhatsky <senozhatsky@chromium.org>
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Link: https://lore.kernel.org/r/20250108090457.512198-2-bigeasy@linutronix.de
-Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
+Cc: Mark Rutland <mark.rutland@arm.com>
+Cc: Namhyung Kim <namhyung@kernel.org>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Song Liu <songliubraving@fb.com>
+Link: https://lore.kernel.org/r/b3ee1994d95257cb7f2de037c5030ba7d1bed404.1736327613.git.christophe.leroy@csgroup.eu
+Signed-off-by: Arnaldo Carvalho de Melo <acme@redhat.com>
 Signed-off-by: Sasha Levin <sashal@kernel.org>
 ---
- include/linux/kallsyms.h | 2 +-
+ tools/perf/util/machine.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-index c3f075e8f60cb..1c6a6c1704d8d 100644
---- a/include/linux/kallsyms.h
-+++ b/include/linux/kallsyms.h
-@@ -57,10 +57,10 @@ static inline void *dereference_symbol_descriptor(void *ptr)
+diff --git a/tools/perf/util/machine.c b/tools/perf/util/machine.c
+index 27d5345d2b307..9be2f4479f525 100644
+--- a/tools/perf/util/machine.c
++++ b/tools/perf/util/machine.c
+@@ -1003,7 +1003,7 @@ static int machine__get_running_kernel_start(struct machine *machine,
  
- 	preempt_disable();
- 	mod = __module_address((unsigned long)ptr);
--	preempt_enable();
+ 	err = kallsyms__get_symbol_start(filename, "_edata", &addr);
+ 	if (err)
+-		err = kallsyms__get_function_start(filename, "_etext", &addr);
++		err = kallsyms__get_symbol_start(filename, "_etext", &addr);
+ 	if (!err)
+ 		*end = addr;
  
- 	if (mod)
- 		ptr = dereference_module_function_descriptor(mod, ptr);
-+	preempt_enable();
- #endif
- 	return ptr;
- }
 -- 
 2.39.5
 
