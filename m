@@ -1,88 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-5867-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5868-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53F7FC02194
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2025 14:29:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD403C02192
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2025 14:31:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yp2gH6Gmfz2yyx;
-	Thu,  6 Feb 2025 01:29:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.67.36.66
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738765771;
-	cv=none; b=iezxOuG1y3op+0dw0CWfAcn29PyOzncAprH8RVcitHUi32OePVrQfDJL8t240TczHI7apBPh2liNbAROvSqevAGkODxqPpJpgRL42O6aZw3LM1y+6k4oVsb+37Bou2/uXfAuFn9Igi6gYkQdfEjD84E+JgsHQlUqgPJDOsDeyPGqb2JFUXu/nwNTtmu8rEZDC/7ewpNEmrQoTINTldZaLPbBffWpEmRQlVjHlN41bqhjU2DmY7DW+a4dSmVeILFEW0UHUehxD9D/Rw0+1FJrmW3WlnYZMmXjLWq/10jcrO6SM4x9wnIviOB1Td0wj5xxtTxe7WUOnzOikGc6cZonzA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yp2jc23qrz3013;
+	Thu,  6 Feb 2025 01:31:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738765892;
+	cv=none; b=mqOtCVXWIhj/GGt6t4gI8uZ9TSHN4BwDXdSqmwFSdVA4XLD1L8NwiheivSl0dZy2dyli9Ybc5UISopVpHi+5BpDi0xQP9LPcerUq8nfYzzrp23lAi3nAEOz2X2dhbcNAGWETElRhbr2mzcHYUrklC2TS/is/2uPnmdxCYEzOdDoixrtDGW4Gb7ER043Fi2+x4aiHn7sHKgkX+PL0pHoMKCTE0z/jV+qXPsjSR5DdV/ItA+lY76ZCaS2n8qmQv75xIza+Qw2kKyw5N+W4F0uN3p8Bb/7LSJJAWbYIBM/MMqHcUTfjss3PWc9idv5TAr1kmh0jkSJQwmXE/liMBkj89Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738765771; c=relaxed/relaxed;
-	bh=o7SSsQlWsrss/UCQ1/IqoEaMcm37gC+GF0xSYADmnHw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LtRIzaKVIG+LnP4fQ5FAu/AlbDQYlcyT7HJZ0+uDO2MbpeKD3NYwL3yX/2Qp/JAqAZHOFwEcdKbs6i6kH0lAuSjrZcMSx9cLy/928b2ExRzRnFmVwMfLkwDJhtBOhyAypt8tCFK9cTP2Eioe9kNwlU0JhG7+6c9hkIlluWE2OYa09ozi6BkCOmi1FImuzkAoqMrmkbLAbLAbLU23ZZrrjX+qA5Pdys3XGVvXVTLfxbdgygQrltfq/8LJvbRZ58bE4Bdk9Xg25Z+x1r9Dwq69sLoqTZfP4NI6j1HDmHik/tSTLmqtzyiEVyWttIeLhSqOGWTsepo6czmeBGpXZVqMhQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net; dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=PACWVV/B; dkim-atps=neutral; spf=pass (client-ip=185.67.36.66; helo=mout02.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org) smtp.mailfrom=posteo.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net
+	t=1738765892; c=relaxed/relaxed;
+	bh=i6kHd7wpWMdNgzHRU81o3c8WeS710W5wrzyYmaB3fD8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=C6QY8GB0M29MInbecnPIYUI4qWAKP1ToYknDWalamRUeVtbouZ3p7UKWX1JKXb/49AmT9cgk8YaRzlrtREdkhzSkg5R4NOt1JvwCP624UoxsjbAmQFHoGycbv1y6vC4lnn2Rk0B7E3A907ktS3DL7WqAl0aSE8nMovU0IU1VFe+3QAUX/YLVOfKsU4oeijJMmLrKHDe9Jzb6pRNmgiThe0plk2g9lOEnKNe1i1yvq2awkGNzZtLmXMDtUHuSGqviHOQO88oKrPNE7b8z20z+ZREqNPjWLDl9JU8DzbCsZggCXbJUGqoGBdD83aE2i4NoKKMWWPgqeBebrUs/LOWZwA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=X9d+FXZr; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=PACWVV/B;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=X9d+FXZr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=posteo.net (client-ip=185.67.36.66; helo=mout02.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org)
-Received: from mout02.posteo.de (mout02.posteo.de [185.67.36.66])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yp2gD4lxDz2ydW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2025 01:29:27 +1100 (AEDT)
-Received: from submission (posteo.de [185.67.36.169]) 
-	by mout02.posteo.de (Postfix) with ESMTPS id B58A7240101
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2025 15:29:21 +0100 (CET)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=posteo.net; s=2017;
-	t=1738765761; bh=e42SIVOUhhbdor72mrNuSIArnji9rVNQMG+KjSfReLQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:Content-Transfer-Encoding:From;
-	b=PACWVV/B2zEXa/3zM3iFyWGMCvq1ep2tJrc4lnPcQd3vMa6GfKW9yWUGJflhWkzB6
-	 mdwFgQnP74Q/JsCwaMpTD/CjCuigxBwGIzzFxwKWVOeHk4MaYvlikd7rp62zTC36An
-	 Agq7QhuBJJS77HdFXurVKxgAqrp2UMVQuGlfqmMXwEUvTE2X+Q7vjO9yeuFfneWNi4
-	 UzFkZdRD0ItU6gs7hUevNamTNwgpLFYRa/IWNqQMQfGMroi2NGU2e/DlG3TmQlVncm
-	 PLI6VUrrsbH50E1C83K8fRG84DpnJGcwKJONJ/5Rq2M0DazTqmw5sg53lAryZJ//tS
-	 +5vr8gbAqJFJA==
-Received: from customer (localhost [127.0.0.1])
-	by submission (posteo.de) with ESMTPSA id 4Yp2fz0fXhz9rxQ;
-	Wed,  5 Feb 2025 15:29:14 +0100 (CET)
-Date: Wed,  5 Feb 2025 14:29:14 +0000
-From: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
-To: Rob Herring <robh@kernel.org>
-Cc: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>,
-	devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Scott Wood <oss@buserror.net>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yp2jb36HSz2ydW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2025 01:31:31 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 18E085C5C58;
+	Wed,  5 Feb 2025 14:30:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DB6C0C4CED1;
+	Wed,  5 Feb 2025 14:31:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1738765887;
+	bh=nSU1N/H7Kbw4NWQWtDGR2D+RngV5y/67tsTzqxG2RQQ=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=X9d+FXZrRh8SRtZt5l77axtbpK/UpnirP/YGmW0VcLN2Fv+YZ3+9tRA36J+yXg93J
+	 rXyZB58EAMg4VnA+S2j2kuwcOpVjkM7gq9tKAqVVThOWQSPrfzppAIGWEcgT+YQdND
+	 UARy21Y+KJqlr6P5jt1/e8RqDYEzrxjbbxFDuJ+Y=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: stable@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	patches@lists.linux.dev,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Helge Deller <deller@gmx.de>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
 	Naveen N Rao <naveen@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	Damien Le Moal <dlemoal@kernel.org>,
-	Niklas Cassel <cassel@kernel.org>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	"David S. Miller" <davem@davemloft.net>, Lee Jones <lee@kernel.org>,
-	Vinod Koul <vkoul@kernel.org>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
-	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	=?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
-	Wim Van Sebroeck <wim@linux-watchdog.org>,
-	Guenter Roeck <linux@roeck-us.net>, Mark Brown <broonie@kernel.org>,
-	Miquel Raynal <miquel.raynal@bootlin.com>,
-	Richard Weinberger <richard@nod.at>,
-	Vignesh Raghavendra <vigneshr@ti.com>, linux-kernel@vger.kernel.org,
-	linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org,
-	dmaengine@vger.kernel.org, linux-pci@vger.kernel.org,
-	linux-watchdog@vger.kernel.org, linux-spi@vger.kernel.org,
-	linux-mtd@lists.infradead.org
-Subject: Re: [PATCH 8/9] dt-bindings: spi: Convert Freescale SPI bindings to
- YAML
-Message-ID: <Z6N1uqg4Dji4Pt3X@probook>
-References: <20250126-ppcyaml-v1-0-50649f51c3dd@posteo.net>
- <20250126-ppcyaml-v1-8-50649f51c3dd@posteo.net>
- <20250127050901.GB3127337-robh@kernel.org>
+	Nicholas Piggin <npiggin@gmail.com>,
+	Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+	linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Sergey Senozhatsky <senozhatsky@chromium.org>,
+	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 6.6 309/393] module: Extend the preempt disabled section in dereference_symbol_descriptor().
+Date: Wed,  5 Feb 2025 14:43:48 +0100
+Message-ID: <20250205134432.131530756@linuxfoundation.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250205134420.279368572@linuxfoundation.org>
+References: <20250205134420.279368572@linuxfoundation.org>
+User-Agent: quilt/0.68
+X-stable: review
+X-Patchwork-Hint: ignore
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,99 +81,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250127050901.GB3127337-robh@kernel.org>
 
-On Sun, Jan 26, 2025 at 11:09:01PM -0600, Rob Herring wrote:
-> On Sun, Jan 26, 2025 at 07:59:03PM +0100, J. Neuschäfer wrote:
-> > fsl-spi.txt contains the bindings for the fsl,spi and fsl,espi
-> > contollers. Convert them to YAML.
-> > 
-> > Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
-> > ---
-> >  .../devicetree/bindings/spi/fsl,espi.yaml          | 56 +++++++++++++++++
-> >  Documentation/devicetree/bindings/spi/fsl,spi.yaml | 71 ++++++++++++++++++++++
-> >  Documentation/devicetree/bindings/spi/fsl-spi.txt  | 62 -------------------
-> >  3 files changed, 127 insertions(+), 62 deletions(-)
-> > 
-> > diff --git a/Documentation/devicetree/bindings/spi/fsl,espi.yaml b/Documentation/devicetree/bindings/spi/fsl,espi.yaml
-> > new file mode 100644
-> > index 0000000000000000000000000000000000000000..350275760210c5763af0c7b1e1522ccbfb97eec7
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/spi/fsl,espi.yaml
-> > @@ -0,0 +1,56 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +%YAML 1.2
-> > +---
-> > +$id: http://devicetree.org/schemas/spi/fsl,espi.yaml#
-> > +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> > +
-> > +title: Freescale eSPI (Enhanced Serial Peripheral Interface) controller
-> > +
-> > +maintainers:
-> > +  - J. Neuschäfer <j.ne@posteo.net>
-> > +
-> > +properties:
-> > +  compatible:
-> > +    const: fsl,mpc8536-espi
-> > +
-> > +  reg:
-> > +    maxItems: 1
-> > +
-> > +  interrupts: true
-> 
-> How many?
-> 
-> > +
-> > +  fsl,espi-num-chipselects:
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > +    description: The number of the chipselect signals.
-> 
-> Constraints?
-> 
-> > +
-> > +  fsl,csbef:
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > +    description: Chip select assertion time in bits before frame starts
-> 
-> Constraints?
-> 
-> > +
-> > +  fsl,csaft:
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> > +    description: Chip select negation time in bits after frame ends
-> 
-> Constraints?
+6.6-stable review patch.  If anyone has any objections, please let me know.
 
-I'll add appropriate constraints to all of these.
+------------------
 
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
-> > diff --git a/Documentation/devicetree/bindings/spi/fsl,spi.yaml b/Documentation/devicetree/bindings/spi/fsl,spi.yaml
-[...]
-> > +  clock-frequency:
-> > +    $ref: /schemas/types.yaml#/definitions/uint32
-> 
-> Don't need a type.
+[ Upstream commit a145c848d69f9c6f32008d8319edaa133360dd74 ]
 
-Will remove
+dereference_symbol_descriptor() needs to obtain the module pointer
+belonging to pointer in order to resolve that pointer.
+The returned mod pointer is obtained under RCU-sched/ preempt_disable()
+guarantees and needs to be used within this section to ensure that the
+module is not removed in the meantime.
 
-> 
-> > +    description: input clock frequency to non FSL_SOC cores
-> > +
-> > +  cs-gpios: true
-> > +
-> > +  fsl,spisel_boot:
-> > +    $ref: /schemas/types.yaml#/definitions/flag
+Extend the preempt_disable() section to also cover
+dereference_module_function_descriptor().
 
-I do wonder, what's the difference between
-$ref: /schemas/types.yaml#/definitions/flag and type: boolean?
+Fixes: 04b8eb7a4ccd9 ("symbol lookup: introduce dereference_symbol_descriptor()")
+Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Naveen N Rao <naveen@kernel.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Reviewed-by: Sergey Senozhatsky <senozhatsky@chromium.org>
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Link: https://lore.kernel.org/r/20250108090457.512198-2-bigeasy@linutronix.de
+Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ include/linux/kallsyms.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index c3f075e8f60cb..1c6a6c1704d8d 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -57,10 +57,10 @@ static inline void *dereference_symbol_descriptor(void *ptr)
+ 
+ 	preempt_disable();
+ 	mod = __module_address((unsigned long)ptr);
+-	preempt_enable();
+ 
+ 	if (mod)
+ 		ptr = dereference_module_function_descriptor(mod, ptr);
++	preempt_enable();
+ #endif
+ 	return ptr;
+ }
+-- 
+2.39.5
 
 
 
-Thanks for your review.
-
-Best regards,
-J. Neuschäfer
 
