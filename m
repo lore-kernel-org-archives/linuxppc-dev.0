@@ -1,59 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-5861-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5862-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D3C0C02192
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2025 10:20:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FD65C02192
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Feb 2025 13:03:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ynx7X4wBMz2yvv;
-	Wed,  5 Feb 2025 21:20:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738750808;
-	cv=none; b=OueNCQLE55ddLJ1rhiZSBNU5RyhrwaKE2xOmfJGWjQEx7PsrKEfRBN9CLRgK/eO6Yo6ES8hiYMiW0pO3atsf+pIV3hT3ZyKVnmZRSoWP3d8LSyabR3BwIK1q7++kZr7SnClDx66xNhdGjMuEYrAQjNGgJwbOwYp0C/O22LiWuqLPUOgqU1lyCUjinqd7Qo8xF5NdC0LJMEIk1EdrtK6QQ7dGoVE6Pyxx04D3OIkakKlTOtxc7QDWv8Vef2upfNW0FJ5J4VOkpe77ODqLmFIDTtEkR+/1gasrtkcpyh5Zuv7xM6sWi0qNYrL7SoUDCd0/ZHGjjTDdmdKly/vTfiJDAw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yp0m94xl3z2yYy;
+	Thu,  6 Feb 2025 00:03:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738760617;
+	cv=none; b=jR5TxkHGe4TgF9nn9qi3U6xmhIdoOtsHzrMzHANIGjnJe1JiikqeQkq5+Twnj68UmsQLphxH29vzDOrinq9iYd16NG9dG7SwSqUtKXjKpzkAH5SVe0vcMjM+CLHzKoK0EE6MVGDUrUHPN4lMKE7GAIlooqcQDxIIgHLOBQ4v/243OfZJovdmorjhQCsXnN6sQi2gTKR++mB9iqrnZAXfltuhg9cX0GsUMNKuTSqURkKY2skPTYH64Jnzr9b1gJoqxlOh4X9QdUXIcSgNgq0kVyMeq/V9TQInUDdDO7XxbOWH8+OZKP6HmnFrGp+Kwsc/eI25z6wjLCDsd6hsel7GJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738750808; c=relaxed/relaxed;
-	bh=UmRS0TQ9cmsMW3/S89e4rLuoWMYkTd9SH2ZKjN67w7k=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aW6irvKIGpc4v0E94xCVDxO0kHbBJa6SqGBhu8l64xStVCZglke/JJSEnK7cGbZxdYk3D5BMKa+vSp3aEwsUTg8pWKVR4qIsZxjk0crfix66gvK6mApUjLUkzOi0h0Rd5m9Vt/+hLcHbIZNlaMeqz2Ri4Z9jaGoNNek5LpveZsqXSL/9nHaHbdd1/hmW6Pswf3peZTyOk6bg9oJUGxHiQQyoQ1rashpK42CfgIAKYrwxsU3GRuT/7sQbjKXNHDxZggxe7dFnggxidEM65LetFQKJzoFBp6oZKGCpnAc3hZK1gL4PPqYL42mSwU4ptT08a2ZMS8d6QBT9NCpgEPFZDw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ynx7V5fr3z2yhG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Feb 2025 21:20:06 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4YnwZ26rWfz9sRy;
-	Wed,  5 Feb 2025 10:54:34 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id M-KKv11BQlIr; Wed,  5 Feb 2025 10:54:34 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4YnwZ25znhz9sRs;
-	Wed,  5 Feb 2025 10:54:34 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id BE9F78B765;
-	Wed,  5 Feb 2025 10:54:34 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id wXrCb1ZKHXqu; Wed,  5 Feb 2025 10:54:34 +0100 (CET)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.138])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8F3188B763;
-	Wed,  5 Feb 2025 10:54:34 +0100 (CET)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] powerpc/time: Define div128_by_32() static and __init
-Date: Wed,  5 Feb 2025 10:54:26 +0100
-Message-ID: <50810349bf1eee378fbeab72a36e4b6553a60c3d.1738749246.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.47.0
+	t=1738760617; c=relaxed/relaxed;
+	bh=l83Dw368hueJll8PyntCW0Nb5bpCWlX4zt8mq3uaKys=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=U+lXHaGzgjUskLf+wWV9mj1Pg6PpHuBF6jVY401hWiBBS3EqbuRICORXO3BUKoS8d/viH0HOHj+Pd7DR+uSdub4v6VIH7unH//jL9eQ3DLueziyx0uQA4RBSlJGrYQ1fMCLcTx6KaYzaJRNpagE2ryKIbxEXlkM8WM042pfQfaXBSJOUXXEh7KhfzIT0tYlCQiUp5LOXyzXqR2eV0vyHP4aSveR4zj+XC6X4TF2lPXUs0M1/k7+2LDagwg/zPVnowDCh2dWVhWZW1a18rfOXujeIhE8rZQNoSrvfCNEf/y6CLxEPXD+eXVWrKdwDw8/H2KCAGwGnMWDDvsIS3dGNAA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=e8xyOu9s; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=e8xyOu9s; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=vgoyal@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=e8xyOu9s;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=e8xyOu9s;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=vgoyal@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yp0m84vbtz2yDp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2025 00:03:34 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1738760610;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=l83Dw368hueJll8PyntCW0Nb5bpCWlX4zt8mq3uaKys=;
+	b=e8xyOu9suDOEhyW1mYGaLKcIJGBjrcqeVXECLhKDkkSK9/9WxBUmeLY8jPukXrRwHvqZUT
+	idD6vGpmfT7frs/Ir/O6HV0g1JSs8RfHN2RzPcQh65CJKBZVfWgY7/6USJxKzvuQ9EeeMS
+	5Z34rgC89sFvm/ChZyDIFZ44EbS9338=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1738760610;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=l83Dw368hueJll8PyntCW0Nb5bpCWlX4zt8mq3uaKys=;
+	b=e8xyOu9suDOEhyW1mYGaLKcIJGBjrcqeVXECLhKDkkSK9/9WxBUmeLY8jPukXrRwHvqZUT
+	idD6vGpmfT7frs/Ir/O6HV0g1JSs8RfHN2RzPcQh65CJKBZVfWgY7/6USJxKzvuQ9EeeMS
+	5Z34rgC89sFvm/ChZyDIFZ44EbS9338=
+Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-491-1l4K9GaVMGO1d3Se1A4h_Q-1; Wed,
+ 05 Feb 2025 08:03:26 -0500
+X-MC-Unique: 1l4K9GaVMGO1d3Se1A4h_Q-1
+X-Mimecast-MFC-AGG-ID: 1l4K9GaVMGO1d3Se1A4h_Q
+Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 5FC961801A0D;
+	Wed,  5 Feb 2025 13:03:19 +0000 (UTC)
+Received: from fedora.redhat.com (unknown [10.22.80.186])
+	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 72B8C3000197;
+	Wed,  5 Feb 2025 13:03:15 +0000 (UTC)
+Received: by fedora.redhat.com (Postfix, from userid 1000)
+	id A724B6AA37D; Wed,  5 Feb 2025 08:03:13 -0500 (EST)
+Date: Wed, 5 Feb 2025 08:03:13 -0500
+From: Vivek Goyal <vgoyal@redhat.com>
+To: Alistair Popple <apopple@nvidia.com>
+Cc: akpm@linux-foundation.org, dan.j.williams@intel.com, linux-mm@kvack.org,
+	alison.schofield@intel.com, lina@asahilina.net,
+	zhang.lyra@gmail.com, gerald.schaefer@linux.ibm.com,
+	vishal.l.verma@intel.com, dave.jiang@intel.com, logang@deltatee.com,
+	bhelgaas@google.com, jack@suse.cz, jgg@ziepe.ca,
+	catalin.marinas@arm.com, will@kernel.org, mpe@ellerman.id.au,
+	npiggin@gmail.com, dave.hansen@linux.intel.com, ira.weiny@intel.com,
+	willy@infradead.org, djwong@kernel.org, tytso@mit.edu,
+	linmiaohe@huawei.com, david@redhat.com, peterx@redhat.com,
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+	nvdimm@lists.linux.dev, linux-cxl@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
+	linux-xfs@vger.kernel.org, jhubbard@nvidia.com, hch@lst.de,
+	david@fromorbit.com, chenhuacai@kernel.org, kernel@xen0n.name,
+	loongarch@lists.linux.dev, Hanna Czenczek <hreitz@redhat.com>,
+	German Maglione <gmaglione@redhat.com>
+Subject: Re: [PATCH v6 01/26] fuse: Fix dax truncate/punch_hole fault path
+Message-ID: <Z6NhkR8ZEso4F-Wx@redhat.com>
+References: <cover.11189864684e31260d1408779fac9db80122047b.1736488799.git-series.apopple@nvidia.com>
+ <bfae590045c7fc37b7ccef10b9cec318012979fd.1736488799.git-series.apopple@nvidia.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,138 +102,106 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1738749266; l=4498; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=f/KudvDb/LpLUE7WgOFEb5XQshqKSdc0rKHj8lp4Q8E=; b=cdqu6OPzHtRCATddCKCHRp6u+8nN0lIO6F+X99psIAbZ/S3lfy5pCsRzy+0ofVOA68tymV2yF aZjsgJYAF58CWUpPiuDyr1MtZMZwQXNGPHao31ikXSlkOeuWK+kUjP8
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <bfae590045c7fc37b7ccef10b9cec318012979fd.1736488799.git-series.apopple@nvidia.com>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
 
-div128_by_32() used to be called from outside time.c in the old days
-but since v2.6.15 it hasn't been used outside time.c
+On Fri, Jan 10, 2025 at 05:00:29PM +1100, Alistair Popple wrote:
+> FS DAX requires file systems to call into the DAX layout prior to unlinking
+> inodes to ensure there is no ongoing DMA or other remote access to the
+> direct mapped page. The fuse file system implements
+> fuse_dax_break_layouts() to do this which includes a comment indicating
+> that passing dmap_end == 0 leads to unmapping of the whole file.
+> 
+> However this is not true - passing dmap_end == 0 will not unmap anything
+> before dmap_start, and further more dax_layout_busy_page_range() will not
+> scan any of the range to see if there maybe ongoing DMA access to the
+> range. Fix this by passing -1 for dmap_end to fuse_dax_break_layouts()
+> which will invalidate the entire file range to
+> dax_layout_busy_page_range().
 
-$ git grep div128_by_32 v2.6.14
-v2.6.14:arch/ppc64/kernel/iSeries_setup.c:	div128_by_32(1024 * 1024, 0, tb_ticks_per_sec, &divres);
-v2.6.14:arch/ppc64/kernel/pmac_time.c:	div128_by_32( 1024*1024, 0, tb_ticks_per_sec, &divres );
-v2.6.14:arch/ppc64/kernel/time.c:				div128_by_32( XSEC_PER_SEC, 0, tb_ticks_per_sec, &divres );
-v2.6.14:arch/ppc64/kernel/time.c:	div128_by_32(1024*1024, 0, tb_ticks_per_sec, &divres);
-v2.6.14:arch/ppc64/kernel/time.c:	div128_by_32(1000000000, 0, tb_ticks_per_sec, &res);
-v2.6.14:arch/ppc64/kernel/time.c:	div128_by_32( 1024*1024, 0, new_tb_ticks_per_sec, &divres );
-v2.6.14:arch/ppc64/kernel/time.c:void div128_by_32( unsigned long dividend_high, unsigned long dividend_low,
-v2.6.14:include/asm-ppc64/time.h:void div128_by_32( unsigned long dividend_high, unsigned long dividend_low,
+Hi Alistair,
 
-$ git grep div128_by_32 v2.6.15
-v2.6.15:arch/powerpc/kernel/time.c:				div128_by_32( XSEC_PER_SEC, 0, tb_ticks_per_sec, &divres );
-v2.6.15:arch/powerpc/kernel/time.c:	div128_by_32(1024*1024, 0, tb_ticks_per_sec, &res);
-v2.6.15:arch/powerpc/kernel/time.c:	div128_by_32(1000000000, 0, tb_ticks_per_sec, &res);
-v2.6.15:arch/powerpc/kernel/time.c:	div128_by_32(1024*1024, 0, new_tb_ticks_per_sec, &divres);
-v2.6.15:arch/powerpc/kernel/time.c:void div128_by_32(u64 dividend_high, u64 dividend_low,
-v2.6.15:include/asm-powerpc/time.h:extern void div128_by_32(u64 dividend_high, u64 dividend_low,
+Thanks for fixing DAX related issues for virtiofs. I am wondering how are
+you testing DAX with virtiofs. AFAIK, we don't have DAX support in Rust
+virtiofsd. C version of virtiofsd used to have out of the tree patches
+for DAX. But C version got deprecated long time ago.
 
-Move it above its only caller which is time_init() and define it
-static and __init.
+Do you have another implementation of virtiofsd somewhere else which
+supports DAX and allows for testing DAX related changes?
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/time.h |  3 --
- arch/powerpc/kernel/time.c      | 65 ++++++++++++++++-----------------
- 2 files changed, 32 insertions(+), 36 deletions(-)
+Thanks
+Vivek
 
-diff --git a/arch/powerpc/include/asm/time.h b/arch/powerpc/include/asm/time.h
-index 9bdd8080299b..f8885586efaf 100644
---- a/arch/powerpc/include/asm/time.h
-+++ b/arch/powerpc/include/asm/time.h
-@@ -89,9 +89,6 @@ static inline unsigned long tb_ticks_since(unsigned long tstamp)
- #define mulhdu(x, y)	mul_u64_u64_shr(x, y, 64)
- #endif
- 
--extern void div128_by_32(u64 dividend_high, u64 dividend_low,
--			 unsigned divisor, struct div_result *dr);
--
- extern void secondary_cpu_time_init(void);
- extern void __init time_init(void);
- 
-diff --git a/arch/powerpc/kernel/time.c b/arch/powerpc/kernel/time.c
-index 0727332ad86f..0be53642501b 100644
---- a/arch/powerpc/kernel/time.c
-+++ b/arch/powerpc/kernel/time.c
-@@ -901,6 +901,38 @@ void secondary_cpu_time_init(void)
- 	register_decrementer_clockevent(smp_processor_id());
- }
- 
-+/*
-+ * Divide a 128-bit dividend by a 32-bit divisor, leaving a 128 bit
-+ * result.
-+ */
-+static __init void div128_by_32(u64 dividend_high, u64 dividend_low,
-+				unsigned int divisor, struct div_result *dr)
-+{
-+	unsigned long a, b, c, d;
-+	unsigned long w, x, y, z;
-+	u64 ra, rb, rc;
-+
-+	a = dividend_high >> 32;
-+	b = dividend_high & 0xffffffff;
-+	c = dividend_low >> 32;
-+	d = dividend_low & 0xffffffff;
-+
-+	w = a / divisor;
-+	ra = ((u64)(a - (w * divisor)) << 32) + b;
-+
-+	rb = ((u64)do_div(ra, divisor) << 32) + c;
-+	x = ra;
-+
-+	rc = ((u64)do_div(rb, divisor) << 32) + d;
-+	y = rb;
-+
-+	do_div(rc, divisor);
-+	z = rc;
-+
-+	dr->result_high = ((u64)w << 32) + x;
-+	dr->result_low  = ((u64)y << 32) + z;
-+}
-+
- /* This function is only called on the boot processor */
- void __init time_init(void)
- {
-@@ -974,39 +1006,6 @@ void __init time_init(void)
- 	enable_sched_clock_irqtime();
- }
- 
--/*
-- * Divide a 128-bit dividend by a 32-bit divisor, leaving a 128 bit
-- * result.
-- */
--void div128_by_32(u64 dividend_high, u64 dividend_low,
--		  unsigned divisor, struct div_result *dr)
--{
--	unsigned long a, b, c, d;
--	unsigned long w, x, y, z;
--	u64 ra, rb, rc;
--
--	a = dividend_high >> 32;
--	b = dividend_high & 0xffffffff;
--	c = dividend_low >> 32;
--	d = dividend_low & 0xffffffff;
--
--	w = a / divisor;
--	ra = ((u64)(a - (w * divisor)) << 32) + b;
--
--	rb = ((u64) do_div(ra, divisor) << 32) + c;
--	x = ra;
--
--	rc = ((u64) do_div(rb, divisor) << 32) + d;
--	y = rb;
--
--	do_div(rc, divisor);
--	z = rc;
--
--	dr->result_high = ((u64)w << 32) + x;
--	dr->result_low  = ((u64)y << 32) + z;
--
--}
--
- /* We don't need to calibrate delay, we use the CPU timebase for that */
- void calibrate_delay(void)
- {
--- 
-2.47.0
+> 
+> Signed-off-by: Alistair Popple <apopple@nvidia.com>
+> Co-developed-by: Dan Williams <dan.j.williams@intel.com>
+> Signed-off-by: Dan Williams <dan.j.williams@intel.com>
+> Fixes: 6ae330cad6ef ("virtiofs: serialize truncate/punch_hole and dax fault path")
+> Cc: Vivek Goyal <vgoyal@redhat.com>
+> 
+> ---
+> 
+> Changes for v6:
+> 
+>  - Original patch had a misplaced hunk due to a bad rebase.
+>  - Reworked fix based on Dan's comments.
+> ---
+>  fs/fuse/dax.c  | 1 -
+>  fs/fuse/dir.c  | 2 +-
+>  fs/fuse/file.c | 4 ++--
+>  3 files changed, 3 insertions(+), 4 deletions(-)
+> 
+> diff --git a/fs/fuse/dax.c b/fs/fuse/dax.c
+> index 9abbc2f..455c4a1 100644
+> --- a/fs/fuse/dax.c
+> +++ b/fs/fuse/dax.c
+> @@ -681,7 +681,6 @@ static int __fuse_dax_break_layouts(struct inode *inode, bool *retry,
+>  			0, 0, fuse_wait_dax_page(inode));
+>  }
+>  
+> -/* dmap_end == 0 leads to unmapping of whole file */
+>  int fuse_dax_break_layouts(struct inode *inode, u64 dmap_start,
+>  				  u64 dmap_end)
+>  {
+> diff --git a/fs/fuse/dir.c b/fs/fuse/dir.c
+> index 0b2f856..bc6c893 100644
+> --- a/fs/fuse/dir.c
+> +++ b/fs/fuse/dir.c
+> @@ -1936,7 +1936,7 @@ int fuse_do_setattr(struct mnt_idmap *idmap, struct dentry *dentry,
+>  	if (FUSE_IS_DAX(inode) && is_truncate) {
+>  		filemap_invalidate_lock(mapping);
+>  		fault_blocked = true;
+> -		err = fuse_dax_break_layouts(inode, 0, 0);
+> +		err = fuse_dax_break_layouts(inode, 0, -1);
+>  		if (err) {
+>  			filemap_invalidate_unlock(mapping);
+>  			return err;
+> diff --git a/fs/fuse/file.c b/fs/fuse/file.c
+> index 082ee37..cef7a8f 100644
+> --- a/fs/fuse/file.c
+> +++ b/fs/fuse/file.c
+> @@ -253,7 +253,7 @@ static int fuse_open(struct inode *inode, struct file *file)
+>  
+>  	if (dax_truncate) {
+>  		filemap_invalidate_lock(inode->i_mapping);
+> -		err = fuse_dax_break_layouts(inode, 0, 0);
+> +		err = fuse_dax_break_layouts(inode, 0, -1);
+>  		if (err)
+>  			goto out_inode_unlock;
+>  	}
+> @@ -2890,7 +2890,7 @@ static long fuse_file_fallocate(struct file *file, int mode, loff_t offset,
+>  	inode_lock(inode);
+>  	if (block_faults) {
+>  		filemap_invalidate_lock(inode->i_mapping);
+> -		err = fuse_dax_break_layouts(inode, 0, 0);
+> +		err = fuse_dax_break_layouts(inode, 0, -1);
+>  		if (err)
+>  			goto out;
+>  	}
+> -- 
+> git-series 0.9.1
+> 
 
 
