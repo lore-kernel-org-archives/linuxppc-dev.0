@@ -1,68 +1,126 @@
-Return-Path: <linuxppc-dev+bounces-5909-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5910-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEF1EC02199
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2025 18:52:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3E80C0219B
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2025 19:45:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YpmRn38YRz30Lt;
-	Fri,  7 Feb 2025 05:52:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1049"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738867925;
-	cv=none; b=Bvp8AdQLiYJfWqB64r/Znz5z+NZiee1mhiLv4tFPSxeCIr/Bpv3UlgNdBwHGFSUa95wKlcQSTtP0GccjuhQb/SI6Muvw10MWS5cWirJ9H8kGcr6PQ+Ikdo7uGuWUf2B26LFg0wHMnuEYcRPYI6ESJEjFLi2FcCMz3TJYmoXDns6HVmcU+p/P/14R3nh6NLa/JBrmE9tlGqCe9zmU0vOjcG/+usuovS710GUPCj4bK/z+l9oZ7x8+pEz4NfvjUigXGUiKOI1Gc38naAuR3zghXE6epQnituHMQX0kjalzbK3g0ATzr+Eh7q/aL4TDwDjQMZij1h1sFz0YglgT+b/v/w==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738867925; c=relaxed/relaxed;
-	bh=9FHf7X3ntolDh58znF+Bk2cZ6pAkHciPEwA7XP/h9Ew=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=FZbmoMSWSxxZUl4lcScMXSqOFcZY5fMjSbWB6gFLFIcfnrqrvczJIHis/uB7T7Tq89QkE6BWOLg1K+LuCgWwpRp4XaPrLINp/u/c18pErTo/XEJ8rev1J9uNwSr5bjbEajiRdOwZ454oLxi6LoSp03Py6XBQ+oR4/TZTqPodWG1z7SLAtzrRXCEewJKwiDS4xCTBIawCSyhiNbd5EJJAa7L6xtad6DeEr1wqLLwWUOSaDWdEgV+z4rvCOsY1uuJQ0u6u/trSXwNR0SX5wyKxErzozcMG4n55R5QjQmt0AqBtwBeP7D83/LsfWuAvqHDLTWvfHO6MjLTnoDOj+KL42w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=rtr+GrWy; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=30aslzwqkdlewmucxffxcv.tfdczeloggt-uvmczjkj.fqcrsj.fix@flex--fvdl.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--fvdl.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YpndH2l7Lz30HB;
+	Fri,  7 Feb 2025 06:45:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=192.198.163.16
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738871123;
+	cv=fail; b=guwfMCeu0PCFDdvDmO94O73/n7pyIjHvHURzG5u2xV1d2fyM1q8eChIXcoEOzkrkfv7nM9vYr+9gBiZuxQ1+ukg7COgCsSO1YEEqdA5C4kfP+X/tIz6v9kDwSrfE8Y6KhHcubqL/Qs1npAusN2ssUUizA/4uwBk5MuBD6b9PLGdICPlmnzOOrXYz74HDwPjoIJyZ5Y5UfFSrtsyJz00YwvC4KMoXlQJKxPBbqwjGYS9VpkF/BUTwEu6bZi21htd/Pxe+0tXRnAZzWJ8eBCMY9nWP4dUfZqIPLcGBoichBWrAlep0dYhFeH3WiILjRDRtpVqQ47gvYj77jDQn3G+D2A==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1738871123; c=relaxed/relaxed;
+	bh=OMJ1sNLL9WXBsJJGrMJJvJq50hmSatgcU29inNdcEj4=;
+	h=Date:From:To:CC:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=F76ewACBxGe8mXVgxCkhxm+ROvhbm6FjBtLcUXgnhUi+gSON+0t0NbOUTifDzkmAiwmEtR4vkX/fDBnFm4zm0MFTZmHcGgY3isP3yzOXB5DZ3Iuxl2QyDNnU1e4nXIz5BPt3eqFQaf+g6HP0mc5Uu1+o7Sm1+ewCsViPs9z1tL0saVVi1T1ntvWT2jCvkTETMrdqNtxxf+e2e6Aa1/0xdM6QhUnmeHrYcch9srRgr6CBo+zP3VGkiAgxcCtqkegotd6mOQeyrCNqojViJ/tUC3LTWxXMnYNx52d0X5oFrXUrDFu5b0RKv6alGcG6y4YOcM0S+0Lb4ufCLBs6remMlA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lhYt+vrR; dkim-atps=neutral; spf=pass (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=dan.j.williams@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=rtr+GrWy;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lhYt+vrR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--fvdl.bounces.google.com (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=30aslzwqkdlewmucxffxcv.tfdczeloggt-uvmczjkj.fqcrsj.fix@flex--fvdl.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1049.google.com (mail-pj1-x1049.google.com [IPv6:2607:f8b0:4864:20::1049])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=dan.j.williams@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YpmRl6nlJz2yWr
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2025 05:52:03 +1100 (AEDT)
-Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-2f5538a2356so2572307a91.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Feb 2025 10:52:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1738867920; x=1739472720; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=9FHf7X3ntolDh58znF+Bk2cZ6pAkHciPEwA7XP/h9Ew=;
-        b=rtr+GrWyikVNrQtKDW6BqS3hQQxMVS7mvImvwUjfKT0aB46i81nr69UgUW4nEO7l5b
-         ET/y/LH+37wq0VbFWLab6ri/qsT6z+yu57HPN4//9rZjiq9pugRbcee2YnWJS9vKuIUi
-         P9HC4wtZnEdSPrOVJ9K/Uxwan9A6/NesUaJQiUypMe51hosQKf75P8Vk04zvZakF8lwC
-         65+mbnqtVnWRQdmhrb3adYTvUUl8Xzr0Wwa1o10VAAbv8WGTSQFJdmt6dmHcn3B48S1F
-         t1lvx1HvLxgOMvN9Joxq7moMrEzNIKfVkw+ZCXXFZ3pki7uf+pTJH7s0A78pyUNQJhfK
-         kHIw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1738867920; x=1739472720;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=9FHf7X3ntolDh58znF+Bk2cZ6pAkHciPEwA7XP/h9Ew=;
-        b=P2nMh3jSSnhPayinjjJZpsuD+vzMQZamuJVQ08JFGsC6PkoFE/tlUDj1dNrDFQOzWe
-         8/VdsaR5mn+W2/QNLrHFiTt17iIFHmQ5yJ8K7fbTKNQLsQjp0fi2+CGQtOTgPnj4qL7K
-         VDtX2wiQILkmI7kS2CbqgpEMbgBFCKyp0DkYtfikQ+vuC6OP60gzXaW0tpO2SxOd8z6V
-         ak3VGqvg+UISLO9LVG5S60yaz9PEAB8DIlw8z0SelE2xURnPSClLgr93PJR6eJE9cszj
-         T1hqIf+bwqZKMbfrCnNkt5d44Qmnnn7FfmigNP4BVOYYDjF2b1Em2+rxJo8bpIy2F3bG
-         /mpw==
-X-Forwarded-Encrypted: i=1; AJvYcCWxHheHpBnm6b6mFTKruzn4lUidYpZwyD7VlWeC0UqjFiuVoInpqub6PjdJM1TpO8i2YhLNxq4ndE8DUtg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywb9eLIqGws2D5c9v+8Iule2gMthxAMSPi3WcvI6xrytSlMXeri
-	ZGO8KmmfBxhC2s0srnd8r6H0VUnXdXG2xyEGRCUeEKpErRSakHpEHRj610w/cvTqtVZjwg==
-X-Google-Smtp-Source: AGHT+IF0hEN8V7uU06C9tElOiOiDXvl7WJ62royjKbG+oprlqtroJ24zLedDhZAejMw2Fg4HCqLgipPv
-X-Received: from pfej4.prod.google.com ([2002:aa7:8d04:0:b0:725:c7de:e052])
- (user=fvdl job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6a00:4615:b0:72d:35ed:214b
- with SMTP id d2e1a72fcca58-7305d515e41mr566746b3a.24.1738867920500; Thu, 06
- Feb 2025 10:52:00 -0800 (PST)
-Date: Thu,  6 Feb 2025 18:51:07 +0000
-In-Reply-To: <20250206185109.1210657-1-fvdl@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YpndF01VYz304f
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2025 06:45:18 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1738871121; x=1770407121;
+  h=date:from:to:cc:subject:message-id:references:
+   in-reply-to:mime-version;
+  bh=TAUR8CITq0NWvA+Vq2453t9DVtds67bY33qC7or/0lg=;
+  b=lhYt+vrRJGgIXVXCWxs1innz5HAnCkQzWpLry1LBUnIpGIXRJkZmaFey
+   nGr96UDGC0CLqya3bOfT/2lXnET8c7S2+T1jfUVu8AzzVHUnc5kyauNAS
+   ZGQiumB4JE+hmP0+jotDq1NXv7O95BWduazkPE4+GihQIeLRibzEOIm/8
+   TznbJ2XB6H27poVCT1rpG5KsEl2VSXTxG/Hh+Aax/5nn/JBrQBy13rRX1
+   I3Y3vPwl3mw/w2XEv7tXS2dXc0hzV7F9bAfGvLEzKNrri+19PIRG873ZM
+   f8k5E/87Q88DWbtgNXDeq8sLpKjJelgWkSo35+9xJ1puvbwK9AWJGZ2X9
+   g==;
+X-CSE-ConnectionGUID: nWEQXc+wTVe0W9eXC3Nvcw==
+X-CSE-MsgGUID: dasaKrTKRMWHhaTsogYHVQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11336"; a="27102700"
+X-IronPort-AV: E=Sophos;i="6.13,265,1732608000"; 
+   d="scan'208";a="27102700"
+Received: from orviesa003.jf.intel.com ([10.64.159.143])
+  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 06 Feb 2025 11:45:11 -0800
+X-CSE-ConnectionGUID: YAnxC5dXSrKvEgKnxmSoMg==
+X-CSE-MsgGUID: KRxVrKbOQqixdWOvzFRQ7w==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.11,199,1725346800"; 
+   d="scan'208";a="116251149"
+Received: from orsmsx603.amr.corp.intel.com ([10.22.229.16])
+  by orviesa003.jf.intel.com with ESMTP/TLS/AES256-GCM-SHA384; 06 Feb 2025 11:45:11 -0800
+Received: from orsmsx601.amr.corp.intel.com (10.22.229.14) by
+ ORSMSX603.amr.corp.intel.com (10.22.229.16) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.44; Thu, 6 Feb 2025 11:45:10 -0800
+Received: from orsedg603.ED.cps.intel.com (10.7.248.4) by
+ orsmsx601.amr.corp.intel.com (10.22.229.14) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id
+ 15.1.2507.44 via Frontend Transport; Thu, 6 Feb 2025 11:45:10 -0800
+Received: from NAM02-BN1-obe.outbound.protection.outlook.com (104.47.51.49) by
+ edgegateway.intel.com (134.134.137.100) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.1.2507.44; Thu, 6 Feb 2025 11:45:09 -0800
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=M2DOzGIHdghmUsxH+PouHxCntA7oJT8+7+DzkFEuhJKl0pXZMaMbIfOIPNNNBd/q0rruVmXVJTC9XEaSMABKGnPe49z7nlW0PVRC+t+ObibXaZc7CfUhQeFx5prGqjssqhQXneo8r7S4q0lBL4+GaX+A2Tp58W9FerWvUPaEwoU5aF1gVHZS6S/FyYQ8feASoMSQPSnMUUnVX4bANLl0F6IKsSFL9QpGokimMaQH9dtlydVMs0izBmYRRj9us5xu4yqbEOes22IdGfJpx/E8m28m6PjLrVbGFwV0P0kU/nFAidLWhXtIy0wA4mY+9GRTjljQN8o6V/LdYhomOR8rFQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=OMJ1sNLL9WXBsJJGrMJJvJq50hmSatgcU29inNdcEj4=;
+ b=PiLM/sBu2cY38bpUaNCoEE3c5ypRqXKGZGp2oYQYM2lIqdx1BqrfhKG6J2TJNWHToY3+Ow1urRfwa4gtBs+BMRwIx1pQaYQkxEf8f0UNOP+LSq3BuIdwejNqtY7L1IECfzQ4KAoljzu6lB0VfT3RvKGUR/8Sto4FqqyAvUhryNYtTzBJDRRoCGhzveYsiWgaXPhJpi49EobjBozM0yS66nK1zJy5t2dbciEzG3IPEzKXu1qKxe3f15jSbMMO43u/OoRjF2A2GWGjf+lDMlnF7bWKzUqa4BgqI95vZKpV21gBKbvasa12YPPHe7tywQmhuznRaBP4X/zQl5CeEhBOGg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com (2603:10b6:510:256::6)
+ by DM4PR11MB8130.namprd11.prod.outlook.com (2603:10b6:8:181::8) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8398.24; Thu, 6 Feb
+ 2025 19:44:31 +0000
+Received: from PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::6b05:74cf:a304:ecd8]) by PH8PR11MB8107.namprd11.prod.outlook.com
+ ([fe80::6b05:74cf:a304:ecd8%4]) with mapi id 15.20.8422.011; Thu, 6 Feb 2025
+ 19:44:31 +0000
+Date: Thu, 6 Feb 2025 11:44:27 -0800
+From: Dan Williams <dan.j.williams@intel.com>
+To: Asahi Lina <lina@asahilina.net>, Dan Williams <dan.j.williams@intel.com>,
+	Vivek Goyal <vgoyal@redhat.com>, Alistair Popple <apopple@nvidia.com>
+CC: <akpm@linux-foundation.org>, <dan.j.williams@intel.com>,
+	<linux-mm@kvack.org>, <alison.schofield@intel.com>, <zhang.lyra@gmail.com>,
+	<gerald.schaefer@linux.ibm.com>, <vishal.l.verma@intel.com>,
+	<dave.jiang@intel.com>, <logang@deltatee.com>, <bhelgaas@google.com>,
+	<jack@suse.cz>, <jgg@ziepe.ca>, <catalin.marinas@arm.com>, <will@kernel.org>,
+	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <dave.hansen@linux.intel.com>,
+	<ira.weiny@intel.com>, <willy@infradead.org>, <djwong@kernel.org>,
+	<tytso@mit.edu>, <linmiaohe@huawei.com>, <david@redhat.com>,
+	<peterx@redhat.com>, <linux-doc@vger.kernel.org>,
+	<linux-kernel@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
+	<linuxppc-dev@lists.ozlabs.org>, <nvdimm@lists.linux.dev>,
+	<linux-cxl@vger.kernel.org>, <linux-fsdevel@vger.kernel.org>,
+	<linux-ext4@vger.kernel.org>, <linux-xfs@vger.kernel.org>,
+	<jhubbard@nvidia.com>, <hch@lst.de>, <david@fromorbit.com>,
+	<chenhuacai@kernel.org>, <kernel@xen0n.name>, <loongarch@lists.linux.dev>,
+	Hanna Czenczek <hreitz@redhat.com>, German Maglione <gmaglione@redhat.com>
+Subject: Re: [PATCH v6 01/26] fuse: Fix dax truncate/punch_hole fault path
+Message-ID: <67a5111b2f805_2d2c29448@dwillia2-xfh.jf.intel.com.notmuch>
+References: <cover.11189864684e31260d1408779fac9db80122047b.1736488799.git-series.apopple@nvidia.com>
+ <bfae590045c7fc37b7ccef10b9cec318012979fd.1736488799.git-series.apopple@nvidia.com>
+ <Z6NhkR8ZEso4F-Wx@redhat.com>
+ <67a3fde7da328_2d2c2942b@dwillia2-xfh.jf.intel.com.notmuch>
+ <A1E3C5B2-CCD8-41BA-BBC8-E8338C18D485@asahilina.net>
+Content-Type: text/plain; charset="us-ascii"
+Content-Disposition: inline
+In-Reply-To: <A1E3C5B2-CCD8-41BA-BBC8-E8338C18D485@asahilina.net>
+X-ClientProxiedBy: MW4PR04CA0154.namprd04.prod.outlook.com
+ (2603:10b6:303:85::9) To PH8PR11MB8107.namprd11.prod.outlook.com
+ (2603:10b6:510:256::6)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,344 +132,120 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Mime-Version: 1.0
-References: <20250206185109.1210657-1-fvdl@google.com>
-X-Mailer: git-send-email 2.48.1.502.g6dc24dfdaf-goog
-Message-ID: <20250206185109.1210657-28-fvdl@google.com>
-Subject: [PATCH v3 27/28] mm/hugetlb: enable bootmem allocation from CMA areas
-From: Frank van der Linden <fvdl@google.com>
-To: akpm@linux-foundation.org, muchun.song@linux.dev, linux-mm@kvack.org, 
-	linux-kernel@vger.kernel.org
-Cc: yuzhao@google.com, usamaarif642@gmail.com, joao.m.martins@oracle.com, 
-	roman.gushchin@linux.dev, Frank van der Linden <fvdl@google.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: PH8PR11MB8107:EE_|DM4PR11MB8130:EE_
+X-MS-Office365-Filtering-Correlation-Id: f59e907a-6dca-492c-49fe-08dd46e6ad1c
+X-LD-Processed: 46c98d88-e344-4ed4-8496-4ed7712e255d,ExtAddr
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|7416014|376014|366016;
+X-Microsoft-Antispam-Message-Info: =?us-ascii?Q?OIgdx/QS0F2VfD7RcMrlPZggvaQr+lm/b3Eocp+x63W65zCENK5LqxguXCTb?=
+ =?us-ascii?Q?AD4zwkboTq6R0jFaKXCayyE9yt5X7uPOtHJX/iPUdYvdb3sp+8+iRwLGDbXT?=
+ =?us-ascii?Q?3YcuvnkekyiIsJpciB55VQ2DCeZmq48aNrTcp1XIAr8Yw2g5hIz71PaB/XVH?=
+ =?us-ascii?Q?ApUePWjG7r2oLFLVw9VMsZWrVcoYlXh2NnocXpdE2HrvzecffmskeHv4x5YE?=
+ =?us-ascii?Q?bopn6aOgZt9y2SyjCh7i9i1Oy5O2NJJo9XWJhad1BKB0q3ZM16/YtZz6rs+O?=
+ =?us-ascii?Q?FKbpRJ0bjxSq1tsr6olyyjvYDL+d6quNxPDwKp2YGgEchGZUUZEFphXkxDeM?=
+ =?us-ascii?Q?BD7xm0s6RuIEVKTAng/Tbw6E0qisKcuWTqQxdGeqUcbhZ82OCzHKgAfBYbMg?=
+ =?us-ascii?Q?DqRdzGpN+P6T9rVi7m3TfNfV4DuIv/YLCu6FkyPKJdoB6WkMOMOdcE1Sa53y?=
+ =?us-ascii?Q?pA+5V+YnI+HS24qFisfvrr9oM5QF+a+zwsdP5hIlJxJf8kCxXgOvjAQDU1Pr?=
+ =?us-ascii?Q?ZkPQh4rmpBNJFEwMYY9MCqyQWRTBLPv1XiN6X4FthZUqNUMjXz/pCQWnKfD0?=
+ =?us-ascii?Q?jpETDWyKxyd3ah62mzB4MVAVdC6XmKUlI4HjLtyb8LgoJ/eFmUrJc+ORLnZK?=
+ =?us-ascii?Q?xh6YirfJk6oS5oDOpq7hykwZmmk05XTHP6TLXlHpTkit6IqsryXvqYb8jOzS?=
+ =?us-ascii?Q?NF4eeHChjjKO8xXKDqngNDkkc6mM/6KmiT0mps0Vo3qLONkFcsg+4XNbX/+L?=
+ =?us-ascii?Q?qv5y7lauKoWyFhRkvMRd0/zvc8SJSY0FWkclUK+8gl3pcet33Ga/WVzKMeYx?=
+ =?us-ascii?Q?XTDPAp0CVUh+TS7CsThdX7aobv14uJ3nvBmL0LGIliMwKsdSMotgWQn8g6+H?=
+ =?us-ascii?Q?CsAVqkdHhc/5i/AkPnKh09OaizoLwfdB8QwdBvVdEN9SItqGX44oZ+AIEjjs?=
+ =?us-ascii?Q?/muKcjLxgQY1TZyP+otBcCINOjJdwC2qjhwsfngpv4iPm79qfeuCSo1eoRd4?=
+ =?us-ascii?Q?a+aZEMQsY7lxalFY2ku1+l2XS60jarjglp96zI2Gd4XaIantnhdocglFt4pT?=
+ =?us-ascii?Q?99otIrATIhUWIwMnFZBZE0JRZt5fH/VNNZtAmkSChrcyL7BL27zuCwA0HGXV?=
+ =?us-ascii?Q?o6JgQ/owVhxzlLxYKM1JRosBjJ9E5WSQ8Sf7w1/lPL4yKBC0+xMFwbsFsuEN?=
+ =?us-ascii?Q?CFConB5tYnjdmYUZ8/A3QV0iaMurGpt8+fajMQvJIMLj8iBTT6/c3c6VPPIL?=
+ =?us-ascii?Q?BrrY4Wg9ue/gjZ7UeUgP+va5pmYtQaphBkK11PgsJThZnWE7Qizf5bBz7uhZ?=
+ =?us-ascii?Q?uv4VtFoHIetDGPJ13ZsZ0iyBvlg57mZZiv7iiME9777/BTlkPoieDcJcvNNr?=
+ =?us-ascii?Q?lObIiQjV0q9pdCYmpr4lGhlH22aP?=
+X-Forefront-Antispam-Report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH8PR11MB8107.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(366016);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0: =?us-ascii?Q?7uGLCczOQuER7M5SfIyEkqSTQar39xFt+f7Z0u04lYTkjg9SKQg4r6AY/Jzo?=
+ =?us-ascii?Q?U7oPBtpIgnZfnJBIBFyZ4tT8R1FHZfaTGwBLkXrgYV/k1cEqKAMy8KI/GlX0?=
+ =?us-ascii?Q?Z5Fa+6ucK3XADFtZtoK7SlJiFK2bf3/fgIJ2DF3TSkZtClEcBqFHhplKKfth?=
+ =?us-ascii?Q?3A8rXpkyolSSBh2AnNzbJvdxdoJd+gcVsFPAwv6W7NwOPFwBOZ/FQkWoUj81?=
+ =?us-ascii?Q?ZHIpxJGU2KZGfVJRzIsdtwasS+RLsA+6hq21tjKm9F7cBY51cy0oJ403FEl+?=
+ =?us-ascii?Q?87zEz8WfI4WbK5SJ07q6++otLTlF4EFi8SNw5jf2zwjy3mGPLamrBsSD6FSr?=
+ =?us-ascii?Q?oS3Vua2OBE9UZY3h3EmWHQhBX/DWIeBzqI7sG9LWOmDHQq+SN5WJEChbiuFf?=
+ =?us-ascii?Q?efV3e1XGNh/yjXfyLTZjqaCNgyWFxN9tqVKGY10EacWIqBSdhtP9+eE0HxJM?=
+ =?us-ascii?Q?poWB9BxpHll5BpVlOVwPGEzZhSqwqFln7pxwWghUJ32nXDEQUb4nU2yR/4Fu?=
+ =?us-ascii?Q?f0149tzNVLbx3+leho4wmZaqQEHUMyXnTWQt9+bD7IKO90cQyaEBXehjhigj?=
+ =?us-ascii?Q?qYJnxD/X45Lbr56zDFmBIvei9/KSNR9fDeXzrBXGPwjdRbNHGrLzt/fERm4S?=
+ =?us-ascii?Q?dTMAIElRCm3Pap4bQj4pqkULT1u8j0J8LK2MPtG47nGIK/rtbMry1cRSNP/P?=
+ =?us-ascii?Q?i8qpClafpRpUwyL6eJE9GDwd+4ywHMQSklKZLv1E/M/LVJGNbpFL5CJrXdEb?=
+ =?us-ascii?Q?F0s53GpE6CSaKoRYPn9PZu6emamk0aZjY/gYrlrHmmQv916UaUVhQrwsQ9oh?=
+ =?us-ascii?Q?e/SjuURqvckuVB+05yAbIb7Ug2hxIOtKg/HevvkzCpPUDwKLReN5LzdL33nF?=
+ =?us-ascii?Q?RKt6FydNRmpn2xHlRZWXV8/5JImO7eFuyYLmsHAd8GLcHNHmEDKRJQ/fDn8Y?=
+ =?us-ascii?Q?j/z+CN54ShHCb8RYbt/Gg6Bc/zXPeOn0qEiwMyA4cV/zqDcym6ejP7YJqDnA?=
+ =?us-ascii?Q?b0UIRPqaHJm4qR2ryAgDCPMVpWuItfK/XhFmUgmzAyPdq4mfJsjsCRjtEfJF?=
+ =?us-ascii?Q?Ayb55xeyo/pm8Wtg3K7Vj+AH0XXC1aQUNhLwzqPizP0zDR4AqRurwY43GUos?=
+ =?us-ascii?Q?UWfH0UkxCpucU9mBXLP065FXhwWHfD1Aoi7H4IYH54beZv3bcWDwOX5HxQ4e?=
+ =?us-ascii?Q?cFtevy6kPbv18RLoJSHCSfaqGOloyH/0yIP5Hzyf97iQNon1W32tzcOWq1L8?=
+ =?us-ascii?Q?nrRX9JJhW5dZ6g/Xc6LI0QjHFB+WOMyjeI/xuiGzQJGYBcMSwEjbtJ7Bi9NK?=
+ =?us-ascii?Q?9ucYg6oEdVR+JY8ywt/KTZCUFipF/C3LfPed3aGQGuESpxTI5k6w2yPz0zlv?=
+ =?us-ascii?Q?u+la8XsisLfR4WqZmS/MiDtUzjAts6N4ZY13ZWzWhjnDdLfe7dqILCb+lhVI?=
+ =?us-ascii?Q?mDYlyhaF5l8uet9+qOGvtA1HAHFS7LYWFJ6kDvCpm5QoYv5uME+I3CB7S+CA?=
+ =?us-ascii?Q?2dT6rxmzLsIvMAEBWkFIH66nmIRcchaqJ8VTvcXQwP4WoAY13OzXVJkPfqA0?=
+ =?us-ascii?Q?p6t4Fm5Ut51iMaqsuDI8ueaMU+yKXIbTJijQjVtuRWN/RkagV3ZCMcpFcHDr?=
+ =?us-ascii?Q?Bg=3D=3D?=
+X-MS-Exchange-CrossTenant-Network-Message-Id: f59e907a-6dca-492c-49fe-08dd46e6ad1c
+X-MS-Exchange-CrossTenant-AuthSource: PH8PR11MB8107.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Feb 2025 19:44:31.8389
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: hL+fObs4Q4imKcdifzMWJ0Esx3KVRqeHklKCHR0uqmKutoCXw9sRrRFc7+mE2n90XlEZt3UgnE/GMrwWS+HwqWxfliAMAh//0WWTeYiyXdg=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR11MB8130
+X-OriginatorOrg: intel.com
 
-If hugetlb_cma_only is enabled, we know that hugetlb pages
-can only be allocated from CMA. Now that there is an interface
-to do early reservations from a CMA area (returning memblock
-memory), it can be used to allocate hugetlb pages from CMA.
+Asahi Lina wrote:
+> Hi,
+> 
+> On February 6, 2025 1:10:15 AM GMT+01:00, Dan Williams <dan.j.williams@intel.com> wrote:
+> >Vivek Goyal wrote:
+> >> On Fri, Jan 10, 2025 at 05:00:29PM +1100, Alistair Popple wrote:
+> >> > FS DAX requires file systems to call into the DAX layout prior to unlinking
+> >> > inodes to ensure there is no ongoing DMA or other remote access to the
+> >> > direct mapped page. The fuse file system implements
+> >> > fuse_dax_break_layouts() to do this which includes a comment indicating
+> >> > that passing dmap_end == 0 leads to unmapping of the whole file.
+> >> > 
+> >> > However this is not true - passing dmap_end == 0 will not unmap anything
+> >> > before dmap_start, and further more dax_layout_busy_page_range() will not
+> >> > scan any of the range to see if there maybe ongoing DMA access to the
+> >> > range. Fix this by passing -1 for dmap_end to fuse_dax_break_layouts()
+> >> > which will invalidate the entire file range to
+> >> > dax_layout_busy_page_range().
+> >> 
+> >> Hi Alistair,
+> >> 
+> >> Thanks for fixing DAX related issues for virtiofs. I am wondering how are
+> >> you testing DAX with virtiofs. AFAIK, we don't have DAX support in Rust
+> >> virtiofsd. C version of virtiofsd used to have out of the tree patches
+> >> for DAX. But C version got deprecated long time ago.
+> >> 
+> >> Do you have another implementation of virtiofsd somewhere else which
+> >> supports DAX and allows for testing DAX related changes?
+> >
+> >I have personally never seen a virtiofs-dax test. It sounds like you are
+> >saying we can deprecate that support if there are no longer any users.
+> >Or, do you expect that C-virtiofsd is alive in the ecosystem?
+> 
+> I accidentally replied offlist, but I wanted to mention that libkrun
+> supports DAX and we use it in muvm. It's a critical part of x11bridge
+> functionality, since it uses DAX to share X11 shm fences between X11
+> clients in the VM and the XWayland server on the host, which only
+> works if the mmaps are coherent.
 
-This also allows for doing pre-HVO on these pages (if enabled).
-
-Make sure to initialize the page structures and associated data
-correctly. Create a flag to signal that a hugetlb page has been
-allocated from CMA to make things a little easier.
-
-Some configurations of powerpc have a special hugetlb bootmem
-allocator, so introduce a boolean arch_specific_huge_bootmem_alloc
-that returns true if such an allocator is present. In that case,
-CMA bootmem allocations can't be used, so check that function
-before trying.
-
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Signed-off-by: Frank van der Linden <fvdl@google.com>
----
- arch/powerpc/include/asm/book3s/64/hugetlb.h |   6 +
- include/linux/hugetlb.h                      |  17 +++
- mm/hugetlb.c                                 | 121 ++++++++++++++-----
- 3 files changed, 113 insertions(+), 31 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/hugetlb.h b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-index f0bba9c5f9c3..bb786694dd26 100644
---- a/arch/powerpc/include/asm/book3s/64/hugetlb.h
-+++ b/arch/powerpc/include/asm/book3s/64/hugetlb.h
-@@ -94,4 +94,10 @@ static inline int check_and_get_huge_psize(int shift)
- 	return mmu_psize;
- }
- 
-+#define arch_has_huge_bootmem_alloc arch_has_huge_bootmem_alloc
-+
-+static inline bool arch_has_huge_bootmem_alloc(void)
-+{
-+	return (firmware_has_feature(FW_FEATURE_LPAR) && !radix_enabled());
-+}
- #endif
-diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
-index 2512463bca49..6c6546b54934 100644
---- a/include/linux/hugetlb.h
-+++ b/include/linux/hugetlb.h
-@@ -591,6 +591,7 @@ enum hugetlb_page_flags {
- 	HPG_freed,
- 	HPG_vmemmap_optimized,
- 	HPG_raw_hwp_unreliable,
-+	HPG_cma,
- 	__NR_HPAGEFLAGS,
- };
- 
-@@ -650,6 +651,7 @@ HPAGEFLAG(Temporary, temporary)
- HPAGEFLAG(Freed, freed)
- HPAGEFLAG(VmemmapOptimized, vmemmap_optimized)
- HPAGEFLAG(RawHwpUnreliable, raw_hwp_unreliable)
-+HPAGEFLAG(Cma, cma)
- 
- #ifdef CONFIG_HUGETLB_PAGE
- 
-@@ -678,14 +680,18 @@ struct hstate {
- 	char name[HSTATE_NAME_LEN];
- };
- 
-+struct cma;
-+
- struct huge_bootmem_page {
- 	struct list_head list;
- 	struct hstate *hstate;
- 	unsigned long flags;
-+	struct cma *cma;
- };
- 
- #define HUGE_BOOTMEM_HVO		0x0001
- #define HUGE_BOOTMEM_ZONES_VALID	0x0002
-+#define HUGE_BOOTMEM_CMA		0x0004
- 
- bool hugetlb_bootmem_page_zones_valid(int nid, struct huge_bootmem_page *m);
- 
-@@ -823,6 +829,17 @@ static inline pte_t arch_make_huge_pte(pte_t entry, unsigned int shift,
- }
- #endif
- 
-+#ifndef arch_has_huge_bootmem_alloc
-+/*
-+ * Some architectures do their own bootmem allocation, so they can't use
-+ * early CMA allocation.
-+ */
-+static inline bool arch_has_huge_bootmem_alloc(void)
-+{
-+	return false;
-+}
-+#endif
-+
- static inline struct hstate *folio_hstate(struct folio *folio)
- {
- 	VM_BUG_ON_FOLIO(!folio_test_hugetlb(folio), folio);
-diff --git a/mm/hugetlb.c b/mm/hugetlb.c
-index 24a06d6d3617..737ffd223d45 100644
---- a/mm/hugetlb.c
-+++ b/mm/hugetlb.c
-@@ -131,8 +131,10 @@ static void hugetlb_free_folio(struct folio *folio)
- #ifdef CONFIG_CMA
- 	int nid = folio_nid(folio);
- 
--	if (cma_free_folio(hugetlb_cma[nid], folio))
-+	if (folio_test_hugetlb_cma(folio)) {
-+		WARN_ON_ONCE(!cma_free_folio(hugetlb_cma[nid], folio));
- 		return;
-+	}
- #endif
- 	folio_put(folio);
- }
-@@ -1508,6 +1510,9 @@ static struct folio *alloc_gigantic_folio(struct hstate *h, gfp_t gfp_mask,
- 					break;
- 			}
- 		}
-+
-+		if (folio)
-+			folio_set_hugetlb_cma(folio);
- 	}
- #endif
- 	if (!folio) {
-@@ -3174,6 +3179,53 @@ struct folio *alloc_hugetlb_folio(struct vm_area_struct *vma,
- 	return ERR_PTR(-ENOSPC);
- }
- 
-+static bool __init hugetlb_early_cma(struct hstate *h)
-+{
-+	if (arch_has_huge_bootmem_alloc())
-+		return false;
-+
-+	return (hstate_is_gigantic(h) && hugetlb_cma_only);
-+}
-+
-+static __init void *alloc_bootmem(struct hstate *h, int nid)
-+{
-+	struct huge_bootmem_page *m;
-+	unsigned long flags;
-+	struct cma *cma;
-+
-+#ifdef CONFIG_CMA
-+	if (hugetlb_early_cma(h)) {
-+		flags = HUGE_BOOTMEM_CMA;
-+		cma = hugetlb_cma[nid];
-+		m = cma_reserve_early(cma, huge_page_size(h));
-+	} else
-+#endif
-+	{
-+		flags = 0;
-+		cma = NULL;
-+		m = memblock_alloc_try_nid_raw(huge_page_size(h),
-+			huge_page_size(h), 0, MEMBLOCK_ALLOC_ACCESSIBLE, nid);
-+	}
-+
-+	if (m) {
-+		/*
-+		 * Use the beginning of the huge page to store the
-+		 * huge_bootmem_page struct (until gather_bootmem
-+		 * puts them into the mem_map).
-+		 *
-+		 * Put them into a private list first because mem_map
-+		 * is not up yet.
-+		 */
-+		INIT_LIST_HEAD(&m->list);
-+		list_add(&m->list, &huge_boot_pages[nid]);
-+		m->hstate = h;
-+		m->flags = flags;
-+		m->cma = cma;
-+	}
-+
-+	return m;
-+}
-+
- int alloc_bootmem_huge_page(struct hstate *h, int nid)
- 	__attribute__ ((weak, alias("__alloc_bootmem_huge_page")));
- int __alloc_bootmem_huge_page(struct hstate *h, int nid)
-@@ -3183,17 +3235,14 @@ int __alloc_bootmem_huge_page(struct hstate *h, int nid)
- 
- 	/* do node specific alloc */
- 	if (nid != NUMA_NO_NODE) {
--		m = memblock_alloc_try_nid_raw(huge_page_size(h), huge_page_size(h),
--				0, MEMBLOCK_ALLOC_ACCESSIBLE, nid);
-+		m = alloc_bootmem(h, node);
- 		if (!m)
- 			return 0;
- 		goto found;
- 	}
- 	/* allocate from next node when distributing huge pages */
- 	for_each_node_mask_to_alloc(&h->next_nid_to_alloc, nr_nodes, node, &node_states[N_ONLINE]) {
--		m = memblock_alloc_try_nid_raw(
--				huge_page_size(h), huge_page_size(h),
--				0, MEMBLOCK_ALLOC_ACCESSIBLE, node);
-+		m = alloc_bootmem(h, node);
- 		if (m)
- 			break;
- 	}
-@@ -3202,7 +3251,6 @@ int __alloc_bootmem_huge_page(struct hstate *h, int nid)
- 		return 0;
- 
- found:
--
- 	/*
- 	 * Only initialize the head struct page in memmap_init_reserved_pages,
- 	 * rest of the struct pages will be initialized by the HugeTLB
-@@ -3212,18 +3260,6 @@ int __alloc_bootmem_huge_page(struct hstate *h, int nid)
- 	 */
- 	memblock_reserved_mark_noinit(virt_to_phys((void *)m + PAGE_SIZE),
- 		huge_page_size(h) - PAGE_SIZE);
--	/*
--	 * Use the beginning of the huge page to store the
--	 * huge_bootmem_page struct (until gather_bootmem
--	 * puts them into the mem_map).
--	 *
--	 * Put them into a private list first because mem_map
--	 * is not up yet.
--	 */
--	INIT_LIST_HEAD(&m->list);
--	list_add(&m->list, &huge_boot_pages[node]);
--	m->hstate = h;
--	m->flags = 0;
- 	return 1;
- }
- 
-@@ -3264,13 +3300,25 @@ static void __init hugetlb_folio_init_vmemmap(struct folio *folio,
- 	prep_compound_head((struct page *)folio, huge_page_order(h));
- }
- 
-+static bool __init hugetlb_bootmem_page_prehvo(struct huge_bootmem_page *m)
-+{
-+	return m->flags & HUGE_BOOTMEM_HVO;
-+}
-+
-+static bool __init hugetlb_bootmem_page_earlycma(struct huge_bootmem_page *m)
-+{
-+	return m->flags & HUGE_BOOTMEM_CMA;
-+}
-+
- /*
-  * memblock-allocated pageblocks might not have the migrate type set
-  * if marked with the 'noinit' flag. Set it to the default (MIGRATE_MOVABLE)
-- * here.
-+ * here, or MIGRATE_CMA if this was a page allocated through an early CMA
-+ * reservation.
-  *
-- * Note that this will not write the page struct, it is ok (and necessary)
-- * to do this on vmemmap optimized folios.
-+ * In case of vmemmap optimized folios, the tail vmemmap pages are mapped
-+ * read-only, but that's ok - for sparse vmemmap this does not write to
-+ * the page structure.
-  */
- static void __init hugetlb_bootmem_init_migratetype(struct folio *folio,
- 							  struct hstate *h)
-@@ -3279,9 +3327,13 @@ static void __init hugetlb_bootmem_init_migratetype(struct folio *folio,
- 
- 	WARN_ON_ONCE(!pageblock_aligned(folio_pfn(folio)));
- 
--	for (i = 0; i < nr_pages; i += pageblock_nr_pages)
--		set_pageblock_migratetype(folio_page(folio, i),
-+	for (i = 0; i < nr_pages; i += pageblock_nr_pages) {
-+		if (folio_test_hugetlb_cma(folio))
-+			init_cma_pageblock(folio_page(folio, i));
-+		else
-+			set_pageblock_migratetype(folio_page(folio, i),
- 					  MIGRATE_MOVABLE);
-+	}
- }
- 
- static void __init prep_and_add_bootmem_folios(struct hstate *h,
-@@ -3327,10 +3379,16 @@ bool __init hugetlb_bootmem_page_zones_valid(int nid,
- 		return true;
- 	}
- 
-+	if (hugetlb_bootmem_page_earlycma(m)) {
-+		valid = cma_validate_zones(m->cma);
-+		goto out;
-+	}
-+
- 	start_pfn = virt_to_phys(m) >> PAGE_SHIFT;
- 
- 	valid = !pfn_range_intersects_zones(nid, start_pfn,
- 			pages_per_huge_page(m->hstate));
-+out:
- 	if (!valid)
- 		hstate_boot_nrinvalid[hstate_index(m->hstate)]++;
- 
-@@ -3359,11 +3417,6 @@ static void __init hugetlb_bootmem_free_invalid_page(int nid, struct page *page,
- 	}
- }
- 
--static bool __init hugetlb_bootmem_page_prehvo(struct huge_bootmem_page *m)
--{
--	return (m->flags & HUGE_BOOTMEM_HVO);
--}
--
- /*
-  * Put bootmem huge pages into the standard lists after mem_map is up.
-  * Note: This only applies to gigantic (order > MAX_PAGE_ORDER) pages.
-@@ -3413,6 +3466,9 @@ static void __init gather_bootmem_prealloc_node(unsigned long nid)
- 			 */
- 			folio_set_hugetlb_vmemmap_optimized(folio);
- 
-+		if (hugetlb_bootmem_page_earlycma(m))
-+			folio_set_hugetlb_cma(folio);
-+
- 		list_add(&folio->lru, &folio_list);
- 
- 		/*
-@@ -3605,8 +3661,11 @@ static void __init hugetlb_hstate_alloc_pages(struct hstate *h)
- {
- 	unsigned long allocated;
- 
--	/* skip gigantic hugepages allocation if hugetlb_cma enabled */
--	if (hstate_is_gigantic(h) && hugetlb_cma_size) {
-+	/*
-+	 * Skip gigantic hugepages allocation if early CMA
-+	 * reservations are not available.
-+	 */
-+	if (hstate_is_gigantic(h) && hugetlb_cma_size && !hugetlb_early_cma(h)) {
- 		pr_warn_once("HugeTLB: hugetlb_cma is enabled, skip boot time allocation\n");
- 		return;
- 	}
--- 
-2.48.1.502.g6dc24dfdaf-goog
-
+Ah, good to hear. It would be lovely to integrate an muvm smoketest
+somewhere in https://github.com/pmem/ndctl/tree/main/test so that we
+have early warning on potential breakage.
 
