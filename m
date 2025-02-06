@@ -1,98 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-5911-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5912-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52C65C02194
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2025 19:53:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4ED9C02194
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2025 20:28:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YpnpH4y2sz30ML;
-	Fri,  7 Feb 2025 06:53:11 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738871591;
-	cv=none; b=ft0s/aJL+iCZyb99p3JC57TYtRdagznnCKSQ2kynpeH+0vSV0hNPMH2ydUuyBz9fsM4rWMQ9fDvvhIZrEK6gVsYwkWwYZq4cfNa+XLwuvZPUJO5eU3N746xFRbrlmXcKRQOnDYxtu+VRuq17hElsmlgAKpVEHX/7+z2kajUVVFqVhYHQCRE2CV2dsNlFgS+kkJWsJ5zBbi45oYfv7PEv+0kTbLo9eCZwHW7LlQ4vbXDp47KoDJ7kLBpgQ1xfAW2oeS5LTbQPRUN0rclfUfZI0yLl6o7zPdC6PPPHEsP6UmTW4xPCZIMjleOZhMaf4CtIXoRPQMYL2LUoSiCtB1MzYg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YppZf2jxpz30MY;
+	Fri,  7 Feb 2025 07:28:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.63.210.85
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738846048;
+	cv=none; b=NlPInPtTQqN6xJuGcbkFOnqQ/zDNb2lFFupuJ/ILEuC41iZgVE0xeLDA7jf9I2FVA7vsT39JywkzD4q8CElgvT/WQsyk2Wyj8au0IxHWYtO3YJ8XXqYhu/jQOYF8v9BWDzI15KhXbbdkRdyjWgsV2MJXuo7gqU5f0D2qt3urCg1JDTlKJQRe7LqDyYsIlSTylZ9qkoYOC9jfH4YL4GNTolCyW7gbzgiQqXUWWtGOy5966I2aerA3gmSlfrXsYsCbUT1Ri1UksLS1GooDXeowRWQ3PGxhf3WEoEUTeTFAIOLVNEjxkS6V+tM36h+obpD0CYSMSzXQnY53N3eerRfWiQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738871591; c=relaxed/relaxed;
-	bh=7JgvIAIceAwHxj2fyskGk885eH/ty9kKVu+V1n/Kkmk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=n+VqOiirCuCtecKad9+Kx4mB0XVu5y3sRMn7cBVf6MAZkgLng+bfTpFoDp6DrDNYrUKqRLwKszCJDGA+Ah6zAySvqfyQQ4H+MR/7nl30EZTRg5UUefbc/7U88oevz3LjTytWmbaPZncxH6rSeP/IZg7F+DlqEBDtNfeNP3zd3DxsXzBfjIXEM1Gr9uESeBT0hmor/Tdmg2wmFb3gibEO4QuTy0gfAWPVBekfHj77reyYLRtp00mC6Ka7NemQMDKlLR/zpFSCGzhHs5vUbTz7LhJklVMPVzzhaLnvaM69PWHevTrQLfGaiWgu65DyN5k8NTpM6GkVgK6ThMX0G5Fyrg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rZrR517e; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=J3Tvfp0S; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DUleIDDA; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=QNSCHbGt; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1738846048; c=relaxed/relaxed;
+	bh=gGjxLpCbPBjW2Ych8XSy3B16+07LZI5NC9HXokxFssw=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
+	 MIME-Version:Content-Type; b=JjcRbdsiJr9WSSUAlEMwm12mTESwjI074BOlQMQpV69On66UN7t7o/frHirEEwClO8CGDQGR3Dmb7dKH2t3mlqygOGW5uSqnEe2nbDf2YLm6P9OmEl34FPbdj+JRzQndZkevtUFB9XsQ8IpBRtgWWWFIaoZZMlPpq7i3U2J/Y4mrq5/6XnRxMsl0calbGq5xq2F3xQGTEaDN4RHKbncri5tEsDKC2J37J94RmTYipO4hXt4ml0ShA9fvXtFzoohzG+ZlVi4QrEUxfUYT59o1JdiLHg02BwixnQ6shKuG3f3euyFurLszstKy5SEcGnN5Viknm+Ckd40x+pZjc7vJWg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=asahilina.net; dkim=pass (2048-bit key; secure) header.d=asahilina.net header.i=@asahilina.net header.a=rsa-sha256 header.s=default header.b=nwevoDBb; dkim-atps=neutral; spf=pass (client-ip=212.63.210.85; helo=mail.marcansoft.com; envelope-from=lina@asahilina.net; receiver=lists.ozlabs.org) smtp.mailfrom=asahilina.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=asahilina.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=rZrR517e;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=J3Tvfp0S;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=DUleIDDA;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=QNSCHbGt;
+	dkim=pass (2048-bit key; secure) header.d=asahilina.net header.i=@asahilina.net header.a=rsa-sha256 header.s=default header.b=nwevoDBb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=asahilina.net (client-ip=212.63.210.85; helo=mail.marcansoft.com; envelope-from=lina@asahilina.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 366 seconds by postgrey-1.37 at boromir; Thu, 06 Feb 2025 23:47:25 AEDT
+Received: from mail.marcansoft.com (marcansoft.com [212.63.210.85])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YpnpG3KjMz304f
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2025 06:53:10 +1100 (AEDT)
-Received: from kitsune.suse.cz (unknown [10.100.12.127])
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YpcM15xqtz307V
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Feb 2025 23:47:25 +1100 (AEDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
 	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id EE92421163;
-	Thu,  6 Feb 2025 19:53:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1738871587; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7JgvIAIceAwHxj2fyskGk885eH/ty9kKVu+V1n/Kkmk=;
-	b=rZrR517efNCOoa49s4+wv59OdAQbG4xDK/2eTkjP7jpYIHDuGJrITPmSognfa99QzzLomt
-	SlUP4g5GXdjVjewFeBLmEC6fQN5OqjJXWrLsQArV3OCFtamoU7A51HMc4ahfE/JX9DvfSw
-	sDrM5jZR9HJFYUNQnQirVACA1l1zslQ=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1738871587;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7JgvIAIceAwHxj2fyskGk885eH/ty9kKVu+V1n/Kkmk=;
-	b=J3Tvfp0SkFC5Dh3zb5qrMLBeyjN0VVlsI6Zm9PVd07FPdXKbjIYUsnSaQOWZY5g6URaqce
-	VQ/N+ZanCpRpdmCg==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1738871586; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7JgvIAIceAwHxj2fyskGk885eH/ty9kKVu+V1n/Kkmk=;
-	b=DUleIDDAhFWAZ5P+H4QOKCGzLYMFqC6NRrox6Z0XWm5NkMjOo/Neyn26j0adwaA0zCH7Z1
-	KkRR3a/hnh62Gf2sDxwwJAqMAdTdJRbrKSoetdmj2r3u3dn545m1vRJ3TNrllkTJo3jeg6
-	FuEnCBB2XfcsXb3ynzYkseZ7C6jvZ8c=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1738871586;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=7JgvIAIceAwHxj2fyskGk885eH/ty9kKVu+V1n/Kkmk=;
-	b=QNSCHbGtlKqCTrXDs81VvAdDGvSnKPmYCnn6i0QC4XdtnZ/55ST5kIExaYAuQb10pv/rHv
-	K9llWdmXciremUCg==
-Date: Thu, 6 Feb 2025 20:53:05 +0100
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Haren Myneni <haren@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
-	npiggin@gmail.com, mahesh@linux.ibm.com, tyreld@linux.ibm.com,
-	hbabu@us.ibm.com
-Subject: Re: [PATCH v2 6/6] powerpc/pseries: Add papr-platform-dump character
- driver for dump retrieval
-Message-ID: <Z6UTId3-o5HM69IY@kitsune.suse.cz>
-References: <20250111003010.2147021-1-haren@linux.ibm.com>
- <20250111003010.2147021-7-haren@linux.ibm.com>
- <Z6N1pDdLbcFXg3bi@kitsune.suse.cz>
- <d9341cf39ff817e7c1a47f0f793ac6e61dd1d2fc.camel@linux.ibm.com>
- <Z6R-WEfBCBpMQpey@kitsune.suse.cz>
- <9a1b6a0accb80b2824037f93ffb120a3aabd02a5.camel@linux.ibm.com>
- <Z6TV8q-IsJ5XGOgN@kitsune.suse.cz>
- <63702395ffbbb9362a7290dc87f5504969c1a67e.camel@linux.ibm.com>
+	(Authenticated sender: lina@asahilina.net)
+	by mail.marcansoft.com (Postfix) with ESMTPSA id 309B343A93;
+	Thu,  6 Feb 2025 12:41:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=asahilina.net;
+	s=default; t=1738845671;
+	bh=gGjxLpCbPBjW2Ych8XSy3B16+07LZI5NC9HXokxFssw=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References;
+	b=nwevoDBbC0UeG2eDXtUawSqdQxRm+euSZHd3ngRpkByL0DD9kCFf49BH0SVwqgk2n
+	 VbPbgsXeuo5qKxEQitzDnNoYRnRhrDKUdwnfZEkFo1hN7pvdu935hNtstjc2/IZoPD
+	 wZ84XMWJKbaTiwQ/YcDC3VxbjMRTo+8kUIfTzRhKhmMvCUS0mMfOHTpNhAIUJH1Hco
+	 bUkn/83a2NXwoIF45+wABskiOXwaXu9MjBUmoX7JF/ca3nB3DXUGRGPVqXmKTz2oWw
+	 XQrIRRijvdh5im9KZQEg5MV7prp92svrz8nBInZM8ksGdBxRXC4dm5xe52/WWrZvPA
+	 ZkBWJ4Sif4Mvw==
+Date: Thu, 06 Feb 2025 13:41:11 +0100
+From: Asahi Lina <lina@asahilina.net>
+To: Dan Williams <dan.j.williams@intel.com>, Vivek Goyal <vgoyal@redhat.com>,
+ Alistair Popple <apopple@nvidia.com>
+CC: akpm@linux-foundation.org, dan.j.williams@intel.com, linux-mm@kvack.org,
+ alison.schofield@intel.com, zhang.lyra@gmail.com,
+ gerald.schaefer@linux.ibm.com, vishal.l.verma@intel.com,
+ dave.jiang@intel.com, logang@deltatee.com, bhelgaas@google.com, jack@suse.cz,
+ jgg@ziepe.ca, catalin.marinas@arm.com, will@kernel.org, mpe@ellerman.id.au,
+ npiggin@gmail.com, dave.hansen@linux.intel.com, ira.weiny@intel.com,
+ willy@infradead.org, djwong@kernel.org, tytso@mit.edu, linmiaohe@huawei.com,
+ david@redhat.com, peterx@redhat.com, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, nvdimm@lists.linux.dev,
+ linux-cxl@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linux-ext4@vger.kernel.org, linux-xfs@vger.kernel.org, jhubbard@nvidia.com,
+ hch@lst.de, david@fromorbit.com, chenhuacai@kernel.org, kernel@xen0n.name,
+ loongarch@lists.linux.dev, Hanna Czenczek <hreitz@redhat.com>,
+ German Maglione <gmaglione@redhat.com>
+Subject: Re: [PATCH v6 01/26] fuse: Fix dax truncate/punch_hole fault path
+User-Agent: K-9 Mail for Android
+In-Reply-To: <67a3fde7da328_2d2c2942b@dwillia2-xfh.jf.intel.com.notmuch>
+References: <cover.11189864684e31260d1408779fac9db80122047b.1736488799.git-series.apopple@nvidia.com> <bfae590045c7fc37b7ccef10b9cec318012979fd.1736488799.git-series.apopple@nvidia.com> <Z6NhkR8ZEso4F-Wx@redhat.com> <67a3fde7da328_2d2c2942b@dwillia2-xfh.jf.intel.com.notmuch>
+Message-ID: <A1E3C5B2-CCD8-41BA-BBC8-E8338C18D485@asahilina.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,111 +83,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <63702395ffbbb9362a7290dc87f5504969c1a67e.camel@linux.ibm.com>
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-0.996];
-	MIME_GOOD(-0.10)[text/plain];
-	MISSING_XM_UA(0.00)[];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[8];
-	RCVD_COUNT_ZERO(0.00)[0];
-	MIME_TRACE(0.00)[0:+];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	FREEMAIL_CC(0.00)[lists.ozlabs.org,linux.ibm.com,ellerman.id.au,gmail.com,us.ibm.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_HAS_DN(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FROM_EQ_ENVFROM(0.00)[];
-	TO_DN_SOME(0.00)[]
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, Feb 06, 2025 at 10:34:42AM -0800, Haren Myneni wrote:
-> On Thu, 2025-02-06 at 16:32 +0100, Michal Suchánek wrote:
-> > On Thu, Feb 06, 2025 at 07:28:14AM -0800, Haren Myneni wrote:
-> > > On Thu, 2025-02-06 at 10:18 +0100, Michal Suchánek wrote:
-> > > > On Wed, Feb 05, 2025 at 11:51:19PM -0800, Haren Myneni wrote:
-> > > > > On Wed, 2025-02-05 at 15:28 +0100, Michal Suchánek wrote:
+Hi,
 
-> > > > > > > +
-> > > > > > > +	if (params->status != RTAS_IBM_PLATFORM_DUMP_COMPLETE)
-> > > > > > > +		pr_warn("Platform dump is not complete, but
-> > > > > > > requested "
-> > > > > > > +			"to invalidate dump for ID(%llu)\n",
-> > > > > > > +			dump_tag);
-> > > > > > 
-> > > > > > Not sure if something should be done here or if relying on
-> > > > > > translation
-> > > > > > of the error from the RTAS call is advisable.
-> > > > > 
-> > > > > This check just diplays message in case if the user initiated
-> > > > > to
-> > > > > invalidate the dump without saving it completely. Then
-> > > > > invalidates
-> > > > > the
-> > > > > dump with RTAS call and retuns the RTAS return value. 
-> > > > > 
-> > > > > As mentioned above, platform-dump is available only on non-HMC
-> > > > > based
-> > > > > systems. So invoke the collection of dump by BMC based
-> > > > > interface,
-> > > > > not
-> > > > > widely used. I can remove this check if preferred.
-> > > > 
-> > > > From the previous discussion it sounds like trying to invalidate
-> > > > the
-> > > > dump without first reading it in full is an error.
-> > > 
-> > > Thanks for your suggestions.
-> > > 
-> > > Yes, it was doing as part of read() calls. But explicit ioctl to
-> > > invalidate here. I was thinking like user space removing FD without
-> > > reading or writing operation.
-> > 
-> > And is it possible to invalidate the dump without reading it fully
-> > first?
-> > 
-> > If not then there is no point trying to do the call that is known to
-> > fail anyway.
-> 
-> Generally not possible if uses librtas API rtas_platform_dump() which
-> reads the dump completely and then the application calls this API
-> explicitly to invalidate the dump (with buffer NULL - as doing in the
-> current implementation). The current use case is extract_platdump
-> command (ppc64-diag package)
-> 
-> extract_platdump() {   /* we are not chamging this implementation */
->  
-> status = rtas_platform_dump() - initial call
-> while !dump_complete {
-> 	status = rtas_platform_dump()
-> 	if (status < 0) failure
-> 	if (status == 0) dump_complete = 1
-> }
-> 
-> status = rtas_platform_dump() -  to invalidate dump by passing buffer =
-> NULL
-> 
-> We should not expect using any command other than extract_platdump
-> since the use case of collecting platform dump is narrow and is only on
-> non-hmc based systems.
-> 
-> Hence added warning message if the dump is not completely read and
-> invalidate the dump like removing file by mistake.
-> 
-> But I like your suggestion of returning an error (-EPERM) if not saved
-> the dump completely.
+On February 6, 2025 1:10:15 AM GMT+01:00, Dan Williams <dan=2Ej=2Ewilliams=
+@intel=2Ecom> wrote:
+>Vivek Goyal wrote:
+>> On Fri, Jan 10, 2025 at 05:00:29PM +1100, Alistair Popple wrote:
+>> > FS DAX requires file systems to call into the DAX layout prior to unl=
+inking
+>> > inodes to ensure there is no ongoing DMA or other remote access to th=
+e
+>> > direct mapped page=2E The fuse file system implements
+>> > fuse_dax_break_layouts() to do this which includes a comment indicati=
+ng
+>> > that passing dmap_end =3D=3D 0 leads to unmapping of the whole file=
+=2E
+>> >=20
+>> > However this is not true - passing dmap_end =3D=3D 0 will not unmap a=
+nything
+>> > before dmap_start, and further more dax_layout_busy_page_range() will=
+ not
+>> > scan any of the range to see if there maybe ongoing DMA access to the
+>> > range=2E Fix this by passing -1 for dmap_end to fuse_dax_break_layout=
+s()
+>> > which will invalidate the entire file range to
+>> > dax_layout_busy_page_range()=2E
+>>=20
+>> Hi Alistair,
+>>=20
+>> Thanks for fixing DAX related issues for virtiofs=2E I am wondering how=
+ are
+>> you testing DAX with virtiofs=2E AFAIK, we don't have DAX support in Ru=
+st
+>> virtiofsd=2E C version of virtiofsd used to have out of the tree patche=
+s
+>> for DAX=2E But C version got deprecated long time ago=2E
+>>=20
+>> Do you have another implementation of virtiofsd somewhere else which
+>> supports DAX and allows for testing DAX related changes?
+>
+>I have personally never seen a virtiofs-dax test=2E It sounds like you ar=
+e
+>saying we can deprecate that support if there are no longer any users=2E
+>Or, do you expect that C-virtiofsd is alive in the ecosystem?
 
-I think EPERM is not correct in this case. It's not a problem of
-permission but of incorrect state.
+I accidentally replied offlist, but I wanted to mention that libkrun suppo=
+rts DAX and we use it in muvm=2E It's a critical part of x11bridge function=
+ality, since it uses DAX to share X11 shm fences between X11 clients in the=
+ VM and the XWayland server on the host, which only works if the mmaps are =
+coherent=2E
 
-There are some errors around that like EBUSY or EINPROGRESS.
+(Sorry for the unwrapped reply, I'm on mobile right now=2E)
 
-Thanks
-
-Micahl
+~~ Lina
 
