@@ -1,88 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-5914-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5915-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94C38C02194
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2025 20:33:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9715C02194
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Feb 2025 20:42:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yppj56t5Hz30N8;
-	Fri,  7 Feb 2025 07:33:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738853966;
-	cv=none; b=EEZgIgKVdaIGnI3A7S/MSjO647ckih333bD6LsqnRC+fxodOZs41C1g3UY8UycY3nO0OMIFXxQ+h9a4lJ2aGngcf1+p2dzIe7XuNVtfsVzY9YiAXwPI5tcNzmbNgs+ZJDRIJETv1YnqUuuUiOe1X8eBs0bz3WW3GH9L5tOEjzcw3qaulUk6rJ7Q6QMv+gat+fr31mj4mLlgHQQYrWr6PMxHvOauOi0gwtkP5FwyOEoFT5pqBQe+2bnFAln6ACO3wx48adgjkldvbqmQ82GyxxWLCLqq1sexm0mFePza60yh5z+4WnYtJlHOhXWkXRZyI2KfzJFs+GFwjo3IdVJAH1A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ypptc0nr7z301N;
+	Fri,  7 Feb 2025 07:42:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.63.210.85
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738871849;
+	cv=none; b=aETjP4zZn41UK1U2lMMiZvwX6LSQ92ZGXYQfpW3E96o5FpU52ZlkUd8LDcmUStX5MzyPKW4RKH95yv8599KEReSFtBt+TOTfbNe2ZOi6pp3UVa84BmcAcqJ/fWwZuoBD/iYj0AGvwzyd16iD4OakLy2He6DynVDQcgykUWaLZI+BXQQkObv7EX2AhcCqlbIxzBIpH/kdJnVW7nZn3LxpnK4RcygraAloXo8RjuWYsLNtTCJC8sDfyk34hhtJxRC5xkgcTPh9LJ2a7aTAs+zYIDcJoMYTSjzoNxwoD89sVzHKseBfE4qiR1SFMomaL1RFu3oQ56MezaJqq5gVF83M+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738853966; c=relaxed/relaxed;
-	bh=U74SGZiAIGmMlazRLhrpYiZ/iTjbN0drFn9h+a0WXAw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=TOw4O7gUK+8vtPzorPfthlxukNKD04wqUOie58GdIxdxwi2ULgI4t8VWBz9LCYkLuliPOrK1bGouqhiG/LI5109gn83BCenN+bp0WnsCzHFuD281r5JEt79uq02aVwiOxEQtyqVA4v5dbe1BI3nnUVkAzirLjUZNurwuKTYImTwRMmXadhO56y4hTx5XZPZVrHlIPCsBWFvaf+mqtojT648zQazMtPAgStlZER8GP2wOm0YT10LPYw/DK5tM/vbd5ExKhJ3G8oy2FaZ9NIcIeDme3drpV5GhJya2h7VR4+SvzRRgccMsqIUYRJHooGOhsLPVoufVwoBFqWH4BXWk6A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IdukG7zH; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FC/DO2/j; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=aesteve@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	t=1738871849; c=relaxed/relaxed;
+	bh=Oq2MSbg8uowd0cp7hGubDTrXjjRg2sj0R+N70jk1ffs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=QH+ZT91vK5/Of4d33nGsXaqyxE+MrGirRM0B6CXu0YYxkwz9UyWGrQmYwLWZ8MBPH7hKq/ZLNl1LIOi7CrHPSrCtRfI/wMOtzH3iBjnrqJTqY8mzZ+48nGLx/pWLm2OHJS+t941h6DzdXbtUXT7MmO2ih5VGmq36iuXp6MAvB5exaRa1sy/2v1XlwYL/xpSeL6KEZimERNvS0PUmOt5nEr44f+UpQwRvFyQ7SRpwUsRKznSeAnIuizws7bSTuHsqYwM8Y0nOXdxFvZsfQ9jqstbQWrRaGARf7j6qk7HzD72QuHaaL2OJInCDWCr0I7sOEtfy4zg+HledGlPvTkNnLw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=asahilina.net; dkim=pass (2048-bit key; secure) header.d=asahilina.net header.i=@asahilina.net header.a=rsa-sha256 header.s=default header.b=NCRCOX62; dkim-atps=neutral; spf=pass (client-ip=212.63.210.85; helo=mail.marcansoft.com; envelope-from=lina@asahilina.net; receiver=lists.ozlabs.org) smtp.mailfrom=asahilina.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=asahilina.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IdukG7zH;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FC/DO2/j;
+	dkim=pass (2048-bit key; secure) header.d=asahilina.net header.i=@asahilina.net header.a=rsa-sha256 header.s=default header.b=NCRCOX62;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=aesteve@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=asahilina.net (client-ip=212.63.210.85; helo=mail.marcansoft.com; envelope-from=lina@asahilina.net; receiver=lists.ozlabs.org)
+Received: from mail.marcansoft.com (marcansoft.com [212.63.210.85])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YpgHJ6ckqz2ydW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2025 01:59:23 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1738853959;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=U74SGZiAIGmMlazRLhrpYiZ/iTjbN0drFn9h+a0WXAw=;
-	b=IdukG7zHcjbwzv/f3JojfJsBikQY78FJFCG9oIm/rVa9dF8+fkxjgtRotISd6u1LIRdL8A
-	t/4XmQSO0hLrrmwDBeQi/8NAyN6c19A4sIqvx56B5ace54oDMCN6UzSVzmefoyR5eujFNc
-	lh2GY/5bawpZJEn53cUr6CzlRKlSD+8=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1738853960;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=U74SGZiAIGmMlazRLhrpYiZ/iTjbN0drFn9h+a0WXAw=;
-	b=FC/DO2/j9U4vH3IY8jDYSil1qXftx/tkzbxaapS0QhSNvef+KRNYIJ0yP8pSauTD3QD27f
-	UMCR1QQdJO9Htf0mDtVGr5Lry6DAt+1QefeZ+uPDs2o4RwwlkiZAK2RlRqV/dhh+3hM39s
-	VZDjkqg35ga4oPo7iIQNqvWEzQJzOi4=
-Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com
- [209.85.216.72]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-272-GAYqrJwpPzWI_6G-0-69ug-1; Thu, 06 Feb 2025 09:59:18 -0500
-X-MC-Unique: GAYqrJwpPzWI_6G-0-69ug-1
-X-Mimecast-MFC-AGG-ID: GAYqrJwpPzWI_6G-0-69ug
-Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-2f780a3d6e5so2215322a91.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 06 Feb 2025 06:59:17 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1738853957; x=1739458757;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=U74SGZiAIGmMlazRLhrpYiZ/iTjbN0drFn9h+a0WXAw=;
-        b=tnZxMSpWdCuJKm/VTMGBc+RsBaCHI3lb5eRGrKGrXWeNK+RuBHrx8ylyUKQ3S4b59d
-         B2LUcZ6YRHFT1uk1jefsturi8E7yZ7xAqiKduzHWdJnRe+nc0LGEIXh224+oq0imKCWi
-         qfLBewIq7KXZxowMNewjQoYyo/kNjkVUsOsgP4lic7CxQOBDsqhSq+dNt5z+rsBPM5Fm
-         PEEuMUzDXj2l1XYdaSG3E6N+zvRXelEiBUWlq+hCu7kXWJURqGJuxdA7rGmYUpLd8awh
-         Rit7nNqG9+uFDtz6a2I9hmU+tmfW9zlyfQDZvEPzWQhdz1YIAQwpP8NlfwP20kRtwhz5
-         O7jg==
-X-Forwarded-Encrypted: i=1; AJvYcCUFZEB/kFOppjPqSljrWKPBrOTiqx44C4fy8OE8U8V5Ui4LHUvNa3K580nDg3EF5KlDZH6gmI/LthGS97A=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxiJNPmpyLB9VDJKBvIIE0daPYAKs3NB8XhkfD2ZLg3MDtX0twm
-	bKReUqoAF5GfvNLOTQzKHDcXz6uL7QrbBsasLIJ85PoajObVCzp6xcyZe/oLX/Qj5SdEtc8CdtN
-	yW4ZsizhIgsJLqvbViYLtTJyxDMuSLaVn60sZ2Tvr5i+/GyP0AlNplRpnPDp/p8BLd9QlCQSjPj
-	fKjlyDvzd5YNqMryDDguFGBkMEhDqhbT2oGyaD6g==
-X-Gm-Gg: ASbGncux2f2m7FohVDqzv3Oh+D25n3CoaWHu07W049LTAaa75yPUcvXsK1SyU4xd4QX
-	S35N6Hq0tRoO2Icwk6i1CKuTvT/4s4FYJTVCKSN8EKzbhfboXa4AxLAeT/JhA+unz
-X-Received: by 2002:a17:90b:2786:b0:2ee:e518:c1d8 with SMTP id 98e67ed59e1d1-2f9e082f33emr11110511a91.30.1738853955625;
-        Thu, 06 Feb 2025 06:59:15 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IFWpQlGfjL4+bcsd9CXoOi/pDbHuiuuwkJUWCLm8Y4KSWCpEnRWVj/utErs2ioiglleYEOHWPatBsG9+Rhw180=
-X-Received: by 2002:a17:90b:2786:b0:2ee:e518:c1d8 with SMTP id
- 98e67ed59e1d1-2f9e082f33emr11110445a91.30.1738853955312; Thu, 06 Feb 2025
- 06:59:15 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YpnvC25zkz304f
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2025 06:57:25 +1100 (AEDT)
+Received: from [127.0.0.1] (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits))
+	(No client certificate requested)
+	(Authenticated sender: lina@asahilina.net)
+	by mail.marcansoft.com (Postfix) with ESMTPSA id BEC3E43A93;
+	Thu,  6 Feb 2025 19:57:14 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=asahilina.net;
+	s=default; t=1738871838;
+	bh=E+lU6r2Gicb6SJrSYXFHxoENYWrJPQXqghLrsfBIZ0E=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To;
+	b=NCRCOX62cpd8AaeYgG4rxET2H1BdW5ASoApszzfwGbbwxcAi8JWEtWH7VKPS0yNrU
+	 KFiGoOBJTGUiBY398SaWyKoOkkxLQKgcKB++A5vdRnKurYaFamwfuqDeD4Li0V7/BD
+	 ZFbnXCZIVstHri09WyTDk3rsvei3iqp3Wv88gFpTjboT5hk1QReVygK8DNbS1rAE5e
+	 ZVYOfzgP+exVnyyAMksacexFZh5ai5B5OIZuRLE+1hNKKzMmVYnbjvHmFUsKLTJapX
+	 sqeFezTN1APVg2wUKlFuAfP0pLwgdEGNsgDxRLidt+apRNe3K3Tef2DzbQ48tGi6XJ
+	 h0XYECuYgyX9w==
+Message-ID: <2f4728be-3a0d-4bc3-ab11-6b1e2e3fbc6e@asahilina.net>
+Date: Fri, 7 Feb 2025 04:57:13 +0900
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,77 +60,106 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 01/26] fuse: Fix dax truncate/punch_hole fault path
+To: Dan Williams <dan.j.williams@intel.com>, Vivek Goyal <vgoyal@redhat.com>,
+ Alistair Popple <apopple@nvidia.com>, Sergio Lopez Pascual <slp@redhat.com>
+Cc: akpm@linux-foundation.org, linux-mm@kvack.org,
+ alison.schofield@intel.com, zhang.lyra@gmail.com,
+ gerald.schaefer@linux.ibm.com, vishal.l.verma@intel.com,
+ dave.jiang@intel.com, logang@deltatee.com, bhelgaas@google.com,
+ jack@suse.cz, jgg@ziepe.ca, catalin.marinas@arm.com, will@kernel.org,
+ mpe@ellerman.id.au, npiggin@gmail.com, dave.hansen@linux.intel.com,
+ ira.weiny@intel.com, willy@infradead.org, djwong@kernel.org, tytso@mit.edu,
+ linmiaohe@huawei.com, david@redhat.com, peterx@redhat.com,
+ linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ nvdimm@lists.linux.dev, linux-cxl@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
+ linux-xfs@vger.kernel.org, jhubbard@nvidia.com, hch@lst.de,
+ david@fromorbit.com, chenhuacai@kernel.org, kernel@xen0n.name,
+ loongarch@lists.linux.dev, Hanna Czenczek <hreitz@redhat.com>,
+ German Maglione <gmaglione@redhat.com>
 References: <cover.11189864684e31260d1408779fac9db80122047b.1736488799.git-series.apopple@nvidia.com>
  <bfae590045c7fc37b7ccef10b9cec318012979fd.1736488799.git-series.apopple@nvidia.com>
- <Z6NhkR8ZEso4F-Wx@redhat.com> <67a3fde7da328_2d2c2942b@dwillia2-xfh.jf.intel.com.notmuch>
- <Z6S7A-51SdPco_3Z@redhat.com> <20250206143032.GA400591@fedora>
-In-Reply-To: <20250206143032.GA400591@fedora>
-From: Albert Esteve <aesteve@redhat.com>
-Date: Thu, 6 Feb 2025 15:59:03 +0100
-X-Gm-Features: AWEUYZm-M5VdAvcj3hSDqRtWWsY2KSl-UpKtCd6mALNvZQI6X9XPfCW9uUgmKYc
-Message-ID: <CADSE00+2o5Ma0W6FBLHwpUaKut9Tf74GKLCU-377qgxr08EeoQ@mail.gmail.com>
-Subject: Re: [PATCH v6 01/26] fuse: Fix dax truncate/punch_hole fault path
-To: Stefan Hajnoczi <stefanha@redhat.com>
-Cc: Vivek Goyal <vgoyal@redhat.com>, Dan Williams <dan.j.williams@intel.com>, 
-	Alistair Popple <apopple@nvidia.com>, akpm@linux-foundation.org, linux-mm@kvack.org, 
-	alison.schofield@intel.com, lina@asahilina.net, zhang.lyra@gmail.com, 
-	gerald.schaefer@linux.ibm.com, vishal.l.verma@intel.com, dave.jiang@intel.com, 
-	logang@deltatee.com, bhelgaas@google.com, jack@suse.cz, jgg@ziepe.ca, 
-	catalin.marinas@arm.com, will@kernel.org, mpe@ellerman.id.au, 
-	npiggin@gmail.com, dave.hansen@linux.intel.com, ira.weiny@intel.com, 
-	willy@infradead.org, djwong@kernel.org, tytso@mit.edu, linmiaohe@huawei.com, 
-	david@redhat.com, peterx@redhat.com, linux-doc@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linuxppc-dev@lists.ozlabs.org, nvdimm@lists.linux.dev, 
-	linux-cxl@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linux-ext4@vger.kernel.org, linux-xfs@vger.kernel.org, jhubbard@nvidia.com, 
-	hch@lst.de, david@fromorbit.com, chenhuacai@kernel.org, kernel@xen0n.name, 
-	loongarch@lists.linux.dev, Hanna Czenczek <hreitz@redhat.com>, 
-	German Maglione <gmaglione@redhat.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: PT4rsNrOc6PFHfRQEjrby8-dyIyc9WNtvJKboqnzbnE_1738853957
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+ <Z6NhkR8ZEso4F-Wx@redhat.com>
+ <67a3fde7da328_2d2c2942b@dwillia2-xfh.jf.intel.com.notmuch>
+ <A1E3C5B2-CCD8-41BA-BBC8-E8338C18D485@asahilina.net>
+ <67a5111b2f805_2d2c29448@dwillia2-xfh.jf.intel.com.notmuch>
+Content-Language: en-US
+From: Asahi Lina <lina@asahilina.net>
+In-Reply-To: <67a5111b2f805_2d2c29448@dwillia2-xfh.jf.intel.com.notmuch>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Hi!
+On 2/7/25 4:44 AM, Dan Williams wrote:
+> Asahi Lina wrote:
+>> Hi,
+>>
+>> On February 6, 2025 1:10:15 AM GMT+01:00, Dan Williams <dan.j.williams@intel.com> wrote:
+>>> Vivek Goyal wrote:
+>>>> On Fri, Jan 10, 2025 at 05:00:29PM +1100, Alistair Popple wrote:
+>>>>> FS DAX requires file systems to call into the DAX layout prior to unlinking
+>>>>> inodes to ensure there is no ongoing DMA or other remote access to the
+>>>>> direct mapped page. The fuse file system implements
+>>>>> fuse_dax_break_layouts() to do this which includes a comment indicating
+>>>>> that passing dmap_end == 0 leads to unmapping of the whole file.
+>>>>>
+>>>>> However this is not true - passing dmap_end == 0 will not unmap anything
+>>>>> before dmap_start, and further more dax_layout_busy_page_range() will not
+>>>>> scan any of the range to see if there maybe ongoing DMA access to the
+>>>>> range. Fix this by passing -1 for dmap_end to fuse_dax_break_layouts()
+>>>>> which will invalidate the entire file range to
+>>>>> dax_layout_busy_page_range().
+>>>>
+>>>> Hi Alistair,
+>>>>
+>>>> Thanks for fixing DAX related issues for virtiofs. I am wondering how are
+>>>> you testing DAX with virtiofs. AFAIK, we don't have DAX support in Rust
+>>>> virtiofsd. C version of virtiofsd used to have out of the tree patches
+>>>> for DAX. But C version got deprecated long time ago.
+>>>>
+>>>> Do you have another implementation of virtiofsd somewhere else which
+>>>> supports DAX and allows for testing DAX related changes?
+>>>
+>>> I have personally never seen a virtiofs-dax test. It sounds like you are
+>>> saying we can deprecate that support if there are no longer any users.
+>>> Or, do you expect that C-virtiofsd is alive in the ecosystem?
+>>
+>> I accidentally replied offlist, but I wanted to mention that libkrun
+>> supports DAX and we use it in muvm. It's a critical part of x11bridge
+>> functionality, since it uses DAX to share X11 shm fences between X11
+>> clients in the VM and the XWayland server on the host, which only
+>> works if the mmaps are coherent.
+> 
+> Ah, good to hear. It would be lovely to integrate an muvm smoketest
+> somewhere in https://github.com/pmem/ndctl/tree/main/test so that we
+> have early warning on potential breakage.
 
-On Thu, Feb 6, 2025 at 3:30=E2=80=AFPM Stefan Hajnoczi <stefanha@redhat.com=
-> wrote:
->
-> On Thu, Feb 06, 2025 at 08:37:07AM -0500, Vivek Goyal wrote:
-> > And then there are challenges at QEMU level. virtiofsd needs additional
-> > vhost-user commands to implement DAX and these never went upstream in
-> > QEMU. I hope these challenges are sorted at some point of time.
->
-> Albert Esteve has been working on QEMU support:
-> https://lore.kernel.org/qemu-devel/20240912145335.129447-1-aesteve@redhat=
-.com/
->
-> He has a viable solution. I think the remaining issue is how to best
-> structure the memory regions. The reason for slow progress is not
-> because it can't be done, it's probably just because this is a
-> background task.
+I think you'll probably want a smoke test using libkrun directly, since
+muvm is quite application-specific. It's really easy to write a quick C
+file to call into libkrun and spin up a VM.
 
-It is partially that, indeed. But what has me blocked for now on posting th=
-e
-next version is that I was reworking a bit the MMAP strategy.
-Following David comments, I am relying more on RAMBlocks and
-subregions for mmaps. But this turned out more difficult than anticipated.
+If it's supposed to test an arbitrary kernel though, I'm not sure what
+the test setup would look like. You'd need to run it on a host (whose
+kernel is mostly irrelevant) and then use libkrun to spin up a VM with a
+guest, which then runs the test. libkrun normally uses a bundled kernel
+though (shipped as libkrunfw), we'd need to add an API to specify an
+external kernel binary I guess?
 
-I hope I can make it work this month and then post the next version.
-If there are no major blockers/reworks, further iterations on the
-patch shall go smoother.
+I'm happy to help with that, but I'll need to know a bit more about the
+intended usage first. I *think* most of the scaffolding for running
+arbitrary kernels is already planned, since there was some talk of
+running the host kernel as the guest kernel, so this wouldn't add much
+work on top of that.
 
-I have a separate patch for the vhost-user spec which could
-iterate faster, if that'd help.
+I definitely have a few tests in mind if we do put this together, since
+I know of one or two things that are definitely broken in DAX upstream
+right now (which I *think* this series fixes but I never got around to
+testing it...).
 
-BR,
-Albert.
+Cc: slp for libkrun.
 
->
-> Please discuss with Albert if QEMU support is urgent.
->
-> Stefan
+~~ Lina
 
 
