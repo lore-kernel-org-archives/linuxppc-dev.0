@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-5956-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5957-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 148FAC0219D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2025 21:31:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4A61C0219D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2025 21:31:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YqRwL2QT0z30VS;
-	Sat,  8 Feb 2025 08:30:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YqRwM2Lpfz30W7;
+	Sat,  8 Feb 2025 08:30:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738963842;
-	cv=none; b=Mo5v4N9OmsHTf9oULAKOnsEIlzlDT7fyLmnVFFOEbDt/tpkHJJYMIzyPlbSFfXTMObexfnVldCRRhb9MbFH88jS4ORyJ3Do6NCpdJhxsNpvq4IWXT0amSfbGPoVQw79hFEiLGc7Boxxx/9mLi7YqEvD3LpGvmQz1rfRiEZr4azslxB6B5/WYdCIFzijOGyS6g0Hf/SfiKB5R8eYe0NJ/dl85DuJg7OD3nDHU9P3NTON+Odod9cgR37HBxSYljml9aTjgFgf3YRugoIkkvpeIL0rozi36rFYVKXE9hoBGbtof22ZTp/ZWW6Jhv7z5J0ii4v+g6xfAq+dFPWYWIQ06fw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738963843;
+	cv=none; b=VB52ftuCnlzeTQclTUWbKArI3lHAGGycIZeh3YyIUZppmBOmS7HQiYnDWWN0XWNnzLHyF8d0zZG8U1sI8aokxhLAP0XZUh69LaS1JSu6LhS/7Yl7wyI+GwuLc7O9pU06TnGOBpDmawzQ6/FFSpKTAxLywx7bc6C7Fjw0Udz83SK+vw+nu6dfWNdwnhT7BccP0hgh25AXSrm1baF5QSbe/vkYUwE7Lg9OTqYQkDlLkVZ6x2wz1BJVqMNx90VIBVNHHxApao/UB+r2yj7L/qMv6zXO3EaMk5bzOBT2cY85mEKw5jBVEh710uXoUUqVL76nkwZUtcDhOYMjwf/UWEs9aw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738963842; c=relaxed/relaxed;
-	bh=fGZT8Y8fr8Zq9yg5mYdeARw7GNPmBIELTw4XM5CycBg=;
+	t=1738963843; c=relaxed/relaxed;
+	bh=Cr3phd2Li2vDbGmofpKl+4CZj0Rn7FSKiIVrUspCNBQ=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=MBehNUMJsmPpYmLi/DpTOFrdKL2/6gbkxSRSrmqZlwQxL3vKZNfPy+Q9j2eVxUtIqMt1IfIpYroWDNmu8KgBK2tpMYFNHHJxC567BJ0POcNP09uKnCTHgiMyS+Q1PPgCiSXZ2RsD9X9pGmqC/79euizoMXSE/UauUV84LN3LRoK2FcXB75p/Djb+vNP89loC/Jpv8raQm6bWoIW2AftifTKLHZrPIPsb67YCxJsj0CQydoK3HXZlOFwO/sKvUbRA+dCzJ9s7KRgy4P2Dn16tgfvjSRbE7CYkWBEC7wOwO422NaWsmEg8PHcMaViMkmAOst06KM2L9jlcwO2f0C/nAA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JiBlDHg6; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=RLxw+mlcwOrAapAl7uQEhXAhMotwuRQryfchx0t2oXKckHybPF8KcUX+AZG8QzDq6g1r2hiS3M6cDOaPENLL65RM2hnQ5BfvKEsVRQbGsu55Plak/Qrv3nBkTAOe0XEwALRlIXvsGJO3j4GZsz6SZVwy5ASqYpbsW0BvaAxdlooADmHQvo+uoLDEMToYyjfg1bqwUc2DNnLYFiaPqX8tEDrdI2aGrUyEetqfbDsb7IdcFjYfNnqUgXSjNtutoMvAEiOnO/F8QT+LsNE5vcC81LyJCkkRbl3ZA3JpnmA3YIAsO2jPvBU9uoQioqjbpfGAWjv16TERhjOxqnAiJl8eVA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=htVJpOej; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JiBlDHg6;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=htVJpOej;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YqRwJ12Zkz2yjb
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2025 08:30:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YqRwJ3KKVz2xrb
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2025 08:30:40 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 0BF3A5C71CF;
-	Fri,  7 Feb 2025 21:29:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 2056DC4CEE4;
-	Fri,  7 Feb 2025 21:30:35 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 532535C71FD;
+	Fri,  7 Feb 2025 21:29:58 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 2EB13C4AF10;
+	Fri,  7 Feb 2025 21:30:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1738963835;
-	bh=Yko99go3545UAB2s6Emx2EMK5jUBtBhobNj/oRqGi+w=;
+	s=k20201202; t=1738963836;
+	bh=RuAkLHcNPzAoRdo6BpE9kwkQgXaZNQeVgfwDORycGBA=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=JiBlDHg6ZSDyxbhNeVBdiYDu0RTc2VmBhCvC/9Ujwk3f08unB+9u5VSyNP5fQ59+w
-	 gYPjTe20zFKpi67KhwKIKAoPCLNDSRlnTW3ewUFAdPPg8bjAQ/Ma0HkbRFgHxavBeG
-	 3ZSWE/0FDmdZCUjyankvfSGGR+T0BAiTRScMiHob6XcDelVXWnq9G3MJAwtEiJcGys
-	 sZ8QrQU2yz7KQrm8VtXHiG73zpbiXyGkW/1a7oxgAjE1oglLwipJP3oHWRIcYUVYSS
-	 gpBk4mR0xSzCmZf2b8VkVPKPeJDpBPbUZmVsri9PKVGilHnUzj+LOeGE5WtNAq9TAE
-	 z6+Pq5a+E5q8w==
+	b=htVJpOejbXQWhe8jHGJAWKpyPz60TBThljZn9O7eII5mG/tHuyQw3AAVP6bnG4OBW
+	 N7TMJID2KXI6LpFSP3IOheld8gdP+cAzxN/XCJ6c+ALuWgdHzgNleFP2YUE1dT1eoc
+	 7id0urMFXjBD61eQ69fa76RFvE7fLaWi4yiRrCqThGrExM9L/uUwwkouMtWLK13KGs
+	 jTL+0qXLrrjfiuuGUF3zoU85mGpItVNANt7iMIxv2cO0DIbVvBOmg+F2bL+5ZMPlaQ
+	 JWxJwyTqiSLNKjeJhfZq3/gkFx1sUQJn2HOeZkOCEyfPXtKecp8jpkvfmR2fVEU+u8
+	 kmHpjT/ZN1Umg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 07DB1C02196;
-	Fri,  7 Feb 2025 21:30:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1AC49C0219E;
+	Fri,  7 Feb 2025 21:30:36 +0000 (UTC)
 From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Fri, 07 Feb 2025 22:30:18 +0100
-Subject: [PATCH v2 01/12] dt-bindings: powerpc: Add Freescale/NXP MPC83xx
- SoCs
+Date: Fri, 07 Feb 2025 22:30:27 +0100
+Subject: [PATCH v2 10/12] dt-bindings: memory-controllers: Add
+ fsl,elbc-gpcm-uio
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,7 +65,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250207-ppcyaml-v2-1-8137b0c42526@posteo.net>
+Message-Id: <20250207-ppcyaml-v2-10-8137b0c42526@posteo.net>
 References: <20250207-ppcyaml-v2-0-8137b0c42526@posteo.net>
 In-Reply-To: <20250207-ppcyaml-v2-0-8137b0c42526@posteo.net>
 To: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
@@ -94,11 +94,11 @@ Cc: imx@lists.linux.dev, Scott Wood <oss@buserror.net>,
  linux-spi@vger.kernel.org, linux-mtd@lists.infradead.org, 
  =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1738963832; l=2727;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1738963832; l=2327;
  i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=+DtXHVhCbOjn2pFTbqRWo5Ja3tlRCt7VFujPhHnXDOo=;
- b=54lqxy1ufYEIepdx+xHdUJx6JcOYaLxP/9DdiR0f6dmwQhVzKAJEIXbhq9mtePiM8uZ3aOyby
- Do8ItLmBFxhAnsOoEwKoXSekGVjsFNxzqD5f2ZqqDPjxCvL/6gHEYYX
+ bh=LkemF+iJaT/609rtTCAj5OV7UUDgDJnkAiLlT9aG8EE=;
+ b=IGiyO3zCvC30tHqbSQpswM01pqy9M52ANeFq4lodtrLUuOkaxDX7czh8YTYt1oGe4ku3Ffnah
+ NTVhcN7NU36DyvvlburD8XDK2p3cgpWfPmuP85hC3kYOHiKRAnrQG3g
 X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
  pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
 X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
@@ -108,97 +108,86 @@ Reply-To: j.ne@posteo.net
 
 From: "J. Neuschäfer" <j.ne@posteo.net>
 
-Add a new binding for MPC83xx platforms, describing the board compatible
-strings used in currently existing device trees.
+Formalize the binding already supported by the uio_fsl_elbc_gpcm.c
+driver.
 
-Note that the SoC bus is called immr@... in many existing devicetrees,
-but this contradicts the simple-bus binding.
-
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
 ---
 
 V2:
-- trim subject line
-- fix property order to comply with dts coding style
-- add Rob Herrings's R-b tag
+- split out from fsl,elbc patch
+- add description
+- remove "device_type" property
+- move to bindings/memory-controllers
 ---
- .../bindings/powerpc/fsl/fsl,mpc83xx.yaml          | 67 ++++++++++++++++++++++
- 1 file changed, 67 insertions(+)
+ .../memory-controllers/fsl,elbc-gpcm-uio.yaml      | 59 ++++++++++++++++++++++
+ 1 file changed, 59 insertions(+)
 
-diff --git a/Documentation/devicetree/bindings/powerpc/fsl/fsl,mpc83xx.yaml b/Documentation/devicetree/bindings/powerpc/fsl/fsl,mpc83xx.yaml
+diff --git a/Documentation/devicetree/bindings/memory-controllers/fsl,elbc-gpcm-uio.yaml b/Documentation/devicetree/bindings/memory-controllers/fsl,elbc-gpcm-uio.yaml
 new file mode 100644
-index 0000000000000000000000000000000000000000..1d7ed67473ca447e0fd2e9b8f30d20e18c601ccf
+index 0000000000000000000000000000000000000000..381584b400a0ad98c6d9e0b38f2877d44603ed84
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/powerpc/fsl/fsl,mpc83xx.yaml
-@@ -0,0 +1,67 @@
++++ b/Documentation/devicetree/bindings/memory-controllers/fsl,elbc-gpcm-uio.yaml
+@@ -0,0 +1,59 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/powerpc/fsl/fsl,mpc83xx.yaml#
++$id: http://devicetree.org/schemas/memory-controllers/fsl,elbc-gpcm-uio.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Freescale PowerQUICC II Pro (MPC83xx) platforms
++title: Userspace I/O interface for Freescale eLBC devices
++
++description:
++  The Freescale Enhanced Local Bus controller (eLBC) supports flexible access
++  to memory devices, through the General-Purpose Chip-select Machine (GPCM).
++  The purpose of this binding is to designate devices attached to eLBC/GPMC for
++  use by userspace.
 +
 +maintainers:
 +  - J. Neuschäfer <j.ne@posteo.net>
 +
 +properties:
-+  $nodename:
-+    const: '/'
 +  compatible:
-+    oneOf:
-+      - description: MPC83xx Reference Design Boards
-+        items:
-+          - enum:
-+              - fsl,mpc8308rdb
-+              - fsl,mpc8315erdb
-+              - fsl,mpc8360rdk
-+              - fsl,mpc8377rdb
-+              - fsl,mpc8377wlan
-+              - fsl,mpc8378rdb
-+              - fsl,mpc8379rdb
++    const: fsl,elbc-gpcm-uio
 +
-+patternProperties:
-+  "^soc@.*$":
-+    type: object
-+    properties:
-+      compatible:
-+        oneOf:
-+          - items:
-+              - enum:
-+                  - fsl,mpc8315-immr
-+                  - fsl,mpc8308-immr
-+              - const: simple-bus
-+          - items:
-+              - const: fsl,mpc8360-immr
-+              - const: fsl,immr
-+              - const: fsl,soc
-+              - const: simple-bus
-+          - const: simple-bus
++  reg:
++    maxItems: 1
 +
-+additionalProperties: true
++  elbc-gpcm-br:
++    description: Base Register (BR) value to set
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++  elbc-gpcm-or:
++    description: Option Register (OR) value to set
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++  interrupts:
++    maxItems: 1
++
++  uio_name:
++    $ref: /schemas/types.yaml#/definitions/string
++
++required:
++  - compatible
++  - reg
++  - elbc-gpcm-br
++  - elbc-gpcm-or
++
++additionalProperties: false
 +
 +examples:
 +  - |
-+    / {
-+        compatible = "fsl,mpc8315erdb";
-+        model = "MPC8315E-RDB";
-+        #address-cells = <1>;
++    localbus {
++        #address-cells = <2>;
 +        #size-cells = <1>;
 +
-+        soc@e0000000 {
-+            compatible = "fsl,mpc8315-immr", "simple-bus";
-+            reg = <0xe0000000 0x00000200>;
-+            #address-cells = <1>;
-+            #size-cells = <1>;
-+            device_type = "soc";
-+            ranges = <0 0xe0000000 0x00100000>;
-+            bus-frequency = <0>;
++        simple-periph@2,0 {
++            compatible = "fsl,elbc-gpcm-uio";
++            reg = <0x2 0x0 0x10000>;
++            elbc-gpcm-br = <0xfd810800>;
++            elbc-gpcm-or = <0xffff09f7>;
 +        };
 +    };
-+
-+...
 
 -- 
 2.48.0.rc1.219.gb6b6757d772
