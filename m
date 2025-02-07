@@ -1,55 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-5965-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5966-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37B38C0219E
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2025 21:32:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E038FC0219D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2025 21:38:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YqRwR2JmBz30dt;
-	Sat,  8 Feb 2025 08:30:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738963847;
-	cv=none; b=eZf/zPEEmD/QxJrkZB65nC1bS9K0hDoxawPgDNmB5ETpZcq19ESvDYK+r47bcnPRoCy9dRuZYRZoRtMBOmE2O9OgGQ2+P3tjj7lfojM9ah96mXp5LJlfMpVjpLIH7bl4c23j7cXg6obZFulYU+yMu1/8XFhv7o2CXOgYZXr74YDGt+RlWaYtU+q9/7tbbIItTU+7aYgxo/3DM5pLb2mFpz5IN6I+bEi5mWPhQ026SFpwRArxMhJLnQ7rRhGAElQCe16OwiMrckd37lTLnvhYA4YxEzSgOpl/7qgf5yv/IIT7QpiYsbI2Tghp4y2YlrN+GghktNylixFRQC3b2dslBA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YqS563jHwz2yjb;
+	Sat,  8 Feb 2025 08:38:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738964298;
+	cv=none; b=laZ80y863g4PgMT3G5dvB9CBFElo67lW0L45sKVGxMyFdwHVNq24hxaFzMxKPFZ8n2KDrmZVF226Cb9hJpTCpwveJPXo0kUU8e1KIY7tc5SX/DURyuLIG/a6va0RLoyaIoDkxArwrY7KTDnKn1n30HjvX6vdJMmYTEweI9X2U90RIt03kMm44SORRUqTYgXegZtO+mc53sXdfvy5y2yjnC5/Xu3IalwCMf597dP5p/S1UR9xgMrEqzzbLMFV4auEjjv1PF3stA73jbmSIvDUj8relvDsBvMG6vn9gfD4G/JkAW6yje1IU45XRwFRGEIcIY2Harq/3JxQnVxVUy+IzQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738963847; c=relaxed/relaxed;
-	bh=fS+WoGOhvsv8uW9FRhEkgZqnGryseOLH2V00hnT2hU4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=jcUC54eubqxVeRsUiIJt54M1nGnDW1b+nKyo3XRdknQV8Gvi66B0pVI901VQFBOpDudtk6pO/Wet+P0ULc9qNp9Mzv9eqQD5Nva/c5jAjuG84nqFcK9LWnAjQiACaUewWWM7/LbjY+gRZZACrTNitlqM3KC6EbjgWBcKSNrRKXB515+jQmYwy2JuuhNjGJQ6woxAU3WakNi7yyZhp1uNYZUsl74xGsxt070VILXgS53HaBVUJnHbwcnkWM6LQ3Lf+5LvmzdP9nk0LOHjAdbPob/8OKqqBDfQW5Bx4faHvfEXXkeFbaHsR9Uu0g8cHXKeT8eMID8Zvs3PBQfDOP8J1w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nBjy4UuM; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1738964298; c=relaxed/relaxed;
+	bh=d+AWo53Bbd3sX/7MFIskwu8/ey2mRt6zTcv4eDJPNZw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QFp63BRUIvlXNElOhKAtXAs/blnykU5W62c3gtFsV+wRfAYjDgD8fg2De6REugOq1kFpkCsh2bKRWJSqHk2i8mYYAx/LB+GPaj4aPFOOd03pou/EKSuid6SlIBNm8xik6w/x+2www2mFkQ4I3arplK+/DYjzLEF6pCnMdH61fJSbfBBECT3n0FEI4zLLtq1/MGaagsT+ROUmsBk9txjSYHpnnMp30tKEBpBBgiy14vVw6k0tBciGtUvBBX5yI5ZRgin0d7O9RfxX+nj+GdPk3WHkgpkyV733kAMxCG/4pFzEAAsr+juBZE2pwt+lvLGt0L6fHPYUWnu1LjMBFGvSpQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lfyiv5cu; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nBjy4UuM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lfyiv5cu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YqRwP3X91z301v
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2025 08:30:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YqS55585Zz2yjV
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2025 08:38:17 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id F3D49A43D88;
-	Fri,  7 Feb 2025 21:28:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 49856C4CEEB;
-	Fri,  7 Feb 2025 21:30:36 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 0FC385C06C0;
+	Fri,  7 Feb 2025 21:37:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B1DF4C4CED1;
+	Fri,  7 Feb 2025 21:38:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1738963836;
-	bh=U5UemYYck+g6K/d3gcb9OegxZyY2n//O2XiyL7ugTcw=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=nBjy4UuM3SUjIdxik6BR5rm/ASIJDNQxPXN6mSjlI/9OhbWm0pZ67xR8x2mMfUhJ2
-	 pmCvmwPfQNJr7yMaXgaW3IiGDMuUfwMsP2wZrEiXIdiePG6DyLpOc/jVvLhKwMUvma
-	 i+DRou6NNxW1lQyr6j3oepEfzlI7mFHYShrjOEAX3ss/mvHQq7j6TSmzceRed2Kyeg
-	 22SUIbA3CvdGchhzow9F3mV0iGlv7y+4IPzE/IFPZ8cxKv37/E4K6uo59XGKcp1WcA
-	 Sdb1YkwjH0iM0Dz45WKyVSeHDPyPae/84FQDUuxGixxRDv7L3IWgcuMOxBIVZH3//b
-	 0GhrBdgdRLEKg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 38036C021A0;
-	Fri,  7 Feb 2025 21:30:36 +0000 (UTC)
-From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Fri, 07 Feb 2025 22:30:28 +0100
-Subject: [PATCH v2 11/12] dt-bindings: nand: Add fsl,elbc-fcm-nand
+	s=k20201202; t=1738964295;
+	bh=7xVwhwDjoai8YSxFqqwGSBjxwD2KZy4EIiDqNHKYu+k=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=lfyiv5cuS/GU2byBNx1/HS6vFu4XgUVKiwxJxFKa4f3ofnDnF5InCMn2/xpuWS58N
+	 4QtqPZCaUgmr79HJ9xmM78pXb89BQLwgxXvc33Lh+3EQeafVlBrVppNrK8XOQUw5H8
+	 UJR9X0noZ/1FbX4W1ZBZAMhUYy9BgxOGEd9MwMZFlu4BmJKNV6MQRgPREDIoJFchfh
+	 vkIpTE9C01BimsoJ3MqyEWHAtinnUWxUS8B374bKNWOXDU9Asd0dSh8FiOORDf92iW
+	 aQPWNpap/IIavA7B9QLaDyt/3GM8gUFwZBNJqf8kGVt3NewUlFLL83a8JTzoH0ByF2
+	 gYO4ujWIo0Hvw==
+Date: Fri, 7 Feb 2025 21:38:05 +0000
+From: Mark Brown <broonie@kernel.org>
+To: j.ne@posteo.net
+Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Krzysztof Kozlowski <krzk@kernel.org>, imx@lists.linux.dev,
+	Scott Wood <oss@buserror.net>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>, Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Damien Le Moal <dlemoal@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>, Lee Jones <lee@kernel.org>,
+	Vinod Koul <vkoul@kernel.org>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	=?iso-8859-1?Q?J=2E_Neusch=E4fer?= <j.neuschaefer@gmx.net>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	Guenter Roeck <linux@roeck-us.net>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Richard Weinberger <richard@nod.at>,
+	Vignesh Raghavendra <vigneshr@ti.com>, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org,
+	dmaengine@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-watchdog@vger.kernel.org, linux-spi@vger.kernel.org,
+	linux-mtd@lists.infradead.org
+Subject: Re: [PATCH v2 00/12] YAML conversion of several Freescale/PowerPC DT
+ bindings
+Message-ID: <611e47da-ba87-4c21-a6b7-cf051dc88158@sirena.org.uk>
+References: <20250207-ppcyaml-v2-0-8137b0c42526@posteo.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,145 +92,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20250207-ppcyaml-v2-11-8137b0c42526@posteo.net>
-References: <20250207-ppcyaml-v2-0-8137b0c42526@posteo.net>
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="Yv3YhmJAoxj+QMAv"
+Content-Disposition: inline
 In-Reply-To: <20250207-ppcyaml-v2-0-8137b0c42526@posteo.net>
-To: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- Krzysztof Kozlowski <krzk@kernel.org>
-Cc: imx@lists.linux.dev, Scott Wood <oss@buserror.net>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Naveen N Rao <naveen@kernel.org>, Rob Herring <robh@kernel.org>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, Damien Le Moal <dlemoal@kernel.org>, 
- Niklas Cassel <cassel@kernel.org>, Herbert Xu <herbert@gondor.apana.org.au>, 
- "David S. Miller" <davem@davemloft.net>, Lee Jones <lee@kernel.org>, 
- Vinod Koul <vkoul@kernel.org>, Lorenzo Pieralisi <lpieralisi@kernel.org>, 
- =?utf-8?q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>, 
- Bjorn Helgaas <bhelgaas@google.com>, 
- =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>, 
- Wim Van Sebroeck <wim@linux-watchdog.org>, 
- Guenter Roeck <linux@roeck-us.net>, Mark Brown <broonie@kernel.org>, 
- Miquel Raynal <miquel.raynal@bootlin.com>, 
- Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
- linux-kernel@vger.kernel.org, linux-ide@vger.kernel.org, 
- linux-crypto@vger.kernel.org, dmaengine@vger.kernel.org, 
- linux-pci@vger.kernel.org, linux-watchdog@vger.kernel.org, 
- linux-spi@vger.kernel.org, linux-mtd@lists.infradead.org, 
- =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1738963832; l=2741;
- i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=A7t/u30eqpoJx8jMTUhNPC2EH5W9JFBL9vrCsuCzJiM=;
- b=6cIaRoAnn733LBvmUf6ToU9hIJ7bv+M0rf3gbWNtCLaOwrVFONlFsub9Dce/9cDwwRNLlYNWC
- H/IAes0Q6zqDDWsbACciyF+d+riDCoYn9mhlEeFsw3WbFpHU26/6A9t
-X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
- pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
-X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
- auth_id=156
-X-Original-From: =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
-Reply-To: j.ne@posteo.net
-
-From: "J. Neuschäfer" <j.ne@posteo.net>
-
-Formalize the binding already supported by the fsl_elbc_nand.c driver
-and used in several device trees in arch/powerpc/boot/dts/.
-
-Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
----
-
-V2:
-- split out from fsl,elbc binding patch
-- constrain #address-cells and #size-cells
-- add a general description
-- use unevaluatedProperties=false instead of additionalProperties=false
-- fix property order to comply with dts coding style
-- include raw-nand-chip.yaml instead of nand-chip.yaml
----
- .../devicetree/bindings/mtd/fsl,elbc-fcm-nand.yaml | 68 ++++++++++++++++++++++
- 1 file changed, 68 insertions(+)
-
-diff --git a/Documentation/devicetree/bindings/mtd/fsl,elbc-fcm-nand.yaml b/Documentation/devicetree/bindings/mtd/fsl,elbc-fcm-nand.yaml
-new file mode 100644
-index 0000000000000000000000000000000000000000..1de97bb24fa4a83e2ea5d94ab822dd0e37baa102
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mtd/fsl,elbc-fcm-nand.yaml
-@@ -0,0 +1,68 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mtd/fsl,elbc-fcm-nand.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: NAND flash attached to Freescale eLBC
-+
-+description:
-+  The Freescale Enhanced Local Bus controller (eLBC) contains logic to
-+  interface with NAND flash, called the NAND Flash Control Machine (FCM).
-+  This binding describes flash attached to an eLBC using the FCM.
-+
-+maintainers:
-+  - J. Neuschäfer <j.ne@posteo.net>
-+
-+allOf:
-+  - $ref: raw-nand-chip.yaml#
-+
-+properties:
-+  compatible:
-+    oneOf:
-+      - items:
-+          - enum:
-+              - fsl,mpc8313-fcm-nand
-+              - fsl,mpc8315-fcm-nand
-+              - fsl,mpc8377-fcm-nand
-+              - fsl,mpc8378-fcm-nand
-+              - fsl,mpc8379-fcm-nand
-+              - fsl,mpc8536-fcm-nand
-+              - fsl,mpc8569-fcm-nand
-+              - fsl,mpc8572-fcm-nand
-+              - fsl,p1020-fcm-nand
-+              - fsl,p1021-fcm-nand
-+              - fsl,p1025-fcm-nand
-+              - fsl,p2020-fcm-nand
-+          - const: fsl,elbc-fcm-nand
-+      - const: fsl,elbc-fcm-nand
-+
-+  reg:
-+    maxItems: 1
-+
-+  "#address-cells":
-+    const: 1
-+
-+  "#size-cells":
-+    const: 1
-+
-+required:
-+  - compatible
-+  - reg
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    localbus {
-+        #address-cells = <2>;
-+        #size-cells = <1>;
-+
-+        nand@1,0 {
-+            compatible = "fsl,mpc8315-fcm-nand",
-+                         "fsl,elbc-fcm-nand";
-+            reg = <0x1 0x0 0x2000>;
-+            #address-cells = <1>;
-+            #size-cells = <1>;
-+        };
-+    };
-
--- 
-2.48.0.rc1.219.gb6b6757d772
+X-Cookie: MMM-MM!!  So THIS is BIO-NEBULATION!
 
 
+--Yv3YhmJAoxj+QMAv
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+
+On Fri, Feb 07, 2025 at 10:30:17PM +0100, J. Neusch=E4fer via B4 Relay wrot=
+e:
+
+> This is a spin-off of the series titled
+> "powerpc: MPC83xx cleanup and LANCOM NWAPP2 board".
+
+> During the development of that series, it became clear that many
+> devicetree bindings for Freescale MPC8xxx platforms are still in the old
+> plain-text format, or don't exist at all, and in any case don't mention
+> all valid compatible strings.
+
+What's the story with dependencies here - why is all this stuff in one
+series?  Normally I'd expect bindings conversions to be standalone.
+
+--Yv3YhmJAoxj+QMAv
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmemfT0ACgkQJNaLcl1U
+h9Dq1Af/eChCpyVx52hhPj2Ppke4XqgRYwHfMx1ZD4zg9Fv5cLy+pNBr/CAHHckC
+zFU84oMRCqn0Y8VcKQo6h/qnhsFnmdYxFgRmYg1kXZIm+jfrFUtTHfRH4I/8b95Z
+G2JrWA/AN9rNXn2n7I0gL2mBLfXBlTl2GlESRinIHR9eESMM/hJAQmkkw2xpgeCM
+lc0xNSEPmuS3M0+rYNtypbnc1bbGXU6zVOEz+5Ennz6bHPi6q6Amjz6HBLyoln3X
+3F9zfSERvGPIA442jE6Qm6cFH4S7Vv/L4urjeIvSe7le626ajH99YJZl1BSFaPLR
+qcOQY87d6Kjx7kPP+wMJG/Lfhrmprg==
+=9fhs
+-----END PGP SIGNATURE-----
+
+--Yv3YhmJAoxj+QMAv--
 
