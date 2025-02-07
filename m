@@ -1,55 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-5958-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5959-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B900C0219D
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2025 21:31:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB039C0219E
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2025 21:31:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YqRwM4Hrkz30W9;
-	Sat,  8 Feb 2025 08:30:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YqRwN2JBqz30WJ;
+	Sat,  8 Feb 2025 08:30:44 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738963843;
-	cv=none; b=j3DKnsB5/mqe2btoMXZmF0MytfRdczN6NW34N/CYJXClcnP6wTbXSw1uvSPtHtTxEJ3BkBwUE2ZdilVtLxzSTt0A4og/hUuX/w24sWXpTREq5rBgCOYd/bicNiqVEd15hA7pgBIpb0pLg//dNHaPpt0e0YTwS9udZFGe5YI4VyPsx9iYgZbR5mrDlzVgNiRB/z/83oRWgT5eM82FN1tcuuV1tKTaG5yoBtuIpM/uEDBdsSdwvkdCQDZhoMmjA47AMYA6wGNMEeuYNEqq0e64CjkxLcn2OMwpnLudbIfo9wwuiBVryzeIFpqcgshSk7WmKpEVZdu/IBm+iAnvS4qC4w==
+	cv=none; b=JKAr71CHFvVcdgUyRlvfE8Kpj6zqRD1g58yJU9JeevAz9xw8XqMEjfp002cNrPOXdyS+praF4oakN593OJsFzKh57JH368kXZtRvdg0UerIa0F9+Q10lqmmrWxEGuSthNROjaX5SPtWYEkwyObpvY26l4BSJuWvTr02i/ixliM2j0H3dqFWtwij2jYUDhiK1dPNZ+k/2pi01LnNQFHlzX+cr0FIYLlJrDM3Tx/sbXenoRPBIPXSCmaUg6kz1hN6zoISsCHcg0EbdUa6EIK+QSxMua6+xtoks6KCE5AcE52roq5ZE6IoFUm0QedjOM0FKuyF6mLq6OjfeiqDiE7segw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1738963843; c=relaxed/relaxed;
-	bh=+k/JRf5Yyn3QVycUUJ57UMb1g2UcZGFkwWvnCcXMCbs=;
+	bh=HnUxexEUb8kgKoCVqVx7O4eJcUp8Z6mdpCZ4nJQBxmY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=HhWC94eRZiGRgGJVbY4oYeTOZILYMUbHGjiH5XREgN5guZVBLVil1ksMu2jA0jUNgr4OlkJpEkKG3KZyQvptXzm9XpKGvtpj2ns2BuWL/yFFfifP0M4qjFcW+XJ847FnBr2h+YGeGnCdksC9uuX9HTaaWWD8RJawxKnkg+21J/XxTzvQvyfCoS8SOqZaSCmWU4egKxUmU88qxAvPs5JGFPkE93oZyoH0KoVf5IdCEOC9rnKtheWhfSPAjNj9Lz53T0ajkjCLWmyV6uKKwXIzkAfRDlkwm4EN+bybo8P/HQJfD2pbUmOrLJMA5VtnbZ793bTbP3c+EOyI66v1njPAoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kNRibzA0; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=Ui87yENvzZIORST0EhBR/ixgp5quzcU66NeJJaKqTDtz0q1WwPAiVEu0x3JZ95qK8lhHgRf05ALagqbLOyLBzFq3Y7kW0rbylJcgsFncgOiUJVyzVl3ihS73iPxOfMVtKzoY9/gaVZV46Tfnh67AtTMJW5vh+Byp3OrLRgTcOzce383vjKugd8GFNvSH6w0inLvQlMzV0wU4gij+yA5x4306r4dDe2ds1+8PSx5mOV7bLBKowPX9WPG0yDGy77PXU4oTxiDwma8dhjrhhx29gTT5pqV1NqMEBudwXwJpExDRIqXfA5gkOz4FEXwOErTVuCHLHk67znToKXUiAwceVQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P7kYzEbF; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kNRibzA0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P7kYzEbF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YqRwJ19QNz2ykc
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2025 08:30:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YqRwJ3bVTz30MR
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Feb 2025 08:30:40 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 80C41A43CF4;
-	Fri,  7 Feb 2025 21:28:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 3DA76C4CEE6;
+	by nyc.source.kernel.org (Postfix) with ESMTP id 11D81A43CFC;
+	Fri,  7 Feb 2025 21:28:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id AE809C116B1;
 	Fri,  7 Feb 2025 21:30:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1738963835;
-	bh=nktEztgiNtX/g4rmdLEVKXUelw39pbboF7CNwlBd40Q=;
+	bh=fqvAh3iKxOl03ArBCkYTvP/GeGQRKw1fc2EwMT7Iylc=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=kNRibzA0sw2Sw+B0fy2zZdwXVSxYwIYmTwqT33kjPkzxWMOTJkeCi7kZ+St1dYfJ8
-	 sDsPsSvzLXHdK7tlUqACRftJt7E2CJ93vVMwrufGvdyalzrNO0up2+sN0gPyW5Bjuk
-	 bq/+royUYXCZQ7BsBSVq8+G/SZ/L5oRONDOxcJNfGwws28/ZnwBbpD0jUFXJyyMbGJ
-	 sMYQIW3/T7ibAELE7FzHc9n0ROzdEM5tdduEbXhUCz9oMQzTLKvi9eI2Rxjoc4faZN
-	 3EUy9pC3HZ8m/nDI6FWey8qNm+N1t10AJzLBMdF3s+XseMSZjzyQDjr6Z9GPXGsJgL
-	 YEZOfjytMwkow==
+	b=P7kYzEbFv5XvnqA9e0Aw2hN/mJRZM27jQPH1NC1dLXOY023QXk/rORY52thAt4Mdz
+	 IETcYpeRUiFbFi5nhNx5iYFzW6OsssSlEVnUg8NOz6WheSOyOrSQH4fRPJgwKwW/nJ
+	 GUnAOxEjOCkKarOkpR4/dMMD9MKp/kyyu15l201GH1QFIgYUSLUeCuylliv+tyBS76
+	 PZ3bBRkl3Jlf0aq/SQ22KHDfHe+UFncODbI+oH+5KAH+98cKh8mAVq9OAWv0I8QQuM
+	 6d0sdji7khwUHKrFpdHXbdH+OXkYla7EFI9+U0yF4/dv1NRZ7/g9q/udgu16gysYi+
+	 567gwgWihYFdQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2267DC0219D;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 908A2C0219D;
 	Fri,  7 Feb 2025 21:30:35 +0000 (UTC)
 From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Fri, 07 Feb 2025 22:30:19 +0100
-Subject: [PATCH v2 02/12] dt-bindings: ata: Convert fsl,pq-sata to YAML
+Date: Fri, 07 Feb 2025 22:30:23 +0100
+Subject: [PATCH v2 06/12] dt-bindings: pci: Convert fsl,mpc83xx-pcie to
+ YAML
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,7 +65,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250207-ppcyaml-v2-2-8137b0c42526@posteo.net>
+Message-Id: <20250207-ppcyaml-v2-6-8137b0c42526@posteo.net>
 References: <20250207-ppcyaml-v2-0-8137b0c42526@posteo.net>
 In-Reply-To: <20250207-ppcyaml-v2-0-8137b0c42526@posteo.net>
 To: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
@@ -93,11 +94,11 @@ Cc: imx@lists.linux.dev, Scott Wood <oss@buserror.net>,
  linux-spi@vger.kernel.org, linux-mtd@lists.infradead.org, 
  =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1738963832; l=3808;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1738963832; l=5802;
  i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=UpnIOgI342qJlYPCanJVhpXk4WK6YM5Ksj/vzI9NEeg=;
- b=IMEEL81nsnb2ijBv3LXOcNNng8dQqK5mDCiPuvJw5PIblvynwYV/YQROKecYzJSMsuTEb53Rb
- z5adZJegyg5CeBejUIlBGgfzgjd8CuS7MscsQzisoYwXCU7aFBlh0dZ
+ bh=jBiH9+MQmhRrwEmLTkNNDzkIkSq8VyyQ3zetJ06KX9U=;
+ b=sEBW0totelYgL1en7cVmNkknyNI5Sj/Sspm1mJTetH6lj+iSulPd72CfWDp7mXxTwMSsXTvC8
+ CcPFFfl4jGrD9Ji4ICjmccGslMxPc79Ljlsx1zaFK/lzwD1MvefNj68
 X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
  pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
 X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
@@ -107,123 +108,177 @@ Reply-To: j.ne@posteo.net
 
 From: "J. Neuschäfer" <j.ne@posteo.net>
 
-Convert the Freescale PowerQUICC SATA controller binding from text form
-to YAML. The list of compatible strings reflects current usage.
+Formalise the binding for the PCI controllers in the Freescale MPC8xxx
+chip family. Information about PCI-X-specific properties was taken from
+fsl,pci.txt. The examples were taken from mpc8315erdb.dts and
+xpedite5200_xmon.dts.
 
-To clarify the description, I changed it to mention "each SATA
-controller" instead of each port.
-
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
 Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
 ---
 
 V2:
-- remove unnecessary multiline marker (|)
-- clarified controllers vs. ports in the description
+- merge fsl,pci.txt into fsl,mpc8xxx-pci.yaml
+- regroup compatible strings, list single-item values in one enum
 - trim subject line (remove "binding")
+- fix property order to comply with dts coding style
 ---
- .../devicetree/bindings/ata/fsl,pq-sata.yaml       | 59 ++++++++++++++++++++++
- Documentation/devicetree/bindings/ata/fsl-sata.txt | 28 ----------
- 2 files changed, 59 insertions(+), 28 deletions(-)
+ .../devicetree/bindings/pci/fsl,mpc8xxx-pci.yaml   | 115 +++++++++++++++++++++
+ Documentation/devicetree/bindings/pci/fsl,pci.txt  |  27 -----
+ 2 files changed, 115 insertions(+), 27 deletions(-)
 
-diff --git a/Documentation/devicetree/bindings/ata/fsl,pq-sata.yaml b/Documentation/devicetree/bindings/ata/fsl,pq-sata.yaml
+diff --git a/Documentation/devicetree/bindings/pci/fsl,mpc8xxx-pci.yaml b/Documentation/devicetree/bindings/pci/fsl,mpc8xxx-pci.yaml
 new file mode 100644
-index 0000000000000000000000000000000000000000..97eea11b4fbbb773487c004abbedcb7bd290605c
+index 0000000000000000000000000000000000000000..57c5503cec47e6e90ed2b09835bfad10309db927
 --- /dev/null
-+++ b/Documentation/devicetree/bindings/ata/fsl,pq-sata.yaml
-@@ -0,0 +1,59 @@
++++ b/Documentation/devicetree/bindings/pci/fsl,mpc8xxx-pci.yaml
+@@ -0,0 +1,115 @@
 +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +%YAML 1.2
 +---
-+$id: http://devicetree.org/schemas/ata/fsl,pq-sata.yaml#
++
++$id: http://devicetree.org/schemas/pci/fsl,mpc8xxx-pci.yaml#
 +$schema: http://devicetree.org/meta-schemas/core.yaml#
 +
-+title: Freescale 8xxx/3.0 Gb/s SATA nodes
++title: Freescale MPC83xx PCI/PCI-X/PCIe controllers
++
++description: |
++  Binding for the PCI/PCI-X/PCIe host bridges on MPC8xxx SoCs.
++  See also: Documentation/devicetree/bindings/pci/fsl,pci.txt
 +
 +maintainers:
-+  - J. Neuschäfer <j.ne@posteo.net>
++  - J. Neuschäfer <j.neuschaefer@gmx.net>
 +
-+description:
-+  SATA nodes are defined to describe on-chip Serial ATA controllers.
-+  Each SATA controller should have its own node.
++allOf:
++  - $ref: /schemas/pci/pci-host-bridge.yaml#
 +
 +properties:
 +  compatible:
 +    oneOf:
++      - enum:
++          - fsl,mpc8314-pcie
++          - fsl,mpc8349-pci
++          - fsl,mpc8540-pci
++          - fsl,mpc8548-pcie
++          - fsl,mpc8641-pcie
 +      - items:
 +          - enum:
-+              - fsl,mpc8377-sata
-+              - fsl,mpc8536-sata
-+              - fsl,mpc8315-sata
-+              - fsl,mpc8379-sata
-+          - const: fsl,pq-sata
-+      - const: fsl,pq-sata-v2
++              - fsl,mpc8308-pcie
++              - fsl,mpc8315-pcie
++              - fsl,mpc8377-pcie
++              - fsl,mpc8378-pcie
++          - const: fsl,mpc8314-pcie
++      - items:
++          - const: fsl,mpc8360-pci
++          - const: fsl,mpc8349-pci
++      - items:
++          - const: fsl,mpc8540-pcix
++          - const: fsl,mpc8540-pci
 +
 +  reg:
-+    maxItems: 1
++    minItems: 1
++    items:
++      - description: internal registers
++      - description: config space access registers
++
++  clock-frequency: true
 +
 +  interrupts:
-+    maxItems: 1
++    items:
++      - description: Consolidated PCI interrupt
 +
-+  cell-index:
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+    enum: [1, 2, 3, 4]
-+    description: |
-+      1 for controller @ 0x18000
-+      2 for controller @ 0x19000
-+      3 for controller @ 0x1a000
-+      4 for controller @ 0x1b000
++  fsl,pci-agent-force-enum:
++    type: boolean
++    description:
++      Typically any Freescale PCI-X bridge hardware strapped into Agent mode is
++      prevented from enumerating the bus. The PrPMC form-factor requires all
++      mezzanines to be PCI-X Agents, but one per system may still enumerate the
++      bus.
++
++      This property allows a PCI-X bridge to be used for bus enumeration
++      despite being strapped into Agent mode.
 +
 +required:
++  - reg
 +  - compatible
-+  - interrupts
-+  - cell-index
 +
-+additionalProperties: false
++unevaluatedProperties: false
 +
 +examples:
 +  - |
 +    #include <dt-bindings/interrupt-controller/irq.h>
-+    sata@18000 {
-+        compatible = "fsl,mpc8379-sata", "fsl,pq-sata";
-+        reg = <0x18000 0x1000>;
-+        cell-index = <1>;
-+        interrupts = <44 IRQ_TYPE_LEVEL_LOW>;
-+        interrupt-parent = <&ipic>;
++
++    pcie@e0009000 {
++        compatible = "fsl,mpc8315-pcie", "fsl,mpc8314-pcie";
++        reg = <0xe0009000 0x00001000>;
++        ranges = <0x02000000 0 0xa0000000 0xa0000000 0 0x10000000
++                  0x01000000 0 0x00000000 0xb1000000 0 0x00800000>;
++        #address-cells = <3>;
++        #size-cells = <2>;
++        #interrupt-cells = <1>;
++        device_type = "pci";
++        bus-range = <0 255>;
++        interrupt-map-mask = <0xf800 0 0 7>;
++        interrupt-map = <0 0 0 1 &ipic 1 IRQ_TYPE_LEVEL_LOW
++                         0 0 0 2 &ipic 1 IRQ_TYPE_LEVEL_LOW
++                         0 0 0 3 &ipic 1 IRQ_TYPE_LEVEL_LOW
++                         0 0 0 4 &ipic 1 IRQ_TYPE_LEVEL_LOW>;
++        clock-frequency = <0>;
 +    };
-diff --git a/Documentation/devicetree/bindings/ata/fsl-sata.txt b/Documentation/devicetree/bindings/ata/fsl-sata.txt
++
++  - |
++    pci@ef008000 {
++        compatible = "fsl,mpc8540-pcix", "fsl,mpc8540-pci";
++        reg = <0xef008000 0x1000>;
++        ranges = <0x02000000 0 0x80000000 0x80000000 0 0x20000000
++                  0x01000000 0 0x00000000 0xd0000000 0 0x01000000>;
++        #interrupt-cells = <1>;
++        #size-cells = <2>;
++        #address-cells = <3>;
++        device_type = "pci";
++        clock-frequency = <33333333>;
++        interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
++        interrupt-map = </* IDSEL */
++                         0xe000 0 0 1 &mpic 2 1
++                         0xe000 0 0 2 &mpic 3 1>;
++        interrupts-extended = <&mpic 24 2>;
++        bus-range = <0 0>;
++        fsl,pci-agent-force-enum;
++    };
++
++
++...
+diff --git a/Documentation/devicetree/bindings/pci/fsl,pci.txt b/Documentation/devicetree/bindings/pci/fsl,pci.txt
 deleted file mode 100644
-index fd63bb3becc9363c520a8fd06629fdc52c4d4299..0000000000000000000000000000000000000000
---- a/Documentation/devicetree/bindings/ata/fsl-sata.txt
+index d8ac4a768e7e65b465f83308cc918ec471309dcf..0000000000000000000000000000000000000000
+--- a/Documentation/devicetree/bindings/pci/fsl,pci.txt
 +++ /dev/null
-@@ -1,28 +0,0 @@
--* Freescale 8xxx/3.0 Gb/s SATA nodes
+@@ -1,27 +0,0 @@
+-* Bus Enumeration by Freescale PCI-X Agent
 -
--SATA nodes are defined to describe on-chip Serial ATA controllers.
--Each SATA port should have its own node.
+-Typically any Freescale PCI-X bridge hardware strapped into Agent mode
+-is prevented from enumerating the bus. The PrPMC form-factor requires
+-all mezzanines to be PCI-X Agents, but one per system may still
+-enumerate the bus.
+-
+-The property defined below will allow a PCI-X bridge to be used for bus
+-enumeration despite being strapped into Agent mode.
 -
 -Required properties:
--- compatible        : compatible list, contains 2 entries, first is
--		 "fsl,CHIP-sata", where CHIP is the processor
--		 (mpc8315, mpc8379, etc.) and the second is
--		 "fsl,pq-sata"
--- interrupts        : <interrupt mapping for SATA IRQ>
--- cell-index        : controller index.
--                          1 for controller @ 0x18000
--                          2 for controller @ 0x19000
--                          3 for controller @ 0x1a000
--                          4 for controller @ 0x1b000
--
--Optional properties:
--- reg               : <registers mapping>
+-- fsl,pci-agent-force-enum : There is no value associated with this
+-  property. The property itself is treated as a boolean.
 -
 -Example:
--	sata@18000 {
--		compatible = "fsl,mpc8379-sata", "fsl,pq-sata";
--		reg = <0x18000 0x1000>;
--		cell-index = <1>;
--		interrupts = <2c 8>;
--		interrupt-parent = < &ipic >;
+-
+-	/* PCI-X bridge known to be PrPMC Monarch */
+-	pci0: pci@ef008000 {
+-		fsl,pci-agent-force-enum;
+-		#interrupt-cells = <1>;
+-		#size-cells = <2>;
+-		#address-cells = <3>;
+-		compatible = "fsl,mpc8540-pcix", "fsl,mpc8540-pci";
+-		device_type = "pci";
+-		...
+-		...
 -	};
 
 -- 
