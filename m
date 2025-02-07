@@ -1,40 +1,40 @@
-Return-Path: <linuxppc-dev+bounces-5924-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5925-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 252A6C02194
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2025 01:56:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 516EEC02194
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Feb 2025 01:56:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YpxsW5Smgz30Gf;
-	Fri,  7 Feb 2025 12:56:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.188
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738893391;
-	cv=none; b=mFTG4UvTitcpvcrUfc1nK6bVld1rfrMNvmFjMH0dOJelOner2Cn5AuEr+MK3EFEwC9n8Mmx3++j4bd1brPeXJkdOrU5lkZfHq8URJszGxUL7ciEkXds3+W1rqx1ErECtgb/0pjkQLG+k3ZjccT5UF9R9MWfwYtTBifWPkdTx/Esb+K5r6vxnqBV1OAvsZRj+4pgqkgOd7No1KJeqz3/DkTTMjG0rMRms6jNQT1vCIqG0RqjjlnB6xPWtAeQWwYLCard6vBkk0Re7gaf8e4frIY8nzVY5YiXDBD9NQZ0F1DdqRMIa9aazhm6MIruqMOVn+p3Y8YetrjEWTZXz2F7M4Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ypxsc0mbvz30Sy;
+	Fri,  7 Feb 2025 12:56:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.191
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1738893396;
+	cv=none; b=XzCws+/p2V32PgN3WFz/jSNceiWKICcrTAPR6vDNbHOCC9tWyDqV7y9Z34fKlCt8nqAOxXp9phBVf32HQFWTFtEdTwEvJ6RhjrISdFHyKkSc+kMp6EdVnCWNBcvfbIvIRf0DnbKHOjCFv/xRaM7xCtjhQNqg6WahPZQRiVe7AphABrDmRWUh3GaL55VEmfsT/iPaJHIXvN5NYNm0FmkCN0tpVHKpsC0DGgQ8c84n85RSb/+P5h2JcT6t8i3O1nK6UUuCL9eAxWABQy1jzcUg3laFu1AVg44M9XwjPEvio9E9UerzypNAl2gxCtsrmgwkMJKxLKGrZHVeQy8Bw1dQ4Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1738893391; c=relaxed/relaxed;
-	bh=8c4ShNb79VS3uJ78niPOF4xUIo8m2Xpczu98d0+MjB8=;
+	t=1738893396; c=relaxed/relaxed;
+	bh=HgmzFqnowmHaICe63vQCPOEp7KctLVy/XYlqp6Src5w=;
 	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=A2SxuBwCpLlMiSP0/ZOn5htg2gyKrsDZ+5QwtteuufUOyFq8S8Xds75GTsHMi3aYW2g0HndEz/ufq27T5u0tq0Y+UJA+nAJz88m7BeHuuhFb2FlhrI3olBwWye/RQ15MF+ke05L1Loma6fhoSV6GnaKUkpdjOZSTJsX7y3NQkth6RHApB6oS62bIeyN2YcUoJsPIvbIj50mbP3PBwhm8kgEUlJX5vwY9KPHWPA26bxC271Tu5VXM6A03Djg3KI7JVX1P3QbXm9fjuGhr7z4E+zdvpQPRa7XTXa6cP7QMy8yKiaUercxwVB/4Zi9tYrz2XS0k3kf9WmPhgEj1FDCkqg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=zhangzekun11@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 MIME-Version:Content-Type; b=VCVZEw3V7eBupHoifqtK856mazBfKfF1etE4T1ikrTpB77n+4bGfRzEsoJAqRPsTcPFXq5ONhXAsIt9cdT01fjlojsJv91zTyocbm2Vk0Tw+oxiG1OyoSXnzo851yQ9bTP9JEKYDvbLpqPZpzxatWjRmy+joXiQTm6f8Z0oVr9Tezr19Qkb9sO9LqnPxvv1xKG1kh89TEd1ANfiZLoTGuYAfmzVK+rsfAR8FE5INQyZnYLTe4wKV2tRunbC50CGZ+EO90h9SHesZSsyJLPrFpkzpo+2pIS2e/eyKo3xJMMTLcPZ1MN+aotWV7lEfQi57umaVXvxFFqDoMYJn7mAdYg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.191; helo=szxga05-in.huawei.com; envelope-from=zhangzekun11@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.188; helo=szxga02-in.huawei.com; envelope-from=zhangzekun11@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga02-in.huawei.com (szxga02-in.huawei.com [45.249.212.188])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.191; helo=szxga05-in.huawei.com; envelope-from=zhangzekun11@huawei.com; receiver=lists.ozlabs.org)
+Received: from szxga05-in.huawei.com (szxga05-in.huawei.com [45.249.212.191])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YpxsV72hpz2yvl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2025 12:56:30 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.19.163.174])
-	by szxga02-in.huawei.com (SkyGuard) with ESMTP id 4YpxQT1ty7zgcbJ;
-	Fri,  7 Feb 2025 09:36:33 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ypxsb2Mtqz2yvl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Feb 2025 12:56:35 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.19.163.17])
+	by szxga05-in.huawei.com (SkyGuard) with ESMTP id 4YpxQ10YRMz1l0lp;
+	Fri,  7 Feb 2025 09:36:09 +0800 (CST)
 Received: from kwepemf500003.china.huawei.com (unknown [7.202.181.241])
-	by mail.maildlp.com (Postfix) with ESMTPS id 73B881400DD;
-	Fri,  7 Feb 2025 09:39:51 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id E03DE1A0188;
+	Fri,  7 Feb 2025 09:39:47 +0800 (CST)
 Received: from huawei.com (10.175.112.208) by kwepemf500003.china.huawei.com
  (7.202.181.241) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Fri, 7 Feb
- 2025 09:39:49 +0800
+ 2025 09:39:45 +0800
 From: Zhang Zekun <zhangzekun11@huawei.com>
 To: <robh@kernel.org>, <saravanak@google.com>, <justin.chen@broadcom.com>,
 	<florian.fainelli@broadcom.com>, <andrew+netdev@lunn.ch>, <kuba@kernel.org>,
@@ -48,9 +48,9 @@ CC: <arm-scmi@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
 	<linux-media@vger.kernel.org>, <netdev@vger.kernel.org>,
 	<devicetree@vger.kernel.org>, <chenjun102@huawei.com>,
 	<zhangzekun11@huawei.com>
-Subject: [PATCH 6/9] net: dsa: Use of_find_node_by_name_balanced() to find device_node
-Date: Fri, 7 Feb 2025 09:31:14 +0800
-Message-ID: <20250207013117.104205-7-zhangzekun11@huawei.com>
+Subject: [PATCH 4/9] media: max9286: Use of_find_node_by_name_balanced() to find device_node
+Date: Fri, 7 Feb 2025 09:31:12 +0800
+Message-ID: <20250207013117.104205-5-zhangzekun11@huawei.com>
 X-Mailer: git-send-email 2.22.0
 In-Reply-To: <20250207013117.104205-1-zhangzekun11@huawei.com>
 References: <20250207013117.104205-1-zhangzekun11@huawei.com>
@@ -78,24 +78,24 @@ of_find_node_by_name_balanced() to make code logic a bit simplier.
 
 Signed-off-by: Zhang Zekun <zhangzekun11@huawei.com>
 ---
- drivers/net/dsa/bcm_sf2.c | 4 +---
+ drivers/media/i2c/max9286.c | 4 +---
  1 file changed, 1 insertion(+), 3 deletions(-)
 
-diff --git a/drivers/net/dsa/bcm_sf2.c b/drivers/net/dsa/bcm_sf2.c
-index fa2bf3fa9019..7567686317f1 100644
---- a/drivers/net/dsa/bcm_sf2.c
-+++ b/drivers/net/dsa/bcm_sf2.c
-@@ -1435,9 +1435,7 @@ static int bcm_sf2_sw_probe(struct platform_device *pdev)
- 	set_bit(0, priv->cfp.used);
- 	set_bit(0, priv->cfp.unique);
+diff --git a/drivers/media/i2c/max9286.c b/drivers/media/i2c/max9286.c
+index 9fc4e130a273..0299d08a7196 100644
+--- a/drivers/media/i2c/max9286.c
++++ b/drivers/media/i2c/max9286.c
+@@ -1399,9 +1399,7 @@ static int max9286_parse_dt(struct max9286_priv *priv)
+ 	u32 i2c_clk_freq = 105000;
+ 	unsigned int i;
  
--	/* Balance of_node_put() done by of_find_node_by_name() */
--	of_node_get(dn);
--	ports = of_find_node_by_name(dn, "ports");
-+	ports = of_find_node_by_name_balanced(dn, "ports");
- 	if (ports) {
- 		bcm_sf2_identify_ports(priv, ports);
- 		of_node_put(ports);
+-	/* Balance the of_node_put() performed by of_find_node_by_name(). */
+-	of_node_get(dev->of_node);
+-	i2c_mux = of_find_node_by_name(dev->of_node, "i2c-mux");
++	i2c_mux = of_find_node_by_name_balanced(dev->of_node, "i2c-mux");
+ 	if (!i2c_mux) {
+ 		dev_err(dev, "Failed to find i2c-mux node\n");
+ 		return -EINVAL;
 -- 
 2.22.0
 
