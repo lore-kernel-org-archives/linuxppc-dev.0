@@ -1,50 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-5993-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5994-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE4E9C02198
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Feb 2025 18:20:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D071FC02198
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Feb 2025 18:42:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yqzdz1ySBz2yVD;
-	Sun,  9 Feb 2025 05:20:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739038807;
-	cv=none; b=S1rFLfxRY9apCMG6OsxRU1IiknpNjarKjFXT/kP2bqpemSUEyWIS2Q7548eo1eYAYRSpjIKkyGLaLR5u19G2xy5Hb8KVktyO5PCTkrzANB/HtLmjH1QHC7LYckMWV82VGP1Q+4Y6156kidWV8Y4dQ5svD84c9CYeSb87ou01C3Et3mHb8wjhbQ2EybsLTAqlO9GZOc/BCRnN9eGNLEiTDLPJAADe2pX4t8MCMz3a+OFer9An8e+eN+aXlhrLu9urkkTyK5lFcTpg6PQDoOAhFDCQK8GTupPLylwUlIhr7WpaWL6u2xRNfBvgsUHNJ/+f012aT1KliinwM/fjdk2MHw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yr0862kWKz2ypW;
+	Sun,  9 Feb 2025 05:42:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::22c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739040166;
+	cv=none; b=BVEGUSpSv4WonMIGvTcVbHTJ9gvVKSjRjM0sgi0IJ+UZk/I28DAdkslJkXn00bNxckteuNhBA2pHClaUDy8uu1e2FBWxB7zHe6uxrhk08Jr9DC0QUdSrBb6EiallgURVvRUGM4PvuLDSPYkRv4Tg8C1ExiKagC4IWEQ3fAb/q0jsByaFS6dWJ8ZOkD1O/r5f5NWE9UskkP85rQir8vOitCCRjnBFEpu42f2TTcl42bWO0c9imnKEXaOS2jLY3VmjtnQsD4y3DykY0AzjCnCPYsD6wdY8mKaPDvJ8+UsxOExPrS/vkS8wD/CjH61MOABiNUAgw9pAvaIJaV2+Ucs1vw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739038807; c=relaxed/relaxed;
-	bh=DH84ICV7i7R/e4m6i/CWqFVJlPwBx+t+ajY8fMAW850=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=MqCgEmOxs/Y04L/9TedQDynGAZ028hKqp6Pf7SabsVFjYHRp7b4sdrNwxln9nW5Z9f60PsJCL2uAERxNYFM4yNB/uVZ8MaNmBsyxXbTjEE2hfq+CSl65OytcjMkgnLQe5xPGapjujybomOYEmNdIUFholLdwmc768+C7vaY2q1U+T9qVz+JWo2DxtTmNGfcDTq3KIeBzfEoYwY3SclIXJPnhpSQSSyoVP0ZEEM+CeK2xSQBXHowzMCd8C9hbClPZbCFxA1TZQ0Je+PECT/s/49T9IFvj5M9U0IE0TFy1vnBmL5UUSQIJvAv8Okh1UlzRTYkqSvaro8yjbubOXseBAw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yqzdy3KH6z2yT0
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Feb 2025 05:20:05 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4Yqz654D1kz9sPd;
-	Sat,  8 Feb 2025 18:55:57 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 2kbV93WVjU2T; Sat,  8 Feb 2025 18:55:57 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4Yqz6539yJz9rvV;
-	Sat,  8 Feb 2025 18:55:57 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 624F28B79C;
-	Sat,  8 Feb 2025 18:55:57 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id ViW2ux6gv5_3; Sat,  8 Feb 2025 18:55:57 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6213F8B763;
-	Sat,  8 Feb 2025 18:55:56 +0100 (CET)
-Message-ID: <0f05c020-47e4-444d-90ab-9eb8414f4ef8@csgroup.eu>
-Date: Sat, 8 Feb 2025 18:55:54 +0100
+	t=1739040166; c=relaxed/relaxed;
+	bh=OF3d2v/Cd40GRW7Y3SKITD/wzvp4wTLT0QafaTbIXWQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=cS04gtWUPaMEqPRMTdW0L2/kwu+UkqP+LJdKfqmWHfM/EVyrxn5YOg+7UTbOrHSh4LyJmVZvBEFaOAiop1aGP5UMn5twke4Yh9wLfuDvn2B/4Mm9ggKCviPYmGzqOeZN8hQyS3YPCvczBBt6I+NdFEP3A8DsxBxDiLsEphcVk2rJBwhDlP34+4q+oMAp7pjDK2HF8A93Gt8fLbhGWAXoTwbvAB1xUdj6Y8XMAA0a/RlLXWzdtdwUQKr3e+MrHBgov36CEYApeehwBPIubk8e5CydrbanIuN83JFgyJxmmXFUq4ACRJpkl2onQbFGCGmMaRHMN1wydg+3wmJ4FIJ2AA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=N4tZ1Mv3; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::22c; helo=mail-lj1-x22c.google.com; envelope-from=tamird@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=N4tZ1Mv3;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::22c; helo=mail-lj1-x22c.google.com; envelope-from=tamird@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lj1-x22c.google.com (mail-lj1-x22c.google.com [IPv6:2a00:1450:4864:20::22c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yr08504z4z2y8V
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Feb 2025 05:42:43 +1100 (AEDT)
+Received: by mail-lj1-x22c.google.com with SMTP id 38308e7fff4ca-307d9a13782so26639161fa.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 08 Feb 2025 10:42:43 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1739040159; x=1739644959; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=OF3d2v/Cd40GRW7Y3SKITD/wzvp4wTLT0QafaTbIXWQ=;
+        b=N4tZ1Mv3l7r6mKHiA1eUzDPhALeTYql//JaOrjYEywLZt55PQ57MXTWwkcLNG5Wv3s
+         YQdGNYGS7UrBMZZSL4gnvFjxOXBSL2eA01JoJo5CipRCN0sdNGAEdCWxp4UDsuq7Oych
+         +zQOLjCOPZtxwIwAiXoUodWd00anYBoWE7wsIeFDYVf8CZWmwwql14Mhg0brBcnUi62P
+         uYlU2+P52P04i3s2CU3myDs8phNwsaOeVAcbcxEpFu10AnO5cLilaVOI45J1eTqhsIng
+         5I8k3yqB11cuuSnVMJMln98S6bMuJYy7ED+DzpsyiLmmG1/8ci7xvpyQPUyOayjrFOfF
+         QvdQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739040159; x=1739644959;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=OF3d2v/Cd40GRW7Y3SKITD/wzvp4wTLT0QafaTbIXWQ=;
+        b=l7FNdKwgnkbVW9nR5lQjE196glp0BOD3LEtjgBJcu4RZgn39ZyEEoDlM8aeM5mXBJj
+         f1/KprJzh6deAN5vPCai4NWND4o1wbkCATKJE+XEmau3zaCt5t+rm3fLf7MReNVAGCjK
+         z4iuf62G/kamFXumyGMbBE/HEQttJO9N4+7VDEeA/8Gkoo4+KYhdyK2GmHgWKYfiorND
+         xamhqUdvpgfl+CnlQvlvWNXM/sTLvj201LVY2SIe8MaEP4Ko5kmaHLvxrYvtUvcT50wS
+         wJCHLs5C7F/FcDN7TcjoosEUv9KYc+yZhCTq1lSQuCjK1K3WZKHoXiLsPH9nSXaAtBwE
+         6AcQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWcxxbj/uPF5qYbrKUnBeXP3wXGpRdbJOzxIZ2lOWsKyzjWZJ58mBvRsF+6MotY+ZqetphUJt2o8cRvFII=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxYTJzdcLkbL5T2GsAeOHZgp8ZcjBqDvyPPTdDSw1HXe+U/LGiE
+	iEOxdtE21kVR6TKIMVIPB2nNf8iq8wQfJcqxOyGRZ3osUdCNDKrqv0K0r12sIwNdWI39WU9sECU
+	pbM23dgo3bXnz6czrf48qmYzER3U=
+X-Gm-Gg: ASbGnctGPc8vsmye6uFyPsfZhQTfdeqdhApvVxkMqm3Pb+fWSRIjvMIwu9i3LrvD9LC
+	Uhxza9DSMLygQX/O2R+8oivU/2HQPnKsnoO4t+mzo8WWA+yFa3UWAXg6ZOGuUFu5DInuQ1FvpP/
+	Qgf2cORIa61iv5kPj6mJiMZRelIiyL3Oo=
+X-Google-Smtp-Source: AGHT+IE5yIE5Ue/y+RzFKL8z9km0wUX+8BN+VY4C0BGBjE9wQybUdFtxMRSR6CK8CWLDtOvu3dWumbmGNC9v45fv/pQ=
+X-Received: by 2002:a05:651c:199f:b0:307:dc1f:e469 with SMTP id
+ 38308e7fff4ca-307e580c5d1mr26440881fa.20.1739040158468; Sat, 08 Feb 2025
+ 10:42:38 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,138 +78,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 5/9] powerpc: Use preempt_model_str().
-To: Shrikanth Hegde <sshegde@linux.ibm.com>,
- Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Cc: linux-kernel@vger.kernel.org, linux-rt-devel@lists.linux.dev,
- Ben Segall <bsegall@google.com>, Catalin Marinas <catalin.marinas@arm.com>,
- Dietmar Eggemann <dietmar.eggemann@arm.com>, Ingo Molnar <mingo@redhat.com>,
- Juri Lelli <juri.lelli@redhat.com>, Mel Gorman <mgorman@suse.de>,
- Peter Zijlstra <peterz@infradead.org>, Steven Rostedt <rostedt@goodmis.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Valentin Schneider <vschneid@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>, Will Deacon <will@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Naveen N Rao <naveen@kernel.org>, linuxppc-dev@lists.ozlabs.org
-References: <20250203141632.440554-1-bigeasy@linutronix.de>
- <20250203141632.440554-6-bigeasy@linutronix.de>
- <65c6f60d-bb52-48bd-a02c-87ffd2a915d4@csgroup.eu>
- <20250203160103.9DikC9FJ@linutronix.de>
- <51999b8e-61c0-48b7-b744-c83d39e7f311@csgroup.eu>
- <20250204082223.6iNyq_KR@linutronix.de>
- <7b51f7de-8e4b-4766-85ca-dee24832c693@linux.ibm.com>
- <93833119-9406-4d30-aa7b-4521adb3a573@csgroup.eu>
- <936f0451-a4ee-4e14-9ce9-9cd9613fc55c@linux.ibm.com>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <936f0451-a4ee-4e14-9ce9-9cd9613fc55c@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20250207-bitmap-kunit-convert-v1-0-c520675343b6@gmail.com> <Z6eaDuXnT_rjVSNS@thinkpad>
+In-Reply-To: <Z6eaDuXnT_rjVSNS@thinkpad>
+From: Tamir Duberstein <tamird@gmail.com>
+Date: Sat, 8 Feb 2025 13:42:02 -0500
+X-Gm-Features: AWEUYZka1JKrPSYInI4GKv2M2y8rfwixxdFsdqTGcwpCPpsY53i6WsWMtdiDkWA
+Message-ID: <CAJ-ks9=f8d7jh=15bHc28Z37p9rA-Kg4J2mQ++VBcsesVvezUA@mail.gmail.com>
+Subject: Re: [PATCH 0/3] bitmap: convert self-test to KUnit
+To: Yury Norov <yury.norov@gmail.com>
+Cc: David Gow <davidgow@google.com>, John Hubbard <jhubbard@nvidia.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Naveen N Rao <naveen@kernel.org>, Rasmus Villemoes <linux@rasmusvillemoes.dk>, 
+	Shuah Khan <shuah@kernel.org>, Kees Cook <kees@kernel.org>, 
+	Muhammad Usama Anjum <usama.anjum@collabora.com>, linux-kernel@vger.kernel.org, 
+	linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-kselftest@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Sat, Feb 8, 2025 at 12:53=E2=80=AFPM Yury Norov <yury.norov@gmail.com> w=
+rote:
+>
+> [...]
+>
+> Take over means that you'd at least add the Co-developed-by tag.
 
+I didn't use their code - the thing being "taken over" is the work of
+having these debates with the maintainers.
 
-Le 08/02/2025 à 14:42, Shrikanth Hegde a écrit :
-> 
-> 
-> On 2/8/25 18:25, Christophe Leroy wrote:
->>
->>
->> Le 08/02/2025 à 08:35, Shrikanth Hegde a écrit :
->>>
->>>
->>> On 2/4/25 13:52, Sebastian Andrzej Siewior wrote:
->>>> Use preempt_model_str() instead of manually conducting the preemption
->>>> model. Use pr_emerg() instead of printk() to pass a loglevel.
->>>
->>> even on powerpc, i see __die ends up calling show_regs_print_info().
->>> Why print it twice?
->>
->> I don't understand what you mean, what is printed twice ?
->>
->> I can't see show_regs_print_info() printing the preemption model, am I 
->> missing something ?
->>
-> 
-> Patch 2/9 add preemption string in dump_stack_print_info.
-> 
-> __die -> show_regs() _> show_regs_print_info() -> 
-> dump_stack_print_info() -> init_utsname()->version, preempt_model_str(), 
-> BUILD_ID_VAL);
-> 
-> Wont we end up in this path?
+> [...]
+>
+> KUNIT is disabled in defconfig, at least on x86_64. It is also disabled
+> on my Ubuntu 24.04 machine. If I take your patches, I'll be unable to
+> boot-test bitmaps. Even worse, I'll be unable to build the standalone
+> test from sources as a module and load it later.
+>
+> Or I misunderstand it, and there's a way to build some particular KUNIT
+> test without enabling KUNIT in config and/or re-compiling the whole kerne=
+l?
+> Please teach me, if so
+>
+> Unless you give me a way to build and run the test in true
+> production environment, I'm not going with KUNITs. Sorry.
 
-Indeed I missed that. You are right, we now get the information twice:
+This is a question for David -- I don't know if this is possible.
 
-[  440.068216] BUG: Unable to handle kernel data access on write at 
-0xc09036fc
-[  440.075051] Faulting instruction address: 0xc045ddf8
-[  440.080032] Oops: Kernel access of bad area, sig: 11 [#1]
-[  440.085438] BE PAGE_SIZE=16K PREEMPT  CMPC885
-[  440.089872] SAF3000 DIE NOTIFICATION
-[  440.093391] CPU: 0 UID: 0 PID: 472 Comm: sh Not tainted 
-6.13.0-s3k-dev-01384-g54680e2fbfb0 #1379 PREEMPT
-[  440.102977] Hardware name: MIAE 8xx 0x500000 CMPC885
-[  440.107951] NIP:  c045ddf8 LR: c045dde8 CTR: 00000000
-[  440.113015] REGS: c9bf3d60 TRAP: 0300   Not tainted 
-(6.13.0-s3k-dev-01384-g54680e2fbfb0)
-[  440.121215] MSR:  00009032 <EE,ME,IR,DR,RI>  CR: 35009393  XER: 80003100
-[  440.128198] DAR: c09036fc DSISR: 82000000
-[  440.128198] GPR00: c045c59c c9bf3e20 c27e7700 0000002e c108575c 
-00000001 c1085850 00009032
-[  440.128198] GPR08: 00000027 0198b861 00000001 3ffff000 55009393 
-100d815e 7fcf5e20 100d0000
-[  440.128198] GPR16: 100d0000 00000000 113e447c 113e4480 00000000 
-00000001 00000000 00000000
-[  440.128198] GPR24: 113e4464 00000000 c1828000 c9bf3ef8 c1136eac 
-c9bf3ef8 c2888000 c0900000
-[  440.168081] NIP [c045ddf8] lkdtm_WRITE_RO+0x34/0x50
-[  440.172969] LR [c045dde8] lkdtm_WRITE_RO+0x24/0x50
-[  440.177771] Call Trace:
+> [...]
+>
+> This is my evidence: sometimes people report performance or whatever
+> issues on their systems, suspecting bitmaps guilty. I ask them to run
+> the bitmap or find_bit test to narrow the problem. Sometimes I need to
+> test a hardware I have no access to, and I have to (kindly!) ask people
+> to build a small test and run it. I don't want to ask them to rebuild
+> the whole kernel, or even to build something else.
+>
+> https://lore.kernel.org/all/YuWk3titnOiQACzC@yury-laptop/
 
-Christophe
+This is compelling evidence, and it was not previously raised. Thank you.
 
-> 
->> Christophe
->>
->>>
->>>>
->>>> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
->>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
->>>> Cc: Nicholas Piggin <npiggin@gmail.com>
->>>> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
->>>> Cc: Naveen N Rao <naveen@kernel.org>
->>>> Cc: linuxppc-dev@lists.ozlabs.org
->>>> Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
->>>> ---
->>>> v2…v3:
->>>>    - Use printk() instead of pr_emerg() to remain consistent with the
->>>>      other invocations in terms of printing context.
->>>>
->>>>   arch/powerpc/kernel/traps.c | 4 ++--
->>>>   1 file changed, 2 insertions(+), 2 deletions(-)
->>>>
->>>> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
->>>> index edf5cabe5dfdb..d6d77d92b3358 100644
->>>> --- a/arch/powerpc/kernel/traps.c
->>>> +++ b/arch/powerpc/kernel/traps.c
->>>> @@ -263,10 +263,10 @@ static int __die(const char *str, struct 
->>>> pt_regs *regs, long err)
->>>>   {
->>>>       printk("Oops: %s, sig: %ld [#%d]\n", str, err, ++die_counter);
->>>> -    printk("%s PAGE_SIZE=%luK%s%s%s%s%s%s %s\n",
->>>> +    printk("%s PAGE_SIZE=%luK%s %s %s%s%s%s %s\n",
->>>>              IS_ENABLED(CONFIG_CPU_LITTLE_ENDIAN) ? "LE" : "BE",
->>>>              PAGE_SIZE / 1024, get_mmu_str(),
->>>> -           IS_ENABLED(CONFIG_PREEMPT) ? " PREEMPT" : "",
->>>> +           preempt_model_str(),
->>>>              IS_ENABLED(CONFIG_SMP) ? " SMP" : "",
->>>>              IS_ENABLED(CONFIG_SMP) ? (" NR_CPUS=" 
->>>> __stringify(NR_CPUS)) : "",
->>>>              debug_pagealloc_enabled() ? " DEBUG_PAGEALLOC" : "",
->>>
->>
-> 
+I notice that two things are true about the performance test part of
+test_bitmap.c:
+- It's a minority of the code in the file (48 lines out of 1462).
+- There are no assertions in it.
 
+Do you also find value in running the testing portion on other
+people's machines, to which you don't have access?
+
+> [...]
+>
+> Nice summary for the discussion. Unfortunately you missed my concerns.
+> Which are:
+>
+> Pros:
+>  - Now we switch to KUNITs because KUNITs are so good
+>
+> Cons:
+>  - Wipes git history;
+
+I was very careful to minimize churn, and the result is 249 lines on
+which I'd now own the blame (228 with `-w`). Still, it's a valid con.
+
+>  - Bloats the test's source code;
+
+The test is 74 lines shorter after this series.
+
+>  - Adds dependencies;
+>  - Doesn't run on most popular distros and defconfig;
+
+Yep, I understand your concerns much better now - and I'm grateful for
+your having taken the time to explain and show receipts. Still, I
+wonder if we can get the best of both worlds - either by finding what
+you need in KUnit, or by moving the testing bit to KUnit and keeping
+the performance bit where it is.
+
+Thanks.
+Tamir
 
