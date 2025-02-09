@@ -1,50 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-5999-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6000-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E957FC02199
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Feb 2025 09:50:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BE27C02199
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Feb 2025 10:01:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YrNH91cbVz30Ng;
-	Sun,  9 Feb 2025 20:50:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739094613;
-	cv=none; b=YFvjViTwzaXgvnAvoxwvC51XlflBk0RF3eV6QeusmdM/7e0873DuVzSlqkZplls9MAEYxUT05ELyjAktHWTJhkiGrxzmA15eyW0ekpHHyYk/JOVCK0Cwpjyf7ALej/hm+JcZIDVYHRyHzP8bM3oh2K3G/DpYLjMVw/A5w98pUO/U3cLg/uR52xAp2Z+lB+xtmbnfFT7BlvSZY5brQiljYoXG6hdoAzBbff8bemddYsyWb5obGqdejuRRhbiXN9Rn5Wke6bGJz36A+bq2/vJ73eaTPYb7aOc9WAlQdynCtMLe77Lgfi9OeOIY6K3izs8DPRBqKhIQ2kOoYqj3T5ideQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YrNXV4VcMz2yk7;
+	Sun,  9 Feb 2025 21:01:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.186
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739095306;
+	cv=none; b=KMCv28VUK7Hp0U5BYnIrfR4YnQaXcrptgJEFzswVdWCAuOcJFQuvqJ97Mi8uZQbgAjYAJEkeITq31aWPXyVyZuW3qoc8AEy0txVvq3iDUZLN3cNxzs+az9eknp18I751bC3+/FC58gCbgjeTj52GdFnIT3KLAkDYfDplyTT3lqfxw1Bp6ERFWogD6yItiDWZl/xYCy6nWpbYrCf5VaibSAnJYBESZR555MK8XDhvXa4Lr0szD5NIzptrjmxZ2duSrVqLhlGIms+NmZYi4D3H2QD3VKM6cKsV8/R/ousKf1Oai21OW/53MLAQdDao6yeut4lnBCWPRbwj9zpD7Oqqsw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739094613; c=relaxed/relaxed;
-	bh=ckI1RqsjMyU0sE2QURMCMC6KgUXPyPicfhatXov8UOs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=CqYjDVTUDFpJjgB4cy2oDFX8jDU54BNBVKwjrNu/2tATo7VV1ufmgerMSaYBXFpGS+th4A5PfBSD2y/bOt0fL6YSvgcae81WNplf9iIYqrrvgfjS/4tp44Svi1Jr1a9FPdpelO5DPsrfpnKaUqIthMoiV5RjMItBM7c3k4JxOP0yv7mEHZrEUUfYK/FKotK5UTNiWcZlDYDgNmH0y7+0zbhMKF1+AA0DzH5DeI4MFSTPo6XxNBprQIDithC3LOSIqyVCd2MZP2CCcuN7+trBKhZsTCwmcDkj2ttkT1WJTSePYUwMEMSFxwB5VufSQcDblUmClLRJXMhxVw548HLjgQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YrNH83HSbz2xmS
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Feb 2025 20:50:12 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4YrMXQ0N35z9sPd;
-	Sun,  9 Feb 2025 10:16:38 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id aNuFw5IlXRuw; Sun,  9 Feb 2025 10:16:37 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4YrMXP6dxTz9rvV;
-	Sun,  9 Feb 2025 10:16:37 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D19888B764;
-	Sun,  9 Feb 2025 10:16:37 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id kpTQIB64sT6S; Sun,  9 Feb 2025 10:16:37 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 124738B763;
-	Sun,  9 Feb 2025 10:16:37 +0100 (CET)
-Message-ID: <505dcbf1-c185-4bc3-9615-041dfd6344e5@csgroup.eu>
-Date: Sun, 9 Feb 2025 10:16:35 +0100
+	t=1739095306; c=relaxed/relaxed;
+	bh=9cSbhneX97WdYtqTFiUpL4Xz+wowhgsJfRXIyo0XD/Q=;
+	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
+	 Message-Id:References:To; b=N7l1QIvN/GXg74KPPe54E8I1CDUyKGughuQz+8viyU5Ksk9K20JjPi7rjIrjVh4p1m8FFEXMt3k0wxaa/kWnUftyFk1rKPBvwD4wYYf0f19Dp3+yPyQ7lxI+z/ajxoYXneBW6ubqnkkNrddEUjo7yiNxKjTdWbgoxegU0m1yCk3r0BFcfynI0bkyyrvYSJjOMDt1VQZOJXJNf+6BF2nY7ujxPXIulRUi3b4zW0HJMkhdSaQUlK0xc8j0qg808BXPx+YpyJLbv1uYsnuXdnvZhi2Nh3a2Eo33bOgMWNuWV3xd8/islvKHdoVXopNw2wJNOJZAKFIFeZ9XWu9HibtULA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass (client-ip=95.215.58.186; helo=out-186.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.186; helo=out-186.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 6227 seconds by postgrey-1.37 at boromir; Sun, 09 Feb 2025 21:01:40 AEDT
+Received: from out-186.mta1.migadu.com (out-186.mta1.migadu.com [95.215.58.186])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YrNXN5KC4z2yZ4
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Feb 2025 21:01:39 +1100 (AEDT)
+Content-Type: text/plain;
+	charset=utf-8
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1739095279;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=9cSbhneX97WdYtqTFiUpL4Xz+wowhgsJfRXIyo0XD/Q=;
+	b=sE9os2oCjn5wm8jnTVvYcVtsREUjUYFxqpeprhiDim4rUG/+AqdL+oucY7wOl6roCTG3KQ
+	vbQFdqiU1SgzVUSSV8hHxiKNbVnT0cEfKjMaB7UXMbQLmd/KSeTBzTVeUBBBTzk03hWMlY
+	puW18AQ0rIHwYhVZpFVgDNNdVqPd0qI=
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,62 +50,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3776.700.51.11.1\))
 Subject: Re: [RESEND PATCH] fadump: Use str_yes_no() helper in
  fadump_show_config()
-To: Thorsten Blum <thorsten.blum@linux.dev>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Naveen N Rao <naveen@kernel.org>, Hari Bathini <hbathini@linux.ibm.com>,
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Thorsten Blum <thorsten.blum@linux.dev>
+In-Reply-To: <505dcbf1-c185-4bc3-9615-041dfd6344e5@csgroup.eu>
+Date: Sun, 9 Feb 2025 11:01:06 +0100
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Naveen N Rao <naveen@kernel.org>,
+ Hari Bathini <hbathini@linux.ibm.com>,
  Sourabh Jain <sourabhjain@linux.ibm.com>,
  "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
  "Aneesh Kumar K.V (IBM)" <aneesh.kumar@kernel.org>,
- Bjorn Helgaas <bhelgaas@google.com>
-Cc: Baoquan He <bhe@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+ Bjorn Helgaas <bhelgaas@google.com>,
+ Baoquan He <bhe@redhat.com>,
+ linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org
+Content-Transfer-Encoding: quoted-printable
+Message-Id: <B65D3E24-E34B-47DA-902F-8DD338CCFE09@linux.dev>
 References: <20250209081704.2758-2-thorsten.blum@linux.dev>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20250209081704.2758-2-thorsten.blum@linux.dev>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+ <505dcbf1-c185-4bc3-9615-041dfd6344e5@csgroup.eu>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+X-Migadu-Flow: FLOW_OUT
 
-Hi,
+On 9. Feb 2025, at 10:16, Christophe Leroy wrote:
+> Le 09/02/2025 =C3=A0 09:17, Thorsten Blum a =C3=A9crit :
+>> Remove hard-coded strings by using the str_yes_no() helper function.
+>> Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+>> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+>=20
+> Any reason for resending ? Your patch is not lost, see =
+https://patchwork.ozlabs.org/project/linuxppc-dev/list/?submitter=3D89400
 
-Le 09/02/2025 à 09:17, Thorsten Blum a écrit :
-> Remove hard-coded strings by using the str_yes_no() helper function.
-> 
-> Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+Ah sorry, I missed this. It's sometimes hard to know the status of a
+patch when it's not in next yet.
 
-Any reason for resending ? Your patch is not lost, see 
-https://patchwork.ozlabs.org/project/linuxppc-dev/list/?submitter=89400
-
-If there is a reason that you don't want to put in the commit message, 
-just put it here below under the ---
-
-> ---
->   arch/powerpc/kernel/fadump.c | 6 ++----
->   1 file changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-> index 4b371c738213..8c531533dd3e 100644
-> --- a/arch/powerpc/kernel/fadump.c
-> +++ b/arch/powerpc/kernel/fadump.c
-> @@ -289,10 +289,8 @@ static void __init fadump_show_config(void)
->   	if (!fw_dump.fadump_supported)
->   		return;
->   
-> -	pr_debug("Fadump enabled    : %s\n",
-> -				(fw_dump.fadump_enabled ? "yes" : "no"));
-> -	pr_debug("Dump Active       : %s\n",
-> -				(fw_dump.dump_active ? "yes" : "no"));
-> +	pr_debug("Fadump enabled    : %s\n", str_yes_no(fw_dump.fadump_enabled));
-> +	pr_debug("Dump Active       : %s\n", str_yes_no(fw_dump.dump_active));
->   	pr_debug("Dump section sizes:\n");
->   	pr_debug("    CPU state data size: %lx\n", fw_dump.cpu_state_data_size);
->   	pr_debug("    HPTE region size   : %lx\n", fw_dump.hpte_region_size);
-
+Thanks,
+Thorsten=
 
