@@ -1,58 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-5997-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-5998-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C4E0C02199
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Feb 2025 08:18:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2433BC02199
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  9 Feb 2025 09:50:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YrLDt4cjDz2yDT;
-	Sun,  9 Feb 2025 19:18:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::b9"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739089086;
-	cv=none; b=GnZY4a9XQ1OfRBsMAg58Eo5I3RAIBXOUgAWLERdAqaBQtj7R2K48xuJfW2L2l1od+56wUcD8EY3CEe1OiSz6CZC+78r0aXKMh9pyci368fUP9JUNcwu4gXla1wCiOPRqxQp5bEkBcF4BWFOcNyyT8BcK9C8bagqul/jstHl/yFy9oh5JC9VYLL3idVRax00jcrVVdfw6wrBsIzGV90rSqKddQJTpFXHviLrIMYKCQCX1e5O3Ey3lp4sYSf+ovihMBkyeh4qUuW0KrbNDFZQwpgxcf4avcQIio8FEFWAwm/358CtwHs1PSFjmyIIZ/p59AeLrqkr+UAZ/Pq/XVXR8eQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YrNH42tMlz2yVv;
+	Sun,  9 Feb 2025 20:50:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739094608;
+	cv=none; b=cDZAU0VE5jhIVBWOumeNLSZUh9iOVgnyVXqFsvyb1CEzgPNABT4oxc15pblxeyBydfrvjoKn5YZ5Nv+7Uw/JLIktIykyRptehV0JxtrkQO/QdnNq8+6tYAlmB0rVHAuqcK/76+0xQCUGrAIZC3xQBoK1A1VitQM9iA8ZZPk42c9q7cuXwg5Qz3fkTSx58zsokJk0xP/QbeHPPNUa2eFYamLaKf6YXYgNaYQCHSbU1LvJ7Y2SysqDBknIKykqq7XZPdJMqpV5S4j6YJnpSSuWJZOv2eLieFSlJ+GSbdpr86xhnLmRdW4KZnGvJ4vEZ9e7ifpIQ9cA4Dm6W8l+HQP/rQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739089086; c=relaxed/relaxed;
-	bh=IiH2NYlYsxSXLU1sZ46R9u08xGC0tcovZjatzA0NQ/g=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=JpaStV1eg1jajd6tEGtJlHT87L53YcZrKj6uS3mwpcCVJsl4Wh/BYiRRVnuRKkTRHHkJSXJHQgf5EKQ/+MtD6boN7UAGPi5CSmTvecutz+rTNj1EjbIAX61/E0bsgCBsPqnjhkpmYf+dxdN71MmTv45l3nlxxxNzDrKdkMmbKToMmNV3yP/tBwFi2DvCSn4XmS9dhUDntBRCPXb1FxoRq9QDVL4Fw7Dq8soPNHz0RstyjQqnngCGGevmANsR0/F4t6i2KJ8MagKDqzWohba3mgWIlqPkhgTUCrkAJPbOdFGwSFein+nAYlcVG3uSuPSgOQbZNxMc2gfGfgKEc1BngQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; spf=pass (client-ip=2001:41d0:203:375::b9; helo=out-185.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::b9; helo=out-185.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-185.mta1.migadu.com (out-185.mta1.migadu.com [IPv6:2001:41d0:203:375::b9])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YrLDl6Lj8z2xs7
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Feb 2025 19:17:59 +1100 (AEDT)
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1739089051;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=IiH2NYlYsxSXLU1sZ46R9u08xGC0tcovZjatzA0NQ/g=;
-	b=beA2ZaiO51l+gHGagbiy/5PON6iHcgDUL2hOT4U9nQRs1pDSlEUfvytDoLVV0jN70Am9uk
-	h8sS4Ej53b1rW6aS17PW6xy/OK/bG4alYOo3PTnHR99YN8sn8Y62wddmhExI5mrIaqrnyN
-	tWzymrtgpzZIVp4gUoF9e4tes3cbRmI=
-From: Thorsten Blum <thorsten.blum@linux.dev>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Hari Bathini <hbathini@linux.ibm.com>,
-	Sourabh Jain <sourabhjain@linux.ibm.com>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	"Aneesh Kumar K.V (IBM)" <aneesh.kumar@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>,
-	Baoquan He <bhe@redhat.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: [RESEND PATCH] fadump: Use str_yes_no() helper in fadump_show_config()
-Date: Sun,  9 Feb 2025 09:17:03 +0100
-Message-ID: <20250209081704.2758-2-thorsten.blum@linux.dev>
+	t=1739094608; c=relaxed/relaxed;
+	bh=Z3bKHEYmP4NrCF3rYVJ3ZWLrLHw6gos/4l/0/P4BDng=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=VR3Q8L2+AP/yI9ZfI40j8MvloD8z/UYjHPVl+nYDjP1/wEHZj/07dLJyc7s+R31omMKAxpYjttZHm8wMaZgh37q1n7IhAJiJK4qVuknrXK0u15JEZ6SWJxCi8HPGoz7U00aOJ+5c6IFy7Qb/xtremWXdShA1mOvsQkNWET6aP6P+kw0yIVPUkNET+tFVwInM2+6d7pmNU1Tfu4DJDR1fWusW3eOWmGQaCMM5CIv8/N5RAZPUx2UgdGyn0iqtfCmEcHd94XE6ZBWcVvGW7GwRD9xDxKYoCCIV9A2Sp/F2GhEwx/ffMxnfrsfnpnyT/RO0qt1TRG18anIa1A4RrNcVCg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YrNH33NRmz2xmS
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Feb 2025 20:50:05 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4YrMpP1Dw5z9sRr;
+	Sun,  9 Feb 2025 10:28:45 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id DDi-BSp373Uq; Sun,  9 Feb 2025 10:28:45 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4YrMpP0PSMz9sRk;
+	Sun,  9 Feb 2025 10:28:45 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id F275D8B764;
+	Sun,  9 Feb 2025 10:28:44 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id lJDIllVd9YL8; Sun,  9 Feb 2025 10:28:44 +0100 (CET)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6C8D78B763;
+	Sun,  9 Feb 2025 10:28:44 +0100 (CET)
+Message-ID: <0203253b-4bda-4e66-b7e6-e74300c44c80@csgroup.eu>
+Date: Sun, 9 Feb 2025 10:28:42 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,36 +57,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH net-next] net: phy: remove unused PHY_INIT_TIMEOUT
+ definitions
+To: Heiner Kallweit <hkallweit1@gmail.com>,
+ Andrew Lunn <andrew+netdev@lunn.ch>, Paolo Abeni <pabeni@redhat.com>,
+ Jakub Kicinski <kuba@kernel.org>, David Miller <davem@davemloft.net>,
+ Eric Dumazet <edumazet@google.com>, Simon Horman <horms@kernel.org>,
+ Andrew Lunn <andrew@lunn.ch>,
+ Russell King - ARM Linux <linux@armlinux.org.uk>
+Cc: "netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <11be8192-b722-4680-9d1c-3e4323afc27f@gmail.com>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <11be8192-b722-4680-9d1c-3e4323afc27f@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-Migadu-Flow: FLOW_OUT
 
-Remove hard-coded strings by using the str_yes_no() helper function.
 
-Reviewed-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
----
- arch/powerpc/kernel/fadump.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
-index 4b371c738213..8c531533dd3e 100644
---- a/arch/powerpc/kernel/fadump.c
-+++ b/arch/powerpc/kernel/fadump.c
-@@ -289,10 +289,8 @@ static void __init fadump_show_config(void)
- 	if (!fw_dump.fadump_supported)
- 		return;
- 
--	pr_debug("Fadump enabled    : %s\n",
--				(fw_dump.fadump_enabled ? "yes" : "no"));
--	pr_debug("Dump Active       : %s\n",
--				(fw_dump.dump_active ? "yes" : "no"));
-+	pr_debug("Fadump enabled    : %s\n", str_yes_no(fw_dump.fadump_enabled));
-+	pr_debug("Dump Active       : %s\n", str_yes_no(fw_dump.dump_active));
- 	pr_debug("Dump section sizes:\n");
- 	pr_debug("    CPU state data size: %lx\n", fw_dump.cpu_state_data_size);
- 	pr_debug("    HPTE region size   : %lx\n", fw_dump.hpte_region_size);
--- 
-2.48.1
+Le 08/02/2025 à 22:14, Heiner Kallweit a écrit :
+> Both identical definitions of PHY_INIT_TIMEOUT aren't used,
+> so remove them.
+
+Would be good to say when it stopped being used, ie which commit or 
+commits removed its use.
+
+Also why only remove PHY_INIT_TIMEOUT ? For instance PHY_FORCE_TIMEOUT 
+also seems to be unused. PHY_CHANGE_TIME as well.
+
+> 
+> Signed-off-by: Heiner Kallweit <hkallweit1@gmail.com>
+> ---
+>   drivers/net/ethernet/freescale/ucc_geth.h | 1 -
+>   include/linux/phy.h                       | 1 -
+>   2 files changed, 2 deletions(-)
+> 
+> diff --git a/drivers/net/ethernet/freescale/ucc_geth.h b/drivers/net/ethernet/freescale/ucc_geth.h
+> index 38789faae..03b515240 100644
+> --- a/drivers/net/ethernet/freescale/ucc_geth.h
+> +++ b/drivers/net/ethernet/freescale/ucc_geth.h
+> @@ -890,7 +890,6 @@ struct ucc_geth_hardware_statistics {
+>   							   addresses */
+>   
+>   #define TX_TIMEOUT                              (1*HZ)
+> -#define PHY_INIT_TIMEOUT                        100000
+>   #define PHY_CHANGE_TIME                         2
+>   
+>   /* Fast Ethernet (10/100 Mbps) */
+> diff --git a/include/linux/phy.h b/include/linux/phy.h
+> index 3028f8abf..9cb86666c 100644
+> --- a/include/linux/phy.h
+> +++ b/include/linux/phy.h
+> @@ -293,7 +293,6 @@ static inline long rgmii_clock(int speed)
+>   	}
+>   }
+>   
+> -#define PHY_INIT_TIMEOUT	100000
+>   #define PHY_FORCE_TIMEOUT	10
+>   
+>   #define PHY_MAX_ADDR	32
 
 
