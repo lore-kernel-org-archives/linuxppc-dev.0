@@ -1,70 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-6014-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6015-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77C67C0219B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Feb 2025 04:34:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDDBEC02198
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Feb 2025 05:23:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YrsDj055nz2xrv;
-	Mon, 10 Feb 2025 15:34:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739162084;
-	cv=none; b=gJNpcNtCs/JtPFhNPKJrMkm4cjDYxZQOXwJXtH5Mcit7Vzf5H/ZSuuNWb9QTIDGqTxXLmQnNVfKPJKGjqsl5c2U20/DnbI3WRKKMVTTa2McMNuoNjyZ+YWteq5ucr2xjOeFNEvs9O8AwS71lIAXrOxpo6YBJPNAr8B2hSZS/xzsS48iGkWCVezeOq/CmoNf0mKW4pwSxfVZlJv7Vix6a3sthtdYEMkuYZk0nXLlgpbCNxQsFCm53yC/T99/q6gajkg4VPc+P/SX492M9WCf06thpx+qwLj6MhUHRXvnp9bn741+/Wcc0K1rVDKwP3GuMzvJoG9fRVOGms3mHQbbk1g==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739162084; c=relaxed/relaxed;
-	bh=fOvPbUbMnTIgUdqmziqc+FQX9Yehx4Z55MHuSNKVBU0=;
-	h=Message-ID:Date:MIME-Version:To:From:Subject:Cc:Content-Type; b=XUc7f7rf2O/cjWF2PlWhQC9vrfLjzVj/cBqejeEWdoC7pBNf9JBCvAZtbndzEPQFslLSyC57HsXhyKWbooLrkKBVkuYzvgHnSG+bK4n3Cv1ZIdfwYpRjZF1qvcl9IBzXN+3URkxGnHIMiaeZbLVWL1/IfEpeEPGw2IYqC5/pVpbzgbXnbbFgSJZaPRLDLJCq686/POo4R5GgtFFiVZxpFFcm1SdItrl3CUiUy3CABkVuA9iOEOhOt8D3CH1yvayPe/hHNQ8KMw/ZHrSLTWa48mCWHxx/KWUFnv7BbdZLEk3K+qWmP2KatdYghcL94qCrZF/DV4tgiMRpFEWkixMoRA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mz+ErOXe; dkim-atps=neutral; spf=none (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.vnet.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.vnet.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YrtK06NHkz2yy9;
+	Mon, 10 Feb 2025 16:23:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=136.143.188.112 arc.chain=zohomail.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739165012;
+	cv=pass; b=fjSJI1QRfDelPBNz/m9UGh8QhxrzENM0JXC9pd1OsW4Lhm+fXN/u14Nld/PcFbmwT66T6hxlPCCVOAjaSA/btykF2wfnzYu0YyFclpAheIOiNyzaTPZrCgqkzghP2egzSzVLMW+iXU+OyZ7KcGuqFOehGi3YIVD2xhsBvjOmYAWCcExoMoyp9D95jpkiRmfA5fcZkWn5ltnkAX4W0laYYDch58VPlm6BfNReFAQE19zejJnyvvAGr69Y57y16yoSvpxqk7gNHp7sHgsExYX9jC7Uz+oIxq2nZ06mJtapr+giirFOM/3Wk0+F0eI3peK/BKlH8CvaWt9Fd8N0eh918A==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1739165012; c=relaxed/relaxed;
+	bh=/QIz911OMtcD5qVxILAnaTymBqCBQ0ocZbJLtR/PUXY=;
+	h=Message-ID:Date:MIME-Version:Cc:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=EJCa1fXfqwdrIqhaeQJvhqL21h9eH9DzOxXBhpWVTPi4gGmfAWukaEsCEjb8bYTTgd/NQXJyeXoVteUs5pWHJ5p3u4v36A6ck9qmFknBHolQfKBTLf9qXu4Vb53eKS4O+kKbzhkZfBVgjTZSP02f8FtSTIA6kuRsawmThxHRwt0fLHbsNSJDojNIKvnBtmL2KBvaoc0eRkTtKCunZ1Mv/WCAVJ8m5KQ9JC/y+lA2UV91pzCIBYgarW8GVr0L1my/wV+dteYpv9JdiFaxjqnXFeJvVNPiaeAHoFdYlADaPVmM4ii57MTUEyLr5lihyifYMBJms0XvNqUDpA20OPBcGA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=collabora.com; dkim=pass (1024-bit key; unprotected) header.d=collabora.com header.i=Usama.Anjum@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=f6qZ3e8i; dkim-atps=neutral; spf=pass (client-ip=136.143.188.112; helo=sender4-pp-f112.zoho.com; envelope-from=usama.anjum@collabora.com; receiver=lists.ozlabs.org) smtp.mailfrom=collabora.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=collabora.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mz+ErOXe;
+	dkim=pass (1024-bit key; unprotected) header.d=collabora.com header.i=Usama.Anjum@collabora.com header.a=rsa-sha256 header.s=zohomail header.b=f6qZ3e8i;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=collabora.com (client-ip=136.143.188.112; helo=sender4-pp-f112.zoho.com; envelope-from=usama.anjum@collabora.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 87 seconds by postgrey-1.37 at boromir; Mon, 10 Feb 2025 16:23:31 AEDT
+Received: from sender4-pp-f112.zoho.com (sender4-pp-f112.zoho.com [136.143.188.112])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YrsDg6wsvz2xgX
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Feb 2025 15:34:43 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 51A39I7m030033;
-	Mon, 10 Feb 2025 04:34:33 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=pp1; bh=fOvPbUbMnTIgUdqmziqc+FQX9Yeh
-	x4Z55MHuSNKVBU0=; b=mz+ErOXesXyWQEp4udBMmheDXFaL8vLD2MB03/p8N1qZ
-	7wfYzGDypnQhxAGPTeujEUPzgylFUWTJRKoYN6o2gx3dNhTuLOLPRQ+QGane/GOM
-	Ffv6S6ElNzQ6gsJkJUKB/qO8k7XtCFmzqZwaLvKZTpNPUyb0gkRuyLFpR0sc70BL
-	obCnIC08Df0yZs1JMijuPVuhM26f2l0CKf3NKv+51zWa+hxndHFNB0sX+0OUlRGU
-	4+GWPi9RXY1eq4VqanNveEZG3aUrTa33Vylk18EaFN1HpntoGb1ujocpMNPvdHSC
-	3SgzzYbUjHUQUdUCR7ESCrunlzizSlBlD/S0MxO+CQ==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44pr2nuagj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 10 Feb 2025 04:34:33 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 51A3tNsd016743;
-	Mon, 10 Feb 2025 04:34:32 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 44pk3jvg9n-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 10 Feb 2025 04:34:32 +0000
-Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 51A4YWrx16187970
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 10 Feb 2025 04:34:32 GMT
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3A4BC58055;
-	Mon, 10 Feb 2025 04:34:32 +0000 (GMT)
-Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1C5E958059;
-	Mon, 10 Feb 2025 04:34:31 +0000 (GMT)
-Received: from [9.61.251.80] (unknown [9.61.251.80])
-	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 10 Feb 2025 04:34:30 +0000 (GMT)
-Message-ID: <8d1ebe64-f5df-43d4-8e4d-20f934daff45@linux.vnet.ibm.com>
-Date: Mon, 10 Feb 2025 10:04:29 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YrtJz0mclz2yvl
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Feb 2025 16:23:30 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1739164993; cv=none; 
+	d=zohomail.com; s=zohoarc; 
+	b=JqR3KorCinvjHzPa8RdmHaKo/HGGZPs4Quon3J4LcuKW53paY2xrujdgyKyb0u/fvKNQNHOAEsR+IhyX2J6Shyqj054CajgskOyynsW2q9P9/FMvjRp1fFuB3krvcspyRAt6ox3XCD8aMkOyGknXwc1nbDzKnZqXVCGx/Qs/w/M=
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
+	t=1739164993; h=Content-Type:Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
+	bh=/QIz911OMtcD5qVxILAnaTymBqCBQ0ocZbJLtR/PUXY=; 
+	b=JavJ1/h08URD+qfQgBblFNzRNNCbdCTekR8HBb4VYEJrj9vVMsyC7qtuehWgCTVabiCmL2hqP7O0hwtqU74DZaqAT+wnT+uLyiEqSeowgBtvhvpgntqUnA9WFfJfEXIP4Lljrym5LSx+f4ICUsYSSKkJb8W7LRseT2oTfKoeCa8=
+ARC-Authentication-Results: i=1; mx.zohomail.com;
+	dkim=pass  header.i=collabora.com;
+	spf=pass  smtp.mailfrom=Usama.Anjum@collabora.com;
+	dmarc=pass header.from=<Usama.Anjum@collabora.com>
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1739164993;
+	s=zohomail; d=collabora.com; i=Usama.Anjum@collabora.com;
+	h=Message-ID:Date:Date:MIME-Version:Cc:Cc:Subject:Subject:To:To:References:From:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:Message-Id:Reply-To;
+	bh=/QIz911OMtcD5qVxILAnaTymBqCBQ0ocZbJLtR/PUXY=;
+	b=f6qZ3e8i8EEkCrdCw8Zh5Oz3CJuZoCruA6E8bWsMLoWPs0gdo4+AL/oP0evryGri
+	n3+BKDk+INPt9staTbiJVc3MJZFQbHD3nmHBi71VcT1g8foyt/WCLnWTJdOqXPOHZfF
+	KEckjYeSqMbMdKTem7j/U8TSML/74A1Y5Ups+O38=
+Received: by mx.zohomail.com with SMTPS id 1739164990922906.1391036387133;
+	Sun, 9 Feb 2025 21:23:10 -0800 (PST)
+Message-ID: <47a8a72b-61a0-49e3-8ae8-668380b3b567@collabora.com>
+Date: Mon, 10 Feb 2025 10:23:39 +0500
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,166 +65,479 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Content-Language: en-GB
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-From: Venkat Rao Bagalkote <venkat88@linux.vnet.ibm.com>
-Subject: [linux-next][next-20250207]Observing Kernel Softlock up's while
- running kselftest
-Cc: sfr@canb.auug.org.au
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: cES3qbbo26zhOCiA0BH6NgjaQKsmIJ6h
-X-Proofpoint-ORIG-GUID: cES3qbbo26zhOCiA0BH6NgjaQKsmIJ6h
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-02-10_02,2025-02-07_03,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 mlxlogscore=758
- spamscore=0 suspectscore=0 adultscore=0 priorityscore=1501
- lowpriorityscore=0 impostorscore=0 phishscore=0 clxscore=1011
- malwarescore=0 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2501170000 definitions=main-2502100035
+Cc: Usama.Anjum@collabora.com, linux-kernel@vger.kernel.org,
+ linux-m68k@lists.linux-m68k.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kselftest@vger.kernel.org
+Subject: Re: [PATCH 3/3] bitmap: break kunit into test cases
+To: Tamir Duberstein <tamird@gmail.com>, David Gow <davidgow@google.com>,
+ John Hubbard <jhubbard@nvidia.com>, Andrew Morton
+ <akpm@linux-foundation.org>, Geert Uytterhoeven <geert@linux-m68k.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Naveen N Rao <naveen@kernel.org>, Yury Norov <yury.norov@gmail.com>,
+ Rasmus Villemoes <linux@rasmusvillemoes.dk>, Shuah Khan <shuah@kernel.org>,
+ Kees Cook <kees@kernel.org>
+References: <20250207-bitmap-kunit-convert-v1-0-c520675343b6@gmail.com>
+ <20250207-bitmap-kunit-convert-v1-3-c520675343b6@gmail.com>
+Content-Language: en-US
+From: Muhammad Usama Anjum <Usama.Anjum@collabora.com>
+In-Reply-To: <20250207-bitmap-kunit-convert-v1-3-c520675343b6@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-ZohoMailClient: External
 
-Greetings!!!
+On 2/8/25 1:14 AM, Tamir Duberstein wrote:
+> Move some tests into `bitmap_test_cases` and parameterize
+> `test_bitmap_print_buf`. This gives us nicer output in the event of a
+> failure.
+> 
+> Signed-off-by: Tamir Duberstein <tamird@gmail.com>
+Reviewed-by: Muhammad Usama Anjum <usama.anjum@collabora.com>
 
-I am observing kernel soft lock up's while running kselftest on IBM 
-Power Servers.
+> ---
+>  lib/bitmap_kunit.c | 182 ++++++++++++++++++++++++++---------------------------
+>  1 file changed, 89 insertions(+), 93 deletions(-)
+> 
+> diff --git a/lib/bitmap_kunit.c b/lib/bitmap_kunit.c
+> index 0605228288d6..f7b90f6d5f49 100644
+> --- a/lib/bitmap_kunit.c
+> +++ b/lib/bitmap_kunit.c
+> @@ -17,8 +17,6 @@
+>  static char pbl_buffer[PAGE_SIZE];
+>  static char print_buf[PAGE_SIZE * 2];
+>  
+> -static struct kunit *kunittest;
+> -
+>  #define tc_err(fmt, ...) \
+>  	KUNIT_FAIL(kunittest, fmt, ##__VA_ARGS__)
+>  
+> @@ -96,7 +94,7 @@ static const unsigned long exp3_1_0[] = {
+>  
+>  #define expect_eq_uint(x, y)		expect_eq_ulong((unsigned int)(x), (unsigned int)(y))
+>  
+> -static void test_zero_clear(void)
+> +static void test_zero_clear(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(bmap, 1024);
+>  
+> @@ -125,7 +123,7 @@ static void test_zero_clear(void)
+>  	expect_eq_pbl("", bmap, 1024);
+>  }
+>  
+> -static void test_find_nth_bit(void)
+> +static void test_find_nth_bit(struct kunit *kunittest)
+>  {
+>  	unsigned long b, bit, cnt = 0;
+>  	DECLARE_BITMAP(bmap, 64 * 3);
+> @@ -166,7 +164,7 @@ static void test_find_nth_bit(void)
+>  	}
+>  }
+>  
+> -static void test_fill_set(void)
+> +static void test_fill_set(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(bmap, 1024);
+>  
+> @@ -195,7 +193,7 @@ static void test_fill_set(void)
+>  	expect_eq_pbl("0-1023", bmap, 1024);
+>  }
+>  
+> -static void test_copy(void)
+> +static void test_copy(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(bmap1, 1024);
+>  	DECLARE_BITMAP(bmap2, 1024);
+> @@ -234,7 +232,7 @@ static void test_copy(void)
+>  	expect_eq_pbl("0-108,128-1023", bmap2, 1024);
+>  }
+>  
+> -static void test_bitmap_region(void)
+> +static void test_bitmap_region(struct kunit *kunittest)
+>  {
+>  	int pos, order;
+>  
+> @@ -259,7 +257,7 @@ static void test_bitmap_region(void)
+>  
+>  #define EXP2_IN_BITS	(sizeof(exp2) * 8)
+>  
+> -static void test_replace(void)
+> +static void test_replace(struct kunit *kunittest)
+>  {
+>  	unsigned int nbits = 64;
+>  	unsigned int nlongs = DIV_ROUND_UP(nbits, BITS_PER_LONG);
+> @@ -300,7 +298,7 @@ static const unsigned long sg_scatter_exp[] = {
+>  	BITMAP_FROM_U64(0x000000000000021aULL),
+>  };
+>  
+> -static void test_bitmap_sg(void)
+> +static void test_bitmap_sg(struct kunit *kunittest)
+>  {
+>  	unsigned int nbits = 64;
+>  	DECLARE_BITMAP(bmap_gather, 100);
+> @@ -421,7 +419,7 @@ static const struct test_bitmap_parselist parselist_tests[] = {
+>  
+>  };
+>  
+> -static void test_bitmap_parselist(void)
+> +static void test_bitmap_parselist(struct kunit *kunittest)
+>  {
+>  	int i;
+>  	int err;
+> @@ -457,7 +455,7 @@ static void test_bitmap_parselist(void)
+>  	}
+>  }
+>  
+> -static void test_bitmap_printlist(void)
+> +static void test_bitmap_printlist(struct kunit *kunittest)
+>  {
+>  	unsigned long *bmap = kmalloc(PAGE_SIZE, GFP_KERNEL);
+>  	char *buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+> @@ -533,7 +531,7 @@ static const struct test_bitmap_parselist parse_tests[] = {
+>  #undef step
+>  };
+>  
+> -static void test_bitmap_parse(void)
+> +static void test_bitmap_parse(struct kunit *kunittest)
+>  {
+>  	int i;
+>  	int err;
+> @@ -568,7 +566,7 @@ static void test_bitmap_parse(void)
+>  	}
+>  }
+>  
+> -static void test_bitmap_arr32(void)
+> +static void test_bitmap_arr32(struct kunit *kunittest)
+>  {
+>  	unsigned int nbits, next_bit;
+>  	u32 arr[EXP1_IN_BITS / 32];
+> @@ -594,7 +592,7 @@ static void test_bitmap_arr32(void)
+>  	}
+>  }
+>  
+> -static void test_bitmap_arr64(void)
+> +static void test_bitmap_arr64(struct kunit *kunittest)
+>  {
+>  	unsigned int nbits, next_bit;
+>  	u64 arr[EXP1_IN_BITS / 64];
+> @@ -626,7 +624,7 @@ static void test_bitmap_arr64(void)
+>  	}
+>  }
+>  
+> -static noinline void test_mem_optimisations(void)
+> +static noinline void test_mem_optimisations(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(bmap1, 1024);
+>  	DECLARE_BITMAP(bmap2, 1024);
+> @@ -669,7 +667,7 @@ static const unsigned char clump_exp[] = {
+>  	0x05,	/* non-adjacent 2 bits set */
+>  };
+>  
+> -static void test_for_each_set_clump8(void)
+> +static void test_for_each_set_clump8(struct kunit *kunittest)
+>  {
+>  #define CLUMP_EXP_NUMBITS 64
+>  	DECLARE_BITMAP(bits, CLUMP_EXP_NUMBITS);
+> @@ -691,7 +689,7 @@ static void test_for_each_set_clump8(void)
+>  		expect_eq_clump8(start, CLUMP_EXP_NUMBITS, clump_exp, &clump);
+>  }
+>  
+> -static void test_for_each_set_bit_wrap(void)
+> +static void test_for_each_set_bit_wrap(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(orig, 500);
+>  	DECLARE_BITMAP(copy, 500);
+> @@ -716,7 +714,7 @@ static void test_for_each_set_bit_wrap(void)
+>  	}
+>  }
+>  
+> -static void test_for_each_set_bit(void)
+> +static void test_for_each_set_bit(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(orig, 500);
+>  	DECLARE_BITMAP(copy, 500);
+> @@ -738,7 +736,7 @@ static void test_for_each_set_bit(void)
+>  	expect_eq_bitmap(orig, copy, 500);
+>  }
+>  
+> -static void test_for_each_set_bit_from(void)
+> +static void test_for_each_set_bit_from(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(orig, 500);
+>  	DECLARE_BITMAP(copy, 500);
+> @@ -768,7 +766,7 @@ static void test_for_each_set_bit_from(void)
+>  	}
+>  }
+>  
+> -static void test_for_each_clear_bit(void)
+> +static void test_for_each_clear_bit(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(orig, 500);
+>  	DECLARE_BITMAP(copy, 500);
+> @@ -790,7 +788,7 @@ static void test_for_each_clear_bit(void)
+>  	expect_eq_bitmap(orig, copy, 500);
+>  }
+>  
+> -static void test_for_each_clear_bit_from(void)
+> +static void test_for_each_clear_bit_from(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(orig, 500);
+>  	DECLARE_BITMAP(copy, 500);
+> @@ -820,7 +818,7 @@ static void test_for_each_clear_bit_from(void)
+>  	}
+>  }
+>  
+> -static void test_for_each_set_bitrange(void)
+> +static void test_for_each_set_bitrange(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(orig, 500);
+>  	DECLARE_BITMAP(copy, 500);
+> @@ -842,7 +840,7 @@ static void test_for_each_set_bitrange(void)
+>  	expect_eq_bitmap(orig, copy, 500);
+>  }
+>  
+> -static void test_for_each_clear_bitrange(void)
+> +static void test_for_each_clear_bitrange(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(orig, 500);
+>  	DECLARE_BITMAP(copy, 500);
+> @@ -864,7 +862,7 @@ static void test_for_each_clear_bitrange(void)
+>  	expect_eq_bitmap(orig, copy, 500);
+>  }
+>  
+> -static void test_for_each_set_bitrange_from(void)
+> +static void test_for_each_set_bitrange_from(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(orig, 500);
+>  	DECLARE_BITMAP(copy, 500);
+> @@ -894,7 +892,7 @@ static void test_for_each_set_bitrange_from(void)
+>  	}
+>  }
+>  
+> -static void test_for_each_clear_bitrange_from(void)
+> +static void test_for_each_clear_bitrange_from(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(orig, 500);
+>  	DECLARE_BITMAP(copy, 500);
+> @@ -965,7 +963,7 @@ static struct test_bitmap_cut test_cut[] = {
+>  	},
+>  };
+>  
+> -static void test_bitmap_cut(void)
+> +static void test_bitmap_cut(struct kunit *kunittest)
+>  {
+>  	unsigned long b[5], *in = &b[1], *out = &b[0];	/* Partial overlap */
+>  	int i;
+> @@ -986,8 +984,14 @@ struct test_bitmap_print {
+>  	unsigned long nbits;
+>  	const char *mask;
+>  	const char *list;
+> +	const char *name;
+>  };
+>  
+> +static void param_to_desc(const struct test_bitmap_print *param, char *desc)
+> +{
+> +	strscpy(desc, param->name, KUNIT_PARAM_DESC_SIZE);
+> +}
+> +
+>  static const unsigned long small_bitmap[] = {
+>  	BITMAP_FROM_U64(0x3333333311111111ULL),
+>  };
+> @@ -1082,35 +1086,34 @@ static const char large_list[] = /* more than 4KB */
+>  	"49,2552-2553,2556-2557\n";
+>  
+>  static const struct test_bitmap_print test_print[] = {
+> -	{ small_bitmap, sizeof(small_bitmap) * BITS_PER_BYTE, small_mask, small_list },
+> -	{ large_bitmap, sizeof(large_bitmap) * BITS_PER_BYTE, large_mask, large_list },
+> +	{ small_bitmap, sizeof(small_bitmap) * BITS_PER_BYTE, small_mask, small_list, "small" },
+> +	{ large_bitmap, sizeof(large_bitmap) * BITS_PER_BYTE, large_mask, large_list, "large" },
+>  };
+>  
+> -static void test_bitmap_print_buf(void)
+> +KUNIT_ARRAY_PARAM(test_print, test_print, param_to_desc);
+> +
+> +static void test_bitmap_print_buf(struct kunit *kunittest)
+>  {
+> -	int i;
+> +	int n;
+>  
+> -	for (i = 0; i < ARRAY_SIZE(test_print); i++) {
+> -		const struct test_bitmap_print *t = &test_print[i];
+> -		int n;
+> +	const struct test_bitmap_print *t = kunittest->param_value;
+>  
+> -		n = bitmap_print_bitmask_to_buf(print_buf, t->bitmap, t->nbits,
+> -						0, 2 * PAGE_SIZE);
+> -		expect_eq_uint(strlen(t->mask) + 1, n);
+> -		expect_eq_str(t->mask, print_buf, n);
+> +	n = bitmap_print_bitmask_to_buf(print_buf, t->bitmap, t->nbits,
+> +					0, 2 * PAGE_SIZE);
+> +	expect_eq_uint(strlen(t->mask) + 1, n);
+> +	expect_eq_str(t->mask, print_buf, n);
+>  
+> +	n = bitmap_print_list_to_buf(print_buf, t->bitmap, t->nbits,
+> +					0, 2 * PAGE_SIZE);
+> +	expect_eq_uint(strlen(t->list) + 1, n);
+> +	expect_eq_str(t->list, print_buf, n);
+> +
+> +	/* test by non-zero offset */
+> +	if (strlen(t->list) > PAGE_SIZE) {
+>  		n = bitmap_print_list_to_buf(print_buf, t->bitmap, t->nbits,
+> -					     0, 2 * PAGE_SIZE);
+> -		expect_eq_uint(strlen(t->list) + 1, n);
+> -		expect_eq_str(t->list, print_buf, n);
+> -
+> -		/* test by non-zero offset */
+> -		if (strlen(t->list) > PAGE_SIZE) {
+> -			n = bitmap_print_list_to_buf(print_buf, t->bitmap, t->nbits,
+> -						     PAGE_SIZE, PAGE_SIZE);
+> -			expect_eq_uint(strlen(t->list) + 1 - PAGE_SIZE, n);
+> -			expect_eq_str(t->list + PAGE_SIZE, print_buf, n);
+> -		}
+> +						PAGE_SIZE, PAGE_SIZE);
+> +		expect_eq_uint(strlen(t->list) + 1 - PAGE_SIZE, n);
+> +		expect_eq_str(t->list + PAGE_SIZE, print_buf, n);
+>  	}
+>  }
+>  
+> @@ -1118,7 +1121,7 @@ static void test_bitmap_print_buf(void)
+>   * FIXME: Clang breaks compile-time evaluations when KASAN and GCOV are enabled.
+>   * To workaround it, GCOV is force-disabled in Makefile for this configuration.
+>   */
+> -static void test_bitmap_const_eval(void)
+> +static void test_bitmap_const_eval(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(bitmap, BITS_PER_LONG);
+>  	unsigned long initvar = BIT(2);
+> @@ -1186,7 +1189,7 @@ static void test_bitmap_const_eval(void)
+>  /*
+>   * Helper function to test bitmap_write() overwriting the chosen byte pattern.
+>   */
+> -static void test_bitmap_write_helper(const char *pattern)
+> +static void test_bitmap_write_helper(struct kunit *kunittest, const char *pattern)
+>  {
+>  	DECLARE_BITMAP(bitmap, TEST_BIT_LEN);
+>  	DECLARE_BITMAP(exp_bitmap, TEST_BIT_LEN);
+> @@ -1240,7 +1243,7 @@ static void test_bitmap_write_helper(const char *pattern)
+>  	}
+>  }
+>  
+> -static void test_bitmap_read_write(void)
+> +static void test_bitmap_read_write(struct kunit *kunittest)
+>  {
+>  	unsigned char *pattern[3] = {"", "all:1/2", "all"};
+>  	DECLARE_BITMAP(bitmap, TEST_BIT_LEN);
+> @@ -1286,10 +1289,10 @@ static void test_bitmap_read_write(void)
+>  	}
+>  
+>  	for (pi = 0; pi < ARRAY_SIZE(pattern); pi++)
+> -		test_bitmap_write_helper(pattern[pi]);
+> +		test_bitmap_write_helper(kunittest, pattern[pi]);
+>  }
+>  
+> -static void test_bitmap_read_perf(void)
+> +static void test_bitmap_read_perf(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(bitmap, TEST_BIT_LEN);
+>  	unsigned int cnt, nbits, i;
+> @@ -1312,10 +1315,10 @@ static void test_bitmap_read_perf(void)
+>  		}
+>  	}
+>  	time = ktime_get() - time;
+> -	kunit_info(kunittest, "Time spent in %s:\t%llu\n", __func__, time);
+> +	kunit_info(kunittest, "Time spent:\t%llu\n", time);
+>  }
+>  
+> -static void test_bitmap_write_perf(void)
+> +static void test_bitmap_write_perf(struct kunit *kunittest)
+>  {
+>  	DECLARE_BITMAP(bitmap, TEST_BIT_LEN);
+>  	unsigned int cnt, nbits, i;
+> @@ -1334,49 +1337,42 @@ static void test_bitmap_write_perf(void)
+>  		}
+>  	}
+>  	time = ktime_get() - time;
+> -	kunit_info(kunittest, "Time spent in %s:\t%llu\n", __func__, time);
+> +	kunit_info(kunittest, "Time spent:\t%llu\n", time);
+>  }
+>  
+>  #undef TEST_BIT_LEN
+>  
+> -static void bitmap_test(struct kunit *test)
+> -{
+> -	kunittest = test;
+> -
+> -	test_zero_clear();
+> -	test_fill_set();
+> -	test_copy();
+> -	test_bitmap_region();
+> -	test_replace();
+> -	test_bitmap_sg();
+> -	test_bitmap_arr32();
+> -	test_bitmap_arr64();
+> -	test_bitmap_parse();
+> -	test_bitmap_parselist();
+> -	test_bitmap_printlist();
+> -	test_mem_optimisations();
+> -	test_bitmap_cut();
+> -	test_bitmap_print_buf();
+> -	test_bitmap_const_eval();
+> -	test_bitmap_read_write();
+> -	test_bitmap_read_perf();
+> -	test_bitmap_write_perf();
+> -
+> -	test_find_nth_bit();
+> -	test_for_each_set_bit();
+> -	test_for_each_set_bit_from();
+> -	test_for_each_clear_bit();
+> -	test_for_each_clear_bit_from();
+> -	test_for_each_set_bitrange();
+> -	test_for_each_clear_bitrange();
+> -	test_for_each_set_bitrange_from();
+> -	test_for_each_clear_bitrange_from();
+> -	test_for_each_set_clump8();
+> -	test_for_each_set_bit_wrap();
+> -}
+> -
+>  static struct kunit_case bitmap_test_cases[] = {
+> -	KUNIT_CASE(bitmap_test),
+> +	KUNIT_CASE(test_zero_clear),
+> +	KUNIT_CASE(test_fill_set),
+> +	KUNIT_CASE(test_copy),
+> +	KUNIT_CASE(test_bitmap_region),
+> +	KUNIT_CASE(test_replace),
+> +	KUNIT_CASE(test_bitmap_sg),
+> +	KUNIT_CASE(test_bitmap_arr32),
+> +	KUNIT_CASE(test_bitmap_arr64),
+> +	KUNIT_CASE(test_bitmap_parse),
+> +	KUNIT_CASE(test_bitmap_parselist),
+> +	KUNIT_CASE(test_bitmap_printlist),
+> +	KUNIT_CASE(test_mem_optimisations),
+> +	KUNIT_CASE(test_bitmap_cut),
+> +	KUNIT_CASE_PARAM(test_bitmap_print_buf, test_print_gen_params),
+> +	KUNIT_CASE(test_bitmap_const_eval),
+> +	KUNIT_CASE(test_bitmap_read_write),
+> +	KUNIT_CASE(test_bitmap_read_perf),
+> +	KUNIT_CASE(test_bitmap_write_perf),
+> +
+> +	KUNIT_CASE(test_find_nth_bit),
+> +	KUNIT_CASE(test_for_each_set_bit),
+> +	KUNIT_CASE(test_for_each_set_bit_from),
+> +	KUNIT_CASE(test_for_each_clear_bit),
+> +	KUNIT_CASE(test_for_each_clear_bit_from),
+> +	KUNIT_CASE(test_for_each_set_bitrange),
+> +	KUNIT_CASE(test_for_each_clear_bitrange),
+> +	KUNIT_CASE(test_for_each_set_bitrange_from),
+> +	KUNIT_CASE(test_for_each_clear_bitrange_from),
+> +	KUNIT_CASE(test_for_each_set_clump8),
+> +	KUNIT_CASE(test_for_each_set_bit_wrap),
+>  	{}
+>  };
+>  
+> 
 
-Though, I colud not reporduce this consistently, but CI has detected 
-this error twice now. Hence reporting.
 
-This error was reported firat time, while running signal component tests 
-and second time while running EEH component.
-
-linux-next/tools/testing/selftests/powerpc/signal
-
-linux-next/tools/testing/selftests/powerpc/eeh
-
-
-
-Traces:
-
-[11480.019928] watchdog: BUG: soft lockup - CPU#0 stuck for 26s! 
-[swapper/0:0]
-[11480.019935] Modules linked in: nvram(E) rpadlpar_io(E) rpaphp(E) 
-dm_mod(E) bonding(E) tls(E) nft_fib_inet(E) nft_fib_ipv4(E) 
-nft_fib_ipv6(E) nft_fib(E) nft_reject_inet(E) nf_reject_ipv4(E) 
-nf_reject_ipv6(E) nft_reject(E) nft_ct(E) nft_chain_nat(E) nf_nat(E) 
-nf_conntrack(E) nf_defrag_ipv6(E) nf_defrag_ipv4(E) rfkill(E) ip_set(E) 
-nf_tables(E) nfnetlink(E) hvcs(E) pseries_rng(E) hvcserver(E) 
-vmx_crypto(E) drm(E) drm_panel_orientation_quirks(E) xfs(E) lpfc(E) 
-sr_mod(E) sd_mod(E) cdrom(E) sg(E) nvmet_fc(E) ibmvscsi(E) nvmet(E) 
-ibmveth(E) scsi_transport_srp(E) nvme_fc(E) nvme_fabrics(E) bnx2x(E) 
-nvme_core(E) be2net(E) mdio(E) scsi_transport_fc(E) fuse(E) [last 
-unloaded: test_cpuidle_latency(OE)]
-[11480.019990] CPU: 0 UID: 0 PID: 0 Comm: swapper/0 Kdump: loaded 
-Tainted: G           OE      6.14.0-rc1-next-20250207 #1
-[11480.019995] Tainted: [O]=OOT_MODULE, [E]=UNSIGNED_MODULE
-[11480.019996] Hardware name: IBM,8375-42A POWER9 (architected) 0x4e0202 
-0xf000005 of:IBM,FW950.80 (VL950_131) hv:phyp pSeries
-[11480.019997] NIP:  c00000000003a2d0 LR: c00000000003a644 CTR: 
-c0000000002a912c
-[11480.020000] REGS: c0000003bffffb28 TRAP: 0900   Tainted: G           
-OE       (6.14.0-rc1-next-20250207)
-[11480.020002] MSR:  8000000000009033 <SF,EE,ME,IR,DR,RI,LE>  CR: 
-22042442  XER: 20040000
-[11480.020009] CFAR: 0000000000000000 IRQMASK: 0
-[11480.020009] GPR00: c00000000003a644 c0000003bffffb00 c000000001667500 
-c0000003bffffaf8
-[11480.020009] GPR04: c000000004062940 c0000003bffffd20 0000000000000001 
-c000000002277ca0
-[11480.020009] GPR08: 0000000000000003 0000000000000049 0000000000000000 
-0000000000002000
-[11480.020009] GPR12: c0000000002a912c c000000003000000 0000000000000000 
-0000000000000000
-[11480.020009] GPR16: 0000000000000001 0000000000000082 0000000000000001 
-0000000000000100
-[11480.020009] GPR20: 0000000004200002 0000000000000000 0000000000000000 
-0000000100110511
-[11480.020009] GPR24: 7fffffffffffffff 0000000000000001 00000003bd5a0000 
-0000000000000000
-[11480.020009] GPR28: 0000000000000002 0000000000000003 fcffffffffffffff 
-fcffffffffffffff
-[11480.020036] NIP [c00000000003a2d0] __replay_soft_interrupts+0x5c/0x22c
-[11480.020048] LR [c00000000003a644] arch_local_irq_restore+0x1a4/0x280
-[11480.020053] Call Trace:
-[11480.020054] [c0000003bffffb00] [c00000000003a358] 
-__replay_soft_interrupts+0xe4/0x22c (unreliable)
-[11480.020060] [c0000003bffffcb0] [c00000000003a644] 
-arch_local_irq_restore+0x1a4/0x280
-[11480.020064] [c0000003bffffcf0] [c0000000002a9d60] 
-tmigr_handle_remote_cpu+0x24c/0x318
-[11480.020071] [c0000003bffffda0] [c0000000002aa034] 
-tmigr_handle_remote_up+0x208/0x2d0
-[11480.020075] [c0000003bffffe10] [c0000000002a7d34] 
-__walk_groups.isra.0+0x6c/0x100
-[11480.020079] [c0000003bffffe50] [c0000000002aa2d0] 
-tmigr_handle_remote+0xf0/0x170
-[11480.020083] [c0000003bffffed0] [c0000000002876a4] 
-run_timer_softirq+0x54/0x68
-[11480.020089] [c0000003bffffef0] [c000000000179128] 
-handle_softirqs+0x148/0x3b4
-[11480.020094] [c0000003bfffffe0] [c000000000017f30] 
-do_softirq_own_stack+0x3c/0x50
-[11480.020100] [c000000002c87900] [c000000000178688] 
-__irq_exit_rcu+0x18c/0x1b4
-[11480.020102] [c000000002c87930] [c000000000179758] irq_exit+0x20/0x38
-[11480.020105] [c000000002c87950] [c00000000002b004] 
-timer_interrupt+0x128/0x300
-[11480.020108] [c000000002c879b0] [c000000000009ffc] 
-decrementer_common_virt+0x28c/0x290
-[11480.020113] --- interrupt: 900 at plpar_hcall_norets_notrace+0x18/0x2c
-[11480.020119] NIP:  c0000000000fb9d4 LR: c0000000010c2348 CTR: 
-0000000000000000
-[11480.020120] REGS: c000000002c879e0 TRAP: 0900   Tainted: G           
-OE       (6.14.0-rc1-next-20250207)
-[11480.020122] MSR:  800000000280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  
-CR: 22000248  XER: 20040000
-[11480.020129] CFAR: 0000000000000000 IRQMASK: 0
-[11480.020129] GPR00: 0000000000000000 c000000002c87c80 c000000001667500 
-0000000000000000
-[11480.020129] GPR04: 000000000000ffff 0000000000000000 0000000000000000 
-0000000000000000
-[11480.020129] GPR08: 0000000000000000 0000000000000000 80000000c7a3fc00 
-ffffffffffffffff
-[11480.020129] GPR12: 0000000000000000 c000000003000000 0000000000000000 
-0000000000000000
-[11480.020129] GPR16: 0000000000000000 0000000000000000 0000000000000000 
-0000000000000000
-[11480.020129] GPR20: 0000000000c00000 0000000000000008 0000000000000000 
-0000000000000000
-[11480.020129] GPR24: 0000000000000000 0000000000000000 00000a6adcf558a4 
-0000000000000000
-[11480.020129] GPR28: 0000000000000000 0000000000000001 c0000000022618e0 
-c0000000022618e8
-[11480.020155] NIP [c0000000000fb9d4] plpar_hcall_norets_notrace+0x18/0x2c
-[11480.020158] LR [c0000000010c2348] check_and_cede_processor+0x48/0x5c
-[11480.020162] --- interrupt: 900
-[11480.020163] [c000000002c87c80] [c00000000028a8b0] 
-__hrtimer_start_range_ns+0x160/0x2ec (unreliable)
-[11480.020168] [c000000002c87ce0] [c0000000010c2790] 
-dedicated_cede_loop+0x94/0x1a0
-[11480.020171] [c000000002c87d30] [c0000000010c1d80] 
-cpuidle_enter_state+0x3b4/0x5b4
-[11480.020174] [c000000002c87dd0] [c000000000cac55c] cpuidle_enter+0x4c/0x68
-[11480.020178] [c000000002c87e10] [c0000000001eb5b4] call_cpuidle+0x4c/0x94
-[11480.020184] [c000000002c87e30] [c0000000001f3798] 
-cpuidle_idle_call+0x164/0x240
-[11480.020188] [c000000002c87e90] [c0000000001f3974] do_idle+0x100/0x1ac
-[11480.020192] [c000000002c87ee0] [c0000000001f3ca4] 
-cpu_startup_entry+0x48/0x50
-[11480.020196] [c000000002c87f10] [c000000000011280] rest_init+0xf0/0xf4
-[11480.020199] [c000000002c87f40] [c000000002006604] 
-start_kernel+0x50c/0x5e0
-[11480.020204] [c000000002c87fe0] [c00000000000ea9c] 
-start_here_common+0x1c/0x20
-[11480.020207] Code: 71298000 408201ec 892d0933 7d2a48f8 554a07fe 
-0b0a0000 792ad7e2 0b0a0000 61290040 38610028 992d0933 480421c9 
-<60000000> 39200000 e9410130 f9210160
-
-
-Regards,
-
-Venkat.
-
+-- 
+BR,
+Muhammad Usama Anjum
 
