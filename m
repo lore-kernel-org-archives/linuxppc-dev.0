@@ -1,82 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-6089-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6090-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84B4CC0219E
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2025 16:14:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E30E2C0219E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Feb 2025 16:15:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Ysmjz3by6z30Vm;
-	Wed, 12 Feb 2025 03:14:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ysmk64vqpz306d;
+	Wed, 12 Feb 2025 03:14:54 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739290487;
-	cv=none; b=eNZNS3YrxDIeqjyqFDMbpGrnjkR0uVVUISN9IyuWbqZyeh5dFn6OrzS9UJ7wOYBZl+Y0rvKSR92QmH5vZ/U25oRoLH7+nR8nCRl+YckZebVzo0d/SENB2kSpTNJffZeRb+GEDOdwwo5PTXauE4zYVJqRleHgY9SObfjEdJIvIRlAlEewSDKS33ugOnojPfhPTY7+wSSvT5aHGnTi4vh6D7Ehl8rM9w1wojzsVVxlpVPAexlKSwZDmEJCOUjL0sEBr1TfBeO/HWV30l8Tbi7BFrrgPN40qfxCaoaJfgv9iaHrtttOTLkV60VTyPCW/1P8yP7wZhFghsj/+BuTxr7dnw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739290494;
+	cv=none; b=k4ZbkNxm8ualcGI+XDBLZxcya8jMEbkPnc79xwGv1PrUZOE13p3QDyPwoWpxXWJAFe+xaA8mIs2U0Bm5v1AXhzmele78iKlZLbVBIKb2Q3UAmo1Amwem/VIrYMn6ul5p0YmfOPwVZ952GZQHXqN2MtH0HsqN96XcThZud+j8A+ZrvfJV0DZiy43b22hDmsXyXL85LODzLLIuofpcIN0kC3uujpfJ9mEuRzZPeK4WP1yZ3OJSM2SK4wLx3HQcHdPruRA6hhiacZhFdBNDa6gDrpTyDVjN/ZGpQlntban8kJ20HwgdfgBrYNGx5zW3EzRdErTvZ/kPwtBcVMvPuUfMyQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739290487; c=relaxed/relaxed;
-	bh=0xdreWwVnxuyL481YPDSF8wHYJ0Nb52Yq9rjkbtqthM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=DnExAd/5FR/zmsnETVIK/7AONhRW1zsQEEfNwGeeHQ9N6+74Cqk0KlrFBp7f74h0+/0bPNi+2QYiMabZqJPilQGVnAXlUx3jixmL66kqJnkxlkxXJ3TuNzpfZUGF+w/vajuxeRhUktOOHrYQjYjd2+cC+PbVZiPd0255yp3D0di1KYCAwIuYM+P47zJUxhDK17BKmyHwHICCcAekbkDZz9mMnQL8KpGF7U45tNGIFl83Y2unio8SymxXzF2/8Lk2tS4akgYEBM6hPWUkMI0oGCL55XXdCcbJPFWYjmEdrTG9hFsIcB02E2cmU+2i7qt2UUwELdrvGu1aelMbXqiWCQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GM33nSBP; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1739290494; c=relaxed/relaxed;
+	bh=80YUf/ywVjSGbesvwbJLhfkbTLis/xViQMBOegskX9w=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=jI4NNZh6hQBzMa3TD+CcaiXeAxWfqYXM+mh3f0GElnE34RR95Dquf+GSkL/zU6bXYy2ak5StCWqBQFv18YBFp6uxEd4qIJm+VyQustxcWsJ2rzst/A/1hQYXvQXw6NgNaAdc14Lec//kb2zgPp+6uHHlhsProJndXJkc+EjydoZD/i30GMxru0kYc+UpQx1cYgIOhN40x9HDwYUZZyroby6bc05/Hm8Wn1d6wwIoMB9FtVSqL5WVGLZlhi4M+EWClPkvczb3vsYdxN4rdfYBStd8WJULtWFzLYIozF0WfaDTLyoc5zM0zcVaKKdsEJifJeJiVanoo/tc+RarEYF4Mw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RFTFB/us; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GM33nSBP;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RFTFB/us;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ysmjy3w1Tz306S
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2025 03:14:45 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 51BDbuna008118;
-	Tue, 11 Feb 2025 16:14:35 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ysmk56nW3z306S
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Feb 2025 03:14:53 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 51BB4IrT023714;
+	Tue, 11 Feb 2025 16:14:43 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=0xdreWwVnxuyL481YPDSF8wHYJ0Nb52Yq9rjkbtqt
-	hM=; b=GM33nSBPY+V8zuX/Vo6qsCvkrDYPevGhB7ydkWhlr/shFpwW6uboK0eQW
-	cCcXWSOmYWeKG5zIgPxmHnkAOup926KlLs1tKeSrA25EaUkJQ2N41UPcf5VUaMvW
-	ExzrWi7H34nJEiWCxU/+dugPTV602w0ZNTHvbTmXFTDs0B/3rHjuHxMw1Gn9Z9zt
-	yQON1fWg1UnuiUtL1c/V2DZOTL8ylbTqxL6cHurb1sqyTpE0W/QMvRN2mc2psqeo
-	HySaowWNgnnxMJTmEA+fSU0v3woDWrH/c93rXcS1hsHOkYMEZMWeqnBcwIcE4h+R
-	O7O6tj/KZI714xY5AbtCPmzuAR2nQ==
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=80YUf/ywVjSGbesvw
+	bJLhfkbTLis/xViQMBOegskX9w=; b=RFTFB/usUKYR41QCdmJNN8Wqr9C5ezgoB
+	yrm+uirbh+ebWsyaj2+jPmvpRw8caN6Zt56OqiCgdQdLPU53s/UorBllR8KkT1SZ
+	kuInfPZPA0hKymKlWspURvkjHKmyH78L6QhWNQuaGehdVg5UlXIO1gfCvcfO0fJ8
+	rUN8UzZ+/oqI5g7ZOjmwrnDpBZn07jsz114ou8bPQ8SMdGZwrAuB8sgtZJNZPzCQ
+	9Ap/jV42/ciK5AW6rFTcB8m7w/pd+OQ75ju+CxRRYaM79jxFMtJHjy8CUfmW0ubH
+	qKQq76T/gwqPWP3HKUf1xGqsSM/JpfIEBM1zYwhAW7C4UJBsRq4/w==
 Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44qvma3p6t-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44qtkac2bq-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Feb 2025 16:14:34 +0000 (GMT)
+	Tue, 11 Feb 2025 16:14:42 +0000 (GMT)
 Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 51BFHMYa028721;
-	Tue, 11 Feb 2025 16:14:33 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 44pma1kprm-1
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 51BEWNNa028687;
+	Tue, 11 Feb 2025 16:14:41 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 44pma1kps5-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Feb 2025 16:14:33 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 51BGEWA654788394
+	Tue, 11 Feb 2025 16:14:41 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 51BGEebr47317282
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 11 Feb 2025 16:14:32 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 09DA42004E;
-	Tue, 11 Feb 2025 16:14:32 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 30F9420043;
-	Tue, 11 Feb 2025 16:14:31 +0000 (GMT)
+	Tue, 11 Feb 2025 16:14:40 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 05EDA20040;
+	Tue, 11 Feb 2025 16:14:40 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 394002004B;
+	Tue, 11 Feb 2025 16:14:39 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.63.197.14])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 11 Feb 2025 16:14:31 +0000 (GMT)
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 11 Feb 2025 16:14:39 +0000 (GMT)
 Received: from jarvis.ozlabs.ibm.com.com (unknown [9.150.7.124])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id DEB55600AE;
-	Wed, 12 Feb 2025 03:14:24 +1100 (AEDT)
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 0957A600AE;
+	Wed, 12 Feb 2025 03:14:34 +1100 (AEDT)
 From: Andrew Donnellan <ajd@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: x86@kernel.org, linux-mm@kvack.org, linux-riscv@lists.infradead.org,
         linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
         pasha.tatashin@soleen.com, sweettea-kernel@dorminy.me
-Subject: [PATCH v13 00/11] Support page table check on PowerPC
-Date: Wed, 12 Feb 2025 03:13:53 +1100
-Message-ID: <20250211161404.850215-1-ajd@linux.ibm.com>
+Subject: [PATCH v13 03/11] mm/page_table_check: Provide addr parameter to page_table_check_pte_set()
+Date: Wed, 12 Feb 2025 03:13:56 +1100
+Message-ID: <20250211161404.850215-4-ajd@linux.ibm.com>
 X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250211161404.850215-1-ajd@linux.ibm.com>
+References: <20250211161404.850215-1-ajd@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,143 +94,132 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: QPmKXD5gPUpVSUuCIRBS05bl4oO8-nRA
-X-Proofpoint-ORIG-GUID: QPmKXD5gPUpVSUuCIRBS05bl4oO8-nRA
+X-Proofpoint-GUID: WnFAlpqnOaYlwekcppAuf1YDj6QbWgI5
+X-Proofpoint-ORIG-GUID: WnFAlpqnOaYlwekcppAuf1YDj6QbWgI5
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
  definitions=2025-02-11_07,2025-02-11_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 malwarescore=0
- clxscore=1011 lowpriorityscore=0 priorityscore=1501 impostorscore=0
- adultscore=0 mlxlogscore=999 spamscore=0 suspectscore=0 bulkscore=0
- phishscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2501170000 definitions=main-2502110106
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501 mlxscore=0
+ phishscore=0 lowpriorityscore=0 clxscore=1011 malwarescore=0 spamscore=0
+ mlxlogscore=574 impostorscore=0 bulkscore=0 suspectscore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2501170000
+ definitions=main-2502110106
 
-Support page table check on all PowerPC platforms. This works by
-serialising assignments, reassignments and clears of page table
-entries at each level in order to ensure that anonymous mappings
-have at most one writable consumer, and likewise that file-backed
-mappings are not simultaneously also anonymous mappings.
+From: Rohan McLure <rmclure@linux.ibm.com>
 
-In order to support this infrastructure, a number of stubs must be
-defined for all powerpc platforms. Additionally, seperate set_pte_at()
-and set_pte_at_unchecked(), to allow for internal, uninstrumented mappings.
+To provide support for powerpc platforms, provide an addr parameter to
+the page_table_check_pte_set() routine. This parameter is needed on some
+powerpc platforms which do not encode whether a mapping is for user or
+kernel in the pte. On such platforms, this can be inferred form the
+addr parameter.
 
-(This series was written by Rohan McLure, who has left IBM and is no longer
-working on powerpc - I've taken far too long to pick this up and finally
-send it.)
+Signed-off-by: Rohan McLure <rmclure@linux.ibm.com>
+Reviewed-by: Pasha Tatashin <pasha.tatashin@soleen.com>
+[ajd: rebase]
+Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+---
+ arch/arm64/include/asm/pgtable.h |  2 +-
+ arch/riscv/include/asm/pgtable.h |  2 +-
+ include/linux/page_table_check.h | 12 +++++++-----
+ include/linux/pgtable.h          |  2 +-
+ mm/page_table_check.c            |  4 ++--
+ 5 files changed, 12 insertions(+), 10 deletions(-)
 
-v13:
- * Rebase on mainline
- * Don't use set_pte_at_unchecked() for early boot purposes (Pasha)
-
-v12:
- * Rename commits that revert changes to instead reflect that we are
-   reinstating old behaviour due to it providing more flexibility
- * Add return line to pud_pfn() stub
- * Instrument ptep_get_and_clear() for nohash
-Link: https://lore.kernel.org/linuxppc-dev/20240402051154.476244-1-rmclure@linux.ibm.com/
-
-v11:
- * The pud_pfn() stub, which previously had no legitimate users on any
-   powerpc platform, now has users in Book3s64 with transparent pages.
-   Include a stub of the same name for each platform that does not
-   define their own.
- * Drop patch that standardised use of p*d_leaf(), as already included
-   upstream in v6.9.
- * Provide fallback definitions of p{m,u}d_user_accessible_page() that
-   do not reference p*d_leaf(), p*d_pte(), as they are defined after
-   powerpc/mm headers by linux/mm headers.
- * Ensure that set_pte_at_unchecked() has the same checks as
-   set_pte_at().
-Link: https://lore.kernel.org/linuxppc-dev/20240328045535.194800-14-rmclure@linux.ibm.com/ 
-
-v10:
- * Revert patches that removed address and mm parameters from page table
-   check routines, including consuming code from arm64, x86_64 and
-   riscv.
- * Implement *_user_accessible_page() routines in terms of pte_user()
-   where available (64-bit, book3s) but otherwise by checking the
-   address (on platforms where the pte does not imply whether the
-   mapping is for user or kernel)
- * Internal set_pte_at() calls replaced with set_pte_at_unchecked(), which
-   is identical, but prevents double instrumentation.
-Link: https://lore.kernel.org/linuxppc-dev/20240313042118.230397-9-rmclure@linux.ibm.com/T/
-
-v9:
- * Adapt to using the set_ptes() API, using __set_pte_at() where we need
-   must avoid instrumentation.
- * Use the logic of *_access_permitted() for implementing
-   *_user_accessible_page(), which are required routines for page table
-   check.
- * Even though we no longer need p{m,u,4}d_leaf(), still default
-   implement these to assist in refactoring out extant
-   p{m,u,4}_is_leaf().
- * Add p{m,u}_pte() stubs where asm-generic does not provide them, as
-   page table check wants all *user_accessible_page() variants, and we
-   would like to default implement the variants in terms of
-   pte_user_accessible_page().
- * Avoid the ugly pmdp_collapse_flush() macro nonsense! Just instrument
-   its constituent calls instead for radix and hash.
-Link: https://lore.kernel.org/linuxppc-dev/20231130025404.37179-2-rmclure@linux.ibm.com/
-
-v8:
- * Fix linux/page_table_check.h include in asm/pgtable.h breaking
-   32-bit.
-Link: https://lore.kernel.org/linuxppc-dev/20230215231153.2147454-1-rmclure@linux.ibm.com/
-
-v7:
- * Remove use of extern in set_pte prototypes
- * Clean up pmdp_collapse_flush macro
- * Replace set_pte_at with static inline function
- * Fix commit message for patch 7
-Link: https://lore.kernel.org/linuxppc-dev/20230215020155.1969194-1-rmclure@linux.ibm.com/
-
-v6:
- * Support huge pages and p{m,u}d accounting.
- * Remove instrumentation from set_pte from kernel internal pages.
- * 64s: Implement pmdp_collapse_flush in terms of __pmdp_collapse_flush
-   as access to the mm_struct * is required.
-Link: https://lore.kernel.org/linuxppc-dev/20230214015939.1853438-1-rmclure@linux.ibm.com/
-
-v5:
-Link: https://lore.kernel.org/linuxppc-dev/20221118002146.25979-1-rmclure@linux.ibm.com/
-
-Rohan McLure (11):
-  mm/page_table_check: Reinstate address parameter in
-    [__]page_table_check_pud_set()
-  mm/page_table_check: Reinstate address parameter in
-    [__]page_table_check_pmd_set()
-  mm/page_table_check: Provide addr parameter to
-    page_table_check_pte_set()
-  mm/page_table_check: Reinstate address parameter in
-    [__]page_table_check_pud_clear()
-  mm/page_table_check: Reinstate address parameter in
-    [__]page_table_check_pmd_clear()
-  mm/page_table_check: Reinstate address parameter in
-    [__]page_table_check_pte_clear()
-  mm: Provide address parameter to p{te,md,ud}_user_accessible_page()
-  powerpc: mm: Add pud_pfn() stub
-  powerpc: mm: Implement *_user_accessible_page() for ptes
-  powerpc: mm: Use set_pte_at_unchecked() for internal usages
-  powerpc: mm: Support page table check
-
- arch/arm64/include/asm/pgtable.h             | 18 +++---
- arch/powerpc/Kconfig                         |  1 +
- arch/powerpc/include/asm/book3s/32/pgtable.h | 12 +++-
- arch/powerpc/include/asm/book3s/64/pgtable.h | 62 +++++++++++++++---
- arch/powerpc/include/asm/nohash/pgtable.h    | 13 +++-
- arch/powerpc/include/asm/pgtable.h           | 19 ++++++
- arch/powerpc/mm/book3s64/hash_pgtable.c      |  4 ++
- arch/powerpc/mm/book3s64/pgtable.c           | 17 +++--
- arch/powerpc/mm/book3s64/radix_pgtable.c     |  9 ++-
- arch/powerpc/mm/pgtable.c                    | 12 ++++
- arch/riscv/include/asm/pgtable.h             | 18 +++---
- arch/x86/include/asm/pgtable.h               | 20 +++---
- include/linux/page_table_check.h             | 67 ++++++++++++--------
- include/linux/pgtable.h                      | 10 +--
- mm/page_table_check.c                        | 39 +++++++-----
- 15 files changed, 225 insertions(+), 96 deletions(-)
-
+diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+index 0262d9e966f9..78f579812c0c 100644
+--- a/arch/arm64/include/asm/pgtable.h
++++ b/arch/arm64/include/asm/pgtable.h
+@@ -424,7 +424,7 @@ static inline void __set_ptes(struct mm_struct *mm,
+ 			      unsigned long __always_unused addr,
+ 			      pte_t *ptep, pte_t pte, unsigned int nr)
+ {
+-	page_table_check_ptes_set(mm, ptep, pte, nr);
++	page_table_check_ptes_set(mm, addr, ptep, pte, nr);
+ 	__sync_cache_and_tags(pte, nr);
+ 
+ 	for (;;) {
+diff --git a/arch/riscv/include/asm/pgtable.h b/arch/riscv/include/asm/pgtable.h
+index bd4092b72258..9eb5f85dac82 100644
+--- a/arch/riscv/include/asm/pgtable.h
++++ b/arch/riscv/include/asm/pgtable.h
+@@ -562,7 +562,7 @@ static inline void __set_pte_at(struct mm_struct *mm, pte_t *ptep, pte_t pteval)
+ static inline void set_ptes(struct mm_struct *mm, unsigned long addr,
+ 		pte_t *ptep, pte_t pteval, unsigned int nr)
+ {
+-	page_table_check_ptes_set(mm, ptep, pteval, nr);
++	page_table_check_ptes_set(mm, addr, ptep, pteval, nr);
+ 
+ 	for (;;) {
+ 		__set_pte_at(mm, ptep, pteval);
+diff --git a/include/linux/page_table_check.h b/include/linux/page_table_check.h
+index 5855d690c48a..9243c920ed02 100644
+--- a/include/linux/page_table_check.h
++++ b/include/linux/page_table_check.h
+@@ -17,8 +17,8 @@ void __page_table_check_zero(struct page *page, unsigned int order);
+ void __page_table_check_pte_clear(struct mm_struct *mm, pte_t pte);
+ void __page_table_check_pmd_clear(struct mm_struct *mm, pmd_t pmd);
+ void __page_table_check_pud_clear(struct mm_struct *mm, pud_t pud);
+-void __page_table_check_ptes_set(struct mm_struct *mm, pte_t *ptep, pte_t pte,
+-		unsigned int nr);
++void __page_table_check_ptes_set(struct mm_struct *mm, unsigned long addr,
++				 pte_t *ptep, pte_t pte, unsigned int nr);
+ void __page_table_check_pmd_set(struct mm_struct *mm, unsigned long addr,
+ 				pmd_t *pmdp, pmd_t pmd);
+ void __page_table_check_pud_set(struct mm_struct *mm, unsigned long addr,
+@@ -68,12 +68,13 @@ static inline void page_table_check_pud_clear(struct mm_struct *mm, pud_t pud)
+ }
+ 
+ static inline void page_table_check_ptes_set(struct mm_struct *mm,
+-		pte_t *ptep, pte_t pte, unsigned int nr)
++					     unsigned long addr, pte_t *ptep,
++					     pte_t pte, unsigned int nr)
+ {
+ 	if (static_branch_likely(&page_table_check_disabled))
+ 		return;
+ 
+-	__page_table_check_ptes_set(mm, ptep, pte, nr);
++	__page_table_check_ptes_set(mm, addr, ptep, pte, nr);
+ }
+ 
+ static inline void page_table_check_pmd_set(struct mm_struct *mm,
+@@ -129,7 +130,8 @@ static inline void page_table_check_pud_clear(struct mm_struct *mm, pud_t pud)
+ }
+ 
+ static inline void page_table_check_ptes_set(struct mm_struct *mm,
+-		pte_t *ptep, pte_t pte, unsigned int nr)
++					     unsigned long addr, pte_t *ptep,
++					     pte_t pte, unsigned int nr)
+ {
+ }
+ 
+diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+index 94d267d02372..2b25dd17ec67 100644
+--- a/include/linux/pgtable.h
++++ b/include/linux/pgtable.h
+@@ -285,7 +285,7 @@ static inline pte_t pte_advance_pfn(pte_t pte, unsigned long nr)
+ static inline void set_ptes(struct mm_struct *mm, unsigned long addr,
+ 		pte_t *ptep, pte_t pte, unsigned int nr)
+ {
+-	page_table_check_ptes_set(mm, ptep, pte, nr);
++	page_table_check_ptes_set(mm, addr, ptep, pte, nr);
+ 
+ 	arch_enter_lazy_mmu_mode();
+ 	for (;;) {
+diff --git a/mm/page_table_check.c b/mm/page_table_check.c
+index 099719d6f788..959e11e1af24 100644
+--- a/mm/page_table_check.c
++++ b/mm/page_table_check.c
+@@ -209,8 +209,8 @@ static inline void page_table_check_pte_flags(pte_t pte)
+ 		WARN_ON_ONCE(swap_cached_writable(pte_to_swp_entry(pte)));
+ }
+ 
+-void __page_table_check_ptes_set(struct mm_struct *mm, pte_t *ptep, pte_t pte,
+-		unsigned int nr)
++void __page_table_check_ptes_set(struct mm_struct *mm, unsigned long addr,
++				 pte_t *ptep, pte_t pte, unsigned int nr)
+ {
+ 	unsigned int i;
+ 
 -- 
 2.48.1
 
