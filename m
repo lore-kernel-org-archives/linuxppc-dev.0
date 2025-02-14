@@ -1,42 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-6162-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6163-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09FBFC021A4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2025 02:00:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 109AFC021A4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2025 02:04:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YvFd94H5mz30Qb;
-	Fri, 14 Feb 2025 13:00:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739498445;
-	cv=none; b=clt0dINxh7T0A7Z73YJqgpvGHjJVb0mYv/4rbldhx4EEwhCuUGezs9+erEtwFHvPuCGdzoNinF9AjVjDEBYJNjAvQqMfmHgVBiiprcXCLGfpmBtUie9Wub8hO5TFsMPcsw+cAoJ0SRrAMATIF/A49dR1UruETEgkfRqZChIld3odbC/R/Z8TgfQkT5CYS9TadP8cBsRWY/j7IpOym+OS9OaVJsjd3TAyb9BoOIZ0s2JZ6Dg9sBkM+3srlbaOanexJK4JKbkpqJO8/F7nIxh/j+zY5pFIjNFb3s8UpNxyX6REqrJjeA2nm1bmgLCUwmfwjb5iI5AJcbHiv47+KDswKw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YvFjH52msz30Sy;
+	Fri, 14 Feb 2025 13:04:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.67.36.66
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739498659;
+	cv=none; b=IWBO24OxH1u8dFkcKTC/eGXv35HQj976dCpu4y9BJ8ttrn4SHby2O83Q3XVFRYbwZz4lY75qz08l4Noty4hKHKd8l1rxnG/E4hWvjJ5COL3njRS6Ml9yjf5qrmEJ3xi6bCRfApNbOahzTkwqnFj/F/XmS0ILpslFuITKJ54m5+FJ/RImkmvHgjkkQxfKc4icbC5AIUDPvhszj/5RpYJL+QqrcK3J2gc1pw537UB2ZiUUsfl5PxGC55I9eblwJUIGqT8rHmawTE1GHR5S0XhloAMqzkyqNJLT/UGHs7oPRxLTOLLNgceDsF+kuzchRyoZW5Tx0YYsk1Cric4A8yTy7g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739498445; c=relaxed/relaxed;
-	bh=s6gybk0sDxsKPqVranOYHJNAYoMVjrehj07uCNXs5vM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=KMymKCyPrNP4zXpB176LIp6DLBAypFYsmy+JtFfg/2KPnzTtVV/goWpZ16/MkweZ5GySuKFiP4bwI547tUIBr8MCE//c64rr2F1darikHavb+iMg38v4HgQxEYAIQsT1l4iT/U5TSOw/Kdz9/CWeZRm+NllInPc0BtJWK5zzIfKQnsjWaE2ikT6b8AsyHdOHVNDdIYzi3ZNwwf04LfXQGIkcDNzxk/eV47HX4Tv0+tGjt9/HZALf+clWqJyCF7giJMcaAcm2s1V/2rBtAloTxlhTIVNXLbfdGa0ChUvFN/2zI4k6xLP97YFD84x9+T9PYpkLFr02PxVTf86lxzlHwg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=tongtiangen@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1739498659; c=relaxed/relaxed;
+	bh=EAIg7P9NijZgjwq+VDVW+hbvRMb79rSCrOfw1wR+Kr0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=W7wSlMQqJWDbeglq3aZEYKBTFTQOFAg11pmCreygGAWM7b0M/ZX/Nqb285QLYQt1KU4y2TMkE+1tAxJ3ereIaD0N5WfEI3p9LgxqNLz9xF5fU2RBGZ60bOqX52NV2Jy3ZqLSsOkHl/SEWm16/b2ZRA0OPg+/n4ywHtnmU0u9vDS0geZ9gNoZBO6R6V+HNCnKp3GxwShF7ktDOQxU7ADxLtF0rIoZzb3VyRtkXNZD+evhY01anGBQsFz2+7BnjFGfdYtLOSvuyiANzJL9808zCKwBdTlJS9mzt68++csHK95TXtOGL4x2Xz0uk402rwCWzofuaZVaSwC5C7zUHKdXIw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net; dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=C9aC+pKo; dkim-atps=neutral; spf=pass (client-ip=185.67.36.66; helo=mout02.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org) smtp.mailfrom=posteo.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=C9aC+pKo;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=posteo.net (client-ip=185.67.36.66; helo=mout02.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org)
+Received: from mout02.posteo.de (mout02.posteo.de [185.67.36.66])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YvFd66MYQz2xjL
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2025 13:00:40 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.19.163.252])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4YvF8m1vkrz11PdJ;
-	Fri, 14 Feb 2025 09:39:36 +0800 (CST)
-Received: from kwepemk500005.china.huawei.com (unknown [7.202.194.90])
-	by mail.maildlp.com (Postfix) with ESMTPS id 9BD7F1800EA;
-	Fri, 14 Feb 2025 09:44:05 +0800 (CST)
-Received: from [10.174.179.234] (10.174.179.234) by
- kwepemk500005.china.huawei.com (7.202.194.90) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Fri, 14 Feb 2025 09:44:03 +0800
-Message-ID: <df40840d-e860-397d-60bd-02f4b2d0b433@huawei.com>
-Date: Fri, 14 Feb 2025 09:44:02 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YvFjF0Ypwz2xjL
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2025 13:04:15 +1100 (AEDT)
+Received: from submission (posteo.de [185.67.36.169]) 
+	by mout02.posteo.de (Postfix) with ESMTPS id 1B91D240103
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2025 03:04:08 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=posteo.net; s=2017;
+	t=1739498649; bh=WhJmekLyQeapuWa9J6WUco9/aFXXshTQJPKudksd1Lo=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:Content-Transfer-Encoding:From;
+	b=C9aC+pKotBYDBvwHbTDmEtOZK2Ra+f7bAYQUvCM/dtbWfMsQsGWZeEeLwJx9349oL
+	 VxAMuJYr8FI+lA2ZTwXdk1IHX8nxBWiIDWcaKSKQ2tfVREADwwe6KiERJCt8BKkoBU
+	 bGHbtXZ2beiPazOifUexm8mkWOOGP5rxS8iFWrcTZKzehaUBbKSpAQfJmIABYJp2oA
+	 mtnZUD0G1r1VMuy8HKzuxK15FKZNo/eieV5v3tmYwVsxcTFZ9kM/w2JcFmiiEa/Hw5
+	 pBJm8Hy6SO+D2nmLRNTdzOzXsFvlGdE4b4eqbYvNh97fXyQ5mP91+yuXP2h75bCoyt
+	 FQQyOSPQmdtcA==
+Received: from customer (localhost [127.0.0.1])
+	by submission (posteo.de) with ESMTPSA id 4YvFhy67kgz9rxF;
+	Fri, 14 Feb 2025 03:04:02 +0100 (CET)
+Date: Fri, 14 Feb 2025 02:04:02 +0000
+From: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+To: Rob Herring <robh@kernel.org>
+Cc: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>,
+	devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Krzysztof Kozlowski <krzk@kernel.org>, imx@lists.linux.dev,
+	Scott Wood <oss@buserror.net>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Damien Le Moal <dlemoal@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>, Lee Jones <lee@kernel.org>,
+	Vinod Koul <vkoul@kernel.org>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	=?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	Guenter Roeck <linux@roeck-us.net>, Mark Brown <broonie@kernel.org>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Richard Weinberger <richard@nod.at>,
+	Vignesh Raghavendra <vigneshr@ti.com>, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org,
+	dmaengine@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-watchdog@vger.kernel.org, linux-spi@vger.kernel.org,
+	linux-mtd@lists.infradead.org
+Subject: Re: [PATCH v2 03/12] dt-bindings: crypto: Convert fsl,sec-2.0 to YAML
+Message-ID: <Z66kksKzsknmOy5Q@probook>
+References: <20250207-ppcyaml-v2-0-8137b0c42526@posteo.net>
+ <20250207-ppcyaml-v2-3-8137b0c42526@posteo.net>
+ <20250212193314.GA4134845-robh@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -49,85 +95,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:91.0) Gecko/20100101
- Thunderbird/91.8.0
-Subject: Re: [PATCH v13 2/5] arm64: add support for ARCH_HAS_COPY_MC
-To: Catalin Marinas <catalin.marinas@arm.com>
-CC: Mark Rutland <mark.rutland@arm.com>, Jonathan Cameron
-	<Jonathan.Cameron@huawei.com>, Mauro Carvalho Chehab
-	<mchehab+huawei@kernel.org>, Will Deacon <will@kernel.org>, Andrew Morton
-	<akpm@linux-foundation.org>, James Morse <james.morse@arm.com>, Robin Murphy
-	<robin.murphy@arm.com>, Andrey Konovalov <andreyknvl@gmail.com>, Dmitry
- Vyukov <dvyukov@google.com>, Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
-	Andrey Ryabinin <ryabinin.a.a@gmail.com>, Alexander Potapenko
-	<glider@google.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, Aneesh
- Kumar K.V <aneesh.kumar@kernel.org>, "Naveen N. Rao"
-	<naveen.n.rao@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo
- Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, Dave Hansen
-	<dave.hansen@linux.intel.com>, <x86@kernel.org>, "H. Peter Anvin"
-	<hpa@zytor.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-mm@kvack.org>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>,
-	<kasan-dev@googlegroups.com>, <wangkefeng.wang@huawei.com>, Guohanjun
-	<guohanjun@huawei.com>
-References: <20241209024257.3618492-1-tongtiangen@huawei.com>
- <20241209024257.3618492-3-tongtiangen@huawei.com> <Z6zKfvxKnRlyNzkX@arm.com>
-From: Tong Tiangen <tongtiangen@huawei.com>
-In-Reply-To: <Z6zKfvxKnRlyNzkX@arm.com>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.174.179.234]
-X-ClientProxiedBy: dggems703-chm.china.huawei.com (10.3.19.180) To
- kwepemk500005.china.huawei.com (7.202.194.90)
+In-Reply-To: <20250212193314.GA4134845-robh@kernel.org>
 
-
-
-在 2025/2/13 0:21, Catalin Marinas 写道:
-> (catching up with old threads)
+On Wed, Feb 12, 2025 at 01:33:14PM -0600, Rob Herring wrote:
+> On Fri, Feb 07, 2025 at 10:30:20PM +0100, J. Neuschäfer wrote:
+> > Convert the Freescale security engine (crypto accelerator) binding from
+> > text form to YAML. The list of compatible strings reflects what was
+> > previously described in prose; not all combinations occur in existing
+> > devicetrees.
+> > 
+> > Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
+> > ---
+> > 
+> > V2:
+> > - several improvements suggested by Rob Herring:
+> >   - remove unnecessary multiline markers
+> >   - constrain fsl,num-channels to enum: [1,4]
+> >   - constrain fsl,channel-fifo-len to plausible limits
+> >   - constrain fsl,exec-units-mask to maximum=0xfff
+> > - trim subject line (remove "binding")
+> > ---
+> >  .../devicetree/bindings/crypto/fsl,sec2.0.yaml     | 142 +++++++++++++++++++++
+> >  .../devicetree/bindings/crypto/fsl-sec2.txt        |  65 ----------
+> >  2 files changed, 142 insertions(+), 65 deletions(-)
+[...]
+> > +title: Freescale SoC SEC Security Engines versions 1.x-2.x-3.x
+> > +
+> > +maintainers:
+> > +  - J. Neuschäfer <j.ne@posteo.net.
 > 
-> On Mon, Dec 09, 2024 at 10:42:54AM +0800, Tong Tiangen wrote:
->> For the arm64 kernel, when it processes hardware memory errors for
->> synchronize notifications(do_sea()), if the errors is consumed within the
->> kernel, the current processing is panic. However, it is not optimal.
->>
->> Take copy_from/to_user for example, If ld* triggers a memory error, even in
->> kernel mode, only the associated process is affected. Killing the user
->> process and isolating the corrupt page is a better choice.
+> missing >
+
+Good catch, will fix.
+
+
+> > +  fsl,descriptor-types-mask:
+> > +    $ref: /schemas/types.yaml#/definitions/uint32
+> > +    description: |
+> > +      The bitmask representing what descriptors are available. Descriptor type
+> > +      information should be encoded following the SEC's Descriptor Header Dword
+> > +      DESC_TYPE field documentation, i.e. as follows:
+> > +
+> > +        bit 0  = set if SEC supports the aesu_ctr_nonsnoop desc. type
+> > +        bit 1  = set if SEC supports the ipsec_esp descriptor type
+> > +        bit 2  = set if SEC supports the common_nonsnoop desc. type
+> > +        bit 3  = set if SEC supports the 802.11i AES ccmp desc. type
+> > +        bit 4  = set if SEC supports the hmac_snoop_no_afeu desc. type
+> > +        bit 5  = set if SEC supports the srtp descriptor type
+> > +        bit 6  = set if SEC supports the non_hmac_snoop_no_afeu desc.type
+> > +        bit 7  = set if SEC supports the pkeu_assemble descriptor type
+> > +        bit 8  = set if SEC supports the aesu_key_expand_output desc.type
+> > +        bit 9  = set if SEC supports the pkeu_ptmul descriptor type
+> > +        bit 10 = set if SEC supports the common_nonsnoop_afeu desc. type
+> > +        bit 11 = set if SEC supports the pkeu_ptadd_dbl descriptor type
 > 
-> I agree that killing the user process and isolating the page is a better
-> choice but I don't see how the latter happens after this patch. Which
-> page would be isolated?
+> Why 3 variations of 'descriptor type'?
 
-The SEA is triggered when the page with hardware error is read. After
-that, the page is isolated in memory_failure() (mf). The processing of
-mf is mentioned in the comments of do_sea().
-
-/*
-  * APEI claimed this as a firmware-first notification.
-  * Some processing deferred to task_work before ret_to_user().
-  */
-
-Some processing include mf.
-
-> 
->> Add new fixup type EX_TYPE_KACCESS_ERR_ZERO_MEM_ERR to identify insn
->> that can recover from memory errors triggered by access to kernel memory,
->> and this fixup type is used in __arch_copy_to_user(), This make the regular
->> copy_to_user() will handle kernel memory errors.
-> 
-> Is the assumption that the error on accessing kernel memory is
-> transient? There's no way to isolate the kernel page and also no point
-> in isolating the destination page either.
-
-Yes, it's transient, the kernel page in mf can't be isolated, the
-transient access (ld) of this kernel page is currently expected to kill
-the user-mode process to avoid error spread.
+The reasons have been lost in time, I suppose. I'll normalize the spelling.
 
 
-The SEA processes synchronization errors. Only hardware errors on the
-source page can be detected (Through synchronous ld insn) and processed.
-The destination page cannot be processed.
-
-> 
+Thanks,
+J. Neuschäfer
 
