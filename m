@@ -1,74 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-6184-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6185-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28411C021A4
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2025 10:19:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10D2FC02198
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2025 11:34:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YvShx438lz2yk7;
-	Fri, 14 Feb 2025 21:19:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.205.221.231
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739525119;
-	cv=none; b=hMfEDnOuL1oPYd27cAg4aCRD5cMolRR2aFaYodmsXjCKMaxK9tiyFygWQTnC6aopTnpKoyfmP3ZKuQop6F/j0c2S5lzO8ymmpuk/aTp7ZrvVNnseEKZb6p1mwC75sYaQE5aSwSy4notExW/PwhJ4iTyp9ZnJb/CU0JM7Obxl8Xv8N7/gp/FS8R/r/3syvoIQ52Osn0nzbli/IOe2Z0oXSTTN67AOCwcmLimzn7kufFNiINzwiOyzqhrDhtGbZBsO/HUJhVJfOLvkMWjl8k81P6WYMIXl9VHgSE/Itoi+Je5I54fPmK1k67t3IuJit1BJBsFTJWgk5gabKnhsOPRjPA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YvVMk2Rm2z30Tk;
+	Fri, 14 Feb 2025 22:34:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739532898;
+	cv=none; b=IWO6GFpV+toeIm8zr7qXQHRj1wW/NNHKr2F3pgiYcmB70fHo0CiBqVkyAvV/MTojvEPOegX0XugQg+8TyoIDf5Evvkz1k4WKAVDj1fvF6ZkzYoqSSBeP//JuyjCyVaB3H8WIJahMMRj9NILCiC0biku+WeXql1fF3uXIJ2d6NGwZzfSDTi2T7Z0jNhVzw8be9Mmt168y3VbBb4a6oUoBGkT7wW/yt6rX1LpdODDcjSPzZfWEvrIUI7530SqRRzGjkvGxIlNyRGS9dytzhSdexh7zan4xWsWKI2NpNOVBTyAzDoMZDmrYT6HdZRWKgRBHKcLyEX1MgUtf/hTD6mM2DQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739525119; c=relaxed/relaxed;
-	bh=I9tMxA0b35Ehfj2sW9QpEMSfeMBVVc4pqXPgNUSyFJI=;
-	h=Message-ID:From:To:Cc:Subject:Date:MIME-Version; b=IrWIMJPGj3ObF8ew45+XUCrTgS5/VfFgPKcoMrji8/VMktsn2TqYyHJve+O85217I1shKdWNOH/Z30b3fqHkuxlynNn13VT5oV0n+qsEP0SswC+q9XJ/mZtfo/XsFdRaMZ+L/Yq5cr2fMKu1mUdx8u9GwLV6zNg5EQCVKqK0vteVJoQDRuWooRI9qTFKk0KiWJzmQ9ooV7wPCgB400YQA680cLvjzoiPV5RF/Jiq8RC7TVUY0DdmUgu9LiftEu/bu+jpGkEvyDX/dx6qMmxnLtVJHe4p9pjUawvgTnHXFlGJn1uwvvRM1399B/cgFCOoaJFS4DD3ZErGAYa+qkqB4g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=foxmail.com; dkim=pass (1024-bit key; unprotected) header.d=foxmail.com header.i=@foxmail.com header.a=rsa-sha256 header.s=s201512 header.b=eRafmj4N; dkim-atps=neutral; spf=pass (client-ip=203.205.221.231; helo=out203-205-221-231.mail.qq.com; envelope-from=xiaopeitux@foxmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=foxmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=foxmail.com
+	t=1739532898; c=relaxed/relaxed;
+	bh=WWdSDqLPiHMtkC3qRBjEr7KgW5xesCDv6jmHPBIB4Zc=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=ETy1frWBhi05+cmgf5jfF8lklX56QWFTRQ5G4L1Snp3/uk4ySPM/TRADKH2I6klbbSQtrarHA0EcEbDVVfp1Ky+UTLOkjY+2JaehC8ANY+g4eSMnwHIHC7gZliQOxTa+WZJRELn5Gs2ThKzP3emjMZPBI4ejA+UctOXObrTnI0xzga4TwOn1K6F1iqLasTQDLn57iRuyAd4HW5z3mB4groWjJLlep7aQ/vn/riI5hEpevtKmmfxUcFRSJaDH0Yju4sVRE5HKaais7PkMuXqR5uUNkP3NJoFsVftjZ5bvauZHv2rrlYhIcfC3En4AZ7tHBb/QQzPdFR0p1siyGawSWg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=0VNtTEYh; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=WFnwPIfj; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=foxmail.com header.i=@foxmail.com header.a=rsa-sha256 header.s=s201512 header.b=eRafmj4N;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=0VNtTEYh;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=WFnwPIfj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=foxmail.com (client-ip=203.205.221.231; helo=out203-205-221-231.mail.qq.com; envelope-from=xiaopeitux@foxmail.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 11261 seconds by postgrey-1.37 at boromir; Fri, 14 Feb 2025 20:25:16 AEDT
-Received: from out203-205-221-231.mail.qq.com (out203-205-221-231.mail.qq.com [203.205.221.231])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4YvRV42XnKz30W0
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2025 20:25:13 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
-	s=s201512; t=1739525108;
-	bh=I9tMxA0b35Ehfj2sW9QpEMSfeMBVVc4pqXPgNUSyFJI=;
-	h=From:To:Cc:Subject:Date;
-	b=eRafmj4Nn0RJmMZxKKCPewJukLw4FYmGssrL4xqxep+7BsoxaQaKotXThW7IoJNpm
-	 9eK53Azanu24qlIIxVoGz470KqJgBlzImZYHc+Z/BO8CSe4GequNPpCkwwdtuqbEa5
-	 Ja/yVleRS31HlB1xWfOeeh/+5PKcZhBc0Tt1SXyE=
-Received: from localhost.localdomain ([116.128.244.169])
-	by newxmesmtplogicsvrszb16-1.qq.com (NewEsmtp) with SMTP
-	id 2C88A6BB; Fri, 14 Feb 2025 14:11:08 +0800
-X-QQ-mid: xmsmtpt1739513468tg3oqmv9r
-Message-ID: <tencent_832FF5138D392257AC081FEE322A03C84907@qq.com>
-X-QQ-XMAILINFO: MR/iVh5QLeiehVxo+faJzMBrZMJ7TGsCOUlN4TBw/pxiWd3JxEndMuo3xdDyMB
-	 hw5nZTeA8kHAXi7hoIcWIWLCkCMSXVA1V0O/T5Y3RuToIEUY0hTdcgQb08vo3LhJXKsfC/JAvHfI
-	 dFlAWCttNdr0V4trtFUMRcXnyH964UhkOzb51/bZfoor6r0FE2f9UE5YpxX23Di25YQaAxO92CP8
-	 Iooke+oYAazomDNH/ofk9CYXzM7PWpS3LueiFgK2e4sYNBJwAD1p0ggeJ0w7cBQI5nTRJ3/FDl+p
-	 qXpgEjcHKK2keiab4mSAS8b42zMoQoPLh5J7lpAOR19p0C6Y571Ut1RFfO8Omf9nvA+1xTe6f50z
-	 aPB1LPh2k8dFdMKfrKyseGDSs9y8rruJGtcYvHKLtjdmFtirUK5ERtB3UlnFYv2JnXesFYeBqcg6
-	 BxOtiLc1Dx5wUCEWorxZxyLEzC/LBHrjr8RzA7jcElNt1TwfAcb6Ot7QEVnb38LH6O/xuJT2fNG9
-	 629mM3h7fo7+BL5hS164+RWu94Qk3xXaNtzcRQAuc9f0BCg6HlS8QrIjTUDG234gtklE/UKr/WhP
-	 te6CenuNctvR3b+WXNAmV3Tj6s1Xd63QDpNhtNd0uFf0we42I9EabA9cvuHqWxGLjmUiDinwhStd
-	 QCLf5Kk/h+n+p5AhXFoQ0xui7AhcQwkap7EAJIR6ml9cu/gelcHTcS9st2JiNamIIwMhx7GOm7Nd
-	 vPv/Gd5+/xMlLsx+zX75NAXtr/M9vb6eulH7KVYwuscVqFFqpnATGfv0X6ewFENr35Sk4CmAalXH
-	 tdvlO66UxWeQbpTOqoG5v5la1zDSixvPfW101WnC8fQgKxSgha6LOEj6Eda7axYH+zT9+V+hmbvm
-	 zDVyI7Q5g6Cd0LKk3uL36EOhC+x59LzSAecuUmSLPTAFF0p1ZEwsFo7ZHJSFBDjBMKLF2Ef1NaE3
-	 AfAvZ+qmc=
-X-QQ-XMRINFO: MPJ6Tf5t3I/ycC2BItcBVIA=
-From: xiaopeitux@foxmail.com
-To: andrew+netdev@lunn.ch,
-	davem@davemloft.net,
-	edumazet@google.com,
-	kuba@kernel.org,
-	netdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Cc: Pei Xiao <xiaopei01@kylinos.cn>,
-	kernel test robot <lkp@intel.com>
-Subject: [PATCH] net: freescale: ucc_geth: make ugeth_mac_ops be static
-Date: Fri, 14 Feb 2025 14:11:07 +0800
-X-OQ-MSGID: <e940237592fae0d6e8e32d6b61b4ff18724dc918.1739513279.git.xiaopei01@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YvVMj3XMBz30Gq
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2025 22:34:57 +1100 (AEDT)
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1739532886;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WWdSDqLPiHMtkC3qRBjEr7KgW5xesCDv6jmHPBIB4Zc=;
+	b=0VNtTEYhNZqymGENVsUmuk+rnlFfX7RSGT3Ho51Jzxq38FSlmeIElqqU148QkLgRvvbxMF
+	oARriYR4RFpth96NjMkBo5hNBkelucCuzn5JwatniL1M08uy4SKjyhCAdV/qdQ/eba99LI
+	XiEfVSgYOnLLjTtprHlvawcrkXxeqR+m8TpQcRwp+J+sEstFenL0586F5ak1q3mLy7LV6n
+	qnrektVapcPsyxUDFZn8atapF68IW+EhNarZoqS+FgcZ3nF1GslRp9zthgkNswbWYfqivE
+	2J78e9sNA7ZDPletmeb/HsB02wyQreu92A/Zp2E3TtpGj+8SwnWuzKOp2Uz71Q==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1739532886;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WWdSDqLPiHMtkC3qRBjEr7KgW5xesCDv6jmHPBIB4Zc=;
+	b=WFnwPIfjvhMmBrrfQwvQ/cPdgZnaXQkJD4fxKY5hU7USn1NEKaf7iB28bu/zo8sPSUnwBx
+	KGOlqDpRoCYGNWAw==
+To: David Woodhouse <dwmw2@infradead.org>, Thomas =?utf-8?Q?Wei=C3=9Fschuh?=
+ <thomas.weissschuh@linutronix.de>, "James E.J. Bottomley"
+ <James.Bottomley@HansenPartnership.com>, Helge
+ Deller <deller@gmx.de>, Andy Lutomirski <luto@kernel.org>, Vincenzo
+ Frascino <vincenzo.frascino@arm.com>, Anna-Maria Behnsen
+ <anna-maria@linutronix.de>, Frederic Weisbecker <frederic@kernel.org>,
+ Andrew Morton <akpm@linux-foundation.org>, Catalin
+ Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Theodore
+ Ts'o <tytso@mit.edu>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Paul Walmsley
+ <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+ <aou@eecs.berkeley.edu>, Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui
+ <kernel@xen0n.name>, Russell King <linux@armlinux.org.uk>, Heiko Carstens
+ <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev
+ <agordeev@linux.ibm.com>, Christian Borntraeger
+ <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, Thomas
+ Bogendoerfer <tsbogend@alpha.franken.de>, Michael Ellerman
+ <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe
+ Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>,
+ Madhavan
+ Srinivasan <maddy@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>, Borislav
+ Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Arnd Bergmann
+ <arnd@arndb.de>, Guo Ren <guoren@kernel.org>
+Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-riscv@lists.infradead.org,
+ loongarch@lists.linux.dev, linux-s390@vger.kernel.org,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arch@vger.kernel.org, Nam Cao <namcao@linutronix.de>,
+ linux-csky@vger.kernel.org, "Ridoux, Julien" <ridouxj@amazon.com>, "Luu,
+ Ryan" <rluu@amazon.com>, kvm <kvm@vger.kernel.org>
+Subject: Re: [PATCH v3 00/18] vDSO: Introduce generic data storage
+In-Reply-To: <ff83dc5c91b4e46bcf2d99680ec6af250fb05b27.camel@infradead.org>
+References: <20250204-vdso-store-rng-v3-0-13a4669dfc8c@linutronix.de>
+ <ff83dc5c91b4e46bcf2d99680ec6af250fb05b27.camel@infradead.org>
+Date: Fri, 14 Feb 2025 12:34:44 +0100
+Message-ID: <87ed00kbe3.ffs@tglx>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,38 +100,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-From: Pei Xiao <xiaopei01@kylinos.cn>
+David!
 
-sparse warning:
-    sparse: symbol 'ugeth_mac_ops' was not declared. Should it be
-static.
+On Thu, Feb 06 2025 at 09:31, David Woodhouse wrote:
+> Thanks for working on this. Is there a plan to expose the time data
+> directly to userspace in a form which is usable *other* than by
+> function calls which get the value of the clock at a given moment?
+>
+> For populating the vmclock device=C2=B9 we need to know the actual
+> relationship between the hardware counter (TSC, arch timer, etc.) and
+> real time in order to propagate that to the guest.
+>
+> I see two options for doing this:
+>
+>  1. Via userspace, exposing the vdso time data (and a notification when
+>     it changes?) and letting the userspace VMM populate the vmclock.
+>     This is complex for x86 because of TSC scaling; in fact userspace
+>     doesn't currently know the precise scaling from host to guest TSC
+>     so we'd have to be able to extract that from KVM.
 
-Add static to fix sparse warnings.
+Exposing the raw data is not going to happen as we would create an ABI
+preventing any modifications to the internals. VDSO data is considered a
+fully internal (think kernel) representation and the accessor functions
+create an ABI around it. So if at all you can add a accessor function
+which exposes data to user space so that the internal data
+representation can still be modified as necessary.
 
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202502141128.9HfxcdIE-lkp@intel.com/
-Fixes: 53036aa8d031 ("net: freescale: ucc_geth: phylink conversion")
-Signed-off-by: Pei Xiao <xiaopei01@kylinos.cn>
----
- drivers/net/ethernet/freescale/ucc_geth.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+>  2. In kernel, asking KVM to populate the vmclock structure much like
+>     it does other pvclocks shared with the guest. KVM/x86 already uses
+>     pvclock_gtod_register_notifier() to hook changes; should we expand
+>     on that? The problem with that notifier is that it seems to be
+>     called far more frequently than I'd expect.
 
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index f47f8177a93b..c24b2f75435f 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -3408,7 +3408,7 @@ static int ucc_geth_parse_clock(struct device_node *np, const char *which,
- 	return 0;
- }
- 
--struct phylink_mac_ops ugeth_mac_ops = {
-+static struct phylink_mac_ops ugeth_mac_ops = {
- 	.mac_link_up = ugeth_mac_link_up,
- 	.mac_link_down = ugeth_mac_link_down,
- 	.mac_config = ugeth_mac_config,
--- 
-2.25.1
+It's called once per tick to expose the continous updates to the
+conversion factors and related internal data.
+
+Thanks,
+
+        tglx
 
 
