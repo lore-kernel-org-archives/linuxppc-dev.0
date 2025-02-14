@@ -1,65 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-6183-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6184-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CE8EC02198
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2025 08:57:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28411C021A4
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Feb 2025 10:19:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YvQtH3hg0z30Vg;
-	Fri, 14 Feb 2025 19:57:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8:216:3eff:fe9d:e7b4"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739523463;
-	cv=none; b=aNYABobvpqGIZg54+geHMkt1idTsn0nH59TJtyJ/di5v0+2hK/ldKG36F3QM81gwN3ye9W6hPLR19WUq1bDSF6J2ckfRSzdoEvLZBunCUqomjiTKjFJWmqAx1p8y37GtgxOfS3jguTVdy2tqXm1lJmZn3mHXq/EBQMYZZrrXM+kXx+Y/zV100jbK0xrLKnXMKhNECEHXB1WGO+53OdxUdeRKRiMgsR4tnUV7j298GOZhx+jNmn1tD+xsv5NLFboWTNLsI8jOd7beD2cD8aPB0m3rEBvfnV/KBS5MC8ElbbMT4gl+ROqGzABV/hOmXXtPgOjqtl1EZsdde6fhheUtnQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YvShx438lz2yk7;
+	Fri, 14 Feb 2025 21:19:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.205.221.231
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739525119;
+	cv=none; b=hMfEDnOuL1oPYd27cAg4aCRD5cMolRR2aFaYodmsXjCKMaxK9tiyFygWQTnC6aopTnpKoyfmP3ZKuQop6F/j0c2S5lzO8ymmpuk/aTp7ZrvVNnseEKZb6p1mwC75sYaQE5aSwSy4notExW/PwhJ4iTyp9ZnJb/CU0JM7Obxl8Xv8N7/gp/FS8R/r/3syvoIQ52Osn0nzbli/IOe2Z0oXSTTN67AOCwcmLimzn7kufFNiINzwiOyzqhrDhtGbZBsO/HUJhVJfOLvkMWjl8k81P6WYMIXl9VHgSE/Itoi+Je5I54fPmK1k67t3IuJit1BJBsFTJWgk5gabKnhsOPRjPA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739523463; c=relaxed/relaxed;
-	bh=MNvBJa4Q9PSMsPDhj3s1+Vt+BAwOGndJFZntHwfg/ow=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=CTQBiB5blsoYLaklfZd5QtG4qtEKxh7TUQG8b/qbVX33tSGA+EPr0YHL3UCqXuY2lFOdKmoQniVNoHA1PK8UZtI0j5j92HpPDYFg+KAacB3o6XaBa5Ff6d5PvswkpaUaZj7tsVY3wOe+YZtq9QRLLGISCYreJaFNUU6MLKfAUDi/pU6b1qlWSE9qCMhBEcBoztuyPLjNOixYZBatYkQw4CBWiI8t/6Xwx/O8nUNMsZjXw+uayQEo2m1WFGA+iZnUxLx032zgLZFUN83/l6c1wKqUm+oUbNWtefghMtozZNGP3LSxqQwumyOA40Gtm2Ju6jJkptZgsBe64i4WhP2aSw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=pERS73CN; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8:216:3eff:fe9d:e7b4; helo=mslow3.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+	t=1739525119; c=relaxed/relaxed;
+	bh=I9tMxA0b35Ehfj2sW9QpEMSfeMBVVc4pqXPgNUSyFJI=;
+	h=Message-ID:From:To:Cc:Subject:Date:MIME-Version; b=IrWIMJPGj3ObF8ew45+XUCrTgS5/VfFgPKcoMrji8/VMktsn2TqYyHJve+O85217I1shKdWNOH/Z30b3fqHkuxlynNn13VT5oV0n+qsEP0SswC+q9XJ/mZtfo/XsFdRaMZ+L/Yq5cr2fMKu1mUdx8u9GwLV6zNg5EQCVKqK0vteVJoQDRuWooRI9qTFKk0KiWJzmQ9ooV7wPCgB400YQA680cLvjzoiPV5RF/Jiq8RC7TVUY0DdmUgu9LiftEu/bu+jpGkEvyDX/dx6qMmxnLtVJHe4p9pjUawvgTnHXFlGJn1uwvvRM1399B/cgFCOoaJFS4DD3ZErGAYa+qkqB4g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=foxmail.com; dkim=pass (1024-bit key; unprotected) header.d=foxmail.com header.i=@foxmail.com header.a=rsa-sha256 header.s=s201512 header.b=eRafmj4N; dkim-atps=neutral; spf=pass (client-ip=203.205.221.231; helo=out203-205-221-231.mail.qq.com; envelope-from=xiaopeitux@foxmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=foxmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=foxmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=pERS73CN;
+	dkim=pass (1024-bit key; unprotected) header.d=foxmail.com header.i=@foxmail.com header.a=rsa-sha256 header.s=s201512 header.b=eRafmj4N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8:216:3eff:fe9d:e7b4; helo=mslow3.mail.gandi.net; envelope-from=maxime.chevallier@bootlin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1810 seconds by postgrey-1.37 at boromir; Fri, 14 Feb 2025 19:57:41 AEDT
-Received: from mslow3.mail.gandi.net (mslow3.mail.gandi.net [IPv6:2001:4b98:dc4:8:216:3eff:fe9d:e7b4])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=foxmail.com (client-ip=203.205.221.231; helo=out203-205-221-231.mail.qq.com; envelope-from=xiaopeitux@foxmail.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 11261 seconds by postgrey-1.37 at boromir; Fri, 14 Feb 2025 20:25:16 AEDT
+Received: from out203-205-221-231.mail.qq.com (out203-205-221-231.mail.qq.com [203.205.221.231])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YvQtF5NzLz30Gq
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2025 19:57:41 +1100 (AEDT)
-Received: from relay5-d.mail.gandi.net (relay5-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::225])
-	by mslow3.mail.gandi.net (Postfix) with ESMTP id 24DD058505F
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2025 08:27:35 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 0DED244331;
-	Fri, 14 Feb 2025 08:27:22 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1739521644;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=MNvBJa4Q9PSMsPDhj3s1+Vt+BAwOGndJFZntHwfg/ow=;
-	b=pERS73CNJU60vhPF1OVm1TWS8RcM43zlfRPZ1EppD0bEghrGemomkYR8FoCeoLwPRfiLrq
-	SkF5/1g9soVLzzc03QJyHQGZFS2h9GfXkUcTignasl++h1B1XQtzihzXoZwIpaEbXH/SyN
-	Ch+Ga5kkfrrlZIwOuybPkZc5d2/+dgxwObuSRubmqduiiN/z0wjrFnp3qimQn1t2lBDC+n
-	MHUraA0WmTgpfxjazyRDjhs/C2JCg2rmWqlT6TqpUJ+sOIDXqHX0oGMopYifbs+hJUHfNA
-	7d5d1mmgpiSbCTT19SsqnwQHtz1FZH5AdYScflZ1uuqQ1gpJuqU30VA8rCCVHw==
-Date: Fri, 14 Feb 2025 09:27:21 +0100
-From: Maxime Chevallier <maxime.chevallier@bootlin.com>
-To: xiaopeitux@foxmail.com
-Cc: andrew+netdev@lunn.ch, davem@davemloft.net, edumazet@google.com,
- kuba@kernel.org, netdev@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, Pei Xiao <xiaopei01@kylinos.cn>, kernel test
- robot <lkp@intel.com>
-Subject: Re: [PATCH] net: freescale: ucc_geth: make ugeth_mac_ops be static
-Message-ID: <20250214092721.6fadd49f@fedora.home>
-In-Reply-To: <tencent_832FF5138D392257AC081FEE322A03C84907@qq.com>
-References: <tencent_832FF5138D392257AC081FEE322A03C84907@qq.com>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.43; x86_64-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4YvRV42XnKz30W0
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Feb 2025 20:25:13 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
+	s=s201512; t=1739525108;
+	bh=I9tMxA0b35Ehfj2sW9QpEMSfeMBVVc4pqXPgNUSyFJI=;
+	h=From:To:Cc:Subject:Date;
+	b=eRafmj4Nn0RJmMZxKKCPewJukLw4FYmGssrL4xqxep+7BsoxaQaKotXThW7IoJNpm
+	 9eK53Azanu24qlIIxVoGz470KqJgBlzImZYHc+Z/BO8CSe4GequNPpCkwwdtuqbEa5
+	 Ja/yVleRS31HlB1xWfOeeh/+5PKcZhBc0Tt1SXyE=
+Received: from localhost.localdomain ([116.128.244.169])
+	by newxmesmtplogicsvrszb16-1.qq.com (NewEsmtp) with SMTP
+	id 2C88A6BB; Fri, 14 Feb 2025 14:11:08 +0800
+X-QQ-mid: xmsmtpt1739513468tg3oqmv9r
+Message-ID: <tencent_832FF5138D392257AC081FEE322A03C84907@qq.com>
+X-QQ-XMAILINFO: MR/iVh5QLeiehVxo+faJzMBrZMJ7TGsCOUlN4TBw/pxiWd3JxEndMuo3xdDyMB
+	 hw5nZTeA8kHAXi7hoIcWIWLCkCMSXVA1V0O/T5Y3RuToIEUY0hTdcgQb08vo3LhJXKsfC/JAvHfI
+	 dFlAWCttNdr0V4trtFUMRcXnyH964UhkOzb51/bZfoor6r0FE2f9UE5YpxX23Di25YQaAxO92CP8
+	 Iooke+oYAazomDNH/ofk9CYXzM7PWpS3LueiFgK2e4sYNBJwAD1p0ggeJ0w7cBQI5nTRJ3/FDl+p
+	 qXpgEjcHKK2keiab4mSAS8b42zMoQoPLh5J7lpAOR19p0C6Y571Ut1RFfO8Omf9nvA+1xTe6f50z
+	 aPB1LPh2k8dFdMKfrKyseGDSs9y8rruJGtcYvHKLtjdmFtirUK5ERtB3UlnFYv2JnXesFYeBqcg6
+	 BxOtiLc1Dx5wUCEWorxZxyLEzC/LBHrjr8RzA7jcElNt1TwfAcb6Ot7QEVnb38LH6O/xuJT2fNG9
+	 629mM3h7fo7+BL5hS164+RWu94Qk3xXaNtzcRQAuc9f0BCg6HlS8QrIjTUDG234gtklE/UKr/WhP
+	 te6CenuNctvR3b+WXNAmV3Tj6s1Xd63QDpNhtNd0uFf0we42I9EabA9cvuHqWxGLjmUiDinwhStd
+	 QCLf5Kk/h+n+p5AhXFoQ0xui7AhcQwkap7EAJIR6ml9cu/gelcHTcS9st2JiNamIIwMhx7GOm7Nd
+	 vPv/Gd5+/xMlLsx+zX75NAXtr/M9vb6eulH7KVYwuscVqFFqpnATGfv0X6ewFENr35Sk4CmAalXH
+	 tdvlO66UxWeQbpTOqoG5v5la1zDSixvPfW101WnC8fQgKxSgha6LOEj6Eda7axYH+zT9+V+hmbvm
+	 zDVyI7Q5g6Cd0LKk3uL36EOhC+x59LzSAecuUmSLPTAFF0p1ZEwsFo7ZHJSFBDjBMKLF2Ef1NaE3
+	 AfAvZ+qmc=
+X-QQ-XMRINFO: MPJ6Tf5t3I/ycC2BItcBVIA=
+From: xiaopeitux@foxmail.com
+To: andrew+netdev@lunn.ch,
+	davem@davemloft.net,
+	edumazet@google.com,
+	kuba@kernel.org,
+	netdev@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Cc: Pei Xiao <xiaopei01@kylinos.cn>,
+	kernel test robot <lkp@intel.com>
+Subject: [PATCH] net: freescale: ucc_geth: make ugeth_mac_ops be static
+Date: Fri, 14 Feb 2025 14:11:07 +0800
+X-OQ-MSGID: <e940237592fae0d6e8e32d6b61b4ff18724dc918.1739513279.git.xiaopei01@kylinos.cn>
+X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,35 +81,38 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
-X-GND-State: clean
-X-GND-Score: -100
-X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdegleduiecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfitefpfffkpdcuggftfghnshhusghstghrihgsvgenuceurghilhhouhhtmecufedtudenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhepfffhvfevuffkjghfohfogggtgfesthejredtredtvdenucfhrhhomhepofgrgihimhgvucevhhgvvhgrlhhlihgvrhcuoehmrgigihhmvgdrtghhvghvrghllhhivghrsegsohhothhlihhnrdgtohhmqeenucggtffrrghtthgvrhhnpedugfelledvtdffvdekudeijeduueevvdevffehudehvdeuudetheekheeigfetheenucffohhmrghinhepkhgvrhhnvghlrdhorhhgnecukfhppedvrgdtudemtggsudelmeekugegtgemlehftddtmegstgdvudemkeekleelmeehgedttgemvgehlegvnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvdgrtddumegtsgduleemkegugegtmeelfhdttdemsggtvddumeekkeelleemheegtdgtmegvheelvgdphhgvlhhopehfvgguohhrrgdrhhhomhgvpdhmrghilhhfrhhomhepmhgrgihimhgvrdgthhgvvhgrlhhlihgvrhessghoohhtlhhinhdrtghomhdpnhgspghrtghpthhtohepuddtpdhrtghpthhtohepgihirghophgvihhtuhigsehfohigmhgrihhlrdgtohhmpdhrtghpthhtoheprghnughrvgifodhnvghtuggvvheslhhunhhnrdgthhdprhgtphhtt
- hhopegurghvvghmsegurghvvghmlhhofhhtrdhnvghtpdhrtghpthhtohepvgguuhhmrgiivghtsehgohhoghhlvgdrtghomhdprhgtphhtthhopehkuhgsrgeskhgvrhhnvghlrdhorhhgpdhrtghpthhtohepnhgvthguvghvsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvlhdrohhrgh
-X-GND-Sasl: maxime.chevallier@bootlin.com
+Content-Transfer-Encoding: 8bit
 
-Hi,
+From: Pei Xiao <xiaopei01@kylinos.cn>
 
-On Fri, 14 Feb 2025 14:11:07 +0800
-xiaopeitux@foxmail.com wrote:
+sparse warning:
+    sparse: symbol 'ugeth_mac_ops' was not declared. Should it be
+static.
 
-> From: Pei Xiao <xiaopei01@kylinos.cn>
-> 
-> sparse warning:
->     sparse: symbol 'ugeth_mac_ops' was not declared. Should it be
-> static.
-> 
-> Add static to fix sparse warnings.
-> 
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes: https://lore.kernel.org/oe-kbuild-all/202502141128.9HfxcdIE-lkp@intel.com/
-> Fixes: 53036aa8d031 ("net: freescale: ucc_geth: phylink conversion")
-> Signed-off-by: Pei Xiao <xiaopei01@kylinos.cn>
+Add static to fix sparse warnings.
 
-Thanks for fixing this,
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202502141128.9HfxcdIE-lkp@intel.com/
+Fixes: 53036aa8d031 ("net: freescale: ucc_geth: phylink conversion")
+Signed-off-by: Pei Xiao <xiaopei01@kylinos.cn>
+---
+ drivers/net/ethernet/freescale/ucc_geth.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-Reviewed-by: Maxime Chevallier <maxime.chevallier@bootlin.com>
+diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
+index f47f8177a93b..c24b2f75435f 100644
+--- a/drivers/net/ethernet/freescale/ucc_geth.c
++++ b/drivers/net/ethernet/freescale/ucc_geth.c
+@@ -3408,7 +3408,7 @@ static int ucc_geth_parse_clock(struct device_node *np, const char *which,
+ 	return 0;
+ }
+ 
+-struct phylink_mac_ops ugeth_mac_ops = {
++static struct phylink_mac_ops ugeth_mac_ops = {
+ 	.mac_link_up = ugeth_mac_link_up,
+ 	.mac_link_down = ugeth_mac_link_down,
+ 	.mac_config = ugeth_mac_config,
+-- 
+2.25.1
 
-Maxime
 
