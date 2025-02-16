@@ -1,70 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-6217-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6218-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9753C021A0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 15 Feb 2025 12:55:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3233FC02198
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 16 Feb 2025 16:00:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yw86Y6jglz2yMD;
-	Sat, 15 Feb 2025 23:55:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.15
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739624149;
-	cv=none; b=Ws8Xp//oXJyy9Vq5cyaf4MnhN/VecNWisKg96IOjSBALNtz1PG087CIqR4yVtrgyYbBvaiCmC4l0h9zcjwx+jti9eFRfoxq9fvLwiTIFe+5X//X6muDpoKrEqCmSFs8fuWAX8stu7WQ1Kl5AuEoFjsNNNSB6rlha1Usrm7aELypnjAbDpPGTq2Pc/a7TnfKz9ZgR7o2FVpExCBBhTCTjPTKmGpdB+e+Sf+fDLQ9y/7/GMd9jCoHfsUeck2ErmxMMBP1MmFmbEMhjvYvvwe+YIFS+ltOqkgRYvU//2Dbi23yDVZRYRuLk8zlBQ2OtMJFCViX2xZ8IrsXG35delJF8/A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Ywr8x2Bt9z2xQ8;
+	Mon, 17 Feb 2025 03:00:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.67.36.66
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739721617;
+	cv=none; b=QMLrjqRXtoHv/s8yXNS87VBAywTIHreB0kn01Y9Hi6MZLkp55fsQcgiA7pHWR4rMipC30LHluYoqYPdOWYZQ41gxYrTzfvr1Ie/FzWduoVejlFSn94gs4ifu50EcNPNn+5qNRgd/RaNYWvpj08YVdnZKOoH/ekjdXNzd8uj+hdKcZ9YbOmBEpaI89qkpdBIJCP/I+NFAR3Wjxgs+xd8KBTZ1ZzoMWp3T7FNItHeJjVsMYjURDRj3rvsq0WzaHax2bPsx8LUstd/MKxDzSlrBeP1o3OC8bG2USjYW/9YECZYcmVMNevta39ZDoyZUDi3w+wLGD2TttUcwljradyDqKw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739624149; c=relaxed/relaxed;
-	bh=p467yl45oLmRGrafSN5Up+7/iD1Z2wYE7/SsbnqK1Fk=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=otDy1uk9MB31+CZ4XAiLE+iPWDgOSeGKwhbviicArVNZVADgCTlCIoGtb3yas6lkfzIUn+YR5Z0pvynGoIilslZ0mmbGiZ0SWcjy4uQ9teH1AU4MpyMi4MnOxsnzTAm8JWXukvgOgvuMYvFgGZHVZ91Hz1khMjqYj220+8rozjydw+4uB8EV9cEqTnYkzgujkgUyqN18GAHGOdSV6EsW7/0jphTveDGz4qOQEkwJpCSK0LmL3H9THc/PmBL3Xai1h62nOSDbxiMwlbfye3DbGFfEMleTV+lAl1/us2yUWHGkAzhlqv/0HuUuVGVur5ZZ9TZzLAtyujn2UjyC6+59xg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HM6uytMP; dkim-atps=neutral; spf=pass (client-ip=192.198.163.15; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1739721617; c=relaxed/relaxed;
+	bh=U4Hpvn/puGC7pLf7h/gsjiJvZ/EPgviBoavaLq4rqj8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XTSf2pREInWUSPtpnNgtnow2h06JzsVzDsm+0BbK05kPlH99WW68BbngIM0Y1PRgIJNyez34/mzuJOmh1Voy5yvSCVPQUrO6ojS9HntrJVVFwuVGSGPnMZizXFfoZlWDqPjemwbjrXuhuA0FrvTFAKGs+UhTwylA8BM8mhvKeLY2kBG6o30xIxBTr0jTvtQWVij0BwEgkUNey2I5/cxfg4PKHQNCc4moVYB8qs361KOs5TUsNn6n2W8igotWvcykmuB8xx22qNcUfrwAvcqyZuLNFqpYvKmtvINzxRb0rMiT0mQndO4EPD7WmLU/5SiGVlihwkadQfkbzFMKCUokVA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net; dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=lo5x3VWI; dkim-atps=neutral; spf=pass (client-ip=185.67.36.66; helo=mout02.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org) smtp.mailfrom=posteo.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=posteo.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=HM6uytMP;
+	dkim=pass (2048-bit key; secure) header.d=posteo.net header.i=@posteo.net header.a=rsa-sha256 header.s=2017 header.b=lo5x3VWI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.15; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.15])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=posteo.net (client-ip=185.67.36.66; helo=mout02.posteo.de; envelope-from=j.ne@posteo.net; receiver=lists.ozlabs.org)
+Received: from mout02.posteo.de (mout02.posteo.de [185.67.36.66])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yw86W4bZ7z2yGC
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Feb 2025 23:55:45 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1739624148; x=1771160148;
-  h=date:from:to:cc:subject:message-id;
-  bh=94JEKl2MaZ4XuKtjoa8FgCnq7Vyq/9G1DLdKLQgs+ok=;
-  b=HM6uytMPMtBbTlV/6Co3u95qr9wZYtt+b8EiOOE3pkjVO/bAYJGi0tib
-   F2P8y0UDCtzG4EAeU4cDWwwXHkI8XHlWTwnSoXJ8sGNG8dcz62SaSuZgH
-   14AAd4wOcP1GusmqSx4nk52Byt20ovwlQOp1qeD3ZBkAmxnMb7bgbDzAf
-   7qVr81srp7IunZKaqYaRdplrGl3Q8Zwz7TPF4ZU2k7vTiP33NAHJNJvdO
-   F7DjP3z2MOetLwYbNDUCxRZHFVJ0t0A0b6kCBh8tfMPA+lFPgPa3mh1vj
-   txbOto5ZAfYlrXjylYJ1RTI2SbaqpODeHwtNUzBg1mmJidzhCfuJgIp/2
-   A==;
-X-CSE-ConnectionGUID: /sWFJHPcQj+xc1MVDaYMaQ==
-X-CSE-MsgGUID: Ey/sHqk6QXOx5ovfHjGlOg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11346"; a="40505333"
-X-IronPort-AV: E=Sophos;i="6.13,288,1732608000"; 
-   d="scan'208";a="40505333"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by fmvoesa109.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Feb 2025 04:55:42 -0800
-X-CSE-ConnectionGUID: PatXK1dKTAySTihLzIya9g==
-X-CSE-MsgGUID: vP7rMyB7RcygBAdiTS3oAQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.13,288,1732608000"; 
-   d="scan'208";a="113676074"
-Received: from lkp-server01.sh.intel.com (HELO d63d4d77d921) ([10.239.97.150])
-  by fmviesa007.fm.intel.com with ESMTP; 15 Feb 2025 04:55:41 -0800
-Received: from kbuild by d63d4d77d921 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1tjHhr-001AoD-28;
-	Sat, 15 Feb 2025 12:55:39 +0000
-Date: Sat, 15 Feb 2025 20:55:17 +0800
-From: kernel test robot <lkp@intel.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:merge] BUILD SUCCESS
- 3062e4bd79ed920c60453b56e08d3bda74513f7d
-Message-ID: <202502152011.xGCU46O1-lkp@intel.com>
-User-Agent: s-nail v14.9.24
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Ywr8t5Z4Cz2xGp
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2025 03:00:13 +1100 (AEDT)
+Received: from submission (posteo.de [185.67.36.169]) 
+	by mout02.posteo.de (Postfix) with ESMTPS id 21347240101
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Feb 2025 17:00:04 +0100 (CET)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=posteo.net; s=2017;
+	t=1739721605; bh=EF26j1suwLuBzziUeMgwWp0X8x4RpIgeD8Jxuuo4ULs=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:Content-Transfer-Encoding:From;
+	b=lo5x3VWIhi8sKEvyrajrRfqSD+ZmAX6jHeV4EBj5EdAhxjQn8VPKOx2I6wvg2Fb+O
+	 CaRc/K5p2vQnqZa8Y5URg4/Gi7Y7A/Cmn69DYFx+UuP5RFASqmPUlUYFDoUqZzWt7S
+	 oLt/qqd6HGTwfyW3vWq+4n8jM4zkUMLjnMyLd+rfGXV+HEz3atsSNtnZH9HQ/NAtvl
+	 2NsOCAZ7MNNzAjClL6pPW6Y5eXLnco3JwxXyXEIJFyICKG0rqucN2a+5SYckcIF07c
+	 ADgg4mbURCw+qsn9+KFVJuXnwUekdHSM2TwW/qYXbKcnpjG5eRQ/hqFFNC+RDqEZhF
+	 ZVlJCxaSlGXHA==
+Received: from customer (localhost [127.0.0.1])
+	by submission (posteo.de) with ESMTPSA id 4Ywr8V6Vlfz9rxW;
+	Sun, 16 Feb 2025 16:59:54 +0100 (CET)
+Date: Sun, 16 Feb 2025 15:59:54 +0000
+From: =?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+To: Rob Herring <robh@kernel.org>
+Cc: Crystal Wood <oss@buserror.net>, j.ne@posteo.net,
+	devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Krzysztof Kozlowski <krzk@kernel.org>, imx@lists.linux.dev,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Damien Le Moal <dlemoal@kernel.org>,
+	Niklas Cassel <cassel@kernel.org>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	"David S. Miller" <davem@davemloft.net>, Lee Jones <lee@kernel.org>,
+	Vinod Koul <vkoul@kernel.org>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	=?utf-8?Q?J=2E_Neusch=C3=A4fer?= <j.neuschaefer@gmx.net>,
+	Wim Van Sebroeck <wim@linux-watchdog.org>,
+	Guenter Roeck <linux@roeck-us.net>, Mark Brown <broonie@kernel.org>,
+	Miquel Raynal <miquel.raynal@bootlin.com>,
+	Richard Weinberger <richard@nod.at>,
+	Vignesh Raghavendra <vigneshr@ti.com>, linux-kernel@vger.kernel.org,
+	linux-ide@vger.kernel.org, linux-crypto@vger.kernel.org,
+	dmaengine@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-watchdog@vger.kernel.org, linux-spi@vger.kernel.org,
+	linux-mtd@lists.infradead.org, Li Yang <leoyang.li@nxp.com>,
+	John Ogness <john.ogness@linutronix.de>
+Subject: Re: [PATCH v2 09/12] dt-bindings: memory-controllers: Convert
+ fsl,elbc to YAML
+Message-ID: <Z7ILej_AJYot_wKP@probook>
+References: <20250207-ppcyaml-v2-0-8137b0c42526@posteo.net>
+ <20250207-ppcyaml-v2-9-8137b0c42526@posteo.net>
+ <Z6kQpuQf5m-bXTyt@buserror.net>
+ <20250210215324.GA1040564-robh@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,122 +96,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20250210215324.GA1040564-robh@kernel.org>
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: 3062e4bd79ed920c60453b56e08d3bda74513f7d  Automatic merge of 'next' into merge (2025-02-14 17:57)
+On Mon, Feb 10, 2025 at 03:53:24PM -0600, Rob Herring wrote:
+> On Sun, Feb 09, 2025 at 02:31:34PM -0600, Crystal Wood wrote:
+> > On Fri, Feb 07, 2025 at 10:30:26PM +0100, J. Neuschäfer via B4 Relay wrote:
+> > > From: "J. Neuschäfer" <j.ne@posteo.net>
+> > > 
+> > > Convert the Freescale localbus controller bindings from text form to
+> > > YAML. The updated list of compatible strings reflects current usage
+> > > in arch/powerpc/boot/dts/, except that many existing device trees
+> > > erroneously specify "simple-bus" in addition to fsl,*elbc.
+> > > 
+> > > Changes compared to the txt version:
+> > >  - removed the board-control (fsl,mpc8272ads-bcsr) node because it only
+> > >    appears in this example and nowhere else
+> > >  - added a new example with NAND flash
+> > >  - updated list of compatible strings
+> > > 
+> > > Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
+> > > ---
+> > > 
+> > > V2:
+> > > - fix order of properties in examples, according to dts coding style
+> > > - move to Documentation/devicetree/bindings/memory-controllers
+> > > - clarify the commit message a tiny bit
+> > > - remove unnecessary multiline markers (|)
+> > > - define address format in patternProperties
+> > > - trim subject line (remove "binding")
+> > > - remove use of "simple-bus", because it's technically incorrect
+> > 
+> > While I admit I haven't been following recent developments in this area,
+> > as someone who was involved when "simple-bus" was created (and was on the
+> > ePAPR committee that standardized it) I'm surprised to hear simple-bus
+> > being called "erroneous" or "technically incorrect" here.
+> 
+> Erroneous because the binding did not say "simple-bus" was used. Not 
+> uncommon with the old .txt bindings.
+> 
+> Generally, if a bus has control registers or resources like clocks, then 
+> we tend not to call them 'simple-bus'. And '"specific-bus", 
+> "simple-bus"' gives some problems around what driver if any do you 
+> bind to. 
+[...]
+> > You'd probably need something like commit 3e25f800afb82bd9e5f8 ("memory:
+> > fsl_ifc: populate child devices without relying on simple-bus") and the 
+> > subsequent fix in dd8adc713b1656 ("memory: fsl_ifc: populate child
+> > nodes of buses and mfd devices")...
+> > 
+> > I'm curious what the reasoning was for removing simple-bus from IFC.  It
+> > seems that the schema verification also played a role in that:
+> > https://www.spinics.net/lists/devicetree/msg220418.html
+> 
+> If a kernel change is needed to support changed .dts files, then we 
+> shouldn't be doing that here (being mature platforms). That would mean 
+> new DTB will not work with existing kernels.
 
-elapsed time: 1444m
+Alright, I'll keep simple-bus in the eLBC binding for historical
+compatibility.
 
-configs tested: 101
-configs skipped: 1
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+Thank you both for your discussion.
 
-tested configs:
-alpha                            allyesconfig    gcc-14.2.0
-arc                              allmodconfig    gcc-13.2.0
-arc                              allyesconfig    gcc-13.2.0
-arc                   randconfig-001-20250214    gcc-13.2.0
-arc                   randconfig-001-20250215    gcc-13.2.0
-arc                   randconfig-002-20250214    gcc-13.2.0
-arc                   randconfig-002-20250215    gcc-13.2.0
-arm                              allmodconfig    gcc-14.2.0
-arm                              allyesconfig    gcc-14.2.0
-arm                   randconfig-001-20250214    clang-16
-arm                   randconfig-001-20250215    clang-15
-arm                   randconfig-002-20250214    gcc-14.2.0
-arm                   randconfig-002-20250215    clang-17
-arm                   randconfig-003-20250214    clang-21
-arm                   randconfig-003-20250215    gcc-14.2.0
-arm                   randconfig-004-20250214    gcc-14.2.0
-arm                   randconfig-004-20250215    gcc-14.2.0
-arm64                            allmodconfig    clang-18
-arm64                 randconfig-001-20250214    gcc-14.2.0
-arm64                 randconfig-001-20250215    clang-21
-arm64                 randconfig-002-20250214    gcc-14.2.0
-arm64                 randconfig-002-20250215    gcc-14.2.0
-arm64                 randconfig-003-20250214    gcc-14.2.0
-arm64                 randconfig-004-20250214    gcc-14.2.0
-csky                  randconfig-001-20250214    gcc-14.2.0
-csky                  randconfig-002-20250214    gcc-14.2.0
-hexagon                          allmodconfig    clang-21
-hexagon                          allyesconfig    clang-18
-hexagon               randconfig-001-20250214    clang-21
-hexagon               randconfig-002-20250214    clang-15
-i386                             allmodconfig    gcc-12
-i386                              allnoconfig    gcc-12
-i386                             allyesconfig    gcc-12
-i386        buildonly-randconfig-001-20250214    gcc-12
-i386        buildonly-randconfig-002-20250214    gcc-12
-i386        buildonly-randconfig-003-20250214    clang-19
-i386        buildonly-randconfig-004-20250214    gcc-12
-i386        buildonly-randconfig-005-20250214    gcc-12
-i386        buildonly-randconfig-006-20250214    gcc-12
-i386                                defconfig    clang-19
-loongarch             randconfig-001-20250214    gcc-14.2.0
-loongarch             randconfig-002-20250214    gcc-14.2.0
-m68k                              allnoconfig    gcc-14.2.0
-microblaze                        allnoconfig    gcc-14.2.0
-mips                              allnoconfig    gcc-14.2.0
-nios2                             allnoconfig    gcc-14.2.0
-nios2                 randconfig-001-20250214    gcc-14.2.0
-nios2                 randconfig-002-20250214    gcc-14.2.0
-openrisc                          allnoconfig    gcc-14.2.0
-parisc                            allnoconfig    gcc-14.2.0
-parisc                randconfig-001-20250214    gcc-14.2.0
-parisc                randconfig-002-20250214    gcc-14.2.0
-powerpc                           allnoconfig    gcc-14.2.0
-powerpc               randconfig-001-20250214    gcc-14.2.0
-powerpc               randconfig-002-20250214    clang-18
-powerpc               randconfig-003-20250214    clang-21
-powerpc64             randconfig-001-20250214    clang-18
-powerpc64             randconfig-002-20250214    gcc-14.2.0
-powerpc64             randconfig-003-20250214    gcc-14.2.0
-riscv                             allnoconfig    gcc-14.2.0
-riscv                 randconfig-001-20250214    clang-18
-riscv                 randconfig-002-20250214    gcc-14.2.0
-s390                             allmodconfig    clang-19
-s390                              allnoconfig    clang-21
-s390                             allyesconfig    gcc-14.2.0
-s390                  randconfig-001-20250214    gcc-14.2.0
-s390                  randconfig-002-20250214    clang-19
-sh                               allmodconfig    gcc-14.2.0
-sh                                allnoconfig    gcc-14.2.0
-sh                               allyesconfig    gcc-14.2.0
-sh                    randconfig-001-20250214    gcc-14.2.0
-sh                    randconfig-002-20250214    gcc-14.2.0
-sparc                            allmodconfig    gcc-14.2.0
-sparc                             allnoconfig    gcc-14.2.0
-sparc                 randconfig-001-20250214    gcc-14.2.0
-sparc                 randconfig-002-20250214    gcc-14.2.0
-sparc64               randconfig-001-20250214    gcc-14.2.0
-sparc64               randconfig-002-20250214    gcc-14.2.0
-um                               allmodconfig    clang-21
-um                                allnoconfig    clang-18
-um                               allyesconfig    gcc-12
-um                    randconfig-001-20250214    gcc-12
-um                    randconfig-002-20250214    clang-16
-x86_64                            allnoconfig    clang-19
-x86_64                           allyesconfig    clang-19
-x86_64      buildonly-randconfig-001-20250214    clang-19
-x86_64      buildonly-randconfig-001-20250215    gcc-12
-x86_64      buildonly-randconfig-002-20250214    clang-19
-x86_64      buildonly-randconfig-002-20250215    clang-19
-x86_64      buildonly-randconfig-003-20250214    gcc-12
-x86_64      buildonly-randconfig-003-20250215    gcc-12
-x86_64      buildonly-randconfig-004-20250214    clang-19
-x86_64      buildonly-randconfig-004-20250215    clang-19
-x86_64      buildonly-randconfig-005-20250214    gcc-12
-x86_64      buildonly-randconfig-005-20250215    clang-19
-x86_64      buildonly-randconfig-006-20250214    gcc-12
-x86_64      buildonly-randconfig-006-20250215    clang-19
-x86_64                              defconfig    gcc-11
-xtensa                            allnoconfig    gcc-14.2.0
-xtensa                randconfig-001-20250214    gcc-14.2.0
-xtensa                randconfig-002-20250214    gcc-14.2.0
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+J. Neuschäfer
 
