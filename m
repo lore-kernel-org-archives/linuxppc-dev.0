@@ -1,97 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-6280-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6281-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63D53C021AA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2025 19:58:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34456C021AA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2025 21:01:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YxYPq47Rbz2xy7;
-	Tue, 18 Feb 2025 06:58:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739822335;
-	cv=none; b=SQA6F8jugUOR6o7SfhuLb1UMwQDAVY/W2Er4UKyThHYGReoMN44VaSyq2rmg6pErGVJ0KyqvjnkZk0XqG2oik7eDjxryRQxnTC+aKo0dTG8Jr0Tt7r8M39WeMva07daav0+UBDGIEnC4nkPaemsFf71um/Z3s6pFddfyQPercxN2lFtEmrIeUIV4X0fsn/HfXMkuasGgvTOcgIcKqIbuyePTkvnF4A+k9Eu839e1YDwwuR5Q+DYOyqdsXM1pyPDwDyGrvxcZrLxBSPM4PKNrovD4soklKT7gaXbddamZJcefApGY9ovBfUDTFE/x5Gs1Bm4ukgMqEiqMCo3GkpnzGg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YxZng5QNZz2xgp;
+	Tue, 18 Feb 2025 08:01:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739794696;
+	cv=none; b=VVjHK9fQwMg53I9Bsfq4ySb+Ud+Hhiqpq5eUbaf52YY1SxyL1CYNxtU9lClo6VMdj9Y6hb78UY5VPNzcU76JMRVK3LQWuYZkWqNDGCqHjpYP4fdEIlCb6/TpseRjRgeu89Zy6sZ3cG/PZHFBo1b0PN3WM/CBBd3ZtgzOwIyIXkI6bvF5P/OyoUfQg49rcGt5tId17zfSlZUJqfXfezE4hDSJTEp/s2zL3PpSNJFTYjS8rkkz66as9TbNsw+fsI+Y6QXLSIXcGqhNnZotT8nd7oDrtLQsyvHFvDJlD5lIHW4eJ2B2hNgR4YqwfTK105C/yz6PCx7eTbdoEISFbphDIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739822335; c=relaxed/relaxed;
-	bh=NlktFKbt7fWOri2OGRbyYiQR64jGh1ap4Xy3JViDRMo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=B1OsKEdR1cKYtWpjGvTdCfsJ+MvDhos6XKhhbuVeJV1k9fqhuRDgUvQjJoW2CQzEQFlKmaB9suuSUzeOoAmQEOHwMEUeGVlplnTiUI3viD2CXz0DM18aAkOvSvRrGafE72buT6CJ5swXRUw1QTH55I8IaPd631piBnLyNilH2PvZE30t6m3SXhoinyT434C0aWYwKjj4vf3DajPpDepI70k8tOROwX8hvuAu7OxfPXF+K+dUWcGt1WxbHoFYqyNXXWcdWeMRIGTJilIR/MPUvIGAwLI57eWdnYY1Ih4MYbswt/sb0cFsYnRLQn9ya/AxHKqWplOXj032S/glm5uVKw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XEv90QqL; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XEv90QqL; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+	t=1739794696; c=relaxed/relaxed;
+	bh=MIEQNAU/fiauFH6+CL2PWeRIqpF2Jjl6N4X/geT76YQ=;
+	h=From:Message-Id:Content-Type:Mime-Version:Subject:Date:
+	 In-Reply-To:Cc:To:References; b=NB6KpeYXIiNlVqxw+EPpVWje0Hqs5bpEo6Ru8nTBeIlZZAg3Yae8ybiq4dHJIZ73aWMDR96SiYGe+AhdTZ56kDnLIst/mxpgSmBCaWEsh661c3hQyQTxbl/OXwO5A0ooiyMX4LpwJDmXOenKgEncMrpjJHhI+RoNchCKGPmLvS1VeeaoyWYuVrQqqxTVYYQLmHWlrobhen1UpTvVAJilx99dvLAYFawPclbTyBuIIAaPS4P3uqFngFz2v8n+lUWzg08Jc5voG87/pz98GF3uW1mLLf6hDFS5Q7GzJCLUL6OsNfdV0hwLOjux2w9OwBKf2Tbv7wR7931Q9AmBAofNcA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IJI9wLOg; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XEv90QqL;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=XEv90QqL;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IJI9wLOg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YxYPp2TRYz2xVq
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2025 06:58:52 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1739822328;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=NlktFKbt7fWOri2OGRbyYiQR64jGh1ap4Xy3JViDRMo=;
-	b=XEv90QqLiwNBMjF1S27daonlXuEOOLHs7NrLdcZ852Eyi1X0g2ufVb6bYGyDj1wuiNUSyK
-	OOBPeN7XymK/ge0Rmg+nO6mu7L5GXaisEI3ml3V4pcEkt4r95P8NqsEYp/9GUtEx4L6ur7
-	MgBXpRf8Wjsgw/9gagCKLkl9aewXYac=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1739822328;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=NlktFKbt7fWOri2OGRbyYiQR64jGh1ap4Xy3JViDRMo=;
-	b=XEv90QqLiwNBMjF1S27daonlXuEOOLHs7NrLdcZ852Eyi1X0g2ufVb6bYGyDj1wuiNUSyK
-	OOBPeN7XymK/ge0Rmg+nO6mu7L5GXaisEI3ml3V4pcEkt4r95P8NqsEYp/9GUtEx4L6ur7
-	MgBXpRf8Wjsgw/9gagCKLkl9aewXYac=
-Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
- [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-632-Uu1uySAZPWuAueqUVFMuDQ-1; Mon, 17 Feb 2025 14:58:47 -0500
-X-MC-Unique: Uu1uySAZPWuAueqUVFMuDQ-1
-X-Mimecast-MFC-AGG-ID: Uu1uySAZPWuAueqUVFMuDQ_1739822326
-Received: by mail-wr1-f71.google.com with SMTP id ffacd0b85a97d-38f3bac2944so773382f8f.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2025 11:58:46 -0800 (PST)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1739822326; x=1740427126;
-        h=content-transfer-encoding:in-reply-to:organization:autocrypt
-         :content-language:from:references:cc:to:subject:user-agent
-         :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=NlktFKbt7fWOri2OGRbyYiQR64jGh1ap4Xy3JViDRMo=;
-        b=IrWTvUL7LUUjsJycu4gX/LaS8AVSMSk79skDH8fX3jQnFwRfL8wzvxRFqL+Bi1XTHT
-         QZYgopq028Ya1zKEbcpU9J4QHNXhVdPpiVuEE+IRf7aEh6X41L7u8lb3VeB7mGC6pA1D
-         1GVOPPWgThMU0gheWA5lUepUqarktSWHj8GPXExanEBZj5wwsHwsDnJeHRh+vt2LqUDS
-         2v4pi/o5h86hPsUmcfjGGPZttButjlvn5UYqiiRdNuUmrIsuEGOqphInRqhJaEgdrGQA
-         VsNbiVk8wpL+Z2kI/Le28N9NHdF3R9KWEecbj/BEmIPhXgAt2r/6xHgIXm/j/s9m1mtv
-         UeSA==
-X-Forwarded-Encrypted: i=1; AJvYcCW3UN2NUL/xKK9/IR3Yjhpxde+Hj2Z6cxHOu14uIB6eP0/eMVvxHZKapeWf4JDez3QsJj1wDavyzbwO5Uc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyBRWRwM73SvKvgz3RM8I8cCbEobWnVdY+zOOTpUjbS1/K/TI8p
-	fIOnCys2dcfTFlZl7kfg9Ia4W4t0DLYxxozrX2608ZhY/uY1ZDt0PN+aDE1xL/9GiSwprSyMo/9
-	rwWr0Y5h5NaqLFv4N8No31AChPgyTPoxuVVja5NY4B3c3Vxx5LJd2EtDLBaODYOM=
-X-Gm-Gg: ASbGncuONrpukGLYnra0ri3gu8C3cxPH7oFKxQOnjJMl324GRsLYOkPnpmhZMieaHDZ
-	2X6xOb05BReRPHIqJjsnB2VIpG+fnB3P2rJVuqZEzy3Hp7dJnnndJcmP/IE6f1iYQ9vH0bKWZXQ
-	Tvgt3LwbMsix66uS4vNEcq0tw/utTA3boEm6zpOfZN5YujgizZXPgwHDXNiN2Rn5APBDGHtjyLH
-	VgDlWavJx2BBbaHyhRKW0u1TVznquaAUP4QstuwbwmheEk/I7F+6u7XlV0JZYJuQCiHri2CqaMi
-	L2O3GN/lkm6PzoOsA+k17JaRhJybqyqmPL7qRXTkF1RzPrf6DHXEb3Fs3jqpFP0/jITVkVCXqec
-	aXreadXULc1gLAVYSbK/uga5edphahw==
-X-Received: by 2002:a5d:4a43:0:b0:38f:3392:9fd8 with SMTP id ffacd0b85a97d-38f33f2cb57mr8062660f8f.18.1739822325475;
-        Mon, 17 Feb 2025 11:58:45 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IGmnf+EH+x2w9Z3amJyvk4I4a5QL1krZ5SQiXGUsJvRabwqfhUp4vd7zVPxaXWLqtKKNwXS0Q==
-X-Received: by 2002:a5d:4a43:0:b0:38f:3392:9fd8 with SMTP id ffacd0b85a97d-38f33f2cb57mr8062617f8f.18.1739822325081;
-        Mon, 17 Feb 2025 11:58:45 -0800 (PST)
-Received: from ?IPV6:2003:cb:c739:900:900f:3c9e:2f7b:5d0a? (p200300cbc7390900900f3c9e2f7b5d0a.dip0.t-ipconnect.de. [2003:cb:c739:900:900f:3c9e:2f7b:5d0a])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-38f258b4118sm13425148f8f.18.2025.02.17.11.58.39
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 17 Feb 2025 11:58:43 -0800 (PST)
-Message-ID: <519c6ef7-ca56-4aac-8e43-f75b17353d66@redhat.com>
-Date: Mon, 17 Feb 2025 20:58:38 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YxMBH0bwbz301n
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2025 23:18:14 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 51H19eHE016399;
+	Mon, 17 Feb 2025 12:18:08 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=MIEQNAU/fiauFH6+CL2PWeRIqpF2Jj
+	l6N4X/geT76YQ=; b=IJI9wLOgia54FHIprMdgewJTOBkRF4n1jaUoe//i+kEz7L
+	NRGm+hzTvHs54+Y/rFRwnEoiHrVUl39ufLnLkEFThaBAYoelL2eGifVmImfR/SS/
+	2B+GM5o4LRY0PP0zJvqmhPvtvVZGnzpIYta8RSK801kmXygOVapFzQGILb5Yw8sX
+	CcG7FN/wvGUTqDPbFlp8s5hZinQThQQPyt6DzXFQYasgudu9XWRplemtpspinuwg
+	1SI4QUtSm6DnK8y/MEa5VvPBOOVE+K14yBKfGgVF65+marpQ6GF+JQH77/13ukVX
+	4kmqBR5vs/zn13lcKhTeErPUAAwTdRj74dSBYbcw==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44uu69as4g-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 17 Feb 2025 12:18:08 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 51HC8xYZ008190;
+	Mon, 17 Feb 2025 12:18:07 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44uu69as4b-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 17 Feb 2025 12:18:07 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 51H8U3V4003891;
+	Mon, 17 Feb 2025 12:18:06 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 44u68np0fp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 17 Feb 2025 12:18:06 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 51HCI2vt44433892
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 17 Feb 2025 12:18:02 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 83C5420043;
+	Mon, 17 Feb 2025 12:18:02 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 11D1820040;
+	Mon, 17 Feb 2025 12:17:56 +0000 (GMT)
+Received: from smtpclient.apple (unknown [9.61.241.34])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Mon, 17 Feb 2025 12:17:55 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.ibm.com>
+Message-Id: <EA54B231-A065-4ED3-8678-1A84CC1D4931@linux.ibm.com>
+Content-Type: multipart/alternative;
+	boundary="Apple-Mail=_7189952D-CFA7-4F07-8881-DBBE0AF5CDD0"
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,165 +86,452 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 16/20] huge_memory: Add vmf_insert_folio_pmd()
-To: Alistair Popple <apopple@nvidia.com>
-Cc: akpm@linux-foundation.org, dan.j.williams@intel.com, linux-mm@kvack.org,
- Alison Schofield <alison.schofield@intel.com>, lina@asahilina.net,
- zhang.lyra@gmail.com, gerald.schaefer@linux.ibm.com,
- vishal.l.verma@intel.com, dave.jiang@intel.com, logang@deltatee.com,
- bhelgaas@google.com, jack@suse.cz, jgg@ziepe.ca, catalin.marinas@arm.com,
- will@kernel.org, mpe@ellerman.id.au, npiggin@gmail.com,
- dave.hansen@linux.intel.com, ira.weiny@intel.com, willy@infradead.org,
- djwong@kernel.org, tytso@mit.edu, linmiaohe@huawei.com, peterx@redhat.com,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- nvdimm@lists.linux.dev, linux-cxl@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
- linux-xfs@vger.kernel.org, jhubbard@nvidia.com, hch@lst.de,
- david@fromorbit.com, chenhuacai@kernel.org, kernel@xen0n.name,
- loongarch@lists.linux.dev
-References: <cover.472dfc700f28c65ecad7591096a1dc7878ff6172.1738709036.git-series.apopple@nvidia.com>
- <9f10e88441f3cb26eff6be0c9ef5997844c8c24e.1738709036.git-series.apopple@nvidia.com>
- <afff4368-9401-4943-b802-1b15bdcf5aaa@redhat.com>
- <6mmjoe27y63cfe5cycqje63gehgumod3bp7zzgvpz7qehgfuv4@uomvqgizba2m>
-From: David Hildenbrand <david@redhat.com>
-Autocrypt: addr=david@redhat.com; keydata=
- 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
- WNyWQQ==
-Organization: Red Hat
-In-Reply-To: <6mmjoe27y63cfe5cycqje63gehgumod3bp7zzgvpz7qehgfuv4@uomvqgizba2m>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: GRe67k_I0Uql53Jn4Y3u8vsTD8Gamx3C-tNW4cyAgOE_1739822326
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3776.700.51\))
+Subject: Re: [PATCH] tools/perf: Add check to tool pmu tests to ensure if the
+ event is valid
+Date: Mon, 17 Feb 2025 17:47:42 +0530
+In-Reply-To: <Z61oWlOoyF0BKwYV@google.com>
+Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
+        Arnaldo Carvalho de Melo <acme@kernel.org>,
+        Jiri Olsa <jolsa@kernel.org>, Adrian Hunter <adrian.hunter@intel.com>,
+        Ian Rogers <irogers@google.com>, linux-perf-users@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
+        kjain@linux.ibm.com, disgoel@linux.vnet.ibm.com,
+        hbathini@linux.vnet.ibm.com, Aditya.Bodkhe1@ibm.com
+To: Namhyung Kim <namhyung@kernel.org>, Thomas Richter <tmricht@linux.ibm.com>,
+        James Clark <james.clark@linaro.org>
+References: <20250212185438.15251-1-atrajeev@linux.vnet.ibm.com>
+ <Z61oWlOoyF0BKwYV@google.com>
+X-Mailer: Apple Mail (2.3776.700.51)
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: ybR_ay0la1r_ZGVpEXnrscnLmzLAVE4h
+X-Proofpoint-ORIG-GUID: x82NwIcys8V8FB648D6TLiLK0JFNPphg
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-02-17_05,2025-02-13_01,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 bulkscore=0
+ malwarescore=0 priorityscore=1501 suspectscore=0 impostorscore=0
+ lowpriorityscore=0 spamscore=0 clxscore=1011 mlxscore=0 mlxlogscore=999
+ adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2501170000 definitions=main-2502170105
 
-On 17.02.25 05:29, Alistair Popple wrote:
-> On Mon, Feb 10, 2025 at 07:45:09PM +0100, David Hildenbrand wrote:
->> On 04.02.25 23:48, Alistair Popple wrote:
->>> Currently DAX folio/page reference counts are managed differently to normal
->>> pages. To allow these to be managed the same as normal pages introduce
->>> vmf_insert_folio_pmd. This will map the entire PMD-sized folio and take
->>> references as it would for a normally mapped page.
->>>
->>> This is distinct from the current mechanism, vmf_insert_pfn_pmd, which
->>> simply inserts a special devmap PMD entry into the page table without
->>> holding a reference to the page for the mapping.
->>>
->>> It is not currently useful to implement a more generic vmf_insert_folio()
->>> which selects the correct behaviour based on folio_order(). This is because
->>> PTE faults require only a subpage of the folio to be PTE mapped rather than
->>> the entire folio. It would be possible to add this context somewhere but
->>> callers already need to handle PTE faults and PMD faults separately so a
->>> more generic function is not useful.
->>>
->>> Signed-off-by: Alistair Popple <apopple@nvidia.com>
->>
->> Nit: patch subject ;)
->>
->>>
->>> ---
->>>
->>> Changes for v7:
->>>
->>>    - Fix bad pgtable handling for PPC64 (Thanks Dan and Dave)
->>
->> Is it? ;) insert_pfn_pmd() still doesn't consume a "pgtable_t *"
->>
->> But maybe I am missing something ...
-> 
-> At a high-level all I'm trying to do (perhaps badly) is pull the ptl locking one
-> level up the callstack.
-> 
-> As far as I can tell the pgtable is consumed here:
-> 
-> static int insert_pfn_pmd(struct vm_area_struct *vma, unsigned long addr,
-> 		pmd_t *pmd, pfn_t pfn, pgprot_t prot, bool write,
-> 		pgtable_t pgtable)
-> 
-> [...]
-> 
-> 	if (pgtable) {
-> 		pgtable_trans_huge_deposit(mm, pmd, pgtable);
-> 		mm_inc_nr_ptes(mm);
-> 		pgtable = NULL;
-> 	}
-> 
-> [...]
-> 
-> 	return 0;
-> 
-> Now I can see I failed to clean up the useless pgtable = NULL asignment, which
-> is confusing because I'm not trying to look at pgtable in the caller (ie.
-> vmf_insert_pfn_pmd()/vmf_insert_folio_pmd()) to determine if it needs freeing.
-> So I will remove this assignment.
 
-Ahhh, yes, the "pgtable = NULL" confused me, so I was looking for a 
-"pgtable_t *pgtable" being passed instead, that we could manipulate.
+--Apple-Mail=_7189952D-CFA7-4F07-8881-DBBE0AF5CDD0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain;
+	charset=utf-8
 
-> 
-> Instead callers just look at the return code from insert_pfn_pmd() - if there
-> was an error pgtable_trans_huge_deposit(pgtable) wasn't called and if the caller
-> passed a pgtable it should be freed. Otherwise if insert_pfn_pmd() succeeded
-> then callers can assume the pgtable was consumed by pgtable_trans_huge_deposit()
-> and therefore should not be freed.
-> 
-> Hopefully that all makes sense, but maybe I've missed something obvious too...
 
-Yes, you assume that if insert_pfn_pmd() succeeds, the table was 
-consumed, otherwise it must be freed.
 
-Thanks!
+> On 13 Feb 2025, at 9:04=E2=80=AFAM, Namhyung Kim <namhyung@kernel.org> =
+wrote:
+>=20
+> On Thu, Feb 13, 2025 at 12:24:38AM +0530, Athira Rajeev wrote:
+>> "Tool PMU" tests fails on powerpc as below:
+>>=20
+>>   12.1: Parsing without PMU name:
+>>   --- start ---
+>>   test child forked, pid 48492
+>>   Using CPUID 0x00800200
+>>   Attempt to add: tool/duration_time/
+>>   ..after resolving event: tool/config=3D0x1/
+>>   duration_time -> tool/duration_time/
+>>   Attempt to add: tool/user_time/
+>>   ..after resolving event: tool/config=3D0x2/
+>>   user_time -> tool/user_time/
+>>   Attempt to add: tool/system_time/
+>>   ..after resolving event: tool/config=3D0x3/
+>>   system_time -> tool/system_time/
+>>   Attempt to add: tool/has_pmem/
+>>   ..after resolving event: tool/config=3D0x4/
+>>   has_pmem -> tool/has_pmem/
+>>   Attempt to add: tool/num_cores/
+>>   ..after resolving event: tool/config=3D0x5/
+>>   num_cores -> tool/num_cores/
+>>   Attempt to add: tool/num_cpus/
+>>   ..after resolving event: tool/config=3D0x6/
+>>   num_cpus -> tool/num_cpus/
+>>   Attempt to add: tool/num_cpus_online/
+>>   ..after resolving event: tool/config=3D0x7/
+>>   num_cpus_online -> tool/num_cpus_online/
+>>   Attempt to add: tool/num_dies/
+>>   ..after resolving event: tool/config=3D0x8/
+>>   num_dies -> tool/num_dies/
+>>   Attempt to add: tool/num_packages/
+>>   ..after resolving event: tool/config=3D0x9/
+>>   num_packages -> tool/num_packages/
+>>=20
+>>   ---- unexpected signal (11) ----
+>>   12.1: Parsing without PMU name                                      =
+: FAILED!
+>>=20
+>> Same fail is observed for "Parsing with PMU name" as well.
+>>=20
+>> The testcase loops through events in tool_pmu__for_each_event()
+>> and access event name using "tool_pmu__event_to_str()".
+>> Here tool_pmu__event_to_str returns null for "slots" event
+>> and "system_tsc_freq" event. These two events are only applicable
+>> for arm64 and x86 respectively. So the function =
+tool_pmu__event_to_str()
+>> skips for unsupported events and returns null. This null value is
+>> causing testcase fail.
+>>=20
+>> To address this in "Tool PMU" testcase, add a helper function
+>> tool_pmu__all_event_to_str() which returns the name for all
+>> events mapping to the tool_pmu_event index including the
+>> skipped ones. So that even if its a skipped event, the
+>> helper function helps to resolve the tool_pmu_event index to
+>> its mapping event name. Update the testcase to check for null event
+>> names before proceeding the test.
+>>=20
+>> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+>=20
+> Please take a look at:
+> =
+https://lore.kernel.org/r/20250212163859.1489916-1-james.clark@linaro.org
+>=20
+> Thanks,
+> Namhyung
+Hi,
 
-Acked-by: David Hildenbrand <david@redhat.com>
+Sure thanks for the fix James
 
--- 
-Cheers,
+Thomas,
+Thanks for testing this patch.  But James already fixed this with a =
+different patch and it is part of perf-tools-next
+=
+https://git.kernel.org/pub/scm/linux/kernel/git/perf/perf-tools-next.git/c=
+ommit/?h=3Dperf-tools-next&id=3D615ec00b06f78912c370b372426190768402a5b9
 
-David / dhildenb
+Please test with latest perf-tools-next=20
+
+Thanks
+Athira
+
+>=20
+>> ---
+>> tools/perf/tests/tool_pmu.c | 12 ++++++++++++
+>> tools/perf/util/tool_pmu.c  | 17 +++++++++++++++++
+>> tools/perf/util/tool_pmu.h  |  1 +
+>> 3 files changed, 30 insertions(+)
+>>=20
+>> diff --git a/tools/perf/tests/tool_pmu.c =
+b/tools/perf/tests/tool_pmu.c
+>> index 187942b749b7..e468e5fb3c73 100644
+>> --- a/tools/perf/tests/tool_pmu.c
+>> +++ b/tools/perf/tests/tool_pmu.c
+>> @@ -19,6 +19,18 @@ static int do_test(enum tool_pmu_event ev, bool =
+with_pmu)
+>> 		return TEST_FAIL;
+>> 	}
+>>=20
+>> +	/*
+>> +	 * if tool_pmu__event_to_str returns NULL, Check if the event is
+>> +	 * valid for the platform.
+>> +	 * Example:
+>> +	 * slots event is only on arm64.
+>> +	 * system_tsc_freq event is only on x86.
+>> +	 */
+>> +	if (!tool_pmu__event_to_str(ev) && =
+tool_pmu__skip_event(tool_pmu__all_event_to_str(ev))) {
+>> +		ret =3D TEST_OK;
+>> +		goto out;
+>> +	}
+>> +
+>> 	if (with_pmu)
+>> 		snprintf(str, sizeof(str), "tool/%s/", =
+tool_pmu__event_to_str(ev));
+>> 	else
+>> diff --git a/tools/perf/util/tool_pmu.c b/tools/perf/util/tool_pmu.c
+>> index 3a68debe7143..572422797f6e 100644
+>> --- a/tools/perf/util/tool_pmu.c
+>> +++ b/tools/perf/util/tool_pmu.c
+>> @@ -60,6 +60,15 @@ int tool_pmu__num_skip_events(void)
+>> 	return num;
+>> }
+>>=20
+>> +/*
+>> + * tool_pmu__event_to_str returns only supported event names.
+>> + * For events which are supposed to be skipped in the platform,
+>> + * return NULL
+>> + *
+>> + * tool_pmu__all_event_to_str returns the name for all
+>> + * events mapping to the tool_pmu_event index including the
+>> + * skipped ones.
+>> + */
+>> const char *tool_pmu__event_to_str(enum tool_pmu_event ev)
+>> {
+>> 	if ((ev > TOOL_PMU__EVENT_NONE && ev < TOOL_PMU__EVENT_MAX) &&
+>> @@ -69,6 +78,14 @@ const char *tool_pmu__event_to_str(enum =
+tool_pmu_event ev)
+>> 	return NULL;
+>> }
+>>=20
+>> +const char *tool_pmu__all_event_to_str(enum tool_pmu_event ev)
+>> +{
+>> +	if (ev > TOOL_PMU__EVENT_NONE && ev < TOOL_PMU__EVENT_MAX)
+>> +		return tool_pmu__event_names[ev];
+>> +
+>> +	return NULL;
+>> +}
+>> +
+>> enum tool_pmu_event tool_pmu__str_to_event(const char *str)
+>> {
+>> 	int i;
+>> diff --git a/tools/perf/util/tool_pmu.h b/tools/perf/util/tool_pmu.h
+>> index a60184859080..da76808ae71e 100644
+>> --- a/tools/perf/util/tool_pmu.h
+>> +++ b/tools/perf/util/tool_pmu.h
+>> @@ -30,6 +30,7 @@ enum tool_pmu_event {
+>> 	for ((ev) =3D TOOL_PMU__EVENT_DURATION_TIME; (ev) < =
+TOOL_PMU__EVENT_MAX; ev++)
+>>=20
+>> const char *tool_pmu__event_to_str(enum tool_pmu_event ev);
+>> +const char *tool_pmu__all_event_to_str(enum tool_pmu_event ev);
+>> enum tool_pmu_event tool_pmu__str_to_event(const char *str);
+>> bool tool_pmu__skip_event(const char *name);
+>> int tool_pmu__num_skip_events(void);
+>> --=20
+>> 2.43.5
+
+
+--Apple-Mail=_7189952D-CFA7-4F07-8881-DBBE0AF5CDD0
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/html;
+	charset=utf-8
+
+<html><head><meta http-equiv=3D"content-type" content=3D"text/html; =
+charset=3Dutf-8"></head><body style=3D"overflow-wrap: break-word; =
+-webkit-nbsp-mode: space; line-break: after-white-space;"><br =
+id=3D"lineBreakAtBeginningOfMessage"><div><br><blockquote =
+type=3D"cite"><div>On 13 Feb 2025, at 9:04=E2=80=AFAM, Namhyung Kim =
+&lt;namhyung@kernel.org&gt; wrote:</div><br =
+class=3D"Apple-interchange-newline"><div><meta charset=3D"UTF-8"><span =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: 400; =
+letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
+display: inline !important;">On Thu, Feb 13, 2025 at 12:24:38AM +0530, =
+Athira Rajeev wrote:</span><br style=3D"caret-color: rgb(0, 0, 0); =
+font-family: Helvetica; font-size: 12px; font-style: normal; =
+font-variant-caps: normal; font-weight: 400; letter-spacing: normal; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;"><blockquote type=3D"cite" style=3D"font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: 400; letter-spacing: normal; orphans: auto; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;">"Tool PMU" tests fails on powerpc as =
+below:<br><br>&nbsp;&nbsp;12.1: Parsing without PMU =
+name:<br>&nbsp;&nbsp;--- start ---<br>&nbsp;&nbsp;test child forked, pid =
+48492<br>&nbsp;&nbsp;Using CPUID 0x00800200<br>&nbsp;&nbsp;Attempt to =
+add: tool/duration_time/<br>&nbsp;&nbsp;..after resolving event: =
+tool/config=3D0x1/<br>&nbsp;&nbsp;duration_time -&gt; =
+tool/duration_time/<br>&nbsp;&nbsp;Attempt to add: =
+tool/user_time/<br>&nbsp;&nbsp;..after resolving event: =
+tool/config=3D0x2/<br>&nbsp;&nbsp;user_time -&gt; =
+tool/user_time/<br>&nbsp;&nbsp;Attempt to add: =
+tool/system_time/<br>&nbsp;&nbsp;..after resolving event: =
+tool/config=3D0x3/<br>&nbsp;&nbsp;system_time -&gt; =
+tool/system_time/<br>&nbsp;&nbsp;Attempt to add: =
+tool/has_pmem/<br>&nbsp;&nbsp;..after resolving event: =
+tool/config=3D0x4/<br>&nbsp;&nbsp;has_pmem -&gt; =
+tool/has_pmem/<br>&nbsp;&nbsp;Attempt to add: =
+tool/num_cores/<br>&nbsp;&nbsp;..after resolving event: =
+tool/config=3D0x5/<br>&nbsp;&nbsp;num_cores -&gt; =
+tool/num_cores/<br>&nbsp;&nbsp;Attempt to add: =
+tool/num_cpus/<br>&nbsp;&nbsp;..after resolving event: =
+tool/config=3D0x6/<br>&nbsp;&nbsp;num_cpus -&gt; =
+tool/num_cpus/<br>&nbsp;&nbsp;Attempt to add: =
+tool/num_cpus_online/<br>&nbsp;&nbsp;..after resolving event: =
+tool/config=3D0x7/<br>&nbsp;&nbsp;num_cpus_online -&gt; =
+tool/num_cpus_online/<br>&nbsp;&nbsp;Attempt to add: =
+tool/num_dies/<br>&nbsp;&nbsp;..after resolving event: =
+tool/config=3D0x8/<br>&nbsp;&nbsp;num_dies -&gt; =
+tool/num_dies/<br>&nbsp;&nbsp;Attempt to add: =
+tool/num_packages/<br>&nbsp;&nbsp;..after resolving event: =
+tool/config=3D0x9/<br>&nbsp;&nbsp;num_packages -&gt; =
+tool/num_packages/<br><br>&nbsp;&nbsp;---- unexpected signal (11) =
+----<br>&nbsp;&nbsp;12.1: Parsing without PMU name =
+&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&n=
+bsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbs=
+p;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;&nbsp;=
+: FAILED!<br><br>Same fail is observed for "Parsing with PMU name" as =
+well.<br><br>The testcase loops through events in =
+tool_pmu__for_each_event()<br>and access event name using =
+"tool_pmu__event_to_str()".<br>Here tool_pmu__event_to_str returns null =
+for "slots" event<br>and "system_tsc_freq" event. These two events are =
+only applicable<br>for arm64 and x86 respectively. So the function =
+tool_pmu__event_to_str()<br>skips for unsupported events and returns =
+null. This null value is<br>causing testcase fail.<br><br>To address =
+this in "Tool PMU" testcase, add a helper =
+function<br>tool_pmu__all_event_to_str() which returns the name for =
+all<br>events mapping to the tool_pmu_event index including =
+the<br>skipped ones. So that even if its a skipped event, the<br>helper =
+function helps to resolve the tool_pmu_event index to<br>its mapping =
+event name. Update the testcase to check for null event<br>names before =
+proceeding the test.<br><br>Signed-off-by: Athira Rajeev =
+&lt;atrajeev@linux.vnet.ibm.com&gt;<br></blockquote><br =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: 400; =
+letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none;"><span =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: 400; =
+letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
+display: inline !important;">Please take a look at:</span><br =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: 400; =
+letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none;"><a =
+href=3D"https://lore.kernel.org/r/20250212163859.1489916-1-james.clark@lin=
+aro.org" style=3D"font-family: Helvetica; font-size: 12px; font-style: =
+normal; font-variant-caps: normal; font-weight: 400; letter-spacing: =
+normal; orphans: auto; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; widows: auto; word-spacing: =
+0px; -webkit-text-stroke-width: =
+0px;">https://lore.kernel.org/r/20250212163859.1489916-1-james.clark@linar=
+o.org</a><br style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; =
+font-size: 12px; font-style: normal; font-variant-caps: normal; =
+font-weight: 400; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;"><br style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; =
+font-size: 12px; font-style: normal; font-variant-caps: normal; =
+font-weight: 400; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none;"><span style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; =
+font-size: 12px; font-style: normal; font-variant-caps: normal; =
+font-weight: 400; letter-spacing: normal; text-align: start; =
+text-indent: 0px; text-transform: none; white-space: normal; =
+word-spacing: 0px; -webkit-text-stroke-width: 0px; text-decoration: =
+none; float: none; display: inline !important;">Thanks,</span><br =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: 400; =
+letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none;"><span =
+style=3D"caret-color: rgb(0, 0, 0); font-family: Helvetica; font-size: =
+12px; font-style: normal; font-variant-caps: normal; font-weight: 400; =
+letter-spacing: normal; text-align: start; text-indent: 0px; =
+text-transform: none; white-space: normal; word-spacing: 0px; =
+-webkit-text-stroke-width: 0px; text-decoration: none; float: none; =
+display: inline !important;">Namhyung</span><br style=3D"caret-color: =
+rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
+normal; font-variant-caps: normal; font-weight: 400; letter-spacing: =
+normal; text-align: start; text-indent: 0px; text-transform: none; =
+white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: =
+none;"></div></blockquote>Hi,</div><div><br></div><div>Sure thanks for =
+the fix James</div><div><br></div><div>Thomas,</div><div>Thanks for =
+testing this patch. &nbsp;But James already fixed this with a different =
+patch and it is part of perf-tools-next</div><div><a =
+href=3D"https://git.kernel.org/pub/scm/linux/kernel/git/perf/perf-tools-ne=
+xt.git/commit/?h=3Dperf-tools-next&amp;id=3D615ec00b06f78912c370b372426190=
+768402a5b9">https://git.kernel.org/pub/scm/linux/kernel/git/perf/perf-tool=
+s-next.git/commit/?h=3Dperf-tools-next&amp;id=3D615ec00b06f78912c370b37242=
+6190768402a5b9</a><br></div><div><br></div><div>Please test with latest =
+perf-tools-next&nbsp;</div><div><br></div><div>Thanks</div><div>Athira</di=
+v><div><br><blockquote type=3D"cite"><div><br style=3D"caret-color: =
+rgb(0, 0, 0); font-family: Helvetica; font-size: 12px; font-style: =
+normal; font-variant-caps: normal; font-weight: 400; letter-spacing: =
+normal; text-align: start; text-indent: 0px; text-transform: none; =
+white-space: normal; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;"><blockquote type=3D"cite" style=3D"font-family: =
+Helvetica; font-size: 12px; font-style: normal; font-variant-caps: =
+normal; font-weight: 400; letter-spacing: normal; orphans: auto; =
+text-align: start; text-indent: 0px; text-transform: none; white-space: =
+normal; widows: auto; word-spacing: 0px; -webkit-text-stroke-width: 0px; =
+text-decoration: none;">---<br>tools/perf/tests/tool_pmu.c | 12 =
+++++++++++++<br>tools/perf/util/tool_pmu.c &nbsp;| 17 =
++++++++++++++++++<br>tools/perf/util/tool_pmu.h &nbsp;| &nbsp;1 +<br>3 =
+files changed, 30 insertions(+)<br><br>diff --git =
+a/tools/perf/tests/tool_pmu.c b/tools/perf/tests/tool_pmu.c<br>index =
+187942b749b7..e468e5fb3c73 100644<br>--- =
+a/tools/perf/tests/tool_pmu.c<br>+++ b/tools/perf/tests/tool_pmu.c<br>@@ =
+-19,6 +19,18 @@ static int do_test(enum tool_pmu_event ev, bool =
+with_pmu)<br><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>return TEST_FAIL;<br><span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>}<br><br>+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>/*<br>+<span class=3D"Apple-tab-span" style=3D"white-space: =
+pre;">	</span><span class=3D"Apple-converted-space">&nbsp;</span>* if =
+tool_pmu__event_to_str returns NULL, Check if the event is<br>+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
+class=3D"Apple-converted-space">&nbsp;</span>* valid for the =
+platform.<br>+<span class=3D"Apple-tab-span" style=3D"white-space: =
+pre;">	</span><span class=3D"Apple-converted-space">&nbsp;</span>* =
+Example:<br>+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span><span class=3D"Apple-converted-space">&nbsp;</span>* slots event =
+is only on arm64.<br>+<span class=3D"Apple-tab-span" style=3D"white-space:=
+ pre;">	</span><span class=3D"Apple-converted-space">&nbsp;</span>* =
+system_tsc_freq event is only on x86.<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span><span =
+class=3D"Apple-converted-space">&nbsp;</span>*/<br>+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>if =
+(!tool_pmu__event_to_str(ev) &amp;&amp; =
+tool_pmu__skip_event(tool_pmu__all_event_to_str(ev))) {<br>+<span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>ret =3D =
+TEST_OK;<br>+<span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>goto out;<br>+<span class=3D"Apple-tab-span" style=3D"white-space: =
+pre;">	</span>}<br>+<br><span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>if (with_pmu)<br><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>snprintf(str, sizeof(str), "tool/%s/", =
+tool_pmu__event_to_str(ev));<br><span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>else<br>diff --git =
+a/tools/perf/util/tool_pmu.c b/tools/perf/util/tool_pmu.c<br>index =
+3a68debe7143..572422797f6e 100644<br>--- =
+a/tools/perf/util/tool_pmu.c<br>+++ b/tools/perf/util/tool_pmu.c<br>@@ =
+-60,6 +60,15 @@ int tool_pmu__num_skip_events(void)<br><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>return =
+num;<br>}<br><br>+/*<br>+ * tool_pmu__event_to_str returns only =
+supported event names.<br>+ * For events which are supposed to be =
+skipped in the platform,<br>+ * return NULL<br>+ *<br>+ * =
+tool_pmu__all_event_to_str returns the name for all<br>+ * events =
+mapping to the tool_pmu_event index including the<br>+ * skipped =
+ones.<br>+ */<br>const char *tool_pmu__event_to_str(enum tool_pmu_event =
+ev)<br>{<br><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>if ((ev &gt; TOOL_PMU__EVENT_NONE &amp;&amp; ev &lt; =
+TOOL_PMU__EVENT_MAX) &amp;&amp;<br>@@ -69,6 +78,14 @@ const char =
+*tool_pmu__event_to_str(enum tool_pmu_event ev)<br><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>return =
+NULL;<br>}<br><br>+const char *tool_pmu__all_event_to_str(enum =
+tool_pmu_event ev)<br>+{<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>if (ev &gt; TOOL_PMU__EVENT_NONE =
+&amp;&amp; ev &lt; TOOL_PMU__EVENT_MAX)<br>+<span class=3D"Apple-tab-span"=
+ style=3D"white-space: pre;">	</span><span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>return =
+tool_pmu__event_names[ev];<br>+<br>+<span class=3D"Apple-tab-span" =
+style=3D"white-space: pre;">	</span>return NULL;<br>+}<br>+<br>enum =
+tool_pmu_event tool_pmu__str_to_event(const char *str)<br>{<br><span =
+class=3D"Apple-tab-span" style=3D"white-space: pre;">	</span>int =
+i;<br>diff --git a/tools/perf/util/tool_pmu.h =
+b/tools/perf/util/tool_pmu.h<br>index a60184859080..da76808ae71e =
+100644<br>--- a/tools/perf/util/tool_pmu.h<br>+++ =
+b/tools/perf/util/tool_pmu.h<br>@@ -30,6 +30,7 @@ enum tool_pmu_event =
+{<br><span class=3D"Apple-tab-span" style=3D"white-space: pre;">	=
+</span>for ((ev) =3D TOOL_PMU__EVENT_DURATION_TIME; (ev) &lt; =
+TOOL_PMU__EVENT_MAX; ev++)<br><br>const char =
+*tool_pmu__event_to_str(enum tool_pmu_event ev);<br>+const char =
+*tool_pmu__all_event_to_str(enum tool_pmu_event ev);<br>enum =
+tool_pmu_event tool_pmu__str_to_event(const char *str);<br>bool =
+tool_pmu__skip_event(const char *name);<br>int =
+tool_pmu__num_skip_events(void);<br>--<span =
+class=3D"Apple-converted-space">&nbsp;</span><br>2.43.5</blockquote></div>=
+</blockquote></div><br></body></html>=
+
+--Apple-Mail=_7189952D-CFA7-4F07-8881-DBBE0AF5CDD0--
 
 
