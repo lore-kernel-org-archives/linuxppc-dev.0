@@ -1,71 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-6238-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6239-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6064EC021A6
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2025 03:59:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F851C021A0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2025 04:03:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yx86F4Lprz2yyC;
-	Mon, 17 Feb 2025 14:59:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.205.221.236
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739757319;
-	cv=none; b=KgAazKxAwjsAh2ruqpxmJeVAsY+pnK5ZjruV7bdC5q0NAQ/bj3PMn8ft2LXEbVehnXK34PiNvkBY/cLSvtH5ZFk7ccVFkC1va+4RsDrGOofc2R9ixduJ2HHHeLzU9nJvYr0I4Hs3N6vp+Ukk4wGba6//j9qBkt3J/qZKG/iiIc6WMIP1PR8dHVjW9xPw7ApuYJ5cyKxfYlbBFt7HQ8d0rk2PP4KunMxSG+cIpl1copGJ5wJ59f0Mo/sjQ4I+D2ct9Mlx3B+HVRB/CzzcKHG9VIl50kvQTrtGKWFet3UWtil41aRjJw5f3/8Lsrr3d6EJZrnDqVNOp/suz6a8+FWozA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yx8Br3q1jz2yys;
+	Mon, 17 Feb 2025 15:03:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739761253;
+	cv=none; b=lJZ+U8ZPlNV3jrByIh2HJnKoB1OXY9gNOL02mhm4LlhujKBJMVGF+C8yrqg5UZQiXK4mONSekII0DbFqARZB+ZiqRhVL+GyJt+X4keeO7oduHeLVYbmUnh4p7wv56gOlmyu9EmrRJpqUrjPEa6tk1fpi27NDY7Gd34ugHOc0UAzWGBSKT9O8zgwVGuSlrxspe08cJo/egQaLXGWiVaeXuqILAh8GPu3bzDDLqrksZX9QeIPNpm2DmvLeo+33efQQLkvxBzIYZ33WCbwnFPeeZInVGobKLvdKWzIkd7MmRukLHKz4ZEJPq4NqwF2Ptb6Nra6ItqxpmYyWD/EwEpdA6g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739757319; c=relaxed/relaxed;
-	bh=pP07imU1yRZo5VJuVB+0B4Te8JSt7A3ydHeyAZRXe2k=;
-	h=Message-ID:From:To:Cc:Subject:Date:MIME-Version; b=Minueft5hxJ/GEqItuRhzlqBVVA/+IRV02ICAqxYlN2UyUrodM5drucSZ83v4dtcbFOtvW5f6MGz9d4fbbRZG5JFd+i52mEfrBKwCwom6jW1e8+fg+jbyiFxxlZKGNDzgKJ3FHUocToSf9KYdCjwuN/8TwvImrAY5GF9uw3HKZxg/d0jK1zzKjQ7kZw3UTl/fhuI9WLoma7tyrS8BhNAx9Hk/+nsuVwhWNuVHhLSb23n/BInqZHV/fQY4ZfAmJaL0tCNAx84LwaDA1T4Jk+3IZ7T4DfLTySRZWtLL9MlT+VnE6ozOfKAsWzP7HFCsuEqE79wsMqxMPa4iejYP/OXaA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=foxmail.com; dkim=pass (1024-bit key; unprotected) header.d=foxmail.com header.i=@foxmail.com header.a=rsa-sha256 header.s=s201512 header.b=pNNlbVgE; dkim-atps=neutral; spf=pass (client-ip=203.205.221.236; helo=out203-205-221-236.mail.qq.com; envelope-from=xiaopeitux@foxmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=foxmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=foxmail.com
+	t=1739761253; c=relaxed/relaxed;
+	bh=RM9oXdBZNW/iQqyTSg1FXsRacwBHB2wVEo55z428eLA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=JM1o7u1tWNgBz28WCv7w4JaDBVsnHkDaBx1ox7Kp5e88d8GIpMQlFcoWkqgU3F7dpCrzNzKXRwhc1ULWHygLVJ1rLOj+laSrKY3IG9GzMTqthWWPlaO2Pm72Ce3psYQY3+iR4B1YVd5Q5xXztYfYgnUWF8Y9Y9zTaLoQE9rJX21O/fHn2BQQ2D7YZKBCkJswzbDmwPv0aPZ/X16owubr+gQcF8rCl3q7zuNq4Eo7EKM5W55HjRHEilSbVs0G6ffn4t5QPiBmCxp8DZkmQbC04IBH/MWd8wlpjVlvMmWBu5iz2lUIhbLTJbhL7kbfUowMXakeUQZHTl24w7T7J/nkwA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=EAP7NY3b; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=liuhangbin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=foxmail.com header.i=@foxmail.com header.a=rsa-sha256 header.s=s201512 header.b=pNNlbVgE;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=EAP7NY3b;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=foxmail.com (client-ip=203.205.221.236; helo=out203-205-221-236.mail.qq.com; envelope-from=xiaopeitux@foxmail.com; receiver=lists.ozlabs.org)
-Received: from out203-205-221-236.mail.qq.com (out203-205-221-236.mail.qq.com [203.205.221.236])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102b; helo=mail-pj1-x102b.google.com; envelope-from=liuhangbin@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x102b.google.com (mail-pj1-x102b.google.com [IPv6:2607:f8b0:4864:20::102b])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4Yx5MR43Mvz2xGp
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2025 12:55:14 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=foxmail.com;
-	s=s201512; t=1739757311;
-	bh=pP07imU1yRZo5VJuVB+0B4Te8JSt7A3ydHeyAZRXe2k=;
-	h=From:To:Cc:Subject:Date;
-	b=pNNlbVgEHt4FWo2ScIqCW/lkTqbg64dUkldXuud2ba574XFTSLbzLwkifCEwOl7y9
-	 lw6U3sAN4frX15304bcD6wlhX1z/GcSe6pSFXuaV2YlLUpC+h8/4/lq4igHMw2k8To
-	 PVN2yUY53PaBX54kDtBWmQWPEWOamZpp6ETqIwN4=
-Received: from localhost.localdomain ([116.128.244.169])
-	by newxmesmtplogicsvrszc13-0.qq.com (NewEsmtp) with SMTP
-	id 75F9AABE; Mon, 17 Feb 2025 09:29:31 +0800
-X-QQ-mid: xmsmtpt1739755771trd9me21x
-Message-ID: <tencent_30122FBA93E93911578208176E68AA00C807@qq.com>
-X-QQ-XMAILINFO: M0yQCYO1Pk4BQK9MwsPiXqLGdYYZSCLOPPfcpbnW81QswNSiwoPu1fQRPn7F4g
-	 Mydr584M1QsAx8p9vJW2dNlaGgSs9qjxzUQoqGMgEXOKNDptenroPhnIdT7wOUzWwiCRjhyfexyk
-	 TfYjGCNFByNDY6+DQ68CGxbWvmgRgPbVmxef1Yh3jlTSixjrFchIAGSh6SaHI14zkLLM3m5I+/Kh
-	 ZQbL6/7GqFUrphyQwokQVvJkqsh1oRCKJz6klboLy/nEMeQhd7Q4icPHtOy4bXoMvMHrq6pfGkWg
-	 ImYQA7TkTp+/IVwx8k7vJLN2yRL6HAj/DXjzr3oao5WcMkc12OFmm8OY4fIffYrNtNpl6Yg5WLzz
-	 yk6y0BkDvpFi7hN2FllxQ2WHuWFl1fi29fC2vi2XKycICaR17lRkskAhDBE3F9Mk0wglksHagyU6
-	 FB8NjSuJzycDlj2INNuygQBkdFTwRj9ApcHaLMyasP1Iqd0hGrKRd9OUTodpMSAlZkF1NBEXH1Nv
-	 ymbMLU2prsmupp2Rq3wqCkA9aupjiejnS7QaUy5VO0grngJJoZfWJyeSRJMC8WLVHE1vigZ91ez2
-	 GYHGccGvDCW5WpLW2fIPGSX+7Uoc4NMhNZqCUXfFbvAAgNmdsc3EuyphnzemUi6UrI7BDRxUSZ++
-	 lOPyhTidGDJ5IrDdHWly5ByE4VPXNT7coAzK9926lFvsy8MqYS0sRTdCaC4MyYUxzH7zmYDcf+99
-	 qMVY3fT7gcmgRUEqxaoKA0k/oGVrQwB1dessQJ4A34X93QMKQNxPZZxwyHNNtOG8GCxOD7kxnQAZ
-	 CxwEIzKlVS5C/c6TRERMAQ6SK1XRdzsEmR1Fgy8XwJ1vp9gFSZscNiZeUNHdDtVK30/1s14ouo4J
-	 p8EheVKqazUI0RO3xJHOSNook+sCdapEXcuTDEjTslQlXx1l866VpYw4r9KxpXXx9ty88vwRblqw
-	 S3aqY4Miq4Snich5DAvT97+HhukaXt526TtBBLBgJIAq9yfTIGlw==
-X-QQ-XMRINFO: NyFYKkN4Ny6FSmKK/uo/jdU=
-From: xiaopeitux@foxmail.com
-To: andrew+netdev@lunn.ch,
-	maxime.chevallier@bootlin.com,
-	netdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Cc: Pei Xiao <xiaopei01@kylinos.cn>,
-	kernel test robot <lkp@intel.com>
-Subject: [PATCH V2] net: freescale: ucc_geth: make ugeth_mac_ops be static const
-Date: Mon, 17 Feb 2025 09:29:30 +0800
-X-OQ-MSGID: <05ccd0ec9dda47a7bb26b78ef41fea2f2ce675c8.1739755552.git.xiaopei01@kylinos.cn>
-X-Mailer: git-send-email 2.25.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yx6q82QxCz2yyC
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2025 14:00:51 +1100 (AEDT)
+Received: by mail-pj1-x102b.google.com with SMTP id 98e67ed59e1d1-2fa5af6d743so5838447a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 16 Feb 2025 19:00:51 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1739761249; x=1740366049; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=RM9oXdBZNW/iQqyTSg1FXsRacwBHB2wVEo55z428eLA=;
+        b=EAP7NY3bzX5y0TOCicelahd4tSdA56YBFCOWByxmQv5X/tY1uUR9IVEbAqF7QR/OAK
+         xEh+TTsozmJFE/pKmFAQSXtqcY23h204C3bn8Qc0ZcIm/kOH+IwuYIZr9lQT+RxjBFPV
+         exRx2/BIbPJOQAWQBxArx9AO+L6XeJyUBNT7wyn/e8dNTK/brT5E/H2seTrFxwn8vEtH
+         baW0QLma6vRDubiwsR6OYLbLCv/KVSMfobqXEBHv1WqDFluFEtSpaph6vvOxQcqyzrVI
+         42wZTVjDhW/hwa0lxaQqT4hgug4Im9gwW532hbRGgCRttCwir+oQTAg4mvauy4QRlSNI
+         V56Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1739761249; x=1740366049;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=RM9oXdBZNW/iQqyTSg1FXsRacwBHB2wVEo55z428eLA=;
+        b=EBApooLMG0yTjEl3J3XM/TNbrsHxkMR5+Qer27vR+ipswD2CKPZ0fNI3MUmrtY15b4
+         Suau+2/juFaYWrYwvBFVaIPfic9SSpFwrupLY3P+/pgFpDo6aDpG7F6JeC/omH0I1p3f
+         zybkiD0EU8Z3cl1YxfsP6HxwSq4DOoOMbUotKX/eMdWuIFJV4DwJerUGz4/1T7Kbs9hi
+         7VciGDXsYYVSsx1OwWb+hdQWCLrV1kagvVRqegq+BdIXtxtb+NvabjhlfxY5QdHTjDeT
+         SyZHqE5FF/sZNOV+Ud33gvcqKAT/EGDNfzg8OeWoFGx8RscYtf8VVvMUjIOkSrxarAbZ
+         XsLA==
+X-Forwarded-Encrypted: i=1; AJvYcCXZo2rBYEckYW3+kZFqDmBxLiw6m3xU/Vmq52NTOpKBhBbz53QpUNMp0rhIHZGVZVp1W8lxitR590zsR20=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzdG1PymZMdCgBRnsYwqlaVzcHIBe0SHZKJrfIVG78tQLkJoICV
+	RT8T+pFU3wjTxtDxnaHevRoVC8V/rDOZVsN6g6CN74HZMfZkhhdy
+X-Gm-Gg: ASbGncsA9Op8uvx9FiB2zul1ZnJHCUV7P6cw0mN1eTz7lk9KgOhrYGZMM3dPl8DYYON
+	mjn2aWvTXCyREP53j1qF/d+7q3PpfWPQR+eHtSdTV6Hd6uHLvjNpW0obYNcYjrWWcE6W+8wYVcY
+	oCgVkEEIIg5A1zA/MYDWfHqgXkyL1MPC6VjB5qXs3qlnqbs4FErQZY/ZQCwGOH96UA/Rj7OBc+0
+	Jawr8U1g4avfCoovoY1hddOHnjOLHn9RE6FG1cqlEGLUyxLgyyevr3kFbO3zWK7le5TRcoG9hMh
+	SfL+1og/H7RCGMsve0nu
+X-Google-Smtp-Source: AGHT+IFlbZXzjTjaiCfw7RWv2kRvgfxitjDjmHfqC8UYJCSB2hhBiRs+ip/IcfoDod4m+VWndDNKwQ==
+X-Received: by 2002:a05:6a00:244e:b0:71e:21:d2d8 with SMTP id d2e1a72fcca58-7326179d668mr14480366b3a.7.1739761248651;
+        Sun, 16 Feb 2025 19:00:48 -0800 (PST)
+Received: from fedora ([43.228.180.230])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-73265678abasm3272624b3a.27.2025.02.16.19.00.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sun, 16 Feb 2025 19:00:47 -0800 (PST)
+Date: Mon, 17 Feb 2025 03:00:40 +0000
+From: Hangbin Liu <liuhangbin@gmail.com>
+To: Tejun Heo <tj@kernel.org>
+Cc: Aditya Dutt <duttaditya18@gmail.com>, Shuah Khan <shuah@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	"David S . Miller" <davem@davemloft.net>,
+	Shuah Khan <skhan@linuxfoundation.org>,
+	linux-kernel-mentees@lists.linuxfoundation.org,
+	cgroups@vger.kernel.org, netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] selftests: make shell scripts POSIX-compliant
+Message-ID: <Z7KmWNNIsXCnhiax@fedora>
+References: <20250216120225.324468-1-duttaditya18@gmail.com>
+ <Z7IOR2UNzjy7cQA7@slm.duckdns.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,42 +95,27 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <Z7IOR2UNzjy7cQA7@slm.duckdns.org>
 
-From: Pei Xiao <xiaopei01@kylinos.cn>
+On Sun, Feb 16, 2025 at 06:11:51AM -1000, Tejun Heo wrote:
+> On Sun, Feb 16, 2025 at 05:32:25PM +0530, Aditya Dutt wrote:
+> > Changes include:
+> > - Replaced [[ ... ]] with [ ... ]
+> > - Replaced == with =
+> > - Replaced printf -v with cur=$(printf ...).
+> > - Replaced echo -e with printf "%b\n" ...
+> > 
+> > The above mentioned are Bash/GNU extensions and are not part of POSIX.
+> > Using shells like dash or non-GNU coreutils may produce errors.
+> > They have been replaced with POSIX-compatible alternatives.
+> 
+> Maybe just update them to use /bin/bash instead? There haven't been a lot of
+> reports of actual breakges and a lot of existing tests are using /bin/bash
+> already.
 
-sparse warning:
-    sparse: symbol 'ugeth_mac_ops' was not declared. Should it be
-static.
++1
 
-Add static to fix sparse warnings and add const. phylink_create() will
-accept a const struct.
-
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202502141128.9HfxcdIE-lkp@intel.com/
-Fixes: 53036aa8d031 ("net: freescale: ucc_geth: phylink conversion")
-Signed-off-by: Pei Xiao <xiaopei01@kylinos.cn>
-
-changlog:
-V2:change to add 'const' suggestion from Andrew Lunn's review.
----
- drivers/net/ethernet/freescale/ucc_geth.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/net/ethernet/freescale/ucc_geth.c b/drivers/net/ethernet/freescale/ucc_geth.c
-index f47f8177a93b..ed4f57701485 100644
---- a/drivers/net/ethernet/freescale/ucc_geth.c
-+++ b/drivers/net/ethernet/freescale/ucc_geth.c
-@@ -3408,7 +3408,7 @@ static int ucc_geth_parse_clock(struct device_node *np, const char *which,
- 	return 0;
- }
- 
--struct phylink_mac_ops ugeth_mac_ops = {
-+static const struct phylink_mac_ops ugeth_mac_ops = {
- 	.mac_link_up = ugeth_mac_link_up,
- 	.mac_link_down = ugeth_mac_link_down,
- 	.mac_config = ugeth_mac_config,
--- 
-2.25.1
-
+Hangbin
 
