@@ -1,73 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-6268-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6269-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0ADF3C021AB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2025 14:55:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD3FCC021AA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2025 16:04:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YxQh04mwBz2yyD;
-	Tue, 18 Feb 2025 01:55:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739804144;
-	cv=none; b=HxIYfAaMWy6dgxqhvJNnS9tGvCBo2dJTql1hHNput0Kh6X80SusSYZCe2oiF8fi0tQv17eC9edlmCMzccvy9atItR2GWL8442nPb8n+/djD9HkJVQrSOLlQpQGt2tX8tQufesvjrnusbw+UUNGTZHxoZB6Jh02JoGcn3fIDl0kWW5IA2ugR4N6VOfGCVuY5tpmkqiMa3uviWOnodj4XCFXUrdsKc1NC0p0hGAtOrlfELWKirD1t7Ows4tfIqIORcx1kTyzgndc0xRh1PIl18uOFE1dgdYjji/46cSTezJu0JHHImpoA01xCh+agwiwud5lHPvUGIbT1qlxHEp90WVQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YxSCm0z7xz2xS8;
+	Tue, 18 Feb 2025 03:04:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.71.208.12
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739808292;
+	cv=none; b=WHjuEN+fhA4QeMSL0AV1jULlFA0Q+1mO//PrNXtgx9hRm6JI5DJRHgebJ//vxb9cTVk9PCF+u+WhPBzuifHv5kCgAageicQRxPvjzChED6X7h6c5V3SlxFAVAGPG08Mq77TUf5u2cKISUNysVwn58z7qnLz18y5/rcwg+rWfXUBJP9SMxmXbGYluHXMbd2Gee4vCRvXywWGUfd61PIMJRKVIuWrwaSEDEmr6HSxlP5f8Q+6Z5cn/Pcd1vTojmcHD3bLiI+bqdKrrYy2YhLpJCwIt4CGqeFvSHyZEoM2AkLeHabER/ukjxvpsFMV3INHtFB2J+9i3uXBSwrV4ZH7DkQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739804144; c=relaxed/relaxed;
-	bh=+M34uV/zkct1kEAaK2pLJ3/QmCI3GfHP6imSRuJbcm8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=QmhCPv/66+XQlB8Qav/4s2nv7nj89ZKbZqlCPycHy4le6Alzg8MdCqgM2kMNOarrMWkgfPw9f10rPvTLcn+kfBMC4am05yqe+oObB6NzDmkHWpk/a7929AXLRrgnisseLXK+Nm/Hn8XXN1LCK/OslxMGJ3Ys2neECf43IlKRPQeQbNgH3ZNix2JDrbVUU6sCiA3Wj3I4SkhxrMxEFqec2zgDCi0uGKS2/ALNaSS9BxE/lgJhMpMVqzDaVqpEHrfViWIwJfkyeId+ZpSXskoQOdRHRmp0SHbmWeuHiNN9l/wZNJK9Hds2/uO/GQfbbUbvnVzsb0B5bOD1JB3PaDijFw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1739808292; c=relaxed/relaxed;
+	bh=41DYd8S5nzPKADDvgmNVKMBye2mp3t96d0S4S/5x/MU=;
+	h=Date:From:Message-ID:To:CC:Subject:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=JYhFPkGhwBZ83+f5S7wO00Z04ZRGlCg4XfTzBLipZhRSnCxGethnCj0o3NG00gPsELDRUh+UFicgmR9QuPFcsXhTc8zJ+jVUhyxoQQlGRmKyIXLgfIvtA2VHkPDtw7t86fZQUnh3CGFjB0av5aTtUWjvDg2pQlfTHMfi26VMFiQt8d7bFzMM3LOGDIblR3ct79otiEUFagoadE0TB08WBUG5wEJ/KejakjHneE9lMC7CX1dV+mmIMaO7Lppr3uw07JY2h8+SmZyia0+o0VQxjU8ZNAf8ng2LeuKMyanJ0nA6P9E42Qk7qMbTZdbWRGiIyl+udAUrwEuW0jyM66lTWA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=sympatico.ca; dkim=pass (2048-bit key; unprotected) header.d=sympatico.ca header.i=@sympatico.ca header.a=rsa-sha256 header.s=selector1 header.b=gz01XTzy; dkim-atps=neutral; spf=pass (client-ip=209.71.208.12; helo=cmx-mtlrgo001.bell.net; envelope-from=al.dunsmuir@sympatico.ca; receiver=lists.ozlabs.org) smtp.mailfrom=sympatico.ca
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=sympatico.ca
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=sympatico.ca header.i=@sympatico.ca header.a=rsa-sha256 header.s=selector1 header.b=gz01XTzy;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sympatico.ca (client-ip=209.71.208.12; helo=cmx-mtlrgo001.bell.net; envelope-from=al.dunsmuir@sympatico.ca; receiver=lists.ozlabs.org)
+X-Greylist: delayed 118 seconds by postgrey-1.37 at boromir; Tue, 18 Feb 2025 03:04:50 AEDT
+Received: from cmx-mtlrgo001.bell.net (mta-mtl-002.bell.net [209.71.208.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YxQgz1R1qz2yZ6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2025 01:55:43 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 4E9CC5C57AC;
-	Mon, 17 Feb 2025 14:55:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 453CDC4CED1;
-	Mon, 17 Feb 2025 14:55:35 +0000 (UTC)
-Date: Mon, 17 Feb 2025 14:55:32 +0000
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Tong Tiangen <tongtiangen@huawei.com>
-Cc: Mark Rutland <mark.rutland@arm.com>,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-	Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
-	Will Deacon <will@kernel.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	James Morse <james.morse@arm.com>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Andrey Konovalov <andreyknvl@gmail.com>,
-	Dmitry Vyukov <dvyukov@google.com>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Andrey Ryabinin <ryabinin.a.a@gmail.com>,
-	Alexander Potapenko <glider@google.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
-	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	kasan-dev@googlegroups.com, wangkefeng.wang@huawei.com,
-	Guohanjun <guohanjun@huawei.com>
-Subject: Re: [PATCH v13 4/5] arm64: support copy_mc_[user]_highpage()
-Message-ID: <Z7NN5Pa-c5PtIbcF@arm.com>
-References: <20241209024257.3618492-1-tongtiangen@huawei.com>
- <20241209024257.3618492-5-tongtiangen@huawei.com>
- <Z6zWSXzKctkpyH7-@arm.com>
- <69955002-c3b1-459d-9b42-8d07475c3fd3@huawei.com>
- <Z698SFVqHjpGeGC0@arm.com>
- <e1d2affb-5c6b-00b5-8209-34bbca36f96b@huawei.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YxSCk05Zsz2xPL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2025 03:04:49 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=sympatico.ca; s=selector1; t=1739808290; 
+        bh=41DYd8S5nzPKADDvgmNVKMBye2mp3t96d0S4S/5x/MU=;
+        h=Date:From:Message-ID:To:Subject:In-Reply-To:References:MIME-Version:Content-Type;
+        b=gz01XTzy+vXowWW4auKghJgrxsyb5vuQ3qW7/MwctUIxZkT/2Kk74CUInfdXZ+WESPCeW1cwcvCFN1Zw0Xfyye7fqntc/0SlwH8dM4f2UR9ZDp6IYNtYXumzVxyhz2n/HNeJYx/hqdoJxxCXnW2OfmywzLQkvqI9C4UUzjHhnjgM6DTbX+Ser5zL3vd2gzXuVvBZKg25NcybSJ/GUEEU6uM8kPfX9M0eoAKk0J/84cksto39BuBkrNS14ZzD+xW6pfafuugpnhBA4l0VsLBQ83f0wh1Trmnx/1/PdFCmq0f+/BzV5VFfxm89A1sAVaMYKuiSThY6sNY4xD41i/PPQg==
+X-RG-SOPHOS: Clean
+X-RG-VADE-SC: 0
+X-RG-VADE: Clean
+X-Originating-IP: [76.71.36.239]
+X-RG-Env-Sender: al.dunsmuir@sympatico.ca
+X-RG-Rigid: 67ACA5AF01009087
+X-RazorGate-Vade: dmFkZTGMu6JuLVqLuz3zvC7c6OKmmoJx/rp/Y62QFXTbJQCSvND99pzidzTNP0FoNoeT+DVV8xqc/cEi0E1ntBW/hE4KCN6Y5/Ni7BTyiox9QjrVemw03MswMXHZpvAvsWBAkOZ3G6Zz7VLWHE9aDveciqCfBYF1iLLPcu30qskWnCtVh42odawXvEiks5/HOlebHKhQNnKlTJU1BEFwS519tsIPbAD0MwH5R9jHvLjFUFsHR6FdH6m44PlkEDlLcCW2r+/aueZlns20RoZH8enOhYvFxpVtXKdzuWPnhIONQOnkInmckYWGZ1lwu5jJ+PYbQTgR5kj9Vtui1jnZ/Np9zkU+ldnZD5K6ITn+XVjpSCxzNzCpwX23nGIrg+5S75VC+BkRpfAMbblt78BjS+84cxt16e2PHfT6T5iqOz2/7q6UnrAJ7Fq2pvjqJG3D4k0hrmBFudt0e6xH/aUsN/TQJt1P69E2DKWgIr+VDrtu9nP9jAF0PesKZSHNbB4w3Ho/wZScR4vp/K4LKriQfT8+HxRmp6RrX+4SOYiihZ/24VdXY9x4EjTPn2R4LX6e7bloKkykLD1Rp+mzc5GDxZz3WWVNmcCM0IMEdYUbDhKPsIn7VvSTHRWZz1Aw73BXQSd9YgVq+H1vf5IiY2LRxNlRdF/wS+rq6PUgD5mbNAxFAIQFbA
+X-RazorGate-Vade-Verdict: clean 0
+X-RazorGate-Vade-Classification: clean
+Received: from bucky.alba.lan (76.71.36.239) by cmx-mtlrgo001.bell.net (authenticated as al.dunsmuir@sympatico.ca)
+        id 67ACA5AF01009087; Mon, 17 Feb 2025 11:02:15 -0500
+Date: Mon, 17 Feb 2025 11:02:15 -0500
+From: Al Dunsmuir <al.dunsmuir@sympatico.ca>
+Message-ID: <1972812751.20250217110215@sympatico.ca>
+To: Alexandru Elisei <alexandru.elisei@arm.com>, 
+ Andrew Jones <andrew.jones@linux.dev>
+CC: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com, 
+ frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com, 
+ david@redhat.com, pbonzini@redhat.com, kvm@vger.kernel.org, 
+ kvmarm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+ kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org, will@kernel.org, 
+ julien.thierry.kdev@gmail.com, maz@kernel.org, oliver.upton@linux.dev, 
+ suzuki.poulose@arm.com, yuzenghui@huawei.com, joey.gouly@arm.com, 
+ andre.przywara@arm.com
+Subject: Re: [kvm-unit-tests PATCH v2 03/18] scripts: Refuse to run the tests if not configured for qemu
+In-Reply-To: <Z6o/rbweZttGReir@arm.com>
+References: <20250120164316.31473-1-alexandru.elisei@arm.com> 
+  <20250120164316.31473-4-alexandru.elisei@arm.com>
+  <20250121-45faf6a9a9681c7c9ece5f44@orel> <Z6nX8YC8ZX9jFiLb@arm.com>
+  <20250210-640ff37c16a0dbccb69f08ea@orel> <Z6o/rbweZttGReir@arm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,62 +75,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <e1d2affb-5c6b-00b5-8209-34bbca36f96b@huawei.com>
+Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 7bit
 
-On Mon, Feb 17, 2025 at 04:07:49PM +0800, Tong Tiangen wrote:
-> 在 2025/2/15 1:24, Catalin Marinas 写道:
-> > On Fri, Feb 14, 2025 at 10:49:01AM +0800, Tong Tiangen wrote:
-> > > 在 2025/2/13 1:11, Catalin Marinas 写道:
-> > > > On Mon, Dec 09, 2024 at 10:42:56AM +0800, Tong Tiangen wrote:
-> > > > > Currently, many scenarios that can tolerate memory errors when copying page
-> > > > > have been supported in the kernel[1~5], all of which are implemented by
-> > > > > copy_mc_[user]_highpage(). arm64 should also support this mechanism.
-> > > > > 
-> > > > > Due to mte, arm64 needs to have its own copy_mc_[user]_highpage()
-> > > > > architecture implementation, macros __HAVE_ARCH_COPY_MC_HIGHPAGE and
-> > > > > __HAVE_ARCH_COPY_MC_USER_HIGHPAGE have been added to control it.
-> > > > > 
-> > > > > Add new helper copy_mc_page() which provide a page copy implementation with
-> > > > > hardware memory error safe. The code logic of copy_mc_page() is the same as
-> > > > > copy_page(), the main difference is that the ldp insn of copy_mc_page()
-> > > > > contains the fixup type EX_TYPE_KACCESS_ERR_ZERO_MEM_ERR, therefore, the
-> > > > > main logic is extracted to copy_page_template.S. In addition, the fixup of
-> > > > > MOPS insn is not considered at present.
-> > > > 
-> > > > Could we not add the exception table entry permanently but ignore the
-> > > > exception table entry if it's not on the do_sea() path? That would save
-> > > > some code duplication.
-> > > 
-> > > I'm sorry, I didn't catch your point, that the do_sea() and non do_sea()
-> > > paths use different exception tables?
-> > 
-> > No, they would have the same exception table, only that we'd interpret
-> > it differently depending on whether it's a SEA error or not. Or rather
-> > ignore the exception table altogether for non-SEA errors.
-> 
-> You mean to use the same exception type (EX_TYPE_KACCESS_ERR_ZERO) and
-> then do different processing on SEA errors and non-SEA errors, right?
+Hello Alexandru,
 
-Right.
+On Monday, February 10, 2025, 1:04:29 PM, you wrote:
 
-> If so, some instructions of copy_page() did not add to the exception
-> table will be added to the exception table, and the original logic will
-> be affected.
-> 
-> For example, if an instruction is not added to the exception table, the
-> instruction will panic when it triggers a non-SEA error. If this
-> instruction is added to the exception table because of SEA processing,
-> and then a non-SEA error is triggered, should we fix it?
+> Hi Drew,
 
-No, we shouldn't fix it. The exception table entries have a type
-associated. For a non-SEA error, we preserve the original behaviour even
-if we find a SEA-specific entry in the exception table. You already need
-such logic even if you duplicate the code for configurations where you
-have MC enabled.
+> On Mon, Feb 10, 2025 at 02:56:25PM +0100, Andrew Jones wrote:
+>> On Mon, Feb 10, 2025 at 10:41:53AM +0000, Alexandru Elisei wrote:
+>> > Hi Drew,
+>> > 
+>> > On Tue, Jan 21, 2025 at 03:48:55PM +0100, Andrew Jones wrote:
+>> > > On Mon, Jan 20, 2025 at 04:43:01PM +0000, Alexandru Elisei wrote:
+>> > <snip>
+>> > > > ---
+>> > > >  arm/efi/run             | 8 ++++++++
+>> > > >  arm/run                 | 9 +++++++++
+>> > > >  run_tests.sh            | 8 ++++++++
+>> > > >  scripts/mkstandalone.sh | 8 ++++++++
+>> > > >  4 files changed, 33 insertions(+)
+>> > <snip>
+>> > > > +case "$TARGET" in
+>> > > > +qemu)
+>> > > > +    ;;
+>> > > > +*)
+>> > > > +    echo "'$TARGET' not supported for standlone tests"
+>> > > > +    exit 2
+>> > > > +esac
+>> > > 
+>> > > I think we could put the check in a function in scripts/arch-run.bash and
+>> > > just use the same error message for all cases.
+>> > 
+>> > Coming back to the series.
+>> > 
+>> > arm/efi/run and arm/run source scripts/arch-run.bash; run_tests.sh and
+>> > scripts/mkstandalone.sh don't source scripts/arch-run.bash. There doesn't
+>> > seem to be a common file that is sourced by all of them.
+>> 
+>> scripts/mkstandalone.sh uses arch-run.bash, see generate_test().
 
--- 
-Catalin
+> Are you referring to this bit:
+
+> generate_test ()
+> {
+>         <snip>
+>         (echo "#!/usr/bin/env bash"
+>          cat scripts/arch-run.bash "$TEST_DIR/run")
+
+> I think scripts/arch-run.bash would need to be sourced for any functions defined
+> there to be usable in mkstandalone.sh.
+
+> What I was thinking is something like this:
+
+> if ! vmm_supported $TARGET; then
+>         echo "$0 does not support '$TARGET'"
+>         exit 2
+> fi
+
+> Were you thinking of something else?
+
+> I think mkstandalone should error at the top level (when you do make
+> standalone), and not rely on the individual scripts to error if the VMM is
+> not supported. That's because I think creating the test files, booting a
+> machine and copying the files only to find out that kvm-unit-tests was
+> misconfigured is a pretty suboptimal experience.
+
+>> run_tests.sh doesn't, but I'm not sure it needs to validate TARGET
+>> since it can leave that to the lower-level scripts.
+
+> I put the check in arm/run, and removed it from run_tests.sh, and this is
+> what I got:
+
+> $ ./run_tests.sh selftest-setup
+> SKIP selftest-setup (./arm/run does not supported 'kvmtool')
+
+> which looks good to me.
+
+Grammar nit:  This should be
+SKIP selftest-setup (./arm/run does not support 'kvmtool')
+
+Al
+
+>> 
+>> > 
+>> > How about creating a new file in scripts (vmm.bash?) with only this
+>> > function?
+>> 
+>> If we need a new file, then we can add one, but I'd try using
+>> arch-run.bash or common.bash first.
+
+> common.bash seems to work (and the name fits), so I'll give that a go.
+
+> Thanks,
+> Alex
+
+
 
