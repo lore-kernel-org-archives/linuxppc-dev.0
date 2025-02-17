@@ -1,89 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-6267-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6268-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03220C021A0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2025 11:33:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0ADF3C021AB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Feb 2025 14:55:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YxLBL4HpNz30TP;
-	Mon, 17 Feb 2025 22:33:14 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739791994;
-	cv=none; b=YQROVCJk1Va85e/SByjDmv7mmSF3+s2Kwo1jEOhKhsF9VcLHuv2+DLIGGt3sF7eITkCxvpa0+ZdBMPrgHKwyQAp/b9qNerTOZDiKB6ETZROvC4/cmMarUUXdgcpxZDBEuXKP/YZN+sEBctOKpbwCv/xtrXzKWufWIHmNiMjqwcFF+IL7jtQQNsmFYB9Jsfv/VmsJE7UwaUrbf3MAGr5OOM12md5jYsWhUnz0T9L9tv9a9DiPuta5cZej5YlnAiahBWKwfxrLhyXX6NB/gxGw2mL4Dv/NgR07IqOvaghuVHXyiSvMJ3eVNS5AOaic7IWS6MRKaqTpHAAX1GZR1cJVjg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YxQh04mwBz2yyD;
+	Tue, 18 Feb 2025 01:55:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739804144;
+	cv=none; b=HxIYfAaMWy6dgxqhvJNnS9tGvCBo2dJTql1hHNput0Kh6X80SusSYZCe2oiF8fi0tQv17eC9edlmCMzccvy9atItR2GWL8442nPb8n+/djD9HkJVQrSOLlQpQGt2tX8tQufesvjrnusbw+UUNGTZHxoZB6Jh02JoGcn3fIDl0kWW5IA2ugR4N6VOfGCVuY5tpmkqiMa3uviWOnodj4XCFXUrdsKc1NC0p0hGAtOrlfELWKirD1t7Ows4tfIqIORcx1kTyzgndc0xRh1PIl18uOFE1dgdYjji/46cSTezJu0JHHImpoA01xCh+agwiwud5lHPvUGIbT1qlxHEp90WVQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739791994; c=relaxed/relaxed;
-	bh=jVVIeJ5VkPX8oItLInZFO2+0Tbbhku0v92QnOuHm2Z4=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=F+H7TYkiQYF5W1phg/zMdyuUURgpNBRH+KRWEFyQpaEe0ew01FADl+Silwwndyq0BMKZI54AymPD9nYyES4HjtWgV+9uug0nc6UZexOPckjDGEcK23CCfe5XZspe/tNhc5hp7HeBFZL7sL7EEfuyAvQkR1fCMpRtOArOJ+HWcs5bymisWC7SAy2S2CZGlItbwKiXo0fX8fg4Hikmio+1YkbwiXcDvA0skaUguMCHoNrptcmGVhvllZH9Oae+z8vpz3Zfe8pOnPiGnsQZ6yuAAjrC7zDGH/LpTQr/O6MdPNswn2cjpMpwIXXpGqKrGTXQ3uiRNa3eWMH1RDg0n0FVew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QhDGfgkm; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=huschle@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=QhDGfgkm;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=huschle@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1739804144; c=relaxed/relaxed;
+	bh=+M34uV/zkct1kEAaK2pLJ3/QmCI3GfHP6imSRuJbcm8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=QmhCPv/66+XQlB8Qav/4s2nv7nj89ZKbZqlCPycHy4le6Alzg8MdCqgM2kMNOarrMWkgfPw9f10rPvTLcn+kfBMC4am05yqe+oObB6NzDmkHWpk/a7929AXLRrgnisseLXK+Nm/Hn8XXN1LCK/OslxMGJ3Ys2neECf43IlKRPQeQbNgH3ZNix2JDrbVUU6sCiA3Wj3I4SkhxrMxEFqec2zgDCi0uGKS2/ALNaSS9BxE/lgJhMpMVqzDaVqpEHrfViWIwJfkyeId+ZpSXskoQOdRHRmp0SHbmWeuHiNN9l/wZNJK9Hds2/uO/GQfbbUbvnVzsb0B5bOD1JB3PaDijFw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YxLBK6W4Yz3093
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Feb 2025 22:33:13 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 51H5O3Zo031269;
-	Mon, 17 Feb 2025 11:32:57 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=jVVIeJ5VkPX8oItLI
-	nZFO2+0Tbbhku0v92QnOuHm2Z4=; b=QhDGfgkmmpo6YPbMxe260vF0jC8SjkbFk
-	7OoAaLnBT45/EOhTO3gakdgAdhEcdpOUU9C4wV4Tq2/XsMGNhqeFofDyaOfT2hG0
-	hTMHG0XrM2qwYICafAt63m5hnRpd0TJfhWiN8/XPsztA76AZxe5IGM2VhGbSgXou
-	bxt0P1wtvPqcsBMPiy2je0Cf8e/5/KW4D8qj0cXDUuoKo7ovYUX+536UWVOvwNrQ
-	YVoB+O/FRgbcv35hBY5UuxtyvoiOYdeLXLlVhiklrky/ie70BX8y3X7j+TE0tKhF
-	oQL+/KNqon9g19bxv4JYwB2IzW7hqP6WOUHk22xdBXQ+eCSCaTYTg==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44uxx7sqq8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 17 Feb 2025 11:32:57 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 51HBTCaj023718;
-	Mon, 17 Feb 2025 11:32:56 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44uxx7sqq3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 17 Feb 2025 11:32:56 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 51H87RnM001623;
-	Mon, 17 Feb 2025 11:32:55 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 44u5myny44-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 17 Feb 2025 11:32:55 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 51HBWpPt56688902
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 17 Feb 2025 11:32:51 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7999E2004B;
-	Mon, 17 Feb 2025 11:32:51 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8616820040;
-	Mon, 17 Feb 2025 11:32:50 +0000 (GMT)
-Received: from IBM-PW0CRK36.ibm.com (unknown [9.179.18.115])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 17 Feb 2025 11:32:50 +0000 (GMT)
-From: Tobias Huschle <huschle@linux.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org, dietmar.eggemann@arm.com,
-        rostedt@goodmis.org, bsegall@google.com, mgorman@suse.de,
-        vschneid@redhat.com, sshegde@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org
-Subject: [RFC PATCH v2 2/3] sched/fair: adapt scheduler group weight and capacity for parked CPUs
-Date: Mon, 17 Feb 2025 12:32:51 +0100
-Message-Id: <20250217113252.21796-3-huschle@linux.ibm.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250217113252.21796-1-huschle@linux.ibm.com>
-References: <20250217113252.21796-1-huschle@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YxQgz1R1qz2yZ6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Feb 2025 01:55:43 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 4E9CC5C57AC;
+	Mon, 17 Feb 2025 14:55:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 453CDC4CED1;
+	Mon, 17 Feb 2025 14:55:35 +0000 (UTC)
+Date: Mon, 17 Feb 2025 14:55:32 +0000
+From: Catalin Marinas <catalin.marinas@arm.com>
+To: Tong Tiangen <tongtiangen@huawei.com>
+Cc: Mark Rutland <mark.rutland@arm.com>,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+	Mauro Carvalho Chehab <mchehab+huawei@kernel.org>,
+	Will Deacon <will@kernel.org>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	James Morse <james.morse@arm.com>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Andrey Konovalov <andreyknvl@gmail.com>,
+	Dmitry Vyukov <dvyukov@google.com>,
+	Vincenzo Frascino <vincenzo.frascino@arm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Andrey Ryabinin <ryabinin.a.a@gmail.com>,
+	Alexander Potapenko <glider@google.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	"Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
+	"Naveen N. Rao" <naveen.n.rao@linux.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	linux-arm-kernel@lists.infradead.org, linux-mm@kvack.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	kasan-dev@googlegroups.com, wangkefeng.wang@huawei.com,
+	Guohanjun <guohanjun@huawei.com>
+Subject: Re: [PATCH v13 4/5] arm64: support copy_mc_[user]_highpage()
+Message-ID: <Z7NN5Pa-c5PtIbcF@arm.com>
+References: <20241209024257.3618492-1-tongtiangen@huawei.com>
+ <20241209024257.3618492-5-tongtiangen@huawei.com>
+ <Z6zWSXzKctkpyH7-@arm.com>
+ <69955002-c3b1-459d-9b42-8d07475c3fd3@huawei.com>
+ <Z698SFVqHjpGeGC0@arm.com>
+ <e1d2affb-5c6b-00b5-8209-34bbca36f96b@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,92 +80,62 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: wUlm24ngoZROl3P4jmqRmdXwn1v2hLip
-X-Proofpoint-ORIG-GUID: mbmYppk-WZXU2wR3kqbQZCkGm6A3GFbj
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-02-17_05,2025-02-13_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 phishscore=0
- adultscore=0 bulkscore=0 clxscore=1011 suspectscore=0 mlxlogscore=732
- lowpriorityscore=0 malwarescore=0 mlxscore=0 impostorscore=0
- priorityscore=1501 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2501170000 definitions=main-2502170101
+In-Reply-To: <e1d2affb-5c6b-00b5-8209-34bbca36f96b@huawei.com>
 
-Parked CPUs should not be considered to be available for computation.
-This implies, that they should also not contribute to the overall weight
-of scheduler groups, as a large group of parked CPUs should not attempt
-to process any tasks, hence, a small group of non-parked CPUs should be
-considered to have a larger weight.
-The same consideration holds true for the CPU capacities of such groups.
-A group of parked CPUs should not be considered to have any capacity.
+On Mon, Feb 17, 2025 at 04:07:49PM +0800, Tong Tiangen wrote:
+> 在 2025/2/15 1:24, Catalin Marinas 写道:
+> > On Fri, Feb 14, 2025 at 10:49:01AM +0800, Tong Tiangen wrote:
+> > > 在 2025/2/13 1:11, Catalin Marinas 写道:
+> > > > On Mon, Dec 09, 2024 at 10:42:56AM +0800, Tong Tiangen wrote:
+> > > > > Currently, many scenarios that can tolerate memory errors when copying page
+> > > > > have been supported in the kernel[1~5], all of which are implemented by
+> > > > > copy_mc_[user]_highpage(). arm64 should also support this mechanism.
+> > > > > 
+> > > > > Due to mte, arm64 needs to have its own copy_mc_[user]_highpage()
+> > > > > architecture implementation, macros __HAVE_ARCH_COPY_MC_HIGHPAGE and
+> > > > > __HAVE_ARCH_COPY_MC_USER_HIGHPAGE have been added to control it.
+> > > > > 
+> > > > > Add new helper copy_mc_page() which provide a page copy implementation with
+> > > > > hardware memory error safe. The code logic of copy_mc_page() is the same as
+> > > > > copy_page(), the main difference is that the ldp insn of copy_mc_page()
+> > > > > contains the fixup type EX_TYPE_KACCESS_ERR_ZERO_MEM_ERR, therefore, the
+> > > > > main logic is extracted to copy_page_template.S. In addition, the fixup of
+> > > > > MOPS insn is not considered at present.
+> > > > 
+> > > > Could we not add the exception table entry permanently but ignore the
+> > > > exception table entry if it's not on the do_sea() path? That would save
+> > > > some code duplication.
+> > > 
+> > > I'm sorry, I didn't catch your point, that the do_sea() and non do_sea()
+> > > paths use different exception tables?
+> > 
+> > No, they would have the same exception table, only that we'd interpret
+> > it differently depending on whether it's a SEA error or not. Or rather
+> > ignore the exception table altogether for non-SEA errors.
+> 
+> You mean to use the same exception type (EX_TYPE_KACCESS_ERR_ZERO) and
+> then do different processing on SEA errors and non-SEA errors, right?
 
-Signed-off-by: Tobias Huschle <huschle@linux.ibm.com>
----
- kernel/sched/fair.c | 18 ++++++++++++++----
- 1 file changed, 14 insertions(+), 4 deletions(-)
+Right.
 
-diff --git a/kernel/sched/fair.c b/kernel/sched/fair.c
-index 5eb1a3113704..287c6648a41d 100644
---- a/kernel/sched/fair.c
-+++ b/kernel/sched/fair.c
-@@ -9913,6 +9913,8 @@ struct sg_lb_stats {
- 	unsigned int sum_nr_running;		/* Nr of all tasks running in the group */
- 	unsigned int sum_h_nr_running;		/* Nr of CFS tasks running in the group */
- 	unsigned int sum_nr_parked;
-+	unsigned int parked_cpus;
-+	unsigned int parked_capacity;
- 	unsigned int idle_cpus;                 /* Nr of idle CPUs         in the group */
- 	unsigned int group_weight;
- 	enum group_type group_type;
-@@ -10369,6 +10371,8 @@ static inline void update_sg_lb_stats(struct lb_env *env,
- 			*sg_overutilized = 1;
- 
- 		sgs->sum_nr_parked += arch_cpu_parked(i) * rq->cfs.h_nr_queued;
-+		sgs->parked_capacity += arch_cpu_parked(i) * capacity_of(i);
-+		sgs->parked_cpus += arch_cpu_parked(i);
- 
- 		/*
- 		 * No need to call idle_cpu() if nr_running is not 0
-@@ -10406,9 +10410,11 @@ static inline void update_sg_lb_stats(struct lb_env *env,
- 		}
- 	}
- 
--	sgs->group_capacity = group->sgc->capacity;
-+	sgs->group_capacity = group->sgc->capacity - sgs->parked_capacity;
-+	if (!sgs->group_capacity)
-+		sgs->group_capacity = 1;
- 
--	sgs->group_weight = group->group_weight;
-+	sgs->group_weight = group->group_weight - sgs->parked_cpus;
- 
- 	/* Check if dst CPU is idle and preferred to this group */
- 	if (!local_group && env->idle && sgs->sum_h_nr_running &&
-@@ -10692,6 +10698,8 @@ static inline void update_sg_wakeup_stats(struct sched_domain *sd,
- 		sgs->sum_nr_running += nr_running;
- 
- 		sgs->sum_nr_parked += arch_cpu_parked(i) * rq->cfs.h_nr_queued;
-+		sgs->parked_capacity += arch_cpu_parked(i) * capacity_of(i);
-+		sgs->parked_cpus += arch_cpu_parked(i);
- 
- 		/*
- 		 * No need to call idle_cpu_without() if nr_running is not 0
-@@ -10707,9 +10715,11 @@ static inline void update_sg_wakeup_stats(struct sched_domain *sd,
- 
- 	}
- 
--	sgs->group_capacity = group->sgc->capacity;
-+	sgs->group_capacity = group->sgc->capacity - sgs->parked_capacity;
-+	if (!sgs->group_capacity)
-+		sgs->group_capacity = 1;
- 
--	sgs->group_weight = group->group_weight;
-+	sgs->group_weight = group->group_weight - sgs->parked_cpus;
- 
- 	sgs->group_type = group_classify(sd->imbalance_pct, group, sgs);
- 
+> If so, some instructions of copy_page() did not add to the exception
+> table will be added to the exception table, and the original logic will
+> be affected.
+> 
+> For example, if an instruction is not added to the exception table, the
+> instruction will panic when it triggers a non-SEA error. If this
+> instruction is added to the exception table because of SEA processing,
+> and then a non-SEA error is triggered, should we fix it?
+
+No, we shouldn't fix it. The exception table entries have a type
+associated. For a non-SEA error, we preserve the original behaviour even
+if we find a SEA-specific entry in the exception table. You already need
+such logic even if you duplicate the code for configurations where you
+have MC enabled.
+
 -- 
-2.34.1
-
+Catalin
 
