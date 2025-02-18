@@ -1,53 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-6327-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6328-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BA03C021AA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2025 20:27:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5FEE8C021AF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2025 20:58:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YyB0L6tm4z2ykT;
-	Wed, 19 Feb 2025 07:27:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=158.69.130.18
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739910450;
-	cv=none; b=USVgyjzuxboXiGWvDQq6Ny5yo7UwXs5l1gWQhLNI1VUxNK3+8+mDb/CiMWROa3iWXjqSbYlGrz/od9XlCwdnRcXkSjLpTz/kf+NB6WSdjKs5AFuiwvwIhQo6fE0hIq5G7J8+tsXYESluWWgjBXjMaYxMycUpzzUC5l4hxHkEqJnIEPF8H4kPPGm6sATY452RnNYgHgTZC5p836DVGxhQ/+6trxCA7Fhxqv6QHg0bqWVjyQnLWUh8NhkoybQNdd3FuFcC7iFfUmV3aZKmeBvD+QE0GREPABkoMlwWlPLh6z8lxw9n4HcT6saqSsQsdpWrlU6ZColrKBPTHS4WOG4roA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YyBgs4dMzz2ykX;
+	Wed, 19 Feb 2025 07:58:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c01:e000:3a1::42"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739912297;
+	cv=none; b=DCSybATKCKWdMcJW9PKV1Y0OtaAT1HKmuKisEYBRqkbatw2/O4sMnX52fqwl2IoLlFXgU0SAgL096Tyo31CBR4jgaSEwQnPFWmoyeS3g2a8vPWgxXAvwzDbfJGQ2xywSHB/ZAt1xGGem4eYgYzH1ICO3VF16m0BYWcNJEU9VKsjkoYW7O7z2VIqnqT8M8X/SAyDZUk46RyJ0CBoHS9P2H7aNofkN0Q5KZgEUXqUwLnmBKTAi/dm08EaUyLqmum/fu4cTQiW55RcaNj++4SGfYJpo1RagquI3+xWny6CpK401qr0QIDKL432M84lMr9UvjpB8knRiuDLvY9GLawy0jQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739910450; c=relaxed/relaxed;
-	bh=5deE5hyg68WB5WdR/ckHbJZNDxaZSHbkdIPpKN/Jf44=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=hkskC+/6XgaWR7GWhdA8UdlgkNLZDG6QonCpqYkCXqNw00DtJ/bDjLPK4cqFLANLyCntZFbK/Fih6FZ5GGcOPwLwYd4SgajeotPsgPA/PsqCyw1f3ts8yoz/clAU1ac3FUlecjYJROqyi5vfLX7DJPCj6HX8rjNbG0VonjoSME3ZrmDwjDRoEpmT5gvzmYgXIp4A4T7H06VO8T/FEoevgZVuYX6Rs1a4zWYi5yNUOvUrq6sTUsh5MXoE7gUy37PBLtwSP7Cy8vfGPcf9KhJLZGSENzXLQXNTCrvPA41OVGEYMT37ilc2QqmirwqilL1jjI1SyyDgZ83odeAg8AGhMA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=efficios.com; dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=smtpout1 header.b=XFz2QqZG; dkim-atps=neutral; spf=pass (client-ip=158.69.130.18; helo=smtpout.efficios.com; envelope-from=kstewart@efficios.com; receiver=lists.ozlabs.org) smtp.mailfrom=efficios.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=efficios.com
+	t=1739912297; c=relaxed/relaxed;
+	bh=8jNMU8ip6rBeSpqlISiaPJWQQi8raU32gK6jMCIpWKM=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=k3+1artu7j+KBLiEqYNzeTWdNgQS0WvkXzUEGOKS8RiJ+artIQPDPCKCAWi7mzim5W4ES26JdA47SPyhNfSIakLhPrxcXbshxCMpya5obUKckhfgN12zoKREe4Ieg0paBvyfDub5LqNK9fhMSkYpudCFuGToImGScoBvE5HPz6kzHpKpKdBs41RJTkQeWcw4bgnZIZnw0mY8eXOrGWvVhjenVRRKiOU1RR7N1UAt+xNW8TSsViO/Kxdo5B8yFBvBdxWU3baNwm//HA1tpUIw5xQkz4WxnpBmwBYbar5aj8yB0VLuPYuCnpqq6R5NAy/3iFUhQXpffWoAcogJbw4Yiw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lwn.net; dkim=pass (2048-bit key; unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256 header.s=20201203 header.b=RGZ+lDda; dkim-atps=neutral; spf=pass (client-ip=2600:3c01:e000:3a1::42; helo=ms.lwn.net; envelope-from=corbet@lwn.net; receiver=lists.ozlabs.org) smtp.mailfrom=lwn.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lwn.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=smtpout1 header.b=XFz2QqZG;
+	dkim=pass (2048-bit key; unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256 header.s=20201203 header.b=RGZ+lDda;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=efficios.com (client-ip=158.69.130.18; helo=smtpout.efficios.com; envelope-from=kstewart@efficios.com; receiver=lists.ozlabs.org)
-Received: from smtpout.efficios.com (smtpout.efficios.com [158.69.130.18])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lwn.net (client-ip=2600:3c01:e000:3a1::42; helo=ms.lwn.net; envelope-from=corbet@lwn.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 324 seconds by postgrey-1.37 at boromir; Wed, 19 Feb 2025 07:58:12 AEDT
+Received: from ms.lwn.net (ms.lwn.net [IPv6:2600:3c01:e000:3a1::42])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YyB0K2XdRz2yh2
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2025 07:27:29 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=efficios.com;
-	s=smtpout1; t=1739910441;
-	bh=YVI5exqhXtTK6AnQzPNoWRQDD3V/AhCHKs/nyX3bdIg=;
-	h=From:Date:Subject:To:Cc:From;
-	b=XFz2QqZGXPNEBUB9cMN1Yi/BFhCh/ELD75YfUtW7mq13eBDBc+NSXT40rme2mIGjW
-	 SP+qAbHTq5/Lr/a6lKdRKxl2xry2ZEOE/YCNqRXBlZPGvs5/nnMgT9/44/plzNLojc
-	 mWdqj/WYxMyW+PxZGEnMTCVGvtObgaHO8wY29NEceOHhubsd0othXg98p1UglBFUJZ
-	 5b+KxgHbkLSszBF9CO34djoKEGtrrNvgp6+Pjpgmml8UV945ZKFw8nxV6mmcOi5Ztz
-	 0G/PnyS44l5q2As9sqRvEKQ8ZBYsbaZP3ny0fEC1StVHl44KvSzTi1qawoIV0nJ5lJ
-	 a9aTDkakeoEAA==
-Received: from smtpout01.internal.efficios.com (96-127-217-162.qc.cable.ebox.net [96.127.217.162])
-	by smtpout.efficios.com (Postfix) with ESMTPSA id 4YyB091DLFzwhg;
-	Tue, 18 Feb 2025 15:27:21 -0500 (EST)
-Received: from laptop-kstewart.internal.efficios.com (laptop-kstewart.internal.efficios.com [172.16.0.60])
-	by smtpout01.internal.efficios.com (Postfix) with ESMTP id DEA352A4B6;
-	Tue, 18 Feb 2025 15:27:20 -0500 (EST)
-From: Kienan Stewart <kstewart@efficios.com>
-Date: Tue, 18 Feb 2025 15:26:39 -0500
-Subject: [PATCH v2] kbuild: Add missing $(objtree) prefix to powerpc
- crtsavres.o artifact
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YyBgm6lrfz2yh2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2025 07:58:12 +1100 (AEDT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net 41147411AF
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lwn.net; s=20201203;
+	t=1739911962; bh=8jNMU8ip6rBeSpqlISiaPJWQQi8raU32gK6jMCIpWKM=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=RGZ+lDdax8qjIOiB5ZacnAgWnZTgsFpylEbMW51u+P/MIZ4iyhn77FaRGI2dDgZ/7
+	 PSdVV5Ab40gE18mE/GC17G4zDapRXyDnjvtMyLX/X1z8KjuhPso6bXPWo8AreECp1G
+	 98znlH/rTluOQYNBlOJ3zgZgHPpYqLWuZudgxDv3yJkDcFhOdWhqo1YhFEhOHIeY4A
+	 VAIzOxV+UDEcDyE8DFXCRzajUWTxsxZbIOIWZNKLrJ8usY8w0570cRguzaHptPlgAX
+	 T0ovBK0bp9qEs6SV4ZG5qi7exbun4747718D6XGCFauEWi9SsploIuqSqI6XFFY4zS
+	 3PACaipur3xJQ==
+Received: from localhost (unknown [IPv6:2601:280:4600:2d7f::1fe])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by ms.lwn.net (Postfix) with ESMTPSA id 41147411AF;
+	Tue, 18 Feb 2025 20:52:42 +0000 (UTC)
+From: Jonathan Corbet <corbet@lwn.net>
+To: Mauro Carvalho Chehab <mchehab+huawei@kernel.org>, Bagas Sanjaya
+ <bagasdotme@gmail.com>
+Cc: Linux Doc Mailing List <linux-doc@vger.kernel.org>,
+ linux-kernel@vger.kernel.org, "David S. Miller" <davem@davemloft.net>,
+ Andreas Noever <andreas.noever@gmail.com>, Avadhut
+ Naik <avadhut.naik@amd.com>, Catalin Marinas <catalin.marinas@arm.com>,
+ Eric Dumazet <edumazet@google.com>, Hu Haowen
+ <2023002089@link.tyut.edu.cn>, Lars-Peter Clausen <lars@metafoo.de>,
+ Michael Jamet <michael.jamet@intel.com>, Mika Westerberg
+ <mika.westerberg@linux.intel.com>, Paolo Abeni <pabeni@redhat.com>, Sean
+ Young <sean@mess.org>, Yanteng Si <si.yanteng@linux.dev>, Yehezkel Bernat
+ <YehezkelShB@gmail.com>, Thomas Gleixner <tglx@linutronix.de>, Michael
+ Ellerman <mpe@ellerman.id.au>, Shrikanth Hegde <sshegde@linux.ibm.com>,
+ "Russell King (Oracle)" <rmk+kernel@armlinux.org.uk>, Pawan Gupta
+ <pawan.kumar.gupta@linux.intel.com>, James Morse <james.morse@arm.com>,
+ "Nysal Jan K.A" <nysal@linux.ibm.com>, Tom Lendacky
+ <thomas.lendacky@amd.com>, Sourabh Jain <sourabhjain@linux.ibm.com>,
+ Stephen Rothwell <sfr@canb.auug.org.au>, Frederic Barrat
+ <fbarrat@linux.ibm.com>, Andrew Donnellan <ajd@linux.ibm.com>, Madhavan
+ Srinivasan <maddy@linux.ibm.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao
+ <naveen@kernel.org>, linux-arm-kernel@lists.infradead.org,
+ linux-iio@vger.kernel.org, linux-media@vger.kernel.org,
+ linux-usb@vger.kernel.org, netdev@vger.kernel.org,
+ workflows@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 0/9] Extend automarkup support for ABI symbols
+In-Reply-To: <20250212135808.58d2f032@foz.lan>
+References: <cover.1739254867.git.mchehab+huawei@kernel.org>
+ <Z6yFG_NntQfkwYli@archie.me> <20250212135808.58d2f032@foz.lan>
+Date: Tue, 18 Feb 2025 13:52:41 -0700
+Message-ID: <871pvvnffq.fsf@trenco.lwn.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,69 +90,21 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250218-buildfix-extmod-powerpc-v2-1-1e78fcf12b56@efficios.com>
-X-B4-Tracking: v=1; b=H4sIAP7stGcC/4WNTQ6CMBCFr0Jm7Rim5ce48h6GBZSpTCK0aRExh
- LtbuYDL7+W9720QOQhHuGYbBF4kipsSqFMGZminB6P0iUHlqsxJ1di95NlbWZHXeXQ9evfm4A2
- 2dVEwaU32oiGtfeDUOsz3JvEgcXbhcxwt9Ev/OxdCwqLMU6mjSlX6xtaKERfPxo3Q7Pv+BYxLi
- nrBAAAA
-X-Change-ID: 20250127-buildfix-extmod-powerpc-a744e1331f83
-To: Masahiro Yamada <masahiroy@kernel.org>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Naveen N Rao <naveen@kernel.org>
-Cc: linux-build@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, Nicolas Schier <n.schier@avm.de>, 
- Kienan Stewart <kstewart@efficios.com>
-X-Mailer: b4 0.14.2
+Content-Type: text/plain
 
-In the upstream commit 214c0eea43b2ea66bcd6467ea57e47ce8874191b
-("kbuild: add $(objtree)/ prefix to some in-kernel build artifacts")
-artifacts required for building out-of-tree kernel modules had
-$(objtree) prepended to them to prepare for building in other
-directories.
+Mauro Carvalho Chehab <mchehab+huawei@kernel.org> writes:
 
-When building external modules for powerpc,
-arch/powerpc/lib/crtsavres.o is required for certain
-configurations. This artifact is missing the prepended $(objtree).
+>> WARNING: Documentation/ABI/testing/sysfs-class-cxl not found
+>
+> I need to double-check verify this one, as it didn't appear on
+> my tests. Are you getting it against docs-next or linux-next?
 
-Fixes: 13b25489b6f8 ("kbuild: change working directory to external module directory with M=")
-Acked-by: Masahiro Yamada <masahiroy@kernel.org>
-Reviewed-by: Nicolas Schier <n.schier@avm.de>
-Tested-by: Nicolas Schier <n.schier@avm.de>
-Signed-off-by: Kienan Stewart <kstewart@efficios.com>
----
-Changes in v2:
-- Added Review-by/Tested-by/Fixes/Acked-By
-- Removed mention of possible work-around for external modules (while
-the build will pass, `make modules_install` will fail)
-- Link to v1: https://lore.kernel.org/r/20250127-buildfix-extmod-powerpc-v1-1-450012b16263@efficios.com
----
- arch/powerpc/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+I get this one too, FWIW.
 
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index f3804103c56ccfdb16289468397ccaea71bf721e..9933b98df69d7f7b9aaf33d36155cc61ab4460c7 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -58,7 +58,7 @@ ifeq ($(CONFIG_PPC64)$(CONFIG_LD_IS_BFD),yy)
- # There is a corresponding test in arch/powerpc/lib/Makefile
- KBUILD_LDFLAGS_MODULE += --save-restore-funcs
- else
--KBUILD_LDFLAGS_MODULE += arch/powerpc/lib/crtsavres.o
-+KBUILD_LDFLAGS_MODULE += $(objtree)/arch/powerpc/lib/crtsavres.o
- endif
- 
- ifdef CONFIG_CPU_LITTLE_ENDIAN
+I've gone ahead and applied the series, but this would be nice to get
+cleaned up.
 
----
-base-commit: ffd294d346d185b70e28b1a28abe367bbfe53c04
-change-id: 20250127-buildfix-extmod-powerpc-a744e1331f83
+Thanks,
 
-Best regards,
--- 
-Kienan Stewart <kstewart@efficios.com>
-
+jon
 
