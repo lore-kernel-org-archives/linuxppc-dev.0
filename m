@@ -1,55 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-6323-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6324-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A59AC02198
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2025 14:30:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BDDEC021AA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2025 16:20:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yy24B5kfzz302c;
-	Wed, 19 Feb 2025 01:30:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739889018;
-	cv=none; b=UekbpafNg20dTSXfwN5Or0f4CB3LvEBPWpezoZX7WrukkspxjoSgoUPJy/Lsu0eu1MocGSIzIIZdaNxsBUrDIf5JquGkgN2Tik1lXjQ0YyXSrQuGMNioeyEMyGcALcqeavBai35dsK4ois13xMW7CUXMYT1p1KMtDZd1YAx2BVWUFbdNaPyhDmXFeJhmvEWpxzKt6yWi4Rye0qIiik5CqwlA6kFw4GjSdwf4GdO9kQVg5RdW9avkXXeGammSEhxZzDNSkd9fsQVzsSZG1Y/oAZGA5Um5EOaQ3cPfcS/SMf/9FzZEby3XvZkG8rOL8xwv+ELIe76TWxfzcqmHTTrRcA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yy4WV68MMz305S;
+	Wed, 19 Feb 2025 03:20:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.11
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739895638;
+	cv=none; b=ofq5D5LsuzDGApl0eBiMr4l0NDpFc6cM/hvOzu/XvSqhYXBONzmgenOiV95kQ1ssKKXwFHHUJy+e7C78DUgsvwhNp8vu5Vuy3KnGWOqyVg/54FTDJyFhN/zxKWakywC+buoUtwtxeDhbCCD/VBumKt8py+vFqqDiMfTe57QjNnrHt58FCj7oGRY4PbxncabtPUAA3dqyAtt4m1UNLRt68pePihAtM1FLpfdUqOBw7sqvqHOTZbz6qqsD9lPMrTD0DeAhEYfgVOZxmAvgXaYDCn7auKb2kB/gAOp07OROCO7pEtIVNzwA29qCCVborSHifrWsKbSMOchY3p+zGM60Bw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739889018; c=relaxed/relaxed;
-	bh=p7bFH52wJ34hPmluM9YijKr4tBQI7aprfLp//tqtW5Y=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=Wdsa0FglIs9IrgA8z44457Hy8O+E/FQG+tts7Q4Or96L8cF1GtYv0HNQxjSo1eFDegE6vPJT3Z8enYhdi+ypAfordBn1x4igacyLTYsd17rin7E68mDrollR5LZNx/hWx0A8jJ69ejU1yW3x/k5hJDTm4ORKvIEtJ2a4MrLyyafMeYuqjvPI+wVH+j4cl94yMzMDBLjwP2KxC6pdllW9Sd82FpULg1qFGf37pp81n+R11cFvPDPz8VZ5xON3ozk9MmiFYB1RLtGkKr3o2vCFKnWhi4clp7hQ5sAVWmdKkZXInOIec+hjLmJrZ4Mt6rAV7mnpRk4NOGafq6xMrDsNfA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
+	t=1739895638; c=relaxed/relaxed;
+	bh=PuNEgfrlM/gT6Dlk5ijFDMfGLfFnWNWypU33Y24JHlk=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=WVPxmxYf015PXlP8hUNxWyzXg80hpwKimMpyRrwH3pwfmt3cFwX6ay71oeVMi+Brz2GKz+prEhmhbFa5NB1P+xdk6vAB/4+GKCN8YKcFvTXZMB4WAqcvUniwTshSjtll7BTFoB1nNURW39BnYgXQks3ce+5bJt1hA5DcEAice0V02fQQ8YKTf3sC5u2qAS1yi8Z0ucQ6mL5OoeDya1dkAZfvd74BMc4JxuXIBELs6VI2SpLiGt42BIR7j2uUvyWq1NF8K2COgFBbrJjIHtSx1JHr5PidRhbtqPKG+U/6bnMSyHDe/NW8rTRVULXXiG7tfqoy2cO6Y6a4NZzbH76wUQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AeZnAlWC; dkim-atps=neutral; spf=pass (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=AeZnAlWC;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yy2494GQZz2xCW
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2025 01:30:17 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.19.88.194])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4Yy1Xh1lwYzkXNS;
-	Tue, 18 Feb 2025 22:06:28 +0800 (CST)
-Received: from kwepemd200014.china.huawei.com (unknown [7.221.188.8])
-	by mail.maildlp.com (Postfix) with ESMTPS id 70BA314035E;
-	Tue, 18 Feb 2025 22:10:07 +0800 (CST)
-Received: from localhost.localdomain (10.50.165.33) by
- kwepemd200014.china.huawei.com (7.221.188.8) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1258.34; Tue, 18 Feb 2025 22:10:06 +0800
-From: Yicong Yang <yangyicong@huawei.com>
-To: <catalin.marinas@arm.com>, <will@kernel.org>, <sudeep.holla@arm.com>,
-	<tglx@linutronix.de>, <peterz@infradead.org>, <mpe@ellerman.id.au>,
-	<linux-arm-kernel@lists.infradead.org>, <mingo@redhat.com>, <bp@alien8.de>,
-	<dave.hansen@linux.intel.com>, <pierre.gondois@arm.com>,
-	<dietmar.eggemann@arm.com>
-CC: <linuxppc-dev@lists.ozlabs.org>, <x86@kernel.org>,
-	<linux-kernel@vger.kernel.org>, <morten.rasmussen@arm.com>,
-	<msuchanek@suse.de>, <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
-	<jonathan.cameron@huawei.com>, <prime.zeng@hisilicon.com>,
-	<linuxarm@huawei.com>, <yangyicong@hisilicon.com>, <xuwei5@huawei.com>,
-	<guohanjun@huawei.com>, <sshegde@linux.ibm.com>
-Subject: [PATCH v11 0/4] Support SMT control on arm64
-Date: Tue, 18 Feb 2025 22:10:14 +0800
-Message-ID: <20250218141018.18082-1-yangyicong@huawei.com>
-X-Mailer: git-send-email 2.31.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yy4WS4B1Zz2yh2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2025 03:20:34 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1739895636; x=1771431636;
+  h=date:from:to:cc:subject:message-id;
+  bh=usDIvTraO2QgWAuurg4XaFy8qCBRhrJoi6aIKiIATBI=;
+  b=AeZnAlWCvvJM722NL5WYkqBdexbRXb95x866Oy5XypjVNIdIpaiPNU9C
+   vQ9H+jQZNGKtUPYqoXht7Jv2nnWfrs/NVUbaMC62G5UKdaOYB9FVqJKiG
+   x2hB74q4HrzMrMtRJxjUhRzSpC/A5kwQaAIdC1OVBjBoqGuXSiWEMyGZ4
+   xUqOlOSasRw4QZMsstjmKGvxZm47rbM6mVfOnnBceTg/OU6jMFUxLMbrl
+   pTL5Q+Lcuo436YFG2m4aozdCDptsk1atnv4HMb2NpUSv2y7XqkY799ETA
+   TB7zdXjL+ZxYU+jnbq4RXTR45Dj88w0vSibv6XD8BB+Uy+VQpIrBWa5Qt
+   g==;
+X-CSE-ConnectionGUID: 9YDx6/toSwqR5mqnMysL2Q==
+X-CSE-MsgGUID: 9n7wcifmQnKXLTbJBoX36Q==
+X-IronPort-AV: E=McAfee;i="6700,10204,11348"; a="50813172"
+X-IronPort-AV: E=Sophos;i="6.13,296,1732608000"; 
+   d="scan'208";a="50813172"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Feb 2025 08:20:31 -0800
+X-CSE-ConnectionGUID: hbaJHkIVQyCMUADPd8+Ngw==
+X-CSE-MsgGUID: qb+ldK8gS0iLKC/5By6i3Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.13,296,1732608000"; 
+   d="scan'208";a="114175695"
+Received: from lkp-server02.sh.intel.com (HELO 76cde6cc1f07) ([10.239.97.151])
+  by orviesa009.jf.intel.com with ESMTP; 18 Feb 2025 08:20:30 -0800
+Received: from kbuild by 76cde6cc1f07 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1tkQKh-0000ht-1i;
+	Tue, 18 Feb 2025 16:20:27 +0000
+Date: Wed, 19 Feb 2025 00:20:08 +0800
+From: kernel test robot <lkp@intel.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [powerpc:merge] BUILD SUCCESS
+ 956c5a532ca99463143d340261c0046bbe359e75
+Message-ID: <202502190002.90PRKIJ7-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,95 +76,126 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-Originating-IP: [10.50.165.33]
-X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
- kwepemd200014.china.huawei.com (7.221.188.8)
 
-From: Yicong Yang <yangyicong@hisilicon.com>
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 956c5a532ca99463143d340261c0046bbe359e75  Automatic merge of 'master' into merge (2025-02-17 20:37)
 
-The core CPU control framework supports runtime SMT control which
-is not yet supported on arm64. Besides the general vulnerabilities
-concerns we want this runtime control on our arm64 server for:
+elapsed time: 1446m
 
-- better single CPU performance in some cases
-- saving overall power consumption
+configs tested: 105
+configs skipped: 2
 
-This patchset implements it in the following aspects:
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-- Provides a default topology_is_primary_thread()
-- support retrieve SMT thread number on OF based system
-- support retrieve SMT thread number on ACPI based system
-- select HOTPLUG_SMT for arm64
+tested configs:
+alpha                             allnoconfig    gcc-14.2.0
+alpha                            allyesconfig    gcc-14.2.0
+arc                              allmodconfig    gcc-13.2.0
+arc                               allnoconfig    gcc-13.2.0
+arc                              allyesconfig    gcc-13.2.0
+arc                   randconfig-001-20250218    gcc-13.2.0
+arc                   randconfig-002-20250218    gcc-13.2.0
+arm                              allmodconfig    gcc-14.2.0
+arm                               allnoconfig    clang-17
+arm                              allyesconfig    gcc-14.2.0
+arm                   randconfig-001-20250218    gcc-14.2.0
+arm                   randconfig-002-20250218    gcc-14.2.0
+arm                   randconfig-003-20250218    gcc-14.2.0
+arm                   randconfig-004-20250218    clang-21
+arm64                            allmodconfig    clang-18
+arm64                             allnoconfig    gcc-14.2.0
+arm64                 randconfig-001-20250218    clang-21
+arm64                 randconfig-002-20250218    clang-21
+arm64                 randconfig-003-20250218    gcc-14.2.0
+arm64                 randconfig-004-20250218    clang-16
+csky                              allnoconfig    gcc-14.2.0
+csky                  randconfig-001-20250218    gcc-14.2.0
+csky                  randconfig-002-20250218    gcc-14.2.0
+hexagon                          allmodconfig    clang-21
+hexagon                           allnoconfig    clang-21
+hexagon                          allyesconfig    clang-18
+hexagon               randconfig-001-20250218    clang-17
+hexagon               randconfig-002-20250218    clang-21
+i386                              allnoconfig    gcc-12
+i386                             allyesconfig    gcc-12
+i386        buildonly-randconfig-001-20250218    gcc-12
+i386        buildonly-randconfig-002-20250218    gcc-12
+i386        buildonly-randconfig-003-20250218    gcc-12
+i386        buildonly-randconfig-004-20250218    clang-19
+i386        buildonly-randconfig-005-20250218    clang-19
+i386        buildonly-randconfig-006-20250218    gcc-12
+i386                                defconfig    clang-19
+loongarch                        allmodconfig    gcc-14.2.0
+loongarch                         allnoconfig    gcc-14.2.0
+loongarch             randconfig-001-20250218    gcc-14.2.0
+loongarch             randconfig-002-20250218    gcc-14.2.0
+m68k                             allmodconfig    gcc-14.2.0
+m68k                              allnoconfig    gcc-14.2.0
+m68k                             allyesconfig    gcc-14.2.0
+microblaze                       allmodconfig    gcc-14.2.0
+microblaze                        allnoconfig    gcc-14.2.0
+microblaze                       allyesconfig    gcc-14.2.0
+mips                              allnoconfig    gcc-14.2.0
+nios2                             allnoconfig    gcc-14.2.0
+nios2                 randconfig-001-20250218    gcc-14.2.0
+nios2                 randconfig-002-20250218    gcc-14.2.0
+openrisc                          allnoconfig    gcc-14.2.0
+openrisc                         allyesconfig    gcc-14.2.0
+parisc                           allmodconfig    gcc-14.2.0
+parisc                            allnoconfig    gcc-14.2.0
+parisc                           allyesconfig    gcc-14.2.0
+parisc                randconfig-001-20250218    gcc-14.2.0
+parisc                randconfig-002-20250218    gcc-14.2.0
+powerpc                          allmodconfig    gcc-14.2.0
+powerpc                           allnoconfig    gcc-14.2.0
+powerpc                          allyesconfig    clang-16
+powerpc               randconfig-001-20250218    gcc-14.2.0
+powerpc               randconfig-002-20250218    gcc-14.2.0
+powerpc               randconfig-003-20250218    clang-21
+powerpc64             randconfig-001-20250218    gcc-14.2.0
+powerpc64             randconfig-002-20250218    clang-16
+powerpc64             randconfig-003-20250218    clang-18
+riscv                            allmodconfig    clang-21
+riscv                             allnoconfig    gcc-14.2.0
+riscv                            allyesconfig    clang-21
+riscv                 randconfig-001-20250218    gcc-14.2.0
+riscv                 randconfig-002-20250218    clang-21
+s390                             allmodconfig    clang-19
+s390                              allnoconfig    clang-21
+s390                             allyesconfig    gcc-14.2.0
+s390                  randconfig-001-20250218    clang-21
+s390                  randconfig-002-20250218    clang-15
+sh                               allmodconfig    gcc-14.2.0
+sh                                allnoconfig    gcc-14.2.0
+sh                               allyesconfig    gcc-14.2.0
+sh                    randconfig-001-20250218    gcc-14.2.0
+sh                    randconfig-002-20250218    gcc-14.2.0
+sparc                            allmodconfig    gcc-14.2.0
+sparc                             allnoconfig    gcc-14.2.0
+sparc                 randconfig-001-20250218    gcc-14.2.0
+sparc                 randconfig-002-20250218    gcc-14.2.0
+sparc64               randconfig-001-20250218    gcc-14.2.0
+sparc64               randconfig-002-20250218    gcc-14.2.0
+um                               allmodconfig    clang-21
+um                                allnoconfig    clang-18
+um                               allyesconfig    gcc-12
+um                    randconfig-001-20250218    clang-21
+um                    randconfig-002-20250218    gcc-11
+x86_64                            allnoconfig    clang-19
+x86_64                           allyesconfig    clang-19
+x86_64      buildonly-randconfig-001-20250218    clang-19
+x86_64      buildonly-randconfig-002-20250218    gcc-12
+x86_64      buildonly-randconfig-003-20250218    clang-19
+x86_64      buildonly-randconfig-004-20250218    gcc-12
+x86_64      buildonly-randconfig-005-20250218    clang-19
+x86_64      buildonly-randconfig-006-20250218    clang-19
+x86_64                              defconfig    gcc-11
+xtensa                            allnoconfig    gcc-14.2.0
+xtensa                randconfig-001-20250218    gcc-14.2.0
+xtensa                randconfig-002-20250218    gcc-14.2.0
 
-Tests has been done on our ACPI based arm64 server and on ACPI/OF
-based QEMU VMs.
-
-Change since v10:
-- handle topology parsing failure case on DT based system
-- address some style comments per Jonathan and add tags, Thanks
-Link: https://lore.kernel.org/linux-arm-kernel/20241220075313.51502-1-yangyicong@huawei.com/
-
-Change since v9:
-- Refine the comment of topology_is_primary_thread(). Tested with LoongArch
-  to prove it also works on architecture's not using CONFIG_GENERIC_ARCH_TOPOLOGY
-- always call cpu_smt_set_num_threads() to make the smt/control shows correct
-  status on non-SMT system
-Link: https://lore.kernel.org/linux-arm-kernel/20241114141127.23232-1-yangyicong@huawei.com/
-
-Change since v8:
-- Fix WARN on ACPI based non-SMT platform noticed in v7, per Pierre.
-Link: https://lore.kernel.org/all/20241105093237.63565-1-yangyicong@huawei.com/
-
-Change since v7:
-Address the comments from Thomas:
-- Add a newline between the glue define and function of topology_is_primary_thread
-- Explicitly mention the sibling mask won't be empty in the comment
-Link: https://lore.kernel.org/lkml/20241030125415.18994-1-yangyicong@huawei.com/
-
-Change since v6:
-- Fix unused variable if !CONFIG_ARM64 || !CONFIG_RISV found by lkp-test
-- Fix max_smt_thread_num updating in OF path pointed by Pierre
-- Drop unused variable and refine the comments/commit per Pierre
-Link: https://lore.kernel.org/linux-arm-kernel/20241015021841.35713-1-yangyicong@huawei.com/
-
-Change since v5:
-- Drop the dependency on CONFIG_SMP since it's always on on arm64, per Pierre
-- Avoid potential multiple calls of cpu_smt_set_num_threads() on asymmetric system, per Dietmar
-- Detect heterogenous SMT topology and issue a warning for partly support, per Pierre
-- Thanks Dietmar for testing, didn't pickup the tag due to code changes. Thanks testing by Pierre
-Link: https://lore.kernel.org/linux-arm-kernel/20240806085320.63514-1-yangyicong@huawei.com/
-
-Change since v4:
-- Provide a default topology_is_primary_thread() in the framework, Per Will
-Link: https://lore.kernel.org/linux-arm-kernel/20231121092602.47792-1-yangyicong@huawei.com/
-
-Change since v3:
-- Fix some build and kconfig error reported by kernel test robot <lkp@intel.com>
-Link: https://lore.kernel.org/linux-arm-kernel/20231114040110.54590-1-yangyicong@huawei.com/
-
-Change since v2:
-- Detect SMT thread number at topology build from ACPI/DT, avoid looping CPUs
-- Split patches into ACPI/OF/arch_topology path and enable the kconfig for arm64
-Link: https://lore.kernel.org/linux-arm-kernel/20231010115335.13862-1-yangyicong@huawei.com/
-
-Yicong Yang (4):
-  cpu/SMT: Provide a default topology_is_primary_thread()
-  arch_topology: Support SMT control for OF based system
-  arm64: topology: Support SMT control on ACPI based system
-  arm64: Kconfig: Enable HOTPLUG_SMT
-
- arch/arm64/Kconfig                  |  1 +
- arch/arm64/kernel/topology.c        | 66 +++++++++++++++++++++++++++++
- arch/powerpc/include/asm/topology.h |  1 +
- arch/x86/include/asm/topology.h     |  2 +-
- drivers/base/arch_topology.c        | 27 ++++++++++++
- include/linux/topology.h            | 22 ++++++++++
- 6 files changed, 118 insertions(+), 1 deletion(-)
-
--- 
-2.24.0
-
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
