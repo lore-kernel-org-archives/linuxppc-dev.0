@@ -1,98 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-6318-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6319-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D454CC02198
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2025 14:11:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C375C02198
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Feb 2025 14:25:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Yy1f432xYz304s;
-	Wed, 19 Feb 2025 01:11:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739887868;
-	cv=none; b=B2yIMXv9Xudr6bD523GICFMRgGeY1ODRZO1pajx1rjTAMoKWp5GFwQlhmayJO5rK9Cv9qU+pTYWbEyIo/22stmYX/0CMErtDuiv4cFe7NKQdV75Jm70X2L30ZN7ebJkomp+9McYlTydySV6nzft+gBJUEQUn9B42Pm5qiFT7jW1NcQYpg0VvsAgDHkssBLTUYW8gbIDJVD6rpvS6qw9NsmRjhAb6Of5BM1LgmzuD7r5u8T3xkadk+V29TjCbLq2RmXxl+aKM/Nz1OOmeegICgPbdMMBX86WLbkM9mW/nKlMhSCgqRlQqPiqMaXY+cvwxJ5yEXwFu9BqgDg6VzmRAag==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Yy1yq1s4lz2ytT;
+	Wed, 19 Feb 2025 01:25:39 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.190
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739888739;
+	cv=none; b=K2bT86EHZf5urHgmQdqNZPKONChBFfZ5ejnDmTnA93sL45ne7a2EcUu1saAIp4MblpKwqLMfgN4YKU6wSZ6YBn42lwUr2HPjUMJYi47PslpTQp0NzwEuf/ZgSJvsX/BmYfI6oQj3+8Rv8OPuAbmspqaUpCBXRW/aWt+1S3cARlRTiHPlp0+0aos9RWg9mpbKUoIefRbPkRvTYFs606j620oIviv2N57umI1sMoeLfRv8nLhKhgbyyydWnZMHRMy2a/siCz1J57rgFYBJqzpIiZ82aW25rT749yDijezx9zPiEateKV95KjgAC1DjGP4SitwLkDU/NjUZmcYdVH4yxA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739887868; c=relaxed/relaxed;
-	bh=x9KAvFKzoCjfbssZ2GysCMFj7HXNV5bEADEv9sZWwHY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=K34wgC+bd0eJO4IO9zuYv3Q2HN+tQ9hWipM3RxKt6uEcfVOMsKmlrzNbdS4n3xrHJM84a0uR2ZbZPyUMOENt32RElrDVShLPBzYXjmL1wJk4Sy0ya01FlxdU/qLbLcvt4sccjiYoU7uOrSBVmdXGQpmxXqV2fNTMaBk0fR7Hrm05POfj1B0ky4VpDGibNQBTM289MoC9i1tB5A2AZTjxsyLXsZd5NI2+5z5AUwjZ8xY9Eo4VepbpLkWH8rt2F/ppGeuCPKtSdA7wXTRPjA2YCQJMqnUvFZfPDWxKxrw6EdwrpDVTp4NB+Y4AgAfID7p/mB7FOV+t5I82C39gmrdDJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XNlZveZW; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XNlZveZW;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=amachhiw@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	t=1739888739; c=relaxed/relaxed;
+	bh=ofjcbTC5Iths2yPSWOVtIfXGjT3o/MqZin0E+e7oyZc=;
+	h=From:To:CC:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=IvZsLeEWjRHr3NEfl7MyOHNGr0G5OEVRLcESImsEi9WUOEe7vN4Y2DI84T2gvsPsruYcdpoay7pFTuSkQZAzCdVh3ebgE6iPrSz9f2OMyuh77+WPOlfYy2+QmIEOSSAyJoU7UdDLSJCjXQs6bMiNgPuhE6WAWd49v7rd1mEa2fpvwmQkiQbWufAfj4IhVukLpg8S4D9dTwPFLia+2F2MQz2VqzcYo8YPvAb9bvTvt1rmScmDK+iTDlCTPT2iNexl7iJgBWpes0KVpK1D8mJ5Tv3R/z/H81Vh/2TtH/CQTnLubRq9/Bg/jjZCGFiRn2i6FtHDD+X73847fQnAr1tMpw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.190; helo=szxga04-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.190; helo=szxga04-in.huawei.com; envelope-from=yangyicong@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 921 seconds by postgrey-1.37 at boromir; Wed, 19 Feb 2025 01:25:36 AEDT
+Received: from szxga04-in.huawei.com (szxga04-in.huawei.com [45.249.212.190])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yy1f14vp4z2ytT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2025 01:11:05 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 51I7XE6j009948;
-	Tue, 18 Feb 2025 14:10:51 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=x9KAvFKzoCjfbssZ2GysCMFj7HXNV5
-	bEADEv9sZWwHY=; b=XNlZveZW32fHmU0ddBApqaOqtFZDf8IR5z1DqsQMtRfphg
-	K0jhbKsEILXQlkcPwIpAf+unobXxVF3cj2sTKBs9s/B/HemVTZFF+putk7q6bqc5
-	o5lsLhZGssUvXwE3a6UJi5vawuJvEPE32taooF1BG5F1QwYASgOmt8UT7MktwcIT
-	wsYqI21auwNMpwsx2oLhQovtRSaDTOYaAyxPBNmFuvy3U6BtRKybPIfZw0yheq9/
-	BkmX9VFCKPz6TE0IcJ2rjptMpaJFjvoDHePTYkinN8PKfSwmuVAzVfGt6f0RCk2p
-	Ar2DReYsVvuBPU+vOwUTCYDvOn/16XkDsjW18ALw==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44vnwphur2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 18 Feb 2025 14:10:51 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 51IE2GbP014750;
-	Tue, 18 Feb 2025 14:10:50 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44vnwphuqt-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 18 Feb 2025 14:10:50 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 51ID5E57008155;
-	Tue, 18 Feb 2025 14:10:50 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 44u58tkqbr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 18 Feb 2025 14:10:49 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 51IEAkZ719792266
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 18 Feb 2025 14:10:46 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5A2A72004B;
-	Tue, 18 Feb 2025 14:10:46 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 411CE20043;
-	Tue, 18 Feb 2025 14:10:43 +0000 (GMT)
-Received: from li-e7e2bd4c-2dae-11b2-a85c-bfd29497117c.ibm.com (unknown [9.124.223.231])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue, 18 Feb 2025 14:10:43 +0000 (GMT)
-Date: Tue, 18 Feb 2025 19:40:38 +0530
-From: Amit Machhiwal <amachhiw@linux.ibm.com>
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, Vaibhav Jain <vaibhav@linux.ibm.com>,
-        Shivaprasad G Bhat <sbhat@linux.ibm.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Naveen N Rao <naveen@kernel.org>, kvm@vger.kernel.org,
-        linux-kernel@vger.kernel.org, stable@vger.kernel.org
-Subject: Re: [PATCH v2] KVM: PPC: Enable CAP_SPAPR_TCE_VFIO on pSeries KVM
- guests
-Message-ID: <20250218193759.261b658a-40-amachhiw@linux.ibm.com>
-Mail-Followup-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, kvm-ppc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	Vaibhav Jain <vaibhav@linux.ibm.com>, Shivaprasad G Bhat <sbhat@linux.ibm.com>, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, kvm@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, stable@vger.kernel.org
-References: <20250129094033.2265211-1-amachhiw@linux.ibm.com>
- <8734gdqky4.fsf@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Yy1ym5KCXz2yVF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2025 01:25:34 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.19.163.44])
+	by szxga04-in.huawei.com (SkyGuard) with ESMTP id 4Yy1YV4MQsz22wPM;
+	Tue, 18 Feb 2025 22:07:10 +0800 (CST)
+Received: from kwepemd200014.china.huawei.com (unknown [7.221.188.8])
+	by mail.maildlp.com (Postfix) with ESMTPS id 0F5211401F1;
+	Tue, 18 Feb 2025 22:10:10 +0800 (CST)
+Received: from localhost.localdomain (10.50.165.33) by
+ kwepemd200014.china.huawei.com (7.221.188.8) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1258.34; Tue, 18 Feb 2025 22:10:08 +0800
+From: Yicong Yang <yangyicong@huawei.com>
+To: <catalin.marinas@arm.com>, <will@kernel.org>, <sudeep.holla@arm.com>,
+	<tglx@linutronix.de>, <peterz@infradead.org>, <mpe@ellerman.id.au>,
+	<linux-arm-kernel@lists.infradead.org>, <mingo@redhat.com>, <bp@alien8.de>,
+	<dave.hansen@linux.intel.com>, <pierre.gondois@arm.com>,
+	<dietmar.eggemann@arm.com>
+CC: <linuxppc-dev@lists.ozlabs.org>, <x86@kernel.org>,
+	<linux-kernel@vger.kernel.org>, <morten.rasmussen@arm.com>,
+	<msuchanek@suse.de>, <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
+	<jonathan.cameron@huawei.com>, <prime.zeng@hisilicon.com>,
+	<linuxarm@huawei.com>, <yangyicong@hisilicon.com>, <xuwei5@huawei.com>,
+	<guohanjun@huawei.com>, <sshegde@linux.ibm.com>
+Subject: [PATCH v11 3/4] arm64: topology: Support SMT control on ACPI based system
+Date: Tue, 18 Feb 2025 22:10:17 +0800
+Message-ID: <20250218141018.18082-4-yangyicong@huawei.com>
+X-Mailer: git-send-email 2.31.0
+In-Reply-To: <20250218141018.18082-1-yangyicong@huawei.com>
+References: <20250218141018.18082-1-yangyicong@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,128 +66,153 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8734gdqky4.fsf@gmail.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 5FtYUAbJXnLQacYSRs_w_gQgikmOfhs4
-X-Proofpoint-ORIG-GUID: RGFuLxK2PqGqaA5i6nsKd9j9s8CwlIjw
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-02-18_06,2025-02-18_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_spam_definite policy=outbound score=100 priorityscore=1501
- spamscore=100 mlxlogscore=-999 impostorscore=0 lowpriorityscore=0
- malwarescore=0 phishscore=0 mlxscore=100 adultscore=0 suspectscore=0
- bulkscore=0 clxscore=1015 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2501170000 definitions=main-2502180106
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-Originating-IP: [10.50.165.33]
+X-ClientProxiedBy: dggems705-chm.china.huawei.com (10.3.19.182) To
+ kwepemd200014.china.huawei.com (7.221.188.8)
 
-Hi Ritesh,
+From: Yicong Yang <yangyicong@hisilicon.com>
 
-Thanks for reviewing the patch. My response is inline:
+For ACPI we'll build the topology from PPTT and we cannot directly
+get the SMT number of each core. Instead using a temporary xarray
+to record the heterogeneous information (from ACPI_PPTT_ACPI_IDENTICAL)
+and SMT information of the first core in its heterogeneous CPU cluster
+when building the topology. Then we can know the largest SMT number
+in the system. If a homogeneous system's using ACPI 6.2 or later,
+all the CPUs should be under the root node of PPTT. There'll be
+only one entry in the xarray and all the CPUs in the system will
+be assumed identical.
 
-On 2025/02/17 09:30 AM, Ritesh Harjani (IBM) wrote:
-> Amit Machhiwal <amachhiw@linux.ibm.com> writes:
-> 
-> > Currently on book3s-hv, the capability KVM_CAP_SPAPR_TCE_VFIO is only
-> > available for KVM Guests running on PowerNV and not for the KVM guests
-> > running on pSeries hypervisors. This prevents a pSeries L2 guest from
-> > leveraging the in-kernel acceleration for H_PUT_TCE_INDIRECT and
-> > H_STUFF_TCE hcalls that results in slow startup times for large memory
-> > guests.
-> >
-> > Fix this by enabling the CAP_SPAPR_TCE_VFIO on the pSeries hosts as well
-> > for the nested PAPR guests. With the patch, booting an L2 guest with
-> > 128G memory results in an average improvement of 11% in the startup
-> > times.
-> >
-> > Fixes: f431a8cde7f1 ("powerpc/iommu: Reimplement the iommu_table_group_ops for pSeries")
-> > Cc: stable@vger.kernel.org
-> > Signed-off-by: Amit Machhiwal <amachhiw@linux.ibm.com>
-> > ---
-> > Changes since v1:
-> >     * Addressed review comments from Ritesh
-> >     * v1: https://lore.kernel.org/all/20250109132053.158436-1-amachhiw@linux.ibm.com/
-> 
-> Thanks Amit for v2. However we still didn't answer one important
-> question regarding the context / background of this patch asked here [2]
-> 
-> [2]: https://lore.kernel.org/linuxppc-dev/87r059vpmi.fsf@gmail.com/
-> 
-> <copy paste from v1>
->     IIUC it was said here [1] that this capability is not available on
->     pSeries, hence it got removed. Could you please give a background on
->     why this can be enabled now for pSeries? Was there any additional
->     support added for this? 
->     [1]:
->     https://lore.kernel.org/linuxppc-dev/20181214052910.23639-2-sjitindarsingh@gmail.com/
-> 
->     ... Ohh thinking back a little, are you saying that after the patch...
->     f431a8cde7f1 ("powerpc/iommu: Reimplement the iommu_table_group_ops for pSeries")
->     ...we can bring back this capability for kvm guest running on pseries
->     as well. Because all underlying issues in using VFIO on pseries were
->     fixed. Is this understanding correct? 
-> 
+The core's SMT control provides two interface to the users [1]:
+1) enable/disable SMT by writing on/off
+2) enable/disable SMT by writing thread number 1/max_thread_number
 
-Yes, your understanding is correct.
+If a system have more than one SMT thread number the 2) may
+not handle it well, since there're multiple thread numbers in the
+system and 2) only accept 1/max_thread_number. So issue a warning
+to notify the users if such system detected.
 
-> 
-> Please also update the commit message with the required context of why we can
-> enable this capability now while it was explicitely marked as disabled
-> earlier in [1].
-> 
+[1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/ABI/testing/sysfs-devices-system-cpu#n542
 
-Sure, I'll update the patch description and send a v3 soon.
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
+---
+ arch/arm64/kernel/topology.c | 66 ++++++++++++++++++++++++++++++++++++
+ 1 file changed, 66 insertions(+)
 
-> But looks good otherwise. With that addressed in the commit message,
-> please feel free to add - 
-> 
-> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> 
+diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+index 1a2c72f3e7f8..6eba1ac091ee 100644
+--- a/arch/arm64/kernel/topology.c
++++ b/arch/arm64/kernel/topology.c
+@@ -15,8 +15,10 @@
+ #include <linux/arch_topology.h>
+ #include <linux/cacheinfo.h>
+ #include <linux/cpufreq.h>
++#include <linux/cpu_smt.h>
+ #include <linux/init.h>
+ #include <linux/percpu.h>
++#include <linux/xarray.h>
+ 
+ #include <asm/cpu.h>
+ #include <asm/cputype.h>
+@@ -37,17 +39,28 @@ static bool __init acpi_cpu_is_threaded(int cpu)
+ 	return !!is_threaded;
+ }
+ 
++struct cpu_smt_info {
++	unsigned int thread_num;
++	int core_id;
++};
++
+ /*
+  * Propagate the topology information of the processor_topology_node tree to the
+  * cpu_topology array.
+  */
+ int __init parse_acpi_topology(void)
+ {
++	unsigned int max_smt_thread_num = 0;
++	struct cpu_smt_info *entry;
++	struct xarray hetero_cpu;
++	unsigned long hetero_id;
+ 	int cpu, topology_id;
+ 
+ 	if (acpi_disabled)
+ 		return 0;
+ 
++	xa_init(&hetero_cpu);
++
+ 	for_each_possible_cpu(cpu) {
+ 		topology_id = find_acpi_cpu_topology(cpu, 0);
+ 		if (topology_id < 0)
+@@ -57,6 +70,34 @@ int __init parse_acpi_topology(void)
+ 			cpu_topology[cpu].thread_id = topology_id;
+ 			topology_id = find_acpi_cpu_topology(cpu, 1);
+ 			cpu_topology[cpu].core_id   = topology_id;
++
++			/*
++			 * In the PPTT, CPUs below a node with the 'identical
++			 * implementation' flag have the same number of threads.
++			 * Count the number of threads for only one CPU (i.e.
++			 * one core_id) among those with the same hetero_id.
++			 * See the comment of find_acpi_cpu_topology_hetero_id()
++			 * for more details.
++			 *
++			 * One entry is created for each node having:
++			 * - the 'identical implementation' flag
++			 * - its parent not having the flag
++			 */
++			hetero_id = find_acpi_cpu_topology_hetero_id(cpu);
++			entry = xa_load(&hetero_cpu, hetero_id);
++			if (!entry) {
++				entry = kzalloc(sizeof(*entry), GFP_KERNEL);
++				WARN_ON_ONCE(!entry);
++
++				if (entry) {
++					entry->core_id = topology_id;
++					entry->thread_num = 1;
++					xa_store(&hetero_cpu, hetero_id,
++						 entry, GFP_KERNEL);
++				}
++			} else if (entry->core_id == topology_id) {
++				entry->thread_num++;
++			}
+ 		} else {
+ 			cpu_topology[cpu].thread_id  = -1;
+ 			cpu_topology[cpu].core_id    = topology_id;
+@@ -67,6 +108,31 @@ int __init parse_acpi_topology(void)
+ 		cpu_topology[cpu].package_id = topology_id;
+ 	}
+ 
++	/*
++	 * This should be a short loop depending on the number of heterogeneous
++	 * CPU clusters. Typically on a homogeneous system there's only one
++	 * entry in the XArray.
++	 */
++	xa_for_each(&hetero_cpu, hetero_id, entry) {
++		if (entry->thread_num != max_smt_thread_num && max_smt_thread_num)
++			pr_warn_once("Heterogeneous SMT topology is partly supported by SMT control\n");
++
++		max_smt_thread_num = max(max_smt_thread_num, entry->thread_num);
++		xa_erase(&hetero_cpu, hetero_id);
++		kfree(entry);
++	}
++
++	/*
++	 * Notify the CPU framework of the SMT support. Initialize the
++	 * max_smt_thread_num to 1 if no SMT support detected. A thread
++	 * number of 1 can be handled by the framework so we don't need
++	 * to check max_smt_thread_num to see we support SMT or not.
++	 */
++	if (!max_smt_thread_num)
++		max_smt_thread_num = 1;
++
++	cpu_smt_set_num_threads(max_smt_thread_num, max_smt_thread_num);
++	xa_destroy(&hetero_cpu);
+ 	return 0;
+ }
+ #endif
+-- 
+2.24.0
 
-Thanks!
-
-~ Amit
-
-> -ritesh
-> 
-> >
-> >  arch/powerpc/kvm/powerpc.c | 5 +----
-> >  1 file changed, 1 insertion(+), 4 deletions(-)
-> >
-> > diff --git a/arch/powerpc/kvm/powerpc.c b/arch/powerpc/kvm/powerpc.c
-> > index ce1d91eed231..a7138eb18d59 100644
-> > --- a/arch/powerpc/kvm/powerpc.c
-> > +++ b/arch/powerpc/kvm/powerpc.c
-> > @@ -543,26 +543,23 @@ int kvm_vm_ioctl_check_extension(struct kvm *kvm, long ext)
-> >  		r = !hv_enabled;
-> >  		break;
-> >  #ifdef CONFIG_KVM_MPIC
-> >  	case KVM_CAP_IRQ_MPIC:
-> >  		r = 1;
-> >  		break;
-> >  #endif
-> >
-> >  #ifdef CONFIG_PPC_BOOK3S_64
-> >  	case KVM_CAP_SPAPR_TCE:
-> > +		fallthrough;
-> >  	case KVM_CAP_SPAPR_TCE_64:
-> > -		r = 1;
-> > -		break;
-> >  	case KVM_CAP_SPAPR_TCE_VFIO:
-> > -		r = !!cpu_has_feature(CPU_FTR_HVMODE);
-> > -		break;
-> >  	case KVM_CAP_PPC_RTAS:
-> >  	case KVM_CAP_PPC_FIXUP_HCALL:
-> >  	case KVM_CAP_PPC_ENABLE_HCALL:
-> >  #ifdef CONFIG_KVM_XICS
-> >  	case KVM_CAP_IRQ_XICS:
-> >  #endif
-> >  	case KVM_CAP_PPC_GET_CPU_CHAR:
-> >  		r = 1;
-> >  		break;
-> >  #ifdef CONFIG_KVM_XIVE
-> >
-> > base-commit: 6d61a53dd6f55405ebcaea6ee38d1ab5a8856c2c
-> > -- 
-> > 2.48.1
 
