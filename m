@@ -1,84 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-6353-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6354-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC7F8C021B0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Feb 2025 16:22:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99117C021AA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Feb 2025 17:22:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YyhVg0pf4z2ywS;
-	Thu, 20 Feb 2025 03:22:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739982123;
-	cv=none; b=Ys76bjig6PUFJLcUB1+GvroyaHXCzSPPLwJxPfCrZYXRLU0XS5wBQaZBO5TNd6QypZi1l0nsBhDgBE+h2bDSOQabCpTCvvOm/WWw34lzlUkUMYVr5RcDry9JMKncKG1u8lepRc8rd9qeMztekyGrPEL44bkxonBeHy6oOcjuNHyD5QwDIzOisRTRP9LiRKV0tP4mKb7ExlxLWluic1TeVLCxYcJkUI15uqnDJgX1MNIOIte4QJamNsbDlSMf7BbjLZSMeQd/CgmzFz9KLsPm+AnhX5Cy3excN6ZaeFFoVDbj/XucMmHBiLWdrzsXaHphLvXWQyB6vqKJzqedHWr4pQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YyjrH1MbHz2yk3;
+	Thu, 20 Feb 2025 04:22:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=78.133.224.34
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739985743;
+	cv=none; b=SgpGkDgfffitN5JneTaJq9c+Zm/kp/fGtjlg4YA+O4b6LNAyCZSE0WfMtgUgxCauDIaVnWOcIU3llusJQK4+nuHJUYlveQuIDw/0L0mFbMpGgM4VM9xuGxRAtzvbg7JSZZiKQaUH2HLBHL5kvVovY2OOGbeGpok/Ob9lYwmqa+wGlnWyACQpG+AYZxZH+bVvJaH+CCBYK1r9bX4D6jaJPP5cjd4fRzZtGsnqI5Ef0mNIa+rubiB0L1ZP7G1hVyLk0SuyV9HNQR44Hf9Xr97jjv+0eBTR9q1RM17D+gQqk/SczEiAFjvFfjO4h7pZ5rujCwLasg4lOsbqCnveO3vFrA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739982123; c=relaxed/relaxed;
-	bh=sI0uUTF74a9oWRxqSrmo4ISZh1Osp1/CDwnWs/YQ0zM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=g0OPeX7k3B8xWjUZPG1lLSPkX0YVzm5ekZxLhBAN5d3wMbZTFi/fMYDdnhVeR5nHm8+6BIxgTbhGpf6riPrEc3JzP1uetA0Zxexxo2BtkeWN98GpUgGfwSoN0D0YN6iu1X709Vwj6i5H3Xix7yToAeG0hGoKE8cYsSawfvSwC6ujr/7+eT7L6NE965T8lfp3RgSoV+8DmwTS0ua1dutKPBipg1gDzuppMOzBpT4VWXmVFsmhfpMdG+Ocu66UiJw9QPO0oMIW4xvuSDFfxSlYtC57gnvUrDQzTo8eOukzQ7l8vE1b4HJKK2YAL4W54L4fZZqv615deifd2SZkoJ6P+Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DLTpdiiQ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sv@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DLTpdiiQ;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sv@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YyhVf1lG4z2yFQ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2025 03:22:01 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 51JFv3cq022138;
-	Wed, 19 Feb 2025 16:21:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=sI0uUTF74a9oWRxqSrmo4ISZh1Osp1/CDwnWs/YQ0
-	zM=; b=DLTpdiiQpwwp3xjUKSlN677fA0avcR0Qs5hD+YYfcGKOAwyXjHygGYHxj
-	sIFv9O8nB4e+QBgIImwQFkYNMxfwCKcV6sHy0mtok7PpCgu3LPuaNj8H4UnKKtw6
-	yhTcTGMv72LmnVMwaBn+ABwOGL7q5g10H1wxwQOkNUe27H7P00wHGVUXxMVM6RTI
-	F3Shu8qV9cElhml5KmAz+7K8TWf1lGBeoQlCivqSvdjizr/+7e4CftyL2h8G9oBH
-	xn9TiIt2RREOtkOVn/afN3S5xFs32Jn6O3KtKhhEZVU6c8UPYrfUju4RwHKQGfr9
-	xMUxWzJdD4w/tNTo0+8vGRNnkcJ5w==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44wahjtsj1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 19 Feb 2025 16:21:48 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 51JG3ltR006774;
-	Wed, 19 Feb 2025 16:21:47 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 44wahjtshx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 19 Feb 2025 16:21:47 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 51JE8Go4009721;
-	Wed, 19 Feb 2025 16:21:46 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 44w03y50fc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 19 Feb 2025 16:21:46 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 51JGLh2l46203154
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 19 Feb 2025 16:21:43 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3176520043;
-	Wed, 19 Feb 2025 16:21:43 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 46C8B20040;
-	Wed, 19 Feb 2025 16:21:40 +0000 (GMT)
-Received: from li-2fa77bcc-2701-11b2-a85c-cd621c23b6bd.ibm.com (unknown [9.39.30.196])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 19 Feb 2025 16:21:40 +0000 (GMT)
-From: Sathvika Vasireddy <sv@linux.ibm.com>
-To: jpoimboe@kernel.org, peterz@infradead.org, christophe.leroy@csgroup.eu,
-        npiggin@gmail.com, maddy@linux.ibm.com
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        llvm@lists.linux.dev, sv@linux.ibm.com
-Subject: [RFC PATCH] objtool: Skip unannotated intra-function call warning for bl+mflr pattern
-Date: Wed, 19 Feb 2025 21:50:14 +0530
-Message-ID: <20250219162014.10334-1-sv@linux.ibm.com>
-X-Mailer: git-send-email 2.47.0
+	t=1739985743; c=relaxed/relaxed;
+	bh=dFxe56y64fz2EeT0c2Pu85pRgsY04A3JsiBl9id3tQc=;
+	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=Yj6vwpHMu2mc7ciRMHHbmpYXUIIsR4LeJCuWRpRVjUwF/AaB1Yj4eO1LdxJ5wUbTQxxq/vmR6tDY4T66LjUUxMKbFNmqM2usH7BuDIXgog7n9GI8yhz7Vtio4iqRSd4YzUt4Mt2hPQDcDojo9TCy07gjB5MTpb1J25oK4RbCee5H4hc7GRVwMlfdYSMGwer8kwiSRjAag2FPJRoa4YFrRGA21mk+n+vkuH6YhQF93mdzG75K430U1AskKEFsPyZsBEjukAPvaYpkOm2CLhjPWgws/FSlYe3gyMSa0ZIv/IE8QKqpwXUbyjcHY/tiXJFI/XWsTSXZ81GjHff/cfm5sA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk; spf=none (client-ip=78.133.224.34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org) smtp.mailfrom=orcam.me.uk
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=78.133.224.34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org)
+X-Greylist: delayed 387 seconds by postgrey-1.37 at boromir; Thu, 20 Feb 2025 04:22:22 AEDT
+Received: from angie.orcam.me.uk (angie.orcam.me.uk [78.133.224.34])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YyjrG0WQnz2yPG
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Feb 2025 04:22:22 +1100 (AEDT)
+Received: by angie.orcam.me.uk (Postfix, from userid 500)
+	id 247399200B3; Wed, 19 Feb 2025 18:16:05 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by angie.orcam.me.uk (Postfix) with ESMTP id 1E09592009E;
+	Wed, 19 Feb 2025 17:16:05 +0000 (GMT)
+Date: Wed, 19 Feb 2025 17:16:05 +0000 (GMT)
+From: "Maciej W. Rozycki" <macro@orcam.me.uk>
+To: "Dmitry V. Levin" <ldv@strace.io>
+cc: Andrew Morton <akpm@linux-foundation.org>, Oleg Nesterov <oleg@redhat.com>, 
+    Alexey Gladkov <legion@kernel.org>, 
+    Eugene Syromyatnikov <evgsyr@gmail.com>, 
+    Charlie Jenkins <charlie@rivosinc.com>, Helge Deller <deller@gmx.de>, 
+    Mike Frysinger <vapier@gentoo.org>, Renzo Davoli <renzo@cs.unibo.it>, 
+    Davide Berardi <berardi.dav@gmail.com>, Vineet Gupta <vgupta@kernel.org>, 
+    Russell King <linux@armlinux.org.uk>, 
+    Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+    Brian Cain <bcain@quicinc.com>, Huacai Chen <chenhuacai@kernel.org>, 
+    WANG Xuerui <kernel@xen0n.name>, Geert Uytterhoeven <geert@linux-m68k.org>, 
+    Michal Simek <monstr@monstr.eu>, 
+    Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+    Dinh Nguyen <dinguyen@kernel.org>, Jonas Bonn <jonas@southpole.se>, 
+    Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
+    Stafford Horne <shorne@gmail.com>, 
+    "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
+    Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+    Christophe Leroy <christophe.leroy@csgroup.eu>, 
+    Naveen N Rao <naveen@kernel.org>, 
+    Madhavan Srinivasan <maddy@linux.ibm.com>, 
+    Paul Walmsley <paul.walmsley@sifive.com>, 
+    Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+    Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+    Alexander Gordeev <agordeev@linux.ibm.com>, 
+    Christian Borntraeger <borntraeger@linux.ibm.com>, 
+    Sven Schnelle <svens@linux.ibm.com>, 
+    Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
+    John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+    "David S. Miller" <davem@davemloft.net>, 
+    Andreas Larsson <andreas@gaisler.com>, Richard Weinberger <richard@nod.at>, 
+    Anton Ivanov <anton.ivanov@cambridgegreys.com>, 
+    Johannes Berg <johannes@sipsolutions.net>, 
+    Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, 
+    Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, 
+    x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
+    Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>, 
+    Arnd Bergmann <arnd@arndb.de>, strace-devel@lists.strace.io, 
+    linux-snps-arc@lists.infradead.org, linux-kernel@vger.kernel.org, 
+    linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org, 
+    loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, 
+    linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org, 
+    linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+    linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+    linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
+    linux-um@lists.infradead.org, linux-arch@vger.kernel.org
+Subject: Re: [PATCH v6 3/6] syscall.h: introduce syscall_set_nr()
+In-Reply-To: <20250217091034.GD18175@strace.io>
+Message-ID: <alpine.DEB.2.21.2502191658530.65342@angie.orcam.me.uk>
+References: <20250217091034.GD18175@strace.io>
+User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,65 +94,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: -0nfzOLk-iSmRiDMV3cAGQnVUQrMFrCG
-X-Proofpoint-ORIG-GUID: lsAzIwV9z7swoBTplC0ojbBe2RyPnvvE
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-02-19_07,2025-02-19_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 phishscore=0
- spamscore=0 clxscore=1011 priorityscore=1501 mlxlogscore=944
- lowpriorityscore=0 impostorscore=0 malwarescore=0 bulkscore=0 mlxscore=0
- adultscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2502100000 definitions=main-2502190124
+Content-Type: text/plain; charset=US-ASCII
 
-Architectures like PowerPC use a pattern where the compiler generates a
-branch-and-link (bl) instruction that targets the very next instruction,
-followed by loading the link register (mflr) later. This pattern appears
-in the code like:
+On Mon, 17 Feb 2025, Dmitry V. Levin wrote:
 
- bl .+4
- li r5,0
- mflr r30
+> diff --git a/arch/mips/include/asm/syscall.h b/arch/mips/include/asm/syscall.h
+> index ea050b23d428..b956b015641c 100644
+> --- a/arch/mips/include/asm/syscall.h
+> +++ b/arch/mips/include/asm/syscall.h
+> @@ -41,6 +41,20 @@ static inline long syscall_get_nr(struct task_struct *task,
+>  	return task_thread_info(task)->syscall;
+>  }
+>  
+> +static inline void syscall_set_nr(struct task_struct *task,
+> +				  struct pt_regs *regs,
+> +				  int nr)
+> +{
+> +	/*
+> +	 * New syscall number has to be assigned to regs[2] because
+> +	 * syscall_trace_entry() loads it from there unconditionally.
 
-Objtool currently warns about this as an "unannotated intra-function
-call" because find_call_destination() fails to find any symbol at the
-target offset. Add a check to skip the warning when a branch targets
-the immediate next instruction in the same function.
+ That label is called `trace_a_syscall' in arch/mips/kernel/scall64-o32.S 
+instead.  To bring some order and avoid an inaccuracy here should the odd 
+one be matched to the other three?
 
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202502180818.XnFdv8I8-lkp@intel.com/
-Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
----
- tools/objtool/check.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+> +	 *
+> +	 * Consequently, if the syscall was indirect and nr != __NR_syscall,
+> +	 * then after this assignment the syscall will cease to be indirect.
+> +	 */
+> +	task_thread_info(task)->syscall = regs->regs[2] = nr;
+> +}
+> +
+>  static inline void mips_syscall_update_nr(struct task_struct *task,
+>  					  struct pt_regs *regs)
+>  {
 
-diff --git a/tools/objtool/check.c b/tools/objtool/check.c
-index 753dbc4f8198..3f7cf2c917b5 100644
---- a/tools/objtool/check.c
-+++ b/tools/objtool/check.c
-@@ -1613,6 +1613,7 @@ static struct symbol *find_call_destination(struct section *sec, unsigned long o
-  */
- static int add_call_destinations(struct objtool_file *file)
- {
-+	struct instruction *next_insn;
- 	struct instruction *insn;
- 	unsigned long dest_off;
- 	struct symbol *dest;
-@@ -1625,6 +1626,11 @@ static int add_call_destinations(struct objtool_file *file)
- 		reloc = insn_reloc(file, insn);
- 		if (!reloc) {
- 			dest_off = arch_jump_destination(insn);
-+
-+			next_insn = next_insn_same_func(file, insn);
-+			if (next_insn && dest_off == next_insn->offset)
-+				continue;
-+
- 			dest = find_call_destination(insn->sec, dest_off);
- 
- 			add_call_dest(file, insn, dest, false);
--- 
-2.39.3
+ Otherwise:
 
+Reviewed-by: Maciej W. Rozycki <macro@orcam.me.uk>
+
+for this part, thank you!
+
+  Maciej
 
