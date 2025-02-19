@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-6346-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6347-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2599C021AA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Feb 2025 11:15:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 559D0C021AA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Feb 2025 11:21:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4YyYhz27Nmz2ypP;
-	Wed, 19 Feb 2025 22:15:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.176
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739963731;
-	cv=none; b=ZAo3q5Tf9X3UYgj4ZgvUGVml9yuP1lAbzOSeizNa/X2Ao4ClmTDx7WIgxkzA+gksE4ptaI5uHjBI/28aNL5HZ/xtLUXOiWXTK4t2xhCo1ZZbItmgvY3AFOE0FRsBW9Zz0v5qlCKLBg0HbOJ+J7IYKHL82etix7UX2Qa4USH0HmICsEMnRgL9fPm07pHnRyqZYFKTcejo2PmHFqQfJbXq5viLR5BkunyJfLFO6TapvKsxnnBSwj+mvVvC+0nB3FfskT38dFwau+ET6UR2j6sUmPwanNrbAKpqlLZ67CmA6OXnGeCCB46v2dAjmTf1AjbJtF4+H0EK4EY9CFanm1QMjw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4YyYr603rlz30Nc;
+	Wed, 19 Feb 2025 22:21:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::ac"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1739964101;
+	cv=none; b=ZsUrzNT9rusnxoCAng1MuHrEEzo3mQ/8ytIIQLnnicJK12BdIRyZO00I+YoGZ6e6qg44wKJ/+lrSPrprJvVm4Gzp0t02PpE9QROAH56BUvWHW137dhoTAxeJoMC1ySLV699/Y3gn+xLjX1DYDqpytlBM8EC8qCrR16/ejyN1w9nlMQkWSIPiiRMms4Fn1jcrXOwzsqJ3vnANh5pbY4JFuvbmoaiC0DBWkeI4F6SVtbasCjDAc4xStK3DVfsJRkRgLN2KCP0JHr5hWFAUntfevNzmv7qLbplsyxYXJK56EH7qyXC3ZHvspZ+nUycNED+BmBEnuG7TgijWSXmwVa7xIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1739963731; c=relaxed/relaxed;
-	bh=V7J6bjtaJTUd2K3lHUzfdRkSYg0oGbnN7LsQbAU/9XM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=eue2XzIuvR6Z//dJO9Ya1Gtq6bntGpEvpk+k2v36JA0Q3kVqBZmIf+d8IPihVvTVAiHPRPHk4ZESYJ73ZZB8KrvOsjas+03Bwiko4mva/q2554nlxp83tVlodwjaRAwxIsLA/+oC1bSS6HzN0S1zAkEfmrwaQk0L+Nc0gLts/Umd6mn7NYhVyD7n7/Zxquk4RgoT1F3QT+XHYZUml1bzUW7d9Sdev3flsyLPFckzyryfKVf8J0VLq2MckDVsyK/GcRUPQS23M2Hjv9WSu1ehTLgQ4DD5ezlg6V/YbBZkL9kgh7G0q4CstHc8FLOphT24e33Wilulrqw4XbJikzUgSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Hu5kFdvD; dkim-atps=neutral; spf=pass (client-ip=95.215.58.176; helo=out-176.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	t=1739964101; c=relaxed/relaxed;
+	bh=VbnfYpgjWkRFEHyP0AjeLJC9trz2T52WuBKfYylRL1Q=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=oC/0RVXJI9bVv7Donyhn3NHHYymjrc+DbtzO/BEJn54koi1vd4KtFn3KIjCPWGV7TlRXSbKBnxn3YHsdxk1r/A79uEZTXG052HYdA/lGRVSbK43ZZRwpqKxJnEocO3UqQpP4RWpMVjkSusGWw0GkNfGGnthR+6rboEziXmgu4dnkuKcmIFMzqT6tV+o+gyQyNdV5gqay/h5XMm40Y7LxdrHcAhUyuwVROj0dnqCXP46Jp8DgQlAy77k4RBAjlHIEaE9doCkrZbRN9hwYuzTHoTZjR7kDlRALUW8clTF6FFx9k/LYg4TTlO5RnNjFLkixGCuVS0s70950NDsn0Sin/Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ELOE7ZeY; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::ac; helo=out-172.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=Hu5kFdvD;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=ELOE7ZeY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.176; helo=out-176.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-176.mta1.migadu.com (out-176.mta1.migadu.com [95.215.58.176])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::ac; helo=out-172.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-172.mta1.migadu.com (out-172.mta1.migadu.com [IPv6:2001:41d0:203:375::ac])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4YyYhw07rbz2ykZ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2025 22:15:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4YyYr51GSmz2x9N
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Feb 2025 22:21:40 +1100 (AEDT)
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1739963705;
+	t=1739964079;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding;
-	bh=V7J6bjtaJTUd2K3lHUzfdRkSYg0oGbnN7LsQbAU/9XM=;
-	b=Hu5kFdvDAl32MVBunidKz0lAaU+XD+kJfkL4Cw+vHuYkNw4YLkqIORjg824bxqSwl28IkG
-	B7EMVX+KJFYNsnHnGg8R60lwGEB+rdEY6Lw5HbGMS8oz751Bme1exo81wBvwzpgDB+zw3c
-	kkaUKDbj7EeQsujtqYSMAFns28sKWRc=
+	bh=VbnfYpgjWkRFEHyP0AjeLJC9trz2T52WuBKfYylRL1Q=;
+	b=ELOE7ZeYVBe7n7GTsLUiWA+YpQPM0B19luO+whrKKrz/ZSizg3ZAkrD05CqAR1J/E7fiSx
+	aNp9dJO3S8tyZ+R4/OFCMvox/ut6fRs7hq+jgOCn/6TGx9b7tiWRM5mZw2kbiObtZjp5V0
+	SXCFFkX0523/vbML2Rq3ae9+sfeUdj0=
 From: Thorsten Blum <thorsten.blum@linux.dev>
-To: Geoff Levand <geoff@infradead.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>
-Cc: Thorsten Blum <thorsten.blum@linux.dev>,
-	linuxppc-dev@lists.ozlabs.org,
+	Naveen N Rao <naveen@kernel.org>,
+	=?UTF-8?q?Ricardo=20B=2E=20Marli=C3=A8re?= <ricardo@marliere.net>,
+	Thorsten Blum <thorsten.blum@linux.dev>
+Cc: linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [RESEND PATCH] powerpc/ps3: Use str_write_read() in ps3_notification_read_write()
-Date: Wed, 19 Feb 2025 12:14:45 +0100
-Message-ID: <20250219111445.2875-2-thorsten.blum@linux.dev>
+Subject: [RESEND PATCH] powerpc: mpic: Use str_enabled_disabled() helper function
+Date: Wed, 19 Feb 2025 12:20:52 +0100
+Message-ID: <20250219112053.3352-2-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,38 +63,47 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-Migadu-Flow: FLOW_OUT
 
-Remove hard-coded strings by using the str_write_read() helper function.
+Remove hard-coded strings by using the str_enabled_disabled() helper
+function.
 
-Suggested-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Use pr_debug() instead of printk(KERN_DEBUG) to silence a checkpatch
+warning.
+
+Reviewed-by: Ricardo B. Marlière <ricardo@marliere.net>
 Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
 ---
- arch/powerpc/platforms/ps3/device-init.c | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/sysdev/mpic.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/arch/powerpc/platforms/ps3/device-init.c b/arch/powerpc/platforms/ps3/device-init.c
-index 61722133eb2d..22d91ac424dd 100644
---- a/arch/powerpc/platforms/ps3/device-init.c
-+++ b/arch/powerpc/platforms/ps3/device-init.c
-@@ -14,6 +14,7 @@
+diff --git a/arch/powerpc/sysdev/mpic.c b/arch/powerpc/sysdev/mpic.c
+index d94cf36b0f65..25fc4ac91814 100644
+--- a/arch/powerpc/sysdev/mpic.c
++++ b/arch/powerpc/sysdev/mpic.c
+@@ -27,6 +27,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/pci.h>
  #include <linux/slab.h>
- #include <linux/reboot.h>
- #include <linux/rcuwait.h>
 +#include <linux/string_choices.h>
+ #include <linux/syscore_ops.h>
+ #include <linux/ratelimit.h>
+ #include <linux/pgtable.h>
+@@ -474,9 +475,9 @@ static void __init mpic_scan_ht_msi(struct mpic *mpic, u8 __iomem *devbase,
+ 		addr = addr | ((u64)readl(base + HT_MSI_ADDR_HI) << 32);
+ 	}
  
- #include <asm/firmware.h>
- #include <asm/lv1call.h>
-@@ -724,7 +725,7 @@ static irqreturn_t ps3_notification_interrupt(int irq, void *data)
- static int ps3_notification_read_write(struct ps3_notification_device *dev,
- 				       u64 lpar, int write)
- {
--	const char *op = write ? "write" : "read";
-+	const char *op = str_write_read(write);
- 	unsigned long flags;
- 	int res;
+-	printk(KERN_DEBUG "mpic:   - HT:%02x.%x %s MSI mapping found @ 0x%llx\n",
+-		PCI_SLOT(devfn), PCI_FUNC(devfn),
+-		flags & HT_MSI_FLAGS_ENABLE ? "enabled" : "disabled", addr);
++	pr_debug("mpic:   - HT:%02x.%x %s MSI mapping found @ 0x%llx\n",
++		 PCI_SLOT(devfn), PCI_FUNC(devfn),
++		 str_enabled_disabled(flags & HT_MSI_FLAGS_ENABLE), addr);
  
+ 	if (!(flags & HT_MSI_FLAGS_ENABLE))
+ 		writeb(flags | HT_MSI_FLAGS_ENABLE, base + HT_MSI_FLAGS);
 -- 
 2.48.1
 
