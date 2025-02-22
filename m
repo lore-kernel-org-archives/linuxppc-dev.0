@@ -1,94 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-6390-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6391-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D070C021B2
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Feb 2025 10:14:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB2F6C021B6
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Feb 2025 22:46:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z0NCF4903z2y8p;
-	Sat, 22 Feb 2025 21:14:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740219273;
-	cv=none; b=Guw4CXwc8LdAEF47AP6tJdk1Qgpp7gKidQKzAxcfN0tPEXj5XMvJCxLXYzD7BJWnxEBqWug8kQbXvKtsuNVyy85E2M9iwKVSDV13iQBX7jqDYQQhX2+6O8smzlSHDyLtQDKz5DJ/ZdKMssg0ihcVjGuTr96u8URRtzE4Yhnc9dAbBK0a2UloWKE94NphXbZFJV+j078IfZo5D4FXol6TUTD5HeEIBl3XNHipnE0MMshRGtsXa3SrEOmThfh7d9Xwr/0PbQIU+E6hb3ZZCbFh4mG9sd5xWMlPOepQIzFV0Qn6BpeRTC3MZx3xG8QdLeM+Hhl6qdn5qIWNKuZwYFTSzw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z0htk2wwrz2yVT;
+	Sun, 23 Feb 2025 09:46:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740231527;
+	cv=none; b=bXmwgAl/WzOQ4iK42/O1Jh7aWk1ocJcrx03mi9lnOr0cOXMKKLX7tsGW6uKHAWfQjVgVn0FKE3YX6FkPsfAiVDIooVwwYGkGKrDa3VHrrhMdRelHCAXziTkcrjVxRMoQCH6yGO7OtsQ/6WfA0Yop8uFDRNq/65WomvkJwRkekxYLv/+pIprj6z/HCqNtoCIMhX7+EOAtrHV7EIdpPMEInQ0QQ2lhg9kZQkIDOqTNT18bB7r/OjDqaSjVywV8GQMwVdxc7vxFmuNV7ei4x0IvUscUnXvZKRaWgybjeRAy0YS4gSGneUnweLRSWKCB3YcCFKCCTH67/0x1wmY7ZU4OyA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740219273; c=relaxed/relaxed;
-	bh=NYt57ZYgbjy6ej8hXDty7Cfp9Tf5nA32oYEo7YLt3U4=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=O8ycnXiu52SD+5oKkAAKLASLuUqVxbV4Ammq00/EINhJ3kjeKyx9fwAnQrGcd/p5Lv9lTZ0vl6y5IS3V5PBohJQnq1WyOdsc7HfSitUKZg4b5DHOkBQTD5kE2GwtuH7Ah1wjgKUlL7YleFtzPyi0NVrttBPOA+PsCcV57XQQBg069Qoddnh9FXrFJErgJkMNrB6BT87O+ybuoIeZbZ0csVCC7EgE3nRjkLq50z6TUSq0EMsdwZ2LATCCAAExJY4GEga7itzJI+utLQbA1TyO4MOEme2iXOB9e+Oro+Tl2sBEcjsHCCi4bSW1Ig42qgJNu1hD/Rkx3KZPIPO+iGf0aw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=E0xbOLPR; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=z74TsqYt; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1740231527; c=relaxed/relaxed;
+	bh=CLXAfmXaGriUIRefxyaQBd27LIBV1HDxn0UO9rquAAE=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=DZALYIe/CfUmKk6XImSw5Xb+WFXtIUyWBJ2t89byCL8rpEnulUtqkJqv+680hoM66kSBnnIpDXywcXM4qRp5eLRgUbeUGWioP7l4ZB9hUDxbEGuYXsfO90I5GkJxYgm9nO3rtzD50LVTnHex6bDnoqQW2/cgeFUKE8BZVnwZ2ZMOMLorVykniDhXeG6JS6WCvcMYJGuV1RdFtG1ed2q7qu5dARMBhTe3olFgZY5lARSdGBLWUQSvCR/KEeMEFEdHyIOcvs+8ManKGleDuk/qMZ5UhJM4h1Fg57XVuRUMlfVBGnxQz/SZT4dAvuUWfNjcWoifMZ/ZkeCVX7itR2cakg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B0yifpRA; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=E0xbOLPR;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=z74TsqYt;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=B0yifpRA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z0NCC6FQNz2xmS
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2025 21:14:31 +1100 (AEDT)
-From: Thomas Gleixner <tglx@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1740219265;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=NYt57ZYgbjy6ej8hXDty7Cfp9Tf5nA32oYEo7YLt3U4=;
-	b=E0xbOLPRJ+XD/M3Ao9By6szoKCsyLxcxtVTGsSbhAcE5NU1NK5C2+Dfl+zJ4+rpk8p2vce
-	IgpgL+eLpTnyqk83xyrJHvEqqHTXl3g07KURIn1lsZ0aq6OKRUYTD54okHfdjXqNbDsSjC
-	8vSMloBPM2AV4QgA0stwUEWMG6uZx3A9biypqi3p4tS6E2BLtlPpYMDvXniwVQOifJQaz1
-	6Qig6O/uBgxjjBbGrOo71YvA2kL4peLeza5WOnn/Kdf4/Lf3rBALBWYLzmAVI3S8o31rMK
-	Fy+Fe19AlwTl2IsoJXlYAVNRDdBMW1sP8B0maDlcTMTjaB57ZbWi7eIerkehlg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1740219265;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=NYt57ZYgbjy6ej8hXDty7Cfp9Tf5nA32oYEo7YLt3U4=;
-	b=z74TsqYtERi/FO28k1WNxuOk/eCrttvKrCalx/NPgzVgRgvry4d1qCKiaSmbcNlhBsMonW
-	bE0L5AunrFXssYCw==
-To: Xi Ruoyao <xry111@xry111.site>, Thomas =?utf-8?Q?Wei=C3=9Fschuh?=
- <thomas.weissschuh@linutronix.de>, "James E.J. Bottomley"
- <James.Bottomley@HansenPartnership.com>, Helge
- Deller <deller@gmx.de>, Andy Lutomirski <luto@kernel.org>, Vincenzo
- Frascino <vincenzo.frascino@arm.com>, Anna-Maria Behnsen
- <anna-maria@linutronix.de>, Frederic Weisbecker <frederic@kernel.org>,
- Andrew Morton <akpm@linux-foundation.org>, Catalin
- Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Theodore
- Ts'o <tytso@mit.edu>, "Jason A. Donenfeld" <Jason@zx2c4.com>, Paul
- Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt <palmer@dabbelt.com>,
- Albert Ou <aou@eecs.berkeley.edu>, Huacai Chen <chenhuacai@kernel.org>,
- WANG Xuerui <kernel@xen0n.name>, Russell King <linux@armlinux.org.uk>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger
- <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, Thomas
- Bogendoerfer <tsbogend@alpha.franken.de>, Michael Ellerman
- <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe
- Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>,
- Madhavan
- Srinivasan <maddy@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>, Borislav
- Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, Arnd Bergmann
- <arnd@arndb.de>, Guo Ren <guoren@kernel.org>
-Cc: linux-parisc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-riscv@lists.infradead.org,
- loongarch@lists.linux.dev, linux-s390@vger.kernel.org,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arch@vger.kernel.org, Nam Cao <namcao@linutronix.de>,
- linux-csky@vger.kernel.org
-Subject: Re: [PATCH v3 09/18] riscv: vdso: Switch to generic storage
- implementation
-In-Reply-To: <1adbf1603237b654a2948ae13692c6b6db0ab7eb.camel@xry111.site>
-References: <20250204-vdso-store-rng-v3-0-13a4669dfc8c@linutronix.de>
- <20250204-vdso-store-rng-v3-9-13a4669dfc8c@linutronix.de>
- <1adbf1603237b654a2948ae13692c6b6db0ab7eb.camel@xry111.site>
-Date: Sat, 22 Feb 2025 11:14:23 +0100
-Message-ID: <87a5aegubk.ffs@tglx>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z0Skt3K0zz2ytQ
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Feb 2025 00:38:46 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id F05675C57DC;
+	Sat, 22 Feb 2025 13:38:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 63EAAC4CEE8;
+	Sat, 22 Feb 2025 13:38:42 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1740231522;
+	bh=stV9tpnov4yN5EBBC898RB20QY2wQygLqqMwvyDN5Eo=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=B0yifpRAfaIfxTZ/0+9c3+UJ6qN5Dz2MYeH33+yGul4+clHOoYOKj7b62QejMT/8g
+	 S2CYW0YgBcPqT15Iel2fnamnYJtolkQujb5QiIQsPTkZdjqLWXT7CU4ksITzjNvJme
+	 3d4WC6R1R5DAgSMl2jSpFMrFEJJBtx0cnCv/iiaAk1XbvL4U+/1lDEIgAQ3UBcvPw3
+	 njE1qDOjvXAQliL9xTzqGJZOjKRdSCHxoWzDjLva1JB9wYfEweoMyEP4bsx9JsX2qP
+	 d6ZJpK0fstVTAsVJaPQsaRyx+bQOaO0r7zTn6AnlWTFK8XsWNWrUJuxSIBDSlNgPIs
+	 12puhG4AUFbeg==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 50EF4C021B5;
+	Sat, 22 Feb 2025 13:38:42 +0000 (UTC)
+From: Sven Peter via B4 Relay <devnull+sven.svenpeter.dev@kernel.org>
+Date: Sat, 22 Feb 2025 13:38:34 +0000
+Subject: [PATCH 2/4] i2c: pasemi: Improve error recovery
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,27 +62,181 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+Message-Id: <20250222-pasemi-fixes-v1-2-d7ea33d50c5e@svenpeter.dev>
+References: <20250222-pasemi-fixes-v1-0-d7ea33d50c5e@svenpeter.dev>
+In-Reply-To: <20250222-pasemi-fixes-v1-0-d7ea33d50c5e@svenpeter.dev>
+To: Janne Grunau <j@jannau.net>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>, 
+ Naveen N Rao <naveen@kernel.org>, Andi Shyti <andi.shyti@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, asahi@lists.linux.dev, 
+ linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, 
+ linux-kernel@vger.kernel.org, Sven Peter <sven@svenpeter.dev>, 
+ Hector Martin <marcan@marcan.st>
+X-Mailer: b4 0.13.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4391; i=sven@svenpeter.dev;
+ h=from:subject:message-id;
+ bh=FOQIV4q7QbwGt8D9/MCWC8cZNMpith++DiclVxlmaig=;
+ b=owGbwMvMwCHmIlirolUq95LxtFoSQ/rOyzHXHGYEMRdvvZQdf+b35HAG7jV1fXEBv+3epzBOj
+ Pfwu3K+o5SFQYyDQVZMkWX7fnvTJw/fCC7ddOk9zBxWJpAhDFycAjCRhpmMDGfYv3fz+dwVN3j+
+ 47OXaKGTUe2hyf/CpdvNZfxfSR8pY2Rk6BTTbD4r61F6tmjvwZU3dq5/MKWRSXnxd41XE9lvpYp
+ PZwYA
+X-Developer-Key: i=sven@svenpeter.dev; a=openpgp;
+ fpr=A1E3E34A2B3C820DBC4955E5993B08092F131F93
+X-Endpoint-Received: by B4 Relay for sven@svenpeter.dev/default with
+ auth_id=167
+X-Original-From: Sven Peter <sven@svenpeter.dev>
+Reply-To: sven@svenpeter.dev
 
-On Sat, Feb 22 2025 at 16:17, Xi Ruoyao wrote:
-> On Tue, 2025-02-04 at 13:05 +0100, Thomas Wei=C3=9Fschuh wrote:
->> The generic storage implementation provides the same features as the
->> custom one. However it can be shared between architectures, making
->> maintenance easier.
->>=20
->> Co-developed-by: Nam Cao <namcao@linutronix.de>
->> Signed-off-by: Nam Cao <namcao@linutronix.de>
->> Signed-off-by: Thomas Wei=C3=9Fschuh <thomas.weissschuh@linutronix.de>
->
-> I made a RISC-V vDSO getrandom implementation on top of this and it
-> works fine.  I'll submit it when this is merged.
+From: Hector Martin <marcan@marcan.st>
 
-You can submit it right now. If it's reviewed and if Jason agrees, this
-can be merged through the timers/vdso branch on top of the pending
-changes.
+The hardware (supposedly) has a 25ms timeout for clock stretching
+and the driver uses 100ms which should be plenty. The error
+reocvery itself is however lacking.
 
-Thanks for testing it!
+Add handling for all the missing error condition, and better recovery in
+pasemi_smb_clear(). Also move the timeout to a #define since it's used
+in multiple places now.
 
-       tglx
+Signed-off-by: Hector Martin <marcan@marcan.st>
+[sven: adjusted commit message after splitting the commit into two]
+Signed-off-by: Sven Peter <sven@svenpeter.dev>
+---
+ drivers/i2c/busses/i2c-pasemi-core.c | 70 +++++++++++++++++++++++++++++-------
+ 1 file changed, 58 insertions(+), 12 deletions(-)
+
+diff --git a/drivers/i2c/busses/i2c-pasemi-core.c b/drivers/i2c/busses/i2c-pasemi-core.c
+index bd128ab2e2eb..770b86b92a10 100644
+--- a/drivers/i2c/busses/i2c-pasemi-core.c
++++ b/drivers/i2c/busses/i2c-pasemi-core.c
+@@ -52,6 +52,8 @@
+ #define CTL_UJM		BIT(8)
+ #define CTL_CLK_M	GENMASK(7, 0)
+ 
++#define TRANSFER_TIMEOUT_MS	100
++
+ static inline void reg_write(struct pasemi_smbus *smbus, int reg, int val)
+ {
+ 	dev_dbg(smbus->dev, "smbus write reg %x val %08x\n", reg, val);
+@@ -80,23 +82,45 @@ static void pasemi_reset(struct pasemi_smbus *smbus)
+ 	reinit_completion(&smbus->irq_completion);
+ }
+ 
+-static void pasemi_smb_clear(struct pasemi_smbus *smbus)
++static int pasemi_smb_clear(struct pasemi_smbus *smbus)
+ {
+ 	unsigned int status;
++	int timeout = TRANSFER_TIMEOUT_MS;
+ 
+ 	status = reg_read(smbus, REG_SMSTA);
++
++	/* First wait for the bus to go idle */
++	while ((status & (SMSTA_XIP | SMSTA_JAM)) && timeout--) {
++		msleep(1);
++		status = reg_read(smbus, REG_SMSTA);
++	}
++
++	if (timeout < 0) {
++		dev_warn(smbus->dev, "Bus is still stuck (status 0x%08x)\n", status);
++		return -EIO;
++	}
++
++	/* If any badness happened or there is data in the FIFOs, reset the FIFOs */
++	if ((status & (SMSTA_MRNE | SMSTA_JMD | SMSTA_MTO | SMSTA_TOM | SMSTA_MTN | SMSTA_MTA)) ||
++		!(status & SMSTA_MTE))
++		pasemi_reset(smbus);
++
++	/* Clear the flags */
+ 	reg_write(smbus, REG_SMSTA, status);
++
++	return 0;
+ }
+ 
+ static int pasemi_smb_waitready(struct pasemi_smbus *smbus)
+ {
+-	int timeout = 100;
++	int timeout = TRANSFER_TIMEOUT_MS;
+ 	unsigned int status;
+ 
+ 	if (smbus->use_irq) {
+ 		reinit_completion(&smbus->irq_completion);
+-		reg_write(smbus, REG_IMASK, SMSTA_XEN | SMSTA_MTN);
+-		wait_for_completion_timeout(&smbus->irq_completion, msecs_to_jiffies(100));
++		/* XEN should be set when a transaction terminates, whether due to error or not */
++		reg_write(smbus, REG_IMASK, SMSTA_XEN);
++		wait_for_completion_timeout(&smbus->irq_completion, msecs_to_jiffies(timeout));
+ 		reg_write(smbus, REG_IMASK, 0);
+ 		status = reg_read(smbus, REG_SMSTA);
+ 	} else {
+@@ -107,16 +131,36 @@ static int pasemi_smb_waitready(struct pasemi_smbus *smbus)
+ 		}
+ 	}
+ 
+-	/* Got NACK? */
+-	if (status & SMSTA_MTN)
+-		return -ENXIO;
++	/* Controller timeout? */
++	if (status & SMSTA_TOM) {
++		dev_warn(smbus->dev, "Controller timeout, status 0x%08x\n", status);
++		return -EIO;
++	}
+ 
+-	if (timeout < 0) {
+-		dev_warn(smbus->dev, "Timeout, status 0x%08x\n", status);
+-		reg_write(smbus, REG_SMSTA, status);
++	/* Peripheral timeout? */
++	if (status & SMSTA_MTO) {
++		dev_warn(smbus->dev, "Peripheral timeout, status 0x%08x\n", status);
+ 		return -ETIME;
+ 	}
+ 
++	/* Still stuck in a transaction? */
++	if (status & SMSTA_XIP) {
++		dev_warn(smbus->dev, "Bus stuck, status 0x%08x\n", status);
++		return -EIO;
++	}
++
++	/* Arbitration loss? */
++	if (status & SMSTA_MTA) {
++		dev_warn(smbus->dev, "Arbitration loss, status 0x%08x\n", status);
++		return -EBUSY;
++	}
++
++	/* Got NACK? */
++	if (status & SMSTA_MTN) {
++		dev_warn(smbus->dev, "NACK, status 0x%08x\n", status);
++		return -ENXIO;
++	}
++
+ 	/* Clear XEN */
+ 	reg_write(smbus, REG_SMSTA, SMSTA_XEN);
+ 
+@@ -177,7 +221,8 @@ static int pasemi_i2c_xfer(struct i2c_adapter *adapter,
+ 	struct pasemi_smbus *smbus = adapter->algo_data;
+ 	int ret, i;
+ 
+-	pasemi_smb_clear(smbus);
++	if (pasemi_smb_clear(smbus))
++		return -EIO;
+ 
+ 	ret = 0;
+ 
+@@ -200,7 +245,8 @@ static int pasemi_smb_xfer(struct i2c_adapter *adapter,
+ 	addr <<= 1;
+ 	read_flag = read_write == I2C_SMBUS_READ;
+ 
+-	pasemi_smb_clear(smbus);
++	if (pasemi_smb_clear(smbus))
++		return -EIO;
+ 
+ 	switch (size) {
+ 	case I2C_SMBUS_QUICK:
+
+-- 
+2.34.1
+
+
 
