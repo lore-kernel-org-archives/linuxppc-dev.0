@@ -1,65 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-6385-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6386-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A0B1FC021B3
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Feb 2025 23:44:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7BF6FC021B3
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Feb 2025 00:34:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z06DP42Tpz30VQ;
-	Sat, 22 Feb 2025 10:44:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04::f03c:95ff:fe5e:7468"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740181477;
-	cv=none; b=TxVRq7EZdp65FWDnnCKFo5E0u4c4yQpKilZVVFpdZ9mxSeZ3GPIC1YZCeuEAr3PU3UjSEaQZMgsQONVwCkpznDqFG6m5RZWUbGL4hEvW6mj7SajHGqqQkuRAzMtNHOijl4OsYB9LtEP2i5RV6A7GW7+im/7fjUaqxohhXUE/euTSkmQHsL8W/K1NDblMbT8maMM16AvJbp4FoMrrTa3dNOzL4s2r2qkTwenJhkieQjwXJgu1agabCtdS6yJ8ha9wUmFZgPNKQzZjvY1rLcYn1459zfvNhVFHhaVUqRTtc8NCqIeF/VBAdBjA8gtUkNICkVNwYKraOvXDA+im+2mNPg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z07Kg0G0mz30V7;
+	Sat, 22 Feb 2025 11:34:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::112c"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740184454;
+	cv=none; b=gn5rKb2JHQ/9FmIpATbVxOPGzecDGl0Te+1dg1z835iIm4soybRNnPe27mPeZAR4KT8dAqnftrf+GXn5gUjra7yyqO1BBfIpS/vLFt0ZTJx3U3xIsPgMionytCUC1SzDaViGuMBao253g1iG5DXuOoyGc2fzAUf2G1Ag/Nm0nMAsz4j5jCMXxsYS+kKzbfiY49uBOxZ1KONV9A8Hat1taOraBShTbVprainIbmMWnZXtVJfC/95+/ahbVccCII4iBojEeHq0afscBb/zjwl2nMIa2+FLZlbVhkCz8cgf5rH8vMiEs43q+vVb2eqSn7x4iPkAgfM5tAEH69eVKr92VA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740181477; c=relaxed/relaxed;
-	bh=hUqIJBibsmbnPJogcXliLkIeRLRswEhVmHxAsbFNMFc=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=hmcAjEzP5DbPvoq3V9qERAfi1NBcNgCW0iuvtG1OuEyV1LO5BLamRAa/7nyHrN4VLlKZi4HnbnBtCSF/vB+UXf1zJ8kG3VpWYVa5zLEaf+l7Mfl19QY42DR6hUQ5wV4WJ71EgReBsNooNINhGbzo6wS5xye0PU8GPSrBcp3bYJ85aQ81m4z36wPxgSpHaTb9D3r419r9qknzmfSUEJG/G7j2romQSjEIv0fEklIKE+KTfGhSDkc031HIdZOsTKm0NySPRjmMP/f3zznSru3ZMOc+4C1KaTavAXnTAs3kwSDMu9warxE9nWFGZKpqEDkWl+thHuGxjBsWP2pUxy6xpw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=I9/+cK7b; dkim-atps=neutral; spf=pass (client-ip=2600:3c04::f03c:95ff:fe5e:7468; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1740184454; c=relaxed/relaxed;
+	bh=vwm1CmURc5ve7fRU7CIVjr3XJe8XTIamKjt5b8I2oxA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Dzvw6kOdw6Ztq5S0wXdWcyypaj6xwWdtgFWIp/oXcFQaslKNvmcx7XiP/8yroVteir9gLzsKEifojQD6TsBIYVES/1hlDH0u/EaYn7Kqwo27jSI/dq/ctjfRFT5iNLZrT2O3sIa4eHn2pXWihHkJIPZclrzNFk3hrOh2DfgSaJP7FZRZns5qR6kOnGOPf+C5BD6fqPhrALwWqwWO6HYyrHwRj3dnZNqNPTN1rEL+Qz3hw5TE1X+dYvNVTlfXVunbIZtitjzgSwdgc+E/FgRzcmx/H4fVhj4GmqskHTLxLg9m4hp/Bs+Ca19Wk8YR9PMqTv5aLEFyuXy3EqYEM/xJ4g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com; dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=QaoiYUHm; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::112c; helo=mail-yw1-x112c.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org) smtp.mailfrom=paul-moore.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=I9/+cK7b;
+	dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=QaoiYUHm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04::f03c:95ff:fe5e:7468; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 474 seconds by postgrey-1.37 at boromir; Sat, 22 Feb 2025 10:44:36 AEDT
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04::f03c:95ff:fe5e:7468])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=paul-moore.com (client-ip=2607:f8b0:4864:20::112c; helo=mail-yw1-x112c.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x112c.google.com (mail-yw1-x112c.google.com [IPv6:2607:f8b0:4864:20::112c])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z06DN3G2dz30CL
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2025 10:44:36 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 0B3CA6134E;
-	Fri, 21 Feb 2025 23:36:35 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51352C4CED6;
-	Fri, 21 Feb 2025 23:36:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740180997;
-	bh=Fzra3LTozAg1Caf4BQdZdGPzv/rLipAz4636FFpafrU=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=I9/+cK7b5Os9EJJvA+A2tT1AI7MEU4cYE2uHhPjbpxsWOSlQTNv7ei/j1775SGlo7
-	 ATSaK5KEAOB2X/UFUrMBrRZw/0d73yTA+sAciJ8otQ9st328UxrgVn99TAqt5Mx7cT
-	 pQHY5nP52ubmB8bb3AlUUQx1P1tkSk5C1x1JsTI5/ZmZYL7NMq9zW1EDX2PQ5L+PO3
-	 ohat8UVjy5+3iKyDcctjf3+3mj49C52dWekRYoV82Jua7pFMxW9BM368BdafOizLSF
-	 W3bWwocINj4nXShXAUJC38RGtOzDHGaqveXWXD0aQ16R3vH4njRK0hSU3blbCBKra3
-	 wx93WhKB7/a6Q==
-Date: Fri, 21 Feb 2025 17:36:35 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Yazen Ghannam <yazen.ghannam@amd.com>
-Cc: Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
-	Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
-	Lukas Wunner <lukas@wunner.de>,
-	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-	linux-kernel@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
-	linux-edac@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Tony Luck <tony.luck@intel.com>
-Subject: Re: [PATCH v2 1/2] PCI: Track Flit Mode Status & print it with link
- status
-Message-ID: <20250221233635.GA372807@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z07Kd6MvVz2yRD
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Feb 2025 11:34:12 +1100 (AEDT)
+Received: by mail-yw1-x112c.google.com with SMTP id 00721157ae682-6f666c94285so24600237b3.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Feb 2025 16:34:12 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=paul-moore.com; s=google; t=1740184450; x=1740789250; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=vwm1CmURc5ve7fRU7CIVjr3XJe8XTIamKjt5b8I2oxA=;
+        b=QaoiYUHmq2jFN59m7jQpf1CZ6IqvcW+zuUMjC4B7XHGD3C5feBiM09rojBbnkQHZXY
+         9oxQNkeQjgGKnaMWV8fR5jpZrrxo8Iup20JqpY1eVtpc3NgTJioRiKhtE0NmcXzqhmj3
+         3XDe9REWlimQ9P+XPJizxmiunJHQYl/fk2g9O1HdtrCrW8Xe5UqvhvQ26FVQIp/zmYeg
+         Ju+Q43/VdUzHaU8rMWX0r4wVDlVioHD/IPrSmEy2HXYTr0sY1NjCiGTfZP7zI/rF7hpZ
+         hvMLMlbqm04hsx3jrjSCbmaAdKlfr/+XZPN02zGV/E8/NgzV6pCmEYqpLIV4u2J4MWe1
+         cbUw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740184450; x=1740789250;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=vwm1CmURc5ve7fRU7CIVjr3XJe8XTIamKjt5b8I2oxA=;
+        b=B1xgsQNMpo1ZtigSDJ950hqYTADuFfsugHuBHzQl5S4acFtW8eCJtdFuCM97nojqfq
+         4O9c6SjqDYU6BrAVUGG9evhWNUTT1mADKYZsisekkNMDEVkNB/swoWcoJy3Nu+f3C0sZ
+         WfemsKrnnfVvGoSa8rbpAxPYH0hLrDdnWXlpcwMFR7nCRzT306Pwj2aHUsMspxLpJ63x
+         0Bq/67BuCD285jWvIYWQoBYPNSUux3dZuD9YMNk0+MTA7lxPfv9GklXv1tWhGm/eMcO+
+         51L3YEFiDgRAOPWPIQSGMaeMkLTsbmVClmuOV4Lf5hk3tovLXezXV7ArWqXD8GuqB7Cg
+         lHgA==
+X-Forwarded-Encrypted: i=1; AJvYcCUKFbt6bFBYuyOAmtK5+Ir1nFvD1tXmcJI46aZ6/xdPEIysT6uiGul1EN5T1nV1Yk76Lz1SaSEzs9t+Neg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyhPXl18C1o68zSPzEsjg4hsT0RAJgUR/2cWBSVXQE8oYyTje6W
+	WVLs25zfpW4933ynExNGuMQZl5Fp8dYmWLw1r5VqEy7oNoIJTVdQhL2RUO/wqSLmnxFA20ak9L+
+	YLvTkdg/uqF86zUGq76QCUjdPvNY9zaRbk898
+X-Gm-Gg: ASbGncvnKvEGAiu5J9N/ucsSBuQPncryVIR0fBnapzkkLurSotlG5kkXM8mFZs9vfLX
+	bxUX1apGSFqHwCFhvgYuL0ayM4R9QPbKfOfz8mdCsK+2yOE1FIqAdJmDzIz5Dnnikz+BW5YHTTu
+	7ZHpPYFf8=
+X-Google-Smtp-Source: AGHT+IHU8mqrXQveakYlLhZ7AQnDt8Huldya+naR0jPDiYuZo2FksnUyR3yBLKwefOB052PduAKRpiO/vKqO0ObiYCs=
+X-Received: by 2002:a05:690c:3506:b0:6f6:c937:2cf4 with SMTP id
+ 00721157ae682-6fbcc81835dmr37934927b3.23.1740184450404; Fri, 21 Feb 2025
+ 16:34:10 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,72 +78,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250221152948.GA926653@yaz-khff2.amd.com>
+References: <20250211-xattrat-syscall-v3-1-a07d15f898b2@kernel.org> <20250221.ahB8jei2Chie@digikod.net>
+In-Reply-To: <20250221.ahB8jei2Chie@digikod.net>
+From: Paul Moore <paul@paul-moore.com>
+Date: Fri, 21 Feb 2025 19:33:59 -0500
+X-Gm-Features: AWEUYZkJvdf7eQZPTJrwhKnqZP-Y8wnVSUpipQ3Me6WvrrB1wQej040Y9lsHrww
+Message-ID: <CAHC9VhSnP=j_T30ctVmzQ8TwhD6YFcrWhLbqa_oG3WSAPUPOaA@mail.gmail.com>
+Subject: Re: [PATCH v3] fs: introduce getfsxattrat and setfsxattrat syscalls
+To: Andrey Albershteyn <aalbersh@redhat.com>, =?UTF-8?B?TWlja2HDq2wgU2FsYcO8bg==?= <mic@digikod.net>
+Cc: Richard Henderson <richard.henderson@linaro.org>, Matt Turner <mattst88@gmail.com>, 
+	Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Will Deacon <will@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, Michal Simek <monstr@monstr.eu>, 
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Helge Deller <deller@gmx.de>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Naveen N Rao <naveen@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, 
+	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+	"David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, 
+	Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, 
+	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>, 
+	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
+	=?UTF-8?Q?G=C3=BCnther_Noack?= <gnoack@google.com>, 
+	Arnd Bergmann <arnd@arndb.de>, linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-m68k@lists.linux-m68k.org, 
+	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
+	linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org, 
+	linux-api@vger.kernel.org, linux-arch@vger.kernel.org, 
+	linux-xfs@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, Feb 21, 2025 at 10:29:48AM -0500, Yazen Ghannam wrote:
-> On Fri, Feb 07, 2025 at 06:18:35PM +0200, Ilpo Järvinen wrote:
-> > PCIe r6.0 added Flit mode that mainly alters HW behavior but some OS
-> > visible changes are also because of it. The OS visible changes include
-> 
-> The first sentence reads oddly. Maybe a slight change?
-> 
-> "...but there are some OS visible changes because of it."
+On Fri, Feb 21, 2025 at 10:08=E2=80=AFAM Micka=C3=ABl Sala=C3=BCn <mic@digi=
+kod.net> wrote:
+>
+> It looks security checks are missing.  With IOCTL commands, file
+> permissions are checked at open time, but with these syscalls the path
+> is only resolved but no specific access seems to be checked (except
+> inode_owner_or_capable via vfs_fileattr_set).
 
-Updated locally.
+Thanks for reviewing the patch and catching this Micka=C3=ABl.  I agree
+with the hooks identified and their placement; it should be fairly
+straightforward with only a few lines added in each case.
 
-> > +	if (dev->bus && dev->bus->flit_mode)
-> > +		flit_mode = ", in Flit mode";
-> > +
-> >  	if (bw_avail >= bw_cap && verbose)
-> > -		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth (%s x%d link)\n",
-> > +		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth (%s x%d link)%s\n",
-> >  			 bw_cap / 1000, bw_cap % 1000,
-> > -			 pci_speed_string(speed_cap), width_cap);
-> > +			 pci_speed_string(speed_cap), width_cap, flit_mode);
-> >  	else if (bw_avail < bw_cap)
-> > -		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth, limited by %s x%d link at %s (capable of %u.%03u Gb/s with %s x%d link)\n",
-> > +		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth, limited by %s x%d link at %s (capable of %u.%03u Gb/s with %s x%d link)%s\n",
-> >  			 bw_avail / 1000, bw_avail % 1000,
-> >  			 pci_speed_string(speed), width,
-> >  			 limiting_dev ? pci_name(limiting_dev) : "<unknown>",
-> >  			 bw_cap / 1000, bw_cap % 1000,
-> > -			 pci_speed_string(speed_cap), width_cap);
-> > +			 pci_speed_string(speed_cap), width_cap, flit_mode);
-> 
-> Does the "Flit mode" message *need* to go into these lines? Could it be
-> its own message?
-
-I suppose it doesn't need to be there, and these bandwidth lines are
-already pretty long (my fault, open to suggestions to shorten them),
-but I do think it's useful to have related info all on the same line.
-
->  +#include <linux/string_choices.h>
-> 
->  @@ -6190,21 +6190,25 @@ void __pcie_print_link_status(struct pci_dev *dev, bool verbose)
->   	enum pci_bus_speed speed, speed_cap;
->   	struct pci_dev *limiting_dev = NULL;
->   	u32 bw_avail, bw_cap;
->   
->   	bw_cap = pcie_bandwidth_capable(dev, &speed_cap, &width_cap);
->   	bw_avail = pcie_bandwidth_available(dev, &limiting_dev, &speed, &width);
->   
->  +	if (dev->bus)
->  +		pci_info(dev, "Flit mode: %s\n", str_enabled_disabled(dev->bus->flit_mode);
->  +
->   	if (bw_avail >= bw_cap && verbose)
->  		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth (%s x%d link)\n",
->   			 bw_cap / 1000, bw_cap % 1000,
->  			 pci_speed_string(speed_cap), width_cap);
->   	else if (bw_avail < bw_cap)
->  		pci_info(dev, "%u.%03u Gb/s available PCIe bandwidth, limited by %s x%d link at %s (capable of %u.%03u Gb/s with %s x%d link)\n",
->   			 bw_avail / 1000, bw_avail % 1000,
->   			 pci_speed_string(speed), width,
->   			 limiting_dev ? pci_name(limiting_dev) : "<unknown>",
->   			 bw_cap / 1000, bw_cap % 1000,
->  			 pci_speed_string(speed_cap), width_cap);
-> 
-> >  }
+--=20
+paul-moore.com
 
