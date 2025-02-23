@@ -1,55 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-6395-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6396-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FF7FC021B5
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 22 Feb 2025 22:47:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 657CAC021B2
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Feb 2025 20:28:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z0hvx5lRNz305n;
-	Sun, 23 Feb 2025 09:47:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04::f03c:95ff:fe5e:7468"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740231882;
-	cv=none; b=deWmJ1vQw+L4jVuMODbxfAYYg6I8U+2qtTYT1xbGrhcyBdNTG+5r+o+VGVDxMXmgtKmhAoTw1ot7KSwm1A1Wd1qJ+zsf3pIug48qb2YRVfEFuhjm5/SdanFRb5hoscd/loKkbKHv5XtxY27oMewivNqUDhM/czoOeUUKlVT+bdkcraMUngHqZ/yqvNgr/kBXu1e/hJzTuphxPOXzyXUvSfweO4Y83rr2cuJoWFwX0STRvVD0Z8t3PZk12IfeodbYOf9suV6lnHkQ1+2EyY/GfQITFymVgH9Ywr+C8HkfCkSnhryyt10Vx/14buTKYoLfnFvHvZuOX0S3uhT06X9Rbw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1Fnd4QJhz2yt0;
+	Mon, 24 Feb 2025 07:28:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.215.58.170
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740342533;
+	cv=none; b=gb2N2dkWWv4bX7BnfDSoUX2oYNhNChfu2Nhv6gKY9a2YoRjPFImTNRKCNr1Ru+Zzhb1njkbA5VsmMjK8pou4DsiRY1A5J02rzLNFU/2a8RcND5+wcXzJlDjSVnuOUU+ZuLuwgBwdzj9g2v4Z7cP+wc8xaxRHY4mX3uKm7PV/AEIsyP1r86t+hWkI2bfoGEHkO1+ycrGLCVHNAutMEoI/a5BugB+ngzg2M9rwMfVXNHL/82vB2vAahc882Hjh52AL3lflweXq/7JLoQpsG8Hw3kFiF8tfo4Ot9z/g4OIGAT00MizCgpt1kWpCioE4Bmb5x7s2rrn1NrZ1v5LcmY8tOQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740231882; c=relaxed/relaxed;
-	bh=KjynJ2iDpp55Qa/iGoDoKteY9QmQneQsXJpkrRU1z8c=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=JVjA7aMoyxFYcNo6WzcKHR3vgrOJHUJUfDQ4wrxYZ8XW2RxCz+cOoRBmHH/6uJhLoKAU45pA3MovHfD+mZUn5gTqkv+DWFL4lvrGpWFePt60aY/w1OdIBB/s6/EWRdCtX6l5VMlS4/0bwhOgoThurRlGG1/alnT06GvZifIa9wV3x64/q3R4aNuLfICOEJk0mHRUMtB79cEU1Z6KzxPvZJ0y9UVbiFw9qsyOleiqS6AKkicPbQeXhu2OMwwvh1/vqRK/Tao43yRV058KikLTAWdr22EVlD5v9kOMODUdALE+klNCKje0C8lbn5xwiEyPHRCr/TTXpQsPuvdCuqaCKg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZhE5nsTR; dkim-atps=neutral; spf=pass (client-ip=2600:3c04::f03c:95ff:fe5e:7468; helo=tor.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1740342533; c=relaxed/relaxed;
+	bh=+zTJ3hkU+s+DVpC9GLX4g3ZeOAZuzC6afimUtBs/oto=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CWUE/zKGI/De9RbBzV+gFsNPf8j1mbQJoMuaCyV5AQttH6qk33AqV2fTJqOsUdKrH/jjsuMd5afYcSPu8Ue0R083QReETLNne0fxNOjQS4DV0lTDV+lUbcWMhXOXoLirflkMG8C5l8RVBnUJ9hn2tMB4TuTl+ePW9inn+C/3eUEqibv5YkCuC9ZMQymWSlt3IBNsGbXh+lgsrfk2X/uxqBbhU2tzZfUq2h6lHjDfQzjrrDF8jB2ebfpdxsdfVP8dKJFkBYimY1cJo1lwdgNR69Lz4m1JoQTPH2VKuYV9yaiolN702V2z9dlEdCCGMguImOypQhfGGwbvEDw0pUsS9A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=lmnsaeOC; dkim-atps=neutral; spf=pass (client-ip=95.215.58.170; helo=out-170.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZhE5nsTR;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=lmnsaeOC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04::f03c:95ff:fe5e:7468; helo=tor.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04::f03c:95ff:fe5e:7468])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=95.215.58.170; helo=out-170.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+Received: from out-170.mta1.migadu.com (out-170.mta1.migadu.com [95.215.58.170])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z0Ssh0vc6z2ywh
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 23 Feb 2025 00:44:39 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2BD6B61132;
-	Sat, 22 Feb 2025 13:38:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 45F11C4CEE2;
-	Sat, 22 Feb 2025 13:38:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740231522;
-	bh=YvDVaUlNxk0FFYVh0Uih/QBxDdTXOT7A8XEjDIMtIh8=;
-	h=From:Subject:Date:To:Cc:Reply-To:From;
-	b=ZhE5nsTRYzQ+xatxbsjltkmXjh4yz5WSZQT0ORjz/ia6DJh/+c0KCvrgkMHMyfvyU
-	 bXNgj/KMZL8hfTAfvtWD5nWhDyjoN3LUGVlwwPKv/fkxV8gAcp4vtjWk2Dfa4HLGgn
-	 4h3Q2Y2F7/0SwRmqdCJVR5zQ1UPd03x3J0uol3c4L6bbbUwBYTbKGW4/iANsTgpi/R
-	 tzscufz5qnk6PQ3YazNK7IIvefqcVF7qgsUzqjiVNW3zC0wDff35tKvJFhYzgw/Ru4
-	 uOOl4hdcJIjtWojAHSS7G/G4ZxjdwyIKk3P96DzWVYRUaM4FyJuOah+KTjxWqFDHnj
-	 yuLhSTAtwKpEQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 2DD68C021B6;
-	Sat, 22 Feb 2025 13:38:42 +0000 (UTC)
-From: Sven Peter via B4 Relay <devnull+sven.svenpeter.dev@kernel.org>
-Subject: [PATCH 0/4] Apple/PASemi i2c error recovery fixes
-Date: Sat, 22 Feb 2025 13:38:32 +0000
-Message-Id: <20250222-pasemi-fixes-v1-0-d7ea33d50c5e@svenpeter.dev>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z1FnZ3FXWz2yn4
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2025 07:28:49 +1100 (AEDT)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1740342508;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=+zTJ3hkU+s+DVpC9GLX4g3ZeOAZuzC6afimUtBs/oto=;
+	b=lmnsaeOC9S8BAtthK/cic5Jq9HPDXa7zl2UuyMUWHwgbLUPq7Cs05LchrCjy2DEn+6dRch
+	LEfwgj8nAy2sRTzEzDjvqVQRFs9KyO+6XM07cqypLKtDxuaocjVK85fEZNZS14V+kfK3l5
+	9r3CN++W2BpuMHOKh2M1vd1M7PQeyYo=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Herve Codina <herve.codina@bootlin.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>
+Cc: Thorsten Blum <thorsten.blum@linux.dev>,
+	linux-sound@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] ASoC: fsl: fsl_qmc_audio: Remove unnecessary bool conversions
+Date: Sun, 23 Feb 2025 21:27:41 +0100
+Message-ID: <20250223202741.1916-2-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,66 +67,39 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-B4-Tracking: v=1; b=H4sIAFjTuWcC/x3LQQqAIBBA0avIrBNULKmrRAu1qWaRiQMRSHdPW
- j4+vwJjIWSYRIWCNzFdqUF3AuLh046S1mYwyvTKGCWzZzxJbvQgy1EPMThnlQ0e2pIL/qEd8/K
- +H5oY4NteAAAA
-To: Janne Grunau <j@jannau.net>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Naveen N Rao <naveen@kernel.org>, Andi Shyti <andi.shyti@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, asahi@lists.linux.dev, 
- linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Sven Peter <sven@svenpeter.dev>, 
- Hector Martin <marcan@marcan.st>
-X-Mailer: b4 0.13.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=914; i=sven@svenpeter.dev;
- h=from:subject:message-id;
- bh=YvDVaUlNxk0FFYVh0Uih/QBxDdTXOT7A8XEjDIMtIh8=;
- b=owGbwMvMwCHmIlirolUq95LxtFoSQ/rOy5HrJq+aLtY2ozoptL78762o7OM1P5+2PDjD8rfuR
- uLhdnuWjlIWBjEOBlkxRZbt++1Nnzx8I7h006X3MHNYmUCGMHBxCsBEPq9m+B8UVsSsKB6l/aLM
- SGmO1TO/xDc3TO5efhvyobe+eUXa+heMDF84zpXYKKjnr520yNlii5XDksSac68jXTJCt34JMb5
- 9nREA
-X-Developer-Key: i=sven@svenpeter.dev; a=openpgp;
- fpr=A1E3E34A2B3C820DBC4955E5993B08092F131F93
-X-Endpoint-Received: by B4 Relay for sven@svenpeter.dev/default with
- auth_id=167
-X-Original-From: Sven Peter <sven@svenpeter.dev>
-Reply-To: sven@svenpeter.dev
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-Hi,
+Remove unnecessary bool conversions and simplify the code.
 
-This series adds a few fixes/improvements to the error recovery for
-Apple/PASemi i2c controllers.
-The patches have been in our downstream tree and were originally used
-to debug a rare glitch caused by clock strechting but are useful in
-general. We haven't seen the controller misbehave since adding these.
-
-Best,
-
-Sven
-
-Signed-off-by: Sven Peter <sven@svenpeter.dev>
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
 ---
-Hector Martin (3):
-      i2c: pasemi: Improve error recovery
-      i2c: pasemi: Enable the unjam machine
-      i2c: pasemi: Log bus reset causes
+ sound/soc/fsl/fsl_qmc_audio.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Sven Peter (1):
-      i2c: pasemi: Add registers bits and switch to BIT()
-
- drivers/i2c/busses/i2c-pasemi-core.c | 121 ++++++++++++++++++++++++++---------
- 1 file changed, 92 insertions(+), 29 deletions(-)
----
-base-commit: 2014c95afecee3e76ca4a56956a936e23283f05b
-change-id: 20250220-pasemi-fixes-916cb77404ba
-
-Best regards,
+diff --git a/sound/soc/fsl/fsl_qmc_audio.c b/sound/soc/fsl/fsl_qmc_audio.c
+index e257b8adafe0..b2979290c973 100644
+--- a/sound/soc/fsl/fsl_qmc_audio.c
++++ b/sound/soc/fsl/fsl_qmc_audio.c
+@@ -892,7 +892,7 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
+ 		qmc_soc_dai_driver->playback.channels_max = count > 1 ? count : nb_tx_ts;
+ 	}
+ 	qmc_soc_dai_driver->playback.formats = qmc_audio_formats(nb_tx_ts,
+-								 count > 1 ? true : false);
++								 count > 1);
+ 
+ 	qmc_soc_dai_driver->capture.channels_min = 0;
+ 	qmc_soc_dai_driver->capture.channels_max = 0;
+@@ -901,7 +901,7 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
+ 		qmc_soc_dai_driver->capture.channels_max = count > 1 ? count : nb_rx_ts;
+ 	}
+ 	qmc_soc_dai_driver->capture.formats = qmc_audio_formats(nb_rx_ts,
+-								count > 1 ? true : false);
++								count > 1);
+ 
+ 	qmc_soc_dai_driver->playback.rates = snd_pcm_rate_to_rate_bit(tx_fs_rate);
+ 	qmc_soc_dai_driver->playback.rate_min = tx_fs_rate;
 -- 
-Sven Peter <sven@svenpeter.dev>
-
+2.48.1
 
 
