@@ -1,48 +1,145 @@
-Return-Path: <linuxppc-dev+bounces-6432-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6433-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BBC3C021A4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2025 18:54:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92310C021A4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2025 21:19:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1qfk4lRkz2ynf;
-	Tue, 25 Feb 2025 05:54:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=78.133.224.34
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740423294;
-	cv=none; b=e/s2Rxv4RfneNIVHqnSppvo8GG6kZDrmetzrcpp80V+PAvX1hC3+Zb7kD0dM3wxUvkLA2iY5ZzhaIkSEhDzpzpMkeuDoO9vPiobEo86AGqNq9su4fjKz/VtdqWnAa/C76aWG4NqUBZknO3igaL7NXTzxPked7dRLWc4g1NZfk/YYzcy+dKb4ZW1vmygMIO0LjLwBEf5JD++e7ZCX8ZK6cKRi1LfeFL4aCsBpn3tK06F1Wen6KBHNQfFNOgRfzruCjOLl0FtnnEtyUtw84NmoVAlkNedtu+xNGySOuvwTobq6+xhMLEPkZlBGWOmWD1UFYG+nBWmFuGfPE14P/UdQzw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1ts71PdNz2yGY;
+	Tue, 25 Feb 2025 08:19:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740431947;
+	cv=none; b=oYIpW/3OfkWftWUTHEO6eLe62/2PnKc8mJJKC3TzE/kzjUhbrTMQaGnZwyCrso1pLyKo2SXv0Hj3gadYjwTB+G2AI2m7lMyzLQVkGw7Dzg6JWYyV7d7ElUAziO06d1bp3RzS81Am0X5Gh1pW/uA0S68OeEGQAEy6ldQGlqUpl3zI8ukkvtmFhqGbIfGJUwZfj0kIpvCiasVlbaNJ0DXnu+ULIrmcY3nVPHlGp/O7xtU2rn4FMnKTLj/Xegm7Kx93tcThBajw6L2qxHI74IGMT3lPgQCv7wJTkcg/ypqgiFrSPul/qkM4N/ADkRTAyy7/mRJ1fbhk3CaHCMj3WmDrRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740423294; c=relaxed/relaxed;
-	bh=YluMPzkYsTnXYqs2SbRVlhdYZTHxCY54jT1aZdmybgE=;
-	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=dQLAryiGksYSeRkTn1BjAGAalzQCwMtu8ANzK/0cb/KKYeORtJJBVxdSvtgDxW5CkEKFyusp9tj/jfIHIpwltMH/bVOoTKTUbLV0cbhnP/0A2XXcNazN4pOIIHwF9PxOJyNXgmQhj3QimWmYkpebLyfhkwPe3lkFd4KhvW3Dj5gugpd7k0LyYvU5JHY0o959TQ/W6WhGPM+O6rqKNxsfP7EIo8/WPKSYVZ+x8g2jhqlQvBQTtynhNAGeTSLWYpr9ZueRnZCFoDNTVVPYJVjdP8Asx0oKwDFHLANbb/yGmAEjD3IG+zmLd52dZUmLQqyf8SJDVfwKqD6C26Qr1Pfwzg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk; spf=none (client-ip=78.133.224.34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org) smtp.mailfrom=orcam.me.uk
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=orcam.me.uk
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=orcam.me.uk (client-ip=78.133.224.34; helo=angie.orcam.me.uk; envelope-from=macro@orcam.me.uk; receiver=lists.ozlabs.org)
-Received: from angie.orcam.me.uk (angie.orcam.me.uk [78.133.224.34])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1qfj3PNlz2yk3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2025 05:54:51 +1100 (AEDT)
-Received: by angie.orcam.me.uk (Postfix, from userid 500)
-	id 6D16692009C; Mon, 24 Feb 2025 19:54:47 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by angie.orcam.me.uk (Postfix) with ESMTP id 5F97F92009B;
-	Mon, 24 Feb 2025 18:54:47 +0000 (GMT)
-Date: Mon, 24 Feb 2025 18:54:47 +0000 (GMT)
-From: "Maciej W. Rozycki" <macro@orcam.me.uk>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-cc: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, 
-    Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
-    Oliver O'Halloran <oohall@gmail.com>, 
-    Madhavan Srinivasan <maddy@linux.ibm.com>, 
-    Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-    Naveen N Rao <naveen@kernel.org>, linuxppc-dev@lists.ozlabs.org, 
-    linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc: Don't use %pK through printk
-In-Reply-To: <ffd5dd44-babc-480a-b1bc-61bd7ff1e920@csgroup.eu>
-Message-ID: <alpine.DEB.2.21.2502241840360.65342@angie.orcam.me.uk>
-References: <20250217-restricted-pointers-powerpc-v1-1-32c6bff63c9a@linutronix.de> <ffd5dd44-babc-480a-b1bc-61bd7ff1e920@csgroup.eu>
-User-Agent: Alpine 2.21 (DEB 202 2017-01-01)
+	t=1740431947; c=relaxed/relaxed;
+	bh=b4ChK7d4tTnyUI2qkV4nzn6rGiBQ0dJ69F8Ua/liB9M=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 In-Reply-To:Content-Type:Content-Disposition; b=Eaw/+ncmuzjhLFNLJDsWNuQWNc8UdoXrMJ7LT+0nCNNrBV00NHUImrcEHrgSC2FBpIsDlRTY0ymJqfas/HvC9gILWryuFNvUx4Xk7OJjmCSgqcS2KwGfsGwyXALtDWbHi8IkrvAQmtRhXeauOIfAN9Q3TFq0vRRotfJ4jW7eqrfC22rBLKD7btTOZTDNv+8LtpMWY5FbwmdesJfRSI2unOX0PtVa3nvp4xlKxgIBf2Op3OFiez6KkyQSpP8K2y0sxiZ0iuIJhXCmp9VPLo4VlH1+1M8TeT+d6k/JAOAUgM34qYQxLL8zjJ5f9m9KI+cDqEPZhU9Ov/fXVgxUfEim0A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Zdz01f+h; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Zdz01f+h; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=mst@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Zdz01f+h;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Zdz01f+h;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=mst@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z1ts60DJJz2yGN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2025 08:19:03 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1740431941;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=b4ChK7d4tTnyUI2qkV4nzn6rGiBQ0dJ69F8Ua/liB9M=;
+	b=Zdz01f+hZyHKoiUN9SUBx/Gh0FdjHjNckiE5gryQdLpn5eJupb9URl99cHVRzhS3BnSw0B
+	kySJyDP7rWqk4P/JUmGAIZ80elyHIXTHLtSmaaQZkPZumvtTWDCbwq8B2KZXTZ9LbtlWk4
+	Z0jdLU167Ab9fAOKSlQ+E+2tAMlbKbY=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1740431941;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=b4ChK7d4tTnyUI2qkV4nzn6rGiBQ0dJ69F8Ua/liB9M=;
+	b=Zdz01f+hZyHKoiUN9SUBx/Gh0FdjHjNckiE5gryQdLpn5eJupb9URl99cHVRzhS3BnSw0B
+	kySJyDP7rWqk4P/JUmGAIZ80elyHIXTHLtSmaaQZkPZumvtTWDCbwq8B2KZXTZ9LbtlWk4
+	Z0jdLU167Ab9fAOKSlQ+E+2tAMlbKbY=
+Received: from mail-ej1-f69.google.com (mail-ej1-f69.google.com
+ [209.85.218.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-591-bxIDml2MNuWnlOExSW5O-Q-1; Mon, 24 Feb 2025 16:18:57 -0500
+X-MC-Unique: bxIDml2MNuWnlOExSW5O-Q-1
+X-Mimecast-MFC-AGG-ID: bxIDml2MNuWnlOExSW5O-Q_1740431937
+Received: by mail-ej1-f69.google.com with SMTP id a640c23a62f3a-abb9d1c8113so367214466b.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2025 13:18:57 -0800 (PST)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740431937; x=1741036737;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=b4ChK7d4tTnyUI2qkV4nzn6rGiBQ0dJ69F8Ua/liB9M=;
+        b=HIDnVqMffUgmn1ymx0oT06xMavhv/IEvtQJGd31HN+Q6+NulG++8XGrYUH/qGG3bD6
+         exWMspHJ5sENFsYItPfBFk+BPgTHW9aSKBvAMU6E4EgTxpSYigq5ElUKJR9R7hqipqV3
+         alDp8+mG3nkQ+ogTW2oHwSCWZunQY1dzDWEyrXa0P2Dk6tJ4SQF3XAYoQnd//LJwOS3W
+         vTcNqyIpXBMFsV6R/Sj57VV9tXbMTCMUUBllh70O+i5H5tLtCHd8ca1BKPQKKOH3TlvD
+         nNMwY3+vPqzQJ8Jo5Xnf+0SGUz2omkSf6/OPc2J9ATqRH8rzmXrcpf0DyQtWY39cp9ch
+         CaAQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVglzy0m11s3t1P63LZkY9n2mgDye6Q7sIJAlK48JehyE8AfB+yKBfpeN8hwrf38a1ycmDD8TNkY0MmTaQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxZ2jP/MAhLOkoL7/R462bEjxkiefMJThIrw0rW9mGu9FUTodB1
+	3HqOa3KS0fkp665cSXsa439rOaPu8ewunSCRIboHTUd3HmaaARvM6jB02CTQZh8isUwjcoBqv5K
+	/Hq8JOUsXa1vD9b+3cQACsRyHJ9Mw4epgP0XkcRL8B3k99ou4WDpfTtp9dpDo6eo=
+X-Gm-Gg: ASbGncsgOQgA5U62RY5njELpmCOKTKb+p3heevXp2ZLqtveFIDvT73dfI93wEywopvb
+	Bct054FAT+mzyjoE69FVv78/+aqH4TRAr2//1SQtlkPX3ydWqgHjaNCe/bCcnIBmxFaYaph1FIp
+	2pu0j3/g0StFvRctk3dWyTSrxsf36Q8LpXkkk0ltn/ncb38vbdB6zShoqNL8ScQLC9ymJCoA03K
+	js+98uICO3ySm+Zco9bvQ25HlfQP/N3rt8c82g8She5Rpon4hYhLZrlUVD6Wr7kmovPBQcNjDcu
+	uO1P5ylm8g==
+X-Received: by 2002:a17:906:3151:b0:aba:5e50:6984 with SMTP id a640c23a62f3a-abc099ead3amr1385572566b.2.1740431936616;
+        Mon, 24 Feb 2025 13:18:56 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IHYEBC44CLKnEsK0LbK9e6zpwdED/WRkdl8e2EWDOlyh5Ynisvb1G99K7KkazLO1N5pYn2zMA==
+X-Received: by 2002:a17:906:3151:b0:aba:5e50:6984 with SMTP id a640c23a62f3a-abc099ead3amr1385570066b.2.1740431936166;
+        Mon, 24 Feb 2025 13:18:56 -0800 (PST)
+Received: from redhat.com ([2a0d:6fc7:441:1929:22c5:4595:d9bc:489e])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-abed20134fdsm23497166b.94.2025.02.24.13.18.49
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 24 Feb 2025 13:18:55 -0800 (PST)
+Date: Mon, 24 Feb 2025 16:18:47 -0500
+From: "Michael S. Tsirkin" <mst@redhat.com>
+To: Yury Norov <yury.norov@gmail.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org, netdev@vger.kernel.org,
+	virtualization@lists.linux.dev, linux-nvme@lists.infradead.org,
+	linux-hyperv@vger.kernel.org, linux-pci@vger.kernel.org,
+	linux-scsi@vger.kernel.org, linux-crypto@vger.kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Haren Myneni <haren@linux.ibm.com>,
+	Rick Lindsley <ricklind@linux.ibm.com>,
+	Nick Child <nnac123@linux.ibm.com>,
+	Thomas Falcon <tlfalcon@linux.ibm.com>,
+	Andrew Lunn <andrew+netdev@lunn.ch>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Jason Wang <jasowang@redhat.com>,
+	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+	Eugenio =?iso-8859-1?Q?P=E9rez?= <eperezma@redhat.com>,
+	Keith Busch <kbusch@kernel.org>, Jens Axboe <axboe@kernel.dk>,
+	Christoph Hellwig <hch@lst.de>, Sagi Grimberg <sagi@grimberg.me>,
+	"K. Y. Srinivasan" <kys@microsoft.com>,
+	Haiyang Zhang <haiyangz@microsoft.com>,
+	Wei Liu <wei.liu@kernel.org>, Dexuan Cui <decui@microsoft.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
+	Rob Herring <robh@kernel.org>, Bjorn Helgaas <bhelgaas@google.com>,
+	James Smart <james.smart@broadcom.com>,
+	Dick Kennedy <dick.kennedy@broadcom.com>,
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+	"Martin K. Petersen" <martin.petersen@oracle.com>,
+	Rasmus Villemoes <linux@rasmusvillemoes.dk>,
+	Matt Wu <wuqiang.matt@bytedance.com>,
+	Steffen Klassert <steffen.klassert@secunet.com>,
+	Daniel Jordan <daniel.m.jordan@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Greg Kurz <groug@kaod.org>, Peter Xu <peterx@redhat.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Hendrik Brueckner <brueckner@linux.ibm.com>
+Subject: Re: [PATCH v2 00/13] cpumask: cleanup cpumask_next_wrap()
+ implementation and usage
+Message-ID: <20250224161832-mutt-send-email-mst@kernel.org>
+References: <20250128164646.4009-1-yury.norov@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,74 +152,88 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8BIT
+In-Reply-To: <20250128164646.4009-1-yury.norov@gmail.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: RCbixF01Y5S6Oy_5SkkCaFI8hB1rc1hmGF7phW7KkOo_1740431937
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Mon, 24 Feb 2025, Christophe Leroy wrote:
-
-> > Restricted pointers ("%pK") are not meant to be used through printk().
-> > It can unintentionally expose security sensitive, raw pointer values.
-> > 
-> > Use regular pointer formatting instead.
-> > 
-> > Link:
-> > https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Flkml%2F20250113171731-dc10e3c1-da64-4af0-b767-7c7070468023%40linutronix.de%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C75a852a0fef54fa43a3608dd4f263f45%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638753747883689862%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=aUgq6pXb1ySaQ6e%2FdyM09jfc4MNLE71Njw0%2FnCg%2F6VU%3D&reserved=0
-> > Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
+On Tue, Jan 28, 2025 at 11:46:29AM -0500, Yury Norov wrote:
+> cpumask_next_wrap() is overly complicated, comparing to it's generic
+> version find_next_bit_wrap(), not mentioning it duplicates the above.
+> It roots to the times when the function was used in the implementation
+> of for_each_cpu_wrap() iterator. The function has 2 additional parameters
+> that were used to catch loop termination condition for the iterator.
+> (Although, only one is needed.)
 > 
-> Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Since 4fe49b3b97c262 ("lib/bitmap: introduce for_each_set_bit_wrap()
+> macro"), for_each_cpu_wrap() is wired to corresponding generic
+> wrapping bitmap iterator, and additional complexity of
+> cpumask_next_wrap() is not needed anymore.
 > 
-> > ---
-> >   arch/powerpc/kernel/eeh_driver.c | 2 +-
-> >   arch/powerpc/perf/hv-24x7.c      | 8 ++++----
-> >   2 files changed, 5 insertions(+), 5 deletions(-)
-> > 
-> > diff --git a/arch/powerpc/kernel/eeh_driver.c
-> > b/arch/powerpc/kernel/eeh_driver.c
-> > index
-> > 7efe04c68f0fe3fb1c3c13d97d58e79e47cf103b..10ce6b3bd3b7c54f91544ae7f7fd3f32a51ee09a
-> > 100644
-> > --- a/arch/powerpc/kernel/eeh_driver.c
-> > +++ b/arch/powerpc/kernel/eeh_driver.c
-> > @@ -907,7 +907,7 @@ void eeh_handle_normal_event(struct eeh_pe *pe)
-> >   		/* FIXME: Use the same format as dump_stack() */
-> >   		pr_err("EEH: Call Trace:\n");
-> >   		for (i = 0; i < pe->trace_entries; i++)
-> > -			pr_err("EEH: [%pK] %pS\n", ptrs[i], ptrs[i]);
-> > +			pr_err("EEH: [%p] %pS\n", ptrs[i], ptrs[i]);
-> >     		pe->trace_entries = 0;
-> >   	}
+> All existing users call cpumask_next_wrap() in a manner that makes
+> it possible to turn it to a straight and simple alias to
+> find_next_bit_wrap().
+> 
+> This series replaces historical 4-parameter cpumask_next_wrap() with a
+> thin 2-parameter wrapper around find_next_bit_wrap().
+> 
+> Where it's possible to use for_each_cpu_wrap() iterator, the code is
+> switched to use it because it's always preferable to use iterators over
+> open loops.
+> 
+> This series touches various scattered subsystems and To-list for the
+> whole series is quite a long. To minimize noise, I send cover-letter and
+> key patches #5 and 6 to every person involved. All other patches are sent
+> individually to those pointed by scripts/get_maintainers.pl.
+> 
+> I'd like to move the series with my bitmap-for-next branch as a whole.
 
- But shouldn't this be using `%px' then instead?  It would be sad if all 
-the address information from error reports such as below:
 
-EEH: Call Trace:
-EEH: [000000008985bc3b] __eeh_send_failure_event+0x78/0x150
-EEH: [000000008c4c5782] eeh_dev_check_failure+0x388/0x6b0
-EEH: [000000001fb766c1] eeh_check_failure+0x98/0x100
-EEH: [000000004b9af8c6] dfx_port_read_long+0xb0/0x130 [defxx]
-EEH: [00000000e23999c1] dfx_interrupt+0x80/0x8c0 [defxx]
-EEH: [00000000c7884fb7] __handle_irq_event_percpu+0x9c/0x2f0
-EEH: [000000008d4e9afd] handle_irq_event_percpu+0x44/0xc0
-EEH: [000000008c39ece4] handle_irq_event+0x74/0xc0
-EEH: [00000000d85114a9] handle_fasteoi_irq+0xd4/0x220
-EEH: [00000000a692ef4e] generic_handle_irq+0x54/0x80
-EEH: [00000000a6db243b] __do_irq+0x68/0x200
-EEH: [0000000040ccff9e] call_do_irq+0x14/0x24
-EEH: [00000000e8e9ddf7] do_IRQ+0x78/0xd0
-EEH: [0000000031916539] replay_soft_interrupts+0x180/0x370
-EEH: [000000001b7e5728] arch_local_irq_restore+0x48/0xc0
-EEH: [00000000088691b7] cpuidle_enter_state+0x108/0x560
-EEH: [00000000e6e26f30] cpuidle_enter+0x50/0x70
-EEH: [000000007c26474c] call_cpuidle+0x4c/0x80
-EEH: [0000000036b8a2fc] do_idle+0x360/0x3b0
-EEH: [0000000048702083] cpu_startup_entry+0x38/0x40
-EEH: [00000000d3b1fb8d] start_secondary+0x62c/0x660
-EEH: [0000000041a9a815] start_secondary_prolog+0x10/0x14
+virtio-net changes are straight-forward, so
 
-was suddenly lost from the kernel log, the access to which unprivileged 
-users can be denied if so desired according to the site policy.  Whereas 
-running the kernel such as to have all output from plain `%p' exposed just 
-to cope with this proposed change, now that seems like a security risk.
+Acked-by: Michael S. Tsirkin <mst@redhat.com>
 
-  Maciej
+
+> v1: https://lore.kernel.org/netdev/20241228184949.31582-1-yury.norov@gmail.com/T/
+> v2:
+>  - rebase on top of today's origin/master;
+>  - drop #v1-10: not needed since v6.14 @ Sagi Grinberg;
+>  - #2, #3: fix picking next unused CPU @ Nick Child;
+>  - fix typos, cleanup comments @ Bjorn Helgaas, Alexander Gordeev;
+>  - CC Christoph Hellwig for the whole series.
+> 
+> Yury Norov (13):
+>   objpool: rework objpool_pop()
+>   virtio_net: simplify virtnet_set_affinity()
+>   ibmvnic: simplify ibmvnic_set_queue_affinity()
+>   powerpc/xmon: simplify xmon_batch_next_cpu()
+>   cpumask: deprecate cpumask_next_wrap()
+>   cpumask: re-introduce cpumask_next{,_and}_wrap()
+>   cpumask: use cpumask_next_wrap() where appropriate
+>   padata: switch padata_find_next() to using cpumask_next_wrap()
+>   s390: switch stop_machine_yield() to using cpumask_next_wrap()
+>   scsi: lpfc: switch lpfc_irq_rebalance() to using cpumask_next_wrap()
+>   scsi: lpfc: rework lpfc_next_{online,present}_cpu()
+>   PCI: hv: Switch hv_compose_multi_msi_req_get_cpu() to using
+>     cpumask_next_wrap()
+>   cpumask: drop cpumask_next_wrap_old()
+> 
+>  arch/powerpc/xmon/xmon.c            |  6 +--
+>  arch/s390/kernel/processor.c        |  2 +-
+>  drivers/net/ethernet/ibm/ibmvnic.c  | 18 +++++---
+>  drivers/net/virtio_net.c            | 12 ++---
+>  drivers/pci/controller/pci-hyperv.c |  3 +-
+>  drivers/scsi/lpfc/lpfc.h            | 23 +++-------
+>  drivers/scsi/lpfc/lpfc_init.c       |  2 +-
+>  include/linux/cpumask.h             | 69 ++++++++++++++++++++---------
+>  include/linux/objpool.h             |  7 ++-
+>  kernel/padata.c                     |  2 +-
+>  lib/cpumask.c                       | 37 +---------------
+>  11 files changed, 81 insertions(+), 100 deletions(-)
+> 
+> -- 
+> 2.43.0
+
 
