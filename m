@@ -1,50 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-6423-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6424-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0DBFC021A4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2025 13:50:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91099C021A4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2025 13:50:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1hv63DZwz3057;
-	Tue, 25 Feb 2025 00:50:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740405010;
-	cv=none; b=KF+NsOFZ6nMjfCroAri6BbI258wPplXBj/d023I/UY8mCJfb6vY9ecdN/RbLlm+RITTh5rhau7ILhuoXfehVIQuKMpzT5HNorN9ItDL5hi+u6POU2pLAViJ67t+pM+T/lOeMNwQEtYsPHoJYVIsYAQUBiykuWIinWQXwVrcN0zHDrAcdGPn7hy7RSShzwmVRrtxjGHLq8Y540imeZucChSJCfXHr1oCckV6XoVOK4QWm1psmYWXz9X+b7pVm7Csu/2PBOHSy9F7hTkrFKilLLSZYckFtjbUlKUawD1fiLRbQqhNKpGXK5B5PBbGGuPFOKzdqBF+6mpYEncO/DPAu+A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1hvS1npDz3064;
+	Tue, 25 Feb 2025 00:50:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740405028;
+	cv=none; b=GEuLJfXP5x3imedch/TnD9Eg9hAbTfoLjhq+NWq+8WiNHbfAzSqnAxDxTvGzsiXyY0Dw40F5ED7i+AwqKkwtTIeU+uKeAwhA72dj/7ySvgFR/H1wHGeS7og6ovH9o7X9rjckcthPFrXE/C1dOpD58buxH74DuLDV6nTpT4BfefQjS43gPEmhL2F/k1YG/G7XD1zOkRTYAuLrgzL87188mPxt8jgpsP0bRfz92cL2HxAZ+AwiNSYvKQWUpRX1/Iw27sfW6yNBDVi4bQVvPz2XdowioFldgveeCbUwax8G3L3Un1fnSiQFe5Greh7Q2OEIb6Yt/mSRDS09QFeIE/K+JQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740405010; c=relaxed/relaxed;
-	bh=mkUojayzpSNR2fWWyQu+4+EMVQxfuayXZ2muUc8nSok=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=d6koh3P/gmTqHILBMSqOPv8Kh8S7q0+5Rwovp/Z0fsX2tj7srNvixrzqLOF4eo64I1/HzGC9FxZcQuuyHvVF/n40W9ZPFsG6OXqG4NJDxkLEbts4yYm+dvsc2k4WefN7bOi/yU22eOQV2S4SSulsQXKDMj36Z4Kg70JQP9RwZ8kjxNL4zFl1fhyrYAGWpj/fo73HgNrJLbExu4biOM8ZJj2qsfsepK7eDMfyDKgDCTKTx5nMCYWZLxs6yMwzg4Mw4WF/nzE8JPJQqCPzY1fdGE10+H4+T22BpuEws4V/VB5S4fIjiEbJDmbAXncIYd9MRMb8KGU2EMcr98opnL3Ibg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1hv54D0Vz3050
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2025 00:50:06 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4Z1hCR2KX7z9sVs;
-	Mon, 24 Feb 2025 14:19:15 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id elqyD67td6jR; Mon, 24 Feb 2025 14:19:15 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4Z1hCR1Gpgz9sVq;
-	Mon, 24 Feb 2025 14:19:15 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 18CEC8B77C;
-	Mon, 24 Feb 2025 14:19:15 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id PKWx441hCHAv; Mon, 24 Feb 2025 14:19:14 +0100 (CET)
-Received: from [10.25.207.138] (unknown [10.25.207.138])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id CBC498B765;
-	Mon, 24 Feb 2025 14:19:14 +0100 (CET)
-Message-ID: <8f4ec6d4-2646-4a87-b3a1-edfaecff2a01@csgroup.eu>
-Date: Mon, 24 Feb 2025 14:19:14 +0100
+	t=1740405028; c=relaxed/relaxed;
+	bh=s6Z9zgK/N3a/oWp1pz88cw7urkbX2EqTLSufEFZe38o=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BLiMYTIGDYRaJy92fQ0DWvE+3gDxCchU+9s4ort30FqDHdfHeU9Uj8Yt6R5HjnuWO5gVIxHeYYUAkIaecR5/DAe49gv2cYYly0fZ3OCShUL0AhERNggpQE+hNd4ws4Gla0CLo8CI0fzvZSitEzykYtpa945cKYyLvMu90/CXGdKdY45YH+2ir2hsaPmKNwmHmf15HrwZ3zaE6bcY290QN8AsG8/iKqtToaSfVWQ2n1oKMp+3kYiGfSghhr0IDJTDkGFmYkhlXTuOM9ZFASpGebJwuD/g6hmVrMzVgyZQfFziduhfqI7i4csPZtAx2011PFpJ3QEtaW7sM+VHl2WbkA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1hvR3RpPz305m
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2025 00:50:27 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3ACCB1515;
+	Mon, 24 Feb 2025 05:50:13 -0800 (PST)
+Received: from [10.163.40.148] (unknown [10.163.40.148])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 00D913F5A1;
+	Mon, 24 Feb 2025 05:49:47 -0800 (PST)
+Message-ID: <137a241a-324a-45a9-a60b-d65f27dc4fc2@arm.com>
+Date: Mon, 24 Feb 2025 19:19:47 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,158 +44,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH] objtool: Skip unannotated intra-function call warning
- for bl+mflr pattern
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Sathvika Vasireddy <sv@linux.ibm.com>, jpoimboe@kernel.org,
- peterz@infradead.org, npiggin@gmail.com, maddy@linux.ibm.com,
- Nathan Chancellor <nathan@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- llvm@lists.linux.dev
-References: <20250219162014.10334-1-sv@linux.ibm.com>
- <3223ec0e-c445-4bbf-ae72-276688e40908@csgroup.eu>
- <d5ada017-1ba2-4a89-8a58-4555f09f9d97@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <d5ada017-1ba2-4a89-8a58-4555f09f9d97@csgroup.eu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: Re: [PATCH V2 5/5] mm: Rename GENERIC_PTDUMP and PTDUMP_CORE
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, linux-mm@kvack.org
+Cc: steven.price@arm.com, Andrew Morton <akpm@linux-foundation.org>,
+ Mark Rutland <mark.rutland@arm.com>, kvmarm@lists.linux.dev,
+ linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>, Marc Zyngier <maz@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
+ <palmer@dabbelt.com>, Heiko Carstens <hca@linux.ibm.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>
+References: <20250217042220.32920-1-anshuman.khandual@arm.com>
+ <20250217042220.32920-6-anshuman.khandual@arm.com>
+ <ba5b12e4-850c-445b-a1b1-0dc5f3905dda@csgroup.eu>
+Content-Language: en-US
+From: Anshuman Khandual <anshuman.khandual@arm.com>
+In-Reply-To: <ba5b12e4-850c-445b-a1b1-0dc5f3905dda@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 24/02/2025 à 11:33, Christophe Leroy a écrit :
+On 2/24/25 17:31, Christophe Leroy wrote:
 > 
 > 
-> Le 24/02/2025 à 08:15, Christophe Leroy a écrit :
+> Le 17/02/2025 à 05:22, Anshuman Khandual a écrit :
+>> Platforms subscribe into generic ptdump implementation via GENERIC_PTDUMP.
+>> But generic ptdump gets enabled via PTDUMP_CORE. These configs combination
+>> is confusing as they sound very similar and does not differentiate between
+>> platform's feature subscription and feature enablement for ptdump. Rename
+>> the configs as ARCH_HAS_PTDUMP and PTDUMP making it more clear and improve
+>> readability.
 >>
->>
->> Le 19/02/2025 à 17:20, Sathvika Vasireddy a écrit :
->>> Architectures like PowerPC use a pattern where the compiler generates a
->>> branch-and-link (bl) instruction that targets the very next instruction,
->>> followed by loading the link register (mflr) later. This pattern appears
->>> in the code like:
->>>
->>>   bl .+4
->>>   li r5,0
->>>   mflr r30
->>
->> What compiler do you use ? Is it a very old version of GCC ?
+>> Cc: Catalin Marinas <catalin.marinas@arm.com>
+>> Cc: Will Deacon <will@kernel.org>
+>> Cc: Jonathan Corbet <corbet@lwn.net>
+>> Cc: Marc Zyngier <maz@kernel.org>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Nicholas Piggin <npiggin@gmail.com>
+>> Cc: Paul Walmsley <paul.walmsley@sifive.com>
+>> Cc: Palmer Dabbelt <palmer@dabbelt.com>
+>> Cc: Heiko Carstens <hca@linux.ibm.com>
+>> Cc: Vasily Gorbik <gor@linux.ibm.com>
+>> Cc: Thomas Gleixner <tglx@linutronix.de>
+>> Cc: Ingo Molnar <mingo@redhat.com>
+>> Cc: Andrew Morton <akpm@linux-foundation.org>
+>> Cc: linux-arm-kernel@lists.infradead.org
+>> Cc: linux-doc@vger.kernel.org
+>> Cc: linux-kernel@vger.kernel.org
+>> Cc: kvmarm@lists.linux.dev
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Cc: linux-riscv@lists.infradead.org
+>> Cc: linux-s390@vger.kernel.org
+>> Cc: linux-mm@kvack.org
+>> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
+>> ---
+>> diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+>> index 7612c52e9b1e..5aef2aa4103c 100644
+>> --- a/arch/riscv/Kconfig
+>> +++ b/arch/riscv/Kconfig
+>> @@ -43,6 +43,7 @@ config RISCV
+>>       select ARCH_HAS_PMEM_API
+>>       select ARCH_HAS_PREEMPT_LAZY
+>>       select ARCH_HAS_PREPARE_SYNC_CORE_CMD
+>> +    select ARCH_HAS_PTDUMP
 > 
-> Oh, I see that this is a report on a projet version of clang ? compiler: 
-> clang version 21.0.0git
-> 
-> Then I guess the bug needs to be fixed in Clang, not in the kernel.
+> Is it OK to drop the 'if MMU' from below ?
 
-Well, this problem already exists on clang 18 it seems:
-
-00000004 <btext_map>:
-    4:   7c 08 02 a6     mflr    r0
-    8:   94 21 ff e0     stwu    r1,-32(r1)
-    c:   93 c1 00 18     stw     r30,24(r1)
-   10:   90 01 00 24     stw     r0,36(r1)
-   14:   93 a1 00 14     stw     r29,20(r1)
-   18:   48 00 00 05     bl      1c <btext_map+0x18>
-   1c:   38 a0 00 00     li      r5,0
-   20:   7f c8 02 a6     mflr    r30
-
-While GCC generates:
-
-00000418 <btext_map>:
-  418:   94 21 ff e0     stwu    r1,-32(r1)
-  41c:   7c 08 02 a6     mflr    r0
-  420:   42 9f 00 05     bcl     20,4*cr7+so,424 <btext_map+0xc>
-  424:   39 20 00 00     li      r9,0
-  428:   93 c1 00 18     stw     r30,24(r1)
-  42c:   7f c8 02 a6     mflr    r30
-
-So lets make the kernel tolerate it allthough it should be fixed on 
-clang at the end.
-
-I can't find any related issue in the clang issues database 
-(https://github.com/llvm/llvm-project/issues), should we open one ?
-
-Christophe
+Sure, will add it back.
 
 > 
->>
->> That sequence is not correct and should never be used by modern 
->> compilers. It should be bcl 20,31,+4 instead.
->>
->> All such hand writen sequences have been removed from kernel assembly, 
->> see commit c974809a26a1 ("powerpc/vdso: Avoid link stack corruption in 
->> __get_datapage()") for details
->>
->>
->>>
->>> Objtool currently warns about this as an "unannotated intra-function
->>> call" because find_call_destination() fails to find any symbol at the
->>> target offset. Add a check to skip the warning when a branch targets
->>> the immediate next instruction in the same function.
->>
->> I think this should be done in arch_decode_instruction(), just set 
->> insn-  >type to INSN_OTHER when you see bl .+4
->>
->> Something like:
->>
->> diff --git a/tools/objtool/arch/powerpc/decode.c b/tools/objtool/arch/ 
->> powerpc/decode.c
->> index 53b55690f320..ca264c97ee8d 100644
->> --- a/tools/objtool/arch/powerpc/decode.c
->> +++ b/tools/objtool/arch/powerpc/decode.c
->> @@ -55,7 +55,9 @@ int arch_decode_instruction(struct objtool_file 
->> *file, const struct section *sec
->>
->>       switch (opcode) {
->>       case 18: /* b[l][a] */
->> -        if ((ins & 3) == 1) /* bl */
->> +        if (ins == 0x48000005)    /* bl .+4 */
->> +            typ = INSN_OTHER;
->> +        else if ((ins & 3) == 1) /* bl */
->>               typ = INSN_CALL;
->>
->>           imm = ins & 0x3fffffc;
->>
->>
->>
->>>
->>> Reported-by: kernel test robot <lkp@intel.com>
->>> Closes: https://lore.kernel.org/oe-kbuild-all/202502180818.XnFdv8I8- 
->>> lkp@intel.com/
->>> Signed-off-by: Sathvika Vasireddy <sv@linux.ibm.com>
->>> ---
->>>   tools/objtool/check.c | 6 ++++++
->>>   1 file changed, 6 insertions(+)
->>>
->>> diff --git a/tools/objtool/check.c b/tools/objtool/check.c
->>> index 753dbc4f8198..3f7cf2c917b5 100644
->>> --- a/tools/objtool/check.c
->>> +++ b/tools/objtool/check.c
->>> @@ -1613,6 +1613,7 @@ static struct symbol 
->>> *find_call_destination(struct section *sec, unsigned long o
->>>    */
->>>   static int add_call_destinations(struct objtool_file *file)
->>>   {
->>> +       struct instruction *next_insn;
->>>          struct instruction *insn;
->>>          unsigned long dest_off;
->>>          struct symbol *dest;
->>> @@ -1625,6 +1626,11 @@ static int add_call_destinations(struct 
->>> objtool_file *file)
->>>                  reloc = insn_reloc(file, insn);
->>>                  if (!reloc) {
->>>                          dest_off = arch_jump_destination(insn);
->>> +
->>> +                       next_insn = next_insn_same_func(file, insn);
->>> +                       if (next_insn && dest_off == next_insn->offset)
->>> +                               continue;
->>> +
->>>                          dest = find_call_destination(insn->sec, 
->>> dest_off);
->>>
->>>                          add_call_dest(file, insn, dest, false);
->>> -- 
->>> 2.39.3
->>>
->>
-> 
-
+>>       select ARCH_HAS_PTE_DEVMAP if 64BIT && MMU
+>>       select ARCH_HAS_PTE_SPECIAL
+>>       select ARCH_HAS_SET_DIRECT_MAP if MMU
+>> @@ -112,7 +113,6 @@ config RISCV
+>>       select GENERIC_IRQ_SHOW_LEVEL
+>>       select GENERIC_LIB_DEVMEM_IS_ALLOWED
+>>       select GENERIC_PCI_IOMAP
+>> -    select GENERIC_PTDUMP if MMU
+>>       select GENERIC_SCHED_CLOCK
+>>       select GENERIC_SMP_IDLE_THREAD
+>>       select GENERIC_TIME_VSYSCALL if MMU && 64BIT
 
