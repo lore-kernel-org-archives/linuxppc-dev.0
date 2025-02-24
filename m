@@ -1,50 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-6410-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6411-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 423E2C021A4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2025 12:20:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54E45C021A6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2025 12:35:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1fvQ6rbVz302N;
-	Mon, 24 Feb 2025 23:20:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740399618;
-	cv=none; b=RRmg7vO8MfTnGX7f+n/qZMBMlxL8auX5oslUQD5j4XTq2mzhz/ITP+f1tc0eyaOQOMEy4/dguwnvRMaGfkhgee7VZTpMEePO7uQeQqiTq9Ig6+B2L6RKbpwt5HAgALj75rIhmOsh6ds6RzHa77kC8FySGqaY8uVfcUA61lqEDp1xoZRgFuVT6zPS3kFBLvrt9Dw2QrZHXguJ435acjRe6gDEn+rzFJIQ7rxEXmS49/xLLM0dcXGdROtHZki9Zmj0XL8pgzhRJb+doQvMZlWg09FR3BGCeV2WQot2z+r94tXHzsvvhphR6Efi4ff+K9nJ9IAgoHgjOtgyh8h2GZNHrw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1gFT6ktlz2ypP;
+	Mon, 24 Feb 2025 23:35:57 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1:d65d:64ff:fe57:4e05"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740400557;
+	cv=none; b=iDxILF1mYKxWyhNplTnuS87uiZlz330I3HW0Lrun2laTUTVulM822ex9ocL6N+gG9PQshyQkBXNiyVMksK3SEccn7JmqapxAMCYKWOuBe1Pgiw7theVaLeORlo/diUKCqqr88TNVW/ThzjBCcJ2oDOVmhzKjfixCIEB9gSI9RZSuz9LipFl+1s4GaQG2ymljib0GCG53NVICgX8WGB0uNXaQySiIonsKsYgKh6+S5xiTRKkb6kkj3oS7iDkwy5HmHjY+GChxbMHRixK0I5eeNZkMZlE4HByrX6wbFu2ct6dIutgOj30A2u+A8nSlXzsgk1R1kcC3ZYlMK+2JHarnSw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740399618; c=relaxed/relaxed;
-	bh=NUglqXFaBSKbjaI8wCI8WMLgJ28QXB3lzAOlW7DR9vQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JvrmEDYwO5nDSwkdoklMFILICtAAoCUw1z4kMRpgUc/kvC2sv7fqnw/LIXXbEilZP8j/qtyWHqqM6R5exidxi910Jvob0vHuIOPI7/c/i+r2u5q/4w+tSR/O+pEfbLcoyUvPJ0ERyqqqKmeuWrxl//HWLpGRl47C2QRYoieVo72XrI19mMk31PoVAKcWg77zLXurg2TGA9376NTXocGt5JRk0P/xIbDlSybnepoWzK4mjfUaXIixaJYF4Y7O/O9uiXvWn0jHrwcYuYgNpZETEJOtvb+xBPPFPZg15/6TLmDHN22R94qoUCW/Z1Xpyoe5IUtf4mi8CQaO3goQ6vwFhA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1fvQ1GBFz2yRM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2025 23:20:18 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4Z1fY56pPJz9sSK;
-	Mon, 24 Feb 2025 13:04:25 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id jmjW4wRXcRyZ; Mon, 24 Feb 2025 13:04:25 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4Z1fY55w83z9sSC;
-	Mon, 24 Feb 2025 13:04:25 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B37438B765;
-	Mon, 24 Feb 2025 13:04:25 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id lGRMugV4dhlW; Mon, 24 Feb 2025 13:04:25 +0100 (CET)
-Received: from [10.25.207.138] (unknown [10.25.207.138])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7A6868B763;
-	Mon, 24 Feb 2025 13:04:25 +0100 (CET)
-Message-ID: <93e96586-13a2-4800-9dc7-5b35177a328e@csgroup.eu>
-Date: Mon, 24 Feb 2025 13:04:25 +0100
+	t=1740400557; c=relaxed/relaxed;
+	bh=KjNIYWV63wd2ETJVPJjYoHVaRj09KcDEXGN6j/BKYZs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=UUSW5lzr54p4qi/OT2nkzQBJzKwWgE1Hlc+96bSiOa+aRx8SiWbRPNv3sIe49D0Hn0ACJ21dfUCboOjWiEAaMKiURos1UerXbESh37Amxd2hIzDTWO9fVfESQtJrvlbg39f4ZRsWTvlgHtyK/PaeXC6kbgrUfgJ5K645AQnHgHBuxWaK3H1Cw97u1YDOX3wz6oqjmEcP//pbsYUZn+Ch4OzJ7M/GJOtXAo7oSEsnY5nuyfo08VKCgWQyBAvdo4zas9g0tzgz3E/Uox4uMAixixAqdum/o7e1DkFnWSwEFf/fWx5YOZD0WZ/JYKPQCCujQZiKUQgH19NyM+G4b8Whaw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1:d65d:64ff:fe57:4e05; helo=desiato.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
+Received: from desiato.infradead.org (desiato.infradead.org [IPv6:2001:8b0:10b:1:d65d:64ff:fe57:4e05])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z1gFL5ZBXz2yRM
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2025 23:35:50 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=desiato.20200630; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=KjNIYWV63wd2ETJVPJjYoHVaRj09KcDEXGN6j/BKYZs=; b=CiPkSzWklbhO7mPKl1Jriapzi/
+	h9ZxgOOaJCqDCX7rY6o0B7nUEflSjApS0qhasUcWF4BOkhJEwhaYfuv99XToeUmJQw2+kR6W5WrhW
+	OwHnhVNyz53GmSNgcjiXOMIlxaXMZ0jwdb4zAwnzMZ4zeug+JEniisIxMNgEmiqKuCkxUOCf72gjQ
+	oTHbKpc43qi+xEsISsUdjmrcR0JdWeEOh3E9X9GVJYKXcwRew5f16ANwoYvi3KnMMjz5NxnyR5eZs
+	Kaqfcp2voEqtm9ZcyMIA26TvS5hyeuZL36CiNSnC/JxZQm22QlYAxSDZQwcmduj7p2AXViJBxosAl
+	/Ur+1niw==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by desiato.infradead.org with esmtpsa (Exim 4.98 #2 (Red Hat Linux))
+	id 1tmXgO-00000003Bsx-0elI;
+	Mon, 24 Feb 2025 12:35:36 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id B45A4300164; Mon, 24 Feb 2025 13:35:34 +0100 (CET)
+Date: Mon, 24 Feb 2025 13:35:34 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Sathvika Vasireddy <sv@linux.ibm.com>
+Cc: Josh Poimboeuf <jpoimboe@kernel.org>, christophe.leroy@csgroup.eu,
+	npiggin@gmail.com, maddy@linux.ibm.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	llvm@lists.linux.dev
+Subject: Re: [RFC PATCH] objtool: Skip unannotated intra-function call
+ warning for bl+mflr pattern
+Message-ID: <20250224123534.GB17456@noisy.programming.kicks-ass.net>
+References: <20250219162014.10334-1-sv@linux.ibm.com>
+ <20250220195940.ely2l2fpsozd2tuv@jpoimboe>
+ <4bea75bc-d3f6-4972-b644-f9b5a4e8bb77@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,56 +67,18 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH V2 2/5] arch/powerpc: Drop GENERIC_PTDUMP from
- mpc885_ads_defconfig
-To: Anshuman Khandual <anshuman.khandual@arm.com>, linux-mm@kvack.org
-Cc: steven.price@arm.com, Andrew Morton <akpm@linux-foundation.org>,
- Mark Rutland <mark.rutland@arm.com>, kvmarm@lists.linux.dev,
- linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-References: <20250217042220.32920-1-anshuman.khandual@arm.com>
- <20250217042220.32920-3-anshuman.khandual@arm.com>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20250217042220.32920-3-anshuman.khandual@arm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <4bea75bc-d3f6-4972-b644-f9b5a4e8bb77@linux.ibm.com>
 
+On Fri, Feb 21, 2025 at 02:20:41PM +0530, Sathvika Vasireddy wrote:
 
+> Also, just out of curiosity, how does x86 do it? Does it not use a branch to
+> next instruction approach?
 
-Le 17/02/2025 à 05:22, Anshuman Khandual a écrit :
-> GENERIC_PTDUMP gets selected on powerpc explicitly and hence can be dropped
-> off from mpc885_ads_defconfig.
-> 
-> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Cc: linuxppc-dev@lists.ozlabs.org
-> Cc: linux-kernel@vger.kernel.org
-> Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
-> ---
-> Just wondering - Should CONFIG_PTDUMP_DEBUGFS be added instead ?
+x86_64 can use LEA like:
 
-Yes please do that as a fix to commit e084728393a5 ("powerpc/ptdump: 
-Convert powerpc to GENERIC_PTDUMP")
+  #define _THIS_IP_ ({ unsigned long __here; asm ("lea 0(%%rip), %0" : "=r" (__here)); __here; })
 
-> 
->   arch/powerpc/configs/mpc885_ads_defconfig | 1 -
->   1 file changed, 1 deletion(-)
-> 
-> diff --git a/arch/powerpc/configs/mpc885_ads_defconfig b/arch/powerpc/configs/mpc885_ads_defconfig
-> index 77306be62e9e..ea6f836407d2 100644
-> --- a/arch/powerpc/configs/mpc885_ads_defconfig
-> +++ b/arch/powerpc/configs/mpc885_ads_defconfig
-> @@ -78,4 +78,3 @@ CONFIG_DEBUG_VM_PGTABLE=y
->   CONFIG_DETECT_HUNG_TASK=y
->   CONFIG_BDI_SWITCH=y
->   CONFIG_PPC_EARLY_DEBUG=y
-> -CONFIG_GENERIC_PTDUMP=y
-
+32bit needs to call a function, read the stack value and return.
 
