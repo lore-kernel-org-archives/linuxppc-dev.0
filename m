@@ -1,124 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-6405-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6406-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87ACEC021A4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2025 10:54:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 593D4C021A6
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Feb 2025 11:20:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1d0c0VbTz2yjb;
-	Mon, 24 Feb 2025 21:54:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740394479;
-	cv=none; b=SLGwsE9tZfZU2oYXLBpst2l80rbQQrBz9ow4IfOX12RKehH1Aw3r77Bo0cDaYKCIGT6UkY79cYtzWnsg5Q7iHGukXi6lvK3eZw3UE4y1DkUvklhiXDR7ejQkHbbAOiMJYlkYHsvB219Fw78MFsDJFcVEJYpNKhS1AfWkrrn1PcIhBRpo44D54XC1sjewEGcx6DMpC8+msvBIv5LnXYT2OsFqJh4KZsIZXCAKCA6TOmuefL3qwAas1XN+MwLPGBjAgnOri/keLwozukXyhsAljwOrPPWal+6XLFwYOH8Rk7bZNshWPN6dhwXQdWDkzRxw1K7nAnC9l6LxCOVsKu6Hwg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1dYz5v9Xz2yk7;
+	Mon, 24 Feb 2025 22:20:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740396007;
+	cv=none; b=jI81Jz2BPh9IvZbGQ4a3T0Gf0W6+OpqlfQPWARhI5lU24n53BQIRv6BTvtWWbcU9AXvYhlMCv+1T8m/S8SAPOmVf7gERhcwhjIdV3Wm+lXPYgavUJiViewA7nZtMPwNp7Y+GmxcIMDJDFDg4AQatduuv489n4aPHHpC13sfmYv2KMUwS4z8Uz8ZnOASlRXKEFlTuGGg69HTOfJIDCkg5N5feFMljFjKfcq+cxZqD0nbHWu+2p3TJy0KYqd/ySb92weVdUvsh4mtEmOIk9Tb5MTHpdFHa+JEG7JvogFmMcq8FPJP2qsJvdNs0ltZ/hnC+CF6SK5J6hHdWO0ggz5kSTA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740394479; c=relaxed/relaxed;
-	bh=gIYv0/Q/Zeq48EvvOMQm6hO5YrgVHHe1Ef648QzRuwU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AURzL10eCeSKQTTjQjY8ZlSCfSSDAKh6yi6A04ZWREWykl2yWuMMpWU+6+5N07MxPoEoqcN9Y5KYL7W8ZXs3vo8qw6kjAYUCitQWtGGdLTt/PTGjvAjXQuP1RshiMErGcVzKl+n/DSZe5WNROK8EK6frmW78ze+KnpVqYAw2v3ws3Dv+zZB7d7st5leoFlbQ1JC6C9wz3BKzOmFCmo6n8LUowp10NWInHHNdlq1sxYmGQKl9Qj18St5QhfYuZqQmAqLd6SgErXIKFP/v2eJO0uBOYHwjmrr0XbtMxTJjCMdXLErDhAGUXOyXxoyW6nGjmBzlnxtwdP3frc6AKA+Zmg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=pLCojCI6; dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=mI6wHxTt; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=pLCojCI6; dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=mI6wHxTt; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=pLCojCI6;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=mI6wHxTt;
-	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=pLCojCI6;
-	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=mI6wHxTt;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=jack@suse.cz; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z1d0Z0RjKz2yVv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2025 21:54:37 +1100 (AEDT)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 8BA3E21181;
-	Mon, 24 Feb 2025 10:54:34 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1740394474; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=gIYv0/Q/Zeq48EvvOMQm6hO5YrgVHHe1Ef648QzRuwU=;
-	b=pLCojCI6Ndh8FwupTNlbbixAqjYHuxtVBB/wAhSI2CLqc5jJkopVnCJxSWHzaCKQwe2dH4
-	3x617lQVv51ilS4EsCYxVNEOhnsZqBjQfoVAZgBN29x/s5kbOz/dlsanhZegKzfgyXT5VC
-	cRDnBMZ9oK3wXeYa4tXtE7DdF72F96o=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1740394474;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=gIYv0/Q/Zeq48EvvOMQm6hO5YrgVHHe1Ef648QzRuwU=;
-	b=mI6wHxTt5f/7/t2PAluzL2HfiTQQw6hI/kg92M+8rMU6W15iP4rnG9oxLReHFFId8HEKpr
-	LHlaPGLupEhmG0Aw==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1740394474; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=gIYv0/Q/Zeq48EvvOMQm6hO5YrgVHHe1Ef648QzRuwU=;
-	b=pLCojCI6Ndh8FwupTNlbbixAqjYHuxtVBB/wAhSI2CLqc5jJkopVnCJxSWHzaCKQwe2dH4
-	3x617lQVv51ilS4EsCYxVNEOhnsZqBjQfoVAZgBN29x/s5kbOz/dlsanhZegKzfgyXT5VC
-	cRDnBMZ9oK3wXeYa4tXtE7DdF72F96o=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1740394474;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=gIYv0/Q/Zeq48EvvOMQm6hO5YrgVHHe1Ef648QzRuwU=;
-	b=mI6wHxTt5f/7/t2PAluzL2HfiTQQw6hI/kg92M+8rMU6W15iP4rnG9oxLReHFFId8HEKpr
-	LHlaPGLupEhmG0Aw==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 7247113929;
-	Mon, 24 Feb 2025 10:54:34 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id cgroG+pPvGddfwAAD6G6ig
-	(envelope-from <jack@suse.cz>); Mon, 24 Feb 2025 10:54:34 +0000
-Received: by quack3.suse.cz (Postfix, from userid 1000)
-	id 202B0A090D; Mon, 24 Feb 2025 11:54:34 +0100 (CET)
-Date: Mon, 24 Feb 2025 11:54:34 +0100
-From: Jan Kara <jack@suse.cz>
-To: Andrey Albershteyn <aalbersh@redhat.com>
-Cc: Richard Henderson <richard.henderson@linaro.org>, 
-	Matt Turner <mattst88@gmail.com>, Russell King <linux@armlinux.org.uk>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
-	Geert Uytterhoeven <geert@linux-m68k.org>, Michal Simek <monstr@monstr.eu>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, 
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, 
-	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
-	"David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, 
-	Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
-	Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>, 
-	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
-	=?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, =?utf-8?Q?G=C3=BCnther?= Noack <gnoack@google.com>, 
-	Arnd Bergmann <arnd@arndb.de>, linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linux-security-module@vger.kernel.org, linux-api@vger.kernel.org, linux-arch@vger.kernel.org, 
-	linux-xfs@vger.kernel.org
-Subject: Re: [PATCH v3] fs: introduce getfsxattrat and setfsxattrat syscalls
-Message-ID: <fyp7gcbeo3xlrh7zi7k6m5aa6h5otbufxq3kh5zvgr3sjdbxl3@4nkuwx46yajk>
-References: <20250211-xattrat-syscall-v3-1-a07d15f898b2@kernel.org>
+	t=1740396007; c=relaxed/relaxed;
+	bh=agwkPsQh4b0DyXkYLYLuwktIP7TFr6q/buoiPBn5ggc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=eEbq5/nmC3CAVdIM90X1gsTTfqc7BafbdNagK0BpqwP21LgRBRcPElHibmAaOF2i/2hBc68Z7Ylj4cFrXAnKs9u0QkoUBlIpCkB/o4z8Vgllk9Jgu2A+cKPOAVwVyww3m83yqbL3aTR4pybvNI0xVWmOKSP3RKS1cYopnVvas8+FFoYozzEIh2puLvwBXwcacIPoeg7+q8jj6G+KEjqmGGMwwPJUvMFsYTaYPmSIycWm2QYcKcJzt0DRf/GWl1IGSeX/W5y2tdVnpXHkMPCpx3tMRXNrc4dmm73/mZXJ6t0Y89tUNf3ws5E1tsHln4Pcx32wo2xy3JUbZNDaVbduzA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z1dYy55gqz2xYr
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Feb 2025 22:20:06 +1100 (AEDT)
+Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4Z1dQg35xWz9sSq;
+	Mon, 24 Feb 2025 12:13:47 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id reeUmV24E4zC; Mon, 24 Feb 2025 12:13:47 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4Z1dQg2BZFz9sSp;
+	Mon, 24 Feb 2025 12:13:47 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2FFAC8B765;
+	Mon, 24 Feb 2025 12:13:47 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id kefUlrU39Hz9; Mon, 24 Feb 2025 12:13:47 +0100 (CET)
+Received: from [10.25.207.138] (unknown [10.25.207.138])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C903F8B763;
+	Mon, 24 Feb 2025 12:13:46 +0100 (CET)
+Message-ID: <5e8a4dd9-50a8-4080-8d63-dbb8c7241b98@csgroup.eu>
+Date: Mon, 24 Feb 2025 12:13:46 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -131,213 +57,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 4/4] mm: Rename GENERIC_PTDUMP and PTDUMP_CORE
+To: Anshuman Khandual <anshuman.khandual@arm.com>,
+ Steven Price <steven.price@arm.com>, linux-mm@kvack.org
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Jonathan Corbet <corbet@lwn.net>, Marc Zyngier <maz@kernel.org>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
+ <palmer@dabbelt.com>, Heiko Carstens <hca@linux.ibm.com>,
+ Vasily Gorbik <gor@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, Andrew Morton <akpm@linux-foundation.org>,
+ linux-arm-kernel@lists.infradead.org, linux-doc@vger.kernel.org,
+ linux-kernel@vger.kernel.org, kvmarm@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org
+References: <20250213040934.3245750-1-anshuman.khandual@arm.com>
+ <20250213040934.3245750-5-anshuman.khandual@arm.com>
+ <8e75c5ff-a97b-4a6f-9c8b-ac2598eafe60@arm.com>
+ <6e1201a1-60c1-40a3-951f-d603b6341a11@csgroup.eu>
+ <03b042ec-1cb7-4419-8741-c65e74e49d51@arm.com>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <03b042ec-1cb7-4419-8741-c65e74e49d51@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250211-xattrat-syscall-v3-1-a07d15f898b2@kernel.org>
-X-Spamd-Result: default: False [-3.80 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	MID_RHS_NOT_FQDN(0.50)[];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	ARC_NA(0.00)[];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	MISSING_XM_UA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCVD_COUNT_THREE(0.00)[3];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.de];
-	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[linaro.org,gmail.com,armlinux.org.uk,arm.com,kernel.org,linux-m68k.org,monstr.eu,alpha.franken.de,hansenpartnership.com,gmx.de,linux.ibm.com,ellerman.id.au,csgroup.eu,users.sourceforge.jp,libc.org,physik.fu-berlin.de,davemloft.net,gaisler.com,linutronix.de,redhat.com,alien8.de,linux.intel.com,zytor.com,zankel.net,zeniv.linux.org.uk,suse.cz,digikod.net,google.com,arndb.de,vger.kernel.org,lists.infradead.org,lists.linux-m68k.org,lists.ozlabs.org];
-	R_RATELIMIT(0.00)[to_ip_from(RLyerg7kx5bdf6cnfzf33td54o)];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_TLS_LAST(0.00)[];
-	TO_MATCH_ENVRCPT_SOME(0.00)[];
-	RCPT_COUNT_GT_50(0.00)[56];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:email,imap1.dmz-prg2.suse.org:helo]
 
-On Tue 11-02-25 18:22:47, Andrey Albershteyn wrote:
-> From: Andrey Albershteyn <aalbersh@redhat.com>
+
+
+Le 14/02/2025 à 08:26, Anshuman Khandual a écrit :
 > 
-> Introduce getfsxattrat and setfsxattrat syscalls to manipulate inode
-> extended attributes/flags. The syscalls take parent directory fd and
-> path to the child together with struct fsxattr.
 > 
-> This is an alternative to FS_IOC_FSSETXATTR ioctl with a difference
-> that file don't need to be open as we can reference it with a path
-> instead of fd. By having this we can manipulated inode extended
-> attributes not only on regular files but also on special ones. This
-> is not possible with FS_IOC_FSSETXATTR ioctl as with special files
-> we can not call ioctl() directly on the filesystem inode using fd.
+> On 2/13/25 17:19, Christophe Leroy wrote:
+>>
+>>
+>> Le 13/02/2025 à 12:23, Steven Price a écrit :
+>>> On 13/02/2025 04:09, Anshuman Khandual wrote:
+>>>> Platforms subscribe into generic ptdump implementation via GENERIC_PTDUMP.
+>>>> But generic ptdump gets enabled via PTDUMP_CORE. These configs combination
+>>>> is confusing as they sound very similar and does not differentiate between
+>>>> platform's feature subscription and feature enablement for ptdump. Rename
+>>>> the configs as ARCH_HAS_PTDUMP and PTDUMP making it more clear and improve
+>>>> readability.
+>>>
+>>> [...]
+>>>> diff --git a/arch/powerpc/configs/mpc885_ads_defconfig b/arch/powerpc/configs/mpc885_ads_defconfig
+>>>> index 77306be62e9e..db005618690b 100644
+>>>> --- a/arch/powerpc/configs/mpc885_ads_defconfig
+>>>> +++ b/arch/powerpc/configs/mpc885_ads_defconfig
+>>>> @@ -78,4 +78,4 @@ CONFIG_DEBUG_VM_PGTABLE=y
+>>>>    CONFIG_DETECT_HUNG_TASK=y
+>>>>    CONFIG_BDI_SWITCH=y
+>>>>    CONFIG_PPC_EARLY_DEBUG=y
+>>>> -CONFIG_GENERIC_PTDUMP=y
+>>>> +CONFIG_PTDUMP=y
+>>>
+>>> I'd suggest dropp this from the defconfig too, just like patch 1 dropped
+>>> it from debug.config.
+>>>
+>>
+>> Thanks for spotting that.
+>>
+>> That one is wrong. Was introduced by commit d210ee3fdfe8 ("powerpc/configs: Update config files for removed/renamed symbols") which aimed at fixing commit e084728393a5 ("powerpc/ptdump: Convert powerpc to GENERIC_PTDUMP") but it did it wrong.
+>>
+>> It is CONFIG_PTDUMP_DEBUGFS that is wanted.
 > 
-> This patch adds two new syscalls which allows userspace to get/set
-> extended inode attributes on special files by using parent directory
-> and a path - *at() like syscall.
-> 
-> Also, as vfs_fileattr_set() is now will be called on special files
-> too, let's forbid any other attributes except projid and nextents
-> (symlink can have an extent).
-> 
-> CC: linux-api@vger.kernel.org
-> CC: linux-fsdevel@vger.kernel.org
-> CC: linux-xfs@vger.kernel.org
-> Signed-off-by: Andrey Albershteyn <aalbersh@redhat.com>
+> Should this replacement be done in the series or would you like it
+> to be handled in powerpc later ?
 
-Some comments below:
-
-> +SYSCALL_DEFINE4(getfsxattrat, int, dfd, const char __user *, filename,
-> +		struct fsxattr __user *, fsx, unsigned int, at_flags)
-> +{
-> +	CLASS(fd, dir)(dfd);
-> +	struct fileattr fa;
-> +	struct path filepath;
-> +	int error;
-> +	unsigned int lookup_flags = 0;
-> +
-> +	if ((at_flags & ~(AT_SYMLINK_NOFOLLOW | AT_EMPTY_PATH)) != 0)
-> +		return -EINVAL;
-> +
-> +	if (at_flags & AT_SYMLINK_FOLLOW)
-	    ^^ This should be !(at_flags & AT_SYMLINK_NOFOLLOW)?
-
-In the check above you verify for AT_SYMLINK_NOFOLLOW and that also matches
-what setxattrat() does...
-
-
-> +		lookup_flags |= LOOKUP_FOLLOW;
-> +
-> +	if (at_flags & AT_EMPTY_PATH)
-> +		lookup_flags |= LOOKUP_EMPTY;
-> +
-> +	if (fd_empty(dir))
-> +		return -EBADF;
-
-This check is wrong and in fact the whole dfd handling looks buggy.
-openat(2) manpage describes the expected behavior:
-
-       The dirfd argument is used in conjunction with the pathname argument as
-       follows:
-
-       •  If the pathname given in pathname is absolute,  then  dirfd  is  ig-
-          nored.
-	  ^^^^ This is what you break. If the pathname is absolute, you're
-not expected to touch dirfd.
-
-       •  If  the pathname given in pathname is relative and dirfd is the spe-
-          cial value AT_FDCWD, then pathname is interpreted  relative  to  the
-          current working directory of the calling process (like open()).
-          ^^^ Also AT_FDCWD handling would be broken by the above check.
-
-       •  If  the  pathname  given  in pathname is relative, then it is inter-
-          preted relative to the directory referred to by the file  descriptor
-          dirfd  (rather than relative to the current working directory of the
-          calling process, as is done by open() for a relative pathname).   In
-          this  case,  dirfd  must  be a directory that was opened for reading
-          (O_RDONLY) or using the O_PATH flag.
-
-       If the pathname given in pathname is relative, and dirfd is not a valid
-       file descriptor, an error (EBADF) results.  (Specifying an invalid file
-       descriptor number in dirfd can be used as a means to ensure that  path-
-       name is absolute.)
-
-> +
-> +	error = user_path_at(dfd, filename, lookup_flags, &filepath);
-		^^^ And user_path_at() isn't quite what you need either
-because with AT_EMPTY_PATH we also want to allow for filename to be NULL
-(not just empty string) and user_path_at() does not support that. That's
-why I in my previous replies suggested you should follow what setxattrat()
-does and that sadly it is more painful than it should be. You need
-something like:
-
-	name = getname_maybe_null(filename, at_flags);
-	if (!name) {
-		CLASS(fd, f)(dfd);
-
-		if (fd_empty(f))
-			return -EBADF;
-		error = vfs_fileattr_get(file_dentry(fd_file(f)), &fa);
-	} else {
-		error = filename_lookup(dfd, filename, lookup_flags, &filepath,
-					NULL);
-		if (error)
-			goto out;
-		error = vfs_fileattr_get(filepath.dentry, &fa);
-		path_put(&filepath);
-	}
-	if (!error)
-		error = copy_fsxattr_to_user(&fa, fsx);
-out:
-	putname(name);
-	return error;
-
-Longer term, we need to provide user_path_maybe_null_at() for this but I
-don't want to drag you into this cleanup :)
-
-> +	if (error)
-> +		return error;
-> +
-> +	error = vfs_fileattr_get(filepath.dentry, &fa);
-> +	if (!error)
-> +		error = copy_fsxattr_to_user(&fa, fsx);
-> +
-> +	path_put(&filepath);
-> +	return error;
-> +}
-> +
-> +SYSCALL_DEFINE4(setfsxattrat, int, dfd, const char __user *, filename,
-> +		struct fsxattr __user *, fsx, unsigned int, at_flags)
-> +{
-> +	CLASS(fd, dir)(dfd);
-> +	struct fileattr fa;
-> +	struct path filepath;
-> +	int error;
-> +	unsigned int lookup_flags = 0;
-> +
-> +	if ((at_flags & ~(AT_SYMLINK_FOLLOW | AT_EMPTY_PATH)) != 0)
-> +		return -EINVAL;
-> +
-> +	if (at_flags & AT_SYMLINK_FOLLOW)
-> +		lookup_flags |= LOOKUP_FOLLOW;
-
-I think using AT_SYMLINK_NOFOLLOW is actually more traditional and thus
-less surprising to users so I'd prefer that. Definitely this needs to be
-consistent with getfsxattrat().
-
-> +
-> +	if (at_flags & AT_EMPTY_PATH)
-> +		lookup_flags |= LOOKUP_EMPTY;
-> +
-> +	if (fd_empty(dir))
-> +		return -EBADF;
-
-Same comment regarding dfd handling as above.
-
-> +
-> +	if (copy_fsxattr_from_user(&fa, fsx))
-> +		return -EFAULT;
-> +
-> +	error = user_path_at(dfd, filename, lookup_flags, &filepath);
-> +	if (error)
-> +		return error;
-> +
-> +	error = mnt_want_write(filepath.mnt);
-> +	if (!error) {
-> +		error = vfs_fileattr_set(file_mnt_idmap(fd_file(dir)),
-> +					 filepath.dentry, &fa);
-> +		mnt_drop_write(filepath.mnt);
-> +	}
-> +
-> +	path_put(&filepath);
-> +	return error;
-> +}
-
-Otherwise the patch looks good to me.
-
-								Honza
--- 
-Jan Kara <jack@suse.com>
-SUSE Labs, CR
+Yes I think you should do the replacement.
 
