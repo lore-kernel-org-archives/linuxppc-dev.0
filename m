@@ -1,50 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-6452-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6453-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 781F8C021B2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Feb 2025 07:50:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CAADC021B2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Feb 2025 08:11:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z28sD4vZKz30RG;
-	Tue, 25 Feb 2025 18:50:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740469808;
-	cv=none; b=TS+lWvFeApvKvvXEbLBoid6hEZzR1lBfOGwU5x00ikbVSEB4wjPDNua+32cNgJCxWFKp/QH/6TGJcArK+Do+iJ0CtwcORc+F5sWnkjIN9jDxTxOe9rHdAhhLFVvSVb9k6Rs4vKitj7Ta5LkyO1VIqPfKzrUdkQ1F7YkP6HvUc1Esy2vFkxrJ0hPxyF3Bcm2nxkoqWjb3wHsYykorCux7Qnh6Ew4EO+0IVlnKDQyolufARUZoIWtCvQgeFkCHQ7G22yks6QS2S+wMum2CJJ6SNb79IoCWcVkFjp3f31C1NBdbZYIAe6RCfYG/EFO8Ioomi+1C2TqeVHT8dG9dHZv+Eg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z29KY6jSCz30RN;
+	Tue, 25 Feb 2025 19:11:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.141
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740471073;
+	cv=none; b=irhlxOxE1j/McqiW8uvMUUopOnI0AIRwygC7YhxJ0vCCt27hatD9q8oYs2CDg0XkU9uvW2OnuKZUI6gKOo95kC1nFd9Lp6OOvluCz6RBImL0OrSyDJ0RYHiIOjheJi8DUjvbhUgJvPxZBWXG/7eXR0RhFDrdnTxxV5i/4ndEnKeZBpuZL54k9QXYM8aZjbnf5XxBPyBCo4wqOwZVDQ5bHxqlO1vh9UHqQoYU8GQe1DASt5fhbuDt3KEX9rL3pRtS6gUdeDTTYwLrarrZF05DxH7CEt07INsYZcKcjNSMNvHxpmD5II16aIRuKQY7R5iuidy6gsKUIL2WeDsA299UmQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740469808; c=relaxed/relaxed;
-	bh=w2py0kUiJotY/so+MJMdjzD0yIaoyBE+ZyWnlWNYFdk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Q2AVWxjfpAf0APJYOheS/mfjlpQcjucX7PTqzyzR/nSmlLKn1qzMZhm89FiejoXaxilIvhWjAgpL8UGDlbdEm83HoqYrV1SrH0TZgVT65k0S6URNU7Y0bZl4K9g8eUh7dzeJcJDCw3GOasC1bns18o+k3854bc8QgCLxqmy3FiXCgJVjUxG+1oEiW3ISM8Fv0U/6uvDIG73N6y4RHehtzj96uGbo5VySemeNbEPOEDtwX5DAS627BzP7LpYADwvSdKc9rn/UzWD8Wwfy1SFTo4PonC8uxSccXOal8KUM0msOZLnaUHysEGNBs/euNvyZ6zg31ZsFNHGl0gV8HG1zqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z28sC00r4z30PF
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2025 18:50:06 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4Z28XW5p6Cz9sSH;
-	Tue, 25 Feb 2025 08:35:39 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id LNoX8tsTPzIV; Tue, 25 Feb 2025 08:35:39 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4Z28XW50Xsz9sS8;
-	Tue, 25 Feb 2025 08:35:39 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 98D598B780;
-	Tue, 25 Feb 2025 08:35:39 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id D597ggcl3448; Tue, 25 Feb 2025 08:35:39 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 283828B77C;
-	Tue, 25 Feb 2025 08:35:39 +0100 (CET)
-Message-ID: <7d23db63-6909-48e2-8262-fb000aa714a5@csgroup.eu>
-Date: Tue, 25 Feb 2025 08:35:38 +0100
+	t=1740471073; c=relaxed/relaxed;
+	bh=QLBFywS7XyTxwPOejQif6z/28yCPC+NOlxqp7jJivgU=;
+	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
+	 Subject:Content-Type; b=GvBRsEZwuO6QvY5w/7UPjhcUnSrR4E17nvtXRK3enK53cmUuqV26Zd6fXUb4W3UGlmLRrAPDiMbco5NL62tw1k+Lgk4krTCTX1OKQcQDRanL6BzB4TJL4KzAxEEp9ZA7AF0SPnVlUdq/nOk6yx3QYlZ29nqEhbpmhbq6Ku/plzTOUDDLF/8ZjLhCGPSyMPlo+kNBPZZCe/V6hyDYh8dkpaAPqzdxjY2lQYWUbdCiIyNXGebYY7MV42G1ZzKkfsKIqJbFWje8J7pbkqqH+WWnO+U8YuNf1JESugE1mVUur/BSqV75ShJJRKMdCkHE8oH9e/3TR7zUwMDBCF5lpc28NQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=nuB/bCA9; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=YPoIMkvS; dkim-atps=neutral; spf=pass (client-ip=202.12.124.141; helo=flow-b6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=nuB/bCA9;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=YPoIMkvS;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.141; helo=flow-b6-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 517 seconds by postgrey-1.37 at boromir; Tue, 25 Feb 2025 19:11:10 AEDT
+Received: from flow-b6-smtp.messagingengine.com (flow-b6-smtp.messagingengine.com [202.12.124.141])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z29KV6Z6Qz30PF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2025 19:11:10 +1100 (AEDT)
+Received: from phl-compute-11.internal (phl-compute-11.phl.internal [10.202.2.51])
+	by mailflow.stl.internal (Postfix) with ESMTP id BC32C1D40DC7;
+	Tue, 25 Feb 2025 03:02:28 -0500 (EST)
+Received: from phl-imap-11 ([10.202.2.101])
+  by phl-compute-11.internal (MEProxy); Tue, 25 Feb 2025 03:02:30 -0500
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
+	:cc:content-transfer-encoding:content-type:content-type:date
+	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1740470548;
+	 x=1740477748; bh=QLBFywS7XyTxwPOejQif6z/28yCPC+NOlxqp7jJivgU=; b=
+	nuB/bCA9S1ItHoQccv5Gpf2mwvDce7RRcNcpwlxjDxO1holF+tGByrAapeP7OrFr
+	HAk3aSlywo6BQ3aIq3YD97bpYimQZCmCJzQVQ4J7/FjQNoffpOdztKN3jNMkLAsm
+	9VGEaeHYbe7aA1pwEwTc5Ly3uUaA5trnjhjeblm3R3qCmYh5gobnjqpCGnSMaJxH
+	Q4rT9xQzPWGhTDWs9MOLPKEFr4nLKLYdEEplecb0+f886EV6VW5atz2MXrJXfgSa
+	8nO2s+I0QTs8G0bnVObE2Z5vC+C/ADHfqNq9PLbtRtoWaqB9bL1p64n0kbx/qUFh
+	GI6t/ArRTPIDtTrox5TXCQ==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:content-type:date:date:feedback-id:feedback-id
+	:from:from:in-reply-to:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:subject:to:to:x-me-proxy
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1740470548; x=
+	1740477748; bh=QLBFywS7XyTxwPOejQif6z/28yCPC+NOlxqp7jJivgU=; b=Y
+	PoIMkvS6Pmv9DRNik2ZIAlOAGJxA128xi+2AFbN1p4mZSMpWJvjWRKHZs4PLFfc6
+	1+aHv049YnYKEfVZEN+sir1Y3b3y0M5hJe6zr9DGoS6Mofb56X+snvlPvlUK0F+4
+	mXCUv/SVSH9ziGwDTAMYmz7Q5CpBKdy6teD7hFBcWYrwRSOU7VayJcaFf2MNpoPY
+	RwMyBak80wphhNQM/ZbdE2tRPYWKp2xSTpvayyVo+xrq2jkqVAoOaz4M/GmpQhDQ
+	GoohNCukP3A1YcdSedH7Ka31l79hVrCqcvm9Qig3waOu8sHkFMFBcxErO5OHkgJx
+	1CybiPzK73IGpPLVmfvxA==
+X-ME-Sender: <xms:EHm9Z5ksovKix4IxAYOa6NPEsSLcphOoyOjz8HC-1Dt-R6Vx9U_HmQ>
+    <xme:EHm9Z02PIBag6kVjBAxYukVUJEdGe04NJq4rDChWSx6WsgtBg87p-_V2omgoWP2jZ
+    _7Dx_WXLOJSuAYYKgM>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgdekuddujecutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpggftfghnshhusghstghrihgsvgdp
+    uffrtefokffrpgfnqfghnecuuegrihhlohhuthemuceftddtnecusecvtfgvtghiphhivg
+    hnthhsucdlqddutddtmdenucfjughrpefoggffhffvvefkjghfufgtgfesthhqredtredt
+    jeenucfhrhhomhepfdetrhhnugcuuegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusg
+    druggvqeenucggtffrrghtthgvrhhnpedvhfdvkeeuudevfffftefgvdevfedvleehvddv
+    geejvdefhedtgeegveehfeeljeenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmh
+    epmhgrihhlfhhrohhmpegrrhhnugesrghrnhgusgdruggvpdhnsggprhgtphhtthhopeeh
+    tddpmhhouggvpehsmhhtphhouhhtpdhrtghpthhtohepsghpsegrlhhivghnkedruggvpd
+    hrtghpthhtohepthhssghoghgvnhgusegrlhhphhgrrdhfrhgrnhhkvghnrdguvgdprhgt
+    phhtthhopegtrghtrghlihhnrdhmrghrihhnrghssegrrhhmrdgtohhmpdhrtghpthhtoh
+    eplhhinhhugiesrghrmhhlihhnuhigrdhorhhgrdhukhdprhgtphhtthhopegthhhrihhs
+    thhophhhvgdrlhgvrhhohiestghsghhrohhuphdrvghupdhrtghpthhtohepuggrvhgvmh
+    esuggrvhgvmhhlohhfthdrnhgvthdprhgtphhtthhopehmihgtseguihhgihhkohgurdhn
+    vghtpdhrtghpthhtohepmhhpvgesvghllhgvrhhmrghnrdhiugdrrghupdhrtghpthhtoh
+    eprghnughrvggrshesghgrihhslhgvrhdrtghomh
+X-ME-Proxy: <xmx:EHm9Z_qJ-ITA7HBjaqdXvk3f-nqGrbsu3fDpFPFh2RmK-q6S1Rh3pg>
+    <xmx:EHm9Z5nHJC0k8dToMBJ4l8OzwQT8BBLHg391079G2HLzyfUZiOWn0A>
+    <xmx:EHm9Z302TC_YPcv_Alc8uVIbhcs_m4NaqklpywGUw6d3uwcpJgO6qQ>
+    <xmx:EHm9Z4sdir4sphaNBGTPw7csAyqyoGjyjpv2MyJVBqSCdS8S2iGxGQ>
+    <xmx:FHm9Z9FhQ4LWTtKGSN8SQ9W8XolOVrCxrHfKpOz3hrDt-C_9ux6zE9sc>
+Feedback-ID: i56a14606:Fastmail
+Received: by mailuser.phl.internal (Postfix, from userid 501)
+	id A3F4B2220072; Tue, 25 Feb 2025 03:02:24 -0500 (EST)
+X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,61 +100,127 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH] objtool: Skip unannotated intra-function call warning
- for bl+mflr pattern
-To: Nathan Chancellor <nathan@kernel.org>
-Cc: Sathvika Vasireddy <sv@linux.ibm.com>, jpoimboe@kernel.org,
- peterz@infradead.org, npiggin@gmail.com, maddy@linux.ibm.com,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- llvm@lists.linux.dev
-References: <20250219162014.10334-1-sv@linux.ibm.com>
- <3223ec0e-c445-4bbf-ae72-276688e40908@csgroup.eu>
- <d5ada017-1ba2-4a89-8a58-4555f09f9d97@csgroup.eu>
- <8f4ec6d4-2646-4a87-b3a1-edfaecff2a01@csgroup.eu>
- <20250224170922.GA585841@ax162>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20250224170922.GA585841@ax162>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Date: Tue, 25 Feb 2025 09:02:04 +0100
+From: "Arnd Bergmann" <arnd@arndb.de>
+To: "Christian Brauner" <brauner@kernel.org>
+Cc: "Amir Goldstein" <amir73il@gmail.com>,
+ "Andrey Albershteyn" <aalbersh@redhat.com>,
+ "Darrick J. Wong" <djwong@kernel.org>,
+ "Richard Henderson" <richard.henderson@linaro.org>,
+ "Matt Turner" <mattst88@gmail.com>,
+ "Russell King" <linux@armlinux.org.uk>,
+ "Catalin Marinas" <catalin.marinas@arm.com>,
+ "Will Deacon" <will@kernel.org>,
+ "Geert Uytterhoeven" <geert@linux-m68k.org>,
+ "Michal Simek" <monstr@monstr.eu>,
+ "Thomas Bogendoerfer" <tsbogend@alpha.franken.de>,
+ "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
+ "Helge Deller" <deller@gmx.de>,
+ "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+ "Michael Ellerman" <mpe@ellerman.id.au>,
+ "Nicholas Piggin" <npiggin@gmail.com>,
+ "Christophe Leroy" <christophe.leroy@csgroup.eu>,
+ "Naveen N Rao" <naveen@kernel.org>, "Heiko Carstens" <hca@linux.ibm.com>,
+ "Vasily Gorbik" <gor@linux.ibm.com>,
+ "Alexander Gordeev" <agordeev@linux.ibm.com>,
+ "Christian Borntraeger" <borntraeger@linux.ibm.com>,
+ "Sven Schnelle" <svens@linux.ibm.com>,
+ "Yoshinori Sato" <ysato@users.sourceforge.jp>,
+ "Rich Felker" <dalias@libc.org>,
+ "John Paul Adrian Glaubitz" <glaubitz@physik.fu-berlin.de>,
+ "David S . Miller" <davem@davemloft.net>,
+ "Andreas Larsson" <andreas@gaisler.com>,
+ "Andy Lutomirski" <luto@kernel.org>,
+ "Thomas Gleixner" <tglx@linutronix.de>, "Ingo Molnar" <mingo@redhat.com>,
+ "Borislav Petkov" <bp@alien8.de>,
+ "Dave Hansen" <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, "Chris Zankel" <chris@zankel.net>,
+ "Max Filippov" <jcmvbkbc@gmail.com>,
+ "Alexander Viro" <viro@zeniv.linux.org.uk>, "Jan Kara" <jack@suse.cz>,
+ =?UTF-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>,
+ =?UTF-8?Q?G=C3=BCnther_Noack?= <gnoack@google.com>,
+ linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-m68k@lists.linux-m68k.org,
+ linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
+ linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org,
+ linux-api@vger.kernel.org, Linux-Arch <linux-arch@vger.kernel.org>,
+ linux-xfs@vger.kernel.org, =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>,
+ "Theodore Ts'o" <tytso@mit.edu>
+Message-Id: <6b51ffa2-9d67-4466-865e-e703c1243352@app.fastmail.com>
+In-Reply-To: <20250224-klinke-hochdekoriert-3f6be89005a8@brauner>
+References: <20250211-xattrat-syscall-v3-1-a07d15f898b2@kernel.org>
+ <20250221181135.GW21808@frogsfrogsfrogs>
+ <CAOQ4uxgyYBFqkq6cQsso4LxJsPJ4uECOdskXmz-nmGhhV5BQWg@mail.gmail.com>
+ <20250224-klinke-hochdekoriert-3f6be89005a8@brauner>
+Subject: Re: [PATCH v3] fs: introduce getfsxattrat and setfsxattrat syscalls
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
+On Mon, Feb 24, 2025, at 12:32, Christian Brauner wrote:
+> On Fri, Feb 21, 2025 at 08:15:24PM +0100, Amir Goldstein wrote:
+>> On Fri, Feb 21, 2025 at 7:13=E2=80=AFPM Darrick J. Wong <djwong@kerne=
+l.org> wrote:
 
+>> > > @@ -23,6 +23,9 @@
+>> > >  #include <linux/rw_hint.h>
+>> > >  #include <linux/seq_file.h>
+>> > >  #include <linux/debugfs.h>
+>> > > +#include <linux/syscalls.h>
+>> > > +#include <linux/fileattr.h>
+>> > > +#include <linux/namei.h>
+>> > >  #include <trace/events/writeback.h>
+>> > >  #define CREATE_TRACE_POINTS
+>> > >  #include <trace/events/timestamp.h>
+>> > > @@ -2953,3 +2956,75 @@ umode_t mode_strip_sgid(struct mnt_idmap *=
+idmap,
+>> > >       return mode & ~S_ISGID;
+>> > >  }
+>> > >  EXPORT_SYMBOL(mode_strip_sgid);
+>> > > +
+>> > > +SYSCALL_DEFINE4(getfsxattrat, int, dfd, const char __user *, fil=
+ename,
+>> > > +             struct fsxattr __user *, fsx, unsigned int, at_flag=
+s)
+>> >
+>> > Should the kernel require userspace to pass the size of the fsx buf=
+fer?
+>> > That way we avoid needing to rev the interface when we decide to gr=
+ow
+>> > the structure.
+>
+> Please version the struct by size as we do for clone3(),
+> mount_setattr(), listmount()'s struct mnt_id_req, sched_setattr(), all
+> the new xattrat*() system calls and a host of others. So laying out the
+> struct 64bit and passing a size alongside it.
+>
+> This is all handled by copy_struct_from_user() and copy_struct_to_user=
+()
+> so nothing to reinvent. And it's easy to copy from existing system
+> calls.
 
-Le 24/02/2025 à 18:09, Nathan Chancellor a écrit :
-> On Mon, Feb 24, 2025 at 02:19:14PM +0100, Christophe Leroy wrote:
->> Well, this problem already exists on clang 18 it seems:
->>
->> 00000004 <btext_map>:
->>     4:   7c 08 02 a6     mflr    r0
->>     8:   94 21 ff e0     stwu    r1,-32(r1)
->>     c:   93 c1 00 18     stw     r30,24(r1)
->>    10:   90 01 00 24     stw     r0,36(r1)
->>    14:   93 a1 00 14     stw     r29,20(r1)
->>    18:   48 00 00 05     bl      1c <btext_map+0x18>
->>    1c:   38 a0 00 00     li      r5,0
->>    20:   7f c8 02 a6     mflr    r30
->>
->> While GCC generates:
->>
->> 00000418 <btext_map>:
->>   418:   94 21 ff e0     stwu    r1,-32(r1)
->>   41c:   7c 08 02 a6     mflr    r0
->>   420:   42 9f 00 05     bcl     20,4*cr7+so,424 <btext_map+0xc>
->>   424:   39 20 00 00     li      r9,0
->>   428:   93 c1 00 18     stw     r30,24(r1)
->>   42c:   7f c8 02 a6     mflr    r30
->>
->> So lets make the kernel tolerate it allthough it should be fixed on clang at
->> the end.
->>
->> I can't find any related issue in the clang issues database
->> (https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fllvm%2Fllvm-project%2Fissues&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C3c10d37fecd94c692acb08dd54f5ff51%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638760137702082512%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=qOjbONjWUuXFKUNb42yEPXgXmvU6x%2BuwbGSg2Ep6WRk%3D&reserved=0), should we open one ?
-> 
-> Yes please, especially if you happen to have a simplified reproducer
-> (but no worries if not). I can make sure it gets labeled for the PowerPC
-> backend folks to take a look at.
-> 
+I don't think that works in this case, because 'struct fsxattr'
+is an existing structure that is defined with a fixed size of
+28 bytes. If we ever need more than 8 extra bytes, then the
+existing ioctl commands are also broken.
 
-Done, see https://github.com/llvm/llvm-project/issues/128644
+Replacing fsxattr with an extensible structure of the same contents
+would work, but I feel that just adds more complication for little
+gain.
+
+On the other hand, there is an open question about how unknown
+flags and fields in this structure. FS_IOC_FSSETXATTR/FS_IOC_FSGETXATTR
+treats them as optional and just ignores anything it doesn't
+understand, while copy_struct_from_user() would treat any unknown
+but set bytes as -E2BIG.
+
+The ioctl interface relies on the existing behavior, see
+0a6eab8bd4e0 ("vfs: support FS_XFLAG_COWEXTSIZE and get/set of
+CoW extent size hint") for how it was previously extended
+with an optional flag/word. I think that is fine for the syscall
+as well, but should be properly documented since it is different
+from how most syscalls work.
+
+    Arnd
 
