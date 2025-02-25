@@ -1,50 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-6446-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6447-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31AABC021B2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Feb 2025 06:20:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A399FC021B2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Feb 2025 06:24:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z26sL3rXMz2yvv;
-	Tue, 25 Feb 2025 17:20:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740464406;
-	cv=none; b=lwmcOYjdpNaCuVXGShNj9WPq1zrk5PzKKzic7+KkXNOrmHVpTzNdPrwdzU1b49zaa4WzTRIB+565vxN5OQaRlNikADZ/1aZ+MPoDFU9ZT6nwHbxBP7tt/CMzBJ5AAU+OkhAocN6KxH6VZLR7x/A+kOmvEQsBUEvCWWnFLHTKRalLPRBCDYedwoyo/RovImT01vlY1c8U+CC7gvdPvqf5TgvoDrHd6UrcD584WHbvxAqOj0hrJd0K+7U166Quu4qN163a4CFXQkU6g+gLZZWsMQEJyLu+k8+3GynP9QM5gygSUYnNceTAECTZVJlhKq+gXKK8+2X/9cUmFgdg+8idow==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740464406; c=relaxed/relaxed;
-	bh=vjHAsXQ5IQJ+/42mm4aDJJxzQUZsJTSwLQCYASozxz4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Bu0RKRwDD3S1tdERYVsTaQF9uJLu1DQhEhaeizDkIsXgS6JxWe01sLUSObJGSD6NiREpig3ZL19B8YBiJhVJOA8wOmJW6jqT+68IakKQVvdHxQYQFQ7Thq3oVw5grpA4C6yCMjjMvJJu1FM7qoVRX/AEzMVboG1hrYtmiBYyf9RHMFPCyXiMG4Mz+85+luc6GN9AkwD3wIxjTTDUMajNJNcUwJRdAOApZboGj3A5uZwwawf9XVUuWaykfb0L10E8lEMYK71kUPVoBRDrD0Ov6kq22ohR6UaZ7+/qOOuzBzpGqqVpdGZ6XOwRt6fc1deK/N65y4bHwJDdDuD6UEsmMQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z26sK3v1mz2ysX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2025 17:20:04 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4Z26Nj44jNz9sSH;
-	Tue, 25 Feb 2025 06:58:45 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id elWzm5hk9ksV; Tue, 25 Feb 2025 06:58:45 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4Z26Nj2zRWz9sS8;
-	Tue, 25 Feb 2025 06:58:45 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 422BB8B780;
-	Tue, 25 Feb 2025 06:58:45 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id k1t4mJHItepu; Tue, 25 Feb 2025 06:58:45 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id A74F38B77C;
-	Tue, 25 Feb 2025 06:58:44 +0100 (CET)
-Message-ID: <a7a135c9-c65b-48a8-a3a8-6aa98afe77d0@csgroup.eu>
-Date: Tue, 25 Feb 2025 06:58:44 +0100
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z26xw1ZY1z3024;
+	Tue, 25 Feb 2025 17:24:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2405::602" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740464644;
+	cv=pass; b=gOYazTMek28YdOy5mRtAtl86ZUjBUKOvHuAZz0YaU/JtLw8kixRiheOszlc74MKWiverbZzGMzyfiz3tq9dXk1rcVXUp35zV4JvL+xAKVhy70yW1AHdLw8TZjofItEfoNg8slh3JdsW53Zm1mHoXVD8yVMX884TtHXUxTRMT5MHmdrq52hwro0LmLorsNz55CJIrfmxgc/Ug0c2oms3xgtC6UXWKwR+at/xymiZeHCLAClGAdmoiYz3aVK2IUoUhIgQPp/EXppI9pRD0DGr9/sgzeTlF0qxxarJLsaf+H66GCBMTkcjNwmuTncP/vLupnTJj5MpATC51bEJwzD3pgA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1740464644; c=relaxed/relaxed;
+	bh=PAQDT6oY5OcgdSN1C7jHGCMlq8FGau1ZD6szWSbL8XY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=j/QTo5vab1GiIGmMC7+DzfVA7JntkTqEsXOR5fL/cpXbGKZQgoL49JEexHDz41jjOLFunnatQ0RJvKzLZti+T5wYdnCJLuWrId5nmMU22YWbo0Y51HB40XLeUSDHF1PvMZb7JejPlNDVwISlHIqycFyw+yR7SP/E75S9MpD91qx3AWXwK1bFOZTHt054+SVGlOo9ftfnz7F4x2P0nUEfgzfoJLxdA3AOkmHjJYZ7fWqJ0UahtqHpq5fJf8Do4w/5Yh4aTvV2maYf25dUNHvBgbnvjGsllcRVsguSrmduYhB2m0x6pZrYqpUR8XbmbU9O+u/CGik300l9veSlJXsZJg==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=YGSkuknc; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:2405::602; helo=nam02-dm3-obe.outbound.protection.outlook.com; envelope-from=apopple@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=YGSkuknc;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:2405::602; helo=nam02-dm3-obe.outbound.protection.outlook.com; envelope-from=apopple@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM02-DM3-obe.outbound.protection.outlook.com (mail-dm3nam02on20602.outbound.protection.outlook.com [IPv6:2a01:111:f403:2405::602])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z26xt3dxvz2ysX
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2025 17:24:02 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=s1yLYXOtg5B4M6A1Lp5qqMIZkEZxe6utMO3hX7MI9rQw4d14hekNyjcNRr/Rz/qSx5biWJEJpHv8/lY4k6qGpG4aeJFY7hczDb4b2dUrzukjeSBzT7yfquTB1W9C5RetR8BWkK3MQsldyLvmq5fferYIlasGIrwGFFlC6PyK3Km3TWD+zGcINfG/pJKwDqLmgYFhf2NCAk2VgXhGg9uBleLQ7kfOdFpMReiaIqAxPqr66jQyhs4LqLqsWWfr2e4ZI2pzyGarVVTm+K09kosH5c6YRWYy7+VRANslAedCkFIe19TC5py9YnSn2NHsQDAlA1dTtsZZ373ryCr6hEnkpw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=PAQDT6oY5OcgdSN1C7jHGCMlq8FGau1ZD6szWSbL8XY=;
+ b=WpynXwWUEz9McvmL48J+3VPSvVuRmZ8VRMPLzfGOEtj8n5q9YxCAJ7vueOtyD2y/RLS/lXrAiSRE5VaCsnIgIsGtdsTOQka/MZHFP6SPKaNbzOBtxmqR5pLHiDM6oye8rUc4bxu2RymMVkRQq3978+a4iyAUv3KoSzbYwA6oBM98/NGQM+yoGxi1l3yPT/4W8iQCTwtEB2ck3ZL4YGPYKjNzRJq78zOIq1pTscBuRcswsXXjyhOwtXnHHzC0BfWRgR9rBOD75gTkt6CfX9WK8R34H2tx2VIQ4XnVVJBWzGAL53vG1soCCebi+/pLyU8sR1ea5G/fa9g3FcwWCRKajw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=PAQDT6oY5OcgdSN1C7jHGCMlq8FGau1ZD6szWSbL8XY=;
+ b=YGSkukncqxbaaCWA1UlkVkYpVnXJGY2F0ZQEYHeLRwAmFP9h1O6nUuoUvcjifwgRpEhY3QwqbZgBF3hBqz1KKhWYfrlOdDCf1lU41OIMRhBOO+YUqiGJzeqDNHNhp35Ljdi2yOwyu0G+BsSr7/O0a506AjaRjpvZNjhvsfdxd4AK2AXK8UgJwvTrvreFPmttrFFvSNiVJ2keZ8YeC2V8fayFG1rb7DbB8aN4TG3KLvAuEHEvVGD3835mYQbOhUcMlgCvOHsyRVBoEPEHw2G4qjItUKcU1feKFl4RwFn2IBS1NEDe3ronfq8Wp0Hkxt+BrWZuyaMSNWNL6xbEv7y53g==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from DS0PR12MB7726.namprd12.prod.outlook.com (2603:10b6:8:130::6) by
+ SA0PR12MB7076.namprd12.prod.outlook.com (2603:10b6:806:2d5::11) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8466.20; Tue, 25 Feb
+ 2025 06:23:40 +0000
+Received: from DS0PR12MB7726.namprd12.prod.outlook.com
+ ([fe80::953f:2f80:90c5:67fe]) by DS0PR12MB7726.namprd12.prod.outlook.com
+ ([fe80::953f:2f80:90c5:67fe%7]) with mapi id 15.20.8489.018; Tue, 25 Feb 2025
+ 06:23:40 +0000
+Date: Tue, 25 Feb 2025 17:23:35 +1100
+From: Alistair Popple <apopple@nvidia.com>
+To: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
+Cc: akpm@linux-foundation.org, dan.j.williams@intel.com, 
+	linux-mm@kvack.org, Alison Schofield <alison.schofield@intel.com>, 
+	lina@asahilina.net, zhang.lyra@gmail.com, vishal.l.verma@intel.com, 
+	dave.jiang@intel.com, logang@deltatee.com, bhelgaas@google.com, jack@suse.cz, 
+	jgg@ziepe.ca, catalin.marinas@arm.com, will@kernel.org, mpe@ellerman.id.au, 
+	npiggin@gmail.com, dave.hansen@linux.intel.com, ira.weiny@intel.com, 
+	willy@infradead.org, djwong@kernel.org, tytso@mit.edu, linmiaohe@huawei.com, 
+	david@redhat.com, peterx@redhat.com, linux-doc@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linuxppc-dev@lists.ozlabs.org, nvdimm@lists.linux.dev, linux-cxl@vger.kernel.org, 
+	linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org, linux-xfs@vger.kernel.org, 
+	jhubbard@nvidia.com, hch@lst.de, david@fromorbit.com, chenhuacai@kernel.org, 
+	kernel@xen0n.name, loongarch@lists.linux.dev, vgoyal@redhat.com, 
+	stefanha@redhat.com
+Subject: Re: [PATCH v8 20/20] device/dax: Properly refcount device dax pages
+ when mapping
+Message-ID: <asvyejblo43qscvoqv5wpbpdhrjyf6o2tmj2qait2dmqpj7jnw@eqihgijwrkf5>
+References: <cover.a782e309b1328f961da88abddbbc48e5b4579021.1739850794.git-series.apopple@nvidia.com>
+ <9d9d33b418dd1aab9323203488305085389f62c1.1739850794.git-series.apopple@nvidia.com>
+ <20250220193334.0f7f4071@thinkpad-T15>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250220193334.0f7f4071@thinkpad-T15>
+X-ClientProxiedBy: SYCPR01CA0011.ausprd01.prod.outlook.com
+ (2603:10c6:10:31::23) To CY8PR12MB7705.namprd12.prod.outlook.com
+ (2603:10b6:930:84::9)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,106 +95,234 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc: Don't use %pK through printk
-To: "Maciej W. Rozycki" <macro@orcam.me.uk>
-Cc: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Naveen N Rao <naveen@kernel.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <20250217-restricted-pointers-powerpc-v1-1-32c6bff63c9a@linutronix.de>
- <ffd5dd44-babc-480a-b1bc-61bd7ff1e920@csgroup.eu>
- <alpine.DEB.2.21.2502241840360.65342@angie.orcam.me.uk>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <alpine.DEB.2.21.2502241840360.65342@angie.orcam.me.uk>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: DS0PR12MB7726:EE_|SA0PR12MB7076:EE_
+X-MS-Office365-Filtering-Correlation-Id: 48137162-3acb-403f-f57b-08dd5564f17a
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|376014|7416014|366016|1800799024;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?kDiscbIc/TMogWEkacpAxOKtdhbNbYxh96mc6yJp19O4KnLokDdHidMTCtnT?=
+ =?us-ascii?Q?w3f+p7hyBvExy1BfviNNWCL+CzaU6AFYWImW/wiVjAvBDW8Bp5ET5jzsU6EA?=
+ =?us-ascii?Q?pYTIFC9AONL8E0YuBROYP4+N4RsWGugbzCXH0ih4Q1dOhC8Mz6Fz0+cHN4mW?=
+ =?us-ascii?Q?B4Vz/KVFO4Ye/9YDykiLQ01YCrBKwHLGQug3GLngTgKTJcVssLuUpHZ05AeE?=
+ =?us-ascii?Q?pXULbQEO68LnEPDaqnyP2uKb6deLvKVpErbMff81wqWmKR6jip2LCXESAiQ0?=
+ =?us-ascii?Q?Uy+pFePe4u+4UEqKFUykeWokvNfpAHI9aJyg+faFnympp4Xy4KN3N6oozcrG?=
+ =?us-ascii?Q?Ku82SjiqqDJVWNzgZ0q8GmmYTuzcI2qsvWiPckfQjLNpIz0NP85iaEOAsDlp?=
+ =?us-ascii?Q?nOabidojdPfvgKZG3VaNptzI3ix+133QYaVlNsFeN5YaLdf+FJfqewCnX94e?=
+ =?us-ascii?Q?CgYM6ups/SClDbXzsGLbYKUGQx6TCnpVBNzYEcgNi9E2i4pIs82LqxhPdmyy?=
+ =?us-ascii?Q?5rTXnNuuVSafoyNsVNeiGU8w/JK+yS/XsvtJrg62DC1VH7xTDFDOanF6iW0/?=
+ =?us-ascii?Q?h6IxN3k6/4NVoivIBkho0eDmKhKIzoVmoqMRyVpOPfchFTshTl48mFwICvOW?=
+ =?us-ascii?Q?l/ahe5mfTUstzFjtwkgiqL9CyCMstSaaIghRgCXCd6ASCLVP8ae+rel1yb+P?=
+ =?us-ascii?Q?pCFT8vSpmdOEgOnO0pRXishocoCBZO6eX1f6eKyQ5OPPY62Txqt+gSN1xExj?=
+ =?us-ascii?Q?tcRm0M2vxvUX62oyKND4axY8RkEMLPZ4fRj9VmWsjR9Ohuw6DlJSwzQrLc98?=
+ =?us-ascii?Q?JBd7CzqW/+Y7DYbGAEHrzktpjBI9FGI+m/JxePjKDUCfh2aWbpUzB7V6Eif8?=
+ =?us-ascii?Q?yDoPdvbYCNCJPYbzALHHeauItW5E1co+kw1ljnzJ4qSoZ/wbB6+rcZTTEiL0?=
+ =?us-ascii?Q?xbcCdi9CmV5h5LxDZbnnj4WC44nT6Vve2iTgJNQkfl9YmNmeX3ovY2KFij57?=
+ =?us-ascii?Q?CIi+OqCczgUJvIQY1I9LQyAj1FYT58DfLTHAai6Chmjf9+8c74jEoKrSnnvl?=
+ =?us-ascii?Q?M7ppF2P/l6hGNS4lErzTAdlPM9RdbHZfcRBcm4w1/sGvb6gXUndTtdREgyLt?=
+ =?us-ascii?Q?KQ0kX77kTfgG1Lu63Pr1fyuItxPW5/Rm4i5iVbLysSEaiBuul2fTlUae1fei?=
+ =?us-ascii?Q?ae0+7aMbibEsSpt6Hqwyw3NBfxG4qj9huDteHiuti6amvmj7zqtFkSC5du49?=
+ =?us-ascii?Q?XZKQbWi/nJqkhASkJpjGYx3sxL22uEyutWtWXhUQoh6XH2n2NEIJ7KTQ53Kz?=
+ =?us-ascii?Q?MdrrlGTqx7RF82N9qL1NuAdNEhX3XNoXJaNyzCmV6dL0ZOfldvhOqnTyYz78?=
+ =?us-ascii?Q?LREjKyhaOv/tcpCRJ9fkWEcprx10?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS0PR12MB7726.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(7416014)(366016)(1800799024);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?K0BHBbo7rHv2DIee0rRFwnef7NRpc+gqFBM57jl9TQ89zJCnPpAvx4fmcMe7?=
+ =?us-ascii?Q?w3QpklRHkdk5UuNemsco0/OQ19W35o4FVN26YycpRoXkrhq62KFIcymEgjfa?=
+ =?us-ascii?Q?cOGEY/5Qi0tBwXkamKABLYPFFDxNBjWfTAr2DySPiLjlml8kK65ukFrR1c92?=
+ =?us-ascii?Q?5YcoqdgUWQO06xnm7j2P2+T5odXDt4Awp7UPm7+xN6yxY2+EIW9N8KhmX0pS?=
+ =?us-ascii?Q?MEULP7gKZ5LvL0DIZegK6ABIccYQZG1vGJCpPvFnASDmzcnWHoVv2RCMJNMJ?=
+ =?us-ascii?Q?t5S7tybhejJFETpnSaCyELqFWCkeAsJP6i2hW/xhXuQEU2vTR/JfaImnJGya?=
+ =?us-ascii?Q?YhSUYArrsvg4VdWEHbY5QMgmnx7NGMz5gG8Aw7ZkL34bjPoCccaLVuO59EzW?=
+ =?us-ascii?Q?d2CmVOgnFH11LzAE7dXH0x+cDafGQl5b9HUruBa6Qf0MWD8vMi3B6onfk04P?=
+ =?us-ascii?Q?3+zCIlHkViklwinjgcMfE7fEyHAzJo1tb3OtBhcs9F19k65m5aSviqyOSfcw?=
+ =?us-ascii?Q?kSI982tQ5Pn80jGCM/Wswe1Jquxe/577+5k7hn5pIhsiTp53/qR3xyimeCnP?=
+ =?us-ascii?Q?OWNvlmLLOY2ZuvhPdUCNSK3fG1NWY48ju3Wrx+PuuZB1VJKTOeKqPwB85znU?=
+ =?us-ascii?Q?CbqdTZ7s4wLc7aJ/VH1hNRbfwhb9Ib558iZ65O/IBkfO8xiwmo/Jc0cLhY05?=
+ =?us-ascii?Q?W6ZJEkyuLqN10zdcKzAkph4EcPWtb3sufX3SkO0zK3ZcPIMTUtTJldxOICVC?=
+ =?us-ascii?Q?UhuIEUJHY9mjyIQsnmnnMncrQ25xMEydBZNDtXyaXW/zQTA/wbb8Ar+1vhIr?=
+ =?us-ascii?Q?BwldMrt/y3GdLiMyx5pOP+qxhvWMnPx3obfurtF3f6sLyiZ4VJuHz/yru1Ey?=
+ =?us-ascii?Q?oWrtlZIpU46KBzjSG6LXDrgvI2feP3T1uhvJM5oYtp3NOo84+9lvxz+DWbhC?=
+ =?us-ascii?Q?9tlH9HjzoqruEWIMv2rSEfEkVRXOoBYn+IQQ7h83wN9Xo1Q5TbEsLLloeSbs?=
+ =?us-ascii?Q?8kLOlMyT5FwVRWdx9Hj3pK3puG2a8ZiratQealwVUZuQtkvsT3dpO7GBVTTw?=
+ =?us-ascii?Q?Jyw7KcUszKm2dz++WnLegKlhl/uxjg21gBAJQG994va7lViCqLa5ZACj7gS9?=
+ =?us-ascii?Q?T3k5HI/0TmSSpGOO/Mxc50hXBGCifh96aYRUsk6E+oANJpAtGo90cUbMs1WW?=
+ =?us-ascii?Q?ZE2uKkyHMKYURjx5kXEkCBWqF4hjR81VLnKzcDLSwOq5I7ar0Kr6VyOlhI9X?=
+ =?us-ascii?Q?INx+mY3EcIR8LTVMdpXufYOZX8Kqmv1mIBJUFlvzqtbIjYi2fEYqpwU6AiYA?=
+ =?us-ascii?Q?rl4xW4RqGFjtZ/cpDNXLGJ0O3w9JpHDOnxlVMEgHtllo754ZOSvkXDwT4WAo?=
+ =?us-ascii?Q?60kkYbxrM6cxwzLV7sKUBt13czLVbECpbQ7Jt2k8eE+/2dw6+Hl0BZ5WXpPl?=
+ =?us-ascii?Q?UsWfWR/6HYQfpzKGFjsjqiO+/NDROEYZSsoVG69DZOkJE2SXEkknvXe2UfV+?=
+ =?us-ascii?Q?F4HSlCvys0StzVVnbDPX1mQvrszaajCLWoJOs1hFW7OW+uex3rKWqivj0HUa?=
+ =?us-ascii?Q?4iTa1iFsx/QBZRwAuOm8bllr990DP9ahSYWNIZow?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 48137162-3acb-403f-f57b-08dd5564f17a
+X-MS-Exchange-CrossTenant-AuthSource: CY8PR12MB7705.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 25 Feb 2025 06:23:39.9737
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: /PvPd10RDT7xwb8wqf3VkLsOrCUbeBkIIS0HqmXND10Eu9MB6pPYaQ8vaTHqBQJyVuZClzFdhbVUurl2uMrCZw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: SA0PR12MB7076
 
+On Thu, Feb 20, 2025 at 07:33:34PM +0100, Gerald Schaefer wrote:
+> On Tue, 18 Feb 2025 14:55:36 +1100
+> Alistair Popple <apopple@nvidia.com> wrote:
+> 
+> [...]
+> > diff --git a/mm/memremap.c b/mm/memremap.c
+> > index 9a8879b..532a52a 100644
+> > --- a/mm/memremap.c
+> > +++ b/mm/memremap.c
+> > @@ -460,11 +460,10 @@ void free_zone_device_folio(struct folio *folio)
+> >  {
+> >  	struct dev_pagemap *pgmap = folio->pgmap;
+> >  
+> > -	if (WARN_ON_ONCE(!pgmap->ops))
+> > -		return;
+> > -
+> > -	if (WARN_ON_ONCE(pgmap->type != MEMORY_DEVICE_FS_DAX &&
+> > -			 !pgmap->ops->page_free))
+> > +	if (WARN_ON_ONCE((!pgmap->ops &&
+> > +			  pgmap->type != MEMORY_DEVICE_GENERIC) ||
+> > +			 (pgmap->ops && !pgmap->ops->page_free &&
+> > +			  pgmap->type != MEMORY_DEVICE_FS_DAX)))
+> 
+> Playing around with dcssblk, adding devm_memremap_pages() and
+> pgmap.type = MEMORY_DEVICE_FS_DAX, similar to the other two existing
+> FS_DAX drivers drivers/nvdimm/pmem.c and fs/fuse/virtio_fs.c, I hit
+> this warning when executing binaries from DAX-mounted fs.
+> 
+> I do not set up pgmap->ops, similar to fs/fuse/virtio_fs.c, and I don't see
+> why they would be needed here anyway, at least for MEMORY_DEVICE_FS_DAX.
+> drivers/nvdimm/pmem.c does set up pgmap->ops, but only ->memory_failure,
+> which is still good enough to not trigger the warning here, probably just
+> by chance.
 
+Yes, I think so. And you can guess which driver I've done all my testing
+with.
 
-Le 24/02/2025 à 19:54, Maciej W. Rozycki a écrit :
-> ***ATTENTION, Sopra Steria Group cannot confirm the identity of this email sender (SPF record failure). This might be a fake email from an attacker, if you have any doubts report and delete the email.***
-> 
-> ***ATTENTION, Sopra Steria Group ne peut pas confirmer l’identité de l’émetteur de ce message (SPF record failure). Il pourrait s’agir d’un faux message, à détruire si vous avez un doute ***
-> 
-> On Mon, 24 Feb 2025, Christophe Leroy wrote:
-> 
->>> Restricted pointers ("%pK") are not meant to be used through printk().
->>> It can unintentionally expose security sensitive, raw pointer values.
->>>
->>> Use regular pointer formatting instead.
->>>
->>> Link:
->>> https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Flkml%2F20250113171731-dc10e3c1-da64-4af0-b767-7c7070468023%40linutronix.de%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C9079ef2ec60e4717ec8e08dd5504b718%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638760200949886583%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=d2QCtnssTlVmKOKR57rui%2Fq73UsAAoZrim%2FABaz5IFs%3D&reserved=0
->>> Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
->>
->> Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->>
->>> ---
->>>    arch/powerpc/kernel/eeh_driver.c | 2 +-
->>>    arch/powerpc/perf/hv-24x7.c      | 8 ++++----
->>>    2 files changed, 5 insertions(+), 5 deletions(-)
->>>
->>> diff --git a/arch/powerpc/kernel/eeh_driver.c
->>> b/arch/powerpc/kernel/eeh_driver.c
->>> index
->>> 7efe04c68f0fe3fb1c3c13d97d58e79e47cf103b..10ce6b3bd3b7c54f91544ae7f7fd3f32a51ee09a
->>> 100644
->>> --- a/arch/powerpc/kernel/eeh_driver.c
->>> +++ b/arch/powerpc/kernel/eeh_driver.c
->>> @@ -907,7 +907,7 @@ void eeh_handle_normal_event(struct eeh_pe *pe)
->>>              /* FIXME: Use the same format as dump_stack() */
->>>              pr_err("EEH: Call Trace:\n");
->>>              for (i = 0; i < pe->trace_entries; i++)
->>> -                   pr_err("EEH: [%pK] %pS\n", ptrs[i], ptrs[i]);
->>> +                   pr_err("EEH: [%p] %pS\n", ptrs[i], ptrs[i]);
->>>                      pe->trace_entries = 0;
->>>      }
-> 
->   But shouldn't this be using `%px' then instead?  It would be sad if all
-> the address information from error reports such as below:
-> 
-> EEH: Call Trace:
-> EEH: [000000008985bc3b] __eeh_send_failure_event+0x78/0x150
-> EEH: [000000008c4c5782] eeh_dev_check_failure+0x388/0x6b0
-> EEH: [000000001fb766c1] eeh_check_failure+0x98/0x100
-> EEH: [000000004b9af8c6] dfx_port_read_long+0xb0/0x130 [defxx]
-> EEH: [00000000e23999c1] dfx_interrupt+0x80/0x8c0 [defxx]
-> EEH: [00000000c7884fb7] __handle_irq_event_percpu+0x9c/0x2f0
-> EEH: [000000008d4e9afd] handle_irq_event_percpu+0x44/0xc0
-> EEH: [000000008c39ece4] handle_irq_event+0x74/0xc0
-> EEH: [00000000d85114a9] handle_fasteoi_irq+0xd4/0x220
-> EEH: [00000000a692ef4e] generic_handle_irq+0x54/0x80
-> EEH: [00000000a6db243b] __do_irq+0x68/0x200
-> EEH: [0000000040ccff9e] call_do_irq+0x14/0x24
-> EEH: [00000000e8e9ddf7] do_IRQ+0x78/0xd0
-> EEH: [0000000031916539] replay_soft_interrupts+0x180/0x370
-> EEH: [000000001b7e5728] arch_local_irq_restore+0x48/0xc0
-> EEH: [00000000088691b7] cpuidle_enter_state+0x108/0x560
-> EEH: [00000000e6e26f30] cpuidle_enter+0x50/0x70
-> EEH: [000000007c26474c] call_cpuidle+0x4c/0x80
-> EEH: [0000000036b8a2fc] do_idle+0x360/0x3b0
-> EEH: [0000000048702083] cpu_startup_entry+0x38/0x40
-> EEH: [00000000d3b1fb8d] start_secondary+0x62c/0x660
-> EEH: [0000000041a9a815] start_secondary_prolog+0x10/0x14
-> 
-> was suddenly lost from the kernel log, the access to which unprivileged
-> users can be denied if so desired according to the site policy.  Whereas
-> running the kernel such as to have all output from plain `%p' exposed just
-> to cope with this proposed change, now that seems like a security risk.
+> Now I wonder:
+> 1) What is this check / warning good for, when this function only ever
+>    calls pgmap->ops->page_free(), but not for MEMORY_DEVICE_FS_DAX and
+>    not for MEMORY_DEVICE_GENERIC (the latter only after this patch)?
+> 2) Is the warning also seen for virtio DAX mappings (added Vivek and
+>    Stefan on CC)? No pgmap->ops set up there, so I would guess "yes",
+>    and already before this series, with the old check / warning.
 
-The purpose of hashed addresses is to avoid kernel addresses to leak to 
-the kernel log. Here you have function names, if you get real function 
-addresses at the same time, then you know everything about kernel 
-addresses and for instance KASLR becomes just pointless.
+Right, I simply updated the warning to reflect what should have been
+happening prior to this change. However looking again I don't think
+free_zone_device_folio() is ever called for MEMORY_DEVICE_FS_DAX pages. Instead
+put_devmap_managed_folio_refs() would have returned false and cause most paths
+to skip calling free_zone_device_folio().
 
-By the way, why do you need the addresses at all in addition to function 
-names ? When I look at x86 dump stack, they only print function name, 
-using %pBb
+The only path that doesn't do that appears to be `folio_put()`. That probably
+should also be calling put_devmap_managed_folio_refs(), I'm not sure why it
+doesn't.
 
-Christophe
+> 3) Could this be changed to only check / warn if pgmap->ops (or maybe
+>    rather pgmap->ops->page_free) is not set up, but not for
+>    MEMORY_DEVICE_GENERIC and MEMORY_DEVICE_FS_DAX where this is not
+>    being called?
+
+Oh I think I know what actually happened. Earlier versions of my patch series
+did define a pgmap->ops->page_free() callback for MEMORY_DEVICE_FS_DAX but
+review comments suggested I just do all the was required directly in the switch
+statement. Obviously I forgot to update the check when I removed the need
+for pgmap->ops->page_free and having pgmap->ops->memory_failure defined was
+sufficient to (accidentally) get past the check.
+
+So yeah, the check is wrong. It shouldn't require pgmap->ops to be defined for
+MEMORY_DEVICE_FS_DAX or MEMORY_DEVICE_GENERIC.
+
+> 4) Or is there any reason why pgmap->ops would be required for
+>    MEMORY_DEVICE_FS_DAX?
+
+Nope.
+
+> Apart from the warning, we would also miss out on the
+> wake_up_var(&folio->page) in the MEMORY_DEVICE_FS_DAX case, when no
+> pgmap->ops was set up. IIUC, even before this change / series (i.e.
+> for virtio DAX only, since dcssblk was not using ZONE_DEVICE before,
+> and pmem seems to work by chance because they have ops->memory_failure).
+
+See __put_devmap_managed_folio_refs() - the wake_up_var() was there to intercept
+the 2->1 refcount transition. Now the wake_up_var() needs to happen on 1->0,
+hence why it got moved to free_zone_device_page().
+
+> >  		return;
+> >  
+> >  	mem_cgroup_uncharge(folio);
+> > @@ -494,7 +493,8 @@ void free_zone_device_folio(struct folio *folio)
+> >  	 * zero which indicating the page has been removed from the file
+> >  	 * system mapping.
+> >  	 */
+> > -	if (pgmap->type != MEMORY_DEVICE_FS_DAX)
+> > +	if (pgmap->type != MEMORY_DEVICE_FS_DAX &&
+> > +	    pgmap->type != MEMORY_DEVICE_GENERIC)
+> >  		folio->mapping = NULL;
+> >  
+> >  	switch (pgmap->type) {
+> > @@ -509,7 +509,6 @@ void free_zone_device_folio(struct folio *folio)
+> >  		 * Reset the refcount to 1 to prepare for handing out the page
+> >  		 * again.
+> >  		 */
+> > -		pgmap->ops->page_free(folio_page(folio, 0));
+> 
+> Ok, this is probably the reason why you adjusted the check above, since
+> no more pgmap->ops needed for MEMORY_DEVICE_GENERIC.
+> Still, the MEMORY_DEVICE_FS_DAX case also does not seem to need
+> pgmap->ops, and at least the existing virtio DAX should already be
+> affected, and of course future dcssblk DAX.
+> 
+> But maybe that should be addressed in a separate patch, since your changes
+> here seem consistent, and not change or worsen anything wrt !pgmap->ops
+> and MEMORY_DEVICE_FS_DAX.
+
+Nah, I think the check is wrong and needs fixing here.
+
+> >  		folio_set_count(folio, 1);
+> >  		break;
+> >  
+> 
+> For reference, this is call trace I see when I hit the warning:
+
+Well thanks for testing this and for posting these results.
+
+> [  283.567945] ------------[ cut here ]------------
+> [  283.567947] WARNING: CPU: 12 PID: 878 at mm/memremap.c:436 free_zone_device_folio+0x6e/0x140
+> [  283.567959] Modules linked in:
+> [  283.567963] CPU: 12 UID: 0 PID: 878 Comm: ls Not tainted 6.14.0-rc3-next-20250220-00012-gd072dabf62e8-dirty #44
+> [  283.567968] Hardware name: IBM 3931 A01 704 (z/VM 7.4.0)
+> [  283.567971] Krnl PSW : 0704d00180000000 000001ec0548b44a (free_zone_device_folio+0x72/0x140)
+> [  283.567978]            R:0 T:1 IO:1 EX:1 Key:0 M:1 W:0 P:0 AS:3 CC:1 PM:0 RI:0 EA:3
+> [  283.567982] Krnl GPRS: 0000000000000038 0000000000000000 0000000000000003 000001ec06cc42e8
+> [  283.567986]            00000004cc38e400 0000000000000000 0000000000000003 0000000093eacd00
+> [  283.567990]            000000009a68413f 0000016614010940 000000009553a640 0000016614010940
+> [  283.567994]            0000000000000000 0000000000000000 000001ec0548b416 0000016c05da3bf8
+> [  283.568004] Krnl Code: 000001ec0548b43e: a70e0003		chi	%r0,3
+>                           000001ec0548b442: a7840006		brc	8,000001ec0548b44e
+>                          #000001ec0548b446: af000000		mc	0,0
+>                          >000001ec0548b44a: a7f4005f		brc	15,000001ec0548b508
+>                           000001ec0548b44e: c00400000008	brcl	0,000001ec0548b45e
+>                           000001ec0548b454: b904002b		lgr	%r2,%r11
+>                           000001ec0548b458: c0e5001dcd84	brasl	%r14,000001ec05844f60
+>                           000001ec0548b45e: 9101b01f		tm	31(%r11),1
+> [  283.568035] Call Trace:
+> [  283.568038]  [<000001ec0548b44a>] free_zone_device_folio+0x72/0x140 
+> [  283.568042] ([<000001ec0548b416>] free_zone_device_folio+0x3e/0x140)
+> [  283.568045]  [<000001ec057a4c1c>] wp_page_copy+0x34c/0x6e0 
+> [  283.568050]  [<000001ec057ac640>] __handle_mm_fault+0x220/0x4d0 
+> [  283.568054]  [<000001ec057ac97e>] handle_mm_fault+0x8e/0x160 
+> [  283.568057]  [<000001ec054ca006>] do_exception+0x1a6/0x450 
+> [  283.568061]  [<000001ec06264992>] __do_pgm_check+0x132/0x1e0 
+> [  283.568065]  [<000001ec0627057e>] pgm_check_handler+0x11e/0x170 
+> [  283.568069] Last Breaking-Event-Address:
+> [  283.568070]  [<000001ec0548b428>] free_zone_device_folio+0x50/0x140
+> [  283.568074] ---[ end trace 0000000000000000 ]---
+> 
 
