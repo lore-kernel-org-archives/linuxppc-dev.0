@@ -1,63 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-6455-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6456-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE901C021B2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Feb 2025 08:20:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0900BC021B2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Feb 2025 10:22:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z29Wp18sNz30TP;
-	Tue, 25 Feb 2025 19:20:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740471606;
-	cv=none; b=AoZ2tFP3/i3od85ExvHjJttVnyUtpvcIwGMRLi5aE6LWTgvXpGsh7+nSLvGaSaa50vG6f8XopzZmv03EFzYVar9gwH7rmLLGXXG/5AeDGbftZacGbfqeia/aOYQDIgxLLeU5hzmqNV9GhjJe2tairRfXxIvfAeTO8mPbKDfX0ZPhHo1IUbnViLcFhHWtAqxTkWj7zPfmjEDkA+e+f0+vwjgqr2emlfYzPgsyEXVdbWKs87iDtMpQto74UIns7lEt7GUMsgyX9uNGLi9rSi8EhsQ4WfnGuqSUXFfG+wL2ZcqR6wSGmd1dMsT5Vz39M9F0Bp9Gaz/F6EPk5s4kagmkxw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z2DF83h0wz30DL;
+	Tue, 25 Feb 2025 21:22:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740478956;
+	cv=none; b=GZP2mWAFTD36Lg2nijf+aPyZocb3aQfstZ0PpTT141Pa942AmnCrclyjleMUjmMm2EQQ2pFGvfDUq1uL0R4yToJ0RrP2G9oJSX7IMlKVu9BNfMB11RFVq6hoNmQd5ocNxI9h2E/HfCD070fFoxXy7530h0UexLRFvvUoSyKMaIybNb4u4sVcVe5nGwPwanvQN8lUs3NYYJvSwmuOVmcoApe73Y8jpz7OaommI+Mrgt3OzQIwcLqInMy53+ouZd5zWIULP2S8M7bcOVBFXke4im9yAogiUhdInydTYXc3nNpWGiCmv+drKH6c6rINWZFeFOmylXEQ5IOdQmNRQBR81g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740471606; c=relaxed/relaxed;
-	bh=3CGxW0IhmgYPl5LFhfxqkq4UzTFam36fdRHyt2d1V6Y=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=gG+mrCcg0GmpdtsZeDmBvujgOY8yxrSor2B8mJagRuhWtmSkM9qzR4L2ZluWaoonotSXEagjcDgvnSLymAN5IEGErVKTRNw+av5k6Lmd9toa2Av+MHMmdRM4px+dz2eqUtMFrXZAts7I1JuEEVLlUNk4HgVYAEIky7BfzoWvZ3cEaPwSMXgMbTykAGC8oWPRjsjS4IiL+WNMmud8NsbpiskP/r9iyW0Or0k5yvTG8NPK+EeG7QKtHzKbJCMEYaQx7A2fEyJYXfuXTRVgHUyBB/MhWVRmRfTqZdoXS1xBKrm3jGNHRF7jS898W39nLSOBA7Avy/CZPa1rZ6RqCj8Atg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z29Wn303hz30PF
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2025 19:20:05 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4Z29CQ5nnmz9sSd;
-	Tue, 25 Feb 2025 09:05:54 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id IOg3G3RLLwfI; Tue, 25 Feb 2025 09:05:54 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4Z29CM62YDz9sSY;
-	Tue, 25 Feb 2025 09:05:51 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B84C28B780;
-	Tue, 25 Feb 2025 09:05:51 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 0Az_q5mFkqk4; Tue, 25 Feb 2025 09:05:51 +0100 (CET)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.202.221])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 0385A8B77C;
-	Tue, 25 Feb 2025 09:05:50 +0100 (CET)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Segher Boessenkool <segher@kewrnel.crashing.org>
-Subject: [PATCH v5 2/4] objtool/powerpc: Add support for decoding all types of uncond branches
-Date: Tue, 25 Feb 2025 09:05:49 +0100
-Message-ID: <bf0b4d554547bc34fa3d1af5b4e62a84c0bc182b.1740470510.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.47.0
-In-Reply-To: <0ca71a4b0ac679ea52bd9fdd1f607195d72b499f.1733245362.git.christophe.leroy@csgroup.eu>
-References: <cover.1733245362.git.christophe.leroy@csgroup.eu>
+	t=1740478956; c=relaxed/relaxed;
+	bh=9joJ5lAMoQVd6/QxOHtknGOH3Jwd7fDHmxdMpAvs0mc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Hgec/bMQHPlcEfdczju3r9Pp8Q8yqJRqAP9SEvtr4u2AIf21bnAHXmOqVa1ZDsnzA2eOob88QdfrKtWJB41O+nwJautYSPhPoU2ieIfEefi+A/sQnyjuagfV+MReEX7oO8m1eAn3iEvga5KhMdgpNIab8ZG4sIrM8luRW5jxgL8IboF3/WSuPO671bMuetZaa5Gf9K1yfARMvsk9eP81i0iWwrLW60/uu4fsZZDYbm1Hr/BDedLrGWLk8KFE2BuicfRnGcgKQogwYq5EXVpIw6L9etFSUnV40CSzH5DbrCko9HiD6rqdbhI5TLnaO66DHn5lfWZ5Rngs9auI5oLtfg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QLdVe9QX; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QLdVe9QX;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z2DF73tWfz3048
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Feb 2025 21:22:35 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 722FF6126A;
+	Tue, 25 Feb 2025 10:22:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5F22EC4CEDD;
+	Tue, 25 Feb 2025 10:22:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1740478952;
+	bh=5HOkE2YqQG0nj7GKm31VM9cru6617nBuKvCY1GMnDrc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=QLdVe9QX36ZATBZopGaFS7xncV75FrVifGUmO8YFcq0fsqRsaJ22u5r4/RZQOJ3Sp
+	 yMEl/oKfTZihFmWVtEKikhl/HfJsgdlkCrNq55W9eyV/njTytIaMD9k7zFgv1x4TaI
+	 I2IADYz/CQiWBy3kUYdqd4/6a+d9wa1OJ63tEswPaPSmhJ9mvyvjSLPOfrMnC+lJSK
+	 LaosnjwljP1fU1QllOJcPmhDfG/AbY9BKKl5qhnGon0GvGM+IMN1WKFPOeumOwG/Tb
+	 8wfL7+oJ4DopnrX8olKXaLI8joRoQgVk7Ykgfi+0FSJvIaTDPVShiCTVbRLd3HNrPp
+	 6XmUqt0gTmi9g==
+Date: Tue, 25 Feb 2025 11:22:17 +0100
+From: Christian Brauner <brauner@kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Amir Goldstein <amir73il@gmail.com>, 
+	Andrey Albershteyn <aalbersh@redhat.com>, "Darrick J. Wong" <djwong@kernel.org>, 
+	Richard Henderson <richard.henderson@linaro.org>, Matt Turner <mattst88@gmail.com>, 
+	Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Will Deacon <will@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, 
+	Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+	"James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, Helge Deller <deller@gmx.de>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Naveen N Rao <naveen@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, 
+	Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, 
+	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, "David S . Miller" <davem@davemloft.net>, 
+	Andreas Larsson <andreas@gaisler.com>, Andy Lutomirski <luto@kernel.org>, 
+	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
+	Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>, 
+	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, 
+	=?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, =?utf-8?Q?G=C3=BCnther?= Noack <gnoack@google.com>, 
+	linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+	linux-security-module@vger.kernel.org, linux-api@vger.kernel.org, 
+	Linux-Arch <linux-arch@vger.kernel.org>, linux-xfs@vger.kernel.org, 
+	Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>, Theodore Ts'o <tytso@mit.edu>
+Subject: Re: [PATCH v3] fs: introduce getfsxattrat and setfsxattrat syscalls
+Message-ID: <20250225-strom-kopflos-32062347cd13@brauner>
+References: <20250211-xattrat-syscall-v3-1-a07d15f898b2@kernel.org>
+ <20250221181135.GW21808@frogsfrogsfrogs>
+ <CAOQ4uxgyYBFqkq6cQsso4LxJsPJ4uECOdskXmz-nmGhhV5BQWg@mail.gmail.com>
+ <20250224-klinke-hochdekoriert-3f6be89005a8@brauner>
+ <6b51ffa2-9d67-4466-865e-e703c1243352@app.fastmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,66 +93,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1740470749; l=1915; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=8JbHItkDNTqx7ppT/iSayCN1jPwzTMbHToRWPnGXZ+8=; b=kDGs0rx51ssFnmq55d2aoKmsBU2DAAmDzguoyq3tyjbjJbM4jrsG8ij4o0PNedE9Vme8j9BUr x0rsWe/Na1UAXrX4N8/CmGrpflO/ZQFmsAwWzcfysb78yw/g0I16gKg
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <6b51ffa2-9d67-4466-865e-e703c1243352@app.fastmail.com>
 
-Add support for 'bla' instruction.
+On Tue, Feb 25, 2025 at 09:02:04AM +0100, Arnd Bergmann wrote:
+> On Mon, Feb 24, 2025, at 12:32, Christian Brauner wrote:
+> > On Fri, Feb 21, 2025 at 08:15:24PM +0100, Amir Goldstein wrote:
+> >> On Fri, Feb 21, 2025 at 7:13 PM Darrick J. Wong <djwong@kernel.org> wrote:
+> 
+> >> > > @@ -23,6 +23,9 @@
+> >> > >  #include <linux/rw_hint.h>
+> >> > >  #include <linux/seq_file.h>
+> >> > >  #include <linux/debugfs.h>
+> >> > > +#include <linux/syscalls.h>
+> >> > > +#include <linux/fileattr.h>
+> >> > > +#include <linux/namei.h>
+> >> > >  #include <trace/events/writeback.h>
+> >> > >  #define CREATE_TRACE_POINTS
+> >> > >  #include <trace/events/timestamp.h>
+> >> > > @@ -2953,3 +2956,75 @@ umode_t mode_strip_sgid(struct mnt_idmap *idmap,
+> >> > >       return mode & ~S_ISGID;
+> >> > >  }
+> >> > >  EXPORT_SYMBOL(mode_strip_sgid);
+> >> > > +
+> >> > > +SYSCALL_DEFINE4(getfsxattrat, int, dfd, const char __user *, filename,
+> >> > > +             struct fsxattr __user *, fsx, unsigned int, at_flags)
+> >> >
+> >> > Should the kernel require userspace to pass the size of the fsx buffer?
+> >> > That way we avoid needing to rev the interface when we decide to grow
+> >> > the structure.
+> >
+> > Please version the struct by size as we do for clone3(),
+> > mount_setattr(), listmount()'s struct mnt_id_req, sched_setattr(), all
+> > the new xattrat*() system calls and a host of others. So laying out the
+> > struct 64bit and passing a size alongside it.
+> >
+> > This is all handled by copy_struct_from_user() and copy_struct_to_user()
+> > so nothing to reinvent. And it's easy to copy from existing system
+> > calls.
+> 
+> I don't think that works in this case, because 'struct fsxattr'
+> is an existing structure that is defined with a fixed size of
+> 28 bytes. If we ever need more than 8 extra bytes, then the
+> existing ioctl commands are also broken.
+> 
+> Replacing fsxattr with an extensible structure of the same contents
+> would work, but I feel that just adds more complication for little
+> gain.
+> 
+> On the other hand, there is an open question about how unknown
+> flags and fields in this structure. FS_IOC_FSSETXATTR/FS_IOC_FSGETXATTR
+> treats them as optional and just ignores anything it doesn't
+> understand, while copy_struct_from_user() would treat any unknown
+> but set bytes as -E2BIG.
+> 
+> The ioctl interface relies on the existing behavior, see
+> 0a6eab8bd4e0 ("vfs: support FS_XFLAG_COWEXTSIZE and get/set of
+> CoW extent size hint") for how it was previously extended
+> with an optional flag/word. I think that is fine for the syscall
+> as well, but should be properly documented since it is different
+> from how most syscalls work.
 
-This is done by 'flagging' the address as an absolute address so that
-arch_jump_destination() can calculate it as expected. Because code is
-_always_ 4 bytes aligned, use bit 30 as flag.
-
-Also add support for 'b' and 'ba' instructions. Objtool call them jumps.
-
-And make sure the special 'bl .+4' used by clang in relocatable code is
-not seen as an 'unannotated intra-function call'. clang should use the
-special 'bcl 20,31,.+4' form like gcc but for the time being it does not
-so lets work around that.
-
-Link: https://github.com/llvm/llvm-project/issues/128644
-Reviewed-by: Segher Boessenkool <segher@kewrnel.crashing.org>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
-v5: Add a special case for clang to ignore 'bl .+4' form.
----
- tools/objtool/arch/powerpc/decode.c | 10 +++++++++-
- 1 file changed, 9 insertions(+), 1 deletion(-)
-
-diff --git a/tools/objtool/arch/powerpc/decode.c b/tools/objtool/arch/powerpc/decode.c
-index 53b55690f320..26d5050424a9 100644
---- a/tools/objtool/arch/powerpc/decode.c
-+++ b/tools/objtool/arch/powerpc/decode.c
-@@ -55,12 +55,17 @@ int arch_decode_instruction(struct objtool_file *file, const struct section *sec
- 
- 	switch (opcode) {
- 	case 18: /* b[l][a] */
--		if ((ins & 3) == 1) /* bl */
-+		if (ins == 0x48000005)	/* bl .+4 */
-+			typ = INSN_OTHER;
-+		else if (ins & 1)	/* bl[a] */
- 			typ = INSN_CALL;
-+		else		/* b[a] */
-+			typ = INSN_JUMP_UNCONDITIONAL;
- 
- 		imm = ins & 0x3fffffc;
- 		if (imm & 0x2000000)
- 			imm -= 0x4000000;
-+		imm |= ins & 2;	/* AA flag */
- 		break;
- 	}
- 
-@@ -77,6 +82,9 @@ int arch_decode_instruction(struct objtool_file *file, const struct section *sec
- 
- unsigned long arch_jump_destination(struct instruction *insn)
- {
-+	if (insn->immediate & 2)
-+		return insn->immediate & ~2;
-+
- 	return insn->offset + insn->immediate;
- }
- 
--- 
-2.47.0
-
+If we're doing a new system call I see no reason to limit us to a
+pre-existing structure or structure layout.
 
