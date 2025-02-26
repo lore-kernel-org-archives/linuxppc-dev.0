@@ -1,55 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-6510-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6511-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7161FC021B8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2025 17:02:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5788C021B8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2025 17:30:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z313P6sX2z3bpG;
-	Thu, 27 Feb 2025 04:01:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04::f03c:95ff:fe5e:7468"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740589313;
-	cv=none; b=ev+Ia4fiy6IZk5pH6/BH6GSjrvxREVqHphRHKPZyGhU6Bxzwrf9oeNtVMO4fYfCf4Mz0btg7aaMb2r1q6c3QPbApK/rl8/wjPa2QH/JoAVu7WxJito2k7TQFdl6mxJ+lKC6DFJmUpmCgQypkAL6ucgdKW0spOZaMkU9ug7f3Po0yW8cxHlT+FDX3MQbvGKkhqWVjlonKv7FGxEPs73ugrp4cryOAjGVY7xq3MoP6eJmKeahVdYMTlHoV+aAOA0DlzAH2AvmdHn9yuaSyoYmbjGES0DtBNh0987GC1I++OCyYBUt8pietz836GTIuU9qmYzGoTS9+dvfg8AQvYxPsZQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z31gq29ZWz3bmY;
+	Thu, 27 Feb 2025 04:29:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740590999;
+	cv=none; b=hDsRCKMMS8iBV7jdRS8P1claxdRoN78OGhOOVHOg2AtkH11c4Crq+44Bi0bSN1UiRZU5tBewXQ9ttBbDJehkg3uQ+1lZ+njjAzgcKnm/JGrmliJJvxv8C6ufAEN6sBIsawMIclvsYd3tbgBiIKa47XG9xcmmAyA1xnHPmFbWTxejWhc8wnQQ9mX4EB+zPICylNObX96CPXTsBxh8bRvFkcGfVLWkmTgpvA+ldp7zIORiYZiK/eTZZLGWslJtD0eteHstur9ZaeRwcK+m6wFSeh3mPYZQfc4zEjvG+LciRqyCe+/9KtunUA2AafXZRUJoRj0lEHv6Nqp9oaDCoBHD5Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740589313; c=relaxed/relaxed;
-	bh=3bDamqVMZxCt8ii8o+ZFMv9Apqyaz7SzX3a/QhHo2sA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=MKCwO/IQ89FpM3FZHyVoaJkkgMooDStETEmmG9s24u/eyFY+PqL0azHABMpEZ2HqfYLHA7rBhrBUd78BX9DyBp3YvrE7DsTo1/tiAvDaCHR3Amq4e/G2uA+GgmoQY8RVz5tOljn6QGqKEWka82kyL4aDI1iYjQVNNTCxSUuOdy0zJsY/6gFLWhy5LngfYFq/BOhBpIJJ8o/XMvKq5NdGDVgxYnHX6j+TepbTTc+kswHhYeGfFdlbZz2rOZ87JwF4G2W0r6RvjvxA2/xRdksnQF27sxkHRwxkE2twxf6WdQ1pWLc8GqJvu6eNz4ykDTO6vsT0mpFek3Bxt2DrL1DH1w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IzK+yIvj; dkim-atps=neutral; spf=pass (client-ip=2600:3c04::f03c:95ff:fe5e:7468; helo=tor.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1740590999; c=relaxed/relaxed;
+	bh=CnXueaCGmWbQDHgXGyE68GsbYb0dWQWLRSW2rtdWDmA=;
+	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=barqDlZo6U9fKNdV/2cziWUMWdCm+s9001QMDaDjYeZR2e88tqBLxl2+dQFWr2ZLvTI/VDIebPe2IE6j/OM179rAz0A4yP0UI7srjYcqITnk52ply90FF3w8GUd16a8BDZPeeDf8EQFVHclFtK5O7TW0VVLB74NE8ehfRqhX375OGWMnn+GdJrih8OM6zm02DejPqHJLiXlQvhn2NllCZ8/WtGw/TsqMIxgqc2yblEi+Dy16gfXE0VhYWwZINcoLqtDBLNSVl3xHASfVJAcHyPeEz0ohrCkm4JPbAIk8H+L7YneecxQIPeCevSJCx8h9LxVFXTjwNvWAImNjyTtpog==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LvuRHUyz; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IzK+yIvj;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LvuRHUyz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04::f03c:95ff:fe5e:7468; helo=tor.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04::f03c:95ff:fe5e:7468])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z313M1HMrz3bmk
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2025 04:01:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z31gp1tLkz30T1
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Feb 2025 04:29:58 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 67F3F61F20;
-	Wed, 26 Feb 2025 17:01:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id AE6ECC4CEE9;
-	Wed, 26 Feb 2025 17:01:47 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 72DE85C73F2;
+	Wed, 26 Feb 2025 17:29:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F1288C4CEE8;
+	Wed, 26 Feb 2025 17:29:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1740589307;
-	bh=mR8X2x+4upIZjxcvX9fZdAr30Xa5cx+18eEK9yFm0bk=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=IzK+yIvjtGcpCAWuhQPuFuWYDw3PRuP/iopY5U/F91CkdhnH563bOWE6iKnAXkWBu
-	 u0Adw8tGsxCHpQcFaG+XePcavBbxZRWD/zQohOnm6luTDE/iXjwGzHthoTWeB78sz9
-	 eEjT7ETFLsxo+zqR+CGyQCrF+1C5ii+UGNP6WJawz4iFlo3jR7TOsNQBbr4drAS1SE
-	 hULTyaRyDEyj1yQrmzfYJErPCtiIg/zBo/UcUh4beAr4v4McIid2ODZlnY4Fa8aObv
-	 6HWFa36OGGNPM4Zykpab8b+TICi2RFa4g/eKTcJKfVmRcX5v08XqWSsKUYe3suR3dQ
-	 ffWRnEmFq1h7Q==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 9DFD0C19F38;
-	Wed, 26 Feb 2025 17:01:47 +0000 (UTC)
-From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Wed, 26 Feb 2025 18:01:41 +0100
-Subject: [PATCH v3 2/3] dt-bindings: nand: Add fsl,elbc-fcm-nand
+	s=k20201202; t=1740590996;
+	bh=B7w6kz3z2eZZW+849CoU9pf/lvE0LeYWzWllU/FXywM=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
+	b=LvuRHUyzsDWBTphzSY4cpGJheves2OjCoffnc3zD1Cs3/7s9gDHGbCtO7REggRQHT
+	 AI/MP3MumtyjhM1PsyE4/MBrWPyHkdXlnJYkNmcJz5XXpy7pIvhg1M+32QCSOizCC5
+	 WycR9PU0apuL+WalxZdhnQCiglQ9C+E+Iwt4VKRv1OxHXjL+FPaSmlpOXQ3nQfq6Pa
+	 4HibuZPCwt4hN5y/MLqcTV4mPBorAnabrbhKYjwtpoqoxT3PCAjeh3dbctv6Eud3Ak
+	 cCqUEu1xn0TbvlZQvWjYiNBhQtjqkgSJ3Nvt+KLGtUswtYxweYIfAUHtQnD4x5yDuN
+	 jIho7uCRXlAbQ==
+Date: Wed, 26 Feb 2025 11:29:54 -0600
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,154 +59,90 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20250226-ppcyaml-elbc-v3-2-a90ed71da838@posteo.net>
-References: <20250226-ppcyaml-elbc-v3-0-a90ed71da838@posteo.net>
-In-Reply-To: <20250226-ppcyaml-elbc-v3-0-a90ed71da838@posteo.net>
-To: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Miquel Raynal <miquel.raynal@bootlin.com>, 
- Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Crystal Wood <oss@buserror.net>, 
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: Conor Dooley <conor+dt@kernel.org>, 
+ Michael Ellerman <mpe@ellerman.id.au>, 
  Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Naveen N Rao <naveen@kernel.org>
-Cc: linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
- linux-mtd@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
- =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>, 
- Frank Li <Frank.Li@nxp.com>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1740589304; l=3338;
- i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=CdXw6dR5bMVKNz3tQ2ZajhBrMGlazf+TPLV0IfPcsxQ=;
- b=ou0k0jl7pEz6u2l1Bp+HZXK2i2t4d4INlycakDeN/WIBbhWASIzDsh/9ARllj6+TJrAUIobNt
- PBZYX405vpjBssaH+g2YrR27om7vZv3GVW9RzROoCOA95mWOs191kqO
-X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
- pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
-X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
- auth_id=156
-X-Original-From: =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
-Reply-To: j.ne@posteo.net
+ Christophe Leroy <christophe.leroy@csgroup.eu>, dmaengine@vger.kernel.org, 
+ Crystal Wood <oss@buserror.net>, linuxppc-dev@lists.ozlabs.org, 
+ Nicholas Piggin <npiggin@gmail.com>, Vinod Koul <vkoul@kernel.org>, 
+ devicetree@vger.kernel.org, linux-kernel@vger.kernel.org, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Naveen N Rao <naveen@kernel.org>
+To: =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+In-Reply-To: <20250226-ppcyaml-dma-v3-1-79ce3133569f@posteo.net>
+References: <20250226-ppcyaml-dma-v3-1-79ce3133569f@posteo.net>
+Message-Id: <174059099427.2999773.4836262903761680275.robh@kernel.org>
+Subject: Re: [PATCH v3] dt-bindings: dma: Convert fsl,elo*-dma to YAML
 
-From: "J. Neuschäfer" <j.ne@posteo.net>
 
-Formalize the binding already supported by the fsl_elbc_nand.c driver
-and used in several device trees in arch/powerpc/boot/dts/.
+On Wed, 26 Feb 2025 16:57:17 +0100, J. Neuschäfer wrote:
+> The devicetree bindings for Freescale DMA engines have so far existed as
+> a text file. This patch converts them to YAML, and specifies all the
+> compatible strings currently in use in arch/powerpc/boot/dts.
+> 
+> Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
+> ---
+> I considered referencing dma-controller.yaml, but that requires
+> the #dma-cells property (via dma-common.yaml), and I'm now sure which
+> value it should have, if any. Therefore I did not reference
+> dma-controller.yaml.
+> 
+> V3:
+> - split out as a single patch
+> - restructure "description" definitions to use "items:" as much as possible
+> - remove useless description of interrupts in fsl,elo3-dma
+> - rename DMA controller nodes to dma-controller@...
+> - use IRQ_TYPE_* constants in examples
+> - define unit address format for DMA channel nodes
+> - drop interrupts-parent properties from examples
+> 
+> V2:
+> - part of series [PATCH v2 00/12] YAML conversion of several Freescale/PowerPC DT bindings
+>   Link: https://lore.kernel.org/lkml/20250207-ppcyaml-v2-5-8137b0c42526@posteo.net/
+> - remove unnecessary multiline markers
+> - fix additionalProperties to always be false
+> - add description/maxItems to interrupts
+> - add missing #address-cells/#size-cells properties
+> - convert "Note on DMA channel compatible properties" to YAML by listing
+>   fsl,ssi-dma-channel as a valid compatible value
+> - fix property ordering in examples: compatible and reg come first
+> - add missing newlines in examples
+> - trim subject line (remove "bindings")
+> ---
+>  .../devicetree/bindings/dma/fsl,elo-dma.yaml       | 137 ++++++++++++++
+>  .../devicetree/bindings/dma/fsl,elo3-dma.yaml      | 125 +++++++++++++
+>  .../devicetree/bindings/dma/fsl,eloplus-dma.yaml   | 132 +++++++++++++
+>  .../devicetree/bindings/powerpc/fsl/dma.txt        | 204 ---------------------
+>  4 files changed, 394 insertions(+), 204 deletions(-)
+> 
 
-raw-nand-chip.yaml is referenced in order to accommodate situations in
-which the ECC parameters settings are set in the device tree. One such
-example is in arch/powerpc/boot/dts/turris1x.dts:
+My bot found errors running 'make dt_binding_check' on your patch:
 
-	/* MT29F2G08ABAEAWP:E NAND */
-	nand@1,0 {
-		compatible = "fsl,p2020-fcm-nand", "fsl,elbc-fcm-nand";
-		reg = <0x1 0x0 0x00040000>;
-		nand-ecc-mode = "soft";
-		nand-ecc-algo = "bch";
+yamllint warnings/errors:
 
-		partitions { ... };
-	};
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/dma/fsl,elo-dma.example.dtb: dma-controller@82a8: '#dma-cells' is a required property
+	from schema $id: http://devicetree.org/schemas/dma/dma-controller.yaml#
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/dma/fsl,eloplus-dma.example.dtb: dma-controller@21300: '#dma-cells' is a required property
+	from schema $id: http://devicetree.org/schemas/dma/dma-controller.yaml#
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/dma/fsl,elo3-dma.example.dtb: dma-controller@100300: '#dma-cells' is a required property
+	from schema $id: http://devicetree.org/schemas/dma/dma-controller.yaml#
 
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
-Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
----
+doc reference errors (make refcheckdocs):
 
-V3:
-- remove unnecessary #address/size-cells from nand node in example
-- add Frank Li's review tag
-- add missing end of document marker (...)
-- explain choice to reference raw-nand-chip.yaml
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20250226-ppcyaml-dma-v3-1-79ce3133569f@posteo.net
 
-V2:
-- split out from fsl,elbc binding patch
-- constrain #address-cells and #size-cells
-- add a general description
-- use unevaluatedProperties=false instead of additionalProperties=false
-- fix property order to comply with dts coding style
-- include raw-nand-chip.yaml instead of nand-chip.yaml
----
- .../devicetree/bindings/mtd/fsl,elbc-fcm-nand.yaml | 68 ++++++++++++++++++++++
- 1 file changed, 68 insertions(+)
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
 
-diff --git a/Documentation/devicetree/bindings/mtd/fsl,elbc-fcm-nand.yaml b/Documentation/devicetree/bindings/mtd/fsl,elbc-fcm-nand.yaml
-new file mode 100644
-index 0000000000000000000000000000000000000000..91e8f2f9ff26da0f5a3f9bf276955ed32e9e7bc6
---- /dev/null
-+++ b/Documentation/devicetree/bindings/mtd/fsl,elbc-fcm-nand.yaml
-@@ -0,0 +1,68 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/mtd/fsl,elbc-fcm-nand.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: NAND flash attached to Freescale eLBC
-+
-+description:
-+  The Freescale Enhanced Local Bus controller (eLBC) contains logic to
-+  interface with NAND flash, called the NAND Flash Control Machine (FCM).
-+  This binding describes flash attached to an eLBC using the FCM.
-+
-+maintainers:
-+  - J. Neuschäfer <j.ne@posteo.net>
-+
-+allOf:
-+  - $ref: raw-nand-chip.yaml#
-+
-+properties:
-+  compatible:
-+    oneOf:
-+      - items:
-+          - enum:
-+              - fsl,mpc8313-fcm-nand
-+              - fsl,mpc8315-fcm-nand
-+              - fsl,mpc8377-fcm-nand
-+              - fsl,mpc8378-fcm-nand
-+              - fsl,mpc8379-fcm-nand
-+              - fsl,mpc8536-fcm-nand
-+              - fsl,mpc8569-fcm-nand
-+              - fsl,mpc8572-fcm-nand
-+              - fsl,p1020-fcm-nand
-+              - fsl,p1021-fcm-nand
-+              - fsl,p1025-fcm-nand
-+              - fsl,p2020-fcm-nand
-+          - const: fsl,elbc-fcm-nand
-+      - const: fsl,elbc-fcm-nand
-+
-+  reg:
-+    maxItems: 1
-+
-+  "#address-cells":
-+    const: 1
-+
-+  "#size-cells":
-+    const: 1
-+
-+required:
-+  - compatible
-+  - reg
-+
-+unevaluatedProperties: false
-+
-+examples:
-+  - |
-+    localbus {
-+        #address-cells = <2>;
-+        #size-cells = <1>;
-+
-+        nand@1,0 {
-+            compatible = "fsl,mpc8315-fcm-nand",
-+                         "fsl,elbc-fcm-nand";
-+            reg = <0x1 0x0 0x2000>;
-+        };
-+    };
-+
-+...
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
 
--- 
-2.48.0.rc1.219.gb6b6757d772
+pip3 install dtschema --upgrade
 
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
 
 
