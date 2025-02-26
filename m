@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-6499-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6500-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6EEEC021BF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2025 12:25:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2520EC021BF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 26 Feb 2025 12:25:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z2tw71lYHz3bn0;
-	Wed, 26 Feb 2025 23:25:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z2twC2N3Fz3bnB;
+	Wed, 26 Feb 2025 23:25:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740572711;
-	cv=none; b=kvMv7upq+MPizvtFp5iLa/sXfWEr/6qzfx2z0Jvw7gJby8jJwzdAinncHZMjpPPNbj35NiSI5ukGVB+De4TyEFpLI+aOT1jRMk+/VLcPqS6xINyT/5com2fKEgFPye4ZT0EnyXtpXgm77SOvGZbReH58uBil9nIfQMrHJysOKP8sS233ZG+vWwwwNRc8509hvrtBvmt+HyGeVagFCoPKqAtxscFEUtHzSmB8RaXGWRQSWR74adDjU2uvosdA0zT7vQvCIlNY3Zykc+jqxSJl+GWqh+0YPstsCuY4oFv5A4BP2Bnxv4KYw8CQDG8iDEk6pJRgnyVjwO6wO1P0wDg42A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740572715;
+	cv=none; b=L74b+dPASwHWgje7B3IiexwKe2pzTC0Jvou/sU9z6jRJLkJqu3aMgOznkRW1BDxQyfPLuHIZVQjpSxW0Gpzy4SB7jV3nkhh/A1VD9JQIxotGnyxuLvreyFhR6dGjwrzXrft/uLhOtXFSJLW4j9FLehXZRVHgNf+Bq0KJOsL44+5sqD6uqCeQEP83STvogR5KVCpwUnDHwonCmCc4jjL52bExNlfDu3oVq0j/u4jIpcWoozDOM8mb4K3NjDfuVXt5XXVTttD1yOksXYz0xVAPV2RI3ebhx/RtNUDPm8tKaPAzaIlk11K4yspkHmrWhgJBN2+Kf0Tx6WooC1wFamnx5g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740572711; c=relaxed/relaxed;
-	bh=9mxtOTKYXM9++EznKJFw0LH+ZQbbA0koCKCRQD8Qu+g=;
+	t=1740572715; c=relaxed/relaxed;
+	bh=LRGsBqibvYFIOQyj99eysD7W+10FLHigdztuNASGJ38=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=eJy/ir9z3VUrWLyn0ufR9DaaiykEXIsDpnfy8L+GG2FNirsn51eNHw7VvmERXi3C382xdaS9HpaF7Os3cf/4O0cchKFrj1YAdkFKS/D+PNTHD1E3SF2+3so4YhC87V5wHYnv80kajcDcwFDqoZin2rKYXSWeoCcblzzSyQ2uM7oSRMoDzvwuMqVY84j4RO9JI3tOI6Yuv6cHgaLJ8gqFs1pdgP76Mo9zsJKSDQwqhkmO6LUw4KWRU7WOt/e3Dmmo73llMF9+EqBGAbjdm5Yq0BgSaeklM6hVW2XRLqjNuPPCGb/Y/Hix5Uoj/b/MwW1GYJM0fgSud8+Y+VAVrW02dQ==
+	 MIME-Version; b=Y6G3CQBUoutBT7faPrad8aXwFvRDDJogbCi9mswSZB5/awUzu2bu5mL9G60vqf8dURAxFv59+EyQlsFMbh5BCoGh9P07AqlNGGZWo9rO+EpttfgZXloMBKmLHxQ0uI45jfgRxHz6kfiTkv9Ss9bUWAXcl4TLDVZD9WeG4u02zdh3fUuaa8FVz0MZmqHRjA5gF9vOSrs1rp5sNl1DHfsyyAU0gnVVRBb9HyPSYiEanPuRRFN4lqf2v2XU1bZGT7lT0E+dd3E0uDf6Q1bwfg07RJtvuL2DJVbGpZnKRJCHIlntsfW9cmqtwLeUS4bcGqdaOEl/6fz+nDZv8c9Ib/JCUA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=anshuman.khandual@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z2tw646lrz3blg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2025 23:25:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z2twB6L9rz3blg
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 26 Feb 2025 23:25:14 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 77DF42308;
-	Wed, 26 Feb 2025 04:24:55 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0B27628C7;
+	Wed, 26 Feb 2025 04:25:00 -0800 (PST)
 Received: from a077893.arm.com (unknown [10.163.40.69])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 300E63F5A1;
-	Wed, 26 Feb 2025 04:24:33 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 146C63F5A1;
+	Wed, 26 Feb 2025 04:24:39 -0800 (PST)
 From: Anshuman Khandual <anshuman.khandual@arm.com>
 To: linux-mm@kvack.org
 Cc: Anshuman Khandual <anshuman.khandual@arm.com>,
@@ -42,13 +42,10 @@ Cc: Anshuman Khandual <anshuman.khandual@arm.com>,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-riscv@lists.infradead.org,
 	linux-s390@vger.kernel.org,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Jonathan Corbet <corbet@lwn.net>,
 	Steven Price <steven.price@arm.com>
-Subject: [PATCH V3 3/5] docs: arm64: Drop PTDUMP config options from ptdump.rst
-Date: Wed, 26 Feb 2025 17:54:02 +0530
-Message-Id: <20250226122404.1927473-4-anshuman.khandual@arm.com>
+Subject: [PATCH V3 4/5] mm: Make DEBUG_WX depdendent on GENERIC_PTDUMP
+Date: Wed, 26 Feb 2025 17:54:03 +0530
+Message-Id: <20250226122404.1927473-5-anshuman.khandual@arm.com>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20250226122404.1927473-1-anshuman.khandual@arm.com>
 References: <20250226122404.1927473-1-anshuman.khandual@arm.com>
@@ -66,34 +63,31 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Both GENERIC_PTDUMP and PTDUMP_CORE are not user selectable config options.
-Just drop these from documentation.
+DEBUG_WX selects PTDUMP_CORE without even ensuring that the given platform
+implements GENERIC_PTDUMP. This problem has been latent until now, as all
+the platforms subscribing ARCH_HAS_DEBUG_WX also subscribe GENERIC_PTDUMP.
 
-Cc: Catalin Marinas <catalin.marinas@arm.com>
-Cc: Will Deacon <will@kernel.org>
-Cc: Jonathan Corbet <corbet@lwn.net>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: linux-doc@vger.kernel.org
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org
-Suggested-by: Steven Price <steven.price@arm.com>
+Reviewed-by: Steven Price <steven.price@arm.com>
 Signed-off-by: Anshuman Khandual <anshuman.khandual@arm.com>
 ---
- Documentation/arch/arm64/ptdump.rst | 2 --
- 1 file changed, 2 deletions(-)
+ mm/Kconfig.debug | 1 +
+ 1 file changed, 1 insertion(+)
 
-diff --git a/Documentation/arch/arm64/ptdump.rst b/Documentation/arch/arm64/ptdump.rst
-index 5dcfc5d7cddf..51eb902ba41a 100644
---- a/Documentation/arch/arm64/ptdump.rst
-+++ b/Documentation/arch/arm64/ptdump.rst
-@@ -22,8 +22,6 @@ offlining of memory being accessed by the ptdump code.
- In order to dump the kernel page tables, enable the following
- configurations and mount debugfs::
- 
-- CONFIG_GENERIC_PTDUMP=y
-- CONFIG_PTDUMP_CORE=y
-  CONFIG_PTDUMP_DEBUGFS=y
- 
-  mount -t debugfs nodev /sys/kernel/debug
+diff --git a/mm/Kconfig.debug b/mm/Kconfig.debug
+index 41a58536531d..a51a1149909a 100644
+--- a/mm/Kconfig.debug
++++ b/mm/Kconfig.debug
+@@ -186,6 +186,7 @@ config ARCH_HAS_DEBUG_WX
+ config DEBUG_WX
+ 	bool "Warn on W+X mappings at boot"
+ 	depends on ARCH_HAS_DEBUG_WX
++	depends on GENERIC_PTDUMP
+ 	depends on MMU
+ 	select PTDUMP_CORE
+ 	help
 -- 
 2.25.1
 
