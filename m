@@ -1,96 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-6596-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6597-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4DD7C19F32
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Mar 2025 04:41:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89468C19F32
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Mar 2025 07:32:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z58RC3bQnz30Wj;
-	Sun,  2 Mar 2025 15:41:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740890487;
-	cv=none; b=glyuHwcHPhGAXWxURthkBXwiG53x35wboGnNmcBCXfVtzPHEtb2JfwnUb5XFbUwJ+TjAvoTdXNsrDheGMULIZbBfw0fZLWoVrJU9iPaHupeHk2G3l4EMEeG70Yzkm2CIhvtHM4AbEHZPghQWj1PaUwYGM0HAJOc4S4pEhoySxCrXq3DqqUe87Vox9d8Ba/tN6j9WTUPs5l/deL9DYJBVC477QukKrYgLPOzTzZUlH4arWfqGpjPR8JVkBa3UFGQE3icD52uVpwg/JG9yDBhn06+zkTAhYO/542TSwuyCJ848n7jqwPAavtwFR/VyfZlzKtoqHpfV3WRlaW+QU5NHGg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z5DDf0XWfz2xfX;
+	Sun,  2 Mar 2025 18:32:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::631"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740900753;
+	cv=none; b=gm05AuTzxP3MbTlsj/OnN4K0Es2iWbjsC7ZpC9HuZz8FeCBO+qOZNFXws75OY6s6gc49s2DrtiNf/ca6n1lUksnNqG5uNqTgPIwr3jmncs43RtUX4ovH7Hw8jvwOXaoltmk9NqGywhKOGn1PqRwrTFR+K0cSCckh08fuQSc28mDjYUQpKuOyxJeH9mgP0xqn9DXsq12Ulty2d06LGKR6q5H0qr8gJM4/JzLrtX9MHJnmr7x2QBBcJJGDrpqGfDyUrEOMLoNwYc0lV2YgEqw/cApO8+FsuCf0+TF+VNJj5VLG5o3DdBXL9k0xo9ciAo0KHGxTpALzpge3zjZPNnq4AA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740890487; c=relaxed/relaxed;
-	bh=CoWBOvObzL9EJVp8HByGX04v1bDxGEY88MLNLpRCCo8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hoR2D+RYq5JEuRadFLj2Gu2RJMt9ZffqlX8GxcBacQFY8hLf7pqEW7L2ldn/azdX3GLpbB3aBI+ab/nRYBHyGKPGdMzdfTygu8tmnHsstnPi+g/ugl4MQeLFM7RNSVJi3hAbSoq8ynRkAOsj3kEd3+POJ+lnaxiXcqwwrPFpoUQnKtzLGPE+XLbZZtqz5fgKbQNwcBTxEpr4IN8ZiViJjaJkR391fjhZgp43wg0GWlTW1bHfu5deLooxc/fAWjJxsbZWe19+yPY5UZXwhkJLM3cbU3Mwzru91Qa6X5orqEXIDoM55NXZMyscsiZcKBrq5Bb2nOGemP2FbElR0RUZBA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=N/iaDN3G; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1740900753; c=relaxed/relaxed;
+	bh=G9tcvHcD5mXLiBCT94Xacz3XJRhpdDRG8RLlqSwKDZU=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=SGRMv0CHDCIiYkXkqKyT5VFFTJHYRtq627M0+jFYT4TzWwd39JTT5xxtkEuSzeOiYR0/LgmlGrtxBUJh1hjYIwWPRQx/AHjX2KYDpTAZMddzOvgwf+ddyjHgukrVekqRxpRfElC/YxmItCLmgmiUC3jqxOInkwvmA6/LZIFC/rrfPtjyIdk+d46L+GDpP+HipBCqK1pWDY0Md81c1wgEQI3WnEGuoCaRUbvX2EdHxp9wK6Me88OeZLUoXdjwltI6U1XUbeaKGB7VzhsXc8UaL/ROydJbWrRVYXdctASLGH0JolHrpkpJBPGu4bn6O9UD0N9Sz5QPYfAfWppquX+h9Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OCGa36nZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=N/iaDN3G;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OCGa36nZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z58RB5Lfyz30CL
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Mar 2025 15:41:26 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5221VAUb011444;
-	Sun, 2 Mar 2025 04:40:46 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=CoWBOv
-	ObzL9EJVp8HByGX04v1bDxGEY88MLNLpRCCo8=; b=N/iaDN3GxctjIZduhn5NbQ
-	glCFkPfAA2UsJc1yhsW84kCDDFjtuILt4UmOpBM1O3egu3yHwau+maDmtEILbQiQ
-	Ir/NjqFNi7BEI/Fzw92jxPEJT1y90+riEq2z6/kf5qvIL4cnxi6wovSLfJEDCJPK
-	TOL/TE6YlD8FCTupit5/r+fjAWP7pBsKm39/CGxfW6JuR2JF8G7KwmYe+i4bRy82
-	ZM1s8X8C3FEtWFxg9ESW5NPY+Anqa9FDnf9hJq6/5t65Y/5nY/1wwDYBF84oL4ZQ
-	k2ihAwaywgghtwyxzJTcGZOxRssSgpyrdPcxSTLejS79jbVGzDUAtq5HZzBgz0Tw
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4542912s5e-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 02 Mar 2025 04:40:46 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 5224ejrY002364;
-	Sun, 2 Mar 2025 04:40:45 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4542912s5c-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 02 Mar 2025 04:40:45 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5222gSme020824;
-	Sun, 2 Mar 2025 04:40:44 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 454esjgc5d-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sun, 02 Mar 2025 04:40:44 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5224egL147841734
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sun, 2 Mar 2025 04:40:43 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DC4D720043;
-	Sun,  2 Mar 2025 04:40:42 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1609220040;
-	Sun,  2 Mar 2025 04:40:34 +0000 (GMT)
-Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.ibm.com.com (unknown [9.43.83.152])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sun,  2 Mar 2025 04:40:33 +0000 (GMT)
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Josh Poimboeuf <jpoimboe@kernel.org>, Jason Baron <jbaron@akamai.com>,
-        Steven Rostedt <rostedt@goodmis.org>, Ard Biesheuvel <ardb@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-        Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-        "H. Peter Anvin" <hpa@zytor.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v4 0/4] Implement inline static calls on PPC32 - v4
-Date: Sun,  2 Mar 2025 10:10:30 +0530
-Message-ID: <174089027712.25244.560287768025207621.b4-ty@linux.ibm.com>
-X-Mailer: git-send-email 2.47.0
-In-Reply-To: <cover.1733245362.git.christophe.leroy@csgroup.eu>
-References: <cover.1733245362.git.christophe.leroy@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z5DDc05QNz2xSC
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Mar 2025 18:32:30 +1100 (AEDT)
+Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-22398e09e39so7606905ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Mar 2025 23:32:30 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1740900748; x=1741505548; darn=lists.ozlabs.org;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=G9tcvHcD5mXLiBCT94Xacz3XJRhpdDRG8RLlqSwKDZU=;
+        b=OCGa36nZsKFyc9/oI3WCq3RgivxJOWIt/r3yiRvoph8RTGpjxnraN2NhpI6gbs0IOb
+         vn9p0KXYMQubOYc5OERxllUMz1WGgAhq+NggqJFqtsEE7HLUYBvVMQAZumyctXPlg/SF
+         tJ3HAtheSXDtfCm7I59SFM9eNFMpsDlQpY3jLgl8PWNCW4dWN26+RVcdIWBpyNLT4fj8
+         UE3Hzg96iozSecfDDicpr6OuCjJTvA7cWeIWaR0Y2aGKrWuUZ51QZgMO22WklwumS/wm
+         i6o8jQhneS2kFPZy+ImL5q9gIPr1VTFiKVaLFj98KSiowKbAdDpfP41FxqadHrNW19oZ
+         4vFw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1740900748; x=1741505548;
+        h=references:message-id:date:in-reply-to:subject:cc:to:from
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=G9tcvHcD5mXLiBCT94Xacz3XJRhpdDRG8RLlqSwKDZU=;
+        b=Gx7BdQ9tHfb4QneSC5AgoaFyxvHCMUMD4GDNO2uJKHh19Ds7IAKV88EARV1kL6P6Se
+         AnUFyqH+Hl/DOujroZBOtON94uSs3/7BwvqOnJR0UHzaDxaR8jODckgyzDrPZPxnO4vO
+         T+3IzNSyuFboxqyZ57iKfWmDWe4oKRb4IquIKPlIbJRverLEla8gp+D+t+rL8UIx3BeK
+         v0ZxBAPxWl8JjHXrG3Q5RzprQsZPVsgFrfNjt5GTyBK+tnmJ8GggwFlSuAekSMLPt9gu
+         bV8RTSQzeUJTN7rK27ZJfsxGSMPiCMzbW1EJlU9DhBafH1dEag3MrbdLvKQbr1DaTkrE
+         lwmA==
+X-Forwarded-Encrypted: i=1; AJvYcCX/vAYa18Fc2TQGurBmz+rAeLu9SRLCQLy3ZlxhqU6JoejFAwPZqdEC7Ldf35WXVz7venQUgEVncelUBKY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxG/GrlAABDJ2OLNBLZxDBIi4RkjCd9L8qm/xGyt2vQ1Y++clmq
+	snxDhAeXqvUNBwteSLXB7psW1y/jLRJwHOOwpUei87R4OLMQS/Fn
+X-Gm-Gg: ASbGncscYFaS64guMhpw6cs+eQnco0gS4lMkeigc8UBrugNavuy3A+8++O9JXPcq0S5
+	KsMbv5r+uEcY1j9BgDArZzkNNC4ZgEKOrWwtywc3eTbQsssdY+b0iIouNfMRX+CXR/WCM62lSmu
+	Dvzft0KCif3HabLPsN+D2NLbUv82kpkZa4i5gTxPQI5EFdgkhdb8JRV5mX8u4je2QyMjHzv8hX8
+	pket6A0Bj0zmfcFnf0Elku3YJfmCHbVDOFcOCYQQyNlkpPN+aQgOuakJkABK6Nd7Bm6d7wInorL
+	yeayQE+gjoX9C2yErRqdswObBFa55pIyn7k+vw==
+X-Google-Smtp-Source: AGHT+IFzFkieeBb2NMMU42EFRDtFPiGvetD+bFoMuUMaS1B/SYB94zXTA2T9Hwz60Qwu7pPhLgTIFw==
+X-Received: by 2002:a17:902:d48f:b0:220:ee5e:6bb with SMTP id d9443c01a7336-22368fc0c71mr134863535ad.20.1740900748354;
+        Sat, 01 Mar 2025 23:32:28 -0800 (PST)
+Received: from dw-tp ([49.205.218.89])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-223504c5dcesm57364525ad.119.2025.03.01.23.32.25
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 01 Mar 2025 23:32:27 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v4] powerpc/hugetlb: Disable gigantic hugepages if fadump is active
+In-Reply-To: <20250128043358.163372-1-sourabhjain@linux.ibm.com>
+Date: Sun, 02 Mar 2025 12:05:20 +0530
+Message-ID: <87h64cgct3.fsf@gmail.com>
+References: <20250128043358.163372-1-sourabhjain@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,42 +86,138 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: pZ2PXWMrXkueT3DsQbLJaaMGmDo63Vt1
-X-Proofpoint-ORIG-GUID: 3TyE20V3wWsdYlKZuNDbwQjw2LbM90L5
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1057,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-03-01_10,2025-02-28_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0
- impostorscore=0 adultscore=0 priorityscore=1501 lowpriorityscore=0
- malwarescore=0 mlxscore=0 bulkscore=0 clxscore=1011 spamscore=0
- phishscore=0 mlxlogscore=670 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.19.0-2502100000 definitions=main-2503020031
 
-On Tue, 03 Dec 2024 20:44:48 +0100, Christophe Leroy wrote:
-> This series implements inline static calls on PPC32.
-> 
-> First patch adds to static_call core the ability to pass the
-> trampoline address at the same time as the site address to
-> arch_static_call_transform() so that it can fallback on branching to
-> the trampoline when the site is too far (Max distance for direct
-> branch is 32 Mbytes on powerpc).
-> 
-> [...]
+Sourabh Jain <sourabhjain@linux.ibm.com> writes:
 
-Applied to powerpc/next.
+> The fadump kernel boots with limited memory solely to collect the kernel
+> core dump. Having gigantic hugepages in the fadump kernel is of no use.
 
-[1/4] static_call_inline: Provide trampoline address when updating sites
-      https://git.kernel.org/powerpc/c/d856bc3ac7d9ca88b3f52d8e08e58ce892dc3ce1
-[2/4] objtool/powerpc: Add support for decoding all types of uncond branches
-      https://git.kernel.org/powerpc/c/bb7f054f4de260dc14813230cfe4ca7299647b6e
-[3/4] powerpc: Prepare arch_static_call_transform() for supporting inline static calls
-      https://git.kernel.org/powerpc/c/6626f98ed55a7a20b1852e7d263a96d8f5a1b59f
-[4/4] powerpc/static_call: Implement inline static calls
-      https://git.kernel.org/powerpc/c/f50b45626e053dc10792c680cabbbadbf8c001e7
+Sure got it.
 
-Thanks
+> Many times, the fadump kernel encounters OOM (Out of Memory) issues if
+> gigantic hugepages are allocated.
+>
+> To address this, disable gigantic hugepages if fadump is active by
+> returning early from arch_hugetlb_valid_size() using
+> hugepages_supported(). When fadump is active, the global variable
+> hugetlb_disabled is set to true, which is later used by the
+> PowerPC-specific hugepages_supported() function to determine hugepage
+> support.
+>
+> Returning early from arch_hugetlb_vali_size() not only disables
+> gigantic hugepages but also avoids unnecessary hstate initialization for
+> every hugepage size supported by the platform.
+>
+> kernel logs related to hugepages with this patch included:
+> kernel argument passed: hugepagesz=1G hugepages=1
+>
+> First kernel: gigantic hugepage got allocated
+> ==============================================
+>
+> dmesg | grep -i "hugetlb"
+> -------------------------
+> HugeTLB: registered 1.00 GiB page size, pre-allocated 1 pages
+> HugeTLB: 0 KiB vmemmap can be freed for a 1.00 GiB page
+> HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+> HugeTLB: 0 KiB vmemmap can be freed for a 2.00 MiB page
+>
+> $ cat /proc/meminfo | grep -i "hugetlb"
+> -------------------------------------
+> Hugetlb:         1048576 kB
+
+Was this tested with patch [1] in your local tree?
+
+[1]: https://web.git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?id=d629d7a8efc33
+
+IIUC, this patch [1] disables the boot time allocation of hugepages.
+Isn't it also disabling the boot time allocation for gigantic huge pages
+passed by the cmdline params like hugepagesz=1G and hugepages=2 ?
+
+
+> HugeTLB: registered 1.00 GiB page size, pre-allocated 1 pages
+This print comes from report_hugepages(). The only place from where
+report_hugepages() gets called is hugetlb_init(). hugetlb_init() is what
+is responsible for hugepages & gigantic hugepage allocations of the
+passed kernel cmdline params.
+
+But hugetlb_init() already checks for hugepages_supported() in the very
+beginning. So I am not sure whether we need this extra patch to disable
+gigantic hugepages allocation by the kernel cmdline params like
+hugepagesz=1G and hugepages=2 type of options.
+
+Hence I was wondering if you had this patch [1] in your tree when you were
+testing this?
+
+But I may be missing something. Could you please help clarify on whether
+we really need this patch to disable gigantic hugetlb page allocations?
+
+>
+> Fadump kernel: gigantic hugepage not allocated
+> ===============================================
+>
+> dmesg | grep -i "hugetlb"
+> -------------------------
+> [    0.000000] HugeTLB: unsupported hugepagesz=1G
+> [    0.000000] HugeTLB: hugepages=1 does not follow a valid hugepagesz, ignoring
+> [    0.706375] HugeTLB support is disabled!
+> [    0.773530] hugetlbfs: disabling because there are no supported hugepage sizes
+>
+> $ cat /proc/meminfo | grep -i "hugetlb"
+> ----------------------------------
+> <Nothing>
+>
+> Cc: Hari Bathini <hbathini@linux.ibm.com>
+> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+
+I guess the extra " in the above was not adding me in the cc list.
+Hence I missed to see this patch early.
+
+-ritesh
+
+
+> Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+> ---
+> Changelog:
+>
+> v1:
+> https://lore.kernel.org/all/20250121150419.1342794-1-sourabhjain@linux.ibm.com/
+>
+> v2:
+> https://lore.kernel.org/all/20250124103220.111303-1-sourabhjain@linux.ibm.com/
+>  - disable gigantic hugepage in arch code, arch_hugetlb_valid_size()
+>
+> v3:
+> https://lore.kernel.org/all/20250125104928.88881-1-sourabhjain@linux.ibm.com/
+>  - Do not modify the initialization of the shift variable
+>
+> v4:
+> - Update commit message to include how hugepages_supported() detects
+>   hugepages support when fadump is active
+> - Add Reviewed-by tag
+> - NO functional change
+>
+> ---
+>  arch/powerpc/mm/hugetlbpage.c | 3 +++
+>  1 file changed, 3 insertions(+)
+>
+> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+> index 6b043180220a..88cfd182db4e 100644
+> --- a/arch/powerpc/mm/hugetlbpage.c
+> +++ b/arch/powerpc/mm/hugetlbpage.c
+> @@ -138,6 +138,9 @@ bool __init arch_hugetlb_valid_size(unsigned long size)
+>  	int shift = __ffs(size);
+>  	int mmu_psize;
+>
+> +	if (!hugepages_supported())
+> +		return false;
+> +
+>  	/* Check that it is a page size supported by the hardware and
+>  	 * that it fits within pagetable and slice limits. */
+>  	if (size <= PAGE_SIZE || !is_power_of_2(size))
+> --
+> 2.48.1
 
