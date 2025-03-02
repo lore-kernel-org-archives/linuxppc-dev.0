@@ -1,80 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-6597-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6598-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89468C19F32
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Mar 2025 07:32:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3379DC19F32
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Mar 2025 10:14:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z5DDf0XWfz2xfX;
-	Sun,  2 Mar 2025 18:32:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::631"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740900753;
-	cv=none; b=gm05AuTzxP3MbTlsj/OnN4K0Es2iWbjsC7ZpC9HuZz8FeCBO+qOZNFXws75OY6s6gc49s2DrtiNf/ca6n1lUksnNqG5uNqTgPIwr3jmncs43RtUX4ovH7Hw8jvwOXaoltmk9NqGywhKOGn1PqRwrTFR+K0cSCckh08fuQSc28mDjYUQpKuOyxJeH9mgP0xqn9DXsq12Ulty2d06LGKR6q5H0qr8gJM4/JzLrtX9MHJnmr7x2QBBcJJGDrpqGfDyUrEOMLoNwYc0lV2YgEqw/cApO8+FsuCf0+TF+VNJj5VLG5o3DdBXL9k0xo9ciAo0KHGxTpALzpge3zjZPNnq4AA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z5HqT3TWMz30RG;
+	Sun,  2 Mar 2025 21:14:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1740910469;
+	cv=none; b=jjgIwEEAmXhiGtJx9uzFsYFGt7uazmo3laVTv5CEXamljkBnUU8CkN78H3EQND6UGZcxR/AU2Xsz2l9JJvGzZLfURPs+gyTUYhJRU1aTo+oZ69sZvYpeYiRMgQVLwAuzBsqDKibo5WEowwgPggtKwZOeNkYFnDrjKMMWqfbSpr/Hui4fSiiSPvYoK4J7fjV+VOA5K33T+2J1JcPCBw122NHf9PoW4DpN7y8z3G7ehRIyIqwhRiWZpOK8fYqw66XBLeMEb4ltbmNNBcgih/lhX1XNuAxHhUAjdzcpUtApzR2RMQIT8YVnoYrsgSP7U7ULz/sjxsXQanfh2ORBl6D2Hw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1740900753; c=relaxed/relaxed;
-	bh=G9tcvHcD5mXLiBCT94Xacz3XJRhpdDRG8RLlqSwKDZU=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=SGRMv0CHDCIiYkXkqKyT5VFFTJHYRtq627M0+jFYT4TzWwd39JTT5xxtkEuSzeOiYR0/LgmlGrtxBUJh1hjYIwWPRQx/AHjX2KYDpTAZMddzOvgwf+ddyjHgukrVekqRxpRfElC/YxmItCLmgmiUC3jqxOInkwvmA6/LZIFC/rrfPtjyIdk+d46L+GDpP+HipBCqK1pWDY0Md81c1wgEQI3WnEGuoCaRUbvX2EdHxp9wK6Me88OeZLUoXdjwltI6U1XUbeaKGB7VzhsXc8UaL/ROydJbWrRVYXdctASLGH0JolHrpkpJBPGu4bn6O9UD0N9Sz5QPYfAfWppquX+h9Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OCGa36nZ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1740910469; c=relaxed/relaxed;
+	bh=IVvXupNW/sWy3XIuy3+yfkxn0uIvYltZ95OZyciM4+k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=a2T/7fQgMH4eie5OdjyNdTSMj/XqvLGsKtxPha25VfbxaV9I3IRrd4fvSBMXT9zfFbsdoJlA2XZk7d07BVxx9GNPjNCgasq5giMY+fqhX4qmF7NyLmt3hNN3seAfzGPlFyZcpDeGo84fsNp6LJQCghD7/LHqJ6XTGXmAg5cHPAEOXUY4aN4t1G0X+Cz8Waz9bDXdNfoQ5neP5kN7lpletA80s7YRBwST9JjGpjXYxK9VYs44R+lDzrVMOYVFg22FgQD66cwNlBYG0MwJT9kv5aO7Xpi9BYU2nJiZ0rbcRbcqK6JBL+2NGfwlejVQDBCHRIHDQgav7UQw98Bi+osnzg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fioWX4J3; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OCGa36nZ;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fioWX4J3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::631; helo=mail-pl1-x631.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x631.google.com (mail-pl1-x631.google.com [IPv6:2607:f8b0:4864:20::631])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z5DDc05QNz2xSC
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Mar 2025 18:32:30 +1100 (AEDT)
-Received: by mail-pl1-x631.google.com with SMTP id d9443c01a7336-22398e09e39so7606905ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Mar 2025 23:32:30 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1740900748; x=1741505548; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=G9tcvHcD5mXLiBCT94Xacz3XJRhpdDRG8RLlqSwKDZU=;
-        b=OCGa36nZsKFyc9/oI3WCq3RgivxJOWIt/r3yiRvoph8RTGpjxnraN2NhpI6gbs0IOb
-         vn9p0KXYMQubOYc5OERxllUMz1WGgAhq+NggqJFqtsEE7HLUYBvVMQAZumyctXPlg/SF
-         tJ3HAtheSXDtfCm7I59SFM9eNFMpsDlQpY3jLgl8PWNCW4dWN26+RVcdIWBpyNLT4fj8
-         UE3Hzg96iozSecfDDicpr6OuCjJTvA7cWeIWaR0Y2aGKrWuUZ51QZgMO22WklwumS/wm
-         i6o8jQhneS2kFPZy+ImL5q9gIPr1VTFiKVaLFj98KSiowKbAdDpfP41FxqadHrNW19oZ
-         4vFw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1740900748; x=1741505548;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=G9tcvHcD5mXLiBCT94Xacz3XJRhpdDRG8RLlqSwKDZU=;
-        b=Gx7BdQ9tHfb4QneSC5AgoaFyxvHCMUMD4GDNO2uJKHh19Ds7IAKV88EARV1kL6P6Se
-         AnUFyqH+Hl/DOujroZBOtON94uSs3/7BwvqOnJR0UHzaDxaR8jODckgyzDrPZPxnO4vO
-         T+3IzNSyuFboxqyZ57iKfWmDWe4oKRb4IquIKPlIbJRverLEla8gp+D+t+rL8UIx3BeK
-         v0ZxBAPxWl8JjHXrG3Q5RzprQsZPVsgFrfNjt5GTyBK+tnmJ8GggwFlSuAekSMLPt9gu
-         bV8RTSQzeUJTN7rK27ZJfsxGSMPiCMzbW1EJlU9DhBafH1dEag3MrbdLvKQbr1DaTkrE
-         lwmA==
-X-Forwarded-Encrypted: i=1; AJvYcCX/vAYa18Fc2TQGurBmz+rAeLu9SRLCQLy3ZlxhqU6JoejFAwPZqdEC7Ldf35WXVz7venQUgEVncelUBKY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxG/GrlAABDJ2OLNBLZxDBIi4RkjCd9L8qm/xGyt2vQ1Y++clmq
-	snxDhAeXqvUNBwteSLXB7psW1y/jLRJwHOOwpUei87R4OLMQS/Fn
-X-Gm-Gg: ASbGncscYFaS64guMhpw6cs+eQnco0gS4lMkeigc8UBrugNavuy3A+8++O9JXPcq0S5
-	KsMbv5r+uEcY1j9BgDArZzkNNC4ZgEKOrWwtywc3eTbQsssdY+b0iIouNfMRX+CXR/WCM62lSmu
-	Dvzft0KCif3HabLPsN+D2NLbUv82kpkZa4i5gTxPQI5EFdgkhdb8JRV5mX8u4je2QyMjHzv8hX8
-	pket6A0Bj0zmfcFnf0Elku3YJfmCHbVDOFcOCYQQyNlkpPN+aQgOuakJkABK6Nd7Bm6d7wInorL
-	yeayQE+gjoX9C2yErRqdswObBFa55pIyn7k+vw==
-X-Google-Smtp-Source: AGHT+IFzFkieeBb2NMMU42EFRDtFPiGvetD+bFoMuUMaS1B/SYB94zXTA2T9Hwz60Qwu7pPhLgTIFw==
-X-Received: by 2002:a17:902:d48f:b0:220:ee5e:6bb with SMTP id d9443c01a7336-22368fc0c71mr134863535ad.20.1740900748354;
-        Sat, 01 Mar 2025 23:32:28 -0800 (PST)
-Received: from dw-tp ([49.205.218.89])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-223504c5dcesm57364525ad.119.2025.03.01.23.32.25
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 01 Mar 2025 23:32:27 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Hari Bathini <hbathini@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>
-Subject: Re: [PATCH v4] powerpc/hugetlb: Disable gigantic hugepages if fadump is active
-In-Reply-To: <20250128043358.163372-1-sourabhjain@linux.ibm.com>
-Date: Sun, 02 Mar 2025 12:05:20 +0530
-Message-ID: <87h64cgct3.fsf@gmail.com>
-References: <20250128043358.163372-1-sourabhjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z5HqR15ccz303B
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Mar 2025 21:14:25 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1740910467; x=1772446467;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=JdTNwd1U8jreQAVVLAvpSDE+3S5NhoVQU4glg3o7XwQ=;
+  b=fioWX4J3KAIiuVw296TpEZkAfKuZykWz1hvffm05JQxEFpqt84iz1OUw
+   uJn6/K3x0LDTyoMFwA/6GZI0pzEszXecEyTtv6QXmypQvEhL7AgJoTwHf
+   m8tsNQf9c0VbQMsl0PT1BGU4VnSg8zO2RwN/Lgz/aC5MWfTdW10fEzngN
+   BRUfsredbhMAYwLC0pCeI5+F4AqDRz6cPmCmZYv0nCY228a5vplsnbpzt
+   1iKrn4StxdmUU7GnB1EEWrWAOnGMBKlFsFjFAwaa7VSajaBwoGauQCQKc
+   JMdZHNz4t7mCYcuYmXF02gixH+hbdkEHEEPZC0raHRs+xHW/Qzm3chfz/
+   g==;
+X-CSE-ConnectionGUID: yDk33W07SJiTtB0OcUol+w==
+X-CSE-MsgGUID: bqqco7oWQGeUEHVcZ9PP0w==
+X-IronPort-AV: E=McAfee;i="6700,10204,11360"; a="41036623"
+X-IronPort-AV: E=Sophos;i="6.13,327,1732608000"; 
+   d="scan'208";a="41036623"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 02 Mar 2025 02:14:22 -0800
+X-CSE-ConnectionGUID: Ysau1Y99QEugJM8OB4AptQ==
+X-CSE-MsgGUID: nRMYbUFGSWalvFl0NVpWFQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.12,224,1728975600"; 
+   d="scan'208";a="118643300"
+Received: from lkp-server02.sh.intel.com (HELO 76cde6cc1f07) ([10.239.97.151])
+  by orviesa008.jf.intel.com with ESMTP; 02 Mar 2025 02:14:20 -0800
+Received: from kbuild by 76cde6cc1f07 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1togKv-000HEo-2s;
+	Sun, 02 Mar 2025 10:14:17 +0000
+Date: Sun, 2 Mar 2025 18:13:28 +0800
+From: kernel test robot <lkp@intel.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, mpe@ellerman.id.au,
+	npiggin@gmail.com, christophe.leroy@csgroup.eu
+Cc: oe-kbuild-all@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Subject: Re: [PATCH v2 1/4] powerpc/perf/core-book3s: Avoid loading platform
+ pmu driver during dump kernel
+Message-ID: <202503021712.eVdjymsT-lkp@intel.com>
+References: <20250301182310.6832-1-maddy@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,138 +80,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
+MIME-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250301182310.6832-1-maddy@linux.ibm.com>
 
-Sourabh Jain <sourabhjain@linux.ibm.com> writes:
+Hi Madhavan,
 
-> The fadump kernel boots with limited memory solely to collect the kernel
-> core dump. Having gigantic hugepages in the fadump kernel is of no use.
+kernel test robot noticed the following build errors:
 
-Sure got it.
+[auto build test ERROR on powerpc/next]
+[also build test ERROR on powerpc/fixes linus/master v6.14-rc4 next-20250228]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-> Many times, the fadump kernel encounters OOM (Out of Memory) issues if
-> gigantic hugepages are allocated.
->
-> To address this, disable gigantic hugepages if fadump is active by
-> returning early from arch_hugetlb_valid_size() using
-> hugepages_supported(). When fadump is active, the global variable
-> hugetlb_disabled is set to true, which is later used by the
-> PowerPC-specific hugepages_supported() function to determine hugepage
-> support.
->
-> Returning early from arch_hugetlb_vali_size() not only disables
-> gigantic hugepages but also avoids unnecessary hstate initialization for
-> every hugepage size supported by the platform.
->
-> kernel logs related to hugepages with this patch included:
-> kernel argument passed: hugepagesz=1G hugepages=1
->
-> First kernel: gigantic hugepage got allocated
-> ==============================================
->
-> dmesg | grep -i "hugetlb"
-> -------------------------
-> HugeTLB: registered 1.00 GiB page size, pre-allocated 1 pages
-> HugeTLB: 0 KiB vmemmap can be freed for a 1.00 GiB page
-> HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
-> HugeTLB: 0 KiB vmemmap can be freed for a 2.00 MiB page
->
-> $ cat /proc/meminfo | grep -i "hugetlb"
-> -------------------------------------
-> Hugetlb:         1048576 kB
+url:    https://github.com/intel-lab-lkp/linux/commits/Madhavan-Srinivasan/powerpc-perf-hv-24x7-Avoid-loading-hv-24x7-during-dump-kernel/20250302-022531
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+patch link:    https://lore.kernel.org/r/20250301182310.6832-1-maddy%40linux.ibm.com
+patch subject: [PATCH v2 1/4] powerpc/perf/core-book3s: Avoid loading platform pmu driver during dump kernel
+config: powerpc64-randconfig-001-20250302 (https://download.01.org/0day-ci/archive/20250302/202503021712.eVdjymsT-lkp@intel.com/config)
+compiler: powerpc64-linux-gcc (GCC) 14.2.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250302/202503021712.eVdjymsT-lkp@intel.com/reproduce)
 
-Was this tested with patch [1] in your local tree?
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202503021712.eVdjymsT-lkp@intel.com/
 
-[1]: https://web.git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?id=d629d7a8efc33
+All errors (new ones prefixed by >>):
 
-IIUC, this patch [1] disables the boot time allocation of hugepages.
-Isn't it also disabling the boot time allocation for gigantic huge pages
-passed by the cmdline params like hugepagesz=1G and hugepages=2 ?
+   arch/powerpc/perf/core-book3s.c: In function 'init_ppc64_pmu':
+>> arch/powerpc/perf/core-book3s.c:2599:13: error: implicit declaration of function 'is_kdump_kernel' [-Wimplicit-function-declaration]
+    2599 |         if (is_kdump_kernel() || is_fadump_active())
+         |             ^~~~~~~~~~~~~~~
 
 
-> HugeTLB: registered 1.00 GiB page size, pre-allocated 1 pages
-This print comes from report_hugepages(). The only place from where
-report_hugepages() gets called is hugetlb_init(). hugetlb_init() is what
-is responsible for hugepages & gigantic hugepage allocations of the
-passed kernel cmdline params.
+vim +/is_kdump_kernel +2599 arch/powerpc/perf/core-book3s.c
 
-But hugetlb_init() already checks for hugepages_supported() in the very
-beginning. So I am not sure whether we need this extra patch to disable
-gigantic hugepages allocation by the kernel cmdline params like
-hugepagesz=1G and hugepages=2 type of options.
+  2587	
+  2588	static int __init init_ppc64_pmu(void)
+  2589	{
+  2590		if (cpu_has_feature(CPU_FTR_HVMODE) && pmu_override) {
+  2591			pr_warn("disabling perf due to pmu_override= command line option.\n");
+  2592			on_each_cpu(do_pmu_override, NULL, 1);
+  2593			return 0;
+  2594		}
+  2595	
+  2596		/*
+  2597		 * If the dump kernel is active, skip loading these drivers
+  2598		 */
+> 2599		if (is_kdump_kernel() || is_fadump_active())
+  2600			return 0;
+  2601	
+  2602		/* run through all the pmu drivers one at a time */
+  2603		if (!init_power5_pmu())
+  2604			return 0;
+  2605		else if (!init_power5p_pmu())
+  2606			return 0;
+  2607		else if (!init_power6_pmu())
+  2608			return 0;
+  2609		else if (!init_power7_pmu())
+  2610			return 0;
+  2611		else if (!init_power8_pmu())
+  2612			return 0;
+  2613		else if (!init_power9_pmu())
+  2614			return 0;
+  2615		else if (!init_power10_pmu())
+  2616			return 0;
+  2617		else if (!init_power11_pmu())
+  2618			return 0;
+  2619		else if (!init_ppc970_pmu())
+  2620			return 0;
+  2621		else
+  2622			return init_generic_compat_pmu();
+  2623	}
+  2624	early_initcall(init_ppc64_pmu);
+  2625	
 
-Hence I was wondering if you had this patch [1] in your tree when you were
-testing this?
-
-But I may be missing something. Could you please help clarify on whether
-we really need this patch to disable gigantic hugetlb page allocations?
-
->
-> Fadump kernel: gigantic hugepage not allocated
-> ===============================================
->
-> dmesg | grep -i "hugetlb"
-> -------------------------
-> [    0.000000] HugeTLB: unsupported hugepagesz=1G
-> [    0.000000] HugeTLB: hugepages=1 does not follow a valid hugepagesz, ignoring
-> [    0.706375] HugeTLB support is disabled!
-> [    0.773530] hugetlbfs: disabling because there are no supported hugepage sizes
->
-> $ cat /proc/meminfo | grep -i "hugetlb"
-> ----------------------------------
-> <Nothing>
->
-> Cc: Hari Bathini <hbathini@linux.ibm.com>
-> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
-
-I guess the extra " in the above was not adding me in the cc list.
-Hence I missed to see this patch early.
-
--ritesh
-
-
-> Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> ---
-> Changelog:
->
-> v1:
-> https://lore.kernel.org/all/20250121150419.1342794-1-sourabhjain@linux.ibm.com/
->
-> v2:
-> https://lore.kernel.org/all/20250124103220.111303-1-sourabhjain@linux.ibm.com/
->  - disable gigantic hugepage in arch code, arch_hugetlb_valid_size()
->
-> v3:
-> https://lore.kernel.org/all/20250125104928.88881-1-sourabhjain@linux.ibm.com/
->  - Do not modify the initialization of the shift variable
->
-> v4:
-> - Update commit message to include how hugepages_supported() detects
->   hugepages support when fadump is active
-> - Add Reviewed-by tag
-> - NO functional change
->
-> ---
->  arch/powerpc/mm/hugetlbpage.c | 3 +++
->  1 file changed, 3 insertions(+)
->
-> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
-> index 6b043180220a..88cfd182db4e 100644
-> --- a/arch/powerpc/mm/hugetlbpage.c
-> +++ b/arch/powerpc/mm/hugetlbpage.c
-> @@ -138,6 +138,9 @@ bool __init arch_hugetlb_valid_size(unsigned long size)
->  	int shift = __ffs(size);
->  	int mmu_psize;
->
-> +	if (!hugepages_supported())
-> +		return false;
-> +
->  	/* Check that it is a page size supported by the hardware and
->  	 * that it fits within pagetable and slice limits. */
->  	if (size <= PAGE_SIZE || !is_power_of_2(size))
-> --
-> 2.48.1
+-- 
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
