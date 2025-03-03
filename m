@@ -1,59 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-6635-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6636-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A887DC282C5
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Mar 2025 11:13:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3F41C282C6
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  3 Mar 2025 11:13:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z5x2w3tF5z3bwf;
-	Mon,  3 Mar 2025 22:11:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741000296;
-	cv=none; b=hhFqXbRhjzPWql/NT9hrRHbha/py/+hqzCwuqR9ufNlzu01Eq4FRMXbH/+fG6AL08U+LjHNtLkozzpzRgAFp2ZaMOGlQqLbIIVAORDrVRZBXAnaeHOevSL7oB5tTQ3hfSK4XKkjf4PhZqcmgEQODC3Un8qDZGcbOG1H68QgLrlg99Vk6s4fdoAmcO6PPoI5Dl6a5tu9NuzH6e1utcx5gKoeWow8POqIvvGvErwCif1WXKnxTgYHl70xd8suiJDtAKcDFVJdk762+g9EWbUcgoZvxizv58Pfe/TBFhU/hXJVIYwgCZ9Ys7HIHrjAEtsIlM8a9BxVjZSkAgIm09lViTg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z5x3B1W7fz30WT;
+	Mon,  3 Mar 2025 22:11:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741000310;
+	cv=none; b=juMfh8q2wCp0xz5NyqeMrWyrWnwx3+1Rg0+aPNkS15GDOlHg3w8Fe4Rvij4JfqfN11i1VkyOhQiOWTUt2VgEU9ggIjq4tZPPdikxHR9QD11ZmyrTuULtc7y58Km8ByvSyn4qPsRmM/FYHSnArUy2TAgLlm0QM1IgRcjJMggO64G+teQyRWcsbYcFdUp7adnsHUvj7ndeA8FdEVQKWMm4XXivCOpdS39+vxeOVUi9AGLlFZvzkJISMDwrT5AqHXo/zAqz0kLZn7KDp6FXJ7tagDvsom9w3Pvcg3qGNxuAcyInnw4699UKtqF06HeK9wrusxp+2tR2YQbbnqY8r+/VQA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741000296; c=relaxed/relaxed;
-	bh=rgB3LhMqOZ+YBkO0ZZD/ZAGt3jgrVFlcoSgeSBFrG1A=;
+	t=1741000310; c=relaxed/relaxed;
+	bh=AJv8sbi30FpTvlQDBkPTmpk9/XqdhxgUpv0PpOkXPOI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=E7DEPHwNkCIncwaeQgLXobx4tys1+myQPC+aGgaErDVY8Jpn1A+t5qEqISziCG7waIyYMJrhDUpsYDiuySpZFZ+2nmv1ejYPwV46S103wZcrDf2ROed+78ROZ4eUCAxlJXU6Tmtdtluh0zJJlaSMFlfJQcLnkgOFOlVY7H9LwLynRY1pMc5TyCZpjPzKvhwY98Vqfe6NqAMgt1tsUDa9vK50VbMDWbBj5sHjVxLvQpLfp7y4YokGKCcZg0YL0R/LK1NFoqzAV5/paUJ8NyZ/KiuAIdKehcupiSwpqFpDRtRquuqvUpEEZxYcjBfbbW2KeRiHVC4YzziUweFQgIy3Sg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=UbCusKeg; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=1fOvo9r/; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=YGp1RQropguk8YvrhNsfeKN6hbTfTtqjD6Q0UDPDvW7pk+yG3RyuANcw2MpTDw9mT/ag2Nn1njp0wkJpJe00XH6TJiv0v5xDrs0716hZEKOBXRoxdXlXT3TrsKSDnJX2JZNLpPrdAyiR/CidV52agP9SKpyNp+UlT3H9aPPxsJDGsxhdYyj+UDp/KrG0Nof8+iXpa0doFFGFjLAKQe8Gb+nxq5b7iuhv/Majrx1WiXjqY6U6AqwvoHhmD6yu0kcU4s74bveRmw6zXWAzOa0mtGHLfpcAG6iP9myJvV8rlBMUYJuxxou1Z3NS4orq2QxPis6Vs+u60UGV44C7APysJw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=DPMhc5St; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=1+KAwjf8; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=UbCusKeg;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=1fOvo9r/;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=DPMhc5St;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=1+KAwjf8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4Z5x2v3C08z30W0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Mar 2025 22:11:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4Z5x390Lvhz30W0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  3 Mar 2025 22:11:49 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1741000276;
+	s=2020; t=1741000275;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rgB3LhMqOZ+YBkO0ZZD/ZAGt3jgrVFlcoSgeSBFrG1A=;
-	b=UbCusKegiY4htXtXb6cmiKpgLftrm8OW6HF0kY4SBA0xVA6X8uBoNc4HcYBYgf3qB7EKjy
-	0vnRhbCV99EGmEO9CIOQU5AdcQcMfSuVz/5cfuOEsSLtkpmIdb9tmSJn0nh1ZOEYvHWBXd
-	x5ohKq3YewG7wcBF2kCJNgLCwTZ1D8/+mkjUHVAlRsJkask5JVQkRUpUXvBwP5yhscXqaz
-	XCh3Z8GjDsSWj8I/uJ8qzqf1Kvs1B2NRxSEdIpg0gcMkgu4ew/f79wpGOjeFlZX68JF+W3
-	yzEpHQhM86wPsh+PyaBRXS68MAr6198hI5WbIhM1S9V/TuYtYWMg1LfvvT3P/A==
+	bh=AJv8sbi30FpTvlQDBkPTmpk9/XqdhxgUpv0PpOkXPOI=;
+	b=DPMhc5St6/iBg0Y6tqofShmyTKuwKq3vvfQL17Fv17cL5576zmzU/q8wwATt065xdTEIe0
+	H5/lUJEkDJb4Dnot8oim8ONpHiXn4rxkl4ZKuUNIRZf1yoBxWK3e3fFVIHF4t5DYt+Pta1
+	WjEaK2yuyJ7lEyiV/TYAsOZNVCsiQO5Xend1W+CLKTyAaVSTMUdP1qYL2R4vusXlk+lUxC
+	Wz6VPs7+syo2CcYwbmSbLSbcCRq+/ECmxtW8MdBwpiNShdz4AC/P1mN0h6oa7FsU54kOh6
+	fzTsvsJNKNKPJWpfL0/vFFAWVvQz2jAywdZxbsnCOt1EFdsExTkIMvIy5evpAg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1741000276;
+	s=2020e; t=1741000275;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rgB3LhMqOZ+YBkO0ZZD/ZAGt3jgrVFlcoSgeSBFrG1A=;
-	b=1fOvo9r/qH+GjFBoFmV4Mq1GTv7uo31luHW62OlEVNNKdplS0DAqHgugpnuoBkmS+FSCDn
-	OTxv7inUt8L/yyCQ==
-Date: Mon, 03 Mar 2025 12:11:17 +0100
-Subject: [PATCH 15/19] x86/vdso: Prepare introduction of struct vdso_clock
+	bh=AJv8sbi30FpTvlQDBkPTmpk9/XqdhxgUpv0PpOkXPOI=;
+	b=1+KAwjf81amAe8EFn1H/1U+g2iwu7oBX2L4PER3y+YH1TmvAt1mLk0jvbLUY5cZe+V6lBa
+	XrUyykEgLplRiQAg==
+Date: Mon, 03 Mar 2025 12:11:14 +0100
+Subject: [PATCH 12/19] vdso/vsyscall: Prepare introduction of struct
+ vdso_clock
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,7 +69,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250303-vdso-clock-v1-15-c1b5c69a166f@linutronix.de>
+Message-Id: <20250303-vdso-clock-v1-12-c1b5c69a166f@linutronix.de>
 References: <20250303-vdso-clock-v1-0-c1b5c69a166f@linutronix.de>
 In-Reply-To: <20250303-vdso-clock-v1-0-c1b5c69a166f@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
@@ -90,11 +91,11 @@ Cc: linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
  linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
  linux-arch@vger.kernel.org, Nam Cao <namcao@linutronix.de>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1741000267; l=3053;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1741000267; l=5035;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=xyNISseLOTNZW4PPjUER0EQo8UUOOyYEKCLROc72ytc=;
- b=0qWgzjrxn8OGxXIBksBvp9I3CDmpmtrU83qA8jyzdK/S89J9zVZl5lnjSVCXoSYPOtqJjB5z6
- Eds45EkmeVCCIxtaR0ZY0XAX3AF9MFiqoAGHbKfXMXIBaSvGGgd69bM
+ bh=TGrYgHBDC1ym/D0u89FhQ1yXA+RjazyIG5JtuCcOFIQ=;
+ b=O0ykrjovG/rAJm0nxuT72171DFtNpYj28xh5+v7YJoR1artjVb5TWt8ayEA+4+1DaKgw1KXq4
+ S4wO7RvQ76JASNE0pYEgVClwArWHVorrse27BBdxE3CW+jNIThljxoa
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
@@ -114,64 +115,110 @@ Signed-off-by: Anna-Maria Behnsen <anna-maria@linutronix.de>
 Signed-off-by: Nam Cao <namcao@linutronix.de>
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- arch/x86/include/asm/vdso/gettimeofday.h | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ kernel/time/vsyscall.c | 40 +++++++++++++++++++++-------------------
+ 1 file changed, 21 insertions(+), 19 deletions(-)
 
-diff --git a/arch/x86/include/asm/vdso/gettimeofday.h b/arch/x86/include/asm/vdso/gettimeofday.h
-index edec796832e08b73d6d58bda6408957048f4e80e..9e52cc46e1da99114312d85b34ae52e539dac9b6 100644
---- a/arch/x86/include/asm/vdso/gettimeofday.h
-+++ b/arch/x86/include/asm/vdso/gettimeofday.h
-@@ -261,7 +261,7 @@ static inline u64 __arch_get_hw_counter(s32 clock_mode,
- 	return U64_MAX;
- }
- 
--static inline bool arch_vdso_clocksource_ok(const struct vdso_time_data *vd)
-+static inline bool arch_vdso_clocksource_ok(const struct vdso_clock *vc)
+diff --git a/kernel/time/vsyscall.c b/kernel/time/vsyscall.c
+index 418192296ef7dd3c1772d50f129e7838883cf00c..dd85b41a70bee7decbd943c35197c091916ee4c7 100644
+--- a/kernel/time/vsyscall.c
++++ b/kernel/time/vsyscall.c
+@@ -18,25 +18,26 @@
+ static inline void update_vdso_time_data(struct vdso_time_data *vdata, struct timekeeper *tk)
  {
- 	return true;
+ 	struct vdso_timestamp *vdso_ts;
++	struct vdso_clock *vc = vdata;
+ 	u64 nsec, sec;
+ 
+-	vdata[CS_HRES_COARSE].cycle_last	= tk->tkr_mono.cycle_last;
++	vc[CS_HRES_COARSE].cycle_last	= tk->tkr_mono.cycle_last;
+ #ifdef CONFIG_GENERIC_VDSO_OVERFLOW_PROTECT
+-	vdata[CS_HRES_COARSE].max_cycles	= tk->tkr_mono.clock->max_cycles;
++	vc[CS_HRES_COARSE].max_cycles	= tk->tkr_mono.clock->max_cycles;
+ #endif
+-	vdata[CS_HRES_COARSE].mask		= tk->tkr_mono.mask;
+-	vdata[CS_HRES_COARSE].mult		= tk->tkr_mono.mult;
+-	vdata[CS_HRES_COARSE].shift		= tk->tkr_mono.shift;
+-	vdata[CS_RAW].cycle_last		= tk->tkr_raw.cycle_last;
++	vc[CS_HRES_COARSE].mask		= tk->tkr_mono.mask;
++	vc[CS_HRES_COARSE].mult		= tk->tkr_mono.mult;
++	vc[CS_HRES_COARSE].shift	= tk->tkr_mono.shift;
++	vc[CS_RAW].cycle_last		= tk->tkr_raw.cycle_last;
+ #ifdef CONFIG_GENERIC_VDSO_OVERFLOW_PROTECT
+-	vdata[CS_RAW].max_cycles		= tk->tkr_raw.clock->max_cycles;
++	vc[CS_RAW].max_cycles		= tk->tkr_raw.clock->max_cycles;
+ #endif
+-	vdata[CS_RAW].mask			= tk->tkr_raw.mask;
+-	vdata[CS_RAW].mult			= tk->tkr_raw.mult;
+-	vdata[CS_RAW].shift			= tk->tkr_raw.shift;
++	vc[CS_RAW].mask			= tk->tkr_raw.mask;
++	vc[CS_RAW].mult			= tk->tkr_raw.mult;
++	vc[CS_RAW].shift		= tk->tkr_raw.shift;
+ 
+ 	/* CLOCK_MONOTONIC */
+-	vdso_ts		= &vdata[CS_HRES_COARSE].basetime[CLOCK_MONOTONIC];
++	vdso_ts		= &vc[CS_HRES_COARSE].basetime[CLOCK_MONOTONIC];
+ 	vdso_ts->sec	= tk->xtime_sec + tk->wall_to_monotonic.tv_sec;
+ 
+ 	nsec = tk->tkr_mono.xtime_nsec;
+@@ -54,7 +55,7 @@ static inline void update_vdso_time_data(struct vdso_time_data *vdata, struct ti
+ 	nsec	+= (u64)tk->monotonic_to_boot.tv_nsec << tk->tkr_mono.shift;
+ 
+ 	/* CLOCK_BOOTTIME */
+-	vdso_ts		= &vdata[CS_HRES_COARSE].basetime[CLOCK_BOOTTIME];
++	vdso_ts		= &vc[CS_HRES_COARSE].basetime[CLOCK_BOOTTIME];
+ 	vdso_ts->sec	= sec;
+ 
+ 	while (nsec >= (((u64)NSEC_PER_SEC) << tk->tkr_mono.shift)) {
+@@ -64,12 +65,12 @@ static inline void update_vdso_time_data(struct vdso_time_data *vdata, struct ti
+ 	vdso_ts->nsec	= nsec;
+ 
+ 	/* CLOCK_MONOTONIC_RAW */
+-	vdso_ts		= &vdata[CS_RAW].basetime[CLOCK_MONOTONIC_RAW];
++	vdso_ts		= &vc[CS_RAW].basetime[CLOCK_MONOTONIC_RAW];
+ 	vdso_ts->sec	= tk->raw_sec;
+ 	vdso_ts->nsec	= tk->tkr_raw.xtime_nsec;
+ 
+ 	/* CLOCK_TAI */
+-	vdso_ts		= &vdata[CS_HRES_COARSE].basetime[CLOCK_TAI];
++	vdso_ts		= &vc[CS_HRES_COARSE].basetime[CLOCK_TAI];
+ 	vdso_ts->sec	= tk->xtime_sec + (s64)tk->tai_offset;
+ 	vdso_ts->nsec	= tk->tkr_mono.xtime_nsec;
  }
-@@ -300,34 +300,34 @@ static inline bool arch_vdso_cycles_ok(u64 cycles)
-  * declares everything with the MSB/Sign-bit set as invalid. Therefore the
-  * effective mask is S64_MAX.
-  */
--static __always_inline u64 vdso_calc_ns(const struct vdso_time_data *vd, u64 cycles, u64 base)
-+static __always_inline u64 vdso_calc_ns(const struct vdso_clock *vc, u64 cycles, u64 base)
+@@ -78,6 +79,7 @@ void update_vsyscall(struct timekeeper *tk)
  {
--	u64 delta = cycles - vd->cycle_last;
-+	u64 delta = cycles - vc->cycle_last;
+ 	struct vdso_time_data *vdata = vdso_k_time_data;
+ 	struct vdso_timestamp *vdso_ts;
++	struct vdso_clock *vc = vdata;
+ 	s32 clock_mode;
+ 	u64 nsec;
  
- 	/*
- 	 * Negative motion and deltas which can cause multiplication
- 	 * overflow require special treatment. This check covers both as
--	 * negative motion is guaranteed to be greater than @vd::max_cycles
-+	 * negative motion is guaranteed to be greater than @vc::max_cycles
- 	 * due to unsigned comparison.
- 	 *
- 	 * Due to the MSB/Sign-bit being used as invalid marker (see
- 	 * arch_vdso_cycles_ok() above), the effective mask is S64_MAX, but that
- 	 * case is also unlikely and will also take the unlikely path here.
- 	 */
--	if (unlikely(delta > vd->max_cycles)) {
-+	if (unlikely(delta > vc->max_cycles)) {
- 		/*
- 		 * Due to the above mentioned TSC wobbles, filter out
- 		 * negative motion.  Per the above masking, the effective
- 		 * sign bit is now bit 62.
- 		 */
- 		if (delta & (1ULL << 62))
--			return base >> vd->shift;
-+			return base >> vc->shift;
+@@ -85,21 +87,21 @@ void update_vsyscall(struct timekeeper *tk)
+ 	vdso_write_begin(vdata);
  
- 		/* Handle multiplication overflow gracefully */
--		return mul_u64_u32_add_u64_shr(delta & S64_MAX, vd->mult, base, vd->shift);
-+		return mul_u64_u32_add_u64_shr(delta & S64_MAX, vc->mult, base, vc->shift);
- 	}
+ 	clock_mode = tk->tkr_mono.clock->vdso_clock_mode;
+-	vdata[CS_HRES_COARSE].clock_mode	= clock_mode;
+-	vdata[CS_RAW].clock_mode		= clock_mode;
++	vc[CS_HRES_COARSE].clock_mode	= clock_mode;
++	vc[CS_RAW].clock_mode		= clock_mode;
  
--	return ((delta * vd->mult) + base) >> vd->shift;
-+	return ((delta * vc->mult) + base) >> vc->shift;
- }
- #define vdso_calc_ns vdso_calc_ns
+ 	/* CLOCK_REALTIME also required for time() */
+-	vdso_ts		= &vdata[CS_HRES_COARSE].basetime[CLOCK_REALTIME];
++	vdso_ts		= &vc[CS_HRES_COARSE].basetime[CLOCK_REALTIME];
+ 	vdso_ts->sec	= tk->xtime_sec;
+ 	vdso_ts->nsec	= tk->tkr_mono.xtime_nsec;
  
+ 	/* CLOCK_REALTIME_COARSE */
+-	vdso_ts		= &vdata[CS_HRES_COARSE].basetime[CLOCK_REALTIME_COARSE];
++	vdso_ts		= &vc[CS_HRES_COARSE].basetime[CLOCK_REALTIME_COARSE];
+ 	vdso_ts->sec	= tk->xtime_sec;
+ 	vdso_ts->nsec	= tk->tkr_mono.xtime_nsec >> tk->tkr_mono.shift;
+ 
+ 	/* CLOCK_MONOTONIC_COARSE */
+-	vdso_ts		= &vdata[CS_HRES_COARSE].basetime[CLOCK_MONOTONIC_COARSE];
++	vdso_ts		= &vc[CS_HRES_COARSE].basetime[CLOCK_MONOTONIC_COARSE];
+ 	vdso_ts->sec	= tk->xtime_sec + tk->wall_to_monotonic.tv_sec;
+ 	nsec		= tk->tkr_mono.xtime_nsec >> tk->tkr_mono.shift;
+ 	nsec		= nsec + tk->wall_to_monotonic.tv_nsec;
 
 -- 
 2.48.1
