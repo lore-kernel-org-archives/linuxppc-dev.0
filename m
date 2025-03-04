@@ -1,79 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-6658-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6659-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63296C021B8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Mar 2025 05:33:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2392DC282C6
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Mar 2025 05:58:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6PVp04gLz2yy9;
-	Tue,  4 Mar 2025 16:33:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741066433;
-	cv=none; b=IG9eswmoSAzNANpa0LwuGNvLGyuWbOV4GtrVZIDcqi9JZUebH2dKEqGIY9Z+rV0RWuXRvfjb2huewUQZeH//xHIKYYtTDIrmRKB0zqIamcfsF2FJIeXUFlSs7xyp+dGBv08cw5bByP71josgkvCimZqkMY1s9Nns84xF69Bg8yaqvtzT9mlCtPQ37nmz44Ma3JxuCiG9Fyez4ztUkt4wEFKwLJR6OpCpamGtG6cIRPLFFNClxDa6rPgBRECRmwSK8CxLV+evhh/3BBpC2Y9XO4CmKpT12tcxKy5K3MBl4/wOPi8LO5wEooEIZuAkn0Tq9LiQfwpWGvmuRijZjhDGeQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6Q314pKKz2yvk;
+	Tue,  4 Mar 2025 16:58:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1032"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741067901;
+	cv=none; b=T7fC2htLyuStiAbY49LvRgPLC0EJ2HvE5qzKE+BUYogJeYFZhVoUEY5BnR71/XJM10tfoUKeXDwscRcdYC+9ozOq3YhJ1LmLlvxpKK3C+ovQG7S7TtuzUboaBmBcco5QeQyHt2AZe/+XxIx8CWDB65EKA2YUcohHSOnPowk20BCpCaAKpb7KHZBCVN4Ufo4Z3q23pmqSFKLXraje5JbQ8KNR/JmsrS2us28yTeXhVeFHqJ8iXPxp6A+/lZbhZbpTqTDkMKb5LihEPCmIkBvrdoM8ULa4eT47ybY/I0t6/mONVdwUqK05MTa6FY9TfOkpqViciWuP5SLDoCXsCRlRnw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741066433; c=relaxed/relaxed;
-	bh=Kak97jxeFCsEI5n0EtRiTfMEbfiu5QO8EMfREFfi7Cc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jz+yNH+hZjOlC2IcnOFgxh8/+mcaWzII8lO+3a8T/7jgeRVtUyZdh2dnAmRru1IzD05i54x54qp893tl5VMN8n1tRE1LkypD8c3PZU3j1csQCTivR5alUX2EufRllXaNflMjoLB62K47+rF0CqBMaFm3Ynrb0mTuzEMEdFPHIpxqomz3dGmvcltCkZx5r4FEaMhGP8dIrBDVuQZ+WjtQUrf7wPmVPNo9KtSKDzJlJoiqfS2zdJYCJt7aDpvZ5MIrpA9EhRcRB7XicakbOQlVOasAO2WSNK7NqbawAHDs6gxlwCjX/PrnnIPKH0SPKtCl9hQw9aN2Ofui4R9eodP9mQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cmzxXWnu; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=donettom@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1741067901; c=relaxed/relaxed;
+	bh=yOaP7xeGxXC0B8/JeWLBZSowIX3CdoKm5gkTER4B97o=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-version:Content-type; b=BUyQtw2eNkuZGY7tpkMUTw2RpVCtjxbEd1+/h8haTYdtUqTylCQgKiJBYLK3i7XUzOg1PsNHT1Gqhy//b05VEjxQFvPfDnk0f1tY2NeHP/IJs9xGlhaSKLysSkNZ1UgO4zPaoE/r8JLJL6263FPOnXHeypFc4AKGrrA/SBX7gfKir+1Zh7IjlfW2/LCdjCiXdBqdT5w+MABx2wc9NfDM8UjKF6Paoo+QDTQf2wcv3cXP2GfddJm3toT30/BGD/CL5zbTajqphRhRw5tWh5O7+LJmXVfCq93HIUC1zvfJ8Xibzb5IJGTt2IeGgXKou2oQ7DCooryR65AsmnyN0fteBQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gCeGbrgJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cmzxXWnu;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gCeGbrgJ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=donettom@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1032; helo=mail-pj1-x1032.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1032.google.com (mail-pj1-x1032.google.com [IPv6:2607:f8b0:4864:20::1032])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z6PVn1pFyz2yVV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2025 16:33:52 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 523Lf37b022696;
-	Tue, 4 Mar 2025 05:33:41 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Kak97j
-	xeFCsEI5n0EtRiTfMEbfiu5QO8EMfREFfi7Cc=; b=cmzxXWnu8DDlvaZxMU0tc9
-	t4XWLcxv3Wn/d9iPiLomFwpLUhQbSquNw5O41TeqNFasqYl/lu28V0ZYIaIvTq5u
-	RNT+LJ6aCfesRnLgwngZFDpmZoG8vFheeD3kmyJF7gS4rC/rXWtzaiiavKPbJwar
-	dw+AEipb8pUR5kxRQqqODckNJpMltwPE2PiWJKWSofO58IfoeT4PlsXgyckfp+OG
-	34EQRyBkiSlZMQTkI6y+UnUslMIgHFq/yTVCxak2WgJQicBF8ALlgshRfSNjMBZx
-	Hmxjc8ddPQ1MB5oXkajaiUOi8lBB8lbgr7ilT1mJ5hUZlcNEQxbxfe6Zv1Ufw2bA
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 455dunvn3t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Mar 2025 05:33:41 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 5245Tu9P030315;
-	Tue, 4 Mar 2025 05:33:41 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 455dunvn3p-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Mar 2025 05:33:41 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5243FWwv009038;
-	Tue, 4 Mar 2025 05:33:40 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 454cxybxhu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 04 Mar 2025 05:33:39 +0000
-Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5245Xdp530409328
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 4 Mar 2025 05:33:39 GMT
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4441E58056;
-	Tue,  4 Mar 2025 05:33:39 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B4E2658052;
-	Tue,  4 Mar 2025 05:33:37 +0000 (GMT)
-Received: from [9.39.17.109] (unknown [9.39.17.109])
-	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  4 Mar 2025 05:33:37 +0000 (GMT)
-Message-ID: <d4b3fdbc-645f-4a43-bd9c-d29f4e4dacbc@linux.ibm.com>
-Date: Tue, 4 Mar 2025 11:03:35 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z6Q301cVTz2yjV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2025 16:58:19 +1100 (AEDT)
+Received: by mail-pj1-x1032.google.com with SMTP id 98e67ed59e1d1-2febaaf175fso6288658a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 03 Mar 2025 21:58:19 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1741067896; x=1741672696; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=yOaP7xeGxXC0B8/JeWLBZSowIX3CdoKm5gkTER4B97o=;
+        b=gCeGbrgJbrNtF7eL2KFxbIPOtPgX4bAZ4epDPpV7Nz0zzf2f3wjw11xj7qfnkV6XTR
+         jmPNYHFFeeiyB5yqeRl3rtNC/zzMIFdM0de825Y6BUN30dTec47wOS9lzv/jPwCAljsh
+         MRW2nj7fqiTz2Bq2smpdUGT2MbMlF/MxMjGH2y0CdJiNQINxnEgDFowKkUNX5v1s7sXA
+         XmOwV5wAQRubSc+MxBeMKnqDHowEoKuOzkLl1bMgm0ateMY+H05LhZ+BCvHPRzfrXfBp
+         wVx0qVuYA7+vxRvi1M8oHOi5r57PRpz+TlrJeEfuvslYYnys8NjMMBxHLa9C9QiRurD1
+         nnoQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1741067896; x=1741672696;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=yOaP7xeGxXC0B8/JeWLBZSowIX3CdoKm5gkTER4B97o=;
+        b=CwQRMzIz0e44+HbyxUsIKgvSugmGJxGX873O4Mhdw2FVvs5jbGw9CYMTWg6vLu+zaL
+         uD6J/ifiMGpig8V5KUXbCc+yp47yrJz6oSx4X3zgp3ahETwVNSq0K2VuVxaB6In9PwGu
+         zq2IS9Nki3PNMuOmN3w7sgLe9nH5srhhpSJfDUAGtnEr+41hnJtZWqnVv+iekRbVith8
+         PHPtl5OLN0ihySaEU9GU4usQbrQkyDcix+O+6BL6KH9064xYx835K1jA9p2rh9HcBoM5
+         zyzwEOSvLwfK/k/EsRMhfR5TRjSYTeSKAiFd0rDZBq4ixoO+agIVjfHGaXeR53H7gddF
+         HscQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU2FNkQ6ND53DBKz/XEWwwZvhQtUqAb/JBvv5TSDiBgAAukLj7MshV8TEqOnrPO1z9FXEFNKOxUPZs5GTM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzUO5UNr/T6E7du4r4M4okqLGtBsN4lIqATudKI8GD0qkBsdSuR
+	TvY4U03TOfybCEKN/BmzZ62OwEcY+b6cd2jJZebS08Kgq7Q1XyTE
+X-Gm-Gg: ASbGncsVv82qhZ/qub/nUHH/vls2HMytHr/U16LMrNTgkJqgmH+/XlimGVgLnyqODGM
+	tx6QaxB6eaa+WEoaCNb4tQB89kRRYU/WIkVP3KAjYC8XUZTvexzLAde13m+/Vh2LyRU6BBK2X8w
+	A8aI1E6RbnHO6zTV8RQf31AzK1gT4LLqtYEgzkjwezMWCfW556dpaH2qay/5te+46YuLelh3sGM
+	Hc51973CfGFmngUqpE+0aeNC7tLrueHYv6+tk6woOegjCc1RcD9bangNau465DyCAnZLOk+T6eF
+	O8YBfjwHry9WQtReYhFthXsQ3ENjGbaKM59pqw==
+X-Google-Smtp-Source: AGHT+IGQm9LNTqjUkda6gE6UnHcmaZ8mjCoyF61Jy/cFz4ViFggX05JeQzmG4R7wafmXVo88+l2gjw==
+X-Received: by 2002:a17:90b:1d86:b0:2f7:4cce:ae37 with SMTP id 98e67ed59e1d1-2febab7176amr28106736a91.18.1741067896441;
+        Mon, 03 Mar 2025 21:58:16 -0800 (PST)
+Received: from dw-tp ([171.76.80.250])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-2fed5700987sm6837271a91.30.2025.03.03.21.58.13
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 03 Mar 2025 21:58:15 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Sourabh Jain <sourabhjain@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: Hari Bathini <hbathini@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Mahesh Salgaonkar <mahesh@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v4] powerpc/hugetlb: Disable gigantic hugepages if fadump is active
+In-Reply-To: <84a2ab12-e24a-4bd6-b562-e3154d1aa258@linux.ibm.com>
+Date: Tue, 04 Mar 2025 10:27:40 +0530
+Message-ID: <87frjttmt7.fsf@gmail.com>
+References: <20250128043358.163372-1-sourabhjain@linux.ibm.com> <87h64cgct3.fsf@gmail.com> <84a2ab12-e24a-4bd6-b562-e3154d1aa258@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,130 +89,249 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] book3s64/radix : Align section vmemmap start address to
- PAGE_SIZE
-To: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        linuxppc-dev@lists.ozlabs.org
-Cc: Ritesh Harjani <ritesh.list@gmail.com>
-References: <20250226043426.224494-1-donettom@linux.ibm.com>
- <yq5aeczexo5w.fsf@kernel.org>
-Content-Language: en-US
-From: Donet Tom <donettom@linux.ibm.com>
-In-Reply-To: <yq5aeczexo5w.fsf@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: _Arnb8ArP1IDWJWCErMUeDDBo0Nx5wUy
-X-Proofpoint-GUID: lxaNxDj0DJ9WZ4NG0IaXi78xL_7mhOo4
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1093,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-03-04_02,2025-03-03_04,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- adultscore=0 priorityscore=1501 malwarescore=0 bulkscore=0 spamscore=0
- suspectscore=0 mlxlogscore=999 phishscore=0 clxscore=1015 mlxscore=0
- impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2502100000 definitions=main-2503040044
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
+Content-Transfer-Encoding: 8bit
 
+Sourabh Jain <sourabhjain@linux.ibm.com> writes:
 
-On 3/3/25 18:32, Aneesh Kumar K.V wrote:
-> Donet Tom <donettom@linux.ibm.com> writes:
+> Hello Ritesh,
 >
->> A vmemmap altmap is a device-provided region used to provide
->> backing storage for struct pages. For each namespace, the altmap
->> should belong to that same namespace. If the namespaces are
->> created unaligned, there is a chance that the section vmemmap
->> start address could also be unaligned. If the section vmemmap
->> start address is unaligned, the altmap page allocated from the
->> current namespace might be used by the previous namespace also.
->> During the free operation, since the altmap is shared between two
->> namespaces, the previous namespace may detect that the page does
->> not belong to its altmap and incorrectly assume that the page is a
->> normal page. It then attempts to free the normal page, which leads
->> to a kernel crash.
->>
->> In this patch, we are aligning the section vmemmap start address
->> to PAGE_SIZE. After alignment, the start address will not be
->> part of the current namespace, and a normal page will be allocated
->> for the vmemmap mapping of the current section. For the remaining
->> sections, altmaps will be allocated. During the free operation,
->> the normal page will be correctly freed.
->>
->> Without this patch
->> ==================
->> NS1 start               NS2 start
->>   _________________________________________________________
->> |         NS1               |            NS2              |
->>   ---------------------------------------------------------
->> | Altmap| Altmap | .....|Altmap| Altmap | ...........
->> |  NS1  |  NS1   |      | NS2  |  NS2   |
->>
->                              ^^^ this should be allocated in ram?
+> Thanks for the review.
 >
+> On 02/03/25 12:05, Ritesh Harjani (IBM) wrote:
+>> Sourabh Jain <sourabhjain@linux.ibm.com> writes:
+>>
+>>> The fadump kernel boots with limited memory solely to collect the kernel
+>>> core dump. Having gigantic hugepages in the fadump kernel is of no use.
+>> Sure got it.
+>>
+>>> Many times, the fadump kernel encounters OOM (Out of Memory) issues if
+>>> gigantic hugepages are allocated.
+>>>
+>>> To address this, disable gigantic hugepages if fadump is active by
+>>> returning early from arch_hugetlb_valid_size() using
+>>> hugepages_supported(). When fadump is active, the global variable
+>>> hugetlb_disabled is set to true, which is later used by the
+>>> PowerPC-specific hugepages_supported() function to determine hugepage
+>>> support.
+>>>
+>>> Returning early from arch_hugetlb_vali_size() not only disables
+>>> gigantic hugepages but also avoids unnecessary hstate initialization for
+>>> every hugepage size supported by the platform.
+>>>
+>>> kernel logs related to hugepages with this patch included:
+>>> kernel argument passed: hugepagesz=1G hugepages=1
+>>>
+>>> First kernel: gigantic hugepage got allocated
+>>> ==============================================
+>>>
+>>> dmesg | grep -i "hugetlb"
+>>> -------------------------
+>>> HugeTLB: registered 1.00 GiB page size, pre-allocated 1 pages
+>>> HugeTLB: 0 KiB vmemmap can be freed for a 1.00 GiB page
+>>> HugeTLB: registered 2.00 MiB page size, pre-allocated 0 pages
+>>> HugeTLB: 0 KiB vmemmap can be freed for a 2.00 MiB page
+>>>
+>>> $ cat /proc/meminfo | grep -i "hugetlb"
+>>> -------------------------------------
+>>> Hugetlb:         1048576 kB
+>> Was this tested with patch [1] in your local tree?
+>>
+>> [1]: https://web.git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/commit/?id=d629d7a8efc33
+>>
+>> IIUC, this patch [1] disables the boot time allocation of hugepages.
+>> Isn't it also disabling the boot time allocation for gigantic huge pages
+>> passed by the cmdline params like hugepagesz=1G and hugepages=2 ?
+>
+> Yes, I had the patch [1] in my tree.
+>
+> My understanding is that gigantic pages are allocated before normal huge 
+> pages.
+>
+> In hugepages_setup() in hugetlb.c, we have:
+>
+>      if (hugetlb_max_hstate && hstate_is_gigantic(parsed_hstate))
+>          hugetlb_hstate_alloc_pages(parsed_hstate);
+>
+> I believe the above code allocates memory for gigantic pages, and 
+> hugetlb_init() is
+> called later because it is a subsys_initcall.
+>
+> So, by the time the kernel reaches hugetlb_init(), the gigantic pages 
+> are already
+> allocated. Isn't that right?
+>
+> Please let me know your opinion.
 
-Yes, it should be allocated from RAM. However, in the current
-implementation, an altmap page gets allocated. This is because the
-NS2 vmemmap section's start address is unaligned. There is an
-altmap_cross_boundary() check. Here, from the vmemmap section
-start, we identify the namespace start and check if the namespace start
-is within the boundary. Since it is within the boundary, it returns false,
-causing an altmap page to be allocated. During the PTE update, the
-vmemmap start address is aligned down to PAGE_SIZE, and the PTE is
-updated. As a result, the altmap page is shared between the current
-and previous namespaces.
+Yes, you are right. We are allocating hugepages from memblock, however
+this isn't getting advertized anywhere. i.e. there is no way one can
+know from any user interface on whether hugepages were allocated or not.
+i.e. for fadump kernel when hugepagesz= and hugepages= params are
+passed, though it will allocate gigantic pages, it won't advertize this
+in meminfo or anywhere else. This was adding the confusion when I tested
+this (which wasn't clear from the commit msg either).
 
-If we had aligned the vmemmap start address, the
-altmap_cross_boundary() function would return true because the
-vmemmap section's start address belongs to the previous
-namespace. Therefore normal page gets allocated. During the
-PTE set operation, since the address is already aligned, the
-PTE will updated.
+And I guess this is happening during fadump kernel because of our patch
+[1], which added a check to see whether hugetlb_disabled is true in
+hugepages_supported(). Due to this hugetlb_init() is now not doing the
+rest of the initialization for those gigantic pages which were allocated
+due to cmdline options from hugepages_setup().
+
+[1]: https://lore.kernel.org/linuxppc-dev/20241202054310.928610-1-sourabhjain@linux.ibm.com/
+
+Now as we know from below that fadump can set hugetlb_disabled call in early_setup().
+i.e. fadump can mark hugetlb_disabled to true in 
+early_setup() -> early_init_devtree() -> fadump_reserve_mem()
+
+And hugepages_setup() and hugepagesz_setup() gets called late in
+start_kernel() -> parse_args() 
 
 
->> In the above scenario, NS1 and NS2 are two namespaces. The vmemmap
->> for NS1 comes from Altmap NS1, which belongs to NS1, and the
->> vmemmap for NS2 comes from Altmap NS2, which belongs to NS2.
+And we already check for hugepages_supported() in all necessary calls in
+mm/hugetlb.c. So IMO, this check should go in mm/hugetlb.c in
+hugepagesz_setup() and hugepages_setup(). Because otherwise every arch
+implementation will end up duplicating this by adding
+hugepages_supported() check in their arch implementation of
+arch_hugetlb_valid_size().
+
+e.g. references of hugepages_supported() checks in mm/hugetlb.c
+
+mm/hugetlb.c hugetlb_show_meminfo_node 4959 if (!hugepages_supported())    
+mm/hugetlb.c hugetlb_report_node_meminfo 4943 if (!hugepages_supported())  
+mm/hugetlb.c hugetlb_report_meminfo 4914 if (!hugepages_supported())       
+mm/hugetlb.c hugetlb_overcommit_handler 4848 if (!hugepages_supported())   
+mm/hugetlb.c hugetlb_sysctl_handler_common 4809 if (!hugepages_supported())
+mm/hugetlb.c hugetlb_init 4461 if (!hugepages_supported()) {               
+mm/hugetlb.c dissolve_free_hugetlb_folios 2211 if (!hugepages_supported()) 
+fs/hugetlbfs/inode.c init_hugetlbfs_fs 1604 if (!hugepages_supported()) {  
+
+
+Let me also see the history on why this wasn't done earlier though... 
+
+... Oh actually there is more history to this. See [2]. We already had
+hugepages_supported() check in hugepages_setup() and other places
+earlier which was removed to fix some other problem in ppc ;)
+
+[2]: https://web.git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=c2833a5bf75b3657c4dd20b3709c8c702754cb1f
+
+
+Hence I believe this needs a wider cleanup than just fixing it for our
+arch. I see there is a patch series already fixing these code paths,
+which is also cleaning up the path of gigantic hugepage allocation in
+hugepages_setup(). I think it is in mm-unstable branch too. Can we
+please review & test that to make sure that the fadump usecase of
+disabling hugepages & gigantic are getting covered properly?
+
+[3]: https://lore.kernel.org/all/20250228182928.2645936-1-fvdl@google.com/
+
+
+Thoughts?
+
+-ritesh
+
+>
+> Thanks,
+> Sourabh Jain
+>
+>
 >>
->> The vmemmap start for NS2 is not aligned, so Altmap NS2 is shared
->> by both NS1 and NS2. During the free operation in NS1, Altmap NS2
->> is not part of NS1's altmap, causing it to attempt to free an
->> invalid page.
 >>
->> With this patch
->> ===============
->> NS1 start               NS2 start
->>   _________________________________________________________
->> |         NS1               |            NS2              |
->>   ---------------------------------------------------------
->> | Altmap| Altmap | .....| Normal | Altmap | Altmap |.......
->> |  NS1  |  NS1   |      |  Page  |  NS2   |  NS2   |
+>>> HugeTLB: registered 1.00 GiB page size, pre-allocated 1 pages
+>> This print comes from report_hugepages(). The only place from where
+>> report_hugepages() gets called is hugetlb_init(). hugetlb_init() is what
+>> is responsible for hugepages & gigantic hugepage allocations of the
+>> passed kernel cmdline params.
 >>
->> If the vmemmap start for NS2 is not aligned then we are allocating
->> a normal page. NS1 and NS2 vmemmap will be freed correctly.
+>> But hugetlb_init() already checks for hugepages_supported() in the very
+>> beginning. So I am not sure whether we need this extra patch to disable
+>> gigantic hugepages allocation by the kernel cmdline params like
+>> hugepagesz=1G and hugepages=2 type of options.
 >>
->> Fixes: 368a0590d954("powerpc/book3s64/vmemmap: switch radix to use a different vmemmap handling function")
->> Co-developed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->> Signed-off-by: Donet Tom <donettom@linux.ibm.com>
->> ---
->>   arch/powerpc/mm/book3s64/radix_pgtable.c | 2 ++
->>   1 file changed, 2 insertions(+)
+>> Hence I was wondering if you had this patch [1] in your tree when you were
+>> testing this?
 >>
->> diff --git a/arch/powerpc/mm/book3s64/radix_pgtable.c b/arch/powerpc/mm/book3s64/radix_pgtable.c
->> index 311e2112d782..b22d5f6147d2 100644
->> --- a/arch/powerpc/mm/book3s64/radix_pgtable.c
->> +++ b/arch/powerpc/mm/book3s64/radix_pgtable.c
->> @@ -1120,6 +1120,8 @@ int __meminit radix__vmemmap_populate(unsigned long start, unsigned long end, in
->>   	pmd_t *pmd;
->>   	pte_t *pte;
->>   
->> +	start = ALIGN_DOWN(start, PAGE_SIZE);
->> +
->>   	for (addr = start; addr < end; addr = next) {
->>   		next = pmd_addr_end(addr, end);
->>   
->> -- 
->> 2.43.5
+>> But I may be missing something. Could you please help clarify on whether
+>> we really need this patch to disable gigantic hugetlb page allocations?
+>>
+>>> Fadump kernel: gigantic hugepage not allocated
+>>> ===============================================
+>>>
+>>> dmesg | grep -i "hugetlb"
+>>> -------------------------
+>>> [    0.000000] HugeTLB: unsupported hugepagesz=1G
+>>> [    0.000000] HugeTLB: hugepages=1 does not follow a valid hugepagesz, ignoring
+>>> [    0.706375] HugeTLB support is disabled!
+>>> [    0.773530] hugetlbfs: disabling because there are no supported hugepage sizes
+>>>
+>>> $ cat /proc/meminfo | grep -i "hugetlb"
+>>> ----------------------------------
+>>> <Nothing>
+
+What I meant was, when we pass hugepagesz= and hugepages= and fadump=on,
+then during the fadump kernel, we still will see the above prints and
+nothing in meminfo even w/o this patch (because the user interfaces will
+be disabled since hugetlb_supported() is false).
+This observation should have been mentioned in the commit msg to avoid
+the confusion :)
+
+
+>>>
+>>> Cc: Hari Bathini <hbathini@linux.ibm.com>
+>>> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+>>> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>>> Cc: Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+>> I guess the extra " in the above was not adding me in the cc list.
+>> Hence I missed to see this patch early.
+>
+> Thanks for point it out. I will fix it.
+>
+>
+>>
+>> -ritesh
+>>
+>>
+>>> Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>>> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+>>> ---
+>>> Changelog:
+>>>
+>>> v1:
+>>> https://lore.kernel.org/all/20250121150419.1342794-1-sourabhjain@linux.ibm.com/
+>>>
+>>> v2:
+>>> https://lore.kernel.org/all/20250124103220.111303-1-sourabhjain@linux.ibm.com/
+>>>   - disable gigantic hugepage in arch code, arch_hugetlb_valid_size()
+>>>
+>>> v3:
+>>> https://lore.kernel.org/all/20250125104928.88881-1-sourabhjain@linux.ibm.com/
+>>>   - Do not modify the initialization of the shift variable
+>>>
+>>> v4:
+>>> - Update commit message to include how hugepages_supported() detects
+>>>    hugepages support when fadump is active
+>>> - Add Reviewed-by tag
+>>> - NO functional change
+>>>
+>>> ---
+>>>   arch/powerpc/mm/hugetlbpage.c | 3 +++
+>>>   1 file changed, 3 insertions(+)
+>>>
+>>> diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+>>> index 6b043180220a..88cfd182db4e 100644
+>>> --- a/arch/powerpc/mm/hugetlbpage.c
+>>> +++ b/arch/powerpc/mm/hugetlbpage.c
+>>> @@ -138,6 +138,9 @@ bool __init arch_hugetlb_valid_size(unsigned long size)
+>>>   	int shift = __ffs(size);
+>>>   	int mmu_psize;
+>>>
+>>> +	if (!hugepages_supported())
+>>> +		return false;
+>>> +
+>>>   	/* Check that it is a page size supported by the hardware and
+>>>   	 * that it fits within pagetable and slice limits. */
+>>>   	if (size <= PAGE_SIZE || !is_power_of_2(size))
+>>> --
+>>> 2.48.1
 
