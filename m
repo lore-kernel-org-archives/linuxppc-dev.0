@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-6716-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6717-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69A05C021B8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Mar 2025 23:20:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22103C021B8
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Mar 2025 23:22:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6s996Krsz3btX;
-	Wed,  5 Mar 2025 10:20:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741130413;
-	cv=none; b=gy63H7FwMuQYNVKfR1Wqy0vVFI4ndo//JRtECwR1uF0/RTDgWFe8O3ITnzrCRV21OoOwCf4llfVSfQJaFrne2Kcx6UGW/OckkWm6xN+XPGstcMs1nhN5dwxNeREG7Fw28ELBM+Vt0xMkX7FbQtDwvGr63cAqRnL7/WasQxZ3w5l467Zoy8XWkTRMVVNhkLghvp/9KEobgYKMTGI2WK++beMr9qADNWG1aJ1O7anEHNVsf/PWNLQqBLYo1MScaiNXOl4AOIQodds5pdWKKDXQUuvOHFteJ+B9nWGfkrfVSf+QoTKbbN3cj6ocmSWMAxIdeT9z/pW9RcD43AWT/SZZbg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6sCv5Ss9z30Kg;
+	Wed,  5 Mar 2025 10:22:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741130555;
+	cv=none; b=LjkSbHLXise7xxxuonV5/mUOdAuM5JI6/KFsRs2I6UmYWWUhMqrLVYmqAn1pA3XHCenYCWW5nRoJwB74Dk3yJKEJ/pevbLr6Jhh96Pib7OISJ7FgwxmWOrKfmy0b8p2Z2l1jbOVeJySHzMRbRhmfLdnP1Hf6kTN+tC8mHzHwCSYg7GhXxQP/obzNI2ipnhioG5LwIWWG/BHWAFS7OmSwKOIV9acqR4tYKKA2dOgTIZ2ZnaLZHOOLJT3x8WIcF3PjNKkglMrqAEQhk9xkL9bCdtuRRPl0e13z1S/crqdUBhqbu9iILHBhJXY0kA9Ts7v4xXSvMgReV+d8QrON7cOqHQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741130413; c=relaxed/relaxed;
-	bh=Nbw6yIg7e5jUPWkVanOP1Ree1vKFbJwEEf4jA24zjxk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=R5EnnGGOSQT7fj8UjxT+xvMmyPE0aWHagQeyKkGOnfPyi5xnkQFzNHWqReyFuIkP4p5mb7URTpPGl7sc3tdk0mRC2LUXG+mgO3d6dkBucATNTqfaPckbf7RPAqKimG3It2NjtpCuc66ZfKCyOxUpATK8pPxsmWyXAk+WmX0jjMvGb5yJRRVfSBpdImn3/PUOqRxm9A99nQoaYoFEXo9cxZjKYsipgCdaZSe9dWGxUq33Z0hWh6rfkCW1jLeu4kx5xHl4A9IvR1mLgHjs9mYlSi5AcaPIvoU7dS2qxBSm0wdYFbHcv/ayiOfwVOJggraBR3S6wpIlU30J5xyMX7cyNQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6s992JPlz309v
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2025 10:20:13 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4Z6rkH4Tpfz9stK;
-	Wed,  5 Mar 2025 00:00:23 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Vg8UFazMBaqu; Wed,  5 Mar 2025 00:00:23 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4Z6rkH3gmRz9stJ;
-	Wed,  5 Mar 2025 00:00:23 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 68B398B776;
-	Wed,  5 Mar 2025 00:00:23 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id WgqhTFqhzL8T; Wed,  5 Mar 2025 00:00:23 +0100 (CET)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.202.221])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6A6868B763;
-	Wed,  5 Mar 2025 00:00:22 +0100 (CET)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: [PATCH] powerpc: Fix 'intra_function_call not a direct call' warning
-Date: Wed,  5 Mar 2025 00:00:19 +0100
-Message-ID: <88876fb4e412203452e57d1037a1341cf15ccc7b.1741128981.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.47.0
+	t=1741130555; c=relaxed/relaxed;
+	bh=hx/3h9ISwJhZvNorTGSlGjIIt6i3ltvEbkF5D20+mMA=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=YIaj5xuvbyUq3rtA8D4yXsSI8EYlS/+etePvhoBt+My/LwyP9qNltXXJBVDD5d8qctNDPMefSw/iSykF/lFlUnXINWRcWm30bB/aJvXNOko/6c97sgxc6DQyyYwioQAwadEjH0D/+uwfbwheMIuwEwRzvRUhgxgTlbz9viHmZyNsjas5SPx7PG/iRAkZ3/BCZW1w8jWUkT0hhfDmS15scKH5EjAP0C8k80GjU2FBe0Q8oVeU0i8F54P9lRpqZS3L7xeTzXaDzDQomFS4hdYmOXlut4Y6m/2EPLcGzfy3H2Uf1CWgBjrpaMC7B/IerRqYQpAr2n8vB5kl3QWVnclJuQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gDzGSlEt; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gDzGSlEt;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z6sCt66HJz309v
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Mar 2025 10:22:34 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 2B5B85C630E;
+	Tue,  4 Mar 2025 23:20:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 86C02C4CEE9;
+	Tue,  4 Mar 2025 23:22:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1741130551;
+	bh=iiljtkG5DqNiUtL+acfsxJ6Pgz3aTmOCDfPZ887+nAo=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=gDzGSlEtb1YmIF4xksZ5KICBIE6jiYVJbX5zLBu6WeXSOzYETPbtl7pBlJT94TlJp
+	 98429J1ufEerB9D5zlpi6FyT613n+XxiYpuLllRSd6Jc/Fs3vfixEBUwYjWesBxY9l
+	 a8K/h4srMoPKUHE9zTyXl8ONAwuSY8OSQAC0Jh4COIA+1fe9FAyJfmIwAcBvTux2cM
+	 t8d271Al1ktDKdM37p0xzAi2nHQW6mnONPflu+pwknzHC8p2CFcPRyN45RMbwDrxz7
+	 uEeead0R9x5Cn7B8qN/mT3rCK2rHn1d/hHI82+wJb4MyIJEfLchmiyu7N5SKM/LKqF
+	 9p3hjY0T3KyUA==
+Date: Tue, 4 Mar 2025 17:22:30 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Bijie Xu <bijie.xu@corigine.com>
+Cc: oohall@gmail.com, mahesh@linux.ibm.com, bhelgaas@google.com,
+	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org, Jon Pan-Doh <pandoh@google.com>,
+	Karolina Stolarek <karolina.stolarek@oracle.com>
+Subject: Re: [PATCH] PCI/AER: Add kernel.aer_print_skip_mask to control aer
+ log
+Message-ID: <20250304232230.GA264709@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,65 +66,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1741129219; l=2054; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=mhbNOqeaG3cayoZ0G+PBgg4dwi61tzwTHcEUa12auuE=; b=7N9scikoa+Nrpe1ZRdjcL9gPR/Fv9oP706Utkehsb5jpMtETPsmWna7UeuR2WrRZqNzuzxEPV Yl2xUJ9+RvLDFWnUJcyDqZ4beL9CAl/sTxFcq+8ZuShM/FEjsmx0abA
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250108075703.410961-1-bijie.xu@corigine.com>
 
-The following build warning have been reported:
+[+cc Jon, Karolina]
 
-  arch/powerpc/kvm/book3s_hv_rmhandlers.o: warning: objtool: .text+0xe84: intra_function_call not a direct call
-  arch/powerpc/kernel/switch.o: warning: objtool: .text+0x4: intra_function_call not a direct call
+On Wed, Jan 08, 2025 at 03:57:03PM +0800, Bijie Xu wrote:
+> Sometimes certain PCIE devices installed on some servers occasionally
+> produce large number of AER correctable error logs, which is quite
+> annoying. Add this sysctl parameter kernel.aer_print_skip_mask to
+> skip printing AER errors of certain severity.
+> 
+> The AER severity can be 0(NONFATAL), 1(FATAL), 2(CORRECTABLE). The 3
+> low bits of the mask are used to skip these 3 severities. Set bit 0
+> can skip printing NONFATAL AER errors, and set bit 1 can skip printing
+> FATAL AER errors, set bit 2 can skip printing CORRECTABLE AER errors.
+> And multiple bits can be set to skip multiple severities.
 
-This happens due to commit bb7f054f4de2 ("objtool/powerpc: Add support
-for decoding all types of uncond branches") because that commit decodes
-'bl .+4' as a normal instruction because that instruction is used by
-clang instead of 'bcl 20,31,+.4' for relocatable code.
+This is definitely annoying, actually MORE than annoying in some
+cases.
 
-The solution is simply to remove the ANNOTATE_INTRA_FUNCTION_CALL
-annotation now that the instruction is not seen as a function call
-anymore.
+I'm hoping the correctable error rate-limiting work can reduce the
+annoyance to an tolerable level:
 
-Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Closes: https://lore.kernel.org/all/8c4c3fc2-2bd7-4148-af68-2f504d6119e0@linux.ibm.com
-Fixes: bb7f054f4de2 ("objtool/powerpc: Add support for decoding all types of uncond branches")
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/kernel/switch.S            | 1 -
- arch/powerpc/kvm/book3s_hv_rmhandlers.S | 2 --
- 2 files changed, 3 deletions(-)
+  https://lore.kernel.org/r/20250214023543.992372-1-pandoh@google.com
 
-diff --git a/arch/powerpc/kernel/switch.S b/arch/powerpc/kernel/switch.S
-index 608c0ce7cec6..59e3ee99db0e 100644
---- a/arch/powerpc/kernel/switch.S
-+++ b/arch/powerpc/kernel/switch.S
-@@ -39,7 +39,6 @@ flush_branch_caches:
- 
- 	// Flush the link stack
- 	.rept 64
--	ANNOTATE_INTRA_FUNCTION_CALL
- 	bl	.+4
- 	.endr
- 	b	1f
-diff --git a/arch/powerpc/kvm/book3s_hv_rmhandlers.S b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-index ea7ad200b330..83f7504349d2 100644
---- a/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-+++ b/arch/powerpc/kvm/book3s_hv_rmhandlers.S
-@@ -1524,14 +1524,12 @@ kvm_flush_link_stack:
- 
- 	/* Flush the link stack. On Power8 it's up to 32 entries in size. */
- 	.rept 32
--	ANNOTATE_INTRA_FUNCTION_CALL
- 	bl	.+4
- 	.endr
- 
- 	/* And on Power9 it's up to 64. */
- BEGIN_FTR_SECTION
- 	.rept 32
--	ANNOTATE_INTRA_FUNCTION_CALL
- 	bl	.+4
- 	.endr
- END_FTR_SECTION_IFSET(CPU_FTR_ARCH_300)
--- 
-2.47.0
+Can you take a look at this and see if it's going the right direction
+for you, or if it needs extensions to do what you need?
 
+> Signed-off-by: Bijie Xu <bijie.xu@corigine.com>
+> ---
+>  drivers/pci/pcie/aer.c | 23 +++++++++++++++++++++++
+>  1 file changed, 23 insertions(+)
+> 
+> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> index 80c5ba8d8296..b46973526bcf 100644
+> --- a/drivers/pci/pcie/aer.c
+> +++ b/drivers/pci/pcie/aer.c
+> @@ -698,6 +698,7 @@ static void __aer_print_error(struct pci_dev *dev,
+>  	pci_dev_aer_stats_incr(dev, info);
+>  }
+>  
+> +unsigned int aer_print_skip_mask __read_mostly;
+>  void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
+>  {
+>  	int layer, agent;
+> @@ -710,6 +711,9 @@ void aer_print_error(struct pci_dev *dev, struct aer_err_info *info)
+>  		goto out;
+>  	}
+>  
+> +	if ((1 << info->severity) & aer_print_skip_mask)
+> +		goto out;
+> +
+>  	layer = AER_GET_LAYER_ERROR(info->severity, info->status);
+>  	agent = AER_GET_AGENT(info->severity, info->status);
+>  
+> @@ -1596,3 +1600,22 @@ int __init pcie_aer_init(void)
+>  		return -ENXIO;
+>  	return pcie_port_service_register(&aerdriver);
+>  }
+> +
+> +static const struct ctl_table aer_print_skip_mask_sysctls[] = {
+> +	{
+> +		.procname       = "aer_print_skip_mask",
+> +		.data           = &aer_print_skip_mask,
+> +		.maxlen         = sizeof(unsigned int),
+> +		.mode           = 0644,
+> +		.proc_handler   = &proc_douintvec,
+> +	},
+> +	{}
+> +};
+> +
+> +static int __init aer_print_skip_mask_sysctl_init(void)
+> +{
+> +	register_sysctl_init("kernel", aer_print_skip_mask_sysctls);
+> +	return 0;
+> +}
+> +
+> +late_initcall(aer_print_skip_mask_sysctl_init);
+> -- 
+> 2.25.1
+> 
 
