@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-6656-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6657-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7FEF6C021B8
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Mar 2025 04:46:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF68EC021B8
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Mar 2025 05:13:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6NRk6LrKz2yvj;
-	Tue,  4 Mar 2025 15:46:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741063570;
-	cv=none; b=mihtWhO2SuzztBV1VIXezxYdk7BiUkmRdatGsT4Aal4F67SW8oHOjdcfMqOakxVmYQEfQvULhqKGUf+8i3lvHR7OLL3jvVTmLYW2QCpgaxT97/dh4nQu+FuyTO8FgEhKCRQzX+VQWl7lITGBPqlfU2+PdNv9sKOJ1VOJ2d9/5qPSdX30sG0UyVHnrlFgDXxP4i+8EhQx0TK8ABEjLZ3OfE2kelaNVe5KkP/7feuagYwCHXAAEDRqIqkzxcNMWaYY4ZFlOCadvY++McO3vWaIQlFI9FS6QFI2eqV62uzCY/fef7g3HBqJqb85B9ReGKYpLsA57I8scIMYpcrIyZ5ZaQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Z6P2x0K21z3024;
+	Tue,  4 Mar 2025 16:13:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741065192;
+	cv=none; b=CTWSvFH3Bbo5suUvjDC77hIcn9nuzwFYnhFQyclojaPFqm+VofKD6g+ZnHeic/tKwHUInlgRSb5qbRkeXPqu6viaXGSFvMh81Sy75j/IFBLNBlPi/OhJvKM6mBs4gzBDmw8464gcFriv5MldOIIRcEnZftXBq3LA5hA6cAIbNvNCRDTktd99Gbnmf517Ze2VuIo/cex3j0USq/jxgiLQbUp/b0aFD+KUq4bfNFVbb2avYKeq5zUrFPSsdhZNLj/i2tTkUF/9t1RzGUbFxKlOQUK98CeBatczJaaig/SZPC+X+0ISrJBkbRTeh9gxaev0pYBkBM7RI6FbjExJ3YK0tQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741063570; c=relaxed/relaxed;
-	bh=2wW4WcOrMiWwVIoahZMyX0rPgAwzLulIDO+CLS1CIds=;
-	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
-	 Mime-Version:Content-Type; b=G08yz6nWVRIiL+uh/hJscPI6Yvsy1YyqvnVXxtYSOD6XKXlVnfNgWUeT0jbv2ks0hrXQabLo+wcs4J9kUyxCVMGnqWp6V8Nme33wR1S4/Wrhk0aoosb8ZrDTG1EoWhI0/PyX7krzqMpGhrHAq2q4FLNOTtEhIJBASsVeFKsMbgXbqrqcPDeCZvcI0LtaZI+wSzzi8VuO4jizYr6AKC1TCwUoL4az9EhKfjLMS9AFd8hB/K5swfTSOfkXF6yD07zBBRo05/ZijCk2MwPfoQIfO+K7delr7XctZH3vnE74Fu/IQe3h6xg8hJTOH+3lIt92ZbeuxrQeUlXPOP4XsiuNQA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=dF8tbczv; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1741065192; c=relaxed/relaxed;
+	bh=9Mmxx9BzLSCgjqzCorficye9fmMyUXlLEOjHsrOeSiY=;
+	h=Message-ID:Date:MIME-Version:To:From:Subject:Content-Type; b=OZkn5tQoMZqTMJiMKEKfvG63YaIbyQATNTSGRv0h1HWtQR2GXgBB5E+r9OyK0IogygOGeYmVPWbjL4khVFyHwf3VuvnOY9YvmTmtNzm1VeYXiNxUCYdsooBYv3XXXpBmuN+L7o346P97OSSXsOyOlM2JKSc52Tq+WzcQJgySRaXGrCsYIDDLODbiX0SMUxB8dwj2IiO4SQvTsc9agNZOPZyL/Yo70KdRUIyAUyeXlwL2E0/GCZzx7COmJrO0T9y/XNy/jgKBDFzJ/7tYLhnXiyzyZQAaDcy3qjTjeQ3cJn1mXZUaKgekL+bwz0rgkS6jUA1CPu82PH6pPw1sSVbpCw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g16eaa5V; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=dF8tbczv;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g16eaa5V;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z6NRf35z3z2yTy
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2025 15:46:05 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id A49DEA44E18;
-	Tue,  4 Mar 2025 04:40:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 13364C4CEE5;
-	Tue,  4 Mar 2025 04:46:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
-	s=korg; t=1741063562;
-	bh=BIFrLh9/bQIuBnwap0eqz54Lk04kbf4V0DZ+B0m2mNI=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
-	b=dF8tbczvEn6O6hRjSdWKxvQKkGRzNDZEQd6dsg0AiFp2L+F6YCMhGyxTx3ZlL53AI
-	 kaXbQDaf9UtJ2eGtPxCyhDiD+/NG8ggB7max5UArq9jsbxOqNhnoi74SE44bszJ2Pe
-	 oKDZeMXGXB5LFz8Eg4Vk7YAWHaK0unPGQ7GwUCdU=
-Date: Mon, 3 Mar 2025 20:46:00 -0800
-From: Andrew Morton <akpm@linux-foundation.org>
-To: Alistair Popple <apopple@nvidia.com>
-Cc: dan.j.williams@intel.com, linux-mm@kvack.org, Alison Schofield
- <alison.schofield@intel.com>, lina@asahilina.net, zhang.lyra@gmail.com,
- gerald.schaefer@linux.ibm.com, vishal.l.verma@intel.com,
- dave.jiang@intel.com, logang@deltatee.com, bhelgaas@google.com,
- jack@suse.cz, jgg@ziepe.ca, catalin.marinas@arm.com, will@kernel.org,
- mpe@ellerman.id.au, npiggin@gmail.com, dave.hansen@linux.intel.com,
- ira.weiny@intel.com, willy@infradead.org, djwong@kernel.org, tytso@mit.edu,
- linmiaohe@huawei.com, david@redhat.com, peterx@redhat.com,
- linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- nvdimm@lists.linux.dev, linux-cxl@vger.kernel.org,
- linux-fsdevel@vger.kernel.org, linux-ext4@vger.kernel.org,
- linux-xfs@vger.kernel.org, jhubbard@nvidia.com, hch@lst.de,
- david@fromorbit.com, chenhuacai@kernel.org, kernel@xen0n.name,
- loongarch@lists.linux.dev
-Subject: Re: [PATCH v9 00/20] fs/dax: Fix ZONE_DEVICE page reference counts
-Message-Id: <20250303204600.cb49d2d614efcded0b28f8c1@linux-foundation.org>
-In-Reply-To: <xhbru4aekyfl25552le5tvifwonyuwoyioxrqxy6zkm2xlyhc5@oqxnudb4bope>
-References: <cover.8068ad144a7eea4a813670301f4d2a86a8e68ec4.1740713401.git-series.apopple@nvidia.com>
-	<xhbru4aekyfl25552le5tvifwonyuwoyioxrqxy6zkm2xlyhc5@oqxnudb4bope>
-X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Z6P2v5tlHz2yy9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Mar 2025 16:13:11 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 523KdBpv018728;
+	Tue, 4 Mar 2025 05:12:58 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=9Mmxx9BzLSCgjqzCorficye9fmMy
+	UXlLEOjHsrOeSiY=; b=g16eaa5VXsPfyR8a9N/tpQBxemJzGX5TOyAex9daLsWp
+	XMzFXvXWgxmnJydzG4z1mTr6uWYaiqqcv4h2Q3Gs+rY9iV848qEC5aQHzG9E6DnS
+	J+LkGXybHX+3sipx3GeZqjdeKYwAEL/AzH2vw4PLB3S8kbAEbox+nTFoSTcAVDcK
+	eexxw09zI+EW6Lt8CcKNspLGy45VS486tyg1+Drc13PE6owjkfqq2RP0QtRipgXi
+	g1TU6HVbLePrEWCYeojQZN1m6FavDOyHpsZ9kskK5gGSrZXBzEq0vsEA9BgJULYC
+	VSMKqwiNn021PbMGtP8dNQuAwuuQGN/oyGHZMK9EjQ==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 455kmyht38-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 04 Mar 2025 05:12:58 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 52458YFS020800;
+	Tue, 4 Mar 2025 05:12:57 GMT
+Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 454esjudtx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 04 Mar 2025 05:12:57 +0000
+Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
+	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5245CvqG43385172
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 4 Mar 2025 05:12:57 GMT
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 082615805E;
+	Tue,  4 Mar 2025 05:12:57 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7F04D58052;
+	Tue,  4 Mar 2025 05:12:55 +0000 (GMT)
+Received: from [9.204.204.161] (unknown [9.204.204.161])
+	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  4 Mar 2025 05:12:55 +0000 (GMT)
+Message-ID: <8c4c3fc2-2bd7-4148-af68-2f504d6119e0@linux.ibm.com>
+Date: Tue, 4 Mar 2025 10:42:53 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,17 +76,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Mime-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Content-Language: en-GB
+To: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        Stephen Rothwell <sfr@canb.auug.org.au>,
+        Michael Ellerman <mpe@ellerman.id.au>, maddy@linux.ibm.com
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: Build Warnings at arch/powerpc/
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: _zp1hdzXtHLw7rMRdaRt4D898Jo2Zhi-
+X-Proofpoint-GUID: _zp1hdzXtHLw7rMRdaRt4D898Jo2Zhi-
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1093,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-03-04_02,2025-03-03_04,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 mlxlogscore=746
+ priorityscore=1501 bulkscore=0 impostorscore=0 lowpriorityscore=0
+ mlxscore=0 malwarescore=0 clxscore=1015 phishscore=0 suspectscore=0
+ spamscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2502100000 definitions=main-2503040039
 
-On Fri, 28 Feb 2025 14:42:40 +1100 Alistair Popple <apopple@nvidia.com> wrote:
+Greetings!!
 
-> This is essentially the same as what's currently in mm-unstable aside from
-> the two updates listed below. The main thing to note is it incorporates
-> Balbir's fixup which is currently in mm-unstable as c98612955016
-> ("mm-allow-compound-zone-device-pages-fix-fix")
-> 
 
-Thanks, I've updated mm.git to this v9 series.
+Observing build warnings with linux-next and powerpc repo's. Issue is 
+currently not seen on mainline yet.
+
+PPC Repo: 
+https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge 
+branch
+
+PPC Kernel Version: 6.14.0-rc4-g1304f486dbf1
+next Repo: 
+https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git 
+master branch
+
+next Kernel Version: 6.14.0-rc5-next-20250303
+
+
+On linux-next kernel issue got introduced b/w next-20250227 and 
+next-20250303
+
+
+Build Warnings:
+
+arch/powerpc/kvm/book3s_hv_rmhandlers.o: warning: objtool: .text+0xe84: 
+intra_function_call not a direct call
+arch/powerpc/crypto/ghashp8-ppc.o: warning: objtool: .text+0x22c: 
+unannotated intra-function call
+arch/powerpc/kernel/switch.o: warning: objtool: .text+0x4: 
+intra_function_call not a direct call
+
+
+If you fix this issue, please add below tag.
+
+
+Reported-By: Venkat Rao Bagalkote <venkat88@linux.vnet.ibm.com>
+
+
+Regards,
+
+Venkat.
+
 
