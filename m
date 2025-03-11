@@ -1,48 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-6900-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6901-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 807E1C282EC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Mar 2025 15:15:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6F85C28B30
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Mar 2025 15:22:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZBy4c14sXz3brR;
-	Wed, 12 Mar 2025 02:15:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741706128;
-	cv=none; b=SSwUDRHb1JdelDSCUbvYFX6V2ZM36fFiaAi1tFKtOwa7ces6ZhIPq0wOrabySpa+RtsXnvrI4purwRdgegTx+qtqyAtpyP8p5xzMQe+Am87OFVCfl1Wb01+77QaJ3PlvnGRtZNrMWfQRsE0m/D/5S1VJJsbYpvkg5mhg1EmppD/KQ0jS44192R5v5EIFd3czpE/GsUVKDM8Y1RFgFNTADJ+Jio2xQ7E4hXdyC9nlz2sfd9COHQQD9tijKOIBnnihLt57TVDx4EVdkY1Sp+M7/36iLv8aWHDZJOcoQCehDI9zSkFK/jFZ2o9D/eQgaTXL/S4v7mffUamSVbrkEAkUpw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZByF91pcjz3brr;
+	Wed, 12 Mar 2025 02:22:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741706573;
+	cv=none; b=FNw3feGxlMKn3qVPU58+u7ZCDqP5dRxGhjfixnqdTe6Jcvo2p7ViW2fYdHigdHelxKDTrUbQpgnoMMgp6lQFD+Vpa1BqXr3c3iUP4mTE1vXopZZR+0kwbt3tofUgx9KkA0VecxqvC2tzyhGOiCtRc+BshmVrFtyJ3jAuppGm+rWRH+G2sjNGJPNf3ehQqZGSZHc7w/+Q1ZrQ3j+r2JeqqJjKGTwUki78etNzBhtZiGgk3yoyzLdgzaYGklLOsIigGm/tmiOrfSMvOfOxaRZ4pMd3ZxEkT4JwVZqKNwUmoZxKbcCsvutV02rpNPLdnWVEHuM/5Mk0uzJ3XkV01US3zw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741706128; c=relaxed/relaxed;
-	bh=JKkAW0UIzqm6r4vB92ZekbOgf936keSki2pNmwT0r9k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=GiqAdmZXFtMxEdihZolauauQMfkXb0Jlka/d0JAc4xwbPYR+e+LsG59DhTp5laLnNCu25r325p+53B+9wq9uFij4Byl+sADE+UfhVap7/MHl27BBFLto3hzN2L/Hs2O3KX77bU+0FrXpCrSMmHKLrTBWCXFpDIZm7AneKJz0w+PUiOJJ9IQyE9txCH6sbhDzxOsEFgufu+/3gKugKOpCUs2O+s8EbdAaAxOeSU/MPB/r1ih/wFySqpah35xHsvoM8VsVU61HXPi7VSxLYrtK7tgbOHdIMQmWIW9YdP35ribM4bsAbJIVt4UmDiU49mX8ZuKCzED07UkobCzmrZDVyg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=cmarinas@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	t=1741706573; c=relaxed/relaxed;
+	bh=HGAutUtIvxKzxSVKu9oB+j1rVsqi2SI2kep7Hxb7vo0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=lmllcvEmefRGZoPdEVMt2loJC9bkacEkdzWfd/Ozvb6qnTaTAYIU3tkGfPaOt5R5dy5ljuifeBSkladWMfw8bC5vdyFOMGXqct5SQSnvAR/PQQYJrjEvtkSSnttWfocT+Dk/q1bE9W90DzIivc8SzPf36kMaVrQhgGz/zuPe9CWxY7ennwwyTz6DLHDPL7mZAHDa9MB/ECzPj/jaZCxuPA8nP8VhiBizr2YGWCUBFG2ds82zZNA91CKYZV1Ni15yipjo3FLMmLwwLvGOOHYxdEulqCWXZOMqvpkwItAW8VosMFn9l8ChR5kq0nk3mSPC/+9iVy5l4wDV//rzRp6grw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=sqczCio5; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=sqczCio5;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZBy4b2s4Jz30VQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2025 02:15:27 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZByF818Pjz2y8p
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2025 02:22:51 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 47F845C64BB;
-	Tue, 11 Mar 2025 15:13:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CE924C4CEE9;
-	Tue, 11 Mar 2025 15:15:22 +0000 (UTC)
-Date: Tue, 11 Mar 2025 15:15:20 +0000
-From: Catalin Marinas <catalin.marinas@arm.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: shuah@kernel.org, mpe@ellerman.id.au, npiggin@gmail.com,
-	christophe.leroy@csgroup.eu, naveen@kernel.org,
-	yury.khrustalev@arm.com, linux-arm-kernel@lists.infradead.org,
-	linux-kselftest@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: Re: [PATCH] selftest/powerpc/mm/pkey: fix build-break introduced by
- commit 00894c3fc917
-Message-ID: <Z9BTiOh6DkstKZ53@arm.com>
-References: <20250311084129.39308-1-maddy@linux.ibm.com>
+	by nyc.source.kernel.org (Postfix) with ESMTP id EDA3FA459E9;
+	Tue, 11 Mar 2025 15:17:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 211B0C4CEE9;
+	Tue, 11 Mar 2025 15:22:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1741706567;
+	bh=jfMEqxbgBdGVFnDs5yBPsyLQMCEa4P3jCJ3E8KJALXM=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=sqczCio5r9m2UZMc3/94eL8/4pL5AZylZtpcmriDK3TwQDOpZNIHZ5uoA+uuoXwjW
+	 GxXyIwryu94tXGKJU6V4Vgk05yqx/UEoO8dw9Af6Fg1H4DOShfV2Vl9YQ8auvPlG3d
+	 mHHH+ujbGLo9aG5YkFuNwkRtSEXVsn6YpakBLGOU=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: stable@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	patches@lists.linux.dev,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Helge Deller <deller@gmx.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Naveen N Rao <naveen@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+	linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Sergey Senozhatsky <senozhatsky@chromium.org>,
+	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 5.10 093/462] module: Extend the preempt disabled section in dereference_symbol_descriptor().
+Date: Tue, 11 Mar 2025 15:55:59 +0100
+Message-ID: <20250311145802.027766156@linuxfoundation.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250311145758.343076290@linuxfoundation.org>
+References: <20250311145758.343076290@linuxfoundation.org>
+User-Agent: quilt/0.68
+X-stable: review
+X-Patchwork-Hint: ignore
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,44 +81,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250311084129.39308-1-maddy@linux.ibm.com>
 
-Hi Madhavan,
+5.10-stable review patch.  If anyone has any objections, please let me know.
 
-On Tue, Mar 11, 2025 at 02:11:29PM +0530, Madhavan Srinivasan wrote:
-> Build break was reported in the powerpc mailing list for next-20250218 with below errors
-> 
-> make[1]: Nothing to be done for 'all'.
-> BUILD_TARGET=/root/venkat/linux-next/tools/testing/selftests/powerpc/mm; mkdir -p $BUILD_TARGET; make OUTPUT=$BUILD_TARGET -k -C mm all
->   CC       pkey_exec_prot
-> In file included from pkey_exec_prot.c:18:
-> /root/venkat/linux-next/tools/testing/selftests/powerpc/include/pkeys.h: In function ‘pkeys_unsupported’:
-> /root/venkat/linux-next/tools/testing/selftests/powerpc/include/pkeys.h:96:34: error: ‘PKEY_UNRESTRICTED’ undeclared (first use in this function)
->    96 |         pkey = sys_pkey_alloc(0, PKEY_UNRESTRICTED);
->       |                                  ^~~~~~~~~~~~~~~~~
-> 
-> https://lore.kernel.org/all/20250113170619.484698-2-yury.khrustalev@arm.com/ patchset
-> has been queued to arm64/for-next/pkey_unrestricted which is causing a build break
-> in the selftest/powerpc builds.
-> 
-> Commit 6d61527d931ba ("mm/pkey: Add PKEY_UNRESTRICTED macro") added a macro
-> PKEY_UNRESTRICTED to handle implicit literal value of 0x0 (which is "unrestricted").
-> Add the same to selftest/powerpc/pkeys.h to fix the reported build break.
-> 
-> Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> Closes: https://lore.kernel.org/lkml/3267ea6e-5a1a-4752-96ef-8351c912d386@linux.ibm.com/T/
-> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
-> ---
-> Catalin, can you take this fix via arm64/for-next/pkey_unrestricted?
-> Patch applies clean on top of arm64/for-next/pkey_unrestricted
+------------------
 
-I'll take it, sorry for the break. I did not realise powerpc duplicates
-those definitions.
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
+[ Upstream commit a145c848d69f9c6f32008d8319edaa133360dd74 ]
+
+dereference_symbol_descriptor() needs to obtain the module pointer
+belonging to pointer in order to resolve that pointer.
+The returned mod pointer is obtained under RCU-sched/ preempt_disable()
+guarantees and needs to be used within this section to ensure that the
+module is not removed in the meantime.
+
+Extend the preempt_disable() section to also cover
+dereference_module_function_descriptor().
+
+Fixes: 04b8eb7a4ccd9 ("symbol lookup: introduce dereference_symbol_descriptor()")
+Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Naveen N Rao <naveen@kernel.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Reviewed-by: Sergey Senozhatsky <senozhatsky@chromium.org>
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Link: https://lore.kernel.org/r/20250108090457.512198-2-bigeasy@linutronix.de
+Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ include/linux/kallsyms.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index 430f1cefbb9e1..ea2eb5fe83a3c 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -63,10 +63,10 @@ static inline void *dereference_symbol_descriptor(void *ptr)
+ 
+ 	preempt_disable();
+ 	mod = __module_address((unsigned long)ptr);
+-	preempt_enable();
+ 
+ 	if (mod)
+ 		ptr = dereference_module_function_descriptor(mod, ptr);
++	preempt_enable();
+ #endif
+ 	return ptr;
+ }
 -- 
-Catalin
+2.39.5
+
+
+
 
