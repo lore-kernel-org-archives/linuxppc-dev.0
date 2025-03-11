@@ -1,74 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-6901-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6902-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6F85C28B30
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Mar 2025 15:22:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 361E0C282EC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Mar 2025 17:11:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZByF91pcjz3brr;
-	Wed, 12 Mar 2025 02:22:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741706573;
-	cv=none; b=FNw3feGxlMKn3qVPU58+u7ZCDqP5dRxGhjfixnqdTe6Jcvo2p7ViW2fYdHigdHelxKDTrUbQpgnoMMgp6lQFD+Vpa1BqXr3c3iUP4mTE1vXopZZR+0kwbt3tofUgx9KkA0VecxqvC2tzyhGOiCtRc+BshmVrFtyJ3jAuppGm+rWRH+G2sjNGJPNf3ehQqZGSZHc7w/+Q1ZrQ3j+r2JeqqJjKGTwUki78etNzBhtZiGgk3yoyzLdgzaYGklLOsIigGm/tmiOrfSMvOfOxaRZ4pMd3ZxEkT4JwVZqKNwUmoZxKbcCsvutV02rpNPLdnWVEHuM/5Mk0uzJ3XkV01US3zw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZC0fy2zcBz3brx;
+	Wed, 12 Mar 2025 04:11:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741709455;
+	cv=none; b=Vi854MLg3kHC4PXA4xMwTm53lG1HPsH5ZhW4L2VLTYr/oMDUBqArlhU6sIQQ6ax1Ni+ZU2LDZ3McsxbB5eEEhQXdwAo6eZq/r0BhqAxKMC9keBpigdVtdfNPY4ghOYPZsodNua//BCdRk4A4AaphmX7jka94TgDiZdWhr1BivVf9BfgXUuNSotT9B/7N8nk1XwzeUqsRJNxzy/QRd4u+4bLjNXXMMpsomfKIzGj18nkRxks+8/Cw4eMUomqtGUv+MnIMAMxgMpak4gqRRCLgmL0ML1b76+DkEhkg9axINzPm0AgHPOyTBRret0WAPsIKZnYSfw7Al7pzDVdmQrlFOA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741706573; c=relaxed/relaxed;
-	bh=HGAutUtIvxKzxSVKu9oB+j1rVsqi2SI2kep7Hxb7vo0=;
+	t=1741709455; c=relaxed/relaxed;
+	bh=Eq2eYkgjMtMdXEiE7U4VNPwFdP5DbNO8T7hhzQWw4ek=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lmllcvEmefRGZoPdEVMt2loJC9bkacEkdzWfd/Ozvb6qnTaTAYIU3tkGfPaOt5R5dy5ljuifeBSkladWMfw8bC5vdyFOMGXqct5SQSnvAR/PQQYJrjEvtkSSnttWfocT+Dk/q1bE9W90DzIivc8SzPf36kMaVrQhgGz/zuPe9CWxY7ennwwyTz6DLHDPL7mZAHDa9MB/ECzPj/jaZCxuPA8nP8VhiBizr2YGWCUBFG2ds82zZNA91CKYZV1Ni15yipjo3FLMmLwwLvGOOHYxdEulqCWXZOMqvpkwItAW8VosMFn9l8ChR5kq0nk3mSPC/+9iVy5l4wDV//rzRp6grw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=sqczCio5; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+	 MIME-Version:Content-Type; b=Ja63DUzMqanZnjt/l+gSKUmDdAYgAkn7372/8r63U8f1N2ZwpEaDVNfhF7IivBzCJFcVSbg+FW7j0nidiMPlAv5ZnXEHeeTx8UlLyDrIV8/8Ow9MMCGsMYNp7ACA5Dc24u1PWrhWY1k0bgGJPMJUVky49X4ecNA6rZYP5i51BAMa+EFMRyueFzTDBj9qkOJA7seBUYbakVfTZJLm5+zhxscB2Sv6hcH1MJQH5S/12Unmy8ZPvIA4MAddkQUE9uklQbWzfBtUQdIrPrG8yBAdtBx5Ar24g3VemYqhO9ZL8bGHGqLooEQGPjFLtwtcLkJg3t6TIHLQt676FZFoQs6smQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=trZnTh8v; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=sqczCio5;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=trZnTh8v;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZByF818Pjz2y8p
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2025 02:22:51 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id EDA3FA459E9;
-	Tue, 11 Mar 2025 15:17:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 211B0C4CEE9;
-	Tue, 11 Mar 2025 15:22:47 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1741706567;
-	bh=jfMEqxbgBdGVFnDs5yBPsyLQMCEa4P3jCJ3E8KJALXM=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=sqczCio5r9m2UZMc3/94eL8/4pL5AZylZtpcmriDK3TwQDOpZNIHZ5uoA+uuoXwjW
-	 GxXyIwryu94tXGKJU6V4Vgk05yqx/UEoO8dw9Af6Fg1H4DOShfV2Vl9YQ8auvPlG3d
-	 mHHH+ujbGLo9aG5YkFuNwkRtSEXVsn6YpakBLGOU=
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: stable@vger.kernel.org
-Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	patches@lists.linux.dev,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Helge Deller <deller@gmx.de>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Naveen N Rao <naveen@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
-	linux-parisc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Sergey Senozhatsky <senozhatsky@chromium.org>,
-	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Sasha Levin <sashal@kernel.org>
-Subject: [PATCH 5.10 093/462] module: Extend the preempt disabled section in dereference_symbol_descriptor().
-Date: Tue, 11 Mar 2025 15:55:59 +0100
-Message-ID: <20250311145802.027766156@linuxfoundation.org>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250311145758.343076290@linuxfoundation.org>
-References: <20250311145758.343076290@linuxfoundation.org>
-User-Agent: quilt/0.68
-X-stable: review
-X-Patchwork-Hint: ignore
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZBzJZ3Yq3z3blk
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2025 03:10:54 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 52BFqogK027902;
+	Tue, 11 Mar 2025 16:10:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=Eq2eYk
+	gjMtMdXEiE7U4VNPwFdP5DbNO8T7hhzQWw4ek=; b=trZnTh8vLH8rw/5O0tU1i2
+	I4/BBghHgYYUF9/qf5fXROZnYKapocJRZoot500i31shiGcnSqL4vsqD0nc3V+bM
+	XV5SdGkMWq2J8SYxgswf+SN5/UaZeATe8+WRLYlCdYo2RvcaMKy3Tj1Jb+N/D3Ni
+	x3N5ZKZkQtBVRSQLr29heOLVIJVvKIJ+Ewb7WwKk5Is6hxeBP1FELw+3S8crF5eM
+	eC6YsywB2GFX88PMQ0CLWUs7EI3hW6eUBM7J7K3dE71Drl8XwWmpn9DgS4E0uurp
+	A6UFbnWPYtcmArh54TovpAY4OjBGp1COpninkDxtX+Eb4+6dn81zE1MFJ84xvD4Q
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 45a7a1cyw2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Mar 2025 16:10:22 +0000 (GMT)
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 52BFqQBT011483;
+	Tue, 11 Mar 2025 16:10:21 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 45a7a1cyvw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Mar 2025 16:10:21 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 52BD2kRH022213;
+	Tue, 11 Mar 2025 16:10:20 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 45917nd2fw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 11 Mar 2025 16:10:20 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 52BGAGC934996626
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 11 Mar 2025 16:10:16 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B03EB20049;
+	Tue, 11 Mar 2025 16:10:16 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2E7DE2004D;
+	Tue, 11 Mar 2025 16:10:11 +0000 (GMT)
+Received: from li-621bac4c-27c7-11b2-a85c-c2bf7c4b3c07.ibm.com.com (unknown [9.43.96.240])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 11 Mar 2025 16:10:10 +0000 (GMT)
+From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
+To: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Cc: ast@kernel.org, hbathini@linux.ibm.com, andrii@kernel.org,
+        daniel@iogearbox.net, martin.lau@linux.dev, eddyz87@gmail.com,
+        song@kernel.org, yonghong.song@linux.dev, john.fastabend@gmail.com,
+        kpsingh@kernel.org, sdf@fomichev.me, haoluo@google.com,
+        jolsa@kernel.org, christophe.leroy@csgroup.eu, naveen@kernel.org,
+        maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com
+Subject: [PATCH 2/2] powerpc, bpf: Inline bpf_get_smp_processor_id()
+Date: Tue, 11 Mar 2025 21:39:55 +0530
+Message-ID: <20250311160955.825647-3-skb99@linux.ibm.com>
+X-Mailer: git-send-email 2.43.5
+In-Reply-To: <20250311160955.825647-1-skb99@linux.ibm.com>
+References: <20250311160955.825647-1-skb99@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,65 +99,99 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 0Q1rkXzBFu15-t_NNyNIKB5YUHYg0Zcc
+X-Proofpoint-GUID: H6X_cuOGAr15dDWrqW6bOtNhwwY76Q1E
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1093,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-03-11_04,2025-03-11_02,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ phishscore=0 lowpriorityscore=0 mlxlogscore=700 malwarescore=0
+ clxscore=1011 mlxscore=0 impostorscore=0 bulkscore=0 spamscore=0
+ suspectscore=0 adultscore=0 classifier=spam adjust=0 reason=mlx
+ scancount=1 engine=8.19.0-2502100000 definitions=main-2503110101
 
-5.10-stable review patch.  If anyone has any objections, please let me know.
+Inline the calls to bpf_get_smp_processor_id() in the powerpc bpf jit.
 
-------------------
+powerpc saves the Logical processor number (paca_index) in paca.
 
-From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Here is how the powerpc JITed assembly changes after this commit:
 
-[ Upstream commit a145c848d69f9c6f32008d8319edaa133360dd74 ]
+Before:
 
-dereference_symbol_descriptor() needs to obtain the module pointer
-belonging to pointer in order to resolve that pointer.
-The returned mod pointer is obtained under RCU-sched/ preempt_disable()
-guarantees and needs to be used within this section to ensure that the
-module is not removed in the meantime.
+cpu = bpf_get_smp_processor_id();
 
-Extend the preempt_disable() section to also cover
-dereference_module_function_descriptor().
+addis 12, 2, -517
+addi 12, 12, -29456
+mtctr 12
+bctrl
+mr	8, 3
 
-Fixes: 04b8eb7a4ccd9 ("symbol lookup: introduce dereference_symbol_descriptor()")
-Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Helge Deller <deller@gmx.de>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Naveen N Rao <naveen@kernel.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
-Cc: linux-parisc@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Reviewed-by: Sergey Senozhatsky <senozhatsky@chromium.org>
-Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
-Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
-Link: https://lore.kernel.org/r/20250108090457.512198-2-bigeasy@linutronix.de
-Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+After:
+
+cpu = bpf_get_smp_processor_id();
+
+lhz 8, 8(13)
+
+To evaluate the performance improvements introduced by this change,
+the benchmark described in [1] was employed.
+
++---------------+-------------------+-------------------+--------------+
+|      Name     |      Before       |        After      |   % change   |
+|---------------+-------------------+-------------------+--------------|
+| glob-arr-inc  | 41.580 ± 0.034M/s | 54.137 ± 0.019M/s |   + 30.20%   |
+| arr-inc       | 39.592 ± 0.055M/s | 54.000 ± 0.026M/s |   + 36.39%   |
+| hash-inc      | 25.873 ± 0.012M/s | 26.334 ± 0.058M/s |   + 1.78%    |
++---------------+-------------------+-------------------+--------------+
+
+[1] https://github.com/anakryiko/linux/commit/8dec900975ef
+
+Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
 ---
- include/linux/kallsyms.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/net/bpf_jit_comp.c   | 10 ++++++++++
+ arch/powerpc/net/bpf_jit_comp64.c |  5 +++++
+ 2 files changed, 15 insertions(+)
 
-diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
-index 430f1cefbb9e1..ea2eb5fe83a3c 100644
---- a/include/linux/kallsyms.h
-+++ b/include/linux/kallsyms.h
-@@ -63,10 +63,10 @@ static inline void *dereference_symbol_descriptor(void *ptr)
- 
- 	preempt_disable();
- 	mod = __module_address((unsigned long)ptr);
--	preempt_enable();
- 
- 	if (mod)
- 		ptr = dereference_module_function_descriptor(mod, ptr);
-+	preempt_enable();
- #endif
- 	return ptr;
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 3d4bd45a9a22..4b79b2d95469 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -445,6 +445,16 @@ bool bpf_jit_supports_percpu_insn(void)
+ 	return true;
  }
+ 
++bool bpf_jit_inlines_helper_call(s32 imm)
++{
++	switch (imm) {
++	case BPF_FUNC_get_smp_processor_id:
++		return true;
++	default:
++		return false;
++	}
++}
++
+ void *arch_alloc_bpf_trampoline(unsigned int size)
+ {
+ 	return bpf_prog_pack_alloc(size, bpf_jit_fill_ill_insns);
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index 06f06770ceea..a8de12c026da 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -1087,6 +1087,11 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+ 		case BPF_JMP | BPF_CALL:
+ 			ctx->seen |= SEEN_FUNC;
+ 
++			if (insn[i].src_reg == 0 && imm == BPF_FUNC_get_smp_processor_id) {
++				EMIT(PPC_RAW_LHZ(bpf_to_ppc(BPF_REG_0), _R13, offsetof(struct paca_struct, paca_index)));
++				break;
++			}
++
+ 			ret = bpf_jit_get_func_addr(fp, &insn[i], extra_pass,
+ 						    &func_addr, &func_addr_fixed);
+ 			if (ret < 0)
 -- 
-2.39.5
-
-
+2.43.5
 
 
