@@ -1,50 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-6908-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6909-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91E9CC282EC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Mar 2025 18:20:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F25CCC2BA1B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Mar 2025 21:07:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZC29f6C15z2yys;
-	Wed, 12 Mar 2025 05:20:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741717206;
-	cv=none; b=DLoaLyhNS012S/o3AVaVqfQ7zmboDskZhOKgK6nDWME6xOaXfL/HDzOjXvLn022FCBOICT7uPT1eVe91SOVh4MxBVBR3V7OFidJEgP5Ew5TWKACFZbUJfpMkQZjYUq+BgRK446AGct1HXS+MadYDTm8FOUQ7Jt3nPjS4hv0RiRvF+vE8Fbaf5T/fdQfieaZuo/pjAeRLvTSyhz51/c94QLeiIXKJEzZKnTjnRP0dbl8vJMwWf3FasQ6KB2wDApfmMWazQaeFEi7VgW/koWLmdGWg+JQaJ6aPNP0C2J8RloNR0OUGTBySJw0TnE6+j5fQqN+1TZGXeG7g2gwJCyy5iA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZC5th3HNRz2ydW;
+	Wed, 12 Mar 2025 08:07:24 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741727244;
+	cv=none; b=DXq2+QX+BseYOiv7mSgqt96qLDsGjPWZFfubOdiSen2gsFKJ6vJcHQjs6iS9TZvzg1OkvDyyTVm+XA1jvBCoM6Khwx1/kiikAxtp2TO3W8HelH/qmqJykYcBFtUSq164auDJPEMOz5M8a2DXIB0LOe46/80GIayNrLLQMYZcRWPwFbITXGkCVQLUImlLZ/3DG13z9HBqgacagr2oub0+NT392VcU5FVwY+hBsV/oakYqlYqfKzyRtfKRoYYsb2mLDpOY57So3r0pdsqRhcwLT7ysdwVQCYTuhFPpLSL/6g7pCH1qq7Fj3RZdRdx5VB2O0V7Go5+CPFz6H09mwc6HbQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741717206; c=relaxed/relaxed;
-	bh=IcOUuK+OqLPnXQDSrj0z7K2wsCIiZrscMy7zQ+3PIl4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JEDi+zafMA7DUo7I3ZGipZXI6/9//Th9kMef6SNCXqGwC8RFM2vOC0RJFNeCYU+anXnAbtxLCo7I5BxSPNp0MY0H+sJJ3CrPMOaTgvMUMosBNQGsXKwr35e89SCnmrW4n3IfbaetiMAKY7VKOquqtjecHs9BlEGyMUl6/+h4mNr4rE6MLpJKtTiOyuH6XTe8uL4/AnrpzByuxdRJOd5FRbQjXE3khOKMKwpnz7hqO3gkMPXohC3feRqQPVpgNGsi8TUnysjLy5xWqum5pY6Jz17vj/tH49ezjOwHa2qU4eFrKZ8VrEhgWs+jhBmXGbow4m+3+a3ehbTm/DcowktEqQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZC29d6bNrz2yDD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2025 05:20:05 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4ZC1Xf6JvGz9sgH;
-	Tue, 11 Mar 2025 18:51:30 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id fvDIzXamRURc; Tue, 11 Mar 2025 18:51:30 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4ZC1Xf5CWCz9sVm;
-	Tue, 11 Mar 2025 18:51:30 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9A2E28B768;
-	Tue, 11 Mar 2025 18:51:30 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 175KqGxnGV_Y; Tue, 11 Mar 2025 18:51:30 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3AF2D8B763;
-	Tue, 11 Mar 2025 18:51:29 +0100 (CET)
-Message-ID: <61e746ca-456f-4824-9678-85399b450bce@csgroup.eu>
-Date: Tue, 11 Mar 2025 18:51:28 +0100
+	t=1741727244; c=relaxed/relaxed;
+	bh=kjtbj0rMoRhWzV3nxSJsuSOSdwzNUEUPeZ0N5AhKsuE=;
+	h=Date:From:To:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=VNKIWiEHddtdpFDIPnDLoe3GIrNwoR63hZPWzfJvIA6G24VmDTXl2R+lF3W7B2e21ZpIk5UF7ILsk3H9z2avP1mZgqI0TXs+rbU2qR4kt4T+373kgjpKzpzdkziBDqlY1tBcK7BIMDcNkX4TPH31tDfV9MRZNYCAYnLNbGHI2e5DMrTgpaNXplww0tqTu/mnRih0LURPhSNJzLYkrEl1K8NS9NzUE+WUNWpMEyYnF5IjpAaqX37UN940XaqGcLBDBKot6rkioAnY17hbcccAiMAK+FGyB34Nef4s2KejsdsVOXRradZboFDwWkHN6UMwl8ICixiIymUChZHJUZ4lbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=C1iHqPEK; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=C1iHqPEK;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZC5tg1RKwz2yMF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2025 08:07:23 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 8DFAB5C06AD;
+	Tue, 11 Mar 2025 21:05:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 25BDBC4CEE9;
+	Tue, 11 Mar 2025 21:07:03 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1741727240;
+	bh=rNimSVN80xWe5rcUWVjkmfCgcoptPPb9Jv9OZmpPkd4=;
+	h=Date:From:To:Subject:References:In-Reply-To:From;
+	b=C1iHqPEKFmOZ1AdRri3tQAqNRCUTPzRJDLMlo7w9miEeyKlINu4yaWAdRhzIs0paH
+	 jfkQRnK0XKmpkNOb3HtMEZGNKykGUrnuj1eWXqoXCuk4rS12Ikm530MvS19u7Mf4J3
+	 tH/UJQzFzlpWZeIQ8GU3qF5sOrZxvuNLkXsoHttkETnhl82ybMrj85LRdzmLv+hBla
+	 wPX3Fb5aCd0lbfNzAcpKqyB8kieIZqzft75UbkCyh4kRvACkkIIDZ2qg0qRSwpfeTU
+	 KbinhUeYSjsKqONFQqPFUHd8wwI3NPOSMI/Iwxdn5G8aIP9ZQgz2eFjKKr2GfyLFcr
+	 AI9TcpmJNf73w==
+Date: Tue, 11 Mar 2025 23:06:56 +0200
+From: Mike Rapoport <rppt@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Andy Lutomirski <luto@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
+	Borislav Petkov <bp@alien8.de>, Brian Cain <bcain@kernel.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Dinh Nguyen <dinguyen@kernel.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Guo Ren <guoren@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
+	Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Jiaxun Yang <jiaxun.yang@flygoat.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Matt Turner <mattst88@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Michal Simek <monstr@monstr.eu>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Richard Weinberger <richard@nod.at>,
+	Russell King <linux@armlinux.org.uk>,
+	Stafford Horne <shorne@gmail.com>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Vasily Gorbik <gor@linux.ibm.com>, Vineet Gupta <vgupta@kernel.org>,
+	Will Deacon <will@kernel.org>, linux-alpha@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
+	linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+	linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH 10/13] arch, mm: set high_memory in free_area_init()
+Message-ID: <Z9Cl8JKkRGhaRrgM@kernel.org>
+References: <20250306185124.3147510-1-rppt@kernel.org>
+ <20250306185124.3147510-11-rppt@kernel.org>
+ <cee346ec-5fa5-4d0b-987b-413ee585dbaa@sirena.org.uk>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,124 +102,34 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] powerpc, bpf: Inline bpf_get_smp_processor_id()
-To: Saket Kumar Bhaskar <skb99@linux.ibm.com>, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: ast@kernel.org, hbathini@linux.ibm.com, andrii@kernel.org,
- daniel@iogearbox.net, martin.lau@linux.dev, eddyz87@gmail.com,
- song@kernel.org, yonghong.song@linux.dev, john.fastabend@gmail.com,
- kpsingh@kernel.org, sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org,
- naveen@kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com
-References: <20250311160955.825647-1-skb99@linux.ibm.com>
- <20250311160955.825647-3-skb99@linux.ibm.com>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20250311160955.825647-3-skb99@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cee346ec-5fa5-4d0b-987b-413ee585dbaa@sirena.org.uk>
 
+Hi Mark,
 
+On Tue, Mar 11, 2025 at 05:51:06PM +0000, Mark Brown wrote:
+> On Thu, Mar 06, 2025 at 08:51:20PM +0200, Mike Rapoport wrote:
+> > From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+> > 
+> > high_memory defines upper bound on the directly mapped memory.
+> > This bound is defined by the beginning of ZONE_HIGHMEM when a system has
+> > high memory and by the end of memory otherwise.
+> > 
+> > All this is known to generic memory management initialization code that
+> > can set high_memory while initializing core mm structures.
+> > 
+> > Remove per-architecture calculation of high_memory and add a generic
+> > version to free_area_init().
+> 
+> This patch appears to be causing breakage on a number of 32 bit arm
+> platforms, including qemu's virt-2.11,gic-version=3.  Affected platforms
+> die on boot with no output, a bisect with qemu points at this commit and
+> those for physical platforms appear to be converging on the same place.
 
-Le 11/03/2025 à 17:09, Saket Kumar Bhaskar a écrit :
-> [Vous ne recevez pas souvent de courriers de skb99@linux.ibm.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
-> 
-> Inline the calls to bpf_get_smp_processor_id() in the powerpc bpf jit.
-> 
-> powerpc saves the Logical processor number (paca_index) in paca.
-> 
-> Here is how the powerpc JITed assembly changes after this commit:
-> 
-> Before:
-> 
-> cpu = bpf_get_smp_processor_id();
-> 
-> addis 12, 2, -517
-> addi 12, 12, -29456
-> mtctr 12
-> bctrl
-> mr      8, 3
-> 
-> After:
-> 
-> cpu = bpf_get_smp_processor_id();
-> 
-> lhz 8, 8(13)
-> 
-> To evaluate the performance improvements introduced by this change,
-> the benchmark described in [1] was employed.
-> 
-> +---------------+-------------------+-------------------+--------------+
-> |      Name     |      Before       |        After      |   % change   |
-> |---------------+-------------------+-------------------+--------------|
-> | glob-arr-inc  | 41.580 ± 0.034M/s | 54.137 ± 0.019M/s |   + 30.20%   |
-> | arr-inc       | 39.592 ± 0.055M/s | 54.000 ± 0.026M/s |   + 36.39%   |
-> | hash-inc      | 25.873 ± 0.012M/s | 26.334 ± 0.058M/s |   + 1.78%    |
-> +---------------+-------------------+-------------------+--------------+
-> 
+Can you share how this can be reproduced with qemu?
 
-Nice improvement.
-
-I see that bpf_get_current_task() could be inlined as well, on PPC32 it 
-is in r2, on PPC64 it is in paca.
-
-> [1] https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fgithub.com%2Fanakryiko%2Flinux%2Fcommit%2F8dec900975ef&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C1d1f40ce41344cf1ecf508dd60b73ae0%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638773062267813839%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=T%2BG206FHtW7hhFT1%2BXxRwN7pc%2BRzu8SiMlZ5njIlhB8%3D&reserved=0
-> 
-> Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
-> ---
->   arch/powerpc/net/bpf_jit_comp.c   | 10 ++++++++++
->   arch/powerpc/net/bpf_jit_comp64.c |  5 +++++
->   2 files changed, 15 insertions(+)
-> 
-> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-> index 3d4bd45a9a22..4b79b2d95469 100644
-> --- a/arch/powerpc/net/bpf_jit_comp.c
-> +++ b/arch/powerpc/net/bpf_jit_comp.c
-> @@ -445,6 +445,16 @@ bool bpf_jit_supports_percpu_insn(void)
->          return true;
->   }
-> 
-> +bool bpf_jit_inlines_helper_call(s32 imm)
-> +{
-> +       switch (imm) {
-> +       case BPF_FUNC_get_smp_processor_id:
-> +               return true;
-> +       default:
-> +               return false;
-> +       }
-> +}
-
-What about PPC32 ?
-
-
-> +
->   void *arch_alloc_bpf_trampoline(unsigned int size)
->   {
->          return bpf_prog_pack_alloc(size, bpf_jit_fill_ill_insns);
-> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-> index 06f06770ceea..a8de12c026da 100644
-> --- a/arch/powerpc/net/bpf_jit_comp64.c
-> +++ b/arch/powerpc/net/bpf_jit_comp64.c
-> @@ -1087,6 +1087,11 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
->                  case BPF_JMP | BPF_CALL:
->                          ctx->seen |= SEEN_FUNC;
-> 
-> +                       if (insn[i].src_reg == 0 && imm == BPF_FUNC_get_smp_processor_id) {
-
-Please use BPF_REG_0 instead of just 0.
-
-> +                               EMIT(PPC_RAW_LHZ(bpf_to_ppc(BPF_REG_0), _R13, offsetof(struct paca_struct, paca_index)));
-
-Can just use 'src_reg' instead of 'bpf_to_ppc(BPF_REG_0)'
-
-> +                               break;
-> +                       }
-> +
->                          ret = bpf_jit_get_func_addr(fp, &insn[i], extra_pass,
->                                                      &func_addr, &func_addr_fixed);
->                          if (ret < 0)
-> --
-> 2.43.5
-> 
-
+-- 
+Sincerely yours,
+Mike.
 
