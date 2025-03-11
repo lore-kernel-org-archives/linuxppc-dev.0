@@ -1,54 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-6898-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6899-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 755F3C282EC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Mar 2025 14:43:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 63E40C282EC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Mar 2025 15:06:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZBxMH0gCvz3brP;
-	Wed, 12 Mar 2025 01:43:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741704187;
-	cv=none; b=EpcirqwWojx0x0Yyeg6twYBZStz0dkGoukKSy7+GzWsK8RikF7/xavSK+OFRKgkeb50GZIYyr/WLyCF6+/uV0daI5aQUzqS3/fv8UeXEZWEcYQUg519+fP7pZOik9LXrHGLJPlf1LqYVJNDEBwuD3lLoTfe5OxDFc6J8tV9S3e6xty9GEB53DLDvdPs/9CDCbvLyzyepzCG8Sl3FyiJ36OvtfXG/cR8PyqmzNbEXCB1AS0LFUOfttz4AW1BArSpLQCVQ6IMYSfrQIqmW9RAOQ3pcBaWmk3cm79fghg22LhEIKFYzrun91nJLrHmmB3C3JFpWSfG7lrbxGM6d3KM7Iw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZBxsx6fBxz3brB;
+	Wed, 12 Mar 2025 02:06:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741705573;
+	cv=none; b=f5N/N53Ik1Q5iG99T4vx6lTfR0XWT0/DjvF5AIBlfOOWM7BGeKNNzBZevVFQXN4j+NrAAFh6LyP0mEY30MqxXXUbSZ1b6BW/bblNekNvmovxdDQQEGNWLdYWiAWjGfvwM5421vLJbqM9xcua8B2m1FkRk1gRsJGzjH1aPKebzOn4+vNWstfF8OJJFAlKiM2nyf5LmRsjb2u6jAlfvYSv+wVYqsdZ6pJwccmdFqvk69mbXvlaiJAuygqD2fS7fcMRNbQ0GZsUqziJCGQscHwKfACKB5sG/uMPZGvb5ABr22Z1csKuCV+G/5IT2knhE5CZj/mjmNY83wSsyLMM3nC7Ig==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741704187; c=relaxed/relaxed;
-	bh=kHx9MMe0I+IhuCYlFT1sS6UaInxKAWS8UcRErdt1woY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ASRCdTAKKch+E7XCC7bsQieyskqw47LPcLdo8pfuARd4NZpvsrrgEfIWt+Y3zG5JH9yC5VWREtcmLogInh93DnwERV0BKQAjSHsYrbEtRHbaU27xlRFbQM6XHOlvG5Nw3HJmghwKFYg1dAqoLUVu9wE41Kqd6XzuRMs+23d6ilXaKTxDcTuMXXlr6R7zyndQ64KpckAUlxgjQJ000Qs+G92O7fVqyhALck7i+V9iGGDx57x+EDVUXWdCR/vMorCd60dxUuhtdLeO0G/1eLSi82nDsy2/bIUtUo+HFofMa7q24EUMRqZKtMMahpGZHe8MlYtiKeqrzgvkCS1FL1rZWQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com; spf=none (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=sudeep.holla@foss.arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=foss.arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=foss.arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=sudeep.holla@foss.arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZBxMG3DN1z3blV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2025 01:43:06 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8BB3F27B5;
-	Tue, 11 Mar 2025 07:42:46 -0700 (PDT)
-Received: from bogus (e133711.arm.com [10.1.196.55])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 61E293F694;
-	Tue, 11 Mar 2025 07:42:31 -0700 (PDT)
-Date: Tue, 11 Mar 2025 14:42:28 +0000
-From: Sudeep Holla <sudeep.holla@arm.com>
-To: Yicong Yang <yangyicong@huawei.com>
-Cc: <catalin.marinas@arm.com>, <will@kernel.org>, <tglx@linutronix.de>,
-	<peterz@infradead.org>, <mpe@ellerman.id.au>,
-	<linux-arm-kernel@lists.infradead.org>, <mingo@redhat.com>,
-	<bp@alien8.de>, <dave.hansen@linux.intel.com>,
-	<pierre.gondois@arm.com>, <dietmar.eggemann@arm.com>,
-	<linuxppc-dev@lists.ozlabs.org>, <x86@kernel.org>,
-	<linux-kernel@vger.kernel.org>, <morten.rasmussen@arm.com>,
-	<msuchanek@suse.de>, <gregkh@linuxfoundation.org>,
-	<rafael@kernel.org>, <jonathan.cameron@huawei.com>,
-	<prime.zeng@hisilicon.com>, <linuxarm@huawei.com>,
-	<yangyicong@hisilicon.com>, <xuwei5@huawei.com>,
-	<guohanjun@huawei.com>, <sshegde@linux.ibm.com>
-Subject: Re: [PATCH v12 3/4] arm64: topology: Support SMT control on ACPI
- based system
-Message-ID: <Z9BL1DgDlcYKVaDu@bogus>
-References: <20250311075143.61078-1-yangyicong@huawei.com>
- <20250311075143.61078-4-yangyicong@huawei.com>
+	t=1741705573; c=relaxed/relaxed;
+	bh=3ZERqBXdmzo1DqNbqnk/OjvO9FMTT2lMrUpjT1gRZbI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=i6a5QjM7kHwOUB044zXxLQxxYy9F5yw1Y098pYmlG3HgZfF1kDtWcM9/uvWvTQ09PxYB2HK2DzM0ddyhl6xhS4u3z2ArECb5BG9wDCwu7JZwz0ynBu6KN9WUs6jlujuPIWuoHBGiPPfj4DZw9MY76DspkfW/ThxNK4SkghPu8BrKvw+OperDeHrG67cuM47RetJ5pmGoPBwYiCX8eXdV73h2RVIQqemHVxnGTcM5uctZOeES5eqeidEfLCcEgGEj1uWM3y0BgVqEHnVmx3k9Qtqj/h9PzEuON05EjEVnBtKMkj5I6FkVjHM28L+6g+67aJZ34qTYa2vSMRhyBhkwzw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=oBaIM/Bq; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=oBaIM/Bq;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZBxss4gW3z2yvs
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Mar 2025 02:06:08 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 1DCE35C6482;
+	Tue, 11 Mar 2025 15:03:48 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 09A29C4CEEA;
+	Tue, 11 Mar 2025 15:06:04 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1741705564;
+	bh=teU+hXn+Myk6jvRF7qkBDarMFZ6al5Sl9daMvda9Ukc=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=oBaIM/Bqfh8/3MNUYVgxrIQJEhr6ZPeS/8BCrv5G8DdiayVywmIXTJkn3lDUoqxmj
+	 6aX6/T6KHlZSvrLWCxCEqBK5qan1qguUumpD6WriYfqMGhYKZV8hqSWJGyxW/yxriR
+	 Z4t6MvD1DXxlaQGpnFhBVM9cg4JtTijjp9QflCoE=
+From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+To: stable@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	patches@lists.linux.dev,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Helge Deller <deller@gmx.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Naveen N Rao <naveen@kernel.org>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>,
+	linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Sergey Senozhatsky <senozhatsky@chromium.org>,
+	"Peter Zijlstra (Intel)" <peterz@infradead.org>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Petr Pavlu <petr.pavlu@suse.com>,
+	Sasha Levin <sashal@kernel.org>
+Subject: [PATCH 5.4 059/328] module: Extend the preempt disabled section in dereference_symbol_descriptor().
+Date: Tue, 11 Mar 2025 15:57:09 +0100
+Message-ID: <20250311145717.241367846@linuxfoundation.org>
+X-Mailer: git-send-email 2.48.1
+In-Reply-To: <20250311145714.865727435@linuxfoundation.org>
+References: <20250311145714.865727435@linuxfoundation.org>
+User-Agent: quilt/0.68
+X-stable: review
+X-Patchwork-Hint: ignore
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,45 +81,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250311075143.61078-4-yangyicong@huawei.com>
+Content-Transfer-Encoding: 8bit
 
-On Tue, Mar 11, 2025 at 03:51:42PM +0800, Yicong Yang wrote:
-> From: Yicong Yang <yangyicong@hisilicon.com>
-> 
-> For ACPI we'll build the topology from PPTT and we cannot directly
-> get the SMT number of each core. Instead using a temporary xarray
-> to record the heterogeneous information (from ACPI_PPTT_ACPI_IDENTICAL)
-> and SMT information of the first core in its heterogeneous CPU cluster
-> when building the topology. Then we can know the largest SMT number
-> in the system. If a homogeneous system's using ACPI 6.2 or later,
-> all the CPUs should be under the root node of PPTT. There'll be
-> only one entry in the xarray and all the CPUs in the system will
-> be assumed identical.
-> 
-> The framework's SMT control provides two interface to the users [1]
-> through /sys/devices/system/cpu/smt/control:
-> 1) enable SMT by writing "on" and disable by "off"
-> 2) enable SMT by writing max_thread_number or disable by writing 1
-> 
-> Both method support to completely disable/enable the SMT cores so both
-> work correctly for symmetric SMT platform and asymmetric platform with
-> non-SMT and one type SMT cores like:
-> core A: 1 thread
-> core B: X (X!=1) threads
-> 
-> Note that for a theoretically possible multiple SMT-X (X>1) core
-> platform the SMT control is also supported as expected but only
-> by writing the "on/off" method.
-> 
-> [1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/ABI/testing/sysfs-devices-system-cpu#n542
+5.4-stable review patch.  If anyone has any objections, please let me know.
 
-Ditto, just path please.
+------------------
 
-Reviewed-by: Sudeep Holla <sudeep.holla@arm.com>
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 
---
-Regards,
-Sudeep
+[ Upstream commit a145c848d69f9c6f32008d8319edaa133360dd74 ]
+
+dereference_symbol_descriptor() needs to obtain the module pointer
+belonging to pointer in order to resolve that pointer.
+The returned mod pointer is obtained under RCU-sched/ preempt_disable()
+guarantees and needs to be used within this section to ensure that the
+module is not removed in the meantime.
+
+Extend the preempt_disable() section to also cover
+dereference_module_function_descriptor().
+
+Fixes: 04b8eb7a4ccd9 ("symbol lookup: introduce dereference_symbol_descriptor()")
+Cc: James E.J. Bottomley <James.Bottomley@HansenPartnership.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Helge Deller <deller@gmx.de>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Naveen N Rao <naveen@kernel.org>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Sergey Senozhatsky <sergey.senozhatsky.work@gmail.com>
+Cc: linux-parisc@vger.kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Reviewed-by: Sergey Senozhatsky <senozhatsky@chromium.org>
+Acked-by: Peter Zijlstra (Intel) <peterz@infradead.org>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+Link: https://lore.kernel.org/r/20250108090457.512198-2-bigeasy@linutronix.de
+Signed-off-by: Petr Pavlu <petr.pavlu@suse.com>
+Signed-off-by: Sasha Levin <sashal@kernel.org>
+---
+ include/linux/kallsyms.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/include/linux/kallsyms.h b/include/linux/kallsyms.h
+index 1f96ce2b47df1..d84b677c728a9 100644
+--- a/include/linux/kallsyms.h
++++ b/include/linux/kallsyms.h
+@@ -63,10 +63,10 @@ static inline void *dereference_symbol_descriptor(void *ptr)
+ 
+ 	preempt_disable();
+ 	mod = __module_address((unsigned long)ptr);
+-	preempt_enable();
+ 
+ 	if (mod)
+ 		ptr = dereference_module_function_descriptor(mod, ptr);
++	preempt_enable();
+ #endif
+ 	return ptr;
+ }
+-- 
+2.39.5
+
+
+
 
