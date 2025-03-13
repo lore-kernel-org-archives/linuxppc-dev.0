@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-7016-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7017-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D174C35FF6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Mar 2025 21:35:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11238C282DE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Mar 2025 21:36:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDLQb6gn6z3bsR;
-	Fri, 14 Mar 2025 08:35:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741901751;
-	cv=none; b=dsGeUMp6zQbF5euq7c6PEckwNpFLkYoVNskx0x5DypimjonDXgx6WA6M9HCWzKS/hLvvHBBgBqj9C64eX5kTUX8+rZl8FL0lS5poyG0TnunFvzznYLfAyg+WtVBoxdxkX6WY3nX5HWirGmWZyWTQeT9cZO/pSuAFZOLC69Bldt8YmV0ScHg00+39bDVfC4yOnsU+MrmoCkUD/Ngaa3VTtzi9kf1sN/4Z2T0dYSsfkssG3yzr5fnGl8WUj6INlE9tOAHi2hAYjLQ/KUwZbwAdg+hn809phI++MUTo8yezWswJQm0kZmA57QcQx10uL9rBbYffRw6We4d+Ul2jENq3mA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDLQd1XGfz30Tm;
+	Fri, 14 Mar 2025 08:35:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741901753;
+	cv=none; b=QtlQUnmIUqLqElGmQJQewCoC+fU3Ar270Gna7wati3CkeBSe4+A1ma3MEFvyx3kPSjC3UIVq1QYnnUKbqBAuC/k4z0ZJe6RU6M5lCoJc0TUicasLI6IeWC2q5YQngX2WWPc5gj1yZTT62Rk0FWznZlsADtu/mmplycf602VvIOyhbgAu3p2IYJWFOUZ3VFFA7+4JvOcVTKY8ohYjOZUaP7X1y3FUxQGwKoPNKW6be5IYSVzkxHRhmSmKjw78LezOg+AjmffnGUGp+NVMYiY7pYjb+/Jwh73IE2EIPm7JsB/6aPsBj+EDDnEvoc0w4+q6l0HfPV3u34zPKkT6IvN1WQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741901751; c=relaxed/relaxed;
-	bh=bJEzQCZ92MtoMbSuPLt8OGwESo64W5ig4kIlpCFgPj0=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=DjqLvbgGEu7DqTboT1nlZLwNz4gr7yeX/A1SSaRjxL6mkVh/rhstD/QE7KMgqOZlowD5+0i7OdvxKw0inewlLFMIIxKuvaqvAuEmF+heg3uE7LC9bjjT1Y6aG2H8TKi3EaDgt9OhYeFc6a4efKOY7ExKCr8e3UO0X98maqnRSJE+yMrhXIzWrZKUSemY23zlEQMnfNPYTh0u5xOEt3+FQUmwJ1bYggQ5ji+odMDooCYObiDIEO99LQMXOOtKi3XsdMdIZzDkYkpLA2xV2dMcsfWylV3jK9M6KWGaga9QoYAUDWAoxVFJx8jao8gJQjIYCaIrkO8VvkTjHgkG9i/u9A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lAgXyM8b; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1741901753; c=relaxed/relaxed;
+	bh=r7+96Dla31AVWZ6PWAMx4zWlTCgVkXinkXohN7qWNig=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=WUrmIG7moa1rT/WohRQmGnp5nVQeKUUjqjHq4Oh5iUjd1xZnJtnMS5D2LNJL9lg1+1BT2aaq2XaeYP2KGVs9Hn1iTIp3u8BjAHgo9b4Kc2tI5cmtsFj3TafznK+18gGX7TZhGRSprWiEbGz/ivIsbV4vhL9uIZey1OKb7ujVwiLS8GPT0BoHOu6V++haPBQ9+hQqicHOgXKldxXZ3b6p2q86CV43TSP30Kw0kiWMGeb9hoJq4t69veR12ijIYZX8XnjM20sCJD4XsLueYZQTgOl3hnZyWpvZcj+aLrYxoKSZrKVAYMxpeZpJ3ykeACT7t7exuzD7rfo337mtl4DJrQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UGMGL3X9; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lAgXyM8b;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UGMGL3X9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZDLQZ4V56z30Tm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 08:35:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZDLQb4FkHz30Vl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 08:35:51 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 451B05C5F50;
-	Thu, 13 Mar 2025 21:33:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 50B8EC4CEE5;
+	by nyc.source.kernel.org (Postfix) with ESMTP id B51C9A48744;
+	Thu, 13 Mar 2025 21:30:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 2F786C4CEDD;
 	Thu, 13 Mar 2025 21:35:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1741901747;
-	bh=6jT7E3dszeoggTWfBvp5Ah7Bk+esnWTVsyo2RUzuXeY=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=lAgXyM8bqhkLfV1VkAiUtvDuwN9EfxEjA44VgoGzD8Qh9aMAaTZv15+KjP/XGL6I+
-	 blmU8GiIAlmPQD2CKmWE42tgBfvZEgMYvCpfsCl6ehT+xROnlb6JQtsfxbJMtnj3K1
-	 T2KBiaJd7De3zKIbjADB+2TrjrZw4JwpUA9z0W1ObjU26J3gjEwJqrkrkcRgNLKfh/
-	 nzMN/PaIErScaA1qk52SEY9jlx0TsMBrWGHASK5y+92FRYklF0akTbjcQhLz5wfYVP
-	 G+4IN4xsNwU9h1FpW3H/IV33pWjg+A3YLgndw5Cs/b2n8N79dW/IetTgSU1G43IocU
-	 azqKqeNPJasSg==
+	bh=QXdqznCl6zlXKgo7A3qnzu5GYl6y2ulHGCxl1/kb/sM=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=UGMGL3X9r+/+B7Ki1dz7aIIx3BVj6/jw9e3hQejj2HY56lhR90Ei9eMd2ExJnuVl4
+	 nhzlqoKVI4s14JjbEOFjHBXKkMxkXm7ztnSIM6zmtw/B/MM017gC+4IJzAvblOZBvg
+	 jcPEwT1Gbo5rA9ZOdDQ2rUIE43QDYeqnt+XTQlja/Ae/LwDdtpkj8dojIZeVJLC/Xz
+	 fdg5No0SHcndQ9rhJAKCS7lL72cMqE42jrWkP4rzaInu0VF8qHkcJNKl1mmdZNlfjY
+	 Fu0shyD2k9+c7DxeVA4OdeTT2ds+GRTACXc1yIcWHX5XPj1WUgZ4CD8s4nCQxb7gAU
+	 Hrb0QHhHUK7LQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 3EF55C35FF6;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1E5D2C282DE;
 	Thu, 13 Mar 2025 21:35:47 +0000 (UTC)
 From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Thu, 13 Mar 2025 22:35:45 +0100
-Subject: [PATCH v4 2/4] dt-bindings: memory-controllers: Add
- fsl,elbc-gpcm-uio
+Subject: [PATCH v4 0/4] Freescale Enhanced Local Bus Controller (eLBC)
+ binding YAML conversion
+Date: Thu, 13 Mar 2025 22:35:43 +0100
+Message-Id: <20250313-ppcyaml-elbc-v4-0-55903722d9ea@posteo.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,9 +65,11 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250313-ppcyaml-elbc-v4-2-55903722d9ea@posteo.net>
-References: <20250313-ppcyaml-elbc-v4-0-55903722d9ea@posteo.net>
-In-Reply-To: <20250313-ppcyaml-elbc-v4-0-55903722d9ea@posteo.net>
+X-B4-Tracking: v=1; b=H4sIAK9P02cC/1XMTQ7CIBCG4as0sxZDoVXqynuYLviZWpJaCBBi0
+ 3B3sYkLl+9MvmeHiMFihFuzQ8Bso3Vrje7UgJ7l+kRiTW1glPWUMUq815t8LQQXpYlSoh+6dlL
+ 1CXXiA072fXCPsfZsY3JhO/TMv9cfdPmHMieUyIGiubZGCi7u3sWE7rxigrGU8gF6bWhZqQAAA
+ A==
+X-Change-ID: 20250220-ppcyaml-elbc-bb85941fb250
 To: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, 
  Miquel Raynal <miquel.raynal@bootlin.com>, 
@@ -82,11 +84,11 @@ Cc: Frank Li <Frank.Li@nxp.com>, linux-kernel@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, 
  =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1741901745; l=2466;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1741901745; l=2006;
  i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=GqmRkAlOewBuTl80Xuqu1vck/4Qgv6V5ggfAWvSwWKQ=;
- b=wZeK9XEU61C7ky528WxfxleojI3r9yrM8qUzgijGXLV4l9QQ4TjOLOv5yUDEA4CBKOtuWtlnT
- HTOsyhSE2xTBXvX8GopYmSWIBsRpEmgSPf795+QssgqqpNTNNRkl6Yq
+ bh=QXdqznCl6zlXKgo7A3qnzu5GYl6y2ulHGCxl1/kb/sM=;
+ b=J/Kgwixg8aMdL6wWzPE1z788ocud2C9oulADJ11L1/1i6gab2H/myIHxU679xZWjMAKxfa4mZ
+ mc8dKDOOrNbBF0PZBjh7Pbrdg+VriwAxg4w5LMKXlA9m2IyQfvgVzuB
 X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
  pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
 X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
@@ -94,99 +96,51 @@ X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
 X-Original-From: =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 Reply-To: j.ne@posteo.net
 
-From: "J. Neuschäfer" <j.ne@posteo.net>
+This series converts the fsl,elbc binding to YAML and adds new bindings
+for related devices (particular kinds of chip on the eLBC).
 
-Formalize the binding already supported by the uio_fsl_elbc_gpcm.c
-driver.
+For readability, the existing unit address syntax of <cs>,<offset>
+(e.g. nand@1,0) is kept. This results in a few dtc validation warnings,
+when combined with other choices in this patchset:
 
-Reviewed-by: Frank Li <Frank.Li@nxp.com>
-Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+- For compatibility with existing kernels which don't explicitly probe
+  under an eLBC controller, the "simple-bus" compatible string is kept
+  on eLBC controller nodes. The validation logic requires a linear unit
+  address, though (e.g. @100000000 instead of @1,0)
+
+The patches in this series were previously part of the following series,
+which turned out to be too large and unwieldy:
+[PATCH v2 00/12] YAML conversion of several Freescale/PowerPC DT bindings
+https://lore.kernel.org/lkml/20250207-ppcyaml-v2-0-8137b0c42526@posteo.net/
+
+Changelogs are present in the individual patches.
+
 Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
 ---
+Changes in v4:
+- Reintroduce patch "dt-bindings: mtd: raw-nand-chip: Relax node name pattern"
+- Link to v3: https://lore.kernel.org/r/20250226-ppcyaml-elbc-v3-0-a90ed71da838@posteo.net
 
-V4:
-- no changes
-
-V3:
-- add review tags
-
-V2:
-- split out from fsl,elbc patch
-- add description
-- remove "device_type" property
-- move to bindings/memory-controllers
 ---
- .../memory-controllers/fsl,elbc-gpcm-uio.yaml      | 59 ++++++++++++++++++++++
- 1 file changed, 59 insertions(+)
+J. Neuschäfer (4):
+      dt-bindings: mtd: raw-nand-chip: Relax node name pattern
+      dt-bindings: memory-controllers: Add fsl,elbc-gpcm-uio
+      dt-bindings: nand: Add fsl,elbc-fcm-nand
+      dt-bindings: memory-controllers: Convert fsl,elbc to YAML
 
-diff --git a/Documentation/devicetree/bindings/memory-controllers/fsl,elbc-gpcm-uio.yaml b/Documentation/devicetree/bindings/memory-controllers/fsl,elbc-gpcm-uio.yaml
-new file mode 100644
-index 0000000000000000000000000000000000000000..381584b400a0ad98c6d9e0b38f2877d44603ed84
---- /dev/null
-+++ b/Documentation/devicetree/bindings/memory-controllers/fsl,elbc-gpcm-uio.yaml
-@@ -0,0 +1,59 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/memory-controllers/fsl,elbc-gpcm-uio.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Userspace I/O interface for Freescale eLBC devices
-+
-+description:
-+  The Freescale Enhanced Local Bus controller (eLBC) supports flexible access
-+  to memory devices, through the General-Purpose Chip-select Machine (GPCM).
-+  The purpose of this binding is to designate devices attached to eLBC/GPMC for
-+  use by userspace.
-+
-+maintainers:
-+  - J. Neuschäfer <j.ne@posteo.net>
-+
-+properties:
-+  compatible:
-+    const: fsl,elbc-gpcm-uio
-+
-+  reg:
-+    maxItems: 1
-+
-+  elbc-gpcm-br:
-+    description: Base Register (BR) value to set
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+
-+  elbc-gpcm-or:
-+    description: Option Register (OR) value to set
-+    $ref: /schemas/types.yaml#/definitions/uint32
-+
-+  interrupts:
-+    maxItems: 1
-+
-+  uio_name:
-+    $ref: /schemas/types.yaml#/definitions/string
-+
-+required:
-+  - compatible
-+  - reg
-+  - elbc-gpcm-br
-+  - elbc-gpcm-or
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    localbus {
-+        #address-cells = <2>;
-+        #size-cells = <1>;
-+
-+        simple-periph@2,0 {
-+            compatible = "fsl,elbc-gpcm-uio";
-+            reg = <0x2 0x0 0x10000>;
-+            elbc-gpcm-br = <0xfd810800>;
-+            elbc-gpcm-or = <0xffff09f7>;
-+        };
-+    };
+ .../memory-controllers/fsl,elbc-gpcm-uio.yaml      |  59 ++++++++
+ .../bindings/memory-controllers/fsl,elbc.yaml      | 158 +++++++++++++++++++++
+ .../devicetree/bindings/mtd/fsl,elbc-fcm-nand.yaml |  68 +++++++++
+ .../devicetree/bindings/mtd/raw-nand-chip.yaml     |   2 +-
+ .../devicetree/bindings/powerpc/fsl/lbc.txt        |  43 ------
+ 5 files changed, 286 insertions(+), 44 deletions(-)
+---
+base-commit: 2014c95afecee3e76ca4a56956a936e23283f05b
+change-id: 20250220-ppcyaml-elbc-bb85941fb250
 
+Best regards,
 -- 
-2.48.0.rc1.219.gb6b6757d772
+J. Neuschäfer <j.ne@posteo.net>
 
 
 
