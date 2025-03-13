@@ -1,61 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-6954-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6955-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBD8FC282DE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Mar 2025 09:35:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27414C28B28
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Mar 2025 10:11:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZD2Rl0LmKz3c6b;
-	Thu, 13 Mar 2025 20:35:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.176.79.56
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741858546;
-	cv=none; b=JYFah7i8L6EZ4iito7/DyoUHnQzDrlwoWvd5hinoDFfuYjIUWzu4qatBL+sOqa0Gl2dgfVlrbq+WM7kGqqBPn2Xf9kURvcWpseLLvZusgTxQFbxMDKIhmwlGZb9uVMC60kznC/dJElO8j9eIRzGVv4/C6OqcSyJMoAfaeXRphJjDBlaRbo2OFaqsDykLsDHbE3KRdE/GhpBeGri96djEmQnisW8lprbWu2mCLVDhvW48B3KgIa6NyiaIuRC261xXTnGFJS7YWOglpiBn56Mv1KTMqAv7gkbufr/I/I0nZZ+cf461zAJW/PLaFyrZNBSN2kjCzNDz3W+IfjF68++l8A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZD3FC4zQ5z3c1w;
+	Thu, 13 Mar 2025 21:11:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741860703;
+	cv=none; b=MGXKek+PI64ZoESnmd/KdCDb/GmYYUxHh347XG4bSJUTVsMNBDyLN/q0YhYjeBFXCZVDJFtC8KvQwt8gfeLqtA2RIdDY/ATobLD5xS0dCKclJK5o15nG9vWkX15LW1EdpaP82wfPj2KckfvLTwegKHa7ZlGLB5jx4q3uNCfIRfHZW4v7bqgZKXlsJvV+2Ko2o4jIGp2gq+zoJBTjMRFnb4Bz/YMgeW9jpFhzYnX8ee+NFi5nfEFo2P9EqsRGMRPJTIw7Rvpgqz9K/vZdhkeem85oqqpnNH7A9Z/K9QjlxIgYXAaHN4I5OLJvb6eBZwIT1wrMqAzEJKWrgiUjaP2FPA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741858546; c=relaxed/relaxed;
-	bh=SR7skY0cNZP8+PD07B5V+WakevQ3+dWSBgW7Fpq/qZM=;
-	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=chiCuPQHlD5bYuWV6BzQRzddeqjK8Fyf+p8PJMeRmNLRh62oaQ00eOOePzuX+fl2Z3isxh47ic4twLAJfRRnxSo4y1xUV4tEI5HnTUTnHi0K6RbiUy1IN4sgetErqNFgGx4ifrqpGjD76Jl3VBYC3Fzcl2SfV8wJk+O/amSc1zk1MwUdzoIJQ+tsbKAX/10oK7DgRqF4+8bOIjTnX04MPXYAAvUrtg1/eAMt/Vs3kIqkwefjZQkBmZWCdp4dE5jzlDfha+WhVmYm1LTIi5lASV9hXXxNE8WBN1fls85TaDP0ZvtqWW2wUS6jldYbZJAcR9xSK1CXZ1lfX836z9IJ2Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1165 seconds by postgrey-1.37 at boromir; Thu, 13 Mar 2025 20:35:46 AEDT
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZD2Rk0dVKz2yn4
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2025 20:35:44 +1100 (AEDT)
-Received: from mail.maildlp.com (unknown [172.18.186.31])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4ZD1vy6Wlyz6J6cn;
-	Thu, 13 Mar 2025 17:11:42 +0800 (CST)
-Received: from frapeml500008.china.huawei.com (unknown [7.182.85.71])
-	by mail.maildlp.com (Postfix) with ESMTPS id 1F8BF1403A8;
-	Thu, 13 Mar 2025 17:16:14 +0800 (CST)
-Received: from localhost (10.203.177.66) by frapeml500008.china.huawei.com
- (7.182.85.71) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Thu, 13 Mar
- 2025 10:16:13 +0100
-Date: Thu, 13 Mar 2025 09:16:11 +0000
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: Yicong Yang <yangyicong@huawei.com>
-CC: <catalin.marinas@arm.com>, <will@kernel.org>, <sudeep.holla@arm.com>,
-	<tglx@linutronix.de>, <peterz@infradead.org>, <mpe@ellerman.id.au>,
-	<linux-arm-kernel@lists.infradead.org>, <mingo@redhat.com>, <bp@alien8.de>,
-	<dave.hansen@linux.intel.com>, <pierre.gondois@arm.com>,
-	<dietmar.eggemann@arm.com>, <linuxppc-dev@lists.ozlabs.org>,
-	<x86@kernel.org>, <linux-kernel@vger.kernel.org>, <morten.rasmussen@arm.com>,
-	<msuchanek@suse.de>, <gregkh@linuxfoundation.org>, <rafael@kernel.org>,
-	<prime.zeng@hisilicon.com>, <linuxarm@huawei.com>,
-	<yangyicong@hisilicon.com>, <xuwei5@huawei.com>, <guohanjun@huawei.com>,
-	<sshegde@linux.ibm.com>
-Subject: Re: [PATCH v12 2/4] arch_topology: Support SMT control for OF based
- system
-Message-ID: <20250313091611.00003ccf@huawei.com>
-In-Reply-To: <20250311075143.61078-3-yangyicong@huawei.com>
-References: <20250311075143.61078-1-yangyicong@huawei.com>
-	<20250311075143.61078-3-yangyicong@huawei.com>
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
+	t=1741860703; c=relaxed/relaxed;
+	bh=UshDcxCHBAFBNtVF8A0toN4U9q/viYL2qJswKsSXCqc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jnZD1jR9u6WAt2GBgp6fspvQ0CYIEraoeGLcX/k79zXdagUDjC5hZE/NFvQ3yxpKR7GAoI/rocYvyMx76d+AQJ5ZtfjmItsFhIx/slOw9fBkR0jMMN8NP/9W2L1vjoKeKlVSoXcSjUIv1bsZ/ianVw+HZedvfKTGZBz/Iz1l+gV/WuLsHe6eU3SekF6cbI5PBMRwywQZur0wt5t24lTZqaCgqkpmp8iktMcKbuufE3XQHXO0tBiMpTLWCFfN2dsTsQ3bUjGxhfjGIQha/B8rbYvLLTJsv1nylfeRNAayp3NENU1Bf0dONZ3dsBTgr4FqxbRazQREAp5mGlh02J5hzA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZD3FB40qlz30Tm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2025 21:11:40 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id C44E41516;
+	Thu, 13 Mar 2025 03:11:18 -0700 (PDT)
+Received: from raptor (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6112F3F694;
+	Thu, 13 Mar 2025 03:11:06 -0700 (PDT)
+Date: Thu, 13 Mar 2025 10:11:03 +0000
+From: Alexandru Elisei <alexandru.elisei@arm.com>
+To: Andrew Jones <andrew.jones@linux.dev>
+Cc: kvm@vger.kernel.org, kvmarm@lists.linux.dev,
+	kvm-riscv@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org, pbonzini@redhat.com, thuth@redhat.com,
+	eric.auger@redhat.com, lvivier@redhat.com, frankja@linux.ibm.com,
+	imbrenda@linux.ibm.com, nrb@linux.ibm.com
+Subject: Re: [kvm-unit-tests PATCH v2] Makefile: Use CFLAGS in cc-option
+Message-ID: <Z9KvNzQnkFSTvmoE@raptor>
+References: <20250307091828.57933-2-andrew.jones@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,39 +52,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.203.177.66]
-X-ClientProxiedBy: lhrpeml500010.china.huawei.com (7.191.174.240) To
- frapeml500008.china.huawei.com (7.182.85.71)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250307091828.57933-2-andrew.jones@linux.dev>
 
-On Tue, 11 Mar 2025 15:51:41 +0800
-Yicong Yang <yangyicong@huawei.com> wrote:
+Hi Drew,
 
-> From: Yicong Yang <yangyicong@hisilicon.com>
+Thank you for debugging this. I tested the patch by compiling the MTE test
+from Vladimir with clang and it works now:
+
+Tested-by: Alexandru Elisei <alexandru.elisei@arm.com>
+
+Thanks,
+Alex
+
+On Fri, Mar 07, 2025 at 10:18:29AM +0100, Andrew Jones wrote:
+> When cross compiling with clang we need to specify the target in
+> CFLAGS and cc-option will fail to recognize target-specific options
+> without it. Add CFLAGS to the CC invocation in cc-option.
 > 
-> On building the topology from the devicetree, we've already gotten the
-> SMT thread number of each core. Update the largest SMT thread number
-> and enable the SMT control by the end of topology parsing.
+> The introduction of the realmode_bits variable is necessary to
+> avoid make failing to build x86 due to CFLAGS referencing itself.
 > 
-> The framework's SMT control provides two interface to the users [1]
-> through /sys/devices/system/cpu/smt/control:
-> 1) enable SMT by writing "on" and disable by "off"
-> 2) enable SMT by writing max_thread_number or disable by writing 1
+> Signed-off-by: Andrew Jones <andrew.jones@linux.dev>
+> ---
+> v2:
+>  - Fixed x86 builds with the realmode_bits variable
 > 
-> Both method support to completely disable/enable the SMT cores so both
-> work correctly for symmetric SMT platform and asymmetric platform with
-> non-SMT and one type SMT cores like:
-> core A: 1 thread
-> core B: X (X!=1) threads
+>  Makefile            | 2 +-
+>  x86/Makefile.common | 3 ++-
+>  2 files changed, 3 insertions(+), 2 deletions(-)
 > 
-> Note that for a theoretically possible multiple SMT-X (X>1) core
-> platform the SMT control is also supported as expected but only
-> by writing the "on/off" method.
+> diff --git a/Makefile b/Makefile
+> index 78352fced9d4..9dc5d2234e2a 100644
+> --- a/Makefile
+> +++ b/Makefile
+> @@ -21,7 +21,7 @@ DESTDIR := $(PREFIX)/share/kvm-unit-tests/
+>  
+>  # cc-option
+>  # Usage: OP_CFLAGS+=$(call cc-option, -falign-functions=0, -malign-functions=0)
+> -cc-option = $(shell if $(CC) -Werror $(1) -S -o /dev/null -xc /dev/null \
+> +cc-option = $(shell if $(CC) $(CFLAGS) -Werror $(1) -S -o /dev/null -xc /dev/null \
+>                > /dev/null 2>&1; then echo "$(1)"; else echo "$(2)"; fi ;)
+>  
+>  libcflat := lib/libcflat.a
+> diff --git a/x86/Makefile.common b/x86/Makefile.common
+> index 0b7f35c8de85..e97464912e28 100644
+> --- a/x86/Makefile.common
+> +++ b/x86/Makefile.common
+> @@ -98,6 +98,7 @@ tests-common = $(TEST_DIR)/vmexit.$(exe) $(TEST_DIR)/tsc.$(exe) \
+>  ifneq ($(CONFIG_EFI),y)
+>  tests-common += $(TEST_DIR)/realmode.$(exe) \
+>  		$(TEST_DIR)/la57.$(exe)
+> +realmode_bits := $(if $(call cc-option,-m16,""),16,32)
+>  endif
+>  
+>  test_cases: $(tests-common) $(tests)
+> @@ -108,7 +109,7 @@ $(TEST_DIR)/realmode.elf: $(TEST_DIR)/realmode.o
+>  	$(LD) -m elf_i386 -nostdlib -o $@ \
+>  	      -T $(SRCDIR)/$(TEST_DIR)/realmode.lds $^
+>  
+> -$(TEST_DIR)/realmode.o: bits = $(if $(call cc-option,-m16,""),16,32)
+> +$(TEST_DIR)/realmode.o: bits = $(realmode_bits)
+>  
+>  $(TEST_DIR)/access_test.$(bin): $(TEST_DIR)/access.o
+>  
+> -- 
+> 2.48.1
 > 
-> [1] https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/ABI/testing/sysfs-devices-system-cpu#n542
-> Reviewed-by: Pierre Gondois <pierre.gondois@arm.com>
-> Reviewed-by: Dietmar Eggemann <dietmar.eggemann@arm.com>
-> Signed-off-by: Yicong Yang <yangyicong@hisilicon.com>
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
