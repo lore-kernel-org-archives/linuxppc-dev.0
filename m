@@ -1,78 +1,115 @@
-Return-Path: <linuxppc-dev+bounces-6967-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6968-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 745D8C282DE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Mar 2025 13:52:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 792FFC28B2E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Mar 2025 13:52:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZD87V0jPsz3c81;
-	Fri, 14 Mar 2025 00:52:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip="2a01:111:f403:2606::604"
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741873926;
-	cv=fail; b=Q4XVJYTSf6kPC6qUzU1QeeAnOXA17ECruLPmV9FOsJGKco90QplOJhNwiC7O2/FPD+6w6+QlhW/dKrLzwPA75ZijH6g5KJSVq3pmd6jZWWJ6FFAgtkg9T8vNu9S2Vt6ciMGEFUkY0FZQ+dMpNkN2ogGlVawu83Aw7bhznTq0t9/AmhP+qBVwH9GzRNn4xOjefQv6D17Ei7V0t2A4ywoOI7GEoBzDtAT0lLkMQXxazZUOH7rkHv9BAEvhrJYnRODqcpptcsAUkwEvP2BTq4EHSPp9D47PPui8GvEbn/I9oKCSKvfNlzj7S9dYeeeBmBm84Risle8bmhdCfBUCTclJDg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741873926; c=relaxed/relaxed;
-	bh=RuImD1g+x/qsnuL4PMuSnn+mVCyez/VYXYkuQ3lTIDo=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=fKtlKQL0ziSFwEfFfn/3XIXAVtQ/pjN7fWbiqMdOpqz7YJp6/aGEoEzRPG3TcFB/VgGp5AJZ+o9O7bEcdCvTW69KZFc8NOTnPC5cB9H7yTlIADVxWKmi4/rXq+Bfo5yMBzRgPihhGbkJenDUnRNQrVdo0d6utrY/3E2XkFEjlFyf1Cb07mNDLQPj9tXV3mswM7btuqYSkhOhJ7lm746fHf3ut9iofHJqe5fxDhvqzrUMCZNBBU+3g9p7G1EGAuMjlarj7Nu5eLW2K6th/HdTvi3P3VfYImsAFu8uuP6mLKwcihdZ87gD8zbjiTxeNmTX/55f5b48YhRaAb+yOaVtDA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=nxp.com; dkim=fail (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=S6GtSI/d reason="signature verification failed"; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:2606::604; helo=eur02-am0-obe.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=fail (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZD87d0nYWz3c88;
+	Fri, 14 Mar 2025 00:52:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741873933;
+	cv=none; b=d0hC0Q2V7YyOGVP1k8UiPJtw9T8f3Z6aV8nDfTBKff3uoHXXVmBs85fD/zHB3T2pzMkAax/K2C37esR3V5SlBd8ng6A8vm2Kt/n8fmP51kE+SwTY0+lLV58m4/LdF057c1tYiaqqtOBYnwShqF9LKZZ2pGKc3G4JUU6lZ83gHtsurGOaJf0KwqR8IqXBK6L6QTTVTBs78wkaQWA7l1a4k/c14Jt8NkoicO/K2jST9iSyEhtJ/e8oAlP4Gja8ZDto4+mLRCOvXbGyuteKXAqlbey4tAhbcLNxnI8jjTmfqpbdvINb7dnubMchCX2YohBZ5hmnGr9sFQqG7zyHGhLAJQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1741873933; c=relaxed/relaxed;
+	bh=EqEJoM4rgtKrOS/V5SDQTOhmiMYuUlj1yWrv5iY9ngQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=SMsDSBAj3UkUDtKwYYHK2Grxrj3+cPeNJbCHUE4Rs2Qv46QRoYfwIXNV1Zy+EFXYJsmi2caPLIuu3OBXkoEdfhflCEM3aiQbW3dpFWB5l9dO+QqSKI3KQr0sRh4qnaZqiD/Te3wptV/ypK9fEHQqOgnGzm27PhBWbdLRyNN83HrcGjlTkQUxwwsstwJgOu2aiRFvv24a7rQpgFC4qA1UNvx/EyvExP/wdRGSBxrs4jWBQ2JB1JTjE1SGlX/DsylVZ1n+uV/Z+PmYJfzajlr4KqaceE+EIHOtzrrWMyyzzasLUUrXrTSKvN350TJRTWwGwap34gp9yayl73bz6/OERQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HkCN8WEi; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=fail reason="signature verification failed" (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=S6GtSI/d;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HkCN8WEi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:2606::604; helo=eur02-am0-obe.outbound.protection.outlook.com; envelope-from=ioana.ciornei@nxp.com; receiver=lists.ozlabs.org)
-Received: from EUR02-AM0-obe.outbound.protection.outlook.com (mail-am0eur02on20604.outbound.protection.outlook.com [IPv6:2a01:111:f403:2606::604])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZD87T2wd8z30Lt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 00:52:05 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=NnUBEWXwd5XzY156ERmWwXdnrle/AKgp3dIKVXO+b2uBlpWJuoUVpwWoeLqt42VcqqVSN9UtFPwOSjD7PuHRLpLN4+8mrvOBll3Rj8T6YZry9waBU1qfnceyDHcf+yDuPEMyodf8eTKc3E9ojznH01esn8w18xVzqrzH7awaL5r6Zb/8aGx+eICPDWVscvpYbl+7aVHciaVD8w5Lb2LgHmu8ENI9UxieY/h/4YpicIRqvQz+319EEqH78BQZnn74XBWGU4pwzmsxRY70P/7DLgGPsRc/tNj9A1uoRoNh3wYacRa3hcOuzjTn1S15Xjp2SyqseMqkotMz+ATpdvXHoA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=GUp5I9bxDRXMsjAfEJ7jXsjtxjZLP9YU0HGEB/1/mWI=;
- b=cUK0PqH/k5cxPqhZMB8wL1FXbBz9bM6/my42F8lA9ghJdXGkfgqFuhQKDDQrQ2MyVyut/msyESPDiYRQ3P6Gu5Z3bB3MIIrrGpiZXuWOjc82SAzrC3mvnAIfK3IPpc64JZn2mZZzrFRLv5HQPCx7etNnh8eZyywj06QGzCF2K/Pco8SeVEF+lj08beiGUizGH1w3kXF1qRyzAqvhVMtDXg/xZLOuisR+hc47cRHyM65+k1Do/4NEPK3DOLTcCuPCKzoEwSM2GTDpNGN+Mv9vHe9OMDvh3PItz3oZjJnapwbKOBLkqrtSMktoLnNQPNW2+Bz2gcOExC7JJ0FAXSCgYg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=GUp5I9bxDRXMsjAfEJ7jXsjtxjZLP9YU0HGEB/1/mWI=;
- b=S6GtSI/di9797Qc/7yno+0Nspp9/Zkl26l/uYNclvqDosKyQKGE5su6tooouYU5frONord2j5LSICuub3z3N70B5IYZTQ+pJGRzoU/XyvLHe15ynn5aS43rTTvlONBQKXGa4Dnu1uc+xp3OgxEYccDT8EwE9Ia+m7idoYWEihcpeqX7e0pHZ/2I/Eq5H2+A8MCHv6TZ+NmfM55YTwDWT3RbU0u3rnZAKuBCj15TUiEiUYrq2BIuaTAl7N6hd4w1XNH7sZJPGpbA7u6n4gmik6ggUzour5kKu2fxVcU+JWeDCa/i5Y5atSO5/jWjldxo+N+kT6SnK8NruihjNQrCdzg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from AS8PR04MB8868.eurprd04.prod.outlook.com (2603:10a6:20b:42f::6)
- by VI1PR04MB7039.eurprd04.prod.outlook.com (2603:10a6:800:12b::21) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8534.28; Thu, 13 Mar
- 2025 13:51:46 +0000
-Received: from AS8PR04MB8868.eurprd04.prod.outlook.com
- ([fe80::b317:9c26:147f:c06e]) by AS8PR04MB8868.eurprd04.prod.outlook.com
- ([fe80::b317:9c26:147f:c06e%5]) with mapi id 15.20.8534.027; Thu, 13 Mar 2025
- 13:51:46 +0000
-Date: Thu, 13 Mar 2025 15:51:42 +0200
-From: Ioana Ciornei <ioana.ciornei@nxp.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: "Dr. David Alan Gilbert" <linux@treblig.org>, stuyoder@gmail.com, 
-	Laurentiu Tudor <laurentiu.tudor@nxp.com>, linuxppc-dev@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bus: fsl-mc: Remove deadcode
-Message-ID: <oz65tdekf2ywyzadbntuxntwxulcdzyo33se54qqdsddkogquh@bqnmsmqijfvb>
-References: <20241115152055.279732-1-linux@treblig.org>
- <3f9dbb7b-6527-48e1-9028-b46e5a0c58ce@csgroup.eu>
- <Z9LbwRUsHwFLpBZA@gallifrey>
- <362f9392-f891-4a15-9ffd-5f5a6cac41b8@csgroup.eu>
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <362f9392-f891-4a15-9ffd-5f5a6cac41b8@csgroup.eu>
-X-ClientProxiedBy: AM6PR10CA0015.EURPRD10.PROD.OUTLOOK.COM
- (2603:10a6:209:89::28) To AS8PR04MB8868.eurprd04.prod.outlook.com
- (2603:10a6:20b:42f::6)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZD87c24LRz30Lt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 00:52:12 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id AEE665C4862;
+	Thu, 13 Mar 2025 13:49:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 47360C4CEEA;
+	Thu, 13 Mar 2025 13:51:57 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1741873930;
+	bh=Af9gKlZIDExjo3NK0sfX49tiYlvs18loCfa3z4qCS4k=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=HkCN8WEiZBDjOoNXkOEhfAhooerV5dkF2AGCJWQINBT3fsaxpVBZFUOQ//qEwjrlr
+	 2bPNOWsGN1jhMAGqtWghdbP/jbKVpjyzoCccZNeP956MHM+FvQnV9vxHUVxRi1f57Z
+	 Cy2YUjxboCWMf8Ik4jDKpmCaERo0psIxJMx1djt5KJO5hJIfLq+Tx6yluPloxucc9B
+	 6OYJdeY4IAXQhLphwpYrBpClaEiHNJqeML3xePGY/xtE3X+oYEZbMNo1hpUyjyziIo
+	 HNC9zwJ99nOKR2UIM2I44zSMPyeB7SMX8Wiy499daNzgPSdZFBmii2RnjlN8BaRWiJ
+	 bOL4XjeNb0D3Q==
+From: Mike Rapoport <rppt@kernel.org>
+To: Andrew Morton <akpm@linux-foundation.org>
+Cc: Alexander Gordeev <agordeev@linux.ibm.com>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Andy Lutomirski <luto@kernel.org>,
+	Ard Biesheuvel <ardb@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Borislav Petkov <bp@alien8.de>,
+	Brian Cain <bcain@kernel.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Dinh Nguyen <dinguyen@kernel.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Guo Ren <guoren@kernel.org>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Helge Deller <deller@gmx.de>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Jiaxun Yang <jiaxun.yang@flygoat.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mark Brown <broonie@kernel.org>,
+	Matt Turner <mattst88@gmail.com>,
+	Max Filippov <jcmvbkbc@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Michal Simek <monstr@monstr.eu>,
+	Mike Rapoport <rppt@kernel.org>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Richard Weinberger <richard@nod.at>,
+	Russell King <linux@armlinux.org.uk>,
+	Stafford Horne <shorne@gmail.com>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Vineet Gupta <vgupta@kernel.org>,
+	Will Deacon <will@kernel.org>,
+	linux-alpha@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-csky@vger.kernel.org,
+	linux-hexagon@vger.kernel.org,
+	loongarch@lists.linux.dev,
+	linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org,
+	linux-openrisc@vger.kernel.org,
+	linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	linux-sh@vger.kernel.org,
+	sparclinux@vger.kernel.org,
+	linux-um@lists.infradead.org,
+	linux-arch@vger.kernel.org,
+	linux-mm@kvack.org,
+	x86@kernel.org
+Subject: [PATCH v2 08/13] xtensa: split out printing of virtual memory layout to a function
+Date: Thu, 13 Mar 2025 15:49:58 +0200
+Message-ID: <20250313135003.836600-9-rppt@kernel.org>
+X-Mailer: git-send-email 2.47.2
+In-Reply-To: <20250313135003.836600-1-rppt@kernel.org>
+References: <20250313135003.836600-1-rppt@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,156 +122,141 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AS8PR04MB8868:EE_|VI1PR04MB7039:EE_
-X-MS-Office365-Filtering-Correlation-Id: d2accff3-5a4a-4d95-2f92-08dd623631ab
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|376014|366016|13003099007|7053199007|27256017;
-X-Microsoft-Antispam-Message-Info:
-	=?iso-8859-1?Q?n7d9ClzdfJ6mpC8REkARTPKTtkNyksyrVT/wRqA6wt9n3dTW4o5klE88ws?=
- =?iso-8859-1?Q?sTvhajq/xFl2pUHiJM8HC+OPnRdjY10S7AL7uP/dpArCbzjO01VHjD6xq7?=
- =?iso-8859-1?Q?vSy9ZniC73jqw/431lw2OeKraOx+QGEhdAolJwxKAelWVS1DDb4tq5Z3/s?=
- =?iso-8859-1?Q?/Fha7pB5B7FjVhl6mivObmLxftmUDgVLTYFDniXKEijFDoYNy+2tune/RL?=
- =?iso-8859-1?Q?/+dV/kudFIkVkeh3ko1qw1e5Awd1EtFM+zDkzb0wNqf03P5A7Ph/SpJfq3?=
- =?iso-8859-1?Q?9c2HOOPXZ/ItMA/a/HWI6TAXoLjNbOgHo4809Oh3C5GUB4Ven5E9vJzDWE?=
- =?iso-8859-1?Q?SHw19w/zv4x8vLbDGlVnSUWaE3N9KMaX8zjK4l/D/9WOR0yHeg6aerWI9J?=
- =?iso-8859-1?Q?1tvvXY2+Di1y1GqO+gN0o5B8HKICctQCFBtCCp7j7NDfAjngDCa/pDNcyO?=
- =?iso-8859-1?Q?peitxNlp54lCsRnyi7HKWzAUM9obHTy8rjdR6k5AiK2ms8ghp8bN/Q75w5?=
- =?iso-8859-1?Q?+cvOJqi4qAHDeC/Mqw1Rtex+/xBatrpxxHxUr7YKWuFMqfa2EOgxVLDJ6Q?=
- =?iso-8859-1?Q?/IxaCPczaHCNXYmjr4HwyOZ2hxdTjScvzNnYDO9xXfwAUTYI/AzmJTMrqQ?=
- =?iso-8859-1?Q?Wfiv0orVMGwIjPH9xJmQnztuVcR6IWsXL/3zeUYtDsWShjjsUk8vrYSTT4?=
- =?iso-8859-1?Q?FMM6Ugk1C+AQp7MkDWSTB24gT++E/K/VKpT/nwUbHP+GeyjM2CDUlhvU7q?=
- =?iso-8859-1?Q?Ui+pM74J7WS9+XZRxayXvKn7cfh5NSNvLP+3dzFQwm189V+biBZqC7ZmwE?=
- =?iso-8859-1?Q?oTcxEWHgu8MUwijPde/szUcjFBtLo3rpZNMq/DuEQc7ESjl1ByT5vTQrvI?=
- =?iso-8859-1?Q?ghV7104x6bK/tdeB5jhuTTd59HQmxM9KxAnRf9tyC8O0e/qjxsDwiv7gXR?=
- =?iso-8859-1?Q?YXwxCQE98LSTCLDmJdNzWau6xlvxynrQ273f3QDMVSTdWU+S4RhIHzYTWq?=
- =?iso-8859-1?Q?raIrP2R2/GRYDDfjWNhO4gaXTpeGSycqus84ICNDs/Futjsw9ylAqSdDCO?=
- =?iso-8859-1?Q?CyRtRmStrFlIPwlzMSKpjITvYlQgUiklTAbc+3m0Ayhpx3F5ij1OvsTinS?=
- =?iso-8859-1?Q?OLqpyL2cGbkMmaTjzKuOOpYqmINUhGrs6rho0966Qr6g4Dv0KS/FRUTqoJ?=
- =?iso-8859-1?Q?gAcIeajMXlY/Di/56Oj6jVsO+hmkTpiaeaDwsMi7fSXHktQxdVeYYBM4SQ?=
- =?iso-8859-1?Q?rhoq1e6HiG1sw9m/pvi2PsulIhBbBCMGtSG3GDzGhnpoV5KkKJprFg+MPI?=
- =?iso-8859-1?Q?gGsu3KW5MH/XFEmt0N41pu2z2823kvOmW7ztC7fFtIvmjebYHKBbWkg0Wt?=
- =?iso-8859-1?Q?37LUg4A8CULrmfByVqKlzM1t0faLKX6WA9jnYd5b7mqvCJ7rD99F6OUmlD?=
- =?iso-8859-1?Q?cMlYOkW3uXUR6wDKO8fd5RywqOVqJa4TRVPDbNTpGYOR2MeHkSfd/etQFE?=
- =?iso-8859-1?Q?Q=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AS8PR04MB8868.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(366016)(13003099007)(7053199007)(27256017);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?iso-8859-1?Q?hilon3FNFlz5K+L9QHfczcKb/zzNhzAmxcxd2RrGJ6dwBBPwUtkaYW8e2v?=
- =?iso-8859-1?Q?D0Na+Mww0mX3PmSpja5kiuVw3Q3IceS4cUdRpaWBGe2c6yLVeHD0bxJh8p?=
- =?iso-8859-1?Q?5TTjbaNABI0aHW0XybUVHEOWEoyNe7swXuq3ru5HOsS2+5XPfekiiVjkx5?=
- =?iso-8859-1?Q?e/E0rvS4HkPBF/rZWQCIPTSe2JejxtjmYgYIdn9vBMbs3vh47TxQiwEQ3A?=
- =?iso-8859-1?Q?XGwm/3iBLCsRq4T8/8cgjfwC0AEiyZ51MB5bnKm4ScqiMWF2TWdrQLxCbC?=
- =?iso-8859-1?Q?9knBh50dqN9Cq0/mOAKS/uWp8nuaLG8yubrvfWPdRcaJMnvQL+Ow/lmyTY?=
- =?iso-8859-1?Q?cbxuVAP6Yc6WRv1USqhpPkMxg5qTQCLtXPUOGDdV2TmJgC9ygjNjgfswsc?=
- =?iso-8859-1?Q?6DA0+jOOKdAEZF487gRLl813dTvWq24OIwmcjhMX3MZkW0y2tG8rZFDFs6?=
- =?iso-8859-1?Q?cDKVLjznUPzqsRWnSaoNPhVjs09YezHSNEL9jlRtSlpmIk8uz5oQJLSSkU?=
- =?iso-8859-1?Q?VmeqMc4ULnG+u7lfyzmJBWNRnfk5U24PADAeSmq1XoXo2AZeqMqWLN6zzn?=
- =?iso-8859-1?Q?YxzxBDm/F6HTqLqF+4QPUB9nhhkUA0X5N/LzLbEDWd14G7/jl2GvzvCd1P?=
- =?iso-8859-1?Q?X2DH8aw94pvxzMUyyRoTD7kh4XCNT73cY3Jfa2PMtMqms/ONf1Hll3Wzjl?=
- =?iso-8859-1?Q?ILmCtR9gbQDMgAn0ppN4vTVjVubJPKt1uEyaQD4GunW3Xxomix1V/tY04o?=
- =?iso-8859-1?Q?FZbSL/E8uScJ7ZRe3NkF5cubo7+VWXe0mkSyVRJ5+pX0V3OuqfpRW0wLHl?=
- =?iso-8859-1?Q?xKyX3eawHgXafFH6r9yFncjTBlFTdylRmWI7GNa4G8CQzoLNsN+cqgkV7v?=
- =?iso-8859-1?Q?eUdN6Pg35JrO3CNtKYRMhG2HFiq2pfnqri5Rpv8WJBkeK+Z8D0ACNaOxxV?=
- =?iso-8859-1?Q?tSRMBfNKYf/w5tXhgv0RAQfn+CsIC7kDpvRNf9TVtiyyjYNfjdXw4xMXE8?=
- =?iso-8859-1?Q?n4oUFaXlivf2EaCqc4M57f5EeZym5m9t6i0UvteIDdvrGPHV9xDSh/3Gmy?=
- =?iso-8859-1?Q?0Yc2e+yCMq9woFIgWGDPvIuFaDVOWI62DEHmZl451eo8Xkh2VP8l9krIKn?=
- =?iso-8859-1?Q?H5GV0zg1tE1enGbepfe7eK4mPLGnTHY45BeLfpA+QqAsa3xLzIwblgVExL?=
- =?iso-8859-1?Q?kj9YiW0+WaM303LBBE0ieMj3JE9frs0IpYY/SD4LVD9kmbWuRCt5IQWNck?=
- =?iso-8859-1?Q?rPn1QX5QlPxBwLemXViqYUUmo82yu6dfqbsLPHcW9eu+UAuZSlUWv5rbW7?=
- =?iso-8859-1?Q?jG46ua4P2ERjsa9re+u7N3AirmnXmrxnj2ZkxBsF5kkWh81F6mQHrVezJv?=
- =?iso-8859-1?Q?29lt6Y67ayK7P8tgSQXJmvY3RlHdmDM1BJ6NjlFRPYK86PKLFeFwT0sUs9?=
- =?iso-8859-1?Q?i7jl2yzS6fbZIUWLUAAlrTIz2mWgBtg6LAuvmXswBo81SAv1cHQcfSR8RL?=
- =?iso-8859-1?Q?6kDepWMlkB3EGBYpC2zmiGNAHsMTwFYqAJrW1Vu+DAkX8jqetDxx0NnxhY?=
- =?iso-8859-1?Q?VRRIdXIIwzvCpxRWj0HMHENbmh8cjBuTpD3qi9LGtfTJF+EUftKdUk0cIe?=
- =?iso-8859-1?Q?CeS3kmTgTPXZKm6KQXTueXdE6e0PkAD0nH?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: d2accff3-5a4a-4d95-2f92-08dd623631ab
-X-MS-Exchange-CrossTenant-AuthSource: AS8PR04MB8868.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 13 Mar 2025 13:51:45.9849
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: rXHJ9/TsAcFLrPp9pJgzeO6szhfQi7nJwn2L74QbeeVWYNkJ/qJAxfH5rDBbP7jTyGOYNF5H1XoxAIfpFqqJLQ==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VI1PR04MB7039
+Content-Transfer-Encoding: 8bit
 
-On Thu, Mar 13, 2025 at 02:37:56PM +0100, Christophe Leroy wrote:
-> 
-> 
-> Le 13/03/2025 à 14:21, Dr. David Alan Gilbert a écrit :
-> > [Vous ne recevez pas souvent de courriers de linux@treblig.org. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
-> > 
-> > * Christophe Leroy (christophe.leroy@csgroup.eu) wrote:
-> > > 
-> > > 
-> > > Le 15/11/2024 à 16:20, linux@treblig.org a écrit :
-> > > > [Vous ne recevez pas souvent de courriers de linux@treblig.org. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
-> > > > 
-> > > > From: "Dr. David Alan Gilbert" <linux@treblig.org>
-> > > > 
-> > > > fsl_mc_allocator_driver_exit() was added explicitly by
-> > > > commit 1e8ac83b6caf ("bus: fsl-mc: add fsl_mc_allocator cleanup function")
-> > > > but was never used.
-> > > > 
-> > > > Remove it.
-> > > > 
-> > > > fsl_mc_portal_reset() was added in 2015 by
-> > > > commit 197f4d6a4a00 ("staging: fsl-mc: fsl-mc object allocator driver")
-> > > > but was never used.
-> > > > 
-> > > > Remove it.
-> > > > 
-> > > > fsl_mc_portal_reset() was the only caller of dpmcp_reset().
-> > > > 
-> > > > Remove it.
-> > > > 
-> > > > Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
-> > > 
-> > > Acked-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> > 
-> > Hi,
-> >    Can someone pick this old change up please?  I see the PPC patchwork says
-> >    'handled elsewhere' but doesn't say where.
-> 
-> MAINTAINERS file says where:
-> 
-> QORIQ DPAA2 FSL-MC BUS DRIVER
-> M:	Stuart Yoder <stuyoder@gmail.com>
-> M:	Laurentiu Tudor <laurentiu.tudor@nxp.com>
-> L:	linux-kernel@vger.kernel.org
-> S:	Maintained
-> F:	Documentation/ABI/stable/sysfs-bus-fsl-mc
-> F:	Documentation/devicetree/bindings/misc/fsl,qoriq-mc.txt
-> F:
-> Documentation/networking/device_drivers/ethernet/freescale/dpaa2/overview.rst
-> F:	drivers/bus/fsl-mc/
-> F:	include/uapi/linux/fsl_mc.h
-> 
-> FREESCALE SOC DRIVERS
-> M:	Christophe Leroy <christophe.leroy@csgroup.eu>
-> L:	linuxppc-dev@lists.ozlabs.org
-> L:	linux-arm-kernel@lists.infradead.org (moderated for non-subscribers)
-> S:	Maintained
-> F:	Documentation/devicetree/bindings/misc/fsl,dpaa2-console.yaml
-> F:	Documentation/devicetree/bindings/soc/fsl/
-> F:	drivers/soc/fsl/
-> F:	include/linux/fsl/
-> F:	include/soc/fsl/
-> 
-> I acked the 2 line changes in include/linux/fsl/mc.h, the main changes being
-> in the C files which are not under my scope.
-> 
-> Stuart, Laurentiu, can you pick up the patch ?
+From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 
-Stuart and Laurentiu are no longer at NXP. Even when they handled the
-fsl-mc bus driver, they didn't have a tree themselves to pick patches up
-but rather, historically, patches on the fsl-mc bus were picked by Greg
-KH.
+This will help with pulling out memblock_free_all() to the generic
+code and reducing code duplication in arch::mem_init().
 
-Ioana
+Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+---
+ arch/xtensa/mm/init.c | 97 ++++++++++++++++++++++---------------------
+ 1 file changed, 50 insertions(+), 47 deletions(-)
+
+diff --git a/arch/xtensa/mm/init.c b/arch/xtensa/mm/init.c
+index b2587a1a7c46..01577d33e602 100644
+--- a/arch/xtensa/mm/init.c
++++ b/arch/xtensa/mm/init.c
+@@ -66,6 +66,55 @@ void __init bootmem_init(void)
+ 	memblock_dump_all();
+ }
+ 
++static void __init print_vm_layout(void)
++{
++	pr_info("virtual kernel memory layout:\n"
++#ifdef CONFIG_KASAN
++		"    kasan   : 0x%08lx - 0x%08lx  (%5lu MB)\n"
++#endif
++#ifdef CONFIG_MMU
++		"    vmalloc : 0x%08lx - 0x%08lx  (%5lu MB)\n"
++#endif
++#ifdef CONFIG_HIGHMEM
++		"    pkmap   : 0x%08lx - 0x%08lx  (%5lu kB)\n"
++		"    fixmap  : 0x%08lx - 0x%08lx  (%5lu kB)\n"
++#endif
++		"    lowmem  : 0x%08lx - 0x%08lx  (%5lu MB)\n"
++		"    .text   : 0x%08lx - 0x%08lx  (%5lu kB)\n"
++		"    .rodata : 0x%08lx - 0x%08lx  (%5lu kB)\n"
++		"    .data   : 0x%08lx - 0x%08lx  (%5lu kB)\n"
++		"    .init   : 0x%08lx - 0x%08lx  (%5lu kB)\n"
++		"    .bss    : 0x%08lx - 0x%08lx  (%5lu kB)\n",
++#ifdef CONFIG_KASAN
++		KASAN_SHADOW_START, KASAN_SHADOW_START + KASAN_SHADOW_SIZE,
++		KASAN_SHADOW_SIZE >> 20,
++#endif
++#ifdef CONFIG_MMU
++		VMALLOC_START, VMALLOC_END,
++		(VMALLOC_END - VMALLOC_START) >> 20,
++#ifdef CONFIG_HIGHMEM
++		PKMAP_BASE, PKMAP_BASE + LAST_PKMAP * PAGE_SIZE,
++		(LAST_PKMAP*PAGE_SIZE) >> 10,
++		FIXADDR_START, FIXADDR_END,
++		(FIXADDR_END - FIXADDR_START) >> 10,
++#endif
++		PAGE_OFFSET, PAGE_OFFSET +
++		(max_low_pfn - min_low_pfn) * PAGE_SIZE,
++#else
++		min_low_pfn * PAGE_SIZE, max_low_pfn * PAGE_SIZE,
++#endif
++		((max_low_pfn - min_low_pfn) * PAGE_SIZE) >> 20,
++		(unsigned long)_text, (unsigned long)_etext,
++		(unsigned long)(_etext - _text) >> 10,
++		(unsigned long)__start_rodata, (unsigned long)__end_rodata,
++		(unsigned long)(__end_rodata - __start_rodata) >> 10,
++		(unsigned long)_sdata, (unsigned long)_edata,
++		(unsigned long)(_edata - _sdata) >> 10,
++		(unsigned long)__init_begin, (unsigned long)__init_end,
++		(unsigned long)(__init_end - __init_begin) >> 10,
++		(unsigned long)__bss_start, (unsigned long)__bss_stop,
++		(unsigned long)(__bss_stop - __bss_start) >> 10);
++}
+ 
+ void __init zones_init(void)
+ {
+@@ -77,6 +126,7 @@ void __init zones_init(void)
+ #endif
+ 	};
+ 	free_area_init(max_zone_pfn);
++	print_vm_layout();
+ }
+ 
+ static void __init free_highpages(void)
+@@ -118,53 +168,6 @@ void __init mem_init(void)
+ 	high_memory = (void *)__va(max_low_pfn << PAGE_SHIFT);
+ 
+ 	memblock_free_all();
+-
+-	pr_info("virtual kernel memory layout:\n"
+-#ifdef CONFIG_KASAN
+-		"    kasan   : 0x%08lx - 0x%08lx  (%5lu MB)\n"
+-#endif
+-#ifdef CONFIG_MMU
+-		"    vmalloc : 0x%08lx - 0x%08lx  (%5lu MB)\n"
+-#endif
+-#ifdef CONFIG_HIGHMEM
+-		"    pkmap   : 0x%08lx - 0x%08lx  (%5lu kB)\n"
+-		"    fixmap  : 0x%08lx - 0x%08lx  (%5lu kB)\n"
+-#endif
+-		"    lowmem  : 0x%08lx - 0x%08lx  (%5lu MB)\n"
+-		"    .text   : 0x%08lx - 0x%08lx  (%5lu kB)\n"
+-		"    .rodata : 0x%08lx - 0x%08lx  (%5lu kB)\n"
+-		"    .data   : 0x%08lx - 0x%08lx  (%5lu kB)\n"
+-		"    .init   : 0x%08lx - 0x%08lx  (%5lu kB)\n"
+-		"    .bss    : 0x%08lx - 0x%08lx  (%5lu kB)\n",
+-#ifdef CONFIG_KASAN
+-		KASAN_SHADOW_START, KASAN_SHADOW_START + KASAN_SHADOW_SIZE,
+-		KASAN_SHADOW_SIZE >> 20,
+-#endif
+-#ifdef CONFIG_MMU
+-		VMALLOC_START, VMALLOC_END,
+-		(VMALLOC_END - VMALLOC_START) >> 20,
+-#ifdef CONFIG_HIGHMEM
+-		PKMAP_BASE, PKMAP_BASE + LAST_PKMAP * PAGE_SIZE,
+-		(LAST_PKMAP*PAGE_SIZE) >> 10,
+-		FIXADDR_START, FIXADDR_END,
+-		(FIXADDR_END - FIXADDR_START) >> 10,
+-#endif
+-		PAGE_OFFSET, PAGE_OFFSET +
+-		(max_low_pfn - min_low_pfn) * PAGE_SIZE,
+-#else
+-		min_low_pfn * PAGE_SIZE, max_low_pfn * PAGE_SIZE,
+-#endif
+-		((max_low_pfn - min_low_pfn) * PAGE_SIZE) >> 20,
+-		(unsigned long)_text, (unsigned long)_etext,
+-		(unsigned long)(_etext - _text) >> 10,
+-		(unsigned long)__start_rodata, (unsigned long)__end_rodata,
+-		(unsigned long)(__end_rodata - __start_rodata) >> 10,
+-		(unsigned long)_sdata, (unsigned long)_edata,
+-		(unsigned long)(_edata - _sdata) >> 10,
+-		(unsigned long)__init_begin, (unsigned long)__init_end,
+-		(unsigned long)(__init_end - __init_begin) >> 10,
+-		(unsigned long)__bss_start, (unsigned long)__bss_stop,
+-		(unsigned long)(__bss_stop - __bss_start) >> 10);
+ }
+ 
+ static void __init parse_memmap_one(char *p)
+-- 
+2.47.2
+
 
