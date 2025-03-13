@@ -1,93 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-6996-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6997-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5CF9EC282DE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Mar 2025 20:01:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D76BC35FF1
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Mar 2025 20:01:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDJKx4BjBz3cCM;
-	Fri, 14 Mar 2025 07:01:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741866300;
-	cv=none; b=Vfnm/iNPcdIte3N9H6axQUoCYWx7nrPFoVOrOphv5BSYl823zDx2Mur7xZ45m4Uj7i0cDO38rjM+ZDtTFeUCMDIhVo3froig17WbK76IvbvYqrqry7Qt6LJweOQ/Hx9rXWTAhg+7qvhVUL2oGLIGFnlWX0kZAyjDCWoMfN3uXwp8xPokf2JlPoA5CMcej0CyRFqIJ6P+bVgpJfS5ySE+fzwXAHUou1U/arfCC1WySx91NMDwZQ1Zrn3Jtdrm0nsGjzwffAlmeINa+ziO/UBvK4r16hj3zB/SpRQAAfCQ9UERHWEXVswAD1cv3QImI+ZsAJJl98qTrRclx/qIOZsASw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDJL36mTKz3cCn;
+	Fri, 14 Mar 2025 07:01:47 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741866301;
+	cv=none; b=E0ufjIEqeMUc34i1B6FG0tXk68W8UXdzMFp63cKMY5NIHqHJVO2o5nnnAY3LIcRMqsC2710PXvFPOn2AZMxEsBdk+nS53l/E0px0Nhw8gy3QReyHgx5XWNAvi61buVE2QCdjcVb3bTzkJjJmJjGSBQb3fC2Tq+AAr3MgFVbGugC4S2K9Z5jshFU4crcOdBgiDuyr19fyJPxwmoELRMk/Mv12gZjcBf5CLUCPSV4TwarL9QFQ1qDBhiRfeJTZd1Nu7KjYTmMT6glOg5h2+87J3CPti4HV61bN/bdRqdMb/Z3QkHBf/+Zn50Rbgny2FW7DkocOyZsVS8AvyeEIeBCV7w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741866300; c=relaxed/relaxed;
-	bh=EdALik7flTFVSWTVblU8JKKGGV2JCoENkhxrfjNtUxw=;
+	t=1741866301; c=relaxed/relaxed;
+	bh=Td98jnkcLGUCy3vrjbMOv35ZA5bivtUA493Q3YOVPt4=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-type; b=MjeyIGObgvqbRy3CxfZgTbXuklwRJkkaFu1z801U5PrqMM77e/m4Co0TT5AejAb/nl+SOZxQTgtRBByqkNh7wdqByUEbFed29LwzsVwCS6LtwfWTcip0qC5elxQkD6wLDAU2AwYA69nss7c2uCUi8DPHy+QpA5/sU6A+0hIBccFnCYeDOF/4SxuFX8prUNrIk3qVCkaeWMrFVhxlbMX18YDg+yCuYwy0tyz0rP/Hv5iJ8Hv+0+HPoXUvhM7olRVg08N56UCQYS2sqFnRgIbWRmfkhkfDzV8nBqONpHMcc85m0SHMAXrK31fdYK1GtRHK7MQFGiZ0UMuZaU4erNECyQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HDUwsku5; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=JhFfb65d; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=acarmina@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+	 MIME-Version:Content-type; b=TNqNqaRzxqaI/tT1KMoQKYDj+RulpaN2PfyFRVEP0fEBLKpJOunmLSSva26SJSlb2BCWdnmFodKrb5dhvG4G5JDiM8Kf9ED+svkIUJhZlCEO5FLqrxQt7z3d4vsAft3b+d+D+9aFWbQWWS3svenjZhmtqoBNBz/f7gtritWIzZu4tGQXGZZ+5DQT4RvfWwlsbJJO6165WO02x8NE8HlNTyu7UBy6TT3SINSzSFF6c3gM+jOxTKFtaZ9F4W4AwqIK6lsJUSnyZ/lAVIA3zs0G89fb10IlIMV3SGMa2WOoAlmXgKQeoB+7JXsi2QtaPDyCggZQ6zyqYhfeb50S0NcTtg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KMQ9dFVA; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KMQ9dFVA; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=acarmina@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=HDUwsku5;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=JhFfb65d;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KMQ9dFVA;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KMQ9dFVA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=acarmina@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=acarmina@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZD5Jq3Y0Dz2ynL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2025 22:44:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZD5Jr5jhjz2ynL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2025 22:45:00 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1741866293;
+	s=mimecast20190719; t=1741866298;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=EdALik7flTFVSWTVblU8JKKGGV2JCoENkhxrfjNtUxw=;
-	b=HDUwsku52T2ebFubb0fL46MZQa2MunEfwZq4PVi6xPrrywjQMxaQopf8+f5zCYoAxteEB3
-	xaqk19lBYLT07dKklUnp691mkZuPMOxrSDdrxwt/7JWnnNAZVaKwAyHG7FmjJalo3EXW7g
-	UU+C01IG94XqG+FyGX1MKTgk+UhH2ls=
+	bh=Td98jnkcLGUCy3vrjbMOv35ZA5bivtUA493Q3YOVPt4=;
+	b=KMQ9dFVAw0PY8UoGH2ZnQtv2EV1wkdO5uMIhmgRIISCHv2e6UOaDaVi7LvbwZbNh7n7E4v
+	rpZttcOhxtu+k3vFQyVx1b9bXyRJvVjAlEWjpsuJ4piW3btDMboUi+UlsJ7nfie3PM21rl
+	iSt6HWBX/qir8+M8pUGYWT8Z2x0h6lo=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1741866294;
+	s=mimecast20190719; t=1741866298;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=EdALik7flTFVSWTVblU8JKKGGV2JCoENkhxrfjNtUxw=;
-	b=JhFfb65dbLIFuTOsmZM5CyAKYRE/nYHwuuMUhfMFJXL71ecgONeVT5sCU0JRbnXWD4mjRw
-	lvGo4rzE2KKAHaAR6Sjbaw7cgLxcwbzmlOQn3InlGswLBFVfjH5CFHvADo36gSWlI307hK
-	tLxIwCyVHTjMXtBBhaYy7bzTtx3Zz7w=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=Td98jnkcLGUCy3vrjbMOv35ZA5bivtUA493Q3YOVPt4=;
+	b=KMQ9dFVAw0PY8UoGH2ZnQtv2EV1wkdO5uMIhmgRIISCHv2e6UOaDaVi7LvbwZbNh7n7E4v
+	rpZttcOhxtu+k3vFQyVx1b9bXyRJvVjAlEWjpsuJ4piW3btDMboUi+UlsJ7nfie3PM21rl
+	iSt6HWBX/qir8+M8pUGYWT8Z2x0h6lo=
+Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
+ [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-214-H8qLI-7xMuqU11I5HQkj_A-1; Thu, 13 Mar 2025 07:44:52 -0400
-X-MC-Unique: H8qLI-7xMuqU11I5HQkj_A-1
-X-Mimecast-MFC-AGG-ID: H8qLI-7xMuqU11I5HQkj_A_1741866292
-Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-391459c0395so372327f8f.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2025 04:44:52 -0700 (PDT)
+ us-mta-155-nD3mCbnbPkeQOFJuRKt7Kw-1; Thu, 13 Mar 2025 07:44:57 -0400
+X-MC-Unique: nD3mCbnbPkeQOFJuRKt7Kw-1
+X-Mimecast-MFC-AGG-ID: nD3mCbnbPkeQOFJuRKt7Kw_1741866296
+Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-391425471d6so306882f8f.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2025 04:44:57 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1741866291; x=1742471091;
+        d=1e100.net; s=20230601; t=1741866296; x=1742471096;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=EdALik7flTFVSWTVblU8JKKGGV2JCoENkhxrfjNtUxw=;
-        b=StF/I2yHtqUZmblDc1tALglwNhuraGLo1vXATsohs3CJDrdKxBnFhAIm340le4jvp+
-         LXFfL7KDr5+MouX0SOa2BTjUMZEu4YoaCW83HLVQRMMsneY1TUdPBcTfAYnPnZH1CBmy
-         h1rAVs1B/A7hkaPPG7O+HHICFH8LzS/zaOq7NmOmBgFkLQ+2CT5zwzrqCOJgDfAFeuYu
-         3FjdCs4vOREp/GC42dz/hshfooh+3dhrufAn/B2LJk17pS/BRuweqKnfA/9H4u0diGY2
-         LHQUNfLroYUam7+COaymj/8xYfZBO1PzJQETXOLybBMOY09h58veyTRqW7M2El+APT9k
-         eCOQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXdhpa65sfr5Ls6NNAdwjAPaLUR33QGKY5g7zOVP+wJQZ0MXNLb8CxiQbrZxmQcm0tW0XssrDaemyICz5U=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx4ac2kbPL9BfpfrpN0G5QEza0S6f6M5LDNIw8ADdFGCneIMWB+
-	q8h1xl9g1i4Jzze4e8SFS9AGeYVfv0G3YcaqyqPh6WMcLC9RqJLctuRIz09SQPf7QDeQAK/aowo
-	2TU9sHAxUVBSYEmCLYnrsvo3s73fjce3ljDb3xVjZo19ujNeAwOtOBfCCqEY+rHA=
-X-Gm-Gg: ASbGncsjLD9MeqN/rH/qIRkU8HsIGhA2vgydbAv5j9KADHHnxQ4dACQaer1UkUsT514
-	jpv4gw/rUcKKnawX5TRgduSChDGVySZvT8pk+LKFsNBSgaKvTNYnepvGPTVCeW2VPik4j0h9AoE
-	4hRB3NhMmWDc2adNaiWRdS+9jE63iuTx9UJF8wisJmqe5vshYWm4JLoe/JgXK0ZEUvflAn1DrSG
-	OO0+XMoYPKHaGNaHN7eNYXWFYoGSHXaYU2f0vCchjdmqvu2+824KZD6nLu69FPuvmJjQtBE9Uc9
-	MkeDqXEfer0pJDT+lY7g
-X-Received: by 2002:a5d:64a4:0:b0:391:a74:d7dc with SMTP id ffacd0b85a97d-39132db7543mr19148430f8f.50.1741866291553;
-        Thu, 13 Mar 2025 04:44:51 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFc68icOs2UFLsGvYM02K+KaAXrxdUkEYYl5CYIXnV4BsTbvYwzMB6bzWlvY18H1nYSqaV5qQ==
-X-Received: by 2002:a5d:64a4:0:b0:391:a74:d7dc with SMTP id ffacd0b85a97d-39132db7543mr19148405f8f.50.1741866291178;
-        Thu, 13 Mar 2025 04:44:51 -0700 (PDT)
+        bh=Td98jnkcLGUCy3vrjbMOv35ZA5bivtUA493Q3YOVPt4=;
+        b=b1OFwONiJYhU7Y6sh5v7rlUVxs/OuNgbtlLyE6qCJfglIwZAz0VMSiwQ4xHyU13bcV
+         Q/PWkSxoHy5U5VI9Oh0KTvXPOJ8TuJUj2e5C2pHRRL0z6FpYIkvmntTSyIO1LkHSIEfD
+         nqrSz2W09lzXy2Y6MH/OKvK+7WbSLDD7RE/VcMykP3HWkkXfC+FTEgArqTLul/77dtpe
+         9E4dzktPLhg91HcuxteV7YfaDhTNIRSl1yb6axUm7JvFtOJAw5efj3IkruNKadWdjw3J
+         L81idZ7BYeSE2wJia866Ssu/vhnQ+YAtUxjkxuZOaM3/0nr8P5lbEDtL6HYUr/uFIVOt
+         DA2A==
+X-Forwarded-Encrypted: i=1; AJvYcCUihxxFsCjyWXJiTDeO55OSdnSvqCbUyJqvz+ff5qGxHHgg7V3rHR+/PFZCyf1oljJ8dJ2+9yDcIuDJYwc=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxoytg+I10ODXs2noTPdhyX4AzkHCBtgNAmNxj/g4crwlRv8clk
+	sF/zDYqtAmJThlhpPoTclR32QHyA2CmfdzuoNtmg3GckomeXLJn98+9kGIGp5juv3XJNMBeFBW/
+	jehsPeMS2AHVDVX+21uDUbaF/YdAFMCUXj79ZEOmkr2E3tOkw3r4nIcZWrVHeEF4=
+X-Gm-Gg: ASbGncvzrrLYH5q3edI0lfB+uBrTI2aE0Qn1Udbwf2eJeQ3+C8VcX8hFUhfyV10jeQN
+	R0ZXmdEQxdwp6GApQSn5hPAZUaXArcDnfQ7LR2JfGnDldTelrszPXSJIFx2z4dd1GLIYNGPXp37
+	i1Xw0e+JsGjud8tBbRFHVJug4oWuJXVt20+mkeEM8iW9lTq2dvEH+GTEi/nKtdZQoo6WsUlinhB
+	nShkLUg29MKrpC2meUl+tsEnU1fVxPDrZ3lSHBWEPClNnDv/5loRJH6khzT19jS7CoFxZZCE/gC
+	HJhhSf1EtJJAS3qkXiRN
+X-Received: by 2002:a5d:64a8:0:b0:391:23e7:968d with SMTP id ffacd0b85a97d-39132db703cmr17836145f8f.47.1741866296144;
+        Thu, 13 Mar 2025 04:44:56 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IEyU2ePtAFWyqCZMakOsiK4/iIhrDziNVQawXJEAak4gPJli8tipIq38M0q9zksW0XKC08fAA==
+X-Received: by 2002:a5d:64a8:0:b0:391:23e7:968d with SMTP id ffacd0b85a97d-39132db703cmr17836093f8f.47.1741866295677;
+        Thu, 13 Mar 2025 04:44:55 -0700 (PDT)
 Received: from lab.hqhome163.com ([81.57.75.210])
-        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-43d188b754asm17844115e9.14.2025.03.13.04.44.49
+        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-43d188b754asm17844115e9.14.2025.03.13.04.44.53
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 13 Mar 2025 04:44:50 -0700 (PDT)
+        Thu, 13 Mar 2025 04:44:54 -0700 (PDT)
 From: Alessandro Carminati <acarmina@redhat.com>
 To: linux-kselftest@vger.kernel.org
 Cc: David Airlie <airlied@gmail.com>,
@@ -122,14 +122,14 @@ Cc: David Airlie <airlied@gmail.com>,
 	linux-sh@vger.kernel.org,
 	loongarch@lists.linux.dev,
 	x86@kernel.org,
-	Linux Kernel Functional Testing <lkft@linaro.org>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Simon Horman <horms@kernel.org>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
 	Alessandro Carminati <acarmina@redhat.com>
-Subject: [PATCH v4 10/14] s390: Add support for suppressing warning backtraces
-Date: Thu, 13 Mar 2025 11:43:25 +0000
-Message-Id: <20250313114329.284104-11-acarmina@redhat.com>
+Subject: [PATCH v4 12/14] sh: Move defines needed for suppressing warning backtraces
+Date: Thu, 13 Mar 2025 11:43:27 +0000
+Message-Id: <20250313114329.284104-13-acarmina@redhat.com>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20250313114329.284104-1-acarmina@redhat.com>
 References: <20250313114329.284104-1-acarmina@redhat.com>
@@ -146,70 +146,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: omw4d6m2oVosu2zqgedhwKw8OaGp-f37yp3DjBKUquU_1741866292
+X-Mimecast-MFC-PROC-ID: rdvuO3pD6ZpigQs_-jvJBSHM5M5g0TmKPpM6NjQcZgQ_1741866296
 X-Mimecast-Originator: redhat.com
 Content-type: text/plain
 Content-Transfer-Encoding: 8bit
 
 From: Guenter Roeck <linux@roeck-us.net>
 
-Add name of functions triggering warning backtraces to the __bug_table
-object section to enable support for suppressing WARNING backtraces.
+Declaring the defines needed for suppressing warning inside
+'#ifdef CONFIG_DEBUG_BUGVERBOSE' results in a kerneldoc warning.
 
-To limit image size impact, the pointer to the function name is only added
-to the __bug_table section if both CONFIG_KUNIT_SUPPRESS_BACKTRACE and
-CONFIG_DEBUG_BUGVERBOSE are enabled. Otherwise, the __func__ assembly
-parameter is replaced with a (dummy) NULL parameter to avoid an image size
-increase due to unused __func__ entries (this is necessary because
-__func__ is not a define but a virtual variable).
+.../bug.h:29: warning: expecting prototype for _EMIT_BUG_ENTRY().
+	Prototype was for HAVE_BUG_FUNCTION() instead
 
-Tested-by: Linux Kernel Functional Testing <lkft@linaro.org>
-Acked-by: Dan Carpenter <dan.carpenter@linaro.org>
-Cc: Heiko Carstens <hca@linux.ibm.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Alexander Gordeev <agordeev@linux.ibm.com>
+Move the defines above the kerneldoc entry for _EMIT_BUG_ENTRY
+to make kerneldoc happy.
+
+Reported-by: Simon Horman <horms@kernel.org>
+Cc: Simon Horman <horms@kernel.org>
+Cc: Yoshinori Sato <ysato@users.sourceforge.jp>
+Cc: Rich Felker <dalias@libc.org>
+Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
 Signed-off-by: Guenter Roeck <linux@roeck-us.net>
 Signed-off-by: Alessandro Carminati <acarmina@redhat.com>
 ---
- arch/s390/include/asm/bug.h | 17 ++++++++++++++---
- 1 file changed, 14 insertions(+), 3 deletions(-)
+ arch/sh/include/asm/bug.h | 16 +++++++++-------
+ 1 file changed, 9 insertions(+), 7 deletions(-)
 
-diff --git a/arch/s390/include/asm/bug.h b/arch/s390/include/asm/bug.h
-index c500d45fb465..44d4e9f24ae0 100644
---- a/arch/s390/include/asm/bug.h
-+++ b/arch/s390/include/asm/bug.h
-@@ -8,6 +8,15 @@
+diff --git a/arch/sh/include/asm/bug.h b/arch/sh/include/asm/bug.h
+index 470ce6567d20..bf4947d51d69 100644
+--- a/arch/sh/include/asm/bug.h
++++ b/arch/sh/include/asm/bug.h
+@@ -11,6 +11,15 @@
+ #define HAVE_ARCH_BUG
+ #define HAVE_ARCH_WARN_ON
  
- #ifdef CONFIG_DEBUG_BUGVERBOSE
- 
++#ifdef CONFIG_DEBUG_BUGVERBOSE
 +#ifdef CONFIG_KUNIT_SUPPRESS_BACKTRACE
 +# define HAVE_BUG_FUNCTION
-+# define __BUG_FUNC_PTR	"	.long	%0-.\n"
-+# define __BUG_FUNC	__func__
++# define __BUG_FUNC_PTR	"\t.long %O2\n"
 +#else
 +# define __BUG_FUNC_PTR
-+# define __BUG_FUNC	NULL
 +#endif /* CONFIG_KUNIT_SUPPRESS_BACKTRACE */
++#endif /* CONFIG_DEBUG_BUGVERBOSE */
 +
- #define __EMIT_BUG(x) do {					\
- 	asm_inline volatile(					\
- 		"0:	mc	0,0\n"				\
-@@ -17,10 +26,12 @@
- 		".section __bug_table,\"aw\"\n"			\
- 		"2:	.long	0b-.\n"				\
- 		"	.long	1b-.\n"				\
--		"	.short	%0,%1\n"			\
--		"	.org	2b+%2\n"			\
-+		__BUG_FUNC_PTR					\
-+		"	.short	%1,%2\n"			\
-+		"	.org	2b+%3\n"			\
- 		".previous\n"					\
--		: : "i" (__LINE__),				\
-+		: : "i" (__BUG_FUNC),				\
-+		    "i" (__LINE__),				\
- 		    "i" (x),					\
- 		    "i" (sizeof(struct bug_entry)));		\
- } while (0)
+ /**
+  * _EMIT_BUG_ENTRY
+  * %1 - __FILE__
+@@ -25,13 +34,6 @@
+  */
+ #ifdef CONFIG_DEBUG_BUGVERBOSE
+ 
+-#ifdef CONFIG_KUNIT_SUPPRESS_BACKTRACE
+-# define HAVE_BUG_FUNCTION
+-# define __BUG_FUNC_PTR	"\t.long %O2\n"
+-#else
+-# define __BUG_FUNC_PTR
+-#endif /* CONFIG_KUNIT_SUPPRESS_BACKTRACE */
+-
+ #define _EMIT_BUG_ENTRY				\
+ 	"\t.pushsection __bug_table,\"aw\"\n"	\
+ 	"2:\t.long 1b, %O1\n"			\
 -- 
 2.34.1
 
