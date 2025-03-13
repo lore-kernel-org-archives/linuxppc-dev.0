@@ -1,109 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-7014-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7015-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4818DC35FF1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Mar 2025 20:10:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61603C282DE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Mar 2025 21:35:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDJWg18CQz3cZ2;
-	Fri, 14 Mar 2025 07:10:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:638:a000:1025::14"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741888664;
-	cv=none; b=iB/7NlvR/ohaKXNNw1cPAMOKYD80fDsGmhX6M3XUis2R8WH5XzoJS6xurByHvtTjvUQX21Bx4+4/x8qw+iXUbkQwphtuqoqOFukpNkYPQzSrYVSSsHK6joSeTUYh2Af+/I/L0NKPyAgpm9fe2xFri2JDdM70nPFq/9EvWIBnHgv7utLhbU2l79wekUlnGZu7w+68hekenSSPaW5t5jQOVNOCiiYIViF3dzs9PT0xZQIy77fjPsvMWGjFTGLU3D/n4v8fKzG56NNGWrazvUKjoUK22DFSi1j8oGRJ83WMSrjtuY5ATNBXmvtzT54CRHux8QYDStFx0IjzRXN3gozstQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDLQb6GSJz3bqp;
+	Fri, 14 Mar 2025 08:35:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741901751;
+	cv=none; b=j9fMH9FkFfn4R2QsmZIyOgjuxOkStSMbgUDD6TgliMK9mJjK0xpokCAsQEzAJ7tzTvwA0CAjoEFiojyZGuMTABmqYDKSFORpXrliZPlVrLjK4mmPhPnwaM6Mr6DTeD8wBocUUAWW9W9eKGMRfS37TUtIgefs9njX0WMqfsg0tissC0FbfRdLJsdKklml1tJzafrIGun8BxVBhYkxRZH0isS9OKgo8j7w6BrSmgkKbWqNh+xNGZpTbzi53w5yo016OIbx8H9EJ8Azqjh5ApZ0GOF+gPSpPZSe8WtTxTbN/IhdFUfETv/I0VjokGF3i3sAmPmGRJrFtYJaZtV9bmLldw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741888664; c=relaxed/relaxed;
-	bh=inXF0fSbPXzIw85fLojKxfeAwoCHVSrQnIcBk6Xmr0w=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=AbfdbRrFNOuwPUZ1iKqq9gApKi0tjwIBg0Alyxn+XmyigpAz0YpIzJAW73RGsAVQBjWFZQMTbugV+vJSfsfBi/ebiGWfqSxQJflQXRGtDwZva8nXmVR8xdLT8Csz2LtoKXptw4C0rmoKugm5xIZWsfoLfMD3HdpwqRghYBiUsWiweO0XSZPRcX8DBcmqizedKsIFSOuwdtBvscCOXpfTwNEL8aClh3oOyqjce2McIckVgOPMJVawiB8sEZiUlMTKBFhIGaH520NIrdkNY+8qakY06UHiMQZOxrrF5O2uP6sqRjfONkDFdNlV4a83s/eeVecz8iKou+TQA+lCye32NA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=fau.de; dkim=pass (2048-bit key; secure) header.d=fau.de header.i=@fau.de header.a=rsa-sha256 header.s=fau-2021 header.b=AxKMmKCQ; dkim-atps=neutral; spf=pass (client-ip=2001:638:a000:1025::14; helo=mx-rz-1.rrze.uni-erlangen.de; envelope-from=luis.gerhorst@fau.de; receiver=lists.ozlabs.org) smtp.mailfrom=fau.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=fau.de
+	t=1741901751; c=relaxed/relaxed;
+	bh=nuGCJyiNGWXP0t1pW15HxuPUE6kQBriA8l6y1xvAY5w=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=WSbxSnJZeTswSfj9mC6qM63MgzfXD11wirEWV37YIY6e42zspEULngAw5n/uxFLzu/Lv8oA7wh49FO3LSIub1e6uG5MHvV9cnZlwu+vDS2v73P4Y16/SQBE4/n8nw41ZvR00aBvPIMamDIQ3ujM+v0sbOAMinEaIwa84NczAE7bao/p9XkNAIl0FCadPaL7YlQ9ND64RJo2YUR8Yk52HgvRV3VegQhK1scQaIVFEwFtkeERdL+Wmo4Q/w59PUNrbKLbwcRi7w7i0qtcFJjpVcMHwiOkIN+dGfSaklg47jJzAwkXGZyuggn8o3TtaUtogG2glyHjjWeTkDDPwKkttnw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qi8Mb83D; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=fau.de header.i=@fau.de header.a=rsa-sha256 header.s=fau-2021 header.b=AxKMmKCQ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qi8Mb83D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=fau.de (client-ip=2001:638:a000:1025::14; helo=mx-rz-1.rrze.uni-erlangen.de; envelope-from=luis.gerhorst@fau.de; receiver=lists.ozlabs.org)
-Received: from mx-rz-1.rrze.uni-erlangen.de (mx-rz-1.rrze.uni-erlangen.de [IPv6:2001:638:a000:1025::14])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZDFZv6d58z3c6c
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 04:57:43 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=fau.de; s=fau-2021;
-	t=1741888660; bh=inXF0fSbPXzIw85fLojKxfeAwoCHVSrQnIcBk6Xmr0w=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From:To:CC:
-	 Subject;
-	b=AxKMmKCQ/tUIryjmV6bln3IsP87BGHN2B6gCMBY0/d23v1QncY7Fg4tvz9Ply2c2E
-	 EtZ9j5hk/a93x8xbTIDeFfX4xhjnAVkRHkqxR8JXcWkfYBYn7XqIDdRKjBW5K87Ulo
-	 CNJgfqkZkXshsU8mgMnsK14BhABBlO4wuzXR08U5aw0PIYhxgH+zSWNXs1ZU6RpevA
-	 c5zAnwkfBTXgRsb0ihRA3j+8KZaIVNDtvH5S/9CVFPq29NX+vt8ZOFeBQn2HXQM5tN
-	 9k0MxlQGKreHFKOYa/LE6axle2cpz397PbIJD/cx26VfVqozGpfawjRItUXG8S00o0
-	 WqDysq/Kj/HAg==
-Received: from mx-rz-smart.rrze.uni-erlangen.de (mx-rz-smart.rrze.uni-erlangen.de [IPv6:2001:638:a000:1025::1e])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by mx-rz-1.rrze.uni-erlangen.de (Postfix) with ESMTPS id 4ZDFZr3T6Cz8t05;
-	Thu, 13 Mar 2025 18:57:40 +0100 (CET)
-X-Virus-Scanned: amavisd-new at boeck5.rrze.uni-erlangen.de (RRZE)
-X-RRZE-Flag: Not-Spam
-X-RRZE-Submit-IP: 2001:9e8:3614:2b00:7ee6:68e5:4447:ba92
-Received: from luis-tp.fritz.box (unknown [IPv6:2001:9e8:3614:2b00:7ee6:68e5:4447:ba92])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: U2FsdGVkX1+HSEbJ8SZ+LQGIWIboOg0KFAeQEvQjoXs=)
-	by smtp-auth.uni-erlangen.de (Postfix) with ESMTPSA id 4ZDFZm2cS5z8svD;
-	Thu, 13 Mar 2025 18:57:36 +0100 (CET)
-From: Luis Gerhorst <luis.gerhorst@fau.de>
-To: Alexei Starovoitov <ast@kernel.org>,
-	Daniel Borkmann <daniel@iogearbox.net>,
-	Andrii Nakryiko <andrii@kernel.org>,
-	Martin KaFai Lau <martin.lau@linux.dev>,
-	Eduard Zingerman <eddyz87@gmail.com>,
-	Song Liu <song@kernel.org>,
-	Yonghong Song <yonghong.song@linux.dev>,
-	John Fastabend <john.fastabend@gmail.com>,
-	KP Singh <kpsingh@kernel.org>,
-	Stanislav Fomichev <sdf@fomichev.me>,
-	Hao Luo <haoluo@google.com>,
-	Jiri Olsa <jolsa@kernel.org>,
-	Puranjay Mohan <puranjay@kernel.org>,
-	Xu Kuohai <xukuohai@huaweicloud.com>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Hari Bathini <hbathini@linux.ibm.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Mykola Lysenko <mykolal@fb.com>,
-	Shuah Khan <shuah@kernel.org>,
-	Luis Gerhorst <luis.gerhorst@fau.de>,
-	Henriette Herzog <henriette.herzog@rub.de>,
-	Cupertino Miranda <cupertino.miranda@oracle.com>,
-	Matan Shachnai <m.shachnai@gmail.com>,
-	Dimitar Kanaliev <dimitar.kanaliev@siteground.com>,
-	Shung-Hsi Yu <shung-hsi.yu@suse.com>,
-	Daniel Xu <dxu@dxuuu.xyz>,
-	bpf@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kselftest@vger.kernel.org,
-	George Guo <guodongtai@kylinos.cn>,
-	WANG Xuerui <git@xen0n.name>,
-	Tiezhu Yang <yangtiezhu@loongson.cn>
-Cc: Maximilian Ott <ott@cs.fau.de>,
-	Milan Stephan <milan.stephan@fau.de>
-Subject: [PATCH bpf-next 11/11] bpf: Fall back to nospec for spec path verification
-Date: Thu, 13 Mar 2025 18:53:12 +0100
-Message-ID: <20250313175312.1120183-2-luis.gerhorst@fau.de>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20250313175312.1120183-1-luis.gerhorst@fau.de>
-References: <20250313172127.1098195-1-luis.gerhorst@fau.de>
- <20250313175312.1120183-1-luis.gerhorst@fau.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZDLQZ4XDrz30VR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 08:35:50 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 305EA5C5F3B;
+	Thu, 13 Mar 2025 21:33:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 4A823C4CEEA;
+	Thu, 13 Mar 2025 21:35:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1741901747;
+	bh=29z3wRwOCbrYFJhrHEd02uoJUqdaA1ekxWQFQrQotpk=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=qi8Mb83DPQcxOwpJUpOwU451pOwTebiNJrgNeBrTpA63J83AZg30QoQcIkQYSfrhv
+	 46oGohIuYsvQic6z6AfrPaIDD684kHCRjF/2Q6zh/DwyWZ9nQGcDY73lFKEF1puK5C
+	 rc4O09wp5+NkrwsqZ+WbZuQuF1r0OH3OXnZ2e1FhAO4R2MFrpJvx8ji9yDK8T4Qe/D
+	 sUfecbB+ZCvXjKxAzOtJlbGd2ws4t3OdbrNWJNJ2/F7UKnkeHILWUU5rGL4kklMg4Y
+	 t8+hERQzWu5cl1c8EiM+K4dmXYpJo/A07MJpBneXJ0rSfTr8m/ylv198gPXsR9oJ0f
+	 NEOTN5yFg+buw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 3075AC35FF1;
+	Thu, 13 Mar 2025 21:35:47 +0000 (UTC)
+From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
+Date: Thu, 13 Mar 2025 22:35:44 +0100
+Subject: [PATCH v4 1/4] dt-bindings: mtd: raw-nand-chip: Relax node name
+ pattern
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -116,61 +63,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+Message-Id: <20250313-ppcyaml-elbc-v4-1-55903722d9ea@posteo.net>
+References: <20250313-ppcyaml-elbc-v4-0-55903722d9ea@posteo.net>
+In-Reply-To: <20250313-ppcyaml-elbc-v4-0-55903722d9ea@posteo.net>
+To: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Miquel Raynal <miquel.raynal@bootlin.com>, 
+ Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Crystal Wood <oss@buserror.net>, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>, 
+ Naveen N Rao <naveen@kernel.org>
+Cc: Frank Li <Frank.Li@nxp.com>, linux-kernel@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-mtd@lists.infradead.org, 
+ linuxppc-dev@lists.ozlabs.org, 
+ =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+X-Mailer: b4 0.14.2
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1741901745; l=1483;
+ i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
+ bh=yPgY1z7mg/3dcZuzAQmURU+bDX68s9E0YWQYCk73u2A=;
+ b=TiGBn5/omWDqmmLaDYByMyKwn3FP8MKFA347zo4v6yuRXDARcPhBHg/qDZ7YtYAYDRNFvDA0h
+ 53muitjhV2cDO/0YZJ+D5+FcGeK2zPgVfVIqJHclzEtsmonRa/ttpQ9
+X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
+ pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
+X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
+ auth_id=156
+X-Original-From: =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+Reply-To: j.ne@posteo.net
 
-This trades verification complexity for runtime overheads due to the
-nospec inserted because of the EINVAL.
+From: "J. Neuschäfer" <j.ne@posteo.net>
 
-With increased limits this allows applying mitigations to large BPF
-progs such as the Parca Continuous Profiler's prog. However, this
-requires a jump-seq limit of 256k. In any case, the same principle
-should apply to smaller programs therefore include it even if the limit
-stays at 8k for now. Most programs in [1] only require a limit of 32k.
+In some scenarios, such as under the Freescale eLBC bus, there are raw
+NAND chips with a unit address that has a comma in it (cs,offset).
+For reasons of compatibility with historical device trees and
+readability of the unit addresses, this format is kept.
 
-[1] https://arxiv.org/pdf/2405.00078 ("VeriFence: Lightweight and
-    Precise Spectre Defenses for Untrusted Linux Kernel Extensions")
+Relax the $nodename pattern in raw-nand-chip.yaml to allow such unit
+addresses. Unfortunately $nonenames defined in bindings that reference
+raw-nand
 
-Signed-off-by: Luis Gerhorst <luis.gerhorst@fau.de>
-Acked-by: Henriette Herzog <henriette.herzog@rub.de>
-Cc: Maximilian Ott <ott@cs.fau.de>
-Cc: Milan Stephan <milan.stephan@fau.de>
+Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
 ---
- kernel/bpf/verifier.c | 14 ++++++++++++++
- 1 file changed, 14 insertions(+)
 
-diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-index 03af82f52a02..49c7e2608ccd 100644
---- a/kernel/bpf/verifier.c
-+++ b/kernel/bpf/verifier.c
-@@ -187,6 +187,7 @@ struct bpf_verifier_stack_elem {
- };
+V4:
+- reintroduce patch to silence dtc validation error, after discussion
+  with Rob Herring and Miquèl Raynal
+- add some more detail to the commit message
+- remove unit address format rather than extending it
+  (old pattern: "^nand@[a-f0-9](,[0-9a-f]*)?$")
+
+V3:
+- remove patch after discussion with Miquèl Raynal
+
+V2:
+- new patch
+---
+ Documentation/devicetree/bindings/mtd/raw-nand-chip.yaml | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/Documentation/devicetree/bindings/mtd/raw-nand-chip.yaml b/Documentation/devicetree/bindings/mtd/raw-nand-chip.yaml
+index 092448d7bfc5ccd246ca4b2341464e18722a2d51..d655f6673fc31b1d9ee7cd734cbe1d310f88090b 100644
+--- a/Documentation/devicetree/bindings/mtd/raw-nand-chip.yaml
++++ b/Documentation/devicetree/bindings/mtd/raw-nand-chip.yaml
+@@ -25,7 +25,7 @@ description: |
  
- #define BPF_COMPLEXITY_LIMIT_JMP_SEQ	8192
-+#define BPF_COMPLEXITY_LIMIT_SPEC_V1_VERIFICATION	(BPF_COMPLEXITY_LIMIT_JMP_SEQ / 2)
- #define BPF_COMPLEXITY_LIMIT_STATES	64
+ properties:
+   $nodename:
+-    pattern: "^nand@[a-f0-9]$"
++    pattern: "^nand@"
  
- #define BPF_MAP_KEY_POISON	(1ULL << 63)
-@@ -2010,6 +2011,19 @@ static struct bpf_verifier_state *push_stack(struct bpf_verifier_env *env,
- 	struct bpf_verifier_stack_elem *elem;
- 	int err;
- 
-+	if (!env->bypass_spec_v1 &&
-+	    cur->speculative &&
-+	    env->stack_size > BPF_COMPLEXITY_LIMIT_SPEC_V1_VERIFICATION) {
-+		/* Avoiding nested speculative path verification because we are
-+		 * close to exceeding the jump sequence complexity limit. Will
-+		 * instead insert a speculation barrier which will impact
-+		 * performace. To improve performance, authors should reduce the
-+		 * program's complexity. Barrier will be inserted in
-+		 * do_check().
-+		 */
-+		return ERR_PTR(-EINVAL);
-+	}
-+
- 	elem = kzalloc(sizeof(struct bpf_verifier_stack_elem), GFP_KERNEL);
- 	if (!elem) {
- 		err = -ENOMEM;
+   reg:
+     description:
+
 -- 
-2.48.1
+2.48.0.rc1.219.gb6b6757d772
+
 
 
