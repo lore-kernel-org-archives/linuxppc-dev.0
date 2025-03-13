@@ -1,56 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-6975-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-6976-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFB37C282DE
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Mar 2025 14:05:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA4FEC282DE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Mar 2025 15:26:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZD8RP19jLz3cC6;
-	Fri, 14 Mar 2025 01:05:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1098:5b::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741874752;
-	cv=none; b=UikXeTFLMLNrfKI7NPPe1DipIFXHUo5/TUaWpOlMAtohEq4eUedluEL06+5QJNT4uhUr9bj6Qvze5yxSEhbPFBs+Ibj2omwghiKYKmWTFe5licwfPoUGC+7OxEtaspsnVCshDyX7HC1ApeMmMeU0kdcnY0nfv+FWQlDh9P3O+vUtvyYsMfLcXljCM0cege8+iwH3YeKipLdum1Ka4kFWUpNK+ilAno8z46sJ2TGsbSdKOKlahYAxKF94NMBkoj9vfEZYz20kjkeNyDHHClI3FHz0JZV9hX8k3h6TL/9fPSG1rqVsRvyzEMriR6U80+0Yl+ZeTHCYMCS7irg3J+29UA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDBDq1bTGz3c9w;
+	Fri, 14 Mar 2025 02:26:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.208.42
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741879611;
+	cv=none; b=YHlYQA81AydCXaQG1bk0y61fxbcO0cWW1mVVwD5Hn57a9NfMlDCP02A5Pb1fgw9Thb+EhufmOX/lMiIhhXNwUiOuyytGk+GaUge56KcoE41FdNiOdbSsSgm8UgZM9liix+1EzBgRZiNAwQLdEivOR3qm/reOqWIiSNHjYzu/QlGrko97sEBA84V9zkZeSqcM43jZGW7eqUdo4/AsyyT8jSX46on328b6Cml3slZM7hgP4W9o7RAWEP1YqxV81tVmN33uCsbXKOUWeruFIOa9gqovTfD50w3lCBipwWQKUwu81NVBZZ0ecn21Q3xrzgiNeDFcQTpWlSejS8fx7XYwdQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741874752; c=relaxed/relaxed;
-	bh=PEsRyzQpnsTIeXVgh3VKXs2l1ybuznv72IKMRB+grdU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MFOVvq4GQ6MN03dQpuR92nkLfDvuu0feYiukZwOISiQyn+E2WxTNNV8IwSqBs7AnNB3WlVzq2QtDX8BY5HSvLTBeAn1z6Tm6cgewPO2t99pcEU1k2dNTFe61WWVtLSyEF2U0EWdSd4vXGHAh8Lx/O/kWsN/9S2pJ09JOjjd4TQrfPJtq9XuZFooOpBUPOmhhspZpWtTK1/NRYTxfw5hUOknvjtqsbhQGlR2Zrb9AOBqX2lUE8hDWQPH1wwRnANICdE+lWepJnJQcZbyInvC1NeyZ1hBoC2wM3h1BTQt7HWe8wRoXz4tcSryGGw0goN/OsCCETb60UeDnA81LbIJZbw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=treblig.org; dkim=pass (2048-bit key; unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256 header.s=bytemarkmx header.b=Qr8mHT8t; dkim-atps=neutral; spf=pass (client-ip=2a00:1098:5b::1; helo=mx.treblig.org; envelope-from=dg@treblig.org; receiver=lists.ozlabs.org) smtp.mailfrom=treblig.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=treblig.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=treblig.org header.i=@treblig.org header.a=rsa-sha256 header.s=bytemarkmx header.b=Qr8mHT8t;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=treblig.org (client-ip=2a00:1098:5b::1; helo=mx.treblig.org; envelope-from=dg@treblig.org; receiver=lists.ozlabs.org)
-Received: from mx.treblig.org (mx.treblig.org [IPv6:2a00:1098:5b::1])
+	t=1741879611; c=relaxed/relaxed;
+	bh=1ii1IFZdoC6n5uv3UgvYeObshpXYt3dV3HzZ5zG8DvA=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=aO4pK5iLyLUzgqS1smKm4LIqpg6t1d2n3csrGFYBlktDZyXiTb8QGz0qOOwwMlFQSXg4scQ2oZ4s8QamuQRWDrr1Skr8Ojh7j19nyS7oGciMjgqEzWupNcQfSJ1AFCIB502JUW40s9rwMXissZ9d+2pmLSEgKdUUAaFlYdUdkt5Mvv0X6/xFgKyEnYwsrHmH6fBB0E47PbdBGmN3/5BHz2wcgLIoKNEjE3yzgFjbqPVMfFaLofeY9VDlUsK5W8x7VGabki3z5BBz2OP0W/a9ugpEPJx+RJgwMczh/Se09MB9/5z0uQSxiCKW+Js1UMryfGypNwxXvgQ2mmrDWTgIeA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.208.42; helo=mail-ed1-f42.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.208.42; helo=mail-ed1-f42.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com [209.85.208.42])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZD8RL1BxCz3c9R
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 01:05:48 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=treblig.org
-	; s=bytemarkmx; h=Content-Type:MIME-Version:Message-ID:Subject:From:Date:From
-	:Subject; bh=PEsRyzQpnsTIeXVgh3VKXs2l1ybuznv72IKMRB+grdU=; b=Qr8mHT8tIdgntsqj
-	NLrrS5Nptf7Tk9fTNx2lUaq17GWzLPe++dmJ/knwGNcamJkF7mmQdKUGO4KkGfI+uOVW2SYvOuYnj
-	ywq5WWolNQHzhB7hsIoObIvmm9u6ce/iE5xZaAOFJw6dhcs5UnROKWLVAjmUtFfLy396y+rxr2CzL
-	qmpNRx7lY61adQjn+6wz7BJhLBG7bIIvq2SLUJ5JvM22js3jepniEmeIAk3RyUCZbWHhkRBXvC77N
-	an/ZWCodTWczRMEeRy9NtcFHMYAC/dC1m5zJFgVLfnQGxemQF6+/kVt1/UTOqMf+RwyDheSgPRMs0
-	Clmjuln9XCwddUhhDw==;
-Received: from dg by mx.treblig.org with local (Exim 4.96)
-	(envelope-from <dg@treblig.org>)
-	id 1tsiUj-004dd2-1D;
-	Thu, 13 Mar 2025 13:21:05 +0000
-Date: Thu, 13 Mar 2025 13:21:05 +0000
-From: "Dr. David Alan Gilbert" <linux@treblig.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, ioana.ciornei@nxp.com,
-	stuyoder@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bus: fsl-mc: Remove deadcode
-Message-ID: <Z9LbwRUsHwFLpBZA@gallifrey>
-References: <20241115152055.279732-1-linux@treblig.org>
- <3f9dbb7b-6527-48e1-9028-b46e5a0c58ce@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZDBDn2JTXz2xtt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 02:26:48 +1100 (AEDT)
+Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-5e56b229d60so4137443a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2025 08:26:48 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1741879604; x=1742484404;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=1ii1IFZdoC6n5uv3UgvYeObshpXYt3dV3HzZ5zG8DvA=;
+        b=t5Noo+x0+7Uzxg/0SpsuFivCW55nkkBIGFMqtbAg41iYde/METPqKyNsR2L4sCkfif
+         pmaNy/IhjQ6bII+WN7ssM/tUXwcrbw1m3HznyOPzLYcyx41ZRV/0BK7bEOht7vO5Fr33
+         bmkRSPOOFYgKTvzaF3PosmZ85c3jc1/q7+ATzAyTCgtGFtW0DFp2dx5JU8FankegJ5zc
+         vvT4NCNFMO1vYoyodJd3V0RLA1tsJ9RRqA6CTXV4BJvS0Tk2r92JE3C/Qed5Qty4mZ1b
+         HBNgyKsfdHhatmw23fZHtUgz42Zri+uY9ouZA5vkVLmWvlv97plRjg7rgvmdekQuSn4R
+         LzWg==
+X-Forwarded-Encrypted: i=1; AJvYcCXjygb9A0s1LuW7IJWMrKGppmbvrBTTeHh3JbwwHxTdbQLcUxc1s3PnCfyvg4Zv4fbG3NYqo5Cz+5YW2Yk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxsZ4JeA0R54HegZyYLFbROL7EgvvcqGyW/k6/Tp0TIcq6P8bqI
+	fl9IZUX0WUaNcqB/3kirHV8YF8WOMX2oh4TZvwFkKOyBx4nlEpJLMH0eLgyLhK0=
+X-Gm-Gg: ASbGnctf8ZbMW5zV07j6kx1V6/HqK2LmKOHMLawwD+T7JWH8bwLD6NiZsIH92G1YqLh
+	dgUIjB9Is7Yth6pXDey+upldj42DTaJPilQeBVF5E3TLU0M54du6s2A65MkTtVmIqaSKS2IcS6P
+	WKHt0jwrbYSZRiReuUlt1KKzxAdSXaXo4k+0pGrCyLZ/fIC2nYxTVGO/9+p6Jkk+V4dG1QlIaqV
+	/Iq7MYX2AsJjQ6LPMoQBCRDUN0o1p2rVyEi8vEwyvDkiDU+qJbQgGIfzTOfWRGcpSRihIFf5Fr5
+	HbuXd0JZoqMnvfc7UYoWubv0jPCCCYLUwuPsip1V5QTLnGeNtmk4TMSt+QwOzXBv6NgagzOsBhb
+	Nn6MFbSI=
+X-Google-Smtp-Source: AGHT+IGerm4HS0GZkRklhgpFWYMQmzHudTyLko8izWBnTIVlklXCEhadE4AoThkA585F7zD/QwnKPg==
+X-Received: by 2002:a17:907:3da1:b0:ac2:b2b5:40ce with SMTP id a640c23a62f3a-ac31237416bmr352050766b.13.1741879604417;
+        Thu, 13 Mar 2025 08:26:44 -0700 (PDT)
+Received: from mail-ed1-f41.google.com (mail-ed1-f41.google.com. [209.85.208.41])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ac3147e9bb0sm92093966b.47.2025.03.13.08.26.43
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Thu, 13 Mar 2025 08:26:43 -0700 (PDT)
+Received: by mail-ed1-f41.google.com with SMTP id 4fb4d7f45d1cf-5e614da8615so2113657a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Mar 2025 08:26:43 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCUFBu6rj7nqaW7RbxKneo/oQpAksXPUx4fuuxG3ADkctqRVUFuL6zpvZC6Cl5f1vZLNmSpNSV2Of3HA3So=@lists.ozlabs.org
+X-Received: by 2002:a17:907:9626:b0:ac3:d1c:89ce with SMTP id
+ a640c23a62f3a-ac312305664mr252326866b.9.1741879178133; Thu, 13 Mar 2025
+ 08:19:38 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,175 +75,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <3f9dbb7b-6527-48e1-9028-b46e5a0c58ce@csgroup.eu>
-X-Chocolate: 70 percent or better cocoa solids preferably
-X-Operating-System: Linux/6.1.0-21-amd64 (x86_64)
-X-Uptime: 13:17:26 up 309 days, 31 min,  1 user,  load average: 0.00, 0.00,
- 0.00
-User-Agent: Mutt/2.2.12 (2023-09-09)
+References: <20250313135003.836600-1-rppt@kernel.org> <20250313135003.836600-14-rppt@kernel.org>
+In-Reply-To: <20250313135003.836600-14-rppt@kernel.org>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Thu, 13 Mar 2025 16:19:10 +0100
+X-Gmail-Original-Message-ID: <CAMuHMdWCBL_cg1NgbHCA3e9GTob_P9mTuN_Tepvigci6rxDmbg@mail.gmail.com>
+X-Gm-Features: AQ5f1Jr9qHWq5jtnIT3-BmFGhQQ_nRM0uVNr9PeQK5Y9eEomJSZyndfwbc1wpbs
+Message-ID: <CAMuHMdWCBL_cg1NgbHCA3e9GTob_P9mTuN_Tepvigci6rxDmbg@mail.gmail.com>
+Subject: Re: [PATCH v2 13/13] arch, mm: make releasing of memory to page
+ allocator more explicit
+To: Mike Rapoport <rppt@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Andreas Larsson <andreas@gaisler.com>, Andy Lutomirski <luto@kernel.org>, Ard Biesheuvel <ardb@kernel.org>, 
+	Arnd Bergmann <arnd@arndb.de>, Borislav Petkov <bp@alien8.de>, Brian Cain <bcain@kernel.org>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Dave Hansen <dave.hansen@linux.intel.com>, 
+	"David S. Miller" <davem@davemloft.net>, Dinh Nguyen <dinguyen@kernel.org>, 
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>, Guo Ren <guoren@kernel.org>, 
+	Heiko Carstens <hca@linux.ibm.com>, Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, 
+	Ingo Molnar <mingo@redhat.com>, Jiaxun Yang <jiaxun.yang@flygoat.com>, 
+	Johannes Berg <johannes@sipsolutions.net>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Mark Brown <broonie@kernel.org>, Matt Turner <mattst88@gmail.com>, 
+	Max Filippov <jcmvbkbc@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, Michal Simek <monstr@monstr.eu>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Peter Zijlstra <peterz@infradead.org>, 
+	Richard Weinberger <richard@nod.at>, Russell King <linux@armlinux.org.uk>, 
+	Stafford Horne <shorne@gmail.com>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+	Thomas Gleixner <tglx@linutronix.de>, Vasily Gorbik <gor@linux.ibm.com>, Vineet Gupta <vgupta@kernel.org>, 
+	Will Deacon <will@kernel.org>, linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	linux-csky@vger.kernel.org, linux-hexagon@vger.kernel.org, 
+	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, 
+	linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org, 
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
+	linux-um@lists.infradead.org, linux-arch@vger.kernel.org, linux-mm@kvack.org, 
+	x86@kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-* Christophe Leroy (christophe.leroy@csgroup.eu) wrote:
-> 
-> 
-> Le 15/11/2024 à 16:20, linux@treblig.org a écrit :
-> > [Vous ne recevez pas souvent de courriers de linux@treblig.org. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
-> > 
-> > From: "Dr. David Alan Gilbert" <linux@treblig.org>
-> > 
-> > fsl_mc_allocator_driver_exit() was added explicitly by
-> > commit 1e8ac83b6caf ("bus: fsl-mc: add fsl_mc_allocator cleanup function")
-> > but was never used.
-> > 
-> > Remove it.
-> > 
-> > fsl_mc_portal_reset() was added in 2015 by
-> > commit 197f4d6a4a00 ("staging: fsl-mc: fsl-mc object allocator driver")
-> > but was never used.
-> > 
-> > Remove it.
-> > 
-> > fsl_mc_portal_reset() was the only caller of dpmcp_reset().
-> > 
-> > Remove it.
-> > 
-> > Signed-off-by: Dr. David Alan Gilbert <linux@treblig.org>
-> 
-> Acked-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+On Thu, 13 Mar 2025 at 14:53, Mike Rapoport <rppt@kernel.org> wrote:
+> From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+>
+> The point where the memory is released from memblock to the buddy allocator
+> is hidden inside arch-specific mem_init()s and the call to
+> memblock_free_all() is needlessly duplicated in every artiste cure and
+> after introduction of arch_mm_preinit() hook, mem_init() implementation on
+> many architecture only contains the call to memblock_free_all().
+>
+> Pull memblock_free_all() call into mm_core_init() and drop mem_init() on
+> relevant architectures to make it more explicit where the free memory is
+> released from memblock to the buddy allocator and to reduce code
+> duplication in architecture specific code.
+>
+> Acked-by: Dave Hansen <dave.hansen@linux.intel.com>     # x86
+> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 
-Hi,
-  Can someone pick this old change up please?  I see the PPC patchwork says
-  'handled elsewhere' but doesn't say where.
+>  arch/m68k/mm/init.c          |  2 --
 
-Thanks,
+Acked-by: Geert Uytterhoeven <geert@linux-m68k.org> # m68k
 
-Dave
-> 
-> > ---
-> >   drivers/bus/fsl-mc/dpmcp.c            | 22 ----------------------
-> >   drivers/bus/fsl-mc/fsl-mc-allocator.c |  5 -----
-> >   drivers/bus/fsl-mc/fsl-mc-private.h   |  6 ------
-> >   drivers/bus/fsl-mc/mc-io.c            | 20 --------------------
-> >   include/linux/fsl/mc.h                |  2 --
-> >   5 files changed, 55 deletions(-)
-> > 
-> > diff --git a/drivers/bus/fsl-mc/dpmcp.c b/drivers/bus/fsl-mc/dpmcp.c
-> > index 5fbd0dbde24a..7816c0a728ef 100644
-> > --- a/drivers/bus/fsl-mc/dpmcp.c
-> > +++ b/drivers/bus/fsl-mc/dpmcp.c
-> > @@ -75,25 +75,3 @@ int dpmcp_close(struct fsl_mc_io *mc_io,
-> >          /* send command to mc*/
-> >          return mc_send_command(mc_io, &cmd);
-> >   }
-> > -
-> > -/**
-> > - * dpmcp_reset() - Reset the DPMCP, returns the object to initial state.
-> > - * @mc_io:     Pointer to MC portal's I/O object
-> > - * @cmd_flags: Command flags; one or more of 'MC_CMD_FLAG_'
-> > - * @token:     Token of DPMCP object
-> > - *
-> > - * Return:     '0' on Success; Error code otherwise.
-> > - */
-> > -int dpmcp_reset(struct fsl_mc_io *mc_io,
-> > -               u32 cmd_flags,
-> > -               u16 token)
-> > -{
-> > -       struct fsl_mc_command cmd = { 0 };
-> > -
-> > -       /* prepare command */
-> > -       cmd.header = mc_encode_cmd_header(DPMCP_CMDID_RESET,
-> > -                                         cmd_flags, token);
-> > -
-> > -       /* send command to mc*/
-> > -       return mc_send_command(mc_io, &cmd);
-> > -}
-> > diff --git a/drivers/bus/fsl-mc/fsl-mc-allocator.c b/drivers/bus/fsl-mc/fsl-mc-allocator.c
-> > index b5e8c021fa1f..6c3beb82dd1b 100644
-> > --- a/drivers/bus/fsl-mc/fsl-mc-allocator.c
-> > +++ b/drivers/bus/fsl-mc/fsl-mc-allocator.c
-> > @@ -656,8 +656,3 @@ int __init fsl_mc_allocator_driver_init(void)
-> >   {
-> >          return fsl_mc_driver_register(&fsl_mc_allocator_driver);
-> >   }
-> > -
-> > -void fsl_mc_allocator_driver_exit(void)
-> > -{
-> > -       fsl_mc_driver_unregister(&fsl_mc_allocator_driver);
-> > -}
-> > diff --git a/drivers/bus/fsl-mc/fsl-mc-private.h b/drivers/bus/fsl-mc/fsl-mc-private.h
-> > index b3520ea1b9f4..e1b7ec3ed1a7 100644
-> > --- a/drivers/bus/fsl-mc/fsl-mc-private.h
-> > +++ b/drivers/bus/fsl-mc/fsl-mc-private.h
-> > @@ -66,10 +66,6 @@ int dpmcp_close(struct fsl_mc_io *mc_io,
-> >                  u32 cmd_flags,
-> >                  u16 token);
-> > 
-> > -int dpmcp_reset(struct fsl_mc_io *mc_io,
-> > -               u32 cmd_flags,
-> > -               u16 token);
-> > -
-> >   /*
-> >    * Data Path Resource Container (DPRC) API
-> >    */
-> > @@ -631,8 +627,6 @@ int dprc_scan_objects(struct fsl_mc_device *mc_bus_dev,
-> > 
-> >   int __init fsl_mc_allocator_driver_init(void);
-> > 
-> > -void fsl_mc_allocator_driver_exit(void);
-> > -
-> >   void fsl_mc_init_all_resource_pools(struct fsl_mc_device *mc_bus_dev);
-> > 
-> >   void fsl_mc_cleanup_all_resource_pools(struct fsl_mc_device *mc_bus_dev);
-> > diff --git a/drivers/bus/fsl-mc/mc-io.c b/drivers/bus/fsl-mc/mc-io.c
-> > index 95b10a6cf307..a0ad7866cbfc 100644
-> > --- a/drivers/bus/fsl-mc/mc-io.c
-> > +++ b/drivers/bus/fsl-mc/mc-io.c
-> > @@ -263,23 +263,3 @@ void fsl_mc_portal_free(struct fsl_mc_io *mc_io)
-> >          dpmcp_dev->consumer_link = NULL;
-> >   }
-> >   EXPORT_SYMBOL_GPL(fsl_mc_portal_free);
-> > -
-> > -/**
-> > - * fsl_mc_portal_reset - Resets the dpmcp object for a given fsl_mc_io object
-> > - *
-> > - * @mc_io: Pointer to the fsl_mc_io object that wraps the MC portal to free
-> > - */
-> > -int fsl_mc_portal_reset(struct fsl_mc_io *mc_io)
-> > -{
-> > -       int error;
-> > -       struct fsl_mc_device *dpmcp_dev = mc_io->dpmcp_dev;
-> > -
-> > -       error = dpmcp_reset(mc_io, 0, dpmcp_dev->mc_handle);
-> > -       if (error < 0) {
-> > -               dev_err(&dpmcp_dev->dev, "dpmcp_reset() failed: %d\n", error);
-> > -               return error;
-> > -       }
-> > -
-> > -       return 0;
-> > -}
-> > -EXPORT_SYMBOL_GPL(fsl_mc_portal_reset);
-> > diff --git a/include/linux/fsl/mc.h b/include/linux/fsl/mc.h
-> > index c90ec889bfc2..37316a58d2ed 100644
-> > --- a/include/linux/fsl/mc.h
-> > +++ b/include/linux/fsl/mc.h
-> > @@ -417,8 +417,6 @@ int __must_check fsl_mc_portal_allocate(struct fsl_mc_device *mc_dev,
-> > 
-> >   void fsl_mc_portal_free(struct fsl_mc_io *mc_io);
-> > 
-> > -int fsl_mc_portal_reset(struct fsl_mc_io *mc_io);
-> > -
-> >   int __must_check fsl_mc_object_allocate(struct fsl_mc_device *mc_dev,
-> >                                          enum fsl_mc_pool_type pool_type,
-> >                                          struct fsl_mc_device **new_mc_adev);
-> > --
-> > 2.47.0
-> > 
-> 
+Gr{oetje,eeting}s,
+
+                        Geert
+
 -- 
- -----Open up your eyes, open up your mind, open up your code -------   
-/ Dr. David Alan Gilbert    |       Running GNU/Linux       | Happy  \ 
-\        dave @ treblig.org |                               | In Hex /
- \ _________________________|_____ http://www.treblig.org   |_______/
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+
+In personal conversations with technical people, I call myself a hacker. But
+when I'm talking to journalists I just say "programmer" or something like that.
+                                -- Linus Torvalds
 
