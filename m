@@ -1,79 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-7046-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7047-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10578C28B2F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Mar 2025 09:08:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 382D2C282EC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Mar 2025 09:25:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDdnn4HFsz3cYb;
-	Fri, 14 Mar 2025 20:08:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741943309;
-	cv=none; b=OU3D4PhTBQrkbNSoNCX/93NZfZp2h9TUYMC9bBde8FNY8Vs5IkuMzL81XgZwpuvafaZSobEoC/qrApADpHINXO/HEr00wBGCGQlZEwM1+Qp/LwPsRsepi77xn4oGZsxHih4rqxq5ssb+r+5zJwFjX9LjYRvl6NN1Flo/YOosLU1lv9dmsPBAeSedYbiJHYTwfgS+hIt7CTSiHM3oq9Jbq3In/PmL69eg0ObpqxXtZIEri4AY1kD6o1zCyKnopxkt69x0Y94LTc8icEM1I/XYZcsNt8dE7X6LgZQI9PS5YrspK8cSTLnTM6Lwm3DMHn9cI6omyu6Hku8u0qIUpVuzdQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDf9c49B6z3cYG;
+	Fri, 14 Mar 2025 20:25:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741944340;
+	cv=none; b=SFpajZXpvIdM9dxCmxvY03d3BKViJAXqTfUVsv3tTh9oZLoNt0tgP8veq1hHjkosAYWS4nXlqNbkGxygdEkFxC5hEK8z5VS9pQp0EvAf2oec9qBu0T536M22LkM5oZeH6ZUcYz4a8exegkTAHjqB/hZ1iF7D8ut9Pb9erqb1LjTUIW/8Dono92scEgP6hn6dOhXRyLESTnxYizvObMuXlvjwdUUa88bwsVuwQSN4o5nqjP4QZUcygdLBHfGB8wzJv9s72xjs+UJRIsCEgx9Tggge4goQOCxsFZFfWTFhI8l5w61g/gBmox1QSZ6086r2+TT68H05BEakCJ3t6lSllg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741943309; c=relaxed/relaxed;
-	bh=P5Ptcoo0re4UupnZRhseH76+bGD+NG6A68s8gCEYTzI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=FCXWBLLGf3P4glgU6b1vE8Ff8DdIRb95GlYU+rjDmb/DoUNh1AHI/1MZSc9Q0uS62QD5uyyhgkIGoDaxOjn+TknjBP5eGfTtOj9c10YWTFPyhEfqMxMLp2c+oek72+K+y87rXc0JPcU8aRHM+0RzNLHmnMoBcGGdY+byCbxhnfsrwwkfNn1gNwGaSkJzTiT0wtMKjKLXa90O0uF5As2WyKPx8H4j9fdDWUka4pq5uEgGV1FeDqCJ5QEYTUe28ecfjxU+ypSzEbi3nm7EdQdcOY8pWcnD8/67HJZlFOA6G/9j63hb7JpLbFoHYLvBxTOQtOq+J4aSSYe+F9HfqZlJWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Mn/OPDYa; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1741944340; c=relaxed/relaxed;
+	bh=tmaj98J/fxkfgoUEV6gT/fCczi5L/Uyg0IXGLFH63V0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=ec00iuRfecgLPz/3hN04jLJ9jB49LTNYlzlf7JGNY/5xpFKqs9KWIQJvUbs66qimNprlHWr8Cw0rAFnDSNXVFb48w8EUmOQiqBJQM6r+GtkYJrroRnPk0QHpDSfdiTPFikAVNwnIQgN45FEojsiW/ImMuElUvIeNkBYI/1VQqdiS3sStuF4jzM7RKdzpjUJqEGKDn2hCvbcGug2gN1nwkyuoBLnQzdOx4026YffimROB3gCrYJzZ7o7hNlnE3lTILmdNrLhNUI4Er3OxGRG1VKa/EwMueYJREW+X5KqmCfkL02EPChNy2qPyRBRrrVqTz35mPx6oUcy5hWySz4n79A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=b9kg9Eou; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=t7mxcR2c; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=b9kg9Eou; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=t7mxcR2c; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Mn/OPDYa;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=b9kg9Eou;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=t7mxcR2c;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=b9kg9Eou;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=t7mxcR2c;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZDdnm3Pj9z3cYN
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 20:08:26 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 52DNP4Qv018322;
-	Fri, 14 Mar 2025 09:08:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=P5Ptco
-	o0re4UupnZRhseH76+bGD+NG6A68s8gCEYTzI=; b=Mn/OPDYaG0OL/6nGYnKYOY
-	DeQU50X23BQlguz7qfLDTLT0HtWVvH1ff7TYmK3WwBrFIXHbxWJa6glBFk+qBDIJ
-	QaeDKrcTXjGTzQFxdOcAaF/3SOBKDxs6TvW9XgRVnQ5cb+UNmqjk7Kc3a/Sb2lhK
-	qoSefv4V/2Tns0D6MvLoIxRTbhndbbHnW5ZGLb6kLpGs9Hb3skW3uFZ/+qNAWxVZ
-	HT1GIio5HgioUzR5b1AHVzPHV/gZUOClPGQfG37lbvNHV3msXV7ubjJ+PP+BjCmr
-	tuM+8ukjrkN1lUrdRFd752D59SQi6u4Ifqa1AzsIbEtkW5Ar8yvFm7me0eSfOu5g
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 45c0srcscr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 14 Mar 2025 09:08:14 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 52E96Nbl017054;
-	Fri, 14 Mar 2025 09:08:13 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 45c0srcscj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 14 Mar 2025 09:08:13 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 52E96kuE027065;
-	Fri, 14 Mar 2025 09:08:12 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 45atsr644r-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 14 Mar 2025 09:08:12 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 52E988jd18415970
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 14 Mar 2025 09:08:08 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 767762004B;
-	Fri, 14 Mar 2025 09:08:08 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7F65320043;
-	Fri, 14 Mar 2025 09:08:05 +0000 (GMT)
-Received: from [9.39.22.126] (unknown [9.39.22.126])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 14 Mar 2025 09:08:05 +0000 (GMT)
-Message-ID: <1263bf89-a2dd-4ae9-a8f9-9c36ddd08208@linux.ibm.com>
-Date: Fri, 14 Mar 2025 14:38:04 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZDf9b26c8z3cWc
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 20:25:39 +1100 (AEDT)
+Received: from kitsune.suse.cz (unknown [10.100.12.127])
+	by smtp-out2.suse.de (Postfix) with ESMTP id E4D6D1F388;
+	Fri, 14 Mar 2025 09:25:35 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1741944336; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=tmaj98J/fxkfgoUEV6gT/fCczi5L/Uyg0IXGLFH63V0=;
+	b=b9kg9Eou7sCDQ/zMFDOXv2H8frkSr3cznK8uO1q2nlfJ1MgNxEMIbULLgTEF/eRko5Uvnv
+	OQEF3kV9QxJcUihfWAjzyHHtsgeD7MSdAmF+HPkt9ZMXRHE9J+13AtLPFO8ILNvlbwMAh0
+	gsr2QI9XLrCao3MIBWnUjjX8eV1Ue0E=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1741944336;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=tmaj98J/fxkfgoUEV6gT/fCczi5L/Uyg0IXGLFH63V0=;
+	b=t7mxcR2c1iON3DvFhhP1If79mdaLUE48gbYj39tjy2K4g2QGidh1bGc08oHM2aGlOa1EVw
+	j13KQvs+dBPrNlBA==
+Authentication-Results: smtp-out2.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1741944336; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=tmaj98J/fxkfgoUEV6gT/fCczi5L/Uyg0IXGLFH63V0=;
+	b=b9kg9Eou7sCDQ/zMFDOXv2H8frkSr3cznK8uO1q2nlfJ1MgNxEMIbULLgTEF/eRko5Uvnv
+	OQEF3kV9QxJcUihfWAjzyHHtsgeD7MSdAmF+HPkt9ZMXRHE9J+13AtLPFO8ILNvlbwMAh0
+	gsr2QI9XLrCao3MIBWnUjjX8eV1Ue0E=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1741944336;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=tmaj98J/fxkfgoUEV6gT/fCczi5L/Uyg0IXGLFH63V0=;
+	b=t7mxcR2c1iON3DvFhhP1If79mdaLUE48gbYj39tjy2K4g2QGidh1bGc08oHM2aGlOa1EVw
+	j13KQvs+dBPrNlBA==
+From: Michal Suchanek <msuchanek@suse.de>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Michal Suchanek <msuchanek@suse.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Nicolas Schier <nicolas@fjasle.eu>,
+	Masahiro Yamada <masahiroy@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	linux-kernel@vger.kernel.org,
+	"Nysal Jan K.A." <nysal@linux.ibm.com>
+Subject: [PATCH v2] powerpc/boot: Fix build with gcc 15
+Date: Fri, 14 Mar 2025 10:25:23 +0100
+Message-ID: <20250314092528.15506-1-msuchanek@suse.de>
+X-Mailer: git-send-email 2.47.1
+In-Reply-To: <Z86liwlwP5WvrEkw@kitsune.suse.cz>
+References: <Z86liwlwP5WvrEkw@kitsune.suse.cz>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,96 +104,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/6] powerpc: fadump: use lock guard for mutex
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, mpe@ellerman.id.au, fbarrat@linux.ibm.com,
-        ajd@linux.ibm.com, mahesh@linux.ibm.com, oohall@gmail.com,
-        hbathini@linux.ibm.com, dhowells@redhat.com, haren@linux.ibm.com,
-        linux-kernel@vger.kernel.org
-References: <20250314054544.1998928-1-sshegde@linux.ibm.com>
- <20250314054544.1998928-4-sshegde@linux.ibm.com>
- <20250314082223.GT5880@noisy.programming.kicks-ass.net>
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-Content-Language: en-US
-In-Reply-To: <20250314082223.GT5880@noisy.programming.kicks-ass.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 2aHaGjGqb04H9xa5NdtJKF2BmYUQP55S
-X-Proofpoint-GUID: 5qlFFH1qpa3l-RY29U11zq59JxMJzqO4
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1093,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-03-14_03,2025-03-13_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 adultscore=0
- priorityscore=1501 lowpriorityscore=0 clxscore=1015 bulkscore=0
- malwarescore=0 phishscore=0 mlxlogscore=744 mlxscore=0 impostorscore=0
- suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.19.0-2502280000 definitions=main-2503140071
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [-2.80 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	RCPT_COUNT_TWELVE(0.00)[12];
+	RCVD_COUNT_ZERO(0.00)[0];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	FUZZY_BLOCKED(0.00)[rspamd.com];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[suse.de,linux.ibm.com,ellerman.id.au,gmail.com,csgroup.eu,kernel.org,fjasle.eu,google.com,vger.kernel.org];
+	TO_DN_SOME(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:email,suse.de:mid];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com]
 
+Similar to x86 the ppc boot code does not build with GCC 15.
 
+Copy the fix from
+commit ee2ab467bddf ("x86/boot: Use '-std=gnu11' to fix build with GCC 15")
 
-On 3/14/25 13:52, Peter Zijlstra wrote:
+Signed-off-by: Michal Suchanek <msuchanek@suse.de>
+---
+v2: Move the fix outside of ifdef to apply to all subarchitectures
+---
+ arch/powerpc/boot/Makefile | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Thanks Peter for taking a look.
+diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+index 1ff6ad4f6cd2..210c60d3d4cc 100644
+--- a/arch/powerpc/boot/Makefile
++++ b/arch/powerpc/boot/Makefile
+@@ -32,6 +32,8 @@ else
+     BOOTAR := $(AR)
+ endif
+ 
++BOOTTARGETFLAGS	+= -std=gnu11
++
+ ifdef CONFIG_PPC64_BOOT_WRAPPER
+ BOOTTARGETFLAGS	+= -m64
+ BOOTTARGETFLAGS	+= -mabi=elfv2
+-- 
+2.47.1
 
-> On Fri, Mar 14, 2025 at 11:15:41AM +0530, Shrikanth Hegde wrote:
->> use guard(mutex) for scope based resource management of mutex.
->> This would make the code simpler and easier to maintain.
->>
->> More details on lock guards can be found at
->> https://lore.kernel.org/all/20230612093537.614161713@infradead.org/T/#u
->>
->> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
->> ---
->>   arch/powerpc/kernel/fadump.c | 6 ++----
->>   1 file changed, 2 insertions(+), 4 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/fadump.c b/arch/powerpc/kernel/fadump.c
->> index 4b371c738213..5fd2c546fd8c 100644
->> --- a/arch/powerpc/kernel/fadump.c
->> +++ b/arch/powerpc/kernel/fadump.c
->> @@ -1374,15 +1374,13 @@ static void fadump_free_elfcorehdr_buf(void)
->>   
->>   static void fadump_invalidate_release_mem(void)
->>   {
->> -	mutex_lock(&fadump_mutex);
->> +	guard(mutex)(&fadump_mutex);
->> +
->>   	if (!fw_dump.dump_active) {
->> -		mutex_unlock(&fadump_mutex);
->>   		return;
->>   	}
->>   
->>   	fadump_cleanup();
->> -	mutex_unlock(&fadump_mutex);
->> -
-> 
-> This will result in running the below functions with the mutex held.
-> 
->>   	fadump_free_elfcorehdr_buf();
->>   	fadump_release_memory(fw_dump.boot_mem_top, memblock_end_of_DRAM());
->>   	fadump_free_cpu_notes_buf();
-> 
-
-Ok. Got it, since the variable is still in scope unlock wont be called.
-So, will use scoped_guard as you suggested below in v2.
-
-> 
-> The equivalent transformation for the above code would look like:
-> 
-> static void fadump_invalidate_release_mem(void)
-> {
-> 	scoped_guard (mutex, &fadump_mutex) {
-> 		if (!fw_dump.dump_active)
-> 			return;
-> 
-> 		fadump_cleanup();
-> 	}
-> 
-> 	fadump_free_elfcorehdr_buf();
-> 	...
-
-ok.
 
