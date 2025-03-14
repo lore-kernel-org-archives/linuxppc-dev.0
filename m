@@ -1,81 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-7073-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7074-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CCDD3C35FF1
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Mar 2025 13:57:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1080DC282EC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Mar 2025 16:08:32 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDmBj5q7zz3cdD;
-	Sat, 15 Mar 2025 00:57:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741960621;
-	cv=none; b=iCjhEZl0rqgWj/DfHGIoa0NwDRuMH51VqjLmQOmIt6ycj2d+xAX0rDWQoy+tFQP/HRzBQI/7VhyHVdc0fGcilD8uQaqAD/HkMwFD5Bff0yzesETbH1a4UrfBdWhNV8gl13YFbijGCBqcf/0BqmQgISx56iAq09Ps+zI3sfNjMe7FmVC03iQtHKh69iCojNpmd3+qZ5xAe5Fkg/o/wfIpYSMebZF9CqN4KOtmZkwNw9y4JM3/wqJXaBSxYrUPhqDiR2snLYoHt8xWigymM75KnNGUiet3APHy4LOGIaLXP1FQjRcvvuj1E5RoelOEkfmzRtIdozvx1JiPiEukY+7G/Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDq6Q4BjRz3cWN;
+	Sat, 15 Mar 2025 03:08:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741968510;
+	cv=none; b=lxYi+ThdrMuLC/oa+AkX7qRn0fNZpPgRsK7Or98W/wPi1n/voOu0MXpVf9xo8tVigXcwR4fwl2q2iSnCX+9T4ZxRtKr1nMMUZuVwdtTDdnj7VUCtKwmC8U7raphx+4r+jHEOkYM2ADu54/sGac6UNMtnrCQXO3BJc0lbiQs4WI+piaJ/Z3s2mgWm3aLtYCMN/vLpH3I3T8oFeHGGt3f9ckLDyYkVQ19ThJRA34SHbRDQn1X+XArXjHCj6K1jNPsD4MUhzegTGLNLi175C69bsbEIjX5ZcPRdvsjC8zyvG9tq7087CI40+bg96hWdFLbF6mmEyvP/J0uGpLJqHk5XGA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741960621; c=relaxed/relaxed;
-	bh=GP1C891gRUDmIZJZxmIcn2d7DaqxKBuMNf///X+ZPYU=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=cMz5pK01RwALaQkxmuHtkvfnG3fQnYsKhmj5sRS9FKLxBqE2ymvNZz1Gp4R2n/8R25ZOC0kCwW/+tp6451fqcBRfezKOj4mWIRaeUbhV2GCoGCe5KOJUtgAfIts5Tuja5D+cAhxRNLUZB5y9kAeb+1YZrQekn8S9K3nAvaEC+urmSpRlQ12H3MghoS+XD23c8wAQnBaT3YcMs6k3WQwhUZhHGA3Fdssak2VZnPAZ9Xo4Pu9+ttg0MhTrPL6zOU5l3FtKS8cSjUz40KohdkVa2EXAeBY+jUX3nFfdSf9uvPuNavvbEuaFvOH/vBv54U2XfJRA1/QpO5aCJqqQuXpfFg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LrL3VVKZ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1741968510; c=relaxed/relaxed;
+	bh=3UThOL2xYE+zlzWKKbLr4gFZbbNJ4JtHESm/nz/q22I=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=IHvqsC8TLlXaBJPaDgQpi/KYLWFmgbL+3YIK0kg7gQNsYtIpl+YDmi+MdSMSjDCoHl2cCHqhNsVhPNgHTB4dO7LrGR5qlRGb2OmmKIr9WUvs7cJ2otlHfrYlymNCSusdWOu9BEhbk9Thr1Zn7S6ZT7LON/GFq4jgALPttuJVlBRuufIN92p9rVs0cmfs7JRX2adMkun7gkF2uVrS2jY8/PtKze8XuJn9Gwn9IsuJD/lMCKdRxMAOGX7tk6/MFPUlHdmhRBbC8pLK3NiNas1N3gJCqDrO1vpqtOke++GTvwzsJrYZpv6d48YVQConxgNML8vaARKXo1kCDbbW2NepTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=oUvGicU9; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=BKlii9JD; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=LrL3VVKZ;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=oUvGicU9;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=BKlii9JD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=bigeasy@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZDmBh2RKXz3cbX
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Mar 2025 00:57:00 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 52EB14wo005820
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 13:56:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=GP1C891gRUDmIZJZx
-	mIcn2d7DaqxKBuMNf///X+ZPYU=; b=LrL3VVKZLKIM7x9iJDpGHE5HqgL+O2ace
-	Y8WqyHl2udIvkjvKdHhUV1BWjdWkY3LCWPrc0fKGqkP+7IJepp8Y8qFD1VpfckVu
-	qsSxBBh7REqxyPMbmy89sFTm07j0FSPYACArBDhytETjH3Z9e/dBW+wLuOgtrIBO
-	LknXMQnPRBQJyPqzFfDe6+1m5uzwYjgCct4UZ2PXUV3sc4hf+hfcM/ynegJEAuAi
-	qT9Hv+Y5TeUfpwuUrUwRm6ZxFZEISF+KB9+Ua7tqdotKkg8QlKRfLZuXmxKjaQYY
-	kHxVnDm2DuaDP6O/3pkIxcBYPMK0zpk4zl94xnqTisF18FILMiufA==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 45c6s5by7s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 13:56:57 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 52ECuhnx015405
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 13:56:30 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 45atspq76t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 13:56:30 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 52EDuPnJ33423832
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 14 Mar 2025 13:56:26 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DC3A120043;
-	Fri, 14 Mar 2025 13:56:25 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E68E720040;
-	Fri, 14 Mar 2025 13:56:20 +0000 (GMT)
-Received: from localhost.localdomain (unknown [9.61.242.102])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 14 Mar 2025 13:56:20 +0000 (GMT)
-From: Athira Rajeev <atrajeev@linux.ibm.com>
-To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
-Cc: atrajeev@linux.ibm.com, disgoel@linux.vnet.ibm.com,
-        hbathini@linux.vnet.ibm.com, Aditya.Bodkhe1@ibm.com,
-        adubey@linux.ibm.com, skb99@linux.ibm.com, sshegde@linux.ibm.com,
-        riteshh@linux.ibm.com, Tejas.Manhas1@ibm.com
-Subject: [PATCH 6/9] powerpc/pseries/htmdump: Add htm setup support to htmdump module
-Date: Fri, 14 Mar 2025 19:25:38 +0530
-Message-Id: <20250314135541.1831-7-atrajeev@linux.ibm.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
-In-Reply-To: <20250314135541.1831-1-atrajeev@linux.ibm.com>
-References: <20250314135541.1831-1-atrajeev@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZDq6P1JKrz30Nl
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Mar 2025 03:08:29 +1100 (AEDT)
+From: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1741968496;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=3UThOL2xYE+zlzWKKbLr4gFZbbNJ4JtHESm/nz/q22I=;
+	b=oUvGicU9EzvDhQw6mwbX6KaWnwK85wGS1FqPabwF0NiVNPAIGHBx6LELfdu02mi4glujPm
+	eolrnSGgQ7aoFzpdUkQwS/VN7Z25xOGvggToNLYhR4YEbuA79BU1D6PJmqtvGRmQFVIQ4e
+	LKc6i51kdpZoP7fAFIAVgUFuP3VWMPZNe+kYoW+wgNifmq+7kYeS/QrCTEQpoEiilZ+f68
+	QEW3WPnuOpiZRyh2NDsyzdZkWTyOmlUTXwr6cgEBqNEDeYV80+HVhajnFj4dZJTcZoNqX1
+	DTsK2A1xouiZfunNcBz5zevTeJ9P3GY+g7sgstTKzqY8P8plPZurQeeQC1Sw9A==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1741968496;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=3UThOL2xYE+zlzWKKbLr4gFZbbNJ4JtHESm/nz/q22I=;
+	b=BKlii9JDzCL1dJehRa3nId7N9nVNEeOzD6QG3T8tFCBuRpP4qdEZBdFXR1kby22VnhG37q
+	NXHPULtxuG4UCeBQ==
+To: linux-kernel@vger.kernel.org,
+	linux-rt-devel@lists.linux.dev
+Cc: Ben Segall <bsegall@google.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Mel Gorman <mgorman@suse.de>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Will Deacon <will@kernel.org>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 5/9] powerpc: Rely on generic printing of preemption model.
+Date: Fri, 14 Mar 2025 17:08:06 +0100
+Message-ID: <20250314160810.2373416-6-bigeasy@linutronix.de>
+In-Reply-To: <20250314160810.2373416-1-bigeasy@linutronix.de>
+References: <20250314160810.2373416-1-bigeasy@linutronix.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,95 +91,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 1fuYVdLkLrqEM8uJqz-EXmKDZpJRzp8c
-X-Proofpoint-ORIG-GUID: 1fuYVdLkLrqEM8uJqz-EXmKDZpJRzp8c
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1093,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-03-14_05,2025-03-14_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- mlxlogscore=999 clxscore=1015 impostorscore=0 lowpriorityscore=0
- malwarescore=0 bulkscore=0 mlxscore=0 phishscore=0 spamscore=0
- adultscore=0 suspectscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.19.0-2502280000 definitions=main-2503140110
+Content-Transfer-Encoding: quoted-printable
 
-Add htm setup support to htmdump module. To use the
-HTM (Hardware Trace Macro), HTM buffer has to be allocated.
-Support setup of HTM buffers via debugfs interface. Under
-debugfs folder, "/sys/kernel/debug/powerpc/htmdump", add file
-"htmsetup". The interface allows setup of HTM buffer by writing
-size of HTM buffer in power of 2 to the "htmsetup" file
+After the first printk in __die() there is show_regs() ->
+show_regs_print_info() which prints the current
+preemption model.
 
-Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+Remove the preempion model from the arch code.
+
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Naveen N Rao <naveen@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+Signed-off-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
 ---
- arch/powerpc/platforms/pseries/htmdump.c | 36 ++++++++++++++++++++++++
- 1 file changed, 36 insertions(+)
+ arch/powerpc/kernel/traps.c | 3 +--
+ 1 file changed, 1 insertion(+), 2 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/htmdump.c b/arch/powerpc/platforms/pseries/htmdump.c
-index 8c75248f2682..cadb0ad6ba31 100644
---- a/arch/powerpc/platforms/pseries/htmdump.c
-+++ b/arch/powerpc/platforms/pseries/htmdump.c
-@@ -20,6 +20,8 @@ static u32 coreindexonchip;
- static u32 htmtype;
- static u32 htmconfigure;
- static u32 htmstart;
-+static u32 htmsetup;
-+
- static struct dentry *htmdump_debugfs_dir;
- 
- /*
-@@ -284,8 +286,41 @@ static const struct file_operations htminfo_fops = {
- 	.open   = simple_open,
- };
- 
-+static int  htmsetup_set(void *data, u64 val)
-+{
-+	long rc, ret;
-+
-+	/*
-+	 * Input value: HTM buffer size in the power of 2
-+	 * example: hex value 0x21 ( decimal: 33 ) is for
-+	 * 8GB
-+	 * Invoke H_HTM call with:
-+	 * - operation as htm start (H_HTM_OP_SETUP)
-+	 * - parameter 1 set to input value.
-+	 * - last two values are unused, hence set to zero
-+	 */
-+	rc = htm_hcall_wrapper(nodeindex, nodalchipindex, coreindexonchip,
-+			htmtype, H_HTM_OP_SETUP, val, 0, 0);
-+
-+	ret = htm_return_check(rc);
-+	if (ret <= 0)
-+		return ret;
-+
-+	/* Set htmsetup if H_HTM_OP_SETUP operation succeeds */
-+	htmsetup = val;
-+
-+	return 0;
-+}
-+
-+static int htmsetup_get(void *data, u64 *val)
-+{
-+	*val = htmsetup;
-+	return 0;
-+}
-+
- DEFINE_SIMPLE_ATTRIBUTE(htmconfigure_fops, htmconfigure_get, htmconfigure_set, "%llu\n");
- DEFINE_SIMPLE_ATTRIBUTE(htmstart_fops, htmstart_get, htmstart_set, "%llu\n");
-+DEFINE_SIMPLE_ATTRIBUTE(htmsetup_fops, htmsetup_get, htmsetup_set, "%llu\n");
- 
- static int htmdump_init_debugfs(void)
+diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
+index edf5cabe5dfdb..cb8e9357383e9 100644
+--- a/arch/powerpc/kernel/traps.c
++++ b/arch/powerpc/kernel/traps.c
+@@ -263,10 +263,9 @@ static int __die(const char *str, struct pt_regs *regs=
+, long err)
  {
-@@ -313,6 +348,7 @@ static int htmdump_init_debugfs(void)
- 	 */
- 	debugfs_create_file("htmconfigure", 0600, htmdump_debugfs_dir, NULL, &htmconfigure_fops);
- 	debugfs_create_file("htmstart", 0600, htmdump_debugfs_dir, NULL, &htmstart_fops);
-+	debugfs_create_file("htmsetup", 0600, htmdump_debugfs_dir, NULL, &htmsetup_fops);
- 
- 	/* Debugfs interface file to present status of HTM */
- 	htm_status_buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
--- 
-2.43.5
+ 	printk("Oops: %s, sig: %ld [#%d]\n", str, err, ++die_counter);
+=20
+-	printk("%s PAGE_SIZE=3D%luK%s%s%s%s%s%s %s\n",
++	printk("%s PAGE_SIZE=3D%luK%s %s%s%s%s %s\n",
+ 	       IS_ENABLED(CONFIG_CPU_LITTLE_ENDIAN) ? "LE" : "BE",
+ 	       PAGE_SIZE / 1024, get_mmu_str(),
+-	       IS_ENABLED(CONFIG_PREEMPT) ? " PREEMPT" : "",
+ 	       IS_ENABLED(CONFIG_SMP) ? " SMP" : "",
+ 	       IS_ENABLED(CONFIG_SMP) ? (" NR_CPUS=3D" __stringify(NR_CPUS)) : "",
+ 	       debug_pagealloc_enabled() ? " DEBUG_PAGEALLOC" : "",
+--=20
+2.47.2
 
 
