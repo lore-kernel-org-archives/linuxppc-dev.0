@@ -1,157 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-7069-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7070-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 539F6C28B30
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Mar 2025 13:56:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 562F4C282EC
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Mar 2025 13:56:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDmB66n8Gz3cZ9;
-	Sat, 15 Mar 2025 00:56:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741960590;
-	cv=pass; b=UadEsip4vpu28lVuxtwyn3CbFzQWojBQDC9sjhM361WF5mvVThEM2ko4bqN5zyuFONRLB4YJnrsjNRQLMXgXX9I+71OFW4yQdmBGpMHpob4a4ZbKP5PB712d3ZOKvfbQvtbojbRDGwqCd9GYRzbtgFQeWGajbZmKbrS0HmXRbSIInzArKUG9wQeGZkp2H/sWMD053ME0mwXl+TApITLCQk5hTcwOF+ffXtB883qJb+GgPBP1JuIkTkgVXDT09UhDWvYFnTPQjkCbKvwQnFANR63XL1bfMSP4BnOL6hDoAwSnWiPSdSrmf3VWbjMxEMKf5vNiWPQhN0P+hE+Kci3xgg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1741960590; c=relaxed/relaxed;
-	bh=NcFbcaBYan/q1ZnXoFexG82u67AdrKOMOR7LyvAPJUA=;
-	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
-	 Content-Type:MIME-Version; b=b07K5++uFkSo2J9II0xXvhRcY5VLDpVuuKzMhWiRryN24ydsGWKdx37D5dkYsDUR1TcvqDYTXDk8APPViQIuu2BcSOjmsjOr/PNrC9e35JccHbfhdByg8iqhIKz2wVbhtqwt0f3bZ4NpEh26DgoZO+FXsn+qIhUgiBI01C8U/xiqb4XjW+bwSF9AXVnR68IjeyWeaodUkAYybn8BgPTDtOhXXZbd25ybICA4763TZ7IBNVni+sYr3K/vLzL3z0HNz9xKIK0Br6gBXYia7EOF0xHSbdyJLMxP2xjkXJybBvlBKPMp9SK4rzmVp+0zGFygypyCXeBn0f1mrfpBmuM6GA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=WI4vHW/e; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZDmBf0DMjz3cZ1;
+	Sat, 15 Mar 2025 00:56:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1741960617;
+	cv=none; b=MYQWKEnXmlLAjUnuIXwFAEQYy3G2N97YWQY1fZKUj/+6PgCt2gfxVhheheZyiNsQzHs4cPKlqNM9Btt2sKAc4F2eDoiz/OAolE3ry4vAV23fppTxr73PjObNEPSR2EZaQBFeAMBGB7RSVad6pjJezHW89d2DWdRs0TL4YraPJQFlY0wicDpiWfO0dHdLKOI30PQ9IrIcqi/UlRGjU0fQbzUHhx7UBlpmYmBaQSGSORJ3DRrDrOLvwub8M6/y5zTYvW7bYLdw62zne1e/vRudfUeNvYIhEST6AowzlODm2hYfkNfSdb7/qxB5qgoczot8e15ZgZXIV0umFtw/GYzkzA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1741960617; c=relaxed/relaxed;
+	bh=4bUt/h0o+ORmQwovx+L1rA3Rfl14295zHijCUqhHMNc=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=GvtPldCxQ16A5fzCAGUheHW0V6i5/QnkXEc2RT3gItE7fYubG6zXSC7ZZ0v5JkuizvJ1RttNaIVTxxKexYO8Yrg42PUrmh6xkXkLT3HJ69i1FGWyclugALpzMcqH1ZrbBO3xCOmlehwusVxT9hmGjKmFNqNBKw+UTeO50RUCfMW64R7e4uF11uHu4OC6hxTrHIlElxjyaZGj/SqSHY+oxwO2ZO9qCrheeJjATcZxwq61HWFIKQjuiG3n8GKc8mvTmYNjjlp/bHsEwMr9R1wgffZa0xYDWVEaTl96V4DMaGOTAyOjCGn6Eqm+m9PNCEOTXlvoMxQKqAArm4rr6lmWkw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PROmmSVi; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=WI4vHW/e;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PROmmSVi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=wei.fang@nxp.com; receiver=lists.ozlabs.org)
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=atrajeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZDmB56jycz3cZt
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Mar 2025 00:56:29 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=I5sxaHQFZu55r8LxUFb+OKt9OAWgLn3KeFw3hP6TsNWAjZEAGUCfsSOl0O5OETQb+eMBCg0s7IWhzFhcIsYOTkv9uizUCmzwz/jzNIEwiStRw4/EoJsccl0FkzLJfDhnYxwKlYkqPiL5ZsWaeE7GllTRzgQkOAigRrAqn+9GCq0tUlgTqgk8KCy8xTYSaAfpV+sEFF4mGwOywAgLH4t4DHXypPThCe64aBf9CH6OO82ECDaH7TSWZB4ymeWwGigelDzPWBmushs/tfDvp3kd8D3U7GMtOIYF+nmECPW3/cofmee3mHKfRoFc20PXrP27zQU8MUCrl+Q2K13Wt/tr+A==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=NcFbcaBYan/q1ZnXoFexG82u67AdrKOMOR7LyvAPJUA=;
- b=AM0wVL2dHhG87+erfyEffsOdCBpnxJhudFQBFtVtXoRXwbpl2MWQawf5+hlkQD7WF2UKkMriVP+BY/2nNdCqFu2sDXbMLOC2WIDg+ZzmNuoX1yu9aZRMNJ/nJkTZazs9Hd9ybvAPdlrSIzFmsMhx32KY63EY6zM09Kf9vwz7tlur+WFAS0ODMBK2+AAXRG5CDUSUxJnSm4Xh5/4ZOPZBi95yBI90MsKRUbz7QNgD0XJNnLs4SR6Z/6NttlJJsXaohUPH7lfcfH8+fzuCq7yMSNQuCh0h5f/M/p8SVkcYdEEWwLSVpQqfsiWCWs50qs4eY1Q1TzSP4EUxi8VE44OahA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=NcFbcaBYan/q1ZnXoFexG82u67AdrKOMOR7LyvAPJUA=;
- b=WI4vHW/e+IwGRI1E44wnQp4QdbhkGASc5UEraXd74px/NK6P89OLlmIDiWFo5fMfWws4cl8Fm0qhWmX7sxM5oBoyXFUCiGvrQRilKnwisRCOG91Ch3xS4VaENaE4H2edZflqG3ZzDgXBweXF9fWvcwZfOEVx6SPevOZ2Q2OxmwQ5cf+pHGy273EWZ3aOSFMhdCvFT/R5Vq5MNOt/hWG+e3tU68AwR5m8Fn/AXNqzHrnzQ177c0rmx/yAO2wTSautqmmZACpgOaARqUgTlmJbxGbnAq8VilCLyF8F1A8dlvif+PcIbVdufkzlLM/5cVWhWAA/DIzGnCydl7vdlVHndg==
-Received: from PAXPR04MB8510.eurprd04.prod.outlook.com (2603:10a6:102:211::7)
- by GV1PR04MB10557.eurprd04.prod.outlook.com (2603:10a6:150:209::13) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8511.28; Fri, 14 Mar
- 2025 13:56:07 +0000
-Received: from PAXPR04MB8510.eurprd04.prod.outlook.com
- ([fe80::a7c2:e2fa:8e04:40db]) by PAXPR04MB8510.eurprd04.prod.outlook.com
- ([fe80::a7c2:e2fa:8e04:40db%5]) with mapi id 15.20.8534.027; Fri, 14 Mar 2025
- 13:56:07 +0000
-From: Wei Fang <wei.fang@nxp.com>
-To: Vladimir Oltean <vladimir.oltean@nxp.com>
-CC: Claudiu Manoil <claudiu.manoil@nxp.com>, Clark Wang
-	<xiaoning.wang@nxp.com>, "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
-	"davem@davemloft.net" <davem@davemloft.net>, "edumazet@google.com"
-	<edumazet@google.com>, "kuba@kernel.org" <kuba@kernel.org>,
-	"pabeni@redhat.com" <pabeni@redhat.com>, "christophe.leroy@csgroup.eu"
-	<christophe.leroy@csgroup.eu>, "netdev@vger.kernel.org"
-	<netdev@vger.kernel.org>, "linux-kernel@vger.kernel.org"
-	<linux-kernel@vger.kernel.org>, "imx@lists.linux.dev" <imx@lists.linux.dev>,
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>
-Subject: RE: [PATCH v4 net-next 02/14] net: enetc: add command BD ring support
- for i.MX95 ENETC
-Thread-Topic: [PATCH v4 net-next 02/14] net: enetc: add command BD ring
- support for i.MX95 ENETC
-Thread-Index: AQHbkkpLRYKdL7a04kCsKfHEkw9g2bNxSx9ggADF3gCAAG/sgIAAKgsQ
-Date: Fri, 14 Mar 2025 13:56:06 +0000
-Message-ID:
- <PAXPR04MB8510E0C6A4EE36B2155D813B88D22@PAXPR04MB8510.eurprd04.prod.outlook.com>
-References: <20250311053830.1516523-1-wei.fang@nxp.com>
- <20250311053830.1516523-1-wei.fang@nxp.com>
- <20250311053830.1516523-3-wei.fang@nxp.com>
- <20250311053830.1516523-3-wei.fang@nxp.com>
- <20250313164908.rdy3y77xno3fza3l@skbuf>
- <PAXPR04MB8510D3A2F2A792A89941A7FD88D22@PAXPR04MB8510.eurprd04.prod.outlook.com>
- <20250314111801.2oela3qoi5qrl6el@skbuf>
-In-Reply-To: <20250314111801.2oela3qoi5qrl6el@skbuf>
-Accept-Language: en-US
-Content-Language: en-US
-X-MS-Has-Attach:
-X-MS-TNEF-Correlator:
-authentication-results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-x-ms-publictraffictype: Email
-x-ms-traffictypediagnostic: PAXPR04MB8510:EE_|GV1PR04MB10557:EE_
-x-ms-office365-filtering-correlation-id: 5d4b8dba-07f5-4cc9-2965-08dd62fff7d1
-x-ms-exchange-senderadcheck: 1
-x-ms-exchange-antispam-relay: 0
-x-microsoft-antispam:
- BCL:0;ARA:13230040|366016|1800799024|7416014|376014|38070700018;
-x-microsoft-antispam-message-info:
- =?us-ascii?Q?SFjCRoA87StEe+rELC4mMbbsp8/LctKjPJikUHPrtkMDt3ukCVQM4R0imyg/?=
- =?us-ascii?Q?/r5VvlOSxA8O90nSEh/tHTR0T5xst5+Wni2esFpCtUtYkIiooMqDI6yj5wFO?=
- =?us-ascii?Q?9ZEGDHWDU0pa4KOKHsIy4UZKZQhY7Hl5wu6YweOE76XPFDZoGv6fcP7vrv6/?=
- =?us-ascii?Q?je3bG0Y654ITDiE6OPIYDYBX0AUHI/cbH1L65qg8kfI5kdP0Nx+Fptml+Dps?=
- =?us-ascii?Q?rl+RV9aiidOgkN++HwGSYDx/F//ig4XF9YcG/INGjamVl2/m72L6Pgh2KUHA?=
- =?us-ascii?Q?PV1AxAsxTqH3W6RbgHnr3U58WYqs8YQJPH6dZt48arHIvYwLHPQ28Lm1bn3X?=
- =?us-ascii?Q?ojT8KxI4BQceZLGgMxOlZ0cHX9C3EouER5TPUKco1DNPIUN73avZCDG/HSGI?=
- =?us-ascii?Q?1CFj+J8Pz+A2Vwa93z/8eIqZU2Cp0hM0efr2OwFodPMEDi81cdZmVQaBqFNP?=
- =?us-ascii?Q?9VJDmiLsWcH/UzcmEn8MGnDjQ0zym1O3N240Jws/Q/HvDPINqQbsVPbPOZId?=
- =?us-ascii?Q?FE9oAGPVyKmXwCnSqI9zwZbCD4m07rfmgXggmgWHFFA4RJzhRUfqfcP37rC5?=
- =?us-ascii?Q?EceviTJpo0FqaANzeJT+vTkJ+uWqx/EWT0OBy8Y791m00nNRvj2Iao62qdul?=
- =?us-ascii?Q?BBKV9m0bhNMZ5BG+xa/BWWe9s/XP+MnfbgpQBjtzw8g33G3ug0jMrX2lI9Ky?=
- =?us-ascii?Q?7AlNUWNunsKC6nHnmXTdv6zJ9SPPbg4wSmXba3ZtgsHoAC76h+zqCKHcyYqT?=
- =?us-ascii?Q?MSkFjWn9z9pj/TZByMMTTKemLTWE3PYCXTdDsYNYIbILAIhIqx+6t1Zh7VML?=
- =?us-ascii?Q?SdClAGCF9LU5I2RwsGgy57zwKnVlCtPTeXlJtNfbrL2aJ2HQHcdkEtPwwOus?=
- =?us-ascii?Q?r1vDEJCKNP//cJo/h6fxSHU+c7WxbdiDQZ+S9fdpuknjlLe7OjZSLSmg3VMr?=
- =?us-ascii?Q?5q23BRoGIBVP3uCCeKF1p5XCMkX6BSZtuHrcmEBzqmHJpjNlfImeVqcW4g59?=
- =?us-ascii?Q?1vnhWLmqinJRTMG791vbkCmZfBy8e/oEZcnKLnFXVuFRISpZ26K02MOVy49y?=
- =?us-ascii?Q?xxBSlr3Qywql82O3L72FtMBH9Rvxw8QihjD/q+GkbQ+mOqTzCB5tHwAVJk3I?=
- =?us-ascii?Q?+7g1t5dtCj8j1CEo/hl/LI54/MXF98YSb+Ji/6mEUZYuR4RVgIYNMsSO1pQ0?=
- =?us-ascii?Q?JcC4fGNXhdRHFe54TbSPR3CEi9J7jS6Dw6UlKKR0CunQ25kQ0gi19tKnhR4o?=
- =?us-ascii?Q?Qr8oAYjSxMVI+tmbw/UMaSEukW68Bf3eOixROVkccUO74ceV0PXaaBHJYZcU?=
- =?us-ascii?Q?LRR+/N/jKze7pvqcz4Z2+rTKRZThWbMfew+rr7jcBOqTCX6AcRnKaC9ZYl9N?=
- =?us-ascii?Q?4EpCL5H92QMI7JglEvptNWXnS8eznA0V49MXobyc2WewK0JUXnOCde6wqRXY?=
- =?us-ascii?Q?ZEuHLft7OzodbUmmEVbyfBWXaNHnBWV2?=
-x-forefront-antispam-report:
- CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB8510.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(1800799024)(7416014)(376014)(38070700018);DIR:OUT;SFP:1101;
-x-ms-exchange-antispam-messagedata-chunkcount: 1
-x-ms-exchange-antispam-messagedata-0:
- =?us-ascii?Q?LwSAdcqY5/XKOujWI+PiiNna3vS6zYKkeGBAmMlb8L4EDdbaRp9B0V86bU/8?=
- =?us-ascii?Q?Kr60po6NeLKz+4n4XT/LPXFnbIiZpbZgZbaFh4kD0VNhA8vibTQfUR+Vy0Qc?=
- =?us-ascii?Q?GHzDNVSxY03jHZSDR3IkbyUqz9yJHprWe6kXLh1xfl4chLo9fy4o8r4dfsAq?=
- =?us-ascii?Q?oD11LL3WXF+xJZPVj2HuvH8IAQ0AUflogsHI+OnjT9phebPR/ULXVZZzI3W4?=
- =?us-ascii?Q?3EMe7cFo9UYd2FWuRjCD333Euu82/XmHe12vlDzuHdjEi3nOQVD5itpQEhzC?=
- =?us-ascii?Q?G02XpYkM7qFJJOGDKpg41f8O6Dwl8lxOQcE/in/WgzEPMqSVmyT+JHsRCU6e?=
- =?us-ascii?Q?5DWq4rH5YuJjcrPiACjOoi0lOKDsD+p799wp0+BXOXzBN1dES9g/2iIEn1o1?=
- =?us-ascii?Q?KzlMzAqg6hhShnb9K4GPS+uH+BMGR9LwmrpIDneI92NWkR2DbWTa84jAXTvM?=
- =?us-ascii?Q?FyMdjYs/G9/SRLh9yeiayGaKdBDRR7erfpsj9wtPmUPDTGdf90tNGucy2kFR?=
- =?us-ascii?Q?mfFu6T5N3pjMI6xKzHnWe/JV18Z+MerfR2QNNhNBGhdchDuiI1siJyfhgnbz?=
- =?us-ascii?Q?g3uzAZENOPIZIfqXojq29g81Yl94+g/iTyHfo44G0SQyUJ0qj4fonzXZ0UOp?=
- =?us-ascii?Q?m6EYXdLtz67y8lDT0B/jVtyOcIIHzs8Dm+LExdriBqwL3q+NuP6EHgo1Tp/s?=
- =?us-ascii?Q?z8uAfIAPJ1VMgR6t1p2Q0BAf2zEcNilUMHWdwBYRXElyTs28X0sCkw68bCp7?=
- =?us-ascii?Q?v8Gq7uXzqEfullpxoxlm0knYpFPjlz/N0UTQukGBZhT6M+je0kNzMoHqt8NK?=
- =?us-ascii?Q?NFvzbsI1KVR7E2KARmcC7G5fZyYWcgCjAJrONuhzbrcoksxfRlI3U5Ogo0FS?=
- =?us-ascii?Q?nagSA6gNE/CxQvLLoKVxzpvmNOxp2JxGtJx3dYPX9ahkym6wl6CGwyuEHX+/?=
- =?us-ascii?Q?TsgvKhrshY9ZIn0rsK7MDzxTtTs1fN75KqO7z5sMJ3yGaPHpsXNde0rcq4oE?=
- =?us-ascii?Q?5joNHhqa1eYRP/1guC7FmnwiFjm4hBD1pcQkU+H0kTsIEbSKQMMFZ39FgSJ8?=
- =?us-ascii?Q?pBDBnsjxbsbEktcYU6JMztajp3Fl6pZgySxuFXuYh46qbQ9xnpYtiUTGDSf4?=
- =?us-ascii?Q?r5tdloEjlEsubJh4+x7ptXpl2Oj4wpcr4DrtuVgKmGHN4Y8EupnHgi1PGnss?=
- =?us-ascii?Q?wz39jI5VajY3t3mtKMTHqI2X/La+RZQ2ljOPj/xfLKiQq1X3G6LU5mkPjMbj?=
- =?us-ascii?Q?Q3r9D2E1Zma767eD508+2GC19FN23dQKtnqE3DCtUjgUu1DH8E/BpVIv70Uh?=
- =?us-ascii?Q?3CRV8DGo/rcrfDPPOxAFKjw3rN08TqffojvAcrC99gl26Y4tpltHUCBxeNgD?=
- =?us-ascii?Q?GO4MRzV20td3c7MCHEuDRWZsAfetwPKKz1AQuvfFLO4YV6X3H61tRS7Gje+t?=
- =?us-ascii?Q?YkUwxdA3surZEuvoOuy2bOlXFXoh632QSw07gpixSFfkSMIxymuBSQ796J04?=
- =?us-ascii?Q?8Zwmbs/gkfE7EhrgseDrVClmy+z86N2g1oYBBO1d1D2lZH8PnOB6a7LcXD1u?=
- =?us-ascii?Q?+uNj7ggw4lRa4gcDEW0=3D?=
-Content-Type: text/plain; charset="us-ascii"
-Content-Transfer-Encoding: quoted-printable
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZDmBd2GRmz3cYw
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 15 Mar 2025 00:56:57 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 52EAOtRG018092
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 13:56:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=4bUt/h0o+ORmQwovx
+	+L1rA3Rfl14295zHijCUqhHMNc=; b=PROmmSVie7t8EyHgeZtIdNA/dEkN+U1KW
+	2sK3DMkDK7A3tMjQss3Ipd3CGMlmdf9JoK7A7VejmEkch0ZAor+boqap9Ulelx1q
+	u0jmduLgYuScw6K6do7zp6XseBK5Yh3addxDlcQKoUzQhnbbjcn/dhuGNhtnjd9K
+	fA/PsAM734kCBQOJXOAsfoNl3VzR1wppSR3stBtvfu5Tlqs4wZsPUYYWqqH/S6q6
+	Ut1U84o03t0JN1kLKNKSqEkJkMJEXPghlnm3SDqT0x35m+dsZnjPDlM1L0Dz9sy9
+	cm7s8Dv25aKDt99qZI70DcW5DDLxNqKKGnzcQjj7Qa3OYTv9+6vyQ==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 45c0sre522-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 13:56:55 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 52ECYftF012255
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 13:56:40 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 45atsrq6nb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Mar 2025 13:56:39 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 52EDuVZm14746012
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 14 Mar 2025 13:56:32 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CE8F820040;
+	Fri, 14 Mar 2025 13:56:31 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A083C20043;
+	Fri, 14 Mar 2025 13:56:26 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.61.242.102])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 14 Mar 2025 13:56:26 +0000 (GMT)
+From: Athira Rajeev <atrajeev@linux.ibm.com>
+To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Cc: atrajeev@linux.ibm.com, disgoel@linux.vnet.ibm.com,
+        hbathini@linux.vnet.ibm.com, Aditya.Bodkhe1@ibm.com,
+        adubey@linux.ibm.com, skb99@linux.ibm.com, sshegde@linux.ibm.com,
+        riteshh@linux.ibm.com, Tejas.Manhas1@ibm.com
+Subject: [PATCH 7/9] powerpc/pseries/htmdump: Add htm flags support to htmdump module
+Date: Fri, 14 Mar 2025 19:25:39 +0530
+Message-Id: <20250314135541.1831-8-atrajeev@linux.ibm.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+In-Reply-To: <20250314135541.1831-1-atrajeev@linux.ibm.com>
+References: <20250314135541.1831-1-atrajeev@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -164,57 +88,198 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB8510.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 5d4b8dba-07f5-4cc9-2965-08dd62fff7d1
-X-MS-Exchange-CrossTenant-originalarrivaltime: 14 Mar 2025 13:56:06.9981
- (UTC)
-X-MS-Exchange-CrossTenant-fromentityheader: Hosted
-X-MS-Exchange-CrossTenant-id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
-X-MS-Exchange-CrossTenant-userprincipalname: 5rYt8SBBiKP1yg9L9aywO44GIFxW0ccBBkjHwk32Yn0Je6QZORpNT4tV3B8ihZAnRo2IEWQcau1c2KbGv+XDjw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV1PR04MB10557
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: _8PbzQfy4MUweYCRKjsuNLZm_zimj1iJ
+X-Proofpoint-GUID: _8PbzQfy4MUweYCRKjsuNLZm_zimj1iJ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1093,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-03-14_05,2025-03-14_01,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 adultscore=0
+ priorityscore=1501 lowpriorityscore=0 clxscore=1015 bulkscore=0
+ malwarescore=0 phishscore=0 mlxlogscore=999 mlxscore=0 impostorscore=0
+ suspectscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2502280000 definitions=main-2503140110
 
-> On Fri, Mar 14, 2025 at 06:51:06AM +0200, Wei Fang wrote:
-> > > I don't understand the need for si->ops->setup_cbdr() and
-> > > si->ops->teardown_cbdr()?
-> > > Doesn't every call site know which kind of SI it is dealing with, and=
- thus it
-> can
-> > > appropriately call the direct symbol?
-> > > - the v1 PSI and the VSI call enetc_setup_cbdr() and enetc_teardown_c=
-bdr()
-> > > - the v4 PSI calls enetc4_setup_cbdr() and enetc4_teardown_cbdr()
-> >
-> > Yes, for PSI we can use directly call these functions because they are =
-different
-> > drivers, but for VSI, v1 and v4 will use the same driver. I just want t=
-he PSI and
-> > VSI to be consistent. If you don't like this, I can remove these interf=
-aces from
-> > the patch set, and add vf_setup_cbdr and vf_teardown_cbdr in the future
-> when
-> > I add the VF support for ENETC v4.
->=20
-> It's not that I don't like them, the point is rather simple: as far as
-> this patch set is concerned, converting direct function calls to
-> indirect ones is an unfinished idea. It needs to be evaluated in full
-> context, which is not present here - as you say, v4 VSIs need to be
-> further modified to call a different set of operations - but right now,
-> they call a single set of CBDR functions. Changes which require
-> subsequent patch sets in order to make any sense at all are discouraged.
->=20
-> Given the fact that the PSI code paths still don't benefit from an
-> indirect function call in any way, I would in principle recommend to
-> keep calling their CBDR methods directly. For VSIs I don't know which is
-> preferable (if-else vs function pointer), I need to see that code first.
+Under debugfs folder, "/sys/kernel/debug/powerpc/htmdump", add file
+"htmflags". Currently supported flag value is to enable/disable
+HTM buffer wrap. wrap is used along with "configure" to prevent
+HTM buffer from wrapping. Writing 1 will set noWrap while
+configuring HTM
 
-Okay, let's keep directly calls in v1 and v4 PSI drivers. Regarding to the
-VSI, some people don't like if-else because they think we may have v5,
-v6, v7 in the future which may use different version of command BD ring,
-so they prefer function pointer. But for trivial, like different register o=
-ffsets
-for different ENETC versions. I think if-else is enough.
+Signed-off-by: Athira Rajeev <atrajeev@linux.ibm.com>
+---
+ arch/powerpc/include/asm/plpar_wrappers.h |  4 +-
+ arch/powerpc/platforms/pseries/htmdump.c  | 55 +++++++++++++++++++----
+ 2 files changed, 48 insertions(+), 11 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/plpar_wrappers.h b/arch/powerpc/include/asm/plpar_wrappers.h
+index f3efa9946b3c..f2b6cc4341bb 100644
+--- a/arch/powerpc/include/asm/plpar_wrappers.h
++++ b/arch/powerpc/include/asm/plpar_wrappers.h
+@@ -81,12 +81,12 @@ static inline long htm_call(unsigned long flags, unsigned long target,
+                                  param1, param2, param3);
+ }
+ 
+-static inline long htm_hcall_wrapper(unsigned long nodeindex,
++static inline long htm_hcall_wrapper(unsigned long flags, unsigned long nodeindex,
+                unsigned long nodalchipindex, unsigned long coreindexonchip,
+ 	       unsigned long type, unsigned long htm_op, unsigned long param1, unsigned long param2,
+ 	       unsigned long param3)
+ {
+-       return htm_call(H_HTM_FLAGS_HARDWARE_TARGET,
++	return htm_call(H_HTM_FLAGS_HARDWARE_TARGET | flags,
+                        H_HTM_TARGET_NODE_INDEX(nodeindex) |
+                        H_HTM_TARGET_NODAL_CHIP_INDEX(nodalchipindex) |
+                        H_HTM_TARGET_CORE_INDEX_ON_CHIP(coreindexonchip),
+diff --git a/arch/powerpc/platforms/pseries/htmdump.c b/arch/powerpc/platforms/pseries/htmdump.c
+index cadb0ad6ba31..0b3bed738db5 100644
+--- a/arch/powerpc/platforms/pseries/htmdump.c
++++ b/arch/powerpc/platforms/pseries/htmdump.c
+@@ -21,6 +21,7 @@ static u32 htmtype;
+ static u32 htmconfigure;
+ static u32 htmstart;
+ static u32 htmsetup;
++static u64 htmflags;
+ 
+ static struct dentry *htmdump_debugfs_dir;
+ 
+@@ -92,7 +93,7 @@ static ssize_t htmdump_read(struct file *filp, char __user *ubuf,
+ 	 * - operation as htm dump (H_HTM_OP_DUMP_DATA)
+ 	 * - last three values are address, size and offset
+ 	 */
+-	rc = htm_hcall_wrapper(nodeindex, nodalchipindex, coreindexonchip,
++	rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
+ 				   htmtype, H_HTM_OP_DUMP_DATA, virt_to_phys(htm_buf),
+ 				   PAGE_SIZE, page);
+ 
+@@ -115,6 +116,7 @@ static const struct file_operations htmdump_fops = {
+ static int  htmconfigure_set(void *data, u64 val)
+ {
+ 	long rc, ret;
++	unsigned long param1 = -1, param2 = -1;
+ 
+ 	/*
+ 	 * value as 1 : configure HTM.
+@@ -125,17 +127,25 @@ static int  htmconfigure_set(void *data, u64 val)
+ 		/*
+ 		 * Invoke H_HTM call with:
+ 		 * - operation as htm configure (H_HTM_OP_CONFIGURE)
++		 * - If htmflags is set, param1 and param2 will be -1
++		 *   which is an indicator to use default htm mode reg mask
++		 *   and htm mode reg value.
+ 		 * - last three values are unused, hence set to zero
+ 		 */
+-		rc = htm_hcall_wrapper(nodeindex, nodalchipindex, coreindexonchip,
+-			   htmtype, H_HTM_OP_CONFIGURE, 0, 0, 0);
++		if (!htmflags) {
++			param1 = 0;
++			param2 = 0;
++		}
++
++		rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
++			   htmtype, H_HTM_OP_CONFIGURE, param1, param2, 0);
+ 	} else if (val == 0) {
+ 		/*
+ 		 * Invoke H_HTM call with:
+ 		 * - operation as htm deconfigure (H_HTM_OP_DECONFIGURE)
+ 		 * - last three values are unused, hence set to zero
+ 		 */
+-		rc = htm_hcall_wrapper(nodeindex, nodalchipindex, coreindexonchip,
++		rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
+ 				htmtype, H_HTM_OP_DECONFIGURE, 0, 0, 0);
+ 	} else
+ 		return -EINVAL;
+@@ -171,7 +181,7 @@ static int  htmstart_set(void *data, u64 val)
+ 		 * - operation as htm start (H_HTM_OP_START)
+ 		 * - last three values are unused, hence set to zero
+ 		 */
+-		rc = htm_hcall_wrapper(nodeindex, nodalchipindex, coreindexonchip,
++		rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
+ 			   htmtype, H_HTM_OP_START, 0, 0, 0);
+ 
+ 	} else if (val == 0) {
+@@ -180,7 +190,7 @@ static int  htmstart_set(void *data, u64 val)
+ 		 * - operation as htm start (H_HTM_OP_STOP)
+ 		 * - last three values are unused, hence set to zero
+ 		 */
+-		rc = htm_hcall_wrapper(nodeindex, nodalchipindex, coreindexonchip,
++		rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
+ 				htmtype, H_HTM_OP_STOP, 0, 0, 0);
+ 	} else
+ 		return -EINVAL;
+@@ -215,7 +225,7 @@ static ssize_t htmstatus_read(struct file *filp, char __user *ubuf,
+ 	 * - operation as htm status (H_HTM_OP_STATUS)
+ 	 * - last three values as addr, size and offset
+ 	 */
+-	rc = htm_hcall_wrapper(nodeindex, nodalchipindex, coreindexonchip,
++	rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
+ 				   htmtype, H_HTM_OP_STATUS, virt_to_phys(htm_status_buf),
+ 				   PAGE_SIZE, 0);
+ 
+@@ -259,7 +269,7 @@ static ssize_t htminfo_read(struct file *filp, char __user *ubuf,
+ 	 * - operation as htm status (H_HTM_OP_STATUS)
+ 	 * - last three values as addr, size and offset
+ 	 */
+-	rc = htm_hcall_wrapper(nodeindex, nodalchipindex, coreindexonchip,
++	rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
+ 				   htmtype, H_HTM_OP_DUMP_SYSPROC_CONF, virt_to_phys(htm_info_buf),
+ 				   PAGE_SIZE, 0);
+ 
+@@ -299,7 +309,7 @@ static int  htmsetup_set(void *data, u64 val)
+ 	 * - parameter 1 set to input value.
+ 	 * - last two values are unused, hence set to zero
+ 	 */
+-	rc = htm_hcall_wrapper(nodeindex, nodalchipindex, coreindexonchip,
++	rc = htm_hcall_wrapper(htmflags, nodeindex, nodalchipindex, coreindexonchip,
+ 			htmtype, H_HTM_OP_SETUP, val, 0, 0);
+ 
+ 	ret = htm_return_check(rc);
+@@ -318,9 +328,35 @@ static int htmsetup_get(void *data, u64 *val)
+ 	return 0;
+ }
+ 
++static int  htmflags_set(void *data, u64 val)
++{
++	/*
++	 * Input value:
++	 * Currently supported flag value is to enable/disable
++	 * HTM buffer wrap. wrap is used along with "configure"
++	 * to prevent HTM buffer from wrapping.
++	 * Writing 1 will set noWrap while configuring HTM
++	 */
++	if (val == 1)
++		htmflags = H_HTM_FLAGS_NOWRAP;
++	else if (val == 0)
++		htmflags = 0;
++	else
++		return -EINVAL;
++
++	return 0;
++}
++
++static int htmflags_get(void *data, u64 *val)
++{
++	*val = htmflags;
++	return 0;
++}
++
+ DEFINE_SIMPLE_ATTRIBUTE(htmconfigure_fops, htmconfigure_get, htmconfigure_set, "%llu\n");
+ DEFINE_SIMPLE_ATTRIBUTE(htmstart_fops, htmstart_get, htmstart_set, "%llu\n");
+ DEFINE_SIMPLE_ATTRIBUTE(htmsetup_fops, htmsetup_get, htmsetup_set, "%llu\n");
++DEFINE_SIMPLE_ATTRIBUTE(htmflags_fops, htmflags_get, htmflags_set, "%llu\n");
+ 
+ static int htmdump_init_debugfs(void)
+ {
+@@ -349,6 +385,7 @@ static int htmdump_init_debugfs(void)
+ 	debugfs_create_file("htmconfigure", 0600, htmdump_debugfs_dir, NULL, &htmconfigure_fops);
+ 	debugfs_create_file("htmstart", 0600, htmdump_debugfs_dir, NULL, &htmstart_fops);
+ 	debugfs_create_file("htmsetup", 0600, htmdump_debugfs_dir, NULL, &htmsetup_fops);
++	debugfs_create_file("htmflags", 0600, htmdump_debugfs_dir, NULL, &htmflags_fops);
+ 
+ 	/* Debugfs interface file to present status of HTM */
+ 	htm_status_buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
+-- 
+2.43.5
 
 
