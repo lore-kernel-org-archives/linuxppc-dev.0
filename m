@@ -1,50 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-7125-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7126-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1F60C28B28
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Mar 2025 10:20:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 877C1C282EC
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Mar 2025 11:09:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZGWF32R4Lz2yhb;
-	Mon, 17 Mar 2025 21:20:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742206807;
-	cv=none; b=Pj/YdRdOZtAc4HrE+5l93d9PxcohSVRds8E68Ibg3YrFAOYLEYNgwJIDDqClnfCLoheCe7r2YF9igjMdRv3cC0rbsyo6TrsbITGXhecHWVkx8ILtZNCh3MjBTIZ/+waYF7jiKZrKswZFq0aj/5Tl/4UQK5/QOKbgM0DMdQHNDHeM0yTAfbGMxX0TOpRn1ruTqKGckKnGqQV9BlZ/ZcbIVlczeLFQtxQZei2EcmbfarYC/uHuIsJGOEjQtunCdsJAoHoofqKWiQXkoj0v8pRRh7CrVM9HAfjjXG8oOM0DJ9tIEDVz2UaLmtAPRNRnGgf723uknrxavFk9R0zqIqc1Vw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZGXLP694gz2ygL;
+	Mon, 17 Mar 2025 22:09:49 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742209789;
+	cv=none; b=Ac2DSNwv6LjUkF/IjoAMG5Rx4TMJRg/931ENaw7YVtVKtrXuEuV6nLIK/vA6ffUuTOE133ppn+Hzgc3lk/p9l0nJxgHp8Wnuw2kH8jq2soCgNTYSHtgcZoUSkgux/6OlzQ7gH/WQ/wMAjaq+bIdjIlJF85NmkJ+bcTdM4rTshP8lXeVL2C9uaCPKioP3UexKX/g2cnaTknMp1N7lvNpfehA6kQhyP/aMK/+O0xly/KHxqZikP9tJ4usnNz3Sp0YRdvZV79o2L8+/RXuyJqG3nrKmxGs+KhW6H0Hzj08AxwOUEGI4GfsT+q8APp/Vtt3jbQB0QI4ia5uUHxh/dP+b7Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742206807; c=relaxed/relaxed;
-	bh=QjGqku77ky/KOLhdQseQnbh6D/bht9nIYgkdqcAOfgk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=C9bqHOmZn6ypHwJi9BYKlp05/xMkWPQzmyIlZd9oAT/P07vh8TWM46R/1vuPa61x6XldQfsviH7c0kuiIVL1rppeR08eshiESwFRp+prwtB2EGd2FMD+qdXUhrUHI9J2jT2kjNzKpzAdRqTfE103z9cBHhcFV8NgldEXofo22OIo6d62Aqwvaat6UP0l088lOKs5Rk2cOcxExEbwEFKFKzeg7HKtL1AfFLDKWGhZD2sSu4XMUflyBkMp4D7RvJ25fr8pAY9iXuAhKz0ygcXMdBRzJ67uNJTbSgTDjuQUNwgLtuQpLtPDHnAcKxv7Ar6ehvYYY0dz9nHpHJEtGmil6A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZGWF224MBz2yhW
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Mar 2025 21:20:05 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4ZGVx21Cfmz9sRy;
-	Mon, 17 Mar 2025 11:06:14 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id GY3M6MKxajRN; Mon, 17 Mar 2025 11:06:14 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4ZGVx20QyPz9sRr;
-	Mon, 17 Mar 2025 11:06:14 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id EF3CF8B765;
-	Mon, 17 Mar 2025 11:06:13 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id Jcpq8BWRW1ng; Mon, 17 Mar 2025 11:06:13 +0100 (CET)
-Received: from [10.25.207.144] (unknown [10.25.207.144])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id CAF918B764;
-	Mon, 17 Mar 2025 11:06:13 +0100 (CET)
-Message-ID: <ebc5d8c6-3c5c-4e6a-a218-9dddcdb4f8bc@csgroup.eu>
-Date: Mon, 17 Mar 2025 11:06:13 +0100
+	t=1742209789; c=relaxed/relaxed;
+	bh=zqbOzGR/S1NqZVeaOkKz/a3SBP5r2fF1Gtl6KlZ7yBc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=njY0v/ofEmHaC5Q+7o2yiey688Ar4WYq5RSFhH+p+enp0qCrYExugL0EPOFTeON6FbqVP+/8i8pX+9ZdwlrYAYBsA6VhZpVHtG4JHABxsf2gAt31z4H1jU8e6japUgeeCfiFlWRHtR2tGGP1GUutWLkjIffn7CUo52oaxEb6UN4SpjjB4nbzbydfLPt7hgV95zr4Lr0N7gySwN28H21ZafFPJ9x4G9VRRW5y9qVeJCjWsDwFvokCxWEjyahaCYW3kOQ+JLY2aFQETN/xi46ZwG+zMJWavqLB+0ZNccAsa1hMCirVl/q6y8kpuHiAfkp7KLucPa4dWOLq2azTwc/xag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au; dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=EVq82bFL; dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ellerman.id.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ellerman.id.au header.i=@ellerman.id.au header.a=rsa-sha256 header.s=201909 header.b=EVq82bFL;
+	dkim-atps=neutral
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZGXLN2YlSz2yN3
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Mar 2025 22:09:48 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ellerman.id.au;
+	s=201909; t=1742209786;
+	bh=zqbOzGR/S1NqZVeaOkKz/a3SBP5r2fF1Gtl6KlZ7yBc=;
+	h=From:To:Cc:Subject:Date:From;
+	b=EVq82bFLVWAwnFiYN0xCZZwDgOF0En0/B6KlIlF0AL70U0X3pAwg0xxKx62byv3ge
+	 aMe1twjF8tvlPeanOl4hAHlpb1/ZelXSr6SlIfwTIhCwSrKJvfv0PlLnv9+PM23D6W
+	 +Uq+vA1jF/DjtjhyJZAzsBy72YdW636f4Wu+2nmdrAATaKX5g8x/5ucNOYrYkXrOzx
+	 ahnp4XaUQl4zwqgyghzPmR/X4I5Z6idikh8as2ab6ioTZQdagjMs2WRXT8X0+JFr1B
+	 ipffAUWJh25DmOUXvjbNHhFnIW/gFii9V9Dh1tSZ2JxW9yQd1NA7yQ/ao+sJDeckIP
+	 fwNVy8VQhP65w==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4ZGXLL2Y2Pz4x1t;
+	Mon, 17 Mar 2025 22:09:46 +1100 (AEDT)
+From: Michael Ellerman <mpe@ellerman.id.au>
+To: Stephen Rothwell <sfr@canb.auug.org.au>, maddy@linux.ibm.com
+Cc: linuxppc-dev@lists.ozlabs.org, Linux Next Mailing List
+ <linux-next@vger.kernel.org>, Andrew Donnellan <ajd@linux.ibm.com>,
+ "Martin K. Petersen" <martin.petersen@oracle.com>
+Subject: Please add powerpc topic/cxl branch to linux-next
+Date: Mon, 17 Mar 2025 22:09:43 +1100
+Message-ID: <87y0x3dibs.fsf@mpe.ellerman.id.au>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,71 +63,23 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [linux-next-20250307] Build Failure
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
- Stephen Rothwell <sfr@canb.auug.org.au>, linux-kernel@vger.kernel.org,
- Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <70ba4e80-53c4-4583-82f3-2851e0829aa6@linux.ibm.com>
- <5ab103b4-70f0-454e-bca6-0bfc66d143f5@csgroup.eu>
- <c0a716d0-6811-4b1b-b008-d4e97900cb0e@linux.ibm.com>
- <5c671410-cedd-4854-a3e7-2060607d5c4d@csgroup.eu>
- <25e5d468-6c40-40b7-a010-8c8018b6d228@linux.ibm.com>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <25e5d468-6c40-40b7-a010-8c8018b6d228@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
+Hi sfr,
 
+Could you please add the topic/cxl branch of the powerpc tree to
+linux-next for the next few weeks, it's targeted for the next merge
+window.
 
-Le 17/03/2025 à 08:27, Venkat Rao Bagalkote a écrit :
-> 
-> On 12/03/25 8:49 pm, Christophe Leroy wrote:
->>
->>
->> Le 12/03/2025 à 11:11, Venkat Rao Bagalkote a écrit :
->>>
->>> On 12/03/25 4:20 am, Christophe Leroy wrote:
->>>>
->>>>
->>>> Le 09/03/2025 à 13:38, Venkat Rao Bagalkote a écrit :
->>>>> Greetings!!,
->>>>>
->>>>> I see linux-next-20250307 fails to build on IBM Power9 and Power10 
->>>>> servers.
->>>>>
->>>>>
->>>>> Errors:
->>>>>
->>>>> In file included from ^[[01m^[[K<command-line>^[[m^[[K:
->>>>> ^[[01m^[[K./usr/include/cxl/features.h:11:10:^[[m^[[K 
->>>>> ^[[01;31m^[[Kfatal error: ^[[m^[[Kuuid/uuid.h: No such file or 
->>>>> directory
->>>>>     11 | #include ^[[01;31m^[[K<uuid/uuid.h>^[[m^[[K
->>>>>        |          ^[[01;31m^[[K^~~~~~~~~~~~~^[[m^[[K
->>>>
->>>> This is unreadable. Please avoid fancy colors that add escapes to 
->>>> logs. You can unset LANG environment var before building in order to 
->>>> get pastable stuff.
->>>>
->>
->> Allthought not really readable, it seems to mention that uuid/uuid.h 
->> is missing.
->>
->> Can you confirm that you have installed libuuid package in your 
->> system ? Maybe you also need some libuuid-dev packet to get headers ?
-> 
-> 
-> Yeah uuid package is installed on my system. I am seeing this failure 
-> only with build next-20250307.
-> 
-> Builds with before and after are compiling successfully.
+  https://web.git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git/log/?h=topic/cxl
 
-Ok, so I understand from this that the problem is fixed and there is not 
-further investigation required.
+It contains a topic branch of sorts to hold the cxl removal. It has a
+few commits from the SCSI tree, up to and including the cxlflash
+removal, then it merges powerpc/fixes to get a Documentation/ patch that
+touches cxl, and then the cxl removal patch from Andrew.
 
-Thanks
-Christophe
+The plan will be to send it to Linus after the powerpc and SCSI trees
+have been merged, during the merge window.
+
+cheers
 
