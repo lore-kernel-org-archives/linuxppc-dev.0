@@ -1,85 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-7219-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7220-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2583C35FFA
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Mar 2025 17:29:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AFF44C35FFA
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Mar 2025 17:30:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHwgk2ZY9z2xGp;
-	Thu, 20 Mar 2025 04:29:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742405378;
-	cv=none; b=aTTugwdQVKnPGguUp9MesMQVzLpYY0uLXtecucavj+5CLlUZ/cAofJkMAwFaRw9g000AcuI2SQMJxKySBMTO3NQG468wdWyUCdW8By1rJuYPD34IWhR+KKpY0+RHgu1BNuIFkD03kzyOhCjyQ6DJ77kywZenrNrH8yDjjEYJCPPhS9lUIXpuQHfJWdSE981GO73WhOVe1J0wMbMbEG7GFyWjuiY027K+YxG9rKx1ImayA4nJuJ/1Ufjz2YJZBmGuOLrymoUwObPmApfz3r7/j+W3ktonuEfdo+zCLWOptpdTNlYeCCwPG8GrcQjSTdhH07yFmKHsGtskjtNYlcFVqA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZHwhZ0Kqnz2yqT;
+	Thu, 20 Mar 2025 04:30:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742405422;
+	cv=none; b=nbs5fhgrq1eRdHI5o2aGRtGm2z2LpTzJhK4dW3TOQdJynmNgUArqqnTQRLwzZBPH9ykU/cZUzv0PLMQ/NT/YrLek5o0dAUcEEPvTP09FqVszn7aTOXHmnnO++6r5HhXpSvNqZ8NbdjkMIX2xkarN1rcSgKHMMAae4pR3sRJnmwrWvdcKItMiR57UPeEhtIAFwnCeITrjen7abhe4zj5V3isEGihHZWQ0zKVSReH4QxURAwsaXy1OlWrm6k5UbVlaJw672D3zEssnoHXKNLW6Kduzwh4+CFmLqL8MiydnbGFSis1rWcsGqvqaITqCn2jhB1e6dATmNLPsRRVu/47zWw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742405378; c=relaxed/relaxed;
-	bh=vMrYu1osGr7V6A5J0GJf4oN8siwZ0RnsLRJLACTdmTY=;
+	t=1742405422; c=relaxed/relaxed;
+	bh=AsfoyWYQwkuNnFqxzeEPQqfO/94I4+8DnMEa+Vta9E4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Bslm/3uyOuCRWbQPukW7RazL9n3vJY0f0vOFhlg6MIthYJwD+GW8m6hV3oeoc/uZt6Gj3moyvV5fpHApL5DEOQx5bMvUdcmug2/85G9qmFeITNI/b2Lcb53GcSgId97wrZcpuyXnsrYSGnrpZ9XoE3CTFVdXhtNTaYw+DftXf+Vptb68cmo47fOiXWkwXeMt8GHd/nqWGlnxyG5HFBm9oj+0LDhn7CfPeJ8lKiG9hfGjgWrUy0jnwS8B4ClUzG4xz5WhIIyRCxTwXrUgJo4MlX/AYASu1fAF7uc2KAorC3n+BT9LkvxP6SQOyUPWqA+aN+WF0kimHC65w1edAP1CuQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=wIBWcptd; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=mhSjOK8v; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=wIBWcptd; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=mhSjOK8v; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	 Content-Type:Content-Disposition:In-Reply-To; b=WwxxzZzU8YArURNJbfzDfAaqDPy14JoZZElyYbsO2ZWK9aLKcU595Jq58x449jsvePby0cyVEDDaUYt3QEKOy6VySrnLFeLR/IS7n+ntwecJ5NqCP5SHIb1nyb4tpAEVPZCmlZGxSdpfZuEPaLu+Vfnd+V+OqTRF95RzpZjII34GeTbp6HUcr1sNeOPuFrBmRIaFrFfn/9x7gvRlid5FAqvMYw22p8LbNlKqORlq/GiGSufyEDLdonbeTgYnhVYcahHHI7CyS/l9dYvNDHnvs4F/UxIi52H/Sdgy6Peq2DeCA6sazNOtCr/uB2dy+jI0M16DkxFrbYClOhvWBImcDQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Z9biRIG4; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=wIBWcptd;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=mhSjOK8v;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=wIBWcptd;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=mhSjOK8v;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Z9biRIG4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHwgf4jvkz2ySW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2025 04:29:34 +1100 (AEDT)
-Received: from kitsune.suse.cz (unknown [10.100.12.127])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 07F6021F4D;
-	Wed, 19 Mar 2025 17:29:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1742405371; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vMrYu1osGr7V6A5J0GJf4oN8siwZ0RnsLRJLACTdmTY=;
-	b=wIBWcptdGL+wkdTnuRmjJXC5snJGbMWIVCxqbn4wIIeDRVC6KrF/+knh7WpDye1AppidiY
-	oNnP7wAOwinz/S8kaqmYKPtVBmudI4p92iT9mxxa37UvjtdFWE9R78N+1335L82mEYL9fl
-	Ph/m6w+67nMRNXkoR8w7Ivs6dU8SdFA=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1742405371;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vMrYu1osGr7V6A5J0GJf4oN8siwZ0RnsLRJLACTdmTY=;
-	b=mhSjOK8vSII2RfD2Z5FNo8udjoZhtjLW5cncFRKciXlruiXhPe8UnU/jpdU9VmR1lTs5Nl
-	mM3BuhZTKoi/brCQ==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1742405371; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vMrYu1osGr7V6A5J0GJf4oN8siwZ0RnsLRJLACTdmTY=;
-	b=wIBWcptdGL+wkdTnuRmjJXC5snJGbMWIVCxqbn4wIIeDRVC6KrF/+knh7WpDye1AppidiY
-	oNnP7wAOwinz/S8kaqmYKPtVBmudI4p92iT9mxxa37UvjtdFWE9R78N+1335L82mEYL9fl
-	Ph/m6w+67nMRNXkoR8w7Ivs6dU8SdFA=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1742405371;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=vMrYu1osGr7V6A5J0GJf4oN8siwZ0RnsLRJLACTdmTY=;
-	b=mhSjOK8vSII2RfD2Z5FNo8udjoZhtjLW5cncFRKciXlruiXhPe8UnU/jpdU9VmR1lTs5Nl
-	mM3BuhZTKoi/brCQ==
-Date: Wed, 19 Mar 2025 18:29:29 +0100
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Gaurav Batra <gbatra@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org, donettom@linux.ibm.com
-Subject: Re: [PATCH] powerpc/pseries/iommu: memory notifier incorrectly adds
- TCEs for pmemory
-Message-ID: <Z9r--U_INHB4RjXI@kitsune.suse.cz>
-References: <20250130183854.92258-1-gbatra@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZHwhY2zYFz2xlQ
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2025 04:30:21 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id AC9715C499F;
+	Wed, 19 Mar 2025 17:28:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4230AC4CEEC;
+	Wed, 19 Mar 2025 17:30:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1742405418;
+	bh=gpKrn8HW8AZZySNjAdZoJyOHfdkLfMonlBIG0pb7rJs=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Z9biRIG4v4RALHETyvhDmvsnPST2Po+0NgCvGoxxlYmK5oqGJFq3Rp9gX67v29Wa1
+	 bH7PO28pgmcU0v/QDX91o2kqmi4Ab/alUwXSnKEhUVmpijp2QXT1kbAeE/BeUTB2w4
+	 DztQSBkjHjFDEOE1vXLqLSxoM+x0cOQXFjAy/9AkqphJzxmv9vEJiHhiDLT1IF9R0a
+	 fvSkmrweH3Uqz5StTuzwnCRMzNnOP5xPmKGZG3FJCiX6/cCFVHJE4wc1QmxnLfYKX6
+	 xZfGhbjQVQFVC+38sI2KRQZeyUXfOYxq9jp9xJit0e9jNp+XS4+tmVbVnRQlE5ZirP
+	 KE1eon15QED6w==
+Date: Wed, 19 Mar 2025 10:30:10 -0700
+From: Nathan Chancellor <nathan@kernel.org>
+To: Arnd Bergmann <arnd@arndb.de>
+Cc: Arnd Bergmann <arnd@kernel.org>,
+	Linux-Arch <linux-arch@vger.kernel.org>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Matt Turner <mattst88@gmail.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Greg Ungerer <gerg@linux-m68k.org>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	"James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
+	Helge Deller <deller@gmx.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Julian Vetter <julian@outer-limits.org>,
+	Bjorn Helgaas <bhelgaas@google.com>, linux-alpha@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org
+Subject: Re: [PATCH 5/6] mips: drop GENERIC_IOMAP wrapper
+Message-ID: <20250319173010.GA84652@ax162>
+References: <20250315105907.1275012-1-arnd@kernel.org>
+ <20250315105907.1275012-6-arnd@kernel.org>
+ <20250318203906.GA4089579@ax162>
+ <5b2779f8-573d-401e-817e-979e02f811d3@app.fastmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,168 +89,28 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250130183854.92258-1-gbatra@linux.ibm.com>
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-0.999];
-	MIME_GOOD(-0.10)[text/plain];
-	MISSING_XM_UA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	TO_DN_SOME(0.00)[];
-	ARC_NA(0.00)[];
-	RCVD_COUNT_ZERO(0.00)[0];
-	FROM_HAS_DN(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCPT_COUNT_THREE(0.00)[3];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[nongnu.org:url]
+In-Reply-To: <5b2779f8-573d-401e-817e-979e02f811d3@app.fastmail.com>
 
-Hello,
+On Tue, Mar 18, 2025 at 10:13:35PM +0100, Arnd Bergmann wrote:
+> Thanks for the report, I missed that the generic ioport_map() function
+> is missing the PCI_IOBASE macro, we should probably remove that from
+> the asm-generic/io.h header and require architectures to define it
+> themselves, since the NULL fallback is pretty much always wrong.
+> 
+> There is also a type mismatch between the MIPS
+> PCI_IOBASE/mips_io_port_base and the one that asm-generic/io.h
+> expects, so I had to add a couple of extra typecasts, which
+> makes it rather ugly, but the change below seems to work.
 
-looks like this upsets some assumption qemu has about these windows.
+Thanks, that does make the -Wnull-pointer-arithmetic warnings disappear.
+That build still fails in next-20250319 (which includes that change) at
+the end with:
 
-https://lists.nongnu.org/archive/html/qemu-devel/2025-03/msg05137.html
+  $ make -skj"$(nproc)" ARCH=mips CROSS_COMPILE=mips-linux- mrproper malta_defconfig all
+  ERROR: modpost: "pci_iounmap" [drivers/net/wireless/intel/ipw2x00/ipw2100.ko] undefined!
 
-When Linux kernel that has this patch applied is running inside a qemu
-VM with a PCI device and the VM is rebooted qemu crashes shortly after
-the next Linux kernel starts.
+which appears related to this original change.
 
-This is quite curious since qemu does AFAIK not support pmemory at all.
-
-Any idea what went wrong there?
-
-Thanks
-
-Michal
-
-On Thu, Jan 30, 2025 at 12:38:54PM -0600, Gaurav Batra wrote:
-> iommu_mem_notifier() is invoked when RAM is dynamically added/removed. This
-> notifier call is responsible to add/remove TCEs from the Dynamic DMA Window
-> (DDW) when TCEs are pre-mapped. TCEs are pre-mapped only for RAM and not
-> for persistent memory (pmemory). For DMA buffers in pmemory, TCEs are
-> dynamically mapped when the device driver instructs to do so.
-> 
-> The issue is 'daxctl' command is capable of adding pmemory as "System RAM"
-> after LPAR boot. The command to do so is -
-> 
-> daxctl reconfigure-device --mode=system-ram dax0.0 --force
-> 
-> This will dynamically add pmemory range to LPAR RAM eventually invoking
-> iommu_mem_notifier(). The address range of pmemory is way beyond the Max
-> RAM that the LPAR can have. Which means, this range is beyond the DDW
-> created for the device, at device initialization time.
-> 
-> As a result when TCEs are pre-mapped for the pmemory range, by
-> iommu_mem_notifier(), PHYP HCALL returns H_PARAMETER. This failed the
-> command, daxctl, to add pmemory as RAM.
-> 
-> The solution is to not pre-map TCEs for pmemory.
-> 
-> Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
-> ---
->  arch/powerpc/include/asm/mmzone.h      |  1 +
->  arch/powerpc/mm/numa.c                 |  2 +-
->  arch/powerpc/platforms/pseries/iommu.c | 29 ++++++++++++++------------
->  3 files changed, 18 insertions(+), 14 deletions(-)
-> 
-> diff --git a/arch/powerpc/include/asm/mmzone.h b/arch/powerpc/include/asm/mmzone.h
-> index d99863cd6cde..049152f8d597 100644
-> --- a/arch/powerpc/include/asm/mmzone.h
-> +++ b/arch/powerpc/include/asm/mmzone.h
-> @@ -29,6 +29,7 @@ extern cpumask_var_t node_to_cpumask_map[];
->  #ifdef CONFIG_MEMORY_HOTPLUG
->  extern unsigned long max_pfn;
->  u64 memory_hotplug_max(void);
-> +u64 hot_add_drconf_memory_max(void);
->  #else
->  #define memory_hotplug_max() memblock_end_of_DRAM()
->  #endif
-> diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-> index 3c1da08304d0..603a0f652ba6 100644
-> --- a/arch/powerpc/mm/numa.c
-> +++ b/arch/powerpc/mm/numa.c
-> @@ -1336,7 +1336,7 @@ int hot_add_scn_to_nid(unsigned long scn_addr)
->  	return nid;
->  }
->  
-> -static u64 hot_add_drconf_memory_max(void)
-> +u64 hot_add_drconf_memory_max(void)
->  {
->  	struct device_node *memory = NULL;
->  	struct device_node *dn = NULL;
-> diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
-> index 29f1a0cc59cd..abd9529a8f41 100644
-> --- a/arch/powerpc/platforms/pseries/iommu.c
-> +++ b/arch/powerpc/platforms/pseries/iommu.c
-> @@ -1284,17 +1284,13 @@ static LIST_HEAD(failed_ddw_pdn_list);
->  
->  static phys_addr_t ddw_memory_hotplug_max(void)
->  {
-> -	resource_size_t max_addr = memory_hotplug_max();
-> -	struct device_node *memory;
-> +	resource_size_t max_addr;
->  
-> -	for_each_node_by_type(memory, "memory") {
-> -		struct resource res;
-> -
-> -		if (of_address_to_resource(memory, 0, &res))
-> -			continue;
-> -
-> -		max_addr = max_t(resource_size_t, max_addr, res.end + 1);
-> -	}
-> +#if defined(CONFIG_NUMA) && defined(CONFIG_MEMORY_HOTPLUG)
-> +	max_addr = hot_add_drconf_memory_max();
-> +#else
-> +	max_addr = memblock_end_of_DRAM();
-> +#endif
->  
->  	return max_addr;
->  }
-> @@ -1600,7 +1596,7 @@ static bool enable_ddw(struct pci_dev *dev, struct device_node *pdn)
->  
->  	if (direct_mapping) {
->  		/* DDW maps the whole partition, so enable direct DMA mapping */
-> -		ret = walk_system_ram_range(0, memblock_end_of_DRAM() >> PAGE_SHIFT,
-> +		ret = walk_system_ram_range(0, ddw_memory_hotplug_max() >> PAGE_SHIFT,
->  					    win64->value, tce_setrange_multi_pSeriesLP_walk);
->  		if (ret) {
->  			dev_info(&dev->dev, "failed to map DMA window for %pOF: %d\n",
-> @@ -2346,11 +2342,17 @@ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
->  	struct memory_notify *arg = data;
->  	int ret = 0;
->  
-> +	/* This notifier can get called when onlining persistent memory as well.
-> +	 * TCEs are not pre-mapped for persistent memory. Persistent memory will
-> +	 * always be above ddw_memory_hotplug_max()
-> +	 */
-> +
->  	switch (action) {
->  	case MEM_GOING_ONLINE:
->  		spin_lock(&dma_win_list_lock);
->  		list_for_each_entry(window, &dma_win_list, list) {
-> -			if (window->direct) {
-> +			if (window->direct && (arg->start_pfn << PAGE_SHIFT) <
-> +				ddw_memory_hotplug_max()) {
->  				ret |= tce_setrange_multi_pSeriesLP(arg->start_pfn,
->  						arg->nr_pages, window->prop);
->  			}
-> @@ -2362,7 +2364,8 @@ static int iommu_mem_notifier(struct notifier_block *nb, unsigned long action,
->  	case MEM_OFFLINE:
->  		spin_lock(&dma_win_list_lock);
->  		list_for_each_entry(window, &dma_win_list, list) {
-> -			if (window->direct) {
-> +			if (window->direct && (arg->start_pfn << PAGE_SHIFT) <
-> +				ddw_memory_hotplug_max()) {
->  				ret |= tce_clearrange_multi_pSeriesLP(arg->start_pfn,
->  						arg->nr_pages, window->prop);
->  			}
-> 
-> base-commit: 95ec54a420b8f445e04a7ca0ea8deb72c51fe1d3
-> -- 
-> 2.39.3 (Apple Git-146)
-> 
-> 
+Cheers,
+Nathan
 
