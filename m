@@ -1,69 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-7241-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7242-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58B74C35FFF
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Mar 2025 17:40:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B171C28B30
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 20 Mar 2025 17:55:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZJXrw0htjz305P;
-	Fri, 21 Mar 2025 04:39:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1049"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742492384;
-	cv=none; b=NMbC/RbWQQIa8HAaS6nsMSZMyOjCPTTla+bsWke/IhmyBecgHYnq5nGvzflvARly0zcZMao0gBwSZm+wpiJI7+ouxyK3HwpKjUU68sUNA7Xi7UJkENswdxeb6AIeca+l3+P9HSVwLNRB4AYKl+Faujh+q7J16MeHSRVevsip/Xt1fI94pltjQqFxm99FEOEDFA9PWftrJCHv2lHavLwo7/WbWpMm1861hNKetPo3AF3XFGrlnSwWi6pb8ZOYpoZ8F4M94E7+vET4+2/EUalJ94aaA/B8C399bNqQA9nkSnhdZ7xyOTu0JzCKECtKEYZMFYBL7G9is2nAGcTGCvJZWw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZJYBY691Tz301B;
+	Fri, 21 Mar 2025 04:55:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742493301;
+	cv=none; b=KisBhc1PnyhnhG58Z73ZvOkW/kx58ODsNSyEjqYnPv1qcmL1x/jK0VjjJYMPa4cj5YjE0sYdoJ8MxCvXS/qFcTrGKlNu4X7jsQ7R2XQMM5D3hzhkWbGVXDq5d7VblX3PKnaD3jZxmPbkZ07FO8b57cc0rO2NmgE5qTC6Qc27nqsnTxqbBDMiBasu2/kAeW2Nwm38CQaAkbuLO4IwDOxUTFjZ8ZAm6jhc0kH44SwdphcOWgYw0rQQdALapKiwLIOUd8ljZDR+FqJ0NrZvowHynrb9RpKwLU8W5daV13+mSa104Fe+6xDbJLEXUnFr8AoZA6bXl3ncmA1WtiEq/jOspQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742492384; c=relaxed/relaxed;
-	bh=utO18jM3DqI43jAs46xftkc+iTkKZEsg2nm4Y+WIpWw=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=a2AMhTxmLflwRLFPCIqrNBCKXW+bmkASm95l9r2sIqrbOK0/5pZXqyuN3mF6j9q6XwcZsdCJ2MeeXNzhXb2lSOPme4pHNAMN/apUc+SJQNb7NDQ8vChNwH/YS09cGzML/nqAkt6cGElTV9Fj37QgJEmdcnOhHQPAnuED/iQ5X6SetuZq0X5X0sX7bewcDRU1DPHnX21/ki2NKo4KEMOuqwFg9RwEyUFryx19m2XaELfTNHxLiUnPvf+Up7mZoLnyV3vKphNjvq0E6sLv9N6KdLuaxmlnjUA4y0NDBLeQvnsWjJ7Fpz2gNwT1PUyd5TqylJ6nIWMW1sUQaH1ELRxrWA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=a45bynko; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=32llczwykddclnkxguzhhzex.vhfebgnqiiv-wxoeblml.hsetul.hkz@flex--surenb.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--surenb.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1742493301; c=relaxed/relaxed;
+	bh=fdAJmgA8x/DyLgki6UGmCIKVDlIrxAcV/gCy52yibzM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mz26oH2/FH4iV/NcBbKZaM+bL1TvSDcp98Wtxl5bXHKAOtQCIKkM6HZ/ypZNRKAmShB9+WhNlXW6PqZfQYUNFyQ+Y4aiILK3zsgcHK2pKGxCpE1pqM/DEKzCEXLvIzM87kNGxMe8HN9xnr8viHItT3RlPApN11/6Yv5VpO6Yq8NGOXulmvsdnVdcq2QQoFy9NVDhCSKV5P2j2uh3745Fp8jBbdSniWtx2F2kNq/Et1pZiLgJc2RLptja7Z0dmT5Zh7VSVe/smzjwlFpEDLQ/pYmCh9KDp3TtOOMYEP+xV/EvWxRtYGJlwBOsKbyNxewAw+0qqAfremBpBjiH+5M0yA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bQz9AiiA; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=a45bynko;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=bQz9AiiA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--surenb.bounces.google.com (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=32llczwykddclnkxguzhhzex.vhfebgnqiiv-wxoeblml.hsetul.hkz@flex--surenb.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1049.google.com (mail-pj1-x1049.google.com [IPv6:2607:f8b0:4864:20::1049])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sbhat@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZJXrq6zKKz2xy7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2025 04:39:39 +1100 (AEDT)
-Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-2ff581215f7so1357864a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 20 Mar 2025 10:39:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1742492378; x=1743097178; darn=lists.ozlabs.org;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:from:to:cc:subject:date:message-id:reply-to;
-        bh=utO18jM3DqI43jAs46xftkc+iTkKZEsg2nm4Y+WIpWw=;
-        b=a45bynkoUSrft2iidMS9GvgYHFj8KVt7lvGDxDg7wZRsh/hbme8LJQ6bpIGjcRqF39
-         PAuA6q+vvRdL2e/efnz77CHeoDwvHZ4FfTBas8A6tdlOVaXIexCxtlSzYYxqj7sFTMqZ
-         yGmB76BvE4P7B5hnzyaQiIZDnGlp5JMaDx8mFmIbxiwfuvlLSK+BiUWPySf1zOQxbq7a
-         xrK+QkgDD7nh1HPqphNwWlGEe0cswg/rUu+lP12dGSVqaHRcSPB6d1kHgrojwSZ4T1Mv
-         1SehrQFqcJp3pwh1WcxhiQbt4tlsCU7UIzxZGn7pfogVSV0pnlcMMaMKvZS0GKk5UJWv
-         uzVw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742492378; x=1743097178;
-        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
-         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=utO18jM3DqI43jAs46xftkc+iTkKZEsg2nm4Y+WIpWw=;
-        b=DPyPekcr7JbWPHo0NNyh3r6VHfpVQ5E4ie6ftos5eFbm1jViidwt17Qlft8Zn0w6wi
-         QS0TCAqVYR3Th3oiemr7Yvk5iB/5V63xDNDVX/aXRen+UFrzkCOMj/6o5SougU6j0CQu
-         mauV8z8TQiESG4uRZi/hI+6gHQWkCnvWayzTdjYltHIJtd9jsHe7b8fL76q0E2meC7a7
-         k7W3neg//oTeNheLWw+SFM7oGiNVd/0WCeCyuvKHmZUgphMYwr6ofYusSaPSGt6HYgGc
-         ntpe0Jx6vafAQyz8YoqlK1NfCg0iRdPU6mpm2bU1w34dIj9kFA0Q+sfGO3dbB6FqQ5ZJ
-         D9cQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXWlWJYUBkh8pPNTJ89qYHpL71VIqdGctCbvau1tQp4moK1JLAxXYLajrd4I5gTuTKQdMgbCj/vbo1+V7Y=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwMD4dnhhipjaNfmf0qixtngqH9RVum0QeCOYbcaQlucwnZgKnf
-	5lLd0YxNMbUTi23k1nwKQrjD+TbqnwkWTyMA3Fpzm/Krer7zXvFujrazQm+lmXR+dwnZ8iWQz7U
-	CRg==
-X-Google-Smtp-Source: AGHT+IGjhRps2uk6ZFQZIC7R3fpxDHdrRFbLqUZ0BLeU3xJE1wYlTDOJepff3lsj9OvAu2ohK9dAI+Xpphc=
-X-Received: from pjf11.prod.google.com ([2002:a17:90b:3f0b:b0:2fa:1803:2f9f])
- (user=surenb job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:2743:b0:2ff:5a9d:9390
- with SMTP id 98e67ed59e1d1-3030fe779bbmr123144a91.8.1742492378297; Thu, 20
- Mar 2025 10:39:38 -0700 (PDT)
-Date: Thu, 20 Mar 2025 10:39:30 -0700
-In-Reply-To: <20250320173931.1583800-1-surenb@google.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZJYBX63rPz2ySh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2025 04:55:00 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 52KCS0Yt030296;
+	Thu, 20 Mar 2025 17:54:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=fdAJmg
+	A8x/DyLgki6UGmCIKVDlIrxAcV/gCy52yibzM=; b=bQz9AiiAuGSrKdHEPcEB8f
+	IABivnIpupqYJMsPlqaJaShNowYW6bXXdoLS5GH67i0yVgstu9pK/3ZC7B59CNep
+	9WsEI37+uJ6BAmpgRf9tMvY+q4fW42QNS8PDjACylARHCB2BwAIjhArJr3P4m7Ah
+	QsYxSiRbxhTGM+J2GP8sOrFW3UnY/506ae/dxLDkwfJSbnBw7LTR9WhOjNpkAYjo
+	ZQdJGF3DXZ7RIh1uHfBiXuUQRFZWyzBZVcCWNgt3gAcpV/2cKQiV91D6bIQ53JoZ
+	TIzzKUG6/hs5GvJHeLeljft3fUSGx+cS2evWOI4vTtDWYMmtHPClCNapKdjjVAFg
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 45gk21sv4a-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 20 Mar 2025 17:54:56 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 52KGXH8U020324;
+	Thu, 20 Mar 2025 17:54:54 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 45dncmh81k-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 20 Mar 2025 17:54:54 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 52KHsqt441091458
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 20 Mar 2025 17:54:52 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 37D8020043;
+	Thu, 20 Mar 2025 17:54:52 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5BD6920040;
+	Thu, 20 Mar 2025 17:54:50 +0000 (GMT)
+Received: from [9.124.213.75] (unknown [9.124.213.75])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 20 Mar 2025 17:54:50 +0000 (GMT)
+Message-ID: <9131d1be-d68e-48d6-afe3-af8949194b21@linux.ibm.com>
+Date: Thu, 20 Mar 2025 23:24:49 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,269 +78,98 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Mime-Version: 1.0
-References: <20250320173931.1583800-1-surenb@google.com>
-X-Mailer: git-send-email 2.49.0.395.g12beb8f557-goog
-Message-ID: <20250320173931.1583800-3-surenb@google.com>
-Subject: [RFC 2/3] mm: introduce GCMA
-From: Suren Baghdasaryan <surenb@google.com>
-To: akpm@linux-foundation.org
-Cc: willy@infradead.org, david@redhat.com, vbabka@suse.cz, 
-	lorenzo.stoakes@oracle.com, liam.howlett@oracle.com, alexandru.elisei@arm.com, 
-	peterx@redhat.com, hannes@cmpxchg.org, mhocko@kernel.org, 
-	m.szyprowski@samsung.com, iamjoonsoo.kim@lge.com, mina86@mina86.com, 
-	axboe@kernel.dk, viro@zeniv.linux.org.uk, brauner@kernel.org, 
-	hch@infradead.org, jack@suse.cz, hbathini@linux.ibm.com, 
-	sourabhjain@linux.ibm.com, ritesh.list@gmail.com, aneesh.kumar@kernel.org, 
-	bhelgaas@google.com, sj@kernel.org, fvdl@google.com, ziy@nvidia.com, 
-	yuzhao@google.com, minchan@kernel.org, surenb@google.com, linux-mm@kvack.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-block@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, iommu@lists.linux.dev, 
-	linux-kernel@vger.kernel.org, Minchan Kim <minchan@google.com>
-Content-Type: text/plain; charset="UTF-8"
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] vfio: pci: Advertise INTx only if LINE is connected
+To: Alex Williamson <alex.williamson@redhat.com>
+Cc: jgg@ziepe.ca, kevin.tian@intel.com, linux-kernel@vger.kernel.org,
+        kvm@vger.kernel.org, yi.l.liu@intel.com, Yunxiang.Li@amd.com,
+        pstanner@redhat.com, maddy@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org
+References: <174231895238.2295.12586708771396482526.stgit@linux.ibm.com>
+ <20250318115832.04abbea7.alex.williamson@redhat.com>
+Content-Language: en-US
+From: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+In-Reply-To: <20250318115832.04abbea7.alex.williamson@redhat.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 2ArvXWe6IanlGKcJBSbLAOIKEdIivx5Z
+X-Proofpoint-GUID: 2ArvXWe6IanlGKcJBSbLAOIKEdIivx5Z
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1093,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-03-20_05,2025-03-20_01,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 clxscore=1015
+ bulkscore=0 adultscore=0 priorityscore=1501 spamscore=0 mlxlogscore=999
+ malwarescore=0 phishscore=0 impostorscore=0 lowpriorityscore=0 mlxscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2502280000
+ definitions=main-2503200111
 
-From: Minchan Kim <minchan@google.com>
+On 3/18/25 11:28 PM, Alex Williamson wrote:
+> On Tue, 18 Mar 2025 17:29:21 +0000
+> Shivaprasad G Bhat <sbhat@linux.ibm.com> wrote:
+>
+>> On POWER systems, when the device is behind the io expander,
+>> not all PCI slots would have the PCI_INTERRUPT_LINE connected.
+>> The firmware assigns a valid PCI_INTERRUPT_PIN though. In such
+>> configuration, the irq_info ioctl currently advertizes the
+>> irq count as 1 as the PCI_INTERRUPT_PIN is valid.
+>>
+>> The patch adds the additional check[1] if the irq is assigned
+>> for the PIN which is done iff the LINE is connected.
+>>
+>> [1]: https://lore.kernel.org/qemu-devel/20250131150201.048aa3bf.alex.williamson@redhat.com/
+>>
+>> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+>> Suggested-By: Alex Williamson <alex.williamson@redhat.com>
+>> ---
+>>   drivers/vfio/pci/vfio_pci_core.c |    4 ++++
+>>   1 file changed, 4 insertions(+)
+>>
+>> diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
+>> index 586e49efb81b..4ce70f05b4a8 100644
+>> --- a/drivers/vfio/pci/vfio_pci_core.c
+>> +++ b/drivers/vfio/pci/vfio_pci_core.c
+>> @@ -734,6 +734,10 @@ static int vfio_pci_get_irq_count(struct vfio_pci_core_device *vdev, int irq_typ
+>>   			return 0;
+>>   
+>>   		pci_read_config_byte(vdev->pdev, PCI_INTERRUPT_PIN, &pin);
+>> +#if IS_ENABLED(CONFIG_PPC64)
+>> +		if (!vdev->pdev->irq)
+>> +			pin = 0;
+>> +#endif
+>>   
+>>   		return pin ? 1 : 0;
+>>   	} else if (irq_type == VFIO_PCI_MSI_IRQ_INDEX) {
+>>
+>>
+> See:
+>
+> https://lore.kernel.org/all/20250311230623.1264283-1-alex.williamson@redhat.com/
+>
+> Do we need to expand that to test !vdev->pdev->irq in
+> vfio_config_init()?
 
-This patch introduces GCMA (Guaranteed Contiguous Memory Allocator)
-cleacache backend which reserves some amount of memory at the boot
-and then donates it to store clean file-backed pages in the cleancache.
-GCMA aims to guarantee contiguous memory allocation success as well as
-low and deterministic allocation latency.
+Yes. Looks to be the better option. I did try this and it works.
 
-Notes:
-Originally, the idea was posted by SeongJae Park and Minchan Kim [1].
-Later Minchan reworked it to be used in Android as a reference for
-Android vendors to use [2].
 
-[1] https://lwn.net/Articles/619865/
-[2] https://android-review.googlesource.com/q/topic:%22gcma_6.12%22
+I see your patch has already got Reviewed-by. Are you planning
 
-Signed-off-by: Minchan Kim <minchan@google.com>
-Signed-off-by: Suren Baghdasaryan <surenb@google.com>
----
- include/linux/gcma.h |  12 ++++
- mm/Kconfig           |  15 +++++
- mm/Makefile          |   1 +
- mm/gcma.c            | 155 +++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 183 insertions(+)
- create mode 100644 include/linux/gcma.h
- create mode 100644 mm/gcma.c
+for v2 Or want me to post a separate patch with this new check?
 
-diff --git a/include/linux/gcma.h b/include/linux/gcma.h
-new file mode 100644
-index 000000000000..2ce40fcc74a5
---- /dev/null
-+++ b/include/linux/gcma.h
-@@ -0,0 +1,12 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+#ifndef __GCMA_H__
-+#define __GCMA_H__
-+
-+#include <linux/types.h>
-+
-+int gcma_register_area(const char *name,
-+		       unsigned long start_pfn, unsigned long count);
-+void gcma_alloc_range(unsigned long start_pfn, unsigned long count);
-+void gcma_free_range(unsigned long start_pfn, unsigned long count);
-+
-+#endif /* __GCMA_H__ */
-diff --git a/mm/Kconfig b/mm/Kconfig
-index d6ebf0fb0432..85268ef901b6 100644
---- a/mm/Kconfig
-+++ b/mm/Kconfig
-@@ -1002,6 +1002,21 @@ config CMA_AREAS
- 
- 	  If unsure, leave the default value "8" in UMA and "20" in NUMA.
- 
-+config GCMA
-+       bool "GCMA (Guaranteed Contiguous Memory Allocator)"
-+       depends on CLEANCACHE
-+	help
-+	  This enables the Guaranteed Contiguous Memory Allocator to allow
-+	  low latency guaranteed contiguous memory allocations. Memory
-+	  reserved by GCMA is donated to cleancache to be used as pagecache
-+	  extension. Once GCMA allocation is requested, necessary pages are
-+	  taken back from the cleancache and used to satisfy the request.
-+	  Cleancache guarantees low latency successful allocation as long
-+	  as the total size of GCMA allocations does not exceed the size of
-+	  the memory donated to the cleancache.
-+
-+	  If unsure, say "N".
-+
- config MEM_SOFT_DIRTY
- 	bool "Track memory changes"
- 	depends on CHECKPOINT_RESTORE && HAVE_ARCH_SOFT_DIRTY && PROC_FS
-diff --git a/mm/Makefile b/mm/Makefile
-index 084dbe9edbc4..2173d395d371 100644
---- a/mm/Makefile
-+++ b/mm/Makefile
-@@ -149,3 +149,4 @@ obj-$(CONFIG_EXECMEM) += execmem.o
- obj-$(CONFIG_TMPFS_QUOTA) += shmem_quota.o
- obj-$(CONFIG_PT_RECLAIM) += pt_reclaim.o
- obj-$(CONFIG_CLEANCACHE) += cleancache.o
-+obj-$(CONFIG_GCMA)	+= gcma.o
-diff --git a/mm/gcma.c b/mm/gcma.c
-new file mode 100644
-index 000000000000..263e63da0c89
---- /dev/null
-+++ b/mm/gcma.c
-@@ -0,0 +1,155 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * GCMA (Guaranteed Contiguous Memory Allocator)
-+ *
-+ */
-+
-+#define pr_fmt(fmt) "gcma: " fmt
-+
-+#include <linux/cleancache.h>
-+#include <linux/gcma.h>
-+#include <linux/hashtable.h>
-+#include <linux/highmem.h>
-+#include <linux/idr.h>
-+#include <linux/slab.h>
-+#include <linux/xarray.h>
-+
-+#define MAX_GCMA_AREAS		64
-+#define GCMA_AREA_NAME_MAX_LEN	32
-+
-+struct gcma_area {
-+	int area_id;
-+	unsigned long start_pfn;
-+	unsigned long end_pfn;
-+	char name[GCMA_AREA_NAME_MAX_LEN];
-+};
-+
-+static struct gcma_area areas[MAX_GCMA_AREAS];
-+static atomic_t nr_gcma_area = ATOMIC_INIT(0);
-+static DEFINE_SPINLOCK(gcma_area_lock);
-+
-+static void alloc_page_range(struct gcma_area *area,
-+			     unsigned long start_pfn, unsigned long end_pfn)
-+{
-+	unsigned long scanned = 0;
-+	unsigned long pfn;
-+	struct page *page;
-+	int err;
-+
-+	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
-+		if (!(++scanned % XA_CHECK_SCHED))
-+			cond_resched();
-+
-+		page = pfn_to_page(pfn);
-+		err = cleancache_backend_get_folio(area->area_id, page_folio(page));
-+		VM_BUG_ON(err);
-+	}
-+}
-+
-+static void free_page_range(struct gcma_area *area,
-+			    unsigned long start_pfn, unsigned long end_pfn)
-+{
-+	unsigned long scanned = 0;
-+	unsigned long pfn;
-+	struct page *page;
-+	int err;
-+
-+	for (pfn = start_pfn; pfn < end_pfn; pfn++) {
-+		if (!(++scanned % XA_CHECK_SCHED))
-+			cond_resched();
-+
-+		page = pfn_to_page(pfn);
-+		err = cleancache_backend_put_folio(area->area_id,
-+						   page_folio(page));
-+		VM_BUG_ON(err);
-+	}
-+}
-+
-+int gcma_register_area(const char *name,
-+		       unsigned long start_pfn, unsigned long count)
-+{
-+	LIST_HEAD(folios);
-+	int i, area_id;
-+	int nr_area;
-+	int ret = 0;
-+
-+	for (i = 0; i < count; i++) {
-+		struct folio *folio;
-+
-+		folio = page_folio(pfn_to_page(start_pfn + i));
-+		list_add(&folio->lru, &folios);
-+	}
-+
-+	area_id = cleancache_register_backend(name, &folios);
-+	if (area_id < 0)
-+		return area_id;
-+
-+	spin_lock(&gcma_area_lock);
-+
-+	nr_area = atomic_read(&nr_gcma_area);
-+	if (nr_area < MAX_GCMA_AREAS) {
-+		struct gcma_area *area = &areas[nr_area];
-+
-+		area->area_id = area_id;
-+		area->start_pfn = start_pfn;
-+		area->end_pfn = start_pfn + count;
-+		strscpy(area->name, name);
-+		/* Ensure above stores complete before we increase the count */
-+		atomic_set_release(&nr_gcma_area, nr_area + 1);
-+	} else {
-+		ret = -ENOMEM;
-+	}
-+
-+	spin_unlock(&gcma_area_lock);
-+
-+	return ret;
-+}
-+EXPORT_SYMBOL_GPL(gcma_register_area);
-+
-+void gcma_alloc_range(unsigned long start_pfn, unsigned long count)
-+{
-+	int nr_area = atomic_read_acquire(&nr_gcma_area);
-+	unsigned long end_pfn = start_pfn + count;
-+	struct gcma_area *area;
-+	int i;
-+
-+	for (i = 0; i < nr_area; i++) {
-+		unsigned long s_pfn, e_pfn;
-+
-+		area = &areas[i];
-+		if (area->end_pfn <= start_pfn)
-+			continue;
-+
-+		if (area->start_pfn > end_pfn)
-+			continue;
-+
-+		s_pfn = max(start_pfn, area->start_pfn);
-+		e_pfn = min(end_pfn, area->end_pfn);
-+		alloc_page_range(area, s_pfn, e_pfn);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(gcma_alloc_range);
-+
-+void gcma_free_range(unsigned long start_pfn, unsigned long count)
-+{
-+	int nr_area = atomic_read_acquire(&nr_gcma_area);
-+	unsigned long end_pfn = start_pfn + count;
-+	struct gcma_area *area;
-+	int i;
-+
-+	for (i = 0; i < nr_area; i++) {
-+		unsigned long s_pfn, e_pfn;
-+
-+		area = &areas[i];
-+		if (area->end_pfn <= start_pfn)
-+			continue;
-+
-+		if (area->start_pfn > end_pfn)
-+			continue;
-+
-+		s_pfn = max(start_pfn, area->start_pfn);
-+		e_pfn = min(end_pfn, area->end_pfn);
-+		free_page_range(area, s_pfn, e_pfn);
-+	}
-+}
-+EXPORT_SYMBOL_GPL(gcma_free_range);
--- 
-2.49.0.rc1.451.g8f38331e32-goog
+
+> We don't allow a zero irq to be enabled in
+> vfio_intx_enable(), so we might as well not report it as supported.
+
+Yes. I agree.
+
+
+Thank you!
+
+
+Regards,
+
+Shivaprasad
+
 
 
