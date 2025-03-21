@@ -1,97 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-7283-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7284-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45CC6C36000
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Mar 2025 19:49:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B535EC36007
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Mar 2025 21:06:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZKCh661d8z30Vn;
-	Sat, 22 Mar 2025 06:49:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZKFNb1C9Tz2xfR;
+	Sat, 22 Mar 2025 08:06:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742586566;
-	cv=none; b=TGK5E/lVWN4SUn3lUQI/MEzwnnZnKcVMwuVX9BRpc6kyMkjm+QXiL4Jh2koyGFhPhF0zBZ3NhBJ2eTvAryxb9NO/SQc+RuhNIa97RDGVSjbQcFKYi4Rp4dqpK50MY3xaEko8RJpjydI6O4QlbTwLpsqT39huhJt02dT9mau7WwP3sMG4GEX9ZLaMNqf/q0VGBR4Ztziu/eh86IZlw/m3fPMLK0ooEimCxcuO4nyL6GZzjrsCHsvAxn707YYyZmINAS+dnAyc593uaortoFPvW6eEwDNE9ym2PsstV7MS8K6N0DcbTe4igyBMUFPIqK7/qQQEEJFcuiA9t3JK2/nigg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742591167;
+	cv=none; b=gRxkOuyh2PQRN5Ce/J2uY30Pi8RKlNgj4Tckr7ExnGa9Ej/PGkKFfooNVZYs3bg5kh8UNiek7ZiMz5GTY3lm1jZ6eEs5rMf23jx74zvEcp6IszaLZhIthtwLBw/w+O9gwCmvPOTwS3nnY5aWyW/bifDzHW8dM+rkQ1FTDM2PLdvK09h33tWS3vZBMSiAU5bwGargmcUARErQvksQAvcei6TmUdSAWBDPdr18ZzHhpCGTTqNlG8BAIqpRfDGQUYVxN53LLvKzd73soS7FYwDKapOIFbBmw4ZypMBYn3GmfSA6Ix+egq1qPbgHNlAW1IBy7d9KeE8U0WLi/PzQhklbjQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742586566; c=relaxed/relaxed;
-	bh=P+CKY6hYnggEy5gDUo8IBcPB4aoVwWaaXqwhjqRQh5c=;
-	h=From:Date:Subject:MIME-Version:Message-Id:References:In-Reply-To:
-	 To:Cc:Content-Type; b=XFJKPkJC8BiFDUAwapX3nyiGecjefOB22IGi3/BPZQpmgZpR8ab5+ZwqDBiNs0bmM/R7tJXIxyxi0/zZLjjkBi6GIJkg5fVOFLuBDiWzqjp63OH3sh09JXzhCDjA3KJNiiQihj0DCIdEl6mYj6/kYQ5LWroZbYyZKTT7nOn4Jdu3IJA/DF2isYRye50ptwBgYjKP0drzz9fiTfJY+sQOh5H7CZNBFNQPHMdXjHklw+b3MChVnbJhADdv0F7jXtKdcAd2qfPvT4Eh6cTeoNIvEOQ8zmwB+itDrJsa+WQIrGJrOieqY+uTmGXjHQJQ6DWhYQHYySpjh3p8AXIQ1XD79Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AoVSmLWx; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AoVSmLWx; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=aalbersh@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+	t=1742591167; c=relaxed/relaxed;
+	bh=WRnJoqDrjjM/0a1a+E2erJF3D59Mlmw/EEkVC6fPK4Y=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=DnBC+nK7HHnQGQvKrgQADrbuz17zJU+EhmdtEcmhfGbAmbVRZwsMSv+dKdDwVXxOQW8iQ/MCJnbYylu477gARahDmjOO6VvP6Sj4DOUwkQODqNXvSt7KXqrapc/GZGlh2INOFETx/7pa8ipSLh7xVtX8eCliDM1iK8sAV2aVwuL7+eP0sV3b5KYaa9MIRCmwCIWMrbCP7Gpuv3aybS0vn4he+5fblz9LGYb2noo/qmQW4OPvIclFo+2wKKGalkKtz4OeokA4tzuFBGU2vA7qEG57mpE2jJ0QPbjp6MI56Fotk3xKRMvrZXQNq5fKtVnKJQERgWBs5rgock8mU0oBKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=gHmxFAY0; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ClT+65h7; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=acarmina@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AoVSmLWx;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=AoVSmLWx;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=gHmxFAY0;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ClT+65h7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=aalbersh@redhat.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=acarmina@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZKCh56QX3z30VV
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Mar 2025 06:49:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZKFNX0Rs0z2xd6
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Mar 2025 08:06:01 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1742586562;
+	s=mimecast20190719; t=1742591158;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=P+CKY6hYnggEy5gDUo8IBcPB4aoVwWaaXqwhjqRQh5c=;
-	b=AoVSmLWx5YwJPEtLVi1Z6cNl8Jc31u1ef/LKGwe8yfwooSvSDGvrrvPoQ6wu3w1+HZU0Qy
-	y+YXTLPqu/ezYvYpytSKqXsT8DuC6fguSzCSQdjLb84vXphbZpLuZYQR+/3sojd2lQ1wKz
-	mMHgRmzcqVdO5xykTVNvjbQFrN0Ey54=
+	bh=WRnJoqDrjjM/0a1a+E2erJF3D59Mlmw/EEkVC6fPK4Y=;
+	b=gHmxFAY0KhiJFMaJ6aPKNM6ITg/GX8BYG+FTO3HdEgTT6w6kbZzLOfaTaYgJ1m2nRZyUBJ
+	D8lj44UqFv3S3oXqPQnDtha4pCp0tCjl8sWYEZV8pwmfiHIJ10m75LA9gsffsmRJvvqiRr
+	k2HV1quk896qb504/VOdQhe2S95lhqE=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1742586562;
+	s=mimecast20190719; t=1742591159;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=P+CKY6hYnggEy5gDUo8IBcPB4aoVwWaaXqwhjqRQh5c=;
-	b=AoVSmLWx5YwJPEtLVi1Z6cNl8Jc31u1ef/LKGwe8yfwooSvSDGvrrvPoQ6wu3w1+HZU0Qy
-	y+YXTLPqu/ezYvYpytSKqXsT8DuC6fguSzCSQdjLb84vXphbZpLuZYQR+/3sojd2lQ1wKz
-	mMHgRmzcqVdO5xykTVNvjbQFrN0Ey54=
-Received: from mail-ej1-f71.google.com (mail-ej1-f71.google.com
- [209.85.218.71]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=WRnJoqDrjjM/0a1a+E2erJF3D59Mlmw/EEkVC6fPK4Y=;
+	b=ClT+65h7v3dL4SymA1AG2dSqHUesNCJfP/6xAW70I1F2dqF8tRTuxBbLVIm0RBLa9+MkN4
+	uxA4/DnIM8j4dId0pR2fCSL02Wy53vQV408DBl3E8QhxHpjWA43uI3Ek4f481CeN7JYSgv
+	zQyKskM9LROKHEhEexpVoot1ZbJzCuU=
+Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com
+ [209.85.214.197]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-637-3cb7gA2HMc-zJs_fMvtcwQ-1; Fri, 21 Mar 2025 15:49:17 -0400
-X-MC-Unique: 3cb7gA2HMc-zJs_fMvtcwQ-1
-X-Mimecast-MFC-AGG-ID: 3cb7gA2HMc-zJs_fMvtcwQ_1742586556
-Received: by mail-ej1-f71.google.com with SMTP id a640c23a62f3a-ac3d3cd9accso227531366b.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2025 12:49:16 -0700 (PDT)
+ us-mta-647-cPTBwEW_Nx2CCjm_f7MAnQ-1; Fri, 21 Mar 2025 17:05:55 -0400
+X-MC-Unique: cPTBwEW_Nx2CCjm_f7MAnQ-1
+X-Mimecast-MFC-AGG-ID: cPTBwEW_Nx2CCjm_f7MAnQ_1742591154
+Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-224364f2492so34645975ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2025 14:05:54 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1742586556; x=1743191356;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20230601; t=1742591154; x=1743195954;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=P+CKY6hYnggEy5gDUo8IBcPB4aoVwWaaXqwhjqRQh5c=;
-        b=Rr4oGL8Il+tFuqmjVR8tAVZEwWVlODe/99q0HQOuIef4CKjS8MTMwwhic0/XQziHWa
-         Ir5zOq1z/84keLgrbrpp4y3ns/Dbw1C9L6OeUYk4ABtmbJFFJDCDp8ziYT/5WQ8URVsY
-         bhWRzZX2HR7NSPMV1tlhDGrO1uSNcFXdY+SMjsnn69cZq/WDBd8yEH/UNGDoyFEngibp
-         lQSil/bvmmMN0iOXhukbQjlQOzlhSKF82sZ+xkcI9t5MrvaNffI5mN9+ZSBp7NZRDZsr
-         ZCBACi71aAtaf4C3BnSfQ/l83AKqOE0b5Y2j9gMfYWqlIJOUhm0Q6+dpzhgDXtwBJ93v
-         hcMA==
-X-Forwarded-Encrypted: i=1; AJvYcCXMYAWYtg/K/b3gqKwG1RL7Mg+uum77gqEcP1ktNxBllgLXsbEnOX6aOF8f192GCQdwfdb6KI7xf2aChdE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzk1ESV58JuOunIDDY+c1GJp3wnYwG2nTkqtapmFO3S5Mm2OvOy
-	Fwmj9JTZqKRftsdq9ykOgaqKXRDc6wjegqJblEFzHM+otrInfXDUWq3V0m5wlSNoz6BpD1fAA96
-	WdC7MFwNrPN8nPxgGvxDp6+83TqJQfQlykcOyKMV6HJpB8vlgYTBwrHc1OnU9CA==
-X-Gm-Gg: ASbGncvM6lc4IDEmOsVZ7YB+PuKdvglKSNbuezICL3KDJ8RIgt6d7fvd97CM4q86VgY
-	Qd855lfS1QvhaExAjfv55O/8Ksw1xB6OT/J79k6hEjsDQahAU/wmxa4gM4JvaVn6KfFZXJkEaOM
-	41mvjHoxxiFSE53hTrjNvwzRGk/dzdXbrYt6/92cuR1NFjVJkxughFhORclF6SmAWr25VYQpOyg
-	Mc26NklVMOzSreXrSlBHKf8vM4X16Y9P7Rim2XNLxx0lRUwTA/eh4TyyETZnoEPcH60stYPMaDE
-	jtuNL0eRO5bLB3G4X+MPTZV4he59c/EC9EUVfUSFGg==
-X-Received: by 2002:a17:907:9482:b0:ac2:13f:338b with SMTP id a640c23a62f3a-ac3f2537a13mr417243166b.55.1742586555782;
-        Fri, 21 Mar 2025 12:49:15 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IE364/oBuyn+cE4ig5ONss+vPjSo5TWTy9RSOBlsLCFEbZLg0sVEvc8UiI6SNuN3e2vwFGwrA==
-X-Received: by 2002:a17:907:9482:b0:ac2:13f:338b with SMTP id a640c23a62f3a-ac3f2537a13mr417237066b.55.1742586555219;
-        Fri, 21 Mar 2025 12:49:15 -0700 (PDT)
-Received: from [127.0.0.2] (ip-217-030-074-039.aim-net.cz. [217.30.74.39])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ac3ef8d3d38sm204412266b.39.2025.03.21.12.49.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 21 Mar 2025 12:49:13 -0700 (PDT)
-From: Andrey Albershteyn <aalbersh@redhat.com>
-X-Google-Original-From: Andrey Albershteyn <aalbersh@kernel.org>
-Date: Fri, 21 Mar 2025 20:48:41 +0100
-Subject: [PATCH v4 2/3] fs: split fileattr/fsxattr converters into helpers
+        bh=WRnJoqDrjjM/0a1a+E2erJF3D59Mlmw/EEkVC6fPK4Y=;
+        b=aC9FwbEIMyOBj2YM3WOFuUg8/CmAHb5YubQ3JCoFTcV0Yb6xOWBvLiqemM0iSBJZNd
+         4vovuflwcnaCJwx8n/IOZ/f0IlE72CCpFHspc3YCFB+2bM0z56JtC/Lmgs/4T8+zKSI2
+         5pWgvpdZY/YU4RtLtXKrff5wi25cVtdJ/aaIgX6C1cvPUonBfWKmllbOywBSghU9pve6
+         JBY2sLC7Ca1Xf3chMPIyBdNrLBisghHP4AmYKYbRobmdyk0RDF3u1V9eE2qHPxhWsWIN
+         QBS4dP/097JVbKrOQ1U8zw8yWOOX7eQ4A1ju7h0NH9/53QA4cAnoaqU/P/Xn284qG95y
+         nBVg==
+X-Forwarded-Encrypted: i=1; AJvYcCWaBEbQPZvYIn8xmocNOzcfx6zrjE0LVOfMrMwfm3ffyY7hGCT77TbrLevj50Et/yW/bI9R7GgvUtKgERY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YweqKEJ4r6bBwmfL4sXgCHyzluIfHtBD30MD9r2yMCRAQ8LvEPH
+	QebeEwvdg7OyvFPiOkgsVH3v0rJA+NO0/kv2svdnh4iEEc7M6MbnL3VWL/CafLFAZPc2lQWIYnB
+	0juD4NuC1EDaINKJXsm0RgMwOkdAgkBv0DzG5nLMAVlyQjLdXlkuxXQv3+wyO9FtrFVl2CNUDNF
+	NITOqBlUW0qx4Tuq3apBEtBAUHUxkkA2h8TrSwSw==
+X-Gm-Gg: ASbGncsJzQFk4UWzV8x8ZjO6EBq+mVJBaFMc5MT3zNGDIv6VBmAotg0dHuYAd32H/wg
+	Trj906XZHFBa1HRbHW7l4vZm/n4b+fa2e7fzeNBVBxucvX4iJH1qfnuSHV8yp7TXSgvgcugU=
+X-Received: by 2002:a17:902:ce08:b0:224:2175:b0cd with SMTP id d9443c01a7336-22780db3884mr78325185ad.26.1742591153928;
+        Fri, 21 Mar 2025 14:05:53 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IEN00ZwsCSvrb1GxmsoNJZNu7MKJs1Ucfk1lD2MiRFFRVzqqr5ClONI/dVh1idt8Msn85KVY7jetnaUeKy09VA=
+X-Received: by 2002:a17:902:ce08:b0:224:2175:b0cd with SMTP id
+ d9443c01a7336-22780db3884mr78324575ad.26.1742591153425; Fri, 21 Mar 2025
+ 14:05:53 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,151 +95,336 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Message-Id: <20250321-xattrat-syscall-v4-2-3e82e6fb3264@kernel.org>
-References: <20250321-xattrat-syscall-v4-0-3e82e6fb3264@kernel.org>
-In-Reply-To: <20250321-xattrat-syscall-v4-0-3e82e6fb3264@kernel.org>
-To: Richard Henderson <richard.henderson@linaro.org>, 
- Matt Turner <mattst88@gmail.com>, Russell King <linux@armlinux.org.uk>, 
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
- Geert Uytterhoeven <geert@linux-m68k.org>, Michal Simek <monstr@monstr.eu>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
- Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Naveen N Rao <naveen@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, 
- Vasily Gorbik <gor@linux.ibm.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Sven Schnelle <svens@linux.ibm.com>, 
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
- "David S. Miller" <davem@davemloft.net>, 
- Andreas Larsson <andreas@gaisler.com>, Andy Lutomirski <luto@kernel.org>, 
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, 
- Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, 
- x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
- Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>, 
- Alexander Viro <viro@zeniv.linux.org.uk>, 
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
- =?utf-8?q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, 
- =?utf-8?q?G=C3=BCnther_Noack?= <gnoack@google.com>, 
- Arnd Bergmann <arnd@arndb.de>, 
- =?utf-8?q?Pali_Roh=C3=A1r?= <pali@kernel.org>, 
- Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
- "Serge E. Hallyn" <serge@hallyn.com>
-Cc: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, linux-m68k@lists.linux-m68k.org, 
- linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
- linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org, 
- linux-api@vger.kernel.org, linux-arch@vger.kernel.org, 
- Andrey Albershteyn <aalbersh@kernel.org>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3102; i=aalbersh@kernel.org;
- h=from:subject:message-id; bh=U65D6SohAEKFKir81pK5H51AE5x6/jUW8l5jaJk9nGM=;
- b=owJ4nJvAy8zAJea2/JXEGuOHHIyn1ZIY0u8e2nhsqffE2qNHBdc56kpaBv10/G5zKMBMNU5Y1
- 7+08cOt3t6OUhYGMS4GWTFFlnXSWlOTiqTyjxjUyMPMYWUCGcLAxSkAF7Fl+MO39MOayUtjz0Xc
- Zf+S85RBZMPrQyk/IssaWQR3V917GlLI8D93Rvvtmb0TdxnrLdm5326CcYQxW4JKaaBU3XVFNfO
- V51kB1DlIeQ==
-X-Developer-Key: i=aalbersh@kernel.org; a=openpgp;
- fpr=AE1B2A9562721A6FC4307C1F46A7EA18AC33E108
+References: <20250313114329.284104-1-acarmina@redhat.com> <20250313114329.284104-11-acarmina@redhat.com>
+ <b6bb68f0-7e93-4db2-9fe6-f615f06ddeb1@roeck-us.net>
+In-Reply-To: <b6bb68f0-7e93-4db2-9fe6-f615f06ddeb1@roeck-us.net>
+From: Alessandro Carminati <acarmina@redhat.com>
+Date: Fri, 21 Mar 2025 22:05:42 +0100
+X-Gm-Features: AQ5f1JoQT0Axds-sBfJ5O3FpL2NPQAbk3ZSqHh9aN-1kzXKN_DmP6zsQowxJbF0
+Message-ID: <CAGegRW4GinPmsav5=VBfjXBKy4cUEs5FWv-ixXODk7ajZ69vYg@mail.gmail.com>
+Subject: Re: [PATCH v4 10/14] s390: Add support for suppressing warning backtraces
+To: Guenter Roeck <linux@roeck-us.net>
+Cc: linux-kselftest@vger.kernel.org, David Airlie <airlied@gmail.com>, 
+	Arnd Bergmann <arnd@arndb.de>, =?UTF-8?B?TWHDrXJhIENhbmFs?= <mcanal@igalia.com>, 
+	Dan Carpenter <dan.carpenter@linaro.org>, Kees Cook <keescook@chromium.org>, 
+	Daniel Diaz <daniel.diaz@linaro.org>, David Gow <davidgow@google.com>, 
+	Arthur Grillo <arthurgrillo@riseup.net>, Brendan Higgins <brendan.higgins@linux.dev>, 
+	Naresh Kamboju <naresh.kamboju@linaro.org>, 
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Maxime Ripard <mripard@kernel.org>, 
+	=?UTF-8?B?VmlsbGUgU3lyasOkbMOk?= <ville.syrjala@linux.intel.com>, 
+	Daniel Vetter <daniel@ffwll.ch>, Thomas Zimmermann <tzimmermann@suse.de>, 
+	Alessandro Carminati <alessandro.carminati@gmail.com>, Jani Nikula <jani.nikula@intel.com>, 
+	dri-devel@lists.freedesktop.org, kunit-dev@googlegroups.com, 
+	linux-arch@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	linux-sh@vger.kernel.org, loongarch@lists.linux.dev, x86@kernel.org, 
+	Linux Kernel Functional Testing <lkft@linaro.org>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: l2E6WnfIAYhmPMyvTTeN_4tOJqNg2N7gUtpupXMMt3c_1742586556
+X-Mimecast-MFC-PROC-ID: c3irt5hZ7ixpuuXdUGQBbu6E6hTmeKiol-ow0XPwUVE_1742591154
 X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-This will be helpful for get/setfsxattrat syscalls to convert
-between fileattr and fsxattr.
+Hello Guenter,
+Sorry for being late to the party.
 
-Signed-off-by: Andrey Albershteyn <aalbersh@kernel.org>
+On Fri, Mar 21, 2025 at 6:06=E2=80=AFPM Guenter Roeck <linux@roeck-us.net> =
+wrote:
+>
+> On 3/13/25 04:43, Alessandro Carminati wrote:
+> > From: Guenter Roeck <linux@roeck-us.net>
+> >
+> > Add name of functions triggering warning backtraces to the __bug_table
+> > object section to enable support for suppressing WARNING backtraces.
+> >
+> > To limit image size impact, the pointer to the function name is only ad=
+ded
+> > to the __bug_table section if both CONFIG_KUNIT_SUPPRESS_BACKTRACE and
+> > CONFIG_DEBUG_BUGVERBOSE are enabled. Otherwise, the __func__ assembly
+> > parameter is replaced with a (dummy) NULL parameter to avoid an image s=
+ize
+> > increase due to unused __func__ entries (this is necessary because
+> > __func__ is not a define but a virtual variable).
+> >
+> > Tested-by: Linux Kernel Functional Testing <lkft@linaro.org>
+> > Acked-by: Dan Carpenter <dan.carpenter@linaro.org>
+> > Cc: Heiko Carstens <hca@linux.ibm.com>
+> > Cc: Vasily Gorbik <gor@linux.ibm.com>
+> > Cc: Alexander Gordeev <agordeev@linux.ibm.com>
+> > Signed-off-by: Guenter Roeck <linux@roeck-us.net>
+> > Signed-off-by: Alessandro Carminati <acarmina@redhat.com>
+> > ---
+> >   arch/s390/include/asm/bug.h | 17 ++++++++++++++---
+> >   1 file changed, 14 insertions(+), 3 deletions(-)
+> >
+> > diff --git a/arch/s390/include/asm/bug.h b/arch/s390/include/asm/bug.h
+> > index c500d45fb465..44d4e9f24ae0 100644
+> > --- a/arch/s390/include/asm/bug.h
+> > +++ b/arch/s390/include/asm/bug.h
+> > @@ -8,6 +8,15 @@
+> >
+> >   #ifdef CONFIG_DEBUG_BUGVERBOSE
+> >
+> > +#ifdef CONFIG_KUNIT_SUPPRESS_BACKTRACE
+> > +# define HAVE_BUG_FUNCTION
+> > +# define __BUG_FUNC_PTR      "       .long   %0-.\n"
+> > +# define __BUG_FUNC  __func__
+>
+> gcc 7.5.0 on s390 barfs; it doesn't like the use of "__func__" with "%0-.=
+"
+>
+> drivers/gpu/drm/bridge/analogix/analogix-i2c-dptx.c: In function 'anx_dp_=
+aux_transfer':
+> ././include/linux/compiler_types.h:492:20: warning: asm operand 0 probabl=
+y doesn't match constraints
+>
+> I was unable to find an alternate constraint that the compiler would acce=
+pt.
+>
+> I don't know if the same problem is seen with older compilers on other ar=
+chitectures,
+> or if the problem is relevant in the first place.
+>
+> gcc 10.3.0 and later do not have this problem. I also tried s390 builds w=
+ith gcc 9.4
+> and 9.5 but they both crash for unrelated reasons.
+>
+> If this is a concern, the best idea I have is to make KUNIT_SUPPRESS_BACK=
+TRACE
+> depend on, say,
+>         depends on CC_IS_CLANG || (CC_IS_GCC && GCC_VERSION >=3D 100300)
+>
+> A more complex solution might be to define an architecture flag such
+> as HAVE_SUPPRESS_BACKTRACE, make that conditional on the gcc version
+> for s390 only, and make KUNIT_SUPPRESS_BACKTRACE depend on it.
+
+I've spent some time trying to better define the problem.
+Although it may seem trivial, the old compiler simply doesn't work=E2=80=94=
+I
+believe the issue is a bit more complex.
+
+So, let me share some code and then comment on it.
+$ cat bug-s390.c
+#include "bug_entry.h"
+#define asm_inline asm __inline
+# define __BUG_FUNC_PTR " .long %0-.\n"
+# define __BUG_FUNC __func__
+#define __EMIT_BUG(x) do { \
+asm_inline volatile( \
+"0: mc 0,0\n" \
+".section .rodata.str,\"aMS\",@progbits,1\n" \
+"1: .asciz \""__FILE__"\"\n" \
+".previous\n" \
+".section __bug_table,\"aw\"\n" \
+"2: .long 0b-.\n" \
+" .long 1b-.\n" \
+__BUG_FUNC_PTR \
+" .short %1,%2\n" \
+" .org 2b+%3\n" \
+".previous\n" \
+: : "i" (__BUG_FUNC), \
+    "i" (__LINE__), \
+    "i" (x), \
+    "i" (sizeof(struct bug_entry))); \
+} while (0)
+
+#define BUG() do { \
+__EMIT_BUG(0); \
+} while (0)
+
+void f1(){
+BUG();
+}
+void f2(){
+BUG();
+}
+int main() {
+BUG();
+        f1();
+        f2();
+return 0;
+}
+$ # This is a stripped version of the s390x code for bug
+$ ~/x-tools/s390x-ibm-linux-gnu_14/bin/s390x-ibm-linux-gnu-gcc -v
+Using built-in specs.
+COLLECT_GCC=3D/home/alessandro/x-tools/s390x-ibm-linux-gnu_14/bin/s390x-ibm=
+-linux-gnu-gcc
+COLLECT_LTO_WRAPPER=3D/home/alessandro/x-tools/s390x-ibm-linux-gnu_14/bin/.=
+./libexec/gcc/s390x-ibm-linux-gnu/14.2.0/lto-wrapper
+Target: s390x-ibm-linux-gnu
+Configured with:
+/home/alessandro/src/s390x-toolchain/.build/s390x-ibm-linux-gnu/src/gcc/con=
+figure
+--build=3Dx86_64-build_pc-linux-gnu --host=3Dx86_64-build_pc-linux-gnu
+--target=3Ds390x-ibm-linux-gnu
+--prefix=3D/home/alessandro/x-tools/s390x-ibm-linux-gnu
+--exec_prefix=3D/home/alessandro/x-tools/s390x-ibm-linux-gnu
+--with-sysroot=3D/home/alessandro/x-tools/s390x-ibm-linux-gnu/s390x-ibm-lin=
+ux-gnu/sysroot
+--enable-languages=3Dc,c++ --with-pkgversion=3D'crosstool-NG
+1.27.0.18_7458341' --enable-__cxa_atexit --disable-libmudflap
+--disable-libgomp --disable-libssp --disable-libquadmath
+--disable-libquadmath-support --disable-libsanitizer --disable-libmpx
+--with-gmp=3D/home/alessandro/src/s390x-toolchain/.build/s390x-ibm-linux-gn=
+u/buildtools
+--with-mpfr=3D/home/alessandro/src/s390x-toolchain/.build/s390x-ibm-linux-g=
+nu/buildtools
+--with-mpc=3D/home/alessandro/src/s390x-toolchain/.build/s390x-ibm-linux-gn=
+u/buildtools
+--with-isl=3D/home/alessandro/src/s390x-toolchain/.build/s390x-ibm-linux-gn=
+u/buildtools
+--enable-lto --enable-threads=3Dposix --enable-target-optspace
+--disable-plugin --disable-nls --disable-multilib
+--with-local-prefix=3D/home/alessandro/x-tools/s390x-ibm-linux-gnu/s390x-ib=
+m-linux-gnu/sysroot
+--enable-long-long
+Thread model: posix
+Supported LTO compression algorithms: zlib zstd
+gcc version 14.2.0 (crosstool-NG 1.27.0.18_7458341)
+$ ~/x-tools/s390x-ibm-linux-gnu_14/bin/s390x-ibm-linux-gnu-gcc -S -m64
+bug-s390.c
+$ ~/x-tools/s390x-ibm-linux-gnu_14/bin/s390x-ibm-linux-gnu-gcc -S -m64
+-fPIC bug-s390.c
+$ ~/x-tools/s390x-ibm-linux-gnu/bin/s390x-ibm-linux-gnu-gcc -v
+Using built-in specs.
+COLLECT_GCC=3D/home/alessandro/x-tools/s390x-ibm-linux-gnu/bin/s390x-ibm-li=
+nux-gnu-gcc
+COLLECT_LTO_WRAPPER=3D/home/alessandro/x-tools/s390x-ibm-linux-gnu/libexec/=
+gcc/s390x-ibm-linux-gnu/7.5.0/lto-wrapper
+Target: s390x-ibm-linux-gnu
+Configured with:
+/home/alessandro/src/cross-s390/.build/s390x-ibm-linux-gnu/src/gcc/configur=
+e
+--build=3Dx86_64-build_pc-linux-gnu --host=3Dx86_64-build_pc-linux-gnu
+--target=3Ds390x-ibm-linux-gnu
+--prefix=3D/home/alessandro/x-tools/s390x-ibm-linux-gnu
+--exec_prefix=3D/home/alessandro/x-tools/s390x-ibm-linux-gnu
+--with-sysroot=3D/home/alessandro/x-tools/s390x-ibm-linux-gnu/s390x-ibm-lin=
+ux-gnu/sysroot
+--enable-languages=3Dc --with-pkgversion=3D'crosstool-NG
+1.27.0.18_7458341' --enable-__cxa_atexit --disable-tm-clone-registry
+--disable-libmudflap --disable-libgomp --disable-libssp
+--disable-libquadmath --disable-libquadmath-support
+--disable-libsanitizer --disable-libmpx --disable-libstdcxx-verbose
+--with-gmp=3D/home/alessandro/src/cross-s390/.build/s390x-ibm-linux-gnu/bui=
+ldtools
+--with-mpfr=3D/home/alessandro/src/cross-s390/.build/s390x-ibm-linux-gnu/bu=
+ildtools
+--with-mpc=3D/home/alessandro/src/cross-s390/.build/s390x-ibm-linux-gnu/bui=
+ldtools
+--with-isl=3D/home/alessandro/src/cross-s390/.build/s390x-ibm-linux-gnu/bui=
+ldtools
+--enable-lto --without-zstd --enable-threads=3Dposix
+--enable-target-optspace --disable-plugin --disable-nls
+--disable-multilib
+--with-local-prefix=3D/home/alessandro/x-tools/s390x-ibm-linux-gnu/s390x-ib=
+m-linux-gnu/sysroot
+--enable-long-long
+Thread model: posix
+gcc version 7.5.0 (crosstool-NG 1.27.0.18_7458341)
+$ ~/x-tools/s390x-ibm-linux-gnu/bin/s390x-ibm-linux-gnu-gcc  -S -m64 bug-s3=
+90.c
+$ ~/x-tools/s390x-ibm-linux-gnu/bin/s390x-ibm-linux-gnu-gcc  -S -m64
+-fPIC bug-s390.c
+bug-s390.c: In function 'f1':
+bug-s390.c:2:20: warning: asm operand 0 probably doesn't match constraints
+ #define asm_inline asm __inline
+                    ^
+bug-s390.c:6:2: note: in expansion of macro 'asm_inline'
+  asm_inline volatile(     \
+  ^~~~~~~~~~
+bug-s390.c:25:2: note: in expansion of macro '__EMIT_BUG'
+  __EMIT_BUG(0);     \
+  ^~~~~~~~~~
+bug-s390.c:29:2: note: in expansion of macro 'BUG'
+  BUG();
+  ^~~
+bug-s390.c:2:20: error: impossible constraint in 'asm'
+ #define asm_inline asm __inline
+                    ^
+bug-s390.c:6:2: note: in expansion of macro 'asm_inline'
+  asm_inline volatile(     \
+  ^~~~~~~~~~
+bug-s390.c:25:2: note: in expansion of macro '__EMIT_BUG'
+  __EMIT_BUG(0);     \
+  ^~~~~~~~~~
+bug-s390.c:29:2: note: in expansion of macro 'BUG'
+  BUG();
+  ^~~
+bug-s390.c: In function 'f2':
+bug-s390.c:2:20: warning: asm operand 0 probably doesn't match constraints
+ #define asm_inline asm __inline
+                    ^
+bug-s390.c:6:2: note: in expansion of macro 'asm_inline'
+  asm_inline volatile(     \
+  ^~~~~~~~~~
+bug-s390.c:25:2: note: in expansion of macro '__EMIT_BUG'
+  __EMIT_BUG(0);     \
+  ^~~~~~~~~~
+bug-s390.c:32:2: note: in expansion of macro 'BUG'
+  BUG();
+  ^~~
+bug-s390.c: In function 'main':
+bug-s390.c:2:20: warning: asm operand 0 probably doesn't match constraints
+ #define asm_inline asm __inline
+                    ^
+bug-s390.c:6:2: note: in expansion of macro 'asm_inline'
+  asm_inline volatile(     \
+  ^~~~~~~~~~
+bug-s390.c:25:2: note: in expansion of macro '__EMIT_BUG'
+  __EMIT_BUG(0);     \
+  ^~~~~~~~~~
+bug-s390.c:35:2: note: in expansion of macro 'BUG'
+  BUG();
+  ^~~
+$ cat linux-6.14-rc7/arch/s390/Makefile| grep "fPIC"
+KBUILD_AFLAGS_MODULE +=3D -fPIC
+KBUILD_CFLAGS_MODULE +=3D -fPIC
+KBUILD_CFLAGS +=3D -fPIC
+
+As you can see, the problem is not that the compiler itself doesn't
+work, but rather that -fPIC introduces some complications.
+__func__ is a compile-time constant, but this holds true only for
+traditionally linked code.
+When compiling position-independent code, this assumption no longer applies=
+.
+
+GCC makes significant efforts to handle this, and for several
+architectures, it manages to solve the problem.
+However, this is not universally the case.
+Additionally, -fPIC is not widely used in kernel code... I have only
+seen it used for VDSO, the x86 boot piggyback decompressor, PowerPC
+boot, and the s390x architecture.
+
+That said, GCC has been mitigating this issue, allowing us to treat a
+non-compile-time constant as if it were one.
+A proof of this is that, at least since GCC 11, the s390x version of
+GCC is able to build this code.
+Before that... certainly in GCC 7.5 it couldn't.
+
+A simple fix would be to restrict usage to GCC versions greater than
+11 for s390.
+
+The real concern is that we have a latent issue that could be
+triggered by changes in build settings, as "feature" support varies
+across GCC versions and architectures.
+For example, while x86_64 at version 14 seems to work both with and
+without -fPIC, this is not the case for AArch64, where enabling -fPIC
+causes failures even in version 14.
+
+I'm currently working on a long-term fix for this.
+
+>
+> Guenter
+>
+
+
+--=20
 ---
- fs/ioctl.c               | 32 +++++++++++++++++++++-----------
- include/linux/fileattr.h |  2 ++
- 2 files changed, 23 insertions(+), 11 deletions(-)
-
-diff --git a/fs/ioctl.c b/fs/ioctl.c
-index 4434c97bc5dff5a3e8635e28745cd99404ff353e..840283d8c406623d8d26790f89b62ebcbd39e2de 100644
---- a/fs/ioctl.c
-+++ b/fs/ioctl.c
-@@ -538,6 +538,16 @@ int vfs_fileattr_get(struct dentry *dentry, struct fileattr *fa)
- }
- EXPORT_SYMBOL(vfs_fileattr_get);
- 
-+void fileattr_to_fsxattr(const struct fileattr *fa, struct fsxattr *fsx)
-+{
-+	memset(fsx, 0, sizeof(struct fsxattr));
-+	fsx->fsx_xflags = fa->fsx_xflags;
-+	fsx->fsx_extsize = fa->fsx_extsize;
-+	fsx->fsx_nextents = fa->fsx_nextents;
-+	fsx->fsx_projid = fa->fsx_projid;
-+	fsx->fsx_cowextsize = fa->fsx_cowextsize;
-+}
-+
- /**
-  * copy_fsxattr_to_user - copy fsxattr to userspace.
-  * @fa:		fileattr pointer
-@@ -549,12 +559,7 @@ int copy_fsxattr_to_user(const struct fileattr *fa, struct fsxattr __user *ufa)
- {
- 	struct fsxattr xfa;
- 
--	memset(&xfa, 0, sizeof(xfa));
--	xfa.fsx_xflags = fa->fsx_xflags;
--	xfa.fsx_extsize = fa->fsx_extsize;
--	xfa.fsx_nextents = fa->fsx_nextents;
--	xfa.fsx_projid = fa->fsx_projid;
--	xfa.fsx_cowextsize = fa->fsx_cowextsize;
-+	fileattr_to_fsxattr(fa, &xfa);
- 
- 	if (copy_to_user(ufa, &xfa, sizeof(xfa)))
- 		return -EFAULT;
-@@ -563,6 +568,15 @@ int copy_fsxattr_to_user(const struct fileattr *fa, struct fsxattr __user *ufa)
- }
- EXPORT_SYMBOL(copy_fsxattr_to_user);
- 
-+void fsxattr_to_fileattr(const struct fsxattr *fsx, struct fileattr *fa)
-+{
-+	fileattr_fill_xflags(fa, fsx->fsx_xflags);
-+	fa->fsx_extsize = fsx->fsx_extsize;
-+	fa->fsx_nextents = fsx->fsx_nextents;
-+	fa->fsx_projid = fsx->fsx_projid;
-+	fa->fsx_cowextsize = fsx->fsx_cowextsize;
-+}
-+
- static int copy_fsxattr_from_user(struct fileattr *fa,
- 				  struct fsxattr __user *ufa)
- {
-@@ -571,11 +585,7 @@ static int copy_fsxattr_from_user(struct fileattr *fa,
- 	if (copy_from_user(&xfa, ufa, sizeof(xfa)))
- 		return -EFAULT;
- 
--	fileattr_fill_xflags(fa, xfa.fsx_xflags);
--	fa->fsx_extsize = xfa.fsx_extsize;
--	fa->fsx_nextents = xfa.fsx_nextents;
--	fa->fsx_projid = xfa.fsx_projid;
--	fa->fsx_cowextsize = xfa.fsx_cowextsize;
-+	fsxattr_to_fileattr(&xfa, fa);
- 
- 	return 0;
- }
-diff --git a/include/linux/fileattr.h b/include/linux/fileattr.h
-index 47c05a9851d0600964b644c9c7218faacfd865f8..31888fa2edf10050be134f587299256088344365 100644
---- a/include/linux/fileattr.h
-+++ b/include/linux/fileattr.h
-@@ -33,7 +33,9 @@ struct fileattr {
- 	bool	fsx_valid:1;
- };
- 
-+void fileattr_to_fsxattr(const struct fileattr *fa, struct fsxattr *fsx);
- int copy_fsxattr_to_user(const struct fileattr *fa, struct fsxattr __user *ufa);
-+void fsxattr_to_fileattr(const struct fsxattr *fsx, struct fileattr *fa);
- 
- void fileattr_fill_xflags(struct fileattr *fa, u32 xflags);
- void fileattr_fill_flags(struct fileattr *fa, u32 flags);
-
--- 
-2.47.2
+Alessandro
 
 
