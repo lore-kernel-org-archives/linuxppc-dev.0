@@ -1,79 +1,106 @@
-Return-Path: <linuxppc-dev+bounces-7264-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7265-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9812C36000
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Mar 2025 11:42:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB7C0C36000
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Mar 2025 14:06:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZK0tH0vSdz30Nl;
-	Fri, 21 Mar 2025 22:42:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742557351;
-	cv=none; b=K5lCEcEFV/p/Z4aO8j7KVaOMD+aaE16R5BLQ2OqpLC4EFUAfTxa4IbAE/BmklJk7+xG+SWK1FjpU29QmPDyINtv5rppahstFsVOGF5D07k0d3XaE4yVGN9ZUSiDeh3b48ydDkgk1+0ZNRyArEWwM9M+OxOg2m0Ffg2qtOxs6kj4hlvRjvmqq4IXDGYAC3SnJxsKJVNgjNkWBR5GlM1RK8rXwR0d6Mk0dp7Mzt57R5Qu68f2+9uZPXaFY9m/OO+uQwSEdVUopLU5Aem7cG5ySYYA/9y9xogWgBZjeZI8rE92QORKz5Cdq8fa7ZaI1IeDxQ3dY9g7MysMwOedUBpoidQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZK44S60Xqz305D;
+	Sat, 22 Mar 2025 01:06:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742565992;
+	cv=none; b=dcy6PURs+hEI0w+SeKmDPU6xnOCYnmjk/BX0fSAZuscxlPNyl5cFLo5kJgfbi1pwPTlaw4bOsEnzbOX0dS25Ytba7aU3SLak3qnm+CRg7/fW1U8j2UcQQrarkp+PWCeVVqqqWo/9f7xuig1kHZ52wsBMgTlhP9dcGi7y4tm0bEFrKu7EtmciWc4WHStBblDp0Lx2PM8RyTEXIcu30sFZaQCv5K2heuRgTPAspBi9DOjv6QUWDnS381kbYwNG5TyLxLP7BSUSAVjaNZ58RELdD2MT6OvSIngRGLT2/7qXJmkTliaeiXR9UW8kUKybf+iVa9swkNtIGNaSRVoEVk4fgQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742557351; c=relaxed/relaxed;
-	bh=HxEUrFSkwvtTHGZsRrcYMHupA72KBahfp9Or61L+rwM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gHUlqAnoxQR0z9U0F6yTgtvvhAizea9AhmQohFxSVTohJq5Sw3NkdP11g1seeY8yvTd2jUnW6plXaUUqJhKn5Gd76MNuNLUn22Rwjv3IpR1sb15JjNjyd0UfjKUC7Vt7VjVUxcAGJxx3vPc2pKUev65WqRExZQLHjdgoMKVy5YY+2IASmzypIpgq/Zake3maxfe860SbUivyXqX1pmPvmmyhO4MLp54DIqhetyNv03gOkHp4Gv8EmoGDxoEPFxbHKuggSlVDcrPpHNkSWey+mUyVeXvZKzF9hPAAd18DnOgrWOFcBMjW9JBFKWcCJMqV5grj1e6nglUDBXUS6rp/+g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Y8hrAs+p; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1742565992; c=relaxed/relaxed;
+	bh=PtfqZFqF8iFiel/s4I4nuuc5DqZUNdlFQlj2cWV2Ueg=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=n2V2fl/UP5rSz5Qp85uhhwgy+pVzMrrKtYLhllQeWcx4VGty4esxgnAqi25Y3uB9I746EM1l2NeRicGCYG5tgsSf3jEFL0Oo6gZERIFmmecuCNXUButAa0ItA1Lk/bgmwt80bVVZg8ngE+Aa6CeBslDFJc8gfqC6bm+GBRYK1glg04ngFrdnHC9nJlnWcAyEi6ylsSQnKnq0zOhBiM3pkGQ5jWRKI/PbWK0KjWfYrxzsStj9kGx+TX6mQRCQmLiJj6ncX+l2fLnmW/3HQys4JElQg4+6FYXpOWDeAM9+sSdQ50lcKuDZ0O6T+rLM0nLzc5aALrdPECUcuKq9MrB9nQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=SKZT2Tqi; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QttLd1xs; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=alex.williamson@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Y8hrAs+p;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=SKZT2Tqi;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=QttLd1xs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=alex.williamson@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZK0tF4kJ5z30D3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2025 22:42:29 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 52LATcLe014247;
-	Fri, 21 Mar 2025 11:42:15 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=HxEUrF
-	SkwvtTHGZsRrcYMHupA72KBahfp9Or61L+rwM=; b=Y8hrAs+pldr03rjzo+WhAy
-	U52ZrtB+IqpzlWD9UpaK9zugv90jFOORN2zkELt6EwBYrXFWIcZS7T1RujhRR0LQ
-	3Nf9j8Yjpxk3xB9bYRq14TwB/gDfnvtsM98c0oASGAYIbK/QB4X9zQZqm+IkjRDE
-	ribkrbF5GRfCwv50NtewtRkh8OhPtU6xy8rSO7LnT8LIX56v3qdxJjHbPqxbZAph
-	BD+5t5VtF45BpBRp3FPz6zlw4+LuZ5Jdm7JFgVBVk7SG8v/GkVL/roGm5XjcQs+L
-	s7rfJ8QPLxW6fTafqX2ZQ1y2WOGXHcm336io/OvsUF3QmYmLAdMZqov2l5nbldnw
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 45gt80u9xe-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 21 Mar 2025 11:42:15 +0000 (GMT)
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 52LBY281031415;
-	Fri, 21 Mar 2025 11:42:14 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 45gt80u9x5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 21 Mar 2025 11:42:14 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 52LB0iUw019218;
-	Fri, 21 Mar 2025 11:42:14 GMT
-Received: from smtprelay04.dal12v.mail.ibm.com ([172.16.1.6])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 45dmvpd2m9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 21 Mar 2025 11:42:14 +0000
-Received: from smtpav05.dal12v.mail.ibm.com (smtpav05.dal12v.mail.ibm.com [10.241.53.104])
-	by smtprelay04.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 52LBgCoH31654592
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 21 Mar 2025 11:42:13 GMT
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E184158067;
-	Fri, 21 Mar 2025 11:42:12 +0000 (GMT)
-Received: from smtpav05.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B8DF85805D;
-	Fri, 21 Mar 2025 11:42:04 +0000 (GMT)
-Received: from [9.43.64.160] (unknown [9.43.64.160])
-	by smtpav05.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 21 Mar 2025 11:42:04 +0000 (GMT)
-Message-ID: <31a3d76b-617b-4c97-b83d-2cd47fabbf02@linux.ibm.com>
-Date: Fri, 21 Mar 2025 17:12:01 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZK44R4QWZz2ySN
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 22 Mar 2025 01:06:29 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1742565984;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=PtfqZFqF8iFiel/s4I4nuuc5DqZUNdlFQlj2cWV2Ueg=;
+	b=SKZT2TqiGog31SHDGSOPh6FoplixFOL/dkNwDdujcHBcGU5FAD6mxcn45cyKrZkzOBuasu
+	6j3t4TQIkBG/SH+U/NhJr0mUgMDw5cyVMs+XryHQ0cqjZTJd6RD0PcZeBUxCWBTjMN8jEc
+	S3janHRmQwlT1tVcJMytvIPfKOGNgOY=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1742565985;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=PtfqZFqF8iFiel/s4I4nuuc5DqZUNdlFQlj2cWV2Ueg=;
+	b=QttLd1xsCLc9uEjGakyNZOf9Hnm8ceqor6tinnUALoO0R18EHmrTThPaqQstQaHfHq36Q1
+	HcI0AR1UL3cEZYhH17IUvMjXv7f/lff7Qq4o7cI+W+Mo0NY/YXbJKgqJqDcL1hDKjHWhjg
+	SgdWpm1ViGRiFFXVnUKiBUB4uLmzFgA=
+Received: from mail-oi1-f197.google.com (mail-oi1-f197.google.com
+ [209.85.167.197]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-204-RqmL6-_7PdG6lJcrNbRyoQ-1; Fri, 21 Mar 2025 10:06:23 -0400
+X-MC-Unique: RqmL6-_7PdG6lJcrNbRyoQ-1
+X-Mimecast-MFC-AGG-ID: RqmL6-_7PdG6lJcrNbRyoQ_1742565982
+Received: by mail-oi1-f197.google.com with SMTP id 5614622812f47-3f6aaeb8bfeso397190b6e.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Mar 2025 07:06:23 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1742565982; x=1743170782;
+        h=content-transfer-encoding:mime-version:organization:references
+         :in-reply-to:message-id:subject:cc:to:from:date:x-gm-message-state
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=PtfqZFqF8iFiel/s4I4nuuc5DqZUNdlFQlj2cWV2Ueg=;
+        b=R4XwJObkgNmLJlKsPrK14iDF2mObVwLMBXHBTnKIWPKKIfj3zrjjbrFDr6VMBYNW+n
+         GZswNGzBwVH4XQD3wpl3AoG3Hm5YbFFMC5lQiVpEcmHt8QE0aqClS95oYhLofj/1wjVv
+         1HnPWKCYWAE7JgPijq/y+ZW2HluE+M6GaP5sQv7zYayhVKpTwCVlX0X8z8AEwwV3lOEI
+         35iO7pD2wDTY8ypSddM77nq7AQ0wUSMggWusJP+Q1xefRV3G2S1J/OWLiYw0fggr2+8p
+         eVra59r+i1FyJRSr3eJOwHcZIP4G286e4QmfxVPlRatUholgkh517R1RiQ3TY0BdvZFd
+         ZEdg==
+X-Forwarded-Encrypted: i=1; AJvYcCX+INDXD9nY0Wk19PmXdS3Ta7rkgtuBvKDtYr2dd8PFV6bq4o+d7PyfTJyHfqqhgDIp01qBTv173GSAq0s=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxxg4MsHq3qiLuuWS8vGKuAnueujQTMw1eD5iE4Az4jC3+y7BoH
+	Yy8yEw+9877pNjWERr5Ms3LTBWZZabQ4D6FqeLJQqZCFDtuK9r2oUoHGb9HLU/bpowhG0di8LMl
+	YBz+2UsQ1wuJ4RdlgWLNcDM9iQ08GfQc25rutV66btoI4fL7vyfyu50eh6NL9lUk=
+X-Gm-Gg: ASbGncsGB69kJk8bawwgURSzTxEUMfuFDvI5RuTN2y4lTd6QzO2rWSnjgvaIAKNY+e5
+	zoYdKiLor4V7YXu+7f2mf18eNaNUxXJJ9eIxmRPejpRrCPfRccTZVWfHQKbx6GMLocQy5oIA074
+	2yO6Ebm3nuMjM3lUf1ND0P+zlMbIa3ITxJigyn27yFfLdLhyIxaOQ7PWb8Gll7l+vIEk6w6ceBy
+	cSh+h4/E4WIscxB3uN1FVoKa0PmcSrbH3GS6cyCJ3bThmGZ3nu+BRtMI7JSJZQIORH9ZoOdN16v
+	MfEvdSv8zHLvf6Ws1/A=
+X-Received: by 2002:a05:6808:6807:b0:3fe:b5d3:3f23 with SMTP id 5614622812f47-3febf793391mr842059b6e.5.1742565982322;
+        Fri, 21 Mar 2025 07:06:22 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IEXrUa2CJtGUuPnUiUVvqG8OIHWW+85+a82cVLjG6j0tZ/F39gii6vY+WagE3AnL6fCZ04BMg==
+X-Received: by 2002:a05:6808:6807:b0:3fe:b5d3:3f23 with SMTP id 5614622812f47-3febf793391mr842043b6e.5.1742565981807;
+        Fri, 21 Mar 2025 07:06:21 -0700 (PDT)
+Received: from redhat.com ([38.15.36.11])
+        by smtp.gmail.com with ESMTPSA id 5614622812f47-3febf7109ddsm335819b6e.26.2025.03.21.07.06.17
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 21 Mar 2025 07:06:19 -0700 (PDT)
+Date: Fri, 21 Mar 2025 08:06:13 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+Cc: jgg@ziepe.ca, kevin.tian@intel.com, linux-kernel@vger.kernel.org,
+ kvm@vger.kernel.org, yi.l.liu@intel.com, Yunxiang.Li@amd.com,
+ pstanner@redhat.com, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] vfio: pci: Advertise INTx only if LINE is connected
+Message-ID: <20250321080613.566cb6bd.alex.williamson@redhat.com>
+In-Reply-To: <9131d1be-d68e-48d6-afe3-af8949194b21@linux.ibm.com>
+References: <174231895238.2295.12586708771396482526.stgit@linux.ibm.com>
+	<20250318115832.04abbea7.alex.williamson@redhat.com>
+	<9131d1be-d68e-48d6-afe3-af8949194b21@linux.ibm.com>
+Organization: Red Hat
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,174 +113,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH V2 2/2] tools/perf/powerpc/util: Add support to handle
- compatible mode PVR for perf json events
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Athira Rajeev <atrajeev@linux.vnet.ibm.com>, namhyung@kernel.org
-Cc: linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, irogers@google.com,
-        akanksha@linux.ibm.com, kjain@linux.ibm.com,
-        disgoel@linux.vnet.ibm.com, acme@kernel.org, hbathini@linux.ibm.com,
-        adrian.hunter@intel.com, jolsa@kernel.org
-References: <20241010145107.51211-1-atrajeev@linux.vnet.ibm.com>
- <20241010145107.51211-2-atrajeev@linux.vnet.ibm.com>
- <7cd87317-4f2a-45af-bd07-6e715406ff55@csgroup.eu>
-Content-Language: en-US
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-In-Reply-To: <7cd87317-4f2a-45af-bd07-6e715406ff55@csgroup.eu>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: TxLlLE1cX4Hnb4p2JPivH8_9XWPO13lL
-X-Proofpoint-GUID: 3Jh4cugb2FdlH5bhaW77yb4YKss_41FL
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1093,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-03-21_04,2025-03-20_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0
- lowpriorityscore=0 spamscore=0 mlxlogscore=999 phishscore=0
- priorityscore=1501 mlxscore=0 adultscore=0 suspectscore=0 clxscore=1011
- impostorscore=0 bulkscore=0 classifier=spam adjust=0 reason=mlx
- scancount=1 engine=8.19.0-2502280000 definitions=main-2503210085
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: 68ttlV4ua2z6Zgzh3mGU659QVa-zt4xbTnIVKQXI7-c_1742565982
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
+On Thu, 20 Mar 2025 23:24:49 +0530
+Shivaprasad G Bhat <sbhat@linux.ibm.com> wrote:
 
+> On 3/18/25 11:28 PM, Alex Williamson wrote:
+> > On Tue, 18 Mar 2025 17:29:21 +0000
+> > Shivaprasad G Bhat <sbhat@linux.ibm.com> wrote:
+> >  
+> >> On POWER systems, when the device is behind the io expander,
+> >> not all PCI slots would have the PCI_INTERRUPT_LINE connected.
+> >> The firmware assigns a valid PCI_INTERRUPT_PIN though. In such
+> >> configuration, the irq_info ioctl currently advertizes the
+> >> irq count as 1 as the PCI_INTERRUPT_PIN is valid.
+> >>
+> >> The patch adds the additional check[1] if the irq is assigned
+> >> for the PIN which is done iff the LINE is connected.
+> >>
+> >> [1]: https://lore.kernel.org/qemu-devel/20250131150201.048aa3bf.alex.williamson@redhat.com/
+> >>
+> >> Signed-off-by: Shivaprasad G Bhat <sbhat@linux.ibm.com>
+> >> Suggested-By: Alex Williamson <alex.williamson@redhat.com>
+> >> ---
+> >>   drivers/vfio/pci/vfio_pci_core.c |    4 ++++
+> >>   1 file changed, 4 insertions(+)
+> >>
+> >> diff --git a/drivers/vfio/pci/vfio_pci_core.c b/drivers/vfio/pci/vfio_pci_core.c
+> >> index 586e49efb81b..4ce70f05b4a8 100644
+> >> --- a/drivers/vfio/pci/vfio_pci_core.c
+> >> +++ b/drivers/vfio/pci/vfio_pci_core.c
+> >> @@ -734,6 +734,10 @@ static int vfio_pci_get_irq_count(struct vfio_pci_core_device *vdev, int irq_typ
+> >>   			return 0;
+> >>   
+> >>   		pci_read_config_byte(vdev->pdev, PCI_INTERRUPT_PIN, &pin);
+> >> +#if IS_ENABLED(CONFIG_PPC64)
+> >> +		if (!vdev->pdev->irq)
+> >> +			pin = 0;
+> >> +#endif
+> >>   
+> >>   		return pin ? 1 : 0;
+> >>   	} else if (irq_type == VFIO_PCI_MSI_IRQ_INDEX) {
+> >>
+> >>  
+> > See:
+> >
+> > https://lore.kernel.org/all/20250311230623.1264283-1-alex.williamson@redhat.com/
+> >
+> > Do we need to expand that to test !vdev->pdev->irq in
+> > vfio_config_init()?  
+> 
+> Yes. Looks to be the better option. I did try this and it works.
+> 
+> 
+> I see your patch has already got Reviewed-by. Are you planning
+> 
+> for v2 Or want me to post a separate patch with this new check?
 
-On 3/21/25 4:04 PM, Christophe Leroy wrote:
-> Hi,
-> 
-> Le 10/10/2024 à 16:51, Athira Rajeev a écrit :
->> perf list picks the events supported for specific platform
->> from pmu-events/arch/powerpc/<platform>. Example power10 events
->> are in pmu-events/arch/powerpc/power10, power9 events are part
->> of pmu-events/arch/powerpc/power9. The decision of which
->> platform to pick is determined based on PVR value in powerpc.
->> The PVR value is matched from pmu-events/arch/powerpc/mapfile.csv
->>
->> Example:
->>
->> Format:
->>     PVR,Version,JSON/file/pathname,Type
->>
->> 0x004[bcd][[:xdigit:]]{4},1,power8,core
->> 0x0066[[:xdigit:]]{4},1,power8,core
->> 0x004e[[:xdigit:]]{4},1,power9,core
->> 0x0080[[:xdigit:]]{4},1,power10,core
->> 0x0082[[:xdigit:]]{4},1,power10,core
->>
->> The code gets the PVR from system using get_cpuid_str function
->> in arch/powerpc/util/headers.c ( from SPRN_PVR ) and compares
->> with value from mapfile.csv
->> In case of compat mode, say when partition is booted in a power9
->> mode when the system is a power10, this picks incorrectly. Because
->> PVR will point to power10 where as it should pick events from power9
->> folder. To support generic events, add new folder
->> pmu-events/arch/powerpc/compat to contain the ISA architected events
->> which is supported in compat mode. Also return 0x00ffffff as pvr
->> when booted in compat mode. Based on this pvr value, json will
->> pick events from pmu-events/arch/powerpc/compat
->>
->> Suggested-by: Madhavan Srinivasan <maddy@linux.ibm.com>
->> Signed-off-by: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
-> 
-> I see this patch was merged into mainline allthough it had CI failures and still has.
-> 
-> Could you please fix it ?
+It seems worth noting this as an additional vector for virtualizing the
+PIN register since we'd often expect the PIN is already zero if
+pdev->irq is zero.  I posted a patch[1], please review/test.  Thanks,
 
-We already have a fix patch posted for this issue 
+Alex
 
-https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20250321100726.699956-1-likhitha@linux.ibm.com/
-
-Maddy
-
-
-> 
-> arch/powerpc/util/header.c: In function 'is_compat_mode':
-> Error: arch/powerpc/util/header.c:20:14: error: cast to pointer from integer of different size [-Werror=int-to-pointer-cast]
->    20 |  if (!strcmp((char *)platform, (char *)base_platform))
->       |              ^
-> Error: arch/powerpc/util/header.c:20:32: error: cast to pointer from integer of different size [-Werror=int-to-pointer-cast]
->    20 |  if (!strcmp((char *)platform, (char *)base_platform))
->       |                                ^
-> cc1: all warnings being treated as errors
-> make[6]: *** [/linux/tools/build/Makefile.build:86: /output/arch/powerpc/util/header.o] Error 1
-> 
-> 
-> The following fix but is maybe not the right one as in reality getauxval() seems to return a long not a u64.
-> 
-> diff --git a/tools/perf/arch/powerpc/util/header.c b/tools/perf/arch/powerpc/util/header.c
-> index c7df534dbf8f..1b045d410f31 100644
-> --- a/tools/perf/arch/powerpc/util/header.c
-> +++ b/tools/perf/arch/powerpc/util/header.c
-> @@ -17,7 +17,7 @@ static bool is_compat_mode(void)
->      u64 base_platform = getauxval(AT_BASE_PLATFORM);
->      u64 platform = getauxval(AT_PLATFORM);
-> 
-> -    if (!strcmp((char *)platform, (char *)base_platform))
-> +    if (!strcmp((char *)(long)platform, (char *)(long)base_platform))
->          return false;
-> 
->      return true;
-> 
-> 
-> Thanks
-> Christophe
-> 
->> ---
->> changelog:
->> V1 -> V2:
->> Corrected commit message and subject line
->>
->>   tools/perf/arch/powerpc/util/header.c | 32 ++++++++++++++++++++++++++-
->>   1 file changed, 31 insertions(+), 1 deletion(-)
->>
->> diff --git a/tools/perf/arch/powerpc/util/header.c b/tools/perf/arch/powerpc/util/header.c
->> index 6b00efd53638..adc82c479443 100644
->> --- a/tools/perf/arch/powerpc/util/header.c
->> +++ b/tools/perf/arch/powerpc/util/header.c
->> @@ -10,6 +10,18 @@
->>   #include "utils_header.h"
->>   #include "metricgroup.h"
->>   #include <api/fs/fs.h>
->> +#include <sys/auxv.h>
->> +
->> +static bool is_compat_mode(void)
->> +{
->> +    u64 base_platform = getauxval(AT_BASE_PLATFORM);
->> +    u64 platform = getauxval(AT_PLATFORM);
->> +
->> +    if (!strcmp((char *)platform, (char *)base_platform))
->> +        return false;
->> +
->> +    return true;
->> +}
->>     int
->>   get_cpuid(char *buffer, size_t sz)
->> @@ -33,8 +45,26 @@ char *
->>   get_cpuid_str(struct perf_pmu *pmu __maybe_unused)
->>   {
->>       char *bufp;
->> +    unsigned long pvr;
->> +
->> +    /*
->> +     * IBM Power System supports compatible mode. That is
->> +     * Nth generation platform can support previous generation
->> +     * OS in a mode called compatibile mode. For ex. LPAR can be
->> +     * booted in a Power9 mode when the system is a Power10.
->> +     *
->> +     * In the compatible mode, care must be taken when generating
->> +     * PVR value. When read, PVR will be of the AT_BASE_PLATFORM
->> +     * To support generic events, return 0x00ffffff as pvr when
->> +     * booted in compat mode. Based on this pvr value, json will
->> +     * pick events from pmu-events/arch/powerpc/compat
->> +     */
->> +    if (!is_compat_mode())
->> +        pvr = mfspr(SPRN_PVR);
->> +    else
->> +        pvr = 0x00ffffff;
->>   -    if (asprintf(&bufp, "0x%.8lx", mfspr(SPRN_PVR)) < 0)
->> +    if (asprintf(&bufp, "0x%.8lx", pvr) < 0)
->>           bufp = NULL;
->>         return bufp;
-> 
+[1]https://lore.kernel.org/all/20250320194145.2816379-1-alex.williamson@redhat.com/
 
 
