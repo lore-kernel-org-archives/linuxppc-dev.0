@@ -1,70 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-7323-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7324-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5C35C35FFC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Mar 2025 10:32:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51759C35FFC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Mar 2025 11:45:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZMR7S3wQVz2yLJ;
-	Tue, 25 Mar 2025 21:32:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZMSlY5dBKz2yFJ;
+	Tue, 25 Mar 2025 22:45:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742898740;
-	cv=none; b=Mv/PLMgLiFKyjDXwMaetSKjJwZdJsQe/y2R+GMMj85uNwEZreZl376PUyOCAWcZ0kNe+ganyhNEuoIpAnoa4I4XggoryWM3wNIYKqNCnzQaROx0R0kA/RoVGiuKK9A7/Cm6Lp2zZa8ogJvfSaFN0DyoIKNp5fjCqSEH1VTRxMPN3HTgSAknBY6LHH5vgiogqosOAvgEwR+E6bgGMuRejNuTWMnv90DUe3/BLU4rpMNeVVmYAFDru8mwE0522Oq1kgmMfHbsUTgpdSX+k6tnvW+hxyO7bOahZNJj1S8TrSDLZwNRzSuq9IP+jdCkQRXNLffZPArJ55wzJe9AwrARnGw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742903113;
+	cv=none; b=V7bVT/sTGe6NoY6XT/+1t+OiKPJDlExGluNWPdCZAmQb5mrFz9MynTdiv3luQbxbfUk+Alh65bXhN/kq26GpM92p1DghBRxbQCd0BRlhuUrzq7zMewVFuPhM/H7QfJk0dmiH3x/EMoYzAGMHsvWJk4kF6kIPPbg996jq6yECwXReh/gX0s2S02yb+xIj3IJ4TSjmi0AtC/V7TfnWmgRmz9k85jGirCzCz5BOQBVantGYoaNen7UEx0+0gV7DB3HXtQX2ASXocM4TaejIsX0eRDDLU76OrSAO6KHVL+Njtpa0S7aOW4J41L79FT0pFudHP6bQa/jCyZNa8WfYVsweaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742898740; c=relaxed/relaxed;
-	bh=TDu0Ny0Fcmjl+OCepVqwkzhE+JS6jvmII5BtRtgp3Xw=;
-	h=Message-ID:Date:MIME-Version:To:From:Subject:Content-Type; b=FK8YKsPbQDgMAZ0kWEVkZq+gMO4SwXG4tFSE1FwSoE9j64QVsc63aoT8ijA5YaePjJ12ivs7ZlpZgyrEHHkzDmB0R4TpbqZdsOv8Igt0eA+1XYQzU1eVsJ/8Ba+3buNRDSYRU+2eDfjh3XvzbJ795H60jG+Wvb0o6kb0gE/o8j4KziFLuUNa/Nh+EcbyQiJV2uYH4XNuxhyzEn1kpvdDWoRf2P04uiZjILJyM7vDORKnIKU1SzvE/cRtoxDpYL2kiCXz1kiJn7A8FCLOr4XdYHRzVsIl/kd6/7ydcwz+9neRTFZcvWHgjqDXIngG4V40TAhGsEvEfiWwOfGTel+TzA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MBpKnnhe; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1742903113; c=relaxed/relaxed;
+	bh=ZeSvWIeDWkZDUBR4rtlXsoPy9rqPVDRaaZ2ycwV8IUc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=OGSPjm3347UXr2edyj2faN6dewRAbdWUxmRKJPeCpixt9rXmHZmi0BrE1N3Z8mwWdwMSOTYS4eA/6iSKKK1S9o1SQwAtOGukrUAjJPAvUrTg/S9nLrev/mbfPXiBmRnEqD4QdwTKXhXthFFr5YbLSJaACL0hllsYH5vhBWaSxoaDkM2QZzIXF10BDOGMgMNFJOO2yfkVf/bXF1oZriKRv9p4wzjC3FZSq/LWZdZFJLZMNGkN8JAEx2438XbBbnYjKncFRwTm+NWLQ5Ntp4N5Dbc0XtFBgFB5Gb5q37dk5ziPi65Sah0E1VuT5ccX3c9hKyJe8KMIh0D+21UARYk1Jw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EVjLbNU/; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MBpKnnhe;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EVjLbNU/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZMR7R2hDMz2yGZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2025 21:32:19 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 52P8rFDM011900;
-	Tue, 25 Mar 2025 10:32:15 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=pp1; bh=TDu0Ny0Fcmjl+OCepVqwkzhE+JS6
-	jvmII5BtRtgp3Xw=; b=MBpKnnheWBepOp1W3NkAWcv+9Gb1k630RvhptHs0nJNd
-	1UJJXSc8yRGxr8XxX7CN59FL/oEAn+uI9A9zim3LeC8TfbI+vQ7+OCBhoD76uAxU
-	OCKZMjYzNbrW96JTv68qn2FcmuWp+Y3zsLQS5PNVBRphJeUn2f9cZyb/bhKSdkn0
-	g2G3+XNlNqu89PqAlokJuNhFY6sHrjlTcklqsmIOf2RTboe9vxF9RGHQqKOZdazC
-	uSO5eJ6aAm1WI/PXQu5LfVk2x7dCxt2y0Rj8aNLkVOUCqMb/mUr9xpGjEkxrsjeQ
-	XeeHxim5ceqLyRNtedDX3gSs+ASU+2BprMyJsRi0Ww==
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 45kejptytp-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZMSlX3kf4z2xS9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2025 22:45:11 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 52P56dKK027910;
+	Tue, 25 Mar 2025 11:45:06 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=ZeSvWIeDWkZDUBR4rtlXsoPy9rqPVD
+	RaaZ2ycwV8IUc=; b=EVjLbNU/k5+hqrBMGzGH/Fx07OdHl42M4QPRgyplfcTT6J
+	MwoJFMiFn5ij4vtQYKZws4avcfDpsg8HTGu+yk4smIpknNF1/LkS9KUAqwNixD79
+	ad7FOtrMtYWSfMK+0y/k+iBDcS6qO2SkUM7X6JDEdc0QPeNWVoTr+oIu2kRcRv28
+	DH0NIcG89cBtHwrkcT21EncIaY9Q921n7hd3XwjNstgoRdi+kOoqJidlt36eXkrq
+	6W2i1ELzPn0x3ZKkp92ZwW92S6D4xMHM8O766zh98f74mqdkawWrPoNExbZDg3KS
+	b4KT6ZUcufkzDEdKg+dAFe6vpOlRQKkw/S04GkGA==
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 45kbjwvae5-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 25 Mar 2025 10:32:15 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 52P7lM8M030330;
-	Tue, 25 Mar 2025 10:32:14 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 45j7htb351-1
+	Tue, 25 Mar 2025 11:45:06 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 52PA0TZm009692;
+	Tue, 25 Mar 2025 11:45:05 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 45j9rkjy33-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 25 Mar 2025 10:32:14 +0000
-Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 52PAWD2j11076112
+	Tue, 25 Mar 2025 11:45:05 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 52PBj2hk35258764
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 25 Mar 2025 10:32:14 GMT
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A7B3F58058;
-	Tue, 25 Mar 2025 10:32:13 +0000 (GMT)
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2058558059;
-	Tue, 25 Mar 2025 10:32:10 +0000 (GMT)
-Received: from [9.61.251.51] (unknown [9.61.251.51])
-	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 25 Mar 2025 10:32:09 +0000 (GMT)
-Message-ID: <5df6968a-2e5f-468e-b457-fc201535dd4c@linux.ibm.com>
-Date: Tue, 25 Mar 2025 16:02:08 +0530
+	Tue, 25 Mar 2025 11:45:02 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 41C5120043;
+	Tue, 25 Mar 2025 11:45:02 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2D19320040;
+	Tue, 25 Mar 2025 11:44:59 +0000 (GMT)
+Received: from linux.ibm.com (unknown [9.43.39.189])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue, 25 Mar 2025 11:44:58 +0000 (GMT)
+Date: Tue, 25 Mar 2025 17:14:55 +0530
+From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
+To: Quentin Monnet <qmo@qmon.net>
+Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+        Hari Bathini <hbathini@linux.ibm.com>, bpf <bpf@vger.kernel.org>,
+        LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
+        jkacur@redhat.com, lgoncalv@redhat.com, gmonaco@redhat.com,
+        williams@redhat.com, tglozar@redhat.com, rostedt@goodmis.org
+Subject: Re: [linux-next-20250324]/tool/bpf/bpftool fails to complie on
+ linux-next-20250324
+Message-ID: <Z+KXN0KjyHlQPLUj@linux.ibm.com>
+References: <5df6968a-2e5f-468e-b457-fc201535dd4c@linux.ibm.com>
+ <8b0b2a41-203d-41f8-888d-2273afb877d0@qmon.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,111 +89,107 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-GB
-To: Saket Kumar Bhaskar <skb99@linux.ibm.com>,
-        Hari Bathini <hbathini@linux.ibm.com>, bpf <bpf@vger.kernel.org>,
-        LKML <linux-kernel@vger.kernel.org>, linuxppc-dev@lists.ozlabs.org,
-        jkacur@redhat.com, lgoncalv@redhat.com, gmonaco@redhat.com,
-        williams@redhat.com, tglozar@redhat.com, rostedt@goodmis.org
-From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Subject: [linux-next-20250324]/tool/bpf/bpftool fails to complie on
- linux-next-20250324
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8b0b2a41-203d-41f8-888d-2273afb877d0@qmon.net>
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: upORWBvozE1TM21JUSyh-tiHSH1YQ4xZ
-X-Proofpoint-GUID: upORWBvozE1TM21JUSyh-tiHSH1YQ4xZ
+X-Proofpoint-GUID: 6J8TeICOWrWWtMDx4atpNlqvb8kZ_Apf
+X-Proofpoint-ORIG-GUID: 6J8TeICOWrWWtMDx4atpNlqvb8kZ_Apf
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1093,Hydra:6.0.680,FMLib:17.12.68.34
  definitions=2025-03-25_04,2025-03-25_02,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxlogscore=802 adultscore=0
- suspectscore=0 phishscore=0 lowpriorityscore=0 spamscore=0 clxscore=1011
- impostorscore=0 malwarescore=0 mlxscore=0 priorityscore=1501 bulkscore=0
- classifier=spam adjust=0 reason=mlx scancount=1 engine=8.19.0-2502280000
- definitions=main-2503250072
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
+ priorityscore=1501 lowpriorityscore=0 phishscore=0 spamscore=0
+ clxscore=1011 bulkscore=0 adultscore=0 suspectscore=0 malwarescore=0
+ mlxlogscore=999 mlxscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2502280000 definitions=main-2503250080
 
-Greetings!!!
+On Tue, Mar 25, 2025 at 11:09:24AM +0000, Quentin Monnet wrote:
+> 2025-03-25 16:02 UTC+0530 ~ Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> > Greetings!!!
+> > 
+> > 
+> > bpftool fails to complie on linux-next-20250324 repo.
+> > 
+> > 
+> > Error:
+> > 
+> > make: *** No rule to make target 'bpftool', needed by '/home/linux/
+> > tools/testing/selftests/bpf/tools/include/vmlinux.h'. Stop.
+> > make: *** Waiting for unfinished jobs.....
+> 
+> 
+> Thanks! Would be great to have a bit more context on the error (and on
+> how to reproduce) for next time. Bpftool itself seems to compile fine,
+> the error shows that it's building it from the context of the selftests
+> that seems broken.
+> 
+> 
+Yes, selftest build for BPF fails.
+## pwd
+/linux/tools/testing/selftests/bpf
 
+# make -j 33
 
-bpftool fails to complie on linux-next-20250324 repo.
+make: *** No rule to make target 'bpftool', needed by '/home/upstreamci/linux/tools/testing/selftests/bpf/tools/include/vmlinux.h'.  Stop.
+make: *** Waiting for unfinished jobs....
 
+> > Git bisect points to commit: 8a635c3856ddb74ed3fe7c856b271cdfeb65f293 as
+> > first bad commit.
+> 
+> Thank you Venkat for the bisect!
+> 
+> On a quick look, that commit introduced a definition for BPFTOOL in
+> tools/scripts/Makefile.include:
+> 
+> 	diff --git a/tools/scripts/Makefile.include .../Makefile.include
+> 	index 0aa4005017c7..71bbe52721b3 100644
+> 	--- a/tools/scripts/Makefile.include
+> 	+++ b/tools/scripts/Makefile.include
+> 	@@ -91,6 +91,9 @@ LLVM_CONFIG	?= llvm-config
+> 	 LLVM_OBJCOPY	?= llvm-objcopy
+> 	 LLVM_STRIP	?= llvm-strip
+> 	
+> 	+# Some tools require bpftool
+> 	+BPFTOOL		?= bpftool
+> 	+
+> 	 ifeq ($(CC_NO_CLANG), 1)
+> 	 EXTRA_WARNINGS += -Wstrict-aliasing=3
+> 
+> But several utilities or selftests under tools/ include
+> tools/scripts/Makefile.include _and_ use their own version of the
+> $(BPFTOOL) variable, often assigning only if unset, for example in
+> tools/testing/selftests/bpf/Makefile:
+> 
+> 	BPFTOOL ?= $(DEFAULT_BPFTOOL)
+> 
+> My guess is that the new definition from Makefile.include overrides this
+> with simply "bpftool" as a value, and the Makefile fails to build it as
+> a result.
+> 
+> If I guessed correctly, one workaround would be to rename the variable
+> in Makefile.include (and in whatever Makefile now relies on it) into
+> something that is not used in the other Makefiles, for example
+> BPFTOOL_BINARY.
+> 
+> Please copy the BPF mailing list on changes impacting BPF tooling (or
+> for BPF-related patchsets in general).
+> 
+> Thanks,
+> Quentin
+Yes you are right that the new definition from Makefile.include overrides this
+with simply "bpftool" as a value, and the Makefile in bpf selftest fails to 
+build it as a result.
 
-Error:
+But the main cause is that it is not able to locate the bpftool binary.
+So, is it good idea to both rename this variable in Makefile.include and 
+use:
 
-make: *** No rule to make target 'bpftool', needed by 
-'/home/linux/tools/testing/selftests/bpf/tools/include/vmlinux.h'. Stop.
-make: *** Waiting for unfinished jobs.....
+BPFTOOL ?= /usr/sbin/bpftool
 
+This is the link to patch that is impacting: 
+https://lore.kernel.org/all/20250218145859.27762-3-tglozar@redhat.com/
 
-Git bisect points to commit: 8a635c3856ddb74ed3fe7c856b271cdfeb65f293 as 
-first bad commit.
-
-Bisect log:
-
-git bisect start
-# status: waiting for both good and bad commits
-# good: [4701f33a10702d5fc577c32434eb62adde0a1ae1] Linux 6.14-rc7
-git bisect good 4701f33a10702d5fc577c32434eb62adde0a1ae1
-# status: waiting for bad commit, 1 good commit known
-# bad: [882a18c2c14fc79adb30fe57a9758283aa20efaa] Add linux-next 
-specific files for 20250324
-git bisect bad 882a18c2c14fc79adb30fe57a9758283aa20efaa
-# good: [36ad536dbad8e29a1fdb7a8760a9c4fcb0dcf7cb] Merge branch 
-'for-next' of 
-git://git.kernel.org/pub/scm/linux/kernel/git/wireless/wireless-next.git
-git bisect good 36ad536dbad8e29a1fdb7a8760a9c4fcb0dcf7cb
-# good: [96c123361d8e32f6012aa449eed27147979af27e] Merge branch 'next' 
-of git://git.kernel.org/pub/scm/linux/kernel/git/jarkko/linux-tpmdd.git
-git bisect good 96c123361d8e32f6012aa449eed27147979af27e
-# bad: [b9fc57d1f74797e7b25c779671c03192a81feb1a] Merge branch 
-'usb-next' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/usb.git
-git bisect bad b9fc57d1f74797e7b25c779671c03192a81feb1a
-# good: [1da0a3d00734bf365f53480a7ffb4361fd61e6d5] Merge branch 'master' 
-of git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git
-git bisect good 1da0a3d00734bf365f53480a7ffb4361fd61e6d5
-# bad: [4541ffab99f8b7ddadb367c73f28ea1fe70f2f97] Merge branch 'next' of 
-git://git.kernel.org/pub/scm/virt/kvm/kvm.git
-git bisect bad 4541ffab99f8b7ddadb367c73f28ea1fe70f2f97
-# good: [361da275e5ce98bbab5f6990d02eb9709742d703] Merge branch 
-'kvm-nvmx-and-vm-teardown' into HEAD
-git bisect good 361da275e5ce98bbab5f6990d02eb9709742d703
-# bad: [28b4c36e59ccfd4e38eaf804b292b3c5b2287900] Merge branch 
-'for-next' of 
-git://git.kernel.org/pub/scm/linux/kernel/git/trace/linux-trace.git
-git bisect bad 28b4c36e59ccfd4e38eaf804b292b3c5b2287900
-# good: [2ec5357274fdbe8d48d13d33a1b0e367bcadb85a] Merge sorttable/for-next
-git bisect good 2ec5357274fdbe8d48d13d33a1b0e367bcadb85a
-# good: [af1a78613133542583c9a9875c824678a3c3a145] Merge branch 
-'edac-drivers' into edac-for-next
-git bisect good af1a78613133542583c9a9875c824678a3c3a145
-# good: [2325ccf7b99fa8e1e95c3ce8a205e170d244b062] Merge branch 
-'edac-for-next' of git://git.kernel.org/pub/scm/linux/kernel/git/ras/ras.git
-git bisect good 2325ccf7b99fa8e1e95c3ce8a205e170d244b062
-# bad: [18923806b1291102cad3a6b713006c7e7f563534] rtla/timerlat_top: 
-Move divisor to update
-git bisect bad 18923806b1291102cad3a6b713006c7e7f563534
-# bad: [9dc3766ed07c95c9a77fa98dcbc83dcb7f49df3d] rtla: Add optional 
-dependency on BPF tooling
-git bisect bad 9dc3766ed07c95c9a77fa98dcbc83dcb7f49df3d
-# bad: [8a635c3856ddb74ed3fe7c856b271cdfeb65f293] tools/build: Add 
-bpftool-skeletons feature test
-git bisect bad 8a635c3856ddb74ed3fe7c856b271cdfeb65f293
-# good: [6fa5e3a87cd7838453be66c3a69c2236a1680504] rtla/timerlat: Unify 
-params struct
-git bisect good 6fa5e3a87cd7838453be66c3a69c2236a1680504
-# first bad commit: [8a635c3856ddb74ed3fe7c856b271cdfeb65f293] 
-tools/build: Add bpftool-skeletons feature test
-
-
-If you happen to fix this, please add below tag.
-
-
-Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-
-
-Regards,
-
-Venkat.
-
+Thanks,
+Saket
 
