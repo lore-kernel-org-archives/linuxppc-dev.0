@@ -1,68 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-7319-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7320-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90DA5C35FFC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Mar 2025 07:20:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA9D7C36008
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 25 Mar 2025 07:20:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZMLsg1SkHz2ypW;
-	Tue, 25 Mar 2025 18:20:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZMLsl6Wfvz2yKq;
+	Tue, 25 Mar 2025 18:20:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742887207;
-	cv=none; b=LGDwVNo5a6VwkcXbibAQEBK//MGVgrH1iicu/CwEC76pAt0P77PPZxwpBIWt37gQPbzQeiR6uLoE88S/5PzyyaGSZ942A5cerRU3eLm/6T/7qnMDhEXKB748WyPRjqw0pmvcGGWQP+3xl+2f8LvIG8HT++PyAfCdKqv3bcfAAPH+HIhxzF/Guz6T/DZgy6sRGlW/yQTxe2UplosrhPTxZD9Nyi7n0Y3Z0H5UMTBpmifaCiUFcuzztfnkUW8Dd06aFPgVwvX/0vGabVaEV20iV5/eei+SBpYU6A2SZW14A+Na531o6pVzbd1Y0I1QaiU3YvqJUx/jpp0uYGAEsXM2WQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1742887211;
+	cv=none; b=AGMO+e/y6+xekpQ1DSy7p/3TRUIw84TOGP75UMHPbetqs6wCnjiTlfBUJGxM2Imfxksg5EktaXqeoKJfP6gyN2ND7K8LrxOGEl2J7p8GIysQVB7hffZwGKvUMucyQSxLYbIu62p9TfpbI77aeiwyCcpnmQYz2HV+2iTyohdXLXZVTpkx4ND1iKGa2ELUyC8gdg71NjdADFCjdbfBYseo+gs5NO73NDsFdMIaF5x+ldYxUbjDZ4tfc+1KHLrR3OI5WGwBbciP+wuQv7Rw/QTPuLIwscDN6Om66tnsTtMuRU62i67iTGbwYpO91+0xsTZ8cpEqLKli67KX6N0BxTxYEg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1742887207; c=relaxed/relaxed;
-	bh=kDShMSxvkg820fpQJpj96lVsB5yI42I46t2/co9NjGQ=;
+	t=1742887211; c=relaxed/relaxed;
+	bh=nVCvfQ5DtQYHcmAr0D2aMfpBZawKOMRMx48ObQpx+8o=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=OXBT6BiJtps2CpzXA7zDLhrQ05zzWpGza6hRBrSbtWuHHxZemqaFBUVyHe/iFZi1SaBr61uKBkdmUflCKf/AgOt4ISk7FlNPARZo7+jo5Ex+qkkpiwnz+k0uXWi0b0ngzy5N6bfF60N/dNayJ94ZVwzKbSKH5xacXjSDm35HloktpxA+m7H3xwypztqyAFKJwB72Yx1cFWxZw0b2ce+VzUr0YPPlmUre/J9pfiGYAO7WmsL1PWWLBko++Qc9EtBkrc99iFHCJmk202g8tePqp4vfHluvgEhRx+K5dD2jdd5178kHfD0p6ay8+clvS2DaQTZqhqRgDvSBwaNxbfHtDw==
+	 MIME-Version:Content-Type; b=nPA6eCIhkGSQnBXmpQk06Vt8KFKKqR1Si4j9HxvLmi1Nlr0Hb2VXFh/6AF/oSBZRZUDCIRp3O8w4grF+TC5rgg3r7oUDQLr1vobuu9BL8mXpRadLPZMsQjjUeZfqsaQ5cb7j6pMSFX4WZe0BTbTat61Whe93vpOTTZPVOrceTOaYrpB2qcaSlJZHaDzQrItKcMr1hj+HfcdF2vW9cZ6BckikbQWoXgBRCfHE1/tgOmXCON+172mBgST1urAG72O6uP4nGHZN0WhxXl2lFo5pXZii0eo9f2TIgkK1jQ73OCV5ijTSXyf/xLG0z1jYZDBjAOOIohGwBbIxv8z/wGosrw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZMLsf278rz2yKq
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2025 18:20:05 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZMLsl0VjCz2yqg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 25 Mar 2025 18:20:10 +1100 (AEDT)
 Received: from localhost (mailhub3.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4ZMLW63xsFz9sSN;
-	Tue, 25 Mar 2025 08:04:02 +0100 (CET)
+	by localhost (Postfix) with ESMTP id 4ZMLYK5Gt4z9sSh;
+	Tue, 25 Mar 2025 08:05:57 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id v6JKQQL_eFrh; Tue, 25 Mar 2025 08:04:02 +0100 (CET)
+	with ESMTP id FJ4bAikuKLHX; Tue, 25 Mar 2025 08:05:57 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4ZMLW635Zrz9sRy;
-	Tue, 25 Mar 2025 08:04:02 +0100 (CET)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4ZMLYK4VFHz9sSg;
+	Tue, 25 Mar 2025 08:05:57 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 519418B765;
-	Tue, 25 Mar 2025 08:04:02 +0100 (CET)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 851568B765;
+	Tue, 25 Mar 2025 08:05:57 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id RHurKaChOlYD; Tue, 25 Mar 2025 08:04:02 +0100 (CET)
+	with ESMTP id 1R3S4luMUOar; Tue, 25 Mar 2025 08:05:57 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 1B9F58B763;
-	Tue, 25 Mar 2025 08:04:02 +0100 (CET)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 565FA8B763;
+	Tue, 25 Mar 2025 08:05:57 +0100 (CET)
 Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
-	by PO20335.IDSI0.si.c-s.fr (8.18.1/8.17.1) with ESMTPS id 52P73rZi009331
+	by PO20335.IDSI0.si.c-s.fr (8.18.1/8.17.1) with ESMTPS id 52P75npS009415
 	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
-	Tue, 25 Mar 2025 08:03:53 +0100
+	Tue, 25 Mar 2025 08:05:49 +0100
 Received: (from chleroy@localhost)
-	by PO20335.IDSI0.si.c-s.fr (8.18.1/8.18.1/Submit) id 52P73odJ009328;
-	Tue, 25 Mar 2025 08:03:50 +0100
+	by PO20335.IDSI0.si.c-s.fr (8.18.1/8.18.1/Submit) id 52P75mFm009410;
+	Tue, 25 Mar 2025 08:05:48 +0100
 X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Stuart Yoder <stuyoder@gmail.com>, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, Ioana Ciornei <ioana.ciornei@nxp.com>
+To: ioana.ciornei@nxp.com, stuyoder@gmail.com, linux@treblig.org
 Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Arnd Bergmann <arnd@arndb.de>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Subject: Re: [PATCH v2 0/3] MAINTAINERS: updates for the fsl-mc bus entry
-Date: Tue, 25 Mar 2025 08:03:27 +0100
-Message-ID: <174288553817.2234438.3505434675141018123.b4-ty@csgroup.eu>
+        linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] bus: fsl-mc: Remove deadcode
+Date: Tue, 25 Mar 2025 08:03:29 +0100
+Message-ID: <174288553818.2234438.11007216946587143383.b4-ty@csgroup.eu>
 X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20250320120319.3520315-1-ioana.ciornei@nxp.com>
-References: <20250320120319.3520315-1-ioana.ciornei@nxp.com>
+In-Reply-To: <20241115152055.279732-1-linux@treblig.org>
+References: <20241115152055.279732-1-linux@treblig.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,30 +75,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1742886214; l=861; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=5ct58WUMCAhireJk5huWUvhQ9El2yA0OK7tPTYy9x7A=; b=F2JnbXHN3cz8KA26VpWyklKsskrhu/PjUTjpnQuGBhLOOzsPIA29F8wTqO9SMTufc2xs4Rk+V lBtj8F+abOTD2p1xRKgGg9i/g2W7MVVQaUYXg5qnJFtHn0aZl+bupc3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1742886214; l=584; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=VhmgXn8UTNWepu/WKdG9W0WStpBu+2fR6BBNfwNb5Vo=; b=OOvXAJey8QbW05uaPC1iND6tTU4jLioJLk4ni3WxNp8YZL9IeOycvAmyn8xVebICfDxO/xZ2T ZW88LyzkL67DtjvUgJNVQ4IKPHgyaY28eIKUhtLCD0xCKdaYppLQQbT
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
 
-On Thu, 20 Mar 2025 14:03:16 +0200, Ioana Ciornei wrote:
-> This patch set updates the fsl-mc bus driver MAINTAINERS entry. Since
-> there are small separate changes, I put each of them into a separate
-> patch.
+On Fri, 15 Nov 2024 15:20:55 +0000, linux@treblig.org wrote:
+> fsl_mc_allocator_driver_exit() was added explicitly by
+> commit 1e8ac83b6caf ("bus: fsl-mc: add fsl_mc_allocator cleanup function")
+> but was never used.
 > 
-> Changes in v2:
-> - 1/3: also removed Stuart from the MAINTAINERS file
-> https://lore.kernel.org/linuxppc-dev/CAEac7tYQE76z4pYminhvMJR6GZ66RPRv4PxM-U9VpGJjvn6APg@mail.gmail.com/
+> Remove it.
+> 
+> fsl_mc_portal_reset() was added in 2015 by
+> commit 197f4d6a4a00 ("staging: fsl-mc: fsl-mc object allocator driver")
+> but was never used.
 > 
 > [...]
 
 Applied, thanks!
 
-[1/3] MAINTAINERS: add myself as maintainer for the fsl-mc bus
-      commit: 29904d6c1be66882c7148a1439e0f671fc02e56c
-[2/3] MAINTAINERS: fix nonexistent dtbinding file name
-      commit: baa9934908ad1cb6f7093c8ba15d518a43419f9a
-[3/3] MAINTAINERS: add the linuppc-dev list to the fsl-mc bus entry
-      commit: 586739b1e8b14a38145a80e7684874d1a3268498
+[1/1] bus: fsl-mc: Remove deadcode
+      commit: c25951eb7518844fcb7fc9ec58e888731e8c46d0
 
 Best regards,
 -- 
