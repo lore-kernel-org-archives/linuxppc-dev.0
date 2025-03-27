@@ -1,51 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-7359-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7360-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69D3DC36011
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Mar 2025 19:50:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 43E4BC3600B
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 27 Mar 2025 20:57:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZNvQ73l2vz2yhW;
-	Fri, 28 Mar 2025 06:50:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743105007;
-	cv=none; b=EjHlusnxY0guENxSOG+sNJSlWsMK1Ojpo32HUzxUd+jwyK/3yuXPwegEeyDYEgOX9mWQQ2aTcXAqwlCmaPaI3Ezip+W7EdkyOZVxuIVXdC8OVQ9t76667r5rQFYbd/NHX12tWADjyOlOcnQpqpEMMtbHmkUOEivdbrbGc3Kp2HJmLwiOM9Jy7JS7G0fnHByQlfY+zU3km6BHOGWMlLjSS79l4fxQzodvXMeKuUTVe+XHfcjJMme1c2a3LFWreQ+kIPi//MCOnieLf/16to9XPIRzRNbmVctcCC0v48vO8uBl5gUltRlGdHPyUWEAVhLlRiEpQ1vsxjVTlgBQxIYb9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZNwwJ51Tkz2yr8;
+	Fri, 28 Mar 2025 07:57:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::535"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743109071;
+	cv=none; b=NfG6ZPRK7KUB/gx8bjB/tY17scj9AwSC88P2QxbOqmdd9pPuHtRSFDty6kvDG98mx6jGPNthOQBr/k/2mR6GMJ3Ovs1dIou8GcbYgKJUf4xZY4RuIrPnjBoWIuT6YKXtq5kgIleSIajFP2i8M+Hdc/yWy0yiKlNWpj0Qd9pTTnl1lW0u24KMkih3e7HG2gkQe6zA5cv4y1jbdWKR9pbFSo6GYHhNGhfBuoWJhJLsKuyq1ZW5WI394XXzvGT+8aOn1gqPgIvbHwhcPZ92F67o5rfGgQrSuJz9iUUAPMBoU5alYI3c34XT6Bm68n09s1uYWxuEkbtOQvhRnE4CKD8ASw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1743105007; c=relaxed/relaxed;
-	bh=teY/IAl9/RDZ08ip2C2/xMfOMHxZKuunUStGQAsVbRA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=m2mUYLvxozTygaBb6yR0zu7mdpjBkMGtzRQaAPL7NC4vp1rEbmrbTpwkjXw7z7/a6vFh6+SCDyJRDIyq1PeYqfhhQ/9gioSSZZgvKv4gGsFc1ociQslGncMkJQ25/36p9PiIhwJpXvQ+MSFIif1Lrl5fkiOlq6DFGUmN0Ml9G39lTDvcrFz2EZC+Uw/VWNw/W0sEoTuq5oZ+1vkX9Df6pbRPQatoWXD7XOpNSSSAulJte4MbwR6q6NaAeX1Oh3O4xrR0TjVRVkQr3QdnlrKfJJg0ydY6Khcwe5RHKje5c+5QivypMvGhxvA5VoMdo6Ny3AMp9vgvkqEU5DV8u/RX0Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1799 seconds by postgrey-1.37 at boromir; Fri, 28 Mar 2025 06:50:05 AEDT
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZNvQ542bgz2ySS
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2025 06:50:05 +1100 (AEDT)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4ZNtCY6NVdz9v5M;
-	Thu, 27 Mar 2025 19:55:53 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id DjaaxL0rvOli; Thu, 27 Mar 2025 19:55:53 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4ZNtCY5gJSz9tC6;
-	Thu, 27 Mar 2025 19:55:53 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id C18358B76E;
-	Thu, 27 Mar 2025 19:55:53 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id MK2dalRyhSYe; Thu, 27 Mar 2025 19:55:53 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 47F8A8B763;
-	Thu, 27 Mar 2025 19:55:53 +0100 (CET)
-Message-ID: <b37c7a1a-9ec8-417e-9d9d-adeffe409df8@csgroup.eu>
-Date: Thu, 27 Mar 2025 19:55:53 +0100
+	t=1743109071; c=relaxed/relaxed;
+	bh=VR7DEyijnU2Btuzsq24JxQagRdb3glRQ+pQ9YwQUpTo=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=ULM9BqsKQI8CXCHDIpA5WHy27XW2JrwnIomHJQUxJT+dX0W6ZedjfUOoxvM/eU9imje5E/vLdKu9TLRv85bUz9geB4G/8b0vQAotPliWamzrfGS4GGcp2XjL5qlpk3bemtccoLw7dHbDokLslaDCGQT5u+5VXIwXVn9xHCHB09/p1Obu7AiMs8H3Cq5zROGK4qx46b1qDWZx51AZq57PKzSryxHOn1ZoUMSkDJbRGFnphC7y/0CK6racxCz9b1ot4OSwI2awIS9lh+uHNPIHli774nx0tRZgprwUdVe9AfL2b4xjxeCj+PTnqz2fFGs+2GtNji8uPNOLIPa67hmddw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=I0JDykBH; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=amir73il@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=I0JDykBH;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::535; helo=mail-ed1-x535.google.com; envelope-from=amir73il@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x535.google.com (mail-ed1-x535.google.com [IPv6:2a00:1450:4864:20::535])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZNwwG38b1z2yfv
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 28 Mar 2025 07:57:50 +1100 (AEDT)
+Received: by mail-ed1-x535.google.com with SMTP id 4fb4d7f45d1cf-5dca468c5e4so2565058a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 27 Mar 2025 13:57:50 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1743109066; x=1743713866; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=VR7DEyijnU2Btuzsq24JxQagRdb3glRQ+pQ9YwQUpTo=;
+        b=I0JDykBHe4Tjbw+ZT8BvZn1CLY+GTvevcWMYsMPiSRnZsjTeBsQQwWBJcRJJAQAmFK
+         MMoBoNSRdsgkaFV1sxERDZe/Gk9oVOC/yPMD5+7efL6c5AuldDHTfQte+3o1o7pxmMsD
+         ITxiTGLpMYOx7PSUhwcA4zET0EUVZ4EToqPTO4S5OCkXiHEm/MpNpb/MggzoCJ1NeyaR
+         7JiTaCUZ6gRhJaFhBqohv/VrMGI/HFgpi7XIJz7tpYyN5UYJffOEWT9hyy1GTePX5XQo
+         CcrKGZPjKFZ6zP0bv73hONu7X2H63sDJwH6gyaxsyO4GVpcRr4GxRx1pnY8gi1FuHgq0
+         zvtQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1743109066; x=1743713866;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=VR7DEyijnU2Btuzsq24JxQagRdb3glRQ+pQ9YwQUpTo=;
+        b=o9bJ1X1NmvOYunZUkZEu8fhywM1SCtrY8Y9qyx8qMngnv41vdNHhfjB5NfN4VzZz9Y
+         0f+Zd5utEALAFFzCi29qqDgdPMWOGNrYOrNlcb5J+EsiyQqCY+vVCBbf8qEJtdSE1K+a
+         4IaCkO9Taw+kOYgotlBmzcCqVWqGdod/jMHbQj9Y6Omd2vKMY8Uhp/nt19AMaHDoISL9
+         TxhXO167CiBRNvIJZxUf4ykrfi7umShXQp1qjO0tuFbNGS7vCapBSTU4w2vgAwM+mCYo
+         BCpKjYv8gJhx3NiXBiWj/bSR8FDe4vZ+uUfFEmW+BFucvs9Ggh9DnU29HeRrp2H7DcCm
+         5JnQ==
+X-Forwarded-Encrypted: i=1; AJvYcCU1sJ+JPaH2R30WGNIwOi74JqXXqCulM1lfPwiGfJwbYmPIUK9/5Pbl7D/7S3JCiKmwikze61lf0AngOm0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzY3E+K4hzIv3bbR7lfmkq/h9oUS0sC7UPrn/3dopnyqxuEDkRc
+	dfd6ZCWRK3ECC0IIXcDwCr17Wp5I4MTnecqnv/yuPJaiyEoq+QkAjK7OzAf/Sonn3WQqdOIV6er
+	uDwRNEjF/t9FAGvVefVI+0jIEEU0=
+X-Gm-Gg: ASbGncvPTimrrArSGyc2MJeHdsmztCOS1CYtatdGHeJVmZskVJJRFfgT0TEGqdAhIxB
+	NLdAME6Rp/zl/LEjZyAyihmbK7vssHy/jqpj+d9wkN+C3vETUXXjuDVZ6JeW5JQaymQ61tzUr28
+	cKaUTrO5bRz8CVS8Vt1vVZ/I3h2Q==
+X-Google-Smtp-Source: AGHT+IGQy/9DoQYCCr9US5q6EnypmXetXiJBY3dnHtL1iSSGFXJt9gHT/MXORtXg0qR63MnGE5R7UOJG3H1b0VV82NI=
+X-Received: by 2002:a05:6402:26d0:b0:5e6:23c:a242 with SMTP id
+ 4fb4d7f45d1cf-5ed8e59f048mr6048289a12.18.1743109065684; Thu, 27 Mar 2025
+ 13:57:45 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,89 +78,188 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [main-line]Build warnings on PowerPC system
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- LKML <linux-kernel@vger.kernel.org>
-References: <61cf556c-4947-4bd6-af63-892fc0966dad@linux.ibm.com>
- <8797a1c4-dc58-4a85-bc51-a3d4131e7930@linux.ibm.com>
- <b5713b0b-a278-424c-8ba3-3aec01454e94@linux.ibm.com>
- <38653c58-a5c4-496f-9b52-e7bc3e447423@linux.ibm.com>
- <516febac-b2ba-48a0-83a4-ab259e972541@linux.ibm.com>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <516febac-b2ba-48a0-83a4-ab259e972541@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20250321-xattrat-syscall-v4-0-3e82e6fb3264@kernel.org>
+ <CAOQ4uxjQDUg8HFG+mSxMkR54zen7nC2jttzOKqh13Bx-uosh3Q@mail.gmail.com>
+ <20250323103234.2mwhpsbigpwtiby4@pali> <CAOQ4uxiTKhGs1H-w1Hv-+MqY284m92Pvxfem0iWO+8THdzGvuA@mail.gmail.com>
+ <20250327192629.ivnarhlkfbhbzjcl@pali>
+In-Reply-To: <20250327192629.ivnarhlkfbhbzjcl@pali>
+From: Amir Goldstein <amir73il@gmail.com>
+Date: Thu, 27 Mar 2025 21:57:34 +0100
+X-Gm-Features: AQ5f1JpYIOUBRGbLo4K_0o1yQv002a0U-X2PtgEoVHqkLx0cP_6nsQWGxHLw9Sg
+Message-ID: <CAOQ4uxhJ53h+1AjtF4B64onqvRfZsJ3n1OFikyJpXAPTyX45iQ@mail.gmail.com>
+Subject: Re: [PATCH v4 0/3] fs: introduce getfsxattrat and setfsxattrat syscalls
+To: =?UTF-8?Q?Pali_Roh=C3=A1r?= <pali@kernel.org>
+Cc: Andrey Albershteyn <aalbersh@redhat.com>, Richard Henderson <richard.henderson@linaro.org>, 
+	Matt Turner <mattst88@gmail.com>, Russell King <linux@armlinux.org.uk>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, Michal Simek <monstr@monstr.eu>, 
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Helge Deller <deller@gmx.de>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Naveen N Rao <naveen@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Sven Schnelle <svens@linux.ibm.com>, Yoshinori Sato <ysato@users.sourceforge.jp>, 
+	Rich Felker <dalias@libc.org>, John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
+	"David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, 
+	Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, 
+	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
+	"H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>, 
+	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
+	=?UTF-8?B?TWlja2HDq2wgU2FsYcO8bg==?= <mic@digikod.net>, 
+	=?UTF-8?Q?G=C3=BCnther_Noack?= <gnoack@google.com>, 
+	Arnd Bergmann <arnd@arndb.de>, Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
+	"Serge E. Hallyn" <serge@hallyn.com>, linux-alpha@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
+	sparclinux@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
+	linux-security-module@vger.kernel.org, linux-api@vger.kernel.org, 
+	linux-arch@vger.kernel.org, selinux@vger.kernel.org, 
+	Andrey Albershteyn <aalbersh@kernel.org>, linux-xfs@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, Mar 27, 2025 at 8:26=E2=80=AFPM Pali Roh=C3=A1r <pali@kernel.org> w=
+rote:
+>
+> On Thursday 27 March 2025 12:47:02 Amir Goldstein wrote:
+> > On Sun, Mar 23, 2025 at 11:32=E2=80=AFAM Pali Roh=C3=A1r <pali@kernel.o=
+rg> wrote:
+> > >
+> > > On Sunday 23 March 2025 09:45:06 Amir Goldstein wrote:
+> > > > On Fri, Mar 21, 2025 at 8:50=E2=80=AFPM Andrey Albershteyn <aalbers=
+h@redhat.com> wrote:
+> > > > >
+> > > > > This patchset introduced two new syscalls getfsxattrat() and
+> > > > > setfsxattrat(). These syscalls are similar to FS_IOC_FSSETXATTR i=
+octl()
+> > > > > except they use *at() semantics. Therefore, there's no need to op=
+en the
+> > > > > file to get an fd.
+> > > > >
+> > > > > These syscalls allow userspace to set filesystem inode attributes=
+ on
+> > > > > special files. One of the usage examples is XFS quota projects.
+> > > > >
+> > > > > XFS has project quotas which could be attached to a directory. Al=
+l
+> > > > > new inodes in these directories inherit project ID set on parent
+> > > > > directory.
+> > > > >
+> > > > > The project is created from userspace by opening and calling
+> > > > > FS_IOC_FSSETXATTR on each inode. This is not possible for special
+> > > > > files such as FIFO, SOCK, BLK etc. Therefore, some inodes are lef=
+t
+> > > > > with empty project ID. Those inodes then are not shown in the quo=
+ta
+> > > > > accounting but still exist in the directory. This is not critical=
+ but in
+> > > > > the case when special files are created in the directory with alr=
+eady
+> > > > > existing project quota, these new inodes inherit extended attribu=
+tes.
+> > > > > This creates a mix of special files with and without attributes.
+> > > > > Moreover, special files with attributes don't have a possibility =
+to
+> > > > > become clear or change the attributes. This, in turn, prevents us=
+erspace
+> > > > > from re-creating quota project on these existing files.
+> > > > >
+> > > > > Christian, if this get in some mergeable state, please don't merg=
+e it
+> > > > > yet. Amir suggested these syscalls better to use updated struct f=
+sxattr
+> > > > > with masking from Pali Roh=C3=A1r patchset, so, let's see how it =
+goes.
+> > > >
+> > > > Andrey,
+> > > >
+> > > > To be honest I don't think it would be fair to delay your syscalls =
+more
+> > > > than needed.
+> > >
+> > > I agree.
+> > >
+> > > > If Pali can follow through and post patches on top of your syscalls=
+ for
+> > > > next merge window that would be great, but otherwise, I think the
+> > > > minimum requirement is that the syscalls return EINVAL if fsx_pad
+> > > > is not zero. we can take it from there later.
+> > >
+> > > IMHO SYS_getfsxattrat is fine in this form.
+> > >
+> > > For SYS_setfsxattrat I think there are needed some modifications
+> > > otherwise we would have problem again with backward compatibility as
+> > > is with ioctl if the syscall wants to be extended in future.
+> > >
+> > > I would suggest for following modifications for SYS_setfsxattrat:
+> > >
+> > > - return EINVAL if fsx_xflags contains some reserved or unsupported f=
+lag
+> > >
+> > > - add some flag to completely ignore fsx_extsize, fsx_projid, and
+> > >   fsx_cowextsize fields, so SYS_setfsxattrat could be used just to
+> > >   change fsx_xflags, and so could be used without the preceding
+> > >   SYS_getfsxattrat call.
+> > >
+> > > What do you think about it?
+> >
+> > I think all Andrey needs to do now is return -EINVAL if fsx_pad is not =
+zero.
+> >
+> > You can use this later to extend for the semantics of flags/fields mask
+> > and we can have a long discussion later on what this semantics should b=
+e.
+> >
+> > Right?
+> >
+> > Amir.
+>
+> It is really enough?
 
+I don't know. Let's see...
 
-Le 27/03/2025 à 17:24, Venkat Rao Bagalkote a écrit :
-> 
-> On 27/03/25 8:36 pm, Madhavan Srinivasan wrote:
->>
->> On 3/27/25 7:31 PM, Venkat Rao Bagalkote wrote:
->>> On 27/03/25 7:22 pm, Madhavan Srinivasan wrote:
->>>> On 3/27/25 12:33 AM, Venkat Rao Bagalkote wrote:
->>>>> Greetings!!!
->>>>>
->>>>> I see below build warnings while compiling mainline kernel on IBM 
->>>>> Power9 system.
->>>>>
->>>>> Repo Link: https://eur01.safelinks.protection.outlook.com/? 
->>>>> url=https%3A%2F%2Fgit.kernel.org%2Fpub%2Fscm%2Flinux%2Fkernel%2Fgit%2Ftorvalds%2Flinux.git%2F&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7Cd6121f3814a7497bc5e608dd6d4be6c8%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638786894952762400%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=3el3Uw9JR2vxDzjOIvF%2BVnienBrwtOsA%2Ftg0kGBqziE%3D&reserved=0
->>>>>
->>>>> Head Commit: f6e0150b2003fb2b9265028a618aa1732b3edc8f
->>>>>
->>>>> Attached is the .config.
->>>>>
->>>>> Machine: IBM Power9
->>>>>
->>>>> gcc version 11.5.0
->>>> What is the ld version in your system.
->>> Please find the ld version below.
->>>
->>> GNU ld version 2.35.2-59.el9
->>
->> ah ok that explains. Kindly can you try with this patch and let us 
->> know whether
->> this fixes the warning in your setup
->>
->>
->> diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
->> index 1db60fe13802..09ceb5a42d81 100755
->> --- a/arch/powerpc/boot/wrapper
->> +++ b/arch/powerpc/boot/wrapper
->> @@ -235,7 +235,7 @@ fi
->>   # suppress some warnings in recent ld versions
->>   nowarn="-z noexecstack"
->>   if ! ld_is_lld; then
->> -       if [ "$LD_VERSION" -ge "$(echo 2.39 | ld_version)" ]; then
->> +       if [ "$LD_VERSION" -ge "$(echo 2.35 | ld_version)" ]; then
->>                  nowarn="$nowarn --no-warn-rwx-segments"
->>          fi
->>   fi
-> Above change fixes the issue. No warnings observed. Thank you!!
+> All new extensions later would have to be added
+> into fsx_pad fields, and currently unused bits in fsx_xflags would be
+> unusable for extensions.
 
-Take care, this must be a special version of binutils.
+I am working under the assumption that the first extension would be
+to support fsx_xflags_mask and from there, you could add filesystem
+flags support checks and then new flags. Am I wrong?
 
-With regular 2.36.1 I get following error:
+Obviously, fsx_xflags_mask would be taken from fsx_pad space.
+After that extension is implemented, calling SYS_setfsxattrat() with
+a zero fsx_xflags_mask would be silly for programs that do not do
+the legacy get+set.
 
-$ /opt/gcc/gcc-8.5.0-nolibc/powerpc64-linux/bin/powerpc64-linux-ld --version
-GNU ld (GNU Binutils) 2.36.1
-Copyright (C) 2021 Free Software Foundation, Inc.
-This program is free software; you may redistribute it under the terms of
-the GNU General Public License version 3 or (at your option) a later 
-version.
-This program has absolutely no warranty.
+So when we introduce  fsx_xflags_mask, we could say that a value
+of zero means that the mask is not being checked at all and unknown
+flags in set syscall are ignored (a.k.a legacy ioctl behavior).
 
-$ /opt/gcc/gcc-8.5.0-nolibc/powerpc64-linux/bin/powerpc64-linux-ld 
---no-warn-rwx-segments test.o
-/opt/gcc/gcc-8.5.0-nolibc/powerpc64-linux/bin/powerpc64-linux-ld: 
-unrecognized option '--no-warn-rwx-segments'
-/opt/gcc/gcc-8.5.0-nolibc/powerpc64-linux/bin/powerpc64-linux-ld: use 
-the --help option for usage information
+Programs that actually want to try and set without get will have to set
+a non zero fsx_xflags_mask to do something useful.
 
+I don't think this is great.
+I would rather that the first version of syscalls will require the mask
+and will always enforce filesystems supported flags.
+
+If you can get those patches (on top of current series) posted and
+reviewed in time for the next merge window, including consensus
+on the actual semantics, that would be the best IMO.
+
+But I am just preparing a plan B in case you do not have time to
+work on the patches or if consensus on the API extensions is not
+reached on time.
+
+I think that for plan B, the minimum is to verify zero pad field and
+that is something that this syscall has to do anyway, because this
+is the way that backward compact APIs work.
+
+If you want the syscall to always return -EINVAL for setting xflags
+that are currently undefined I agree that would be nice as well.
+
+Thanks,
+Amir.
 
