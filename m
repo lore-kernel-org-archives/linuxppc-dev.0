@@ -1,74 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-7447-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7448-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBB93C3601A
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Apr 2025 04:27:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7AC24C36010
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  4 Apr 2025 04:51:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZTQY03Mhxz30TJ;
-	Fri,  4 Apr 2025 15:26:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=23.155.224.40
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743740804;
-	cv=none; b=eXqQxQNaaSEZ0bG+Jm5NPX3GyckXojUCA7HbNVi5zHymikR4kVqnjZnGcFH8qx7JRE+n5GRZIgwDE2dmLWqb5fzW6TQMu66TWWDzBb6kAjlRLRzcGnBujc7DuwOQPi1zrTEL1x20Opq2IoGRntsMRlZSJ5KM52PEwIhsYuYpUa7ruhM3kD08YgaQ0bVNgCvt5JZQITReaQlhcnpS0rzHNHa1Pecl30n4125/NoBGpthZd6Ng/rWukn1QCVWL1+sJlspn/A53Zd70DfoR6e76938Z04vewatSYAJL74sOf+iGefYN9+UYP0CXdSUt96hDr3fL5dkrr3DIKDAHVZvdnw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZTR5b6kPCz2yfF;
+	Fri,  4 Apr 2025 15:51:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=176.9.242.62
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743742291;
+	cv=none; b=lCv1yMr/zainatp08oqFlSMCJi+nplmpIATj71pzQ4eu+UVSqemR70xtN2IdXgaJdo/NGy8/poY2905fg6X0H3ZjEadAqowtKACxHuStzg0Y5RwfFDgMDEKFtU0WmmMMRvbo5f34VBs9MYF51sTh+MnM3t0kcVi6qgtr0DwF+JZdvKhOZbFpTnpE2+ixkJOdvA9OuKv45Za5POiBgkEdPgBNhvxUXLCo2/o8DS+C6qgNeJPsC2D5Sw9HHXYa8MymRvpWx3JZW4JvnszOoKiuQRMe0hsTeenKVKpvPIAUUB+tbPF7stQmCZjnFwayoCHDlZtwkY88tR9o7KGWSP1kHw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1743740804; c=relaxed/relaxed;
-	bh=fAe4Tpi/1CPIcV/MWl6tn64VBoEe+zjbtMnLCtQAsSM=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=irR28dzzKj0/ZUDKQyWdJCyOzL4ubYpgGEnrrXCumbuUh0OWVkDFZZTMCQlMcXoCqWuyzhZomBVPI7gs03n1XQzH/5ERSyS9s0sLZIgUQ1/3vV16Xrza6eb7YZOLrr5YczdqtXZ3YNUglNXmUE+kVOSs4NLaORS3JCjC/TlDF7eDmqjbx2DPB0bc593w3umR0eqFGrldBbyLTYW1mtXcuFsS+/H9nXnkcmoOwMrN5JnEGZEWsxklsy+LbH8MVtwLx0JMPQknafPRl+FJ/PyHZfqhcA11S8O0V65rB2wmjk6Sf1ogFXWGf6OPQB9XTpq7z42WjHMnlcXOs1gZLxk9mQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=raptorengineering.com; dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=C7cDfb7Z; dkim-atps=neutral; spf=pass (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=sanastasio@raptorengineering.com; receiver=lists.ozlabs.org) smtp.mailfrom=raptorengineering.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=raptorengineering.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=C7cDfb7Z;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=raptorengineering.com (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=sanastasio@raptorengineering.com; receiver=lists.ozlabs.org)
-Received: from raptorengineering.com (mail.raptorengineering.com [23.155.224.40])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1743742291; c=relaxed/relaxed;
+	bh=1MYkHqc/nP/fGBQIUNI2OfmIg7gHypOzq7R4zOWYFdo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fEi4WAu9WU9GxXpd30lSXl4jQc9S5m+eAW6vaUpowuMUAwgp7VLio9uLi+m6gpDXEC0Zh+ISFSOWyFmONFfhrYzZT+ttFMmApx+9TSU/aNidSP7ucdvW6hvQsIcllpAoufPXtjlSkNAU70js8faKBXhc0mBtoX4yQQKGq3dJcrXlJmvML65tXw5QkBAf5cuX/anKzHOyHU49IIVwIXOKvVfcjq3Rab9u+TFYwRNkU+yzlPBEwWzWYrfJOFgXnCmhGCumoys13YBfzL+jZNHZTqR7aRlOR65zAICMeR/aNI/qDhJWuOBNKKZPmSH6BMN4y2MsdjsWa9guvqo9Zwuydw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=176.9.242.62; helo=bmailout3.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org) smtp.helo=bmailout3.hostsharing.net
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=bmailout3.hostsharing.net (client-ip=176.9.242.62; helo=bmailout3.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 525 seconds by postgrey-1.37 at boromir; Fri, 04 Apr 2025 15:51:30 AEDT
+Received: from bmailout3.hostsharing.net (bmailout3.hostsharing.net [176.9.242.62])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZTQXv43dMz2yvs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Apr 2025 15:26:39 +1100 (AEDT)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id 1CA4A8287D28;
-	Thu,  3 Apr 2025 23:18:15 -0500 (CDT)
-Received: from mail.rptsys.com ([127.0.0.1])
-	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10032)
-	with ESMTP id R4hZ5MRpKMEH; Thu,  3 Apr 2025 23:18:14 -0500 (CDT)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id 39B3282888D4;
-	Thu,  3 Apr 2025 23:18:14 -0500 (CDT)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.rptsys.com 39B3282888D4
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=raptorengineering.com; s=B8E824E6-0BE2-11E6-931D-288C65937AAD;
-	t=1743740294; bh=fAe4Tpi/1CPIcV/MWl6tn64VBoEe+zjbtMnLCtQAsSM=;
-	h=From:To:Date:Message-Id:MIME-Version;
-	b=C7cDfb7ZWARbd4e0IfE7mFEDuZlh28NN29CT0E/NFCq33WYLpOQNX5FhFsO9mh1nn
-	 y+dsRpzh+7OU6Hnb5cLUOmyHKAM3udhyuwGFOcJD20EpZCzx+cTr67zaXM5w/mwQsh
-	 pF5M94SxPLECbSdw3MOJeVSL66J6BSKL3SEjtodY=
-X-Virus-Scanned: amavisd-new at rptsys.com
-Received: from mail.rptsys.com ([127.0.0.1])
-	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id Ax0Jm6ctHBZu; Thu,  3 Apr 2025 23:18:14 -0500 (CDT)
-Received: from raptor-ewks-026.lan (5.edge.rptsys.com [23.155.224.38])
-	by mail.rptsys.com (Postfix) with ESMTPSA id AC3CD82878A5;
-	Thu,  3 Apr 2025 23:18:13 -0500 (CDT)
-From: Shawn Anastasio <sanastasio@raptorengineering.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org,
-	linux-pci@vger.kernel.org,
-	tpearson@raptorengineering.com,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZTR5Z4qVxz2ydx
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  4 Apr 2025 15:51:30 +1100 (AEDT)
+Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
+	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
+	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
+	by bmailout3.hostsharing.net (Postfix) with ESMTPS id 84EE52C06E55;
+	Fri,  4 Apr 2025 06:42:29 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id BD8EF1143F; Fri,  4 Apr 2025 06:42:32 +0200 (CEST)
+Date: Fri, 4 Apr 2025 06:42:32 +0200
+From: Lukas Wunner <lukas@wunner.de>
+To: Shawn Anastasio <sanastasio@raptorengineering.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	linux-pci@vger.kernel.org, tpearson@raptorengineering.com,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
 	Naveen N Rao <naveen@kernel.org>,
 	Bjorn Helgaas <bhelgaas@google.com>,
-	Shawn Anastasio <sanastasio@raptorengineering.com>
-Subject: [PATCH 1/3] pci/hotplug/pnv_php: Properly clean up allocated IRQs on unplug
-Date: Thu,  3 Apr 2025 23:18:08 -0500
-Message-Id: <20250404041810.245984-2-sanastasio@raptorengineering.com>
-X-Mailer: git-send-email 2.30.2
-In-Reply-To: <20250404041810.245984-1-sanastasio@raptorengineering.com>
+	Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+Subject: Re: [PATCH 2/3] pci/hotplug/pnv_php: Work around switches with
+ broken presence detection
+Message-ID: <Z-9jOFiPaxYAJwdm@wunner.de>
 References: <20250404041810.245984-1-sanastasio@raptorengineering.com>
+ <20250404041810.245984-3-sanastasio@raptorengineering.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,192 +64,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250404041810.245984-3-sanastasio@raptorengineering.com>
 
-In cases where the root of a nested PCIe bridge configuration is
-unplugged, the pnv_php driver would leak the allocated IRQ resources for
-the child bridges' hotplug event notifications, resulting in a panic.
-Fix this by walking all child buses and deallocating all it's IRQ
-resources before calling pci_hp_remove_devices.
+[cc += Krishna]
 
-Also modify the lifetime of the workqueue at struct pnv_php_slot::wq so
-that it is only destroyed in pnv_php_free_slot, instead of
-pnv_php_disable_irq. This is required since pnv_php_disable_irq will now
-be called by workers triggered by hot unplug interrupts, so the
-workqueue needs to stay allocated.
+On Thu, Apr 03, 2025 at 11:18:09PM -0500, Shawn Anastasio wrote:
+> The Microsemi Switchtec PM8533 PFX 48xG3 [11f8:8533] PCIe switch system
+> was observed to incorrectly assert the Presence Detect Set bit in its
+> capabilities when tested on a Raptor Computing Systems Blackbird system,
+> resulting in the hot insert path never attempting a rescan of the bus
+> and any downstream devices not being re-detected.
+> 
+> Work around this by additionally checking whether the PCIe data link is
+> active or not when performing presence detection on downstream switches'
+> ports, similar to the pciehp_hpc.c driver.
+[...]
+> --- a/drivers/pci/hotplug/pnv_php.c
+> +++ b/drivers/pci/hotplug/pnv_php.c
+> @@ -390,6 +390,20 @@ static int pnv_php_get_power_state(struct hotplug_slot *slot, u8 *state)
+>  	return 0;
+>  }
+>  
+> +static int pcie_check_link_active(struct pci_dev *pdev)
+> +{
+> +	u16 lnk_status;
+> +	int ret;
+> +
+> +	ret = pcie_capability_read_word(pdev, PCI_EXP_LNKSTA, &lnk_status);
+> +	if (ret == PCIBIOS_DEVICE_NOT_FOUND || PCI_POSSIBLE_ERROR(lnk_status))
+> +		return -ENODEV;
+> +
+> +	ret = !!(lnk_status & PCI_EXP_LNKSTA_DLLLA);
+> +
+> +	return ret;
+> +}
+> +
 
-The abridged kernel panic that occurs without this patch is as follows:
+This appears to be a 1:1 copy of pciehp_check_link_active(),
+save for the ctrl_dbg() call.
 
-  WARNING: CPU: 0 PID: 687 at kernel/irq/msi.c:292 msi_device_data_release+0x6c/0x9c
-  CPU: 0 UID: 0 PID: 687 Comm: bash Not tainted 6.14.0-rc5+ #2
-  Call Trace:
-   msi_device_data_release+0x34/0x9c (unreliable)
-   release_nodes+0x64/0x13c
-   devres_release_all+0xc0/0x140
-   device_del+0x2d4/0x46c
-   pci_destroy_dev+0x5c/0x194
-   pci_hp_remove_devices+0x90/0x128
-   pci_hp_remove_devices+0x44/0x128
-   pnv_php_disable_slot+0x54/0xd4
-   power_write_file+0xf8/0x18c
-   pci_slot_attr_store+0x40/0x5c
-   sysfs_kf_write+0x64/0x78
-   kernfs_fop_write_iter+0x1b0/0x290
-   vfs_write+0x3bc/0x50c
-   ksys_write+0x84/0x140
-   system_call_exception+0x124/0x230
-   system_call_vectored_common+0x15c/0x2ec
+For the sake of code-reuse, please move the function into the
+PCI library drivers/pci/pci.c so that it can be used everywhere.
 
-Signed-off-by: Shawn Anastasio <sanastasio@raptorengineering.com>
----
- drivers/pci/hotplug/pnv_php.c | 76 ++++++++++++++++++++++++++---------
- 1 file changed, 57 insertions(+), 19 deletions(-)
+Note that there's another patch pending which does exactly that:
 
-diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
-index 573a41869c15..2c07544216fb 100644
---- a/drivers/pci/hotplug/pnv_php.c
-+++ b/drivers/pci/hotplug/pnv_php.c
-@@ -36,8 +36,10 @@ static void pnv_php_register(struct device_node *dn);
- static void pnv_php_unregister_one(struct device_node *dn);
- static void pnv_php_unregister(struct device_node *dn);
- 
-+static void pnv_php_enable_irq(struct pnv_php_slot *php_slot);
-+
- static void pnv_php_disable_irq(struct pnv_php_slot *php_slot,
--				bool disable_device)
-+				bool disable_device, bool disable_msi)
- {
- 	struct pci_dev *pdev = php_slot->pdev;
- 	u16 ctrl;
-@@ -53,19 +55,15 @@ static void pnv_php_disable_irq(struct pnv_php_slot *php_slot,
- 		php_slot->irq = 0;
- 	}
- 
--	if (php_slot->wq) {
--		destroy_workqueue(php_slot->wq);
--		php_slot->wq = NULL;
--	}
--
--	if (disable_device) {
-+	if (disable_device || disable_msi) {
- 		if (pdev->msix_enabled)
- 			pci_disable_msix(pdev);
- 		else if (pdev->msi_enabled)
- 			pci_disable_msi(pdev);
-+	}
- 
-+	if (disable_device)
- 		pci_disable_device(pdev);
--	}
- }
- 
- static void pnv_php_free_slot(struct kref *kref)
-@@ -74,7 +72,8 @@ static void pnv_php_free_slot(struct kref *kref)
- 					struct pnv_php_slot, kref);
- 
- 	WARN_ON(!list_empty(&php_slot->children));
--	pnv_php_disable_irq(php_slot, false);
-+	pnv_php_disable_irq(php_slot, false, false);
-+	destroy_workqueue(php_slot->wq);
- 	kfree(php_slot->name);
- 	kfree(php_slot);
- }
-@@ -561,8 +560,42 @@ static int pnv_php_reset_slot(struct hotplug_slot *slot, bool probe)
- static int pnv_php_enable_slot(struct hotplug_slot *slot)
- {
- 	struct pnv_php_slot *php_slot = to_pnv_php_slot(slot);
-+	u32 prop32;
-+	int ret;
-+
-+	ret = pnv_php_enable(php_slot, true);
-+	if (ret)
-+		return ret;
- 
--	return pnv_php_enable(php_slot, true);
-+	/* (Re-)enable interrupt if the slot supports surprise hotplug */
-+	ret = of_property_read_u32(php_slot->dn, "ibm,slot-surprise-pluggable", &prop32);
-+	if (!ret && prop32)
-+		pnv_php_enable_irq(php_slot);
-+
-+	return 0;
-+}
-+
-+/**
-+ * Disable any hotplug interrupts for all slots on the provided bus, as well as
-+ * all downstream slots in preparation for a hot unplug.
-+ */
-+static int pnv_php_disable_all_irqs(struct pci_bus *bus)
-+{
-+	struct pci_bus *child_bus;
-+	struct pci_slot *cur_slot;
-+
-+	/* First go down child busses */
-+	list_for_each_entry(child_bus, &bus->children, node)
-+		pnv_php_disable_all_irqs(child_bus);
-+
-+	/* Disable IRQs for all pnv_php slots on this bus */
-+	list_for_each_entry(cur_slot, &bus->slots, list) {
-+		struct pnv_php_slot *php_slot = to_pnv_php_slot(cur_slot->hotplug);
-+
-+		pnv_php_disable_irq(php_slot, false, true);
-+	}
-+
-+	return 0;
- }
- 
- static int pnv_php_disable_slot(struct hotplug_slot *slot)
-@@ -579,6 +612,10 @@ static int pnv_php_disable_slot(struct hotplug_slot *slot)
- 	    php_slot->state != PNV_PHP_STATE_REGISTERED)
- 		return 0;
- 
-+
-+	/* Free all irq resources from slot and all child slots before remove */
-+	pnv_php_disable_all_irqs(php_slot->bus);
-+
- 	/* Remove all devices behind the slot */
- 	pci_lock_rescan_remove();
- 	pci_hp_remove_devices(php_slot->bus);
-@@ -647,6 +684,15 @@ static struct pnv_php_slot *pnv_php_alloc_slot(struct device_node *dn)
- 		return NULL;
- 	}
- 
-+	/* Allocate workqueue for this slot's interrupt handling */
-+	php_slot->wq = alloc_workqueue("pciehp-%s", 0, 0, php_slot->name);
-+	if (!php_slot->wq) {
-+		SLOT_WARN(php_slot, "Cannot alloc workqueue\n");
-+		kfree(php_slot->name);
-+		kfree(php_slot);
-+		return NULL;
-+	}
-+
- 	if (dn->child && PCI_DN(dn->child))
- 		php_slot->slot_no = PCI_SLOT(PCI_DN(dn->child)->devfn);
- 	else
-@@ -843,14 +889,6 @@ static void pnv_php_init_irq(struct pnv_php_slot *php_slot, int irq)
- 	u16 sts, ctrl;
- 	int ret;
- 
--	/* Allocate workqueue */
--	php_slot->wq = alloc_workqueue("pciehp-%s", 0, 0, php_slot->name);
--	if (!php_slot->wq) {
--		SLOT_WARN(php_slot, "Cannot alloc workqueue\n");
--		pnv_php_disable_irq(php_slot, true);
--		return;
--	}
--
- 	/* Check PDC (Presence Detection Change) is broken or not */
- 	ret = of_property_read_u32(php_slot->dn, "ibm,slot-broken-pdc",
- 				   &broken_pdc);
-@@ -869,7 +907,7 @@ static void pnv_php_init_irq(struct pnv_php_slot *php_slot, int irq)
- 	ret = request_irq(irq, pnv_php_interrupt, IRQF_SHARED,
- 			  php_slot->name, php_slot);
- 	if (ret) {
--		pnv_php_disable_irq(php_slot, true);
-+		pnv_php_disable_irq(php_slot, true, true);
- 		SLOT_WARN(php_slot, "Error %d enabling IRQ %d\n", ret, irq);
- 		return;
- 	}
--- 
-2.30.2
+https://lore.kernel.org/r/20250225-qps615_v4_1-v4-7-e08633a7bdf8@oss.qualcomm.com/
 
+So either include that patch in your series (addressing the review
+feedback I sent for it and cc'ing the original submitter) or wait
+for it to be respun by the original submitter.
+
+Thanks,
+
+Lukas
 
