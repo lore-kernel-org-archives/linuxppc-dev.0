@@ -1,48 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-7460-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7461-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1AF98C36010
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Apr 2025 18:31:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C75F1C36010
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  5 Apr 2025 18:31:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZVPDf4g1nz2yqT;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZVPDf6j5Cz2yqd;
 	Sun,  6 Apr 2025 04:30:58 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1743877858;
-	cv=none; b=iNikiHnSvgHVG6KV0LbqfyF5X5YWLqepygDkS8dJEBj/71jiDXzUGxxZOBe/9FPbt2eziCxqZ+FpDybK/ZcSHa6P8I55CrtJJ/NtcZlAzt42q07V2cVKZ477Hy9paFsmdew0vPpJYYnnYz/5vCo+ZfYRMnzn0csQZY3WUsH6vpMXU4sddG/TcOv0rnCgWS2WXD0RmwJfZhWmi2k/g1f0zgzmZSul6kCsTp3C47m/S8Z9ql59pLiS7VNOqW3GtIBPJVXcqzzbHezsbV2hwejX8ynBg4/kP/ZdNXELDwScRbi2GYhd/QHJM/m+5mY0O1iIC5Yih8+KhTgMF1YJdvZFdw==
+	cv=none; b=GEFG4OQhkC7+jcuJLcU+xrbtzPVJUNnSX8nG8iJss/fFCgaIEvSZM2aeN0x6qxMh74MILKQnMDyn0Rh//d3rTx94KK5rbMu6utHvmVivqMftswuSHi4rHXXlEVsu1B2Hm0xcJGU5ge7Od0/M+2FE2Rp3lFMZvPG47GtDt2esJcBi+dkzmAGRGQOLIokRYYHlUhNA4KwmP+u5powZFFYICiUGQMvDslxGRtVW95Dnu/Fjws7C8J/14PfYFmZHKnvTnpBUmA/YbGcc74KrtI3TUi24s+tav7jaG8I0r0IkQcvbOkW/1+F28zAdUvJ7a30INCVHQuvjkOhYjpxf5k05JA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1743877858; c=relaxed/relaxed;
-	bh=opnZfCZ0neXJH9H/qFRNtMe7ebtD0rAGv16WYa1Q+Fo=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WfxGEgseaFq9Ej5YU9333xL8/2Vo3D2GUMPpOvx9778W+cLop8ltm7tFRlHrQ7H89PLPlkGUbrwmIpWaXvs2lWKF456pOHCC7LBSYcEVbMRO72Sx9oc715GL0aLbxXzqDzfqu9cXUZjfirjwc362bWFaRcjzkPMNjq2wiG33icSYW8EsWg6kAfjCvY0x8zhqZJVivbc09eyNWNxkEHaSYVhjRaoHPz92HbqfLctnhemX8RD12Iw8rERKrh6XrOVEfDyOUKEr1M6/D8Fo7wmLV8aJ88M/VtukPyb5lQzUxQDMMpMTHpqUa0+AqVoFGFhXh/poZdqfLe+jjRO+O5MbBw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZADTKA2X; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	bh=+WlwStlSnfC5NEPsQH1uCIJTnt3x1QBzvDJxtvkfY/g=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=NZoGX+6EmxkJWmyOHNMKEJaEba1t4efY68buXjlvAWH2CFo9Tpv0Vb08MnHx3JSfPI8+hPBcMYyLxwbZaKVO2jISHuZXi+r/F8H/p2ivKhbdgkAmlllrk2QGll8yQ1b9wUK1bxcCQgNOehybOv77Puz4kzKLTxHTRS3Wc2Do32zLKUnoQIqEQ2a72JxKn0VQR0ARhIxr5hI1KaR/ilptnW1kvPLuALdxJe2jabsH/FoDPOzZVQSePO2HZbBg5ipZqMeQfkSIxaCfzvBOiMKZxB/qJoZPzT+Yicm6zzwTlA66sl7ebBRIXE+Vrx5wMTf/k8tBqZWKkYXtETSNzyb1IQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=noIpjDqD; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZADTKA2X;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=noIpjDqD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZVPDd1lSQz2ygn
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZVPDd1Rccz2ygY
 	for <linuxppc-dev@lists.ozlabs.org>; Sun,  6 Apr 2025 04:30:56 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 073235C4A31;
-	Sat,  5 Apr 2025 18:28:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 571E2C4CEE4;
-	Sat,  5 Apr 2025 18:30:52 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 57AF25C4D7F;
+	Sat,  5 Apr 2025 18:28:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D58B1C4CEEF;
+	Sat,  5 Apr 2025 18:30:53 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1743877852;
-	bh=NUeI4U0WXhSt3zBtNRQTMMK3/MdfX1g2dDF6Z2qmcBk=;
-	h=From:To:Cc:Subject:Date:From;
-	b=ZADTKA2XpWmUoC1UvEdiBW5vfd7VpA7EcazTAeFqV6IYRAcTwJj32Vg1Wq5fCGLgs
-	 7JyOAjRuSsqqgqYWs71EQVJOb9Z2n5pA17nrPeJlhMKCA/eAK9NXkFZR3p91Y8caSt
-	 jinR8neVOTsIM05C1MclF0w8iWixTieJ05Msm7l1WKlKmf9VdzyhgwbvbhsJ497vsg
-	 XywIxp8b7zKgwiB5AvFpxMRMingbmpZEm6NwEgL/uIHCSdA3oOaTUTX2dXfFwk4hjZ
-	 yqf7tRidgJduOJ/eghplQ3/3xFBzLYQ40Eu7Y4R9D9qCW1JAc/ukkE3kpFwTEyuN6k
-	 35/hTz+afw7oA==
+	s=k20201202; t=1743877854;
+	bh=D2tEpsWY4w41zyO9mRm9ESpTHuZZsTPd3X8yjRIpe0o=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=noIpjDqDhLDBABGCHVNmQQ2h8BWnwAxFDtsOFcoFKNxk0gyPU/LOtpq2nCtr4ctXY
+	 rLdYf4hSIAxZF6Iqma5VDA29gdV75qEAO6DNobzim4h40VZuxABxPTSuy5qA6Z3+Gi
+	 u26LT6Ped85xCa7E/CXxXYKJBJwJOgJFErvUIjCa3oK7MJJORBbuNgyXVI9UQPMHsg
+	 OPlyHfm80Opu0kXqVxLNVQVCqi7H4A9CleAyNUQMgvbWkvw+/Mm6dsTtqoDPdCmmQB
+	 I9dD9wvAB3/58AU88Te4T5KoSY/LAsgJwh/SXU8JPoTFI8l0knVbL2yEPMYIN21zZv
+	 bsDJbKSaBKKIw==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -55,10 +56,12 @@ Cc: linux-kernel@vger.kernel.org,
 	Ard Biesheuvel <ardb@kernel.org>,
 	"Jason A . Donenfeld " <Jason@zx2c4.com>,
 	Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH 0/9] Remove per-architecture ChaCha skcipher glue code
-Date: Sat,  5 Apr 2025 11:26:00 -0700
-Message-ID: <20250405182609.404216-1-ebiggers@kernel.org>
+Subject: [PATCH 3/9] crypto: arm/chacha - remove the redundant skcipher algorithms
+Date: Sat,  5 Apr 2025 11:26:03 -0700
+Message-ID: <20250405182609.404216-4-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250405182609.404216-1-ebiggers@kernel.org>
+References: <20250405182609.404216-1-ebiggers@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,87 +76,348 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Currently each architecture exposes ChaCha not only through the library
-API, but also through the crypto_skcipher API.  That requires each
-architecture to implement essentially the same skcipher glue code.
+From: Eric Biggers <ebiggers@google.com>
 
-Following the example of what's been done for crc32 and crc32c,
-eliminate this redundancy by making crypto/chacha.c register both the
-generic and architecture-optimized skcipher algorithms, implemented on
-top of the appropriate library functions.  This removes almost 800 lines
-of code and disentangles the library code from the skcipher API.
+Since crypto/chacha.c now registers chacha20-$(ARCH), xchacha20-$(ARCH),
+and xchacha12-$(ARCH) skcipher algorithms that use the architecture's
+ChaCha and HChaCha library functions, individual architectures no longer
+need to do the same.  Therefore, remove the redundant skcipher
+algorithms and leave just the library functions.
 
-From what I remember, the following are the reasons why it wasn't just
-done this way originally.  But none of these really hold water:
+Signed-off-by: Eric Biggers <ebiggers@google.com>
+---
+ arch/arm/crypto/Kconfig            |   7 -
+ arch/arm/crypto/chacha-glue.c      | 242 +----------------------------
+ arch/arm/crypto/chacha-neon-core.S |   2 +-
+ 3 files changed, 7 insertions(+), 244 deletions(-)
 
-- The skcipher code was there first, so it may have seemed more natural
-  to add onto it rather than replace it.
-
-- Architectures could register multiple skcipher algorithms using
-  different CPU features and have them all be tested in a single boot.
-  This was convenient in theory, but it never really worked properly.
-  It didn't apply to the library code, the x86 ChaCha code wasn't
-  actually doing this (it used static keys instead), and this cannot
-  catch bugs like accidentally using an AVX instruction in SSE code.
-  Instead, a correct solution, which also doesn't require any special
-  kernel support, is to just boot the kernel in QEMU using different
-  -cpu arguments as needed to test all the code.
-
-- There was a concern about changing cra_driver_names potentially
-  breaking users.  But in practice users rely on cra_name, not
-  cra_driver_name.  We already change, add, and remove cra_driver_names
-  occasionally for various reasons.  And even if someone was relying on
-  a specific cra_driver_name, there are some more lightweight
-  compatibility tricks that could be used.
-
-- There was a desire for users to be able to override the kernel's
-  choice of ChaCha implementation by blacklisting the arch-optimized
-  ChaCha module.  But that already became mostly impossible when the
-  library functions were added to the same module.  And in practice
-  users don't do this anyway.  Even if, hypothetically, someone really
-  needed to do this and for some reason the kernel couldn't be fixed to
-  make the right choice in their case automatically, there are other
-  ways this could be implemented such as a module parameter.
-
-Eric Biggers (9):
-  crypto: riscv/chacha - implement library instead of skcipher
-  crypto: chacha - centralize the skcipher wrappers for arch code
-  crypto: arm/chacha - remove the redundant skcipher algorithms
-  crypto: arm64/chacha - remove the skcipher algorithms
-  crypto: mips/chacha - remove the skcipher algorithms
-  crypto: powerpc/chacha - remove the skcipher algorithms
-  crypto: s390/chacha - remove the skcipher algorithms
-  crypto: x86/chacha - remove the skcipher algorithms
-  crypto: chacha - remove <crypto/internal/chacha.h>
-
- arch/arm/crypto/Kconfig                 |   7 -
- arch/arm/crypto/chacha-glue.c           | 243 +---------------------
- arch/arm/crypto/chacha-neon-core.S      |   2 +-
- arch/arm64/crypto/Kconfig               |   7 -
- arch/arm64/crypto/chacha-neon-core.S    |   2 +-
- arch/arm64/crypto/chacha-neon-glue.c    | 146 +------------
- arch/mips/crypto/Kconfig                |   6 -
- arch/mips/crypto/chacha-glue.c          | 131 +-----------
- arch/powerpc/crypto/Kconfig             |   8 -
- arch/powerpc/crypto/chacha-p10-glue.c   | 147 +-------------
- arch/riscv/crypto/Kconfig               |  11 +-
- arch/riscv/crypto/chacha-riscv64-glue.c | 112 ++++------
- arch/riscv/crypto/chacha-riscv64-zvkb.S |  71 +++----
- arch/s390/crypto/Kconfig                |   7 -
- arch/s390/crypto/chacha-glue.c          |  99 ++-------
- arch/x86/crypto/Kconfig                 |   9 -
- arch/x86/crypto/chacha_glue.c           | 144 +------------
- crypto/Makefile                         |   3 +-
- crypto/chacha.c                         | 260 ++++++++++++++++++++++++
- crypto/chacha_generic.c                 | 139 -------------
- include/crypto/chacha.h                 |   9 +
- include/crypto/internal/chacha.h        |  43 ----
- 22 files changed, 413 insertions(+), 1193 deletions(-)
- create mode 100644 crypto/chacha.c
- delete mode 100644 crypto/chacha_generic.c
- delete mode 100644 include/crypto/internal/chacha.h
-
-base-commit: 56f944529ec2292cbe63377a76df3759d702dd39
+diff --git a/arch/arm/crypto/Kconfig b/arch/arm/crypto/Kconfig
+index 23e4ea067ddbb..624c4c8c5296a 100644
+--- a/arch/arm/crypto/Kconfig
++++ b/arch/arm/crypto/Kconfig
+@@ -214,17 +214,10 @@ config CRYPTO_AES_ARM_CE
+ 	  Architecture: arm using:
+ 	  - ARMv8 Crypto Extensions
+ 
+ config CRYPTO_CHACHA20_NEON
+ 	tristate
+-	select CRYPTO_SKCIPHER
+ 	select CRYPTO_ARCH_HAVE_LIB_CHACHA
+ 	default CRYPTO_LIB_CHACHA_INTERNAL
+-	help
+-	  Length-preserving ciphers: ChaCha20, XChaCha20, and XChaCha12
+-	  stream cipher algorithms
+-
+-	  Architecture: arm using:
+-	  - NEON (Advanced SIMD) extensions
+ 
+ endmenu
+ 
+diff --git a/arch/arm/crypto/chacha-glue.c b/arch/arm/crypto/chacha-glue.c
+index e1cb34d317712..3a5c75c95d43b 100644
+--- a/arch/arm/crypto/chacha-glue.c
++++ b/arch/arm/crypto/chacha-glue.c
+@@ -1,18 +1,15 @@
+ // SPDX-License-Identifier: GPL-2.0
+ /*
+- * ARM NEON accelerated ChaCha and XChaCha stream ciphers,
+- * including ChaCha20 (RFC7539)
++ * ChaCha and HChaCha functions (ARM optimized)
+  *
+  * Copyright (C) 2016-2019 Linaro, Ltd. <ard.biesheuvel@linaro.org>
+  * Copyright (C) 2015 Martin Willi
+  */
+ 
+-#include <crypto/algapi.h>
+-#include <crypto/internal/chacha.h>
++#include <crypto/chacha.h>
+ #include <crypto/internal/simd.h>
+-#include <crypto/internal/skcipher.h>
+ #include <linux/jump_label.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ 
+ #include <asm/cputype.h>
+@@ -98,262 +95,35 @@ void chacha_crypt_arch(u32 *state, u8 *dst, const u8 *src, unsigned int bytes,
+ 		dst += todo;
+ 	} while (bytes);
+ }
+ EXPORT_SYMBOL(chacha_crypt_arch);
+ 
+-static int chacha_stream_xor(struct skcipher_request *req,
+-			     const struct chacha_ctx *ctx, const u8 *iv,
+-			     bool neon)
+-{
+-	struct skcipher_walk walk;
+-	u32 state[16];
+-	int err;
+-
+-	err = skcipher_walk_virt(&walk, req, false);
+-
+-	chacha_init(state, ctx->key, iv);
+-
+-	while (walk.nbytes > 0) {
+-		unsigned int nbytes = walk.nbytes;
+-
+-		if (nbytes < walk.total)
+-			nbytes = round_down(nbytes, walk.stride);
+-
+-		if (!IS_ENABLED(CONFIG_KERNEL_MODE_NEON) || !neon) {
+-			chacha_doarm(walk.dst.virt.addr, walk.src.virt.addr,
+-				     nbytes, state, ctx->nrounds);
+-			state[12] += DIV_ROUND_UP(nbytes, CHACHA_BLOCK_SIZE);
+-		} else {
+-			kernel_neon_begin();
+-			chacha_doneon(state, walk.dst.virt.addr,
+-				      walk.src.virt.addr, nbytes, ctx->nrounds);
+-			kernel_neon_end();
+-		}
+-		err = skcipher_walk_done(&walk, walk.nbytes - nbytes);
+-	}
+-
+-	return err;
+-}
+-
+-static int do_chacha(struct skcipher_request *req, bool neon)
+-{
+-	struct crypto_skcipher *tfm = crypto_skcipher_reqtfm(req);
+-	struct chacha_ctx *ctx = crypto_skcipher_ctx(tfm);
+-
+-	return chacha_stream_xor(req, ctx, req->iv, neon);
+-}
+-
+-static int chacha_arm(struct skcipher_request *req)
+-{
+-	return do_chacha(req, false);
+-}
+-
+-static int chacha_neon(struct skcipher_request *req)
+-{
+-	return do_chacha(req, neon_usable());
+-}
+-
+-static int do_xchacha(struct skcipher_request *req, bool neon)
+-{
+-	struct crypto_skcipher *tfm = crypto_skcipher_reqtfm(req);
+-	struct chacha_ctx *ctx = crypto_skcipher_ctx(tfm);
+-	struct chacha_ctx subctx;
+-	u32 state[16];
+-	u8 real_iv[16];
+-
+-	chacha_init(state, ctx->key, req->iv);
+-
+-	if (!IS_ENABLED(CONFIG_KERNEL_MODE_NEON) || !neon) {
+-		hchacha_block_arm(state, subctx.key, ctx->nrounds);
+-	} else {
+-		kernel_neon_begin();
+-		hchacha_block_neon(state, subctx.key, ctx->nrounds);
+-		kernel_neon_end();
+-	}
+-	subctx.nrounds = ctx->nrounds;
+-
+-	memcpy(&real_iv[0], req->iv + 24, 8);
+-	memcpy(&real_iv[8], req->iv + 16, 8);
+-	return chacha_stream_xor(req, &subctx, real_iv, neon);
+-}
+-
+-static int xchacha_arm(struct skcipher_request *req)
+-{
+-	return do_xchacha(req, false);
+-}
+-
+-static int xchacha_neon(struct skcipher_request *req)
+-{
+-	return do_xchacha(req, neon_usable());
+-}
+-
+-static struct skcipher_alg arm_algs[] = {
+-	{
+-		.base.cra_name		= "chacha20",
+-		.base.cra_driver_name	= "chacha20-arm",
+-		.base.cra_priority	= 200,
+-		.base.cra_blocksize	= 1,
+-		.base.cra_ctxsize	= sizeof(struct chacha_ctx),
+-		.base.cra_module	= THIS_MODULE,
+-
+-		.min_keysize		= CHACHA_KEY_SIZE,
+-		.max_keysize		= CHACHA_KEY_SIZE,
+-		.ivsize			= CHACHA_IV_SIZE,
+-		.chunksize		= CHACHA_BLOCK_SIZE,
+-		.setkey			= chacha20_setkey,
+-		.encrypt		= chacha_arm,
+-		.decrypt		= chacha_arm,
+-	}, {
+-		.base.cra_name		= "xchacha20",
+-		.base.cra_driver_name	= "xchacha20-arm",
+-		.base.cra_priority	= 200,
+-		.base.cra_blocksize	= 1,
+-		.base.cra_ctxsize	= sizeof(struct chacha_ctx),
+-		.base.cra_module	= THIS_MODULE,
+-
+-		.min_keysize		= CHACHA_KEY_SIZE,
+-		.max_keysize		= CHACHA_KEY_SIZE,
+-		.ivsize			= XCHACHA_IV_SIZE,
+-		.chunksize		= CHACHA_BLOCK_SIZE,
+-		.setkey			= chacha20_setkey,
+-		.encrypt		= xchacha_arm,
+-		.decrypt		= xchacha_arm,
+-	}, {
+-		.base.cra_name		= "xchacha12",
+-		.base.cra_driver_name	= "xchacha12-arm",
+-		.base.cra_priority	= 200,
+-		.base.cra_blocksize	= 1,
+-		.base.cra_ctxsize	= sizeof(struct chacha_ctx),
+-		.base.cra_module	= THIS_MODULE,
+-
+-		.min_keysize		= CHACHA_KEY_SIZE,
+-		.max_keysize		= CHACHA_KEY_SIZE,
+-		.ivsize			= XCHACHA_IV_SIZE,
+-		.chunksize		= CHACHA_BLOCK_SIZE,
+-		.setkey			= chacha12_setkey,
+-		.encrypt		= xchacha_arm,
+-		.decrypt		= xchacha_arm,
+-	},
+-};
+-
+-static struct skcipher_alg neon_algs[] = {
+-	{
+-		.base.cra_name		= "chacha20",
+-		.base.cra_driver_name	= "chacha20-neon",
+-		.base.cra_priority	= 300,
+-		.base.cra_blocksize	= 1,
+-		.base.cra_ctxsize	= sizeof(struct chacha_ctx),
+-		.base.cra_module	= THIS_MODULE,
+-
+-		.min_keysize		= CHACHA_KEY_SIZE,
+-		.max_keysize		= CHACHA_KEY_SIZE,
+-		.ivsize			= CHACHA_IV_SIZE,
+-		.chunksize		= CHACHA_BLOCK_SIZE,
+-		.walksize		= 4 * CHACHA_BLOCK_SIZE,
+-		.setkey			= chacha20_setkey,
+-		.encrypt		= chacha_neon,
+-		.decrypt		= chacha_neon,
+-	}, {
+-		.base.cra_name		= "xchacha20",
+-		.base.cra_driver_name	= "xchacha20-neon",
+-		.base.cra_priority	= 300,
+-		.base.cra_blocksize	= 1,
+-		.base.cra_ctxsize	= sizeof(struct chacha_ctx),
+-		.base.cra_module	= THIS_MODULE,
+-
+-		.min_keysize		= CHACHA_KEY_SIZE,
+-		.max_keysize		= CHACHA_KEY_SIZE,
+-		.ivsize			= XCHACHA_IV_SIZE,
+-		.chunksize		= CHACHA_BLOCK_SIZE,
+-		.walksize		= 4 * CHACHA_BLOCK_SIZE,
+-		.setkey			= chacha20_setkey,
+-		.encrypt		= xchacha_neon,
+-		.decrypt		= xchacha_neon,
+-	}, {
+-		.base.cra_name		= "xchacha12",
+-		.base.cra_driver_name	= "xchacha12-neon",
+-		.base.cra_priority	= 300,
+-		.base.cra_blocksize	= 1,
+-		.base.cra_ctxsize	= sizeof(struct chacha_ctx),
+-		.base.cra_module	= THIS_MODULE,
+-
+-		.min_keysize		= CHACHA_KEY_SIZE,
+-		.max_keysize		= CHACHA_KEY_SIZE,
+-		.ivsize			= XCHACHA_IV_SIZE,
+-		.chunksize		= CHACHA_BLOCK_SIZE,
+-		.walksize		= 4 * CHACHA_BLOCK_SIZE,
+-		.setkey			= chacha12_setkey,
+-		.encrypt		= xchacha_neon,
+-		.decrypt		= xchacha_neon,
+-	}
+-};
+-
+ bool chacha_is_arch_optimized(void)
+ {
+ 	/* We always can use at least the ARM scalar implementation. */
+ 	return true;
+ }
+ EXPORT_SYMBOL(chacha_is_arch_optimized);
+ 
+-static int __init chacha_simd_mod_init(void)
++static int __init chacha_arm_mod_init(void)
+ {
+-	int err = 0;
+-
+-	if (IS_REACHABLE(CONFIG_CRYPTO_SKCIPHER)) {
+-		err = crypto_register_skciphers(arm_algs, ARRAY_SIZE(arm_algs));
+-		if (err)
+-			return err;
+-	}
+-
+ 	if (IS_ENABLED(CONFIG_KERNEL_MODE_NEON) && (elf_hwcap & HWCAP_NEON)) {
+-		int i;
+-
+ 		switch (read_cpuid_part()) {
+ 		case ARM_CPU_PART_CORTEX_A7:
+ 		case ARM_CPU_PART_CORTEX_A5:
+ 			/*
+ 			 * The Cortex-A7 and Cortex-A5 do not perform well with
+ 			 * the NEON implementation but do incredibly with the
+ 			 * scalar one and use less power.
+ 			 */
+-			for (i = 0; i < ARRAY_SIZE(neon_algs); i++)
+-				neon_algs[i].base.cra_priority = 0;
+ 			break;
+ 		default:
+ 			static_branch_enable(&use_neon);
+ 		}
+-
+-		if (IS_REACHABLE(CONFIG_CRYPTO_SKCIPHER)) {
+-			err = crypto_register_skciphers(neon_algs, ARRAY_SIZE(neon_algs));
+-			if (err)
+-				crypto_unregister_skciphers(arm_algs, ARRAY_SIZE(arm_algs));
+-		}
+ 	}
+-	return err;
++	return 0;
+ }
++arch_initcall(chacha_arm_mod_init);
+ 
+-static void __exit chacha_simd_mod_fini(void)
+-{
+-	if (IS_REACHABLE(CONFIG_CRYPTO_SKCIPHER)) {
+-		crypto_unregister_skciphers(arm_algs, ARRAY_SIZE(arm_algs));
+-		if (IS_ENABLED(CONFIG_KERNEL_MODE_NEON) && (elf_hwcap & HWCAP_NEON))
+-			crypto_unregister_skciphers(neon_algs, ARRAY_SIZE(neon_algs));
+-	}
+-}
+-
+-arch_initcall(chacha_simd_mod_init);
+-module_exit(chacha_simd_mod_fini);
+-
+-MODULE_DESCRIPTION("ChaCha and XChaCha stream ciphers (scalar and NEON accelerated)");
++MODULE_DESCRIPTION("ChaCha and HChaCha functions (ARM optimized)");
+ MODULE_AUTHOR("Ard Biesheuvel <ard.biesheuvel@linaro.org>");
+ MODULE_LICENSE("GPL v2");
+-MODULE_ALIAS_CRYPTO("chacha20");
+-MODULE_ALIAS_CRYPTO("chacha20-arm");
+-MODULE_ALIAS_CRYPTO("xchacha20");
+-MODULE_ALIAS_CRYPTO("xchacha20-arm");
+-MODULE_ALIAS_CRYPTO("xchacha12");
+-MODULE_ALIAS_CRYPTO("xchacha12-arm");
+-#ifdef CONFIG_KERNEL_MODE_NEON
+-MODULE_ALIAS_CRYPTO("chacha20-neon");
+-MODULE_ALIAS_CRYPTO("xchacha20-neon");
+-MODULE_ALIAS_CRYPTO("xchacha12-neon");
+-#endif
+diff --git a/arch/arm/crypto/chacha-neon-core.S b/arch/arm/crypto/chacha-neon-core.S
+index 13d12f672656b..ddd62b6294a57 100644
+--- a/arch/arm/crypto/chacha-neon-core.S
++++ b/arch/arm/crypto/chacha-neon-core.S
+@@ -1,7 +1,7 @@
+ /*
+- * ChaCha/XChaCha NEON helper functions
++ * ChaCha/HChaCha NEON helper functions
+  *
+  * Copyright (C) 2016 Linaro, Ltd. <ard.biesheuvel@linaro.org>
+  *
+  * This program is free software; you can redistribute it and/or modify
+  * it under the terms of the GNU General Public License version 2 as
 -- 
 2.49.0
 
