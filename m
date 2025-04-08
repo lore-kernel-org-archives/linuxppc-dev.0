@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-7528-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7529-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB674C3600C
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Apr 2025 09:54:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 98A18C3600C
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Apr 2025 09:54:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZX1cm57Rbz30Lt;
-	Tue,  8 Apr 2025 19:54:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZX1d52c7gz30Pn;
+	Tue,  8 Apr 2025 19:54:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744106040;
-	cv=none; b=L4m0itRT301IpiWLWWW0TDCwSAo9eh2iodOFHc4uiIvFAW43ynvCfe41XiSy6b8WPmvhqHMq1J09vP3W1RT2aR6ZOByZSxyPjpva2AXX6b5am5C+zjoqyYcin/O45R6NkRWVtQeCuvwEzG/RcSrkmvk7mPVdIoHFs7II4nzelurVpSXb7YJd0Q72aoExtrn4HhwzLX9ivd/iwduWeUmcpBodC5ZZezFzee6OIO5hXOxPjd9sw/9qtS8w7s5P15+4dOQVcKGEeD/tAS2iiKAxjwiYexmkrJ/JsBwPaHJ7K/oSmLbYvHlJxcKZW9EhladLx8cSOe0aceQE4HZBBIEjPg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744106057;
+	cv=none; b=b221yMkrcKE3LUhKVZta3Lgo7xYQPQRCHqymH2fbbvK9rehPI9uM7pjn00sHa9qY2T89tSv2eSiqnhztJpLieTeOG5IPrAxoR6GVDj4awfN9EyrhVOuJJQlir3G4ak51YD5IqlVj/5QuVQrtLWoKUh5j2RSptyWWYaMNrKpA1p4MJeIvdfKt3gKYLRpv1YPzOproHYSo7bqOzzDBptwp85lB41xDVPt5Z9xAskvR+k/KfguB0mYLEwEhN6Kc8dKk7AwFi4+FvtVk2wjgKh7rl9rDMdSEqzrZnsXWg2S0ldivXpdlM5j5ci0BGyJJgdCWxWVTNEn97Q04iFi6YP2MvA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744106040; c=relaxed/relaxed;
-	bh=tEBbZMuK7OXxaJSao4EKWfZ44UXf7uN/ZmWU7nnmgv8=;
+	t=1744106057; c=relaxed/relaxed;
+	bh=AoW5uPcncPp3axMC3OLXSZhaQ2vhQ+ldUmkYdrG/FME=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=g64nVJLSo3JnqfZohLMIhWGF/l8AVGkZOreCnWj6v1S/2unr9C87AqIL+tPsHiDdVTtBwOBMkRZ+bOhyEwLPf7MGfO/pHla2YwZJQwhxyikb2/ejVr2tf3t5CwdbmcakUasLIymtB3VLRpM0B8Khm5EPb2pgfLPYKTUldykr29Bln9yYK81ewy1aQWbtj2tn5iKsbxjsQPJRZlyriOZP6uk3f8ibpSWhjAdyAAdwI9afDfqgEH93MWJ1Ec14fjbQ+dHKBX8I4bCKWLItio8o4Dm5YNGM2GgXq1v3vpmcsR5MnddBUzv4iw+O/3SRMt9wGV0XHODe8KVkXxSttbvJXg==
+	 MIME-Version; b=lzlHQqVp3yNZdBZcFx/aY9j9W0pPehg3B+dtCf1B4J4Al0Bb8Fnuo9rDeppq1b3f3eRPRh4ec3h8RCq1tnB9anlfQiJ1GyI2VZawKKyBqC08qR4QZTdzLQCxBKbiGuLEsODFCEH5XZ+ccLlzE+cjII7Knqhu2xG/qpB7adn9ZIaIZDSEAXfuTS1BeHrPE2OKBUKLIiF/c64nlGsiJYIZSyssA2M6EaY9JWZYl8P6mxKp/eZgJrObG75TFndSq7Og+/OeDYqkrs8UaOgMYVUIsNyIkDEFmiu098pgZzYSEwRKAht06RVBXnJ4SwN3UJzJBokToY6Fj1FNso76od7F3Q==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZX1cm0xGCz2yrt
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Apr 2025 19:54:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZX1d43zzxz307K
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Apr 2025 19:54:16 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 211432308;
-	Tue,  8 Apr 2025 02:53:30 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3EB2B2328;
+	Tue,  8 Apr 2025 02:53:44 -0700 (PDT)
 Received: from e123572-lin.arm.com (e123572-lin.cambridge.arm.com [10.1.194.54])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D3DDB3F6A8;
-	Tue,  8 Apr 2025 02:53:24 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id F29D83F6A8;
+	Tue,  8 Apr 2025 02:53:38 -0700 (PDT)
 From: Kevin Brodsky <kevin.brodsky@arm.com>
 To: linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org,
@@ -63,9 +63,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org
-Subject: [PATCH v2 04/12] m68k: mm: Call ctor/dtor for kernel PTEs
-Date: Tue,  8 Apr 2025 10:52:14 +0100
-Message-ID: <20250408095222.860601-5-kevin.brodsky@arm.com>
+Subject: [PATCH v2 07/12] mm: Skip ptlock_init() for kernel PMDs
+Date: Tue,  8 Apr 2025 10:52:17 +0100
+Message-ID: <20250408095222.860601-8-kevin.brodsky@arm.com>
 X-Mailer: git-send-email 2.47.0
 In-Reply-To: <20250408095222.860601-1-kevin.brodsky@arm.com>
 References: <20250408095222.860601-1-kevin.brodsky@arm.com>
@@ -83,39 +83,40 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The generic implementation of pte_{alloc_one,free}_kernel now calls
-the [cd]tor. Align the m68k/ColdFire implementation of those
-functions by calling the [cd]tor explicitly.
+Split page table locks are not used for pgtables associated to
+init_mm, at any level. pte_alloc_kernel() does not call
+ptlock_init() as a result. There is however no separate alloc/free
+functions for kernel PMDs, and pmd_ptlock_init() is called
+unconditionally. When ALLOC_SPLIT_PTLOCKS is true (e.g. 32-bit
+architectures or if CONFIG_PREEMPT_RT is selected), this results in
+unnecessary dynamic memory allocation every time a kernel PMD is
+allocated.
+
+Now that pagetable_pmd_ctor() is passed the associated mm, we can
+easily remove this overhead by skipping pmd_ptlock_init() if the
+pgtable is associated to init_mm. No special-casing is needed on the
+dtor path, as ptlock_free() is already called unconditionally for
+all levels. (ptlock_free() is a no-op unless a ptlock was allocated
+for the given PTP.)
 
 Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
 ---
- arch/m68k/include/asm/mcf_pgalloc.h | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
+ include/linux/mm.h | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/m68k/include/asm/mcf_pgalloc.h b/arch/m68k/include/asm/mcf_pgalloc.h
-index 465a71101b7d..fc5454d37da3 100644
---- a/arch/m68k/include/asm/mcf_pgalloc.h
-+++ b/arch/m68k/include/asm/mcf_pgalloc.h
-@@ -7,7 +7,7 @@
- 
- static inline void pte_free_kernel(struct mm_struct *mm, pte_t *pte)
+diff --git a/include/linux/mm.h b/include/linux/mm.h
+index 3f48e449574a..ef420f4dc72c 100644
+--- a/include/linux/mm.h
++++ b/include/linux/mm.h
+@@ -3210,7 +3210,7 @@ static inline spinlock_t *pmd_lock(struct mm_struct *mm, pmd_t *pmd)
+ static inline bool pagetable_pmd_ctor(struct mm_struct *mm,
+ 				      struct ptdesc *ptdesc)
  {
--	pagetable_free(virt_to_ptdesc(pte));
-+	pagetable_dtor_free(virt_to_ptdesc(pte));
- }
- 
- extern const char bad_pmd_string[];
-@@ -19,6 +19,10 @@ static inline pte_t *pte_alloc_one_kernel(struct mm_struct *mm)
- 
- 	if (!ptdesc)
- 		return NULL;
-+	if (!pagetable_pte_ctor(mm, ptdesc)) {
-+		pagetable_free(ptdesc);
-+		return NULL;
-+	}
- 
- 	return ptdesc_address(ptdesc);
- }
+-	if (!pmd_ptlock_init(ptdesc))
++	if (mm != &init_mm && !pmd_ptlock_init(ptdesc))
+ 		return false;
+ 	ptdesc_pmd_pts_init(ptdesc);
+ 	__pagetable_ctor(ptdesc);
 -- 
 2.47.0
 
