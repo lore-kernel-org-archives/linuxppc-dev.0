@@ -1,72 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-7549-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7550-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B55C2C369A4
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Apr 2025 15:31:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC65CC369A4
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Apr 2025 16:07:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZX96M0bgDz30KY;
-	Wed,  9 Apr 2025 01:31:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744126298;
-	cv=none; b=MQ0dm7ugh1jmM8KY9AOvJhLAMa53tAifTEJMUGTzH/pZcBZRC+DsDhbywVMoNaL/g3jAPeD56kLhUTYXW4k1PmgIx5yyDW3GOpOEpI+PuJFezG75HP+O0R04oErNAn5GdnGIqwi06W80Vl18GwJsa6ev/er2kLEyVTMehnkK73DSwuOzZxtSQ+dE3ofe4AzDOJ779HGuoThFvynGMmjA4AITHS7bJv5FCe4ESvkL8GnpyAiZLUTrHJy6qzR8OcZX5dpkP/PF67s+GoKIC41Etu/pI26rFRHEoFlgkHLUkRIee8BM6TqVLqXqYIjA+rwu8bg4G2BjCjpukg1SxMDtQA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZX9w23KPkz30Qk;
+	Wed,  9 Apr 2025 02:07:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744128466;
+	cv=none; b=mgoi4dU529Mixu9Cec3vO28mbPhKTuTAUrKRNPdYcWBtqcdQsKOqkRN29DyQ7/F0BV+jPIliTTWEp30Yi1crZZHlSDIM/ZTi8Y+QmGsqGS3tql/ycPl5aMdi7V0ugD3oqA3gBTbEJ3Z06MNEhmTUMHnkpc21t3mEU30uzpDQh1fYFPMwli6u8epYkWFIDod0NMqhdWWvLn7PQxbfD139ftcHwvCTRwIb/F2n8xhaej5D+C/37hP5Zx3fecgEG9ifG5tbdzNUedjIlsRZ8aOR0wUmpl22R7E7nYKKpIxIgeAsGl7lgFjR0vuVMcrViUG4vaZOPVl2c2XBszCA2qSiSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744126298; c=relaxed/relaxed;
-	bh=h3v2u8ip3cqMDDLNIpKhDZO5Hm5vU3p7hzEHmiU+27A=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AEwU1OZc739/FTqEnM48v6V/qQI7uYEz3z74R8HMxTBEXITpkCOHD+9YNtgk+IWIs+BrQp9HgsSBjijHEYgwatABs1AfS8KxHPqX+9Jzx+HUk9yQJwn16K9Xdyrg1nOvcm6MZ7IS/scEDW59CqoQKaSWIDFWiUn3WxCywIx8gdlRSZ/X3Y64cEAX88Zg1G0IVOCCeIa9kGu1ZuH0Pbx2k+zGfZqCSp/t2W5dNVS0LjNtrPnlcP1bnpSiG4nrFvd2WiWarQ3RkDvHtDYsCuJnSaR/OmANkhpe67pJql/e53Rt9hesT0Cnp2fqdsg/Nj5se40Xvf1qsovN4oh31ZlcSg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P4UJEaCt; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1744128466; c=relaxed/relaxed;
+	bh=ow6t3aZjTh8zUSYva0I+1eccwoSgmKvfkvuHek+W7BI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=dl0YW3fatnR1w8Dw5LGgtfUXQ5J3vuFv/mwfqkliqCV7KUn6U6NSatF8kSYeOBQbIDI8zzhmK8BI21EpPReLeXcHRBY+CurKs83JRNczoHmMox35lRhYAK/sPN/wfjQFOeR2RK1+JwX+W9ulBjnN4SSknpRbmHte+a20R4YCYIYeudtRK/7KvgZgRSFSW2VKTWztkYScnY9iipUappTyDRHjKuQJihE54PtQDuHMvjIgT8oP5JCI0+jExsa0vXwR6pPTU17ELnvN+VjpNH4ySWpfAUhP0CS70UttMyh+bzR3g1YeiF9wQ2OKvCOXo+Yz3pMwxxzmOMBFbMfgHd5wPQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rNlkWZXj; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=P4UJEaCt;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rNlkWZXj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZX96K6BFHz30D3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2025 01:31:37 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 4793E5C59B4;
-	Tue,  8 Apr 2025 15:29:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A14E9C4CEE5;
-	Tue,  8 Apr 2025 15:31:33 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1744126294;
-	bh=Uq29KL+ro4IRBo8g5H8MypBCBK0Ooc76QGNcWH4alfw=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=P4UJEaCtF61oGuLRw5Uii2z9vVlYo67NwlmwTqICCwpgHdYrc/oIvkhAI0jjnKiYr
-	 Foi1EZ+/FfOtwDutvDlZ9IsQ6EaTcYYiD+reVoWqi4tU8zzV1GPixJdCq3xMn5ULof
-	 keSD4lGX9dDqatRoGU+M0XVaSjc2nQ2FStY95360gQvs2zoe+wDlgAKASUDQjaYgeZ
-	 kQ3WWSvJQ9LkYm40V+PxAHXYZKpuv+S9USOhEty0CogIdTgr+YTMAnmHfwKeorOjfK
-	 lEPaV0ygH0+6jINKFxGVxFPjOV4RS3OnCQKWa9pJFTARzwygN4IV07Gvc2xj2sINKa
-	 D8jpHP3BSx3cg==
-Date: Tue, 8 Apr 2025 18:31:30 +0300
-From: Jarkko Sakkinen <jarkko@kernel.org>
-To: Stefano Garzarella <sgarzare@redhat.com>
-Cc: Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	linux-kernel@vger.kernel.org,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	linux-arm-kernel@lists.infradead.org,
-	Jens Wiklander <jens.wiklander@linaro.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Sumit Garg <sumit.garg@kernel.org>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-integrity@vger.kernel.org, Jason Gunthorpe <jgg@ziepe.ca>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Naveen N Rao <naveen@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Peter Huewe <peterhuewe@gmx.de>,
-	James Bottomley <James.Bottomley@hansenpartnership.com>
-Subject: Re: [PATCH v2 2/4] tpm: support devices with synchronous send()
-Message-ID: <Z_VBUozuHvbxdyB3@kernel.org>
-References: <20250408083208.43512-1-sgarzare@redhat.com>
- <20250408083208.43512-3-sgarzare@redhat.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZX9w11nb8z2yrF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  9 Apr 2025 02:07:45 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 538E3xau029563;
+	Tue, 8 Apr 2025 16:07:36 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=ow6t3aZjTh8zUSYva
+	0I+1eccwoSgmKvfkvuHek+W7BI=; b=rNlkWZXjqNmrVA9DfqJ9qTqgEL8tDwB8v
+	uW+rRoK5iANBpubG1GKB6moL8Y4rxf1/ciAdNCg7DM56snFXeq6UI27BGzCdiXoL
+	Hr2JPBnmHtPqLjuZGH88qIcxX6n6fTG8p4+QuOCg9WyUsQapClXHAaBAz4VCbhjJ
+	ChFNmfH4CzkNCe02vZlhygEXR9J7hifdORr/28Gcllu/FuSoK+QDhFbPQ7HoT2l3
+	g8Y/Cdw/tx32Fgkpts/Q5SasZwSNURS/WI0A4R0LnPV7CD9LTIe6eJvqHGND+b6c
+	aEm6js3u/gkF2v4JxOC8NjZ+BFWMYfs0Eu9JU8hP/snzGwujEHEow==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 45vv6a3cmf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 08 Apr 2025 16:07:35 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 538FxwH6004506;
+	Tue, 8 Apr 2025 16:07:35 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 45vv6a3cmc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 08 Apr 2025 16:07:35 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 538E2Kef018870;
+	Tue, 8 Apr 2025 16:07:34 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 45uhj2b31s-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 08 Apr 2025 16:07:34 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 538G7WkZ17170806
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 8 Apr 2025 16:07:32 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B38A12004D;
+	Tue,  8 Apr 2025 16:07:32 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9DDE720043;
+	Tue,  8 Apr 2025 16:07:32 +0000 (GMT)
+Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Tue,  8 Apr 2025 16:07:32 +0000 (GMT)
+Received: by tuxmaker.boeblingen.de.ibm.com (Postfix, from userid 55669)
+	id 50F3DE171F; Tue, 08 Apr 2025 18:07:32 +0200 (CEST)
+From: Alexander Gordeev <agordeev@linux.ibm.com>
+To: Andrew Morton <akpm@linux-foundation.org>,
+        Andrey Ryabinin <ryabinin.a.a@gmail.com>
+Cc: Hugh Dickins <hughd@google.com>, Nicholas Piggin <npiggin@gmail.com>,
+        Guenter Roeck <linux@roeck-us.net>, Juergen Gross <jgross@suse.com>,
+        Jeremy Fitzhardinge <jeremy@goop.org>, linux-kernel@vger.kernel.org,
+        linux-mm@kvack.org, kasan-dev@googlegroups.com,
+        sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org,
+        linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+        stable@vger.kernel.org
+Subject: [PATCH v2 3/3] mm: Protect kernel pgtables in apply_to_pte_range()
+Date: Tue,  8 Apr 2025 18:07:32 +0200
+Message-ID: <ef8f6538b83b7fc3372602f90375348f9b4f3596.1744128123.git.agordeev@linux.ibm.com>
+X-Mailer: git-send-email 2.45.2
+In-Reply-To: <cover.1744128123.git.agordeev@linux.ibm.com>
+References: <cover.1744128123.git.agordeev@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,95 +101,93 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250408083208.43512-3-sgarzare@redhat.com>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 6gWNv_Bw0XevSqtBIthyoWHVrcn2MvLC
+X-Proofpoint-GUID: -fZrXKHJloGCIvDX7whqAyynxCC3jswc
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1095,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-04-08_06,2025-04-08_03,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 phishscore=0
+ lowpriorityscore=0 spamscore=0 priorityscore=1501 adultscore=0
+ clxscore=1015 suspectscore=0 bulkscore=0 mlxlogscore=779 mlxscore=0
+ impostorscore=0 classifier=spam adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2502280000 definitions=main-2504080110
 
-On Tue, Apr 08, 2025 at 10:32:06AM +0200, Stefano Garzarella wrote:
-> From: Stefano Garzarella <sgarzare@redhat.com>
-> 
-> Some devices do not support interrupts and provide a single synchronous
-> operation to send the command and receive the response on the same buffer.
-> 
-> Currently, these types of drivers must use an internal buffer where they
-> temporarily store the response between .send() and recv() calls.
-> 
-> Introduce a new flag (TPM_CHIP_FLAG_SYNC) to support synchronous send().
-> If that flag is set by the driver, tpm_try_transmit() will use the send()
-> callback to send the command and receive the response on the same buffer
-> synchronously. In that case send() return the number of bytes of the
-> response on success, or -errno on failure.
-> 
-> Suggested-by: Jason Gunthorpe <jgg@ziepe.ca>
-> Suggested-by: Jarkko Sakkinen <jarkko@kernel.org>
-> Signed-off-by: Stefano Garzarella <sgarzare@redhat.com>
-> ---
->  include/linux/tpm.h              |  1 +
->  drivers/char/tpm/tpm-interface.c | 18 +++++++++++++++---
->  2 files changed, 16 insertions(+), 3 deletions(-)
-> 
-> diff --git a/include/linux/tpm.h b/include/linux/tpm.h
-> index 2e38edd5838c..0e9746dc9d30 100644
-> --- a/include/linux/tpm.h
-> +++ b/include/linux/tpm.h
-> @@ -350,6 +350,7 @@ enum tpm_chip_flags {
->  	TPM_CHIP_FLAG_SUSPENDED			= BIT(8),
->  	TPM_CHIP_FLAG_HWRNG_DISABLED		= BIT(9),
->  	TPM_CHIP_FLAG_DISABLE			= BIT(10),
-> +	TPM_CHIP_FLAG_SYNC			= BIT(11),
->  };
->  
->  #define to_tpm_chip(d) container_of(d, struct tpm_chip, dev)
-> diff --git a/drivers/char/tpm/tpm-interface.c b/drivers/char/tpm/tpm-interface.c
-> index 3b6ddcdb4051..9fbe84b5a131 100644
-> --- a/drivers/char/tpm/tpm-interface.c
-> +++ b/drivers/char/tpm/tpm-interface.c
-> @@ -114,8 +114,17 @@ static ssize_t tpm_try_transmit(struct tpm_chip *chip, void *buf, size_t bufsiz)
->  		return rc;
->  	}
->  
-> -	/* A sanity check. send() should just return zero on success e.g.
-> -	 * not the command length.
-> +	/* Synchronous devices return the response directly during the send()
-> +	 * call in the same buffer.
-> +	 */
+The lazy MMU mode can only be entered and left under the protection
+of the page table locks for all page tables which may be modified.
+Yet, when it comes to kernel mappings apply_to_pte_range() does not
+take any locks. That does not conform arch_enter|leave_lazy_mmu_mode()
+semantics and could potentially lead to re-schedulling a process while
+in lazy MMU mode or racing on a kernel page table updates.
 
-Nit:
+Cc: stable@vger.kernel.org
+Fixes: 38e0edb15bd0 ("mm/apply_to_range: call pte function with lazy updates")
+Signed-off-by: Alexander Gordeev <agordeev@linux.ibm.com>
+---
+ mm/kasan/shadow.c | 7 ++-----
+ mm/memory.c       | 5 ++++-
+ 2 files changed, 6 insertions(+), 6 deletions(-)
 
-/*
- * ...
+diff --git a/mm/kasan/shadow.c b/mm/kasan/shadow.c
+index edfa77959474..6531a7aa8562 100644
+--- a/mm/kasan/shadow.c
++++ b/mm/kasan/shadow.c
+@@ -308,14 +308,14 @@ static int kasan_populate_vmalloc_pte(pte_t *ptep, unsigned long addr,
+ 	__memset((void *)page, KASAN_VMALLOC_INVALID, PAGE_SIZE);
+ 	pte = pfn_pte(PFN_DOWN(__pa(page)), PAGE_KERNEL);
+ 
+-	spin_lock(&init_mm.page_table_lock);
+ 	if (likely(pte_none(ptep_get(ptep)))) {
+ 		set_pte_at(&init_mm, addr, ptep, pte);
+ 		page = 0;
+ 	}
+-	spin_unlock(&init_mm.page_table_lock);
++
+ 	if (page)
+ 		free_page(page);
++
+ 	return 0;
+ }
+ 
+@@ -401,13 +401,10 @@ static int kasan_depopulate_vmalloc_pte(pte_t *ptep, unsigned long addr,
+ 
+ 	page = (unsigned long)__va(pte_pfn(ptep_get(ptep)) << PAGE_SHIFT);
+ 
+-	spin_lock(&init_mm.page_table_lock);
+-
+ 	if (likely(!pte_none(ptep_get(ptep)))) {
+ 		pte_clear(&init_mm, addr, ptep);
+ 		free_page(page);
+ 	}
+-	spin_unlock(&init_mm.page_table_lock);
+ 
+ 	return 0;
+ }
+diff --git a/mm/memory.c b/mm/memory.c
+index f0201c8ec1ce..1f3727104e99 100644
+--- a/mm/memory.c
++++ b/mm/memory.c
+@@ -2926,6 +2926,7 @@ static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
+ 			pte = pte_offset_kernel(pmd, addr);
+ 		if (!pte)
+ 			return err;
++		spin_lock(&init_mm.page_table_lock);
+ 	} else {
+ 		if (create)
+ 			pte = pte_alloc_map_lock(mm, pmd, addr, &ptl);
+@@ -2951,7 +2952,9 @@ static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
+ 
+ 	arch_leave_lazy_mmu_mode();
+ 
+-	if (mm != &init_mm)
++	if (mm == &init_mm)
++		spin_unlock(&init_mm.page_table_lock);
++	else
+ 		pte_unmap_unlock(mapped_pte, ptl);
+ 
+ 	*mask |= PGTBL_PTE_MODIFIED;
+-- 
+2.45.2
 
-It's wrong in the existing comment.
-
-> +	if (chip->flags & TPM_CHIP_FLAG_SYNC) {
-> +		len = rc;
-> +		rc = 0;
-> +		goto out_send_sync;
-> +	}
-> +
-> +	/* A sanity check. send() of asynchronous devices should just return
-> +	 * zero on success e.g. not the command length.
->  	 */
->  	if (rc > 0) {
->  		dev_warn(&chip->dev,
-> @@ -151,7 +160,10 @@ static ssize_t tpm_try_transmit(struct tpm_chip *chip, void *buf, size_t bufsiz)
->  	if (len < 0) {
->  		rc = len;
->  		dev_err(&chip->dev, "tpm_transmit: tpm_recv: error %d\n", rc);
-> -	} else if (len < TPM_HEADER_SIZE || len != be32_to_cpu(header->length))
-> +		return rc;
-> +	}
-> +out_send_sync:
-
-out_sync would be sufficient
-
-> +	if (len < TPM_HEADER_SIZE || len != be32_to_cpu(header->length))
->  		rc = -EFAULT;
->  
->  	return rc ? rc : len;
-> -- 
-> 2.49.0
-> 
-
-BR, Jarkko
 
