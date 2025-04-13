@@ -1,64 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-7632-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7633-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30528C369AB
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Apr 2025 18:37:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F32AC3601E
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 13 Apr 2025 04:55:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZZj353Ft1z2xpn;
-	Sun, 13 Apr 2025 04:37:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744483057;
-	cv=none; b=LmW3UtchJd5KWQA92vv8MmY3b+2mHwf3HIE8Q7XX5YkCkETUMdHfPZNT6J9OdbiTRDQGvw7t05CbVSMHnXcgbEnh5CEvgwu5QwPrFYwqs8wj4+xL5jUMaF3wWjE3xzkjCbt3pGvSi9Xt5JG6n3Mr8GYMiSVkrZ0wN2RciA7duG0Ipu6jz6SkLD8xwep3nztQ6YdB8q4njw2NP8ATkD+2KABnxuKOcrFKJT+62/DNY4qzNtOw2KID3oxgWLPastZBPacrYHE9/PBGzJKzHpCdb68J+kjHrrNAJ/dYpA2qS564iEHlHJE9w2PzFJgiuiU3NTOsYZJdY8wo+Z/1tJotzw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZZymM2Wsxz2ySW;
+	Sun, 13 Apr 2025 14:55:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744520147;
+	cv=none; b=J1NGSsFPyRuuJmDiyVYftbcPec4X0ya74sWvr650Ku/y37fvGpCLeQkQp8eEuPBKSIiPRZqijTJvZVje9JQwQ4lZUYA3USIXjVEy9xgZtk26FwWWALyiPnHFEmxHcx6MY6kXOFaZILi3Thva78y+OegGaFlb1bFPYR/gxEsfI7w3wRog6WY7GQEeOdBsE0/Yy4bBvipxhfmoDkLheVhsXbhR+4XjFJdC3zIowgLYntZsNa0+Ae5JaMOnF7C9Y9xXX+XgbDEgD7RugUo8dLiGubBMpsekGr80XDdPrYkoSVnyhTUEZI3NvlAPIYofzJ3BWy7O65N+MnbIpjeXczbdTw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744483057; c=relaxed/relaxed;
-	bh=PrNUaPWDjYYhvPGQquqEn7s7dsa0fPnH23NtwLKDWuE=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=aEIWlkQBD0yZWcyTEaLR1HQVIxtqNNhtB+MXvAqugKFZPqQt7/QWPwC4CqJsPCWavdpyoscldQd0axB1Zemy7rtqTB7I7g8VlYPcyQPsbDOKITVH1cVYFM2ztRvNsJsl3j/46sly3qf6gLumMjJfx0Zcn+0O7XBuldQUFoQBMkB67ATwzks3j8/YLzr8psydLudIC4xNpwedvoIkjVPdVsccaDapZaAM9T7Byu9RXXMYbgtPT4IsLZKaexExqVDcAt5JMZwyFwyq05j4yuVM0uimR8ZrYqTbgjIh3EeBbdR8VVXcRxqMBmtuAc7Sfg+OEd9luSMl2ddRydgldTFH4Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sGY2UJk+; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1744520147; c=relaxed/relaxed;
+	bh=O6e/7+xSkqHNapzqaKLz5lcr5fn/gFwGUJi7HyR0IVQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=GJLG33zv1coCZmMOB8hzOML8z2PX4WgLKtcKWIzfD4zbw2GhNldHr1lWeBY/QL+6/xXDYFt9jzcvYpqyD5vzNzJtEaGg3c3K63fEffLmQ23mVlqwAwGFUUcqeSOyWWU1x/+eOoEfpQfvs7LenJR4VwCFiG2T/Dckby3IV99sCdR5NNaVhjmts7XwLlZ0CbFJRMhdiWH9X3P3tXAkJcJCxub+LxtCog4d9mVivu4osHbJfvbtFFDl/niOfDzvkpGl9S5WU/Odp9KdrgLYBsQXcjD7hWlsVYPMJzovpIgHdT9amkexa84jipSFPZSv1Puv6FTMuNeTjmUjV0V3YQu7jw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=raC1yaz/; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sGY2UJk+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=raC1yaz/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZZj342xQXz2xdL
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Apr 2025 04:37:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZZymJ3KXjz2xrb
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Apr 2025 14:55:44 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id AB60C61130;
-	Sat, 12 Apr 2025 18:37:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A7C5BC4CEE3;
-	Sat, 12 Apr 2025 18:37:33 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 19EBBA407E5;
+	Sun, 13 Apr 2025 04:50:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C7EE6C4CEEC;
+	Sun, 13 Apr 2025 04:55:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1744483053;
-	bh=BpK5R2sMEdkLTQEHgR6WN8H07iIrsSB4lh+8YOdW9E8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=sGY2UJk++YQ1QXmgTg8+wiGU2gcjReDVYbJr9JZQvfrf95buap1K864GDorOsjW5Y
-	 eJ7/25SeCxcgJocaq8e82rZJ5O8/KHFwePtqbOGPEEtHWvY36KynDfMBDn4qtXptzR
-	 twc8Ti6ObYZpmFrMBq5g1mo13eYpqpmr7RYaRcahoVxcXDVlkIKIH/bHK7kwgDjgWj
-	 cDwSPYDs1voQFN7COJHN8kjDPiWgyCOde1agQXnZU8K3rOT2GsFpxEnq2WNLFXTJmj
-	 ijDXQIMgXK8xx4ScvQNfhXlfgX2rpe+8WKFLbKBTqIdn200Up6jaY0diylNwJo2sP+
-	 UZ3SzSyBu8MhQ==
-Date: Sat, 12 Apr 2025 13:37:32 -0500
-From: Rob Herring <robh@kernel.org>
-To: =?iso-8859-1?Q?J=2E_Neusch=E4fer?= <j.ne@posteo.net>
-Cc: Crystal Wood <oss@buserror.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
-	devicetree@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] dt-bindings: powerpc: Convert fsl/pmc.txt to YAML
-Message-ID: <20250412183732.GA1442430-robh@kernel.org>
-References: <20250412-fslpmc-yaml-v2-1-98c0948a2921@posteo.net>
+	s=k20201202; t=1744520140;
+	bh=0eZGQ4HOV8ila8DyyAF1mDleVNmhJHh2p5GKktNCdP0=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=raC1yaz/NDXB5M5reoTn4t/01dfz407KBNfd0K/poDFbBFUEXP/CzzQ/h7BteTKya
+	 +l7uKwR0/amZTMR3DiCT4nH7nArCjhZueQexvrtZHd1cqtpaZmRDLh5ctmFa/17nNz
+	 YvKl3VfyjfrY+n4+fVBaZFVabVob+HzAYlmZBeuLJed3kN9mqzNFK1Dr+NpPQHmKfv
+	 aTwBkkxbcyoedBvl/d93d69Apzs8J+eTE/mQIYs1kMuv509JB0qmRvALse4njknTIM
+	 +MqCByN2EQaGo2r6lHoqjSObkDTt2F9oRPuZ1LRLrdmx8gkUI1M9HlEWVfoq+o2o+e
+	 OGm+yRM8WpVlw==
+From: Eric Biggers <ebiggers@kernel.org>
+To: linux-crypto@vger.kernel.org
+Cc: linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	x86@kernel.org,
+	Danny Tsen <dtsen@linux.ibm.com>
+Subject: [PATCH 1/9] crypto: powerpc/poly1305 - implement library instead of shash
+Date: Sat, 12 Apr 2025 21:54:13 -0700
+Message-ID: <20250413045421.55100-2-ebiggers@kernel.org>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250413045421.55100-1-ebiggers@kernel.org>
+References: <20250413045421.55100-1-ebiggers@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,190 +70,273 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250412-fslpmc-yaml-v2-1-98c0948a2921@posteo.net>
 
-On Sat, Apr 12, 2025 at 02:49:38PM +0200, J. Neuschäfer wrote:
-> This patch rewrites pmc.txt into YAML format. Descriptive texts are
-> expanded or shortened in a few places to better fit today's conventions.
-> 
-> The list of compatible strings (and combinations of them) is based on
-> existing device trees in arch/powerpc as well as compatible strings
-> already mentioned in the plain-text version of the binding.
-> 
-> One thing I didn't handle are soc-clk@... nodes as seen in
-> Documentation/devicetree/bindings/powerpc/fsl/pmc.yaml.
-> 
-> Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
-> ---
-> Changes in v2:
-> - Rebase on v6.15-rc1
-> - Link to v1: https://lore.kernel.org/r/20250315-fslpmc-yaml-v1-1-10ba354a85c2@posteo.net
-> ---
-> 
-> Note: The examples include a consumer (sata@19000), to demonstrate how
-> sleep specifiers work. I've heard that "unrelated" nodes in examples are
-> generally discouraged, but I'm not sure if it's better to keep it or to
-> drop it in this example.
+From: Eric Biggers <ebiggers@google.com>
 
-I'd drop. Unless you want to fix the error. There's nothing really 
-unique with how 'sleep' property works.
+Currently the Power10 optimized Poly1305 is only wired up to the
+crypto_shash API, which makes it unavailable to users of the library
+API.  The crypto_shash API for Poly1305 is going to change to be
+implemented on top of the library API, so the library API needs to be
+supported.  And of course it's needed anyway to serve the library users.
 
-> ---
->  .../devicetree/bindings/powerpc/fsl/pmc.txt        |  63 --------
->  .../devicetree/bindings/powerpc/fsl/pmc.yaml       | 159 +++++++++++++++++++++
->  2 files changed, 159 insertions(+), 63 deletions(-)
-> 
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt b/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt
-> deleted file mode 100644
-> index 07256b7ffcaab2ba57b33cf279df45d830ce33b3..0000000000000000000000000000000000000000
-> --- a/Documentation/devicetree/bindings/powerpc/fsl/pmc.txt
-> +++ /dev/null
-> @@ -1,63 +0,0 @@
-> -* Power Management Controller
-> -
-> -Properties:
-> -- compatible: "fsl,<chip>-pmc".
-> -
-> -  "fsl,mpc8349-pmc" should be listed for any chip whose PMC is
-> -  compatible.  "fsl,mpc8313-pmc" should also be listed for any chip
-> -  whose PMC is compatible, and implies deep-sleep capability.
-> -
-> -  "fsl,mpc8548-pmc" should be listed for any chip whose PMC is
-> -  compatible.  "fsl,mpc8536-pmc" should also be listed for any chip
-> -  whose PMC is compatible, and implies deep-sleep capability.
-> -
-> -  "fsl,mpc8641d-pmc" should be listed for any chip whose PMC is
-> -  compatible; all statements below that apply to "fsl,mpc8548-pmc" also
-> -  apply to "fsl,mpc8641d-pmc".
-> -
-> -  Compatibility does not include bit assignments in SCCR/PMCDR/DEVDISR; these
-> -  bit assignments are indicated via the sleep specifier in each device's
-> -  sleep property.
-> -
-> -- reg: For devices compatible with "fsl,mpc8349-pmc", the first resource
-> -  is the PMC block, and the second resource is the Clock Configuration
-> -  block.
-> -
-> -  For devices compatible with "fsl,mpc8548-pmc", the first resource
-> -  is a 32-byte block beginning with DEVDISR.
-> -
-> -- interrupts: For "fsl,mpc8349-pmc"-compatible devices, the first
-> -  resource is the PMC block interrupt.
-> -
-> -- fsl,mpc8313-wakeup-timer: For "fsl,mpc8313-pmc"-compatible devices,
-> -  this is a phandle to an "fsl,gtm" node on which timer 4 can be used as
-> -  a wakeup source from deep sleep.
-> -
-> -Sleep specifiers:
-> -
-> -  fsl,mpc8349-pmc: Sleep specifiers consist of one cell.  For each bit
-> -  that is set in the cell, the corresponding bit in SCCR will be saved
-> -  and cleared on suspend, and restored on resume.  This sleep controller
-> -  supports disabling and resuming devices at any time.
-> -
-> -  fsl,mpc8536-pmc: Sleep specifiers consist of three cells, the third of
-> -  which will be ORed into PMCDR upon suspend, and cleared from PMCDR
-> -  upon resume.  The first two cells are as described for fsl,mpc8578-pmc.
-> -  This sleep controller only supports disabling devices during system
-> -  sleep, or permanently.
-> -
-> -  fsl,mpc8548-pmc: Sleep specifiers consist of one or two cells, the
-> -  first of which will be ORed into DEVDISR (and the second into
-> -  DEVDISR2, if present -- this cell should be zero or absent if the
-> -  hardware does not have DEVDISR2) upon a request for permanent device
-> -  disabling.  This sleep controller does not support configuring devices
-> -  to disable during system sleep (unless supported by another compatible
-> -  match), or dynamically.
-> -
-> -Example:
-> -
-> -	power@b00 {
-> -		compatible = "fsl,mpc8313-pmc", "fsl,mpc8349-pmc";
-> -		reg = <0xb00 0x100 0xa00 0x100>;
-> -		interrupts = <80 8>;
-> -	};
-> diff --git a/Documentation/devicetree/bindings/powerpc/fsl/pmc.yaml b/Documentation/devicetree/bindings/powerpc/fsl/pmc.yaml
-> new file mode 100644
-> index 0000000000000000000000000000000000000000..bb2db8adb74c54fec5d07393573f156c63a9e886
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/powerpc/fsl/pmc.yaml
-> @@ -0,0 +1,159 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/powerpc/fsl/pmc.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Power Management Controller
-> +
-> +maintainers:
-> +  - J. Neuschäfer <j.ne@posteo.net>
-> +
-> +description: |
-> +  The Power Management Controller in several MPC8xxx SoCs helps save power by
-> +  controlling chip-wide low-power states as well as peripheral clock gating.
-> +
-> +  Sleep of peripheral devices is configured by the `sleep` property, for
-> +  example `sleep = <&pmc 0x00000030>`. Any cells after the &pmc phandle are
-> +  called a sleep specifier.
-> +
-> +  For "fsl,mpc8349-pmc", sleep specifiers consist of one cell.  For each bit that
-> +  is set in the cell, the corresponding bit in SCCR will be saved and cleared
-> +  on suspend, and restored on resume.  This sleep controller supports disabling
-> +  and resuming devices at any time.
-> +
-> +  For "fsl,mpc8536-pmc", sleep specifiers consist of three cells, the third of
-> +  which will be ORed into PMCDR upon suspend, and cleared from PMCDR upon
-> +  resume.  The first two cells are as described for fsl,mpc8548-pmc.  This
-> +  sleep controller only supports disabling devices during system sleep, or
-> +  permanently.
-> +
-> +  For "fsl,mpc8548-pmc" or "fsl,mpc8641d-pmc", Sleep specifiers consist of one
-> +  or two cells, the first of which will be ORed into DEVDISR (and the second
-> +  into DEVDISR2, if present -- this cell should be zero or absent if the
-> +  hardware does not have DEVDISR2) upon a request for permanent device
-> +  disabling.  This sleep controller does not support configuring devices to
-> +  disable during system sleep (unless supported by another compatible match),
-> +  or dynamically.
-> +
-> +properties:
-> +  compatible:
-> +    oneOf:
-> +      - items:
-> +          - const: fsl,mpc8315-pmc
-> +          - const: fsl,mpc8313-pmc
-> +          - const: fsl,mpc8349-pmc
-> +
-> +      - items:
-> +          - enum:
-> +              - fsl,mpc8313-pmc
-> +              - fsl,mpc8323-pmc
-> +              - fsl,mpc8360-pmc
-> +              - fsl,mpc8377-pmc
-> +              - fsl,mpc8378-pmc
-> +              - fsl,mpc8379-pmc
-> +          - const: fsl,mpc8349-pmc
-> +
-> +      - items:
-> +          - const: fsl,p1022-pmc
-> +          - const: fsl,mpc8536-pmc
-> +          - const: fsl,mpc8548-pmc
-> +
-> +      - items:
-> +          - enum:
-> +              - fsl,mpc8536-pmc
-> +              - fsl,mpc8568-pmc
-> +              - fsl,mpc8569-pmc
-> +          - const: fsl,mpc8548-pmc
-> +
-> +      - const: fsl,mpc8548-pmc
-> +
-> +      - const: fsl,mpc8641d-pmc
+Therefore, change the Power10 optimized Poly1305 code to implement the
+library API instead of the crypto_shash API.
 
-1 enum for these 2.
+Cc: Danny Tsen <dtsen@linux.ibm.com>
+Signed-off-by: Eric Biggers <ebiggers@google.com>
+---
+ arch/powerpc/crypto/Kconfig             |  11 +-
+ arch/powerpc/crypto/poly1305-p10-glue.c | 132 +++++++-----------------
+ 2 files changed, 39 insertions(+), 104 deletions(-)
 
-Rob
+diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
+index 47dccdd49637..cbcf76953d83 100644
+--- a/arch/powerpc/crypto/Kconfig
++++ b/arch/powerpc/crypto/Kconfig
+@@ -98,20 +98,15 @@ config CRYPTO_CHACHA20_P10
+ 	select CRYPTO_LIB_CHACHA_GENERIC
+ 	select CRYPTO_ARCH_HAVE_LIB_CHACHA
+ 	default CRYPTO_LIB_CHACHA_INTERNAL
+ 
+ config CRYPTO_POLY1305_P10
+-	tristate "Hash functions: Poly1305 (P10 or later)"
++	tristate
+ 	depends on PPC64 && CPU_LITTLE_ENDIAN && VSX
+-	select CRYPTO_HASH
++	select CRYPTO_ARCH_HAVE_LIB_POLY1305
+ 	select CRYPTO_LIB_POLY1305_GENERIC
+-	help
+-	  Poly1305 authenticator algorithm (RFC7539)
+-
+-	  Architecture: PowerPC64
+-	  - Power10 or later
+-	  - Little-endian
++	default CRYPTO_LIB_POLY1305_INTERNAL
+ 
+ config CRYPTO_DEV_VMX
+         bool "Support for VMX cryptographic acceleration instructions"
+         depends on PPC64 && VSX
+         help
+diff --git a/arch/powerpc/crypto/poly1305-p10-glue.c b/arch/powerpc/crypto/poly1305-p10-glue.c
+index 369686e9370b..87bd5eba4497 100644
+--- a/arch/powerpc/crypto/poly1305-p10-glue.c
++++ b/arch/powerpc/crypto/poly1305-p10-glue.c
+@@ -2,28 +2,26 @@
+ /*
+  * Poly1305 authenticator algorithm, RFC7539.
+  *
+  * Copyright 2023- IBM Corp. All rights reserved.
+  */
+-
+-#include <crypto/algapi.h>
+-#include <linux/crypto.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/jump_label.h>
+-#include <crypto/internal/hash.h>
+-#include <crypto/internal/poly1305.h>
+ #include <crypto/internal/simd.h>
++#include <crypto/poly1305.h>
+ #include <linux/cpufeature.h>
+ #include <linux/unaligned.h>
+ #include <asm/simd.h>
+ #include <asm/switch_to.h>
+ 
+ asmlinkage void poly1305_p10le_4blocks(void *h, const u8 *m, u32 mlen);
+ asmlinkage void poly1305_64s(void *h, const u8 *m, u32 mlen, int highbit);
+ asmlinkage void poly1305_emit_64(void *h, void *s, u8 *dst);
+ 
++static __ro_after_init DEFINE_STATIC_KEY_FALSE(have_p10);
++
+ static void vsx_begin(void)
+ {
+ 	preempt_disable();
+ 	enable_kernel_vsx();
+ }
+@@ -32,82 +30,50 @@ static void vsx_end(void)
+ {
+ 	disable_kernel_vsx();
+ 	preempt_enable();
+ }
+ 
+-static int crypto_poly1305_p10_init(struct shash_desc *desc)
++void poly1305_init_arch(struct poly1305_desc_ctx *dctx, const u8 key[POLY1305_KEY_SIZE])
+ {
+-	struct poly1305_desc_ctx *dctx = shash_desc_ctx(desc);
+-
+-	poly1305_core_init(&dctx->h);
++	if (!static_key_enabled(&have_p10))
++		return poly1305_init_generic(dctx, key);
++
++	dctx->h = (struct poly1305_state){};
++	dctx->core_r.key.r64[0] = get_unaligned_le64(key + 0);
++	dctx->core_r.key.r64[1] = get_unaligned_le64(key + 8);
++	dctx->s[0] = get_unaligned_le32(key + 16);
++	dctx->s[1] = get_unaligned_le32(key + 20);
++	dctx->s[2] = get_unaligned_le32(key + 24);
++	dctx->s[3] = get_unaligned_le32(key + 28);
+ 	dctx->buflen = 0;
+-	dctx->rset = 0;
+-	dctx->sset = false;
+-
+-	return 0;
+ }
++EXPORT_SYMBOL(poly1305_init_arch);
+ 
+-static unsigned int crypto_poly1305_setdctxkey(struct poly1305_desc_ctx *dctx,
+-					       const u8 *inp, unsigned int len)
++void poly1305_update_arch(struct poly1305_desc_ctx *dctx,
++			  const u8 *src, unsigned int srclen)
+ {
+-	unsigned int acc = 0;
+-
+-	if (unlikely(!dctx->sset)) {
+-		if (!dctx->rset && len >= POLY1305_BLOCK_SIZE) {
+-			struct poly1305_core_key *key = &dctx->core_r;
+-
+-			key->key.r64[0] = get_unaligned_le64(&inp[0]);
+-			key->key.r64[1] = get_unaligned_le64(&inp[8]);
+-			inp += POLY1305_BLOCK_SIZE;
+-			len -= POLY1305_BLOCK_SIZE;
+-			acc += POLY1305_BLOCK_SIZE;
+-			dctx->rset = 1;
+-		}
+-		if (len >= POLY1305_BLOCK_SIZE) {
+-			dctx->s[0] = get_unaligned_le32(&inp[0]);
+-			dctx->s[1] = get_unaligned_le32(&inp[4]);
+-			dctx->s[2] = get_unaligned_le32(&inp[8]);
+-			dctx->s[3] = get_unaligned_le32(&inp[12]);
+-			acc += POLY1305_BLOCK_SIZE;
+-			dctx->sset = true;
+-		}
+-	}
+-	return acc;
+-}
++	unsigned int bytes;
+ 
+-static int crypto_poly1305_p10_update(struct shash_desc *desc,
+-				      const u8 *src, unsigned int srclen)
+-{
+-	struct poly1305_desc_ctx *dctx = shash_desc_ctx(desc);
+-	unsigned int bytes, used;
++	if (!static_key_enabled(&have_p10))
++		return poly1305_update_generic(dctx, src, srclen);
+ 
+ 	if (unlikely(dctx->buflen)) {
+ 		bytes = min(srclen, POLY1305_BLOCK_SIZE - dctx->buflen);
+ 		memcpy(dctx->buf + dctx->buflen, src, bytes);
+ 		src += bytes;
+ 		srclen -= bytes;
+ 		dctx->buflen += bytes;
+-
+-		if (dctx->buflen == POLY1305_BLOCK_SIZE) {
+-			if (likely(!crypto_poly1305_setdctxkey(dctx, dctx->buf,
+-							       POLY1305_BLOCK_SIZE))) {
+-				vsx_begin();
+-				poly1305_64s(&dctx->h, dctx->buf,
+-						  POLY1305_BLOCK_SIZE, 1);
+-				vsx_end();
+-			}
+-			dctx->buflen = 0;
+-		}
++		if (dctx->buflen < POLY1305_BLOCK_SIZE)
++			return;
++		vsx_begin();
++		poly1305_64s(&dctx->h, dctx->buf, POLY1305_BLOCK_SIZE, 1);
++		vsx_end();
++		dctx->buflen = 0;
+ 	}
+ 
+ 	if (likely(srclen >= POLY1305_BLOCK_SIZE)) {
+ 		bytes = round_down(srclen, POLY1305_BLOCK_SIZE);
+-		used = crypto_poly1305_setdctxkey(dctx, src, bytes);
+-		if (likely(used)) {
+-			srclen -= used;
+-			src += used;
+-		}
+ 		if (crypto_simd_usable() && (srclen >= POLY1305_BLOCK_SIZE*4)) {
+ 			vsx_begin();
+ 			poly1305_p10le_4blocks(&dctx->h, src, srclen);
+ 			vsx_end();
+ 			src += srclen - (srclen % (POLY1305_BLOCK_SIZE * 4));
+@@ -124,63 +90,37 @@ static int crypto_poly1305_p10_update(struct shash_desc *desc,
+ 
+ 	if (unlikely(srclen)) {
+ 		dctx->buflen = srclen;
+ 		memcpy(dctx->buf, src, srclen);
+ 	}
+-
+-	return 0;
+ }
++EXPORT_SYMBOL(poly1305_update_arch);
+ 
+-static int crypto_poly1305_p10_final(struct shash_desc *desc, u8 *dst)
++void poly1305_final_arch(struct poly1305_desc_ctx *dctx, u8 *dst)
+ {
+-	struct poly1305_desc_ctx *dctx = shash_desc_ctx(desc);
++	if (!static_key_enabled(&have_p10))
++		return poly1305_final_generic(dctx, dst);
+ 
+-	if (unlikely(!dctx->sset))
+-		return -ENOKEY;
+-
+-	if ((dctx->buflen)) {
++	if (dctx->buflen) {
+ 		dctx->buf[dctx->buflen++] = 1;
+ 		memset(dctx->buf + dctx->buflen, 0,
+ 		       POLY1305_BLOCK_SIZE - dctx->buflen);
+ 		vsx_begin();
+ 		poly1305_64s(&dctx->h, dctx->buf, POLY1305_BLOCK_SIZE, 0);
+ 		vsx_end();
+-		dctx->buflen = 0;
+ 	}
+ 
+ 	poly1305_emit_64(&dctx->h, &dctx->s, dst);
+-	return 0;
+ }
+-
+-static struct shash_alg poly1305_alg = {
+-	.digestsize	= POLY1305_DIGEST_SIZE,
+-	.init		= crypto_poly1305_p10_init,
+-	.update		= crypto_poly1305_p10_update,
+-	.final		= crypto_poly1305_p10_final,
+-	.descsize	= sizeof(struct poly1305_desc_ctx),
+-	.base		= {
+-		.cra_name		= "poly1305",
+-		.cra_driver_name	= "poly1305-p10",
+-		.cra_priority		= 300,
+-		.cra_blocksize		= POLY1305_BLOCK_SIZE,
+-		.cra_module		= THIS_MODULE,
+-	},
+-};
++EXPORT_SYMBOL(poly1305_final_arch);
+ 
+ static int __init poly1305_p10_init(void)
+ {
+-	return crypto_register_shash(&poly1305_alg);
+-}
+-
+-static void __exit poly1305_p10_exit(void)
+-{
+-	crypto_unregister_shash(&poly1305_alg);
++	if (cpu_has_feature(CPU_FTR_ARCH_31))
++		static_branch_enable(&have_p10);
++	return 0;
+ }
+-
+-module_cpu_feature_match(PPC_MODULE_FEATURE_P10, poly1305_p10_init);
+-module_exit(poly1305_p10_exit);
++arch_initcall(poly1305_p10_init);
+ 
+ MODULE_LICENSE("GPL");
+ MODULE_AUTHOR("Danny Tsen <dtsen@linux.ibm.com>");
+ MODULE_DESCRIPTION("Optimized Poly1305 for P10");
+-MODULE_ALIAS_CRYPTO("poly1305");
+-MODULE_ALIAS_CRYPTO("poly1305-p10");
+
+base-commit: 3be3f70ee95da03a87d94c4a714ee679a5c7b34d
+-- 
+2.49.0
+
 
