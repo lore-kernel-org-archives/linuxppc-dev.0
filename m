@@ -1,86 +1,101 @@
-Return-Path: <linuxppc-dev+bounces-7655-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7656-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91106C369A2
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Apr 2025 15:00:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9205C369A2
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 14 Apr 2025 16:27:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zbr7M1Ky3z30HB;
-	Tue, 15 Apr 2025 01:00:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744642815;
-	cv=none; b=Fqmb7rMiIBqPkI0ugj7ttpvfzQu9Ltr/o2zDS41ubwG9LarmFiw5blSiOLuwIl87t+xQQRVi55MkKRC7eCyaevmQVR51r9piSzb4WnYpvsERr/qBee74VVVQWtC1piZ3o0XyaPctiK/K3OQRxrDVNDZ8yfCELCt8w0D12Uijbq1bIe3FcfcIMuTpktJsiC/FCjJJ8W03x40XAsO/BdBc1mQpclmmPt19X2TWE7R3RYk7dpFNlo8OXIGUckVsXw36BwXcazGvHkAIDPFQhcrJct8/bP4b6rpdsGvjx303C6F0ZmjKmAy9uE5OLczMsO7JXfVe5kVheaSD0JZXgGhlJw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744642815; c=relaxed/relaxed;
-	bh=PiBcwGEvq2PhJfASxrOHAGOy8gVOP2qSKhUxi65Uo4U=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=eziP2ae6CFmJY/Fbss1mgBwIk11XU3W6UFcqNmCTAcdbag14wT9mftAjlcAkN5XAjyBqjPXC4GS2+W8DReAlRBdmRK087ut+ybdlrOr+KYhwdlzfgoIyvhwwKWevn+knf33XhaxMxBvDLCeox4us5fP/PucXsq6qOoY1KRaui+OTHpiCNv9N/Z3IaYByBhnhoivIfoIeWHxDrr5ubzx/Q+ZoDKJp+dPbxYOcANybzzva0yz2E0jJxyh4E4CIOQcfDl7cnrtt9Vmd5n8RRLav8WIpT9+/xdNIP1xTqTGy6u4W9+t6UqbtjlxIVJ9Ja+yZQ+qap1ohoWxsg4ZX0g/svw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FSqlZEKs; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=azNUmWSG; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=sgarzare@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Zbt3l11K3z2yT0;
+	Tue, 15 Apr 2025 02:27:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.165.32 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744648035;
+	cv=pass; b=T5AAzAqR9BSYPtBjx6+SE9Ef3/6OdBfmYjy/cDiW73vt6SCl3+0dm3kAfiUamMp1kaESiFOh1234ldcreMMACqn3CzAXElwsI8f6YGyn1KDRi1BpI7WJNRFP1+qU2jsgXjMW8J5eEOg8vbO4R9aMGiItPsIUpMqdvMJcnlyBmrtlXZb8gmLLgmyN5wgbfRJk0qVwOsgLdXB35FIX2Yd4vEwodjoBoqae9ml/k+iJw+0k8zGZ7wB0Mg1P1ZSEaUlZuwl2EdZey/095SkG6mxcJC4C4rzp0PK487GuT1k/WB5ZROUpb2WoY6F9bmWVHXKvPGsdtqXX0ASbirA+cB2DnA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1744648035; c=relaxed/relaxed;
+	bh=SRpmcJa6uk+G5RIHXOTn4nfXMonGVNCo3bVOQS4FhsU=;
+	h=To:Cc:Subject:From:In-Reply-To:Message-ID:References:Date:
+	 Content-Type:MIME-Version; b=XfdAVDq8f7B8nuxgP42imut7b/ssEcq/o1KQLnPhsbmsIo/3KYlxlEmIw/lLGyIqf2S5qke2a1sg48iu0BnPFUi7Jw905HanZ4BhHXj788KTx+STZVCEZU3jNFa2mjpKLRH+S/nu3qyODtAz20gQSwhZ6b7KAz2lXoyL3bV4cTG0V6p/TWyeUqjKcfB+Q7e3yY4BVDo1CzZOc3u502YaqsvKyojV5QEidhP/oZ99o69xLd0dBK00LwYuO5yfbtA2fvEaH8exAOp62QVzD9wY9atkCWFxV2G99EqoAtIUe+v7nANHlmYCEuRQpo2gxBMoy4E9XtEc1cHaxFPtKWrqWQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=IILEe/gv; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=WFD5vfOM; dkim-atps=neutral; spf=pass (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=martin.petersen@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FSqlZEKs;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=azNUmWSG;
+	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2023-11-20 header.b=IILEe/gv;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=WFD5vfOM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=sgarzare@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=martin.petersen@oracle.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 8574 seconds by postgrey-1.37 at boromir; Tue, 15 Apr 2025 02:27:12 AEST
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zbr7L28Htz306S
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2025 01:00:13 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1744642808;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=PiBcwGEvq2PhJfASxrOHAGOy8gVOP2qSKhUxi65Uo4U=;
-	b=FSqlZEKsHxZUjypmlxyqpibo2a4xTWxUGXoIv/0QwQinD33Ojuhn5aK+bhZthNFPq3mnv5
-	0eMtMq/is+er+fYIduxEfDna1/fz9Mxrn1ZGX7sUCXl7thSRWZ+NHUsc2+EUAS/cdKSllq
-	gC1/wMO7pi8DBRj9ci7HJbORuhkQu3w=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1744642809;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=PiBcwGEvq2PhJfASxrOHAGOy8gVOP2qSKhUxi65Uo4U=;
-	b=azNUmWSGWyIrpWcRUQCbcra0kEF/f1AEi8B6evC5VNmbbm1oOh7d489E2FKDvMt3dQtE3H
-	BmpbeYZ5VmAsLy1bFChV0najQZA64UOQxmzNXs+/qGJ+36mdVzFC8WHL8Zeh/6mcODddGf
-	pUZ4fnYz86MPN8xAIb3X7kmhVlrllZY=
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-173-uY4_F-2uMeCHIVp4zdn-og-1; Mon, 14 Apr 2025 11:00:02 -0400
-X-MC-Unique: uY4_F-2uMeCHIVp4zdn-og-1
-X-Mimecast-MFC-AGG-ID: uY4_F-2uMeCHIVp4zdn-og_1744642801
-Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-43d22c304adso23343605e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 14 Apr 2025 08:00:01 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1744642801; x=1745247601;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=PiBcwGEvq2PhJfASxrOHAGOy8gVOP2qSKhUxi65Uo4U=;
-        b=ul1cA8ZzFXjEWAmum99nKEPACbDYYuwueTQur9VSh/B1FkFWaT7iX6kukRkfF1nqbR
-         zDTDbPNm94KxJAIlJm17IkxQQc/2CY2O9i0M6i0720Y/53ot7s9Z+ZdmnLBqH6iRpxRo
-         m31MTvTxxqLM+Kpy4RJVVyBZeOzU6wNgbT/DixJQ1NShOpw98qYW0rLmQIsXKbakerCS
-         fh3IwqSKnNkpcpPy8MvOfT6zYPN7BzCLmDfULH2bktuQOrCOKzgVSUE/B0ctov16+2y7
-         6+SpSgGijkI895EW2TNMybmrovr7p5KEpleCH82bMjYTl3KBqPGs2iGXHHedlG75V094
-         F+4w==
-X-Forwarded-Encrypted: i=1; AJvYcCWtDbsH2WpjB8a9jgf+oWAOppQbV9TO7YUSW1qLLk4wfqRcj4ZOJ5laXy9HOrmpXy6h/hyR48V/np+43J4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz/Tcst11J6P/JBVGrcfMbA2fRJiY/Hkf0nqKierN4fcEaEEFC2
-	2pV5cljbUTD7Ai36OYe5unegSphynm4E2oTCKmxawgqTUXN2zhKo7xUCOS+eAxwm7Nmk8aYiAy3
-	DjaXoTqAEgUKyf6yuNRy3Pn0GmE6pmt9HuEe9bhQk9pM2BfrE3XZ2DuVUBnTuFO+63MXNd8CFSz
-	Rsj/cb/a13VaY54rLvZmyeLu2lvNPDvsrnvjVDDQ==
-X-Gm-Gg: ASbGnctavOq0fsZ40ZAmxQ8jd92FpmPhTVSGdsPa8bbQJ0Xl3GRiLX5FbDbhVmkLBMX
-	afj7V/a7Kmy8WVB0Cw7PVL7z4/DrtZeystAOWuYdcNbmnwUYV0vqcFLqc/9jArDkyWcff3g==
-X-Received: by 2002:a05:600c:3c84:b0:439:91c7:895a with SMTP id 5b1f17b1804b1-43f2ea651bcmr156859895e9.7.1744642800765;
-        Mon, 14 Apr 2025 08:00:00 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFBw02L0rMKAm8Z+1nOktn69htJsdj/Jz1OK8Cyd/Ml4PZuhztd9KZNvdjVRlhSdTo1NUKpE0xXzvNiaYGSRZU=
-X-Received: by 2002:a05:600c:3c84:b0:439:91c7:895a with SMTP id
- 5b1f17b1804b1-43f2ea651bcmr156859495e9.7.1744642800128; Mon, 14 Apr 2025
- 08:00:00 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zbt3h2PwRz2y2B
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Apr 2025 02:27:11 +1000 (AEST)
+Received: from pps.filterd (m0246627.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 53ECq3sh021393;
+	Mon, 14 Apr 2025 14:03:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=corp-2023-11-20; bh=SRpmcJa6uk+G5RIHXO
+	Tn4nfXMonGVNCo3bVOQS4FhsU=; b=IILEe/gvGlGQE5YZEnpck4sUrmLgroTkjr
+	Dx1LJIheevNl5O8hQ9/ppYUkT/Vg3ZXxs/VOW4b+NBHnhbb4cMvVGFDHvYrGrDUw
+	LmH/1jwJMG8WgfxILlQcABpNuIeG7kTDLu40yv596tpGHy08ELTxtBrchFuuyc0f
+	mj1LI9qBRzlR0N9xYptgsLlO8y5DnTm954m+9EwFmPRz68sS/5TxVbudAG95gQLf
+	Lc+2JcFGzfZRX5dFYCCtTDhicT1JGxKXH0If11Y75Qe/3sEzDYNocLnP/DwabKEu
+	4UNhg3J4IcrGNMfxWpw8L0gqI5HC5UxKN/m48Zs/I5RRdtfxOg0A==
+Received: from phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta01.appoci.oracle.com [138.1.114.2])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 4612r7869a-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 14 Apr 2025 14:03:59 +0000 (GMT)
+Received: from pps.filterd (phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 53ECG8ia009194;
+	Mon, 14 Apr 2025 14:03:59 GMT
+Received: from bl2pr02cu003.outbound.protection.outlook.com (mail-eastusazlp17010005.outbound.protection.outlook.com [40.93.11.5])
+	by phxpaimrmta01.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 460d3gjagc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 14 Apr 2025 14:03:58 +0000
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=pGSZlc6oPezQfLlkrVRm3Eao3WozkYsvZbqszIjqEG2xzFDzN3kv9nTcKuwpl1hDL33NOrwF/+f4pbXZJU+8TZ3P4skl8jiHuwEEzCQVe8ZYI5+eKmV6+IH3TiTlDcjTjAPi04KLxIhcVIPNU//Pn9KFZgWdYnWd2KW7W9eRU2L4hp69BlWoYn2rWKgB1yxC7Fn52wX7ZAcsdyLrcN3L5dbxSzY9X32ffxYOpk9aq2BvARgx0XoX+ofbXXeqqGGRUeyvQ2t/mGweSXgvR5dwfmt12j9ntfhAqWg/QNkVikiYITjc9QPiizuTU6XjVbMzM3ijfhUJLvSqcctkdvSlQA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=SRpmcJa6uk+G5RIHXOTn4nfXMonGVNCo3bVOQS4FhsU=;
+ b=IwnBJDDoRnHi/r85VZIB4WB5qN3QYxZiKW3QuoxoC5Ozppe85jFviZoBkzsDsCEAvTYCMDcJsoHVFJP7drLgfsJZLzkAVNWgcfgxdLhA80IV4cjHTaHNc5F6hCGwoFY3SK2pUIw2lHXIxF8kftp7VsqtiToMP5H4z5fRXrVwNDZxFpHSKRhgXW9amTsK5MwprOsewUr/565QkDCBYd792xEQDXa7rnqI2jC8bJozrsbWwTkrGSu1A/OhZi7AOinjj9xbgICnbMq8wP5EQX7Esu26QX2/qQkRyzR7CKQKYsgiQwf1n4ZYqe9DsCqtf0haArpSX67drTAeo1HQyrKJfg==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
+ dkim=pass header.d=oracle.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+ d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=SRpmcJa6uk+G5RIHXOTn4nfXMonGVNCo3bVOQS4FhsU=;
+ b=WFD5vfOMDRLh98Xh4pZ0b3iREVoOCuu1neXkODOWv8nFB51Vn9OXe268pwhaGjmUuTEhlZdh/MD2oYYICXD/Ayr+CJHg9vrCF9iFkj5otrBsX7AJMjP3ZrO4Yy95WiNJ3+J8wd/ro2UnxACijRXKrklkhBlXvLYle1DXBZQxbDw=
+Received: from CH0PR10MB5338.namprd10.prod.outlook.com (2603:10b6:610:cb::8)
+ by DS0PR10MB7400.namprd10.prod.outlook.com (2603:10b6:8:138::7) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8632.33; Mon, 14 Apr
+ 2025 14:03:56 +0000
+Received: from CH0PR10MB5338.namprd10.prod.outlook.com
+ ([fe80::5cca:2bcc:cedb:d9bf]) by CH0PR10MB5338.namprd10.prod.outlook.com
+ ([fe80::5cca:2bcc:cedb:d9bf%3]) with mapi id 15.20.8632.030; Mon, 14 Apr 2025
+ 14:03:56 +0000
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
+        Ard
+ Biesheuvel <ardb@kernel.org>,
+        linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+        linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        sparclinux@vger.kernel.org, linux-s390@vger.kernel.org, x86@kernel.org
+Subject: Re: [PATCH] lib/crc: make the CPU feature static keys __ro_after_init
+From: "Martin K. Petersen" <martin.petersen@oracle.com>
+In-Reply-To: <20250413154350.10819-1-ebiggers@kernel.org> (Eric Biggers's
+	message of "Sun, 13 Apr 2025 08:43:50 -0700")
+Organization: Oracle Corporation
+Message-ID: <yq1tt6qhmc2.fsf@ca-mkp.ca.oracle.com>
+References: <20250413154350.10819-1-ebiggers@kernel.org>
+Date: Mon, 14 Apr 2025 10:03:54 -0400
+Content-Type: text/plain
+X-ClientProxiedBy: SJ0PR13CA0211.namprd13.prod.outlook.com
+ (2603:10b6:a03:2c1::6) To CH0PR10MB5338.namprd10.prod.outlook.com
+ (2603:10b6:610:cb::8)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,212 +108,106 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-References: <20250414145653.239081-1-sgarzare@redhat.com> <20250414145653.239081-4-sgarzare@redhat.com>
-In-Reply-To: <20250414145653.239081-4-sgarzare@redhat.com>
-From: Stefano Garzarella <sgarzare@redhat.com>
-Date: Mon, 14 Apr 2025 16:59:47 +0200
-X-Gm-Features: ATxdqUGzkoR7R29rCyZrs6HYZjyVNgh9a1johmj3oUpZ98_9R4aglRHe8KpEBvQ
-Message-ID: <CAGxU2F5SJ9nQfAV-D1WKjsUow_01xjGBRXP4d+q4T=5Bw=yaOg@mail.gmail.com>
-Subject: Re: [PATCH v3 3/4] tpm/tpm_ftpm_tee: support TPM_CHIP_FLAG_SYNC
-To: Jens Wiklander <jens.wiklander@linaro.org>, Sumit Garg <sumit.garg@kernel.org>
-Cc: Jarkko Sakkinen <jarkko@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	Peter Huewe <peterhuewe@gmx.de>, Alexandre Belloni <alexandre.belloni@bootlin.com>, 
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>, Naveen N Rao <naveen@kernel.org>, 
-	Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, 
-	Nicolas Ferre <nicolas.ferre@microchip.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	James Bottomley <James.Bottomley@hansenpartnership.com>, linux-integrity@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	Jason Gunthorpe <jgg@ziepe.ca>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: cFQZb8J0TWqGyXF9OAWfWUuKsMraZpMJzstareW2BNg_1744642801
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH0PR10MB5338:EE_|DS0PR10MB7400:EE_
+X-MS-Office365-Filtering-Correlation-Id: 4bc269e9-5adc-400d-97d9-08dd7b5d325e
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|376014|7416014|1800799024;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?heXeLHzB8if400Ajk3J40aSo9X1hoqeCcyrPninXZQ3JPYWZ285JMmPMqx2A?=
+ =?us-ascii?Q?MBB508UeSo7448uekwwwZgs9jczVHCkRKRKY7Mx7wYzo2J35jtzq9xQGO5FG?=
+ =?us-ascii?Q?pkdKmVgN5KkdFRX8OtDzJbAGucpJo6B3m0b+SimWk6kaNzpWmOBVODYayxaq?=
+ =?us-ascii?Q?qzyo/fucKT8NruKzA9HSg7MhopQiOtNMQeQ0aWStyI7rTTvaclkE10Jw6ESg?=
+ =?us-ascii?Q?2T0JtpSHmgbsE1aWRA2VETtYRfO/qfcJWVtgIyWe3tCxCTdmjQ036nm1qgma?=
+ =?us-ascii?Q?4hAROAU6KLojzKSlSLOmTJXxl+08witEYv92/cLca7RPPczkICfnGq35jzT+?=
+ =?us-ascii?Q?QPlpIlmSqPjezCbGJXnLgKbztiEOh+5ONXoybckeRY83Biym2wO8NXMqsZKT?=
+ =?us-ascii?Q?2gU0BldjRXwi5jmYqTN1JxHp7eJifkDBn4kFskE02Z0gCr+bv0mbWhsKnEMB?=
+ =?us-ascii?Q?fi59TXx1BoasPg5JtSe7aCL+u6kOZmTdxuk39TvlJQRt/8XkDN1oMTcjPu+B?=
+ =?us-ascii?Q?nCsDQrEYcB2aFD3X8E5ODCrmft8ybx2N6oXTbcxuWYHMG6BTf6Nel86fmyaz?=
+ =?us-ascii?Q?HDEyzdVS5oVb8kfnVzOPRGEsFknG4a9fvwuLFK8iNTRB11hBXHNrvEUEJXHG?=
+ =?us-ascii?Q?VIn3T7cG2IplfxAcMmLwYoVggdwvkGwn3zteGXU7TL0uaqxAf2ZSeFMsbX9N?=
+ =?us-ascii?Q?yMxUbz9fPSTDks3HEh/CYQUHvRGMlrDqIJjtzWkfOiah1VuW1nnu6ec5l4kq?=
+ =?us-ascii?Q?omucNXuilhVCQ2YHosiI0RBWKl7YhcGkK34SLNKbZwx0XdOCst8NX42IF6fG?=
+ =?us-ascii?Q?UdiXETXIvizenucaUcXHAj0SS9wQdbsEfbT39I0upGnc0DXQxIKhbEcN0DY+?=
+ =?us-ascii?Q?mhTHlE3RqtMhk4xg/x/xBeIEXASQE1KFO5zo7W+U+7hs/NgMLw1MK/HECG6w?=
+ =?us-ascii?Q?P2zsVMFQ91gACvKjlKbNVgh3CR1Y4tG8vF6Io2syerqhB2Qda9IatWz/ph+4?=
+ =?us-ascii?Q?LmSKFxKavPyoQ/UJkKesMye6iVJjcshzXxYGwAqWkfhjyfX6U/99/eoNucux?=
+ =?us-ascii?Q?LjxUXKYrhvyM0mz5XM6epXOeGaaSqnr/1mBu2ZmCwgOgGEExU+w7svbPM1MP?=
+ =?us-ascii?Q?dLXn7lwoyKDJT3dvaRYH36P2y3xQ+9H01kSvd9xxhNzQrxue9sg/BfaT1Rrv?=
+ =?us-ascii?Q?b0esuZ4aYN4OnQeFKHOiqF4TAwiuRZyq8eM+W8vW6tTGdm4dOKm74FdT+ucP?=
+ =?us-ascii?Q?UqBYXQhl9JDRG4v2Fk0Q5H6HfITmVpEvx6gUTQ7w2rTT5LdlM4X2/Warv0+G?=
+ =?us-ascii?Q?+RlsdlJjiDyCZCFZ2dCC78NDRhzS3YM1pRwR+bYdlgHCZvalYpbiuX8mMvQT?=
+ =?us-ascii?Q?FxG1KoZvdxf6eFOcmyiOASWCMks1MBjhLmiKN930hI/2cKQZyc3moTIyE+wV?=
+ =?us-ascii?Q?BABvBvMOumI=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH0PR10MB5338.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(1800799024);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?RQv/m980/T2oPcUOhR+4NxD/UUzmm49Mfh2DZgWeCWwtzOc4PsiszNGmM9Z8?=
+ =?us-ascii?Q?s439wQE4x1kNIYt+kxY6ZvGO4XH+y94TDkunPHuxwzE0ZXf0s1dXTPi79Azm?=
+ =?us-ascii?Q?2qchTIQ26xRPuRqO1h8ZeIir1xDGdndTG/69Jg3wMKPJl+erJ3r/p+FjfjWh?=
+ =?us-ascii?Q?7kWQW3aOq/1iC8Bqwc29gCQ3qcjNwTsc8xtSzchvQze7G0wKs0NMmWRNiHdS?=
+ =?us-ascii?Q?mw31m525/iB292am+1d6W+rwa4GBRy7zikhwTZjNXJ+l6k7tcof+6JpTfaHj?=
+ =?us-ascii?Q?2H2XRCth65Z7ka/QRyMv2s8/j1M5Pja9MHlLnOT1BrZPe5KVDcWpPgt524ko?=
+ =?us-ascii?Q?JpOCSM/IZaecInoarMDv2AbGkumi+JmQUPlBf/Vxzyy0/7t9H7BIQsu7kicx?=
+ =?us-ascii?Q?0zhGYT8g+VCo8ly0WtyJWOksxQliqYaV5Bqzk1nxfmZSQ0ENRGPgFeKkWwC9?=
+ =?us-ascii?Q?AL7dbZtHe/TmZRmOGmFzAhuCdirgujoIA+8JHBexYvta/x6AG7I4KdkH0J/5?=
+ =?us-ascii?Q?pMVQqYEPkcd3gk7D7MzpOnhmikkVboBiFUvn+FI84zLPnqCMwGmPef3M3Qpe?=
+ =?us-ascii?Q?4k8k4uRoEb/Ee7hTjrm6P8SOh3LrGWKV6p+s0iZqj3fIEpm2/mkYYKWapK8C?=
+ =?us-ascii?Q?UJoesIWdLx0isJy9Y/n+IT/rrDDnfWuQalwkuZ3/MVN++7yWTpBLR4g6icMQ?=
+ =?us-ascii?Q?rhsf/d3cXEflowhpnLfhtjKGaLNig1HK4jtZUoqwVPBbbDTXyY61hlu6KB0O?=
+ =?us-ascii?Q?5ncvIbfsm3cd0etupY2j7ap/CHMJxSnU00GpUvp22KQ4J75wBtk2p3HnNpOv?=
+ =?us-ascii?Q?GYuUD8Af9slIDNpoCi/IJ5VaXK2HJ0RcCwasVHg5y/yI3S+xQHEtHfWMp5rm?=
+ =?us-ascii?Q?wGP+SsFLU+x6203j0MXzcW8ergKSCVCgkG6Mxu7ZdmDh3Lw3nia7F/NBi7Pp?=
+ =?us-ascii?Q?Cb5CQntLrawNYB6L2HIwa7aOzzRcZf03ijqd+7ca4kkyD9h2LAdlRmkcUgvC?=
+ =?us-ascii?Q?fG4DIfKfRUKPEBjAPkjUx3nhnjEPnc1x21Ww83rLdUN5Ry7JOcFEjFcw84Lr?=
+ =?us-ascii?Q?/I+727nKaEr+q+V6pb1e0YHel3xZEMDFgCDui645NsTyIQ38z51reVDMm37T?=
+ =?us-ascii?Q?f4q/hfXPCy8ie021/tKmkE5JHtPgHFyYQtFClelkspmXAeFd3hh5/zO/HBUs?=
+ =?us-ascii?Q?OlzTF6GowE9w/2uKJE10eT50Tnel9+GD/0cO6cfhmmXjKctD/8aod1KiUyUb?=
+ =?us-ascii?Q?fJGb2sXBTYTBOGYPoAavJBD7w3i4GoPrL7BI8w60gQ4rnCQFdzGsOHQMCnM7?=
+ =?us-ascii?Q?GpANaNJud+OY9GAC4hkhOvRd4/Lq2fv6WasuYn2v6cwRCGHUbSefxK2NQ/q7?=
+ =?us-ascii?Q?835J+e9yGDjBIR81AABGZ7o0V2Zze+imjXSDU6oNn1b/DLP0ggss/EUEE7ct?=
+ =?us-ascii?Q?QimTglFgeyMqJ8YgNctXIdYWv0hONFSKgqTCWgJ5DcrSpjMxl8ITtmhtjW/0?=
+ =?us-ascii?Q?tBGHGOcoPn8h6SUCfZTKzwQR8tl0CcU80KP6onv4UdqY19+YrR6XfybuuhnU?=
+ =?us-ascii?Q?cfoUykk3PRcTVpZ9BLJ+TDZi5CWaBIvyE6v/vGjlSCOvntx6R41vUM9D29mM?=
+ =?us-ascii?Q?Dg=3D=3D?=
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
+	Ze6LJ+sKipMYGBi0mWP+nXUYCyApofbmgUhApWvL0gfovcX0fOrp761PAZFkyYonKY4ZQQZW0pflFugGor8blNqoMcJySOIooBaqC+ANFiv/iHceTuWN+5wh0sAKOJUeohLLgYqjGkMmhAGbyu+wbLf4iX8mIYhLJD7n5psd4WScbwhvTUFpwoN6GrGw5H6bVGtGeMl3ooqYbMHxxzdjHcJwQTkHdzOMUOLAAQRyMaLFU/Azkjk4EsAeB0yyzfHsl9VOOj54EUbFt2pMiNm3YPAl+zRLh96d4BK5XFGDCNvPgoeGKcgNSnilq78H9EnuD7gKTb4e/8NaGPY8vxnfZKe8+dnJfLe4sd/T+ntnlnZjOgBxnubJZCjU4YLTTkTT2SRA3ofPTszKH+JdieaTtlAlHyvpK0kuboecYE8NkJuxlUgho6N7kJEkz8bz6m2akUDpsINWgzZ6Yrr5JNZwPYM3NVoMjjY7+TVimTbb1OCQ0E0SK9lUIZC3ESmhxc6Yf9vV9l7PYZMr1RL6ejSS30huQBDjhRmBeL2TO6Cy9rzZHrBLFi8HJA6UTWcvqyZsJ1e4BDfs3Vat2dIrrRaj9SlOWr/BZ74kAwMDvIPHzEg=
+X-OriginatorOrg: oracle.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 4bc269e9-5adc-400d-97d9-08dd7b5d325e
+X-MS-Exchange-CrossTenant-AuthSource: CH0PR10MB5338.namprd10.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 14 Apr 2025 14:03:56.5041
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: ip6BensbNUgBvAoYNeXmya5s6HlsIeGe/dIYHIR6J9fCB8kti3jF2yNt9SoDWiZmtVtXiqOwfekM4J9ckoJE6qig5pKZKv7++EI1hoWXw+E=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR10MB7400
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1095,Hydra:6.0.680,FMLib:17.12.68.34
+ definitions=2025-04-14_04,2025-04-10_01,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 bulkscore=0 malwarescore=0
+ mlxlogscore=999 phishscore=0 suspectscore=0 spamscore=0 adultscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2502280000
+ definitions=main-2504140102
+X-Proofpoint-GUID: BdyBqGi6kxUfUY6Qs1S880bGMkmBiiOF
+X-Proofpoint-ORIG-GUID: BdyBqGi6kxUfUY6Qs1S880bGMkmBiiOF
 
-On Mon, 14 Apr 2025 at 16:57, Stefano Garzarella <sgarzare@redhat.com> wrote:
->
-> From: Stefano Garzarella <sgarzare@redhat.com>
->
-> This driver does not support interrupts, and receiving the response is
-> synchronous with sending the command.
->
-> So we can set TPM_CHIP_FLAG_SYNC to support synchronous send() and
-> return responses in the same buffer used for commands. This way we
-> don't need the 4KB internal buffer used to cache the response before
-> .send() and .recv(). Also we don't need to implement recv() op.
->
-> Signed-off-by: Stefano Garzarella <sgarzare@redhat.com>
-> ---
-> v2:
-> - set TPM_CHIP_FLAG_SYNC and support it in the new send()
-> - removed Jens' T-b
 
-@Jens @Sumit can you test/review this patch again since from v1 we
-changed the core a bit adding TPM_CHIP_FLAG_SYNC instead of
-send_recv() op?
+Eric,
 
-Thanks,
-Stefano
+> All of the CRC library's CPU feature static_keys are initialized by
+> initcalls and never change afterwards, so there's no need for them to
+> be in the regular .data section. Put them in .data..ro_after_init
+> instead.
 
-> v1:
-> - added Jens' T-b
-> ---
->  drivers/char/tpm/tpm_ftpm_tee.h |  4 ---
->  drivers/char/tpm/tpm_ftpm_tee.c | 64 ++++++++++-----------------------
->  2 files changed, 19 insertions(+), 49 deletions(-)
->
-> diff --git a/drivers/char/tpm/tpm_ftpm_tee.h b/drivers/char/tpm/tpm_ftpm_tee.h
-> index e39903b7ea07..8d5c3f0d2879 100644
-> --- a/drivers/char/tpm/tpm_ftpm_tee.h
-> +++ b/drivers/char/tpm/tpm_ftpm_tee.h
-> @@ -22,16 +22,12 @@
->   * struct ftpm_tee_private - fTPM's private data
->   * @chip:     struct tpm_chip instance registered with tpm framework.
->   * @session:  fTPM TA session identifier.
-> - * @resp_len: cached response buffer length.
-> - * @resp_buf: cached response buffer.
->   * @ctx:      TEE context handler.
->   * @shm:      Memory pool shared with fTPM TA in TEE.
->   */
->  struct ftpm_tee_private {
->         struct tpm_chip *chip;
->         u32 session;
-> -       size_t resp_len;
-> -       u8 resp_buf[MAX_RESPONSE_SIZE];
->         struct tee_context *ctx;
->         struct tee_shm *shm;
->  };
-> diff --git a/drivers/char/tpm/tpm_ftpm_tee.c b/drivers/char/tpm/tpm_ftpm_tee.c
-> index 637cc8b6599e..b9adc040ca6d 100644
-> --- a/drivers/char/tpm/tpm_ftpm_tee.c
-> +++ b/drivers/char/tpm/tpm_ftpm_tee.c
-> @@ -31,46 +31,18 @@ static const uuid_t ftpm_ta_uuid =
->                   0x82, 0xCB, 0x34, 0x3F, 0xB7, 0xF3, 0x78, 0x96);
->
->  /**
-> - * ftpm_tee_tpm_op_recv() - retrieve fTPM response.
-> - * @chip:      the tpm_chip description as specified in driver/char/tpm/tpm.h.
-> - * @buf:       the buffer to store data.
-> - * @count:     the number of bytes to read.
-> - *
-> - * Return:
-> - *     In case of success the number of bytes received.
-> - *     On failure, -errno.
-> - */
-> -static int ftpm_tee_tpm_op_recv(struct tpm_chip *chip, u8 *buf, size_t count)
-> -{
-> -       struct ftpm_tee_private *pvt_data = dev_get_drvdata(chip->dev.parent);
-> -       size_t len;
-> -
-> -       len = pvt_data->resp_len;
-> -       if (count < len) {
-> -               dev_err(&chip->dev,
-> -                       "%s: Invalid size in recv: count=%zd, resp_len=%zd\n",
-> -                       __func__, count, len);
-> -               return -EIO;
-> -       }
-> -
-> -       memcpy(buf, pvt_data->resp_buf, len);
-> -       pvt_data->resp_len = 0;
-> -
-> -       return len;
-> -}
-> -
-> -/**
-> - * ftpm_tee_tpm_op_send() - send TPM commands through the TEE shared memory.
-> + * ftpm_tee_tpm_op_send() - send TPM commands through the TEE shared memory
-> + * and retrieve the response.
->   * @chip:      the tpm_chip description as specified in driver/char/tpm/tpm.h
-> - * @buf:       the buffer to send.
-> - * @len:       the number of bytes to send.
-> + * @buf:       the buffer to send and to store the response.
-> + * @cmd_len:   the number of bytes to send.
->   * @buf_size:  the size of the buffer.
->   *
->   * Return:
-> - *     In case of success, returns 0.
-> + *     In case of success, returns the number of bytes received.
->   *     On failure, -errno
->   */
-> -static int ftpm_tee_tpm_op_send(struct tpm_chip *chip, u8 *buf, size_t len,
-> +static int ftpm_tee_tpm_op_send(struct tpm_chip *chip, u8 *buf, size_t cmd_len,
->                                 size_t buf_size)
->  {
->         struct ftpm_tee_private *pvt_data = dev_get_drvdata(chip->dev.parent);
-> @@ -82,16 +54,15 @@ static int ftpm_tee_tpm_op_send(struct tpm_chip *chip, u8 *buf, size_t len,
->         struct tee_param command_params[4];
->         struct tee_shm *shm = pvt_data->shm;
->
-> -       if (len > MAX_COMMAND_SIZE) {
-> +       if (cmd_len > MAX_COMMAND_SIZE) {
->                 dev_err(&chip->dev,
->                         "%s: len=%zd exceeds MAX_COMMAND_SIZE supported by fTPM TA\n",
-> -                       __func__, len);
-> +                       __func__, cmd_len);
->                 return -EIO;
->         }
->
->         memset(&transceive_args, 0, sizeof(transceive_args));
->         memset(command_params, 0, sizeof(command_params));
-> -       pvt_data->resp_len = 0;
->
->         /* Invoke FTPM_OPTEE_TA_SUBMIT_COMMAND function of fTPM TA */
->         transceive_args = (struct tee_ioctl_invoke_arg) {
-> @@ -105,7 +76,7 @@ static int ftpm_tee_tpm_op_send(struct tpm_chip *chip, u8 *buf, size_t len,
->                 .attr = TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INPUT,
->                 .u.memref = {
->                         .shm = shm,
-> -                       .size = len,
-> +                       .size = cmd_len,
->                         .shm_offs = 0,
->                 },
->         };
-> @@ -117,7 +88,7 @@ static int ftpm_tee_tpm_op_send(struct tpm_chip *chip, u8 *buf, size_t len,
->                 return PTR_ERR(temp_buf);
->         }
->         memset(temp_buf, 0, (MAX_COMMAND_SIZE + MAX_RESPONSE_SIZE));
-> -       memcpy(temp_buf, buf, len);
-> +       memcpy(temp_buf, buf, cmd_len);
->
->         command_params[1] = (struct tee_param) {
->                 .attr = TEE_IOCTL_PARAM_ATTR_TYPE_MEMREF_INOUT,
-> @@ -158,17 +129,20 @@ static int ftpm_tee_tpm_op_send(struct tpm_chip *chip, u8 *buf, size_t len,
->                         __func__, resp_len);
->                 return -EIO;
->         }
-> +       if (resp_len > buf_size) {
-> +               dev_err(&chip->dev,
-> +                       "%s: resp_len=%zd exceeds buf_size=%zd\n",
-> +                       __func__, resp_len, buf_size);
-> +               return -EIO;
-> +       }
->
-> -       /* sanity checks look good, cache the response */
-> -       memcpy(pvt_data->resp_buf, temp_buf, resp_len);
-> -       pvt_data->resp_len = resp_len;
-> +       memcpy(buf, temp_buf, resp_len);
->
-> -       return 0;
-> +       return resp_len;
->  }
->
->  static const struct tpm_class_ops ftpm_tee_tpm_ops = {
->         .flags = TPM_OPS_AUTO_STARTUP,
-> -       .recv = ftpm_tee_tpm_op_recv,
->         .send = ftpm_tee_tpm_op_send,
->  };
->
-> @@ -253,7 +227,7 @@ static int ftpm_tee_probe(struct device *dev)
->         }
->
->         pvt_data->chip = chip;
-> -       pvt_data->chip->flags |= TPM_CHIP_FLAG_TPM2;
-> +       pvt_data->chip->flags |= TPM_CHIP_FLAG_TPM2 | TPM_CHIP_FLAG_SYNC;
->
->         /* Create a character device for the fTPM */
->         rc = tpm_chip_register(pvt_data->chip);
-> --
-> 2.49.0
->
+LGTM.
 
+Reviewed-by: Martin K. Petersen <martin.petersen@oracle.com>
+
+-- 
+Martin K. Petersen
 
