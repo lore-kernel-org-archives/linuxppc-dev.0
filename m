@@ -1,55 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-7667-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7668-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DD40C369AB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Apr 2025 15:37:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6845CC369BA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Apr 2025 15:37:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZcSvl2rB7z2xVq;
-	Wed, 16 Apr 2025 01:37:23 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZcSvm3Mgrz3bl7;
+	Wed, 16 Apr 2025 01:37:24 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744731443;
-	cv=none; b=WXOBvWH2sylI8Kg2NyjAX8uNPf4OFIAKL/t6dsVGRVZRv9tlPCbsP1YCqi+a2LvkXkOd/qK0HHSklDjl0q+orp7FNW1qRqAA8qWy4ak1usl9hcLd3F7sHxYzcNRmF9Q7dKOHW+Xp6SZ7xGH56Vj1rtyGr7olzMiQJgcAl1D+gJ/qGWtBX1TXhg3J8ezlAsJqv/nrt+fBapbd6L64AmF1D1JFpawJkfH0wm9tRiUIV01iNCeayrvlJJLq9nBCFcyE5QlHnb+tm/5gEqhA+BvYQGPaopTWZd0J9QFINKQmDR3bLgKH+jlboyMEfOiM3GiRyfmU3H1S465to5Y3aNL73A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744731444;
+	cv=none; b=kcxZEP6sJ/WiN2lqg2lldiB/Sx1h2OeFPBfGnbJIpBnGxBrYb0cxg08Db9kda/c1+OVVt9J2TdrpsB7iec5Jo78Zn5/mG1sk0x7gwFBJnsQy+MQV2S6oBbqYUV6cfo/MjgJX//o2hel5CQQ6rOKG6IdLnYJN4Cu65WmUfu2gYXgOJ5YEyfWDh4QwfPKKdDSsMdDei1gdgqJ7Dt8Ckukjym8QUJsQMYAyYb9Yr6wRRZOxSQXOVhPouCfE1BvoGZKUbp+sM/B78lQEhVqsnQUoVH8JnjHE39qQ8Y2H+CzgNDNiuCzxcg7twoLJTg6fkYldVQaWac23jH2zHPdW6MkbJA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744731443; c=relaxed/relaxed;
-	bh=aWGrnOqysJizSR01smsSWh2TP1Mi7MZUbGBVnPLFD8I=;
+	t=1744731444; c=relaxed/relaxed;
+	bh=864IBWPR/g77N41nse+BQX0aC8cI/YU4haFPAwkPj8Y=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Zmz/MjSBwMNxNURTRbDmsZdFlxSJ7m9KdusCV8yL3sKchS+COhyvd7GnRqOs27Rn6Sz2Xnd4bBYMaFOi13s18fiD1QV1Ix8Dht+GT68e6aLI/NJCtlUX1aQ8elwvXuL9nyoTdg2Fe/ZL0FPJ6bLu8rZLYJrd8q3tjvg0eNzLT1GCS+Ql4z8rXSWzixwXobaBvh0QKIq2IAxY6b4LUtGrdhUzi7+o5ulYSHGHJ18dij3eecbXIt1iTwizZqONiMsrVCKVtIBdZpGlTNXPJtq7rCxaLaw3hxleHxM4PEHsofKiyRQL4qypmllMTvd8OVceYvF7NDl9gR72gdH1sNc74A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TSKpof01; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=eMYO7CxOV3YDVK9hQRKLA1NTuXgHnabsy9SFXqmRrJXdNPECq6WklGZwEcgQq/GilZK74gtV3d7GNACGhqNpd8jPya1ScovzT8DmFp1QpP2t1ZWEAfAOVdZVEHnlHgnSGBj0EdCh59A9zKwl41zQxYGFyIbTzx4H54azwPPygPKRqjvErJJvHHALPYBmOb4uqL4XJt1Ewh2ECZvR1dsFWcJDI0kjo4mPITD4sS5JUQM31bP0AYmCc4h/q2v9i9TfO7OyGWM/IzltfSEJPO0kQEsmoIDM2eRu7I52XCxGzN9MuCieBRZ39x1iv+YRhAKTwTVm46EioI02ckfGz1kTag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rsTNqLfy; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TSKpof01;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rsTNqLfy;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZcSvk3YKqz3bl7
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZcSvk45Jhz3blb
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2025 01:37:22 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id A55744A347;
+	by sea.source.kernel.org (Postfix) with ESMTP id 6E5A54A28B;
 	Tue, 15 Apr 2025 15:37:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 7DA19C4CEF6;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 45DBBC4CEEC;
 	Tue, 15 Apr 2025 15:37:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1744731437;
-	bh=NZgmwCPRLWI3kpiACRhVK8RgHlS1bLhmnT/HYgkFGdk=;
+	bh=tKCZ1U57MVrN0lerBtOC7DMLUFHO1/PGHr6C3AN/kw8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=TSKpof01gBcDIqp1QhNNuavMJvKiQDekMhNXaX1zqpSboLdMZt2sYK64S6kK0yoTR
-	 LTpr9IzVoTwInti3CLtqjFiBpJkfUGK8MhvbOt0AbXjUMvLTuAjrHJg0vPyQ/KX+7k
-	 cukVgT0d2r99Tro+Av5nrtkIWP7a8irZ06tj6nDyHxm2cx+QO8g4ZdpaRCoK8Br/nv
-	 Utq0cRG96+rjcwCiEa2j/KTBEzkc4dkkwPSPCDwMQpY/E/pUJkltn6+ceJlhBZW1F4
-	 rfDqV0kct4pAWX6u+H4Dr08bpjttADS/WZY7LGZynCuFhZTkG3sBicTH2id5NbxwqT
-	 n9vXb2FCIxmJg==
+	b=rsTNqLfyi72SZ2jdirJeSjURBXX62aZ3L4pWjWLptiWpw2cfwZe/aRXiQoEaOh4g5
+	 RLBOosAfAdYQtJgmkQoTKYqqnhgD6zjHH2wtCPTV/YJltfh4aZs3h6P+ObW3x1zwWo
+	 CtLJFr08sd65Rrec7g9PTaXiGScXZa3ArJQla2WLBTVQTRskWfFcRoTTpACdHw0GZx
+	 /fbvokcvpvMPAZqSOZB9qn9hyf7MPRAYfpf92zozbk0aN42rIqjTfSw0J8WMc5sbjS
+	 GaICvSypnddmjlIYeLpm4LrLFSX44d7INNmiyQA1ngqw98f+TNdtdO5ZGweFn9rBIu
+	 qWr8fXD3ygmSA==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DB67C369BD;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 30B65C369C1;
 	Tue, 15 Apr 2025 15:37:17 +0000 (UTC)
 From: Sven Peter via B4 Relay <devnull+sven.svenpeter.dev@kernel.org>
-Date: Tue, 15 Apr 2025 15:36:59 +0000
-Subject: [PATCH v2 5/6] i2c: pasemi: Enable the unjam machine
+Date: Tue, 15 Apr 2025 15:36:56 +0000
+Subject: [PATCH v2 2/6] i2c: pasemi: Sort includes alphabetically
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,7 +64,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250415-pasemi-fixes-v2-5-c543bf53151a@svenpeter.dev>
+Message-Id: <20250415-pasemi-fixes-v2-2-c543bf53151a@svenpeter.dev>
 References: <20250415-pasemi-fixes-v2-0-c543bf53151a@svenpeter.dev>
 In-Reply-To: <20250415-pasemi-fixes-v2-0-c543bf53151a@svenpeter.dev>
 To: Janne Grunau <j@jannau.net>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, 
@@ -77,13 +77,13 @@ Cc: linuxppc-dev@lists.ozlabs.org, asahi@lists.linux.dev,
  linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, 
  linux-kernel@vger.kernel.org, Sven Peter <sven@svenpeter.dev>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1300; i=sven@svenpeter.dev;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1747; i=sven@svenpeter.dev;
  h=from:subject:message-id;
- bh=avtSs0p55pNQJTNl3swTi6LwCmUmFUOOKuZ3dOr9VMk=;
- b=owGbwMvMwCHmIlirolUq95LxtFoSQ/q/Ws2ndfPmtB3bbO2jqvDW5Ev4LGcDy+r+knvZS59Pe
- X71jezqjlIWBjEOBlkxRZbt++1Nnzx8I7h006X3MHNYmUCGMHBxCsBEbHkZGU6nTbw1R/BPS4jk
- jcyrs3Uk5026L3Qj8fylVBc5TZurXrMYGd5u+bD78K+fK15NMFWyPLghsbbqqc4xs/jri+yaTOL
- 5uXgB
+ bh=d4SrViBETCvEIVGrCu813u0fCI79k8TBuEJCcmGpDI0=;
+ b=owGbwMvMwCHmIlirolUq95LxtFoSQ/q/WtWl7ddnLW1MubOp8d16cesWr2/7U2cXBHtceHk94
+ Xb343vXOkpZGMQ4GGTFFFm277c3ffLwjeDSTZfew8xhZQIZwsDFKQATyZrO8D+9Oq6hSL4vb+s3
+ aes9x67wXZ7ywlla4kKDZuwqy/eW7yMY/ik9+WNdy5A+zzfXXDRK0vDdoZPBj/T0lJ3n3axrt+s
+ uZwUA
 X-Developer-Key: i=sven@svenpeter.dev; a=openpgp;
  fpr=A1E3E34A2B3C820DBC4955E5993B08092F131F93
 X-Endpoint-Received: by B4 Relay for sven@svenpeter.dev/default with
@@ -91,36 +91,66 @@ X-Endpoint-Received: by B4 Relay for sven@svenpeter.dev/default with
 X-Original-From: Sven Peter <sven@svenpeter.dev>
 Reply-To: sven@svenpeter.dev
 
-From: Hector Martin <marcan@marcan.st>
+From: Sven Peter <sven@svenpeter.dev>
 
-The I2C bus can get stuck under some conditions (desync between
-controller and device). The pasemi controllers include an unjam feature
-that is enabled on reset, but was being disabled by the driver. Keep it
-enabled by explicitly setting the UJM bit in the CTL register. This
-should help recover the bus from certain conditions, which would
-otherwise remain stuck forever.
+No functional changes.
 
-Signed-off-by: Hector Martin <marcan@marcan.st>
-Reviewed-by: Neal Gompa <neal@gompa.dev>
-Reviewed-by: Alyssa Rosenzweig <alyssa@rosenzweig.io>
 Signed-off-by: Sven Peter <sven@svenpeter.dev>
 ---
- drivers/i2c/busses/i2c-pasemi-core.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ drivers/i2c/busses/i2c-pasemi-core.c | 10 +++++-----
+ drivers/i2c/busses/i2c-pasemi-pci.c  | 10 +++++-----
+ 2 files changed, 10 insertions(+), 10 deletions(-)
 
 diff --git a/drivers/i2c/busses/i2c-pasemi-core.c b/drivers/i2c/busses/i2c-pasemi-core.c
-index 2f31f039bedfd7f78d6572fe925125b1a6d0724b..41db38d82fe62c73614b8fafe4cb73c7d1a24762 100644
+index 71cc8cfc7c5cbf3924269f6217712d42008c03ff..df1b0087dcacb0a3b94196368137d5e20b0e6d7e 100644
 --- a/drivers/i2c/busses/i2c-pasemi-core.c
 +++ b/drivers/i2c/busses/i2c-pasemi-core.c
-@@ -78,7 +78,7 @@ static inline int reg_read(struct pasemi_smbus *smbus, int reg)
+@@ -6,15 +6,15 @@
+  */
  
- static void pasemi_reset(struct pasemi_smbus *smbus)
- {
--	u32 val = (CTL_MTR | CTL_MRR | (smbus->clk_div & CTL_CLK_M));
-+	u32 val = (CTL_MTR | CTL_MRR | CTL_UJM | (smbus->clk_div & CTL_CLK_M));
+ #include <linux/bits.h>
++#include <linux/delay.h>
++#include <linux/i2c.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+-#include <linux/kernel.h>
+-#include <linux/stddef.h>
+ #include <linux/sched.h>
+-#include <linux/i2c.h>
+-#include <linux/delay.h>
+ #include <linux/slab.h>
+-#include <linux/io.h>
++#include <linux/stddef.h>
  
- 	if (smbus->hw_rev >= 6)
- 		val |= CTL_EN;
+ #include "i2c-pasemi-core.h"
+ 
+diff --git a/drivers/i2c/busses/i2c-pasemi-pci.c b/drivers/i2c/busses/i2c-pasemi-pci.c
+index 77f90c7436eda2df16afd7f1cac79355fb005bfd..b9ccb54ec77e22bb1b77848c858e2e0cc51db7e3 100644
+--- a/drivers/i2c/busses/i2c-pasemi-pci.c
++++ b/drivers/i2c/busses/i2c-pasemi-pci.c
+@@ -5,15 +5,15 @@
+  * SMBus host driver for PA Semi PWRficient
+  */
+ 
++#include <linux/delay.h>
++#include <linux/i2c.h>
++#include <linux/io.h>
++#include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+-#include <linux/kernel.h>
+-#include <linux/stddef.h>
+ #include <linux/sched.h>
+-#include <linux/i2c.h>
+-#include <linux/delay.h>
+ #include <linux/slab.h>
+-#include <linux/io.h>
++#include <linux/stddef.h>
+ 
+ #include "i2c-pasemi-core.h"
+ 
 
 -- 
 2.34.1
