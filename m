@@ -1,55 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-7665-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7666-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B78FC369BD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Apr 2025 15:37:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E0E8C369AB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Apr 2025 15:37:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZcSvj4dDrz2xd4;
-	Wed, 16 Apr 2025 01:37:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744731441;
-	cv=none; b=lrNM6QaGIsJz3cGr1y+1tk0zIbKehzsXtCxQ9o4yHCMYvyS/Q1yTdamc7RqLkRzFih2YrNB5oEU09NGCmRvTEEtuUTdKnsS9NXx2BkdD3xQ1rPG0JTM72mmO+aUcffkFkjNPoO0OPDgWKmXqTPWsyqvTFb3pmo2qk8vDxEHhWPEYomdNjbArH4ONeCoGr9YzU88PcNGjV4HMTpbeBJQuDzcdm/A1GZllDeXW3Iq1yTuOZ96J//xFt853b/Nf1uil0vYzhczpUsca7MMiabFWX9BTbIgfJ7to4yWXqzDMA8KsZXSEa8RzzcUpVntzTEqxPy+wEmsaTfgRY5FCq5QxRA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZcSvk1QVyz3bl5;
+	Wed, 16 Apr 2025 01:37:22 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744731442;
+	cv=none; b=c34fMB1BCRNBc9BrgMU7JjlzqPDk0/R5cO/uPrmxJmc97zDESGeaPGoeyRmXTJbIeoD3rVsEVlWML3Uy+onNrqx0Ivnkbj9ksCmYLIdZRbX/mUBw4x/dcYL25OKE09dbwt0MC5BNUByGAjTZCI0/6djFYuU1MQIcPB0fDA4uxFgyX6l2uBVzNGEOmyOv5ZFe46jO88UK0TV+p5sSfTmbi12u9Gvgr3+7yhc9t442yWNwqTbMZivBRFiP64rUowMX1/U/5pC9FFon3NgqGvylJmDOGicn5CYRmq+YrpAwRZS5gCYlAdQ1WzYBXjRzJ+tiQ9W2ct7iX/uC37TjNOuGGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744731441; c=relaxed/relaxed;
-	bh=xKmkMPmEcJmaMes/os9PPE/5CFS9MZHaaET8Nf0gww0=;
+	t=1744731442; c=relaxed/relaxed;
+	bh=yPoh999NAR7Z1rztq7zMYun/kBXA9QLmEkjkFBC0iSM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=bMglcV0XJgmG5ektlUWubBnav9spzPL325HoF+YBgRYD1PHyDHupnmX2J1JX5hCCtnuRwMqCVOtQczDmrunbtYMtLhq3CQMa5iCzJnev3L1XEXe7wSVBCxD9F5j9TRVyaLjhbI5ZyCnBXLArW01pm6wrg1bD3INOd5mjQfnym7CRhRVoDe5FIZG5eN5B7F+8C2+0mgOGJda/IoQv2AjyVbTmacxOllCZkRhl4n3DOs1xecoZtedoyWUVPO/w5KBhnvLSoyU0gl94zONp5hlQwBtEVayWT/LTuW8m2ZTqGFCSwdIJcSHQJK+drk7fhyhnv8jZnn+897XtWaFKkr/u9w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nBdxMbZs; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=npMEuEKEzPM1aYNEXuv32Z1tpjdJ5K/O3/YiHHwcJ9JxuV2Xtm2CC8mNIqsuC7SSN4s3RChn9MyrwFlcbaDdjCeXZaDq5PWZpuTz+rOwKoQXTq8Ttb+sLDE6JDbooSP3kGWbgma8U174AmgTU4MDgvf0o/cvWSXdUMCRyzew3OC1mov6uDCQ+PLwi1s1KjdN44iAbyp9UExwHQXAtu0/Rfb8KU42oPNr9TLSkwJfxR17FAXDDov5oTAJ9hVdwt3pzZ3tmP3clyudd4aSZGIX+1qiMb1ZnRLNgxgMLsfwxNtRv8S5gY7WXvs38iNdTyeF1fL/xaCh3bONtdFRohwezQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=s9zJymXN; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nBdxMbZs;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=s9zJymXN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZcSvh1KYPz2xS9
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2025 01:37:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZcSvj0L75z2xVq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2025 01:37:20 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 81EAB4A2DD;
-	Tue, 15 Apr 2025 15:37:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 541E0C4CEF1;
+	by dfw.source.kernel.org (Postfix) with ESMTP id 92DB75C58AD;
+	Tue, 15 Apr 2025 15:35:00 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 3D168C4CEED;
 	Tue, 15 Apr 2025 15:37:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1744731437;
-	bh=F6ydi+3Kh9gLpG3MhIJVGmiYu4P4h2LRSPQzIzRGasg=;
+	bh=J3Oie2pptyHEtwvKtZF+eWmaLMCyaUrJVSGBPvvdSlQ=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=nBdxMbZseuEol55Y1Ny/cpNeEYq7uiD50JIs/gwKO1Foa2wPiCEWrc90lL1haY55m
-	 1U/Avo4ZIeTMGB3B0hc8RtHCP+fUz1bh2A2nXzqENOb+2WfvRXprDXBqeNLCoJuZLD
-	 zEBzma6f58T7jbVHsEsmRO/7k15L34RmCdGfwwtOcxHX2/PGwMxk0Rl2AUyFdDAssB
-	 m1CvNeYIsiA8Aek7Vq8uG2im5lz8Ku3au63TEM2C6vbDxZy5V1Zeq34gNfiIOXXi7b
-	 +Ckbnl3Dd3I78yvbAcdPdFDJ24wap6NTAymjMZa8wXc2v/uNtLmmcjAZd5/3bavVVv
-	 hOwn1ihr8SoqA==
+	b=s9zJymXNPTZOXH7mjUl0DjJiQnxJOqCGFa5iNXmtPndbrqBuDGv267Xb0yWif0CsV
+	 uNeQpT+5Fd+8w2sEbBrBewBoMqFZdi09FLbrt3/iwQ5ssPPu4QY7l0DVurdWZqD791
+	 mfb8cecYFexXhWQClD9icW4ujlNKK1uR3RUjMNFqaI/wdAI+69g61bLH1OR/gd+23y
+	 47RkxtJqu+AidqXZIvQS4MFYAcp5jAdmhmadXI+D0d2QwZz8q2YLXxq7ZVhp4MIxU7
+	 fIsNl/sNMWeVPC7mSomGKYPfIGZreYnC6K9aQsq1TZK6L0/WKcyK8Kn2mUxaF8ZzVq
+	 PWBg3HcQNdXMQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 457E4C369BA;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F9E8C369BD;
 	Tue, 15 Apr 2025 15:37:17 +0000 (UTC)
 From: Sven Peter via B4 Relay <devnull+sven.svenpeter.dev@kernel.org>
-Date: Tue, 15 Apr 2025 15:36:57 +0000
-Subject: [PATCH v2 3/6] i2c: pasemi: Improve timeout handling
+Date: Tue, 15 Apr 2025 15:36:55 +0000
+Subject: [PATCH v2 1/6] i2c: pasemi: Use correct bits.h include
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,7 +64,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250415-pasemi-fixes-v2-3-c543bf53151a@svenpeter.dev>
+Message-Id: <20250415-pasemi-fixes-v2-1-c543bf53151a@svenpeter.dev>
 References: <20250415-pasemi-fixes-v2-0-c543bf53151a@svenpeter.dev>
 In-Reply-To: <20250415-pasemi-fixes-v2-0-c543bf53151a@svenpeter.dev>
 To: Janne Grunau <j@jannau.net>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, 
@@ -75,15 +75,16 @@ To: Janne Grunau <j@jannau.net>, Alyssa Rosenzweig <alyssa@rosenzweig.io>,
  Neal Gompa <neal@gompa.dev>, Hector Martin <marcan@marcan.st>
 Cc: linuxppc-dev@lists.ozlabs.org, asahi@lists.linux.dev, 
  linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Sven Peter <sven@svenpeter.dev>
+ linux-kernel@vger.kernel.org, Sven Peter <sven@svenpeter.dev>, 
+ Andy Shevchenko <andy.shevchenko@gmail.com>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=2138; i=sven@svenpeter.dev;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=990; i=sven@svenpeter.dev;
  h=from:subject:message-id;
- bh=pieYM48LE5ENsb4OlGmWM38fJJzel5K/67CDk0KItDE=;
- b=owGbwMvMwCHmIlirolUq95LxtFoSQ/q/WvWKcJ/Ij8b3P05fYM58StKf7c2kj6UO6rKVr2u/R
- bN/jY3vKGVhEONgkBVTZNm+3970ycM3gks3XXoPM4eVCWQIAxenAExk7yWG/w5Skwunb99z8fBu
- o7eC/youx5b+YzCc+W/XoprbuSEdnPcZGU4/lzac0t5wuYzjwwGL5tcNvtVFW7/VPLu1Y0rwgYr
- 9DAwA
+ bh=T4ctk5KZpkF4MCpfLgWPh46S+YQwBJlk0+PfdZqRe6g=;
+ b=owGbwMvMwCHmIlirolUq95LxtFoSQ/q/WpVo9+5foQ6z5vcxp3SHJe/Yv2n3g66G6UzbKwXuL
+ tgouymoo5SFQYyDQVZMkWX7fnvTJw/fCC7ddOk9zBxWJpAhDFycAjCRbQ4M/70DXfKzoxxXTxOc
+ uo9dNH/jlYrXT2ck/Xx1InsiY6tQ80ZGho+/F3tc3uDmaXHgnMfKKX0nLK4sFYvyXBK8OMPl/06
+ 9o5wA
 X-Developer-Key: i=sven@svenpeter.dev; a=openpgp;
  fpr=A1E3E34A2B3C820DBC4955E5993B08092F131F93
 X-Endpoint-Received: by B4 Relay for sven@svenpeter.dev/default with
@@ -93,71 +94,30 @@ Reply-To: sven@svenpeter.dev
 
 From: Sven Peter <sven@svenpeter.dev>
 
-Add proper timeout handling for the interrupt path.
-Previously, this was only correctly done for the polling path.
-Note that we drop reg_write(smbus, REG_SMSTA, status) here which
-will be done anyway whenever the next transaction starts via
-pasemi_smb_clear.
+When changing the #defines to use BIT and GENMASK the bitfield.h include
+was added instead of the correct bits.h include.
 
+Reported-by: Andy Shevchenko <andy.shevchenko@gmail.com>
+Closes: https://lore.kernel.org/asahi/Z965tVhC5jxy1kqZ@surfacebook.localdomain/
+Fixes: 8b4da3ef9206 ("i2c: pasemi: Add registers bits and switch to BIT()")
 Signed-off-by: Sven Peter <sven@svenpeter.dev>
 ---
- drivers/i2c/busses/i2c-pasemi-core.c | 24 +++++++++++++++++-------
- 1 file changed, 17 insertions(+), 7 deletions(-)
+ drivers/i2c/busses/i2c-pasemi-core.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/i2c/busses/i2c-pasemi-core.c b/drivers/i2c/busses/i2c-pasemi-core.c
-index df1b0087dcacb0a3b94196368137d5e20b0e6d7e..9b611dbdfef23e78a4ea75ac0311938d52b6ba96 100644
+index bd128ab2e2ebb64929f2f6a3525835a880c3114d..71cc8cfc7c5cbf3924269f6217712d42008c03ff 100644
 --- a/drivers/i2c/busses/i2c-pasemi-core.c
 +++ b/drivers/i2c/busses/i2c-pasemi-core.c
-@@ -91,32 +91,42 @@ static void pasemi_smb_clear(struct pasemi_smbus *smbus)
- static int pasemi_smb_waitready(struct pasemi_smbus *smbus)
- {
- 	int timeout = 100;
-+	int ret;
- 	unsigned int status;
+@@ -5,7 +5,7 @@
+  * SMBus host driver for PA Semi PWRficient
+  */
  
- 	if (smbus->use_irq) {
- 		reinit_completion(&smbus->irq_completion);
- 		reg_write(smbus, REG_IMASK, SMSTA_XEN | SMSTA_MTN);
--		wait_for_completion_timeout(&smbus->irq_completion, msecs_to_jiffies(100));
-+		ret = wait_for_completion_timeout(&smbus->irq_completion, msecs_to_jiffies(100));
- 		reg_write(smbus, REG_IMASK, 0);
- 		status = reg_read(smbus, REG_SMSTA);
-+
-+		if (ret < 0) {
-+			dev_err(smbus->dev,
-+				"Completion wait failed with %d, status 0x%08x\n",
-+				ret, status);
-+			return ret;
-+		} else if (ret == 0) {
-+			dev_warn(smbus->dev, "Timeout, status 0x%08x\n", status);
-+			return -ETIME;
-+		}
- 	} else {
- 		status = reg_read(smbus, REG_SMSTA);
- 		while (!(status & SMSTA_XEN) && timeout--) {
- 			msleep(1);
- 			status = reg_read(smbus, REG_SMSTA);
- 		}
-+
-+		if (timeout < 0) {
-+			dev_warn(smbus->dev, "Timeout, status 0x%08x\n", status);
-+			return -ETIME;
-+		}
- 	}
- 
- 	/* Got NACK? */
- 	if (status & SMSTA_MTN)
- 		return -ENXIO;
- 
--	if (timeout < 0) {
--		dev_warn(smbus->dev, "Timeout, status 0x%08x\n", status);
--		reg_write(smbus, REG_SMSTA, status);
--		return -ETIME;
--	}
--
- 	/* Clear XEN */
- 	reg_write(smbus, REG_SMSTA, SMSTA_XEN);
- 
+-#include <linux/bitfield.h>
++#include <linux/bits.h>
+ #include <linux/module.h>
+ #include <linux/pci.h>
+ #include <linux/kernel.h>
 
 -- 
 2.34.1
