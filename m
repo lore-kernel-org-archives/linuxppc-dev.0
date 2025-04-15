@@ -1,55 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-7666-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7667-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E0E8C369AB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Apr 2025 15:37:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DD40C369AB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Apr 2025 15:37:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZcSvk1QVyz3bl5;
-	Wed, 16 Apr 2025 01:37:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744731442;
-	cv=none; b=c34fMB1BCRNBc9BrgMU7JjlzqPDk0/R5cO/uPrmxJmc97zDESGeaPGoeyRmXTJbIeoD3rVsEVlWML3Uy+onNrqx0Ivnkbj9ksCmYLIdZRbX/mUBw4x/dcYL25OKE09dbwt0MC5BNUByGAjTZCI0/6djFYuU1MQIcPB0fDA4uxFgyX6l2uBVzNGEOmyOv5ZFe46jO88UK0TV+p5sSfTmbi12u9Gvgr3+7yhc9t442yWNwqTbMZivBRFiP64rUowMX1/U/5pC9FFon3NgqGvylJmDOGicn5CYRmq+YrpAwRZS5gCYlAdQ1WzYBXjRzJ+tiQ9W2ct7iX/uC37TjNOuGGQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZcSvl2rB7z2xVq;
+	Wed, 16 Apr 2025 01:37:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744731443;
+	cv=none; b=WXOBvWH2sylI8Kg2NyjAX8uNPf4OFIAKL/t6dsVGRVZRv9tlPCbsP1YCqi+a2LvkXkOd/qK0HHSklDjl0q+orp7FNW1qRqAA8qWy4ak1usl9hcLd3F7sHxYzcNRmF9Q7dKOHW+Xp6SZ7xGH56Vj1rtyGr7olzMiQJgcAl1D+gJ/qGWtBX1TXhg3J8ezlAsJqv/nrt+fBapbd6L64AmF1D1JFpawJkfH0wm9tRiUIV01iNCeayrvlJJLq9nBCFcyE5QlHnb+tm/5gEqhA+BvYQGPaopTWZd0J9QFINKQmDR3bLgKH+jlboyMEfOiM3GiRyfmU3H1S465to5Y3aNL73A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744731442; c=relaxed/relaxed;
-	bh=yPoh999NAR7Z1rztq7zMYun/kBXA9QLmEkjkFBC0iSM=;
+	t=1744731443; c=relaxed/relaxed;
+	bh=aWGrnOqysJizSR01smsSWh2TP1Mi7MZUbGBVnPLFD8I=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=npMEuEKEzPM1aYNEXuv32Z1tpjdJ5K/O3/YiHHwcJ9JxuV2Xtm2CC8mNIqsuC7SSN4s3RChn9MyrwFlcbaDdjCeXZaDq5PWZpuTz+rOwKoQXTq8Ttb+sLDE6JDbooSP3kGWbgma8U174AmgTU4MDgvf0o/cvWSXdUMCRyzew3OC1mov6uDCQ+PLwi1s1KjdN44iAbyp9UExwHQXAtu0/Rfb8KU42oPNr9TLSkwJfxR17FAXDDov5oTAJ9hVdwt3pzZ3tmP3clyudd4aSZGIX+1qiMb1ZnRLNgxgMLsfwxNtRv8S5gY7WXvs38iNdTyeF1fL/xaCh3bONtdFRohwezQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=s9zJymXN; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=Zmz/MjSBwMNxNURTRbDmsZdFlxSJ7m9KdusCV8yL3sKchS+COhyvd7GnRqOs27Rn6Sz2Xnd4bBYMaFOi13s18fiD1QV1Ix8Dht+GT68e6aLI/NJCtlUX1aQ8elwvXuL9nyoTdg2Fe/ZL0FPJ6bLu8rZLYJrd8q3tjvg0eNzLT1GCS+Ql4z8rXSWzixwXobaBvh0QKIq2IAxY6b4LUtGrdhUzi7+o5ulYSHGHJ18dij3eecbXIt1iTwizZqONiMsrVCKVtIBdZpGlTNXPJtq7rCxaLaw3hxleHxM4PEHsofKiyRQL4qypmllMTvd8OVceYvF7NDl9gR72gdH1sNc74A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TSKpof01; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=s9zJymXN;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TSKpof01;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZcSvj0L75z2xVq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2025 01:37:20 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZcSvk3YKqz3bl7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2025 01:37:22 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 92DB75C58AD;
-	Tue, 15 Apr 2025 15:35:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 3D168C4CEED;
+	by sea.source.kernel.org (Postfix) with ESMTP id A55744A347;
+	Tue, 15 Apr 2025 15:37:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 7DA19C4CEF6;
 	Tue, 15 Apr 2025 15:37:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1744731437;
-	bh=J3Oie2pptyHEtwvKtZF+eWmaLMCyaUrJVSGBPvvdSlQ=;
+	bh=NZgmwCPRLWI3kpiACRhVK8RgHlS1bLhmnT/HYgkFGdk=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=s9zJymXNPTZOXH7mjUl0DjJiQnxJOqCGFa5iNXmtPndbrqBuDGv267Xb0yWif0CsV
-	 uNeQpT+5Fd+8w2sEbBrBewBoMqFZdi09FLbrt3/iwQ5ssPPu4QY7l0DVurdWZqD791
-	 mfb8cecYFexXhWQClD9icW4ujlNKK1uR3RUjMNFqaI/wdAI+69g61bLH1OR/gd+23y
-	 47RkxtJqu+AidqXZIvQS4MFYAcp5jAdmhmadXI+D0d2QwZz8q2YLXxq7ZVhp4MIxU7
-	 fIsNl/sNMWeVPC7mSomGKYPfIGZreYnC6K9aQsq1TZK6L0/WKcyK8Kn2mUxaF8ZzVq
-	 PWBg3HcQNdXMQ==
+	b=TSKpof01gBcDIqp1QhNNuavMJvKiQDekMhNXaX1zqpSboLdMZt2sYK64S6kK0yoTR
+	 LTpr9IzVoTwInti3CLtqjFiBpJkfUGK8MhvbOt0AbXjUMvLTuAjrHJg0vPyQ/KX+7k
+	 cukVgT0d2r99Tro+Av5nrtkIWP7a8irZ06tj6nDyHxm2cx+QO8g4ZdpaRCoK8Br/nv
+	 Utq0cRG96+rjcwCiEa2j/KTBEzkc4dkkwPSPCDwMQpY/E/pUJkltn6+ceJlhBZW1F4
+	 rfDqV0kct4pAWX6u+H4Dr08bpjttADS/WZY7LGZynCuFhZTkG3sBicTH2id5NbxwqT
+	 n9vXb2FCIxmJg==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1F9E8C369BD;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 6DB67C369BD;
 	Tue, 15 Apr 2025 15:37:17 +0000 (UTC)
 From: Sven Peter via B4 Relay <devnull+sven.svenpeter.dev@kernel.org>
-Date: Tue, 15 Apr 2025 15:36:55 +0000
-Subject: [PATCH v2 1/6] i2c: pasemi: Use correct bits.h include
+Date: Tue, 15 Apr 2025 15:36:59 +0000
+Subject: [PATCH v2 5/6] i2c: pasemi: Enable the unjam machine
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,7 +64,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250415-pasemi-fixes-v2-1-c543bf53151a@svenpeter.dev>
+Message-Id: <20250415-pasemi-fixes-v2-5-c543bf53151a@svenpeter.dev>
 References: <20250415-pasemi-fixes-v2-0-c543bf53151a@svenpeter.dev>
 In-Reply-To: <20250415-pasemi-fixes-v2-0-c543bf53151a@svenpeter.dev>
 To: Janne Grunau <j@jannau.net>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, 
@@ -75,16 +75,15 @@ To: Janne Grunau <j@jannau.net>, Alyssa Rosenzweig <alyssa@rosenzweig.io>,
  Neal Gompa <neal@gompa.dev>, Hector Martin <marcan@marcan.st>
 Cc: linuxppc-dev@lists.ozlabs.org, asahi@lists.linux.dev, 
  linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Sven Peter <sven@svenpeter.dev>, 
- Andy Shevchenko <andy.shevchenko@gmail.com>
+ linux-kernel@vger.kernel.org, Sven Peter <sven@svenpeter.dev>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=990; i=sven@svenpeter.dev;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1300; i=sven@svenpeter.dev;
  h=from:subject:message-id;
- bh=T4ctk5KZpkF4MCpfLgWPh46S+YQwBJlk0+PfdZqRe6g=;
- b=owGbwMvMwCHmIlirolUq95LxtFoSQ/q/WpVo9+5foQ6z5vcxp3SHJe/Yv2n3g66G6UzbKwXuL
- tgouymoo5SFQYyDQVZMkWX7fnvTJw/fCC7ddOk9zBxWJpAhDFycAjCRbQ4M/70DXfKzoxxXTxOc
- uo9dNH/jlYrXT2ck/Xx1InsiY6tQ80ZGho+/F3tc3uDmaXHgnMfKKX0nLK4sFYvyXBK8OMPl/06
- 9o5wA
+ bh=avtSs0p55pNQJTNl3swTi6LwCmUmFUOOKuZ3dOr9VMk=;
+ b=owGbwMvMwCHmIlirolUq95LxtFoSQ/q/Ws2ndfPmtB3bbO2jqvDW5Ev4LGcDy+r+knvZS59Pe
+ X71jezqjlIWBjEOBlkxRZbt++1Nnzx8I7h006X3MHNYmUCGMHBxCsBEbHkZGU6nTbw1R/BPS4jk
+ jcyrs3Uk5026L3Qj8fylVBc5TZurXrMYGd5u+bD78K+fK15NMFWyPLghsbbqqc4xs/jri+yaTOL
+ 5uXgB
 X-Developer-Key: i=sven@svenpeter.dev; a=openpgp;
  fpr=A1E3E34A2B3C820DBC4955E5993B08092F131F93
 X-Endpoint-Received: by B4 Relay for sven@svenpeter.dev/default with
@@ -92,32 +91,36 @@ X-Endpoint-Received: by B4 Relay for sven@svenpeter.dev/default with
 X-Original-From: Sven Peter <sven@svenpeter.dev>
 Reply-To: sven@svenpeter.dev
 
-From: Sven Peter <sven@svenpeter.dev>
+From: Hector Martin <marcan@marcan.st>
 
-When changing the #defines to use BIT and GENMASK the bitfield.h include
-was added instead of the correct bits.h include.
+The I2C bus can get stuck under some conditions (desync between
+controller and device). The pasemi controllers include an unjam feature
+that is enabled on reset, but was being disabled by the driver. Keep it
+enabled by explicitly setting the UJM bit in the CTL register. This
+should help recover the bus from certain conditions, which would
+otherwise remain stuck forever.
 
-Reported-by: Andy Shevchenko <andy.shevchenko@gmail.com>
-Closes: https://lore.kernel.org/asahi/Z965tVhC5jxy1kqZ@surfacebook.localdomain/
-Fixes: 8b4da3ef9206 ("i2c: pasemi: Add registers bits and switch to BIT()")
+Signed-off-by: Hector Martin <marcan@marcan.st>
+Reviewed-by: Neal Gompa <neal@gompa.dev>
+Reviewed-by: Alyssa Rosenzweig <alyssa@rosenzweig.io>
 Signed-off-by: Sven Peter <sven@svenpeter.dev>
 ---
  drivers/i2c/busses/i2c-pasemi-core.c | 2 +-
  1 file changed, 1 insertion(+), 1 deletion(-)
 
 diff --git a/drivers/i2c/busses/i2c-pasemi-core.c b/drivers/i2c/busses/i2c-pasemi-core.c
-index bd128ab2e2ebb64929f2f6a3525835a880c3114d..71cc8cfc7c5cbf3924269f6217712d42008c03ff 100644
+index 2f31f039bedfd7f78d6572fe925125b1a6d0724b..41db38d82fe62c73614b8fafe4cb73c7d1a24762 100644
 --- a/drivers/i2c/busses/i2c-pasemi-core.c
 +++ b/drivers/i2c/busses/i2c-pasemi-core.c
-@@ -5,7 +5,7 @@
-  * SMBus host driver for PA Semi PWRficient
-  */
+@@ -78,7 +78,7 @@ static inline int reg_read(struct pasemi_smbus *smbus, int reg)
  
--#include <linux/bitfield.h>
-+#include <linux/bits.h>
- #include <linux/module.h>
- #include <linux/pci.h>
- #include <linux/kernel.h>
+ static void pasemi_reset(struct pasemi_smbus *smbus)
+ {
+-	u32 val = (CTL_MTR | CTL_MRR | (smbus->clk_div & CTL_CLK_M));
++	u32 val = (CTL_MTR | CTL_MRR | CTL_UJM | (smbus->clk_div & CTL_CLK_M));
+ 
+ 	if (smbus->hw_rev >= 6)
+ 		val |= CTL_EN;
 
 -- 
 2.34.1
