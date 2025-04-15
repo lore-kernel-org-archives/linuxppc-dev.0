@@ -1,55 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-7670-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7671-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2626C369BA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Apr 2025 15:38:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8801C369AB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Apr 2025 21:27:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZcSvn1wPNz3blb;
-	Wed, 16 Apr 2025 01:37:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744731445;
-	cv=none; b=IneWFyd60raozJmm/mQL36kVsCH+NdqrANW5rdXdMUGlqXZi92zb7NlJK9IhLyXJM1BGfYtNihvhxC2ZaHiWD4bLaWtO6dqUCjYnfll0dlRvZEEwAghzXRKOOHl5yob8oLBymWcTkhclI7RziHEXiUn2pVEazWle8FlUVXaVqYXn9R8Lb1omdFYEnt19FvGBZp70SyQ5XjFBe0iP57b0kCHm7QrhyWDporDJAG+hgwOsZhx7Cajz9cxg86LrYA//Y21P199938ffAn3QWQYEnHCeT9oVBEqIgPqplpowWfosJ2qbwXvYFLA/XVmyCBM6Bt95zwWMMNw4xAHjiSZJIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Zccgf4fQ4z2yFJ;
+	Wed, 16 Apr 2025 07:27:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b5"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744737140;
+	cv=none; b=NxgLuzeUhTz3i9bdOgiPpUN/IAVv859vZ/t0SQ3zqhwEgOZJOb0hN1S23tBNwZ8sNVNBivTC4E1HGaKUDfwZ7VgS1tbbINqN2J2BPEynm5bkBPdZLqe4W1x8MLwOMF53l2bqp2AS5HfTzmbWMK0jISoBHKABKEHeJXAiEhPEM2z5JHS6qdvNtuQxZ1pLBmpO8PxpAM97/9PHbrQ9Oeb5OntSq5s1Hz5C6vGnoOgWZSu0FV8GRNhg7Z+RiK/eNpEhjkqQ5ucOGIpcrvXI0nPLDEU49tKnVTDYiT7rh6E6St8HsbRA7GBt+yHeyBVjAlxRCHOdvwvDtmGR03N0+czjLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744731445; c=relaxed/relaxed;
-	bh=SPu7srPL9By2zZEVIfL1Lj4E5YPu0Ndbglz1s4g9Cc4=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=meoJdAIPRX3f7NK7NhEBm5ef0AXqy/shMNc9S3Ab8SYsSGl4lDf6gyZCmHOK7khkAt8gQsumV91IHz7Clj8CeUHqtXqz1LhwxOQ0VBehu+5SF6cI7aUbSCin9JJL8Kw1yjK1x5jKiuV6YsBNE8KrWcF/Qzn3fSLCBtDYizCYVMMUlgWbLOpZTOGLPh/cxksrIUY+kWMK6SQMq/nxy5mj/tY0czAFFmsg/p+fwen6L0gLoKMSRg7Dz8d0wKdycItI0tSTtW3psfcpOBeG81I0u7c1fromwRpCxTtNULazvz+Uw1n7oPjggB/j1OWTnZ413B2vuXhZPDp+zpKaTl8hGg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JzJSNSwW; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1744737140; c=relaxed/relaxed;
+	bh=TZ5TeuXVlqIBcTKnyUPN6n6PTqhb3E+xVpAkmmqWBI8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jqHMFV12tNLbU0Ev7ekL/6UJhziBjFJ+L9nZDqj/zTqRXlquiggWZIiJJaOggvxroHxWaUFCYMuglRsbl1c4MRmA/Rps+V3wtrRdgd/Ydcj2t98x9L7ycCjN5D+zyinBj8MUXz9IAGviBS4rdf2ZvJ5H1IA53i5zUUz2lEKVKGf6v/J97EwEstTmZ1TRMmSkaO3TCDAc17vBd/kliBjpj+FI1PCK233A03UwfpKAkOfrEHbrw5TGOjlM0cIWBmwJy4W6HwiQjZcCS5w8tjgWqYCWnl2e+q/DOLtEjtg2dujOkTu+Quz9N7QRMLirNCJfr/5bJ15QBzT5FiCs8/TqoA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=rosenzweig.io; dkim=pass (2048-bit key; unprotected) header.d=rosenzweig.io header.i=@rosenzweig.io header.a=rsa-sha256 header.s=key1 header.b=oFlrKFE4; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b5; helo=out-181.mta0.migadu.com; envelope-from=alyssa@rosenzweig.io; receiver=lists.ozlabs.org) smtp.mailfrom=rosenzweig.io
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=rosenzweig.io
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JzJSNSwW;
+	dkim=pass (2048-bit key; unprotected) header.d=rosenzweig.io header.i=@rosenzweig.io header.a=rsa-sha256 header.s=key1 header.b=oFlrKFE4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=rosenzweig.io (client-ip=2001:41d0:1004:224b::b5; helo=out-181.mta0.migadu.com; envelope-from=alyssa@rosenzweig.io; receiver=lists.ozlabs.org)
+X-Greylist: delayed 62 seconds by postgrey-1.37 at boromir; Wed, 16 Apr 2025 03:12:16 AEST
+Received: from out-181.mta0.migadu.com (out-181.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZcSvk49tqz3blc
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2025 01:37:22 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id B4C964A3F6;
-	Tue, 15 Apr 2025 15:37:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 89651C4CEF5;
-	Tue, 15 Apr 2025 15:37:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1744731437;
-	bh=BXUeJzaOPu6wdBqkrzRH/yMdh5em9BF7TrNPfXAEkdo=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=JzJSNSwW1P5Il90YgnnI/8kNQAi/MxhGxCnW4IJvmxBzldDz2BxVdp6eFk/VfZkoN
-	 0VCZSNOPkpx9267K5Qm/v+ydkhNxlP02vtdxLC/T9tOMbqnbjF7O7LvZVoFM5kssWR
-	 gSxDIEVZrhrQqBl0Fdo0nKvGFwIgFS4DkuhIEvPa2jpLoG6I/dIgYQjiK/8PWHEP0q
-	 txdISMHQyZ2PK42lt3c3jKdAWRupthIZPbEvlZLQLqbXHL5TnunV6oBqhQO+Ro1pfR
-	 7BskaEU0gQHEzcd+qjBJLZlC2/c9V4LdbH8lfVHfFfM5JcND2y9uRoOEl5wnNI8SJt
-	 vjMEveyFIGojg==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7EA63C369BA;
-	Tue, 15 Apr 2025 15:37:17 +0000 (UTC)
-From: Sven Peter via B4 Relay <devnull+sven.svenpeter.dev@kernel.org>
-Date: Tue, 15 Apr 2025 15:37:00 +0000
-Subject: [PATCH v2 6/6] i2c: pasemi: Log bus reset causes
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZcW1D1Q2Gz3bjg
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Apr 2025 03:12:15 +1000 (AEST)
+Date: Tue, 15 Apr 2025 13:11:51 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=rosenzweig.io;
+	s=key1; t=1744737116;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=TZ5TeuXVlqIBcTKnyUPN6n6PTqhb3E+xVpAkmmqWBI8=;
+	b=oFlrKFE4LAVCgIG+lnbBcjPxf379TP8S57q7VeZGqKPSLoMsXkqz8/bW4DFZwGljq48SIS
+	5JGRUASghmHz8I2DS3FnnTTUgSbCY0OVjCB44yrdsBbb6gaQTdplmXNS7Pr3MbmMic8/il
+	u/gK8rVWZGtJCJgA9lA6cPzx7TsCgtf3DtsLBSv1Gcjmtj3lA+cWhzUf/0ySFFQGq0uivf
+	3+nDtOlNfKhzPEd1yBjoNewkC6tThMgDjJvj06zeuH71hXyaGylesqRmtdzFBQtaBWdSW/
+	xuR/GbERtUk8S47AzQ2lxF5NDnBA447wq2R7byXt74R3ZcoszoXceD0TmqeMaQ==
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Alyssa Rosenzweig <alyssa@rosenzweig.io>
+To: sven@svenpeter.dev
+Cc: Janne Grunau <j@jannau.net>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Andi Shyti <andi.shyti@kernel.org>, Neal Gompa <neal@gompa.dev>,
+	Hector Martin <marcan@marcan.st>, linuxppc-dev@lists.ozlabs.org,
+	asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org,
+	linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 3/6] i2c: pasemi: Improve timeout handling
+Message-ID: <Z_6TV-tPU2wRdfFf@blossom>
+References: <20250415-pasemi-fixes-v2-0-c543bf53151a@svenpeter.dev>
+ <20250415-pasemi-fixes-v2-3-c543bf53151a@svenpeter.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,83 +71,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250415-pasemi-fixes-v2-6-c543bf53151a@svenpeter.dev>
-References: <20250415-pasemi-fixes-v2-0-c543bf53151a@svenpeter.dev>
-In-Reply-To: <20250415-pasemi-fixes-v2-0-c543bf53151a@svenpeter.dev>
-To: Janne Grunau <j@jannau.net>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Naveen N Rao <naveen@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
- Neal Gompa <neal@gompa.dev>, Hector Martin <marcan@marcan.st>
-Cc: linuxppc-dev@lists.ozlabs.org, asahi@lists.linux.dev, 
- linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Sven Peter <sven@svenpeter.dev>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1542; i=sven@svenpeter.dev;
- h=from:subject:message-id;
- bh=VA1WhVX4Izvudq5u7eRf2fGXelyMPNY/3NDm2fN5raU=;
- b=owGbwMvMwCHmIlirolUq95LxtFoSQ/q/Wq19l7xza3jP7jSI+u++w+7L/V2srnF6Fyb/Wj4xQ
- Wxp+pKOjlIWBjEOBlkxRZbt++1Nnzx8I7h006X3MHNYmUCGMHBxCsBEtjEzMtx+KuJdcOrOkUlJ
- rxm8+9rvPi4Wl21gUd+fq73jnISu6A5GhlebAySynZqu/S4pmjq5XUPuoEygj/TT0tth2o+mXug
- S5AcA
-X-Developer-Key: i=sven@svenpeter.dev; a=openpgp;
- fpr=A1E3E34A2B3C820DBC4955E5993B08092F131F93
-X-Endpoint-Received: by B4 Relay for sven@svenpeter.dev/default with
- auth_id=167
-X-Original-From: Sven Peter <sven@svenpeter.dev>
-Reply-To: sven@svenpeter.dev
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <20250415-pasemi-fixes-v2-3-c543bf53151a@svenpeter.dev>
+X-Migadu-Flow: FLOW_OUT
 
-From: Hector Martin <marcan@marcan.st>
-
-This ensures we get all information we need to debug issues when users
-forward us their logs.
-
-Signed-off-by: Hector Martin <marcan@marcan.st>
-Reviewed-by: Neal Gompa <neal@gompa.dev>
 Reviewed-by: Alyssa Rosenzweig <alyssa@rosenzweig.io>
-Signed-off-by: Sven Peter <sven@svenpeter.dev>
----
- drivers/i2c/busses/i2c-pasemi-core.c | 7 +++++--
- 1 file changed, 5 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/i2c/busses/i2c-pasemi-core.c b/drivers/i2c/busses/i2c-pasemi-core.c
-index 41db38d82fe62c73614b8fafe4cb73c7d1a24762..e5e8a748638f02e48d6ffa65e49aff5b12f70e06 100644
---- a/drivers/i2c/busses/i2c-pasemi-core.c
-+++ b/drivers/i2c/busses/i2c-pasemi-core.c
-@@ -22,6 +22,7 @@
- /* Register offsets */
- #define REG_MTXFIFO	0x00
- #define REG_MRXFIFO	0x04
-+#define REG_XFSTA	0x0c
- #define REG_SMSTA	0x14
- #define REG_IMASK	0x18
- #define REG_CTL		0x1c
-@@ -89,7 +90,7 @@ static void pasemi_reset(struct pasemi_smbus *smbus)
- 
- static int pasemi_smb_clear(struct pasemi_smbus *smbus)
- {
--	unsigned int status;
-+	unsigned int status, xfstatus;
- 	int ret;
- 
- 	/* First wait for the bus to go idle */
-@@ -98,7 +99,9 @@ static int pasemi_smb_clear(struct pasemi_smbus *smbus)
- 				 USEC_PER_MSEC, USEC_PER_MSEC * TRANSFER_TIMEOUT_MS);
- 
- 	if (ret < 0) {
--		dev_err(smbus->dev, "Bus is still stuck (status 0x%08x)\n", status);
-+		xfstatus = reg_read(smbus, REG_XFSTA);
-+		dev_err(smbus->dev, "Bus is still stuck (status 0x%08x xfstatus 0x%08x)\n",
-+			 status, xfstatus);
- 		return -EIO;
- 	}
- 
-
--- 
-2.34.1
-
-
+Le Tue , Apr 15, 2025 at 03:36:57PM +0000, Sven Peter via B4 Relay a écrit :
+> From: Sven Peter <sven@svenpeter.dev>
+> 
+> Add proper timeout handling for the interrupt path.
+> Previously, this was only correctly done for the polling path.
+> Note that we drop reg_write(smbus, REG_SMSTA, status) here which
+> will be done anyway whenever the next transaction starts via
+> pasemi_smb_clear.
+> 
+> Signed-off-by: Sven Peter <sven@svenpeter.dev>
+> ---
+>  drivers/i2c/busses/i2c-pasemi-core.c | 24 +++++++++++++++++-------
+>  1 file changed, 17 insertions(+), 7 deletions(-)
+> 
+> diff --git a/drivers/i2c/busses/i2c-pasemi-core.c b/drivers/i2c/busses/i2c-pasemi-core.c
+> index df1b0087dcacb0a3b94196368137d5e20b0e6d7e..9b611dbdfef23e78a4ea75ac0311938d52b6ba96 100644
+> --- a/drivers/i2c/busses/i2c-pasemi-core.c
+> +++ b/drivers/i2c/busses/i2c-pasemi-core.c
+> @@ -91,32 +91,42 @@ static void pasemi_smb_clear(struct pasemi_smbus *smbus)
+>  static int pasemi_smb_waitready(struct pasemi_smbus *smbus)
+>  {
+>  	int timeout = 100;
+> +	int ret;
+>  	unsigned int status;
+>  
+>  	if (smbus->use_irq) {
+>  		reinit_completion(&smbus->irq_completion);
+>  		reg_write(smbus, REG_IMASK, SMSTA_XEN | SMSTA_MTN);
+> -		wait_for_completion_timeout(&smbus->irq_completion, msecs_to_jiffies(100));
+> +		ret = wait_for_completion_timeout(&smbus->irq_completion, msecs_to_jiffies(100));
+>  		reg_write(smbus, REG_IMASK, 0);
+>  		status = reg_read(smbus, REG_SMSTA);
+> +
+> +		if (ret < 0) {
+> +			dev_err(smbus->dev,
+> +				"Completion wait failed with %d, status 0x%08x\n",
+> +				ret, status);
+> +			return ret;
+> +		} else if (ret == 0) {
+> +			dev_warn(smbus->dev, "Timeout, status 0x%08x\n", status);
+> +			return -ETIME;
+> +		}
+>  	} else {
+>  		status = reg_read(smbus, REG_SMSTA);
+>  		while (!(status & SMSTA_XEN) && timeout--) {
+>  			msleep(1);
+>  			status = reg_read(smbus, REG_SMSTA);
+>  		}
+> +
+> +		if (timeout < 0) {
+> +			dev_warn(smbus->dev, "Timeout, status 0x%08x\n", status);
+> +			return -ETIME;
+> +		}
+>  	}
+>  
+>  	/* Got NACK? */
+>  	if (status & SMSTA_MTN)
+>  		return -ENXIO;
+>  
+> -	if (timeout < 0) {
+> -		dev_warn(smbus->dev, "Timeout, status 0x%08x\n", status);
+> -		reg_write(smbus, REG_SMSTA, status);
+> -		return -ETIME;
+> -	}
+> -
+>  	/* Clear XEN */
+>  	reg_write(smbus, REG_SMSTA, SMSTA_XEN);
+>  
+> 
+> -- 
+> 2.34.1
+> 
+> 
 
