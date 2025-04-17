@@ -1,48 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-7756-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7757-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9B9B3C369C9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Apr 2025 18:27:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C8B2C369CA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Apr 2025 18:27:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZdmZj63Hzz3c00;
-	Fri, 18 Apr 2025 04:27:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744914429;
-	cv=none; b=i6PfOJj+ytL6Wv1s3Vv0sypqyJukAuiFuSh2NSm/4zKG2FiF0CauFYF4LN+EytNtJvs3RxEeqi3YJIOHTKM8WXTNleFxADOjRxiQXrimMYJkDVR20pAIZX+uhpA/cdRjLPXS3gPZdfo43GLbj5IvvWptl9K3LxWWu2fXNQ/IymX2n/UgEPy/2jyI6JAz+bsZN5LPCEZb/+lG643k9i2vU2eLeBKyJO34f0BQTcZ7YZYm9fHp9T1/IANe610t65mE3fEQBP+A223na0SqdT6HAaCS8TYYhK+ignqVDzdE8weZTirk+KPVrLimham5YQp/k69lAs/DyfVrOPVkJmJgew==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZdmZl0Vw2z2yrJ;
+	Fri, 18 Apr 2025 04:27:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744914431;
+	cv=none; b=Zw04kottfchjtSfi94Xcvi4SmmMFJ3UqCBrN6h/aq652S2DcDmUfZd1kRRKJNspDZ6nbyqsqQRFF5qB37GMXmKkHOINs61kbagXZ3Zw/WQeFNl5VCpfkCIYqI4A8TeOGQeanMIHvoz3ptuEnsnxL3K1kIip16p046jHViS13rAaQEURHwV6akm+1ZGdVzfpvQA9wuuRNG/1HPMwGtADFW8zfOLnnSEvgZmcrCZPE4QQfwB0lQi7AwbSSt2C4v5oXfwjlSB0ZUWxpR/ZS3gUwwcBIqU7SC4I/gfEyGHrX5KrRRpJdxF+cLJj3e7eMQLr6QTmOzp3XXKxMufEr1cuYtQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744914429; c=relaxed/relaxed;
-	bh=zkygNKKSJ6A/yCBu0e02gVkBmVl2/XwjeTtPr2xnTyU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=XRv/dMvGp6gAOBoccFhcsE1hEK1bLrOXLoQsFhdEDQmMslUmcAMwgexb03Puy77LNBeFcsoknnMtrohczZcfyeaqCsVcVrN0xdWECFbpE/xdTM35SkbyyAyu4yqaKib+FPAeOeFg8sDcPzemWV3II3Xuf43HUIMstSpdFHWRx0HKhLQYe9v9HYt0S020vr/n+7NuS1EQBGZ5uZ8h99mg0hD+A5mLDKqfyUQKfdafnANrQPuIpnSwYHw012TaEZAsFTEfe45vE3alhdkdLcFj+8M5y1sCu44fL4Qfdcuu68Jl++Ulldpco6tPYwhagKeJFLfYFe79uOrSvPxmjEOBCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OIGe0C4H; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1744914431; c=relaxed/relaxed;
+	bh=QLvmdUOpIt3qputYjrPPCWLqkyP+trIqVdJfTraaI+Y=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=BfRj3MS7to3atCn7tdrUMVPwQXwAM+/wQmpUDRWj55IpPPMcKibokZgyoEzenXy7ysJ9UolT60WBzyRg2XNPSNejCM3k3p8i1kTItPtlYTqja1z+9yC5VeCBj0jnlVSqKn1lpQloBVuYvckD5eo9OISC6la4CxfiGHdhwsEXc2MVYzxr+qdn+ITd3wNn1x+hGQvEVlcwqqekg+dAPs3RPaJq5WsIRxwNRYktHD9nSGECoK3fHX4DmttUbhQaASQSAvsEhzT/RlX8Loy99lqDBw2DeKE6dJjHfUSPRO4iOWhbbjd07wiRvvLBKgRbZObxJzEQzzL4SbPEC7OwrJONJQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=toxBea61; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OIGe0C4H;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=toxBea61;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZdmZh2qW5z2yrJ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2025 04:27:08 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZdmZk1Mkdz3c2F
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2025 04:27:09 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id C3C9149E43;
-	Thu, 17 Apr 2025 18:27:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 241E8C4CEEC;
-	Thu, 17 Apr 2025 18:27:05 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id AF4ABA4A456;
+	Thu, 17 Apr 2025 18:21:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E8307C4CEEC;
+	Thu, 17 Apr 2025 18:27:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1744914425;
-	bh=eYlw8AhwDiKSQwbJxBZMP6nL7U7/odFuPU2SW3GNcIs=;
-	h=From:To:Cc:Subject:Date:From;
-	b=OIGe0C4HhyE/SwSQmKx2rHmtBTJv+C//vsUPyHQ9nBNZ7SM70FI5kAjNOXx0SiPAT
-	 oAV2RDvW3y7SexpSfNzDbW3E0WnI97wnBu7vd0ixGUtDVT++ajf0iwHpYPkfRoPvP9
-	 dT4SFF4LmjWuyS23J7I28QPr2BOEobjN9OeNUvVqomFKSjPZoUnpDk/aJjRQhRsRIa
-	 2jmz2BHEDWHCJM4wvqlkIeqwkGTdW4f9UXQwxbXtBHS8en8Ihmr+5OuGxO4m0tt2DT
-	 hAvSXPNfuhibOtdvN7de1S4/+B2pChejRWcf0/OP2SYlBqQ90ckVcnffrq7XEP05h7
-	 kOgQb7+Go6l8A==
+	s=k20201202; t=1744914427;
+	bh=nXbV1Uvq4c8RL4YhRp/ivGFjNzOtTa70IujwafR6+UE=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=toxBea61JWC5/trBUl49NvCsVkVAmNhju3B87UReIfBHz8VnRyE/LuVybLVF2k/nY
+	 ozG0hZ8OBwzDL6uS4Zi1cnO2Mrn+mq1gQ/r8Oq+czYCLjfyTD/V03RB7fCo5SP71wf
+	 zlxk4RJm3o05FtCFrRaAKTzpr6oWDwo/e21dJwjhdxrVVorZg+xwqsKTLym49Olhvz
+	 SwdxWMKOu8BP6ibmjf8JnzW3kYR8b7Naf0ZpIJmNV9xQkNMUjmcXpx+iFVvnhelZFG
+	 WffphaS/N+aHynjqKlRMXoA+AQi8OOH4tWYJ2rqeMi/Rw6uFqtGdZWOBgLIHH2X50p
+	 7wDfzUig2kHFw==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -57,10 +58,12 @@ Cc: linux-arch@vger.kernel.org,
 	x86@kernel.org,
 	"Jason A . Donenfeld " <Jason@zx2c4.com>,
 	Ard Biesheuvel <ardb@kernel.org>
-Subject: [PATCH 00/15] Finish disentangling ChaCha, Poly1305, and BLAKE2s from CRYPTO
-Date: Thu, 17 Apr 2025 11:26:08 -0700
-Message-ID: <20250417182623.67808-1-ebiggers@kernel.org>
+Subject: [PATCH 02/15] crypto: arm64 - drop redundant dependencies on ARM64
+Date: Thu, 17 Apr 2025 11:26:10 -0700
+Message-ID: <20250417182623.67808-3-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250417182623.67808-1-ebiggers@kernel.org>
+References: <20250417182623.67808-1-ebiggers@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,58 +78,46 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series removes the unnecessary dependency of the ChaCha, Poly1305,
-and BLAKE2s library functions on the generic crypto infrastructure, i.e.
-CONFIG_CRYPTO.  To do this, it moves arch/*/crypto/Kconfig from a
-submenu of crypto/Kconfig to a submenu of arch/*/Kconfig, then re-adds
-the CRYPTO dependency to the symbols that actually need it.
+From: Eric Biggers <ebiggers@google.com>
 
-Patches 14-15 then simplify the ChaCha and Poly1305 symbols by removing
-the unneeded "internal" symbols.
+arch/arm64/crypto/Kconfig is sourced only when CONFIG_ARM64=y, so there
+is no need for the symbols defined inside it to depend on ARM64.
 
-Note that Curve25519 is still entangled.  Later patches will fix that.
+Signed-off-by: Eric Biggers <ebiggers@google.com>
+---
+ arch/arm64/crypto/Kconfig | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Eric Biggers (15):
-  crypto: arm - remove CRYPTO dependency of library functions
-  crypto: arm64 - drop redundant dependencies on ARM64
-  crypto: arm64 - remove CRYPTO dependency of library functions
-  crypto: loongarch - source arch/loongarch/crypto/Kconfig without
-    CRYPTO
-  crypto: mips - remove CRYPTO dependency of library functions
-  crypto: powerpc - drop redundant dependencies on PPC
-  crypto: powerpc - remove CRYPTO dependency of library functions
-  crypto: riscv - remove CRYPTO dependency of library functions
-  crypto: s390 - drop redundant dependencies on S390
-  crypto: s390 - remove CRYPTO dependency of library functions
-  crypto: sparc - source arch/sparc/crypto/Kconfig without CRYPTO
-  crypto: x86 - drop redundant dependencies on X86
-  crypto: x86 - remove CRYPTO dependency of library functions
-  crypto: lib/chacha - remove INTERNAL symbol and selection of CRYPTO
-  crypto: lib/poly1305 - remove INTERNAL symbol and selection of CRYPTO
-
- arch/arm/Kconfig            |  2 ++
- arch/arm/crypto/Kconfig     | 28 ++++++++-------
- arch/arm64/Kconfig          |  3 +-
- arch/arm64/crypto/Kconfig   | 45 ++++++++++++-----------
- arch/loongarch/Kconfig      |  1 +
- arch/mips/Kconfig           |  2 ++
- arch/mips/crypto/Kconfig    | 12 +++----
- arch/powerpc/Kconfig        |  2 ++
- arch/powerpc/crypto/Kconfig | 22 ++++++------
- arch/riscv/Kconfig          |  2 ++
- arch/riscv/crypto/Kconfig   | 14 ++++----
- arch/s390/Kconfig           |  4 +++
- arch/s390/crypto/Kconfig    | 21 ++++++-----
- arch/sparc/Kconfig          |  2 ++
- arch/sparc/crypto/Kconfig   | 14 ++++----
- arch/x86/Kconfig            |  4 +++
- arch/x86/crypto/Kconfig     | 72 ++++++++++++++++++-------------------
- crypto/Kconfig              | 34 ++----------------
- lib/crypto/Kconfig          | 32 ++++++-----------
- 19 files changed, 149 insertions(+), 167 deletions(-)
-
-
-base-commit: da4cb617bc7d827946cbb368034940b379a1de90
+diff --git a/arch/arm64/crypto/Kconfig b/arch/arm64/crypto/Kconfig
+index 7c2f63f2e307..704d0b7e1d13 100644
+--- a/arch/arm64/crypto/Kconfig
++++ b/arch/arm64/crypto/Kconfig
+@@ -135,11 +135,11 @@ config CRYPTO_AES_ARM64
+ 
+ 	  Architecture: arm64
+ 
+ config CRYPTO_AES_ARM64_CE
+ 	tristate "Ciphers: AES (ARMv8 Crypto Extensions)"
+-	depends on ARM64 && KERNEL_MODE_NEON
++	depends on KERNEL_MODE_NEON
+ 	select CRYPTO_ALGAPI
+ 	select CRYPTO_LIB_AES
+ 	help
+ 	  Block ciphers: AES cipher algorithms (FIPS-197)
+ 
+@@ -252,11 +252,11 @@ config CRYPTO_SM4_ARM64_NEON_BLK
+ 	  Architecture: arm64 using:
+ 	  - NEON (Advanced SIMD) extensions
+ 
+ config CRYPTO_AES_ARM64_CE_CCM
+ 	tristate "AEAD cipher: AES in CCM mode (ARMv8 Crypto Extensions)"
+-	depends on ARM64 && KERNEL_MODE_NEON
++	depends on KERNEL_MODE_NEON
+ 	select CRYPTO_ALGAPI
+ 	select CRYPTO_AES_ARM64_CE
+ 	select CRYPTO_AES_ARM64_CE_BLK
+ 	select CRYPTO_AEAD
+ 	select CRYPTO_LIB_AES
 -- 
 2.49.0
 
