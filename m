@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-7765-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7766-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B04DC369C9
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Apr 2025 18:28:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45A4FC369CA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Apr 2025 18:28:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZdmZt3lGjz3c4r;
-	Fri, 18 Apr 2025 04:27:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744914438;
-	cv=none; b=cf95gItTzU9tzqEdVBiCWOdCtP0DOg8vM3SR9Sh/rODBe7qYSI02S5MDd9Br9mXMks/kBin4DldJPC4cxUUqYz5/qW3CAc3W7fNgiXX6CBVyOG6UiyPHx4YhaseU1uzeO1p2e+Mv4MU8K6Gi+WLRKodzpghqQZtWuTAaHN0YlUJ2VYWtA+uwpfgOeZYmq6pRhy3CSbqnZcK08tDcig99GtRSMDnnc4GuUBnpEQ/LqzANYzYzoXkyVOlTH4YtS+Q9k4WHS2b8/rPVSNmhlTE4flniaBJgI8dqcwpamqqjByJu0cTli/M8VWVkQxjJouDp1WztkC/hz5pxVYBqYtSL2A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZdmZv3Njdz3c6P;
+	Fri, 18 Apr 2025 04:27:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744914439;
+	cv=none; b=Dpsc4f0TPHXVojvB315rmskrGjYhfv7a62SslC1x9NgoFYtWTERBILMoXPaDPrOK4soU2tXo/snULWhgPhX0pqwbQxE6risWwxP4AtJIdke8j6rWHG7xfHaqUGMrho021KOYIFNga+w/lj1oN9atavSIng+WK8qbHHEWqTMXoWKHNxiyr7sRvmmpFD1EGKwclugliAFympkhr4cq/VF6nNLoneFmOi/rq4MfDLg0jtGZXqOq0SA6gse7ls/vIs71r9q7iTQp/Aba5LAr1Ikco9gprvdR+PBJtfcfyM0T4RnXK9kx/w83M9mQNNVhagxBbdLGawr/NJaFNky12wXIhA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744914438; c=relaxed/relaxed;
-	bh=8hZQ2R0YEs0vZ6aEcLQBtSfCUDsQ+taoCfYorQUDELk=;
+	t=1744914439; c=relaxed/relaxed;
+	bh=0XEBnwK5RXVU0kneRCErCZ0nRzPfJAlLl11dCpubW0s=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=LhDvckBCKvhiUmDz3np3oliT0IxQBJGBwrE9KHIJ+H7eIRZXVuj39+O96j094xGMqxP7rB9DsrL5+WWsnm4+mqU2TBY1QOTv9xC8tu+lshZyxB3IRa87va9wntwxHqxTWSmrJWVVFWYwzPXY3WptrufOXDZ+l4grTBIiEs/ebJ2X4PR/cRJvyuiz7DtTQKUont3IQeAPDnPqpxJShEZYTLeokjzK+X7CKqmsxkpIAnsWh9AALVrNJUoFbYm4r+7MMuFlXKAiCx7+ee1XMGcqo9HnORZhrMl9UthV+ivhRQDmocuafJQv9HQlmEbqdh3jQ4J+po1APf8rRfN45DvsFg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IsPQ7SM0; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=bhbll/Li6i8IQKQcuAGuBuZ2MTbQAKo4D4n8YcCD4bdHIXFn8yPwqXON0/S+Np/yPcwQPg9BRpOnu6KDk6bvZxVAItM2GNizuXPbwyh9Uz8ipSbGINMDtf8Fl6mhyF9of7jaYzpamNB0avHEGcF7HFNettqfpgvxcyCufbY6Wvmpd7ceA3wiGLqlmlEhojacKQvb5gdPWSEiDT0UTBwibWAOoEKc5zAZs54eXO6gH8ixHL68q5clOP5cBsqtdvMHYRdv5rDTNZE21Mdzjxe+f2LXkkanVF59hAeXFe0xbTT6xFpGQJOHwBJ5DT7GHD4HHQYoezocfIl2b8lDFFJUVQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kEzKamQ7; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IsPQ7SM0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kEzKamQ7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZdmZs4JFHz3c6P
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZdmZs6vmLz3c7H
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Apr 2025 04:27:17 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id CE1A549E43;
-	Thu, 17 Apr 2025 18:27:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A178C4CEEE;
-	Thu, 17 Apr 2025 18:27:15 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 4E8206846F;
+	Thu, 17 Apr 2025 18:26:55 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7754CC4CEE4;
+	Thu, 17 Apr 2025 18:27:12 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1744914435;
-	bh=JbJS8/qnHgUt3U/s/OZ1wHouJGsPrwOIMNb0fsrruts=;
+	s=k20201202; t=1744914433;
+	bh=UX4WI8EDuBMolYsjuDM2U8XKg5QnChDBXSYKd39EvNs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=IsPQ7SM08OE2nVaOMuo7BI2L0WCPbuWvkvRFKYA1VN20m7TA2WLujzpAcLu7ZMcib
-	 hPnCRg0E7SNiql3hUMjtjrKocI+hy9AGuNATMqCgnk/rNoSndaJyXohW2QtNmOUSPf
-	 HrM2yP1EtnKQZI2TXj4jwGIcWlPFoOfnUtif6W1J55H7QSOzeGZBBl4pFsL/oOnTEN
-	 CWOaPKhbHIyWJ9YsfjPH79eEhWbfY/xLRdrWQ9tJfUzkID0IPOW6mp/fkmf8M1/xUN
-	 vdYRLr2CQUbbJhMAXeeDorK0RWUQEsRQB9v5kyhJZrk3fHLwmkx9SgLxxg4V3BakOJ
-	 ld/9yQXGcf11g==
+	b=kEzKamQ77+ydJivcumu5A0EVk/kXXWFfSMds2u7k1YTk1H+rF/67bqU+j+jJWKdl+
+	 Q2n7E/dnU6nc5VZ8aq76mLC/hUu6qr1DUvojFRMnBTG+hbecrgjHXxpJDYNWm7g372
+	 mmod6G58GI206xhh4cwUi5gmbRp9pUV4UvcKffRJAd/SAd+OZL0MArn+XZe+a+lWse
+	 WraOSg0kbetPV1xAm5FmZOqOUclZDEor8z8B8fJwgV0wrK0yHCkvuFiYjwgVictUSB
+	 YND7Tu4UPgsbBXF3UxPOsP1otOEQDGQ0geJEuAFCBu/GYCNhtmvhRyLJmhJesven4e
+	 nLNW8wApG8jyw==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -58,9 +58,9 @@ Cc: linux-arch@vger.kernel.org,
 	x86@kernel.org,
 	"Jason A . Donenfeld " <Jason@zx2c4.com>,
 	Ard Biesheuvel <ardb@kernel.org>
-Subject: [PATCH 11/15] crypto: sparc - source arch/sparc/crypto/Kconfig without CRYPTO
-Date: Thu, 17 Apr 2025 11:26:19 -0700
-Message-ID: <20250417182623.67808-12-ebiggers@kernel.org>
+Subject: [PATCH 08/15] crypto: riscv - remove CRYPTO dependency of library functions
+Date: Thu, 17 Apr 2025 11:26:16 -0700
+Message-ID: <20250417182623.67808-9-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250417182623.67808-1-ebiggers@kernel.org>
 References: <20250417182623.67808-1-ebiggers@kernel.org>
@@ -80,121 +80,114 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-Source arch/sparc/crypto/Kconfig regardless of CRYPTO, so that if
-library functions are ever added to there they can be built without
-pulling in the generic crypto infrastructure.
+Continue disentangling the crypto library functions from the generic
+crypto infrastructure by removing the unnecessary CRYPTO dependency of
+CRYPTO_CHACHA_RISCV64.  To do this, make arch/riscv/crypto/Kconfig be
+sourced regardless of CRYPTO, and explicitly list the CRYPTO dependency
+in the symbols that do need it.
 
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- arch/sparc/Kconfig        |  2 ++
- arch/sparc/crypto/Kconfig | 14 +++++++-------
+ arch/riscv/Kconfig        |  2 ++
+ arch/riscv/crypto/Kconfig | 12 ++++++------
  crypto/Kconfig            |  3 ---
- 3 files changed, 9 insertions(+), 10 deletions(-)
+ 3 files changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/arch/sparc/Kconfig b/arch/sparc/Kconfig
-index 0f88123925a4..b1081e627a28 100644
---- a/arch/sparc/Kconfig
-+++ b/arch/sparc/Kconfig
-@@ -407,10 +407,12 @@ config UBOOT_ENTRY_ADDR
- 	 hardcoded by the SPARC32 and LEON port.
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index bbec87b79309..baa7b8d98ed8 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -1349,8 +1349,10 @@ source "drivers/cpuidle/Kconfig"
  
- 	 This is the virtual address u-boot jumps to when booting the Linux
- 	 Kernel.
+ source "drivers/cpufreq/Kconfig"
  
-+source "arch/sparc/crypto/Kconfig"
+ endmenu # "CPU Power Management"
+ 
++source "arch/riscv/crypto/Kconfig"
 +
- endmenu
- endif
+ source "arch/riscv/kvm/Kconfig"
  
- endmenu
- 
-diff --git a/arch/sparc/crypto/Kconfig b/arch/sparc/crypto/Kconfig
-index e858597de89d..477a85370507 100644
---- a/arch/sparc/crypto/Kconfig
-+++ b/arch/sparc/crypto/Kconfig
+ source "drivers/acpi/Kconfig"
+diff --git a/arch/riscv/crypto/Kconfig b/arch/riscv/crypto/Kconfig
+index 27a1f26d41bd..08547694937c 100644
+--- a/arch/riscv/crypto/Kconfig
++++ b/arch/riscv/crypto/Kconfig
 @@ -2,11 +2,11 @@
  
- menu "Accelerated Cryptographic Algorithms for CPU (sparc64)"
+ menu "Accelerated Cryptographic Algorithms for CPU (riscv)"
  
- config CRYPTO_DES_SPARC64
- 	tristate "Ciphers: DES and Triple DES EDE, modes: ECB/CBC"
--	depends on SPARC64
-+	depends on CRYPTO && SPARC64
+ config CRYPTO_AES_RISCV64
+ 	tristate "Ciphers: AES, modes: ECB, CBC, CTS, CTR, XTS"
+-	depends on 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
++	depends on CRYPTO && 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
  	select CRYPTO_ALGAPI
- 	select CRYPTO_LIB_DES
+ 	select CRYPTO_LIB_AES
  	select CRYPTO_SKCIPHER
  	help
- 	  Block cipher: DES (FIPS 46-2) cipher algorithm
-@@ -16,61 +16,61 @@ config CRYPTO_DES_SPARC64
+ 	  Block cipher: AES cipher algorithms
+@@ -25,43 +25,43 @@ config CRYPTO_CHACHA_RISCV64
+ 	select CRYPTO_LIB_CHACHA_GENERIC
+ 	default CRYPTO_LIB_CHACHA_INTERNAL
  
- 	  Architecture: sparc64
- 
- config CRYPTO_MD5_SPARC64
- 	tristate "Digests: MD5"
--	depends on SPARC64
-+	depends on CRYPTO && SPARC64
- 	select CRYPTO_MD5
- 	select CRYPTO_HASH
+ config CRYPTO_GHASH_RISCV64
+ 	tristate "Hash functions: GHASH"
+-	depends on 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
++	depends on CRYPTO && 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
+ 	select CRYPTO_GCM
  	help
- 	  MD5 message digest algorithm (RFC1321)
+ 	  GCM GHASH function (NIST SP 800-38D)
  
- 	  Architecture: sparc64 using crypto instructions, when available
+ 	  Architecture: riscv64 using:
+ 	  - Zvkg vector crypto extension
  
- config CRYPTO_SHA1_SPARC64
- 	tristate "Hash functions: SHA-1"
--	depends on SPARC64
-+	depends on CRYPTO && SPARC64
- 	select CRYPTO_SHA1
- 	select CRYPTO_HASH
- 	help
- 	  SHA-1 secure hash algorithm (FIPS 180)
- 
- 	  Architecture: sparc64
- 
- config CRYPTO_SHA256_SPARC64
+ config CRYPTO_SHA256_RISCV64
  	tristate "Hash functions: SHA-224 and SHA-256"
--	depends on SPARC64
-+	depends on CRYPTO && SPARC64
+-	depends on 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
++	depends on CRYPTO && 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
  	select CRYPTO_SHA256
- 	select CRYPTO_HASH
  	help
- 	  SHA-224 and SHA-256 secure hash algorithms (FIPS 180)
+ 	  SHA-224 and SHA-256 secure hash algorithm (FIPS 180)
  
- 	  Architecture: sparc64 using crypto instructions, when available
+ 	  Architecture: riscv64 using:
+ 	  - Zvknha or Zvknhb vector crypto extensions
+ 	  - Zvkb vector crypto extension
  
- config CRYPTO_SHA512_SPARC64
+ config CRYPTO_SHA512_RISCV64
  	tristate "Hash functions: SHA-384 and SHA-512"
--	depends on SPARC64
-+	depends on CRYPTO && SPARC64
+-	depends on 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
++	depends on CRYPTO && 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
  	select CRYPTO_SHA512
+ 	help
+ 	  SHA-384 and SHA-512 secure hash algorithm (FIPS 180)
+ 
+ 	  Architecture: riscv64 using:
+ 	  - Zvknhb vector crypto extension
+ 	  - Zvkb vector crypto extension
+ 
+ config CRYPTO_SM3_RISCV64
+ 	tristate "Hash functions: SM3 (ShangMi 3)"
+-	depends on 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
++	depends on CRYPTO && 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
  	select CRYPTO_HASH
+ 	select CRYPTO_LIB_SM3
  	help
- 	  SHA-384 and SHA-512 secure hash algorithms (FIPS 180)
+ 	  SM3 (ShangMi 3) secure hash function (OSCCA GM/T 0004-2012)
  
- 	  Architecture: sparc64 using crypto instructions, when available
+@@ -69,11 +69,11 @@ config CRYPTO_SM3_RISCV64
+ 	  - Zvksh vector crypto extension
+ 	  - Zvkb vector crypto extension
  
- config CRYPTO_AES_SPARC64
- 	tristate "Ciphers: AES, modes: ECB, CBC, CTR"
--	depends on SPARC64
-+	depends on CRYPTO && SPARC64
- 	select CRYPTO_SKCIPHER
- 	help
- 	  Block ciphers: AES cipher algorithms (FIPS-197)
- 	  Length-preseving ciphers: AES with ECB, CBC, and CTR modes
- 
- 	  Architecture: sparc64 using crypto instructions
- 
- config CRYPTO_CAMELLIA_SPARC64
- 	tristate "Ciphers: Camellia, modes: ECB, CBC"
--	depends on SPARC64
-+	depends on CRYPTO && SPARC64
+ config CRYPTO_SM4_RISCV64
+ 	tristate "Ciphers: SM4 (ShangMi 4)"
+-	depends on 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
++	depends on CRYPTO && 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
  	select CRYPTO_ALGAPI
- 	select CRYPTO_SKCIPHER
+ 	select CRYPTO_SM4
  	help
- 	  Block ciphers: Camellia cipher algorithms
- 	  Length-preserving ciphers: Camellia with ECB and CBC modes
+ 	  SM4 block cipher algorithm (OSCCA GB/T 32907-2016,
+ 	  ISO/IEC 18033-3:2010/Amd 1:2021)
 diff --git a/crypto/Kconfig b/crypto/Kconfig
-index 78e83ce576ed..c0906bb4f844 100644
+index 2467dba73372..8c334c9f2081 100644
 --- a/crypto/Kconfig
 +++ b/crypto/Kconfig
 @@ -1424,13 +1424,10 @@ endmenu
@@ -203,14 +196,14 @@ index 78e83ce576ed..c0906bb4f844 100644
  	bool
  
  if !KMSAN # avoid false positives from assembly
--if SPARC
--source "arch/sparc/crypto/Kconfig"
+-if RISCV
+-source "arch/riscv/crypto/Kconfig"
 -endif
- if X86
- source "arch/x86/crypto/Kconfig"
+ if S390
+ source "arch/s390/crypto/Kconfig"
  endif
- endif
- 
+ if SPARC
+ source "arch/sparc/crypto/Kconfig"
 -- 
 2.49.0
 
