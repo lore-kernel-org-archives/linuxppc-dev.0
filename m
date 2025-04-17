@@ -1,63 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-7734-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7735-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D11F7C369B2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Apr 2025 11:43:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C2CBC369B2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Apr 2025 12:12:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zdbcb27lYz3bjg;
-	Thu, 17 Apr 2025 21:43:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=176.9.242.62
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744890191;
-	cv=none; b=e4eimUrrAGQcIIejFQuZeR90QUZIXeTiP15CY8i8XTc1/GNKgtyTUS3MVZQospMFeeRCpI/q8hiCY8PeaodXgxYPObnFL6WvpSubbG5shI5uAZXZb4l6/8KR0rm+Y+KI7ZoQeHV9Mt+01TGkAZhdISnaSwEmIo+G9HJ8xRosItDQwOVnu/h6oiBc/oQ6rpaZUcBovNUTOS63dhDDSGQTK0sgxJ269F/qL6FRZPlgZ5aYPnczJpatdycR4TaBJ+n3pFnUsx0jqmbfNW3C7fq2T0T0+t8BZmEbGNVPzBawsEBeBXEJhOWNha5EThOHACMASCLq0nJhmCycVuOPOiBkjQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZdcGK3m9Fz2yfy;
+	Thu, 17 Apr 2025 22:12:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.16
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744891945;
+	cv=none; b=lFXOylDkFZyCXZy9LtSHFdykJjPbfWIddpk5fB8wt9/09h5RxMFJtPYRWmfqivmMnyPd9W1bPWs/aUrbtMD6MYGT8CqmzN6fzZnGh5KDwnkLxYLKAvHm0vZ4VSL1kvPzfv3Nod0aPGC+01lzj42db6iXDu2UKuf2Fj8AdjMJbp6R/m3btnYX5WU+REs0trf7ZYkd8nzRGIGXdlByMOdn/tGY1pNbpEiD5O0WWoN13c3G9jqNF+3Yw5i0cJAUP6lJC7eZDw+qQqDygvD95dVXUqZ9zIGD9QozCDQPFeD+ZW135pfwKH/TwOo2w3lPQYGiv1Vgeq/ure5VXTLXtZOduw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744890191; c=relaxed/relaxed;
-	bh=ksfUHwJwEa/Qtvl9koWNYt/f0eJlXmKPuay0tU422kA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZyZpl6mskI/6+gYymiXDJa19HK6awkpwxIth1urGPfZij7jeKPeyuVGDkSPlwgmbGnuLEoLvQP4edioCTYXAaE13pDg2GCMIN5D0VuUL2GiPx5BLmXcGWxZyQw/3JYvz51hRHsyXCDB8B5cPAbvNPos49OSuN6wi1W3aX12NDLItqsJeraEoZfHNx5FK4vBC07IisQ7pGP/jiq9aZx5wIr4v15psmzCcmJU/50ME3ObgPCON6s7DLV0MMXN1PR/xVVbQJbJom4i93Cilbpv/PP2lY5vEGDx4DRyRM/OeH4xH2IOb6xeRMHzFq6DWOj2zs1+d4XzuVLoKbbfqx6PuHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=176.9.242.62; helo=bmailout3.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org) smtp.helo=bmailout3.hostsharing.net
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=bmailout3.hostsharing.net (client-ip=176.9.242.62; helo=bmailout3.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org)
-Received: from bmailout3.hostsharing.net (bmailout3.hostsharing.net [176.9.242.62])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1744891945; c=relaxed/relaxed;
+	bh=gtsAOZy57LWy4UaoZm1z1UU5EW3pPUKm6U1ht6AGNlQ=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=Yh2nCNdFwOcaNvzYzUOr1EXOHVI/yEdmHuNGxK58Hj1gcQO+GfP6T26KIooWCVQYeBVp8QdiLsyFL2MSRoqTEsnrMa4IcVs0aqGoKscIRnsQFx6BCXCnLebLLQntwKykhuGjGEBFI3UakeiOu3lunj0LNWpYoKRhyHa+uLy5hUVJO4K+f601RZ//8f5n/7BXRHDHC4F7pOc/S2ALZWPvcXXcZvnrmQWYd0Ltf/aQ90qDHBqJgCVsUEw2+zEPfQSqdT+JJVo/h9aMtsSszE26Hr3G8QJKxHUszyOYPnP68YHADGmskEhsRTYTVmsxwG2g6SrezADubXRR96EX2VOT2Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=iIqjmfO4; dkim-atps=neutral; spf=pass (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=iIqjmfO4;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.16; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZdbcY5XRGz2ygK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2025 21:43:09 +1000 (AEST)
-Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
-	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
-	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
-	by bmailout3.hostsharing.net (Postfix) with ESMTPS id A152F2C05243;
-	Thu, 17 Apr 2025 13:42:58 +0200 (CEST)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 02911B1FD0; Thu, 17 Apr 2025 13:43:00 +0200 (CEST)
-Date: Thu, 17 Apr 2025 13:42:59 +0200
-From: Lukas Wunner <lukas@wunner.de>
-To: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Krzysztof Wilczy??ski <kw@linux.com>, Rob Herring <robh@kernel.org>,
-	dingwei@marvell.com, cassel@kernel.org,
-	Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org
-Subject: Re: [PATCH 2/4] PCI/ERR: Add support for resetting the slot in a
- platforms specific way
-Message-ID: <aADpQ0rbuj571B4R@wunner.de>
-References: <20250404-pcie-reset-slot-v1-0-98952918bf90@linaro.org>
- <20250404-pcie-reset-slot-v1-2-98952918bf90@linaro.org>
- <Z--cY5Uf6JyTYL9y@wunner.de>
- <3dokyirkf47lqxgx5k2ybij5b5an6qnceifsub3mcmjvzp3kdb@sm7f2jxxepdc>
- <Z__AyQeZmXiNwT7c@wunner.de>
- <rrqn7hlefn7klaczi2jkfta72pwmtentj3zp37yvw3brwpnalk@3eapwfeo5y4d>
- <aABJ_u8-FXeJoPyF@wunner.de>
- <jb4iq364iqwk3swux5cjiczyvdyrkjtqjclefyfjrntepvroyn@7vbvbzu3pd3p>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZdcGG1v0lz2yGf
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2025 22:12:20 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1744891943; x=1776427943;
+  h=date:from:to:cc:subject:message-id;
+  bh=D0JC/+EPLMqewQ5IxiOkDwYslKt+SMTGKLNYwmTCLGw=;
+  b=iIqjmfO47PJqWWa9XZJCqG5fwFHoSrmKcUxl/F3XDb5ydQuMWn2OoQKA
+   y4bpjOB1ZPaKspmDPHAusTiDt6bO7EZ25ykqAq/qmse+FVZJXmB/PuYzA
+   MtoQdzj3MLhNyTeb5rhd9Exr+DAgOXGuGME1PaE4Fj1qE4RaRoLMSOmFr
+   3z4pn3qIiCCdqvlx8xKYWnBnRgZcEePVHiEiEuqE1JDCJGS6NibX+0AeN
+   VkKgYfZM1SlFTn2gOdXu/GuHpQsqPiwEQShPljH/gOMG/lvibK7WmGzIe
+   mGzLhU6BEshbnCGalo4TAM1xj9zUapLvIvaapE838yGTMXt561+UWQIC3
+   g==;
+X-CSE-ConnectionGUID: gFb3/Xk4QQG3K3FUDE9WdQ==
+X-CSE-MsgGUID: umMQUMXtS82HpGv2IfO5ng==
+X-IronPort-AV: E=McAfee;i="6700,10204,11405"; a="46564462"
+X-IronPort-AV: E=Sophos;i="6.15,219,1739865600"; 
+   d="scan'208";a="46564462"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by orvoesa108.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Apr 2025 05:12:18 -0700
+X-CSE-ConnectionGUID: eN99WtXCScG1DDBkPIRCwg==
+X-CSE-MsgGUID: lpB8mIiARNOqCnSW8+FYSA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.15,219,1739865600"; 
+   d="scan'208";a="135893632"
+Received: from lkp-server01.sh.intel.com (HELO b207828170a5) ([10.239.97.150])
+  by fmviesa004.fm.intel.com with ESMTP; 17 Apr 2025 05:12:16 -0700
+Received: from kbuild by b207828170a5 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1u5O6I-000MeQ-00;
+	Thu, 17 Apr 2025 12:12:14 +0000
+Date: Thu, 17 Apr 2025 20:12:00 +0800
+From: kernel test robot <lkp@intel.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [powerpc:fixes-test] BUILD SUCCESS
+ b2accfe7ca5bc9f9af28e603b79bdd5ad8df5c0b
+Message-ID: <202504172053.r8T8UQmS-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,234 +76,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <jb4iq364iqwk3swux5cjiczyvdyrkjtqjclefyfjrntepvroyn@7vbvbzu3pd3p>
 
-On Thu, Apr 17, 2025 at 11:09:21AM +0530, Manivannan Sadhasivam wrote:
-> On Thu, Apr 17, 2025 at 02:23:26AM +0200, Lukas Wunner wrote:
-> > On Wed, Apr 16, 2025 at 08:34:21PM +0530, Manivannan Sadhasivam wrote:
-> > > I don't think it is possible to get rid of the powerpc version. It has
-> > > its own pci_dev::sysdata pointing to 'struct pci_controller' pointer
-> > > which is internal to powerpc arch code. And the generic code would need
-> > > 'struct pci_host_bridge' to access the callback.
-> > 
-> > Below is my proposal to convert powerpc to the new ->slot_reset() callback.
-> > Compile-tested only.
-> > 
-> > Feel free to include this in your series, alternatively I can submit it
-> > to powerpc maintainers once your series has landed.  Thanks!
-> 
-> Looks good to me, thanks! I think it would be better if it is submitted
-> once my series has landed in mainline (just to avoid immutable branch
-> hassle between powerpc and PCI trees).
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git fixes-test
+branch HEAD: b2accfe7ca5bc9f9af28e603b79bdd5ad8df5c0b  powerpc/boot: Check for ld-option support
 
-Sure, this can wait until your series has landed.  It would also be
-possible to merge through the pci tree if powerpc maintainers ack the
-patch.
+elapsed time: 1447m
 
-I've realized that pci_reset_secondary_bus() can be made private as well,
-so below is an updated patch.  Just putting this out there FWIW.
+configs tested: 7
+configs skipped: 135
 
--- 8< --
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-From: Lukas Wunner <lukas@wunner.de>
-Subject: [PATCH] powerpc/powernv/pci: Migrate to pci_host_bridge::reset_slot
- callback
+tested configs:
+powerpc                allnoconfig    gcc-14.2.0
+powerpc    randconfig-001-20250417    clang-21
+powerpc    randconfig-002-20250417    gcc-9.3.0
+powerpc    randconfig-003-20250417    gcc-9.3.0
+powerpc64  randconfig-001-20250417    clang-21
+powerpc64  randconfig-002-20250417    clang-21
+powerpc64  randconfig-003-20250417    gcc-5.5.0
 
-struct pci_host_bridge has just been amended with a ->reset_slot()
-callback to allow for a host-bridge-specific bus reset procedure.
-
-PowerNV needs a platform-specific bus reset procedure and has historically
-implemented it by overriding pcibios_reset_secondary_bus().
-
-Migrate PowerNV to the new ->reset_slot() callback to avoid having to
-maintain two different mechanisms for platform- and host-bridge-specific
-bus reset procedures.  Assign the callback as soon as the pci_host_bridge
-is allocated through the following call chain:
-
-pcibios_init()
-  pcibios_scan_phb()
-    pci_create_root_bus()
-      pci_register_host_bridge()
-        pcibios_root_bridge_prepare()
-
-The powerpc-specific implementation of pcibios_reset_secondary_bus() can
-thus be deleted and the remaining default implementation in the PCI core
-can be made private.  pci_reset_secondary_bus() can also be made private.
-The ->reset_secondary_bus() callback in struct pci_controller_ops becomes
-obsolete and can be deleted.
-
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
----
- arch/powerpc/include/asm/pci-bridge.h        |  1 -
- arch/powerpc/kernel/pci-common.c             | 12 ------------
- arch/powerpc/platforms/powernv/eeh-powernv.c | 14 +++++++++-----
- arch/powerpc/platforms/powernv/pci-ioda.c    |  9 +++++++--
- arch/powerpc/platforms/powernv/pci.h         |  3 ++-
- drivers/pci/pci.c                            |  4 ++--
- include/linux/pci.h                          |  2 --
- 7 files changed, 20 insertions(+), 25 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/pci-bridge.h b/arch/powerpc/include/asm/pci-bridge.h
-index 2aa3a091ef20..0de09fc90641 100644
---- a/arch/powerpc/include/asm/pci-bridge.h
-+++ b/arch/powerpc/include/asm/pci-bridge.h
-@@ -36,7 +36,6 @@ struct pci_controller_ops {
- 					    unsigned long type);
- 	void		(*setup_bridge)(struct pci_bus *bus,
- 					unsigned long type);
--	void		(*reset_secondary_bus)(struct pci_dev *pdev);
- 
- #ifdef CONFIG_PCI_MSI
- 	int		(*setup_msi_irqs)(struct pci_dev *pdev,
-diff --git a/arch/powerpc/kernel/pci-common.c b/arch/powerpc/kernel/pci-common.c
-index eac84d687b53..dad15fbec4e0 100644
---- a/arch/powerpc/kernel/pci-common.c
-+++ b/arch/powerpc/kernel/pci-common.c
-@@ -233,18 +233,6 @@ void pcibios_setup_bridge(struct pci_bus *bus, unsigned long type)
- 		hose->controller_ops.setup_bridge(bus, type);
- }
- 
--void pcibios_reset_secondary_bus(struct pci_dev *dev)
--{
--	struct pci_controller *phb = pci_bus_to_host(dev->bus);
--
--	if (phb->controller_ops.reset_secondary_bus) {
--		phb->controller_ops.reset_secondary_bus(dev);
--		return;
--	}
--
--	pci_reset_secondary_bus(dev);
--}
--
- resource_size_t pcibios_default_alignment(void)
- {
- 	if (ppc_md.pcibios_default_alignment)
-diff --git a/arch/powerpc/platforms/powernv/eeh-powernv.c b/arch/powerpc/platforms/powernv/eeh-powernv.c
-index db3370d1673c..9ea2fa892efc 100644
---- a/arch/powerpc/platforms/powernv/eeh-powernv.c
-+++ b/arch/powerpc/platforms/powernv/eeh-powernv.c
-@@ -890,18 +890,22 @@ static int pnv_eeh_bridge_reset(struct pci_dev *pdev, int option)
- 	return (rc == OPAL_SUCCESS) ? 0 : -EIO;
- }
- 
--void pnv_pci_reset_secondary_bus(struct pci_dev *dev)
-+int pnv_pci_reset_secondary_bus(struct pci_host_bridge *host,
-+				struct pci_dev *dev)
- {
- 	struct pci_controller *hose;
-+	int rc_hot, rc_dea;
- 
- 	if (pci_is_root_bus(dev->bus)) {
- 		hose = pci_bus_to_host(dev->bus);
--		pnv_eeh_root_reset(hose, EEH_RESET_HOT);
--		pnv_eeh_root_reset(hose, EEH_RESET_DEACTIVATE);
-+		rc_hot = pnv_eeh_root_reset(hose, EEH_RESET_HOT);
-+		rc_dea = pnv_eeh_root_reset(hose, EEH_RESET_DEACTIVATE);
- 	} else {
--		pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
--		pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
-+		rc_hot = pnv_eeh_bridge_reset(dev, EEH_RESET_HOT);
-+		rc_dea = pnv_eeh_bridge_reset(dev, EEH_RESET_DEACTIVATE);
- 	}
-+
-+	return rc_hot ? : rc_dea;
- }
- 
- static void pnv_eeh_wait_for_pending(struct pci_dn *pdn, const char *type,
-diff --git a/arch/powerpc/platforms/powernv/pci-ioda.c b/arch/powerpc/platforms/powernv/pci-ioda.c
-index ae4b549b5ca0..e1b75a4bc681 100644
---- a/arch/powerpc/platforms/powernv/pci-ioda.c
-+++ b/arch/powerpc/platforms/powernv/pci-ioda.c
-@@ -2145,6 +2145,12 @@ static void pnv_pci_ioda_fixup(void)
- #endif
- }
- 
-+static int pnv_pci_root_bridge_prepare(struct pci_host_bridge *bridge)
-+{
-+	bridge->reset_slot = pnv_pci_reset_secondary_bus;
-+	return 0;
-+}
-+
- /*
-  * Returns the alignment for I/O or memory windows for P2P
-  * bridges. That actually depends on how PEs are segmented.
-@@ -2504,7 +2510,6 @@ static const struct pci_controller_ops pnv_pci_ioda_controller_ops = {
- 	.release_device		= pnv_pci_release_device,
- 	.window_alignment	= pnv_pci_window_alignment,
- 	.setup_bridge		= pnv_pci_fixup_bridge_resources,
--	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
- 	.shutdown		= pnv_pci_ioda_shutdown,
- #ifdef CONFIG_IOMMU_API
- 	.device_group		= pnv_pci_device_group,
-@@ -2515,7 +2520,6 @@ static const struct pci_controller_ops pnv_npu_ocapi_ioda_controller_ops = {
- 	.enable_device_hook	= pnv_ocapi_enable_device_hook,
- 	.release_device		= pnv_pci_release_device,
- 	.window_alignment	= pnv_pci_window_alignment,
--	.reset_secondary_bus	= pnv_pci_reset_secondary_bus,
- 	.shutdown		= pnv_pci_ioda_shutdown,
- };
- 
-@@ -2724,6 +2728,7 @@ static void __init pnv_pci_init_ioda_phb(struct device_node *np,
- 	}
- 
- 	ppc_md.pcibios_default_alignment = pnv_pci_default_alignment;
-+	ppc_md.pcibios_root_bridge_prepare = pnv_pci_root_bridge_prepare;
- 
- #ifdef CONFIG_PCI_IOV
- 	ppc_md.pcibios_fixup_sriov = pnv_pci_ioda_fixup_iov;
-diff --git a/arch/powerpc/platforms/powernv/pci.h b/arch/powerpc/platforms/powernv/pci.h
-index 42075501663b..44e8969c7729 100644
---- a/arch/powerpc/platforms/powernv/pci.h
-+++ b/arch/powerpc/platforms/powernv/pci.h
-@@ -275,7 +275,8 @@ extern struct iommu_table *pnv_pci_table_alloc(int nid);
- 
- extern void pnv_pci_init_ioda2_phb(struct device_node *np);
- extern void pnv_pci_init_npu2_opencapi_phb(struct device_node *np);
--extern void pnv_pci_reset_secondary_bus(struct pci_dev *dev);
-+extern int pnv_pci_reset_secondary_bus(struct pci_host_bridge *host,
-+				       struct pci_dev *dev);
- extern int pnv_eeh_phb_reset(struct pci_controller *hose, int option);
- 
- extern struct pnv_ioda_pe *pnv_pci_bdfn_to_pe(struct pnv_phb *phb, u16 bdfn);
-diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
-index 13709bb898a9..28cdcd698914 100644
---- a/drivers/pci/pci.c
-+++ b/drivers/pci/pci.c
-@@ -4962,7 +4962,7 @@ int pci_bridge_wait_for_secondary_bus(struct pci_dev *dev, char *reset_type)
- 			    PCIE_RESET_READY_POLL_MS - delay);
- }
- 
--void pci_reset_secondary_bus(struct pci_dev *dev)
-+static void pci_reset_secondary_bus(struct pci_dev *dev)
- {
- 	u16 ctrl;
- 
-@@ -4980,7 +4980,7 @@ void pci_reset_secondary_bus(struct pci_dev *dev)
- 	pci_write_config_word(dev, PCI_BRIDGE_CONTROL, ctrl);
- }
- 
--void __weak pcibios_reset_secondary_bus(struct pci_dev *dev)
-+static void pcibios_reset_secondary_bus(struct pci_dev *dev)
- {
- 	struct pci_host_bridge *host = pci_find_host_bridge(dev->bus);
- 	int ret;
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index 76e977af2d52..829d7cbbf258 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -1397,8 +1397,6 @@ int pci_try_reset_function(struct pci_dev *dev);
- int pci_probe_reset_slot(struct pci_slot *slot);
- int pci_probe_reset_bus(struct pci_bus *bus);
- int pci_reset_bus(struct pci_dev *dev);
--void pci_reset_secondary_bus(struct pci_dev *dev);
--void pcibios_reset_secondary_bus(struct pci_dev *dev);
- void pci_update_resource(struct pci_dev *dev, int resno);
- int __must_check pci_assign_resource(struct pci_dev *dev, int i);
- void pci_release_resource(struct pci_dev *dev, int resno);
--- 
-2.43.0
-
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
