@@ -1,85 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-7736-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7737-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8C04C369B2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Apr 2025 12:12:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66CD3C369B2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Apr 2025 12:18:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZdcGs0b7rz2ygk;
-	Thu, 17 Apr 2025 22:12:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744883310;
-	cv=none; b=ofgvaZtrYQoZJBWviu5KeeXwcDPhPF60n9zG8dRZPux+p/g+iPLVOXEx1lVK6ytNbVYu3leivE/iCHiLjE8zwHNtjuf7HNzgBTYOubu3inyvdcIVo7B7kjOvFUkHo4kTlVtT1k7gdaz3EqvCK3SDydqM7xw3PEjXU9jf1LH/8aW7vedH78a8tNE+h5Y3ltnfDddUHT9/hleyPD+milV96//x1aEcodKusc7VL7k3wX29jqrAlkyOtF0aW3Vqn2zny1ooTnpU76zEubkQqhGVIcXzJdp0xNNXE9uHZmSMXZKNFYumNWBrdQWrEs0Ty5rl2NyGA5OrcWf6gQ/OBKvI5w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZdcNl5zSlz3bsT;
+	Thu, 17 Apr 2025 22:17:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1744892279;
+	cv=none; b=NJOipd7kbV4xHn5oRzFf0H7RAKptTbtc/y2JaGFuRE+ZDNf+E+1gn1jcn9SCWMgq1ho7ZwIjynVhVQTc9wMVvGMu2ZuB1s9Tfjr7ksIqXoENMcpkE93cE40NcFUdb13WYVwhJF4CuQLTuxPn2q9E5LwfVlpUNoRuSTy87iesKlxOBAnjyk55/j9ATbfjTEQeWpT7PA0LLPGHKzajUPB16RUL3ncwCKP8GBIWyqmxeKpajDZes997AqlgwDs9Wuyh2guBeKZyUQ40dfJCp3JQL0JOadb/VPqMBcNQ9F5qHsw5uO0yRElPWaFn8NzNBDoZ3L/jWgP8eg/KoXG9xBH4sA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1744883310; c=relaxed/relaxed;
-	bh=ib44xKBj/Ro+Xh08yJf1yGF0ql4Q7w+22UKEcuxyUGk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=dIrm7SnTcEO+j8QS0S5WIxYXFYFiWqY3nEHb4t4XE3WGcuJqKotFf2ePVKOAmg+IdNIMRytOeaE1H27EDBU1u6GcisM+xiV6ip4nEsp+/4DYmCzM8BPc56L3kbG9SpQwRHKoEBiLQmYfNcbgTYtPR2xkXulM2MAVyItiTNyb5Gq9Yh2XFgQjJwarPQMGonRltImn011wBLGJ2r9R6xMyxbz/xhGnAAyYpxY8hDE8AJgnsS4vV/itt5Ypv6T/wnNGzbgQ6F+3ijydePDgPwhq8rzHpYhk2+P54VChu3EiS2UO96Ib2EQyv086JJTdNBNafxop2ly9mcOnZLH+iN4Vzg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Uv0qjN97; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krishna.chundru@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
+	t=1744892279; c=relaxed/relaxed;
+	bh=8s1djKeL3fc4H9gWVuhC844rgRl5PgneXVqXQ6Os7m8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=TkoFH89Zi7zktx3mQp1LU9Fn2Ls8pXw+vaNszd+PbCuEl23ZuP69zAC5j0+xxC9NQn7djyuhkiLDoLxEGPw375Vn65fx9ahn27ecJsXZof5fGE7858ttdZuzH5KWKzZ2miKlyghztkIOD2b6pjROYxyeHN+c5kL6BqYcz3flJOqrDbGlzMhjsOgw8fkRz0Vz8S0V24Ol5hH3qdV96j0U9H5gHdisgiZoRIIvhkDQZZcXA3+eyqYur+La4RQGk5Z6mhjKQlue82jxmSlIiIjj+0byb0Dzp44GnOFLIukPXrfIm36KZx3uevUj0HaIUawqL9Fjxb2AVDbQ1Nxw9QviZg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HrFTplON; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Uv0qjN97;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HrFTplON;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krishna.chundru@oss.qualcomm.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 2183 seconds by postgrey-1.37 at boromir; Thu, 17 Apr 2025 19:48:28 AEST
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=gautam@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZdY4D6W9Hz305P
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2025 19:48:26 +1000 (AEST)
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 53H5l6bR027212
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2025 09:12:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
-	cc:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	ib44xKBj/Ro+Xh08yJf1yGF0ql4Q7w+22UKEcuxyUGk=; b=Uv0qjN97adMvtefz
-	EGm8EizDkZw6NWJUroUIg6Re6QCO0cnRWiLoMQNnp0n9A7OfwDB6MlrjPUQjFVN2
-	RhoKU+OiCE2gx/QGfen8TjmLgivVvd9lIgod8tXQf7735RuZ0vp/tcwdCN2Z16MO
-	XYIWC2IRhfWgdM3X++Rrc4/QY7WWQQXx3MJQoTTZPLQBgI3ZGoGq9q7jOTSoRXKQ
-	UZFdl6N3FCwaq9rfb6fsDD6cAhCnpLKZXf7UdPkAxitmc7Qr8jWIr0nUKRUuEfXh
-	hDuEc/z7La/wDE1Lk3wNjgNLWxPQ1+fCLOrvo5gm/s8b5WM/E+GxwU8MIoKj/dJT
-	M4MYCQ==
-Received: from mail-pl1-f200.google.com (mail-pl1-f200.google.com [209.85.214.200])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 45ydvjej1r-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2025 09:12:01 +0000 (GMT)
-Received: by mail-pl1-f200.google.com with SMTP id d9443c01a7336-22c31b55ac6so10569215ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2025 02:12:01 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1744881121; x=1745485921;
-        h=content-transfer-encoding:in-reply-to:from:references:cc:to
-         :content-language:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=ib44xKBj/Ro+Xh08yJf1yGF0ql4Q7w+22UKEcuxyUGk=;
-        b=LNSTuGsglectCZO2YeEo99YZCJDc/pjLnuApgYR89TXPZ2uXYEUXCOZN0SNvcpx/pS
-         rAmMzrc43Or1kdaysfs0mezcybZO66JTWkg8Cn252M/jEXy55G4ESMrfDmGy/deiNIfm
-         OzzFPCVj8r/yHDgv+TMhYIyVsctWon/e74W8mZtVdsfZJi3S/xHC7WjpzIifuDa8Mixb
-         M0+ZAszqlAwItBc+Wos5Dxox7b3HEl84ycHYXmOO2KrVtMZNQJEcuL4bAvCrAO/JWzhl
-         0JrxZmQXlWWphE6YHoLZFZmxFKXiu2lNYpHPPs+oivZlcB9hVdfBzxmI0UrpfU+yJ2bl
-         zI3w==
-X-Forwarded-Encrypted: i=1; AJvYcCW1eYk4rNxEGu/b/EoTlppI1AwtBWMAGnH8HWp3lVtdkKEUTgtSalQKY7Qemfk19sdm0TmFLPnBl+eeaOU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwpR2FR4FEPsPcKMXCDDw0btfAjUbkQQTWW24+xuVPvvbXdRVV2
-	56aJ9IYG/jNjctIKM7WEIykS/mJ8W/bOSk9IEN6XCaM9Y1u8y8ixCS0+iH2FLulzjaFAbvDt1UK
-	cvgGc8MAcDu+UZVifoyXJlOKv14eLfzmqbIq911Df7h3pwGOrI5WxP5zYS7AO6arV
-X-Gm-Gg: ASbGnctiFtvo/NsnKkQrPZFAfihDewkn/cR4fEc31O/hcP+Ls2Yid4nk2fY+ytBCoHr
-	JFxBmNwteDovpV6/ajRj1ooqvgFgO3Wl3o0cxkwm+UCHZ+5vWjtuo3SSXq1vo/Ge1qRLSKz04My
-	PJekicKK5dEZzmkbRiMObVmQLDT2yGhu98Toiwc6/a+wi5TrEqrgzbsN7KImM3fe+hmAjkiZclM
-	VqtC9PS0qjDl8n2cioS+8t9Y187eiJPaeNz/eKcgliJmFB7Q67JJiizGgjd78WpR4aMScet6wUF
-	1x1Jw2Ard9uc7hj68W7ppMt67/hM3jDDX8NSIg9HwQ==
-X-Received: by 2002:a17:903:2f85:b0:223:6744:bfb9 with SMTP id d9443c01a7336-22c35973405mr86070435ad.41.1744881121017;
-        Thu, 17 Apr 2025 02:12:01 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGQyKNgE0DokKtvPIYouYE1uOOI7So2YqEjxzqZuyFFiQfJrMgw7yOOs6D0q9vCJ2ghjk5ZDA==
-X-Received: by 2002:a17:903:2f85:b0:223:6744:bfb9 with SMTP id d9443c01a7336-22c35973405mr86070015ad.41.1744881120660;
-        Thu, 17 Apr 2025 02:12:00 -0700 (PDT)
-Received: from [10.92.199.136] ([202.46.23.19])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-22c33fe9810sm28564065ad.249.2025.04.17.02.11.56
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 17 Apr 2025 02:12:00 -0700 (PDT)
-Message-ID: <2c0b0929-0610-3e99-03be-a50e9f5f323b@oss.qualcomm.com>
-Date: Thu, 17 Apr 2025 14:41:55 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZdcNk5NRJz2ySp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Apr 2025 22:17:58 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 53HAeaEa015627;
+	Thu, 17 Apr 2025 12:17:43 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=8s1djKeL3fc4H9gWVuhC844rgRl5PgneXVqXQ6Os7
+	m8=; b=HrFTplON4eaEVIY8pRzY0DPFDgOLuOfTJqijR744NQ2xpz60nr+RSxnoF
+	CJMKMINuFT3O1SC2t5vXI5Yfmryub9LneukT3UT7jdP0PRf2fW2xkktNRPU12wl7
+	4ZGQ07zJ2/Agx7G3Yjv1EEx4vHxWPCp+cPFeAI2KWCEYZOYUuvLKxVKOC8rHpPM6
+	pxx6JhPFkNxU8Erds7KRzthkniSo/OfpTAslc5kY0Wlw9OXfRXIgweC6qVqnIBum
+	MGkLiUgknaB8dhUpO3c86qDDMry+mwNr1rsy4Xb0H4v/VmAsgNwdj4pvJgg7t8h+
+	GKOjd4ugUzVngtqQfpZQjo7Pba4uQ==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46303rrdfa-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 17 Apr 2025 12:17:42 +0000 (GMT)
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 53HCHgda028278;
+	Thu, 17 Apr 2025 12:17:42 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46303rrdf8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 17 Apr 2025 12:17:42 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 53HBcuAj010392;
+	Thu, 17 Apr 2025 12:17:41 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4604qkdamn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 17 Apr 2025 12:17:41 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 53HCHb5U29754010
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 17 Apr 2025 12:17:37 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id BD56020043;
+	Thu, 17 Apr 2025 12:17:37 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0978720040;
+	Thu, 17 Apr 2025 12:17:36 +0000 (GMT)
+Received: from li-c6426e4c-27cf-11b2-a85c-95d65bc0de0e.in.ibm.com (unknown [9.204.206.66])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 17 Apr 2025 12:17:35 +0000 (GMT)
+From: Gautam Menghani <gautam@linux.ibm.com>
+To: maddy@linux.ibm.com, npiggin@gmail.com, mpe@ellerman.id.au,
+        christophe.leroy@csgroup.eu, naveen@kernel.org
+Cc: Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
+        kvm@vger.kernel.org, linux-kernel@vger.kernel.org
+Subject: [PATCH] KVM: PPC: Kconfig: Enable CONFIG_VPA_PMU with KVM
+Date: Thu, 17 Apr 2025 17:47:23 +0530
+Message-ID: <20250417121727.267280-1-gautam@linux.ibm.com>
+X-Mailer: git-send-email 2.49.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,114 +91,48 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.15.1
-Subject: Re: [PATCH v2 3/4] PCI: Add link down handling for host bridges
-Content-Language: en-US
-To: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-        Oliver O'Halloran <oohall@gmail.com>,
-        Bjorn Helgaas <bhelgaas@google.com>,
-        Lorenzo Pieralisi <lpieralisi@kernel.org>,
-        =?UTF-8?Q?Krzysztof_Wilczy=c5=84ski?= <kw@linux.com>,
-        Rob Herring <robh@kernel.org>, dingwei@marvell.com, cassel@kernel.org,
-        Lukas Wunner <lukas@wunner.de>, linuxppc-dev@lists.ozlabs.org,
-        linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-msm@vger.kernel.org
-References: <20250416-pcie-reset-slot-v2-0-efe76b278c10@linaro.org>
- <20250416-pcie-reset-slot-v2-3-efe76b278c10@linaro.org>
- <26b70e1b-861f-4c94-47a7-a267c41cadbb@oss.qualcomm.com>
- <lsehjhqicvit32jcsjkfqemgypnpim6zbxwapzdrncm3hwrp44@bvwg2acyyvle>
-From: Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
-In-Reply-To: <lsehjhqicvit32jcsjkfqemgypnpim6zbxwapzdrncm3hwrp44@bvwg2acyyvle>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=ZIrXmW7b c=1 sm=1 tr=0 ts=6800c5e1 cx=c_pps a=IZJwPbhc+fLeJZngyXXI0A==:117 a=j4ogTh8yFefVWWEFDRgCtg==:17 a=IkcTkHD0fZMA:10 a=XR8D0OoHHMoA:10 a=KKAkSRfTAAAA:8 a=om0y8n2fdRonrlNA1WoA:9 a=QEXdDO2ut3YA:10
- a=uG9DUKGECoFWVXl0Dc02:22 a=cvBusfyB2V15izCimMoJ:22
-X-Proofpoint-GUID: xP0TPir5Qnt8H9VHoT5HPs-H0ySWYIYd
-X-Proofpoint-ORIG-GUID: xP0TPir5Qnt8H9VHoT5HPs-H0ySWYIYd
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=C/bpyRP+ c=1 sm=1 tr=0 ts=6800f166 cx=c_pps a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17 a=XR8D0OoHHMoA:10 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=4sdRRrpyhxI9_uLjM3gA:9
+X-Proofpoint-ORIG-GUID: 7HBlp_NFM4J29MT9buZP-ezNtNQhPCdp
+X-Proofpoint-GUID: 0ZTnXM6xgeaJkUNPnWFG_kiOFaa3C1ZH
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1095,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-04-17_02,2025-04-15_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 suspectscore=0
- clxscore=1015 priorityscore=1501 bulkscore=0 phishscore=0 mlxlogscore=999
- spamscore=0 impostorscore=0 malwarescore=0 mlxscore=0 lowpriorityscore=0
- classifier=spam authscore=0 authtc=n/a authcc= route=outbound adjust=0
+ definitions=2025-04-17_03,2025-04-17_01,2024-11-22_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1011
+ lowpriorityscore=0 priorityscore=1501 impostorscore=0 adultscore=0
+ mlxscore=0 suspectscore=0 spamscore=0 mlxlogscore=999 bulkscore=0
+ malwarescore=0 phishscore=0 classifier=spam authscore=0 adjust=0
  reason=mlx scancount=1 engine=8.19.0-2502280000
- definitions=main-2504170071
+ definitions=main-2504170090
 
+Enable CONFIG_VPA_PMU with KVM to enable its usage. Currently, the
+vpa-pmu driver cannot be used since it is not enabled in distro configs.
 
+On fedora kernel 6.13.7, the config option is disabled:
+$ cat /boot/config-6.13.7-200.fc41.ppc64le | grep VPA
+ # CONFIG_VPA_PMU is not set
 
-On 4/17/2025 1:24 PM, Manivannan Sadhasivam wrote:
-> On Wed, Apr 16, 2025 at 11:21:49PM +0530, Krishna Chaitanya Chundru wrote:
->>
->>
->> On 4/16/2025 9:59 PM, Manivannan Sadhasivam via B4 Relay wrote:
->>> From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
->>>
->>> The PCI link, when down, needs to be recovered to bring it back. But that
->>> cannot be done in a generic way as link recovery procedure is specific to
->>> host bridges. So add a new API pci_host_handle_link_down() that could be
->>> called by the host bridge drivers when the link goes down.
->>>
->>> The API will iterate through all the slots and calls the pcie_do_recovery()
->>> function with 'pci_channel_io_frozen' as the state. This will result in the
->>> execution of the AER Fatal error handling code. Since the link down
->>> recovery is pretty much the same as AER Fatal error handling,
->>> pcie_do_recovery() helper is reused here. First the AER error_detected
->>> callback will be triggered for the bridge and the downstream devices. Then,
->>> pcie_do_slot_reset() will be called for each slots, which will reset the
->>> slots using 'reset_slot' callback to recover the link. Once that's done,
->>> resume message will be broadcasted to the bridge and the downstream devices
->>> indicating successful link recovery.
->>>
->>> In case if the AER support is not enabled in the kernel, only
->>> pci_bus_error_reset() will be called for each slots as there is no way we
->>> could inform the drivers about link recovery.
->>>
->> The PCIe endpoint drivers are registering with err_handlers and they
->> will be invoked only from pcie_do_recovery, but there are getting built
->> by default irrespective of AER is enabled or not.
->>
-> 
-> AER is *one* of the functionalities of an endpoint. And the endpoint could
-> mostly work without AER reporting (except for AER fatal/non-fatal where recovery
-> need to be performed by the host). So it wouldn't make sense to add AER
-> dependency for them.
-> 
->> Does it make sense to built err.c irrespective of AER is enabled or not
->> to use common logic without the need of having dependency on AER.
->>
-> 
-> Well, yes and no. Right now, only DPC reuses the err handlers except AER. But
-> DPC driver itself is functional dependent on AER. So I don't think it is really
-> required to build err.c independent of AER. But I will try to rework the code in
-> the future for fixing things like 'AER' prefix added to logs and such.
->
-Right now we have DPC & AER to use this pcie_do_recovery(), now we are
-adding supporting for controller reported error (Link down) not sure if
-there will be newer ways to report errors in future.
+Fixes: 176cda0619b6c ("powerpc/perf: Add perf interface to expose vpa counters")
+Cc: stable@vger.kernel.org # v6.13+
+Signed-off-by: Gautam Menghani <gautam@linux.ibm.com>
+---
+ arch/powerpc/kvm/Kconfig | 1 +
+ 1 file changed, 1 insertion(+)
 
-May be not in this series, in future better to de-couple err.c from
-AER as err.c. As the sources of error reporting is not limited to AER
-or DPC alone now.
+diff --git a/arch/powerpc/kvm/Kconfig b/arch/powerpc/kvm/Kconfig
+index dbfdc126bf14..209627e57d07 100644
+--- a/arch/powerpc/kvm/Kconfig
++++ b/arch/powerpc/kvm/Kconfig
+@@ -84,6 +84,7 @@ config KVM_BOOK3S_64_HV
+ 	select KVM_BOOK3S_HV_POSSIBLE
+ 	select KVM_GENERIC_MMU_NOTIFIER
+ 	select CMA
++	select VPA_PMU if HV_PERF_CTRS
+ 	help
+ 	  Support running unmodified book3s_64 guest kernels in
+ 	  virtual machines on POWER7 and newer processors that have
+-- 
+2.49.0
 
->> Also since err.c is tied with AER, DPC also had a hard requirement
->> to enable AER which is not needed technically.
->>
-> 
-> DPC driver is functional dependent on AER.
-I got a impression by seeing below statement that DPC can work
-independently.
-As per spec 6 sec 6.2.11.2, DPC error signaling "A DPC-capable
-Downstream Port must support ERR_COR signaling, independent of whether
-it supports Advanced Error Reporting (AER) or not".
-
-In fact it can work if AER is not enabled also, but will not have full
-functionality of DPC.
-
-- Krishna Chaitanya.
-> 
-> - Mani
-> 
 
