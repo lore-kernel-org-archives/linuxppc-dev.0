@@ -1,88 +1,107 @@
-Return-Path: <linuxppc-dev+bounces-7851-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7852-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89312C369AB
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Apr 2025 09:42:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B770C369AB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 21 Apr 2025 09:43:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zh0l718pfz3c2l;
-	Mon, 21 Apr 2025 19:42:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745228531;
-	cv=none; b=aK15dNt6SSbHrA6T/onX64nKcfFvKsRd7wFS+gM8GkSSWXrXdSglhMNYhZoWQRH/n4IBR5dx+xhrPxBnW7djiFhNzYuJY7yXEeKWfRqBB9CJIsaq3Jves1fuawixmp+yeRboAB/SygRRH9itAAkFzR15/Uwk7RSyJILFpAeAzJwilPy2XQjowQXFVkKzamEpLRXzV568wzTXUdOzLRqRz6HSEahBrN2KUs1sMwyV4Odi4lXt+l+ysXGrcYmPqn5QQnHnfzsSR9jiCYGt/t5TOqQsVflUqTscBKjsAbKPJ5ax0hWXzs5q4rCY1VQgpkOiRVmwDKTAV7s8xlm9C8oquA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Zh0n91J0Dz3bp0;
+	Mon, 21 Apr 2025 19:43:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:638:a000:1025::15"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745228637;
+	cv=none; b=lWhPu8JS5j5ve0+yd+yd5GUD30DHyx6Sh7w9SJ5Q3BmlRpurKlSNwXQm/jTVKjnYAgeBuUed3oFjI1NhKeYC+EplYBVAZ75XbUcvhqmqlNzFzwODNjeesk51cQa+KKEp+NOwmK0CLaRt6eD5slZZyGjdWJavbQtzyeHagSeYpQ9XpIPDSrgegdjdiDbXHUZcAwb94WED9clNqHYxvBqjjKDnZB3v1zZWCnaeKEn5rqTSBSilf5of6vAWFNh7/O/r/1BvvzqZLFgUWO3LC4amgCk6M34JbgJYglHMxwXHlDjW1kmdiEYGt8/PpDIp0nJmWUNZ+E9AWmaM24zuK+MiaQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745228531; c=relaxed/relaxed;
-	bh=ZbwJK0sX8EPH4utB4iySXESMuZgXQ4XK2/L2O0jMcSE=;
+	t=1745228637; c=relaxed/relaxed;
+	bh=bKc9yVDD12zFt5PActr4wA/mqYObJPYba1F2TtgIniE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=USrfanfHgqhUJCRnNVyhbwtbcnYrhyssoZ/Mnz6UVYebRXBnAPk4wSYqmLsFkTgqDQ3DWtqZqzEeNtw/eyO3Z0VhCMM1T2sl7+PjKoN7ns1rRQDVDp1P8z4MmFsZPgJbjjGzPDskwr3YEJAvgN2VZDSLNqeD4/W9M9de7UVhyLwobpIOHxJO5pLCBoQ5Bjn1qBs1dQcMDLJfJLSXrQZWUVAxrBzgxkd6K80T5kfwIVTUQdWqU8lBsfSnDk2iEFUwHfqM0roj99ANLh/Y2Le89SEKrRAzcInLPLrwDUqWmOSlEVYlrhypuDMvRr+L6mdnKEzQHbgMZXN8x1i48kc2ww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Dn315FqU; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 MIME-Version; b=n/v2piMAJdSQ9/6K/mSq5NVtbVMrFDGDfds6t2QtV8VSI2qZu4ToF/IPAedbZC6IgohH655fQe9LGGT4DUkwEt6Qig6RSnZbDu3Fe4l3qMPCCAzjV7s+DU/OiWaYwoojk7+NzCrRSCaFXGmAO9L44CgesEnEuEWlFdS+o+5mG/pIpVR6izfmkvb5e9rfgG/8hLVqa7PY5nLz1tIQ3E4KFbv1xOhLrjmFbNUETGPVg0B4KDa6BsowAIojeUEATYzfJgbh7QuZ8K/OKM6PpRF14ZzbWcOjTwQAJhRsI4f9ATCQ3g4ohu5eh4MuHBsVuGmBi8U2d3NQi7HiUfUNKT6kRg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=fau.de; dkim=pass (2048-bit key; secure) header.d=fau.de header.i=@fau.de header.a=rsa-sha256 header.s=fau-2021 header.b=Bjn/QEof; dkim-atps=neutral; spf=pass (client-ip=2001:638:a000:1025::15; helo=mx-rz-2.rrze.uni-erlangen.de; envelope-from=luis.gerhorst@fau.de; receiver=lists.ozlabs.org) smtp.mailfrom=fau.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=fau.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Dn315FqU;
+	dkim=pass (2048-bit key; secure) header.d=fau.de header.i=@fau.de header.a=rsa-sha256 header.s=fau-2021 header.b=Bjn/QEof;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=fau.de (client-ip=2001:638:a000:1025::15; helo=mx-rz-2.rrze.uni-erlangen.de; envelope-from=luis.gerhorst@fau.de; receiver=lists.ozlabs.org)
+Received: from mx-rz-2.rrze.uni-erlangen.de (mx-rz-2.rrze.uni-erlangen.de [IPv6:2001:638:a000:1025::15])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zh0l62FhJz2ySJ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2025 19:42:10 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 53KLhur2021650;
-	Mon, 21 Apr 2025 09:41:57 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=ZbwJK0
-	sX8EPH4utB4iySXESMuZgXQ4XK2/L2O0jMcSE=; b=Dn315FqURq3L6NWy664t8j
-	V17V5K/cKbzN8bp9UiQhfaVwdfJa/ftrR6MJqHAIUuef9PrIZmG3QB3jYyWNrAqF
-	ymZ9aYTWTXYg1bYs18gjhJ6VSiTHm5PUURtiea2PH9Bry/PzUuUwUBP9zUXc8Wi1
-	xa7hxVT9Mv9MEufFdTmMSy486zTKs2j+Bkhn/O6p/CZ2wpvbBxlHUDxxCG+xzbBe
-	L5mL/5sSmOvuV8IcSkdI4IbUpe7B1m6Sh75cXbQxLkJDSoC9dTziiKU1YAg2JPmy
-	37Z3U8OYloGmHdynNiN3Xvej0/OhQZtsjXpK8eArP6Q7c3q9FKgq85iHYPEZp91Q
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46592va4pw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 21 Apr 2025 09:41:56 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 53L9fD1L028985;
-	Mon, 21 Apr 2025 09:41:56 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46592va4pu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 21 Apr 2025 09:41:56 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 53L8iN42027743;
-	Mon, 21 Apr 2025 09:41:55 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 464rv1wdmq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 21 Apr 2025 09:41:55 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 53L9frUa47382884
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 21 Apr 2025 09:41:53 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D0AAC202EE;
-	Mon, 21 Apr 2025 09:41:53 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0B6ED202D4;
-	Mon, 21 Apr 2025 09:41:49 +0000 (GMT)
-Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.ibm.com.com (unknown [9.43.29.154])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 21 Apr 2025 09:41:48 +0000 (GMT)
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
-        paulus@ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: naveen@kernel.org, linuxppc-dev@lists.ozlabs.org,
-        kernel test robot <lkp@intel.com>
-Subject: Re: [RFC PATCH] powerpc: Add check to select PPC_RADIX_BROADCAST_TLBIE
-Date: Mon, 21 Apr 2025 15:11:46 +0530
-Message-ID: <174516637906.525631.13671868581882641091.b4-ty@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zh0n83C8lz2ySJ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 21 Apr 2025 19:43:56 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=fau.de; s=fau-2021;
+	t=1745228633; bh=bKc9yVDD12zFt5PActr4wA/mqYObJPYba1F2TtgIniE=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From:To:CC:
+	 Subject;
+	b=Bjn/QEofQTdq/J3TseRjZdcqev313eZp49KQMpDxw3fcrP2tpiLaGTBqE8GZY4VgE
+	 rjAV2qWcX0yCLh7mrHHLLUBweYbo+YNgF3Xf79KyJSGwei7EeYdAePeUsP4bygd3Pl
+	 pWA8VO1xci2awe1hMjd7tW1qpL2ziIt3TJ9OyHSXdc1vzOesbCNGI+d+iyAbjdfipa
+	 RqWzC08Ud7MIZ9hoLz2GGA4fFORkata3vsh86MjGg5dbAjL6gLobC8c9Nci4+LmZ+q
+	 uCN67LZzyM/c35wMeaSUdjsVwJAtRr1m72TuEk8kc3vr7OlO352MDunu1vGYOdmHDJ
+	 /VS++ChghzKzg==
+Received: from mx-rz-smart.rrze.uni-erlangen.de (mx-rz-smart.rrze.uni-erlangen.de [IPv6:2001:638:a000:1025::1e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-rz-2.rrze.uni-erlangen.de (Postfix) with ESMTPS id 4Zh0n50GM9zPjsG;
+	Mon, 21 Apr 2025 11:43:53 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at boeck2.rrze.uni-erlangen.de (RRZE)
+X-RRZE-Flag: Not-Spam
+X-RRZE-Submit-IP: 2001:9e8:3600:7e00:5b67:6b9c:caeb:75c
+Received: from luis-tp.fritz.box (unknown [IPv6:2001:9e8:3600:7e00:5b67:6b9c:caeb:75c])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	(Authenticated sender: U2FsdGVkX19cmuOIeBrlP12vMR/oAY988hn6ybM2J80=)
+	by smtp-auth.uni-erlangen.de (Postfix) with ESMTPSA id 4Zh0my3j2BzPk5Y;
+	Mon, 21 Apr 2025 11:43:46 +0200 (CEST)
+From: Luis Gerhorst <luis.gerhorst@fau.de>
+To: Alexei Starovoitov <ast@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Andrii Nakryiko <andrii@kernel.org>,
+	Martin KaFai Lau <martin.lau@linux.dev>,
+	Eduard Zingerman <eddyz87@gmail.com>,
+	Song Liu <song@kernel.org>,
+	Yonghong Song <yonghong.song@linux.dev>,
+	John Fastabend <john.fastabend@gmail.com>,
+	KP Singh <kpsingh@kernel.org>,
+	Stanislav Fomichev <sdf@fomichev.me>,
+	Hao Luo <haoluo@google.com>,
+	Jiri Olsa <jolsa@kernel.org>,
+	Puranjay Mohan <puranjay@kernel.org>,
+	Xu Kuohai <xukuohai@huaweicloud.com>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	Hari Bathini <hbathini@linux.ibm.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Mykola Lysenko <mykolal@fb.com>,
+	Shuah Khan <shuah@kernel.org>,
+	Luis Gerhorst <luis.gerhorst@fau.de>,
+	Henriette Herzog <henriette.herzog@rub.de>,
+	Saket Kumar Bhaskar <skb99@linux.ibm.com>,
+	Cupertino Miranda <cupertino.miranda@oracle.com>,
+	Jiayuan Chen <mrpre@163.com>,
+	Matan Shachnai <m.shachnai@gmail.com>,
+	Dimitar Kanaliev <dimitar.kanaliev@siteground.com>,
+	Shung-Hsi Yu <shung-hsi.yu@suse.com>,
+	Daniel Xu <dxu@dxuuu.xyz>,
+	bpf@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kselftest@vger.kernel.org
+Cc: Maximilian Ott <ott@cs.fau.de>,
+	Milan Stephan <milan.stephan@fau.de>
+Subject: [PATCH bpf-next v2 07/11] bpf: Rename sanitize_stack_spill to nospec_result
+Date: Mon, 21 Apr 2025 11:17:58 +0200
+Message-ID: <20250421091802.3234859-8-luis.gerhorst@fau.de>
 X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250407084029.357710-1-maddy@linux.ibm.com>
-References: <20250407084029.357710-1-maddy@linux.ibm.com>
+In-Reply-To: <20250421091802.3234859-1-luis.gerhorst@fau.de>
+References: <20250421091802.3234859-1-luis.gerhorst@fau.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,36 +114,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: _TTvpkW9uvr46WAtRddlW3EwLjYHT_j4
-X-Authority-Analysis: v=2.4 cv=RorFLDmK c=1 sm=1 tr=0 ts=680612e4 cx=c_pps a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17 a=IkcTkHD0fZMA:10 a=XR8D0OoHHMoA:10 a=VwQbUJbxAAAA:8 a=GKMZPHe1ApgckJ878fUA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: GadkcUyihj6yppDBaNwPB8rv9ZqtBDMN
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1095,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-04-21_04,2025-04-21_02,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501 mlxscore=0
- bulkscore=0 mlxlogscore=561 lowpriorityscore=0 impostorscore=0
- suspectscore=0 spamscore=0 clxscore=1015 phishscore=0 malwarescore=0
- adultscore=0 classifier=spam authscore=0 authtc=n/a authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.19.0-2502280000
- definitions=main-2504210070
 
-On Mon, 07 Apr 2025 14:10:29 +0530, Madhavan Srinivasan wrote:
-> Commit 3d45a3d0d2e6 ("powerpc: Define config option for processors with broadcast TLBIE")
-> added a config option PPC_RADIX_BROADCAST_TLBIE to support processors with
-> broadcast TLBIE. Since this option is relevant only for RADIX_MMU, add
-> a check as a dependency to enable PPC_RADIX_BROADCAST_TLBIE in both
-> powernv and pseries configs. This fixes the unmet config dependency
-> warning reported
-> 
-> [...]
+This is made to clarify that this flag will cause a nospec to be added
+after this insn and can therefore be relied upon to reduce speculative
+path analysis.
 
-Applied to powerpc/fixes.
+Signed-off-by: Luis Gerhorst <luis.gerhorst@fau.de>
+Cc: Henriette Herzog <henriette.herzog@rub.de>
+Cc: Maximilian Ott <ott@cs.fau.de>
+Cc: Milan Stephan <milan.stephan@fau.de>
+---
+ include/linux/bpf_verifier.h | 2 +-
+ kernel/bpf/verifier.c        | 4 ++--
+ 2 files changed, 3 insertions(+), 3 deletions(-)
 
-[1/1] powerpc: Add check to select PPC_RADIX_BROADCAST_TLBIE
-      https://git.kernel.org/powerpc/c/3700976f2ae8dfec4c17433f8a16c9e6c334cf89
+diff --git a/include/linux/bpf_verifier.h b/include/linux/bpf_verifier.h
+index 9734544b6957..cebb67becdad 100644
+--- a/include/linux/bpf_verifier.h
++++ b/include/linux/bpf_verifier.h
+@@ -576,7 +576,7 @@ struct bpf_insn_aux_data {
+ 	u64 map_key_state; /* constant (32 bit) key tracking for maps */
+ 	int ctx_field_size; /* the ctx field size for load insn, maybe 0 */
+ 	u32 seen; /* this insn was processed by the verifier at env->pass_cnt */
+-	bool sanitize_stack_spill; /* subject to Spectre v4 sanitation */
++	bool nospec_result; /* result is unsafe under speculation, nospec must follow */
+ 	bool zext_dst; /* this insn zero extends dst reg */
+ 	bool needs_zext; /* alu op needs to clear upper bits */
+ 	bool storage_get_func_atomic; /* bpf_*_storage_get() with atomic memory alloc */
+diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
+index 27d3bc97a9e0..3d446c19bdf6 100644
+--- a/kernel/bpf/verifier.c
++++ b/kernel/bpf/verifier.c
+@@ -5031,7 +5031,7 @@ static int check_stack_write_fixed_off(struct bpf_verifier_env *env,
+ 		}
+ 
+ 		if (sanitize)
+-			env->insn_aux_data[insn_idx].sanitize_stack_spill = true;
++			env->insn_aux_data[insn_idx].nospec_result = true;
+ 	}
+ 
+ 	err = destroy_if_dynptr_stack_slot(env, state, spi);
+@@ -20886,7 +20886,7 @@ static int convert_ctx_accesses(struct bpf_verifier_env *env)
+ 		}
+ 
+ 		if (type == BPF_WRITE &&
+-		    env->insn_aux_data[i + delta].sanitize_stack_spill) {
++		    env->insn_aux_data[i + delta].nospec_result) {
+ 			struct bpf_insn patch[] = {
+ 				*insn,
+ 				BPF_ST_NOSPEC(),
+-- 
+2.49.0
 
-Thanks
 
