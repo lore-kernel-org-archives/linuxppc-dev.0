@@ -1,68 +1,43 @@
-Return-Path: <linuxppc-dev+bounces-7871-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7872-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 045CFC369D5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Apr 2025 02:17:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 988D0C369D5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Apr 2025 02:51:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZhQqN3Jqyz3bpm;
-	Tue, 22 Apr 2025 12:17:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745288240;
-	cv=none; b=CCoQd/IZY5/9solFnT0v7oYFeaIL8aK8+ADXF7i1cEN4CmYcHbZjUxLDvebD5IsyMHj+X+AVyMLJNm9JlES9UBLIJX19cV7Asu4lJFcAkorHn7sQYISLXsYCS55/dm8sRxvggGNNn1fVWHldYlQyzXw+whu9TTl8UJzgcKb2pQ5kq1gEwYtIrZbJjftC7alz6tSrzFB3Fr19otlDKAX4Kcv1HLldMGlaGx8pr4ySH7xV3Yly7BLYF5LqaiZXn+KYm5dC80rgCoHl0x2cnQykB1u0dpHNFppKu3WRO18spgCpc8R+00MvphAME9M7OTyM/gzkRb6ntji1HUhAvnOV9g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZhRZQ53MHz3bpt;
+	Tue, 22 Apr 2025 12:51:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::ae"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745289432;
+	cv=none; b=MOQ28ZCDahJTtZDcTSGwoaqjfaK6sECCv15U2J+4RnQP9dAbMOPUmrfPQXvqnQnv2QdmWDsQPqFcoL9bcTCgPKaF/P523c6If3XlXgs+1pYn5Px/5wvyP3HJKIksqC66jXw6D6h8CdJeiK3r448vat3YgFUUVzAIDZBlIK/QycOCk2aLBR6vh6eoikFQBtpBiHKBHcsesZWqxne13Nrmvs3FlTwQPGinJOqdFFzjozohq2EdX8oc05NctszunaIR5yvG/QhDMJosItAaMJZAm7esxgQMLv48NCz8hQGwexXouiQp4Hs6cBV/JwgFInoPYsqVREHEDM++z9sgVcC5Hg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745288240; c=relaxed/relaxed;
-	bh=Lb+J9ZokVSqqxIsPp1kmHD+Y9qcFSWI6Hw+ckhxKTBU=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=eNZ1+y2ewlOBRpWfWM/U2cfbD3dIBFxUtXtSj9Kzn0+C9MAK9jId67elhGgB8InWiEpzYR8AJbfBwsu+gpyjyB2fFxKajrisRVvdNDp3lC2Jme89xnfAbA1RyRcJqbYGrRNDysNc58/NkRli2FXI3iRIJqYHQNpsND0gRLvZhyP3HphnBjVk8w3sDed/8WCYTWrzNgd71cNq+07nRPyyByej0AatynQVIqf3cVg6LpgtUhAvFLXNqSyCoyscAbRC6i8J4pMDnn8fNiyTA8XhWkdY4k4NLfJMgBtuN8bfwN5El3S3qTdjw3+scFhptzi6cVteOjZSWJdHRkJ/6CEbWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=myhualnb; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=myhualnb;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+	t=1745289432; c=relaxed/relaxed;
+	bh=2Nw6SGmFuOHiMnCDJg0/g7L7mJqzQ17JM76NGIuuNfI=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=nCjP41FlQqgNrYxGUlqA163tfaobqlPa3vF1DAHLKdTY/mnsPgV/1r6BGr+YEU/D15VOqQv3RvcFQSWM7Zh3ArZIzlCh/t6K2zx8sRPJJnYiIeBnIQtCC4UXlpfHX0EFashgEGn8sCFEiqIhFDjkcRiQzvFGZthYPxLVLVI0PA2PtcPsgKCpgX5HzBpWt3JICF1B/lcWWFdu3KpetEQsZsKEmfkIqTzabefdZkpaPa4UGev/93aWrTPV0sOE4UEY6y01BQPnO+BnB9jBcnFC2mgEwOJyh0j4vPeANCKtUfCLDhMuH5FBVtGm7zXkHcQTgEgSmH/OoTZrdPmY7iZsUg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=fail (p=quarantine dis=none) header.from=kernel.org; spf=pass (client-ip=2001:41d0:203:375::ae; helo=out-174.mta1.migadu.com; envelope-from=ben.collins@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=fail (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::ae; helo=out-174.mta1.migadu.com; envelope-from=ben.collins@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 71 seconds by postgrey-1.37 at boromir; Tue, 22 Apr 2025 12:37:11 AEST
+Received: from out-174.mta1.migadu.com (out-174.mta1.migadu.com [IPv6:2001:41d0:203:375::ae])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZhQqM5K9Xz2yRn
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2025 12:17:19 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 08298A4BF35;
-	Tue, 22 Apr 2025 02:11:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 77FD6C4CEEE;
-	Tue, 22 Apr 2025 02:17:14 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1745288235;
-	bh=NjNbpF18wPAYd3eJEswSOl8w+6PgqTaTcYBTzvy0/08=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=myhualnbDMfLHwDB1hoHPqRPJtTa+7waxg6JDU0hWW00KQSUwZfmyrBlsMpI5BtAh
-	 WX6TDBujrsi1h9CJNtD6MbWWWQ2nMmLq1zI7NcRGB88q2kA6MArJ8pOGoPexJqqrm5
-	 9RdACuCLAVsCCOjSEOUGZG9VoHa6xcXVqW7HMrW8IOEricD88vuJ+ulY1v1DfSN/W+
-	 g3uZvqnUUdQ+sj3NqQjLte5IEd7oDP2bcYFb8MO7Z2pftvDI1ouxXmskzHeAD7927W
-	 N/JUdIvT0qkxUI326jEqMd1F3dfj64NhU3k8Y8BXGE3wbb3bYXDdGrwCkPaspuW56A
-	 U9cV79TOeBTQw==
-From: Sasha Levin <sashal@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	stable@vger.kernel.org
-Cc: Shengjiu Wang <shengjiu.wang@nxp.com>,
-	Mark Brown <broonie@kernel.org>,
-	Sasha Levin <sashal@kernel.org>,
-	shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	lgirdwood@gmail.com,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-sound@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH AUTOSEL 6.12 07/23] ASoC: fsl_asrc_dma: get codec or cpu dai from backend
-Date: Mon, 21 Apr 2025 22:16:47 -0400
-Message-Id: <20250422021703.1941244-7-sashal@kernel.org>
-X-Mailer: git-send-email 2.39.5
-In-Reply-To: <20250422021703.1941244-1-sashal@kernel.org>
-References: <20250422021703.1941244-1-sashal@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZhRGH60hwz2yRn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 22 Apr 2025 12:37:11 +1000 (AEST)
+Date: Mon, 21 Apr 2025 22:36:46 -0400
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Ben Collins <bcollins@kernel.org>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org
+Subject: [PATCH] kexec: Include kernel-end even without crashkernel
+Message-ID: <2025042122-inescapable-mandrill-8a5ff2@boujee-and-buff>
+Mail-Followup-To: linuxppc-dev@lists.ozlabs.org, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	linux-kernel@vger.kernel.org
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,60 +50,141 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-X-stable: review
-X-Patchwork-Hint: Ignore
-X-stable-base: Linux 6.12.24
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="nzde7snpamx2jdcs"
+Content-Disposition: inline
+X-Migadu-Flow: FLOW_OUT
 
-From: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-[ Upstream commit ef5c23ae9ab380fa756f257411024a9b4518d1b9 ]
+--nzde7snpamx2jdcs
+Content-Type: text/plain; protected-headers=v1; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
+Subject: [PATCH] kexec: Include kernel-end even without crashkernel
+MIME-Version: 1.0
 
-With audio graph card, original cpu dai is changed to codec device in
-backend, so if cpu dai is dummy device in backend, get the codec dai
-device, which is the real hardware device connected.
+Certain versions of kexec don't even work without kernel-end being
+added to the device-tree. Add it even if crash-kernel is disabled.
 
-The specific case is ASRC->SAI->AMIX->CODEC.
-
-Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-Link: https://patch.msgid.link/20250319033504.2898605-1-shengjiu.wang@nxp.com
-Signed-off-by: Mark Brown <broonie@kernel.org>
-Signed-off-by: Sasha Levin <sashal@kernel.org>
+Signed-off-by: Ben Collins <bcollins@kernel.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
 ---
- sound/soc/fsl/fsl_asrc_dma.c | 15 ++++++++++++++-
- 1 file changed, 14 insertions(+), 1 deletion(-)
+ arch/powerpc/kexec/core.c | 27 +++++++++++++++------------
+ 1 file changed, 15 insertions(+), 12 deletions(-)
 
-diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-index f501f47242fb0..1bba48318e2dd 100644
---- a/sound/soc/fsl/fsl_asrc_dma.c
-+++ b/sound/soc/fsl/fsl_asrc_dma.c
-@@ -156,11 +156,24 @@ static int fsl_asrc_dma_hw_params(struct snd_soc_component *component,
- 	for_each_dpcm_be(rtd, stream, dpcm) {
- 		struct snd_soc_pcm_runtime *be = dpcm->be;
- 		struct snd_pcm_substream *substream_be;
--		struct snd_soc_dai *dai = snd_soc_rtd_to_cpu(be, 0);
-+		struct snd_soc_dai *dai_cpu = snd_soc_rtd_to_cpu(be, 0);
-+		struct snd_soc_dai *dai_codec = snd_soc_rtd_to_codec(be, 0);
-+		struct snd_soc_dai *dai;
- 
- 		if (dpcm->fe != rtd)
- 			continue;
- 
-+		/*
-+		 * With audio graph card, original cpu dai is changed to codec
-+		 * device in backend, so if cpu dai is dummy device in backend,
-+		 * get the codec dai device, which is the real hardware device
-+		 * connected.
-+		 */
-+		if (!snd_soc_dai_is_dummy(dai_cpu))
-+			dai = dai_cpu;
-+		else
-+			dai = dai_codec;
+diff --git a/arch/powerpc/kexec/core.c b/arch/powerpc/kexec/core.c
+index 00e9c267b912f..7b5958c37f702 100644
+--- a/arch/powerpc/kexec/core.c
++++ b/arch/powerpc/kexec/core.c
+@@ -22,6 +22,8 @@
+ #include <asm/setup.h>
+ #include <asm/firmware.h>
+=20
++#define cpu_to_be_ulong __PASTE(cpu_to_be, BITS_PER_LONG)
 +
- 		substream_be = snd_soc_dpcm_get_substream(be, stream);
- 		dma_params_be = snd_soc_dai_get_dma_data(dai, substream_be);
- 		dev_be = dai->dev;
--- 
-2.39.5
+ #ifdef CONFIG_CRASH_DUMP
+ void machine_crash_shutdown(struct pt_regs *regs)
+ {
+@@ -136,17 +138,10 @@ int __init overlaps_crashkernel(unsigned long start, =
+unsigned long size)
+ }
+=20
+ /* Values we need to export to the second kernel via the device tree. */
+-static phys_addr_t kernel_end;
+ static phys_addr_t crashk_base;
+ static phys_addr_t crashk_size;
+ static unsigned long long mem_limit;
+=20
+-static struct property kernel_end_prop =3D {
+-	.name =3D "linux,kernel-end",
+-	.length =3D sizeof(phys_addr_t),
+-	.value =3D &kernel_end,
+-};
+-
+ static struct property crashk_base_prop =3D {
+ 	.name =3D "linux,crashkernel-base",
+ 	.length =3D sizeof(phys_addr_t),
+@@ -165,8 +160,6 @@ static struct property memory_limit_prop =3D {
+ 	.value =3D &mem_limit,
+ };
+=20
+-#define cpu_to_be_ulong	__PASTE(cpu_to_be, BITS_PER_LONG)
+-
+ static void __init export_crashk_values(struct device_node *node)
+ {
+ 	/* There might be existing crash kernel properties, but we can't
+@@ -190,6 +183,15 @@ static void __init export_crashk_values(struct device_=
+node *node)
+ 	mem_limit =3D cpu_to_be_ulong(memory_limit);
+ 	of_update_property(node, &memory_limit_prop);
+ }
++#endif /* CONFIG_CRASH_RESERVE */
++
++static phys_addr_t kernel_end;
++
++static struct property kernel_end_prop =3D {
++	.name =3D "linux,kernel-end",
++	.length =3D sizeof(phys_addr_t),
++	.value =3D &kernel_end,
++};
+=20
+ static int __init kexec_setup(void)
+ {
+@@ -200,16 +202,17 @@ static int __init kexec_setup(void)
+ 		return -ENOENT;
+=20
+ 	/* remove any stale properties so ours can be found */
+-	of_remove_property(node, of_find_property(node, kernel_end_prop.name, NUL=
+L));
++	of_remove_property(node, of_find_property(node, kernel_end_prop.name,
++						  NULL));
+=20
+ 	/* information needed by userspace when using default_machine_kexec */
+ 	kernel_end =3D cpu_to_be_ulong(__pa(_end));
+ 	of_add_property(node, &kernel_end_prop);
+=20
++#ifdef CONFIG_CRASH_RESERVE
+ 	export_crashk_values(node);
+-
++#endif
+ 	of_node_put(node);
+ 	return 0;
+ }
+ late_initcall(kexec_setup);
+-#endif /* CONFIG_CRASH_RESERVE */
+--=20
+2.49.0
 
+
+--=20
+ Ben Collins
+ https://libjwt.io
+ https://github.com/benmcollins
+ --
+ 3EC9 7598 1672 961A 1139  173A 5D5A 57C7 242B 22CF
+
+--nzde7snpamx2jdcs
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEPsl1mBZylhoRORc6XVpXxyQrIs8FAmgHAL4ACgkQXVpXxyQr
+Is/Rdw//aZ/gDOUiLOgJS8j1ko2eGjIzxYlBW03r8PuxmJYsvyE2NQafHwyBcZIW
+7LgYOCArrlqW8hJJN0bU9fPEqgb/pbsQZWdNlGQlgXL/Q6mmQCunEzdPiyXCuduf
+kZZKYy6J0h4uxcA3r9zlPbwfePgC279IS3cHWDhQW9+KX/1VatTgQCa9ouMaBuLm
+l4QZfLU8lBkZhUT6uZ9xk5977s0uUN++30VTNujVAgW8jFQmkmoScVuj40GsdnuL
+MMi1Q7PQSgsM9sjAtTczAo6b5VWysSc4cqZFbZYRPk72E+heGptKxngVo84It7a1
+jFozTTQycO9jp8x4k6ootp4xmn+yM2x5LqAfXy9lwE5QCRG1PjSQJsXupWGW3bMT
+URa3zqNySf3yhmCxi0pHXhU0ZNhUpFX7IwfMEouZR8qcqOCarZ9PXNXp7dordh/L
+Lpi9MEJx8HZG46+TxFAK1QGwv3hY7K1L7yAGwt7IPr/tR8dDXFn1FN0AJ+pPkmiN
+IJ7UGlNZliwvr4CzB7CjH2hwi528tXfoBgR2xp9cKUuEnweyFKXPtCpcYRI4Z6xq
+lDzmRTBk2u/Re/uXzziLOPciUUxjNTEl0lEuJ9pHNAtcHD+4dh0u07sGEopWlf6h
+oZtck4zNVZQh6ak+nvXuf44c5RDqvYaQkclumtE6GBzFpjZeh+g=
+=oqyi
+-----END PGP SIGNATURE-----
+
+--nzde7snpamx2jdcs--
 
