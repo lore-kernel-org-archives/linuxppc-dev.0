@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-7924-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7925-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96754C369D3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Apr 2025 15:29:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41AB3C369D3
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Apr 2025 15:29:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZhmND6pR5z3cHt;
-	Wed, 23 Apr 2025 01:28:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745335708;
-	cv=none; b=XPr5a+IvaV3nV0yMqazKm+ZBtj7AMmG0qvbtvL/6be1Qh3RzV2wQQ3X3mbqFsanfkO7QhIjmFL2Ah5MzhUkQvtdGyMX08JJtGtshX2bkrdderSm6W2kKQaJ/aNm/11rxLdirjzcPxsPDDzMSTTK1WjbwoSRBeQNUeDNRJ35hEU23F4QdreqboAGB5uGZhFYkC7niz6I0N5F/yDrpxwxrXKYKzW/ctNBPBumHF9soKbqGG3U2bNDXnTG0h9jE9IRIHh7+13+4QX/86NXEIV/NwZbOZ7qd5xh3tEzLH3zUmpYyX7x6JmfryRY2/leVc6ZUx9L36MQ2NeHjm8RaBRbbhw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZhmNF1WYTz3c89;
+	Wed, 23 Apr 2025 01:28:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745335709;
+	cv=none; b=KT8szpNZAbZ2J6+YbPelw7BA7KI6WI5lSBS5uzksO3El3kdDIrCYZdjHVSICxPnkbuEm3GBAZSJLiReSYNw5OzI4UisVgNHfkyN8Q/c/SIq4/FctUVAhjusRa11V6igVR8yJ+Iov9v5uy5Dxm5sV1fMo3+zV62kloDzOqFh+YQbLSpfmo333OFsbPfsiqwSkflYhIZk6OPDH9a/IFh6CrWNzHshvzD7mfKtIyVGKcFf1bc1Xa9rFNBXftl6FdvX5EDhGlx15pSTiK4jIuWn70yI7zlrysNA0LQcEDH6dpN4wuTl3NzPcARjWxz0rWye2DLkNy7ITCnCjRpIhsi4lMQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745335708; c=relaxed/relaxed;
-	bh=WtPCi66iSqMZcLw/odJWl7zof7PIFZ58Gm8bwD5gdUE=;
+	t=1745335709; c=relaxed/relaxed;
+	bh=v2h6CGIV3eXPb+GQ366+kepEHRJUTtr1olat+pN344g=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=o02Mstbdg3WyAXXzyh1G+ik7vp5KuT4I3uPfNIh7jIWzEZOxJa4XhSJ8bsIN65KsPBAzgs6WGfPhoYBLKWGYW5hVo0w4Z2NgZBUz1siK36Stnuabm2LjwSNm28LhQ99CWIdDBJ6+bzF3biQFBa0J4k9dlm0Vj8mgUDM5+Nxu++8U0x0bf34MAWrOBygZ6iPNiZVptP7RHiWQfhyHR+PY7mZj4h0eQhLmZ0o0pSp1W/AFDAxD0rBZ+43SphQ7Xt7Zu/1UDnQPZu51nm73YDSOLQH8qW7tqyGCCUIFBxA8uUtPvNVSJ1o8HdY8r8+vLFvoU+mQxYL65LNZbYYqUzo8gA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cKwMSXyS; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=m5FNZZPhb68jSQC5EwyI7dOQWMWH4yaOzMKM2aezO1Po3vGKtBBgwn+PqF1ZdJx/sZh10Ro898ZqKznHn3DirQSaGczofChNVGTjuE2sSbv+jX6modQ6OlLUoFK/M2yW2DpUHfeQ9GsAQmT6TFyxECLPgIosmxo6A7mXFfxvrfle15FFFMvoOEvMfRRiJAbnCHmIUsHh6JP/4w9nBxN2ZZqNzYUu6I1YLQsb6NcqcN+wT/p5ERWHEOY7fm9qlKqFA0O2jIlMbP2btQcr5KdbL1WfVkEIESRiQ8y7JQBT8HuzlBPv/ekRBBpqkFRwSwn8shHk3P4QVWN3wJK4O3WDcw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=flnVTBjr; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cKwMSXyS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=flnVTBjr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZhmN61lwcz3bvd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2025 01:28:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZhmN7135vz3cCt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2025 01:28:23 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 96E135C5CBC;
-	Tue, 22 Apr 2025 15:26:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 04868C4CEF0;
-	Tue, 22 Apr 2025 15:28:18 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 010F5A4BD0D;
+	Tue, 22 Apr 2025 15:22:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6E94AC4AF09;
+	Tue, 22 Apr 2025 15:28:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1745335699;
-	bh=ki6Sn/ee5qgO3vhh3ZkrojeEv770iQQrw7Ukhfk4zI8=;
+	s=k20201202; t=1745335700;
+	bh=ZcB01eEG0PyKlIVeDwX/bqMc2RbGUn9yHA+iRHbv2w8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=cKwMSXyShmoHoJUgBOV9El8W3aUBH6B0Lz2ReK5Ym+/HXRopKgkn01mXIoaJjRjWO
-	 Rmyc7OlIJeA+Jq8fnsi9olY+0Z6qJ33MBan8XAwwZU15EexRsxco6jYkVAJpbmWUdw
-	 k0W+pKj3tOJd9n0K/kF93dD+ZqWixWfdWR2iEC2blBH7niDgSzB+Eab1g9SkEPXWPK
-	 miq+8VeFRIDQ9eKZZ6SRyjXnnrGZwZBPk4rcz3Zml+i3s+36nIv/RasGxrNX1GI9of
-	 Wo4JYKUEfdCTsdGvzQWPi78zsaclbLaPDuWsc2OgCOInv7zjSeKx10axodSTGDrhSh
-	 yIGZqaS1xAWdQ==
+	b=flnVTBjrcSMGzaCSWAF3ye5NXVmpU/6srA7TV+v4bkaqFY2GYm1FaDCcYPH7hh8Um
+	 XOIMTiGX3wi1BxxUC+c8+YmYtI6H5wQwbfPtQ5z2d4dmVdVPn/MKv8ne5oWoWd4gQU
+	 uSobcfZD1j7EFl/LlBhh0gx2CmGiYh/+zFmssMJuB1uoahPQP7aVDXtiZLak68wFdh
+	 JJSl145uTsHT5mYqm8OVfUHIZ21q9UAQpINtNNXrcCiYAFOWl6j6kFTiHue6WK4wa2
+	 aProW4NNfjxsq6wAtS69b9mBF3mo2oVeqU8K7o5PqEU+5ShZrm9LNhZnL3/bUZ6jGc
+	 6UajEdWW1lTBQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -55,11 +55,10 @@ Cc: linux-arch@vger.kernel.org,
 	linux-s390@vger.kernel.org,
 	x86@kernel.org,
 	"Jason A . Donenfeld" <Jason@zx2c4.com>,
-	Ard Biesheuvel <ardb@kernel.org>,
-	Heiko Carstens <hca@linux.ibm.com>
-Subject: [PATCH v3 10/13] crypto: s390 - move library functions to arch/s390/lib/crypto/
-Date: Tue, 22 Apr 2025 08:27:13 -0700
-Message-ID: <20250422152716.5923-11-ebiggers@kernel.org>
+	Ard Biesheuvel <ardb@kernel.org>
+Subject: [PATCH v3 13/13] crypto: lib/poly1305 - remove INTERNAL symbol and selection of CRYPTO
+Date: Tue, 22 Apr 2025 08:27:16 -0700
+Message-ID: <20250422152716.5923-14-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250422152716.5923-1-ebiggers@kernel.org>
 References: <20250422152716.5923-1-ebiggers@kernel.org>
@@ -79,135 +78,145 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-Continue disentangling the crypto library functions from the generic
-crypto infrastructure by moving the s390 ChaCha library functions into a
-new directory arch/s390/lib/crypto/ that does not depend on CRYPTO.
-This mirrors the distinction between crypto/ and lib/crypto/.
+Now that the architecture-optimized Poly1305 kconfig symbols are defined
+regardless of CRYPTO, there is no need for CRYPTO_LIB_POLY1305 to select
+CRYPTO.  So, remove that.  This makes the indirection through the
+CRYPTO_LIB_POLY1305_INTERNAL symbol unnecessary, so get rid of that and
+just use CRYPTO_LIB_POLY1305 directly.  Finally, make the fallback to
+the generic implementation use a default value instead of a select; this
+makes it consistent with how the arch-optimized code gets enabled and
+also with how CRYPTO_LIB_BLAKE2S_GENERIC gets enabled.
 
-Acked-by: Heiko Carstens <hca@linux.ibm.com>
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- arch/s390/crypto/Kconfig                 | 6 ------
- arch/s390/crypto/Makefile                | 3 ---
- arch/s390/lib/Makefile                   | 1 +
- arch/s390/lib/crypto/Kconfig             | 7 +++++++
- arch/s390/lib/crypto/Makefile            | 4 ++++
- arch/s390/{ => lib}/crypto/chacha-glue.c | 0
- arch/s390/{ => lib}/crypto/chacha-s390.S | 0
- arch/s390/{ => lib}/crypto/chacha-s390.h | 0
- lib/crypto/Kconfig                       | 3 +++
- 9 files changed, 15 insertions(+), 9 deletions(-)
- create mode 100644 arch/s390/lib/crypto/Kconfig
- create mode 100644 arch/s390/lib/crypto/Makefile
- rename arch/s390/{ => lib}/crypto/chacha-glue.c (100%)
- rename arch/s390/{ => lib}/crypto/chacha-s390.S (100%)
- rename arch/s390/{ => lib}/crypto/chacha-s390.h (100%)
+ arch/arm/lib/crypto/Kconfig     |  2 +-
+ arch/arm64/lib/crypto/Kconfig   |  2 +-
+ arch/mips/lib/crypto/Kconfig    |  2 +-
+ arch/powerpc/lib/crypto/Kconfig |  2 +-
+ arch/x86/lib/crypto/Kconfig     |  2 +-
+ crypto/Kconfig                  |  2 +-
+ lib/crypto/Kconfig              | 16 +++++-----------
+ 7 files changed, 11 insertions(+), 17 deletions(-)
 
-diff --git a/arch/s390/crypto/Kconfig b/arch/s390/crypto/Kconfig
-index e88d9cd256ef5..a2bfd6eef0ca3 100644
---- a/arch/s390/crypto/Kconfig
-+++ b/arch/s390/crypto/Kconfig
-@@ -97,16 +97,10 @@ config CRYPTO_DES_S390
- 	  Architecture: s390
+diff --git a/arch/arm/lib/crypto/Kconfig b/arch/arm/lib/crypto/Kconfig
+index 5d10bd13fc8df..e8444fd0aae30 100644
+--- a/arch/arm/lib/crypto/Kconfig
++++ b/arch/arm/lib/crypto/Kconfig
+@@ -18,7 +18,7 @@ config CRYPTO_CHACHA20_NEON
+ 	default CRYPTO_LIB_CHACHA
+ 	select CRYPTO_ARCH_HAVE_LIB_CHACHA
  
- 	  As of z990 the ECB and CBC mode are hardware accelerated.
- 	  As of z196 the CTR mode is hardware accelerated.
+ config CRYPTO_POLY1305_ARM
+ 	tristate
+-	default CRYPTO_LIB_POLY1305_INTERNAL
++	default CRYPTO_LIB_POLY1305
+ 	select CRYPTO_ARCH_HAVE_LIB_POLY1305
+diff --git a/arch/arm64/lib/crypto/Kconfig b/arch/arm64/lib/crypto/Kconfig
+index 2a8ff7cfc08d3..0b903ef524d85 100644
+--- a/arch/arm64/lib/crypto/Kconfig
++++ b/arch/arm64/lib/crypto/Kconfig
+@@ -8,7 +8,7 @@ config CRYPTO_CHACHA20_NEON
+ 	select CRYPTO_ARCH_HAVE_LIB_CHACHA
  
--config CRYPTO_CHACHA_S390
--	tristate
--	select CRYPTO_LIB_CHACHA_GENERIC
--	select CRYPTO_ARCH_HAVE_LIB_CHACHA
--	default CRYPTO_LIB_CHACHA_INTERNAL
--
- config CRYPTO_HMAC_S390
- 	tristate "Keyed-hash message authentication code: HMAC"
+ config CRYPTO_POLY1305_NEON
+ 	tristate
+ 	depends on KERNEL_MODE_NEON
+-	default CRYPTO_LIB_POLY1305_INTERNAL
++	default CRYPTO_LIB_POLY1305
+ 	select CRYPTO_ARCH_HAVE_LIB_POLY1305
+diff --git a/arch/mips/lib/crypto/Kconfig b/arch/mips/lib/crypto/Kconfig
+index 454354e30d76c..0670a170c1be0 100644
+--- a/arch/mips/lib/crypto/Kconfig
++++ b/arch/mips/lib/crypto/Kconfig
+@@ -6,7 +6,7 @@ config CRYPTO_CHACHA_MIPS
+ 	default CRYPTO_LIB_CHACHA
+ 	select CRYPTO_ARCH_HAVE_LIB_CHACHA
+ 
+ config CRYPTO_POLY1305_MIPS
+ 	tristate
+-	default CRYPTO_LIB_POLY1305_INTERNAL
++	default CRYPTO_LIB_POLY1305
+ 	select CRYPTO_ARCH_HAVE_LIB_POLY1305
+diff --git a/arch/powerpc/lib/crypto/Kconfig b/arch/powerpc/lib/crypto/Kconfig
+index 6627d28cd24e0..bf6d0ab22c27d 100644
+--- a/arch/powerpc/lib/crypto/Kconfig
++++ b/arch/powerpc/lib/crypto/Kconfig
+@@ -8,8 +8,8 @@ config CRYPTO_CHACHA20_P10
+ 	select CRYPTO_ARCH_HAVE_LIB_CHACHA
+ 
+ config CRYPTO_POLY1305_P10
+ 	tristate
+ 	depends on PPC64 && CPU_LITTLE_ENDIAN && VSX
+-	default CRYPTO_LIB_POLY1305_INTERNAL
++	default CRYPTO_LIB_POLY1305
+ 	select CRYPTO_ARCH_HAVE_LIB_POLY1305
+ 	select CRYPTO_LIB_POLY1305_GENERIC
+diff --git a/arch/x86/lib/crypto/Kconfig b/arch/x86/lib/crypto/Kconfig
+index e44403d9677f5..546fe2afe0b51 100644
+--- a/arch/x86/lib/crypto/Kconfig
++++ b/arch/x86/lib/crypto/Kconfig
+@@ -20,7 +20,7 @@ config CRYPTO_CHACHA20_X86_64
+ 	select CRYPTO_ARCH_HAVE_LIB_CHACHA
+ 
+ config CRYPTO_POLY1305_X86_64
+ 	tristate
+ 	depends on 64BIT
+-	default CRYPTO_LIB_POLY1305_INTERNAL
++	default CRYPTO_LIB_POLY1305
+ 	select CRYPTO_ARCH_HAVE_LIB_POLY1305
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+index 832af6363951f..9878286d1d683 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -954,12 +954,12 @@ config CRYPTO_POLYVAL
+ 	  cryptographic hash function.
+ 
+ config CRYPTO_POLY1305
+ 	tristate "Poly1305"
  	select CRYPTO_HASH
++	select CRYPTO_LIB_POLY1305
+ 	select CRYPTO_LIB_POLY1305_GENERIC
+-	select CRYPTO_LIB_POLY1305_INTERNAL
  	help
- 	  s390 specific HMAC hardware support for SHA224, SHA256, SHA384 and
-diff --git a/arch/s390/crypto/Makefile b/arch/s390/crypto/Makefile
-index 14dafadbcbed4..e3853774e1a3a 100644
---- a/arch/s390/crypto/Makefile
-+++ b/arch/s390/crypto/Makefile
-@@ -9,12 +9,9 @@ obj-$(CONFIG_CRYPTO_SHA512_S390) += sha512_s390.o sha_common.o
- obj-$(CONFIG_CRYPTO_SHA3_256_S390) += sha3_256_s390.o sha_common.o
- obj-$(CONFIG_CRYPTO_SHA3_512_S390) += sha3_512_s390.o sha_common.o
- obj-$(CONFIG_CRYPTO_DES_S390) += des_s390.o
- obj-$(CONFIG_CRYPTO_AES_S390) += aes_s390.o
- obj-$(CONFIG_CRYPTO_PAES_S390) += paes_s390.o
--obj-$(CONFIG_CRYPTO_CHACHA_S390) += chacha_s390.o
- obj-$(CONFIG_S390_PRNG) += prng.o
- obj-$(CONFIG_CRYPTO_GHASH_S390) += ghash_s390.o
- obj-$(CONFIG_CRYPTO_HMAC_S390) += hmac_s390.o
- obj-y += arch_random.o
--
--chacha_s390-y := chacha-glue.o chacha-s390.o
-diff --git a/arch/s390/lib/Makefile b/arch/s390/lib/Makefile
-index 14bbfe50033c7..fce4edbe8a078 100644
---- a/arch/s390/lib/Makefile
-+++ b/arch/s390/lib/Makefile
-@@ -1,10 +1,11 @@
- # SPDX-License-Identifier: GPL-2.0
- #
- # Makefile for s390-specific library files..
- #
+ 	  Poly1305 authenticator algorithm (RFC7539)
  
-+obj-y += crypto/
- lib-y += delay.o string.o uaccess.o find.o spinlock.o tishift.o
- lib-y += csum-partial.o
- obj-y += mem.o xor.o
- lib-$(CONFIG_KPROBES) += probes.o
- lib-$(CONFIG_UPROBES) += probes.o
-diff --git a/arch/s390/lib/crypto/Kconfig b/arch/s390/lib/crypto/Kconfig
-new file mode 100644
-index 0000000000000..b79fd91af9fe1
---- /dev/null
-+++ b/arch/s390/lib/crypto/Kconfig
-@@ -0,0 +1,7 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+
-+config CRYPTO_CHACHA_S390
-+	tristate
-+	default CRYPTO_LIB_CHACHA_INTERNAL
-+	select CRYPTO_LIB_CHACHA_GENERIC
-+	select CRYPTO_ARCH_HAVE_LIB_CHACHA
-diff --git a/arch/s390/lib/crypto/Makefile b/arch/s390/lib/crypto/Makefile
-new file mode 100644
-index 0000000000000..06c2cf77178ef
---- /dev/null
-+++ b/arch/s390/lib/crypto/Makefile
-@@ -0,0 +1,4 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+
-+obj-$(CONFIG_CRYPTO_CHACHA_S390) += chacha_s390.o
-+chacha_s390-y := chacha-glue.o chacha-s390.o
-diff --git a/arch/s390/crypto/chacha-glue.c b/arch/s390/lib/crypto/chacha-glue.c
-similarity index 100%
-rename from arch/s390/crypto/chacha-glue.c
-rename to arch/s390/lib/crypto/chacha-glue.c
-diff --git a/arch/s390/crypto/chacha-s390.S b/arch/s390/lib/crypto/chacha-s390.S
-similarity index 100%
-rename from arch/s390/crypto/chacha-s390.S
-rename to arch/s390/lib/crypto/chacha-s390.S
-diff --git a/arch/s390/crypto/chacha-s390.h b/arch/s390/lib/crypto/chacha-s390.h
-similarity index 100%
-rename from arch/s390/crypto/chacha-s390.h
-rename to arch/s390/lib/crypto/chacha-s390.h
+ 	  Poly1305 is an authenticator algorithm designed by Daniel J. Bernstein.
+ 	  It is used for the ChaCha20-Poly1305 AEAD, specified in RFC7539 for use
 diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
-index 0b06c25eb38a5..db19a7acc2fbf 100644
+index c6ab724c1dbd9..af2368799579f 100644
 --- a/lib/crypto/Kconfig
 +++ b/lib/crypto/Kconfig
-@@ -169,8 +169,11 @@ if PPC
- source "arch/powerpc/lib/crypto/Kconfig"
- endif
- if RISCV
- source "arch/riscv/lib/crypto/Kconfig"
- endif
-+if S390
-+source "arch/s390/lib/crypto/Kconfig"
-+endif
- endif
+@@ -112,25 +112,19 @@ config CRYPTO_ARCH_HAVE_LIB_POLY1305
+ 	  accelerated implementation of the Poly1305 library interface,
+ 	  either builtin or as a module.
  
- endmenu
+ config CRYPTO_LIB_POLY1305_GENERIC
+ 	tristate
++	default CRYPTO_LIB_POLY1305 if !CRYPTO_ARCH_HAVE_LIB_POLY1305
+ 	help
+-	  This symbol can be depended upon by arch implementations of the
+-	  Poly1305 library interface that require the generic code as a
+-	  fallback, e.g., for SIMD implementations. If no arch specific
+-	  implementation is enabled, this implementation serves the users
+-	  of CRYPTO_LIB_POLY1305.
+-
+-config CRYPTO_LIB_POLY1305_INTERNAL
+-	tristate
+-	select CRYPTO_LIB_POLY1305_GENERIC if CRYPTO_ARCH_HAVE_LIB_POLY1305=n
++	  This symbol can be selected by arch implementations of the Poly1305
++	  library interface that require the generic code as a fallback, e.g.,
++	  for SIMD implementations. If no arch specific implementation is
++	  enabled, this implementation serves the users of CRYPTO_LIB_POLY1305.
+ 
+ config CRYPTO_LIB_POLY1305
+ 	tristate
+-	select CRYPTO
+-	select CRYPTO_LIB_POLY1305_INTERNAL
+ 	help
+ 	  Enable the Poly1305 library interface. This interface may be fulfilled
+ 	  by either the generic implementation or an arch-specific one, if one
+ 	  is available and enabled.
+ 
 -- 
 2.49.0
 
