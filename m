@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-7922-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7923-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 443F4C369C2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Apr 2025 15:29:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52C61C369C2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Apr 2025 15:29:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZhmND0HPKz3byk;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZhmND1RMcz3byl;
 	Wed, 23 Apr 2025 01:28:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745335707;
-	cv=none; b=OKjyS36J9ro4n1+ANfcewn92u4JUyHRdM3t9zOlHdDFTcPp9Xy9y5Uz5vlZOklyoxYfDZEfCGYPulru8VHdEO/Rkfh7SrGD8bIiVzfP35/yn1qVcaqM209mHQfG8jrvSseG4zX4m4zVRhyvahgJp2Rm/sQV5ZXJM23sY3PMLwXSyhAHpCb33tru5oCUhTgjaopv+n0gMudi4+nU3N+ieS/UKwBrFIauPHvqhBEubWQFhGO+FpUCqBVhTaYanuxoRLElRf1C/y9zu4bxJXmeZ4n3KWfWDbMwCoMVFJJmrvyPQx7+V6GwUJ2f0bAaEutPtlPm3oZIkJRljSMrQoQyFnQ==
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745335708;
+	cv=none; b=Qn4saSk9EqezF246GwNmPw8Nr61gMO9gRKAM5GUPwoWsxl+k78rHWuXaU4sYyVqMXsk3MkfgGJ2Lc+jBL1HBpfBb6eh6SRfPCFXAhcd7liPFRJH1vrtYz5K01KlUTt7m9qnI4fSgaPBtKLS5QYNnjnNh6AAbHIs8/eAGDS7N2wOqTTHiRJye5wlG8hV3lWVPuw3eOWVkr8Yxomyo/kN2EAJZBu7K6GcYeesMHUXPw1Poa9Eq9wRJdawyfAaQI74IGXBDu85EvA5qyxePGVRxMmn1+h0zD3xFYvI6yMHzZeprfkIhOy0hS2gkPvUdjR1EyUz84TuSbu2IeRNE7tup5w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745335707; c=relaxed/relaxed;
-	bh=Gkre60zXNPIPeH0+K/IDcEfnGFbHo643ocDxg7xLzek=;
+	t=1745335708; c=relaxed/relaxed;
+	bh=JTbO3bkLwy7G2nJqTkGEYXUtBveaaxyR2UC7H7HLcoU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=H5tLjVUECy5OhhI0yyDmVYUN6Jl8y8UTxogHEBtZAjzbyg7D2LTFVA9eMXfD2RDX21rXiVX8iv7nj0HDJJvJ8gNt6Pyn1H+3iMTQybJ67qaYi7V9HkbXYeZ75sIBjSLpnkfw6OHf6whWYzdcIRLtUhl7YxSQhAb9OFsGF0Jid8gYKEjS65wQL0p3MbGMDX51HFKHvCxbpIBf3DDRl7/dnwJJf17lr3ba1zFuKUmr+tGwDZ5MmscGiWHghlrpY8Pev0v9W+tLAiNtD/MOjKaq20SIqaeZuweQFcWW7fv1KTmFInwqiEaG0arucHKkAIMxBTguKMIGvNqWrh05sWcK8g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ijwuPSlj; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=gxzIYcGuXB5nE9LBpiR7fEw5PrWnIkJox+OpRkkmE/7lxFE9DpChWgojHZK7zctFL4fsvR/3tXY1V8hg9UlDM01GvuXHEnbYpHd3Fu7W3W4lmlIhEG5Aq7RPknENePk4R3wU/3UmUPcF4lYWAPluAOXZpaS2EcXZAGgVHXnCrQcAIVR9LMQ2W2uStUNp1dvLyCN24rlY/iIstEq6aKhEDU3O5AyLlYX82jgcTj7xbp2rr948Y5d/to+mK+RK7zIGNzDjAU7x9QUb5VVXUEa8WThhADy3KSGfLM222ybhmODeI5vs1yX0DAHII5ab540H24lUrVZjb9WgbT4SGirjNA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S1Iqr1h9; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ijwuPSlj;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=S1Iqr1h9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZhmN56h09z3c86
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZhmN60WD4z3c89
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2025 01:28:21 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 136D85C5CCB;
-	Tue, 22 Apr 2025 15:26:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7E6C1C4CEEF;
-	Tue, 22 Apr 2025 15:28:19 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 7E0DC4A957;
+	Tue, 22 Apr 2025 15:28:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87429C4CEE9;
+	Tue, 22 Apr 2025 15:28:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1745335699;
-	bh=5jzPL09SfE4WESjYxnB172zEQMoguedQXb5qi2BK7CI=;
+	s=k20201202; t=1745335698;
+	bh=JceMeyvHZFS3hU3osMnM8DtDXrhU/UjeqoFMt/NCYhM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ijwuPSljLUCro4FgzubwMtFH7ikucOxhOmnwpK6MBIXki/ne1ecDcVhjsr6xzQvuh
-	 L0mtGc60L0lm36lPD5HzNCMl5zZkE2nKIUzHSoJN3xOKsEQmTFrBFfzBylPKyPaxfT
-	 qm4pWQkhKvgvN53FRAScHg0rKhXDla860Iw1OSU05S+d9q+5FrAe49ZsC/3tga9M3C
-	 M1WXUCOradICSVIHOwp0kpNxqXWO8/wXK0q0Fk+Qn6KnfL4y/jcUXimTK9ErrttADo
-	 rhsPaa4wEQ33r+g2jpElI+q94Xu3SNQhsSq9JpxDS1jq45FeL8zQ9p0FsEw4u5NgWl
-	 OXjLODS4asp5Q==
+	b=S1Iqr1h9HcAr7bVNT5cba2ArhH18ZszXuXxOULo1zOhqYgh93BeDmZmHR/LwJsF7b
+	 dhj8C+xJh4XhDT2g2eWx7IzOWw1s2s3vyJ6hz4uAM5jSnIcp07jjdJszZrqTUv20bS
+	 A4bMr1hXWDqFBHAU3/BabcvlSFb65cZFqD5VpKVjHDz2iPn7goCrvRJGSiSGjJOq08
+	 fG1/R2TuLkBGrejtmZ4GemCxXYilTCCNeo0uNnYhgCiJ4TpYBKNFEWgtZq6U5cAqYr
+	 taRybWcMEKlFRSxFM9HBqPP0OEHH06GdOtPd+jUapb+VTerV7yzqXLVE36IbD8U6Jj
+	 a9MwsvOLwBXFQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -56,9 +56,9 @@ Cc: linux-arch@vger.kernel.org,
 	x86@kernel.org,
 	"Jason A . Donenfeld" <Jason@zx2c4.com>,
 	Ard Biesheuvel <ardb@kernel.org>
-Subject: [PATCH v3 11/13] crypto: x86 - move library functions to arch/x86/lib/crypto/
-Date: Tue, 22 Apr 2025 08:27:14 -0700
-Message-ID: <20250422152716.5923-12-ebiggers@kernel.org>
+Subject: [PATCH v3 09/13] crypto: riscv - move library functions to arch/riscv/lib/crypto/
+Date: Tue, 22 Apr 2025 08:27:12 -0700
+Message-ID: <20250422152716.5923-10-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250422152716.5923-1-ebiggers@kernel.org>
 References: <20250422152716.5923-1-ebiggers@kernel.org>
@@ -79,281 +79,122 @@ Content-Transfer-Encoding: 8bit
 From: Eric Biggers <ebiggers@google.com>
 
 Continue disentangling the crypto library functions from the generic
-crypto infrastructure by moving the x86 BLAKE2s, ChaCha, and Poly1305
-library functions into a new directory arch/x86/lib/crypto/ that does
-not depend on CRYPTO.  This mirrors the distinction between crypto/ and
-lib/crypto/.
+crypto infrastructure by moving the riscv ChaCha library functions into
+a new directory arch/riscv/lib/crypto/ that does not depend on CRYPTO.
+This mirrors the distinction between crypto/ and lib/crypto/.
 
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- arch/x86/crypto/Kconfig                       | 25 ------------------
- arch/x86/crypto/Makefile                      | 15 -----------
- arch/x86/lib/Makefile                         |  2 ++
- arch/x86/lib/crypto/.gitignore                |  2 ++
- arch/x86/lib/crypto/Kconfig                   | 26 +++++++++++++++++++
- arch/x86/lib/crypto/Makefile                  | 17 ++++++++++++
- arch/x86/{ => lib}/crypto/blake2s-core.S      |  0
- arch/x86/{ => lib}/crypto/blake2s-glue.c      |  0
- .../x86/{ => lib}/crypto/chacha-avx2-x86_64.S |  0
- .../{ => lib}/crypto/chacha-avx512vl-x86_64.S |  0
- .../{ => lib}/crypto/chacha-ssse3-x86_64.S    |  0
- arch/x86/{ => lib}/crypto/chacha_glue.c       |  0
- .../crypto/poly1305-x86_64-cryptogams.pl      |  0
- arch/x86/{ => lib}/crypto/poly1305_glue.c     |  0
- lib/crypto/Kconfig                            |  3 +++
- 15 files changed, 50 insertions(+), 40 deletions(-)
- create mode 100644 arch/x86/lib/crypto/.gitignore
- create mode 100644 arch/x86/lib/crypto/Kconfig
- create mode 100644 arch/x86/lib/crypto/Makefile
- rename arch/x86/{ => lib}/crypto/blake2s-core.S (100%)
- rename arch/x86/{ => lib}/crypto/blake2s-glue.c (100%)
- rename arch/x86/{ => lib}/crypto/chacha-avx2-x86_64.S (100%)
- rename arch/x86/{ => lib}/crypto/chacha-avx512vl-x86_64.S (100%)
- rename arch/x86/{ => lib}/crypto/chacha-ssse3-x86_64.S (100%)
- rename arch/x86/{ => lib}/crypto/chacha_glue.c (100%)
- rename arch/x86/{ => lib}/crypto/poly1305-x86_64-cryptogams.pl (100%)
- rename arch/x86/{ => lib}/crypto/poly1305_glue.c (100%)
+ arch/riscv/crypto/Kconfig                         | 7 -------
+ arch/riscv/crypto/Makefile                        | 3 ---
+ arch/riscv/lib/Makefile                           | 1 +
+ arch/riscv/lib/crypto/Kconfig                     | 8 ++++++++
+ arch/riscv/lib/crypto/Makefile                    | 4 ++++
+ arch/riscv/{ => lib}/crypto/chacha-riscv64-glue.c | 0
+ arch/riscv/{ => lib}/crypto/chacha-riscv64-zvkb.S | 0
+ lib/crypto/Kconfig                                | 3 +++
+ 8 files changed, 16 insertions(+), 10 deletions(-)
+ create mode 100644 arch/riscv/lib/crypto/Kconfig
+ create mode 100644 arch/riscv/lib/crypto/Makefile
+ rename arch/riscv/{ => lib}/crypto/chacha-riscv64-glue.c (100%)
+ rename arch/riscv/{ => lib}/crypto/chacha-riscv64-zvkb.S (100%)
 
-diff --git a/arch/x86/crypto/Kconfig b/arch/x86/crypto/Kconfig
-index b4df6cf37e0ea..9e941362e4cd5 100644
---- a/arch/x86/crypto/Kconfig
-+++ b/arch/x86/crypto/Kconfig
-@@ -333,17 +333,10 @@ config CRYPTO_ARIA_GFNI_AVX512_X86_64
- 	  - AVX512 (Advanced Vector Extensions)
- 	  - GFNI (Galois Field New Instructions)
+diff --git a/arch/riscv/crypto/Kconfig b/arch/riscv/crypto/Kconfig
+index 27a1f26d41bde..4863be2a4ec2f 100644
+--- a/arch/riscv/crypto/Kconfig
++++ b/arch/riscv/crypto/Kconfig
+@@ -16,17 +16,10 @@ config CRYPTO_AES_RISCV64
+ 	  - Zvkned vector crypto extension
+ 	  - Zvbb vector extension (XTS)
+ 	  - Zvkb vector crypto extension (CTR)
+ 	  - Zvkg vector crypto extension (XTS)
  
- 	  Processes 64 blocks in parallel.
- 
--config CRYPTO_CHACHA20_X86_64
+-config CRYPTO_CHACHA_RISCV64
 -	tristate
--	depends on 64BIT
--	select CRYPTO_LIB_CHACHA_GENERIC
+-	depends on 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
 -	select CRYPTO_ARCH_HAVE_LIB_CHACHA
+-	select CRYPTO_LIB_CHACHA_GENERIC
 -	default CRYPTO_LIB_CHACHA_INTERNAL
 -
- config CRYPTO_AEGIS128_AESNI_SSE2
- 	tristate "AEAD ciphers: AEGIS-128 (AES-NI/SSE4.1)"
- 	depends on 64BIT
- 	select CRYPTO_AEAD
+ config CRYPTO_GHASH_RISCV64
+ 	tristate "Hash functions: GHASH"
+ 	depends on 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
+ 	select CRYPTO_GCM
  	help
-@@ -371,38 +364,20 @@ config CRYPTO_NHPOLY1305_AVX2
- 	  NHPoly1305 hash function for Adiantum
+diff --git a/arch/riscv/crypto/Makefile b/arch/riscv/crypto/Makefile
+index 247c7bc7288ce..4ae9bf762e907 100644
+--- a/arch/riscv/crypto/Makefile
++++ b/arch/riscv/crypto/Makefile
+@@ -2,13 +2,10 @@
  
- 	  Architecture: x86_64 using:
- 	  - AVX2 (Advanced Vector Extensions 2)
+ obj-$(CONFIG_CRYPTO_AES_RISCV64) += aes-riscv64.o
+ aes-riscv64-y := aes-riscv64-glue.o aes-riscv64-zvkned.o \
+ 		 aes-riscv64-zvkned-zvbb-zvkg.o aes-riscv64-zvkned-zvkb.o
  
--config CRYPTO_BLAKE2S_X86
--	bool "Hash functions: BLAKE2s (SSSE3/AVX-512)"
--	depends on 64BIT
--	select CRYPTO_LIB_BLAKE2S_GENERIC
--	select CRYPTO_ARCH_HAVE_LIB_BLAKE2S
--	help
--	  BLAKE2s cryptographic hash function (RFC 7693)
+-obj-$(CONFIG_CRYPTO_CHACHA_RISCV64) += chacha-riscv64.o
+-chacha-riscv64-y := chacha-riscv64-glue.o chacha-riscv64-zvkb.o
 -
--	  Architecture: x86_64 using:
--	  - SSSE3 (Supplemental SSE3)
--	  - AVX-512 (Advanced Vector Extensions-512)
--
- config CRYPTO_POLYVAL_CLMUL_NI
- 	tristate "Hash functions: POLYVAL (CLMUL-NI)"
- 	depends on 64BIT
- 	select CRYPTO_POLYVAL
- 	help
- 	  POLYVAL hash function for HCTR2
+ obj-$(CONFIG_CRYPTO_GHASH_RISCV64) += ghash-riscv64.o
+ ghash-riscv64-y := ghash-riscv64-glue.o ghash-riscv64-zvkg.o
  
- 	  Architecture: x86_64 using:
- 	  - CLMUL-NI (carry-less multiplication new instructions)
- 
--config CRYPTO_POLY1305_X86_64
--	tristate
--	depends on 64BIT
--	select CRYPTO_ARCH_HAVE_LIB_POLY1305
--	default CRYPTO_LIB_POLY1305_INTERNAL
--
- config CRYPTO_SHA1_SSSE3
- 	tristate "Hash functions: SHA-1 (SSSE3/AVX/AVX2/SHA-NI)"
- 	depends on 64BIT
- 	select CRYPTO_SHA1
- 	select CRYPTO_HASH
-diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
-index 2f22b381f2445..fad59a6c6c26f 100644
---- a/arch/x86/crypto/Makefile
-+++ b/arch/x86/crypto/Makefile
-@@ -40,13 +40,10 @@ obj-$(CONFIG_CRYPTO_CAST6_AVX_X86_64) += cast6-avx-x86_64.o
- cast6-avx-x86_64-y := cast6-avx-x86_64-asm_64.o cast6_avx_glue.o
- 
- obj-$(CONFIG_CRYPTO_AEGIS128_AESNI_SSE2) += aegis128-aesni.o
- aegis128-aesni-y := aegis128-aesni-asm.o aegis128-aesni-glue.o
- 
--obj-$(CONFIG_CRYPTO_CHACHA20_X86_64) += chacha-x86_64.o
--chacha-x86_64-y := chacha-avx2-x86_64.o chacha-ssse3-x86_64.o chacha-avx512vl-x86_64.o chacha_glue.o
--
- obj-$(CONFIG_CRYPTO_AES_NI_INTEL) += aesni-intel.o
- aesni-intel-y := aesni-intel_asm.o aesni-intel_glue.o
- aesni-intel-$(CONFIG_64BIT) += aes-ctr-avx-x86_64.o \
- 			       aes-gcm-aesni-x86_64.o \
- 			       aes-xts-avx-x86_64.o
-@@ -61,23 +58,16 @@ obj-$(CONFIG_CRYPTO_SHA256_SSSE3) += sha256-ssse3.o
- sha256-ssse3-y := sha256-ssse3-asm.o sha256-avx-asm.o sha256-avx2-asm.o sha256_ni_asm.o sha256_ssse3_glue.o
- 
- obj-$(CONFIG_CRYPTO_SHA512_SSSE3) += sha512-ssse3.o
- sha512-ssse3-y := sha512-ssse3-asm.o sha512-avx-asm.o sha512-avx2-asm.o sha512_ssse3_glue.o
- 
--obj-$(CONFIG_CRYPTO_BLAKE2S_X86) += libblake2s-x86_64.o
--libblake2s-x86_64-y := blake2s-core.o blake2s-glue.o
--
- obj-$(CONFIG_CRYPTO_GHASH_CLMUL_NI_INTEL) += ghash-clmulni-intel.o
- ghash-clmulni-intel-y := ghash-clmulni-intel_asm.o ghash-clmulni-intel_glue.o
- 
- obj-$(CONFIG_CRYPTO_POLYVAL_CLMUL_NI) += polyval-clmulni.o
- polyval-clmulni-y := polyval-clmulni_asm.o polyval-clmulni_glue.o
- 
--obj-$(CONFIG_CRYPTO_POLY1305_X86_64) += poly1305-x86_64.o
--poly1305-x86_64-y := poly1305-x86_64-cryptogams.o poly1305_glue.o
--targets += poly1305-x86_64-cryptogams.S
--
- obj-$(CONFIG_CRYPTO_NHPOLY1305_SSE2) += nhpoly1305-sse2.o
- nhpoly1305-sse2-y := nh-sse2-x86_64.o nhpoly1305-sse2-glue.o
- obj-$(CONFIG_CRYPTO_NHPOLY1305_AVX2) += nhpoly1305-avx2.o
- nhpoly1305-avx2-y := nh-avx2-x86_64.o nhpoly1305-avx2-glue.o
- 
-@@ -99,12 +89,7 @@ obj-$(CONFIG_CRYPTO_ARIA_AESNI_AVX2_X86_64) += aria-aesni-avx2-x86_64.o
- aria-aesni-avx2-x86_64-y := aria-aesni-avx2-asm_64.o aria_aesni_avx2_glue.o
- 
- obj-$(CONFIG_CRYPTO_ARIA_GFNI_AVX512_X86_64) += aria-gfni-avx512-x86_64.o
- aria-gfni-avx512-x86_64-y := aria-gfni-avx512-asm_64.o aria_gfni_avx512_glue.o
- 
--quiet_cmd_perlasm = PERLASM $@
--      cmd_perlasm = $(PERL) $< > $@
--$(obj)/%.S: $(src)/%.pl FORCE
--	$(call if_changed,perlasm)
--
- # Disable GCOV in odd or sensitive code
- GCOV_PROFILE_curve25519-x86_64.o := n
-diff --git a/arch/x86/lib/Makefile b/arch/x86/lib/Makefile
-index 1c50352eb49f9..4f0d57a354267 100644
---- a/arch/x86/lib/Makefile
-+++ b/arch/x86/lib/Makefile
-@@ -1,10 +1,12 @@
- # SPDX-License-Identifier: GPL-2.0
- #
- # Makefile for x86 specific library files.
- #
- 
-+obj-y += crypto/
-+
- # Produces uninteresting flaky coverage.
- KCOV_INSTRUMENT_delay.o	:= n
- 
- # KCSAN uses udelay for introducing watchpoint delay; avoid recursion.
- KCSAN_SANITIZE_delay.o := n
-diff --git a/arch/x86/lib/crypto/.gitignore b/arch/x86/lib/crypto/.gitignore
+ obj-$(CONFIG_CRYPTO_SHA256_RISCV64) += sha256-riscv64.o
+ sha256-riscv64-y := sha256-riscv64-glue.o sha256-riscv64-zvknha_or_zvknhb-zvkb.o
+diff --git a/arch/riscv/lib/Makefile b/arch/riscv/lib/Makefile
+index b1c46153606a6..0baec92d2f55b 100644
+--- a/arch/riscv/lib/Makefile
++++ b/arch/riscv/lib/Makefile
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0-only
++obj-y			+= crypto/
+ lib-y			+= delay.o
+ lib-y			+= memcpy.o
+ lib-y			+= memset.o
+ lib-y			+= memmove.o
+ ifeq ($(CONFIG_KASAN_GENERIC)$(CONFIG_KASAN_SW_TAGS),)
+diff --git a/arch/riscv/lib/crypto/Kconfig b/arch/riscv/lib/crypto/Kconfig
 new file mode 100644
-index 0000000000000..580c839bb1776
+index 0000000000000..46ce2a7ac1f2c
 --- /dev/null
-+++ b/arch/x86/lib/crypto/.gitignore
-@@ -0,0 +1,2 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+poly1305-x86_64-cryptogams.S
-diff --git a/arch/x86/lib/crypto/Kconfig b/arch/x86/lib/crypto/Kconfig
-new file mode 100644
-index 0000000000000..f83aa51dd9129
---- /dev/null
-+++ b/arch/x86/lib/crypto/Kconfig
-@@ -0,0 +1,26 @@
++++ b/arch/riscv/lib/crypto/Kconfig
+@@ -0,0 +1,8 @@
 +# SPDX-License-Identifier: GPL-2.0-only
 +
-+config CRYPTO_BLAKE2S_X86
-+	bool "Hash functions: BLAKE2s (SSSE3/AVX-512)"
-+	depends on 64BIT
-+	select CRYPTO_LIB_BLAKE2S_GENERIC
-+	select CRYPTO_ARCH_HAVE_LIB_BLAKE2S
-+	help
-+	  BLAKE2s cryptographic hash function (RFC 7693)
-+
-+	  Architecture: x86_64 using:
-+	  - SSSE3 (Supplemental SSE3)
-+	  - AVX-512 (Advanced Vector Extensions-512)
-+
-+config CRYPTO_CHACHA20_X86_64
++config CRYPTO_CHACHA_RISCV64
 +	tristate
-+	depends on 64BIT
++	depends on 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
 +	default CRYPTO_LIB_CHACHA_INTERNAL
-+	select CRYPTO_LIB_CHACHA_GENERIC
 +	select CRYPTO_ARCH_HAVE_LIB_CHACHA
-+
-+config CRYPTO_POLY1305_X86_64
-+	tristate
-+	depends on 64BIT
-+	default CRYPTO_LIB_POLY1305_INTERNAL
-+	select CRYPTO_ARCH_HAVE_LIB_POLY1305
-diff --git a/arch/x86/lib/crypto/Makefile b/arch/x86/lib/crypto/Makefile
++	select CRYPTO_LIB_CHACHA_GENERIC
+diff --git a/arch/riscv/lib/crypto/Makefile b/arch/riscv/lib/crypto/Makefile
 new file mode 100644
-index 0000000000000..c2ff8c5f1046e
+index 0000000000000..e27b78f317fc8
 --- /dev/null
-+++ b/arch/x86/lib/crypto/Makefile
-@@ -0,0 +1,17 @@
++++ b/arch/riscv/lib/crypto/Makefile
+@@ -0,0 +1,4 @@
 +# SPDX-License-Identifier: GPL-2.0-only
 +
-+obj-$(CONFIG_CRYPTO_BLAKE2S_X86) += libblake2s-x86_64.o
-+libblake2s-x86_64-y := blake2s-core.o blake2s-glue.o
-+
-+obj-$(CONFIG_CRYPTO_CHACHA20_X86_64) += chacha-x86_64.o
-+chacha-x86_64-y := chacha-avx2-x86_64.o chacha-ssse3-x86_64.o chacha-avx512vl-x86_64.o chacha_glue.o
-+
-+obj-$(CONFIG_CRYPTO_POLY1305_X86_64) += poly1305-x86_64.o
-+poly1305-x86_64-y := poly1305-x86_64-cryptogams.o poly1305_glue.o
-+targets += poly1305-x86_64-cryptogams.S
-+
-+quiet_cmd_perlasm = PERLASM $@
-+      cmd_perlasm = $(PERL) $< > $@
-+
-+$(obj)/%.S: $(src)/%.pl FORCE
-+	$(call if_changed,perlasm)
-diff --git a/arch/x86/crypto/blake2s-core.S b/arch/x86/lib/crypto/blake2s-core.S
++obj-$(CONFIG_CRYPTO_CHACHA_RISCV64) += chacha-riscv64.o
++chacha-riscv64-y := chacha-riscv64-glue.o chacha-riscv64-zvkb.o
+diff --git a/arch/riscv/crypto/chacha-riscv64-glue.c b/arch/riscv/lib/crypto/chacha-riscv64-glue.c
 similarity index 100%
-rename from arch/x86/crypto/blake2s-core.S
-rename to arch/x86/lib/crypto/blake2s-core.S
-diff --git a/arch/x86/crypto/blake2s-glue.c b/arch/x86/lib/crypto/blake2s-glue.c
+rename from arch/riscv/crypto/chacha-riscv64-glue.c
+rename to arch/riscv/lib/crypto/chacha-riscv64-glue.c
+diff --git a/arch/riscv/crypto/chacha-riscv64-zvkb.S b/arch/riscv/lib/crypto/chacha-riscv64-zvkb.S
 similarity index 100%
-rename from arch/x86/crypto/blake2s-glue.c
-rename to arch/x86/lib/crypto/blake2s-glue.c
-diff --git a/arch/x86/crypto/chacha-avx2-x86_64.S b/arch/x86/lib/crypto/chacha-avx2-x86_64.S
-similarity index 100%
-rename from arch/x86/crypto/chacha-avx2-x86_64.S
-rename to arch/x86/lib/crypto/chacha-avx2-x86_64.S
-diff --git a/arch/x86/crypto/chacha-avx512vl-x86_64.S b/arch/x86/lib/crypto/chacha-avx512vl-x86_64.S
-similarity index 100%
-rename from arch/x86/crypto/chacha-avx512vl-x86_64.S
-rename to arch/x86/lib/crypto/chacha-avx512vl-x86_64.S
-diff --git a/arch/x86/crypto/chacha-ssse3-x86_64.S b/arch/x86/lib/crypto/chacha-ssse3-x86_64.S
-similarity index 100%
-rename from arch/x86/crypto/chacha-ssse3-x86_64.S
-rename to arch/x86/lib/crypto/chacha-ssse3-x86_64.S
-diff --git a/arch/x86/crypto/chacha_glue.c b/arch/x86/lib/crypto/chacha_glue.c
-similarity index 100%
-rename from arch/x86/crypto/chacha_glue.c
-rename to arch/x86/lib/crypto/chacha_glue.c
-diff --git a/arch/x86/crypto/poly1305-x86_64-cryptogams.pl b/arch/x86/lib/crypto/poly1305-x86_64-cryptogams.pl
-similarity index 100%
-rename from arch/x86/crypto/poly1305-x86_64-cryptogams.pl
-rename to arch/x86/lib/crypto/poly1305-x86_64-cryptogams.pl
-diff --git a/arch/x86/crypto/poly1305_glue.c b/arch/x86/lib/crypto/poly1305_glue.c
-similarity index 100%
-rename from arch/x86/crypto/poly1305_glue.c
-rename to arch/x86/lib/crypto/poly1305_glue.c
+rename from arch/riscv/crypto/chacha-riscv64-zvkb.S
+rename to arch/riscv/lib/crypto/chacha-riscv64-zvkb.S
 diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
-index db19a7acc2fbf..f321fe1a8681b 100644
+index 4b3e94ed84bb6..0b06c25eb38a5 100644
 --- a/lib/crypto/Kconfig
 +++ b/lib/crypto/Kconfig
-@@ -172,8 +172,11 @@ if RISCV
- source "arch/riscv/lib/crypto/Kconfig"
+@@ -166,8 +166,11 @@ if MIPS
+ source "arch/mips/lib/crypto/Kconfig"
  endif
- if S390
- source "arch/s390/lib/crypto/Kconfig"
+ if PPC
+ source "arch/powerpc/lib/crypto/Kconfig"
  endif
-+if X86
-+source "arch/x86/lib/crypto/Kconfig"
++if RISCV
++source "arch/riscv/lib/crypto/Kconfig"
 +endif
  endif
  
