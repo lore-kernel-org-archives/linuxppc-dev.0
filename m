@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-7916-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7917-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1DDFC369C2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Apr 2025 15:28:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E34A6C369C2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 22 Apr 2025 15:28:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZhmN71sM9z3cDt;
-	Wed, 23 Apr 2025 01:28:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745335703;
-	cv=none; b=XSP2L/Pz0tSGGo8QhaX2RnO2h1+qQ7kxOm2bXgXccUO7u8JrwbTUl7sTYfLZsxC8BJqzHcy1JCz9IEegJ5B1Wq4mhvCzbTW66c+VU658RCJdOvOaDgul/TCzBBvuowqx2ijdkD4p6P8OrMLwd10zejhIxx+Vc+nJNNebXVYyBHob1VIDr5Uj3hIw7NY/s+hh5w8l0sqegMv6YlVUDAS+mV/QIiF8ZVebnfpyO2CTtJGzBOPbXKUS+PKMdyCrih22YN+2DIUV/wKEGSXU8kcmjoIREZDc9z7q+6FpOTQKb47RYesIwxIUBo7b7z5Sz0zk1E8H62a/LUtKb4WB1IspVA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZhmN907Lqz3bsR;
+	Wed, 23 Apr 2025 01:28:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745335704;
+	cv=none; b=ed+RXDtbaDirO2tYyf4Vgd9n9rN4GTGprTwOamW+nkRk8vxc+x+FWWUYvE9CHoV5s2hRWXgAtlGub3rlh0JfWMvAJ9VSdT4znJ3Lg3fbQ+tiSGnq82yzbee9g3k8r9EN3JqJjzbcFWtHts41TCgA1AsWu1jHlsplLcdJ1x4N/AuDY6c4GSgr/q5H5851eKsfp8+RgyLn55mbmjZXGpzGTt7WGP9Kpvy1R4w4n4gwYMZfC5wK1oRk70IFgM3EnRkZ6pTZA14+Hkz1fAtht+9diqKWqrxKtIOuAanlq+lCyYgRI8sk3UgPqdcxNyvMGYpS8QM3L1gUyu2KqxPUvWclbQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745335703; c=relaxed/relaxed;
-	bh=83KXcYEIsD7ECHA1NKyy7H7dP/VBiX8gnJNujLDgaCQ=;
+	t=1745335704; c=relaxed/relaxed;
+	bh=ZL3xL18OqBepeI2rMRy6I/9dIf6929xtLwXTLCkttl8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Y1GO4DniaYHu3rUSrMulPPPBMM7C+OD8zmE1SQFHoY+kJoGWlta9zMKARsvkACzEnb2GjpmcTnOSiy8/cIxt4y0wjiCrxDXOSO+IP2Lk7As9vqVvtHmGI3Gcu7bxuNWL736g+VxXukEdSkhxKJQkLotQKeuMABHdE7IoqVOLAeVNBXHXs53PqvC+KgxL4BGsi8aSgL10/3UQfM6Vgj6qKPeEIbSXuywJjxmjiPcb5XKv2IJZuCL/wHARTDx3cMcRfKGyvNHUlJhE6jRZfth2wIGrztIwUOH8EBP2mtjOLZlWqViN06YUOJ1hoi2frCPU3uC6Crd6dY1r+1vJYqp/yQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uBsUn+1u; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=ds9r1D+4lrb8H9QoN34/4EY4tVot4uKH0Z0qnmrURJAOxHeDXIDtzQCJehUIFSKrl7x6VTKTv31n/GGLqGvqJPiu9kopT59naalfT2nCzDSDZGO28Lj2zKiXGRYBe1NocHGL6SMiK0LNOo9bcisF7ljR4tC44eUh//xcBiNQHH/vBR1dlvsWb4rCaszKeBrLjO81sXy9GMbA3bMf0H50c+QjUhtUGedJXnR1FMTeBfkWrznSHOhuA/KCCVfFUlVp8Qpnsxzdsg4zLNqMS1o/C2O5UbcqzzRjCVVCTRqvmj/Ey54OLIMcfYzWoOYQJ5KkBPcMDuslFO38xwahw0Ehqg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qCNc0DKF; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uBsUn+1u;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qCNc0DKF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZhmN40dgdz3bsR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2025 01:28:19 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZhmN44Qz9z3c18
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2025 01:28:20 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id C48365C5C9A;
-	Tue, 22 Apr 2025 15:25:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 32E98C4CEE9;
-	Tue, 22 Apr 2025 15:28:15 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 862564A95A;
+	Tue, 22 Apr 2025 15:28:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 901F7C4CEF0;
+	Tue, 22 Apr 2025 15:28:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1745335695;
-	bh=Wsz8KfnWpKz3RjYagwsQwuMx7mcDuZ3DmLJCHCvCnLk=;
+	s=k20201202; t=1745335697;
+	bh=qN/B6X2mvQN94BK3RyJeOZTVFWohKhnnWgVazqat/cI=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=uBsUn+1uknnAtCvGxigHZ4JZToY6+Gy1ixr68PQvV2N71BUQl87w4yMZvlkmjCwZ0
-	 RiCZCN4vIV2n0ynKuXxTLvrHQVn87JR/9LqXwv5UnpKrmGxngl4unZebkUVwATB/sE
-	 IaMI4ynGGpFpbI3ZRnoRy8dF2K06NBvFqAB9SziK+JLDHzV8/1oz0c8BZdihd951Qw
-	 c5+HPn83XoB+DEMH5jnPKhtWdxpTkVxm/BPC9ZhGUEnLGxZ5UomAOSh+VAoTMwUtNK
-	 4tXgPPEpd0lYeetuHeVpKT/bTaC5YXBvG+nlQRTRr/c8aoQJpGfdjm9w+zNTOpb2JF
-	 xGv23N6geYPRQ==
+	b=qCNc0DKFbLWtkplqTtT13CfwTQE6PaHVBBB82/X3fpAVVgtphrM7DaoQyH455ZtOA
+	 3od7qCZHN+hjsgHwHoLLaoYUvUy0n4ZLD8MXqabiEQnfE8b0eEYnokQm4XP7Z6lAec
+	 EXcafR4+DRXVWUUo+U3YX0MI9revROjD3N+FINWhLx2ySRUQS+CtMP5XWtT7z1Bse+
+	 sWKjSYAtxfBtHbgvbh8/qo8Ii1gZwC22fBFUmufECRvIgkgizSl0vTv5e3ZptSKsYc
+	 BMjVjUSfg43cgoox7tDqaWuq1v9tK+qmeq9iIGiYy9qynq949O7WRuHB2Su5l2kxzE
+	 OsTl37h8/3eAg==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-arch@vger.kernel.org,
@@ -56,9 +56,9 @@ Cc: linux-arch@vger.kernel.org,
 	x86@kernel.org,
 	"Jason A . Donenfeld" <Jason@zx2c4.com>,
 	Ard Biesheuvel <ardb@kernel.org>
-Subject: [PATCH v3 02/13] crypto: powerpc - drop redundant dependencies on PPC
-Date: Tue, 22 Apr 2025 08:27:05 -0700
-Message-ID: <20250422152716.5923-3-ebiggers@kernel.org>
+Subject: [PATCH v3 07/13] crypto: mips - move library functions to arch/mips/lib/crypto/
+Date: Tue, 22 Apr 2025 08:27:10 -0700
+Message-ID: <20250422152716.5923-8-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250422152716.5923-1-ebiggers@kernel.org>
 References: <20250422152716.5923-1-ebiggers@kernel.org>
@@ -78,71 +78,193 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-arch/powerpc/crypto/Kconfig is sourced only when CONFIG_PPC=y, so there
-is no need for the symbols defined inside it to depend on PPC.
+Continue disentangling the crypto library functions from the generic
+crypto infrastructure by moving the mips ChaCha and Poly1305 library
+functions into a new directory arch/mips/lib/crypto/ that does not
+depend on CRYPTO.  This mirrors the distinction between crypto/ and
+lib/crypto/.
 
-Acked-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- arch/powerpc/crypto/Kconfig | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ arch/mips/crypto/Kconfig                    | 11 -----------
+ arch/mips/crypto/Makefile                   | 17 -----------------
+ arch/mips/lib/Makefile                      |  2 ++
+ arch/mips/lib/crypto/.gitignore             |  2 ++
+ arch/mips/lib/crypto/Kconfig                | 12 ++++++++++++
+ arch/mips/lib/crypto/Makefile               | 19 +++++++++++++++++++
+ arch/mips/{ => lib}/crypto/chacha-core.S    |  0
+ arch/mips/{ => lib}/crypto/chacha-glue.c    |  0
+ arch/mips/{ => lib}/crypto/poly1305-glue.c  |  0
+ arch/mips/{ => lib}/crypto/poly1305-mips.pl |  0
+ lib/crypto/Kconfig                          |  3 +++
+ 11 files changed, 38 insertions(+), 28 deletions(-)
+ create mode 100644 arch/mips/lib/crypto/.gitignore
+ create mode 100644 arch/mips/lib/crypto/Kconfig
+ create mode 100644 arch/mips/lib/crypto/Makefile
+ rename arch/mips/{ => lib}/crypto/chacha-core.S (100%)
+ rename arch/mips/{ => lib}/crypto/chacha-glue.c (100%)
+ rename arch/mips/{ => lib}/crypto/poly1305-glue.c (100%)
+ rename arch/mips/{ => lib}/crypto/poly1305-mips.pl (100%)
 
-diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
-index cbcf76953d835..8bcc690134644 100644
---- a/arch/powerpc/crypto/Kconfig
-+++ b/arch/powerpc/crypto/Kconfig
-@@ -15,48 +15,46 @@ config CRYPTO_CURVE25519_PPC64
- 	  Architecture: PowerPC64
- 	  - Little-endian
+diff --git a/arch/mips/crypto/Kconfig b/arch/mips/crypto/Kconfig
+index 8283664a1f24b..9db1fd6d9f0e0 100644
+--- a/arch/mips/crypto/Kconfig
++++ b/arch/mips/crypto/Kconfig
+@@ -1,14 +1,9 @@
+ # SPDX-License-Identifier: GPL-2.0
  
- config CRYPTO_MD5_PPC
- 	tristate "Digests: MD5"
--	depends on PPC
+ menu "Accelerated Cryptographic Algorithms for CPU (mips)"
+ 
+-config CRYPTO_POLY1305_MIPS
+-	tristate
+-	select CRYPTO_ARCH_HAVE_LIB_POLY1305
+-	default CRYPTO_LIB_POLY1305_INTERNAL
+-
+ config CRYPTO_MD5_OCTEON
+ 	tristate "Digests: MD5 (OCTEON)"
+ 	depends on CPU_CAVIUM_OCTEON
+ 	select CRYPTO_MD5
  	select CRYPTO_HASH
+@@ -45,12 +40,6 @@ config CRYPTO_SHA512_OCTEON
  	help
- 	  MD5 message digest algorithm (RFC1321)
+ 	  SHA-384 and SHA-512 secure hash algorithms (FIPS 180)
  
- 	  Architecture: powerpc
+ 	  Architecture: mips OCTEON using crypto instructions, when available
  
- config CRYPTO_SHA1_PPC
- 	tristate "Hash functions: SHA-1"
--	depends on PPC
- 	help
- 	  SHA-1 secure hash algorithm (FIPS 180)
+-config CRYPTO_CHACHA_MIPS
+-	tristate
+-	depends on CPU_MIPS32_R2
+-	select CRYPTO_ARCH_HAVE_LIB_CHACHA
+-	default CRYPTO_LIB_CHACHA_INTERNAL
+-
+ endmenu
+diff --git a/arch/mips/crypto/Makefile b/arch/mips/crypto/Makefile
+index fddc882814123..5adb631a69c18 100644
+--- a/arch/mips/crypto/Makefile
++++ b/arch/mips/crypto/Makefile
+@@ -1,22 +1,5 @@
+ # SPDX-License-Identifier: GPL-2.0
+ #
+ # Makefile for MIPS crypto files..
+ #
  
- 	  Architecture: powerpc
+-obj-$(CONFIG_CRYPTO_CHACHA_MIPS) += chacha-mips.o
+-chacha-mips-y := chacha-core.o chacha-glue.o
+-AFLAGS_chacha-core.o += -O2 # needed to fill branch delay slots
+-
+-obj-$(CONFIG_CRYPTO_POLY1305_MIPS) += poly1305-mips.o
+-poly1305-mips-y := poly1305-core.o poly1305-glue.o
+-
+-perlasm-flavour-$(CONFIG_32BIT) := o32
+-perlasm-flavour-$(CONFIG_64BIT) := 64
+-
+-quiet_cmd_perlasm = PERLASM $@
+-      cmd_perlasm = $(PERL) $(<) $(perlasm-flavour-y) $(@)
+-
+-$(obj)/poly1305-core.S: $(src)/poly1305-mips.pl FORCE
+-	$(call if_changed,perlasm)
+-
+-targets += poly1305-core.S
+diff --git a/arch/mips/lib/Makefile b/arch/mips/lib/Makefile
+index 9c024e6d5e54c..9d75845ef78e1 100644
+--- a/arch/mips/lib/Makefile
++++ b/arch/mips/lib/Makefile
+@@ -1,10 +1,12 @@
+ # SPDX-License-Identifier: GPL-2.0
+ #
+ # Makefile for MIPS-specific library files..
+ #
  
- config CRYPTO_SHA1_PPC_SPE
- 	tristate "Hash functions: SHA-1 (SPE)"
--	depends on PPC && SPE
-+	depends on SPE
- 	help
- 	  SHA-1 secure hash algorithm (FIPS 180)
++obj-y	+= crypto/
++
+ lib-y	+= bitops.o csum_partial.o delay.o memcpy.o memset.o \
+ 	   mips-atomic.o strncpy_user.o \
+ 	   strnlen_user.o uncached.o
  
- 	  Architecture: powerpc using
- 	  - SPE (Signal Processing Engine) extensions
+ obj-y			+= iomap_copy.o
+diff --git a/arch/mips/lib/crypto/.gitignore b/arch/mips/lib/crypto/.gitignore
+new file mode 100644
+index 0000000000000..0d47d4f21c6de
+--- /dev/null
++++ b/arch/mips/lib/crypto/.gitignore
+@@ -0,0 +1,2 @@
++# SPDX-License-Identifier: GPL-2.0-only
++poly1305-core.S
+diff --git a/arch/mips/lib/crypto/Kconfig b/arch/mips/lib/crypto/Kconfig
+new file mode 100644
+index 0000000000000..5b82ba753c55c
+--- /dev/null
++++ b/arch/mips/lib/crypto/Kconfig
+@@ -0,0 +1,12 @@
++# SPDX-License-Identifier: GPL-2.0-only
++
++config CRYPTO_CHACHA_MIPS
++	tristate
++	depends on CPU_MIPS32_R2
++	default CRYPTO_LIB_CHACHA_INTERNAL
++	select CRYPTO_ARCH_HAVE_LIB_CHACHA
++
++config CRYPTO_POLY1305_MIPS
++	tristate
++	default CRYPTO_LIB_POLY1305_INTERNAL
++	select CRYPTO_ARCH_HAVE_LIB_POLY1305
+diff --git a/arch/mips/lib/crypto/Makefile b/arch/mips/lib/crypto/Makefile
+new file mode 100644
+index 0000000000000..804488c7adedc
+--- /dev/null
++++ b/arch/mips/lib/crypto/Makefile
+@@ -0,0 +1,19 @@
++# SPDX-License-Identifier: GPL-2.0-only
++
++obj-$(CONFIG_CRYPTO_CHACHA_MIPS) += chacha-mips.o
++chacha-mips-y := chacha-core.o chacha-glue.o
++AFLAGS_chacha-core.o += -O2 # needed to fill branch delay slots
++
++obj-$(CONFIG_CRYPTO_POLY1305_MIPS) += poly1305-mips.o
++poly1305-mips-y := poly1305-core.o poly1305-glue.o
++
++perlasm-flavour-$(CONFIG_32BIT) := o32
++perlasm-flavour-$(CONFIG_64BIT) := 64
++
++quiet_cmd_perlasm = PERLASM $@
++      cmd_perlasm = $(PERL) $(<) $(perlasm-flavour-y) $(@)
++
++$(obj)/poly1305-core.S: $(src)/poly1305-mips.pl FORCE
++	$(call if_changed,perlasm)
++
++targets += poly1305-core.S
+diff --git a/arch/mips/crypto/chacha-core.S b/arch/mips/lib/crypto/chacha-core.S
+similarity index 100%
+rename from arch/mips/crypto/chacha-core.S
+rename to arch/mips/lib/crypto/chacha-core.S
+diff --git a/arch/mips/crypto/chacha-glue.c b/arch/mips/lib/crypto/chacha-glue.c
+similarity index 100%
+rename from arch/mips/crypto/chacha-glue.c
+rename to arch/mips/lib/crypto/chacha-glue.c
+diff --git a/arch/mips/crypto/poly1305-glue.c b/arch/mips/lib/crypto/poly1305-glue.c
+similarity index 100%
+rename from arch/mips/crypto/poly1305-glue.c
+rename to arch/mips/lib/crypto/poly1305-glue.c
+diff --git a/arch/mips/crypto/poly1305-mips.pl b/arch/mips/lib/crypto/poly1305-mips.pl
+similarity index 100%
+rename from arch/mips/crypto/poly1305-mips.pl
+rename to arch/mips/lib/crypto/poly1305-mips.pl
+diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
+index 7395234d654b7..c5c01bc3569d5 100644
+--- a/lib/crypto/Kconfig
++++ b/lib/crypto/Kconfig
+@@ -160,8 +160,11 @@ if ARM
+ source "arch/arm/lib/crypto/Kconfig"
+ endif
+ if ARM64
+ source "arch/arm64/lib/crypto/Kconfig"
+ endif
++if MIPS
++source "arch/mips/lib/crypto/Kconfig"
++endif
+ endif
  
- config CRYPTO_SHA256_PPC_SPE
- 	tristate "Hash functions: SHA-224 and SHA-256 (SPE)"
--	depends on PPC && SPE
-+	depends on SPE
- 	select CRYPTO_SHA256
- 	select CRYPTO_HASH
- 	help
- 	  SHA-224 and SHA-256 secure hash algorithms (FIPS 180)
- 
- 	  Architecture: powerpc using
- 	  - SPE (Signal Processing Engine) extensions
- 
- config CRYPTO_AES_PPC_SPE
- 	tristate "Ciphers: AES, modes: ECB/CBC/CTR/XTS (SPE)"
--	depends on PPC && SPE
-+	depends on SPE
- 	select CRYPTO_SKCIPHER
- 	help
- 	  Block ciphers: AES cipher algorithms (FIPS-197)
- 	  Length-preserving ciphers: AES with ECB, CBC, CTR, and XTS modes
- 
+ endmenu
 -- 
 2.49.0
 
