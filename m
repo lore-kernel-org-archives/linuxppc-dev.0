@@ -1,84 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-7933-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7935-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15219C369CB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Apr 2025 08:22:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 364FAC369CB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 23 Apr 2025 08:53:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZjBtF4HPbz2yRZ;
-	Wed, 23 Apr 2025 18:22:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745396549;
-	cv=none; b=Ntu7TaDXi/YybK8zj/BcOw7SuPZ+eZDGJb+e8DvMZAxw2VYGCR1+2V9b6hqbQYGCD+IWk0jJ/+HosCuT3zIhY7UsRMxCEj7v9WLZifrDQjTn9L4kmhilaw7P7uzOHR6nc9Bgt6NhxgCggcVAZnnzHNt46r6WnjyJeGGVZOmxSdIvPIib/RH7mLQk88UjcQP7pn2Vc4jRXB0OD9DcQHLwwV+r35n4G9ymWiDvuihPEFALSzE57iZDLM8YIpAkQ8dABZfvJiIutQEmqxe8laNvDJZC0yPHQ55hJD1jp/7WK5voLtwuhn2n0xH7/Hh/2DCPGyr/Ws6f51Qy53IFXeCHHw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZjCYn5q8Fz2ydt;
+	Wed, 23 Apr 2025 18:53:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2404:9400:2221:ea00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745398397;
+	cv=none; b=e3QtH7lLck1wJPVvow4ppO7IUqhjL6mjRyec/kw9y/0NSZdpxaBlz5zNjWlG+5r1xLMD1ma+DHk3QyZPEimFSuO63K3PpxV6ZQCVRbKa89icD9r5+0ZiBzPyqYMUVUiQnOPzoEZemz8iTkJP5XQIz4pUmo1L3YdQ9pgJkQwMRhVjQ6sZvbZe87jn2hjs1cZhU9cccbfYFBD8s6ekczSKO0rXA+jZid0dNwNiHTGyY+aQbTdlIK9cDpG8xZZnrgUwKKjK6ud0yjk6sF+Xw3SfOTBZZ9hy6FlPVmi/TdepC//YiH3gTWYAv5eeWnmUXzhvpaQRBtDNVQ6wwmZzgIeOng==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745396549; c=relaxed/relaxed;
-	bh=OCgqTmK++0s7Q8nDZmYjpgL8gYuVarkNIZKnLBkKk7w=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Vj1LYOuPxnP6Nrz42SVCYSFpg27snr3QAs+x4tM2PIVmFbS7kL1VACpdgd2BUk5UVnt1ZJrOArP3JSkvym1Jgk+Oz0FakRTpYSVvv3CpPqnGaTgbXLngPwMgGVcpDeACs4ZAhuJu91SGlBf4zMX+OTy4y4UuaMu+Z+Phhqk8ImXq0Mr1fG3PpTebzQKi55ObZFg+rQaXICoGW7H0qI6sBBw823N6ntd9ut1TzTcyedH4FpHPMlCZ8aj/i3tgx1A05114XCz/UuNDBv8VzaBa+0PZqHJShXJCXqZ1UhzQHLBOa913UmXFMWVhs9E1c8JfnEwQd91CPA5fHHwKLijAeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=q6N1cSz3; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1745398397; c=relaxed/relaxed;
+	bh=AONr5Laja4/bxGWO9p3sD5Nbjdmr1ly5yTSyfO28Ygg=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=PfcNz1ru194N+VoLmoEz/y90cBeIe1e/30Yu/11hCZTwX46jwsBCFE10CSTi/84K3rXrGUz7zC7iPW9lyRBxVGz6LU/4FANkGziH6ZkxGcFOxpbkEq4rALu3AQtR7DSIw+UaRLNU/y7JQda27UOWP+SuaV58CEFkCA3brX72i4lnHFbVAAE9yhqzNEt6LzbK/gV18QH2ge3un5NLxHZeS24eHpU9Pxlt+XmeYqMV/SNAFDHs0PtFFhziNMc53VjzsEIXfDrKmA7uqG4NygJegLtcC0ZyVbsu8rnqL+EP3BNn7SFATBfE8dG95L3OADF3sJRbkEr0V27BJyb0jELQ6w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=canb.auug.org.au; dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=202503 header.b=PlBtzy+n; dkim-atps=neutral; spf=pass (client-ip=2404:9400:2221:ea00::3; helo=mail.ozlabs.org; envelope-from=sfr@canb.auug.org.au; receiver=lists.ozlabs.org) smtp.mailfrom=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=q6N1cSz3;
+	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=202503 header.b=PlBtzy+n;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=canb.auug.org.au (client-ip=2404:9400:2221:ea00::3; helo=mail.ozlabs.org; envelope-from=sfr@canb.auug.org.au; receiver=lists.ozlabs.org)
+Received: from mail.ozlabs.org (mail.ozlabs.org [IPv6:2404:9400:2221:ea00::3])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZjBtD47Ynz2xQ5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2025 18:22:27 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 53N6fwEd002619;
-	Wed, 23 Apr 2025 08:22:09 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=OCgqTmK++0s7Q8nDZmYjpgL8gYuVarkNIZKnLBkKk
-	7w=; b=q6N1cSz3XFGFzJH9Y3wbu8f5yv16Ej3wewuupgN+k3/L05wzxAkp52L0y
-	VMpOYUqQWlKCMQtZMEXRgPfieX8Pp/8Tdl/fUGiYm8jO7+qOTClrR4Mi1wFe4cGT
-	71Lu0c4ut+9I/gfVmEIaty1jqKN9Y9qoVLV8LrGGvjXZhxhgWMFTsrFg8nmYupvW
-	9hzQNIxnr3Gt7ZMBqz4ROJhpG/CaU3u5/pkXtBC0SRP1jgktbWzdrGg7L8FxcIS1
-	OzWYS+xUkgw7/EfRzXT69UEHVbMNsVgCEcNS2GCyLJtHyJQ6veVSkgXLdq0DmHTB
-	lLkk/jdpnHx3+JhcvxFWfsoI7WGQg==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 466jpt27yu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 23 Apr 2025 08:22:08 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 53N8J8r5026976;
-	Wed, 23 Apr 2025 08:22:08 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 466jpt27yq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 23 Apr 2025 08:22:08 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 53N6jGOF000976;
-	Wed, 23 Apr 2025 08:22:06 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 466jfxt4nw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 23 Apr 2025 08:22:06 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 53N8M4cQ55640396
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 23 Apr 2025 08:22:04 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1AD4120063;
-	Wed, 23 Apr 2025 08:22:04 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9314F2004F;
-	Wed, 23 Apr 2025 08:21:59 +0000 (GMT)
-Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.ibm.com.com (unknown [9.43.11.234])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 23 Apr 2025 08:21:59 +0000 (GMT)
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: mpe@ellerman.id.au, christophe.leroy@csgroup.eu
-Cc: npiggin@gmail.com, naveen@kernel.org, linuxppc-dev@lists.ozlabs.org,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Stephen Rothwell <sfr@canb.auug.org.au>
-Subject: [PATCH v2] powerpc/boot: Fix dash warning
-Date: Wed, 23 Apr 2025 13:51:54 +0530
-Message-ID: <20250423082154.30625-1-maddy@linux.ibm.com>
-X-Mailer: git-send-email 2.49.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZjCYn27DGz2xjP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 23 Apr 2025 18:53:17 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
+	s=202503; t=1745398397;
+	bh=AONr5Laja4/bxGWO9p3sD5Nbjdmr1ly5yTSyfO28Ygg=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=PlBtzy+n1I+F5On3axV2gomhE0qazvPB0vFMcUI6yTiZ4FStpmNSCCbp2TmSeEKdz
+	 bJKbZ3eWW2YNn8ltq5q75nBpl0iBeHWQ1aMylFBpuQRj/gQRFnSXpjP/0H4gKLuuQa
+	 spTA9RJZXUJ1/5rewqEilChXkRg76JuikdSus1cp2mmQnPdxqX0AxlLY430YgKMXe+
+	 qdGuI4Cv2aZLBn9Wl0A3jPR4qdzPCbTwMI5BJPp1eSBWEZyCipsgPt54nepoWg1rQh
+	 N7GK/QV1fVtpUpK+c3lPUq91+EIywzh/uP00cUmI5ZtEKPBvOSmtP4XYLW33QIuxlz
+	 rvBsRuccQVaHA==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4ZjCYl6Znnz4wbR;
+	Wed, 23 Apr 2025 18:53:15 +1000 (AEST)
+Date: Wed, 23 Apr 2025 18:53:15 +1000
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: mpe@ellerman.id.au, christophe.leroy@csgroup.eu, npiggin@gmail.com,
+ naveen@kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v2] powerpc/boot: Fix dash warning
+Message-ID: <20250423185315.6732741f@canb.auug.org.au>
+In-Reply-To: <20250423082154.30625-1-maddy@linux.ibm.com>
+References: <20250423082154.30625-1-maddy@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,69 +66,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: LIxVjy3vYElhjmKZPDYRrSRyu75IXyQu
-X-Proofpoint-ORIG-GUID: rbdOwCxZelALHt-y235a-KVBU1-0OrHy
-X-Authority-Analysis: v=2.4 cv=a/Qw9VSF c=1 sm=1 tr=0 ts=6808a330 cx=c_pps a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17 a=XR8D0OoHHMoA:10 a=rOUgymgbAAAA:8 a=VnNF1IyMAAAA:8 a=eK3rdy_XGhdtUv4H5qYA:9 a=0bXxn9q0MV6snEgNplNhOjQmxlI=:19
- a=MP9ZtiD8KjrkvI0BhSjB:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNDIzMDA1MCBTYWx0ZWRfXx8dbmZ1JjKcm R+8t/lH8WdXRW9WQemDGqCjLPo00+mp22nUV1eLZy8PM58Z1OX1DD8AIIFIaRdsnRYws779iY0N PrJCI+f4Ilf2GuVmnxavWK3/JiAnsWcblTFvf1sN9SpQGjAjCfc61f/xoMnXaZpJMPU/Wos1WSP
- bIH7VuCQU0Se9t44EpZnAuKgeKZo9mUw3VfIDIoqNSRahml5w5KBwuDwWFR1/Q5NLagpyZT7+E4 s3eWyRvxj9JvkWdfzPqtOZENF+6kYpS37PYo92n5NoR7SXUQst809go1CN5YguzXcuLZobCAQDA JWgzEvu9PiCnPT9NBizHWsl0UEqE8cTUbBXpwpo6t2K2eFn9KjAnxPDNd6JjvodFCcw2uR+RMNL
- /r97xzLk9Hw0HzwtFSfjX1b/VnHaaovkR8E7MoSmdiS4az1d/xw8GRL3NzG5weiSsFlAtIEQ
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.680,FMLib:17.12.68.34
- definitions=2025-04-23_05,2025-04-22_01,2024-11-22_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- suspectscore=0 mlxscore=0 phishscore=0 malwarescore=0 mlxlogscore=999
- impostorscore=0 spamscore=0 adultscore=0 bulkscore=0 lowpriorityscore=0
- clxscore=1015 classifier=spam authscore=0 authtc=n/a authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
- definitions=main-2504230050
+Content-Type: multipart/signed; boundary="Sig_/ZRZ9VoJmpND_sy0/N9neHDP";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 
-Commit b2accfe7ca5b '("powerpc/boot: Check for ld-option support")' suppressed
-linker warnings, but the expressed used did not go well with POSIX shell (dash)
-resulting with this warning
+--Sig_/ZRZ9VoJmpND_sy0/N9neHDP
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-arch/powerpc/boot/wrapper: 237: [: 0: unexpected operator
-ld: warning: arch/powerpc/boot/zImage.epapr has a LOAD segment with RWX permissions
+Hi Madhavan,
 
-Fix the check to handle the reported warning. Patch also fixes
-couple of shellcheck reported errors for the same line.
+On Wed, 23 Apr 2025 13:51:54 +0530 Madhavan Srinivasan <maddy@linux.ibm.com=
+> wrote:
+>
+> Commit b2accfe7ca5b '("powerpc/boot: Check for ld-option support")' suppr=
+essed
+> linker warnings, but the expressed used did not go well with POSIX shell =
+(dash)
+> resulting with this warning
+>=20
+> arch/powerpc/boot/wrapper: 237: [: 0: unexpected operator
+> ld: warning: arch/powerpc/boot/zImage.epapr has a LOAD segment with RWX p=
+ermissions
+>=20
+> Fix the check to handle the reported warning. Patch also fixes
+> couple of shellcheck reported errors for the same line.
+>=20
+> In arch/powerpc/boot/wrapper line 237:
+> if [ $(${CROSS}ld -v --no-warn-rwx-segments &>/dev/null; echo $?) -eq 0 ]=
+; then
+>      ^-- SC2046 (warning): Quote this to prevent word splitting.
+>        ^------^ SC2086 (info): Double quote to prevent globbing and word =
+splitting.
+>                                             ^---------^ SC3020 (warning):=
+ In POSIX sh, &> is undefined.
+>=20
+> Fixes: b2accfe7ca5b '("powerpc/boot: Check for ld-option support")'
+> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Suggested-by: Stephen Rothwell <sfr@canb.auug.org.au>
+> Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+> ---
+> Changelog v1:
+> - modified the check to use the command exit
+>   state instead explicit checking with exit code
+>  =20
+> Patch applies on top of powerpc/fixes
+>=20
+>  arch/powerpc/boot/wrapper | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+>=20
+> diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+> index 267ca6d4d9b3..3d8dc822282a 100755
+> --- a/arch/powerpc/boot/wrapper
+> +++ b/arch/powerpc/boot/wrapper
+> @@ -234,7 +234,7 @@ fi
+> =20
+>  # suppress some warnings in recent ld versions
+>  nowarn=3D"-z noexecstack"
+> -if [ $(${CROSS}ld -v --no-warn-rwx-segments &>/dev/null; echo $?) -eq 0 =
+]; then
+> +if "${CROSS}ld" -v --no-warn-rwx-segments >/dev/null 2>&1; then
+>  	nowarn=3D"$nowarn --no-warn-rwx-segments"
+>  fi
 
-In arch/powerpc/boot/wrapper line 237:
-if [ $(${CROSS}ld -v --no-warn-rwx-segments &>/dev/null; echo $?) -eq 0 ]; then
-     ^-- SC2046 (warning): Quote this to prevent word splitting.
-       ^------^ SC2086 (info): Double quote to prevent globbing and word splitting.
-                                            ^---------^ SC3020 (warning): In POSIX sh, &> is undefined.
+Looks good to me.
 
-Fixes: b2accfe7ca5b '("powerpc/boot: Check for ld-option support")'
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Suggested-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Madhavan Srinivasan <maddy@linux.ibm.com>
----
-Changelog v1:
-- modified the check to use the command exit
-  state instead explicit checking with exit code
-  
-Patch applies on top of powerpc/fixes
+Reviewed-by: Stephen Rothwell <sfr@canb.auug.org.au>
 
- arch/powerpc/boot/wrapper | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+--=20
+Cheers,
+Stephen Rothwell
 
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index 267ca6d4d9b3..3d8dc822282a 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -234,7 +234,7 @@ fi
- 
- # suppress some warnings in recent ld versions
- nowarn="-z noexecstack"
--if [ $(${CROSS}ld -v --no-warn-rwx-segments &>/dev/null; echo $?) -eq 0 ]; then
-+if "${CROSS}ld" -v --no-warn-rwx-segments >/dev/null 2>&1; then
- 	nowarn="$nowarn --no-warn-rwx-segments"
- fi
- 
--- 
-2.49.0
+--Sig_/ZRZ9VoJmpND_sy0/N9neHDP
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmgIqnsACgkQAVBC80lX
+0GzqeggAnkS/r0Xh4OWUQWAayNgnwrapAqaT1CctZBQR6SQlTLTSN0lQDDR2k/08
+EUiZF3JjmTKgSrFa48bm2cEgAWrjPF7hmkmjn7CUC6aCZtVnZIhz71VFLO7vfD7C
+5eUpHf8nYMzS2QwhVOGyuPVuKM28uZFGZu/XbIX5f7g5bCC8/cx9+kE5Lw6zffZ0
+tcKT8XWodbDRIcaBFPc36TPoeqh6b2eTRh8IKogJjeO6g8GGof7NjV9kY068UfNU
+hSDjg6CPD+uAth/2CpuTXYwuC8VR6p4Sk69G7/aD/ZkLa9mMMehzb+A5RCyc8uwz
+s70KFnkDD8Zk0dkWeHm6VBGP04yrGQ==
+=NnXB
+-----END PGP SIGNATURE-----
+
+--Sig_/ZRZ9VoJmpND_sy0/N9neHDP--
 
