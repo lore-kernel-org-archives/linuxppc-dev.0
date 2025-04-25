@@ -1,72 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-7994-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-7995-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5416EC369D7
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Apr 2025 17:20:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4853BC369C2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 25 Apr 2025 17:46:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZkfkW55Lsz30FR;
-	Sat, 26 Apr 2025 03:20:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc2:55:216:3eff:fef7:d647"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745601651;
-	cv=none; b=CMChDS7AWzkrw34tFlI2cqRZyHJ5dfd8qaO1Vbw2XpFO4Jctk+4PvlCe2RyxJSLpoQG2B/AnZ0pvL41TOz32/k8vtUEz7sPboRV5wm+2fPbs+CHUg4D8QSXaxm3TNOmlLSWsoBsymCmQVxkGfB1zqcDi8h6/WjZMpMLaM1ZU45B766FcGWYR0Yzl58Llx4BVoWxi4o3lj5SuBYjMA0Y/w26zsreiJBpl3oNejCLmnA4S1AhFwiAWKu3S6XLOJoaSgrvo76wookngpiNR1rLHuVU6ur+WYnET9oKG35kXR9/NMgUJZ22FKUIm7tqN3i8IvKpnbcRU7bcp/RswTLQWsg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZkgJV4m3cz2yFK;
+	Sat, 26 Apr 2025 03:46:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745603210;
+	cv=none; b=XUxkzHwoZsRPduagP6lsRyAwSZIfGH+MpzJ0MADG5r4Y2B29bL5xr/S28AediYK7LDH7nSEgjhb+trogNaMAFWiXCOaUepAA9QmMZfCqquYmVvZWlQrS12GS73Sye4eBRAsq/IHe9ryxSww1y9AqnfLu7Z/DsjVxYeLQJXn71PcwEz0iMuBuqnsLROQmk1THYpjrP/LHaP5vknlfI5Db9Aee7DGYIaLYxrH7k9NJ7nCCgMHaAzXfopQsND7BB83p4gTZ7qOz1leDlEE1a7RoqSULqWoXDPNzOnpYsNeacz20uJnjBQM+emWaB6Y0aX9fly5jR4b67UhqcOEFU4KTyw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745601651; c=relaxed/relaxed;
-	bh=CSCNlyuVe/6sXD5TPGRmpfNEkLgX/CzMjBfJgOiKrLs=;
+	t=1745603210; c=relaxed/relaxed;
+	bh=ohYtiXcZslxqDRSa2W2ilOC8uqLye/CVpujTXHNq514=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=MWaY2RKMPplOwfAWhfrLflStdDekjZvEavuYheOj/JM2Mh+2OIRlHitcwGqT0QrH6RoQ3gsOkQraM5ddh3f06i4sRB/PpH9Fd2Jmw5cj1iVhiSLJUSmpbqnmFDy25iUe3e7L/QyvHQV5JZoSyjV4SaQ7DqUmcwx/w9WFOzQRmEEB9Hj3en+z0ZyGW+pCJQkSlvzmaRP6h29jtLYyPKxvcAgc5LyMaTzLj28zoab1/mLXvXpFnWdfaFwiZ+oxkNbod1dnZZMx2NM7HKTd0iVp2Sqcs9YRKGVxRPq9T/bYRctcMPZ7kdPAuNxwVlHqa0Xa3n+7NLPUODi+g7rPpzVePg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com; dkim=pass (1024-bit key; unprotected) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=kCLYVafc; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc2:55:216:3eff:fef7:d647; helo=perceval.ideasonboard.com; envelope-from=laurent.pinchart@ideasonboard.com; receiver=lists.ozlabs.org) smtp.mailfrom=ideasonboard.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ideasonboard.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=odc/GaKd6UTYn7r5wZD3zbIu6ATMq1lCro1igXazksapkV3vn2WR2uZePQ1VUkQVgrAFEuJ0bWkySd1+UARY4D6BIXHLea7DkkGiFQzaw5oPY+MakBGbwKWrBKolEULtEWoELhl5y3hNEiGTyZnAsl/tfdY0JWu0m1p5m3CWD9uW2mbJGJHdVHmPsWiXvOep0JX5b2PHk365lC0aNsFi5QshNtNd8rPmceOHK0m8J3InJqproNhvu4iN5bbEPgnTrziDdpeIHxq4QEOgTF7K5OePqjt7oxXIDsByOrfywUgwybqslndD3JgcqhSiZBOjHw86AyQgy9ZQOdulIcFRIQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kXqFv3PY; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=ideasonboard.com header.i=@ideasonboard.com header.a=rsa-sha256 header.s=mail header.b=kCLYVafc;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=kXqFv3PY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ideasonboard.com (client-ip=2001:4b98:dc2:55:216:3eff:fef7:d647; helo=perceval.ideasonboard.com; envelope-from=laurent.pinchart@ideasonboard.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 785 seconds by postgrey-1.37 at boromir; Sat, 26 Apr 2025 03:20:50 AEST
-Received: from perceval.ideasonboard.com (perceval.ideasonboard.com [IPv6:2001:4b98:dc2:55:216:3eff:fef7:d647])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=acme@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZkfkV2XCVz2y06
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Apr 2025 03:20:50 +1000 (AEST)
-Received: from pendragon.ideasonboard.com (81-175-209-231.bb.dnainternet.fi [81.175.209.231])
-	by perceval.ideasonboard.com (Postfix) with ESMTPSA id 97499250;
-	Fri, 25 Apr 2025 19:07:34 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=ideasonboard.com;
-	s=mail; t=1745600854;
-	bh=fHOSkVvCS0e3YcFWO5XU4zHBCn1ZyGlikcXhosdxBlE=;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZkgJT1H01z2y06
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 26 Apr 2025 03:46:49 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id A653443F56;
+	Fri, 25 Apr 2025 17:46:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BE012C4CEE9;
+	Fri, 25 Apr 2025 17:46:45 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1745603206;
+	bh=Sgmu/3BDx6uV+GllAWEYIgsqkuxFB3Bo3lMKzsQbZ2I=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=kCLYVafcorPJlG/fHXm4USpf3DTn8tEKNyjJotnlxAmdkehyKovEoloLTRfWJi/09
-	 aOg3xajkx1N/UwjLceV/Ao3fSd7aRk+VNE8sQk0Umz773BJkgCALLzqZCRBn+qZb8S
-	 vBdb+BPkJh0/ODbo6Zp99xfca39KAPD96NEw/V3s=
-Date: Fri, 25 Apr 2025 20:07:32 +0300
-From: Laurent Pinchart <laurent.pinchart@ideasonboard.com>
-To: Dan Carpenter <dan.carpenter@linaro.org>
-Cc: "zhangzekun (A)" <zhangzekun11@huawei.com>,
-	Oleksij Rempel <o.rempel@pengutronix.de>, robh@kernel.org,
-	saravanak@google.com, justin.chen@broadcom.com,
-	florian.fainelli@broadcom.com, andrew+netdev@lunn.ch,
-	kuba@kernel.org, kory.maincent@bootlin.com,
-	jacopo+renesas@jmondi.org, kieran.bingham+renesas@ideasonboard.com,
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-	olteanv@gmail.com, davem@davemloft.net, taras.chornyi@plvision.eu,
-	edumazet@google.com, pabeni@redhat.com, sudeep.holla@arm.com,
-	cristian.marussi@arm.com, arm-scmi@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-media@vger.kernel.org,
-	netdev@vger.kernel.org, devicetree@vger.kernel.org,
-	chenjun102@huawei.com, Joe Hattori <joe@pf.is.s.u-tokyo.ac.jp>,
-	Krzysztof Kozlowski <krzk@kernel.org>
-Subject: Re: [PATCH 1/9] of: Add warpper function
- of_find_node_by_name_balanced()
-Message-ID: <20250425170732.GA21390@pendragon.ideasonboard.com>
-References: <20250207013117.104205-1-zhangzekun11@huawei.com>
- <20250207013117.104205-2-zhangzekun11@huawei.com>
- <Z6XDKi_V0BZSdCeL@pengutronix.de>
- <80b1c21c-096b-4a11-b9d7-069c972b146a@huawei.com>
- <20250207153722.GA24886@pendragon.ideasonboard.com>
- <be93486b-91bb-4fdd-9f6c-ec295c448476@stanley.mountain>
- <aAuqgiSxrh24-L-D@stanley.mountain>
+	b=kXqFv3PYfpmBTMDXt0YQcvIa+c7cBzZLXfX0aRTW5hwIi7Cr/z9nrkp2qpx2QmmDs
+	 2oQEfJpTjjK+eQIbvUIXDO5FMl5QTwd/OlzGK4JnEP4xpXVD1W+mTnBDo9kJ5sfAwV
+	 b1qtwUhWkcS6yuSCR4sHhfZziZ8X8JKdksebA7zhaUQr4u1taFD7DKf5s161xIOktL
+	 UPONCIojyn8avf9dADvif+atuQGvGvqWfkqtK7ZTEodm1acIEBcUGpTGLDhTYzC0az
+	 uvDc5JFvWwEad8nFuy3XsZgsEz2/wfddc00VP0zPELSn85GCJIfnPTRk4jD2TFMTOe
+	 lqb0Jz0o7PAlw==
+Date: Fri, 25 Apr 2025 14:46:43 -0300
+From: Arnaldo Carvalho de Melo <acme@kernel.org>
+To: Athira Rajeev <atrajeev@linux.ibm.com>
+Cc: Namhyung Kim <namhyung@kernel.org>, Jiri Olsa <jolsa@kernel.org>,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	Ian Rogers <irogers@google.com>,
+	"open list:PERFORMANCE EVENTS SUBSYSTEM" <linux-perf-users@vger.kernel.org>,
+	Likhitha Korrapati <likhitha@linux.ibm.com>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Subject: Re: [PATCH] tools/lib/perf: Fix -Werror=alloc-size-larger-than in
+ cpumap.c
+Message-ID: <aAvKg8K2fyrZ6zy4@x1>
+References: <20250406163412.897313-1-likhitha@linux.ibm.com>
+ <E58C5DCA-5F52-4B61-A816-DE932BA40FDA@linux.ibm.com>
+ <baad9d65-07b1-4a19-aea6-5ba5d60da98e@linux.ibm.com>
+ <1b1450a8-f091-4091-981d-76b27f61be24@linux.ibm.com>
+ <D1C1E5D6-085A-41D1-85AB-52809C956BFB@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,32 +77,143 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <aAuqgiSxrh24-L-D@stanley.mountain>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <D1C1E5D6-085A-41D1-85AB-52809C956BFB@linux.ibm.com>
 
-On Fri, Apr 25, 2025 at 06:30:10PM +0300, Dan Carpenter wrote:
-> Whatever happened with this thread from Feb.
-> https://lore.kernel.org/all/20250207013117.104205-1-zhangzekun11@huawei.com/
-> 
-> The issue was that people weren't expecting of_find_node_by_name() to
-> drop the reference on the of_node.  The patchset introduced a wrapper
-> which basically worked as expected except no liked the naming.  Krzysztof
-> suggested that maybe the callers should be using of_get_child_by_name()
-> instead.
+On Fri, Apr 25, 2025 at 08:19:02PM +0530, Athira Rajeev wrote:
+> > On 14 Apr 2025, at 7:08 AM, Madhavan Srinivasan <maddy@linux.ibm.com> wrote:
+> > On 4/7/25 5:38 PM, Venkat Rao Bagalkote wrote:
+> >> On 07/04/25 12:10 am, Athira Rajeev wrote:
+> >>>> On 6 Apr 2025, at 10:04 PM, Likhitha Korrapati <likhitha@linux.ibm.com> wrote:
 
-My conclusion is that most of the users of of_find_node_by_name() with a
-non-NULL first argument are wrong, and should be replaced by
-of_get_child_by_name(). We need a volunteer to do that work.
+> >>>> perf build break observed when using gcc 13-3 (FC39 ppc64le)
+> >>>> with the following error.
 
-> I created a Smatch warning for this and here are the four issues it
-> found.  The line numbers are from linux-next.
-> 
-> drivers/net/ethernet/broadcom/asp2/bcmasp.c:1370 bcmasp_probe() warn: 'dev->of_node' was not incremented
-> drivers/net/pse-pd/tps23881.c:505 tps23881_get_of_channels() warn: 'priv->np' was not incremented
-> drivers/media/platform/qcom/venus/core.c:301 venus_add_video_core() warn: 'dev->of_node' was not incremented
-> drivers/regulator/tps6594-regulator.c:618 tps6594_regulator_probe() warn: 'tps->dev->of_node' was not incremented
+> >>>> cpumap.c: In function 'perf_cpu_map__merge':
+> >>>> cpumap.c:414:20: error: argument 1 range [18446744069414584320, 18446744073709551614] exceeds maximum object size 9223372036854775807 [-Werror=alloc-size-larger-than=]
+> >>>>   414 |         tmp_cpus = malloc(tmp_len * sizeof(struct perf_cpu));
+> >>>>       |                    ^~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~~
+> >>>> In file included from cpumap.c:4:
+> >>>> /usr/include/stdlib.h:672:14: note: in a call to allocation function 'malloc' declared here
+> >>>>   672 | extern void *malloc (size_t __size) __THROW __attribute_malloc__
+> >>>>       |              ^~~~~~
+> >>>> cc1: all warnings being treated as errors
 
--- 
-Regards,
+> >>>> Error happens to be only in gcc13-3 and not in latest gcc 14.
+> >>>> Even though git-bisect pointed bad commit as:
+> >>>> 'commit f5b07010c13c ("libperf: Don't remove -g when EXTRA_CFLAGS are used")',
+> >>>> issue is with tmp_len being "int". It holds number of cpus and making
+> >>>> it "unsigned int" fixes the issues.
 
-Laurent Pinchart
+> >>>> After the fix:
+
+> >>>>   CC      util/pmu-flex.o
+> >>>>   CC      util/expr-flex.o
+> >>>>   LD      util/perf-util-in.o
+> >>>>   LD      perf-util-in.o
+> >>>>   AR      libperf-util.a
+> >>>>   LINK    perf
+> >>>>   GEN     python/perf.cpython-312-powerpc64le-linux-gnu.so
+
+> >>>> Signed-off-by: Likhitha Korrapati <likhitha@linux.ibm.com>
+> >>> Looks good to me
+
+> >>> Reviewed-by: Athira Rajeev <atrajeev@linux.ibm.com>
+
+> >> Tested this patch on perf-tools-next repo, and this patch fixes the issue.
+
+> >> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+
+> > Arnaldo, Namhyung,
+
+> > can you consider pulling this fix? since it is breaking the build in gcc13-3 or
+> > if you have any comments do let us know.
+
+This isn't the only place in that file where this pattern exists:
+
+⬢ [acme@toolbx perf-tools-next]$ grep malloc tools/lib/perf/cpumap.c 
+	cpus = malloc(sizeof(*cpus) + sizeof(struct perf_cpu) * nr_cpus);
+	tmp_cpus = malloc(tmp_len * sizeof(struct perf_cpu));
+	tmp_cpus = malloc(tmp_len * sizeof(struct perf_cpu));
+⬢ [acme@toolbx perf-tools-next]$
+
+
+struct perf_cpu_map *perf_cpu_map__alloc(int nr_cpus)
+{
+        RC_STRUCT(perf_cpu_map) *cpus;
+        struct perf_cpu_map *result;
+
+        if (nr_cpus == 0)
+                return NULL;
+
+        cpus = malloc(sizeof(*cpus) + sizeof(struct perf_cpu) * nr_cpus);
+
+
+int perf_cpu_map__merge(struct perf_cpu_map **orig, struct perf_cpu_map *other)
+{
+        struct perf_cpu *tmp_cpus;
+        int tmp_len;
+        int i, j, k;
+        struct perf_cpu_map *merged;
+
+        if (perf_cpu_map__is_subset(*orig, other))
+                return 0;
+        if (perf_cpu_map__is_subset(other, *orig)) {
+                perf_cpu_map__put(*orig);
+                *orig = perf_cpu_map__get(other);
+                return 0;
+        }
+
+        tmp_len = __perf_cpu_map__nr(*orig) + __perf_cpu_map__nr(other);
+        tmp_cpus = malloc(tmp_len * sizeof(struct perf_cpu));
+
+
+struct perf_cpu_map *perf_cpu_map__intersect(struct perf_cpu_map *orig,
+                                             struct perf_cpu_map *other)
+{
+        struct perf_cpu *tmp_cpus;
+        int tmp_len;
+        int i, j, k;
+        struct perf_cpu_map *merged = NULL;
+
+        if (perf_cpu_map__is_subset(other, orig))
+                return perf_cpu_map__get(orig);
+        if (perf_cpu_map__is_subset(orig, other))
+                return perf_cpu_map__get(other);
+
+        tmp_len = max(__perf_cpu_map__nr(orig), __perf_cpu_map__nr(other));
+        tmp_cpus = malloc(tmp_len * sizeof(struct perf_cpu));
+
+I'm trying to figure out why its only in perf_cpu_map__merge() that this
+triggers :-\
+
+Maybe that max() call in perf_cpu_map__intersect() somehow makes the
+compiler happy.
+
+And in perf_cpu_map__alloc() all calls seems to validate it.
+
+But wouldn't turning this into a calloc() be better?
+
+Like:
+
+diff --git a/tools/lib/perf/cpumap.c b/tools/lib/perf/cpumap.c
+index 4454a5987570cfbc..99d21618a252ac0e 100644
+--- a/tools/lib/perf/cpumap.c
++++ b/tools/lib/perf/cpumap.c
+@@ -411,7 +411,7 @@ int perf_cpu_map__merge(struct perf_cpu_map **orig, struct perf_cpu_map *other)
+        }
+ 
+        tmp_len = __perf_cpu_map__nr(*orig) + __perf_cpu_map__nr(other);
+-       tmp_cpus = malloc(tmp_len * sizeof(struct perf_cpu));
++       tmp_cpus = calloc(tmp_len, sizeof(struct perf_cpu));
+        if (!tmp_cpus)
+                return -ENOMEM;
+ 
+⬢ [acme@toolbx perf-tools-next]$
+
+
+And better, do the max size that the compiler is trying to help us
+catch?
+
+- Arnaldo
 
