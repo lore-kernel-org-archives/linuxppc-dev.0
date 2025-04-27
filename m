@@ -1,55 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-8058-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8059-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E3CBC369D3
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Apr 2025 11:31:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1F46C369D1
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 27 Apr 2025 12:35:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zlkt76MCQz300F;
-	Sun, 27 Apr 2025 21:31:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZlmJ30xhzz2yjN;
+	Sun, 27 Apr 2025 22:35:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745753471;
-	cv=none; b=GYQe0wMAexWc4tCEJvMWBMosw3IJ8N+cB4gV/64h56cw6WujyzZzcXbXoSTFa588usOhFM5J8VCl7caYKOxNPVCyilsjbb79UaFjOlQbueuMqMq7p0rubVE+R4QGNMitDbCwFnPXXXTSDvwGzteRF3yYv+oAY2gb+DQ8+FzJC6LlDb+YmNRb5A9w2318Ucg8sesG0Y4muTy5qBpjeC9BUreHWjNI2owcWOXcH/hXzmnR9rLIQLTr4Br7b4Eohps/7NmOxMivKPvejty+Eumrkt7ROsEJYmbi4QMhhONjr0CTSvnXQnP6KhgcVPZEqwSl/zregqOqebJqSbL9CABN8g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745757315;
+	cv=none; b=GL+NZsd7PXD8cBGmctl+efUkfXsDV62UHu7d41YWbFJ5h307Qmn6CoLKBjSiT40cTsr8xYtdE0N/tRlGRact3YoA/pedaIjvkRu56OWjilXTn00VzFl6EigD52qH8/JC2t1neDSLu1NSXRx7vwg6s7SW2muaOig/TLuU7UDIIFh8oGoQI08CaNX+gdEHa7+x2cwB870Qs4A5OKubLmEhMXenV0he1q42WfqR+YgO6l1xJnLTqVwiLLymmvWNQ21vK/cQfWgoWzD4PxBo0Fv6fijIm3idKbvw/c8EEM99cA260uydEVGE6/Jf0yAv9XKLgTOeJzO8/zkz0hVFiKGH+g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745753471; c=relaxed/relaxed;
-	bh=ty5sP9LfN5etARY0VPfKAhrjkJpnP8lAKy+EsDHiRQw=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=nCaOj1Pmg2hL9330UOsfzVqOBuM1sCY9NVFozRxzkFMh69yJRiKgwJA7X+Dyr+mGE0ZEqjiNhyBHYNIeZxfRx5R3Xchyh18lmUYL4hVUR6wripetvQv2BHI283TjCFRZPCdUi/GfNpH40p/kaPDCLA1Hmw/e3Xg5wOW2aMwfOyZFSIxCFKj9ZliR2ZZJKaQZJxVGx2puuTsI24X/5ZpHRrK3H8k3jQMN9wYKjbAMepsraRKpB5N7G4ha9THZ0R+jJl7E3+p2mhPi5Yp8gA9Gv0YsdYd77HbbhjsKiI3/s5qtKs7MgZgj0qtlvwOkhQ8ERzJ4LeZGLML1JHf6ioRT8g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DmqObJfS; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1745757315; c=relaxed/relaxed;
+	bh=x8f4t4nt9rsCTVCnIU404yqWxVU1T55YRezryjfEQVE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nNS+BMBHxm5pTXL3TUfVuW/Xo9eb+PWEYV3MLwQSUWzl9zD281s9OpUm8x4Kv+9U+2B0lwOOZPUar0FFmqIHeCO8RIpx769OFEL2bjrsJ/Mm3VreQtlw0IVawjYnMOD6A0NbgBBMFbUs7im/11Gmib3zGx+e5pBe6zhkY+9V1Gam/5FGCW/HoidU+CvAo/byl5VBIYkvXmQU+ZcqlYEmc3MSAKXsUqCl3tpDyseB+t0n82kslpOR0f/gikey4Xnxh4yBKYdIXnsbmI3MIMs9zCYMTL6EZBKAkdA96Kv4Aa7Yk+Tjss9X4PTdS3scsyikurbb+gs3vLFnV9idNg9zEA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Z/bC3K8g; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DmqObJfS;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Z/bC3K8g;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=devnull+sven.svenpeter.dev@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zlkt54zxjz2yqp
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Apr 2025 21:31:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZlmJ22CL7z2yRD
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 27 Apr 2025 22:35:14 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 56513A40155;
-	Sun, 27 Apr 2025 11:25:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id B0FDFC4CEEF;
-	Sun, 27 Apr 2025 11:31:05 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 2469BA41B78;
+	Sun, 27 Apr 2025 12:29:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C871EC4CEE3;
+	Sun, 27 Apr 2025 12:35:08 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1745753465;
-	bh=nYEoUAOYWWe1YgrKh5F/Uu0ClKx/Vy3NGeA0qWcOwyo=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=DmqObJfSjvkHnlkZgErAaxvRjqcppPchhkfMe39U+sJFKtK5w4iCL7c9x6ObknXww
-	 EicxT+HQ6/5+hvieORhsBZ6VkeAvE3cmMVSuS2BYhziV6O6weI/d1fVTmQbwz70NLE
-	 48vX687s1P/ix4xLr1DYmXYTHIISIgTCdOyEDHiKA4B3doVmScS2ZGfQ6y2sUtw3V/
-	 78HZvxM1AKJAblOgIsDdd72L8pp8ajiZArUk280ziOa8+71GyXLwYDvDeLq+YLX4td
-	 iWjkjoxF8OsQAUcXmLzqSigRYE6rzwfbrj2ozFVFlSEJzHiUr+D4NWPRvOIlyXDA+a
-	 gF8cpNsXhjBew==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id A4935C369D1;
-	Sun, 27 Apr 2025 11:31:05 +0000 (UTC)
-From: Sven Peter via B4 Relay <devnull+sven.svenpeter.dev@kernel.org>
-Date: Sun, 27 Apr 2025 11:30:45 +0000
-Subject: [PATCH v3 3/4] i2c: pasemi: Improve error recovery
+	s=k20201202; t=1745757309;
+	bh=+fG06d9jSSQdeLJWYT8qSWyP0TU2u5CifNzbFJ/XfgY=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Z/bC3K8gVx5897sx0m9B41J6wHjyFDFZgASHs9iyreaRRk2MKpyYUHIChH0IMZ+YE
+	 CzZkzcFERGfABqvMeyokm38y2VZH1t5PXI3jqlNLj31O6QzfV4ZyHuWpQD5SufL8sh
+	 rMNwaM4baXS3hhq65SxgADqCkLMyuW5V/NMVsX9ArKa0gLMzlxZ3ipvrpf8J83tU+o
+	 uflwveBrQ+n/Bix3Mc+6fn73BsQynQkFCU+yjw5oweub/OLg/mgN4a2AvYIkGcsQxu
+	 WG/oK62LsN1zFPX/8VNMqn7nvg/p7bTy/cbZYyeFB1PCxyrBqaBIAWTWK+La5mkmHu
+	 OvCP4g5GpgVHQ==
+Date: Sun, 27 Apr 2025 05:35:14 -0700
+From: Eric Biggers <ebiggers@kernel.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+	sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
+	x86@kernel.org, Ard Biesheuvel <ardb@kernel.org>,
+	"Jason A . Donenfeld " <Jason@zx2c4.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [v2 PATCH 00/13] Architecture-optimized SHA-256 library API
+Message-ID: <20250427123514.GA1161@quark>
+References: <cover.1745734678.git.herbert@gondor.apana.org.au>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,151 +70,33 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250427-pasemi-fixes-v3-3-af28568296c0@svenpeter.dev>
-References: <20250427-pasemi-fixes-v3-0-af28568296c0@svenpeter.dev>
-In-Reply-To: <20250427-pasemi-fixes-v3-0-af28568296c0@svenpeter.dev>
-To: Janne Grunau <j@jannau.net>, Alyssa Rosenzweig <alyssa@rosenzweig.io>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Naveen N Rao <naveen@kernel.org>, Andi Shyti <andi.shyti@kernel.org>, 
- Neal Gompa <neal@gompa.dev>, Hector Martin <marcan@marcan.st>
-Cc: linuxppc-dev@lists.ozlabs.org, asahi@lists.linux.dev, 
- linux-arm-kernel@lists.infradead.org, linux-i2c@vger.kernel.org, 
- linux-kernel@vger.kernel.org, Sven Peter <sven@svenpeter.dev>
-X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3408; i=sven@svenpeter.dev;
- h=from:subject:message-id;
- bh=RQjUShH7rfus6djDqHEQgJ89KeDc5Vm8l5ffHfaOO3w=;
- b=owGbwMvMwCHmIlirolUq95LxtFoSQwafaCnnKomj7TVR2fJPP2nrKIu1nnmY/XB6sRmL7W2Gl
- TN/u3zrKGVhEONgkBVTZNm+3970ycM3gks3XXoPM4eVCWQIAxenAExk4wNGhrVvj6W+rlAuuXsr
- W8ns8tK0Hf2G+9n57Wq43vz8EOrK8Jjhf+CO+N5Tsxav/3Hhxfn8aVvfMWhIvs189/nVKb4s3op
- 3F3kA
-X-Developer-Key: i=sven@svenpeter.dev; a=openpgp;
- fpr=A1E3E34A2B3C820DBC4955E5993B08092F131F93
-X-Endpoint-Received: by B4 Relay for sven@svenpeter.dev/default with
- auth_id=167
-X-Original-From: Sven Peter <sven@svenpeter.dev>
-Reply-To: sven@svenpeter.dev
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <cover.1745734678.git.herbert@gondor.apana.org.au>
 
-From: Hector Martin <marcan@marcan.st>
+On Sun, Apr 27, 2025 at 02:30:41PM +0800, Herbert Xu wrote:
+> Changes in v2:
+> - Rebase on top of lib partial block helper series.
+> - Restore the block-only shash implementation of sha256.
+> - Move the SIMD hardirq test out of the block functions so that
+>   it is only done for the lib/crypto interface.
+> - Split the lib/crypto sha256 module to break cycle in allmod build.
+> 
+> This is based on
+> 
+> 	https://patchwork.kernel.org/project/linux-crypto/list/?series=957415
 
-Add handling for all the missing error condition, and better recovery in
-pasemi_smb_clear().
+Well, barely a day and you've already ruined my patch series.  Now instead of a
+clean design where the crypto_shash API is built on top of the normal library
+API (sha256_update() etc.), there's now a special low-level API
+"sha256_choose_blocks()" just for shash that it's built on top of instead, for
+no good reason.  You're also still pushing your broken BLOCK_HASH_UPDATE_BLOCKS
+macro that doesn't work with size_t, and putting my name on your broken code
+that uses it.
 
-Reviewed-by: Alyssa Rosenzweig <alyssa@rosenzweig.io>
-Reviewed-by: Neal Gompa <neal@gompa.dev>
-Signed-off-by: Hector Martin <marcan@marcan.st>
-Co-developed-by: Sven Peter <sven@svenpeter.dev>
-Signed-off-by: Sven Peter <sven@svenpeter.dev>
----
- drivers/i2c/busses/i2c-pasemi-core.c | 61 +++++++++++++++++++++++++++++++-----
- 1 file changed, 54 insertions(+), 7 deletions(-)
+And yes, sorry about the allmodconfig build error.  It just means that the
+generic code needs to be split into its own module, like how curve25519 works.
+I'll post a new version with that fixed and your gratuitous changes undone.
 
-diff --git a/drivers/i2c/busses/i2c-pasemi-core.c b/drivers/i2c/busses/i2c-pasemi-core.c
-index ee38e8a1e1f5d062384e85a2fd49d7da9257aacc..dad20ee0c6689eda309cb0374aa75b42669cbcdc 100644
---- a/drivers/i2c/busses/i2c-pasemi-core.c
-+++ b/drivers/i2c/busses/i2c-pasemi-core.c
-@@ -87,12 +87,31 @@ static void pasemi_reset(struct pasemi_smbus *smbus)
- 	reinit_completion(&smbus->irq_completion);
- }
- 
--static void pasemi_smb_clear(struct pasemi_smbus *smbus)
-+static int pasemi_smb_clear(struct pasemi_smbus *smbus)
- {
- 	unsigned int status;
-+	int ret;
- 
--	status = reg_read(smbus, REG_SMSTA);
-+	/* First wait for the bus to go idle */
-+	ret = readx_poll_timeout(ioread32, smbus->ioaddr + REG_SMSTA,
-+				 status, !(status & (SMSTA_XIP | SMSTA_JAM)),
-+				 USEC_PER_MSEC,
-+				 USEC_PER_MSEC * PASEMI_TRANSFER_TIMEOUT_MS);
-+
-+	if (ret < 0) {
-+		dev_err(smbus->dev, "Bus is still stuck (status 0x%08x)\n", status);
-+		return -EIO;
-+	}
-+
-+	/* If any badness happened or there is data in the FIFOs, reset the FIFOs */
-+	if ((status & (SMSTA_MRNE | SMSTA_JMD | SMSTA_MTO | SMSTA_TOM | SMSTA_MTN | SMSTA_MTA)) ||
-+	    !(status & SMSTA_MTE))
-+		pasemi_reset(smbus);
-+
-+	/* Clear the flags */
- 	reg_write(smbus, REG_SMSTA, status);
-+
-+	return 0;
- }
- 
- static int pasemi_smb_waitready(struct pasemi_smbus *smbus)
-@@ -130,9 +149,35 @@ static int pasemi_smb_waitready(struct pasemi_smbus *smbus)
- 		}
- 	}
- 
-+	/* Controller timeout? */
-+	if (status & SMSTA_TOM) {
-+		dev_err(smbus->dev, "Controller timeout, status 0x%08x\n", status);
-+		return -EIO;
-+	}
-+
-+	/* Peripheral timeout? */
-+	if (status & SMSTA_MTO) {
-+		dev_err(smbus->dev, "Peripheral timeout, status 0x%08x\n", status);
-+		return -ETIME;
-+	}
-+
-+	/* Still stuck in a transaction? */
-+	if (status & SMSTA_XIP) {
-+		dev_err(smbus->dev, "Bus stuck, status 0x%08x\n", status);
-+		return -EIO;
-+	}
-+
-+	/* Arbitration loss? */
-+	if (status & SMSTA_MTA) {
-+		dev_err(smbus->dev, "Arbitration loss, status 0x%08x\n", status);
-+		return -EBUSY;
-+	}
-+
- 	/* Got NACK? */
--	if (status & SMSTA_MTN)
-+	if (status & SMSTA_MTN) {
-+		dev_err(smbus->dev, "NACK, status 0x%08x\n", status);
- 		return -ENXIO;
-+	}
- 
- 	/* Clear XEN */
- 	reg_write(smbus, REG_SMSTA, SMSTA_XEN);
-@@ -194,9 +239,9 @@ static int pasemi_i2c_xfer(struct i2c_adapter *adapter,
- 	struct pasemi_smbus *smbus = adapter->algo_data;
- 	int ret, i;
- 
--	pasemi_smb_clear(smbus);
--
--	ret = 0;
-+	ret = pasemi_smb_clear(smbus);
-+	if (ret)
-+		return ret;
- 
- 	for (i = 0; i < num && !ret; i++)
- 		ret = pasemi_i2c_xfer_msg(adapter, &msgs[i], (i == (num - 1)));
-@@ -217,7 +262,9 @@ static int pasemi_smb_xfer(struct i2c_adapter *adapter,
- 	addr <<= 1;
- 	read_flag = read_write == I2C_SMBUS_READ;
- 
--	pasemi_smb_clear(smbus);
-+	err = pasemi_smb_clear(smbus);
-+	if (err)
-+		return err;
- 
- 	switch (size) {
- 	case I2C_SMBUS_QUICK:
-
--- 
-2.34.1
-
-
+- Eric
 
