@@ -1,69 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-8130-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8131-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C259C369D5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Apr 2025 17:03:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75425C369D5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Apr 2025 17:14:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZmV9l6M7zz3blv;
-	Tue, 29 Apr 2025 03:02:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745859733;
-	cv=none; b=l8YnZlAO9BQoj5ER6JX91eMfzxSqxGYoSJTYyLKDmN1SLXbooQLXNFgVQurQnm5VMx1KQe7kLDXpjfcaLv9y2Tv7+/UUceyyZ1pEUwuWrB6WUCRcK6Fopo5EtNwNARtM1OL186f3qi4boDKC6RToXtPTeGhpqn4s7WLpzXEa+74vDbi2eIt3kno9VCuq7XZt+F5QNb1BeqPAnzLHGLSLQkvzsds12xgd+a04wt4smKIVgFYZVG1cZ8b0BMEtfaz+BaAIlQW5JDy2FJLKWVV1YUrhci2zfM+jZUAmhOOWourxiUNwF0k+gI1VLmiVzTcNfClHtTfM5unQrtX4eE7K1A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZmVRL0T17z30T8;
+	Tue, 29 Apr 2025 03:14:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745860445;
+	cv=none; b=cVkyZURAzjAw5teDD43NuF4Xy1y26Eht4Fb+Q2RO9YjlGElMcoXON3vm5I7NRsp/bGu2ROnBLnsfq631AX9TmwUZgfTAcdZhRM7XW7clws5rCLQ3+sbnd6uzFg/rqXba5OI89yw2+JNj/dIe9klQw+8r0UfjpcO5neyVtQEBvpBiDOgDiBNeglrfVGrmq0jvoYXRCZWxM0pT7L7QyQxu7yKBL0AR+HZZVqHW4S1f/tEZuYhpDz5n+/w4pJP4pRcQVoQ9HmHsnuTpb5a8LEnFbv60PgkkduPmYmWw08miDhh1/QO08rg7rjBMbnwnluicRxV/ZLWQWHiJsUBN3bDXfw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745859733; c=relaxed/relaxed;
-	bh=Wn9BjgkE2+3mBCEiin0rtZNfMaiiTypr9lnO+2M+sxw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=m6jnSuQVT1i/iC1EyzmDa8yd0VdVd+GnN/dYtOmApOWZ/8/pzPjw707805htb0arlzAeQE79m8Fd4rJ5xpO6hW6Wys9Ht8JMIByHpLW68HlZXFytbcMipCGSgYAB9odIccMm91JbIbd59REMU9SdBVFUTyQwFrkIp9enKkiTH0A0YLNAe101Riplc6Jc5fXVr5ZhAXGekPwu3MN4CVndPAFV1sXlodrf/kFHnAm3isUTV63w53sAKrRjSw4dyLvX6c1pTE9bRstf90YwYIAaMfzpilDqJ8yG+X6jiHSIcRJ/3WhdZ4lyNta+FJ/QYAKcd+8GIBynBTQjUp8cZXg12g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fhWU0v5r; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1745860445; c=relaxed/relaxed;
+	bh=KomaKdZjhofElzsKOtg4I+kL2PS3yimbP7HbLJSlulQ=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hQl81Uix4UzryaD7gEAlXhdOoxDHn7ceq7JhbqxaIj5lzGJfjCzAW35ip6kECYgYlNDtB1XWgO0BpyLuO+VkzRvyPlSRtvlsiAwjchLtc+v2hxtGxJToQqHSLTeJc4U+scezg3YZxQC2OKqAtjdNi9T4vDsjMdShzAKUkXYRp80hDkHZsVtZpKgm5OfdebPBJJnCA59nlw57ZrOeumNfGOUVkR3f1xeKqTpWtnsRbAr3v4LsSi6uZI2oZQLpLw7IOYcVvjmJwxF8N/IgktS3bUrtsCJPIPKOy9K8wk3SXe40g7mtYD7JnqgkZTUFs+y/NKk/RT8uXs5m9Ant1nl+uA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lxsnSifw; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=donettom@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fhWU0v5r;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lxsnSifw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=donettom@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZmV9Z3wHRz30Wg
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2025 03:02:09 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id B45F44AAB0;
-	Mon, 28 Apr 2025 17:02:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 51142C4CEE4;
-	Mon, 28 Apr 2025 17:02:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1745859725;
-	bh=nXzVAsBZCcgzdRMgpyZqkLVLDfQ1jazwy8tBAdc6LUA=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=fhWU0v5rvclI0LyXWoFJWCc8BBqZDSK9XM7bRtugjwHxkC9RmCMCl2vCKuOh436Ey
-	 Ig/QtscHPvoggKplKY8rsRsfkwt0OwdOq34ZqZDAbiEv8E5P01FA/mfMJ72ATs6yi5
-	 xtI4vlMR9BO7Dk/EK/p0TqckPPgaRp0M4L70oTI7kuhAq08xKo8Ct0naj+YkYryNq7
-	 blhBW4oQl/I7gEJaoQUPcdRlQut7zku3n/Ndeo5F4OSGVa3pMFbqtC6wAXO56chZBJ
-	 HuVy4LX5Sijc6DMVip1M6D8+vuscZaaisIZodo+tI3jQpBF1IChO5AMAywdJvSVo6A
-	 y5G4kI3kbrXAg==
-From: Eric Biggers <ebiggers@kernel.org>
-To: linux-crypto@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	linux-arch@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-mips@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org,
-	sparclinux@vger.kernel.org,
-	linux-s390@vger.kernel.org,
-	x86@kernel.org,
-	Ard Biesheuvel <ardb@kernel.org>,
-	"Jason A . Donenfeld" <Jason@zx2c4.com>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH v4 12/13] crypto: sha256 - remove sha256_base.h
-Date: Mon, 28 Apr 2025 10:00:37 -0700
-Message-ID: <20250428170040.423825-13-ebiggers@kernel.org>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250428170040.423825-1-ebiggers@kernel.org>
-References: <20250428170040.423825-1-ebiggers@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZmVRK0cb7z30T3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2025 03:14:04 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 53S8vRI4011968;
+	Mon, 28 Apr 2025 17:13:47 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=KomaKd
+	ZjhofElzsKOtg4I+kL2PS3yimbP7HbLJSlulQ=; b=lxsnSifwoJMmlWz8KjinGm
+	pyb3sVziw0856i6roV0tj3wCP9PhAxQVQEPxpr2ZGmNUC+JS79cPAhyuCqU58WrC
+	BYYiNIjTGgnGR6pn+jYvPSXt27JpZEUMlO0bBXFYIBGfQn6ZFVLHbAYCigwowZ5M
+	y9Qn/q+kf1lSkMyhXDUb44g9D9AQUeYDEEmqwt6PnM6FBqo4QjP+oTFd0OdgfdHn
+	ixfvzBdxmXPMm48N1Sb65hVDmKw6InGQUEzENJNUwZzWHa5ON8yeRqnVPl14/k+U
+	6HRIt0P6OBJZ56KrtENGAXE+zxM+FH8/q7ZSd3uYCLBjS55VrqGUdKQHng8wsL1g
+	==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 469v5kmm69-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 28 Apr 2025 17:13:46 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 53SG4hau001803;
+	Mon, 28 Apr 2025 17:13:45 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 469bamfcyt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 28 Apr 2025 17:13:45 +0000
+Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 53SHDiwS31785558
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 28 Apr 2025 17:13:44 GMT
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7054C58059;
+	Mon, 28 Apr 2025 17:13:44 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 762E658058;
+	Mon, 28 Apr 2025 17:13:40 +0000 (GMT)
+Received: from [9.39.16.18] (unknown [9.39.16.18])
+	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 28 Apr 2025 17:13:40 +0000 (GMT)
+Message-ID: <f23608eb-3f4e-453c-bcfc-032f963d310c@linux.ibm.com>
+Date: Mon, 28 Apr 2025 22:43:38 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,208 +80,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 2/2] selftests/mm: Fix a build failure on powerpc
+To: "Nysal Jan K.A." <nysal@linux.ibm.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Shuah Khan <shuah@kernel.org>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Segher Boessenkool <segher@kernel.crashing.org>,
+        linuxppc-dev@lists.ozlabs.org, Kevin Brodsky <kevin.brodsky@arm.com>,
+        linux-mm@kvack.org, linux-kselftest@vger.kernel.org,
+        linux-kernel@vger.kernel.org
+References: <20250428131937.641989-1-nysal@linux.ibm.com>
+ <20250428131937.641989-2-nysal@linux.ibm.com>
+Content-Language: en-US
+From: Donet Tom <donettom@linux.ibm.com>
+In-Reply-To: <20250428131937.641989-2-nysal@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: KbhYiEFmmP_tUzB4rpXFNi3_j7M0PyVQ
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNDI4MDEzNiBTYWx0ZWRfX8vQd+r/NVdK9 fVj89Nk81fj93yIB2WK4uyLM7M2mHWCc2/y4CfPB3vhVEHD61xJsc2tkwaYLeMAo1yZPGG2x6dm N6/occobZIF5tvvDpMBVNLKqwuD0ILpj3AhpKOro+gHjepSmyAR3zwBl4jwSjOC0XFRdJO78IvF
+ 63cjTo0OVdK2T0jqwU+mT4ZrZpKUZ9IXT4LlK8EaJ5rjawUKpt/6t0aslWBLVTDSR3Q/Oij9URI gbRM6RAky3R5e1w7XWGL+4tZoNYi5BSFK5TvAt5U5U/yjvaXvZL1jx9fj4NrvENMq7KyXXgLXUW eu3eugR/BYKbxdOp951n729X4QIrTsbuJG0jJmbMjsVpG946nf+Pkcdvxipk9dHdfgIAGhD47QW
+ 8Z7aBlg4v4J8yzNtx5fmE2j6pB8oC35I7r8W4BNQsUCCmMki2/wpZhW72L+YobWf0ODzjd9E
+X-Proofpoint-GUID: KbhYiEFmmP_tUzB4rpXFNi3_j7M0PyVQ
+X-Authority-Analysis: v=2.4 cv=DvxW+H/+ c=1 sm=1 tr=0 ts=680fb74b cx=c_pps a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17 a=IkcTkHD0fZMA:10 a=XR8D0OoHHMoA:10 a=VnNF1IyMAAAA:8 a=QUTIWzIZJQuvQjQnFLoA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
+ definitions=2025-04-28_06,2025-04-24_02,2025-02-21_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 bulkscore=0
+ lowpriorityscore=0 malwarescore=0 spamscore=0 mlxlogscore=906 phishscore=0
+ impostorscore=0 suspectscore=0 adultscore=0 clxscore=1011
+ priorityscore=1501 classifier=spam authscore=0 authtc=n/a authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
+ definitions=main-2504280136
 
-From: Eric Biggers <ebiggers@google.com>
 
-sha256_base.h is no longer used, so remove it.
+On 4/28/25 6:49 PM, Nysal Jan K.A. wrote:
+> The compiler is unaware of the size of code generated by the ".rept"
+> assembler directive. This results in the compiler emitting branch
+> instructions where the offset to branch to exceeds the maximum allowed
+> value, resulting in build failures like the following:
+>
+>    CC       protection_keys
+>    /tmp/ccypKWAE.s: Assembler messages:
+>    /tmp/ccypKWAE.s:2073: Error: operand out of range (0x0000000000020158
+>    is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+>    /tmp/ccypKWAE.s:2509: Error: operand out of range (0x0000000000020130
+>    is not between 0xffffffffffff8000 and 0x0000000000007ffc)
+>
+> Fix the issue by manually adding nop instructions using the preprocessor.
+>
+> Fixes: 46036188ea1f5 ("selftests/mm: build with -O2")
+> Reported-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Signed-off-by: Nysal Jan K.A. <nysal@linux.ibm.com>
+> ---
+>   tools/testing/selftests/mm/pkey-powerpc.h | 12 +++++++++++-
+>   1 file changed, 11 insertions(+), 1 deletion(-)
+>
+> diff --git a/tools/testing/selftests/mm/pkey-powerpc.h b/tools/testing/selftests/mm/pkey-powerpc.h
+> index d8ec906b8120..17bf2d1b0192 100644
+> --- a/tools/testing/selftests/mm/pkey-powerpc.h
+> +++ b/tools/testing/selftests/mm/pkey-powerpc.h
+> @@ -104,8 +104,18 @@ static inline void expect_fault_on_read_execonly_key(void *p1, int pkey)
+>   	return;
+>   }
+>   
+> +#define REPEAT_8(s) s s s s s s s s
+> +#define REPEAT_64(s) REPEAT_8(s) REPEAT_8(s) REPEAT_8(s) REPEAT_8(s) \
+> +		     REPEAT_8(s) REPEAT_8(s) REPEAT_8(s) REPEAT_8(s)
+> +#define REPEAT_512(s) REPEAT_64(s) REPEAT_64(s) REPEAT_64(s) REPEAT_64(s) \
+> +		      REPEAT_64(s) REPEAT_64(s) REPEAT_64(s) REPEAT_64(s)
+> +#define REPEAT_4096(s) REPEAT_512(s) REPEAT_512(s) REPEAT_512(s) REPEAT_512(s) \
+> +		       REPEAT_512(s) REPEAT_512(s) REPEAT_512(s) REPEAT_512(s)
+> +#define REPEAT_16384(s) REPEAT_4096(s) REPEAT_4096(s) \
+> +			REPEAT_4096(s) REPEAT_4096(s)
+> +
 
-Signed-off-by: Eric Biggers <ebiggers@google.com>
----
- include/crypto/sha256_base.h | 183 -----------------------------------
- 1 file changed, 183 deletions(-)
- delete mode 100644 include/crypto/sha256_base.h
 
-diff --git a/include/crypto/sha256_base.h b/include/crypto/sha256_base.h
-deleted file mode 100644
-index 6878fb9c26c04..0000000000000
---- a/include/crypto/sha256_base.h
-+++ /dev/null
-@@ -1,183 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-only */
--/*
-- * sha256_base.h - core logic for SHA-256 implementations
-- *
-- * Copyright (C) 2015 Linaro Ltd <ard.biesheuvel@linaro.org>
-- */
--
--#ifndef _CRYPTO_SHA256_BASE_H
--#define _CRYPTO_SHA256_BASE_H
--
--#include <crypto/internal/hash.h>
--#include <crypto/internal/sha2.h>
--#include <linux/math.h>
--#include <linux/string.h>
--#include <linux/types.h>
--#include <linux/unaligned.h>
--
--typedef void (sha256_block_fn)(struct crypto_sha256_state *sst, u8 const *src,
--			       int blocks);
--
--static inline int sha224_base_init(struct shash_desc *desc)
--{
--	struct sha256_state *sctx = shash_desc_ctx(desc);
--
--	sha224_init(sctx);
--	return 0;
--}
--
--static inline int sha256_base_init(struct shash_desc *desc)
--{
--	struct sha256_state *sctx = shash_desc_ctx(desc);
--
--	sha256_init(sctx);
--	return 0;
--}
--
--static inline int lib_sha256_base_do_update(struct sha256_state *sctx,
--					    const u8 *data,
--					    unsigned int len,
--					    sha256_block_fn *block_fn)
--{
--	unsigned int partial = sctx->count % SHA256_BLOCK_SIZE;
--	struct crypto_sha256_state *state = (void *)sctx;
--
--	sctx->count += len;
--
--	if (unlikely((partial + len) >= SHA256_BLOCK_SIZE)) {
--		int blocks;
--
--		if (partial) {
--			int p = SHA256_BLOCK_SIZE - partial;
--
--			memcpy(sctx->buf + partial, data, p);
--			data += p;
--			len -= p;
--
--			block_fn(state, sctx->buf, 1);
--		}
--
--		blocks = len / SHA256_BLOCK_SIZE;
--		len %= SHA256_BLOCK_SIZE;
--
--		if (blocks) {
--			block_fn(state, data, blocks);
--			data += blocks * SHA256_BLOCK_SIZE;
--		}
--		partial = 0;
--	}
--	if (len)
--		memcpy(sctx->buf + partial, data, len);
--
--	return 0;
--}
--
--static inline int lib_sha256_base_do_update_blocks(
--	struct crypto_sha256_state *sctx, const u8 *data, unsigned int len,
--	sha256_block_fn *block_fn)
--{
--	unsigned int remain = len - round_down(len, SHA256_BLOCK_SIZE);
--
--	sctx->count += len - remain;
--	block_fn(sctx, data, len / SHA256_BLOCK_SIZE);
--	return remain;
--}
--
--static inline int sha256_base_do_update_blocks(
--	struct shash_desc *desc, const u8 *data, unsigned int len,
--	sha256_block_fn *block_fn)
--{
--	return lib_sha256_base_do_update_blocks(shash_desc_ctx(desc), data,
--						len, block_fn);
--}
--
--static inline int lib_sha256_base_do_finup(struct crypto_sha256_state *sctx,
--					   const u8 *src, unsigned int len,
--					   sha256_block_fn *block_fn)
--{
--	unsigned int bit_offset = SHA256_BLOCK_SIZE / 8 - 1;
--	union {
--		__be64 b64[SHA256_BLOCK_SIZE / 4];
--		u8 u8[SHA256_BLOCK_SIZE * 2];
--	} block = {};
--
--	if (len >= bit_offset * 8)
--		bit_offset += SHA256_BLOCK_SIZE / 8;
--	memcpy(&block, src, len);
--	block.u8[len] = 0x80;
--	sctx->count += len;
--	block.b64[bit_offset] = cpu_to_be64(sctx->count << 3);
--	block_fn(sctx, block.u8, (bit_offset + 1) * 8 / SHA256_BLOCK_SIZE);
--	memzero_explicit(&block, sizeof(block));
--
--	return 0;
--}
--
--static inline int sha256_base_do_finup(struct shash_desc *desc,
--				       const u8 *src, unsigned int len,
--				       sha256_block_fn *block_fn)
--{
--	struct crypto_sha256_state *sctx = shash_desc_ctx(desc);
--
--	if (len >= SHA256_BLOCK_SIZE) {
--		int remain;
--
--		remain = lib_sha256_base_do_update_blocks(sctx, src, len,
--							  block_fn);
--		src += len - remain;
--		len = remain;
--	}
--	return lib_sha256_base_do_finup(sctx, src, len, block_fn);
--}
--
--static inline int lib_sha256_base_do_finalize(struct sha256_state *sctx,
--					      sha256_block_fn *block_fn)
--{
--	unsigned int partial = sctx->count % SHA256_BLOCK_SIZE;
--	struct crypto_sha256_state *state = (void *)sctx;
--
--	sctx->count -= partial;
--	return lib_sha256_base_do_finup(state, sctx->buf, partial, block_fn);
--}
--
--static inline int sha256_base_do_finalize(struct shash_desc *desc,
--					  sha256_block_fn *block_fn)
--{
--	struct sha256_state *sctx = shash_desc_ctx(desc);
--
--	return lib_sha256_base_do_finalize(sctx, block_fn);
--}
--
--static inline int __sha256_base_finish(u32 state[SHA256_DIGEST_SIZE / 4],
--				       u8 *out, unsigned int digest_size)
--{
--	__be32 *digest = (__be32 *)out;
--	int i;
--
--	for (i = 0; digest_size > 0; i++, digest_size -= sizeof(__be32))
--		put_unaligned_be32(state[i], digest++);
--	return 0;
--}
--
--static inline void lib_sha256_base_finish(struct sha256_state *sctx, u8 *out,
--					  unsigned int digest_size)
--{
--	__sha256_base_finish(sctx->state, out, digest_size);
--	memzero_explicit(sctx, sizeof(*sctx));
--}
--
--static inline int sha256_base_finish(struct shash_desc *desc, u8 *out)
--{
--	unsigned int digest_size = crypto_shash_digestsize(desc->tfm);
--	struct crypto_sha256_state *sctx = shash_desc_ctx(desc);
--
--	return __sha256_base_finish(sctx->state, out, digest_size);
--}
--
--static inline void sha256_transform_blocks(struct crypto_sha256_state *sst,
--					   const u8 *input, int blocks)
--{
--	sha256_blocks_generic(sst->state, input, blocks);
--}
--
--#endif /* _CRYPTO_SHA256_BASE_H */
--- 
-2.49.0
+Hi Nysal,
 
+This change looks good to me. I tested in on power and the error is not seen.
+
+   CC       droppable
+   CC       guard-regions
+   CC       soft-dirty
+   CC       protection_keys
+   CC       va_high_addr_switch
+   CC       virtual_address_range
+   CC       write_to_hugetlbfs
+
+Reviewed-by:Donet Tom <donettom@linux.ibm.com>
+Tested-by: Donet Tom <donettom@linux.ibm.com>
+
+
+>   /* 4-byte instructions * 16384 = 64K page */
+> -#define __page_o_noops() asm(".rept 16384 ; nop; .endr")
+> +#define __page_o_noops() asm(REPEAT_16384("nop\n"))
+>   
+>   static inline void *malloc_pkey_with_mprotect_subpage(long size, int prot, u16 pkey)
+>   {
 
