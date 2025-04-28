@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-8124-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8126-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 692B2C369D9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Apr 2025 17:03:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7102C369D5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 28 Apr 2025 17:03:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZmV9b4BCfz30Pn;
-	Tue, 29 Apr 2025 03:02:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745859731;
-	cv=none; b=ZYa/Wocq0QlY1LA0+shgyvpK+LDNqkdJttjxSbenZmdmocKX/HjLNyp+kNOenLcusKmYAXbnlfHP/tb4/h4WnoXFZJcLqENhz68WnkuWFjnDRcnjek3Vb7GE7nRZ4eRd1/f9Po7iVpVsKyyFUqMQDGhkOJPFOtHBR1MvQ806w6WsRvvuoQzg14GCPGBoMcYnlCMjnm1y1ZJHUgf9YvurRG20mb0HCa+99MK1J78MkSuZmoy/zFNDqD+QxpIGcYlc/yLKaYIEhTDLUnfW1r/ohFsHn3Ib9eJzi0ADvvajvQx2ragsBW8Lw3s7CoOxK7Op8jeeTEHVlFmNv8ackEJx1A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZmV9l0V5hz3bgn;
+	Tue, 29 Apr 2025 03:02:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745859732;
+	cv=none; b=UxXSVlmTP76yiHPO08bs96j9hxBV6QOLNTTXc4efzU+8Y6i1i2HTD7k6pgrJUxvPrrNL0b6eC+5GwpQZSnhniIHubjUc9vuq8EaN/1Cj02gLp84b2LweGb9y/oofpKBDoYABZsr43reKF/s4H9D6/CNrSJkEhtXgiMzYWpn4E2cWEN51klQSDE5ecZMLvk0naLUW5dLewI9QuHFmOJetnwHKgehmdEuWEq0UZdelXNUCIWJX28pRGV33OoOKNf8WINgwLmJ6JvX7fQcn55YoQQkHJUUyII25nM3SyNrMb6zlwpnc4Dy/RJGwjG/tJx4bVn80HxTOhcSBheJCcqF7hQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745859731; c=relaxed/relaxed;
-	bh=aPe+Rg7WHMoAQoebqyD1uvu2R3d2LQH1qq+8QNTU8FY=;
+	t=1745859732; c=relaxed/relaxed;
+	bh=SCpP04qZk9CkYqOqmo4uy8fzMWBAITgcnEd0nQXd/TU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mek+5haMDOXvc8Dr4XEBmxIyHu3GZKLscvHTMi5md8cpSzI2g4TKJ3LW10yT+WopxzxXVq2gN7/kY2FnIW0w/yEF046dFmOyQuZ4HnK9E2CB9EKk2j73ssM5vFmKWst08Nko1MpwzEg4tMcr28450CzVOA3XYHmbKkiiYNObizPVwU64c/BewH+MwEHRLTtHV7/giL16tJAzoHTTbydf0mN+Kq20GnKlIFi6A+jQODHn6Vm7S4wXJKsSyLoTcpQLIjwUM3YT2YTOwerEVD1HM6ZGME32yLVltvOoM2q6adQ7/YP+49VI/+8z/4bC8HiWE/Hl6GUXnG0UMUvvwGvjLA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OGQmBBUC; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=P5JDhhaFlcLfb9REJQn02n/wSgcluyLgC16V33bGpCJMcpC89Rhhkao8+jFahV86rdBiAFQcI5dVrdkM93z2A9MBsbIbEuXq4d/OCQzgopA5dhLPMkFCBFdIZsNXFb9HAFlpTfZlGeV2IeKAR85b9sftfRgrxHDf3gkQJvM0GzQnNpEaBL+cp8qWw1kx0giYCsQ8wrommkKBitUaB7YD6pfhMULNbLf+WIVL/9HT0VVafLVDim9yDX4azcZHfvjKa4IF/oYTd5IAFWIGXZnWOui7e6Xf8OZrqvpux6QPrFURjfHeDxLdoPJNRWc5sRmHA1LArbS4tZm/oNWHOWXuCg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NL722hBj; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OGQmBBUC;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NL722hBj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZmV9V0DFbz30Tm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2025 03:02:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZmV9S0cL0z30QJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2025 03:02:03 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 933B94AAAE;
-	Mon, 28 Apr 2025 17:02:01 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 29834C4CEF4;
-	Mon, 28 Apr 2025 17:02:03 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 44BCCA4B510;
+	Mon, 28 Apr 2025 16:56:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5A015C4CEEF;
+	Mon, 28 Apr 2025 17:01:59 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1745859723;
-	bh=fl9W9kw6x9BtAcwxv3i+lwM7Nx55GbUHoaN+qSOzLYc=;
+	s=k20201202; t=1745859719;
+	bh=FdTj6K4sC8o9O68Xl7Dv5FXbsA7tvpNWNUu+Hq9R/ro=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=OGQmBBUC32So+rKWRal5pZ+OX2EXNOGGb/JE8DmSQgnqG5sEfEBP+pR9j1WT/aCKL
-	 OgmatCLdQ0OCWxmlDgzFEnyL4kNneQOoPCMMBbc5mXyZN0js8sG6s/L4VF/UGfcmQT
-	 FKWYUyF5jmJOYWdnt2lF9Hi8Z0hjVX1b1FK6Fv+9d70n0XPXnjc36hdDp19zXgB+T+
-	 O62R+qO8/gq89H2pAK7hYUfRTlGBzwtrN0HPUq8TmT94iZTeO0XnD/DsGPD100+dgo
-	 1txqhtx+laFsFxhLC1sLAwveIFlGjyWKxKpZcqYWomOel3nzDLTqPijc2rryFjIzhU
-	 zYVaiM3BKMoCw==
+	b=NL722hBjAHgiSCFf7E8nycyvixy6LHfOD05Ec1wO1aHZiWytTa5+SS320bbDlO+oE
+	 YDTB46A6gaNs68kXUz+SnZINlNwr9iZCyaOL+nVSmbNtQcScJMFEIOwam+glZF5Lcb
+	 fmYAUq89mHUfczMv0IB6T9rAzhFSd+v68IzdtY0BrFlCPAnOqz8q7q7jJlw3BJ5EN4
+	 Qy49ht1zAublPGDuL34Nxi//2lQRNxqOK4bPVmSZNPjPqyn1yGnv97tsEYX/dWNh6h
+	 yuuoMNraSAl9mNcfHuWP0xXrAvKsmSlSH3IiJSe0oOOBfJORh8DC0o350cWmBFGE7N
+	 e8jdu5gBfeQfA==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -58,9 +58,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Ard Biesheuvel <ardb@kernel.org>,
 	"Jason A . Donenfeld" <Jason@zx2c4.com>,
 	Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH v4 08/13] crypto: s390/sha256 - implement library instead of shash
-Date: Mon, 28 Apr 2025 10:00:33 -0700
-Message-ID: <20250428170040.423825-9-ebiggers@kernel.org>
+Subject: [PATCH v4 01/13] crypto: sha256 - support arch-optimized lib and expose through shash
+Date: Mon, 28 Apr 2025 10:00:26 -0700
+Message-ID: <20250428170040.423825-2-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250428170040.423825-1-ebiggers@kernel.org>
 References: <20250428170040.423825-1-ebiggers@kernel.org>
@@ -81,330 +81,957 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-Instead of providing crypto_shash algorithms for the arch-optimized
-SHA-256 code, instead implement the SHA-256 library.  This is much
-simpler, it makes the SHA-256 library functions be arch-optimized, and
-it fixes the longstanding issue where the arch-optimized SHA-256 was
-disabled by default.  SHA-256 still remains available through
-crypto_shash, but individual architectures no longer need to handle it.
+As has been done for various other algorithms, rework the design of the
+SHA-256 library to support arch-optimized implementations, and make
+crypto/sha256.c expose both generic and arch-optimized shash algorithms
+that wrap the library functions.
+
+This allows users of the SHA-256 library functions to take advantage of
+the arch-optimized code, and this makes it much simpler to integrate
+SHA-256 for each architecture.
+
+Note that sha256_base.h is not used in the new design.  It will be
+removed once all the architecture-specific code has been updated.
+
+Move the generic block function into its own module to avoid a circular
+dependency from libsha256.ko => sha256-$ARCH.ko => libsha256.ko.
 
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- arch/s390/configs/debug_defconfig |   1 -
- arch/s390/configs/defconfig       |   1 -
- arch/s390/crypto/Kconfig          |  10 ---
- arch/s390/crypto/Makefile         |   1 -
- arch/s390/crypto/sha256_s390.c    | 144 ------------------------------
- arch/s390/lib/crypto/Kconfig      |   6 ++
- arch/s390/lib/crypto/Makefile     |   2 +
- arch/s390/lib/crypto/sha256.c     |  47 ++++++++++
- 8 files changed, 55 insertions(+), 157 deletions(-)
- delete mode 100644 arch/s390/crypto/sha256_s390.c
- create mode 100644 arch/s390/lib/crypto/sha256.c
+ crypto/Kconfig                 |   1 +
+ crypto/Makefile                |   3 +-
+ crypto/sha256.c                | 201 +++++++++++++++++++++++++++++++++
+ crypto/sha256_generic.c        | 102 -----------------
+ include/crypto/internal/sha2.h |  28 +++++
+ include/crypto/sha2.h          |  15 +--
+ include/crypto/sha256_base.h   |   9 +-
+ lib/crypto/Kconfig             |  19 ++++
+ lib/crypto/Makefile            |   3 +
+ lib/crypto/sha256-generic.c    | 137 ++++++++++++++++++++++
+ lib/crypto/sha256.c            | 196 ++++++++++++++------------------
+ 11 files changed, 487 insertions(+), 227 deletions(-)
+ create mode 100644 crypto/sha256.c
+ delete mode 100644 crypto/sha256_generic.c
+ create mode 100644 include/crypto/internal/sha2.h
+ create mode 100644 lib/crypto/sha256-generic.c
 
-diff --git a/arch/s390/configs/debug_defconfig b/arch/s390/configs/debug_defconfig
-index 6f2c9ce1b1548..de69faa4d94f3 100644
---- a/arch/s390/configs/debug_defconfig
-+++ b/arch/s390/configs/debug_defconfig
-@@ -793,11 +793,10 @@ CONFIG_CRYPTO_USER_API_HASH=m
- CONFIG_CRYPTO_USER_API_SKCIPHER=m
- CONFIG_CRYPTO_USER_API_RNG=m
- CONFIG_CRYPTO_USER_API_AEAD=m
- CONFIG_CRYPTO_SHA512_S390=m
- CONFIG_CRYPTO_SHA1_S390=m
--CONFIG_CRYPTO_SHA256_S390=m
- CONFIG_CRYPTO_SHA3_256_S390=m
- CONFIG_CRYPTO_SHA3_512_S390=m
- CONFIG_CRYPTO_GHASH_S390=m
- CONFIG_CRYPTO_AES_S390=m
- CONFIG_CRYPTO_DES_S390=m
-diff --git a/arch/s390/configs/defconfig b/arch/s390/configs/defconfig
-index f18a7d97ac216..f12679448e976 100644
---- a/arch/s390/configs/defconfig
-+++ b/arch/s390/configs/defconfig
-@@ -780,11 +780,10 @@ CONFIG_CRYPTO_USER_API_HASH=m
- CONFIG_CRYPTO_USER_API_SKCIPHER=m
- CONFIG_CRYPTO_USER_API_RNG=m
- CONFIG_CRYPTO_USER_API_AEAD=m
- CONFIG_CRYPTO_SHA512_S390=m
- CONFIG_CRYPTO_SHA1_S390=m
--CONFIG_CRYPTO_SHA256_S390=m
- CONFIG_CRYPTO_SHA3_256_S390=m
- CONFIG_CRYPTO_SHA3_512_S390=m
- CONFIG_CRYPTO_GHASH_S390=m
- CONFIG_CRYPTO_AES_S390=m
- CONFIG_CRYPTO_DES_S390=m
-diff --git a/arch/s390/crypto/Kconfig b/arch/s390/crypto/Kconfig
-index a2bfd6eef0ca3..e2c27588b21a9 100644
---- a/arch/s390/crypto/Kconfig
-+++ b/arch/s390/crypto/Kconfig
-@@ -20,20 +20,10 @@ config CRYPTO_SHA1_S390
+diff --git a/crypto/Kconfig b/crypto/Kconfig
+index 9878286d1d683..daf46053d25a5 100644
+--- a/crypto/Kconfig
++++ b/crypto/Kconfig
+@@ -992,10 +992,11 @@ config CRYPTO_SHA1
  
- 	  Architecture: s390
- 
- 	  It is available as of z990.
- 
--config CRYPTO_SHA256_S390
--	tristate "Hash functions: SHA-224 and SHA-256"
--	select CRYPTO_HASH
--	help
--	  SHA-224 and SHA-256 secure hash algorithms (FIPS 180)
--
--	  Architecture: s390
--
--	  It is available as of z9.
--
- config CRYPTO_SHA3_256_S390
- 	tristate "Hash functions: SHA3-224 and SHA3-256"
+ config CRYPTO_SHA256
+ 	tristate "SHA-224 and SHA-256"
  	select CRYPTO_HASH
- 	help
- 	  SHA3-224 and SHA3-256 secure hash algorithms (FIPS 202)
-diff --git a/arch/s390/crypto/Makefile b/arch/s390/crypto/Makefile
-index e3853774e1a3a..21757d86cd499 100644
---- a/arch/s390/crypto/Makefile
-+++ b/arch/s390/crypto/Makefile
-@@ -2,11 +2,10 @@
- #
- # Cryptographic API
- #
- 
- obj-$(CONFIG_CRYPTO_SHA1_S390) += sha1_s390.o sha_common.o
--obj-$(CONFIG_CRYPTO_SHA256_S390) += sha256_s390.o sha_common.o
- obj-$(CONFIG_CRYPTO_SHA512_S390) += sha512_s390.o sha_common.o
- obj-$(CONFIG_CRYPTO_SHA3_256_S390) += sha3_256_s390.o sha_common.o
- obj-$(CONFIG_CRYPTO_SHA3_512_S390) += sha3_512_s390.o sha_common.o
- obj-$(CONFIG_CRYPTO_DES_S390) += des_s390.o
- obj-$(CONFIG_CRYPTO_AES_S390) += aes_s390.o
-diff --git a/arch/s390/crypto/sha256_s390.c b/arch/s390/crypto/sha256_s390.c
-deleted file mode 100644
-index e6876c49414d5..0000000000000
---- a/arch/s390/crypto/sha256_s390.c
-+++ /dev/null
-@@ -1,144 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0+
--/*
-- * Cryptographic API.
-- *
-- * s390 implementation of the SHA256 and SHA224 Secure Hash Algorithm.
-- *
-- * s390 Version:
-- *   Copyright IBM Corp. 2005, 2011
-- *   Author(s): Jan Glauber (jang@de.ibm.com)
-- */
--#include <asm/cpacf.h>
--#include <crypto/internal/hash.h>
--#include <crypto/sha2.h>
--#include <linux/cpufeature.h>
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/string.h>
--
--#include "sha.h"
--
--static int s390_sha256_init(struct shash_desc *desc)
--{
--	struct s390_sha_ctx *sctx = shash_desc_ctx(desc);
--
--	sctx->state[0] = SHA256_H0;
--	sctx->state[1] = SHA256_H1;
--	sctx->state[2] = SHA256_H2;
--	sctx->state[3] = SHA256_H3;
--	sctx->state[4] = SHA256_H4;
--	sctx->state[5] = SHA256_H5;
--	sctx->state[6] = SHA256_H6;
--	sctx->state[7] = SHA256_H7;
--	sctx->count = 0;
--	sctx->func = CPACF_KIMD_SHA_256;
--
--	return 0;
--}
--
--static int sha256_export(struct shash_desc *desc, void *out)
--{
--	struct s390_sha_ctx *sctx = shash_desc_ctx(desc);
--	struct crypto_sha256_state *octx = out;
--
--	octx->count = sctx->count;
--	memcpy(octx->state, sctx->state, sizeof(octx->state));
--	return 0;
--}
--
--static int sha256_import(struct shash_desc *desc, const void *in)
--{
--	struct s390_sha_ctx *sctx = shash_desc_ctx(desc);
--	const struct crypto_sha256_state *ictx = in;
--
--	sctx->count = ictx->count;
--	memcpy(sctx->state, ictx->state, sizeof(ictx->state));
--	sctx->func = CPACF_KIMD_SHA_256;
--	return 0;
--}
--
--static struct shash_alg sha256_alg = {
--	.digestsize	=	SHA256_DIGEST_SIZE,
--	.init		=	s390_sha256_init,
--	.update		=	s390_sha_update_blocks,
--	.finup		=	s390_sha_finup,
--	.export		=	sha256_export,
--	.import		=	sha256_import,
--	.descsize	=	S390_SHA_CTX_SIZE,
--	.statesize	=	sizeof(struct crypto_sha256_state),
--	.base		=	{
--		.cra_name	=	"sha256",
--		.cra_driver_name=	"sha256-s390",
--		.cra_priority	=	300,
--		.cra_flags	=	CRYPTO_AHASH_ALG_BLOCK_ONLY,
--		.cra_blocksize	=	SHA256_BLOCK_SIZE,
--		.cra_module	=	THIS_MODULE,
--	}
--};
--
--static int s390_sha224_init(struct shash_desc *desc)
--{
--	struct s390_sha_ctx *sctx = shash_desc_ctx(desc);
--
--	sctx->state[0] = SHA224_H0;
--	sctx->state[1] = SHA224_H1;
--	sctx->state[2] = SHA224_H2;
--	sctx->state[3] = SHA224_H3;
--	sctx->state[4] = SHA224_H4;
--	sctx->state[5] = SHA224_H5;
--	sctx->state[6] = SHA224_H6;
--	sctx->state[7] = SHA224_H7;
--	sctx->count = 0;
--	sctx->func = CPACF_KIMD_SHA_256;
--
--	return 0;
--}
--
--static struct shash_alg sha224_alg = {
--	.digestsize	=	SHA224_DIGEST_SIZE,
--	.init		=	s390_sha224_init,
--	.update		=	s390_sha_update_blocks,
--	.finup		=	s390_sha_finup,
--	.export		=	sha256_export,
--	.import		=	sha256_import,
--	.descsize	=	S390_SHA_CTX_SIZE,
--	.statesize	=	sizeof(struct crypto_sha256_state),
--	.base		=	{
--		.cra_name	=	"sha224",
--		.cra_driver_name=	"sha224-s390",
--		.cra_priority	=	300,
--		.cra_flags	=	CRYPTO_AHASH_ALG_BLOCK_ONLY,
--		.cra_blocksize	=	SHA224_BLOCK_SIZE,
--		.cra_module	=	THIS_MODULE,
--	}
--};
--
--static int __init sha256_s390_init(void)
--{
--	int ret;
--
--	if (!cpacf_query_func(CPACF_KIMD, CPACF_KIMD_SHA_256))
--		return -ENODEV;
--	ret = crypto_register_shash(&sha256_alg);
--	if (ret < 0)
--		goto out;
--	ret = crypto_register_shash(&sha224_alg);
--	if (ret < 0)
--		crypto_unregister_shash(&sha256_alg);
--out:
--	return ret;
--}
--
--static void __exit sha256_s390_fini(void)
--{
--	crypto_unregister_shash(&sha224_alg);
--	crypto_unregister_shash(&sha256_alg);
--}
--
--module_cpu_feature_match(S390_CPU_FEATURE_MSA, sha256_s390_init);
--module_exit(sha256_s390_fini);
--
--MODULE_ALIAS_CRYPTO("sha256");
--MODULE_ALIAS_CRYPTO("sha224");
--MODULE_LICENSE("GPL");
--MODULE_DESCRIPTION("SHA256 and SHA224 Secure Hash Algorithm");
-diff --git a/arch/s390/lib/crypto/Kconfig b/arch/s390/lib/crypto/Kconfig
-index 069b355fe51aa..e3f855ef43934 100644
---- a/arch/s390/lib/crypto/Kconfig
-+++ b/arch/s390/lib/crypto/Kconfig
-@@ -3,5 +3,11 @@
- config CRYPTO_CHACHA_S390
- 	tristate
- 	default CRYPTO_LIB_CHACHA
- 	select CRYPTO_LIB_CHACHA_GENERIC
- 	select CRYPTO_ARCH_HAVE_LIB_CHACHA
-+
-+config CRYPTO_SHA256_S390
-+	tristate
-+	default CRYPTO_LIB_SHA256
-+	select CRYPTO_ARCH_HAVE_LIB_SHA256
+ 	select CRYPTO_LIB_SHA256
 +	select CRYPTO_LIB_SHA256_GENERIC
-diff --git a/arch/s390/lib/crypto/Makefile b/arch/s390/lib/crypto/Makefile
-index 06c2cf77178ef..920197967f463 100644
---- a/arch/s390/lib/crypto/Makefile
-+++ b/arch/s390/lib/crypto/Makefile
-@@ -1,4 +1,6 @@
- # SPDX-License-Identifier: GPL-2.0-only
+ 	help
+ 	  SHA-224 and SHA-256 secure hash algorithms (FIPS 180, ISO/IEC 10118-3)
  
- obj-$(CONFIG_CRYPTO_CHACHA_S390) += chacha_s390.o
- chacha_s390-y := chacha-glue.o chacha-s390.o
-+
-+obj-$(CONFIG_CRYPTO_SHA256_S390) += sha256.o
-diff --git a/arch/s390/lib/crypto/sha256.c b/arch/s390/lib/crypto/sha256.c
+ 	  This is required for IPsec AH (XFRM_AH) and IPsec ESP (XFRM_ESP).
+ 	  Used by the btrfs filesystem, Ceph, NFS, and SMB.
+diff --git a/crypto/Makefile b/crypto/Makefile
+index 5d2f2a28d8a07..2a23926b9f4f5 100644
+--- a/crypto/Makefile
++++ b/crypto/Makefile
+@@ -74,11 +74,12 @@ obj-$(CONFIG_CRYPTO_XCBC) += xcbc.o
+ obj-$(CONFIG_CRYPTO_NULL2) += crypto_null.o
+ obj-$(CONFIG_CRYPTO_MD4) += md4.o
+ obj-$(CONFIG_CRYPTO_MD5) += md5.o
+ obj-$(CONFIG_CRYPTO_RMD160) += rmd160.o
+ obj-$(CONFIG_CRYPTO_SHA1) += sha1_generic.o
+-obj-$(CONFIG_CRYPTO_SHA256) += sha256_generic.o
++obj-$(CONFIG_CRYPTO_SHA256) += sha256.o
++CFLAGS_sha256.o += -DARCH=$(ARCH)
+ obj-$(CONFIG_CRYPTO_SHA512) += sha512_generic.o
+ obj-$(CONFIG_CRYPTO_SHA3) += sha3_generic.o
+ obj-$(CONFIG_CRYPTO_SM3_GENERIC) += sm3_generic.o
+ obj-$(CONFIG_CRYPTO_STREEBOG) += streebog_generic.o
+ obj-$(CONFIG_CRYPTO_WP512) += wp512.o
+diff --git a/crypto/sha256.c b/crypto/sha256.c
 new file mode 100644
-index 0000000000000..50c592ce7a5de
+index 0000000000000..1c2edcf9453dc
 --- /dev/null
-+++ b/arch/s390/lib/crypto/sha256.c
-@@ -0,0 +1,47 @@
++++ b/crypto/sha256.c
+@@ -0,0 +1,201 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
-+ * SHA-256 optimized using the CP Assist for Cryptographic Functions (CPACF)
++ * Crypto API wrapper for the SHA-256 and SHA-224 library functions
 + *
-+ * Copyright 2025 Google LLC
++ * Copyright (c) Jean-Luc Cooke <jlcooke@certainkey.com>
++ * Copyright (c) Andrew McDonald <andrew@mcdonald.org.uk>
++ * Copyright (c) 2002 James Morris <jmorris@intercode.com.au>
++ * SHA224 Support Copyright 2007 Intel Corporation <jonathan.lynch@intel.com>
 + */
-+#include <asm/cpacf.h>
++#include <crypto/internal/hash.h>
 +#include <crypto/internal/sha2.h>
-+#include <linux/cpufeature.h>
 +#include <linux/kernel.h>
 +#include <linux/module.h>
 +
-+static __ro_after_init DEFINE_STATIC_KEY_FALSE(have_cpacf_sha256);
++const u8 sha224_zero_message_hash[SHA224_DIGEST_SIZE] = {
++	0xd1, 0x4a, 0x02, 0x8c, 0x2a, 0x3a, 0x2b, 0xc9, 0x47,
++	0x61, 0x02, 0xbb, 0x28, 0x82, 0x34, 0xc4, 0x15, 0xa2,
++	0xb0, 0x1f, 0x82, 0x8e, 0xa6, 0x2a, 0xc5, 0xb3, 0xe4,
++	0x2f
++};
++EXPORT_SYMBOL_GPL(sha224_zero_message_hash);
 +
-+void sha256_blocks_arch(u32 state[SHA256_STATE_WORDS],
-+			const u8 *data, size_t nblocks)
-+{
-+	if (static_branch_likely(&have_cpacf_sha256))
-+		cpacf_kimd(CPACF_KIMD_SHA_256, state, data,
-+			   nblocks * SHA256_BLOCK_SIZE);
-+	else
-+		sha256_blocks_generic(state, data, nblocks);
-+}
-+EXPORT_SYMBOL(sha256_blocks_arch);
++const u8 sha256_zero_message_hash[SHA256_DIGEST_SIZE] = {
++	0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14,
++	0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24,
++	0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c,
++	0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55
++};
++EXPORT_SYMBOL_GPL(sha256_zero_message_hash);
 +
-+bool sha256_is_arch_optimized(void)
++static int crypto_sha256_init(struct shash_desc *desc)
 +{
-+	return static_key_enabled(&have_cpacf_sha256);
-+}
-+EXPORT_SYMBOL(sha256_is_arch_optimized);
-+
-+static int __init sha256_s390_mod_init(void)
-+{
-+	if (cpu_have_feature(S390_CPU_FEATURE_MSA) &&
-+	    cpacf_query_func(CPACF_KIMD, CPACF_KIMD_SHA_256))
-+		static_branch_enable(&have_cpacf_sha256);
++	sha256_init(shash_desc_ctx(desc));
 +	return 0;
 +}
-+arch_initcall(sha256_s390_mod_init);
 +
-+static void __exit sha256_s390_mod_exit(void)
++static int crypto_sha256_update_generic(struct shash_desc *desc, const u8 *data,
++					unsigned int len)
 +{
++	sha256_update_generic(shash_desc_ctx(desc), data, len);
++	return 0;
 +}
-+module_exit(sha256_s390_mod_exit);
++
++static int crypto_sha256_update_arch(struct shash_desc *desc, const u8 *data,
++				     unsigned int len)
++{
++	sha256_update(shash_desc_ctx(desc), data, len);
++	return 0;
++}
++
++static int crypto_sha256_final_generic(struct shash_desc *desc, u8 *out)
++{
++	sha256_final_generic(shash_desc_ctx(desc), out);
++	return 0;
++}
++
++static int crypto_sha256_final_arch(struct shash_desc *desc, u8 *out)
++{
++	sha256_final(shash_desc_ctx(desc), out);
++	return 0;
++}
++
++static int crypto_sha256_finup_generic(struct shash_desc *desc, const u8 *data,
++				       unsigned int len, u8 *out)
++{
++	struct sha256_state *sctx = shash_desc_ctx(desc);
++
++	sha256_update_generic(sctx, data, len);
++	sha256_final_generic(sctx, out);
++	return 0;
++}
++
++static int crypto_sha256_finup_arch(struct shash_desc *desc, const u8 *data,
++				    unsigned int len, u8 *out)
++{
++	struct sha256_state *sctx = shash_desc_ctx(desc);
++
++	sha256_update(sctx, data, len);
++	sha256_final(sctx, out);
++	return 0;
++}
++
++static int crypto_sha256_digest_generic(struct shash_desc *desc, const u8 *data,
++					unsigned int len, u8 *out)
++{
++	struct sha256_state *sctx = shash_desc_ctx(desc);
++
++	sha256_init(sctx);
++	sha256_update_generic(sctx, data, len);
++	sha256_final_generic(sctx, out);
++	return 0;
++}
++
++static int crypto_sha256_digest_arch(struct shash_desc *desc, const u8 *data,
++				     unsigned int len, u8 *out)
++{
++	sha256(data, len, out);
++	return 0;
++}
++
++static int crypto_sha224_init(struct shash_desc *desc)
++{
++	sha224_init(shash_desc_ctx(desc));
++	return 0;
++}
++
++static int crypto_sha224_final_generic(struct shash_desc *desc, u8 *out)
++{
++	sha224_final_generic(shash_desc_ctx(desc), out);
++	return 0;
++}
++
++static int crypto_sha224_final_arch(struct shash_desc *desc, u8 *out)
++{
++	sha224_final(shash_desc_ctx(desc), out);
++	return 0;
++}
++
++static struct shash_alg algs[] = {
++	{
++		.base.cra_name		= "sha256",
++		.base.cra_driver_name	= "sha256-generic",
++		.base.cra_priority	= 100,
++		.base.cra_blocksize	= SHA256_BLOCK_SIZE,
++		.base.cra_module	= THIS_MODULE,
++		.digestsize		= SHA256_DIGEST_SIZE,
++		.init			= crypto_sha256_init,
++		.update			= crypto_sha256_update_generic,
++		.final			= crypto_sha256_final_generic,
++		.finup			= crypto_sha256_finup_generic,
++		.digest			= crypto_sha256_digest_generic,
++		.descsize		= sizeof(struct sha256_state),
++	},
++	{
++		.base.cra_name		= "sha224",
++		.base.cra_driver_name	= "sha224-generic",
++		.base.cra_priority	= 100,
++		.base.cra_blocksize	= SHA224_BLOCK_SIZE,
++		.base.cra_module	= THIS_MODULE,
++		.digestsize		= SHA224_DIGEST_SIZE,
++		.init			= crypto_sha224_init,
++		.update			= crypto_sha256_update_generic,
++		.final			= crypto_sha224_final_generic,
++		.descsize		= sizeof(struct sha256_state),
++	},
++	{
++		.base.cra_name		= "sha256",
++		.base.cra_driver_name	= "sha256-" __stringify(ARCH),
++		.base.cra_priority	= 300,
++		.base.cra_blocksize	= SHA256_BLOCK_SIZE,
++		.base.cra_module	= THIS_MODULE,
++		.digestsize		= SHA256_DIGEST_SIZE,
++		.init			= crypto_sha256_init,
++		.update			= crypto_sha256_update_arch,
++		.final			= crypto_sha256_final_arch,
++		.finup			= crypto_sha256_finup_arch,
++		.digest			= crypto_sha256_digest_arch,
++		.descsize		= sizeof(struct sha256_state),
++	},
++	{
++		.base.cra_name		= "sha224",
++		.base.cra_driver_name	= "sha224-" __stringify(ARCH),
++		.base.cra_priority	= 300,
++		.base.cra_blocksize	= SHA224_BLOCK_SIZE,
++		.base.cra_module	= THIS_MODULE,
++		.digestsize		= SHA224_DIGEST_SIZE,
++		.init			= crypto_sha224_init,
++		.update			= crypto_sha256_update_arch,
++		.final			= crypto_sha224_final_arch,
++		.descsize		= sizeof(struct sha256_state),
++	},
++};
++
++static unsigned int num_algs;
++
++static int __init crypto_sha256_mod_init(void)
++{
++	/* register the arch flavours only if they differ from generic */
++	num_algs = ARRAY_SIZE(algs);
++	BUILD_BUG_ON(ARRAY_SIZE(algs) % 2 != 0);
++	if (!sha256_is_arch_optimized())
++		num_algs /= 2;
++	return crypto_register_shashes(algs, ARRAY_SIZE(algs));
++}
++subsys_initcall(crypto_sha256_mod_init);
++
++static void __exit crypto_sha256_mod_exit(void)
++{
++	crypto_unregister_shashes(algs, num_algs);
++}
++module_exit(crypto_sha256_mod_exit);
 +
 +MODULE_LICENSE("GPL");
-+MODULE_DESCRIPTION("SHA-256 using the CP Assist for Cryptographic Functions (CPACF)");
++MODULE_DESCRIPTION("Crypto API wrapper for the SHA-256 and SHA-224 library functions");
++
++MODULE_ALIAS_CRYPTO("sha256");
++MODULE_ALIAS_CRYPTO("sha256-generic");
++MODULE_ALIAS_CRYPTO("sha256-" __stringify(ARCH));
++MODULE_ALIAS_CRYPTO("sha224");
++MODULE_ALIAS_CRYPTO("sha224-generic");
++MODULE_ALIAS_CRYPTO("sha224-" __stringify(ARCH));
+diff --git a/crypto/sha256_generic.c b/crypto/sha256_generic.c
+deleted file mode 100644
+index 05084e5bbaec8..0000000000000
+--- a/crypto/sha256_generic.c
++++ /dev/null
+@@ -1,102 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-or-later
+-/*
+- * Crypto API wrapper for the generic SHA256 code from lib/crypto/sha256.c
+- *
+- * Copyright (c) Jean-Luc Cooke <jlcooke@certainkey.com>
+- * Copyright (c) Andrew McDonald <andrew@mcdonald.org.uk>
+- * Copyright (c) 2002 James Morris <jmorris@intercode.com.au>
+- * SHA224 Support Copyright 2007 Intel Corporation <jonathan.lynch@intel.com>
+- */
+-#include <crypto/internal/hash.h>
+-#include <crypto/sha2.h>
+-#include <crypto/sha256_base.h>
+-#include <linux/kernel.h>
+-#include <linux/module.h>
+-
+-const u8 sha224_zero_message_hash[SHA224_DIGEST_SIZE] = {
+-	0xd1, 0x4a, 0x02, 0x8c, 0x2a, 0x3a, 0x2b, 0xc9, 0x47,
+-	0x61, 0x02, 0xbb, 0x28, 0x82, 0x34, 0xc4, 0x15, 0xa2,
+-	0xb0, 0x1f, 0x82, 0x8e, 0xa6, 0x2a, 0xc5, 0xb3, 0xe4,
+-	0x2f
+-};
+-EXPORT_SYMBOL_GPL(sha224_zero_message_hash);
+-
+-const u8 sha256_zero_message_hash[SHA256_DIGEST_SIZE] = {
+-	0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14,
+-	0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24,
+-	0x27, 0xae, 0x41, 0xe4, 0x64, 0x9b, 0x93, 0x4c,
+-	0xa4, 0x95, 0x99, 0x1b, 0x78, 0x52, 0xb8, 0x55
+-};
+-EXPORT_SYMBOL_GPL(sha256_zero_message_hash);
+-
+-static void sha256_block(struct crypto_sha256_state *sctx, const u8 *input,
+-			 int blocks)
+-{
+-	sha256_transform_blocks(sctx, input, blocks);
+-}
+-
+-static int crypto_sha256_update(struct shash_desc *desc, const u8 *data,
+-				unsigned int len)
+-{
+-	return sha256_base_do_update_blocks(desc, data, len, sha256_block);
+-}
+-
+-static int crypto_sha256_finup(struct shash_desc *desc, const u8 *data,
+-			       unsigned int len, u8 *hash)
+-{
+-	sha256_base_do_finup(desc, data, len, sha256_block);
+-	return sha256_base_finish(desc, hash);
+-}
+-
+-static struct shash_alg sha256_algs[2] = { {
+-	.digestsize	=	SHA256_DIGEST_SIZE,
+-	.init		=	sha256_base_init,
+-	.update		=	crypto_sha256_update,
+-	.finup		=	crypto_sha256_finup,
+-	.descsize	=	sizeof(struct crypto_sha256_state),
+-	.base		=	{
+-		.cra_name	=	"sha256",
+-		.cra_driver_name=	"sha256-generic",
+-		.cra_priority	=	100,
+-		.cra_flags	=	CRYPTO_AHASH_ALG_BLOCK_ONLY |
+-					CRYPTO_AHASH_ALG_FINUP_MAX,
+-		.cra_blocksize	=	SHA256_BLOCK_SIZE,
+-		.cra_module	=	THIS_MODULE,
+-	}
+-}, {
+-	.digestsize	=	SHA224_DIGEST_SIZE,
+-	.init		=	sha224_base_init,
+-	.update		=	crypto_sha256_update,
+-	.finup		=	crypto_sha256_finup,
+-	.descsize	=	sizeof(struct crypto_sha256_state),
+-	.base		=	{
+-		.cra_name	=	"sha224",
+-		.cra_driver_name=	"sha224-generic",
+-		.cra_priority	=	100,
+-		.cra_flags	=	CRYPTO_AHASH_ALG_BLOCK_ONLY |
+-					CRYPTO_AHASH_ALG_FINUP_MAX,
+-		.cra_blocksize	=	SHA224_BLOCK_SIZE,
+-		.cra_module	=	THIS_MODULE,
+-	}
+-} };
+-
+-static int __init sha256_generic_mod_init(void)
+-{
+-	return crypto_register_shashes(sha256_algs, ARRAY_SIZE(sha256_algs));
+-}
+-
+-static void __exit sha256_generic_mod_fini(void)
+-{
+-	crypto_unregister_shashes(sha256_algs, ARRAY_SIZE(sha256_algs));
+-}
+-
+-subsys_initcall(sha256_generic_mod_init);
+-module_exit(sha256_generic_mod_fini);
+-
+-MODULE_LICENSE("GPL");
+-MODULE_DESCRIPTION("SHA-224 and SHA-256 Secure Hash Algorithm");
+-
+-MODULE_ALIAS_CRYPTO("sha224");
+-MODULE_ALIAS_CRYPTO("sha224-generic");
+-MODULE_ALIAS_CRYPTO("sha256");
+-MODULE_ALIAS_CRYPTO("sha256-generic");
+diff --git a/include/crypto/internal/sha2.h b/include/crypto/internal/sha2.h
+new file mode 100644
+index 0000000000000..d641c67abcbc3
+--- /dev/null
++++ b/include/crypto/internal/sha2.h
+@@ -0,0 +1,28 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++
++#ifndef _CRYPTO_INTERNAL_SHA2_H
++#define _CRYPTO_INTERNAL_SHA2_H
++
++#include <crypto/sha2.h>
++
++void sha256_update_generic(struct sha256_state *sctx,
++			   const u8 *data, size_t len);
++void sha256_final_generic(struct sha256_state *sctx,
++			  u8 out[SHA256_DIGEST_SIZE]);
++void sha224_final_generic(struct sha256_state *sctx,
++			  u8 out[SHA224_DIGEST_SIZE]);
++
++#if IS_ENABLED(CONFIG_CRYPTO_ARCH_HAVE_LIB_SHA256)
++bool sha256_is_arch_optimized(void);
++#else
++static inline bool sha256_is_arch_optimized(void)
++{
++	return false;
++}
++#endif
++void sha256_blocks_generic(u32 state[SHA256_STATE_WORDS],
++			   const u8 *data, size_t nblocks);
++void sha256_blocks_arch(u32 state[SHA256_STATE_WORDS],
++			const u8 *data, size_t nblocks);
++
++#endif /* _CRYPTO_INTERNAL_SHA2_H */
+diff --git a/include/crypto/sha2.h b/include/crypto/sha2.h
+index abbd882f7849f..444484d1b1cfa 100644
+--- a/include/crypto/sha2.h
++++ b/include/crypto/sha2.h
+@@ -11,10 +11,11 @@
+ #define SHA224_DIGEST_SIZE	28
+ #define SHA224_BLOCK_SIZE	64
+ 
+ #define SHA256_DIGEST_SIZE      32
+ #define SHA256_BLOCK_SIZE       64
++#define SHA256_STATE_WORDS      8
+ 
+ #define SHA384_DIGEST_SIZE      48
+ #define SHA384_BLOCK_SIZE       128
+ 
+ #define SHA512_DIGEST_SIZE      64
+@@ -64,36 +65,26 @@ extern const u8 sha256_zero_message_hash[SHA256_DIGEST_SIZE];
+ extern const u8 sha384_zero_message_hash[SHA384_DIGEST_SIZE];
+ 
+ extern const u8 sha512_zero_message_hash[SHA512_DIGEST_SIZE];
+ 
+ struct crypto_sha256_state {
+-	u32 state[SHA256_DIGEST_SIZE / 4];
++	u32 state[SHA256_STATE_WORDS];
+ 	u64 count;
+ };
+ 
+ struct sha256_state {
+-	u32 state[SHA256_DIGEST_SIZE / 4];
++	u32 state[SHA256_STATE_WORDS];
+ 	u64 count;
+ 	u8 buf[SHA256_BLOCK_SIZE];
+ };
+ 
+ struct sha512_state {
+ 	u64 state[SHA512_DIGEST_SIZE / 8];
+ 	u64 count[2];
+ 	u8 buf[SHA512_BLOCK_SIZE];
+ };
+ 
+-/*
+- * Stand-alone implementation of the SHA256 algorithm. It is designed to
+- * have as little dependencies as possible so it can be used in the
+- * kexec_file purgatory. In other cases you should generally use the
+- * hash APIs from include/crypto/hash.h. Especially when hashing large
+- * amounts of data as those APIs may be hw-accelerated.
+- *
+- * For details see lib/crypto/sha256.c
+- */
+-
+ static inline void sha256_init(struct sha256_state *sctx)
+ {
+ 	sctx->state[0] = SHA256_H0;
+ 	sctx->state[1] = SHA256_H1;
+ 	sctx->state[2] = SHA256_H2;
+diff --git a/include/crypto/sha256_base.h b/include/crypto/sha256_base.h
+index 08cd5e41d4fdb..6878fb9c26c04 100644
+--- a/include/crypto/sha256_base.h
++++ b/include/crypto/sha256_base.h
+@@ -7,11 +7,11 @@
+ 
+ #ifndef _CRYPTO_SHA256_BASE_H
+ #define _CRYPTO_SHA256_BASE_H
+ 
+ #include <crypto/internal/hash.h>
+-#include <crypto/sha2.h>
++#include <crypto/internal/sha2.h>
+ #include <linux/math.h>
+ #include <linux/string.h>
+ #include <linux/types.h>
+ #include <linux/unaligned.h>
+ 
+@@ -172,9 +172,12 @@ static inline int sha256_base_finish(struct shash_desc *desc, u8 *out)
+ 	struct crypto_sha256_state *sctx = shash_desc_ctx(desc);
+ 
+ 	return __sha256_base_finish(sctx->state, out, digest_size);
+ }
+ 
+-void sha256_transform_blocks(struct crypto_sha256_state *sst,
+-			     const u8 *input, int blocks);
++static inline void sha256_transform_blocks(struct crypto_sha256_state *sst,
++					   const u8 *input, int blocks)
++{
++	sha256_blocks_generic(sst->state, input, blocks);
++}
+ 
+ #endif /* _CRYPTO_SHA256_BASE_H */
+diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
+index af2368799579f..7fe678047939b 100644
+--- a/lib/crypto/Kconfig
++++ b/lib/crypto/Kconfig
+@@ -137,10 +137,29 @@ config CRYPTO_LIB_CHACHA20POLY1305
+ config CRYPTO_LIB_SHA1
+ 	tristate
+ 
+ config CRYPTO_LIB_SHA256
+ 	tristate
++	help
++	  Enable the SHA-256 library interface. This interface may be fulfilled
++	  by either the generic implementation or an arch-specific one, if one
++	  is available and enabled.
++
++config CRYPTO_ARCH_HAVE_LIB_SHA256
++	bool
++	help
++	  Declares whether the architecture provides an arch-specific
++	  accelerated implementation of the SHA-256 library interface.
++
++config CRYPTO_LIB_SHA256_GENERIC
++	tristate
++	default CRYPTO_LIB_SHA256 if !CRYPTO_ARCH_HAVE_LIB_SHA256
++	help
++	  This symbol can be selected by arch implementations of the SHA-256
++	  library interface that require the generic code as a fallback, e.g.,
++	  for SIMD implementations. If no arch specific implementation is
++	  enabled, this implementation serves the users of CRYPTO_LIB_SHA256.
+ 
+ config CRYPTO_LIB_SM3
+ 	tristate
+ 
+ if !KMSAN # avoid false positives from assembly
+diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
+index 4dd62bc5bee3d..71d3d05d666a2 100644
+--- a/lib/crypto/Makefile
++++ b/lib/crypto/Makefile
+@@ -49,10 +49,13 @@ obj-$(CONFIG_CRYPTO_LIB_SHA1)			+= libsha1.o
+ libsha1-y					:= sha1.o
+ 
+ obj-$(CONFIG_CRYPTO_LIB_SHA256)			+= libsha256.o
+ libsha256-y					:= sha256.o
+ 
++obj-$(CONFIG_CRYPTO_LIB_SHA256_GENERIC)		+= libsha256-generic.o
++libsha256-generic-y				:= sha256-generic.o
++
+ ifneq ($(CONFIG_CRYPTO_MANAGER_DISABLE_TESTS),y)
+ libblake2s-y					+= blake2s-selftest.o
+ libchacha20poly1305-y				+= chacha20poly1305-selftest.o
+ libcurve25519-y					+= curve25519-selftest.o
+ endif
+diff --git a/lib/crypto/sha256-generic.c b/lib/crypto/sha256-generic.c
+new file mode 100644
+index 0000000000000..a16ad4f25ebb7
+--- /dev/null
++++ b/lib/crypto/sha256-generic.c
+@@ -0,0 +1,137 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * SHA-256, as specified in
++ * http://csrc.nist.gov/groups/STM/cavp/documents/shs/sha256-384-512.pdf
++ *
++ * SHA-256 code by Jean-Luc Cooke <jlcooke@certainkey.com>.
++ *
++ * Copyright (c) Jean-Luc Cooke <jlcooke@certainkey.com>
++ * Copyright (c) Andrew McDonald <andrew@mcdonald.org.uk>
++ * Copyright (c) 2002 James Morris <jmorris@intercode.com.au>
++ * Copyright (c) 2014 Red Hat Inc.
++ */
++
++#include <crypto/internal/sha2.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/string.h>
++#include <linux/unaligned.h>
++
++static const u32 SHA256_K[] = {
++	0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
++	0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
++	0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
++	0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
++	0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
++	0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
++	0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
++	0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
++	0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
++	0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
++	0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
++	0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
++	0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
++	0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
++	0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
++	0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
++};
++
++static inline u32 Ch(u32 x, u32 y, u32 z)
++{
++	return z ^ (x & (y ^ z));
++}
++
++static inline u32 Maj(u32 x, u32 y, u32 z)
++{
++	return (x & y) | (z & (x | y));
++}
++
++#define e0(x)       (ror32(x, 2) ^ ror32(x, 13) ^ ror32(x, 22))
++#define e1(x)       (ror32(x, 6) ^ ror32(x, 11) ^ ror32(x, 25))
++#define s0(x)       (ror32(x, 7) ^ ror32(x, 18) ^ (x >> 3))
++#define s1(x)       (ror32(x, 17) ^ ror32(x, 19) ^ (x >> 10))
++
++static inline void LOAD_OP(int I, u32 *W, const u8 *input)
++{
++	W[I] = get_unaligned_be32((__u32 *)input + I);
++}
++
++static inline void BLEND_OP(int I, u32 *W)
++{
++	W[I] = s1(W[I-2]) + W[I-7] + s0(W[I-15]) + W[I-16];
++}
++
++#define SHA256_ROUND(i, a, b, c, d, e, f, g, h) do {		\
++	u32 t1, t2;						\
++	t1 = h + e1(e) + Ch(e, f, g) + SHA256_K[i] + W[i];	\
++	t2 = e0(a) + Maj(a, b, c);				\
++	d += t1;						\
++	h = t1 + t2;						\
++} while (0)
++
++static void sha256_block_generic(u32 state[SHA256_STATE_WORDS],
++				 const u8 *input, u32 W[64])
++{
++	u32 a, b, c, d, e, f, g, h;
++	int i;
++
++	/* load the input */
++	for (i = 0; i < 16; i += 8) {
++		LOAD_OP(i + 0, W, input);
++		LOAD_OP(i + 1, W, input);
++		LOAD_OP(i + 2, W, input);
++		LOAD_OP(i + 3, W, input);
++		LOAD_OP(i + 4, W, input);
++		LOAD_OP(i + 5, W, input);
++		LOAD_OP(i + 6, W, input);
++		LOAD_OP(i + 7, W, input);
++	}
++
++	/* now blend */
++	for (i = 16; i < 64; i += 8) {
++		BLEND_OP(i + 0, W);
++		BLEND_OP(i + 1, W);
++		BLEND_OP(i + 2, W);
++		BLEND_OP(i + 3, W);
++		BLEND_OP(i + 4, W);
++		BLEND_OP(i + 5, W);
++		BLEND_OP(i + 6, W);
++		BLEND_OP(i + 7, W);
++	}
++
++	/* load the state into our registers */
++	a = state[0];  b = state[1];  c = state[2];  d = state[3];
++	e = state[4];  f = state[5];  g = state[6];  h = state[7];
++
++	/* now iterate */
++	for (i = 0; i < 64; i += 8) {
++		SHA256_ROUND(i + 0, a, b, c, d, e, f, g, h);
++		SHA256_ROUND(i + 1, h, a, b, c, d, e, f, g);
++		SHA256_ROUND(i + 2, g, h, a, b, c, d, e, f);
++		SHA256_ROUND(i + 3, f, g, h, a, b, c, d, e);
++		SHA256_ROUND(i + 4, e, f, g, h, a, b, c, d);
++		SHA256_ROUND(i + 5, d, e, f, g, h, a, b, c);
++		SHA256_ROUND(i + 6, c, d, e, f, g, h, a, b);
++		SHA256_ROUND(i + 7, b, c, d, e, f, g, h, a);
++	}
++
++	state[0] += a; state[1] += b; state[2] += c; state[3] += d;
++	state[4] += e; state[5] += f; state[6] += g; state[7] += h;
++}
++
++void sha256_blocks_generic(u32 state[SHA256_STATE_WORDS],
++			   const u8 *data, size_t nblocks)
++{
++	u32 W[64];
++
++	do {
++		sha256_block_generic(state, data, W);
++		data += SHA256_BLOCK_SIZE;
++	} while (--nblocks);
++
++	memzero_explicit(W, sizeof(W));
++}
++EXPORT_SYMBOL_GPL(sha256_blocks_generic);
++
++MODULE_DESCRIPTION("SHA-256 Algorithm (generic implementation)");
++MODULE_LICENSE("GPL");
+diff --git a/lib/crypto/sha256.c b/lib/crypto/sha256.c
+index a89bab377de1a..4b19cf977ef1b 100644
+--- a/lib/crypto/sha256.c
++++ b/lib/crypto/sha256.c
+@@ -9,152 +9,109 @@
+  * Copyright (c) Andrew McDonald <andrew@mcdonald.org.uk>
+  * Copyright (c) 2002 James Morris <jmorris@intercode.com.au>
+  * Copyright (c) 2014 Red Hat Inc.
+  */
+ 
+-#include <linux/unaligned.h>
+-#include <crypto/sha256_base.h>
++#include <crypto/internal/sha2.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/string.h>
++#include <linux/unaligned.h>
+ 
+-static const u32 SHA256_K[] = {
+-	0x428a2f98, 0x71374491, 0xb5c0fbcf, 0xe9b5dba5,
+-	0x3956c25b, 0x59f111f1, 0x923f82a4, 0xab1c5ed5,
+-	0xd807aa98, 0x12835b01, 0x243185be, 0x550c7dc3,
+-	0x72be5d74, 0x80deb1fe, 0x9bdc06a7, 0xc19bf174,
+-	0xe49b69c1, 0xefbe4786, 0x0fc19dc6, 0x240ca1cc,
+-	0x2de92c6f, 0x4a7484aa, 0x5cb0a9dc, 0x76f988da,
+-	0x983e5152, 0xa831c66d, 0xb00327c8, 0xbf597fc7,
+-	0xc6e00bf3, 0xd5a79147, 0x06ca6351, 0x14292967,
+-	0x27b70a85, 0x2e1b2138, 0x4d2c6dfc, 0x53380d13,
+-	0x650a7354, 0x766a0abb, 0x81c2c92e, 0x92722c85,
+-	0xa2bfe8a1, 0xa81a664b, 0xc24b8b70, 0xc76c51a3,
+-	0xd192e819, 0xd6990624, 0xf40e3585, 0x106aa070,
+-	0x19a4c116, 0x1e376c08, 0x2748774c, 0x34b0bcb5,
+-	0x391c0cb3, 0x4ed8aa4a, 0x5b9cca4f, 0x682e6ff3,
+-	0x748f82ee, 0x78a5636f, 0x84c87814, 0x8cc70208,
+-	0x90befffa, 0xa4506ceb, 0xbef9a3f7, 0xc67178f2,
+-};
+-
+-static inline u32 Ch(u32 x, u32 y, u32 z)
+-{
+-	return z ^ (x & (y ^ z));
+-}
+-
+-static inline u32 Maj(u32 x, u32 y, u32 z)
+-{
+-	return (x & y) | (z & (x | y));
+-}
+-
+-#define e0(x)       (ror32(x, 2) ^ ror32(x, 13) ^ ror32(x, 22))
+-#define e1(x)       (ror32(x, 6) ^ ror32(x, 11) ^ ror32(x, 25))
+-#define s0(x)       (ror32(x, 7) ^ ror32(x, 18) ^ (x >> 3))
+-#define s1(x)       (ror32(x, 17) ^ ror32(x, 19) ^ (x >> 10))
++/*
++ * If __DISABLE_EXPORTS is defined, then this file is being compiled for a
++ * pre-boot environment.  In that case, ignore the kconfig options, pull the
++ * generic code into the same translation unit, and use that only.
++ */
++#ifdef __DISABLE_EXPORTS
++#include "sha256-generic.c"
++#endif
+ 
+-static inline void LOAD_OP(int I, u32 *W, const u8 *input)
++static inline void sha256_blocks(u32 state[SHA256_STATE_WORDS], const u8 *data,
++				 size_t nblocks, bool force_generic)
+ {
+-	W[I] = get_unaligned_be32((__u32 *)input + I);
++#if IS_ENABLED(CONFIG_CRYPTO_ARCH_HAVE_LIB_SHA256) && !defined(__DISABLE_EXPORTS)
++	if (!force_generic)
++		return sha256_blocks_arch(state, data, nblocks);
++#endif
++	sha256_blocks_generic(state, data, nblocks);
+ }
+ 
+-static inline void BLEND_OP(int I, u32 *W)
++static inline void __sha256_update(struct sha256_state *sctx, const u8 *data,
++				   size_t len, bool force_generic)
+ {
+-	W[I] = s1(W[I-2]) + W[I-7] + s0(W[I-15]) + W[I-16];
+-}
+-
+-#define SHA256_ROUND(i, a, b, c, d, e, f, g, h) do {		\
+-	u32 t1, t2;						\
+-	t1 = h + e1(e) + Ch(e, f, g) + SHA256_K[i] + W[i];	\
+-	t2 = e0(a) + Maj(a, b, c);				\
+-	d += t1;						\
+-	h = t1 + t2;						\
+-} while (0)
++	size_t partial = sctx->count % SHA256_BLOCK_SIZE;
+ 
+-static void sha256_transform(u32 *state, const u8 *input, u32 *W)
+-{
+-	u32 a, b, c, d, e, f, g, h;
+-	int i;
+-
+-	/* load the input */
+-	for (i = 0; i < 16; i += 8) {
+-		LOAD_OP(i + 0, W, input);
+-		LOAD_OP(i + 1, W, input);
+-		LOAD_OP(i + 2, W, input);
+-		LOAD_OP(i + 3, W, input);
+-		LOAD_OP(i + 4, W, input);
+-		LOAD_OP(i + 5, W, input);
+-		LOAD_OP(i + 6, W, input);
+-		LOAD_OP(i + 7, W, input);
+-	}
++	sctx->count += len;
+ 
+-	/* now blend */
+-	for (i = 16; i < 64; i += 8) {
+-		BLEND_OP(i + 0, W);
+-		BLEND_OP(i + 1, W);
+-		BLEND_OP(i + 2, W);
+-		BLEND_OP(i + 3, W);
+-		BLEND_OP(i + 4, W);
+-		BLEND_OP(i + 5, W);
+-		BLEND_OP(i + 6, W);
+-		BLEND_OP(i + 7, W);
+-	}
++	if (partial + len >= SHA256_BLOCK_SIZE) {
++		size_t nblocks;
+ 
+-	/* load the state into our registers */
+-	a = state[0];  b = state[1];  c = state[2];  d = state[3];
+-	e = state[4];  f = state[5];  g = state[6];  h = state[7];
+-
+-	/* now iterate */
+-	for (i = 0; i < 64; i += 8) {
+-		SHA256_ROUND(i + 0, a, b, c, d, e, f, g, h);
+-		SHA256_ROUND(i + 1, h, a, b, c, d, e, f, g);
+-		SHA256_ROUND(i + 2, g, h, a, b, c, d, e, f);
+-		SHA256_ROUND(i + 3, f, g, h, a, b, c, d, e);
+-		SHA256_ROUND(i + 4, e, f, g, h, a, b, c, d);
+-		SHA256_ROUND(i + 5, d, e, f, g, h, a, b, c);
+-		SHA256_ROUND(i + 6, c, d, e, f, g, h, a, b);
+-		SHA256_ROUND(i + 7, b, c, d, e, f, g, h, a);
+-	}
++		if (partial) {
++			size_t l = SHA256_BLOCK_SIZE - partial;
+ 
+-	state[0] += a; state[1] += b; state[2] += c; state[3] += d;
+-	state[4] += e; state[5] += f; state[6] += g; state[7] += h;
+-}
++			memcpy(&sctx->buf[partial], data, l);
++			data += l;
++			len -= l;
+ 
+-void sha256_transform_blocks(struct crypto_sha256_state *sst,
+-			     const u8 *input, int blocks)
+-{
+-	u32 W[64];
++			sha256_blocks(sctx->state, sctx->buf, 1, force_generic);
++		}
+ 
+-	do {
+-		sha256_transform(sst->state, input, W);
+-		input += SHA256_BLOCK_SIZE;
+-	} while (--blocks);
++		nblocks = len / SHA256_BLOCK_SIZE;
++		len %= SHA256_BLOCK_SIZE;
+ 
+-	memzero_explicit(W, sizeof(W));
++		if (nblocks) {
++			sha256_blocks(sctx->state, data, nblocks,
++				      force_generic);
++			data += nblocks * SHA256_BLOCK_SIZE;
++		}
++		partial = 0;
++	}
++	if (len)
++		memcpy(&sctx->buf[partial], data, len);
+ }
+-EXPORT_SYMBOL_GPL(sha256_transform_blocks);
+ 
+ void sha256_update(struct sha256_state *sctx, const u8 *data, unsigned int len)
+ {
+-	lib_sha256_base_do_update(sctx, data, len, sha256_transform_blocks);
++	__sha256_update(sctx, data, len, false);
+ }
+ EXPORT_SYMBOL(sha256_update);
+ 
+-static void __sha256_final(struct sha256_state *sctx, u8 *out, int digest_size)
++static inline void __sha256_final(struct sha256_state *sctx, u8 *out,
++				  size_t digest_size, bool force_generic)
+ {
+-	lib_sha256_base_do_finalize(sctx, sha256_transform_blocks);
+-	lib_sha256_base_finish(sctx, out, digest_size);
++	const size_t bit_offset = SHA256_BLOCK_SIZE - sizeof(__be64);
++	__be64 *bits = (__be64 *)&sctx->buf[bit_offset];
++	size_t partial = sctx->count % SHA256_BLOCK_SIZE;
++	size_t i;
++
++	sctx->buf[partial++] = 0x80;
++	if (partial > bit_offset) {
++		memset(&sctx->buf[partial], 0, SHA256_BLOCK_SIZE - partial);
++		sha256_blocks(sctx->state, sctx->buf, 1, force_generic);
++		partial = 0;
++	}
++
++	memset(&sctx->buf[partial], 0, bit_offset - partial);
++	*bits = cpu_to_be64(sctx->count << 3);
++	sha256_blocks(sctx->state, sctx->buf, 1, force_generic);
++
++	for (i = 0; i < digest_size; i += 4)
++		put_unaligned_be32(sctx->state[i / 4], out + i);
++
++	memzero_explicit(sctx, sizeof(*sctx));
+ }
+ 
+ void sha256_final(struct sha256_state *sctx, u8 *out)
+ {
+-	__sha256_final(sctx, out, 32);
++	__sha256_final(sctx, out, SHA256_DIGEST_SIZE, false);
+ }
+ EXPORT_SYMBOL(sha256_final);
+ 
+ void sha224_final(struct sha256_state *sctx, u8 *out)
+ {
+-	__sha256_final(sctx, out, 28);
++	__sha256_final(sctx, out, SHA224_DIGEST_SIZE, false);
+ }
+ EXPORT_SYMBOL(sha224_final);
+ 
+ void sha256(const u8 *data, unsigned int len, u8 *out)
+ {
+@@ -164,7 +121,28 @@ void sha256(const u8 *data, unsigned int len, u8 *out)
+ 	sha256_update(&sctx, data, len);
+ 	sha256_final(&sctx, out);
+ }
+ EXPORT_SYMBOL(sha256);
+ 
++#if IS_ENABLED(CONFIG_CRYPTO_SHA256) && !defined(__DISABLE_EXPORTS)
++void sha256_update_generic(struct sha256_state *sctx,
++			   const u8 *data, size_t len)
++{
++	__sha256_update(sctx, data, len, true);
++}
++EXPORT_SYMBOL(sha256_update_generic);
++
++void sha256_final_generic(struct sha256_state *sctx, u8 out[SHA256_DIGEST_SIZE])
++{
++	__sha256_final(sctx, out, SHA256_DIGEST_SIZE, true);
++}
++EXPORT_SYMBOL(sha256_final_generic);
++
++void sha224_final_generic(struct sha256_state *sctx, u8 out[SHA224_DIGEST_SIZE])
++{
++	__sha256_final(sctx, out, SHA224_DIGEST_SIZE, true);
++}
++EXPORT_SYMBOL(sha224_final_generic);
++#endif
++
+ MODULE_DESCRIPTION("SHA-256 Algorithm");
+ MODULE_LICENSE("GPL");
 -- 
 2.49.0
 
