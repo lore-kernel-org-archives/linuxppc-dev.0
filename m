@@ -1,76 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-8166-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8168-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1A7F5C369DC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Apr 2025 21:14:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E62BC369DC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Apr 2025 23:31:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZnCkQ3n4Hz2ySW;
-	Wed, 30 Apr 2025 07:14:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745961278;
-	cv=none; b=m2y/swijUfPlCHuVFDP2pX1ASWeOBJzntLkwGm1AR5XEmtpKaNSt7bvq7GtmdR1BiNhoFXBxImJm9a+8e9fS9vamH4U92d6onJZOu1Jp8HKUJc8+5nndScGX0qfxajMXHEe+rAl2PWruIfft0E6Gn3hIkVIkj2hQebW4p0m64iU1XedhaCG7HuRpGLyx2vrcCv7N3v5AMmuWvhtOJTHjN97tGoOTAQuM57VAmEzaVuvxRfFYoHtf0DDKb1ZrlBQw6QkzNCcI2nNsdZj1p3URNZKc5M+wzp1gS36H5KnpHuV1E/ST41tK2quh8v7q+U+OAiFPs5475tlH9Uyw482kIg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZnGlv5pM1z30TY;
+	Wed, 30 Apr 2025 09:31:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b35"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745969467;
+	cv=none; b=h0NW484FRi510J/mO0Glfh/aOu9camj5pTBHvwDt7XcjoWDwDQOdtpVfmnwEXgprEC2WRvFPLAe8mSkbmDAa5xVRhvCvRkoq1j6xNKFEVAattorIsDjp4BAj1Hk4/OEER0fCrTMb4M8gIkhdNp6lS7OoSFIPzfgikNinJatsJRworPvClw6BVgLVa+Vn1A2RJTJEAaHZS02n1QV8ONaoiZVoZPc2kTnPmiZtNnWMQc5nQaUa/Vx4Gb82DoZXjc3IZJCsDbFHzOZZoqLZqlhc0DMCdtuOv0LYn2460CMAlVw+Q9gDJR1TN3y4xa+PxK1+l4YmDsR11mpb8iFtVu3xZg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745961278; c=relaxed/relaxed;
-	bh=o4kfW0CZtaxODQ2nyZUMar4KmvI/zq8Gtr2YS+w8zD4=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Y5CTiSMA6o1P+VxM3pcNmqbHfgfmG0Perqqn7Q/nKolknOsqed2AJ88SMrPWCMrsu1Gnc1KVRANl57kxtt4kNtb/rnfBzs/kGsQFAAWlRW45rpkQ1EDAxerkOyZVHWGliBig3jdfE+/vl9M3q3/EliqzKWW1SASRN6Jbmws6z6XPbW3H1SFCmWpBlCR16eza9OoxfZNshVVJ8boSDylkAGMZLN7rjRvBRwZIrrB8VJtisvG9U+2CAhXxGvV+djTX3lH32QsU0kYIgX7X7pJ0XGismEtb+WBkh1EPYr/hPvT3UzNPllVV81yVrFyg5IBhkdAVciCmOSIkAo6b3TsoXw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Yf4vC5e4; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1745969467; c=relaxed/relaxed;
+	bh=cIuAebnQ3utGP4sRcNF3af9094rXpAxKt1SXsqCPHIU=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=d+/sdv5WrcEo3Vc+34AdqaB1A0HzhRuKjulQ1xOs2dvkGu6QUYZ7P33koVIHvMZ8rQhsTQ4pxvRYzp81Y+OtAtKPkbVwQ/Yk+UgPDvICm1O0GMbLH8beQRpb+V4iU1/nzXln+MaM0DNeetIekGgL4EmW5+oPTFIw9pGVjgqj44tSovic2FYyKcqxBVAVR6muO+d2jwmxzpk5pRhcnDIQ8LMVsJ4M7ifvYNOpUPnl91fJNhxgaKJxSq9aIMcwcXZvH6VDTaaKxtXVxpPr/rfhI7pMwsZd4EBuMRYnSiheLjQ63DmmN1wHM5xWx9i4SxLaf1jzzAX2mYfktSrAW+4Ymg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com; dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=b5CIjzGE; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b35; helo=mail-yb1-xb35.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org) smtp.mailfrom=paul-moore.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Yf4vC5e4;
+	dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=b5CIjzGE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=paul-moore.com (client-ip=2607:f8b0:4864:20::b35; helo=mail-yb1-xb35.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb35.google.com (mail-yb1-xb35.google.com [IPv6:2607:f8b0:4864:20::b35])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZnCkP0lm8z2ySN
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2025 07:14:36 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 53TJCDAd009393;
-	Tue, 29 Apr 2025 21:14:27 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=o4kfW0CZtaxODQ2nyZUMar4KmvI/zq8Gtr2YS+w8z
-	D4=; b=Yf4vC5e4OU7syeBf9phF57SSPmh09CHy3e1LdKPwOo7ZVx3MSYTMs0zsj
-	IEk2Xu1NE0sphp4cN+Br9MUo/docHWhUy3TDF6t8ryBEj5OZQmhC4DikGCiaQkxT
-	AoYenEX+52mVPgTlO7hhT5OiLC8pU3Nve+qPvbgpiyyovOI+zg+5GcqYFr/LoUCs
-	r+SDgGj79tAU3s9RMvUE6gB8n9cmhKAiQEprTRVw8Y6F1/w6k10iD2vZlUaeKKRB
-	CwX6tlRtUy0SwGfwErAIYaMQLQHgHaO3vO+otsVmH6AJN87JrLmpMkn7bJfDHz0h
-	3tkGxHfw3H2Z75KGOIbbBEVQ4U51g==
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46aw7t2ucd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 29 Apr 2025 21:14:27 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 53THLUi8000666;
-	Tue, 29 Apr 2025 21:14:26 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 469atpd53e-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 29 Apr 2025 21:14:26 +0000
-Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 53TLENKW30016036
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 29 Apr 2025 21:14:24 GMT
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D723758062;
-	Tue, 29 Apr 2025 21:14:23 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E086158054;
-	Tue, 29 Apr 2025 21:14:22 +0000 (GMT)
-Received: from li-4910aacc-2eed-11b2-a85c-d93b702d4d28.ibm.com.com (unknown [9.61.186.27])
-	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 29 Apr 2025 21:14:22 +0000 (GMT)
-From: Haren Myneni <haren@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, sfr@canb.auug.org.au, tyreld@linux.ibm.com,
-        linux-next@vger.kernel.org, hbabu@us.ibm.com, haren@linux.ibm.com
-Subject: [PATCH] powerpc/pseries: Include linux/types.h in papr-platform-dump.h
-Date: Tue, 29 Apr 2025 14:14:18 -0700
-Message-ID: <20250429211419.1081354-1-haren@linux.ibm.com>
-X-Mailer: git-send-email 2.43.5
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZnGlt1WkHz2yjV
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2025 09:31:04 +1000 (AEST)
+Received: by mail-yb1-xb35.google.com with SMTP id 3f1490d57ef6-e731cd5f2adso3733852276.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2025 16:31:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=paul-moore.com; s=google; t=1745969460; x=1746574260; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=cIuAebnQ3utGP4sRcNF3af9094rXpAxKt1SXsqCPHIU=;
+        b=b5CIjzGEMS4m8MX7h7mDTqngnai462/L2gmMDP3lR/23v44Yb+HrBvWJikn959WzQ/
+         yWP2gz/AMSuzHgP/Rv8nmJ0FpniATcGx9TNcH6o8HaHM1jEZoW2D1x6xSm7s1L+V5W12
+         m5cwcvotR5+hQgS+OWVagTBFOiGGzDaQq0pzORPkiKxJ+K0wVjoETvT+xmHairZ8i3Is
+         LaLlNf0Ucnv9Kizop28kFjl9/XniNZ68HanKYXJ8uDO8sEs77okGltd7BGQYQwYB0bhI
+         hk99u6MCqFLoAOqt1g+uJvoruOcUc9s8REPmXiH8jUf5ECbn4p7c+rU3lIOPEPJe9qyH
+         +wPQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1745969460; x=1746574260;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=cIuAebnQ3utGP4sRcNF3af9094rXpAxKt1SXsqCPHIU=;
+        b=JJCakAhhizQRgYcvHVhGCG2MlyE+c1PsrcQ8PZp7PMXSxoYzX7DHTHm9lw+Dc4f8eb
+         JmtGUgTYeNxtsJnX5f112jEZm+38pelVMSPI6JhJJXm5ULWl3Cjoila6wAXNGM1HNn7J
+         RpDIIydLNwMppqi83WvlZJtgQ3xio+F28rvNZTIX0ODfCaUZWewQf4sF2RrytA8xblEI
+         p8LgmCg11DoGr0/459f6nCIX9wjzHEiG6jeD5/rftHtiapA2JJXIZ1oYK1khGxTQtxln
+         9zu/v1LsgFIR2vr8PN7GE3C9tTWIRfj+pC6FVag60RnX04Tbt8weDqWsY4G/Ua3VQbBB
+         ezDQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXbAZhRg89di706X9qahK6CmL5JuTmSLF9cBxw1lJNKkDpffXvi/RISI7r4hNjbHWMT+Gp8VNLJ7pe76cg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy0Z8QQTsa4KNsDZDLG2YFLabMlGAHI36SUR5HOC/+coIGxCHrf
+	oGvF/2J5VOfu1Pbxl8lcptXYRu30huzyvXJXGxFhtju9sH3Ufbzfj4VVHidFQUk8x+QS0A69ZSM
+	jQD086dhYhJQjA7dOdfPZHbePwC69zruQiqTx
+X-Gm-Gg: ASbGncsjdlhjCsja2uFL4Ep0bXNj7s1hPadeuhix3abCtRZkHHuzIkRF27iI6NWzkFC
+	k4wSkdGZ22NaSHXEWAy+HGAVEIjrupFKtz1t3GOAhyWBRlUgrB3saKh/hnZ5zOHbDcm2vveHDDL
+	WAIi87fo+YzatQoLwchkuN/A==
+X-Google-Smtp-Source: AGHT+IGwua5N9PuQI5YXnZ9QizB13TEvlVyb3ghRMEepupOY9IBACmHRKJ/ceFLULrT2r9vA2fNY/xi9tZpK618tJa8=
+X-Received: by 2002:a05:6902:e09:b0:e73:17e3:ef4e with SMTP id
+ 3f1490d57ef6-e73ecf7cabdmr1474221276.48.1745969460035; Tue, 29 Apr 2025
+ 16:31:00 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,49 +79,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNDI5MDE1NiBTYWx0ZWRfXxrnvX5Q2NAUr 8c/nu6b5t0J3e9CkVxeArCgh1I0IJmIRdtBBWfitR3bt8m/80ygw0NrW+34t0HLX8CqeSue71M9 1yMkr8rsD9s2RUj5FKhzNKbhCIEJrPRSLEEVttU5jemYHtEkd0QHTNbZ+bnNI1ep0XPT2F4xXIB
- hX+yhSdMbfSpORp3fBMgP5jrx7ztFkaAH8cgG7Loov1yY2rfjsLuzTvnsjYkpYkY9w+L65CXMrk ErXc3ENJut9xiVe+Ld4/+N0uUALUhfwg8gcJarTHtfVEdId9dWUV0qSUuvED0twubcIfkRFba9B DW2LYoGkYFM1Zq/FQxYVIwH03QhYTZbQu9vDd6idqCfXYfFvv6l9jKpTXi8HRWWk3vsR3j6TuUP
- UZyarLESHH5m7B4MGA36czCxYieB4TsSMqPLiXHjjl51tOoAvT9IWy8nM0VXGgaYoOCZXUJ8
-X-Proofpoint-GUID: SruYYSz7Yl3R9JfTCELRAW1fr3l2bz8P
-X-Authority-Analysis: v=2.4 cv=MJRgmNZl c=1 sm=1 tr=0 ts=68114133 cx=c_pps a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17 a=XR8D0OoHHMoA:10 a=VwQbUJbxAAAA:8 a=rOUgymgbAAAA:8 a=VnNF1IyMAAAA:8 a=IJ5uNYSzlZeX1pgoDwQA:9 a=MP9ZtiD8KjrkvI0BhSjB:22
-X-Proofpoint-ORIG-GUID: SruYYSz7Yl3R9JfTCELRAW1fr3l2bz8P
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
- definitions=2025-04-29_08,2025-04-24_02,2025-02-21_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 clxscore=1011
- suspectscore=0 priorityscore=1501 phishscore=0 adultscore=0
- lowpriorityscore=0 impostorscore=0 malwarescore=0 mlxlogscore=950
- mlxscore=0 bulkscore=0 classifier=spam authscore=0 authtc=n/a authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
- definitions=main-2504290156
+References: <20250429-module-hashes-v3-0-00e9258def9e@weissschuh.net> <20250429-module-hashes-v3-8-00e9258def9e@weissschuh.net>
+In-Reply-To: <20250429-module-hashes-v3-8-00e9258def9e@weissschuh.net>
+From: Paul Moore <paul@paul-moore.com>
+Date: Tue, 29 Apr 2025 19:30:48 -0400
+X-Gm-Features: ATxdqUHKCRv2dWw3Z8HwiaRKbffRbebAcIs6GQu6Ludlza-Iyae1SuGp-QceJWc
+Message-ID: <CAHC9VhSAANnOYB11AerdtpEwWSu9OoRdxW34dap909D3z=t49A@mail.gmail.com>
+Subject: Re: [PATCH v3 8/9] lockdown: Make the relationship to MODULE_SIG a dependency
+To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
+Cc: Masahiro Yamada <masahiroy@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
+	Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, 
+	Sami Tolvanen <samitolvanen@google.com>, Daniel Gomez <da.gomez@samsung.com>, 
+	James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>, 
+	Roberto Sassu <roberto.sassu@huawei.com>, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
+	Eric Snowberg <eric.snowberg@oracle.com>, Nicolas Schier <nicolas.schier@linux.dev>, 
+	=?UTF-8?Q?Fabian_Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>, 
+	Arnout Engelen <arnout@bzzt.net>, Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>, 
+	Christian Heusel <christian@heusel.eu>, =?UTF-8?Q?C=C3=A2ju_Mihai=2DDrosi?= <mcaju95@gmail.com>, 
+	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arch@vger.kernel.org, linux-modules@vger.kernel.org, 
+	linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Fix the following build warning:
-usr/include/asm/papr-platform-dump.h:12: found __[us]{8,16,32,64} type without #include <linux/types.h>
+On Tue, Apr 29, 2025 at 9:04=E2=80=AFAM Thomas Wei=C3=9Fschuh <linux@weisss=
+chuh.net> wrote:
+>
+> The new hash-based module integrity checking will also be able to
+> satisfy the requirements of lockdown.
+> Such an alternative is not representable with "select", so use
+> "depends on" instead.
+>
+> Signed-off-by: Thomas Wei=C3=9Fschuh <linux@weissschuh.net>
+> ---
+>  security/lockdown/Kconfig | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
 
-Fixes: 8aa9efc0be66 ("powerpc/pseries: Add papr-platform-dump character driver for dump retrieval")
-Closes: https://lore.kernel.org/linux-next/20250429185735.034ba678@canb.auug.org.au/
+I'm hopeful that we will see notice about dedicated Lockdown
+maintainers soon, but in the meantime this looks okay to me.
 
-Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
-Signed-off-by: Haren Myneni <haren@linux.ibm.com>
----
- arch/powerpc/include/uapi/asm/papr-platform-dump.h | 1 +
- 1 file changed, 1 insertion(+)
+Acked-by: Paul Moore <paul@paul-moore.com>
 
-diff --git a/arch/powerpc/include/uapi/asm/papr-platform-dump.h b/arch/powerpc/include/uapi/asm/papr-platform-dump.h
-index a1d89c290dab..8a1c060e89a9 100644
---- a/arch/powerpc/include/uapi/asm/papr-platform-dump.h
-+++ b/arch/powerpc/include/uapi/asm/papr-platform-dump.h
-@@ -2,6 +2,7 @@
- #ifndef _UAPI_PAPR_PLATFORM_DUMP_H_
- #define _UAPI_PAPR_PLATFORM_DUMP_H_
- 
-+#include <linux/types.h>
- #include <asm/ioctl.h>
- #include <asm/papr-miscdev.h>
- 
--- 
-2.43.5
+> diff --git a/security/lockdown/Kconfig b/security/lockdown/Kconfig
+> index e84ddf48401010bcc0829a32db58e6f12bfdedcb..155959205b8eac2c85897a8c4=
+c8b7ec471156706 100644
+> --- a/security/lockdown/Kconfig
+> +++ b/security/lockdown/Kconfig
+> @@ -1,7 +1,7 @@
+>  config SECURITY_LOCKDOWN_LSM
+>         bool "Basic module for enforcing kernel lockdown"
+>         depends on SECURITY
+> -       select MODULE_SIG if MODULES
+> +       depends on !MODULES || MODULE_SIG
+>         help
+>           Build support for an LSM that enforces a coarse kernel lockdown
+>           behaviour.
+>
+> --
+> 2.49.0
 
+--=20
+paul-moore.com
 
