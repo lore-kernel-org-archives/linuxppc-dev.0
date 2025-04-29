@@ -1,46 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-8146-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8147-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D70FC3ABA5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Apr 2025 13:11:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 679D1C3ABA5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Apr 2025 13:12:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zn11D3YKrz30VM;
-	Tue, 29 Apr 2025 23:11:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Zn11F30vSz30VF;
+	Tue, 29 Apr 2025 23:11:45 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745932304;
-	cv=none; b=FhpT81HTz9l2tIf4NZlQ1Ku5YiKJ9CP4syWsHqnbJ54RiM9+76vqeDYZvlnSdFNYwOBGELuKfXvrAY1mLOPKs8l/qUjWwrWWTKUUx552/ilZqnMt4ktmgcDNuVgWvrQrMhhfr+V11Whe8gGXsxW89VA7Tp2BhcNS7wz2eQpm3PH9/1H6/O9jaUTVY0R7PXfazHfGNzvkKftprmCR9wuK0pYTPk8/lwXB7Vx8+SN/YHjjx/C7RtCn35HvIlmNghK+i5/p/LWlPgphuhQick/ye51jxHZqlMnmKpiBZzQP0dJWn7gn89Rm8wJWFyEkzDvGimWzia8Azsy/mTJ+ru5UzQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745932305;
+	cv=none; b=e6BIW3xb/iIBfjiVunDQDLsiuXUDc73KMHi80pLKIaBW+OuX0j6ixqeMFsSpV60hGuAjAIQZLX1heH68rjAF7PAOkVrXRX0aotDEqVIX6NuZiyH9JD5Vv8hAWmiRphM3rdw2hL7nFBl224F12QmdubsgNnm3Ji0BKIm/Sfl7MwmbWzRVpJkegPxhz10miLY5S1ZTkGEz4tXuQha8VRBBxZoROBpgKCISnXDSp46x9/WTBHGhqj4bWUjv9IEHJcYQhE6JBV94+AV0BQK9UsKCCWQj7iX6F5LbmY3bQUGId5jh18oIl3FtKTcNzqcpU0Qf14a+WlnBDl2cyxLIQHIV7Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745932304; c=relaxed/relaxed;
-	bh=oUFhmXFCBunPnLrlSz62rC8pQNGqtXlW5XV6j5WYmww=;
+	t=1745932305; c=relaxed/relaxed;
+	bh=S0yCm4OGge+sQpscopHNk2h1csJHis5gPj31mD/ExFE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KdUMW7zJWVUAka0FIEYVtrrv/h7g7sE/ZmJ19QwkZ9hsHQUpeT39nHqTe5UL/sfYvvZlj74kIkqmJ4vXz+AvMV4a7gId3SPsh2Rq+cF5IQloV4OhCvtrHDN3FHYxRD+SRtJc5nr/2X7F12IY3nUQuZGdYFXMlHUVd5c1YXDUgiOh18JqzPYhigwlhuopwkIXwqQOr15G3J5/1sUVYx/jc4v5z4ydbH8T/wtzRVTIKvkoqia2r8vLPM21vIbXmWzVQTfw02FkTa/6fiJH8WlZzS5NGmK08Ymym6O1h89LcVlyrVg2f/SW05SmySF0rIKC1y7RprXglRvYVEUxuGPFtw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=InUYUEBx; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=nC9CXGizWsIxs/gRTFtJP2Dj5G0Imf5o6ik/n8Beuy8b8Kt58sY5nhK2xbe6KLaNKsa/N1c9wb194Pj0iKCdnZ62a4ZEbjXbUaPolPJeO5cGX4xU9m/9rJFQ8FlHC//7Qkwf3nZP3OpIdKmW4Az5HSOgwjOQeV5JzbfkVn45HfFqYbWhvLUtB6JghbGnjnMzQtCiHijfRagWJ5UPhLqBiol/HmDUt0tDq4VJdzG2DGyjGrSj2xnoQ5JCjXp5aJB+jIOttDtiIYtneqELIHgITemIvsXMUgmNQkPJ6gqONZGGZTXITmn0cKSSgTi7fvaOvKe8HM2lsMCTqhMymN0dTQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=WtCigX7B; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=InUYUEBx;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=WtCigX7B;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 418 seconds by postgrey-1.37 at boromir; Tue, 29 Apr 2025 23:11:41 AEST
 Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zn1191f8Bz30VF
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zn1192pVbz30VV
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2025 23:11:41 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1745931874;
-	bh=UCCJkeYdVSKNrm9L/l2LgArwTnkqToFIXrGQtz775hQ=;
+	bh=kmQUIW+5wYPfShUIrOsErGdMJNnQUWIZ+BIWQSkTJR8=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=InUYUEBxzcaSdnkfyWEYs5gnGMDG+ZrErjBcXwVYAokpi9GEx8U1OAq8QYl2tMjVP
-	 1ekrjrvh9Kq4zyyJzkto/U4Kn8QLoXereQhuqEhHhjjsu1IS7NMnfsLI/u0MH1f9jK
-	 qMLc+34JpYBUgNoLb0o6WFDZy5UfMXBeZPj/wmy4=
+	b=WtCigX7BHHuvjnDxDfwmcSBeyBTCRfjxFnCfp2BR4OAm8h26gm2cA1/Y41MLSAFgt
+	 1Lui6JugA7ZpyRc/IZB1OjD42wB3i+36XOrIwAmkctFHApWN8n8eNQWTRbRgCPvph3
+	 brq4Vp0mkbXBZ/i62ncTuTb5J/ZgYF05LkJovw2Q=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Tue, 29 Apr 2025 15:04:32 +0200
-Subject: [PATCH v3 5/9] module: Make module loading policy usable without
- MODULE_SIG
+Date: Tue, 29 Apr 2025 15:04:34 +0200
+Subject: [PATCH v3 7/9] module: Move lockdown check into generic module
+ loader
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,7 +55,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250429-module-hashes-v3-5-00e9258def9e@weissschuh.net>
+Message-Id: <20250429-module-hashes-v3-7-00e9258def9e@weissschuh.net>
 References: <20250429-module-hashes-v3-0-00e9258def9e@weissschuh.net>
 In-Reply-To: <20250429-module-hashes-v3-0-00e9258def9e@weissschuh.net>
 To: Masahiro Yamada <masahiroy@kernel.org>, 
@@ -84,157 +83,60 @@ Cc: =?utf-8?q?Fabian_Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>,
  linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1745931873; l=4529;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1745931873; l=1576;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=UCCJkeYdVSKNrm9L/l2LgArwTnkqToFIXrGQtz775hQ=;
- b=FFTZUNwOflf9z+ryGT7IH9ClBV+Qgyns9jpZd219As5W1VpY2anGRlh//7RjRR1nc7E7upt8z
- nqLMla0XzUOAp/oDbt2x4NABjz1decy6MVywaUlDbU1LQpYgWKpemko
+ bh=kmQUIW+5wYPfShUIrOsErGdMJNnQUWIZ+BIWQSkTJR8=;
+ b=UeBVXcH7NmJEkR+38OyjzyfoU04GJpL9A/GpeD8/tUNbtYa0RNhFf/oUemhiWfy3i/HNqh5wb
+ 6448IhPkVJ2DZ12vw7Fz0/2aJ9GNQhLh065QNg6B4NkyTQK1vbDsDIR
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-The loading policy functionality will also be used by the hash-based
-module validation. Split it out from CONFIG_MODULE_SIG so it is usable
-by both.
+The lockdown check buried in module_sig_check() will not compose well
+with the introduction of hash-based module validation.
+Move it into module_integrity_check() which will work better.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- include/linux/module.h  |  8 ++++----
- kernel/module/Kconfig   |  6 +++++-
- kernel/module/main.c    | 26 +++++++++++++++++++++++++-
- kernel/module/signing.c | 21 ---------------------
- 4 files changed, 34 insertions(+), 27 deletions(-)
+ kernel/module/main.c    | 6 +++++-
+ kernel/module/signing.c | 3 +--
+ 2 files changed, 6 insertions(+), 3 deletions(-)
 
-diff --git a/include/linux/module.h b/include/linux/module.h
-index d94b196d5a34e104d81308df4b150452eb96cdc9..68aa8bbd33acc84e013dc575ee88bd4e3101f9f4 100644
---- a/include/linux/module.h
-+++ b/include/linux/module.h
-@@ -453,7 +453,7 @@ struct module {
- 	const u32 *gpl_crcs;
- 	bool using_gplonly_symbols;
- 
--#ifdef CONFIG_MODULE_SIG
-+#ifdef CONFIG_MODULE_SIG_POLICY
- 	/* Signature was verified. */
- 	bool sig_ok;
- #endif
-@@ -921,14 +921,14 @@ static inline bool retpoline_module_ok(bool has_retpoline)
- }
- #endif
- 
--#ifdef CONFIG_MODULE_SIG
-+#ifdef CONFIG_MODULE_SIG_POLICY
- bool is_module_sig_enforced(void);
- 
- static inline bool module_sig_ok(struct module *module)
- {
- 	return module->sig_ok;
- }
--#else	/* !CONFIG_MODULE_SIG */
-+#else	/* !CONFIG_MODULE_SIG_POLICY */
- static inline bool is_module_sig_enforced(void)
- {
- 	return false;
-@@ -938,7 +938,7 @@ static inline bool module_sig_ok(struct module *module)
- {
- 	return true;
- }
--#endif	/* CONFIG_MODULE_SIG */
-+#endif	/* CONFIG_MODULE_SIG_POLICY */
- 
- #if defined(CONFIG_MODULES) && defined(CONFIG_KALLSYMS)
- int module_kallsyms_on_each_symbol(const char *modname,
-diff --git a/kernel/module/Kconfig b/kernel/module/Kconfig
-index c51f25538d0ea66e6486ad0be6684173cd0140b5..a3146e9378fcd3292a756a2a7ea5241524cbc408 100644
---- a/kernel/module/Kconfig
-+++ b/kernel/module/Kconfig
-@@ -265,9 +265,13 @@ config MODULE_SIG
- 	  debuginfo strip done by some packagers (such as rpmbuild) and
- 	  inclusion into an initramfs that wants the module size reduced.
- 
-+config MODULE_SIG_POLICY
-+	def_bool y
-+	depends on MODULE_SIG
-+
- config MODULE_SIG_FORCE
- 	bool "Require modules to be validly signed"
--	depends on MODULE_SIG
-+	depends on MODULE_SIG_POLICY
- 	help
- 	  Reject unsigned modules or signed modules for which we don't have a
- 	  key.  Without this, such modules will simply taint the kernel.
 diff --git a/kernel/module/main.c b/kernel/module/main.c
-index a2859dc3eea66ec19991e7e4afb5bbcae2c2d167..83c66205556fdde92152c131f1f58229c4f7f734 100644
+index 0c88d443a3bc894b18a7aa230cadf396e585c415..1c353ece05fd1d2d709204e4d5fa44ecb8832bfa 100644
 --- a/kernel/module/main.c
 +++ b/kernel/module/main.c
-@@ -2432,7 +2432,7 @@ static void module_augment_kernel_taints(struct module *mod, struct load_info *i
- 				mod->name);
- 		add_taint_module(mod, TAINT_TEST, LOCKDEP_STILL_OK);
- 	}
--#ifdef CONFIG_MODULE_SIG
-+#ifdef CONFIG_MODULE_SIG_POLICY
- 	mod->sig_ok = info->sig_ok;
- 	if (!mod->sig_ok) {
- 		pr_notice_once("%s: module verification failed: signature "
-@@ -3808,3 +3808,27 @@ static int module_debugfs_init(void)
+@@ -3254,7 +3254,11 @@ static int module_integrity_check(struct load_info *info, int flags)
+ 	if (IS_ENABLED(CONFIG_MODULE_SIG))
+ 		err = module_sig_check(info, flags);
+ 
+-	return err;
++	if (err)
++		return err;
++	if (info->sig_ok)
++		return 0;
++	return security_locked_down(LOCKDOWN_MODULE_SIGNATURE);
  }
- module_init(module_debugfs_init);
- #endif
-+
-+#ifdef CONFIG_MODULE_SIG_POLICY
-+
-+#undef MODULE_PARAM_PREFIX
-+#define MODULE_PARAM_PREFIX "module."
-+
-+static bool sig_enforce = IS_ENABLED(CONFIG_MODULE_SIG_FORCE);
-+module_param(sig_enforce, bool_enable_only, 0644);
-+
-+/*
-+ * Export sig_enforce kernel cmdline parameter to allow other subsystems rely
-+ * on that instead of directly to CONFIG_MODULE_SIG_FORCE config.
-+ */
-+bool is_module_sig_enforced(void)
-+{
-+	return sig_enforce;
-+}
-+EXPORT_SYMBOL(is_module_sig_enforced);
-+
-+void set_module_sig_enforced(void)
-+{
-+	sig_enforce = true;
-+}
-+#endif
+ 
+ /*
 diff --git a/kernel/module/signing.c b/kernel/module/signing.c
-index a2ff4242e623d5d4e87d2f3d139d8620fb937579..e51920605da14771601327ea596dad2e12400518 100644
+index e51920605da14771601327ea596dad2e12400518..029e1ef6f0e369fd48e8c81154b6c697ad7a6249 100644
 --- a/kernel/module/signing.c
 +++ b/kernel/module/signing.c
-@@ -16,27 +16,6 @@
+@@ -11,7 +11,6 @@
+ #include <linux/module_signature.h>
+ #include <linux/string.h>
+ #include <linux/verification.h>
+-#include <linux/security.h>
+ #include <crypto/public_key.h>
  #include <uapi/linux/module.h>
  #include "internal.h"
+@@ -100,5 +99,5 @@ int module_sig_check(struct load_info *info, int flags)
+ 		return -EKEYREJECTED;
+ 	}
  
--#undef MODULE_PARAM_PREFIX
--#define MODULE_PARAM_PREFIX "module."
--
--static bool sig_enforce = IS_ENABLED(CONFIG_MODULE_SIG_FORCE);
--module_param(sig_enforce, bool_enable_only, 0644);
--
--/*
-- * Export sig_enforce kernel cmdline parameter to allow other subsystems rely
-- * on that instead of directly to CONFIG_MODULE_SIG_FORCE config.
-- */
--bool is_module_sig_enforced(void)
--{
--	return sig_enforce;
--}
--EXPORT_SYMBOL(is_module_sig_enforced);
--
--void set_module_sig_enforced(void)
--{
--	sig_enforce = true;
--}
--
- /*
-  * Verify the signature on a module.
-  */
+-	return security_locked_down(LOCKDOWN_MODULE_SIGNATURE);
++	return 0;
+ }
 
 -- 
 2.49.0
