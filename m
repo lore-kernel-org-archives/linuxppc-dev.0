@@ -1,46 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-8148-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8149-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A758C3ABA5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Apr 2025 13:12:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54E68C3ABA5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Apr 2025 13:12:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zn11F4Llxz30WY;
-	Tue, 29 Apr 2025 23:11:45 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Zn11H0CtSz3bgw;
+	Tue, 29 Apr 2025 23:11:47 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.69.126.157
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745932305;
-	cv=none; b=KwphmdIPKgAWf1EHIrbH+15T5xJNy5it7xRdWHmf6ASjGGbqqgKE3XDhFgiu2ybRaS87riTVGigyIqJXT0umUR8P05CQM2BauIftrRus5YBKQUuaH915QVADxFesLVFRVMG9XOXfOYXuR2rYJ2OyBEUb73l/O3ycD2d43+ipdJ6fyJmdfDfzIqHu/KV7IPUeYCHBy20kM09dErFaQClfV0X8cn5JVEjAaXAeEUZytRvn52jg2wmnU1j1vOYJ7Kic4jW/GqM+rPuuno8Fq/vk9SaFzKglc+cYypyUpkQ+7G4OpX3QdYUVcdihxkUrbiu9v4qMeLQBXX/5YHcvl2oPBA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745932306;
+	cv=none; b=FhFiZ3YVOf+JcHqHM1uavmgUBOZ0SjVtv2PjM/BsVbjsAQHgJIbc8jyB3Wk+epRSVKpW8waBUTHl828cRxtBjubXmkmsUNWivs62kgfD4YqsZR/xheKBtDc6hzfX3knS71/oPHScmgFrgD2GC4SVZoYnvLl1jSNa9qZbcQxRmZ57YikgwAmgPMPT03DPDmY+ai7uLCwl+2+BJZSihEHRPLm/8EjQ8QrRGU78d3KbdFS54iD+2iHriYxH4NswBVlAVcYKKSOlWTdJvxzqXAjAClgwpygiOXjmGRqQuTE1Lx2TITjvfPE2V/HIGmF386vOUlC+ulBiZMulMAUIFp3TGA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745932305; c=relaxed/relaxed;
-	bh=aScCtlxWmkOt5Ivc1Zwa4/rnBW43yx6ns9TNjITSQ0I=;
+	t=1745932306; c=relaxed/relaxed;
+	bh=JIT3OVdj+I/feDJ7MIZzHLsKy8BpbSltNl8ZAReeByk=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=hya6ASH0y78MNZPXSLbR29nfJf+LMwPM8aVIiYH1zQ/NNMXGRXov88OMJp7B4CvIUhHcg7GxRdRrTgYvIWLN9T5BvEkAZ9gOcnm5F3I58FdWij8uTP3N3RfTK4kwFPFKISASJwz6WqtVoZi6uZFELs2cPnDQT2WAMPvQXzFbISEmo+VnkcMuuz5yMU7NdBYBM0Hj+8RX9IjZuFBgZUrJPVVphlzLxGMXHjeEq038odLosl2KTERQbVSFDPeYx16J6FvET3rHFywkfQv5B7KAIb3BlnJ/alS6IskDeziloGqCglgnUOSUBCBxW6GiaxCVwXQmbeUyrAqf96UmiI3JNg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=IP1DdbS6; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+	 In-Reply-To:To:Cc; b=RNt5QdYC2KYWb/MCtfDjbmOKRMhRNxYQC56S1oEs4YwPbqJPzMcbunKeniMmQFBjACx3zSjjci4Cz8uzaR6vxBa4sGAk1s3str26TQPwF1ITJzBoaOGjEmqNXK/8+Jo6q2rGnOHMHXncZYwE1y4v/ztA4kF5hZF27Mi0IMint5UkjWahLJPQEZ0VFHM4T/Ozqy4ilxWYtGRPw+CLXTVDpgruC0b9tdvvCsgj0uc+6qUGXvoV1F40sY8xFrqWmuB4XBpAB0QG/z67LfCeYAKywyTtUWtDL4h4uN50Bip2qACgZi1iPEE7rx/1nCdCMpc1q+KpL32RYdB72YUJMGLBhA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=VYryOxdF; dkim-atps=neutral; spf=pass (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=IP1DdbS6;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=VYryOxdF;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=159.69.126.157; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 417 seconds by postgrey-1.37 at boromir; Tue, 29 Apr 2025 23:11:40 AEST
 Received: from todd.t-8ch.de (todd.t-8ch.de [159.69.126.157])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zn1186JzXz2yZ6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2025 23:11:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zn11G1JS9z2yZ6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2025 23:11:46 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
 	s=mail; t=1745931874;
-	bh=uAWB6PT9KWFnBAMA3cbexNOM6gBbMJ+pc0ZLJPh/nCk=;
+	bh=T0fD62G5Xd9JAdE1vJEHi+5qJb4+xZfzKULQbTpVsYY=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=IP1DdbS6IzaBothHocjADf+qL4oAkLdiurq64F5MflZ0CZDa/lYpWrsml+742YHst
-	 iOyI0+5LcIsIS/W4HFdjoT/ntGDbtphulyydXha40XALs+kRmGLCiVLEfgRlEXd44i
-	 i3j7qFAN06WEqLbuj3qkp+iO8C4pKXai2Bd1HOA8=
+	b=VYryOxdFWiuicUrPjgyis2zuZL8HUMkxBtaWkvPWWMgwx6fNX77ASJjeDFDpfyYHw
+	 KlP9XfRkBQRLrRP6PSNRiZKXU1e4Esjb2A29aFuLPFeS3riZO9QVkA9NNt7hZLeydC
+	 NcnvAzHlpyrHYLn4kkg+67KDunNeKerUN6ll+XQs=
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Date: Tue, 29 Apr 2025 15:04:33 +0200
-Subject: [PATCH v3 6/9] module: Move integrity checks into dedicated
- function
+Date: Tue, 29 Apr 2025 15:04:31 +0200
+Subject: [PATCH v3 4/9] kbuild: generate module BTF based on
+ vmlinux.unstripped
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,7 +55,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250429-module-hashes-v3-6-00e9258def9e@weissschuh.net>
+Message-Id: <20250429-module-hashes-v3-4-00e9258def9e@weissschuh.net>
 References: <20250429-module-hashes-v3-0-00e9258def9e@weissschuh.net>
 In-Reply-To: <20250429-module-hashes-v3-0-00e9258def9e@weissschuh.net>
 To: Masahiro Yamada <masahiroy@kernel.org>, 
@@ -84,89 +83,45 @@ Cc: =?utf-8?q?Fabian_Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>,
  linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1745931873; l=2744;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1745931873; l=1584;
  i=linux@weissschuh.net; s=20221212; h=from:subject:message-id;
- bh=uAWB6PT9KWFnBAMA3cbexNOM6gBbMJ+pc0ZLJPh/nCk=;
- b=iRF9YHFRJ0F5rufwXzvY22fLGkR188SEbIQOvxK8Ykc40lMoYTbbn3dxF8M1U6Io0VBFSQnub
- DLlawF/4eSbCgHUqpSnuVTwGNU8WrJh6r3nnQCGoXmCtSCexZ7mG2aR
+ bh=T0fD62G5Xd9JAdE1vJEHi+5qJb4+xZfzKULQbTpVsYY=;
+ b=6lIaRg6590Hj4acqj1sln00p80ejNkYdhE8fd1gi5gYjFoau00uJEyqPoFekX25gQwNDezEKu
+ qEQc0ld+MXaAAf2/mWACbl7TSFfJDcOGbkpMK55cb7w/QH1GfpEOqS8
 X-Developer-Key: i=linux@weissschuh.net; a=ed25519;
  pk=KcycQgFPX2wGR5azS7RhpBqedglOZVgRPfdFSPB1LNw=
 
-With the addition of hash-based integrity checking, the configuration
-matrix is easier to represent in a dedicated function and with explicit
-usage of IS_ENABLED().
-
-Drop the now unnecessary stub for module_sig_check().
+The upcoming module hashes functionality will build the modules in
+between the generation of the BTF data and the final link of vmlinux.
+At this point vmlinux is not yet built and therefore can't be used for
+module BTF generation. vmlinux.unstripped however is usable and
+sufficient for BTF generation.
 
 Signed-off-by: Thomas Weißschuh <linux@weissschuh.net>
 ---
- kernel/module/internal.h |  7 -------
- kernel/module/main.c     | 18 ++++++++++++++----
- 2 files changed, 14 insertions(+), 11 deletions(-)
+ scripts/Makefile.modfinal | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/kernel/module/internal.h b/kernel/module/internal.h
-index 626cf8668a7eb9202fce13d631f39429a4fe0ace..42fbc53c6af66a1b531fcad08997742d838eb481 100644
---- a/kernel/module/internal.h
-+++ b/kernel/module/internal.h
-@@ -325,14 +325,7 @@ int module_enable_text_rox(const struct module *mod);
- int module_enforce_rwx_sections(Elf_Ehdr *hdr, Elf_Shdr *sechdrs,
- 				char *secstrings, struct module *mod);
+diff --git a/scripts/Makefile.modfinal b/scripts/Makefile.modfinal
+index 5d01b553ec9a4565c8e5a6edd05665c409003bc1..527f6b27baff9db94d31c15447de445a05bc0634 100644
+--- a/scripts/Makefile.modfinal
++++ b/scripts/Makefile.modfinal
+@@ -36,11 +36,11 @@ quiet_cmd_ld_ko_o = LD [M]  $@
  
--#ifdef CONFIG_MODULE_SIG
- int module_sig_check(struct load_info *info, int flags);
--#else /* !CONFIG_MODULE_SIG */
--static inline int module_sig_check(struct load_info *info, int flags)
--{
--	return 0;
--}
--#endif /* !CONFIG_MODULE_SIG */
+ quiet_cmd_btf_ko = BTF [M] $@
+       cmd_btf_ko = 							\
+-	if [ ! -f $(objtree)/vmlinux ]; then				\
+-		printf "Skipping BTF generation for %s due to unavailability of vmlinux\n" $@ 1>&2; \
++	if [ ! -f $(objtree)/vmlinux.unstripped ]; then			\
++		printf "Skipping BTF generation for %s due to unavailability of vmlinux.unstripped\n" $@ 1>&2; \
+ 	else								\
+-		LLVM_OBJCOPY="$(OBJCOPY)" $(PAHOLE) -J $(PAHOLE_FLAGS) $(MODULE_PAHOLE_FLAGS) --btf_base $(objtree)/vmlinux $@; \
+-		$(RESOLVE_BTFIDS) -b $(objtree)/vmlinux $@;		\
++		LLVM_OBJCOPY="$(OBJCOPY)" $(PAHOLE) -J $(PAHOLE_FLAGS) $(MODULE_PAHOLE_FLAGS) --btf_base $(objtree)/vmlinux.unstripped $@; \
++		$(RESOLVE_BTFIDS) -b $(objtree)/vmlinux.unstripped $@;		\
+ 	fi;
  
- #ifdef CONFIG_DEBUG_KMEMLEAK
- void kmemleak_load_module(const struct module *mod, const struct load_info *info);
-diff --git a/kernel/module/main.c b/kernel/module/main.c
-index 83c66205556fdde92152c131f1f58229c4f7f734..0c88d443a3bc894b18a7aa230cadf396e585c415 100644
---- a/kernel/module/main.c
-+++ b/kernel/module/main.c
-@@ -3247,6 +3247,16 @@ static int early_mod_check(struct load_info *info, int flags)
- 	return err;
- }
- 
-+static int module_integrity_check(struct load_info *info, int flags)
-+{
-+	int err = 0;
-+
-+	if (IS_ENABLED(CONFIG_MODULE_SIG))
-+		err = module_sig_check(info, flags);
-+
-+	return err;
-+}
-+
- /*
-  * Allocate and load the module: note that size of section 0 is always
-  * zero, and we rely on this for optional sections.
-@@ -3260,18 +3270,18 @@ static int load_module(struct load_info *info, const char __user *uargs,
- 	char *after_dashes;
- 
- 	/*
--	 * Do the signature check (if any) first. All that
--	 * the signature check needs is info->len, it does
-+	 * Do the integrity checks (if any) first. All that
-+	 * they need is info->len, it does
- 	 * not need any of the section info. That can be
- 	 * set up later. This will minimize the chances
- 	 * of a corrupt module causing problems before
--	 * we even get to the signature check.
-+	 * we even get to the integrity check.
- 	 *
- 	 * The check will also adjust info->len by stripping
- 	 * off the sig length at the end of the module, making
- 	 * checks against info->len more correct.
- 	 */
--	err = module_sig_check(info, flags);
-+	err = module_integrity_check(info, flags);
- 	if (err)
- 		goto free_copy;
- 
+ # Same as newer-prereqs, but allows to exclude specified extra dependencies
 
 -- 
 2.49.0
