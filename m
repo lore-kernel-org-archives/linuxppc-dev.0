@@ -1,50 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-8187-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8188-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6DF8C369D9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Apr 2025 13:20:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2F72C369D9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Apr 2025 13:29:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Znd955bTNz3bmc;
-	Wed, 30 Apr 2025 23:20:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746019241;
-	cv=none; b=K9/IK4MuSN9E2uXIy5yaInCAzmZHp6eoHmWtvNx9X856kgMEtl9WZdKLD35b4moUp/LtwxQqgT5a5b2QcvKPNjzTCmYTSUhDIF8AtTm7CASBMRkhCsBSNZtDIx/SGNDoDRmFozOz6DVQnQZJTBLelnGM2C7myRbzMJPYjprBcuPrnRBKvv263pNdMu+hMbFKBLSgq2wAGXxB1AEt49dDopRLint5yBxgBb+25DmU2R/TRUNpy1FOeNlPribPfBSliQCZn/LRZdDRDPecY8cNrphr6ePtWynZt0pPtq3QEJIW1wH0rWPLnHl8qoBxiORHqt0A7Wwj1ixqDb3J2VcXwg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZndMR0qmWz2yVv;
+	Wed, 30 Apr 2025 23:29:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746019779;
+	cv=none; b=V3tnw4WGTbIwzRDT0NcNXzGFaiON/vNk/qK3/VWHRF8i/duEgvDH+1uSyJVR0uQZJYWoGc5DIKGzk7gBhZIW5yN/QO8DSDvk3PB1FtTHGqoH9zmb223+pyZB/OSr6MOES3D4Ts5r60VO0AF9WkEtUzmFpFM0FyUcrSz1CwQegXpFlyzxvt3JYO3QKNXZ45g2/vSPPnMSzVs+6huqkLQsN+GXKZR3pNVa4n8HuCFnLp4cZIekKRgk/a0qS2Q6Dr4KsN5BIrU9LvAR27a/HGj0wZu/yIYvLKmEbzJEkKsXZ/k/EPbzUVNCN+/VbFDu0YTbBxJIOz/ZeXDSJ/nPiu+9KQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746019241; c=relaxed/relaxed;
-	bh=lap9juuf6M+H21OAhwncTzbUOlYri5ri3aKi052RfMY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=FphFsMpLAR3FwmAeKvm/HdfjzhsN6VbYhnPVY/XH7L8tUyS0YpnfwwzltYRsEuzy94KhimvXKP7kmHGz+IM2gPhWGyz5G1ZOLCp7i5ekCBeAxWz6cjf80RARfy7ub0kMls28oHh40sT2o2tJc1a8dOsyo+f+UfCgYwozXHV1Sk19D2dLTqxGe2u4qJfpVVSgVTvP2CUVfwSnyOZuqyUvVO/BG4aDYPgrY4H1CGdFnYDA4XX9ShpRGx+lQWwT2wpQkeEBZs8u7kJfRDw6k0Y3K790fqinRN9fefPYETJ2aWzt2lWS3j/ErpAchzSBdCFkJL1/xrO72p9tpf8fmRCtfQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Znd9521vxz2xCC
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2025 23:20:41 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4ZncWW5wx6z9sB6;
-	Wed, 30 Apr 2025 14:51:35 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 5Jn3jHRQJJXY; Wed, 30 Apr 2025 14:51:35 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4ZncWW58BXz9sB2;
-	Wed, 30 Apr 2025 14:51:35 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id ACE558B765;
-	Wed, 30 Apr 2025 14:51:35 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id nU_5OgwYsu31; Wed, 30 Apr 2025 14:51:35 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7227D8B763;
-	Wed, 30 Apr 2025 14:51:35 +0200 (CEST)
-Message-ID: <d8911b8a-94a4-4ede-8e58-8de3afeccf3f@csgroup.eu>
-Date: Wed, 30 Apr 2025 14:51:35 +0200
+	t=1746019779; c=relaxed/relaxed;
+	bh=H/eGatCGfMyAMZkac1vP/80gmKFHQJq5wLmjfkF9Va8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=WB2k5m3Ykw/ox0f/tXM0/MFKW0b8iRimhBLDAoK3gGAeQahXjiWlOc0t2l+HUELUuPBNir502mh5XRYU3alOz3reNMTQRlG1aek8WlyeEAG4TdjzyeVzYoj8n7IPI2Rk03ir/Yq5JHIMXOIKyyg65ju8sT438wwfDyPiqYWFk10fDJmFXVxDoK4DQYNjUXA/P4K84kSNlIuuUDQdCVhNeK+jKzZLDPUOEFX3l8ZQDsHPBK46vwKBkNdGuwatesYrBWkFkayxmnICqfzRWpfMuMhkwBuH60II1hQqB3erwoEK0xnx2mOM2K1/YkcxGCNeKslf4uF7auK5pgZ0C67IAg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YzXg5ruK; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YzXg5ruK;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZndMQ0tz9z2yVV
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2025 23:29:37 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 53UC36v3006768;
+	Wed, 30 Apr 2025 13:29:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:reply-to:subject:to; s=pp1; bh=H/eGatCGfMyAMZkac1vP/
+	80gmKFHQJq5wLmjfkF9Va8=; b=YzXg5ruK2YTxjOx17CmwTYTPKjHHdBULmlyuX
+	jTvijvhkWmVRg63goVfjfQz7qd0RXCKC7JPz1m5rcU5KszKe3FEbJ8unurYMyFJ/
+	nf9F3XrrTeOSjMvdCHBg9xTaTwQS8RJB4TbKcvppNP739S0nSsNAqYrKqS4m0ofQ
+	9jkznf/QKz1rx/5NmWM66i7xpDvepj16Z25eULXKNX5KpCw1a02KQRXA6rxOiBvH
+	yupqxEh6yd7+85JK6WlJXaHwhtINmueGCXYO3iqQ+tigme5/e9+px7E9mYYzULa/
+	xvRnz+Gjo3bgq9qFkvIsCAXUgEd3Y2x8tHAuBXNRNxlcHlJuw==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46b6vb39bp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Apr 2025 13:29:26 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 53UDPNbY013840;
+	Wed, 30 Apr 2025 13:29:25 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46b6vb39bj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Apr 2025 13:29:25 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 53U9qPlM008542;
+	Wed, 30 Apr 2025 13:29:24 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 469ch37pq1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Apr 2025 13:29:24 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 53UDTLBY35783262
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 30 Apr 2025 13:29:21 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3298F20043;
+	Wed, 30 Apr 2025 13:29:21 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8A49120040;
+	Wed, 30 Apr 2025 13:29:18 +0000 (GMT)
+Received: from linux.ibm.com (unknown [9.126.150.29])
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with SMTP;
+	Wed, 30 Apr 2025 13:29:18 +0000 (GMT)
+Date: Wed, 30 Apr 2025 18:59:17 +0530
+From: Srikar Dronamraju <srikar@linux.ibm.com>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu, mpe@ellerman.id.au, peterz@infradead.org,
+        fbarrat@linux.ibm.com, ajd@linux.ibm.com, mahesh@linux.ibm.com,
+        oohall@gmail.com, hbathini@linux.ibm.com, dhowells@redhat.com,
+        haren@linux.ibm.com, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 0/6] powerpc: use lock guards for mutex Set 1
+Message-ID: <aBIlrYRE8TvWAKI_@linux.ibm.com>
+Reply-To: Srikar Dronamraju <srikar@linux.ibm.com>
+References: <20250314114502.2083434-1-sshegde@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,57 +96,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: segmentation fault when stepping multi-threaded application
-To: Tomas Alvarez Vanoli <tomas.alvarez-vanoli@hitachienergy.com>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <DB9PR06MB7849819F8C6A43108E66C610C2812@DB9PR06MB7849.eurprd06.prod.outlook.com>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <DB9PR06MB7849819F8C6A43108E66C610C2812@DB9PR06MB7849.eurprd06.prod.outlook.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+In-Reply-To: <20250314114502.2083434-1-sshegde@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=BISzrEQG c=1 sm=1 tr=0 ts=681225b6 cx=c_pps a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17 a=8nJEP1OIZ-IA:10 a=XR8D0OoHHMoA:10 a=VwQbUJbxAAAA:8 a=JfrnYn6hAAAA:8 a=VnNF1IyMAAAA:8 a=_evYCRor3lOg1Tm-bjQA:9
+ a=wPNLvfGTeEIA:10 a=1CNFftbPRP8L7MoqJWF3:22
+X-Proofpoint-GUID: eKw5tx0qpIcUseuhLt25YcSIfJCVsS9P
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNDMwMDA5NCBTYWx0ZWRfXy4wMmo54urfh MoXjz2xRDY3WkKqE+Ij/OlsHcgOejLne2EqamSxwj7IxD14lP8+nK56m89CY7ta+TBSxkI3iZtc p6ePJqRhHbFXo8vlUvo/T3++YBlyg2B4yBuJ775eLDgrYCDQhYE2FcNW1kWuN5Gx0AsyZGtbq2D
+ zx/at2ncBiYgifTG9luNL5MsfrBAHg5pKS2yKVJS20Gc5v27bmSSQ4s2s4ikD7ygMWeND6ClW8l 4JtAb+fcfd5YRW3FHZQ+B3Gu5mazvurE4YBurHYYSwi1UM6+P14j7gmGO+CUN7Z1Ish4FgVU2Sa RSfxy9lxUVVxs1iHl95XMPDr1251/xbhkFyPSDrvEu52iXsh/NiAc9EjFWWUGstO2bxogQXImKO
+ BdrZOC6x3kt+qnGN8WbQbEtYDSIYLDCXjkE5zIQF1Of/7OIDjuCJQzG20b/RowFBFbvp97eD
+X-Proofpoint-ORIG-GUID: C-m7iRsO30HuYYvfFdznr2fBemJCidWD
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
+ definitions=2025-04-30_04,2025-04-24_02,2025-02-21_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 suspectscore=0 adultscore=0
+ priorityscore=1501 spamscore=0 lowpriorityscore=0 mlxlogscore=999
+ mlxscore=0 phishscore=0 bulkscore=0 impostorscore=0 clxscore=1015
+ malwarescore=0 classifier=spam authscore=0 authtc=n/a authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
+ definitions=main-2504300094
 
+* Shrikanth Hegde <sshegde@linux.ibm.com> [2025-03-14 17:14:56]:
 
+> This is an effort to make the code simpler by making use of lock
+> guards which were introduced in [1], which works by using __cleanup 
+> attributes. More details in v1 cover letter
+> 
+> This series aims mainly at simplifying code around mutex with goto
+> statements. If it makes sense, there are more code simplification which 
+> can done for preempt, rcu, spinlock as well. Even for mutex, there is
+> more which could be done. Even there are usecases for kfree which could
+> use the new __free infra. 
+> 
+> Please review. Code is compile/boot tested except for powernv. 
+> Have kept the patches separate for easier bisect. Let me if they should
+> be combined into one. Commit message is same for all. 
+> 
+> [1]: https://lkml.kernel.org/r/20230612093537.614161713%40infradead.org
+> v1: https://lore.kernel.org/all/20250314054544.1998928-1-sshegde@linux.ibm.com/#t
+> 
+> v1->v2:
+> - Fix changelog of powernv (Andrew Donnellan)
+> - use scoped_guard in couple of places to avoid holding mutex
+>   un-necessarily (Peter Zijlstra)
+> 
+> Shrikanth Hegde (6):
+>   powerpc: eeh: use lock guard for mutex
+>   powerpc: rtas: use lock guard for mutex
+>   powerpc: fadump: use lock guard for mutex
+>   powerpc: book3s: vas: use lock guard for mutex
+>   powerpc: powernv: ocxl: use lock guard for mutex
+>   powerpc: sysdev: use lock guard for mutex
+> 
 
-Le 28/04/2025 à 13:16, Tomas Alvarez Vanoli a écrit :
-> [Vous ne recevez pas souvent de courriers de tomas.alvarez-vanoli@hitachienergy.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
-> 
-> Hello, I am writing because I have a segmentation fault when remote-debugging a PPC 32-bit target with gdbserver.
-> This is the same platform described in 'https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Flinuxppc-dev%2Fdc38afe9-6b78-f3f5-666b-986939e40fc6%40keymile.com%2F&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7C92fc720d78d3418625be08dd864ab6c1%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638814377658854956%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=Vo%2BKA%2FAMnJajKrHxowApVvw1Rzp6bu3jDtC1sayJkQY%3D&reserved=0',
-> although the bug does not seem to be the same and the position of the thread struct does not affect it.
-> 
-> The segmentation fault message is the following:
-> 
-> tomcli[135]: User access of kernel address (dffbdf10) - exploit attempt? (uid: 0)
-> 
-> 
-> gdbserver is sometimes unresponsive, although sometimes I am able to kill it with CTRL+C.
-> The code I use to reproduce this (tomcli) is the same as my colleague sent back in 2016:
-> 
-> 
-> 
-> This can be reproduced always by starting the debug session, stepping 5 times and then issuing a continue.
-> Sometimes just a continue will do.
-> This error is also happening sporadically when running our main application under gdbserver, we get a segmentation fault in dl_fixup.
-> It never happens during normal runtime.
-> 
-> The address that the kernel complains about is coming from pt_regs->gpr[3]. This value is put in the register in a call to PTRACE_SINGLESTEP (value 9).
-> 
-> I poked around the ptrace code a bit, seeing if there were any possible overflows but I could not find anything, so maybe I'm barking up the wrong tree, although it does seem to be related to ptrace.
-> 
-> I also added a dump_stack before the "exploit attempt" message:
-> 
-> CPU: 3 PID: 135 Comm: tomcli Not tainted 6.1.133-00564-g0c302b26a2c4-dirty #0
-> Hardware name: name,prodname e5500 0x80241021 CoreNet Generic
+For all the patches in this series
 
-In the begining you say it is the same platform as the other report. 
-When I follow the link I understand that platform is a 83xx.
+Reviewed-by: Srikar Dronamraju <srikar@linux.ibm.com>
 
-Here it is a e5500.
-
-Am I missing something ?
-
-Christophe
-
+-- 
+Thanks and Regards
+Srikar Dronamraju
 
