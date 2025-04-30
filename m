@@ -1,84 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-8205-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8206-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94300C369D9
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Apr 2025 22:33:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D64EEC369D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 May 2025 01:20:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZnsRH0NRTz2yZ8;
-	Thu,  1 May 2025 08:33:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::630"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746042988;
-	cv=none; b=kB3QwWsflzvpSlgrgg6M38Y3Yk+CVl9l/TH2qLpK9BLuZyfF9MRt0Euf4rFaLrArXQF0iMruRc39kUAvZNGnjSWArMVhgKdZcuTXPywph5JU6kmv+gs2/mfVN3+7j1w7JCK26O/QMsIbdV9N43g9jV/0reOSq8KbnTGHPvqOwcY2QUujAu7aJRgmOUfI0Dwdhs8brhchxgvhBNSjVk/MiKCcXPhSqDKj3+95wJ8gJs6z0zmcyyr4FvhfBbTvgU6IP1ZO0c2vMW8A7jLyLmGBbmeek8Pu3Td2SD2OlabirNN4s2+zXhsB8kkYirIF36eqPXvA/hvPBtxKnF7YXaFqBg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Znx7n1cykz30Jc;
+	Thu,  1 May 2025 11:20:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746062437;
+	cv=none; b=mSMedEwDuotycRmEQOcGqcZ5R+8MvkWsbjrWC66ab2YjCdgLZzBPMVbvd4KxSQ+/9opKACVemPoGnhwUQxxgBKHg0mgZPvBYvffYswdPDjmWfZLMRtSVrnWnwmgYR1fsBt9D6dOzwt/u+sNrrlVJsx9rKx0y767IqDcKB7pFf2SNUZP5NSpak6rLWmZ5kOyLBN6bscXQhXii0UDsxWk0pyk9nty5YHVKyW4FORC5kRxD07t1hK71nNfrh7G3bpcZmnzec3fAbQctBnfh0AFpc9j5AW1dtpW639KAcNbHlEmeLdAHCjT4iBmz2GQSCKLQWVon8PxzlpGSZsaqLcKxfg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746042988; c=relaxed/relaxed;
-	bh=fl3ZSe7H35q1B+EOiZUwtSQdGXkhze1P/MPuzRRU2ao=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=LNRA+jRR6+cx2Mog6Qq9Lnsfm/n+sXMg0bWDbKd5b5EuBdV69NlrMUp/K6CYcFrwUht6B31ixzdVweD22R/HDCDsghTr/972X7HlHU9JJYA10S5vcUMelJtO74tKP4ehV0bAIaovq9JCXOZYUSPToN2j/v7h8XBUxOSEGhXV0bnEeZoreGvuWq5UJK++SLWBBhmZ0hlagjB660/11hQadKQiiKkTsJ57zGWIwoDIoyYkcOIi0GpXn5hFbOo/BvV1IlTvScJN8CWgrNBkIQnzaCfKN4u4RRv6H8iQM3grtUCUEtRXvUXs50L8l6uIB2d1E0p/y055rmuXWdkFopz4TA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=P9/JrjzP; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=willmcvicker@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=P9/JrjzP;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::630; helo=mail-pl1-x630.google.com; envelope-from=willmcvicker@google.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x630.google.com (mail-pl1-x630.google.com [IPv6:2607:f8b0:4864:20::630])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Znnxk5GvYz2yYy
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2025 05:56:26 +1000 (AEST)
-Received: by mail-pl1-x630.google.com with SMTP id d9443c01a7336-227a8cdd241so3205995ad.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2025 12:56:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1746042983; x=1746647783; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=fl3ZSe7H35q1B+EOiZUwtSQdGXkhze1P/MPuzRRU2ao=;
-        b=P9/JrjzPjk0bC3BFcBd6+VHk7LXJXcJ3yaKPlDGFA3sh8WRUdtvw2DRXlJZBSSgB2n
-         4G9eRCzU4iDoOz2L/Fg3nW+x7XILX50+/EEpTK07GjKtng/P/9MwQ6w/z/7NEAjKzEhu
-         dBGsmftOXqVQZcjZpETzTrYti6m8QaaVQKgf72VO9Gtm0eZH8qMYi3hDxaUBPc4vCWYM
-         +mmCkGUZErfRiu4Ao+ks6jF1cnmwMS2UlmOhggj+69xjuVK8UUSXLt7K4NuA4rF7O6ba
-         PN4TqU2x5BTWX158P2XTpjQrh2W2CWxz5Po2y2HVMrz0l4kUmEy+nzjkie1XNuac/YH8
-         RSBQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1746042983; x=1746647783;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=fl3ZSe7H35q1B+EOiZUwtSQdGXkhze1P/MPuzRRU2ao=;
-        b=c/Gvlg+O9nxc4iovBDaLvo3s7txXiHIy333khLKETHiExKRiQkVuWjCTp4gjWtzyex
-         0EzYpwrCUaGjl+ZP3l66fphY0UFUzHnnGZqA/WPAQ6i6enQSbO6aqFntqrG/wp240sJH
-         UFiO5qFNKmVZie9TGSsUla7WpgEXYpWa+T/fiJXiAMTRVqRLO2oJHJBCHrZcC0I6wm3y
-         9oor1flaP073jipMmq6/CnA6154ktMmksQLUB2MDI1sG8BkjzaxTfcOuvS2Kd9Xc6eA/
-         bGlYknPYELBB1x4xQBJYc5HpU+dIzvGlEe7p2IW471jCtIeWd3ShlUm85BEcptEvGpAr
-         kTbg==
-X-Forwarded-Encrypted: i=1; AJvYcCXMvaB0nvqGsWnd3VQRWSA0je6oQnJOjMpISkkInBZ3m1tj3C6YlriK8mpKvHJXrGFIO1jFuRlE9H040Nk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxCdN0966YW7AEwKXwDiKn1tl6VhMtBOJP1h9IqbNfiU2LmT7OW
-	75KmjYlI9yeHnP1INK+buIu5GMdrR0v07kt/vk6p6/0HAv4RzU9m3IobaevKAQ==
-X-Gm-Gg: ASbGncuKpVfZrhqp3uBuSB0et0VZc3lgcJKKIYcuEGbPuyNOMWf5TBySLmJDheiNNpc
-	WRsaDyhOmsNUZOFjLcVQOJPQGe6lP+JwAeNxEPdfsapN8QJ3My3LtS55F8dINdxqg5Sl6OwuSRa
-	1kPe7wXANy9fiHbtsDSfyAmtAmc2VCS135kruLJL5CoajTuRfBH3czOrRHbTYOS9TAsz2w+L+YF
-	WLKV8t25fFQNhBJPCLnJdSTyhcHFDqhYxdT2993HPXCvX4LLfbqDva4y1WoyPGDJq6BylFU/Bdq
-	Qj2NW886uwKw4o1xYNajdnQIBG8C7bR/2hVPaWAGnnQscTZVGw9JeODzNG8NfyPsfJCi7NphJtk
-	e1XKsAg==
-X-Google-Smtp-Source: AGHT+IEfvBtw6ZDkXGIV92ANTqElq200z1gKvtBKSpmArntOiAskzPFgnv57q18obGXP2jeZOb7RVA==
-X-Received: by 2002:a17:902:f785:b0:223:6744:bfb9 with SMTP id d9443c01a7336-22e041084e8mr4719445ad.41.1746042983190;
-        Wed, 30 Apr 2025 12:56:23 -0700 (PDT)
-Received: from google.com (7.104.168.34.bc.googleusercontent.com. [34.168.104.7])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-22db4dbb1a0sm126748995ad.58.2025.04.30.12.56.22
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Apr 2025 12:56:22 -0700 (PDT)
-Date: Wed, 30 Apr 2025 12:56:18 -0700
-From: William McVicker <willmcvicker@google.com>
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: joro@8bytes.org, will@kernel.org, Ioana Ciornei <ioana.ciornei@nxp.com>,
-	iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] bus: fsl_mc: Fix driver_managed_dma check
-Message-ID: <aBKAYnP0u9ZlK12y@google.com>
-References: <20250425133929.646493-3-robin.murphy@arm.com>
+	t=1746062437; c=relaxed/relaxed;
+	bh=BAu52AYdix/V9RSufhycf1X7fvKFn3BiPPyS0EgLWQ4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=CbjbHZpw6T6oCszUL7rlkUBIaM9U8dr/+nOK++TNEdbitOy0RfMCKL4uVG/+nBZa4gMC/Fc97W8mEcRjWYx+K7UTkZVskOruj2PJBd2NZ1JJfF/xFnqM+FaQ2ApPgmjY1icE/q3B0JxWU8T2/irFH+/Nbs/b3e1imdG71riOU3EfO+KjI4yvVs3PukTqN3tL9gM6XcNbvJ4oZ9QqvMeViP5qLM2dbXVLqdiZ+qgah1fMRIpd8rlj1+xbvom5/VoKmms/OG+rKFI1473Y7ebjr7e4P68myXnr6W0MfX29q3cKa0Tknf+zA+3jd446lfMKfs6r1UCS8TjUoR8hkvOs+w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Znx7m3mr5z2ygL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2025 11:20:35 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4ZnkqN2kqkz9sjs;
+	Wed, 30 Apr 2025 19:35:44 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 1Qa8SuqShg7C; Wed, 30 Apr 2025 19:35:44 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4ZnkqN1zfNz9sj6;
+	Wed, 30 Apr 2025 19:35:44 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3E48B8B765;
+	Wed, 30 Apr 2025 19:35:44 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id 11LIMd6Z3cYq; Wed, 30 Apr 2025 19:35:44 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4C1928B763;
+	Wed, 30 Apr 2025 19:35:43 +0200 (CEST)
+Message-ID: <95e42755-13ad-4659-903f-5f087926c0a1@csgroup.eu>
+Date: Wed, 30 Apr 2025 19:35:42 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,61 +58,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250425133929.646493-3-robin.murphy@arm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 4/5] powerpc: 52xx/gpio: use new line value setter
+ callbacks
+To: Bartosz Golaszewski <brgl@bgdev.pl>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Naveen N Rao <naveen@kernel.org>, Linus Walleij <linus.walleij@linaro.org>,
+ Anatolij Gustschin <agust@denx.de>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-gpio@vger.kernel.org,
+ Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+References: <20250408-gpiochip-set-rv-powerpc-v1-0-73dc1ebc6ef1@linaro.org>
+ <20250408-gpiochip-set-rv-powerpc-v1-4-73dc1ebc6ef1@linaro.org>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20250408-gpiochip-set-rv-powerpc-v1-4-73dc1ebc6ef1@linaro.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On 04/25/2025, Robin Murphy wrote:
-> Since it's not currently safe to take device_lock() in the IOMMU probe
-> path, that can race against really_probe() setting dev->driver before
-> attempting to bind. The race itself isn't so bad, since we're only
-> concerned with dereferencing dev->driver itself anyway, but sadly my
-> attempt to implement the check with minimal churn leads to a kind of
-> TOCTOU issue, where dev->driver becomes valid after to_fsl_mc_driver(NULL)
-> is already computed, and thus the check fails to work as intended.
+
+
+Le 08/04/2025 à 09:21, Bartosz Golaszewski a écrit :
+> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
 > 
-> Will and I both hit this with the platform bus, but the pattern here is
-> the same, so fix it for correctness too.
-
-Thanks!
-
-Reviewed-by: Will McVicker <willmcvicker@google.com>
-
+> struct gpio_chip now has callbacks for setting line values that return
+> an integer, allowing to indicate failures. Convert the driver to using
+> them.
 > 
-> Reported-by: Will McVicker <willmcvicker@google.com>
-> Fixes: bcb81ac6ae3c ("iommu: Get DT/ACPI parsing into the proper probe path")
-> Signed-off-by: Robin Murphy <robin.murphy@arm.com>
+> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+
 > ---
->  drivers/bus/fsl-mc/fsl-mc-bus.c | 6 +++---
->  1 file changed, 3 insertions(+), 3 deletions(-)
+>   arch/powerpc/platforms/52xx/mpc52xx_gpt.c | 6 ++++--
+>   1 file changed, 4 insertions(+), 2 deletions(-)
 > 
-> diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
-> index a8be8cf246fb..67031136ef66 100644
-> --- a/drivers/bus/fsl-mc/fsl-mc-bus.c
-> +++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
-> @@ -139,9 +139,9 @@ static int fsl_mc_bus_uevent(const struct device *dev, struct kobj_uevent_env *e
->  
->  static int fsl_mc_dma_configure(struct device *dev)
->  {
-> +	const struct device_driver *drv = READ_ONCE(dev->driver);
->  	struct device *dma_dev = dev;
->  	struct fsl_mc_device *mc_dev = to_fsl_mc_device(dev);
-> -	struct fsl_mc_driver *mc_drv = to_fsl_mc_driver(dev->driver);
->  	u32 input_id = mc_dev->icid;
->  	int ret;
->  
-> @@ -153,8 +153,8 @@ static int fsl_mc_dma_configure(struct device *dev)
->  	else
->  		ret = acpi_dma_configure_id(dev, DEV_DMA_COHERENT, &input_id);
->  
-> -	/* @mc_drv may not be valid when we're called from the IOMMU layer */
-> -	if (!ret && dev->driver && !mc_drv->driver_managed_dma) {
-> +	/* @drv may not be valid when we're called from the IOMMU layer */
-> +	if (!ret && drv && !to_fsl_mc_driver(drv)->driver_managed_dma) {
->  		ret = iommu_device_use_default_domain(dev);
->  		if (ret)
->  			arch_teardown_dma_ops(dev);
-> -- 
-> 2.39.2.101.g768bb238c484.dirty
+> diff --git a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+> index 1ea591ec6083..c96af6b0eab4 100644
+> --- a/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+> +++ b/arch/powerpc/platforms/52xx/mpc52xx_gpt.c
+> @@ -280,7 +280,7 @@ static int mpc52xx_gpt_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+>   	return (in_be32(&gpt->regs->status) >> 8) & 1;
+>   }
+>   
+> -static void
+> +static int
+>   mpc52xx_gpt_gpio_set(struct gpio_chip *gc, unsigned int gpio, int v)
+>   {
+>   	struct mpc52xx_gpt_priv *gpt = gpiochip_get_data(gc);
+> @@ -293,6 +293,8 @@ mpc52xx_gpt_gpio_set(struct gpio_chip *gc, unsigned int gpio, int v)
+>   	raw_spin_lock_irqsave(&gpt->lock, flags);
+>   	clrsetbits_be32(&gpt->regs->mode, MPC52xx_GPT_MODE_GPIO_MASK, r);
+>   	raw_spin_unlock_irqrestore(&gpt->lock, flags);
+> +
+> +	return 0;
+>   }
+>   
+>   static int mpc52xx_gpt_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+> @@ -334,7 +336,7 @@ static void mpc52xx_gpt_gpio_setup(struct mpc52xx_gpt_priv *gpt)
+>   	gpt->gc.direction_input  = mpc52xx_gpt_gpio_dir_in;
+>   	gpt->gc.direction_output = mpc52xx_gpt_gpio_dir_out;
+>   	gpt->gc.get = mpc52xx_gpt_gpio_get;
+> -	gpt->gc.set = mpc52xx_gpt_gpio_set;
+> +	gpt->gc.set_rv = mpc52xx_gpt_gpio_set;
+>   	gpt->gc.base = -1;
+>   	gpt->gc.parent = gpt->dev;
+>   
 > 
+
 
