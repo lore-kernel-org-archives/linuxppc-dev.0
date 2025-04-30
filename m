@@ -1,71 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-8168-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8169-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E62BC369DC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Apr 2025 23:31:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03DDAC369DC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Apr 2025 00:23:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZnGlv5pM1z30TY;
-	Wed, 30 Apr 2025 09:31:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b35"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745969467;
-	cv=none; b=h0NW484FRi510J/mO0Glfh/aOu9camj5pTBHvwDt7XcjoWDwDQOdtpVfmnwEXgprEC2WRvFPLAe8mSkbmDAa5xVRhvCvRkoq1j6xNKFEVAattorIsDjp4BAj1Hk4/OEER0fCrTMb4M8gIkhdNp6lS7OoSFIPzfgikNinJatsJRworPvClw6BVgLVa+Vn1A2RJTJEAaHZS02n1QV8ONaoiZVoZPc2kTnPmiZtNnWMQc5nQaUa/Vx4Gb82DoZXjc3IZJCsDbFHzOZZoqLZqlhc0DMCdtuOv0LYn2460CMAlVw+Q9gDJR1TN3y4xa+PxK1+l4YmDsR11mpb8iFtVu3xZg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZnHwL22hKz30Tc;
+	Wed, 30 Apr 2025 10:23:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1745972610;
+	cv=none; b=lFqvB7eNM/DwPti52P2cP7HaTcNlBDLDmIoPjV1PNyaPjdX2OMKwNDet53cRAdFYSWq7Mnqd8R2l1Ytms8rdyxfVFzrzdLa0ZGwkOaM7K50AF6VOXV//kifBLMXKaG7TQqTTUJm+nRGWiIIdqJdqRrckSZC/3V3CRRZRtJfAWtbge8RuCV3Iy9a8ZlZxEA8cMj6A8+Pe69fSublZRAQyRWgWVxtIIOa2gG2yWM1YztcP59yy+tZeVMII/ciYdos+CWVabYDzMBsI0yfB3NpX8naLuIH5yHm8SCf3JWXolsXOKTyCe2s4icek72EE3u8GGktK/U7kgqoomZE5v89Ftg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1745969467; c=relaxed/relaxed;
-	bh=cIuAebnQ3utGP4sRcNF3af9094rXpAxKt1SXsqCPHIU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=d+/sdv5WrcEo3Vc+34AdqaB1A0HzhRuKjulQ1xOs2dvkGu6QUYZ7P33koVIHvMZ8rQhsTQ4pxvRYzp81Y+OtAtKPkbVwQ/Yk+UgPDvICm1O0GMbLH8beQRpb+V4iU1/nzXln+MaM0DNeetIekGgL4EmW5+oPTFIw9pGVjgqj44tSovic2FYyKcqxBVAVR6muO+d2jwmxzpk5pRhcnDIQ8LMVsJ4M7ifvYNOpUPnl91fJNhxgaKJxSq9aIMcwcXZvH6VDTaaKxtXVxpPr/rfhI7pMwsZd4EBuMRYnSiheLjQ63DmmN1wHM5xWx9i4SxLaf1jzzAX2mYfktSrAW+4Ymg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com; dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=b5CIjzGE; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b35; helo=mail-yb1-xb35.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org) smtp.mailfrom=paul-moore.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=paul-moore.com
+	t=1745972610; c=relaxed/relaxed;
+	bh=GT5TxOXhiRjIO9K+mHvIClNmf9oIbrxWKTdD5+XkjLU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ULHqU6xfBfMevhawyFbo2UPimTJ2DSjhyfFPhkFtkydYAlBAfUOZUIDMnl5FnHSrxGVu9prSOqHvoFAaxx7flN3CPq2T4urGHjkdxWX6wbns7UZ13gPSCMefD87Ygk6FpH+3S6QiGMN7LZriBIXdoGLkkvIetlwLrsNrtC6B8ErDTSwEOClfBZVg9R1nxNzSltv7F74kcsr+YmaVuLLVrjYwfqDAhDwd0FTAw1zEw/QeL2hQDeSj7yjHetE49tymek68hQGdXuKS0DYCk/1A/eCO/g/KaV5uDQh/icKMG9lcJ6oWTh5+pjNag8wT2GUZ/C10Zf/7Rcs8ALOpdNPxFw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MO7pbjeD; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=paul-moore.com header.i=@paul-moore.com header.a=rsa-sha256 header.s=google header.b=b5CIjzGE;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MO7pbjeD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=paul-moore.com (client-ip=2607:f8b0:4864:20::b35; helo=mail-yb1-xb35.google.com; envelope-from=paul@paul-moore.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb35.google.com (mail-yb1-xb35.google.com [IPv6:2607:f8b0:4864:20::b35])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZnGlt1WkHz2yjV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2025 09:31:04 +1000 (AEST)
-Received: by mail-yb1-xb35.google.com with SMTP id 3f1490d57ef6-e731cd5f2adso3733852276.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Apr 2025 16:31:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=paul-moore.com; s=google; t=1745969460; x=1746574260; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=cIuAebnQ3utGP4sRcNF3af9094rXpAxKt1SXsqCPHIU=;
-        b=b5CIjzGEMS4m8MX7h7mDTqngnai462/L2gmMDP3lR/23v44Yb+HrBvWJikn959WzQ/
-         yWP2gz/AMSuzHgP/Rv8nmJ0FpniATcGx9TNcH6o8HaHM1jEZoW2D1x6xSm7s1L+V5W12
-         m5cwcvotR5+hQgS+OWVagTBFOiGGzDaQq0pzORPkiKxJ+K0wVjoETvT+xmHairZ8i3Is
-         LaLlNf0Ucnv9Kizop28kFjl9/XniNZ68HanKYXJ8uDO8sEs77okGltd7BGQYQwYB0bhI
-         hk99u6MCqFLoAOqt1g+uJvoruOcUc9s8REPmXiH8jUf5ECbn4p7c+rU3lIOPEPJe9qyH
-         +wPQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1745969460; x=1746574260;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=cIuAebnQ3utGP4sRcNF3af9094rXpAxKt1SXsqCPHIU=;
-        b=JJCakAhhizQRgYcvHVhGCG2MlyE+c1PsrcQ8PZp7PMXSxoYzX7DHTHm9lw+Dc4f8eb
-         JmtGUgTYeNxtsJnX5f112jEZm+38pelVMSPI6JhJJXm5ULWl3Cjoila6wAXNGM1HNn7J
-         RpDIIydLNwMppqi83WvlZJtgQ3xio+F28rvNZTIX0ODfCaUZWewQf4sF2RrytA8xblEI
-         p8LgmCg11DoGr0/459f6nCIX9wjzHEiG6jeD5/rftHtiapA2JJXIZ1oYK1khGxTQtxln
-         9zu/v1LsgFIR2vr8PN7GE3C9tTWIRfj+pC6FVag60RnX04Tbt8weDqWsY4G/Ua3VQbBB
-         ezDQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXbAZhRg89di706X9qahK6CmL5JuTmSLF9cBxw1lJNKkDpffXvi/RISI7r4hNjbHWMT+Gp8VNLJ7pe76cg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy0Z8QQTsa4KNsDZDLG2YFLabMlGAHI36SUR5HOC/+coIGxCHrf
-	oGvF/2J5VOfu1Pbxl8lcptXYRu30huzyvXJXGxFhtju9sH3Ufbzfj4VVHidFQUk8x+QS0A69ZSM
-	jQD086dhYhJQjA7dOdfPZHbePwC69zruQiqTx
-X-Gm-Gg: ASbGncsjdlhjCsja2uFL4Ep0bXNj7s1hPadeuhix3abCtRZkHHuzIkRF27iI6NWzkFC
-	k4wSkdGZ22NaSHXEWAy+HGAVEIjrupFKtz1t3GOAhyWBRlUgrB3saKh/hnZ5zOHbDcm2vveHDDL
-	WAIi87fo+YzatQoLwchkuN/A==
-X-Google-Smtp-Source: AGHT+IGwua5N9PuQI5YXnZ9QizB13TEvlVyb3ghRMEepupOY9IBACmHRKJ/ceFLULrT2r9vA2fNY/xi9tZpK618tJa8=
-X-Received: by 2002:a05:6902:e09:b0:e73:17e3:ef4e with SMTP id
- 3f1490d57ef6-e73ecf7cabdmr1474221276.48.1745969460035; Tue, 29 Apr 2025
- 16:31:00 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZnHwK3CP4z2ygD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Apr 2025 10:23:29 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id ED8784A3F2;
+	Wed, 30 Apr 2025 00:23:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8EC9CC4CEE3;
+	Wed, 30 Apr 2025 00:23:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1745972607;
+	bh=LnbXxn6cfAZ1LTNdbY6B1qJi8/AVpoR91fSjqgmQQ4M=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=MO7pbjeDbnVXE/n/z9HbdDKaUWn0AE0FB0fjHQyAYO1pQvqZCOc1DnAsTTIagOjGE
+	 IinOPJPJJWCyGDxl4eZVw+9ZisCnZuCGR0RDCICa5c0Qp27mO8eM6zXM+kai6kTqDr
+	 zru468uguQzT2sXdbOaS9G3o/zsTYAO29n5RYy48Y0Ymr2XTrJtK3cEQLGA24Qr8Nl
+	 8ndy/tLrUPN6sQRzWd/qODJ7a+y7u24BwmddSbWH4Lt78uFJ8irq4YF3rBsTFWndwL
+	 Ou75B4JZWtJxDo7X3FUAPNbwlHf1Dctk+kJqOQUkjTe5MtL8/MI7avQP0PiA9COqGR
+	 H4tJtPJbu+qAQ==
+Date: Wed, 30 Apr 2025 09:23:22 +0900
+From: Mark Brown <broonie@kernel.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+	Herve Codina <herve.codina@bootlin.com>,
+	linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Thomas Petazzoni <thomas.petazzoni@bootlin.com>,
+	stable@vger.kernel.org
+Subject: Re: [PATCH] ASoC: fsl: fsl_qmc_audio: Reset audio data pointers on
+ TRIGGER_START event
+Message-ID: <aBFtesqln2Xeab-d@finisterre.sirena.org.uk>
+References: <20250410091643.535627-1-herve.codina@bootlin.com>
+ <174429282080.80887.6648935549042489213.b4-ty@kernel.org>
+ <4b42c00a-0ef5-4121-9e40-9214bf9a1197@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,69 +76,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250429-module-hashes-v3-0-00e9258def9e@weissschuh.net> <20250429-module-hashes-v3-8-00e9258def9e@weissschuh.net>
-In-Reply-To: <20250429-module-hashes-v3-8-00e9258def9e@weissschuh.net>
-From: Paul Moore <paul@paul-moore.com>
-Date: Tue, 29 Apr 2025 19:30:48 -0400
-X-Gm-Features: ATxdqUHKCRv2dWw3Z8HwiaRKbffRbebAcIs6GQu6Ludlza-Iyae1SuGp-QceJWc
-Message-ID: <CAHC9VhSAANnOYB11AerdtpEwWSu9OoRdxW34dap909D3z=t49A@mail.gmail.com>
-Subject: Re: [PATCH v3 8/9] lockdown: Make the relationship to MODULE_SIG a dependency
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Cc: Masahiro Yamada <masahiroy@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
-	Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, 
-	Sami Tolvanen <samitolvanen@google.com>, Daniel Gomez <da.gomez@samsung.com>, 
-	James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>, 
-	Roberto Sassu <roberto.sassu@huawei.com>, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
-	Eric Snowberg <eric.snowberg@oracle.com>, Nicolas Schier <nicolas.schier@linux.dev>, 
-	=?UTF-8?Q?Fabian_Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>, 
-	Arnout Engelen <arnout@bzzt.net>, Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>, 
-	Christian Heusel <christian@heusel.eu>, =?UTF-8?Q?C=C3=A2ju_Mihai=2DDrosi?= <mcaju95@gmail.com>, 
-	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, 
-	linux-arch@vger.kernel.org, linux-modules@vger.kernel.org, 
-	linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="+n29DJNat32DEv6U"
+Content-Disposition: inline
+In-Reply-To: <4b42c00a-0ef5-4121-9e40-9214bf9a1197@csgroup.eu>
+X-Cookie: Well begun is half done.
+
+
+--+n29DJNat32DEv6U
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: quoted-printable
 
-On Tue, Apr 29, 2025 at 9:04=E2=80=AFAM Thomas Wei=C3=9Fschuh <linux@weisss=
-chuh.net> wrote:
->
-> The new hash-based module integrity checking will also be able to
-> satisfy the requirements of lockdown.
-> Such an alternative is not representable with "select", so use
-> "depends on" instead.
->
-> Signed-off-by: Thomas Wei=C3=9Fschuh <linux@weissschuh.net>
-> ---
->  security/lockdown/Kconfig | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+On Mon, Apr 28, 2025 at 11:20:42AM +0200, Christophe Leroy wrote:
+> Le 10/04/2025 =E0 15:47, Mark Brown a =E9crit=A0:
 
-I'm hopeful that we will see notice about dedicated Lockdown
-maintainers soon, but in the meantime this looks okay to me.
+> Would it be possible to get this patch into one of the v6.15 rc as it is a
+> bug fix ?
 
-Acked-by: Paul Moore <paul@paul-moore.com>
+It appears to be queued as a fix, could you be more specific please?
 
-> diff --git a/security/lockdown/Kconfig b/security/lockdown/Kconfig
-> index e84ddf48401010bcc0829a32db58e6f12bfdedcb..155959205b8eac2c85897a8c4=
-c8b7ec471156706 100644
-> --- a/security/lockdown/Kconfig
-> +++ b/security/lockdown/Kconfig
-> @@ -1,7 +1,7 @@
->  config SECURITY_LOCKDOWN_LSM
->         bool "Basic module for enforcing kernel lockdown"
->         depends on SECURITY
-> -       select MODULE_SIG if MODULES
-> +       depends on !MODULES || MODULE_SIG
->         help
->           Build support for an LSM that enforces a coarse kernel lockdown
->           behaviour.
->
-> --
-> 2.49.0
+Please delete unneeded context from mails when replying.  Doing this
+makes it much easier to find your reply in the message, helping ensure
+it won't be missed by people scrolling through the irrelevant quoted
+material.
 
---=20
-paul-moore.com
+--+n29DJNat32DEv6U
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmgRbXoACgkQJNaLcl1U
+h9D2igf+IcSLAyyqPyCkgkxObz6ejq16mYpRMVXdZgtsyHGwuf21NEktBbBgp3Wb
+sxMIFXayPEfzTqCLLcjojYObuIU3gK6zFBOIx73YRxysA6dtMV4EIm41985xKvNd
+aYY/rxmR5HrZI1zZyqz7zkxM1AxmzFeKpD/PzJTmq0c4uM/ZbrmiihxtH7fg5e0/
+hQ8OeyYviqP0IRVrxq5DvirNF207T1vwhXXlkB5WQqkxUqjAD9EsE4mkDc0TUDx9
+SxljcDisxCz3w0DC+Ej9awxAm1Px35jb4UJxmPYX5ALjc9p8VcOhsre+sPWhHoGZ
+6Ihvu7uJBQgr5wMQCcOJZifShXbGzA==
+=K3dG
+-----END PGP SIGNATURE-----
+
+--+n29DJNat32DEv6U--
 
