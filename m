@@ -1,80 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-8229-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8230-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EA42C369DC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 May 2025 19:50:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1888C369DC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 May 2025 21:54:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZpPm56Hfqz3bjG;
-	Fri,  2 May 2025 05:50:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746129013;
-	cv=none; b=ii7fAW5mEs4/Gu4BAuyC/2e39s56PCcJuoPMe6P7ZwF8p0uBkxVbrgu35+vubtkX8eOZnhPjENNJ1bR88K7q1hHLcvUNCr76dZWpz1vq6VQbrxm/UUDLoI9PAvsw2yflodfoyH+A2G4/KfQnipRD8N1b283ue8Ze2+BbAr6T3hSLU2L/TK9ccCxf83uqyiE0q4zisrd0fWRZfqydiFznQwGk6x6eKciNNbTWopr34LNpNi2N6g9STUqU0A+ZwAn41MBPqa++LOJz1ZiZa5PTnvEaIjm8k0b9ksxcxQjVDE9IlyajuoZuXkup2+MJuK11dRYU0tcMhNQ/Sp19OD3mOA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZpSWh1K0wz2yYf;
+	Fri,  2 May 2025 07:54:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::541"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746118619;
+	cv=none; b=eWYaBABQcxTLJPI0S6zlrESNoi2OZkWK5cuU/qkk/o+ZgWD0TcyvKcrSg9QNrO7zywmmfY8VXzg8v5hXof2hsVem2iZjXXti/NQVo0pF0FZqebR1qsRUOPaPcuzuzSLOixnTqm7ggQQQUXu9W82hEhBlQO2u5GoJLZhLvAuBtj8TV39+1ACDeKTZWMWji0hSVezjLWGFEaPqcaHsuajs0+PJ8MA5PmYDBYAVY3XxntZg5l8385TBK6a79zugUEVbhTKIQOtvWnXSoeHqg0gEiSzU3nJ3YONOK21agsYCjzOrH2zAX4GfLljivuw4qc6L4/f3m79/A25nKoTz1AEKaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746129013; c=relaxed/relaxed;
-	bh=jv8duKOe5m4ZcxCT4PVebURlgI+c9MBZpeSO+6h25S0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Lji8BTQzw1kcv5KE0o+2dmZJc/mcZr7AGkZ+HuieYvGiLOPVRYY7Wk9lPO/Gq4VOdXCGQLuzy0drx7Rw+jKoBShgZdVXN5/hpZQekrLuPGEkzj6O0IkjP0uec8aVr1NkU/p1G4TAf/5m6dYtRPpm1ztjFjmOMIosKlTGvThIxuSA+a8gg5pDuRPiEq2hQpSyHeuTbklgY9CdgvvFL/3k0lFogXTWiVP/a8grG+QL3dXcltNJ3gwvJbHf/Pn7+y5O1bnud5QnYUjbt8jlIGX6R8lYOneUsFalF2Ctptx1jbAYbxU/hzfCI926YWv73YwJJS48XUFwdPeotra538qaqw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZLrOTLrN; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1746118619; c=relaxed/relaxed;
+	bh=pjITccKn52YoXHvMNHp0xjqzTUP9bb6Gv+c2QtvOV0Q=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=NRJzmG3ySvKcsot8oiGdSTPIAQjD7up25XyG2V2Yx+hg385uwJtZAY8OgeJm5LpVPS7OI0RgxYAW6ZZrmKzolBTg62G6nQuPnCu3rI7GiP4D/Ry0daAOAF9O+odmO6LwSU3eNEjZnl5CSgtFAUozF2Z0/IzqFYVeJ+6CKJCwdKHqfT+T+t8OQJME9V49J/eTnWcmIgi4aWKChcXwP0FNuoMP1xwufHUKyyY/6PNLztQ0iZpJjukuXahTvwCHOM7dmq7Q3rL2Vpizwlg7o4GWq/hKTnKtYc448jIiqKWuJiQbfDtWIh59jI21M3/4sQ4uEGej4+uiC+A00hZzZakFuA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KxeFCj8u; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::541; helo=mail-ed1-x541.google.com; envelope-from=memxor@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZLrOTLrN;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KxeFCj8u;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::541; helo=mail-ed1-x541.google.com; envelope-from=memxor@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com [IPv6:2a00:1450:4864:20::541])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZpPm36Ymbz30DP
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2025 05:50:11 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 541JUgQI005593;
-	Thu, 1 May 2025 19:49:57 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=jv8duKOe5m4ZcxCT4
-	PVebURlgI+c9MBZpeSO+6h25S0=; b=ZLrOTLrNgAU8AcaqxPa0RID97XuMMpMcc
-	aADnrDGHGIBAu4Xyc362aof0sX4jNpoij0TA6/sg6WdtF7mmTZot7KwgoapVxnxm
-	IkiKG/KuJ7MwCUbLNPZgHhmEwWpg578ZXDldzwBDNXG7RN56tZEc2xdcut7ni9YI
-	vn0M/Y5b6eOZmZLLiR5BzlBJU8NZjiK3nbffKt5xyNt7qyI2pI6qK6lKGJ1V0Adj
-	ztzqbuTnPAMe8oDp6PsQk4aSoujYdQYLmuaSvx+RdeOzKsIiTH4cLZC6+6FeF9m9
-	9QQ0IvbtuBwZQRF1NdzmaDejCol1qEWrTgr33DKciyyBHUP0KvdZQ==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46bv0vvw57-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 May 2025 19:49:56 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 541HIJOw001880;
-	Thu, 1 May 2025 19:49:56 GMT
-Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 469bamxkbf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 May 2025 19:49:56 +0000
-Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
-	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 541Jntda26870448
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 1 May 2025 19:49:55 GMT
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B8B3058059;
-	Thu,  1 May 2025 19:49:55 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 54E6F58053;
-	Thu,  1 May 2025 19:49:55 +0000 (GMT)
-Received: from d.austin.ibm.com (unknown [9.41.102.181])
-	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  1 May 2025 19:49:55 +0000 (GMT)
-From: Dave Marquardt <davemarq@linux.ibm.com>
-To: netdev@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org, michal.swiatkowski@linux.intel.com,
-        horms@kernel.org, kuba@kernel.org,
-        Dave Marquardt <davemarq@linux.ibm.com>
-Subject: [PATCH v4 1/3] net: ibmveth: Indented struct ibmveth_adapter correctly
-Date: Thu,  1 May 2025 14:49:42 -0500
-Message-ID: <20250501194944.283729-2-davemarq@linux.ibm.com>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250501194944.283729-1-davemarq@linux.ibm.com>
-References: <20250501194944.283729-1-davemarq@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZpKw96tHpz2yQj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2025 02:56:56 +1000 (AEST)
+Received: by mail-ed1-x541.google.com with SMTP id 4fb4d7f45d1cf-5f62d3ed994so2083990a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 May 2025 09:56:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1746118611; x=1746723411; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=pjITccKn52YoXHvMNHp0xjqzTUP9bb6Gv+c2QtvOV0Q=;
+        b=KxeFCj8uiNPwyHb89oc32hs/oehI2WjwfjlWJckDpAZlrJOEpwF6TA13UDqNpsNId8
+         9L53ZqidjhetXlW2QcqWswjH6pkuvA3KcE6DqMby9uKZ4VYHG8E5/s5OvudaVjZ9VHJY
+         jdm0NTh++fwkqdLmqFo1w6QUR88Bsj/QqHcNSCrn3V0aelFSwEgVscetx8XNaLzlH1hk
+         BDQKdGGRdZdpnBTeq9ICOhu6V0fk+7c7FcWEKa8xr3X0d/TBPErd76YufYsTREGq+/19
+         36zESQ6hxz8lQqvtliuaKam4Ua4RpBwz33uawdqjw9iw6+kmmqRycTO3px1vnSMe6ouj
+         P5Mw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1746118611; x=1746723411;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=pjITccKn52YoXHvMNHp0xjqzTUP9bb6Gv+c2QtvOV0Q=;
+        b=swJHXRlpy1SsPH1e2uoMwtNjaRKlPfM/LW4DBQwuf+Nve27wndpFqhhukJ7YX93O9D
+         /vQj9tmk2eIgB8BLa/xxopF2L7wd8/FQGVe9L06wSCwPXmlji6/9rV2FiSjnGXA6bOdd
+         wuuwHqHr/Hbprqlc9DbZYJcswlcypUlvwJ8sXtCIjqF99o/dS1lpNLS6vBwDuAy6NVL8
+         NVm+Cfys0dkQW7keg/UxE1AUpFAdIM7ZPmR7Ik2qaAi5S4PYGycWPvhGDYk9ZL6kSHMO
+         M4SYSS8OkNdfxgJN2co1J2EXVCT7iC2ut59oXblfdE5wB/CRmu8iWMlMkpMqVZs3+aw1
+         mNUg==
+X-Forwarded-Encrypted: i=1; AJvYcCVgCIsYOMn+2G8UiEC805RlWRcHinunPXEKrS+ll65y6CzEQdR21ux6M1EL2Bv2R7fmTOcp2puOwOQIlto=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyJhxLA8tVde5YHLAKbr6QWgIIeWpcRx/ICh4aGNrAAyhartXYA
+	D6X4qfcYnirJJ8zmXmikZQIb+UUcHwkVxXDTN9SIAhULYY9noItu+6bx/jsAdEAvOFou8PWziOO
+	FXiln5S5eTK4veIlVMmm7T8lWTw8=
+X-Gm-Gg: ASbGncurQPYI4t5xEExSeR+Mw70jsOFqgnoix81+hS1M6kpewN9dautu9iObpIVsbWc
+	cfqrlQNHBKWblZI4Bw8rxsA9lxRmGUEg3PnnnOJ6FnRKSxhWfnEnhiQJMsAAbDiSB5G13rTWxYA
+	Iiz3+VmKRG3itTv9Ynv5lwYAbY8bT4Ok4JpHxuNONplxqChR16nmy9Ow==
+X-Google-Smtp-Source: AGHT+IECEidvEo999oYKJS7UCLAVVBM0myFbAJ15E7tPIRmjavdQpBC/5/8mZ8iIClrt0F8kscmSCXQGalHJ9fnIAF0=
+X-Received: by 2002:a05:6402:524c:b0:5e6:de5:312f with SMTP id
+ 4fb4d7f45d1cf-5f913507c6dmr3187305a12.23.1746118610475; Thu, 01 May 2025
+ 09:56:50 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,109 +78,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=LJlmQIW9 c=1 sm=1 tr=0 ts=6813d064 cx=c_pps a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17 a=dt9VzEwgFbYA:10 a=VnNF1IyMAAAA:8 a=QyXUC8HyAAAA:8 a=VwQbUJbxAAAA:8 a=tDx_pM9AtCVaZWMooBsA:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTAxMDE1MCBTYWx0ZWRfX7pMj8TdM0Qxp YFkZmb9dBOyiX/p1xmSj3zUiV1J8qu3XWxDUoobypjVeNI6JrJqHrANgaFS2Lsx6jSwQQmCYfeS AgKh4yG0IXuf+2a7KFbrn1OBz9oVqM67/JbPEDhao1eNC1UIRn325uQ0m+Lyj1Drt3kp0uA0Njl
- N32gomBZ5yheL3fKbkQa2re8+jFxw4Dr88Pp/JzIhMmftF448Ht1vWh9uv7aGcTHfsALmvzuQvX lZVEQmToFsK2e+YADRRNCQ1CG8DE1XcrpRoD9Kdbhq87vb7WW+JEeEAjFqGV00V8GZqOh7PxBN1 BUyJ1uhp0BBCaFS31AKnowxqhm2mg4/6gRcpFqlZb3KIIeC42Y0FCYsJ+CGSk+OG2YwfMYzivya
- q9BsexdHYXktnl8vJ+WTXenmirOG60X3jTRx650rcq62Z+IQUcXCGCerkFFJowCOJCHLa/dK
-X-Proofpoint-ORIG-GUID: eyxWl2G26zI7838ACUK8MqfcukYUw6Xw
-X-Proofpoint-GUID: eyxWl2G26zI7838ACUK8MqfcukYUw6Xw
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
- definitions=2025-05-01_06,2025-04-24_02,2025-02-21_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 impostorscore=0
- suspectscore=0 mlxlogscore=999 malwarescore=0 bulkscore=0
- lowpriorityscore=0 mlxscore=0 priorityscore=1501 adultscore=0 phishscore=0
- clxscore=1015 spamscore=0 classifier=spam authscore=0 authtc=n/a authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
- definitions=main-2505010150
+References: <20250501073603.1402960-1-luis.gerhorst@fau.de> <20250501073603.1402960-2-luis.gerhorst@fau.de>
+In-Reply-To: <20250501073603.1402960-2-luis.gerhorst@fau.de>
+From: Kumar Kartikeya Dwivedi <memxor@gmail.com>
+Date: Thu, 1 May 2025 18:56:13 +0200
+X-Gm-Features: ATxdqUF2nyzuV4YsC3PXg7l3hGhLYkWnuNMDOdnMHwkg3TmNkQsrDO9p2L0Wm2o
+Message-ID: <CAP01T742Td_U8=fs4DDrxWSdQcXEpGE=T6+WfJqBw_bqpXhb+g@mail.gmail.com>
+Subject: Re: [PATCH bpf-next v3 01/11] selftests/bpf: Fix caps for __xlated/jited_unpriv
+To: Luis Gerhorst <luis.gerhorst@fau.de>
+Cc: Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+	Andrii Nakryiko <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, 
+	Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, 
+	Yonghong Song <yonghong.song@linux.dev>, John Fastabend <john.fastabend@gmail.com>, 
+	KP Singh <kpsingh@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>, Hao Luo <haoluo@google.com>, 
+	Jiri Olsa <jolsa@kernel.org>, Puranjay Mohan <puranjay@kernel.org>, 
+	Xu Kuohai <xukuohai@huaweicloud.com>, Catalin Marinas <catalin.marinas@arm.com>, 
+	Will Deacon <will@kernel.org>, Hari Bathini <hbathini@linux.ibm.com>, 
+	Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Mykola Lysenko <mykolal@fb.com>, Shuah Khan <shuah@kernel.org>, 
+	Henriette Herzog <henriette.herzog@rub.de>, Saket Kumar Bhaskar <skb99@linux.ibm.com>, 
+	Cupertino Miranda <cupertino.miranda@oracle.com>, Jiayuan Chen <mrpre@163.com>, 
+	Matan Shachnai <m.shachnai@gmail.com>, Dimitar Kanaliev <dimitar.kanaliev@siteground.com>, 
+	Shung-Hsi Yu <shung-hsi.yu@suse.com>, Daniel Xu <dxu@dxuuu.xyz>, bpf@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Made struct ibmveth_adapter follow indentation rules
+On Thu, 1 May 2025 at 09:39, Luis Gerhorst <luis.gerhorst@fau.de> wrote:
+>
+> Currently, __xlated_unpriv and __jited_unpriv do not work because the
+> BPF syscall will overwrite info.jited_prog_len and info.xlated_prog_len
+> with 0 if the process is not bpf_capable(). This bug was not noticed
+> before, because there is no test that actually uses
+> __xlated_unpriv/__jited_unpriv.
+>
+> To resolve this, simply restore the capabilities earlier (but still
+> after loading the program). Adding this here unconditionally is fine
+> because the function first checks that the capabilities were initialized
+> before attempting to restore them.
+>
+> This will be important later when we add tests that check whether a
+> speculation barrier was inserted in the correct location.
+>
+> Signed-off-by: Luis Gerhorst <luis.gerhorst@fau.de>
+> Fixes: 9c9f73391310 ("selftests/bpf: allow checking xlated programs in verifier_* tests")
+> Fixes: 7d743e4c759c ("selftests/bpf: __jited test tag to check disassembly after jit")
+> ---
 
-Signed-off-by: Dave Marquardt <davemarq@linux.ibm.com>
-Reviewed-by: Michal Swiatkowski <michal.swiatkowski@linux.intel.com>
-Reviewed-by: Simon Horman <horms@kernel.org>
----
- drivers/net/ethernet/ibm/ibmveth.h | 64 +++++++++++++++---------------
- 1 file changed, 32 insertions(+), 32 deletions(-)
-
-diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
-index 8468e2c59d7a..0f72ce54e7cf 100644
---- a/drivers/net/ethernet/ibm/ibmveth.h
-+++ b/drivers/net/ethernet/ibm/ibmveth.h
-@@ -134,38 +134,38 @@ struct ibmveth_rx_q {
- };
- 
- struct ibmveth_adapter {
--    struct vio_dev *vdev;
--    struct net_device *netdev;
--    struct napi_struct napi;
--    unsigned int mcastFilterSize;
--    void * buffer_list_addr;
--    void * filter_list_addr;
--    void *tx_ltb_ptr[IBMVETH_MAX_QUEUES];
--    unsigned int tx_ltb_size;
--    dma_addr_t tx_ltb_dma[IBMVETH_MAX_QUEUES];
--    dma_addr_t buffer_list_dma;
--    dma_addr_t filter_list_dma;
--    struct ibmveth_buff_pool rx_buff_pool[IBMVETH_NUM_BUFF_POOLS];
--    struct ibmveth_rx_q rx_queue;
--    int rx_csum;
--    int large_send;
--    bool is_active_trunk;
--
--    u64 fw_ipv6_csum_support;
--    u64 fw_ipv4_csum_support;
--    u64 fw_large_send_support;
--    /* adapter specific stats */
--    u64 replenish_task_cycles;
--    u64 replenish_no_mem;
--    u64 replenish_add_buff_failure;
--    u64 replenish_add_buff_success;
--    u64 rx_invalid_buffer;
--    u64 rx_no_buffer;
--    u64 tx_map_failed;
--    u64 tx_send_failed;
--    u64 tx_large_packets;
--    u64 rx_large_packets;
--    /* Ethtool settings */
-+	struct vio_dev *vdev;
-+	struct net_device *netdev;
-+	struct napi_struct napi;
-+	unsigned int mcastFilterSize;
-+	void *buffer_list_addr;
-+	void *filter_list_addr;
-+	void *tx_ltb_ptr[IBMVETH_MAX_QUEUES];
-+	unsigned int tx_ltb_size;
-+	dma_addr_t tx_ltb_dma[IBMVETH_MAX_QUEUES];
-+	dma_addr_t buffer_list_dma;
-+	dma_addr_t filter_list_dma;
-+	struct ibmveth_buff_pool rx_buff_pool[IBMVETH_NUM_BUFF_POOLS];
-+	struct ibmveth_rx_q rx_queue;
-+	int rx_csum;
-+	int large_send;
-+	bool is_active_trunk;
-+
-+	u64 fw_ipv6_csum_support;
-+	u64 fw_ipv4_csum_support;
-+	u64 fw_large_send_support;
-+	/* adapter specific stats */
-+	u64 replenish_task_cycles;
-+	u64 replenish_no_mem;
-+	u64 replenish_add_buff_failure;
-+	u64 replenish_add_buff_success;
-+	u64 rx_invalid_buffer;
-+	u64 rx_no_buffer;
-+	u64 tx_map_failed;
-+	u64 tx_send_failed;
-+	u64 tx_large_packets;
-+	u64 rx_large_packets;
-+	/* Ethtool settings */
- 	u8 duplex;
- 	u32 speed;
- };
--- 
-2.49.0
-
+Acked-by: Kumar Kartikeya Dwivedi <memxor@gmail.com>
 
