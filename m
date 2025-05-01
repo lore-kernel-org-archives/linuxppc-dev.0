@@ -1,50 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-8207-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8208-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25AEFC369DC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 May 2025 01:20:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D712C369D9
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 May 2025 01:21:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Znx7s5Mfcz3blg;
-	Thu,  1 May 2025 11:20:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746062441;
-	cv=none; b=ghJwyjfOXQx8dvf1vM6Zh4Cl6Z5RkiPZKNnj5EYolBXITcyJHhQwjK8iPeJ208Uqxzk0NlGYSRmJQ+ikkD2w2kFSF30QZYX96cquoCFVEX5TV9TRocnwyX6QNoajyGdmOkD7Afdwr0pxPhvh9dfACWTVGydWOyndPv5gFzLW+3qwKDiI74cmJngcZ6vnke2X/Xmuvj6T4iMGGM7PxH+EiGttEzO0/e+OLXeuVblnkjRa/Opwn26GFXGqTTx1DJN3EYY6Rj7ZtiVF1bO8+6GhNLpvurvQVT1WUnX2C791Vz8fgAaOV5r/5WhgTY+oRf/kCYoY4UQzLsKgTfO3qPdScQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Znx8g1gL6z30P3;
+	Thu,  1 May 2025 11:21:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=144.6.53.87
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746062483;
+	cv=none; b=XsDIepD4cqVl8/qpbbQQQ/e09J4dWEi521n4PW1Js02+5k4ebyUb4DBxMRWdRq5RZtvReKSdd/C5QzMMs+gB+BnSaASJs/oUfIEcLW7K7vIsmFDroYv3Gj15tn4oWDe4FSgMxoiqhpSlIHmvbexhjB8L7uuC83m7MgC36cZMHPzkdR3g1l60hf+jfNQKRt6kCb2bYCohGO3F37YvS9ZE811MeGfCPdQbv529G4gkzPBPKqrIzBjjRo2dKCcMpVMvNYPuaFyCtA0IBvAnTxf8J/PzYBwpI6bZ3/FrBWXyKkoDPNr3rPq+rsLFG5JbCHC3C+S5DIrJanPeI7s+j3UhLQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746062441; c=relaxed/relaxed;
-	bh=bjTn7kRhjlVHa2rnLBNQ8D0thkEYJVGM1E5YblYCgx0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=KmhpznnjsuKUi13k0bl2HLWxwRmxXdiWNoiSQ65pJKm9J3pGe9LUjG6K29Jb2peCHlleIhRi8DiFYQGvnmkysU2tgo+SXaOyxhkeeclYhsNNOWLWk0Z3CAggzK3qe6LtOrDmiSYaFT1XWyYpu1efXpC5axqN3a7QdEprcxY5iKeum8PPN0LebJBuW/JT1ac1aVijLafFiVQvI0Mdv4yOgNvJ9mjdfS2JiIrSKMqwds0DILBNvm6kiUZ6gptcoWqHFMsUWCyiyzgi46C8lb/NmHlQftackTmi3BJd7rmnhORQ62XfacXqF6qYipKex6koqfbswmbzFT7EytQ1Ebwkwg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Znx7s1gZ2z2ygL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2025 11:20:41 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4Znkq45ny8z9sgs;
-	Wed, 30 Apr 2025 19:35:28 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id iqe3FYWY-FyS; Wed, 30 Apr 2025 19:35:28 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4Znkq40BnRz9sgR;
-	Wed, 30 Apr 2025 19:35:28 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 009548B765;
-	Wed, 30 Apr 2025 19:35:28 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id g5LcEjKmwqYi; Wed, 30 Apr 2025 19:35:27 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D3A228B763;
-	Wed, 30 Apr 2025 19:35:26 +0200 (CEST)
-Message-ID: <fab558c6-0403-45f4-97c3-9c71db678a20@csgroup.eu>
-Date: Wed, 30 Apr 2025 19:35:26 +0200
+	t=1746062483; c=relaxed/relaxed;
+	bh=NW5f/6zfXSJgSFBDpq9nG7FU/uxSqKRQHQ8TMd0Poy8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=djXswK1+v7XPI0rXYxaNEai+SFLdZygotxrrUtUULlZq0ZIO/SHW7ATkx3gPqOwlMIuyLbLaLwKqlLT2A8pHd1ds87Ami/Mlctm6HEbRfh3FKMQ6jgTMXRskqjGKfzeLoGDaljP6IKWllaVW7Bh/mULZHukM7ycP9DPkWrhL5dJKRlxoidQ1eSyuubA4Xwv8elzivOmKRpSgBwuxE8yFL4cahgYqG+0hBlSc6Ago0zvtBUg2N/LG2l6ZeyJAnzARHTCLOU1B03wONny3NS7pMIEisNASl4yhj7tq/f//Xv/d2VBEtsApwmIPn/wITQCzsXE9vCiuHacpb04ai3PNEw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au; dkim=pass (2048-bit key; unprotected) header.d=hmeau.com header.i=@hmeau.com header.a=rsa-sha256 header.s=formenos header.b=a/NlvQqO; dkim-atps=neutral; spf=pass (client-ip=144.6.53.87; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org) smtp.mailfrom=gondor.apana.org.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=hmeau.com header.i=@hmeau.com header.a=rsa-sha256 header.s=formenos header.b=a/NlvQqO;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gondor.apana.org.au (client-ip=144.6.53.87; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org)
+Received: from abb.hmeau.com (abb.hmeau.com [144.6.53.87])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Znx8f4V9gz2ygL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  1 May 2025 11:21:22 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=hmeau.com;
+	s=formenos; h=In-Reply-To:Content-Type:MIME-Version:References:Message-ID:
+	Subject:Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
+	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
+	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
+	List-Post:List-Owner:List-Archive;
+	bh=NW5f/6zfXSJgSFBDpq9nG7FU/uxSqKRQHQ8TMd0Poy8=; b=a/NlvQqOeoRlesedjZn7kxOnFw
+	uv4a9xzHl7D1VZeIL93rjMMAkhe5hxqE4x0m2n/FWDvbWRvtAX99hxnOhhW6vCIjzXO0BHZ3lqJM5
+	RB9c0EnDFbkQGKZre/Y99u6FTj0aU0AbJGl20o5hnmiDJvj7wFkXsXvZtugU3t3vxsaSBA7xX9NFz
+	wK8MiCgvwE6zOyaFZ4PnOSV/LXOZB/7xN/Nq+7ZCdajE/MnuryS2PJCBO8luW8qV3BFecbN+Fs9Ot
+	Cw+tw3zJmJw9KzUB2KECxEtcp23uuxyS5Q/PBLXt9Z81aTgSodFT60Fy0hM+6eWtxA0rVUI0j3R7q
+	BRzxY+2w==;
+Received: from loth.rohan.me.apana.org.au ([192.168.167.2])
+	by formenos.hmeau.com with smtp (Exim 4.96 #2 (Debian))
+	id 1uAIbz-002Qsc-2M;
+	Thu, 01 May 2025 09:21:16 +0800
+Received: by loth.rohan.me.apana.org.au (sSMTP sendmail emulation); Thu, 01 May 2025 09:21:15 +0800
+Date: Thu, 1 May 2025 09:21:15 +0800
+From: Herbert Xu <herbert@gondor.apana.org.au>
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
+	linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+	sparclinux@vger.kernel.org, linux-s390@vger.kernel.org,
+	x86@kernel.org, Ard Biesheuvel <ardb@kernel.org>,
+	"Jason A . Donenfeld" <Jason@zx2c4.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 00/12] crypto: sha256 - Use partial block API
+Message-ID: <aBLMi5XOQKJyJGu-@gondor.apana.org.au>
+References: <cover.1745992998.git.herbert@gondor.apana.org.au>
+ <20250430174543.GB1958@sol.localdomain>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,74 +74,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/5] powerpc: 44x/gpio: use new line value setter
- callbacks
-To: Bartosz Golaszewski <brgl@bgdev.pl>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Naveen N Rao <naveen@kernel.org>, Linus Walleij <linus.walleij@linaro.org>,
- Anatolij Gustschin <agust@denx.de>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-gpio@vger.kernel.org,
- Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-References: <20250408-gpiochip-set-rv-powerpc-v1-0-73dc1ebc6ef1@linaro.org>
- <20250408-gpiochip-set-rv-powerpc-v1-3-73dc1ebc6ef1@linaro.org>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20250408-gpiochip-set-rv-powerpc-v1-3-73dc1ebc6ef1@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250430174543.GB1958@sol.localdomain>
 
+On Wed, Apr 30, 2025 at 10:45:43AM -0700, Eric Biggers wrote:
+>
+> As for your sha256_finup "optimization", it's an interesting idea, but
+> unfortunately it slightly slows down the common case which is count % 64 < 56,
+> due to the unnecessary copy to the stack and the following zeroization.  In the
+> uncommon case where count % 64 >= 56 you do get to pass nblocks=2 to
+> sha256_blocks_*(), but ultimately SHA-256 is serialized block-by-block anyway,
+> so it ends up being only slightly faster in that case, which again is the
+> uncommon case.  So while it's an interesting idea, it doesn't seem to actually
+> be better.  And the fact that that patch is also being used to submit unrelated,
+> more dubious changes isn't very helpful, of course.
 
+I'm more than willing to change sha256_finup if you can prove it
+with real numbers that it is worse than the single-block version.
 
-Le 08/04/2025 à 09:21, Bartosz Golaszewski a écrit :
-> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-> 
-> struct gpio_chip now has callbacks for setting line values that return
-> an integer, allowing to indicate failures. Convert the driver to using
-> them.
-> 
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-
-> ---
->   arch/powerpc/platforms/44x/gpio.c | 7 ++++---
->   1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/44x/gpio.c b/arch/powerpc/platforms/44x/gpio.c
-> index e5f2319e5cbe..d540e261d85a 100644
-> --- a/arch/powerpc/platforms/44x/gpio.c
-> +++ b/arch/powerpc/platforms/44x/gpio.c
-> @@ -75,8 +75,7 @@ __ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
->   		clrbits32(&regs->or, GPIO_MASK(gpio));
->   }
->   
-> -static void
-> -ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
-> +static int ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
->   {
->   	struct ppc4xx_gpio_chip *chip = gpiochip_get_data(gc);
->   	unsigned long flags;
-> @@ -88,6 +87,8 @@ ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
->   	spin_unlock_irqrestore(&chip->lock, flags);
->   
->   	pr_debug("%s: gpio: %d val: %d\n", __func__, gpio, val);
-> +
-> +	return 0;
->   }
->   
->   static int ppc4xx_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
-> @@ -179,7 +180,7 @@ static int __init ppc4xx_add_gpiochips(void)
->   		gc->direction_input = ppc4xx_gpio_dir_in;
->   		gc->direction_output = ppc4xx_gpio_dir_out;
->   		gc->get = ppc4xx_gpio_get;
-> -		gc->set = ppc4xx_gpio_set;
-> +		gc->set_rv = ppc4xx_gpio_set;
->   
->   		ret = of_mm_gpiochip_add_data(np, mm_gc, ppc4xx_gc);
->   		if (ret)
-> 
-
+Cheers,
+-- 
+Email: Herbert Xu <herbert@gondor.apana.org.au>
+Home Page: http://gondor.apana.org.au/~herbert/
+PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
 
