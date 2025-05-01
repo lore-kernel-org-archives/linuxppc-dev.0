@@ -1,77 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-8226-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8227-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD83FC369DC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 May 2025 19:50:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32C81C369DC
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 May 2025 19:50:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZpPlw6Dmlz2ySg;
-	Fri,  2 May 2025 05:50:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZpPm02pBTz2ydQ;
+	Fri,  2 May 2025 05:50:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746129001;
-	cv=none; b=O+HA7oblN9OpMMxRXdYqDRwAV0NTCXnZ3ev8vpJwEvJgrKTw/m/kHFhYBO4wzfPTJZO+KRbQQZqgY9ItqBJjnGFBi/zolYC3u3HmP1hkXvLlKeyZwMBLKXaru2XTKhmcLPUitnKxQ75S1NOvO5xyvSrlo/2NUBQbmxT+lA5hbuiSw4eth+6I8I0RM0Fd4m/s03xbEX/xv1nzSTv4p8D6MqSWfW6ITUaycKZ1tWPwVJy/oWUg4XAMg2iYb1UeMEpwNkjAofa1rzCpeXviShPkkpUQn9CkNUNdDm/iokNAUgN5HUCDem6CXrWaUmNZwkq8/M8SIvPM0n6aitaNBwWmMg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746129005;
+	cv=none; b=nuWoHErKRcQaP45iY1anlQBDgIqFZ98r8H3G4iynfbK6v3jDrYLc+hXV7EQSsp5qgoUsXhTnEVbvcIxhesuzAbbsB4khxYdyjiWK3O8BSr6IzQS5MRn3L9VTx+8hfMDbjEtb1/35GM8MOWbAGWT3cRbWJPL7ZmWG1Fr9vVABUGrlfNObZ14ExPcPJLRQVQBLJylwrou4VJ4cogHYjIn7rJiKPWLr4oxs19ZNLkaMa2wfXUduyvP84b2Bejm8YWHvaE4WOH8Ectv/bXvFMqaOFLbEV745+bq9P1EQBYLT1tPIH70J0AsPRWofP3svb2hdMnX1KxK5QpCLnVb4FAAmdw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746129001; c=relaxed/relaxed;
-	bh=caAEH/TApAN1wAmC7MoCNocKcJ8+CeKGQvII9Fl5qnQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=G8DTYflpyl/8t3OeynglX1Uk2Ismq4Er1qBuTLmo8+ZER7X4Nj94Fcw6aBsMw5LJlQ8qKFYk8nuh1Mj9EDeZb0j3WRj7X149UAJCzePUuqF3mCPbN+bIk3BL1/AX4F+34PliR8CdAJu2wOmbnrCU7Rp3ZK9vlI+2KlOl7cqg4PcbUJBfhZJr92tTjVf9CP0yGWEGb3gV9Kgvym3NVeJctQGh5V0gg3XjcflL42V3GftLLK2w6dtytlZ/c1JhF+9GgIWuUGPY3diIBdFlP6vefAyT4AY10nZ9SEj9mwNqvXN0m9TMjaJt/KY6h976toDvfvphpSde6Emoj8YtCgEgpw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pwCOh3bX; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1746129005; c=relaxed/relaxed;
+	bh=L+F0vnQeRR+zrmETaWiDvYnv23zmZ8SbVLeoI8KksSE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=JyNWTr48zHmL7G75JlErHJ2K9dLk6+7jnCKoLjPw8bjpV4m4Pca3yS1ofoYvoN9aBLLWye5b/Vgs/BNiTc05Jil7UvnVHIr9zr1zRn10xD8UnaxUIY4UjQWj+GpHb4+V7es9MltlV/o0aURejYLuclIjVVqSkO8vwxbK5nfmxde4ZKSetWyMC7jssGu3maiNKIfPb62qKh0ojGpDSHzH/D6LKfIEEmzh9MWt3at7MXcI181/gJ+sK3Yv5Da0VI1H28bi1clDp+ShbGcwQu0Mn/JguPl3EdsGsgraFINj2WfCFEv37sX3gxVSxqKfAR7HbG2ZCQa+X8ft0VTHduOk6g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qO/K9z73; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pwCOh3bX;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qO/K9z73;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=davemarq@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZpPlr546pz2yPS
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2025 05:49:58 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 541BpNPs027699;
-	Thu, 1 May 2025 19:49:53 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZpPlx1WFdz2ySm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2025 05:50:04 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 541Bptpa024009;
+	Thu, 1 May 2025 19:50:00 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=caAEH/TApAN1wAmC7MoCNocKcJ8+CeKGQvII9Fl5q
-	nQ=; b=pwCOh3bXV3o1uYDfCCLh0oWw5ayRFAHwAf3ek/s5n+kfDAq0KIyq7dCBp
-	RrSC2fn716641Z8944BtgicdFaLcKvIoAy70sylcb2So+ujtXLgRNMOuF/QQNJzd
-	ZfeL4Hx3t7JXfRCx1WOCQjaMenaiFF9QRnFSNUwHDvhQ1v17wXMZPUwWXe338P1n
-	BoAB7OpEEohB94jURtNelW2L298xMC8VwWqiv5ibbKXLOSKSykC4ydxoC3FRDcp2
-	aBwl1SeulwfWG/hWfW8Ol2cHYTQLBRlDId2yYSekPJgLVDDHzwvIe2pVZ6ZApoaq
-	ITrK8/RygMIi0eDKvxq2/IKlgQUqQ==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46buy950h2-1
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=L+F0vnQeRR+zrmETa
+	WiDvYnv23zmZ8SbVLeoI8KksSE=; b=qO/K9z73ak3EA5V5UZN+uJoxbziVw3obd
+	+dwgMPKViJjt80oDdt7ovyv0xhWhzz8aLHamgZRP0Rc33wRLT0/O5fQcFxnNhHJd
+	wZIUvSSWP6b8iG+Xaj5Q15t15AuHMv4rCrnc7el8ypyW8SaKZDu1C9YpILCyP/Ey
+	HVyckNGiwwgHiXbq3IoNBghl5B6amGAJVc87iSaSggCH94yZnmRszQT1JX16UQbA
+	e8HuAnvbRkcD4VbKSZkdRz5fkZc4XAX3/mn4150pZDkjOpKNEFnOskMKyDnLzq0O
+	3XuvDYpxkUmrTtOHVboAGQ8c0joE/ZToZiKFSyM7px5MpP55/BQvw==
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46c6vjjnvc-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 May 2025 19:49:53 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 541IIAeT024679;
-	Thu, 1 May 2025 19:49:52 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 469c1medtx-1
+	Thu, 01 May 2025 19:49:59 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 541HYkN9001830;
+	Thu, 1 May 2025 19:49:58 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 469bamxkbq-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 May 2025 19:49:52 +0000
+	Thu, 01 May 2025 19:49:58 +0000
 Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 541JnpLW24904240
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 541JnwFm31916726
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 1 May 2025 19:49:51 GMT
+	Thu, 1 May 2025 19:49:58 GMT
 Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5CB1758043;
-	Thu,  1 May 2025 19:49:51 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 079015805D;
+	Thu,  1 May 2025 19:49:58 +0000 (GMT)
 Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D86AA58053;
-	Thu,  1 May 2025 19:49:50 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 96DF558053;
+	Thu,  1 May 2025 19:49:57 +0000 (GMT)
 Received: from d.austin.ibm.com (unknown [9.41.102.181])
 	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  1 May 2025 19:49:50 +0000 (GMT)
+	Thu,  1 May 2025 19:49:57 +0000 (GMT)
 From: Dave Marquardt <davemarq@linux.ibm.com>
 To: netdev@vger.kernel.org
 Cc: linuxppc-dev@lists.ozlabs.org, michal.swiatkowski@linux.intel.com,
         horms@kernel.org, kuba@kernel.org,
         Dave Marquardt <davemarq@linux.ibm.com>
-Subject: [PATCH v4 0/3] net: ibmveth: Make ibmveth use new reset function and new KUnit testsg
-Date: Thu,  1 May 2025 14:49:41 -0500
-Message-ID: <20250501194944.283729-1-davemarq@linux.ibm.com>
+Subject: [PATCH v4 2/3] net: ibmveth: Reset the adapter when unexpected states are detected
+Date: Thu,  1 May 2025 14:49:43 -0500
+Message-ID: <20250501194944.283729-3-davemarq@linux.ibm.com>
 X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250501194944.283729-1-davemarq@linux.ibm.com>
+References: <20250501194944.283729-1-davemarq@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,50 +90,287 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTAxMDE1MCBTYWx0ZWRfX+2nbv6hhe1zA aADjqyvmvAnO/zQhl4vWZl85rwixTmuYyRHoVOWKXoljYxn/Yt+mKfDwLYi0iBwCFLbrLflmJb0 P/dMLqOWPUgLKhbgAjPB94QQFb93T1EwlAZTF+Hin7NWfX19ca0c6gI82Q3EEWZAUwo/b2CRlZ+
- X2/ZIiwQbcIkhs5yJn82WJN3hrMYngRP1Eww3rihT9bC0KiO7Y2AdHeG3Rvcf9WIIE1wRLl7Rr7 kZZgJ35gTdbEjWUgu4uIG57robAnls1DMlzW1MZQUEC5bRjgBwKrYZ4+tFa9dBp6vFaaxGD4Tm/ cAjSo933Uno+FwYtiEDtvx+zfoJ+qD5jwifOJSwq2PIiy8HtseZwjrjact6YX6FArBn6g6kJ55k
- wIWLNaPQNKvWklJ9LN+XfwYgpp4DGWcdsqlkUZcuJPLZ6L4v8CYy45Ge88dUOY4zF9HmCXeD
-X-Authority-Analysis: v=2.4 cv=FOYbx/os c=1 sm=1 tr=0 ts=6813d061 cx=c_pps a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17 a=dt9VzEwgFbYA:10 a=AIdBDbJpuyt8KpZaaOoA:9
-X-Proofpoint-ORIG-GUID: WQfDCzc2fTcks667WTA62ir9d1O1aYZm
-X-Proofpoint-GUID: WQfDCzc2fTcks667WTA62ir9d1O1aYZm
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTAxMDE1MCBTYWx0ZWRfX6bspcri1I5Wu X1CCBJVekp61tp/h5YdRxfReRcjcEE+nBcPYjjlHg2tESjBa0HunDtcuzZku9dv6CstqOauzTEG Pre6D7PQtNdzNZyAlHIih6dUPnH/a1j0xfca0m1L7Q1txJmOF4dz7TIeiKD+Y8YRz5ITn5fZ9MR
+ +RQtPiH2F5vU+lMuKF6QepJABzFl0ICxvG+OsYBVwwCYVboGcyr3Dt1dL7orNv+kqMtw6vgFeVQ wHkiT1Jh0OqDVjZJkJdm3ghKyQaX9qQPzkYle1RXoJWZoxCb+43Bb1cBFlWJnQxqnrjYIwrS5YI XxmIRLqRfnq98JdQn7/p9z4EkPt7tZkD6MPNwB7t95RiUOioJnctZCTkOmv9M0xj96JON7RVpig
+ OPcoO+6n3nZ3nKNDW1wdWoeyB8TVXyR0TRsM9QmQyMOQ0OScknWPi82ZcTNfE14LE5JHg1ZS
+X-Authority-Analysis: v=2.4 cv=GI8IEvNK c=1 sm=1 tr=0 ts=6813d067 cx=c_pps a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17 a=dt9VzEwgFbYA:10 a=VnNF1IyMAAAA:8 a=p5xwiLD6boTwWVqVSOUA:9
+X-Proofpoint-GUID: -dYIlExtGEjh5NPYCs962gi-BK5gRepk
+X-Proofpoint-ORIG-GUID: -dYIlExtGEjh5NPYCs962gi-BK5gRepk
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
  definitions=2025-05-01_06,2025-04-24_02,2025-02-21_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0
- priorityscore=1501 adultscore=0 malwarescore=0 mlxlogscore=705 spamscore=0
- lowpriorityscore=0 impostorscore=0 suspectscore=0 clxscore=1011
- bulkscore=0 mlxscore=0 classifier=spam authscore=0 authtc=n/a authcc=
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 spamscore=0
+ mlxlogscore=999 mlxscore=0 bulkscore=0 clxscore=1015 priorityscore=1501
+ lowpriorityscore=0 malwarescore=0 suspectscore=0 adultscore=0
+ impostorscore=0 classifier=spam authscore=0 authtc=n/a authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
  definitions=main-2505010150
 
-- Fixed struct ibmveth_adapter indentation
-- Made ibmveth driver use WARN_ON with recovery rather than BUG_ON. Some
-  recovery code schedules a reset through new function ibmveth_reset. Also
-  removed a conflicting and unneeded forward declaration.
-- Added KUnit tests for some areas changed by the WARN_ON changes.
+Reset the adapter through new function ibmveth_reset, called in
+WARN_ON situations. Removed conflicting and unneeded forward
+declaration.
 
-Changes:
-v4: Addressed Jakub Kicinski's review comment: added missing work
-queue cancel in ibmveth_remove
-v3: Addressed Simon Horman's review comments
-- Reworded commit message for ibmveth_reset and WARN_ON changes
-- Fixed broken kernel-doc comments
-- Fixed struct ibmveth_adapter as a separate patch before ibmveth_reset
-  and WARN_ON changes
-v2: Addressed Michal Swiatkowski's review comments
-- Split into multiple patches
-- Used a more descriptive label
+Signed-off-by: Dave Marquardt <davemarq@linux.ibm.com>
+---
+ drivers/net/ethernet/ibm/ibmveth.c | 118 ++++++++++++++++++++++++-----
+ drivers/net/ethernet/ibm/ibmveth.h |   1 +
+ 2 files changed, 100 insertions(+), 19 deletions(-)
 
-Dave Marquardt (3):
-  net: ibmveth: Indented struct ibmveth_adapter correctly
-  net: ibmveth: Reset the adapter when unexpected states are detected
-  net: ibmveth: added KUnit tests for some buffer pool functions
-
- drivers/net/ethernet/ibm/Kconfig   |  13 ++
- drivers/net/ethernet/ibm/ibmveth.c | 247 ++++++++++++++++++++++++++---
- drivers/net/ethernet/ibm/ibmveth.h |  65 ++++----
- 3 files changed, 274 insertions(+), 51 deletions(-)
-
+diff --git a/drivers/net/ethernet/ibm/ibmveth.c b/drivers/net/ethernet/ibm/ibmveth.c
+index 04192190beba..cff494739bc9 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.c
++++ b/drivers/net/ethernet/ibm/ibmveth.c
+@@ -39,8 +39,6 @@
+ #include "ibmveth.h"
+ 
+ static irqreturn_t ibmveth_interrupt(int irq, void *dev_instance);
+-static void ibmveth_rxq_harvest_buffer(struct ibmveth_adapter *adapter,
+-				       bool reuse);
+ static unsigned long ibmveth_get_desired_dma(struct vio_dev *vdev);
+ 
+ static struct kobj_type ktype_veth_pool;
+@@ -231,7 +229,10 @@ static void ibmveth_replenish_buffer_pool(struct ibmveth_adapter *adapter,
+ 		index = pool->free_map[free_index];
+ 		skb = NULL;
+ 
+-		BUG_ON(index == IBM_VETH_INVALID_MAP);
++		if (WARN_ON(index == IBM_VETH_INVALID_MAP)) {
++			schedule_work(&adapter->work);
++			goto bad_index_failure;
++		}
+ 
+ 		/* are we allocating a new buffer or recycling an old one */
+ 		if (pool->skbuff[index])
+@@ -300,6 +301,7 @@ static void ibmveth_replenish_buffer_pool(struct ibmveth_adapter *adapter,
+ 		                 DMA_FROM_DEVICE);
+ 	dev_kfree_skb_any(pool->skbuff[index]);
+ 	pool->skbuff[index] = NULL;
++bad_index_failure:
+ 	adapter->replenish_add_buff_failure++;
+ 
+ 	mb();
+@@ -370,20 +372,36 @@ static void ibmveth_free_buffer_pool(struct ibmveth_adapter *adapter,
+ 	}
+ }
+ 
+-/* remove a buffer from a pool */
+-static void ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
+-					    u64 correlator, bool reuse)
++/**
++ * ibmveth_remove_buffer_from_pool - remove a buffer from a pool
++ * @adapter: adapter instance
++ * @correlator: identifies pool and index
++ * @reuse: whether to reuse buffer
++ *
++ * Return:
++ * * %0       - success
++ * * %-EINVAL - correlator maps to pool or index out of range
++ * * %-EFAULT - pool and index map to null skb
++ */
++static int ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
++					   u64 correlator, bool reuse)
+ {
+ 	unsigned int pool  = correlator >> 32;
+ 	unsigned int index = correlator & 0xffffffffUL;
+ 	unsigned int free_index;
+ 	struct sk_buff *skb;
+ 
+-	BUG_ON(pool >= IBMVETH_NUM_BUFF_POOLS);
+-	BUG_ON(index >= adapter->rx_buff_pool[pool].size);
++	if (WARN_ON(pool >= IBMVETH_NUM_BUFF_POOLS) ||
++	    WARN_ON(index >= adapter->rx_buff_pool[pool].size)) {
++		schedule_work(&adapter->work);
++		return -EINVAL;
++	}
+ 
+ 	skb = adapter->rx_buff_pool[pool].skbuff[index];
+-	BUG_ON(skb == NULL);
++	if (WARN_ON(!skb)) {
++		schedule_work(&adapter->work);
++		return -EFAULT;
++	}
+ 
+ 	/* if we are going to reuse the buffer then keep the pointers around
+ 	 * but mark index as available. replenish will see the skb pointer and
+@@ -411,6 +429,8 @@ static void ibmveth_remove_buffer_from_pool(struct ibmveth_adapter *adapter,
+ 	mb();
+ 
+ 	atomic_dec(&(adapter->rx_buff_pool[pool].available));
++
++	return 0;
+ }
+ 
+ /* get the current buffer on the rx queue */
+@@ -420,24 +440,44 @@ static inline struct sk_buff *ibmveth_rxq_get_buffer(struct ibmveth_adapter *ada
+ 	unsigned int pool = correlator >> 32;
+ 	unsigned int index = correlator & 0xffffffffUL;
+ 
+-	BUG_ON(pool >= IBMVETH_NUM_BUFF_POOLS);
+-	BUG_ON(index >= adapter->rx_buff_pool[pool].size);
++	if (WARN_ON(pool >= IBMVETH_NUM_BUFF_POOLS) ||
++	    WARN_ON(index >= adapter->rx_buff_pool[pool].size)) {
++		schedule_work(&adapter->work);
++		return NULL;
++	}
+ 
+ 	return adapter->rx_buff_pool[pool].skbuff[index];
+ }
+ 
+-static void ibmveth_rxq_harvest_buffer(struct ibmveth_adapter *adapter,
+-				       bool reuse)
++/**
++ * ibmveth_rxq_harvest_buffer - Harvest buffer from pool
++ *
++ * @adapter: pointer to adapter
++ * @reuse:   whether to reuse buffer
++ *
++ * Context: called from ibmveth_poll
++ *
++ * Return:
++ * * %0    - success
++ * * other - non-zero return from ibmveth_remove_buffer_from_pool
++ */
++static int ibmveth_rxq_harvest_buffer(struct ibmveth_adapter *adapter,
++				      bool reuse)
+ {
+ 	u64 cor;
++	int rc;
+ 
+ 	cor = adapter->rx_queue.queue_addr[adapter->rx_queue.index].correlator;
+-	ibmveth_remove_buffer_from_pool(adapter, cor, reuse);
++	rc = ibmveth_remove_buffer_from_pool(adapter, cor, reuse);
++	if (unlikely(rc))
++		return rc;
+ 
+ 	if (++adapter->rx_queue.index == adapter->rx_queue.num_slots) {
+ 		adapter->rx_queue.index = 0;
+ 		adapter->rx_queue.toggle = !adapter->rx_queue.toggle;
+ 	}
++
++	return 0;
+ }
+ 
+ static void ibmveth_free_tx_ltb(struct ibmveth_adapter *adapter, int idx)
+@@ -709,6 +749,35 @@ static int ibmveth_close(struct net_device *netdev)
+ 	return 0;
+ }
+ 
++/**
++ * ibmveth_reset - Handle scheduled reset work
++ *
++ * @w: pointer to work_struct embedded in adapter structure
++ *
++ * Context: This routine acquires rtnl_mutex and disables its NAPI through
++ *          ibmveth_close. It can't be called directly in a context that has
++ *          already acquired rtnl_mutex or disabled its NAPI, or directly from
++ *          a poll routine.
++ *
++ * Return: void
++ */
++static void ibmveth_reset(struct work_struct *w)
++{
++	struct ibmveth_adapter *adapter = container_of(w, struct ibmveth_adapter, work);
++	struct net_device *netdev = adapter->netdev;
++
++	netdev_dbg(netdev, "reset starting\n");
++
++	rtnl_lock();
++
++	dev_close(adapter->netdev);
++	dev_open(adapter->netdev, NULL);
++
++	rtnl_unlock();
++
++	netdev_dbg(netdev, "reset complete\n");
++}
++
+ static int ibmveth_set_link_ksettings(struct net_device *dev,
+ 				      const struct ethtool_link_ksettings *cmd)
+ {
+@@ -1324,7 +1393,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+ 			wmb(); /* suggested by larson1 */
+ 			adapter->rx_invalid_buffer++;
+ 			netdev_dbg(netdev, "recycling invalid buffer\n");
+-			ibmveth_rxq_harvest_buffer(adapter, true);
++			if (unlikely(ibmveth_rxq_harvest_buffer(adapter, true)))
++				break;
+ 		} else {
+ 			struct sk_buff *skb, *new_skb;
+ 			int length = ibmveth_rxq_frame_length(adapter);
+@@ -1334,6 +1404,8 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+ 			__sum16 iph_check = 0;
+ 
+ 			skb = ibmveth_rxq_get_buffer(adapter);
++			if (unlikely(!skb))
++				break;
+ 
+ 			/* if the large packet bit is set in the rx queue
+ 			 * descriptor, the mss will be written by PHYP eight
+@@ -1357,10 +1429,12 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+ 				if (rx_flush)
+ 					ibmveth_flush_buffer(skb->data,
+ 						length + offset);
+-				ibmveth_rxq_harvest_buffer(adapter, true);
++				if (unlikely(ibmveth_rxq_harvest_buffer(adapter, true)))
++					break;
+ 				skb = new_skb;
+ 			} else {
+-				ibmveth_rxq_harvest_buffer(adapter, false);
++				if (unlikely(ibmveth_rxq_harvest_buffer(adapter, false)))
++					break;
+ 				skb_reserve(skb, offset);
+ 			}
+ 
+@@ -1407,7 +1481,10 @@ static int ibmveth_poll(struct napi_struct *napi, int budget)
+ 	 * then check once more to make sure we are done.
+ 	 */
+ 	lpar_rc = h_vio_signal(adapter->vdev->unit_address, VIO_IRQ_ENABLE);
+-	BUG_ON(lpar_rc != H_SUCCESS);
++	if (WARN_ON(lpar_rc != H_SUCCESS)) {
++		schedule_work(&adapter->work);
++		goto out;
++	}
+ 
+ 	if (ibmveth_rxq_pending_buffer(adapter) && napi_schedule(napi)) {
+ 		lpar_rc = h_vio_signal(adapter->vdev->unit_address,
+@@ -1428,7 +1505,7 @@ static irqreturn_t ibmveth_interrupt(int irq, void *dev_instance)
+ 	if (napi_schedule_prep(&adapter->napi)) {
+ 		lpar_rc = h_vio_signal(adapter->vdev->unit_address,
+ 				       VIO_IRQ_DISABLE);
+-		BUG_ON(lpar_rc != H_SUCCESS);
++		WARN_ON(lpar_rc != H_SUCCESS);
+ 		__napi_schedule(&adapter->napi);
+ 	}
+ 	return IRQ_HANDLED;
+@@ -1670,6 +1747,7 @@ static int ibmveth_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 
+ 	adapter->vdev = dev;
+ 	adapter->netdev = netdev;
++	INIT_WORK(&adapter->work, ibmveth_reset);
+ 	adapter->mcastFilterSize = be32_to_cpu(*mcastFilterSize_p);
+ 	ibmveth_init_link_settings(netdev);
+ 
+@@ -1762,6 +1840,8 @@ static void ibmveth_remove(struct vio_dev *dev)
+ 	struct ibmveth_adapter *adapter = netdev_priv(netdev);
+ 	int i;
+ 
++	cancel_work_sync(&adapter->work);
++
+ 	for (i = 0; i < IBMVETH_NUM_BUFF_POOLS; i++)
+ 		kobject_put(&adapter->rx_buff_pool[i].kobj);
+ 
+diff --git a/drivers/net/ethernet/ibm/ibmveth.h b/drivers/net/ethernet/ibm/ibmveth.h
+index 0f72ce54e7cf..b0a2460ec9f9 100644
+--- a/drivers/net/ethernet/ibm/ibmveth.h
++++ b/drivers/net/ethernet/ibm/ibmveth.h
+@@ -137,6 +137,7 @@ struct ibmveth_adapter {
+ 	struct vio_dev *vdev;
+ 	struct net_device *netdev;
+ 	struct napi_struct napi;
++	struct work_struct work;
+ 	unsigned int mcastFilterSize;
+ 	void *buffer_list_addr;
+ 	void *filter_list_addr;
 -- 
 2.49.0
 
