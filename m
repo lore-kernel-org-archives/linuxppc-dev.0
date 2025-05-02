@@ -1,70 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-8235-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8236-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55DDBC369DC
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 May 2025 22:43:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19CCCC3ABA3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 May 2025 04:13:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZpTbR03wJz2yWK;
-	Fri,  2 May 2025 08:42:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::542"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746138651;
-	cv=none; b=gwqC506pemArrTAAW4sE7Z5EgmawQIh4sercjyLB7bUKLl442xKG5q2HD1c7vLbnFyhvqrCjxEYZuSFvKRLFi4dDauqQJ2bgcH4A6UUgBsDV47KbfLOGK1+UKMewc7ka4Wm6RSXttcfzbm3RK7Rvg//01j6DWYzaDrSwlmxNCPqRukRwRhd9hooNaRvjMtjr35dcgm5dL2rYXdOsK8EkAMXBKsx9nrz/xWbDJ4gZ1xhcWF7WqvtnNkAdN4jTfxQp2KlblJYEoIhNeSc6daAomhMd1lTk3BrWF0rLiDe2iaA5Rmm5XFVQ24yG9YdD7vRsdN+hAvZpnFEcwWkGZtPo3w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZpcwD2MDzz2ymg;
+	Fri,  2 May 2025 14:13:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746159180;
+	cv=none; b=SxapSz957W8gb0j1H7uMfYozPS3qsJRQpFOuv3YISuxYvbikujpNppeA9NyIemwxmi2fOCTGKi3HLySwItNhsP6UwpP2eXM1U0NC780zfF+JfdTLHBrs6syuuU3rMDzRZgOmbQrjXxM3R4LEjZDg76cVRvs6/Wr72yaNFwpktn3Oi3+d/Yuv9VFiiD+1HdzhC0aJoRybCdUTYvvqL+Eq0m0A+lCfby3RjLnRUUyvJkrBdtUrHgitVmyN0NMgHzbQjWj4WFHHclrXuEdjyI0xjx89ujmgOd5lXH2iqPXK/3YvBZhTg1gmeCweTMsTvnynKiQ9qrJWM4iB6TbjWMQ3aA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746138651; c=relaxed/relaxed;
-	bh=+DIhbp2zBCUUrZHkv3NTANy3q1+8YPM4ngw/q64EdRc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=URM1sUHYCqPlnUXhy88Mo+tfQnKv1EL1YqoQITw6vJsij+DTZKJz23DcWi4gmk4I91+lkljMyoJ/aMtMOFoUQIjqskLHumbS8ZWwjQxnsfsgQ7IdzZHa3urU1wwfDlrlpZl0HJLXES/KuR8XN9+MNRNTJAW+v4MvelCFHXrM2lntsiADDvDjsi6K3nZdFNKellGx4jshZoSsDCyw67xvc4qqKV4Vh3T/ae1hBNtv6YLX+4BIvwgslltgB7jpve2S+HwBZJa6ROOSO3zZHKZGZJUChpgWvBV0wIqoI7NQaLl9SAqLEuaE9qwzzL8+4I3PtKCsuyXFy8J09neyImttQw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CNk1WElH; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::542; helo=mail-ed1-x542.google.com; envelope-from=memxor@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1746159180; c=relaxed/relaxed;
+	bh=NcmWfthnPHQDUlzxLJaKRULCubnGPMFdKqEnETJKvi0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=EoZei5m765O2KVoF2KsURXHoDxEVQRLJt87QuPog3UDIT67kO1sB0IYERyvoNJJXTiWNd+RhLfHOVHwzZz6fnKbD/ETqQmCRP3n/zHVf5L8N9fI5RHZjhVybWW3qSHcAWK6WnqRzSU91CoPhlXjh8kygJBiyctKafLUx/Jo1fVz7SdKvB0Rve53ZTMJBojE47CABgZVtjs+A+7vUcbfpvAEoE6fuUwMLCoVhjcPSIR78KPbZCqsq6bqDc9gChLGkz+P7+tmKFAE2zYTfe5T3vTQ6UgEn27bx8pe+XyOemg+kP/DZUxMNzhrcyQd1lr0szCxJFF+//wuOjx/4n4tThw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CFFMvJLv; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CNk1WElH;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=CFFMvJLv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::542; helo=mail-ed1-x542.google.com; envelope-from=memxor@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x542.google.com (mail-ed1-x542.google.com [IPv6:2a00:1450:4864:20::542])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZpTKP5tjWz2ySY
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2025 08:30:49 +1000 (AEST)
-Received: by mail-ed1-x542.google.com with SMTP id 4fb4d7f45d1cf-5f624291db6so2109155a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 May 2025 15:30:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1746138646; x=1746743446; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=+DIhbp2zBCUUrZHkv3NTANy3q1+8YPM4ngw/q64EdRc=;
-        b=CNk1WElHYO41QnSiSRxRhOpdXm7ip2+hetCDPPXPtmcMjkZ5xk0MLz6uk2RvkbJRmX
-         kpJGsrQY6FsKlDmSoY8TbADtCwiqE2lCV1PncWRzqqEW8SRQvWvBw9kf882UaqcVGHjU
-         bt79UEUx/LcR5vo8aI1wJpZTF8L2NLZ7Rewnj34GsU4JYU/fNNIlCxzvNnGs4/vN9AfF
-         pMy8KAJmiGkVOuM8KLBRzKAfAB6RECt+bC+E/o0vghOUEBFV/kIMIQ4sOcItz5Zx6S9d
-         Kuv0WxdQvAX6pF0uYIrrnfu2MtpuUl7pXEu4W7k2EEBbHE3P/LZ/DJswh+sptwBkZ+6z
-         eK0A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1746138646; x=1746743446;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=+DIhbp2zBCUUrZHkv3NTANy3q1+8YPM4ngw/q64EdRc=;
-        b=uM1fsldKkicszIVD4NxK2AdpqNm/vVO7PPcscHA+dbmx3G/zKsZfLipi3ktnU28ARx
-         vqbAGVOnjZJVx/27j+NAI8ceDxZpGi30rhpYEHwNIe13Q3V+LFCY2OAE0obVHFyG06pW
-         OSIskAa8Lv4nip3G5mJbe9mApp5J6a7USoDWblycqMVv9P4P4vQHC04ulTqwnIsp41m4
-         M6tK0gJsHirGIN8VL/GVDGM+CmtKKCeF5zGrHsibj+GABuvhVkOb9PZGXLfmq7IyUAuF
-         6sjJYOZmCrUS06xsISms6E/nuMnTJXIvZP04SQp0SOZc8UH+S4dylZCnX8VNOTgP0L8I
-         YPtg==
-X-Forwarded-Encrypted: i=1; AJvYcCWa3Yw/qEUXqv+uI6mqLvLWotqNGxGpZRWSb1Kc05I4lHR36ZtWw/VGcB+Vn3rHbEL/fMfFsCF3FJswLLw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxfD12A+2pL4ZnFg9qOabJ5JVUaON18yZXFoeqWyMDM+T1OTclG
-	wA/nxwFzI39ywU1A1R7dXeDVRFQOqzlwQXztKX+Udt8ciXp/TeE037M3JeJKohEkNwcVu8i3Cfv
-	CYE+Y1/yBYhO5e52D6qT9cYa0BnQ=
-X-Gm-Gg: ASbGnctWYq80ry12/FIWdup4KYgCD6SrEJSZYsVT2Vd+vNXBR5Q6eh+CwcEgMwjO3il
-	ko+9RlABYtOA6NNY/rVFX2jdrMp5vj8rTbhQc97SAx0FxMc2jeEH1TvXaN3wxhWIfNUOIMnw9bK
-	fuOs2W3oGlRCDXsIdbkNGcz2s6dqxW8zDKMDxcQqR0UUQ=
-X-Google-Smtp-Source: AGHT+IG09f2b7Y4uH3A4LEbmPohoiBZ1TPbF2Kj8BdJpyHWDLhgzXkdGcWvLzUMh9kLAyJv+ATRCPXiPJsNUAWmKXHo=
-X-Received: by 2002:a05:6402:5192:b0:5f6:2758:149e with SMTP id
- 4fb4d7f45d1cf-5fa78014527mr322827a12.11.1746138646330; Thu, 01 May 2025
- 15:30:46 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZpcwB62Vyz2yQj
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2025 14:12:58 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 541LrEGC022584;
+	Fri, 2 May 2025 04:12:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=NcmWft
+	hnPHQDUlzxLJaKRULCubnGPMFdKqEnETJKvi0=; b=CFFMvJLv6goEMBuEWNCf7u
+	RpRpU1NrLwsFa2Ft/t2QTa2NeW0yoFWDjC6ChDc1AIpGXbDpLkfSfBUta4/4GJKY
+	6y0fRHJzWy+d3K8jfQ7QzT2e3QP7tLCjefN5t9o29oBJxGhPq781T+l2TzXxSiSf
+	LU/Pr3GYp5aaCgcd3hkPODSg+0zaeiPyp+26y49g4jf8AcM826nlFfRcVgWgnNcs
+	/mRa0zme8506MRZvQGiNzCOYFJDqhHzECaZyEh61ouROMyuQqjZicZUcFAr6c0/z
+	bW1TSlz5vxo5viSZp44BbxvXB5oF1trFZKUr+m5+JRklj317m/ATph41LvFXWLCw
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46c6vjm3kt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 02 May 2025 04:12:48 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 5424Cm6a000563;
+	Fri, 2 May 2025 04:12:48 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46c6vjm3kp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 02 May 2025 04:12:48 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5422jIvj001917;
+	Fri, 2 May 2025 04:12:46 GMT
+Received: from smtprelay04.wdc07v.mail.ibm.com ([172.16.1.71])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 469ban04t9-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 02 May 2025 04:12:46 +0000
+Received: from smtpav04.wdc07v.mail.ibm.com (smtpav04.wdc07v.mail.ibm.com [10.39.53.231])
+	by smtprelay04.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5424CiMO59244888
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 2 May 2025 04:12:44 GMT
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CBC3358045;
+	Fri,  2 May 2025 04:12:44 +0000 (GMT)
+Received: from smtpav04.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4F32758056;
+	Fri,  2 May 2025 04:12:40 +0000 (GMT)
+Received: from [9.43.91.235] (unknown [9.43.91.235])
+	by smtpav04.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Fri,  2 May 2025 04:12:39 +0000 (GMT)
+Message-ID: <5a23e0d7-f32a-4097-b3cc-dcccb7355778@linux.ibm.com>
+Date: Fri, 2 May 2025 09:42:37 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,45 +87,108 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250501073603.1402960-1-luis.gerhorst@fau.de> <20250501073603.1402960-8-luis.gerhorst@fau.de>
-In-Reply-To: <20250501073603.1402960-8-luis.gerhorst@fau.de>
-From: Kumar Kartikeya Dwivedi <memxor@gmail.com>
-Date: Fri, 2 May 2025 00:30:09 +0200
-X-Gm-Features: ATxdqUHPJMzTDr7uGCd29q-hTjuCFiE_oOpFxHvXqTdvhmyQK0iMn3qq8We2LrU
-Message-ID: <CAP01T75RR_6mC5fvD-tg+pxR8TEUHpUfU4Lqo0p+EBrkY9BVnw@mail.gmail.com>
-Subject: Re: [PATCH bpf-next v3 07/11] bpf: Rename sanitize_stack_spill to nospec_result
-To: Luis Gerhorst <luis.gerhorst@fau.de>
-Cc: Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
-	Andrii Nakryiko <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, 
-	Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, 
-	Yonghong Song <yonghong.song@linux.dev>, John Fastabend <john.fastabend@gmail.com>, 
-	KP Singh <kpsingh@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>, Hao Luo <haoluo@google.com>, 
-	Jiri Olsa <jolsa@kernel.org>, Puranjay Mohan <puranjay@kernel.org>, 
-	Xu Kuohai <xukuohai@huaweicloud.com>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Will Deacon <will@kernel.org>, Hari Bathini <hbathini@linux.ibm.com>, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Mykola Lysenko <mykolal@fb.com>, Shuah Khan <shuah@kernel.org>, 
-	Henriette Herzog <henriette.herzog@rub.de>, Saket Kumar Bhaskar <skb99@linux.ibm.com>, 
-	Cupertino Miranda <cupertino.miranda@oracle.com>, Jiayuan Chen <mrpre@163.com>, 
-	Matan Shachnai <m.shachnai@gmail.com>, Dimitar Kanaliev <dimitar.kanaliev@siteground.com>, 
-	Shung-Hsi Yu <shung-hsi.yu@suse.com>, Daniel Xu <dxu@dxuuu.xyz>, bpf@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org, 
-	Maximilian Ott <ott@cs.fau.de>, Milan Stephan <milan.stephan@fau.de>
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] Documentation: Fix description format for powerpc RTAS
+ ioctls
+To: Bagas Sanjaya <bagasdotme@gmail.com>, Haren Myneni <haren@linux.ibm.com>,
+        linuxppc-dev@lists.ozlabs.org
+Cc: sfr@canb.auug.org.au, tyreld@linux.ibm.com, linux-next@vger.kernel.org,
+        hbabu@us.ibm.com
+References: <20250430022847.1118093-1-haren@linux.ibm.com>
+ <aBHodTu4IjqzZeXb@archie.me>
+Content-Language: en-US
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+In-Reply-To: <aBHodTu4IjqzZeXb@archie.me>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTAyMDAyOSBTYWx0ZWRfXzVZkK5Vh47hh U5hk5uEBRf6bDlKdURulHgavbmYlhdPgZyRGeHnzbOVzk8czpnzjfrq3g+KlhZtb5SXYw4aIgjx et44aeDf/7Wy7bISyvQMz7238OqwXz0n/c6MUXJSY1IZNz8kJKPnkYd6dORp121tMnvmI92e6SN
+ kAd8ZBG2EKL1z4he2tzrOuAjitA0I6Ig8i6aw0npGBLhybu4yh8fKWejrcGYjzSARTX5iwjTY2B viGxmh3p3DnaMB/9I/uJbGc7jGogzk1SKTbFTPM7iNtO5JVD7/bUUDBtBk9+7gJwpjoSE8xBD0x kG70DRGkvd2CjxtdAw+T+BVwJkDph+Nw5kzvuM5oBPR4FxHL1N6q2Ztqq3hS9htPFJe6XCKpF8g
+ uRYeriVop0CE5FYZE6bMTPuhagWuoZhZRPJq9RTkIX7valLHIHNzYonJDW3jThr6jDJDeDwu
+X-Authority-Analysis: v=2.4 cv=GI8IEvNK c=1 sm=1 tr=0 ts=68144640 cx=c_pps a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17 a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=VwQbUJbxAAAA:8 a=pGLkceISAAAA:8 a=rOUgymgbAAAA:8 a=VnNF1IyMAAAA:8
+ a=rmmP8zxhHohSwG9kuDgA:9 a=QEXdDO2ut3YA:10 a=MP9ZtiD8KjrkvI0BhSjB:22
+X-Proofpoint-GUID: x3m5nFGnMEqquqfDHny04VVUZk9aa5AT
+X-Proofpoint-ORIG-GUID: QcLHAZmg28OdBOefPxG_iYrewZ3MnegJ
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
+ definitions=2025-05-01_06,2025-04-24_02,2025-02-21_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 spamscore=0
+ mlxlogscore=999 mlxscore=0 bulkscore=0 clxscore=1015 priorityscore=1501
+ lowpriorityscore=0 malwarescore=0 suspectscore=0 adultscore=0
+ impostorscore=0 classifier=spam authscore=0 authtc=n/a authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
+ definitions=main-2505020029
 
-On Thu, 1 May 2025 at 10:02, Luis Gerhorst <luis.gerhorst@fau.de> wrote:
->
-> This is made to clarify that this flag will cause a nospec to be added
-> after this insn and can therefore be relied upon to reduce speculative
-> path analysis.
->
-> Signed-off-by: Luis Gerhorst <luis.gerhorst@fau.de>
-> Cc: Henriette Herzog <henriette.herzog@rub.de>
-> Cc: Maximilian Ott <ott@cs.fau.de>
-> Cc: Milan Stephan <milan.stephan@fau.de>
-> ---
 
-Acked-by: Kumar Kartikeya Dwivedi <memxor@gmail.com>
+
+On 4/30/25 2:38 PM, Bagas Sanjaya wrote:
+> On Tue, Apr 29, 2025 at 07:28:47PM -0700, Haren Myneni wrote:
+>> Fix the description format for the following build warnings:
+>>
+>> "Documentation/userspace-api/ioctl/ioctl-number.rst:369:
+>> ERROR: Malformed table. Text in column margin in table line 301.
+>>
+>> 0xB2  03-05 arch/powerpc/include/uapi/asm/papr-indices.h
+>> powerpc/pseries indices API
+>>                             <mailto:linuxppc-dev>
+>> 0xB2  06-07 arch/powerpc/include/uapi/asm/papr-platform-dump.h
+>> powerpc/pseries Platform Dump API
+>>                             <mailto:linuxppc-dev>
+>> 0xB2  08  arch/powerpc/include/uapi/asm/papr-physical-attestation.h
+>> powerpc/pseries Physical Attestation API
+>>                             <mailto:linuxppc-dev>"
+>>
+> 
+> Hi,
+> 
+> FYI, I've also submitted the fix earlier at [1] (but different approach).
+> ppc maintainers, would you like taking this patch instead or mine?
+
+Looked your patch (thanks for the link) and it is more of generic clean up. 
+I would prefer to take Haren patch now since it fixes the specific failure
+case. But would encourage you to send it as generic cleanup patch.
+
+Maddy
+
+
+> 
+> [1]: https://lore.kernel.org/linuxppc-dev/20250429130524.33587-2-bagasdotme@gmail.com/
+> 
+>> Reported-by: Stephen Rothwell <sfr@canb.auug.org.au>
+>> Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+>> Fixes: 43d869ac25f1 ("powerpc/pseries: Define papr_indices_io_block for papr-indices ioctls")
+>> Fixes: 8aa9efc0be66 ("powerpc/pseries: Add papr-platform-dump character driver for dump retrieval")
+>> Fixes: 86900ab620a4 ("powerpc/pseries: Add a char driver for physical-attestation RTAS")
+>> Closes: https://lore.kernel.org/linux-next/20250429181707.7848912b@canb.auug.org.au/
+>> ---
+>>  Documentation/userspace-api/ioctl/ioctl-number.rst | 6 +++---
+>>  1 file changed, 3 insertions(+), 3 deletions(-)
+>>
+>> diff --git a/Documentation/userspace-api/ioctl/ioctl-number.rst b/Documentation/userspace-api/ioctl/ioctl-number.rst
+>> index 017a23aeadc3..fee5c4731501 100644
+>> --- a/Documentation/userspace-api/ioctl/ioctl-number.rst
+>> +++ b/Documentation/userspace-api/ioctl/ioctl-number.rst
+>> @@ -366,11 +366,11 @@ Code  Seq#    Include File                                           Comments
+>>                                                                       <mailto:linuxppc-dev>
+>>  0xB2  01-02  arch/powerpc/include/uapi/asm/papr-sysparm.h            powerpc/pseries system parameter API
+>>                                                                       <mailto:linuxppc-dev>
+>> -0xB2  03-05 arch/powerpc/include/uapi/asm/papr-indices.h             powerpc/pseries indices API
+>> +0xB2  03-05  arch/powerpc/include/uapi/asm/papr-indices.h            powerpc/pseries indices API
+>>                                                                       <mailto:linuxppc-dev>
+>> -0xB2  06-07 arch/powerpc/include/uapi/asm/papr-platform-dump.h       powerpc/pseries Platform Dump API
+>> +0xB2  06-07  arch/powerpc/include/uapi/asm/papr-platform-dump.h      powerpc/pseries Platform Dump API
+>>                                                                       <mailto:linuxppc-dev>
+>> -0xB2  08  arch/powerpc/include/uapi/asm/papr-physical-attestation.h  powerpc/pseries Physical Attestation API
+>> +0xB2  08     powerpc/include/uapi/asm/papr-physical-attestation.h    powerpc/pseries Physical Attestation API
+>>                                                                       <mailto:linuxppc-dev>
+>>  0xB3  00     linux/mmc/ioctl.h
+>>  0xB4  00-0F  linux/gpio.h                                            <mailto:linux-gpio@vger.kernel.org>
+> 
+> In any case,
+> 
+> Reviewed-by: Bagas Sanjaya <bagasdotme@gmail.com>
+> 
+> Thanks.
+> 
+
 
