@@ -1,70 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-8239-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8240-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEBA8C3ABA3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 May 2025 04:38:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EF16C3ABA3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 May 2025 06:53:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZpdTS3PZgz30DP;
-	Fri,  2 May 2025 14:38:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::541"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746144235;
-	cv=none; b=S8hsMXiW4vrePhtVct3lWF0CyhTAFCkxDDBAPHXC1NYSvGIPPBvmG+HjjEuQjyYp3FEtMIypU1UjqIdW0MeynsqvQ9kSFk6jDj4WEBsY4d+1eIHT3/uPVdkF/CixZ3C9RJj8az3Rxv8EP6OpAV5L859Xjn+FRlhcXBcLPjDv02jPKcxOAbiLs8d5Ghmuokda8DkzlgwYBTYN4KfMHRXryZoAevOgAbWYqnwVP29PDYFvmenETPtatc9HO8D9kZwetdcyXQnTQ0Z22TWT7gGf99cF5tam/fDx+pOAA5at0Mri8MT4AZEzr375BePPotdPQi1jilVzDOm6+hvD3Q2BGQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZphTM2d06z2yGf;
+	Fri,  2 May 2025 16:53:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:c010:41de::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746168807;
+	cv=none; b=bBpLD0muudF+qabY3ZK6qndxFquYcOIh+BHSNAQMb68xANjvzzy1TXnxnTdMsHeYa08XksBuO7EVBujtBGxvtwADNha0hXddIqs5XatAcTjZ9VK/LZU3WMcL9IWmYjX7bzJhoB7pZ9O/ZaPbH+ZA4iDFKcxsdySAQRWlwhIiGdUU9/z359EWn1/FFX0zcnbzlFor7tc46QrZFC7Xj6aR5EzkK6ZB0UJn1HQbrF8ZnwbAQIgeJq72BANiCjWTTKHH3E64MJ74RrFlTxTgmXLfFMR6Tvt9cIhwccUuXHdTVCoLuArqx1B7kFVCjPyeWG/culquSzgXdbR3Pznhk92LjA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746144235; c=relaxed/relaxed;
-	bh=BAdrSpHVasOUL/GpRMRQtUO4sMi+w7FhQalzllF+FBE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=VUrQbl6XP1WVJRVfX8WcUnHsJuXARScFWMG7zqeGD4LzfUsj1zwqZ6dTUaYDtEf3xO1FBhheqSfFHnF2uDNc3THmrq0a8ml/hlFktF94gfvV/yq3/H9KfHaFH+3tlvJTbaG2GB4fGO1DO1M9FSX72pNTrSv+Y/xxrFAVZCwzpoR0d9H4EIFu0p7ra2QpaV5FU17SdFI28YuD97UeHTC+W+d2UXRkquMsxTQgEAcrZi75D6qHeqANZq4KHI892/yCTc+zjbj/bWut3QUjXfpgTepni1mjIvUc6N/CUcV7MWknAO6aTUsPhJvFb90JJ2OfrPUxRAGQf6OMKEVjvJN+wg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y05uXiWM; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::541; helo=mail-ed1-x541.google.com; envelope-from=memxor@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1746168807; c=relaxed/relaxed;
+	bh=vrA/dEmEMZN/XoLggQl5jTVNWP4WWIcPBU5A1dVNqWA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=cTkIAD9CfJ0gFzT6ojxWKCS/mBQ41N6TvXQPwk4z6jXpuHpWmZpcPaQT5joxupUKLdjOxPEm5lDPS7Tg0iWucUusJAzfdm1iBCs90sboCfVz8uRdmpO4k9xRlAsrBt8yxK1Dxc2RYuGAN30w+RsNFQvo7UW9QLE82JtzioKSqNLZZ5yi0FSjt+/YD2eNNfByKHwo8QJNxW2lJ/qupy5bdSEvIhbJHfwxjboDLH+qWGtgOFBTgSK/6804/shVsUwOIK0VKb7z6ASbvk9nqUXV6enz940Kk+EYWtko/ZPQAJwLBG+4TwC+0zGZjc0ECCtT0DmKajidBkX7amRqxA6SWA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net; dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=CxKUsKab; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org) smtp.mailfrom=weissschuh.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=weissschuh.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y05uXiWM;
+	dkim=pass (1024-bit key; unprotected) header.d=weissschuh.net header.i=@weissschuh.net header.a=rsa-sha256 header.s=mail header.b=CxKUsKab;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::541; helo=mail-ed1-x541.google.com; envelope-from=memxor@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x541.google.com (mail-ed1-x541.google.com [IPv6:2a00:1450:4864:20::541])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=weissschuh.net (client-ip=2a01:4f8:c010:41de::1; helo=todd.t-8ch.de; envelope-from=linux@weissschuh.net; receiver=lists.ozlabs.org)
+Received: from todd.t-8ch.de (todd.t-8ch.de [IPv6:2a01:4f8:c010:41de::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZpWNm5mT5z2yVt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2025 10:03:51 +1000 (AEST)
-Received: by mail-ed1-x541.google.com with SMTP id 4fb4d7f45d1cf-5e5c7d6b96fso2636729a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 01 May 2025 17:03:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1746144229; x=1746749029; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=BAdrSpHVasOUL/GpRMRQtUO4sMi+w7FhQalzllF+FBE=;
-        b=Y05uXiWMMorYM9tsBxkdfLOXacpiCTw4YUOeOiDfP7XhP4P2K5yxLPxmBaGAkuUpEM
-         7pfdugFzKAYSFnOn4pibClAhVsTr9QqXMqLMHWs3Z1clFe8VYGC5IhnX/3tsbU8fDQm/
-         WkCsbDoAp5J7Q1kVK20R1drPuhNcl7cERr7BKVO/ygUNdmX6CyU3H2F5Ke1qeyW9vUNU
-         9jKoL7D0j+ETJN978YP0+jqqif+l0FELgi/fNKwatPuahC8ZRneq5RbPABYvzlqlHkQ9
-         +aOof62lpdgPbxhLYrSK8v2oTu9Sam6r88No8xX6emSzaVkti5iN7kHq54Lggf6YXXRV
-         OdwQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1746144229; x=1746749029;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=BAdrSpHVasOUL/GpRMRQtUO4sMi+w7FhQalzllF+FBE=;
-        b=cI6RIh01cAgh4AccRd2tWfGPLqUIBakG8iaZsr9C1Gj/yDcPGXJLB77CTZz5bZStRz
-         WbsahzmBr5HK3SUjLmELfw3+qSkRObqjdA51gFaMJnT/Bf6UpLBah4IyFmOqBKNIjzml
-         XDWnEIPvEtE9XAC3ET6RsHnmWJjC24ltppn0XLccEyaW1hrykEwpP7VC+atjE6VNUs5t
-         f4qNGOCFJpvu/vf3f7F/yPmev3R6s44jOtR5WFuOhkPqoCXWDFP6hw2O1HbyQoVSSyLY
-         ZBQzRP7KA5HOW/UqS9DrsolPHypWr1NqSC121UA+fDm/xPZ/8ddhT8g2Cprd39rBXY7a
-         /wXg==
-X-Forwarded-Encrypted: i=1; AJvYcCVigbZn/bDXxQ545ulLLBsGbotvTzSXEKYVE30MWXMr9jO5hVR7zZrIqINazTuCgojzoIaRqbMLW2IdIhA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx4SVfOWyjS+aYBE7wS3XbO4M7mw6tWcMG+lgBCfbQhP5U2jd+e
-	6dy1iX8Kzm45gGEOS27aqgR2SOI498U+hKCPpdV+WSYydTlhHxV+ceCkYRiQozzgjL0S8XdVu/r
-	T5eTR8r8zh8fNlaRdMyKPdH712/Q=
-X-Gm-Gg: ASbGncsxFgnHPAOn/devLslRNoCIfHhI4rZTEyJC07uesK339GJvLkPeyhVdn0O8pjb
-	ZCoj2vmV91vUy9C236KjxJhmL8AjJ92IkJe+Om2KeQAWrfQ+waE7q1uh3F9UppeSdp5kjH3Mh4e
-	NRt1YdayY9V/GV8SDlqXrO3bioWbtqkn39vRYd1r1HgiI=
-X-Google-Smtp-Source: AGHT+IEZmaXKlPg2SX6D1Gg4Ct+dglKTu1NfoiUsMrHJ97ikPtGkPZ2woUqGvcz2mbdKYLABZveqW+MvsUkMW/lyo9o=
-X-Received: by 2002:a05:6402:51d3:b0:5ec:fb3d:f51f with SMTP id
- 4fb4d7f45d1cf-5fa78006329mr578324a12.10.1746144228590; Thu, 01 May 2025
- 17:03:48 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZphTF507Fz2yGY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  2 May 2025 16:53:17 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=weissschuh.net;
+	s=mail; t=1746168790;
+	bh=AEdRU+ogQrE6gQAgP/rybtN8TOhshZ7X86ciQDX554g=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=CxKUsKabvVQtCyoctO8MV2iUdgbSXO1OeNK+W2RsL9m4NVcoUrzpeI7zuNg2eC3IS
+	 ZL0Jz4TZ9bVREPe8YN+Ocj0q2Hc+biSc2XfA95gtj8Z+2GrX2G118bp/uIjQ0QmRMk
+	 XDnIezQvPUDxsyD5F02EsfUCEVYsV3PK2uLBkSiQ=
+Date: Fri, 2 May 2025 08:53:09 +0200
+From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Masahiro Yamada <masahiroy@kernel.org>, 
+	Nathan Chancellor <nathan@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
+	Luis Chamberlain <mcgrof@kernel.org>, Petr Pavlu <petr.pavlu@suse.com>, 
+	Sami Tolvanen <samitolvanen@google.com>, Daniel Gomez <da.gomez@samsung.com>, 
+	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>, 
+	"Serge E. Hallyn" <serge@hallyn.com>, Jonathan Corbet <corbet@lwn.net>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>, 
+	Roberto Sassu <roberto.sassu@huawei.com>, Dmitry Kasatkin <dmitry.kasatkin@gmail.com>, 
+	Eric Snowberg <eric.snowberg@oracle.com>, Nicolas Schier <nicolas.schier@linux.dev>, 
+	Fabian =?utf-8?Q?Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>, Arnout Engelen <arnout@bzzt.net>, 
+	Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>, 
+	Christian Heusel <christian@heusel.eu>, =?utf-8?B?Q8OianU=?= Mihai-Drosi <mcaju95@gmail.com>, 
+	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org, linux-arch@vger.kernel.org, 
+	linux-modules@vger.kernel.org, linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
+Subject: Re: [PATCH v3 0/9] module: Introduce hash-based integrity checking
+Message-ID: <840b0334-71e4-45b1-80b0-e883586ba05c@t-8ch.de>
+References: <20250429-module-hashes-v3-0-00e9258def9e@weissschuh.net>
+ <f1dca9daa01d0d2432c12ecabede3fa1389b1d29.camel@HansenPartnership.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,134 +73,87 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250501073603.1402960-1-luis.gerhorst@fau.de> <20250501073603.1402960-11-luis.gerhorst@fau.de>
-In-Reply-To: <20250501073603.1402960-11-luis.gerhorst@fau.de>
-From: Kumar Kartikeya Dwivedi <memxor@gmail.com>
-Date: Fri, 2 May 2025 02:03:12 +0200
-X-Gm-Features: ATxdqUHVm1hIS_v_8Z_z0qlxAyMnE3MrBINfcmLce0vU9ymsmOtLw6c47Fn4EGE
-Message-ID: <CAP01T76HZ+s5h+_REqRFkRjjoKwnZZn9YswpSVinGicah1pGJw@mail.gmail.com>
-Subject: Re: [PATCH bpf-next v3 10/11] bpf: Allow nospec-protected var-offset
- stack access
-To: Luis Gerhorst <luis.gerhorst@fau.de>
-Cc: Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
-	Andrii Nakryiko <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, 
-	Eduard Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, 
-	Yonghong Song <yonghong.song@linux.dev>, John Fastabend <john.fastabend@gmail.com>, 
-	KP Singh <kpsingh@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>, Hao Luo <haoluo@google.com>, 
-	Jiri Olsa <jolsa@kernel.org>, Puranjay Mohan <puranjay@kernel.org>, 
-	Xu Kuohai <xukuohai@huaweicloud.com>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Will Deacon <will@kernel.org>, Hari Bathini <hbathini@linux.ibm.com>, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Mykola Lysenko <mykolal@fb.com>, Shuah Khan <shuah@kernel.org>, 
-	Henriette Herzog <henriette.herzog@rub.de>, Saket Kumar Bhaskar <skb99@linux.ibm.com>, 
-	Cupertino Miranda <cupertino.miranda@oracle.com>, Jiayuan Chen <mrpre@163.com>, 
-	Matan Shachnai <m.shachnai@gmail.com>, Dimitar Kanaliev <dimitar.kanaliev@siteground.com>, 
-	Shung-Hsi Yu <shung-hsi.yu@suse.com>, Daniel Xu <dxu@dxuuu.xyz>, bpf@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org, 
-	Maximilian Ott <ott@cs.fau.de>, Milan Stephan <milan.stephan@fau.de>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <f1dca9daa01d0d2432c12ecabede3fa1389b1d29.camel@HansenPartnership.com>
 
-On Thu, 1 May 2025 at 10:17, Luis Gerhorst <luis.gerhorst@fau.de> wrote:
->
-> Insert a nospec before the access to prevent it from ever using an index
-> that is subject to speculative scalar-confusion.
->
-> The access itself can either happen directly in the BPF program (reads
-> only, check_stack_read_var_off()) or in a helper (read/write,
-> check_helper_mem_access()).
->
-> This relies on the fact that the speculative scalar confusion that leads
-> to the variable-stack access going OOBs must stem from a prior
-> speculative store or branch bypass. Adding a nospec before the
-> variable-stack access will force all previously bypassed stores/branches
-> to complete and cause the stack access to only ever go to the stack slot
-> that is accessed architecturally.
->
-> Alternatively, the variable-offset stack access might be a write that
-> can itself be subject to speculative store bypass (this can happen in
-> theory even if this code adds a nospec /before/ the variable-offset
-> write). Only indirect writes by helpers might be affected here (e.g.,
-> those taking ARG_PTR_TO_MAP_VALUE). (Because check_stack_write_var_off()
-> does not use check_stack_range_initialized(), in-program variable-offset
-> writes are not affected.) If the in-helper write can be subject to
-> Spectre v4 and the helper writes/overwrites pointers on the BPF stack,
-> they are already a problem for fixed-offset stack accesses and should be
-> subject to Spectre v4 sanitization.
->
-> Signed-off-by: Luis Gerhorst <luis.gerhorst@fau.de>
-> Acked-by: Henriette Herzog <henriette.herzog@rub.de>
-> Cc: Maximilian Ott <ott@cs.fau.de>
-> Cc: Milan Stephan <milan.stephan@fau.de>
-> ---
->  kernel/bpf/verifier.c | 24 ++++++++++++------------
->  1 file changed, 12 insertions(+), 12 deletions(-)
->
-> diff --git a/kernel/bpf/verifier.c b/kernel/bpf/verifier.c
-> index db26b477dd45..1fbafea3ed69 100644
-> --- a/kernel/bpf/verifier.c
-> +++ b/kernel/bpf/verifier.c
-> @@ -7894,6 +7894,11 @@ static int check_atomic(struct bpf_verifier_env *env, struct bpf_insn *insn)
->         }
->  }
->
-> +static struct bpf_insn_aux_data *cur_aux(const struct bpf_verifier_env *env)
-> +{
-> +       return &env->insn_aux_data[env->insn_idx];
-> +}
-> +
->  /* When register 'regno' is used to read the stack (either directly or through
->   * a helper function) make sure that it's within stack boundary and, depending
->   * on the access type and privileges, that all elements of the stack are
-> @@ -7933,18 +7938,18 @@ static int check_stack_range_initialized(
->         if (tnum_is_const(reg->var_off)) {
->                 min_off = max_off = reg->var_off.value + off;
->         } else {
-> -               /* Variable offset is prohibited for unprivileged mode for
-> +               /* Variable offset requires a nospec for unprivileged mode for
->                  * simplicity since it requires corresponding support in
->                  * Spectre masking for stack ALU.
->                  * See also retrieve_ptr_limit().
->                  */
->                 if (!env->bypass_spec_v1) {
-> -                       char tn_buf[48];
-> -
-> -                       tnum_strn(tn_buf, sizeof(tn_buf), reg->var_off);
-> -                       verbose(env, "R%d variable offset stack access prohibited for !root, var_off=%s\n",
-> -                               regno, tn_buf);
-> -                       return -EACCES;
-> +                       /* Allow the access, but prevent it from using a
-> +                        * speculative offset using a nospec before the
-> +                        * dereference op.
-> +                        */
-> +                       cur_aux(env)->nospec = true;
-> +                       WARN_ON_ONCE(cur_aux(env)->alu_state);
->                 }
->                 /* Only initialized buffer on stack is allowed to be accessed
->                  * with variable offset. With uninitialized buffer it's hard to
-> @@ -11172,11 +11177,6 @@ static int check_get_func_ip(struct bpf_verifier_env *env)
->         return -ENOTSUPP;
->  }
+Hi James,
 
-Hmm, while reading related code, I noticed that sanitize_check_bounds
-returns 0 in case the type is not map_value or stack.
-It seems like it should be returning an error, cannot check right now
-but I'm pretty sure these are not the two pointer types unprivileged
-programs can access?
-So smells like a bug?
+On 2025-04-29 10:05:04-0400, James Bottomley wrote:
+> On Tue, 2025-04-29 at 15:04 +0200, Thomas Weißschuh wrote:
+> > The current signature-based module integrity checking has some
+> > drawbacks in combination with reproducible builds:
+> > Either the module signing key is generated at build time, which makes
+> > the build unreproducible,
+> 
+> I don't believe it does: as long as you know what the key was, which
+> you can get from the kernel keyring, you can exactly reproduce the core
+> build (it's a public key after all and really equivalent to built in
+> configuration).  Is the fact that you have to boot the kernel to get
+> the key the problem?  In which case we could insist it be shipped in
+> the kernel packaging.
 
->
-> -static struct bpf_insn_aux_data *cur_aux(const struct bpf_verifier_env *env)
-> -{
-> -       return &env->insn_aux_data[env->insn_idx];
-> -}
-> -
->  static bool loop_flag_is_zero(struct bpf_verifier_env *env)
->  {
->         struct bpf_reg_state *regs = cur_regs(env);
-> --
-> 2.49.0
->
->
+See below.
+
+> >  or a static key is used, which precludes rebuilds by third parties
+> > and makes the whole build and packaging process much more
+> > complicated. 
+> 
+> No, it's the same as above ... as long as you have the public key you
+> can reproduce the core build with the same end to end hash.
+
+While the scheme you propose does allow verification of rebuildability,
+it does not satisfy the requirements for a reproducible build as
+understood by the general reproducible builds community:
+
+	When is a build reproducible?
+
+	A build is reproducible if given the same source code, build environment
+	and build instructions, any party can recreate bit-by-bit identical
+	copies of all specified artifacts.
+
+	The relevant attributes of the build environment, the build instructions
+	and the source code as well as the expected reproducible artifacts are
+	defined by the authors or distributors. The artifacts of a build are the
+	parts of the build results that are the desired primary output.
+
+https://reproducible-builds.org/docs/definition/
+
+Specifically the output of a previous build (the public key, module
+signatures) is not available during the rebuild or verification.
+
+> However, is there also a corresponding question of how we verify
+> reproduceability of kernel builds (and the associated modules ... I
+> assume for the modules you do strip the appended signature)?
+
+Currently distros either don't enforce the reproducibility of the
+kernel package at all or disable MODULE_SIG.
+With the proposed scheme there would be no signatures on builtin modules.
+
+> I assume
+> you're going by the secure boot hash (authenticode hash of the efi stub
+> and the compressed payload which includes the key).  However, if we had
+> the vmlinux.o we could do a much more nuanced hash to verify the build,
+> say by placing the keyring data in a section that isn't hashed.
+
+The currently existing tooling does not have any nuance in its
+verifications. It just compares bit-by-bit.
+I think this is intentional as any bespoke per-package logic would
+introduce possible failure modes and stand in the way of implementing
+multiple completely independent verification toolsets.
+While bespoke tools like diffoscope exist, these are only for
+development and debugging. Not not for the reproducibiliy check itself.
+
+How to handle secure-boot with distro keys is not yet clearly defined.
+I see two possibilities, which should be possible with the proposed
+scheme, both starting with the build of an unsigned kernel package.
+Then a signature would be computed on private infrastructure and either
+* shipped in a standalone package, to be combined with the kernel when
+  that is installed to the ESP/flash etc.
+* used as input of a signed kernel package where it is combined with the
+  unsigned kernel image.
+
+
+Thomas
 
