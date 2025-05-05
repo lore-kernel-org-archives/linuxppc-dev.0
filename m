@@ -1,97 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-8296-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8297-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3058C3ABB6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 May 2025 12:46:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1F8DC3ABB0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 May 2025 15:05:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zrh9R0Fc2z2yqm;
-	Mon,  5 May 2025 22:46:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=23.83.223.164 arc.chain=mailchannels.net
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746449194;
-	cv=pass; b=kDDc1crhBVWGzXt2R/gaYQi6BIQYMXCl/CJn7+nkE/DOHxrC8/tDv1nVEPNzZzllrBrQJX+D+Tx+i+MoSMJbPB/Bf9a26Zd6F+QiuyRfHZ2bT+AmR3gkVV0aVW6HxMEjGqQX8BV072oQ1k6Fq6fUK9Tyk0LI5SrViEVDvUVr98ujPoB1kPzHBKE2yw9cBauNniB53td7haVECuS0C/uzHZBKMMTXG/9CeXfsqOpAWyTiflwzfBpC2U9Wgruu8M1JbsEfXzyTPLsEOiiqcY9U9/tinegcPAyHYo44UhdMn/fL7eESQaDeLcP/7yNkKaWYbAWivphhLwFU4eYrhOaEFw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746449194; c=relaxed/relaxed;
-	bh=FH2fG34MlZYKx5e7jmuoiXADMpRcIcNhlCpltkFibWI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=oKh/t9qfwoG//5OZY4VFoSv7oy0Qg40vDWwpMBGw40i63hycFpfeAHsx1hC6Kpx7I+HXF90Ph9U77eXvJ5ONgsXnJ9acJO+2pYO78az6JnmBycHsOTitHIitXlcEZ8cvKdcsHeSYbk7z6+BbwCnPQGTY1R3B2QGU2xTSE0BkZdPM2DT8+Q7TrpeltQNeuCz6bT9neV1mfzgVxhVYztLsMhdJ5anT63YvdTqeM3qEkyGryi9H9N2D2LK26zIWndCwqIg1+7Ozh82YYOECB2lVQRmZ4QK0MQ6kNCY2vnjjLXhQk9X0Frq/w8iGDOZZ2xNZQfEBCMeSGb5ju2Rs/KcaOg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ascii.art.br; dkim=pass (2048-bit key; unprotected) header.d=ascii.art.br header.i=@ascii.art.br header.a=rsa-sha256 header.s=dreamhost header.b=Zb0aViTG; dkim-atps=neutral; spf=pass (client-ip=23.83.223.164; helo=shrimp.cherry.relay.mailchannels.net; envelope-from=tuliom@ascii.art.br; receiver=lists.ozlabs.org) smtp.mailfrom=ascii.art.br
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ascii.art.br
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZrlFY5x4Sz2xWc;
+	Tue,  6 May 2025 01:05:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746457521;
+	cv=none; b=GPHISNiYLmiiMTRus2zhwRBe7hyc4eNsm7f1smGs3AX3TLJ5264VU0jB4JAQIlzPt9EhoUhZaOOjm9XRdGxADJP6m5v+6lWjJ7H/lEkWlw9lPBjM5bqq/q5qmBDgrialOE6206Fuxo7Pl8uD2BBfR4xzLOxpf5Qu2B9Z2Y6jey6fmvU4aWbJJ+R8HWGeOdWz8u0nOaQL8KQb5MgHjJRGShgQHdCdZiTgkFgeXxzZFaEfARroVeN/nOE7OaNq5bqqavS5/itTJ+DmEHwnJO5kOOeej7mAooINMqqNb5lrMZ7W3KgKxcAlOrx0V3H1ZQSsnp4tWgTxdnsoQ8UEvxwVjw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1746457521; c=relaxed/relaxed;
+	bh=T+qXACh+orFstyMcko98tuRTzfxhHQyvvDnRU8Dpz2k=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=B91Z08i4ZgP+CT9DN7vVjwGV38V20/rCjB2Wkj8DnuWqKNDHR/HraYbXApjVW+w2Q6Wo8RvYqyuv07t7eyqnKksqAhAFUHCFWX5H5MpUbz6OXRmFHXB8H+eMGPxDzWfJbgzuDmJ6kfAsKJ4ysBfoND9taDJECNVuuOJJQJ6x2kjC+lA/iP3EwGcR4ZiWSZAp2xaO7quXP0IZTD+QCw0ljLcjfvDEbgm7Xb+JnYgbM8EScj0vTeRlU+yY7ntydAQz9PIykgiLUS/ZDe/0rea6bjzpY5Q/pFm98Ka4SFTRswfGcQuf63LzkGAngqfqTfttolEVZ7lG69h2X2EEglIxJg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GBSqCk/x; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ascii.art.br header.i=@ascii.art.br header.a=rsa-sha256 header.s=dreamhost header.b=Zb0aViTG;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GBSqCk/x;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ascii.art.br (client-ip=23.83.223.164; helo=shrimp.cherry.relay.mailchannels.net; envelope-from=tuliom@ascii.art.br; receiver=lists.ozlabs.org)
-Received: from shrimp.cherry.relay.mailchannels.net (shrimp.cherry.relay.mailchannels.net [23.83.223.164])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=cassel@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zrh9M2Sfzz2xd6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2025 22:46:29 +1000 (AEST)
-X-Sender-Id: dreamhost|x-authsender|tuliom@ascii.art.br
-Received: from relay.mailchannels.net (localhost [127.0.0.1])
-	by relay.mailchannels.net (Postfix) with ESMTP id 56AE7322B5A
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2025 12:44:15 +0000 (UTC)
-Received: from pdx1-sub0-mail-a210.dreamhost.com (100-106-214-82.trex-nlb.outbound.svc.cluster.local [100.106.214.82])
-	(Authenticated sender: dreamhost)
-	by relay.mailchannels.net (Postfix) with ESMTPA id A8444322B91
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2025 12:44:14 +0000 (UTC)
-ARC-Seal: i=1; s=arc-2022; d=mailchannels.net; t=1746449054; a=rsa-sha256;
-	cv=none;
-	b=5dkHGT5o7KsAHEE1if3NFKyuMCcx+/qSzQuIgE5NK7hlywF5f9iRzo2BxEg+gaNz4dScT/
-	+JOnlkPQuVb8qK82dKfWJEcMn3Hv3aSXte2qlH1eXLum0zQ70MofbItnSqn6K40VymumHY
-	8CUHpW2zPr5c+a60PSbwm2uHIX5g5QQ/DHAbwTdWHeZsEBXG6nguCcEENeQ0Bj/UhRB5KT
-	i6at17Eg4lp7LoB6fv94lmaW1qtz0f7i3EHxWafU+glYR3HUJiPuQbyZzn3sVjDjfeoN+M
-	BUOGvodku+uptO8wxggTo1smTeM+thO2xX/kBE2iQ35D0YSrCj38mpy1DaxkLA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed;
- d=mailchannels.net;
-	s=arc-2022; t=1746449054;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 dkim-signature; bh=FH2fG34MlZYKx5e7jmuoiXADMpRcIcNhlCpltkFibWI=;
-	b=JeYA1jmC+rEBP/U1aYj/MHEb6obgFF0J6ENcH3IcUJ2IWNVk2nSzfbEekn1HrRRgCli+2t
-	v0nO2QTleJEm96KHjOmvVnGoyr7OINS6rsSopPW2C+a0d0c+DxgAYvjcqL32D0f28eRZnN
-	+CwB5dABNPS9+Oo6+P45j0FTPDH1BZpEV8KWhE2PobqfeoYYksdxz2p6nSVlzP1fzeEq/J
-	iR9ZJnLJfo+aOKmrDBepEjbcHP+1uPURe9tiCc0rAZGkLelmYbWOLZ+jKO1Xoj8cwP/On2
-	dsl1UrTMGzKoyvxl6Ke8OAgUx5YBHlwjs3Qyvq26a5q31ckFXuOZFm0euGbeBQ==
-ARC-Authentication-Results: i=1;
-	rspamd-56c68c6fd9-cwb97;
-	auth=pass smtp.auth=dreamhost smtp.mailfrom=tuliom@ascii.art.br
-X-Sender-Id: dreamhost|x-authsender|tuliom@ascii.art.br
-X-MC-Relay: Neutral
-X-MailChannels-SenderId: dreamhost|x-authsender|tuliom@ascii.art.br
-X-MailChannels-Auth-Id: dreamhost
-X-Descriptive-Robust: 2c8cee6541dda0a3_1746449055153_1875921552
-X-MC-Loop-Signature: 1746449055153:1420688729
-X-MC-Ingress-Time: 1746449055153
-Received: from pdx1-sub0-mail-a210.dreamhost.com (pop.dreamhost.com
- [64.90.62.162])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384)
-	by 100.106.214.82 (trex/7.0.3);
-	Mon, 05 May 2025 12:44:15 +0000
-Received: from ascii.art.br (ip-187-108-54-97.isp.valenet.com.br [187.108.54.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	(Authenticated sender: tuliom@ascii.art.br)
-	by pdx1-sub0-mail-a210.dreamhost.com (Postfix) with ESMTPSA id 4Zrh6k0VcFz6t
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2025 05:44:13 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ascii.art.br;
-	s=dreamhost; t=1746449054;
-	bh=FH2fG34MlZYKx5e7jmuoiXADMpRcIcNhlCpltkFibWI=;
-	h=From:To:Cc:Subject:Date:Content-Type;
-	b=Zb0aViTGYYnW3gL/aLD9Xw1WicdKNFAOQSHsJ4ou7Mmn/uAs7o4ANCIi0rbzYYkHo
-	 7iHHMDC8LSypWUzcX10eEqT7bbVbgMfvVjKsh5qrJNhj1Pwvb/DVv214bqaquMkOKL
-	 gRNq5Mp+A66j1PyDWxwSwm6P/ptPd1+JItCaS5rqUhMJ/a7SfO4VwWK/XoIk0u4e0a
-	 TQ+sRCw86PwJpAghz+gqp/RpYDHRFdg565Jutp4hzGuzbyO0lpvjV7RerLPc4ml/EJ
-	 n8093v3GBfogVZhkcQKSfuKYSGjVFGNYWvzcVTDSUcaKgxh5cwfS/nDf54qW6bLpmh
-	 sQgIy9/extSxQ==
-From: Tulio Magno Quites Machado Filho <tuliom@ascii.art.br>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: 
-Subject: Bug: Issue in ioctls.h affecting userspace
-Date: Mon, 05 May 2025 09:44:10 -0300
-Message-ID: <8734dji5wl.fsf@ascii.art.br>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZrlFX5Kqhz2xVq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2025 01:05:20 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 693C94A738;
+	Mon,  5 May 2025 15:05:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F76CC4CEE4;
+	Mon,  5 May 2025 15:05:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1746457518;
+	bh=tVwY1GhHmqP4tNt6PF7NZ89nMFSpxg7uRS+j8Qo6g3I=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=GBSqCk/xbHGCM6+NNMlpLQtOhHa+ERjy2QkOGRQzAhDpyDdOUa/ne7UZQ4uiH2bGy
+	 utwN7dvaElYocZWWZ8zV+ilIOEUxgzRxIYWDmAyZwGFBzppVTztXR2ITc7/LUHeVaD
+	 l8t58dkIeX9CikCl4ZG3QKczALeaRoEermE6CuDbOzrQ4HKmDj1iZ0sm/egm+N6XFR
+	 2ZagUpMpX52vB/uJ/qVM5cSMENXexwQ60phGkPFo5OGKJ3RyTCmFWi3RjWqZ94j+u1
+	 8s48ANOuF7cnPTaPjlyFVTKMGhFYvV9JmRJLZ482FwgaxRJO6Qa/cJWEc4cH3jxkQq
+	 TN1/EnXSDIdkg==
+Date: Mon, 5 May 2025 17:05:10 +0200
+From: Niklas Cassel <cassel@kernel.org>
+To: manivannan.sadhasivam@linaro.org
+Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	Rob Herring <robh@kernel.org>, Zhou Wang <wangzhou1@hisilicon.com>,
+	Will Deacon <will@kernel.org>, Robert Richter <rric@kernel.org>,
+	Alyssa Rosenzweig <alyssa@rosenzweig.io>,
+	Marc Zyngier <maz@kernel.org>,
+	Conor Dooley <conor.dooley@microchip.com>,
+	Daire McNamara <daire.mcnamara@microchip.com>, dingwei@marvell.com,
+	Lukas Wunner <lukas@wunner.de>,
+	Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-riscv@lists.infradead.org, wilfred.mallawa@wdc.com
+Subject: Re: [PATCH v3 5/5] PCI: qcom: Add support for resetting the slot due
+ to link down event
+Message-ID: <aBjTpglI5_P2Q3Aa@ryzen>
+References: <20250417-pcie-reset-slot-v3-0-59a10811c962@linaro.org>
+ <20250417-pcie-reset-slot-v3-5-59a10811c962@linaro.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,18 +82,45 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250417-pcie-reset-slot-v3-5-59a10811c962@linaro.org>
 
-Heads up: a recent glibc change exposed an issue in the powerpc-specifi
-ioctls.h [1].
+Hello Mani,
 
-Userspace projects like Python, LLVM and GCC [2] can't build on ppc64le now.
+On Thu, Apr 17, 2025 at 10:46:31PM +0530, Manivannan Sadhasivam via B4 Relay wrote:
+> @@ -1571,6 +1652,9 @@ static irqreturn_t qcom_pcie_global_irq_thread(int irq, void *data)
+>  		pci_unlock_rescan_remove();
+>  
+>  		qcom_pcie_icc_opp_update(pcie);
+> +	} else if (FIELD_GET(PARF_INT_ALL_LINK_DOWN, status)) {
+> +		dev_dbg(dev, "Received Link down event\n");
+> +		pci_host_handle_link_down(pp->bridge);
+>  	} else {
+>  		dev_WARN_ONCE(dev, 1, "Received unknown event. INT_STATUS: 0x%08x\n",
+>  			      status);
 
-Suggestions with temporary workarounds are welcome!
+From debugging an unrelated problem, I noticed that dw-rockchip can
+sometimes have both "link up" bit and "hot reset or link down" bit set
+at the same time, when reading the status register.
 
-[1] https://github.com/linuxppc/issues/issues/488
-[2] https://bugzilla.redhat.com/show_bug.cgi?id=2363674
+Perhaps the link went down very quickly and then was established again
+by the time the threaded IRQ handler gets to run.
 
--- 
-Tulio Magno
+Your code seems to do an if + else if.
+
+Without knowing how the events work for your platforms, I would guess
+that it should also be possible to have multiple events set.
+
+
+In you code, if both LINK UP and hot reset/link down are set,
+I would assume that you driver will not do the right thing.
+
+Perhaps you want to swap the order? So that link down is handled first,
+and then link up is handled. (If you convert to "if + if "instead of
+"if + else if" that is.)
+
+
+Kind regards,
+Niklas
 
