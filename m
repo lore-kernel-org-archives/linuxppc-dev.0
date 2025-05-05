@@ -1,79 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-8292-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8293-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49BD7C3ABB6
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 May 2025 09:45:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 02A60C3ABB0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 May 2025 09:59:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zrc8S5QHWz2yhv;
-	Mon,  5 May 2025 19:45:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746438328;
-	cv=none; b=WIe3jq784TNEUxHEQgA3td86xIedjvzJbCetv2WjkmaC9tUT2GqkR/omElrccWXsM5YW5CPtVEjsVUbQ939sqVdbCzioset8B49M2RDZ9f0bL/MGJdz0viBTTmr91T4DDl+FG8dRj720MXY4ptYd0s6ybcClYZiYVzBI1G7pgdK6Sqi2uJqycI0zqMptQhtS4Y5VXQkS8uj1/wkK/zvdMETt773cOeR8wrBdtyoI44ITUOcC8eiRkgbZRm/7RHl5620U+boL0e+00Qb07O89J1bs2UymXsBFOjcXZjkfvGT0jmyJ5JCXmjFCm6Yi6jBOhDWGzliHoU0cBYKDibI9Vg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZrcSL3xLZz2ypV;
+	Mon,  5 May 2025 19:59:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746434469;
+	cv=none; b=J505cbehoa1hZdAw4vKntuiSn1f2GPa8W/4F2ExDI6z1v/qtP4odQwO7ySXKAbbyNFpy5KguRpOnjK/CaDGn3bm4hVpDk5Pp8AO5EVQ0rMM0PWwz6zMq04cQqTtAaiCXZd+aSGn1xxCyqA7UNYPeZ4Abt3i/QtUE7JIxlV1b1MMqjBMYfvpVDxxGI8EbYa5PlbClEVtVKapXOS4LjwxQ9P5wLPRc0rfwfYojFhXwE7UJ4l4V5CnAFgmgkl6GJmECpeQ10AS773wbklhfKMGOVlFPZoGpiWRSN9z/RTAf5B/Nzna+bDUL19xPMbq5wHabmtiuYXgoz2FloL/ozPF3FA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746438328; c=relaxed/relaxed;
-	bh=odq4NQNI7uhQDIrO4MJdemyiy21aI4OIXjj1VT0ZNyk=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Zlkek3ENh3S+2uRSEoP3lqAn29JrBwVftXN3ioDIoYWxfKPRqX8QKuU5eT0SSqNINgzBjDVjT5RsezoGnfxzvOaRtx4Rbxr9BJjotc2rZ3oL/CGh0x1sugqF8u5Bkx5HAI9KeOiGEDAYgQ16+8vSx0QHKz/pqgkbMH7XmzC3uM0XXd3Z6uPTPve1h1j/2/EG2TeIg3P/3eX8vu/kz3DCpwGDVjUv7dpfMpQcUlsC73XugB/VqLl7ot0RO71Nta1Pm396A6MOWv/bUz5E+SPmpQXmv14xEYCobMAhcFEu9SlU9WraENuL/2+vt0Qz1nNV+WjitPMTse1wIv+yY4qjNw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BE7sEhgH; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1746434469; c=relaxed/relaxed;
+	bh=nH++p+jrs7ARalgRqRk2xphHR4blMdPiPcDBikIC30k=;
+	h=Content-Type:Message-ID:Date:MIME-Version:Subject:To:Cc:
+	 References:From:In-Reply-To; b=os8xF8FMdktBLZSEUcjQLDU1cn8J41Aofhwlflgsoki4F8Y7sC49bF6+xCDVdEOQ3Wq3LpY037mYnAzGOinBVj7PKFQop2WaYiw+8yjLeZ23rvhBDzWc3xj9OOMK5E2k/ibJnzvfodPXkquHrEob1aFsDYltd+Z2U9zma7zgWXYgX/FTYlzc9Lvhh5iz8zSA5bX1jIOvP7aPTZJ1qOcyUWGcqLm/wQamueSsEBmAY5IuEw1Nf7PIhBA1jCGScdS4zUL1rtXgKpwtDoh8ouOoIehEvFY3JtgfcDH11Mzi/lZ50ZoVBMD6OewvvLh21gWf3Z845J6Bi4L1ynR3ip63CA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m6II62bM; dkim-atps=neutral; spf=none (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=kowsjois@linux.vnet.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.vnet.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.vnet.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BE7sEhgH;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=m6II62bM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.vnet.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=kowsjois@linux.vnet.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zrc8R45GBz2xd6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2025 19:45:27 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5450p7lb019542;
-	Mon, 5 May 2025 09:45:15 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZrZkC60Pwz2yk3
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  5 May 2025 18:41:07 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5456DxWv017076;
+	Mon, 5 May 2025 08:41:01 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=odq4NQ
-	NI7uhQDIrO4MJdemyiy21aI4OIXjj1VT0ZNyk=; b=BE7sEhgH54mIX4fy97EMyP
-	+u/th+bmOxbnY1RAk+GH3BNSu9e4wz4AbMWmYYhBbRc7Gle1iDAaXPlMxiDcbngP
-	5gynr/rdg5hvGFKzoYPv7pDZtE/12pE9ZpGLOlc8QsyihwMwAifeog5TfQyBLoaf
-	DT9H2A9Z59Msz9jNvsiI4bbj+D/67h5A8FjuTBRZQGGkpFww58QxXRyFJjrAqzoc
-	tjLjCJm/U6uaKhey9nSzLVq3wdyKzNWll9ke0FDNwVXomaTaqJWwhHUb0fNnHQzy
-	9PzWsl7cVQlYLuEigd5LJ4TuiCJ4jv+RoAK6VdeVMeGfULjn8/qBuKYxXLZfrS7g
-	==
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=nH++p+jrs7ARalgRqRk2xphHR4blMd
+	PiPcDBikIC30k=; b=m6II62bMuZ5pvPRUNN+h3OcjgbieUGssk3Mil4t5oWiwjW
+	BWvL6GIbNt+APgSQzvIuR+xMeZf5lVz76NN1WzDiXaHJ9D8EzUHnmpJ8EB/nrciR
+	PfQfu4oHIfFkmRWznI0eALNFg0iv01hxCEl2cwtnPbpXc27tvg8Z1RnH016M/l6N
+	9uGtG20WVEQcTe7b/nMWQOBAgYJuD9O3CKOjR16upqH47qvT9aGurz4mkNb2f18b
+	jztXfyesR2yjEedgHr0enuJCy07SDsDk5/WYlMy6BAz7qDmj0uldvOG3iCgGAy8O
+	Br4kFMXjza4r4R8My/tsw5t2gNOtQ73m69avMcrw==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46egcv25ck-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46e65hufk7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 May 2025 09:45:14 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 5459jEEC019335;
-	Mon, 5 May 2025 09:45:14 GMT
+	Mon, 05 May 2025 08:41:00 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 5458ax2Y026700;
+	Mon, 5 May 2025 08:41:00 GMT
 Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46egcv25cg-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46e65hufk5-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 May 2025 09:45:14 +0000 (GMT)
+	Mon, 05 May 2025 08:41:00 +0000 (GMT)
 Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5458gwcG032220;
-	Mon, 5 May 2025 09:45:13 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 46dxymdh5g-1
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 54545AN8032220;
+	Mon, 5 May 2025 08:40:59 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 46dxymd9vn-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 May 2025 09:45:13 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5459j9Zj58196324
+	Mon, 05 May 2025 08:40:59 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5458etVS47382988
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 5 May 2025 09:45:09 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 95D3120043;
-	Mon,  5 May 2025 09:45:09 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4979420040;
-	Mon,  5 May 2025 09:45:07 +0000 (GMT)
-Received: from [9.109.215.252] (unknown [9.109.215.252])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  5 May 2025 09:45:07 +0000 (GMT)
-Message-ID: <34b4f66f-2bba-4047-b056-8923449351de@linux.ibm.com>
-Date: Mon, 5 May 2025 15:15:06 +0530
+	Mon, 5 May 2025 08:40:55 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 44A1D2004B;
+	Mon,  5 May 2025 08:40:55 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C1DCA20040;
+	Mon,  5 May 2025 08:40:52 +0000 (GMT)
+Received: from [9.43.3.121] (unknown [9.43.3.121])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon,  5 May 2025 08:40:52 +0000 (GMT)
+Content-Type: multipart/alternative;
+ boundary="------------7rgk8RnrKQZb82gQrChnm3M9"
+Message-ID: <84932bb4-8fd0-49c3-bb87-5a7e02f2d658@linux.vnet.ibm.com>
+Date: Mon, 5 May 2025 14:10:51 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,43 +89,271 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/6] powerpc: use lock guards for mutex Set 1
-To: maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org
-Cc: npiggin@gmail.com, christophe.leroy@csgroup.eu, mpe@ellerman.id.au,
-        peterz@infradead.org, ajd@linux.ibm.com, mahesh@linux.ibm.com,
-        hbathini@linux.ibm.com, linux-kernel@vger.kernel.org,
-        venkat88@linux.ibm.com
-References: <20250505075333.184463-1-sshegde@linux.ibm.com>
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Subject: Re: [PATCH] powerpc/pseries/dlpar: Search DRC index from
+ ibm,drc-indexes for IO add
+To: Haren Myneni <haren@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        tyreld@linux.ibm.com, hbabu@us.ibm.com
+References: <20250501041056.1281055-1-haren@linux.ibm.com>
 Content-Language: en-US
-In-Reply-To: <20250505075333.184463-1-sshegde@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+From: Kowshik Jois B S <kowsjois@linux.vnet.ibm.com>
+In-Reply-To: <20250501041056.1281055-1-haren@linux.ibm.com>
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 1FJcsKm1SK-IK3pDETSJn9mAYgM4MBab
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTA1MDA5MSBTYWx0ZWRfX9b6dFVvI7rhN sMJngsI7CPDVs9WSUD4/D4+kXeBSovsygRr5NN8EWPB7KtT9VXQZqh+1U5NhO7AGO/ICVQZpnbz 7p+WD50H1FxhVBqkNJOTLIMdmtzuBE7dcJO6LS2YvmlEUYLo5zOG83bSBX7lbar80Ej4hUoyO7t
- Vxb2zu+spZ+Rqgk1O2D5v3gxb4uPkThtmhfqnMq1aIiSVlCIytBCN7i+4wu0cDQNo2m2xrCqx1U KM8ASnBGJZa/mLP/87kEyjnUF65kZEREuxJimi2gTa4lv/ZT98zSyda/T/RW7CUU+JtfzJxCEVg /P9nfvSxdR11BOw3wZbLZgMjOEOpid80qU2aLsb2lnD+6+rrino3irlVQNBwwOTmdLUtK9k5AqA
- aDSx1QbS/A0NBYJTamSFkY3lnhFS2RzObzKI5UQ14Uy9b3Oy/knykIUnpfNtPw+4z4AaMiYH
-X-Authority-Analysis: v=2.4 cv=O7k5vA9W c=1 sm=1 tr=0 ts=681888aa cx=c_pps a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17 a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=_WHVDzdL9Q4wb5IpKhAA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: a_-Lms8RERylWpZG-PMiZFHBooqTk735
+X-Authority-Analysis: v=2.4 cv=UZ1RSLSN c=1 sm=1 tr=0 ts=6818799c cx=c_pps a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17 a=dt9VzEwgFbYA:10 a=r77TgQKjGQsHNAKrUKIA:9 a=VnNF1IyMAAAA:8 a=-N88GMA1C97Ez57G5QwA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=MwhoDN2aAihZLIMZg8gA:9 a=e3hT5Jw74hslWIsE:21 a=_W_S_7VecoQA:10 a=lqcHg5cX4UMA:10
+X-Proofpoint-GUID: 0fbTGGoF4VJE06ZOmPtRov51pxb6YfQI
+X-Proofpoint-ORIG-GUID: -3WJW6loVSvqvi8yO0vNJ8DGLAycA5Iz
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTA1MDA4MSBTYWx0ZWRfX5Y/MkOIWup2n 2jOSM6ixeCTGGQsUcSU30g/pAUbOJawRVS47EqbgnPC94iZZTzZhNuqaoniXWQ5X3ey02wUT8/H GqCrupaZd6jaUUmLQ3UCotdoExF/yKLN+q8eeur7JE7E4o0oK9aY9Wdf/2D2SS2zRkep5FgDQbU
+ +sygiteF2Emt76d1wb7x/Z+aeDHDra2k5lHv9o4aRDi7VX/9qxzOcdCAo0NfS+ONW0J8weNzeSt BCjIoR9sGZjFs1zoylGK+EfmLDWcWTSSgN6KbQWkOmENsGH2YCLyb3ZZnKnlk1v5ViR00W/7ibl uHowV3CP4PhhJ/XSfkuhyKNOVMpnAZDg8+N8zja264CQn//WdbWF5c6kyEno99zxSYOrPDpe7JY
+ JNSEjRcXyOjKHhBz2d2war2xshFvLHJeuTkujM7FHGeetkbJYGqVsqHjo3X52kR4qA4m5cnR
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
  definitions=2025-05-05_04,2025-04-30_01,2025-02-21_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 bulkscore=0 mlxlogscore=649
- malwarescore=0 spamscore=0 impostorscore=0 suspectscore=0
- lowpriorityscore=0 priorityscore=1501 clxscore=1015 mlxscore=0
- adultscore=0 phishscore=0 classifier=spam authscore=0 authtc=n/a authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
- definitions=main-2505050091
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
+ suspectscore=0 malwarescore=0 bulkscore=0 priorityscore=1501 adultscore=0
+ spamscore=0 impostorscore=0 clxscore=1011 mlxscore=0 mlxlogscore=891
+ phishscore=0 classifier=spam authscore=0 authtc=n/a authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
+ definitions=main-2505050081
+
+This is a multi-part message in MIME format.
+--------------7rgk8RnrKQZb82gQrChnm3M9
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+
+Haren, could you please add the below tag:
 
 
+Reported-by:Kowshik Jois<kowsjois@linux.ibm.com
 
-On 5/5/25 13:23, Shrikanth Hegde wrote:
-> This is an effort to make the code simpler by making use of lock
-> guards which were introduced in [1], which works by using __cleanup
-> attributes. More details in v1 cover letter
-> 
 
-compile/boot tested on PowerNV(P9). Also ran eeh selftests.
-No regressions were seen compared to baseline.
+Regards,
+
+Kowshik Jois B S
+
+
+On 01/05/25 09:40, Haren Myneni wrote:
+> IO hotplug add event is handled in the user space with drmgr tool.
+> After the device is enabled, the user space uses /sys/kerne/dlpar
+> interface with “dt add index <drc_index>” to update the device tree.
+> The kernel interface (dlpar_hp_dt_add()) finds the parent node for
+> the specified ‘drc_index’ from ibm,drc-info property. But old FW
+> provides ibm,drc-indexes property instead of ibm,drc-info.
+>
+> If the ibm,drc-info is not available, this patch adds changes to
+> search ‘drc_index’ from the indexes array in ibm,drc-indexes
+> property to support old FW.
+>
+> Fixes: 02b98ff44a57 ("powerpc/pseries/dlpar: Add device tree nodes for DLPAR IO add")
+> Signed-off-by: Haren Myneni<haren@linux.ibm.com>
+> ---
+>   arch/powerpc/platforms/pseries/dlpar.c | 52 +++++++++++++++++++++++++-
+>   1 file changed, 50 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+> index 213aa26dc8b3..979487da6522 100644
+> --- a/arch/powerpc/platforms/pseries/dlpar.c
+> +++ b/arch/powerpc/platforms/pseries/dlpar.c
+> @@ -404,6 +404,45 @@ get_device_node_with_drc_info(u32 index)
+>   	return NULL;
+>   }
+>   
+> +static struct device_node *
+> +get_device_node_with_drc_indexes(u32 drc_index)
+> +{
+> +	struct device_node *np = NULL;
+> +	u32 nr_indexes, index;
+> +	int i, rc;
+> +
+> +	for_each_node_with_property(np, "ibm,drc-indexes") {
+> +		/*
+> +		 * First element in the array is the total number of
+> +		 * DRC indexes returned.
+> +		 */
+> +		rc = of_property_read_u32_index(np, "ibm,drc-indexes",
+> +				0, &nr_indexes);
+> +		if (rc)
+> +			goto out_put_np;
+> +
+> +		/*
+> +		 * Retrieve DRC index from the list and return the
+> +		 * device node if matched with the specified index.
+> +		 */
+> +		for (i = 0; i < nr_indexes; i++) {
+> +			rc = of_property_read_u32_index(np, "ibm,drc-indexes",
+> +							i+1, &index);
+> +			if (rc)
+> +				goto out_put_np;
+> +
+> +			if (drc_index == index)
+> +				return np;
+> +		}
+> +	}
+> +
+> +	return NULL;
+> +
+> +out_put_np:
+> +	of_node_put(np);
+> +	return NULL;
+> +}
+> +
+>   static int dlpar_hp_dt_add(u32 index)
+>   {
+>   	struct device_node *np, *nodes;
+> @@ -423,10 +462,19 @@ static int dlpar_hp_dt_add(u32 index)
+>   		goto out;
+>   	}
+>   
+> +	/*
+> +	 * Recent FW provides ibm,drc-info property. So search
+> +	 * for the user specified DRC index from ibm,drc-info
+> +	 * property. If this property is not available, search
+> +	 * in the indexes array from ibm,drc-indexes property.
+> +	 */
+>   	np = get_device_node_with_drc_info(index);
+>   
+> -	if (!np)
+> -		return -EIO;
+> +	if (!np) {
+> +		np = get_device_node_with_drc_indexes(index);
+> +		if (!np)
+> +			return -EIO;
+> +	}
+>   
+>   	/* Next, configure the connector. */
+>   	nodes = dlpar_configure_connector(cpu_to_be32(index), np);
+--------------7rgk8RnrKQZb82gQrChnm3M9
+Content-Type: text/html; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta http-equiv="Content-Type" content="text/html; charset=UTF-8">
+  </head>
+  <body>
+    <p><span
+style="color: rgb(29, 28, 29); font-family: Slack-Lato, Slack-Fractions, appleLogo, sans-serif; font-size: 15px; font-style: normal; font-variant-ligatures: common-ligatures; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">Haren,
+        could you please add the below tag:</span></p>
+    <p><span
+style="color: rgb(29, 28, 29); font-family: Slack-Lato, Slack-Fractions, appleLogo, sans-serif; font-size: 15px; font-style: normal; font-variant-ligatures: common-ligatures; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"><br>
+      </span><span aria-label="" class="c-mrkdwn__br"
+        data-stringify-type="paragraph-break"
+style="box-sizing: inherit; height: 8px; display: block; color: rgb(29, 28, 29); font-family: Slack-Lato, Slack-Fractions, appleLogo, sans-serif; font-size: 15px; font-style: normal; font-variant-ligatures: common-ligatures; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"></span><span
+style="color: rgb(29, 28, 29); font-family: Slack-Lato, Slack-Fractions, appleLogo, sans-serif; font-size: 15px; font-style: normal; font-variant-ligatures: common-ligatures; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;">Reported-by:<span> </span></span><span
+        class="c-mrkdwn__highlight"
+style="box-sizing: inherit; background-color: var(--dt_color-surf-hgl-3); color: rgb(29, 28, 29); font-family: Slack-Lato, Slack-Fractions, appleLogo, sans-serif; font-size: 15px; font-style: normal; font-variant-ligatures: common-ligatures; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Kowshik
+        Jois&lt;<a class="moz-txt-link-abbreviated" href="mailto:kowsjois@linux.ibm.com">kowsjois@linux.ibm.com</a></span></p>
+    <p><span class="c-mrkdwn__highlight"
+style="box-sizing: inherit; background-color: var(--dt_color-surf-hgl-3); color: rgb(29, 28, 29); font-family: Slack-Lato, Slack-Fractions, appleLogo, sans-serif; font-size: 15px; font-style: normal; font-variant-ligatures: common-ligatures; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;"><br>
+      </span></p>
+    <p><span class="c-mrkdwn__highlight"
+style="box-sizing: inherit; background-color: var(--dt_color-surf-hgl-3); color: rgb(29, 28, 29); font-family: Slack-Lato, Slack-Fractions, appleLogo, sans-serif; font-size: 15px; font-style: normal; font-variant-ligatures: common-ligatures; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Regards,</span></p>
+    <p><span class="c-mrkdwn__highlight"
+style="box-sizing: inherit; background-color: var(--dt_color-surf-hgl-3); color: rgb(29, 28, 29); font-family: Slack-Lato, Slack-Fractions, appleLogo, sans-serif; font-size: 15px; font-style: normal; font-variant-ligatures: common-ligatures; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial;">Kowshik
+        Jois B S<br>
+      </span></p>
+    <p><span
+style="color: rgb(29, 28, 29); font-family: Slack-Lato, Slack-Fractions, appleLogo, sans-serif; font-size: 15px; font-style: normal; font-variant-ligatures: common-ligatures; font-variant-caps: normal; font-weight: 400; letter-spacing: normal; orphans: 2; text-align: left; text-indent: 0px; text-transform: none; widows: 2; word-spacing: 0px; -webkit-text-stroke-width: 0px; white-space: normal; background-color: rgb(255, 255, 255); text-decoration-thickness: initial; text-decoration-style: initial; text-decoration-color: initial; display: inline !important; float: none;"><br>
+      </span></p>
+    <div class="moz-cite-prefix">On 01/05/25 09:40, Haren Myneni wrote:<br>
+    </div>
+    <blockquote type="cite"
+      cite="mid:20250501041056.1281055-1-haren@linux.ibm.com">
+      <pre wrap="" class="moz-quote-pre">IO hotplug add event is handled in the user space with drmgr tool.
+After the device is enabled, the user space uses /sys/kerne/dlpar
+interface with “dt add index &lt;drc_index&gt;” to update the device tree.
+The kernel interface (dlpar_hp_dt_add()) finds the parent node for
+the specified ‘drc_index’ from ibm,drc-info property. But old FW
+provides ibm,drc-indexes property instead of ibm,drc-info.
+
+If the ibm,drc-info is not available, this patch adds changes to
+search ‘drc_index’ from the indexes array in ibm,drc-indexes
+property to support old FW.
+
+Fixes: 02b98ff44a57 ("powerpc/pseries/dlpar: Add device tree nodes for DLPAR IO add")
+Signed-off-by: Haren Myneni <a class="moz-txt-link-rfc2396E" href="mailto:haren@linux.ibm.com">&lt;haren@linux.ibm.com&gt;</a>
+---
+ arch/powerpc/platforms/pseries/dlpar.c | 52 +++++++++++++++++++++++++-
+ 1 file changed, 50 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/pseries/dlpar.c b/arch/powerpc/platforms/pseries/dlpar.c
+index 213aa26dc8b3..979487da6522 100644
+--- a/arch/powerpc/platforms/pseries/dlpar.c
++++ b/arch/powerpc/platforms/pseries/dlpar.c
+@@ -404,6 +404,45 @@ get_device_node_with_drc_info(u32 index)
+ 	return NULL;
+ }
+ 
++static struct device_node *
++get_device_node_with_drc_indexes(u32 drc_index)
++{
++	struct device_node *np = NULL;
++	u32 nr_indexes, index;
++	int i, rc;
++
++	for_each_node_with_property(np, "ibm,drc-indexes") {
++		/*
++		 * First element in the array is the total number of
++		 * DRC indexes returned.
++		 */
++		rc = of_property_read_u32_index(np, "ibm,drc-indexes",
++				0, &amp;nr_indexes);
++		if (rc)
++			goto out_put_np;
++
++		/*
++		 * Retrieve DRC index from the list and return the
++		 * device node if matched with the specified index.
++		 */
++		for (i = 0; i &lt; nr_indexes; i++) {
++			rc = of_property_read_u32_index(np, "ibm,drc-indexes",
++							i+1, &amp;index);
++			if (rc)
++				goto out_put_np;
++
++			if (drc_index == index)
++				return np;
++		}
++	}
++
++	return NULL;
++
++out_put_np:
++	of_node_put(np);
++	return NULL;
++}
++
+ static int dlpar_hp_dt_add(u32 index)
+ {
+ 	struct device_node *np, *nodes;
+@@ -423,10 +462,19 @@ static int dlpar_hp_dt_add(u32 index)
+ 		goto out;
+ 	}
+ 
++	/*
++	 * Recent FW provides ibm,drc-info property. So search
++	 * for the user specified DRC index from ibm,drc-info
++	 * property. If this property is not available, search
++	 * in the indexes array from ibm,drc-indexes property.
++	 */
+ 	np = get_device_node_with_drc_info(index);
+ 
+-	if (!np)
+-		return -EIO;
++	if (!np) {
++		np = get_device_node_with_drc_indexes(index);
++		if (!np)
++			return -EIO;
++	}
+ 
+ 	/* Next, configure the connector. */
+ 	nodes = dlpar_configure_connector(cpu_to_be32(index), np);
+</pre>
+    </blockquote>
+  </body>
+</html>
+
+--------------7rgk8RnrKQZb82gQrChnm3M9--
+
 
