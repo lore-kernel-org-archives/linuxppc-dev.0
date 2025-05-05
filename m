@@ -1,79 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-8298-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8299-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBEECC3ABAA
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 May 2025 15:28:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F02DDC3ABAA
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 May 2025 16:14:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zrlmk2XgRz2xS0;
-	Tue,  6 May 2025 01:28:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746458934;
-	cv=none; b=c+WlWA0PDw12MYaKZu0yodZ4Qf3la6ym2FIvqmoVFmRIAKy0ussbVopR2yfIduQgVjwnn73evt0UYWDx01nnSMNxy8LnuNQ9h71yKPhO8UXjalKI5p4qiR31bxKM/FA7pwFc199p+NqVlLbFDWxDV62Qs1IEf7WEsUXoL+Xm0Hh4QKUqm8L88+kS31XsdanhiOnMFKbPGF80QNPD08b81Bcu3NFRLZI+3VpTZMyDZjLYefknN403yzGDSAdnRPrYGb0pHtV0ckOtEuV924dUkcxX6PIDi/XUm07DDZV0I9+OLzqdDMUanXkYMbPw1Zq1iEbEmI0St09Gl8mNvB51bw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Zrmnp2BlJz2xd6;
+	Tue,  6 May 2025 02:14:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746461694;
+	cv=none; b=JKoSZclCPRvsIYLq44ieFRF9esfjDmk989Ietg/STDu9Jil9Oihe89T6pCp3Q8lmiBcyOXKL6PEXFrmncw3uwtEaaYS4lKxaz0KTb396qQDntqEB6/ZMbH3EsURAx1L6byzW1rPX/NlE84LAcLzOT1H65pM+5g0JzQET4xExX4nzViCcLVgDIV8B1ierKx2wQMq6dToeAe3f+3Rn/odp6IxLKzH1qPFeviSyMt7VcVu3KQr+2mm37MXG33MQdXP9xI/7RVL8FVBXJLvHSlItIcZ7oi1+sVlmwGL7eMfatr0Od1U5SxN/Maxp7F1KMwQrkxV5uj+AWr7AB61Cz5yb0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746458934; c=relaxed/relaxed;
-	bh=yT/Hz7Vny58s7pF04mj8EmDDKFWuILntGtvKNKSpuZ4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=l18NSjAydtyDqXmNfssqoB8OcQLs5mPBFSOLcgF8MjzUOFuNQjUp5do+Ck5C68kXHbe5o0dJF+MEDmNXsWCag61meNHa1wbfub8ZZzYDuuJhV6k0LxlN8Ub5zIMAWo6ZaMbjYd+zVBaszLxRUt2tRezeeBIO2YkiWO81MYX/7Or+o3Lw/1uqtdZmS4gi+Y6JbzJ9E1IFVq2WATLo/hUltbN5N8nA5z8CyolLdrxMmEZ1sh13yroWtp6yYOou7344NKPMPzm54Co4DxELzm8Ax13E4td7umT9rkbkDR3Pd2KPiaOO/GiYMo4yllE2RGtfMCiUaPHBG76T47cFEBwfWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RDiG4ixS; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1746461694; c=relaxed/relaxed;
+	bh=SWvry4KDZapMEnULakjmTiQHQSX4k/taW1KwMUhJXLA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=dqDwd0YksuYjJpPyoL0dmLav7om61C5QD4FRlbTH8wUiDeSlVBzI4XaDJmoW7sCH0U8Fxt6MwRG0Xg++3Q17YZijM2ASmwYm+qVHuoNXZqsr3tB1BVRcVetiaHxM0ZdrA0cBOBFasnI3IChJqpT6ljSoVk/XQWpTUyNCunysselJFC5HhHSdDHkqRdPv/COhssIvTz/Ge+vqC5ESzRwADbawZRKSVZmdO7oC/3J67JqUS9hPVeelCckI+4lAUd0QBY7d5Ixr/+/oDYTpiIUa0UMLbPc8DdSUHnAUH4Ax0RYd3tddVg3PbsbYiVydnxaVYJ9iuiBih+F5T+awlyH3Jg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=j+IS4q8M; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=manivannan.sadhasivam@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RDiG4ixS;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=j+IS4q8M;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=manivannan.sadhasivam@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zrlmj155Hz2xHY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2025 01:28:52 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 545EGJ9S010306;
-	Mon, 5 May 2025 14:22:52 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=yT/Hz7
-	Vny58s7pF04mj8EmDDKFWuILntGtvKNKSpuZ4=; b=RDiG4ixSrFr2V9swc3q2Ry
-	54W8AfHXSNvSFwyMKVpIt6oudDGxvQgMQdfOOQ6lCNdpzsL8s9nMttVwQurVGqL1
-	64Jtb8vNR2LpwZqPzV6ycb+UYCHvZyRdVhnIp8i8A66Os935iKDoA+5TpEmmpcpA
-	Qcv1mpXxgwHxIilJg59oQ857S9otTCVzh6dBVrudheohsgYolEkEWBNgq0efdsQp
-	l+ZNhUrY1GTmCloBNsbHljqw2wf4q/9rpu3dA7x7GkuazAztqY7TLp7TEln/x1Y4
-	taMKECRlvceJDFT/rKhyQ+pKNM2WGjGaNM83G2dZx9CXeGoUa8/i+p1USFOoT2/g
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46ej6yu474-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 May 2025 14:22:52 +0000 (GMT)
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 545E6FE8004125;
-	Mon, 5 May 2025 14:22:52 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46ej6yu471-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 May 2025 14:22:51 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 545DHtar014167;
-	Mon, 5 May 2025 14:22:51 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 46dypkebt1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 May 2025 14:22:51 +0000
-Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 545EMnSD19399218
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 5 May 2025 14:22:49 GMT
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5E06D5805B;
-	Mon,  5 May 2025 14:22:49 +0000 (GMT)
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B635958058;
-	Mon,  5 May 2025 14:22:45 +0000 (GMT)
-Received: from [9.61.244.137] (unknown [9.61.244.137])
-	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  5 May 2025 14:22:45 +0000 (GMT)
-Message-ID: <898a1a58-ae8d-4210-9f4e-9e97c9e0cb82@linux.ibm.com>
-Date: Mon, 5 May 2025 19:52:44 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zrmnn0cgZz2xTh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  6 May 2025 02:14:51 +1000 (AEST)
+Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-736c3e7b390so5338780b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 May 2025 09:14:51 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1746461689; x=1747066489; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=SWvry4KDZapMEnULakjmTiQHQSX4k/taW1KwMUhJXLA=;
+        b=j+IS4q8MZAoNYkAYz+eZ1WCm1lLjRnI0eUK7OFxOiTd2xfQg1BkXahmc6n93RP0pRx
+         ionZCtwWvf2SQzFj38cmb5+36Nbkk9Gls/LSGN6i6e4ekPuuuREoHA0Dqi6d2WD97IBq
+         qRbiTJbQd6fAvvsQw2drbKk9yDCGyxFLrcshKt1lSui6zoVeKjJLIsUC+OyvpjRv4mw3
+         hiJsxM0YQWQNo3/ZpfbirYquKm6iXFTT/LRMl2frscPhJW+n/BOH3sIlNy1xIrkxly65
+         uGIzyT1KPFy+/j8nMF0qwGsLyq1fzqyzyDKKmi+uIg+tfyW65RrJR1XLMVswwAKsS/Lm
+         GA8A==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1746461689; x=1747066489;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=SWvry4KDZapMEnULakjmTiQHQSX4k/taW1KwMUhJXLA=;
+        b=lpMoTjVJaEiwRbiyJDGMBGLma8Rhfp2iB5G5PGByq4zbOGZaMuAgIlnM6l9/iGeZMM
+         HeMgtsA3bv63jUNvZ8iF4kgtUfR5L8z/rVsscNIslsKq1U5W/ldTszQJIdz2Y4j0dmVU
+         rUrDx25Z4g0jGSgpLQXYJktvEJ+mqnMLkF3hEqrvVen3YzQ6d9XSS521by25N5FVcBbn
+         0SZJff55XkpfYGOjw1ENDevLm/rGXiHMQn7lsQgiWhYVN5SE/ZXvX8bKYmNL2cp6t2OC
+         bl3xK/U0VgBTlZ47FtFZ+dCkW0shrZAVHkrh2NVs2q/l1k3dM4I7crCrmjV++e8DBIN0
+         kpfg==
+X-Forwarded-Encrypted: i=1; AJvYcCUyBDbY/CB1taDdiLSlnDUTmi/OuW3x7IldYr4zsl4a5O/URhULPM91VBrA/bFCA2Roois3gKbX1nywJoE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyRRsxwbtTLykV85weRrGzGGf+h2jQp5GHDa3bF/ld2g22bH21K
+	i2LXNEEBdydYCt2FG+kY8GdKgoSqVydqJDkwqKlgIyPEG2mEgUhrcXc5DcOkqQ==
+X-Gm-Gg: ASbGnctWpfJA9DylBN/KRsqzUsyYBbIGPev+MAblDtZGTzt29yL30NT6wacFtqcEaRS
+	9M+EYejfGjgGKU4KPnZLvNu/kAyUXohIix9/14Q1e1UA6006Lyli/4vuootsF/DRwoK0JTO4wST
+	W0ffWtAqDRZF0HnPo1+husGQ7L0qZPNnkn7KRxHiiGYZYmAa5Wz/qEEz+b72393uUpkLMyQ6Qar
+	A5IKJ3OY36cMAAIymneYXHqqPwXUv7wCDxaX1+6Nvag0oBm7eyuBC7yE5UPsbeKWX4ie+rOJAtY
+	htPAyU0SZU+qHEyTFZ43A2LyowyzTDL+eJbCMh71/6n2aCzSpaE=
+X-Google-Smtp-Source: AGHT+IGDlihVIhUXhK0fIymH88F2X8FV0rkQuFidNrc3Roi5FkXvbM1MtssO/KpT/pJrJT2EqnO02g==
+X-Received: by 2002:a05:6a00:9095:b0:732:5164:3cc with SMTP id d2e1a72fcca58-7406f17ac90mr10027660b3a.19.1746461688655;
+        Mon, 05 May 2025 09:14:48 -0700 (PDT)
+Received: from thinkpad ([120.60.48.235])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-740590a1c09sm6964138b3a.168.2025.05.05.09.14.40
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 05 May 2025 09:14:48 -0700 (PDT)
+Date: Mon, 5 May 2025 21:44:38 +0530
+From: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
+To: Niklas Cassel <cassel@kernel.org>
+Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+	Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, 
+	Lorenzo Pieralisi <lpieralisi@kernel.org>, Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>, 
+	Rob Herring <robh@kernel.org>, Zhou Wang <wangzhou1@hisilicon.com>, 
+	Will Deacon <will@kernel.org>, Robert Richter <rric@kernel.org>, 
+	Alyssa Rosenzweig <alyssa@rosenzweig.io>, Marc Zyngier <maz@kernel.org>, 
+	Conor Dooley <conor.dooley@microchip.com>, Daire McNamara <daire.mcnamara@microchip.com>, 
+	dingwei@marvell.com, Lukas Wunner <lukas@wunner.de>, 
+	Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-riscv@lists.infradead.org, wilfred.mallawa@wdc.com
+Subject: Re: [PATCH v3 5/5] PCI: qcom: Add support for resetting the slot due
+ to link down event
+Message-ID: <tflie6ncttih5jxn5xg3zvktidqv5jaqsnsuryy56qfq7pghxd@ippj4lhsdqme>
+References: <20250417-pcie-reset-slot-v3-0-59a10811c962@linaro.org>
+ <20250417-pcie-reset-slot-v3-5-59a10811c962@linaro.org>
+ <aBjTpglI5_P2Q3Aa@ryzen>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,86 +103,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 0/6] powerpc: use lock guards for mutex Set 1
-To: Shrikanth Hegde <sshegde@linux.ibm.com>, maddy@linux.ibm.com,
-        linuxppc-dev@lists.ozlabs.org
-Cc: npiggin@gmail.com, christophe.leroy@csgroup.eu, mpe@ellerman.id.au,
-        peterz@infradead.org, ajd@linux.ibm.com, mahesh@linux.ibm.com,
-        hbathini@linux.ibm.com, linux-kernel@vger.kernel.org
-References: <20250505075333.184463-1-sshegde@linux.ibm.com>
-Content-Language: en-GB
-From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-In-Reply-To: <20250505075333.184463-1-sshegde@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: Fi89rRTXqcx4UoqqRZCdr5bRAgcroU0A
-X-Authority-Analysis: v=2.4 cv=GKAIEvNK c=1 sm=1 tr=0 ts=6818c9bc cx=c_pps a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17 a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=VwQbUJbxAAAA:8 a=JfrnYn6hAAAA:8 a=VnNF1IyMAAAA:8 a=wbOSOQyIEbtBsbREJHsA:9
- a=QEXdDO2ut3YA:10 a=1CNFftbPRP8L7MoqJWF3:22
-X-Proofpoint-GUID: -OjYd0mMDgHSvjQu3mLG3kVKKKuBz6dB
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTA1MDEzNiBTYWx0ZWRfX60VvHmELtd/8 /sZut1BNy9mAmjnPnJhReoI5D1ySrZtcKxV9HyEyZs70zrqN3kijlHD6qNa6QOJCFbchfBrDRdA lG4lT2CqZ2S+yBmk8NJVKvxAweuNqeuh0Znl/uynuZsxYlx+2F0y3TTkdnLhMe1SpUMjfWKpFrd
- HtJIBTMoVbdncHuPqzAHwRFNa5Eph9sKdwaOZ9cz58M4bHTR87FeJjnI0CL1n0yUzFp36rkYpMW CArWQ+xpS8Ltq/4RzYp1+8ABDl75ItCOzuMG2T9Dua26P9oPipwTXk9v2Ch5SzusMGa6t6iV2iG 2kSj6sv8PQw/VKzyq5A2OvcnQU+eCJVH3rj3Auh71ycw6vTjqTW74znnDaxtnZVnjPx2IlVux2p
- Sl6HopcLddKUiQzsnOHhhfR0ar45m75G7G6e5MRzsDNOztA8oxnrY4WWail/tZKtUCFvKiPl
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
- definitions=2025-05-05_06,2025-05-05_01,2025-02-21_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 lowpriorityscore=0
- impostorscore=0 mlxscore=0 suspectscore=0 priorityscore=1501
- malwarescore=0 mlxlogscore=991 adultscore=0 clxscore=1015 phishscore=0
- spamscore=0 bulkscore=0 classifier=spam authscore=0 authtc=n/a authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
- definitions=main-2505050136
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <aBjTpglI5_P2Q3Aa@ryzen>
 
+On Mon, May 05, 2025 at 05:05:10PM +0200, Niklas Cassel wrote:
+> Hello Mani,
+> 
+> On Thu, Apr 17, 2025 at 10:46:31PM +0530, Manivannan Sadhasivam via B4 Relay wrote:
+> > @@ -1571,6 +1652,9 @@ static irqreturn_t qcom_pcie_global_irq_thread(int irq, void *data)
+> >  		pci_unlock_rescan_remove();
+> >  
+> >  		qcom_pcie_icc_opp_update(pcie);
+> > +	} else if (FIELD_GET(PARF_INT_ALL_LINK_DOWN, status)) {
+> > +		dev_dbg(dev, "Received Link down event\n");
+> > +		pci_host_handle_link_down(pp->bridge);
+> >  	} else {
+> >  		dev_WARN_ONCE(dev, 1, "Received unknown event. INT_STATUS: 0x%08x\n",
+> >  			      status);
+> 
+> From debugging an unrelated problem, I noticed that dw-rockchip can
+> sometimes have both "link up" bit and "hot reset or link down" bit set
+> at the same time, when reading the status register.
+> 
 
-On 05/05/25 1:23 pm, Shrikanth Hegde wrote:
-> This is an effort to make the code simpler by making use of lock
-> guards which were introduced in [1], which works by using __cleanup
-> attributes. More details in v1 cover letter
->
-> v2->v3:
-> - Collects tags (Andrew Donnellan & Srikar Dronamraju)
-> - Address comments from Srikar Dronamraju
->
-> v1->v2:
-> - Fix changelog of powernv (Andrew Donnellan)
-> - use scoped_guard in couple of places to avoid holding mutex
->    un-necessarily (Peter Zijlstra)
->
-> [1]: https://lkml.kernel.org/r/20230612093537.614161713%40infradead.org
-> v1: https://lore.kernel.org/all/20250314054544.1998928-1-sshegde@linux.ibm.com/#t
-> v2: https://lore.kernel.org/all/20250314114502.2083434-1-sshegde@linux.ibm.com/
->
-> Shrikanth Hegde (6):
->    powerpc: eeh: use lock guard for mutex
->    powerpc: rtas: use lock guard for mutex
->    powerpc: fadump: use lock guard for mutex
->    powerpc: book3s: vas: use lock guard for mutex
->    powerpc: powernv: ocxl: use lock guard for mutex
->    powerpc: sysdev: use lock guard for mutex
->
->   arch/powerpc/kernel/eeh.c                   | 20 +++----
->   arch/powerpc/kernel/fadump.c                | 11 ++--
->   arch/powerpc/kernel/rtas_flash.c            | 64 +++++++--------------
->   arch/powerpc/platforms/book3s/vas-api.c     | 32 +++++------
->   arch/powerpc/platforms/powernv/ocxl.c       | 12 +---
->   arch/powerpc/sysdev/fsl_mpic_timer_wakeup.c | 14 +----
->   6 files changed, 50 insertions(+), 103 deletions(-)
->
-Tested this patch-set by applying on top of powerpc repo, with HEAD: 
-b4432656b36e5cc1d50a1f2dc15357543add530e, and Build and boot test is 
-successful.
+That's a good catch. It is quite possible that both fields could be set at once,
+so 'if..else' is indeed a bad idea.
 
-Also FADUMP and DLPAR operations are successful. Hence, for the series,
+> Perhaps the link went down very quickly and then was established again
+> by the time the threaded IRQ handler gets to run.
+> 
+> Your code seems to do an if + else if.
+> 
+> Without knowing how the events work for your platforms, I would guess
+> that it should also be possible to have multiple events set.
+> 
 
+I agree.
 
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> 
+> In you code, if both LINK UP and hot reset/link down are set,
+> I would assume that you driver will not do the right thing.
+> 
+> Perhaps you want to swap the order? So that link down is handled first,
+> and then link up is handled. (If you convert to "if + if "instead of
+> "if + else if" that is.)
+> 
 
+Makes sense. I'll incorporate this change in v5, thanks!
 
-Regards,
+- Mani
 
-Venkat.
-
-
-
+-- 
+மணிவண்ணன் சதாசிவம்
 
