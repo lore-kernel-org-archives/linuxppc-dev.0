@@ -1,94 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-8378-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8379-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7ADBDC3ABBF
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 May 2025 11:16:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5B1BC3ABBF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 May 2025 11:53:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zst520JRsz2yLB;
-	Wed,  7 May 2025 21:16:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=103.168.172.159
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746604576;
-	cv=none; b=OV5W6iEg8oVTXg2ry/ZX+i1+qckVyAfnHCHcjwY89hSUTPbtPv4OXkMuee4KKO+z4LEYCJNSsOTuGdDKow0ijwsda7ZS1Bu81msVPeNc+bS3BFLqzda1f+Dgaf56SFbTa4fw/uBV52WPvYsmhWStQHj3tCRhOXo6DIIegveGSm1qCiNzX2CTzY0uiR9r5dY+NKpMnStq9Sy7iKhBaL/B1ENYyekX0vn3vStOUYt9EpojjA5Q54mkiYI/ErxgL1gz7FdqBMoTfKR2vQWQargTX5g2a412ISkQwsBK40RRXoMyXGjedaJzjyvKdqG2BAu2xZWe2YbD/7qaHESWAcE8JQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZstvQ3R5Wz2y8W;
+	Wed,  7 May 2025 21:53:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746618818;
+	cv=none; b=IEZxsu/+FInS5ftrzzGgD+CIIVDLnzLmh3TvKcAJ8Aooso0Uu1b3FDyLRJu30Ipmy8HswSP5C/3OSb9azYTqfb1Z7yla4L8y2PWrh0iODL0uofyhAHyosdZBcHdwSxPJestxS0YeRVdzG4HRPoNZTDfIU8KEstIGPwKxb0t/UQnyaegE2EKgXrZqpkuwXJeZkJDW25hvzu7PprNXyfuQ07gSyGHex5QdxYcrIel8DcfQcg3Gi002YFtpzzmeMn7hYN3aQvULRtSNi1Pws5zsOmJfmKsBx344kjtn/2Vc70RA1bs4lxOAG2Yj7sTuUTKDu3aKBHyN3rpmpuOHuMWzcA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746604576; c=relaxed/relaxed;
-	bh=JcQmMXNVSlii7PXek34Y/lx8uJAyMcBAejqngOH419Y=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=YaJPdwmrTL5OLIT6bzFfVpe02izgnh7wgDmMmvJ/CJifIrPC48E284hh+aONj3gY6ae3x/PMlNocwkCrVgxaX6dwdNiagvyHfx8NmQaFSBRdn9Xdk+5SfSCcCGFLP8rzSE96++B8fz4HVV6tNOpzBY1LeBh1IDBUpaoWIe3tbRz57MfZ3HjrPSOjuVxf0s7/3ETQ5j8azpAIk9I4qESNVHyGtVxfHx602Vj1vRvgCIeQNe0MFEx+rJiJFGXGqKJSp7Q+TnN+CigF4EubKF4BtX5LrgkQDdouFhv+t/ZBgSEypjeg0G7zxQWg/daHRr1LHd/al/uZ/RCl112QZD3QlQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bzzt.net; dkim=pass (2048-bit key; unprotected) header.d=bzzt.net header.i=@bzzt.net header.a=rsa-sha256 header.s=fm1 header.b=m6ixM4t0; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=kZA4fxjI; dkim-atps=neutral; spf=pass (client-ip=103.168.172.159; helo=fhigh-a8-smtp.messagingengine.com; envelope-from=arnout@bzzt.net; receiver=lists.ozlabs.org) smtp.mailfrom=bzzt.net
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bzzt.net
+	t=1746618818; c=relaxed/relaxed;
+	bh=e2to3al3zB/dCSwNER/F7O+X5fTG8/d0mwyMmqNC3Z8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ROcri+vHlrEEl3Ld7ZkMVYwfAo7PtSEiJuLX13RyYnr+edNQYdhoPWCdwaIozRvCDiRHtcICo7/+aaxs/gIHaX99boe0TFrk72B8DG+gz1pnAYGz/4LHI/4HD1y3+mEjLfQhcQKPbZHxhpR53DUFHL9s4N/hGUekkwSsQ7fA79iFWGhTvXiFfB+iP5TTP9cOh7Zv7wXyueody0Zhm9izcvMZFV2mZO/uUYRSyG/wmnEaa8wg+WNXRG7ePkZkVbIQKpObX/eC2pNRBQSmMixhtZAJfYobxJdGJAWZe87qMhJYlLGRP/kaYlIrCRc+1gX0ZBJL2d40/EROho40pSo17A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TBDv5P01; dkim-atps=neutral; spf=pass (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bzzt.net header.i=@bzzt.net header.a=rsa-sha256 header.s=fm1 header.b=m6ixM4t0;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=kZA4fxjI;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TBDv5P01;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bzzt.net (client-ip=103.168.172.159; helo=fhigh-a8-smtp.messagingengine.com; envelope-from=arnout@bzzt.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 412 seconds by postgrey-1.37 at boromir; Wed, 07 May 2025 17:56:14 AEST
-Received: from fhigh-a8-smtp.messagingengine.com (fhigh-a8-smtp.messagingengine.com [103.168.172.159])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZsndV081rz2xVq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2025 17:56:13 +1000 (AEST)
-Received: from phl-compute-12.internal (phl-compute-12.phl.internal [10.202.2.52])
-	by mailfhigh.phl.internal (Postfix) with ESMTP id B39121140120;
-	Wed,  7 May 2025 03:49:18 -0400 (EDT)
-Received: from phl-imap-01 ([10.202.2.91])
-  by phl-compute-12.internal (MEProxy); Wed, 07 May 2025 03:49:18 -0400
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bzzt.net; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm1; t=1746604158;
-	 x=1746690558; bh=JcQmMXNVSlii7PXek34Y/lx8uJAyMcBAejqngOH419Y=; b=
-	m6ixM4t0Bd5/+Uss2nIYQ1/8T+lGP87Kg95DJvDFeb7DqFU29pVjw++3Li/Ley4k
-	ZrzM0BTeOpxvwh0sxNtp1QLtmfEYacvZlaBLB36B/w5i+GcjjskXQ0NzqZ/J8mTP
-	0YaZMKdN2faVUFAATg5ZwGTmea9qyr9RUA6YVKZsk0Ynsui8h881co/aN0ZXJuwi
-	5Sj7qnbnfM/R3UdL8fSmn+rvlyKNZHlus1rZIwTZiL7RBtLT9PzGjn64VYzcfQcL
-	K31sNpaJp+rsMDYUDKWzrVzvYvr+Orkj6MVMJBYkLw1cNBnaMgMmUWIW90Mo1Pz8
-	Th8btXk/wU2H3HrP1aEw3A==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=1746604158; x=
-	1746690558; bh=JcQmMXNVSlii7PXek34Y/lx8uJAyMcBAejqngOH419Y=; b=k
-	ZA4fxjIvrDac2vbflfR/MW94tnMJZme863HxGuBbuLxnJnRgxnFSpP9pmL1bJ6Hn
-	GwrmAA0bCs013xnar98UKcdvEKlDyOMViA6Ll+6K0qq4GehsaoV25FXc095wkrfm
-	ARJbKlcWT+oSnf3JFc/90YW82bEOsZ6Q05NtJirhJsI2n6diyAXIfLOztBgceqlv
-	zMCw/UOhobb+tlAbOVIkP5KjU91f+R/jwFvELLUZ2kIUna7Kr57xbbWw1Lc+YFNc
-	9GdUEF5rtofNpvc0UeGxakfKT3O5BroTxokSKGbhNBCPSe8rxTVj1ZDoNivbyC0a
-	E10rzrUGPhBZWCiPGqFFA==
-X-ME-Sender: <xms:ehAbaFqS2VNSdrrCBKfKPArS0Gqyyqv5CLshf_qm6RWOqC7P6yzTdQ>
-    <xme:ehAbaHpIDmwdOxMLOentJK9Nd5ZQ-GbYT2KYBTe9j5pBuLP1Z84rJCkZnNpuwkFU1
-    MvZkTrEA8H9ukbh2wc>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefvddrtddtgddvkeeifedtucetufdoteggodetrf
-    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdggtfgfnhhsuhgsshgtrhhisggv
-    pdfurfetoffkrfgpnffqhgenuceurghilhhouhhtmecufedttdenucesvcftvggtihhpih
-    gvnhhtshculddquddttddmnecujfgurhepofggfffhvfevkfgjfhfutgfgsehtjeertder
-    tddtnecuhfhrohhmpedftehrnhhouhhtucfgnhhgvghlvghnfdcuoegrrhhnohhuthessg
-    iiiihtrdhnvghtqeenucggtffrrghtthgvrhhnpeefgefgfeektdefkeeludetteefkeef
-    ffdvkeeujeegveethfdthfffjedvgedtueenucffohhmrghinhepkhgvrhhnvghlrdhorh
-    hgpdguvggsihgrnhdrohhrghdpvghnghgvlhgvnhdrvghunecuvehluhhsthgvrhfuihii
-    vgeptdenucfrrghrrghmpehmrghilhhfrhhomheprghrnhhouhhtsegsiiiithdrnhgvth
-    dpnhgspghrtghpthhtohepfeeipdhmohguvgepshhmthhpohhuthdprhgtphhtthhopehk
-    phgthihrugesrghrtghhlhhinhhugidrohhrghdprhgtphhtthhopegrrhhnugesrghrnh
-    gusgdruggvpdhrtghpthhtoheptghhrhhishhtohhphhgvrdhlvghrohihsegtshhgrhho
-    uhhprdgvuhdprhgtphhtthhopehmphgvsegvlhhlvghrmhgrnhdrihgurdgruhdprhgtph
-    htthhopegumhhithhrhidrkhgrshgrthhkihhnsehgmhgrihhlrdgtohhmpdhrtghpthht
-    ohepmhgtrghjuhelheesghhmrghilhdrtghomhdprhgtphhtthhopehnphhighhgihhnse
-    hgmhgrihhlrdgtohhmpdhrtghpthhtohepshgrmhhithholhhvrghnvghnsehgohhoghhl
-    vgdrtghomhdprhgtphhtthhopehsvghrghgvsehhrghllhihnhdrtghomh
-X-ME-Proxy: <xmx:ehAbaCPQCmtU0_XRz8-vmJUTunODN6LJ5XAJdUQXl8MZC_JaCjxFOg>
-    <xmx:ehAbaA59wckYPtLYhTZVffPcvxO_BZijemUeXnd5cHTnWqBB3GWO6g>
-    <xmx:ehAbaE6X6GZm-X-h7CHtIj_tqXHUMbSzEVEZwOfDgLuZu2J5RbipmQ>
-    <xmx:ehAbaIgcx2n28RoC1hGQYgUotGxNuE0nTYRb07t4aUhf_rREVRpkqQ>
-    <xmx:fhAbaPRdhTA1xuKM3DUYaFI8sfLgbhVSaXODaU-UBjVBXGPdpqtaF29z>
-Feedback-ID: i8a1146c4:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 74285336007C; Wed,  7 May 2025 03:49:14 -0400 (EDT)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZstvN1TJPz2xrL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2025 21:53:34 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1746618817; x=1778154817;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=72Scb1V0hycsXKAsGR/ifXYu2GLLvEtvC8pJoVQX4Zo=;
+  b=TBDv5P01BxzNg9HC3QympmgsJdEN4uNwwwLYQMIcazEydYF6u5Dr1BUS
+   8PS2leV37XOuKSM5UgMwJ2+LzhvcbtHuTNb7tu25jlo5/i24XfcaRgIjD
+   KCzEux3dUKXi1VEWFLEaAfVgEcAdUb9WG4gxMEew/b1E0CtqIZOXbPuvK
+   rQzZBYBKdSl0gK9k4fWyL4PiwlHSvwbhEM9+vOtef06kE7XlXG7MuZESR
+   9sHzlzMszlLlSvSwbVheIs0BEMNoIK5bRi1v614pZp+VZ/uTuvalis0aI
+   ckHE/cLMZVrBr6OBZ91OBAq8vDeAoY7WD7loJhYRrcU0nMTqlg3X09W66
+   A==;
+X-CSE-ConnectionGUID: sjINpQ5CQ1Gxf/GG29AXiQ==
+X-CSE-MsgGUID: XQL/E9frR4C6z35+UjeJEg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11426"; a="59332539"
+X-IronPort-AV: E=Sophos;i="6.15,269,1739865600"; 
+   d="scan'208";a="59332539"
+Received: from fmviesa006.fm.intel.com ([10.60.135.146])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 07 May 2025 04:53:31 -0700
+X-CSE-ConnectionGUID: LhlCLecGS0Kjox3SYmsO2w==
+X-CSE-MsgGUID: pWiazrmQTcC6g3fF7eWhUA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.15,269,1739865600"; 
+   d="scan'208";a="135898621"
+Received: from lkp-server01.sh.intel.com (HELO 1992f890471c) ([10.239.97.150])
+  by fmviesa006.fm.intel.com with ESMTP; 07 May 2025 04:53:28 -0700
+Received: from kbuild by 1992f890471c with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1uCdL4-0007il-1W;
+	Wed, 07 May 2025 11:53:26 +0000
+Date: Wed, 7 May 2025 19:52:53 +0800
+From: kernel test robot <lkp@intel.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, mpe@ellerman.id.au,
+	christophe.leroy@csgroup.eu
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev, npiggin@gmail.com,
+	naveen@kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Subject: Re: [PATCH 3/6] powerpc/perf:make isa207_pmu_format_group struct
+ static
+Message-ID: <202505071909.iZZsdCTI-lkp@intel.com>
+References: <20250422131040.374427-4-maddy@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,130 +83,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: T5f9a5891fefab612
-Date: Wed, 07 May 2025 09:47:23 +0200
-From: "Arnout Engelen" <arnout@bzzt.net>
-To: "James Bottomley" <James.Bottomley@hansenpartnership.com>,
- =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Cc: "Masahiro Yamada" <masahiroy@kernel.org>,
- "Nathan Chancellor" <nathan@kernel.org>, "Arnd Bergmann" <arnd@arndb.de>,
- "Luis Chamberlain" <mcgrof@kernel.org>,
- "Petr Pavlu" <petr.pavlu@suse.com>,
- "Sami Tolvanen" <samitolvanen@google.com>,
- "Daniel Gomez" <da.gomez@samsung.com>,
- "Paul Moore" <paul@paul-moore.com>, "James Morris" <jmorris@namei.org>,
- "Serge E. Hallyn" <serge@hallyn.com>, "Jonathan Corbet" <corbet@lwn.net>,
- "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Michael Ellerman" <mpe@ellerman.id.au>,
- "Nicholas Piggin" <npiggin@gmail.com>,
- "Christophe Leroy" <christophe.leroy@csgroup.eu>,
- "Naveen N Rao" <naveen@kernel.org>, "Mimi Zohar" <zohar@linux.ibm.com>,
- "Roberto Sassu" <roberto.sassu@huawei.com>,
- "Dmitry Kasatkin" <dmitry.kasatkin@gmail.com>,
- "Eric Snowberg" <eric.snowberg@oracle.com>,
- "Nicolas Schier" <nicolas.schier@linux.dev>,
- =?UTF-8?Q?Fabian_Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>,
- "Mattia Rizzolo" <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>,
- "Christian Heusel" <christian@heusel.eu>,
- =?UTF-8?Q?C=C3=A2ju_Mihai-Drosi?= <mcaju95@gmail.com>,
- linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
- linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Message-Id: <6615efdc-3a84-4f1c-8a93-d7333bee0711@app.fastmail.com>
-In-Reply-To: 
- <2413d57aee6d808177024e3a88aaf61e14f9ddf4.camel@HansenPartnership.com>
-References: <20250429-module-hashes-v3-0-00e9258def9e@weissschuh.net>
- <f1dca9daa01d0d2432c12ecabede3fa1389b1d29.camel@HansenPartnership.com>
- <840b0334-71e4-45b1-80b0-e883586ba05c@t-8ch.de>
- <b586e946c8514cecde65f98de8e19eb276c09703.camel@HansenPartnership.com>
- <072b392f-8122-4e4f-9a94-700dadcc0529@app.fastmail.com>
- <2413d57aee6d808177024e3a88aaf61e14f9ddf4.camel@HansenPartnership.com>
-Subject: Re: [PATCH v3 0/9] module: Introduce hash-based integrity checking
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250422131040.374427-4-maddy@linux.ibm.com>
 
-On Tue, May 6, 2025, at 15:24, James Bottomley wrote:
-> I'll repeat the key point again: all modern hermetic build systems come
-> with provenance which is usually a signature.
+Hi Madhavan,
 
-I'm not sure the 'hermetic build' parallel is so applicable here: typically a
-hermetic build will produce an artifact and a signature, and when you embed
-that result in a larger aggregate, you only embed the artifact (not the
-signature) and sign the aggregate. With module signatures, the module *and*
-their signatures are embedded in the aggregate (e.g. ISO, disk image), which is
-where (at least in my case) the friction comes from.
+kernel test robot noticed the following build warnings:
 
-> Plus, you've got to remember that a signature is a cryptographic
-> function of the hash over the build minus the signature.  You can't
-> verify a signature unless you know how to get the build minus the
-> signature.  So the process is required to be deterministic.
+[auto build test WARNING on powerpc/next]
+[also build test WARNING on powerpc/fixes powerpc/topic/ppc-kvm linus/master v6.15-rc5 next-20250507]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Right: there is no friction validating the module signatures, that is fine.
-There is friction validating the aggregate artifact (e.g. ISO, disk image),
-though, because of those signatures embedded into it.
+url:    https://github.com/intel-lab-lkp/linux/commits/Madhavan-Srinivasan/powerpc-kvm-Fix-sparse-warning/20250422-211309
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+patch link:    https://lore.kernel.org/r/20250422131040.374427-4-maddy%40linux.ibm.com
+patch subject: [PATCH 3/6] powerpc/perf:make isa207_pmu_format_group struct static
+config: powerpc64-randconfig-002-20250424 (https://download.01.org/0day-ci/archive/20250507/202505071909.iZZsdCTI-lkp@intel.com/config)
+compiler: clang version 21.0.0git (https://github.com/llvm/llvm-project f819f46284f2a79790038e1f6649172789734ae8)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250507/202505071909.iZZsdCTI-lkp@intel.com/reproduce)
 
-As you mentioned earlier, of course this is *possible* to do (for example by
-adding the signatures as inputs to the second 'independent' build or by
-creating a hard-to-validate 'check recipe' running the build in reverse).
-Still, checking modules at run time by hash instead of by signature would be a
-much simpler option for such scenario's.
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202505071909.iZZsdCTI-lkp@intel.com/
 
-> > > All current secure build processes (hermetic builds, SLSA and the
-> > > like) are requiring output provenance (i.e. signed artifacts).  If
-> > > you try to stand like Canute against this tide saying "no signed
-> > > builds", you're simply opposing progress for the sake of it
-> > 
-> > I don't think anyone is saying 'no signed builds', but we'd enjoy
-> > being able to keep the signatures as detached metadata instead of
-> > having to embed them into the 'actual' artifacts.
-> 
-> We had this debate about 15 years ago when Debian first started
-> reproducible builds for the kernel.  Their initial approach was
-> detached module signatures.  This was the original patch set:
-> 
-> https://lore.kernel.org/linux-modules/20160405001611.GJ21187@decadent.org.uk/
-> 
-> And this is the reason why Debian abandoned it:
-> 
-> https://lists.debian.org/debian-kernel/2016/05/msg00384.html
+All warnings (new ones prefixed by >>):
 
-That is interesting history, thanks for digging that up. Of the 2 problems Ben
-mentions running into there, '1' does not seem universal (I think this feature
-is indeed mainly interesting for systems where you don't _want_ anyone to be
-able to load locally-built modules), and '2' is a problem that detached
-signatures have but module hashes don't have.
-
-> The specific problem is why detached signatures are almost always a
-> problem: after a period of time, particularly if the process for
-> creating updated artifacts gets repeated often matching the output to
-> the right signature becomes increasingly error prone.
-
-I haven't experienced that issue with the module hashes yet.
-
-> Debian was, however, kind enough to attach what they currently do to
-> get reproducible builds to the kernel documentation:
-> 
-> https://docs.kernel.org/kbuild/reproducible-builds.html
-
-Cool, I was aware of that page but didn't know it was initially contributed by
-Debian.
-
-> However, if you want to detach the module signatures for packaging, so
-> the modules can go in a reproducible section and the signatures
-> elsewhere, then I think we could accommodate that (the output of the
-> build is actually unsigned modules, they just get signed on install).
-
-At least I don't really come to this from the packaging perspective, but from
-the "building an independently verifiable ISO/disk image" perspective.
-Separating the modules and the signatures into separate packages doesn't help
-me there, since they'd still both need to be present on the image.
+>> arch/powerpc/perf/isa207-common.c:40:37: warning: unused variable 'isa207_pmu_format_group' [-Wunused-const-variable]
+      40 | static const struct attribute_group isa207_pmu_format_group = {
+         |                                     ^~~~~~~~~~~~~~~~~~~~~~~
+   1 warning generated.
 
 
-Kind regards,
+vim +/isa207_pmu_format_group +40 arch/powerpc/perf/isa207-common.c
+
+    39	
+  > 40	static const struct attribute_group isa207_pmu_format_group = {
+    41		.name = "format",
+    42		.attrs = isa207_pmu_format_attr,
+    43	};
+    44	
 
 -- 
-Arnout Engelen
-Engelen Open Source
-https://engelen.eu
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
