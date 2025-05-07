@@ -1,101 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-8373-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8374-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 189F8C369DC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 May 2025 06:25:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C08BC3ABC0
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 May 2025 08:44:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zsld15LbTz2ynf;
-	Wed,  7 May 2025 16:25:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746599141;
-	cv=none; b=GQsMYQVQNlKUpJKNyOfXSwiYVnRifmmMi0h1aBFNUy5pwf5kF2h0CXvTOSd1IZ0TyuJTHTLhTcKmiMzJ4oilb3i/mCAS6YqrmIH9hNNcSxYGVoHOE+bGXmy5wZNg0l4UcaLhAmBGFQXo8ssc3ZrnSxscXLffDCydhZ8v766L2EFmT1JfPM1MbZDqHZJE8Ok0AYq/DXLyZud6lk2lPXkKMfKeFgPlY/hRBYogq0DgHQ8amSxu1nBJxLSRgplfjb0wIbxnurjmfLvj4JUg8m8YChtzAf2PZWI/bOeHC1ePPaWwfLmBZhVwyIfl5DwprMHUu1xRGY8g/StXCbCAy/ujOA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZspjS3kp3z2xlL;
+	Wed,  7 May 2025 18:44:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746607484;
+	cv=none; b=VZgTo5lj4MVGWF04Mgpp26AOEunLUba2kI3CBya8JNDZZEiS7yeD7lLpEYegCOQ/Uv+rjW1DuWo79uLXWI0dKXxegflbRXJE/7oyyrdCWH6o7jVg7Cv+b4S071gpIC6SnoYXgHSDT0g5H9rHPKqHpQ089v0sRzOaPsicX6BUfQHmq0MuKodiQ+1R9Wqhw4w31BiTll5SzGD2Sxx7J51Q/vnCW/LWHaaSvjX/Y2IJv5t2ryZ8oAZjbjUBUm9WGJMZ61gyks2GE9APbXfkuArsxDzCeqy5dfimJNPncJiIa1R83G+kHWvK68OO2C7PmycwbkeOH/FEPl8VonwHxtkVoQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746599141; c=relaxed/relaxed;
-	bh=1H2SKdw/CJ1oFZysP7AbA7rtWkaow9Z02aBk9jm2tJY=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=WZ/kIeFJzsGzHfENt+qqj57BdihO8ZH6XD8btkKlEa7aNIaO6VrXi5hlzIf63cLDbAGK6+a4cFHh2JMFBk/r5jDqpQ1SJ1xysCAd06nOGsnFbV0iprjTUs/0VoJI6e02goMHr4fjO1dYVdn5G9SXLDvyeOoYqOuNSNhJbitJRG3YMTEF/vEZng1BQz331INhrUwYqLjGfkIAtGg7QB7z8y16F6Zve35XcxLk8kNV5MHG6ioWx0VFurSBRYwd+B6xEMe02SqqGndAN0U+k5vY8TMhEC8g9CrGaiFoBTkFNzHv9wLwKoZ/gRvVA8EA+M4AZt4ZULm1REVJPSIx+w1DAA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dSax7/gr; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1746607484; c=relaxed/relaxed;
+	bh=FO0fjrYVKp8xGIN/2Gqnbgr69KrWHFR/beTQuzDyhBY=;
+	h=Message-ID:Date:MIME-Version:To:From:Subject:Content-Type; b=C93dZrB7czmYYiKGJr8OGC3rwojok+tZ6b+KTwGQTCV9+KdSSavmyaytp8MVJWcFE0yDev8q997fQQCObrhFgPcvWoyDS6d0c4VfaqXx1Hi2SJXc5YOr2DdypvPMMn6dwi0M6E1zEmbnNatnXsOZTkdf0nvA+WgqenjypIjaeQbX9TkLO8yK9GbB+B1Im08/yiO4o6f/lfd6Cp7F9kX17DnNQldU7n7EzKU9GupICG3hNZxxYlR7vKKFEAw+yIw7DA8A64gf/eBqnYaVdF1ksXtKvJFI4MKzS166yqLXOwnVTmKg/F4CYCfuoS/vf16WlmLwdVsRP3fJBK49NsO/uA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iQIYEICk; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dSax7/gr;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=iQIYEICk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zsld06jFyz2xHp
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2025 16:25:40 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 546J06iH011055;
-	Wed, 7 May 2025 06:25:28 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=1H2SKd
-	w/CJ1oFZysP7AbA7rtWkaow9Z02aBk9jm2tJY=; b=dSax7/grc7WqB/w/bpL/qP
-	srxnysIRxGGAAXDI6H07wewjbDmW9dQAKxo3hIx0sAJuRV4Y3UnGCqJTo0TGTh+E
-	CSEx4GKSUi74QnnzVHwsttQdyRdXhKiL8GPcX/daPcm1e6gYwCycshMQGispPPPo
-	Cuou3Vg4l+Ua0iF6+JtMrw1ue5LgVKtNzLH80ZHBo09C3DONozFyXjRJfWxxp0qw
-	WFFAIhDbdC9B38s7KpNzdI9Se8DzWOJZVYBtM5pu6AyAERGdgfNKz2IB+6n/VwcM
-	qqusOBll8cO+kIt09bxOjxi8Xwf7a0F9ilw9zWT5w4orqwJl1ZSsTzX2R/7xlUPw
-	==
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZspjR3pMWz2xS2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2025 18:44:43 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5475Ij2f010427;
+	Wed, 7 May 2025 08:44:40 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=FO0fjrYVKp8xGIN/2Gqnbgr69KrW
+	HFR/beTQuzDyhBY=; b=iQIYEICk59Wutt7kEO9PpERcRMlZOculkpuYYN49Wq1/
+	dZDDRMUyuACsZ5Op+2591XF6yLTzAwPFLkEiB7EWrNCf+VxHoRAf+AYBwwDrlGyj
+	HlYSzEnwYi+ymNTizgfUETIAX4bzSaMVA2OCiX770k+emtT63JZuGw/5otFoy+I4
+	IVEdr7CdkbiS6yaQXbny5Um0/bPe+LlQN3d0YbYerNlnVt9UGFslqgrb6iQZicTw
+	fe3YSO/kTkAo8uaM/+6OhKfx8c2AXBojUJTLZrtasQzh+/rQAWRL5es25XLHwlwm
+	UzlIS2MUQUYF7p1dP+DoKDToI4YCGgl29WMIjvaaeg==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46fgvsmunb-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46fgbjdm2k-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 May 2025 06:25:28 +0000 (GMT)
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 5476M1Rq015839;
-	Wed, 7 May 2025 06:25:27 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46fgvsmun8-1
+	Wed, 07 May 2025 08:44:40 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 5478QTfl026578;
+	Wed, 7 May 2025 08:44:40 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46fgbjdm2f-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 May 2025 06:25:27 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5475xk1u014583;
-	Wed, 7 May 2025 06:25:27 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 46dypkq40a-1
+	Wed, 07 May 2025 08:44:40 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5476WFr8013770;
+	Wed, 7 May 2025 08:44:39 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 46e062fehx-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 May 2025 06:25:27 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5476PPXP40436050
+	Wed, 07 May 2025 08:44:39 +0000
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5478iccG23593280
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 7 May 2025 06:25:25 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 69C4420082;
-	Wed,  7 May 2025 06:04:01 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 011B520081;
-	Wed,  7 May 2025 06:04:01 +0000 (GMT)
-Received: from ozlabs.au.ibm.com (unknown [9.63.197.14])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  7 May 2025 06:04:00 +0000 (GMT)
-Received: from jarvis.ozlabs.ibm.com (haven.au.ibm.com [9.63.198.114])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 37A13600BB;
-	Wed,  7 May 2025 16:03:57 +1000 (AEST)
-Message-ID: <f950789abaad0e854c4e60c7316b675c712c386f.camel@linux.ibm.com>
-Subject: Re: [PATCH 1/3] powerpc/pseries: Correct secvar format
- representation for static key management
-From: Andrew Donnellan <ajd@linux.ibm.com>
-To: Nayna Jain <nayna@linux.ibm.com>, Srish Srinivasan
- <ssrish@linux.ibm.com>,
-        linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, naveen@kernel.org, zohar@linux.ibm.com,
-        linux-kernel@vger.kernel.org
-Date: Wed, 07 May 2025 16:03:57 +1000
-In-Reply-To: <3fe59767-954b-4c2c-a602-9801f1c1080a@linux.ibm.com>
-References: <20250430090350.30023-1-ssrish@linux.ibm.com>
-	 <20250430090350.30023-2-ssrish@linux.ibm.com>
-	 <87e1185273ce21e5fd69ff071a1be986c2a0301a.camel@linux.ibm.com>
-	 <3fe59767-954b-4c2c-a602-9801f1c1080a@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.1 (3.56.1-1.fc42) 
+	Wed, 7 May 2025 08:44:38 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 5DD6F58055;
+	Wed,  7 May 2025 08:44:38 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4DC815804B;
+	Wed,  7 May 2025 08:44:36 +0000 (GMT)
+Received: from [9.204.204.179] (unknown [9.204.204.179])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  7 May 2025 08:44:35 +0000 (GMT)
+Message-ID: <75b94ef2-752b-4018-9b2a-148ecda5e8f4@linux.ibm.com>
+Date: Wed, 7 May 2025 14:14:34 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -109,48 +85,188 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Content-Language: en-GB
+To: LKML <linux-kernel@vger.kernel.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        linux-btrfs@vger.kernel.org, riteshh@linux.ibm.com,
+        Qu Wenruo <quwenruo.btrfs@gmx.com>, disgoel@linux.vnet.ibm.com
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: [next-20250506][btrfs] Kernel OOPS while btrfs/001 TC
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=CLAqXQrD c=1 sm=1 tr=0 ts=681afcd8 cx=c_pps a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17 a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=VnNF1IyMAAAA:8 a=VI1NQ0rgZN61wkHHH4kA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: QD1K8PZ3uYzMJ7kPAvcb9JP4VkJn7oLp
-X-Proofpoint-ORIG-GUID: rztLrWR4sWMaBLVOXO8rmeAHuH-8u504
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTA3MDA1NSBTYWx0ZWRfX4xfKB8NZ6lMj ZtfYnsUNf0YlOGsCxzKwCSwj0/7ZlN3V0rIXgktRbJk96/zqTwFBQ7qJYF8HaIgiF/JLG/ZXHLP fwfAFfN8Egegx3Azq06LVxs0lFt5rN7e20WRWDH2PJ3ZltAxbeAfNv2yKK1Djc7/QOjuHCBDB+B
- 5kjED0cI8vLL0DVSGP5e0sePnn0Zn4n8YUhQCUGXYqBadtJUHz05ns+OmaSiTCqwQ03cWzz3mbc ZSoHS2RpPBuOSbR0JXN5VxkSA0GXQMDRy3/p40WWRIyvVAp3fa6p/Thlb5JJUm6JYhz/shzMNMK CWAxRkmqguwkzSHnyNA11yoiZ5Opo5bHsCKgKXHCxg87TcMZPlcFirIXEg+1Ty4YPN7di82VJqJ
- DuXhzSc/Oz4AuIOl9chIMEvHa+o4omFhDcj61hplespwcl4lrvYa9iPXXvMWDUUCs9zOhGDl
+X-Proofpoint-ORIG-GUID: NmLre71nuBKqpkRRyNXeHHYzCJKbKSmm
+X-Proofpoint-GUID: Pt44Bp16xx9yccZZJROR44K9cdhvcQyb
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTA3MDA3OSBTYWx0ZWRfX81a4ZT0S0PSv Y4t5UQCBOS8r2qqMKE8Qs1NHtmIh9wDvryUx+jH5qh/cLrUZVyzsaIilvUNcgpqB4wthqQmFbpO Qri+cJ8rvHbR24Tbl//90Ta/6OJs7/JStVhKY5D9FDT4/cIe76OVkyyVHWFTpybHXG3/JVVlytp
+ vkjWT/gZItBIWXlTrYtS9+/EOO0dea6aw5hXhf/mDJ9fZjfoY4TOOuq4RpS4tH2l+S6prejTn3k thAsGFW6sElBZeyGzJpn3WcXB50FCTG7Z6F/qSMj+6NnyxXG+jnNYzVrs1ZiuUzmKnIasHP3fQP GFoXiUrzA6G/mq/+HJs3E+ap0MvestszpHmmHlShxKI0sy7hTM/AM5/TkaBAWorwgxpVhmXJ5mc
+ itrdAxMFGIPbDWTf2YIRpyyntLq6SWZegrJHxsyKRDSgFEDlR9xJl9wG3iZu2e39dXXX3xF9
+X-Authority-Analysis: v=2.4 cv=FJcbx/os c=1 sm=1 tr=0 ts=681b1d78 cx=c_pps a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17 a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=UIzWbI13G1sJYqkSAR8A:9 a=3ZKOabzyN94A:10
+ a=QEXdDO2ut3YA:10
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
- definitions=2025-05-07_02,2025-05-06_01,2025-02-21_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 impostorscore=0
- phishscore=0 malwarescore=0 bulkscore=0 priorityscore=1501 suspectscore=0
- mlxscore=0 lowpriorityscore=0 spamscore=0 mlxlogscore=678 clxscore=1015
- classifier=spam authscore=0 authtc=n/a authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2504070000
- definitions=main-2505070055
+ definitions=2025-05-07_03,2025-05-06_01,2025-02-21_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ mlxlogscore=812 phishscore=0 impostorscore=0 suspectscore=0 mlxscore=0
+ malwarescore=0 lowpriorityscore=0 clxscore=1015 bulkscore=0 adultscore=0
+ spamscore=0 classifier=spam authscore=0 authtc=n/a authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
+ definitions=main-2505070079
 
-On Tue, 2025-05-06 at 15:27 -0400, Nayna Jain wrote:
->=20
-> > It might be better to use something like "ibm,plpks-sb-static" in
-> > place
-> > of "ibm,plpks-sb-v0" to make it instantly clear that static mode
-> > doesn't use the same version numbering scheme as dynamic mode.
->=20
-> Yes, "ibm,plpks-sb-static" is more clear compared to "ibm,plpks-sb-
-> v0".=C2=A0=20
-> However, I am not sure why "static mode doesn't use the same version=20
-> numbering scheme as dynamic mode". Infact, as per my understanding,=C2=A0
-> it=20
-> is part of same versioning system. "0 represent static, 1 represent=20
-> dynamic and anything beyond 1 would mean dynamic with additional
-> features".
->=20
-> Also, wouldn't having "ibm,pkpks-sb-static" and then "ibm,pkpk-sb-v1"
-> for dynamic would be bit confusing? I mean being static is clear, but
-> what they relate v1 to? Or did you mean to have "ibm,plpks-sb-static"
-> and "ibm,plpks-sb-dynamic"=C2=A0 for the two modes?
->=20
+Hello,
 
-I don't feel strongly about this, as long as it's well documented.
 
---=20
-Andrew Donnellan    OzLabs, ADL Canberra
-ajd@linux.ibm.com   IBM Australia Limited
+I am observing kernel OOPS, while running btrfs/001 TC, from xfstests suite.
+
+
+This issue is introduced in next-20250506. This issue is not seen on 
+next-20250505 kernel.
+
+
+Steps to repro:
+
+
+1. git clone git://git.kernel.org/pub/scm/fs/xfs/xfstests-dev.git
+2. cd xfstests-dev/
+3. mkdir /mnt/loop-device /mnt/test /mnt/scratch
+4. for i in $(seq 0 5); do fallocate -o 0 -l 5GiB 
+/mnt/loop-device/file-$i.img; done
+5. for i in $(seq 0 5); do losetup /dev/loop$i 
+/mnt/loop-device/file-$i.img; done
+6. mkfs.btrfs -f -s 65536 -n 65536 /dev/loop0; mkfs.btrfs -f /dev/loop1; 
+mkfs.btrfs -f /dev/loop2; mkfs.btrfs -f /dev/loop3; mkfs.btrfs -f 
+/dev/loop4; mkfs.btrfs -f /dev/loop5
+8. vi local.config
+9. make
+10. ./check tools/btrfs/001
+
+
+local.config contents:
+
+
+export RECREATE_TEST_DEV=true
+export TEST_DEV=/dev/loop0
+export TEST_DIR=/mnt/test
+export SCRATCH_DEV_POOL="/dev/loop1 /dev/loop2 /dev/loop3 /dev/loop4 
+/dev/loop5"
+export SCRATCH_MNT=/mnt/scratch
+export MKFS_OPTIONS="-f -s 4096 -n 4096"
+export FSTYP=btrfs
+export MOUNT_OPTIONS=""
+
+
+Crash:
+
+
+[  953.799060] Btrfs loaded, zoned=yes, fsverity=no
+[  968.070858] BTRFS: device fsid 3813dc53-a2f3-4342-b44e-c9349f17f991 
+devid 1 transid 8 /dev/loop0 (7:0) scanned by mount (25422)
+[  968.072561] BTRFS info (device loop0): first mount of filesystem 
+3813dc53-a2f3-4342-b44e-c9349f17f991
+[  968.072584] BTRFS info (device loop0): using crc32c (crc32c-powerpc) 
+checksum algorithm
+[  968.072594] BTRFS info (device loop0): forcing free space tree for 
+sector size 4096 with page size 65536
+[  968.072599] BTRFS info (device loop0): using free-space-tree
+[  968.073867] BTRFS info (device loop0): checking UUID tree
+[  968.074000] Kernel attempted to read user page (68) - exploit 
+attempt? (uid: 0)
+[  968.074009] BUG: Kernel NULL pointer dereference on read at 0x00000068
+[  968.074013] Faulting instruction address: 0xc00800000f7fb5e0
+[  968.074019] Oops: Kernel access of bad area, sig: 11 [#1]
+[  968.074022] LE PAGE_SIZE=64K MMU=Radix  SMP NR_CPUS=8192 NUMA pSeries
+[  968.074028] Modules linked in: btrfs blake2b_generic xor raid6_pq 
+zstd_compress loop dm_mod nft_fib_inet nft_fib_ipv4 nft_fib_ipv6 nft_fib 
+nft_reject_inet nf_reject_ipv4 nf_reject_ipv6 nft_reject nft_ct sunrpc 
+nft_chain_nat nf_nat nf_conntrack nf_defrag_ipv6 nf_defrag_ipv4 bonding 
+tls rfkill ip_set nf_tables nfnetlink pseries_rng vmx_crypto fuse ext4 
+crc16 mbcache jbd2 sd_mod sg ibmvscsi scsi_transport_srp ibmveth
+[  968.074074] CPU: 0 UID: 0 PID: 25422 Comm: mount Kdump: loaded Not 
+tainted 6.15.0-rc5-next-20250506 #1 VOLUNTARY
+
+[  968.074087] NIP:  c00800000f7fb5e0 LR: c00800000f7fb3b4 CTR: 
+c00000000047862c
+[  968.074091] REGS: c000000154747920 TRAP: 0300   Not tainted 
+(6.15.0-rc5-next-20250506)
+[  968.074096] MSR:  800000000280b033 <SF,VEC,VSX,EE,FP,ME,IR,DR,RI,LE>  
+CR: 24022882  XER: 00000000
+[  968.074109] CFAR: c00800000f7fb650 DAR: 0000000000000068 DSISR: 
+40000000 IRQMASK: 0
+[  968.074109] GPR00: c00800000f7fb3b4 c000000154747bc0 c0080000099da600 
+0000000000000000
+[  968.074109] GPR04: c000000008570c20 7fffffffffffffff 0000000000000000 
+c0000000068e3a00
+[  968.074109] GPR08: 0000000000000000 0000000000000000 c0000000068e3a00 
+0000000000002000
+[  968.074109] GPR12: c00000000047862c c000000003020000 0000000000000000 
+0000000000000000
+[  968.074109] GPR16: 0000000000000000 0000000000000000 0000000000000000 
+0000000000000000
+[  968.074109] GPR20: 0000000000000000 0000000000000000 0000000000000000 
+0000000000000000
+[  968.074109] GPR24: 0000000000000000 c000000015b00000 c00000007a38ac00 
+0000000000000020
+[  968.074109] GPR28: c000000008560a00 c00000006b1784c0 0000000000000000 
+c000000063147980
+[  968.074163] NIP [c00800000f7fb5e0] btrfs_get_tree_subvol+0x32c/0x544 
+[btrfs]
+[  968.074205] LR [c00800000f7fb3b4] btrfs_get_tree_subvol+0x100/0x544 
+[btrfs]
+[  968.074241] Call Trace:
+[  968.074244] [c000000154747bc0] [c00800000f7fb3b4] 
+btrfs_get_tree_subvol+0x100/0x544 [btrfs] (unreliable)
+[  968.074282] [c000000154747cb0] [c000000000630da4] vfs_get_tree+0x48/0x15c
+[  968.074291] [c000000154747d30] [c00000000067675c] 
+do_new_mount+0x234/0x438
+[  968.074297] [c000000154747da0] [c000000000678298] sys_mount+0x164/0x1b0
+[  968.074303] [c000000154747e10] [c000000000033338] 
+system_call_exception+0x138/0x330
+[  968.074311] [c000000154747e50] [c00000000000d05c] 
+system_call_vectored_common+0x15c/0x2ec
+[  968.074319] ---- interrupt: 3000 at 0x7fff89d4edf4
+[  968.074323] NIP:  00007fff89d4edf4 LR: 00007fff89d4edf4 CTR: 
+0000000000000000
+[  968.074328] REGS: c000000154747e80 TRAP: 3000   Not tainted 
+(6.15.0-rc5-next-20250506)
+[  968.074333] MSR:  800000000280f033 
+<SF,VEC,VSX,EE,PR,FP,ME,IR,DR,RI,LE>  CR: 44022804  XER: 00000000
+[  968.074345] IRQMASK: 0
+[  968.074345] GPR00: 0000000000000015 00007fffc25e41b0 00007fff89e37d00 
+000000015e810710
+[  968.074345] GPR04: 000000015e810730 000000015e8106f0 0000000000000000 
+000000015e810690
+[  968.074345] GPR08: 000000015e8106f0 0000000000000000 0000000000000000 
+0000000000000000
+[  968.074345] GPR12: 0000000000000000 00007fff8a03c140 0000000000000000 
+0000000000000000
+[  968.074345] GPR16: 0000000000000000 0000000000000000 0000000000000000 
+0000000125d1f298
+[  968.074345] GPR20: 0000000000000000 0000000000000000 000000015e810530 
+000000015e810730
+[  968.074345] GPR24: 00007fff89f38e68 00007fff89f38e78 00007fff89f3dfe8 
+00007fff89f60240
+[  968.074345] GPR28: 000000015e8106f0 0000000000000000 000000015e810710 
+0000000000100000
+[  968.074396] NIP [00007fff89d4edf4] 0x7fff89d4edf4
+[  968.074399] LR [00007fff89d4edf4] 0x7fff89d4edf4
+[  968.074403] ---- interrupt: 3000
+[  968.074406] Code: 4bffeffd 3920f000 7c234840 7c7e1b78 41810144 
+7c7a1b78 4bfffe30 60000000 813f0088 71290001 41820068 e93d0040 
+<e8690068> 38630070 481416e1 e8410018
+[  968.074425] ---[ end trace 0000000000000000 ]---
+[  968.076694] pstore: backend (nvram) writing error (-1)
+[  968.076698]
+
+
+
+If you happent to fix this, please add below tag.
+
+
+Reported-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+
+
+Regards,
+
+Venkat.
+
 
