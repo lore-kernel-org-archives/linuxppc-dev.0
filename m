@@ -1,107 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-8381-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8382-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9339C3ABC0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 May 2025 14:14:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D557FC3ABBF
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 May 2025 15:13:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zsy1j2CF5z2xk5;
-	Thu,  8 May 2025 00:14:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746627257;
-	cv=none; b=TOsF7HS+JDQ/2MI6MdFz6vkjTiN3iquR7Q5tLWyqc/5qYc1SS6LjO9lT3gpCnkqFAf052pjwICUcvX01ubLQrh/pfNblVbeHuHUknKq8m3slKGsUKYjJ3UMcImIbfNeilLcuCdUQ/+wrku4CbfZo0my5r2L+HaWKrOz6Ne3/u8yZnBnfc9CoGWuI/xwRN7t51m8uiksGnftJdkBKgSZPBl0ODuFiMYjwGOrHzcelQWrftHukRiSgoScU5KC5t7qSMQhAeNiTaUrYvFegBQPFaOjDCgjcswxNG6xWpbTNFlFGlzAcaVWE7TLQqRCzTh8xK0r6kQdPGWdSjs4rbbtQSQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZszLP5SYpz2ySk;
+	Thu,  8 May 2025 01:13:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746630829;
+	cv=none; b=igwfUVR16hDHQca70codQOIJnqpEO5L/+yxYcN5Nnzqf4o42DPpCuG7hLmt8yXG6bhZotqCJpdGwO9tb690De4o2IgyHcEooLQlUeeicdCnZtAUw4uJoHpzghiue4ugbkVzTjy4RPvdxnuzVaN7DjDpgq1TRBTOba3UOLAxAZpd3xZ/iQ7FzNQl3o7mpNSQitXOoxv85Q9zMlZU6uIiTtIokP37TV4iHbLqbP4VzyG1qiM8fK6OLBO4GqiTbeMKux71tTV7dulkixO2bJFygRS6Ir82ATRi78aY9Z08n6822qU7rWvwnRkFNC0M48NIMsiCBlc/YL+zgUkmkoA+yUg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746627257; c=relaxed/relaxed;
-	bh=4F+lmQfDzO1utDvoQ1V5GTpLQaeGDhuvUOdxa8KD7cw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=a6r6YlXPFir1Y5hON81NqN7bUiQwdTgyCIo/GPe0tqB6GB81ikuOPtOHBw6aHYG8GhVU10iFLb0mKmU+c4/pBcDpZ7iSOkEWvNnXdAI9uRntVYlIQIZetkFOIJup+LpkwohqqMy8Qc2IADZOjWkwm2wu1Dl1KJ10gh1v3kJwt6U83WuooGJlJx8CD7Fd6+qovRgqHYBS0PV52+CoKNKOtBNJS0XoupaBmW/UdNgzlBUiaBEkY7EQu3FFi4c8CImDxfA+fYM8ck1xxI6Yk2VwiAmWwNDyhAvAwcWZaru5QndnntsH/p3AvyVDmTV93JjUqBLxT4qMkrVrP5wIgPoFQw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz; dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=qYIOaCWp; dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=xHUXyZA3; dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=qYIOaCWp; dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=xHUXyZA3; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=dsterba@suse.cz; receiver=lists.ozlabs.org) smtp.mailfrom=suse.cz
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=suse.cz
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=qYIOaCWp;
-	dkim=pass header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=xHUXyZA3;
-	dkim=pass (1024-bit key) header.d=suse.cz header.i=@suse.cz header.a=rsa-sha256 header.s=susede2_rsa header.b=qYIOaCWp;
-	dkim=neutral header.d=suse.cz header.i=@suse.cz header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=xHUXyZA3;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.cz (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=dsterba@suse.cz; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zsy1g4C9Hz2xdL
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2025 00:14:15 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id 327D32123B;
-	Wed,  7 May 2025 14:14:11 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1746627251;
-	h=from:from:reply-to:reply-to:date:date:message-id:message-id:to:to:
-	 cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=4F+lmQfDzO1utDvoQ1V5GTpLQaeGDhuvUOdxa8KD7cw=;
-	b=qYIOaCWpZhsLWlZo/yD0frKhX34LnLUxbyzDb1Sgc7aNDXDJlftxrAC11MxDHz2zYSXYFj
-	QJZV07n8aU9/zKlKW0ZV1OVHpaYsRPwKIoJ4RFseACkI5t0HP6DWRZ0Lsb4Qt8NNGPS6uM
-	9xfUcRIzsagfglNWCPh4g0AbseKCH/A=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1746627251;
-	h=from:from:reply-to:reply-to:date:date:message-id:message-id:to:to:
-	 cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=4F+lmQfDzO1utDvoQ1V5GTpLQaeGDhuvUOdxa8KD7cw=;
-	b=xHUXyZA3cF4kNzY9ScKBML+wdF77e+nolc3cO0OXB6b9J0gHp8Mn6XOoDFRip/3ipjG5NT
-	9p63X72vH6ywr2Bg==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.cz header.s=susede2_rsa header.b=qYIOaCWp;
-	dkim=pass header.d=suse.cz header.s=susede2_ed25519 header.b=xHUXyZA3
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.cz; s=susede2_rsa;
-	t=1746627251;
-	h=from:from:reply-to:reply-to:date:date:message-id:message-id:to:to:
-	 cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=4F+lmQfDzO1utDvoQ1V5GTpLQaeGDhuvUOdxa8KD7cw=;
-	b=qYIOaCWpZhsLWlZo/yD0frKhX34LnLUxbyzDb1Sgc7aNDXDJlftxrAC11MxDHz2zYSXYFj
-	QJZV07n8aU9/zKlKW0ZV1OVHpaYsRPwKIoJ4RFseACkI5t0HP6DWRZ0Lsb4Qt8NNGPS6uM
-	9xfUcRIzsagfglNWCPh4g0AbseKCH/A=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.cz;
-	s=susede2_ed25519; t=1746627251;
-	h=from:from:reply-to:reply-to:date:date:message-id:message-id:to:to:
-	 cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=4F+lmQfDzO1utDvoQ1V5GTpLQaeGDhuvUOdxa8KD7cw=;
-	b=xHUXyZA3cF4kNzY9ScKBML+wdF77e+nolc3cO0OXB6b9J0gHp8Mn6XOoDFRip/3ipjG5NT
-	9p63X72vH6ywr2Bg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 0EACD139D9;
-	Wed,  7 May 2025 14:14:11 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id 0P8RA7NqG2jJUgAAD6G6ig
-	(envelope-from <dsterba@suse.cz>); Wed, 07 May 2025 14:14:11 +0000
-Date: Wed, 7 May 2025 16:14:09 +0200
-From: David Sterba <dsterba@suse.cz>
-To: Filipe Manana <fdmanana@kernel.org>
-Cc: Venkat <venkat88@linux.ibm.com>, quwenruo.btrfs@gmx.com,
-	linux-btrfs@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-	linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com,
-	ritesh.list@gmail.com, disgoel@linux.ibm.com,
-	David Sterba <dsterba@suse.com>
-Subject: Re: [linux-next-20250320][btrfs] Kernel OOPs while running btrfs/108
-Message-ID: <20250507141409.GG9140@suse.cz>
-Reply-To: dsterba@suse.cz
-References: <0B1A34F5-2EEB-491E-9DD0-FC128B0D9E07@linux.ibm.com>
- <CAL3q7H7PqVRnDuooSr6OhvUQ3G5V2gq6VEDpqTqNX9jHmq97aw@mail.gmail.com>
+	t=1746630829; c=relaxed/relaxed;
+	bh=PZ5XgZvcv/q4X1RGwpv/5NV41wykkSz1iihQ6Dz6u84=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=feGaXs4xm93D9XjUDePxKKp0r9JrfCDtj/GP6ZE44RnspPNw46k1Dpg4lZGydRgL/OEDuPxwTRktF7nElT9cqL+w2opc7G+xqCaMrn9/mxu2Wzf0CwpEZtUC2dHfRRzcryMeeIwPdEteYuwH5B1h1MmIoCKn+fmYt5JxHS66oWtsHjfaxxcTVVayBX/zFidpfUSW55pWYisrDoBb3c/h4ZFPJbc46iAulbVf6UzpS+CzBXDmpbv4+fMPpj/9oPH1q3IwLYFvX1Lj0cB3y4DkobwWHctx8MNneMYG+4A4CNk8spBTM4PEkEQRIn+5xcNzC6odZkqrqxNpbGecWTKwyA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=alexandru.elisei@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZszLN10tlz2yMw
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 May 2025 01:13:48 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id D016A2008;
+	Wed,  7 May 2025 08:13:06 -0700 (PDT)
+Received: from localhost.localdomain (usa-sjc-mx-foss1.foss.arm.com [172.31.20.19])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 9D89A3F58B;
+	Wed,  7 May 2025 08:13:13 -0700 (PDT)
+From: Alexandru Elisei <alexandru.elisei@arm.com>
+To: andrew.jones@linux.dev,
+	eric.auger@redhat.com,
+	lvivier@redhat.com,
+	thuth@redhat.com,
+	frankja@linux.ibm.com,
+	imbrenda@linux.ibm.com,
+	nrb@linux.ibm.com,
+	david@redhat.com,
+	pbonzini@redhat.com
+Cc: kvm@vger.kernel.org,
+	kvmarm@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	kvm-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	will@kernel.org,
+	julien.thierry.kdev@gmail.com,
+	maz@kernel.org,
+	oliver.upton@linux.dev,
+	suzuki.poulose@arm.com,
+	yuzenghui@huawei.com,
+	joey.gouly@arm.com,
+	andre.przywara@arm.com
+Subject: [kvm-unit-tests PATCH v3 01/16] scripts: unittests.cfg: Rename 'extra_params' to 'qemu_params'
+Date: Wed,  7 May 2025 16:12:41 +0100
+Message-ID: <20250507151256.167769-2-alexandru.elisei@arm.com>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250507151256.167769-1-alexandru.elisei@arm.com>
+References: <20250507151256.167769-1-alexandru.elisei@arm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -115,67 +71,1192 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAL3q7H7PqVRnDuooSr6OhvUQ3G5V2gq6VEDpqTqNX9jHmq97aw@mail.gmail.com>
-User-Agent: Mutt/1.5.23.1-rc1 (2014-03-12)
-X-Rspamd-Queue-Id: 327D32123B
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-1.71 / 50.00];
-	BAYES_HAM(-3.00)[99.99%];
-	SUSPICIOUS_RECIPS(1.50)[];
-	HAS_REPLYTO(0.30)[dsterba@suse.cz];
-	R_DKIM_ALLOW(-0.20)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com,gmx.com];
-	DKIM_SIGNED(0.00)[suse.cz:s=susede2_rsa,suse.cz:s=susede2_ed25519];
-	ARC_NA(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	TO_DN_SOME(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	RCVD_TLS_ALL(0.00)[];
-	FREEMAIL_CC(0.00)[linux.ibm.com,gmx.com,vger.kernel.org,lists.ozlabs.org,gmail.com,suse.com];
-	REPLYTO_DOM_NEQ_TO_DOM(0.00)[];
-	REPLYTO_ADDR_EQ_FROM(0.00)[];
-	RCVD_COUNT_TWO(0.00)[2];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	DKIM_TRACE(0.00)[suse.cz:+];
-	MID_RHS_MATCH_FROM(0.00)[];
-	TAGGED_RCPT(0.00)[];
-	RCPT_COUNT_SEVEN(0.00)[10];
-	ASN(0.00)[asn:25478, ipnet:::/0, country:RU];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns]
 
-On Wed, May 07, 2025 at 02:04:47PM +0100, Filipe Manana wrote:
-> On Wed, May 7, 2025 at 10:02 AM Venkat <venkat88@linux.ibm.com> wrote:
-> >
-> > +Disha,
-> >
-> > Hello Qu,
-> >
-> > I still see this failure on next-20250505.
-> >
-> > May I know, when will this be fixed.
-> 
-> The two patches pointed out before by Qu are still being added to linux-next.
-> Qu reported this on the thread for the patches:
-> 
-> https://lore.kernel.org/linux-btrfs/0146825e-a1b1-4789-b4f5-a0894347babe@gmx.com/
-> 
-> There was no reply from the author and David added them again to
-> for-next/linux-next.
-> 
-> David, can you drop them out from for-next? Why are they being added
-> again when there were no changes since last time?
+The arm and arm64 architectures can also be run with kvmtool, and work is
+under way to have it supported by the run_tests.sh test runner. Not
+suprisingly, kvmtool's syntax for running a virtual machine is different to
+qemu's.
 
-The patches have been there for like 4 -rc kernels without reported
-problems. I will remove them again.
+Add a new unittest parameter, 'qemu_params', with the goal to add a similar
+parameter for kvmtool, when that's supported.
+
+'extra_params' has been kept in the scripts as an alias for 'qemu_params'
+to preserve compatibility with custom test definition, but it is expected
+that going forward new tests will use 'qemu_params'.
+
+Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
+---
+ arm/unittests.cfg     |  76 +++++++++++------------
+ docs/unittests.txt    |  15 +++--
+ powerpc/unittests.cfg |  18 +++---
+ riscv/unittests.cfg   |   2 +-
+ s390x/unittests.cfg   |  50 +++++++--------
+ scripts/common.bash   |   8 +--
+ scripts/runtime.bash  |   6 +-
+ x86/unittests.cfg     | 140 +++++++++++++++++++++---------------------
+ 8 files changed, 160 insertions(+), 155 deletions(-)
+
+diff --git a/arm/unittests.cfg b/arm/unittests.cfg
+index fe1011454f88..6c6f76b2fb52 100644
+--- a/arm/unittests.cfg
++++ b/arm/unittests.cfg
+@@ -15,26 +15,26 @@
+ [selftest-setup]
+ file = selftest.flat
+ smp = 2
+-extra_params = -m 256 -append 'setup smp=2 mem=256'
++qemu_params = -m 256 -append 'setup smp=2 mem=256'
+ groups = selftest
+ 
+ # Test vector setup and exception handling (kernel mode).
+ [selftest-vectors-kernel]
+ file = selftest.flat
+-extra_params = -append 'vectors-kernel'
++qemu_params = -append 'vectors-kernel'
+ groups = selftest
+ 
+ # Test vector setup and exception handling (user mode).
+ [selftest-vectors-user]
+ file = selftest.flat
+-extra_params = -append 'vectors-user'
++qemu_params = -append 'vectors-user'
+ groups = selftest
+ 
+ # Test SMP support
+ [selftest-smp]
+ file = selftest.flat
+ smp = $MAX_SMP
+-extra_params = -append 'smp'
++qemu_params = -append 'smp'
+ groups = selftest
+ 
+ # Test PCI emulation
+@@ -46,79 +46,79 @@ groups = pci
+ [pmu-cycle-counter]
+ file = pmu.flat
+ groups = pmu
+-extra_params = -append 'cycle-counter 0'
++qemu_params = -append 'cycle-counter 0'
+ 
+ [pmu-event-introspection]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+-extra_params = -append 'pmu-event-introspection'
++qemu_params = -append 'pmu-event-introspection'
+ 
+ [pmu-event-counter-config]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+-extra_params = -append 'pmu-event-counter-config'
++qemu_params = -append 'pmu-event-counter-config'
+ 
+ [pmu-basic-event-count]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+-extra_params = -append 'pmu-basic-event-count'
++qemu_params = -append 'pmu-basic-event-count'
+ 
+ [pmu-mem-access]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+-extra_params = -append 'pmu-mem-access'
++qemu_params = -append 'pmu-mem-access'
+ 
+ [pmu-mem-access-reliability]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+-extra_params = -append 'pmu-mem-access-reliability'
++qemu_params = -append 'pmu-mem-access-reliability'
+ 
+ [pmu-sw-incr]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+-extra_params = -append 'pmu-sw-incr'
++qemu_params = -append 'pmu-sw-incr'
+ 
+ [pmu-chained-counters]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+-extra_params = -append 'pmu-chained-counters'
++qemu_params = -append 'pmu-chained-counters'
+ 
+ [pmu-chained-sw-incr]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+-extra_params = -append 'pmu-chained-sw-incr'
++qemu_params = -append 'pmu-chained-sw-incr'
+ 
+ [pmu-chain-promotion]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+-extra_params = -append 'pmu-chain-promotion'
++qemu_params = -append 'pmu-chain-promotion'
+ 
+ [pmu-overflow-interrupt]
+ file = pmu.flat
+ groups = pmu
+ arch = arm64
+-extra_params = -append 'pmu-overflow-interrupt'
++qemu_params = -append 'pmu-overflow-interrupt'
+ 
+ # Test PMU support (TCG) with -icount IPC=1
+ #[pmu-tcg-icount-1]
+ #file = pmu.flat
+-#extra_params = -icount 0 -append 'cycle-counter 1'
++#qemu_params = -icount 0 -append 'cycle-counter 1'
+ #groups = pmu
+ #accel = tcg
+ 
+ # Test PMU support (TCG) with -icount IPC=256
+ #[pmu-tcg-icount-256]
+ #file = pmu.flat
+-#extra_params = -icount 8 -append 'cycle-counter 256'
++#qemu_params = -icount 8 -append 'cycle-counter 256'
+ #groups = pmu
+ #accel = tcg
+ 
+@@ -126,77 +126,77 @@ extra_params = -append 'pmu-overflow-interrupt'
+ [gicv2-ipi]
+ file = gic.flat
+ smp = $((($MAX_SMP < 8)?$MAX_SMP:8))
+-extra_params = -machine gic-version=2 -append 'ipi'
++qemu_params = -machine gic-version=2 -append 'ipi'
+ groups = gic
+ 
+ [gicv2-mmio]
+ file = gic.flat
+ smp = $((($MAX_SMP < 8)?$MAX_SMP:8))
+-extra_params = -machine gic-version=2 -append 'mmio'
++qemu_params = -machine gic-version=2 -append 'mmio'
+ groups = gic
+ 
+ [gicv2-mmio-up]
+ file = gic.flat
+ smp = 1
+-extra_params = -machine gic-version=2 -append 'mmio'
++qemu_params = -machine gic-version=2 -append 'mmio'
+ groups = gic
+ 
+ [gicv2-mmio-3p]
+ file = gic.flat
+ smp = $((($MAX_SMP < 3)?$MAX_SMP:3))
+-extra_params = -machine gic-version=2 -append 'mmio'
++qemu_params = -machine gic-version=2 -append 'mmio'
+ groups = gic
+ 
+ [gicv3-ipi]
+ file = gic.flat
+ smp = $MAX_SMP
+-extra_params = -machine gic-version=3 -append 'ipi'
++qemu_params = -machine gic-version=3 -append 'ipi'
+ groups = gic
+ 
+ [gicv2-active]
+ file = gic.flat
+ smp = $((($MAX_SMP < 8)?$MAX_SMP:8))
+-extra_params = -machine gic-version=2 -append 'active'
++qemu_params = -machine gic-version=2 -append 'active'
+ groups = gic
+ 
+ [gicv3-active]
+ file = gic.flat
+ smp = $MAX_SMP
+-extra_params = -machine gic-version=3 -append 'active'
++qemu_params = -machine gic-version=3 -append 'active'
+ groups = gic
+ 
+ [its-introspection]
+ file = gic.flat
+ smp = $MAX_SMP
+-extra_params = -machine gic-version=3 -append 'its-introspection'
++qemu_params = -machine gic-version=3 -append 'its-introspection'
+ groups = its
+ arch = arm64
+ 
+ [its-trigger]
+ file = gic.flat
+ smp = $MAX_SMP
+-extra_params = -machine gic-version=3 -append 'its-trigger'
++qemu_params = -machine gic-version=3 -append 'its-trigger'
+ groups = its
+ arch = arm64
+ 
+ [its-migration]
+ file = gic.flat
+ smp = $MAX_SMP
+-extra_params = -machine gic-version=3 -append 'its-migration'
++qemu_params = -machine gic-version=3 -append 'its-migration'
+ groups = its migration
+ arch = arm64
+ 
+ [its-pending-migration]
+ file = gic.flat
+ smp = $MAX_SMP
+-extra_params = -machine gic-version=3 -append 'its-pending-migration'
++qemu_params = -machine gic-version=3 -append 'its-pending-migration'
+ groups = its migration
+ arch = arm64
+ 
+ [its-migrate-unmapped-collection]
+ file = gic.flat
+ smp = $MAX_SMP
+-extra_params = -machine gic-version=3 -append 'its-migrate-unmapped-collection'
++qemu_params = -machine gic-version=3 -append 'its-migrate-unmapped-collection'
+ groups = its migration
+ arch = arm64
+ 
+@@ -231,37 +231,37 @@ groups = cache
+ [debug-bp]
+ file = debug.flat
+ arch = arm64
+-extra_params = -append 'bp'
++qemu_params = -append 'bp'
+ groups = debug
+ 
+ [debug-bp-migration]
+ file = debug.flat
+ arch = arm64
+-extra_params = -append 'bp-migration'
++qemu_params = -append 'bp-migration'
+ groups = debug migration
+ 
+ [debug-wp]
+ file = debug.flat
+ arch = arm64
+-extra_params = -append 'wp'
++qemu_params = -append 'wp'
+ groups = debug
+ 
+ [debug-wp-migration]
+ file = debug.flat
+ arch = arm64
+-extra_params = -append 'wp-migration'
++qemu_params = -append 'wp-migration'
+ groups = debug migration
+ 
+ [debug-sstep]
+ file = debug.flat
+ arch = arm64
+-extra_params = -append 'ss'
++qemu_params = -append 'ss'
+ groups = debug
+ 
+ [debug-sstep-migration]
+ file = debug.flat
+ arch = arm64
+-extra_params = -append 'ss-migration'
++qemu_params = -append 'ss-migration'
+ groups = debug migration
+ 
+ # FPU/SIMD test
+@@ -276,17 +276,17 @@ arch = arm64
+ [mte-sync]
+ file = mte.flat
+ groups = mte
+-extra_params = -machine mte=on -append 'sync'
++qemu_params = -machine mte=on -append 'sync'
+ arch = arm64
+ 
+ [mte-async]
+ file = mte.flat
+ groups = mte
+-extra_params = -machine mte=on -append 'async'
++qemu_params = -machine mte=on -append 'async'
+ arch = arm64
+ 
+ [mte-asymm]
+ file = mte.flat
+ groups = mte
+-extra_params = -machine mte=on -append 'asymm'
++qemu_params = -machine mte=on -append 'asymm'
+ arch = arm64
+diff --git a/docs/unittests.txt b/docs/unittests.txt
+index c4269f6230c8..3d19fd70953f 100644
+--- a/docs/unittests.txt
++++ b/docs/unittests.txt
+@@ -24,9 +24,9 @@ param = value format.
+ 
+ Available parameters
+ ====================
+-Note! Some parameters like smp and extra_params modify how a test is run,
+-while others like arch and accel restrict the configurations in which the
+-test is run.
++Note! Some parameters like smp and qemu_params/extra_params modify how a
++test is run, while others like arch and accel restrict the configurations
++in which the test is run.
+ 
+ file
+ ----
+@@ -56,13 +56,18 @@ smp = <number>
+ Optional, the number of processors created in the machine to run the test.
+ Defaults to 1. $MAX_SMP can be used to specify the maximum supported.
+ 
+-extra_params
++qemu_params
+ ------------
+ These are extra parameters supplied to the QEMU process. -append '...' can
+ be used to pass arguments into the test case argv. Multiple parameters can
+ be added, for example:
+ 
+-extra_params = -m 256 -append 'smp=2'
++qemu_params = -m 256 -append 'smp=2'
++
++extra_params
++------------
++Alias for 'qemu_params', supported for compatibility purposes. Use
++'qemu_params' for new tests.
+ 
+ groups
+ ------
+diff --git a/powerpc/unittests.cfg b/powerpc/unittests.cfg
+index 149f963f3d53..5097911e4bf3 100644
+--- a/powerpc/unittests.cfg
++++ b/powerpc/unittests.cfg
+@@ -15,7 +15,7 @@
+ [selftest-setup]
+ file = selftest.elf
+ smp = 2
+-extra_params = -m 1g -append 'setup smp=2 mem=1024'
++qemu_params = -m 1g -append 'setup smp=2 mem=1024'
+ groups = selftest
+ 
+ [selftest-migration]
+@@ -27,7 +27,7 @@ groups = selftest migration
+ file = selftest-migration.elf
+ machine = pseries
+ groups = selftest migration
+-extra_params = -append "skip"
++qemu_params = -append "skip"
+ 
+ [migration-memory]
+ file = memory-verify.elf
+@@ -46,20 +46,20 @@ machine = pseries
+ file = rtas.elf
+ machine = pseries
+ timeout = 5
+-extra_params = -append "get-time-of-day date=$(date +%s)"
++qemu_params = -append "get-time-of-day date=$(date +%s)"
+ groups = rtas
+ 
+ [rtas-get-time-of-day-base]
+ file = rtas.elf
+ machine = pseries
+ timeout = 5
+-extra_params = -rtc base="2006-06-17" -append "get-time-of-day date=$(date --date="2006-06-17 UTC" +%s)"
++qemu_params = -rtc base="2006-06-17" -append "get-time-of-day date=$(date --date="2006-06-17 UTC" +%s)"
+ groups = rtas
+ 
+ [rtas-set-time-of-day]
+ file = rtas.elf
+ machine = pseries
+-extra_params = -append "set-time-of-day"
++qemu_params = -append "set-time-of-day"
+ timeout = 5
+ groups = rtas
+ 
+@@ -94,7 +94,7 @@ smp = 2
+ [atomics-migration]
+ file = atomics.elf
+ machine = pseries
+-extra_params = -append "migration -m"
++qemu_params = -append "migration -m"
+ groups = migration
+ 
+ [timebase]
+@@ -103,14 +103,14 @@ file = timebase.elf
+ [timebase-icount]
+ file = timebase.elf
+ accel = tcg
+-extra_params = -icount shift=5
++qemu_params = -icount shift=5
+ 
+ [h_cede_tm]
+ file = tm.elf
+ machine = pseries
+ accel = kvm
+ smp = 2,threads=2
+-extra_params = -machine cap-htm=on -append "h_cede_tm"
++qemu_params = -machine cap-htm=on -append "h_cede_tm"
+ groups = h_cede_tm
+ 
+ [sprs]
+@@ -119,7 +119,7 @@ file = sprs.elf
+ [sprs-migration]
+ file = sprs.elf
+ machine = pseries
+-extra_params = -append '-w'
++qemu_params = -append '-w'
+ groups = migration
+ 
+ [sieve]
+diff --git a/riscv/unittests.cfg b/riscv/unittests.cfg
+index 2eb760eca24e..5b31047f75c7 100644
+--- a/riscv/unittests.cfg
++++ b/riscv/unittests.cfg
+@@ -10,7 +10,7 @@
+ [selftest]
+ file = selftest.flat
+ smp = $MAX_SMP
+-extra_params = -append 'foo bar baz'
++qemu_params = -append 'foo bar baz'
+ groups = selftest
+ 
+ # Set $FIRMWARE_OVERRIDE to /path/to/firmware to select the SBI implementation.
+diff --git a/s390x/unittests.cfg b/s390x/unittests.cfg
+index a9af6680f2a6..1e129fef3c38 100644
+--- a/s390x/unittests.cfg
++++ b/s390x/unittests.cfg
+@@ -10,7 +10,7 @@
+ file = selftest.elf
+ groups = selftest
+ # please keep the kernel cmdline in sync with $(TEST_DIR)/selftest.parmfile
+-extra_params = -append 'test 123'
++qemu_params = -append 'test 123'
+ 
+ [selftest-migration]
+ file = selftest-migration.elf
+@@ -22,7 +22,7 @@ accel = kvm
+ [selftest-migration-skip]
+ file = selftest-migration.elf
+ groups = selftest migration
+-extra_params = -append "skip"
++qemu_params = -append "skip"
+ 
+ # This fails due to a QEMU TCG bug so KVM-only until QEMU is fixed upstream
+ [migration-memory]
+@@ -47,7 +47,7 @@ file = sthyi.elf
+ 
+ [skey]
+ file = skey.elf
+-extra_params = -device virtio-net-ccw
++qemu_params = -device virtio-net-ccw
+ 
+ [diag10]
+ file = diag10.elf
+@@ -75,11 +75,11 @@ file = cpumodel.elf
+ 
+ [diag288]
+ file = diag288.elf
+-extra_params=-device diag288,id=watchdog0 --watchdog-action inject-nmi
++qemu_params=-device diag288,id=watchdog0 --watchdog-action inject-nmi
+ 
+ [stsi]
+ file = stsi.elf
+-extra_params=-name kvm-unit-test --uuid 0fb84a86-727c-11ea-bc55-0242ac130003 -smp 1,maxcpus=8
++qemu_params=-name kvm-unit-test --uuid 0fb84a86-727c-11ea-bc55-0242ac130003 -smp 1,maxcpus=8
+ 
+ [smp]
+ file = smp.elf
+@@ -87,15 +87,15 @@ smp = 2
+ 
+ [sclp-1g]
+ file = sclp.elf
+-extra_params = -m 1G
++qemu_params = -m 1G
+ 
+ [sclp-3g]
+ file = sclp.elf
+-extra_params = -m 3G
++qemu_params = -m 3G
+ 
+ [css]
+ file = css.elf
+-extra_params = -device virtio-net-ccw
++qemu_params = -device virtio-net-ccw
+ 
+ [skrf]
+ file = skrf.elf
+@@ -126,25 +126,25 @@ file = spec_ex.elf
+ [firq-linear-cpu-ids-kvm]
+ file = firq.elf
+ timeout = 20
+-extra_params = -smp 1,maxcpus=3 -device host-s390x-cpu,core-id=1 -device host-s390x-cpu,core-id=2
++qemu_params = -smp 1,maxcpus=3 -device host-s390x-cpu,core-id=1 -device host-s390x-cpu,core-id=2
+ accel = kvm
+ 
+ [firq-nonlinear-cpu-ids-kvm]
+ file = firq.elf
+ timeout = 20
+-extra_params = -smp 1,maxcpus=3 -device host-s390x-cpu,core-id=2 -device host-s390x-cpu,core-id=1
++qemu_params = -smp 1,maxcpus=3 -device host-s390x-cpu,core-id=2 -device host-s390x-cpu,core-id=1
+ accel = kvm
+ 
+ [firq-linear-cpu-ids-tcg]
+ file = firq.elf
+ timeout = 20
+-extra_params = -smp 1,maxcpus=3 -cpu qemu -device qemu-s390x-cpu,core-id=1 -device qemu-s390x-cpu,core-id=2
++qemu_params = -smp 1,maxcpus=3 -cpu qemu -device qemu-s390x-cpu,core-id=1 -device qemu-s390x-cpu,core-id=2
+ accel = tcg
+ 
+ [firq-nonlinear-cpu-ids-tcg]
+ file = firq.elf
+ timeout = 20
+-extra_params = -smp 1,maxcpus=3 -cpu qemu -device qemu-s390x-cpu,core-id=2 -device qemu-s390x-cpu,core-id=1
++qemu_params = -smp 1,maxcpus=3 -cpu qemu -device qemu-s390x-cpu,core-id=2 -device qemu-s390x-cpu,core-id=1
+ accel = tcg
+ 
+ [sck]
+@@ -152,7 +152,7 @@ file = sck.elf
+ 
+ [epsw]
+ file = epsw.elf
+-extra_params = -device virtio-net-ccw
++qemu_params = -device virtio-net-ccw
+ 
+ [tprot]
+ file = tprot.elf
+@@ -161,26 +161,26 @@ file = tprot.elf
+ file = adtl-status.elf
+ smp = 2
+ accel = kvm
+-extra_params = -cpu host,gs=on,vx=on
++qemu_params = -cpu host,gs=on,vx=on
+ 
+ [adtl-status-no-vec-no-gs-kvm]
+ file = adtl-status.elf
+ smp = 2
+ accel = kvm
+-extra_params = -cpu host,gs=off,vx=off
++qemu_params = -cpu host,gs=off,vx=off
+ 
+ [adtl-status-tcg]
+ file = adtl-status.elf
+ smp = 2
+ accel = tcg
+ # no guarded-storage support in tcg
+-extra_params = -cpu qemu,vx=on
++qemu_params = -cpu qemu,vx=on
+ 
+ [adtl-status-no-vec-no-gs-tcg]
+ file = adtl-status.elf
+ smp = 2
+ accel = tcg
+-extra_params = -cpu qemu,gs=off,vx=off
++qemu_params = -cpu qemu,gs=off,vx=off
+ 
+ [migration]
+ file = migration.elf
+@@ -214,13 +214,13 @@ smp = 2
+ [migration-skey-sequential]
+ file = migration-skey.elf
+ groups = migration
+-extra_params = -append '--sequential'
++qemu_params = -append '--sequential'
+ 
+ [migration-skey-parallel]
+ file = migration-skey.elf
+ smp = 2
+ groups = migration
+-extra_params = -append '--parallel'
++qemu_params = -append '--parallel'
+ 
+ [execute]
+ file = ex.elf
+@@ -229,34 +229,34 @@ file = ex.elf
+ file = pv-icptcode.elf
+ smp = 3
+ groups = pv-host
+-extra_params = -m 2200
++qemu_params = -m 2200
+ 
+ [pv-ipl]
+ file = pv-ipl.elf
+ groups = pv-host
+-extra_params = -m 2200
++qemu_params = -m 2200
+ 
+ [pv-diags]
+ file = pv-diags.elf
+ groups = pv-host
+-extra_params = -m 2200
++qemu_params = -m 2200
+ 
+ [uv-host]
+ file = uv-host.elf
+ smp = 2
+ groups = pv-host
+-extra_params = -m 2200
++qemu_params = -m 2200
+ 
+ [topology]
+ file = topology.elf
+ 
+ [topology-2]
+ file = topology.elf
+-extra_params = -cpu max,ctop=on -smp sockets=31,cores=8,maxcpus=248  -append '-sockets 31 -cores 8'
++qemu_params = -cpu max,ctop=on -smp sockets=31,cores=8,maxcpus=248  -append '-sockets 31 -cores 8'
+ 
+ [topology-3]
+ file = topology.elf
+-extra_params = """-cpu max,ctop=on -smp cpus=1,drawers=2,books=2,sockets=2,cores=16,maxcpus=128 \
++qemu_params = """-cpu max,ctop=on -smp cpus=1,drawers=2,books=2,sockets=2,cores=16,maxcpus=128 \
+ -append '-drawers 2 -books 2 -sockets 2 -cores 16' \
+ -device max-s390x-cpu,core-id=31,drawer-id=0,book-id=0,socket-id=0,entitlement=medium,dedicated=false \
+ -device max-s390x-cpu,core-id=11,drawer-id=0,book-id=0,socket-id=0,entitlement=high,dedicated=true \
+diff --git a/scripts/common.bash b/scripts/common.bash
+index 3aa557c8c03d..bd7c82f1adda 100644
+--- a/scripts/common.bash
++++ b/scripts/common.bash
+@@ -38,8 +38,8 @@ function for_each_unittest()
+ 			kernel=$TEST_DIR/${BASH_REMATCH[1]}
+ 		elif [[ $line =~ ^smp\ *=\ *(.*)$ ]]; then
+ 			smp=${BASH_REMATCH[1]}
+-		elif [[ $line =~ ^extra_params\ *=\ *'"""'(.*)$ ]]; then
+-			opts=${BASH_REMATCH[1]}$'\n'
++		elif [[ $line =~ ^(extra_params|qemu_params)\ *=\ *'"""'(.*)$ ]]; then
++			opts=${BASH_REMATCH[2]}$'\n'
+ 			while read -r -u $fd; do
+ 				#escape backslash newline, but not double backslash
+ 				if [[ $opts =~ [^\\]*(\\*)$'\n'$ ]]; then
+@@ -54,8 +54,8 @@ function for_each_unittest()
+ 					opts+=$REPLY$'\n'
+ 				fi
+ 			done
+-		elif [[ $line =~ ^extra_params\ *=\ *(.*)$ ]]; then
+-			opts=${BASH_REMATCH[1]}
++		elif [[ $line =~ ^(extra_params|qemu_params)\ *=\ *(.*)$ ]]; then
++			opts=${BASH_REMATCH[2]}
+ 		elif [[ $line =~ ^groups\ *=\ *(.*)$ ]]; then
+ 			groups=${BASH_REMATCH[1]}
+ 		elif [[ $line =~ ^arch\ *=\ *(.*)$ ]]; then
+diff --git a/scripts/runtime.bash b/scripts/runtime.bash
+index ee229631277d..400e8a082528 100644
+--- a/scripts/runtime.bash
++++ b/scripts/runtime.bash
+@@ -179,9 +179,9 @@ function run()
+         echo $cmdline
+     fi
+ 
+-    # extra_params in the config file may contain backticks that need to be
+-    # expanded, so use eval to start qemu.  Use "> >(foo)" instead of a pipe to
+-    # preserve the exit status.
++    # qemu_params/extra_params in the config file may contain backticks that
++    # need to be expanded, so use eval to start qemu.  Use "> >(foo)" instead of
++    # a pipe to preserve the exit status.
+     summary=$(eval "$cmdline" 2> >(RUNTIME_log_stderr $testname) \
+                              > >(tee >(RUNTIME_log_stdout $testname $kernel) | extract_summary))
+     ret=$?
+diff --git a/x86/unittests.cfg b/x86/unittests.cfg
+index 6e69c50b9b0d..a356f486eaec 100644
+--- a/x86/unittests.cfg
++++ b/x86/unittests.cfg
+@@ -10,20 +10,20 @@
+ [apic-split]
+ file = apic.flat
+ smp = 2
+-extra_params = -cpu qemu64,+x2apic,+tsc-deadline -machine kernel_irqchip=split
++qemu_params = -cpu qemu64,+x2apic,+tsc-deadline -machine kernel_irqchip=split
+ arch = x86_64
+ groups = apic
+ 
+ [ioapic-split]
+ file = ioapic.flat
+-extra_params = -cpu qemu64 -machine kernel_irqchip=split
++qemu_params = -cpu qemu64 -machine kernel_irqchip=split
+ arch = x86_64
+ groups = apic
+ 
+ [x2apic]
+ file = apic.flat
+ smp = 2
+-extra_params = -cpu qemu64,+x2apic,+tsc-deadline
++qemu_params = -cpu qemu64,+x2apic,+tsc-deadline
+ arch = x86_64
+ timeout = 30
+ groups = apic
+@@ -33,7 +33,7 @@ groups = apic
+ [xapic]
+ file = apic.flat
+ smp = 2
+-extra_params = -cpu qemu64,-x2apic,+tsc-deadline -machine pit=off
++qemu_params = -cpu qemu64,-x2apic,+tsc-deadline -machine pit=off
+ arch = x86_64
+ timeout = 60
+ groups = apic
+@@ -41,7 +41,7 @@ groups = apic
+ [ioapic]
+ file = ioapic.flat
+ smp = 4
+-extra_params = -cpu qemu64,+x2apic
++qemu_params = -cpu qemu64,+x2apic
+ arch = x86_64
+ 
+ [cmpxchg8b]
+@@ -58,27 +58,27 @@ smp = 3
+ 
+ [vmexit_cpuid]
+ file = vmexit.flat
+-extra_params = -append 'cpuid'
++qemu_params = -append 'cpuid'
+ groups = vmexit
+ 
+ [vmexit_vmcall]
+ file = vmexit.flat
+-extra_params = -append 'vmcall'
++qemu_params = -append 'vmcall'
+ groups = vmexit
+ 
+ [vmexit_mov_from_cr8]
+ file = vmexit.flat
+-extra_params = -append 'mov_from_cr8'
++qemu_params = -append 'mov_from_cr8'
+ groups = vmexit
+ 
+ [vmexit_mov_to_cr8]
+ file = vmexit.flat
+-extra_params = -append 'mov_to_cr8'
++qemu_params = -append 'mov_to_cr8'
+ groups = vmexit
+ 
+ [vmexit_inl_pmtimer]
+ file = vmexit.flat
+-extra_params = -append 'inl_from_pmtimer'
++qemu_params = -append 'inl_from_pmtimer'
+ groups = vmexit
+ 
+ # To allow IPIs to be accelerated by SVM AVIC when the feature is available and
+@@ -87,77 +87,77 @@ groups = vmexit
+ [vmexit_ipi]
+ file = vmexit.flat
+ smp = 2
+-extra_params = -machine pit=off -append 'ipi'
++qemu_params = -machine pit=off -append 'ipi'
+ groups = vmexit
+ 
+ [vmexit_ipi_halt]
+ file = vmexit.flat
+ smp = 2
+-extra_params = -append 'ipi_halt'
++qemu_params = -append 'ipi_halt'
+ groups = vmexit
+ 
+ [vmexit_ple_round_robin]
+ file = vmexit.flat
+-extra_params = -append 'ple_round_robin'
++qemu_params = -append 'ple_round_robin'
+ groups = vmexit
+ 
+ [vmexit_tscdeadline]
+ file = vmexit.flat
+ groups = vmexit
+-extra_params = -cpu qemu64,+x2apic,+tsc-deadline -append tscdeadline
++qemu_params = -cpu qemu64,+x2apic,+tsc-deadline -append tscdeadline
+ 
+ [vmexit_tscdeadline_immed]
+ file = vmexit.flat
+ groups = vmexit
+-extra_params = -cpu qemu64,+x2apic,+tsc-deadline -append tscdeadline_immed
++qemu_params = -cpu qemu64,+x2apic,+tsc-deadline -append tscdeadline_immed
+ 
+ [vmexit_cr0_wp]
+ file = vmexit.flat
+ smp = 2
+-extra_params = -append 'toggle_cr0_wp'
++qemu_params = -append 'toggle_cr0_wp'
+ groups = vmexit
+ 
+ [vmexit_cr4_pge]
+ file = vmexit.flat
+ smp = 2
+-extra_params = -append 'toggle_cr4_pge'
++qemu_params = -append 'toggle_cr4_pge'
+ groups = vmexit
+ 
+ [access]
+ file = access_test.flat
+ arch = x86_64
+-extra_params = -cpu max,host-phys-bits
++qemu_params = -cpu max,host-phys-bits
+ 
+ [access_fep]
+ file = access_test.flat
+ arch = x86_64
+-extra_params = -cpu max,host-phys-bits -append force_emulation
++qemu_params = -cpu max,host-phys-bits -append force_emulation
+ groups = nodefault
+ timeout = 240
+ 
+ [access-reduced-maxphyaddr]
+ file = access_test.flat
+ arch = x86_64
+-extra_params = -cpu IvyBridge,phys-bits=36,host-phys-bits=off
++qemu_params = -cpu IvyBridge,phys-bits=36,host-phys-bits=off
+ check = /sys/module/kvm_intel/parameters/allow_smaller_maxphyaddr=Y
+ 
+ [smap]
+ file = smap.flat
+-extra_params = -cpu max
++qemu_params = -cpu max
+ 
+ [pku]
+ file = pku.flat
+ arch = x86_64
+-extra_params = -cpu max
++qemu_params = -cpu max
+ 
+ [pks]
+ file = pks.flat
+ arch = x86_64
+-extra_params = -cpu max
++qemu_params = -cpu max
+ 
+ [asyncpf]
+ file = asyncpf.flat
+-extra_params = -cpu host -m 2048
++qemu_params = -cpu host -m 2048
+ 
+ [emulator]
+ file = emulator.flat
+@@ -177,7 +177,7 @@ arch = x86_64
+ 
+ [memory]
+ file = memory.flat
+-extra_params = -cpu max
++qemu_params = -cpu max
+ arch = x86_64
+ 
+ [msr]
+@@ -186,11 +186,11 @@ arch = x86_64
+ # support follows the host kernel.  Running a 32-bit guest on a 64-bit host
+ # will fail due to shortcomings in KVM.
+ file = msr.flat
+-extra_params = -cpu max,vendor=GenuineIntel
++qemu_params = -cpu max,vendor=GenuineIntel
+ 
+ [pmu]
+ file = pmu.flat
+-extra_params = -cpu max
++qemu_params = -cpu max
+ check = /sys/module/kvm/parameters/enable_pmu=Y /proc/sys/kernel/nmi_watchdog=0
+ accel = kvm
+ groups = pmu
+@@ -198,7 +198,7 @@ groups = pmu
+ [pmu_lbr]
+ arch = x86_64
+ file = pmu_lbr.flat
+-extra_params = -cpu host,migratable=no
++qemu_params = -cpu host,migratable=no
+ check = /sys/module/kvm/parameters/enable_pmu=Y /proc/sys/kernel/nmi_watchdog=0 /sys/module/kvm/parameters/ignore_msrs=N
+ accel = kvm
+ groups = pmu
+@@ -206,14 +206,14 @@ groups = pmu
+ [pmu_pebs]
+ arch = x86_64
+ file = pmu_pebs.flat
+-extra_params = -cpu host,migratable=no
++qemu_params = -cpu host,migratable=no
+ check = /sys/module/kvm/parameters/enable_pmu=Y /proc/sys/kernel/nmi_watchdog=0
+ accel = kvm
+ groups = pmu
+ 
+ [vmware_backdoors]
+ file = vmware_backdoors.flat
+-extra_params = -machine vmport=on -cpu max
++qemu_params = -machine vmport=on -cpu max
+ check = /sys/module/kvm/parameters/enable_vmware_backdoor=Y
+ arch = x86_64
+ accel = kvm
+@@ -234,20 +234,20 @@ timeout = 180
+ [syscall]
+ file = syscall.flat
+ arch = x86_64
+-extra_params = -cpu Opteron_G1,vendor=AuthenticAMD
++qemu_params = -cpu Opteron_G1,vendor=AuthenticAMD
+ 
+ [tsc]
+ file = tsc.flat
+-extra_params = -cpu max
++qemu_params = -cpu max
+ 
+ [tsc_adjust]
+ file = tsc_adjust.flat
+-extra_params = -cpu max
++qemu_params = -cpu max
+ 
+ [xsave]
+ file = xsave.flat
+ arch = x86_64
+-extra_params = -cpu max
++qemu_params = -cpu max
+ 
+ [rmap_chain]
+ file = rmap_chain.flat
+@@ -256,20 +256,20 @@ arch = x86_64
+ [svm]
+ file = svm.flat
+ smp = 2
+-extra_params = -cpu max,+svm -m 4g -append "-pause_filter_test"
++qemu_params = -cpu max,+svm -m 4g -append "-pause_filter_test"
+ arch = x86_64
+ groups = svm
+ 
+ [svm_pause_filter]
+ file = svm.flat
+-extra_params = -cpu max,+svm -overcommit cpu-pm=on -m 4g -append pause_filter_test
++qemu_params = -cpu max,+svm -overcommit cpu-pm=on -m 4g -append pause_filter_test
+ arch = x86_64
+ groups = svm
+ 
+ [svm_npt]
+ file = svm_npt.flat
+ smp = 2
+-extra_params = -cpu max,+svm -m 4g
++qemu_params = -cpu max,+svm -m 4g
+ arch = x86_64
+ 
+ [taskswitch]
+@@ -285,68 +285,68 @@ groups = tasks
+ [kvmclock_test]
+ file = kvmclock_test.flat
+ smp = 2
+-extra_params = --append "10000000 `date +%s`"
++qemu_params = --append "10000000 `date +%s`"
+ 
+ [pcid-enabled]
+ file = pcid.flat
+-extra_params = -cpu qemu64,+pcid,+invpcid
++qemu_params = -cpu qemu64,+pcid,+invpcid
+ arch = x86_64
+ groups = pcid
+ 
+ [pcid-disabled]
+ file = pcid.flat
+-extra_params = -cpu qemu64,-pcid,-invpcid
++qemu_params = -cpu qemu64,-pcid,-invpcid
+ arch = x86_64
+ groups = pcid
+ 
+ [pcid-asymmetric]
+ file = pcid.flat
+-extra_params = -cpu qemu64,-pcid,+invpcid
++qemu_params = -cpu qemu64,-pcid,+invpcid
+ arch = x86_64
+ groups = pcid
+ 
+ [rdpru]
+ file = rdpru.flat
+-extra_params = -cpu max
++qemu_params = -cpu max
+ arch = x86_64
+ 
+ [umip]
+ file = umip.flat
+-extra_params = -cpu qemu64,+umip
++qemu_params = -cpu qemu64,+umip
+ 
+ [la57]
+ file = la57.flat
+-extra_params = -cpu max,host-phys-bits
++qemu_params = -cpu max,host-phys-bits
+ 
+ [vmx]
+ file = vmx.flat
+-extra_params = -cpu max,+vmx -append "-exit_monitor_from_l2_test -ept_access* -vmx_smp* -vmx_vmcs_shadow_test -atomic_switch_overflow_msrs_test -vmx_init_signal_test -vmx_apic_passthrough_tpr_threshold_test -apic_reg_virt_test -virt_x2apic_mode_test -vmx_pf_exception_test -vmx_pf_exception_forced_emulation_test -vmx_pf_no_vpid_test -vmx_pf_invvpid_test -vmx_pf_vpid_test -vmx_basic_vid_test -vmx_eoi_virt_test -vmx_posted_interrupts_test"
++qemu_params = -cpu max,+vmx -append "-exit_monitor_from_l2_test -ept_access* -vmx_smp* -vmx_vmcs_shadow_test -atomic_switch_overflow_msrs_test -vmx_init_signal_test -vmx_apic_passthrough_tpr_threshold_test -apic_reg_virt_test -virt_x2apic_mode_test -vmx_pf_exception_test -vmx_pf_exception_forced_emulation_test -vmx_pf_no_vpid_test -vmx_pf_invvpid_test -vmx_pf_vpid_test -vmx_basic_vid_test -vmx_eoi_virt_test -vmx_posted_interrupts_test"
+ arch = x86_64
+ groups = vmx
+ 
+ [ept]
+ file = vmx.flat
+-extra_params = -cpu max,host-phys-bits,+vmx -m 2560 -append "ept_access*"
++qemu_params = -cpu max,host-phys-bits,+vmx -m 2560 -append "ept_access*"
+ arch = x86_64
+ groups = vmx
+ 
+ [vmx_eoi_bitmap_ioapic_scan]
+ file = vmx.flat
+ smp = 2
+-extra_params = -cpu max,+vmx -m 2048 -append vmx_eoi_bitmap_ioapic_scan_test
++qemu_params = -cpu max,+vmx -m 2048 -append vmx_eoi_bitmap_ioapic_scan_test
+ arch = x86_64
+ groups = vmx
+ 
+ [vmx_hlt_with_rvi_test]
+ file = vmx.flat
+-extra_params = -cpu max,+vmx -append vmx_hlt_with_rvi_test
++qemu_params = -cpu max,+vmx -append vmx_hlt_with_rvi_test
+ arch = x86_64
+ groups = vmx
+ timeout = 10
+ 
+ [vmx_apicv_test]
+ file = vmx.flat
+-extra_params = -cpu max,+vmx -append "apic_reg_virt_test virt_x2apic_mode_test vmx_basic_vid_test vmx_eoi_virt_test"
++qemu_params = -cpu max,+vmx -append "apic_reg_virt_test virt_x2apic_mode_test vmx_basic_vid_test vmx_eoi_virt_test"
+ arch = x86_64
+ groups = vmx
+ timeout = 30
+@@ -354,7 +354,7 @@ timeout = 30
+ [vmx_posted_intr_test]
+ file = vmx.flat
+ smp = 2
+-extra_params = -cpu max,+vmx -append "vmx_posted_interrupts_test"
++qemu_params = -cpu max,+vmx -append "vmx_posted_interrupts_test"
+ arch = x86_64
+ groups = vmx
+ timeout = 10
+@@ -362,14 +362,14 @@ timeout = 10
+ [vmx_apic_passthrough_thread]
+ file = vmx.flat
+ smp = 2
+-extra_params = -cpu max,+vmx -m 2048 -append vmx_apic_passthrough_thread_test
++qemu_params = -cpu max,+vmx -m 2048 -append vmx_apic_passthrough_thread_test
+ arch = x86_64
+ groups = vmx
+ 
+ [vmx_init_signal_test]
+ file = vmx.flat
+ smp = 2
+-extra_params = -cpu max,+vmx -m 2048 -append vmx_init_signal_test
++qemu_params = -cpu max,+vmx -m 2048 -append vmx_init_signal_test
+ arch = x86_64
+ groups = vmx
+ timeout = 10
+@@ -377,62 +377,62 @@ timeout = 10
+ [vmx_sipi_signal_test]
+ file = vmx.flat
+ smp = 2
+-extra_params = -cpu max,+vmx -m 2048 -append vmx_sipi_signal_test
++qemu_params = -cpu max,+vmx -m 2048 -append vmx_sipi_signal_test
+ arch = x86_64
+ groups = vmx
+ timeout = 10
+ 
+ [vmx_apic_passthrough_tpr_threshold_test]
+ file = vmx.flat
+-extra_params = -cpu max,+vmx -m 2048 -append vmx_apic_passthrough_tpr_threshold_test
++qemu_params = -cpu max,+vmx -m 2048 -append vmx_apic_passthrough_tpr_threshold_test
+ arch = x86_64
+ groups = vmx
+ timeout = 10
+ 
+ [vmx_vmcs_shadow_test]
+ file = vmx.flat
+-extra_params = -cpu max,+vmx -append vmx_vmcs_shadow_test
++qemu_params = -cpu max,+vmx -append vmx_vmcs_shadow_test
+ arch = x86_64
+ groups = vmx
+ timeout = 180
+ 
+ [vmx_pf_exception_test]
+ file = vmx.flat
+-extra_params = -cpu max,+vmx -append "vmx_pf_exception_test"
++qemu_params = -cpu max,+vmx -append "vmx_pf_exception_test"
+ arch = x86_64
+ groups = vmx nested_exception
+ 
+ [vmx_pf_exception_test_fep]
+ file = vmx.flat
+-extra_params = -cpu max,+vmx -append "vmx_pf_exception_forced_emulation_test"
++qemu_params = -cpu max,+vmx -append "vmx_pf_exception_forced_emulation_test"
+ arch = x86_64
+ groups = vmx nested_exception nodefault
+ timeout = 240
+ 
+ [vmx_pf_vpid_test]
+ file = vmx.flat
+-extra_params = -cpu max,+vmx -append "vmx_pf_vpid_test"
++qemu_params = -cpu max,+vmx -append "vmx_pf_vpid_test"
+ arch = x86_64
+ groups = vmx nested_exception nodefault
+ timeout = 240
+ 
+ [vmx_pf_invvpid_test]
+ file = vmx.flat
+-extra_params = -cpu max,+vmx -append "vmx_pf_invvpid_test"
++qemu_params = -cpu max,+vmx -append "vmx_pf_invvpid_test"
+ arch = x86_64
+ groups = vmx nested_exception nodefault
+ timeout = 240
+ 
+ [vmx_pf_no_vpid_test]
+ file = vmx.flat
+-extra_params = -cpu max,+vmx -append "vmx_pf_no_vpid_test"
++qemu_params = -cpu max,+vmx -append "vmx_pf_no_vpid_test"
+ arch = x86_64
+ groups = vmx nested_exception nodefault
+ timeout = 240
+ 
+ [vmx_pf_exception_test_reduced_maxphyaddr]
+ file = vmx.flat
+-extra_params = -cpu IvyBridge,phys-bits=36,host-phys-bits=off,+vmx -append "vmx_pf_exception_test"
++qemu_params = -cpu IvyBridge,phys-bits=36,host-phys-bits=off,+vmx -append "vmx_pf_exception_test"
+ arch = x86_64
+ groups = vmx nested_exception
+ check = /sys/module/kvm_intel/parameters/allow_smaller_maxphyaddr=Y
+@@ -444,31 +444,31 @@ arch = x86_64
+ [hyperv_synic]
+ file = hyperv_synic.flat
+ smp = 2
+-extra_params = -cpu host,hv_passthrough -device hyperv-testdev
++qemu_params = -cpu host,hv_passthrough -device hyperv-testdev
+ groups = hyperv
+ 
+ [hyperv_connections]
+ file = hyperv_connections.flat
+ smp = 2
+-extra_params = -cpu host,hv_passthrough -device hyperv-testdev
++qemu_params = -cpu host,hv_passthrough -device hyperv-testdev
+ groups = hyperv
+ 
+ [hyperv_stimer]
+ file = hyperv_stimer.flat
+ smp = 2
+-extra_params = -cpu host,hv_passthrough
++qemu_params = -cpu host,hv_passthrough
+ groups = hyperv
+ 
+ [hyperv_stimer_direct]
+ file = hyperv_stimer.flat
+ smp = 2
+-extra_params = -cpu host,hv_passthrough -append direct
++qemu_params = -cpu host,hv_passthrough -append direct
+ groups = hyperv
+ 
+ [hyperv_clock]
+ file = hyperv_clock.flat
+ smp = 2
+-extra_params = -cpu host,hv_passthrough
++qemu_params = -cpu host,hv_passthrough
+ arch = x86_64
+ groups = hyperv
+ check = /sys/devices/system/clocksource/clocksource0/current_clocksource=tsc
+@@ -478,20 +478,20 @@ file = intel-iommu.flat
+ arch = x86_64
+ timeout = 30
+ smp = 4
+-extra_params = -M q35,kernel-irqchip=split -device intel-iommu,intremap=on,eim=off -device edu
++qemu_params = -M q35,kernel-irqchip=split -device intel-iommu,intremap=on,eim=off -device edu
+ 
+ [tsx-ctrl]
+ file = tsx-ctrl.flat
+-extra_params = -cpu max
++qemu_params = -cpu max
+ groups = tsx-ctrl
+ 
+ [intel_cet]
+ file = cet.flat
+ arch = x86_64
+ smp = 2
+-extra_params = -enable-kvm -m 2048 -cpu host
++qemu_params = -enable-kvm -m 2048 -cpu host
+ 
+ [lam]
+ file = lam.flat
+ arch = x86_64
+-extra_params = -enable-kvm -cpu max
++qemu_params = -enable-kvm -cpu max
+-- 
+2.49.0
+
 
