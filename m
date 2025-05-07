@@ -1,77 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-8369-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8370-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDD5CC3ABC0
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 May 2025 06:14:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C582C369DC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 May 2025 06:14:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZslMW6jR7z2ydN;
-	Wed,  7 May 2025 16:13:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746598439;
-	cv=none; b=LovaXDTfCe51htyRf0bHXOsbGba4W2PSBEyI3X24MlL8zCxGH0x06DAaqzBLUqWvp6WbDZi0Py3NPECZM/TlaRrCpi/4LJ/QwE+pzdYvcxKDgeu4xZcZA8n1nagLRbiK7P2hckyITvdfFDhvYrecNdbqbYKZdVGEZUM+x+re+SELUX1EOtUB6ROD6wVorD7NuYO6pY0Snfz3tqj2RSMbdjsa5UJWEcGfiagQnTyQxsPdzRTO3vgPTmseem3jpzZBSTZ7l8Nurt+e3wVk/6oxFe/i8qcESurX7CgRiP0RRFS3TBJY4oSsL1qAA1ckI8efp8bQQrGIVFIWerpN14kjoQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZslMX6Npvz2yD5;
+	Wed,  7 May 2025 16:14:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1033"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746598440;
+	cv=none; b=HttCSxjcLwYiA0nGaBC1jxwGau3X8vnXYOMYGSBZWKEwiFJuqjjaups1p9gwpDpnikzLd0ke/uQzU99thmwL2wPGBfjHp9G/PtgfYwu44lpF1cAGUoN9srVgkrF/Wg898rRwgcn6qWX2LtTaLeXl8ljKd5v9F/iuXZL3MtpBe2Oc26HfTa6xs/znKf8va5FL5Azse9a/oRXdJLFjn4aUZ+BjcL6DM421ngmOg4LRkg1IbInlMSQmIc65aY9WQaL/hdt6Xkm7prwD2KlsJz3z3hCkUE4KaPhnbQAd0WZvUAU8IJmiO+OR3L4uXkjhLYwQJnvHi6asm/1mmpmw4rUzjw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746598439; c=relaxed/relaxed;
-	bh=Rozxfw15XCGd2H6xaiwn51c9kWvMu98WF+4nRevjr28=;
+	t=1746598440; c=relaxed/relaxed;
+	bh=6vm+0Lb5O0nFfHF45Rxd0EU26SBQ9dTBWQWsUCmh1So=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TnUrHwIjpj+yf58f4SxH2dZZcMraxaoOk3wCwzWNqDO0MeNQsqL/ATMINp2JWBsPXopCwEqdINl4UuoMm4rrow+v4qv5/yT5QLkYBT8E7gUKQgQwQQ5894fzDUpXRv4mmVMo6Accz0A6m5KO6dbNyDXOBtlpZoj6EfW37rDt4l/Xx+fZU/XSrUjXEvyF6GdbTUdQk01lqQjHkqvB6uINpUuSH3QtoWEyJW6fvi34kCRgYE2RM2+eLDeNEz34MaB+ujZrIoOImdmu1WoYsW6/NtG3Qzk9OgKktlNfdr5QFF39Y2+THTTpQ9mZy1q3lUV5gY9lqXnfL+WUG7hOq/wQhg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TGi51ZfE; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=bagasdotme@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	 MIME-Version; b=G2U7FJ+XhP8ZPofLg0egSSFbJ0BSRW5hY2P2P8uF0BTUuGw1HM5+3PL5E6S6FEJ4B4N2llVIw/TYOghFBIE/tBBBuoKTYEDlffnqUPWctJlrg4FgRCvl0muxoiErgZ2pW/G3v06bELGLzS/xGNixm5EeINVaYGJ5rNkDzvqTjtCtPe7ySMRpEj3PtFU9kHmCvvsP1j5kkHi7Yec8w/o2V14qrdW4kw9esLcGMViH7oSFEBMAn/6/rMfThsLRvYrXbIbW2X979vSbL5LTUDeEIjdWBit1nXjSyxLnT4McQcSrRxP/eVn3lOgQ/dRocRYpLIXbPkFfUv91i9r+83Ag0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=jRAGWkLx; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=bagasdotme@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=TGi51ZfE;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=jRAGWkLx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62d; helo=mail-pl1-x62d.google.com; envelope-from=bagasdotme@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x62d.google.com (mail-pl1-x62d.google.com [IPv6:2607:f8b0:4864:20::62d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1033; helo=mail-pj1-x1033.google.com; envelope-from=bagasdotme@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1033.google.com (mail-pj1-x1033.google.com [IPv6:2607:f8b0:4864:20::1033])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZslMV26lDz2yD5
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2025 16:13:57 +1000 (AEST)
-Received: by mail-pl1-x62d.google.com with SMTP id d9443c01a7336-22e15aea506so59972815ad.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 May 2025 23:13:57 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZslMW5B8qz2yGx
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2025 16:13:59 +1000 (AEST)
+Received: by mail-pj1-x1033.google.com with SMTP id 98e67ed59e1d1-30a93d80a80so1181761a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 May 2025 23:13:59 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1746598435; x=1747203235; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1746598437; x=1747203237; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=Rozxfw15XCGd2H6xaiwn51c9kWvMu98WF+4nRevjr28=;
-        b=TGi51ZfE+027a0uFljTZ6RR2z6g0iazomxupbHgbuU2/YvTcZNq9W2utWK9qsgFfy6
-         eXh+2phFeOCa2bDJkgN93Ec1ic3PMTzsee4RNe/eqzdTmdVNhz2lNdIriXIEFMFdNB/c
-         k48BaypOuqaDOraa656j/31AfbPsnEujOKD87cQw/AX4MsYbccPj1uJJAkfNrz8X8BY0
-         tuo88Va1X4BP1qGuDULWwHy4/eQX3fpKCWmZcxbAvEdWOLauOBZSpUGlOMG11qHl5V2I
-         1IMoBr9n2BxofqABo/d7zY+nMcPzKc5iLkfGNleqXIOoUU4kxuXJzb9lsjJ2/C+g+SVK
-         RVYA==
+        bh=6vm+0Lb5O0nFfHF45Rxd0EU26SBQ9dTBWQWsUCmh1So=;
+        b=jRAGWkLxC/l4+iknfpemVaxqF+2GGY0Bf/bBW4ykj7oliympaO4cCzappd46ekOtG9
+         ByrTBEM6K9FUHQidwqZ5kR+IXT0yIyVmAiv7Zv3O3k7uHsRo/zsWUH/7TBO7GTifg0Wm
+         awROEevXNx/KV8XVVMdPfaEyM+iSW2EMLzV5yBW7n57PbbTZi4Iz/RDIDfFN9F3UvQug
+         WxzuRlFyOfI9eZnNz/x6m/VEMve5Phg+5KXmFctJtcgUXAsEmZG4NPwtHnNUsbm5KDZB
+         aG1gecPiAXmCoPs31U7wlrZy29D3QjRuityIWxoCiuvMUapsuJIv2Nd9qeaZZkx5YH9R
+         U60g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1746598435; x=1747203235;
+        d=1e100.net; s=20230601; t=1746598437; x=1747203237;
         h=content-transfer-encoding:mime-version:references:in-reply-to
          :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=Rozxfw15XCGd2H6xaiwn51c9kWvMu98WF+4nRevjr28=;
-        b=lqDw67X4jWTlbpDSTKyuQdA/p+5D5H7Ae7pZUl7vV6ppFuTGy9zOKjhX+8XA6mjUmH
-         zA818w2WkzJm/yBAAWGnmOUqLztW+J6F7N+rALETLutW2+hXiyJsDC/Z6B+Zh1DkDuxo
-         TgXChy/YW2fM5X3B8rKh8X7zefYSAt4OWqKi64OLRyPyilpDwZ89SgYMPikMAHZgL1hu
-         zspYOc72Z1OmuJsASDo6+Acs6KodJKg4Z0vyKh7YDVExb/jmMpNUQe2G+djqstKdoGkD
-         EM591VKaO1cjo2LSG4uvZG3wPXJ7h1RNgL2/Zcp0/+isBbUg4EVx3InJhd2S0XBeG161
-         3RDQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWrBIse71xMbBU42RG80mctTlbbfCJnb/d/kxuJJ7YByU+Z8Dv2PETzjiQJvajU7XfXGlSzjTqW2Ybqxac=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxsDn/FO95zeZtmNL1V3j4P4U+emsDAh4T5hYzM9ZVBidQ47lVd
-	Wf5JTD4FjaPBvGjktzagVQyWVa8UOOrgoTETY7eCyOB5eY+chu0P
-X-Gm-Gg: ASbGncsMY41PVjjo8LgAtZdLwRlRpm3ANoUw8Vwh731YmOrHVJQkh4pbQO9eu66sP2K
-	sEwLw/AC9/5JPgsZGkiJwO66kYokWJLhSDdBB/u1nuG1Aei9SLArqWo5z69yyn3D6UcjFYIAl+n
-	AsL1qomx+lq8MBfFHJqtFBEhGEl5yHwOl5nT6LBr/oYdTdeWkXZnzKG+xPddJek69aBbm8UmFnQ
-	aSHuXl6bMCRDAL4U1FZKaCOwXww1kl5OTPZ0D743HNrIBLwuaf2fy0dN/rf+hPl6DlBr1uaO1rW
-	pA8QzAtQJAabN4pPN3SjFKEwiODzhR8t+Ah2mPdi
-X-Google-Smtp-Source: AGHT+IHn1JoIwnOddTfG6PRyqZCpjAnehF1wYY+TV7xyiH9zs9UIjbHMUdyCMMVyIeRgK6aA0NFoqA==
-X-Received: by 2002:a17:903:478d:b0:223:f7ec:f834 with SMTP id d9443c01a7336-22e5ecc2c09mr32036665ad.31.1746598434443;
-        Tue, 06 May 2025 23:13:54 -0700 (PDT)
+        bh=6vm+0Lb5O0nFfHF45Rxd0EU26SBQ9dTBWQWsUCmh1So=;
+        b=VD2RgUTnXB7jN+F6ia8fu9bLEwdv3omP8xKz+A3ovEd9cr75hdTPSO1ups/twMAwVz
+         XEiBuiypIQxoKtMar+BwrH7nUR88y/nrNsBfUKKtyYDiQclwygjtEaxenmUI2lF04/f3
+         XSDAashWwN05yDow7Bv18gIC2B0JwHoSJ4uTIiRi8R80YQUA9M0MyLmIXjfFciP/d/xB
+         VN0xidEnttFVHxblTLPEizDyRI0HaBNknV/fIw6bpnyQNLRAp7RvUHJHWWZecwTXAFI3
+         tP6A5S0LUSWSnnMnMITgGeeP9PXaRRTQ60P7EQ+fCeLZ+N3PFJfmy2lF3y4UEjpKMr8p
+         5tKw==
+X-Forwarded-Encrypted: i=1; AJvYcCXWObfP2GR0Rqv+fW33BbqLVepBMrT+qIixY7MUXoG+eITQuQPmBPgbMmVhWuZ35LivsOJV2ktLiAno6lo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YycqXRtbOL6OemYhMcPX1ttDgs5I32pFYq0WfjmdRRIR7C3KQtI
+	b0wGqIzjXj/CdzSEoNXKWvcXZmmvi6MvVXjbrWIv5l9lTQO44pDb
+X-Gm-Gg: ASbGncukegtPMUZlGXVH8CsIO8iBeyyq/2HdfcETra0234RYTBQHe2IHWYSirLtQEIu
+	/n3v/axA1dz7rWHtnMNQ+5t+M0b4uNjdpWhoSb2XNI7NLMDWHSQbAO/PIZpWk3UhvaL2bmVoxGq
+	+JJhS8DdrF8EOb1AJc7PTeRzwKKhlY2ledlxCEqTmKt+gqSQMHh+dutXcZ07RBxcEE7b6larhc4
+	UxGIfOn+U/eOSDndVRCivqk+ljKQkGRDIWMdidfZ2p8Ey5a7RfG0jZQhFR03Mk84Q8EG7hnLuBv
+	zpTw8543biJh1wIt4HhJ3F+XOBgvLE90INGfcQs1
+X-Google-Smtp-Source: AGHT+IHieGl0XKScok6vqvy/w/N8xUPc60HTW65R1OFneHoR2yn38l0NW+LUejGODqY9FuJITKOr0w==
+X-Received: by 2002:a17:90b:3908:b0:30a:29be:8fe1 with SMTP id 98e67ed59e1d1-30aac19d3c9mr3558333a91.9.1746598437436;
+        Tue, 06 May 2025 23:13:57 -0700 (PDT)
 Received: from archie.me ([103.124.138.155])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-22e1522ef9bsm86224765ad.217.2025.05.06.23.13.53
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-30a81015002sm2201345a91.0.2025.05.06.23.13.54
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 06 May 2025 23:13:53 -0700 (PDT)
+        Tue, 06 May 2025 23:13:54 -0700 (PDT)
 Received: by archie.me (Postfix, from userid 1000)
-	id 289E642A3183; Wed, 07 May 2025 13:13:52 +0700 (WIB)
+	id BA9D0427A6BB; Wed, 07 May 2025 13:13:51 +0700 (WIB)
 From: Bagas Sanjaya <bagasdotme@gmail.com>
 To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
 	Linux Documentation <linux-doc@vger.kernel.org>,
@@ -88,9 +88,9 @@ Cc: Jonathan Corbet <corbet@lwn.net>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
 	Naveen N Rao <naveen@kernel.org>
-Subject: [PATCH 3/3] Documentation: ioctl-number: Correct full path to papr-physical-attestation.h
-Date: Wed,  7 May 2025 13:13:03 +0700
-Message-ID: <20250507061302.25219-5-bagasdotme@gmail.com>
+Subject: [PATCH 1/3] Documentation: ioctl-number: Fix linuxppc-dev mailto link
+Date: Wed,  7 May 2025 13:13:01 +0700
+Message-ID: <20250507061302.25219-3-bagasdotme@gmail.com>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250507061302.25219-2-bagasdotme@gmail.com>
 References: <20250507061302.25219-2-bagasdotme@gmail.com>
@@ -107,35 +107,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1833; i=bagasdotme@gmail.com; h=from:subject; bh=xfAfj1klcleSKHXLxNAOO+8ONspPBsJHamkZ5reirUg=; b=owGbwMvMwCX2bWenZ2ig32LG02pJDBlSP9hFHpo7Bmol7VRe578uf3OIuf12U978h+pvVje05 O9TWni8o5SFQYyLQVZMkWVSIl/T6V1GIhfa1zrCzGFlAhnCwMUpABMxvcnI8Jb1kPtfpaOCbBst Vhsy8YS0H08O6Y7c6iDOHM+tm9zBzchwboEoa+Qny9+5K9u92ANb0vkrs3s21r3Sa9jFcy6hdgs bAA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2982; i=bagasdotme@gmail.com; h=from:subject; bh=pM9FqZnVNazjsTy87XiYOeCdoktvmor3drEddnsJK5s=; b=owGbwMvMwCX2bWenZ2ig32LG02pJDBlSP9h7RLe7uX/fZnCDQ2nSg0Bj7h3zHv76JK72nWerD 5fQzP49HaUsDGJcDLJiiiyTEvmaTu8yErnQvtYRZg4rE8gQBi5OAZjI7I+MDPfbnPj21x/65mLM 9Mba81BbyrT9GzyiP3yeUaGjK+8YrcTwh3vhnK+T79epT1h3KLhpVcCVHjGdjP+dHrc/RbEH6F9 tYQUA
 X-Developer-Key: i=bagasdotme@gmail.com; a=openpgp; fpr=701B806FDCA5D3A58FFB8F7D7C276C64A5E44A1D
 Content-Transfer-Encoding: 8bit
 
-Commit 03c9d1a5a30d93 ("Documentation: Fix description format for
-powerpc RTAS ioctls") fixes Sphinx warning by chopping arch/ path
-component of papr-physical-attestation.h to fit existing "Include File"
-column. Now that the column has been widened just enough for that
-header file, add back its arch/ path component.
+Spell out full Linux PPC mailing list address like other subsystem
+mailing lists listed in the table.
 
-Fixes: 03c9d1a5a30d ("Documentation: Fix description format for powerpc RTAS ioctls")
+Fixes: 43d869ac25f1 ("powerpc/pseries: Define papr_indices_io_block for papr-indices ioctls")
+Fixes: 8aa9efc0be66 ("powerpc/pseries: Add papr-platform-dump character driver for dump retrieval")
+Fixes: 86900ab620a4 ("powerpc/pseries: Add a char driver for physical-attestation RTAS")
 Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
 ---
- Documentation/userspace-api/ioctl/ioctl-number.rst | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ Documentation/userspace-api/ioctl/ioctl-number.rst | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
 diff --git a/Documentation/userspace-api/ioctl/ioctl-number.rst b/Documentation/userspace-api/ioctl/ioctl-number.rst
-index 3864c8416627e0..855139f3bc0e48 100644
+index fee5c473150177..b613235ca18767 100644
 --- a/Documentation/userspace-api/ioctl/ioctl-number.rst
 +++ b/Documentation/userspace-api/ioctl/ioctl-number.rst
-@@ -370,7 +370,7 @@ Code  Seq#    Include File                                             Comments
-                                                                        <mailto:linuxppc-dev@lists.ozlabs.org>
- 0xB2  06-07  arch/powerpc/include/uapi/asm/papr-platform-dump.h        powerpc/pseries Platform Dump API
-                                                                        <mailto:linuxppc-dev@lists.ozlabs.org>
--0xB2  08     powerpc/include/uapi/asm/papr-physical-attestation.h      powerpc/pseries Physical Attestation API
-+0xB2  08     arch/powerpc/include/uapi/asm/papr-physical-attestation.h powerpc/pseries Physical Attestation API
-                                                                        <mailto:linuxppc-dev@lists.ozlabs.org>
+@@ -363,15 +363,15 @@ Code  Seq#    Include File                                           Comments
+ 0xB1  00-1F                                                          PPPoX
+                                                                      <mailto:mostrows@styx.uwaterloo.ca>
+ 0xB2  00     arch/powerpc/include/uapi/asm/papr-vpd.h                powerpc/pseries VPD API
+-                                                                     <mailto:linuxppc-dev>
++                                                                     <mailto:linuxppc-dev@lists.ozlabs.org>
+ 0xB2  01-02  arch/powerpc/include/uapi/asm/papr-sysparm.h            powerpc/pseries system parameter API
+-                                                                     <mailto:linuxppc-dev>
++                                                                     <mailto:linuxppc-dev@lists.ozlabs.org>
+ 0xB2  03-05  arch/powerpc/include/uapi/asm/papr-indices.h            powerpc/pseries indices API
+-                                                                     <mailto:linuxppc-dev>
++                                                                     <mailto:linuxppc-dev@lists.ozlabs.org>
+ 0xB2  06-07  arch/powerpc/include/uapi/asm/papr-platform-dump.h      powerpc/pseries Platform Dump API
+-                                                                     <mailto:linuxppc-dev>
++                                                                     <mailto:linuxppc-dev@lists.ozlabs.org>
+ 0xB2  08     powerpc/include/uapi/asm/papr-physical-attestation.h    powerpc/pseries Physical Attestation API
+-                                                                     <mailto:linuxppc-dev>
++                                                                     <mailto:linuxppc-dev@lists.ozlabs.org>
  0xB3  00     linux/mmc/ioctl.h
- 0xB4  00-0F  linux/gpio.h                                              <mailto:linux-gpio@vger.kernel.org>
+ 0xB4  00-0F  linux/gpio.h                                            <mailto:linux-gpio@vger.kernel.org>
+ 0xB5  00-0F  uapi/linux/rpmsg.h                                      <mailto:linux-remoteproc@vger.kernel.org>
 -- 
 An old man doll... just what I always wanted! - Clara
 
