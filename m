@@ -1,97 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-8372-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8373-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6EAAC369DC
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 May 2025 06:17:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 189F8C369DC
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 May 2025 06:25:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZslRl41pRz2ydl;
-	Wed,  7 May 2025 16:17:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Zsld15LbTz2ynf;
+	Wed,  7 May 2025 16:25:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746598659;
-	cv=none; b=UXP+JMmWYjUv7WDVrZa2dq/g2lpEbzN8oBu1zNukewV+py6TDtSFI3umsvFtGBTPTPNFbcr0IEKqtiN9jBorrLsXXIFQuquCqb4TFDB0TVbrnsmZg5yGrbsuaV7KuReEp+Y26+dr5nflVYtpk7QjvYXTjrBsl12XHYmkV/hVD1LKRAdgMkpsUYHpCKKGVkpDb9LA6apfrdMVYVUt9xBXJTaYhY6db1+tp4T7t7B5VwxUzIBhoT88V818y/80iOV9oMShb1zBpT56gLzaOtFFspW2ybVuZiEvbw9fT7ZzNtXiIDSaUumMyyaSybnTD5i5B/boSjuotGPnI932XP9HuA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746599141;
+	cv=none; b=GQsMYQVQNlKUpJKNyOfXSwiYVnRifmmMi0h1aBFNUy5pwf5kF2h0CXvTOSd1IZ0TyuJTHTLhTcKmiMzJ4oilb3i/mCAS6YqrmIH9hNNcSxYGVoHOE+bGXmy5wZNg0l4UcaLhAmBGFQXo8ssc3ZrnSxscXLffDCydhZ8v766L2EFmT1JfPM1MbZDqHZJE8Ok0AYq/DXLyZud6lk2lPXkKMfKeFgPlY/hRBYogq0DgHQ8amSxu1nBJxLSRgplfjb0wIbxnurjmfLvj4JUg8m8YChtzAf2PZWI/bOeHC1ePPaWwfLmBZhVwyIfl5DwprMHUu1xRGY8g/StXCbCAy/ujOA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746598659; c=relaxed/relaxed;
-	bh=q2mJKUg1tUiVhDgsXqIjw0hWzdyfFMnBvVtWrB+aK1o=;
+	t=1746599141; c=relaxed/relaxed;
+	bh=1H2SKdw/CJ1oFZysP7AbA7rtWkaow9Z02aBk9jm2tJY=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=grqAkD/zyvquXlxHdTBC+g+5xZ2kHJqN248EQfy6/OLQXuWsas0knvowAlHvdfHWkuJs8HhH6esMbGe3RPb/QpuEMBLgeI3RBQn3tTVTTQ2sqz7MNwOFO+Que80wVxcUJC+hYyAx5+oxI9h/vC9Db0oim2yORkWYhdhnxrf3EGYrAug7OGTFGYzBTEvawTNU5/tvzlnKv81WS8axoHLfG8QhkYmy/aqAa13jqWKrQ+K27u/lhch+Yq9qaKdVO0cStAtw54o7hdv8II0pkxdTAOllbW8mQmT6OyWDV/p6mLBZaFWJAW+EaKBuzYw5WROLccLDPz+qwRA9Q2pfTmC6cw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=p18VrMVR; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 Content-Type:MIME-Version; b=WZ/kIeFJzsGzHfENt+qqj57BdihO8ZH6XD8btkKlEa7aNIaO6VrXi5hlzIf63cLDbAGK6+a4cFHh2JMFBk/r5jDqpQ1SJ1xysCAd06nOGsnFbV0iprjTUs/0VoJI6e02goMHr4fjO1dYVdn5G9SXLDvyeOoYqOuNSNhJbitJRG3YMTEF/vEZng1BQz331INhrUwYqLjGfkIAtGg7QB7z8y16F6Zve35XcxLk8kNV5MHG6ioWx0VFurSBRYwd+B6xEMe02SqqGndAN0U+k5vY8TMhEC8g9CrGaiFoBTkFNzHv9wLwKoZ/gRvVA8EA+M4AZt4ZULm1REVJPSIx+w1DAA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dSax7/gr; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=p18VrMVR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dSax7/gr;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZslRj6CZ4z2xBb
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2025 16:17:37 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 546Lgbsi017652;
-	Wed, 7 May 2025 06:17:24 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zsld06jFyz2xHp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  7 May 2025 16:25:40 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 546J06iH011055;
+	Wed, 7 May 2025 06:25:28 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=q2mJKU
-	g1tUiVhDgsXqIjw0hWzdyfFMnBvVtWrB+aK1o=; b=p18VrMVRhaAqLLJchkjXJd
-	GTsHu6RuGy35S2KImfWTbDMxolCEBTYPi9JwofZ9K6N8bm10BlldGAma3DEsuls3
-	OPN4qv59KGkv0ZrLMdIr2UH+6cNIxZusI/amAjYAVoJlkVPk9AoZwW8RiY7q8nZ4
-	vTlqjklcdAx2l6myoVpmE1yBzjHJnRLfowUqCbR9hF2hYa+KequdEZgY5I2aKFU6
-	/gHTX5tG0F4l1A9VcuUFkAVxi0kH1ts8+MYB/tOuMY2PkWBWBFXKgOdJjnf3hG58
-	ONEO9ZnR+9Y3vXII2Wp1mUCX4p08EIUOMgtRJ+usmkoAtDjnao4pSKKPssuGy1ug
+	:message-id:mime-version:references:subject:to; s=pp1; bh=1H2SKd
+	w/CJ1oFZysP7AbA7rtWkaow9Z02aBk9jm2tJY=; b=dSax7/grc7WqB/w/bpL/qP
+	srxnysIRxGGAAXDI6H07wewjbDmW9dQAKxo3hIx0sAJuRV4Y3UnGCqJTo0TGTh+E
+	CSEx4GKSUi74QnnzVHwsttQdyRdXhKiL8GPcX/daPcm1e6gYwCycshMQGispPPPo
+	Cuou3Vg4l+Ua0iF6+JtMrw1ue5LgVKtNzLH80ZHBo09C3DONozFyXjRJfWxxp0qw
+	WFFAIhDbdC9B38s7KpNzdI9Se8DzWOJZVYBtM5pu6AyAERGdgfNKz2IB+6n/VwcM
+	qqusOBll8cO+kIt09bxOjxi8Xwf7a0F9ilw9zWT5w4orqwJl1ZSsTzX2R/7xlUPw
 	==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46ftjw1qr9-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46fgvsmunb-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 May 2025 06:17:23 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 54769wMm009335;
-	Wed, 7 May 2025 06:17:23 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46ftjw1qr8-1
+	Wed, 07 May 2025 06:25:28 +0000 (GMT)
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 5476M1Rq015839;
+	Wed, 7 May 2025 06:25:27 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46fgvsmun8-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 May 2025 06:17:23 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 54747RF1001272;
-	Wed, 7 May 2025 06:17:22 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 46dwftfgm3-1
+	Wed, 07 May 2025 06:25:27 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5475xk1u014583;
+	Wed, 7 May 2025 06:25:27 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 46dypkq40a-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 May 2025 06:17:22 +0000
+	Wed, 07 May 2025 06:25:27 +0000
 Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5476HKsW51970520
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5476PPXP40436050
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 7 May 2025 06:17:20 GMT
+	Wed, 7 May 2025 06:25:25 GMT
 Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C419A20191;
-	Wed,  7 May 2025 06:17:20 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 69C4420082;
+	Wed,  7 May 2025 06:04:01 +0000 (GMT)
 Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6057820194;
-	Wed,  7 May 2025 06:17:20 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 011B520081;
+	Wed,  7 May 2025 06:04:01 +0000 (GMT)
 Received: from ozlabs.au.ibm.com (unknown [9.63.197.14])
 	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  7 May 2025 06:17:20 +0000 (GMT)
+	Wed,  7 May 2025 06:04:00 +0000 (GMT)
 Received: from jarvis.ozlabs.ibm.com (haven.au.ibm.com [9.63.198.114])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 157CE600BB;
-	Wed,  7 May 2025 16:17:18 +1000 (AEST)
-Message-ID: <24106430db9693f580c3765206257677c10e4375.camel@linux.ibm.com>
+	by ozlabs.au.ibm.com (Postfix) with ESMTPSA id 37A13600BB;
+	Wed,  7 May 2025 16:03:57 +1000 (AEST)
+Message-ID: <f950789abaad0e854c4e60c7316b675c712c386f.camel@linux.ibm.com>
 Subject: Re: [PATCH 1/3] powerpc/pseries: Correct secvar format
  representation for static key management
 From: Andrew Donnellan <ajd@linux.ibm.com>
-To: Srish Srinivasan <ssrish@linux.ibm.com>, linux-integrity@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org
+To: Nayna Jain <nayna@linux.ibm.com>, Srish Srinivasan
+ <ssrish@linux.ibm.com>,
+        linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
         christophe.leroy@csgroup.eu, naveen@kernel.org, zohar@linux.ibm.com,
-        nayna@linux.ibm.com, linux-kernel@vger.kernel.org
-Date: Wed, 07 May 2025 16:17:17 +1000
-In-Reply-To: <2b7145a2-1cfb-4b1a-929c-10a03747119e@linux.ibm.com>
+        linux-kernel@vger.kernel.org
+Date: Wed, 07 May 2025 16:03:57 +1000
+In-Reply-To: <3fe59767-954b-4c2c-a602-9801f1c1080a@linux.ibm.com>
 References: <20250430090350.30023-1-ssrish@linux.ibm.com>
 	 <20250430090350.30023-2-ssrish@linux.ibm.com>
 	 <87e1185273ce21e5fd69ff071a1be986c2a0301a.camel@linux.ibm.com>
-	 <2b7145a2-1cfb-4b1a-929c-10a03747119e@linux.ibm.com>
+	 <3fe59767-954b-4c2c-a602-9801f1c1080a@linux.ibm.com>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.56.1 (3.56.1-1.fc42) 
@@ -109,53 +110,45 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: T2zuHdKPoneGx6U0Oag-MWwuSf1oy_IE
-X-Proofpoint-ORIG-GUID: dYDczGWAl_g1Yeu0mEYo2aRaGcQqzvg-
-X-Authority-Analysis: v=2.4 cv=R4ADGcRX c=1 sm=1 tr=0 ts=681afaf3 cx=c_pps a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17 a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=1mVJ_uiqAAAA:8 a=VnNF1IyMAAAA:8 a=ZL5jSCTfk5O3AX6_IFcA:9 a=QEXdDO2ut3YA:10
- a=h67g7WpEjx8dfGT80pje:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTA3MDA1NSBTYWx0ZWRfX3bjV2ZTOBwZI AoZee1AuWXHL3mEOVESyROCsB8QVcI191swW8dFRPXbvA1vNtAxpVuu+9WFt7fjz6JpQcUdXubo wPFkuM2fN70bmTaEboG5YEtpSuy102YWQnotoo10ZYv+ZaiHxdPuLL1V2VU43BcJqyyhsO8cLbZ
- M/yqVwqbj258hYXKoeFovDyYDCqGOUS0Q5pfwi9yVpHSAIz1Pn5O21PQKul8m4v6Z7sMyf7WYCc tIQoG9HUDDIXPU1suhNl1wjlzssX6QCAtXyqD6iphGdOFXS+pYutxgLDf7HUBEBBVXhE3f9Eclv epYvWyx7ubFKO3C8Y+hp/GNbHLgunLGG4VgG5tye3AtxdDamWQbcVxl0TkZ267lqajre4S8NBaq
- WzyVp3Ec5zvLG9YSqezNG3QAv48XAA0JK5kfoEAqNWs9uCZWZ+D1fGqWKhy8TsZS0lCzB7JH
+X-Authority-Analysis: v=2.4 cv=CLAqXQrD c=1 sm=1 tr=0 ts=681afcd8 cx=c_pps a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17 a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=VnNF1IyMAAAA:8 a=VI1NQ0rgZN61wkHHH4kA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: QD1K8PZ3uYzMJ7kPAvcb9JP4VkJn7oLp
+X-Proofpoint-ORIG-GUID: rztLrWR4sWMaBLVOXO8rmeAHuH-8u504
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTA3MDA1NSBTYWx0ZWRfX4xfKB8NZ6lMj ZtfYnsUNf0YlOGsCxzKwCSwj0/7ZlN3V0rIXgktRbJk96/zqTwFBQ7qJYF8HaIgiF/JLG/ZXHLP fwfAFfN8Egegx3Azq06LVxs0lFt5rN7e20WRWDH2PJ3ZltAxbeAfNv2yKK1Djc7/QOjuHCBDB+B
+ 5kjED0cI8vLL0DVSGP5e0sePnn0Zn4n8YUhQCUGXYqBadtJUHz05ns+OmaSiTCqwQ03cWzz3mbc ZSoHS2RpPBuOSbR0JXN5VxkSA0GXQMDRy3/p40WWRIyvVAp3fa6p/Thlb5JJUm6JYhz/shzMNMK CWAxRkmqguwkzSHnyNA11yoiZ5Opo5bHsCKgKXHCxg87TcMZPlcFirIXEg+1Ty4YPN7di82VJqJ
+ DuXhzSc/Oz4AuIOl9chIMEvHa+o4omFhDcj61hplespwcl4lrvYa9iPXXvMWDUUCs9zOhGDl
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
  definitions=2025-05-07_02,2025-05-06_01,2025-02-21_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
- mlxlogscore=999 clxscore=1015 impostorscore=0 suspectscore=0 bulkscore=0
- lowpriorityscore=0 malwarescore=0 spamscore=0 mlxscore=0 adultscore=0
- phishscore=0 classifier=spam authscore=0 authtc=n/a authcc= route=outbound
- adjust=0 reason=mlx scancount=1 engine=8.19.0-2504070000
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 impostorscore=0
+ phishscore=0 malwarescore=0 bulkscore=0 priorityscore=1501 suspectscore=0
+ mlxscore=0 lowpriorityscore=0 spamscore=0 mlxlogscore=678 clxscore=1015
+ classifier=spam authscore=0 authtc=n/a authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2504070000
  definitions=main-2505070055
 
-On Wed, 2025-05-07 at 00:29 +0530, Srish Srinivasan wrote:
-> > > +	rc =3D plpks_read_fw_var(&var);
-> > > +	if (rc) {
-> > > +		pr_info("Error %ld reading SB_VERSION from
-> > > firmware\n", rc);
-> > We need to check for -ENOENT, otherwise this message is going to be
-> > printed every time you boot a machine in static mode.
-> Yes, I agree with your concern. I just want to add that, as per my=20
-> understanding, we need to check for both -ENOENT and -EPERM,
-> as explained below:
+On Tue, 2025-05-06 at 15:27 -0400, Nayna Jain wrote:
 >=20
-> As per H_PKS_READ_OBJECT semantics described in the PAPR v10.60=20
-> (https://files.openpower.foundation/s/XFgfMaqLMD5Bcm8),
+> > It might be better to use something like "ibm,plpks-sb-static" in
+> > place
+> > of "ibm,plpks-sb-v0" to make it instantly clear that static mode
+> > doesn't use the same version numbering scheme as dynamic mode.
 >=20
-> * If the object is not world readable, verify that the consumer
-> password=20
-> matches the stored value in the hypervisor. Else return H_AUTHORITY.
-> * Verify if the object exists, else return H_NOT_FOUND.
-> * Verify if the policy for the object is met, else return
-> H_AUTHORITY.
+> Yes, "ibm,plpks-sb-static" is more clear compared to "ibm,plpks-sb-
+> v0".=C2=A0=20
+> However, I am not sure why "static mode doesn't use the same version=20
+> numbering scheme as dynamic mode". Infact, as per my understanding,=C2=A0
+> it=20
+> is part of same versioning system. "0 represent static, 1 represent=20
+> dynamic and anything beyond 1 would mean dynamic with additional
+> features".
 >=20
-> So, the hypervisor returns H_NOT_FOUND only for the authenticated=20
-> consumer. For unauthenticated consumers, which is the case here,
-> it would return H_AUTHORITY.
+> Also, wouldn't having "ibm,pkpks-sb-static" and then "ibm,pkpk-sb-v1"
+> for dynamic would be bit confusing? I mean being static is clear, but
+> what they relate v1 to? Or did you mean to have "ibm,plpks-sb-static"
+> and "ibm,plpks-sb-dynamic"=C2=A0 for the two modes?
+>=20
 
-We expect SB_VERSION to always be world-readable, I think? In which
-case it shouldn't return H_AUTHORITY / -EPERM, ever, and if it does
-that's an error which should be handled as an error. Or am I
-misinterpreting the spec here?
-
+I don't feel strongly about this, as long as it's well documented.
 
 --=20
 Andrew Donnellan    OzLabs, ADL Canberra
