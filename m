@@ -1,78 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-8458-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8459-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13D2BC3ABBC
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 May 2025 07:14:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00C92C3ABC3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 May 2025 08:20:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4Zv0bt42mtz2yqW;
-	Fri,  9 May 2025 17:14:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::642"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746771073;
-	cv=none; b=lmIDC6ceLJ7Je14RITrRn2ytNBfAKD1KBU73YFHuJKlraESAwYXhv38zGsRJvWC8ZiackNHhZ5XowRsy+eMN+QiY7OL0w/iQQOEjDmqdffCxm11Rs/6HmOhCl5Fsd6Hrw0Refsxw+qEj2zY2ISEX28jS9+1rl8JyAUQVnNJUKqRDn+pyQ/LEqkNzmnuDT2sSx4ok0dQh6YCaROq8Q/RsV2RcuMulhSZ8Ib8iAQnp6or01e/+Iv1ptn9lIMlShz6UuCxPLT9ZMXxgFvIQGbCAe9MgE+vrm8z3Vy2d9JY3fVK0UmZCrSTapDhhUI5fdrvIAZViDjRdcRnE5QL7FFbigA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Zv24k220hz2xH9;
+	Fri,  9 May 2025 18:20:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1746778838;
+	cv=none; b=iPbb1nX9vbR18F8OjEBUIl7lUV9ai2Rfkyx+Id8dfVdmS5Z5433oMQReNYwuh0ZeeEetzAJMaAW2Sbhkp7ft5TlEXvkN3BNQwtYIKyAd1tT5L3d3kCSEYWbLI/fjZhrUoyYkFtTy1jpC7CMuLrJpIwWG1GCOe8XE/GUhBvEofYEMdtXq9Qg6wO9K6kXp2pbbIJ3k+xjqmuzB93LkyaZroan4Emtg7Rhe8wDaEqj63sxV4qurQE/yCAotWnhqL5/hNkvajdQkXx3PcYdL/5wrTZ84MnM5/kkreWTCVOgE5DQM0xpCZ93ehrjya2fbiFTRA0jj8AxT9NOz7lYdT09cbA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1746771073; c=relaxed/relaxed;
-	bh=tT4nmiF3B+9Zf02ngFo5qPxLiB0Cnk6TGo7gdbEV7tc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UZpFbc6lWn3ybiE5UYGXuLXXYd6KDA63WOKFgbZzf798W5dmbQfk7jzqB5EYziHAPvL3uGBizx8p1lwc5nkW8YPP5kJgQ87MC557Vhs4RudSJNTDJ36DCeLjdcCWR4cMiS0GArJXNs68V75oEfIghHZDIoKmr+1fqMB9aEAgqqm7lkLIEL69m4V5wqJIJ9pRXgQnqPJA84+6eWG3T51gQWqgGfw6ihC+tdaToGIUDeS4SnC+wYOD4crsvd3ALCawRMKtdpb2wWNtj0GL8byhEoGxp7IuLxxBYSXdqUy/w9m/knruYvEWfLB6y4a8Po6fyf014rWPixphaVEH5ZCbzw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=EYgKsJ6T; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::642; helo=mail-ej1-x642.google.com; envelope-from=etzhao1900@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=EYgKsJ6T;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::642; helo=mail-ej1-x642.google.com; envelope-from=etzhao1900@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x642.google.com (mail-ej1-x642.google.com [IPv6:2a00:1450:4864:20::642])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZtzCN167Kz2yQJ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2025 16:11:10 +1000 (AEST)
-Received: by mail-ej1-x642.google.com with SMTP id a640c23a62f3a-ad21a5466f6so108126966b.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 May 2025 23:11:10 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1746771065; x=1747375865; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=tT4nmiF3B+9Zf02ngFo5qPxLiB0Cnk6TGo7gdbEV7tc=;
-        b=EYgKsJ6Tb5TaymWpxXAyuo5Yt6QY5Q4m0iR+7ByW3cDYuxLpmIekTS/todiYUU75DF
-         wgs7k1rHRpUsPsZy79kRDEKso9expmvWATLJiYWY6kUgNrpdpdNq7XFb2Nvbe9On4CGx
-         obN+b5itXN3KmhuuURuHghOC8ZtI5vTDeY3kaf9sVaqzs2YjHM9uygJEKacPqWG2rIFY
-         WSQ1FVOgdILU9kOKTTuFBxuwWFnfO/zm99PWF0l2WzreN/O8Mrc8HhhObNTRhUyt4TIz
-         HLatNXoBIKpJ1JfAArbCvVcJG+2xSHXoMmEJB6m8onludDmlxffxb0gW5v5o4NhWSTe1
-         IcnA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1746771065; x=1747375865;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=tT4nmiF3B+9Zf02ngFo5qPxLiB0Cnk6TGo7gdbEV7tc=;
-        b=Q1AvRVjjGSuDJtC2ytO/chM0Dw/iE8HDHU1QLVxCUFHZcw0iHammfoLkWMraZbLRfY
-         X7ESFRJ3pe1faaM6fK6SM6ZyVQ1DRLmlIorMP9hKM3YLGKefQw1pFljh38fG1KwqpRKs
-         6WOrLLoseb2ls54xPe1mQXzvBRCKBiq4hYKC3Aq77uKLcos3N6iORr7WhvPd66MbFxun
-         klGo9IJgOaLtq57FRGUDsaoe4VtDuJnsqz5iiszPAHYqD4OQJldew6eso/iwCN9Ysum6
-         24xVIiwF9BbFXpoxclcKWRBvzJm49iFWrWbZaonWHArOASvN9BKBP1NTxlWffMK6ZfuF
-         7w9g==
-X-Forwarded-Encrypted: i=1; AJvYcCWecAfopbi4o0SIfLXWw6/dFp6nZ0DKFk8MuAB/sMhbmUXtAhoweP8G6jGiYN+liFNRBZmppBZRqj3FWu8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzTQT9K3GFRY7MxZPzotXtOX+sQl2NcCzdkR5p6f+A02ndeT1h4
-	JdNO4Q6Ta0Eejewcn2+kdSj/7u7M3t6ggZ5OaEUQXMCxkYKW3VRZ
-X-Gm-Gg: ASbGncuwGuNCdXyV5Oq3vFHawtR4iMR+x4uj6mbcRvG/9PHeJoptHifFuq3r+4FFtM0
-	4gbHuI4GRx6KWkZD1sVa2vH94claPtpwnMf+oNVPQZSYqCzlk6+DqUSR1qwVDeXSy68QCts8vD2
-	12hQqCUX23Ld4ndEuLdFh60Dj1Q62r+m9NaFYpsr/jnbAJIzkIsQ84ikyPtQBsCtq5LiPhNXXfj
-	h9ASScy5OSIJExXQGwHLSd5YPfrBLTsydzgGPEPocHeqg8vihUef17AWmOswCmjsX8l0I8mHf63
-	HgaL+oZRG5XIpl+5eYGdOAYa1///zV41n4VaunyNLYHL5o94+up8wbp1IDUOmK5aXhYLVwHOWGK
-	le14xbNlBiD6Q81/GfEM+t9Is2FtIWzm78pkQdOEFMxILUhu87eY=
-X-Google-Smtp-Source: AGHT+IHV7Lb+Jz2vAFwguRkPg3xEv8RK1gYxrdSEajyR1uZCyO5I90pymBqse+1L9ASZRUyJgq24dg==
-X-Received: by 2002:a17:906:6a22:b0:ad2:cce:8d5e with SMTP id a640c23a62f3a-ad21b16d4d8mr201457766b.7.1746771065029;
-        Thu, 08 May 2025 23:11:05 -0700 (PDT)
-Received: from [26.26.26.1] (ec2-3-69-236-239.eu-central-1.compute.amazonaws.com. [3.69.236.239])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ad219343c81sm101663266b.58.2025.05.08.23.11.00
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 08 May 2025 23:11:04 -0700 (PDT)
-Message-ID: <ec5bd8d1-c865-40ac-b03d-9e07875d931c@gmail.com>
-Date: Fri, 9 May 2025 14:11:00 +0800
+	t=1746778838; c=relaxed/relaxed;
+	bh=ika5hIu7vcmCMkLJzSdUGhi/HBkB2UL7WSbLSFZaMhc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=WkNtHnx5Kjth5d9i0s72Bxiuh4MzIIfpG4OhpE+fRafxJxgjkSuWuLDy03Cp//XI8a12Cl1CBVep0Q2EToQX8CBeM1A6hl7+gDa8DnPKD0CA2ZNMaV2SLpJb5jnCulEo52fpaAAr5WFWeDu9NgHfHrwocLFylEoW+Y0Yr6cGO+4NSmYhF8C7G4+eR/6qydnqc9suquMF8AzRyR+mvgMJwtCp/ld5GrlKTxDCrxBgm1z3WBDP3xtBNzdfWAKeN2h4FUg/3eACxaef2rBTTAWK3qxOzTiMsC8QZxtbFLzDO9hYrk6rJg5+Hcqc8eRvPieQhzHr5W9LYrDvjWKi/gnWFA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4Zv24j2yQrz2xCC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  9 May 2025 18:20:36 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4Zv1N573r2z9sSD;
+	Fri,  9 May 2025 09:48:53 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id kcGGoeHh1ks9; Fri,  9 May 2025 09:48:53 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4Zv1N56Mh3z9sN6;
+	Fri,  9 May 2025 09:48:53 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D4AF88B778;
+	Fri,  9 May 2025 09:48:53 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id fLUc-Bq1cvAL; Fri,  9 May 2025 09:48:53 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 34A968B768;
+	Fri,  9 May 2025 09:48:53 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Herve Codina <herve.codina@bootlin.com>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-sound@vger.kernel.org
+Subject: [PATCH 1/2] soc: fsl: qmc: Only set completion interrupt when needed
+Date: Fri,  9 May 2025 09:48:44 +0200
+Message-ID: <19aa9d8a84c8475c62c42ac886dad0980428c6c0.1746776731.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.47.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,63 +75,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 1/5] PCI/ERR: Remove misleading TODO regarding kernel
- panic
-To: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
- Lorenzo Pieralisi <lpieralisi@kernel.org>,
- =?UTF-8?Q?Krzysztof_Wilczy=C5=84ski?= <kw@linux.com>,
- Rob Herring <robh@kernel.org>, Zhou Wang <wangzhou1@hisilicon.com>,
- Will Deacon <will@kernel.org>, Robert Richter <rric@kernel.org>,
- Alyssa Rosenzweig <alyssa@rosenzweig.io>, Marc Zyngier <maz@kernel.org>,
- Conor Dooley <conor.dooley@microchip.com>,
- Daire McNamara <daire.mcnamara@microchip.com>
-Cc: dingwei@marvell.com, cassel@kernel.org, Lukas Wunner <lukas@wunner.de>,
- Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-riscv@lists.infradead.org
-References: <20250508-pcie-reset-slot-v4-0-7050093e2b50@linaro.org>
- <20250508-pcie-reset-slot-v4-1-7050093e2b50@linaro.org>
-Content-Language: en-US
-From: Ethan Zhao <etzhao1900@gmail.com>
-In-Reply-To: <20250508-pcie-reset-slot-v4-1-7050093e2b50@linaro.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1746776925; l=2172; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=ig/ZbmdXAZ4t1bPHRxM84n5jpK07+Tvvsh4nuTJX8PI=; b=pnkZgcWnhBcWfbA5jK6s60oD/I9FJW2zzX1yTfF+itCYFpH0oEoeXcAdYf4ZGD3jD+0lWsk6+ LR7tb/W/pj6CoYWGqcEd5CqA6E3WkNiFBSQMszPeTC0SszuBsZQyCLy
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 
+When no post-completion processing is expected, don't waste time
+handling useless interrupts.
 
+Only set QMC_BD_[R/T]X_I and QMC_BD_[R/T]X_UB when a completion
+function is passed in.
 
-On 5/8/2025 3:10 PM, Manivannan Sadhasivam wrote:
-> A PCI device is just another peripheral in a system. So failure to
-> recover it, must not result in a kernel panic. So remove the TODO which
-> is quite misleading.
-> 
-Could you explain what the result would be if A PCI device failed to
-recovery from FATAL/NON_FATAL aer error or DPC event ? what else
-better choice we have as next step ? or just saying "failed" then
-go ahead ?
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ drivers/soc/fsl/qe/qmc.c | 18 +++++++++++-------
+ 1 file changed, 11 insertions(+), 7 deletions(-)
 
-Thanks,
-Ethan
-> Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-> ---
->   drivers/pci/pcie/err.c | 1 -
->   1 file changed, 1 deletion(-)
-> 
-> diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
-> index 31090770fffcc94e15ba6e89f649c6f84bfdf0d5..de6381c690f5c21f00021cdc7bde8d93a5c7db52 100644
-> --- a/drivers/pci/pcie/err.c
-> +++ b/drivers/pci/pcie/err.c
-> @@ -271,7 +271,6 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
->   
->   	pci_uevent_ers(bridge, PCI_ERS_RESULT_DISCONNECT);
->   
-> -	/* TODO: Should kernel panic here? */
->   	pci_info(bridge, "device recovery failed\n");
->   
->   	return status;
-> 
+diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
+index 36c0ccc06151..0a704fd0b1a0 100644
+--- a/drivers/soc/fsl/qe/qmc.c
++++ b/drivers/soc/fsl/qe/qmc.c
+@@ -474,7 +474,9 @@ int qmc_chan_write_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
+ 	xfer_desc->context = context;
+ 
+ 	/* Activate the descriptor */
+-	ctrl |= (QMC_BD_TX_R | QMC_BD_TX_UB);
++	ctrl |= QMC_BD_TX_R;
++	if (complete)
++		ctrl |= QMC_BD_TX_I | QMC_BD_TX_UB;
+ 	wmb(); /* Be sure to flush the descriptor before control update */
+ 	qmc_write16(&bd->cbd_sc, ctrl);
+ 
+@@ -586,7 +588,9 @@ int qmc_chan_read_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
+ 		  QMC_BD_RX_AB | QMC_BD_RX_CR);
+ 
+ 	/* Activate the descriptor */
+-	ctrl |= (QMC_BD_RX_E | QMC_BD_RX_UB);
++	ctrl |= QMC_BD_RX_E;
++	if (complete)
++		ctrl |= QMC_BD_RX_I | QMC_BD_RX_UB;
+ 	wmb(); /* Be sure to flush data before descriptor activation */
+ 	qmc_write16(&bd->cbd_sc, ctrl);
+ 
+@@ -1482,19 +1486,19 @@ static int qmc_setup_chan(struct qmc *qmc, struct qmc_chan *chan)
+ 
+ 	/* Init Rx BDs and set Wrap bit on last descriptor */
+ 	BUILD_BUG_ON(QMC_NB_RXBDS == 0);
+-	val = QMC_BD_RX_I;
+ 	for (i = 0; i < QMC_NB_RXBDS; i++) {
+ 		bd = chan->rxbds + i;
+-		qmc_write16(&bd->cbd_sc, val);
++		qmc_write16(&bd->cbd_sc, 0);
+ 	}
+ 	bd = chan->rxbds + QMC_NB_RXBDS - 1;
+-	qmc_write16(&bd->cbd_sc, val | QMC_BD_RX_W);
++	qmc_write16(&bd->cbd_sc, QMC_BD_RX_W);
+ 
+ 	/* Init Tx BDs and set Wrap bit on last descriptor */
+ 	BUILD_BUG_ON(QMC_NB_TXBDS == 0);
+-	val = QMC_BD_TX_I;
+ 	if (chan->mode == QMC_HDLC)
+-		val |= QMC_BD_TX_L | QMC_BD_TX_TC;
++		val = QMC_BD_TX_L | QMC_BD_TX_TC;
++	else
++		val = 0;
+ 	for (i = 0; i < QMC_NB_TXBDS; i++) {
+ 		bd = chan->txbds + i;
+ 		qmc_write16(&bd->cbd_sc, val);
+-- 
+2.47.0
 
 
