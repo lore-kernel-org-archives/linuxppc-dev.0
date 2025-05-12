@@ -1,63 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-8522-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8523-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0C7CC3ABC3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 May 2025 21:38:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69E3FC3ABCB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 May 2025 22:47:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZxCfS5X4Hz2xjv;
-	Tue, 13 May 2025 07:38:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.7
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747055827;
-	cv=none; b=oAPxql+1zXbpZetZ0Hw5bQYE5ugfXEq29vGZEdm4XT5UpYMlx1BVj8q1W14VSFEt17i1h3806+BOESfRJdfMGEs7xVX4nYRaFDfIegiL6kEOH/vQrFlYnHP8ElLr9PDjO+3CyIDGXgxaHEHEwuzPnjwA1B1+OoIYS+aPtJsC8JoJETMqvKJnPzu/Erxhd6de/Lx6moAD3T++D53AgwBCi0mKlzPKvHUKgZaEq3X9EszYm4TgaMptzQ/FuDbHRPdSKUTUa3Tum7GZewzTYUSeBvaV8VwFVeRe+vAyIBX3QS+zleQwn2+I0/e0k/EOUN1O7xSB6YCwyRkl0YJs92LoFA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZxF924NYQz2xnM;
+	Tue, 13 May 2025 08:47:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747090022;
+	cv=none; b=aO6jwxmu22ao2caKynxFWR2PdHZP1MexxFsf5jsQUDfAmEYP5CL9GqYG8sY7/k6dOLroo4vaLBASczdOYgjAFM+xjCH1BlfRMeumqy29h+hZVtestuOiyPhpbFAZ6dRVdqS9Yo/r+qqqpFphfdWsSfpLZlM47kDbt8XOlrVv3swm/S32LbV6CIrnNBH7QALeFSrUXVTF1zqKqziHcTjZQNZHW7TwoLcPIzkh6xBhGEMJrs8Wh6SXhO9en3JwUgTC2JIJfNN+vnWiFuil1MkXGICt0EE4m14QoZOXhh2CT3xrkSbkMhRjKiRxXIP6zBOlJiE6gf+n5FN/8JVJPgR27A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747055827; c=relaxed/relaxed;
-	bh=haOrPHUuchDPkLi2v3yXHCKRYTqMznWY4qj2j2lSWl4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=fXDkJFyPRYy3mz65nJCd/2L48jcGFlos95DuCFsGn5hAtu5B/vX+DCsHJKATu2qZDQi++9EoRcwIo7GaKnVp0Oqijv1+UEuwdMByaBkSIi3GNc4SGNo5PObS8pbbJccI1lRIA0EkoiJEOJQ9XGtG88yM45ePzDVBG2jaJpwvvMmPjZ7Har0j8DKlvvSouf/M+Fhw25dQQF7IdwhHEJjgp+RBgvC/M/Vk6eQD0JTJIQz5hIHamFbwL3hktqfbRVXfL3dLjn364EBrMCdTqUiuVKEutdd5vrp0ASR+m6IaGY6j77vK3f+fgYtV3xFRjNT/ltrAZBPcL2Dt9IJ3gRJ3wg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KOR0jkaI; dkim-atps=neutral; spf=none (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=jacek.lawrynowicz@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1747090022; c=relaxed/relaxed;
+	bh=+Pxty47wzhSe18CB3+iQWaxbdDCtth5cjzLv0DsWG+M=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=XWf8QEDY1VCidNYwOw6Nef1Bv+bAq3mtkOZsEVIBLG2BBF+AcrDBWVGNboBai8D7nMUQrQ2+jhEaw2GcIt718LdV6mnj64RISymyaQzi05F1+/0/VrbQ/Ye4oABfaVtGc5ZP6zbFkt9WY5DYXUhC4F86H2QGAJkHkh1fE+cye8cNe4ff0fRDHhkOt2rFQs8i+Kx7nYWyjezW3mcdkK/qQNv2uhKKwc9eLOSA5AwirwAZjeS5O6spyqjWsYcx77+n3YQ+jtmncrgHgp1KD1bjAfj2uNoZT5g5S/OVWbI9zF1FQAmu42fSoAykcYWCesudbx3ndPlgHEGLuzI0gRhjwA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gW4nZDVb; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KOR0jkaI;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gW4nZDVb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.7; helo=mgamail.intel.com; envelope-from=jacek.lawrynowicz@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Mon, 12 May 2025 23:17:04 AEST
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=gbatra@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4Zx0WN5bkyz2xlL
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 May 2025 23:17:04 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1747055825; x=1778591825;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=N+0LFGTtI6zB+BSNgrVSHcilV81hSz+0mu8K+VGrGKw=;
-  b=KOR0jkaInErFHr6zqMr7sXrO52uytgKeUDdr3P43+hTe7WP5pKS/P7vH
-   UGs/UbrCDbG3QY4+PbKp+GEYSLVBrZ85sdURFsyGAKCnHAFi9i2BBJ7aC
-   n8PoT7h4fzBo9qZX9z3x+LZ29EK8Q7AjSIAo3Gvx7Pc+d9I7l4/wYzunt
-   r1LpeninaJiGpQY2wLSE56+em/SARycpIwxX4xT+GJ4/YgHCCR/hQTs3G
-   Vhv2nMfxRWq7bhAF4fzCmCn9RTiJMaI5GXzWEXqjdOeBsH6yHGrS9RMp6
-   mV48VknGxeQrYd/DMW+gpcNZiqJsPvmtkAo8X+WimKF9o9V+hTwELt9xN
-   g==;
-X-CSE-ConnectionGUID: YO0PxY7TSwC7z423ji68ow==
-X-CSE-MsgGUID: UTTQQTpuSaehKljYCLB6SQ==
-X-IronPort-AV: E=McAfee;i="6700,10204,11431"; a="74243972"
-X-IronPort-AV: E=Sophos;i="6.15,282,1739865600"; 
-   d="scan'208";a="74243972"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by fmvoesa101.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 May 2025 06:15:57 -0700
-X-CSE-ConnectionGUID: mF0Tr4TVTgSXs/DMLsD7rQ==
-X-CSE-MsgGUID: /tqYRHGYSri+FGM+Rb+4MA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,282,1739865600"; 
-   d="scan'208";a="138329163"
-Received: from tronach-mobl.ger.corp.intel.com (HELO [10.245.84.129]) ([10.245.84.129])
-  by fmviesa009-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 May 2025 06:15:51 -0700
-Message-ID: <c26c38da-401e-4044-8b9e-cd5547e61677@linux.intel.com>
-Date: Mon, 12 May 2025 15:15:49 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZxF902KsYz2xjN
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 May 2025 08:46:59 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 54CLIjSu025476
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 May 2025 22:46:57 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=+Pxty47wzhSe18CB3+iQWaxbdDCtth5cjzLv0DsWG
+	+M=; b=gW4nZDVbqGt/wduJh2UiaJLUP8n8XR4unPQoUN/3FQh9+O3hfQqkwekER
+	spy9sjMRsfzxVgG7yWC8kGZIGnLXvYmOsivTgHoUF/lGPDZW9pVyx2d2XNR0rusx
+	HONLEsnllUCXqpP+GAZc+l8nYMN1iIHnyLvsAn/stxjNle+p3vQFZ+XeloP8+Z8g
+	cOYJ30IadawzMkXGJ7tq4oZtJ4gPNk86R1bF2tjRImQYasRoTvsj1YeFTY/KdhvE
+	2PXzkj1/b7SI3m48NMJJrDrUz/3VNbAdQv4rDbSC5COYDMO+uKoAKHTlXLlx7Hqf
+	cWNLDJu74biNxU3lBeRFhsCmZww2Q==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46krsg8a3t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 May 2025 22:46:56 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 54CMkuxr005924;
+	Mon, 12 May 2025 22:46:56 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46krsg8a3q-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 12 May 2025 22:46:56 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 54CMVh36003597;
+	Mon, 12 May 2025 22:46:55 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 46jkbkg1bd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 12 May 2025 22:46:55 +0000
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 54CMkoTu28312210
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 12 May 2025 22:46:50 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D8C4958059;
+	Mon, 12 May 2025 22:46:53 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 7F94C5804B;
+	Mon, 12 May 2025 22:46:53 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.61.248.25])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 12 May 2025 22:46:53 +0000 (GMT)
+From: Gaurav Batra <gbatra@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
+Cc: Gaurav Batra <gbatra@linux.ibm.com>, Nilay Shroff <nilay@linux.ibm.com>,
+        Ritesh Harjani <ritesh.list@gmail.com>
+Subject: [PATCH v3] powerpc/pseries/iommu: Fix kmemleak in TCE table userspace view
+Date: Mon, 12 May 2025 17:46:53 -0500
+Message-Id: <20250512224653.35697-1-gbatra@linux.ibm.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,59 +91,95 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 2/6] accel/ivpu: Use effective buffer size for zero
- terminator
-To: Markus Burri <markus.burri@mt.com>, linux-kernel@vger.kernel.org
-Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Naveen N Rao <naveen@kernel.org>,
- Maciej Falkowski <maciej.falkowski@linux.intel.com>,
- Oded Gabbay <ogabbay@kernel.org>, Linus Walleij <linus.walleij@linaro.org>,
- Bartosz Golaszewski <brgl@bgdev.pl>, Nuno Sa <nuno.sa@analog.com>,
- Olivier Moysan <olivier.moysan@foss.st.com>,
- Jonathan Cameron <jic23@kernel.org>, Lars-Peter Clausen <lars@metafoo.de>,
- linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org,
- linux-gpio@vger.kernel.org, linux-iio@vger.kernel.org,
- Markus Burri <markus.burri@bbv.ch>
-References: <20250508130612.82270-1-markus.burri@mt.com>
- <20250508130612.82270-3-markus.burri@mt.com>
-Content-Language: en-US
-From: Jacek Lawrynowicz <jacek.lawrynowicz@linux.intel.com>
-Organization: Intel Technology Poland sp. z o.o. - ul. Slowackiego 173, 80-298
- Gdansk - KRS 101882 - NIP 957-07-52-316
-In-Reply-To: <20250508130612.82270-3-markus.burri@mt.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTEyMDIzMyBTYWx0ZWRfX/ckpdosvCk3j kqZIBc8aiKPKH4i8pYV0+3cYGMRGkeNTNDm6J7f9EdVgknMwfJwotxC/ak7/SpuHgTsxqwdwgGN imJ+cVkl5GjagqDbuXgQNdy5016lfCvGmzVDhzU4WZ5FiEcR/gg4oWYjlpqX4iPmCDqaW3NhhCg
+ lavhnal3MoOY9Ofidw4q6fWTdORbjSxctsHfepHJ2vU9fZojYoanhpvfJETrUvGVXHBwmBgikpX 2VHdQ1t+e7wgvuCSZ+cWKPFPMdXPZAt3Go39F39+klajhfu5t22V2i9lZ8FW5a8+x6qwf46JHbE S4sAkaZlW9xUCVMu8TWaiAIIfa3eJWf9mWkPJMvHHG/j/UQtaC1ryBcy7Wd3q0rRdHKaSqDtFpC
+ UkcheZfy7Bo5So6u6M0pvFquwMBmXnc5GaVC2Gc5z3pVmd/JJzrE8vMNv25Uo5WlBzFEPtzx
+X-Proofpoint-ORIG-GUID: GnjMcRZ36jo-dhN46PKXRcoPs252YSN_
+X-Proofpoint-GUID: Q8WyzFAPVd5YB4aCsfs_tzm652eZTvDL
+X-Authority-Analysis: v=2.4 cv=VvEjA/2n c=1 sm=1 tr=0 ts=68227a60 cx=c_pps a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17 a=dt9VzEwgFbYA:10 a=VnNF1IyMAAAA:8 a=pGLkceISAAAA:8 a=_ic8xWZxl3AzqVNFu_8A:9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
+ definitions=2025-05-12_07,2025-05-09_01,2025-02-21_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0 impostorscore=0
+ bulkscore=0 phishscore=0 malwarescore=0 suspectscore=0 priorityscore=1501
+ mlxscore=0 clxscore=1015 spamscore=0 lowpriorityscore=0 mlxlogscore=825
+ classifier=spam authscore=0 authtc=n/a authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2504070000
+ definitions=main-2505120233
 
-Thanks for the fix, applied to drm-misc-fixes
+When a device is opened by a userspace driver, via VFIO interface, DMA
+window is created. This DMA window has TCE Table and a corresponding
+data for userview of TCE table.
 
-On 5/8/2025 3:06 PM, Markus Burri wrote:
-> Use the effective written size instead of original size as index for zero
-> termination. If the input from user-space is to larger and the input is
-> truncated, the original size is out-of-bound.
-> Since there is an upfront size check here, the change is for consistency.
-> 
-> Signed-off-by: Markus Burri <markus.burri@mt.com>
-> ---
->  drivers/accel/ivpu/ivpu_debugfs.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/drivers/accel/ivpu/ivpu_debugfs.c b/drivers/accel/ivpu/ivpu_debugfs.c
-> index f0dad0c9ce33..cd24ccd20ba6 100644
-> --- a/drivers/accel/ivpu/ivpu_debugfs.c
-> +++ b/drivers/accel/ivpu/ivpu_debugfs.c
-> @@ -455,7 +455,7 @@ priority_bands_fops_write(struct file *file, const char __user *user_buf, size_t
->  	if (ret < 0)
->  		return ret;
->  
-> -	buf[size] = '\0';
-> +	buf[ret] = '\0';
->  	ret = sscanf(buf, "%u %u %u %u", &band, &grace_period, &process_grace_period,
->  		     &process_quantum);
->  	if (ret != 4)
+When the userspace driver closes the device, all the above infrastructure
+is free'ed and the device control given back to kernel. Both DMA window
+and TCE table is getting free'ed. But due to a code bug, userview of the
+TCE table is not getting free'ed. This is resulting in a memory leak.
+
+Befow is the information from KMEMLEAK
+
+unreferenced object 0xc008000022af0000 (size 16777216):
+  comm "senlib_unit_tes", pid 9346, jiffies 4294983174
+  hex dump (first 32 bytes):
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  backtrace (crc 0):
+    kmemleak_vmalloc+0xc8/0x1a0
+    __vmalloc_node_range+0x284/0x340
+    vzalloc+0x58/0x70
+    spapr_tce_create_table+0x4b0/0x8d0
+    tce_iommu_create_table+0xcc/0x170 [vfio_iommu_spapr_tce]
+    tce_iommu_create_window+0x144/0x2f0 [vfio_iommu_spapr_tce]
+    tce_iommu_ioctl.part.0+0x59c/0xc90 [vfio_iommu_spapr_tce]
+    vfio_fops_unl_ioctl+0x88/0x280 [vfio]
+    sys_ioctl+0xf4/0x160
+    system_call_exception+0x164/0x310
+    system_call_vectored_common+0xe8/0x278
+unreferenced object 0xc008000023b00000 (size 4194304):
+  comm "senlib_unit_tes", pid 9351, jiffies 4294984116
+  hex dump (first 32 bytes):
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+    00 00 00 00 00 00 00 00 00 00 00 00 00 00 00 00  ................
+  backtrace (crc 0):
+    kmemleak_vmalloc+0xc8/0x1a0
+    __vmalloc_node_range+0x284/0x340
+    vzalloc+0x58/0x70
+    spapr_tce_create_table+0x4b0/0x8d0
+    tce_iommu_create_table+0xcc/0x170 [vfio_iommu_spapr_tce]
+    tce_iommu_create_window+0x144/0x2f0 [vfio_iommu_spapr_tce]
+    tce_iommu_create_default_window+0x88/0x120 [vfio_iommu_spapr_tce]
+    tce_iommu_ioctl.part.0+0x57c/0xc90 [vfio_iommu_spapr_tce]
+    vfio_fops_unl_ioctl+0x88/0x280 [vfio]
+    sys_ioctl+0xf4/0x160
+    system_call_exception+0x164/0x310
+    system_call_vectored_common+0xe8/0x278
+
+Fixes: f431a8cde7f1 ("powerpc/iommu: Reimplement the iommu_table_group_ops for pSeries")
+Signed-off-by: Gaurav Batra <gbatra@linux.ibm.com>
+Reviewed-by: Nilay Shroff <nilay@linux.ibm.com>
+Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+---
+ arch/powerpc/platforms/pseries/iommu.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
+
+diff --git a/arch/powerpc/platforms/pseries/iommu.c b/arch/powerpc/platforms/pseries/iommu.c
+index d6ebc19fb99c..eec333dd2e59 100644
+--- a/arch/powerpc/platforms/pseries/iommu.c
++++ b/arch/powerpc/platforms/pseries/iommu.c
+@@ -197,7 +197,7 @@ static void tce_iommu_userspace_view_free(struct iommu_table *tbl)
+ 
+ static void tce_free_pSeries(struct iommu_table *tbl)
+ {
+-	if (!tbl->it_userspace)
++	if (tbl->it_userspace)
+ 		tce_iommu_userspace_view_free(tbl);
+ }
+ 
+
+base-commit: 02ddfb981de88a2c15621115dd7be2431252c568
+-- 
+2.39.3 (Apple Git-146)
 
 
