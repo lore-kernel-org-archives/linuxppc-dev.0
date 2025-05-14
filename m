@@ -1,125 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-8578-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8579-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 388C1C3ABD8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 May 2025 15:10:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B012BC3ABCC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 May 2025 15:15:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZyGwm5WRKz2yrt;
-	Thu, 15 May 2025 01:10:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747235400;
-	cv=none; b=DC8Qewyy8UFySebuTqe40qfchNreTb8AiqfyGXW2MEK1IhR+zDbtJ0Vc1b1tFBFvwV36nHSYHgF/txMuPKKSUXjumuE667H6CHBPyoyxJlLXNDL2iuVuDScvQ6dgHMeXuP4889CCKefXCbWyFH3WCSW5juw7iWxRW9pzPDQqf0Ov6krbi6UK0EIFHUU/fcejLdMAFdoKO7F6eqan8QBgbleznH5ffF50SjulVedPSRCcX+2lIPMUDqY+jQJLOIJ1U3mXQ5Y/Ewgrorw6zsWYrwgxwwMhuLeB2lYX/z6JeyrzcHkYwiCkNeJ+oEDJaEyuoe9D+q8dcAtyrXYBquvnbA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZyH3c2CDzz2xtt;
+	Thu, 15 May 2025 01:15:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.17
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747235756;
+	cv=none; b=WS6hsZAM0EJUUkb8xoI7FSeNVbMHB5qzHLubYV1pgQ8usF0vf7dxQ3Qv0IMFROPUKmF/9XKkRY6kCFIjWwOStfMzZ3uq6mP4HQXJvlMqYTZmhT2bKXUg69XFsKQSPJ/2NOxV1Eqadr0MvOuTLrzskeuRG7C1l+pIad6phueMBMKlfH7ovYDQC+uM+3OEd3ireuvh3DmBBwdmIcPVE+HoJoqFKh8RBvVmlW+l3s9iCA/HSAnU77SF0aBYL9w9jTgu4DxhWezUFGmkzcjZcjCa2MJE+5zGohVeHDtj1dqwId0t8NhQWoAQYrC3dPnbOEQ/IfyliXAR/4OJYdjJ0QpBKA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747235400; c=relaxed/relaxed;
-	bh=SGLS4mX8Cr6nBhXohVGb4hxEdStSi2AhSRa+lOkd6Rc=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=gj1vK7uFeQ9M0IJnUn3u9nw/EUH8URHWW22uUpb50ahzWVJxH23/7Y6SHuGjju8HsN+NYVjXY6oR6KNxAdGup5E/EdA43uwF3WBvTcUkODAARNEXmbGCflRUc0Tpb2gwUJ5wync+KORCJXW1TjovmBO1dfubwkbtNCVfTbMbz9E9JQyuRNtctoenAUAfcNdXwurbT+JpALGBMBcY1hK0dsZxVHGpXA9KuO3AnWchIP2Zowwl2zfA0roYc91IUcGInm1leM0xn1qksYxm0VOYneR0+xQ2cQgJukaoUwHIzWgJb/qJqjTNtC+BIbHSK8dEK3MtNsGkAftNqcuol3ah+w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EDeEF4IO; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1747235756; c=relaxed/relaxed;
+	bh=l9Sy2nZG/65Ih5GxVFRbkt9VFk6N59raehsFZJZALN4=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=NSref6HmkwX6OUK9DkZeAAxSkGngUsaXp2gWm8eAS5gSzOLlonwHESZ+frypHHq8UvxVSLPh8eWi67PYLuLGHf/I0Og7gqZA3XF3Bl9v5uTde8+yEYSvZeWU5IByJGdRAn9Z2NRHt6+rXpnYCFOOOMeiTXD7Juz0/mGVFHrXH+ViSGtp2N4fAtroey3/BzFn9pukC53hFZNpq6ofnpVDee5/peTN6O1JUEEMHBdDDnr2SGWuliO9B9Vmgv26MWbf7sJX5hJW/XyX4fYx7I/Uv+MlCat59WqumoVAfDXJxIpuvC5UhAtLga5MNjBgjJk92FWXllsmQoOvZeuQ/eJLQQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Jh9Wq4Tb; dkim-atps=neutral; spf=none (client-ip=192.198.163.17; helo=mgamail.intel.com; envelope-from=kan.liang@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=EDeEF4IO;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Jh9Wq4Tb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.17; helo=mgamail.intel.com; envelope-from=kan.liang@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Thu, 15 May 2025 01:15:53 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZyGwl4v7sz2yr6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2025 01:09:59 +1000 (AEST)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 54EEn9jI025341;
-	Wed, 14 May 2025 15:09:21 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=SGLS4m
-	X8Cr6nBhXohVGb4hxEdStSi2AhSRa+lOkd6Rc=; b=EDeEF4IOYx2AE+f7lPQiyF
-	IRyvtU0UyyfLRz/m/EGB2YPnrJj9LgYYnyKusAffnlttd89Nis4X+sz92EjzQjpd
-	jwWTsThw+Y5GLOMoGOaVRMfV0OIZuKKtHGSOKF/3U3aCRx6MlSPpa8KnmJhef1VP
-	aN0cNxncPfkE7KPekD8F3idZQdgoQUBsveGNHXvz7wwQbEnYCE8lqtt4iwtDXWi4
-	CRAafK2tdRSH6gutURszp7nStU4k4ZayI86IjkNBuD7e4q5LDAL/8q+NRhvdodVD
-	z0xzgPw0UIRz+jrbwxRGYTycmQN76r39KZq4wMWTuDGk5HgF+HaIttAexs8pYn9Q
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46mbs6mygm-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 14 May 2025 15:09:21 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 54EF3ppg015552;
-	Wed, 14 May 2025 15:09:20 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46mbs6mygh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 14 May 2025 15:09:20 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 54EDIrZ4026656;
-	Wed, 14 May 2025 15:09:19 GMT
-Received: from smtprelay07.wdc07v.mail.ibm.com ([172.16.1.74])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 46mbfpcun1-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 14 May 2025 15:09:19 +0000
-Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
-	by smtprelay07.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 54EF9JUY61669786
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 14 May 2025 15:09:19 GMT
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F3F885805D;
-	Wed, 14 May 2025 15:09:18 +0000 (GMT)
-Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F2A225805C;
-	Wed, 14 May 2025 15:09:15 +0000 (GMT)
-Received: from li-43857255-d5e6-4659-90f1-fc5cee4750ad.ibm.com (unknown [9.61.139.222])
-	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 14 May 2025 15:09:15 +0000 (GMT)
-Message-ID: <10ca077d6d51fac10e56c94db4205a482946d15f.camel@linux.ibm.com>
-Subject: Re: [PATCH v3 2/9] ima: efi: Drop unnecessary check for
- CONFIG_MODULE_SIG/CONFIG_KEXEC_SIG
-From: Mimi Zohar <zohar@linux.ibm.com>
-To: Thomas =?ISO-8859-1?Q?Wei=DFschuh?= <linux@weissschuh.net>,
-        Masahiro
- Yamada <masahiroy@kernel.org>,
-        Nathan Chancellor <nathan@kernel.org>, Arnd
- Bergmann <arnd@arndb.de>,
-        Luis Chamberlain <mcgrof@kernel.org>,
-        Petr Pavlu
- <petr.pavlu@suse.com>,
-        Sami Tolvanen <samitolvanen@google.com>,
-        Daniel
- Gomez <da.gomez@samsung.com>, Paul Moore <paul@paul-moore.com>,
-        James
- Morris <jmorris@namei.org>,
-        "Serge E. Hallyn" <serge@hallyn.com>,
-        Jonathan
- Corbet <corbet@lwn.net>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael
- Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Naveen N Rao
- <naveen@kernel.org>,
-        Roberto Sassu <roberto.sassu@huawei.com>,
-        Dmitry
- Kasatkin <dmitry.kasatkin@gmail.com>,
-        Eric Snowberg
- <eric.snowberg@oracle.com>,
-        Nicolas Schier <nicolas.schier@linux.dev>
-Cc: Fabian =?ISO-8859-1?Q?Gr=FCnbichler?= <f.gruenbichler@proxmox.com>,
-        Arnout Engelen <arnout@bzzt.net>, Mattia Rizzolo <mattia@mapreri.org>,
-        kpcyrd <kpcyrd@archlinux.org>, Christian Heusel <christian@heusel.eu>,
-        =?ISO-8859-1?Q?C=E2ju?= Mihai-Drosi <mcaju95@gmail.com>,
-        linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
-        linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Date: Wed, 14 May 2025 11:09:15 -0400
-In-Reply-To: <20250429-module-hashes-v3-2-00e9258def9e@weissschuh.net>
-References: <20250429-module-hashes-v3-0-00e9258def9e@weissschuh.net>
-	 <20250429-module-hashes-v3-2-00e9258def9e@weissschuh.net>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.52.4 (3.52.4-2.fc40) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZyH3Y2xbnz2xCC
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2025 01:15:53 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1747235753; x=1778771753;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=s+EyXjLUXo0M2dfj157AL5fvrY36sWvSBJ2tuImTWtk=;
+  b=Jh9Wq4Tbk7P9e4IL01NFirnzkOVtGjyu39qv3hlTf9sOpYOzoFLhHcgY
+   4u92XhNiVuUyn8xSIpwr4G4ajAFhIbhEOlDHgzpC03GqtH/kAkLPyjjnE
+   CHbbDRkJNdHwvC4Fjyn4ZKE+zJYnHcEWsbBAGLcP3RjkKKpiApQLr6v8h
+   HqJC4KrCubhZ18V+tob7B//IJmpYNFaO/84kZHCX3PFL3gDlH9EskDVw4
+   usXGt8GNmSLy7PTGBiG4A5zMlo8CaiszyZ+gOiLARFD4+OL+eBMzGQw5W
+   hFYDarOrLMCbbWZ6PEYOvH6Vub/v6FZVnZoTeyI/xMharZ5uESySUD1eV
+   Q==;
+X-CSE-ConnectionGUID: T7kOFq1DQzqpRTkUimYmCw==
+X-CSE-MsgGUID: FMv3+bAuQ9aYVhLf6v7Zjg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11433"; a="49072743"
+X-IronPort-AV: E=Sophos;i="6.15,288,1739865600"; 
+   d="scan'208";a="49072743"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 May 2025 08:14:44 -0700
+X-CSE-ConnectionGUID: CIB9tTiBQxeDfYbnRRxmEw==
+X-CSE-MsgGUID: X62WA9/KTryQTVKPFxrNVw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.15,288,1739865600"; 
+   d="scan'208";a="142939165"
+Received: from kanliang-dev.jf.intel.com ([10.165.154.102])
+  by fmviesa005.fm.intel.com with ESMTP; 14 May 2025 08:14:44 -0700
+From: kan.liang@linux.intel.com
+To: peterz@infradead.org,
+	mingo@redhat.com,
+	namhyung@kernel.org,
+	irogers@google.com,
+	mark.rutland@arm.com,
+	linux-kernel@vger.kernel.org,
+	linux-perf-users@vger.kernel.org
+Cc: eranian@google.com,
+	ctshao@google.com,
+	tmricht@linux.ibm.com,
+	Kan Liang <kan.liang@linux.intel.com>,
+	Athira Rajeev <atrajeev@linux.vnet.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH V2 05/15] powerpc/perf: Remove driver-specific throttle support
+Date: Wed, 14 May 2025 08:13:51 -0700
+Message-Id: <20250514151401.2547932-6-kan.liang@linux.intel.com>
+X-Mailer: git-send-email 2.38.1
+In-Reply-To: <20250514151401.2547932-1-kan.liang@linux.intel.com>
+References: <20250514151401.2547932-1-kan.liang@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -133,74 +90,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTE0MDEzNSBTYWx0ZWRfXxHBh49BiMB+Z MOVdYBkj3WfGeCvyIQdcjIWtbvhdgBJDYmtH6aIKRjRnMJBKYgzpPmkHWOOqemh7EtoawfXuMN4 eKKgq7Ry6EeCtJw7jp7/S2fYItn19YaPW+hBVQRi+4t3a5UAZNQ5UPInke8w30g5b8se68ZT7Ax
- uyX1Mp5KfZEBF1+6kD3JyFEbD6Ba5ORKHBGX2UYN+mA+u9b5PNgiZ4CrEnefA6hvAWwSLzSGVz5 lfZsKkS3N4Z5aAyu4/uL9doUnd4OJRE2qSwiQt6qWZvzc77oDfFAmcU2G+ATyRKgE9IvpviTCgs UWQHCPNHhWFnBgTjcLgT6zGCCSV8LvhiQkuSOBWZC40lmYxl/++p50z0pqMJ3qtG/nPGT+SAqw5
- AgDBYLW1PLqYSYudLSRYQO3vcficUjVtjVwE+OfIpvmnKwF2qJ8sxjnazQ4TXbapLUyVp0K4
-X-Proofpoint-ORIG-GUID: j22mpxTFY4WP2OwphhpcY-gxyz0D7Xyv
-X-Authority-Analysis: v=2.4 cv=d5f1yQjE c=1 sm=1 tr=0 ts=6824b221 cx=c_pps a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17 a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=VTue-mJiAAAA:8 a=GYJFTEJjVrNzjNUGXfAA:9 a=QEXdDO2ut3YA:10
- a=S9YjYK_EKPFYWS37g-LV:22
-X-Proofpoint-GUID: DQ7JcpUJJQk_GINm-Q0_GETzDy7ehAm2
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
- definitions=2025-05-14_04,2025-05-14_03,2025-02-21_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 bulkscore=0
- spamscore=0 clxscore=1011 mlxscore=0 lowpriorityscore=0 priorityscore=1501
- suspectscore=0 mlxlogscore=999 impostorscore=0 adultscore=0 phishscore=0
- classifier=spam authscore=0 authtc=n/a authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2505070000
- definitions=main-2505140135
+Content-Transfer-Encoding: 8bit
 
-On Tue, 2025-04-29 at 15:04 +0200, Thomas Wei=C3=9Fschuh wrote:
-> When configuration settings are disabled the guarded functions are
-> defined as empty stubs, so the check is unnecessary.
-> The specific configuration option for set_module_sig_enforced() is
-> about to change and removing the checks avoids some later churn.
->=20
-> Signed-off-by: Thomas Wei=C3=9Fschuh <linux@weissschuh.net>
->=20
-> ---
-> This patch is not strictly necessary right now, but makes looking for
-> usages of CONFIG_MODULE_SIG easier.
-> ---
-> =C2=A0security/integrity/ima/ima_efi.c | 6 ++----
-> =C2=A01 file changed, 2 insertions(+), 4 deletions(-)
->=20
-> diff --git a/security/integrity/ima/ima_efi.c b/security/integrity/ima/im=
-a_efi.c
-> index
-> 138029bfcce1e40ef37700c15e30909f6e9b4f2d..a35dd166ad47beb4a7d46cc3e8fc604=
-f57e03ecb
-> 100644
-> --- a/security/integrity/ima/ima_efi.c
-> +++ b/security/integrity/ima/ima_efi.c
-> @@ -68,10 +68,8 @@ static const char * const sb_arch_rules[] =3D {
-> =C2=A0const char * const *arch_get_ima_policy(void)
-> =C2=A0{
-> =C2=A0	if (IS_ENABLED(CONFIG_IMA_ARCH_POLICY) && arch_ima_get_secureboot(=
-)) {
-> -		if (IS_ENABLED(CONFIG_MODULE_SIG))
-> -			set_module_sig_enforced();
-> -		if (IS_ENABLED(CONFIG_KEXEC_SIG))
-> -			set_kexec_sig_enforced();
-> +		set_module_sig_enforced();
-> +		set_kexec_sig_enforced();
-> =C2=A0		return sb_arch_rules;
+From: Kan Liang <kan.liang@linux.intel.com>
 
-Hi Thomas,
+The throttle support has been added in the generic code. Remove
+the driver-specific throttle support.
 
-I'm just getting to looking at this patch set.  Sorry for the delay.
+Besides the throttle, perf_event_overflow may return true because of
+event_limit. It already does an inatomic event disable. The pmu->stop
+is not required either.
 
-Testing whether CONFIG_MODULE_SIG and CONFIG_KEXEC_SIG are configured gives=
- priority
-to them, rather than to the IMA support.  Without any other changes, both s=
-ignature
-verifications would be enforced.  Is that the intention?
+Signed-off-by: Kan Liang <kan.liang@linux.intel.com>
+Cc: Athira Rajeev <atrajeev@linux.vnet.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+---
+ arch/powerpc/perf/core-book3s.c  | 6 ++----
+ arch/powerpc/perf/core-fsl-emb.c | 3 +--
+ 2 files changed, 3 insertions(+), 6 deletions(-)
 
-Mimi
-
-> =C2=A0	}
-> =C2=A0	return NULL;
->=20
+diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
+index 42ff4d167acc..8b0081441f85 100644
+--- a/arch/powerpc/perf/core-book3s.c
++++ b/arch/powerpc/perf/core-book3s.c
+@@ -2344,12 +2344,10 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
+ 			ppmu->get_mem_weight(&data.weight.full, event->attr.sample_type);
+ 			data.sample_flags |= PERF_SAMPLE_WEIGHT_TYPE;
+ 		}
+-		if (perf_event_overflow(event, &data, regs))
+-			power_pmu_stop(event, 0);
++		perf_event_overflow(event, &data, regs);
+ 	} else if (period) {
+ 		/* Account for interrupt in case of invalid SIAR */
+-		if (perf_event_account_interrupt(event))
+-			power_pmu_stop(event, 0);
++		perf_event_account_interrupt(event);
+ 	}
+ }
+ 
+diff --git a/arch/powerpc/perf/core-fsl-emb.c b/arch/powerpc/perf/core-fsl-emb.c
+index d2ffcc7021c5..7120ab20cbfe 100644
+--- a/arch/powerpc/perf/core-fsl-emb.c
++++ b/arch/powerpc/perf/core-fsl-emb.c
+@@ -635,8 +635,7 @@ static void record_and_restart(struct perf_event *event, unsigned long val,
+ 
+ 		perf_sample_data_init(&data, 0, last_period);
+ 
+-		if (perf_event_overflow(event, &data, regs))
+-			fsl_emb_pmu_stop(event, 0);
++		perf_event_overflow(event, &data, regs);
+ 	}
+ }
+ 
+-- 
+2.38.1
 
 
