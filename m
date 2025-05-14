@@ -1,108 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-8580-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8581-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EA66C3ABD8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 May 2025 15:22:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5E904C3ABDD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 14 May 2025 16:29:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZyHBv5MkXz2yrl;
-	Thu, 15 May 2025 01:22:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::136"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747236135;
-	cv=none; b=RTB9NjT6AEOfp+IWUbGwJjy/8CyOWS3FO+tH2vE9G/1fC6/5y2ebWSmBpgc78Fu14GPH7/uPGBxoYm6W71UsMfDhL4+eC4Kf+M56PR9xfwWTmPCFUh8t4C2dhWanRzpiYEN/tLvkH8h+OEpHrny+31cDDkN4C/0RSx89rMHSJyg08e5b7EYYVCUnaLcaI6I5x1QceCLW9xNeKTDNqCcwbzHMDlBXrBiUZ2dyoGQaLGwWHgS1WRoob04HhbjtrwPCDy1WEwtKrzOHAuqpnA/0VXdQLeMvf10ztuRizUSoktYJR60UV7DjBxX5XtR7Ex6vnrPZFCIm7Y+Pd3SVIc9jZw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZyJhm4KQLz2ywh;
+	Thu, 15 May 2025 02:29:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747240184;
+	cv=none; b=SswiPrCkLSt/0sacwG33P27lNcH40NSnQu+kQaZj8vSplbSACp9O84LcT/WSrWpQZ3RIJtR3IT+6E6IBMJhaHVzpEAS1nW532QNbSD3dPVI8zcGgrWAG/dy6vT7k+2fvxSFZsWXMNkmgIULiZu61vQq8hLqHW85PCCcVnFT78JUdY9b0V04cs+rsf6/fsO+02Hca3e2NJYnG+kqna3umDOHEefwe2rCVfIeZhk057uVS1LUQzfIBuqWjWlwd8F8l/8+LvVZ2gH5KEq1uomunMQZnH9+yxSLEISjjGX/wah1Zw6LGz6L8a7BCsFpC76xGEUiN27cSTbOPTGvZki8O3w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747236135; c=relaxed/relaxed;
-	bh=yapZ2s67BLNwus6ibHABzXGBCoZzVlVupFJe/q2qy/U=;
-	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
-	 MIME-Version:Content-Type; b=XJg6KPOjGirNcLUxqYYpe1qHZ4YedDdBf6OgwczkI4CWpRj72MB0MfB/swJ4WZBUVrYkhoylqsxNd9fg37t8OdcT/f0+Zp+wQhOAhQ1z1p08IHTq5fA0gedkezD606/iKxCwvqMQS/PzFhBZ4gD5nyi/nQ6uiutR070ZMdmWXj8Zr1eKb93xSEj9geGp/BcBOfvN5W+CUQRWV0geYSzzbb2xbIz+znxGsc95MXqA5hB7R1i55d8XzidL9V92hrzn0vzbHWmGhtf6WmkIH8eYibtcqBAP4DvkHmQwT6jvRLkV8dbpFurs01GBFxRnd1oqU0TJt2BiLOjWheLi88pS2A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com; dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2025042001 header.b=djZFgxiA; dkim-atps=neutral; spf=pass (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org) smtp.mailfrom=zytor.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zytor.com
+	t=1747240184; c=relaxed/relaxed;
+	bh=wJxYorE69NSrMrnVHCNoayopmsJOx3uJlDSWpzQxVOI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fDoMlVhK6SLD+Dp1fqiyd5vU9DboD5KaT3G6yMjBGWtWmxIssU/Gwvwk0zvB1fo3b7N99thPHTaGYxYnOtW8MQOwCUz4D/k7i3wKy2cln1vD6yxNJYB86WjdX795hDimXArkUxGWo+zPDim8+bZUxnN6ywXNtSWGGrf45ajdb4z3RyHOtI5vnOG3xqjOY6q68aZ3mKQybypw4dbOk1ywnmvsDYgIgGMMmGfNqraUAoIZXNCNYdaSAzhiGMe6xz0RjRRZTcf+Q10LkZCafU+/20sm2Lb+bjrBlYGTOJ7CHjNibDCh3nWHTrnGRL2wd8kZsLWD5377RTX/jAX85ySHmQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n0Hz+2qT; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=zytor.com header.i=@zytor.com header.a=rsa-sha256 header.s=2025042001 header.b=djZFgxiA;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=n0Hz+2qT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zytor.com (client-ip=2607:7c80:54:3::136; helo=mail.zytor.com; envelope-from=hpa@zytor.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 603 seconds by postgrey-1.37 at boromir; Thu, 15 May 2025 01:22:13 AEST
-Received: from mail.zytor.com (terminus.zytor.com [IPv6:2607:7c80:54:3::136])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZyHBs2kW6z2yr6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2025 01:22:13 +1000 (AEST)
-Received: from [127.0.0.1] ([76.133.66.138])
-	(authenticated bits=0)
-	by mail.zytor.com (8.18.1/8.17.1) with ESMTPSA id 54EFAEbT3012887
-	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NO);
-	Wed, 14 May 2025 08:10:15 -0700
-DKIM-Filter: OpenDKIM Filter v2.11.0 mail.zytor.com 54EFAEbT3012887
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zytor.com;
-	s=2025042001; t=1747235422;
-	bh=yapZ2s67BLNwus6ibHABzXGBCoZzVlVupFJe/q2qy/U=;
-	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
-	b=djZFgxiAUJE7iFHA0Wd/yFppU4TGqi4fxmoBT1mvTgxRmRiu+8QH1zl3CND+QbbP4
-	 97UVxN+J8QD8iz78UlxzP16emoOIxJpWaoO9qxu1Ec5we80T+FOOb4RfHy40YAODf4
-	 27XX25rvc06YcNMTsxppaOiXgVXhowu2DQa6R8gC1Tcuq8Oq9GVQp3swa9CciK5Vg/
-	 jv/tWyK4JR8CJyAVAYMpVNTUaE0Ax5AVAQfxExqancQ8ZpUjlh9FBEWFvjm5PCVbut
-	 6qwwqWO9GyDweGO8bFsU0TsmuX3ejxdQaqkTWk3Ymh6Yue7onjRsMrCGmrkfplN9Ef
-	 P/Ifsp+Ororjw==
-Date: Wed, 14 May 2025 08:10:12 -0700
-From: "H. Peter Anvin" <hpa@zytor.com>
-To: Arnd Bergmann <arnd@arndb.de>, Andrey Albershteyn <aalbersh@redhat.com>,
-        Richard Henderson <richard.henderson@linaro.org>,
-        Matt Turner <mattst88@gmail.com>, Russell King <linux@armlinux.org.uk>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Will Deacon <will@kernel.org>,
-        Geert Uytterhoeven <geert@linux-m68k.org>,
-        Michal Simek <monstr@monstr.eu>,
-        Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-        "James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>,
-        Helge Deller <deller@gmx.de>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Naveen N Rao <naveen@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
-        Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        Yoshinori Sato <ysato@users.osdn.me>, Rich Felker <dalias@libc.org>,
-        John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-        "David S . Miller" <davem@davemloft.net>,
-        Andreas Larsson <andreas@gaisler.com>,
-        Andy Lutomirski <luto@kernel.org>,
-        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-        Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-        Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>,
-        Alexander Viro <viro@zeniv.linux.org.uk>,
-        Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
-        =?ISO-8859-1?Q?Micka=EBl_Sala=FCn?= <mic@digikod.net>,
-        =?ISO-8859-1?Q?G=FCnther_Noack?= <gnoack@google.com>,
-        =?ISO-8859-1?Q?Pali_Roh=E1r?= <pali@kernel.org>,
-        Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
-        "Serge E. Hallyn" <serge@hallyn.com>,
-        Stephen Smalley <stephen.smalley.work@gmail.com>,
-        Ondrej Mosnacek <omosnace@redhat.com>, Tyler Hicks <code@tyhicks.com>,
-        Miklos Szeredi <miklos@szeredi.hu>,
-        Amir Goldstein <amir73il@gmail.com>
-CC: linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
-        linux-arm-kernel@lists.infradead.org, linux-m68k@vger.kernel.org,
-        linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
-        linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
-        linux-fsdevel@vger.kernel.org, linux-security-module@vger.kernel.org,
-        linux-api@vger.kernel.org, Linux-Arch <linux-arch@vger.kernel.org>,
-        selinux@vger.kernel.org, ecryptfs@vger.kernel.org,
-        linux-unionfs@vger.kernel.org, linux-xfs@vger.kernel.org,
-        Andrey Albershteyn <aalbersh@kernel.org>
-Subject: =?US-ASCII?Q?Re=3A_=5BPATCH_v5_0/7=5D_fs=3A_introduce_fi?=
- =?US-ASCII?Q?le=5Fgetattr_and_file=5Fsetattr_syscalls?=
-User-Agent: K-9 Mail for Android
-In-Reply-To: <399fdabb-74d3-4dd6-9eee-7884a986dab1@app.fastmail.com>
-References: <20250513-xattrat-syscall-v5-0-22bb9c6c767f@kernel.org> <399fdabb-74d3-4dd6-9eee-7884a986dab1@app.fastmail.com>
-Message-ID: <B17E8366-DB80-45E6-90D6-294824C40FD9@zytor.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZyJhl17jKz2yw7
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 15 May 2025 02:29:42 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id A10785C6141;
+	Wed, 14 May 2025 16:27:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 49AF8C4CEE3;
+	Wed, 14 May 2025 16:29:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1747240179;
+	bh=viHRzIvyfWm6Z/Hx1NafsPkUVC0n611P4vJNmAOjXhg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=n0Hz+2qT7JlqFqIdhMkIf/FZS59SAcmunTrJe24zF6ImEDjtBid7Z/R0NnZeRevEW
+	 sWoZWTF/BcIW7FEQ2SSNphEXHZtyXGaG3PaDdoJ0l2eXCDzV4VCFRtInmygmiHRwVi
+	 Em/RO7XV4MgUVDWY6ARSyc8/W8oRlDbv9m9KE2pR9qRemS3EYuHdYd5T7K7ANLNVnh
+	 6at9sOk9/6tKuT7Y77aFXMIYD7cPigRCng6UwhNYTG7xeoATlHWsHD24iFDbsTf38M
+	 D3Da2oZS+i9uUho2wzhmIENiG23x1GphFdldsM5DtzQqOK927IugNtM7tiY4QIgUZb
+	 b1iEoflih8IjA==
+Date: Wed, 14 May 2025 09:29:33 -0700
+From: Eric Biggers <ebiggers@kernel.org>
+To: Herbert Xu <herbert@gondor.apana.org.au>
+Cc: linux-crypto@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+	christophe.leroy@csgroup.eu, naveen@kernel.org, dtsen@linux.ibm.com,
+	segher@kernel.crashing.org, stable@vger.kernel.org
+Subject: Re: [PATCH] crypto: powerpc/poly1305 - add depends on BROKEN for now
+Message-ID: <20250514162933.GB1236@sol>
+References: <20250514051847.193996-1-ebiggers@kernel.org>
+ <aCRlU0J7QoSJs5sy@gondor.apana.org.au>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -116,40 +68,33 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain;
- charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aCRlU0J7QoSJs5sy@gondor.apana.org.au>
 
-On May 13, 2025 2:53:23 AM PDT, Arnd Bergmann <arnd@arndb=2Ede> wrote:
->On Tue, May 13, 2025, at 11:17, Andrey Albershteyn wrote:
->
->>
->> 	long syscall(SYS_file_getattr, int dirfd, const char *pathname,
->> 		struct fsxattr *fsx, size_t size, unsigned int at_flags);
->> 	long syscall(SYS_file_setattr, int dirfd, const char *pathname,
->> 		struct fsxattr *fsx, size_t size, unsigned int at_flags);
->
->I don't think we can have both the "struct fsxattr" from the uapi
->headers, and a variable size as an additional argument=2E I would
->still prefer not having the extensible structure at all and just
->use fsxattr, but if you want to make it extensible in this way,
->it should use a different structure (name)=2E Otherwise adding
->fields after fsx_pad[] would break the ioctl interface=2E
->
->I also find the bit confusing where the argument contains both
->"ignored but assumed zero" flags, and "required to be zero"
->flags depending on whether it's in the fsx_pad[] field or
->after it=2E This would be fine if it was better documented=2E
->
->
->> 		fsx=2Efsx_xflags |=3D FS_XFLAG_NODUMP;
->> 		error =3D syscall(468, dfd, "=2E/foo", &fsx, 0);
->
->The example still uses the calling conventions from a previous
->version=2E
->
->       Arnd
+On Wed, May 14, 2025 at 05:41:39PM +0800, Herbert Xu wrote:
+> Eric Biggers <ebiggers@kernel.org> wrote:
+> > From: Eric Biggers <ebiggers@google.com>
+> > 
+> > As discussed in the thread containing
+> > https://lore.kernel.org/linux-crypto/20250510053308.GB505731@sol/, the
+> > Power10-optimized Poly1305 code is currently not safe to call in softirq
+> > context.  Disable it for now.  It can be re-enabled once it is fixed.
+> > 
+> > Fixes: ba8f8624fde2 ("crypto: poly1305-p10 - Glue code for optmized Poly1305 implementation for ppc64le")
+> > Cc: stable@vger.kernel.org
+> > Signed-off-by: Eric Biggers <ebiggers@google.com>
+> > ---
+> > arch/powerpc/lib/crypto/Kconfig | 1 +
+> > 1 file changed, 1 insertion(+)
+> 
+> I thought this fix should be enough, no?
+> 
+> https://patchwork.kernel.org/project/linux-crypto/patch/aB8Yy0JGvoErc0ns@gondor.apana.org.au/
 
-Well, ioctls carry the structure size in the ioctl number, so changing the=
- structure size would change the ioctl number with it=2E
+I didn't notice that.  Probably, though I don't have time to review this subtle
+Poly1305 code.  Especially with all the weird unions in the code.  Would be
+great if the PowerPC folks would take a look.
+
+- Eric
 
