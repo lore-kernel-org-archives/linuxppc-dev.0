@@ -1,64 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-8604-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8605-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE0AEC3ABC9
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 May 2025 08:46:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53510C3ABC9
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 May 2025 11:20:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZzLKT2Pj4z2yMF;
-	Fri, 16 May 2025 18:46:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=144.6.53.87
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747385197;
-	cv=none; b=IRYCEPc0EcmwgH+tYrvMJXG8QBHJGLa3V5FC5g/hZEV2m+ZwLnSlphjlrfSKW5Mpq4IUASlqqzD6LEiBeDoF4ruoCVNTxnAg/2Tu+l1XjUi7I3UIZ15aGFIbViNSVVoZNX164J9fAIkXOkNwrzXiuNwSwToBMtv+yhf2btdtdoZ/CW0nGt1MZPNe5GCbVD4VyTjwkzFSgXAlzXbhKGa1BLVyKi3dmO4CZb2efTrZ+/MGpy6qNft1WudU0Md5u2UdeGoOluQDhzU/5FxQW6kZKiV+7MSn4vRqBnZSnlvI1fxNGb1xLuizMxaBdD0w5MNjHTpPlls62qmangkWc4IjMA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZzPkx5G71z2y8p;
+	Fri, 16 May 2025 21:20:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::636"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747394425;
+	cv=none; b=jdSdkn0vZqhTCu/Ee7+lSKlEhxrNVzB3ZWO8maht00RE/4ZFPDk5g17d2K++NxjQj4QMBsBCIByIrpgRlF6G2Dd6X+pShlrgHldOwvC39aSFj1yEClDtkGgqIuiDcSxUlv2oZ8oQFHKRe5ivjobURD9g1DwiyLzWcYXd6vF2xcrzUhI/0252jskcJ3lc6EiRpEklfYk2fJDXxVJw6pIzAMAHqTEKwjvzUq/P9DkJ46YSRfopl5vO2V/TUUDiCICO5cmKkCIRKMgP7eprVR/8TjAy5TnHzq8f9oWXcOV0zjz2aw6+e2dAGHckl5lJhyeEnk4n5UkH5KbffDGbqw8/XQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747385197; c=relaxed/relaxed;
-	bh=632mvGumOaKkY1p9t4Qs3NLLv5XO+fTtmBWPXtqhGQc=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Ti2ZUniBFiN+WZX8Oe6nz/HiuxGYrch9LaFci9ak8gv9aG9AG5SOOYfis2MIgbvc1576KNG5s7F8RsCXjzKDr3Vs4VhoMxgv3oW96iI/M6Y3DwkaiGNzsjuiFpKNK6qwRxHcF2R+xfE7+g9nTpKeo5e8WjUR1pLZF7OtJqOULDVb2Eskt3aeyZv1NICm/j/XsEY7TJGl4zyv2ppJqtXDYC+roAHxfydR9Fkqz+4+L/G4E/p6doZwC1i5G7NI4z5jRAzdqamkQ4BH170ghxm8JNdDJJG/lUh7zwv1BP3UqTyr7Z246V6DgtsswSkNwVtCjY5kVPedJShbICuYIk3rVg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au; dkim=pass (2048-bit key; unprotected) header.d=hmeau.com header.i=@hmeau.com header.a=rsa-sha256 header.s=formenos header.b=c3sNC6+d; dkim-atps=neutral; spf=pass (client-ip=144.6.53.87; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org) smtp.mailfrom=gondor.apana.org.au
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=gondor.apana.org.au
+	t=1747394425; c=relaxed/relaxed;
+	bh=vwy7hfzLZ0cBAqUBMTjbZE/Mm+UAvRQOZbt7AM6Ff30=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=hMYXciP5w/zZxBedsroPNScAVPCAF+k8wtTR5prL/hSlUxNqtx7PZ2bdf+/hZdYxuD1BIOWC0r6FlQlr99iQOUaK+6TJRkBa7txl4BTa1vG2pmkam7Ja/tcRNp0cj4GlbY45tl4ngarzp5m4BEqgkxgvfScX5yzKhtyUJuJKkLPmBUTt8RP6XigTe5IK13JMrcPSR/5oU3szPwSzr9I0YSA7x7ZQ1Lo78EsY4On5i0welG0zNCMmlsK8sG0/QLGiukqTlciX7Pk2rNIkm8FYF4tbVpjVT8hb6u0iYaGHO1I41gpyPGuuPNDz1B4GRO1APHb1gGMf6M/3pRsZmtAQqw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=BTbr1cSs; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=daniel.baluta@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=hmeau.com header.i=@hmeau.com header.a=rsa-sha256 header.s=formenos header.b=c3sNC6+d;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=BTbr1cSs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gondor.apana.org.au (client-ip=144.6.53.87; helo=abb.hmeau.com; envelope-from=herbert@gondor.apana.org.au; receiver=lists.ozlabs.org)
-Received: from abb.hmeau.com (abb.hmeau.com [144.6.53.87])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=daniel.baluta@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZzLKR3X5cz2yFJ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 May 2025 18:46:34 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=hmeau.com;
-	s=formenos; h=In-Reply-To:Content-Type:MIME-Version:References:Message-ID:
-	Subject:Cc:To:From:Date:Sender:Reply-To:Content-Transfer-Encoding:Content-ID:
-	Content-Description:Resent-Date:Resent-From:Resent-Sender:Resent-To:Resent-Cc
-	:Resent-Message-ID:List-Id:List-Help:List-Unsubscribe:List-Subscribe:
-	List-Post:List-Owner:List-Archive;
-	bh=632mvGumOaKkY1p9t4Qs3NLLv5XO+fTtmBWPXtqhGQc=; b=c3sNC6+dF6eci78NbJHi/7PQwf
-	Ivk7Iz5nrHYp9Z4TUZ4Jut7lIBPRH/8a8ngd6RzQOP6Br7KbC0BZwvQATxMxAc63oCr1cvWigLVtT
-	HH+tp6+9IsNpUlJC/LkPh/p9Bzlm8PkXDopxAwFwjqpRp6VEMMATRsaDNCH8xZmT0WaZpMzJuFgym
-	4uHJ2SNeKmcg3aAa5R882fEAXG3tPtRA2HXqK4OF8nF9a6aYpzyDEsZiqlvxjmiuI10IMNcBM9kzE
-	jwrFI5vbr2Q+g3+SLQ6jofSNFSVnVCjpA/IF6cpJaFsIBgCyP+3oqoqJ7eR34aPoJSrGewT8apHFk
-	ATnzgf2g==;
-Received: from loth.rohan.me.apana.org.au ([192.168.167.2])
-	by formenos.hmeau.com with smtp (Exim 4.96 #2 (Debian))
-	id 1uFqht-006XZO-06;
-	Fri, 16 May 2025 16:46:18 +0800
-Received: by loth.rohan.me.apana.org.au (sSMTP sendmail emulation); Fri, 16 May 2025 16:46:17 +0800
-Date: Fri, 16 May 2025 16:46:17 +0800
-From: Herbert Xu <herbert@gondor.apana.org.au>
-To: kernel test robot <lkp@intel.com>
-Cc: oe-kbuild-all@lists.linux.dev,
-	Linux Crypto Mailing List <linux-crypto@vger.kernel.org>,
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Stephen Rothwell <sfr@canb.auug.org.au>,
-	Danny Tsen <dtsen@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-	Michael Ellerman <mpe@ellerman.id.au>
-Subject: [PATCH] powerpc: Add gcc 128-bit shift helpers
-Message-ID: <aCb7WW2gRrtEmgqD@gondor.apana.org.au>
-References: <202505152053.FrKekjCe-lkp@intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZzPkw5RZKz2y8l
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 May 2025 21:20:23 +1000 (AEST)
+Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-231e8553248so2597505ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 16 May 2025 04:20:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1747394421; x=1747999221; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=vwy7hfzLZ0cBAqUBMTjbZE/Mm+UAvRQOZbt7AM6Ff30=;
+        b=BTbr1cSs0KksedMHfTkpMBqaR5+w5t8MsE6pwqpvYMXOx1+/EN82/gtM+Y8Uh7QrW/
+         dy2TeILMv8dzzVufdeLNEaY5RvJ5MWsZI2Vk6D3FD+tiMtyiNUmYI/KYJ3Zrgr6yVc2b
+         KygQto3PTpBZllBhXeQhZALcnfv/1mfLxyb6q2XbcGVDkHLi2cG5hzySBAhWNMCW6Q8B
+         wFlb/x6aiUBvEqa5dQTDBCWzTaxafXTena6U4uH+Mp+KK9hqr6WkFOU1SFIKgVnRI79z
+         c/+EZcqKVFLdD/fwGct7aFcbExZSrxcmsJt1LsEMqQr9Hm7Kg1+p8k3FSvLb+dVxdjYz
+         RTVQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1747394421; x=1747999221;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=vwy7hfzLZ0cBAqUBMTjbZE/Mm+UAvRQOZbt7AM6Ff30=;
+        b=wgD6C8Fj9p3YrTEFLv/qX7k6u/k8RUnuyIhK/L7UzNcl9Osahw0VHOcZmD08nYoz7E
+         LnN7pA/IE0t6DhVAAlCywHgN2S6PDIRNBYROCHC7vYr4Gt8YPdT95SZ8ZFftVq0FiUdv
+         vpdczuCv0JCc7ACPR9Mfz5nhPhA4cK7XCI5hIM2cGxvs0m/T8YQgpF4r9cWy+2NkjiPF
+         BHhVsQnjpE0plvfTHqqOHSr2aPhC4zEzzJf7iFOi3xkRaDUdRJvPC2dP4ShhOHazR5CZ
+         p/dnnPOWYXNwGiddg479rqimNEjNgc01E2B+mcz8tQlMP2SyQKjUivp1tHQXHx3QJ9wN
+         OBuw==
+X-Forwarded-Encrypted: i=1; AJvYcCULKvhOu6n/lGa38mkQRdQOE0S1fGBPEH8WqCeR1LcYG4U9lbKnxsKjmexpj5EVvHm0L+Z2Grvem7E22uo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyWPOAKMUpwncG5nMUcckjIZrFjzXjr8qHuMsZHghzFq8kYHvm/
+	YZjTADS0VkHfb/FkPyeyjONdIyYOi82BvHoar4c+GB9MO+9BX1p5MqiVk4alggbCHBUdFhDiFpi
+	19cE3Cbz7x4dzp95dl3wuL3wJ1M4b15k=
+X-Gm-Gg: ASbGncumxcPwMPwWeJU3tgICjo08BgRWDPWp6YvUnLrnz/7j3SqQ7aAWQ5kZS05O6F8
+	BBSCP1w9AbKpnm8DIGqm8ZD1u27gWh63VIaDirzqTPw+t/XfJLzvM9VA2miVC0hRQsUSbWbXBCO
+	5+ZCnJf+YdOjSprNZWCkR0TMkEZTwATA==
+X-Google-Smtp-Source: AGHT+IF/3Di+oLsBLaPYpxcv7LfBBu85vy0Q3yZ/dHsMufRKupnaU8hUSwUIBVs/d7/PRc2cuA5Zbi/WvmJkmILfBEU=
+X-Received: by 2002:a17:902:ecd2:b0:224:2384:5b40 with SMTP id
+ d9443c01a7336-231de31b3dbmr32958375ad.24.1747394421207; Fri, 16 May 2025
+ 04:20:21 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,101 +79,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <202505152053.FrKekjCe-lkp@intel.com>
+References: <20250516080334.3272878-1-shengjiu.wang@nxp.com>
+In-Reply-To: <20250516080334.3272878-1-shengjiu.wang@nxp.com>
+From: Daniel Baluta <daniel.baluta@gmail.com>
+Date: Fri, 16 May 2025 14:22:09 +0300
+X-Gm-Features: AX0GCFtrJluGbPO8r8cq7EZ0iKopTI7pXoYtTZfmc5c4e3CQG0UEAmnKOrj0Sus
+Message-ID: <CAEnQRZBfxz7xkC6GSfL6OJ3g6HeFicQdicj48W=JwKYB8HyGRg@mail.gmail.com>
+Subject: Re: [PATCH] ASoC: fsl_xcvr: update platform driver name
+To: Shengjiu Wang <shengjiu.wang@nxp.com>
+Cc: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
+	nicoleotsuka@gmail.com, lgirdwood@gmail.com, broonie@kernel.org, 
+	perex@perex.cz, tiwai@suse.com, linux-sound@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Thu, May 15, 2025 at 08:06:09PM +0800, kernel test robot wrote:
-> tree:   https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git master
-> head:   484803582c77061b470ac64a634f25f89715be3f
-> commit: c66d7ebbe2fa14e41913adb421090a7426f59786 [10914/11408] crypto: powerpc/poly1305 - Add SIMD fallback
-> config: powerpc64-randconfig-002-20250515 (https://download.01.org/0day-ci/archive/20250515/202505152053.FrKekjCe-lkp@intel.com/config)
-> compiler: powerpc64-linux-gcc (GCC) 8.5.0
-> reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250515/202505152053.FrKekjCe-lkp@intel.com/reproduce)
+On Fri, May 16, 2025 at 11:06=E2=80=AFAM Shengjiu Wang <shengjiu.wang@nxp.c=
+om> wrote:
+>
+> XCVR driver is not only used for i.MX8MP platform, so update driver name
+> to make it more generic.
+>
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 
-Thanks for the report.  This patch should fix the problem.
-
----8<---
-When optimising for size, gcc generates out-of-line calls for 128-bit
-integer shifts.  Add these functions to avoid build errors.
-
-Fixes: c66d7ebbe2fa ("crypto: powerpc/poly1305 - Add SIMD fallback")
-Reported-by: kernel test robot <lkp@intel.com>
-Closes: https://lore.kernel.org/oe-kbuild-all/202505152053.FrKekjCe-lkp@intel.com/
-Signed-off-by: Herbert Xu <herbert@gondor.apana.org.au>
-
-diff --git a/arch/powerpc/lib/Makefile b/arch/powerpc/lib/Makefile
-index 1cd74673cbf7..a41c071c1652 100644
---- a/arch/powerpc/lib/Makefile
-+++ b/arch/powerpc/lib/Makefile
-@@ -87,3 +87,5 @@ obj-$(CONFIG_CRC_T10DIF_ARCH) += crc-t10dif-powerpc.o
- crc-t10dif-powerpc-y := crc-t10dif-glue.o crct10dif-vpmsum_asm.o
- 
- obj-$(CONFIG_PPC64) += $(obj64-y)
-+
-+obj-$(CONFIG_ARCH_SUPPORTS_INT128) += tishift.o
-diff --git a/arch/powerpc/lib/tishift.S b/arch/powerpc/lib/tishift.S
-new file mode 100644
-index 000000000000..79afef2d8d54
---- /dev/null
-+++ b/arch/powerpc/lib/tishift.S
-@@ -0,0 +1,54 @@
-+/* SPDX-License-Identifier: GPL-2.0-or-later */
-+/*
-+ * Copyright (c) 2025 Herbert Xu <herbert@gondor.apana.org.au>
-+ */
-+#include <asm/ppc_asm.h>
-+#include <linux/export.h>
-+
-+_GLOBAL(__lshrti3)
-+	cmplwi	r5,63
-+	ble	1f
-+	addi	r5,r5,-64
-+	srd	r3,r4,r5
-+	li	r4,0
-+	blr
-+1:
-+	subfic	r7,r5,64
-+	srd	r3,r3,r5
-+	sld	r6,r4,r7
-+	srd	r4,r4,r5
-+	or	r3,r3,r6
-+	blr
-+EXPORT_SYMBOL(__lshrti3)
-+
-+_GLOBAL(__ashrti3)
-+	cmplwi	r5,63
-+	ble	1f
-+	addi	r5,r5,-64
-+	srad	r3,r4,r5
-+	sradi	r4,r4,63
-+	blr
-+1:
-+	subfic	r7,r5,64
-+	srd	r3,r3,r5
-+	sld	r6,r4,r7
-+	srad	r4,r4,r5
-+	or	r3,r3,r6
-+	blr
-+EXPORT_SYMBOL(__ashrti3)
-+
-+_GLOBAL(__ashlti3)
-+	cmplwi	r5,63
-+	ble	1f
-+	addi	r5,r5,-64
-+	sld	r4,r3,r5
-+	li	r3,0
-+	blr
-+1:
-+	subfic	r7,r5,64
-+	sld	r4,r4,r5
-+	srd	r6,r3,r7
-+	sld	r3,r3,r5
-+	or	r4,r4,r6
-+	blr
-+EXPORT_SYMBOL(__ashlti3)
--- 
-Email: Herbert Xu <herbert@gondor.apana.org.au>
-Home Page: http://gondor.apana.org.au/~herbert/
-PGP Key: http://gondor.apana.org.au/~herbert/pubkey.txt
+Reviewed-by: Daniel Baluta <daniel.baluta@nxp.com>
 
