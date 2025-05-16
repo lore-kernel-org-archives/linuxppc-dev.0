@@ -1,57 +1,99 @@
-Return-Path: <linuxppc-dev+bounces-8614-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8615-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 158A5C3ABD8
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 May 2025 16:56:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF36CC54754
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 16 May 2025 17:02:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZzYBn5NhYz30Jc;
-	Sat, 17 May 2025 02:56:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.4
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747414593;
-	cv=none; b=RGwZkrNClSzIwwo+OB5Gb9KrnDfGSRofE4clE640QcQAUfCl+hUl0JDYHveOA0rAEU2x/vahsXDZZZaRrNopgcQoMfMenrFkmXlflblB9eVfrVWc+Gv+EgZPpB7vmVYbEey67P0PKtGwCY+NZfDRifmC1dg3IhIMNUpOcTI9UlUiePUG8gv6DhBvqrtP8OcJnkWMzNCMGoxYsV5Ivt5/5ktoGkUnXxURYzf0HgT8Hiw1SLxFY3Jpobr0F2sQy7csVCbuNj77dDVt3bVig4F6OxLUXN3NRtShu1ng6nBeV3K+eP6SpDHOhgu/gK8T+cje7wDiNP8JaC68Y9sNuyP7ng==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ZzYKF2g3yz3057;
+	Sat, 17 May 2025 03:02:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747414929;
+	cv=none; b=eruZCbjSP0M2ln88gfqvcrTrfVdp+n3t6JbArM5s5v3dJemLoWVD+nBSU424+lA0uKc/i8pmxBvPpIOeolOSPX88Cg72jfMXFgXJ59D8+q3pk3sA7ccIC4uKgdwvS5Fh9uvbkc2PERgaPODdCEL1RO2lSIaopANqVgyKo5XnmEAEwsPfvbZYmEqv3Qws1Ha08I1am8r+cW/L2/OJio6XFArMSg2WlL3YqxZn4Yon/1NvMVPn3bFRVHbNYA7NePVBXVYRDVJTvUIcG1NGYkdD7qxJbIj6+a7leDLfR6SSj1IEJ0xdk20N25nLyarbGNTWUaqCi5jbKXXa8d/+Sg9QWg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747414593; c=relaxed/relaxed;
-	bh=CtnFyydU4fr89wS3U8rjM2P3apj75aODrTPV9Nlg/9Q=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=fF6GW6uCuV8dW7RwGOcnp6BXnX9E+bVKv4bAZyH4OKLePWrsSFnm9VIsboxXmJVjsulsbStv1sTuzSzWYZfc3QszB2Yj9DkLUlLjTH05/TbNIWbKq63yK7GbMKYWC4tTiXUu36/ZruQsN1L73EfrTM4OlZCTr3gd/LKelXK7D0EIo4BfsPNn74cBGvYxxdetmzUEEP1l7Rycb2vCavSURIFN/V4cw/nLazBEEC66zhlESEX7X6u8FrgY4rrRzU2Arn5AVzHUpu7H0+q0C54stm1pLYSE3y7RPPRrW/wKZxNibImmiW3Y7BhO5yMJ7OZOm49Oi8JtYqK8KGv/vhmwgA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=paU10sG4; dkim-atps=neutral; spf=pass (client-ip=117.135.210.4; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
+	t=1747414929; c=relaxed/relaxed;
+	bh=qUUyy8M43D0dG44GVORUg39KnD5MB3MGDMWFb5IS0pI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=LoDpB1jGOuWGP+fWw4RxnaHpeVcws2Polut7DFC8ntlSV4+SjHhWavLZBNnlWeo85UWAjmjHkHoTIQgg67nXwb3ydW+pEJh5jS4LqhGUyW4zqoIowbVemciNl2rC5aZ3b+wKUzwTQ3LIaV9oOVHkzP/m5TdHm2Hs8q73PE0kjIGVYllkESLglpGmzHJSz2Qe1P2UsfSPTW5Y7QDgW8414/G1tF2jbD/gJWlDibyk3KkSf41N1OsxO8vbvcRDgxkCsebpzhfyewfjbtfwA0kvmP8oX2dnGaPJYjpqgL5zZWwXq1gCIIHuRUYKL9sDp2NVVvuCOClu6WSsTR2tGkvdmg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lUDxZrq3; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=paU10sG4;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lUDxZrq3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=117.135.210.4; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
-Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.4])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ZzYBm3Wr5z30HB
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 May 2025 02:56:32 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=Ct
-	nFyydU4fr89wS3U8rjM2P3apj75aODrTPV9Nlg/9Q=; b=paU10sG4czve6u6TW9
-	Www1Izjma48yhpYZWV9CNfchPXUSpiDjZvbkroqrtE8hhV9OorB95yW+2PenX1aW
-	LG764BB3rg5xTqRPIetuVVl4qmusY0yWP1lhlzlsfnjLw7eXT5mxblqCnLLoFaK9
-	lfr/pvUHZ1fjlqEBPLoeLkuds=
-Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g0-3 (Coremail) with SMTP id _____wB3lOX6bSdoVElgBw--.64634S5;
-	Sat, 17 May 2025 00:55:24 +0800 (CST)
-From: Hans Zhang <18255117159@163.com>
-To: bhelgaas@google.com,
-	tglx@linutronix.de,
-	kw@linux.com,
-	manivannan.sadhasivam@linaro.org,
-	mahesh@linux.ibm.com
-Cc: oohall@gmail.com,
-	linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Hans Zhang <hans.zhang@cixtech.com>
-Subject: [PATCH 3/4] PCI/AER: Expose AER panic state via pci_aer_panic_enabled()
-Date: Sat, 17 May 2025 00:55:17 +0800
-Message-Id: <20250516165518.125495-4-18255117159@163.com>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <20250516165518.125495-1-18255117159@163.com>
-References: <20250516165518.125495-1-18255117159@163.com>
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ZzYKD46s4z2yMt
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 17 May 2025 03:02:08 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 157604A5E3;
+	Fri, 16 May 2025 17:02:06 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D0EECC4CEF0;
+	Fri, 16 May 2025 17:01:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1747414925;
+	bh=cqx2+cIJWTrHCV6/oR0Yq/5mBq5YQMLp47aAmVpBt3g=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=lUDxZrq3AgKR6R/qdSD5KToNP2iDU/ZdgNHX0l93Wa0Usl43PM+Q69PCMJ+riC91+
+	 GzyY7EaqkfMTyfOZpKxurTSZjkJKwfcYAJzN479Jq1XY715ZFPSbZY5p+660Pml4WJ
+	 WVrtggr77MuENEy16G/Cm6GiEnYKWR+qy9NuUFUBtEWcY2PS4Dfe2fo7FR1Ix+D4Oi
+	 47TeVeOimVrXL3v1JgdHRttkQXduRx9X2VuGVrxf0Jjtgu8cmKYzsPNI0B6nhbhtkY
+	 it1pWXgcbOjzy34igpeFVY2tv6MHULnoGk6Vy5BS3lI1O4u50PgBdO3vKkRUd646yd
+	 GEf103TOWCZUw==
+Date: Fri, 16 May 2025 20:01:44 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Pratyush Yadav <ptyadav@amazon.de>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Andy Lutomirski <luto@kernel.org>, Ard Biesheuvel <ardb@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>, Borislav Petkov <bp@alien8.de>,
+	Brian Cain <bcain@kernel.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Dinh Nguyen <dinguyen@kernel.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Guo Ren <guoren@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
+	Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Jiaxun Yang <jiaxun.yang@flygoat.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mark Brown <broonie@kernel.org>, Matt Turner <mattst88@gmail.com>,
+	Max Filippov <jcmvbkbc@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Michal Simek <monstr@monstr.eu>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Richard Weinberger <richard@nod.at>,
+	Russell King <linux@armlinux.org.uk>,
+	Stafford Horne <shorne@gmail.com>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Vasily Gorbik <gor@linux.ibm.com>, Vineet Gupta <vgupta@kernel.org>,
+	Will Deacon <will@kernel.org>, Praveen Kumar <pravkmr@amazon.de>,
+	linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
+	linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
+	linux-arch@vger.kernel.org, linux-mm@kvack.org, x86@kernel.org
+Subject: Re: [PATCH v2 10/13] arch, mm: set high_memory in free_area_init()
+Message-ID: <aCdveN2w9ThjVhae@kernel.org>
+References: <20250313135003.836600-1-rppt@kernel.org>
+ <20250313135003.836600-11-rppt@kernel.org>
+ <mafs05xi0o9ri.fsf@amazon.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,70 +107,173 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wB3lOX6bSdoVElgBw--.64634S5
-X-Coremail-Antispam: 1Uf129KBjvJXoW7Cr1xCw1UCr4fAr1UZr48tFb_yoW8ZF43pF
-	Z5J34rAr4rGF9YgFWkZ3W8Za4rZ3s7t34rJFWkG395uFnxAa45J3s3AFyUXFn7XrWDuF1a
-	yFy5tr13WF4rAaUanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x07jmc_fUUUUU=
-X-Originating-IP: [124.79.128.52]
-X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/xtbBDwlPo2gnaDaNVQAAsj
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <mafs05xi0o9ri.fsf@amazon.de>
 
-From: Hans Zhang <hans.zhang@cixtech.com>
+Hi Pratyush,
 
-Add pci_aer_panic_enabled() to check if aer_panic is enabled system-wide.
-Export the function for use in error recovery logic.
+On Fri, May 16, 2025 at 05:28:17PM +0200, Pratyush Yadav wrote:
+> Hi Mike, Andrew,
+> 
+> On Thu, Mar 13 2025, Mike Rapoport wrote:
+> 
+> > From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+> >
+> > high_memory defines upper bound on the directly mapped memory.
+> > This bound is defined by the beginning of ZONE_HIGHMEM when a system has
+> > high memory and by the end of memory otherwise.
+> >
+> > All this is known to generic memory management initialization code that
+> > can set high_memory while initializing core mm structures.
+> >
+> > Add a generic calculation of high_memory to free_area_init() and remove
+> > per-architecture calculation except for the architectures that set and
+> > use high_memory earlier than that.
+> >
+> > Acked-by: Dave Hansen <dave.hansen@linux.intel.com>	# x86
+> > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> > ---
+> >  arch/alpha/mm/init.c         |  1 -
+> >  arch/arc/mm/init.c           |  2 --
+> >  arch/arm64/mm/init.c         |  2 --
+> >  arch/csky/mm/init.c          |  1 -
+> >  arch/hexagon/mm/init.c       |  6 ------
+> >  arch/loongarch/kernel/numa.c |  1 -
+> >  arch/loongarch/mm/init.c     |  2 --
+> >  arch/microblaze/mm/init.c    |  2 --
+> >  arch/mips/mm/init.c          |  2 --
+> >  arch/nios2/mm/init.c         |  6 ------
+> >  arch/openrisc/mm/init.c      |  2 --
+> >  arch/parisc/mm/init.c        |  1 -
+> >  arch/riscv/mm/init.c         |  1 -
+> >  arch/s390/mm/init.c          |  2 --
+> >  arch/sh/mm/init.c            |  7 -------
+> >  arch/sparc/mm/init_32.c      |  1 -
+> >  arch/sparc/mm/init_64.c      |  2 --
+> >  arch/um/kernel/um_arch.c     |  1 -
+> >  arch/x86/kernel/setup.c      |  2 --
+> >  arch/x86/mm/init_32.c        |  3 ---
+> >  arch/x86/mm/numa_32.c        |  3 ---
+> >  arch/xtensa/mm/init.c        |  2 --
+> >  mm/memory.c                  |  8 --------
+> >  mm/mm_init.c                 | 30 ++++++++++++++++++++++++++++++
+> >  mm/nommu.c                   |  2 --
+> >  25 files changed, 30 insertions(+), 62 deletions(-)
+> 
+> This patch causes a BUG() when built with CONFIG_DEBUG_VIRTUAL and
+> passing in the cma= commandline parameter:
+> 
+>     ------------[ cut here ]------------
+>     kernel BUG at arch/x86/mm/physaddr.c:23!
+>     ception 0x06 IP 10:ffffffff812ebbf8 error 0 cr2 0xffff88903ffff000
+>     CPU: 0 UID: 0 PID: 0 Comm: swapper Not tainted 6.15.0-rc6+ #231 PREEMPT(undef)
+>     Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS Arch Linux 1.16.3-1-1 04/01/2014
+>     RIP: 0010:__phys_addr+0x58/0x60
+>     Code: 01 48 89 c2 48 d3 ea 48 85 d2 75 05 e9 91 52 cf 00 0f 0b 48 3d ff ff ff 1f 77 0f 48 8b 05 20 54 55 01 48 01 d0 e9 78 52 cf 00 <0f> 0b 90 0f 1f 44 00 00 90 90 90 90 90 90 90 90 90 90 90 90 90 90
+>     RSP: 0000:ffffffff82803dd8 EFLAGS: 00010006 ORIG_RAX: 0000000000000000
+>     RAX: 000000007fffffff RBX: 00000000ffffffff RCX: 0000000000000000
+>     RDX: 000000007fffffff RSI: 0000000280000000 RDI: ffffffffffffffff
+>     RBP: ffffffff82803e68 R08: 0000000000000000 R09: 0000000000000000
+>     R10: ffffffff83153180 R11: ffffffff82803e48 R12: ffffffff83c9aed0
+>     R13: 0000000000000000 R14: 0000001040000000 R15: 0000000000000000
+>     FS:  0000000000000000(0000) GS:0000000000000000(0000) knlGS:0000000000000000
+>     CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+>     CR2: ffff88903ffff000 CR3: 0000000002838000 CR4: 00000000000000b0
+>     Call Trace:
+>      <TASK>
+>      ? __cma_declare_contiguous_nid+0x6e/0x340
+>      ? cma_declare_contiguous_nid+0x33/0x70
+>      ? dma_contiguous_reserve_area+0x2f/0x70
+>      ? setup_arch+0x6f1/0x870
+>      ? start_kernel+0x52/0x4b0
+>      ? x86_64_start_reservations+0x29/0x30
+>      ? x86_64_start_kernel+0x7c/0x80
+>      ? common_startup_64+0x13e/0x141
+> 
+> The reason is that __cma_declare_contiguous_nid() does:
+> 
+>     	highmem_start = __pa(high_memory - 1) + 1;
+> 
+> If dma_contiguous_reserve_area() (or any other CMA declaration) is
+> called before free_area_init(), high_memory is uninitialized. Without
+> CONFIG_DEBUG_VIRTUAL, it will likely work but use the wrong value for
+> highmem_start.
+> 
+> Among the architectures this patch touches, the below call
+> dma_contiguous_reserve_area() _before_ free_area_init():
+> 
+> - x86
+> - s390
+> - mips
+> - riscv
+> - xtensa
+> - loongarch
+> - csky
 
-Signed-off-by: Hans Zhang <hans.zhang@cixtech.com>
----
- drivers/pci/pci.h      |  2 ++
- drivers/pci/pcie/aer.c | 12 ++++++++++++
- 2 files changed, 14 insertions(+)
+For most of those this patch didn't really change anything because they
+initialized high_memory in mem_init() which is a part of free_area_init().
+In those cases cma just did
 
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 8ddfc1677eeb..f92928dadc6a 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -959,6 +959,7 @@ static inline void of_pci_remove_host_bridge_node(struct pci_host_bridge *bridge
- #ifdef CONFIG_PCIEAER
- void pci_no_aer(void);
- void pci_aer_panic(void);
-+bool pci_aer_panic_enabled(void);
- void pci_aer_init(struct pci_dev *dev);
- void pci_aer_exit(struct pci_dev *dev);
- extern const struct attribute_group aer_stats_attr_group;
-@@ -970,6 +971,7 @@ void pci_restore_aer_state(struct pci_dev *dev);
- #else
- static inline void pci_no_aer(void) { }
- static inline void pci_aer_panic(void) { }
-+static inline bool pci_aer_panic_enabled(void) { return false; }
- static inline void pci_aer_init(struct pci_dev *d) { }
- static inline void pci_aer_exit(struct pci_dev *d) { }
- static inline void pci_aer_clear_fatal_status(struct pci_dev *dev) { }
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index fa51fb8a5fe7..4fd7db90b77c 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -125,6 +125,18 @@ void pci_aer_panic(void)
- 	pcie_aer_panic = true;
- }
+	highmem_start = __pa(-1) + 1;
+
+and everyone was happy :)
  
-+/**
-+ * pci_aer_panic_enabled() - Are AER panic enabled system-wide?
-+ *
-+ * Return: true if AER panic has not been globally disabled through ACPI FADT,
-+ * PCI bridge quirks, or the "pci=aer_panic" kernel command-line option.
-+ */
-+bool pci_aer_panic_enabled(void)
-+{
-+	return pcie_aer_panic;
-+}
-+EXPORT_SYMBOL(pci_aer_panic_enabled);
-+
- bool pci_aer_available(void)
- {
- 	return !pcie_aer_disable && pci_msi_enabled();
--- 
-2.25.1
+> The below call it _after_ free_area_init():
+> - arm64
+> 
+> And the below don't call it at all:
+> - sparc
+> - nios2
+> - openrisc
+> - hexagon
+> - sh
+> - um
+> - alpha
+> 
+> One possible fix would be to move the calls to
+> dma_contiguous_reserve_area() after free_area_init(). On x86, it would
+> look like the diff below. The obvious downside is that moving the call
+> later increases the chances of allocation failure. I'm not sure how much
+> that actually matters, but at least on x86, that means crash kernel and
+> hugetlb reservations go before DMA reservation. Also, adding a patch
+> like that at rc7 is a bit risky.
 
+I don't think there's a risk of allocation failure, but moving things
+around in setup_arch() is always risky :)
+ 
+> The other option would be to revert this. I tried a revert, but it isn't
+> trivial. It runs into merge conflicts in pretty much all of the arch
+> files. Maybe reverting patches 11, 12, and 13 as well would make it
+> easier but I didn't try that.
+
+What I think we can do is to add this to mm/cma.c (not even compile tested)
+
+diff --git a/mm/cma.c b/mm/cma.c
+index 15632939f20a..c04be488b099 100644
+--- a/mm/cma.c
++++ b/mm/cma.c
+@@ -608,7 +608,10 @@ static int __init __cma_declare_contiguous_nid(phys_addr_t *basep,
+ 	 * complain. Find the boundary by adding one to the last valid
+ 	 * address.
+ 	 */
+-	highmem_start = __pa(high_memory - 1) + 1;
++	if (IS_ENABLED(CONFIG_HIGHMEM))
++		highmem_start = __pa(high_memory - 1) + 1;
++	else
++		highmem_start = memblock_end_of_DRAM();
+ 	pr_debug("%s(size %pa, base %pa, limit %pa alignment %pa)\n",
+ 		__func__, &size, &base, &limit, &alignment);
+ 
+so that highmem_start in __cma_declare_contiguous_nid() will be always
+correct for !HIGHMEM configs and then restore setting of highmem_start in
+mips::paging_init() as mips is the only architecture that actually set
+high_memory before free_area_init() before this patch.
+
+(for 32 bit configs of x86 there alrady a fixup d893aca973c3 ("x86/mm: restore
+early initialization of high_memory for 32-bits"))
+
+-- 
+Sincerely yours,
+Mike.
 
