@@ -1,61 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-8735-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8736-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E10FC3ABDD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 May 2025 11:10:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB03BC3DA6D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 May 2025 11:10:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b1sKb6XWvz3bmq;
-	Tue, 20 May 2025 21:10:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.176.79.56
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747739427;
-	cv=none; b=mFBXqDN/A3wzWdSqB6VRsNgArimO7hs3lPeNiSu0pmZzGDwKh1OA1gJQjbKTD8kXRYZwW0/p0McMmQbUqanE2h/vgOt5ssK36P2MNOuphNnuCu+tWe7PeCwBHYWDifg/llzJRJ+CoqzXm6OlAvoBX/NB+gVLIy226YlMxOyQ2v3Bw3BQSdHoti9lkfr2YuO/SP3FpCOgE39TuIoeEEKOjGlACswvgq1+7QTrrheKKdvpEHJArltDgsNh9LnQGm0Polcz4yMUI98udmX+tOqSfHT4XabNpDg8misC71EXYPYeCDKFAIXh7l9MmeoTI/mBuT9s1M9g1fakbgOcujowqw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b1sKd1Qy6z3bpW;
+	Tue, 20 May 2025 21:10:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=124.126.103.232
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747736228;
+	cv=none; b=XSviGFgz5pq49ujz+hXFDfyHqV0q9KVauOGaZEhAW81oVbW89YWCjiF2gtryP/cClR/+sos8KkwwQDaMAgaUrZcyZAuM7YOrSK5js5XYKgdkAzC7foG89eziPP+mYB3xsGBmrd6vr0YwKlOG7jPuUEmeVDFlTQKCwjyy7Xl6iKVmKx/OPs7Y4JOMEVIq+mT2L+pVeAMg9emjtYOh2H89h9nrQUGvKKg8bfql+T6wXPDdhgZ2Zu7V/TMnARemaOAucswUAhE+LMeK0/z/6aX+9UjYQ1Obdf4FbqL/mXy5IZ6AxNjR4LjdvGELGn9UXw6pNLPfCLU8vYN3hiIYWjK1Pw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747739427; c=relaxed/relaxed;
-	bh=NuzTWUJmEmnbBNLc9BBpFcyqM7HITNKUrpqWCg88mOo=;
-	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=V3muCKuH2j3EIcsqHs7LEd+jYfCOlcSkVPPSUwOA4cjg84my69KXHa7/cJx52097mrFE+kTolfiigUul91H1DRDWr6aN/qB26c2loLUjP6IXVEzG1sr9lLzld5dbDNyT+6YY4jgJgswr6vVsNNWnOW3hHFdnkDcwztiszc3WraGFLGiNmMOSYSjJyDk9bfwJoW62hcBSNB9Dn7yw45VcAib9qTRIL6HOr8RWwr6fvV4TgJPdz0g7P4gD+t+VIcOXorsopDWF55OKB8OkLLYny1I4M2ym4UhCSmh6S/JtmuvUt5qwzZzv5ZezK5YAKSFXQ+XZyJTOSAT1+JTFiYx7/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 86 seconds by postgrey-1.37 at boromir; Tue, 20 May 2025 21:10:26 AEST
-Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1747736228; c=relaxed/relaxed;
+	bh=p3EyvgPSogl+bAGzaQgbs4jw/OpgLHQK5R7ejK2Dn/U=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=MXb3AwWppO0BDXfzwrJZYdJr285EEaK/8y321p7v48XBgUye7FF1von+UsS0XRIL68de+EjW6Ml0mvBZIf0/P/LPtGGrVGpr2Hfkps2y9i/aX8vDgJXPlvCu71h3LTzQvN2lknufl10tZiDeGp37DKrvHiKvrn25ZH8ksp8+sfbw6n4B0+OudckTia38VGHbpCVYK/VrsE54lvEWGYceVO2cQ/cx6M/CEPLDSQdwxqo3shHrdFbFqZXjz0A2yHK10P8AZAUz9UT2rCh+Mcqu8Z7A0kVRxntRKs9iDQS0LHHIuT/g9tSyNfqc8Jhwjq6IBeZUyN6X96Ih2OU94lgI+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=aichao@kylinos.cn; receiver=lists.ozlabs.org) smtp.mailfrom=kylinos.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kylinos.cn (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=aichao@kylinos.cn; receiver=lists.ozlabs.org)
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1sKZ5sMTz3bcJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2025 21:10:26 +1000 (AEST)
-Received: from mail.maildlp.com (unknown [172.18.186.216])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4b1sJY4svJz6GDDL;
-	Tue, 20 May 2025 19:09:33 +0800 (CST)
-Received: from frapeml500008.china.huawei.com (unknown [7.182.85.71])
-	by mail.maildlp.com (Postfix) with ESMTPS id AA50B140447;
-	Tue, 20 May 2025 19:10:23 +0800 (CST)
-Received: from localhost (10.203.177.66) by frapeml500008.china.huawei.com
- (7.182.85.71) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Tue, 20 May
- 2025 13:10:22 +0200
-Date: Tue, 20 May 2025 12:10:21 +0100
-From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-To: "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>
-CC: "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
-	Davidlohr Bueso <dave@stgolabs.net>, Dave Jiang <dave.jiang@intel.com>,
-	Alison Schofield <alison.schofield@intel.com>, Vishal Verma
-	<vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, Dan Williams
-	<dan.j.williams@intel.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
-	Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
-	<linux-kernel@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-	<linux-cxl@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-pci@vger.kernel.org>, <linux-edac@vger.kernel.org>
-Subject: Re: [PATCH 2/4 v2] PCI/AER: Modify pci_print_aer() to take log
- level
-Message-ID: <20250520121021.00001fb3@huawei.com>
-In-Reply-To: <20250429172109.3199192-3-fabio.m.de.francesco@linux.intel.com>
-References: <20250429172109.3199192-1-fabio.m.de.francesco@linux.intel.com>
-	<20250429172109.3199192-3-fabio.m.de.francesco@linux.intel.com>
-X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1r830hpHz2xZh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2025 20:17:06 +1000 (AEST)
+X-UUID: 7eb6c0ec355a11f0b29709d653e92f7d-20250520
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.45,REQID:13616bc0-98fb-453e-810b-0199eb5b8d18,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:6493067,CLOUDID:980ae2365df82707056bbe9350351444,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102,TC:nil,Content:0|50,EDM:-3,IP:
+	nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,L
+	ES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-UUID: 7eb6c0ec355a11f0b29709d653e92f7d-20250520
+Received: from node4.com.cn [(10.44.16.170)] by mailgw.kylinos.cn
+	(envelope-from <aichao@kylinos.cn>)
+	(Generic MTA)
+	with ESMTP id 650892054; Tue, 20 May 2025 17:12:03 +0800
+Received: from node4.com.cn (localhost [127.0.0.1])
+	by node4.com.cn (NSMail) with SMTP id 6877816003840;
+	Tue, 20 May 2025 17:12:03 +0800 (CST)
+X-ns-mid: postfix-682C4763-2333681690
+Received: from kylin-pc.. (unknown [172.25.130.133])
+	by node4.com.cn (NSMail) with ESMTPA id 762BC16001CC7;
+	Tue, 20 May 2025 09:12:00 +0000 (UTC)
+From: Ai Chao <aichao@kylinos.cn>
+To: johannes@sipsolutions.net,
+	perex@perex.cz,
+	tiwai@suse.com,
+	shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	shawnguo@kernel.org,
+	s.hauer@pengutronix.de,
+	kernel@pengutronix.de,
+	jbrunet@baylibre.com,
+	neil.armstrong@linaro.org,
+	khilman@baylibre.com,
+	martin.blumenstingl@googlemail.com,
+	srinivas.kandagatla@linaro.org,
+	kuninori.morimoto.gx@renesas.com,
+	zhangzekun11@huawei.com,
+	krzysztof.kozlowski@linaro.org,
+	ckeepax@opensource.cirrus.com,
+	drhodes@opensource.cirrus.com,
+	alexey.klimov@linaro.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-sound@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-amlogic@lists.infradead.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org,
+	Ai Chao <aichao@kylinos.cn>
+Subject: [PATCH 5/6] ASoC: imx-card: Use helper function for_each_child_of_node_scoped()
+Date: Tue, 20 May 2025 17:11:30 +0800
+Message-ID: <20250520091131.4150248-6-aichao@kylinos.cn>
+X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20250520091131.4150248-1-aichao@kylinos.cn>
+References: <20250520091131.4150248-1-aichao@kylinos.cn>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,22 +102,71 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="US-ASCII"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.203.177.66]
-X-ClientProxiedBy: lhrpeml500012.china.huawei.com (7.191.174.4) To
- frapeml500008.china.huawei.com (7.182.85.71)
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, 29 Apr 2025 19:21:07 +0200
-"Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com> wrote:
+The for_each_child_of_node_scoped() helper provides a scope-based
+clean-up functionality to put the device_node automatically, and
+as such, there is no need to call of_node_put() directly.
 
-> Modify pci_print_aer() to take a printk() log level in preparation of a
-> patch that logs PCIe Components and Link errors from ELOG.
-> 
-> Cc: Dan Williams <dan.j.williams@intel.com>
-> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
-> Signed-off-by: Fabio M. De Francesco <fabio.m.de.francesco@linux.intel.com>
-Fair enough on reasoning and it does what you describe so
+Thus, use this helper to simplify the code.
 
-Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+Signed-off-by: Ai Chao <aichao@kylinos.cn>
+---
+ sound/soc/fsl/imx-card.c | 13 +++++--------
+ 1 file changed, 5 insertions(+), 8 deletions(-)
+
+diff --git a/sound/soc/fsl/imx-card.c b/sound/soc/fsl/imx-card.c
+index 3686d468506b..bffdba4292b6 100644
+--- a/sound/soc/fsl/imx-card.c
++++ b/sound/soc/fsl/imx-card.c
+@@ -513,7 +513,6 @@ static int imx_card_parse_of(struct imx_card_data *da=
+ta)
+ 	struct device_node *platform =3D NULL;
+ 	struct device_node *codec =3D NULL;
+ 	struct device_node *cpu =3D NULL;
+-	struct device_node *np;
+ 	struct device *dev =3D card->dev;
+ 	struct snd_soc_dai_link *link;
+ 	struct dai_link_data *link_data;
+@@ -552,11 +551,10 @@ static int imx_card_parse_of(struct imx_card_data *=
+data)
+ 	link =3D card->dai_link;
+ 	link_data =3D data->link_data;
+=20
+-	for_each_child_of_node(dev->of_node, np) {
++	for_each_child_of_node_scoped(dev->of_node, np) {
+ 		dlc =3D devm_kzalloc(dev, 2 * sizeof(*dlc), GFP_KERNEL);
+ 		if (!dlc) {
+-			ret =3D -ENOMEM;
+-			goto err_put_np;
++			return -ENOMEM;
+ 		}
+=20
+ 		link->cpus	=3D &dlc[0];
+@@ -567,8 +565,8 @@ static int imx_card_parse_of(struct imx_card_data *da=
+ta)
+=20
+ 		ret =3D of_property_read_string(np, "link-name", &link->name);
+ 		if (ret) {
+-			dev_err(card->dev, "error getting codec dai_link name\n");
+-			goto err_put_np;
++			return dev_err_probe(card->dev, ret,
++					     "error getting codec dai_link name\n");
+ 		}
+=20
+ 		cpu =3D of_get_child_by_name(np, "cpu");
+@@ -722,8 +720,7 @@ static int imx_card_parse_of(struct imx_card_data *da=
+ta)
+ 	of_node_put(cpu);
+ 	of_node_put(codec);
+ 	of_node_put(platform);
+-err_put_np:
+-	of_node_put(np);
++
+ 	return ret;
+ }
+=20
+--=20
+2.47.1
+
 
