@@ -1,63 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-8721-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8722-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA7A5C3ABDD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 May 2025 09:40:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1AC8C3DA6D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 May 2025 10:28:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b1qLK3Svqz2yqq;
-	Tue, 20 May 2025 19:40:57 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747734057;
-	cv=none; b=Jb4NNKMXsZPgY45JhOONl0qNNSC64TVTl/EmcKZsLjTsU8p9E8AdbFi4bwD/lAkN2VXFBFv9OY1G4q3KrvYwSNmgdEOyLIhIneRaheeMNauuRenX0WhyocBnGozk2xqTlAEXTJJ5sGx0aJ+oCzAz/N5nOusU0HhAuWl1wR9W8YSysumqYNgE9GA5lUXzDZLW0RPpmXuECPhN7MGVzB/t9XFQfLzdyTzBocWbYwQbeGk4oJPN0gUJ1fyo5f06I+P4vPLIVxasfoMqFl3dcN+5ZO3ZBNNd2hhBQ3rOcHmupO/f/ZYLFQr8uAYFfvhI73ixWiwlrRke7KJuf2TeO5Srww==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b1rP00Zt9z301Y;
+	Tue, 20 May 2025 20:28:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747736900;
+	cv=none; b=LMv5KtpD0s3MG0k/94OEBBDlPaTbsKmj2bQZOuwLn3v4OmEdEZKrzqKem9YdJvVJItFRcbfDIb57yWQBaOTi1cEkyJZXum/OGRBAcPzfqcosyl80Qtvrn77h9yTPKUGhuHx4DvR26oc9lXbhB0+4njI2p/+SKT7ieUvgJR5pL2UAnTgcDKfA8nByqFmkCcwhZF/3yOfV8gTcNvBPHWTaJbjLzCIe0Ks4ZpcphsNTvbKnZkPrMaZv8CubpN5Ge6AO+hU+5Tv+RBgML6yu+k68hAWz7uqGmpGoQsEffeJ2gUKQqozt/mC3gPb7esduy152fjNfK5HBFrkbpq6FOd/zcQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747734057; c=relaxed/relaxed;
-	bh=r3f/3Yibbqs2sfhxRxZCtehmBUIser3fFjj/XLAifA0=;
+	t=1747736900; c=relaxed/relaxed;
+	bh=hwDzzgjznX9cH7+ri0xQdBL1ZEKWHGGv3J3bOXK4N50=;
 	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=YgBNZFNmf0Mbv43Lm1fXJ96iLtl0wszv16eLjyDapbmlgTZ+0WPY/ZMyTZZ2WVDoO77qSXRL7E5Vwfqp+2wbZFgkVXN62epdUd1MRbjM6wrudTvkr/1hKMXwY+lV03USqFUfTbChdipE72/JcgqHJZyG9IB1PQ0h7nDAYr7BOFLoYAFmc44vUnmtJ7lWzVPUaL1vPMrOPQe/dffeWpiDlCivPWCKMV27k1yiHaZYqhrvWv3VXiSKQViMRNtgxzdPpm4aWCPqSzFC142DiW0lkqOb+b6Ew6illqA36tbCl7z7DBJZwppsO2VD2c52PLM1uLVGR4VZKauaazqC/EN6yA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DKg6lmtT; dkim-atps=neutral; spf=none (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 MIME-Version:Content-Type; b=gbrFF8w0Icr4qYpLo9XnbC8K9tZ+GLksOgCO7bCeMH0Er/HfGWWvG9yC9W+hgR7R6GQrtPdeNM7bwyFgKahYOzyAXkSGVrTIYfhNUqeud6KQKXZf+r4vO+bQOdqQgrRzrbPJvaQHy4CUjrfmg8+5HG6yK0Z93eDwIfBS9L2Wir6HyWJ5V7WMNzGop5ha6EJp0UF7r901sEZhN3x4PLiE8lM7fjNhg/p54gYbIc+IWSp7xa+56gilU6ER5EnCbaq6kc3ZcdXMr1zjbtbuvBsGMYTQWA/+9W50W+ANeZh+AWHDKcBWskVDLG0049gwRGcZQYZdjgjGClV3UBheuWBlig==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=knrNWVDo; dkim-atps=neutral; spf=none (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DKg6lmtT;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=knrNWVDo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.11; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 64 seconds by postgrey-1.37 at boromir; Tue, 20 May 2025 19:40:54 AEST
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.11])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1qLG5glqz2ygY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2025 19:40:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1rNx61KXz3000
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2025 20:28:16 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1747734056; x=1779270056;
+  t=1747736898; x=1779272898;
   h=from:date:to:cc:subject:in-reply-to:message-id:
    references:mime-version;
-  bh=u/A3R66/AiZgaNe8EdDX++XVMrmF2Eqz2dGvezybjTw=;
-  b=DKg6lmtThXNQxdu+BvJol0s4DvqLSy28XHO3s/L/Q5bBhfTtpnW7Jhs/
-   VAGGv6SZnqqfpbxk5zE+HVged2dKtGk6XJGhirR23h8Ug1uTrysm6vHzV
-   OlV79otRBfxvQJOKU2HxcmdS+WWuNTUmg2s0E4hMO4IsSkL+S32NBBp5f
-   Z8YJRfZ0tjT9PgUuBZeOk/E73QgM5rJCiTsUFIctt3T5LyBRvuCoZHml0
-   /nuMeuFUPRmzV8SzzXWD5C2vATGBkrMmEOOT9iHZoD0czpoTFA8FPUrUr
-   Q2FIVL6mQQ+ve2vgBbF6WgXmkJOK3TCr9nMdmI7TTluDS6q3h4hMxdTbd
-   w==;
-X-CSE-ConnectionGUID: UegER5aBQjaZBOPbFqHBfA==
-X-CSE-MsgGUID: DUEvcmNyRhaCZlz27Bl+Mg==
-X-IronPort-AV: E=McAfee;i="6700,10204,11438"; a="59888053"
+  bh=ABdjG3Pe62S3x9ocvJ5urldXhGi9h8OX8THWZ/USw6U=;
+  b=knrNWVDoDGb1E8EApXi2KcmZcBDq9zahj4h6FKyiM6xQA1GO67j/gWMn
+   9iBCm8B8+SjN8LBZ4o9MfkWrY+aP/2UfSojdf0GtvRwBrNElYY3wZzHxD
+   dZm5ReW1zA9JxfNAjB1Lin0xi7d7rL9ufapCsJ6vAngmcxtciDF1euE9k
+   izBgSdnb+nxsvPExJxuKvFcoeX/gkRwiNT89Y92JZrAz0kstmhTOTdrvz
+   hJ8qgJHbniOXaeQhX8CkPyeBKkwiRTziboC6RGjkeoRSuzBO13lQ8lXzD
+   WBArm8bBRWsGl5Xb97bHQtGYyqvTvb6zCWc/Tul8evB07UbDqnUzg78Wb
+   Q==;
+X-CSE-ConnectionGUID: OkPSojr7Q/qNpP9+0wyM4Q==
+X-CSE-MsgGUID: /LdV7+6/T56hWqmdUwCEJQ==
+X-IronPort-AV: E=McAfee;i="6700,10204,11438"; a="60700843"
 X-IronPort-AV: E=Sophos;i="6.15,302,1739865600"; 
-   d="scan'208";a="59888053"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by orvoesa103.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 May 2025 02:39:31 -0700
-X-CSE-ConnectionGUID: JcBi3AQcSYOXwRfGd83kXA==
-X-CSE-MsgGUID: xPtR0gzgQ7eMCAxgxUDKMg==
+   d="scan'208";a="60700843"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 May 2025 03:28:13 -0700
+X-CSE-ConnectionGUID: 9pyCjzPqSgefZQ4zCEbisg==
+X-CSE-MsgGUID: DlBKfSmYShKo2EDVX2N9Ag==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.15,302,1739865600"; 
-   d="scan'208";a="139671159"
-Received: from johunt-mobl9.ger.corp.intel.com (HELO localhost) ([10.245.245.235])
-  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 May 2025 02:39:21 -0700
+   d="scan'208";a="144640371"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.235])
+  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 May 2025 03:28:05 -0700
 From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Tue, 20 May 2025 12:39:18 +0300 (EEST)
+Date: Tue, 20 May 2025 13:28:02 +0300 (EEST)
 To: Bjorn Helgaas <helgaas@kernel.org>
 cc: linux-pci@vger.kernel.org, Jon Pan-Doh <pandoh@google.com>, 
     Karolina Stolarek <karolina.stolarek@oracle.com>, 
@@ -74,11 +73,10 @@ cc: linux-pci@vger.kernel.org, Jon Pan-Doh <pandoh@google.com>,
     Terry Bowman <terry.bowman@amd.com>, Shiju Jose <shiju.jose@huawei.com>, 
     Dave Jiang <dave.jiang@intel.com>, LKML <linux-kernel@vger.kernel.org>, 
     linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH v6 01/16] PCI/DPC: Initialize aer_err_info before using
- it
-In-Reply-To: <20250519213603.1257897-2-helgaas@kernel.org>
-Message-ID: <218ec0eb-93a9-ba14-ea6b-742d0d274b84@linux.intel.com>
-References: <20250519213603.1257897-1-helgaas@kernel.org> <20250519213603.1257897-2-helgaas@kernel.org>
+Subject: Re: [PATCH v6 02/16] PCI/DPC: Log Error Source ID only when valid
+In-Reply-To: <20250519213603.1257897-3-helgaas@kernel.org>
+Message-ID: <b6ba76ff-7cbd-2d73-fdc4-41aa8c788bc9@linux.intel.com>
+References: <20250519213603.1257897-1-helgaas@kernel.org> <20250519213603.1257897-3-helgaas@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,34 +96,102 @@ On Mon, 19 May 2025, Bjorn Helgaas wrote:
 
 > From: Bjorn Helgaas <bhelgaas@google.com>
 > 
-> Previously the struct aer_err_info "info" was allocated on the stack
-> without being initialized, so it contained junk except for the fields we
-> explicitly set later.
+> DPC Error Source ID is only valid when the DPC Trigger Reason indicates
+> that DPC was triggered due to reception of an ERR_NONFATAL or ERR_FATAL
+> Message (PCIe r6.0, sec 7.9.14.5).
 > 
-> Initialize "info" at declaration so it starts as all zeroes.
+> When DPC was triggered by ERR_NONFATAL (PCI_EXP_DPC_STATUS_TRIGGER_RSN_NFE)
+> or ERR_FATAL (PCI_EXP_DPC_STATUS_TRIGGER_RSN_FE) from a downstream device,
+> log the Error Source ID (decoded into domain/bus/device/function).  Don't
+> print the source otherwise, since it's not valid.
+> 
+> For DPC trigger due to reception of ERR_NONFATAL or ERR_FATAL, the dmesg
+> logging changes:
+> 
+>   - pci 0000:00:01.0: DPC: containment event, status:0x000d source:0x0200
+>   - pci 0000:00:01.0: DPC: ERR_FATAL detected
+>   + pci 0000:00:01.0: DPC: containment event, status:0x000d, ERR_FATAL received from 0000:02:00.0
+> 
+> and when DPC triggered for other reasons, where DPC Error Source ID is
+> undefined, e.g., unmasked uncorrectable error:
+> 
+>   - pci 0000:00:01.0: DPC: containment event, status:0x0009 source:0x0200
+>   - pci 0000:00:01.0: DPC: unmasked uncorrectable error detected
+>   + pci 0000:00:01.0: DPC: containment event, status:0x0009: unmasked uncorrectable error detected
+> 
+> Previously the "containment event" message was at KERN_INFO and the
+> "%s detected" message was at KERN_WARNING.  Now the single message is at
+> KERN_WARNING.
 > 
 > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 > ---
->  drivers/pci/pcie/dpc.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  drivers/pci/pcie/dpc.c | 45 ++++++++++++++++++++++++++----------------
+>  1 file changed, 28 insertions(+), 17 deletions(-)
 > 
 > diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
-> index df42f15c9829..fe7719238456 100644
+> index fe7719238456..315bf2bfd570 100644
 > --- a/drivers/pci/pcie/dpc.c
 > +++ b/drivers/pci/pcie/dpc.c
-> @@ -258,7 +258,7 @@ static int dpc_get_aer_uncorrect_severity(struct pci_dev *dev,
->  void dpc_process_error(struct pci_dev *pdev)
->  {
->  	u16 cap = pdev->dpc_cap, status, source, reason, ext_reason;
-> -	struct aer_err_info info;
-> +	struct aer_err_info info = { 0 };
-
-= {}; is enough to initialize it, no need to add those zeros.
-
+> @@ -261,25 +261,36 @@ void dpc_process_error(struct pci_dev *pdev)
+>  	struct aer_err_info info = { 0 };
 >  
 >  	pci_read_config_word(pdev, cap + PCI_EXP_DPC_STATUS, &status);
->  	pci_read_config_word(pdev, cap + PCI_EXP_DPC_SOURCE_ID, &source);
+> -	pci_read_config_word(pdev, cap + PCI_EXP_DPC_SOURCE_ID, &source);
+> -
+> -	pci_info(pdev, "containment event, status:%#06x source:%#06x\n",
+> -		 status, source);
+>  
+>  	reason = status & PCI_EXP_DPC_STATUS_TRIGGER_RSN;
+> -	ext_reason = status & PCI_EXP_DPC_STATUS_TRIGGER_RSN_EXT;
+> -	pci_warn(pdev, "%s detected\n",
+> -		 (reason == PCI_EXP_DPC_STATUS_TRIGGER_RSN_UNCOR) ?
+> -		 "unmasked uncorrectable error" :
+> -		 (reason == PCI_EXP_DPC_STATUS_TRIGGER_RSN_NFE) ?
+> -		 "ERR_NONFATAL" :
+> -		 (reason == PCI_EXP_DPC_STATUS_TRIGGER_RSN_FE) ?
+> -		 "ERR_FATAL" :
+> -		 (ext_reason == PCI_EXP_DPC_STATUS_TRIGGER_RSN_RP_PIO) ?
+> -		 "RP PIO error" :
+> -		 (ext_reason == PCI_EXP_DPC_STATUS_TRIGGER_RSN_SW_TRIGGER) ?
+> -		 "software trigger" :
+> -		 "reserved error");
+> +
+> +	switch (reason) {
+> +	case PCI_EXP_DPC_STATUS_TRIGGER_RSN_UNCOR:
+> +		pci_warn(pdev, "containment event, status:%#06x: unmasked uncorrectable error detected\n",
+> +			 status);
+> +		break;
+> +	case PCI_EXP_DPC_STATUS_TRIGGER_RSN_NFE:
+> +	case PCI_EXP_DPC_STATUS_TRIGGER_RSN_FE:
+> +		pci_read_config_word(pdev, cap + PCI_EXP_DPC_SOURCE_ID,
+> +				     &source);
+> +		pci_warn(pdev, "containment event, status:%#06x, %s received from %04x:%02x:%02x.%d\n",
+> +			 status,
+> +			 (reason == PCI_EXP_DPC_STATUS_TRIGGER_RSN_FE) ?
+> +				"ERR_FATAL" : "ERR_NONFATAL",
+> +			 pci_domain_nr(pdev->bus), PCI_BUS_NUM(source),
+> +			 PCI_SLOT(source), PCI_FUNC(source));
+> +		return;
+> +	case PCI_EXP_DPC_STATUS_TRIGGER_RSN_IN_EXT:
+> +		ext_reason = status & PCI_EXP_DPC_STATUS_TRIGGER_RSN_EXT;
+> +		pci_warn(pdev, "containment event, status:%#06x: %s detected\n",
+> +			 status,
+> +			 (ext_reason == PCI_EXP_DPC_STATUS_TRIGGER_RSN_RP_PIO) ?
+> +			 "RP PIO error" :
+> +			 (ext_reason == PCI_EXP_DPC_STATUS_TRIGGER_RSN_SW_TRIGGER) ?
+> +			 "software trigger" :
+> +			 "reserved error");
+> +		break;
+> +	}
+>  
+>  	/* show RP PIO error detail information */
+>  	if (pdev->dpc_rp_extensions &&
 > 
+
+After adding that switch (reason) there, wouldn't it make sense to move 
+also the code from the if blocks into the case blocks? That if 
+conditions check for reason anyway so those if branches would naturally 
+belong under one of the cases each.
 
 -- 
  i.
