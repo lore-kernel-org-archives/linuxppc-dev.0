@@ -1,94 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-8734-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8735-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B466EC3DA6D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 May 2025 11:10:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E10FC3ABDD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 May 2025 11:10:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b1sKS2Mskz3bl6;
-	Tue, 20 May 2025 21:10:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=124.126.103.232
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747736231;
-	cv=none; b=F+kBjXdFE2/X4SjbGDDmyOeYc0ScKzdG6FDKcmoWYhEFfp2evmzEu+H2qKtj9a367ol9qqrMHddpuMVgLnvOjmowT7AKoNypTq78F4OgoUZBiIanDTwCEF6IJfzC4W3jWO+T3Qg6SmjuTM4PA5C8Hnh++EC715PQzNkH3ppyu082W7gEczRDLBqGrAd0o39dT8Sm/MbELEgBp0IXpnyIncj816igum7pCLNGbC8aClv7Llr2LjLP2jMVjt5uz8grMLdZDNvGNLlzjSTx74sUosOWTDAkFKvqiVXMx3B7WyPD8rJh8wTyxUnTuKkuR+hnBZAQpXyixLwKXNyIQmmf+g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b1sKb6XWvz3bmq;
+	Tue, 20 May 2025 21:10:27 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.176.79.56
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747739427;
+	cv=none; b=mFBXqDN/A3wzWdSqB6VRsNgArimO7hs3lPeNiSu0pmZzGDwKh1OA1gJQjbKTD8kXRYZwW0/p0McMmQbUqanE2h/vgOt5ssK36P2MNOuphNnuCu+tWe7PeCwBHYWDifg/llzJRJ+CoqzXm6OlAvoBX/NB+gVLIy226YlMxOyQ2v3Bw3BQSdHoti9lkfr2YuO/SP3FpCOgE39TuIoeEEKOjGlACswvgq1+7QTrrheKKdvpEHJArltDgsNh9LnQGm0Polcz4yMUI98udmX+tOqSfHT4XabNpDg8misC71EXYPYeCDKFAIXh7l9MmeoTI/mBuT9s1M9g1fakbgOcujowqw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747736231; c=relaxed/relaxed;
-	bh=qPUCXsPGc+4erH3P3HSqGBpkg4cLX1U7TN5xq7voaMQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Dv33UdizStrnUYSgrPt3HcJrsppBCdAb3T23buZ9sKRPHRaFOV3yQYaAKdX69wQ7Uejn5is3Nj8PqJQF3cueemgst0uXpwP+tCrZZfubr3d0R6uSqE/4Em+svZcZ+xdw32GjvDiWk1m+l/UQnZmCrTZfshgcIFveF8+a5cNQoEy/voaVQXwLdOfDaeYNVe77pjBZDe+67OcqA12db5DFj/vAwXpURkOXJ85pjH8U5MNdvcglxIFI0uC9Mw4wKeiOydYXRDeh/s3wfKuu4o5XNXJVKOwVweJ1aPuyEjo0n+RRHAYwMKQhZQ0KgTMWuEDSqFyntN9T3K258aVEWIgTQA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=aichao@kylinos.cn; receiver=lists.ozlabs.org) smtp.mailfrom=kylinos.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kylinos.cn (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=aichao@kylinos.cn; receiver=lists.ozlabs.org)
-Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1747739427; c=relaxed/relaxed;
+	bh=NuzTWUJmEmnbBNLc9BBpFcyqM7HITNKUrpqWCg88mOo=;
+	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=V3muCKuH2j3EIcsqHs7LEd+jYfCOlcSkVPPSUwOA4cjg84my69KXHa7/cJx52097mrFE+kTolfiigUul91H1DRDWr6aN/qB26c2loLUjP6IXVEzG1sr9lLzld5dbDNyT+6YY4jgJgswr6vVsNNWnOW3hHFdnkDcwztiszc3WraGFLGiNmMOSYSjJyDk9bfwJoW62hcBSNB9Dn7yw45VcAib9qTRIL6HOr8RWwr6fvV4TgJPdz0g7P4gD+t+VIcOXorsopDWF55OKB8OkLLYny1I4M2ym4UhCSmh6S/JtmuvUt5qwzZzv5ZezK5YAKSFXQ+XZyJTOSAT1+JTFiYx7/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 86 seconds by postgrey-1.37 at boromir; Tue, 20 May 2025 21:10:26 AEST
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1r861zK9z2xZh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2025 20:17:09 +1000 (AEST)
-X-UUID: 80c4e580355a11f0b29709d653e92f7d-20250520
-X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.45,REQID:c6c50a9b-851b-47c0-8a23-cef2bbc22566,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:6493067,CLOUDID:d6772785fdb69d0add419fa33b60654c,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102,TC:nil,Content:0|50,EDM:-3,IP:
-	nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,L
-	ES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
-X-CID-BVR: 0
-X-CID-BAS: 0,_,0,_
-X-CID-FACTOR: TF_CID_SPAM_SNR
-X-UUID: 80c4e580355a11f0b29709d653e92f7d-20250520
-Received: from node4.com.cn [(10.44.16.170)] by mailgw.kylinos.cn
-	(envelope-from <aichao@kylinos.cn>)
-	(Generic MTA)
-	with ESMTP id 1683691209; Tue, 20 May 2025 17:12:07 +0800
-Received: from node4.com.cn (localhost [127.0.0.1])
-	by node4.com.cn (NSMail) with SMTP id E7D3A16003840;
-	Tue, 20 May 2025 17:12:06 +0800 (CST)
-X-ns-mid: postfix-682C4766-7593491691
-Received: from kylin-pc.. (unknown [172.25.130.133])
-	by node4.com.cn (NSMail) with ESMTPA id 3CA4216001CC7;
-	Tue, 20 May 2025 09:12:04 +0000 (UTC)
-From: Ai Chao <aichao@kylinos.cn>
-To: johannes@sipsolutions.net,
-	perex@perex.cz,
-	tiwai@suse.com,
-	shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	shawnguo@kernel.org,
-	s.hauer@pengutronix.de,
-	kernel@pengutronix.de,
-	jbrunet@baylibre.com,
-	neil.armstrong@linaro.org,
-	khilman@baylibre.com,
-	martin.blumenstingl@googlemail.com,
-	srinivas.kandagatla@linaro.org,
-	kuninori.morimoto.gx@renesas.com,
-	zhangzekun11@huawei.com,
-	krzysztof.kozlowski@linaro.org,
-	ckeepax@opensource.cirrus.com,
-	drhodes@opensource.cirrus.com,
-	alexey.klimov@linaro.org
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-sound@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	imx@lists.linux.dev,
-	linux-arm-kernel@lists.infradead.org,
-	linux-amlogic@lists.infradead.org,
-	linux-arm-msm@vger.kernel.org,
-	linux-renesas-soc@vger.kernel.org,
-	Ai Chao <aichao@kylinos.cn>
-Subject: [PATCH 6/6] ASoC: qcom: Use helper function for_each_child_of_node_scoped()
-Date: Tue, 20 May 2025 17:11:31 +0800
-Message-ID: <20250520091131.4150248-7-aichao@kylinos.cn>
-X-Mailer: git-send-email 2.47.1
-In-Reply-To: <20250520091131.4150248-1-aichao@kylinos.cn>
-References: <20250520091131.4150248-1-aichao@kylinos.cn>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1sKZ5sMTz3bcJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2025 21:10:26 +1000 (AEST)
+Received: from mail.maildlp.com (unknown [172.18.186.216])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4b1sJY4svJz6GDDL;
+	Tue, 20 May 2025 19:09:33 +0800 (CST)
+Received: from frapeml500008.china.huawei.com (unknown [7.182.85.71])
+	by mail.maildlp.com (Postfix) with ESMTPS id AA50B140447;
+	Tue, 20 May 2025 19:10:23 +0800 (CST)
+Received: from localhost (10.203.177.66) by frapeml500008.china.huawei.com
+ (7.182.85.71) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Tue, 20 May
+ 2025 13:10:22 +0200
+Date: Tue, 20 May 2025 12:10:21 +0100
+From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+To: "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>
+CC: "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
+	Davidlohr Bueso <dave@stgolabs.net>, Dave Jiang <dave.jiang@intel.com>,
+	Alison Schofield <alison.schofield@intel.com>, Vishal Verma
+	<vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, Dan Williams
+	<dan.j.williams@intel.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
+	Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
+	<linux-kernel@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
+	<linux-cxl@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-pci@vger.kernel.org>, <linux-edac@vger.kernel.org>
+Subject: Re: [PATCH 2/4 v2] PCI/AER: Modify pci_print_aer() to take log
+ level
+Message-ID: <20250520121021.00001fb3@huawei.com>
+In-Reply-To: <20250429172109.3199192-3-fabio.m.de.francesco@linux.intel.com>
+References: <20250429172109.3199192-1-fabio.m.de.francesco@linux.intel.com>
+	<20250429172109.3199192-3-fabio.m.de.francesco@linux.intel.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,90 +69,22 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.203.177.66]
+X-ClientProxiedBy: lhrpeml500012.china.huawei.com (7.191.174.4) To
+ frapeml500008.china.huawei.com (7.182.85.71)
 
-The for_each_child_of_node_scoped() helper provides a scope-based
-clean-up functionality to put the device_node automatically, and
-as such, there is no need to call of_node_put() directly.
+On Tue, 29 Apr 2025 19:21:07 +0200
+"Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com> wrote:
 
-Thus, use this helper to simplify the code.
+> Modify pci_print_aer() to take a printk() log level in preparation of a
+> patch that logs PCIe Components and Link errors from ELOG.
+> 
+> Cc: Dan Williams <dan.j.williams@intel.com>
+> Acked-by: Bjorn Helgaas <bhelgaas@google.com>
+> Signed-off-by: Fabio M. De Francesco <fabio.m.de.francesco@linux.intel.com>
+Fair enough on reasoning and it does what you describe so
 
-Signed-off-by: Ai Chao <aichao@kylinos.cn>
----
- sound/soc/qcom/lpass-cpu.c       | 3 +--
- sound/soc/qcom/qdsp6/q6afe-dai.c | 3 +--
- sound/soc/qcom/qdsp6/q6asm-dai.c | 4 +---
- 3 files changed, 3 insertions(+), 7 deletions(-)
-
-diff --git a/sound/soc/qcom/lpass-cpu.c b/sound/soc/qcom/lpass-cpu.c
-index 242bc16da36d..62f49fe46273 100644
---- a/sound/soc/qcom/lpass-cpu.c
-+++ b/sound/soc/qcom/lpass-cpu.c
-@@ -1046,7 +1046,6 @@ static unsigned int of_lpass_cpu_parse_sd_lines(str=
-uct device *dev,
- static void of_lpass_cpu_parse_dai_data(struct device *dev,
- 					struct lpass_data *data)
- {
--	struct device_node *node;
- 	int ret, i, id;
-=20
- 	/* Allow all channels by default for backwards compatibility */
-@@ -1056,7 +1055,7 @@ static void of_lpass_cpu_parse_dai_data(struct devi=
-ce *dev,
- 		data->mi2s_capture_sd_mode[id] =3D LPAIF_I2SCTL_MODE_8CH;
- 	}
-=20
--	for_each_child_of_node(dev->of_node, node) {
-+	for_each_child_of_node_scoped(dev->of_node, node) {
- 		ret =3D of_property_read_u32(node, "reg", &id);
- 		if (ret || id < 0) {
- 			dev_err(dev, "valid dai id not found: %d\n", ret);
-diff --git a/sound/soc/qcom/qdsp6/q6afe-dai.c b/sound/soc/qcom/qdsp6/q6af=
-e-dai.c
-index 7d9628cda875..64735f2adf8f 100644
---- a/sound/soc/qcom/qdsp6/q6afe-dai.c
-+++ b/sound/soc/qcom/qdsp6/q6afe-dai.c
-@@ -962,10 +962,9 @@ static const struct snd_soc_component_driver q6afe_d=
-ai_component =3D {
- static void of_q6afe_parse_dai_data(struct device *dev,
- 				    struct q6afe_dai_data *data)
- {
--	struct device_node *node;
- 	int ret;
-=20
--	for_each_child_of_node(dev->of_node, node) {
-+	for_each_child_of_node_scoped(dev->of_node, node) {
- 		unsigned int lines[Q6AFE_MAX_MI2S_LINES];
- 		struct q6afe_dai_priv_data *priv;
- 		int id, i, num_lines;
-diff --git a/sound/soc/qcom/qdsp6/q6asm-dai.c b/sound/soc/qcom/qdsp6/q6as=
-m-dai.c
-index a400c9a31fea..d7680dd3a3bb 100644
---- a/sound/soc/qcom/qdsp6/q6asm-dai.c
-+++ b/sound/soc/qcom/qdsp6/q6asm-dai.c
-@@ -1236,10 +1236,8 @@ static int of_q6asm_parse_dai_data(struct device *=
-dev,
- {
- 	struct snd_soc_dai_driver *dai_drv;
- 	struct snd_soc_pcm_stream empty_stream;
--	struct device_node *node;
- 	int ret, id, dir, idx =3D 0;
-=20
--
- 	pdata->num_dais =3D of_get_child_count(dev->of_node);
- 	if (!pdata->num_dais) {
- 		dev_err(dev, "No dais found in DT\n");
-@@ -1253,7 +1251,7 @@ static int of_q6asm_parse_dai_data(struct device *d=
-ev,
-=20
- 	memset(&empty_stream, 0, sizeof(empty_stream));
-=20
--	for_each_child_of_node(dev->of_node, node) {
-+	for_each_child_of_node_scoped(dev->of_node, node) {
- 		ret =3D of_property_read_u32(node, "reg", &id);
- 		if (ret || id >=3D MAX_SESSIONS || id < 0) {
- 			dev_err(dev, "valid dai id not found:%d\n", ret);
---=20
-2.47.1
-
+Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 
