@@ -1,83 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-8733-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8734-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7096AC3ABDD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 May 2025 11:08:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B466EC3DA6D
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 May 2025 11:10:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b1sHP0jCYz3bl7;
-	Tue, 20 May 2025 21:08:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.8
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747739313;
-	cv=none; b=kDcSwWiFAiiyO5YPAOFgfqc7aF6RMf4la3mpXPC62jtdajDXLrK8nIzBNhZMyUS5qwjKXcc/LKlr/v+O/nhQ5juK4fH8gi8Y6cuh+Vp62wGAkBkc9btDjov1mygH1JwS8RyudgZLtzF2KjYqBSBehE4m2xUY5WxbVeD+Io+SFB37iI0/Ca72jid/BbB/OuYeMF65pwp76xkQUl+WwoiWcXp9+ssJkrlTr0Xbu2zpvrHXSOH0TGrOBkhePOkz/qokvJ2MclVYWGOl2ZW/NyVQG9fjjwp7yL5w6V/8fypfgGYxtj42nbuIfpptV2+ZeTGr+cTcLXulu+eTUEvVEkWgnA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b1sKS2Mskz3bl6;
+	Tue, 20 May 2025 21:10:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=124.126.103.232
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747736231;
+	cv=none; b=F+kBjXdFE2/X4SjbGDDmyOeYc0ScKzdG6FDKcmoWYhEFfp2evmzEu+H2qKtj9a367ol9qqrMHddpuMVgLnvOjmowT7AKoNypTq78F4OgoUZBiIanDTwCEF6IJfzC4W3jWO+T3Qg6SmjuTM4PA5C8Hnh++EC715PQzNkH3ppyu082W7gEczRDLBqGrAd0o39dT8Sm/MbELEgBp0IXpnyIncj816igum7pCLNGbC8aClv7Llr2LjLP2jMVjt5uz8grMLdZDNvGNLlzjSTx74sUosOWTDAkFKvqiVXMx3B7WyPD8rJh8wTyxUnTuKkuR+hnBZAQpXyixLwKXNyIQmmf+g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747739313; c=relaxed/relaxed;
-	bh=Ur3VDzYTkCWByEa3zSRBDqZC4SOltpFT8VVu3pgmsVM=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=VGDj6IKpS1CIkq3ia5Of+vS26UqodJBFkZzS7BbZG3FvmtMhoGvVAmFMp5Vxmx7wHBQH+gg3xTVATt+2BmuaNTatOKRYikqN1ls/VhMZhjW8V4bSJ+R8mCA+jTrKoqBpohEkQoydIk3J+d0tbb//rAXqUVILKvGlEcUDCuNuewozqpZUEXKuabsE3wwisfFR9zs8siJrwY3NOJhm959/79kfgos8nLmPvbZZXeHvpm/Me6a+sOvmdgzZYWxwONlFN3sWLmuy1wzP+XEZ6MBl5NUDksh1/BGsHypZlj91zYbR4HLJd81NhGhd7QjNgtdjMeUA1Wf0PKC12hCyYxapxw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=MV13gbGe; dkim-atps=neutral; spf=none (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=MV13gbGe;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1747736231; c=relaxed/relaxed;
+	bh=qPUCXsPGc+4erH3P3HSqGBpkg4cLX1U7TN5xq7voaMQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Dv33UdizStrnUYSgrPt3HcJrsppBCdAb3T23buZ9sKRPHRaFOV3yQYaAKdX69wQ7Uejn5is3Nj8PqJQF3cueemgst0uXpwP+tCrZZfubr3d0R6uSqE/4Em+svZcZ+xdw32GjvDiWk1m+l/UQnZmCrTZfshgcIFveF8+a5cNQoEy/voaVQXwLdOfDaeYNVe77pjBZDe+67OcqA12db5DFj/vAwXpURkOXJ85pjH8U5MNdvcglxIFI0uC9Mw4wKeiOydYXRDeh/s3wfKuu4o5XNXJVKOwVweJ1aPuyEjo0n+RRHAYwMKQhZQ0KgTMWuEDSqFyntN9T3K258aVEWIgTQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=aichao@kylinos.cn; receiver=lists.ozlabs.org) smtp.mailfrom=kylinos.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kylinos.cn (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=aichao@kylinos.cn; receiver=lists.ozlabs.org)
+Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1sHN1XNfz3bl6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2025 21:08:31 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1747739312; x=1779275312;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=2prKnSO821SeuO9H2s4uOwiNlz7rB9Uw7dRLE80sspg=;
-  b=MV13gbGeROrbrzCX0SvzKD4UmqTzxPDdn6LMi9ovIjb3uE7bXZBnMoBb
-   g47COfPnkijLfh9ILquahTA72IZCXwUuWCB/k50m1ykreMxKSCooDTDYD
-   B0PXKCoHJZn+ugOotTt3GIoY9uFU9DcBO7pDF4bN+b9MS/JPat+bQN91H
-   gqUTnu/RTyK4yGlOA736tn2rlUqw/rkLDBFN9h70FT0ITznRn+xYGPf+1
-   wPeFuAb0iBMZgFPclY3cTPQu8bT8rZS3PleNcZN+lD6gDcv094nQPK2dk
-   cC/mYRgtNP0CeqjibWC0mUBpmr/M3p1EKY/0r+lXY9F3hgLoF9z/AZP5x
-   A==;
-X-CSE-ConnectionGUID: S58eOCIWTDWy6b4KC8tSww==
-X-CSE-MsgGUID: WbtYKWITStGqPsJ2C6lM1w==
-X-IronPort-AV: E=McAfee;i="6700,10204,11438"; a="67222159"
-X-IronPort-AV: E=Sophos;i="6.15,302,1739865600"; 
-   d="scan'208";a="67222159"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 May 2025 04:08:30 -0700
-X-CSE-ConnectionGUID: Psky762oSGWT9Xebg7dWIw==
-X-CSE-MsgGUID: vN1G9CdjQXOh3FilZV04og==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,302,1739865600"; 
-   d="scan'208";a="144914007"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.235])
-  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 May 2025 04:08:22 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Tue, 20 May 2025 14:08:19 +0300 (EEST)
-To: Bjorn Helgaas <helgaas@kernel.org>
-cc: linux-pci@vger.kernel.org, Jon Pan-Doh <pandoh@google.com>, 
-    Karolina Stolarek <karolina.stolarek@oracle.com>, 
-    Martin Petersen <martin.petersen@oracle.com>, 
-    Ben Fuller <ben.fuller@oracle.com>, Drew Walton <drewwalton@microsoft.com>, 
-    Anil Agrawal <anilagrawal@meta.com>, Tony Luck <tony.luck@intel.com>, 
-    Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, 
-    Lukas Wunner <lukas@wunner.de>, 
-    Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
-    Sargun Dhillon <sargun@meta.com>, "Paul E . McKenney" <paulmck@kernel.org>, 
-    Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
-    Oliver O'Halloran <oohall@gmail.com>, Kai-Heng Feng <kaihengf@nvidia.com>, 
-    Keith Busch <kbusch@kernel.org>, Robert Richter <rrichter@amd.com>, 
-    Terry Bowman <terry.bowman@amd.com>, Shiju Jose <shiju.jose@huawei.com>, 
-    Dave Jiang <dave.jiang@intel.com>, LKML <linux-kernel@vger.kernel.org>, 
-    linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH v6 10/16] PCI/AER: Combine trace_aer_event() with statistics
- updates
-In-Reply-To: <20250519213603.1257897-11-helgaas@kernel.org>
-Message-ID: <a6260206-a02f-2212-9610-66186d6e26a2@linux.intel.com>
-References: <20250519213603.1257897-1-helgaas@kernel.org> <20250519213603.1257897-11-helgaas@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1r861zK9z2xZh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2025 20:17:09 +1000 (AEST)
+X-UUID: 80c4e580355a11f0b29709d653e92f7d-20250520
+X-CID-P-RULE: Release_Ham
+X-CID-O-INFO: VERSION:1.1.45,REQID:c6c50a9b-851b-47c0-8a23-cef2bbc22566,IP:0,U
+	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
+	release,TS:0
+X-CID-META: VersionHash:6493067,CLOUDID:d6772785fdb69d0add419fa33b60654c,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102,TC:nil,Content:0|50,EDM:-3,IP:
+	nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,L
+	ES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-BVR: 0
+X-CID-BAS: 0,_,0,_
+X-CID-FACTOR: TF_CID_SPAM_SNR
+X-UUID: 80c4e580355a11f0b29709d653e92f7d-20250520
+Received: from node4.com.cn [(10.44.16.170)] by mailgw.kylinos.cn
+	(envelope-from <aichao@kylinos.cn>)
+	(Generic MTA)
+	with ESMTP id 1683691209; Tue, 20 May 2025 17:12:07 +0800
+Received: from node4.com.cn (localhost [127.0.0.1])
+	by node4.com.cn (NSMail) with SMTP id E7D3A16003840;
+	Tue, 20 May 2025 17:12:06 +0800 (CST)
+X-ns-mid: postfix-682C4766-7593491691
+Received: from kylin-pc.. (unknown [172.25.130.133])
+	by node4.com.cn (NSMail) with ESMTPA id 3CA4216001CC7;
+	Tue, 20 May 2025 09:12:04 +0000 (UTC)
+From: Ai Chao <aichao@kylinos.cn>
+To: johannes@sipsolutions.net,
+	perex@perex.cz,
+	tiwai@suse.com,
+	shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	shawnguo@kernel.org,
+	s.hauer@pengutronix.de,
+	kernel@pengutronix.de,
+	jbrunet@baylibre.com,
+	neil.armstrong@linaro.org,
+	khilman@baylibre.com,
+	martin.blumenstingl@googlemail.com,
+	srinivas.kandagatla@linaro.org,
+	kuninori.morimoto.gx@renesas.com,
+	zhangzekun11@huawei.com,
+	krzysztof.kozlowski@linaro.org,
+	ckeepax@opensource.cirrus.com,
+	drhodes@opensource.cirrus.com,
+	alexey.klimov@linaro.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-sound@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	imx@lists.linux.dev,
+	linux-arm-kernel@lists.infradead.org,
+	linux-amlogic@lists.infradead.org,
+	linux-arm-msm@vger.kernel.org,
+	linux-renesas-soc@vger.kernel.org,
+	Ai Chao <aichao@kylinos.cn>
+Subject: [PATCH 6/6] ASoC: qcom: Use helper function for_each_child_of_node_scoped()
+Date: Tue, 20 May 2025 17:11:31 +0800
+Message-ID: <20250520091131.4150248-7-aichao@kylinos.cn>
+X-Mailer: git-send-email 2.47.1
+In-Reply-To: <20250520091131.4150248-1-aichao@kylinos.cn>
+References: <20250520091131.4150248-1-aichao@kylinos.cn>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,84 +102,90 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323328-1580202455-1747739299=:936"
+Content-Transfer-Encoding: quoted-printable
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
+The for_each_child_of_node_scoped() helper provides a scope-based
+clean-up functionality to put the device_node automatically, and
+as such, there is no need to call of_node_put() directly.
 
---8323328-1580202455-1747739299=:936
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
+Thus, use this helper to simplify the code.
 
-On Mon, 19 May 2025, Bjorn Helgaas wrote:
+Signed-off-by: Ai Chao <aichao@kylinos.cn>
+---
+ sound/soc/qcom/lpass-cpu.c       | 3 +--
+ sound/soc/qcom/qdsp6/q6afe-dai.c | 3 +--
+ sound/soc/qcom/qdsp6/q6asm-dai.c | 4 +---
+ 3 files changed, 3 insertions(+), 7 deletions(-)
 
-> From: Bjorn Helgaas <bhelgaas@google.com>
->=20
-> As with the AER statistics, we always want to emit trace events, even if
-> the actual dmesg logging is rate limited.
->=20
-> Call trace_aer_event() directly from pci_dev_aer_stats_incr(), where we
-> update the statistics.
->=20
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
-> ---
->  drivers/pci/pcie/aer.c | 12 ++++++------
->  1 file changed, 6 insertions(+), 6 deletions(-)
->=20
-> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> index eb80c382187d..4683a99c7568 100644
-> --- a/drivers/pci/pcie/aer.c
-> +++ b/drivers/pci/pcie/aer.c
-> @@ -625,6 +625,9 @@ static void pci_dev_aer_stats_incr(struct pci_dev *pd=
+diff --git a/sound/soc/qcom/lpass-cpu.c b/sound/soc/qcom/lpass-cpu.c
+index 242bc16da36d..62f49fe46273 100644
+--- a/sound/soc/qcom/lpass-cpu.c
++++ b/sound/soc/qcom/lpass-cpu.c
+@@ -1046,7 +1046,6 @@ static unsigned int of_lpass_cpu_parse_sd_lines(str=
+uct device *dev,
+ static void of_lpass_cpu_parse_dai_data(struct device *dev,
+ 					struct lpass_data *data)
+ {
+-	struct device_node *node;
+ 	int ret, i, id;
+=20
+ 	/* Allow all channels by default for backwards compatibility */
+@@ -1056,7 +1055,7 @@ static void of_lpass_cpu_parse_dai_data(struct devi=
+ce *dev,
+ 		data->mi2s_capture_sd_mode[id] =3D LPAIF_I2SCTL_MODE_8CH;
+ 	}
+=20
+-	for_each_child_of_node(dev->of_node, node) {
++	for_each_child_of_node_scoped(dev->of_node, node) {
+ 		ret =3D of_property_read_u32(node, "reg", &id);
+ 		if (ret || id < 0) {
+ 			dev_err(dev, "valid dai id not found: %d\n", ret);
+diff --git a/sound/soc/qcom/qdsp6/q6afe-dai.c b/sound/soc/qcom/qdsp6/q6af=
+e-dai.c
+index 7d9628cda875..64735f2adf8f 100644
+--- a/sound/soc/qcom/qdsp6/q6afe-dai.c
++++ b/sound/soc/qcom/qdsp6/q6afe-dai.c
+@@ -962,10 +962,9 @@ static const struct snd_soc_component_driver q6afe_d=
+ai_component =3D {
+ static void of_q6afe_parse_dai_data(struct device *dev,
+ 				    struct q6afe_dai_data *data)
+ {
+-	struct device_node *node;
+ 	int ret;
+=20
+-	for_each_child_of_node(dev->of_node, node) {
++	for_each_child_of_node_scoped(dev->of_node, node) {
+ 		unsigned int lines[Q6AFE_MAX_MI2S_LINES];
+ 		struct q6afe_dai_priv_data *priv;
+ 		int id, i, num_lines;
+diff --git a/sound/soc/qcom/qdsp6/q6asm-dai.c b/sound/soc/qcom/qdsp6/q6as=
+m-dai.c
+index a400c9a31fea..d7680dd3a3bb 100644
+--- a/sound/soc/qcom/qdsp6/q6asm-dai.c
++++ b/sound/soc/qcom/qdsp6/q6asm-dai.c
+@@ -1236,10 +1236,8 @@ static int of_q6asm_parse_dai_data(struct device *=
+dev,
+ {
+ 	struct snd_soc_dai_driver *dai_drv;
+ 	struct snd_soc_pcm_stream empty_stream;
+-	struct device_node *node;
+ 	int ret, id, dir, idx =3D 0;
+=20
+-
+ 	pdata->num_dais =3D of_get_child_count(dev->of_node);
+ 	if (!pdata->num_dais) {
+ 		dev_err(dev, "No dais found in DT\n");
+@@ -1253,7 +1251,7 @@ static int of_q6asm_parse_dai_data(struct device *d=
 ev,
->  =09u64 *counter =3D NULL;
->  =09struct aer_stats *aer_stats =3D pdev->aer_stats;
-> =20
-> +=09trace_aer_event(pci_name(pdev), (info->status & ~info->mask),
-> +=09=09=09info->severity, info->tlp_header_valid, &info->tlp);
-> +
->  =09if (!aer_stats)
->  =09=09return;
-> =20
-> @@ -741,9 +744,6 @@ void aer_print_error(struct pci_dev *dev, struct aer_=
-err_info *info)
->  out:
->  =09if (info->id && info->error_dev_num > 1 && info->id =3D=3D id)
->  =09=09pci_err(dev, "  Error of this Agent is reported first\n");
-> -
-> -=09trace_aer_event(dev_name(&dev->dev), (info->status & ~info->mask),
-> -=09=09=09info->severity, info->tlp_header_valid, &info->tlp);
->  }
-> =20
->  #ifdef CONFIG_ACPI_APEI_PCIEAER
-> @@ -782,6 +782,9 @@ void pci_print_aer(struct pci_dev *dev, int aer_sever=
-ity,
-> =20
->  =09info.status =3D status;
->  =09info.mask =3D mask;
-> +=09info.tlp_header_valid =3D tlp_header_valid;
-> +=09if (tlp_header_valid)
-> +=09=09info.tlp =3D aer->header_log;
-> =20
->  =09pci_dev_aer_stats_incr(dev, &info);
-> =20
-> @@ -799,9 +802,6 @@ void pci_print_aer(struct pci_dev *dev, int aer_sever=
-ity,
-> =20
->  =09if (tlp_header_valid)
->  =09=09pcie_print_tlp_log(dev, &aer->header_log, dev_fmt("  "));
-> -
-> -=09trace_aer_event(pci_name(dev), (status & ~mask),
-> -=09=09=09aer_severity, tlp_header_valid, &aer->header_log);
->  }
->  EXPORT_SYMBOL_NS_GPL(pci_print_aer, "CXL");
-> =20
->=20
-
-Reviewed-by: Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com>
-
+=20
+ 	memset(&empty_stream, 0, sizeof(empty_stream));
+=20
+-	for_each_child_of_node(dev->of_node, node) {
++	for_each_child_of_node_scoped(dev->of_node, node) {
+ 		ret =3D of_property_read_u32(node, "reg", &id);
+ 		if (ret || id >=3D MAX_SESSIONS || id < 0) {
+ 			dev_err(dev, "valid dai id not found:%d\n", ret);
 --=20
- i.
+2.47.1
 
---8323328-1580202455-1747739299=:936--
 
