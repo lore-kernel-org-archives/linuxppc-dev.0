@@ -1,22 +1,22 @@
-Return-Path: <linuxppc-dev+bounces-8737-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8738-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7563EC3ABDD
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 May 2025 11:10:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C32DC3ABDD
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 20 May 2025 11:11:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b1sKv10Pyz3bmk;
-	Tue, 20 May 2025 21:10:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b1sLH6rvKz3bmH;
+	Tue, 20 May 2025 21:11:03 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=124.126.103.232
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747736223;
-	cv=none; b=gCyZv2LeVVjlppYCJUOX3sh5g0o1aSDz+e8MK2kHlChxJdDcPgXh1YTqMirE+Oc8VARshpnm3ZC5H+X6yWnlCJeWSnWFBdw/2Y/+zTBKM2aAHfBt7wRIOBVoHnuNtIKcrjbGh09jYt6pHyLc/3bUPqUlXk1o4wzKRbSPEhbC8UuxHXuYMy50urNhX7EZEG9RU5YwqO1e6GfuU8ugNe0amB0U8oQxCyDOJljLfquZgTWgORsKVicwe3icKOx9iGfeRdDcElSjT5kOYU8OYhxjGn2+Ki5eZtEw4NupVXIBkW1J0yArgFC0rrgRw6nkS/Umar9lwVSF3ro8f8bh0ZLe/A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747736156;
+	cv=none; b=kBr9KfxK322WdfON+KHHCclnaQTZoRw8tHUUU7R1TvU0ZZVmNpy83SknThgJrix0n43KbgvbckIV7Vm31wUtcVv3tjqXMNkC6wQ1uo8w/e3gKHr0au66s1GLLoPrnUSAUr0GbBWLIUOwD5uuh4tUYnDXfGY6VpZDN4RatbPZgB+iCEJSi719RFZuYcM6dEp/hCUwv3FxkRPlHSN60qyrN3VlMhI7nI9EJGpvzjUliOZ55KV40ikb6pDHVl6xddI4mGY7uXkhz6bCY3mG3yRlU/cZyfIwTGimC3XJRBU8Yi/RAuiyuuDQrCEFYXVvWcyiCclJdGP2Ge5CK266oBGmog==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747736223; c=relaxed/relaxed;
-	bh=7Jzts+NR6BxJleMDYfxtTU0HkTyKAc41X6oK1xPCW4U=;
+	t=1747736156; c=relaxed/relaxed;
+	bh=tsR6mYUtq2XfOzUIFlgh+/rijlI9v7OFnIcx2nltOu8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=btFdrCc+zNf3V+uqQlR3PmJcx5U2TbRE1rQGQHPEgEDzqMSkc9Fbl8MgKorQyA7QBqUhteaB58pH/dw0pCeYUh3ZbSVbVRkaWZYaCBgLRCxXWy9J+9RRn0jmj2HC4LjT6kAkBv+lTkM0ZvwblQ17nwglr2Rm8MbmyLAkXb9ZrnO9Lpj5NVUnpr2nXDxGZyVcezFTfhOQC0c2/nv9ADfcClikzvfksj/vdImc6qwORbcQjyNcJzwM3NXKhzJfgLFibRngdmkFYnlti01oZP7HcSP3sYnGGLTU1iZeFS/che41n11DsgZW2ZJc/5dh59gETOezChRZIfdDv5vMZYpM4g==
+	 MIME-Version; b=ZAAwu+VPaQ9c5J+3PaFpdZCRPiWdY5NE8key4I09eAehUzf8o91MHsVDQ2GK1Zd4+SVMISpXyqKIzXLqWe0b4g2/h+crIMJoonEWlgajUahEsgjkDwqPL/kS/p9xDXsRAbXNT0gJLCcXzVFIkW+SuTHJ6ZIGpWpwz6sqfDE4QCswh2K9MxWv+20H13VuHVNOWVXQY+uFIkjLqLvim9an6NiLfLS0TkGIdVvfgAzCuK0ReyHV018qqaeynZ1CcC30fvFb/u1sYbJm7z7HzXvJtkE+b/bxKh6DXolYS4IwBKsE3yp5xQnyMuiXM99Eqqu+HK2xOveTREwUt76kM3Bpzg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=aichao@kylinos.cn; receiver=lists.ozlabs.org) smtp.mailfrom=kylinos.cn
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kylinos.cn (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=aichao@kylinos.cn; receiver=lists.ozlabs.org)
@@ -24,32 +24,32 @@ Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1r7x2Jvtz2xZh
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2025 20:17:00 +1000 (AEST)
-X-UUID: 7c2d313a355a11f0b29709d653e92f7d-20250520
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b1r6g0Yvnz2ySb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 20 May 2025 20:15:54 +1000 (AEST)
+X-UUID: 78003f30355a11f0b29709d653e92f7d-20250520
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.45,REQID:0634e2b0-6be5-42ee-abbe-7876ece723fb,IP:0,U
-	RL:0,TC:0,Content:0,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION:
-	release,TS:0
-X-CID-META: VersionHash:6493067,CLOUDID:11e3fd52d48d5c05f7356116c988d80b,BulkI
+X-CID-O-INFO: VERSION:1.1.45,REQID:43bd5a8b-3f0c-4b04-8e38-3a4c6068aaed,IP:0,U
+	RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:-25
+X-CID-META: VersionHash:6493067,CLOUDID:24953480a3fe3af10c8b7045dbb8b953,BulkI
 	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102,TC:nil,Content:0|50,EDM:-3,IP:
 	nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,L
 	ES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
 X-CID-BVR: 0
 X-CID-BAS: 0,_,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR
-X-UUID: 7c2d313a355a11f0b29709d653e92f7d-20250520
+X-UUID: 78003f30355a11f0b29709d653e92f7d-20250520
 Received: from node4.com.cn [(10.44.16.170)] by mailgw.kylinos.cn
 	(envelope-from <aichao@kylinos.cn>)
 	(Generic MTA)
-	with ESMTP id 1957821300; Tue, 20 May 2025 17:11:59 +0800
+	with ESMTP id 696859959; Tue, 20 May 2025 17:11:52 +0800
 Received: from node4.com.cn (localhost [127.0.0.1])
-	by node4.com.cn (NSMail) with SMTP id 41D4F16003840;
-	Tue, 20 May 2025 17:11:59 +0800 (CST)
-X-ns-mid: postfix-682C475F-939691689
+	by node4.com.cn (NSMail) with SMTP id 3974916001CC7;
+	Tue, 20 May 2025 17:11:52 +0800 (CST)
+X-ns-mid: postfix-682C4758-506861687
 Received: from kylin-pc.. (unknown [172.25.130.133])
-	by node4.com.cn (NSMail) with ESMTPA id 8659916001CC7;
-	Tue, 20 May 2025 09:11:56 +0000 (UTC)
+	by node4.com.cn (NSMail) with ESMTPA id 279CA16001CC7;
+	Tue, 20 May 2025 09:11:49 +0000 (UTC)
 From: Ai Chao <aichao@kylinos.cn>
 To: johannes@sipsolutions.net,
 	perex@perex.cz,
@@ -83,9 +83,9 @@ Cc: linuxppc-dev@lists.ozlabs.org,
 	linux-arm-msm@vger.kernel.org,
 	linux-renesas-soc@vger.kernel.org,
 	Ai Chao <aichao@kylinos.cn>
-Subject: [PATCH 4/6] ASoC: meson: Use helper function for_each_child_of_node_scoped()
-Date: Tue, 20 May 2025 17:11:29 +0800
-Message-ID: <20250520091131.4150248-5-aichao@kylinos.cn>
+Subject: [PATCH 2/6] ASoC: aoa: Use helper function for_each_child_of_node_scoped()
+Date: Tue, 20 May 2025 17:11:27 +0800
+Message-ID: <20250520091131.4150248-3-aichao@kylinos.cn>
 X-Mailer: git-send-email 2.47.1
 In-Reply-To: <20250520091131.4150248-1-aichao@kylinos.cn>
 References: <20250520091131.4150248-1-aichao@kylinos.cn>
@@ -112,87 +112,42 @@ Thus, use this helper to simplify the code.
 
 Signed-off-by: Ai Chao <aichao@kylinos.cn>
 ---
- sound/soc/meson/axg-card.c         |  3 +--
- sound/soc/meson/meson-card-utils.c | 14 ++++----------
- 2 files changed, 5 insertions(+), 12 deletions(-)
+ sound/aoa/soundbus/i2sbus/core.c | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-diff --git a/sound/soc/meson/axg-card.c b/sound/soc/meson/axg-card.c
-index a2dfccb7990f..b4dca80e15e4 100644
---- a/sound/soc/meson/axg-card.c
-+++ b/sound/soc/meson/axg-card.c
-@@ -222,7 +222,6 @@ static int axg_card_parse_codecs_masks(struct snd_soc=
-_card *card,
- 				       struct axg_dai_link_tdm_data *be)
- {
- 	struct axg_dai_link_tdm_mask *codec_mask;
--	struct device_node *np;
-=20
- 	codec_mask =3D devm_kcalloc(card->dev, link->num_codecs,
- 				  sizeof(*codec_mask), GFP_KERNEL);
-@@ -231,7 +230,7 @@ static int axg_card_parse_codecs_masks(struct snd_soc=
-_card *card,
-=20
- 	be->codec_masks =3D codec_mask;
-=20
--	for_each_child_of_node(node, np) {
-+	for_each_child_of_node_scoped(node, np) {
- 		snd_soc_of_get_slot_mask(np, "dai-tdm-slot-rx-mask",
- 					 &codec_mask->rx);
- 		snd_soc_of_get_slot_mask(np, "dai-tdm-slot-tx-mask",
-diff --git a/sound/soc/meson/meson-card-utils.c b/sound/soc/meson/meson-c=
-ard-utils.c
-index cfc7f6e41ab5..cf08c8dedd91 100644
---- a/sound/soc/meson/meson-card-utils.c
-+++ b/sound/soc/meson/meson-card-utils.c
-@@ -137,7 +137,6 @@ int meson_card_set_be_link(struct snd_soc_card *card,
- 			   struct device_node *node)
- {
- 	struct snd_soc_dai_link_component *codec;
--	struct device_node *np;
- 	int ret, num_codecs;
-=20
- 	num_codecs =3D of_get_child_count(node);
-@@ -154,12 +153,10 @@ int meson_card_set_be_link(struct snd_soc_card *car=
-d,
- 	link->codecs =3D codec;
- 	link->num_codecs =3D num_codecs;
-=20
--	for_each_child_of_node(node, np) {
-+	for_each_child_of_node_scoped(node, np) {
- 		ret =3D meson_card_parse_dai(card, np, codec);
--		if (ret) {
--			of_node_put(np);
-+		if (ret)
- 			return ret;
--		}
-=20
- 		codec++;
+diff --git a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus=
+/core.c
+index ce84288168e4..20a4c5891afc 100644
+--- a/sound/aoa/soundbus/i2sbus/core.c
++++ b/sound/aoa/soundbus/i2sbus/core.c
+@@ -207,6 +207,8 @@ static int i2sbus_add_dev(struct macio_dev *macio,
+ 			}
+ 		}
  	}
-@@ -198,7 +195,6 @@ static int meson_card_add_links(struct snd_soc_card *=
-card)
++	of_node_put(sound);
++
+ 	/* for the time being, until we can handle non-layout-id
+ 	 * things in some fabric, refuse to attach if there is no
+ 	 * layout-id property or we haven't been forced to attach.
+@@ -335,7 +337,6 @@ static int i2sbus_add_dev(struct macio_dev *macio,
+=20
+ static int i2sbus_probe(struct macio_dev* dev, const struct of_device_id=
+ *match)
  {
- 	struct meson_card *priv =3D snd_soc_card_get_drvdata(card);
- 	struct device_node *node =3D card->dev->of_node;
 -	struct device_node *np;
- 	int num, i, ret;
+ 	int got =3D 0, err;
+ 	struct i2sbus_control *control =3D NULL;
 =20
- 	num =3D of_get_child_count(node);
-@@ -212,12 +208,10 @@ static int meson_card_add_links(struct snd_soc_card=
- *card)
- 		return ret;
-=20
- 	i =3D 0;
--	for_each_child_of_node(node, np) {
-+	for_each_child_of_node_scoped(node, np) {
- 		ret =3D priv->match_data->add_link(card, np, &i);
--		if (ret) {
--			of_node_put(np);
-+		if (ret)
- 			return ret;
--		}
-=20
- 		i++;
+@@ -347,7 +348,7 @@ static int i2sbus_probe(struct macio_dev* dev, const =
+struct of_device_id *match)
+ 		return -ENODEV;
  	}
+=20
+-	for_each_child_of_node(dev->ofdev.dev.of_node, np) {
++	for_each_child_of_node_scoped(dev->ofdev.dev.of_node, np) {
+ 		if (of_device_is_compatible(np, "i2sbus") ||
+ 		    of_device_is_compatible(np, "i2s-modem")) {
+ 			got +=3D i2sbus_add_dev(dev, control, np);
 --=20
 2.47.1
 
