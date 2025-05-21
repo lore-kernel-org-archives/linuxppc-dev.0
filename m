@@ -1,138 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-8827-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8828-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AE37C2D0CD
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 May 2025 10:19:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 998E0C2D0CD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 May 2025 10:24:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b2S7v5bSmz3c3W;
-	Wed, 21 May 2025 20:19:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747822747;
-	cv=none; b=itE+ouFAGLAK0k9LEbspj1kmoSE3SfJRAMZqvlTwt8kz1GKU5UkthX7RycPQhjgZgvDMA6kG0jq7Hsh/ucy1knLZ3JLFvc4IQp3ikJ6qT6cgdPgoCfpuuZ2DBx+gFY1WSRUKZyUB3YCmdCYiPYhy3aZ6C6qo01MlFPyOrgXnIfLvRE/OisxOgczYcU9Qu3h9rK+sJu1OONFE744g5vE9Jhm6oe89S5Ie+VCcUOumai98MRLk6q4ab/Td4q0PQlXaQXBeETOTLEP2Vm8nyBXRaIoR8DTY4tdlh4WB0MBkMtZyY1wORxdaRBDM+MifVJ+o56Mlj4b19t//vvnZ7w3M8Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b2SFw1M9dz3c3g;
+	Wed, 21 May 2025 20:24:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.9
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747823060;
+	cv=none; b=WLPTBWn315G+B1qNyPxEbPoK7ukj9APP5xCPxNjkFSNLbL91wMN49RbTxbaTJR0R3tRAZZNQpcJbhnM4tTpIZm95eYKFqIiElsaR0dmj4lES/uZZil0l+9cOvnQREpg+KOVFz/eikvt7DCKRpx42Tmna7SW9fH1Dyq1OUbgVmIEEu0FvZYlDWMKEhPczc3r1hJncg5MaAQ5hNpElXdbgi9VIDBwqPqc1IscIj43LajV1JTVXgKzTbAWYz29SrUjpPJIGsftKsjxqM1bDtq4ALNemaAtz2ipnfVW9oc2MBlRzHbf+UJJmlGJzKBig/RTPQPaIuWFlZ6wAPX8W6KVOuQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747822747; c=relaxed/relaxed;
-	bh=V4vig+UBkOHWEC7q6eYysZp9vtHyxiu6x3tPs7w6Jt8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 In-Reply-To:Content-Type:Content-Disposition; b=AKjWq5RuO/7V9M/eTq53r6QQYW/tnZNLMM3ke+JA42fkPkWmeSD4G1ocKQ0yFfw5E14kwDtuRAo+45WhTfbFquq8fb3RgDZns7xuunjlwWttdv47kGemuETpwIlce31xFZniYGrbBH9GVyesltaBIGe7B3g3ilabcYh4JicrP5dTr5eEpzyv6C60tj+vRYvAuJTvkaX7usbGugs7py5H5eTgAa5UH+L0sElDf1i65XGp61YMD5q4hteja3bE6bUCmbbvsOM/EnodbU8tRXJC69HfRoQ4PGQziH3kLgPcsTvhHk4DNwRlxVzUNnSDrX65ZMAF6rUxMv5J+KhsXbyUJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dHqay43f; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UzG1iCm0; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=aalbersh@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1747823060; c=relaxed/relaxed;
+	bh=2nai+BUcQnHWg1hpJZe7Xtn/H75eBEtiB7ZJdQs+9Hc=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=CCccjg5RfUAGW9lOdxKWHnwOTIOHkPOyi89fp8dLUajqiuNsAHsDyiIUrBcXL0tO5yRxvC86ATLJS7smgFM4MmCIcKZkvZ6Z0Jka1sUjOyAl6qyAVI39sK0E/pBLT4Yh/02tYOiTdsRB9AwLLmzWAO+A5F75JuKgxhKMldcTVNclVePOh9Qv7tR7f5AXmFwLHkmO+YemOmp9F7w2hHA4CInKyRsSVeMHm7j92tfAzzwoPcLdSf7p8YVhAbEtJuuChvPl2JUjcL4sHXp5lEdP/dlScokrfOKWKblp3KSJv0pPy49SrTd70GnYFo6w2hhi5qsxSGEfEuaZZ86vHlSA3A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=I6OVH/8N; dkim-atps=neutral; spf=none (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dHqay43f;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UzG1iCm0;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=I6OVH/8N;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=aalbersh@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b2S7t2VnVz3c2F
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2025 20:19:05 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1747822741;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=V4vig+UBkOHWEC7q6eYysZp9vtHyxiu6x3tPs7w6Jt8=;
-	b=dHqay43fBS+0LXCPGrY2ZXXea1P5iXhc441aCw5jZAc4cTmylZXEcAHzepl1UMBlw3rua6
-	YmSOXi8Jxxwjmi49/1h4OtkKUrRnoTKh2lryRaTIo+QU5d7+wl9uHOc3jqbI9I0Pz2CCum
-	lJthqNAJUkMsGOIt/x1pSzoIxqZVVJI=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1747822742;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=V4vig+UBkOHWEC7q6eYysZp9vtHyxiu6x3tPs7w6Jt8=;
-	b=UzG1iCm0LYKULORKlsGfp+PktCPDt7y5TotD8Wcp4+yVvGQiu93igaRmFsUQdjWHu/zOeN
-	yDeJPWhxZ248+y4j6nZXEUrWNHBB5iLf5O5ZluOSQ6kXVJj9HFXCek+z2+cxmvg31rvi/L
-	zktInOQktBVwEGXtRCBWL6vAmbwVnLc=
-Received: from mail-ej1-f69.google.com (mail-ej1-f69.google.com
- [209.85.218.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-679-OhxjfkTzMVGzHYVtB34MpA-1; Wed, 21 May 2025 06:06:47 -0400
-X-MC-Unique: OhxjfkTzMVGzHYVtB34MpA-1
-X-Mimecast-MFC-AGG-ID: OhxjfkTzMVGzHYVtB34MpA_1747822006
-Received: by mail-ej1-f69.google.com with SMTP id a640c23a62f3a-ad55e9a80acso280817866b.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2025 03:06:47 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1747822006; x=1748426806;
-        h=in-reply-to:content-transfer-encoding:content-disposition
-         :mime-version:references:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=V4vig+UBkOHWEC7q6eYysZp9vtHyxiu6x3tPs7w6Jt8=;
-        b=xMUVfN0m+dhtGhPKDrQW832DVOXat5xFCHH/B80P6y74Ak0Taqnys99VMKmCQOuEsx
-         O5+jZAzhk+3H8U3T4YMWhFYI9pqSBNQ9dTN/htr3ZU4r4IYE3FiwbfueWC1C6fVXYXm6
-         GykYzAIt9QvnQeylxxheQbVm4oYAlYJgfv5m3IxCB5Vtpo51scWh48LD5pDt6p6PuJzk
-         VFMVZN31McDuMMI/wMA1WMwF+yZyTJ6RsfFk8skZLKas0qXBDKy4LF+GWb5E6/Pk6pIi
-         AWgag3bxCzhSJnWJTEadycJ/Z59PAsOwHXgDu9k5hFfsNMXOtRqLnnC6zwXC/aiCvpkK
-         5zwQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU8DtaLz48gLiBynWcue2AZlc9LCDc3ZI/4O1trhFFM9Y4bgvWHUBb1p0xD3XsLJYgr0I8OVecXRexfl0M=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwDWIFSXr70HHBupeDlCh22y5klyR7P8Ev6TvNmEP9qsD9FrqSf
-	RAcIKQRgIbUCA4BjI10q4Kubt8QOldwS1FlJBeJnomb1sQikyYHocQRXd0gGBC6kecGGX/mD9Yn
-	0kmFINKKUJ2cqqdQW8xsDPtTw2YMFisuN4KBxX35GKFAD+IsR7LawSlbYWt/HkWvNaw==
-X-Gm-Gg: ASbGncs5VrWR9k89lGU5uyIeUWk3BJLHfAdLrv0cbkset99ph9+y1s/O4yh5QSegtMT
-	ugqY+OdfhtwJ2Ov0NB0HfhYFiOqGDeWglcmmwJ2sdleEg17HDicAy2NOq5H/VzUCkvdVRUXYJTA
-	gvoyXPDxvOusHYRo38PaW7weuKDlG32s6sZZy8YaMOjPP0cfZqWNkIVNT2zsM/ESKlkjemNLuDo
-	B2xMH55P43z1PRIXDVx5F3cO7mgqWvcqE9eNSFkw28RdmtZDEzbPCMtJZJXuH94fUOSiwikM922
-	HSUvQ0ykbytPepk6nVqZ2Tw=
-X-Received: by 2002:a17:907:7f20:b0:ad2:1f65:8569 with SMTP id a640c23a62f3a-ad52d4cac82mr1768736466b.28.1747822005810;
-        Wed, 21 May 2025 03:06:45 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IHrDhSRrFDtKo/q2kMry7jRxoxTndGDEB75ZiBniuUCDsbNGVDoC1oaveLmJXZWQWEiNaVF6A==
-X-Received: by 2002:a17:907:7f20:b0:ad2:1f65:8569 with SMTP id a640c23a62f3a-ad52d4cac82mr1768728666b.28.1747822005178;
-        Wed, 21 May 2025 03:06:45 -0700 (PDT)
-Received: from thinky ([2a0e:fd87:a051:1:d224:1f1f:6cfc:763a])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ad52d278adcsm868243066b.84.2025.05.21.03.06.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 21 May 2025 03:06:44 -0700 (PDT)
-Date: Wed, 21 May 2025 12:06:32 +0200
-From: Andrey Albershteyn <aalbersh@redhat.com>
-To: Amir Goldstein <amir73il@gmail.com>, pali@kernel.org
-Cc: Dave Chinner <david@fromorbit.com>, 
-	Christian Brauner <brauner@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
-	Richard Henderson <richard.henderson@linaro.org>, Matt Turner <mattst88@gmail.com>, 
-	Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Will Deacon <will@kernel.org>, Geert Uytterhoeven <geert@linux-m68k.org>, 
-	Michal Simek <monstr@monstr.eu>, Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
-	"James E . J . Bottomley" <James.Bottomley@hansenpartnership.com>, Helge Deller <deller@gmx.de>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	Naveen N Rao <naveen@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, 
-	Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, 
-	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, "David S . Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Andy Lutomirski <luto@kernel.org>, 
-	Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, "H. Peter Anvin" <hpa@zytor.com>, 
-	Chris Zankel <chris@zankel.net>, Max Filippov <jcmvbkbc@gmail.com>, 
-	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, 
-	=?utf-8?Q?Micka=C3=ABl_Sala=C3=BCn?= <mic@digikod.net>, =?utf-8?Q?G=C3=BCnther?= Noack <gnoack@google.com>, 
-	Pali =?utf-8?B?Um9ow6Fy?= <pali@kernel.org>, Paul Moore <paul@paul-moore.com>, 
-	James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
-	Stephen Smalley <stephen.smalley.work@gmail.com>, Ondrej Mosnacek <omosnace@redhat.com>, 
-	Tyler Hicks <code@tyhicks.com>, Miklos Szeredi <miklos@szeredi.hu>, linux-alpha@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
-	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
-	sparclinux@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
-	linux-security-module@vger.kernel.org, linux-api@vger.kernel.org, 
-	Linux-Arch <linux-arch@vger.kernel.org>, selinux@vger.kernel.org, ecryptfs@vger.kernel.org, 
-	linux-unionfs@vger.kernel.org, linux-xfs@vger.kernel.org, 
-	Andrey Albershteyn <aalbersh@kernel.org>
-Subject: Re: [PATCH v5 0/7] fs: introduce file_getattr and file_setattr
- syscalls
-Message-ID: <mw2d36mqwzqoveguw5vlggrnw2wirsbhdxkox33z3fg7k6huz6@hj4ntgg3oj7p>
-References: <20250513-xattrat-syscall-v5-0-22bb9c6c767f@kernel.org>
- <399fdabb-74d3-4dd6-9eee-7884a986dab1@app.fastmail.com>
- <20250515-bedarf-absagen-464773be3e72@brauner>
- <CAOQ4uxicuEkOas2UR4mqfus9Q2RAeKKYTwbE2XrkcE_zp8oScQ@mail.gmail.com>
- <aCsX4LTpAnGfFjHg@dread.disaster.area>
- <sfmrojifgnrpeilqxtixyqrdjj5uvvpbvirxmlju5yce7z72vi@ondnx7qbie4y>
- <CAOQ4uxiM+BBNODHfxu=v3XN2ezA-0k54qC5R4qdELbZW+W-xkg@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b2SFs1m54z3c2l
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2025 20:24:16 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1747823057; x=1779359057;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=QT+ZRXmQW3xGIwS8YUEuvwknhFtt2KUvctGSee3lUTM=;
+  b=I6OVH/8NQkyxh9ocyFj/ZZlgfLq6L2VwNQQgKTsCw9UHnRChKd6JzCiU
+   lgwlVkMp1I+bbErhQSxXijai9sPd6kW0jmgz1CdM1OXwrWa0ZYyl1+Fe9
+   TVmBKrs49kEY6B6ZzmLWmr39FNzdysrc6Mbt0hGs4yT8qxRO2Z3Hh8Tsn
+   phSAszK9hC+lALbz2MO8ZJAlyBzUeC0QK2wD/aTJ0ZaM/tdawAjGiyWRW
+   YjGRpL97uQGR9uZao310etCfcpnwBotBnEKlQB/T6PuagD2aQQnrItaRK
+   7kuE0ebZQ9FGRDllmFx3T+y8DwnDD9cAAdKS7CsDWdPleRmlPBDYGTxLn
+   Q==;
+X-CSE-ConnectionGUID: v3uDsPQsTCGvlP0hsKjRPQ==
+X-CSE-MsgGUID: iByux+j4Tk2NIU3kz3hOMg==
+X-IronPort-AV: E=McAfee;i="6700,10204,11439"; a="60452563"
+X-IronPort-AV: E=Sophos;i="6.15,303,1739865600"; 
+   d="scan'208";a="60452563"
+Received: from fmviesa002.fm.intel.com ([10.60.135.142])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 May 2025 03:24:13 -0700
+X-CSE-ConnectionGUID: NLexAi0OT0iqeJ9fviJxmw==
+X-CSE-MsgGUID: 6WwmvMZETxiuSev+BW/SKA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.15,303,1739865600"; 
+   d="scan'208";a="163285282"
+Received: from dalessan-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.244.221])
+  by fmviesa002-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 May 2025 03:24:05 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Wed, 21 May 2025 13:24:02 +0300 (EEST)
+To: Bjorn Helgaas <helgaas@kernel.org>
+cc: linux-pci@vger.kernel.org, Jon Pan-Doh <pandoh@google.com>, 
+    Karolina Stolarek <karolina.stolarek@oracle.com>, 
+    Weinan Liu <wnliu@google.com>, 
+    Martin Petersen <martin.petersen@oracle.com>, 
+    Ben Fuller <ben.fuller@oracle.com>, Drew Walton <drewwalton@microsoft.com>, 
+    Anil Agrawal <anilagrawal@meta.com>, Tony Luck <tony.luck@intel.com>, 
+    Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, 
+    Lukas Wunner <lukas@wunner.de>, 
+    Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
+    Sargun Dhillon <sargun@meta.com>, "Paul E . McKenney" <paulmck@kernel.org>, 
+    Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+    Oliver O'Halloran <oohall@gmail.com>, Kai-Heng Feng <kaihengf@nvidia.com>, 
+    Keith Busch <kbusch@kernel.org>, Robert Richter <rrichter@amd.com>, 
+    Terry Bowman <terry.bowman@amd.com>, Shiju Jose <shiju.jose@huawei.com>, 
+    Dave Jiang <dave.jiang@intel.com>, LKML <linux-kernel@vger.kernel.org>, 
+    linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH v7 15/17] PCI/AER: Ratelimit correctable and non-fatal
+ error logging
+In-Reply-To: <20250520215047.1350603-16-helgaas@kernel.org>
+Message-ID: <cb2df523-866a-f3c6-741d-b68358b4569d@linux.intel.com>
+References: <20250520215047.1350603-1-helgaas@kernel.org> <20250520215047.1350603-16-helgaas@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -146,172 +92,276 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <CAOQ4uxiM+BBNODHfxu=v3XN2ezA-0k54qC5R4qdELbZW+W-xkg@mail.gmail.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: kJ3ZwNcY6Nf8HcrC2jNmWfLDD2poZcYt9BXCYor1Xtk_1747822006
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/mixed; boundary="8323328-2051602385-1747823042=:946"
 
-On 2025-05-21 11:36:31, Amir Goldstein wrote:
-> On Wed, May 21, 2025 at 10:48 AM Andrey Albershteyn <aalbersh@redhat.com> wrote:
-> >
-> > On 2025-05-19 21:37:04, Dave Chinner wrote:
-> > > On Thu, May 15, 2025 at 12:33:31PM +0200, Amir Goldstein wrote:
-> > > > On Thu, May 15, 2025 at 11:02 AM Christian Brauner <brauner@kernel.org> wrote:
-> > > > >
-> > > > > On Tue, May 13, 2025 at 11:53:23AM +0200, Arnd Bergmann wrote:
-> > > > > > On Tue, May 13, 2025, at 11:17, Andrey Albershteyn wrote:
-> > > > > >
-> > > > > > >
-> > > > > > >     long syscall(SYS_file_getattr, int dirfd, const char *pathname,
-> > > > > > >             struct fsxattr *fsx, size_t size, unsigned int at_flags);
-> > > > > > >     long syscall(SYS_file_setattr, int dirfd, const char *pathname,
-> > > > > > >             struct fsxattr *fsx, size_t size, unsigned int at_flags);
-> > > > > >
-> > > > > > I don't think we can have both the "struct fsxattr" from the uapi
-> > > > > > headers, and a variable size as an additional argument. I would
-> > > > > > still prefer not having the extensible structure at all and just
-> > > > >
-> > > > > We're not going to add new interfaces that are fixed size unless for the
-> > > > > very basic cases. I don't care if we're doing that somewhere else in the
-> > > > > kernel but we're not doing that for vfs apis.
-> > > > >
-> > > > > > use fsxattr, but if you want to make it extensible in this way,
-> > > > > > it should use a different structure (name). Otherwise adding
-> > > > > > fields after fsx_pad[] would break the ioctl interface.
-> > > > >
-> > > > > Would that really be a problem? Just along the syscall simply add
-> > > > > something like:
-> > > > >
-> > > > > diff --git a/fs/ioctl.c b/fs/ioctl.c
-> > > > > index c91fd2b46a77..d3943805c4be 100644
-> > > > > --- a/fs/ioctl.c
-> > > > > +++ b/fs/ioctl.c
-> > > > > @@ -868,12 +868,6 @@ static int do_vfs_ioctl(struct file *filp, unsigned int fd,
-> > > > >         case FS_IOC_SETFLAGS:
-> > > > >                 return ioctl_setflags(filp, argp);
-> > > > >
-> > > > > -       case FS_IOC_FSGETXATTR:
-> > > > > -               return ioctl_fsgetxattr(filp, argp);
-> > > > > -
-> > > > > -       case FS_IOC_FSSETXATTR:
-> > > > > -               return ioctl_fssetxattr(filp, argp);
-> > > > > -
-> > > > >         case FS_IOC_GETFSUUID:
-> > > > >                 return ioctl_getfsuuid(filp, argp);
-> > > > >
-> > > > > @@ -886,6 +880,20 @@ static int do_vfs_ioctl(struct file *filp, unsigned int fd,
-> > > > >                 break;
-> > > > >         }
-> > > > >
-> > > > > +       switch (_IOC_NR(cmd)) {
-> > > > > +       case _IOC_NR(FS_IOC_FSGETXATTR):
-> > > > > +               if (WARN_ON_ONCE(_IOC_TYPE(cmd) != _IOC_TYPE(FS_IOC_FSGETXATTR)))
-> > > > > +                       return SOMETHING_SOMETHING;
-> > > > > +               /* Only handle original size. */
-> > > > > +               return ioctl_fsgetxattr(filp, argp);
-> > > > > +
-> > > > > +       case _IOC_NR(FFS_IOC_FSSETXATTR):
-> > > > > +               if (WARN_ON_ONCE(_IOC_TYPE(cmd) != _IOC_TYPE(FFS_IOC_FSSETXATTR)))
-> > > > > +                       return SOMETHING_SOMETHING;
-> > > > > +               /* Only handle original size. */
-> > > > > +               return ioctl_fssetxattr(filp, argp);
-> > > > > +       }
-> > > > > +
-> > > >
-> > > > I think what Arnd means is that we will not be able to change struct
-> > > > sfxattr in uapi
-> > > > going forward, because we are not going to deprecate the ioctls and
-> > >
-> > > There's no need to deprecate anything to rev an ioctl API.  We have
-> > > had to solve this "changing struct size" problem previously in XFS
-> > > ioctls. See XFS_IOC_FSGEOMETRY and the older XFS_IOC_FSGEOMETRY_V4
-> > > and XFS_IOC_FSGEOMETRY_V1 versions of the API/ABI.
-> > >
-> > > If we need to increase the structure size, we can rename the existing
-> > > ioctl and struct to fix the version in the API, then use the
-> > > original name for the new ioctl and structure definition.
-> > >
-> > > The only thing we have to make sure of is that the old and new
-> > > structures have exactly the same overlapping structure. i.e.
-> > > extension must always be done by appending new varibles, they can't
-> > > be put in the middle of the structure.
-> > >
-> > > This way applications being rebuild will pick up the new definition
-> > > automatically when the system asserts that it is suppored, whilst
-> > > existing binaries will always still be supported by the kernel.
-> > >
-> > > If the application wants/needs to support all possible kernels, then
-> > > if XFS_IOC_FSGEOMETRY is not supported, call XFS_IOC_FSGEOMETRY_V4,
-> > > and if that fails (only on really old irix!) or you only need
-> > > something in that original subset, call XFS_IOC_FSGEOMETRY_V1 which
-> > > will always succeed....
-> > >
-> > > > Should we will need to depart from this struct definition and we might
-> > > > as well do it for the initial release of the syscall rather than later on, e.g.:
-> > > >
-> > > > --- a/include/uapi/linux/fs.h
-> > > > +++ b/include/uapi/linux/fs.h
-> > > > @@ -148,6 +148,17 @@ struct fsxattr {
-> > > >         unsigned char   fsx_pad[8];
-> > > >  };
-> > > >
-> > > > +/*
-> > > > + * Variable size structure for file_[sg]et_attr().
-> > > > + */
-> > > > +struct fsx_fileattr {
-> > > > +       __u32           fsx_xflags;     /* xflags field value (get/set) */
-> > > > +       __u32           fsx_extsize;    /* extsize field value (get/set)*/
-> > > > +       __u32           fsx_nextents;   /* nextents field value (get)   */
-> > > > +       __u32           fsx_projid;     /* project identifier (get/set) */
-> > > > +       __u32           fsx_cowextsize; /* CoW extsize field value (get/set)*/
-> > > > +};
-> > > > +
-> > > > +#define FSXATTR_SIZE_VER0 20
-> > > > +#define FSXATTR_SIZE_LATEST FSXATTR_SIZE_VER0
-> > >
-> > > If all the structures overlap the same, all that is needed in the
-> > > code is to define the structure size that should be copied in and
-> > > parsed. i.e:
-> > >
-> > >       case FSXATTR..._V1:
-> > >               return ioctl_fsxattr...(args, sizeof(fsx_fileattr_v1));
-> > >       case FSXATTR..._V2:
-> > >               return ioctl_fsxattr...(args, sizeof(fsx_fileattr_v2));
-> > >       case FSXATTR...:
-> > >               return ioctl_fsxattr...(args, sizeof(fsx_fileattr));
-> > >
-> > > -Dave.
-> > > --
-> > > Dave Chinner
-> > > david@fromorbit.com
-> > >
-> >
-> > So, looks like there's at least two solutions to this concern.
-> > Considering also that we have a bit of space in fsxattr,
-> > 'fsx_pad[8]', I think it's fine to stick with the current fsxattr
-> > for now.
-> 
-> Not sure which two solutions you are referring to.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Suggested by Christian and Dave
+--8323328-2051602385-1747823042=:946
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-> 
-> I proposed fsx_fileattr as what I think is the path of least resistance.
-> There are opinions that we may be able to avoid defining
-> this struct, but I don't think there was any objection to adding it.
-> 
-> So unless I am missing an objection that I did not understand
-> define it and get over this hurdle?
+On Tue, 20 May 2025, Bjorn Helgaas wrote:
 
-I see, sure, I misinterpreted the communication :) no problems, I
-will create 'struct fsx_fileattr' then.
+> From: Jon Pan-Doh <pandoh@google.com>
+>=20
+> Spammy devices can flood kernel logs with AER errors and slow/stall
+> execution. Add per-device ratelimits for AER correctable and non-fatal
+> uncorrectable errors that use the kernel defaults (10 per 5s).  Logging o=
+f
+> fatal errors is not ratelimited.
+>=20
+> There are two AER logging entry points:
+>=20
+>   - aer_print_error() is used by DPC and native AER
+>=20
+>   - pci_print_aer() is used by GHES and CXL
+>=20
+> The native AER aer_print_error() case includes a loop that may log detail=
+s
+> from multiple devices.  This is ratelimited such that we log all the
+> details we find if any of the devices has not hit the ratelimit.  If no
+> such device details are found, we still log the Error Source from the ERR=
+_*
+> Message, ratelimited by the Root Port or RCEC that received it.
+>=20
+> The DPC aer_print_error() case is not ratelimited, since this only happen=
+s
+> for fatal errors.
+>=20
+> The CXL pci_print_aer() case is ratelimited by the Error Source device.
+>=20
+> The GHES pci_print_aer() case is via aer_recover_work_func(), which
+> searches for the Error Source device.  If the device is not found, there'=
+s
+> no per-device ratelimit, so we use a system-wide ratelimit that covers al=
+l
+> error types (correctable, non-fatal, and fatal).
+>=20
+> Sargun at Meta reported internally that a flood of AER errors causes RCU
+> CPU stall warnings and CSD-lock warnings.
+>=20
+> Tested using aer-inject[1]. Sent 11 AER errors. Observed 10 errors logged
+> while AER stats (cat /sys/bus/pci/devices/<dev>/aer_dev_correctable) show
+> true count of 11.
+>=20
+> [1] https://git.kernel.org/pub/scm/linux/kernel/git/gong.chen/aer-inject.=
+git
+>=20
+> [bhelgaas: commit log, factor out trace_aer_event() and aer_print_rp_info=
+()
+> changes to previous patches, collect single aer_err_info.ratelimit as uni=
+on
+> of ratelimits of all error source devices, don't ratelimit fatal errors,
+> "aer_report" -> "aer_info"]
+> Reported-by: Sargun Dhillon <sargun@meta.com>
+> Signed-off-by: Jon Pan-Doh <pandoh@google.com>
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 
-Pali, ah sorry, I forgot that you will extend fsxattr right away
+Reviewed-by: Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com>
 
--- 
-- Andrey
+--=20
+ i.
 
+
+> ---
+>  drivers/pci/pci.h      |  3 +-
+>  drivers/pci/pcie/aer.c | 66 ++++++++++++++++++++++++++++++++++++++----
+>  drivers/pci/pcie/dpc.c |  1 +
+>  3 files changed, 64 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> index 705f9ef58acc..65c466279ade 100644
+> --- a/drivers/pci/pci.h
+> +++ b/drivers/pci/pci.h
+> @@ -593,7 +593,8 @@ struct aer_err_info {
+>  =09unsigned int id:16;
+> =20
+>  =09unsigned int severity:2;=09/* 0:NONFATAL | 1:FATAL | 2:COR */
+> -=09unsigned int __pad1:5;
+> +=09unsigned int ratelimit:1;=09/* 0=3Dskip, 1=3Dprint */
+> +=09unsigned int __pad1:4;
+>  =09unsigned int multi_error_valid:1;
+> =20
+>  =09unsigned int first_error:5;
+> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> index 4f1bff0f000f..f9e684ac7878 100644
+> --- a/drivers/pci/pcie/aer.c
+> +++ b/drivers/pci/pcie/aer.c
+> @@ -28,6 +28,7 @@
+>  #include <linux/interrupt.h>
+>  #include <linux/delay.h>
+>  #include <linux/kfifo.h>
+> +#include <linux/ratelimit.h>
+>  #include <linux/slab.h>
+>  #include <acpi/apei.h>
+>  #include <acpi/ghes.h>
+> @@ -88,6 +89,10 @@ struct aer_info {
+>  =09u64 rootport_total_cor_errs;
+>  =09u64 rootport_total_fatal_errs;
+>  =09u64 rootport_total_nonfatal_errs;
+> +
+> +=09/* Ratelimits for errors */
+> +=09struct ratelimit_state cor_log_ratelimit;
+> +=09struct ratelimit_state uncor_log_ratelimit;
+>  };
+> =20
+>  #define AER_LOG_TLP_MASKS=09=09(PCI_ERR_UNC_POISON_TLP|=09\
+> @@ -379,6 +384,11 @@ void pci_aer_init(struct pci_dev *dev)
+> =20
+>  =09dev->aer_info =3D kzalloc(sizeof(*dev->aer_info), GFP_KERNEL);
+> =20
+> +=09ratelimit_state_init(&dev->aer_info->cor_log_ratelimit,
+> +=09=09=09     DEFAULT_RATELIMIT_INTERVAL, DEFAULT_RATELIMIT_BURST);
+> +=09ratelimit_state_init(&dev->aer_info->uncor_log_ratelimit,
+> +=09=09=09     DEFAULT_RATELIMIT_INTERVAL, DEFAULT_RATELIMIT_BURST);
+> +
+>  =09/*
+>  =09 * We save/restore PCI_ERR_UNCOR_MASK, PCI_ERR_UNCOR_SEVER,
+>  =09 * PCI_ERR_COR_MASK, and PCI_ERR_CAP.  Root and Root Complex Event
+> @@ -672,6 +682,18 @@ static void pci_rootport_aer_stats_incr(struct pci_d=
+ev *pdev,
+>  =09}
+>  }
+> =20
+> +static int aer_ratelimit(struct pci_dev *dev, unsigned int severity)
+> +{
+> +=09struct ratelimit_state *ratelimit;
+> +
+> +=09if (severity =3D=3D AER_CORRECTABLE)
+> +=09=09ratelimit =3D &dev->aer_info->cor_log_ratelimit;
+> +=09else
+> +=09=09ratelimit =3D &dev->aer_info->uncor_log_ratelimit;
+> +
+> +=09return __ratelimit(ratelimit);
+> +}
+> +
+>  static void __aer_print_error(struct pci_dev *dev, struct aer_err_info *=
+info)
+>  {
+>  =09const char **strings;
+> @@ -715,6 +737,9 @@ void aer_print_error(struct pci_dev *dev, struct aer_=
+err_info *info)
+> =20
+>  =09pci_dev_aer_stats_incr(dev, info);
+> =20
+> +=09if (!info->ratelimit)
+> +=09=09return;
+> +
+>  =09if (!info->status) {
+>  =09=09pci_err(dev, "PCIe Bus Error: severity=3D%s, type=3DInaccessible, =
+(Unregistered Agent ID)\n",
+>  =09=09=09aer_error_severity_string[info->severity]);
+> @@ -785,6 +810,9 @@ void pci_print_aer(struct pci_dev *dev, int aer_sever=
+ity,
+> =20
+>  =09pci_dev_aer_stats_incr(dev, &info);
+> =20
+> +=09if (!aer_ratelimit(dev, info.severity))
+> +=09=09return;
+> +
+>  =09layer =3D AER_GET_LAYER_ERROR(aer_severity, status);
+>  =09agent =3D AER_GET_AGENT(aer_severity, status);
+> =20
+> @@ -815,8 +843,19 @@ EXPORT_SYMBOL_NS_GPL(pci_print_aer, "CXL");
+>   */
+>  static int add_error_device(struct aer_err_info *e_info, struct pci_dev =
+*dev)
+>  {
+> +=09/*
+> +=09 * Ratelimit AER log messages.  "dev" is either the source
+> +=09 * identified by the root's Error Source ID or it has an unmasked
+> +=09 * error logged in its own AER Capability.  If any of these devices
+> +=09 * has not reached its ratelimit, log messages for all of them.
+> +=09 * Messages are emitted when "e_info->ratelimit" is non-zero.
+> +=09 *
+> +=09 * Note that "e_info->ratelimit" was already initialized to 1 for the
+> +=09 * ERR_FATAL case.
+> +=09 */
+>  =09if (e_info->error_dev_num < AER_MAX_MULTI_ERR_DEVICES) {
+>  =09=09e_info->dev[e_info->error_dev_num] =3D pci_dev_get(dev);
+> +=09=09e_info->ratelimit |=3D aer_ratelimit(dev, e_info->severity);
+>  =09=09e_info->error_dev_num++;
+>  =09=09return 0;
+>  =09}
+> @@ -914,7 +953,7 @@ static int find_device_iter(struct pci_dev *dev, void=
+ *data)
+>   * e_info->error_dev_num and e_info->dev[], based on the given informati=
+on.
+>   */
+>  static bool find_source_device(struct pci_dev *parent,
+> -=09=09struct aer_err_info *e_info)
+> +=09=09=09       struct aer_err_info *e_info)
+>  {
+>  =09struct pci_dev *dev =3D parent;
+>  =09int result;
+> @@ -1140,9 +1179,10 @@ static void aer_recover_work_func(struct work_stru=
+ct *work)
+>  =09=09pdev =3D pci_get_domain_bus_and_slot(entry.domain, entry.bus,
+>  =09=09=09=09=09=09   entry.devfn);
+>  =09=09if (!pdev) {
+> -=09=09=09pr_err("no pci_dev for %04x:%02x:%02x.%x\n",
+> -=09=09=09       entry.domain, entry.bus,
+> -=09=09=09       PCI_SLOT(entry.devfn), PCI_FUNC(entry.devfn));
+> +=09=09=09pr_err_ratelimited("%04x:%02x:%02x.%x: no pci_dev found\n",
+> +=09=09=09=09=09   entry.domain, entry.bus,
+> +=09=09=09=09=09   PCI_SLOT(entry.devfn),
+> +=09=09=09=09=09   PCI_FUNC(entry.devfn));
+>  =09=09=09continue;
+>  =09=09}
+>  =09=09pci_print_aer(pdev, entry.severity, entry.regs);
+> @@ -1283,7 +1323,21 @@ static void aer_isr_one_error_type(struct pci_dev =
+*root,
+>  =09bool found;
+> =20
+>  =09found =3D find_source_device(root, info);
+> -=09aer_print_source(root, info, found ? "" : " (no details found");
+> +
+> +=09/*
+> +=09 * If we're going to log error messages, we've already set
+> +=09 * "info->ratelimit" to non-zero (which enables printing) because
+> +=09 * this is either an ERR_FATAL or we found a device with an error
+> +=09 * logged in its AER Capability.
+> +=09 *
+> +=09 * If we didn't find the Error Source device, at least log the
+> +=09 * Requester ID from the ERR_* Message received by the Root Port or
+> +=09 * RCEC, ratelimited by the RP or RCEC.
+> +=09 */
+> +=09if (info->ratelimit ||
+> +=09    (!found && aer_ratelimit(root, info->severity)))
+> +=09=09aer_print_source(root, info, found ? "" : " (no details found");
+> +
+>  =09if (found)
+>  =09=09aer_process_err_devices(info);
+>  }
+> @@ -1317,12 +1371,14 @@ static void aer_isr_one_error(struct pci_dev *roo=
+t,
+>  =09=09aer_isr_one_error_type(root, &e_info);
+>  =09}
+> =20
+> +=09/* Note that messages for ERR_FATAL are never ratelimited */
+>  =09if (status & PCI_ERR_ROOT_UNCOR_RCV) {
+>  =09=09int fatal =3D status & PCI_ERR_ROOT_FATAL_RCV;
+>  =09=09int multi =3D status & PCI_ERR_ROOT_MULTI_UNCOR_RCV;
+>  =09=09struct aer_err_info e_info =3D {
+>  =09=09=09.id =3D ERR_UNCOR_ID(e_src->id),
+>  =09=09=09.severity =3D fatal ? AER_FATAL : AER_NONFATAL,
+> +=09=09=09.ratelimit =3D fatal ? 1 : 0,
+>  =09=09=09.level =3D KERN_ERR,
+>  =09=09=09.multi_error_valid =3D multi ? 1 : 0,
+>  =09=09};
+> diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
+> index 6c98fabdba57..530c5e2cf7e8 100644
+> --- a/drivers/pci/pcie/dpc.c
+> +++ b/drivers/pci/pcie/dpc.c
+> @@ -271,6 +271,7 @@ void dpc_process_error(struct pci_dev *pdev)
+>  =09=09=09 status);
+>  =09=09if (dpc_get_aer_uncorrect_severity(pdev, &info) &&
+>  =09=09    aer_get_device_error_info(pdev, &info)) {
+> +=09=09=09info.ratelimit =3D 1;=09/* ERR_FATAL; no ratelimit */
+>  =09=09=09aer_print_error(pdev, &info);
+>  =09=09=09pci_aer_clear_nonfatal_status(pdev);
+>  =09=09=09pci_aer_clear_fatal_status(pdev);
+>=20
+--8323328-2051602385-1747823042=:946--
 
