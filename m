@@ -1,41 +1,41 @@
-Return-Path: <linuxppc-dev+bounces-8819-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8820-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82A13C54E65
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 May 2025 09:57:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EC08C54E65
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 May 2025 09:59:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b2RfZ0bl6z3c1C;
-	Wed, 21 May 2025 19:57:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b2Rhz5mCCz3c2K;
+	Wed, 21 May 2025 19:59:15 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.176.79.56
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747821430;
-	cv=none; b=ZotmmYdwglVj+QC0QdtSle1emYbQoOB+sDUcAIoDVtfqlWW1THPbfWf+XWLHPRYG7uU25h0Cm2qKxIRkLlg8fBLkuRAwqcEohhLfrhuu6qvBTuhhICl+WIXo+ob/EGyhdwJMf3qCMrOhEGBbdvE+D2P+I03ZQ1uyzAxVQ0lxB2RXiEhh1TaKc9SvRnPGW/PrWGFugS4ofbaqUOnqvm+hEuiSXiiqkJXY8shAodvBeaQB3Zuc2MoxVCdtH2IGLigtPmk++6I39+0rnwH/cFENLiTCfWxYRbm949VYQZPsG9DbRHgeLTVUBANTOOcUXJK2e6ZAywJty1axy+4Y9Ar9JQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747821555;
+	cv=none; b=RkBgr9VGc1YEy3zBaBCPqR96pqaJ0VZ+Dlcm1CVP3kd5nolssJ1aP0xVm6gSNbysMuYRCWvM7AKjl3jFkiAHNv0OcW3HAoKOm/0D/rvjelY6xGBgpfs+GjDycMDt2hUMlX/CjH6q/empWYXAvXTrcfUuzPNn15PoTMamgiYjzHnDrq2W7h6bYNJiz7592L6e78DTTmNuWbyNagJsqI7iRpVUQrJQeU8B89XNQ7QUhtuHuD+JGWXMxiXb3YZDzJL1Aw/qzXGDuvyAa7deF33z6JEYGC1fiHGpAvOP66z/Dm5JP1ahGk5bIYTJxdbIfHHvIpobCZmvpZEFy5pawmWDcA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747821430; c=relaxed/relaxed;
-	bh=shYl5slsyLlXvDU1fRn0/169R4wJalRqpBVGHmRm/3Y=;
+	t=1747821555; c=relaxed/relaxed;
+	bh=aVKNovIlIgiN/Yt2TbWAYza/i7PM9bMGgpl9JyNT0kQ=;
 	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=PxRoUbiOhuITxybErcyujVQvoHszYB0tHa+jUb0syIQd/Hc2iTKscsLP84SAlsKkXPECLEvXBh04EcxpI4iITkJlEAcb1vxyAfIWuludPpxNaRFjcUNL5jcsDf+rZ+GIoblHzRXxDko8x2Ha0k/TKhEarZFPleBSh39r0YfJOvQIN166xiQDT6jH1ABDtIEeoFguM9annVmZlxuzOL23EwJ7AfPnkJv7Eod4eBx6Lo3vMZ6WFvmcLBEm2z5lgb+FYz6Qatxr7G3wU4liljsna/t59qhj+Pe0x4yQJgLQPSThqyolM50DSDGdD62yKRviiQgzcCZkcfklDUhgFlYuyg==
+	 MIME-Version:Content-Type; b=kzxL2kyxnXGAxUxHt6J4BYb0nt0aZ6OURLfzuHfNsCzv+wqfhtsH+tGHcdPsA2Q3fS5blT4HAQpb6qv/mWMDUOjpSaSX5QS4xgeT74HzipwqH/Zv3PKbhn3T97k9DyLwa/UCNv5213OcaK+5yPDZqyc41oW6rekOFaGK+US0YxzGmh2fqoW45s3jw2miQbs3LPQdYSi0jegJU/m5DjLXn9sCoBD2syPA/5gahbgub6S7hHh+ldUIccfeK38oAGYFjHye3QSqfv1jdbBHoh7axxqHmK7KsoBPC/XxjtLgrKQGjPp9Gjc3Yj/AT3dmFTw+vFnpypMqZ+egaZ6AppMbKQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b2RfX70LZz3c1B
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2025 19:57:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b2Rhy736Rz3c2G
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2025 19:59:14 +1000 (AEST)
 Received: from mail.maildlp.com (unknown [172.18.186.231])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4b2RZl5QMtz6L5BP;
-	Wed, 21 May 2025 17:53:51 +0800 (CST)
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4b2RbJ47krz6D9XP;
+	Wed, 21 May 2025 17:54:20 +0800 (CST)
 Received: from frapeml500008.china.huawei.com (unknown [7.182.85.71])
-	by mail.maildlp.com (Postfix) with ESMTPS id BAC101400F4;
-	Wed, 21 May 2025 17:57:02 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id D13AE140557;
+	Wed, 21 May 2025 17:59:11 +0800 (CST)
 Received: from localhost (10.203.177.66) by frapeml500008.china.huawei.com
  (7.182.85.71) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Wed, 21 May
- 2025 11:57:01 +0200
-Date: Wed, 21 May 2025 10:56:59 +0100
+ 2025 11:59:10 +0200
+Date: Wed, 21 May 2025 10:59:08 +0100
 From: Jonathan Cameron <Jonathan.Cameron@huawei.com>
 To: Bjorn Helgaas <helgaas@kernel.org>
 CC: <linux-pci@vger.kernel.org>, Jon Pan-Doh <pandoh@google.com>, "Karolina
@@ -53,12 +53,11 @@ CC: <linux-pci@vger.kernel.org>, Jon Pan-Doh <pandoh@google.com>, "Karolina
 	<dave.jiang@intel.com>, <linux-kernel@vger.kernel.org>,
 	<linuxppc-dev@lists.ozlabs.org>, Bjorn Helgaas <bhelgaas@google.com>,
 	Krzysztof =?UTF-8?Q?Wilczy=C5=84ski?= <kwilczynski@kernel.org>
-Subject: Re: [PATCH v7 13/17] PCI/AER: Make all pci_print_aer() log levels
- depend on error type
-Message-ID: <20250521105659.000064bd@huawei.com>
-In-Reply-To: <20250520215047.1350603-14-helgaas@kernel.org>
+Subject: Re: [PATCH v7 14/17] PCI/AER: Rename struct aer_stats to aer_info
+Message-ID: <20250521105908.0000622b@huawei.com>
+In-Reply-To: <20250520215047.1350603-15-helgaas@kernel.org>
 References: <20250520215047.1350603-1-helgaas@kernel.org>
-	<20250520215047.1350603-14-helgaas@kernel.org>
+	<20250520215047.1350603-15-helgaas@kernel.org>
 X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -76,72 +75,26 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Originating-IP: [10.203.177.66]
-X-ClientProxiedBy: lhrpeml100003.china.huawei.com (7.191.160.210) To
+X-ClientProxiedBy: lhrpeml100006.china.huawei.com (7.191.160.224) To
  frapeml500008.china.huawei.com (7.182.85.71)
 
-On Tue, 20 May 2025 16:50:30 -0500
+On Tue, 20 May 2025 16:50:31 -0500
 Bjorn Helgaas <helgaas@kernel.org> wrote:
 
 > From: Karolina Stolarek <karolina.stolarek@oracle.com>
 >=20
-> Some existing logs in pci_print_aer() log with error severity by default.
-> Convert them to depend on error type (consistent with rest of AER logging=
-).
+> Update name to reflect the broader definition of structs/variables that a=
+re
+> stored (e.g. ratelimits). This is a preparatory patch for adding rate lim=
+it
+> support.
 >=20
+> [bhelgaas: "aer_report" -> "aer_info"]
 > Signed-off-by: Karolina Stolarek <karolina.stolarek@oracle.com>
 > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 > Tested-by: Krzysztof Wilczy=C5=84ski <kwilczynski@kernel.org>
+> Reviewed-by: Ilpo J=C3=A4rvinen <ilpo.jarvinen@linux.intel.com>
 > Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux=
 .intel.com>
-> Reviewed-by: Ilpo J=C3=A4rvinen <ilpo.jarvinen@linux.intel.com>
-
-One comment inline. It is painful to have a non trivial comment
-that says we didn't pass a parameter for 'reason X' when maybe
-it would be simpler to just pass it and not care that it always
-takes the same value?
-
-Either way this is fine.
 Reviewed-by: Jonathan Cameron <Jonathan.Cameron@huawei.com>
-
-> ---
->  drivers/pci/pcie/aer.c | 16 +++++++++++-----
->  1 file changed, 11 insertions(+), 5 deletions(-)
->=20
-> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> index f5e9961d2c63..4cdcf0ebd86d 100644
-> --- a/drivers/pci/pcie/aer.c
-> +++ b/drivers/pci/pcie/aer.c
-> @@ -788,15 +788,21 @@ void pci_print_aer(struct pci_dev *dev, int aer_sev=
-erity,
->  	layer =3D AER_GET_LAYER_ERROR(aer_severity, status);
->  	agent =3D AER_GET_AGENT(aer_severity, status);
-> =20
-> -	pci_err(dev, "aer_status: 0x%08x, aer_mask: 0x%08x\n", status, mask);
-> +	aer_printk(info.level, dev, "aer_status: 0x%08x, aer_mask: 0x%08x\n",
-> +		   status, mask);
->  	__aer_print_error(dev, &info);
-> -	pci_err(dev, "aer_layer=3D%s, aer_agent=3D%s\n",
-> -		aer_error_layer[layer], aer_agent_string[agent]);
-> +	aer_printk(info.level, dev, "aer_layer=3D%s, aer_agent=3D%s\n",
-> +		   aer_error_layer[layer], aer_agent_string[agent]);
-> =20
->  	if (aer_severity !=3D AER_CORRECTABLE)
-> -		pci_err(dev, "aer_uncor_severity: 0x%08x\n",
-> -			aer->uncor_severity);
-> +		aer_printk(info.level, dev, "aer_uncor_severity: 0x%08x\n",
-> +			   aer->uncor_severity);
-> =20
-> +	/*
-> +	 * pcie_print_tlp_log() uses KERN_ERR, but we only call it when
-> +	 * tlp_header_valid is set, and info.level is always KERN_ERR in
-> +	 * that case.
-
-I wonder if it's easier to just pass the level in than have the
-comment?
-
-> +	 */
->  	if (tlp_header_valid)
->  		pcie_print_tlp_log(dev, &aer->header_log, dev_fmt("  "));
->  }
-
 
