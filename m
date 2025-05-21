@@ -1,87 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-8835-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8836-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4B8BCC54E90
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 May 2025 10:58:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B673C2D0CD
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 21 May 2025 11:06:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b2T1P4gNZz3c5W;
-	Wed, 21 May 2025 20:58:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747825113;
-	cv=none; b=gKJao4W7+b0xLwkKurUFgmDrlMH0stktS0xYlB2O43e+5GaIQ0Rm2sj0iHya2YFLr5WsFXswIi6Qcus9mG7hXtAH2WqXE3gzFzoX/ZXfZZq/6X6ozOBftMbIICRiM75UHbZ2TfJf17UTKiSIGCTGqEBxWsLGI0KsuoOy8zzGu4+pZ2hQJumK3fLb3QJ7hnapmzM96jQtkj4DoZdtEcSVg31XyLXvu0WmXsuzbc9Zuav3huCMwHMM4Xq2YSRL/m5E4yAAduzMW/3pPiaz8wmw+GqWItavEh7WdUM2SAFUgtSH5I+uVAWY8CU+CFo9VL8A6v8FaqiUQPhUYJ4ywBt6Lg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b2TBK0HHQz3c4h;
+	Wed, 21 May 2025 21:06:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.16
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747825576;
+	cv=none; b=f+mrOpD6SAFx7TJ0Vo0xzZAfxBmgAhycURSK0UlLjuQUH4D5DOFNKEryQuDD5L0T/DX2SKN+HqfUsGTCcKLKihtXlRam/Qjorv2wU6V0A3v0kZeV92du+hPMrQU1wCRkIgEVP7JT+L6PXLcV2drPHfydHvmKRKP9ynqdA6NkmK/eIhNBFyY6PDh3KEJYOKa1gh2JMHkdkXmU/vj6e/436Dt9KV7jKU+4hN72hQI+W0WXfv29Z6/ndk7FuG6p0+NmnMzR6Hg5iOfDflED3PMucQrBueH8613sgId1bp7hLOkuS1SFe6rm/cUTMVQd6o0iuMgvQAZHB1UzJLDFbu1GQA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747825113; c=relaxed/relaxed;
-	bh=+iv47Tf1NAy3MKg7JpMt0tSZMZNUHjGtMkJcRX2ZoxQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=JD+52b0s+v+XhyQcSmX0Fqm2G2lwzaMFjtXbMleeqbNjyyB+4BUmyscLttbdxp9qnydpF7SdMhHk/7G2uzJtGDW55LDGErML9vl6KLF8WaoUD09ndbklqga9TGqT+s/bj6jItYNMLmbo+P5ZnaSHHkxs5cBzMyhellAagYqXXT/C6ot9C7NC7PJrpQ/ZwrSxrgsyQn+ywp8RnhdfY1Bd48LoAdUVKoGr55Ln7NZ3a+XUlIeeWcgqpmnE8L6BvJfEaTkZioq1hYaGKkeXnrRCLpH591R6FWlTXzhuwgsuLjy1AtO4uE0mmAhr9k02iMljNJga9Z3vD0Xf23hoV7ZScw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kzjWMpCI; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1747825576; c=relaxed/relaxed;
+	bh=5YhFi0PXHb3rimYYyyaABI3HZ4ORFe4+4GmgT1dCE3I=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=CY/9Feyg446DDH+pkN8AEG1uTtvW0VBbd85qTvLByTpRDtjaJZaqMz61LEY/JLQYi5E0fHgFisNdjiPCEPtqI7Sv47Jkbgc0Enwa8mBfK5L7OC8M2lig+3Sgd6Jt0MF3JM8RCNnwMgmJkpHEnoKp2Fw7cz+I4ss+7rUXMkeQC1L2TcbjYd9pbWo72hT8lgFyIDRqvGGIYd6QziJRARZR5TqkLcL3lawuNoeXnYy3jmtGuZTIXyWECOHZ95UwjLH0fVuBGIcB9Nqd8IT+jNRHrRltf2If82JOlLMsAXUl5068CLKUWTVWhROpm/X1WymvCa2vRRztCxEOte10Tgt+2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lHVigTNx; dkim-atps=neutral; spf=none (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kzjWMpCI;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lHVigTNx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b2T1N2zdMz3c4M
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2025 20:58:32 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 54L8phhu014686;
-	Wed, 21 May 2025 10:58:13 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=+iv47Tf1NAy3MKg7J
-	pMt0tSZMZNUHjGtMkJcRX2ZoxQ=; b=kzjWMpCI2yMJnJ2+8F9Q2uOymy+5O4LcM
-	dogMhK1cYNMNfdv5VIHHlqxXnTu9vnyz0UrsMMZhsxKoQCsKgmH6rkHNL0pjWSIl
-	PlrQmIkUh+l98LHMzwnkIrcSTj+jdOuy90cPR1rkfx2Hk/8qgEHWXSvYl0vhEzvn
-	KPette/LmqGZffkdrpbjNq6Bt+EoQDJhVP2oxhcqYG9Cm3UWJkwJfO+goH066omT
-	v6xzoeKcZyBxzUZrZukZ5f6VCpwjFCk76v3eBKxHHsIOFiMyXou/33BEgkZmY8dV
-	vfV2te0E448moV+2OC2sat//+jtWxkhS6BuodTbCVN4Pkq6fh3IuA==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46sbph0j2n-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 21 May 2025 10:58:13 +0000 (GMT)
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 54LAsMH6025326;
-	Wed, 21 May 2025 10:58:13 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46sbph0j2g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 21 May 2025 10:58:13 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 54L9gx4T010640;
-	Wed, 21 May 2025 10:58:11 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 46rwnmbt5g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 21 May 2025 10:58:11 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 54LAw7m130147158
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 21 May 2025 10:58:07 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 938C920043;
-	Wed, 21 May 2025 10:58:07 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3B88D20040;
-	Wed, 21 May 2025 10:58:05 +0000 (GMT)
-Received: from li-fc74f8cc-3279-11b2-a85c-ef5828687581.in.ibm.com (unknown [9.204.203.112])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 21 May 2025 10:58:05 +0000 (GMT)
-From: Srish Srinivasan <ssrish@linux.ibm.com>
-To: linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, naveen@kernel.org, ajd@linux.ibm.com,
-        zohar@linux.ibm.com, nayna@linux.ibm.com, linux-kernel@vger.kernel.org
-Subject: [PATCH v2 2/3] powerpc/secvar: Expose secvars relevant to the key management mode
-Date: Wed, 21 May 2025 16:27:58 +0530
-Message-ID: <20250521105759.8408-3-ssrish@linux.ibm.com>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250521105759.8408-1-ssrish@linux.ibm.com>
-References: <20250521105759.8408-1-ssrish@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b2TBG0XFKz3c4M
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 21 May 2025 21:06:12 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1747825574; x=1779361574;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=utfKUeejFLvJbdLWTRYs6J3vHpGRVnI8RSEnIEARCWQ=;
+  b=lHVigTNx4SZrPNJ/kVX/aNZafyd1A7jAQpLYjk22VQrqKOQmzOjedz+l
+   E6p2UKlLEeVFVtLxAF1TwPgGcmM0JXxmzcZUYFS4oY4n6AsnGus5I/9KP
+   yyzjvOzuFuBDhoHmTy2esb0yUSmQ31TA8iRpx/hASGisdJ5EE7T/5nC+D
+   Gt8poWMycG0zuqPxsxHAi5J+hmUT0ZKW1mHZqMBJ6acKdrHAHeNpV1iDU
+   sjnBkCHbfi0KFON9BwdDeA2tiG7KwCUz4LfciKauP6cQ7ye4leoG2MsIR
+   9JiK/h+AEJiVoojH9V3P9uLPWAooMWoyE+83zJmqrtcCupxohcJbtnROG
+   g==;
+X-CSE-ConnectionGUID: LViX6hkXQJ2pkyvKkfn2oA==
+X-CSE-MsgGUID: W0sQ81WoSrSAIjbIOk9FdA==
+X-IronPort-AV: E=McAfee;i="6700,10204,11439"; a="37418479"
+X-IronPort-AV: E=Sophos;i="6.15,303,1739865600"; 
+   d="scan'208";a="37418479"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 May 2025 04:06:10 -0700
+X-CSE-ConnectionGUID: dafv0W/nR22u+DF84vjbWQ==
+X-CSE-MsgGUID: DqV9Ekb3RyGrP/3IuGZTHw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.15,303,1739865600"; 
+   d="scan'208";a="140529464"
+Received: from dalessan-mobl3.ger.corp.intel.com (HELO localhost) ([10.245.244.221])
+  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 May 2025 04:06:01 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Wed, 21 May 2025 14:05:57 +0300 (EEST)
+To: Jonathan Cameron <Jonathan.Cameron@huawei.com>
+cc: Bjorn Helgaas <helgaas@kernel.org>, linux-pci@vger.kernel.org, 
+    Jon Pan-Doh <pandoh@google.com>, 
+    Karolina Stolarek <karolina.stolarek@oracle.com>, 
+    Weinan Liu <wnliu@google.com>, 
+    Martin Petersen <martin.petersen@oracle.com>, 
+    Ben Fuller <ben.fuller@oracle.com>, Drew Walton <drewwalton@microsoft.com>, 
+    Anil Agrawal <anilagrawal@meta.com>, Tony Luck <tony.luck@intel.com>, 
+    Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, 
+    Lukas Wunner <lukas@wunner.de>, Sargun Dhillon <sargun@meta.com>, 
+    "Paul E . McKenney" <paulmck@kernel.org>, 
+    Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+    Oliver O'Halloran <oohall@gmail.com>, Kai-Heng Feng <kaihengf@nvidia.com>, 
+    Keith Busch <kbusch@kernel.org>, Robert Richter <rrichter@amd.com>, 
+    Terry Bowman <terry.bowman@amd.com>, Shiju Jose <shiju.jose@huawei.com>, 
+    Dave Jiang <dave.jiang@intel.com>, LKML <linux-kernel@vger.kernel.org>, 
+    linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>, 
+    =?ISO-8859-2?Q?Krzysztof_Wilczy=F1ski?= <kwilczynski@kernel.org>
+Subject: Re: [PATCH v7 17/17] PCI/AER: Add sysfs attributes for log
+ ratelimits
+In-Reply-To: <20250521114600.00007010@huawei.com>
+Message-ID: <5f9fee34-1db6-d30b-688f-040570cc651a@linux.intel.com>
+References: <20250520215047.1350603-1-helgaas@kernel.org> <20250520215047.1350603-18-helgaas@kernel.org> <20250521114600.00007010@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,126 +93,168 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTIxMDEwNSBTYWx0ZWRfXxj+Kr/SU8DGu 7cCuWAgvM3Wh88Nc9JjXMxjU5hz4F3VBsgjEKA2jQyrfRJFwRqsAsBJ/8SEzmCUi+DyVsOMoA6T ibhivpF6lol5UhjPIDQRNTpFGpb4aF7N8r/CtBHNg/ApAtu9oppIRpsJjKJi2dd8PcMjyeCzMcY
- 7QgcG8Y/jrxIEUGcS+2GRCDF71UNHtj70XXyjMJRiNtsZiB/cwnsYZ6LWNfDsnyfvAVqLPfUb2W TFF2ig7rkfHWPPWi8VhoNaXD2B/IKiap+XXxOydwsyCfhAWB5MUQlExMiatXq937BYcrJj4BvWT 3v94iLAS5Kck5RtFHhX6q6rZz+PSEeOlY67NMn4n866ElpK0yIvF/LYnAcJr3mwJTjQgLvZjBhH
- 0Vn1sWCmFmUl8SILKBoZryWG3jmVNy+HRIj+RImKLn20sZYXjVuFbgmgpR7DEt8kQrvxh5mI
-X-Proofpoint-ORIG-GUID: Vww7UlYtzeEycHD7TKb6YTyr59h6E1Iq
-X-Authority-Analysis: v=2.4 cv=L5kdQ/T8 c=1 sm=1 tr=0 ts=682db1c5 cx=c_pps a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17 a=dt9VzEwgFbYA:10 a=VnNF1IyMAAAA:8 a=tLxTvSBFvjwC67ZwczkA:9
-X-Proofpoint-GUID: GHnn0WbiKF2p2z2DrVtQ5F2IFlZ2RgHo
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
- definitions=2025-05-21_03,2025-05-20_03,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 adultscore=0
- priorityscore=1501 lowpriorityscore=0 spamscore=0 clxscore=1015
- mlxlogscore=999 suspectscore=0 phishscore=0 impostorscore=0 malwarescore=0
- mlxscore=0 bulkscore=0 classifier=spam authscore=0 authtc=n/a authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2505160000
- definitions=main-2505210105
+Content-Type: multipart/mixed; boundary="8323328-1454175955-1747825557=:946"
 
-The PLPKS enabled PowerVM LPAR sysfs exposes all of the secure boot
-secvars irrespective of the key management mode.
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-The PowerVM LPAR supports static and dynamic key management for secure
-boot. The key management option can be updated in the management
-console. Only in the dynamic key mode can the user modify the secure
-boot secvars db, dbx, grubdb, grubdbx, and sbat, which are exposed via
-the sysfs interface. But the sysfs interface exposes these secvars even
-in the static key mode. This could lead to errors when reading them or
-writing to them in the static key mode.
+--8323328-1454175955-1747825557=:946
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-Expose only PK, trustedcadb, and moduledb in the static key mode to
-enable loading of signed third-party kernel modules.
+On Wed, 21 May 2025, Jonathan Cameron wrote:
 
-Co-developed-by: Souradeep <soura@imap.linux.ibm.com>
-Signed-off-by: Souradeep <soura@imap.linux.ibm.com>
-Signed-off-by: Srish Srinivasan <ssrish@linux.ibm.com>
-Reviewed-by: Mimi Zohar <zohar@linux.ibm.com>
-Reviewed-by: Stefan Berger <stefanb@linux.ibm.com>
-Reviewed-by: Nayna Jain <nayna@linux.ibm.com>
-Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
----
- Documentation/ABI/testing/sysfs-secvar        |  6 ++++
- arch/powerpc/platforms/pseries/plpks-secvar.c | 28 ++++++++++++++++---
- 2 files changed, 30 insertions(+), 4 deletions(-)
+> On Tue, 20 May 2025 16:50:34 -0500
+> Bjorn Helgaas <helgaas@kernel.org> wrote:
+>=20
+> > From: Jon Pan-Doh <pandoh@google.com>
+> >=20
+> > Allow userspace to read/write log ratelimits per device (including
+> > enable/disable). Create aer/ sysfs directory to store them and any
+> > future aer configs.
+> >=20
+> > Update AER sysfs ABI filename to reflect the broader scope of AER sysfs
+> > attributes (e.g. stats and ratelimits).
+> >=20
+> >   Documentation/ABI/testing/sysfs-bus-pci-devices-aer_stats ->
+> >     sysfs-bus-pci-devices-aer
+> >=20
+> > Tested using aer-inject[1]. Configured correctable log ratelimit to 5.
+> > Sent 6 AER errors. Observed 5 errors logged while AER stats
+> > (cat /sys/bus/pci/devices/<dev>/aer_dev_correctable) shows 6.
+> >=20
+> > Disabled ratelimiting and sent 6 more AER errors. Observed all 6 errors
+> > logged and accounted in AER stats (12 total errors).
+> >=20
+> > [1] https://git.kernel.org/pub/scm/linux/kernel/git/gong.chen/aer-injec=
+t.git
+> >=20
+> > [bhelgaas: note fatal errors are not ratelimited, "aer_report" -> "aer_=
+info"]
+> > Signed-off-by: Karolina Stolarek <karolina.stolarek@oracle.com>
+> > Signed-off-by: Jon Pan-Doh <pandoh@google.com>
+> > Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+> > Tested-by: Krzysztof Wilczy=C5=84ski <kwilczynski@kernel.org>
+>=20
+> There is some relatively new SYSFS infra that I think will help
+> make this slightly nicer by getting rid of the extra directory when
+> there is nothing to be done with it.
+>=20
+> > ---
+> >  ...es-aer_stats =3D> sysfs-bus-pci-devices-aer} | 34 +++++++
+> >  Documentation/PCI/pcieaer-howto.rst           |  5 +-
+> >  drivers/pci/pci-sysfs.c                       |  1 +
+> >  drivers/pci/pci.h                             |  1 +
+> >  drivers/pci/pcie/aer.c                        | 99 +++++++++++++++++++
+> >  5 files changed, 139 insertions(+), 1 deletion(-)
+> >  rename Documentation/ABI/testing/{sysfs-bus-pci-devices-aer_stats =3D>=
+ sysfs-bus-pci-devices-aer} (77%)
+>=20
+>=20
+> > diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> > index f9e684ac7878..9b8dea317a79 100644
+> > --- a/drivers/pci/pcie/aer.c
+> > +++ b/drivers/pci/pcie/aer.c
+> > @@ -627,6 +627,105 @@ const struct attribute_group aer_stats_attr_group=
+ =3D {
+> >  =09.is_visible =3D aer_stats_attrs_are_visible,
+> >  };
+>=20
+> > +#define aer_ratelimit_burst_attr(name, ratelimit)=09=09=09\
+> > +=09static ssize_t=09=09=09=09=09=09=09\
+> > +=09name##_show(struct device *dev, struct device_attribute *attr,=09\
+> > +=09=09    char *buf)=09=09=09=09=09=09\
+> > +{=09=09=09=09=09=09=09=09=09\
+>=20
+> A little odd looking to indent this less than the line above.
+>=20
+> > +=09struct pci_dev *pdev =3D to_pci_dev(dev);=09=09=09=09\
+> > +=09=09=09=09=09=09=09=09=09\
+> > +=09return sysfs_emit(buf, "%d\n",=09=09=09=09=09\
+> > +=09=09=09  pdev->aer_info->ratelimit.burst);=09=09\
+> > +}=09=09=09=09=09=09=09=09=09\
+> > +=09=09=09=09=09=09=09=09=09\
+> > +=09static ssize_t=09=09=09=09=09=09=09\
+> > +=09name##_store(struct device *dev, struct device_attribute *attr,=09\
+> > +=09=09     const char *buf, size_t count)=09=09=09\
+> > +{=09=09=09=09=09=09=09=09=09\
+> > +=09struct pci_dev *pdev =3D to_pci_dev(dev);=09=09=09=09\
+> > +=09int burst;=09=09=09=09=09=09=09\
+> > +=09=09=09=09=09=09=09=09=09\
+> > +=09if (!capable(CAP_SYS_ADMIN))=09=09=09=09=09\
+> > +=09=09return -EPERM;=09=09=09=09=09=09\
+> > +=09=09=09=09=09=09=09=09=09\
+> > +=09if (kstrtoint(buf, 0, &burst) < 0)=09=09=09=09\
+> > +=09=09return -EINVAL;=09=09=09=09=09=09\
+> > +=09=09=09=09=09=09=09=09=09\
+> > +=09pdev->aer_info->ratelimit.burst =3D burst;=09=09=09\
+> > +=09=09=09=09=09=09=09=09=09\
+> > +=09return count;=09=09=09=09=09=09=09\
+> > +}=09=09=09=09=09=09=09=09=09\
+> > +static DEVICE_ATTR_RW(name)
+> > +
+> > +aer_ratelimit_burst_attr(ratelimit_burst_cor_log, cor_log_ratelimit);
+> > +aer_ratelimit_burst_attr(ratelimit_burst_uncor_log, uncor_log_ratelimi=
+t);
+> > +
+> > +static struct attribute *aer_attrs[] =3D {
+> > +=09&dev_attr_ratelimit_log_enable.attr,
+> > +=09&dev_attr_ratelimit_burst_cor_log.attr,
+> > +=09&dev_attr_ratelimit_burst_uncor_log.attr,
+> > +=09NULL
+> > +};
+> > +
+> > +static umode_t aer_attrs_are_visible(struct kobject *kobj,
+> > +=09=09=09=09     struct attribute *a, int n)
+> > +{
+> > +=09struct device *dev =3D kobj_to_dev(kobj);
+> > +=09struct pci_dev *pdev =3D to_pci_dev(dev);
+> > +
+> > +=09if (!pdev->aer_info)
+> > +=09=09return 0;
+> > +
+> > +=09return a->mode;
+> > +}
+> > +
+> > +const struct attribute_group aer_attr_group =3D {
+> > +=09.name =3D "aer",
+> > +=09.attrs =3D aer_attrs,
+> > +=09.is_visible =3D aer_attrs_are_visible,
+> > +};
+>=20
+> There are a bunch of macros to simplify cases where
+> a whole group is either enabled or not and make the group
+> itself go away if there is nothing to be shown.
+>=20
+> DEFINE_SIMPLE_SYSFS_GROUP_VISIBLE() combined with
+> SYSFS_GROUP_VISIBLE() around the assignment does what we
+> want here I think.
+>=20
+> Whilst we can't retrofit that stuff onto existing ABI
+> as someone may be assuming directory presence,
 
-diff --git a/Documentation/ABI/testing/sysfs-secvar b/Documentation/ABI/testing/sysfs-secvar
-index 45281888e520..948df3446a03 100644
---- a/Documentation/ABI/testing/sysfs-secvar
-+++ b/Documentation/ABI/testing/sysfs-secvar
-@@ -37,6 +37,12 @@ Description:	Each secure variable is represented as a directory named as
- 		representation. The data and size can be determined by reading
- 		their respective attribute files.
- 
-+		Only secvars relevant to the key management mode are exposed.
-+		Only in the dynamic key mode can the user modify the secure boot
-+		secvars db, dbx, grubdb, grubdbx, and sbat. PK, trustedcadb and
-+		moduledb are the secvars common to both static and dynamic key
-+		management modes.
-+
- What:		/sys/firmware/secvar/vars/<variable_name>/size
- Date:		August 2019
- Contact:	Nayna Jain <nayna@linux.ibm.com>
-diff --git a/arch/powerpc/platforms/pseries/plpks-secvar.c b/arch/powerpc/platforms/pseries/plpks-secvar.c
-index 767e5e8c6990..f9e9cc40c9d0 100644
---- a/arch/powerpc/platforms/pseries/plpks-secvar.c
-+++ b/arch/powerpc/platforms/pseries/plpks-secvar.c
-@@ -59,7 +59,14 @@ static u32 get_policy(const char *name)
- 		return PLPKS_SIGNEDUPDATE;
- }
- 
--static const char * const plpks_var_names[] = {
-+static const char * const plpks_var_names_static[] = {
-+	"PK",
-+	"moduledb",
-+	"trustedcadb",
-+	NULL,
-+};
-+
-+static const char * const plpks_var_names_dynamic[] = {
- 	"PK",
- 	"KEK",
- 	"db",
-@@ -213,21 +220,34 @@ static int plpks_max_size(u64 *max_size)
- 	return 0;
- }
- 
-+static const struct secvar_operations plpks_secvar_ops_static = {
-+	.get = plpks_get_variable,
-+	.set = plpks_set_variable,
-+	.format = plpks_secvar_format,
-+	.max_size = plpks_max_size,
-+	.config_attrs = config_attrs,
-+	.var_names = plpks_var_names_static,
-+};
- 
--static const struct secvar_operations plpks_secvar_ops = {
-+static const struct secvar_operations plpks_secvar_ops_dynamic = {
- 	.get = plpks_get_variable,
- 	.set = plpks_set_variable,
- 	.format = plpks_secvar_format,
- 	.max_size = plpks_max_size,
- 	.config_attrs = config_attrs,
--	.var_names = plpks_var_names,
-+	.var_names = plpks_var_names_dynamic,
- };
- 
- static int plpks_secvar_init(void)
- {
-+	u8 mode;
-+
- 	if (!plpks_is_available())
- 		return -ENODEV;
- 
--	return set_secvar_ops(&plpks_secvar_ops);
-+	mode = plpks_get_sb_keymgmt_mode();
-+	if (mode)
-+		return set_secvar_ops(&plpks_secvar_ops_dynamic);
-+	return set_secvar_ops(&plpks_secvar_ops_static);
- }
- machine_device_initcall(pseries, plpks_secvar_init);
--- 
-2.47.1
+Are you sure about this? That empty directories are part of ABI as well?
+Are any of these directories listed under Documentation/ABI ?
 
+I can see somebody could in theory rely on the existance of empty=20
+directories but it's not like it contains any real substance without
+a file with the actual content of interest so it seems somewhat strange
+to check for directory and not the file of interest itself.
+
+> we can make sysfs less cluttered for new stuff.
+>=20
+> Maybe I'm missing why that doesn't work here though!
+>=20
+> J
+>=20
+> > +
+> >  static void pci_dev_aer_stats_incr(struct pci_dev *pdev,
+> >  =09=09=09=09   struct aer_err_info *info)
+> >  {
+>=20
+
+--=20
+ i.
+
+--8323328-1454175955-1747825557=:946--
 
