@@ -1,83 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-8916-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8917-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2655CC54ED0
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 May 2025 11:15:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D28FC3DA6D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 May 2025 11:20:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b3jHb4s8Vz2ySP;
-	Fri, 23 May 2025 21:15:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.9
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747998907;
-	cv=none; b=EIJPKwaBVCH1JMVJhT6JCXiaLVjJUc0gsUNt5aaGuHmUTjGZ5sjlRduDYNI87EKRmTX5CHnxqo8J+aB4A8Rhw3+yOX90DyZtXEVvKCXK0Zu0EshVn2QHtrZHMgc6+B/OVBdVz0RnRZ8EO0rLZZLgOaNAJpypnlFG2QHs7zHpU93hHpo1W+/4GI6KGu7S8lMCLHY672TAMQ1eUWrXaDrmcwylUo0Rd6wofEDc6CMlLM1m7K5fcfV8R1vmhd8fqzEss1UJMiBm8xb37W3dWpA8Bm6C/9PRBzROES03SyFJHijfaf/YNSj0h8w3Hv5rjClZwlqgj1lK0UZJsXPs4MxtQQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b3jQ12FFVz30Vj;
+	Fri, 23 May 2025 21:20:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747999241;
+	cv=none; b=G9BLeG911EHE9BqvhOfii3aVhbSf1PRTlOeK9qFpSy5z1eDfsritMk//8vrRBffEn1z7V0jJTNFqxLbt2vVtEZU0d/eebzmtK0ffmHe5lDgvg4QaCn0jnXVsS9C2x03T7V0VlLgpIrk1tu9BeI+ZQizv8zOZwn6aNKBedKIAAN7no9pIgQ/GOK3fgKdWUOCEeE/PjIxSbEEdi6FGjvsfFhFPHjzHAVnuprNtQpJmoeGdEA31YwCU2sFv8je2IlyZ4ddDwTgLEZSDsZTk9sKLCw0bEvOFWoRbSoPQB7JMRhiRBWrh+GI2Q0ELUCmHZ02flwZZqSLTkuMWwqurBNI6DQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747998907; c=relaxed/relaxed;
-	bh=wZtItW9qS2quazqIIiZgBLvxQAqkaGi/nngQ9TjqNV4=;
-	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=ZwY25P8xpAKDXgQQvBu84NFQX23zuqpG1n8kseW7GSG5qJsSnRlsQS/oxxlgAtBT+fDrO/C6iDL7tqiHjmylt3Xl3H7/9AYgY8gTJWzrsVlfHe/z0YOkiMbvJeoluEu82jbCasblalgttuKJwVJ7BsWlN+W1TjflP33ErOnouZ2U+rrWQLfmMtUyFcS/WB+rBPm3lNeYeTQDZ077k0JYNHCirm4flufVGFSo4IuEHaQiZrVmJDvpPIRCOrKF7+qrtxZPGrJA9GD5ZVfcoTc+yuASM7jGknbcUDXu/CiK3IlNeNsL5tXs2TSxFVfKkpxftP04UZnshAWFgevAoXQHBw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=h09RJckG; dkim-atps=neutral; spf=none (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=h09RJckG;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b3jHZ4zMjz2yPS
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2025 21:15:06 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1747998907; x=1779534907;
-  h=from:date:to:cc:subject:in-reply-to:message-id:
-   references:mime-version;
-  bh=uLBLtxOJYDYA8ZKK3hhgGuqxa2VSzPJe0qY4w9hbLA0=;
-  b=h09RJckGFm+8pxFtvLcPL7DS/reBIyjNKFCec/GsxmpVdaiYG7DJ6y1m
-   Z1aEfbQbSbxrJhKEn3PvscUcikOgtYzUmj32qxaPW/qVxMOp2Se5lz5eG
-   UcCcTgsGIdSvErotlotmsrLBdd1+sx+IBaQsASvAurmgyU/sPIIMT+3Pv
-   7dod1u1izBmtwzmuhr0OQd36de39ZkvDxPVLImTBRp/vvpzmvuDfZXbYr
-   t8t00qFi1seRNjoVFEynPHxU24+97Wy7+eghJ8Ik50kPs1IO44hKlw+L2
-   Ed6sP4SHRaHQfrZ/LtKHW88iPR7Ig1Yu6zwmWM9kFFDrlIJsN62psYOdY
-   Q==;
-X-CSE-ConnectionGUID: vDw7JJQ1QQ2eQ4cV2OBZXw==
-X-CSE-MsgGUID: /QLf68GCSMeBVxM5q5HwIA==
-X-IronPort-AV: E=McAfee;i="6700,10204,11441"; a="72579762"
-X-IronPort-AV: E=Sophos;i="6.15,308,1739865600"; 
-   d="scan'208";a="72579762"
-Received: from fmviesa007.fm.intel.com ([10.60.135.147])
-  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 May 2025 04:15:04 -0700
-X-CSE-ConnectionGUID: Vtg0ZHwRQnaaq6htq1XEYA==
-X-CSE-MsgGUID: Qtk9mCUPRiWTvSmmhHzOkA==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.15,308,1739865600"; 
-   d="scan'208";a="141165383"
-Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.150])
-  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 May 2025 04:14:56 -0700
-From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Date: Fri, 23 May 2025 14:14:53 +0300 (EEST)
-To: Bjorn Helgaas <helgaas@kernel.org>
-cc: linux-pci@vger.kernel.org, Jon Pan-Doh <pandoh@google.com>, 
-    Karolina Stolarek <karolina.stolarek@oracle.com>, 
-    Weinan Liu <wnliu@google.com>, 
-    Martin Petersen <martin.petersen@oracle.com>, 
-    Ben Fuller <ben.fuller@oracle.com>, Drew Walton <drewwalton@microsoft.com>, 
-    Anil Agrawal <anilagrawal@meta.com>, Tony Luck <tony.luck@intel.com>, 
-    Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, 
-    Lukas Wunner <lukas@wunner.de>, 
-    Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
-    Sargun Dhillon <sargun@meta.com>, "Paul E . McKenney" <paulmck@kernel.org>, 
-    Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
-    Oliver O'Halloran <oohall@gmail.com>, Kai-Heng Feng <kaihengf@nvidia.com>, 
-    Keith Busch <kbusch@kernel.org>, Robert Richter <rrichter@amd.com>, 
-    Terry Bowman <terry.bowman@amd.com>, Shiju Jose <shiju.jose@huawei.com>, 
-    Dave Jiang <dave.jiang@intel.com>, LKML <linux-kernel@vger.kernel.org>, 
-    linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>
-Subject: Re: [PATCH v8 17/20] PCI/AER: Simplify add_error_device()
-In-Reply-To: <20250522232339.1525671-18-helgaas@kernel.org>
-Message-ID: <68ea56e6-f4d2-9521-9f89-e6e9246eb1b7@linux.intel.com>
-References: <20250522232339.1525671-1-helgaas@kernel.org> <20250522232339.1525671-18-helgaas@kernel.org>
+	t=1747999241; c=relaxed/relaxed;
+	bh=kdhVZ27fT6CE3QToaexz4mdCDbpmw+kJMYcK8ovDzqc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=JM5LUCQ+jnsWvL2V94fN4rjEPzMxTyS1h1Z5fRgZqWrdP5ny1zFQyD57Gi3MR2/6OB2pfmCR/AYIa5JfAHB7nE+DUBk3ozi5sOWWXax0ufOTFY+GZkngIOql5HKoOZD68gEfpZQ1gPOiWyjK+FjgHA54nm7AT7uOsBH5oD91HwVC096xqgkdrtLqQGuqVJB9bOzhy79iwiekW41uOO621Ns5f5zJfgGROQghaXWGGu6Ncm+33BvFYroJX+wrvdtBtWbXLPsW5rZZ9rPZJhOijWu5+LiNILJArf0ut9XplEQMKOAP7InfiYb436pNTEHKkWWCc/e4EA2uyc7DAbPQ1A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b3jQ040tpz30V3
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2025 21:20:38 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4b3hmd3T2Mz9vXt;
+	Fri, 23 May 2025 12:51:45 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id x6OGEq_bauYM; Fri, 23 May 2025 12:51:45 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4b3hmd2TkFz9vXs;
+	Fri, 23 May 2025 12:51:45 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4884C8B769;
+	Fri, 23 May 2025 12:51:45 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id p6vSVHiM0Uvz; Fri, 23 May 2025 12:51:45 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 08E138B763;
+	Fri, 23 May 2025 12:51:43 +0200 (CEST)
+Message-ID: <8ad901c3-3fcb-4643-ac5a-c1f30f93d07f@csgroup.eu>
+Date: Fri, 23 May 2025 12:51:43 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,61 +58,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/mixed; boundary="8323328-1191482443-1747998893=:21466"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/6] ASoC: aoa: Use helper function
+ for_each_child_of_node_scoped()
+To: Ai Chao <aichao@kylinos.cn>, perex@perex.cz, tiwai@suse.com,
+ johannes@sipsolutions.net, kuninori.morimoto.gx@renesas.com,
+ lgirdwood@gmail.com, broonie@kernel.org, jbrunet@baylibre.com,
+ neil.armstrong@linaro.org, khilman@baylibre.com,
+ martin.blumenstingl@googlemail.com, shengjiu.wang@gmail.com,
+ Xiubo.Lee@gmail.com, festevam@gmail.com, nicoleotsuka@gmail.com,
+ shawnguo@kernel.org, s.hauer@pengutronix.de, srinivas.kandagatla@linaro.org
+Cc: linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-renesas-soc@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org,
+ imx@lists.linux.dev, kernel@pengutronix.de, linux-arm-msm@vger.kernel.org
+References: <20250522050300.519244-1-aichao@kylinos.cn>
+ <20250522050300.519244-3-aichao@kylinos.cn>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20250522050300.519244-3-aichao@kylinos.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-  This message is in MIME format.  The first part should be readable text,
-  while the remaining parts are likely unreadable without MIME-aware tools.
 
---8323328-1191482443-1747998893=:21466
-Content-Type: text/plain; charset=ISO-8859-15
-Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-On Thu, 22 May 2025, Bjorn Helgaas wrote:
+Le 22/05/2025 à 07:02, Ai Chao a écrit :
+> The for_each_child_of_node_scoped() helper provides a scope-based
+> clean-up functionality to put the device_node automatically, and
+> as such, there is no need to call of_node_put() directly.
 
-> From: Bjorn Helgaas <bhelgaas@google.com>
->=20
-> Return -ENOSPC error early so the usual path through add_error_device() i=
-s
-> the straightline code.
->=20
-> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+I don't understand this explanation.
+
+You say "no need to call of_node_put()" and the only thing you do in 
+addition to changing from for_each_child_of_node() to 
+for_each_child_of_node_scoped() is to _add_ a new call to of_node_put().
+
+I would expect to see a _removal_ of some of_node_put() when I read your 
+description.
+
+Christophe
+
+> 
+> Thus, use this helper to simplify the code.
+> 
+> Signed-off-by: Ai Chao <aichao@kylinos.cn>
 > ---
->  drivers/pci/pcie/aer.c | 15 +++++++++------
->  1 file changed, 9 insertions(+), 6 deletions(-)
->=20
-> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> index 237741e66d28..24f0f5c55256 100644
-> --- a/drivers/pci/pcie/aer.c
-> +++ b/drivers/pci/pcie/aer.c
-> @@ -816,12 +816,15 @@ EXPORT_SYMBOL_NS_GPL(pci_print_aer, "CXL");
->   */
->  static int add_error_device(struct aer_err_info *e_info, struct pci_dev =
-*dev)
->  {
-> -=09if (e_info->error_dev_num < AER_MAX_MULTI_ERR_DEVICES) {
-> -=09=09e_info->dev[e_info->error_dev_num] =3D pci_dev_get(dev);
-> -=09=09e_info->error_dev_num++;
-> -=09=09return 0;
-> -=09}
-> -=09return -ENOSPC;
-> +=09int i =3D e_info->error_dev_num;
+>   sound/aoa/soundbus/i2sbus/core.c | 5 +++--
+>   1 file changed, 3 insertions(+), 2 deletions(-)
+> 
+> diff --git a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus/core.c
+> index ce84288168e4..20a4c5891afc 100644
+> --- a/sound/aoa/soundbus/i2sbus/core.c
+> +++ b/sound/aoa/soundbus/i2sbus/core.c
+> @@ -207,6 +207,8 @@ static int i2sbus_add_dev(struct macio_dev *macio,
+>   			}
+>   		}
+>   	}
+> +	of_node_put(sound);
 > +
-> +=09if (i >=3D AER_MAX_MULTI_ERR_DEVICES)
-> +=09=09return -ENOSPC;
-> +
-> +=09e_info->dev[i] =3D pci_dev_get(dev);
-> +=09e_info->error_dev_num++;
-> +
-> +=09return 0;
->  }
-> =20
->  /**
->=20
+>   	/* for the time being, until we can handle non-layout-id
+>   	 * things in some fabric, refuse to attach if there is no
+>   	 * layout-id property or we haven't been forced to attach.
+> @@ -335,7 +337,6 @@ static int i2sbus_add_dev(struct macio_dev *macio,
+>   
+>   static int i2sbus_probe(struct macio_dev* dev, const struct of_device_id *match)
+>   {
+> -	struct device_node *np;
+>   	int got = 0, err;
+>   	struct i2sbus_control *control = NULL;
+>   
+> @@ -347,7 +348,7 @@ static int i2sbus_probe(struct macio_dev* dev, const struct of_device_id *match)
+>   		return -ENODEV;
+>   	}
+>   
+> -	for_each_child_of_node(dev->ofdev.dev.of_node, np) {
+> +	for_each_child_of_node_scoped(dev->ofdev.dev.of_node, np) {
+>   		if (of_device_is_compatible(np, "i2sbus") ||
+>   		    of_device_is_compatible(np, "i2s-modem")) {
+>   			got += i2sbus_add_dev(dev, control, np);
 
-Reviewed-by: Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com>
-
---=20
- i.
-
---8323328-1191482443-1747998893=:21466--
 
