@@ -1,90 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-8911-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8913-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D35E2C3DA6D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 May 2025 06:19:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9833C3DA6D
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 May 2025 09:56:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b3Zkf2n54z2yrm;
-	Fri, 23 May 2025 16:19:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747981178;
-	cv=none; b=H1zS1/6qXRx261eKx1TWg5pIM4ZgOwWcmugOEwM5+ukLjRDz+O7zzMf4k6s8rwwVirw68rx0mguWCYfx+csgItlmIVu05PL7B8L9oq9VZfWIwZLIUFPYEvRu96DxTmNL9EW0z7VhvQz8CAvyt8BUSj1sGdmbFpZeleXZdTomK3RBovg8+9z+U0NeDqKESRfKmdutKGwTuLG0be4AKWioXeETLcsrv2X790erSY9gvI811gm8bvjqlZOxcod5jtpnR4+LcD0aF0LCD9P7W09Hq96MMi5dwbBRdaG71J8khrO2NqWtkxKnqSj176OIjW4woJmdopvJD/G3Tmy3COnpXg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b3gYM262Vz2ytV;
+	Fri, 23 May 2025 19:56:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.16
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747994215;
+	cv=none; b=PXe7G5fMIqVjJAPstx2ZFKpgs8XOfrEHuVCrk6sJtthUA+vymJL6C3SyoBWZG+4KuI+/1VLFyQHdt6e3Jk8LOj9UHmKVeuBF8h5EkknmbSYjyQKesync2CeP0owY5zcNd6+3AulGBxv192RDugxhfwEeBf9yRud1uYGmlZAyXuoRdhF+FNvLDxLdvxgowtXP6CjzN3wEIoKgpRcj85EDS3dQkR4lv1CKItKRfLy1TpQYv+Ab3q3pND8Vc5kz/ZPPQxe/kU0RRreD9J5Z3/J05p86X+wWmxEJyUgdONDdcQuRDHGj7ylVUGbAe9fzJxyIDe6BNU3Fu0BIhxzpOuAiew==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747981178; c=relaxed/relaxed;
-	bh=oLNt3RtdnKwFBR5q5jDcZxmQHHAKPZSgXtIxyhohpeU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eSBIs0AhRPvt2SLbReSLNqWwPlJ9VDGN91ttQ5YzeHenZsw68eeBYNTp6uLbjkGsPQcTdc8YRY6Q1a4Yase3V+jiPM6THwvsBDtQmnkhkakm5CKxZdwU727whDlcGbL6w9zmA8KOZqu9pKsc9GiYbBTABYbN4adKZTlX7ArPGttykGZKeITGRGIk9JBtE3gfm0A4kLOJY2qlsqVyPXPTxaoQDlzbR2Fhg8L35MjInYqFxW0E9Qy8DoXqWGd+J1sWuLNu5kgTWxoYIYWhOA4HHo73XgFPIrABEBNZAKPxP2J4lhvpIXrDjkJysHj2LNmqGp9Q6QiwnTsQ3NSvmu6VnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=IRZQV8+9; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=hdGwkoX2; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=IRZQV8+9; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=hdGwkoX2; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1747994215; c=relaxed/relaxed;
+	bh=BX5f0kgNcIuaQh4riq5yd6yrHlHjtFOsSYvpeKUcm68=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=MhjiBe6Hi98Y2mZ3xmcDqeZmXsdpFR4Ji7hetvfQm7dXw/T1PN51O7sHW09Ip4ENxhBy7jbRlxoOwq28isp2U8+hN8jReaUJ0rb6Fy5DSWdHlHlGRavEXta0vF4gBDT3iJce0VtKwbc31SAa+THD0klraNXnRwbBCmfRUWDVEYX2/oTmQowSAotcvlH/qxH6qvIp87OVRYD1OYirrWyietMeM+OtPTv2MXL0b4echwLftMtgvX+bwbTfvdHVqMr1ZMJ+Q73/Aceihi+kDq/1J9gr+eSsZMlphBry6ar9sQkNM6H9iHW9LMY8JtCzNaBxmOP330f7xJNUgCpUvbOtAw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YUV/K2jj; dkim-atps=neutral; spf=none (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=IRZQV8+9;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=hdGwkoX2;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=IRZQV8+9;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=hdGwkoX2;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=YUV/K2jj;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=msuchanek@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.16; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.16])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b3Zkd1YT1z2yrW
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2025 16:19:37 +1000 (AEST)
-Received: from kitsune.suse.cz (unknown [10.100.12.127])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (P-256) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id 29E431F7A8;
-	Fri, 23 May 2025 06:19:29 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1747981169; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=oLNt3RtdnKwFBR5q5jDcZxmQHHAKPZSgXtIxyhohpeU=;
-	b=IRZQV8+9L8Ns96iocdMPl3/WA43ZPmuDxsuN46noj7OtBcuG4YwCgkesfLAhr3gIaQ0gXw
-	UkJqMG888Uo7HczVfd38sRJpWiGuX9gffeiT+/GyEXH0r9E4R1RyJeCRIDQSgqmhEF7hvR
-	dzF9A9w/Gwr6gSfwBkVS/aeNL+QaYpk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1747981169;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=oLNt3RtdnKwFBR5q5jDcZxmQHHAKPZSgXtIxyhohpeU=;
-	b=hdGwkoX2cFA7F2N97OZ+m6VAA65nInrPD3JlD5KaDrDNIAo5qE8Fm0J3JRs42J7uWQ9lS3
-	rWPq03TPzya3pGAw==
-Authentication-Results: smtp-out2.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1747981169; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=oLNt3RtdnKwFBR5q5jDcZxmQHHAKPZSgXtIxyhohpeU=;
-	b=IRZQV8+9L8Ns96iocdMPl3/WA43ZPmuDxsuN46noj7OtBcuG4YwCgkesfLAhr3gIaQ0gXw
-	UkJqMG888Uo7HczVfd38sRJpWiGuX9gffeiT+/GyEXH0r9E4R1RyJeCRIDQSgqmhEF7hvR
-	dzF9A9w/Gwr6gSfwBkVS/aeNL+QaYpk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1747981169;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=oLNt3RtdnKwFBR5q5jDcZxmQHHAKPZSgXtIxyhohpeU=;
-	b=hdGwkoX2cFA7F2N97OZ+m6VAA65nInrPD3JlD5KaDrDNIAo5qE8Fm0J3JRs42J7uWQ9lS3
-	rWPq03TPzya3pGAw==
-Date: Fri, 23 May 2025 08:19:22 +0200
-From: Michal =?iso-8859-1?Q?Such=E1nek?= <msuchanek@suse.de>
-To: Srish Srinivasan <ssrish@linux.ibm.com>
-Cc: linux-integrity@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-	christophe.leroy@csgroup.eu, naveen@kernel.org, ajd@linux.ibm.com,
-	zohar@linux.ibm.com, nayna@linux.ibm.com,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2 2/3] powerpc/secvar: Expose secvars relevant to the
- key management mode
-Message-ID: <aDATahmPIsOmiFAK@kitsune.suse.cz>
-References: <20250521105759.8408-1-ssrish@linux.ibm.com>
- <20250521105759.8408-3-ssrish@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b3gYH6Tdzz2yrp
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2025 19:56:50 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1747994213; x=1779530213;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version;
+  bh=JbxZhZlzZC1d54wodrzZn1J3iTj3tlK9lW0dMu8lctw=;
+  b=YUV/K2jjB+t4mEVmcW/1GlitYJrI9jQEEYCq8ghTC2chi8SOWoPwYhD7
+   F36rMAMUX5yWqNZip70UWs7dw9aq6Nop/3p8v6PjIOcSY6bl4/lmWPW02
+   BgYHhS+6eFu1EgzVFJby9QTdZAiJFs6yJJNqW24XwEUrB90GMM3NmiKU+
+   0BJ5WnyK1AKmkOUxtWQxAW0Mx0TzsolsWrVO7+S8nxB4GlH2obMSTFh+h
+   S67ORyxjwGwcUIqeTYsYX+1AxNq0mLrkwzAoDdGs587ZaIPPF5nSoLdjz
+   z8yA4Y7crlWIVqoi4+OuC4+SzuhTPJXZPYHTtgGz4pzCYKhprtJZfdkJE
+   A==;
+X-CSE-ConnectionGUID: Duu1o0KqR7aATvg/1C21hA==
+X-CSE-MsgGUID: Okp7lT8FTmKbBmqlUDDqow==
+X-IronPort-AV: E=McAfee;i="6700,10204,11441"; a="37670355"
+X-IronPort-AV: E=Sophos;i="6.15,308,1739865600"; 
+   d="scan'208";a="37670355"
+Received: from orviesa004.jf.intel.com ([10.64.159.144])
+  by fmvoesa110.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 May 2025 02:56:47 -0700
+X-CSE-ConnectionGUID: yFtpiiTURPqBOqi3zo9T/A==
+X-CSE-MsgGUID: suIahlvJSs2wQTPTiC/a1Q==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.15,308,1739865600"; 
+   d="scan'208";a="146063780"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.150])
+  by orviesa004-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 May 2025 02:56:39 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Fri, 23 May 2025 12:56:35 +0300 (EEST)
+To: Bjorn Helgaas <helgaas@kernel.org>
+cc: linux-pci@vger.kernel.org, Jon Pan-Doh <pandoh@google.com>, 
+    Karolina Stolarek <karolina.stolarek@oracle.com>, 
+    Weinan Liu <wnliu@google.com>, 
+    Martin Petersen <martin.petersen@oracle.com>, 
+    Ben Fuller <ben.fuller@oracle.com>, Drew Walton <drewwalton@microsoft.com>, 
+    Anil Agrawal <anilagrawal@meta.com>, Tony Luck <tony.luck@intel.com>, 
+    Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, 
+    Lukas Wunner <lukas@wunner.de>, 
+    Jonathan Cameron <Jonathan.Cameron@huawei.com>, 
+    Sargun Dhillon <sargun@meta.com>, "Paul E . McKenney" <paulmck@kernel.org>, 
+    Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+    Oliver O'Halloran <oohall@gmail.com>, Kai-Heng Feng <kaihengf@nvidia.com>, 
+    Keith Busch <kbusch@kernel.org>, Robert Richter <rrichter@amd.com>, 
+    Terry Bowman <terry.bowman@amd.com>, Shiju Jose <shiju.jose@huawei.com>, 
+    Dave Jiang <dave.jiang@intel.com>, LKML <linux-kernel@vger.kernel.org>, 
+    linuxppc-dev@lists.ozlabs.org, Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH v8 13/20] PCI/ERR: Add printk level to
+ pcie_print_tlp_log()
+In-Reply-To: <20250522232339.1525671-14-helgaas@kernel.org>
+Message-ID: <ce537bc4-a302-4da5-2e65-0fb07c9e3e1d@linux.intel.com>
+References: <20250522232339.1525671-1-helgaas@kernel.org> <20250522232339.1525671-14-helgaas@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,142 +92,126 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250521105759.8408-3-ssrish@linux.ibm.com>
-X-Spamd-Result: default: False [-1.30 / 50.00];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MIME_TRACE(0.00)[0:+];
-	FUZZY_BLOCKED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FREEMAIL_CC(0.00)[vger.kernel.org,lists.ozlabs.org,linux.ibm.com,ellerman.id.au,gmail.com,csgroup.eu,kernel.org];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com];
-	MISSING_XM_UA(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[12];
-	FROM_EQ_ENVFROM(0.00)[];
-	RCVD_COUNT_ZERO(0.00)[0];
-	TO_DN_SOME(0.00)[]
+Content-Type: multipart/mixed; boundary="8323328-2019861423-1747994195=:933"
 
-Hello,
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-On Wed, May 21, 2025 at 04:27:58PM +0530, Srish Srinivasan wrote:
-> The PLPKS enabled PowerVM LPAR sysfs exposes all of the secure boot
-> secvars irrespective of the key management mode.
-> 
-> The PowerVM LPAR supports static and dynamic key management for secure
-> boot. The key management option can be updated in the management
-> console. Only in the dynamic key mode can the user modify the secure
-> boot secvars db, dbx, grubdb, grubdbx, and sbat, which are exposed via
-> the sysfs interface. But the sysfs interface exposes these secvars even
-> in the static key mode. This could lead to errors when reading them or
-> writing to them in the static key mode.
+--8323328-2019861423-1747994195=:933
+Content-Type: text/plain; charset=ISO-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
 
-would it cause an error when reading these variables or only when
-writing them?
+On Thu, 22 May 2025, Bjorn Helgaas wrote:
 
-Thanks
-
-Michal
-
-
-> 
-> Expose only PK, trustedcadb, and moduledb in the static key mode to
-> enable loading of signed third-party kernel modules.
-> 
-> Co-developed-by: Souradeep <soura@imap.linux.ibm.com>
-> Signed-off-by: Souradeep <soura@imap.linux.ibm.com>
-> Signed-off-by: Srish Srinivasan <ssrish@linux.ibm.com>
-> Reviewed-by: Mimi Zohar <zohar@linux.ibm.com>
-> Reviewed-by: Stefan Berger <stefanb@linux.ibm.com>
-> Reviewed-by: Nayna Jain <nayna@linux.ibm.com>
-> Reviewed-by: Andrew Donnellan <ajd@linux.ibm.com>
+> From: Bjorn Helgaas <bhelgaas@google.com>
+>=20
+> aer_print_error() produces output at a printk level (KERN_ERR/KERN_WARNIN=
+G/
+> etc) that depends on the kind of error, and it calls pcie_print_tlp_log()=
+,
+> which previously always produced output at KERN_ERR.
+>=20
+> Add a "level" parameter so aer_print_error() can control the level of the
+> pcie_print_tlp_log() output to match.
+>=20
+> Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 > ---
->  Documentation/ABI/testing/sysfs-secvar        |  6 ++++
->  arch/powerpc/platforms/pseries/plpks-secvar.c | 28 ++++++++++++++++---
->  2 files changed, 30 insertions(+), 4 deletions(-)
-> 
-> diff --git a/Documentation/ABI/testing/sysfs-secvar b/Documentation/ABI/testing/sysfs-secvar
-> index 45281888e520..948df3446a03 100644
-> --- a/Documentation/ABI/testing/sysfs-secvar
-> +++ b/Documentation/ABI/testing/sysfs-secvar
-> @@ -37,6 +37,12 @@ Description:	Each secure variable is represented as a directory named as
->  		representation. The data and size can be determined by reading
->  		their respective attribute files.
->  
-> +		Only secvars relevant to the key management mode are exposed.
-> +		Only in the dynamic key mode can the user modify the secure boot
-> +		secvars db, dbx, grubdb, grubdbx, and sbat. PK, trustedcadb and
-> +		moduledb are the secvars common to both static and dynamic key
-> +		management modes.
-> +
->  What:		/sys/firmware/secvar/vars/<variable_name>/size
->  Date:		August 2019
->  Contact:	Nayna Jain <nayna@linux.ibm.com>
-> diff --git a/arch/powerpc/platforms/pseries/plpks-secvar.c b/arch/powerpc/platforms/pseries/plpks-secvar.c
-> index 767e5e8c6990..f9e9cc40c9d0 100644
-> --- a/arch/powerpc/platforms/pseries/plpks-secvar.c
-> +++ b/arch/powerpc/platforms/pseries/plpks-secvar.c
-> @@ -59,7 +59,14 @@ static u32 get_policy(const char *name)
->  		return PLPKS_SIGNEDUPDATE;
+>  drivers/pci/pci.h      | 3 ++-
+>  drivers/pci/pcie/aer.c | 5 +++--
+>  drivers/pci/pcie/dpc.c | 2 +-
+>  drivers/pci/pcie/tlp.c | 6 ++++--
+>  4 files changed, 10 insertions(+), 6 deletions(-)
+>=20
+> diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+> index 705f9ef58acc..1a9bfc708757 100644
+> --- a/drivers/pci/pci.h
+> +++ b/drivers/pci/pci.h
+> @@ -613,7 +613,8 @@ int pcie_read_tlp_log(struct pci_dev *dev, int where,=
+ int where2,
+>  =09=09      struct pcie_tlp_log *log);
+>  unsigned int aer_tlp_log_len(struct pci_dev *dev, u32 aercc);
+>  void pcie_print_tlp_log(const struct pci_dev *dev,
+> -=09=09=09const struct pcie_tlp_log *log, const char *pfx);
+> +=09=09=09const struct pcie_tlp_log *log, const char *level,
+> +=09=09=09const char *pfx);
+>  #endif=09/* CONFIG_PCIEAER */
+> =20
+>  #ifdef CONFIG_PCIEPORTBUS
+> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+> index f80c78846a14..f0936759ba8b 100644
+> --- a/drivers/pci/pcie/aer.c
+> +++ b/drivers/pci/pcie/aer.c
+> @@ -734,7 +734,7 @@ void aer_print_error(struct pci_dev *dev, struct aer_=
+err_info *info)
+>  =09__aer_print_error(dev, info);
+> =20
+>  =09if (info->tlp_header_valid)
+> -=09=09pcie_print_tlp_log(dev, &info->tlp, dev_fmt("  "));
+> +=09=09pcie_print_tlp_log(dev, &info->tlp, level, dev_fmt("  "));
+> =20
+>  out:
+>  =09if (info->id && info->error_dev_num > 1 && info->id =3D=3D id)
+> @@ -797,7 +797,8 @@ void pci_print_aer(struct pci_dev *dev, int aer_sever=
+ity,
+>  =09=09=09aer->uncor_severity);
+> =20
+>  =09if (tlp_header_valid)
+> -=09=09pcie_print_tlp_log(dev, &aer->header_log, dev_fmt("  "));
+> +=09=09pcie_print_tlp_log(dev, &aer->header_log, info.level,
+> +=09=09=09=09   dev_fmt("  "));
 >  }
->  
-> -static const char * const plpks_var_names[] = {
-> +static const char * const plpks_var_names_static[] = {
-> +	"PK",
-> +	"moduledb",
-> +	"trustedcadb",
-> +	NULL,
-> +};
-> +
-> +static const char * const plpks_var_names_dynamic[] = {
->  	"PK",
->  	"KEK",
->  	"db",
-> @@ -213,21 +220,34 @@ static int plpks_max_size(u64 *max_size)
->  	return 0;
->  }
->  
-> +static const struct secvar_operations plpks_secvar_ops_static = {
-> +	.get = plpks_get_variable,
-> +	.set = plpks_set_variable,
-> +	.format = plpks_secvar_format,
-> +	.max_size = plpks_max_size,
-> +	.config_attrs = config_attrs,
-> +	.var_names = plpks_var_names_static,
-> +};
->  
-> -static const struct secvar_operations plpks_secvar_ops = {
-> +static const struct secvar_operations plpks_secvar_ops_dynamic = {
->  	.get = plpks_get_variable,
->  	.set = plpks_set_variable,
->  	.format = plpks_secvar_format,
->  	.max_size = plpks_max_size,
->  	.config_attrs = config_attrs,
-> -	.var_names = plpks_var_names,
-> +	.var_names = plpks_var_names_dynamic,
->  };
->  
->  static int plpks_secvar_init(void)
+>  EXPORT_SYMBOL_NS_GPL(pci_print_aer, "CXL");
+> =20
+> diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
+> index 6c98fabdba57..7ae1590ea1da 100644
+> --- a/drivers/pci/pcie/dpc.c
+> +++ b/drivers/pci/pcie/dpc.c
+> @@ -222,7 +222,7 @@ static void dpc_process_rp_pio_error(struct pci_dev *=
+pdev)
+>  =09=09=09  dpc_tlp_log_len(pdev),
+>  =09=09=09  pdev->subordinate->flit_mode,
+>  =09=09=09  &tlp_log);
+> -=09pcie_print_tlp_log(pdev, &tlp_log, dev_fmt(""));
+> +=09pcie_print_tlp_log(pdev, &tlp_log, KERN_ERR, dev_fmt(""));
+> =20
+>  =09if (pdev->dpc_rp_log_size < PCIE_STD_NUM_TLP_HEADERLOG + 1)
+>  =09=09goto clear_status;
+> diff --git a/drivers/pci/pcie/tlp.c b/drivers/pci/pcie/tlp.c
+> index 890d5391d7f5..71f8fc9ea2ed 100644
+> --- a/drivers/pci/pcie/tlp.c
+> +++ b/drivers/pci/pcie/tlp.c
+> @@ -98,12 +98,14 @@ int pcie_read_tlp_log(struct pci_dev *dev, int where,=
+ int where2,
+>   * pcie_print_tlp_log - Print TLP Header / Prefix Log contents
+>   * @dev: PCIe device
+>   * @log: TLP Log structure
+> + * @level: Printk log level
+>   * @pfx: String prefix
+>   *
+>   * Prints TLP Header and Prefix Log information held by @log.
+>   */
+>  void pcie_print_tlp_log(const struct pci_dev *dev,
+> -=09=09=09const struct pcie_tlp_log *log, const char *pfx)
+> +=09=09=09const struct pcie_tlp_log *log, const char *level,
+> +=09=09=09const char *pfx)
 >  {
-> +	u8 mode;
-> +
->  	if (!plpks_is_available())
->  		return -ENODEV;
->  
-> -	return set_secvar_ops(&plpks_secvar_ops);
-> +	mode = plpks_get_sb_keymgmt_mode();
-> +	if (mode)
-> +		return set_secvar_ops(&plpks_secvar_ops_dynamic);
-> +	return set_secvar_ops(&plpks_secvar_ops_static);
+>  =09/* EE_PREFIX_STR fits the extended DW space needed for the Flit mode =
+*/
+>  =09char buf[11 * PCIE_STD_MAX_TLP_HEADERLOG + 1];
+> @@ -130,6 +132,6 @@ void pcie_print_tlp_log(const struct pci_dev *dev,
+>  =09=09}
+>  =09}
+> =20
+> -=09pci_err(dev, "%sTLP Header%s: %s\n", pfx,
+> +=09dev_printk(level, &dev->dev, "%sTLP Header%s: %s\n", pfx,
+>  =09=09log->flit ? " (Flit)" : "", buf);
 >  }
->  machine_device_initcall(pseries, plpks_secvar_init);
-> -- 
-> 2.47.1
-> 
-> 
+>=20
+
+Reviewed-by: Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com>
+
+--=20
+ i.
+
+--8323328-2019861423-1747994195=:933--
 
