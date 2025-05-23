@@ -1,50 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-8917-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8918-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D28FC3DA6D
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 May 2025 11:20:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E47FC54ED1
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 23 May 2025 15:16:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b3jQ12FFVz30Vj;
-	Fri, 23 May 2025 21:20:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1747999241;
-	cv=none; b=G9BLeG911EHE9BqvhOfii3aVhbSf1PRTlOeK9qFpSy5z1eDfsritMk//8vrRBffEn1z7V0jJTNFqxLbt2vVtEZU0d/eebzmtK0ffmHe5lDgvg4QaCn0jnXVsS9C2x03T7V0VlLgpIrk1tu9BeI+ZQizv8zOZwn6aNKBedKIAAN7no9pIgQ/GOK3fgKdWUOCEeE/PjIxSbEEdi6FGjvsfFhFPHjzHAVnuprNtQpJmoeGdEA31YwCU2sFv8je2IlyZ4ddDwTgLEZSDsZTk9sKLCw0bEvOFWoRbSoPQB7JMRhiRBWrh+GI2Q0ELUCmHZ02flwZZqSLTkuMWwqurBNI6DQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b3pdV4JV7z301B;
+	Sat, 24 May 2025 01:15:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748013358;
+	cv=none; b=CdY9Mk19cuF9dZKihuakhSEcLZ1Qn+LjsEBk85BLj48x2wRNKkcZiX0caTNKntSQwTV8dF4UWQtA6Kj8t8IWVGsqdg6FJuj+zgST2eMKYD4SyEV2q5jONrY2VfkhwTMcBOn4WClP0iorGOqeI2wyF/Cba060C9ZkjhMyGiHfOn74kojRxA8LkORBMQJuLZ/vLcbrTlM4+xDrUyq8JHbDrc7jb+UL/+ISHr6QRzvid0Aq99nBvGGGiiEWAnm73uuZiDIorqI3C3GmiZjI13eroPWySEeRRw2yyG+fvW22/xIxgCeegIQw0W9/bSLuFcd0+Y0BwYfYIrRApYq7myYI4A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1747999241; c=relaxed/relaxed;
-	bh=kdhVZ27fT6CE3QToaexz4mdCDbpmw+kJMYcK8ovDzqc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JM5LUCQ+jnsWvL2V94fN4rjEPzMxTyS1h1Z5fRgZqWrdP5ny1zFQyD57Gi3MR2/6OB2pfmCR/AYIa5JfAHB7nE+DUBk3ozi5sOWWXax0ufOTFY+GZkngIOql5HKoOZD68gEfpZQ1gPOiWyjK+FjgHA54nm7AT7uOsBH5oD91HwVC096xqgkdrtLqQGuqVJB9bOzhy79iwiekW41uOO621Ns5f5zJfgGROQghaXWGGu6Ncm+33BvFYroJX+wrvdtBtWbXLPsW5rZZ9rPZJhOijWu5+LiNILJArf0ut9XplEQMKOAP7InfiYb436pNTEHKkWWCc/e4EA2uyc7DAbPQ1A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b3jQ040tpz30V3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 23 May 2025 21:20:38 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4b3hmd3T2Mz9vXt;
-	Fri, 23 May 2025 12:51:45 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id x6OGEq_bauYM; Fri, 23 May 2025 12:51:45 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4b3hmd2TkFz9vXs;
-	Fri, 23 May 2025 12:51:45 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4884C8B769;
-	Fri, 23 May 2025 12:51:45 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id p6vSVHiM0Uvz; Fri, 23 May 2025 12:51:45 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 08E138B763;
-	Fri, 23 May 2025 12:51:43 +0200 (CEST)
-Message-ID: <8ad901c3-3fcb-4643-ac5a-c1f30f93d07f@csgroup.eu>
-Date: Fri, 23 May 2025 12:51:43 +0200
+	t=1748013358; c=relaxed/relaxed;
+	bh=XWCE6jqKFyONnv3rqRo5aIekZYBw6AYzIcZy4RKLG3w=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:Message-ID:
+	 MIME-Version:Content-Type; b=Og/kLA+Hg6QJ9iXWo1WidK2k5xQpfkSvSdtdAVlL0dThe8Ntm7sMuaGn5u58MXX8htbVqNNvTFR0I+1W3p+PKCvB05qRzJH3lCC9/V+Q05u/lZPm5X2gqQimOPpPTD+NzE7kzI2hxGICMF+ElUUI/UugktwFXKZqURzYkMRlVw+4OfLN/UcbOqW7IuePsZbg5pGDa9q+vsAYNWgxzJv/iPchRFnqOqvLP/2elhrWe+9axYHs13QOkD+wKGzz7M6IBsz/1rjo03vpjqeCeuliOU8SDF0WnsQ+CxAebNN9VFOjXhqQk1kElSG0wQlplmHaDUmT6E+oD/o62+FQECfRTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HX8ckC8A; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HX8ckC8A;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b3pdS701Jz2ySW
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 24 May 2025 01:15:56 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 3B52E5C5DCC;
+	Fri, 23 May 2025 15:13:37 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C994AC4CEE9;
+	Fri, 23 May 2025 15:15:53 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1748013353;
+	bh=XWCE6jqKFyONnv3rqRo5aIekZYBw6AYzIcZy4RKLG3w=;
+	h=Date:From:To:CC:Subject:In-Reply-To:References:From;
+	b=HX8ckC8AMTt3FFPZ5hRUKl69FZBqaXO6fLB2Y7SpVFP65PAO1kjsi8SJWon7Y8VAL
+	 5AlZGipDmdwo6ASrUJHjlZWt23IWVhtZ8w28sd2J+3k/5KL0Ds5/1Kd8fX92L9NeSK
+	 djeiHI1ul7E3zdbl/W4YgmZQN1kHFHTDKeqsu/HEEZ+Cnkla1/YwztmITvG8ynuDgE
+	 JgYg8/t8HUSDfYIDhxSbHCCufsrGiAF7Z4dT97PjU3++rt/osFUnAzdC53SPsceP8v
+	 LTwB//5TEGvRiD/yhKtzXkNNBxvtdGzOsRy/8HOt85jlnfIqIfWPNhzlqEZfOF+w9l
+	 PDqA51dZv9e7g==
+Date: Fri, 23 May 2025 08:15:49 -0700
+From: Kees Cook <kees@kernel.org>
+To: Andrew Donnellan <ajd@linux.ibm.com>, Arnd Bergmann <arnd@arndb.de>
+CC: Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Naveen N Rao <naveen@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ "Aneesh Kumar K.V" <aneesh.kumar@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linuxppc-dev@lists.ozlabs.org,
+ "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ Christoph Hellwig <hch@lst.de>, Marco Elver <elver@google.com>,
+ Andrey Konovalov <andreyknvl@gmail.com>,
+ Andrey Ryabinin <ryabinin.a.a@gmail.com>, Ard Biesheuvel <ardb@kernel.org>,
+ Masahiro Yamada <masahiroy@kernel.org>,
+ Nathan Chancellor <nathan@kernel.org>,
+ Nicolas Schier <nicolas.schier@linux.dev>,
+ Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+ Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>,
+ linux-kernel@vger.kernel.org, x86@kernel.org, kasan-dev@googlegroups.com,
+ linux-doc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ kvmarm@lists.linux.dev, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-efi@vger.kernel.org,
+ linux-hardening@vger.kernel.org, linux-kbuild@vger.kernel.org,
+ linux-security-module@vger.kernel.org, linux-kselftest@vger.kernel.org,
+ sparclinux@vger.kernel.org, llvm@lists.linux.dev
+Subject: Re: [PATCH v2 08/14] powerpc: Handle KCOV __init vs inline mismatches
+User-Agent: K-9 Mail for Android
+In-Reply-To: <e50abba6c962772c73342bacf20fb87dc99dd542.camel@linux.ibm.com>
+References: <20250523043251.it.550-kees@kernel.org> <20250523043935.2009972-8-kees@kernel.org> <e50abba6c962772c73342bacf20fb87dc99dd542.camel@linux.ibm.com>
+Message-ID: <6E407BC0-4D84-4420-AE07-EF85EBA1AB1C@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,83 +88,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/6] ASoC: aoa: Use helper function
- for_each_child_of_node_scoped()
-To: Ai Chao <aichao@kylinos.cn>, perex@perex.cz, tiwai@suse.com,
- johannes@sipsolutions.net, kuninori.morimoto.gx@renesas.com,
- lgirdwood@gmail.com, broonie@kernel.org, jbrunet@baylibre.com,
- neil.armstrong@linaro.org, khilman@baylibre.com,
- martin.blumenstingl@googlemail.com, shengjiu.wang@gmail.com,
- Xiubo.Lee@gmail.com, festevam@gmail.com, nicoleotsuka@gmail.com,
- shawnguo@kernel.org, s.hauer@pengutronix.de, srinivas.kandagatla@linaro.org
-Cc: linux-sound@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-renesas-soc@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-amlogic@lists.infradead.org,
- imx@lists.linux.dev, kernel@pengutronix.de, linux-arm-msm@vger.kernel.org
-References: <20250522050300.519244-1-aichao@kylinos.cn>
- <20250522050300.519244-3-aichao@kylinos.cn>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20250522050300.519244-3-aichao@kylinos.cn>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain;
+ charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
 
 
-Le 22/05/2025 à 07:02, Ai Chao a écrit :
-> The for_each_child_of_node_scoped() helper provides a scope-based
-> clean-up functionality to put the device_node automatically, and
-> as such, there is no need to call of_node_put() directly.
+On May 22, 2025 10:24:30 PM PDT, Andrew Donnellan <ajd@linux=2Eibm=2Ecom> =
+wrote:
+>On Thu, 2025-05-22 at 21:39 -0700, Kees Cook wrote:
+>> When KCOV is enabled all functions get instrumented, unless
+>> the __no_sanitize_coverage attribute is used=2E To prepare for
+>> __no_sanitize_coverage being applied to __init functions, we have to
+>> handle differences in how GCC's inline optimizations get resolved=2E
+>> For
+>> s390 this requires forcing a couple functions to be inline with
+>
+>I assume you mean powerpc here, though I'm sure my employer is happy
+>that you're at least confusing us with IBM's other architecture :)
 
-I don't understand this explanation.
+Whoops! Yes=2E Paste-o on my part=2E The rest of the sentence was updated =
+correctly though=2E :)
 
-You say "no need to call of_node_put()" and the only thing you do in 
-addition to changing from for_each_child_of_node() to 
-for_each_child_of_node_scoped() is to _add_ a new call to of_node_put().
-
-I would expect to see a _removal_ of some of_node_put() when I read your 
-description.
-
-Christophe
-
-> 
-> Thus, use this helper to simplify the code.
-> 
-> Signed-off-by: Ai Chao <aichao@kylinos.cn>
-> ---
->   sound/aoa/soundbus/i2sbus/core.c | 5 +++--
->   1 file changed, 3 insertions(+), 2 deletions(-)
-> 
-> diff --git a/sound/aoa/soundbus/i2sbus/core.c b/sound/aoa/soundbus/i2sbus/core.c
-> index ce84288168e4..20a4c5891afc 100644
-> --- a/sound/aoa/soundbus/i2sbus/core.c
-> +++ b/sound/aoa/soundbus/i2sbus/core.c
-> @@ -207,6 +207,8 @@ static int i2sbus_add_dev(struct macio_dev *macio,
->   			}
->   		}
->   	}
-> +	of_node_put(sound);
-> +
->   	/* for the time being, until we can handle non-layout-id
->   	 * things in some fabric, refuse to attach if there is no
->   	 * layout-id property or we haven't been forced to attach.
-> @@ -335,7 +337,6 @@ static int i2sbus_add_dev(struct macio_dev *macio,
->   
->   static int i2sbus_probe(struct macio_dev* dev, const struct of_device_id *match)
->   {
-> -	struct device_node *np;
->   	int got = 0, err;
->   	struct i2sbus_control *control = NULL;
->   
-> @@ -347,7 +348,7 @@ static int i2sbus_probe(struct macio_dev* dev, const struct of_device_id *match)
->   		return -ENODEV;
->   	}
->   
-> -	for_each_child_of_node(dev->ofdev.dev.of_node, np) {
-> +	for_each_child_of_node_scoped(dev->ofdev.dev.of_node, np) {
->   		if (of_device_is_compatible(np, "i2sbus") ||
->   		    of_device_is_compatible(np, "i2s-modem")) {
->   			got += i2sbus_add_dev(dev, control, np);
-
+--=20
+Kees Cook
 
