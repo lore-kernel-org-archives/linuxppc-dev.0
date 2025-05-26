@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-8932-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8933-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30F2AC5AD49
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 May 2025 08:13:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40803C54FB3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 May 2025 08:21:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b5T7124Xqz2xfB;
-	Mon, 26 May 2025 18:13:49 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b5TJD5rXxz2xfR;
+	Mon, 26 May 2025 18:21:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:242:246e::2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748247229;
-	cv=none; b=acJUTJ89BRuVM5PQCmZpQmcV/A6tOnPYw9K8hLAReXYIPZdteia0FAhRx079PdLxItqVc0333QOpiwu+/uD7JAkdAdG5dQZcc6equQM7ENvJHzaXty0cx8MBCBxnfHL9avo3IwsQODgfG/1R+UoUCoA4asEvcCwZ7W2DQtII3SmovhchJUVUQFVuzqyPcC7H4nXs5g3BDisOxxd1aSGnD2lkOecd3pyHWHublzkNwcfvYE/ISunph1FWrgcnvkQJ2SLQKn01NTFKlGmofBH4xEVauGKbs6ZKd6izdBA5DbhH8eNkgvBU382MItXNiVwWqVaFbtWZkDckjzvEegsriQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748247708;
+	cv=none; b=fbj9Ou+t6QsQZkC/aPWNeqx9qgcexr5R5mb9+7oeJaSYdaTFtyQK4vybXxdareqZyG5RdqyX5dOM/9u0mUHQ4ZFN8uDbSzJpMtf4JqCdRjhkap45cbjbhsQAGOvMBsbkkq47wzsU3MPmnPhpIPKM2WjXS1LZTg6oblVxmToQTxAd8EjiLR8yujMb+JwD4ojtouprDA222Lpa9C6bOLcrwScohx0MwZ0LfNvZfm0s3A3sc1cLkwC6cjmd6xYLyxIJhpkG2GttV6Rgks/kQGl2i39EWobnyCixOz0CX2y2fedcq3hJ5sox4G5e0Ygi9Q4Cprkc5Q1M8AEhKs80AOGczQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748247229; c=relaxed/relaxed;
-	bh=+itlrWYzfhQ7YhSm6Rwr1H/9x36GVhI08lVyKj97jHk=;
+	t=1748247708; c=relaxed/relaxed;
+	bh=kQpQyzSLFXzcV+bV7PWjdFj0k9dCEFAnIJ2CmkjTnDY=;
 	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=JOaK8ohkbExT2Og3yD6VAp6CLfjWhUv6gZwqgx9qX0UREvGkF/xac5u4AWZWqORXvLMIG7fYshzyNNRFQU/GkvWSy9Sx7g5yITNOUFt7bp6ZkwpoU9FMCCmFbIxsojyXJNvJtTZJd34oJPL8Pjrop7xxXYFgjw3vUF/Vt/45YE/RTREBszuv9ng1G2oAOIgeE0a+ULRbTfNUFwU1blJtzOLDjwmj5Ym8/Sn1rT2o15Ic6vjGAo2aTGt0jy15U1RCqUZv6bysRVB/2ygZ/04TAlOiKkma5nHum6l1K7bx27ICN6JIUsVFNKvEkRsqDchPATw2yrPh2odQT6ICSeBHpw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=sipsolutions.net; dkim=pass (2048-bit key; secure) header.d=sipsolutions.net header.i=@sipsolutions.net header.a=rsa-sha256 header.s=mail header.b=F54CGL1B; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:242:246e::2; helo=sipsolutions.net; envelope-from=johannes@sipsolutions.net; receiver=lists.ozlabs.org) smtp.mailfrom=sipsolutions.net
+	 Content-Type:MIME-Version; b=g920mBEIrzPZKzyJvNMN4wFqzq0rOCpMfu/1Xl0RozFnpY2GROxUGsJCqHgUA+cikY7E/BuP7QHs4med72Lmn6t0Mwe/GZXDuvxWOMi0D52n9AoLprxSfri8FsmK4QpKikhnQlp4z7kS7U2aw93SjQvUBjhk6pYut9PY3ToBlRDod+zdXRlXRFNf2CjT3yXyo5uLvBgCwS+88NXvrHxQydLkXnMSQ609amqR3Ymvje4gE3QD8xDYWG71nqk7UnenXZSAT3AEtP2fue9OubPavBV4rGt1WxpNvZI/cWJZtgg5+GRzlISq3CjXDZv95wm1zuLXJqqUEMSuoXuRxnsDaQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=sipsolutions.net; dkim=pass (2048-bit key; secure) header.d=sipsolutions.net header.i=@sipsolutions.net header.a=rsa-sha256 header.s=mail header.b=T8sToZ3s; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:242:246e::2; helo=sipsolutions.net; envelope-from=johannes@sipsolutions.net; receiver=lists.ozlabs.org) smtp.mailfrom=sipsolutions.net
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=sipsolutions.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=sipsolutions.net header.i=@sipsolutions.net header.a=rsa-sha256 header.s=mail header.b=F54CGL1B;
+	dkim=pass (2048-bit key; secure) header.d=sipsolutions.net header.i=@sipsolutions.net header.a=rsa-sha256 header.s=mail header.b=T8sToZ3s;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sipsolutions.net (client-ip=2a01:4f8:242:246e::2; helo=sipsolutions.net; envelope-from=johannes@sipsolutions.net; receiver=lists.ozlabs.org)
 Received: from sipsolutions.net (s3.sipsolutions.net [IPv6:2a01:4f8:242:246e::2])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b5T701TD8z2yZS
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 May 2025 18:13:48 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b5TJD00QLz2xfB
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 26 May 2025 18:21:47 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=sipsolutions.net; s=mail; h=MIME-Version:Content-Transfer-Encoding:
 	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender
 	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-To:
-	Resent-Cc:Resent-Message-ID; bh=+itlrWYzfhQ7YhSm6Rwr1H/9x36GVhI08lVyKj97jHk=;
-	t=1748247228; x=1749456828; b=F54CGL1BoYgIfRjP+wyQKGoiaPS0Rii82n2t1YWxsyTvTIP
-	PBq2X+itw7lz+/1FPKWCVerLk7xlFx1ji0FwDMGgRKdw9hoYxQWL4wy2oE0dHxWunUxOFJ1fGA9HB
-	Bmh1mkwcliB53IWut7vrWaA6DIz6JCICVA+IF1eKXUyiEwfvhQYuGvyU8LKqdAj8EcOpJEl6ynv7w
-	FLE3XJz0WuxjIHK0L5kmksOY3fRZGshq22u+JOYK6N56aSJnplIkb4bBbeCth2syd1QIZ92PMfdL8
-	mzdkWH/gUltI9d6f22LeBpMbQ6XEHWqUTwf2uPb5S/JcPaF8+zrmWT1vWt0H/5DQ==;
+	Resent-Cc:Resent-Message-ID; bh=kQpQyzSLFXzcV+bV7PWjdFj0k9dCEFAnIJ2CmkjTnDY=;
+	t=1748247708; x=1749457308; b=T8sToZ3sH9mMQV3qqKQz+Mt805KsRLYSnezCuAjf7kvFJHL
+	Y8Aoj7TNnMPQbJrcI7lGDuyNImOPKsCGJIJEe8sjG2QGVnE8UJ+SXzuARyMx52rlHXPfztWfpmHsK
+	/FTanrBgfivQNLOix+t3LwO3whblFlmRuI//zghnr6OV3LPyTxsp1/bnAWARKbZndkJhgg/lzIT7K
+	6r532pfYN8KHuWL1PoO15+329lQhaiswVCKUvLmc7MVfYBCevLPtUBoCTZw8nW0JKWxTia8umkyIe
+	/pJqFBhgPdkwN+bnyWZ1DBNOqLqHiAAo1OmqV4DqLy4RfFfTJ28JCOY/OFVpJrQQ==;
 Received: by sipsolutions.net with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
 	(Exim 4.98.2)
 	(envelope-from <johannes@sipsolutions.net>)
-	id 1uJSxj-0000000DOyV-1Dst;
-	Mon, 26 May 2025 10:13:35 +0200
-Message-ID: <23aadbd78d3585c900c579c26f360011cf1ca830.camel@sipsolutions.net>
+	id 1uJT5X-0000000DQMg-1YY7;
+	Mon, 26 May 2025 10:21:39 +0200
+Message-ID: <b36908bf35a20f7196bec4fe22e392a015d9b7d1.camel@sipsolutions.net>
 Subject: Re: [PATCH v2 2/6] ASoC: aoa: Use helper function
  for_each_child_of_node_scoped()
 From: Johannes Berg <johannes@sipsolutions.net>
@@ -66,11 +66,13 @@ Cc: linux-sound <linux-sound@vger.kernel.org>, linux-kernel
  <linux-arm-kernel@lists.infradead.org>,  linux-amlogic
  <linux-amlogic@lists.infradead.org>, imx <imx@lists.linux.dev>, kernel
  <kernel@pengutronix.de>,  linux-arm-msm <linux-arm-msm@vger.kernel.org>
-Date: Mon, 26 May 2025 10:13:33 +0200
-In-Reply-To: <eb1ddeb3-06b6-4ac5-b20a-06b92c7f1363@kylinos.cn>
+Date: Mon, 26 May 2025 10:21:37 +0200
+In-Reply-To: <9ec008a8-b569-4ad1-9206-fe241fb1712d@kylinos.cn>
 References: <2aq0nyvyf7t-2aq4hsc7kp6@nsmail7.0.0--kylin--1>
 	 <7e708dcc98c6f0f615b1b87d190464cfe78be668.camel@sipsolutions.net>
 	 <eb1ddeb3-06b6-4ac5-b20a-06b92c7f1363@kylinos.cn>
+	 <23aadbd78d3585c900c579c26f360011cf1ca830.camel@sipsolutions.net>
+	 <9ec008a8-b569-4ad1-9206-fe241fb1712d@kylinos.cn>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 User-Agent: Evolution 3.54.3 (3.54.3-1.fc41) 
@@ -89,19 +91,41 @@ Precedence: list
 MIME-Version: 1.0
 X-malware-bazaar: not-scanned
 
-On Mon, 2025-05-26 at 16:12 +0800, Ai Chao wrote:
+On Mon, 2025-05-26 at 16:20 +0800, Ai Chao wrote:
 > Hi Johannes:
->=20
-> > > "simplifies the code" is no need to callof_node_put() .
-> > Fair. Except that's not what you _actually_ changed here. Like I said,
-> > either it's buggy before or after.
+> > > Hi Johannes:
+> > >=20
+> > > > > "simplifies the code" is no need to callof_node_put() .
+> > > > Fair. Except that's not what you _actually_ changed here. Like I sa=
+id,
+> > > > either it's buggy before or after.
+> > > >=20
+> > > In the function i2sbus_probe, it not return a struct device_node, so =
+, I
+> > > think function for_each_child_of_node_scoped is better than
+> > > for_each_child_of_node.
+> > You still haven't explained why it's even correct.
 > >=20
-> In the function i2sbus_probe, it not return a struct device_node, so , I=
+> > johannes
+>=20
+> The for_each_child_of_node() function is used to iterate over all child=
 =20
-> think function for_each_child_of_node_scoped is better than=20
-> for_each_child_of_node.
+> nodes of a device tree node.
+> During each iteration, it retrieves a pointer to the child node via=20
+> of_get_next_child() and automatically increments the node's reference=20
+> count (of_node_get()).
+> Each call to of_get_next_child() increases the reference count=20
+> (refcount) of the returned child node, ensuring that the node is not=20
+> freed while in use.
+> for_each_child_of_node() increments the child node's reference count in=
+=20
+> each iteration but does not decrement it automatically.
+> If of_node_put() is not called manually, the reference count will never=
+=20
+> reach zero, resulting in a memory leak of the node.
 
-You still haven't explained why it's even correct.
+Yes, good! Now show that you can apply what you've learned to the
+specific code (and changes) at hand.
 
 johannes
 
