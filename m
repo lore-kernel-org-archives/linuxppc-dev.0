@@ -1,97 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-8942-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-8943-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C545C54FB3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 May 2025 14:51:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8C4B2C54FB3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 26 May 2025 15:33:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b5dxX6TFJz2xRs;
-	Tue, 27 May 2025 00:51:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748271072;
-	cv=none; b=Xga0MMEAYTYr14rUtxngz5AxE2VolIIXeMCr4x1nA0aWTyo2A14Lp5oGRU7ZP1XJ9gaD6jLN3B+q1bDMMY3oeQQvS279L+AXcCHjs7xf1JROH+bdO3k4gpL9ptpgf9RbPZ5SBMwUIgqTBGzCI10JhdMwTG4/sKdyrxvw4/gCOlDlwp9sPkf7vCtiasf/O7AfwLBpEjZRhJa/Nl1pMFsWGBkRjupEdnPGc7Lnz5TxXj1G8I00eMvQfNy6C501KoQO0/fSrgqOIDg8BM0sVJvaucar4emaj7yu6V6LzP7BQsJ281aavJC2kHof4nGGOCVrXuXXdL/c5tnjjjTiZ4vs9w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b5ftT0hrjz2xS2;
+	Tue, 27 May 2025 01:33:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748273617;
+	cv=none; b=WwlpsAmx3ZpDU/2TPUpIgRbFx5nJYCIdZ3hXI3U7GUwu9+9hX1UM6DBdDolZ1EWcRgYKeVvF4M8sZja+UoY9kVDRHDyfMCgouHEVYv6lgE250UiHvc7N1F0t7momvcLhnkpWaIK0mxTM2xum9PtD67eC9tFITVplK398H+PDKbl9h/fWFPQ3epmxwP8CF+HM3F8RkypKx0ulB7cRZuEmvLTu+ncnzN0H6UhI1mP6DPGyGCs3mgjTcK4ZQNJpXeQu9j9iRviKLGDJUOjTqzMfz/vQV0uzNc+zLnrROJ5pmx5nY1zfq7tfxQ2LOPqi/EwoxJsruFFbKbqSaYv4mDnh+g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748271072; c=relaxed/relaxed;
-	bh=mEbyvPQr2gVwbgCiESakcT+TQCA2g4GL1G0/MZDlAx0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fcalBBrkDp6BhBOw3xhqGQhCmuGO17lHyOp1CVktw4Dqz/03/R3ghvqST39jtmL+aHSZQjbFu9/DXZGGw76xjUZqhFVmPbXILrRiwGiIkoigmiju95YrgYtgpJmHfXd604VfxYn/E1yHXydo5+gYfo9+P1p1z5SyjgPdUYx9ffWbc4vNrxruF1aBjiCHOcF7MebIvR3Ui/ey8EaR3fhXZ+TRkzxF0g8Qir0k3428m9+4SOh+bqW3dIZeq61qV3UZ1c7euiWwgX0+SRwUErG1xfhazZ3i4y+NroJUL66lCOpXsbdC4a+XHUhF6R+zmoqg/nIFNZY9DzeQpUrCpqJOow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HW6MpTzV; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=donettom@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1748273617; c=relaxed/relaxed;
+	bh=vetZnB8Rm8VfVwLOdkXrGlsQLcsEwAP0m2e4xXUlcBk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Wrye8mGdTpWZ7fHOyJ8TbYNktaTVoFi3Ony0GJIz7UmpNYUT4O8SG1ZHML5Z3K8juMRmFtbQyAJwXlb9Ci1zm2mclMdbwn5rP4GnMwCD0ZjlS0BXkbA8d3lUccv6lRvduJnDpMZ88f2gizMpHTZzo/oSSABUM9ZtvK0pBR+PnlRl0YB+wi9oL+ckDGwgTKWx10kk8wUVbbhxIwxJYQDNb2FeDOCsjOILMM/LQW9JYb/1/hTZ4FbQjVDdx0pmeYZ+WYnL0gvm1eV8FBEb1VgMTgV+p3LiSmOOPFYltO0u2GCAX+j+u4ZSV352UQo64i2RgkQoxMVvUxSyeS9I1UxJVQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XpgzDHq8; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HW6MpTzV;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XpgzDHq8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=donettom@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=conor@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b5dxX0n1Gz2ySf
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2025 00:51:11 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 54Q3HW2v001284;
-	Mon, 26 May 2025 14:50:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=mEbyvPQr2gVwbgCiE
-	SakcT+TQCA2g4GL1G0/MZDlAx0=; b=HW6MpTzVLt4j1oK8P9dlyto7LgE3rfNj4
-	/vJZ0J792APv/Z0K/nf7gZPqFFGc6AEdk5IaUvzbiuF9CBqqzmUQShfiUDCB4GUG
-	3boMY1bITC2+OdYVazroyoYqjZIeZTrenhTT3SmTVe7F/bbBdLw7y45EJ6wuIhzu
-	OOuiShpnLkEkSfm8+O4DOoYofJur3rRNbxVp7Bxsg6ioZWS2wBgbmWv7SyQCQBr+
-	3L4HN901s2EgSME3FoGI9syPZdobQ8Fyz/zlHHnUJ7+EviF99kzo04v6DS63Kj2V
-	gcyLV2W00wudcTB6AC0yy/uOT4ra8LaLLPabGtMYqk1WNsWSCdz1A==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46u5uchpx5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 26 May 2025 14:50:48 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 54QEfsqr009052;
-	Mon, 26 May 2025 14:50:48 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 46u5uchpx3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 26 May 2025 14:50:47 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 54QEDdlZ007940;
-	Mon, 26 May 2025 14:50:46 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 46uu52x93m-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 26 May 2025 14:50:46 +0000
-Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 54QEoh6S30540446
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 26 May 2025 14:50:43 GMT
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4B5D620043;
-	Mon, 26 May 2025 14:50:43 +0000 (GMT)
-Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id A18EC20040;
-	Mon, 26 May 2025 14:50:40 +0000 (GMT)
-Received: from ltczz402-lp1.aus.stglabs.ibm.com (unknown [9.40.194.31])
-	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 26 May 2025 14:50:40 +0000 (GMT)
-From: Donet Tom <donettom@linux.ibm.com>
-To: David Hildenbrand <david@redhat.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Mike Rapoport <rppt@kernel.org>, Oscar Salvador <osalvador@suse.de>,
-        Zi Yan <ziy@nvidia.com>,
-        Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Ritesh Harjani <ritesh.list@gmail.com>, linux-mm@kvack.org,
-        linux-kernel@vger.kernel.org, "Rafael J . Wysocki" <rafael@kernel.org>,
-        Danilo Krummrich <dakr@kernel.org>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        Alison Schofield <alison.schofield@intel.com>,
-        Yury Norov <yury.norov@gmail.com>, Dave Jiang <dave.jiang@intel.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Nilay Shroff <nilay@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        Donet Tom <donettom@linux.ibm.com>
-Subject: [PATCH v6 4/5] drivers/base/node: Rename register_memory_blocks_under_node() and remove context argument
-Date: Mon, 26 May 2025 09:50:12 -0500
-Message-ID: <030838b43c052079be40e036a4d0f084165e1006.1748270306.git.donettom@linux.ibm.com>
-X-Mailer: git-send-email 2.43.5
-In-Reply-To: <bc754a238aa91fa36be463985ccde66aac7055e7.1748270306.git.donettom@linux.ibm.com>
-References: <bc754a238aa91fa36be463985ccde66aac7055e7.1748270306.git.donettom@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b5ftR403Gz2xRw
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 27 May 2025 01:33:35 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 3EA105C40C2;
+	Mon, 26 May 2025 15:31:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F724C4CEE7;
+	Mon, 26 May 2025 15:33:30 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1748273613;
+	bh=bTIiweD03lr1R1e1Y1cpiVQxuDlSy72r7CfXuZpCyb0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=XpgzDHq8IAUfoS6wq7qPPTet5n4dB+fg6N5zLp0bkDtKEbqKiCKvQmdUge6ThtwS4
+	 g+C5MVkQ+pGzfoPXP0o/Tkn6rBSAOWOoA2UWKgq6Dki7MlIoOxqno7gU81qtidKQsV
+	 Lu0eNkLAYn1V+4WYuZn/XdbMRUONGgzhXJetBx6RAXmjfjMik14xR/A4VdqqXxLiZv
+	 IULYHBNxYnMoXQv+BLfk96/Sc0DmNGpIaQOtYQksJDLUiV7j1aViQS3np3cpBZ70za
+	 Nsb1bW5Fn4uvMFahzAwGKyJO/go310X6uYZ/fxNxj8Fe18s8P/ibtg6AYuCjvW55Zp
+	 Va4NqQE45lWzA==
+Date: Mon, 26 May 2025 16:33:28 +0100
+From: Conor Dooley <conor@kernel.org>
+To: Frank Li <Frank.Li@nxp.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	Fabio Estevam <festevam@gmail.com>,
+	"open list:FREESCALE SOC DRIVERS" <linuxppc-dev@lists.ozlabs.org>,
+	"moderated list:FREESCALE SOC DRIVERS" <linux-arm-kernel@lists.infradead.org>,
+	"open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>,
+	"open list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE" <imx@lists.linux.dev>,
+	open list <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH 1/1] dt-bindings: soc: Add fsl,imx23-digctl.yaml for
+ i.MX23 and i.MX28
+Message-ID: <20250526-corset-villain-8b72aefeba75@spud>
+References: <20250523204524.573028-1-Frank.Li@nxp.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,113 +76,101 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: XU-eQ3M37H_5J9CbBH6jpezQo86iJwvr
-X-Proofpoint-GUID: TiTI2N2-MW1PZXMyGh2diXtASNGxD-k9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTI2MDEyNCBTYWx0ZWRfX+p7cEPRlTyK/ z0C1hfP+cyChD48/p7qazdp2S2jWX/pnQxqmvYH3ZdyKbkVfPivg/VmafYxxSwolAYLRPwyV0bp wqdiPsnLZRWs8cdqTktoDNaV+ONOVK/Lfj0hR35XUaVZBu08ASnK3iZ0jk0T83j4wej6YXvbNr9
- Vf2dkP1wwIhF3u48EkDMbEg3E52WA+vpP8GWkQtE8qP3uGleWq6Afr+wsZRPXF3fin0xyPfTjNU 9P4ap155zKcTu9wM5TNN8ksgyWctTF0mTMFn0r4aomJ2ixftL7Hy16X8c5LDam9vXtBPnSv2DSd JSHOHnEYreNaO7ntx9endag0m2z4qzjr5Md6UEfrZ4trpXV8J6gpmUw2Zh6alTFkESu4t4C3fFU
- ds7lo84V4WRw+eYTgGw5KNASOaLWwMfXTymfZeXkBtvXriTLb/UWJgeDolGUPZ1GzMaxHezL
-X-Authority-Analysis: v=2.4 cv=fJM53Yae c=1 sm=1 tr=0 ts=68347fc8 cx=c_pps a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17 a=dt9VzEwgFbYA:10 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=20KFwNOVAAAA:8 a=Ikd4Dj_1AAAA:8 a=xjaU-GFjuEzJSOh1rDoA:9
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
- definitions=2025-05-26_07,2025-05-26_02,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 mlxscore=0 spamscore=0
- priorityscore=1501 bulkscore=0 adultscore=0 mlxlogscore=999 suspectscore=0
- phishscore=0 clxscore=1015 lowpriorityscore=0 malwarescore=0
- impostorscore=0 classifier=spam authscore=0 authtc=n/a authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2505160000
- definitions=main-2505260124
+Content-Type: multipart/signed; micalg=pgp-sha256;
+	protocol="application/pgp-signature"; boundary="0HV2Ae0Z+B5ulyZ6"
+Content-Disposition: inline
+In-Reply-To: <20250523204524.573028-1-Frank.Li@nxp.com>
 
-The function register_memory_blocks_under_node() is now only called from
-the memory hotplug path, as register_memory_blocks_under_node_early()
-handles registration during early boot. Therefore, the context argument
-used to differentiate between early boot and hotplug is no longer needed
-and was removed.
 
-Since the function is only called from the hotplug path, we renamed
-register_memory_blocks_under_node() to
-register_memory_blocks_under_node_hotplug()
+--0HV2Ae0Z+B5ulyZ6
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Acked-by: Oscar Salvador <osalvador@suse.de>
-Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-Acked-by: David Hildenbrand <david@redhat.com>
-Acked-by: Zi Yan <ziy@nvidia.com>
-Signed-off-by: Donet Tom <donettom@linux.ibm.com>
+On Fri, May 23, 2025 at 04:45:23PM -0400, Frank Li wrote:
+> Add fsl,imx23-digctl.yaml for i.MX23 and i.MX28 to fix below CHECK_DTB
+> warning:
+>=20
+> arch/arm/boot/dts/nxp/mxs/imx23-sansa.dtb: /apb@80000000/apbh-bus@8000000=
+0/digctl@8001c000:
+>     failed to match any schema with compatible: ['fsl,imx23-digctl']
+>=20
+> Signed-off-by: Frank Li <Frank.Li@nxp.com>
+> ---
+>  .../bindings/soc/fsl/fsl,imx23-digctl.yaml    | 41 +++++++++++++++++++
+>  1 file changed, 41 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/fsl/fsl,imx23-d=
+igctl.yaml
+>=20
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,imx23-digctl.y=
+aml b/Documentation/devicetree/bindings/soc/fsl/fsl,imx23-digctl.yaml
+> new file mode 100644
+> index 0000000000000..47f92f763bfa3
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/fsl/fsl,imx23-digctl.yaml
+> @@ -0,0 +1,41 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +%YAML 1.2
+> +---
+> +$id: http://devicetree.org/schemas//soc/fsl/fsl,imx23-digctl.yaml#
+                                     ^^ I assume it makes no difference,
+but you got a double / here.
 
----
-v5 -> v6
+> +$schema: http://devicetree.org/meta-schemas/core.yaml#
+> +
+> +title: Freescale mxs digctrl for i.MX23/i.MX28
 
-No change
+I have no idea reading this what a "digctrl" is. I think you should add
+a description briefly mentioning what it does.
 
-v5 - https://lore.kernel.org/all/d2490e807b2c13950bc1d4199f22ec078cc4c56a.1747904868.git.donettom@linux.ibm.com/
-v4 - https://lore.kernel.org/all/f94685be9cdc931a026999d236d7e92de29725c7.1747376551.git.donettom@linux.ibm.com/
-v3 - https://lore.kernel.org/all/b49ed289096643ff5b5fbedcf1d1c1be42845a74.1746250339.git.donettom@linux.ibm.com/
-v2 - https://lore.kernel.org/all/fbe1e0c7d91bf3fa9a64ff5d84b53ded1d0d5ac7.1745852397.git.donettom@linux.ibm.com/
-v1 - https://lore.kernel.org/all/50142a29010463f436dc5c4feb540e5de3bb09df.1744175097.git.donettom@linux.ibm.com/
----
----
- drivers/base/node.c  |  5 ++---
- include/linux/node.h | 11 +++++------
- mm/memory_hotplug.c  |  5 ++---
- 3 files changed, 9 insertions(+), 12 deletions(-)
+> +
+> +maintainers:
+> +  - Frank Li <Frank.Li@nxp.com>
+> +
+> +properties:
+> +  compatible:
+> +    oneOf:
+> +      - items:
+> +          - enum:
+> +              - fsl,imx28-digctl
+> +          - const: fsl,imx23-digctl
+> +      - const: fsl,imx23-digctl
+> +
+> +  reg:
+> +    maxItems: 1
+> +
+> +  interrupts:
+> +    maxItems: 1
+> +
+> +required:
+> +  - compatible
+> +  - reg
+> +  - interrupts
+> +
+> +additionalProperties: false
+> +
+> +examples:
+> +  - |
+> +    digctl@8001c000 {
+> +        compatible =3D "fsl,imx28-digctl", "fsl,imx23-digctl";
+> +        reg =3D <0x8001c000 0x2000>;
+> +        interrupts =3D <89>;
+> +    };
+> +
+> --=20
+> 2.34.1
+>=20
 
-diff --git a/drivers/base/node.c b/drivers/base/node.c
-index 71ddf2d0d1af..9d0977fa50e3 100644
---- a/drivers/base/node.c
-+++ b/drivers/base/node.c
-@@ -843,9 +843,8 @@ static void register_memory_blocks_under_nodes(void)
- 	}
- }
- 
--void register_memory_blocks_under_node(int nid, unsigned long start_pfn,
--				       unsigned long end_pfn,
--				       enum meminit_context context)
-+void register_memory_blocks_under_node_hotplug(int nid, unsigned long start_pfn,
-+					       unsigned long end_pfn)
- {
- 	walk_memory_blocks(PFN_PHYS(start_pfn), PFN_PHYS(end_pfn - start_pfn),
- 			   (void *)&nid, register_mem_block_under_node_hotplug);
-diff --git a/include/linux/node.h b/include/linux/node.h
-index b15de78e0408..75b036a100d2 100644
---- a/include/linux/node.h
-+++ b/include/linux/node.h
-@@ -111,13 +111,12 @@ struct memory_block;
- extern struct node *node_devices[];
- 
- #if defined(CONFIG_MEMORY_HOTPLUG) && defined(CONFIG_NUMA)
--void register_memory_blocks_under_node(int nid, unsigned long start_pfn,
--				       unsigned long end_pfn,
--				       enum meminit_context context);
-+void register_memory_blocks_under_node_hotplug(int nid, unsigned long start_pfn,
-+					       unsigned long end_pfn);
- #else
--static inline void register_memory_blocks_under_node(int nid, unsigned long start_pfn,
--						     unsigned long end_pfn,
--						     enum meminit_context context)
-+static inline void register_memory_blocks_under_node_hotplug(int nid,
-+							     unsigned long start_pfn,
-+							     unsigned long end_pfn)
- {
- }
- static inline void register_memory_blocks_under_nodes(void)
-diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-index 8305483de38b..f734cc924b51 100644
---- a/mm/memory_hotplug.c
-+++ b/mm/memory_hotplug.c
-@@ -1575,9 +1575,8 @@ int add_memory_resource(int nid, struct resource *res, mhp_t mhp_flags)
- 		BUG_ON(ret);
- 	}
- 
--	register_memory_blocks_under_node(nid, PFN_DOWN(start),
--					  PFN_UP(start + size - 1),
--					  MEMINIT_HOTPLUG);
-+	register_memory_blocks_under_node_hotplug(nid, PFN_DOWN(start),
-+					  PFN_UP(start + size - 1));
- 
- 	/* create new memmap entry */
- 	if (!strcmp(res->name, "System RAM"))
--- 
-2.43.5
+--0HV2Ae0Z+B5ulyZ6
+Content-Type: application/pgp-signature; name="signature.asc"
 
+-----BEGIN PGP SIGNATURE-----
+
+iHUEABYIAB0WIQRh246EGq/8RLhDjO14tDGHoIJi0gUCaDSJxwAKCRB4tDGHoIJi
+0gCyAP9LAdE1TGf4om1fs4XgX2jkfTuBjGIU5v+EiwczA9egZwD+L6HUreQw17x+
+C0TNwI+EWaCw4LyMxszPbEdFd9lA1g4=
+=cgID
+-----END PGP SIGNATURE-----
+
+--0HV2Ae0Z+B5ulyZ6--
 
