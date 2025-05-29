@@ -1,85 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-9012-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9013-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CC94C54FB3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 May 2025 11:36:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 727B2C5AD49
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 May 2025 11:36:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b7PTm4s2sz2yNG;
-	Thu, 29 May 2025 21:36:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.180.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748511314;
-	cv=none; b=mtToigTQHpJdcFweovmO4gWgMOzaTM4+X8TC4pBsmg8cTKR7eGxLJAmFQsX8TBrgNYLKo98J8pBIIUvzmfFyb01GpCDAoRT84ACmmZVWwVSbcvZRxvke95+SguZXtSy69Kbeya3d6TBrEOv3M3fAJBJuvP6DF8VRSFie/+MdAbSqEkAuqZlOQNCIJoMSGzgTYJoBntSK1uHHn+bN+gPnt/GeAzlEt5ZA8h3NLgNLIVdaTc8PtfpDxxICOiEvOVQwVzJ/ZXUZXhQujmYU1bk3eN4iUHgBHWNCb/1GmBztoE/GepKxAMKhMUNIBp0xBEkzVXMugNHcDyRdCQ80JbZ1XQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b7PTy6St7z2yRD;
+	Thu, 29 May 2025 21:36:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748511597;
+	cv=none; b=MDXN1A2dPdUYrKCWqj978H7HQE1zNTK/NBfZtQPNLWSt8R5z02SFVdVm3K/TIlOFvwiZqA1klR2falSyYfnXaeLpmHwiBOmXtTfaMWbkRnr/p0AQ5pEfvB8t/31s462k9MdSkBNjlNCfabbL6AEGp/C89fBHBOVO5CVVvSwwQsBne+837QL8kGQPHvj5/55hlkTDQPOLih3mt2yugBj5JWpYDHv0IYw1VoVnSq8yityjNubF9xRWBh1RRddrHAEdWrXNLI/9uWufbnNsjGYNC6EZua3s2NGOEty4onKj3fZdUZaf9tAci7hlO6Ns0wHeFujhOcTTr5ppRgswxUuxSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748511314; c=relaxed/relaxed;
-	bh=4AfBXbmQzY+v1rrp3aRE7tTBttn9f8zplAsyFICmeQk=;
+	t=1748511597; c=relaxed/relaxed;
+	bh=XhIfxMVlQ8L9RT3lT5uUaRfqIAHopMP4V4S1R9fi38M=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=SMkurtUouwIbvEQ/EVZm2eL4qYJQw41asZ27PRNktNRjsC+kuDYk37/iWUfw+LySr2tvJzdprC82tt3lAS4d5c9/+Mv0Ax9+cINaBCnVN1LyKIS/Z7wexOaU0Ua21rgUp7AGHg6TF1VjrWvZ1B/RVhSqUhvejWLrsPyXuo5JWQ2ntIMe6TODeLleHSsBSGXyrNehrXd9kh+XeO3sED91JHkNMLb5TcX6/Ik+sSd9i+YgJtq6ofk6BQhwI9+Je/Cc8ovHcGgMTU/okT3UcDNlpVkM3MCQo2cS9kQqunt4VuOsNlX3B7lTCN/ViJuxLKJ2G/s56SMzH/IxR3qf5rJNnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=FzxLIlnZ; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=srinivas.kandagatla@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+	 In-Reply-To:Content-Type; b=X/eJnNQV7aZyia8dyQ/pLt1LhyBeY/g5e9hjljTPhVMxuWUKbC50j/TLHvgBcNXIhlmnKWJ5hHiWJNzFPDnxEky7vPP25w96zqlXWF8befyZ4gXhjO7NdBgcg1t0sMJ/f7S9b+zOzzeQs12B7wj3VgkviJuCZRNzWrQkJk0cgMQ2fv7mEIG1mk1oyTpNiyHPu1reeNPBawb2NtwyJU0htGojWblpnv5w4y7NGGJ2AnsE6k8K03Xfhu7U+xvX3Y8fPu4xFrGpjKhBkWIrnvjzbd1IW6T1FwJgHnJoBvsCrs/2PQxvHGVX1xOJWyeSHLDv2AUzJ00MO9ItVhX9uHNIPA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=gpM9dJyt; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=srinivas.kandagatla@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=FzxLIlnZ;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=gpM9dJyt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=srinivas.kandagatla@oss.qualcomm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=srinivas.kandagatla@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b7LnZ0br8z2xCW
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 19:35:13 +1000 (AEST)
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 54T7D8go006104
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 09:27:57 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b7Lv05YVvz2xDD
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 19:39:56 +1000 (AEST)
+Received: from pps.filterd (m0279866.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 54T3RWMQ002109
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 09:30:04 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	4AfBXbmQzY+v1rrp3aRE7tTBttn9f8zplAsyFICmeQk=; b=FzxLIlnZDhQwevYm
-	09rGmnA/fx3s0X0UI8ttCiJQ4w947F8HmT2FHRhBT57ka0D463PUd/x8wO0ecCoS
-	WjTOEtFPc6QXmy/T17dHv1kaDocvDqzJX5+7JXgLGfOynTeQ7hWN3vomj/Jp/L7r
-	IV4vuois2cBlQs3ApXFM5aASVCH+YqNg4Zgz8mtl5OLBblPWiNWMKx4w9w+pk+p2
-	DX27OgneVX+4S+3P2uT4jj6zrXB+yPiUEWpUCXTKGCBXxPTmMyfM0x7frgLW+CZF
-	3XSu3VLKPL6fO332qwV4R3l5/9yoXD7gcNKz4BokoxTRL2yN67iLhT6rfDBGQQYZ
-	mXXQqA==
-Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 46x8d79vj0-1
+	XhIfxMVlQ8L9RT3lT5uUaRfqIAHopMP4V4S1R9fi38M=; b=gpM9dJyt8bVrOwIe
+	LpFoocQC/9ayLPKTKVr1ixHgkCO3/gh4FgJLOmviRgyljkYchTEaXfWcMA1e2Myf
+	S+nGj7iHfRGQ5rAeZGvx9VF/wX9/Bi1fSnnzDEnFk+roiqwMHu7JFApoWZLbPOwB
+	UcGU0hA25GrmSHpEnwj09HpkVrZenD8mzF1NRkzeeeWzcNKhLqoadMwaA7WdydfK
+	GAQZHCVhG1Kf4BCfuBxJIthdwIFrDnOfY9lAikT11DS/dvkI1Fki/7/hZjaGtrHz
+	5WH2fFiG/CNuPVode37PEOv+i9d3M8JNtCvwZD9ra4xWekIPC1BxaE2jg0UkQUI+
+	tNnwkA==
+Received: from mail-qv1-f72.google.com (mail-qv1-f72.google.com [209.85.219.72])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 46wavky1xc-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 09:27:57 +0000 (GMT)
-Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-31220ecc573so425691a91.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 02:27:56 -0700 (PDT)
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 09:30:04 +0000 (GMT)
+Received: by mail-qv1-f72.google.com with SMTP id 6a1803df08f44-6faa33468f2so13814526d6.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 02:30:04 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748510876; x=1749115676;
+        d=1e100.net; s=20230601; t=1748511003; x=1749115803;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=4AfBXbmQzY+v1rrp3aRE7tTBttn9f8zplAsyFICmeQk=;
-        b=lCQMGsCmsGVYhUN4RRZvsCWlNj1EzMyaMu7BCZBFz47PWvB2EFf3J6lcDT4Nt3lbmh
-         iM0MkjfP4n6mLNE0PPPLm7pPp10skzpBx7khTbHVaUxEG1twkAxxysjoyxnibHF2u4rG
-         gky/2rQj8SuH9R+iY0tAXToxUSGBP2gG44JzPZFXp6fCiX1bfL+p2u/seqrH7cu8T0/0
-         aZkeIPVa8ApHf6DJMV0QWYhafu6XV6lICqnsyifbkHvRiyk+g8yznZKeNOp9guNhcuhi
-         Sb9/Y6alVU0sym/FQ9WEK6OBwtDkuEzagO2M+3KZzPPf4fjyo1o7oj1XXfzahlRH+GbD
-         a1Jg==
-X-Forwarded-Encrypted: i=1; AJvYcCVynFpzwfxc8Y51UVvpdFHSLgfQsRKB8g1RL3jNxBV+VPbLOtlwO5gJeQ0U3lgRWP7ZicBMaePg/Xk71e8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxnCZPcL+u3kH4aCP7xlXmmUBkyl2xrFVaUGNf37KuHaXMw+scT
-	xHiWYy8lOuXGfrnDQGMHvoxpcBMWhKwL3GTWItCJ/mMlcSv6xVsitQLxdFiQWArIhD0fjAi87Bc
-	BhgrSBGBZSpKOjmEmse94fCSNg9slq6Wg8ZxxGudB4CxMr1kK2JwkISIBwtqoCG8boCaQquP2ja
-	N5vIE=
-X-Gm-Gg: ASbGncs8oOAF6Z/8WMUIQLu17nWQOHKvJ3d6oSXfWCILtEdvc3nSCVKryP7eqUTvWmJ
-	67iOIwSzoseWJyUo7PLPW8A2X8UYfHEOaRxEvOAgPg3mDRKnDPxjv8mIZNzxdzfyxzs2QwiM/46
-	vwnRRhTgX4t2qsa/yqvvM4kdExP2doKwbszkwIkKY4vOIgIUvyhbfn2cKhQGoxOvm7bzVFcgwkO
-	jfSp/L6I4XyRHj0V1I1Uj4fi9zmaE1ElL/+WKkpXwG/i6JEbJE9qTq61omn+aj1DEWT2ddRyOim
-	SPorK2VlHBCKbbdmqRg3LAu+1qTZll3BcZpHpg==
-X-Received: by 2002:a17:90b:288f:b0:312:e9d:3ffa with SMTP id 98e67ed59e1d1-3120e9d46a7mr4179227a91.31.1748510875580;
-        Thu, 29 May 2025 02:27:55 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFVu8gsVIcc+j2x0F4CmddwNg9zAzw7EDQGOQrTCjISKQhs+iM8+1jN3A0gsZtkJaioa2g2hA==
-X-Received: by 2002:a05:622a:550f:b0:47a:e1b1:c6c9 with SMTP id d75a77b69052e-49f4781eaeamr309670811cf.42.1748510864998;
-        Thu, 29 May 2025 02:27:44 -0700 (PDT)
+        bh=XhIfxMVlQ8L9RT3lT5uUaRfqIAHopMP4V4S1R9fi38M=;
+        b=Lsz9arJLDnu7MZRE3yKYiXhrh5LdeZWTWmh/dumcbVS0W7n0QNSPD3u+5bphYOgmar
+         0+EU8BB0fOssRufu67lKdZHIr01kLYlG0rkZIGlkkFyc3qCvA1WSTpzJSyvbOfBejU96
+         kB7zdPDFZUWrjk5u7A+pplUEoVFWRU+t1/yesHn0RQXtLR2Q7pUuS2KQSAp2MvFR2ei5
+         QmB1dSPInYkFVutpYNxdwSEDUQmjBGNQRlO2IBXPYOnmy7VZefGjBS5jqYPzmBw1T9n9
+         SyrXQ1SzTbN1YCt+9Lk41Ch+2YSEB6MAKzwmDPCYmrrSc9vik82uBsfURPq7FYwfysrA
+         dcJg==
+X-Forwarded-Encrypted: i=1; AJvYcCUSMbe65TyrhlDiQbz+5QLrhAJYV7nZx+NPaaBcUBLBPgBPF8/O2nOVv/ugkIrUDUXIH2AyZQudqfXSpZQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy1okfWPlQZOj6W5QfPNe5G1hXh2X/eudP1TJUH/rR0VrFCeKck
+	e+YX3St9Ovg67S4+OFBjOrJ2EsAlkqfllgaXmWAEyKTSyvrjt4GMAQVgeM7/qm29GAOyTTMAAo/
+	tjoO1QMPJWHKAp7VVBH9i0wE7qL0hWC+H61ZsdJ4T9kx87nXSbIRRZpIxpHe5p6F1YVTu
+X-Gm-Gg: ASbGnctSlW/94OmpyKrrifQgwNaRC+9w2vCHijg/OEoCSY7/+lxbeTDsbR1MA80Cnm3
+	tf2U2kze1JsDaGhWzZnYTwEBYEUTyvl1jv6OO5uoZyjqiRicgjx3uCE8dlMIHcU1GGqrauCbh4p
+	YOpk0AixAPCmUILYxGqSWNJ/bO33DTVrC68dxyHQ5qxXLF0OwNOTZgZjaMg9ARSnI1iYBvF9SEX
+	CJ6e1CLz+7Ls255AisTmECpuR9rw7xWL1+AwEqDBajYkGabjnfxGBud3mHB82Jp60VPX0Ldh0n/
+	6VFDBpNp16GD6PcMofZcVErmFzQ3EeX/Sm+vWw==
+X-Received: by 2002:ad4:5c4c:0:b0:6fa:8c15:75c1 with SMTP id 6a1803df08f44-6fac83d3e56mr19275526d6.2.1748511003005;
+        Thu, 29 May 2025 02:30:03 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFuhF0a9JamEH2xvLOnY3n8YKcLhz5fVLRzYE43PyF8jU1JcEPEDxsP9ZS8JS0YOd2Xcle+XQ==
+X-Received: by 2002:ad4:5c4c:0:b0:6fa:8c15:75c1 with SMTP id 6a1803df08f44-6fac83d3e56mr19275296d6.2.1748511002582;
+        Thu, 29 May 2025 02:30:02 -0700 (PDT)
 Received: from [192.168.68.109] ([5.133.47.210])
-        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3a4efe73f83sm1386641f8f.49.2025.05.29.02.27.44
+        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3a4f009758esm1411669f8f.75.2025.05.29.02.30.01
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 29 May 2025 02:27:44 -0700 (PDT)
-Message-ID: <6668e85d-c60d-42c2-8ada-fe68eb6a425c@oss.qualcomm.com>
-Date: Thu, 29 May 2025 10:27:43 +0100
+        Thu, 29 May 2025 02:30:02 -0700 (PDT)
+Message-ID: <89a1a6ea-3939-4d52-a8d4-478347b1867e@oss.qualcomm.com>
+Date: Thu, 29 May 2025 10:30:01 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,8 +93,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/8] ASoC: codecs: wcd9335: Drop unused sido_input_src
- field
+Subject: Re: [PATCH 5/8] ASoC: codecs: wcd937x: Drop unused 'struct
+ wcd937x_priv' fields
 To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         David Rhodes <david.rhodes@cirrus.com>,
         Richard Fitzgerald <rf@opensource.cirrus.com>,
@@ -111,91 +110,67 @@ Cc: linux-sound@vger.kernel.org, patches@opensource.cirrus.com,
         linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org
 References: <20250528-asoc-const-unused-v1-0-19a5d07b9d5c@linaro.org>
- <20250528-asoc-const-unused-v1-3-19a5d07b9d5c@linaro.org>
+ <20250528-asoc-const-unused-v1-5-19a5d07b9d5c@linaro.org>
 Content-Language: en-US
 From: Srinivas Kandagatla <srinivas.kandagatla@oss.qualcomm.com>
-In-Reply-To: <20250528-asoc-const-unused-v1-3-19a5d07b9d5c@linaro.org>
+In-Reply-To: <20250528-asoc-const-unused-v1-5-19a5d07b9d5c@linaro.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Proofpoint-GUID: AXHqSRG4O3_yWk-CLWyl0UVlcg2NoGh5
-X-Proofpoint-ORIG-GUID: AXHqSRG4O3_yWk-CLWyl0UVlcg2NoGh5
-X-Authority-Analysis: v=2.4 cv=X8pSKHTe c=1 sm=1 tr=0 ts=6838289d cx=c_pps
- a=RP+M6JBNLl+fLTcSJhASfg==:117 a=ZsC4DHZuhs/kKio7QBcDoQ==:17
+X-Proofpoint-GUID: n1HcafxJ08n1x8caj7cwoQlFTyMU5UuW
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTI5MDA5MSBTYWx0ZWRfX0uQd77WhFo4I
+ 4xioo/A+PEJOT7fpwe7ZuILzgQwQ+OvvKB8NtZIhCn2YsD6AycT3cvDjj/XFCN/f1S54SzaAvrS
+ E2Z9IoikNmJaRthbz+F42ybLbor7ySDTCvYBgKVCy7rm3Kb0nPF2hojEwmcfmF13yiMeGL/mg2W
+ mxaJKov9/x5BV/0b7cavv+k8M99pzI+4zCRiTtlpyDJ909dDJ4QvuP11NTz580z3v+vq3DoSrNL
+ zRTnrxDZtdZ/CpolmgtXKz57jtWb848FiLGh2V/QMR8cGRASUTivkRXHcZ3fwaomCBZ9P4S0RnN
+ cPZ1HTxTw92ZLeVnnlH5dNx/xPZlazTZJHdj6Zi8rpLhT7BiOyZlZTHN6mXmheObjETHU+5gBK8
+ t3oLU0fwbEd940Jrocp16Pq+pTZIOIYyTqKR2JFeON0kd6S2/BDyfAL8DA4BQo5pwJPzjhgs
+X-Authority-Analysis: v=2.4 cv=fMk53Yae c=1 sm=1 tr=0 ts=6838291c cx=c_pps
+ a=7E5Bxpl4vBhpaufnMqZlrw==:117 a=ZsC4DHZuhs/kKio7QBcDoQ==:17
  a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=KKAkSRfTAAAA:8 a=EUspDBNiAAAA:8
- a=_jUoxkvH9Ww3fLBRgmsA:9 a=QEXdDO2ut3YA:10 a=iS9zxrgQBfv6-_F4QbHw:22
+ a=pnj4R_TuY2SD5zWdqewA:9 a=QEXdDO2ut3YA:10 a=pJ04lnu7RYOZP9TFuWaZ:22
  a=cvBusfyB2V15izCimMoJ:22
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTI5MDA5MCBTYWx0ZWRfX8yKa/7YGZs8s
- PVYSvjz6X0yb/WTOEEi3JiTsGUXnk/fbHIALmIUooMWU6rbF+BS3+UVnBWMYsEka6XAxy4YCdCx
- qWdC/DyTQfYnuug1yNdc5VL0VCCpYHk0FoYCZloW/NfDyR+ur8Rx7sbKqPk8bUYH2fEgl+ghEDB
- 1qieDl8ycH7inYEfFlVa2wHaA7aWk2ef5dz/6EW/fwtUnoEwAUndpSJN9H8kK2o8hVHGA4gi3eL
- AxzhSNcWn/yr4BJN1vPVQofmJzTBorL3e056b+h1kRD5BAtBNglZkcdfShEchND7lG59KLNyt9y
- /aaXeOVTapd+JwCXEsvwJZDmYK2RyfPNu5mxVimHThRINuTSkB0+IpYS11Q3GrwRn60QaUUDwWU
- QUNaAE4Mgf6RomxfWLEl3Mhy7BwboQpv2u6EEHqzacGmoTlQgzzd7d641F3hoeE8yQ9Iw/Fa
+X-Proofpoint-ORIG-GUID: n1HcafxJ08n1x8caj7cwoQlFTyMU5UuW
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
  definitions=2025-05-29_04,2025-05-29_01,2025-03-28_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 mlxscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
- adultscore=0 impostorscore=0 bulkscore=0 mlxlogscore=856 suspectscore=0
- clxscore=1011 malwarescore=0 classifier=spam authscore=0 authtc=n/a authcc=
+ malwarescore=0 adultscore=0 impostorscore=0 phishscore=0 suspectscore=0
+ spamscore=0 priorityscore=1501 lowpriorityscore=0 clxscore=1015 mlxscore=0
+ mlxlogscore=864 bulkscore=0 classifier=spam authscore=0 authtc=n/a authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2505160000
- definitions=main-2505290090
+ definitions=main-2505290091
 
 
 
 On 5/28/25 8:59 PM, Krzysztof Kozlowski wrote:
-> Member wcd9335_codec.sido_input_src is not read anywhere after
-> assignment, so it can be safely dropped.
+> 'wcd_regmap_irq_chip' and 'jack' in 'struct wcd937x_priv' are not used
+> at all.
 > 
 > Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 > ---
-
-
 
 Reviewed-by: Srinivas Kandagatla <srinivas.kandagatla@oss.qualcomm.com>
 
 --srini
 
->  sound/soc/codecs/wcd9335.c | 5 -----
->  1 file changed, 5 deletions(-)
+>  sound/soc/codecs/wcd937x.c | 2 --
+>  1 file changed, 2 deletions(-)
 > 
-> diff --git a/sound/soc/codecs/wcd9335.c b/sound/soc/codecs/wcd9335.c
-> index 5e19e813748dfa0d065287494240007d60478dea..1c050b8c19de43cf494583d2c96f50f65aefe567 100644
-> --- a/sound/soc/codecs/wcd9335.c
-> +++ b/sound/soc/codecs/wcd9335.c
-> @@ -312,7 +312,6 @@ struct wcd9335_codec {
->  	u32 num_rx_port;
->  	u32 num_tx_port;
->  
-> -	int sido_input_src;
->  	enum wcd9335_sido_voltage sido_voltage;
->  
->  	struct wcd_slim_codec_dai_data dai[NUM_CODEC_DAIS];
-> @@ -4725,8 +4724,6 @@ static const struct snd_soc_dapm_widget wcd9335_dapm_widgets[] = {
->  
->  static void wcd9335_enable_sido_buck(struct snd_soc_component *component)
->  {
-> -	struct wcd9335_codec *wcd = dev_get_drvdata(component->dev);
-> -
->  	snd_soc_component_update_bits(component, WCD9335_ANA_RCO,
->  					WCD9335_ANA_RCO_BG_EN_MASK,
->  					WCD9335_ANA_RCO_BG_ENABLE);
-> @@ -4740,7 +4737,6 @@ static void wcd9335_enable_sido_buck(struct snd_soc_component *component)
->  					WCD9335_ANA_BUCK_CTL_VOUT_D_VREF_EXT);
->  	/* 100us sleep needed after VREF settings */
->  	usleep_range(100, 110);
-> -	wcd->sido_input_src = SIDO_SOURCE_RCO_BG;
->  }
->  
->  static int wcd9335_enable_efuse_sensing(struct snd_soc_component *comp)
-> @@ -4871,7 +4867,6 @@ static int wcd9335_probe(struct wcd9335_codec *wcd)
->  	memcpy(wcd->rx_chs, wcd9335_rx_chs, sizeof(wcd9335_rx_chs));
->  	memcpy(wcd->tx_chs, wcd9335_tx_chs, sizeof(wcd9335_tx_chs));
->  
-> -	wcd->sido_input_src = SIDO_SOURCE_INTERNAL;
->  	wcd->sido_voltage = SIDO_VOLTAGE_NOMINAL_MV;
->  
->  	return devm_snd_soc_register_component(dev, &wcd9335_component_drv,
+> diff --git a/sound/soc/codecs/wcd937x.c b/sound/soc/codecs/wcd937x.c
+> index b9df58b86ce953427e01ffb8c7eb7e52f9c2392a..126a29e0b3ff96c12fdaba2b9344a3040b455e44 100644
+> --- a/sound/soc/codecs/wcd937x.c
+> +++ b/sound/soc/codecs/wcd937x.c
+> @@ -88,10 +88,8 @@ struct wcd937x_priv {
+>  	struct wcd_mbhc_intr intr_ids;
+>  	struct wcd_clsh_ctrl *clsh_info;
+>  	struct irq_domain *virq;
+> -	struct regmap_irq_chip *wcd_regmap_irq_chip;
+>  	struct regmap_irq_chip_data *irq_chip;
+>  	struct regulator_bulk_data supplies[WCD937X_MAX_BULK_SUPPLY];
+> -	struct snd_soc_jack *jack;
+>  	unsigned long status_mask;
+>  	s32 micb_ref[WCD937X_MAX_MICBIAS];
+>  	s32 pullup_ref[WCD937X_MAX_MICBIAS];
 > 
 
 
