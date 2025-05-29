@@ -1,84 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-9011-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9012-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A422AC54FB3
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 May 2025 11:36:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CC94C54FB3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 29 May 2025 11:36:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b7PTb1mv7z2yFQ;
-	Thu, 29 May 2025 21:36:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748511200;
-	cv=none; b=YezhZT4ttdKHCGpAMklhRNEoToh+iMvQj27Nk54TR3QudDC6x1jEhNK16BUQzsAg7wQIDnjTjd+Qw3MOaSIxXlf7E+fr3Mz5lIRW2hhr/bzolhA6wMYa/7yqgglVxs+tXWTA+P31WBOP8bnr39WoiLqtkBYz6watG/Gz2QTITJNlC/0Ds2rWgbP4md87sK77xmAq7kRxzP7DrCZALjea1cGMzjMHoqHsewDqwY09z8w1E+nu9Z38wUrGmj+oJbA8AFgaTbYAaZcydcV14bfPOHJxBkgtapphcPJnJEYgLCbPAklgsdWWo4hhVZbLkZURondFG+HTUEb2iMLGCG+cww==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b7PTm4s2sz2yNG;
+	Thu, 29 May 2025 21:36:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.180.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748511314;
+	cv=none; b=mtToigTQHpJdcFweovmO4gWgMOzaTM4+X8TC4pBsmg8cTKR7eGxLJAmFQsX8TBrgNYLKo98J8pBIIUvzmfFyb01GpCDAoRT84ACmmZVWwVSbcvZRxvke95+SguZXtSy69Kbeya3d6TBrEOv3M3fAJBJuvP6DF8VRSFie/+MdAbSqEkAuqZlOQNCIJoMSGzgTYJoBntSK1uHHn+bN+gPnt/GeAzlEt5ZA8h3NLgNLIVdaTc8PtfpDxxICOiEvOVQwVzJ/ZXUZXhQujmYU1bk3eN4iUHgBHWNCb/1GmBztoE/GepKxAMKhMUNIBp0xBEkzVXMugNHcDyRdCQ80JbZ1XQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748511200; c=relaxed/relaxed;
-	bh=J19CTIdOjN4o9N+SR4QD26ilvGTAu4kkXOBnmt8QyYw=;
+	t=1748511314; c=relaxed/relaxed;
+	bh=4AfBXbmQzY+v1rrp3aRE7tTBttn9f8zplAsyFICmeQk=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bm75Wx0DwU7ywMU7+zv5rlC/jv1v02OWQVtxq//IkwT45XJDzuIVhciRjEtQji/LVdV393gjlVUKiY0/Yh3sozijbzWIgTnUyy49u8ocr+XHauAhRNVSNOU7A5QDk5QuPBhsdNywuRrQHNa/2ar/4e/fAyARAf1a2x2lmbhvus/0QS/X+CplfvwC3NZBwuycJEMcxw7ecX0HeLRo7fQQ13iydGdDbYNwQ+IIl4kyDJcMf5ks8RjBAfvKxsEDmOpITef3hNEGOq21jdyNft5x4C4Yf5oKYhgQi0hAW2SIpuR1OtL7D9EhcyyCFMpdSRCvEwXQoGUGdX9oayLNTWtDFA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=G78IVkSj; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=srinivas.kandagatla@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+	 In-Reply-To:Content-Type; b=SMkurtUouwIbvEQ/EVZm2eL4qYJQw41asZ27PRNktNRjsC+kuDYk37/iWUfw+LySr2tvJzdprC82tt3lAS4d5c9/+Mv0Ax9+cINaBCnVN1LyKIS/Z7wexOaU0Ua21rgUp7AGHg6TF1VjrWvZ1B/RVhSqUhvejWLrsPyXuo5JWQ2ntIMe6TODeLleHSsBSGXyrNehrXd9kh+XeO3sED91JHkNMLb5TcX6/Ik+sSd9i+YgJtq6ofk6BQhwI9+Je/Cc8ovHcGgMTU/okT3UcDNlpVkM3MCQo2cS9kQqunt4VuOsNlX3B7lTCN/ViJuxLKJ2G/s56SMzH/IxR3qf5rJNnA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=FzxLIlnZ; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=srinivas.kandagatla@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=G78IVkSj;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=FzxLIlnZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=srinivas.kandagatla@oss.qualcomm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=srinivas.kandagatla@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b7LlM6zSQz2xDD
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 19:33:19 +1000 (AEST)
-Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 54T8YBW2012585
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 09:33:17 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b7LnZ0br8z2xCW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 19:35:13 +1000 (AEST)
+Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 54T7D8go006104
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 09:27:57 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	J19CTIdOjN4o9N+SR4QD26ilvGTAu4kkXOBnmt8QyYw=; b=G78IVkSjKa2cFUdG
-	TQimbwKv8Sbzgk/GS0OyD9/a1LlaBbCdVjBWFXr8yM3OX5WigqO0oMsV+etu5rNX
-	ens3zoETm/wB7RwxyKTIxhvivztq8I01kS3KqZT+snFp7srDPWorfR0va2ZokDKg
-	mJMT8zgo9xx2YMmCTlkhUmrclZW1LA2x0Gfbrg6xTokzvgIRjMBW9ODBwhrPxNQy
-	9pszzhrFoi4zyS6eIaWLsl7HMr9ZnVaDkJ5GEyKPgKRqX4b0O1tYxGQpV+1JBhCO
-	IG02JIHj1Bkavgu3tpzrz+jA1y7XF8WpvpifHS3dKvZxXRCH8X4T6Mozc4w9wuQx
-	pnqbDg==
-Received: from mail-qv1-f70.google.com (mail-qv1-f70.google.com [209.85.219.70])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 46w691fr4k-1
+	4AfBXbmQzY+v1rrp3aRE7tTBttn9f8zplAsyFICmeQk=; b=FzxLIlnZDhQwevYm
+	09rGmnA/fx3s0X0UI8ttCiJQ4w947F8HmT2FHRhBT57ka0D463PUd/x8wO0ecCoS
+	WjTOEtFPc6QXmy/T17dHv1kaDocvDqzJX5+7JXgLGfOynTeQ7hWN3vomj/Jp/L7r
+	IV4vuois2cBlQs3ApXFM5aASVCH+YqNg4Zgz8mtl5OLBblPWiNWMKx4w9w+pk+p2
+	DX27OgneVX+4S+3P2uT4jj6zrXB+yPiUEWpUCXTKGCBXxPTmMyfM0x7frgLW+CZF
+	3XSu3VLKPL6fO332qwV4R3l5/9yoXD7gcNKz4BokoxTRL2yN67iLhT6rfDBGQQYZ
+	mXXQqA==
+Received: from mail-pj1-f72.google.com (mail-pj1-f72.google.com [209.85.216.72])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 46x8d79vj0-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 09:33:17 +0000 (GMT)
-Received: by mail-qv1-f70.google.com with SMTP id 6a1803df08f44-6faa53cbc74so12255236d6.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 02:33:17 -0700 (PDT)
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 09:27:57 +0000 (GMT)
+Received: by mail-pj1-f72.google.com with SMTP id 98e67ed59e1d1-31220ecc573so425691a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 29 May 2025 02:27:56 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1748511196; x=1749115996;
+        d=1e100.net; s=20230601; t=1748510876; x=1749115676;
         h=content-transfer-encoding:in-reply-to:from:content-language
          :references:cc:to:subject:user-agent:mime-version:date:message-id
          :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=J19CTIdOjN4o9N+SR4QD26ilvGTAu4kkXOBnmt8QyYw=;
-        b=tZmaFZUUcXUTlBAz8ZOLjY64XS4H5F7VFGt429JRUbYrwBsXAz1ShteRWHpR3HbZMv
-         3r8SpYfZBhUL0lvGTw6m8l2GIcMz3NetUcKqIFDNDTely9pmanA81520xk9tbvDpqd0A
-         jTBqY4+z+zBTiLPopEqnM5KhPVzvV3ucDBa4IljaoweWvcDOXyAmwaDlc84Sp5nr5emO
-         Z303gOmior/kyJbnL9qhSyF3FaGBIId2wFpRQT+ztUyD3NPjc/dYD0xLrcVvRpDC66fv
-         NpsRTGknPDMZMGe8fms6JHt4+WCpsXmV/UyV/cX9bROPs2GGdn7yd0vlE4HjCnswQwjM
-         E6pA==
-X-Forwarded-Encrypted: i=1; AJvYcCXgye83pnSdtBd6BdiHmBn2pkl3fMIbvPmPL5NWkWeA9VAf8pF6lachqoSu0bwnU3dN1ZMXs754FNR7SGw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YygwM3vTMPGzc4D6+5YAqtHzM4MmB6Ggu7KyjL4PrWWc5HyBdPd
-	/3WruCgSWWUU1hcrckLEGe0/RczLG2C26T9AgIIkAi/3QpRqH0q9JGcnpXKNOROuK9lVYK/9IUa
-	mqOZOnVJp4Xpr4S79t3elO1ldT8sW3dJUzeQSUs5JyFaqhLXqYHl5Vw4dFFnPzIGc1tZo
-X-Gm-Gg: ASbGncuJq/I5N9hlvJeXyAq84Bd8zl4TWyGDxzRs7GD0mPKYqpwsfGd1KDPm9Z+mTJb
-	KqDLDGAyCia32h8rt0UZ8jFxADugeDcalIoShJiwUkhZdYPMXG3GND0uyLZoEA6REWul7df1D6H
-	73Eugt/cD6W23VL3c+YpyODLEBdrO4kOPPjaxeZBs9k03Gtt+zJLq3pcJnMczOjlMoDQzEGzZli
-	LjcbB0qrmeZLfD03h4ri5/0SKAR/P1JURfoqXEzeUcrEHx+fYKXOkDaFMgwdK0KrkIDZraTu71b
-	TfTyl5X78kAUVGOkw6FfIrAFJgq03MEMPuBZCQ==
-X-Received: by 2002:ad4:5ccb:0:b0:6fa:c697:97a5 with SMTP id 6a1803df08f44-6fac841db7emr19528616d6.15.1748511195792;
-        Thu, 29 May 2025 02:33:15 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IGA79GLpD3HZiK/IRAurUe6TU66mlX4HbtpUZm3DMIN5fjfS4J9m+gB7K+ZJszdXMACo2cUIQ==
-X-Received: by 2002:ad4:5ccb:0:b0:6fa:c697:97a5 with SMTP id 6a1803df08f44-6fac841db7emr19528356d6.15.1748511195376;
-        Thu, 29 May 2025 02:33:15 -0700 (PDT)
+        bh=4AfBXbmQzY+v1rrp3aRE7tTBttn9f8zplAsyFICmeQk=;
+        b=lCQMGsCmsGVYhUN4RRZvsCWlNj1EzMyaMu7BCZBFz47PWvB2EFf3J6lcDT4Nt3lbmh
+         iM0MkjfP4n6mLNE0PPPLm7pPp10skzpBx7khTbHVaUxEG1twkAxxysjoyxnibHF2u4rG
+         gky/2rQj8SuH9R+iY0tAXToxUSGBP2gG44JzPZFXp6fCiX1bfL+p2u/seqrH7cu8T0/0
+         aZkeIPVa8ApHf6DJMV0QWYhafu6XV6lICqnsyifbkHvRiyk+g8yznZKeNOp9guNhcuhi
+         Sb9/Y6alVU0sym/FQ9WEK6OBwtDkuEzagO2M+3KZzPPf4fjyo1o7oj1XXfzahlRH+GbD
+         a1Jg==
+X-Forwarded-Encrypted: i=1; AJvYcCVynFpzwfxc8Y51UVvpdFHSLgfQsRKB8g1RL3jNxBV+VPbLOtlwO5gJeQ0U3lgRWP7ZicBMaePg/Xk71e8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxnCZPcL+u3kH4aCP7xlXmmUBkyl2xrFVaUGNf37KuHaXMw+scT
+	xHiWYy8lOuXGfrnDQGMHvoxpcBMWhKwL3GTWItCJ/mMlcSv6xVsitQLxdFiQWArIhD0fjAi87Bc
+	BhgrSBGBZSpKOjmEmse94fCSNg9slq6Wg8ZxxGudB4CxMr1kK2JwkISIBwtqoCG8boCaQquP2ja
+	N5vIE=
+X-Gm-Gg: ASbGncs8oOAF6Z/8WMUIQLu17nWQOHKvJ3d6oSXfWCILtEdvc3nSCVKryP7eqUTvWmJ
+	67iOIwSzoseWJyUo7PLPW8A2X8UYfHEOaRxEvOAgPg3mDRKnDPxjv8mIZNzxdzfyxzs2QwiM/46
+	vwnRRhTgX4t2qsa/yqvvM4kdExP2doKwbszkwIkKY4vOIgIUvyhbfn2cKhQGoxOvm7bzVFcgwkO
+	jfSp/L6I4XyRHj0V1I1Uj4fi9zmaE1ElL/+WKkpXwG/i6JEbJE9qTq61omn+aj1DEWT2ddRyOim
+	SPorK2VlHBCKbbdmqRg3LAu+1qTZll3BcZpHpg==
+X-Received: by 2002:a17:90b:288f:b0:312:e9d:3ffa with SMTP id 98e67ed59e1d1-3120e9d46a7mr4179227a91.31.1748510875580;
+        Thu, 29 May 2025 02:27:55 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFVu8gsVIcc+j2x0F4CmddwNg9zAzw7EDQGOQrTCjISKQhs+iM8+1jN3A0gsZtkJaioa2g2hA==
+X-Received: by 2002:a05:622a:550f:b0:47a:e1b1:c6c9 with SMTP id d75a77b69052e-49f4781eaeamr309670811cf.42.1748510864998;
+        Thu, 29 May 2025 02:27:44 -0700 (PDT)
 Received: from [192.168.68.109] ([5.133.47.210])
-        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-450cfbf498bsm15179805e9.1.2025.05.29.02.33.13
+        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3a4efe73f83sm1386641f8f.49.2025.05.29.02.27.44
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 29 May 2025 02:33:14 -0700 (PDT)
-Message-ID: <a4c0d421-9062-4424-a750-ee74e2f0407f@oss.qualcomm.com>
-Date: Thu, 29 May 2025 10:33:13 +0100
+        Thu, 29 May 2025 02:27:44 -0700 (PDT)
+Message-ID: <6668e85d-c60d-42c2-8ada-fe68eb6a425c@oss.qualcomm.com>
+Date: Thu, 29 May 2025 10:27:43 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,7 +94,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/8] ASoC: codecs: More const and unused member cleanups
+Subject: Re: [PATCH 3/8] ASoC: codecs: wcd9335: Drop unused sido_input_src
+ field
 To: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>,
         David Rhodes <david.rhodes@cirrus.com>,
         Richard Fitzgerald <rf@opensource.cirrus.com>,
@@ -109,98 +111,91 @@ Cc: linux-sound@vger.kernel.org, patches@opensource.cirrus.com,
         linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org
 References: <20250528-asoc-const-unused-v1-0-19a5d07b9d5c@linaro.org>
+ <20250528-asoc-const-unused-v1-3-19a5d07b9d5c@linaro.org>
 Content-Language: en-US
 From: Srinivas Kandagatla <srinivas.kandagatla@oss.qualcomm.com>
-In-Reply-To: <20250528-asoc-const-unused-v1-0-19a5d07b9d5c@linaro.org>
+In-Reply-To: <20250528-asoc-const-unused-v1-3-19a5d07b9d5c@linaro.org>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
-X-Authority-Analysis: v=2.4 cv=WfoMa1hX c=1 sm=1 tr=0 ts=683829dd cx=c_pps
- a=oc9J++0uMp73DTRD5QyR2A==:117 a=ZsC4DHZuhs/kKio7QBcDoQ==:17
- a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=b5hiRvTwp8EW11ydFUEA:9
- a=QEXdDO2ut3YA:10 a=iYH6xdkBrDN1Jqds4HTS:22
-X-Proofpoint-GUID: MZus-X8MbEubq_V6-UtfIpxjYMh79Jzn
-X-Proofpoint-ORIG-GUID: MZus-X8MbEubq_V6-UtfIpxjYMh79Jzn
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTI5MDA5MSBTYWx0ZWRfX9aBtR8lUWl3X
- 6hGhNLXpDuCKGSjxwOVv8gLDP1oIS5CI8jvGSq9xQRfw2En4fJgr7Ogi4GwVe+WTF2+h2WsXa20
- fYB96DJpDR3dwicsgFlg41CO/yg2pIy5/ySMjzOFcS9rvLlTMBk/eWuD7cfxMHTMNZaZNzrbTgw
- JSTj9dJLCdP6gTc6mufKwwxH6xbEOTHXzaZ+LhqIzcL/dks35ENC8Dzk5RdMVEWPuH1LycJYGsj
- iJ0mvxw3A6N1x5hYckiOz+FRab0Z+bfSkYeUK0+uOuqP0ScMl1L/3wH4jtraRcfrp1zO/KI1UGb
- dmSMAfv5zc5J/CCi6LMlyVDDD1ayOAFugV+L4H+c691vae8HXMsA9Xd0gAbmOlRbqLB/C3OmNFE
- /pxVPJ3JsPZHVTpz3GnJt8I9AQMrj4dvTeO8Hmievq+0TRBXlkuIlwUGRetumSPnKbt+zvUl
+X-Proofpoint-GUID: AXHqSRG4O3_yWk-CLWyl0UVlcg2NoGh5
+X-Proofpoint-ORIG-GUID: AXHqSRG4O3_yWk-CLWyl0UVlcg2NoGh5
+X-Authority-Analysis: v=2.4 cv=X8pSKHTe c=1 sm=1 tr=0 ts=6838289d cx=c_pps
+ a=RP+M6JBNLl+fLTcSJhASfg==:117 a=ZsC4DHZuhs/kKio7QBcDoQ==:17
+ a=IkcTkHD0fZMA:10 a=dt9VzEwgFbYA:10 a=KKAkSRfTAAAA:8 a=EUspDBNiAAAA:8
+ a=_jUoxkvH9Ww3fLBRgmsA:9 a=QEXdDO2ut3YA:10 a=iS9zxrgQBfv6-_F4QbHw:22
+ a=cvBusfyB2V15izCimMoJ:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNTI5MDA5MCBTYWx0ZWRfX8yKa/7YGZs8s
+ PVYSvjz6X0yb/WTOEEi3JiTsGUXnk/fbHIALmIUooMWU6rbF+BS3+UVnBWMYsEka6XAxy4YCdCx
+ qWdC/DyTQfYnuug1yNdc5VL0VCCpYHk0FoYCZloW/NfDyR+ur8Rx7sbKqPk8bUYH2fEgl+ghEDB
+ 1qieDl8ycH7inYEfFlVa2wHaA7aWk2ef5dz/6EW/fwtUnoEwAUndpSJN9H8kK2o8hVHGA4gi3eL
+ AxzhSNcWn/yr4BJN1vPVQofmJzTBorL3e056b+h1kRD5BAtBNglZkcdfShEchND7lG59KLNyt9y
+ /aaXeOVTapd+JwCXEsvwJZDmYK2RyfPNu5mxVimHThRINuTSkB0+IpYS11Q3GrwRn60QaUUDwWU
+ QUNaAE4Mgf6RomxfWLEl3Mhy7BwboQpv2u6EEHqzacGmoTlQgzzd7d641F3hoeE8yQ9Iw/Fa
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
  definitions=2025-05-29_04,2025-05-29_01,2025-03-28_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 phishscore=0 mlxlogscore=983 priorityscore=1501 mlxscore=0
- bulkscore=0 adultscore=0 spamscore=0 suspectscore=0 malwarescore=0
- clxscore=1015 impostorscore=0 classifier=spam authscore=0 authtc=n/a authcc=
+ priorityscore=1501 mlxscore=0 lowpriorityscore=0 phishscore=0 spamscore=0
+ adultscore=0 impostorscore=0 bulkscore=0 mlxlogscore=856 suspectscore=0
+ clxscore=1011 malwarescore=0 classifier=spam authscore=0 authtc=n/a authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2505160000
- definitions=main-2505290091
+ definitions=main-2505290090
 
 
 
 On 5/28/25 8:59 PM, Krzysztof Kozlowski wrote:
-> Make static data const for code safety and drop some unused fields in
-> structs.
+> Member wcd9335_codec.sido_input_src is not read anywhere after
+> assignment, so it can be safely dropped.
 > 
-> This is based on for-v6.16 branch in ASoC tree for context in wcd938x
-> driver.
-> 
-> Best regards,
-> Krzysztof
-> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@linaro.org>
 > ---
-> Krzysztof Kozlowski (8):
->       ASoC: codecs: Constify regmap configuration static variables
->       ASoC: fsl: Constify reg_default array
->       ASoC: codecs: wcd9335: Drop unused sido_input_src field
->       ASoC: codecs: wcd934x: Drop unused num_rx_port/num_tx_port fields
->       ASoC: codecs: wcd937x: Drop unused 'struct wcd937x_priv' fields
->       ASoC: codecs: wcd938x: Drop unused 'struct wcd938x_priv' fields
->       ASoC: codecs: wcd938x: Drop unused variant field
->       ASoC: codecs: wcd939x: Drop unused 'struct wcd939x_priv' fields
 
 
-Thanks Krzysztof for the cleanups, its surprising to see so many unused
-stuct members in qcom codecs. Did you use any static analysis tool to do
-this or was this manually done?
 
+Reviewed-by: Srinivas Kandagatla <srinivas.kandagatla@oss.qualcomm.com>
 
---Srini
+--srini
+
+>  sound/soc/codecs/wcd9335.c | 5 -----
+>  1 file changed, 5 deletions(-)
 > 
->  sound/soc/codecs/cs35l36.c        |  2 +-
->  sound/soc/codecs/da7218.c         |  2 +-
->  sound/soc/codecs/da7219.c         |  4 ++--
->  sound/soc/codecs/es8375.c         |  2 +-
->  sound/soc/codecs/max98363.c       |  2 +-
->  sound/soc/codecs/max98373-i2c.c   |  2 +-
->  sound/soc/codecs/max98373-sdw.c   |  2 +-
->  sound/soc/codecs/max98388.c       |  2 +-
->  sound/soc/codecs/max98390.c       |  2 +-
->  sound/soc/codecs/max98396.c       |  4 ++--
->  sound/soc/codecs/max98504.c       |  2 +-
->  sound/soc/codecs/max98520.c       |  2 +-
->  sound/soc/codecs/max98927.c       |  2 +-
->  sound/soc/codecs/rt722-sdca-sdw.c |  2 +-
->  sound/soc/codecs/wcd9335.c        |  5 -----
->  sound/soc/codecs/wcd934x.c        |  4 ----
->  sound/soc/codecs/wcd937x.c        |  2 --
->  sound/soc/codecs/wcd938x.c        | 18 ++++++++----------
->  sound/soc/codecs/wcd939x.c        |  2 --
->  sound/soc/codecs/wsa881x.c        |  4 ++--
->  sound/soc/codecs/wsa883x.c        |  2 +-
->  sound/soc/codecs/wsa884x.c        |  2 +-
->  sound/soc/fsl/fsl_asrc.c          |  2 +-
->  sound/soc/fsl/fsl_sai.c           |  4 ++--
->  24 files changed, 31 insertions(+), 46 deletions(-)
-> ---
-> base-commit: 22d449bcd69e66f25fe847b678738950dcf9301e
-> change-id: 20250528-asoc-const-unused-1e39b434e427
-> prerequisite-change-id: 20250526-b4-b4-asoc-wcd9395-vdd-px-fixes-0ce64398f9cc:v1
-> prerequisite-patch-id: 104000f7254b9cc81be49af9ca584544718e52f1
-> prerequisite-patch-id: 230fcd1b712c5a3199e7c9d8250e98e5d55c0a40
-> prerequisite-patch-id: ecdbe74955eb7b710f72af1e3cf32ccac52890d5
+> diff --git a/sound/soc/codecs/wcd9335.c b/sound/soc/codecs/wcd9335.c
+> index 5e19e813748dfa0d065287494240007d60478dea..1c050b8c19de43cf494583d2c96f50f65aefe567 100644
+> --- a/sound/soc/codecs/wcd9335.c
+> +++ b/sound/soc/codecs/wcd9335.c
+> @@ -312,7 +312,6 @@ struct wcd9335_codec {
+>  	u32 num_rx_port;
+>  	u32 num_tx_port;
+>  
+> -	int sido_input_src;
+>  	enum wcd9335_sido_voltage sido_voltage;
+>  
+>  	struct wcd_slim_codec_dai_data dai[NUM_CODEC_DAIS];
+> @@ -4725,8 +4724,6 @@ static const struct snd_soc_dapm_widget wcd9335_dapm_widgets[] = {
+>  
+>  static void wcd9335_enable_sido_buck(struct snd_soc_component *component)
+>  {
+> -	struct wcd9335_codec *wcd = dev_get_drvdata(component->dev);
+> -
+>  	snd_soc_component_update_bits(component, WCD9335_ANA_RCO,
+>  					WCD9335_ANA_RCO_BG_EN_MASK,
+>  					WCD9335_ANA_RCO_BG_ENABLE);
+> @@ -4740,7 +4737,6 @@ static void wcd9335_enable_sido_buck(struct snd_soc_component *component)
+>  					WCD9335_ANA_BUCK_CTL_VOUT_D_VREF_EXT);
+>  	/* 100us sleep needed after VREF settings */
+>  	usleep_range(100, 110);
+> -	wcd->sido_input_src = SIDO_SOURCE_RCO_BG;
+>  }
+>  
+>  static int wcd9335_enable_efuse_sensing(struct snd_soc_component *comp)
+> @@ -4871,7 +4867,6 @@ static int wcd9335_probe(struct wcd9335_codec *wcd)
+>  	memcpy(wcd->rx_chs, wcd9335_rx_chs, sizeof(wcd9335_rx_chs));
+>  	memcpy(wcd->tx_chs, wcd9335_tx_chs, sizeof(wcd9335_tx_chs));
+>  
+> -	wcd->sido_input_src = SIDO_SOURCE_INTERNAL;
+>  	wcd->sido_voltage = SIDO_VOLTAGE_NOMINAL_MV;
+>  
+>  	return devm_snd_soc_register_component(dev, &wcd9335_component_drv,
 > 
-> Best regards,
 
 
