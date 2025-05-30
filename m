@@ -1,82 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-9044-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9045-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A554C5B543
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 May 2025 16:14:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CBB6C5B543
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 May 2025 16:27:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b87c952Jfz2xHv;
-	Sat, 31 May 2025 02:14:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c201::3" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748621689;
-	cv=pass; b=EicnZwm76DtLOb4Df2F2jHQPv5A/1ZIbYzV39/kVQqpztouzLBsG9TvUxXrrRp4Kqhlb0fuOE4EZYuhWueScHk9Xwjal223kv7ujpArci/+4eVcpLoI53p5gyLbWgxtjf8BAe4loZxG/HcLmwfZ2XuAhluEMpdWsA9XWkCHn3dXMxy1KJla7Nd7xhrqnzPcsvkysKtkIvfwhsQNPKZH1Yi1Fu1XXV6EjxKHbOUkYPT6jhEdXbmN6S9C1lVbQRSkWSVJc+JPinnWg2KVqG+/RkqRlUP0CKkqXFaZ8zUTts8DTsQh/bf2sYY6Ft55Hcn24PICAvkQV1QepeSYlwNVSfA==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748621689; c=relaxed/relaxed;
-	bh=th9oJsN/wXTmkd7tZ82swm26S1lJzQ7yQ8UijfTC1l0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=P0DlqUjt7bwZMYH1rscLZbHSliy0/DlCmt1rDD6rrsgqS76PkKL4IRb/rqj3bXUDt9lOxapmI3hj9edVJjfT5VJmsRyxeMTNRaIAHxCiYWSNlmIHDzFMGd/if5sqX1SM4HYXEK0zOlRed3Ps4FpQHQgsNm1/Kf0/7CBSUN7dTAQYkuZMtrCwuA8gmYIPiXqhw1y7xez8JIshWUzEDsqFrbgLAfX4IgQwB1VNQiwqoU60ijh/RswyWsvyTUrSaYGM8xVdDHad4c2RQiRG0+QMn7s4J+JL4vs39yHgLKc+6p3xOhXmGAYHPk/Y9v1DSHNBL6rYNytBC50WXISSZxpVCA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=bLutvWzX; dkim-atps=neutral; spf=permerror (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b87tn5lXvz2xHv;
+	Sat, 31 May 2025 02:27:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::52b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748622448;
+	cv=none; b=I5CoHv19sx33GotYTCSWNcMGR0ryL4BastCyxiR6AN/32WtiDULR/bYw2NtM7sv2Ss2TWIo6lQss3pD6yNXFrQlpT5s5+sQdzTleuEsSj3o7LG0HIsQJTDlMHNZ8kvXuU1YoiGTxcUJQADNdY4SDL3LnsuoqxWJxBEq6k7yC23fLBnt7SNadWhiMqHvJk8pedPDHyMHd7Ce4JXDV/+Mn9QuMyF0zI/82YKOk8M8dufMRll0KpROFuxyorHmOoIazEJSJjTwr+LhME6Rc1/7OZ6AEkYzVpnzRJqJhgdu7enhYZ/d4+gDgY47j5vjdt3QVuojBPvDwO/olE8fgc7cxCQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1748622448; c=relaxed/relaxed;
+	bh=Wb7EzNeuZNtT7LoNB6YIvTwNTIj8nYWDYSy4GeuX+MM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=OMFk7meJbORp4MDtgj6JPOX2ugplwfUBAjcZKSYQpnTHKkMcAeSTzdHRW+SPKSYWml3OuHw29NB9HozUqZYfMyHZSmJRl0ctUTvWVXkUiOCQJ5+PdsgkEu9BpPEUW9AUnSlbLG1M5UJFy2dVSJZPhjMMfBBS9vG/rnVXmNrtDPp6vNpiH/sJ993UfkEjazgxwjenA5PDRe9pwvk35DZ5Q8g3cgiAW5WNWjLFU9Ek77zqqoMSLeJZtHRX3XreGswMguNeqU8BrqX7DQTaFEC7h4fxWR4922iglF80CKf341YGb9FlQGlKMQ9UQ9RFlgQzDck6T8HAEgWJsr60CwIJaQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=wuz6ydoE; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::52b; helo=mail-ed1-x52b.google.com; envelope-from=jannh@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=bLutvWzX;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=wuz6ydoE;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=nxp.com (client-ip=2a01:111:f403:c201::3; helo=as8pr04cu009.outbound.protection.outlook.com; envelope-from=frank.li@nxp.com; receiver=lists.ozlabs.org)
-Received: from AS8PR04CU009.outbound.protection.outlook.com (mail-westeuropeazlp170110003.outbound.protection.outlook.com [IPv6:2a01:111:f403:c201::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2a00:1450:4864:20::52b; helo=mail-ed1-x52b.google.com; envelope-from=jannh@google.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x52b.google.com (mail-ed1-x52b.google.com [IPv6:2a00:1450:4864:20::52b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b87c81f9Mz2xC3
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2025 02:14:47 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=nTcTfoX0ctcIz7e/2JJmYSH2JwtrozvtQd174Q8L89cCcmlXyDXi0zM58LE09ZV3oDvES8GntNDAVf6IhCT4esAYNetfX0oCwdsC4FnAJV3GjDCLKl1DdfLjj4Gt5e0TCmrHght9v57bYhadfQQZp0wi3QI+OYr/olUPDoCwx4J9lnAyiTIFNPoOM2OARD6AIBTXXD6Y3rczafhw6Wn2qHnJH7lAAUtqg6pSfjKYKxYN0Q/mTBH3RRUM69j2RKPyeR9er+IscBiso9COD38HVr3gh0b58FFN1d8YPm2NDYLT/5EGRDqP+8hoUNZXYIsv6NSwnelFMGhf7IGVO2MSQA==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=th9oJsN/wXTmkd7tZ82swm26S1lJzQ7yQ8UijfTC1l0=;
- b=MZeT8fVhGeo4dsZrkaU12vd7f5P0dBGgRuu6z08riHGvGWykJs5SCRZn6N5vSMptYcp8vm1++M8zSyCvluQd6aD9KnKR3sF0RhurHHvTtxstxcsKoBEqunhxnxMjnIPOGMKq7cR/sZYX4DT0t3MeWxw5sbqLXwyRgkA2yASLpeKjBQ1Par+0jqPEhEJk0XGv9lL2NEEiaaGNnvWJvIUtTGWRoIxKDh0tFi8E5ZvyZ1r/5j8C4YnU/KPxYVeyT4Fv5pHawCW9LGV0sCz637l1CX+COw0w2PuCjLKNeVxDOUC9pXdzSiJ1rzByhjj1efCwG92iK95UhiP1R938hqeQjA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=th9oJsN/wXTmkd7tZ82swm26S1lJzQ7yQ8UijfTC1l0=;
- b=bLutvWzXl2LRNYvkn98E5HDnK+uD47XVpBxhVjq7VPzpYPqKL4eLyX03dX5ZJJjAOUUOyIUGBeeNoNd5e/AqTFNU9ZU2Wr8zvMX1cv4JAzbpqkQ1Ae/CDiw4mkvx7RWuQbME3vuOQoHMf9dcvmJNj4t0QDwSuK1gS5OC8ZL848evWENPw/afF908Enclk9twmD+Oe2/FS1i0Zr1sTL6fIaLmw9wNlPYejpPP19zkK7Vb1wjfns0++BGehU5Qvr+B0ewwYDJ7QPjnV9i/CMpTm9tDrB39U2niY5YNlQSXwaoISTzUNHxfS01+RL4XA1tLSiBrPPr3qU8npEmSTP6yRA==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from PAXPR04MB9642.eurprd04.prod.outlook.com (2603:10a6:102:240::14)
- by GV1PR04MB10992.eurprd04.prod.outlook.com (2603:10a6:150:207::20) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8769.31; Fri, 30 May
- 2025 16:14:22 +0000
-Received: from PAXPR04MB9642.eurprd04.prod.outlook.com
- ([fe80::9126:a61e:341d:4b06]) by PAXPR04MB9642.eurprd04.prod.outlook.com
- ([fe80::9126:a61e:341d:4b06%6]) with mapi id 15.20.8769.025; Fri, 30 May 2025
- 16:14:22 +0000
-Date: Fri, 30 May 2025 12:14:14 -0400
-From: Frank Li <Frank.li@nxp.com>
-To: Conor Dooley <conor@kernel.org>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
-	"open list:FREESCALE SOC DRIVERS" <linuxppc-dev@lists.ozlabs.org>,
-	"moderated list:FREESCALE SOC DRIVERS" <linux-arm-kernel@lists.infradead.org>,
-	"open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS" <devicetree@vger.kernel.org>,
-	open list <linux-kernel@vger.kernel.org>, imx@lists.linux.dev
-Subject: Re: [PATCH 1/1] dt-bindings: soc: add vf610 reset controller
-Message-ID: <aDnZVmOODuVaEzww@lizhi-Precision-Tower-5810>
-References: <20250522213951.506019-1-Frank.Li@nxp.com>
- <20250526-unpaid-mushy-d47196d04ad1@spud>
- <aDcvP975apg/dhQz@lizhi-Precision-Tower-5810>
- <20250530-construct-library-64ec665a6fea@spud>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250530-construct-library-64ec665a6fea@spud>
-X-ClientProxiedBy: SJ0PR03CA0005.namprd03.prod.outlook.com
- (2603:10b6:a03:33a::10) To PAXPR04MB9642.eurprd04.prod.outlook.com
- (2603:10a6:102:240::14)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b87tk4fYpz2x9N
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2025 02:27:26 +1000 (AEST)
+Received: by mail-ed1-x52b.google.com with SMTP id 4fb4d7f45d1cf-6000791e832so11068a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 30 May 2025 09:27:25 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1748622441; x=1749227241; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Wb7EzNeuZNtT7LoNB6YIvTwNTIj8nYWDYSy4GeuX+MM=;
+        b=wuz6ydoEOfnJ0p4nht1/gH0D6kIuayY10uO3e6H1vbNTVfChWa0+/Rcgdxgc5N+gj5
+         q68zFRtEUIFKp4JwV8UWqvz/wnSrHYhPnA0vXQK2MvXwzOCJPJZFEobRZiak+zZblgWZ
+         SiRB/ZoHbJz0dbinc0gctdpu71C1DrOPpOaVwXT0nPxNKUwPIyLhKeqZYyBC+Xh2+FFh
+         dgOOwIRMw9S6DdehDqUw5A26b73w9EauKjvkyPXozyzsy8s/EFtQ2nCwdjnZmK7Bgquf
+         HxjT5TGsS8xaJ7CkgjS8V9o2V8HipIff1E1vPlKBzxN1kTDJgfSLKcOA9VUhbnxUoJdF
+         2Xvw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1748622441; x=1749227241;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Wb7EzNeuZNtT7LoNB6YIvTwNTIj8nYWDYSy4GeuX+MM=;
+        b=eMVMQG5IY/QE8MQBzSSWI0yko0CRKfBA/haYj5KKPosIvX4h7YYjZ056TiyDWfq73t
+         Jy69noPiddcXz7/tUGN8Oks9rfio1Ozwg6Cy6HwUrF8et4kXuurxvWJjIGxzqPkFtxOx
+         jqMxc3uaR+YNE4GibmcYc38bdDhNpz7gVCbwEQzBan7vreauxGhxgDQgBDvh0/3ENPid
+         R46BDLYSmSATmHwegnqp689AlB6/cYNMq1HvQlhGMhNI72DUwPurgQiVTvdTB+zTB6vw
+         Ed51wcNqWm5qIuXSRhgAEO+Y10Tsd+vx3gtlJYggABAy8BJmlUV9v4GeqaC87WE+bE7i
+         Eg4g==
+X-Forwarded-Encrypted: i=1; AJvYcCXn97t88uS2rcE5DCIu3TJAFnYVZjr/FTogznL73vSpLeR9th9c01c5OF81HLr5INa6HyoupetRUWXE4Zo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwnvCLRfVInqir9u2l/vHcvm3pwg5MpbMpZNGBofytAWknzcdIw
+	x6Gc+PyyhvZ0lvigR3BjA2GIpc7xelmllfuDigYf+YbYVA2Wuk42P+kYWBK9xJ7cTFZgc8dBg5G
+	xOdlJLSasrrmt3gr9dD9KNyhq6WPKLKpQfHR9ask0
+X-Gm-Gg: ASbGnctLge7dS3qbh7K0v40aMMp0EYpxfeHrM8h6+oJToeBfwDOfC1vjUTF3kt/QpBD
+	tH8aaQ/2DumeTUM6E3RdXJYaGku771n8+M4tIODPYIorx2I3rzD8wTcgw9cyM7bjOteNrslbRJb
+	5ZXA0A5dOYkK8sFYFMC9XgE9qnpAu3SLyrRRWK8RZ5sj+/sMOMpZnEyIShfTgEHvabQrxyBC8=
+X-Google-Smtp-Source: AGHT+IFvo4UeYXqvvR6hGpmlYjccx/P9qAgBVyNpakUtwWnk/plyYyjpSLFfr/exrsOHq2DB2NbEp4NJnsA/fPm9vYQ=
+X-Received: by 2002:a50:f608:0:b0:5e6:15d3:ffe7 with SMTP id
+ 4fb4d7f45d1cf-60577a55f40mr88916a12.7.1748622440589; Fri, 30 May 2025
+ 09:27:20 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,126 +79,103 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PAXPR04MB9642:EE_|GV1PR04MB10992:EE_
-X-MS-Office365-Filtering-Correlation-Id: 6b53dc96-7bd0-4264-db36-08dd9f9509b7
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|52116014|366016|376014|7416014|38350700014;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?7LDT/HtAb1bfJWjDFuy4e0lrYZjlONttd/QFXyFlFVSgsxvUoNSt8UnYcVHF?=
- =?us-ascii?Q?2QPq9VKcOv5h0UUIEo5U+KJmbEZgjXrvJ3b8et0dPN0TMF/8ZRuHuaOo2plC?=
- =?us-ascii?Q?P0UG0KnjUOHoWcM1XfrLI9DMssKxkA4aEARifazNNLf390Tsq5FW33XwjF1Y?=
- =?us-ascii?Q?/aM3HPIos/n3fK87kTEgQJcJeDrOVlxk6O8AJmSrc3kHP3q0EKBOo9HZJzN5?=
- =?us-ascii?Q?D/787HwuVrkJQXk2D9Fr83sUSfFjiEF7zFSmRLIzDz4kyij4+F40Stfegx4Y?=
- =?us-ascii?Q?J9KiIL8IwHGQzcUxqn/w/9xGkH9lLRAK8p975apOPiI7sCG1endFIvg1DT4K?=
- =?us-ascii?Q?cS4dWopqJnxAYC7UrHuzo+o5Jbng2HvT52t/1DbFvMGwoe4VxkDe8Fb1fXkS?=
- =?us-ascii?Q?Bi9/8tsj1Q3+yzHNYtZaWLUIgTjbBNAPJOACkrxmMkHiJPbnlpXPXXnwTJGW?=
- =?us-ascii?Q?/SYsoJmaoAAI/1wQwI+DuVVR3s41ZJOXmHoOdCpuTu9BXc6jhkfhEmzuBsn8?=
- =?us-ascii?Q?jaW+TEYf6U9L0w+rPGag/nQzYMZBy1nE3KSvseXA067LGMQxI+pcpli34RLG?=
- =?us-ascii?Q?EExfJjwClmuWFyv/M/Shg+ilDXphM6gQ3XM04ejJB5cme8O/OQSbu6hxdczl?=
- =?us-ascii?Q?ihyKqVqqs9G0gRZb+zx8Yo1+u5o63Pc38Buud1B/PnkX2Ammv0vaq8kpfXxo?=
- =?us-ascii?Q?3aXniYvLdpFfqv2tu7umPR/V88ZZ3HFhEB0BXV7YvsldeMd2wrtS3MudNJlb?=
- =?us-ascii?Q?otgVtGoIXiAWVGl/Ju39h575vXsTLIx0KbPxZdddAaQBvYNzEPSYsI5n7lZu?=
- =?us-ascii?Q?QCNFHwHilgOVz/PHdET49Avu93FeNRM8HM2TXJ2/jD0n46iap7xGs5/S5Ns/?=
- =?us-ascii?Q?1iU9bogenAlejF0+pP2FJbGENPIzKb7OD4RRN8cBO6MM+zoDDbkjXMy0SMfs?=
- =?us-ascii?Q?b5gu78LX1/NuOEalQfmyWq1nE6ZtguUHRjylGSxF0BmRjnXEY3faMh1BfPqt?=
- =?us-ascii?Q?Y/IFUwqxwKkc/xjVV854PgvWauyH+068e8dRW1HQYsYjwchLjoy4k1btSVEy?=
- =?us-ascii?Q?Hgk47GOBqOlCOcpoQFWCJZBHfCzR9KjrmH6o8QRA89Hx4VkhFNF9id260wCv?=
- =?us-ascii?Q?3tprimvgDdg+FT6UVxzE4D0Ro3r77yL01WhsjsNQMEtyr7ISDjACzEpxw8DP?=
- =?us-ascii?Q?ZCYSz3QxrMKMThd5FRedeMam5kzjfzdMzKCZJGrpQ0ARkaBIm9BfkP7EDNE+?=
- =?us-ascii?Q?D8TP466U4z7S6DLWw8lPd2zACT3PwTkgSA4gnSXAWdOwO3SyDc9m+KsiMD8o?=
- =?us-ascii?Q?Ggcg8MARQ/ok9qu2AfkHKp1YXm4c3yZImcXZ2ELkSPXVbJu4KbJKDORfSicx?=
- =?us-ascii?Q?EEArmAEMxX7WsV6ZdxjAipP7HXYt1r3g2GQReuUqU/E7fWkuj10kooUfG4Ob?=
- =?us-ascii?Q?/Y+7JprhUu0=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PAXPR04MB9642.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(52116014)(366016)(376014)(7416014)(38350700014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?qOTtk77mduodRceHP/0BYhtRKIG1lWRZ/OahXMuzSov2UMvN764djCQbiZim?=
- =?us-ascii?Q?MxK+dkmqSDqdUrUpXXVzSU+yvMtvYOSAFTRElUIr8HVPnPnt7xUE2RCApmZJ?=
- =?us-ascii?Q?Al6kjJ4vbRzOp3bToLnULWE5n0uvgedTM0H01v2ToZULEGuAvL3MSC41kJKE?=
- =?us-ascii?Q?k+8ARdsUXno7816a165gusCc1EIchfACueHObcyP94QdVaI69KMund2bGyos?=
- =?us-ascii?Q?xiOXZZy7yJLGNOmppIdIG8OMixjdcTqtjS+JkpX7OpKdXnKyfFe0rUJPiLM1?=
- =?us-ascii?Q?5cq47n3dzGUjk+A3UmBmQPCLtNEW7mSm6pjgdFKP+XX/RGV6dVCnk62Dm1Pk?=
- =?us-ascii?Q?X0oChdodTlkmUzPGUSTTmxxbW2gxjOJgSXKLE06ovHQdfCOKoYxDwwuLI/GE?=
- =?us-ascii?Q?W0r/PE3PlA4IanTV5oG+N6+wuJcFMKdNVEvyalXnkTTEh67tDMaqvxiAfqcO?=
- =?us-ascii?Q?PYIKW8CsRRDbH4sEAqgAajb7A1ufV90is5sKrc4w1jObW/3xQJfozprNYxjo?=
- =?us-ascii?Q?q0oLBOJZygaUc9oc9PlSKDehpfO92k7eOAxexGM3MXzVOTO/LRNmHch7NaFa?=
- =?us-ascii?Q?onkzSwpq4iNagBOSXTTznQ5ZG8nH0bFedhWFVj26ygrtztGu8txPD8Rwf+HG?=
- =?us-ascii?Q?s4MK+t/YSfKNKnLcduTPKqbDA7ze7Ztid6ygozYmsQjbB/zaZOpmHt+DlI7q?=
- =?us-ascii?Q?M7RhOpr1L8m9bTaRy0sVaeDt/XiRmi2IbDgQvHSvXMETXQaPjosxEMWk7xCU?=
- =?us-ascii?Q?KVCRvIp7H0yFbJIPCOibe3/cUjmmQhVDrdjZXnvhj22NCro6X1fM/y2HCQ+h?=
- =?us-ascii?Q?2YkH3XrWpSGfTmebGK6BgaBcArwWv58qLUnK8nBBlrdReQ+LfBTqeFo6NLfd?=
- =?us-ascii?Q?PuXvtwdRU7kytFkNzP3AVaB0TRNX7Jqb46o8BA+LojPGB5qBVTS0LcMkP/Fe?=
- =?us-ascii?Q?iLNLwfaOmHlLynPKIgjVuSTBqlRrzxDr4cjwJv7zTPGFPHy0bTRwkI4ezR5z?=
- =?us-ascii?Q?m48sKGoU0815qImOMHbUOzTW8LjJGr5h6s6HROzwxle0KNJjU+thQQM045Pv?=
- =?us-ascii?Q?grDT+Hu+1APwjFTN04c7HXtxyVjvAgHuwQg9EJ0d/zTif9sUPt4LOkdP28X+?=
- =?us-ascii?Q?rOqW7zQAW3MwWoTq1WvjZlDn4yiG8h2+WcGR0nab5CnB9vg2F7qyAwY+EXt9?=
- =?us-ascii?Q?1JnJ1FIgQi/vIdQ49M6e7oQRIbjJVM2SteFb5Oj7VS1YuR/ZPYRVkesOxXue?=
- =?us-ascii?Q?1r9kjYseBceaZhO2l4PcuL/AXNupc5knGNA4F9SPFoNrZ/MFYrPbcsCSOuVG?=
- =?us-ascii?Q?hRqOw9eJGLj5SVpRIQLWgjT42wgUOfdM+tBB3T0GppNFU/iV43VOFLeTc3Fy?=
- =?us-ascii?Q?pDJfv0hnhxUS7P2mUlunrpjF6AJudfIGG34HhcuR/TBytKeLtc+xpYLl0h9/?=
- =?us-ascii?Q?YsFLbQ8UC+tSyTZbb+x1FcGLE60k1BqyFFPifznKoKT3rT8/aLKrB2o9KYDM?=
- =?us-ascii?Q?d9yKig3LYLQj77NMgAnIL9mE8ubCBnEMMq56810F3UQGSm/++g41EU7csZyF?=
- =?us-ascii?Q?EsqxVzn8PnPuwvQRt/yg8sZGFy4nxme4/PzdFYyd?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 6b53dc96-7bd0-4264-db36-08dd9f9509b7
-X-MS-Exchange-CrossTenant-AuthSource: PAXPR04MB9642.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 30 May 2025 16:14:22.0244
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: hzKX7ZMYKzHTvIJ4tFKGRDJilEk8U1Ytf+zmYurETYJTF+SQ4q3GJOQGR1hJrlXT3yusF3jFvthSGx4/BLDxFw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: GV1PR04MB10992
+References: <20250530140446.2387131-1-ryan.roberts@arm.com> <20250530140446.2387131-2-ryan.roberts@arm.com>
+In-Reply-To: <20250530140446.2387131-2-ryan.roberts@arm.com>
+From: Jann Horn <jannh@google.com>
+Date: Fri, 30 May 2025 18:26:44 +0200
+X-Gm-Features: AX0GCFt5gaAeg9wlqckCjWiqvoyfvAtwj8XYq0jNIyzkBuWgoy0LcwI3HloBVMo
+Message-ID: <CAG48ez2k6ZmM-335EQjXeL6OtKzuOjVPWQDuJ75ww9Z6NMeg5w@mail.gmail.com>
+Subject: Re: [RFC PATCH v1 1/6] fs/proc/task_mmu: Fix pte update and tlb
+ maintenance ordering in pagemap_scan_pmd_entry()
+To: Ryan Roberts <ryan.roberts@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	"David S. Miller" <davem@davemloft.net>, Andreas Larsson <andreas@gaisler.com>, 
+	Juergen Gross <jgross@suse.com>, Ajay Kaher <ajay.kaher@broadcom.com>, 
+	Alexey Makhalov <alexey.makhalov@broadcom.com>, Thomas Gleixner <tglx@linutronix.de>, 
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, "H. Peter Anvin" <hpa@zytor.com>, 
+	Boris Ostrovsky <boris.ostrovsky@oracle.com>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, 
+	Andrew Morton <akpm@linux-foundation.org>, Peter Zijlstra <peterz@infradead.org>, 
+	Arnd Bergmann <arnd@arndb.de>, David Hildenbrand <david@redhat.com>, 
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
+	Vlastimil Babka <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
+	Michal Hocko <mhocko@suse.com>, Alexei Starovoitov <ast@kernel.org>, 
+	Andrey Ryabinin <ryabinin.a.a@gmail.com>, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	sparclinux@vger.kernel.org, virtualization@lists.linux.dev, 
+	xen-devel@lists.xenproject.org, linux-mm@kvack.org, 
+	Andy Lutomirski <luto@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Fri, May 30, 2025 at 04:23:31PM +0100, Conor Dooley wrote:
-> On Wed, May 28, 2025 at 11:43:59AM -0400, Frank Li wrote:
-> > On Mon, May 26, 2025 at 04:54:30PM +0100, Conor Dooley wrote:
-> > > On Thu, May 22, 2025 at 05:39:50PM -0400, Frank Li wrote:
-> > > > Add vf610 reset controller, which used to reboot system to fix below
-> > > > CHECK_DTB warnings:
-> > > >
-> > > > arch/arm/boot/dts/nxp/vf/vf610-bk4.dtb: /soc/bus@40000000/src@4006e000:
-> > > >     failed to match any schema with compatible: ['fsl,vf610-src', 'syscon']
-> > > >
-> > > > Signed-off-by: Frank Li <Frank.Li@nxp.com>
-> > > > ---
-> > > >  .../bindings/soc/fsl/fsl,vf610-src.yaml       | 46 +++++++++++++++++++
-> > > >  1 file changed, 46 insertions(+)
-> > > >  create mode 100644 Documentation/devicetree/bindings/soc/fsl/fsl,vf610-src.yaml
-> > > >
-> > > > diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,vf610-src.yaml b/Documentation/devicetree/bindings/soc/fsl/fsl,vf610-src.yaml
-> > > > new file mode 100644
-> > > > index 0000000000000..4c92a5e4892bf
-> > > > --- /dev/null
-> > > > +++ b/Documentation/devicetree/bindings/soc/fsl/fsl,vf610-src.yaml
-> > > > @@ -0,0 +1,46 @@
-> > > > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > > > +%YAML 1.2
-> > > > +---
-> > > > +$id: http://devicetree.org/schemas//soc/fsl/fsl,vf610-src.yaml#
-> > >
-> > > It's a reset controller then, shouldn't it be in /reset, not //soc?
-> >
-> > It is not reset controller since there are not #reset-cells property to
-> > reset other models. It just provides syscon to reboot the whole system.
+On Fri, May 30, 2025 at 4:04=E2=80=AFPM Ryan Roberts <ryan.roberts@arm.com>=
+ wrote:
+> pagemap_scan_pmd_entry() was previously modifying ptes while in lazy mmu
+> mode, then performing tlb maintenance for the modified ptes, then
+> leaving lazy mmu mode. But any pte modifications during lazy mmu mode
+> may be deferred until arch_leave_lazy_mmu_mode(), inverting the required
+> ordering between pte modificaiton and tlb maintenance.
 >
-> | Add vf610 reset controller
-> | The System Reset Controller (SRC) generates the resets for the device.
+> Let's fix that by leaving mmu mode, forcing all the pte updates to be
+> actioned, before doing the tlb maintenance.
 >
-> Giving me mixed signal here chief. If you call something a reset
-> controller multiple times without any additional clarification that it
-> does not provide resets to peripherals, how is anyone reading the patch
-> not supposed to come to the same conclusion as me?
+> This is a theorectical bug discovered during code review.
+>
+> Fixes: 52526ca7fdb9 ("fs/proc/task_mmu: implement IOCTL to get and option=
+ally clear info about PTEs")
 
-Yes, reference manual call it reset controllers! But it just indicate reset
-signal happen. let me add more descrption at commit message.
+Hmm... isn't lazy mmu mode supposed to also delay TLB flushes, and
+preserve the ordering of PTE modifications and TLB flushes?
 
-Frank
+Looking at the existing implementations of lazy MMU:
+
+ - In Xen PV implementation of lazy MMU, I see that TLB flush
+hypercalls are delayed as well (xen_flush_tlb(),
+xen_flush_tlb_one_user() and xen_flush_tlb_multi() all use
+xen_mc_issue(XEN_LAZY_MMU) which delays issuing if lazymmu is active).
+ - The sparc version also seems to delay TLB flushes, and sparc's
+arch_leave_lazy_mmu_mode() seems to do TLB flushes via
+flush_tlb_pending() if necessary.
+ - powerpc's arch_leave_lazy_mmu_mode() also seems to do TLB flushes.
+
+Am I missing something?
+
+If arm64 requires different semantics compared to all existing
+implementations and doesn't delay TLB flushes for lazy mmu mode, I
+think the "Fixes" tag should point to your addition of lazy mmu
+support for arm64.
+
+> Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
+> ---
+>  fs/proc/task_mmu.c | 3 +--
+>  1 file changed, 1 insertion(+), 2 deletions(-)
+>
+> diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+> index 994cde10e3f4..361f3ffd9a0c 100644
+> --- a/fs/proc/task_mmu.c
+> +++ b/fs/proc/task_mmu.c
+> @@ -2557,10 +2557,9 @@ static int pagemap_scan_pmd_entry(pmd_t *pmd, unsi=
+gned long start,
+>         }
+>
+>  flush_and_return:
+> +       arch_leave_lazy_mmu_mode();
+>         if (flush_end)
+>                 flush_tlb_range(vma, start, addr);
+> -
+> -       arch_leave_lazy_mmu_mode();
+
+I think this ordering was probably intentional, because doing it this
+way around allows Xen PV to avoid one more hypercall, because the TLB
+flush can be batched together with the page table changes?
 
 
+>         pte_unmap_unlock(start_pte, ptl);
+>
+>         cond_resched();
+> --
+> 2.43.0
+>
 
