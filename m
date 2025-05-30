@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-9037-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9038-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A36FEC5AD49
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 May 2025 14:06:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F01DBC5B549
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 30 May 2025 14:06:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b84lT64skz2yZ6;
-	Sat, 31 May 2025 00:05:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b84lm4skqz2yfx;
+	Sat, 31 May 2025 00:06:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748613957;
-	cv=none; b=MWVNLHApnq33aFNT2ZvLv4VvBW/+oFmD4kO+Gq0MAwhjomHNUfTncsKSns+pnNZs5VDgUTQp1O4N8s09NsO7WcEbvSXHCtDaDJFavYq3XLu2AsUaC6x8+mg+R66r4EaWww3a9zS6Rtxa9svVPokI2lX21FP3Fk3ixbZdKZdSNtDo7Ry3QixyTYWkSJwdgE2ME3ICJSlckbmfCa0/UKE3YwJQnLxu6sQl68sK23tdmGshKiXQ+wINGtUQgIH1cNKMbimTmqtOKVX1bhIAWELTTTrGO22srAxlaMokNLWKCF6zkAAhjer4TSFmus5HDJEqGDwpImXgHVmGYKyQaQ4pRQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748613972;
+	cv=none; b=DtE3r14pF04UUx/DFzdp5XCiblYaGJYSqi/+l+60g6gT712dQ/UqfhP3YQptXiABV5ZTMCNcZIXGZeoxj6S5Tp+ztPG0EWvTB2+vAZ8GoT+KML+C9rQ7R2TAgDBKY/GV3IvG3wLMk40Nci93BdgfIkoe3Iwnu+RnVTIjsQDI+ZvyxeQSQ4Bg0XXOzvGz0qLMygj0EyW7xwtGgfXPio1h6TweDXl4MaKcI64lQAwtR49uxbYc+oIDy6IIyOFxKCqgH9UIU+t6DOxS0C7IG0xcj9j7eX3vBF58DanWE5LoaBixYgS50V27JkMwYmgfdnBTF0dtHCPf5I2SrlasFHEYAg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748613957; c=relaxed/relaxed;
-	bh=briVDyCtVmJlcp9qKYDQUQ+ZnAwtSVxjrm6EZqrt8AA=;
+	t=1748613972; c=relaxed/relaxed;
+	bh=7eGTseOzNJr05Fj1yEUAb0RalC6UtR410oEZsPPsDSM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=SjAarZgiPnhWoYDsBKaI8l+Ij71JQx4I1StJ4Q0aV6A2+b7olo8Z2Wl5w95zQoHHXAV+DAYNUE5XT7gu43O8tWapwvjL1GEfTGN8cbhcSMFbGqu+N3pztgOLqU35GARIHCKMJD/pA2U8PIw/PwOshY49URfo54hPvcakbhFtxi0Ghmm2Wkg99c/sCnh2NH97lN+hggNWGihXSVCXOmqOj1KxDcdrZySp26/4Ofs68Xf+Ue0Ua6OL04+QMvtKp0Xauc4XDKjo07qgyzjzb10rJOIUr18Otjk4+a/5ZFoQBnBOkqVfglCec7aSchYt+YnX3l862IZPSwKdrjpyTux1Hg==
+	 MIME-Version; b=BHcqyWzhwxFnnqcCeUqa2LRUcDfWmfBrB1Ulld51z8SotYcgRntB7vgbuM6DKMLsFYMgGi6i0EDPOpad9QAfKuJHLEFKi/4ZqENOJMxp9yTcYKSEF6sXteQTUKEDFeWwkfK1OH14eEmlELaOz2+YlhZucBjKgZ7A5VytZw8MuoHM6ZqeRM2CQ/kVgUjkYYHWGH0GMG49xR9aoinILlOcwgBBGYRO4cNfE0CIfrVFxMNUpF3Cw7nU3HsjHYo1z/7UAqRh7g26zk1UY0eU+ChG/NU7k5mhJyNbYSVUsPaD0RtgyoYGKvzEbezzZ5MC39UPoFac7Hd1TkoxVUZDa1rCcg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4b84lT0yDlz2yGM
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2025 00:05:57 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4b84lm04CDz2yGM
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 31 May 2025 00:06:12 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CC0EB2682;
-	Fri, 30 May 2025 07:05:09 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 8076E26AC;
+	Fri, 30 May 2025 07:05:20 -0700 (PDT)
 Received: from e125769.cambridge.arm.com (e125769.cambridge.arm.com [10.1.196.27])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 42F963F673;
-	Fri, 30 May 2025 07:05:21 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id EAB693F673;
+	Fri, 30 May 2025 07:05:31 -0700 (PDT)
 From: Ryan Roberts <ryan.roberts@arm.com>
 To: Catalin Marinas <catalin.marinas@arm.com>,
 	Will Deacon <will@kernel.org>,
@@ -68,9 +68,9 @@ Cc: Ryan Roberts <ryan.roberts@arm.com>,
 	virtualization@lists.linux.dev,
 	xen-devel@lists.xenproject.org,
 	linux-mm@kvack.org
-Subject: [RFC PATCH v1 4/6] mm: Introduce arch_in_lazy_mmu_mode()
-Date: Fri, 30 May 2025 15:04:42 +0100
-Message-ID: <20250530140446.2387131-5-ryan.roberts@arm.com>
+Subject: [RFC PATCH v1 6/6] Revert "arm64/mm: Permit lazy_mmu_mode to be nested"
+Date: Fri, 30 May 2025 15:04:44 +0100
+Message-ID: <20250530140446.2387131-7-ryan.roberts@arm.com>
 X-Mailer: git-send-email 2.43.0
 In-Reply-To: <20250530140446.2387131-1-ryan.roberts@arm.com>
 References: <20250530140446.2387131-1-ryan.roberts@arm.com>
@@ -89,197 +89,45 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Introduce new arch_in_lazy_mmu_mode() API, which returns true if the
-calling context is currently in lazy mmu mode or false otherwise. Each
-arch that supports lazy mmu mode must provide an implementation of this
-API.
-
-The API will shortly be used to prevent accidental lazy mmu mode nesting
-when performing an allocation, and will additionally be used to ensure
-pte modification vs tlb flushing order does not get inadvertantly
-swapped.
+Commit 491344301b25 ("arm64/mm: Permit lazy_mmu_mode to be nested") made
+the arm64 implementation of lazy_mmu_mode tolerant to nesting. But
+subsequent commits have fixed the core code to ensure that lazy_mmu_mode
+never gets nested (as originally intended). Therefore we can revert this
+commit and reinstate the VM_WARN() if nesting is detected in future.
 
 Signed-off-by: Ryan Roberts <ryan.roberts@arm.com>
 ---
- arch/arm64/include/asm/pgtable.h                  |  8 ++++++++
- .../powerpc/include/asm/book3s/64/tlbflush-hash.h | 15 +++++++++++++++
- arch/sparc/include/asm/tlbflush_64.h              |  1 +
- arch/sparc/mm/tlb.c                               | 12 ++++++++++++
- arch/x86/include/asm/paravirt.h                   |  5 +++++
- arch/x86/include/asm/paravirt_types.h             |  1 +
- arch/x86/kernel/paravirt.c                        |  6 ++++++
- arch/x86/xen/mmu_pv.c                             |  6 ++++++
- include/linux/pgtable.h                           |  1 +
- 9 files changed, 55 insertions(+)
+ arch/arm64/include/asm/pgtable.h | 14 ++------------
+ 1 file changed, 2 insertions(+), 12 deletions(-)
 
 diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-index 5285757ee0c1..add75dee49f5 100644
+index add75dee49f5..dcf0adbeb803 100644
 --- a/arch/arm64/include/asm/pgtable.h
 +++ b/arch/arm64/include/asm/pgtable.h
-@@ -119,6 +119,14 @@ static inline void arch_leave_lazy_mmu_mode(void)
- 	clear_thread_flag(TIF_LAZY_MMU);
- }
- 
-+static inline bool arch_in_lazy_mmu_mode(void)
-+{
-+	if (in_interrupt())
-+		return false;
-+
-+	return test_thread_flag(TIF_LAZY_MMU);
-+}
-+
- #ifdef CONFIG_TRANSPARENT_HUGEPAGE
- #define __HAVE_ARCH_FLUSH_PMD_TLB_RANGE
- 
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-index 146287d9580f..4123a9da32cc 100644
---- a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-@@ -57,6 +57,21 @@ static inline void arch_leave_lazy_mmu_mode(void)
- 
- #define arch_flush_lazy_mmu_mode()      do {} while (0)
- 
-+static inline bool arch_in_lazy_mmu_mode(void)
-+{
-+	struct ppc64_tlb_batch *batch;
-+	bool active;
-+
-+	if (radix_enabled())
-+		return false;
-+
-+	batch = get_cpu_ptr(&ppc64_tlb_batch);
-+	active = batch->active;
-+	put_cpu_ptr(&ppc64_tlb_batch);
-+
-+	return active;
-+}
-+
- extern void hash__tlbiel_all(unsigned int action);
- 
- extern void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize,
-diff --git a/arch/sparc/include/asm/tlbflush_64.h b/arch/sparc/include/asm/tlbflush_64.h
-index 8b8cdaa69272..204bc957df9e 100644
---- a/arch/sparc/include/asm/tlbflush_64.h
-+++ b/arch/sparc/include/asm/tlbflush_64.h
-@@ -45,6 +45,7 @@ void flush_tlb_pending(void);
- void arch_enter_lazy_mmu_mode(void);
- void arch_leave_lazy_mmu_mode(void);
- #define arch_flush_lazy_mmu_mode()      do {} while (0)
-+bool arch_in_lazy_mmu_mode(void);
- 
- /* Local cpu only.  */
- void __flush_tlb_all(void);
-diff --git a/arch/sparc/mm/tlb.c b/arch/sparc/mm/tlb.c
-index a35ddcca5e76..83ab4ba4f4fb 100644
---- a/arch/sparc/mm/tlb.c
-+++ b/arch/sparc/mm/tlb.c
-@@ -69,6 +69,18 @@ void arch_leave_lazy_mmu_mode(void)
- 	preempt_enable();
- }
- 
-+bool arch_in_lazy_mmu_mode(void)
-+{
-+	struct tlb_batch *tb;
-+	bool active;
-+
-+	tb = get_cpu_ptr(&tlb_batch);
-+	active = tb->active;
-+	put_cpu_ptr(&tlb_batch);
-+
-+	return active;
-+}
-+
- static void tlb_batch_add_one(struct mm_struct *mm, unsigned long vaddr,
- 			      bool exec, unsigned int hugepage_shift)
+@@ -83,21 +83,11 @@ static inline void queue_pte_barriers(void)
+ #define  __HAVE_ARCH_ENTER_LAZY_MMU_MODE
+ static inline void arch_enter_lazy_mmu_mode(void)
  {
-diff --git a/arch/x86/include/asm/paravirt.h b/arch/x86/include/asm/paravirt.h
-index b5e59a7ba0d0..c7ea3ccb8a41 100644
---- a/arch/x86/include/asm/paravirt.h
-+++ b/arch/x86/include/asm/paravirt.h
-@@ -542,6 +542,11 @@ static inline void arch_flush_lazy_mmu_mode(void)
- 	PVOP_VCALL0(mmu.lazy_mode.flush);
+-	/*
+-	 * lazy_mmu_mode is not supposed to permit nesting. But in practice this
+-	 * does happen with CONFIG_DEBUG_PAGEALLOC, where a page allocation
+-	 * inside a lazy_mmu_mode section (such as zap_pte_range()) will change
+-	 * permissions on the linear map with apply_to_page_range(), which
+-	 * re-enters lazy_mmu_mode. So we tolerate nesting in our
+-	 * implementation. The first call to arch_leave_lazy_mmu_mode() will
+-	 * flush and clear the flag such that the remainder of the work in the
+-	 * outer nest behaves as if outside of lazy mmu mode. This is safe and
+-	 * keeps tracking simple.
+-	 */
+-
+ 	if (in_interrupt())
+ 		return;
+ 
++	VM_WARN_ON(test_thread_flag(TIF_LAZY_MMU));
++
+ 	set_thread_flag(TIF_LAZY_MMU);
  }
  
-+static inline bool arch_in_lazy_mmu_mode(void)
-+{
-+	return PVOP_CALL0(bool, mmu.lazy_mode.in);
-+}
-+
- static inline void __set_fixmap(unsigned /* enum fixed_addresses */ idx,
- 				phys_addr_t phys, pgprot_t flags)
- {
-diff --git a/arch/x86/include/asm/paravirt_types.h b/arch/x86/include/asm/paravirt_types.h
-index 37a8627d8277..41001ca9d010 100644
---- a/arch/x86/include/asm/paravirt_types.h
-+++ b/arch/x86/include/asm/paravirt_types.h
-@@ -46,6 +46,7 @@ struct pv_lazy_ops {
- 	void (*enter)(void);
- 	void (*leave)(void);
- 	void (*flush)(void);
-+	bool (*in)(void);
- } __no_randomize_layout;
- #endif
- 
-diff --git a/arch/x86/kernel/paravirt.c b/arch/x86/kernel/paravirt.c
-index ab3e172dcc69..9af1a04a47fd 100644
---- a/arch/x86/kernel/paravirt.c
-+++ b/arch/x86/kernel/paravirt.c
-@@ -106,6 +106,11 @@ static noinstr void pv_native_set_debugreg(int regno, unsigned long val)
- {
- 	native_set_debugreg(regno, val);
- }
-+
-+static noinstr bool paravirt_retfalse(void)
-+{
-+	return false;
-+}
- #endif
- 
- struct pv_info pv_info = {
-@@ -228,6 +233,7 @@ struct paravirt_patch_template pv_ops = {
- 		.enter		= paravirt_nop,
- 		.leave		= paravirt_nop,
- 		.flush		= paravirt_nop,
-+		.in		= paravirt_retfalse,
- 	},
- 
- 	.mmu.set_fixmap		= native_set_fixmap,
-diff --git a/arch/x86/xen/mmu_pv.c b/arch/x86/xen/mmu_pv.c
-index 2a4a8deaf612..74f7a8537911 100644
---- a/arch/x86/xen/mmu_pv.c
-+++ b/arch/x86/xen/mmu_pv.c
-@@ -2147,6 +2147,11 @@ static void xen_flush_lazy_mmu(void)
- 	preempt_enable();
- }
- 
-+static bool xen_in_lazy_mmu(void)
-+{
-+	return xen_get_lazy_mode() == XEN_LAZY_MMU;
-+}
-+
- static void __init xen_post_allocator_init(void)
- {
- 	pv_ops.mmu.set_pte = xen_set_pte;
-@@ -2230,6 +2235,7 @@ static const typeof(pv_ops) xen_mmu_ops __initconst = {
- 			.enter = xen_enter_lazy_mmu,
- 			.leave = xen_leave_lazy_mmu,
- 			.flush = xen_flush_lazy_mmu,
-+			.in = xen_in_lazy_mmu,
- 		},
- 
- 		.set_fixmap = xen_set_fixmap,
-diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-index b50447ef1c92..580d9971f435 100644
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -235,6 +235,7 @@ static inline int pmd_dirty(pmd_t pmd)
- #define arch_enter_lazy_mmu_mode()	do {} while (0)
- #define arch_leave_lazy_mmu_mode()	do {} while (0)
- #define arch_flush_lazy_mmu_mode()	do {} while (0)
-+#define arch_in_lazy_mmu_mode()		false
- #endif
- 
- #ifndef pte_batch_hint
 -- 
 2.43.0
 
