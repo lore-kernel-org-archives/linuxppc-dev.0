@@ -1,72 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-9086-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9087-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FA9EC5B555
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Jun 2025 21:19:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDC78C5AD49
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Jun 2025 21:49:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bB6Dj4RTRz2yFJ;
-	Tue,  3 Jun 2025 07:19:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748899189;
-	cv=none; b=HoDKWZY/RcpeCLzDoSkyiXAtjxagP3/WCNPJE0dVo9NEpQpdsDNZUeIrh3bRHd0MHyFy/4alcDafM7S5kXSGjxfluOaBUGsruexHA4RkTptfnLvDKhejBxVWQwQjn4RVEPwLuRc1kGGjjvh258LFAcPPkB0C+oM7F00rHsIKnUvl3qV2sk+OTQ1ZdVe7OWLTS+svjFLQq+gYB/bED1FqrH0J3/lbaibHaS+w7hWIcjPlma6d1EvKB0s/nsntHyQcns3tdDd14U1IUw8yVwHGgSdAUhh7WliS5fNc8/UgFo5MwpGywDasQppGvy6q8wD/R4PfJtViWSop852yKnHbyw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bB6tm37j1z2yMF;
+	Tue,  3 Jun 2025 07:49:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.143.211.150
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748878667;
+	cv=none; b=HBuOTUlI9KhEuwunCwiJCvp9hU5qF5WDD48HMFnkrL6F2lAGhQKL19UmamtjXwTv1qKw8hTKnEY98UFWVXnJb3WUfjYmLPFdzm8T7LtEKkGwpaKewWfrL+QwI2pJl+xGbHOip+j5IgROGOtF9anS777LWBYMRG0Qkm6mb4CzdQHEa7CNpi2+MNxPIHCIO+OwfGsd7FI0HWxKnZrhYw1wPGC2Ax4A2aZoB5o380tsrQFXoe5CZDykSspMvN2jy+RW3oUSWLCEyapxQpOZAYA8uSSBnY3njORtQrrlGLB3Civam7dFifUwvT5Mk2NU9iq+rivpfC6cVftlTy7rrTIPWA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748899189; c=relaxed/relaxed;
-	bh=cvG5ebpKTZEmM8Z9VnrAL8jj9cDueMGGayXKA5dUonw=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=IzntzY2Yn2c4sQhSla3UeYXxm0c1ux/RxTug9GVBLFmLbZierh9JgPV06f7YP3N00WsvD3ddDs3OLk6FKRxNnMz7ZyS5kkWQKOYMY3WZuIAS22X96Vgm2iTAndj76ntDoj/n5nM6JAYCkt9XQp/j+6V0uXsvgZ0hiGtLR4tepjxdawCJFwL1BndVV6LdB66q9ipTUmUN3WEPwj0cT8qbeFAkLB8XfIZyu8g1BANYEMkSPlvjtApm3xtTIBKRJTuBRl9nClsUaxmxBjhrhmA/k0sQYus61regAdbDo64SBGVgG8Cbs6lL279sLt7FEB9QbnT2CpbMPa29r4rWDpErXA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IfLj37KI; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1748878667; c=relaxed/relaxed;
+	bh=71YeMes/eS2IUpNl7YzmLJ929hx1mUSYVecvfpFiJtQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Xy+Rd9QS6sGJppvS+1bGqu5WdxiSyu99KdjEHYiRGzv1CSoQwKBSRtWHB7/MW+sYrGGFWUwwIyKJb4I3OEnwTmd/D5qPr2ZiRf51mrhPBr0lQoVTI1WMpccBNaVUAHq8Fh7Z2n/1j+O7xbFJV4Wz/9rqYhUWhPCaHu5/qmKE45QS0tlnfY4X18pe2EhoXM1Yocka3PbPeu805EdwF8eI1SOAomR7VSJ6FNf2loe77ZRagyF48XEgX1lfEL8gBTS1FCDBqw9/niM+C3BYg+8zjZzKwhu5on6LtGOCIiezsFzcdyI+S5eXFD4sSBO43B0rYvGpRRGHvYwScXGHCcgjHw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=swemel.ru; dkim=pass (1024-bit key; unprotected) header.d=swemel.ru header.i=@swemel.ru header.a=rsa-sha256 header.s=mail header.b=vLEvMcXP; dkim-atps=neutral; spf=pass (client-ip=95.143.211.150; helo=mx.swemel.ru; envelope-from=arefev@swemel.ru; receiver=lists.ozlabs.org) smtp.mailfrom=swemel.ru
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=swemel.ru
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IfLj37KI;
+	dkim=pass (1024-bit key; unprotected) header.d=swemel.ru header.i=@swemel.ru header.a=rsa-sha256 header.s=mail header.b=vLEvMcXP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=swemel.ru (client-ip=95.143.211.150; helo=mx.swemel.ru; envelope-from=arefev@swemel.ru; receiver=lists.ozlabs.org)
+X-Greylist: delayed 572 seconds by postgrey-1.37 at boromir; Tue, 03 Jun 2025 01:37:44 AEST
+Received: from mx.swemel.ru (mx.swemel.ru [95.143.211.150])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bB6Dh5nGpz2xmZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jun 2025 07:19:48 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 88DF243C9D;
-	Mon,  2 Jun 2025 21:19:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3319DC4CEEB;
-	Mon,  2 Jun 2025 21:19:46 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1748899186;
-	bh=6mj/BlYXhWA2zqQmobSnww4HV6I3qNHM38OyJ0T6thY=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=IfLj37KIEU0Jy+o62Y0/R/gpmCidEqsAZWzdxwnL5HG85g62rUbIrFSLo1ASjyW0E
-	 y087JbYvyqH6P0sxoL5Qky0xSKuJSHtn/j8nE76kFXO/pv8Yvty3tt8qc7yiB5Xyfw
-	 oR7816Es3kjDy+NpaxUuATsG/9yz3l6s0Mcf5TX3TWFDvUxPJHfYJve1DpFDrl5/TD
-	 aTidwE3xAY+YwOXO+C4kxAEjuR3zzU0LFIplBOpp/6XKnqvxU1wpzdPOrFATsTLkVs
-	 9KPt/oUZvn0rRo5D+EdjpdLuaozVtiIt7kB8psup46KAwCEAani/+R9Zz46DS9un6V
-	 bN+Em+YzTa7Vg==
-Date: Mon, 2 Jun 2025 16:19:44 -0500
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
-Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Lorenzo Pieralisi <lpieralisi@kernel.org>,
-	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
-	Rob Herring <robh@kernel.org>, Zhou Wang <wangzhou1@hisilicon.com>,
-	Will Deacon <will@kernel.org>, Robert Richter <rric@kernel.org>,
-	Alyssa Rosenzweig <alyssa@rosenzweig.io>,
-	Marc Zyngier <maz@kernel.org>,
-	Conor Dooley <conor.dooley@microchip.com>,
-	Daire McNamara <daire.mcnamara@microchip.com>, dingwei@marvell.com,
-	cassel@kernel.org, Lukas Wunner <lukas@wunner.de>,
-	Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-riscv@lists.infradead.org
-Subject: Re: [PATCH v4 4/5] PCI: host-common: Add link down handling for host
- bridges
-Message-ID: <20250602211944.GA150795@bhelgaas>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4b9yf03CY8z2xfB
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jun 2025 01:37:44 +1000 (AEST)
+From: Denis Arefev <arefev@swemel.ru>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=swemel.ru; s=mail;
+	t=1748878085;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=71YeMes/eS2IUpNl7YzmLJ929hx1mUSYVecvfpFiJtQ=;
+	b=vLEvMcXPgfQ3CsiGHcuIMQoFRBemffsEWU+/pLhYVIot8+IQON8erRN31hp7Wz1r3pHcJH
+	uCmrxYYWnaxYkd5gZNpfhpXwYJPKYA2y8okms7S4ZDS3krqzFQD5QeoGTjWajDDdEy7IO9
+	04idVRUI00JhAD4t9stKVQVk12j4LHk=
+To: stable@vger.kernel.org,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>,
+	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
+	Paul Mackerras <paulus@samba.org>,
+	Dany Madden <drt@linux.ibm.com>,
+	Lijun Pan <ljp@linux.ibm.com>,
+	Sukadev Bhattiprolu <sukadev@linux.ibm.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Jakub Kicinski <kuba@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	netdev@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	lvc-project@linuxtesting.org,
+	Nick Child <nnac123@linux.ibm.com>,
+	Paolo Abeni <pabeni@redhat.com>
+Subject: [PATCH 5.10] ibmvnic: Add tx check to prevent skb leak
+Date: Mon,  2 Jun 2025 18:28:04 +0300
+Message-ID: <20250602152805.88204-1-arefev@swemel.ru>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,46 +71,68 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250508-pcie-reset-slot-v4-4-7050093e2b50@linaro.org>
+Content-Transfer-Encoding: 8bit
 
-On Thu, May 08, 2025 at 12:40:33PM +0530, Manivannan Sadhasivam wrote:
-> The PCI link, when down, needs to be recovered to bring it back. But that
-> cannot be done in a generic way as link recovery procedure is specific to
-> host bridges. So add a new API pci_host_handle_link_down() that could be
-> called by the host bridge drivers when the link goes down.
+From: Nick Child <nnac123@linux.ibm.com>
 
-IIUC you plumbed this into the reset path so the standard entries
-(pci_reset_function() and the sysfs "reset" files) work can now work
-for Root Ports on DT systems just like they do for ACPI systems
-(assuming the ACPI systems supply an _RST method for the ports).  That
-all sounds good.
+commit 0983d288caf984de0202c66641577b739caad561 upstream.
 
-> The API will iterate through all the slots and calls the pcie_do_recovery()
-> function with 'pci_channel_io_frozen' as the state. This will result in the
-> execution of the AER Fatal error handling code. Since the link down
-> recovery is pretty much the same as AER Fatal error handling,
-> pcie_do_recovery() helper is reused here. First the AER error_detected
-> callback will be triggered for the bridge and the downstream devices. Then,
-> pci_host_reset_slot() will be called for the slot, which will reset the
-> slot using 'reset_slot' callback to recover the link. Once that's done,
-> resume message will be broadcasted to the bridge and the downstream devices
-> indicating successful link recovery.
+Below is a summary of how the driver stores a reference to an skb during
+transmit:
+    tx_buff[free_map[consumer_index]]->skb = new_skb;
+    free_map[consumer_index] = IBMVNIC_INVALID_MAP;
+    consumer_index ++;
+Where variable data looks like this:
+    free_map == [4, IBMVNIC_INVALID_MAP, IBMVNIC_INVALID_MAP, 0, 3]
+                                               	consumer_index^
+    tx_buff == [skb=null, skb=<ptr>, skb=<ptr>, skb=null, skb=null]
 
-We have standard PCIe mechanisms to learn about "link down" events,
-e.g., AER Surprise Down error reporting and the Data Link Layer State
-Changed events for hot-plug capable ports.
+The driver has checks to ensure that free_map[consumer_index] pointed to
+a valid index but there was no check to ensure that this index pointed
+to an unused/null skb address. So, if, by some chance, our free_map and
+tx_buff lists become out of sync then we were previously risking an
+skb memory leak. This could then cause tcp congestion control to stop
+sending packets, eventually leading to ETIMEDOUT.
 
-How does this controller-specific "link down" notification relate to
-those?  Is this for controllers that don't support those AER or
-hotplug mechanisms?  Or is this a different scenario that wouldn't be
-covered by them?
+Therefore, add a conditional to ensure that the skb address is null. If
+not then warn the user (because this is still a bug that should be
+patched) and free the old pointer to prevent memleak/tcp problems.
 
-If AER is enabled, do we get both the AER interrupt and the controller
-"link down" interrupt?
+Signed-off-by: Nick Child <nnac123@linux.ibm.com>
+Signed-off-by: Paolo Abeni <pabeni@redhat.com>
+[Denis: minor fix to resolve merge conflict.]                                           
+Signed-off-by: Denis Arefev <arefev@swemel.ru>                                    
+---
+Backport fix for CVE-2024-41066
+Link: https://nvd.nist.gov/vuln/detail/CVE-2024-41066
+---
+ drivers/net/ethernet/ibm/ibmvnic.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-> In case if the AER support is not enabled in the kernel, only
-> pci_bus_error_reset() will be called for each slots as there is no way we
-> could inform the drivers about link recovery.
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index 84da6ccaf339..e63220ebb2ea 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -1625,6 +1625,18 @@ static netdev_tx_t ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
+ 	    (tx_pool->consumer_index + 1) % tx_pool->num_buffers;
+ 
+ 	tx_buff = &tx_pool->tx_buff[index];
++
++	/* Sanity checks on our free map to make sure it points to an index
++	 * that is not being occupied by another skb. If skb memory is
++	 * not freed then we see congestion control kick in and halt tx.
++	 */
++	if (unlikely(tx_buff->skb)) {
++		dev_warn_ratelimited(dev, "TX free map points to untracked skb (%s %d idx=%d)\n",
++				     skb_is_gso(skb) ? "tso_pool" : "tx_pool",
++				     queue_num, index);
++		dev_kfree_skb_any(tx_buff->skb);
++	}
++
+ 	tx_buff->skb = skb;
+ 	tx_buff->data_dma[0] = data_dma_addr;
+ 	tx_buff->data_len[0] = skb->len;
+-- 
+2.43.0
+
 
