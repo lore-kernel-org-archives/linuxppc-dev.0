@@ -1,63 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-9087-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9088-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDC78C5AD49
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  2 Jun 2025 21:49:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3FEB9C5AD49
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  3 Jun 2025 06:50:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bB6tm37j1z2yMF;
-	Tue,  3 Jun 2025 07:49:20 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=95.143.211.150
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748878667;
-	cv=none; b=HBuOTUlI9KhEuwunCwiJCvp9hU5qF5WDD48HMFnkrL6F2lAGhQKL19UmamtjXwTv1qKw8hTKnEY98UFWVXnJb3WUfjYmLPFdzm8T7LtEKkGwpaKewWfrL+QwI2pJl+xGbHOip+j5IgROGOtF9anS777LWBYMRG0Qkm6mb4CzdQHEa7CNpi2+MNxPIHCIO+OwfGsd7FI0HWxKnZrhYw1wPGC2Ax4A2aZoB5o380tsrQFXoe5CZDykSspMvN2jy+RW3oUSWLCEyapxQpOZAYA8uSSBnY3njORtQrrlGLB3Civam7dFifUwvT5Mk2NU9iq+rivpfC6cVftlTy7rrTIPWA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bBLvM3q8Gz2yNB;
+	Tue,  3 Jun 2025 16:50:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1748933439;
+	cv=none; b=Acq6pOcKq44DMxhnzJeTezPA94cnbjluCPEHiF/iwlD3L92qrH9l06TbwNHajInTHkFQtO4bHLXhDi83/xm3sTTD7ZqIVI5+TczrqoceKnERGXedKOH2rO2+ZtvzT7InDIKtxpcRW5sXdShIXp/dFvXvtDteZO1Vvcm9bAmm1gjJxo0JqtnKOyQXgINrGKoRjNyp6gL05LWntEDYR6pLlAmpE9K6PeWjyJV710h6dDkAIYGenva2ZOgjtEIY0IaPY2nkm+hIQr51R7jIyYF764T7+F0PUnYkr4F7JypYUk2KUIEig9kX8W4AemiEs5Nj+UkvYLdXtBhJzyeGjgeJOg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1748878667; c=relaxed/relaxed;
-	bh=71YeMes/eS2IUpNl7YzmLJ929hx1mUSYVecvfpFiJtQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Xy+Rd9QS6sGJppvS+1bGqu5WdxiSyu99KdjEHYiRGzv1CSoQwKBSRtWHB7/MW+sYrGGFWUwwIyKJb4I3OEnwTmd/D5qPr2ZiRf51mrhPBr0lQoVTI1WMpccBNaVUAHq8Fh7Z2n/1j+O7xbFJV4Wz/9rqYhUWhPCaHu5/qmKE45QS0tlnfY4X18pe2EhoXM1Yocka3PbPeu805EdwF8eI1SOAomR7VSJ6FNf2loe77ZRagyF48XEgX1lfEL8gBTS1FCDBqw9/niM+C3BYg+8zjZzKwhu5on6LtGOCIiezsFzcdyI+S5eXFD4sSBO43B0rYvGpRRGHvYwScXGHCcgjHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=swemel.ru; dkim=pass (1024-bit key; unprotected) header.d=swemel.ru header.i=@swemel.ru header.a=rsa-sha256 header.s=mail header.b=vLEvMcXP; dkim-atps=neutral; spf=pass (client-ip=95.143.211.150; helo=mx.swemel.ru; envelope-from=arefev@swemel.ru; receiver=lists.ozlabs.org) smtp.mailfrom=swemel.ru
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=swemel.ru
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=swemel.ru header.i=@swemel.ru header.a=rsa-sha256 header.s=mail header.b=vLEvMcXP;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=swemel.ru (client-ip=95.143.211.150; helo=mx.swemel.ru; envelope-from=arefev@swemel.ru; receiver=lists.ozlabs.org)
-X-Greylist: delayed 572 seconds by postgrey-1.37 at boromir; Tue, 03 Jun 2025 01:37:44 AEST
-Received: from mx.swemel.ru (mx.swemel.ru [95.143.211.150])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4b9yf03CY8z2xfB
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jun 2025 01:37:44 +1000 (AEST)
-From: Denis Arefev <arefev@swemel.ru>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=swemel.ru; s=mail;
-	t=1748878085;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=71YeMes/eS2IUpNl7YzmLJ929hx1mUSYVecvfpFiJtQ=;
-	b=vLEvMcXPgfQ3CsiGHcuIMQoFRBemffsEWU+/pLhYVIot8+IQON8erRN31hp7Wz1r3pHcJH
-	uCmrxYYWnaxYkd5gZNpfhpXwYJPKYA2y8okms7S4ZDS3krqzFQD5QeoGTjWajDDdEy7IO9
-	04idVRUI00JhAD4t9stKVQVk12j4LHk=
-To: stable@vger.kernel.org,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
-	Benjamin Herrenschmidt <benh@kernel.crashing.org>,
-	Paul Mackerras <paulus@samba.org>,
-	Dany Madden <drt@linux.ibm.com>,
-	Lijun Pan <ljp@linux.ibm.com>,
-	Sukadev Bhattiprolu <sukadev@linux.ibm.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Jakub Kicinski <kuba@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	netdev@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	lvc-project@linuxtesting.org,
-	Nick Child <nnac123@linux.ibm.com>,
-	Paolo Abeni <pabeni@redhat.com>
-Subject: [PATCH 5.10] ibmvnic: Add tx check to prevent skb leak
-Date: Mon,  2 Jun 2025 18:28:04 +0300
-Message-ID: <20250602152805.88204-1-arefev@swemel.ru>
+	t=1748933439; c=relaxed/relaxed;
+	bh=W9de7jHyyi7evOifFTIQ9/m9iBZ5RWO3QkmEBJCYbTE=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fhDCxEhJ5gO6EV5Xw1xNUUmMfNdU4HittIAZySw4Jhaga66qQTFpG88KsgH4v7WCllgSFYUv87v3F0mACAZwVEzwfeBHX0HDx3Ad2yLSSjbnn5h7LUPYYbUlgGXfm6RvuuE+u1ZNkBMw4QtxMI91SSmS/DZih5slEYPtB5Ct/40QEBeKYZ3fkX5kYP0t030ZcqNTww1zT6v1Ob0yRc5EET3OA9Gj673ZDL+HhWjBgOePSBlUIo6F0vfKgKUgZzAHwdEwrrS6a9cPwWQc+2dsv0OgU++gMvWisdsNS2UMMaoTRAGLtrsDE9trAGtIYAjQacbt4xy88dbxlRIdTQTi8w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bBLvL3TL6z2yKq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  3 Jun 2025 16:50:35 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4bBLln4vWSz9vY5;
+	Tue,  3 Jun 2025 08:44:05 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id jjqPCRYCwsSv; Tue,  3 Jun 2025 08:44:05 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4bBLln47Zbz9vY4;
+	Tue,  3 Jun 2025 08:44:05 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 88DBB8B765;
+	Tue,  3 Jun 2025 08:44:05 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id WDcIPDlhdCxM; Tue,  3 Jun 2025 08:44:05 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2D7CC8B763;
+	Tue,  3 Jun 2025 08:44:05 +0200 (CEST)
+Message-ID: <3cebc3c4-dbaf-41f6-b98d-1d33bea2eeeb@csgroup.eu>
+Date: Tue, 3 Jun 2025 08:44:04 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,68 +58,95 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc: use always-y instead of extra-y in Makefiles
+To: Masahiro Yamada <masahiroy@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Naveen N Rao <naveen@kernel.org>, linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org
+References: <20250602163302.478765-1-masahiroy@kernel.org>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20250602163302.478765-1-masahiroy@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-From: Nick Child <nnac123@linux.ibm.com>
 
-commit 0983d288caf984de0202c66641577b739caad561 upstream.
 
-Below is a summary of how the driver stores a reference to an skb during
-transmit:
-    tx_buff[free_map[consumer_index]]->skb = new_skb;
-    free_map[consumer_index] = IBMVNIC_INVALID_MAP;
-    consumer_index ++;
-Where variable data looks like this:
-    free_map == [4, IBMVNIC_INVALID_MAP, IBMVNIC_INVALID_MAP, 0, 3]
-                                               	consumer_index^
-    tx_buff == [skb=null, skb=<ptr>, skb=<ptr>, skb=null, skb=null]
+Le 02/06/2025 à 18:32, Masahiro Yamada a écrit :
+> The extra-y syntax is planned for deprecation because it is similar
+> to always-y.
+> 
+> When building the boot wrapper, always-y and extra-y are equivalent.
+> Use always-y instead.
+> 
+> In arch/powerpc/kernel/Makefile, I added ifdef KBUILD_BUILTIN to
+> keep the current behavior: prom_init_check is skipped when building
+> only modular objects.
 
-The driver has checks to ensure that free_map[consumer_index] pointed to
-a valid index but there was no check to ensure that this index pointed
-to an unused/null skb address. So, if, by some chance, our free_map and
-tx_buff lists become out of sync then we were previously risking an
-skb memory leak. This could then cause tcp congestion control to stop
-sending packets, eventually leading to ETIMEDOUT.
+I don't understand what you mean.
 
-Therefore, add a conditional to ensure that the skb address is null. If
-not then warn the user (because this is still a bug that should be
-patched) and free the old pointer to prevent memleak/tcp problems.
+CONFIG_PPC_OF_BOOT_TRAMPOLINE is a bool, it cannot be a module.
 
-Signed-off-by: Nick Child <nnac123@linux.ibm.com>
-Signed-off-by: Paolo Abeni <pabeni@redhat.com>
-[Denis: minor fix to resolve merge conflict.]                                           
-Signed-off-by: Denis Arefev <arefev@swemel.ru>                                    
----
-Backport fix for CVE-2024-41066
-Link: https://nvd.nist.gov/vuln/detail/CVE-2024-41066
----
- drivers/net/ethernet/ibm/ibmvnic.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+prom_init_check is only to check the content of prom_init.o which is 
+never a module.
 
-diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
-index 84da6ccaf339..e63220ebb2ea 100644
---- a/drivers/net/ethernet/ibm/ibmvnic.c
-+++ b/drivers/net/ethernet/ibm/ibmvnic.c
-@@ -1625,6 +1625,18 @@ static netdev_tx_t ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
- 	    (tx_pool->consumer_index + 1) % tx_pool->num_buffers;
- 
- 	tx_buff = &tx_pool->tx_buff[index];
-+
-+	/* Sanity checks on our free map to make sure it points to an index
-+	 * that is not being occupied by another skb. If skb memory is
-+	 * not freed then we see congestion control kick in and halt tx.
-+	 */
-+	if (unlikely(tx_buff->skb)) {
-+		dev_warn_ratelimited(dev, "TX free map points to untracked skb (%s %d idx=%d)\n",
-+				     skb_is_gso(skb) ? "tso_pool" : "tx_pool",
-+				     queue_num, index);
-+		dev_kfree_skb_any(tx_buff->skb);
-+	}
-+
- 	tx_buff->skb = skb;
- 	tx_buff->data_dma[0] = data_dma_addr;
- 	tx_buff->data_len[0] = skb->len;
--- 
-2.43.0
+Is always-y to run _after_ prom_init.o is built ?
+
+Christophe
+
+> 
+> Signed-off-by: Masahiro Yamada <masahiroy@kernel.org>
+> ---
+> 
+>   arch/powerpc/boot/Makefile   | 6 +++---
+>   arch/powerpc/kernel/Makefile | 4 +++-
+>   2 files changed, 6 insertions(+), 4 deletions(-)
+> 
+> diff --git a/arch/powerpc/boot/Makefile b/arch/powerpc/boot/Makefile
+> index 184d0680e661..b003f7ac8755 100644
+> --- a/arch/powerpc/boot/Makefile
+> +++ b/arch/powerpc/boot/Makefile
+> @@ -242,13 +242,13 @@ $(obj)/wrapper.a: $(obj-wlib) FORCE
+>   hostprogs	:= addnote hack-coff mktree
+>   
+>   targets		+= $(patsubst $(obj)/%,%,$(obj-boot) wrapper.a) zImage.lds
+> -extra-y		:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
+> +always-y	:= $(obj)/wrapper.a $(obj-plat) $(obj)/empty.o \
+>   		   $(obj)/zImage.lds $(obj)/zImage.coff.lds $(obj)/zImage.ps3.lds
+>   
+>   dtstree		:= $(src)/dts
+>   
+>   wrapper		:= $(src)/wrapper
+> -wrapperbits	:= $(extra-y) $(addprefix $(obj)/,addnote hack-coff mktree) \
+> +wrapperbits	:= $(always-y) $(addprefix $(obj)/,addnote hack-coff mktree) \
+>   			$(wrapper) FORCE
+>   
+>   #############
+> @@ -455,7 +455,7 @@ WRAPPER_DTSDIR := /usr/lib/kernel-wrapper/dts
+>   WRAPPER_BINDIR := /usr/sbin
+>   INSTALL := install
+>   
+> -extra-installed		:= $(patsubst $(obj)/%, $(DESTDIR)$(WRAPPER_OBJDIR)/%, $(extra-y))
+> +extra-installed		:= $(patsubst $(obj)/%, $(DESTDIR)$(WRAPPER_OBJDIR)/%, $(always-y))
+>   hostprogs-installed	:= $(patsubst %, $(DESTDIR)$(WRAPPER_BINDIR)/%, $(hostprogs))
+>   wrapper-installed	:= $(DESTDIR)$(WRAPPER_BINDIR)/wrapper
+>   dts-installed		:= $(patsubst $(dtstree)/%, $(DESTDIR)$(WRAPPER_DTSDIR)/%, $(wildcard $(dtstree)/*.dts))
+> diff --git a/arch/powerpc/kernel/Makefile b/arch/powerpc/kernel/Makefile
+> index 4d2daa8e7bca..ac01cedad107 100644
+> --- a/arch/powerpc/kernel/Makefile
+> +++ b/arch/powerpc/kernel/Makefile
+> @@ -201,7 +201,9 @@ obj-$(CONFIG_ALTIVEC)		+= vector.o
+>   
+>   obj-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE) += prom_init.o
+>   obj64-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE) += prom_entry_64.o
+> -extra-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE) += prom_init_check
+> +ifdef KBUILD_BUILTIN
+> +always-$(CONFIG_PPC_OF_BOOT_TRAMPOLINE) += prom_init_check
+> +endif
+>   
+>   obj-$(CONFIG_PPC64)		+= $(obj64-y)
+>   obj-$(CONFIG_PPC32)		+= $(obj32-y)
 
 
