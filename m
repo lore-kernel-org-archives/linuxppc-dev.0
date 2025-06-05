@@ -1,98 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-9166-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9167-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFA6EC5B543
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Jun 2025 12:09:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FE3AC5B555
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Jun 2025 12:13:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bCjtC2BBXz2yLB;
-	Thu,  5 Jun 2025 22:09:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::f33"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749125363;
-	cv=none; b=fmtFuMEJ7IUN+Ftsgv8siVink5+fnl+/4mOlza1NjdwLsg3TSPwpg+xdYUVG4Y6MDIZpQyHz0EjZ3RoeSVl/Kf//z8k8RSvphlzmCZIDmYO9N8LC9udvY39wXMD3/UxajqFVprvYR1cyKXGRClfTzB6bx6B45HIPqXNoxJO2OhbqqIrHxF0PXFIL4VBcMB+jnK3dbRK1l9bVXe+iu2aeXw5aRx7ai74r/64OC+027zxWpB99+peZSaEn92M1v8ROWrMJe9v+2f3DpzPz7xEDkW53BKe8HBwr2p+693lR2qAFuvsw1G6urPiVdbRLCuewyHmpp82P0s9yRZFEaZRejg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bCjzP0Pwzz2yYJ;
+	Thu,  5 Jun 2025 22:13:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749119118;
+	cv=none; b=OPnsS1E6083O7kHmb6kRYXqHhKwmygobD+rs+tt5QOY9wdRKxsnW5WQ790so9Vo+/Ug22bh0Wr86dhkI/AsXfPnW/xvoC/wR0MVA/2/4kzdn0Of4XSbxME06pdUu+aS6jjrbnQUzcJZA34unoGSK2dDn7gO7NuHjkNeQwR1eqNVZz7ZFG95Eni2FR0CckN2z6ghgrJk9ytH7sZUOIa84hnWFZ8kp681zQgC6YKGO7tytLhPLBUAR9HXBC83JTGEZJlM7zk91wI9rO0lIbuV3eDF8+FAJpzzsJXTchWlfaJO1fly4PV4EJpHMz/OzIixuenOXqJSVLedfniN4YDnz3Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749125363; c=relaxed/relaxed;
-	bh=UNA1AqJPiuiUBzCeRC8bK1nu38f0qCHlYuwt9uDWl+g=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=G0L97kT793WYzEPak+mOBJF/Kjspi/utEEwGtRjN3+RdZMC24IwggCM+s7t/9ZdbIAZzOHgd6WAa7n78bvaRfLYL2Jp1YROmgCDqaZkm0xNZ/L1PssLosR0kSiZLSoTEW/wpaq6IRT8PsiGojzImTDxHyy8XAairVRXQaXRxoalZMzoTZSyxJ+mZQf4eLsIeHBqfhGIwvyyCObx5xay9iLwSzwrlr72P61O/tbyyTLWVIv9/rvhQQtlAn7cHW90z3ULQIGJv/tZf41diaScxpnjRwl8nhXQBOLyXy+rt+BbE8yR1ndKfpJzXKtcmdQL1bV+BJTVz5KKRrBN4IHqIhw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=dd5/AOVP; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f33; helo=mail-qv1-xf33.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
+	t=1749119118; c=relaxed/relaxed;
+	bh=22nzGWHZvbYaZQRZMdCHmym8UvnMl7KxB4uEGF5YMj8=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=gko+ubTwyD8GRAYC0xXfA82cLq89aJnVuwHhsyYbLArjPNQMkW8hMoBxK+g916Nm7HWE0Ncxf4zgydCF5NKn29t1tm0VRJmF41tw+N7OWuKWZMsicSGdSXziHIwh5q9NLEK7oCHZ/h8DZABzvmVcF0wkQR8WyRzArTKSE1qJspSzhrBvPPb2EGV74Z09GQEvZPwYStO7Pyg2SyrgnGwFT6royHhWtscfPwS0VarrjBfZpbcBakuX76KvV7OUekjdLR8ywy7HPPXorml62xazOvK9H44JouHMwb3ju1UZiCATfoBMEAnkXrEeAR8oJ4vqUJr5/gS3rs3rzGBwFn75GA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f4PPodmG; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=sven@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=dd5/AOVP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f4PPodmG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=2607:f8b0:4864:20::f33; helo=mail-qv1-xf33.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
-Received: from mail-qv1-xf33.google.com (mail-qv1-xf33.google.com [IPv6:2607:f8b0:4864:20::f33])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=sven@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bCjtB15p9z2xH9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2025 22:09:21 +1000 (AEST)
-Received: by mail-qv1-xf33.google.com with SMTP id 6a1803df08f44-6fadb9a0325so8791506d6.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 05 Jun 2025 05:09:21 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=ziepe.ca; s=google; t=1749125358; x=1749730158; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=UNA1AqJPiuiUBzCeRC8bK1nu38f0qCHlYuwt9uDWl+g=;
-        b=dd5/AOVPaG8ozl670CfTudpE0ipWiQbpMkYrwZ6O82xbUcjpVlLPdZdoqR7NDqQzlK
-         omQs6tGHtbobMLI97/4+AXiFF/0PdqLqbFBgPvLVtlSRTP/1GhtX6rxNB8nMUHt+vTk0
-         vAw1e+weGYBrnY2tStVDZP0uJqdAB86ymXPl75bkLyrMHG1iV8aEvw5VeTW94sK8bThG
-         PV669uh1sVxzzmyaD4hj3nvcgHx/ZQXRO0EhoPRvykbO71iI6rsNU1NQq7Uz4v2Dw51R
-         AK7j8q6jcWb3ESM5Vj45WPUnY+JKxLN9PVtDn4PHgAQg3fpqSD86RVO/3MykCwrvfuDo
-         O7+A==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749125358; x=1749730158;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=UNA1AqJPiuiUBzCeRC8bK1nu38f0qCHlYuwt9uDWl+g=;
-        b=h3aVogyZYjS7UyuejvlyghHSk4+IOVZjKEqIwqJVDRKGythHAXP8ToPpYSJwOcDE4+
-         0zr9+mpVooT6QrDhVKDeQa0cKUOx05cCQ6ArTyKUG7q2Keb+Zw6w1CFvNCLcxcG8ffVU
-         2hZSQnEJq2/4WLRDEA7Lk2MlVCJYfVufmIpX7ZRNoMcMerABkTBL2KoLSfggLRVbQMRw
-         yAj95/ss43k1yflp/q/zcOBkMnDZkqxFDlCsHgib/nqynPVmYAe3roTXX2O9Ws+x9vr6
-         1wWyHrEWcnsusi/KXf9LvkkiVJDxTg/cAuciFlZ1CkGCZ1GxeM9vQyuHGD+ATm15C9gQ
-         VWDw==
-X-Forwarded-Encrypted: i=1; AJvYcCWbCLv2iErVb1p/89iMFy9zVpxpK448qEBO9Nz91rzu6R5cb3kBNRjaZ6u5kWahVkRRU6C5G4ninDWp+tw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzFDlrBFphPy4DF3E1o5ENdT7mSpNtrexr6KjbE+Er6nMfngcwQ
-	VWj3QTAuUWdQ7n+NSqrT4LEGiA44HbcusEFS9Xe98can5VrqCXUd8rpPOkAQt6mRYnw=
-X-Gm-Gg: ASbGncviMMg56BW2jCxJY+Mb/miwXVBCLJ2qywDr2Hbhb1Pw2IDJqjSNEils8zeoQTz
-	UarlF5Agfq9LB4Y6KfLI8YrnB+CCGZT1HzVJq7kB5eft2JMO8dtVjN+cJXEC2rJ2d6bf3VczcxY
-	rf0PyfXwo+9+nz+HLS6AhdstOnqRNHUBLZWbCaLy0l0SKeJDpYWLnzBRu7v0cunHFCve2HBRiom
-	G2rFV2zUBYMPHOPSm+9K8aFh+eQEjd4Jhxkddh38USeJgs0TRv9S8nsHZEGsDtdT+4M49LnJOfk
-	55YT1lXrPusjQHX4bOOMVE7U815EBEUVUx9253n6au2Q3StarEU/W8elrB1Q8k00+qrSz61xHCm
-	3oScd87Fa+o9vlzcesK1u/wSenvw=
-X-Google-Smtp-Source: AGHT+IGoKm/5U4/UM2uM64qO2HBitYJapsKbuDFJlmk9byEyE/W8ROsmev/IR9V9jeal6LfHAI1O8g==
-X-Received: by 2002:a05:6214:224d:b0:6fa:c512:c401 with SMTP id 6a1803df08f44-6faf70163f2mr115317766d6.37.1749125350351;
-        Thu, 05 Jun 2025 05:09:10 -0700 (PDT)
-Received: from ziepe.ca (hlfxns017vw-142-167-56-70.dhcp-dynamic.fibreop.ns.bellaliant.net. [142.167.56.70])
-        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-6fac6d4c7d8sm120604836d6.36.2025.06.05.05.09.09
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 05 Jun 2025 05:09:09 -0700 (PDT)
-Received: from jgg by wakko with local (Exim 4.97)
-	(envelope-from <jgg@ziepe.ca>)
-	id 1uN9PB-00000000EdT-18gz;
-	Thu, 05 Jun 2025 09:09:09 -0300
-Date: Thu, 5 Jun 2025 09:09:09 -0300
-From: Jason Gunthorpe <jgg@ziepe.ca>
-To: Dan Williams <dan.j.williams@intel.com>
-Cc: Alistair Popple <apopple@nvidia.com>, linux-mm@kvack.org,
-	gerald.schaefer@linux.ibm.com, willy@infradead.org,
-	david@redhat.com, linux-kernel@vger.kernel.org,
-	nvdimm@lists.linux.dev, linux-fsdevel@vger.kernel.org,
-	linux-ext4@vger.kernel.org, linux-xfs@vger.kernel.org,
-	jhubbard@nvidia.com, hch@lst.de, zhang.lyra@gmail.com,
-	debug@rivosinc.com, bjorn@kernel.org, balbirs@nvidia.com,
-	lorenzo.stoakes@oracle.com, linux-arm-kernel@lists.infradead.org,
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-cxl@vger.kernel.org,
-	dri-devel@lists.freedesktop.org, John@groves.net
-Subject: Re: [PATCH 07/12] mm: Remove redundant pXd_devmap calls
-Message-ID: <20250605120909.GA44681@ziepe.ca>
-References: <cover.541c2702181b7461b84f1a6967a3f0e823023fcc.1748500293.git-series.apopple@nvidia.com>
- <2ee5a64581d2c78445e5c4180d7eceed085825ca.1748500293.git-series.apopple@nvidia.com>
- <6841026c50e57_249110022@dwillia2-xfh.jf.intel.com.notmuch>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bCgZ53tQwz2xgp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2025 20:25:17 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id DD85F5C5753;
+	Thu,  5 Jun 2025 10:22:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DFA39C4CEE7;
+	Thu,  5 Jun 2025 10:25:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1749119114;
+	bh=YdJvMMxNeJZ4ws+mkLoEmNugy4D3YfkKWs3ds4JIL/4=;
+	h=Date:From:Subject:To:Cc:References:In-Reply-To:From;
+	b=f4PPodmGDavBEPsrZH6CTP09Oz6VdO24835qnpwrQF7qR5Ng57NXXpxvd9Fe6yCJ9
+	 ZWQs9LT6MR03KUhBwDM+qyCAhlW/qA9J50X9SLcQs4lViFsNGn8mbG7/ExG/rpwBvF
+	 HetZqNnqNbBtJYhDcKMwRW5OX0z+RL+shCvGmS6oFnEJpeivlSVd5GGzTMRj/wbffB
+	 CNU3TYc10Nm6vaNPxFg7B03NQ9Jx816OJyV79UqJ14fSJ1ef36k/DxAvFNmruTRIuV
+	 f696TTLTlqadTX1aCP2YtcxX3zueLEj39X9pXWt/9ttLekYbtlJqC2HjFb8K4Y7JTj
+	 98dbQqEkzkQ4w==
+Message-ID: <dafd58ae-0a08-4fe6-b94d-c8c6c8c1fa97@kernel.org>
+Date: Thu, 5 Jun 2025 12:25:09 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,28 +59,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <6841026c50e57_249110022@dwillia2-xfh.jf.intel.com.notmuch>
+User-Agent: Mozilla Thunderbird
+From: Sven Peter <sven@kernel.org>
+Subject: Re: [BUG] rmmod i2c-pasemi-platform causing kernel crash on Apple M1.
+To: =?UTF-8?B?56iL5YeM6aOe?= <chenglingfei22s@ict.ac.cn>, j@jannau.net,
+ alyssa@rosenzweig.io, neal@gompa.dev
+Cc: zhangzhenwei22b@ict.ac.cn, wangzhe12@ict.ac.cn, maddy@linux.ibm.com,
+ mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+ naveen@kernel.org, andi.shyti@kernel.org, asahi@lists.linux.dev,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <5c598fea.3165d.1973e0a9a3a.Coremail.chenglingfei22s@ict.ac.cn>
+Content-Language: en-US
+In-Reply-To: <5c598fea.3165d.1973e0a9a3a.Coremail.chenglingfei22s@ict.ac.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Wed, Jun 04, 2025 at 07:35:24PM -0700, Dan Williams wrote:
+Hi,
 
-> If all dax pages are special, then vm_normal_page() should never find
-> them and gup should fail.
+On 05.06.25 05:02, 程凌飞 wrote:
+> Hi, all!
 > 
-> ...oh, but vm_normal_page_p[mu]d() is not used in the gup path, and
-> 'special' is not set in the pte path.
+> We’ve encountered a kernel crash when running rmmod i2c-pasemi-platform on a Mac Mini M1 (T8103) running Asahi Arch Linux.
+> 
+> The bug was first found on the Linux v6.6, which is built manually with the Asahi given config to run our services.
+> At that time, the i2c-pasemi-platform was i2c-apple.
+> 
+> We noticed in the Linux v6.7, the pasemi is splitted into two separate modules, one of which is i2c-pasemi-platform.
+> Therefore, we built Linux v6.14.6 and tried to rmmod i2c-pasemi-platform again, the crash still exists. Moreover, we fetched
+> the latest i2c-pasemi-platform on linux-next(911483b25612c8bc32a706ba940738cc43299496) and asahi, built them and
+> tested again with Linux v6.14.6, but the crash remains.
+> 
+> Because kexec is not supported and will never be fully supported on Apple Silicon platforms due to hardware and firmware
+> design constraints, we can not record the panic logs through kdump.
 
-That seems really suboptimal?? Why would pmd and pte be different?
+Do you have UART connected to a device under test which you could use to 
+grab the panic log from the kernel? Alternatively you can also run the 
+kernel under m1n1's hypervisor and grab the log that way. It'll emulate 
+the serial port and redirect its output via USB.
 
-> I think for any p[mu]d where p[mu]d_page() is ok to use should never set
-> 'special', right?
+> 
+> Thus we tried to find the root cause of the issue manually. When we perform rmmod, the kernel performs device releasing on
+> the i2c bus, then calls the remove function in snd-soc-cs42l83-i2c, which calls the cs42l42_common_remove in cs42l42,
+> because cs42l42-&gt;init_done is true, it performs regmap_write, and finally calls into pasemi_smb_waitready in i2c-pasemi
+> -core.c. We noticed that smbus-&gt;use_irq is true, and after it calls into wait_for_completion_timeout, the system crashs!>
+> We found that wait_for_completion_timeout is one of the core scheduler APIs used by tens of thousands of other drivers,
+> it is unlikely causing the crash. So we tried to remove the call to wait_for_completion_timeout, then the system seems to
+> run well.
+> 
+> However, because we have little knowledge about i2c devices and specifications, we are not sure whether this change will
+> cause other potential harms for the system and device. Is this call to wait necesary here? Or can you give a more
+> sophisticated fix?
 
-There should be dedicated functions for installing pages and PFNs,
-only the PFN one would set the special bit.
+Yes, that call is necessary. It waits for the "transfer completed" 
+interrupt from the hardware. Without it the driver will try to read data 
+before it's available and you'll see corruption. I'm surprised hardware 
+attached to i2c (usb pd controller and audio I think) works at all with 
+that change.
 
-And certainly your tests *should* be failing as special entries should
-never ever be converted to struct page.
 
-Jason
+Sven
+
 
