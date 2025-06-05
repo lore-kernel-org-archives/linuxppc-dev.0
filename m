@@ -1,54 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-9169-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9170-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2192BC5AE59
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Jun 2025 12:28:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D42EEC5AE59
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  5 Jun 2025 14:02:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bCkHf5QYPz2ySg;
-	Thu,  5 Jun 2025 22:27:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.87
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749124529;
-	cv=none; b=P+cCAkLiI7nBYD02pnrhgfmAAHO0tWbdS3Dyow4iWKpJvosVk8DvqinheqQMXE+0haq5fC0QXrGzqW9oJ/Kd+bncrjsBaXrfsLdas6xVSU6L+C1e5qdXPTiUvshrDegGUpuzIj9oWiEarmCyE8wh9fNrK/B9SWDcarlLSQmFaMrxcYzMFJL2aHDaj6OR5feI2kz8AXvgnTF+pcylvxXLTKRW6Ei+w4LhfW/40E7/HpCDxlKFI/gUeJsqEiiFB0WTN8KX2BdYsqut/K6Kxtiqryx9RccDiu+VZZiiszNls2c/3jylDR3j87at3VjK4LbISbOhgeRb5dbk06KQgwv8xg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bCmP22rsdz2yLB;
+	Fri,  6 Jun 2025 00:02:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749132166;
+	cv=none; b=OQfniZc69FxcH63jnUa8hxjLrk8E1rSBc2PDQAo4TyRIHY6X+mmHFWiusX96bAMVRZRJVpxcTR/kKrqvNLgx71Gi0FU8PgfVGiteclrPY/zqEru+hMt5WfmuPOZ8mzKjnhI5X3A+obausVzsXT+9artzja4D0/mQRxzgTTs7mqBfvPBeq6BcBa1SWw/k6FC4eFJT/3FU+kOkyHz5UCLOf9B2KMhVSFP2oVl3BbRmCXI3skRgwS8yFAfgXPlLFb+Fmg3WA6QmJZJJ6P19Tdw8Od0p2P+cE+kcHvd4HgN8axfEFENkhw9QSa2Fj5oPP8AOSLYUfYZo8TWV8Qys4OmnvA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749124529; c=relaxed/relaxed;
-	bh=rXlgnrnD2yeES9tC2kP2vDA8Z0bsnayASllAK5ZGhkc=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:References:Content-Type:
-	 MIME-Version:Message-ID; b=KxwQN1pWEFVyldzfowSA2HmIP/bnxCBGISPUYxufTVGEbFsWoCQWrPPwjeGdMLC+PccYcZdPmncAL6uljcyg+dliTlS2S9fPVC/10lZckxOYaFSsTPsQy3G7YM2BPjrUDgXLkvGHU9g7H9ZNlvPF1oA9zZsLdnh5JIIeTcUHpbIetgkQ8tz0WfPHuruPLTmcizh+brsqTX2RkOQvdpd9oS72qZ1PW88WmJjoYTDGG6AN+zxZFQHVrqAml3JKavA3tbhiQirh/0uQKVy3ncIT3XA2cmK88Fxb6SIKaLLqopATyhz/OtFd3XyrYARbkghp7z6v/ZLIX6LeYZi/AVFTGQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ict.ac.cn; spf=pass (client-ip=159.226.251.87; helo=cstnet.cn; envelope-from=chenglingfei22s@ict.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=ict.ac.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ict.ac.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ict.ac.cn (client-ip=159.226.251.87; helo=cstnet.cn; envelope-from=chenglingfei22s@ict.ac.cn; receiver=lists.ozlabs.org)
-Received: from cstnet.cn (smtp87.cstnet.cn [159.226.251.87])
+	t=1749132166; c=relaxed/relaxed;
+	bh=A5uK2i3PQtgjLrrWFtuaofjfiE8UiJnHn2HsiWlBHcI=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:References:
+	 In-Reply-To:Content-Type; b=NDuRfXW2zt50jZVXxaQPlIBg+rnvF4Kg9bYy73fk06cgJ0/Sy9y8s5ldzWjn8txL5lNlLC8z/lZAInjX1NHuhhC0qAhrVpnwSm2KmVsFFtmo+AMV/grlBprJj0wgOTwyV94wVnAZyI/SdUgISdTmWf72P3FCjrY4leuEi4l16vRh/lN3LryOYTtqrvPzHQuINMDfaMCBNoK9QAB50X3MZqD2eSAeBLIw5Gl2U64/P8/dD3EgWJvuQFXdEd9/RU7G12lHkTdda3pRqBExfLfLFJi3Fh70QK4aoFQEHwVFaL1JrOsTu5X6tqIzQyqLwRbKm88ZXTc85BnhCy3VJWQo9Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gu1SckNE; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=sven@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gu1SckNE;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=sven@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bCjZ64kxjz2xH9
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  5 Jun 2025 21:55:25 +1000 (AEST)
-Received: from chenglingfei22s$ict.ac.cn ( [115.42.62.11] ) by
- ajax-webmail-APP-17 (Coremail) ; Thu, 5 Jun 2025 19:55:00 +0800 (GMT+08:00)
-X-Originating-IP: [115.42.62.11]
-Date: Thu, 5 Jun 2025 19:55:00 +0800 (GMT+08:00)
-X-CM-HeaderCharset: UTF-8
-From: chenglingfei <chenglingfei22s@ict.ac.cn>
-To: "Sven Peter" <sven@kernel.org>
-Cc: j@jannau.net, alyssa@rosenzweig.io, neal@gompa.dev, 
-	zhangzhenwei22b@ict.ac.cn, wangzhe12@ict.ac.cn, maddy@linux.ibm.com, 
-	mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, 
-	naveen@kernel.org, andi.shyti@kernel.org, asahi@lists.linux.dev, 
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
-Subject: Re: Re: [BUG] rmmod i2c-pasemi-platform causing kernel crash on
- Apple M1.
-X-Priority: 3
-X-Mailer: Coremail Webmail Server Version 2024.1-cmXT5 build
- 20240627(e6c6db66) Copyright (c) 2002-2025 www.mailtech.cn cnic.cn
-In-Reply-To: <dafd58ae-0a08-4fe6-b94d-c8c6c8c1fa97@kernel.org>
-References: <5c598fea.3165d.1973e0a9a3a.Coremail.chenglingfei22s@ict.ac.cn>
- <dafd58ae-0a08-4fe6-b94d-c8c6c8c1fa97@kernel.org>
-Content-Transfer-Encoding: base64
-Content-Type: text/plain; charset=UTF-8
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bCmP13tB4z2xgp
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  6 Jun 2025 00:02:45 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 4DC8B5C67BB;
+	Thu,  5 Jun 2025 14:00:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C7D4C4CEE7;
+	Thu,  5 Jun 2025 14:02:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1749132160;
+	bh=iat9T/bPiMblSlK8d+zjpseMEDTU2L2gOx5NeoRkbMg=;
+	h=Date:From:Subject:To:Cc:References:In-Reply-To:From;
+	b=gu1SckNE3ydDy4+TPJ5hb90KWEtEJL7UQ4YxDNMsCyoErspywvpPZflGF86/Lds8N
+	 2CepgkWnmX/C16+jg8uf0zefUHcv5auHG6x2dW5P6PhyMoiB+q5pH51bhoHvYgkb9v
+	 tGsLt46b1Jqd/jhpUJI3Jl7q9DCtRCN9yDpqIAviHRmN0ab4xzWs1PixjB96Z5INAT
+	 ZsejwGMdmWfHwMfA8LlF1ebjHAbcdqooW1LTqAD6Jxf9E0b70Sk2n5IGeagqT2HfNB
+	 WSWBlRXkdzNSbUWRdhhQ8zCHndoIk8LmySF1ueBCBm2mr8YscM9fWJqP8/Rc8vAOAA
+	 KK15FRZIK7PYQ==
+Message-ID: <b3cbeae1-b0c5-43c3-80ec-3b6654582565@kernel.org>
+Date: Thu, 5 Jun 2025 16:02:35 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,87 +59,110 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Message-ID: <4cfe2276.2c0da.1973ff1cc40.Coremail.chenglingfei22s@ict.ac.cn>
-X-Coremail-Locale: zh_CN
-X-CM-TRANSID:qgCowAAn2AGUhUFonO0EAA--.19078W
-X-CM-SenderInfo: xfkh0wpolqwwthlsj2g6lf3hldfou0/1tbiBgoEDmhBUZjeHwAAsn
-X-Coremail-Antispam: 1Ur529EdanIXcx71UUUUU7IcSsGvfJ3iIAIbVAYjsxI4VW3Jw
-	CS07vEb4IE77IF4wCS07vE1I0E4x80FVAKz4kxMIAIbVAFxVCaYxvI4VCIwcAKzIAtYxBI
-	daVFxhVjvjDU=
+User-Agent: Mozilla Thunderbird
+From: Sven Peter <sven@kernel.org>
+Subject: Re: [BUG] rmmod i2c-pasemi-platform causing kernel crash on Apple M1.
+To: chenglingfei <chenglingfei22s@ict.ac.cn>
+Cc: j@jannau.net, alyssa@rosenzweig.io, neal@gompa.dev,
+ zhangzhenwei22b@ict.ac.cn, wangzhe12@ict.ac.cn, maddy@linux.ibm.com,
+ mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+ naveen@kernel.org, andi.shyti@kernel.org, asahi@lists.linux.dev,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <5c598fea.3165d.1973e0a9a3a.Coremail.chenglingfei22s@ict.ac.cn>
+ <dafd58ae-0a08-4fe6-b94d-c8c6c8c1fa97@kernel.org>
+ <4cfe2276.2c0da.1973ff1cc40.Coremail.chenglingfei22s@ict.ac.cn>
+Content-Language: en-US
+In-Reply-To: <4cfe2276.2c0da.1973ff1cc40.Coremail.chenglingfei22s@ict.ac.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-CgoKJmd0OyAtLS0tLeWOn+Wni+mCruS7ti0tLS0tCiZndDsg5Y+R5Lu25Lq6OiAiU3ZlbiBQZXRl
-ciIgPHN2ZW5Aa2VybmVsLm9yZz4KJmd0OyDlj5HpgIHml7bpl7Q6IDIwMjUtMDYtMDUgMTg6MjU6
-MDkgKOaYn+acn+WbmykKJmd0OyDmlLbku7bkuro6IOeoi+WHjOmjniA8Y2hlbmdsaW5nZmVpMjJz
-QGljdC5hYy5jbj4sIGpAamFubmF1Lm5ldCwgYWx5c3NhQHJvc2VuendlaWcuaW8sIG5lYWxAZ29t
-cGEuZGV2CiZndDsg5oqE6YCBOiB6aGFuZ3poZW53ZWkyMmJAaWN0LmFjLmNuLCB3YW5nemhlMTJA
-aWN0LmFjLmNuLCBtYWRkeUBsaW51eC5pYm0uY29tLCBtcGVAZWxsZXJtYW4uaWQuYXUsIG5waWdn
-aW5AZ21haWwuY29tLCBjaHJpc3RvcGhlLmxlcm95QGNzZ3JvdXAuZXUsIG5hdmVlbkBrZXJuZWwu
-b3JnLCBhbmRpLnNoeXRpQGtlcm5lbC5vcmcsIGFzYWhpQGxpc3RzLmxpbnV4LmRldiwgbGludXgt
-YXJtLWtlcm5lbEBsaXN0cy5pbmZyYWRlYWQub3JnLCBsaW51eHBwYy1kZXZAbGlzdHMub3psYWJz
-Lm9yZywgbGludXgtaTJjQHZnZXIua2VybmVsLm9yZywgbGludXgta2VybmVsQHZnZXIua2VybmVs
-Lm9yZwomZ3Q7IOS4u+mimDogUmU6IFtCVUddIHJtbW9kIGkyYy1wYXNlbWktcGxhdGZvcm0gY2F1
-c2luZyBrZXJuZWwgY3Jhc2ggb24gQXBwbGUgTTEuCiZndDsgCiZndDsgSGksCiZndDsgCiZndDsg
-T24gMDUuMDYuMjUgMDU6MDIsIOeoi+WHjOmjniB3cm90ZToKJmd0OyAmZ3Q7IEhpLCBhbGwhCiZn
-dDsgJmd0OyAKJmd0OyAmZ3Q7IFdl4oCZdmUgZW5jb3VudGVyZWQgYSBrZXJuZWwgY3Jhc2ggd2hl
-biBydW5uaW5nIHJtbW9kIGkyYy1wYXNlbWktcGxhdGZvcm0gb24gYSBNYWMgTWluaSBNMSAoVDgx
-MDMpIHJ1bm5pbmcgQXNhaGkgQXJjaCBMaW51eC4KJmd0OyAmZ3Q7IAomZ3Q7ICZndDsgVGhlIGJ1
-ZyB3YXMgZmlyc3QgZm91bmQgb24gdGhlIExpbnV4IHY2LjYsIHdoaWNoIGlzIGJ1aWx0IG1hbnVh
-bGx5IHdpdGggdGhlIEFzYWhpIGdpdmVuIGNvbmZpZyB0byBydW4gb3VyIHNlcnZpY2VzLgomZ3Q7
-ICZndDsgQXQgdGhhdCB0aW1lLCB0aGUgaTJjLXBhc2VtaS1wbGF0Zm9ybSB3YXMgaTJjLWFwcGxl
-LgomZ3Q7ICZndDsgCiZndDsgJmd0OyBXZSBub3RpY2VkIGluIHRoZSBMaW51eCB2Ni43LCB0aGUg
-cGFzZW1pIGlzIHNwbGl0dGVkIGludG8gdHdvIHNlcGFyYXRlIG1vZHVsZXMsIG9uZSBvZiB3aGlj
-aCBpcyBpMmMtcGFzZW1pLXBsYXRmb3JtLgomZ3Q7ICZndDsgVGhlcmVmb3JlLCB3ZSBidWlsdCBM
-aW51eCB2Ni4xNC42IGFuZCB0cmllZCB0byBybW1vZCBpMmMtcGFzZW1pLXBsYXRmb3JtIGFnYWlu
-LCB0aGUgY3Jhc2ggc3RpbGwgZXhpc3RzLiBNb3Jlb3Zlciwgd2UgZmV0Y2hlZAomZ3Q7ICZndDsg
-dGhlIGxhdGVzdCBpMmMtcGFzZW1pLXBsYXRmb3JtIG9uIGxpbnV4LW5leHQoOTExNDgzYjI1NjEy
-YzhiYzMyYTcwNmJhOTQwNzM4Y2M0MzI5OTQ5NikgYW5kIGFzYWhpLCBidWlsdCB0aGVtIGFuZAom
-Z3Q7ICZndDsgdGVzdGVkIGFnYWluIHdpdGggTGludXggdjYuMTQuNiwgYnV0IHRoZSBjcmFzaCBy
-ZW1haW5zLgomZ3Q7ICZndDsgCiZndDsgJmd0OyBCZWNhdXNlIGtleGVjIGlzIG5vdCBzdXBwb3J0
-ZWQgYW5kIHdpbGwgbmV2ZXIgYmUgZnVsbHkgc3VwcG9ydGVkIG9uIEFwcGxlIFNpbGljb24gcGxh
-dGZvcm1zIGR1ZSB0byBoYXJkd2FyZSBhbmQgZmlybXdhcmUKJmd0OyAmZ3Q7IGRlc2lnbiBjb25z
-dHJhaW50cywgd2UgY2FuIG5vdCByZWNvcmQgdGhlIHBhbmljIGxvZ3MgdGhyb3VnaCBrZHVtcC4K
-Jmd0OyAKJmd0OyBEbyB5b3UgaGF2ZSBVQVJUIGNvbm5lY3RlZCB0byBhIGRldmljZSB1bmRlciB0
-ZXN0IHdoaWNoIHlvdSBjb3VsZCB1c2UgdG8gCiZndDsgZ3JhYiB0aGUgcGFuaWMgbG9nIGZyb20g
-dGhlIGtlcm5lbD8gQWx0ZXJuYXRpdmVseSB5b3UgY2FuIGFsc28gcnVuIHRoZSAKJmd0OyBrZXJu
-ZWwgdW5kZXIgbTFuMSdzIGh5cGVydmlzb3IgYW5kIGdyYWIgdGhlIGxvZyB0aGF0IHdheS4gSXQn
-bGwgZW11bGF0ZSAKJmd0OyB0aGUgc2VyaWFsIHBvcnQgYW5kIHJlZGlyZWN0IGl0cyBvdXRwdXQg
-dmlhIFVTQi4KJmd0OyAKCkkgZG9uJ3QgaGF2ZSBVQVJULCBidXQgSSBoYXZlIHRyaWVkIHRvIHJ1
-biB0aGUga2VybmVsIHVuZGVyIG0xbjEncyBoeXBlcnZpc29yLiBIb3dldmVyLCBpdCBkb2VzIG5v
-dCB0cmlnZ2VyIHRoZSByZWxlYXNlIG9mIGNzNDJsODMuIApHaXZlbiB0aGF0IG0xbjEgcHJvdmlk
-ZXMgZnVsbCBwZXJpcGhlcmFsIGRldmljZSBlbXVsYXRpb24gY2FwYWJpbGl0eSwgdGhlIG1vc3Qg
-cGxhdXNpYmxlIGV4cGxhbmF0aW9uIHdvdWxkIGJlIGFuIGluY29ycmVjdCAKZmlybXdhcmUgbG9h
-ZGluZyBzZXF1ZW5jZS4gQnV0IHRoZSBkb2N1bWVudGF0aW9uIG9mIEFzYWhpIHByb3ZpZGVzIGxp
-dHRsZSBkZXRhaWxzIGFib3V0IGhvdyB0byBnZW5lcmF0ZSBhbiBpbml0cmFtZnMgd2l0aCAKZmly
-bXdhcmUgKEkgdGhpbmspLCBjYW4geW91IGdpdmUgbW9yZSBndWlkYW5jZSBhYm91dCBpdD8KCiZn
-dDsgJmd0OyAKJmd0OyAmZ3Q7IFRodXMgd2UgdHJpZWQgdG8gZmluZCB0aGUgcm9vdCBjYXVzZSBv
-ZiB0aGUgaXNzdWUgbWFudWFsbHkuIFdoZW4gd2UgcGVyZm9ybSBybW1vZCwgdGhlIGtlcm5lbCBw
-ZXJmb3JtcyBkZXZpY2UgcmVsZWFzaW5nIG9uCiZndDsgJmd0OyB0aGUgaTJjIGJ1cywgdGhlbiBj
-YWxscyB0aGUgcmVtb3ZlIGZ1bmN0aW9uIGluIHNuZC1zb2MtY3M0Mmw4My1pMmMsIHdoaWNoIGNh
-bGxzIHRoZSBjczQybDQyX2NvbW1vbl9yZW1vdmUgaW4gY3M0Mmw0MiwKJmd0OyAmZ3Q7IGJlY2F1
-c2UgY3M0Mmw0Mi0mZ3Q7aW5pdF9kb25lIGlzIHRydWUsIGl0IHBlcmZvcm1zIHJlZ21hcF93cml0
-ZSwgYW5kIGZpbmFsbHkgY2FsbHMgaW50byBwYXNlbWlfc21iX3dhaXRyZWFkeSBpbiBpMmMtcGFz
-ZW1pCiZndDsgJmd0OyAtY29yZS5jLiBXZSBub3RpY2VkIHRoYXQgc21idXMtJmd0O3VzZV9pcnEg
-aXMgdHJ1ZSwgYW5kIGFmdGVyIGl0IGNhbGxzIGludG8gd2FpdF9mb3JfY29tcGxldGlvbl90aW1l
-b3V0LCB0aGUgc3lzdGVtIGNyYXNocyEmZ3Q7CiZndDsgJmd0OyBXZSBmb3VuZCB0aGF0IHdhaXRf
-Zm9yX2NvbXBsZXRpb25fdGltZW91dCBpcyBvbmUgb2YgdGhlIGNvcmUgc2NoZWR1bGVyIEFQSXMg
-dXNlZCBieSB0ZW5zIG9mIHRob3VzYW5kcyBvZiBvdGhlciBkcml2ZXJzLAomZ3Q7ICZndDsgaXQg
-aXMgdW5saWtlbHkgY2F1c2luZyB0aGUgY3Jhc2guIFNvIHdlIHRyaWVkIHRvIHJlbW92ZSB0aGUg
-Y2FsbCB0byB3YWl0X2Zvcl9jb21wbGV0aW9uX3RpbWVvdXQsIHRoZW4gdGhlIHN5c3RlbSBzZWVt
-cyB0bwomZ3Q7ICZndDsgcnVuIHdlbGwuCiZndDsgJmd0OyAKJmd0OyAmZ3Q7IEhvd2V2ZXIsIGJl
-Y2F1c2Ugd2UgaGF2ZSBsaXR0bGUga25vd2xlZGdlIGFib3V0IGkyYyBkZXZpY2VzIGFuZCBzcGVj
-aWZpY2F0aW9ucywgd2UgYXJlIG5vdCBzdXJlIHdoZXRoZXIgdGhpcyBjaGFuZ2Ugd2lsbAomZ3Q7
-ICZndDsgY2F1c2Ugb3RoZXIgcG90ZW50aWFsIGhhcm1zIGZvciB0aGUgc3lzdGVtIGFuZCBkZXZp
-Y2UuIElzIHRoaXMgY2FsbCB0byB3YWl0IG5lY2VzYXJ5IGhlcmU/IE9yIGNhbiB5b3UgZ2l2ZSBh
-IG1vcmUKJmd0OyAmZ3Q7IHNvcGhpc3RpY2F0ZWQgZml4PwomZ3Q7IAomZ3Q7IFllcywgdGhhdCBj
-YWxsIGlzIG5lY2Vzc2FyeS4gSXQgd2FpdHMgZm9yIHRoZSAidHJhbnNmZXIgY29tcGxldGVkIiAK
-Jmd0OyBpbnRlcnJ1cHQgZnJvbSB0aGUgaGFyZHdhcmUuIFdpdGhvdXQgaXQgdGhlIGRyaXZlciB3
-aWxsIHRyeSB0byByZWFkIGRhdGEgCiZndDsgYmVmb3JlIGl0J3MgYXZhaWxhYmxlIGFuZCB5b3Un
-bGwgc2VlIGNvcnJ1cHRpb24uIEknbSBzdXJwcmlzZWQgaGFyZHdhcmUgCiZndDsgYXR0YWNoZWQg
-dG8gaTJjICh1c2IgcGQgY29udHJvbGxlciBhbmQgYXVkaW8gSSB0aGluaykgd29ya3MgYXQgYWxs
-IHdpdGggCiZndDsgdGhhdCBjaGFuZ2UuCiZndDsgCiZndDsgCiZndDsgU3ZlbgoKQXJlIHRoZXJl
-IGFueSBtZXRob2RzIG9yIHRvb2xzIHRvIHN5c3RlbWF0aWNhbGx5IHZlcmlmeSBpdHMgZnVuY3Rp
-b25hbGl0eT8gSSBhbSBub3Qgc3VyZSB3aGV0aGVyIHRoZSBkZXZpY2VzIGF0dGFjaGVkIHRvIGky
-YwpzaG91bGQgd29yayB3ZWxsIGV2ZW4gYWZ0ZXIgdGhlIGkyYy1wYXNlbWktcGxhdGZvcm0gaGFz
-IGJlZW4gcmVtb3ZlZC4KPC9jaGVuZ2xpbmdmZWkyMnNAaWN0LmFjLmNuPjwvc3ZlbkBrZXJuZWwu
-b3JnPg==
+Hi,
+
+On 05.06.25 13:55, chenglingfei wrote:
+> 
+> 
+> 
+> &gt; -----原始邮件-----
+> &gt; 发件人: "Sven Peter" <sven@kernel.org>
+> &gt; 发送时间: 2025-06-05 18:25:09 (星期四)
+> &gt; 收件人: 程凌飞 <chenglingfei22s@ict.ac.cn>, j@jannau.net, alyssa@rosenzweig.io, neal@gompa.dev
+> &gt; 抄送: zhangzhenwei22b@ict.ac.cn, wangzhe12@ict.ac.cn, maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu, naveen@kernel.org, andi.shyti@kernel.org, asahi@lists.linux.dev, linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org
+> &gt; 主题: Re: [BUG] rmmod i2c-pasemi-platform causing kernel crash on Apple M1.
+> &gt;
+> &gt; Hi,
+> &gt;
+> &gt; On 05.06.25 05:02, 程凌飞 wrote:
+> &gt; &gt; Hi, all!
+> &gt; &gt;
+> &gt; &gt; We’ve encountered a kernel crash when running rmmod i2c-pasemi-platform on a Mac Mini M1 (T8103) running Asahi Arch Linux.
+> &gt; &gt;
+> &gt; &gt; The bug was first found on the Linux v6.6, which is built manually with the Asahi given config to run our services.
+> &gt; &gt; At that time, the i2c-pasemi-platform was i2c-apple.
+> &gt; &gt;
+> &gt; &gt; We noticed in the Linux v6.7, the pasemi is splitted into two separate modules, one of which is i2c-pasemi-platform.
+> &gt; &gt; Therefore, we built Linux v6.14.6 and tried to rmmod i2c-pasemi-platform again, the crash still exists. Moreover, we fetched
+> &gt; &gt; the latest i2c-pasemi-platform on linux-next(911483b25612c8bc32a706ba940738cc43299496) and asahi, built them and
+> &gt; &gt; tested again with Linux v6.14.6, but the crash remains.
+> &gt; &gt;
+> &gt; &gt; Because kexec is not supported and will never be fully supported on Apple Silicon platforms due to hardware and firmware
+> &gt; &gt; design constraints, we can not record the panic logs through kdump.
+> &gt;
+> &gt; Do you have UART connected to a device under test which you could use to
+> &gt; grab the panic log from the kernel? Alternatively you can also run the
+> &gt; kernel under m1n1's hypervisor and grab the log that way. It'll emulate
+> &gt; the serial port and redirect its output via USB.
+> &gt;
+> 
+> I don't have UART, but I have tried to run the kernel under m1n1's hypervisor. However, it does not trigger the release of cs42l83.
+> Given that m1n1 provides full peripheral device emulation capability, the most plausible explanation would be an incorrect
+> firmware loading sequence. But the documentation of Asahi provides little details about how to generate an initramfs with
+> firmware (I think), can you give more guidance about it?
+
+I'm not sure why you are even trying to create a special initramfs. Just
+load your usual kernel using the usual boot flow as a guest. There's 
+also no firmware involved in i2c and I'm not sure what you mean with 
+"full peripheral device emulation" either or how that's related to firmware.
+You also mention that the crash happens when you run rmmod so I again 
+don't understand what "it does not trigger the release of cs42l83" means 
+here.
+
+> 
+> &gt; &gt;
+> &gt; &gt; Thus we tried to find the root cause of the issue manually. When we perform rmmod, the kernel performs device releasing on
+> &gt; &gt; the i2c bus, then calls the remove function in snd-soc-cs42l83-i2c, which calls the cs42l42_common_remove in cs42l42,
+> &gt; &gt; because cs42l42-&gt;init_done is true, it performs regmap_write, and finally calls into pasemi_smb_waitready in i2c-pasemi
+> &gt; &gt; -core.c. We noticed that smbus-&gt;use_irq is true, and after it calls into wait_for_completion_timeout, the system crashs!&gt;
+> &gt; &gt; We found that wait_for_completion_timeout is one of the core scheduler APIs used by tens of thousands of other drivers,
+> &gt; &gt; it is unlikely causing the crash. So we tried to remove the call to wait_for_completion_timeout, then the system seems to
+> &gt; &gt; run well.
+> &gt; &gt;
+> &gt; &gt; However, because we have little knowledge about i2c devices and specifications, we are not sure whether this change will
+> &gt; &gt; cause other potential harms for the system and device. Is this call to wait necesary here? Or can you give a more
+> &gt; &gt; sophisticated fix?
+> &gt;
+> &gt; Yes, that call is necessary. It waits for the "transfer completed"
+> &gt; interrupt from the hardware. Without it the driver will try to read data
+> &gt; before it's available and you'll see corruption. I'm surprised hardware
+> &gt; attached to i2c (usb pd controller and audio I think) works at all with
+> &gt; that change.
+> &gt;
+> &gt;
+> &gt; Sven
+> 
+> Are there any methods or tools to systematically verify its functionality? I am not sure whether the devices attached to i2c
+> should work well even after the i2c-pasemi-platform has been removed.
+
+I don't understand. You say you saw a crash inside pasemi_smb_waitready 
+when calling wait_for_completion_timeout and decided to remove that 
+method. When you remove the call you break the entire driver because it 
+will now try to read data long before the i2c transaction has been 
+completed.
+Obviously, no i2c device will work when the driver isn't loaded but 
+without waiting for the completion they also won't work when the driver 
+is loaded.
+
+
+Sven
+
 
