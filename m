@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-9195-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9196-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3ADF1C61CE8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Jun 2025 20:08:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF07BC61CE8
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Jun 2025 20:08:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bF8P75x76z30PF;
-	Sun,  8 Jun 2025 06:07:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749326859;
-	cv=none; b=VeTJRi4WQ1DuBqoX8Tq6G4SY3YIRu5VHvrv3wDdrCKpC+wF/zxGparZUhrXrrzkYp/1fNFg/NlI2sgUDhZnKnT2bS6yOLJI+v5lxPDrx/rujozfzh3ODIPAmv0OT7fszRRv3PihHOBP+uHIHxlc+4d65STxY+eSUyjxnBEQlqfHqRF0FtAEVybpUjqoIdbUH208nuo848a6CMPTdN0A8/I4QK5pU+SbhSvmxik+GlWcnNtZAi6n8SRyZCi1cEYtbGZYi3oha/jKppzUR56aOJ2EYiDaNGHb9fXo1JKs4Rnt0hKUAJaqouKeGa7eRBpTsKBrdH5lONg1JMEvMWQkhfA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bF8P86Bwhz2yqn;
+	Sun,  8 Jun 2025 06:07:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749326860;
+	cv=none; b=E4KG+EyKy3aw0nJhmFpfTTy2E6ddtsN1iYoEv7dYOJJza4Uygfx1JcAXJgplWPzbM36+Y7E/UhALcP9x18rqpJ4rmI7/spIWruvkl/Eoi+sEhSymOKIcsH1JZijc4ps/GRQ7fG0p8E/qB5dptX059zn+VVVwEtmylVzao/hFnmIUXwq2Hy63hDcJEgZQEjc18FXwksDa8SwXTvd37a+RGKGw5OzekdYVKvUqxjWWqijcRCVneRxU7wcgTI5b7PSxxCSulbhzXR3zcMSDE+Fk+IjY0eGS18N3czB45H86O8KkCGBoCaX0q2JdqNUBZZgI+GZmk5CizHutqpVFmfQr1A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749326859; c=relaxed/relaxed;
-	bh=e+AsveLUcHn+0+FbsqXFMTmK8tae4V6+8tG4w0h2ycE=;
+	t=1749326860; c=relaxed/relaxed;
+	bh=vvPDCJlAlkBU1j14qLER2YG530Z5A8spiezP/JewZVo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=OskTaOnq1yPG3HXMph9XvjVyqP4w33TJAYe+3K57q6zgmkEBFCF1E2fK5wfgRpUxPszo8p9gaBe0PeWqK3MmowvDPoKNoKjStXndDTs6hdIKS9RWsJj3W5v6+NsBouHMusU86c33M6WUExzL/gBicpO6a6+V0eunU9PF8BaZMjEfd6F6jn20zRSARdDYvsWR+YoP63G9U2+OBrz1kI09TzQZ45sK/reo6/sXCX1y1lHl4RFz44SpgT+Q3Q/i1QP8XivRhm7X8P0cAEOk5cARUU7fCopSnX9w46Y9sKZkBvsZGImfAOeL9lWINpAa8GWwUAakibSCI5kOqUJs05dpyA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Tl0d//6C; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=NqQLEElYOLxRS8iO6s3ShOg7bPmX17g1SQRS6YdSo891tAtOOJ/c9QmAOnjlHKOUsgTUwr53ic5vv1Fi6KxIxm0VyouqYMnjF8ueQtTDe2Y4/un+jz1q8NQdmNz8EkHBUtKfCkR7owKdyJt6DjrHyz1gUm7QL0T/2Gxd9rf5l0wDw+ZNNXGGAwy4ODT5lLTH1ciZJB34z/wSMwHFklGER6Sm1n3L+N8dThiUmX1PGAPU/YtaK9mEYaPLgp3f6KGs9zODsluZWwtCOuZCYBVCEjbCqJdGbLQPHzTG7YJiEwOZ8GeBJU5IWh3cQVh1GRMtJ5qqvdqfHje4lOj46btyWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cK97FH/u; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Tl0d//6C;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cK97FH/u;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bF8Nz6L9zz2yqn
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jun 2025 06:07:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bF8P25D6nz308P
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jun 2025 06:07:34 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id D9E204A877;
-	Sat,  7 Jun 2025 20:07:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4418FC4CEF0;
-	Sat,  7 Jun 2025 20:07:28 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 0A4614ABEE;
+	Sat,  7 Jun 2025 20:07:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 87A05C4AF09;
+	Sat,  7 Jun 2025 20:07:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749326848;
-	bh=ul+IYG3QWn7TMt6jwp439C6v/yOYv8veAHOVkfUu8l4=;
+	s=k20201202; t=1749326852;
+	bh=167zq5zi7wdD08Zx3i/mgZI+CHCjTsXkRCx5v5LY1DE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Tl0d//6CPdPlG3/4K4xGeIeOptjkdCK+LvF1RDYSDJB4TuDkHyzyAFAy+0o8jdYQD
-	 ZWO9MtQqxMp+mvgQFYw51Ub/8YitCHjeMaLDttKZ6869jmFQlDCdxOwq5Ju93rJEA1
-	 gfLxWzTirOtlQ++xq8LkB5J2fLk0Ueme2p96jnVzKOeDYv0NZTetnjR2Ea8BfpIKFu
-	 lR8dnWC/fbq55jPpeIpU9aLLrGT805No7GgA6KRHsqhF0iSJg0+TCkvEdxXYgM54th
-	 KGHrYoe4ZCXLd20Ai4X/asdmD4ikmulcOEmMj3hcnUyXWd6JcdP1uwfwEni1zc6C7y
-	 TT61g4vhWl6BQ==
+	b=cK97FH/u1ZexrL4xPo108kbPSyiyqv5D8XHaqv+mjS2WIeFt3z02kKZQoPSDq/X9G
+	 neVztBJCZmrBoT35lHT7/4k1mw3IU50u8eK2I8rCFsAO3s5eNyH+UgVyYXahnJYGwP
+	 TiPrvKloWZbvdMpC4iYVrFLfzw9UqgZm3B60tJ2p04gkZ1fhmhjAqppFmzZj0+0I9k
+	 fZrdwvK3bggFG+eTMFGHLb/guQtWXCbVKytVYD912FXa4Gfgsp4iP8TdQzvl2cNx9/
+	 p7CAFgRZSOtmmJ1+fxlmzhOAzyN+XY2FyOZvJtvXu7z3ScuzRfpONDpwE/CuTrEy5Y
+	 iwR5ANOjA/+Mw==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-crypto@vger.kernel.org,
@@ -59,9 +59,9 @@ Cc: linux-crypto@vger.kernel.org,
 	Ard Biesheuvel <ardb@kernel.org>,
 	"Jason A . Donenfeld" <Jason@zx2c4.com>,
 	Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH v2 01/12] lib/crc: move files into lib/crc/
-Date: Sat,  7 Jun 2025 13:04:43 -0700
-Message-ID: <20250607200454.73587-2-ebiggers@kernel.org>
+Subject: [PATCH v2 09/12] lib/crc/s390: migrate s390-optimized CRC code into lib/crc/
+Date: Sat,  7 Jun 2025 13:04:51 -0700
+Message-ID: <20250607200454.73587-10-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250607200454.73587-1-ebiggers@kernel.org>
 References: <20250607200454.73587-1-ebiggers@kernel.org>
@@ -82,621 +82,168 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-Move all CRC files in lib/ into a subdirectory lib/crc/ to keep them
-from cluttering up the main lib/ directory.
+Move the s390-optimized CRC code from arch/s390/lib/crc* into its new
+location in lib/crc/s390/, and wire it up in the new way.  This new way
+of organizing the CRC code eliminates the need to artificially split the
+code for each CRC variant into separate arch and generic modules,
+enabling better inlining and dead code elimination.  For more details,
+see "lib/crc: prepare for arch-optimized code in subdirs of lib/crc/".
 
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- Documentation/core-api/kernel-api.rst |  14 ++--
- MAINTAINERS                           |   3 +-
- include/linux/crc64.h                 |   3 -
- lib/Kconfig                           |  87 +-------------------
- lib/Kconfig.debug                     |  21 -----
- lib/Makefile                          |  32 +-------
- lib/crc/.gitignore                    |   5 ++
- lib/crc/Kconfig                       | 111 ++++++++++++++++++++++++++
- lib/crc/Makefile                      |  32 ++++++++
- lib/{ => crc}/crc-ccitt.c             |   3 -
- lib/{ => crc}/crc-itu-t.c             |   0
- lib/{ => crc}/crc-t10dif.c            |   0
- lib/{ => crc}/crc16.c                 |   0
- lib/{ => crc}/crc32.c                 |   0
- lib/{ => crc}/crc4.c                  |   0
- lib/{ => crc}/crc64.c                 |   0
- lib/{ => crc}/crc7.c                  |   0
- lib/{ => crc}/crc8.c                  |   0
- lib/{ => crc}/gen_crc32table.c        |   4 +-
- lib/{ => crc}/gen_crc64table.c        |  11 +--
- lib/crc/tests/Makefile                |   2 +
- lib/{ => crc}/tests/crc_kunit.c       |   0
- lib/tests/Makefile                    |   1 -
- 23 files changed, 164 insertions(+), 165 deletions(-)
- create mode 100644 lib/crc/.gitignore
- create mode 100644 lib/crc/Kconfig
- create mode 100644 lib/crc/Makefile
- rename lib/{ => crc}/crc-ccitt.c (98%)
- rename lib/{ => crc}/crc-itu-t.c (100%)
- rename lib/{ => crc}/crc-t10dif.c (100%)
- rename lib/{ => crc}/crc16.c (100%)
- rename lib/{ => crc}/crc32.c (100%)
- rename lib/{ => crc}/crc4.c (100%)
- rename lib/{ => crc}/crc64.c (100%)
- rename lib/{ => crc}/crc7.c (100%)
- rename lib/{ => crc}/crc8.c (100%)
- rename lib/{ => crc}/gen_crc32table.c (95%)
- rename lib/{ => crc}/gen_crc64table.c (81%)
- create mode 100644 lib/crc/tests/Makefile
- rename lib/{ => crc}/tests/crc_kunit.c (100%)
+ arch/s390/Kconfig                             |  1 -
+ arch/s390/lib/Makefile                        |  3 ---
+ lib/crc/Kconfig                               |  1 +
+ lib/crc/Makefile                              |  1 +
+ {arch/s390/lib => lib/crc/s390}/crc32-vx.h    |  0
+ arch/s390/lib/crc32.c => lib/crc/s390/crc32.h | 16 +++-------------
+ {arch/s390/lib => lib/crc/s390}/crc32be-vx.c  |  0
+ {arch/s390/lib => lib/crc/s390}/crc32le-vx.c  |  0
+ 8 files changed, 5 insertions(+), 17 deletions(-)
+ rename {arch/s390/lib => lib/crc/s390}/crc32-vx.h (100%)
+ rename arch/s390/lib/crc32.c => lib/crc/s390/crc32.h (81%)
+ rename {arch/s390/lib => lib/crc/s390}/crc32be-vx.c (100%)
+ rename {arch/s390/lib => lib/crc/s390}/crc32le-vx.c (100%)
 
-diff --git a/Documentation/core-api/kernel-api.rst b/Documentation/core-api/kernel-api.rst
-index ae92a2571388a..c4642d9f13a9c 100644
---- a/Documentation/core-api/kernel-api.rst
-+++ b/Documentation/core-api/kernel-api.rst
-@@ -134,28 +134,28 @@ Arithmetic Overflow Checking
-    :internal:
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index 0c16dc443e2f6..22b90f6aa1a09 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -73,11 +73,10 @@ config S390
+ 	select ARCH_CORRECT_STACKTRACE_ON_KRETPROBE
+ 	select ARCH_ENABLE_MEMORY_HOTPLUG if SPARSEMEM
+ 	select ARCH_ENABLE_MEMORY_HOTREMOVE
+ 	select ARCH_ENABLE_SPLIT_PMD_PTLOCK if PGTABLE_LEVELS > 2
+ 	select ARCH_HAS_CPU_FINALIZE_INIT
+-	select ARCH_HAS_CRC32
+ 	select ARCH_HAS_CURRENT_STACK_POINTER
+ 	select ARCH_HAS_DEBUG_VIRTUAL
+ 	select ARCH_HAS_DEBUG_VM_PGTABLE
+ 	select ARCH_HAS_DEBUG_WX
+ 	select ARCH_HAS_DEVMEM_IS_ALLOWED
+diff --git a/arch/s390/lib/Makefile b/arch/s390/lib/Makefile
+index cd35cdbfa8713..7c8583d46eca1 100644
+--- a/arch/s390/lib/Makefile
++++ b/arch/s390/lib/Makefile
+@@ -23,8 +23,5 @@ obj-$(CONFIG_S390_MODULES_SANITY_TEST) += test_modules.o
+ obj-$(CONFIG_S390_MODULES_SANITY_TEST_HELPERS) += test_modules_helpers.o
  
- CRC Functions
- -------------
+ lib-$(CONFIG_FUNCTION_ERROR_INJECTION) += error-inject.o
  
--.. kernel-doc:: lib/crc4.c
-+.. kernel-doc:: lib/crc/crc4.c
-    :export:
+ obj-$(CONFIG_EXPOLINE_EXTERN) += expoline.o
+-
+-obj-$(CONFIG_CRC32_ARCH) += crc32-s390.o
+-crc32-s390-y := crc32.o crc32le-vx.o crc32be-vx.o
+diff --git a/lib/crc/Kconfig b/lib/crc/Kconfig
+index d0c293b1a4182..1b69a8bef4a85 100644
+--- a/lib/crc/Kconfig
++++ b/lib/crc/Kconfig
+@@ -72,10 +72,11 @@ config CRC32_ARCH
+ 	default y if ARM64
+ 	default y if LOONGARCH
+ 	default y if MIPS && CPU_MIPSR6
+ 	default y if PPC64 && ALTIVEC
+ 	default y if RISCV && RISCV_ISA_ZBC
++	default y if S390
  
--.. kernel-doc:: lib/crc7.c
-+.. kernel-doc:: lib/crc/crc7.c
-    :export:
- 
--.. kernel-doc:: lib/crc8.c
-+.. kernel-doc:: lib/crc/crc8.c
-    :export:
- 
--.. kernel-doc:: lib/crc16.c
-+.. kernel-doc:: lib/crc/crc16.c
-    :export:
- 
--.. kernel-doc:: lib/crc32.c
-+.. kernel-doc:: lib/crc/crc32.c
- 
--.. kernel-doc:: lib/crc-ccitt.c
-+.. kernel-doc:: lib/crc/crc-ccitt.c
-    :export:
- 
--.. kernel-doc:: lib/crc-itu-t.c
-+.. kernel-doc:: lib/crc/crc-itu-t.c
-    :export:
- 
- Base 2 log and power Functions
- ------------------------------
- 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 44c70071acb08..05ff204b016c5 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -6358,12 +6358,11 @@ L:	linux-crypto@vger.kernel.org
- S:	Maintained
- T:	git https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git crc-next
- F:	Documentation/staging/crc*
- F:	arch/*/lib/crc*
- F:	include/linux/crc*
--F:	lib/crc*
--F:	lib/tests/crc_kunit.c
-+F:	lib/crc/
- F:	scripts/gen-crc-consts.py
- 
- CREATIVE SB0540
- M:	Bastien Nocera <hadess@hadess.net>
- L:	linux-input@vger.kernel.org
-diff --git a/include/linux/crc64.h b/include/linux/crc64.h
-index 41de30b907dff..b6aa290a79312 100644
---- a/include/linux/crc64.h
-+++ b/include/linux/crc64.h
-@@ -1,9 +1,6 @@
- /* SPDX-License-Identifier: GPL-2.0 */
--/*
-- * See lib/crc64.c for the related specification and polynomial arithmetic.
-- */
- #ifndef _LINUX_CRC64_H
- #define _LINUX_CRC64_H
- 
- #include <linux/types.h>
- 
-diff --git a/lib/Kconfig b/lib/Kconfig
-index 6c1b8f1842678..3db88ab0d2b4c 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -134,98 +134,13 @@ config TRACE_MMIO_ACCESS
- 	depends on TRACING && ARCH_HAVE_TRACE_MMIO_ACCESS
- 	help
- 	  Create tracepoints for MMIO read/write operations. These trace events
- 	  can be used for logging all MMIO read/write operations.
- 
-+source "lib/crc/Kconfig"
- source "lib/crypto/Kconfig"
- 
--config CRC_CCITT
--	tristate
--	help
--	  The CRC-CCITT library functions.  Select this if your module uses any
--	  of the functions from <linux/crc-ccitt.h>.
--
--config CRC16
--	tristate
--	help
--	  The CRC16 library functions.  Select this if your module uses any of
--	  the functions from <linux/crc16.h>.
--
--config CRC_T10DIF
--	tristate
--	help
--	  The CRC-T10DIF library functions.  Select this if your module uses
--	  any of the functions from <linux/crc-t10dif.h>.
--
--config ARCH_HAS_CRC_T10DIF
--	bool
--
--config CRC_T10DIF_ARCH
--	tristate
--	default CRC_T10DIF if ARCH_HAS_CRC_T10DIF && CRC_OPTIMIZATIONS
--
--config CRC_ITU_T
--	tristate
--	help
--	  The CRC-ITU-T library functions.  Select this if your module uses
--	  any of the functions from <linux/crc-itu-t.h>.
--
--config CRC32
--	tristate
--	select BITREVERSE
--	help
--	  The CRC32 library functions.  Select this if your module uses any of
--	  the functions from <linux/crc32.h> or <linux/crc32c.h>.
--
--config ARCH_HAS_CRC32
--	bool
--
--config CRC32_ARCH
--	tristate
--	default CRC32 if ARCH_HAS_CRC32 && CRC_OPTIMIZATIONS
--
--config CRC64
--	tristate
--	help
--	  The CRC64 library functions.  Select this if your module uses any of
--	  the functions from <linux/crc64.h>.
--
--config ARCH_HAS_CRC64
--	bool
--
--config CRC64_ARCH
--	tristate
--	default CRC64 if ARCH_HAS_CRC64 && CRC_OPTIMIZATIONS
--
--config CRC4
--	tristate
--	help
--	  The CRC4 library functions.  Select this if your module uses any of
--	  the functions from <linux/crc4.h>.
--
--config CRC7
--	tristate
--	help
--	  The CRC7 library functions.  Select this if your module uses any of
--	  the functions from <linux/crc7.h>.
--
--config CRC8
--	tristate
--	help
--	  The CRC8 library functions.  Select this if your module uses any of
--	  the functions from <linux/crc8.h>.
--
--config CRC_OPTIMIZATIONS
--	bool "Enable optimized CRC implementations" if EXPERT
--	default y
--	help
--	  Disabling this option reduces code size slightly by disabling the
--	  architecture-optimized implementations of any CRC variants that are
--	  enabled.  CRC checksumming performance may get much slower.
--
--	  Keep this enabled unless you're really trying to minimize the size of
--	  the kernel.
- 
- config XXHASH
+ config CRC64
  	tristate
- 
- config AUDIT_GENERIC
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index ebe33181b6e6e..3fda96761adbc 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -2899,31 +2899,10 @@ config HW_BREAKPOINT_KUNIT_TEST
  	help
- 	  Tests for hw_breakpoint constraints accounting.
- 
- 	  If unsure, say N.
- 
--config CRC_KUNIT_TEST
--	tristate "KUnit tests for CRC functions" if !KUNIT_ALL_TESTS
--	depends on KUNIT
--	default KUNIT_ALL_TESTS
--	select CRC7
--	select CRC16
--	select CRC_T10DIF
--	select CRC32
--	select CRC64
--	help
--	  Unit tests for the CRC library functions.
--
--	  This is intended to help people writing architecture-specific
--	  optimized versions.  If unsure, say N.
--
--config CRC_BENCHMARK
--	bool "Benchmark for the CRC functions"
--	depends on CRC_KUNIT_TEST
--	help
--	  Include benchmarks in the KUnit test suite for the CRC functions.
--
- config SIPHASH_KUNIT_TEST
- 	tristate "Perform selftest on siphash functions" if !KUNIT_ALL_TESTS
- 	depends on KUNIT
- 	default KUNIT_ALL_TESTS
- 	help
-diff --git a/lib/Makefile b/lib/Makefile
-index c38582f187dd8..14a5928bb57f5 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -120,11 +120,11 @@ CFLAGS_kobject_uevent.o += -DDEBUG
+ 	  The CRC64 library functions.  Select this if your module uses any of
+diff --git a/lib/crc/Makefile b/lib/crc/Makefile
+index 190f889adf556..bec58266251f8 100644
+--- a/lib/crc/Makefile
++++ b/lib/crc/Makefile
+@@ -25,10 +25,11 @@ ifeq ($(CONFIG_CRC32_ARCH),y)
+ CFLAGS_crc32-main.o += -I$(src)/$(SRCARCH)
+ crc32-$(CONFIG_ARM) += arm/crc32-core.o
+ crc32-$(CONFIG_ARM64) += arm64/crc32-core.o
+ crc32-$(CONFIG_PPC) += powerpc/crc32c-vpmsum_asm.o
+ crc32-$(CONFIG_RISCV) += riscv/crc32_lsb.o riscv/crc32_msb.o
++crc32-$(CONFIG_S390) += s390/crc32le-vx.o s390/crc32be-vx.o
  endif
  
- obj-$(CONFIG_DEBUG_INFO_REDUCED) += debug_info.o
- CFLAGS_debug_info.o += $(call cc-option, -femit-struct-debug-detailed=any)
- 
--obj-y += math/ crypto/ tests/ vdso/
-+obj-y += math/ crc/ crypto/ tests/ vdso/
- 
- obj-$(CONFIG_GENERIC_IOMAP) += iomap.o
- obj-$(CONFIG_HAS_IOMEM) += iomap_copy.o devres.o
- obj-$(CONFIG_CHECK_SIGNATURE) += check_signature.o
- obj-$(CONFIG_DEBUG_LOCKING_API_SELFTESTS) += locking-selftest.o
-@@ -146,19 +146,10 @@ obj-$(CONFIG_DEBUG_OBJECTS) += debugobjects.o
- 
- obj-$(CONFIG_BITREVERSE) += bitrev.o
- obj-$(CONFIG_LINEAR_RANGES) += linear_ranges.o
- obj-$(CONFIG_PACKING)	+= packing.o
- obj-$(CONFIG_PACKING_KUNIT_TEST) += packing_test.o
--obj-$(CONFIG_CRC_CCITT)	+= crc-ccitt.o
--obj-$(CONFIG_CRC16)	+= crc16.o
--obj-$(CONFIG_CRC_T10DIF)+= crc-t10dif.o
--obj-$(CONFIG_CRC_ITU_T)	+= crc-itu-t.o
--obj-$(CONFIG_CRC32)	+= crc32.o
--obj-$(CONFIG_CRC64)     += crc64.o
--obj-$(CONFIG_CRC4)	+= crc4.o
--obj-$(CONFIG_CRC7)	+= crc7.o
--obj-$(CONFIG_CRC8)	+= crc8.o
- obj-$(CONFIG_XXHASH)	+= xxhash.o
- obj-$(CONFIG_GENERIC_ALLOCATOR) += genalloc.o
- 
- obj-$(CONFIG_842_COMPRESS) += 842/
- obj-$(CONFIG_842_DECOMPRESS) += 842/
-@@ -292,31 +283,10 @@ obj-$(CONFIG_PERCPU_TEST) += percpu_test.o
- obj-$(CONFIG_ASN1) += asn1_decoder.o
- obj-$(CONFIG_ASN1_ENCODER) += asn1_encoder.o
- 
- obj-$(CONFIG_FONT_SUPPORT) += fonts/
- 
--hostprogs	:= gen_crc32table
--hostprogs	+= gen_crc64table
--clean-files	:= crc32table.h
--clean-files	+= crc64table.h
--
--$(obj)/crc32.o: $(obj)/crc32table.h
--
--quiet_cmd_crc32 = GEN     $@
--      cmd_crc32 = $< > $@
--
--$(obj)/crc32table.h: $(obj)/gen_crc32table
--	$(call cmd,crc32)
--
--$(obj)/crc64.o: $(obj)/crc64table.h
--
--quiet_cmd_crc64 = GEN     $@
--      cmd_crc64 = $< > $@
--
--$(obj)/crc64table.h: $(obj)/gen_crc64table
--	$(call cmd,crc64)
--
- #
- # Build a fast OID lookip registry from include/linux/oid_registry.h
- #
- obj-$(CONFIG_OID_REGISTRY) += oid_registry.o
- 
-diff --git a/lib/crc/.gitignore b/lib/crc/.gitignore
-new file mode 100644
-index 0000000000000..a9e48103c9fb1
---- /dev/null
-+++ b/lib/crc/.gitignore
-@@ -0,0 +1,5 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+/crc32table.h
-+/crc64table.h
-+/gen_crc32table
-+/gen_crc64table
-diff --git a/lib/crc/Kconfig b/lib/crc/Kconfig
-new file mode 100644
-index 0000000000000..e0e7168b74c75
---- /dev/null
-+++ b/lib/crc/Kconfig
-@@ -0,0 +1,111 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+
-+# Kconfig for the kernel's cyclic redundancy check (CRC) library code
-+
-+config CRC4
-+	tristate
-+	help
-+	  The CRC4 library functions.  Select this if your module uses any of
-+	  the functions from <linux/crc4.h>.
-+
-+config CRC7
-+	tristate
-+	help
-+	  The CRC7 library functions.  Select this if your module uses any of
-+	  the functions from <linux/crc7.h>.
-+
-+config CRC8
-+	tristate
-+	help
-+	  The CRC8 library functions.  Select this if your module uses any of
-+	  the functions from <linux/crc8.h>.
-+
-+config CRC16
-+	tristate
-+	help
-+	  The CRC16 library functions.  Select this if your module uses any of
-+	  the functions from <linux/crc16.h>.
-+
-+config CRC_CCITT
-+	tristate
-+	help
-+	  The CRC-CCITT library functions.  Select this if your module uses any
-+	  of the functions from <linux/crc-ccitt.h>.
-+
-+config CRC_ITU_T
-+	tristate
-+	help
-+	  The CRC-ITU-T library functions.  Select this if your module uses
-+	  any of the functions from <linux/crc-itu-t.h>.
-+
-+config CRC_T10DIF
-+	tristate
-+	help
-+	  The CRC-T10DIF library functions.  Select this if your module uses
-+	  any of the functions from <linux/crc-t10dif.h>.
-+
-+config ARCH_HAS_CRC_T10DIF
-+	bool
-+
-+config CRC_T10DIF_ARCH
-+	tristate
-+	default CRC_T10DIF if ARCH_HAS_CRC_T10DIF && CRC_OPTIMIZATIONS
-+
-+config CRC32
-+	tristate
-+	select BITREVERSE
-+	help
-+	  The CRC32 library functions.  Select this if your module uses any of
-+	  the functions from <linux/crc32.h> or <linux/crc32c.h>.
-+
-+config ARCH_HAS_CRC32
-+	bool
-+
-+config CRC32_ARCH
-+	tristate
-+	default CRC32 if ARCH_HAS_CRC32 && CRC_OPTIMIZATIONS
-+
-+config CRC64
-+	tristate
-+	help
-+	  The CRC64 library functions.  Select this if your module uses any of
-+	  the functions from <linux/crc64.h>.
-+
-+config ARCH_HAS_CRC64
-+	bool
-+
-+config CRC64_ARCH
-+	tristate
-+	default CRC64 if ARCH_HAS_CRC64 && CRC_OPTIMIZATIONS
-+
-+config CRC_OPTIMIZATIONS
-+	bool "Enable optimized CRC implementations" if EXPERT
-+	default y
-+	help
-+	  Disabling this option reduces code size slightly by disabling the
-+	  architecture-optimized implementations of any CRC variants that are
-+	  enabled.  CRC checksumming performance may get much slower.
-+
-+	  Keep this enabled unless you're really trying to minimize the size of
-+	  the kernel.
-+
-+config CRC_KUNIT_TEST
-+	tristate "KUnit tests for CRC functions" if !KUNIT_ALL_TESTS
-+	depends on KUNIT
-+	default KUNIT_ALL_TESTS
-+	select CRC7
-+	select CRC16
-+	select CRC_T10DIF
-+	select CRC32
-+	select CRC64
-+	help
-+	  Unit tests for the CRC library functions.
-+
-+	  This is intended to help people writing architecture-specific
-+	  optimized versions.  If unsure, say N.
-+
-+config CRC_BENCHMARK
-+	bool "Benchmark for the CRC functions"
-+	depends on CRC_KUNIT_TEST
-+	help
-+	  Include benchmarks in the KUnit test suite for the CRC functions.
-diff --git a/lib/crc/Makefile b/lib/crc/Makefile
-new file mode 100644
-index 0000000000000..ff4c30dda4528
---- /dev/null
-+++ b/lib/crc/Makefile
-@@ -0,0 +1,32 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+
-+# Makefile for the kernel's cyclic redundancy check (CRC) library code
-+
-+obj-$(CONFIG_CRC4) += crc4.o
-+obj-$(CONFIG_CRC7) += crc7.o
-+obj-$(CONFIG_CRC8) += crc8.o
-+obj-$(CONFIG_CRC16) += crc16.o
-+obj-$(CONFIG_CRC_CCITT) += crc-ccitt.o
-+obj-$(CONFIG_CRC_ITU_T) += crc-itu-t.o
-+obj-$(CONFIG_CRC_T10DIF) += crc-t10dif.o
-+obj-$(CONFIG_CRC32) += crc32.o
-+obj-$(CONFIG_CRC64) += crc64.o
-+obj-y += tests/
-+
-+hostprogs := gen_crc32table gen_crc64table
-+clean-files := crc32table.h crc64table.h
-+
-+$(obj)/crc32.o: $(obj)/crc32table.h
-+$(obj)/crc64.o: $(obj)/crc64table.h
-+
-+quiet_cmd_crc32 = GEN     $@
-+      cmd_crc32 = $< > $@
-+
-+quiet_cmd_crc64 = GEN     $@
-+      cmd_crc64 = $< > $@
-+
-+$(obj)/crc32table.h: $(obj)/gen_crc32table
-+	$(call cmd,crc32)
-+
-+$(obj)/crc64table.h: $(obj)/gen_crc64table
-+	$(call cmd,crc64)
-diff --git a/lib/crc-ccitt.c b/lib/crc/crc-ccitt.c
-similarity index 98%
-rename from lib/crc-ccitt.c
-rename to lib/crc/crc-ccitt.c
-index 9cddf35d3b66e..8d2bc419230b3 100644
---- a/lib/crc-ccitt.c
-+++ b/lib/crc/crc-ccitt.c
-@@ -1,9 +1,6 @@
- // SPDX-License-Identifier: GPL-2.0-only
--/*
-- *	linux/lib/crc-ccitt.c
-- */
- 
- #include <linux/types.h>
- #include <linux/module.h>
- #include <linux/crc-ccitt.h>
- 
-diff --git a/lib/crc-itu-t.c b/lib/crc/crc-itu-t.c
+ obj-$(CONFIG_CRC64) += crc64.o
+ crc64-y := crc64-main.o
+ ifeq ($(CONFIG_CRC64_ARCH),y)
+diff --git a/arch/s390/lib/crc32-vx.h b/lib/crc/s390/crc32-vx.h
 similarity index 100%
-rename from lib/crc-itu-t.c
-rename to lib/crc/crc-itu-t.c
-diff --git a/lib/crc-t10dif.c b/lib/crc/crc-t10dif.c
-similarity index 100%
-rename from lib/crc-t10dif.c
-rename to lib/crc/crc-t10dif.c
-diff --git a/lib/crc16.c b/lib/crc/crc16.c
-similarity index 100%
-rename from lib/crc16.c
-rename to lib/crc/crc16.c
-diff --git a/lib/crc32.c b/lib/crc/crc32.c
-similarity index 100%
-rename from lib/crc32.c
-rename to lib/crc/crc32.c
-diff --git a/lib/crc4.c b/lib/crc/crc4.c
-similarity index 100%
-rename from lib/crc4.c
-rename to lib/crc/crc4.c
-diff --git a/lib/crc64.c b/lib/crc/crc64.c
-similarity index 100%
-rename from lib/crc64.c
-rename to lib/crc/crc64.c
-diff --git a/lib/crc7.c b/lib/crc/crc7.c
-similarity index 100%
-rename from lib/crc7.c
-rename to lib/crc/crc7.c
-diff --git a/lib/crc8.c b/lib/crc/crc8.c
-similarity index 100%
-rename from lib/crc8.c
-rename to lib/crc/crc8.c
-diff --git a/lib/gen_crc32table.c b/lib/crc/gen_crc32table.c
-similarity index 95%
-rename from lib/gen_crc32table.c
-rename to lib/crc/gen_crc32table.c
-index 6d03425b849e4..9a7f31658e355 100644
---- a/lib/gen_crc32table.c
-+++ b/lib/crc/gen_crc32table.c
-@@ -1,9 +1,9 @@
- // SPDX-License-Identifier: GPL-2.0
- #include <stdio.h>
--#include "../include/linux/crc32poly.h"
--#include "../include/generated/autoconf.h"
-+#include "../../include/linux/crc32poly.h"
-+#include "../../include/generated/autoconf.h"
- #include <inttypes.h>
- 
- static uint32_t crc32table_le[256];
- static uint32_t crc32table_be[256];
- static uint32_t crc32ctable_le[256];
-diff --git a/lib/gen_crc64table.c b/lib/crc/gen_crc64table.c
+rename from arch/s390/lib/crc32-vx.h
+rename to lib/crc/s390/crc32-vx.h
+diff --git a/arch/s390/lib/crc32.c b/lib/crc/s390/crc32.h
 similarity index 81%
-rename from lib/gen_crc64table.c
-rename to lib/crc/gen_crc64table.c
-index e05a4230a0a08..f2be9f62bab71 100644
---- a/lib/gen_crc64table.c
-+++ b/lib/crc/gen_crc64table.c
-@@ -1,16 +1,9 @@
- // SPDX-License-Identifier: GPL-2.0
- /*
-- * Generate lookup table for the table-driven CRC64 calculation.
-- *
-- * gen_crc64table is executed in kernel build time and generates
-- * lib/crc64table.h. This header is included by lib/crc64.c for
-- * the table-driven CRC64 calculation.
-- *
-- * See lib/crc64.c for more information about which specification
-- * and polynomial arithmetic that gen_crc64table.c follows to
-- * generate the lookup table.
-+ * This host program runs at kernel build time and generates the lookup tables
-+ * used by the generic CRC64 code.
+rename from arch/s390/lib/crc32.c
+rename to lib/crc/s390/crc32.h
+index 3c4b344417c11..59c8983d428be 100644
+--- a/arch/s390/lib/crc32.c
++++ b/lib/crc/s390/crc32.h
+@@ -3,16 +3,12 @@
+  * CRC-32 implemented with the z/Architecture Vector Extension Facility.
   *
-  * Copyright 2018 SUSE Linux.
-  *   Author: Coly Li <colyli@suse.de>
+  * Copyright IBM Corp. 2015
+  * Author(s): Hendrik Brueckner <brueckner@linux.vnet.ibm.com>
   */
- #include <inttypes.h>
-diff --git a/lib/crc/tests/Makefile b/lib/crc/tests/Makefile
-new file mode 100644
-index 0000000000000..65f63c318ef5e
---- /dev/null
-+++ b/lib/crc/tests/Makefile
-@@ -0,0 +1,2 @@
-+# SPDX-License-Identifier: GPL-2.0-only
-+obj-$(CONFIG_CRC_KUNIT_TEST) += crc_kunit.o
-diff --git a/lib/tests/crc_kunit.c b/lib/crc/tests/crc_kunit.c
+-#define KMSG_COMPONENT	"crc32-vx"
+-#define pr_fmt(fmt)	KMSG_COMPONENT ": " fmt
+ 
+-#include <linux/module.h>
+ #include <linux/cpufeature.h>
+-#include <linux/crc32.h>
+ #include <asm/fpu.h>
+ #include "crc32-vx.h"
+ 
+ #define VX_MIN_LEN		64
+ #define VX_ALIGNMENT		16L
+@@ -25,11 +21,11 @@
+  * on the message buffer, the hardware-accelerated or software implementation
+  * is used.   Note that the message buffer is aligned to improve fetch
+  * operations of VECTOR LOAD MULTIPLE instructions.
+  */
+ #define DEFINE_CRC32_VX(___fname, ___crc32_vx, ___crc32_sw)		    \
+-	u32 ___fname(u32 crc, const u8 *data, size_t datalen)		    \
++	static inline u32 ___fname(u32 crc, const u8 *data, size_t datalen) \
+ 	{								    \
+ 		unsigned long prealign, aligned, remaining;		    \
+ 		DECLARE_KERNEL_FPU_ONSTACK16(vxstate);			    \
+ 									    \
+ 		if (datalen < VX_MIN_LEN + VX_ALIGN_MASK || !cpu_has_vx())  \
+@@ -52,26 +48,20 @@
+ 									    \
+ 		if (remaining)						    \
+ 			crc = ___crc32_sw(crc, data + aligned, remaining);  \
+ 									    \
+ 		return crc;						    \
+-	}								    \
+-	EXPORT_SYMBOL(___fname);
++	}
+ 
+ DEFINE_CRC32_VX(crc32_le_arch, crc32_le_vgfm_16, crc32_le_base)
+ DEFINE_CRC32_VX(crc32_be_arch, crc32_be_vgfm_16, crc32_be_base)
+ DEFINE_CRC32_VX(crc32c_arch, crc32c_le_vgfm_16, crc32c_base)
+ 
+-u32 crc32_optimizations(void)
++static inline u32 crc32_optimizations_arch(void)
+ {
+ 	if (cpu_has_vx()) {
+ 		return CRC32_LE_OPTIMIZATION |
+ 		       CRC32_BE_OPTIMIZATION |
+ 		       CRC32C_OPTIMIZATION;
+ 	}
+ 	return 0;
+ }
+-EXPORT_SYMBOL(crc32_optimizations);
+-
+-MODULE_AUTHOR("Hendrik Brueckner <brueckner@linux.vnet.ibm.com>");
+-MODULE_DESCRIPTION("CRC-32 algorithms using z/Architecture Vector Extension Facility");
+-MODULE_LICENSE("GPL");
+diff --git a/arch/s390/lib/crc32be-vx.c b/lib/crc/s390/crc32be-vx.c
 similarity index 100%
-rename from lib/tests/crc_kunit.c
-rename to lib/crc/tests/crc_kunit.c
-diff --git a/lib/tests/Makefile b/lib/tests/Makefile
-index 56d6450144828..741d3ac2cba25 100644
---- a/lib/tests/Makefile
-+++ b/lib/tests/Makefile
-@@ -8,11 +8,10 @@ obj-$(CONFIG_BITFIELD_KUNIT) += bitfield_kunit.o
- obj-$(CONFIG_BITS_TEST) += test_bits.o
- obj-$(CONFIG_BLACKHOLE_DEV_KUNIT_TEST) += blackhole_dev_kunit.o
- obj-$(CONFIG_CHECKSUM_KUNIT) += checksum_kunit.o
- obj-$(CONFIG_CMDLINE_KUNIT_TEST) += cmdline_kunit.o
- obj-$(CONFIG_CPUMASK_KUNIT_TEST) += cpumask_kunit.o
--obj-$(CONFIG_CRC_KUNIT_TEST) += crc_kunit.o
- CFLAGS_fortify_kunit.o += $(call cc-disable-warning, unsequenced)
- CFLAGS_fortify_kunit.o += $(call cc-disable-warning, stringop-overread)
- CFLAGS_fortify_kunit.o += $(call cc-disable-warning, stringop-truncation)
- CFLAGS_fortify_kunit.o += $(DISABLE_STRUCTLEAK_PLUGIN)
- obj-$(CONFIG_FORTIFY_KUNIT_TEST) += fortify_kunit.o
+rename from arch/s390/lib/crc32be-vx.c
+rename to lib/crc/s390/crc32be-vx.c
+diff --git a/arch/s390/lib/crc32le-vx.c b/lib/crc/s390/crc32le-vx.c
+similarity index 100%
+rename from arch/s390/lib/crc32le-vx.c
+rename to lib/crc/s390/crc32le-vx.c
 -- 
 2.49.0
 
