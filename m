@@ -1,48 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-9189-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9190-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 94BB4C5B543
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Jun 2025 20:07:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70D14C5B543
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Jun 2025 20:07:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bF8P12KJKz305v;
-	Sun,  8 Jun 2025 06:07:33 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749326853;
-	cv=none; b=d7GNFPjIAX5F/doqihUgK9dLvu2mrmnqTgZLpy4UTIQeLmA8WJ2A8xBkRy/2oEEbpdhK155Ae9PnKcaXRDGtSPqDOPKzxoixndpetbg4lFQp1qhAR7NOpD0BvMjqjOSqdGi1f9CUVno6f+rnO1fGPBGD+ASn3gtk464YS7YSx0bk/J3szHhaWhGhkUV0SmObSKcb1I01BRKMnn3vBQ7gS8ZHyWA/+6WcVdRMvloH6g0m6gIF4rtWxwaF4pjThgjArpxpCQkNX+osPJXkUiBjw4JBgmadG5/hxYbGdn7n/TB+lgq1aXgizUWOvwdwVeMIET3ywCc0EKMrtWE98YsoFw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bF8P21wTYz2yN1;
+	Sun,  8 Jun 2025 06:07:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749326854;
+	cv=none; b=Hv2i9S4b4QL7qVjEGFqDnKpWVQA5z3hb5AzImElHeuF2gF1YOahEapcseG6nhQ0Uav6/BzXILxqKyNYpDhUmRA/QSBhBPsrONWVraT/0Y2K+87ZW7gTVoHtE1PuQ+4LMdbTgzMxKNFqa3b7IzWOQFo7nsGhGepbJK9/wKMJbtCvtbZPJ/LcaacwrDw/1PXdz21kMUyNI2QuArj7R87vFNSEkTJzQu15jTGhx/3Am9oHrEIXwQLWgb2sxqT7bMzBuu+BzrCbUbvGaQDphG02vPmzrhDf/eQuul/lSqogP1C7PwiBX2d+Jp0ljzoBdWoLtssEiD9jOkK8WsgdrBzePDA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749326853; c=relaxed/relaxed;
-	bh=Y72pwdJdv83NwOCELFCdobxpoVbiAdDTcG/DefDDSwU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aYgWibKucX+nP4Z491kDX+DnHHZyyFYviQtKmgXoxscqQ1+NqREktW/lwfvjTLBEI1JK2iBztWfDwlsfvLAgjBh+QfETdBDFJ8YODDyJ/aU6VL6jR/E4J4xTmB2Q3oGkmXQUnir/BRPZ7FKZ50jEqSNWTZ7E/oKD8poErMC4cgPQyJerdSbSek48b6Sx0Ze530tZ6EZ3fVvgRowwHRJYp/EU3HTSlw6OFEpoYiYzfcyL0n3e/J7hdURYfeR/TfsLRYMEUkWhGbGqEAeCanJshX0D1sisl3MwmmhJm7yOrwj+hIyVgw4U+uJPRZbaShjhUKI1nsXsGFw7e65Z9ZO/hw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gRoV1HUb; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1749326854; c=relaxed/relaxed;
+	bh=Ems7pW2ZCo1Kw89ebuPU4BszOekS7WAFKwyiLLSkiPA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=mpA9CUkrh4BBe7fK0F/0vdCXhJ49hRumNNhc6Ub75n90xmrI/cslJpKZ5e+OhIgPDZE371+j6xPeAFSGx+9CEOIjLZ5yiMl+tBodsYgCNalC+VOHqscxBAZMn1UXIktshKWnVlAw4/GqBrnB7nLYtqe1C4GKQ4puunUH4BvMkZ43CANO9WFC4OAHFkXdqGRQamOnIT4+xl7fhir51+eB3hwPatUMmDxPHiMbItMS3VFFhb0NMKOfSwEZ6586oDygxZ60FUWOD3m6RrvlX4EvWu1LHdcV90pRGW+1KLrNGIjibHOPgbhu0H2mYiEtkEMia1l6M2h/iGFvi83q090NVw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f1FhhuAi; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gRoV1HUb;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f1FhhuAi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bF8Nz1z03z2yN1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bF8Nz1vssz2xPL
 	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jun 2025 06:07:31 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id B802961154;
+	by sea.source.kernel.org (Postfix) with ESMTP id 61DDA4ABB6;
+	Sat,  7 Jun 2025 20:07:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D8B85C4CEF4;
 	Sat,  7 Jun 2025 20:07:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AED56C4CEE4;
-	Sat,  7 Jun 2025 20:07:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1749326848;
-	bh=8ysByzQduGckfXH5YPNhqS7N079XpguFcwm0rjzocS8=;
-	h=From:To:Cc:Subject:Date:From;
-	b=gRoV1HUb3mHoY0NTYNASmp068PIC0+XHH58cJ1J/iml3lxpURVeKEZfPdxsgVO5/E
-	 TK3DERbIu0ad4NpJR3YGEuSRMtm8k0KjsQ/e1B6ndkfW21OCXr4gvOkwsYwPuN7LH/
-	 4julzDjZZsQKV+2RON+e5sGErNlrupPxAURkSYaOM2C+BkrgAr2ludEhiDvmARNi+k
-	 OIE8uM5VlwuktsCf7eeazyazLOd7RJ842W1OKAjSs1loeQcPjLgsXntgyAhj96Wgjf
-	 gAb3yMih0ZFeI3XRHtMjOILX48N06wdtI+yfb6G24YVDu7SeDfBtRilpxHm1LhCGKV
-	 HbiZlzB1oy8aA==
+	s=k20201202; t=1749326849;
+	bh=yLUp/jnRDPRJYe2ElHSUe7azlBkiNfeDfNdSKo75+q8=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=f1FhhuAiTrZ3n1+2RxOIsHAMGSJ/VjobP7NJfQNN0j/NBFbwNgGFUyusJmRjkKbXS
+	 sqWh1Vqgcop8SjWbs6LXUgNLslH9vJAaJtRSlUYVblMBS0RiVdEhJomtVaMvtV8ZOa
+	 PEHblLWQdMquqQZGguOsB3PGpaG1D6iMt3eqwjzhDYP/ljmb10RAveSRuslbu0TNpU
+	 aXvLzJN+nKuiGXJjGUMUMH4iyFPeV5RkG3XLHj627tTQZ05KelNWJFE8NxxO5DTTAN
+	 /pAmDXiq2dwYEPh4cjU29Xt59sFxxmxlJaZ8E/hzV8XcP6IZjjcVaxjEm3WyRFm4Z6
+	 8pchieYF/5jfg==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-kernel@vger.kernel.org
 Cc: linux-crypto@vger.kernel.org,
@@ -58,10 +59,12 @@ Cc: linux-crypto@vger.kernel.org,
 	Ard Biesheuvel <ardb@kernel.org>,
 	"Jason A . Donenfeld" <Jason@zx2c4.com>,
 	Linus Torvalds <torvalds@linux-foundation.org>
-Subject: [PATCH v2 00/12] lib/crc: improve how arch-optimized code is integrated
-Date: Sat,  7 Jun 2025 13:04:42 -0700
-Message-ID: <20250607200454.73587-1-ebiggers@kernel.org>
+Subject: [PATCH v2 02/12] lib/crc: prepare for arch-optimized code in subdirs of lib/crc/
+Date: Sat,  7 Jun 2025 13:04:44 -0700
+Message-ID: <20250607200454.73587-3-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250607200454.73587-1-ebiggers@kernel.org>
+References: <20250607200454.73587-1-ebiggers@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,17 +80,15 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series is also available at:
+From: Eric Biggers <ebiggers@google.com>
 
-    git fetch https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git lib-crc-arch-v2
-
-This series improves how lib/crc supports arch-optimized code.  First,
-instead of the arch-optimized CRC code being in arch/$(SRCARCH)/lib/, it
-will now be in lib/crc/$(SRCARCH)/.  Second, the API functions (e.g.
-crc32c()), arch-optimized functions (e.g. crc32c_arch()), and generic
-functions (e.g. crc32c_base()) will now be part of a single module for
-each CRC type, allowing better inlining and dead code elimination.  The
-second change is made possible by the first.
+Rework how lib/crc/ supports arch-optimized code.  First, instead of the
+arch-optimized CRC code being in arch/$(SRCARCH)/lib/, it will now be in
+lib/crc/$(SRCARCH)/.  Second, the API functions (e.g. crc32c()),
+arch-optimized functions (e.g. crc32c_arch()), and generic functions
+(e.g. crc32c_base()) will now be part of a single module for each CRC
+type, allowing better inlining and dead code elimination.  The second
+change is made possible by the first.
 
 As an example, consider CONFIG_CRC32=m on x86.  We'll now have just
 crc32.ko instead of both crc32-x86.ko and crc32.ko.  The two modules
@@ -112,176 +113,491 @@ arch/.  At the time there was also a desire to put the library code in
 the same files as the old-school crypto API, but that was a mistake; now
 that the library is separate, that's no longer a constraint either.
 
-Changed in v2:
-   - Fixed build warning on architectures without any optimized CRC code
-   - Fixed build warning in sparc/crc32.h by removing pr_fmt
-   - Moved fallback definitions of crc32*_arch back into arch files
-   - Remove ARCH_HAS_CRC* symbols at end of series instead of beginning,
-     so that they're not removed until they're no longer being selected
-   - Slightly improved some commit messages
-   - Rebased onto other pending lib/crc changes
+Signed-off-by: Eric Biggers <ebiggers@google.com>
+---
+ Documentation/core-api/kernel-api.rst       |  2 +-
+ MAINTAINERS                                 |  1 -
+ include/linux/crc-t10dif.h                  | 10 +--
+ include/linux/crc32.h                       | 30 +--------
+ include/linux/crc64.h                       | 19 +-----
+ lib/crc/Kconfig                             | 12 ++--
+ lib/crc/Makefile                            | 20 +++++-
+ lib/crc/{crc-t10dif.c => crc-t10dif-main.c} | 37 ++++++++---
+ lib/crc/{crc32.c => crc32-main.c}           | 69 +++++++++++++++++----
+ lib/crc/{crc64.c => crc64-main.c}           | 47 +++++++++++---
+ 10 files changed, 158 insertions(+), 89 deletions(-)
+ rename lib/crc/{crc-t10dif.c => crc-t10dif-main.c} (78%)
+ rename lib/crc/{crc32.c => crc32-main.c} (58%)
+ rename lib/crc/{crc64.c => crc64-main.c} (66%)
 
-Eric Biggers (12):
-  lib/crc: move files into lib/crc/
-  lib/crc: prepare for arch-optimized code in subdirs of lib/crc/
-  lib/crc/arm: migrate arm-optimized CRC code into lib/crc/
-  lib/crc/arm64: migrate arm64-optimized CRC code into lib/crc/
-  lib/crc/loongarch: migrate loongarch-optimized CRC code into lib/crc/
-  lib/crc/mips: migrate mips-optimized CRC code into lib/crc/
-  lib/crc/powerpc: migrate powerpc-optimized CRC code into lib/crc/
-  lib/crc/riscv: migrate riscv-optimized CRC code into lib/crc/
-  lib/crc/s390: migrate s390-optimized CRC code into lib/crc/
-  lib/crc/sparc: migrate sparc-optimized CRC code into lib/crc/
-  lib/crc/x86: migrate x86-optimized CRC code into lib/crc/
-  lib/crc: remove ARCH_HAS_* kconfig symbols
-
- Documentation/core-api/kernel-api.rst         |  14 +--
- MAINTAINERS                                   |   4 +-
- arch/arm/Kconfig                              |   2 -
- arch/arm/lib/Makefile                         |   6 -
- arch/arm64/Kconfig                            |   2 -
- arch/arm64/lib/Makefile                       |   6 -
- arch/loongarch/Kconfig                        |   1 -
- arch/loongarch/lib/Makefile                   |   2 -
- arch/mips/Kconfig                             |   1 -
- arch/mips/lib/Makefile                        |   2 -
- arch/powerpc/Kconfig                          |   2 -
- arch/powerpc/lib/Makefile                     |   6 -
- arch/riscv/Kconfig                            |   3 -
- arch/riscv/lib/Makefile                       |   6 -
- arch/s390/Kconfig                             |   1 -
- arch/s390/lib/Makefile                        |   3 -
- arch/sparc/Kconfig                            |   1 -
- arch/sparc/lib/Makefile                       |   2 -
- arch/x86/Kconfig                              |   3 -
- arch/x86/lib/Makefile                         |  10 --
- include/linux/crc-t10dif.h                    |  10 +-
- include/linux/crc32.h                         |  30 +----
- include/linux/crc64.h                         |  22 +---
- lib/Kconfig                                   |  87 +------------
- lib/Kconfig.debug                             |  21 ----
- lib/Makefile                                  |  32 +----
- lib/crc/.gitignore                            |   5 +
- lib/crc/Kconfig                               | 118 ++++++++++++++++++
- lib/crc/Makefile                              |  63 ++++++++++
- .../arm/lib => lib/crc/arm}/crc-t10dif-core.S |   0
- .../crc-t10dif.c => lib/crc/arm/crc-t10dif.h  |  23 +---
- {arch/arm/lib => lib/crc/arm}/crc32-core.S    |   0
- arch/arm/lib/crc32.c => lib/crc/arm/crc32.h   |  38 ++----
- .../lib => lib/crc/arm64}/crc-t10dif-core.S   |   0
- .../crc/arm64/crc-t10dif.h                    |  22 +---
- .../arm64/lib => lib/crc/arm64}/crc32-core.S  |   0
- .../lib/crc32.c => lib/crc/arm64/crc32.h      |  19 +--
- lib/{ => crc}/crc-ccitt.c                     |   3 -
- lib/{ => crc}/crc-itu-t.c                     |   0
- lib/{crc-t10dif.c => crc/crc-t10dif-main.c}   |  37 ++++--
- lib/{ => crc}/crc16.c                         |   0
- lib/{crc32.c => crc/crc32-main.c}             |  69 ++++++++--
- lib/{ => crc}/crc4.c                          |   0
- lib/{crc64.c => crc/crc64-main.c}             |  47 +++++--
- lib/{ => crc}/crc7.c                          |   0
- lib/{ => crc}/crc8.c                          |   0
- lib/{ => crc}/gen_crc32table.c                |   4 +-
- lib/{ => crc}/gen_crc64table.c                |  11 +-
- .../crc/loongarch/crc32.h                     |  32 +----
- .../lib/crc32-mips.c => lib/crc/mips/crc32.h  |  33 +----
- .../crc/powerpc/crc-t10dif.h                  |  20 +--
- .../crc/powerpc}/crc-vpmsum-template.S        |   0
- .../lib/crc32.c => lib/crc/powerpc/crc32.h    |  38 ++----
- .../crc/powerpc}/crc32c-vpmsum_asm.S          |   0
- .../crc/powerpc}/crct10dif-vpmsum_asm.S       |   0
- .../lib => lib/crc/riscv}/crc-clmul-consts.h  |   0
- .../crc/riscv}/crc-clmul-template.h           |   0
- {arch/riscv/lib => lib/crc/riscv}/crc-clmul.h |   0
- .../crc/riscv/crc-t10dif.h                    |   8 +-
- {arch/riscv/lib => lib/crc/riscv}/crc16_msb.c |   0
- .../lib/crc32.c => lib/crc/riscv/crc32.h      |  17 +--
- {arch/riscv/lib => lib/crc/riscv}/crc32_lsb.c |   0
- {arch/riscv/lib => lib/crc/riscv}/crc32_msb.c |   0
- .../lib/crc64.c => lib/crc/riscv/crc64.h      |  11 +-
- {arch/riscv/lib => lib/crc/riscv}/crc64_lsb.c |   0
- {arch/riscv/lib => lib/crc/riscv}/crc64_msb.c |   0
- {arch/s390/lib => lib/crc/s390}/crc32-vx.h    |   0
- arch/s390/lib/crc32.c => lib/crc/s390/crc32.h |  16 +--
- {arch/s390/lib => lib/crc/s390}/crc32be-vx.c  |   0
- {arch/s390/lib => lib/crc/s390}/crc32le-vx.c  |   0
- .../lib/crc32.c => lib/crc/sparc/crc32.h      |  42 ++-----
- .../sparc/lib => lib/crc/sparc}/crc32c_asm.S  |   0
- lib/crc/tests/Makefile                        |   2 +
- lib/{ => crc}/tests/crc_kunit.c               |   0
- .../lib => lib/crc/x86}/crc-pclmul-consts.h   |   0
- .../lib => lib/crc/x86}/crc-pclmul-template.S |   0
- .../lib => lib/crc/x86}/crc-pclmul-template.h |   0
- .../crc-t10dif.c => lib/crc/x86/crc-t10dif.h  |  18 +--
- .../lib => lib/crc/x86}/crc16-msb-pclmul.S    |   0
- {arch/x86/lib => lib/crc/x86}/crc32-pclmul.S  |   0
- arch/x86/lib/crc32.c => lib/crc/x86/crc32.h   |  30 +----
- {arch/x86/lib => lib/crc/x86}/crc32c-3way.S   |   0
- {arch/x86/lib => lib/crc/x86}/crc64-pclmul.S  |   0
- arch/x86/lib/crc64.c => lib/crc/x86/crc64.h   |  21 +---
- lib/tests/Makefile                            |   1 -
- 85 files changed, 406 insertions(+), 621 deletions(-)
- create mode 100644 lib/crc/.gitignore
- create mode 100644 lib/crc/Kconfig
- create mode 100644 lib/crc/Makefile
- rename {arch/arm/lib => lib/crc/arm}/crc-t10dif-core.S (100%)
- rename arch/arm/lib/crc-t10dif.c => lib/crc/arm/crc-t10dif.h (70%)
- rename {arch/arm/lib => lib/crc/arm}/crc32-core.S (100%)
- rename arch/arm/lib/crc32.c => lib/crc/arm/crc32.h (69%)
- rename {arch/arm64/lib => lib/crc/arm64}/crc-t10dif-core.S (100%)
- rename arch/arm64/lib/crc-t10dif.c => lib/crc/arm64/crc-t10dif.h (70%)
- rename {arch/arm64/lib => lib/crc/arm64}/crc32-core.S (100%)
- rename arch/arm64/lib/crc32.c => lib/crc/arm64/crc32.h (81%)
- rename lib/{ => crc}/crc-ccitt.c (98%)
- rename lib/{ => crc}/crc-itu-t.c (100%)
- rename lib/{crc-t10dif.c => crc/crc-t10dif-main.c} (78%)
- rename lib/{ => crc}/crc16.c (100%)
- rename lib/{crc32.c => crc/crc32-main.c} (58%)
- rename lib/{ => crc}/crc4.c (100%)
- rename lib/{crc64.c => crc/crc64-main.c} (66%)
- rename lib/{ => crc}/crc7.c (100%)
- rename lib/{ => crc}/crc8.c (100%)
- rename lib/{ => crc}/gen_crc32table.c (95%)
- rename lib/{ => crc}/gen_crc64table.c (81%)
- rename arch/loongarch/lib/crc32-loongarch.c => lib/crc/loongarch/crc32.h (71%)
- rename arch/mips/lib/crc32-mips.c => lib/crc/mips/crc32.h (82%)
- rename arch/powerpc/lib/crc-t10dif.c => lib/crc/powerpc/crc-t10dif.h (75%)
- rename {arch/powerpc/lib => lib/crc/powerpc}/crc-vpmsum-template.S (100%)
- rename arch/powerpc/lib/crc32.c => lib/crc/powerpc/crc32.h (64%)
- rename {arch/powerpc/lib => lib/crc/powerpc}/crc32c-vpmsum_asm.S (100%)
- rename {arch/powerpc/lib => lib/crc/powerpc}/crct10dif-vpmsum_asm.S (100%)
- rename {arch/riscv/lib => lib/crc/riscv}/crc-clmul-consts.h (100%)
- rename {arch/riscv/lib => lib/crc/riscv}/crc-clmul-template.h (100%)
- rename {arch/riscv/lib => lib/crc/riscv}/crc-clmul.h (100%)
- rename arch/riscv/lib/crc-t10dif.c => lib/crc/riscv/crc-t10dif.h (62%)
- rename {arch/riscv/lib => lib/crc/riscv}/crc16_msb.c (100%)
- rename arch/riscv/lib/crc32.c => lib/crc/riscv/crc32.h (66%)
- rename {arch/riscv/lib => lib/crc/riscv}/crc32_lsb.c (100%)
- rename {arch/riscv/lib => lib/crc/riscv}/crc32_msb.c (100%)
- rename arch/riscv/lib/crc64.c => lib/crc/riscv/crc64.h (65%)
- rename {arch/riscv/lib => lib/crc/riscv}/crc64_lsb.c (100%)
- rename {arch/riscv/lib => lib/crc/riscv}/crc64_msb.c (100%)
- rename {arch/s390/lib => lib/crc/s390}/crc32-vx.h (100%)
- rename arch/s390/lib/crc32.c => lib/crc/s390/crc32.h (81%)
- rename {arch/s390/lib => lib/crc/s390}/crc32be-vx.c (100%)
- rename {arch/s390/lib => lib/crc/s390}/crc32le-vx.c (100%)
- rename arch/sparc/lib/crc32.c => lib/crc/sparc/crc32.h (60%)
- rename {arch/sparc/lib => lib/crc/sparc}/crc32c_asm.S (100%)
- create mode 100644 lib/crc/tests/Makefile
- rename lib/{ => crc}/tests/crc_kunit.c (100%)
- rename {arch/x86/lib => lib/crc/x86}/crc-pclmul-consts.h (100%)
- rename {arch/x86/lib => lib/crc/x86}/crc-pclmul-template.S (100%)
- rename {arch/x86/lib => lib/crc/x86}/crc-pclmul-template.h (100%)
- rename arch/x86/lib/crc-t10dif.c => lib/crc/x86/crc-t10dif.h (56%)
- rename {arch/x86/lib => lib/crc/x86}/crc16-msb-pclmul.S (100%)
- rename {arch/x86/lib => lib/crc/x86}/crc32-pclmul.S (100%)
- rename arch/x86/lib/crc32.c => lib/crc/x86/crc32.h (76%)
- rename {arch/x86/lib => lib/crc/x86}/crc32c-3way.S (100%)
- rename {arch/x86/lib => lib/crc/x86}/crc64-pclmul.S (100%)
- rename arch/x86/lib/crc64.c => lib/crc/x86/crc64.h (61%)
-
-
-base-commit: 464e77d8417003dfa3b0f556eba0297169483249
+diff --git a/Documentation/core-api/kernel-api.rst b/Documentation/core-api/kernel-api.rst
+index c4642d9f13a9c..9c8370891a39b 100644
+--- a/Documentation/core-api/kernel-api.rst
++++ b/Documentation/core-api/kernel-api.rst
+@@ -146,11 +146,11 @@ CRC Functions
+    :export:
+ 
+ .. kernel-doc:: lib/crc/crc16.c
+    :export:
+ 
+-.. kernel-doc:: lib/crc/crc32.c
++.. kernel-doc:: lib/crc/crc32-main.c
+ 
+ .. kernel-doc:: lib/crc/crc-ccitt.c
+    :export:
+ 
+ .. kernel-doc:: lib/crc/crc-itu-t.c
+diff --git a/MAINTAINERS b/MAINTAINERS
+index 05ff204b016c5..a729d80594557 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6356,11 +6356,10 @@ M:	Eric Biggers <ebiggers@kernel.org>
+ R:	Ard Biesheuvel <ardb@kernel.org>
+ L:	linux-crypto@vger.kernel.org
+ S:	Maintained
+ T:	git https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git crc-next
+ F:	Documentation/staging/crc*
+-F:	arch/*/lib/crc*
+ F:	include/linux/crc*
+ F:	lib/crc/
+ F:	scripts/gen-crc-consts.py
+ 
+ CREATIVE SB0540
+diff --git a/include/linux/crc-t10dif.h b/include/linux/crc-t10dif.h
+index a559fdff3f7e2..ecc8bc2dd7f4c 100644
+--- a/include/linux/crc-t10dif.h
++++ b/include/linux/crc-t10dif.h
+@@ -2,19 +2,11 @@
+ #ifndef _LINUX_CRC_T10DIF_H
+ #define _LINUX_CRC_T10DIF_H
+ 
+ #include <linux/types.h>
+ 
+-u16 crc_t10dif_arch(u16 crc, const u8 *p, size_t len);
+-u16 crc_t10dif_generic(u16 crc, const u8 *p, size_t len);
+-
+-static inline u16 crc_t10dif_update(u16 crc, const u8 *p, size_t len)
+-{
+-	if (IS_ENABLED(CONFIG_CRC_T10DIF_ARCH))
+-		return crc_t10dif_arch(crc, p, len);
+-	return crc_t10dif_generic(crc, p, len);
+-}
++u16 crc_t10dif_update(u16 crc, const u8 *p, size_t len);
+ 
+ static inline u16 crc_t10dif(const u8 *p, size_t len)
+ {
+ 	return crc_t10dif_update(0, p, len);
+ }
+diff --git a/include/linux/crc32.h b/include/linux/crc32.h
+index 36bbc0405aa04..22dbe7144eb44 100644
+--- a/include/linux/crc32.h
++++ b/include/linux/crc32.h
+@@ -3,37 +3,13 @@
+ #define _LINUX_CRC32_H
+ 
+ #include <linux/types.h>
+ #include <linux/bitrev.h>
+ 
+-u32 crc32_le_arch(u32 crc, const u8 *p, size_t len);
+-u32 crc32_le_base(u32 crc, const u8 *p, size_t len);
+-u32 crc32_be_arch(u32 crc, const u8 *p, size_t len);
+-u32 crc32_be_base(u32 crc, const u8 *p, size_t len);
+-u32 crc32c_arch(u32 crc, const u8 *p, size_t len);
+-u32 crc32c_base(u32 crc, const u8 *p, size_t len);
+-
+-static inline u32 crc32_le(u32 crc, const void *p, size_t len)
+-{
+-	if (IS_ENABLED(CONFIG_CRC32_ARCH))
+-		return crc32_le_arch(crc, p, len);
+-	return crc32_le_base(crc, p, len);
+-}
+-
+-static inline u32 crc32_be(u32 crc, const void *p, size_t len)
+-{
+-	if (IS_ENABLED(CONFIG_CRC32_ARCH))
+-		return crc32_be_arch(crc, p, len);
+-	return crc32_be_base(crc, p, len);
+-}
+-
+-static inline u32 crc32c(u32 crc, const void *p, size_t len)
+-{
+-	if (IS_ENABLED(CONFIG_CRC32_ARCH))
+-		return crc32c_arch(crc, p, len);
+-	return crc32c_base(crc, p, len);
+-}
++u32 crc32_le(u32 crc, const void *p, size_t len);
++u32 crc32_be(u32 crc, const void *p, size_t len);
++u32 crc32c(u32 crc, const void *p, size_t len);
+ 
+ /*
+  * crc32_optimizations() returns flags that indicate which CRC32 library
+  * functions are using architecture-specific optimizations.  Unlike
+  * IS_ENABLED(CONFIG_CRC32_ARCH) it takes into account the different CRC32
+diff --git a/include/linux/crc64.h b/include/linux/crc64.h
+index b6aa290a79312..fc0c06ab1993c 100644
+--- a/include/linux/crc64.h
++++ b/include/linux/crc64.h
+@@ -2,28 +2,18 @@
+ #ifndef _LINUX_CRC64_H
+ #define _LINUX_CRC64_H
+ 
+ #include <linux/types.h>
+ 
+-u64 crc64_be_arch(u64 crc, const u8 *p, size_t len);
+-u64 crc64_be_generic(u64 crc, const u8 *p, size_t len);
+-u64 crc64_nvme_arch(u64 crc, const u8 *p, size_t len);
+-u64 crc64_nvme_generic(u64 crc, const u8 *p, size_t len);
+-
+ /**
+  * crc64_be - Calculate bitwise big-endian ECMA-182 CRC64
+  * @crc: seed value for computation. 0 or (u64)~0 for a new CRC calculation,
+  *       or the previous crc64 value if computing incrementally.
+  * @p: pointer to buffer over which CRC64 is run
+  * @len: length of buffer @p
+  */
+-static inline u64 crc64_be(u64 crc, const void *p, size_t len)
+-{
+-	if (IS_ENABLED(CONFIG_CRC64_ARCH))
+-		return crc64_be_arch(crc, p, len);
+-	return crc64_be_generic(crc, p, len);
+-}
++u64 crc64_be(u64 crc, const void *p, size_t len);
+ 
+ /**
+  * crc64_nvme - Calculate CRC64-NVME
+  * @crc: seed value for computation. 0 for a new CRC calculation, or the
+  *	 previous crc64 value if computing incrementally.
+@@ -31,13 +21,8 @@ static inline u64 crc64_be(u64 crc, const void *p, size_t len)
+  * @len: length of buffer @p
+  *
+  * This computes the CRC64 defined in the NVME NVM Command Set Specification,
+  * *including the bitwise inversion at the beginning and end*.
+  */
+-static inline u64 crc64_nvme(u64 crc, const void *p, size_t len)
+-{
+-	if (IS_ENABLED(CONFIG_CRC64_ARCH))
+-		return ~crc64_nvme_arch(~crc, p, len);
+-	return ~crc64_nvme_generic(~crc, p, len);
+-}
++u64 crc64_nvme(u64 crc, const void *p, size_t len);
+ 
+ #endif /* _LINUX_CRC64_H */
+diff --git a/lib/crc/Kconfig b/lib/crc/Kconfig
+index e0e7168b74c75..e049f01a4d2c8 100644
+--- a/lib/crc/Kconfig
++++ b/lib/crc/Kconfig
+@@ -46,12 +46,12 @@ config CRC_T10DIF
+ 
+ config ARCH_HAS_CRC_T10DIF
+ 	bool
+ 
+ config CRC_T10DIF_ARCH
+-	tristate
+-	default CRC_T10DIF if ARCH_HAS_CRC_T10DIF && CRC_OPTIMIZATIONS
++	bool
++	depends on CRC_T10DIF && CRC_OPTIMIZATIONS
+ 
+ config CRC32
+ 	tristate
+ 	select BITREVERSE
+ 	help
+@@ -60,12 +60,12 @@ config CRC32
+ 
+ config ARCH_HAS_CRC32
+ 	bool
+ 
+ config CRC32_ARCH
+-	tristate
+-	default CRC32 if ARCH_HAS_CRC32 && CRC_OPTIMIZATIONS
++	bool
++	depends on CRC32 && CRC_OPTIMIZATIONS
+ 
+ config CRC64
+ 	tristate
+ 	help
+ 	  The CRC64 library functions.  Select this if your module uses any of
+@@ -73,12 +73,12 @@ config CRC64
+ 
+ config ARCH_HAS_CRC64
+ 	bool
+ 
+ config CRC64_ARCH
+-	tristate
+-	default CRC64 if ARCH_HAS_CRC64 && CRC_OPTIMIZATIONS
++	bool
++	depends on CRC64 && CRC_OPTIMIZATIONS
+ 
+ config CRC_OPTIMIZATIONS
+ 	bool "Enable optimized CRC implementations" if EXPERT
+ 	default y
+ 	help
+diff --git a/lib/crc/Makefile b/lib/crc/Makefile
+index ff4c30dda4528..926edc3b035f6 100644
+--- a/lib/crc/Makefile
++++ b/lib/crc/Makefile
+@@ -6,20 +6,36 @@ obj-$(CONFIG_CRC4) += crc4.o
+ obj-$(CONFIG_CRC7) += crc7.o
+ obj-$(CONFIG_CRC8) += crc8.o
+ obj-$(CONFIG_CRC16) += crc16.o
+ obj-$(CONFIG_CRC_CCITT) += crc-ccitt.o
+ obj-$(CONFIG_CRC_ITU_T) += crc-itu-t.o
++
+ obj-$(CONFIG_CRC_T10DIF) += crc-t10dif.o
++crc-t10dif-y := crc-t10dif-main.o
++ifeq ($(CONFIG_CRC_T10DIF_ARCH),y)
++CFLAGS_crc-t10dif-main.o += -I$(src)/$(SRCARCH)
++endif
++
+ obj-$(CONFIG_CRC32) += crc32.o
++crc32-y := crc32-main.o
++ifeq ($(CONFIG_CRC32_ARCH),y)
++CFLAGS_crc32-main.o += -I$(src)/$(SRCARCH)
++endif
++
+ obj-$(CONFIG_CRC64) += crc64.o
++crc64-y := crc64-main.o
++ifeq ($(CONFIG_CRC64_ARCH),y)
++CFLAGS_crc64-main.o += -I$(src)/$(SRCARCH)
++endif
++
+ obj-y += tests/
+ 
+ hostprogs := gen_crc32table gen_crc64table
+ clean-files := crc32table.h crc64table.h
+ 
+-$(obj)/crc32.o: $(obj)/crc32table.h
+-$(obj)/crc64.o: $(obj)/crc64table.h
++$(obj)/crc32-main.o: $(obj)/crc32table.h
++$(obj)/crc64-main.o: $(obj)/crc64table.h
+ 
+ quiet_cmd_crc32 = GEN     $@
+       cmd_crc32 = $< > $@
+ 
+ quiet_cmd_crc64 = GEN     $@
+diff --git a/lib/crc/crc-t10dif.c b/lib/crc/crc-t10dif-main.c
+similarity index 78%
+rename from lib/crc/crc-t10dif.c
+rename to lib/crc/crc-t10dif-main.c
+index 311c2ab829f15..08f1f1042a712 100644
+--- a/lib/crc/crc-t10dif.c
++++ b/lib/crc/crc-t10dif-main.c
+@@ -48,18 +48,41 @@ static const u16 t10_dif_crc_table[256] = {
+ 	0xA415, 0x2FA2, 0x38CC, 0xB37B, 0x1610, 0x9DA7, 0x8AC9, 0x017E,
+ 	0x1F65, 0x94D2, 0x83BC, 0x080B, 0xAD60, 0x26D7, 0x31B9, 0xBA0E,
+ 	0xF0D8, 0x7B6F, 0x6C01, 0xE7B6, 0x42DD, 0xC96A, 0xDE04, 0x55B3
+ };
+ 
+-u16 crc_t10dif_generic(u16 crc, const u8 *p, size_t len)
++static inline __maybe_unused u16
++crc_t10dif_generic(u16 crc, const u8 *p, size_t len)
+ {
+-	size_t i;
++	while (len--)
++		crc = (crc << 8) ^ t10_dif_crc_table[(crc >> 8) ^ *p++];
++	return crc;
++}
+ 
+-	for (i = 0; i < len; i++)
+-		crc = (crc << 8) ^ t10_dif_crc_table[(crc >> 8) ^ p[i]];
++#ifdef CONFIG_CRC_T10DIF_ARCH
++#include "crc-t10dif.h" /* $(SRCARCH)/crc-t10dif.h */
++#else
++#define crc_t10dif_arch crc_t10dif_generic
++#endif
+ 
+-	return crc;
++u16 crc_t10dif_update(u16 crc, const u8 *p, size_t len)
++{
++	return crc_t10dif_arch(crc, p, len);
++}
++EXPORT_SYMBOL(crc_t10dif_update);
++
++#ifdef crc_t10dif_mod_init_arch
++static int __init crc_t10dif_mod_init(void)
++{
++	crc_t10dif_mod_init_arch();
++	return 0;
++}
++subsys_initcall(crc_t10dif_mod_init);
++
++static void __exit crc_t10dif_mod_exit(void)
++{
+ }
+-EXPORT_SYMBOL(crc_t10dif_generic);
++module_exit(crc_t10dif_mod_exit);
++#endif
+ 
+-MODULE_DESCRIPTION("T10 DIF CRC calculation");
++MODULE_DESCRIPTION("CRC-T10DIF library functions");
+ MODULE_LICENSE("GPL");
+diff --git a/lib/crc/crc32.c b/lib/crc/crc32-main.c
+similarity index 58%
+rename from lib/crc/crc32.c
+rename to lib/crc/crc32-main.c
+index 6811b37df2aad..b86ee66075d0e 100644
+--- a/lib/crc/crc32.c
++++ b/lib/crc/crc32-main.c
+@@ -28,32 +28,77 @@
+ #include <linux/module.h>
+ #include <linux/types.h>
+ 
+ #include "crc32table.h"
+ 
+-MODULE_AUTHOR("Matt Domsch <Matt_Domsch@dell.com>");
+-MODULE_DESCRIPTION("Various CRC32 calculations");
+-MODULE_LICENSE("GPL");
+-
+-u32 crc32_le_base(u32 crc, const u8 *p, size_t len)
++static inline __maybe_unused u32
++crc32_le_base(u32 crc, const u8 *p, size_t len)
+ {
+ 	while (len--)
+ 		crc = (crc >> 8) ^ crc32table_le[(crc & 255) ^ *p++];
+ 	return crc;
+ }
+-EXPORT_SYMBOL(crc32_le_base);
+ 
+-u32 crc32c_base(u32 crc, const u8 *p, size_t len)
++static inline __maybe_unused u32
++crc32_be_base(u32 crc, const u8 *p, size_t len)
+ {
+ 	while (len--)
+-		crc = (crc >> 8) ^ crc32ctable_le[(crc & 255) ^ *p++];
++		crc = (crc << 8) ^ crc32table_be[(crc >> 24) ^ *p++];
+ 	return crc;
+ }
+-EXPORT_SYMBOL(crc32c_base);
+ 
+-u32 crc32_be_base(u32 crc, const u8 *p, size_t len)
++static inline __maybe_unused u32
++crc32c_base(u32 crc, const u8 *p, size_t len)
+ {
+ 	while (len--)
+-		crc = (crc << 8) ^ crc32table_be[(crc >> 24) ^ *p++];
++		crc = (crc >> 8) ^ crc32ctable_le[(crc & 255) ^ *p++];
+ 	return crc;
+ }
+-EXPORT_SYMBOL(crc32_be_base);
++
++#ifdef CONFIG_CRC32_ARCH
++#include "crc32.h" /* $(SRCARCH)/crc32.h */
++
++u32 crc32_optimizations(void)
++{
++	return crc32_optimizations_arch();
++}
++EXPORT_SYMBOL(crc32_optimizations);
++#else
++#define crc32_le_arch crc32_le_base
++#define crc32_be_arch crc32_be_base
++#define crc32c_arch crc32c_base
++#endif
++
++u32 crc32_le(u32 crc, const void *p, size_t len)
++{
++	return crc32_le_arch(crc, p, len);
++}
++EXPORT_SYMBOL(crc32_le);
++
++u32 crc32_be(u32 crc, const void *p, size_t len)
++{
++	return crc32_be_arch(crc, p, len);
++}
++EXPORT_SYMBOL(crc32_be);
++
++u32 crc32c(u32 crc, const void *p, size_t len)
++{
++	return crc32c_arch(crc, p, len);
++}
++EXPORT_SYMBOL(crc32c);
++
++#ifdef crc32_mod_init_arch
++static int __init crc32_mod_init(void)
++{
++	crc32_mod_init_arch();
++	return 0;
++}
++subsys_initcall(crc32_mod_init);
++
++static void __exit crc32_mod_exit(void)
++{
++}
++module_exit(crc32_mod_exit);
++#endif
++
++MODULE_DESCRIPTION("CRC32 library functions");
++MODULE_LICENSE("GPL");
+diff --git a/lib/crc/crc64.c b/lib/crc/crc64-main.c
+similarity index 66%
+rename from lib/crc/crc64.c
+rename to lib/crc/crc64-main.c
+index 5b1b17057f0ae..e4a6d879e84c3 100644
+--- a/lib/crc/crc64.c
++++ b/lib/crc/crc64-main.c
+@@ -36,23 +36,56 @@
+ #include <linux/module.h>
+ #include <linux/types.h>
+ #include <linux/crc64.h>
+ #include "crc64table.h"
+ 
+-MODULE_DESCRIPTION("CRC64 calculations");
+-MODULE_LICENSE("GPL v2");
+-
+-u64 crc64_be_generic(u64 crc, const u8 *p, size_t len)
++static inline __maybe_unused u64
++crc64_be_generic(u64 crc, const u8 *p, size_t len)
+ {
+ 	while (len--)
+ 		crc = (crc << 8) ^ crc64table[(crc >> 56) ^ *p++];
+ 	return crc;
+ }
+-EXPORT_SYMBOL_GPL(crc64_be_generic);
+ 
+-u64 crc64_nvme_generic(u64 crc, const u8 *p, size_t len)
++static inline __maybe_unused u64
++crc64_nvme_generic(u64 crc, const u8 *p, size_t len)
+ {
+ 	while (len--)
+ 		crc = (crc >> 8) ^ crc64nvmetable[(crc & 0xff) ^ *p++];
+ 	return crc;
+ }
+-EXPORT_SYMBOL_GPL(crc64_nvme_generic);
++
++#ifdef CONFIG_CRC64_ARCH
++#include "crc64.h" /* $(SRCARCH)/crc64.h */
++#else
++#define crc64_be_arch crc64_be_generic
++#define crc64_nvme_arch crc64_nvme_generic
++#endif
++
++u64 crc64_be(u64 crc, const void *p, size_t len)
++{
++	return crc64_be_arch(crc, p, len);
++}
++EXPORT_SYMBOL_GPL(crc64_be);
++
++u64 crc64_nvme(u64 crc, const void *p, size_t len)
++{
++	return ~crc64_nvme_arch(~crc, p, len);
++}
++EXPORT_SYMBOL_GPL(crc64_nvme);
++
++#ifdef crc64_mod_init_arch
++static int __init crc64_mod_init(void)
++{
++	crc64_mod_init_arch();
++	return 0;
++}
++subsys_initcall(crc64_mod_init);
++
++static void __exit crc64_mod_exit(void)
++{
++}
++module_exit(crc64_mod_exit);
++#endif
++
++MODULE_DESCRIPTION("CRC64 library functions");
++MODULE_LICENSE("GPL");
 -- 
 2.49.0
 
