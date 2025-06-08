@@ -1,68 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-9205-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9206-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CAAABC61CE7
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jun 2025 09:45:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D8F8C61CE7
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jun 2025 23:47:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bFVXn3HcNz306d;
-	Sun,  8 Jun 2025 19:45:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.161.54
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749375929;
-	cv=none; b=S9Ntw08jijQZ8HJLUs6EQ3u2tTAvycM/we4iwLy8sLSk4rYDcsNaIojtmooGYFE3M2jCCrZQsO7iQNcaxC1iLw2A4Pilm88cRvEKixvf+uKhQVrsqSfcAyJU6rybh2wf2A1z37tjukVz6M5WQr/N2iq1j8g9SZkit4pTU2TFV2XRIBcVxDHF0ahpPjBZa6ola5E/dZd5ZBWzpDwaX8rUXsXAERBxc1zQILug0JQD6fxOK6BJ4ZxTllJdquUMzyoojTtRdkRmNLiBLdUv3mX5kN0UjyufOMeqMJRUnqH2HRwPu/FTrMWbMl6+MaYNxWURsv176iZNMqbi8zi0nVRpRQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bFsD03spJz2yZS;
+	Mon,  9 Jun 2025 09:47:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749426432;
+	cv=none; b=Wr2UYh0eYracIW/zIy9fMJoyIILa/i4zbLDf27jH/Yit85NMjjwW/7O4sabAcFUz97hiEVc+0KXa0zaCwWptfiaiXkIPQg4bVBJ/37C2pLQejZic8z/pnnYMFio39BiX/mjHW8F0IMuz4NoMM2nbTVa9iRHRcTngrs+j0WmR9CnsaY7BwvjCdxgMmYSd5wLFP+R5xCq9l4o5LY/9wAWQ6l3pffN8qBGac+41fZzEEpwk2yFs5qSA7qzoD5oxli1Ucw37wSswck2R+PS4mRRcdAVjHuTdzakh1dv7KRLPVKvnMZevSdXo/xPq0LW0Qt6pjjRgYZyUzEluakOG06EEmA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749375929; c=relaxed/relaxed;
-	bh=PEIWuLmQRMVnfGdgxWwMM+uZrcmSfOPwu48WTLXFYZc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=iO0PDPowesnQ0zctDSWJ8sdoG1bajVxtZInhdr2W61hdW/k5gDDexgUaSmfCSJq9+7uqRwRzbK7r5kDhmJUtHDvnG5diotEYWUcZ6NfSnqwlu+W8CyJND2J1FPGips+RT3Bc0tYZNtAzzQwZP9H1UKtkwZYOAScccvKCtGuw8TKUh8+h7qpZ89UpC9uRtouHRFPyAkbHk2u1AAtJlZK+J7nqqV1WVVR9OZO0qmJ4xFui0c0rbnYCKv5KkaGpKuNtky3NHAOWpexY46TAxCNa0K3EUvWbrYMCURweHA/o2001O5zIYiBkF6ta8Qd2kNDPSCPoolLZovyMiFSchCpKcQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.161.54; helo=mail-oo1-f54.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.161.54; helo=mail-oo1-f54.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oo1-f54.google.com (mail-oo1-f54.google.com [209.85.161.54])
+	t=1749426432; c=relaxed/relaxed;
+	bh=koeyGqy9geqWWGboYYe/s1BFD6/F+f/laW8jqXjMlgA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Fvdq1IbuXmtXYejXjEfqp+hDVl3AJ5kYr29QOKjNwFHCm/8y8eZt1Zkv4LTT5jYSDlIlXfrDbWJx/mzRprcEAqclKmjT9/Y2MX+9xK/VT1V5rUcpl0HOV5a1iL2EV3yIt0VzBuYSwnuT2CHpB/EMcpf0PMJQQlRWAWFSLVdQs1zobiVGLQVnI1hzGmEqWx0oGAGbSflK8z6sj22v6xTklPL9NIJOWtN/HgVhB0p5dBd778Jm9HlUpOVJkjbhXOexuuI0ACaQZk1GWHG1DTJwDH/lgd/Zoxx0zh3slEmCwg55nzwyTGo50OVjzunFFesgQDLw/uhvhc//8Py8M49itA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EPyWCyBV; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EPyWCyBV;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bFVXm00Z7z305n
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jun 2025 19:45:27 +1000 (AEST)
-Received: by mail-oo1-f54.google.com with SMTP id 006d021491bc7-606668f8d51so2119044eaf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jun 2025 02:45:27 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749375925; x=1749980725;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=PEIWuLmQRMVnfGdgxWwMM+uZrcmSfOPwu48WTLXFYZc=;
-        b=Zlji/T9LworYOccMTcYBJrf7EIbVBwvTF2R+sJ6Fip8ezES116MFu3M/jI+K2U8LVw
-         goeUSCYT5wfWUUPXlVrHqq0sfVmjQxumb6D3yhzQ2/znVMznHLvlDKzpeFQdj0eZopyp
-         EK6CPiEK2SwL0OqYExtM5MPbuEhJBWry4bd3UfuIaFQdmmryN/SaFCpqq0ckPg/UZyN3
-         Un0G9PXdKtSaSRxmSnBRJ3bfpV4ToAq0KejNA6IJGImWc7ngyWM4XuLlnemgKIdXgpmJ
-         JerFPYhezCgrLGsbo+cCBJH4zTU2RcERHOJTlcYyd6DG/vcxJGLs8euJfSJFl9TfgB4j
-         T+/Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVrIsLn0HlSVOY5LGoOB+EwrhYnUBlTIavE8tg2mBsG8xggR+MuIoJpoaN44tbpz/BICMbjxkdbs5wxhA4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwMMijxkAxji5AwbIz3S9nMJJYJFfm5TamHogwMoU6a/4sZMb2Y
-	5fLiGA4fHInkNHTT0K1bVOg04hyIFTNWIHEtJPMzOMsa2IOXTXWGfZAtOjYMb8zn
-X-Gm-Gg: ASbGnctXVy/HjLDgaTgb9/kf2ZSA7Dvj3ABXWAwvZD2iuMmXta8Y+BivTIaLA0qsaeo
-	Tuj2zsmKiLKNAi4TZo6V30vYTbMOBsgSmlNNPdghk4K293SXpN87hy5uTIwmTr3tyVQqDJ+iQ+x
-	mu4DbIUS7icByXcyZqopcBQfITdy6HVnpQ5nxiQ0wNNzbnzRU9kXHsz18u27jjNXjIvf5RolXaZ
-	nT7bXsdD9ZiqI1q/PKB6y5LEOZXdh+UApOcgH7vUGVJGK/M1QDe2Arj0lRay7ggIDiwaSWpp/RZ
-	A38xYUFZ+3BIAziP8w8Q44CGlqNcNAJbomhwUd4rcmSJehZACn/n8g92qSV2hnWfEQqI82zM0yM
-	HlqoCyFJyZdRm+yxzymVFwiYZ
-X-Google-Smtp-Source: AGHT+IHMN94InuYKS8D0hOKY5jl2DwRh86vx9Fm8iSukBSAAYMQsEskuUzX/ysMD5kgvJqT7mxHAdg==
-X-Received: by 2002:a05:6820:215:b0:60a:26f:ad8d with SMTP id 006d021491bc7-60f3d56e8dcmr5722924eaf.0.1749375924597;
-        Sun, 08 Jun 2025 02:45:24 -0700 (PDT)
-Received: from mail-ot1-f49.google.com (mail-ot1-f49.google.com. [209.85.210.49])
-        by smtp.gmail.com with ESMTPSA id 006d021491bc7-60f3e66fc6fsm905357eaf.17.2025.06.08.02.45.23
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sun, 08 Jun 2025 02:45:24 -0700 (PDT)
-Received: by mail-ot1-f49.google.com with SMTP id 46e09a7af769-730580b0de8so2601133a34.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 08 Jun 2025 02:45:23 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCWCa+Kzg+CuOjZUEMJLavgLrKQkjqJYQ5P/jNlCIcMoF4kq+gPvvGc7UW68DcUomzmI20a7taWwsHd+L5U=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:12c7:b0:4e1:ec70:536 with SMTP id
- ada2fe7eead31-4e784052d39mr1902461137.4.1749375601424; Sun, 08 Jun 2025
- 02:40:01 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bFsCz2dWGz2xGv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  9 Jun 2025 09:47:11 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id 5C5A0A4F6B4;
+	Sun,  8 Jun 2025 23:47:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8491AC4CEEE;
+	Sun,  8 Jun 2025 23:47:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1749426428;
+	bh=He/qqF7BxEbAQ+KhVIwOAYIjY3DpawZEJHr+Xte/K6Q=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=EPyWCyBVPXpu72efvExgg8gLAw9penLyFzlo1qRsspsqyd4JZoFxW7hHQvlnEtIIa
+	 1BxGaS04c9RuFEve+dtCt1LEb2SSISR2VgjLm0WYXRDHNt8nXsOorMQAj8PjQpmAB0
+	 F5rfSxl/09kNUJny72FkrWqXDDqrWHkySwoyI3r23w9s9UZxhxYgVcxmIH21znQLYr
+	 RAY4VaCbmTRnWUl2bEewz1enz7kzJYX9fFC9W66bUVBifTQ9wgF652vwOiRoE9mHCR
+	 SyixTBnJQbaXXeJQKz8gWyl2YRqW1kNgBMYmIhv1mCruOadbFAPFkGtBFHhXGzcMB6
+	 +EWaHxDKp/9YA==
+Date: Sun, 8 Jun 2025 16:46:46 -0700
+From: Eric Biggers <ebiggers@kernel.org>
+To: linux-kernel@vger.kernel.org
+Cc: linux-crypto@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org, sparclinux@vger.kernel.org,
+	x86@kernel.org, linux-arch@vger.kernel.org,
+	Ard Biesheuvel <ardb@kernel.org>,
+	"Jason A . Donenfeld " <Jason@zx2c4.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>
+Subject: Re: [PATCH 00/13] lib/crc: improve how arch-optimized code is
+ integrated
+Message-ID: <20250608234646.GE1259@sol>
+References: <20250601224441.778374-1-ebiggers@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,67 +72,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250315105907.1275012-1-arnd@kernel.org> <20250315105907.1275012-3-arnd@kernel.org>
- <6c7770dd1c216410fcff3bf0758a45d5afcb5444.camel@physik.fu-berlin.de>
-In-Reply-To: <6c7770dd1c216410fcff3bf0758a45d5afcb5444.camel@physik.fu-berlin.de>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Sun, 8 Jun 2025 11:39:49 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXeTWSU64jQt+nybsSBOpBEu_zO0WmE5FK1PnA3YkALUQ@mail.gmail.com>
-X-Gm-Features: AX0GCFt4vabIohtnnm_mFUKWYT8sgcrvXqd5vSNi-se7k7UhxzRe5PjaG9sA3nI
-Message-ID: <CAMuHMdXeTWSU64jQt+nybsSBOpBEu_zO0WmE5FK1PnA3YkALUQ@mail.gmail.com>
-Subject: Re: [PATCH 2/6] sh: remove duplicate ioread/iowrite helpers
-To: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
-Cc: Arnd Bergmann <arnd@kernel.org>, linux-arch@vger.kernel.org, 
-	Arnd Bergmann <arnd@arndb.de>, Richard Henderson <richard.henderson@linaro.org>, 
-	Matt Turner <mattst88@gmail.com>, Greg Ungerer <gerg@linux-m68k.org>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Helge Deller <deller@gmx.de>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	Naveen N Rao <naveen@kernel.org>, Yoshinori Sato <ysato@users.sourceforge.jp>, 
-	Rich Felker <dalias@libc.org>, Julian Vetter <julian@outer-limits.org>, 
-	Bjorn Helgaas <bhelgaas@google.com>, linux-alpha@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
-	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250601224441.778374-1-ebiggers@kernel.org>
 
-Hi Adrian,
+On Sun, Jun 01, 2025 at 03:44:28PM -0700, Eric Biggers wrote:
+> This series improves how lib/crc supports arch-optimized code.  First,
+> instead of the arch-optimized CRC code being in arch/$(SRCARCH)/lib/, it
+> will now be in lib/crc/$(SRCARCH)/.  Second, the API functions (e.g.
+> crc32c()), arch-optimized functions (e.g. crc32c_arch()), and generic
+> functions (e.g. crc32c_base()) will now be part of a single module for
+> each CRC type, allowing better inlining and dead code elimination.  The
+> second change is made possible by the first.
+> 
+> As an example, consider CONFIG_CRC32=m on x86.  We'll now have just
+> crc32.ko instead of both crc32-x86.ko and crc32.ko.  The two modules
+> were already coupled together and always both got loaded together via
+> direct symbol dependency, so the separation provided no benefit.
+> 
+> Note: later I'd like to apply the same design to lib/crypto/ too, where
+> often the API functions are out-of-line so this will work even better.
+> In those cases, for each algorithm we currently have 3 modules all
+> coupled together, e.g. libsha256.ko, libsha256-generic.ko, and
+> sha256-x86.ko.  We should have just one, inline things properly, and
+> rely on the compiler's dead code elimination to decide the inclusion of
+> the generic code instead of manually setting it via kconfig.
+> 
+> Having arch-specific code outside arch/ was somewhat controversial when
+> Zinc proposed it back in 2018.  But I don't think the concerns are
+> warranted.  It's better from a technical perspective, as it enables the
+> improvements mentioned above.  This model is already successfully used
+> in other places in the kernel such as lib/raid6/.  The community of each
+> architecture still remains free to work on the code, even if it's not in
+> arch/.  At the time there was also a desire to put the library code in
+> the same files as the old-school crypto API, but that was a mistake; now
+> that the library is separate, that's no longer a constraint either.
+> 
+> Patches 1 and 2, which I previously sent out by themselves, are
+> prerequisites because they eliminate the need for the CRC32 library API
+> to expose the generic functions.
+> 
+> Eric Biggers (13):
+>   crypto/crc32: register only one shash_alg
+>   crypto/crc32c: register only one shash_alg
 
-On Sat, 7 Jun 2025 at 14:08, John Paul Adrian Glaubitz
-<glaubitz@physik.fu-berlin.de> wrote:
-> On Sat, 2025-03-15 at 11:59 +0100, Arnd Bergmann wrote:
-> > From: Arnd Bergmann <arnd@arndb.de>
-> >
-> > The ioread/iowrite functions on sh only do memory mapped I/O like the
-> > generic verion, and never map onto non-MMIO inb/outb variants, so they
-> > just add complexity. In particular, the use of asm-generic/iomap.h
-> > ties the declaration to the x86 implementation.
-> >
-> > Remove the custom versions and use the architecture-independent fallback
-> > code instead. Some of the calling conventions on sh are different here,
-> > so fix that by adding 'volatile' keywords where required by the generic
-> > implementation and change the cpg clock driver to no longer depend on
-> > the interesting choice of return types for ioread8/ioread16/ioread32.
-> >
-> > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+Applied the first 2 patches to
+https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git/log/?h=crc-next
 
-> Those are quite a number of changes that I would like to test on real hardware
-> first before merging them into the kernel.
->
-> @Geert: Could you test it on your SH-7751 LANDISK board as well?
+The remaining patches have new versions in the v2 series.
 
-Already done for a while, as this patch is commit 2494fce26e434071 ("sh:
-remove duplicate ioread/iowrite helpers") in v6.15-rc1 ;-)
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+- Eric
 
