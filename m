@@ -1,67 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-9203-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9204-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 45974C5B543
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  7 Jun 2025 23:47:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60B28C5AD49
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  8 Jun 2025 09:44:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bFFGV362Rz2yGQ;
-	Sun,  8 Jun 2025 09:47:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749340034;
-	cv=none; b=aUhhu8Je6vlH+yIy0olyPHnqKe0MgVVAiZawZVSCCuOiur793xasnj2WYqdx/QESk1IpQGOEZt5s6OewhujXLfs2Z0Sz5+2Nc9K2LztHTcuMhSgDG/+qQhbG1sraeQ9znxsE6dXYZNDDkN2QvgDzzT7gazWWpNn+cLWF0IdR3TJfTcBAhgIc8yQqq/wh4ND/siux1WHupSRJwhC9cFRpUPje+2t9ELIWCr2FG6IfXs0iaIxwwwJ7TM4HIa5IiaFLhwcHw5vJXsERwyO9K9IQR+mSLvddDZlfB6YlG8h6KhDJIAfpoQ6XYz4SOvQHIgV4d2WoIP0q6f7NSEnD+rnSRQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bFVX53ky1z301n;
+	Sun,  8 Jun 2025 19:44:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=130.133.4.66
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749375893;
+	cv=none; b=djl/o6Bm6/8TkKTjwRARrqvWZjWkZ+0nB7ro/l2FhfB2g/w9f/C2+yNC0qxjj4CrrxLwzqCNZkRTVgRhmgAbhMUlZp6aEDkMcjFrHDRxE7aKbNYzcsl1VfxZCvdABubjrxQc0rXLfo0TbJm1ytQLrq0ABkd4b7sMuTC5zfF7K/MwqBVvDWKgdLO7iFBps9aiigzug8W2nWTz1/Pmt+8BFaHc5txNHEoVwIYcQ26NCUVfBjsi852xSm8TPx27oIOUzvRW0GRxF0AkDr7BS0xEuoBgyQQSoUu5EPF4TW3R2YIQdXJgJTxtw3NiuNSo5KGRpC7gR/kUpuMyp0kbp5Z2WA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749340034; c=relaxed/relaxed;
-	bh=9BLd3zVhm1uyr2zWfOpGUqAHdfaRE3TGpoHRN6aaMSk=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=IUdIZEBMDz/sIYCC4zRwfvRj0ZQ8AHTuFeEzvFsDKR/Ff/BOih6YlxI91bnZ2f3DCf7QGafD64jwvQpfWl/zDClXlEnTvjLI9KY7kiLPge6fI/G+25IeBzGBgl6Sq3Gm3aWHMVUIxxPfKQttJ/Ob6VGvSfxbOman72++0TH1oHrlDr47PrTMWfV7YZCfNZk5XnXRVs31GU2PTzjPzTTRFYZetjlp/SOOy5IQN7bry4D2Vd/T9u6cINYm/hUR7MUsuYekYXu5x6l2OwaVk0D+UP/TyjbCThelVGNuXUFvteonidoRLCA+nOlvB1Yko32ehAvmrfmn5BH3i6xALQEHzw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=jsPgU/cc; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=srs0=cnmf=yw=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
+	t=1749375893; c=relaxed/relaxed;
+	bh=AvQSbwk0OMZgevNebkqyi44TEBQebr6htxrvwpOZR80=;
+	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=jtBarmYWCCXY56O8dB7Hi5wdS0VXVj0wpdKvbPCYsXSXEasc/PpR+ZCo5GboVo8BbtUYwT4NxGyCW2c3ZQsrL8xdOPVGeucaVK41ka0zfPxmojfVS3z/bTjhALA2WEOWt9de9jszc8ix0gTrA7PX2OEaxx1Rzu6kbXxafYoPYbbY70SUTFuMMeJwMQSeWDIAi3xpyDpJGKrofK5uTwCMyF59/sIIbaBo+uf0px3QOF0DeKdMh+nh6yMR7aqelwaw3rvYGsDYgAZr1DLP3m8C/E44wD7qUTrnLOcz0YlRKClpKQMCtcj09zdanL7sqW9hQU3lXyTcxhEVWjwCcpvTDA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de; dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=UcGdOxMb; dkim-atps=neutral; spf=pass (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org) smtp.mailfrom=zedat.fu-berlin.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=physik.fu-berlin.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=jsPgU/cc;
+	dkim=pass (2048-bit key; unprotected) header.d=fu-berlin.de header.i=@fu-berlin.de header.a=rsa-sha256 header.s=fub01 header.b=UcGdOxMb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=srs0=cnmf=yw=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zedat.fu-berlin.de (client-ip=130.133.4.66; helo=outpost1.zedat.fu-berlin.de; envelope-from=glaubitz@zedat.fu-berlin.de; receiver=lists.ozlabs.org)
+Received: from outpost1.zedat.fu-berlin.de (outpost1.zedat.fu-berlin.de [130.133.4.66])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bFFGS1Wvpz2xsM
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jun 2025 09:47:12 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 333DAA40311;
-	Sat,  7 Jun 2025 23:47:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9FE6DC4CEE4;
-	Sat,  7 Jun 2025 23:47:07 +0000 (UTC)
-Authentication-Results: smtp.kernel.org;
-	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="jsPgU/cc"
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
-	t=1749340025;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=9BLd3zVhm1uyr2zWfOpGUqAHdfaRE3TGpoHRN6aaMSk=;
-	b=jsPgU/ccygnXS60vh3VCJ8IeDnGtsomv+dciNUeunJ0SO8LqmCcTqPcJBkB2QFrLru1ll1
-	E9OF1lkNEqMRShrw2za9BAoJsJQKmF9rvzmtd3v/rLI1EduGNSPRtry+Kyl+tncxIkS+aK
-	UrU1VhYkP4pcQtnNoKmPvrZIA/DIb6Q=
-Received: 
-	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 669734c3 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
-	Sat, 7 Jun 2025 23:47:04 +0000 (UTC)
-Date: Sat, 7 Jun 2025 17:47:02 -0600
-From: "Jason A. Donenfeld" <Jason@zx2c4.com>
-To: Eric Biggers <ebiggers@kernel.org>
-Cc: linux-kernel@vger.kernel.org, linux-crypto@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	sparclinux@vger.kernel.org, x86@kernel.org,
-	linux-arch@vger.kernel.org, Ard Biesheuvel <ardb@kernel.org>,
-	Linus Torvalds <torvalds@linux-foundation.org>
-Subject: Re: [PATCH v2 00/12] lib/crc: improve how arch-optimized code is
- integrated
-Message-ID: <aETPdvg8qXv18MDu@zx2c4.com>
-References: <20250607200454.73587-1-ebiggers@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bFVX200dwz2yF1
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  8 Jun 2025 19:44:49 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=fu-berlin.de; s=fub01; h=MIME-Version:Content-Transfer-Encoding:
+	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender
+	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:
+	Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:List-Help:
+	List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=AvQSbwk0OMZgevNebkqyi44TEBQebr6htxrvwpOZR80=; t=1749375890; x=1749980690; 
+	b=UcGdOxMby1hZUrbDm+lnX+AQBY1t7zrYgQnyLb7a7CNt7RTcVEIzr/jpNaTCCkT0u4zVChvfP1O
+	o8aTeKQiEZ8YK9MUhKYNMGiPCYrkjMK5jajXqfGNsCKOa6xp3+1j3NZ3Ixa5XAx3UGGO0W4MaA607
+	1kOjImoorSCtoYPYUisuS/JmGokpeUAVVERH93u+DqQAAZdOSV3Ns7lj6bw9VGoLVaeojHAhko3+k
+	N6JGtGHhEgiFK+/gYox7uKv+FSlmkas1+O5EFD2sTAEpnsqCA3PoesjbZfYYA+adnjRqWZz7KVnF7
+	bt7D71i8FrOYSqxkrYvpS/PKMxZtV+XayY6A==;
+Received: from inpost2.zedat.fu-berlin.de ([130.133.4.69])
+          by outpost.zedat.fu-berlin.de (Exim 4.98)
+          with esmtps (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@zedat.fu-berlin.de>)
+          id 1uOCZv-00000000rzo-33xN; Sun, 08 Jun 2025 11:44:35 +0200
+Received: from p57bd96d0.dip0.t-ipconnect.de ([87.189.150.208] helo=[192.168.178.61])
+          by inpost2.zedat.fu-berlin.de (Exim 4.98)
+          with esmtpsa (TLS1.3)
+          tls TLS_AES_256_GCM_SHA384
+          (envelope-from <glaubitz@physik.fu-berlin.de>)
+          id 1uOCZv-00000001WdX-1muC; Sun, 08 Jun 2025 11:44:35 +0200
+Message-ID: <ea09adb64428a73b84cc0199c3b1efb09b9db23c.camel@physik.fu-berlin.de>
+Subject: Re: [PATCH 2/6] sh: remove duplicate ioread/iowrite helpers
+From: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>
+To: Geert Uytterhoeven <geert@linux-m68k.org>
+Cc: Arnd Bergmann <arnd@kernel.org>, linux-arch@vger.kernel.org, Arnd
+ Bergmann	 <arnd@arndb.de>, Richard Henderson
+ <richard.henderson@linaro.org>, Matt Turner	 <mattst88@gmail.com>, Greg
+ Ungerer <gerg@linux-m68k.org>, Thomas Bogendoerfer	
+ <tsbogend@alpha.franken.de>, "James E.J. Bottomley"	
+ <James.Bottomley@hansenpartnership.com>, Helge Deller <deller@gmx.de>, 
+ Madhavan Srinivasan	 <maddy@linux.ibm.com>, Michael Ellerman
+ <mpe@ellerman.id.au>, Nicholas Piggin	 <npiggin@gmail.com>, Christophe
+ Leroy <christophe.leroy@csgroup.eu>, Naveen N Rao <naveen@kernel.org>,
+ Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker	
+ <dalias@libc.org>, Julian Vetter <julian@outer-limits.org>, Bjorn Helgaas	
+ <bhelgaas@google.com>, linux-alpha@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
+	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-sh@vger.kernel.org
+Date: Sun, 08 Jun 2025 11:44:34 +0200
+In-Reply-To: <CAMuHMdXeTWSU64jQt+nybsSBOpBEu_zO0WmE5FK1PnA3YkALUQ@mail.gmail.com>
+References: <20250315105907.1275012-1-arnd@kernel.org>
+	 <20250315105907.1275012-3-arnd@kernel.org>
+	 <6c7770dd1c216410fcff3bf0758a45d5afcb5444.camel@physik.fu-berlin.de>
+	 <CAMuHMdXeTWSU64jQt+nybsSBOpBEu_zO0WmE5FK1PnA3YkALUQ@mail.gmail.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+User-Agent: Evolution 3.56.2 
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,24 +94,64 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20250607200454.73587-1-ebiggers@kernel.org>
+X-Original-Sender: glaubitz@physik.fu-berlin.de
+X-Originating-IP: 87.189.150.208
+X-ZEDAT-Hint: PO
 
-On Sat, Jun 07, 2025 at 01:04:42PM -0700, Eric Biggers wrote:
-> Having arch-specific code outside arch/ was somewhat controversial when
-> Zinc proposed it back in 2018.  But I don't think the concerns are
-> warranted.  It's better from a technical perspective, as it enables the
-> improvements mentioned above.  This model is already successfully used
-> in other places in the kernel such as lib/raid6/.  The community of each
-> architecture still remains free to work on the code, even if it's not in
-> arch/.  At the time there was also a desire to put the library code in
-> the same files as the old-school crypto API, but that was a mistake; now
-> that the library is separate, that's no longer a constraint either.
+Hello Geert,
 
-I can't express how happy I am to see this revived. It's clearly the
-right way forward and makes it a lot simpler for us to dispatch to
-various arch implementations and also is organizationally simpler.
+On Sun, 2025-06-08 at 11:39 +0200, Geert Uytterhoeven wrote:
+> Hi Adrian,
+>=20
+> On Sat, 7 Jun 2025 at 14:08, John Paul Adrian Glaubitz
+> <glaubitz@physik.fu-berlin.de> wrote:
+> > On Sat, 2025-03-15 at 11:59 +0100, Arnd Bergmann wrote:
+> > > From: Arnd Bergmann <arnd@arndb.de>
+> > >=20
+> > > The ioread/iowrite functions on sh only do memory mapped I/O like the
+> > > generic verion, and never map onto non-MMIO inb/outb variants, so the=
+y
+> > > just add complexity. In particular, the use of asm-generic/iomap.h
+> > > ties the declaration to the x86 implementation.
+> > >=20
+> > > Remove the custom versions and use the architecture-independent fallb=
+ack
+> > > code instead. Some of the calling conventions on sh are different her=
+e,
+> > > so fix that by adding 'volatile' keywords where required by the gener=
+ic
+> > > implementation and change the cpg clock driver to no longer depend on
+> > > the interesting choice of return types for ioread8/ioread16/ioread32.
+> > >=20
+> > > Signed-off-by: Arnd Bergmann <arnd@arndb.de>
+>=20
+> > Those are quite a number of changes that I would like to test on real h=
+ardware
+> > first before merging them into the kernel.
+> >=20
+> > @Geert: Could you test it on your SH-7751 LANDISK board as well?
+>=20
+> Already done for a while, as this patch is commit 2494fce26e434071 ("sh:
+> remove duplicate ioread/iowrite helpers") in v6.15-rc1 ;-)
 
-Jason
+Well, there is no Tested-By from either of us, so this isn't optimal.
+
+I wished Arnd could have at least pinged me back regarding this. He knows I=
+'m
+actively maintaining arch/sh and I would like to properly test and review
+such changes.
+
+But I'm not doing this professionally, so I cannot be always there with 100=
+%
+capacity. Just pushing such changes in without any input from me defeats th=
+e
+purpose of a maintainer.
+
+Adrian
+
+--=20
+ .''`.  John Paul Adrian Glaubitz
+: :' :  Debian Developer
+`. `'   Physicist
+  `-    GPG: 62FF 8A75 84E0 2956 9546  0006 7426 3B37 F5B5 F913
 
