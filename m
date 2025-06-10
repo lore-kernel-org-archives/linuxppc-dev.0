@@ -1,89 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-9246-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9247-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFAA1C678DA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jun 2025 14:29:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBD9DC5B552
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jun 2025 16:01:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bGrm14lRdz3bpM;
-	Wed, 11 Jun 2025 00:29:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::433"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749565793;
-	cv=none; b=FHYgh6IwPKXKT1Pky9xq/QruKlcWWIEbvpmI6BZmRlyr5wmp4ZVyktqu9ygMq0USeHJJTcSoXh7DeTnIBepQsWN8gMniuLoga8ssJSt1ADP7G5sGmImBhc5hdTSwufAYj94nkz33rG9JkHxzPZT4qqGeVE9U5vkXMq82Ew2efFj5tuch/iLr9IuXWz/Q7Rb+RUVY/3ljNvf2Yr6hb4C/gxUoq2aFuf5OlbZ/RO79grwZjAY5rbORfguTc8/vW32LcrVVj5V5RHurNQ1/BCZU8ATW5/zHD7B1RChewLADnakO3NA/Lbz9gBIek/unHtI6wPfUBL0uFjc99MmnabnUhA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bGtp51x9Qz3bnq;
+	Wed, 11 Jun 2025 02:01:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749571309;
+	cv=none; b=dpi4/BmLLNEhx8/ApGTO9D5F9M75MZ8tN1N4zFA05X3jVYrup9YFQY91WUHAEZylGl6oh+9EQx/CaMkZv2TbUhs9P1l/OBXqrSLsi1UXhc8js4wrIWxa7gwDVc5fJVSLyW0WoDNPtGNtjfWhko7lah+bH132xsJLaQ5cUbxgrkkI6FNuro8bPtz0eBGdko0OndqcCus0b1LY5fMWO1DyVjSWEn9E0I9iDEed78rqBKRLsyu/n25wqjiRF9kQgsHdVhG9kFoA4jNJZk6r9M5qf7N1+vLgPfDLZ/ZXNvxoHSTiV1rFfFTEamn5Q04F+jvhnKX97dN6K+ulOQzXaHpVQw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749565793; c=relaxed/relaxed;
-	bh=esEZPNG+RjP7eIdE+H90U4csFlF97uknnEYr/Yzqr4Y=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NexVdHRYju+rHGBI6swHT+WBRefpoVRdsG/jteMPVRNVqPFAU4wN1H0HIFtaTNKQD2DdoV9/qlzI2WQa9oMU2LB2dC7LEqP3ToLbxgO1qPZvpY9YNX8z/vToILoPIH3xF68tNysmMWhlbSLhHtGZy6rIdF4iEo1ZjhOdGayOxZYyxoj07Jce9T5AxAp5EJbFAWBOp6kFd7Vd0lv2uBqTsgXGkJtKVg2hQ1lLLpzCGHbweUASVVlzalnQsIbev+GFe2G8PrvA9YUP4U4/64ZbZVj+94Pwu4mvfglQFrchdtc2Hdd/1djDhs3wD9rG10ZGSDN/ko9JHl2OLlQyImFpwA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=i93Lzsp2; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::433; helo=mail-wr1-x433.google.com; envelope-from=fourier.thomas@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1749571309; c=relaxed/relaxed;
+	bh=UBquCt0RzizbjWcclrfnWI/TWU0TECMOXaZ41rpkpcE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:content-type; b=h5hSoR5gcEV7BP5aR90g58yQJfuBfa4Kb2ZC7QuQB/Z7oa0XDSkfz+OD0ci83PCfqf1f6sJEjRGpi7hgVN73MhNmtn3rAS2DH20kis5HVmnAfXRHX0QHCPjtJVtq8nPz56fQSHNU4YXt9XsFbWAvISI60ZHgTWozcI6HjBQYJ1BiwKc3c0p4eWtqX49HCnCpz9VC9xf9a9PrSOXZtIZ2F4pvre7lMaJ5mJqx7l0N3Pk5njSAJO3kd3suMDCHy45TsRpo59zMjuyQpQ0mGc2/JqFXOSvWO/0tpyQ6iOiL+m9XN4fkG88glpQIGbBQWz6wytJA9tsnP3MwLzxMVa02CA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aq0VM97G; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aq0VM97G; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=i93Lzsp2;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aq0VM97G;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=aq0VM97G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::433; helo=mail-wr1-x433.google.com; envelope-from=fourier.thomas@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x433.google.com (mail-wr1-x433.google.com [IPv6:2a00:1450:4864:20::433])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bGrm01YjRz3bmQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2025 00:29:51 +1000 (AEST)
-Received: by mail-wr1-x433.google.com with SMTP id ffacd0b85a97d-3a4f7865b22so887667f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2025 07:29:51 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1749565789; x=1750170589; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=esEZPNG+RjP7eIdE+H90U4csFlF97uknnEYr/Yzqr4Y=;
-        b=i93Lzsp23NfUOnhLgJ6JyO4MHgMzzhW7MNWUW66L55q8A+uoSzsnCD1Uc2/Rr2+hC2
-         JdAG4aHj/2Wza1t+Z9GbpuIA02vdEEuo7L8kFdnYyUCYqDp6ViPO5Nx/gT18Y8fdVQLe
-         NlR7TxHYHDnPoWtDjX4gYTzMoGWycLskotk2SOl5h/dkdhjMXwKFOtasBFfAfekWBFLE
-         4MGm/leQK2aELpS2pa3HQb0HA/cycPg4tTJE0WOIHQ+omylSPM9SMIZOSURZReey3v+N
-         i1Iac6hv2OTl6j1vvjw9hzT3EIDviEKLiagfN4An/VPSa8Rn6zStsIGJbyS1SiRBO/ut
-         Ggcg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749565789; x=1750170589;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=esEZPNG+RjP7eIdE+H90U4csFlF97uknnEYr/Yzqr4Y=;
-        b=PENW1MQt4DsiXtMAqmS8NmX8SCtm79at/gSYcI4NETMuDVoD1YYGE8wzzOPWqIaUM+
-         so6aBEoXzE9Xdf+0I8rGQcUcaTi9hCoIheZpy/lGDrSGfzL4ouWFRAiEDiNYf54M2y42
-         HJvBw2D2jzVKOq+2+m1g+T/bKQ5yQbRMFIcfRU8SYU7ZDmjXYRXQ/RWtDEgGKXfy9rFu
-         a5x7S2SnbXV/t2pkgKc1HxoIlFoqn76aiI4upCc73azxUmTUc9nn58jUZ5BWUef5ge8W
-         QvGj6rxZdTqEqnKKKpZrdyhcDMgFMXjpnnLC5WMd+ewuRUfovWKJHbH+TTElNtlaxZGY
-         7WOA==
-X-Forwarded-Encrypted: i=1; AJvYcCXIf0vMrKV81cpASULYNvlG4wg9WTJd82TfTqbpd4cGjRH5CoBUdUzGo2DKsocgJzIlYa7/Jk4k6a2evG8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Ywzb7gEYPrZnCT/frpDb/Vas1drKK43C6dhvleewdVZKZie2JKn
-	xZ5YIOTXK1GUp8Z9GSrh/0JBWYNPN7zPDVg5gDttnstfCoDpjdZhUmUs
-X-Gm-Gg: ASbGncsINuCpyh4AaxygrrLc+Y9h+nCLZ30C4XJd8ZkYVpHgU26afkZrd8EhXwK7kr1
-	2AWacGdduYVUbD4nvRA+2AlCTjOKiJ3vopWAnK781WNFPJa79EEuUIkbxPd50BS/ggNlkDTWt0J
-	BguioR9F2nXRpXPnlY0Ug7ibjeyu18xgFGldwKIiEYpI0bMGG0mpBBelO9w9tlijMs3wWK/7nqW
-	V4GJVSEdpNDYqxnj97ZPVGZgZeqUa4/lwecEGjcf/9HM+oShhCUjIDP7tlJb+NDnrxlXMLz4vTH
-	kfZ9af7Fn4v5xk/tObwGOZu1qoMDNvdu8qAxcvcaOV0xy4+LucHKIft66sKX5MvUSMdJ4jFpnAR
-	35b1JKa2IIfDjQsg=
-X-Google-Smtp-Source: AGHT+IEsEw3VXsZOTaD+aKW25Mfmt5QTfOeNT+U4CyY9HFg2QSr7SIkvRCBKCEAtxjFu1sU2doGYRw==
-X-Received: by 2002:a05:600c:4e12:b0:451:dee4:f667 with SMTP id 5b1f17b1804b1-452fe0a41c5mr55546505e9.7.1749565788521;
-        Tue, 10 Jun 2025 07:29:48 -0700 (PDT)
-Received: from thomas-precision3591.imag.fr ([2001:660:5301:24:31ff:bbc1:f423:fc85])
-        by smtp.googlemail.com with ESMTPSA id ffacd0b85a97d-3a53229de53sm12376324f8f.8.2025.06.10.07.29.47
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Jun 2025 07:29:48 -0700 (PDT)
-From: Thomas Fourier <fourier.thomas@gmail.com>
-To: 
-Cc: Thomas Fourier <fourier.thomas@gmail.com>,
-	Anatolij Gustschin <agust@denx.de>,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bGtp40kw1z3bnc
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2025 02:01:46 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1749571304;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=UBquCt0RzizbjWcclrfnWI/TWU0TECMOXaZ41rpkpcE=;
+	b=aq0VM97GCK1tCcaizv5YznMJNHhoTYT7HvaqQetUerWbAofroxmcwjvHEEAb/CDAKC2SKT
+	xG303ipjjxffHWCddug3MvDm2E7gYb/Wp5xvvf0kOt7w1L830LdaspyfhN7IXYiVZI3U95
+	BSdcU17RDPu8IBq9WilXftCLM/0UICE=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1749571304;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=UBquCt0RzizbjWcclrfnWI/TWU0TECMOXaZ41rpkpcE=;
+	b=aq0VM97GCK1tCcaizv5YznMJNHhoTYT7HvaqQetUerWbAofroxmcwjvHEEAb/CDAKC2SKT
+	xG303ipjjxffHWCddug3MvDm2E7gYb/Wp5xvvf0kOt7w1L830LdaspyfhN7IXYiVZI3U95
+	BSdcU17RDPu8IBq9WilXftCLM/0UICE=
+Received: from mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-548-N-GSLFYyMmGGejSM3F4XTA-1; Tue,
+ 10 Jun 2025 12:01:40 -0400
+X-MC-Unique: N-GSLFYyMmGGejSM3F4XTA-1
+X-Mimecast-MFC-AGG-ID: N-GSLFYyMmGGejSM3F4XTA_1749571298
+Received: from mx-prod-int-02.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-02.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.15])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 5D9731956063;
+	Tue, 10 Jun 2025 16:01:38 +0000 (UTC)
+Received: from thuth-p1g4.redhat.com (unknown [10.44.32.89])
+	by mx-prod-int-02.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id E63981956087;
+	Tue, 10 Jun 2025 16:01:34 +0000 (UTC)
+From: Thomas Huth <thuth@redhat.com>
+To: linuxppc-dev@lists.ozlabs.org,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
-	linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC EMBEDDED MPC5XXX),
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH v2] (powerpc/512) Fix possible `dma_unmap_single()` on uninitialized pointer
-Date: Tue, 10 Jun 2025 16:29:11 +0200
-Message-ID: <20250610142918.169540-2-fourier.thomas@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	Geoff Levand <geoff@infradead.org>,
+	Naveen N Rao <naveen@kernel.org>
+Subject: [PATCH v2 1/2] powerpc: Replace __ASSEMBLY__ with __ASSEMBLER__ in uapi headers
+Date: Tue, 10 Jun 2025 18:01:27 +0200
+Message-ID: <20250610160128.69033-2-thuth@redhat.com>
+In-Reply-To: <20250610160128.69033-1-thuth@redhat.com>
+References: <20250610160128.69033-1-thuth@redhat.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,35 +92,132 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.15
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: BfMdaELSrX6Qh6azvv2DqqWVkeoPhM2nXdFHpiT5Bes_1749571298
+X-Mimecast-Originator: redhat.com
 Content-Transfer-Encoding: 8bit
+content-type: text/plain; charset="US-ASCII"; x-default=true
 
-If the device configuration fails (if `dma_dev->device_config()`),
-`sg_dma_address(&sg)` is not initialized and the jump to `err_dma_prep`
-leads to calling `dma_unmap_single()` on `sg_dma_address(&sg)`.
+From: Thomas Huth <thuth@redhat.com>
 
-Signed-off-by: Thomas Fourier <fourier.thomas@gmail.com>
+__ASSEMBLY__ is only defined by the Makefile of the kernel, so
+this is not really useful for uapi headers (unless the userspace
+Makefile defines it, too). Let's switch to __ASSEMBLER__ which
+gets set automatically by the compiler when compiling assembly
+code.
+
+This is a completely mechanical patch (done with a simple "sed -i"
+statement).
+
+Signed-off-by: Thomas Huth <thuth@redhat.com>
 ---
- arch/powerpc/platforms/512x/mpc512x_lpbfifo.c | 6 ++----
- 1 file changed, 2 insertions(+), 4 deletions(-)
+ arch/powerpc/include/uapi/asm/opal-prd.h |  4 ++--
+ arch/powerpc/include/uapi/asm/ptrace.h   | 12 ++++++------
+ arch/powerpc/include/uapi/asm/types.h    |  4 ++--
+ 3 files changed, 10 insertions(+), 10 deletions(-)
 
-diff --git a/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c b/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
-index 9668b052cd4b..f251e0f68262 100644
---- a/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
-+++ b/arch/powerpc/platforms/512x/mpc512x_lpbfifo.c
-@@ -240,10 +240,8 @@ static int mpc512x_lpbfifo_kick(void)
- 	dma_conf.src_addr_width = DMA_SLAVE_BUSWIDTH_4_BYTES;
+diff --git a/arch/powerpc/include/uapi/asm/opal-prd.h b/arch/powerpc/include/uapi/asm/opal-prd.h
+index 1869cf83a870e..11abcf0192ca1 100644
+--- a/arch/powerpc/include/uapi/asm/opal-prd.h
++++ b/arch/powerpc/include/uapi/asm/opal-prd.h
+@@ -40,7 +40,7 @@
+ #define OPAL_PRD_SCOM_READ		_IOR('o', 0x02, struct opal_prd_scom)
+ #define OPAL_PRD_SCOM_WRITE		_IOW('o', 0x03, struct opal_prd_scom)
  
- 	/* Make DMA channel work with LPB FIFO data register */
--	if (dma_dev->device_config(lpbfifo.chan, &dma_conf)) {
--		ret = -EINVAL;
--		goto err_dma_prep;
--	}
-+	if (dma_dev->device_config(lpbfifo.chan, &dma_conf))
-+		return -EINVAL;
+-#ifndef __ASSEMBLY__
++#ifndef __ASSEMBLER__
  
- 	sg_init_table(&sg, 1);
+ struct opal_prd_info {
+ 	__u64	version;
+@@ -54,6 +54,6 @@ struct opal_prd_scom {
+ 	__s64	rc;
+ };
  
+-#endif /* __ASSEMBLY__ */
++#endif /* __ASSEMBLER__ */
+ 
+ #endif /* _UAPI_ASM_POWERPC_OPAL_PRD_H */
+diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
+index 7004cfea3f5ff..01e630149d48e 100644
+--- a/arch/powerpc/include/uapi/asm/ptrace.h
++++ b/arch/powerpc/include/uapi/asm/ptrace.h
+@@ -27,7 +27,7 @@
+ 
+ #include <linux/types.h>
+ 
+-#ifndef __ASSEMBLY__
++#ifndef __ASSEMBLER__
+ 
+ #ifdef __KERNEL__
+ struct user_pt_regs
+@@ -57,7 +57,7 @@ struct pt_regs
+ 	unsigned long result;		/* Result of a system call */
+ };
+ 
+-#endif /* __ASSEMBLY__ */
++#endif /* __ASSEMBLER__ */
+ 
+ 
+ /*
+@@ -200,7 +200,7 @@ struct pt_regs
+ #define PPC_PTRACE_SETHWDEBUG	0x88
+ #define PPC_PTRACE_DELHWDEBUG	0x87
+ 
+-#ifndef __ASSEMBLY__
++#ifndef __ASSEMBLER__
+ 
+ struct ppc_debug_info {
+ 	__u32 version;			/* Only version 1 exists to date */
+@@ -212,7 +212,7 @@ struct ppc_debug_info {
+ 	__u64 features;
+ };
+ 
+-#endif /* __ASSEMBLY__ */
++#endif /* __ASSEMBLER__ */
+ 
+ /*
+  * features will have bits indication whether there is support for:
+@@ -224,7 +224,7 @@ struct ppc_debug_info {
+ #define PPC_DEBUG_FEATURE_DATA_BP_DAWR		0x0000000000000010
+ #define PPC_DEBUG_FEATURE_DATA_BP_ARCH_31	0x0000000000000020
+ 
+-#ifndef __ASSEMBLY__
++#ifndef __ASSEMBLER__
+ 
+ struct ppc_hw_breakpoint {
+ 	__u32 version;		/* currently, version must be 1 */
+@@ -236,7 +236,7 @@ struct ppc_hw_breakpoint {
+ 	__u64 condition_value;	/* contents of the DVC register */
+ };
+ 
+-#endif /* __ASSEMBLY__ */
++#endif /* __ASSEMBLER__ */
+ 
+ /*
+  * Trigger Type
+diff --git a/arch/powerpc/include/uapi/asm/types.h b/arch/powerpc/include/uapi/asm/types.h
+index 327616fb70e44..9dbf55e38ea58 100644
+--- a/arch/powerpc/include/uapi/asm/types.h
++++ b/arch/powerpc/include/uapi/asm/types.h
+@@ -28,14 +28,14 @@
+ # include <asm-generic/int-ll64.h>
+ #endif
+ 
+-#ifndef __ASSEMBLY__
++#ifndef __ASSEMBLER__
+ 
+ 
+ typedef struct {
+ 	__u32 u[4];
+ } __attribute__((aligned(16))) __vector128;
+ 
+-#endif /* __ASSEMBLY__ */
++#endif /* __ASSEMBLER__ */
+ 
+ 
+ #endif /* _UAPI_ASM_POWERPC_TYPES_H */
 -- 
-2.43.0
+2.49.0
 
 
