@@ -1,89 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-9265-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9266-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8FB06C677C4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 10 Jun 2025 22:15:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B62FC677C4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 11 Jun 2025 00:10:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bH34x1dQHz2xHY;
-	Wed, 11 Jun 2025 08:15:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749585248;
-	cv=none; b=C9zU3n/aKGKa//g5c84Y9e6K2sr4y+Qk5MZWwpu69vSRTXxigFiBwjxOY4OvIEM5IffhnR/ZBDQLnhx0uiqsJFa64PSvU0E2o9g+xw6CeWR3Ljz0tEZwtCVK43y60e4PMXuxNx4/ARs9d53AFDf/YIiXJ/mI6qjONQ73nf2xuzUU3pHNL1a/qMbH8pzp0PiQ5ljC45HI2zEHyLnbsa4hxGM0XMMyHiuVBsAbaQ9vPBkpA6X1o4VqK/EiNjiAATQPDVciOWw2Z2HeJvqEAFbXoqrCoouAudM8AnnSEuUHdGqkS61ZVbjxDyqXccTtKdDCK3HdFZT4J+DHXo69h+Ubug==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bH5fM6PZJz2ySY;
+	Wed, 11 Jun 2025 10:10:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1049"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749600651;
+	cv=none; b=T32fY7hr4hWZQhPzbHZ68euvAlxWWPgkGN+spdoDloD/GNpT/clMsyyCJPUlyYUDC4+phtq/OwbssfSRu685WnmOR7+2w4P0Z+4RKuy3O2UnORmPlscjz0Ta+HATSyGW0S7QaxgPl/oorI8BUSupVbPFA/RAZ/c2kKBQFvHw1sJUpxqbiZ7GTlnfepuoD7lKipwMNeLJXepEvSfJU5FxohyyLSUaXgW1JHzQxodWWrch/YixVJtt5cKcL1nLHD9ipTGIGL32Wbx2E9JTNBJg1zfLas3jQfyHJacC4o1lXx3+k8xxcAY2Z9n/+KDwt6FIHOgZOzfe3/mia/lQdJMcrA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749585248; c=relaxed/relaxed;
-	bh=ph1K9nhA2Vt5tUTE9IBkwCPvhYlBWrTrf42zGu8uhLY=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=hIMgwSMcDlfQ0Ky+Ktodsdl5x99xkWjndCrU1nlDPEONksIY4KfSS7Nw3lY158geyseGUdq6GJh4XskoYzB5ueT8Rosw7kcZJC4F4VS3UVupf/ZT2C29aSyxE5opbBhUzhZlSJZ1liHTOxySHXyUQZlTtmnIVTJynOXhrgT35EjpoQLpsM51AbX0uyDIhpPAtYnn6fpejpSLug2E2uh+kvuC5CVar46JZAxtqVip92RVQl6r906VWiZZd/FWZHOvUG/QYOFs6PWF1tLBYrwkfF2XnOCudcXkRHFkDmM4XulL54Vq02MpNzi0tPhlVUEr1qmvN/5A9zYT7IvkpEIDeA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Xq16FC8q; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42a; helo=mail-wr1-x42a.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1749600651; c=relaxed/relaxed;
+	bh=KeHmPmMyMKJKT4alX9Roe+NB+CyhbaLAdm3PrWL3iJM=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=bArHg88B18c9CszxLoe9rVkNh7ocOgIpbHfaR/DZDeTlGtmEIzIBZDUdYXyIa5SqTPqxumV0tCrMh23sWwFs39Goco60jbdF/6rRxWdW9AYNk7Doa31/NusP3OCBqfXGtyuXQk2SS3b6iUkkJLi08vaG4Nk0cHVXmBziABEwtuaxDEcnk9bJI7v+XDXh4NeDeL+wUW6qP26Vh0fZW7dWlZC9pGcNM/whhP4uCYSG2bE+ccEBGUc7Epn3CdMOsWcpNuYL0p1QAKRYgr2VzdqXCtB/iOrK12vEdKNSVUBBO1WIVmYUSQ/CkQYK4TjldMIY+PyKE8HIdf5xhAcE+t733Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=kITa1E37; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=3hcliaaykdiq0mivrkowwotm.kwutqv25xxk-lm3tq010.w7tij0.wzo@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Xq16FC8q;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=kITa1E37;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42a; helo=mail-wr1-x42a.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=3hcliaaykdiq0mivrkowwotm.kwutqv25xxk-lm3tq010.w7tij0.wzo@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1049.google.com (mail-pj1-x1049.google.com [IPv6:2607:f8b0:4864:20::1049])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bGzy64myJz308b
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2025 05:54:05 +1000 (AEST)
-Received: by mail-wr1-x42a.google.com with SMTP id ffacd0b85a97d-3a4f78ebec8so3556085f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2025 12:54:05 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bH5fL0J8kz2xHY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 11 Jun 2025 10:10:49 +1000 (AEST)
+Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-3138f5e8ff5so2369119a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 10 Jun 2025 17:10:49 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1749585240; x=1750190040; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ph1K9nhA2Vt5tUTE9IBkwCPvhYlBWrTrf42zGu8uhLY=;
-        b=Xq16FC8q4SY5f+vH2Z27AcjZovfJu7nZe0MBiV0xYczI4CDX1mQhudBjEFBnVUUAk2
-         W3QfVq2SBxQCgin++6mYUJgLNPi6Lc+7xRt4RelQGiu+THEZ866kO8+jPDkAezFpuWQP
-         06M63MA5nSu8xx5JaTWaGm+3E6s9DEaNv9gR4ThoylQTmCbf6WhRN+Y3asppI4cCkW23
-         982AwxC5gKW5DaJo5b/VRverilkVCkEFmTwKjgsxax9uuMtn8FOH2WgSiB0pvJKDjKGZ
-         +UO28LYRVANowxKgi88a/IDti7HMZ1Mnoj2Fz2zypoYKoTY9hnx1CB9meJDjWH8Skb53
-         tRSw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749585240; x=1750190040;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
+        d=google.com; s=20230601; t=1749600646; x=1750205446; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:mime-version:date:reply-to:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=ph1K9nhA2Vt5tUTE9IBkwCPvhYlBWrTrf42zGu8uhLY=;
-        b=FiQ/z183H/VCNyIqrhOdDmvao4HE6rmyRW43GR2e8zPpMC5I4JZAemnk1CzfOt8erH
-         kW0sdygpuUm+HhKIAtCEGzu4ncquSg6RNYH8tz7tANgBdgZ1elhSsUSEU2YnFd0VqKII
-         YKHjVeOiYNisfs3CVPH9DAZbHjgv9t1yw57Wi3dlD44Z00/XVZNX8kDwGwvxraK5P9v8
-         ZMqB0PzU9IF295N3AtjF2M1/OcIkoSLSayA32GA5yLbpywYv9n+Gj8Ej80yKxhM9OjGh
-         kRi5+AmjFbGnDBSL9k9pU0xfHDuy3/dhEZ97VS67kPyItBnRZtdL6k/3GfIqIEApAEl1
-         hyXQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXoa29TiS/0UgStgOUlliaKDWxC8Oz+tK0D7wCxRB+eurVibgHpme9WXIkKLn8bp6dtNXQJc73xcHwr074=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwPdqY6WxNZdSFYqu6yH2TsFhis+ChkY70T3N2cjhuItj73sKsm
-	bY6cwQ2uixa18aT1W39ZIsW/6dIS+aOiWcgi8qYh+JWvATGFygIrO0QH
-X-Gm-Gg: ASbGncvYurtb1yeVvX1zR+/wOSfSWqtkm1jlQ2yEImhMPIZ8T1lYGJXWCJhERINWvD/
-	6Vpp4NaOYiFGgvJnDQPw4t/CeZXNc0jv3Qmg6mi2dxkia418rZBIiEzAH5YZQ4DqHrwu3Nnosso
-	yBfWjmTY4LU9NYEOyt3otNunUs0wlewQlxQ8Fy5M9xq2l8A99DTDA6nlBRFS0grd8QXjNx0HcT2
-	+x7oATnz7zoxcZLs559zpM+3xIduF4DuO4QRzV/r/VTsrey58EaFRWkyrupvgX5tSJ9eWlr2ZEs
-	xYB3+RH+9JZpctzx5aXUHvMnWzHKVVNJ1dh3uOFEyWaq34YoXu50mMQmJ3PCgvQS16ryazr2Hm7
-	zPvWE0rfdYAx8jsAxEl3A0Fgn+ulmrIIm2Sc=
-X-Google-Smtp-Source: AGHT+IEHk/baWTOcAxkY5Kvy7mQ8aJbUM3aIlVEB2Tx5t++pwNgXhWtp4KEGX6pa2mjBcJRZidlhzg==
-X-Received: by 2002:a05:6000:250e:b0:3a4:f6b7:8b07 with SMTP id ffacd0b85a97d-3a558aff7a7mr175941f8f.48.1749585240370;
-        Tue, 10 Jun 2025 12:54:00 -0700 (PDT)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a53229e014sm13068138f8f.3.2025.06.10.12.53.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 10 Jun 2025 12:54:00 -0700 (PDT)
-Date: Tue, 10 Jun 2025 20:53:58 +0100
-From: David Laight <david.laight.linux@gmail.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-sound@vger.kernel.org, Herve Codina <herve.codina@bootlin.com>, Mark
- Brown <broonie@kernel.org>
-Subject: Re: [PATCH] ALSA: pcm: Convert multiple {get/put}_user to
- user_access_begin/user_access_end()
-Message-ID: <20250610205358.07b1cc05@pumpkin>
-In-Reply-To: <bf9288392b1d4b9e92fe29212d9cb933c5b3fbae.1749296015.git.christophe.leroy@csgroup.eu>
-References: <bf9288392b1d4b9e92fe29212d9cb933c5b3fbae.1749296015.git.christophe.leroy@csgroup.eu>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+        bh=KeHmPmMyMKJKT4alX9Roe+NB+CyhbaLAdm3PrWL3iJM=;
+        b=kITa1E37yBrtv9Ru7tyfwf1DzvY8RY/HDdeHdDCLpyIYK3c/enhyFlDVwilWD7wsNg
+         ZKgmMObSbN9ExrwyUejbKkV/PBa7W3W4Ies0WbmvJfYpddanxb4BlcswB6y4NAWV+I86
+         cMVM0PhUnAakO1bBNgomkUbbX2orrkRBYnnRjTOyKQzCDpk4wvi36GJFddF04KkVwF/Y
+         iFgVtHqVT920g1d2ee8Rk9S2IvvAJjsb+MMUHIJ0vZpC+3gascSLg8XmoQyn9yBddcwC
+         AvpR9Sr8VYbueTXdrURcVQyb8eaje02I5gYr+ySLc0zsqxDbbeoEDSMFgSBNZgjUsFgw
+         NE8g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1749600646; x=1750205446;
+        h=cc:to:from:subject:message-id:mime-version:date:reply-to
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=KeHmPmMyMKJKT4alX9Roe+NB+CyhbaLAdm3PrWL3iJM=;
+        b=aOJFRs3nf7cOWefd5Wy59DP+VtH8azE7DDnMe9/K6Y9EudwCw97jvH9tVE98IoW60U
+         +Ei9kDi+dLl7/xLpuyciJbN5VavTFQlHnqBBD63yVQbkssVM6IQLRxYSyXI2VE9j8XAe
+         x5RODRHVn1qn3YboZIASO9KWkr5MclUX79/j3XJZk8iB4CZbqfQpWPOf14G/mZg6zvLt
+         eMjUYR26jkbPfXH0gITTukcNPJT5McCeSLhXO7w7A5L6XysgMRb6rgrq3SZxeATTXftL
+         aZM/6w2MdsjhPev3uksP5PfQrmbTTSWuQb+eAv+DlJqUM2zBTadNytmXNG2EROHxPC4i
+         SrLw==
+X-Forwarded-Encrypted: i=1; AJvYcCVyZcG0FTOw89UN0Zd8pMOBvzRUkBKy30meEfmThPHJwlV3lvjLP2ARYg8iKnbJfZ/vqt9K9NYNxePcznA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyU8O4YIQ0Fon2lIWIboHiSlxf5qk5ef8ioxd+WiLOpGDij7ljz
+	eRAO+OXPSq9MRq86W83q2vGgOpkEr6M8fbdWSlRN3m7u1dgCKflx7p8fcWGKUvY3RzZaMXEESQ3
+	TMIkL7A==
+X-Google-Smtp-Source: AGHT+IF8oABFbuTKJ9GcUMp/LE7xUGa2l9YHKCqeYYF9+w27QVhniGaieMvIcJ7joDnc4dA30O9QnXDBack=
+X-Received: from pjz3.prod.google.com ([2002:a17:90b:56c3:b0:312:e914:4548])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:3ec4:b0:311:9c9a:58d7
+ with SMTP id 98e67ed59e1d1-313b1fbe6admr808960a91.19.1749600645461; Tue, 10
+ Jun 2025 17:10:45 -0700 (PDT)
+Reply-To: Sean Christopherson <seanjc@google.com>
+Date: Tue, 10 Jun 2025 17:10:34 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,23 +75,119 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.50.0.rc0.642.g800a2b2222-goog
+Message-ID: <20250611001042.170501-1-seanjc@google.com>
+Subject: [PATCH 0/8] KVM: Remove include/kvm, standardize includes
+From: Sean Christopherson <seanjc@google.com>
+To: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
+	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
+	Huacai Chen <chenhuacai@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Anup Patel <anup@brainfault.org>, Paul Walmsley <paul.walmsley@sifive.com>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Sean Christopherson <seanjc@google.com>, 
+	Paolo Bonzini <pbonzini@redhat.com>
+Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
+	kvm@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	Anish Ghulati <aghulati@google.com>, Colton Lewis <coltonlewis@google.com>, 
+	Thomas Huth <thuth@redhat.com>
+Content-Type: text/plain; charset="UTF-8"
 
-On Sat,  7 Jun 2025 13:37:42 +0200
-Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
+Kill off include/kvm (through file moves/renames), and standardize the set of
+KVM includes across all architectures.
 
-> With user access protection (Called SMAP on x86 or KUAP on powerpc)
-> each and every call to get_user() or put_user() performs heavy
-> operations to unlock and lock kernel access to userspace.
-> 
-> To avoid that, perform user accesses by blocks using
-> user_access_begin/user_access_end() and unsafe_get_user()/
-> unsafe_put_user() and alike.
+This conflicts with Colton's partioned PMU series[1], but this should work as
+a nice prepatory cleanup for the partitioned PMU work (and hopefully can land
+sooner).
 
-Did you consider using masked_user_access_begin() ?
-It removes a conditional branch and lfence as well.
+Note, these patches were originally posted as part of a much larger and more
+agressive RFC[1].  We've effectively abandoned upstreaming the multi-KVM idea,
+but I'm trying to (slowly) upstream the bits and pieces that I think/hope are
+generally beneficial.
 
-	David
+[1] https://lore.kernel.org/all/20250602192702.2125115-1-coltonlewis@google.com
+[2] https://lore.kernel.org/all/20230916003118.2540661-1-seanjc@google.com
+
+Anish Ghulati (1):
+  KVM: arm64: Move arm_{psci,hypercalls}.h to an internal KVM path
+
+Sean Christopherson (7):
+  KVM: arm64: Include KVM headers to get forward declarations
+  KVM: arm64: Move ARM specific headers in include/kvm to arch directory
+  KVM: Move include/kvm/iodev.h to include/linux as kvm_iodev.h
+  KVM: MIPS: Stop adding virt/kvm to the arch include path
+  KVM: PPC: Stop adding virt/kvm to the arch include path
+  KVM: s390: Stop adding virt/kvm to the arch include path
+  KVM: Standardize include paths across all architectures
+
+ MAINTAINERS                                                | 1 -
+ .../arm64/include/asm/kvm_arch_timer.h                     | 2 ++
+ arch/arm64/include/asm/kvm_host.h                          | 7 +++----
+ include/kvm/arm_pmu.h => arch/arm64/include/asm/kvm_pmu.h  | 2 ++
+ .../kvm/arm_vgic.h => arch/arm64/include/asm/kvm_vgic.h    | 2 +-
+ arch/arm64/kvm/Makefile                                    | 2 --
+ arch/arm64/kvm/arch_timer.c                                | 5 ++---
+ arch/arm64/kvm/arm.c                                       | 6 +++---
+ {include => arch/arm64}/kvm/arm_hypercalls.h               | 0
+ {include => arch/arm64}/kvm/arm_psci.h                     | 0
+ arch/arm64/kvm/guest.c                                     | 2 +-
+ arch/arm64/kvm/handle_exit.c                               | 2 +-
+ arch/arm64/kvm/hyp/Makefile                                | 6 +++---
+ arch/arm64/kvm/hyp/include/hyp/switch.h                    | 4 ++--
+ arch/arm64/kvm/hyp/nvhe/switch.c                           | 4 ++--
+ arch/arm64/kvm/hyp/vhe/switch.c                            | 4 ++--
+ arch/arm64/kvm/hypercalls.c                                | 4 ++--
+ arch/arm64/kvm/pmu-emul.c                                  | 4 ++--
+ arch/arm64/kvm/psci.c                                      | 4 ++--
+ arch/arm64/kvm/pvtime.c                                    | 2 +-
+ arch/arm64/kvm/reset.c                                     | 3 +--
+ arch/arm64/kvm/trace_arm.h                                 | 2 +-
+ arch/arm64/kvm/trng.c                                      | 2 +-
+ arch/arm64/kvm/vgic/vgic-debug.c                           | 2 +-
+ arch/arm64/kvm/vgic/vgic-init.c                            | 2 +-
+ arch/arm64/kvm/vgic/vgic-irqfd.c                           | 2 +-
+ arch/arm64/kvm/vgic/vgic-kvm-device.c                      | 2 +-
+ arch/arm64/kvm/vgic/vgic-mmio-v2.c                         | 4 ++--
+ arch/arm64/kvm/vgic/vgic-mmio-v3.c                         | 4 ++--
+ arch/arm64/kvm/vgic/vgic-mmio.c                            | 6 +++---
+ arch/arm64/kvm/vgic/vgic-v2.c                              | 2 +-
+ arch/arm64/kvm/vgic/vgic-v3-nested.c                       | 3 +--
+ arch/arm64/kvm/vgic/vgic-v3.c                              | 2 +-
+ arch/loongarch/include/asm/kvm_eiointc.h                   | 2 +-
+ arch/loongarch/include/asm/kvm_ipi.h                       | 2 +-
+ arch/loongarch/include/asm/kvm_pch_pic.h                   | 2 +-
+ arch/mips/include/asm/kvm_host.h                           | 3 +--
+ arch/mips/kvm/Makefile                                     | 2 --
+ arch/powerpc/kvm/Makefile                                  | 2 --
+ arch/powerpc/kvm/mpic.c                                    | 2 +-
+ arch/riscv/kvm/Makefile                                    | 2 --
+ arch/riscv/kvm/aia_aplic.c                                 | 2 +-
+ arch/riscv/kvm/aia_imsic.c                                 | 2 +-
+ arch/s390/kvm/Makefile                                     | 2 --
+ arch/x86/kvm/Makefile                                      | 1 -
+ arch/x86/kvm/i8254.h                                       | 2 +-
+ arch/x86/kvm/ioapic.h                                      | 2 +-
+ arch/x86/kvm/irq.h                                         | 2 +-
+ arch/x86/kvm/lapic.h                                       | 2 +-
+ include/{kvm/iodev.h => linux/kvm_iodev.h}                 | 0
+ virt/kvm/Makefile.kvm                                      | 2 ++
+ virt/kvm/coalesced_mmio.c                                  | 3 +--
+ virt/kvm/eventfd.c                                         | 2 +-
+ virt/kvm/kvm_main.c                                        | 3 +--
+ 54 files changed, 64 insertions(+), 77 deletions(-)
+ rename include/kvm/arm_arch_timer.h => arch/arm64/include/asm/kvm_arch_timer.h (98%)
+ rename include/kvm/arm_pmu.h => arch/arm64/include/asm/kvm_pmu.h (99%)
+ rename include/kvm/arm_vgic.h => arch/arm64/include/asm/kvm_vgic.h (99%)
+ rename {include => arch/arm64}/kvm/arm_hypercalls.h (100%)
+ rename {include => arch/arm64}/kvm/arm_psci.h (100%)
+ rename include/{kvm/iodev.h => linux/kvm_iodev.h} (100%)
+
+
+base-commit: 61374cc145f4a56377eaf87c7409a97ec7a34041
+-- 
+2.50.0.rc0.642.g800a2b2222-goog
+
 
