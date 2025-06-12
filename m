@@ -1,68 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-9313-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9314-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12149C61CE8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jun 2025 14:59:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4786EC61CE8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 12 Jun 2025 14:59:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bJ5Jp2L5Yz2xHT;
-	Fri, 13 Jun 2025 00:59:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.217.47
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749740346;
-	cv=none; b=nHEia6Q/AU6OkuApCrM7RwvEvjI7Y5TYCmaeR/rzCCtON1i1WfTtJnKsJx238S8j5uEo71AMeWi4NFmnRNG+6EmHoRX2hw+oBCnZgzN0LjiAaYuxBt6cy7qilh7p4/zJpcnumYXOc2Q0EdfEqDwIb9mw2ThAIPdiLo0R7wcgnXZ0v8yyWE5mv9B1lbjh/ZALeZbaO/LnVts6p7PC2WlTrPRknC/n8AJN/p0hn6S+fC8a+rKc8gb+UiuadET3R+LEJDvEUK+2oXGbTX8rXB+8wRSKuUyXkhAzdm9EIk3FpQyFqgs3kY5mHreuLbEVUhAEt8H+vPDPo74QHPrgZgv/PQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bJ5KH6WWWz2ypV;
+	Fri, 13 Jun 2025 00:59:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=216.40.44.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749740371;
+	cv=none; b=iX8NaDtYC8gp2ApBGl6K7OJ7JaLokvjqjwEdVt5+wDF9mdbdpZU1a28JpXnGxRE3Kr0VqneTr4eHD2kWDjGanm0yIrikDX3svxYO7pKNUgJbjfsez1k1xLvWzS0nd1iUruvg1aDoQu516r8QZS2YdP9D6o5D0vyf6aXxXaylr1saC67jVu/u0+ydzFVgynKUxK9XrU+yW1rvk7JARdtRRZVCK3aVoNCbEE/LsaXrD5kAjIyV+dOwHWmOlOmNAiuoETiS1DSSHqf2IO2/yc3CAgmliHBRnYyq+B2hB34Ag3JPSBmtp36//8Ri2eEXAjCNt7JuYA0O7Ce/7VQrqxLn1w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749740346; c=relaxed/relaxed;
-	bh=j7urv+43q9m5//eN/fBrHnA2GxbG1zcAPVe31MZBFY0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=SbzeFc2j9yQMqyS9NJIg1DdROERMMjB6+Xuye02dahmoe45eRAsXQSxylBBaYpdeyEtxi8PTVzH98kPFRO8V/TCqQNd+mO2X44Y3K3+S/rO9TDbRGUBWghxqsEREuEAX2kIxU6fzQtrvCQWkuNpSm8xjKjtq313NNJhCgBnADTpgh+lFwUV7Nvdf5OUmxKeoFgumSybIOS847XXVzjeurK6I39LntkHLkfBaTrRJUEY0HdXlOxdKKTNXhJ6plhThLxgKTNvXLQBiIJRK3wc12t2HTQRdyjWY2x8sWMXnoGFik84xth2Trdc5Oe33KWjOpMOxqsPaOCMdWiR4uBcjPg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.217.47; helo=mail-vs1-f47.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.217.47; helo=mail-vs1-f47.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-vs1-f47.google.com (mail-vs1-f47.google.com [209.85.217.47])
+	t=1749740371; c=relaxed/relaxed;
+	bh=yEaGNWI2rSJQF/8W/X5KhusGYkw8ca9e0TxE+VPx5Kc=;
+	h=Message-ID:Date:From:To:Cc:Subject:References:MIME-Version:
+	 Content-Type; b=noIFQ3xtJzNOthiKEvhtab5R5CMWiTb7Z8YSJBOqdnYXnuT1Y1yhLVQYn5z9gvfqNzHKyzeeHFR45hhSI/eG8gyriFdJ6FOWxM8zbiyADa/Hz4QIYcHtHibwDZHgSnc8K5lBBhIAgVBDV1Lq4M4IhLapqVZK7tzufcVTatI+pQPbV2ont9lTCDVlaeVyPTeeNkMHSFnL/Gzn0ijOaou7AsN5YLLwuUazWJYaOcglI2oCdKj/q5G95BRl9RDFhgYMK3fQ/mAetJWLcghc2AnvwXb66iWPq6f7lVcnLIi8Mplz1XRvim3fTknqVqEBPiEC92ltS/IUgdqTwhK3GwuRfQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=goodmis.org; spf=pass (client-ip=216.40.44.10; helo=relay.hostedemail.com; envelope-from=rostedt@goodmis.org; receiver=lists.ozlabs.org) smtp.mailfrom=goodmis.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=goodmis.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=goodmis.org (client-ip=216.40.44.10; helo=relay.hostedemail.com; envelope-from=rostedt@goodmis.org; receiver=lists.ozlabs.org)
+X-Greylist: delayed 403 seconds by postgrey-1.37 at boromir; Fri, 13 Jun 2025 00:59:30 AEST
+Received: from relay.hostedemail.com (smtprelay0010.hostedemail.com [216.40.44.10])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJ5Jm44PMz2xC3
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2025 00:59:03 +1000 (AEST)
-Received: by mail-vs1-f47.google.com with SMTP id ada2fe7eead31-4e7b8112f4dso272352137.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2025 07:59:03 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1749740339; x=1750345139;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=j7urv+43q9m5//eN/fBrHnA2GxbG1zcAPVe31MZBFY0=;
-        b=dDRNdLJOUPjj7lhOdrbsZd2eUKQUiExvT4R27yCyL1vGq82pBM0rsUeMA+TCU8DkG3
-         12BNHjqEQkG1acVTtqAezbFMS9vynZbLlDzZ7WKPfrQbzziLf2I+zHuvvxYJU8Q5aZmL
-         GgXTfjCS+7Aq5V5EOFJWKnXzVU/1IKvLvydvWE+79wWPgx59l6bC1TJ/8WpE31f4JW9l
-         FTSa5kKw0cBACKkz4X1d6HG9XZqhmp8/hlDyPBtSlGCGfpCxuRD6WSJ+DGwVlixUTNTC
-         bIMISDh3IE8zbf+cfsP8eu92UhYCEl2AB7Q9xoSBwuyy/QEAT/JzTufUG/Ul2uhn9QdW
-         DvbQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVGI7ONw0TILO4jpD5W5qjq5KQeT8G37nzcWgn2Ii3VdhCDjFtI9cN91hiFh9U79hMNDKCt4t0JgCAiBoM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwDCkTyxt+2FbASbVdkCNxFjoqMiDWfAyHXZ5btTl8bjOnIr/VT
-	pboXMAhbOpS8aJd4oLvwraCFR8ypusjI3w1mpI0BWURWwL6JXYZFFKNAW63ckHom
-X-Gm-Gg: ASbGncva74L1B5KRkue8BnIpbuGC06i9071WeC0X4KNSRw0sGmW8p1ARW+PTuS/pXtd
-	YR2bJntDzzM5LWw1h2lxxEpZWSjwJJEeoIRkqqrMVYQyQBmc1Cx7A2ipU2RMUF192Q+GiTKDiD+
-	2ijFUazkuWKLsRO7KG1cl7dIQHUC28b06wBjrcM/rJA57lBOeQirTVZZC8v//00pphjN87h8IIx
-	sDW8UV4oBGYYWQM7bYU2wSNXmBZ/kRJniTfHWPv9UuGDMFcrERrzRlB/sDoK38zLOUsG9E9fUPd
-	ejJuiTgSklO8dXTF+gK/bfsYQGlAp2ZmYFCE+SkNZYEaa+nej39S3V8ZTN1aA8tgeqpqQyAox5d
-	1SUWZukB2gXHM6234gXY5PAJW
-X-Google-Smtp-Source: AGHT+IFH7L4o1QoQcY133jVp7utaII/vRnpZUFTKF899LgpzNlGokdW/G8F3im1askQwy/5PrxKZeg==
-X-Received: by 2002:a05:6102:390e:b0:4e6:dbbc:16d0 with SMTP id ada2fe7eead31-4e7cccc353fmr3766760137.14.1749740339270;
-        Thu, 12 Jun 2025 07:58:59 -0700 (PDT)
-Received: from mail-ua1-f44.google.com (mail-ua1-f44.google.com. [209.85.222.44])
-        by smtp.gmail.com with ESMTPSA id ada2fe7eead31-4e7d07d752dsm245837137.12.2025.06.12.07.58.58
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 12 Jun 2025 07:58:58 -0700 (PDT)
-Received: by mail-ua1-f44.google.com with SMTP id a1e0cc1a2514c-87ed3b792a2so294142241.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 12 Jun 2025 07:58:58 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCUCezUYpfD4O6L2+2I24v8SdaEvdLg/2U5v8HO7SKeLmEaXzUFARL4arEESZmKGcrpoRtHkcBnyrgENH+Q=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:3046:b0:4e6:a338:a41d with SMTP id
- ada2fe7eead31-4e7ccb9decbmr4392145137.11.1749740338109; Thu, 12 Jun 2025
- 07:58:58 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJ5KG3T8Mz2ynh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2025 00:59:29 +1000 (AEST)
+Received: from omf12.hostedemail.com (a10.router.float.18 [10.200.18.1])
+	by unirelay03.hostedemail.com (Postfix) with ESMTP id 967A0BF42D;
+	Thu, 12 Jun 2025 14:52:34 +0000 (UTC)
+Received: from [HIDDEN] (Authenticated sender: nevets@goodmis.org) by omf12.hostedemail.com (Postfix) with ESMTPA id A99CF20;
+	Thu, 12 Jun 2025 14:52:32 +0000 (UTC)
+Received: from rostedt by gandalf with local (Exim 4.98.2)
+	(envelope-from <rostedt@goodmis.org>)
+	id 1uPjJg-00000001lPb-1eeF;
+	Thu, 12 Jun 2025 10:54:08 -0400
+Message-ID: <20250612145408.246703478@goodmis.org>
+User-Agent: quilt/0.68
+Date: Thu, 12 Jun 2025 10:53:13 -0400
+From: Steven Rostedt <rostedt@goodmis.org>
+To: linux-kernel@vger.kernel.org,
+ linux-trace-kernel@vger.kernel.org,
+ linux-pm@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Cc: Masami Hiramatsu <mhiramat@kernel.org>,
+ Mark Rutland <mark.rutland@arm.com>,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ "Rafael J. Wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>
+Subject: [PATCH 3/4] PM: tracing: Hide device_pm_callback events under PM_SLEEP
+References: <20250612145310.563358597@goodmis.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,44 +67,49 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250610-gpiochip-set-rv-soc-v1-0-1a0c36c9deed@linaro.org> <20250610-gpiochip-set-rv-soc-v1-2-1a0c36c9deed@linaro.org>
-In-Reply-To: <20250610-gpiochip-set-rv-soc-v1-2-1a0c36c9deed@linaro.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Thu, 12 Jun 2025 16:58:46 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdXt7W+XLoeQWqjNR8dBS3oCwFKBydVZueqtYg2uka0WxQ@mail.gmail.com>
-X-Gm-Features: AX0GCFuo1dTCSfHZ3zIJsOn9_JIHrUSOYlkHewmTg8yRd6ll7bXt9Le_Qc4mtYM
-Message-ID: <CAMuHMdXt7W+XLoeQWqjNR8dBS3oCwFKBydVZueqtYg2uka0WxQ@mail.gmail.com>
-Subject: Re: [PATCH 2/2] soc: renesas: pwc-rzv2m: use new GPIO line value
- setter callbacks
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: Qiang Zhao <qiang.zhao@nxp.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	Linus Walleij <linus.walleij@linaro.org>, Magnus Damm <magnus.damm@gmail.com>, 
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org, 
-	linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org, 
-	linux-renesas-soc@vger.kernel.org, 
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=UTF-8
+X-Rspamd-Queue-Id: A99CF20
+X-Stat-Signature: fpyn74mhzgi6edsr6q5dyg95485qe48o
+X-Rspamd-Server: rspamout06
+X-Session-Marker: 6E657665747340676F6F646D69732E6F7267
+X-Session-ID: U2FsdGVkX19j43D1p8tely174eW3U7IK9BarJsJXwwI=
+X-HE-Tag: 1749739952-946871
+X-HE-Meta: U2FsdGVkX19Y+FZTAuN70shmtNMQh8PF2z5w7Al6e+s8ndEXUZ5waGRazYm5aCm2Wr9+0EzyzaKU8+39h43/bI6vwC1JF3awrJxUzixgqFB3CkY/vNKmEsPT/OV5hI4lu+/m0RfUj7nkgQJbHak4qGw+xUParAwYSnfDYmsnUA8nJAyD6BG+V0ytFtMXWmALmab5EFfBTUI5MdjZAAdTv/cWm6PKSm5M9NWf1SX25RHOP6PmO6myilu4l5HiqBpSf6h20aPkkJZ6xNU6nuhYc2en4NRWWwSTYaJqJxRD5a1I7uOniuYR3SvoNNigOYTMI1LKxCHOU2Q1hJiFGU31S+MkEnNyOtsQ3FRNqXap5c/U/vbNbY4d1XhRVHkiS/T/NNdisUq1KQZm54tC8qipcA==
 
-On Tue, 10 Jun 2025 at 14:38, Bartosz Golaszewski <brgl@bgdev.pl> wrote:
-> From: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
->
-> struct gpio_chip now has callbacks for setting line values that return
-> an integer, allowing to indicate failures. Convert the driver to using
-> them.
->
-> Signed-off-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+From: Steven Rostedt <rostedt@goodmis.org>
 
-Reviewed-by: Geert Uytterhoeven <geert+renesas@glider.be>
-i.e. will queue in renesas-devel for v6.17.
+The events device_pm_callback_start and device_pm_callback_end events are
+only called when CONFIG_PM_SLEEP is defined. As each event can take up to
+5K regardless if they are used or not, it's best not to define them when
+they are not used. Add #ifdef around these events when they are not used.
 
-Gr{oetje,eeting}s,
+Signed-off-by: Steven Rostedt (Google) <rostedt@goodmis.org>
+---
+ include/trace/events/power.h | 2 ++
+ 1 file changed, 2 insertions(+)
 
-                        Geert
-
+diff --git a/include/trace/events/power.h b/include/trace/events/power.h
+index a10ad300d660..5b1df5e1e092 100644
+--- a/include/trace/events/power.h
++++ b/include/trace/events/power.h
+@@ -212,6 +212,7 @@ TRACE_EVENT(cpu_frequency_limits,
+ 		  (unsigned long)__entry->cpu_id)
+ );
+ 
++#ifdef CONFIG_PM_SLEEP
+ TRACE_EVENT(device_pm_callback_start,
+ 
+ 	TP_PROTO(struct device *dev, const char *pm_ops, int event),
+@@ -260,6 +261,7 @@ TRACE_EVENT(device_pm_callback_end,
+ 	TP_printk("%s %s, err=%d",
+ 		__get_str(driver), __get_str(device), __entry->error)
+ );
++#endif
+ 
+ TRACE_EVENT(suspend_resume,
+ 
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.47.2
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+
 
