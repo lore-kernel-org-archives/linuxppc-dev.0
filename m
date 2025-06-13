@@ -1,54 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-9346-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9347-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40293C61DB2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jun 2025 12:26:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6EEBC61DB2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jun 2025 12:26:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bJdtS6LZtz30T3;
-	Fri, 13 Jun 2025 22:26:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bJdtn3m3gz30Tf;
+	Fri, 13 Jun 2025 22:26:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8:216:3eff:fe9d:e7b4"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749802034;
-	cv=none; b=kJkihnP0GVTPxrKq5nOLpjWe/8Qpcr4iXzuRzpTy4btThotvYBDiTPHNJD14NSSzddLXKUmk4p3RaK7tOcZ4vKea/E+yoDQ/wosWZtm/+caRIoN3nf5owhEgxw+48emaQ3LHuHjgkyz0qxgAA8e8D96jF/z7tChVDCU8NahbJuDL91Qz2qZT52bcfTN4dg+G82pDFoFMseGjOhrVH0NxSzdFu2qW0M9IGRGSHCVt22v7+arMCabP1nRWU2T3CNYM01V5hKUTi7Am8ARNLR7SjL5UxKxydggOrtrJy6Wex7oF5Mr3JwrcG0pGQ+Oa5EYl4khKJL/VD+h3q/YBHHeWgQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749802039;
+	cv=none; b=duHqCjIheWlpJrzQwpqrkLYD3sbVPWVsOpPeAxrspb5/85llz0BquidosBsER6pRRYRj5bFtYl3N01K+6u+vCJskyt41pGdycQr3rkwDDc6RFRD617cz9T+N8knuoHJEBg4vdSIZ5yykVnP/ScshsBj/inueeWM1K8cWRelxeXndPsXgfAzibg64U3Kn0pmAKR8cDuuhUEHBtsH/W9M1rpjNQS1mVOGzWjDUuKmYV/dvEcnWmq70LYfniX52gXMjuG/9QIh12fRCzwVaflt2f5mUr0PWErxdfuaWRHIA43ANRRvBZk82Ry8FF6RSrNS+Yjjq9Vq+ENTIwVGCuzzSGw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749802034; c=relaxed/relaxed;
-	bh=beEBVGnU6qU0wggmtWKWRNXrz1xxl7Gdx9jeDS6+tJk=;
-	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=c1Ogr+Fac+VRgKLWNjnBM7BwV1tMQ/totU66I8nDgbFQgZFd8Q+8s8QRKkrIHugxi3ezdk1epKvb5gh4p9Vlc/HArb2gtPQPbQiQ+EauHVtgiL/THBN6/C+WC23UKX2mKnN5hrDllUN43fC0ImKkQ9MxyhdNV6E1cUnTyzUF8BjC75LbunkdadJMgw5DZGkcPcT6gjWTuocbEDppX8Lj+okzB1au6nOE/BLM11JYfod9RS80pgTlJeasZCjaX2KmvuMnUjj1pEjpBGq44HpyhhhNuiQ8DCr5T0114XpZ2ux5JTx0VM0qLHgQq5EbyanltkMVrEdur6ymUekEV6PSjw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=kbxOkqLB; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8:216:3eff:fe9d:e7b4; helo=mslow3.mail.gandi.net; envelope-from=alexis.lothore@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+	t=1749802039; c=relaxed/relaxed;
+	bh=eeLleyfYulrm7/2JkDlmDKQ+W0qM+PQ6c1Xd/a6HciU=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=Hh9YQyYnSqhxid0nuWdiBYScBwCfusci7m4vm1yfXiVJWcivZTibiOSJyGvUc57Bpnf6xUoLVMm7tHndAHxkK6BFXVgtddORcRrqNpWbWE3Fvlv6QpBckeLpDRtjBVNxt0OjeSf4HrvUE2dAEVaQ7fcuhK4xLUb4owJbB6TMLkZhm88dlzyt8WC+/3/ssbtzuS4UZu38mryvY/3f93hNO9IW2Z/b2V8CD+PeU84saFcwUucFrZBEth8WR5mghhTdC31W4KZ4Zo29G5IF0TPMsQMXEM2Yq+LVur4CqQAbp+kUWzxh6PbIvLyZGviYzjshBJ5QKBPTz0p72f1FwM/+tw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=PbUsx0ia; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8:216:3eff:fe9d:e7b4; helo=mslow3.mail.gandi.net; envelope-from=alexis.lothore@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=kbxOkqLB;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=PbUsx0ia;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8:216:3eff:fe9d:e7b4; helo=mslow3.mail.gandi.net; envelope-from=alexis.lothore@bootlin.com; receiver=lists.ozlabs.org)
 Received: from mslow3.mail.gandi.net (mslow3.mail.gandi.net [IPv6:2001:4b98:dc4:8:216:3eff:fe9d:e7b4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJX732px2z2yb9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2025 18:07:11 +1000 (AEST)
-Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::224])
-	by mslow3.mail.gandi.net (Postfix) with ESMTP id CFEDB584877
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2025 07:37:36 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 86F1944503;
-	Fri, 13 Jun 2025 07:37:20 +0000 (UTC)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJX7B6z34z2yZ6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2025 18:07:18 +1000 (AEST)
+Received: from relay4-d.mail.gandi.net (relay4-d.mail.gandi.net [217.70.183.196])
+	by mslow3.mail.gandi.net (Postfix) with ESMTP id 613B05848CC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2025 07:37:49 +0000 (UTC)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id A5C3D4451B;
+	Fri, 13 Jun 2025 07:37:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1749800247;
+	t=1749800263;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=beEBVGnU6qU0wggmtWKWRNXrz1xxl7Gdx9jeDS6+tJk=;
-	b=kbxOkqLBWMYw2LKAd/IW2RyGj/nP5qTDA3nQe30746ZNf401cfIfLbPiuY4UCGLIThgg52
-	3SDjkKUlcjrkpsB7uie+NFd+q+khw4Qzg1V7FhH7kqzzDUETsK2pGbu4SLKi+3xHGZA5Px
-	K8dourdAUK5hDgryw11qFf0uNWCLOjes5mH1frWPNr1onGZSx9hzPoBxJ8F4ePD6fSr9AO
-	tPte1M9ivmGyxjku7Xi4XGOT8+ifFHjA0HhTgsLAKFka6UJZWMMHXlJDmbcy5ef57nUIR7
-	33LybB/oSKZ4GDWXEWCuppTs2482C4hbZA/bJ1nk+is7e8e0Di4ud3snPwKt0Q==
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=eeLleyfYulrm7/2JkDlmDKQ+W0qM+PQ6c1Xd/a6HciU=;
+	b=PbUsx0iacezWvrE6A20Xyl+42FRd0/58MVH7JIf9elFbkDG3eJJOpPGahhO/fOwo06e7Gb
+	v1In1Q/JhMx10WL0FVaMQLv8yM7qi6hl4gjHJBEBAadUl1AlxaXU/7UanahRe8NY82lPHT
+	RIaBdWnX4B0AsjT9RnzYiuAtLL1q9vrkkVxg0R0brkQ9Wd4kPpfHCimyNG1cFEFCLp+eo+
+	aZJ1YSyI68DwRMuA/gSfC4kdCpB5pK58wK19PUAQ6eYzrFh0n+serqJ33z6xPgAI6tCkyK
+	jpHHzO+7YONhWsDauoIHYDC0ETlCR6ocSRSRHBCtmX/Qt7CSafBTpS9Q9PAfjQ==
 From: =?utf-8?q?Alexis_Lothor=C3=A9_=28eBPF_Foundation=29?= <alexis.lothore@bootlin.com>
-Subject: [PATCH bpf 0/7] bpf: deny trampoline attachment if args can not be
- located exactly on stack
-Date: Fri, 13 Jun 2025 09:37:09 +0200
-Message-Id: <20250613-deny_trampoline_structs_on_stack-v1-0-5be9211768c3@bootlin.com>
+Date: Fri, 13 Jun 2025 09:37:14 +0200
+Subject: [PATCH bpf 5/7] bpf/powerpc64: use define for max regs count used
+ for arguments
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,10 +65,9 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-B4-Tracking: v=1; b=H4sIACXVS2gC/x2NQQrCMBAAv1L2bCANtKJfEQnJZquLugnZKErp3
- xu8zVxmVlCqTArnYYVKH1bO0mU8DID3IDcynLqDs26ysz2ZRPLzrYZXyU8W8trqG5v6LB0DPsw
- UIx4jOpvSCD1TKi38/S8uEMsC123bAYJUNa93AAAA
-X-Change-ID: 20250609-deny_trampoline_structs_on_stack-5bbc7bc20dd1
+Message-Id: <20250613-deny_trampoline_structs_on_stack-v1-5-5be9211768c3@bootlin.com>
+References: <20250613-deny_trampoline_structs_on_stack-v1-0-5be9211768c3@bootlin.com>
+In-Reply-To: <20250613-deny_trampoline_structs_on_stack-v1-0-5be9211768c3@bootlin.com>
 To: Alexei Starovoitov <ast@kernel.org>, 
  Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko <andrii@kernel.org>, 
  Martin KaFai Lau <martin.lau@linux.dev>, 
@@ -108,70 +108,63 @@ Cc: ebpf@linuxfoundation.org,
 X-Mailer: b4 0.14.2
 X-GND-State: clean
 X-GND-Score: -100
-X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtddugddujeefjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfitefpfffkpdcuggftfghnshhusghstghrihgsvgenuceurghilhhouhhtmecufedtudenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephffufffkgggtgffvvefosehtkeertdertdejnecuhfhrohhmpeetlhgvgihishcunfhothhhohhrroculdgvuefrhfcuhfhouhhnuggrthhiohhnmdcuoegrlhgvgihishdrlhhothhhohhrvgessghoohhtlhhinhdrtghomheqnecuggftrfgrthhtvghrnhepheeuuefggeeiuedutdeghffhtefguefffeelledttdfgjeejueeggeeugfdugfevnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghdpsghoohhtlhhinhdrtghomhenucfkphepvdgrtddvmeekgedvkeemfhelgegtmegvtddtmeemfhekheenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpedvrgdtvdemkeegvdekmehfleegtgemvgdttdemmehfkeehpdhhvghloheplgduledvrdduieekrddurdduleejngdpmhgrihhlfhhrohhmpegrlhgvgihishdrlhhothhhohhrvgessghoohhtlhhinhdrtghomhdpnhgspghrtghpthhtohepheekpdhrtghpthhtohepshhonhhgsehkvghrnhgvlhdrohhrghdprhgtphhtthhopegrghhorhguvggvvheslhhinhhugidrihgsmhdrtghomhdprhgtphhtthhopehlihhnuhigphhptgdquggvvhesl
- hhishhtshdrohiilhgrsghsrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhhsvghlfhhtvghsthesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdhsthhmfedvsehsthdqmhguqdhmrghilhhmrghnrdhsthhorhhmrhgvphhlhidrtghomhdprhgtphhtthhopegrlhgvgigrnhgurhgvrdhtohhrghhuvgesfhhoshhsrdhsthdrtghomhdprhgtphhtthhopehmhihkohhlrghlsehfsgdrtghomhdprhgtphhtthhopehsvhgvnhhssehlihhnuhigrdhisghmrdgtohhm
+X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtddugddujeefjecutefuodetggdotefrodftvfcurfhrohhfihhlvgemucfitefpfffkpdcuggftfghnshhusghstghrihgsvgenuceurghilhhouhhtmecufedtudenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujfgurhephfffufggtgfgkfhfjgfvvefosehtkeertdertdejnecuhfhrohhmpeetlhgvgihishcunfhothhhohhrroculdgvuefrhfcuhfhouhhnuggrthhiohhnmdcuoegrlhgvgihishdrlhhothhhohhrvgessghoohhtlhhinhdrtghomheqnecuggftrfgrthhtvghrnhepleejkeetffefveelgeeklefhtefhgfeigeduveffjeehleeifeefjedtudejgeeunecukfhppedvrgdtvdemkeegvdekmehfleegtgemvgdttdemmehfkeehnecuvehluhhsthgvrhfuihiivgepfeenucfrrghrrghmpehinhgvthepvdgrtddvmeekgedvkeemfhelgegtmegvtddtmeemfhekhedphhgvlhhopegludelvddrudeikedruddrudeljegnpdhmrghilhhfrhhomheprghlvgigihhsrdhlohhthhhorhgvsegsohhothhlihhnrdgtohhmpdhnsggprhgtphhtthhopeehkedprhgtphhtthhopehsohhngheskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheprghgohhruggvvghvsehlihhnuhigrdhisghmrdgtohhmpdhrtghpthhtoheplhhinhhugihpphgtqdguvghvsehlihhsthhsrdhoiihlrggsshdrohhrghdprhgtphhtthhopehlihhnuhigq
+ dhkshgvlhhfthgvshhtsehvghgvrhdrkhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqshhtmhefvdesshhtqdhmugdqmhgrihhlmhgrnhdrshhtohhrmhhrvghplhihrdgtohhmpdhrtghpthhtoheprghlvgigrghnughrvgdrthhorhhguhgvsehfohhsshdrshhtrdgtohhmpdhrtghpthhtohepmhihkhholhgrlhesfhgsrdgtohhmpdhrtghpthhtohepshhvvghnsheslhhinhhugidrihgsmhdrtghomh
 X-GND-Sasl: alexis.lothore@bootlin.com
 
-Hello,
-this series follows some discussions started in [1] around bpf
-trampolines limitations on specific cases. When a trampoline is
-generated for a target function involving many arguments, it has to
-properly find and save the arguments that has been passed through stack.
-While this is doable with basic types (eg: scalars), it brings more
-uncertainty when dealing with specific types like structs (many ABIs
-allow to pass structures by value if they fit in a register or a pair of
-registers). The issue is that those structures layout and location on
-the stack can be altered (ie with attributes, like packed or
-aligned(x)), and this kind of alteration is not encoded in dwarf or BTF,
-making the trampolines clueless about the needed adjustments. Rather
-than trying to support this specific case, as agreed in [2], this series
-aims to properly deny it.
-
-It targets all the architectures currently implementing
-arch_prepare_bpf_trampoline (except aarch64, since it has been handled
-while adding the support for many args):
-- x86
-- s390
-- riscv
-- powerpc
-
-A small validation function is added in the JIT compiler for each of
-those architectures, ensuring that no argument passed on stack is a
-struct. If so, the trampoline creation is cancelled. Any check on args
-already implemented in a JIT comp has been moved in this new function.
-On top of that, it updates the tracing_struct_many_args test, which
-now merely checks that this case is indeed denied.
-
-[1] https://lore.kernel.org/bpf/20250411-many_args_arm64-v1-0-0a32fe72339e@bootlin.com/
-[2] https://lore.kernel.org/bpf/CAADnVQKr3ftNt1uQVrXBE0a2o37ZYRo2PHqCoHUnw6PE5T2LoA@mail.gmail.com/
+powerpc allows using up to 8 registers to pass arguments between function
+calls. This value is hardcoded in multiple places, use a define for this
+value.
 
 Signed-off-by: Alexis Lothoré (eBPF Foundation) <alexis.lothore@bootlin.com>
 ---
-Alexis Lothoré (eBPF Foundation) (7):
-      bpf/x86: use define for max regs count used for arguments
-      bpf/x86: prevent trampoline attachment when args location on stack is uncertain
-      bpf/riscv: prevent trampoline attachment when args location on stack is uncertain
-      bpf/s390: prevent trampoline attachment when args location on stack is uncertain
-      bpf/powerpc64: use define for max regs count used for arguments
-      bpf/powerpc64: prevent trampoline attachment when args location on stack is uncertain
-      selftests/bpf: ensure that functions passing structs on stack can not be hooked
+ arch/powerpc/net/bpf_jit_comp.c | 10 +++++++---
+ 1 file changed, 7 insertions(+), 3 deletions(-)
 
- arch/powerpc/net/bpf_jit_comp.c                    | 38 ++++++++++--
- arch/riscv/net/bpf_jit_comp64.c                    | 26 +++++++-
- arch/s390/net/bpf_jit_comp.c                       | 33 ++++++++--
- arch/x86/net/bpf_jit_comp.c                        | 50 ++++++++++++----
- .../selftests/bpf/prog_tests/tracing_struct.c      | 37 +-----------
- .../selftests/bpf/progs/tracing_struct_many_args.c | 70 ----------------------
- .../testing/selftests/bpf/test_kmods/bpf_testmod.c | 43 ++-----------
- 7 files changed, 129 insertions(+), 168 deletions(-)
----
-base-commit: c4f4f8da70044d8b28fccf73016b4119f3e2fd50
-change-id: 20250609-deny_trampoline_structs_on_stack-5bbc7bc20dd1
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index c0684733e9d6ac79b4cf653bf1b9ad40eb3e1aca..d313920a42c2310c6b5deab6d82e13af49c8ecb1 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -22,6 +22,8 @@
+ 
+ #include "bpf_jit.h"
+ 
++#define MAX_REGS_FOR_ARGS	8
++
+ /* These offsets are from bpf prog end and stay the same across progs */
+ static int bpf_jit_ool_stub, bpf_jit_long_branch_stub;
+ 
+@@ -613,7 +615,7 @@ static void bpf_trampoline_save_args(u32 *image, struct codegen_context *ctx, in
+ 	param_save_area_offset += STACK_FRAME_MIN_SIZE; /* param save area is past frame header */
+ 
+ 	for (int i = 0; i < nr_regs; i++) {
+-		if (i < 8) {
++		if (i < MAX_REGS_FOR_ARGS) {
+ 			EMIT(PPC_RAW_STL(_R3 + i, _R1, regs_off + i * SZL));
+ 		} else {
+ 			EMIT(PPC_RAW_LL(_R3, _R1, param_save_area_offset + i * SZL));
+@@ -626,7 +628,7 @@ static void bpf_trampoline_save_args(u32 *image, struct codegen_context *ctx, in
+ static void bpf_trampoline_restore_args_regs(u32 *image, struct codegen_context *ctx,
+ 					     int nr_regs, int regs_off)
+ {
+-	for (int i = 0; i < nr_regs && i < 8; i++)
++	for (int i = 0; i < nr_regs && i < MAX_REGS_FOR_ARGS; i++)
+ 		EMIT(PPC_RAW_LL(_R3 + i, _R1, regs_off + i * SZL));
+ }
+ 
+@@ -725,7 +727,9 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
+ 	 *
+ 	 * Reserve space for at least 8 registers for now. This can be optimized later.
+ 	 */
+-	bpf_frame_size += (nr_regs > 8 ? nr_regs : 8) * SZL;
++	bpf_frame_size +=
++		(nr_regs > MAX_REGS_FOR_ARGS ? nr_regs : MAX_REGS_FOR_ARGS) *
++		SZL;
+ 
+ 	/* Room for struct bpf_tramp_run_ctx */
+ 	run_ctx_off = bpf_frame_size;
 
-Best regards,
 -- 
-Alexis Lothoré, Bootlin
-Embedded Linux and Kernel engineering
-https://bootlin.com
+2.49.0
 
 
