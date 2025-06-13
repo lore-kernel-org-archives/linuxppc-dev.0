@@ -1,53 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-9333-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9334-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE7EDC61DB2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jun 2025 08:31:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1481C61DB2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jun 2025 08:32:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bJXfm1Nt4z2yb9;
-	Fri, 13 Jun 2025 18:31:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bJXhn2HXlz30KY;
+	Fri, 13 Jun 2025 18:32:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749803472;
-	cv=none; b=XiqVTjjjF+236N1bUxAd106l82KrHuAGokJpnxo47Kh2ehBb8I9qzQdT+Bx6IBcHgkV44tTB6g0iZrr4K3KP09N4F0QWTyVwhHKrjJiXR4P2IdNU1lRYSHJd/iXNSLqf28kfddiE8TKoiYeII4isD3RtaSe54NZx3iJ2Lrb96CVTsXoA2mez1nvGEA1tWiZp5JCAa6Fmap571idq+qSW5/bw2jWhi9Md6EyKy2nvPVZkG1/dL0o74Y8zs/iLr4cDn7Z1rqaQ5hZWVt+FC+MJC3q8qNXz0N+Ky91n/YMgWwUkz4ss2jFGvmf4ayRXQsxxQTIEEIbj4tOaEfIBNeoO5w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749803577;
+	cv=none; b=Ig68xkN/5rbFTOrQvbXttA/ULl+ueLne0MSqUUwL9Fdc0UREbOe4Mou7X67kcBVRglddzbfuWcBGkiLX/wQOxYsm/86aaH1GhTNS9DOFZXHELoDTQp6aDgioxgl2/6nTMhvFHTFJkdiicsavGgmz2o0yYDB71tHXB7ghczOr7/tfZBEd9abwQiBjfD1W4tZOgKjpJoPeI4E9lHAWDJfV6LR8HGUIdQ5B2xbA5wbm5UmePAIshVJUBJ0/z6WlB+WyPo4uHjhi0JE3yv7O3e1zl9LUo+w+wZpzRKYvN/sBvAgbGsdq4PBFxyjkch5jgLhTCvzPXYoaA69/OObL/Y5ZBw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749803472; c=relaxed/relaxed;
-	bh=m4XILQdlyhOEuGIrG8GkhmJQpyqVphUns6R2oeWJu9E=;
+	t=1749803577; c=relaxed/relaxed;
+	bh=ceyQVU1s/TeC1A0uuWSXGNuCFCVzbMABPNZsJKr21a4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=TEAcSQJoxTba/DxXSJD3mJP4DzdnzjLp9XR2R25ArtXQgxTlqLi2lXFuNL1ZwwCzzBPzvtBGY9jFXqg5ceAoLOqMSNkNeEPPugzuDeo8aGcrirweaRVU5Dmf3kTz+s/6K3XXKUrO/LGkVwu0JOrQd/hVCEjS4il9EDUSKqFVpqF+F98ZQ7olNN+tbbnQx+3SPgZ54TD3AzpWJVM6yfwOnI7nvXXF+5Tp2H4F1VZPsM9ZFXj30MLZEfb4u1FwhYKA91Y9IoLnD9PYWRr9mrvm7T5a+H0nPyT0ylvu0ZfU4kRw2h3SpqLNNeQv7nB01FBJeqlPl29IkucdFpFGhfGSYw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=f3LAUdt5; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=WAa9MZngpA/vumswY6v5Wr1Y5xfuj/cz77AG72kJyxH/D0cUP4xskWjy11AB6Zwk40R2xJko6+BzQTW5RekR/0rdvEMQiNqCvMLyWRx2dc4dAH2rofIEQcC56yFSDtssYPKIPCGk4b+DHhEZDNrdFSTyO6dAb5EE59hu1gom6E7h8khl3bcm7fC469acP3VoLif35L0VBZfH5S98uWuO4MXF9eFG09OZgxz+s6NjFc05MoA7R81daJ9DOA2mM/AIrna7dyulcqLmMtOki1FN/yVYlqqCg+a82Qd6vwrV1ST6ZoJbfQ+bG5NX4KaxaiYRmwb3NJuEo7f+nmQEnbvYfQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=dqNTC/tN; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=f3LAUdt5;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=dqNTC/tN;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
 Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJXfd2H4Rz2xKN
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2025 18:31:04 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJXhm128tz30HB
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2025 18:32:56 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Transfer-Encoding:
 	Content-Type:MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:
 	Sender:Reply-To:Content-ID:Content-Description;
-	bh=m4XILQdlyhOEuGIrG8GkhmJQpyqVphUns6R2oeWJu9E=; b=f3LAUdt5CXosLIWHTG1Gn2PqbK
-	uw/eNAwNwnZ7Ad1daZCeRDp/bnOhoqQM5Mn/GdZreNWOuJ0RhhyqKggEr6V0TRSHUSyNjLYbpDFBc
-	LXhiSHFdUqcld4K+jE+bpdoag0YeedzOI2w3hVHWJN92pBzd16viaDbOhzBWRJynFhd712ScZYy3I
-	+M4GEXUTTr2XfF+o14XniGTwivG8YqhQ7knBL1UQbCQwyknCcFLcteoDNuwd0zc8aEJYFa8HH8Tkc
-	yauPRRnQs89VhaSNWzqCn0BH9o+r+7+/tHBn/b2R1OM4E7IJfGDeSMF/O2D2y6Tn0172qdOz/P6S+
-	066LXRWg==;
-Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	bh=ceyQVU1s/TeC1A0uuWSXGNuCFCVzbMABPNZsJKr21a4=; b=dqNTC/tN4NktIpsvVSNzGd1Nnb
+	Ldq+PhqaTIoeFX8VZpUciXtoyr5CFokw7L8HNdBGwoPl6xSK9X6o+V3RpCm62st+eycrHXRgyrId4
+	4Po3+C8crMT914IOhhj9CrqolkUd9H7EV3hacaFcjxbQeteCWjgcHJNLo0dtEgYJ//ndXjdQcuL4N
+	z/E164M1C5AX4Ddk5/Hz9YfZerFiy/DnFQ7B3Dv1S4TZ3MHKdeMIkMZRh1le5FPGjoELyUx3VYPnV
+	42klzQnynHAr/Mz3kmKTN9vJgW3XYeQsbsKdIXLcdMzaRYWGAnXyk4I0cC1V92HJfqr7/zrHNZxlG
+	ZinrIPZg==;
+Received: from 2001-1c00-8d82-d000-266e-96ff-fe07-7dcc.cable.dynamic.v6.ziggo.nl ([2001:1c00:8d82:d000:266e:96ff:fe07:7dcc] helo=noisy.programming.kicks-ass.net)
 	by casper.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uPzVw-0000000Ciov-0OfZ;
-	Fri, 13 Jun 2025 08:11:52 +0000
+	id 1uPzpx-0000000Cjg6-2v0S;
+	Fri, 13 Jun 2025 08:32:33 +0000
 Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id DDD5E30BC59; Fri, 13 Jun 2025 10:11:50 +0200 (CEST)
-Date: Fri, 13 Jun 2025 10:11:50 +0200
+	id 94D9E300969; Fri, 13 Jun 2025 10:32:32 +0200 (CEST)
+Date: Fri, 13 Jun 2025 10:32:32 +0200
 From: Peter Zijlstra <peterz@infradead.org>
-To: Alexis =?iso-8859-1?Q?Lothor=E9_=28eBPF_Foundation=29?= <alexis.lothore@bootlin.com>
+To: Alexis =?iso-8859-1?Q?Lothor=E9?= <alexis.lothore@bootlin.com>
 Cc: Alexei Starovoitov <ast@kernel.org>,
 	Daniel Borkmann <daniel@iogearbox.net>,
 	Andrii Nakryiko <andrii@kernel.org>,
@@ -96,9 +96,11 @@ Cc: Alexei Starovoitov <ast@kernel.org>,
 	linux-arm-kernel@lists.infradead.org
 Subject: Re: [PATCH bpf 2/7] bpf/x86: prevent trampoline attachment when args
  location on stack is uncertain
-Message-ID: <20250613081150.GJ2273038@noisy.programming.kicks-ass.net>
+Message-ID: <20250613083232.GL2273038@noisy.programming.kicks-ass.net>
 References: <20250613-deny_trampoline_structs_on_stack-v1-0-5be9211768c3@bootlin.com>
  <20250613-deny_trampoline_structs_on_stack-v1-2-5be9211768c3@bootlin.com>
+ <20250613081150.GJ2273038@noisy.programming.kicks-ass.net>
+ <DAL9GRMH74F4.2IV0HN0NGU65X@bootlin.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -115,22 +117,35 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20250613-deny_trampoline_structs_on_stack-v1-2-5be9211768c3@bootlin.com>
+In-Reply-To: <DAL9GRMH74F4.2IV0HN0NGU65X@bootlin.com>
 
-On Fri, Jun 13, 2025 at 09:37:11AM +0200, Alexis Lothoré (eBPF Foundation) wrote:
-> When the target function receives more arguments than available
-> registers, the additional arguments are passed on stack, and so the
-> generated trampoline needs to read those to prepare the bpf context,
-> but also to prepare the target function stack when it is in charge of
-> calling it. This works well for scalar types, but if the value is a
-> struct, we can not know for sure the exact struct location, as it may
-> have been packed or manually aligned to a greater value.
+On Fri, Jun 13, 2025 at 10:26:37AM +0200, Alexis Lothoré wrote:
+> Hi Peter,
+> 
+> On Fri Jun 13, 2025 at 10:11 AM CEST, Peter Zijlstra wrote:
+> > On Fri, Jun 13, 2025 at 09:37:11AM +0200, Alexis Lothoré (eBPF Foundation) wrote:
+> >> When the target function receives more arguments than available
+> >> registers, the additional arguments are passed on stack, and so the
+> >> generated trampoline needs to read those to prepare the bpf context,
+> >> but also to prepare the target function stack when it is in charge of
+> >> calling it. This works well for scalar types, but if the value is a
+> >> struct, we can not know for sure the exact struct location, as it may
+> >> have been packed or manually aligned to a greater value.
+> >
+> > https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf
+> >
+> > Has fairly clear rules on how arguments are encoded. Broadly speaking
+> > for the kernel, if the structure exceeds 2 registers in size, it is
+> > passed as a reference, otherwise it is passed as two registers.
+> 
+> Maybe my commit wording is not precise enough, but indeed, there's not
+> doubt about whether the struct value is passed on the stack or through a
+> register/a pair of registers. The doubt is rather about the struct location
+> when it is passed _by value_ and _on the stack_: the ABI indeed clearly
+> states that "Structures and unions assume the alignment of their most
+> strictly aligned component" (p.13), but this rule is "silently broken" when
+> a struct has an __attribute__((packed)) or and __attribute__((aligned(X))),
+> and AFAICT this case can not be detected at runtime with current BTF info.
 
-https://refspecs.linuxbase.org/elf/x86_64-abi-0.99.pdf
-
-Has fairly clear rules on how arguments are encoded. Broadly speaking
-for the kernel, if the structure exceeds 2 registers in size, it is
-passed as a reference, otherwise it is passed as two registers.
-
-
+Ah, okay. So it is a failure of BTF. That was indeed not clear.
 
