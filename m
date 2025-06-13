@@ -1,79 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-9331-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9332-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27EBEC61DB2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jun 2025 07:50:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E379C61DB2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 13 Jun 2025 08:27:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bJWm837z2z2yb9;
-	Fri, 13 Jun 2025 17:50:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749801048;
-	cv=none; b=KLN0P3FJm+sYTxdnk6FbwkPNPyxeKrPhWKqR1QaohLcYNHFiEJblEQp4mIUFkbx4KYfJ3gBLz59pG/FAZP8aC8Xg3PWJq360SE7mtJMSXLnKdQErpVmAi28FtHNyFWrhDH4c8gzKGLthZvcz/uKISXNpUM0zKXTLxUiWf/D5IGp3rW7SwPOzKz02u6cNq2SD7fznUKHATIVWZEFNEiAFQsWStXLrTwVFSxhniyS7YRD2Q7uHK5YYB+zVlhaI9T2gX81P5m3Vycj1RyTJgmkRKj6V3UjGMFbHQrFHtQhAQOjSVfTOfi4b0LsU4YGyQPMJ68huTnRn8YuceD0UC8qNxQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bJXZD6x1kz2yZ6;
+	Fri, 13 Jun 2025 18:27:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1749803236;
+	cv=none; b=UEEf2cKRtGXaNb+FIt1gvDqQvohhq9FxRYmhhejFeJlp1gwZbGmywrkLNN90fOjUd0wNd7K2UhMaJdGzCffOeGWzeEr3jOSpT8Gr4utYvaI57+wwGD+O0849J6FpriFb7kv/37/zX5EBVY1Z12WPryubgC9Y9R6k6bZ62SpNcqtQOZYnO132X5Psrrp3lBznUEzrrCiV9hmPs+Rm1rJKkazjCIB4a/0lij1V5GTWRKVZrUvAE9eNFKaqvQEr4JIYNDqz0K5TTXfPRqBytDisUS7P/Vm3BZ4FbVSzCb961FmNNi/mkbuCTb0ciuQhojr5T7I2B3Ig5IlHwvQ8WUcjwg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1749801048; c=relaxed/relaxed;
-	bh=0J7cGACe8mQObfmJ58swJYDeJJ/SQ+ULJH95lPJ9mhk=;
+	t=1749803236; c=relaxed/relaxed;
+	bh=fo37PQv2rm3Xne0CGA2Mk0pTeTGHYsoK6kdCw1GPq3A=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=VPfi+PxEaiU3l6tB4kibYzBNyuNH3zTHPKOzHKoj8CvtpVVXK0F4McAI1XaNsbWeGIAmbx4UpVKmyJhVdmfqs8gm7ZD5+xTnvttFQYtDnbg22TiBcSzl6HDwTTrwpLep+a54+nWgQASoCR3AsvK/QCdFXIcHBZa3zOZ992wbqJxbPqSwhKbf0PmlqaWvmGVB1VAXt7k+QYyamLQ+nICFGf6XbGBZmb+ZG+Fg9wlx5NSi3Ek9dzE4VQ5zl3XwIexLvkkDtK9oS9uYGhiuSJGqPS4hK+GSpMENDlK0mbFUl4q6T146xGqaiuIxMvvCT61LiZPhsXDFwLqsZCfOJZu2XQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=egEtkIFC; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adityab1@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=egEtkIFC;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adityab1@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bJWm74SfZz2xKN
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2025 17:50:46 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 55CJOfNb001635;
-	Fri, 13 Jun 2025 07:50:28 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=0J7cGA
-	Ce8mQObfmJ58swJYDeJJ/SQ+ULJH95lPJ9mhk=; b=egEtkIFCq0n8XufUIEMwue
-	NlBQXFFWdcmHuaFPeUegbPkpN7EvxwPlv+1zBjc5CvO1aEeuTyn4Kv/T9VFHCeKK
-	AtXyCn2U4W7LLXeWT9X0Ol6YoCNATp39D+cvaHEiEtL2Bx8encYFWG8VgZ+xZHqb
-	4xnJ4UgkdLY4CzxLOPFrD2qKcFEbnV5KbjIOqJVT0gQ20GgSnCRmknvuqjL79J+U
-	sH494L5rzbyiY16LOCbrCIjKW3Zi1Sq1vAaNbBtfY3H8pV9ICpYFeRLge8OZGEZt
-	L6vH1bZRBjRxTywq3UJMc75Db0B7Y9MSSeMz+NBGD0Gg/ur4QKKSwG8HODlUvNNw
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4769x04h3v-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 13 Jun 2025 07:50:27 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 55D7gtLh019864;
-	Fri, 13 Jun 2025 07:50:27 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4769x04h3s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 13 Jun 2025 07:50:27 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 55D5w1N5021839;
-	Fri, 13 Jun 2025 07:50:26 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 47505093xf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 13 Jun 2025 07:50:26 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 55D7oKtA50856434
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 13 Jun 2025 07:50:20 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1869D2004E;
-	Fri, 13 Jun 2025 07:50:20 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2DC0220040;
-	Fri, 13 Jun 2025 07:50:18 +0000 (GMT)
-Received: from [9.109.199.41] (unknown [9.109.199.41])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 13 Jun 2025 07:50:17 +0000 (GMT)
-Message-ID: <1e79fee0-2845-498f-bd16-4589edf19df7@linux.ibm.com>
-Date: Fri, 13 Jun 2025 13:20:17 +0530
+	 In-Reply-To:Content-Type; b=BcJNgmz8e15KEzki7lCy6ztLXrSklAuVi/LEJUsqpCDHAhMRBiO5g3LtYW82aXAnWFp/ztgNNhQ21EBhe6WU6wseytDKEE2/ko6z42Y5bOie2Egwx0MNqdhMGHIPKb+GcEBUr7eP0SqFAanj3DYFpQXsVdeT7TJcDvv0gLcEE8vd+zGjGLHpDLJGSU8d/gUv3hnF9YrzkyoYGDj0XHGqe33mu45mmlhreP5OPXuXLxlbrzPJ45TUvsPV4B3USnneAePBjkEZwIj/yW4KdL+pYhmrgB+YO4MaugGEVpyYla4kIdQoOxBZxkwI2pj029wqhoVquzjH4ZkzYeWRPOVv9g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bJXZC62lPz2xKN
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 13 Jun 2025 18:27:14 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 338E114BF;
+	Fri, 13 Jun 2025 01:26:21 -0700 (PDT)
+Received: from [10.57.84.117] (unknown [10.57.84.117])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 243333F66E;
+	Fri, 13 Jun 2025 01:26:38 -0700 (PDT)
+Message-ID: <bf59680e-c523-4af8-b81f-ea0b4d0e12f2@arm.com>
+Date: Fri, 13 Jun 2025 09:26:37 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,222 +45,201 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] powerpc/ftrace: support CONFIG_FUNCTION_GRAPH_RETVAL
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
-        linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
-        maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        rostedt@goodmis.org, mhiramat@kernel.org, mark.rutland@arm.com,
-        Aditya Bodkhe <aditya.b1@linux.ibm.com>
-References: <20250528134820.74121-1-adityab1@linux.ibm.com>
- <840249c5-2602-4178-a408-f7d502111f79@csgroup.eu>
-Content-Language: en-US
-From: Aditya Bodkhe <adityab1@linux.ibm.com>
-In-Reply-To: <840249c5-2602-4178-a408-f7d502111f79@csgroup.eu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: yniYR6aGmmi4Wlk9dJE1i8toMH_yxv_8
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNjEzMDA1NiBTYWx0ZWRfX7z/5XOJc+Tqy W6l4S5C3lgdorFWpqS7BbJdpGgDz7B6fSmdOS0DVlXQmHkQNYfgGmgSHaQk22PuMQ3RSiC9GwBe Ed562b6i0XqF5bC9vX3deZ+WBi5V+rJXBr6lhVqzQklHjCHsBv+dlOXEO0tPBgvTup4+9BH7Geh
- WEi+DiinmRvpLcHAlWt20gsdDzP11y0dOUS++VBNjMg5+iWZv4XEuKc9GNtUwNdAToJ0h2cv0KV EtRNyQb2s+xYzh/FcY2IURewv6fIdpYV7epWA9d0kYXd4IzKSmp8JNw6/qfvAS3ffB+5jWdiHas zrsKCmx8Fjop4Az7ioINs56MtZTLMMxSFaM6GTVqFbvTWA0dAYkJi8KIkykhMVn7lhYEz88IL6r
- 20oFafCB5/BVsNEDhQ31ShRAFCphUdbyILeycHJJLM7+aCbpor6ICkuv0S5hIs4iJ2rGFoOT
-X-Authority-Analysis: v=2.4 cv=YKGfyQGx c=1 sm=1 tr=0 ts=684bd844 cx=c_pps a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17 a=IkcTkHD0fZMA:10 a=6IFa9wvqVegA:10 a=_EeEMxcBAAAA:8 a=VnNF1IyMAAAA:8 a=3ShwC3RzYPBMsP622vUA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: mRsADJhDk3ArtKDoDH0ljDC-yiHtz1hR
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.0.736,FMLib:17.12.80.40
- definitions=2025-06-12_10,2025-06-12_02,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 spamscore=0 clxscore=1015
- malwarescore=0 bulkscore=0 priorityscore=1501 phishscore=0 mlxscore=0
- lowpriorityscore=0 impostorscore=0 adultscore=0 mlxlogscore=999
- suspectscore=0 classifier=spam authscore=0 authtc=n/a authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2505280000
- definitions=main-2506130056
+Subject: Re: [PATCH 2/6] mm: Lock kernel page tables before entering lazy MMU
+ mode
+Content-Language: en-GB
+To: Alexander Gordeev <agordeev@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+ Hugh Dickins <hughd@google.com>, Nicholas Piggin <npiggin@gmail.com>,
+ Guenter Roeck <linux@roeck-us.net>, Juergen Gross <jgross@suse.com>,
+ Jeremy Fitzhardinge <jeremy@goop.org>
+References: <cover.1749747752.git.agordeev@linux.ibm.com>
+ <7bd3a45dbc375dc2c15cebae09cb2bb972d6039f.1749747752.git.agordeev@linux.ibm.com>
+From: Ryan Roberts <ryan.roberts@arm.com>
+In-Reply-To: <7bd3a45dbc375dc2c15cebae09cb2bb972d6039f.1749747752.git.agordeev@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
+On 12/06/2025 18:36, Alexander Gordeev wrote:
+> As a follow-up to commit 691ee97e1a9d ("mm: fix lazy mmu docs and
+> usage") take a step forward and protect with a lock not only user,
+> but also kernel mappings before entering the lazy MMU mode. With
+> that the semantics of arch_enter|leave_lazy_mmu_mode() callbacks
+> is consolidated, which allows further simplifications.
+> 
+> The effect of this consolidation is not fully preemptible (Real-Time)
+> kernels can not enter the context switch while the lazy MMU mode is
+> active - which is easier to comprehend.
+> 
+> Signed-off-by: Alexander Gordeev <agordeev@linux.ibm.com>
+> ---
+>  include/linux/pgtable.h | 12 ++++++------
+>  mm/kasan/shadow.c       |  5 -----
+>  mm/memory.c             |  5 ++++-
+>  mm/vmalloc.c            |  6 ++++++
+>  4 files changed, 16 insertions(+), 12 deletions(-)
+> 
+> diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+> index 0b6e1f781d86..33bf2b13c219 100644
+> --- a/include/linux/pgtable.h
+> +++ b/include/linux/pgtable.h
+> @@ -224,12 +224,12 @@ static inline int pmd_dirty(pmd_t pmd)
+>   * a raw PTE pointer after it has been modified are not guaranteed to be
+>   * up to date.
+>   *
+> - * In the general case, no lock is guaranteed to be held between entry and exit
+> - * of the lazy mode. So the implementation must assume preemption may be enabled
+> - * and cpu migration is possible; it must take steps to be robust against this.
+> - * (In practice, for user PTE updates, the appropriate page table lock(s) are
+> - * held, but for kernel PTE updates, no lock is held). Nesting is not permitted
+> - * and the mode cannot be used in interrupt context.
+> + * For PREEMPT_RT kernels implementation must assume that preemption may
+> + * be enabled and cpu migration is possible between entry and exit of the
+> + * lazy MMU mode; it must take steps to be robust against this. There is
+> + * no such assumption for non-PREEMPT_RT kernels, since both kernel and
+> + * user page tables are protected with a spinlock while in lazy MMU mode.
+> + * Nesting is not permitted and the mode cannot be used in interrupt context.
 
-On 03/06/25 2:22 pm, Christophe Leroy wrote:
->
->
-> Le 28/05/2025 à 15:48, Aditya Bodkhe a écrit :
->> [Vous ne recevez pas souvent de courriers de adityab1@linux.ibm.com. 
->> Découvrez pourquoi ceci est important à 
->> https://aka.ms/LearnAboutSenderIdentification ]
->>
->> From: Aditya Bodkhe <aditya.b1@linux.ibm.com>
->>
->> commit a1be9ccc57f0 ("function_graph: Support recording and printing the
->> return value of function") introduced support for function graph return
->> value tracing.
->>
->> Additionally, commit a3ed4157b7d8 ("fgraph: Replace fgraph_ret_regs with
->> ftrace_regs") further refactored and optimized the implementation,
->> making `struct fgraph_ret_regs` unnecessary.
->>
->> This patch enables the above modifications for powerpc64, ensuring that
->> function graph return value tracing is available on this architecture.
->
-> Why only powerpc64 ?
->
-> I see nothing specific to powerpc64 in your patch, will it work on 
-> powerpc32 too ?
->
-That's a oversight on my part . This patch necessary changes for 
-powerpc32 bit and tested this feature to be working as expected on the same.
->>
->> After this patch, v6.14+ kernel can also be built with FPROBE on powerpc
->> but there are a few other build and runtime dependencies for FPROBE to
->> work properly. The next patch addresses them.
->>
->> Signed-off-by: Aditya Bodkhe <aditya.b1@linux.ibm.com>
->> ---
->>   arch/powerpc/Kconfig                     |  1 +
->>   arch/powerpc/include/asm/ftrace.h        | 15 +++++++++
->>   arch/powerpc/kernel/trace/ftrace_entry.S | 41 ++++++++++++++----------
->>   3 files changed, 40 insertions(+), 17 deletions(-)
->>
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index c3e0cc83f120..9163521bc4b9 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -250,6 +250,7 @@ config PPC
->>          select HAVE_FUNCTION_ARG_ACCESS_API
->>          select HAVE_FUNCTION_DESCRIPTORS        if PPC64_ELF_ABI_V1
->>          select HAVE_FUNCTION_ERROR_INJECTION
->> +       select HAVE_FUNCTION_GRAPH_FREGS
->>          select HAVE_FUNCTION_GRAPH_TRACER
->>          select HAVE_FUNCTION_TRACER             if !COMPILE_TEST && 
->> (PPC64 || (PPC32 && CC_IS_GCC))
->>          select HAVE_GCC_PLUGINS                 if GCC_VERSION >= 
->> 50200   # plugin support on gcc <= 5.1 is buggy on PPC
->> diff --git a/arch/powerpc/include/asm/ftrace.h 
->> b/arch/powerpc/include/asm/ftrace.h
->> index 82da7c7a1d12..6ffc9c9cf4e3 100644
->> --- a/arch/powerpc/include/asm/ftrace.h
->> +++ b/arch/powerpc/include/asm/ftrace.h
->> @@ -50,6 +50,21 @@ static __always_inline struct pt_regs 
->> *arch_ftrace_get_regs(struct ftrace_regs *
->>                  asm volatile("mfmsr %0" : "=r" ((_regs)->msr)); \
->>          } while (0)
->>
->> +#undef ftrace_regs_get_return_value
->> +static __always_inline unsigned long
->> +ftrace_regs_get_return_value(const struct ftrace_regs *fregs)
->> +{
->> +       return arch_ftrace_regs(fregs)->regs.gpr[3];
->> +}
->> +#define ftrace_regs_get_return_value ftrace_regs_get_return_value
->> +
->> +#undef ftrace_regs_get_frame_pointer
->> +static __always_inline unsigned long
->> +ftrace_regs_get_frame_pointer(const struct ftrace_regs *fregs)
->> +{
->> +       return arch_ftrace_regs(fregs)->regs.gpr[1];
->> +}
->> +
-> Why unset and redefine ftrace_regs_get_return_value() and 
-> ftrace_regs_get_frame_pointer() ? Please explain why the default ones 
-> can't be used on powerpc.
->
-Because for powerpc currently for ftrace_regs_get_return_value() this 
-function regs_return_value() is getting called and it's implementation 
-returns -regs.gpr[3] if is_syscall_success() returns false . This was 
-causing fails in ftrace selftests .
+While I agree that spec for lazy mmu mode is not well defined, and welcome
+changes to clarify and unify the implementations across arches, I think this is
+a step in the wrong direction.
 
-Also for ftrace_regs_get_frame_pointer() current implementation was 
-always returning 0 hence we had to change that too .
+First the major one: you are serializing kernel pgtable operations that don't
+need to be serialized. This, surely, can only lead to performance loss? vmalloc
+could previously (mostly) run in parallel; The only part that was serialized was
+the allocation of the VA space. Once that's done, operations on the VA space can
+be done in parallel because each is only operating on the area it allocated.
+With your change I think all pte operations are serialised with the single
+init_mm.page_table_lock.
 
->>   static __always_inline void
->>   ftrace_regs_set_instruction_pointer(struct ftrace_regs *fregs,
->>                                      unsigned long ip)
->> diff --git a/arch/powerpc/kernel/trace/ftrace_entry.S 
->> b/arch/powerpc/kernel/trace/ftrace_entry.S
->> index 3565c67fc638..eafbfb7584ed 100644
->> --- a/arch/powerpc/kernel/trace/ftrace_entry.S
->> +++ b/arch/powerpc/kernel/trace/ftrace_entry.S
->> @@ -409,23 +409,30 @@ EXPORT_SYMBOL(_mcount)
->>   _GLOBAL(return_to_handler)
->>          /* need to save return values */
->>   #ifdef CONFIG_PPC64
->> -       std     r4,  -32(r1)
->> -       std     r3,  -24(r1)
->> +       stdu    r1, -SWITCH_FRAME_SIZE(r1)
->> +       std     r4, GPR4(r1)
->> +       std     r3, GPR3(r1)
->> +  /* Save previous stack pointer (r1) */
->> +       addi    r3, r1, SWITCH_FRAME_SIZE
->> +       std     r3, GPR1(r1)
->>          /* save TOC */
->> -       std     r2,  -16(r1)
->> -       std     r31, -8(r1)
->> +       std     r2,  24(r1)
->> +       std     r31, 32(r1)
->>          mr      r31, r1
->> -       stdu    r1, -112(r1)
->> -
->> +  /* pass ftrace_regs/pt_regs to ftrace_return_to_handler */
->> +       addi    r3,  r1, STACK_INT_FRAME_REGS
->
-> Some of the changes seems to only be renaming and should be done in a 
-> cleanup/preparatory patch in order to only focus on real necessary 
-> changes in this patch.
->
-Now the way we are setting up the frame we cannot have negative offsets 
-, hence we used offsets which are defined already.
->>          /*
->>           * We might be called from a module.
->>           * Switch to our TOC to run inside the core kernel.
->>           */
->>          LOAD_PACA_TOC()
->>   #else
->> -       stwu    r1, -16(r1)
->> -       stw     r3, 8(r1)
->> -       stw     r4, 12(r1)
->> +       stwu    r1, -SWITCH_FRAME_SIZE(r1)
-> Why do we need such a big frame size just to save two registers ?
->
-This Frame size is needed because we need pt_regs as part of frame , are 
-you saying instead of SWITCH_FRAME_SIZE for 32 bit architecture we 
-should just setup a frame with size of pt_regs because ftrace_regs size 
-is same as pt_regs on ppc
->> +       stw     r4, GPR4(r1)
->> +       stw     r3, GPR3(r1)
->> +       addi    r3, r1, SWITCH_FRAME_SIZE
->> +       stw     r3, GPR1(r1)
-> > +       addi    r3, r1, STACK_INT_FRAME_REGS
->
-> Why is this needed ?
->
-The function ftrace_return_to_handler takes pointer to pt_regs as 
-arguement so we are setting that up in stack and passing that pointer.
->>   #endif
->>
->>          bl      ftrace_return_to_handler
->> @@ -435,15 +442,15 @@ _GLOBAL(return_to_handler)
->>          mtlr    r3
->>
->>   #ifdef CONFIG_PPC64
->> -       ld      r1, 0(r1)
->> -       ld      r4,  -32(r1)
->> -       ld      r3,  -24(r1)
->> -       ld      r2,  -16(r1)
->> -       ld      r31, -8(r1)
->> +       ld      r4,  GPR4(r1)
->> +       ld      r3,  GPR3(r1)
->> +       ld      r2,  24(r1)
->> +       ld      r31, 32(r1)
->> +       ld      r1,  0(r1)
->>   #else
->> -       lwz     r3, 8(r1)
->> -       lwz     r4, 12(r1)
->> -       addi    r1, r1, 16
->> +       lwz     r3, GPR3(r1)
->> +       lwz     r4, GPR4(r1)
->> +       addi    r1, r1, SWITCH_FRAME_SIZE
->>   #endif
->>
->>          /* Jump back to real return address */
->> -- 
->> 2.43.5
->>
->
+Additionally, some arches (inc arm64) use apply_to_page_range() to modify the
+permissions of regions of kernel VA space. Again, we used to be able to modify
+multiple regions in parallel, but you are now serializing this for no good reason.
+
+Secondly, the lazy mmu handler still needs to handle the
+preemption-while-in-lazy-mmu case because, as you mention, it can still be
+preempted for PREEMPT_RT kernels where the spin lock is converted to a sleepable
+lock.
+
+So I think the handler needs to either explicitly disable preemption (as powerpc
+and sparc do) or handle it by plugging into the arch-specific context switch
+code (as x86 does) or only maintain per-task state in the first place (as arm64
+does).
+
+Thanks,
+Ryan
+
+>   */
+>  #ifndef __HAVE_ARCH_ENTER_LAZY_MMU_MODE
+>  #define arch_enter_lazy_mmu_mode()	do {} while (0)
+> diff --git a/mm/kasan/shadow.c b/mm/kasan/shadow.c
+> index d2c70cd2afb1..45115bd770a9 100644
+> --- a/mm/kasan/shadow.c
+> +++ b/mm/kasan/shadow.c
+> @@ -313,12 +313,10 @@ static int kasan_populate_vmalloc_pte(pte_t *ptep, unsigned long addr,
+>  	__memset(page_to_virt(page), KASAN_VMALLOC_INVALID, PAGE_SIZE);
+>  	pte = pfn_pte(page_to_pfn(page), PAGE_KERNEL);
+>  
+> -	spin_lock(&init_mm.page_table_lock);
+>  	if (likely(pte_none(ptep_get(ptep)))) {
+>  		set_pte_at(&init_mm, addr, ptep, pte);
+>  		data->pages[index] = NULL;
+>  	}
+> -	spin_unlock(&init_mm.page_table_lock);
+>  
+>  	return 0;
+>  }
+> @@ -465,13 +463,10 @@ static int kasan_depopulate_vmalloc_pte(pte_t *ptep, unsigned long addr,
+>  
+>  	page = (unsigned long)__va(pte_pfn(ptep_get(ptep)) << PAGE_SHIFT);
+>  
+> -	spin_lock(&init_mm.page_table_lock);
+> -
+>  	if (likely(!pte_none(ptep_get(ptep)))) {
+>  		pte_clear(&init_mm, addr, ptep);
+>  		free_page(page);
+>  	}
+> -	spin_unlock(&init_mm.page_table_lock);
+>  
+>  	return 0;
+>  }
+> diff --git a/mm/memory.c b/mm/memory.c
+> index 71b3d3f98999..1ddc532b1f13 100644
+> --- a/mm/memory.c
+> +++ b/mm/memory.c
+> @@ -3017,6 +3017,7 @@ static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
+>  			pte = pte_offset_kernel(pmd, addr);
+>  		if (!pte)
+>  			return err;
+> +		spin_lock(&init_mm.page_table_lock);
+>  	} else {
+>  		if (create)
+>  			pte = pte_alloc_map_lock(mm, pmd, addr, &ptl);
+> @@ -3042,7 +3043,9 @@ static int apply_to_pte_range(struct mm_struct *mm, pmd_t *pmd,
+>  
+>  	arch_leave_lazy_mmu_mode();
+>  
+> -	if (mm != &init_mm)
+> +	if (mm == &init_mm)
+> +		spin_unlock(&init_mm.page_table_lock);
+> +	else
+>  		pte_unmap_unlock(mapped_pte, ptl);
+>  
+>  	*mask |= PGTBL_PTE_MODIFIED;
+> diff --git a/mm/vmalloc.c b/mm/vmalloc.c
+> index ab986dd09b6a..57b11000ae36 100644
+> --- a/mm/vmalloc.c
+> +++ b/mm/vmalloc.c
+> @@ -105,6 +105,7 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>  	if (!pte)
+>  		return -ENOMEM;
+>  
+> +	spin_lock(&init_mm.page_table_lock);
+>  	arch_enter_lazy_mmu_mode();
+>  
+>  	do {
+> @@ -132,6 +133,7 @@ static int vmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>  	} while (pte += PFN_DOWN(size), addr += size, addr != end);
+>  
+>  	arch_leave_lazy_mmu_mode();
+> +	spin_unlock(&init_mm.page_table_lock);
+>  	*mask |= PGTBL_PTE_MODIFIED;
+>  	return 0;
+>  }
+> @@ -359,6 +361,7 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>  	unsigned long size = PAGE_SIZE;
+>  
+>  	pte = pte_offset_kernel(pmd, addr);
+> +	spin_lock(&init_mm.page_table_lock);
+>  	arch_enter_lazy_mmu_mode();
+>  
+>  	do {
+> @@ -379,6 +382,7 @@ static void vunmap_pte_range(pmd_t *pmd, unsigned long addr, unsigned long end,
+>  	} while (pte += (size >> PAGE_SHIFT), addr += size, addr != end);
+>  
+>  	arch_leave_lazy_mmu_mode();
+> +	spin_unlock(&init_mm.page_table_lock);
+>  	*mask |= PGTBL_PTE_MODIFIED;
+>  }
+>  
+> @@ -525,6 +529,7 @@ static int vmap_pages_pte_range(pmd_t *pmd, unsigned long addr,
+>  	if (!pte)
+>  		return -ENOMEM;
+>  
+> +	spin_lock(&init_mm.page_table_lock);
+>  	arch_enter_lazy_mmu_mode();
+>  
+>  	do {
+> @@ -542,6 +547,7 @@ static int vmap_pages_pte_range(pmd_t *pmd, unsigned long addr,
+>  	} while (pte++, addr += PAGE_SIZE, addr != end);
+>  
+>  	arch_leave_lazy_mmu_mode();
+> +	spin_unlock(&init_mm.page_table_lock);
+>  	*mask |= PGTBL_PTE_MODIFIED;
+>  	return 0;
+>  }
+
 
