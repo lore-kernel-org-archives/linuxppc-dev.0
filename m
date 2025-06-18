@@ -1,69 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-9443-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9444-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCF91C71157
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jun 2025 04:29:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11D01C7115B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jun 2025 05:39:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bMW3Q515Sz3bcj;
-	Wed, 18 Jun 2025 14:29:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=23.155.224.40
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750220962;
-	cv=none; b=EE7fy6wQFPj0q64YzaTOlHzvJZaGcBIdy7w5fCR1k/8sWJ2NxKq/PbainkzXzV5kb4V04/8eTpyCt0fqI7vcrcrA7QR1IZOVAKfKVxfRwhPwa41zhY6c/fUNlckcsAnE4FBjWnDKw7DNU2nqxCoQdYZh/5QtDQ/FChkEJtzoGYPmx+NS36cfBcMhT+nCtQOyatovKdg2ROtQGhN923hR1A1yu3V0wok6TsVuagR+0xmgQZ3xguyFjVqBvOT2lKfzetWy8xrmBxBM9TCkhzFbK5vhQovBciW6k4tkOk7WMysEUvbLkMjRLXutZ5PeILvOmgqyC+/4VwjU4b0FYIOU+Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bMXbw3qD4z30RN;
+	Wed, 18 Jun 2025 15:39:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750225148;
+	cv=none; b=Yt5oYWEt5Kbsi7Hx6/uvbzSqYlewOX1lAyyCOIduVLhEGTJmse4CaXex5dWdNOTC9cz6wahYd5XHPqwdKYzIf88YjkIJmMdEdBNbCMd2p3krNHbSvC4xfclNNqMfkNnNN5q0PbCjLX2P+8g8XNSINaMR0CSEFwe4wqiS3ddI535htw3xJ113PDddy1HfyJk9Wloy/aXvNfyz0j17Gzfx8h9nAiViWH5AA+gpWoyrsfqO56EYAiF8pKUmB6b7xLKSVSlmPUy1aP2Twg3LgoKN2k2GnfZATpMkpfNEsrKLzURpzQ6//TsOju3WrQRaI6chwi1iVdrlgZqsBDVciC9BZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750220962; c=relaxed/relaxed;
-	bh=TXK4nvk3hVRfTyVxrU16zW6M8nI8oDPJzdJIGj8kYsc=;
-	h=Date:From:To:Cc:Message-ID:Subject:MIME-Version:Content-Type; b=DLHOb2xEp0w0X5Hxm3fVnXagkE+xrZH5vOev1VcJIhHC4sRC8+MSpFU3tOETtKUym0JUC2RX/nWdlS0E/BRdTjo4LBGAtcz3VBs5nHexX9Ue71vSL6y9l5gJcZNqJJP8zHL1tk3+qmrFxX/Ahvjgjmre0JrIUkUOy85HbahVrkm50w9GzCCxC4REDEf9HAgmuMFbKNQ47T8wkefT2NiV5F7M99HEkuG4sJnPXNug5nRKJzvzGyy2P0QZmDw6e6L13fUFw0BJF0qrEvW71lVbxhAmhfvVRKD9mLh9boUvqP5TOtgeXALOPbPCRPpS5EWl2PPbuusWiEmXrawpVP+cGA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=raptorengineering.com; dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=ee/cpHd0; dkim-atps=neutral; spf=pass (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=tpearson@raptorengineering.com; receiver=lists.ozlabs.org) smtp.mailfrom=raptorengineering.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=raptorengineering.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=ee/cpHd0;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=raptorengineering.com (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=tpearson@raptorengineering.com; receiver=lists.ozlabs.org)
-Received: from raptorengineering.com (mail.raptorengineering.com [23.155.224.40])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1750225148; c=relaxed/relaxed;
+	bh=0VfDKR79Vtwn5VxJOChmtPjWAJZfi4MTkhv0klH8VUU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=nww1Ae0xR16gOAiobIso5a/OcVe1nVqwPyNg29Qple88OiCnGBqSYWB+jNNxFUaJPRlIGkw3EAZdGrqBGAcKC1gF7O64/UcYNKb1eVIeHQAaL59UOE2Z67sHZJHnowkg+nnncGhda9rKHXW9WouSgZeoq5j4xbuWJJ3i6uJ23NfE5peHwWu+BTnN9Gc7rpglFT/6o92g4rWAekuKFBVgdsiypP3m72gm4wlIDYA4mqdzv5DBrZvZuqzfh4h1VHPzIiy0IpKFwmSAsxS7QwLXLa02ynh0sys4WTnc+9Y9klvyX09iYgZ725ixaMCL7CgWkhugVmQHoT64OFlyrRKqlA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+826cfafe48c3f27d09fc+7969+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=bombadil.srs.infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bombadil.srs.infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=batv+826cfafe48c3f27d09fc+7969+infradead.org+hch@bombadil.srs.infradead.org; receiver=lists.ozlabs.org)
+Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bMW3P40Mwz3bNt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2025 14:29:21 +1000 (AEST)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id 6F3FE8288748;
-	Tue, 17 Jun 2025 23:21:21 -0500 (CDT)
-Received: from mail.rptsys.com ([127.0.0.1])
-	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10032)
-	with ESMTP id gVFMjTkUT-DX; Tue, 17 Jun 2025 23:21:20 -0500 (CDT)
-Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id 0423E828742D;
-	Tue, 17 Jun 2025 23:21:20 -0500 (CDT)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.rptsys.com 0423E828742D
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=raptorengineering.com; s=B8E824E6-0BE2-11E6-931D-288C65937AAD;
-	t=1750220480; bh=TXK4nvk3hVRfTyVxrU16zW6M8nI8oDPJzdJIGj8kYsc=;
-	h=Date:From:To:Message-ID:MIME-Version;
-	b=ee/cpHd0gCNVtqZnV+ywntrlr58zRVI9VRxMIRLxcPWOVw8+Ax1k5uUCWzxNHk79m
-	 hNpMWOTs+tqTvjn/a9Aqz9CtrPbMj3JDPpVqY61tRkLCmR25a2emu+HpK2fnJNOmKA
-	 SriNg5ixLNGMH0Ygt62s3IWJLtAL75bc+cYPiGRM=
-X-Virus-Scanned: amavisd-new at rptsys.com
-Received: from mail.rptsys.com ([127.0.0.1])
-	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id D7TPnMqQcNQJ; Tue, 17 Jun 2025 23:21:19 -0500 (CDT)
-Received: from vali.starlink.edu (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id C33CC8286D0C;
-	Tue, 17 Jun 2025 23:21:19 -0500 (CDT)
-Date: Tue, 17 Jun 2025 23:21:17 -0500 (CDT)
-From: Timothy Pearson <tpearson@raptorengineering.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, 
-	tpearson@raptorengineering.com, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	Naveen N Rao <naveen@kernel.org>, 
-	Bjorn Helgaas <bhelgaas@google.com>, 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bMXbn4M3Nz2yb9
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 18 Jun 2025 15:38:59 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=bombadil.20210309; h=In-Reply-To:Content-Type:MIME-Version
+	:References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=0VfDKR79Vtwn5VxJOChmtPjWAJZfi4MTkhv0klH8VUU=; b=AhWyVqsA3j3LhyCrTsVnb6uTsn
+	9r6eUym64zHlFvMOujpVErXmuxZQzBpGAHf1t8TqLy87/VyIOL9uzm/ZdUVdiz/B19k2KVu7Ye40r
+	mbAeh0+vhywNjZniEURh0ncL8SIKwNm3DZU75mlqhPVHVZQY5qONFOShAFrwqXsxxwbGSEp2nsqis
+	sqMQZI/VXqT+yY4NrSb1Srah+zvhVs4VmAgrGpwwANoFS+Qy4WjpXkCUfgvPrD2Dcw7GG3iyEJEJY
+	l22KO9U5zP3AOTEuow7mmc/cEjcZVJnC4idkyj4mM2zRrVK9hm0cZbS8yFg3Hw7OO91YpFwVHUP90
+	HxZfSLCw==;
+Received: from hch by bombadil.infradead.org with local (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uRlVg-000000096Bv-3dIB;
+	Wed, 18 Jun 2025 05:38:56 +0000
+Date: Tue, 17 Jun 2025 22:38:56 -0700
+From: Christoph Hellwig <hch@infradead.org>
+To: Timothy Pearson <tpearson@raptorengineering.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-pci <linux-pci@vger.kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	christophe leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
 	Shawn Anastasio <sanastasio@raptorengineering.com>
-Message-ID: <1970833911.1309763.1750220477118.JavaMail.zimbra@raptorengineeringinc.com>
-Subject: [PATCH 0/6] PowerNV PCIe Hotplug Driver Fixes
+Subject: Re: [PATCH 3/8] powerpc/pseries/eeh: Export eeh_unfreeze_pe() and
+ eeh_ops
+Message-ID: <aFJQ8AtYlKx1t_ri@infradead.org>
+References: <946966095.1309769.1750220559201.JavaMail.zimbra@raptorengineeringinc.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,53 +68,19 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 7bit
-X-Mailer: Zimbra 8.5.0_GA_3042 (ZimbraWebClient - GC137 (Linux)/8.5.0_GA_3042)
-Thread-Index: 8lRcUti9WpN8CCZCIBC2nXslZWbhGA==
-Thread-Topic: PowerNV PCIe Hotplug Driver Fixes
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <946966095.1309769.1750220559201.JavaMail.zimbra@raptorengineeringinc.com>
+X-SRS-Rewrite: SMTP reverse-path rewritten from <hch@infradead.org> by bombadil.infradead.org. See http://www.infradead.org/rpr.html
 
-Hello all,
+On Tue, Jun 17, 2025 at 11:22:39PM -0500, Timothy Pearson wrote:
+>  /* Platform dependent EEH operations */
+>  struct eeh_ops *eeh_ops = NULL;
+> +EXPORT_SYMBOL(eeh_ops);
 
-This series includes several fixes for bugs in the PowerNV PCIe hotplug
-driver that were discovered in testing with a Microsemi Switchtec PM8533
-PFX 48xG3 PCIe switch on a PowerNV system, as well as one workaround for
-PCIe switches that don't correctly implement slot presence detection
-such as the aforementioned one. Without the workaround, the switch works
-and downstream devices can be hot-unplugged, but the devices never come
-back online after being plugged in again until the system is rebooted.
-Other hotplug drivers (like pciehp_hpc) use a similar workaround.
+Exporting ops vectors is generally a really bad idea.  Please build a
+proper abstraction instead.
 
-Also included are fixes for the EEH driver to make it hotplug safe,
-and a small patch to enable all three attention indicator states per
-the PCIe specification.
+And use EXPORT_SYMBOL_GPL for any kind of low-level API.
 
-Thanks,
-
-Shawn Anastasio (2):
-  pci/hotplug/pnv_php: Properly clean up allocated IRQs on unplug
-  pci/hotplug/pnv_php: Work around switches with broken presence
-    detection
-
-Timothy Pearson (5):
-  powerpc/pseries/eeh: Export eeh_unfreeze_pe() and eeh_ops
-  powerpc/eeh: Make EEH driver device hotplug safe
-  pci/hotplug/pnv_php: Fix surprise plug detection and recovery
-  pci/hotplug/pnv_php: Enable third atetntion indicator state
-
- arch/powerpc/kernel/eeh.c                    |   2 +
- arch/powerpc/kernel/eeh_driver.c             |  48 ++++--
- arch/powerpc/kernel/eeh_pe.c                 |  10 +-
- arch/powerpc/kernel/pci-hotplug.c            |   3 +
- arch/powerpc/platforms/powernv/eeh-powernv.c |   1 +
- drivers/pci/hotplug/pciehp.h                 |   1 -
- drivers/pci/hotplug/pciehp_ctrl.c            |   2 +-
- drivers/pci/hotplug/pciehp_hpc.c             |  33 +---
- drivers/pci/hotplug/pnv_php.c                | 172 ++++++++++++++++---
- drivers/pci/pci.c                            |  31 +++-
- drivers/pci/pci.h                            |   1 +
- 11 files changed, 228 insertions(+), 76 deletions(-)
-
--- 
-2.39.5
 
