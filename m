@@ -1,60 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-9448-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9449-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F901C7115A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jun 2025 16:54:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EE5D2C7115A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jun 2025 16:56:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bMqbJ2180z30T9;
-	Thu, 19 Jun 2025 02:54:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bMqd15mJ4z30TY;
+	Thu, 19 Jun 2025 02:56:05 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=23.155.224.40
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750265676;
-	cv=none; b=P7Omh2sSiOG/A+8WzWakQ6hxcFUVCp6KSNekPc3AKm1wYOY9Z8e+reN3Qs7kU1mIBXL+QgQVEo2yTAch20TGYoJh7IaJ3X1DEVabNDPwIvbBYnAOtoqBAVfgwLBgrvzfU4zIBYomk5eyXkUC88nDTS/zt4Qw2fnYEXRhr3I4NEAEEPHoqXRWYaznkB7NQ68XRAOsw/6uhN8go6A9gV1U49qsjXNbpcFlsedA7ZOhdxCY6sPzBgl8dSgAgUD2ddtC5f5+DYt3GBcfso8uz2abAGMNREP13lNuWPX5yg86m5sxWDummCxBFJcBjD1WjRVdmtHGxCf0prydtPdFr9qRUA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750265765;
+	cv=none; b=h1UJe6+Ub8lHjVQ1y872miyO4PGgg1yjf287Y8E273mWJQZ1lVwLcbFISmKZIXSCcuNdfOXTkhJ/uBxftuFrTWthfTw7dcVDepSrU72kLOwufitJ7ZlmNsTAGRRs3k0v2UtiU/k3lDsxWN3IsqJxzTZNFA/xsohUhPJcxHubyhsb4T5PHiVCkHYg34gRdfPvf5eVYl80M6qFW3w7kz38QY0WkgaWcmsAtEuJcIp+NjhhFLSZNn8xmt0Ix69qgQLMxUVgQBP1MFie6pRijyE/xP1JnlJJI9LBcMvzerkf/+9kK7OBW34ad1MSPoQpUzyoxhzqUqaJGW8SEaYBsDc5UQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750265676; c=relaxed/relaxed;
-	bh=TXK4nvk3hVRfTyVxrU16zW6M8nI8oDPJzdJIGj8kYsc=;
-	h=Date:From:To:Cc:Message-ID:Subject:MIME-Version:Content-Type; b=R1Sd30BGVjhkOKV5s++CVzAOQuItm/Aj/zv97wNIeQOEJVsHfcekyXamWxCaDgUFQ9jE0BSsUrV9dqXPGrBSHQWrv8uwDNEMR1KWGt4xpFY/ErJuIYs0Cw65+IUIeomvfD9nPauTzi5zpw2VJXNrLUonN10RssZDudPb2VG67Zp2dw0Leht4YRnHEgX5rFW/pRGmZVYPzkGC8iIo9xuqf59PuktTT7PLhSl+AC7QqI99f3+HptAKZELPqTfUCWH6aS27m/JGCWuP/U1T8JmqPW/K87N4ENPdknKwTxUutUdxRzVC8s3xzhBj0Ht1E6IKSFYJQq1os9qYnbP2B3kQLQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=raptorengineering.com; dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=B0EFl+B5; dkim-atps=neutral; spf=pass (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=tpearson@raptorengineering.com; receiver=lists.ozlabs.org) smtp.mailfrom=raptorengineering.com
+	t=1750265765; c=relaxed/relaxed;
+	bh=lsH6Mcb5sOzQ2SC69uB9LMQwjmUITv6dqf33k1ZaAf0=;
+	h=Date:From:To:Cc:Message-ID:In-Reply-To:References:Subject:
+	 MIME-Version:Content-Type; b=Iyx4icHz5GnjpGWw1k06UBfzYXUCPt7SqrTyLI2cOr04c5TAAt+YQ2h6DNWG8G8zcDu0OhDz8YRyPoqzeUvvMKUjnQdsGeKFx7Z/OCRyTtqDRrpznelotI256ecPXjMeV2juJe4HK6AGssKYw//XpvXK49d/ITYUEoS4eEp1V89J7BOuJDLxZWpGHr5ytqZ+mb+RtlhwQ8eDmXjrt8jmsjQ+QncaaBcB00btta6oKwixy3pO7gl+4HVJx2za/oo93ZJur668XhtNb6Ly2ehKxs1mx+tpE34oT7ofpy1AzccmzpnBMvdspxJOLuexOKHrxWnDhYDkbL2vJGumb7qiNw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=raptorengineering.com; dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=SG8+Ktpn; dkim-atps=neutral; spf=pass (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=tpearson@raptorengineering.com; receiver=lists.ozlabs.org) smtp.mailfrom=raptorengineering.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=raptorengineering.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=B0EFl+B5;
+	dkim=pass (1024-bit key; secure) header.d=raptorengineering.com header.i=@raptorengineering.com header.a=rsa-sha256 header.s=B8E824E6-0BE2-11E6-931D-288C65937AAD header.b=SG8+Ktpn;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=raptorengineering.com (client-ip=23.155.224.40; helo=raptorengineering.com; envelope-from=tpearson@raptorengineering.com; receiver=lists.ozlabs.org)
 Received: from raptorengineering.com (mail.raptorengineering.com [23.155.224.40])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bMqbH1m4Dz30DP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2025 02:54:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bMqd06xjdz30TG
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2025 02:56:01 +1000 (AEST)
 Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id 0AE7282879F3;
-	Wed, 18 Jun 2025 11:54:33 -0500 (CDT)
+	by mail.rptsys.com (Postfix) with ESMTP id 828C88286FBD;
+	Wed, 18 Jun 2025 11:55:59 -0500 (CDT)
 Received: from mail.rptsys.com ([127.0.0.1])
 	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10032)
-	with ESMTP id ueuYGyDCQRzD; Wed, 18 Jun 2025 11:54:31 -0500 (CDT)
+	with ESMTP id 0aUYil_3E0-H; Wed, 18 Jun 2025 11:55:58 -0500 (CDT)
 Received: from localhost (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id F0DEF8286F81;
-	Wed, 18 Jun 2025 11:54:30 -0500 (CDT)
-DKIM-Filter: OpenDKIM Filter v2.10.3 mail.rptsys.com F0DEF8286F81
+	by mail.rptsys.com (Postfix) with ESMTP id 88B968287179;
+	Wed, 18 Jun 2025 11:55:58 -0500 (CDT)
+DKIM-Filter: OpenDKIM Filter v2.10.3 mail.rptsys.com 88B968287179
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
 	d=raptorengineering.com; s=B8E824E6-0BE2-11E6-931D-288C65937AAD;
-	t=1750265671; bh=TXK4nvk3hVRfTyVxrU16zW6M8nI8oDPJzdJIGj8kYsc=;
+	t=1750265758; bh=lsH6Mcb5sOzQ2SC69uB9LMQwjmUITv6dqf33k1ZaAf0=;
 	h=Date:From:To:Message-ID:MIME-Version;
-	b=B0EFl+B5U0qK16MIf1a72t4z5arjFFgr3ibazQtLKE8gz+ZjP6wwrA/8vIGSqI4UP
-	 mZCG4AypeO9Wf+/6bCjH9n4uNcUxoWWLVwzwXXl1AKJjeRkR6miLLoBO2HDO6Biki7
-	 tc1l1CTz7SIzYj7E9r78PlC6LjhfcgP8N3f4BC6k=
+	b=SG8+Ktpn6Q4bBiZ3ABXaM45t5s/V+sMoNCVSb0T9rxV1PPzYIoYLjKaXLaBLSAyY/
+	 5qwfBhof6dKUdiJuk0rFFbPkEmcEk3yfkjd76FJk04zGXTK75NibzVgEerXqrYaRra
+	 Bkvv+mo6EnYtnHZ71trKJYhcqqd6UJLdZHQWW0CA=
 X-Virus-Scanned: amavisd-new at rptsys.com
 Received: from mail.rptsys.com ([127.0.0.1])
 	by localhost (vali.starlink.edu [127.0.0.1]) (amavisd-new, port 10026)
-	with ESMTP id sxi47ZWzGdik; Wed, 18 Jun 2025 11:54:30 -0500 (CDT)
+	with ESMTP id Z7uLIchHfRBv; Wed, 18 Jun 2025 11:55:58 -0500 (CDT)
 Received: from vali.starlink.edu (localhost [127.0.0.1])
-	by mail.rptsys.com (Postfix) with ESMTP id A84778286AE2;
-	Wed, 18 Jun 2025 11:54:30 -0500 (CDT)
-Date: Wed, 18 Jun 2025 11:54:28 -0500 (CDT)
+	by mail.rptsys.com (Postfix) with ESMTP id 59BA28286FBD;
+	Wed, 18 Jun 2025 11:55:58 -0500 (CDT)
+Date: Wed, 18 Jun 2025 11:55:58 -0500 (CDT)
 From: Timothy Pearson <tpearson@raptorengineering.com>
-To: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: linux-kernel <linux-kernel@vger.kernel.org>, 
+To: Christoph Hellwig <hch@infradead.org>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, 
+	linux-kernel <linux-kernel@vger.kernel.org>, 
 	linux-pci <linux-pci@vger.kernel.org>, 
 	Madhavan Srinivasan <maddy@linux.ibm.com>, 
 	Michael Ellerman <mpe@ellerman.id.au>, 
@@ -62,8 +64,11 @@ Cc: linux-kernel <linux-kernel@vger.kernel.org>,
 	Naveen N Rao <naveen@kernel.org>, 
 	Bjorn Helgaas <bhelgaas@google.com>, 
 	Shawn Anastasio <sanastasio@raptorengineering.com>
-Message-ID: <581463409.1310624.1750265668004.JavaMail.zimbra@raptorengineeringinc.com>
-Subject: [PATCH v2 0/6] PowerNV PCIe Hotplug Driver Fixes
+Message-ID: <596516884.1310632.1750265758190.JavaMail.zimbra@raptorengineeringinc.com>
+In-Reply-To: <1728509613.1310543.1750263002144.JavaMail.zimbra@raptorengineeringinc.com>
+References: <946966095.1309769.1750220559201.JavaMail.zimbra@raptorengineeringinc.com> <aFJQ8AtYlKx1t_ri@infradead.org> <1728509613.1310543.1750263002144.JavaMail.zimbra@raptorengineeringinc.com>
+Subject: Re: [PATCH 3/8] powerpc/pseries/eeh: Export eeh_unfreeze_pe() and
+ eeh_ops
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,50 +85,47 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 7bit
 X-Mailer: Zimbra 8.5.0_GA_3042 (ZimbraWebClient - GC137 (Linux)/8.5.0_GA_3042)
-Thread-Index: 7ViWVrejj338yZQm64sXoMCfdWvE4A==
-Thread-Topic: PowerNV PCIe Hotplug Driver Fixes
+Thread-Topic: powerpc/pseries/eeh: Export eeh_unfreeze_pe() and eeh_ops
+Thread-Index: bupdJGUzprnsSSzB+HYmaNkawJnfUc+y9UXi
 
-Hello all,
 
-This series includes several fixes for bugs in the PowerNV PCIe hotplug
-driver that were discovered in testing with a Microsemi Switchtec PM8533
-PFX 48xG3 PCIe switch on a PowerNV system, as well as one workaround for
-PCIe switches that don't correctly implement slot presence detection
-such as the aforementioned one. Without the workaround, the switch works
-and downstream devices can be hot-unplugged, but the devices never come
-back online after being plugged in again until the system is rebooted.
-Other hotplug drivers (like pciehp_hpc) use a similar workaround.
 
-Also included are fixes for the EEH driver to make it hotplug safe,
-and a small patch to enable all three attention indicator states per
-the PCIe specification.
+----- Original Message -----
+> From: "Timothy Pearson" <tpearson@raptorengineeringinc.com>
+> To: "Christoph Hellwig" <hch@infradead.org>
+> Cc: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>, "linux-kernel" <linux-kernel@vger.kernel.org>, "linux-pci"
+> <linux-pci@vger.kernel.org>, "Madhavan Srinivasan" <maddy@linux.ibm.com>, "Michael Ellerman" <mpe@ellerman.id.au>,
+> "christophe leroy" <christophe.leroy@csgroup.eu>, "Naveen N Rao" <naveen@kernel.org>, "Bjorn Helgaas"
+> <bhelgaas@google.com>, "Shawn Anastasio" <sanastasio@raptorengineering.com>
+> Sent: Wednesday, June 18, 2025 11:10:02 AM
+> Subject: Re: [PATCH 3/8] powerpc/pseries/eeh: Export eeh_unfreeze_pe() and eeh_ops
 
-Thanks,
+> ----- Original Message -----
+>> From: "Christoph Hellwig" <hch@infradead.org>
+>> To: "Timothy Pearson" <tpearson@raptorengineering.com>
+>> Cc: "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>, "linux-kernel"
+>> <linux-kernel@vger.kernel.org>, "linux-pci"
+>> <linux-pci@vger.kernel.org>, "Madhavan Srinivasan" <maddy@linux.ibm.com>,
+>> "Michael Ellerman" <mpe@ellerman.id.au>,
+>> "christophe leroy" <christophe.leroy@csgroup.eu>, "Naveen N Rao"
+>> <naveen@kernel.org>, "Bjorn Helgaas"
+>> <bhelgaas@google.com>, "Shawn Anastasio" <sanastasio@raptorengineering.com>
+>> Sent: Wednesday, June 18, 2025 12:38:56 AM
+>> Subject: Re: [PATCH 3/8] powerpc/pseries/eeh: Export eeh_unfreeze_pe() and
+>> eeh_ops
+> 
+>> On Tue, Jun 17, 2025 at 11:22:39PM -0500, Timothy Pearson wrote:
+>>>  /* Platform dependent EEH operations */
+>>>  struct eeh_ops *eeh_ops = NULL;
+>>> +EXPORT_SYMBOL(eeh_ops);
+>> 
+>> Exporting ops vectors is generally a really bad idea.  Please build a
+>> proper abstraction instead.
+>> 
+>> And use EXPORT_SYMBOL_GPL for any kind of low-level API.
+> 
+> Fair enough.  I'll add a properly exported method for PE get_state() and update
+> the series in the next couple of days.
 
-Shawn Anastasio (2):
-  pci/hotplug/pnv_php: Properly clean up allocated IRQs on unplug
-  pci/hotplug/pnv_php: Work around switches with broken presence
-    detection
-
-Timothy Pearson (5):
-  powerpc/pseries/eeh: Export eeh_unfreeze_pe() and eeh_ops
-  powerpc/eeh: Make EEH driver device hotplug safe
-  pci/hotplug/pnv_php: Fix surprise plug detection and recovery
-  pci/hotplug/pnv_php: Enable third atetntion indicator state
-
- arch/powerpc/kernel/eeh.c                    |   2 +
- arch/powerpc/kernel/eeh_driver.c             |  48 ++++--
- arch/powerpc/kernel/eeh_pe.c                 |  10 +-
- arch/powerpc/kernel/pci-hotplug.c            |   3 +
- arch/powerpc/platforms/powernv/eeh-powernv.c |   1 +
- drivers/pci/hotplug/pciehp.h                 |   1 -
- drivers/pci/hotplug/pciehp_ctrl.c            |   2 +-
- drivers/pci/hotplug/pciehp_hpc.c             |  33 +---
- drivers/pci/hotplug/pnv_php.c                | 172 ++++++++++++++++---
- drivers/pci/pci.c                            |  31 +++-
- drivers/pci/pci.h                            |   1 +
- 11 files changed, 228 insertions(+), 76 deletions(-)
-
--- 
-2.39.5
+Somehow I completely missed eeh_pe_get_state() the first time around.  I don't need to change the API, v2 incoming now.
 
