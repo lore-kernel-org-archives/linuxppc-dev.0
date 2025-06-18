@@ -1,110 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-9503-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9504-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6FE14C7115A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jun 2025 19:26:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 111AFC71157
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 18 Jun 2025 19:44:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bMtyf757nz30Vb;
-	Thu, 19 Jun 2025 05:26:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2009::610" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750274794;
-	cv=pass; b=JgsfxzRhObZTeeianSwfo1H1I8/YunY2OnIyC5NaMbsopEmMNRYsU3l4N32DIr7oMSK0NoRli8GTe3tp+xo6o/Tf//+BiFnaMWAJvTGcUm+Mpa8XCf32BCVYNHl0sPryfYNLQlewk7TmMdlQ1A0EkFufFyQ3fAlSbyYhAS0HpP4Z11M4GboxbT+ja2mBuImHdG+snQs+UPV7rZW4pxxHBDr3k46tsKm4LOQQQyi4kclp0ayYUM8F7V5e0FhvCfRtULaJuhUuUN980Hibpaz6Hj80PCrM1hTn64O4J0tc/ZV3+DskrSE9PRQY5ad5rtKeOY/CCPdbCqeW4aS+uVwFyQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750274794; c=relaxed/relaxed;
-	bh=vHpOYWtvNl5wNcpVXPemlz5PEWDe3QTB7g5UHFpdq28=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=m0dXOwWaYBTlscWCvpPeZGd5QBiM++TntLsJ9PSrcJLTlgqOLcTvIOA5a1Po+QSUOnGnZRqWQSdxVyspLarIbPO3uvCnspzvoXfHtRKCewr0FdbJN3tm81sktxN0YOtbgl94fjQ4EqZoVjIOfGfGehmZYfw47C3DsXsevYuMeaHyybjei89BX+VHM8fHaerqW3KsQNIex8RoaF+btW47Q5gk1sgihFM2l34d7Cidi6Cit7XASScV2Uv/hkq1NL9dWsJkpiWg9nCpLx2YkoKLp6ZUdPagjF+4cJkcXxWN+B7TLuxVUxokDH0Uvj32zw/aXfp3+3rqAuyvWGDDl5K8mg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=TA1fkcXO; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:2009::610; helo=nam10-bn7-obe.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bMvLv3mD9z30T9;
+	Thu, 19 Jun 2025 05:44:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750275847;
+	cv=none; b=oDnC6jwRliPuQ4hDG0RcAk5d219I8YyUTkLOYOY0TfbdaJ/nz+dlRAowUCAGvGWHSuR4O7ugA2t92DgfQpIEaH+em1Zpy+IiGO/htPrmqZGiI0FFC93FCxt5Zlp3vCv5yGRxLc9aCnAka5pFkXSyFP0w3/t1z4K4C1yOgvfe/rtjSHx1wuJXmv1EShowvEAQdvRgj1AMmvHkBKcYjDDTrOJWD3bzxSYV8FXgpUg8shdJfvsstfQkpCn/AYBZ9E6WULbNKERaoLwW1QKM8ZYCza2NMKOfb4PhDauPK1qc3WX9o3A7+/kg92RIleEQyVbeKI17xs37nBUv1oRQR2WGdg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1750275847; c=relaxed/relaxed;
+	bh=twVhQ2epY2UsDg6xroRm42pUeT69vRdy7mfTXh+slI8=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=HKO6dxeN6OkiK7wVqELMIPvH8W0lTogfO3hW7nmHAdHVKILSCqjlxJXlUF+V3ajIvtOnHEoUKGd0+8XpPFX+R/O5dxlA6948RejXksx63LcWQphk2/kmpiZ54r6dFwxL+DLMbd9Xi+tjFDPEcEPoK3tJQTXzi9qk0fj+gZv6eygQCa8/4FVIaQZU3NM5TTufWBhaSbVT7UqJGUgFlpixTIOITEow4ubb0zmoxdz7Ahh48wljWhvkLE+Rw+kAfqkp+kpQuQc8KfAG2YLvI46sWEkvtlOE6zNtFD2Q++MFy8yKrHLgoI99CzhArFjLPxuuvhZ8Hjca+bZ8kOW08OI9qA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dZcEcIlx; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=TA1fkcXO;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dZcEcIlx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:2009::610; helo=nam10-bn7-obe.outbound.protection.outlook.com; envelope-from=ziy@nvidia.com; receiver=lists.ozlabs.org)
-Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on20610.outbound.protection.outlook.com [IPv6:2a01:111:f403:2009::610])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bMtyF0SlSz30Tf
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2025 05:26:11 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=e95wuyhQCcCJe/TMOm1H4rhQ/8PdFpQiyclSRgrgq707TYQ45zTaNBc1+EduDLyw+OqPU+GsiTk3Hm9qzEFKI9w4yghjcv+QzTMuVBx4rHD10rzZu4x/unELUjU+foiQ+Y9uXP2E4V0m2EZIwQ8npDht7hEPsPR17UrndXZ7gszkW8ldt9cr3pIQAZ/MJpUhDzzlJMBGMHY4d9hOtvtmlMII4N7IraZGBxlqVqQ/i8q6dn5GfU7vBr+LPhiJvCqUK3cmFPd/+YBzqkmpnDgLJR5pIe3Kv4O1bT0wnxsBjZBb2vRDhkTmA2mRaQjmkoOxlqvz8knwQaJz5tP6ycU/fQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=vHpOYWtvNl5wNcpVXPemlz5PEWDe3QTB7g5UHFpdq28=;
- b=YV5TZAFAxk6UOLs/2XX+0Dg+dlqc5elIN/Bfftg7E35p0yns7W5RR5P0vrafjZQB+S1rJ8sPLBpnbmnycyZAX6o4uEZ0HIHKPvvFfVgHhDEyfV+8DeAfnTnxQu3Z96kf1XtS2COZ5XwbPlpIgoW7DA6NXvwJeRiWxlS/8huaphftZRBbeEbvTht2EAi6Qf3EZCp138YSnIDWaQS7LxVpRtKYnykkjtXPUaZ4SPGg0h/notUDJ1ghN0Gvo0jqPIhgGtJhmXVmGiBipBOavg0GGbQYkUCAi3krTl8CEZFHFe4YT9oKp/GT19WCdmTNfw+SKFAO73vCUKCz7N2hQ/qtcg==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vHpOYWtvNl5wNcpVXPemlz5PEWDe3QTB7g5UHFpdq28=;
- b=TA1fkcXO4RFY5RGexCLAHDPXdULYqIeEKsk76IFjiQ9Mz2sf+Qfsk02RExr15OoUcOIpWZ6rxHXOv2YoAKT/0LWoQB74NX7NTRBtbAg0CJUlGiwYV/Q4Z56QpvyAE1GoIosNw9psJMtxrzQ4Gw23FYHxZ3eJLAVDy3JjEVJM5TEVjTIOgEYKdilMhgq8N0nxzz7nvnojXMPhAhL3AcWhRm7y7sMXPt024wPXEaJcPRZBml8MMQiEJulQ0TnknR25LMcvjpF1V4j5bo3R7gjPW5Z/oR9/01sxNgOvXDCfRx4OD4fAiS2g9nZfY5E1FwMkmVUg+6AlGwd3H5MgS/bTGg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from DS7PR12MB9473.namprd12.prod.outlook.com (2603:10b6:8:252::5) by
- IA0PR12MB7723.namprd12.prod.outlook.com (2603:10b6:208:431::10) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8835.29; Wed, 18 Jun
- 2025 19:25:51 +0000
-Received: from DS7PR12MB9473.namprd12.prod.outlook.com
- ([fe80::5189:ecec:d84a:133a]) by DS7PR12MB9473.namprd12.prod.outlook.com
- ([fe80::5189:ecec:d84a:133a%5]) with mapi id 15.20.8835.027; Wed, 18 Jun 2025
- 19:25:50 +0000
-From: Zi Yan <ziy@nvidia.com>
-To: Matthew Wilcox <willy@infradead.org>
-Cc: David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org,
- linux-mm@kvack.org, linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- virtualization@lists.linux.dev, linux-fsdevel@vger.kernel.org,
- Andrew Morton <akpm@linux-foundation.org>, Jonathan Corbet <corbet@lwn.net>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Jerrin Shaji George <jerrin.shaji-george@broadcom.com>,
- Arnd Bergmann <arnd@arndb.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>,
- Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
- =?utf-8?q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- Matthew Brost <matthew.brost@intel.com>,
- Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>,
- Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>,
- Ying Huang <ying.huang@linux.alibaba.com>,
- Alistair Popple <apopple@nvidia.com>,
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- "Liam R. Howlett" <Liam.Howlett@oracle.com>,
- Vlastimil Babka <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Minchan Kim <minchan@kernel.org>,
- Sergey Senozhatsky <senozhatsky@chromium.org>,
- Brendan Jackman <jackmanb@google.com>, Johannes Weiner <hannes@cmpxchg.org>,
- Jason Gunthorpe <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>,
- Peter Xu <peterx@redhat.com>, Xu Xin <xu.xin16@zte.com.cn>,
- Chengming Zhou <chengming.zhou@linux.dev>, Miaohe Lin <linmiaohe@huawei.com>,
- Naoya Horiguchi <nao.horiguchi@gmail.com>,
- Oscar Salvador <osalvador@suse.de>, Rik van Riel <riel@surriel.com>,
- Harry Yoo <harry.yoo@oracle.com>, Qi Zheng <zhengqi.arch@bytedance.com>,
- Shakeel Butt <shakeel.butt@linux.dev>
-Subject: Re: [PATCH RFC 08/29] mm/migrate: rename putback_movable_folio() to
- putback_movable_ops_page()
-Date: Wed, 18 Jun 2025 15:25:46 -0400
-X-Mailer: MailMate (2.0r6265)
-Message-ID: <DABB8764-8656-44A8-B252-0240F53BC0E3@nvidia.com>
-In-Reply-To: <aFMQ65hUoOoLaXms@casper.infradead.org>
-References: <20250618174014.1168640-1-david@redhat.com>
- <20250618174014.1168640-9-david@redhat.com>
- <AD158968-D369-4884-806A-18AEE2293C8B@nvidia.com>
- <aFMQ65hUoOoLaXms@casper.infradead.org>
-Content-Type: text/plain
-X-ClientProxiedBy: MN0PR04CA0013.namprd04.prod.outlook.com
- (2603:10b6:208:52d::18) To DS7PR12MB9473.namprd12.prod.outlook.com
- (2603:10b6:8:252::5)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bMvLr2rWbz30Sy
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2025 05:44:04 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id F3412629CE;
+	Wed, 18 Jun 2025 19:44:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8420CC4CEED;
+	Wed, 18 Jun 2025 19:44:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1750275841;
+	bh=7eVewN673jHwQZJkWhF/hgscqK5uhDvpq3jqJohTquY=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=dZcEcIlxzmjGjevrwPL5VBRthst/bU56HrpDzV0SouXpQbvei7g5qbgCHWFqg9tow
+	 c3HnRznLYYO682GbXkOGRxLgkAr6CMVtiRRQwP75W+ELUt7oooYVg4VW+sBh2jo8bj
+	 bLZ1+/p7n0pz7i+b9I9A+djx9Oycqw8ovLsxM/nGFK60BCWmWZDiiygJ7eZwvrHX4N
+	 cKL31BTq9sktKWJ04J0EYepoNYmjD+aO1i9ImxJaU3liXwbTPhC7conbfzRo/Oiu5w
+	 awSotYZAfYhQZbmDH1Nz0X7wS4fZd6904++Xj/ENr+JJUZId4fQ1RyjCm/7sfK6yTP
+	 MJ01+FAErk35Q==
+Date: Wed, 18 Jun 2025 14:44:00 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Timothy Pearson <tpearson@raptorengineering.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	linux-kernel <linux-kernel@vger.kernel.org>,
+	linux-pci <linux-pci@vger.kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	christophe leroy <christophe.leroy@csgroup.eu>,
+	Naveen N Rao <naveen@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Shawn Anastasio <sanastasio@raptorengineering.com>,
+	Lukas Wunner <lukas@wunner.de>
+Subject: Re: [PATCH v2 2/6] pci/hotplug/pnv_php: Work around switches with
+ broken
+Message-ID: <20250618194400.GA1219576@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -118,111 +73,83 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DS7PR12MB9473:EE_|IA0PR12MB7723:EE_
-X-MS-Office365-Filtering-Correlation-Id: 78c6f771-c9f0-4248-6aca-08ddae9def6c
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|7416014|376014|366016;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?QpA+UUQzQFymJ5z0A4Q/ykjsq7dVColX2YxYhsSkH002+xoT6mCwC5/xgu/Z?=
- =?us-ascii?Q?/0DZd2PXBDX81swpzmY8OBAuoZ0OZqrCFCsdcuGfz/e4B68qMa8GroeXIS+g?=
- =?us-ascii?Q?zLYjYHpLQ3KhMXhzIcfh/RHhc1CVwtZ4KavFCADFLcWYjbXRhktMlWBHBYhs?=
- =?us-ascii?Q?jI02c5EU2xgX3QfpNft4Yo/cDPH/VkP0FiTPHaB9TaubAAS8L32vnziVgWrs?=
- =?us-ascii?Q?Lao3VrqBVF9KqdYaNz1Jf81DdnzwEeEw9Tn3K6sVRLVszboaS0AOy7us8/RQ?=
- =?us-ascii?Q?xq/4nWJ2Mgiqclp6sZA+ah0xxqe/b7SLAc6swRgdMHcyykDF6IiAR9ctjMv0?=
- =?us-ascii?Q?DIBB/T5HFVcng84/Uof82V8fL3JlCF9Rw1YMGpzQ4j13c2gF+W2K9KPRyb9K?=
- =?us-ascii?Q?HgYjCED6ELRhAORCFO5xaLYxDfjNTfCVQ/xtQrVAEliJQXtRH1LQkfzliOmn?=
- =?us-ascii?Q?QfK/d6khz3FaDsevbKvlaP5Z+pqfRwxRtqfU7AfoeTQNUKAVN+lGtQIVd9mc?=
- =?us-ascii?Q?ft8IQG18f3bRdQnOmGMP/bRoaJmUk3Mz0fFhXDFSG5KiX3uzHV+ABc65jhZi?=
- =?us-ascii?Q?CO7aEYJZ696wFFyTxu8F0Ai5WPqqY8g5lWkzA4Nlzhj4XYxAJwRsGCEVyZab?=
- =?us-ascii?Q?C11C+x82cH4cZ9+Bt8NXmLIO1GQ8/H9HnHCRtKKjt+WbFrOF4pfSYYlfoq3H?=
- =?us-ascii?Q?VhMCHqPwGQu7pU5MEio6qTDLK0JBTYIUWvky/Rz0R/75pVewIb45fAhFUX5+?=
- =?us-ascii?Q?XtaemHwEa+scU50be1/MflA46u4QXbEkRYCC4ueDF4PS0kA/F7FRT+s/sNyi?=
- =?us-ascii?Q?VMS7eP96n7Vgwh5rbSg2GBRIp25XtER6uMDYshy0iVZZiFUOyP2lK2olFv1U?=
- =?us-ascii?Q?Sw20xPnKVqzqYUmYYX7wIWy52t9jDkw8B8IEfQoLATGUowIed+4n3eKQBhwE?=
- =?us-ascii?Q?XMRFc84UjU6MTvQSVAK/ElsFZy3pgYFJg427h4gsnJSv2QBpxLDORgyTnzRk?=
- =?us-ascii?Q?SrCP9v52psRgqOXbt/4M6iORytWDgFzMSbKyphKJUJUQK+9K3aRpUThds23l?=
- =?us-ascii?Q?al6Y/9Af29VJGqfU2GNlQL91zzx0gXLLsrv39tEAE9ChHzKFvXiUNM1Dd6MA?=
- =?us-ascii?Q?mOnuLk6bstWMw7JRVvRvVzBIOM2uqAk8FHJekaA7Dr/1peiWVMPSSLnlVi1O?=
- =?us-ascii?Q?zxf4xdWiQiGJ3HPm1w3yv/siVNN0ZWMaECgNbsOO+pt1i5CGDq0i0OdDwYbX?=
- =?us-ascii?Q?CBCBpG138XmiryxxEwIHhQYPiEJO0ZOfq+Rsp+/0OdReH3WM8k27KZlKmlT8?=
- =?us-ascii?Q?OHV4eiyjno0wDoB5lpmVETC5sE9xiX+++v28W1VqSAt+aiLge11ugxRWHjrx?=
- =?us-ascii?Q?3gVKBHWntYCv8rh5cG2rKyUrj9LIneJYaQGGDFXglLqDrR7kiG/GIUc4Lm8u?=
- =?us-ascii?Q?ATJjJ664/LM=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DS7PR12MB9473.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(7416014)(376014)(366016);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?eVhQ/JYxmuxsENmlDZfp3SDWU+zISOsHXcw/nFJAe4DQZDSzUSVLDRgrLZ6M?=
- =?us-ascii?Q?N1uiEQGI6QyGD8dJ2FN6jd/dft9PXUPfVgzVo9b59vNp/fROWk1Je8ak0vKC?=
- =?us-ascii?Q?h86suQ/SGIIJu/AzI+7bTUG+gctyGlOLr2eXMzfsPEvf/+fmLO+L1I9cY5IV?=
- =?us-ascii?Q?4juSo2c6xPfgS0I0W5ge/ieTuRudFD9+v2BkRm0u/VVJjxGDBpVp+pQmqknM?=
- =?us-ascii?Q?fu49oDqVtyoSZ2mq9bXPrWcHNl4oe9WU0MGhrRe9RVIpG5Ht3VUVzXb1cFXl?=
- =?us-ascii?Q?k/qJ1z4k5sgTyOsLLDaSRPZbDWj94qA2Dw8GgvvthxUZltfH6HghdT0BEN2q?=
- =?us-ascii?Q?j33TgpHBbeVYCaSyJIMFg52owtEdtZLLmJnnJ+JtoqG3oV0N9D14zNPzIzoc?=
- =?us-ascii?Q?h/94k9vTn0+0g21yhlBFHOmJhtAE+L1dOvpeLqSlebPdRQ6EvBG9RXZam3Oj?=
- =?us-ascii?Q?onDMGw+GsdHAzpY0UBi/SEcEzeDkl3zQpoK8kMwgRmkFc2dezVb1FrJVc4tB?=
- =?us-ascii?Q?TWk+UErk7WVx+xNqDuVwbnSriOtdEDOGQnhmzMFnnXN8rno1RavQeI6T1nPa?=
- =?us-ascii?Q?1CqPo4CWWRKWQXQ28dfiV9mJlhpgQ2x2lpgPkkgtO1jif+ARYlYoAiibreBB?=
- =?us-ascii?Q?Z93skL7qEEGYyywjK2DLbDq61YeaSpRuRLBrMv9LaGSBDP0+ULs2bAobsyn9?=
- =?us-ascii?Q?ORZkMBtPEfDq8psJZGiALYoIsUaSykWpugzYWjHdUPbNx0RgNtsVoour8eX1?=
- =?us-ascii?Q?GGHovSR1ePrzHH85z+1CW0C51XZm+eZxxI6WrSv6PiqvZBcRilXxJxOjRhME?=
- =?us-ascii?Q?ZZ7kAJ6/urfZR1B34ktlImyblDuwoTRel3R/Mhb0UpJ17EBQnlTF+bmBMSVS?=
- =?us-ascii?Q?+6aIDhAKIVe+q1XyGvKaTdptTvJxyHQfInA1Oqig4EdjBbFnpetYOzLY8TdE?=
- =?us-ascii?Q?IuN7t5+RYDFwsbel2keesBrqCAE6riKWcCKs2WtFcl9S6enVxDYYuUmSu0Nq?=
- =?us-ascii?Q?lxSMSvblPtPoszTDv/S7wlBKJbfhd4IZ3Hk2DjYHjuc2f7SMtz8aO/HCCUV1?=
- =?us-ascii?Q?doAkc+3e2BV8hsZrCMKnMNf+xUzUlQznttk+H8JX16ZpFW3jiCUwdNQQjdXe?=
- =?us-ascii?Q?0CRssxAhiq+3M9nb/y4kmK86muKZzRwvchlA9ClnEXPzwH0L4fNIWoskxcp0?=
- =?us-ascii?Q?6A/Z3A5+fBT6YzinTugXfw2L7VEI18FG3bO1bXGFOKaqS+APBj4jqjj7M9Zk?=
- =?us-ascii?Q?Z2pzoJqsbSmk65FHcHpY4DtWslXqSVNVpseDwh/kDyiesskEGySwoXQeeOEE?=
- =?us-ascii?Q?ww0WWFpTpZpTh7TjmogAMeuZZf9tfMXuwJaUFA2q7IcdER5XV5jdIWGEtPLc?=
- =?us-ascii?Q?m5orhFwgCuhjqtgHtJeRxFC46POyWE6vqkkX//tpR8oktK4PEGsumAZL4u/v?=
- =?us-ascii?Q?jLAntgqURWOUvh8SSHZhlW882YijnqsAN7bLBU3xlicD0Uqm+YvhpHwNO2lv?=
- =?us-ascii?Q?lHfr5SHM5ha7fHCqjWg+L3amvr6IK4Zk0VWwDSux07BFZY2T8bQhoSiOcGXJ?=
- =?us-ascii?Q?i2G3Rxk73fOxvZ6rvhk/xilBNDW+SxGhEOfWw/4i?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 78c6f771-c9f0-4248-6aca-08ddae9def6c
-X-MS-Exchange-CrossTenant-AuthSource: DS7PR12MB9473.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 18 Jun 2025 19:25:50.9114
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: y6bpy9/7npy1Dr3r1dvNeDHkkNH9AY6n5WdOuJjROVlp/QFzqL6XsL9f6RXmE+0o
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB7723
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <1741778252.1310636.1750265814430.JavaMail.zimbra@raptorengineeringinc.com>
 
-On 18 Jun 2025, at 15:18, Matthew Wilcox wrote:
+[+cc Lukas, pciehp expert]
 
-> On Wed, Jun 18, 2025 at 03:10:10PM -0400, Zi Yan wrote:
->> On 18 Jun 2025, at 13:39, David Hildenbrand wrote:
->>> +	/*
->>> +	 * TODO: these pages will not be folios in the future. All
->>> +	 * folio dependencies will have to be removed.
->>> +	 */
->>> +	struct folio *folio = page_folio(page);
->>> +
->>> +	VM_WARN_ON_ONCE_PAGE(!PageIsolated(page), page);
->>> +	folio_lock(folio);
->>> +	/* If the page was released by it's owner, there is nothing to do. */
->>> +	if (PageMovable(page))
->>> +		page_movable_ops(page)->putback_page(page);
->>> +	ClearPageIsolated(page);
->>> +	folio_unlock(folio);
->>> +	folio_put(folio);
->>
->> Why not use page version of lock, unlock, and put? Especially you are
->> thinking about not using folio for these pages. Just a question,
->> I am OK with current patch.
->
-> That would reintroduce unnecessary calls to compound_head().
+On Wed, Jun 18, 2025 at 11:56:54AM -0500, Timothy Pearson wrote:
+>  presence detection
 
-Got it. But here page is not folio, so it cannot be a compound page.
-Then, we will need page versions without compound_head() for
-non compound pages. Could that happen in the future when only folio
-can be compound and page is only order-0?
+(subject/commit wrapping seems to be on all of these patches)
 
-Best Regards,
-Yan, Zi
+> The Microsemi Switchtec PM8533 PFX 48xG3 [11f8:8533] PCIe switch system
+> was observed to incorrectly assert the Presence Detect Set bit in its
+> capabilities when tested on a Raptor Computing Systems Blackbird system,
+> resulting in the hot insert path never attempting a rescan of the bus
+> and any downstream devices not being re-detected.
+
+Seems like this switch supports standard PCIe hotplug?  Quite a bit of
+this driver looks similar to things in pciehp.  Is there some reason
+we can't use pciehp directly?  Maybe pciehp could work if there were
+hooks for the PPC-specific bits?
+
+> Work around this by additionally checking whether the PCIe data link is
+> active or not when performing presence detection on downstream switches'
+> ports, similar to the pciehp_hpc.c driver.
+> 
+> Signed-off-by: Shawn Anastasio <sanastasio@raptorengineering.com>
+> Signed-off-by: Timothy Pearson <tpearson@raptorengineering.com>
+> ---
+>  drivers/pci/hotplug/pnv_php.c | 27 +++++++++++++++++++++++++++
+>  1 file changed, 27 insertions(+)
+> 
+> diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
+> index aec0a6d594ac..bac8af3df41a 100644
+> --- a/drivers/pci/hotplug/pnv_php.c
+> +++ b/drivers/pci/hotplug/pnv_php.c
+> @@ -391,6 +391,20 @@ static int pnv_php_get_power_state(struct hotplug_slot *slot, u8 *state)
+>  	return 0;
+>  }
+>  
+> +static int pcie_check_link_active(struct pci_dev *pdev)
+> +{
+> +	u16 lnk_status;
+> +	int ret;
+> +
+> +	ret = pcie_capability_read_word(pdev, PCI_EXP_LNKSTA, &lnk_status);
+> +	if (ret == PCIBIOS_DEVICE_NOT_FOUND || PCI_POSSIBLE_ERROR(lnk_status))
+> +		return -ENODEV;
+> +
+> +	ret = !!(lnk_status & PCI_EXP_LNKSTA_DLLLA);
+> +
+> +	return ret;
+> +}
+> +
+>  static int pnv_php_get_adapter_state(struct hotplug_slot *slot, u8 *state)
+>  {
+>  	struct pnv_php_slot *php_slot = to_pnv_php_slot(slot);
+> @@ -403,6 +417,19 @@ static int pnv_php_get_adapter_state(struct hotplug_slot *slot, u8 *state)
+>  	 */
+>  	ret = pnv_pci_get_presence_state(php_slot->id, &presence);
+>  	if (ret >= 0) {
+> +		if (pci_pcie_type(php_slot->pdev) == PCI_EXP_TYPE_DOWNSTREAM &&
+> +			presence == OPAL_PCI_SLOT_EMPTY) {
+> +			/*
+> +			 * Similar to pciehp_hpc, check whether the Link Active
+> +			 * bit is set to account for broken downstream bridges
+> +			 * that don't properly assert Presence Detect State, as
+> +			 * was observed on the Microsemi Switchtec PM8533 PFX
+> +			 * [11f8:8533].
+> +			 */
+> +			if (pcie_check_link_active(php_slot->pdev) > 0)
+> +				presence = OPAL_PCI_SLOT_PRESENT;
+> +		}
+> +
+>  		*state = presence;
+>  		ret = 0;
+>  	} else {
+> -- 
+> 2.39.5
 
