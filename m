@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-9566-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9567-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49947C7115D
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jun 2025 19:22:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 985A5C7115D
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jun 2025 19:23:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bNVqD5qbNz2xpl;
-	Fri, 20 Jun 2025 05:22:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750360936;
-	cv=none; b=h0tD3KxGbd4k4SP913xcx1DeYidi/R5EuZxNaPO4H0kPlGAsV9eXVJfdJX7usjC3wCwmSSVUkBRHrW3xlLtxpJhE9CEJGqOlpgcPTZLGqTsKrZkOYWjAPdOzf6GuIWfQA+8FHqkIpLjmNkADG761Vid19X72sBGBIvmW8yCarIN2w6Y6PNHDeIpaZq/QfjLWDuoresffTfpZCwcrLDKxKR+7jxRPysLtcCXO9H8UySnCkhpsWjU0voT2pNMKlASrDN3OQnzMe2rrRE1ltxdDkHG6xNcdLdln7i8c1/+ea6dodLtTlG+S0cKN1/dRlPb/1t6GRFyCUHZoKAEzg032vA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bNVqF31RHz30WX;
+	Fri, 20 Jun 2025 05:22:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750360937;
+	cv=none; b=juCaDS13PFTo/0hHvogfBYUE9WIV9gi1cnNhz0u30tAkfxR2ZzuxuJ/u3XHGhI+YGUnzX+VSPihK07XSExW0TSwo9Vs0TU80mLDjqDhXzBZWnxzlbB6WpL1Hv6BhSWIzMSJUghcm0oheWC0ODaJdudKZELo8h6lItz6sihszSiloQfMdefciyPxg9MAANPZrmiVwsUKlUO5S7Pd/Heum0nPJCkLJxWWyligtjmxb333gbCTkRjHGMO06z85NqDpN7itQeF5JXRWDdFg2/B3Hh1G5BsEtHDE0XnIXdPO8BlPTTKuFm74ReeoouLrbA2wF3Hvlm0gSc8aTporCT4U8Rg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750360936; c=relaxed/relaxed;
-	bh=GE6c8SsVR9o6JIeea2ZNE7VA2Y/siWmf6XF6rZyT88M=;
+	t=1750360937; c=relaxed/relaxed;
+	bh=j1ggrj46R1vxqWLF9UFw2Xf1fL13Iu04Y8vyXTgiDj8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=TlXtvsVAzsOOvpKRUNDdBV9ZJ+QIyWq7JmgPXfyN/WuZoa3/WdB89tbe2TUEuGppNGy4R1QgzUugAavnsR5XX5PSvIzjh27rVPgA5n7u/wHqnzJJib0A5lv3HiUeLjp6hwhurN8oT0VqfQ835uEOYF75a6ykDy9HGmq0LtOzanBO84p7LCXeegQ8T4PlRIksgUS3n4Tfi48G5WxbCxYJ1oEesmqypwbqQnVHPoZnHLXEFdQb/KkucMRTlK59XMFVa9TqRnl6gMS1b8Bv3oIfH7Otc8nRu9Wq58EicQ9R/FdKIr4JsuR+NjogompPO3MmeQbTniDfrGn6WAIoz64VWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ckfubopa; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=k/9iWiz7xJ5/OPR7JlGsoWh1egOzvsUwIJqWj3uONSm18EgzSFspU06E+mp0sBbP74A6jQyDxD/iurw6NTn+GiJEXrfUUWS6Cd0zFey3qbgKQWrMsuX88VyrQJU9StgEEhYJPkWOb9cVRBtc5m/22e7ORraX9tdhmZRKlNv88EqBfoJGAU58yN21t/XlrgndYhyFa3U1m9+WN2uG0ypHq4sSI8n3Ayd6Dyc1VQX1KjZc0Ii6lxpyGYWHSag3tO55oWBQwqoJVYwJ6WCQyaaP91H8RAU/4rwmdYHizJ9USJXN9fMNK3QNhmAP+pW3Ow1GBux3zEfq9L1Bf7bwwhwD/w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gsWHI6uC; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ckfubopa;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gsWHI6uC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bNVq80vw0z2xRs
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2025 05:22:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bNVq91qkyz309v
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2025 05:22:13 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 73C88A54752;
-	Thu, 19 Jun 2025 19:22:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E70CEC4CEEA;
-	Thu, 19 Jun 2025 19:22:08 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 876305C66CD;
+	Thu, 19 Jun 2025 19:19:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6A7F8C4CEEA;
+	Thu, 19 Jun 2025 19:22:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750360929;
-	bh=3DyeUW/WI822CziP8LflvlPGRnidGfXtAs+o4+U8YL0=;
+	s=k20201202; t=1750360930;
+	bh=TvyRRr0Q9p57RHCbNRzLmr80cK6DSzs3Te1JHJiic8A=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=CkfubopaY6VurlxxTDeKt8EuEdcI0jI8Ltmpks0RGHy/xxpDowfcQFmgSd56Dojjl
-	 8GXxHra63v7nHHvUxy5f9ZrcMNoQzOhVQW42dqFNm775PqtCJx02qBK6gIVVFTNygI
-	 l9uYbgRMBSgv0j9EzGm/JjC2KNcgiaQEngRGSKXkudVKWSI8Mi3c94FQ2hmZZgK5Vw
-	 3rKGG8cLGgKOzR4GHC/Q1KDQ56GrawR15ExRtAkzK7JlISUNzUrdgWpXQ1sFulToOQ
-	 faEt5eEfuWqmFWmpwIynw0lVykla8gG7dwdRNImsH3tEbqP474rmedKVJoMjBMNlhK
-	 muEWsRTZZp9yA==
+	b=gsWHI6uCzGtgTFS0+9VVGWSKxIlVRoAXr7ncQjaX5JwXgHpNeTiXfuOdhYkgBgHlJ
+	 YQL+IwHGvkSc1iwP/qogzJwScgBGmtDDqgVmXHbv1uR/qUAz+wTmjf+9RfsQ9xDMXt
+	 cx09P6ml5LT5uoXwPMu9X1MNzCP//2MHKBcUUMASgM0/fV4ggydLqclno7rm2SDVnv
+	 ONIUBY64Njs+//9An/TZjwOxs648bB/vuUO+DLFNNZV/7HJSplry+6xHCOjC37RY1I
+	 BLeB2leI6kKtRZ0xNTVxiSLCJo6HP4VbBMk/fOsC2kXM/UVnKAzfqEAO22jUF5/WYU
+	 gM0TVdi6sVQnQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -56,9 +56,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-s390@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org
-Subject: [PATCH v2 6/9] lib/crypto: s390: move arch/s390/lib/crypto/ into lib/crypto/
-Date: Thu, 19 Jun 2025 12:19:05 -0700
-Message-ID: <20250619191908.134235-7-ebiggers@kernel.org>
+Subject: [PATCH v2 9/9] MAINTAINERS: drop arch/*/lib/crypto/ pattern
+Date: Thu, 19 Jun 2025 12:19:08 -0700
+Message-ID: <20250619191908.134235-10-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.0
 In-Reply-To: <20250619191908.134235-1-ebiggers@kernel.org>
 References: <20250619191908.134235-1-ebiggers@kernel.org>
@@ -79,109 +79,30 @@ Content-Transfer-Encoding: 8bit
 
 From: Eric Biggers <ebiggers@google.com>
 
-Move the contents of arch/s390/lib/crypto/ into lib/crypto/s390/.
-
-The new code organization makes a lot more sense for how this code
-actually works and is developed.  In particular, it makes it possible to
-build each algorithm as a single module, with better inlining and dead
-code elimination.  For a more detailed explanation, see the patchset
-which did this for the CRC library code:
-https://lore.kernel.org/r/20250607200454.73587-1-ebiggers@kernel.org/.
-Also see the patchset which did this for SHA-512:
-https://lore.kernel.org/linux-crypto/20250616014019.415791-1-ebiggers@kernel.org/
-
-This is just a preparatory commit, which does the move to get the files
-into their new location but keeps them building the same way as before.
-Later commits will make the actual improvements to the way the
-arch-optimized code is integrated for each algorithm.
+Since all files arch/*/lib/crypto/* have been moved into lib/crypto/,
+remove the arch/*/lib/crypto/ file pattern from MAINTAINERS.
 
 Signed-off-by: Eric Biggers <ebiggers@google.com>
 ---
- arch/s390/lib/Makefile                                  | 1 -
- lib/crypto/Kconfig                                      | 2 +-
- lib/crypto/Makefile                                     | 1 +
- {arch/s390/lib/crypto => lib/crypto/s390}/Kconfig       | 0
- {arch/s390/lib/crypto => lib/crypto/s390}/Makefile      | 0
- {arch/s390/lib/crypto => lib/crypto/s390}/chacha-glue.c | 0
- {arch/s390/lib/crypto => lib/crypto/s390}/chacha-s390.S | 0
- {arch/s390/lib/crypto => lib/crypto/s390}/chacha-s390.h | 0
- {arch/s390/lib/crypto => lib/crypto/s390}/sha256.c      | 0
- 9 files changed, 2 insertions(+), 2 deletions(-)
- rename {arch/s390/lib/crypto => lib/crypto/s390}/Kconfig (100%)
- rename {arch/s390/lib/crypto => lib/crypto/s390}/Makefile (100%)
- rename {arch/s390/lib/crypto => lib/crypto/s390}/chacha-glue.c (100%)
- rename {arch/s390/lib/crypto => lib/crypto/s390}/chacha-s390.S (100%)
- rename {arch/s390/lib/crypto => lib/crypto/s390}/chacha-s390.h (100%)
- rename {arch/s390/lib/crypto => lib/crypto/s390}/sha256.c (100%)
+ MAINTAINERS | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/s390/lib/Makefile b/arch/s390/lib/Makefile
-index cd35cdbfa8713..271a1c407121c 100644
---- a/arch/s390/lib/Makefile
-+++ b/arch/s390/lib/Makefile
-@@ -1,11 +1,10 @@
- # SPDX-License-Identifier: GPL-2.0
- #
- # Makefile for s390-specific library files..
- #
+diff --git a/MAINTAINERS b/MAINTAINERS
+index a92290fffa163..8ca374b24a806 100644
+--- a/MAINTAINERS
++++ b/MAINTAINERS
+@@ -6408,11 +6408,10 @@ M:	Jason A. Donenfeld <Jason@zx2c4.com>
+ M:	Ard Biesheuvel <ardb@kernel.org>
+ L:	linux-crypto@vger.kernel.org
+ S:	Maintained
+ T:	git https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git libcrypto-next
+ T:	git https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git libcrypto-fixes
+-F:	arch/*/lib/crypto/
+ F:	lib/crypto/
  
--obj-y += crypto/
- lib-y += delay.o string.o uaccess.o find.o spinlock.o tishift.o
- lib-y += csum-partial.o
- obj-y += mem.o xor.o
- lib-$(CONFIG_KPROBES) += probes.o
- lib-$(CONFIG_UPROBES) += probes.o
-diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
-index a2b58ca2df0cc..278b7ef5ec4f9 100644
---- a/lib/crypto/Kconfig
-+++ b/lib/crypto/Kconfig
-@@ -203,11 +203,11 @@ source "lib/crypto/powerpc/Kconfig"
- endif
- if RISCV
- source "lib/crypto/riscv/Kconfig"
- endif
- if S390
--source "arch/s390/lib/crypto/Kconfig"
-+source "lib/crypto/s390/Kconfig"
- endif
- if SPARC
- source "arch/sparc/lib/crypto/Kconfig"
- endif
- if X86
-diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
-index 0fe9200a031d6..4cda1f5cd21d4 100644
---- a/lib/crypto/Makefile
-+++ b/lib/crypto/Makefile
-@@ -106,5 +106,6 @@ libsm3-y					:= sm3.o
- obj-$(CONFIG_ARM) += arm/
- obj-$(CONFIG_ARM64) += arm64/
- obj-$(CONFIG_MIPS) += mips/
- obj-$(CONFIG_PPC) += powerpc/
- obj-$(CONFIG_RISCV) += riscv/
-+obj-$(CONFIG_S390) += s390/
-diff --git a/arch/s390/lib/crypto/Kconfig b/lib/crypto/s390/Kconfig
-similarity index 100%
-rename from arch/s390/lib/crypto/Kconfig
-rename to lib/crypto/s390/Kconfig
-diff --git a/arch/s390/lib/crypto/Makefile b/lib/crypto/s390/Makefile
-similarity index 100%
-rename from arch/s390/lib/crypto/Makefile
-rename to lib/crypto/s390/Makefile
-diff --git a/arch/s390/lib/crypto/chacha-glue.c b/lib/crypto/s390/chacha-glue.c
-similarity index 100%
-rename from arch/s390/lib/crypto/chacha-glue.c
-rename to lib/crypto/s390/chacha-glue.c
-diff --git a/arch/s390/lib/crypto/chacha-s390.S b/lib/crypto/s390/chacha-s390.S
-similarity index 100%
-rename from arch/s390/lib/crypto/chacha-s390.S
-rename to lib/crypto/s390/chacha-s390.S
-diff --git a/arch/s390/lib/crypto/chacha-s390.h b/lib/crypto/s390/chacha-s390.h
-similarity index 100%
-rename from arch/s390/lib/crypto/chacha-s390.h
-rename to lib/crypto/s390/chacha-s390.h
-diff --git a/arch/s390/lib/crypto/sha256.c b/lib/crypto/s390/sha256.c
-similarity index 100%
-rename from arch/s390/lib/crypto/sha256.c
-rename to lib/crypto/s390/sha256.c
+ CRYPTO SPEED TEST COMPARE
+ M:	Wang Jinchao <wangjinchao@xfusion.com>
+ L:	linux-crypto@vger.kernel.org
 -- 
 2.50.0
 
