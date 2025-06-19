@@ -1,86 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-9526-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9527-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6634C7115E
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jun 2025 08:43:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B7937C7115E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 19 Jun 2025 08:50:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bNDf23bqSz3064;
-	Thu, 19 Jun 2025 18:43:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750322602;
-	cv=none; b=E3wQebX4zsbOoewJBjoyEItADNx7BBK7WHS944HDY+HXCMYtM3AYdu17PHiBZm+tuylI2Ank47OGhwo9MITks4RnNo4x/3hPZQOwRBiYPilYKwcvWR5PpeJUcE2fudrzXXdjcuyxYZ6/R7wTlSe0k/DB7Duny12mSmG/PbrKgXIqF6Y8/HtQ1jfyIHN9TmkiZLVC8Ra12SH/zBW0JYI8/llLPde+KiYVNaeL6m/KbvAEAI7YlbzCwobsnSFZD/EACFsqr3praKk3X3N7UOZM9PAKY02L5f2Rh93kv2efOg+DciJflSYEwozDX2iXs11JSUV6uht2QqqW/L48+iCGXw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bNDpQ15pSz30MY;
+	Thu, 19 Jun 2025 18:50:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750323038;
+	cv=none; b=k+DhFHk1ilRCjma3ZFX1L2KcOfAVj6JMLq2A4yu8Mxm0ftTj6fEDhlURqgkiCUvRvOz0AJyE+WGg/PYVQSPhlxVvoj7MjxUqd7h8eybYlINsc8uQGIxAWhk6BEJsNv33GlmHIA069pcUg/IzIB98VILyUGIvYyawaxChObQ5PRY9/H5MvV4dhAywZG9MHdQToLHf4ufKGhHy/6rv6Fm9AuXZwI3cOR7ijvj4fGdAmYKZ6b2ZQ5gWk1qI60v7U46pCHdju4gtAJTGg5foynwYyLIjxzMFMXwjiXzqFb8sName+7oBZepzeCSQ87TQ4H/UqTBM1CqaAIXW+HriQF+uVQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750322602; c=relaxed/relaxed;
-	bh=oa6kLDqCMn5IMlpVn6h8w0xVnCi98HTQISRzFIzIJBY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XNuo2SHMmj8TO2NFhL8F8eLDvEZ1Or6a3lijE4+tvCc7ExYR8GB9YmMy7rPdubk8BBXEGR4Q4APt2X1IAd1InR50p6lou4SzUZ6dl1LaVKxMN7LgCLmu0ker23jzp2UkWZnpFm7u6OOXo8FbAEOaSk1zW6O+vUL9w5QvHaA0RsiB6yxRuKOUcq8aoVx/tuFbn0C9sQ8//XXXE5AsU+/hOh1K+7TmbWBc3vCEInSkgKj7Zw5x2wyNVV6EiP+JvJxGCqmM8XZE5iRo1CEMsYS4dqJ7eLfLaBLkvyLeXwMv1vnR2iPcELTAYqLADkNg5vbGaz7KHcSnaWfIlrDT/pcu9A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lx+8Aom2; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lx+8Aom2;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bNDf15N6qz2yPS
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2025 18:43:21 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 41D88482A6;
-	Thu, 19 Jun 2025 08:43:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EDD26C4CEEA;
-	Thu, 19 Jun 2025 08:43:05 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750322599;
-	bh=knSaj9r63rqDmOZgZSzkHTRxv5ZxHAefKUEdl1kqPyc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=lx+8Aom2bWS0DwPE+fknSJmcgxiXj4hPNONs+bcBbG58HQmCKDnsstqHRT2i4Hp4L
-	 lp843vxSaoxc8h3gYUCcDj+Zh+yu8b6r+FvFhQ+Td5+++3gospBlNMUfmA3LVEZJSs
-	 H+3oavWrqrzTM/UA84yRmDqA4Ro9qEkEHcHT8xo64Y1izR3xbdYiXq7dj+TE9sqN4H
-	 jYQ+iAYmPQDM0wCups/Pmv+aKF39FYWoq8+FV7GmhH7giEKd9OWDqpxWcftV4jBCb/
-	 yrICzC+bzGrGPE5UA8GGBcr2iR43NMlMzxzSVX3l3nvy5v0p3eeBv8UbOPGjopnWuS
-	 eHXkzS7mWz7XQ==
-Date: Thu, 19 Jun 2025 10:43:03 +0200
-From: Christian Brauner <brauner@kernel.org>
-To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-Cc: Andrew Morton <akpm@linux-foundation.org>, 
-	Russell King <linux@armlinux.org.uk>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Will Deacon <will@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, "David S . Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Jarkko Sakkinen <jarkko@kernel.org>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, Thomas Gleixner <tglx@linutronix.de>, 
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
-	"H . Peter Anvin" <hpa@zytor.com>, Andy Lutomirski <luto@kernel.org>, 
-	Peter Zijlstra <peterz@infradead.org>, Alexander Viro <viro@zeniv.linux.org.uk>, 
-	Jan Kara <jack@suse.cz>, Kees Cook <kees@kernel.org>, Peter Xu <peterx@redhat.com>, 
-	David Hildenbrand <david@redhat.com>, Zi Yan <ziy@nvidia.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, "Liam R . Howlett" <Liam.Howlett@oracle.com>, 
-	Nico Pache <npache@redhat.com>, Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, 
-	Barry Song <baohua@kernel.org>, Xu Xin <xu.xin16@zte.com.cn>, 
-	Chengming Zhou <chengming.zhou@linux.dev>, Hugh Dickins <hughd@google.com>, 
-	Vlastimil Babka <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>, 
-	Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Rik van Riel <riel@surriel.com>, 
-	Harry Yoo <harry.yoo@oracle.com>, Dan Williams <dan.j.williams@intel.com>, 
-	Matthew Wilcox <willy@infradead.org>, Steven Rostedt <rostedt@goodmis.org>, 
-	Masami Hiramatsu <mhiramat@kernel.org>, Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
-	Jason Gunthorpe <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>, 
-	Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, Jann Horn <jannh@google.com>, 
-	Pedro Falcato <pfalcato@suse.de>, Johannes Weiner <hannes@cmpxchg.org>, 
-	Qi Zheng <zhengqi.arch@bytedance.com>, Shakeel Butt <shakeel.butt@linux.dev>, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	kvm@vger.kernel.org, sparclinux@vger.kernel.org, linux-sgx@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, linux-mm@kvack.org, nvdimm@lists.linux.dev, 
-	linux-trace-kernel@vger.kernel.org
-Subject: Re: [PATCH 3/3] mm: update architecture and driver code to use
- vm_flags_t
-Message-ID: <20250619-eiskunstlauf-entkleidet-a9e1c0463f24@brauner>
-References: <cover.1750274467.git.lorenzo.stoakes@oracle.com>
- <b6eb1894abc5555ece80bb08af5c022ef780c8bc.1750274467.git.lorenzo.stoakes@oracle.com>
+	t=1750323038; c=relaxed/relaxed;
+	bh=LTj8xM2TR/lqvoVvPHJizZTsyvGRlEncFQI6noYeYPg=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=oRAXF0UcNNEBVyJ4x4+Gvh6jYKwhON0ldJkwQsLyAzngH+KesdyJ2Wl8J0IOVXLhk/D2DZRnkuZnxBDVrnho7d1KKv8fsWsRM9J3hU0rpCCBFcoo2MZnwxwMnDzVbi3zF6uf2hKRXxtU76cTObOowZ6CnBeSAnzvtiE/EaGvtHC9l0G6ZDteo/2NjAq7E3SnztF8b6yi6vLImTr2ZMXxGbB3F6QQtiIi89hjpQdYmlxTAP3IbqzoZtSjmMrL+9lODxFD8XqAacbG+sfo970Rf/PvnRq6jsEqWOcpDLUF2kvZ2BNIZJCnUKXgQIzG+TrCsdSLgrq9aVUfnHzSNHouJA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bNDpN70nzz2xjN
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2025 18:50:36 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4bNDck1kVXz9tSq;
+	Thu, 19 Jun 2025 10:42:14 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 8n3SkZ0cbxug; Thu, 19 Jun 2025 10:42:14 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4bNDck0sP1z9tHZ;
+	Thu, 19 Jun 2025 10:42:14 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 183538B790;
+	Thu, 19 Jun 2025 10:42:14 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id Y0gL91Rd_iyf; Thu, 19 Jun 2025 10:42:14 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id CDFC18B78C;
+	Thu, 19 Jun 2025 10:42:13 +0200 (CEST)
+Message-ID: <6f58923f-5ee2-41c6-bb73-8e0fb9ad9a96@csgroup.eu>
+Date: Thu, 19 Jun 2025 10:42:13 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,19 +57,34 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <b6eb1894abc5555ece80bb08af5c022ef780c8bc.1750274467.git.lorenzo.stoakes@oracle.com>
+User-Agent: Mozilla Thunderbird
+Content-Language: fr-FR
+To: Dave Hansen <dave.hansen@linux.intel.com>
+Cc: Linus Torvalds <torvalds@linuxfoundation.org>,
+ Thomas Gleixner <tglx@linutronix.de>, Daniel Borkmann
+ <daniel@iogearbox.net>, "linux-mm@kvack.org" <linux-mm@kvack.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Redundant barrier_nospec() added by commit 74e19ef0ff80 ("uaccess:
+ Add speculation barrier to copy_from_user()")
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-On Wed, Jun 18, 2025 at 08:42:54PM +0100, Lorenzo Stoakes wrote:
-> In future we intend to change the vm_flags_t type, so it isn't correct for
-> architecture and driver code to assume it is unsigned long. Correct this
-> assumption across the board.
-> 
-> Overall, this patch does not introduce any functional change.
-> 
-> Signed-off-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-> ---
+Hello Dave,
 
-Acked-by: Christian Brauner <brauner@kernel.org>
+In commit 74e19ef0ff80 ("uaccess: Add speculation barrier to 
+copy_from_user()") you add barrier_nospec() to copy_from_user().
+
+There is already a barrier_nospec() in allow_read_from_user() which is 
+called by raw_copy_from_user(), see commit 8524e2e76441 
+("powerpc/uaccess: Perform barrier_nospec() in KUAP allowance helpers"). 
+Why do you need an additional one ?
+
+And why only copy_from_user() and not also other places like 
+copy_from_user_iter() for instance ?
+
+Thanks
+Christophe
+
 
