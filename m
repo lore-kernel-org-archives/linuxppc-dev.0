@@ -1,85 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-9577-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9578-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BC61EC71155
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jun 2025 07:55:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D0C8C71155
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 20 Jun 2025 07:56:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bNqXD2nR3z30MY;
-	Fri, 20 Jun 2025 17:55:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::435"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750387669;
-	cv=none; b=TcNwbYOP5Ooh14ARO4bfaNYFCrzdYnsKATog5Gc3THSApjW3FdizAnbFWQNUrrUbzaOeyywtBtQ0JcIGNQmc2zBAiY+WMOzCqXAzZwXBX7NxOtYY/pt8In4jBgQQyazQ40KC102a8bWzp1/d65qgiOtRcuL0YmdATFEQgwpXSP4Tatp/dK8Jca+6IPv8QysjdwmjIvFNxU4TGyd2ZfVz6Q8rdIuwa6sg/1tSNEQYbdKjyPRo1/uJmFLSuuyuzyXBF7XZjUcEYZHPBUfOHDQuV6WdMd4ctJsDb+M17YYakkCKeFa17EpezgSZrQLRneRIMezJYzXIoxicj3eCSxFc2A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bNqYB6LFfz30RJ;
+	Fri, 20 Jun 2025 17:56:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::336"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750406174;
+	cv=none; b=lM54XcT7hcSBV5+/iMMs2S1UU67WSl7xvhIbzIzxUkAYxOdY3Z0KUSPvX0qOuLGUKNp2wRZ2bVyatigKVUsq63LgKaULN2SJqjVgU7gNMy3PGQWboolCV2OjDtuR5O2IfYgaO6aiPbFejiDWCQDgdDVKHgJbyM2fbVb9FiLBIrtJYLtxUdtUNzfgp8DeaIWeL/e9V04woxLY+hLACGiL3PPdOcugN6nT53T6XKxLp6QduJo5IuVjlg9VBAsnwT6CBwqXMgZ93yWelLsweDivWZKn9OCHfBNqhgCUpj4D3nUnG6kiiJjy/VsN+Qh/ti1OuhFE+sPKG7whWpRbqYBDxw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750387669; c=relaxed/relaxed;
-	bh=4mJJTvXvtWN+ybMkRH/wKJbjOL7koZZuVsnuFialitc=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=INY/XsvT82zHrklCY55uM59uTXtr+zMdhNJiUVY3OmRII5krmO2KVhssriIeoZvIlJIluFhgu9LNw3KxkTShhR0nqaeoOb2Ge0hPFpxs5CzvED6qJDLZJEsp4yvfxqQO8O1IZeks+Sfcr65NC7l9TW0FAo2ea6mj8jsU/Fu0JKkhYaqftWredubp+JIeWB4ZmKle7WhnOY7XNU8c9FsZ75TV3rxP9RgPvmps0/idTko12zTLNQxhA/5qXx1ERJb1j7qlbISnRfD7/ElE+yO8t6SQ+J+XKZxxKhmZo7GXjbf/QejFqhvTDqzLHLQPEKw1qGW3zXROFSpvMYu7PMfgng==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=PvNdZTFa; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::435; helo=mail-pf1-x435.google.com; envelope-from=ankitchauhan2065@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1750406174; c=relaxed/relaxed;
+	bh=TvY87dOFEDSl5uZTK8KSbQcIdJ58gT9kw8uM9F5GHbk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=CrPz8mGHhw9SuQ3gnVp9yfPG4edvh8kL+gl3WC4dicAe1+K8LV8ENqcv+3kW8eIHfFN7F1eK8/a6+yl4lhksAqZIsHnchK0HrBFbmn3d5u2ytHr3SvYgt4HfhwgpYwp6xoO0NAp0bNldWpBSdy6anAWDzmZP6KfquvyQ3P5jb+qX6jye5ckA+WmNUpe5dtS47Hu8lTu739P6DkvzxT3bkFcASeZdoxBZ6PuUWFQJ2KwIfMdyC0BExSsW2TJtznsNQ1OsoOCZzzZDurRj1n+BQMJSlvjwyF4QaZ8WlXqMDTjGE0j4uHjmyAXdZ7DhO+sauu+Fe8PirAiVZg/1A8pc4Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=k6UurrR3; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=fourier.thomas@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=PvNdZTFa;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=k6UurrR3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::435; helo=mail-pf1-x435.google.com; envelope-from=ankitchauhan2065@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x435.google.com (mail-pf1-x435.google.com [IPv6:2607:f8b0:4864:20::435])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::336; helo=mail-wm1-x336.google.com; envelope-from=fourier.thomas@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x336.google.com (mail-wm1-x336.google.com [IPv6:2a00:1450:4864:20::336])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bNhjJ0S3bz2yF1
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2025 12:47:47 +1000 (AEST)
-Received: by mail-pf1-x435.google.com with SMTP id d2e1a72fcca58-748e378ba4fso1718033b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 19 Jun 2025 19:47:46 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bNqY91xP7z30Qk
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2025 17:56:12 +1000 (AEST)
+Received: by mail-wm1-x336.google.com with SMTP id 5b1f17b1804b1-450ddb35583so2281805e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 20 Jun 2025 00:56:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1750387664; x=1750992464; darn=lists.ozlabs.org;
+        d=gmail.com; s=20230601; t=1750406169; x=1751010969; darn=lists.ozlabs.org;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=4mJJTvXvtWN+ybMkRH/wKJbjOL7koZZuVsnuFialitc=;
-        b=PvNdZTFaLUvfqaJnw+10RovyvEm7jTVbW6ytoBZJEIasGCyhxh94He2o7XeiV5/Oqq
-         7c5JMmX+hETb706X6YQYUOeGFZKXi53QDuB5POB6rBZjYbnT8Yg3zcjkGlErJ+A0bbbS
-         jLK9mCHzsZVhgSgJt+kZsRxReOjC5pIY8i2U2aAILkMcYr0lpnlSoSQCK81bicMTJ8Oo
-         syF/GYeqUYuL14DGnQX0oQv4WQtdJLOLyXqqWZUXgeiE6B0H/bRjLPRGUaR/fd1M8vez
-         Xl847r0jDVGFK8n6GFx89CLSxV7J5wK2ZIvknU8OE/I18FY7JOFwNHkdfFBIQsKw1Hub
-         JPFw==
+        bh=TvY87dOFEDSl5uZTK8KSbQcIdJ58gT9kw8uM9F5GHbk=;
+        b=k6UurrR3G0ejDq68E72YiL1kRZ2RuqpT7jroBwGylR2K++fXrFENWZ8JN0EXcq6G7G
+         UxSm9Snw0jONBKwu/oNo+kFR9tuZ6o8srhKgpHHblVIwgmN0jAxLqLQseN/hb7anil9P
+         BwpLl4ajLuwAbwU+d1fN7H5WKZXXU39k/pXno4ZMEZSqJwCUPZxqE2UOnXWmIUToMGTE
+         xvmzshrPaN8vCMZoZr/w/KH841bpahlXccg8UmWflSoVrjaGvVdndFcpOq+lmMQANbAf
+         qf04sBdbGJ2dcSWjkWB6xHFWJk6l2Rlf1cMDi5Er/sRH0aGsBlqNR0FKVuuWDRugS+Q6
+         3tOA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750387664; x=1750992464;
+        d=1e100.net; s=20230601; t=1750406169; x=1751010969;
         h=content-transfer-encoding:mime-version:message-id:date:subject:cc
          :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=4mJJTvXvtWN+ybMkRH/wKJbjOL7koZZuVsnuFialitc=;
-        b=WuTxkH3GpFmsVzm1dI6C+Ey5b+3Utl/sI1e28gRSPRu3MPfq/Qs3MlBte3TEp+d1RW
-         QTTpkLRx4F4uqzNnBRhtuvVOOwlnrLSMC+RwiEyP/Stm45NaIESIHYESp2WesI7liFAR
-         VfnddlBy+nyXp3batk7M/e2odyeORefs/pSbuES8sxkC85+iViBVixfhK2Y8qKlNrnlq
-         LV507rZjdyViYF/c2++xi/UJFFGLAqESjGONIfZC1yBEVnqY0I9QfPivyBHwL2Qk2XcP
-         tuURWDzV0XIYCEC6Wc6hRWIQGtAzkwYvZZ74pqnZVuyZEuJtOLE3P0ifRZhjhFNiC3Uc
-         jpXw==
-X-Gm-Message-State: AOJu0YwiOoDjhdmpky7a9X4irVbCWBEzN/OToPTAAUSCKR1m/VpObD7V
-	2POyjIlNlP19ynwNs4fcIYGy7cylqpSWgwG+EPfJ18dmi1JW3U795rD8
-X-Gm-Gg: ASbGncs+zGyG+FfBasUrEsdQYcss2xIBBtipFUYBDDUCTMf5SmaKPBeZNR0A3uHGgQf
-	BHDR3lyToy4jUoZ4D6l/YeN01L9Njh8yUu/5gR+iosrBrz0X14wzxhckCteLLTOywd5BoRSJmR1
-	szj3zCoFlReEzjbS7DrU5QR1NsXV9YISDEhiQkrpHdDBbrvwnozJ9W9P5Nwq9ffZ9ZgHaw2ZG/7
-	i2LsZm0qOfoyYU0iZUg3orX+TFk5Ffr+az8+GrlorxinjSOe7B7NAtIf2ISJJmlgv4tuA6ehbl1
-	KvXBBWy8t11j+Qx5pie8Hj3WuOEC5eMaKizL0ko1hkGrVeu/1CFXinTdT9WNbAhVn1oJ+aycbmP
-	cl6Msrv+jzH/ASK22wVEmnBvgoAtSGDsMfg==
-X-Google-Smtp-Source: AGHT+IEF1HVwk7rZIuKPFFF0u/ApToJ60nR1yo7ZaE0JKrdUL4IvNm5599ieCkZAjKRNZhvRMgO1Jw==
-X-Received: by 2002:a05:6a00:2386:b0:748:e150:ac77 with SMTP id d2e1a72fcca58-7490d6c3b5fmr1387481b3a.22.1750387664321;
-        Thu, 19 Jun 2025 19:47:44 -0700 (PDT)
-Received: from ankitchauhan-Legion-5-15ITH6.. ([2405:201:4042:d128:87bc:2aec:e545:acb3])
-        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-7490a621ceasm899148b3a.97.2025.06.19.19.47.30
+        bh=TvY87dOFEDSl5uZTK8KSbQcIdJ58gT9kw8uM9F5GHbk=;
+        b=Tv9bwMoT98aLE43FID6+pCx/TGR2PRHRdbTABFqVo6/cH/pkOti6EKaIqTl8GZEpUq
+         tuB0ZLEQJ6zz+DAkjZ0qlHyrUAwyZpvU4LXJkb6fmWD06pvxwAfKkHyu24CZK49wIoxZ
+         y+o4/6MqFF8lWHzSG2XkYeBOMYD158ksr+8enc0myAXDv+aNDUmx8p2pfvPop8JCcLst
+         jZxvDG6B/+klh5JtCF6ue6BXtLCBcqaoMg7dXoCYk4SSF9mtLY12ekCRxcBa38czh9Vr
+         amJw3JvO++obZmTpY5rLA2jj0L4M2j3zTC9ttpXIgZbBcLIjAwVSzMOp/DI7HpLsaxyN
+         m8Yw==
+X-Forwarded-Encrypted: i=1; AJvYcCU9OFyEXi6r6TMiqyKJTFkMwdK5q7QirhHh1dKXYagyMXM1E1XhVM1cMb1xoZbN1koZC0WFzBp5FMnviiM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yzqe8h/QcnjK30UwgOW4DLaL4ptsTym240w2oolgzrCo8oCO27i
+	/eU8Cz//YWOTzuDyC9rPNCAuJwh9QlYuSNI8Fsbe1YtotxQHUFBB0MVU
+X-Gm-Gg: ASbGncvqL9/eMb3TdTI3ZyDAJ7KCHm1u3u2/qgyt9FocOhx7WP7jAfqEdf+2ltbRxAA
+	n1FDsMXJRl4Iix98u9daTgebemOQ+EPeqIxwPBGwiZFbul6082nWxzAyhqleOdS6pAVANx94YoE
+	JzmQvATdeXk0DUhDgKFqSwSGdnN6HZL5uvoMdRdJNwDL6yOYip4k3ebwz2ho5ldvUuGxLbwQojm
+	57M+6ShYbfUxKZKeVbwd0b0yRDTQ07jdA7dT+H/Owat21lFw5lFkDsrC+q7m9H4OPvPDDvk+E/N
+	t+lK/NNGQkvdMM74xFLQbFPZX2abqRrgmcT6MQ1plT2MWONDj1rkfQh9E+9B6ZsbeUSARUEOtDA
+	/BKK9CsCNFt1mMPJSjtI=
+X-Google-Smtp-Source: AGHT+IHYS7jIIxnZIERmDkugdwivLbicxS7Nxqbv3Ggs0pGVY2hWqBpMywyYJbdSBt8oaWkIcL7YNg==
+X-Received: by 2002:a05:6000:2890:b0:3a6:d2ca:df15 with SMTP id ffacd0b85a97d-3a6d2cafb34mr347317f8f.11.1750406169025;
+        Fri, 20 Jun 2025 00:56:09 -0700 (PDT)
+Received: from thomas-precision3591.. ([2a0d:e487:44f:8ec9:e0c0:3bc5:bbdf:e81])
+        by smtp.googlemail.com with ESMTPSA id 5b1f17b1804b1-4535eada7adsm50814715e9.35.2025.06.20.00.56.08
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 19 Jun 2025 19:47:43 -0700 (PDT)
-From: Ankit Chauhan <ankitchauhan2065@gmail.com>
-To: fbarrat@linux.ibm.com,
-	ajd@linux.ibm.com,
-	arnd@arndb.de,
-	gregkh@linuxfoundation.org
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Ankit Chauhan <ankitchauhan2065@gmail.com>
-Subject: [PATCH] misc: ocxl: Replace scnprintf() with sysfs_emit() in sysfs show functions
-Date: Fri, 20 Jun 2025 08:17:05 +0530
-Message-Id: <20250620024705.11321-1-ankitchauhan2065@gmail.com>
-X-Mailer: git-send-email 2.34.1
+        Fri, 20 Jun 2025 00:56:08 -0700 (PDT)
+From: Thomas Fourier <fourier.thomas@gmail.com>
+To: 
+Cc: Thomas Fourier <fourier.thomas@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2] powerpc: floppy: Add missing checks after DMA map
+Date: Fri, 20 Jun 2025 09:55:55 +0200
+Message-ID: <20250620075602.12575-1-fourier.thomas@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,68 +97,32 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Replace scnprintf() with sysfs_emit() in sysfs show functions.
-These helpers are preferred in sysfs callbacks because they automatically
-handle buffer size and improve safety and readability.
+The DMA map functions can fail and should be tested for errors.
 
-Signed-off-by: Ankit Chauhan <ankitchauhan2065@gmail.com>
+Signed-off-by: Thomas Fourier <fourier.thomas@gmail.com>
 ---
- drivers/misc/ocxl/sysfs.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+ arch/powerpc/include/asm/floppy.h | 5 ++++-
+ 1 file changed, 4 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/misc/ocxl/sysfs.c b/drivers/misc/ocxl/sysfs.c
-index e849641687a0..f194c159a778 100644
---- a/drivers/misc/ocxl/sysfs.c
-+++ b/drivers/misc/ocxl/sysfs.c
-@@ -16,7 +16,7 @@ static ssize_t global_mmio_size_show(struct device *device,
- {
- 	struct ocxl_afu *afu = to_afu(device);
+diff --git a/arch/powerpc/include/asm/floppy.h b/arch/powerpc/include/asm/floppy.h
+index f8ce178b43b7..34abf8bea2cc 100644
+--- a/arch/powerpc/include/asm/floppy.h
++++ b/arch/powerpc/include/asm/floppy.h
+@@ -144,9 +144,12 @@ static int hard_dma_setup(char *addr, unsigned long size, int mode, int io)
+ 		bus_addr = 0;
+ 	}
  
--	return scnprintf(buf, PAGE_SIZE, "%d\n",
-+	return sysfs_emit(buf, "%d\n",
- 			afu->config.global_mmio_size);
- }
+-	if (!bus_addr)	/* need to map it */
++	if (!bus_addr) {	/* need to map it */
+ 		bus_addr = dma_map_single(&isa_bridge_pcidev->dev, addr, size,
+ 					  dir);
++		if (dma_mapping_error(&isa_bridge_pcidev->dev, bus_addr))
++			return -ENOMEM;
++	}
  
-@@ -26,7 +26,7 @@ static ssize_t pp_mmio_size_show(struct device *device,
- {
- 	struct ocxl_afu *afu = to_afu(device);
- 
--	return scnprintf(buf, PAGE_SIZE, "%d\n",
-+	return sysfs_emit(buf, "%d\n",
- 			afu->config.pp_mmio_stride);
- }
- 
-@@ -36,7 +36,7 @@ static ssize_t afu_version_show(struct device *device,
- {
- 	struct ocxl_afu *afu = to_afu(device);
- 
--	return scnprintf(buf, PAGE_SIZE, "%hhu:%hhu\n",
-+	return sysfs_emit(buf, "%hhu:%hhu\n",
- 			afu->config.version_major,
- 			afu->config.version_minor);
- }
-@@ -47,7 +47,7 @@ static ssize_t contexts_show(struct device *device,
- {
- 	struct ocxl_afu *afu = to_afu(device);
- 
--	return scnprintf(buf, PAGE_SIZE, "%d/%d\n",
-+	return sysfs_emit(buf, "%d/%d\n",
- 			afu->pasid_count, afu->pasid_max);
- }
- 
-@@ -61,9 +61,9 @@ static ssize_t reload_on_reset_show(struct device *device,
- 	int val;
- 
- 	if (ocxl_config_get_reset_reload(pci_dev, &val))
--		return scnprintf(buf, PAGE_SIZE, "unavailable\n");
-+		return sysfs_emit(buf, "unavailable\n");
- 
--	return scnprintf(buf, PAGE_SIZE, "%d\n", val);
-+	return sysfs_emit(buf, "%d\n", val);
- }
- 
- static ssize_t reload_on_reset_store(struct device *device,
+ 	/* remember this one as prev */
+ 	prev_addr = addr;
 -- 
-2.34.1
+2.43.0
 
 
