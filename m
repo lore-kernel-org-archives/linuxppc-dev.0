@@ -1,50 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-9669-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9670-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2AAD9C71157
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jun 2025 05:50:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97D40C77B7C
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 24 Jun 2025 06:24:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bRDZR2cFzz2xRq;
-	Tue, 24 Jun 2025 15:50:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750744239;
-	cv=none; b=KJaXvmitCN99ZeLlZ09Zs8Itp9bsINKxNNg+J3zQcu6fgSIsEHKAAgEQkLSYgc7BIto9WHkkXeFCC7lmrQxZlUqQA/SlK0ZAd7fFUuudwLqv6Fso50J//Yc2SOOCBYGpRZBvWwnHdIS9gKVCEcRMVi3CYqB3YMY2lpbcpJl31tja/ntILdqNhI06RSs83sp3ex3pYWyBdkFyCM6WPXEyl7K3MxLv8NYPTx4ejSfJ/zNUZkXiF4Ez7T5ZlGaD6dVICfKCsiBqeff8gOOKboYKr6de0u+YA5pLedpXZ6oiSErhOZ4H4BffFZHUoQHouDQybF1T+e8lVaZHb8gEfWOBKg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bRFKq1PVpz2xk5;
+	Tue, 24 Jun 2025 16:24:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.9
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750746287;
+	cv=none; b=kXZrwfNRdXQ0UJzgNeXryafWuKT5nCgJJ1LgWYvSdyPML0+vTHd1kgDKoqZuZAES0kvPyRMWewzqiWQW8FP6Xr9ql4fMfrLr+ozUT3/fGeOslMaBXtGaxiVktJdvTY0FwnJpPAsqmG3JDV6oO3CI95Teet5z377D1MCsPZQqH+f8JQrGxdETPqC7JMcd1fmyCRZxII91BcpZo3AoeGfQtTvDOBymCg90TItqVytodlJgxsnZJf6OuoPiG3GK6k2996DSURcUMW8xVx1hMhEeztGwan9TsFLkeBAPwwbEqQc4sRNCcCAfCyIs7A4rAkK4Ye5MCZIo4L0sl9+x7PH4ZQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750744239; c=relaxed/relaxed;
-	bh=pZOxHzM6HNI3sFVl3hxIkbPLMYo5eqWVRMZxRVeJUkQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=osnzEVklNg32C4bFYrStMvtx9PFCtPLx0zNVxcGIvjLQJdVEAcQ652NlnzhyDSfKpzhlAx+WgFvSy3AWXGeceazJoFb0SWdxlx8t1aNAVP9GpZ26RCANkNZl4rt2BKdvOk+pTXUwq8rJpGpBDXAXlwKdR7MysMdrNWxEBn8IpqZxKGmy5RZZkvBqvgFPHKYIhLgfwZwJ7Xkr/C3AQj/N9R1jOdJXurDRRH9KHooqDS8hjmzYRMsK8B7762br57F459pJGAZ5GYtcApN48VooXGtxG2x5TpsZxaiVNTKsNYFn8+KmJNPDNf4gfBAJXQM5jpEd3vjvku+CNR1iK12HPw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bRDZQ3q2nz2xQ4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2025 15:50:36 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4bRDD93jvMz9sRp;
-	Tue, 24 Jun 2025 07:34:49 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id EEbxvPxf50Ga; Tue, 24 Jun 2025 07:34:49 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4bRDD92K1Tz9sN6;
-	Tue, 24 Jun 2025 07:34:49 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 47C598B768;
-	Tue, 24 Jun 2025 07:34:49 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id qwbFcTV72ImU; Tue, 24 Jun 2025 07:34:49 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 512018B767;
-	Tue, 24 Jun 2025 07:34:48 +0200 (CEST)
-Message-ID: <ce2c8557-cda6-4211-9873-9afd993c0580@csgroup.eu>
-Date: Tue, 24 Jun 2025 07:34:48 +0200
+	t=1750746287; c=relaxed/relaxed;
+	bh=t2D4jeT9kUeOV+zdl9qqZPrGlBVCsUbM4rkdl3fmfYc=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=lWBfowdPJGb1PwA3+hmVq9uaXAdDvW7R7shW+hKDjj+IyTIw5aX/fGKYg5ckUC1MQ4jXq7cWlFu2HUm31G3T4sC8DI5yjWZLrYfqqp7mz1qKxKijqEkoRQQelvTyhFYUGeHQDglG77hS+IcY0sdx8w161K9g1/od98INGe9yf+TiNboWH40XCxvoBMg9N3chmvnEg8Ex9qtMqFcbGnWVwVoP5+8+YEMh5U8EEvWWQdGCDd16mD9okwoc9ISVUe5kAS67Vsu6uv4SPdIIdf6kDqiYBMGyVMPn2yE+MlSEBqkjDEXgiPcB2NoEMZftypC21edQiabFDJj6W0/mWu+H9A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KJSqApLJ; dkim-atps=neutral; spf=pass (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KJSqApLJ;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bRFKm2x6Yz2xHT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 24 Jun 2025 16:24:42 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1750746284; x=1782282284;
+  h=date:from:to:cc:subject:message-id;
+  bh=oD32iO9MVzSTvAHD7n/nHa0pGDWPcFESsvNRivcmQe4=;
+  b=KJSqApLJoVYo1mm5gGSwv/L09tb+KsjS61ZQmULd5ZVye/vecE1Lq2Wa
+   ip70SH/E/WmBNVVjJTnh3d9isfyAEZ5j0HdCzoUe7HqQ5f+7oGPbCDUXT
+   MTwlD4hclAUiU92c+IiNFETVyJ20AYeE/sghR5lAiQHb17uDZWqN0S93b
+   CjPCGdwNYjkxjfiwS7bo8gpD1A+L+zz55IVfmcHEv6SIypdhs7aXC5+0a
+   NUMqS0hQEzVFM5oaOiL7P3ZOwuKCmpr75fndYvOij3We7n7i39LFC3e80
+   qKr7nYPIfjHiogXYiVqPoZ8vJguVgbaa6QdNN5N4Rl5FYcVBH5hkNuryM
+   A==;
+X-CSE-ConnectionGUID: 3djGcihYQc+5g7WXgty5Mw==
+X-CSE-MsgGUID: 8gzXXqmdRJCQSJq1HNSUMQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11473"; a="63665620"
+X-IronPort-AV: E=Sophos;i="6.16,260,1744095600"; 
+   d="scan'208";a="63665620"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Jun 2025 23:24:39 -0700
+X-CSE-ConnectionGUID: y09L5B5wSi2xW6oDiO472w==
+X-CSE-MsgGUID: MumER1QIQjKhtE1q0cbGiQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.16,260,1744095600"; 
+   d="scan'208";a="152525956"
+Received: from lkp-server01.sh.intel.com (HELO e8142ee1dce2) ([10.239.97.150])
+  by fmviesa010.fm.intel.com with ESMTP; 23 Jun 2025 23:24:38 -0700
+Received: from kbuild by e8142ee1dce2 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1uTx5A-000RnM-1S;
+	Tue, 24 Jun 2025 06:24:36 +0000
+Date: Tue, 24 Jun 2025 14:24:16 +0800
+From: kernel test robot <lkp@intel.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [powerpc:next-test] BUILD SUCCESS
+ cf183c1730f2634245da35e9b5d53381b787d112
+Message-ID: <202506241406.g2TFLxjD-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,121 +77,96 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/5] uaccess: Add masked_user_{read/write}_access_begin
-To: David Laight <david.laight.linux@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
- <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>, Darren Hart <dvhart@infradead.org>,
- Davidlohr Bueso <dave@stgolabs.net>, Andre Almeida <andrealmeid@igalia.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
-References: <cover.1750585239.git.christophe.leroy@csgroup.eu>
- <6fddae0cf0da15a6521bb847b63324b7a2a067b1.1750585239.git.christophe.leroy@csgroup.eu>
- <20250622173554.7f016f96@pumpkin>
-Content-Language: fr-FR
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20250622173554.7f016f96@pumpkin>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
 
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next-test
+branch HEAD: cf183c1730f2634245da35e9b5d53381b787d112  powerpc: floppy: Add missing checks after DMA map
 
+elapsed time: 1020m
 
-Le 22/06/2025 à 18:35, David Laight a écrit :
-> On Sun, 22 Jun 2025 11:52:39 +0200
-> Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
-> 
->> Allthough masked_user_access_begin() seems to only be used when reading
->> data from user at the moment, introduce masked_user_read_access_begin()
->> and masked_user_write_access_begin() in order to match
->> user_read_access_begin() and user_write_access_begin().
->>
->> Have them default to masked_user_access_begin() when they are
->> not defined.
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->> ---
->>   fs/select.c             | 2 +-
->>   include/linux/uaccess.h | 8 ++++++++
->>   kernel/futex/futex.h    | 4 ++--
->>   lib/strncpy_from_user.c | 2 +-
->>   lib/strnlen_user.c      | 2 +-
->>   5 files changed, 13 insertions(+), 5 deletions(-)
->>
->> diff --git a/fs/select.c b/fs/select.c
->> index 9fb650d03d52..d8547bedf5eb 100644
->> --- a/fs/select.c
->> +++ b/fs/select.c
->> @@ -777,7 +777,7 @@ static inline int get_sigset_argpack(struct sigset_argpack *to,
->>   	// the path is hot enough for overhead of copy_from_user() to matter
->>   	if (from) {
->>   		if (can_do_masked_user_access())
->> -			from = masked_user_access_begin(from);
->> +			from = masked_user_read_access_begin(from);
->>   		else if (!user_read_access_begin(from, sizeof(*from)))
->>   			return -EFAULT;
->>   		unsafe_get_user(to->p, &from->p, Efault);
->> diff --git a/include/linux/uaccess.h b/include/linux/uaccess.h
->> index 7c06f4795670..682a0cd2fe51 100644
->> --- a/include/linux/uaccess.h
->> +++ b/include/linux/uaccess.h
->> @@ -41,6 +41,14 @@
-> 
->>   #ifdef masked_user_access_begin
->>    #define can_do_masked_user_access() 1
->>   #else
->>    #define can_do_masked_user_access() 0
->>    #define masked_user_access_begin(src) NULL
->>    #define mask_user_address(src) (src)
->>   #endif
->>   
->> +#ifndef masked_user_write_access_begin
->> +#define masked_user_write_access_begin masked_user_access_begin
->> +#endif
->> +#ifndef masked_user_read_access_begin
->> +#define masked_user_read_access_begin masked_user_access_begin
->> +#endif
-> 
-> I think that needs merging with the bit above.
-> Perhaps generating something like:
-> 
-> #ifdef masked_user_access_begin
-> #define masked_user_read_access_begin masked_user_access_begin
-> #define masked_user_write_access_begin masked_user_access_begin
-> #endif
-> 
-> #ifdef masked_user_read_access_begin
->    #define can_do_masked_user_access() 1
-> #else
->    #define can_do_masked_user_access() 0
->    #define masked_user_read_access_begin(src) NULL
->    #define masked_user_write_access_begin(src) NULL
->    #define mask_user_address(src) (src)
-> #endif
-> 
-> Otherwise you'll have to #define masked_user_access_begin even though
-> it is never used.
+configs tested: 75
+configs skipped: 70
 
-I'm not sure I understand what you mean.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-masked_user_access_begin() is used, for instance in 
-arch/x86/include/asm/futex.h so it will remain.
+tested configs:
+alpha                             allnoconfig    gcc-15.1.0
+arc                              allmodconfig    clang-19
+arc                               allnoconfig    gcc-15.1.0
+arc                              allyesconfig    clang-19
+arc                   randconfig-001-20250624    gcc-8.5.0
+arc                   randconfig-002-20250624    gcc-8.5.0
+arm                              allmodconfig    clang-19
+arm                               allnoconfig    gcc-15.1.0
+arm                              allyesconfig    clang-19
+arm                   randconfig-001-20250624    gcc-8.5.0
+arm                   randconfig-002-20250624    gcc-8.5.0
+arm                   randconfig-003-20250624    gcc-8.5.0
+arm                   randconfig-004-20250624    gcc-8.5.0
+arm64                            allmodconfig    clang-19
+arm64                             allnoconfig    gcc-15.1.0
+arm64                 randconfig-001-20250624    gcc-8.5.0
+arm64                 randconfig-002-20250624    gcc-8.5.0
+arm64                 randconfig-003-20250624    gcc-8.5.0
+arm64                 randconfig-004-20250624    gcc-8.5.0
+csky                              allnoconfig    gcc-15.1.0
+hexagon                           allnoconfig    gcc-15.1.0
+i386                             allmodconfig    clang-20
+i386                              allnoconfig    clang-20
+i386                             allyesconfig    clang-20
+i386        buildonly-randconfig-001-20250624    gcc-12
+i386        buildonly-randconfig-002-20250624    gcc-12
+i386        buildonly-randconfig-003-20250624    gcc-12
+i386        buildonly-randconfig-004-20250624    gcc-12
+i386        buildonly-randconfig-005-20250624    gcc-12
+i386        buildonly-randconfig-006-20250624    gcc-12
+i386                                defconfig    clang-20
+loongarch                        allmodconfig    gcc-15.1.0
+loongarch                         allnoconfig    gcc-15.1.0
+m68k                             allmodconfig    gcc-15.1.0
+m68k                              allnoconfig    gcc-15.1.0
+m68k                             allyesconfig    gcc-15.1.0
+microblaze                       allmodconfig    gcc-15.1.0
+microblaze                        allnoconfig    gcc-15.1.0
+microblaze                       allyesconfig    gcc-15.1.0
+mips                              allnoconfig    gcc-15.1.0
+nios2                             allnoconfig    gcc-15.1.0
+openrisc                          allnoconfig    clang-21
+openrisc                         allyesconfig    gcc-15.1.0
+parisc                           allmodconfig    gcc-15.1.0
+parisc                            allnoconfig    clang-21
+parisc                           allyesconfig    gcc-15.1.0
+powerpc                          allmodconfig    gcc-15.1.0
+powerpc                           allnoconfig    clang-21
+powerpc                           allnoconfig    gcc-15.1.0
+powerpc                          allyesconfig    gcc-15.1.0
+riscv                            allmodconfig    gcc-15.1.0
+riscv                             allnoconfig    clang-21
+riscv                            allyesconfig    gcc-15.1.0
+s390                             allmodconfig    gcc-15.1.0
+s390                              allnoconfig    clang-21
+s390                             allyesconfig    gcc-15.1.0
+sh                               allmodconfig    gcc-15.1.0
+sh                                allnoconfig    gcc-15.1.0
+sh                               allyesconfig    gcc-15.1.0
+sparc                            allmodconfig    gcc-15.1.0
+sparc                             allnoconfig    gcc-15.1.0
+um                                allnoconfig    clang-21
+x86_64                            allnoconfig    clang-20
+x86_64                           allyesconfig    clang-20
+x86_64      buildonly-randconfig-001-20250624    clang-20
+x86_64      buildonly-randconfig-002-20250624    clang-20
+x86_64      buildonly-randconfig-003-20250624    clang-20
+x86_64      buildonly-randconfig-004-20250624    clang-20
+x86_64      buildonly-randconfig-005-20250624    clang-20
+x86_64      buildonly-randconfig-006-20250624    clang-20
+x86_64                              defconfig    clang-20
+x86_64                                  kexec    clang-20
+x86_64                               rhel-9.4    clang-20
+x86_64                          rhel-9.4-rust    clang-20
+xtensa                            allnoconfig    gcc-15.1.0
 
-masked_user_access_begin() is the analogy of user_access_begin(), it 
-starts a read-write user access and is worth it.
-
-> 
-> Two more patches could change x86-64 to define both and then remove
-> the 'then unused' first check - but that has to be for later.
-> 
-
-Christophe
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
