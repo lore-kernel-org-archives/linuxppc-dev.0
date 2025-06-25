@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-9714-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9715-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2232C77B7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 07:12:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CF81C77B7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 07:12:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bRtJL69hWz3bkg;
-	Wed, 25 Jun 2025 17:10:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bRtJN2P3Rz30WT;
+	Wed, 25 Jun 2025 17:10:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750835442;
-	cv=none; b=FFSk3ALChz0l1TEz+SrYjSZX9RSvScm8JEBsXwJKFe5KAXGIy13Y1yR9efbHZFdn7Et4F/9AjJgyk5eRtHHVyI8JCNG66XF4AVynfegz5lPuLv6vKy4osDgiD49fZGMp6o/sodWD9WWM6dCLAd10IqeIPlZghjkhVLy7A+FDktkLpf8XVHtRGhSy/as7T+U+tinGikJxxT1f7AXdbLRdqL6KDttFT+eJuz9Kb8M0rQeEvrXGppL7DTxGMwQP8t6vM3ifbNfi2A3YF5GNQJp7YlC74ailflapaDopPfYFFPMhmkwLuxEfpUCVhSfV675R56jNk+fUS+37eNGUC5Y8rg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750835444;
+	cv=none; b=l8Oe3hhfffO4g6UX7zU+n9McoikSxiYuXGun7DCBlvPFYn7Z6j8aOrAMuU9ky+DTUr9bp41FLM8F0xlEJfBNrfFs4d3Hc9eXVX5mW3BWDp806JfQnfDXf0ib6J+yjkNbsr1rHi5Jr6dp3xCVaRH3Gw+TnmcqJJo27hXoqGDRNBYJiXIpZcsAMAaqXOn/TlBQQFhwj1Fd/6jiZSseSp+oxke8xafkld8l2EoP8Yhml/vZgfHcqK6Ih2sJRNtYeAll4bWnLTWzFxRc6kV/bpG+QL4lsHW8C85XPmjNMLMhZchrGFOgz3wBdeueBSAOqs2sX/x9iI64C/hnxUG5r1cTRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750835442; c=relaxed/relaxed;
-	bh=lsDpFKFP6yR3OyAu3E5YGdpmZySavU5Hbymk6BRkbVs=;
+	t=1750835444; c=relaxed/relaxed;
+	bh=n8jXU1q6B0KX6KZxSGCS7rIxrQ9U7LY3BptCiu+mNFE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=IXN4YRa9LMCjqoVISidBg4WQN4DyfSoVHb74vlW5vxZ5VzH7rFt3rLDFd7qcWtyLSVEEGSfa1gIoy03SI8YXKEgGkEY6A59uwhNbPe6+w77CiaHHhypxtBVN9qrCBpMeR/HbWd6JZsgJSBgmldHx71CPKd5xqU5vsaeFaKrxtjcTflsOWyLRFfNM+DVfDyQnA1eVXA4MzSOFNmvo1ESEK4iGlLMOoAeIlXo6VB+MxqjZmzlZnaUWjAd8MmVqTnNLhPAVQdh+iyCSbZWQHqYgh03yBKWo90n6MvzjJzYJMSgUa/o9M3EBt4tfXwLPGVtRG1Yzn36d32F2ggk+enY1PA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bGgwTm2q; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=Elq2tunb5RmnBIW68aBcXHV5GpXIsPhzdzF5U7arjwtPIjk8G+mcaOQIztfuOQHEdwEM0FUNw+6OyWxu5gvxZXNCZBydzGRE/JYcqRTRPeVgxRTpSY/n6MuwyF+rPg3NUUnirCbGXXfWs0lRx9n3VU9LrD7yn/RzgzgNxO7B6AbgLXvYJCtld1vzE78R5nWxXIe9t1z7Ylggp0SEb1O4lh5bBoaDkhOisICnL7kG+QepiQpWJglnZ6etQz4kGQAFZpGTEuuG5/WmkNh6hEngJyOZ5+VRADAXYpdwc5iAuNs5wHX8GuLL7lpaILz3N54vzsfI3zq/1xTch7yKK0mbHQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bH9JuMjc; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bGgwTm2q;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bH9JuMjc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bRtJD2qBWz30WT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 17:10:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bRtJF2gDtz3bNt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 17:10:37 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id C638F5C4990;
-	Wed, 25 Jun 2025 07:08:16 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9681DC4CEF5;
-	Wed, 25 Jun 2025 07:10:32 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 3E6B85C61E3;
+	Wed, 25 Jun 2025 07:08:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0EFCAC4CEF2;
+	Wed, 25 Jun 2025 07:10:35 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750835432;
-	bh=HcT0g5xVAWv/N1IR5pEWuUbH8BmCfR6q+xHzYq1G6lk=;
+	s=k20201202; t=1750835435;
+	bh=Y+OM4xhFGnbbVJB2/pk7w3PVA+sL8KWZ8Ahn07y2y1A=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=bGgwTm2qXC8YWw3rGgR+lHbPGOQQ/R4KGHs4yhXIoT3fqyhl19hbTUtM8dvXWJWpd
-	 JFMRJljmUlGkBNKGbQwrg2OrYrBbOmmkLbfT89ahvff9JlIDOJ/YdVkFmjjkU/zMRL
-	 N6xl6d93c+iiFynuJk60pUF1JidoqO9E+WChoY3Daba0yeF7mIFNFNGLvKocEfQlqh
-	 qA/Lv7qPWcCLjw4RnDU3lGzC39o9L6Za9uBu1lYk9hQfwK6Ts6xdFbPF30wSGdQgPR
-	 Bj/zByvKdS2wG1OPmCwaDByOfcnT3Hn8nMTz8VxHHnPMSflTbT1NLWINC0jTbgbIaA
-	 Q3Z5Jzbp+07Ew==
+	b=bH9JuMjcvx3J7GtUczSjT11nGI4YWbo07MYlZLzC2HhSWEMCp2w/3F76EUQDdl9aH
+	 x3U0E8JYWVjle7diqxhGtq75vEUoC36KAdmOt5ehtup8q9m0RB23nlpgatFdW+xPro
+	 JnvpTRlkc04oJMwRgnosZlVo8rkhPtz1xEyaez2xP71hb1UjwpZwEHoEgz9hwvZZ8w
+	 Xg73giZDP2UVojmC6ER8rObGC/udaKqdU8qwkmAQlqBDk2z567b670tXgzD5vy92Bv
+	 LTPxk9gDYjyHb92F+u8ONsV4Eu9yHAg8GfgBAM3Y1PeC6Az6HX0fnNqfEvvqWnzfdm
+	 PfOgccGBMYwtA==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -57,9 +57,9 @@ Cc: linux-kernel@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 12/18] lib/crypto: sha256: Add HMAC-SHA224 and HMAC-SHA256 support
-Date: Wed, 25 Jun 2025 00:08:13 -0700
-Message-ID: <20250625070819.1496119-13-ebiggers@kernel.org>
+Subject: [PATCH 17/18] lib/crypto: sha256: Sync sha256_update() with sha512_update()
+Date: Wed, 25 Jun 2025 00:08:18 -0700
+Message-ID: <20250625070819.1496119-18-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.0
 In-Reply-To: <20250625070819.1496119-1-ebiggers@kernel.org>
 References: <20250625070819.1496119-1-ebiggers@kernel.org>
@@ -78,460 +78,71 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Since HMAC support is commonly needed and is fairly simple, include it
-as a first-class citizen of the SHA-256 library.
-
-The API supports both incremental and one-shot computation, and either
-preparing the key ahead of time or just using a raw key.  The
-implementation is much more streamlined than crypto/hmac.c.
-
-I've kept it consistent with the HMAC-SHA384 and HMAC-SHA512 code as
-much as possible.
-
-Testing of these functions will be via sha224_kunit and sha256_kunit,
-added by a later commit.
+The BLOCK_HASH_UPDATE_BLOCKS macro is difficult to read.  For now, let's
+just write the update explicitly in the straightforward way, mirroring
+sha512_update().  It's possible that we'll bring back a macro for this
+later, but it needs to be properly justified and hopefully a bit more
+readable.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- include/crypto/sha2.h | 222 ++++++++++++++++++++++++++++++++++++++++++
- lib/crypto/sha256.c   | 145 +++++++++++++++++++++++++--
- 2 files changed, 361 insertions(+), 6 deletions(-)
+ lib/crypto/sha256.c | 28 +++++++++++++++++++++++++---
+ 1 file changed, 25 insertions(+), 3 deletions(-)
 
-diff --git a/include/crypto/sha2.h b/include/crypto/sha2.h
-index 18e1eec841b71..2e3fc2cf4aa0d 100644
---- a/include/crypto/sha2.h
-+++ b/include/crypto/sha2.h
-@@ -129,10 +129,26 @@ struct __sha256_ctx {
- 	u64 bytecount;
- 	u8 buf[SHA256_BLOCK_SIZE] __aligned(__alignof__(__be64));
- };
- void __sha256_update(struct __sha256_ctx *ctx, const u8 *data, size_t len);
- 
-+/*
-+ * HMAC key and message context structs, shared by HMAC-SHA224 and HMAC-SHA256.
-+ * The hmac_sha224_* and hmac_sha256_* structs wrap this one so that the API has
-+ * proper typing and doesn't allow mixing the functions arbitrarily.
-+ */
-+struct __hmac_sha256_key {
-+	struct sha256_block_state istate;
-+	struct sha256_block_state ostate;
-+};
-+struct __hmac_sha256_ctx {
-+	struct __sha256_ctx sha_ctx;
-+	struct sha256_block_state ostate;
-+};
-+void __hmac_sha256_init(struct __hmac_sha256_ctx *ctx,
-+			const struct __hmac_sha256_key *key);
-+
- /**
-  * struct sha224_ctx - Context for hashing a message with SHA-224
-  * @ctx: private
-  */
- struct sha224_ctx {
-@@ -146,10 +162,113 @@ static inline void sha224_update(struct sha224_ctx *ctx,
- 	__sha256_update(&ctx->ctx, data, len);
- }
- void sha224_final(struct sha224_ctx *ctx, u8 out[SHA224_DIGEST_SIZE]);
- void sha224(const u8 *data, size_t len, u8 out[SHA224_DIGEST_SIZE]);
- 
-+/**
-+ * struct hmac_sha224_key - Prepared key for HMAC-SHA224
-+ * @key: private
-+ */
-+struct hmac_sha224_key {
-+	struct __hmac_sha256_key key;
-+};
-+
-+/**
-+ * struct hmac_sha224_ctx - Context for computing HMAC-SHA224 of a message
-+ * @ctx: private
-+ */
-+struct hmac_sha224_ctx {
-+	struct __hmac_sha256_ctx ctx;
-+};
-+
-+/**
-+ * hmac_sha224_preparekey() - Prepare a key for HMAC-SHA224
-+ * @key: (output) the key structure to initialize
-+ * @raw_key: the raw HMAC-SHA224 key
-+ * @raw_key_len: the key length in bytes.  All key lengths are supported.
-+ *
-+ * Note: the caller is responsible for zeroizing both the struct hmac_sha224_key
-+ * and the raw key once they are no longer needed.
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_sha224_preparekey(struct hmac_sha224_key *key,
-+			    const u8 *raw_key, size_t raw_key_len);
-+
-+/**
-+ * hmac_sha224_init() - Initialize an HMAC-SHA224 context for a new message
-+ * @ctx: (output) the HMAC context to initialize
-+ * @key: the prepared HMAC key
-+ *
-+ * If you don't need incremental computation, consider hmac_sha224() instead.
-+ *
-+ * Context: Any context.
-+ */
-+static inline void hmac_sha224_init(struct hmac_sha224_ctx *ctx,
-+				    const struct hmac_sha224_key *key)
-+{
-+	__hmac_sha256_init(&ctx->ctx, &key->key);
-+}
-+
-+/**
-+ * hmac_sha224_update() - Update an HMAC-SHA224 context with message data
-+ * @ctx: the HMAC context to update; must have been initialized
-+ * @data: the message data
-+ * @data_len: the data length in bytes
-+ *
-+ * This can be called any number of times.
-+ *
-+ * Context: Any context.
-+ */
-+static inline void hmac_sha224_update(struct hmac_sha224_ctx *ctx,
-+				      const u8 *data, size_t data_len)
-+{
-+	__sha256_update(&ctx->ctx.sha_ctx, data, data_len);
-+}
-+
-+/**
-+ * hmac_sha224_final() - Finish computing an HMAC-SHA224 value
-+ * @ctx: the HMAC context to finalize; must have been initialized
-+ * @out: (output) the resulting HMAC-SHA224 value
-+ *
-+ * After finishing, this zeroizes @ctx.  So the caller does not need to do it.
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_sha224_final(struct hmac_sha224_ctx *ctx, u8 out[SHA224_DIGEST_SIZE]);
-+
-+/**
-+ * hmac_sha224() - Compute HMAC-SHA224 in one shot, using a prepared key
-+ * @key: the prepared HMAC key
-+ * @data: the message data
-+ * @data_len: the data length in bytes
-+ * @out: (output) the resulting HMAC-SHA224 value
-+ *
-+ * If you're using the key only once, consider using hmac_sha224_usingrawkey().
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_sha224(const struct hmac_sha224_key *key,
-+		 const u8 *data, size_t data_len, u8 out[SHA224_DIGEST_SIZE]);
-+
-+/**
-+ * hmac_sha224_usingrawkey() - Compute HMAC-SHA224 in one shot, using a raw key
-+ * @raw_key: the raw HMAC-SHA224 key
-+ * @raw_key_len: the key length in bytes.  All key lengths are supported.
-+ * @data: the message data
-+ * @data_len: the data length in bytes
-+ * @out: (output) the resulting HMAC-SHA224 value
-+ *
-+ * If you're using the key multiple times, prefer to use
-+ * hmac_sha224_preparekey() followed by multiple calls to hmac_sha224() instead.
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_sha224_usingrawkey(const u8 *raw_key, size_t raw_key_len,
-+			     const u8 *data, size_t data_len,
-+			     u8 out[SHA224_DIGEST_SIZE]);
-+
- /**
-  * struct sha256_ctx - Context for hashing a message with SHA-256
-  * @ctx: private
-  */
- struct sha256_ctx {
-@@ -163,10 +282,113 @@ static inline void sha256_update(struct sha256_ctx *ctx,
- 	__sha256_update(&ctx->ctx, data, len);
- }
- void sha256_final(struct sha256_ctx *ctx, u8 out[SHA256_DIGEST_SIZE]);
- void sha256(const u8 *data, size_t len, u8 out[SHA256_DIGEST_SIZE]);
- 
-+/**
-+ * struct hmac_sha256_key - Prepared key for HMAC-SHA256
-+ * @key: private
-+ */
-+struct hmac_sha256_key {
-+	struct __hmac_sha256_key key;
-+};
-+
-+/**
-+ * struct hmac_sha256_ctx - Context for computing HMAC-SHA256 of a message
-+ * @ctx: private
-+ */
-+struct hmac_sha256_ctx {
-+	struct __hmac_sha256_ctx ctx;
-+};
-+
-+/**
-+ * hmac_sha256_preparekey() - Prepare a key for HMAC-SHA256
-+ * @key: (output) the key structure to initialize
-+ * @raw_key: the raw HMAC-SHA256 key
-+ * @raw_key_len: the key length in bytes.  All key lengths are supported.
-+ *
-+ * Note: the caller is responsible for zeroizing both the struct hmac_sha256_key
-+ * and the raw key once they are no longer needed.
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_sha256_preparekey(struct hmac_sha256_key *key,
-+			    const u8 *raw_key, size_t raw_key_len);
-+
-+/**
-+ * hmac_sha256_init() - Initialize an HMAC-SHA256 context for a new message
-+ * @ctx: (output) the HMAC context to initialize
-+ * @key: the prepared HMAC key
-+ *
-+ * If you don't need incremental computation, consider hmac_sha256() instead.
-+ *
-+ * Context: Any context.
-+ */
-+static inline void hmac_sha256_init(struct hmac_sha256_ctx *ctx,
-+				    const struct hmac_sha256_key *key)
-+{
-+	__hmac_sha256_init(&ctx->ctx, &key->key);
-+}
-+
-+/**
-+ * hmac_sha256_update() - Update an HMAC-SHA256 context with message data
-+ * @ctx: the HMAC context to update; must have been initialized
-+ * @data: the message data
-+ * @data_len: the data length in bytes
-+ *
-+ * This can be called any number of times.
-+ *
-+ * Context: Any context.
-+ */
-+static inline void hmac_sha256_update(struct hmac_sha256_ctx *ctx,
-+				      const u8 *data, size_t data_len)
-+{
-+	__sha256_update(&ctx->ctx.sha_ctx, data, data_len);
-+}
-+
-+/**
-+ * hmac_sha256_final() - Finish computing an HMAC-SHA256 value
-+ * @ctx: the HMAC context to finalize; must have been initialized
-+ * @out: (output) the resulting HMAC-SHA256 value
-+ *
-+ * After finishing, this zeroizes @ctx.  So the caller does not need to do it.
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_sha256_final(struct hmac_sha256_ctx *ctx, u8 out[SHA256_DIGEST_SIZE]);
-+
-+/**
-+ * hmac_sha256() - Compute HMAC-SHA256 in one shot, using a prepared key
-+ * @key: the prepared HMAC key
-+ * @data: the message data
-+ * @data_len: the data length in bytes
-+ * @out: (output) the resulting HMAC-SHA256 value
-+ *
-+ * If you're using the key only once, consider using hmac_sha256_usingrawkey().
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_sha256(const struct hmac_sha256_key *key,
-+		 const u8 *data, size_t data_len, u8 out[SHA256_DIGEST_SIZE]);
-+
-+/**
-+ * hmac_sha256_usingrawkey() - Compute HMAC-SHA256 in one shot, using a raw key
-+ * @raw_key: the raw HMAC-SHA256 key
-+ * @raw_key_len: the key length in bytes.  All key lengths are supported.
-+ * @data: the message data
-+ * @data_len: the data length in bytes
-+ * @out: (output) the resulting HMAC-SHA256 value
-+ *
-+ * If you're using the key multiple times, prefer to use
-+ * hmac_sha256_preparekey() followed by multiple calls to hmac_sha256() instead.
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_sha256_usingrawkey(const u8 *raw_key, size_t raw_key_len,
-+			     const u8 *data, size_t data_len,
-+			     u8 out[SHA256_DIGEST_SIZE]);
-+
- /* State for the SHA-512 (and SHA-384) compression function */
- struct sha512_block_state {
- 	u64 h[8];
- };
- 
 diff --git a/lib/crypto/sha256.c b/lib/crypto/sha256.c
-index 3e7797a4489de..165c894a47aa0 100644
+index 0de49bf8e8b8b..c93bf4699160c 100644
 --- a/lib/crypto/sha256.c
 +++ b/lib/crypto/sha256.c
-@@ -1,24 +1,22 @@
- // SPDX-License-Identifier: GPL-2.0-or-later
- /*
-- * SHA-256, as specified in
-- * http://csrc.nist.gov/groups/STM/cavp/documents/shs/sha256-384-512.pdf
-- *
-- * SHA-256 code by Jean-Luc Cooke <jlcooke@certainkey.com>.
-+ * SHA-224, SHA-256, HMAC-SHA224, and HMAC-SHA256 library functions
-  *
-  * Copyright (c) Jean-Luc Cooke <jlcooke@certainkey.com>
-  * Copyright (c) Andrew McDonald <andrew@mcdonald.org.uk>
-  * Copyright (c) 2002 James Morris <jmorris@intercode.com.au>
+@@ -8,11 +8,10 @@
   * Copyright (c) 2014 Red Hat Inc.
+  * Copyright 2025 Google LLC
   */
  
-+#include <crypto/hmac.h>
- #include <crypto/internal/blockhash.h>
- #include <crypto/internal/sha2.h>
+ #include <crypto/hmac.h>
+-#include <crypto/internal/blockhash.h>
+ #include <crypto/sha2.h>
  #include <linux/export.h>
  #include <linux/kernel.h>
  #include <linux/module.h>
--#include <linux/string.h>
-+#include <linux/wordpart.h>
+ #include <linux/unaligned.h>
+@@ -177,12 +176,35 @@ EXPORT_SYMBOL_GPL(sha256_init);
+ void __sha256_update(struct __sha256_ctx *ctx, const u8 *data, size_t len)
+ {
+ 	size_t partial = ctx->bytecount % SHA256_BLOCK_SIZE;
  
- static const struct sha256_block_state sha224_iv = {
- 	.h = {
- 		SHA224_H0, SHA224_H1, SHA224_H2, SHA224_H3,
- 		SHA224_H4, SHA224_H5, SHA224_H6, SHA224_H7,
-@@ -134,7 +132,142 @@ void sha256(const u8 *data, size_t len, u8 out[SHA256_DIGEST_SIZE])
- 	sha256_update(&ctx, data, len);
- 	sha256_final(&ctx, out);
- }
- EXPORT_SYMBOL(sha256);
- 
--MODULE_DESCRIPTION("SHA-256 Algorithm");
-+static void __hmac_sha256_preparekey(struct __hmac_sha256_key *key,
-+				     const u8 *raw_key, size_t raw_key_len,
-+				     const struct sha256_block_state *iv)
-+{
-+	union {
-+		u8 b[SHA256_BLOCK_SIZE];
-+		unsigned long w[SHA256_BLOCK_SIZE / sizeof(unsigned long)];
-+	} derived_key = { 0 };
+ 	ctx->bytecount += len;
+-	BLOCK_HASH_UPDATE_BLOCKS(sha256_blocks, &ctx->state, data, len,
+-				 SHA256_BLOCK_SIZE, ctx->buf, partial);
 +
-+	if (unlikely(raw_key_len > SHA256_BLOCK_SIZE)) {
-+		if (iv == &sha224_iv)
-+			sha224(raw_key, raw_key_len, derived_key.b);
-+		else
-+			sha256(raw_key, raw_key_len, derived_key.b);
-+	} else {
-+		memcpy(derived_key.b, raw_key, raw_key_len);
++	if (partial + len >= SHA256_BLOCK_SIZE) {
++		size_t nblocks;
++
++		if (partial) {
++			size_t l = SHA256_BLOCK_SIZE - partial;
++
++			memcpy(&ctx->buf[partial], data, l);
++			data += l;
++			len -= l;
++
++			sha256_blocks(&ctx->state, ctx->buf, 1);
++		}
++
++		nblocks = len / SHA256_BLOCK_SIZE;
++		len %= SHA256_BLOCK_SIZE;
++
++		if (nblocks) {
++			sha256_blocks(&ctx->state, data, nblocks);
++			data += nblocks * SHA256_BLOCK_SIZE;
++		}
++		partial = 0;
 +	}
-+
-+	for (size_t i = 0; i < ARRAY_SIZE(derived_key.w); i++)
-+		derived_key.w[i] ^= REPEAT_BYTE(HMAC_IPAD_VALUE);
-+	key->istate = *iv;
-+	sha256_blocks(&key->istate, derived_key.b, 1);
-+
-+	for (size_t i = 0; i < ARRAY_SIZE(derived_key.w); i++)
-+		derived_key.w[i] ^= REPEAT_BYTE(HMAC_OPAD_VALUE ^
-+						HMAC_IPAD_VALUE);
-+	key->ostate = *iv;
-+	sha256_blocks(&key->ostate, derived_key.b, 1);
-+
-+	memzero_explicit(&derived_key, sizeof(derived_key));
-+}
-+
-+void hmac_sha224_preparekey(struct hmac_sha224_key *key,
-+			    const u8 *raw_key, size_t raw_key_len)
-+{
-+	__hmac_sha256_preparekey(&key->key, raw_key, raw_key_len, &sha224_iv);
-+}
-+EXPORT_SYMBOL_GPL(hmac_sha224_preparekey);
-+
-+void hmac_sha256_preparekey(struct hmac_sha256_key *key,
-+			    const u8 *raw_key, size_t raw_key_len)
-+{
-+	__hmac_sha256_preparekey(&key->key, raw_key, raw_key_len, &sha256_iv);
-+}
-+EXPORT_SYMBOL_GPL(hmac_sha256_preparekey);
-+
-+void __hmac_sha256_init(struct __hmac_sha256_ctx *ctx,
-+			const struct __hmac_sha256_key *key)
-+{
-+	__sha256_init(&ctx->sha_ctx, &key->istate, SHA256_BLOCK_SIZE);
-+	ctx->ostate = key->ostate;
-+}
-+EXPORT_SYMBOL_GPL(__hmac_sha256_init);
-+
-+static void __hmac_sha256_final(struct __hmac_sha256_ctx *ctx,
-+				u8 *out, size_t digest_size)
-+{
-+	/* Generate the padded input for the outer hash in ctx->sha_ctx.buf. */
-+	__sha256_final(&ctx->sha_ctx, ctx->sha_ctx.buf, digest_size);
-+	memset(&ctx->sha_ctx.buf[digest_size], 0,
-+	       SHA256_BLOCK_SIZE - digest_size);
-+	ctx->sha_ctx.buf[digest_size] = 0x80;
-+	*(__be32 *)&ctx->sha_ctx.buf[SHA256_BLOCK_SIZE - 4] =
-+		cpu_to_be32(8 * (SHA256_BLOCK_SIZE + digest_size));
-+
-+	/* Compute the outer hash, which gives the HMAC value. */
-+	sha256_blocks(&ctx->ostate, ctx->sha_ctx.buf, 1);
-+	for (size_t i = 0; i < digest_size; i += 4)
-+		put_unaligned_be32(ctx->ostate.h[i / 4], out + i);
-+
-+	memzero_explicit(ctx, sizeof(*ctx));
-+}
-+
-+void hmac_sha224_final(struct hmac_sha224_ctx *ctx,
-+		       u8 out[SHA224_DIGEST_SIZE])
-+{
-+	__hmac_sha256_final(&ctx->ctx, out, SHA224_DIGEST_SIZE);
-+}
-+EXPORT_SYMBOL_GPL(hmac_sha224_final);
-+
-+void hmac_sha256_final(struct hmac_sha256_ctx *ctx,
-+		       u8 out[SHA256_DIGEST_SIZE])
-+{
-+	__hmac_sha256_final(&ctx->ctx, out, SHA256_DIGEST_SIZE);
-+}
-+EXPORT_SYMBOL_GPL(hmac_sha256_final);
-+
-+void hmac_sha224(const struct hmac_sha224_key *key,
-+		 const u8 *data, size_t data_len, u8 out[SHA224_DIGEST_SIZE])
-+{
-+	struct hmac_sha224_ctx ctx;
-+
-+	hmac_sha224_init(&ctx, key);
-+	hmac_sha224_update(&ctx, data, data_len);
-+	hmac_sha224_final(&ctx, out);
-+}
-+EXPORT_SYMBOL_GPL(hmac_sha224);
-+
-+void hmac_sha256(const struct hmac_sha256_key *key,
-+		 const u8 *data, size_t data_len, u8 out[SHA256_DIGEST_SIZE])
-+{
-+	struct hmac_sha256_ctx ctx;
-+
-+	hmac_sha256_init(&ctx, key);
-+	hmac_sha256_update(&ctx, data, data_len);
-+	hmac_sha256_final(&ctx, out);
-+}
-+EXPORT_SYMBOL_GPL(hmac_sha256);
-+
-+void hmac_sha224_usingrawkey(const u8 *raw_key, size_t raw_key_len,
-+			     const u8 *data, size_t data_len,
-+			     u8 out[SHA224_DIGEST_SIZE])
-+{
-+	struct hmac_sha224_key key;
-+
-+	hmac_sha224_preparekey(&key, raw_key, raw_key_len);
-+	hmac_sha224(&key, data, data_len, out);
-+
-+	memzero_explicit(&key, sizeof(key));
-+}
-+EXPORT_SYMBOL_GPL(hmac_sha224_usingrawkey);
-+
-+void hmac_sha256_usingrawkey(const u8 *raw_key, size_t raw_key_len,
-+			     const u8 *data, size_t data_len,
-+			     u8 out[SHA256_DIGEST_SIZE])
-+{
-+	struct hmac_sha256_key key;
-+
-+	hmac_sha256_preparekey(&key, raw_key, raw_key_len);
-+	hmac_sha256(&key, data, data_len, out);
-+
-+	memzero_explicit(&key, sizeof(key));
-+}
-+EXPORT_SYMBOL_GPL(hmac_sha256_usingrawkey);
-+
-+MODULE_DESCRIPTION("SHA-224, SHA-256, HMAC-SHA224, and HMAC-SHA256 library functions");
- MODULE_LICENSE("GPL");
++	if (len)
++		memcpy(&ctx->buf[partial], data, len);
+ }
+ EXPORT_SYMBOL(__sha256_update);
+ 
+ static void __sha256_final(struct __sha256_ctx *ctx,
+ 			   u8 *out, size_t digest_size)
 -- 
 2.50.0
 
