@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-9701-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9702-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1E2FC7115C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 07:10:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 578BFC77B7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 07:10:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bRtJ76z5Bz30DP;
-	Wed, 25 Jun 2025 17:10:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750835431;
-	cv=none; b=U5P0Ehq+A5SKRKwWAH3Ipjytx8WyTjE46DRVg1tOVSUeAGWCXlt33ZfQnfaoE1cdcloMLSt5+KhGO1aPydZ5DN9N6EV6tzVFtp7zcj+cSUkZcGojIuDDzV4L/uwhHaSS5LCwO0SDRbiC9TGVOUQZp5w+mwwgxBY3RQmX7QaE4sHXDrIbSqSXSpcFejongm+9oMS+Eyt0+Oh09MPUJN9ecoOIgNzUTOJnGetxSykHFlTBh5DJjp79a1uuAykwnfmTt5y9gi3I5G4mT5Z4UQjbb1vUOkuFTUeAYfVsRnvp4Xd3VSrzvFeAozFtThSArdHk6TGvDIDdLoOP7Ek0p5AtXA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bRtJ827t0z30Ff;
+	Wed, 25 Jun 2025 17:10:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750835432;
+	cv=none; b=NUhVRq4PT7FfyY7vAy0FbqRaSSaKtayeTYzsVWSyinf3cfY85gaADZJy2YzHte5JULVv7idf4j8PuZp1QkWHPhOpDomLiNoFx1XVSaKmSLqWGF1fybyRhvDSrtuw3Ee4MICK7Dw0cnsmf6TqmHro6KURqXL0H0PwoS2tlNWN7rBH0+rVqvBWfWRs0FtlbNyxlEDcsf2HDINZ6nshSY3L3q9lfNJ0ElIn9dgi8xzaGn6Vms0t8rahzvzDTTOjm8bGkN2dEmjgYRsZca2swJuBaTmRit9BUnEOdSNIHEuVNemX1sEwy60JNYUu+M1MesDAnwn0EKyCLd80pI5Acl0llQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750835431; c=relaxed/relaxed;
-	bh=RHtYeLfcxPt6tkSx5THYp4Q4BiufLUsgip9qC/sOP2s=;
+	t=1750835432; c=relaxed/relaxed;
+	bh=kt4sp2VhnIWEOeMcH73t899orOG4QC4oYu9cxkK9Ix8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DqDh3f4tNIboJxx3ZSPUOuPwCzPaZmeUCLd/oxJCYxbDI3Ld9a+BbnWmKxVM4NchyDEjT3QFOXYfKDL2btxiNNp03K3PEJ+FvnCBs5aljl9aaWsqjZHoS+UTg02MhlOPyv8QezA70eaIv9cebsjRcvjToZr4JFi75rbn/bYPFCHbCNVv8CY/oKf4f/dziQu01zLya0fBygSvX2iFKdRLv8S2UTcsGiNtO6g6jhqcd9uuIyYjL+3NgoBbBA5xTOZZmXBpk2l32lOMJxiM8EV78Ul2uOxGwfhNdRZN6DiIfNRZpca4WXattHXGJHrwDahsnQgeX7dIIHZgsVpk4MpS4Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eaWrFSUh; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=SJkK8YJeN1d14RyDnBixjsD3/ImUKiubCY7SS/eKYo9yt8qREDMwTTDY/B7D9zbiNvVgxNbRXxwvy1xpbeE4brj7dqRYKlb0DNjc0Q+QmEQyA0nAtGTB7ElWerK2ZZu08Yr8X2bckiHKp5lA9JgOFwM5BH8zBcmGPY20BQzfIN/S2L/0vG/lo5bAxIvnbiRWbbiQ/FVekuyEhHpAiCglJ0eAAtsmxqy4PVPqgj5g3IVGX4PTTOuaQE/PgR3qYD+8F1zMA2VzGYXYLrBN25hqUmv16A6nEaAARRj+9Mg0YuCs4FIL/7RNQqrmPkfu1RRVLJTvVswO0Pqfn2yHjWreag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=grOdLOtZ; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eaWrFSUh;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=grOdLOtZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bRtJ63qF8z2xRq
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bRtJ64R3Bz2yKq
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 17:10:30 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id AEEA34AFE0;
-	Wed, 25 Jun 2025 07:10:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35A21C4CEF8;
-	Wed, 25 Jun 2025 07:10:28 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id E38D8A51207;
+	Wed, 25 Jun 2025 07:10:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3DC29C4AF09;
+	Wed, 25 Jun 2025 07:10:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750835428;
-	bh=MVpW9jOYl5nfA5iSMc4oN4R/qeu/fhMbVZxtFi5zdFA=;
+	s=k20201202; t=1750835427;
+	bh=oP/HTNYTl9LXpDk4PHssqzdxrIaWg9Dc4X7a2efoHe0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=eaWrFSUhcCI7riLUfFOXOKpU7RRqzyayHnNsr0WqvQSAzXanOJBDrb0E5xCtJtois
-	 8LShoehuDb1UkTBdzvjnDGljGp3yrYnOf2GxQfhGzZJE6b/KqYJikZ8wgjHjdNfNPi
-	 mSTR1FAb33fdLl/btE0meQ09o5r4K6cPrIg9STvdmgXdU1T4r2tm+MQ235u9xHlGPe
-	 cdGa0cns8ZIr3XYa0cJBGr4rbTwGYLKfBa7QGwMZwnJsPNjVGxQI3of78cc5JJiyZm
-	 wU21Gged0J0nqc1T/laJis8r+d0qh5/kKhXdRXWILByu9uENEwQX2fTTLyncyq9hrE
-	 LX8wskdgDHsZg==
+	b=grOdLOtZgoIKmEWCLoLH/9c0vB0aNmsNV3SxcH0BZP5ljLtkHnx2+AKoNSsaq9vrv
+	 DUs8v9tEITVzaIhBG2hZl5pFHjoAU65Vwvo8XLLJNUhLYdlK9SUpvu0gRKUh3lVnmx
+	 xe7B9ojnICi0YfGfAQLPYVUBhPYUYbz115fGEy9isHKdHCYMvqY4oW6SNKWv4FJRs2
+	 WjGEQ1c2vJ3eCDQIKmq8N+TBXe4uIfevRVsKQTU4aigzoOA6WXabW0iVDnRucYJXPc
+	 sldN4RMVz138oOya4ugf0A3vVhvZXhzWJ6hACVLHuujYIZAQvxI5l26FaziMpipYfV
+	 E4hbrlgSnTpIg==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -57,9 +57,9 @@ Cc: linux-kernel@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 03/18] crypto: sha512 - Use the correct legacy export format
-Date: Wed, 25 Jun 2025 00:08:04 -0700
-Message-ID: <20250625070819.1496119-4-ebiggers@kernel.org>
+Subject: [PATCH 01/18] libceph: Rename hmac_sha256() to ceph_hmac_sha256()
+Date: Wed, 25 Jun 2025 00:08:02 -0700
+Message-ID: <20250625070819.1496119-2-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.0
 In-Reply-To: <20250625070819.1496119-1-ebiggers@kernel.org>
 References: <20250625070819.1496119-1-ebiggers@kernel.org>
@@ -78,68 +78,66 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-It appears the legacy export format is intended to have the value of the
-bytecount field be block-aligned, so update __crypto_sha512_export() and
-__crypto_sha512_import() to match.
+Rename hmac_sha256() to ceph_hmac_sha256(), to avoid a naming conflict
+with the upcoming hmac_sha256() library function.
 
-Fixes: e62c2fe56418 ("crypto: sha512 - Use same state format as legacy drivers")
+This code will be able to use the HMAC-SHA256 library, but that's left
+for a later commit.
+
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- crypto/sha512.c | 22 +++++++++++++++++-----
- 1 file changed, 17 insertions(+), 5 deletions(-)
+ net/ceph/messenger_v2.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
 
-diff --git a/crypto/sha512.c b/crypto/sha512.c
-index 0eed801346018..5bda259dd22fe 100644
---- a/crypto/sha512.c
-+++ b/crypto/sha512.c
-@@ -13,30 +13,42 @@
- #include <linux/module.h>
- 
- /*
-  * Export and import functions.  crypto_shash wants a particular format that
-  * matches that used by some legacy drivers.  It currently is the same as the
-- * library SHA context but with the partial block length as a u8 appended to it.
-+ * library SHA context, except the value in bytecount_lo must be block-aligned
-+ * and the remainder must be stored in an extra u8 appended to the struct.
-  */
- 
- #define SHA512_SHASH_STATE_SIZE 209
- static_assert(offsetof(struct __sha512_ctx, state) == 0);
- static_assert(offsetof(struct __sha512_ctx, bytecount_lo) == 64);
- static_assert(offsetof(struct __sha512_ctx, bytecount_hi) == 72);
- static_assert(offsetof(struct __sha512_ctx, buf) == 80);
- static_assert(sizeof(struct __sha512_ctx) + 1 == SHA512_SHASH_STATE_SIZE);
- 
--static int __crypto_sha512_export(const struct __sha512_ctx *ctx, void *out)
-+static int __crypto_sha512_export(const struct __sha512_ctx *ctx0, void *out)
- {
--	memcpy(out, ctx, sizeof(*ctx));
--	*((u8 *)out + sizeof(*ctx)) = ctx->bytecount_lo % SHA512_BLOCK_SIZE;
-+	struct __sha512_ctx ctx = *ctx0;
-+	unsigned int partial;
-+	u8 *p = out;
-+
-+	partial = ctx.bytecount_lo % SHA512_BLOCK_SIZE;
-+	ctx.bytecount_lo -= partial;
-+	memcpy(p, &ctx, sizeof(ctx));
-+	p += sizeof(ctx);
-+	*p = partial;
- 	return 0;
+diff --git a/net/ceph/messenger_v2.c b/net/ceph/messenger_v2.c
+index bd608ffa06279..5483b4eed94e1 100644
+--- a/net/ceph/messenger_v2.c
++++ b/net/ceph/messenger_v2.c
+@@ -791,12 +791,12 @@ static int setup_crypto(struct ceph_connection *con,
+ 	       con_secret + CEPH_GCM_KEY_LEN + CEPH_GCM_IV_LEN,
+ 	       CEPH_GCM_IV_LEN);
+ 	return 0;  /* auth_x, secure mode */
  }
  
- static int __crypto_sha512_import(struct __sha512_ctx *ctx, const void *in)
+-static int hmac_sha256(struct ceph_connection *con, const struct kvec *kvecs,
+-		       int kvec_cnt, u8 *hmac)
++static int ceph_hmac_sha256(struct ceph_connection *con,
++			    const struct kvec *kvecs, int kvec_cnt, u8 *hmac)
  {
--	memcpy(ctx, in, sizeof(*ctx));
-+	const u8 *p = in;
-+
-+	memcpy(ctx, p, sizeof(*ctx));
-+	p += sizeof(*ctx);
-+	ctx->bytecount_lo += *p;
- 	return 0;
- }
+ 	SHASH_DESC_ON_STACK(desc, con->v2.hmac_tfm);  /* tfm arg is ignored */
+ 	int ret;
+ 	int i;
  
- /* SHA-384 */
+@@ -1460,12 +1460,12 @@ static int prepare_auth_signature(struct ceph_connection *con)
+ 	buf = alloc_conn_buf(con, head_onwire_len(SHA256_DIGEST_SIZE,
+ 						  con_secure(con)));
+ 	if (!buf)
+ 		return -ENOMEM;
  
+-	ret = hmac_sha256(con, con->v2.in_sign_kvecs, con->v2.in_sign_kvec_cnt,
+-			  CTRL_BODY(buf));
++	ret = ceph_hmac_sha256(con, con->v2.in_sign_kvecs,
++			       con->v2.in_sign_kvec_cnt, CTRL_BODY(buf));
+ 	if (ret)
+ 		return ret;
+ 
+ 	return prepare_control(con, FRAME_TAG_AUTH_SIGNATURE, buf,
+ 			       SHA256_DIGEST_SIZE);
+@@ -2458,12 +2458,12 @@ static int process_auth_signature(struct ceph_connection *con,
+ 	if (con->state != CEPH_CON_S_V2_AUTH_SIGNATURE) {
+ 		con->error_msg = "protocol error, unexpected auth_signature";
+ 		return -EINVAL;
+ 	}
+ 
+-	ret = hmac_sha256(con, con->v2.out_sign_kvecs,
+-			  con->v2.out_sign_kvec_cnt, hmac);
++	ret = ceph_hmac_sha256(con, con->v2.out_sign_kvecs,
++			       con->v2.out_sign_kvec_cnt, hmac);
+ 	if (ret)
+ 		return ret;
+ 
+ 	ceph_decode_need(&p, end, SHA256_DIGEST_SIZE, bad);
+ 	if (crypto_memneq(p, hmac, SHA256_DIGEST_SIZE)) {
 -- 
 2.50.0
 
