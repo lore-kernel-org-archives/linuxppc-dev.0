@@ -1,70 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-9734-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9735-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B987C7EE30
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 12:02:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B702C7115C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 12:20:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bS0nX61BZz30KY;
-	Wed, 25 Jun 2025 22:02:56 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750852976;
-	cv=none; b=A9gAZm1nFauMDBTlITJZWUDXcg7iv3CLafHsFDXknPsxmV/kNWmYuDJkkpJ0ID+idH/ySxTts5rM85xVQGQe9TLYJe7l2B2gKgB5E8+SVBHPBrs9PVBXE+TWWx1Se9GWv1UOmt9CkxgZU9hIPrYeYR4mr1ptakCBDGwAfKjZoIKEtsWG74Q+Pww955KPjC1KZWKFpYkSTik4jNxG9MhWndeJalEvbmPw8a0oat4rlA47oOQKi5AFEQmwnSM+6cgMxQ+biZ2pS7hV8NnZAYiDrSOJMRP61BJNesg+X2wYuW5IBHrB32eLRaZcwcPANlJaSYOOl1rmAYcefApAvpSNbA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bS19z70kzz307K;
+	Wed, 25 Jun 2025 22:20:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750854039;
+	cv=none; b=ABkF8ajbcuQ6TDo1jXcYIwN/9b1TGqkxPB0b8CSY7/eZ0eRomHA7WIkCbF8/zz7JhcREChWbyTt0xDjCq7siHl3gFd5+RVQopAPNy9LsjP5TEvxZngZds9BcvMjc/OTjuHqoRmGNG9IDIt8VidZoEOzmBLKaH7ftxt7vMWgRryxYZVxg0Yq8sRFfB6awOguDyPtfpIdq2WDN+k+EE/Jx9SNCt+LpKNPKWOJr2mBKehzSgOirBVC6yfrKBOw1oKTZ06Oz91gsXZ7wDv3MmdmWy/XrSwpJe9ZCBfPmwsIlL5+n+95flc0XZaLjatJYA3OTKuP87P7maSmPV8/ijEEpsQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750852976; c=relaxed/relaxed;
-	bh=6ErPyd7an14yCl0+kH7+xShDnNFRVdUpt63D6DRuGz4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Thtp+bKNSXa9ieNUwDegvrQ9DA3O9CNwHSoyJwwgq4PJaElWUD1Yn71SBWZhzp01qJXS4esAY4YmOp+ADPtgzRTklHJISkrp5tpuNk9a05wD1GkDQqMoQPavHKDRIOUo80GRdx7BIO4XXUhOaVwAgJTK9wtY0xBSvDBxmufustL83oY3ZiDNiHZW7JPLVJbk/T/UmuefF3ABdC3serQJGSXuE7OyOGc85FcrmT6EqUBlNftFgBuQdEf5URcEfAr4zV32uQH8vDVswt/ZpbcKDmVsibsPhJ+o4jmRz2xPBGx0IQ7yG2uiJ9+d8JGcUQvs7ebcPgPdKBHjyp9A7p9Jsg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ej94voEo; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ej94voEo;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=jarkko@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bS0nX0DwSz30Ff
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 22:02:56 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 2160F611BD;
-	Wed, 25 Jun 2025 12:02:54 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4A936C4CEEA;
-	Wed, 25 Jun 2025 12:02:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750852973;
-	bh=mlZPeHhKRfK4QPugHv3jcEFJFQvdWnNs9NsJQp8STP8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=Ej94voEoj0IPEuwI8HfFWhG6IxvQc28nyxODnTWBqR5Piq4D+Cpi15LUKzLWStBO8
-	 zjV4FMbheJC5F198UnVnPP98CyeSWC3MId1nxkjZ7PcssbcLhEicNqlBSXShcGUG5x
-	 CQAAU1Uc0QFaWNsMXvikE4gs4WydmFTQOpOXlJyRqiS/3C75FnEBn/uzXCIl/hvJDT
-	 pyNhvIFdWCS23sXWOFQqnEudEsFlDiNcwrvsg3FQvP5/G0kak91NUFq3hmHxIP8btu
-	 R6UMG6d+Xplq3rfzWYPMEL+uZpLl2TtSrC1lHWXB1WQDKxbZIlriv5gp/S2ad2dZ83
-	 qtvlOcnajiMYQ==
-Date: Wed, 25 Jun 2025 15:02:49 +0300
-From: Jarkko Sakkinen <jarkko@kernel.org>
-To: Stefano Garzarella <sgarzare@redhat.com>
-Cc: linux-kernel@vger.kernel.org,
-	Nicolas Ferre <nicolas.ferre@microchip.com>,
-	Naveen N Rao <naveen@kernel.org>,
-	Sumit Garg <sumit.garg@kernel.org>, linux-integrity@vger.kernel.org,
-	Peter Huewe <peterhuewe@gmx.de>,
-	Jens Wiklander <jens.wiklander@linaro.org>,
-	James Bottomley <James.Bottomley@hansenpartnership.com>,
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Nicholas Piggin <npiggin@gmail.com>, Jason Gunthorpe <jgg@ziepe.ca>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Alexandre Belloni <alexandre.belloni@bootlin.com>,
-	Claudiu Beznea <claudiu.beznea@tuxon.dev>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Subject: Re: [PATCH v6 4/4] tpm/tpm_svsm: support TPM_CHIP_FLAG_SYNC
-Message-ID: <aFvlaY0BNjaGxU1D@kernel.org>
-References: <20250620130810.99069-1-sgarzare@redhat.com>
- <20250620130810.99069-5-sgarzare@redhat.com>
+	t=1750854039; c=relaxed/relaxed;
+	bh=3a4sekYOIoKPTcsxrLRc+zk+wxz53oyg/zv9+AP4v48=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=cfnVhvW0goW3wMkeWTXCX2HguULfHrTqGd33RcepdDDJn5an4TIONgbrWeAQOo94xxBSzFJVslXFSH4jcTzgUeqg1HqPD8fhjqbWfLTGFn1qs4K6nm00hqwP0aXTRTstKnuBkAzIDeuy0OxKK5ytsJyrLxVOFIiLeg7oPgzOx+EhYB2rycSbR8Qa9SuwnpUCPWGhnCGkLOeBdH/0LAL4pfEh/mDesAGkLp+FrQdmpCuLUg8StpBPFNYq6N4jSAhOcm2qQMKfQJ1oJ/KMe9u9j+eyuSLW+ZTT/ZSrY9mLbHaI2mZzVIOxqwA2t5OA8mPoSmX+iH5MkyoDuGr10q0pBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bS19z1rYmz2xRq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 22:20:36 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4bRys55D17z9vDH;
+	Wed, 25 Jun 2025 12:35:53 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id E-qPa8r-zWGB; Wed, 25 Jun 2025 12:35:53 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4bRys54JGWz9vDF;
+	Wed, 25 Jun 2025 12:35:53 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 87F7D8B7B7;
+	Wed, 25 Jun 2025 12:35:53 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id Tp4ps0JWzqlx; Wed, 25 Jun 2025 12:35:53 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 942C38B7A7;
+	Wed, 25 Jun 2025 12:35:51 +0200 (CEST)
+Message-ID: <db30beb6-a331-46b7-92a3-1ee7782e317a@csgroup.eu>
+Date: Wed, 25 Jun 2025 12:35:51 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,99 +58,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250620130810.99069-5-sgarzare@redhat.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 1/9] kasan: unify static kasan_flag_enabled across modes
+To: Sabyrzhan Tasbolatov <snovitoll@gmail.com>, ryabinin.a.a@gmail.com,
+ glider@google.com, andreyknvl@gmail.com, dvyukov@google.com,
+ vincenzo.frascino@arm.com, catalin.marinas@arm.com, will@kernel.org,
+ chenhuacai@kernel.org, kernel@xen0n.name, maddy@linux.ibm.com,
+ mpe@ellerman.id.au, npiggin@gmail.com, hca@linux.ibm.com, gor@linux.ibm.com,
+ agordeev@linux.ibm.com, borntraeger@linux.ibm.com, svens@linux.ibm.com,
+ richard@nod.at, anton.ivanov@cambridgegreys.com, johannes@sipsolutions.net,
+ dave.hansen@linux.intel.com, luto@kernel.org, peterz@infradead.org,
+ tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, x86@kernel.org,
+ hpa@zytor.com, chris@zankel.net, jcmvbkbc@gmail.com,
+ akpm@linux-foundation.org
+Cc: guoweikang.kernel@gmail.com, geert@linux-m68k.org, rppt@kernel.org,
+ tiwei.btw@antgroup.com, richard.weiyang@gmail.com, benjamin.berg@intel.com,
+ kevin.brodsky@arm.com, kasan-dev@googlegroups.com,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-s390@vger.kernel.org, linux-um@lists.infradead.org, linux-mm@kvack.org
+References: <20250625095224.118679-1-snovitoll@gmail.com>
+ <20250625095224.118679-2-snovitoll@gmail.com>
+Content-Language: fr-FR
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+In-Reply-To: <20250625095224.118679-2-snovitoll@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Fri, Jun 20, 2025 at 03:08:10PM +0200, Stefano Garzarella wrote:
-> From: Stefano Garzarella <sgarzare@redhat.com>
-> 
-> This driver does not support interrupts, and receiving the response is
-> synchronous with sending the command.
-> 
-> Enable synchronous send() with TPM_CHIP_FLAG_SYNC, which implies that
-> ->send() already fills the provided buffer with a response, and ->recv()
-> is not implemented.
-> 
-> Keep using the same pre-allocated buffer to avoid having to allocate
-> it for each command. We need the buffer to have the header required by
-> the SVSM protocol and the command contiguous in memory.
-> 
-> Signed-off-by: Stefano Garzarella <sgarzare@redhat.com>
-> ---
-> v5:
-> - changed order and parameter names to match tpm_try_transmit() [Jarkko]
-> v4:
-> - reworked commit description [Jarkko]
-> ---
->  drivers/char/tpm/tpm_svsm.c | 27 +++++++++++----------------
->  1 file changed, 11 insertions(+), 16 deletions(-)
-> 
-> diff --git a/drivers/char/tpm/tpm_svsm.c b/drivers/char/tpm/tpm_svsm.c
-> index 0847cbf450b4..f5ba0f64850b 100644
-> --- a/drivers/char/tpm/tpm_svsm.c
-> +++ b/drivers/char/tpm/tpm_svsm.c
-> @@ -26,37 +26,31 @@ struct tpm_svsm_priv {
->  };
->  
->  static int tpm_svsm_send(struct tpm_chip *chip, u8 *buf, size_t bufsiz,
-> -			 size_t len)
-> +			 size_t cmd_len)
->  {
->  	struct tpm_svsm_priv *priv = dev_get_drvdata(&chip->dev);
->  	int ret;
->  
-> -	ret = svsm_vtpm_cmd_request_fill(priv->buffer, 0, buf, len);
-> +	ret = svsm_vtpm_cmd_request_fill(priv->buffer, 0, buf, cmd_len);
->  	if (ret)
->  		return ret;
->  
->  	/*
->  	 * The SVSM call uses the same buffer for the command and for the
-> -	 * response, so after this call, the buffer will contain the response
-> -	 * that can be used by .recv() op.
-> +	 * response, so after this call, the buffer will contain the response.
-> +	 *
-> +	 * Note: we have to use an internal buffer because the device in SVSM
-> +	 * expects the svsm_vtpm header + data to be physically contiguous.
->  	 */
-> -	return snp_svsm_vtpm_send_command(priv->buffer);
-> -}
-> -
-> -static int tpm_svsm_recv(struct tpm_chip *chip, u8 *buf, size_t len)
-> -{
-> -	struct tpm_svsm_priv *priv = dev_get_drvdata(&chip->dev);
-> +	ret = snp_svsm_vtpm_send_command(priv->buffer);
-> +	if (ret)
-> +		return ret;
->  
-> -	/*
-> -	 * The internal buffer contains the response after we send the command
-> -	 * to SVSM.
-> -	 */
-> -	return svsm_vtpm_cmd_response_parse(priv->buffer, buf, len);
-> +	return svsm_vtpm_cmd_response_parse(priv->buffer, buf, bufsiz);
->  }
->  
->  static struct tpm_class_ops tpm_chip_ops = {
->  	.flags = TPM_OPS_AUTO_STARTUP,
-> -	.recv = tpm_svsm_recv,
->  	.send = tpm_svsm_send,
->  };
->  
-> @@ -85,6 +79,7 @@ static int __init tpm_svsm_probe(struct platform_device *pdev)
->  
->  	dev_set_drvdata(&chip->dev, priv);
->  
-> +	chip->flags |= TPM_CHIP_FLAG_SYNC;
->  	err = tpm2_probe(chip);
->  	if (err)
->  		return err;
-> -- 
-> 2.49.0
-> 
 
-Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
 
-BR, Jarkko
+Le 25/06/2025 à 11:52, Sabyrzhan Tasbolatov a écrit :
+> Historically the fast-path static key `kasan_flag_enabled` existed
+> only for `CONFIG_KASAN_HW_TAGS`. Generic and SW_TAGS either relied on
+> `kasan_arch_is_ready()` or evaluated KASAN checks unconditionally.
+> As a result every architecture had to toggle a private flag
+> in its `kasan_init()`.
+> 
+> This patch turns the flag into a single global runtime predicate that
+> is built for every `CONFIG_KASAN` mode and adds a helper that flips
+> the key once KASAN is ready.
+
+Shouldn't kasan_init_generic() also perform the following line to reduce 
+even more code duplication between architectures ?
+
+	init_task.kasan_depth = 0;
+
+Christophe
+
 
