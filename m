@@ -1,86 +1,108 @@
-Return-Path: <linuxppc-dev+bounces-9747-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9748-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ACAF7C7115C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 13:20:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4409C7EE2A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 13:46:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bS2VK645Jz30WX;
-	Wed, 25 Jun 2025 23:19:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750857593;
-	cv=none; b=AFlFCBh7X75E6o5Kwwr8zrW0okS7zgAwJOjH/zqcj1fqbcXr/vRjW039Gzp9US3BpxOoFXZBtBGZpRdqXSwzH48wGxEKTKFx3UZGJh/6tcUG9rGF6cmxKeZ87IjvjXlx8UPzDx9CDzQuX9BuQlFhYdaRe2bwTa4QOZx8NPhTp625bvbls8kdHfDgYJz2ZobIYwOxisZOM05mamQVY54Vg4muoJqog60khbZsrMQFjMSRz19FYvrGulE7wigd+KzxZRmxSyOd517vh/itkXZ41TdxY0tJjsGI6LlvhjmDAgavM6x9uhG+GQB3rIE5Lf1gN5ew5f1oAdbQWC1lpD60uA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bS35Y1sQfz307K;
+	Wed, 25 Jun 2025 23:46:57 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.149
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750856836;
+	cv=none; b=dwuGc4qM4ky7YpH8qybGV4uAl1xDLJbaflCzQljIT/n6fRDUaMkQwN2oa7ONhz5vlyh6ml3ZER0upAOucJk2rcvLHEG613mr+FN1wE1WtneMoNUVeE8TyfmB5aS0TR4BMVygU3a8vVztkat/b52AkUPtIpdxOjVuu4V3qmDPIukqgUBvdpmcfPRUhgKO/gPUQQMa1aNCcbMyw7wWr5Kp/UX4Rn+nMDzf/OazpzrKEt7lyAefmrrOxuUa5Q6qPDfWryjBLpLiqlu6jk5StLUpaFgu6ZLUTT/bz1UJM79bkPbUozduhy6UnBoTDHpEfKmBUBNB9MA28122+4cWfkcqcA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750857593; c=relaxed/relaxed;
-	bh=EgXAwE7Srq56G8hBoHMWeT/tSpntvUV5q0QgOFWJ/dI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=K/jX/FDceFkqGfclMVIIEkQptu8TFvvs/tEV9ptYZvLdM1gRhdxbM91HDpXebacPsNbmKrrsfLAnTGE6gtcZaRnFLiAdpm8feme7OaOFlK5zSrnlY5Gan2N6GEYkaOu9Af4Cciqlpm2dux//wsAbon230zL3EpqG1oOvHb4U9zgtnPS0010ANMwsB8goWdNFWDZ/4XO8AgeugxVdkqXLA7+wQXzgfQaQMakZyw81pT8uZrUw6z/+S7okToMjWUoig9xuvxZt4Z+CsJhI4Ca8FVtX7JTtDEB12vmjyDPrRrIAdHsCH672VBsVC/IvLEe++2GaNIA7osWnPcC0gh/4XQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GO7zj8pT; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1750856836; c=relaxed/relaxed;
+	bh=mYAc1EALspLuVXr2tNLHf33N87U9klyBRW2qKuitYhc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=AF7jNR7bLvOOA1ht/gGkEqn+iVcjUXuFAJNIktm0aVP8A2xuxdCAEKejL4B+qur9xTJ3rravtY0c9WliJ5wEnn0R2CV9JxsNIDIYQR9e39tqq/Wjn2KdfukclzWE/ddjIQnAy6KRQRiILuvKxF8N/L/fhdNSt6Sj8C0LL+IHYpe8QYkC93HWtKKx3hw7GnSjBEiN35Iji0A7s1oNhH/4Wb1UAldXzs/c2g0RCzIcctT73wN5ZprKpkqjf+Yja9po+GwXvgXqiBh3rKPOEsF1HS+KlxHBcr8ayesr4MVgUVaXco6SAx0L1lwaXhPd4N5VPmGeEgG3CC3eVmYPU2wRbw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arunraghavan.net; dkim=pass (2048-bit key; unprotected) header.d=arunraghavan.net header.i=@arunraghavan.net header.a=rsa-sha256 header.s=fm1 header.b=NiRCZPsb; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=Uz297v19; dkim-atps=neutral; spf=pass (client-ip=202.12.124.149; helo=fout-b6-smtp.messagingengine.com; envelope-from=arun@arunraghavan.net; receiver=lists.ozlabs.org) smtp.mailfrom=arunraghavan.net
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=arunraghavan.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=GO7zj8pT;
+	dkim=pass (2048-bit key; unprotected) header.d=arunraghavan.net header.i=@arunraghavan.net header.a=rsa-sha256 header.s=fm1 header.b=NiRCZPsb;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm2 header.b=Uz297v19;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arunraghavan.net (client-ip=202.12.124.149; helo=fout-b6-smtp.messagingengine.com; envelope-from=arun@arunraghavan.net; receiver=lists.ozlabs.org)
+Received: from fout-b6-smtp.messagingengine.com (fout-b6-smtp.messagingengine.com [202.12.124.149])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bS2VK0RH5z30LS
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 23:19:53 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 1BCF561785;
-	Wed, 25 Jun 2025 13:19:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 28477C4CEEA;
-	Wed, 25 Jun 2025 13:19:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750857590;
-	bh=EhfqM/D/gYgjuxfz5kh30ccEUkl+3JBKSIok1lR06Js=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=GO7zj8pTqPb1zaEwV5fxDNnho6jTaP+HMJnZdU7SfWYEupNztVlDcMF4dMt4M5FzS
-	 X8Ucn6Ut74Ulz2JzvGUqCeuEQi7GHunAL/vyESY79xQ+pmPDy2MUbJJvSDmQ6NKggn
-	 E4GQUvbHOfpF9PIWlEE5HYbRbOLwaadcKo4eVmLuFp8nJr0QK31kWilTdlxDrpFvMl
-	 KbKvUCYPkMw9m49t3c8wnxzuHsfoHONCSQmzXoXl0wAaBy3wMkhDev/k9alIT1o+zV
-	 S1UTmvWc69dMkYqytBdnw4TBcc+crqsIL5+rKLwMtmQ6imeM+jRXDwaN940jPdPX8I
-	 Sq81jKm8uM4hA==
-From: Leon Romanovsky <leon@kernel.org>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Leon Romanovsky <leonro@nvidia.com>,
-	Christoph Hellwig <hch@lst.de>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Joerg Roedel <joro@8bytes.org>,
-	Will Deacon <will@kernel.org>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Jason Wang <jasowang@redhat.com>,
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-	=?UTF-8?q?Eugenio=20P=C3=A9rez?= <eperezma@redhat.com>,
-	Alexander Potapenko <glider@google.com>,
-	Marco Elver <elver@google.com>,
-	Dmitry Vyukov <dvyukov@google.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	=?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bS2Cj2zhwz306l
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 23:07:12 +1000 (AEST)
+Received: from phl-compute-06.internal (phl-compute-06.phl.internal [10.202.2.46])
+	by mailfout.stl.internal (Postfix) with ESMTP id 0327E1D00217;
+	Wed, 25 Jun 2025 09:07:08 -0400 (EDT)
+Received: from phl-mailfrontend-02 ([10.202.2.163])
+  by phl-compute-06.internal (MEProxy); Wed, 25 Jun 2025 09:07:09 -0400
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	arunraghavan.net; h=cc:cc:content-transfer-encoding:content-type
+	:date:date:from:from:in-reply-to:message-id:mime-version
+	:reply-to:subject:subject:to:to; s=fm1; t=1750856828; x=
+	1750943228; bh=mYAc1EALspLuVXr2tNLHf33N87U9klyBRW2qKuitYhc=; b=N
+	iRCZPsbnH0kf8n0T3tzCALGVTdE+PGEtgVpNv/12qeHdRRgqV+f5VUV2IDGJbW75
+	DwT0YMujfHs4HHLSQpxvqcckpZz5zDcWoSYssh3eYpdCYKhhzjwcwfQOPKQ0HoM9
+	SexImBEwq0A/1ser+E7rIxm9EyMarN7ecbH0a348B76DhD4JtpOuMf4KK9MikN0N
+	f6NkgLVPjpQ+1UFeYpk5OZZ1qnC7qRTzaRSayZa96nfbglvFNNYyNjNoLl/p3YJ6
+	Ve0P6HIKuH+erc970GAGHnahzbsdlQN3bTzm8RFnjK2ggVVD1ABdAUcTOLO4/g5B
+	ACn40mBQtAj6ddaQG4VNw==
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
+	messagingengine.com; h=cc:cc:content-transfer-encoding
+	:content-type:date:date:feedback-id:feedback-id:from:from
+	:in-reply-to:message-id:mime-version:reply-to:subject:subject:to
+	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm2; t=
+	1750856828; x=1750943228; bh=mYAc1EALspLuVXr2tNLHf33N87U9klyBRW2
+	qKuitYhc=; b=Uz297v19dxDBmaCgXDfknpPIZW+pHMmgOjDcFyB54SxvpZl6Vja
+	b7s0N7hUfSC4qs0ayFcAwqePPMSwvdjHYj2WppEEVeBlaZq1yHBSzmclPDs0+gE5
+	mzIMQZdZMsxLMo01OTltX1UsD9J7vab4fn9ZYaECZJV7Inb+1JRa8Y5cCVNaI3LB
+	ZC6Bk+MTBzMU+q4Cv8Y/m6x1MEv2pUAIJZqPM2DZhEVGLAhSkSAJnM3cdkexXENe
+	swLfgj0H55ja98Y8RoUJe8N9KEiiQlrNYrSdXUV9XEkx+240zalkmEIVyp8hyyRO
+	rZDusFTAenq5GWYGS2FelndeOxVhl0s+UDg==
+X-ME-Sender: <xms:e_RbaBJkMxaGd8E8pikNRd405FY43X_jhr45TSBzWwShZjklcnxSew>
+    <xme:e_RbaNLjV8QP-AqS623yT--JoEalmfCMsmoh4qqebQAPHuGeTPLV7a-SJNZexSR06
+    nY9p_JAld-vdOzeOg>
+X-ME-Received: <xmr:e_RbaJsEE6l4tAifTSWhNnVwCyl-WQJr1JP4GJddF-5H5b89QiXmekKpDStq1Trz>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtddvgddvvdekhecutefuodetggdotefrod
+    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
+    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
+    hrpefhvfevufffkffoggfgsedtkeertdertddtnecuhfhrohhmpeetrhhunhcutfgrghhh
+    rghvrghnuceorghruhhnsegrrhhunhhrrghghhgrvhgrnhdrnhgvtheqnecuggftrfgrth
+    htvghrnhepteduheelvedvledvudfhudevkefhhfeifefggeevkedvudfgueelvdehtdet
+    vdefnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehmrghilhhfrhhomheprg
+    hruhhnsegrrhhunhhrrghghhgrvhgrnhdrnhgvthdpnhgspghrtghpthhtohepudefpdhm
+    ohguvgepshhmthhpohhuthdprhgtphhtthhopehshhgvnhhgjhhiuhdrfigrnhhgsehgmh
+    grihhlrdgtohhmpdhrtghpthhtohepgihiuhgsohdrlhgvvgesghhmrghilhdrtghomhdp
+    rhgtphhtthhopehfvghsthgvvhgrmhesghhmrghilhdrtghomhdprhgtphhtthhopehnih
+    gtohhlvghothhsuhhkrgesghhmrghilhdrtghomhdprhgtphhtthhopehlghhirhgufiho
+    ohgusehgmhgrihhlrdgtohhmpdhrtghpthhtohepsghrohhonhhivgeskhgvrhhnvghlrd
+    horhhgpdhrtghpthhtohepphgvrhgvgiesphgvrhgvgidrtgiipdhrtghpthhtohepthhi
+    figrihesshhushgvrdgtohhmpdhrtghpthhtohepphdrtggrmhgvrhhlhihntghksehtvg
+    hlvghvihgtrdgtohhm
+X-ME-Proxy: <xmx:e_RbaCakAwEoJ-N3AuLc6sRbLQSp7FC_TzfgO_6jk7UkOpVN27ZgXA>
+    <xmx:e_RbaIbMUjfp5FiWTkCiO7V5ntXLGeuabYiGZUgSKLGs3ciGqwo2Iw>
+    <xmx:e_RbaGAVcDLFmlIN9eDjCOyUqdkCvA4KUQICVaKnCrF4L8n6mi42_g>
+    <xmx:e_RbaGbrCpRevF54zYbUdCgNvs3GHf8RhmhjIGf3hjsx9E4hbJSF7A>
+    <xmx:fPRbaCIbg9Vu5L40sdvsI0bLIuxbK8TFcuRsoolv83b_LMG0z0WTLYzy>
+Feedback-ID: i42c0435e:Fastmail
+Received: by mail.messagingengine.com (Postfix) with ESMTPA; Wed,
+ 25 Jun 2025 09:07:06 -0400 (EDT)
+From: Arun Raghavan <arun@arunraghavan.net>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>
+Cc: Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Pieterjan Camerlynck <p.camerlynck@televic.com>,
+	linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	iommu@lists.linux.dev,
-	virtualization@lists.linux.dev,
-	kasan-dev@googlegroups.com,
-	linux-trace-kernel@vger.kernel.org,
-	linux-mm@kvack.org
-Subject: [PATCH 8/8] mm/hmm: migrate to physical address-based DMA mapping API
-Date: Wed, 25 Jun 2025 16:19:05 +0300
-Message-ID: <8a85f4450905fcb6b17d146cc86c11410d522de4.1750854543.git.leon@kernel.org>
+	linux-kernel@vger.kernel.org,
+	Arun Raghavan <arun@asymptotic.io>
+Subject: [PATCH] ASoC: fsl_sai: Force a software reset when starting in consumer mode
+Date: Wed, 25 Jun 2025 09:06:48 -0400
+Message-ID: <20250625130648.201331-1-arun@arunraghavan.net>
 X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1750854543.git.leon@kernel.org>
-References: <cover.1750854543.git.leon@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,54 +118,47 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Leon Romanovsky <leonro@nvidia.com>
+From: Arun Raghavan <arun@asymptotic.io>
 
-Convert HMM DMA operations from the legacy page-based API to the new
-physical address-based dma_map_phys() and dma_unmap_phys() functions.
-This demonstrates the preferred approach for new code that should use
-physical addresses directly rather than page+offset parameters.
+In a setup with an external clock provider, when running the receiver
+(arecord) and triggering an xrun with xrun_injection, we see a channel
+swap/offset. This happens sometimes when running only the receiver, but
+occurs reliably if a transmitter (aplay) is also concurrently running.
 
-The change replaces dma_map_page() and dma_unmap_page() calls with
-dma_map_phys() and dma_unmap_phys() respectively, using the physical
-address that was already available in the code. This eliminates the
-redundant page-to-physical address conversion and aligns with the
-DMA subsystem's move toward physical address-centric interfaces.
+The theory is that SAI seems to lose track of frame sync during the
+trigger stop -> trigger start cycle that occurs during an xrun. Doing
+just a FIFO reset in this case does not suffice, and only a software
+reset seems to get it back on track.
 
-This serves as an example of how new code should be written to leverage
-the more efficient physical address API, which provides cleaner interfaces
-for drivers that already have access to physical addresses.
-
-Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
+Signed-off-by: Arun Raghavan <arun@asymptotic.io>
+Reported-by: Pieterjan Camerlynck <p.camerlynck@televic.com>
 ---
- mm/hmm.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ sound/soc/fsl/fsl_sai.c | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-diff --git a/mm/hmm.c b/mm/hmm.c
-index feac86196a65..9354fae3ae06 100644
---- a/mm/hmm.c
-+++ b/mm/hmm.c
-@@ -779,8 +779,8 @@ dma_addr_t hmm_dma_map_pfn(struct device *dev, struct hmm_dma_map *map,
- 		if (WARN_ON_ONCE(dma_need_unmap(dev) && !dma_addrs))
- 			goto error;
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index af1a168d35e3..3a5ebf32903f 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -841,6 +841,18 @@ static int fsl_sai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 	case SNDRV_PCM_TRIGGER_START:
+ 	case SNDRV_PCM_TRIGGER_RESUME:
+ 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
++		/*
++		 * Force a software reset if we are not the clock provider, as we
++		 * might have lost frame sync during xrun recovery.
++		 */
++		if (sai->is_consumer_mode) {
++			regmap_update_bits(sai->regmap,
++					FSL_SAI_xCSR(tx, ofs), FSL_SAI_CSR_SR,
++					FSL_SAI_CSR_SR);
++			regmap_update_bits(sai->regmap,
++					FSL_SAI_xCSR(tx, ofs), FSL_SAI_CSR_SR,
++					0);
++		}
+ 		regmap_update_bits(sai->regmap, FSL_SAI_xCSR(tx, ofs),
+ 				   FSL_SAI_CSR_FRDE, FSL_SAI_CSR_FRDE);
  
--		dma_addr = dma_map_page(dev, page, 0, map->dma_entry_size,
--					DMA_BIDIRECTIONAL);
-+		dma_addr = dma_map_phys(dev, paddr, map->dma_entry_size,
-+					DMA_BIDIRECTIONAL, 0);
- 		if (dma_mapping_error(dev, dma_addr))
- 			goto error;
- 
-@@ -823,8 +823,8 @@ bool hmm_dma_unmap_pfn(struct device *dev, struct hmm_dma_map *map, size_t idx)
- 		dma_iova_unlink(dev, state, idx * map->dma_entry_size,
- 				map->dma_entry_size, DMA_BIDIRECTIONAL, attrs);
- 	} else if (dma_need_unmap(dev))
--		dma_unmap_page(dev, dma_addrs[idx], map->dma_entry_size,
--			       DMA_BIDIRECTIONAL);
-+		dma_unmap_phys(dev, dma_addrs[idx], map->dma_entry_size,
-+			       DMA_BIDIRECTIONAL, 0);
- 
- 	pfns[idx] &=
- 		~(HMM_PFN_DMA_MAPPED | HMM_PFN_P2PDMA | HMM_PFN_P2PDMA_BUS);
 -- 
 2.49.0
 
