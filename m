@@ -1,87 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-9780-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9781-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08EB7C7115C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 16:42:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2997BC77B7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 19:12:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bS70W2kjFz30MY;
-	Thu, 26 Jun 2025 02:42:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750869771;
-	cv=none; b=THa0WmQW6p+pe9pCN+rbkd8kx1XwzXySUAZUiQKNPeXnHTNzLbsui2TKAFDr0+Bfqnk7BVRmQjMTs13RKQjorngFz6dVavMibR06YVuySAzlDQRnd31jVwMRQMj1M9d2h/CZpE3uESQdIU+udp/LqjFmv22oEZktFAWpybZgem5eEb+MnFNY8yPUqlGBPOYznnCC5BeNrfqI+b/siABLK6VDcz6gQICyqJr+FPHmPPnIresxIYvwVdX30cAxseMlkCY54HqMQrDm/4qOMmOtlJ0U2zrJ48kwXaC0sUAfo+qx0awYsHt6zu5hTvOr0nLioUOGEi+ez/a4dwtu/uFMZQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bSBJp23vSz30NP;
+	Thu, 26 Jun 2025 05:12:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750878730;
+	cv=none; b=l7aDKDEq7+29e9thJjHVUPyfMAbAYFj8995jxF2GgYrOA1+ajIC9GO+hJQpCsZ6RuLV5tbHAMF3CeTq+4EdJlTMlrstNAYsclpv5WYXkGUFkSj1gwmVld06JjGE0xK9j1hMKYTL3WfjjcvKUtEaChcOxdvwH8hOOlVMFrWLl6mGu5gJG9ob1VXSMygG+jULxPWN7IVvK8/Tlbhz0MGMjIXe+iSzAdOM1Py31M7exzd1jfHT18ksTGPLlSV3jx6tXkw4J0xSVpwy3qbYV/nXGZ9YOjacUTeLI7kcMZbOYjgwuBGA7TmuIdqkG5zO1zbk7uMXXjrL0SwK0fBn63BTtXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750869771; c=relaxed/relaxed;
-	bh=Nlfl0HvL6p5C9wiWXuv3ZyT8srkPY79gCbVcPY25wgE=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Nprpnxd3tbfgAKPDrptCgtHtLxhwSng6KnQBbpuEJo7fy02cX5N0TJ+kiTA7Y35TJ69vCjqMyHQa39SLjk0NVH5Rx3/vaxPUrgFyJ8OUfmdSxttSrCybYQjd9Il64k3a1COWuTICbhGNyqHXNr5gI2IzBKzlIwNQSRAvCiACfh8ALD/Ew2TJBrxlnlHAy8E6P0BIGCrOsfLaHDjoDF1kkuhS5JG82QLfOVXzVDk8NznI93Z1y6ZYQZubPN7nt9Dqig7mDqRnBt4fiP2Ck3zN+SjmvwxxGE2HHb9kwZKMxx6RjQZPoYodGy2g5U1nhCkVmXiWS/2k+ypxycouKJIQCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YkTaL1mu; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KEAxUpn4; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=sgarzare@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1750878730; c=relaxed/relaxed;
+	bh=9+d7RfDCUMcyGi2BXCxRuU2xnlzRa42/iauZPwBkcyU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=I5q73spKyR5Cz6Mz0qaZiXS4LaQbping4uIAn3G/RQ9iiXR/ZP2dvTczXuum3fbiMk1mvAn9JCbmG192uIET4uf1CzQcBpC7rbvGpuZc46/u0fQvyiZJnR7nBf4ERBpjceMUMfvkJ8OdOxPN4rwS5jhaCnktHHRIJ1fYpN4ROP2zxWZNJrcHTljaIb6CC9vChtaMFlsdtTZ1PCfSZFKp5T598YFmu3dzH7THUY23ugZTljEFLepI3PJrRfMFspiJaY/bgSVerUeLTD2KOaIhGC0f8GvA+SRxsSHpsHoSDLWN20F0TVmng04ILphUajz9eIlJao5nFa+lM7YQeqInOA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=I7j9hsKP; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YkTaL1mu;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KEAxUpn4;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=I7j9hsKP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=sgarzare@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bS70V0p1Xz30Lt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2025 02:42:47 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1750869762;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Nlfl0HvL6p5C9wiWXuv3ZyT8srkPY79gCbVcPY25wgE=;
-	b=YkTaL1muQkscOMq/yYdhIlqoTzEznbiGIef6upiEu0ZjC5jNPUmta/33QbaWmdBOvaaBa1
-	DWRvmf+sBoPqhWOQ+JTzBaXzNvGegyJa5BjHP+GLiDEpmZFxHCSv+6kSHJ3LTBnc5uOcO3
-	1xJU7MCLlkUj3Huw7W6flPiQYv/krG4=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1750869763;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=Nlfl0HvL6p5C9wiWXuv3ZyT8srkPY79gCbVcPY25wgE=;
-	b=KEAxUpn4sI+pd+NIXAq5e6m5rSa+z1/vgh3OVVllUjaIxVgbTnaGygBt+sSjrlG8I1iSP0
-	WTo87YmMVOb63Mm/brnwRmfUGt4TOOpQLhOVeTL79FI5vXZmWmfF6WTqKjRmMXL6MYvtRo
-	xyjvaW/BLtNIoPpUknMHk4myyzCS4h0=
-Received: from mail-yw1-f199.google.com (mail-yw1-f199.google.com
- [209.85.128.199]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-155-WrKK6V80PGiXPsHl_uRzwA-1; Wed, 25 Jun 2025 12:42:39 -0400
-X-MC-Unique: WrKK6V80PGiXPsHl_uRzwA-1
-X-Mimecast-MFC-AGG-ID: WrKK6V80PGiXPsHl_uRzwA_1750869759
-Received: by mail-yw1-f199.google.com with SMTP id 00721157ae682-714052e5103so1090307b3.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 09:42:39 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750869759; x=1751474559;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=Nlfl0HvL6p5C9wiWXuv3ZyT8srkPY79gCbVcPY25wgE=;
-        b=wNU/g837Py/vPPaHVcT1b+9/RxFORQwhg53UnYb8rHjmtMwAR/ErCd5lIgdmBCRFsJ
-         gAieWPy7+2n/ea1A8n9AMgGZkcWFW7XAwl2ysZta87ztW1FNP//TpNmX08kF3vP1AFOO
-         JDWCS/a5vdnO1jwF0V6e+w/v37KEdw5NOO7Y0U2/NGE6vqWNE0/GfiAHO3b3f4rzYWTO
-         b/bqKQ6vaAvbPNfPmPG5KZPHhEGcHihirNkGw1U5l/TVxzN/1UBjigVyLFpuMStArfz9
-         445p+mVKK0jzJ0w63swBjJ2HLQU2GIEYitEjm4uM+0XKS/nd7FKo+cn8GWk1+hi8r2v6
-         uKpg==
-X-Forwarded-Encrypted: i=1; AJvYcCVkedipaNKrg60R4TNzxe990fWOnJIjlDwcSQyazWqbf3mF9yn8sL7ArJmqAYZzCTWUP5lUo8S/rHYS49k=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxkF2J7Mi23xWNyXknfsSUBkPHVb+EUp5aFjXWEtakuh/1vYKua
-	jezNj0OFA+ppmf6UptN3Mv3WqkEtQolkQgzlaqvDLXphOk7ySkg35D+fHZSeczRk+dYxq+5VDYr
-	6G3IrM8FlP/xv1Nz+AMZJOFZg8DiDMPSgaKqR67J80wwzHsUqIj9XjhGgUwk3vo6OPj8A6IxiDo
-	e7u7f/MoLnWZRasZ74eubqsPAPzbmkiBPmUBaVEu353Q==
-X-Gm-Gg: ASbGncs2wyLyUA8L9Zls17HtnYk6Q9ayeDaEHK5ye9BYTL1/x7VwXlVAUCRa9dZIPCw
-	cESk68da6LqKtVsC1jVfbzuFz0xonSzv/N6MGkS79/9Y2d7R0d84NIO7jSPsBeiVh9MRLhsd6mp
-	4soi10pg==
-X-Received: by 2002:a05:690c:6b0c:b0:70f:8913:ed66 with SMTP id 00721157ae682-715087c70bdmr10121957b3.38.1750869759008;
-        Wed, 25 Jun 2025 09:42:39 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFieNmTUGgh1wCgADlrPL5JDmEvLuKpDHJRUgQ2djJiYYhZb7UVT6EWDckb5lNTgx4pKSPLhXjmzcMJTZ3XZMc=
-X-Received: by 2002:a05:690c:6b0c:b0:70f:8913:ed66 with SMTP id
- 00721157ae682-715087c70bdmr10121207b3.38.1750869758423; Wed, 25 Jun 2025
- 09:42:38 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bSBJn1PGYz30BG
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2025 05:12:08 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 55PELbb5002256;
+	Wed, 25 Jun 2025 19:11:38 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=9+d7RfDCUMcyGi2BX
+	CxRuU2xnlzRa42/iauZPwBkcyU=; b=I7j9hsKPuyh2e3he1wR8KmwFe8lQA7f5y
+	rYxKu41fp/sfEjIwX4rW2yhSBAAcPLDI9kiKSWp1qzhf8EfM2exY4YvhmxBtEklF
+	N4gcfYpqek8GdSi4kZHoshnLzrYdvrwMh7ieFPjuhIb1Bg9TpfiQIjGFYPTYd5iK
+	D26gfc5tUip1KNh8VP8MHqnNN1MoFiASX8LCe0cEhUG3vcVnNI7jv5so1hD2qaNf
+	eh7V6RheSlq9H/suTEHOMNSC/o642v3fev3/JyxHfU5QBdwkwE3Qii+uMMkkQvd7
+	wP7ZygwJ/KHl7znanktJ40JYDvyfGrdfA4b2ZvsIS1wLAf6F3DFSA==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 47dm8jhhd1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 25 Jun 2025 19:11:38 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 55PJAD2u020289;
+	Wed, 25 Jun 2025 19:11:37 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 47dm8jhhcw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 25 Jun 2025 19:11:37 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 55PGq7wY030487;
+	Wed, 25 Jun 2025 19:11:36 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 47e7f030rd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 25 Jun 2025 19:11:36 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 55PJBWGM52494642
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 25 Jun 2025 19:11:32 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 105EC20040;
+	Wed, 25 Jun 2025 19:11:32 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6F22720043;
+	Wed, 25 Jun 2025 19:11:28 +0000 (GMT)
+Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.124.209.143])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 25 Jun 2025 19:11:28 +0000 (GMT)
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+To: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
+        vincent.guittot@linaro.org, tglx@linutronix.de, yury.norov@gmail.com,
+        maddy@linux.ibm.com
+Cc: sshegde@linux.ibm.com, vschneid@redhat.com, dietmar.eggemann@arm.com,
+        rostedt@goodmis.org, kprateek.nayak@amd.com, huschle@linux.ibm.com,
+        srikar@linux.ibm.com, linux-kernel@vger.kernel.org,
+        christophe.leroy@csgroup.eu, linuxppc-dev@lists.ozlabs.org,
+        gregkh@linuxfoundation.org
+Subject: [RFC v2 1/9] sched/docs: Document avoid_cpu_mask and avoid CPU concept
+Date: Thu, 26 Jun 2025 00:41:00 +0530
+Message-ID: <20250625191108.1646208-2-sshegde@linux.ibm.com>
+X-Mailer: git-send-email 2.43.5
+In-Reply-To: <20250625191108.1646208-1-sshegde@linux.ibm.com>
+References: <20250625191108.1646208-1-sshegde@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,126 +99,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250620130810.99069-1-sgarzare@redhat.com> <20250620130810.99069-5-sgarzare@redhat.com>
- <aFvlaY0BNjaGxU1D@kernel.org> <aFwQ129i_HYzG3aY@kernel.org>
-In-Reply-To: <aFwQ129i_HYzG3aY@kernel.org>
-From: Stefano Garzarella <sgarzare@redhat.com>
-Date: Wed, 25 Jun 2025 18:42:26 +0200
-X-Gm-Features: Ac12FXxEB7j1Pqu364HQDxXaTieTzsNMquFeCJO9Pw5PNZpgUTeipi1JP5Ohhks
-Message-ID: <CAGxU2F4q_UyBiNqWfQMVAXqsWQbtu5ety9MTpg35eRcE=eVqjg@mail.gmail.com>
-Subject: Re: [PATCH v6 4/4] tpm/tpm_svsm: support TPM_CHIP_FLAG_SYNC
-To: Jarkko Sakkinen <jarkko@kernel.org>
-Cc: linux-kernel@vger.kernel.org, Nicolas Ferre <nicolas.ferre@microchip.com>, 
-	Naveen N Rao <naveen@kernel.org>, Sumit Garg <sumit.garg@kernel.org>, 
-	linux-integrity@vger.kernel.org, Peter Huewe <peterhuewe@gmx.de>, 
-	Jens Wiklander <jens.wiklander@linaro.org>, 
-	James Bottomley <James.Bottomley@hansenpartnership.com>, 
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, Nicholas Piggin <npiggin@gmail.com>, 
-	Jason Gunthorpe <jgg@ziepe.ca>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Alexandre Belloni <alexandre.belloni@bootlin.com>, Claudiu Beznea <claudiu.beznea@tuxon.dev>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: JhqGREWGA4FKC5u0KJX4j01L8-s8lR8ATQcMxyjaznM_1750869759
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNjI1MDE0MSBTYWx0ZWRfX57VmWe5XYxRc b58FKiEEVnlkADF1Y4ms1gpjAq+hnNW/yN+Xh/0hAwGZ21ac7AJbrQdynjCCmVuDviQ2p12GRYo s8uIxGSTratWHXmzKrMwzSOIZXkr8DWyMcSZ/c9bqS1DHIrmsyF38BlAsBAf4qDQzZm59XH4Ewg
+ nc3l4orWLycmkkV1j0/YqhYqVN/tOMxSSy9iFJrzN+SC+AGDAfQbauX/JX3F6FTMICo/Hd5hb3u xItrAyJh3uTSKLFOE7sFP5GjjyzhKZiqfOY4odzWqihMT8vD0gvJ7wjRLmyqoem0z3GarbmoMRN Z5BVmObk0zAhpK7wfqVbZAYPbDE9IrpG6b6qpaYyn+x3tMqS9pdcaMTLL2CAtyuTUMVO5lxLeZ1
+ M+VkhqQWR5O8vHeChKt8BsY5D8M9rao9cMCejpXDLt6GV0vmaoQj7W/Z/erZmxKhwbCp+fzz
+X-Proofpoint-GUID: CrdOf7y_8SXN7UNmObo2YZTj5GjREvzS
+X-Proofpoint-ORIG-GUID: wQj-IDrmhnmGmzaEQsz7vdRhdF1uncyG
+X-Authority-Analysis: v=2.4 cv=combk04i c=1 sm=1 tr=0 ts=685c49ea cx=c_pps a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17 a=6IFa9wvqVegA:10 a=VnNF1IyMAAAA:8 a=5nzgSDI2G5BSHnRbDcAA:9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.7,FMLib:17.12.80.40
+ definitions=2025-06-25_06,2025-06-25_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ malwarescore=0 spamscore=0 adultscore=0 mlxlogscore=977 clxscore=1015
+ impostorscore=0 suspectscore=0 mlxscore=0 phishscore=0 lowpriorityscore=0
+ bulkscore=0 classifier=spam authscore=0 authtc=n/a authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.19.0-2505280000
+ definitions=main-2506250141
 
-On Wed, 25 Jun 2025 at 17:08, Jarkko Sakkinen <jarkko@kernel.org> wrote:
->
-> On Wed, Jun 25, 2025 at 03:02:54PM +0300, Jarkko Sakkinen wrote:
-> > On Fri, Jun 20, 2025 at 03:08:10PM +0200, Stefano Garzarella wrote:
-> > > From: Stefano Garzarella <sgarzare@redhat.com>
-> > >
-> > > This driver does not support interrupts, and receiving the response is
-> > > synchronous with sending the command.
-> > >
-> > > Enable synchronous send() with TPM_CHIP_FLAG_SYNC, which implies that
-> > > ->send() already fills the provided buffer with a response, and ->recv()
-> > > is not implemented.
-> > >
-> > > Keep using the same pre-allocated buffer to avoid having to allocate
-> > > it for each command. We need the buffer to have the header required by
-> > > the SVSM protocol and the command contiguous in memory.
-> > >
-> > > Signed-off-by: Stefano Garzarella <sgarzare@redhat.com>
-> > > ---
-> > > v5:
-> > > - changed order and parameter names to match tpm_try_transmit() [Jarkko]
-> > > v4:
-> > > - reworked commit description [Jarkko]
-> > > ---
-> > >  drivers/char/tpm/tpm_svsm.c | 27 +++++++++++----------------
-> > >  1 file changed, 11 insertions(+), 16 deletions(-)
-> > >
-> > > diff --git a/drivers/char/tpm/tpm_svsm.c b/drivers/char/tpm/tpm_svsm.c
-> > > index 0847cbf450b4..f5ba0f64850b 100644
-> > > --- a/drivers/char/tpm/tpm_svsm.c
-> > > +++ b/drivers/char/tpm/tpm_svsm.c
-> > > @@ -26,37 +26,31 @@ struct tpm_svsm_priv {
-> > >  };
-> > >
-> > >  static int tpm_svsm_send(struct tpm_chip *chip, u8 *buf, size_t bufsiz,
-> > > -                    size_t len)
-> > > +                    size_t cmd_len)
-> > >  {
-> > >     struct tpm_svsm_priv *priv = dev_get_drvdata(&chip->dev);
-> > >     int ret;
-> > >
-> > > -   ret = svsm_vtpm_cmd_request_fill(priv->buffer, 0, buf, len);
-> > > +   ret = svsm_vtpm_cmd_request_fill(priv->buffer, 0, buf, cmd_len);
-> > >     if (ret)
-> > >             return ret;
-> > >
-> > >     /*
-> > >      * The SVSM call uses the same buffer for the command and for the
-> > > -    * response, so after this call, the buffer will contain the response
-> > > -    * that can be used by .recv() op.
-> > > +    * response, so after this call, the buffer will contain the response.
-> > > +    *
-> > > +    * Note: we have to use an internal buffer because the device in SVSM
-> > > +    * expects the svsm_vtpm header + data to be physically contiguous.
-> > >      */
-> > > -   return snp_svsm_vtpm_send_command(priv->buffer);
-> > > -}
-> > > -
-> > > -static int tpm_svsm_recv(struct tpm_chip *chip, u8 *buf, size_t len)
-> > > -{
-> > > -   struct tpm_svsm_priv *priv = dev_get_drvdata(&chip->dev);
-> > > +   ret = snp_svsm_vtpm_send_command(priv->buffer);
-> > > +   if (ret)
-> > > +           return ret;
-> > >
-> > > -   /*
-> > > -    * The internal buffer contains the response after we send the command
-> > > -    * to SVSM.
-> > > -    */
-> > > -   return svsm_vtpm_cmd_response_parse(priv->buffer, buf, len);
-> > > +   return svsm_vtpm_cmd_response_parse(priv->buffer, buf, bufsiz);
-> > >  }
-> > >
-> > >  static struct tpm_class_ops tpm_chip_ops = {
-> > >     .flags = TPM_OPS_AUTO_STARTUP,
-> > > -   .recv = tpm_svsm_recv,
-> > >     .send = tpm_svsm_send,
-> > >  };
-> > >
-> > > @@ -85,6 +79,7 @@ static int __init tpm_svsm_probe(struct platform_device *pdev)
-> > >
-> > >     dev_set_drvdata(&chip->dev, priv);
-> > >
-> > > +   chip->flags |= TPM_CHIP_FLAG_SYNC;
-> > >     err = tpm2_probe(chip);
-> > >     if (err)
-> > >             return err;
-> > > --
-> > > 2.49.0
-> > >
-> >
-> > Reviewed-by: Jarkko Sakkinen <jarkko@kernel.org>
->
-> Applied.
+This describes what avoid CPU means and what scheduler aims to do 
+when a CPU is marked as avoid. 
 
-Great, thanks!
-Stefano
+Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+---
+ Documentation/scheduler/sched-arch.rst | 25 +++++++++++++++++++++++++
+ 1 file changed, 25 insertions(+)
+
+diff --git a/Documentation/scheduler/sched-arch.rst b/Documentation/scheduler/sched-arch.rst
+index ed07efea7d02..d32755298fca 100644
+--- a/Documentation/scheduler/sched-arch.rst
++++ b/Documentation/scheduler/sched-arch.rst
+@@ -62,6 +62,31 @@ Your cpu_idle routines need to obey the following rules:
+ arch/x86/kernel/process.c has examples of both polling and
+ sleeping idle functions.
+ 
++CPU Avoid
++=========
++
++Under paravirt conditions it is possible to overcommit CPU resources.
++i.e sum of virtual CPU(vCPU) of all VM is greater than number of physical
++CPUs(pCPU). Under such conditions when all or many VM have high utilization,
++hypervisor won't be able to satisfy the requirement and has to context switch
++within or across VM. VM level context switch is more expensive compared to
++task context switch within the VM.
++
++In such cases it is better that VM's co-ordinate among themselves and ask for
++less CPU request by not using some of the vCPUs. Such vCPUs where workload
++can be avoided at the moment are called as "Avoid CPUs". Note that when the
++pCPU contention goes away, these vCPUs can be used again by the workload.
++
++Arch need to set/unset the vCPU as avoid in cpu_avoid_mask. When set, avoid
++the CPU and when unset, use it as usual.
++
++Scheduler will try to avoid those CPUs as much as it can.
++This is achived by
++1. Not selecting those CPU at wakeup.
++2. Push the task away from avoid CPU at tick.
++3. Not selecting avoid CPU at load balance.
++
++This works only for SCHED_RT and SCHED_NORMAL.
+ 
+ Possible arch/ problems
+ =======================
+-- 
+2.43.0
 
 
