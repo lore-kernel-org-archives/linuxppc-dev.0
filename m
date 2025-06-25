@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-9703-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9704-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 87A31C7115C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 07:10:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01B66C77B7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 07:11:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bRtJ94y7Gz30Pg;
-	Wed, 25 Jun 2025 17:10:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bRtJB3MW8z2xbX;
+	Wed, 25 Jun 2025 17:10:34 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750835433;
-	cv=none; b=dafiOnFydQSAGx5Nk2n4PpOLREGwujS0laAU4ccJBuEHNYM/XMB7ZVhhBR1r86TZqUtTMw3G0kebb/mpkTVYVYzvoTPvy7jaxOMTN343boKlNHlaAx3Mskx6DCoZugvErkjtf65qYs8giiALO/6LXzrXgyhsaOYJLQf4UL6jOpVO3GzhemBsK0GkXS05fcqPeS3k15jtTs4S8hxly1wVIXLGoSPwvEtsnbJJ59XKp8PPWO22mcn9LSiYKiZvvB5gIa11GfQcCJs33q64069seh7UoD0fyUbwoVAZzPSWu44oIs0bu5SaVOlAy5Zz5toZbgWxbnR29g5orfqwe4pg7g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750835434;
+	cv=none; b=Vut7R7tAMqcexA8OJWvm5DpGu8U79liTtVgZTT3PmeXNjtmWgiRnt3CwmnE97yuCXeV7/Iq3akoxASyEbOjGpj7S5WVb0dKQ0GDStmDIyELIHBxz12pn6x918TRcz7Iws8P4TkRrmB20Nysck4uovAfmQ//WkwPo3hHS3XBlXQxaV3zcpQx9Y3NYJhS7JD8UYVpGnUSSLReiNtmHjkRM6TcyQcciN5JDdClQ8tQf9ykKorWHuGrWaFbOgt9v9Q9/AnD1190t2PTHk6eZhNiFKgI0h8PiCILbIgXD4Eg6pzV+ploBISnpOJ6wX1Ti66r6SIMbuX9pDKRJ0AQtbE6s3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750835433; c=relaxed/relaxed;
-	bh=Rl/X8BNjuQKErI+jOCJgRTCoqLvybfG5zlXzbd1fC88=;
+	t=1750835434; c=relaxed/relaxed;
+	bh=KYmOcR+Ty6ORVYOprUyh9SHSbbSmp4y4Zcmg/7D/5kY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=jApicFrw6ZlZ7+4zAphk39qKDSPWxnRw5/44xL+y2OJ5HSpWKxLsPuM1PiiyhiHevcoKsiodQwssJQElf+kv4tLTSFgkOYI3zabFWwMtxCGKcRnRgzoj395ZhZcz4LU4njt3cmyuha6GOBQNzc7PSGyY116gIFADfnbWxSM9kozPZ2ab0gRJZX8lQcqB9q3XHdp3NrX8E+ZAuAxSC4z95nkwMau5IPqJ0WwK31wsJohY2PGkNLPpXnAgZMS9DlOXhtZUnjcX/HBdHisEI+Fz9w9tTzJMPg7U4CPKOFE34WFa9ywPv2Ist2h1svKYH2A57LQNM6UmdCog1ibZtTpLAw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AFyVXiVi; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=MZ3FOtqnbsK/eWqBd7WgB1gQkMs0aLU8TBaT+rTrzzDfPHgSf+QgKQgp4Jmu0LpbWbY0kfqvhT5dfWx+YlunS4vdKv7QeGwTwD/XoNyCxxdwEGz3wXKDa3z+7esL6I5H/D7gDYdtQ6DbrUpG+Vepq0vj5TF0QwiavPUL5MtYUrpYTrX5EusOFVkGYP44Zubl7vy7nfi8WIwDSSiusNcmHGeoEwWLgzQ0uKh87he/jyPDgGolXvempHvklelugLS41I0gPwzbP8nK1B1C2poH7ft0zyGlky4X+YNwWcuvRKKRjuqLXMVoPa2ljpZD8x34GkfCmWpWVnV5DTlby5f/nA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nqVpQzpx; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=AFyVXiVi;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nqVpQzpx;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bRtJ645Rpz2xbX
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 17:10:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bRtJ73LFnz307q
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 17:10:31 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 32D384AA30;
-	Wed, 25 Jun 2025 07:10:28 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4181C4CEF4;
-	Wed, 25 Jun 2025 07:10:27 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 9F8F44AFEC;
+	Wed, 25 Jun 2025 07:10:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 303BCC4CEF4;
+	Wed, 25 Jun 2025 07:10:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750835428;
-	bh=UROoErFHCYCaDPqAxDhc4AhSGoASaVjnImGlpaYhSWw=;
+	s=k20201202; t=1750835429;
+	bh=1DNk7tX1YvvlA6uSWHlfTS+Bb3s1eS+aWteQQPlb1JM=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=AFyVXiVibPF18EO8gj6Jg8HFt9D0dAKEtmgBllL6vS9puXEkLps5gGp8IKQOMYoEU
-	 5cIMp+c+4Lw+Md2qvcSaljt6xufjhViD2eHp77C7AyQs1BQx07SSUxJHjp1R0N/16N
-	 C9qn8pZxEt5b6NDQUrlVxIrbOHtSyYVwN3KGx7y0MOmYsCFQU2MsU02kMD0HmvZdME
-	 yIShdZk23UOa1raxW1EGKtqSRe/5QtI3T6rhPGDi9zx6HVJpqsBfLq3VyQx3ChC4Nn
-	 p2b5qocKN78Ox6UeR+WxFAOugP5RqbJOBsLqASFPiHO8G/b6w8RjDlMzNOJo72ptLm
-	 N8Lwk1i6vX/Nw==
+	b=nqVpQzpxUnKXPMGrZ1EGYozacdniZ2Ei1z0BDb9CArbXCIdhByuU9MICPVrjgSPOs
+	 7I9XtCbuuhB6jWShxX4zi3pBcGSRDxsestEYjY/AaCTGarh3AmLmMYGVmsNHH1evss
+	 mVm19s4IODFj3zJjHA7UoVak1Yktt1eeG3x4UvGqP1eBFy9no7S/Z2ct6nwLqYlGJV
+	 Hfjb4JOyB1ZwjnDHOmsYhRJU6IML4Cg4wPn/XWbASQCigU+IWieRPJoRfKCL2onHLw
+	 c93er26kDV2ZMVmMh48fmsPNOWrh8d0egdKTyR/kurxPY6+tKSegQkxGRUJK1Iqp4n
+	 jcy1kRYUqSgXw==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -57,9 +57,9 @@ Cc: linux-kernel@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 02/18] cxl/test: Simplify fw_buf_checksum_show()
-Date: Wed, 25 Jun 2025 00:08:03 -0700
-Message-ID: <20250625070819.1496119-3-ebiggers@kernel.org>
+Subject: [PATCH 05/18] lib/crypto: sha512: Do not include <crypto/internal/sha2.h>
+Date: Wed, 25 Jun 2025 00:08:06 -0700
+Message-ID: <20250625070819.1496119-6-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.0
 In-Reply-To: <20250625070819.1496119-1-ebiggers@kernel.org>
 References: <20250625070819.1496119-1-ebiggers@kernel.org>
@@ -78,54 +78,40 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-First, just use sha256() instead of a sequence of sha256_init(),
-sha256_update(), and sha256_final().  The result is the same.
-
-Second, use *phN instead of open-coding the conversion of bytes to hex.
+Since the SHA-512 code is now consolidated into a single translation
+unit except for assembly code, there is no longer any need for an
+internal header.  Indeed, lib/crypto/sha512.c relies on
+<crypto/internal/sha2.h> only for indirect inclusions.  Stop including
+it.  This prepares for the later removal of this header, once the
+SHA-256 code is reorganized similarly and stops needing it too.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- tools/testing/cxl/test/mem.c | 21 ++-------------------
- 1 file changed, 2 insertions(+), 19 deletions(-)
+ lib/crypto/sha512.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/tools/testing/cxl/test/mem.c b/tools/testing/cxl/test/mem.c
-index 0f1d91f57ba34..d533481672b78 100644
---- a/tools/testing/cxl/test/mem.c
-+++ b/tools/testing/cxl/test/mem.c
-@@ -1826,31 +1826,14 @@ static DEVICE_ATTR_RW(security_lock);
- static ssize_t fw_buf_checksum_show(struct device *dev,
- 				    struct device_attribute *attr, char *buf)
- {
- 	struct cxl_mockmem_data *mdata = dev_get_drvdata(dev);
- 	u8 hash[SHA256_DIGEST_SIZE];
--	unsigned char *hstr, *hptr;
--	struct sha256_state sctx;
--	ssize_t written = 0;
--	int i;
--
--	sha256_init(&sctx);
--	sha256_update(&sctx, mdata->fw, mdata->fw_size);
--	sha256_final(&sctx, hash);
--
--	hstr = kzalloc((SHA256_DIGEST_SIZE * 2) + 1, GFP_KERNEL);
--	if (!hstr)
--		return -ENOMEM;
--
--	hptr = hstr;
--	for (i = 0; i < SHA256_DIGEST_SIZE; i++)
--		hptr += sprintf(hptr, "%02x", hash[i]);
+diff --git a/lib/crypto/sha512.c b/lib/crypto/sha512.c
+index fe9d98b9b7db9..f5a9569a7ef96 100644
+--- a/lib/crypto/sha512.c
++++ b/lib/crypto/sha512.c
+@@ -7,15 +7,16 @@
+  * Copyright (c) 2003 Kyle McMartin <kyle@debian.org>
+  * Copyright 2025 Google LLC
+  */
  
--	written = sysfs_emit(buf, "%s\n", hstr);
-+	sha256(mdata->fw, mdata->fw_size, hash);
+ #include <crypto/hmac.h>
+-#include <crypto/internal/sha2.h>
++#include <crypto/sha2.h>
+ #include <linux/export.h>
+ #include <linux/kernel.h>
+ #include <linux/module.h>
+ #include <linux/overflow.h>
++#include <linux/unaligned.h>
+ #include <linux/wordpart.h>
  
--	kfree(hstr);
--	return written;
-+	return sysfs_emit(buf, "%*phN\n", SHA256_DIGEST_SIZE, hash);
- }
- 
- static DEVICE_ATTR_RO(fw_buf_checksum);
- 
- static ssize_t sanitize_timeout_show(struct device *dev,
+ static const struct sha512_block_state sha384_iv = {
+ 	.h = {
+ 		SHA384_H0, SHA384_H1, SHA384_H2, SHA384_H3,
 -- 
 2.50.0
 
