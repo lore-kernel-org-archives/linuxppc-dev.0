@@ -1,49 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-9705-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9707-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4E22C77B7C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 07:11:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52E60C77B7C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 07:11:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bRtJB6T6Tz30VR;
-	Wed, 25 Jun 2025 17:10:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750835434;
-	cv=none; b=jv3Qz4z6s7sOYJxj+7grPaLBXsz6FXtqNISmH6jb+pHY2+FWN67rT7RmwE6I+6JrWLuMzBTibGC6XB/Mo2NJ9Eefpa12Lg+eDujgaDPBVL5/eRPqlHfovy7LLjH/vlj+ZntS2lNRYcbOL9Duto/Slfw3xv/DtkTU6SOyQJV63RTNehJpSyaxuU0Gi98AjFZs6FlxxwrQ8M63bE9Lj6ZWzjD7bqRQ+0Gmadd1uxrXFwfRwOxDGjaAExDQCsQqdE6HO5QP0Tuu6yTxQx0M8EmNqQu8FLnOe6vZHLEG8oT5F6+3jD+y1KZ2R1yH2qt07vE4eZbU/JGEhDcHaemTRY2fgw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bRtJC3qzwz307q;
+	Wed, 25 Jun 2025 17:10:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750835435;
+	cv=none; b=jT39z39lCt8dRxPdaMSanqF8YFGE0svhqT7mSdVu/D3giLXUXikshJoaXXfMPq2ijL4fLl5xrh8irFNUouhVGZL1JASokjYVlj5iISsnKVz3TSElnyKR+hsB+J0ChhMdZyY8hdBFUNpQaqc8bzYVxkys2g0Tsz8iayRvLnXhJyWiBr/VtE5X/7NgvM9Xc8hZ81kTEhI9YXyxlvI0aw5kfcgS2UUFWKYEREioLL/pkUPgLCow8dnOVMPjWVO8GhKogq5xPHBWDaB+takpjdb2DLKXFeDHkzlD2R/wZ4VXStSQnzDTAgiXQiEtZ54vuwEX/0HZWUXK5PhWQD063XhKuw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750835434; c=relaxed/relaxed;
-	bh=of6wCNXS5Ss8rOtX027YOzmJzT22LfAjPavKHPx9nZU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=WHmI0NnQi/6JhnJsZyMSNVJKpCkTa+0oFjdLUuDjotY35pS2uUMtfxjLjzaywsUHWJEL4nYIK6T5HFmzS24wagfv8fFpzgs3UI9CYo3A48mO6JBRjxodfBqYn7qdqKIv248ddeCs/RfRPPW/sq0XtNBpPsfJslmiQHFBZgycLprU0+vV9warMXTQc9uOjIxwLFIXZsBndXwkbL0m0n2Wz68pvoN7H8C1g1ZS2az8FXeaSafqafKf1Av363yzgyrlUNjaYDja/CbyslWPI4bfDee5U+tU74FCVvosDUrfN21j+x8RCUOOxenu13oLGJWjGTY/xiqrWZdAT3O8ESAjjg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UyXquyVZ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1750835435; c=relaxed/relaxed;
+	bh=THHkjXjEOqvapB514CaFbXrbuImezgeDGuGgUZi1xU0=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=F/2pUpYVEgmPV3ktyJrPUxkZJ5AwkiyFzzG4sw2CQ+mMHZ6MlzyObrIdHXR5mtO+NuT0Bl3+rFA8OSCE1Zmv1NvT8LY1g0QrP0y91ff3FzsDAdq+J39ZZ9e7pNtzLSOJ52VPrrG3kjmbDgHZqgek9tTBKB6MQPOfLsgD3k84QGyj62ezGYcuZ1HLPaAyBMF/yY9yfUKjnx3PM8VuT9Oi5eWaQB9ohOQPhvJKQ4R+QpRxp+8/2OHZf/NYrno74K62cQ/flHUQZc/X1lCxyqU+3OM6bEfK4YEkHYS+4GuvlVrA5HNxIUwzAr58AoN1mCABNjJNpZGWrTo2OTvm4tNnpQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f8mx/QGa; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UyXquyVZ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f8mx/QGa;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bRtJ75jlkz30BG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 17:10:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bRtJ66Tmgz2yPS
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 17:10:30 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 22DE24AFFA;
-	Wed, 25 Jun 2025 07:10:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A66DCC4CEF2;
-	Wed, 25 Jun 2025 07:10:29 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 6DB4AA511D6;
+	Wed, 25 Jun 2025 07:10:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BCD40C4CEEA;
+	Wed, 25 Jun 2025 07:10:26 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750835430;
-	bh=2LrGs37CGEadHzUgE3udzC7iJiB7yoZqC5JHegQK+WQ=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=UyXquyVZWgisY6zFwDG5d4ZzxprCHqDlisQ41lEvQ5IHurjnN/m8NqcWJG2vqieps
-	 QNFaI0iSMcmJ46Ug61uPBEtuUygIKDzSDjAxynb4e32/Bzo9ew8IRX1nVeNa3fkzqN
-	 syi5JxOKQKXDORFsRNuQUSvE2MTtpLQan5nDKmPDEZTdAAdaOORBOzhXfhVgW++ZhS
-	 8aQcYq36vJoEcgEO11QoLWRlxYpBu5iW/xpJLuTKV0vQsT609fAI+9N0MKxz1aEcLo
-	 feCNVsiIJhz/3Gd10BL2tMvEMtB3M5eyiDmrObThqsEaq+JwDKnQHAVQO+KU2HI6MX
-	 nTvdfxLoh5QYA==
+	s=k20201202; t=1750835427;
+	bh=dNjTP1K/kwMastCEsJrXq3spz7hep3Wcru9OBJvpwJA=;
+	h=From:To:Cc:Subject:Date:From;
+	b=f8mx/QGaAe/zXMItJZ0F55QwX91jS97FGsefAFIby9DnkyFtMYmePw0hWX0k2Vjz0
+	 BNtUus02OG1FPiTEiuTLnKq4XdAPibOkbVuuWIwqr6Teh6x7q+npmu7RYtGSs3TgKh
+	 yHlR3Z3sFMiJF1JmEr21Vz4XeDobauDmgAKuguO0wLRUkdQZo1+uNogSSTox5pjMRA
+	 Q9S3L7aW2Ha3BEGdVnUoHxi0bZrXRDXM98wQvtA8KqOd6w32WkvBpZ7zvQj5cG+WOI
+	 oDpEQEOqm7HuwDrOxoiqqiywB1kYtRddglKdLZktyv2YJSKY5cUtjgQmHokaeRDEJb
+	 SXMChrbYairMQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -55,14 +54,11 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-riscv@lists.infradead.org,
 	linux-s390@vger.kernel.org,
 	sparclinux@vger.kernel.org,
-	x86@kernel.org,
-	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 06/18] lib/crypto: sha512: Fix a grammatical error in kerneldoc comments
-Date: Wed, 25 Jun 2025 00:08:07 -0700
-Message-ID: <20250625070819.1496119-7-ebiggers@kernel.org>
+	x86@kernel.org
+Subject: [PATCH 00/18] SHA-256 library improvements
+Date: Wed, 25 Jun 2025 00:08:01 -0700
+Message-ID: <20250625070819.1496119-1-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.0
-In-Reply-To: <20250625070819.1496119-1-ebiggers@kernel.org>
-References: <20250625070819.1496119-1-ebiggers@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,95 +74,134 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-"An HMAC", not "A HMAC".
+This series is targeting libcrypto-next and can also be retrieved from:
 
-Signed-off-by: Eric Biggers <ebiggers@kernel.org>
----
- include/crypto/sha2.h | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
+    git fetch https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git sha256-lib-cleanup-v1
 
-diff --git a/include/crypto/sha2.h b/include/crypto/sha2.h
-index 36a9dab805be7..296ce9d468bfc 100644
---- a/include/crypto/sha2.h
-+++ b/include/crypto/sha2.h
-@@ -247,11 +247,11 @@ struct hmac_sha384_ctx {
-  */
- void hmac_sha384_preparekey(struct hmac_sha384_key *key,
- 			    const u8 *raw_key, size_t raw_key_len);
- 
- /**
-- * hmac_sha384_init() - Initialize a HMAC-SHA384 context for a new message
-+ * hmac_sha384_init() - Initialize an HMAC-SHA384 context for a new message
-  * @ctx: (output) the HMAC context to initialize
-  * @key: the prepared HMAC key
-  *
-  * If you don't need incremental computation, consider hmac_sha384() instead.
-  *
-@@ -262,11 +262,11 @@ static inline void hmac_sha384_init(struct hmac_sha384_ctx *ctx,
- {
- 	__hmac_sha512_init(&ctx->ctx, &key->key);
- }
- 
- /**
-- * hmac_sha384_update() - Update a HMAC-SHA384 context with message data
-+ * hmac_sha384_update() - Update an HMAC-SHA384 context with message data
-  * @ctx: the HMAC context to update; must have been initialized
-  * @data: the message data
-  * @data_len: the data length in bytes
-  *
-  * This can be called any number of times.
-@@ -278,11 +278,11 @@ static inline void hmac_sha384_update(struct hmac_sha384_ctx *ctx,
- {
- 	__sha512_update(&ctx->ctx.sha_ctx, data, data_len);
- }
- 
- /**
-- * hmac_sha384_final() - Finish computing a HMAC-SHA384 value
-+ * hmac_sha384_final() - Finish computing an HMAC-SHA384 value
-  * @ctx: the HMAC context to finalize; must have been initialized
-  * @out: (output) the resulting HMAC-SHA384 value
-  *
-  * After finishing, this zeroizes @ctx.  So the caller does not need to do it.
-  *
-@@ -405,11 +405,11 @@ struct hmac_sha512_ctx {
-  */
- void hmac_sha512_preparekey(struct hmac_sha512_key *key,
- 			    const u8 *raw_key, size_t raw_key_len);
- 
- /**
-- * hmac_sha512_init() - Initialize a HMAC-SHA512 context for a new message
-+ * hmac_sha512_init() - Initialize an HMAC-SHA512 context for a new message
-  * @ctx: (output) the HMAC context to initialize
-  * @key: the prepared HMAC key
-  *
-  * If you don't need incremental computation, consider hmac_sha512() instead.
-  *
-@@ -420,11 +420,11 @@ static inline void hmac_sha512_init(struct hmac_sha512_ctx *ctx,
- {
- 	__hmac_sha512_init(&ctx->ctx, &key->key);
- }
- 
- /**
-- * hmac_sha512_update() - Update a HMAC-SHA512 context with message data
-+ * hmac_sha512_update() - Update an HMAC-SHA512 context with message data
-  * @ctx: the HMAC context to update; must have been initialized
-  * @data: the message data
-  * @data_len: the data length in bytes
-  *
-  * This can be called any number of times.
-@@ -436,11 +436,11 @@ static inline void hmac_sha512_update(struct hmac_sha512_ctx *ctx,
- {
- 	__sha512_update(&ctx->ctx.sha_ctx, data, data_len);
- }
- 
- /**
-- * hmac_sha512_final() - Finish computing a HMAC-SHA512 value
-+ * hmac_sha512_final() - Finish computing an HMAC-SHA512 value
-  * @ctx: the HMAC context to finalize; must have been initialized
-  * @out: (output) the resulting HMAC-SHA512 value
-  *
-  * After finishing, this zeroizes @ctx.  So the caller does not need to do it.
-  *
+This series improves the SHA-224 and SHA-256 library code to be
+consistent with what I did for SHA-384 and SHA-512.  This includes:
+
+- Use stronger typing in the SHA-224 and SHA-256 functions.
+
+- Add support for HMAC-SHA224 and HMAC-SHA256.  (I'll send a separate
+  patch with KUnit test cases for this.)
+
+- Make the old-school crypto API's support for sha224 and sha256 just
+  use the actual library API, instead of unsafe low-level functions.
+
+- Consolidate the CPU-based SHA-224 and SHA-256 code into a single
+  module, with better inlining and dead code elimination.
+
+- Properly document the SHA-224 and SHA-256 functions.
+
+- Other changes to synchronize the code with SHA-384 and SHA-512.
+
+Patches 3-6 are a few fixes/cleanups for the SHA-384 and SHA-512 code
+that I noticed while doing this.
+
+Eric Biggers (18):
+  libceph: Rename hmac_sha256() to ceph_hmac_sha256()
+  cxl/test: Simplify fw_buf_checksum_show()
+  crypto: sha512 - Use the correct legacy export format
+  lib/crypto: sha512: Reorder some code in sha512.c
+  lib/crypto: sha512: Do not include <crypto/internal/sha2.h>
+  lib/crypto: sha512: Fix a grammatical error in kerneldoc comments
+  lib/crypto: sha256: Reorder some code
+  lib/crypto: sha256: Remove sha256_blocks_simd()
+  lib/crypto: sha256: Add sha224() and sha224_update()
+  lib/crypto: sha256: Make library API use strongly-typed contexts
+  lib/crypto: sha256: Propagate sha256_block_state type to
+    implementations
+  lib/crypto: sha256: Add HMAC-SHA224 and HMAC-SHA256 support
+  crypto: sha256 - Wrap library and add HMAC support
+  crypto: sha256 - Use same state format as legacy drivers
+  lib/crypto: sha512: Remove sha256_is_arch_optimized()
+  lib/crypto: sha256: Consolidate into single module
+  lib/crypto: sha256: Sync sha256_update() with sha512_update()
+  lib/crypto: sha256: Document the SHA-224 and SHA-256 API
+
+ arch/mips/cavium-octeon/Kconfig               |   6 -
+ arch/mips/cavium-octeon/crypto/Makefile       |   1 -
+ arch/riscv/purgatory/purgatory.c              |   8 +-
+ arch/s390/purgatory/purgatory.c               |   2 +-
+ arch/x86/purgatory/purgatory.c                |   2 +-
+ crypto/Kconfig                                |   4 +-
+ crypto/sha256.c                               | 371 +++++++++-------
+ crypto/sha512.c                               |  22 +-
+ crypto/testmgr.c                              |  12 +
+ drivers/char/tpm/tpm2-sessions.c              |  12 +-
+ drivers/crypto/img-hash.c                     |   4 +-
+ drivers/crypto/starfive/jh7110-hash.c         |   8 +-
+ include/crypto/internal/sha2.h                |  66 ---
+ include/crypto/sha2.h                         | 402 +++++++++++++++--
+ kernel/kexec_file.c                           |  10 +-
+ lib/crypto/Kconfig                            |  34 +-
+ lib/crypto/Makefile                           |  39 +-
+ lib/crypto/arm/Kconfig                        |   7 -
+ lib/crypto/arm/Makefile                       |   8 +-
+ lib/crypto/arm/sha256-armv4.pl                |  20 +-
+ lib/crypto/arm/sha256-ce.S                    |   2 +-
+ lib/crypto/arm/sha256.c                       |  64 ---
+ lib/crypto/arm/sha256.h                       |  46 ++
+ lib/crypto/arm64/Kconfig                      |   6 -
+ lib/crypto/arm64/Makefile                     |   9 +-
+ lib/crypto/arm64/sha2-armv8.pl                |   2 +-
+ lib/crypto/arm64/sha256-ce.S                  |   2 +-
+ lib/crypto/arm64/sha256.c                     |  75 ----
+ lib/crypto/arm64/sha256.h                     |  58 +++
+ lib/crypto/arm64/sha512.h                     |   6 +-
+ .../crypto/mips/sha256.h                      |  20 +-
+ lib/crypto/powerpc/Kconfig                    |   6 -
+ lib/crypto/powerpc/Makefile                   |   3 -
+ lib/crypto/powerpc/{sha256.c => sha256.h}     |  19 +-
+ lib/crypto/riscv/Kconfig                      |   8 -
+ lib/crypto/riscv/Makefile                     |   3 -
+ .../sha256-riscv64-zvknha_or_zvknhb-zvkb.S    |   2 +-
+ lib/crypto/riscv/sha256.c                     |  67 ---
+ lib/crypto/riscv/sha256.h                     |  42 ++
+ lib/crypto/s390/Kconfig                       |   6 -
+ lib/crypto/s390/Makefile                      |   3 -
+ lib/crypto/s390/sha256.c                      |  47 --
+ lib/crypto/s390/sha256.h                      |  28 ++
+ lib/crypto/sha256-generic.c                   | 138 ------
+ lib/crypto/sha256.c                           | 411 ++++++++++++++++--
+ lib/crypto/sha512.c                           |  75 ++--
+ lib/crypto/sparc/Kconfig                      |   8 -
+ lib/crypto/sparc/Makefile                     |   4 -
+ lib/crypto/sparc/{sha256.c => sha256.h}       |  37 +-
+ lib/crypto/tests/sha224_kunit.c               |  15 +-
+ lib/crypto/tests/sha256_kunit.c               |   2 +-
+ lib/crypto/x86/Kconfig                        |   8 -
+ lib/crypto/x86/Makefile                       |   3 -
+ lib/crypto/x86/sha256-avx-asm.S               |   2 +-
+ lib/crypto/x86/sha256-avx2-asm.S              |   2 +-
+ lib/crypto/x86/sha256-ni-asm.S                |   2 +-
+ lib/crypto/x86/sha256-ssse3-asm.S             |   2 +-
+ lib/crypto/x86/sha256.c                       |  80 ----
+ lib/crypto/x86/sha256.h                       |  55 +++
+ net/ceph/messenger_v2.c                       |  12 +-
+ tools/testing/cxl/test/mem.c                  |  21 +-
+ 61 files changed, 1369 insertions(+), 1070 deletions(-)
+ delete mode 100644 include/crypto/internal/sha2.h
+ delete mode 100644 lib/crypto/arm/sha256.c
+ create mode 100644 lib/crypto/arm/sha256.h
+ delete mode 100644 lib/crypto/arm64/sha256.c
+ create mode 100644 lib/crypto/arm64/sha256.h
+ rename arch/mips/cavium-octeon/crypto/octeon-sha256.c => lib/crypto/mips/sha256.h (76%)
+ rename lib/crypto/powerpc/{sha256.c => sha256.h} (76%)
+ delete mode 100644 lib/crypto/riscv/sha256.c
+ create mode 100644 lib/crypto/riscv/sha256.h
+ delete mode 100644 lib/crypto/s390/sha256.c
+ create mode 100644 lib/crypto/s390/sha256.h
+ delete mode 100644 lib/crypto/sha256-generic.c
+ delete mode 100644 lib/crypto/sparc/Kconfig
+ delete mode 100644 lib/crypto/sparc/Makefile
+ rename lib/crypto/sparc/{sha256.c => sha256.h} (53%)
+ delete mode 100644 lib/crypto/x86/sha256.c
+ create mode 100644 lib/crypto/x86/sha256.h
+
+
+base-commit: d74152ec2b5106263c2a502380acfaf5954f9898
 -- 
 2.50.0
 
