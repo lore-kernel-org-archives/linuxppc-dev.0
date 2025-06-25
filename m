@@ -1,79 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-9738-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9739-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6914CC7EE30
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 12:24:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15092C7EE2A
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 13:19:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bS1GJ5H9Xz30KY;
-	Wed, 25 Jun 2025 22:24:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:4f8:242:246e::2"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750854264;
-	cv=none; b=irHeiIAY1UMtYB5IJBp9wepYXa+W1l8takjB6FOcQu3CBdRpIu3ERc+7BOh86e3xMrPh+i4Fth38Wxb+zM1J9w8NCNRDfDcA3i+1XZnVXWPW3rB0YIXLsWwuFngJZ64KLIYiKblUy+gopRHjCN58gWP2rE5+ouXmEY2Vnn0yODNZvR2JopNKBcqoa3siRBccwS8H7bFvwoxDC0ZLshDng5EWx1B/ziMPy1IzNEa2TgpwPoMJyr84e8fqYiZHGKkpl5m4rYk5otvSZTFoYyZPgLJIvb9Sw6XhWfd0voby8s09sKk019crCz1qkEJnlVLNWH8cgCqmbfC/cDGfarLKRA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bS2Th25qDz307K;
+	Wed, 25 Jun 2025 23:19:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750857560;
+	cv=none; b=HuUBAGVQam83JywEoqI1YCKF91NZn4zH50YjXcOGfnLIhc04h4XETur7j9w79dAjFHH5zI33YAjkRmzC3Q35gDJOiSNmUlvWzrZc5wXoYEo4evWHVKQsVot5sO+0vy7E0F/bFmNIm/HSSI1S/nM1XD2g10Ai4UxwodqQjqiMfeB6FDO3E3wF8F8SPEF9e/V7N7makImixI6znahTkCtpxZF8ZTrIDygLRKqV/p9yp9NI0iH0zj2M5inYarlAXDw17rpsOhuqDG9LA8wIXG1e39nEzNYL0ZVpptmznN5/5Gfq3H+JH8VMNt8LwwmXJUStSEmhcg0kK5domlFJrhXixA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750854264; c=relaxed/relaxed;
-	bh=SJ5NkjC+cOiMPwKXMdsR+3xgXJFhGnL3/wL1U2zUcWg=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=SxVBCj878XwddHJ1E+JkWrSHtFyJkXoaFeVhb3CagAKM+Z21Lz1MbkfhaZW/P3MQ7xcf691WN0kQaPpN0WexZh1lbgXPKdZLY9IdM/kVWbUth1HVuJ4iE5E7uNmFUspLlwFz8Ayrw2k6W9cQTwgLf8ue6SMCNCslWQhmuuzr8ognMzU26mN2S7LUaFE2/HXI7JXMtYsDmRYbL/uMTwI9m9mNuHzYd/D36Wye5Bwc/25SzEoaFWkB9MPkwkEApFS1xWcJ8/1Rd9tSAtLyDHOQxgpxnrt0V74oW/UOGWeHwJbMS4sOFCg5ZeK/9TSP6yWQfHcPjLXgwMVCB6exnP2JwQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=sipsolutions.net; dkim=pass (2048-bit key; secure) header.d=sipsolutions.net header.i=@sipsolutions.net header.a=rsa-sha256 header.s=mail header.b=dE2Ni9JL; dkim-atps=neutral; spf=pass (client-ip=2a01:4f8:242:246e::2; helo=sipsolutions.net; envelope-from=johannes@sipsolutions.net; receiver=lists.ozlabs.org) smtp.mailfrom=sipsolutions.net
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=sipsolutions.net
+	t=1750857560; c=relaxed/relaxed;
+	bh=CP2stCY7T0xSEqK1gjrxM6I4ViVfNBXb5kLK+aDHiy4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Lvw6tdNOIz/cyNzre5008unL3GZOfV0fV7O3R6mzl7nYyB1sIJMYK37RvmW/HAizpk+HuT6umOgyBbMx+uLBbzNNa1PQi8rSnzxsXjJZK3V5SJpGUtpF4CYhe2GXrht5cQ4qCRwBjOMthWCa1JBxrahZj/O/9+kgu8+7kV59nJKQWIYo1t0A1eKrgNSPg1g+xw65jF/nqQU7LrtgH56Y0nIXCKoKnbQMq5K/KayJHcYKq/e6CAc2C3+AYPhy50uF2oBwoyCWl2gc5B1HdGGmC0fpdU8f7ReoAI9dSMQtQZw/cN8X83OvH19qN34TY/Yn+IttEi6QxwkcWdPKmb0bnQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=l10zw3Wd; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=sipsolutions.net header.i=@sipsolutions.net header.a=rsa-sha256 header.s=mail header.b=dE2Ni9JL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=l10zw3Wd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sipsolutions.net (client-ip=2a01:4f8:242:246e::2; helo=sipsolutions.net; envelope-from=johannes@sipsolutions.net; receiver=lists.ozlabs.org)
-Received: from sipsolutions.net (s3.sipsolutions.net [IPv6:2a01:4f8:242:246e::2])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bS1GJ0J9Rz2xRq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 22:24:23 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=sipsolutions.net; s=mail; h=MIME-Version:Content-Transfer-Encoding:
-	Content-Type:References:In-Reply-To:Date:Cc:To:From:Subject:Message-ID:Sender
-	:Reply-To:Content-ID:Content-Description:Resent-Date:Resent-From:Resent-To:
-	Resent-Cc:Resent-Message-ID; bh=SJ5NkjC+cOiMPwKXMdsR+3xgXJFhGnL3/wL1U2zUcWg=;
-	t=1750854264; x=1752063864; b=dE2Ni9JLG7LC5eiiNJ9UsW0bB2fboOyLmXT+KIX+pOz2RrX
-	crXxu1jORJMHoXkLXfSPDNlLedbtqAfIYFuY6lYClIOaYqd6AErn3aa1ReN6CgwDiDzChMu6LT68p
-	RWYGuKHrGNC/gkXMI8LIPGUqFkfQIxn85kUMA6TbIeJ6WBvc1hjl2JF3lOq068Sm4bLMZcWlTCmx1
-	KxXCih3WQ4Kk+yAG2hHawJC3yqyHErnVkMRMIrRM4a3fL18qd4YGZiIc3YW9kXY2lZXXAYCYo/29U
-	VWjqGaqChIAZP6cS17Jz2L0r5+VbOamlIK05wF8Vxd7k8i2oPehw/f7+CxHpmpnA==;
-Received: by sipsolutions.net with esmtpsa (TLS1.3:ECDHE_X25519__RSA_PSS_RSAE_SHA256__AES_256_GCM:256)
-	(Exim 4.98.2)
-	(envelope-from <johannes@sipsolutions.net>)
-	id 1uUPAV-00000009xvR-1M4X;
-	Wed, 25 Jun 2025 14:23:59 +0200
-Message-ID: <81a8b60be5b99ecd9b322d188738016376aff4aa.camel@sipsolutions.net>
-Subject: Re: [PATCH 2/9] kasan: replace kasan_arch_is_ready with
- kasan_enabled
-From: Johannes Berg <johannes@sipsolutions.net>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, Sabyrzhan Tasbolatov	
- <snovitoll@gmail.com>, ryabinin.a.a@gmail.com, glider@google.com, 
-	andreyknvl@gmail.com, dvyukov@google.com, vincenzo.frascino@arm.com, 
-	catalin.marinas@arm.com, will@kernel.org, chenhuacai@kernel.org,
- kernel@xen0n.name, 	maddy@linux.ibm.com, mpe@ellerman.id.au,
- npiggin@gmail.com, hca@linux.ibm.com, 	gor@linux.ibm.com,
- agordeev@linux.ibm.com, borntraeger@linux.ibm.com, 	svens@linux.ibm.com,
- richard@nod.at, anton.ivanov@cambridgegreys.com, 
-	dave.hansen@linux.intel.com, luto@kernel.org, peterz@infradead.org, 
-	tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, x86@kernel.org,
- hpa@zytor.com, 	chris@zankel.net, jcmvbkbc@gmail.com,
- akpm@linux-foundation.org
-Cc: guoweikang.kernel@gmail.com, geert@linux-m68k.org, rppt@kernel.org, 
-	tiwei.btw@antgroup.com, richard.weiyang@gmail.com, benjamin.berg@intel.com,
- 	kevin.brodsky@arm.com, kasan-dev@googlegroups.com, 
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
-	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
-	linux-s390@vger.kernel.org, linux-um@lists.infradead.org, linux-mm@kvack.org
-Date: Wed, 25 Jun 2025 14:23:57 +0200
-In-Reply-To: <750b6617-7abf-4adc-b3e6-6194ff10c547@csgroup.eu>
-References: <20250625095224.118679-1-snovitoll@gmail.com>
-	 <20250625095224.118679-3-snovitoll@gmail.com>
-	 <750b6617-7abf-4adc-b3e6-6194ff10c547@csgroup.eu>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2 (3.56.2-1.fc42) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bS2Tg2y7bz306l
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 23:19:19 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id A1C12A5260A;
+	Wed, 25 Jun 2025 13:19:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 82CB0C4CEEF;
+	Wed, 25 Jun 2025 13:19:13 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1750857554;
+	bh=x2+9WyiMKk51YbdrrEHH1emdFd89rPiPsvikAZYGQgc=;
+	h=From:To:Cc:Subject:Date:From;
+	b=l10zw3WdyXEdS9RctXGPVEXxHMOvYtV9GQIdtQEmyQsrO4jkjVzkws3Uvq5/54YKC
+	 BWk+L1U7dSr6RPgo1R4HkxtMaD51XQsZVWhcz3kfQaIPgtBG+dHPqgSCNm460cQH3m
+	 2hGxhgaSoUU5/cunK9skYGzD0OOpw8n+4wvZBCbCPoNtqZknn8v0E+BKl0w+MyvZYa
+	 XMNB3afOwqLGCPStz6Wmqck3EA/fUOYHSMz7BKlUnJa//u0/py1Po/qzjyplclhZcq
+	 ZrSyz77b7diqxCv/D8r8QvFup7HF/YiJcjJW6vAfghZqn5Tq1J4odLTaEzz4PJKE6n
+	 pcKtlnV78DPoA==
+From: Leon Romanovsky <leon@kernel.org>
+To: Marek Szyprowski <m.szyprowski@samsung.com>
+Cc: Christoph Hellwig <hch@lst.de>,
+	Jonathan Corbet <corbet@lwn.net>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Joerg Roedel <joro@8bytes.org>,
+	Will Deacon <will@kernel.org>,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	Jason Wang <jasowang@redhat.com>,
+	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+	=?UTF-8?q?Eugenio=20P=C3=A9rez?= <eperezma@redhat.com>,
+	Alexander Potapenko <glider@google.com>,
+	Marco Elver <elver@google.com>,
+	Dmitry Vyukov <dvyukov@google.com>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	=?UTF-8?q?J=C3=A9r=C3=B4me=20Glisse?= <jglisse@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	iommu@lists.linux.dev,
+	virtualization@lists.linux.dev,
+	kasan-dev@googlegroups.com,
+	linux-trace-kernel@vger.kernel.org,
+	linux-mm@kvack.org
+Subject: [PATCH 0/8] dma-mapping: migrate to physical address-based API
+Date: Wed, 25 Jun 2025 16:18:57 +0300
+Message-ID: <cover.1750854543.git.leon@kernel.org>
+X-Mailer: git-send-email 2.49.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,30 +90,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-malware-bazaar: not-scanned
+Content-Transfer-Encoding: 8bit
 
-On Wed, 2025-06-25 at 12:27 +0200, Christophe Leroy wrote:
->=20
-> Le 25/06/2025 =C3=A0 11:52, Sabyrzhan Tasbolatov a =C3=A9crit=C2=A0:
-> > Replace the existing kasan_arch_is_ready() calls with kasan_enabled().
-> > Drop checks where the caller is already under kasan_enabled() condition=
-.
->=20
-> If I understand correctly, it means that KASAN won't work anymore=20
-> between patch 2 and 9, because until the arch calls kasan_init_generic()=
-=20
-> kasan_enabled() will return false.
->=20
-> The transition should be smooth and your series should remain bisectable.
->=20
-> Or am I missing something ?
->=20
+This series refactors the DMA mapping to use physical addresses
+as the primary interface instead of page+offset parameters. This
+change aligns the DMA API with the underlying hardware reality where
+DMA operations work with physical addresses, not page structures.
 
-Seems right to me, it won't work for architectures that define
-kasan_arch_is_ready themselves I think?
+The series consists of 8 patches that progressively convert the DMA
+mapping infrastructure from page-based to physical address-based APIs:
 
-But since they have to literally #define it, could #ifdef on that
-temporarily?
+The series maintains backward compatibility by keeping the old
+page-based API as wrapper functions around the new physical
+address-based implementations.
 
-johannes
+Thanks
+
+Leon Romanovsky (8):
+  dma-debug: refactor to use physical addresses for page mapping
+  dma-mapping: rename trace_dma_*map_page to trace_dma_*map_phys
+  iommu/dma: rename iommu_dma_*map_page to iommu_dma_*map_phys
+  dma-mapping: convert dma_direct_*map_page to be phys_addr_t based
+  kmsan: convert kmsan_handle_dma to use physical addresses
+  dma-mapping: fail early if physical address is mapped through platform
+    callback
+  dma-mapping: export new dma_*map_phys() interface
+  mm/hmm: migrate to physical address-based DMA mapping API
+
+ Documentation/core-api/dma-api.rst |  4 +-
+ arch/powerpc/kernel/dma-iommu.c    |  4 +-
+ drivers/iommu/dma-iommu.c          | 14 +++----
+ drivers/virtio/virtio_ring.c       |  4 +-
+ include/linux/dma-map-ops.h        |  8 ++--
+ include/linux/dma-mapping.h        | 13 ++++++
+ include/linux/iommu-dma.h          |  7 ++--
+ include/linux/kmsan.h              | 12 +++---
+ include/trace/events/dma.h         |  4 +-
+ kernel/dma/debug.c                 | 28 ++++++++-----
+ kernel/dma/debug.h                 | 16 ++++---
+ kernel/dma/direct.c                |  6 +--
+ kernel/dma/direct.h                | 13 +++---
+ kernel/dma/mapping.c               | 67 +++++++++++++++++++++---------
+ kernel/dma/ops_helpers.c           |  6 +--
+ mm/hmm.c                           |  8 ++--
+ mm/kmsan/hooks.c                   | 36 ++++++++++++----
+ tools/virtio/linux/kmsan.h         |  2 +-
+ 18 files changed, 159 insertions(+), 93 deletions(-)
+
+-- 
+2.49.0
+
 
