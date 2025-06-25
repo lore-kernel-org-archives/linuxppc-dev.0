@@ -1,131 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-9758-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9759-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 03816C7115C
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 14:00:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE29CC7115C
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 25 Jun 2025 14:02:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bS3Nt0cP9z3bkT;
-	Thu, 26 Jun 2025 00:00:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::12d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750845222;
-	cv=none; b=GeOGp5rHKdIIZOKXkGHmRBIOjOlvEx6TB2Dt60Xfb0sT2MweXR0KqMPOBMgtbpGTUfCrg8AhCTMPkzJpUEHsn95Cd8Dm/or4DhMnnzpSl/RWER4ACXB8dB6Zzhjk6rDWV4Y+Zc4bh9WYnhsrZ/eBDSM4vLQqLb7kvS+x2Qydt6tFFWAsMYnAAReTgpbk1ZrXncW2wOJ5glAnbGIYaJobJs0v8xlILrCposl9vqRh8nI4GPcqFkSZDV8rZTLpHnLgUB25Q9FTMXQTOpNn3780LE81sM9CK6dN2R01PvOEJUezWOHVzntnNZ5+6XI0ekCV55zmG0CIqtZ698D/mtMX2w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bS3Rb3jkrz3bh6;
+	Thu, 26 Jun 2025 00:02:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::12a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750855561;
+	cv=none; b=PSSbIP6hvXQa+e6yUUPXGdwtfCfuItDONbkjr+NtCX6vljpmyg33zwfiQNFQQbK09+Z1pXi6807OW/f+SrHq+lAm2GZ5ifte2Qcjfvgd+c+D7rvnmzCwo/Cps8RLpyjoobavJm9cJ1Z6TU13PpoDR0rS3z+KYvmuF5F3REco513PKt06xD2iZqfzjNPS2/qZI2YERpANKwpGdQZS5uDBR55jqDlakrzZUh9yUNlX/EwB9Ewhp6baSyxBRObB/xxgjsCCZieZhG5nUJ/NbuchQ/soTnMiYQvpxFhF+j+RSK+XJiNwIOehBEqCSgWzeOBQiT28539CEBbMScREhI7vGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750845222; c=relaxed/relaxed;
-	bh=ovwzGubQ7EZCWb++7xcfiusg6EJnFDR8lh6aTJ/PpoI=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=IsqzXJxSjJMOlZDdejCikYSF3zETZKA0ue5/0Sq4c5/g4T68+B49Yx3NSIrMLHD2opL4gdk0Jr1H9P6NUZtfSubXYsemsvZ0Nsi6T0x8k+mGTedV+otFWohvTEO396Ov+C7i+pL6w5CUlJ87pVj8PQ4DDTA3klv6FIhsqLSpJ7rlMxQCQ1RVm8Dx/xX6FVUE5QNn34q2oYlqppbJp0Y/uRv+7bvz5n8rgjiE+w84292U7s2AIFrKCneHbsQ2xX0c8YHRauHfms0zBGh0XVeHTZ1HPWzerUDsmfixzsQk2P1WEVJo5WICx40C0NDloLuBe7L00s+meYFOO1KLMolSLg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=IRcddBYk; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::12d; helo=mail-lf1-x12d.google.com; envelope-from=snovitoll@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1750855561; c=relaxed/relaxed;
+	bh=aeUHbst5u6uAyR1ycfeU07wkwThxzbqj2XsMrc/HWnM=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=FSKyu2OPffflIARIQ/V73KAZPyHXnJ83/yvfW6YdQav7N/m6bi//eZXNPN5q/bRxLLpzv3sFaAEbQgXLbJmMPfI+IjWFPKoBpIx6S5VaaBoWDDtLaq3Qihkc6JBuzsmFRT2DJitermJNZ56Hjuu+MDIPIqE7jk6B6E9R09zpOoX2EVxaeuq0+WQq9yCTk0t2rE7FzbS+9GIlr47TSLBCMHq1sAAJfTXChHRXJJOwuCr5ZV742SmDO4I8aW784pxbfTkmjVvD1JAqh3D6FpMjjdfYH9105t4TbuaCfbzY4mHXajRpvP5DolwDEzo+i6enLSUh0juL6pOk982zp33rpA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CzRX8G4v; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::12a; helo=mail-lf1-x12a.google.com; envelope-from=snovitoll@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=IRcddBYk;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CzRX8G4v;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::12d; helo=mail-lf1-x12d.google.com; envelope-from=snovitoll@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::12a; helo=mail-lf1-x12a.google.com; envelope-from=snovitoll@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lf1-x12a.google.com (mail-lf1-x12a.google.com [IPv6:2a00:1450:4864:20::12a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bRxwP63Y6z2yKq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 19:53:41 +1000 (AEST)
-Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-55220699ba8so6788082e87.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 02:53:41 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bS1l96nFLz2xjN
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 22:45:56 +1000 (AEST)
+Received: by mail-lf1-x12a.google.com with SMTP id 2adb3069b0e04-55351af2fc6so6701812e87.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 25 Jun 2025 05:45:56 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1750845219; x=1751450019; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+        d=gmail.com; s=20230601; t=1750855552; x=1751460352; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=ovwzGubQ7EZCWb++7xcfiusg6EJnFDR8lh6aTJ/PpoI=;
-        b=IRcddBYkpDbf2TVZqYG89LZE0Kpox2xI5AHLFMfngbPtj2ALgwk+E6YPPs3ZFJ9a25
-         MRwbSAfe7eCIP8PCbaJHkzqaSPwCNX1NtUPpUegxy42HwcbkQECwHUmbuDsYp3NkPY0l
-         s6VU/to2k0Lcc7B3y9CDoL4+s3T+kL+VtpdgDsMDWz9c/rk4GPC6AKIUXAAScIfPdJb0
-         HsJlnMtG8EalabFWulzL1lda9AGrDHTfJsbG+C7Fppcy7AoF3RkbmI7Irsui1wyu7gCr
-         O2nSv/buDmTo5l5k78iwLi9x0z+qIGCsEfq/S6AiJmVQOzu36Lh9pP5ZbWyU7t+CClnZ
-         SKhw==
+        bh=aeUHbst5u6uAyR1ycfeU07wkwThxzbqj2XsMrc/HWnM=;
+        b=CzRX8G4vl8ii6yQEzs38NJbRhEcal/aNm2p5qs0AR8UEgx2MvY9UxHn4bL6U7hIFo0
+         D+ibzZQHkvEUZWtg3ZV1tGxchR0+PhY3JVING1IPypvQ5F9Syq+kxWHWzWTQfG6uFaKY
+         RhmTcr8HA9re8AhDJM4UOw+y2h7BOnJz+QtevwwjH1TLOasgzNcdsOgsjmLVeO8JBiGN
+         +C1qTF8UlrdU2h+jC750m5SBU6OnRe76gew8bi0VE+TR4YZKoo5YC0HcMm8WrUcf7FVF
+         6Ye0VUSm39m7RYpisAwFy9JDGK+1IuHiOqyO9Ge3syKvZ4NYy/SM9PhJBqi0ojR5RJB/
+         6NYA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1750845219; x=1751450019;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+        d=1e100.net; s=20230601; t=1750855552; x=1751460352;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=ovwzGubQ7EZCWb++7xcfiusg6EJnFDR8lh6aTJ/PpoI=;
-        b=Tlk38uwTveSZrpV9OMn6jYWVuLcvH2tiC+LZRYbSUWbnsOGl50uSWEAfb3NFD0+Wps
-         2+HOoxNyAvhC8jfaaf0mfGybyhaFxs+2RclMs/kRoAQOyKRJ6TNCbEAFEwJ0zNY9ppf8
-         p/E6o5lsAx3ryq14P1cFPXyx4Uu7HinWIkbfADXYE2VJRQhQ3ACsfZ5d7/iQ1wgrucpV
-         w/IOY49md4EKTvBs+hPyLyYgjaCl/nrbbGlecZ4YnpXxrHvMgnng1jsFqwFAdb9zItU5
-         9HGjGqleZ9b3mmBcUc0vllcU+PMyZHonrO50JU01g0hCfchd0CvZTtz25Ry9xMqaXvfU
-         Fw0A==
-X-Forwarded-Encrypted: i=1; AJvYcCW5i4usGUqX0KTLnx3wyhPUDYysr6lMfo9Fs83DezbDrC8/JDBQFtQOLbKUjwhp8uc601RYOLu22d3NDY8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzuM/28DfdAn26GqlSYFHFY3VcRyZINIRNJ51KgZIWqRSbAvOYh
-	DbyYRDDG+RPZhZPXWS05B17y1UeUwNPC/UgZzYQm/mk/tZjluq1TqTeW
-X-Gm-Gg: ASbGncumB+OHxOkFwq1LFD8kCLtm6LPaOqYdjJMe/1pCH3pb0M/vTaDAqAQINJQYY43
-	fPnVWPeGkl7G5G1xNjy2llnCloT9mA9vMJ/Z7yGyDTNXkMtVmK+zb6hC8XEFep0IiLhsGkIhVae
-	12OIkV0ST2Q/qCdzWNYY8dAVa6OB7DpOBWbh9V1lZ1H+m4Ifx7/X5dNjt876XoW12JCzJkus697
-	NjyUyyj/jFdHGecIW6DCvUTc3dpo2boGepf1aEtq20lxWVY/ByRHrMXMvbnJKniZCsORjti0Qkg
-	e7XjioHlhW/vUr7rUhOTkqU9aFASpqncJ7LV3gl4paob6mq9wUu4ElTlPlITtUvH/tONJ4xn+Uy
-	vELy/g2PEBDdNQd9Oh1j2YNc90UtGLA==
-X-Google-Smtp-Source: AGHT+IHEtWnCbJrLGTsCzIsOmvfz7XrCUuinYoJ1YMkmnRrIevIL2qUouOt7T42E5UqDFgQKhJfguA==
-X-Received: by 2002:a05:6512:3dab:b0:553:26f6:bbfd with SMTP id 2adb3069b0e04-554fdce00cdmr639671e87.8.1750845218713;
-        Wed, 25 Jun 2025 02:53:38 -0700 (PDT)
-Received: from localhost.localdomain (2.135.54.165.dynamic.telecom.kz. [2.135.54.165])
-        by smtp.gmail.com with ESMTPSA id 38308e7fff4ca-32b980a36c0sm19311851fa.62.2025.06.25.02.53.33
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 25 Jun 2025 02:53:38 -0700 (PDT)
-From: Sabyrzhan Tasbolatov <snovitoll@gmail.com>
-To: ryabinin.a.a@gmail.com,
-	glider@google.com,
-	andreyknvl@gmail.com,
-	dvyukov@google.com,
-	vincenzo.frascino@arm.com,
-	catalin.marinas@arm.com,
-	will@kernel.org,
-	chenhuacai@kernel.org,
-	kernel@xen0n.name,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	christophe.leroy@csgroup.eu,
-	hca@linux.ibm.com,
-	gor@linux.ibm.com,
-	agordeev@linux.ibm.com,
-	borntraeger@linux.ibm.com,
-	svens@linux.ibm.com,
-	richard@nod.at,
-	anton.ivanov@cambridgegreys.com,
-	johannes@sipsolutions.net,
-	dave.hansen@linux.intel.com,
-	luto@kernel.org,
-	peterz@infradead.org,
-	tglx@linutronix.de,
-	mingo@redhat.com,
-	bp@alien8.de,
-	x86@kernel.org,
-	hpa@zytor.com,
-	chris@zankel.net,
-	jcmvbkbc@gmail.com,
-	akpm@linux-foundation.org
-Cc: guoweikang.kernel@gmail.com,
-	geert@linux-m68k.org,
-	rppt@kernel.org,
-	tiwei.btw@antgroup.com,
-	richard.weiyang@gmail.com,
-	benjamin.berg@intel.com,
-	kevin.brodsky@arm.com,
-	kasan-dev@googlegroups.com,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	linux-mm@kvack.org,
-	snovitoll@gmail.com
-Subject: [PATCH 9/9] kasan/powerpc: call kasan_init_generic in kasan_init
-Date: Wed, 25 Jun 2025 14:52:24 +0500
-Message-Id: <20250625095224.118679-10-snovitoll@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250625095224.118679-1-snovitoll@gmail.com>
-References: <20250625095224.118679-1-snovitoll@gmail.com>
+        bh=aeUHbst5u6uAyR1ycfeU07wkwThxzbqj2XsMrc/HWnM=;
+        b=RMKw+T0PV2rlMZ750jSJqtfycW3r4kS30XE+HxsGrZg8yvryd+vXNEb+myoOmKV1wM
+         v5f4WCtQnxnlD/gmCcLJllVoNvuw6GmjL2r52A6035JsgE+eksYLD/m8UB5DiPPk7x8A
+         6GAP2bRESNxyrFlL1+lOLRxvPPMUmYY8+6YJZZSRtHV7kr8bPNv1W8XyJMJuX/HCSIqw
+         X94Ev7AnHZ5VuJhuKtucisyKIR95ePcoMjAu5SVFvlz4wbV1HuMAf6G34mjeSo7TWOnq
+         sOyFqfu3ongCa2LOfk/9DJ33svf9ulCyuYTO8EQlWqKVpA2MP8A/vLtICKx9xZBQipuI
+         lYBA==
+X-Forwarded-Encrypted: i=1; AJvYcCXPpj0A/KSMMgcWAFFFGlaqxF9pj8vaVvs+A+S9sjReUodUowiKJBCpA79s5AJaW2RtGtJ2N6ovfAmCkqY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyVQkHUsuOYKY7LFX4MgA+zYR7OslZ3ynThA12y1/bcTsASFt/k
+	5a903VSZWnSMj/5ruwS6lMGLok/4nIh6IGkCuhXFdCJgVcuzC3qsPykAmKvUy6ioCdZ/NYA21Zk
+	x8lEZIiRMHyVpNEH5V7lbD6ntUnyw5t4=
+X-Gm-Gg: ASbGncuAPd+UGqRCH1W4QFCngBsydEzzP+wSk6btb3FlKKWe/c6KUbLCtKS6d2uLK+/
+	S0ruF5V92RckMSEiGR1Fl3T2/+YahuAopRTbGNWSlnctn2F/Pjc7YpqFg6rqkMIuN/AhjEyVcEv
+	quZSRr8aWO8CH09zcwvymfkuMI8m4D0/OLGUVuVNb0Yw==
+X-Google-Smtp-Source: AGHT+IGd+VQCTiJwy9G1ykD/0Nzx0GAzsfPqUCVqghBLVmwOBzPwEbsyyeyH2J2LllM1nMa0CK079KR9Ekpv1ITEkm8=
+X-Received: by 2002:a05:6512:1591:b0:553:abe6:e3e7 with SMTP id
+ 2adb3069b0e04-554fdf5cefbmr869898e87.47.1750855551832; Wed, 25 Jun 2025
+ 05:45:51 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -139,72 +79,54 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+References: <20250625095224.118679-1-snovitoll@gmail.com> <20250625095224.118679-10-snovitoll@gmail.com>
+ <4d568111-9615-4fba-884a-f2ae629776fe@csgroup.eu>
+In-Reply-To: <4d568111-9615-4fba-884a-f2ae629776fe@csgroup.eu>
+From: Sabyrzhan Tasbolatov <snovitoll@gmail.com>
+Date: Wed, 25 Jun 2025 17:45:34 +0500
+X-Gm-Features: Ac12FXyn774raFC9M0P_m_Yp5o7tYNYYaJPlJbUzpj4u5O7z5JIOhc_ux4m2QSg
+Message-ID: <CACzwLxgVj3YD5faPj=09Z9e4WSEe-sD7Sqn4jhaT7eiePaUUMw@mail.gmail.com>
+Subject: Re: [PATCH 9/9] kasan/powerpc: call kasan_init_generic in kasan_init
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: ryabinin.a.a@gmail.com, glider@google.com, andreyknvl@gmail.com, 
+	dvyukov@google.com, vincenzo.frascino@arm.com, catalin.marinas@arm.com, 
+	will@kernel.org, chenhuacai@kernel.org, kernel@xen0n.name, 
+	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com, hca@linux.ibm.com, 
+	gor@linux.ibm.com, agordeev@linux.ibm.com, borntraeger@linux.ibm.com, 
+	svens@linux.ibm.com, richard@nod.at, anton.ivanov@cambridgegreys.com, 
+	johannes@sipsolutions.net, dave.hansen@linux.intel.com, luto@kernel.org, 
+	peterz@infradead.org, tglx@linutronix.de, mingo@redhat.com, bp@alien8.de, 
+	x86@kernel.org, hpa@zytor.com, chris@zankel.net, jcmvbkbc@gmail.com, 
+	akpm@linux-foundation.org, guoweikang.kernel@gmail.com, geert@linux-m68k.org, 
+	rppt@kernel.org, tiwei.btw@antgroup.com, richard.weiyang@gmail.com, 
+	benjamin.berg@intel.com, kevin.brodsky@arm.com, kasan-dev@googlegroups.com, 
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+	loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org, 
+	linux-s390@vger.kernel.org, linux-um@lists.infradead.org, linux-mm@kvack.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-Call kasan_init_generic() which enables the static flag
-to mark generic KASAN initialized, otherwise it's an inline stub.
-Also prints the banner from the single place.
+On Wed, Jun 25, 2025 at 3:33=E2=80=AFPM Christophe Leroy
+<christophe.leroy@csgroup.eu> wrote:
+>
+>
+>
+> Le 25/06/2025 =C3=A0 11:52, Sabyrzhan Tasbolatov a =C3=A9crit :
+> > Call kasan_init_generic() which enables the static flag
+> > to mark generic KASAN initialized, otherwise it's an inline stub.
+> > Also prints the banner from the single place.
+>
+> What about:
+>
+> arch/powerpc/mm/kasan/init_32.c:void __init kasan_init(void)
+> arch/powerpc/mm/kasan/init_book3e_64.c:void __init kasan_init(void)
 
-Closes: https://bugzilla.kernel.org/show_bug.cgi?id=218315
-Fixes: 55d77bae7342 ("kasan: fix Oops due to missing calls to kasan_arch_is_ready()")
-Signed-off-by: Sabyrzhan Tasbolatov <snovitoll@gmail.com>
----
- arch/powerpc/include/asm/kasan.h       | 14 --------------
- arch/powerpc/mm/kasan/init_book3s_64.c |  6 +-----
- 2 files changed, 1 insertion(+), 19 deletions(-)
+Thanks, I've missed them. Will add in v2.
+I've also found out that I've missed:
+arch/arm/mm/kasan_init.c
+arch/riscv/mm/kasan_init.c
 
-diff --git a/arch/powerpc/include/asm/kasan.h b/arch/powerpc/include/asm/kasan.h
-index b5bbb94c51f..23a06fbec72 100644
---- a/arch/powerpc/include/asm/kasan.h
-+++ b/arch/powerpc/include/asm/kasan.h
-@@ -52,20 +52,6 @@
- 
- #endif
- 
--#ifdef CONFIG_KASAN
--#ifdef CONFIG_PPC_BOOK3S_64
--DECLARE_STATIC_KEY_FALSE(powerpc_kasan_enabled_key);
--
--static __always_inline bool kasan_arch_is_ready(void)
--{
--	if (static_branch_likely(&powerpc_kasan_enabled_key))
--		return true;
--	return false;
--}
--
--#define kasan_arch_is_ready kasan_arch_is_ready
--#endif
--
- void kasan_early_init(void);
- void kasan_mmu_init(void);
- void kasan_init(void);
-diff --git a/arch/powerpc/mm/kasan/init_book3s_64.c b/arch/powerpc/mm/kasan/init_book3s_64.c
-index 7d959544c07..dcafa641804 100644
---- a/arch/powerpc/mm/kasan/init_book3s_64.c
-+++ b/arch/powerpc/mm/kasan/init_book3s_64.c
-@@ -19,8 +19,6 @@
- #include <linux/memblock.h>
- #include <asm/pgalloc.h>
- 
--DEFINE_STATIC_KEY_FALSE(powerpc_kasan_enabled_key);
--
- static void __init kasan_init_phys_region(void *start, void *end)
- {
- 	unsigned long k_start, k_end, k_cur;
-@@ -92,11 +90,9 @@ void __init kasan_init(void)
- 	 */
- 	memset(kasan_early_shadow_page, 0, PAGE_SIZE);
- 
--	static_branch_inc(&powerpc_kasan_enabled_key);
--
- 	/* Enable error messages */
- 	init_task.kasan_depth = 0;
--	pr_info("KASAN init done\n");
-+	kasan_init_generic();
- }
- 
- void __init kasan_early_init(void) { }
--- 
-2.34.1
-
+>
+> Christophe
+>
 
