@@ -1,60 +1,139 @@
-Return-Path: <linuxppc-dev+bounces-9821-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9822-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC4B5C7EE30
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jun 2025 15:31:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C316BC7EE30
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jun 2025 15:32:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bSjM727kcz30P3;
-	Fri, 27 Jun 2025 01:30:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:1004:224b::b9"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750951859;
-	cv=none; b=Qb35GP4tWaTca8aczd3rxblnlXvtoMTzwGEkc7Qgs/ckqzCAtZkIEXcDZ5krh0TecJNzGs12rVmd2svKmSmGJSs0Ez7wiL+V/NtosU31wNlxw0CERmO7HiCU5AXXDOX1ZeXxORv2SC9gGahOD2/E6jSGICkQBmp4B2Bk0mtQU7mEuvtQW+LwgEvrRb+loH8FLxquiK81WoEJDph5MUuDoXzjXY2mvWuiWGCw9COPZ2jtVy2TGU6SJVyewzlja16nkZiSj5d6z4Q1JPr9svOpr3YG6taBZCX46P3HGzIsPLGn5jVGFTxymexTkzyn6GgtHkHkwOLl7cv30reKCuRDTg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bSjNW3CKyz30Qk;
+	Fri, 27 Jun 2025 01:32:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::22b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750951931;
+	cv=none; b=LIksHzWrrGliZ2FvUnO1+3/sLGuKYyvyvBR7r8mDr8fA/FMvJAoJqz6BIUoQAi9DjqscGceFTAg0Kj7vPRheBGdTDYeVU7qMEHVzd37M4oHxCTOvlyAcjchAhCQKixKALmsJeBqgyStn92lR9F3r7SEV1n5cylWscU5enq8FzdbnRxm/9yS2sVzLmHT0PO8d0FMfgAaKpyvMxYMNSn0Gi5QZ7+olaaHCJ9MLLGuflSCZbIGsBDTtGzPMpW8By41fiDjHl+zTQ0HMckWviYJxmMA8Am3DWEv4qLK2jfsyYUHT7w5ud4eMKs3Nj8JbBnKfxGHImgOQU3fYavM6ARUjBg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750951859; c=relaxed/relaxed;
-	bh=yMeirCEvb93+6eKpc7HB6gbXZIpqW2Hi3+BGISmVpIs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mxGRYabc06NdX3BCPtuEUtmO1M0S3BeaKhEQTQ7MWuXj27onMV5f4yfnlf5wwHiDMHUrFOsVDbRdZDQ4bO+p24e/U+yUuH5b7XA8ZG9kvYYK8T8nYWJ3qHqvT1wa31s33QHb01hhgJj6/0F9ab9Z2Xjf2m7xgItA5PWPo6TWOxy1bvzUgF0A7kvlK1QIPacNSO6MlNbF4n25V6dTp0ae/0BCE2ZbxMl5v6K4AVWCl6VDys3aN710OM5PRDEeHPXC6r/T0snyoIrxv2pTA0w80KTIB7YmxkSlxIeL34/abHEYJrA5jdz6M2TjfTqOpTNX2yT/lSHXcgfHOCLc8Sbiqg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=vWWiHDwj; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:1004:224b::b9; helo=out-185.mta0.migadu.com; envelope-from=andrew.jones@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
+	t=1750951931; c=relaxed/relaxed;
+	bh=YMfAvEP2mtW3abNAfjIslAPajM3CO1XTnrCn/94UwT0=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=Esb+ZNrCYcFXHJw8v/+YnKiEO00NB2yylMSrDV5/denk8va8l5g0SzFxkHJ2PxSx5mBhO0bRIlBs0H4R9e1XfYZrgaij2D/BjiGs4EK4i9innl+w0HlFYdtHNcGoHGTBHwmH7A1TWCEpYXdrQNggs4JYFM/SjrWryw+9ZztVQGu9sCzEZig9EyHsFBk4+TPx9DemAlEArSFravLuqD/ioOIIL6jodQCG186r6q6iZaDhHd1heTmbtGHyN1PGy6leeTsIuriMkqz/cKpD4xPmQ81w5c4OGmmrAggbMitl0VxSPvMIfpXATYnysr1tCuLDeVoaFCRjVksisdoyCzfnZw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=GfVSbF8F; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::22b; helo=mail-lj1-x22b.google.com; envelope-from=snovitoll@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=vWWiHDwj;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=GfVSbF8F;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:1004:224b::b9; helo=out-185.mta0.migadu.com; envelope-from=andrew.jones@linux.dev; receiver=lists.ozlabs.org)
-X-Greylist: delayed 306 seconds by postgrey-1.37 at boromir; Fri, 27 Jun 2025 01:30:58 AEST
-Received: from out-185.mta0.migadu.com (out-185.mta0.migadu.com [IPv6:2001:41d0:1004:224b::b9])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::22b; helo=mail-lj1-x22b.google.com; envelope-from=snovitoll@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lj1-x22b.google.com (mail-lj1-x22b.google.com [IPv6:2a00:1450:4864:20::22b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bSjM61LY3z30Nl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jun 2025 01:30:57 +1000 (AEST)
-Date: Thu, 26 Jun 2025 17:25:24 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1750951527;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=yMeirCEvb93+6eKpc7HB6gbXZIpqW2Hi3+BGISmVpIs=;
-	b=vWWiHDwjdsnVxah//VOE06mn+L789ERAyxJwwodV56NBj7UU4/YpmcD1M2GXm2fk1fEz+c
-	RE+pf5Ngacj1OI2IB9rFXUFyD830hpC72TGw65II7dNFETzAGJbHVR2KYTBX0Hdw2T6JcQ
-	IYGWh/VdELSLLRDiG1kJohVZrlF6uxc=
-X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
-From: Andrew Jones <andrew.jones@linux.dev>
-To: Alexandru Elisei <alexandru.elisei@arm.com>
-Cc: eric.auger@redhat.com, lvivier@redhat.com, thuth@redhat.com, 
-	frankja@linux.ibm.com, imbrenda@linux.ibm.com, nrb@linux.ibm.com, david@redhat.com, 
-	pbonzini@redhat.com, kvm@vger.kernel.org, kvmarm@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
-	will@kernel.org, julien.thierry.kdev@gmail.com, maz@kernel.org, 
-	oliver.upton@linux.dev, suzuki.poulose@arm.com, yuzenghui@huawei.com, joey.gouly@arm.com, 
-	andre.przywara@arm.com, shahuang@redhat.com
-Subject: Re: [kvm-unit-tests PATCH v4 03/13] scripts: Refuse to run the tests
- if not configured for qemu
-Message-ID: <20250626-e99cee57aaa67223c2e09f31@orel>
-References: <20250625154813.27254-1-alexandru.elisei@arm.com>
- <20250625154813.27254-4-alexandru.elisei@arm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bSjNT4ncJz30Pg
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jun 2025 01:32:09 +1000 (AEST)
+Received: by mail-lj1-x22b.google.com with SMTP id 38308e7fff4ca-32cd0dfbd66so9020251fa.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 26 Jun 2025 08:32:08 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1750951925; x=1751556725; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=YMfAvEP2mtW3abNAfjIslAPajM3CO1XTnrCn/94UwT0=;
+        b=GfVSbF8Fnj25F/zcSZPnqQMa+XNIcnL06jYg7K5Y2tU5PQMoRNuyozpcl9GK4qZWaM
+         YTHl5N0rt6DFl/bfp8b0xkgAeFvpfuCkGnXA0YmkO5dDVoAZmS1jg7VTfsEsIiDeDmod
+         i7+bynx52zXpB9KiDVnhHMNNdlb6mxCPOWcIkx7EOGBIoXJzDh5BrrigvdLsHi9n7l6E
+         fcXsPmr7GY1lHoQiha9/uyehj1JLB0NRsC5lq6WftvJsWj+KKB4j8IUw7j2xf8S1Skhg
+         KSgpDmAKHxPqWdI77KLkIBlv6jhSgJw40mYTAQm6VyoYV5BHS+FzsaX+WnQ0L653X8FQ
+         ytvQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1750951925; x=1751556725;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=YMfAvEP2mtW3abNAfjIslAPajM3CO1XTnrCn/94UwT0=;
+        b=QbbStUoverccPlpYzHyAQWEi6qTygtQVQxknXtOX0+Nsrqf5iFSYzkYi8w3gZA2t4G
+         ZZmNLRnKvkMrrZDJ7D7UNDhGArVJV/vNRrvwgUMKwWEflaLcl0DPNbGuKvIfU5PForns
+         gMm/5Im66nFbIp56p/rSh+02Pjh2CEU2sQbCnRWqEE2v3chNX0cv10t6CODFpgssnhtq
+         jPHooNhNV8YYATRPTgPwNK89wI4IDfHLZyYvkA1pkGCrSAWoDP5XywXnLBHNkGZBYzKS
+         MNteGMTVxG16DjxPHeXoY+3zXBB2WUY6YltOC+N6v7y5D6Tko5elHNkjbRFuynami6xE
+         I8TQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVHndp40M1jPyYDdw+oEQlyo+7KiyJZkUDrqbePMxZ4ISZ4B9wgOgDATzsYPOoa7amMzzHogQHLEbxHYy4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxK2wgOrjjO9WELvVuuQW1FULdB7SyBXYc2HkrZXO7q1dwyXEUO
+	AWCiFlkOsQ7QRZdQajabjYxWMnmVpkC9j+m/hwPciu/HTcHPsMM1ID0H
+X-Gm-Gg: ASbGnctzNkBQWM0G34JwUEZ9BcDl2nZKkW95hI79SLDn5C3ShZE3PjkMQIzvDZjHJYk
+	bq+JvWLj4VFwKETL3wYTWXELJ+v5grMT13hKYwoy2jZOZys7dh1HMm3n/1/GIMW9a/WfXEFqz4W
+	goEoOx0XGwh76ue4hEhLjfx3c1MM6Uv2L+zzhLjG66/dkB4UjY5xvvLCtHQ4wsdnHeb+0/L5Txh
+	ivKLQJ8S+4VBhrDjhYj9Q+aDyyG8pBIb5Q8/mDct4RyN7gISfiNFh2yK/QqVjWZdGevz7GgZnmz
+	86lD+08WSAR+vXVIZ0lgnH9IE9DF9DEVC2C7grckp4ZkK7zVGOH/JYmdLYdmgjAaTgVMbgb+pMw
+	iogw28xqrkgqZcydTver07m7TCE3OAvJ9PCxRdAUU
+X-Google-Smtp-Source: AGHT+IHpXirYmk7XDZLOi1Ssi0yS8Ocf718QqXqkpNJ7oPQlT+uR1sIDO9gdQg1tyNmCsb6VEaTfFA==
+X-Received: by 2002:a05:6512:1589:b0:554:f76a:baba with SMTP id 2adb3069b0e04-554fdcbb935mr2999055e87.3.1750951924452;
+        Thu, 26 Jun 2025 08:32:04 -0700 (PDT)
+Received: from localhost.localdomain (2.135.54.165.dynamic.telecom.kz. [2.135.54.165])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-5550b2ce1fasm42792e87.174.2025.06.26.08.31.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 26 Jun 2025 08:32:03 -0700 (PDT)
+From: Sabyrzhan Tasbolatov <snovitoll@gmail.com>
+To: ryabinin.a.a@gmail.com,
+	glider@google.com,
+	andreyknvl@gmail.com,
+	dvyukov@google.com,
+	vincenzo.frascino@arm.com,
+	linux@armlinux.org.uk,
+	catalin.marinas@arm.com,
+	will@kernel.org,
+	chenhuacai@kernel.org,
+	kernel@xen0n.name,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	christophe.leroy@csgroup.eu,
+	paul.walmsley@sifive.com,
+	palmer@dabbelt.com,
+	aou@eecs.berkeley.edu,
+	alex@ghiti.fr,
+	hca@linux.ibm.com,
+	gor@linux.ibm.com,
+	agordeev@linux.ibm.com,
+	borntraeger@linux.ibm.com,
+	svens@linux.ibm.com,
+	richard@nod.at,
+	anton.ivanov@cambridgegreys.com,
+	johannes@sipsolutions.net,
+	dave.hansen@linux.intel.com,
+	luto@kernel.org,
+	peterz@infradead.org,
+	tglx@linutronix.de,
+	mingo@redhat.com,
+	bp@alien8.de,
+	x86@kernel.org,
+	hpa@zytor.com,
+	chris@zankel.net,
+	jcmvbkbc@gmail.com,
+	akpm@linux-foundation.org,
+	nathan@kernel.org,
+	nick.desaulniers+lkml@gmail.com,
+	morbo@google.com,
+	justinstitt@google.com
+Cc: arnd@arndb.de,
+	rppt@kernel.org,
+	geert@linux-m68k.org,
+	mcgrof@kernel.org,
+	guoweikang.kernel@gmail.com,
+	tiwei.btw@antgroup.com,
+	kevin.brodsky@arm.com,
+	benjamin.berg@intel.com,
+	kasan-dev@googlegroups.com,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	loongarch@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	linux-um@lists.infradead.org,
+	linux-mm@kvack.org,
+	llvm@lists.linux.dev,
+	snovitoll@gmail.com
+Subject: [PATCH v2 00/11] kasan: unify kasan_arch_is_ready with kasan_enabled
+Date: Thu, 26 Jun 2025 20:31:36 +0500
+Message-Id: <20250626153147.145312-1-snovitoll@gmail.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,151 +147,163 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250625154813.27254-4-alexandru.elisei@arm.com>
-X-Migadu-Flow: FLOW_OUT
+Content-Transfer-Encoding: 8bit
 
-On Wed, Jun 25, 2025 at 04:48:03PM +0100, Alexandru Elisei wrote:
-> Arm and arm64 support running the tests under kvmtool. kvmtool has a
-> different command line syntax for configuring and running a virtual
-> machine, and the automated scripts know only how to use qemu.
-> 
-> One issue with that is even though the tests have been configured for
-> kvmtool (with ./configure --target=kvmtool), the scripts will use qemu to
-> run the tests, and without looking at the logs there is no indication that
-> the tests haven't been run with kvmtool, as configured.
-> 
-> Another issue is that kvmtool uses a different address for the UART and
-> when running the tests with qemu via the scripts, this warning is
-> displayed:
-> 
-> WARNING: early print support may not work. Found uart at 0x9000000, but early base is 0x1000000.
-> 
-> which might trip up an unsuspected user.
-> 
-> There are four different ways to run a test using the test infrastructure:
-> with run_tests.sh, by invoking arm/run or arm/efi/run with the correct
-> parameters (only the arm directory is mentioned here because the tests can
-> be configured for kvmtool only on arm and arm64), and by creating
-> standalone tests.
-> 
-> run_tests.sh ends up executing either arm/run or arm/efi/run, so add a
-> check to these two scripts for the test target, and refuse to run the test
-> if kvm-unit-tests has been configured for kvmtool.
-> 
-> mkstandalone.sh also executes arm/run or arm/efi run, but the usual use
-> case for standalone tests is to compile them on one machine, and then to
-> run them on a different machine. This two step process can be time
-> consuming, so save the user time (and frustration!) and add a check
-> directly to mkstandalone.sh.
-> 
-> Reviewed-by: Shaoqin Huang <shahuang@redhat.com>
-> Signed-off-by: Alexandru Elisei <alexandru.elisei@arm.com>
-> ---
-> 
-> Changes v3->v4:
-> 
-> * Renamed check_vmm_supported() to vmm_check_supported().
-> * Added function vmm_get_target().
-> * Added Reviewed-by from Shaoqin.
-> * Fixed typo s/execuing/executing (Drew).
-> 
->  arm/efi/run             |  3 +++
->  arm/run                 |  4 ++++
->  scripts/mkstandalone.sh |  6 +++++-
->  scripts/vmm.bash        | 25 +++++++++++++++++++++++++
->  4 files changed, 37 insertions(+), 1 deletion(-)
->  create mode 100644 scripts/vmm.bash
-> 
-> diff --git a/arm/efi/run b/arm/efi/run
-> index 8f41fc02df31..38800e8bfa13 100755
-> --- a/arm/efi/run
-> +++ b/arm/efi/run
-> @@ -11,6 +11,9 @@ if [ ! -f config.mak ]; then
->  fi
->  source config.mak
->  source scripts/arch-run.bash
-> +source scripts/vmm.bash
-> +
-> +vmm_check_supported
->  
->  if [ -f /usr/share/qemu-efi-aarch64/QEMU_EFI.fd ]; then
->  	DEFAULT_UEFI=/usr/share/qemu-efi-aarch64/QEMU_EFI.fd
-> diff --git a/arm/run b/arm/run
-> index ef58558231b7..edf0c1dd1b41 100755
-> --- a/arm/run
-> +++ b/arm/run
-> @@ -7,7 +7,11 @@ if [ -z "$KUT_STANDALONE" ]; then
->  	fi
->  	source config.mak
->  	source scripts/arch-run.bash
-> +	source scripts/vmm.bash
->  fi
-> +
-> +vmm_check_supported
-> +
->  qemu_cpu="$TARGET_CPU"
->  
->  if [ "$QEMU" ] && [ -z "$ACCEL" ] &&
-> diff --git a/scripts/mkstandalone.sh b/scripts/mkstandalone.sh
-> index c4ba81f18935..9c5768563757 100755
-> --- a/scripts/mkstandalone.sh
-> +++ b/scripts/mkstandalone.sh
-> @@ -6,6 +6,9 @@ if [ ! -f config.mak ]; then
->  fi
->  source config.mak
->  source scripts/common.bash
-> +source scripts/vmm.bash
-> +
-> +vmm_check_supported
->  
->  temp_file ()
->  {
-> @@ -71,7 +74,8 @@ generate_test ()
->  	args[3]='$bin'
->  
->  	(echo "#!/usr/bin/env bash"
-> -	 cat scripts/arch-run.bash "$TEST_DIR/run") | temp_file RUNTIME_arch_run
-> +	 cat scripts/vmm.bash scripts/arch-run.bash "$TEST_DIR/run") \
-> +		| temp_file RUNTIME_arch_run
->  
->  	echo "exec {stdout}>&1"
->  	echo "RUNTIME_log_stdout () { cat >&\$stdout; }"
-> diff --git a/scripts/vmm.bash b/scripts/vmm.bash
-> new file mode 100644
-> index 000000000000..8365c1424a3f
-> --- /dev/null
-> +++ b/scripts/vmm.bash
-> @@ -0,0 +1,25 @@
-> +function vmm_get_target()
-> +{
-> +	if [[ -z "$TARGET" ]]; then
-> +		echo "qemu"
-> +	else
-> +		echo "$TARGET"
-> +	fi
-> +}
-> +
-> +function vmm_check_supported()
-> +{
-> +	# We're not interested in the return code for vmm_get_target().
-> +	# shellcheck disable=SC2155
-> +	local target=$(vmm_get_target)
-> +
-> +	case "$target" in
-> +	qemu)
-> +		return 0
-> +		;;
-> +	*)
-> +		echo "$0 does not support target '$target'"
-> +		exit 2
-> +		;;
-> +	esac
-> +}
-> -- 
-> 2.50.0
->
+This patch series unifies the kasan_arch_is_ready() and kasan_enabled()
+interfaces by extending the existing kasan_enabled() infrastructure to
+work consistently across all KASAN modes (Generic, SW_TAGS, HW_TAGS).
 
-Reviewed-by: Andrew Jones <andrew.jones@linux.dev>
+Currently, kasan_enabled() only works for HW_TAGS mode using a static key,
+while other modes either return IS_ENABLED(CONFIG_KASAN) (compile-time
+constant) or rely on architecture-specific kasan_arch_is_ready()
+implementations with custom static keys and global variables.
+
+This leads to:
+- Code duplication across architectures  
+- Inconsistent runtime behavior between KASAN modes
+- Architecture-specific readiness tracking
+
+After this series:
+- All KASAN modes use the same kasan_flag_enabled static key
+- Consistent runtime enable/disable behavior across modes
+- Simplified architecture code with unified kasan_init_generic() calls
+- Elimination of arch specific kasan_arch_is_ready() implementations
+- Unified vmalloc integration using kasan_enabled() checks
+
+This addresses the bugzilla issue [1] about making
+kasan_flag_enabled and kasan_enabled() work for Generic mode,
+and extends it to provide true unification across all modes.
+
+[1] https://bugzilla.kernel.org/show_bug.cgi?id=217049
+
+=== Current mainline KUnit status
+
+To see if there is any regression, I've tested first on the following
+commit 739a6c93cc75 ("Merge tag 'nfsd-6.16-1' of
+git://git.kernel.org/pub/scm/linux/kernel/git/cel/linux").
+
+Tested via compiling a kernel with CONFIG_KASAN_KUNIT_TEST and running
+QEMU VM. There are failing tests in SW_TAGS and GENERIC modes in arm64:
+
+arm64 CONFIG_KASAN_HW_TAGS:
+	# kasan: pass:62 fail:0 skip:13 total:75
+	# Totals: pass:62 fail:0 skip:13 total:75
+	ok 1 kasan
+
+arm64 CONFIG_KASAN_SW_TAGS=y:
+	# kasan: pass:65 fail:1 skip:9 total:75
+	# Totals: pass:65 fail:1 skip:9 total:75
+	not ok 1 kasan
+	# kasan_strings: EXPECTATION FAILED at mm/kasan/kasan_test_c.c:1598
+	KASAN failure expected in "strscpy(ptr, src + KASAN_GRANULE_SIZE, KASAN_GRANULE_SIZE)", but none occurred
+
+arm64 CONFIG_KASAN_GENERIC=y, CONFIG_KASAN_OUTLINE=y:
+	# kasan: pass:61 fail:1 skip:13 total:75
+	# Totals: pass:61 fail:1 skip:13 total:75
+	not ok 1 kasan
+	# same failure as above
+
+x86_64 CONFIG_KASAN_GENERIC=y:
+	# kasan: pass:58 fail:0 skip:17 total:75
+	# Totals: pass:58 fail:0 skip:17 total:75
+	ok 1 kasan
+
+=== Testing with patches
+
+Testing in v2:
+
+- Compiled every affected arch with no errors:
+
+$ make CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm STRIP=llvm-strip \
+	OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump READELF=llvm-readelf \
+	HOSTCC=clang HOSTCXX=clang++ HOSTAR=llvm-ar HOSTLD=ld.lld \
+	ARCH=$ARCH
+
+$ clang --version
+ClangBuiltLinux clang version 19.1.4
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+
+- make ARCH=um produces the warning during compiling:
+	MODPOST Module.symvers
+	WARNING: modpost: vmlinux: section mismatch in reference: \
+		kasan_init+0x43 (section: .ltext) -> \
+		kasan_init_generic (section: .init.text)
+
+AFAIU, it's due to the code in arch/um/kernel/mem.c, where kasan_init()
+is placed in own section ".kasan_init", which calls kasan_init_generic()
+which is marked with "__init".
+
+- Booting via qemu-system- and running KUnit tests:
+
+* arm64  (GENERIC, HW_TAGS, SW_TAGS): no regression, same above results.
+* x86_64 (GENERIC): no regression, no errors
+
+=== NB
+
+I haven't tested the kernel boot on the following arch. due to the absence
+of qemu-system- support on those arch on my machine, so I defer this to
+relevant arch people to test KASAN initialization:
+- loongarch
+- s390
+- um
+- xtensa
+- powerpc
+- riscv
+
+Code changes in v2:
+- Replace the order of patches. Move "kasan: replace kasan_arch_is_ready
+	with kasan_enabled" at the end to keep the compatibility.
+- arch/arm, arch/riscv: add 2 arch. missed in v1
+- arch/powerpc: add kasan_init_generic() in other kasan_init() calls:
+	arch/powerpc/mm/kasan/init_32.c
+	arch/powerpc/mm/kasan/init_book3e_64.c
+- arch/um: add the proper header `#include <linux/kasan.h>`. Tested
+	via compiling with no errors. In the v1 arch/um changes were acked-by
+	Johannes Berg, though I don't include it due to the changed code in v2.
+- arch/powerpc: add back `#ifdef CONFIG_KASAN` deleted in v1 and tested
+	the compilation.
+- arch/loongarch: update git commit message about non-standard flow of
+	calling kasan_init_generic()
+
+Sabyrzhan Tasbolatov (11):
+  kasan: unify static kasan_flag_enabled across modes
+  kasan/arm64: call kasan_init_generic in kasan_init
+  kasan/arm: call kasan_init_generic in kasan_init
+  kasan/xtensa: call kasan_init_generic in kasan_init
+  kasan/loongarch: call kasan_init_generic in kasan_init
+  kasan/um: call kasan_init_generic in kasan_init
+  kasan/x86: call kasan_init_generic in kasan_init
+  kasan/s390: call kasan_init_generic in kasan_init
+  kasan/powerpc: call kasan_init_generic in kasan_init
+  kasan/riscv: call kasan_init_generic in kasan_init
+  kasan: replace kasan_arch_is_ready with kasan_enabled
+
+ arch/arm/mm/kasan_init.c               |  2 +-
+ arch/arm64/mm/kasan_init.c             |  4 +---
+ arch/loongarch/include/asm/kasan.h     |  7 -------
+ arch/loongarch/mm/kasan_init.c         |  7 ++-----
+ arch/powerpc/include/asm/kasan.h       | 13 -------------
+ arch/powerpc/mm/kasan/init_32.c        |  2 +-
+ arch/powerpc/mm/kasan/init_book3e_64.c |  2 +-
+ arch/powerpc/mm/kasan/init_book3s_64.c |  6 +-----
+ arch/riscv/mm/kasan_init.c             |  1 +
+ arch/s390/kernel/early.c               |  3 ++-
+ arch/um/include/asm/kasan.h            |  5 -----
+ arch/um/kernel/mem.c                   |  4 ++--
+ arch/x86/mm/kasan_init_64.c            |  2 +-
+ arch/xtensa/mm/kasan_init.c            |  2 +-
+ include/linux/kasan-enabled.h          | 22 ++++++++++++++++------
+ include/linux/kasan.h                  |  6 ++++++
+ mm/kasan/common.c                      | 15 +++++++++++----
+ mm/kasan/generic.c                     | 17 ++++++++++++++---
+ mm/kasan/hw_tags.c                     |  7 -------
+ mm/kasan/kasan.h                       |  6 ------
+ mm/kasan/shadow.c                      | 15 +++------------
+ mm/kasan/sw_tags.c                     |  2 ++
+ 22 files changed, 66 insertions(+), 84 deletions(-)
+
+-- 
+2.34.1
+
 
