@@ -1,79 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-9840-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9841-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 290D2C7EE30
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jun 2025 18:45:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE5F6C7EE30
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 26 Jun 2025 21:50:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bSngF424dz30PF;
-	Fri, 27 Jun 2025 04:45:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750963513;
-	cv=none; b=TMEEdIdS4XSJskyx+PmrIPUVf3aJeKXqOdpRebvBxilnaqCmJ8Is/j6S/2SHbAbUXuRpLCRsPItKqIMBjSurgtgMMmTQ5MPWclAumiMaVfQpKzTxU4PSbdAiYkMGvopTyVatS+dimCK36Mt1wlWw7REmF4tZhxtgEPcBPamgALNF9jie8g72rjByRW+RIhmrXgy/ERjofEeiAvBVbjqRRAi7lQjI//26Oc7Qp8vSy6p2d1y/2RwbQIyG5CAtn4GcPOY0sb9FWq/iDIvh0O9Gc9AhlgRp3ByEX1rJvYk4fLstI2a12DT7OoBepgQk68oBhZHAsPBGzqzdzXy3C401ew==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bSsnN1G4Gz2xCd;
+	Fri, 27 Jun 2025 07:50:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1750974648;
+	cv=none; b=PYPdKJRsAfZvomAkgwFy0ypZxbuOQxhIWcBCD8gO3NI/MTk5Dmr+yOa1xq5ILgWDSipE1psdLe1kXwQEqpBtJvlFK/GtxlegkuTbsOryaAGShsji0s4/qKdFblXQEhxRJGfDpEdJ5DHOkwZQG9BBjUyWfdN6SpGvBPJCt9mPRJFe/1c3DjHCMM09dqg8+rGCIhAKAMLCagCcWOX+BBuCOxj39jzCCyWUX7nKJwrbcMiefvbGvU5HnV/X6w2mg8JEnzlpD3DKEukyLIy7Xe1Shxb/8588varjwSUCfip7QVsH/S0zq5w9ZFUu2aE77qilpMjdPFZ0vy9tt2CuhTyBDA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1750963513; c=relaxed/relaxed;
-	bh=zqOZ0nvJoY2kvs0ans1k/jor+XKnKoBEFfFm8tFXKgw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iQt2ck55Nx5P0qtRJSGb5lO1T4W3CRRghlZsS8p0zUrXE0FqghlhdaHH/dEpmavFVctEmaDe5sYV+yVOrs3zjiRB/MqwviuNdVgBSlsnMZhLGWdi8hvCgw1K84mbKRCz9PmgXdK/F0QdLrX/bgn4IOo21MhTt0ZDqITMgFlM9NovUx6MYfL0NkaUQaqezZsFq7kfwqZ2MOKwhvMgv89BWu9DqM8HpBikxsqS6ncpgLhezr+tyDvW+NY2xILZNbPYRKTVfb2H6jZ08qkJAXrcHHOEkH6PwALLYKWZX39afqt873tlj4gwxCaESfRbZDdTeLUANtB8W05nWI+bw4kDoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hLP472CC; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hLP472CC;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bSngD3pHQz30NP
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jun 2025 04:45:12 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id A3BCB4375D;
-	Thu, 26 Jun 2025 18:45:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CC281C4CEEB;
-	Thu, 26 Jun 2025 18:45:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1750963509;
-	bh=qpuwIbsfFlx+vQqZ7u2g19cFy4P5mUElZNbXy5mDaBA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=hLP472CCTg+PhX1yKdunFpJsdMOjYvhGyAgWrimK7DWPKkMd17pKMc1fIfwaPlCPA
-	 JIJRXr+shFAtyLcZe8XBwbY11mrvGDzVdJ3RsltqtREBwQkFGd8GfGcQGFurfXwhRi
-	 Gh6t0AupUp/xt8ImCbK8nrHJ6hmurZkalNqu+4nWd0M/d9ZfOF4iAVk+oNuFVT055z
-	 IXMV0SFHieGPFmST8cP/2Lrg5B0eeTJyP2e7jxgpdTCHDGUFGS4ovBwL7ynEjAeKFJ
-	 dwGKMZLnO96ObPriGbwvv4YKtLXuQsSnKwE/DIyBvIi2T6xOA6FnnFe1RuVAtw0cbK
-	 QWmFFBkB6n4+g==
-Date: Thu, 26 Jun 2025 21:45:04 +0300
-From: Leon Romanovsky <leon@kernel.org>
-To: Alexander Potapenko <glider@google.com>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
-	Christoph Hellwig <hch@lst.de>, Jonathan Corbet <corbet@lwn.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <joro@8bytes.org>,
-	Will Deacon <will@kernel.org>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Jason Wang <jasowang@redhat.com>,
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-	Eugenio =?iso-8859-1?Q?P=E9rez?= <eperezma@redhat.com>,
-	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	=?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, iommu@lists.linux.dev,
-	virtualization@lists.linux.dev, kasan-dev@googlegroups.com,
-	linux-trace-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 5/8] kmsan: convert kmsan_handle_dma to use physical
- addresses
-Message-ID: <20250626184504.GK17401@unreal>
-References: <cover.1750854543.git.leon@kernel.org>
- <cabe5b75fe1201baa6ecd209546c1f0913fc02ef.1750854543.git.leon@kernel.org>
- <CAG_fn=XWP-rpV-D2nV-a3wMbzqLn2T-43tyGnoS2AhVGU8oZMw@mail.gmail.com>
+	t=1750974648; c=relaxed/relaxed;
+	bh=8AfLUpfXbLI4U/fAWmKo7PRiYWNETv7TueNspD+2Y8g=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Mime-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=a/QbGXA+/EL5NbMEpgKgdo12QV0RARNdEh0ZxO+j+L6AOUKekJdGQQIW/E3GLhmh6PRtj3n+CVqgRlnRJ9NuNBLfGTh8/NZi0Mdt2R9OwXhH/bpcXINuisozubrNkBmrSBQNz3wJhOObSWS/dv5M03jLzcS4Or+mBfKNUfvwwgoWoB5IMY8JBHxxVV5GlHAelYq0WRYVWY+vxcIgPNUYsOgkUA1o379RtZxyuWFpmMXGfQ9z0SWfOgjkYUskq18vzGLQPZ6JOjX9AW1sXKBp9+dLStB++DySfsOGyxAlv3+nSJMI+7TaRzPlDlx0ADQQ/PmCjBgVxUOn+2PKUe4NIg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bSsnK6xKqz2xCW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 27 Jun 2025 07:50:44 +1000 (AEST)
+Received: from gate.crashing.org (localhost.localdomain [127.0.0.1])
+	by gate.crashing.org (8.14.1/8.14.1) with ESMTP id 55QLdUFG018871;
+	Thu, 26 Jun 2025 16:39:31 -0500
+Received: (from segher@localhost)
+	by gate.crashing.org (8.14.1/8.14.1/Submit) id 55QLdRb4018869;
+	Thu, 26 Jun 2025 16:39:27 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
+Date: Thu, 26 Jun 2025 16:39:27 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: David Laight <david.laight.linux@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Alexander Viro <viro@zeniv.linux.org.uk>,
+        Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Darren Hart <dvhart@infradead.org>,
+        Davidlohr Bueso <dave@stgolabs.net>,
+        Andre Almeida <andrealmeid@igalia.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-fsdevel@vger.kernel.org, linux-mm@kvack.org
+Subject: Re: [PATCH 0/5] powerpc: Implement masked user access
+Message-ID: <20250626213927.GQ17294@gate.crashing.org>
+References: <cover.1750585239.git.christophe.leroy@csgroup.eu> <20250622172043.3fb0e54c@pumpkin> <ff2662ca-3b86-425b-97f8-3883f1018e83@csgroup.eu> <20250624131714.GG17294@gate.crashing.org> <20250624175001.148a768f@pumpkin> <20250624182505.GH17294@gate.crashing.org> <20250624220816.078f960d@pumpkin>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,64 +64,155 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
+Mime-Version: 1.0
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <CAG_fn=XWP-rpV-D2nV-a3wMbzqLn2T-43tyGnoS2AhVGU8oZMw@mail.gmail.com>
+In-Reply-To: <20250624220816.078f960d@pumpkin>
+User-Agent: Mutt/1.4.2.3i
 
-On Thu, Jun 26, 2025 at 07:43:06PM +0200, Alexander Potapenko wrote:
-> On Wed, Jun 25, 2025 at 3:19 PM Leon Romanovsky <leon@kernel.org> wrote:
-> >
-> > From: Leon Romanovsky <leonro@nvidia.com>
+Hi!
+
+On Tue, Jun 24, 2025 at 10:08:16PM +0100, David Laight wrote:
+> On Tue, 24 Jun 2025 13:25:05 -0500
+> Segher Boessenkool <segher@kernel.crashing.org> wrote:
+> > On Tue, Jun 24, 2025 at 05:50:01PM +0100, David Laight wrote:
+> > > On Tue, 24 Jun 2025 08:17:14 -0500
+> > > Segher Boessenkool <segher@kernel.crashing.org> wrote:
+> > >   
+> > > > On Tue, Jun 24, 2025 at 07:27:47AM +0200, Christophe Leroy wrote:  
+> > > > > Ah ok, I overlooked that, I didn't know the cmove instruction, seem 
+> > > > > similar to the isel instruction on powerpc e500.    
+> > > > 
+> > > > cmove does a move (register or memory) when some condition is true.  
+> > > 
+> > > The destination of x86 'cmov' is always a register (only the source can be
+> > > memory - and is probably always read).  
+> > 
+> > Both source operands can be mem, right?  But probably not both at the
+> > same time.
 > 
-> Hi Leon,
+> It only has one 'real' source, but the implementation could easily
+> read the destination register and then decide which value to write
+> back - rather than doing a conditional write to the register file.
+
+Yeah, in x86 many (most insns?) can read any reg that they write.  Not
+a great design, but heh.
+
+> A conditional write would be a right PITA for the alu result
+> forwarding logic
+
+Depends.  An implementation can always do the register forwarding etc.,
+just annul the actual store where appropriate (and not put it in the
+various store queues either, heh -- annul all the effects of the store).
+
+> > x86 is not a RISC architecture, or more generally, a load/store
+> > architecture.
 > 
-> >
-> > Convert the KMSAN DMA handling function from page-based to physical
-> > address-based interface.
-> >
-> > The refactoring renames kmsan_handle_dma() parameters from accepting
-> > (struct page *page, size_t offset, size_t size) to (phys_addr_t phys,
-> > size_t size).
+> It sort of is these days.
+
+Not at all.  Most *implementations* are, the uarchs, but the
+architecture (which determines the required visible semantics) is not.
+That impedance difference is quite painful, yes, for code generation
+more than for the processor implementation even -- as usual the
+compilers have to save the day!
+
+> The memory transfers are separate u-ops, so a 'reg += mem' instruction
+> is split into two be the decoder.
+
+Yup.  Very expensive.  Both for the implementation, and for the
+performance of eventual code running on it.
+
+> Although some u-ops get merged together and executed in one clock,
+> obvious example is some 'compare+branch' pairs.
+
+On many other architectures such things run in 0 cycles anyway :-)
+
+> > A computational instruction is one that doesn't touch memory or does a
+> > branch, or some system function, some supervisor or hypervisor
+> > instruction maybe.
+> > 
+> > x86 does not have many computational insns, most insns can touch
+> > memory :-)
 > 
-> Could you please elaborate a bit why this is needed? Are you fixing
-> some particular issue?
+> Except that the memory 'bit' is executed separately from any alu 'stuff'.
 
-It is soft of the fix and improvement at the same time.
-Improvement: 
-It allows direct call to kmsan_handle_dma() without need
-to convert from phys_addr_t to struct page for newly introduced
-dma_map_phys() routine.
+On many uarchs, yes.  But not in the arch.  No uarch can decide to just
+not implement these difficult and expensive insns :-)
 
-Fix:
-It prevents us from executing kmsan for addresses that don't have struct page
-(for example PCI_P2PDMA_MAP_THRU_HOST_BRIDGE pages), which we are doing
-with original code.
-
-dma_map_sg_attrs()
- -> __dma_map_sg_attrs()
-  -> dma_direct_map_sg()
-   -> PCI_P2PDMA_MAP_THRU_HOST_BRIDGE and nents > 0
-    -> kmsan_handle_dma_sg();
-     -> kmsan_handle_dma(g_page(item) <---- this is "fake" page.
-
-We are trying to build DMA API that doesn't require struct pages.
-
+> > > There is a planned new instruction that would do a conditional write
+> > > to memory - but not on any cpu yet.  
+> > 
+> > Interesting!  Instructions like the atomic store insns we got for p9,
+> > maybe?  They can do minimum/maximum and various kinds of more generic
+> > reductions and similar.
 > 
-> > A PFN_VALID check is added to prevent KMSAN operations
-> > on non-page memory, preventing from non struct page backed address,
-> >
-> > As part of this change, support for highmem addresses is implemented
-> > using kmap_local_page() to handle both lowmem and highmem regions
-> > properly. All callers throughout the codebase are updated to use the
-> > new phys_addr_t based interface.
+> I think they are only conditional stores.
+> But they do save a conditional branch.
+
+Yeah, but those are not ever executed *anyway*, there is branch
+prediction and we require that to be pretty good to get reasonable
+performance anyway.
+
+A branch around the store insns is just fine if it can be predicted
+correctly.  If it cannot be predicted correctly, you can do the store
+always, just have the address that is stored to depend on the condition
+(such the data is stored to some dummy memory if it "should not be
+done").  Source code gets such a transform done manually in the
+performance critical paths not infrequently, already.
+
+GCC does not currently do such a transformation AFAIK, but it is a
+pretty basic thing to do.  Conditional stores are not often written in
+source code programs, or there would probably be an implementation for
+this already :-)
+
+> A late disable of a memory write is far less problematic than a disabled
+> register file write. No one minds (too much) about slight delays between
+> writes and reads of the same location (reduced by a store to load forwarder)
+> but you don't want to lose clocks between adjacent simple alu instructions.
+
+Writes to memory take tens of cycles *anyway*, but all of that is hidden
+by the various memory load and store queues (which let you do forwarding
+in just a few cycles).
+
+> For my sins I re-implemented a soft cpu last year...
+
+Ouch :-)  But it was fun to do I hope?
+
+> Which doesn't have a 'cmov' :-(
+
+The x86 flag register bits are so limited and complicated in the first
+place, cmov is the easier part there ;-) 
+
+> > But ancient things do not.  Both 970 (Apple G5) and Cell BE do not yet
+> > have it (they are ISA 2.01 and 2.02 respectively).  And the older p5's
+> > do not have it yet either, but the newer ones do.
+> > 
+> > And all classic PowerPC is ISA 1.xx of course.  Medieval CPUs :-)
 > 
-> KMSAN only works on 64-bit systems, do we actually have highmem on any of these?
+> That make more sense than the list in patch 5/5.
 
-I don't know, but the original code had this check:
-  344         if (PageHighMem(page)) 
-  345                 return;
+Not sure what list that is.  I'll find it :-)
 
-Thanks
+> > > > But sure, seen from very far off both isel and cmove can be used to
+> > > > implement the ternary operator ("?:"), are similar in that way :-)  
+> > > 
+> > > Which is exactly what you want to avoid speculation.  
+> > 
+> > There are cheaper / simpler / more effective / better ways to get that,
+> > but sure, everything is better than a conditional branch, always :-)
+> 
+> Everything except a TLB miss :-)
+
+Heh.  TLBa are just a tiny part of translation on Power.  We mostly care
+about the ERATs.  Look it up, if you want to be introduced to another
+level of pain :-)
+
+> And for access_ok() avoiding the conditional is a good enough reason
+> to use a 'conditional move' instruction.
+> Avoiding speculation is actually free.
+
+*Assuming* that avoiding speculation is actually free, you mean?
+
+
+Segher
 
