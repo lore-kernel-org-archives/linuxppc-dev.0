@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-9931-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9932-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0D22C8302B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Jun 2025 16:11:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 10EA4C83029
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 30 Jun 2025 16:11:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bWB1t5RrVz3bmy;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bWB1t5Qlvz30Qb;
 	Tue,  1 Jul 2025 02:09:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751299777;
-	cv=none; b=bL1vPiue9wr/dOnpDOMQGoMPKm7sqLKpZYpCFaEBfA0Enm4LuFl+mCHqT7NnOSufb1Pe0upNVr+PvOd74fM5jz7IvQn6ZDHVq9XKqcw64/2hpnMCnsb0SuezbNz3Uf6dTkFBiobq9tXehxzA+zFAJ5DOlX740rZ9ug4NeWBaOfxLv2lJhSJWpdFODuQQyJWYqcV7x/7bM2hpxXallER9DYqHHsqum74dhhnrUPztS3nbdC+hgn49qfxrLidoVkJthrTRQNX8WD5XHg/iiW23Vo29KbtdwwkBJ6MCJoj91BgExEjVwgDPdsV3hPQ0uvq5YbdFd0nl3KNKA5QEOWVHPA==
+	cv=none; b=nvbPf8bwJGjkrmduwbu2wRpYKYCCN+ogsPhazYbbnPh+XZAMUOYhTxxuWLv3b/i/BroYlD2eiLyejqpkJXO6Cij9G8+eQkQ6tgt2jLYaQjzV3MfD4oHvOYEDU7B2vynJLEPxzXM0vIpVwZE9GrrMNgnBFV/0k1S0zi00MerAqmNXYcRbpujpuK4od4bPh/Oaoci64mMskxxQMDjLmAqvnOORW5dt68P0JFbzhLjTaHS6bHX2Spd+avfBY10wLGJdJCMh6n1XB+DcnXOMLeyu/MMDPM2pBgLKWvXKMVoVD8oueQ7hVu2ih+zAIozZAHRarKkQSlEs3CEUeDOiiWZlSw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1751299777; c=relaxed/relaxed;
-	bh=GI+baXLMItSjgcBMZ7twd6x6pbRFh6QmlEtpG5t/zdQ=;
+	bh=RgNrCjq6lsOkp6g05Z5E9V8l08rRXcQ6exdzrdyOjWk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Tv8H2tPO63SBhDOTjmk+AwAPFnMI7kxQe+klEfXTIvjmH4YmeoP238JZt3vdY60oTy0v8SipxiCOXL8DfdVuCqaV3t3w1RKVCFLH8oTwCWxMTcNbqESV2FvXp5dISSV9IVNiowARL1RedT4XxvNCfPI08xDJo/QSs3J8QrL2edXXMInUi2cRGFSpsdMmmONO1K0yQ2m35G1OG1Ed2yOYmuq7hGE8AOFQm+UW6oNQrF9C0HAzITlJQ+dCDLN58zwqYBn+dyodOkXQeb83B+yfPjvOyaO24yeHyeS4ANRF89Y+cN6t6yMyr6LfaYlgooiTVJzHUuJyNxiSRIvxs43cww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hVQBIRMj; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=L0AX+NBhRBC6Q4pRCWSXtp1j87In9zOEN0Pn6BIkmNwsQnTFXYN0CzkVlIGW4oSUHejN3k5NQSESiyrelOrn/d6IODr5MZ+eZwB4rPsu4m2lw6pckeWYurE+s2l17tjW51+GiA5s7wQh6Geb6rhgFHiLDV4zt1ca3BJ1i81R/EhBm2PRDR2fmB9/MvQpfeW58rIcjsvFzn9O+pzY+umJkAJ+021s2/nQJSkXQWK3WDayl0OSD5ZZWJly9vrVqh2hP2BRCrinYBoy4y6Jha9WCcJHjp9UnJDvEt/lIj6RPiZ5JAN8Nom6DerHl+9jg50iPICe594KMOkgk5Ddowo++w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jnBxR32k; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=hVQBIRMj;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jnBxR32k;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bWB1l5N8Tz3bsq
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bWB1l0Wsmz3brx
 	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2025 02:09:30 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 049505C5D4C;
-	Mon, 30 Jun 2025 16:09:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4DA14C4CEF3;
-	Mon, 30 Jun 2025 16:09:25 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 19317A53519;
+	Mon, 30 Jun 2025 16:09:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5EC2DC4CEF3;
+	Mon, 30 Jun 2025 16:09:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1751299765;
-	bh=IkX8c809Bkwa5YKNS0n0XaW5ZPy/jAKfSUJXB4aJ5O4=;
+	s=k20201202; t=1751299767;
+	bh=pkoFPfsdz5mUfc5I4FK+MnyFLsCjGsnnD9jc5ME9fN4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=hVQBIRMj89xj2I1q9MVzVBAjICgLzgrDPQGlkMEPYi6HkkfGwSqIKdUNwVzeBw43u
-	 pLMZD2xvvsNNH+fstFXvgHc0S/K+L2xVKEbMCCPCufoZ0/heTewIkqVByYK1ZWhTw0
-	 Hy2bV8iB2xINx5piSLStSpNhwTM8MqnEaLYJw7KNKk6zF0ZAJp4VPXHfuIPzb8qigv
-	 gq/sjjO5QScDsTz4EmKmYti8u4FJjxfBDkmAGV/fHoJ21l17GLfNAP/9dbDQMNXKoT
-	 xIgK7YllgkWIiNyIBpu/iZEwvbi6yxZxIbsudqsZ7UWS67uj446XOxPtm5262mi0PL
-	 /HoSYTOI/uH3w==
+	b=jnBxR32keuveFDD/erORneyVQFZMExFVwQ2m1PRHBM8e09zhVEcpdxXezXwhIRIep
+	 1b/hAsrsEPE4GO34uoemDkgD6DfhLn2c+0We3yqTqkDW1Zdqk+usXyKw0ahpO/QyDk
+	 kq8OJiVNVNYv+79sZjwcLRLPE8u+AXxrFrb5rUo1EG4MgLQWKf4VRjl6PqF6ZW6RvL
+	 tO/4ewF4TqSoMw0NJ2cWpzPbScaI6j0B3laWfK7QYlGoz9vuy6ps6Y8wwL6bttBzRT
+	 i6YDWFUv5OhMZDpFhfE2wkKZC04+niDSZ+wBsXg2HLi3z3ji0M2HuML4L/kX6ufOLl
+	 sxIXnWBzurdOw==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -57,9 +57,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Ard Biesheuvel <ardb@kernel.org>,
 	"Jason A . Donenfeld" <Jason@zx2c4.com>,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH v2 10/14] crypto: sha256 - Use same state format as legacy drivers
-Date: Mon, 30 Jun 2025 09:06:41 -0700
-Message-ID: <20250630160645.3198-11-ebiggers@kernel.org>
+Subject: [PATCH v2 14/14] lib/crypto: sha256: Document the SHA-224 and SHA-256 API
+Date: Mon, 30 Jun 2025 09:06:45 -0700
+Message-ID: <20250630160645.3198-15-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.0
 In-Reply-To: <20250630160645.3198-1-ebiggers@kernel.org>
 References: <20250630160645.3198-1-ebiggers@kernel.org>
@@ -78,217 +78,130 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Make the export and import functions for the sha224, sha256,
-hmac(sha224), and hmac(sha256) shash algorithms use the same format as
-the padlock-sha and nx-sha256 drivers, as required by Herbert.
+Add kerneldoc comments, consistent with the kerneldoc comments of the
+SHA-384 and SHA-512 API.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- crypto/sha256.c | 95 +++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 95 insertions(+)
+ include/crypto/sha2.h | 76 +++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 76 insertions(+)
 
-diff --git a/crypto/sha256.c b/crypto/sha256.c
-index d81166cbba953..052806559f06c 100644
---- a/crypto/sha256.c
-+++ b/crypto/sha256.c
-@@ -11,10 +11,47 @@
- #include <crypto/internal/hash.h>
- #include <crypto/sha2.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- 
-+/*
-+ * Export and import functions.  crypto_shash wants a particular format that
-+ * matches that used by some legacy drivers.  It currently is the same as the
-+ * library SHA context, except the value in bytecount must be block-aligned and
-+ * the remainder must be stored in an extra u8 appended to the struct.
-+ */
-+
-+#define SHA256_SHASH_STATE_SIZE 105
-+static_assert(offsetof(struct __sha256_ctx, state) == 0);
-+static_assert(offsetof(struct __sha256_ctx, bytecount) == 32);
-+static_assert(offsetof(struct __sha256_ctx, buf) == 40);
-+static_assert(sizeof(struct __sha256_ctx) + 1 == SHA256_SHASH_STATE_SIZE);
-+
-+static int __crypto_sha256_export(const struct __sha256_ctx *ctx0, void *out)
-+{
-+	struct __sha256_ctx ctx = *ctx0;
-+	unsigned int partial;
-+	u8 *p = out;
-+
-+	partial = ctx.bytecount % SHA256_BLOCK_SIZE;
-+	ctx.bytecount -= partial;
-+	memcpy(p, &ctx, sizeof(ctx));
-+	p += sizeof(ctx);
-+	*p = partial;
-+	return 0;
-+}
-+
-+static int __crypto_sha256_import(struct __sha256_ctx *ctx, const void *in)
-+{
-+	const u8 *p = in;
-+
-+	memcpy(ctx, p, sizeof(*ctx));
-+	p += sizeof(*ctx);
-+	ctx->bytecount += *p;
-+	return 0;
-+}
-+
- /* SHA-224 */
- 
- const u8 sha224_zero_message_hash[SHA224_DIGEST_SIZE] = {
- 	0xd1, 0x4a, 0x02, 0x8c, 0x2a, 0x3a, 0x2b, 0xc9, 0x47,
- 	0x61, 0x02, 0xbb, 0x28, 0x82, 0x34, 0xc4, 0x15, 0xa2,
-@@ -49,10 +86,20 @@ static int crypto_sha224_digest(struct shash_desc *desc,
- {
- 	sha224(data, len, out);
- 	return 0;
- }
- 
-+static int crypto_sha224_export(struct shash_desc *desc, void *out)
-+{
-+	return __crypto_sha256_export(&SHA224_CTX(desc)->ctx, out);
-+}
-+
-+static int crypto_sha224_import(struct shash_desc *desc, const void *in)
-+{
-+	return __crypto_sha256_import(&SHA224_CTX(desc)->ctx, in);
-+}
-+
- /* SHA-256 */
- 
- const u8 sha256_zero_message_hash[SHA256_DIGEST_SIZE] = {
- 	0xe3, 0xb0, 0xc4, 0x42, 0x98, 0xfc, 0x1c, 0x14,
- 	0x9a, 0xfb, 0xf4, 0xc8, 0x99, 0x6f, 0xb9, 0x24,
-@@ -87,10 +134,20 @@ static int crypto_sha256_digest(struct shash_desc *desc,
- {
- 	sha256(data, len, out);
- 	return 0;
- }
- 
-+static int crypto_sha256_export(struct shash_desc *desc, void *out)
-+{
-+	return __crypto_sha256_export(&SHA256_CTX(desc)->ctx, out);
-+}
-+
-+static int crypto_sha256_import(struct shash_desc *desc, const void *in)
-+{
-+	return __crypto_sha256_import(&SHA256_CTX(desc)->ctx, in);
-+}
-+
- /* HMAC-SHA224 */
- 
- #define HMAC_SHA224_KEY(tfm) ((struct hmac_sha224_key *)crypto_shash_ctx(tfm))
- #define HMAC_SHA224_CTX(desc) ((struct hmac_sha224_ctx *)shash_desc_ctx(desc))
- 
-@@ -126,10 +183,23 @@ static int crypto_hmac_sha224_digest(struct shash_desc *desc,
- {
- 	hmac_sha224(HMAC_SHA224_KEY(desc->tfm), data, len, out);
- 	return 0;
- }
- 
-+static int crypto_hmac_sha224_export(struct shash_desc *desc, void *out)
-+{
-+	return __crypto_sha256_export(&HMAC_SHA224_CTX(desc)->ctx.sha_ctx, out);
-+}
-+
-+static int crypto_hmac_sha224_import(struct shash_desc *desc, const void *in)
-+{
-+	struct hmac_sha224_ctx *ctx = HMAC_SHA224_CTX(desc);
-+
-+	ctx->ctx.ostate = HMAC_SHA224_KEY(desc->tfm)->key.ostate;
-+	return __crypto_sha256_import(&ctx->ctx.sha_ctx, in);
-+}
-+
- /* HMAC-SHA256 */
- 
- #define HMAC_SHA256_KEY(tfm) ((struct hmac_sha256_key *)crypto_shash_ctx(tfm))
- #define HMAC_SHA256_CTX(desc) ((struct hmac_sha256_ctx *)shash_desc_ctx(desc))
- 
-@@ -165,10 +235,23 @@ static int crypto_hmac_sha256_digest(struct shash_desc *desc,
- {
- 	hmac_sha256(HMAC_SHA256_KEY(desc->tfm), data, len, out);
- 	return 0;
- }
- 
-+static int crypto_hmac_sha256_export(struct shash_desc *desc, void *out)
-+{
-+	return __crypto_sha256_export(&HMAC_SHA256_CTX(desc)->ctx.sha_ctx, out);
-+}
-+
-+static int crypto_hmac_sha256_import(struct shash_desc *desc, const void *in)
-+{
-+	struct hmac_sha256_ctx *ctx = HMAC_SHA256_CTX(desc);
-+
-+	ctx->ctx.ostate = HMAC_SHA256_KEY(desc->tfm)->key.ostate;
-+	return __crypto_sha256_import(&ctx->ctx.sha_ctx, in);
-+}
-+
- /* Algorithm definitions */
- 
- static struct shash_alg algs[] = {
- 	{
- 		.base.cra_name		= "sha224",
-@@ -179,11 +262,14 @@ static struct shash_alg algs[] = {
- 		.digestsize		= SHA224_DIGEST_SIZE,
- 		.init			= crypto_sha224_init,
- 		.update			= crypto_sha224_update,
- 		.final			= crypto_sha224_final,
- 		.digest			= crypto_sha224_digest,
-+		.export			= crypto_sha224_export,
-+		.import			= crypto_sha224_import,
- 		.descsize		= sizeof(struct sha224_ctx),
-+		.statesize		= SHA256_SHASH_STATE_SIZE,
- 	},
- 	{
- 		.base.cra_name		= "sha256",
- 		.base.cra_driver_name	= "sha256-lib",
- 		.base.cra_priority	= 300,
-@@ -192,11 +278,14 @@ static struct shash_alg algs[] = {
- 		.digestsize		= SHA256_DIGEST_SIZE,
- 		.init			= crypto_sha256_init,
- 		.update			= crypto_sha256_update,
- 		.final			= crypto_sha256_final,
- 		.digest			= crypto_sha256_digest,
-+		.export			= crypto_sha256_export,
-+		.import			= crypto_sha256_import,
- 		.descsize		= sizeof(struct sha256_ctx),
-+		.statesize		= SHA256_SHASH_STATE_SIZE,
- 	},
- 	{
- 		.base.cra_name		= "hmac(sha224)",
- 		.base.cra_driver_name	= "hmac-sha224-lib",
- 		.base.cra_priority	= 300,
-@@ -207,11 +296,14 @@ static struct shash_alg algs[] = {
- 		.setkey			= crypto_hmac_sha224_setkey,
- 		.init			= crypto_hmac_sha224_init,
- 		.update			= crypto_hmac_sha224_update,
- 		.final			= crypto_hmac_sha224_final,
- 		.digest			= crypto_hmac_sha224_digest,
-+		.export			= crypto_hmac_sha224_export,
-+		.import			= crypto_hmac_sha224_import,
- 		.descsize		= sizeof(struct hmac_sha224_ctx),
-+		.statesize		= SHA256_SHASH_STATE_SIZE,
- 	},
- 	{
- 		.base.cra_name		= "hmac(sha256)",
- 		.base.cra_driver_name	= "hmac-sha256-lib",
- 		.base.cra_priority	= 300,
-@@ -222,11 +314,14 @@ static struct shash_alg algs[] = {
- 		.setkey			= crypto_hmac_sha256_setkey,
- 		.init			= crypto_hmac_sha256_init,
- 		.update			= crypto_hmac_sha256_update,
- 		.final			= crypto_hmac_sha256_final,
- 		.digest			= crypto_hmac_sha256_digest,
-+		.export			= crypto_hmac_sha256_export,
-+		.import			= crypto_hmac_sha256_import,
- 		.descsize		= sizeof(struct hmac_sha256_ctx),
-+		.statesize		= SHA256_SHASH_STATE_SIZE,
- 	},
+diff --git a/include/crypto/sha2.h b/include/crypto/sha2.h
+index 2e3fc2cf4aa0d..e0a08f6addd00 100644
+--- a/include/crypto/sha2.h
++++ b/include/crypto/sha2.h
+@@ -153,17 +153,55 @@ void __hmac_sha256_init(struct __hmac_sha256_ctx *ctx,
+  */
+ struct sha224_ctx {
+ 	struct __sha256_ctx ctx;
  };
  
- static int __init crypto_sha256_mod_init(void)
++/**
++ * sha224_init() - Initialize a SHA-224 context for a new message
++ * @ctx: the context to initialize
++ *
++ * If you don't need incremental computation, consider sha224() instead.
++ *
++ * Context: Any context.
++ */
+ void sha224_init(struct sha224_ctx *ctx);
++
++/**
++ * sha224_update() - Update a SHA-224 context with message data
++ * @ctx: the context to update; must have been initialized
++ * @data: the message data
++ * @len: the data length in bytes
++ *
++ * This can be called any number of times.
++ *
++ * Context: Any context.
++ */
+ static inline void sha224_update(struct sha224_ctx *ctx,
+ 				 const u8 *data, size_t len)
  {
+ 	__sha256_update(&ctx->ctx, data, len);
+ }
++
++/**
++ * sha224_final() - Finish computing a SHA-224 message digest
++ * @ctx: the context to finalize; must have been initialized
++ * @out: (output) the resulting SHA-224 message digest
++ *
++ * After finishing, this zeroizes @ctx.  So the caller does not need to do it.
++ *
++ * Context: Any context.
++ */
+ void sha224_final(struct sha224_ctx *ctx, u8 out[SHA224_DIGEST_SIZE]);
++
++/**
++ * sha224() - Compute SHA-224 message digest in one shot
++ * @data: the message data
++ * @len: the data length in bytes
++ * @out: (output) the resulting SHA-224 message digest
++ *
++ * Context: Any context.
++ */
+ void sha224(const u8 *data, size_t len, u8 out[SHA224_DIGEST_SIZE]);
+ 
+ /**
+  * struct hmac_sha224_key - Prepared key for HMAC-SHA224
+  * @key: private
+@@ -273,17 +311,55 @@ void hmac_sha224_usingrawkey(const u8 *raw_key, size_t raw_key_len,
+  */
+ struct sha256_ctx {
+ 	struct __sha256_ctx ctx;
+ };
+ 
++/**
++ * sha256_init() - Initialize a SHA-256 context for a new message
++ * @ctx: the context to initialize
++ *
++ * If you don't need incremental computation, consider sha256() instead.
++ *
++ * Context: Any context.
++ */
+ void sha256_init(struct sha256_ctx *ctx);
++
++/**
++ * sha256_update() - Update a SHA-256 context with message data
++ * @ctx: the context to update; must have been initialized
++ * @data: the message data
++ * @len: the data length in bytes
++ *
++ * This can be called any number of times.
++ *
++ * Context: Any context.
++ */
+ static inline void sha256_update(struct sha256_ctx *ctx,
+ 				 const u8 *data, size_t len)
+ {
+ 	__sha256_update(&ctx->ctx, data, len);
+ }
++
++/**
++ * sha256_final() - Finish computing a SHA-256 message digest
++ * @ctx: the context to finalize; must have been initialized
++ * @out: (output) the resulting SHA-256 message digest
++ *
++ * After finishing, this zeroizes @ctx.  So the caller does not need to do it.
++ *
++ * Context: Any context.
++ */
+ void sha256_final(struct sha256_ctx *ctx, u8 out[SHA256_DIGEST_SIZE]);
++
++/**
++ * sha256() - Compute SHA-256 message digest in one shot
++ * @data: the message data
++ * @len: the data length in bytes
++ * @out: (output) the resulting SHA-256 message digest
++ *
++ * Context: Any context.
++ */
+ void sha256(const u8 *data, size_t len, u8 out[SHA256_DIGEST_SIZE]);
+ 
+ /**
+  * struct hmac_sha256_key - Prepared key for HMAC-SHA256
+  * @key: private
 -- 
 2.50.0
 
