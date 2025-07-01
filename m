@@ -1,97 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-9973-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9974-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 928A7C7EE30
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jul 2025 10:11:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36731C7EE30
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jul 2025 10:15:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bWf1f1Kfzz2xPc;
-	Tue,  1 Jul 2025 20:11:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751364662;
-	cv=none; b=XO3RDMcuKo+LnkN1AUjlVUIUfVV8/WCTBHwWYJ8XVdLiDOggZ8utgjrItAgKTEzqE+Bczbxed6G0Ogs1fXOygNCDTbIVHBpoIaOfYXhY1AQh9jKEbRpZr7G3z8yGXr2D0eTnzaZPZTrdyluORu+n16CNTH4TvJTPsMrH8xkPtMuF3kIrz3gJcbNYO0PCFgVvE6b+tflYU7HqoMHmWjH6NT4Frf1dWvYmOfv/cmov1XVTLfZRV67TnEiAHtn1/VCQrFeLRZU4+7f2pt9XG0eQvfwbk5VbEo9c8QMD9TjdIyEpgic+Q5pFCJhUTkxcVpu/Ht7hZoSqYGuzfoTWsAUmYg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bWf7C5hS1z2yqn;
+	Tue,  1 Jul 2025 20:15:51 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751364951;
+	cv=none; b=gonyezRbwSy8mt4/agivyx+IelR11xTt4Kdi8f8TAn9fxP0Z0QZjqKYE2vjCSVVD+QlxA4rcistcPqCr7NnIgu9/JKiltAAGFArw4cKfm1OnVlaHvMrZRgHqDTGCg6FyzyrfoV4wOW+8Djwc5qGNtHvjzuSuI9SSWRTH+hi3pclhxO00dp3pCRJ/rqKA6fsmQwI1dEQHJohM8AVJ9XiD7uTRDyvcl8jLI5gXxnljV4i70ol41uyFpN/xJq9rZJM+2daXeVo96cXniKm5TkIQSM5ESPkkKFXMRGpwsgCtwMEmRpHoWM8GU1AuCwEv1BpHAQJyPRLSuML9c4wxBu5Dwg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1751364662; c=relaxed/relaxed;
-	bh=c0jD2hSpE7gKZ4WlSst4Xt3GrhqpzXYpDNooeYwdm00=;
-	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
-	 In-Reply-To:Content-Type; b=NZcooQEL7T2vyTb+/LbpHc4gNGEY6xCMbmpMfRcpFgsTKLo80QLqFhelql/ZbKH9+FjU3vwhsnY66+85Fu2DUTAHwklNWenQMyiL5l7yT5AI8fNjsWHZzPX9crX56KNhEui1O1vH3AIAfRVyujV6e+HUZOjRaBwLoT7bDjzWoUcOSNDquVpswv5d/kT7cGjjqOY6Mh8t3lA7tJg2V36BbGVMwMfgmrlHC1Xck3n8WPO8z0C8stLBNt9t++azQr716ijTj5bJ6MkFVjWmCrvdAlFWXQcL13Pt+vWQrolKTw+AqFeOPBEn4nsL7YIa2DUtcifPutUFB7dczxAyFLsPDw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KHQdbGbu; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KHQdbGbu; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+	t=1751364951; c=relaxed/relaxed;
+	bh=J4Wnv9upb7wAm0VhLvAftXFWY5tUZLgFJPfWZ7TYeAU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BiaohMZzMPXh6JhpOA5xMcOymcm9U0J20kPGCWnqlUQKvYkqUs2i7SqrzIWGqgv4WLDp+3ljzw2kz6XtT1Jk/Ui6yqtxLJJemfvaLx10gV/v+uzcqMFJt5LcQRTMJYegXZRizt9CCPgGWwNvCnpbFkt0i6bMNFjU/DkueCfxBcW4eJJYZNVNWxlX02dDhc9t9FRmahLktcqTLMcd3kdtZFwOhxNRuITIn6xTNRoXA5y1GsAkzSYS/weQfMyfFnS5kaIL2Eh1rdxQsKwvWybn/vcOWt6OwD+VKtwf/sBaPYJKZG3/zFzmuJM+ECRI/hSe8W/KHD3SXTQNZB6im1+iqw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=X5guPKg2; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=X5guPKg2; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KHQdbGbu;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=KHQdbGbu;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=X5guPKg2;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=X5guPKg2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bWf1d1zGGz2xHT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2025 20:11:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bWf7B5QFHz2xHT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2025 20:15:49 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1751364657;
+	s=mimecast20190719; t=1751364947;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=c0jD2hSpE7gKZ4WlSst4Xt3GrhqpzXYpDNooeYwdm00=;
-	b=KHQdbGbu/NWIv3yhUTarpBksdz7d126B63jX09cNSn0uhMrH2wdOlkp7EpGWmBbV38RhL0
-	ojur8OUn8cj4jM377Jc5iFIQIuOJLMH6up+n3pEX1Z4inY4rYpaiBPXogspBsZX9hapEr4
-	ieTRPlt2KQSDqOpM5tfXIKE5jTEOqcU=
+	bh=J4Wnv9upb7wAm0VhLvAftXFWY5tUZLgFJPfWZ7TYeAU=;
+	b=X5guPKg26l+Q6nEdaQysq0ZIie5jvi5r/QLqP+/48Nj/aWUfAonR3yf87Dig8sPb+fuWAR
+	Iet3220IzbRIwqvAvTseyAg8AAxJpSXM1FHs7oYLQiFdd59Kc1X+SDVjsifNe4gN+C7f0E
+	xsfgxDx/OrmY8IpT9v+YdZGEPsBs/5U=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1751364657;
+	s=mimecast20190719; t=1751364947;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=c0jD2hSpE7gKZ4WlSst4Xt3GrhqpzXYpDNooeYwdm00=;
-	b=KHQdbGbu/NWIv3yhUTarpBksdz7d126B63jX09cNSn0uhMrH2wdOlkp7EpGWmBbV38RhL0
-	ojur8OUn8cj4jM377Jc5iFIQIuOJLMH6up+n3pEX1Z4inY4rYpaiBPXogspBsZX9hapEr4
-	ieTRPlt2KQSDqOpM5tfXIKE5jTEOqcU=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=J4Wnv9upb7wAm0VhLvAftXFWY5tUZLgFJPfWZ7TYeAU=;
+	b=X5guPKg26l+Q6nEdaQysq0ZIie5jvi5r/QLqP+/48Nj/aWUfAonR3yf87Dig8sPb+fuWAR
+	Iet3220IzbRIwqvAvTseyAg8AAxJpSXM1FHs7oYLQiFdd59Kc1X+SDVjsifNe4gN+C7f0E
+	xsfgxDx/OrmY8IpT9v+YdZGEPsBs/5U=
+Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
+ [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-263-s23nLSoJOoeQdlzNWP5UzA-1; Tue, 01 Jul 2025 06:10:56 -0400
-X-MC-Unique: s23nLSoJOoeQdlzNWP5UzA-1
-X-Mimecast-MFC-AGG-ID: s23nLSoJOoeQdlzNWP5UzA_1751364655
-Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-3a4e9252ba0so1968793f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Jul 2025 03:10:55 -0700 (PDT)
+ us-mta-588-SiGeaDAQOiyedaoDlJH72A-1; Tue, 01 Jul 2025 06:15:45 -0400
+X-MC-Unique: SiGeaDAQOiyedaoDlJH72A-1
+X-Mimecast-MFC-AGG-ID: SiGeaDAQOiyedaoDlJH72A_1751364945
+Received: by mail-wr1-f71.google.com with SMTP id ffacd0b85a97d-3a54a8a0122so2716176f8f.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Jul 2025 03:15:45 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751364655; x=1751969455;
+        d=1e100.net; s=20230601; t=1751364944; x=1751969744;
         h=content-transfer-encoding:in-reply-to:organization:autocrypt
-         :content-language:references:cc:to:from:subject:user-agent
+         :content-language:from:references:cc:to:subject:user-agent
          :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
          :date:message-id:reply-to;
-        bh=c0jD2hSpE7gKZ4WlSst4Xt3GrhqpzXYpDNooeYwdm00=;
-        b=gtB5ebh/4JzHtoUeatZqE6v0Dx5hiuYG+6AAZT93Xr5Xpc0SVpjznqNaM8hUpFoCD5
-         kch2tCOSL07N9AxEwJ58lZn5lPeF3F3X75hT4MdM1QQdqO6oLmw0htxPNWXdJlGFmGs0
-         RrJ1SfrMl+fgyuQI/JMtQ8HHCO8yeZ2SsXlt7YyXTJlDrwFU8WynMOYSINpUuygFa1x0
-         c/2uw/8MGsukUScTa5zviDIy9pgTTJY+MeUgbuuMv+J7ifcK7EXchn7ZzaG3Y8JyGeRg
-         EpcTUwnmTFyqPI31vKFWMwTWY89hdMneFvVnt15Nf8XXRMMVo6GtKHc3dLXcpLQh8MdL
-         ERNw==
-X-Forwarded-Encrypted: i=1; AJvYcCVff924sZ1vtv7M9awrHn6tEV0QQnA/Rm7uCRNxbyqGPBYnGeL80r0msK8QUajw+FGgyesvbMY+0xKU1dE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzhdsStbTXuNYdS8+EhbnkhcXd1K+rOpJCLLb8BlkTOPEVRJ6vD
-	zssz5+6xZxS7Cl3lqxvLykOGhWzI4s4qbjkvzcA+rup6NyTUee+/yXcLwwmd2e6wJQF/eDVN6j0
-	MjyiOCzK/gJ0hVkkD11RpU7mAKmEqCAmd0yId8qcdv5ux9vRgl1z2jDCpJZSQ3C6tts0=
-X-Gm-Gg: ASbGncupxY3wzt2xPeT8Dgyr9TTrJdFqCF2TeIZk28GwGebe52gCpD1eR+vm8Qy0iv1
-	0QszOLt9u9FvvwZxUjrjqrmWVHGxE65eLtJhQ0ONoZ/k40xia4ezMGd+Ttlea91RqjYjTdicSNs
-	dze8OAO7CM0+ocmz/z7y2mR1MRUfOLWIPBYWlzN5Xn8UMIhmmWV2fOTrQCM1acFaNTnX5n0Dli1
-	sqmcKqXC10B0PfQ7QbfMe96RE1kNUG0sViyV/WWZ8P8x4cKNfuo8jRDf7JLLHZJ3Z/4TZa+SV39
-	S9+Pzd514SHibab9h99cDbXzDAKY/R3L3fQKZd0a0IumffR+DjN9gjuCgmfDDpzmIuHsxPAtDup
-	oECeBnzauYiFlSoU7eRjbC+CaFk7mj2X10VtHvVfl/CrMPDdOMw==
-X-Received: by 2002:a05:6000:25ca:b0:3a4:f744:e00e with SMTP id ffacd0b85a97d-3a8f4548f84mr14531930f8f.4.1751364654556;
-        Tue, 01 Jul 2025 03:10:54 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IH2EPAydBFQPvolNYN1EmggMxJTgK1+GLCQ1XLXRXKbAVGL3PuDAhYqnMDlTu+BQBsY4f0XaA==
-X-Received: by 2002:a05:6000:25ca:b0:3a4:f744:e00e with SMTP id ffacd0b85a97d-3a8f4548f84mr14531865f8f.4.1751364653933;
-        Tue, 01 Jul 2025 03:10:53 -0700 (PDT)
+        bh=J4Wnv9upb7wAm0VhLvAftXFWY5tUZLgFJPfWZ7TYeAU=;
+        b=BtP7cMKGkfx7xc8BzIvQvPVoCtFI+lq6bK4GNA+rACMFDbgMrXcfhkG+2CcApAHqm4
+         mFoqSw9m5IdFJpRTk1QvIBtNR33L8Stz4UxflaUPKKpF5gvoXvK7Kr50VsDfc1WKA7vN
+         F5pMwRclP4TlhkNYk5qBUuX+CscBTg8RO0vnXcBr5L7qWlzk+vRKvnBtT5ZGNF1jhRnE
+         tMkLxHVhd+eIzSlEZsa0YNtsrqpTrh+EvsVIZma7P3Hda254PmrY7KxUbBUfsLYyAheU
+         r4gpWZAfuakEig6c6HDa5Ngwh09+cuQaZhOuvQqsXE/uurZ3IxqH+oVgqMv1BAGNPfev
+         gWhg==
+X-Forwarded-Encrypted: i=1; AJvYcCUzwKyFkPHP0gash5vksyhe0z/BQlXzmia353rRglPVxCbe0qcfjYqvNs+nShca6ROEhHjZPRJiJVLz/wM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwuIKFWY1ynIY8P0L9fdt/iHUvDuMtrroaA2cNzRvSgRZYEMWZp
+	zk2n/zPhFiorMCrg/ak3id+HGYzi6CtJy+UT1GqnRgLS4fNinS0mTy5URxUAaOe+c5H02U1pyIg
+	El89luVf+aTqBq/CR/NGkiseB2b4SEmZX7Gc0BGaj3L+JnL1rM6VuDdQtoJMSbyMqdRs=
+X-Gm-Gg: ASbGnculbS002lkqsTZbckKlu8cpqkB2zkTzdU2mbXonp7uFo5rx3q1w0tBYw1ohK6L
+	ABx+n224eOIzC6u0eSzFsDuyGseGHGZaRXSIFT/pksf3y0UHNqHp3PTeo1ouHaIT7kfQlIAu3ua
+	uqcfvjv11muYEQic4mO+ixaw9CRRKECa3LYiKqlMFQwnswogi0E4gzhgcCeCtJdUM6tBQMENmwg
+	CvXvZDu+GZwrc7Ko9mzAV3ebTIjyQDLdUKlxmZr+zcHcEQ3zKWn70MGZHj4PhyO+4rHEnARn7HI
+	7MfhOnZnHgSGI+D4KVl109G0nz0RvKVpri4OzmrpOBmVqo+eL8SH0gF91ZOvVOsyaVhsFZ2A04V
+	vwwGEEH8VkJmnDudNTgM7j2Pkjs7Sn3CSbm9r+3kaXZI/aPrEkw==
+X-Received: by 2002:adf:9dd1:0:b0:3a4:f63b:4bfc with SMTP id ffacd0b85a97d-3a8ffcc9f0cmr13281186f8f.34.1751364944497;
+        Tue, 01 Jul 2025 03:15:44 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IEBcN+deUjqfPetiJ/myiyifjCnu6+sl2jGKUFJOp6xe1gkfchpSA8Op3NtcLea2c6cf5QT6g==
+X-Received: by 2002:adf:9dd1:0:b0:3a4:f63b:4bfc with SMTP id ffacd0b85a97d-3a8ffcc9f0cmr13281122f8f.34.1751364943981;
+        Tue, 01 Jul 2025 03:15:43 -0700 (PDT)
 Received: from ?IPV6:2003:d8:2f18:7500:202e:b0f1:76d6:f9af? (p200300d82f187500202eb0f176d6f9af.dip0.t-ipconnect.de. [2003:d8:2f18:7500:202e:b0f1:76d6:f9af])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a88c7e74fbsm12977368f8f.10.2025.07.01.03.10.51
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4538234be76sm191227645e9.15.2025.07.01.03.15.41
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 01 Jul 2025 03:10:53 -0700 (PDT)
-Message-ID: <0482f13b-c922-4f54-b32e-bb1dc27b44c3@redhat.com>
-Date: Tue, 1 Jul 2025 12:10:51 +0200
+        Tue, 01 Jul 2025 03:15:43 -0700 (PDT)
+Message-ID: <3887c07c-db95-41a2-a3c6-c1199005cdd0@redhat.com>
+Date: Tue, 1 Jul 2025 12:15:41 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,9 +106,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 09/29] mm/migrate: factor out movable_ops page handling
- into migrate_movable_ops_page()
-From: David Hildenbrand <david@redhat.com>
+Subject: Re: [PATCH v1 10/29] mm/migrate: remove folio_test_movable() and
+ folio_movable_ops()
 To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -144,9 +143,9 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  Harry Yoo <harry.yoo@oracle.com>, Qi Zheng <zhengqi.arch@bytedance.com>,
  Shakeel Butt <shakeel.butt@linux.dev>
 References: <20250630130011.330477-1-david@redhat.com>
- <20250630130011.330477-10-david@redhat.com>
- <6aba66e6-0bc5-4afb-a42c-a85756716e1c@lucifer.local>
- <315c5e9a-8fbf-4b9c-98b2-1ea69065af85@redhat.com>
+ <20250630130011.330477-11-david@redhat.com>
+ <100ed589-d3cf-4e31-b8d1-036a8bf77201@lucifer.local>
+From: David Hildenbrand <david@redhat.com>
 Autocrypt: addr=david@redhat.com; keydata=
  xsFNBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
  dBrn+lhhOYjjNefFQou6478faXE6o2AhmebqT4KiQoUQFV4R7y1KMEKoSyy8hQaK1umALTdL
@@ -192,66 +191,25 @@ Autocrypt: addr=david@redhat.com; keydata=
  jPrnvUsUUsjRoRNJjKKA/REq+sAnhkNPPZ/NNMjaZ5b8Tovi8C0tmxiCHaQYqj7G2rgnT0kt
  WNyWQQ==
 Organization: Red Hat
-In-Reply-To: <315c5e9a-8fbf-4b9c-98b2-1ea69065af85@redhat.com>
+In-Reply-To: <100ed589-d3cf-4e31-b8d1-036a8bf77201@lucifer.local>
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: zUzRT-7v0YpfBx9CxfIP1UQDrMiEIwzXDJTOll_zpPk_1751364655
+X-Mimecast-MFC-PROC-ID: XALehmZvDTYh0OYcmrE9xoFQsKyGHxfZtGO_ZzPO1MM_1751364945
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-On 01.07.25 11:24, David Hildenbrand wrote:
-> On 30.06.25 19:05, Lorenzo Stoakes wrote:
->> On Mon, Jun 30, 2025 at 02:59:50PM +0200, David Hildenbrand wrote:
->>> Let's factor it out, simplifying the calling code.
->>>
->>> The assumption is that flush_dcache_page() is not required for
->>> movable_ops pages: as documented for flush_dcache_folio(), it really
->>> only applies when the kernel wrote to pagecache pages / pages in
->>> highmem. movable_ops callbacks should be handling flushing
->>> caches if ever required.
->>
->> But we've enot changed this have we? The flush_dcache_folio() invocation seems
->> to happen the same way now as before? Did I miss something?
+On 30.06.25 19:07, Lorenzo Stoakes wrote:
+> On Mon, Jun 30, 2025 at 02:59:51PM +0200, David Hildenbrand wrote:
+>> Folios will have nothing to do with movable_ops page migration. These
+>> functions are now unused, so let's remove them.
 > 
-> I think, before this change we would have called it also for movable_ops
-> pages
-> 
-> 
-> if (rc == MIGRATEPAGE_SUCCESS) {
-> 	if (__folio_test_movable(src)) {
-> 		...
-> 	}
-> 
-> 	...
-> 
-> 	if (likely(!folio_is_zone_device(dst)))
-> 		flush_dcache_folio(dst);
-> }
-> 
-> Now, we no longer do that for movable_ops pages.
-> 
-> For balloon pages, we're not copying anything, so we never possibly have
-> to flush the dcache.
-> 
-> For zsmalloc, we do the copy in zs_object_copy() through kmap_local.
-> 
-> I think we could have HIGHMEM, so I wonder if we should just do a
-> flush_dcache_page() in zs_object_copy().
-> 
-> At least, staring at highmem.h with memcpy_to_page(), it looks like that
-> might be the right thing to do.
-> 
-> 
-> So likely I'll add a patch before this one that will do the
-> flush_dcache_page() in there.
+> Maybe worth mentioning that __folio_test_movable() is still a thing (for now).
 
-But reading the docs again:
+"Note that __folio_test_movable() and friends will be removed separately 
+next, after more rework."
 
-"This routine need only be called for page cache pages which can 
-potentially ever be mapped into the address space of a user process."
-
-So, not required IIUC. I'll clarify in the patch description.
+Thanks!
 
 -- 
 Cheers,
