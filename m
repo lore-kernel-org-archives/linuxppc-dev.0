@@ -1,59 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-9986-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9987-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D701EC7EE30
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jul 2025 12:20:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4605DC83038
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jul 2025 12:24:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bWhvH6fj3z30FR;
-	Tue,  1 Jul 2025 22:20:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751372443;
-	cv=none; b=WNp2ijcc5Uhn6S+KF+d/loAEKGZh5nhs9A9C2byybs5wzlKQ5wthpY4npEngW2b+ACUa8pC5qXHb15bcSVqvje7NZR+IB6EX5/Z0nO0e2FItmGZM1m+Hj/3YeH2n5/aIA3B5Hby6muJqWdtwRAPQXVUxnBOlccYFCp4mHOzp3IYP3/iJ/UGa0zzDhoJxBr2Xww2JBAunlPzfNmSFmpu2Nk5j/zCjzaYxXSLrVv/zm56EP37wtJxjD+CLd3oPu09y/0f01hNRuDR6XZwL1np2HbQ4htj/EJw/EJJXB9HKd9BiAHEP9eBuNwEIWdz+yt5FQItl1BpEFql2Z24dqQiC/g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bWhzd5gQJz2xk5;
+	Tue,  1 Jul 2025 22:24:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751372669;
+	cv=none; b=T6eHSquSbWuay6NbVIk2iosUbsM4m03diYP0Wg9dmAzYqqP2720sDJNJIGH8nJP5uN4irDGrx2OucTVLSq4oXiQtZ/FEWm0DgqSllmkM7uK84GGCe2u3fq0RUiRzHBtH7IA2KAGjFP+pxGVFCGjS4X6SjSQtPrXN8IxqvHgBCZZliy/GTdXHa86HNC2fN1Fn7mTxVOq7h5bmcyT5cDTUXf4Cs2m+ewHE+eCmrabn91kjjCiFxQz5+3n5CtyT/c0s539Vs8z4ENIOmm554sajMg4mPR4M0bpAKtzyxGerGEsh1jIf/YshsvgjP8fVkLcITHRliDqTY2GTel8Czzt4tg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1751372443; c=relaxed/relaxed;
-	bh=rHxUCsTrJtF7m7ut/7SaSnSngUFKELeGlbAN6JhZgA8=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=JTRJ+IjiLPQsBorsVKmAPDjVN6KD/kh9VTvFrgLzG667IEdV7vyeFb3uHS/s5+7NQtVEK//q5K/Gmg3PEsoxC1T5+noKHvYTsl6By3UfLpLHvrRvMQZy2x4mibg29gvSlokG3A55xuenfuFZCJqNKKBgmt+PzVGikNr/zw4eSPKKpK4/dKzj0XORTqORAHHPICDwZVJkhfywZrSipqj/SrL/YivNMNp0J/ZwxXCu0alYcgJ7Oitw692K0jq8XABjaEgFEGbjIVZDRs8N7htvVQjyXDRlUMG7trtMQu2BV4pKIxbI6LoNmG0uUqAtCwe92fQQoZgKDRx9J+jpGS2ETw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bWhvH2zQkz30DP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2025 22:20:43 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4bWft33dNrz9v5M;
-	Tue,  1 Jul 2025 12:49:31 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 6txJhLz5S1Ji; Tue,  1 Jul 2025 12:49:31 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4bWft32qhJz9v53;
-	Tue,  1 Jul 2025 12:49:31 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5B4DA8B765;
-	Tue,  1 Jul 2025 12:49:31 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 5LaM2CoUw8eA; Tue,  1 Jul 2025 12:49:31 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 89E108B763;
-	Tue,  1 Jul 2025 12:49:30 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Naveen N Rao <naveen@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] arch/powerpc: Remove .interp section in vmlinux
-Date: Tue,  1 Jul 2025 12:49:29 +0200
-Message-ID: <eeaf8fd6628a75d19872ab31cf7e7179e2baef5e.1751366959.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
+	t=1751372669; c=relaxed/relaxed;
+	bh=5dMJcBXdQ77pxzaJeebTFi4ceGva0cqGC9EQBAzQ3z4=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=JRPasPwo/iIgcl02bUG04a5pf+9Kpr3VNCMOkF4lAbhgIE3nz6Nm7FqblEK0xW5UsZZw5+H/faDsHhfOqHKO3oiKMaCKY05b/IUGFPuNcP3MwSfcaw4cTRofuwbz+zVqV4+Eca2KMviQ7267QIMQ7fKxF1h5ztgrA5sUmUO8Z/BduQ6wXMm3tPNFlBOIMc7Ve0HVqe2oMaxcDCjSTRxBExA8qhQTCMQLryR35IThbxwHNTtkM26vDGsozLR0CNcHGgTvNaLlyJV7rlDR/7KWXCc2qVhlROy13qDjLyjdrFhbQq2uU6dJ2//m3XHOtzW7IZMH1EJY1Fb2EckUmBVJGw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=DMG1eSJj; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=DMG1eSJj; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=DMG1eSJj;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=DMG1eSJj;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bWhzc30tzz2xCd
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2025 22:24:26 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1751372664;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=5dMJcBXdQ77pxzaJeebTFi4ceGva0cqGC9EQBAzQ3z4=;
+	b=DMG1eSJj6i+PtSYCUE+YLAXc75Q5GZ92r8TO4FpOPhR+4EAv2nec5TFTiVnKYywA07Hbd6
+	kqRNCXx6JJT40GVXsKKtP92DE75ePg7SmMXjGkXCaN1hVY4+udbMhCrUcJTj39gSjd/KGs
+	8bYKz4a4eAoLkPRV07gHIU6vD7I3cRc=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1751372664;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=5dMJcBXdQ77pxzaJeebTFi4ceGva0cqGC9EQBAzQ3z4=;
+	b=DMG1eSJj6i+PtSYCUE+YLAXc75Q5GZ92r8TO4FpOPhR+4EAv2nec5TFTiVnKYywA07Hbd6
+	kqRNCXx6JJT40GVXsKKtP92DE75ePg7SmMXjGkXCaN1hVY4+udbMhCrUcJTj39gSjd/KGs
+	8bYKz4a4eAoLkPRV07gHIU6vD7I3cRc=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-664-2vEknqrdOMGUqnY-42gWwg-1; Tue, 01 Jul 2025 08:24:22 -0400
+X-MC-Unique: 2vEknqrdOMGUqnY-42gWwg-1
+X-Mimecast-MFC-AGG-ID: 2vEknqrdOMGUqnY-42gWwg_1751372661
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-450db029f2aso25271255e9.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Jul 2025 05:24:22 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1751372661; x=1751977461;
+        h=content-transfer-encoding:in-reply-to:organization:autocrypt
+         :content-language:from:references:cc:to:subject:user-agent
+         :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
+         :date:message-id:reply-to;
+        bh=5dMJcBXdQ77pxzaJeebTFi4ceGva0cqGC9EQBAzQ3z4=;
+        b=aQyG0BViP7n+NP3JN5D99Fu6qkvf67ttq1zSRAbq+jNqm0gWFA4/YbuaHKL43UjjT7
+         E4R88csbj2bW3Nwm34ZPGYz4yE+nw3Lhbd8+w1gwus5hwvKa8XlUh0JFci2bhEpGrf0B
+         3qg86Oh/uxxlGmdY98dhtlG+LV8hu21L5O1NWCbkqBefrhMxiZFMaBknVKpHuA0oVfsv
+         uj8QbLkVsDMbuOKeis2IxLM45NcR3HRs8VdBTNHspekR1keJXpJjpnxz5cTmFzOmed0I
+         P1IGd4Ocwf0pjZZFHeJmg4vGtKXALVd534EgBhLdTLnB0LZUX99dQNDd86+A0T7JBIug
+         8rGw==
+X-Forwarded-Encrypted: i=1; AJvYcCV/KqXRrwnto1H1UUdNdPImCoPGNqOLp+u1+vlOVPhnaGnfGL2+HMBYks8FR4zcZ5zKRfvmF0vf/o3sj1k=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwE90fcudQXb7upxUi+SM69VpkxGsFAQvoM5NUBDyEL1FZDuhWW
+	hhnaxTkNEADBNaEnsXuMcbSfiFtsV8buq5poeivXtKBfrUA2/DwznxdyWhQvMks0EIHKWFYYn/e
+	IG6Zz8Mf+qNtDkWP1lq/URNNNHyKn91tjQhE4mhnXjA19S0IbcpWmYaaBXRMOmMVMDkc=
+X-Gm-Gg: ASbGncskSXJFWwemyyM3SR/azCSIjxxjN/JY0vDfB8pLOPJUJaF8Mqnvv1m3/DSt0EV
+	B1WsL9BOdug6T8cq2AHgSEfa0yqhSMEen69ATpTEXpNsGvrAcIrmIE+2oCQxupeRGpzaRttwEyx
+	Zg2hHsVT1hM8qr4rVI4yccrAfa/r3PNXUVrrCfqZQPIhUgkHRbrgTVgojtT7z2uwsvmfsupCmOh
+	PiEXl3WOVSAVk+ChwZBcMq/ZE52TIJ2JWlXOw2v6Laa6aH84aR3/Hml9UYldzKwy5ie2EIrMuS6
+	7E5fXDPsSUUR9qsTLa7X/PqB4/zVJy36RR/TPIgMjNpjtFZaQtrXZdaVV0MrBR7WE69VyLia4Nd
+	iVV6yuipZc/Tg/Lrx5MWAY9pPsQQXoJhjqPqsPCkS0715l4yVHA==
+X-Received: by 2002:a05:600c:458b:b0:450:b9c0:c7d2 with SMTP id 5b1f17b1804b1-45391b6b96dmr142402315e9.11.1751372661154;
+        Tue, 01 Jul 2025 05:24:21 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFpzHsO7mLLjpgLiPRtxtYPNX8uoCOnkHlcMoEUMymXcRW48dybZJfjs9S76N4KxHcaVdQlIA==
+X-Received: by 2002:a05:600c:458b:b0:450:b9c0:c7d2 with SMTP id 5b1f17b1804b1-45391b6b96dmr142401905e9.11.1751372660588;
+        Tue, 01 Jul 2025 05:24:20 -0700 (PDT)
+Received: from ?IPV6:2003:d8:2f18:7500:202e:b0f1:76d6:f9af? (p200300d82f187500202eb0f176d6f9af.dip0.t-ipconnect.de. [2003:d8:2f18:7500:202e:b0f1:76d6:f9af])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-4538a4213f0sm165518105e9.36.2025.07.01.05.24.17
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 01 Jul 2025 05:24:19 -0700 (PDT)
+Message-ID: <ec23fcb2-a1f5-4da3-a2fc-09abe317f17d@redhat.com>
+Date: Tue, 1 Jul 2025 14:24:16 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,39 +105,117 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1751366969; l=1053; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=edM7g36LIzxnpCXk4fNdHPOI8dVpw9r0Fa+ZaaP4vC0=; b=onBYVdrKpVDLsab8iFcNaM/Z4XjUhzuEjMbpiSMR/HQMbd7GooQ6Lezo3cC5QbEwjGUWWmrt6 MNli6DDn0xvCw+mvkU1TqBvrjIDbt7JBQJhEaCYO7TERnNFYklFqFHh
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v1 13/29] mm/balloon_compaction: stop using
+ __ClearPageMovable()
+To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ virtualization@lists.linux.dev, linux-fsdevel@vger.kernel.org,
+ Andrew Morton <akpm@linux-foundation.org>, Jonathan Corbet <corbet@lwn.net>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Jerrin Shaji George <jerrin.shaji-george@broadcom.com>,
+ Arnd Bergmann <arnd@arndb.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ "Michael S. Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>,
+ Xuan Zhuo <xuanzhuo@linux.alibaba.com>, =?UTF-8?Q?Eugenio_P=C3=A9rez?=
+ <eperezma@redhat.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+ Zi Yan <ziy@nvidia.com>, Matthew Brost <matthew.brost@intel.com>,
+ Joshua Hahn <joshua.hahnjy@gmail.com>, Rakie Kim <rakie.kim@sk.com>,
+ Byungchul Park <byungchul@sk.com>, Gregory Price <gourry@gourry.net>,
+ Ying Huang <ying.huang@linux.alibaba.com>,
+ Alistair Popple <apopple@nvidia.com>,
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>, Vlastimil Babka
+ <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ "Matthew Wilcox (Oracle)" <willy@infradead.org>,
+ Minchan Kim <minchan@kernel.org>,
+ Sergey Senozhatsky <senozhatsky@chromium.org>,
+ Brendan Jackman <jackmanb@google.com>, Johannes Weiner <hannes@cmpxchg.org>,
+ Jason Gunthorpe <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>,
+ Peter Xu <peterx@redhat.com>, Xu Xin <xu.xin16@zte.com.cn>,
+ Chengming Zhou <chengming.zhou@linux.dev>, Miaohe Lin
+ <linmiaohe@huawei.com>, Naoya Horiguchi <nao.horiguchi@gmail.com>,
+ Oscar Salvador <osalvador@suse.de>, Rik van Riel <riel@surriel.com>,
+ Harry Yoo <harry.yoo@oracle.com>, Qi Zheng <zhengqi.arch@bytedance.com>,
+ Shakeel Butt <shakeel.butt@linux.dev>
+References: <20250630130011.330477-1-david@redhat.com>
+ <20250630130011.330477-14-david@redhat.com>
+ <65804db3-71c0-47ff-8189-6a1587d4a0cc@lucifer.local>
+ <94333692-0093-4351-a081-13e202dd2322@redhat.com>
+ <4d1d7aa7-15c7-4c2c-8cd7-0853dcde7940@lucifer.local>
+From: David Hildenbrand <david@redhat.com>
+Autocrypt: addr=david@redhat.com; keydata=
+ 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
+ WNyWQQ==
+Organization: Red Hat
+In-Reply-To: <4d1d7aa7-15c7-4c2c-8cd7-0853dcde7940@lucifer.local>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: 8jjYNj19vorLfeArvCynh_ws6AIVEXR5tgtttVPW2KA_1751372661
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-When building with CONFIG_RELOCATABLE, there is a .interp section
-which contains the name of the expected ELF interpreter:
+> OK I guess this is fine... :)
+> 
+> An aside, unrelated tot his series: it'd be nice to use 'deflate' consistently
+> in this code. We do __count_vm_event(BALLOON_DEFLATE) in
+> balloon_page_list_dequeue() but say 'deflate' nowhere else... well before this
+> patch :)
 
-Contents of section .interp:
- c0000000021c1bac 2f757372 2f6c6962 2f6c642e 736f2e31  /usr/lib/ld.so.1
- c0000000021c1bbc 00                                   .
+Right, dequeue is actually deflate, because one couldn't use that 
+function for anything else as it stands.
 
-That information is useless and even likely wrong. Remove it.
+TODO list ... :)
 
-Link: https://github.com/linuxppc/issues/issues/434
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/arch/powerpc/Makefile b/arch/powerpc/Makefile
-index f3804103c56c..9753fb87217c 100644
---- a/arch/powerpc/Makefile
-+++ b/arch/powerpc/Makefile
-@@ -101,7 +101,7 @@ KBUILD_LDFLAGS	+= -m elf$(BITS)$(LDEMULATION)
- endif
- 
- LDFLAGS_vmlinux-y := -Bstatic
--LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie
-+LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) := -pie --no-dynamic-linker
- LDFLAGS_vmlinux-$(CONFIG_RELOCATABLE) += -z notext
- LDFLAGS_vmlinux	:= $(LDFLAGS_vmlinux-y)
- 
 -- 
-2.49.0
+Cheers,
+
+David / dhildenb
 
 
