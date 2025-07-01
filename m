@@ -1,97 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-9953-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-9954-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE8C7C83038
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jul 2025 08:17:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F106C83038
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  1 Jul 2025 08:21:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bWbVc1phdz2yqn;
-	Tue,  1 Jul 2025 18:17:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bWbbZ0Ct0z2y2B;
+	Tue,  1 Jul 2025 18:21:46 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751357847;
-	cv=none; b=lSV+99PExI/lav/qtIG0IIJZBbh186px481q4X3hCWTq+QWLcfai9bqnxHT/B0qImHxx42zpHrSDP27dPb2Jw0LTL6papIR6WzI5Iy82Axu6kDQTF1alQR9F5XbYHuMhLkfArOEuWVzEjyZ7xb18lHW59BrSMIkxfs423dua/0dvtkhWXZsEqvlWrzrwF5T/+k2PyHqJ3UVCnfpcylOQ3QdDpzTtiadjuRUmAyfazTsC3f4Drm33VBTDv0yTx0YUiFT97Mu+x7rCVcGkixoZ7nDZ1WH/Ft9ctqS1xC5JfZny03p2o+cWq50DzaaYnAg1GakWU3DNoBON8YbOA8TCXQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751358105;
+	cv=none; b=jPTeVIhhInytt0piRXR1G8JddGkAMJqt1RrFTP/IPnPJq9IbpeapTtRXyHuN78HZrLMj2HYrjAULlx4afUilZetu68eH5HsSxCxfxQf/53TojcOsWKQbWzE8BSrcHBwYtxwIO4sLA/ZNbSimRiskUitrO3yqHJP9hb2i0FjdAyUYEe/KMAtP2oKc1HbC5J/akT8/VXt6QjbUR38+bC+lecU32dER4B4KH8hj26Vo8QfXVbnz6bOe6y/59B38vzF+q8wKxDi1I7YQqKAVz+4dj3i3Ne/q9e27RUd8Yeu/h7wH1kgtbeymVRaUsIXX1Esx2BL0JEiZnISDlqPm0X7MRw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1751357847; c=relaxed/relaxed;
-	bh=K8bPxYBe4mprhdcI39oiC8vcqiTtmEpc5GUJmK2gTGs=;
+	t=1751358105; c=relaxed/relaxed;
+	bh=cxU0Ib3KCq9mplKVbTFzx/9NyzfjMRXnNip2tiGw51Q=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=RpMxNOzYBN2WRgTRfNSxHiOj/Epqn4K10lJG3XrNxyHRVHMT6umY3CmRmgWtsnuDkTcxJnsDyGwnxsxhse6GwmbEHFVD1MU4j7GPqoG5lreew/4wcJSwlEAzQsSOfxnHpsV+/ExY8rsl5gelAIqvlSPkZF1OvB82s34C2ymp81SbdA9cuCaOXW4fo6xWc15gU+1hd7BViZhAfpkGiQSE2OwLolK8ZffbXSWmBUu5sijxqX17uIpWwMqlZS8Ib1QvT8M4GEBnv/xxfQZqdhSS/zwub4XOREr4RxcuJfR0Z1Rp7/YrtrzhMwRQq0ES0dh0ROq7cTBrS2TD3ORrfJ34MQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ec0Yv/QF; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ec0Yv/QF; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+	 In-Reply-To:Content-Type; b=nEJRgDgRztFPe8dwtp66JTUKgHsuxP6GWv2JX/L84MwHslF/XoMaZLCFua+WYw66kJYBNU98/bQRDJDjdARXVoLaELjWR7J27xTNwC0+msNLdVU2c/Fky7mIp33wMoSMFnkwIJu7Re9KCT8yJ+3RDbBmKrSUpBX6BZUm5/k4/59ydXWziOCkyJ0ckdXtn1FQ6suV8X2MxhOvQN8QEST+6TqDVbFzMlMz6tHJrUZ15V1/wrns83+743HONDPABEdkVwBMoEzRBkcWPbDIxIL2NitxnTetIeyDewyIF2QFqEF+b7jFQh0jNQR908PBU6kbkYwTSd394IsT5t6Bo098Ag==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NbTgrr3v; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WFRQ+Hd7; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ec0Yv/QF;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ec0Yv/QF;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=NbTgrr3v;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=WFRQ+Hd7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
 Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bWbVZ4Rrgz2xHT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2025 18:17:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bWbbY0ySNz2xHT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  1 Jul 2025 18:21:44 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1751357840;
+	s=mimecast20190719; t=1751358101;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=K8bPxYBe4mprhdcI39oiC8vcqiTtmEpc5GUJmK2gTGs=;
-	b=ec0Yv/QFGDbC7FkwetscPaERsEdw9C3beE6fJbpM4d7/UwA0ZxKP5D4m5cYGI9N6efnuAJ
-	XV3WFjBeU+qEOSoaodJpBVnfpjqZaHXN2K0XtlMF8gcE6ciOUz5p5r+LjbvLEakNuetJe9
-	7mqw5OfENQxvvtQ1VijzWZLNDKvdCYE=
+	bh=cxU0Ib3KCq9mplKVbTFzx/9NyzfjMRXnNip2tiGw51Q=;
+	b=NbTgrr3vsmprePfFZE7vhIY7Bb1mRXxSgIFlPZuEjdgUhgEHfPYBQ/iiFuVSEqlk4Nu+7T
+	YAQ2rhsvJRkiTkJD9h1UC3O9yiJUET0hlfHqicILe6FPL9+29d54C8grjsjYkynSLALWF7
+	uD6kbQ5U2Bh4W85hTJ4k+XJg56jCek8=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1751357840;
+	s=mimecast20190719; t=1751358102;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=K8bPxYBe4mprhdcI39oiC8vcqiTtmEpc5GUJmK2gTGs=;
-	b=ec0Yv/QFGDbC7FkwetscPaERsEdw9C3beE6fJbpM4d7/UwA0ZxKP5D4m5cYGI9N6efnuAJ
-	XV3WFjBeU+qEOSoaodJpBVnfpjqZaHXN2K0XtlMF8gcE6ciOUz5p5r+LjbvLEakNuetJe9
-	7mqw5OfENQxvvtQ1VijzWZLNDKvdCYE=
-Received: from mail-wr1-f72.google.com (mail-wr1-f72.google.com
- [209.85.221.72]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=cxU0Ib3KCq9mplKVbTFzx/9NyzfjMRXnNip2tiGw51Q=;
+	b=WFRQ+Hd7vMd7Whc2tkPhw+UcdrnRfqgIeOWSNkiDSQxPjx1fNmhwKCbKlAzybb47rAUa08
+	eOlDK2gBVPopSi5CVEVmzQ3JIfrFosoa5KVw1BRZYDa49cnNZJdV6o6dhWs7I+US25B5dz
+	hOrejrH0uTounQz6lhH6Za8V8ACyL50=
+Received: from mail-ej1-f69.google.com (mail-ej1-f69.google.com
+ [209.85.218.69]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-41-LBlDXvMXMqO2QtIPtkaa3A-1; Tue, 01 Jul 2025 04:17:18 -0400
-X-MC-Unique: LBlDXvMXMqO2QtIPtkaa3A-1
-X-Mimecast-MFC-AGG-ID: LBlDXvMXMqO2QtIPtkaa3A_1751357837
-Received: by mail-wr1-f72.google.com with SMTP id ffacd0b85a97d-3a4eec544c6so2500925f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Jul 2025 01:17:18 -0700 (PDT)
+ us-mta-657-f8djO9arPXWT-6xVjUdSgA-1; Tue, 01 Jul 2025 04:21:40 -0400
+X-MC-Unique: f8djO9arPXWT-6xVjUdSgA-1
+X-Mimecast-MFC-AGG-ID: f8djO9arPXWT-6xVjUdSgA_1751358099
+Received: by mail-ej1-f69.google.com with SMTP id a640c23a62f3a-ade57fec429so224393966b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 01 Jul 2025 01:21:40 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1751357837; x=1751962637;
+        d=1e100.net; s=20230601; t=1751358099; x=1751962899;
         h=content-transfer-encoding:in-reply-to:organization:autocrypt
          :content-language:from:references:cc:to:subject:user-agent
          :mime-version:date:message-id:x-gm-message-state:from:to:cc:subject
          :date:message-id:reply-to;
-        bh=K8bPxYBe4mprhdcI39oiC8vcqiTtmEpc5GUJmK2gTGs=;
-        b=I588vE0tpGHg9VbGO5MYj6AM8oLJolqvLlFfvxf09ZrKDecye5RrDVGqxh4rq5yvox
-         gPtQR+qKEgh7zhAWVjvmdYt7k5n6cCFT9YB2Y6ICCMqsmQWa7ZWaxkAGdQ2iig5ubv3U
-         nZtd+yczGcMA/FZMNnAWfyHEbfMX20m/nyN8TkYZLqVjGmeA8Jaot83lKR9adPRVHqUH
-         FOUkVIC+lQ4avqyxwShPVxVFvXEm/BdCWhIbDHDB6c8w3CYYI3tNQ+WF2p0CMXnN7wse
-         8UEzdLnrFQ2vqmllnWfJyJVhXoqH3ZnA95KgyUxdeuIhQbXDIl7xLfoqGLWFnjFoSHch
-         +WOw==
-X-Forwarded-Encrypted: i=1; AJvYcCU6EnMKKNqYzyj01Js7yhpy6wZhUr5pHC7hrbYhXvGVC67+3xD7XPM8BNAM9CVs6SO5FYOZHrQid4wRMbw=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyB5rz58NjRsD+44JqZodaeUaZvghW1bU58q51mX3htS7m7zk8t
-	VCbjsr5/Mvl9BcpzIkaD/Z7Uei0hNPus2egwKbbg+vUR4ZJKb//6AODttG52O5AixnCXYjQnPN6
-	nfOpbq9S49hOthHnJwyMUP6WDCNqPqaJ+fQvZqiUQYmWl1ptqD/OBAMOiD90WjAh5F7M=
-X-Gm-Gg: ASbGncsS8gTFIRU9X/jC6LS1ej0U82nXyKvMaH3XgH+8hCM+mmtydrrkvnuA6LlV1Z4
-	FiIVLmVoJ+FoSQQZtH7sJF/ImJx7V6pNoikGzkNu0r5HnWd2Has20EmPQjqbhSKB5yds+6MZ9X/
-	mwzUbCZuMPlmNwiP3srczw5nTS2ZCTzMqg/O68CkkOV3JhsH8bR38Tuj4ap+C8s0BEm4vd2KrVO
-	Bsifk3pARZymjFm2xDqnTLTvsnPAPyc0AUP3g19X92QCj19OEejBi9DixiAA7hooUDG5ZFtsg9X
-	8uB22+iEONWajIEd1XbIv7ZOeazylI+fEjQRDo2/stkEx1smsy1TBSbV//4SykZlT6JhvliicDY
-	gs3AkkxZfuDLYefw6w6MwyES/2r5TS9fMcEcmeFrX+3JDkJ1v8w==
-X-Received: by 2002:a05:6000:2d09:b0:3a5:5298:ce28 with SMTP id ffacd0b85a97d-3a8fdb2a72fmr10414472f8f.4.1751357837369;
-        Tue, 01 Jul 2025 01:17:17 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IERLTCKBmcbHu7zgy5EThqO5Z94lv8XJhhKMgPqWhai691qAKiOAkty7NG8qpu22orfEJT0Zw==
-X-Received: by 2002:a05:6000:2d09:b0:3a5:5298:ce28 with SMTP id ffacd0b85a97d-3a8fdb2a72fmr10414417f8f.4.1751357836794;
-        Tue, 01 Jul 2025 01:17:16 -0700 (PDT)
+        bh=cxU0Ib3KCq9mplKVbTFzx/9NyzfjMRXnNip2tiGw51Q=;
+        b=ZFOnrn2qSi39LWMeCrJ3s8VAPaFg4/DAziheicd/aAO57DseNAnGvF2WMbm8CstFaC
+         Bus3Hf6stPtc97m+mWpHd51kPpcD+hJZMsSoTaE8H6QzCdRXMTnOJO0Q8W1PKjbHBHSD
+         cWq5XRLqAC/heF/mqrhU+duXQFjdLpNuVX4JkGX1qbTAfrT0dhwe4C2qOzPNOvfEPeMo
+         DBcL2B7V+qIHP/AduMwC65f3dWJ7X8GRTuMc65/sE+cpMSAufpplkRorOdGtw66lyihl
+         gMCdbGbpSeAgjfzFeGy8bZk9XJkVWJgus+0Ib5WPQD93atw/oXT/jwM1ibVRGKZIvMX5
+         8PqQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXtdsqeRFDbwFgP2WS3odg5IHheqQivdUebvhKmrjdse6IojLNsXemBP86tbJ1vhtYcBT80oX/024QXk44=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwxObSkao4F1PCfSTCvnMAoW6Ko2Lks8B4YXYoEM4qtPujiUiTt
+	JFJvO7fOa9nIs/PDQOn2rvC2q1HiNRHhqGy+hK7PKWcmW1iwY69ID1ADdR7AELz5Pj+7FtQ3U6I
+	+KVthNMHGg5ymaNKp2iMn2z1fAaBZdMGGI2uq9P3Bv+I5zJujqu0o3c6CRqFsb9zQUrE=
+X-Gm-Gg: ASbGnctERkr7WAeCwyHzxBlkgzs/pgBSN+A+db7JpksWy8kvml7ZaEVHtD24wwixaGg
+	RYnhlPBNqgMI4PITxf/H3HX5OO+umKDoR2A09h5cS2CQq0T30n7UdujHbLX1JZN0GXYABmBwlq6
+	CeLxwsDDfuqqWp5uBFhQmi3XrDt6CNZc4aXUzHSnAM8e2NAtLsyB1H46bz2oBPV5O4fY7xsbIB4
+	ilD52yIdtZbQTeSk98dhiq5ochmYEAqM5wGNyAAyU7QQ7eoLJTwJbCQCcRb5bCbthlMVgzBkTSk
+	a+WoN0t3WMFpTVzg/n6m/rWf3pvufZPp3oz+ar10IXa+sgmjM8IiZaFi6bWEcyt0SyfmnuJmsY/
+	50oq996foxZH9nSF1JeWXyu7W0r51waeVq41Fp8s1pfCp+350Sg==
+X-Received: by 2002:a17:907:78a:b0:ad9:85d3:e141 with SMTP id a640c23a62f3a-ae35016b6d8mr1560671766b.53.1751358098856;
+        Tue, 01 Jul 2025 01:21:38 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHQkcTzHwrlDjllUz0WAed9m3pQuwaJybhBgPe9TiWCmEVaIWiUlRTDH+dtrhI3ojD+spG9Mg==
+X-Received: by 2002:a17:907:78a:b0:ad9:85d3:e141 with SMTP id a640c23a62f3a-ae35016b6d8mr1560664266b.53.1751358098284;
+        Tue, 01 Jul 2025 01:21:38 -0700 (PDT)
 Received: from ?IPV6:2003:d8:2f18:7500:202e:b0f1:76d6:f9af? (p200300d82f187500202eb0f176d6f9af.dip0.t-ipconnect.de. [2003:d8:2f18:7500:202e:b0f1:76d6:f9af])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3a892e528a9sm12735286f8f.60.2025.07.01.01.17.14
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-ae35363b42asm816876766b.25.2025.07.01.01.21.35
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 01 Jul 2025 01:17:16 -0700 (PDT)
-Message-ID: <d4d8b891-008d-4cbc-950f-2e44c4445904@redhat.com>
-Date: Tue, 1 Jul 2025 10:17:13 +0200
+        Tue, 01 Jul 2025 01:21:37 -0700 (PDT)
+Message-ID: <00d8e03d-c36f-47b6-919f-00a411ea6fd8@redhat.com>
+Date: Tue, 1 Jul 2025 10:21:34 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,8 +106,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 04/29] mm/page_alloc: let page freeing clear any set
- page type
+Subject: Re: [PATCH v1 05/29] mm/balloon_compaction: make PageOffline sticky
+ until the page is freed
 To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  linux-doc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
@@ -143,8 +143,8 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
  Harry Yoo <harry.yoo@oracle.com>, Qi Zheng <zhengqi.arch@bytedance.com>,
  Shakeel Butt <shakeel.butt@linux.dev>
 References: <20250630130011.330477-1-david@redhat.com>
- <20250630130011.330477-5-david@redhat.com>
- <8c5392d6-372c-4d5d-8446-6af48fba4548@lucifer.local>
+ <20250630130011.330477-6-david@redhat.com>
+ <6a6cde69-23de-4727-abd7-bae4c0918643@lucifer.local>
 From: David Hildenbrand <david@redhat.com>
 Autocrypt: addr=david@redhat.com; keydata=
  xsFNBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
@@ -191,70 +191,57 @@ Autocrypt: addr=david@redhat.com; keydata=
  jPrnvUsUUsjRoRNJjKKA/REq+sAnhkNPPZ/NNMjaZ5b8Tovi8C0tmxiCHaQYqj7G2rgnT0kt
  WNyWQQ==
 Organization: Red Hat
-In-Reply-To: <8c5392d6-372c-4d5d-8446-6af48fba4548@lucifer.local>
+In-Reply-To: <6a6cde69-23de-4727-abd7-bae4c0918643@lucifer.local>
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: QmoY4AFVY7scriwiKcUo6G3b99UJSJP1LcmR7dhQBC4_1751357837
+X-Mimecast-MFC-PROC-ID: JLUUrSfuxTRaoU9SSZxr9P5BHVcFfRxSt5KWywJjvhE_1751358099
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
-On 30.06.25 17:27, Lorenzo Stoakes wrote:
-> On Mon, Jun 30, 2025 at 02:59:45PM +0200, David Hildenbrand wrote:
->> Currently, any user of page types must clear that type before freeing
->> a page back to the buddy, otherwise we'll run into mapcount related
->> sanity checks (because the page type currently overlays the page
->> mapcount).
->>
->> Let's allow for not clearing the page type by page type users by letting
->> the buddy handle it instead.
->>
->> We'll focus on having a page type set on the first page of a larger
->> allocation only.
->>
->> With this change, we can reliably identify typed folios even though
->> they might be in the process of getting freed, which will come in handy
->> in migration code (at least in the transition phase).
->>
->> In the future we might want to warn on some page types. Instead of
->> having an "allow list", let's rather wait until we know about once that
->> should go on such a "disallow list".
+On 30.06.25 18:01, Lorenzo Stoakes wrote:
+> On Mon, Jun 30, 2025 at 02:59:46PM +0200, David Hildenbrand wrote:
+>> Let the page freeing code handle clearing the page type.
 > 
-> Is the idea here to get this to show up on folio dumps or?
+> Why is this advantageous? We want to keep the page marked offline for longer?
 
-As part of the netmem_desc series, there was a discussion about removing 
-the mystical PP checks -- page_pool_page_is_pp() in page_alloc.c and 
-replacing them by a proper page type check.
+Less code? ;)
 
-In that case, we would probably want to warn in case we get such a 
-netmem page unexpectedly freed.
+I will add:
 
-But, that page type does not exist yet in code, so the sanity check must 
-be added once introduced.
+"Being able to identify balloon pages until actually freed is a 
+requirement for upcoming movable_ops migration changes."
+
+Note that the documentation is extended in patch #27 to mention that.
 
 > 
 >>
->> Reviewed-by: Zi Yan <ziy@nvidia.com>
+>> Acked-by: Zi Yan <ziy@nvidia.com>
 >> Acked-by: Harry Yoo <harry.yoo@oracle.com>
 >> Signed-off-by: David Hildenbrand <david@redhat.com>
->> ---
->>   mm/page_alloc.c | 3 +++
->>   1 file changed, 3 insertions(+)
->>
->> diff --git a/mm/page_alloc.c b/mm/page_alloc.c
->> index 858bc17653af9..44e56d31cfeb1 100644
->> --- a/mm/page_alloc.c
->> +++ b/mm/page_alloc.c
->> @@ -1380,6 +1380,9 @@ __always_inline bool free_pages_prepare(struct page *page,
->>   			mod_mthp_stat(order, MTHP_STAT_NR_ANON, -1);
->>   		page->mapping = NULL;
->>   	}
->> +	if (unlikely(page_has_type(page)))
->> +		page->page_type = UINT_MAX;
 > 
-> Feels like this could do with a comment!
+> On assumption this UINT_MAX stuff is sane :)) I mean this is straightforward I
+> guess:
+ > > Reviewed-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
+> 
+>> ---
+>>   include/linux/balloon_compaction.h | 2 +-
+>>   1 file changed, 1 insertion(+), 1 deletion(-)
+>>
+>> diff --git a/include/linux/balloon_compaction.h b/include/linux/balloon_compaction.h
+>> index b9f19da37b089..bfc6e50bd004b 100644
+>> --- a/include/linux/balloon_compaction.h
+>> +++ b/include/linux/balloon_compaction.h
+>> @@ -140,7 +140,7 @@ static inline void balloon_page_finalize(struct page *page)
+>>   		__ClearPageMovable(page);
+>>   		set_page_private(page, 0);
+>>   	}
+>> -	__ClearPageOffline(page);
+>> +	/* PageOffline is sticky until the page is freed to the buddy. */
+> 
+> OK so we are relying on this UINT_MAX thing in free_pages_prepare() to handle this.
 
-/* Reset the page_type -> _mapcount to -1 */
+Yes. Resetting the page_type -> _mapcount to the initial value -1.
 
 -- 
 Cheers,
