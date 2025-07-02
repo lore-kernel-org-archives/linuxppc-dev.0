@@ -1,85 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-10059-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10060-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C15FC8303C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jul 2025 22:16:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BBF16C8303C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jul 2025 22:16:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bXZ2n4rFRz30Wg;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bXZ2n558rz2yYJ;
 	Thu,  3 Jul 2025 08:15:13 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751494511;
-	cv=none; b=fhFfgcoPMuM+DXXtshvaw5bAXEPg6JO6DyNo/FbjZV90/7GiGvjanBoMHlD7mG1u5E89FEWpkj/V0ukF88HMrp7ZhvTDaQ3rALUjf40cMLGzVG96YwCCB2hX4woyn1ir3bUfdzFZvg1m8xMsysxTYj/2Cw4/xlIR02tYlbhYYrM0X25501+oD8XGt3OoYbP5fwIOdqBbvorGR7wQO/56eJOUcAWk80jmgVztlIef8y+vU4BkG7jW/AyslGpbj/B88s4SfPCzaTDibrKbLlxKh+jtbQDH1g+Vf3E6VyUjlnvaUkgWSdvYzsDv/SGSc/rVikq28ls7nzCfTIuZ7+3kEQ==
+	cv=none; b=dognp7ne0jscC+8re2h+2wfrgzQtX5ft7gdWzhHgf1dn2fBu9vvIiYFnLZXlMPrtXERZlPnuUuthqgf4BwTJE+l4bZMG4LebQu0vsJJmSP5lYfrSCdXxJa+tyBGpAEt9pPEmUWVWTMNh+bGZx1YxkUZSyejX7c4AJ47KLnNbsWYNBal1NbTa9YjLnEGm30Tj5BZ4ooLVr0C8/FDFxIggro8UUkBZ59DcUEN986fzEhCFwss29L51OY2FmQAGq8iXtCb7jY2LwBlZneP0yGGP2y0jN858lmmACL7SndiE0OaCx1kXBZ7c0B2i18qERoZMfPq/koovnK8EaIWAohY9Hg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1751494511; c=relaxed/relaxed;
-	bh=I7N+/jPEv0U8eJ5xO7ldzCQN9xrpZf7gCsNsxKoK2qI=;
+	bh=beX79eOXlR3+dj6shhNCAtbb5Ayn99yavqV3vjZArhE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=nL5Xn1jSUxENpSUOYwlmFwAm6NYswUJk8eqC6ryuoynVmcivgMn4GZwV67HkUWlUZgHJNAUNXeerZO4aj3D4r55w4tZ7mkFfqOpTffcYRMGZx1HvxAgunGIOmIQnrVxYD130yTHTaHAyvguExl7faP8cTzWg0vEagT1S2Hbb6n4VfpVvnzldeifY4BQPQZJay3YryzVO4By/Fs9WyCgDQ33OGOspRDMRRZAUQ+3uEZ1+VjbgqTlAhl8Bfuh3OcevWpsqP11a8a4XIvrIhV82oui7ot/vRy1q9zxBKxJy0M0sDw/9u6xo2ye7WDqYtC8us08hB4ZUL6Vt+3DzU7WLOw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kYLq7Tt/; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=PJ0PJ+Ov2EvTvZMpdkf5gtGl4C+Mie6uCpuASjgbZuzOVZaeNff8qN52LUSCLRKEph8qciATGDdtA/k/kdUCLLar6NQT0lD6Q+G1jRoQ2inDLDJIiFBW/SpvKbAUSuY/UBbsWm7rUIbNymJn0VAsQOU7jmOzDlvtMhNhmgjUmPJO4vYwdysk8cg16qCqDV+iJtvsubpSU3vDxqiNjJhBrTtdiz8otzFL3ZureHyO9oSJJgd8ItVMEEOMsMUqM5FLaUibb/DGAQdRhReF9VKqffN0n99mMXMG3MlxnOxQTyAJ42d+tw6HugHxUMat8HX2OTFIR0aoeaMZlI3yPeIQPA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aoWO36kG; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=kYLq7Tt/;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=aoWO36kG;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bXZ2j5mKnz30W1
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2025 08:15:09 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 562H7Bod025176;
-	Wed, 2 Jul 2025 22:15:02 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=I7N+/j
-	PEv0U8eJ5xO7ldzCQN9xrpZf7gCsNsxKoK2qI=; b=kYLq7Tt/hUoupHPwe3l/mp
-	+5Xia1iNr548dPPgyQzHXZYzmV7FGWkNS3CmxrPMfLDcBsVqtlQ/YtDqDECUycc/
-	fZNLt0iaCXS1giTlzTvmPCFLcdvHr8bKy2/str7VtPaySIzHPMIojj7DLuFjvFlb
-	auD6IsPbPxRNaqXW76CHwktpL/NP95ndsFB2e8/CP69RGbBsbaorU5EnD46fS1B4
-	pP829ysgiHeGJJpg82ksN4rMkwU6HJ43d8xcjqWuhLAxoMDLMhf8yCy+Cy6RPYv2
-	WqM3r8PPAQbiRNNBMOJT3MkKw7+2lFab9SoiCNfCk0WxRN1YlDTlcN0zRvgo4sSA
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 47j6u1yy7x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 02 Jul 2025 22:15:02 +0000 (GMT)
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 562M5dcJ021621;
-	Wed, 2 Jul 2025 22:15:01 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 47j6u1yy7u-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 02 Jul 2025 22:15:01 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 562L4NSN032216;
-	Wed, 2 Jul 2025 22:15:01 GMT
-Received: from smtprelay05.dal12v.mail.ibm.com ([172.16.1.7])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 47ju40sx9p-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 02 Jul 2025 22:15:01 +0000
-Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay05.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 562MEx2j24838744
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bXZ2g5Glfz2xRq
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2025 08:15:07 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 562FBdFp024412;
 	Wed, 2 Jul 2025 22:14:59 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=beX79eOXlR3+dj6sh
+	hNCAtbb5Ayn99yavqV3vjZArhE=; b=aoWO36kGsaDHzE8o1rW+9Aam5Myn1FINT
+	oPRfFfa6xCEOxmN2G/Mln41ukINKt7uXDCiEeQx9xkVPKrrJLQsfpGYgbX386OPQ
+	bzdyVyCT4x+iBWapDmazvi/GVYwirWyWMFf1LuG76Dyxq07RsnJtMOC05boTOwh5
+	D8jrbMRR2pzuCB/gwxf5KDGxFOX37InRRvxt41uHKmcC7ZjVmVuLHscQ1nubNVL8
+	+WhjtfhhaS3dAA89DAPZQrAIOqKcR9WY/ey+UGMEEUC+ZI3s95zAhQdbtQAzDir3
+	Ku6y3kl7jDwgUUbuG9hhSajjnK7xIPIYZsok+RVwLQkLHwkBN0XBA==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 47j82fysbj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 02 Jul 2025 22:14:59 +0000 (GMT)
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 562MEMjP027704;
+	Wed, 2 Jul 2025 22:14:58 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 47j82fysbe-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 02 Jul 2025 22:14:58 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 562K6CLT021112;
+	Wed, 2 Jul 2025 22:14:57 GMT
+Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 47jtquhye3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 02 Jul 2025 22:14:57 +0000
+Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
+	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 562MEsVs22741310
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 2 Jul 2025 22:14:54 GMT
 Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 63A1B58056;
-	Wed,  2 Jul 2025 22:14:59 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 1BEA15803F;
+	Wed,  2 Jul 2025 22:14:54 +0000 (GMT)
 Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B5F975803F;
-	Wed,  2 Jul 2025 22:14:58 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 69D9C58056;
+	Wed,  2 Jul 2025 22:14:53 +0000 (GMT)
 Received: from li-4910aacc-2eed-11b2-a85c-d93b702d4d28.ibm.com.com (unknown [9.61.17.45])
 	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  2 Jul 2025 22:14:58 +0000 (GMT)
+	Wed,  2 Jul 2025 22:14:53 +0000 (GMT)
 From: Haren Myneni <haren@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
         msuchanek@suse.de, mahesh@linux.ibm.com, tyreld@linux.ibm.com,
         hbabu@us.ibm.com, haren@linux.ibm.com
-Subject: [PATCH RFC 8/9] powerpc/pseries: Enable hvpipe with ibm,set-system-parameter RTAS
-Date: Wed,  2 Jul 2025 15:14:42 -0700
-Message-ID: <20250702221444.879256-9-haren@linux.ibm.com>
+Subject: [PATCH RFC 4/9] powerpc/pseries: Send payload with ibm,send-hvpipe-msg RTAS
+Date: Wed,  2 Jul 2025 15:14:38 -0700
+Message-ID: <20250702221444.879256-5-haren@linux.ibm.com>
 X-Mailer: git-send-email 2.43.5
 In-Reply-To: <20250702221444.879256-1-haren@linux.ibm.com>
 References: <20250702221444.879256-1-haren@linux.ibm.com>
@@ -96,107 +95,221 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: SgMJw1sfuovKdKfypejsPLbcdA5nGJOk
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNzAyMDE4MSBTYWx0ZWRfX7IAqtx4EcjDX SblzsJYBg4DDqavIrC7Fomj1T0RAxDJ6EYIMDyRIsIdXHpeWZmjFk3BQDdCX3YX3JjF6lwF3kkM RJqBZf/YqnWUUzgCD0bHaU+LEj9KNvYIfhYHKsnaL69hDLSxRaIBYuGlY3IdC2MpvI1575ZSrIt
- VlRwOWFjh0vQtoMa62T6ElXXtZh1XwOlvlhVVMVSqZIinzjGm8GAwvTtWL51i/SAlIh/f1lNbQB YvmctyE5DT36qvcb9Y1i1ts9hMvG3ry0g0sEaHXGyBnKJbWf4pSXn5KPJyeF4YGedfbIJv1CkWh qWqLEyuopn0fXgLaCVVFZdZGg/TSjdNEBlklZCPHELhKnBct8qKp3hfCkJPCzJupu+fesW2Rhas
- Ud4B7QvQwwpIZK8Z2X2I/7pqwZKWKa+OaNkljogtcY833izrWj0iZt7PTQ9Ot2bFLDz9MNsS
-X-Proofpoint-GUID: tCgP3-lgOrkxj3E1wHzDoJm7v772lhgd
-X-Authority-Analysis: v=2.4 cv=GrRC+l1C c=1 sm=1 tr=0 ts=6865af66 cx=c_pps a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17 a=IkcTkHD0fZMA:10 a=Wb1JkmetP80A:10 a=VnNF1IyMAAAA:8 a=fbHa879tV7MQQsezulwA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: w6qLnad6xQO8wBniqZcFtezgTzfsJA8b
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNzAyMDE4MSBTYWx0ZWRfXyz3zDx7X4Ztk KGoST6QQcJFIN12TIDKlfu6ojbYHcbl8iSYAvZ7lBX2RVxNTnT09hxf5uUcHQLUfoifRhioROVj G1uJ2Rp1jvoeN5bCg5/bkmNPoWrsaQ0oZQL3VUiDJ/g7AhvHPgIM4VF7olWOBlu8cg7b2OrxO5I
+ 1Odf0pwDRz1SIgHNw2znpu+ytOavfHGVebx2LPCeKFRwrN7G/zKA2LbHv2XQ7OXskankAADqOVD bCz/0CtGZ2UEWzRJf8Hna5e1Tup7I9QYlYAF8eOo3bErbQKcmO5UpxbBi9mAF8Q1oamnZp+VxYz reTWIpyomMGgupzEvm9zgpfHNAWFGK4jbCZetMYYZB8HNYSdPl/TBzPVKJjGshOsteCUgY7Rey4
+ GqeF4DlLuf69PPlkr/6jBHcjoTOUWfgV/WauXzmbGBro4/X/6MBEOCI1dtbUdjfqJes6dnEt
+X-Authority-Analysis: v=2.4 cv=LpeSymdc c=1 sm=1 tr=0 ts=6865af63 cx=c_pps a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17 a=Wb1JkmetP80A:10 a=VnNF1IyMAAAA:8 a=lTP4BkPL7ZkNV5ngu4UA:9
+X-Proofpoint-GUID: vJmL1uokazXL_rwRpBzu9ZnzkDMBTXXA
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.7,FMLib:17.12.80.40
  definitions=2025-07-02_04,2025-07-02_04,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 clxscore=1015
- priorityscore=1501 adultscore=0 mlxlogscore=999 mlxscore=0 impostorscore=0
- phishscore=0 spamscore=0 suspectscore=0 bulkscore=0 malwarescore=0
- lowpriorityscore=0 classifier=spam authscore=0 authtc=n/a authcc=
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 priorityscore=1501
+ spamscore=0 bulkscore=0 lowpriorityscore=0 adultscore=0 clxscore=1015
+ impostorscore=0 mlxscore=0 mlxlogscore=999 phishscore=0 suspectscore=0
+ malwarescore=0 classifier=spam authscore=0 authtc=n/a authcc=
  route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2505280000
  definitions=main-2507020181
 
-The partition uses “Hypervisor Pipe OS Enablement Notification”
-system parameter token (value = 64) to enable / disable hvpipe in
-the hypervisor. Once hvpipe is enabled, the hypervisor notifies
-OS if the payload is pending for that partition from any source.
-This system parameter token takes 1 byte length of data with
-1 = Enable and 0 = Disable.
+ibm,send-hvpipe-msg RTAS call is used to send data to the source
+(Ex: Hardware Management Console) over the hypervisor pipe. The
+maximum data length of 4048 bytes is supported with this RTAS call
+right now. The user space uses write() to send this payload which
+invokes this RTAS. Then the write returns the buffer length
+(including papr_hvpipe_hdr length) to the user space for success
+or RTAS failure error.
 
-Enable hvpipe in the hypervisor with ibm,set-system-parameter
-RTAS after registering hvpipe event source interrupt.
+ibm,send-hvpipe-msg call takes source ID as target and the buffer
+in the form of buffer list. The buffer list format consists of
+work area of size 4K to hold buffer list and number of 4K work
+areas depends on buffers is as follows:
+
+Length of Buffer List in bytes
+Address of 4K buffer 1
+Length of 4K buffer 1 used
+...
+Address of 4K buffer n
+Length of 4K buffer n used
+
+Only one buffer is used right now because of max payload size is
+4088 bytes. writev() can be used in future when supported more
+than one buffer.
 
 Signed-off-by: Haren Myneni <haren@linux.ibm.com>
 ---
- arch/powerpc/include/asm/papr-sysparm.h      |  1 +
- arch/powerpc/platforms/pseries/papr-hvpipe.c | 29 +++++++++++++++++++-
- 2 files changed, 29 insertions(+), 1 deletion(-)
+ arch/powerpc/platforms/pseries/papr-hvpipe.c | 120 ++++++++++++++++++-
+ arch/powerpc/platforms/pseries/papr-hvpipe.h |   7 ++
+ 2 files changed, 126 insertions(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/papr-sysparm.h b/arch/powerpc/include/asm/papr-sysparm.h
-index c3cd5b131033..11430e5a7224 100644
---- a/arch/powerpc/include/asm/papr-sysparm.h
-+++ b/arch/powerpc/include/asm/papr-sysparm.h
-@@ -21,6 +21,7 @@ typedef struct {
- #define PAPR_SYSPARM_COOP_MEM_OVERCOMMIT_ATTRS     mk_papr_sysparm(44)
- #define PAPR_SYSPARM_TLB_BLOCK_INVALIDATE_ATTRS    mk_papr_sysparm(50)
- #define PAPR_SYSPARM_LPAR_NAME                     mk_papr_sysparm(55)
-+#define PAPR_SYS_PARAM_HVPIPE_ENABLE               mk_papr_sysparm(64)
- 
- /**
-  * struct papr_sysparm_buf - RTAS work area layout for system parameter functions.
 diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.c b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-index ebccd6a70ab6..b103dde7d584 100644
+index 5768d072859d..c30f4d75e645 100644
 --- a/arch/powerpc/platforms/pseries/papr-hvpipe.c
 +++ b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-@@ -15,6 +15,7 @@
+@@ -14,6 +14,7 @@
+ #include <linux/of.h>
  #include <asm/machdep.h>
  #include <asm/rtas.h>
- #include <asm/rtas-work-area.h>
-+#include <asm/papr-sysparm.h>
++#include <asm/rtas-work-area.h>
  #include <uapi/asm/papr-hvpipe.h>
  #include "pseries.h"
  #include "papr-hvpipe.h"
-@@ -639,6 +640,32 @@ static irqreturn_t hvpipe_event_interrupt(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
+@@ -59,6 +60,51 @@ static LIST_HEAD(hvpipe_src_list);
+  *   return code for failure.
+  */
  
 +/*
-+ * Enable hvpipe by system parameter set with parameter
-+ * token = 64 and with 1 byte buffer data:
-+ * 0 = hvpipe not in use/disabled
-+ * 1 = hvpipe in use/enabled
++ * ibm,send-hvpipe-msg RTAS call
++ * @area: Caller-provided work area buffer to send.
++ * @srcID: Target source for the send pipe message.
 + */
-+static int set_hvpipe_sys_param(u8 val)
++static int rtas_ibm_send_hvpipe_msg(struct rtas_work_area *area, u32 srcID)
 +{
-+	struct papr_sysparm_buf *buf;
++	const s32 token = rtas_function_token(RTAS_FN_IBM_SEND_HVPIPE_MSG);
++	s32 fwrc;
 +	int ret;
 +
-+	buf = papr_sysparm_buf_alloc();
-+	if (!buf)
-+		return -ENOMEM;
++	if (token == RTAS_UNKNOWN_SERVICE)
++		return -ENOENT;
 +
-+	buf->len = cpu_to_be16(1);
-+	buf->val[0] = val;
-+	ret = papr_sysparm_set(PAPR_SYS_PARAM_HVPIPE_ENABLE, buf);
-+	if (!ret)
-+		pr_err("Can not enable hvpipe %d\n", ret);
++	do {
++		fwrc = rtas_call(token, 2, 1, NULL, srcID,
++				rtas_work_area_phys(area));
 +
-+	papr_sysparm_buf_free(buf);
++	} while (rtas_busy_delay(fwrc));
++
++	switch (fwrc) {
++	case RTAS_SUCCESS:
++		ret = 0;
++		break;
++	case RTAS_HARDWARE_ERROR:
++		ret = -EIO;
++		break;
++	case RTAS_INVALID_PARAMETER:
++		ret = -EINVAL;
++		break;
++	case RTAS_HVPIPE_CLOSED:
++		ret = -EACCES;
++		break;
++	case RTAS_FUNC_NOT_SUPPORTED:
++		ret = -EOPNOTSUPP;
++		break;
++	default:
++		ret = -EIO;
++		pr_err_ratelimited("unexpected ibm,receive-hvpipe-msg status %d\n", fwrc);
++		break;
++	}
 +
 +	return ret;
 +}
 +
- static int __init enable_hvpipe_IRQ(void)
+ static struct hvpipe_source_info *hvpipe_find_source(u32 srcID)
  {
- 	struct device_node *np;
-@@ -695,7 +722,7 @@ static int __init papr_hvpipe_init(void)
- 		goto out;
- 	}
+ 	struct hvpipe_source_info *src_info;
+@@ -78,11 +124,83 @@ static ssize_t papr_hvpipe_handle_write(struct file *file,
+ 	const char __user *buf, size_t size, loff_t *off)
+ {
+ 	struct hvpipe_source_info *src_info = file->private_data;
++	struct rtas_work_area *work_area, *work_buf;
++	unsigned long ret, len;
++	char *area_buf;
  
--	if (!enable_hvpipe_IRQ()) {
-+	if (!enable_hvpipe_IRQ() && !set_hvpipe_sys_param(1)) {
- 		ret = misc_register(&papr_hvpipe_dev);
- 		if (!ret) {
- 			pr_info("hvpipe feature is enabled\n");
+ 	if (!src_info)
+ 		return -EIO;
+ 
+-	return 0;
++	/*
++	 * Send HVPIPE RTAS is used to send payload to the specific
++	 * source with the input parameters source ID and the payload
++	 * as buffer list. Each entry in the buffer list contains
++	 * address/length pair of the buffer.
++	 *
++	 * The buffer list format is as follows:
++	 *
++	 * Header (length of address/length pairs and the header length)
++	 * Address of 4K buffer 1
++	 * Length of 4K buffer 1 used
++	 * ...
++	 * Address of 4K buffer n
++	 * Length of 4K buffer n used
++	 *
++	 * See PAPR 7.3.32.2 ibm,send-hvpipe-msg
++	 *
++	 * Even though can support max 1MB payload, the hypervisor
++	 * supports only 4048 bytes payload at present and also
++	 * just one address/length entry.
++	 *
++	 * writev() interface can be added in future when the
++	 * hypervisor supports multiple buffer list entries.
++	 */
++	/* HVPIPE_MAX_WRITE_BUFFER_SIZE = 4048 bytes */
++	if ((size > (HVPIPE_HDR_LEN + HVPIPE_MAX_WRITE_BUFFER_SIZE)) ||
++		(size <= HVPIPE_HDR_LEN))
++		return -EINVAL;
++
++	/*
++	 * The length of (address + length) pair + the length of header
++	 */
++	len = (2 * sizeof(u64)) + sizeof(u64);
++	size -= HVPIPE_HDR_LEN;
++	buf += HVPIPE_HDR_LEN;
++	mutex_lock(&rtas_ibm_send_hvpipe_msg_lock);
++	work_area = rtas_work_area_alloc(SZ_4K);
++	if (!work_area) {
++		ret = -ENOMEM;
++		goto out;
++	}
++	area_buf = rtas_work_area_raw_buf(work_area);
++	/* header */
++	*(u64 *)area_buf = cpu_to_be64(len);
++	area_buf += sizeof(u64);
++
++	work_buf = rtas_work_area_alloc(SZ_4K);
++	if (!area_buf) {
++		ret = -ENOMEM;
++		goto out_work;
++	}
++	/* First buffer address */
++	*(u64 *)area_buf = cpu_to_be64(rtas_work_area_phys(work_buf));
++	area_buf += sizeof(u64);
++	/* First buffer address length */
++	*(u64 *)area_buf = cpu_to_be64(size);
++
++	if (!copy_from_user(rtas_work_area_raw_buf(work_buf), buf, size)) {
++		ret = rtas_ibm_send_hvpipe_msg(work_area, src_info->srcID);
++		if (!ret)
++			ret = size + HVPIPE_HDR_LEN;
++	} else
++		ret = -EPERM;
++
++	rtas_work_area_free(work_buf);
++out_work:
++	rtas_work_area_free(work_area);
++out:
++	mutex_unlock(&rtas_ibm_send_hvpipe_msg_lock);
++	return ret;
+ }
+ 
+ /*
+diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.h b/arch/powerpc/platforms/pseries/papr-hvpipe.h
+index 3b6f9e737913..6f98da4ec45f 100644
+--- a/arch/powerpc/platforms/pseries/papr-hvpipe.h
++++ b/arch/powerpc/platforms/pseries/papr-hvpipe.h
+@@ -3,6 +3,13 @@
+ #define _PAPR_HVPIPE_H
+ 
+ #define	HVPIPE_HMC_ID_MASK	0x02000000 /*02-HMC,00-reserved and HMC ID */
++#define	HVPIPE_MAX_WRITE_BUFFER_SIZE	4048
++/*
++ * hvpipe specific RTAS return values
++ */
++#define	RTAS_HVPIPE_CLOSED		-4
++
++#define	HVPIPE_HDR_LEN	sizeof(struct papr_hvpipe_hdr)
+ 
+ struct hvpipe_source_info {
+ 	struct list_head list;	/* list of sources */
 -- 
 2.43.5
 
