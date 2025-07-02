@@ -1,88 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-10062-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10063-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id EEDE7C8303C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jul 2025 22:16:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEB48C8303C
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jul 2025 23:18:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bXZ2s3Dx2z3bh0;
-	Thu,  3 Jul 2025 08:15:17 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751494514;
-	cv=none; b=Z3eb4AvEQNbKgJpXoYiYDDVEAfwlXNVjekxmxDrVRUu2gLPk1GM9WrlN2Wwt+X9/PXcSiOeSH7d83LK9xoBgHbpTx/tqvti5DEe7pbPntAojoyHGFJMuYgzJynV3LUl/wHgfGDALP/bTN/M3pr/7RTz7D4zODkfom0A9BFpprI48jr6Fu6VEkJr4D6w35+DftjJDeX9z/mdavGcOxcPoSMqMxQPpXs7MH+StuqoNwP4xRgpbNWxFg7SjRoF67FsphFHvoYNL3dH3zojKy5lPm5BjorodUZToZ7HjX8H66rgUgrpS2XudsNcfRZ48wmGznTrDBNJAWivCVMNwRoLcAA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bXbRC6VSlz2yPd;
+	Thu,  3 Jul 2025 09:17:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.28.40.42
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751485224;
+	cv=none; b=emCZlWiYKZ8ZzyYDEoULgkajkwNR8lILH4AeUtk5ZbrgpHbMR4lMhfuPLQ3m4Gyss3ma8CZ4dPXBR5Ip+t5F1t/HOsY0YGzZ5Yc2ueOFbXuDce2z0aHDlS9oqq0YsPIGACswYVyi79D0VCwuWUV79SPf33C6IGhcUoQtpHPYc/1HB1Ns2WG0bIiEgDiZrBu5kOmqB9G/fB1i9AaYCBnHtMoyzW0RSFBE4MqWAFzt8hXpsH5Ow0VxA5enXH7yV34TviA6YkBN6VR8LY3xdt86vU+d0jl64QCgEaq3o7S3HZPbP3XN2A30WllB3A/rVVPYCkZrDSKaBBHnTdUmW87pnw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1751494514; c=relaxed/relaxed;
-	bh=tO94Zj0rK2g+6Hnn8XHzjG8rPFm6cTZD4TL33ikoSv0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=gRCQ7Xuo2ZUxEyFIHBm7cdpnUUK20EIrnz8Jnm1L7YiWqSIO68iDvkPgNv7bHsHtj0bhATHDwYBmRV6Zue8zqdpLQtZ3LtWFUDKXtyXNxE7fEyA3VeqA2ZjVQxCoggaBiOKGp1aPRxo8Chi1E49g7J04uFJJmR+77/K6T8xGqwxOIXWaC4Rkh6fmDgbASx93twaIBziCLrmXdamPJ1ILK2/SbyHT8KkHpF8X/9Bg0LzuL9QkcRGcQAg4kaQuZxl7vwY1OfcbzQHNsCH0cia5n94bzCKg0kD1m2e8epDQBDluffc30IL6lTnBirNmgRearRIl7VzfMOMVUPjiePgHuQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XbPaOr0J; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1751485224; c=relaxed/relaxed;
+	bh=5RU3lTwtSPF51VLF07PdN+iiWmbKVbtf6rK/sDYMK1o=;
+	h=Date:From:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition; b=g2JCf4YoVhw7T0SHD1eGl5nHN9QNsm6bO9RbTOEZk7DG3TxTl2L8zy5ZWjs2bsu55EGy3w+uNoftjWpF5K+i7dydN9AqFV9X1o3WfmbF2nrPh8SW2pXUKE5N1/DtmCxk09ksyl4/RghSzBzdRtSCytuLMHiQm7whvjkrHmfTGh56M3vyoSu7tsU57im8UVYctEtvrP24UYqqKiza1HgaV2A/7kcF02A8UQzWFsldvRUvHzyiLzKcghEx3cnqrV+7z0w97mm5imtPt3Ydeq/vOQ3/H/PqUcpsmDITEA8386AwvFJLuK9waXDXzOYqktJS4zQhmGqMM9GR8SBjRJ6feA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nabijaczleweli.xyz; dkim=pass (2048-bit key; secure) header.d=nabijaczleweli.xyz header.i=@nabijaczleweli.xyz header.a=rsa-sha256 header.s=202505 header.b=QeWC5bpI; dkim-atps=neutral; spf=pass (client-ip=139.28.40.42; helo=tarta.nabijaczleweli.xyz; envelope-from=nabijaczleweli@nabijaczleweli.xyz; receiver=lists.ozlabs.org) smtp.mailfrom=nabijaczleweli.xyz
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nabijaczleweli.xyz
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XbPaOr0J;
+	dkim=pass (2048-bit key; secure) header.d=nabijaczleweli.xyz header.i=@nabijaczleweli.xyz header.a=rsa-sha256 header.s=202505 header.b=QeWC5bpI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nabijaczleweli.xyz (client-ip=139.28.40.42; helo=tarta.nabijaczleweli.xyz; envelope-from=nabijaczleweli@nabijaczleweli.xyz; receiver=lists.ozlabs.org)
+X-Greylist: delayed 449 seconds by postgrey-1.37 at boromir; Thu, 03 Jul 2025 05:40:21 AEST
+Received: from tarta.nabijaczleweli.xyz (tarta.nabijaczleweli.xyz [139.28.40.42])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bXZ2p08FGz3bNt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2025 08:15:13 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 562EY5O2029408;
-	Wed, 2 Jul 2025 22:15:06 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=tO94Zj
-	0rK2g+6Hnn8XHzjG8rPFm6cTZD4TL33ikoSv0=; b=XbPaOr0JLFEbAYcwyfX5bn
-	c7N65odG+vLkpPXfTFFLhMP6XevKLv4CV1yNbVODlEH5qwdTPhIZW90/ScI9mENm
-	6shjcgHbmgnuLTB6mX/+U6B9pR1kw8J6lMQn3D6uriPnhfypOtko4eVx1u0F9Nn2
-	fM7AyI43At5lU7nRxqIhs2XoI0SNzvxNvBheta1yRW2ieZJUMAkAlYcAC0Q2Q10m
-	b3u+UpmoyutQQEod9VNGf18HAgumC/23LaYMlcG7LpkOcy2/5Qg1KSqSqd4TnybH
-	UQti/is7b/jQzNpowSxUAJTgA2ObuqIuQ8MH6z5zQqq4FitpXDE15r6HqdOSCahw
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 47j7wrrb1t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 02 Jul 2025 22:15:06 +0000 (GMT)
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 562MF5P1003433;
-	Wed, 2 Jul 2025 22:15:06 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 47j7wrrb1p-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 02 Jul 2025 22:15:05 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 562IYFmP006904;
-	Wed, 2 Jul 2025 22:15:05 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 47jvxmhkj6-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 02 Jul 2025 22:15:05 +0000
-Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 562MEttd28443248
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 2 Jul 2025 22:14:55 GMT
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BA48D58061;
-	Wed,  2 Jul 2025 22:15:00 +0000 (GMT)
-Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 180AB5803F;
-	Wed,  2 Jul 2025 22:15:00 +0000 (GMT)
-Received: from li-4910aacc-2eed-11b2-a85c-d93b702d4d28.ibm.com.com (unknown [9.61.17.45])
-	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  2 Jul 2025 22:14:59 +0000 (GMT)
-From: Haren Myneni <haren@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        msuchanek@suse.de, mahesh@linux.ibm.com, tyreld@linux.ibm.com,
-        hbabu@us.ibm.com, haren@linux.ibm.com
-Subject: [PATCH RFC 9/9] powerpc/pseries: HVPIPE changes to support migration
-Date: Wed,  2 Jul 2025 15:14:43 -0700
-Message-ID: <20250702221444.879256-10-haren@linux.ibm.com>
-X-Mailer: git-send-email 2.43.5
-In-Reply-To: <20250702221444.879256-1-haren@linux.ibm.com>
-References: <20250702221444.879256-1-haren@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bXVc54CJjz2yRn
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2025 05:40:21 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=nabijaczleweli.xyz;
+	s=202505; t=1751484765;
+	bh=mqTQoihTCIvuzKDNVihAlNO+Z3+bSvYgDiE8xFogLFg=;
+	h=Date:From:Cc:Subject:From;
+	b=QeWC5bpIFMZA/QSzmGOa72YIhdmADCQcnuUtJEKvzr1n7BK1NkdSz8dI5J5Qm6XQB
+	 w2LlWmtfzawVvimSBQj10R0qYJd+G+GvpdVePpxXkpnI9vXWsiR/VCJuJt1ji8LAnN
+	 AVZi43ovZpWL+XV9xBOlrgMDmdVXfyiY0fconOpFimqwYXscsrvJYJcwAXo3ukZHpe
+	 hyfSeGqU60PLGr68YIw3rTcJYPFEHNW8Urq1+da8UCpyOXdSsalrD/4U2OwNh/V7JQ
+	 kU/0TV94RpGTK4M3TE+iXP9EB2Z/jLdhjSFWKdBeMiaZ8O7pdENTlTi5CDQQ8yWRO5
+	 iYN3Z3RQ36NdA==
+Received: from tarta.nabijaczleweli.xyz (unknown [192.168.1.250])
+	by tarta.nabijaczleweli.xyz (Postfix) with ESMTPSA id 586B641A;
+	Wed,  2 Jul 2025 21:32:45 +0200 (CEST)
+Date: Wed, 2 Jul 2025 21:32:45 +0200
+From: 
+	Ahelenia =?utf-8?Q?Ziemia=C5=84ska?= <nabijaczleweli@nabijaczleweli.xyz>
+Cc: Steven Rostedt <rostedt@goodmis.org>, 
+	Masami Hiramatsu <mhiramat@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
+	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Chas Williams <3chas3@gmail.com>, Coly Li <colyli@kernel.org>, 
+	Kent Overstreet <kent.overstreet@linux.dev>, Jeroen de Borst <jeroendb@google.com>, 
+	Harshitha Ramamurthy <hramamurthy@google.com>, Andrew Lunn <andrew+netdev@lunn.ch>, 
+	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
+	Don Brace <don.brace@microchip.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
+	"Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Jiri Slaby <jirislaby@kernel.org>, Mark Fasheh <mark@fasheh.com>, Joel Becker <jlbec@evilplan.org>, 
+	Joseph Qi <joseph.qi@linux.alibaba.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Shuah Khan <shuah@kernel.org>, linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org, 
+	linux-doc@vger.kernel.org, linux-sh@vger.kernel.org, netdev@vger.kernel.org, 
+	linux-bcache@vger.kernel.org, storagedev@microchip.com, linux-scsi@vger.kernel.org, 
+	linux-serial@vger.kernel.org, ocfs2-devel@lists.linux.dev, linux-sound@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org, 
+	linux-atm-general@lists.sourceforge.net
+Subject: [PATCH] global: fix misapplications of "awhile"
+Message-ID: <h2ieddqja5jfrnuh3mvlxt6njrvp352t5rfzp2cvnrufop6tch@tarta.nabijaczleweli.xyz>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,201 +80,250 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=E/PNpbdl c=1 sm=1 tr=0 ts=6865af6a cx=c_pps a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17 a=IkcTkHD0fZMA:10 a=Wb1JkmetP80A:10 a=VnNF1IyMAAAA:8 a=S7z50IwEaLHSfgsXjVMA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: m-0ifBWqwtQgxN-_-Cd7-l5gZMDRV3l8
-X-Proofpoint-ORIG-GUID: DOLwiivE0i9ao707s4ykrzeZn0byax_W
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNzAyMDE4MSBTYWx0ZWRfX6NDJ5pJYzgK2 QdPYxA0vWQN94/AL0VsrNGi0HH2CNxXYjE3ojQ+Vy78Eg9K5ROjjbU48qLCXv4xu4eHuWzqEjcy F1y26DjbPwjyjHtHwSTZzd3fg3cgZZFSc96C41MMVIJTiD+7LMpf2hkppuUmvPDNKGIq2GqYlfs
- 4B2qvbA6VAgAxjIr3oOxNVNdSan9SK9edduBwcIAYFqgpwUXB9yHUSwMZh3YM1LxsbHGkbI35Jo eyW1hXOppy7cqvyC0tEKJx9jISy2JhIsXLm4UTQzcM0MnfpoVecygR2352PNIhTZCNYZFtTR2j0 JplNvE2XuF1aVvR0Fq3I2H5XNu9nnoOa5aOS6eAyqtoB6B/K/8bMhn/Vkp0oBcryzw3PHErGLJl
- vKRgHXiTRvXA4/5RCIOqsmjBqIerJsmmiFjWZudeXOBGaYi13+0tsurbfhlLvDj+K74zi3Hh
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.7,FMLib:17.12.80.40
- definitions=2025-07-02_04,2025-07-02_04,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 spamscore=0
- bulkscore=0 priorityscore=1501 phishscore=0 suspectscore=0 mlxlogscore=979
- lowpriorityscore=0 mlxscore=0 clxscore=1015 adultscore=0 impostorscore=0
- classifier=spam authscore=0 authtc=n/a authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2505280000
- definitions=main-2507020181
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="b64xojk44rmwat7t"
+Content-Disposition: inline
+User-Agent: NeoMutt/20231221-2-4202cf-dirty
 
-The hypervisor assigns one pipe per partition for all sources and
-assigns new pipe after migration. Also the partition ID that is
-used by source as its target ID may be changed after the migration.
-So disable hvpipe during SUSPEND event with ‘hvpipe enable’ system
-parameter value = 0 and enable it after migration during RESUME
-event with  hvpipe enable’ system parameter value = 1.
 
-The user space calls such as ioctl()/ read() / write() / poll()
-returns  -ENXIO between SUSPEND and RESUME events. The user space
-process can close FD and reestablish connection with new FD after
-migration if needed (Example: source IDs are changed).
+--b64xojk44rmwat7t
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: quoted-printable
 
-Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+Of these:
+  7 "for a while" typos
+  5 "take a while" typos
+  1 misreading of "once in a while"?
+
+3 awhiles used correctly remain in the tree
+
+Signed-off-by: Ahelenia Ziemia=C5=84ska <nabijaczleweli@nabijaczleweli.xyz>
 ---
- arch/powerpc/platforms/pseries/mobility.c    |  3 ++
- arch/powerpc/platforms/pseries/papr-hvpipe.c | 53 ++++++++++++++++++++
- arch/powerpc/platforms/pseries/papr-hvpipe.h |  6 +++
- 3 files changed, 62 insertions(+)
+ Documentation/trace/histogram.rst             | 2 +-
+ arch/sh/drivers/pci/common.c                  | 2 +-
+ arch/sh/drivers/pci/pci-sh7780.c              | 2 +-
+ drivers/atm/lanai.c                           | 2 +-
+ drivers/md/bcache/bcache.h                    | 2 +-
+ drivers/md/bcache/request.c                   | 2 +-
+ drivers/net/ethernet/google/gve/gve_rx_dqo.c  | 2 +-
+ drivers/scsi/hpsa.c                           | 2 +-
+ drivers/tty/serial/jsm/jsm_neo.c              | 2 +-
+ fs/ocfs2/dlm/dlmrecovery.c                    | 2 +-
+ sound/pci/emu10k1/emu10k1_main.c              | 2 +-
+ sound/pci/emu10k1/emupcm.c                    | 2 +-
+ tools/testing/selftests/powerpc/tm/tm-tmspr.c | 2 +-
+ 13 files changed, 13 insertions(+), 13 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 62bd8e2d5d4c..95fe802ccdfd 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -28,6 +28,7 @@
- #include <asm/rtas.h>
- #include "pseries.h"
- #include "vas.h"	/* vas_migration_handler() */
-+#include "papr-hvpipe.h"	/* hvpipe_migration_handler() */
- #include "../../kernel/cacheinfo.h"
- 
- static struct kobject *mobility_kobj;
-@@ -744,6 +745,7 @@ static int pseries_migrate_partition(u64 handle)
- 	 * by closing VAS windows at the beginning of this function.
+diff --git a/Documentation/trace/histogram.rst b/Documentation/trace/histog=
+ram.rst
+index 0aada18c38c6..2b98c1720a54 100644
+--- a/Documentation/trace/histogram.rst
++++ b/Documentation/trace/histogram.rst
+@@ -249,7 +249,7 @@ Extended error information
+   table, it should keep a running total of the number of bytes
+   requested by that call_site.
+=20
+-  We'll let it run for awhile and then dump the contents of the 'hist'
++  We'll let it run for a while and then dump the contents of the 'hist'
+   file in the kmalloc event's subdirectory (for readability, a number
+   of entries have been omitted)::
+=20
+diff --git a/arch/sh/drivers/pci/common.c b/arch/sh/drivers/pci/common.c
+index 9633b6147a05..f95004c67e6c 100644
+--- a/arch/sh/drivers/pci/common.c
++++ b/arch/sh/drivers/pci/common.c
+@@ -148,7 +148,7 @@ unsigned int pcibios_handle_status_errors(unsigned long=
+ addr,
+=20
+ 		cmd |=3D PCI_STATUS_PARITY | PCI_STATUS_DETECTED_PARITY;
+=20
+-		/* Now back off of the IRQ for awhile */
++		/* Now back off of the IRQ for a while */
+ 		if (hose->err_irq) {
+ 			disable_irq_nosync(hose->err_irq);
+ 			hose->err_timer.expires =3D jiffies + HZ;
+diff --git a/arch/sh/drivers/pci/pci-sh7780.c b/arch/sh/drivers/pci/pci-sh7=
+780.c
+index 9a624a6ee354..f41d6939a3d9 100644
+--- a/arch/sh/drivers/pci/pci-sh7780.c
++++ b/arch/sh/drivers/pci/pci-sh7780.c
+@@ -153,7 +153,7 @@ static irqreturn_t sh7780_pci_serr_irq(int irq, void *d=
+ev_id)
+ 	/* Deassert SERR */
+ 	__raw_writel(SH4_PCIINTM_SDIM, hose->reg_base + SH4_PCIINTM);
+=20
+-	/* Back off the IRQ for awhile */
++	/* Back off the IRQ for a while */
+ 	disable_irq_nosync(irq);
+ 	hose->serr_timer.expires =3D jiffies + HZ;
+ 	add_timer(&hose->serr_timer);
+diff --git a/drivers/atm/lanai.c b/drivers/atm/lanai.c
+index 2a1fe3080712..0dfa2cdc897c 100644
+--- a/drivers/atm/lanai.c
++++ b/drivers/atm/lanai.c
+@@ -755,7 +755,7 @@ static void lanai_shutdown_rx_vci(const struct lanai_vc=
+c *lvcc)
+ /* Shutdown transmitting on card.
+  * Unfortunately the lanai needs us to wait until all the data
+  * drains out of the buffer before we can dealloc it, so this
+- * can take awhile -- up to 370ms for a full 128KB buffer
++ * can take a while -- up to 370ms for a full 128KB buffer
+  * assuming everone else is quiet.  In theory the time is
+  * boundless if there's a CBR VCC holding things up.
+  */
+diff --git a/drivers/md/bcache/bcache.h b/drivers/md/bcache/bcache.h
+index 1d33e40d26ea..7318d9800370 100644
+--- a/drivers/md/bcache/bcache.h
++++ b/drivers/md/bcache/bcache.h
+@@ -499,7 +499,7 @@ struct gc_stat {
+  * won't automatically reattach).
+  *
+  * CACHE_SET_STOPPING always gets set first when we're closing down a cach=
+e set;
+- * we'll continue to run normally for awhile with CACHE_SET_STOPPING set (=
+i.e.
++ * we'll continue to run normally for a while with CACHE_SET_STOPPING set =
+(i.e.
+  * flushing dirty data).
+  *
+  * CACHE_SET_RUNNING means all cache devices have been registered and jour=
+nal
+diff --git a/drivers/md/bcache/request.c b/drivers/md/bcache/request.c
+index af345dc6fde1..87b4341cb42c 100644
+--- a/drivers/md/bcache/request.c
++++ b/drivers/md/bcache/request.c
+@@ -257,7 +257,7 @@ static CLOSURE_CALLBACK(bch_data_insert_start)
+=20
+ 	/*
+ 	 * But if it's not a writeback write we'd rather just bail out if
+-	 * there aren't any buckets ready to write to - it might take awhile and
++	 * there aren't any buckets ready to write to - it might take a while and
+ 	 * we might be starving btree writes for gc or something.
  	 */
- 	vas_migration_handler(VAS_SUSPEND);
-+	hvpipe_migration_handler(HVPIPE_SUSPEND);
- 
- 	ret = wait_for_vasi_session_suspending(handle);
- 	if (ret)
-@@ -770,6 +772,7 @@ static int pseries_migrate_partition(u64 handle)
- 
- out:
- 	vas_migration_handler(VAS_RESUME);
-+	hvpipe_migration_handler(HVPIPE_RESUME);
- 
- 	return ret;
- }
-diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.c b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-index b103dde7d584..5ef1a26f61a2 100644
---- a/arch/powerpc/platforms/pseries/papr-hvpipe.c
-+++ b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-@@ -27,6 +27,7 @@ static unsigned char hvpipe_ras_buf[RTAS_ERROR_LOG_MAX];
- static struct workqueue_struct *papr_hvpipe_wq;
- static struct work_struct *papr_hvpipe_work;
- static int hvpipe_check_exception_token;
-+static bool hvpipe_feature;
- 
- /*
-  * New PowerPC FW provides support for partitions and various
-@@ -233,6 +234,12 @@ static ssize_t papr_hvpipe_handle_write(struct file *file,
- 	unsigned long ret, len;
- 	char *area_buf;
- 
-+	/*
-+	 * Return -ENXIO during migration
-+	 */
-+	if (!hvpipe_feature)
-+		return -ENXIO;
-+
- 	if (!src_info)
- 		return -EIO;
- 
-@@ -325,6 +332,12 @@ static ssize_t papr_hvpipe_handle_read(struct file *file,
- 	struct papr_hvpipe_hdr hdr;
- 	long ret;
- 
-+	/*
-+	 * Return -ENXIO during migration
-+	 */
-+	if (!hvpipe_feature)
-+		return -ENXIO;
-+
- 	if (!src_info)
- 		return -EIO;
- 
-@@ -401,6 +414,12 @@ static unsigned int papr_hvpipe_handle_poll(struct file *filp,
- {
- 	struct hvpipe_source_info *src_info = filp->private_data;
- 
-+	/*
-+	 * Return -ENXIO during migration
-+	 */
-+	if (!hvpipe_feature)
-+		return -ENXIO;
-+
- 	if (!src_info)
- 		return -EIO;
- 
-@@ -530,6 +549,12 @@ static long papr_hvpipe_dev_ioctl(struct file *filp, unsigned int ioctl,
- 	u32 srcID;
- 	long ret;
- 
-+	/*
-+	 * Return -ENXIO during migration
-+	 */
-+	if (!hvpipe_feature)
-+		return -ENXIO;
-+
- 	if (get_user(srcID, argp))
- 		return -EFAULT;
- 
-@@ -688,6 +713,33 @@ static int __init enable_hvpipe_IRQ(void)
- 	return 0;
- }
- 
-+void hvpipe_migration_handler(int action)
-+{
-+	pr_info("hvpipe migration event %d\n", action);
-+
-+	switch (action) {
-+	case HVPIPE_SUSPEND:
-+		if (hvpipe_feature) {
-+			hvpipe_feature = false;
-+			/*
-+			 * set system parameter hvpipe 'disable'
-+			 */
-+			set_hvpipe_sys_param(0);
-+		}
-+		break;
-+	case HVPIPE_RESUME:
-+		/*
-+		 * set system parameter hvpipe 'enable'
-+		 */
-+		if (!set_hvpipe_sys_param(1))
-+			hvpipe_feature = true;
-+		else
-+			pr_err("hvpipe is not enabled after migration\n");
-+
-+		break;
-+	}
-+}
-+
- static const struct file_operations papr_hvpipe_ops = {
- 	.unlocked_ioctl	=	papr_hvpipe_dev_ioctl,
- };
-@@ -726,6 +778,7 @@ static int __init papr_hvpipe_init(void)
- 		ret = misc_register(&papr_hvpipe_dev);
- 		if (!ret) {
- 			pr_info("hvpipe feature is enabled\n");
-+			hvpipe_feature = true;
- 			return 0;
- 		} else
- 			pr_err("misc-dev registration failed %d\n", ret);
-diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.h b/arch/powerpc/platforms/pseries/papr-hvpipe.h
-index aab7f77e087d..c343f4230865 100644
---- a/arch/powerpc/platforms/pseries/papr-hvpipe.h
-+++ b/arch/powerpc/platforms/pseries/papr-hvpipe.h
-@@ -11,6 +11,11 @@
- 
- #define	HVPIPE_HDR_LEN	sizeof(struct papr_hvpipe_hdr)
- 
-+enum hvpipe_migrate_action {
-+	HVPIPE_SUSPEND,
-+	HVPIPE_RESUME,
-+};
-+
- struct hvpipe_source_info {
- 	struct list_head list;	/* list of sources */
- 	u32 srcID;
-@@ -33,4 +38,5 @@ struct hvpipe_event_buf {
- 				/* with specified src ID */
- };
- 
-+void hvpipe_migration_handler(int action);
- #endif /* _PAPR_HVPIPE_H */
--- 
-2.43.5
+=20
+diff --git a/drivers/net/ethernet/google/gve/gve_rx_dqo.c b/drivers/net/eth=
+ernet/google/gve/gve_rx_dqo.c
+index dcb0545baa50..6a0be54f1c81 100644
+--- a/drivers/net/ethernet/google/gve/gve_rx_dqo.c
++++ b/drivers/net/ethernet/google/gve/gve_rx_dqo.c
+@@ -608,7 +608,7 @@ static int gve_rx_dqo(struct napi_struct *napi, struct =
+gve_rx_ring *rx,
+ 	buf_len =3D compl_desc->packet_len;
+ 	hdr_len =3D compl_desc->header_len;
+=20
+-	/* Page might have not been used for awhile and was likely last written
++	/* Page might have not been used for a while and was likely last written
+ 	 * by a different thread.
+ 	 */
+ 	if (rx->dqo.page_pool) {
+diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
+index c73a71ac3c29..0066f15153a7 100644
+--- a/drivers/scsi/hpsa.c
++++ b/drivers/scsi/hpsa.c
+@@ -7795,7 +7795,7 @@ static int hpsa_wait_for_mode_change_ack(struct ctlr_=
+info *h)
+ 	u32 doorbell_value;
+ 	unsigned long flags;
+=20
+-	/* under certain very rare conditions, this can take awhile.
++	/* under certain very rare conditions, this can take a while.
+ 	 * (e.g.: hot replace a failed 144GB drive in a RAID 5 set right
+ 	 * as we enter this code.)
+ 	 */
+diff --git a/drivers/tty/serial/jsm/jsm_neo.c b/drivers/tty/serial/jsm/jsm_=
+neo.c
+index e8e13bf056e2..2eb9ff26d6e8 100644
+--- a/drivers/tty/serial/jsm/jsm_neo.c
++++ b/drivers/tty/serial/jsm/jsm_neo.c
+@@ -1189,7 +1189,7 @@ static irqreturn_t neo_intr(int irq, void *voidbrd)
+ 			/*
+ 			 * The UART triggered us with a bogus interrupt type.
+ 			 * It appears the Exar chip, when REALLY bogged down, will throw
+-			 * these once and awhile.
++			 * these periodically.
+ 			 * Its harmless, just ignore it and move on.
+ 			 */
+ 			jsm_dbg(INTR, &brd->pci_dev,
+diff --git a/fs/ocfs2/dlm/dlmrecovery.c b/fs/ocfs2/dlm/dlmrecovery.c
+index 67fc62a49a76..00f52812dbb0 100644
+--- a/fs/ocfs2/dlm/dlmrecovery.c
++++ b/fs/ocfs2/dlm/dlmrecovery.c
+@@ -2632,7 +2632,7 @@ static int dlm_pick_recovery_master(struct dlm_ctxt *=
+dlm)
+ 					 dlm_reco_master_ready(dlm),
+ 					 msecs_to_jiffies(1000));
+ 		if (!dlm_reco_master_ready(dlm)) {
+-			mlog(0, "%s: reco master taking awhile\n",
++			mlog(0, "%s: reco master taking a while\n",
+ 			     dlm->name);
+ 			goto again;
+ 		}
+diff --git a/sound/pci/emu10k1/emu10k1_main.c b/sound/pci/emu10k1/emu10k1_m=
+ain.c
+index bbe252b8916c..6050201851b1 100644
+--- a/sound/pci/emu10k1/emu10k1_main.c
++++ b/sound/pci/emu10k1/emu10k1_main.c
+@@ -606,7 +606,7 @@ static int snd_emu10k1_ecard_init(struct snd_emu10k1 *e=
+mu)
+ 	/* Step 2: Calibrate the ADC and DAC */
+ 	snd_emu10k1_ecard_write(emu, EC_DACCAL | EC_LEDN | EC_TRIM_CSN);
+=20
+-	/* Step 3: Wait for awhile;   XXX We can't get away with this
++	/* Step 3: Wait for a while;   XXX We can't get away with this
+ 	 * under a real operating system; we'll need to block and wait that
+ 	 * way. */
+ 	snd_emu10k1_wait(emu, 48000);
+diff --git a/sound/pci/emu10k1/emupcm.c b/sound/pci/emu10k1/emupcm.c
+index 1bf6e3d652f8..ca4b03317539 100644
+--- a/sound/pci/emu10k1/emupcm.c
++++ b/sound/pci/emu10k1/emupcm.c
+@@ -991,7 +991,7 @@ static snd_pcm_uframes_t snd_emu10k1_capture_pointer(st=
+ruct snd_pcm_substream *s
+ 	if (!epcm->running)
+ 		return 0;
+ 	if (epcm->first_ptr) {
+-		udelay(50);	/* hack, it takes awhile until capture is started */
++		udelay(50);	/* hack, it takes a while until capture is started */
+ 		epcm->first_ptr =3D 0;
+ 	}
+ 	ptr =3D snd_emu10k1_ptr_read(emu, epcm->capture_idx_reg, 0) & 0x0000ffff;
+diff --git a/tools/testing/selftests/powerpc/tm/tm-tmspr.c b/tools/testing/=
+selftests/powerpc/tm/tm-tmspr.c
+index dd5ddffa28b7..0d64988ffb40 100644
+--- a/tools/testing/selftests/powerpc/tm/tm-tmspr.c
++++ b/tools/testing/selftests/powerpc/tm/tm-tmspr.c
+@@ -14,7 +14,7 @@
+  * (1) create more threads than cpus
+  * (2) in each thread:
+  * 	(a) set TFIAR and TFHAR a unique value
+- * 	(b) loop for awhile, continually checking to see if
++ * 	(b) loop for a while, continually checking to see if
+  * 	either register has been corrupted.
+  *
+  * (3) Loop:
+--=20
+2.39.5
 
+--b64xojk44rmwat7t
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAABCgAdFiEEfWlHToQCjFzAxEFjvP0LAY0mWPEFAmhliVoACgkQvP0LAY0m
+WPGFEQ/8DbYwNy7U1qf5X+siSkqv8Zb3esOfRNF9i9YUDMZ1GdhK4suKYpWFrOZz
+dw7FGbgwwgl1BNsKAmQoG23kglIQuB54tFwWN487hlkk4CvpeBQDHlQ8+0W2riUX
+fYawEukQC2kZ7+Abxe2ZOYlJGhJJxbTxbDT2oaKRKN/bh87QXXgTK777Y1eYLJkt
+sI7zzKwEsRFpaR2qJaoig54fePOyM50gK+U/MxyMjmoXheCWepLndly0/aZKyvjk
+Hypk+7p1f2nHMk39vwjeFc4U6nmUa1tCy7iEEOnQNqUV9Uds3Uy9NDqGI2xY0hit
+vh/gidHYpTKPKMJFJVuumVVWIrMrqIGxE6sdCFY7Arv5pERKUhPIh8xVtsaBUpmc
+kQwh87srq5PHjvtCrFIcJDSmiJlB132lokYcq0vwHOy8mp6Q7UNSFhEP15zzq75C
+xQ1aeR1SOQ3inWywOAkSZjv80iIdbnQsLZPNeSu5G7/BUZMg2Th5Pvz2h+LSEX2G
+adcgBklNOUu+hpsZzlphdKsiyMoPsf4Og/W0sBd+1SYBBd8fLmIpChGPVGxiaqyW
++OqGHWqtAJHFtK5o+xZreq0tD/WiMgfkU4rObLg1aEfhSP6ILf8YacYYXuTgnQPb
+BHOD8IgLIY1uuG6tB/t5XqoG2JTUxGsxkZZ84kovSpLGkpEdN1A=
+=4j77
+-----END PGP SIGNATURE-----
+
+--b64xojk44rmwat7t--
 
