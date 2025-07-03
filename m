@@ -1,72 +1,111 @@
-Return-Path: <linuxppc-dev+bounces-10063-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10064-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEB48C8303C
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  2 Jul 2025 23:18:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 604E6C77B7C
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  3 Jul 2025 01:39:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bXbRC6VSlz2yPd;
-	Thu,  3 Jul 2025 09:17:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.28.40.42
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751485224;
-	cv=none; b=emCZlWiYKZ8ZzyYDEoULgkajkwNR8lILH4AeUtk5ZbrgpHbMR4lMhfuPLQ3m4Gyss3ma8CZ4dPXBR5Ip+t5F1t/HOsY0YGzZ5Yc2ueOFbXuDce2z0aHDlS9oqq0YsPIGACswYVyi79D0VCwuWUV79SPf33C6IGhcUoQtpHPYc/1HB1Ns2WG0bIiEgDiZrBu5kOmqB9G/fB1i9AaYCBnHtMoyzW0RSFBE4MqWAFzt8hXpsH5Ow0VxA5enXH7yV34TviA6YkBN6VR8LY3xdt86vU+d0jl64QCgEaq3o7S3HZPbP3XN2A30WllB3A/rVVPYCkZrDSKaBBHnTdUmW87pnw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bXfZ768Zpz2ymc;
+	Thu,  3 Jul 2025 11:39:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751506751;
+	cv=none; b=YbPAJJ1I3deALaSipHZWWSqyCd7N6g9neIPyqf322QPOULP3w82Qmesvae6ymO90NxvVvIBNzGzNJyJc6pMXvgXpmmkL02NHYuJIO9hIPuLMF6qxyAy1SR29S3RmlR3LxH9giFTokgUOAd30+6BxvAG6ZDGJGHoWDxFmYzIVaXVsvWAKoc47coJPZPCP/qZY5XtkToZvS+h9ASp//9hiy5cyzXgbpeFqOPeBexoPvYn1cheGC07JtiK9EQj+MP+ojp8VHiE4kIUDuAg2rLGsuCKH2mTENQkYLVCYdnvNHQHivp/b0QinPljFJIB9ffgtTQXRqLkEsUnkVqrM1Bp56w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1751485224; c=relaxed/relaxed;
-	bh=5RU3lTwtSPF51VLF07PdN+iiWmbKVbtf6rK/sDYMK1o=;
-	h=Date:From:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=g2JCf4YoVhw7T0SHD1eGl5nHN9QNsm6bO9RbTOEZk7DG3TxTl2L8zy5ZWjs2bsu55EGy3w+uNoftjWpF5K+i7dydN9AqFV9X1o3WfmbF2nrPh8SW2pXUKE5N1/DtmCxk09ksyl4/RghSzBzdRtSCytuLMHiQm7whvjkrHmfTGh56M3vyoSu7tsU57im8UVYctEtvrP24UYqqKiza1HgaV2A/7kcF02A8UQzWFsldvRUvHzyiLzKcghEx3cnqrV+7z0w97mm5imtPt3Ydeq/vOQ3/H/PqUcpsmDITEA8386AwvFJLuK9waXDXzOYqktJS4zQhmGqMM9GR8SBjRJ6feA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nabijaczleweli.xyz; dkim=pass (2048-bit key; secure) header.d=nabijaczleweli.xyz header.i=@nabijaczleweli.xyz header.a=rsa-sha256 header.s=202505 header.b=QeWC5bpI; dkim-atps=neutral; spf=pass (client-ip=139.28.40.42; helo=tarta.nabijaczleweli.xyz; envelope-from=nabijaczleweli@nabijaczleweli.xyz; receiver=lists.ozlabs.org) smtp.mailfrom=nabijaczleweli.xyz
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nabijaczleweli.xyz
+	t=1751506751; c=relaxed/relaxed;
+	bh=xgpVyoLPh9JdhYBwUjqBEZjWvAdIc2zVJFh7ZQkPLrQ=;
+	h=Message-ID:Subject:From:To:Cc:In-Reply-To:References:Content-Type:
+	 Date:MIME-Version; b=TFw3tvkwIzu6aq114G239VXHJw+mpvoUQHY8wPt17IRIT9LX2rzYt7HY5QrgISXBr4Bo1z5UBdMlCD3Ki+zFl+OlKTWfCrhteQ4MPgUSI1VQY6EKWNzXVy9glqGQ+pmkwkCWemEMo/3JKGDc09s83wZCFs6FCE129erEDjI3lWTsXlmzNKj3hnt9n7drbXrogsTYioDJWnBYs0kB5AWpOL/MgsJFXetQMW6By4JlazxXMBbzHHOhs9DuQ6Q8WCCyLc3RpvIeZymVCUirx3dMM8zboUIV4owvp3z2ADPw9uUNCdFQuJ15tV7Rmu0ywE1pkwgy/Pcd6HOjVhCTrgy9ew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b4L3lFIM; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=nabijaczleweli.xyz header.i=@nabijaczleweli.xyz header.a=rsa-sha256 header.s=202505 header.b=QeWC5bpI;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=b4L3lFIM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nabijaczleweli.xyz (client-ip=139.28.40.42; helo=tarta.nabijaczleweli.xyz; envelope-from=nabijaczleweli@nabijaczleweli.xyz; receiver=lists.ozlabs.org)
-X-Greylist: delayed 449 seconds by postgrey-1.37 at boromir; Thu, 03 Jul 2025 05:40:21 AEST
-Received: from tarta.nabijaczleweli.xyz (tarta.nabijaczleweli.xyz [139.28.40.42])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=zohar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bXVc54CJjz2yRn
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2025 05:40:21 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=nabijaczleweli.xyz;
-	s=202505; t=1751484765;
-	bh=mqTQoihTCIvuzKDNVihAlNO+Z3+bSvYgDiE8xFogLFg=;
-	h=Date:From:Cc:Subject:From;
-	b=QeWC5bpIFMZA/QSzmGOa72YIhdmADCQcnuUtJEKvzr1n7BK1NkdSz8dI5J5Qm6XQB
-	 w2LlWmtfzawVvimSBQj10R0qYJd+G+GvpdVePpxXkpnI9vXWsiR/VCJuJt1ji8LAnN
-	 AVZi43ovZpWL+XV9xBOlrgMDmdVXfyiY0fconOpFimqwYXscsrvJYJcwAXo3ukZHpe
-	 hyfSeGqU60PLGr68YIw3rTcJYPFEHNW8Urq1+da8UCpyOXdSsalrD/4U2OwNh/V7JQ
-	 kU/0TV94RpGTK4M3TE+iXP9EB2Z/jLdhjSFWKdBeMiaZ8O7pdENTlTi5CDQQ8yWRO5
-	 iYN3Z3RQ36NdA==
-Received: from tarta.nabijaczleweli.xyz (unknown [192.168.1.250])
-	by tarta.nabijaczleweli.xyz (Postfix) with ESMTPSA id 586B641A;
-	Wed,  2 Jul 2025 21:32:45 +0200 (CEST)
-Date: Wed, 2 Jul 2025 21:32:45 +0200
-From: 
-	Ahelenia =?utf-8?Q?Ziemia=C5=84ska?= <nabijaczleweli@nabijaczleweli.xyz>
-Cc: Steven Rostedt <rostedt@goodmis.org>, 
-	Masami Hiramatsu <mhiramat@kernel.org>, Jonathan Corbet <corbet@lwn.net>, 
-	Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Chas Williams <3chas3@gmail.com>, Coly Li <colyli@kernel.org>, 
-	Kent Overstreet <kent.overstreet@linux.dev>, Jeroen de Borst <jeroendb@google.com>, 
-	Harshitha Ramamurthy <hramamurthy@google.com>, Andrew Lunn <andrew+netdev@lunn.ch>, 
-	"David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
-	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
-	Don Brace <don.brace@microchip.com>, "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, 
-	"Martin K. Petersen" <martin.petersen@oracle.com>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
-	Jiri Slaby <jirislaby@kernel.org>, Mark Fasheh <mark@fasheh.com>, Joel Becker <jlbec@evilplan.org>, 
-	Joseph Qi <joseph.qi@linux.alibaba.com>, Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Shuah Khan <shuah@kernel.org>, linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org, 
-	linux-doc@vger.kernel.org, linux-sh@vger.kernel.org, netdev@vger.kernel.org, 
-	linux-bcache@vger.kernel.org, storagedev@microchip.com, linux-scsi@vger.kernel.org, 
-	linux-serial@vger.kernel.org, ocfs2-devel@lists.linux.dev, linux-sound@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org, 
-	linux-atm-general@lists.sourceforge.net
-Subject: [PATCH] global: fix misapplications of "awhile"
-Message-ID: <h2ieddqja5jfrnuh3mvlxt6njrvp352t5rfzp2cvnrufop6tch@tarta.nabijaczleweli.xyz>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bXfZ66FL0z2yf3
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  3 Jul 2025 11:39:10 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 562JEAxQ003793;
+	Thu, 3 Jul 2025 01:38:45 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=xgpVyo
+	LPh9JdhYBwUjqBEZjWvAdIc2zVJFh7ZQkPLrQ=; b=b4L3lFIMHGyWmS95nHIWRl
+	h9DRdGUb2nGcL/94yxLei0wURBf1o8sIkM2wWKH+Sw5cpfWPMCUi/PHLXNLxC2xH
+	GBjP7tPOwggeK6mtiy2XMDP4TI9iVe3pUoZIViaZzyOOX57CVTDT+b+CoyHk6N7h
+	0FQvKDHndXCoP/gzpvoNh/FsB70oEyg2nelcqHqKf4CYYWweKNDeupcieG6y1mtn
+	Npb941m9Twm6vF/BYn8Z/VCcEiMvPERje11ZFtw0a1YQt/LSXOB7U9/rWL5EZGID
+	kABh2ml9ah7UXaVybZkhO9Sx99QVwTwFR2ANXq4r2uE0o3TX0uSV3S0NRerwCALw
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 47j84dgwfs-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 03 Jul 2025 01:38:45 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 5631YEmd000959;
+	Thu, 3 Jul 2025 01:38:44 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 47j84dgwfn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 03 Jul 2025 01:38:44 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 562MZRJ6006841;
+	Thu, 3 Jul 2025 01:38:43 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 47jvxmj8qq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 03 Jul 2025 01:38:43 +0000
+Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5631cgPX24511054
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 3 Jul 2025 01:38:42 GMT
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E1B0458059;
+	Thu,  3 Jul 2025 01:38:41 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C598C58058;
+	Thu,  3 Jul 2025 01:38:39 +0000 (GMT)
+Received: from li-43857255-d5e6-4659-90f1-fc5cee4750ad.ibm.com (unknown [9.61.102.8])
+	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Thu,  3 Jul 2025 01:38:39 +0000 (GMT)
+Message-ID: <eb91dcf034db28e457a4482faa397dd7632f00fd.camel@linux.ibm.com>
+Subject: Re: [PATCH v2] integrity: Extract secure boot enquiry function out
+ of IMA
+From: Mimi Zohar <zohar@linux.ibm.com>
+To: GONG Ruiqi <gongruiqi1@huawei.com>,
+        Roberto Sassu
+ <roberto.sassu@huawei.com>,
+        Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
+        Jarkko Sakkinen <jarkko@kernel.org>,
+        Madhavan Srinivasan	
+ <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Heiko
+ Carstens	 <hca@linux.ibm.com>,
+        Vasily Gorbik <gor@linux.ibm.com>,
+        Alexander
+ Gordeev	 <agordeev@linux.ibm.com>
+Cc: Eric Snowberg <eric.snowberg@oracle.com>,
+        Christophe Leroy	
+ <christophe.leroy@csgroup.eu>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Christian Borntraeger <borntraeger@linux.ibm.com>,
+        Sven Schnelle
+ <svens@linux.ibm.com>, "Lee, Chun-Yi" <jlee@suse.com>,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-integrity@vger.kernel.org,
+        keyrings@vger.kernel.org, Lu Jialin <lujialin4@huawei.com>,
+        Nayna Jain	
+ <nayna@linux.ibm.com>
+In-Reply-To: <20250628063251.321370-1-gongruiqi1@huawei.com>
+References: <20250628063251.321370-1-gongruiqi1@huawei.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+Date: Wed, 02 Jul 2025 21:38:39 -0400
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,250 +119,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="b64xojk44rmwat7t"
-Content-Disposition: inline
-User-Agent: NeoMutt/20231221-2-4202cf-dirty
+User-Agent: Evolution 3.54.3 (3.54.3-1.fc41) 
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: AK6aKBga4oupROxNi37kIoTGk3q8-5S4
+X-Proofpoint-GUID: uDLi-sImN3F6mgsunZuJI4XJFtTsseEO
+X-Authority-Analysis: v=2.4 cv=Ib6HWXqa c=1 sm=1 tr=0 ts=6865df25 cx=c_pps a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17 a=IkcTkHD0fZMA:10 a=Wb1JkmetP80A:10 a=i0EeH86SAAAA:8 a=S3K_XBxPWrw5AGGlcUgA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNzAzMDAwOCBTYWx0ZWRfXy2T4VTZGAdYP sUju6z4tCTzdEu3yCSnNzl9jOk3a4Ybp+UEyit+nsO1F3Rgn1K5leqHez3AipMUriRQ47LArP40 9BIqUj1y+Bwq3B6h56eZ8DCtsDqi+DKDsWMDAYm4+YLvPQsohUdOM06LkKYeK88Imwvhck9/FKo
+ RqhPOZlG8YHqnt9HTM0wcWpofMPCBacYx0/fzrLe8sEh0fXC8+meVu/0kh2zeoxYclYP478kWTh sK9ePhL+SfXMtDKJaKxDGBhNzTab5Y2zo9cq55R3XU88nQ8TJSh4mTASDybyMK5UU67y0xVmxwQ ESS/8ZY/oYFc2rySDpumZmdXH5mBW1Ba2NXxmGHm4qkTbGVckU9hBrIXoqf43+N17w7NMatu3TU
+ yJrPAtqTjqPi4XMtScNX9MOfw5mHsMbrSdiWPhSSMhgXCy4Rf4Z4bRb9sltJlp2H9t2Gt+qB
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.7,FMLib:17.12.80.40
+ definitions=2025-07-03_01,2025-07-02_04,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 phishscore=0 suspectscore=0
+ clxscore=1011 mlxlogscore=691 lowpriorityscore=0 impostorscore=0
+ mlxscore=0 malwarescore=0 spamscore=0 priorityscore=1501 adultscore=0
+ bulkscore=0 classifier=spam authscore=0 authtc=n/a authcc= route=outbound
+ adjust=0 reason=mlx scancount=1 engine=8.19.0-2505280000
+ definitions=main-2507030008
 
+[CC: Nayna Jain]
 
---b64xojk44rmwat7t
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
+On Sat, 2025-06-28 at 14:32 +0800, GONG Ruiqi wrote:
+> Commit 92ad19559ea9 ("integrity: Do not load MOK and MOKx when secure
+> boot be disabled") utilizes arch_ima_get_secureboot() to perform a
+> secure boot status check before loading the Machine Owner Key (MOK).
+> However, only when CONFIG_IMA_SECURE_AND_OR_TRUSTED_BOOT=3Dy can this
+> function be functional, while this config has nothing to do with secure
+> boot or MOK loading.
+>=20
+> Given that arch_ima_get_secureboot() is just a helper to retrieve info
+> about secure boot via EFI and doesn't necessarily be a part of IMA,
+> rename it to arch_integrity_get_secureboot(), decouple its functionality
+> from IMA and extract it to be a integrity subsystem helper, so that both
+> certificate loading and IMA can make use of it.
+>=20
+> Compile-tested on powerpc, s390 and x86, with CONFIG_IMA_ARCH_POLICY=3Dn
+> and =3Dy based on defconfig and allmodconfig.
+>=20
+> Signed-off-by: GONG Ruiqi <gongruiqi1@huawei.com>
 
-Of these:
-  7 "for a while" typos
-  5 "take a while" typos
-  1 misreading of "once in a while"?
+The original reason for querying the secure boot status of the system was i=
+n
+order to differentiate IMA policies.  Subsequently, the secure boot check w=
+as
+also added to safely allow loading of the certificates stored in MOK. So lo=
+ading
+IMA policies and the MOK certificates ARE dependent on the secure boot mode=
+.
+                                                                           =
+    =20
+What is your real motivation for moving the secure boot checking out of IMA=
+?   =20
+                                                                           =
+    =20
+FYI, there are a number of problems with the patch itself.  From a very hig=
+h
+level: =20
+                                                                           =
+    =20
+- The EFI secure boot check is co-located with loading the architecture spe=
+cific
+policies.  By co-locating the secure boot check with loading the architectu=
+re
+specific IMA policies, there aren't any ifdef's in C code.  Please refer to=
+ the
+"conditional compilation" section in the kernel coding-style documentation =
+on
+avoiding ifdef's in C code.
+                                                                           =
+    =20
+- Each architecture has it's own method of detecting secure boot. Originall=
+y the
+x86 code was in arch/x86, but to prevent code duplication it was moved to I=
+MA.=20
+The new file should at least be named efi_secureboot.c. =20
+                                                                           =
+    =20
+- The patch title should be about moving and renaming the secure boot check=
+.=20
+The patch description should include a valid reason for the change.
 
-3 awhiles used correctly remain in the tree
-
-Signed-off-by: Ahelenia Ziemia=C5=84ska <nabijaczleweli@nabijaczleweli.xyz>
----
- Documentation/trace/histogram.rst             | 2 +-
- arch/sh/drivers/pci/common.c                  | 2 +-
- arch/sh/drivers/pci/pci-sh7780.c              | 2 +-
- drivers/atm/lanai.c                           | 2 +-
- drivers/md/bcache/bcache.h                    | 2 +-
- drivers/md/bcache/request.c                   | 2 +-
- drivers/net/ethernet/google/gve/gve_rx_dqo.c  | 2 +-
- drivers/scsi/hpsa.c                           | 2 +-
- drivers/tty/serial/jsm/jsm_neo.c              | 2 +-
- fs/ocfs2/dlm/dlmrecovery.c                    | 2 +-
- sound/pci/emu10k1/emu10k1_main.c              | 2 +-
- sound/pci/emu10k1/emupcm.c                    | 2 +-
- tools/testing/selftests/powerpc/tm/tm-tmspr.c | 2 +-
- 13 files changed, 13 insertions(+), 13 deletions(-)
-
-diff --git a/Documentation/trace/histogram.rst b/Documentation/trace/histog=
-ram.rst
-index 0aada18c38c6..2b98c1720a54 100644
---- a/Documentation/trace/histogram.rst
-+++ b/Documentation/trace/histogram.rst
-@@ -249,7 +249,7 @@ Extended error information
-   table, it should keep a running total of the number of bytes
-   requested by that call_site.
-=20
--  We'll let it run for awhile and then dump the contents of the 'hist'
-+  We'll let it run for a while and then dump the contents of the 'hist'
-   file in the kmalloc event's subdirectory (for readability, a number
-   of entries have been omitted)::
-=20
-diff --git a/arch/sh/drivers/pci/common.c b/arch/sh/drivers/pci/common.c
-index 9633b6147a05..f95004c67e6c 100644
---- a/arch/sh/drivers/pci/common.c
-+++ b/arch/sh/drivers/pci/common.c
-@@ -148,7 +148,7 @@ unsigned int pcibios_handle_status_errors(unsigned long=
- addr,
-=20
- 		cmd |=3D PCI_STATUS_PARITY | PCI_STATUS_DETECTED_PARITY;
-=20
--		/* Now back off of the IRQ for awhile */
-+		/* Now back off of the IRQ for a while */
- 		if (hose->err_irq) {
- 			disable_irq_nosync(hose->err_irq);
- 			hose->err_timer.expires =3D jiffies + HZ;
-diff --git a/arch/sh/drivers/pci/pci-sh7780.c b/arch/sh/drivers/pci/pci-sh7=
-780.c
-index 9a624a6ee354..f41d6939a3d9 100644
---- a/arch/sh/drivers/pci/pci-sh7780.c
-+++ b/arch/sh/drivers/pci/pci-sh7780.c
-@@ -153,7 +153,7 @@ static irqreturn_t sh7780_pci_serr_irq(int irq, void *d=
-ev_id)
- 	/* Deassert SERR */
- 	__raw_writel(SH4_PCIINTM_SDIM, hose->reg_base + SH4_PCIINTM);
-=20
--	/* Back off the IRQ for awhile */
-+	/* Back off the IRQ for a while */
- 	disable_irq_nosync(irq);
- 	hose->serr_timer.expires =3D jiffies + HZ;
- 	add_timer(&hose->serr_timer);
-diff --git a/drivers/atm/lanai.c b/drivers/atm/lanai.c
-index 2a1fe3080712..0dfa2cdc897c 100644
---- a/drivers/atm/lanai.c
-+++ b/drivers/atm/lanai.c
-@@ -755,7 +755,7 @@ static void lanai_shutdown_rx_vci(const struct lanai_vc=
-c *lvcc)
- /* Shutdown transmitting on card.
-  * Unfortunately the lanai needs us to wait until all the data
-  * drains out of the buffer before we can dealloc it, so this
-- * can take awhile -- up to 370ms for a full 128KB buffer
-+ * can take a while -- up to 370ms for a full 128KB buffer
-  * assuming everone else is quiet.  In theory the time is
-  * boundless if there's a CBR VCC holding things up.
-  */
-diff --git a/drivers/md/bcache/bcache.h b/drivers/md/bcache/bcache.h
-index 1d33e40d26ea..7318d9800370 100644
---- a/drivers/md/bcache/bcache.h
-+++ b/drivers/md/bcache/bcache.h
-@@ -499,7 +499,7 @@ struct gc_stat {
-  * won't automatically reattach).
-  *
-  * CACHE_SET_STOPPING always gets set first when we're closing down a cach=
-e set;
-- * we'll continue to run normally for awhile with CACHE_SET_STOPPING set (=
-i.e.
-+ * we'll continue to run normally for a while with CACHE_SET_STOPPING set =
-(i.e.
-  * flushing dirty data).
-  *
-  * CACHE_SET_RUNNING means all cache devices have been registered and jour=
-nal
-diff --git a/drivers/md/bcache/request.c b/drivers/md/bcache/request.c
-index af345dc6fde1..87b4341cb42c 100644
---- a/drivers/md/bcache/request.c
-+++ b/drivers/md/bcache/request.c
-@@ -257,7 +257,7 @@ static CLOSURE_CALLBACK(bch_data_insert_start)
-=20
- 	/*
- 	 * But if it's not a writeback write we'd rather just bail out if
--	 * there aren't any buckets ready to write to - it might take awhile and
-+	 * there aren't any buckets ready to write to - it might take a while and
- 	 * we might be starving btree writes for gc or something.
- 	 */
-=20
-diff --git a/drivers/net/ethernet/google/gve/gve_rx_dqo.c b/drivers/net/eth=
-ernet/google/gve/gve_rx_dqo.c
-index dcb0545baa50..6a0be54f1c81 100644
---- a/drivers/net/ethernet/google/gve/gve_rx_dqo.c
-+++ b/drivers/net/ethernet/google/gve/gve_rx_dqo.c
-@@ -608,7 +608,7 @@ static int gve_rx_dqo(struct napi_struct *napi, struct =
-gve_rx_ring *rx,
- 	buf_len =3D compl_desc->packet_len;
- 	hdr_len =3D compl_desc->header_len;
-=20
--	/* Page might have not been used for awhile and was likely last written
-+	/* Page might have not been used for a while and was likely last written
- 	 * by a different thread.
- 	 */
- 	if (rx->dqo.page_pool) {
-diff --git a/drivers/scsi/hpsa.c b/drivers/scsi/hpsa.c
-index c73a71ac3c29..0066f15153a7 100644
---- a/drivers/scsi/hpsa.c
-+++ b/drivers/scsi/hpsa.c
-@@ -7795,7 +7795,7 @@ static int hpsa_wait_for_mode_change_ack(struct ctlr_=
-info *h)
- 	u32 doorbell_value;
- 	unsigned long flags;
-=20
--	/* under certain very rare conditions, this can take awhile.
-+	/* under certain very rare conditions, this can take a while.
- 	 * (e.g.: hot replace a failed 144GB drive in a RAID 5 set right
- 	 * as we enter this code.)
- 	 */
-diff --git a/drivers/tty/serial/jsm/jsm_neo.c b/drivers/tty/serial/jsm/jsm_=
-neo.c
-index e8e13bf056e2..2eb9ff26d6e8 100644
---- a/drivers/tty/serial/jsm/jsm_neo.c
-+++ b/drivers/tty/serial/jsm/jsm_neo.c
-@@ -1189,7 +1189,7 @@ static irqreturn_t neo_intr(int irq, void *voidbrd)
- 			/*
- 			 * The UART triggered us with a bogus interrupt type.
- 			 * It appears the Exar chip, when REALLY bogged down, will throw
--			 * these once and awhile.
-+			 * these periodically.
- 			 * Its harmless, just ignore it and move on.
- 			 */
- 			jsm_dbg(INTR, &brd->pci_dev,
-diff --git a/fs/ocfs2/dlm/dlmrecovery.c b/fs/ocfs2/dlm/dlmrecovery.c
-index 67fc62a49a76..00f52812dbb0 100644
---- a/fs/ocfs2/dlm/dlmrecovery.c
-+++ b/fs/ocfs2/dlm/dlmrecovery.c
-@@ -2632,7 +2632,7 @@ static int dlm_pick_recovery_master(struct dlm_ctxt *=
-dlm)
- 					 dlm_reco_master_ready(dlm),
- 					 msecs_to_jiffies(1000));
- 		if (!dlm_reco_master_ready(dlm)) {
--			mlog(0, "%s: reco master taking awhile\n",
-+			mlog(0, "%s: reco master taking a while\n",
- 			     dlm->name);
- 			goto again;
- 		}
-diff --git a/sound/pci/emu10k1/emu10k1_main.c b/sound/pci/emu10k1/emu10k1_m=
-ain.c
-index bbe252b8916c..6050201851b1 100644
---- a/sound/pci/emu10k1/emu10k1_main.c
-+++ b/sound/pci/emu10k1/emu10k1_main.c
-@@ -606,7 +606,7 @@ static int snd_emu10k1_ecard_init(struct snd_emu10k1 *e=
-mu)
- 	/* Step 2: Calibrate the ADC and DAC */
- 	snd_emu10k1_ecard_write(emu, EC_DACCAL | EC_LEDN | EC_TRIM_CSN);
-=20
--	/* Step 3: Wait for awhile;   XXX We can't get away with this
-+	/* Step 3: Wait for a while;   XXX We can't get away with this
- 	 * under a real operating system; we'll need to block and wait that
- 	 * way. */
- 	snd_emu10k1_wait(emu, 48000);
-diff --git a/sound/pci/emu10k1/emupcm.c b/sound/pci/emu10k1/emupcm.c
-index 1bf6e3d652f8..ca4b03317539 100644
---- a/sound/pci/emu10k1/emupcm.c
-+++ b/sound/pci/emu10k1/emupcm.c
-@@ -991,7 +991,7 @@ static snd_pcm_uframes_t snd_emu10k1_capture_pointer(st=
-ruct snd_pcm_substream *s
- 	if (!epcm->running)
- 		return 0;
- 	if (epcm->first_ptr) {
--		udelay(50);	/* hack, it takes awhile until capture is started */
-+		udelay(50);	/* hack, it takes a while until capture is started */
- 		epcm->first_ptr =3D 0;
- 	}
- 	ptr =3D snd_emu10k1_ptr_read(emu, epcm->capture_idx_reg, 0) & 0x0000ffff;
-diff --git a/tools/testing/selftests/powerpc/tm/tm-tmspr.c b/tools/testing/=
-selftests/powerpc/tm/tm-tmspr.c
-index dd5ddffa28b7..0d64988ffb40 100644
---- a/tools/testing/selftests/powerpc/tm/tm-tmspr.c
-+++ b/tools/testing/selftests/powerpc/tm/tm-tmspr.c
-@@ -14,7 +14,7 @@
-  * (1) create more threads than cpus
-  * (2) in each thread:
-  * 	(a) set TFIAR and TFHAR a unique value
-- * 	(b) loop for awhile, continually checking to see if
-+ * 	(b) loop for a while, continually checking to see if
-  * 	either register has been corrupted.
-  *
-  * (3) Loop:
---=20
-2.39.5
-
---b64xojk44rmwat7t
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQIzBAABCgAdFiEEfWlHToQCjFzAxEFjvP0LAY0mWPEFAmhliVoACgkQvP0LAY0m
-WPGFEQ/8DbYwNy7U1qf5X+siSkqv8Zb3esOfRNF9i9YUDMZ1GdhK4suKYpWFrOZz
-dw7FGbgwwgl1BNsKAmQoG23kglIQuB54tFwWN487hlkk4CvpeBQDHlQ8+0W2riUX
-fYawEukQC2kZ7+Abxe2ZOYlJGhJJxbTxbDT2oaKRKN/bh87QXXgTK777Y1eYLJkt
-sI7zzKwEsRFpaR2qJaoig54fePOyM50gK+U/MxyMjmoXheCWepLndly0/aZKyvjk
-Hypk+7p1f2nHMk39vwjeFc4U6nmUa1tCy7iEEOnQNqUV9Uds3Uy9NDqGI2xY0hit
-vh/gidHYpTKPKMJFJVuumVVWIrMrqIGxE6sdCFY7Arv5pERKUhPIh8xVtsaBUpmc
-kQwh87srq5PHjvtCrFIcJDSmiJlB132lokYcq0vwHOy8mp6Q7UNSFhEP15zzq75C
-xQ1aeR1SOQ3inWywOAkSZjv80iIdbnQsLZPNeSu5G7/BUZMg2Th5Pvz2h+LSEX2G
-adcgBklNOUu+hpsZzlphdKsiyMoPsf4Og/W0sBd+1SYBBd8fLmIpChGPVGxiaqyW
-+OqGHWqtAJHFtK5o+xZreq0tD/WiMgfkU4rObLg1aEfhSP6ILf8YacYYXuTgnQPb
-BHOD8IgLIY1uuG6tB/t5XqoG2JTUxGsxkZZ84kovSpLGkpEdN1A=
-=4j77
------END PGP SIGNATURE-----
-
---b64xojk44rmwat7t--
+Mimi & Nayna
 
