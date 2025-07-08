@@ -1,79 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-10147-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10148-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B852C71130
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  7 Jul 2025 20:36:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 16B80C71130
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  8 Jul 2025 00:43:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bbbc25gmFz30Vq;
-	Tue,  8 Jul 2025 06:36:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751920562;
-	cv=none; b=UAcXzBhfFhqksboXycmp7Pg8TD8xRx843KXYJEAnzOUKyyjIO25K+CApdgeDP1/3Y68vkMI4flj9+4hfNgIX0LBvVQA36awWuqm4cwH7ME1xd6mjyrZAUFbF3/6vZ5kbeRVo9HXbq3RNIsZv0umeBlWWmvOki3ldVloQOlSXD9E2KnjHhbcKXLRBX4zIZHqMK2HSaQPpj+6SOmIm3T3ocIJ7aBsEP1NDp1xly/r9R8SdDJibESVm5oDBIvelHsTwjguWUNtYChQhVELWeF4tcf8XoYo24/RC+h9DlZXc3OsN883zKYGFjL4pWRI44WlyB6NGcqTcxT5PcP8Lv5symw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bbj5w4yZ0z30TG;
+	Tue,  8 Jul 2025 10:43:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::62e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1751935428;
+	cv=none; b=BReixAhlcKqnnPRyu073s/EibS9QL3+yKROfCxu74av8gbJS1HCaie+EFR4WXvMz17e5QD6i7bo+MyODFlNAgUYyZGowge7yRMBJUWYpoQsh0mVkOW2SDl34UI9uaPNASwGAh8x1N7VWFneD+f57cQvQ7VszlKolo46xW1PQe98m32E7ZvQvnQdeHHcE3bngwdgNC8TZKBIvxqBV6OsNw2swrmq25+EH3ZcV2lXF5GnqJR2/Re/jZ/RBzYbVAqd9zKRYGu5RN8BqJIYotbCssDZC22qskkLdtUEnOX6jj54V6R+nblvhwxnOjoRR/enXhoF5NGM9F7358rOZ8SPFwg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1751920562; c=relaxed/relaxed;
-	bh=BFnUtErzqi+YrOuLQHHe/HmmEuiWzUgAukevdWHaQtE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=FcjOsZMjCWxvFz4/3PWj6Zkg8vdCYK+oOXG5pe1q08FhagV9K/kMn+y6MQVMWXl447d4mDE5YOFe4QMB8v41eQgh3ZSCkogSpYY00C9VU7/ohoVz7gGQawE1EgQnGtz9hPJ4UHIHKKXmL1nHfRqs2uOtOkzxHByc+I3xBi9qmmc6SCnv6zf0qI1Tj2LJDvq7+hu/z6liSR3Co/20ri5PyWr7hDR3iXey8OGECTCnhixRzKSQDe8eI4zZvSb9ckc2DcbgrXhCTksXam3tNbaoelLnWj6Luq322qZHuWowJs5EFcvoPY7007xr1bVeJM0ijRhDEnObq3XVPq4t6KwEgw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HUcH24Dw; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nayna@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1751935428; c=relaxed/relaxed;
+	bh=dSX7rXG/Cb7Iv2C93GcbdXPfzK1jTKmoYKGXzw019z4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=DVk1PyfiudeBONNuVYbZuhscRvtDG7gFHm9FS55noajX2gsOQ0qJOk/w4BDANJmwEjZzNvd9w98+wLdac2rIrTV6fZs36OKHOHga34kP3U6DqW0tniCA/jWPWEXWN2tGTOzxZnf4OYkN6roWbKDnPJ02nUe4GMO8nvK/GSLWD6shxEiOSLKaNrJIidgKxwxLc7vTCXnj3KtA4VE2YeXFJOYqKBQZm3kVig/XsWRU82kaiRw/LCSq0Fv/2k7rcPGvourQj0w4nvO8VbbYo2O00IanwPD7CpUFqFXPT739+EWUu1IQGpB3UHAppGFzyHF9Sb7Vv7yX2rir3yTMYBisIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=SDCOeFIV; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=bagasdotme@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=HUcH24Dw;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=SDCOeFIV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nayna@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::62e; helo=mail-pl1-x62e.google.com; envelope-from=bagasdotme@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x62e.google.com (mail-pl1-x62e.google.com [IPv6:2607:f8b0:4864:20::62e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bbbc06Mv7z30Vb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2025 06:36:00 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 567IkRLv020724;
-	Mon, 7 Jul 2025 20:35:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=BFnUtE
-	rzqi+YrOuLQHHe/HmmEuiWzUgAukevdWHaQtE=; b=HUcH24DwcvCPOm3PDDcfLM
-	HVIMdtaBq+zjU+EnIVaKtvk/C0Ei4HkfmBYrKj83PDR47o9Ndy/q67RdjBzsrYUr
-	MBor8MHerh6BtErq14W2pZVcbqui/RUKemAKfd2JLDsdA97WRiHV6poIcmcC99Jf
-	G/HVrWKjo4gRapnVvvwHNTzV41mRj27seDusIe2cC3zJe3lZcSBwMGHaTc9LxL8z
-	3+tHOeEKsj0b53lUmhfGHI0S4IQqPWHOyLOGX5TDRpq/0p2tIFoGMsIXWhvOBx48
-	TB7/sor1/z4FFI/hwS5E2yNdYvOKyuJG3fvhSX91hezE6k9gyQiOZzYSeVZPfFQg
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 47pur6uwwx-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 07 Jul 2025 20:35:41 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.0.8/8.18.0.8) with ESMTP id 567KZfrJ024112;
-	Mon, 7 Jul 2025 20:35:41 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 47pur6uwwu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 07 Jul 2025 20:35:41 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 567HSKfa003123;
-	Mon, 7 Jul 2025 20:35:39 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 47qfvm7px5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 07 Jul 2025 20:35:39 +0000
-Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 567KZbLm19989208
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 7 Jul 2025 20:35:38 GMT
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D991D58066;
-	Mon,  7 Jul 2025 20:35:37 +0000 (GMT)
-Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 05CDD58059;
-	Mon,  7 Jul 2025 20:35:36 +0000 (GMT)
-Received: from [9.61.104.52] (unknown [9.61.104.52])
-	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  7 Jul 2025 20:35:35 +0000 (GMT)
-Message-ID: <e8aa7f94-3e52-488d-a858-564d3d1edd4b@linux.ibm.com>
-Date: Mon, 7 Jul 2025 16:35:35 -0400
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bbj5v1cc9z2yKq
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  8 Jul 2025 10:43:46 +1000 (AEST)
+Received: by mail-pl1-x62e.google.com with SMTP id d9443c01a7336-234fcadde3eso55666715ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 07 Jul 2025 17:43:46 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1751935421; x=1752540221; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=dSX7rXG/Cb7Iv2C93GcbdXPfzK1jTKmoYKGXzw019z4=;
+        b=SDCOeFIVgru2nIQ33kir7xI76j0NWwAucdkb4mnb36rs6Xv9CcOjZ9KfkoMbZVelOs
+         OaEeFXMiSXPtFbo2CPDdyo79ZeH9P+ZpAj3gP1/OiKCzZiEFNtTVrY9HiGzVE6NiU1h2
+         64GBH6l1h+jT+avgH6PJzXPG3bVqCMSlR6lj7dmTLq0bxSOhlQoXjZro2gnRcvwjj4h8
+         2uK5Yk/7yzTMY+AGXxYqrjp1VFbbJFPJEi8OMXPi9fAZPx2+PLcNfyq6dqM8BGWTiPm4
+         mnYmgFyzIv9jorQ9qnY8mUoM1i6nA2G63cN0crYBqWjmz1uhhF6rm3hgusSAQm51QEBj
+         9XOA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1751935421; x=1752540221;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=dSX7rXG/Cb7Iv2C93GcbdXPfzK1jTKmoYKGXzw019z4=;
+        b=UOz5s3yYodeGN4XFWlRx3ri36FXilLtXX8WJXLi6xAnk2v1X6a8VrrD6QaMrevZGSA
+         cuReA5x58NOZX/+4omQ6tkdjOFGJ3svzk2foNItRCvzjNg7XNhCR55epnA9a3aUu2+nx
+         d3ZlX5WI5ZdHB4VeceCEdhhjTIBmLhDJ/sJobzHlMxbF+a3SCHzbYKQxJImoxs6UVWPA
+         czMCwKlKNb7M/c2SEh5lhXxPlbfS20aU7UTC0agIuQffmdKerLrwhRsXoUT5OfXw2sLR
+         iq8uIQTZDzCao0ln66bgtiOePPrgkQSK8Qzt4HbVRIRQGxggcUexi0eAcTL0Irvt02mP
+         /RFA==
+X-Forwarded-Encrypted: i=1; AJvYcCWoLCaC4zccFLnwvyEsYG4x9ZNElNYdW4rSY1DByA/xHrgxxtNLH3wJCvi8X/h7eRtab2gJbbS2EJl59yw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzGSMKxoQmOf9FR1SZO65V9a8xf2uTf7YcZ0Zfq/FWoZdjx3SHw
+	e7sGHWwuyEIFarfOW2Ka6hO8yb2scP6dUEYKZIYZj4cPvyuvk6p61DyR
+X-Gm-Gg: ASbGncsaGYrdnTxU38L+qFLpu2rVqUIm8ax0xAjkxqDEMereSs2PvAFWtBzIRY4eHbp
+	VEQDqvN4NNA0y0vInqgQRZ89OYcXRw0FPxii+9/ce42dpfVFcBvY8s0NRyMprLmi05S26waDwBU
+	GoQgXgpTE0HEid+C1t/cLdBMBtNnS2KXYAvVD8mlEBNn9sbPPza+q9IzBmpjL1ktuiXYoIFq+X5
+	DxN/vRSQFhsX1hfKt+Wzdy/LBYeXMhjUG/zUCPp3s9H7PGbzGPMfChOtZoFhKaJCsHgtV7JZwg3
+	dCR7iVzeswVHrR4wTKNylJszQCK43o98lJQsCN457xEhZj0y2sTxS3OJqkxkiw==
+X-Google-Smtp-Source: AGHT+IEAuHP6Svd8Lb4XpqwNEFCuT7DD/C+PIpC3nxFrsbTlP9Co8Vp8AGmR2u2x8S8eo9w2aPZQTQ==
+X-Received: by 2002:a17:903:2d2:b0:235:f078:4746 with SMTP id d9443c01a7336-23c875ac041mr222094905ad.42.1751935421299;
+        Mon, 07 Jul 2025 17:43:41 -0700 (PDT)
+Received: from archie.me ([103.124.138.155])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-23c845bd292sm94309265ad.236.2025.07.07.17.43.39
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 07 Jul 2025 17:43:40 -0700 (PDT)
+Received: by archie.me (Postfix, from userid 1000)
+	id ADB97410194E; Tue, 08 Jul 2025 07:43:37 +0700 (WIB)
+From: Bagas Sanjaya <bagasdotme@gmail.com>
+To: Linux Kernel Mailing List <linux-kernel@vger.kernel.org>,
+	Linux Documentation <linux-doc@vger.kernel.org>,
+	Linux PowerPC <linuxppc-dev@lists.ozlabs.org>,
+	Linux Networking <netdev@vger.kernel.org>
+Cc: Jonathan Corbet <corbet@lwn.net>,
+	Richard Cochran <richardcochran@gmail.com>,
+	Bagas Sanjaya <bagasdotme@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	Haren Myneni <haren@linux.ibm.com>,
+	Andrew Donnellan <ajd@linux.ibm.com>
+Subject: [PATCH RESEND 3/3] Documentation: ioctl-number: Correct full path to papr-physical-attestation.h
+Date: Tue,  8 Jul 2025 07:43:33 +0700
+Message-ID: <20250708004334.15861-4-bagasdotme@gmail.com>
+X-Mailer: git-send-email 2.50.0
+In-Reply-To: <20250708004334.15861-1-bagasdotme@gmail.com>
+References: <20250708004334.15861-1-bagasdotme@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,148 +103,36 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] integrity: Extract secure boot enquiry function out of
- IMA
-To: GONG Ruiqi <gongruiqi1@huawei.com>, Mimi Zohar <zohar@linux.ibm.com>,
-        Roberto Sassu <roberto.sassu@huawei.com>,
-        Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
-        Jarkko Sakkinen <jarkko@kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>
-Cc: Eric Snowberg <eric.snowberg@oracle.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>, "Lee, Chun-Yi" <jlee@suse.com>,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        linux-s390@vger.kernel.org, linux-integrity@vger.kernel.org,
-        keyrings@vger.kernel.org, Lu Jialin <lujialin4@huawei.com>
-References: <20250628063251.321370-1-gongruiqi1@huawei.com>
- <eb91dcf034db28e457a4482faa397dd7632f00fd.camel@linux.ibm.com>
- <4c59f417-86cc-4dec-ae45-8fcf8c7eb16a@huawei.com>
-Content-Language: en-US
-From: Nayna Jain <nayna@linux.ibm.com>
-In-Reply-To: <4c59f417-86cc-4dec-ae45-8fcf8c7eb16a@huawei.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+X-Developer-Signature: v=1; a=openpgp-sha256; l=1833; i=bagasdotme@gmail.com; h=from:subject; bh=zNTKRq7aNErhkH8U18q1BjbgmqsaSp0PtB0iNkd7AU0=; b=owGbwMvMwCX2bWenZ2ig32LG02pJDBk5mbpnc/aLfFntdWb+ksXqk7k3b/g3t2Pf+8kl71fJd urti6q431HKwiDGxSArpsgyKZGv6fQuI5EL7WsdYeawMoEMYeDiFICJ2K1k+M3adUbuXhb7ds6/ rid/fNNL/ne+srxT6a1017R/89+ufSnD8N+FRzxG+9zjCasarx7YvWuDkPKi/kcmDBzHPRJCH4e Kz+UBAA==
+X-Developer-Key: i=bagasdotme@gmail.com; a=openpgp; fpr=701B806FDCA5D3A58FFB8F7D7C276C64A5E44A1D
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNzA3MDEzNCBTYWx0ZWRfX53yA02ssT3+2 /gIxgy0haxwvya29kT6g0bpAanaNmXV5bL1kndK/P0mrTKdZ49SFu1TJP5w1IqUWfbQ8Q/7bznI p29/fompY+x+URuYQnREA77BOBHkHDEmm6AN+HjDBDDd/RTr2UaK74qWvyJpHwehOnPzp5QzpxI
- ViFpWyHYtpHSNs7sq+DgHFFe3uHzVgoK0nLx9qzRJhfYstdyq+scQd26JdcgQnPrcJKdrxtstzl Y7GBE8NyVQz6HC57xZGbQLTG+sCw7gv8tihuKzlQYUUQ+ap1JWDBvUxKlEN17jKZRMOzcH6dAYJ bexK7F/f5ySSxPQ058yPVn13UnaJHWwzTgez/gZP7lcrVUBsHmwJqAMghch41iaIIy1XpOVbOIK
- X1P4HInyVbuTTrX82/sSSTp06SuDddd+PLM1rGoky6MjBgSeqcetdZDjnk+u5rQfeghbBPu9
-X-Proofpoint-GUID: 9YY1oyQC6cHyMbd3txRAWdcUnljcso27
-X-Proofpoint-ORIG-GUID: ApRdDBF3eK6BnW2c7Srv0xd8U7XS3XOg
-X-Authority-Analysis: v=2.4 cv=W/M4VQWk c=1 sm=1 tr=0 ts=686c2f9d cx=c_pps a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17 a=IkcTkHD0fZMA:10 a=Wb1JkmetP80A:10 a=VwQbUJbxAAAA:8 a=i0EeH86SAAAA:8 a=0SdL4vufndsjM6Dj2E8A:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=GHzZeaHGQcwA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.7,FMLib:17.12.80.40
- definitions=2025-07-07_05,2025-07-07_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0 malwarescore=0 phishscore=0
- mlxscore=0 priorityscore=1501 adultscore=0 clxscore=1011 suspectscore=0
- spamscore=0 lowpriorityscore=0 mlxlogscore=999 bulkscore=0 impostorscore=0
- classifier=spam authscore=0 authtc=n/a authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2505280000
- definitions=main-2507070134
 
+Commit 03c9d1a5a30d93 ("Documentation: Fix description format for
+powerpc RTAS ioctls") fixes Sphinx warning by chopping arch/ path
+component of papr-physical-attestation.h to fit existing "Include File"
+column. Now that the column has been widened just enough for that
+header file, add back its arch/ path component.
 
-On 7/2/25 10:07 PM, GONG Ruiqi wrote:
-> Hi Mimi,
->
-> On 7/3/2025 9:38 AM, Mimi Zohar wrote:
->> [CC: Nayna Jain]
->>
->> On Sat, 2025-06-28 at 14:32 +0800, GONG Ruiqi wrote:
->>> ...
->> The original reason for querying the secure boot status of the system was in
->> order to differentiate IMA policies.  Subsequently, the secure boot check was
->> also added to safely allow loading of the certificates stored in MOK. So loading
->> IMA policies and the MOK certificates ARE dependent on the secure boot mode.
->>                                                                                  
->> What is your real motivation for moving the secure boot checking out of IMA?
->>                                                                                  
-> Sorry for not stating that clearly in this patch. I think the cover
-> letter of V3 I just sent few minutes ago can answer your question, and I
-> quote:
->
-> "We encountered a boot failure issue in an in-house testing, where the
-> kernel refused to load its modules since it couldn't verify their
-> signature. The root cause turned out to be the early return of
-> load_uefi_certs(), where arch_ima_get_secureboot() returned false
-> unconditionally due to CONFIG_IMA_SECURE_AND_OR_TRUSTED_BOOT=n, even
-> though the secure boot was enabled.
-Thanks for sharing additional details.
+Fixes: 03c9d1a5a30d ("Documentation: Fix description format for powerpc RTAS ioctls")
+Signed-off-by: Bagas Sanjaya <bagasdotme@gmail.com>
+---
+ Documentation/userspace-api/ioctl/ioctl-number.rst | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
- From x86 Kconfig:
+diff --git a/Documentation/userspace-api/ioctl/ioctl-number.rst b/Documentation/userspace-api/ioctl/ioctl-number.rst
+index b45f5d857a00b6..5aa09865b3aa0f 100644
+--- a/Documentation/userspace-api/ioctl/ioctl-number.rst
++++ b/Documentation/userspace-api/ioctl/ioctl-number.rst
+@@ -369,7 +369,7 @@ Code  Seq#    Include File                                             Comments
+                                                                        <mailto:linuxppc-dev@lists.ozlabs.org>
+ 0xB2  06-07  arch/powerpc/include/uapi/asm/papr-platform-dump.h        powerpc/pseries Platform Dump API
+                                                                        <mailto:linuxppc-dev@lists.ozlabs.org>
+-0xB2  08     powerpc/include/uapi/asm/papr-physical-attestation.h      powerpc/pseries Physical Attestation API
++0xB2  08     arch/powerpc/include/uapi/asm/papr-physical-attestation.h powerpc/pseries Physical Attestation API
+                                                                        <mailto:linuxppc-dev@lists.ozlabs.org>
+ 0xB3  00     linux/mmc/ioctl.h
+ 0xB4  00-0F  linux/gpio.h                                              <mailto:linux-gpio@vger.kernel.org>
+-- 
+An old man doll... just what I always wanted! - Clara
 
-/For config x86:
-
-     imply IMA_SECURE_AND_OR_TRUSTED_BOOT    if EFI
-/
-And IMA_SECURE_AND_OR_TRUSTED_BOOT is dependent on IMA_ARCH_POLICY .
-
-And from Linux Kernel Kbuild documentation( 
-https://docs.kernel.org/kbuild/kconfig-language.html) :
-
-/weak reverse dependencies: “imply” <symbol> [“if” <expr>]
-
-This is similar to “select” as it enforces a lower limit on another 
-symbol except that the “implied” symbol’s value may still be set to n 
-from a direct dependency or with a visible prompt.
-
-/Following the example from the documentation, if  it is EFI enabled and 
-IMA_ARCH_POLICY is set to y then this config should be default enabled.
-
-If it is EFI enabled and IMA_ARCH_POLICY is set to N, then the setting 
-for IMA_SECURE_AND_OR_TRUSTED_BOOT should be prompted during the build. 
-The default setting for prompt is N. So, the person doing the build 
-should actually select Y to enable IMA_ARCH_POLICY.
-
-Wondering what is the scenario for you? Unless you have IMA_ARCH_POLICY 
-set to N, this config should have been ideally enabled. If you have 
-explicitly set it to N, am curious any specific reason for that.
-
-Thanks & Regards,
-
-    - Nayna
->
-> This patch set attempts to remove this implicit dependency by shifting
-> the functionality of efi secure boot enquiry from IMA to the integrity
-> subsystem, so that both certificate loading and IMA can make use of it
-> independently."
->
-> Here's the link of V3, and please take a look:
-> https://lore.kernel.org/all/20250703014353.3366268-1-gongruiqi1@huawei.com/T/#mef6d5ea47a4ee19745c5292ab8948eba9e16628d
->
->> FYI, there are a number of problems with the patch itself.  From a very high
->> level:
->>                                                                                  
->> - The EFI secure boot check is co-located with loading the architecture specific
->> policies.  By co-locating the secure boot check with loading the architecture
->> specific IMA policies, there aren't any ifdef's in C code.  Please refer to the
->> "conditional compilation" section in the kernel coding-style documentation on
->> avoiding ifdef's in C code.
->>                                                                                  
->> - Each architecture has it's own method of detecting secure boot. Originally the
->> x86 code was in arch/x86, but to prevent code duplication it was moved to IMA.
->> The new file should at least be named efi_secureboot.c.
-> You're right. I didn't realize it's arch-specific in the first place,
-> and moving and renaming arch_ima_get_secureboot() turned out to be a
-> real mess ...
->
-> So the V3 keeps the prototype of arch_ima_get_secureboot(), and only
-> moves out its body, which I think can also better represent the
-> intention of the patch.
->
-> As of the name of the new file, as V3 has been sent earlier and still
-> uses secureboot.c, I can't change it there. I can do it in V4.
->
-> -Ruiqi
->
->>                                                                                  
->> - The patch title should be about moving and renaming the secure boot check.
->> The patch description should include a valid reason for the change.
->>
->> Mimi & Nayna
 
