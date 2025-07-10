@@ -1,85 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-10170-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10171-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 88836C83F1A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jul 2025 07:24:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0EC3EC83F18
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 10 Jul 2025 08:36:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bd5vG1Zk1z30VV;
-	Thu, 10 Jul 2025 17:24:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::635"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752131915;
-	cv=none; b=O27eE1UXqZV9tb/U2Z3f7qyall90VrbQzxTdIy3spf9EXTvgqzlYHwzng1/mHyzyOZdfqRQ6mDV0sqCOpEFcAFKS8/gHL36TgtdOmtCGRmk0RWLMDZCAn5Iw3Dfhiv/fAQMSQd5p4xmYOIGtoXGNJb/WSNQNFZF1EWMRvDKxl1mwunqikaSAzI7S/W2YJBpj8RpqcDA53pN43llqYr9xfCI1CHffCKbmZ19EyT/NAfzppQDyAcuzEklTuEPmlEZjH6h+LcRIQmIn550SELue+ZR3Y86zIFzhv8r6wHOMvMe6wvBBw+iS6rv8qEngM7mB/4Q3Ae1vLabK7PQ8haccwg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bd7Tq4l5Vz30VZ;
+	Thu, 10 Jul 2025 18:35:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::634"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752136559;
+	cv=none; b=aUG8IppqxC+Plczd8IX8eiXWXss/EB8MJbfIgs7hWqv1HseRKvBCzmGGehTVrjRZ1atHbkqysgDUvymqQXdIpSKR8q9OOmENlcOdTuNFxjo+rv5r9hEJmXgoATbWSZsxZzKZQTDDQf5yT7yIanlG0KaCF5Nvu9du2/m89bu3wqJjnCR1YBRgAaJ2T8BbPYnphDe9WrPzbl1nnMLh52AhiDgyvwXO3X1AG26SjwMviPCwf7kKozqxV2wznQPu3pLL0D/n42kl78zlOPd9R57p+NzxZ2E7ZacgHOH4qgtE1bkeiTQE6FCTiBP0z72gB2eC9ab1PG+oRjCUDmYjTdaRCQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752131915; c=relaxed/relaxed;
-	bh=6g1IiPrFyHwJRTaDBspibWxL1+SD9wnK3iKsVFGEiqY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZbJ4o5QB8dQFgWN5lTVXWg5i70pct0oSiw+YLDesNgS3UgRl+DVFu07uadGVk47h/5wRHCNcR0T2vZ/pjy2LDwUwfciGqxmw2i7/z5h0s8YMPI3qXUVT2c2epajFz3msUZj4OsxkQeKf/SwQY6jfVyZ0al5xq4VDo4DqNHUZbGEWSqiOyt5pWrdFoVLqN5LbMJ+RJUKNSbMaDK26FabTAQx7y5u8yXYwQFkLEBoTqAw8BU6wdwS1nwCf0KkdYCaTt1v1Ecnrc8UMOc3TtOobvDT3vXePRFexsnudftPtUb8mDqYNczP/cfRs9kt4mKXD7dVpoMlfEqeSLrsIEIInMQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=hnWjwX6x; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=seokwoo.chung130@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1752136559; c=relaxed/relaxed;
+	bh=Xh1mmOkigieJ55IHaZfa8Zg2NGfpNAm2HJHID8wzV98=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=FLng7cye4M+Ozt9HGwSqqNAdXZbG+AnyRIJ+ZYuJ+x0AdwdVCmHrUsxXtZ4u0lZhVxtd/6zJ+pLmz0e65z+5CYGXgi3bnCxZ87kJX/rFkkLszXmat0sj+pQxnLXvY1h/9WHGbhR0Orgh7AdIQx6ytA7/X3FlDNaC96VgjaUXFn0AcyOvGo3ypnGUE3PYmZJ5KnO8qQfyiBbxUoduuaAvcVfwCUDHigXgjSL71zQG9js512F1PGOqHJR+eFGRnB5oyXdwJorBrfUNPdj4D37ygg6Udux64svLnvtfX2FguQs+uTZoy5WYUxIykLRpKcGl44a3HpDHUIB9HJX7dQIXkw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=IVWMdfXn; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=seokwoo.chung130@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=hnWjwX6x;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=IVWMdfXn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::635; helo=mail-pl1-x635.google.com; envelope-from=seokwoo.chung130@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x635.google.com (mail-pl1-x635.google.com [IPv6:2607:f8b0:4864:20::635])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::634; helo=mail-pl1-x634.google.com; envelope-from=seokwoo.chung130@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x634.google.com (mail-pl1-x634.google.com [IPv6:2607:f8b0:4864:20::634])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bd5mV0rtVz2yYJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2025 17:18:33 +1000 (AEST)
-Received: by mail-pl1-x635.google.com with SMTP id d9443c01a7336-23c8a505177so6606915ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2025 00:18:33 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bd7Tp2l62z2xsW
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2025 18:35:57 +1000 (AEST)
+Received: by mail-pl1-x634.google.com with SMTP id d9443c01a7336-235e1d710d8so9906205ad.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 10 Jul 2025 01:35:57 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1752131909; x=1752736709; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=6g1IiPrFyHwJRTaDBspibWxL1+SD9wnK3iKsVFGEiqY=;
-        b=hnWjwX6xL1MeXzYr+xFNB3hEOxFmy8CFEXcxERppWBA6PZmVWiWSeoDKqPy+bGZBck
-         4N6Z/jnCr0OVXgNvWqGfU0VVFvYLXbhLQ8/oDqPNsKdD6YWF0fFYexzSYMxeFPB48dq0
-         slSTtgdreyLzG3hfI/BCktWopiW6OTJQ04SFcMqhyb2d3/92LCLPJsJwaTysVtRZjlL+
-         USnhYvRl1Sy9RR3mfd1e/dn39tk5H6driGb0lD4F/cLiMfV4AbOpofth7sMFdSDyC+6Z
-         wW/XRzfVcCYnuRgKJtPijHBX55dfO5zpn0EFwb1j1QaNIeTKTH0LVYFxEE5sHNtkg7GH
-         EqqA==
+        d=gmail.com; s=20230601; t=1752136555; x=1752741355; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=Xh1mmOkigieJ55IHaZfa8Zg2NGfpNAm2HJHID8wzV98=;
+        b=IVWMdfXnqyTtBdnxA/Hm4ibVKVoxjwVdM7ipbebqwuxFUZzpOZePe28crvTj4WaUBx
+         rDNt7sM85ebRJgt+SWyXwsNTekZCisMHFfG3IkKY4mrOqnLRDCvJ42RIjlUdraULaFNu
+         nOL+78rHlhNl+D4WqpwF95oe4JTVQQODRhUrepz1ANgFTPX1bwKYe6PhIKUV9h+VT/LN
+         aYIMBMv13jDrywe9t8+7DkUW19tuq4utBIhQkiYRVb1g2X2kxS0vp2n85LPBt+qao0d7
+         iTwwXl1wkPsfcZV1AUkpZYE0G8GKroJ7JhegwZ0AlNRyAdiEJmqzb8B+wMwHbU+4TueM
+         EoQQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1752131909; x=1752736709;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=6g1IiPrFyHwJRTaDBspibWxL1+SD9wnK3iKsVFGEiqY=;
-        b=ipMRPNLr6uZtXtixY4/Rv46dBIoyOJWJjvWF94rlvxs+tVJevkxY9joAsmZWq1mr7V
-         1X2XVR/Zwo0SeeiZobpn1OlD1EqYpQksbglTkYR89lOWFWpSpC1mKBdtQBgklV3mBDqu
-         4ntJ5GT1oSaXsn2qNPaJUxqck+Vax62ZNqW9wn3Uk8CKETKt2vlIV6q1PUItj4iLLjiq
-         dPmzo7911GVItF+TjfkLjQMfzVI1Zv0166P2j323U6BSOrfVNVfE2h5FzlM39nH33JY7
-         FWXfQffb9O+inXgEX+P1OKenxZhj3SpiTfOyzYIV/fx5yn7oT0c9mxBKT7tK3LKx9PF1
-         Zo+w==
-X-Gm-Message-State: AOJu0YzLUw9gs6UN86HI09qREgRwpDJXh2zqwGQe1V6R4GiZWAtb3z+l
-	SOkr+NcgNKBPMoKJhW63fSEQdZ03t37Mt3t9mopG26Sos5ygHG32OsqZ
-X-Gm-Gg: ASbGnctldLBw97lX9TNnxWZyxoL3MJT0QH1X23F8cG1XfboloT3p4FBDyurCMmdaTnZ
-	rBXLHNdTn2ukcQk84FCzlyq6qu8UbzjnjzM2hPEk4Wkwh/HT8IxF1mYL5//He0cH3bq5ANs2fbf
-	fqljp0+XEeWLTHDvXJm3efVu4Us6oia5eBOeRwUZ02xtfUMwEWFezdTDg4Eq2vz83RU7vWGoFN2
-	fLPc5Jv7/+w3KJjq7bkktAnaR52eXeoebWh8hKGgFAglf2T4mw+ybujTe2K7P1NIavcxwuCruo+
-	e8m+AZwzsiUTs8Z+zz621Cg9yyMjDl0MU4oMbUhFnNBsNujzq+bM1/0fdHhiDT+F95t0AmCkMHg
-	5NmaPQuvE
-X-Google-Smtp-Source: AGHT+IFVGyOnm1nwsQ+ze1erHvM2Rxv0pNSLgjOlw0v0EXpaUJJf5eUudFsAasW06wcKg1niVA8W2A==
-X-Received: by 2002:a17:902:ef07:b0:235:ef79:2997 with SMTP id d9443c01a7336-23de2510c87mr46529115ad.47.1752131908813;
-        Thu, 10 Jul 2025 00:18:28 -0700 (PDT)
-Received: from localhost.localdomain ([115.137.3.141])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-31c3eb45c7csm1331530a91.25.2025.07.10.00.18.25
+        d=1e100.net; s=20230601; t=1752136555; x=1752741355;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=Xh1mmOkigieJ55IHaZfa8Zg2NGfpNAm2HJHID8wzV98=;
+        b=HzWOO4VH9lnoMnf1uZQcVe971ug2W3T5smUph5spuD9LFLc1W3igtmW82xORBXWriz
+         TgA0rIsr5QDIO2eNYt13HYtJB4aK9aubr87iTp72a84QNa0173F80Yv6el1rwexS+ukj
+         1FfneXXF14AbShab3rHunpu7LQS8o2o7zArLu8PwCc/do5Gx9L53uJgsLembfjNtOBpz
+         Y5l0bVt0TUhTtvT6TTyh6VNanPkk8HUb3or9kZoysuzSVp7NpUkGPiwLFozTKtwU+o45
+         pCDKR0AN4KIaazlFOReYk5LH4YqwRe2CrMQMpPfFz8WJXXL0FG218l+p7JRhA3x/iIb5
+         pl1w==
+X-Forwarded-Encrypted: i=1; AJvYcCXFFrRUruB+AOP9ml7uTktFbBMWllJCtgDpZ0l2hmibNQkiSln3pZqXFn0ptzsO5xWGkSbMbavvgal7Vw8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyOvyQIkngH4gVxZMiTBIlZAjGx8PPyxVP0jCbIb/eQ9N/2cXI/
+	6tMg03sWphho7vpEA5Vlk5vmhNOejvvjbyZjXPe+MjzmB4dfAhB5iM/F
+X-Gm-Gg: ASbGncuhnhKUKzUXOc/X61hG3SB9tBWNn1AqPhNCAwR0iUhXIKmrKIyZ+tJ3Jf+Z+0w
+	lTQM3R7MK3hhveQ37dbA6ZlqQHAhgT8bg3eNZBe8hw0rCK8j3H2tXrmPHkPqUwTvTrydJE6nqgQ
+	8oH3UFVnHK8PUo9qMBcAIM5dj1BJvgEvMwdQIl9LP7H7PXAb4+pKfTNkHEw01Tl+xzbN3RfDYUQ
+	8WpuhynuRsRSdrP3HIDTUd0Np6smU4Y6Mt6mnbVgDcqMynGt8iSxf6mXiO6R5J3Hk/9E0/kxTyq
+	XO6yVD2QC6Y+rxt9As8+IzE/TV00MQ6MHVhXlxybRG6nufNrysw9uY4BYz4/LiCWPb5j
+X-Google-Smtp-Source: AGHT+IG4B7XXAIAZPOLzQw/263sQj8eeyyiKa3sBlRTmcBCPIqhxXPTBdSpDGcnC8CyHrt0iEV3FXw==
+X-Received: by 2002:a17:902:e742:b0:23d:ce98:6110 with SMTP id d9443c01a7336-23ddb199090mr86875705ad.10.1752136555100;
+        Thu, 10 Jul 2025 01:35:55 -0700 (PDT)
+Received: from gmail.com ([115.137.3.141])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-23de4289274sm13556225ad.43.2025.07.10.01.35.52
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 10 Jul 2025 00:18:28 -0700 (PDT)
+        Thu, 10 Jul 2025 01:35:54 -0700 (PDT)
+Date: Thu, 10 Jul 2025 17:35:49 +0900
 From: Ryan Chung <seokwoo.chung130@gmail.com>
-To: fbarrat@linux.ibm.com,
-	ajd@linux.ibm.com,
-	arnd@arndb.de,
-	gregkh@linuxfoundation.org
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Ryan Chung <seokwoo.chung130@gmail.com>
-Subject: [PATCH] ocxl: sysfs.c: Replace scnprintf() with sysfs_emit()
-Date: Thu, 10 Jul 2025 16:18:15 +0900
-Message-ID: <20250710071815.351069-1-seokwoo.chung130@gmail.com>
-X-Mailer: git-send-email 2.43.0
+To: Andrew Donnellan <ajd@linux.ibm.com>
+Cc: fbarrat@linux.ibm.com, arnd@arndb.de, gregkh@linuxfoundation.org,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ocxl: sysfs.c: Replace scnprintf() with sysfs_emit()
+Message-ID: <aG97Zdc9YU7QFE-j@gmail.com>
+References: <20250710071815.351069-1-seokwoo.chung130@gmail.com>
+ <8bda71d7c25900616beb706c73a04bd54830252b.camel@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,72 +91,33 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8bda71d7c25900616beb706c73a04bd54830252b.camel@linux.ibm.com>
 
-This change uses sysfs_emit() API usage for sysfs 'show'
-functions as recommended from Documentation/filesystems/sysfs.rst.
-Intended for safety and consistency.
+On Thu, Jul 10, 2025 at 05:23:12PM +1000, Andrew Donnellan wrote:
+> On Thu, 2025-07-10 at 16:18 +0900, Ryan Chung wrote:
+> > This change uses sysfs_emit() API usage for sysfs 'show'
+> > functions as recommended from Documentation/filesystems/sysfs.rst.
+> > Intended for safety and consistency.
+> > 
+> > No functional change intended.
+> > 
+> > Signed-off-by: Ryan Chung <seokwoo.chung130@gmail.com>
+> 
+> An identical patch has already been merged in char-misc-next:
+> 
+> https://patchwork.ozlabs.org/project/linuxppc-dev/patch/20250620024705.11321-1-ankitchauhan2065@gmail.com/
+> 
+> 
+> Andrew
+> 
+> -- 
+> Andrew Donnellan    OzLabs, ADL Canberra
+> ajd@linux.ibm.com   IBM Australia Limited
 
-No functional change intended.
+Thank you. I did not see this.
 
-Signed-off-by: Ryan Chung <seokwoo.chung130@gmail.com>
----
- drivers/misc/ocxl/sysfs.c | 12 ++++++------
- 1 file changed, 6 insertions(+), 6 deletions(-)
-
-diff --git a/drivers/misc/ocxl/sysfs.c b/drivers/misc/ocxl/sysfs.c
-index e849641687a0..f194c159a778 100644
---- a/drivers/misc/ocxl/sysfs.c
-+++ b/drivers/misc/ocxl/sysfs.c
-@@ -16,7 +16,7 @@ static ssize_t global_mmio_size_show(struct device *device,
- {
- 	struct ocxl_afu *afu = to_afu(device);
- 
--	return scnprintf(buf, PAGE_SIZE, "%d\n",
-+	return sysfs_emit(buf, "%d\n",
- 			afu->config.global_mmio_size);
- }
- 
-@@ -26,7 +26,7 @@ static ssize_t pp_mmio_size_show(struct device *device,
- {
- 	struct ocxl_afu *afu = to_afu(device);
- 
--	return scnprintf(buf, PAGE_SIZE, "%d\n",
-+	return sysfs_emit(buf, "%d\n",
- 			afu->config.pp_mmio_stride);
- }
- 
-@@ -36,7 +36,7 @@ static ssize_t afu_version_show(struct device *device,
- {
- 	struct ocxl_afu *afu = to_afu(device);
- 
--	return scnprintf(buf, PAGE_SIZE, "%hhu:%hhu\n",
-+	return sysfs_emit(buf, "%hhu:%hhu\n",
- 			afu->config.version_major,
- 			afu->config.version_minor);
- }
-@@ -47,7 +47,7 @@ static ssize_t contexts_show(struct device *device,
- {
- 	struct ocxl_afu *afu = to_afu(device);
- 
--	return scnprintf(buf, PAGE_SIZE, "%d/%d\n",
-+	return sysfs_emit(buf, "%d/%d\n",
- 			afu->pasid_count, afu->pasid_max);
- }
- 
-@@ -61,9 +61,9 @@ static ssize_t reload_on_reset_show(struct device *device,
- 	int val;
- 
- 	if (ocxl_config_get_reset_reload(pci_dev, &val))
--		return scnprintf(buf, PAGE_SIZE, "unavailable\n");
-+		return sysfs_emit(buf, "unavailable\n");
- 
--	return scnprintf(buf, PAGE_SIZE, "%d\n", val);
-+	return sysfs_emit(buf, "%d\n", val);
- }
- 
- static ssize_t reload_on_reset_store(struct device *device,
--- 
-2.43.0
-
+Best, 
+Ryan
 
