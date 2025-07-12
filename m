@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-10224-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10225-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70BC1C83F20
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jul 2025 23:29:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83E67C83F10
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jul 2025 23:29:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bfl8c4F8Vz3by8;
-	Sun, 13 Jul 2025 09:26:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752362800;
-	cv=none; b=f8S9P0E3jde8kUBQLJ+JZ+YMSrA1QRAeyduGakKdwaV0lrmgCpL9Gj9YhKj2aTRoCfzeip9dRTYMrG4wAhE1Y8oz7HwTa1sprCyHvpf01D0QRb95BfSN4D1/GdmxW7B/r6nC8PlU1TrM7ldlpPndEoO/O+b5vbD24HVGuBzjMTd3tc94PfkIHAQr8TJjf561yItg7+EfqPFbYWL+TSybR+yuZDsqAkVIugSJjPmTWFp8JJWVVhnjg4c7PUIeTtNL1YdsxTa9TTAX+TXnnScnDFI3lkH1ATPNlIevFirSliA57VWsrfgeOk9S8F1zKkujXRw/XR456odn6Q8tOuyWXw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bfl8d1y1Fz3bqM;
+	Sun, 13 Jul 2025 09:26:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752362801;
+	cv=none; b=n54NescEghYAS1QDJhSy97zKR6SboH8N71awddv0YOLRB2OEnftG8rK+m1A4qAu8BCLvh+Qnx+UuKgkfT7EmxIKW3JsqewMRTuWefJKzsToi3RC3/2am5nXSIW2SCKFiY08hONhw+mcjn/6vsHmfYnE5zz3ct6BLZORv2OHIEOr1SBbhqAvYCgIWfK56pNEiRg983Wzk2V6e8VQqNoSyeM9KJjstKDH6JMwvQVmNjz6nkqswVtKR7RGoKrQPEU+xTQCM3om6+0A9tgmbC2MnIWOmmWVvlrlrb+5BwlJzo2C/hk32U57/jRWkz8+RxbfAs5lJL2jLNrSEdsbbf4rkqw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752362800; c=relaxed/relaxed;
-	bh=9TMsLZO1bpTAJZJK7qrcR2GqkeUprp3/YrV3Ia6Gi5I=;
+	t=1752362801; c=relaxed/relaxed;
+	bh=zUlm4PeJQztSEdAXDcmnmQt+VbS5kv2O484A8pafujA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ar1f2qHgtxqiY1zah/g8JkyKvU3NH3vGt2OlXy3Gn++tHtcSXcjwVybT+fYhR5h1kjmikl04/1x8VVoOLWR3Bk5RTeSIf0pKl83TWwiz8clY6m4jHLgZxmvq3oZTcRbQLu0erboHoJJhc39/D2OMaINl4b5mt2H5fkF74eAN9zzbscTuGMoPbD/SVQify6Mfhuca3fTqyOE8WTopcwg1ZjVmN84YyGVmZaAij7y8ZH8Yztg8LWcwOdvayYn1AhLG77t53tRu/FMSn7hj9UzVvwlJZkNbzd98Nfo8ubdf/VPGDKgVroqTqUros25NuYNhU8DfDuX7NniTwl3jHe1s2Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WtGAriuO; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=fSJUR58yBju9qsmUbUL8DrabL0iY8sgKpA7vEWO5DXfabqARUo/ROcwHMwyfyFjRBVJTqIm4JTcKQp0O61LS7TGMR0HFIOxDLAN6LNe2fUNl87bVpNIxwceTxDnmqA6sC1BEoKkMfQyNlQJlZbDfweIFvMQ7h+xJFIEaHhpw529VzAE3HZmX1rTd4B+Af2KnNoYKVwdIBj1CjtLdySkiUb4iV2weeIEs08x7IKDIjhdoP0XzrNa42dFT4YcnzZKf4aJg7tKXaNMettCrpn7G3FOEAeQw0z5up+FJvP2z8aPFnYEopHP+IclHFQWlnAPS5O6gQScebxZkJ4MegNHVYA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fX0E8o1k; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WtGAriuO;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fX0E8o1k;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bfl8T1kv0z3bqM
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jul 2025 09:26:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bfl8V12QNz3brC
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jul 2025 09:26:34 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id EE48461132;
-	Sat, 12 Jul 2025 23:26:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5734BC4CEF5;
-	Sat, 12 Jul 2025 23:26:29 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 9435844A09;
+	Sat, 12 Jul 2025 23:26:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 25260C4CEF7;
+	Sat, 12 Jul 2025 23:26:32 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1752362789;
-	bh=KDQk7Ir1m956D0f1p9m7xAyJlDKZMG/Uv5S3nHotAXE=;
+	s=k20201202; t=1752362792;
+	bh=yc9nP0AyrYTSdnZBDBrGS14R619T+8Od6p+X/EDi6Wk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=WtGAriuOY7k91SmjWU1Jatz3UxR2BoHMvt2+41ewmLk75abevvy+rjaJDEKA9dayT
-	 4HnruTxiMdXn9C2lbXUTYijPl6AGxeUiVHGzv2Mci1g3kf1n8j8iqK/Gw4UhDfA1OM
-	 LEGQqPAvwRxD68ZByGUo/zfUhFtcAtZjF5EdvVBpUtFrWQZfMdAZzLC+bqW3uQZhM0
-	 78Q9KCitYCnlEFnRK/ju2eh+jLK5DHwcHu4G++4VwfzzEeTmEfmKN7aI+ajzvGYgYp
-	 L16hAYEY2uFqQu6UpZuTAuo837yuo7jq8gjxWFDQqb9fzhSIEx19EAKXI/j3/CqaeY
-	 kvMR31cHKCF7g==
+	b=fX0E8o1k57ipPAfx4Uzk0gPIv9zXrwOi7EklV1MTTwN4CCofX0j1AgCETrLo46xpR
+	 Fb/HAiIDk0Q2P043QlgVPWAz6ctV/JLTH2RJwvNw1pAU/2HI7xBrHJ7zDBInTtl6pG
+	 mzEoqG3qquK7rGUpI1L2ysFaTLshgPnAeVAFNEt+PnuRxP2jzd7FmS0aJqJE6xV0G4
+	 UAiLiC0Y1UK5bxhY8SxwNggognGdbLAPtfPBg71+lwZI1/NRIuLrUi/bGrX7oCfzlo
+	 jkJE8G03Pxs0HpkZAiPARUZk5aGWGElD8l3JOFy2Vc19sZYmnKIZ8d0fCNYAFiC01z
+	 WBJQa9HaiH7NQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -56,9 +56,9 @@ Cc: linux-kernel@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 20/26] lib/digsig: Use SHA-1 library instead of crypto_shash
-Date: Sat, 12 Jul 2025 16:23:11 -0700
-Message-ID: <20250712232329.818226-21-ebiggers@kernel.org>
+Subject: [PATCH 26/26] lib/crypto: sha1: Remove low-level functions from API
+Date: Sat, 12 Jul 2025 16:23:17 -0700
+Message-ID: <20250712232329.818226-27-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20250712232329.818226-1-ebiggers@kernel.org>
 References: <20250712232329.818226-1-ebiggers@kernel.org>
@@ -77,132 +77,158 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Use the SHA-1 library functions instead of crypto_shash.  This is
-simpler and faster.
+Now that there are no users of the low-level SHA-1 interface, remove it.
+
+Specifically:
+
+- Remove SHA1_DIGEST_WORDS (no longer used)
+- Remove sha1_init_raw() (no longer used)
+- Rename sha1_transform() to sha1_block_generic() and make it static
+- Move SHA1_WORKSPACE_WORDS into lib/crypto/sha1.c
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- lib/Kconfig  |  3 +--
- lib/digsig.c | 46 ++++++----------------------------------------
- 2 files changed, 7 insertions(+), 42 deletions(-)
+ include/crypto/sha1.h | 10 -------
+ lib/crypto/sha1.c     | 63 ++++++++++++-------------------------------
+ 2 files changed, 17 insertions(+), 56 deletions(-)
 
-diff --git a/lib/Kconfig b/lib/Kconfig
-index 37db228f70a99..670c19800c26c 100644
---- a/lib/Kconfig
-+++ b/lib/Kconfig
-@@ -561,12 +561,11 @@ config MPILIB
- 	  which is used by IMA/EVM digital signature extension.
+diff --git a/include/crypto/sha1.h b/include/crypto/sha1.h
+index 162a529ec8413..34658f4d76e3b 100644
+--- a/include/crypto/sha1.h
++++ b/include/crypto/sha1.h
+@@ -24,20 +24,10 @@ struct sha1_state {
+ 	u32 state[SHA1_DIGEST_SIZE / 4];
+ 	u64 count;
+ 	u8 buffer[SHA1_BLOCK_SIZE];
+ };
  
- config SIGNATURE
- 	tristate
- 	depends on KEYS
--	select CRYPTO
--	select CRYPTO_SHA1
-+	select CRYPTO_LIB_SHA1
- 	select MPILIB
- 	help
- 	  Digital signature verification. Currently only RSA is supported.
- 	  Implementation is done using GnuPG MPI library
- 
-diff --git a/lib/digsig.c b/lib/digsig.c
-index 04b5e55ed95f5..5ddcc52f76863 100644
---- a/lib/digsig.c
-+++ b/lib/digsig.c
-@@ -16,19 +16,15 @@
- 
- #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/slab.h>
- #include <linux/key.h>
--#include <linux/crypto.h>
--#include <crypto/hash.h>
- #include <crypto/sha1.h>
- #include <keys/user-type.h>
- #include <linux/mpi.h>
- #include <linux/digsig.h>
- 
--static struct crypto_shash *shash;
+-/*
+- * An implementation of SHA-1's compression function.  Don't use in new code!
+- * You shouldn't be using SHA-1, and even if you *have* to use SHA-1, this isn't
+- * the correct way to hash something with SHA-1 (use crypto_shash instead).
+- */
+-#define SHA1_DIGEST_WORDS	(SHA1_DIGEST_SIZE / 4)
+-#define SHA1_WORKSPACE_WORDS	16
+-void sha1_init_raw(__u32 *buf);
+-void sha1_transform(__u32 *digest, const char *data, __u32 *W);
 -
- static const char *pkcs_1_v1_5_decode_emsa(const unsigned char *msg,
- 						unsigned long  msglen,
- 						unsigned long  modulus_bitlen,
- 						unsigned long *outlen)
- {
-@@ -197,16 +193,16 @@ static int digsig_verify_rsa(struct key *key,
-  *
+ /* State for the SHA-1 compression function */
+ struct sha1_block_state {
+ 	u32 h[SHA1_DIGEST_SIZE / 4];
+ };
+ 
+diff --git a/lib/crypto/sha1.c b/lib/crypto/sha1.c
+index 89831f7f27793..87a76bf97f445 100644
+--- a/lib/crypto/sha1.c
++++ b/lib/crypto/sha1.c
+@@ -49,11 +49,11 @@ static const struct sha1_block_state sha1_iv = {
+ #else
+   #define setW(x, val) (W(x) = (val))
+ #endif
+ 
+ /* This "rolls" over the 512-bit array */
+-#define W(x) (array[(x)&15])
++#define W(x) (workspace[(x)&15])
+ 
+ /*
+  * Where do we get the source from? The first 16 iterations get it from
+  * the input data, the next mix it from the 512-bit array.
   */
- int digsig_verify(struct key *keyring, const char *sig, int siglen,
- 						const char *data, int datalen)
+@@ -70,38 +70,24 @@ static const struct sha1_block_state sha1_iv = {
+ #define T_16_19(t, A, B, C, D, E) SHA_ROUND(t, SHA_MIX, (((C^D)&B)^D) , 0x5a827999, A, B, C, D, E )
+ #define T_20_39(t, A, B, C, D, E) SHA_ROUND(t, SHA_MIX, (B^C^D) , 0x6ed9eba1, A, B, C, D, E )
+ #define T_40_59(t, A, B, C, D, E) SHA_ROUND(t, SHA_MIX, ((B&C)+(D&(B^C))) , 0x8f1bbcdc, A, B, C, D, E )
+ #define T_60_79(t, A, B, C, D, E) SHA_ROUND(t, SHA_MIX, (B^C^D) ,  0xca62c1d6, A, B, C, D, E )
+ 
+-/**
+- * sha1_transform - single block SHA1 transform (deprecated)
+- *
+- * @digest: 160 bit digest to update
+- * @data:   512 bits of data to hash
+- * @array:  16 words of workspace (see note)
+- *
+- * This function executes SHA-1's internal compression function.  It updates the
+- * 160-bit internal state (@digest) with a single 512-bit data block (@data).
+- *
+- * Don't use this function.  SHA-1 is no longer considered secure.  And even if
+- * you do have to use SHA-1, this isn't the correct way to hash something with
+- * SHA-1 as this doesn't handle padding and finalization.
+- *
+- * Note: If the hash is security sensitive, the caller should be sure
+- * to clear the workspace. This is left to the caller to avoid
+- * unnecessary clears between chained hashing operations.
+- */
+-void sha1_transform(__u32 *digest, const char *data, __u32 *array)
++#define SHA1_WORKSPACE_WORDS 16
++
++static void sha1_block_generic(struct sha1_block_state *state,
++			       const u8 data[SHA1_BLOCK_SIZE],
++			       u32 workspace[SHA1_WORKSPACE_WORDS])
  {
--	int err = -ENOMEM;
- 	struct signature_hdr *sh = (struct signature_hdr *)sig;
--	struct shash_desc *desc = NULL;
-+	struct sha1_ctx ctx;
- 	unsigned char hash[SHA1_DIGEST_SIZE];
- 	struct key *key;
- 	char name[20];
-+	int err;
+ 	__u32 A, B, C, D, E;
+ 	unsigned int i = 0;
  
- 	if (siglen < sizeof(*sh) + 2)
- 		return -EINVAL;
+-	A = digest[0];
+-	B = digest[1];
+-	C = digest[2];
+-	D = digest[3];
+-	E = digest[4];
++	A = state->h[0];
++	B = state->h[1];
++	C = state->h[2];
++	D = state->h[3];
++	E = state->h[4];
  
- 	if (sh->algo != PUBKEY_ALGO_RSA)
-@@ -229,51 +225,21 @@ int digsig_verify(struct key *keyring, const char *sig, int siglen,
- 	if (IS_ERR(key)) {
- 		pr_err("key not found, id: %s\n", name);
- 		return PTR_ERR(key);
- 	}
+ 	/* Round 1 - iterations 0-16 take their input from 'data' */
+ 	for (; i < 16; ++i)
+ 		T_0_15(i, A, B, C, D, E);
  
--	desc = kzalloc(sizeof(*desc) + crypto_shash_descsize(shash),
--		       GFP_KERNEL);
--	if (!desc)
--		goto err;
+@@ -119,39 +105,24 @@ void sha1_transform(__u32 *digest, const char *data, __u32 *array)
+ 
+ 	/* Round 4 */
+ 	for (; i < 80; ++i)
+ 		T_60_79(i, A, B, C, D, E);
+ 
+-	digest[0] += A;
+-	digest[1] += B;
+-	digest[2] += C;
+-	digest[3] += D;
+-	digest[4] += E;
+-}
+-EXPORT_SYMBOL(sha1_transform);
 -
--	desc->tfm = shash;
--
--	crypto_shash_init(desc);
--	crypto_shash_update(desc, data, datalen);
--	crypto_shash_update(desc, sig, sizeof(*sh));
--	crypto_shash_final(desc, hash);
--
--	kfree(desc);
-+	sha1_init(&ctx);
-+	sha1_update(&ctx, data, datalen);
-+	sha1_update(&ctx, sig, sizeof(*sh));
-+	sha1_final(&ctx, hash);
- 
- 	/* pass signature mpis address */
- 	err = digsig_verify_rsa(key, sig + sizeof(*sh), siglen - sizeof(*sh),
- 			     hash, sizeof(hash));
- 
--err:
- 	key_put(key);
- 
- 	return err ? -EINVAL : 0;
+-/**
+- * sha1_init_raw - initialize the vectors for a SHA1 digest
+- * @buf: vector to initialize
+- */
+-void sha1_init_raw(__u32 *buf)
+-{
+-	buf[0] = 0x67452301;
+-	buf[1] = 0xefcdab89;
+-	buf[2] = 0x98badcfe;
+-	buf[3] = 0x10325476;
+-	buf[4] = 0xc3d2e1f0;
++	state->h[0] += A;
++	state->h[1] += B;
++	state->h[2] += C;
++	state->h[3] += D;
++	state->h[4] += E;
  }
- EXPORT_SYMBOL_GPL(digsig_verify);
+-EXPORT_SYMBOL(sha1_init_raw);
  
--static int __init digsig_init(void)
--{
--	shash = crypto_alloc_shash("sha1", 0, 0);
--	if (IS_ERR(shash)) {
--		pr_err("shash allocation failed\n");
--		return  PTR_ERR(shash);
--	}
--
--	return 0;
--
--}
--
--static void __exit digsig_cleanup(void)
--{
--	crypto_free_shash(shash);
--}
--
--module_init(digsig_init);
--module_exit(digsig_cleanup);
--
- MODULE_LICENSE("GPL");
+ static void __maybe_unused sha1_blocks_generic(struct sha1_block_state *state,
+ 					       const u8 *data, size_t nblocks)
+ {
+ 	u32 workspace[SHA1_WORKSPACE_WORDS];
+ 
+ 	do {
+-		sha1_transform(state->h, data, workspace);
++		sha1_block_generic(state, data, workspace);
+ 		data += SHA1_BLOCK_SIZE;
+ 	} while (--nblocks);
+ 
+ 	memzero_explicit(workspace, sizeof(workspace));
+ }
 -- 
 2.50.1
 
