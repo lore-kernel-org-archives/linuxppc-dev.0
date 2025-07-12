@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-10222-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10223-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D319C83F1D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jul 2025 23:28:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40422C83F1D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jul 2025 23:29:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bfl8b3rDjz3bwL;
-	Sun, 13 Jul 2025 09:26:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752362799;
-	cv=none; b=Mj5oWsfPuOuk3l7kqnehkgaNpCZXtBgOG1fid/XgazDzgnaqlKc8McVCul9I/C4Xq+GxV4t0mukgVvctvMKlhc8MJ+CBqSYXg6sxYHhMUYu8Knt6xBHwUgW+FaOtQbtQFat2IVDqmJ24YZlhTnyqY8ZHp8DJbxbwU+mlvWfdMaUOCgkqYrYW+Tns1oKOPXsKz8OFKqLOYr3OlJKqmujLC8CFNR1vEe5r2b8hWn0xFaCBaNTh/x+aM8kRwul+u5R6RDuQ/lhnZGNqX4c6q0OjDlXC0en/h9PLvMHm8ZNny8SZCWn+NTkD7yvLYQpdeilVr6+Hpap1akBdeCjeE1a3+Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bfl8c3N0tz3bp7;
+	Sun, 13 Jul 2025 09:26:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752362800;
+	cv=none; b=QlvE3gney7IVnWkwbxIlIGg9Ng1Z+BlKEWowuadoW8Raege9TABHay9g7/21PE1x974jykFFkmK+zfLh6RtVObr3D2oQAnWp7c8RsqBHReq1b91vDbamvrDawEeIVj+xvV2sF996JR0zhsIWdrfElDI84YPRpiBh1jllyP0qduA4Kdno9MFg9ojxNyHZxoK27hWJj/OmvnkXANNlOfCNPyaL0nzEjiBHZtahDlzeKIRB7DpxafxEvOQDfSoRvCk1zZUy000lL78vhDfyqEBoMjLOwQDSdYibK4URM+RHdDkLtZ7jHuwih/ByzAOZAY6eQnoxFOy1a4Xe+8awd3vvBw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752362799; c=relaxed/relaxed;
-	bh=X2MGdzYvcst5IMa/Q4V1TYN4Ms7TUXjTRtBPro8Troo=;
+	t=1752362800; c=relaxed/relaxed;
+	bh=nuX1ud78/VxRBT7LeIurfx88B3B30dpQ41jGp+WBhmo=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZdLhgSjxDCb8G58bq5yhnVC6h+Dfp5fs/LDHy/CnsaEzNSlyg3mtcTOIJ5+1ZHXS+TRVkPt0oXyYj5jU9+dUJpElibs0Dx4blH7gvgdOc/7jQCZOb5dfbC74Hs+DysopAu/2ZcJyXXDJq30HK60QOEB97is9MP1TOXQuxrIsosYfBMYEbZXaD0kRYRb/vV76JuW3t5+TfCEASU5ltqKN3lMQ4WaeR7UWzzDlUP3nhZ16crQEAM/T5UBTlLF85P/efJzQzmnWPJJNcH8y11t5gp4Wl/hPa4LRuNaJq3FZ9UtY9LfBkNxzGbR+h4vf7xZ1i2J7VwR7LNQT79/EeYlqWA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TruHvLVH; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=EZoa/sFzybiMJIY5Io8RhUamsTj1XFsEYvqRbPsP9eY9ucD0gLyOZmBqsdbU540htfgvMn/o7juXf0ZFK0glXZEx1mNcSnWJA7RKBNba+QcRkAsWehgFXBz3RxEb7U3hxxyvBUhoYWVVnsM04n6CLV4Q8xVCUpAl/cIrfiALW5qI8Yb+vVQyrqcjcODgaTaava6r4hdRlDOSipvTofQWFNIoC7Kk84Z0JNmfTJTcoN8fml8GZtCEFpT4ERQXTaUEkrvBUmTJUVSby2MSX6/IKQHzdcaLJAkXDRlLS6S8/dQpslAgAzQxNwuT08kVoeVUBCGnKRB+l8cnP9OKha6Wjw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jHOgR8/e; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TruHvLVH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jHOgR8/e;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bfl8S3W15z3bp7
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jul 2025 09:26:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bfl8T2myMz3bqh
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jul 2025 09:26:32 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 7C70E61127;
+	by dfw.source.kernel.org (Postfix) with ESMTP id 528005C558A;
+	Sat, 12 Jul 2025 23:26:30 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C9477C4CEF8;
 	Sat, 12 Jul 2025 23:26:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9DD0C4CEEF;
-	Sat, 12 Jul 2025 23:26:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1752362789;
-	bh=RedRxFFHKVy5vtVyY+MZJNiBk1oOHQ1I/68b2H+lbA4=;
+	s=k20201202; t=1752362790;
+	bh=xZzl/xlzSt8gsN4p0nytxwCdAqxySD8jh31PuuGyOBQ=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=TruHvLVHxzmKSDlYw1X7RzNkw2reqbswxSziZxBysLXETgCfeJYJssRnoaL1nzchi
-	 mi9LuEPvy1/hCsL7g5ruwnoqxWESCQwA0R6D++X5zLp+a1AP/SYpw+WEAZjvmFQX6i
-	 m5sZe95u3ReCd2zA9v1HzPEzPx2HWU3ceCbr7feHlOPjPGB1S+Avh8UHhOh6Qd9t+q
-	 9f4qhYO4xgQ30f+8sg3fvb3SJc4mvuEfy5lY9MGKg3uEMndll+YQh3+Gn88Rkq4xXy
-	 9QbE4KXhY4FA2wx4Y5mO4lq71JIx2mLl3fKyCGcWwCY0X/KHwZI+dqmIh49OgDsD95
-	 5DEcBVAIH3xUw==
+	b=jHOgR8/eAUWb+TKPF25TOK6Sliz7m1aUYz+j/MLYKMsxt4rKWRZJGo5hPIHSV64zn
+	 7of82OAPvifGLUpuHuFDsjdQA92aH7ZkFpmPXS8OiM9eZNvip/CMvh2gfWUfpsJ3l4
+	 CkTk+rCEkdibLqaQH8fh3UiGr6mwjUtiZs07/Qkt+YZg1C0SccjXKZMsmT6RS+7pet
+	 /YF/SspJy/r11r/BVbRD6U5wKlFEU4eWNfug2GDWZgxrSSqch+PUOQAWyZXRrUKu2z
+	 Vu/ThPYn8ewEdUblbxsMvgsAY7zmfj03U8oqUd9gKkQTaGl7/Z/+oEZXpbIf/sMfr8
+	 r38CY8t/o97kQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -56,9 +56,9 @@ Cc: linux-kernel@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 19/26] tee: Use SHA-1 library instead of crypto_shash
-Date: Sat, 12 Jul 2025 16:23:10 -0700
-Message-ID: <20250712232329.818226-20-ebiggers@kernel.org>
+Subject: [PATCH 21/26] drm/bridge: it6505: Use SHA-1 library instead of crypto_shash
+Date: Sat, 12 Jul 2025 16:23:12 -0700
+Message-ID: <20250712232329.818226-22-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20250712232329.818226-1-ebiggers@kernel.org>
 References: <20250712232329.818226-1-ebiggers@kernel.org>
@@ -77,143 +77,103 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Use the SHA-1 library functions instead of crypto_shash.  This is
-simpler and faster.
+Use the SHA-1 library instead of crypto_shash.  This is simpler and
+faster.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- drivers/tee/Kconfig    |  3 +--
- drivers/tee/tee_core.c | 55 +++++++-----------------------------------
- 2 files changed, 10 insertions(+), 48 deletions(-)
+ drivers/gpu/drm/bridge/Kconfig      |  3 +--
+ drivers/gpu/drm/bridge/ite-it6505.c | 33 ++---------------------------
+ 2 files changed, 3 insertions(+), 33 deletions(-)
 
-diff --git a/drivers/tee/Kconfig b/drivers/tee/Kconfig
-index 61b507c187801..a84767940fbfc 100644
---- a/drivers/tee/Kconfig
-+++ b/drivers/tee/Kconfig
-@@ -1,12 +1,11 @@
- # SPDX-License-Identifier: GPL-2.0-only
- # Generic Trusted Execution Environment Configuration
- menuconfig TEE
- 	tristate "Trusted Execution Environment support"
- 	depends on HAVE_ARM_SMCCC || COMPILE_TEST || CPU_SUP_AMD
+diff --git a/drivers/gpu/drm/bridge/Kconfig b/drivers/gpu/drm/bridge/Kconfig
+index b9e0ca85226a6..89ac820a13e1e 100644
+--- a/drivers/gpu/drm/bridge/Kconfig
++++ b/drivers/gpu/drm/bridge/Kconfig
+@@ -118,12 +118,11 @@ config DRM_ITE_IT6505
+ 	select DRM_DISPLAY_HDCP_HELPER
+ 	select DRM_DISPLAY_HELPER
+ 	select DRM_DISPLAY_DP_AUX_BUS
+ 	select DRM_KMS_HELPER
+ 	select EXTCON
 -	select CRYPTO
--	select CRYPTO_SHA1
+-	select CRYPTO_HASH
 +	select CRYPTO_LIB_SHA1
- 	select DMA_SHARED_BUFFER
- 	select GENERIC_ALLOCATOR
  	help
- 	  This implements a generic interface towards a Trusted Execution
- 	  Environment (TEE).
-diff --git a/drivers/tee/tee_core.c b/drivers/tee/tee_core.c
-index acc7998758ad8..4c82a171bff20 100644
---- a/drivers/tee/tee_core.c
-+++ b/drivers/tee/tee_core.c
-@@ -12,11 +12,10 @@
- #include <linux/module.h>
- #include <linux/overflow.h>
- #include <linux/slab.h>
- #include <linux/tee_core.h>
- #include <linux/uaccess.h>
+ 	  ITE IT6505 DisplayPort bridge chip driver.
+ 
+ config DRM_LONTIUM_LT8912B
+ 	tristate "Lontium LT8912B DSI/HDMI bridge"
+diff --git a/drivers/gpu/drm/bridge/ite-it6505.c b/drivers/gpu/drm/bridge/ite-it6505.c
+index 1383d1e21afea..319d956c0a28c 100644
+--- a/drivers/gpu/drm/bridge/ite-it6505.c
++++ b/drivers/gpu/drm/bridge/ite-it6505.c
+@@ -19,11 +19,11 @@
+ #include <linux/regulator/consumer.h>
+ #include <linux/types.h>
+ #include <linux/wait.h>
+ #include <linux/bitfield.h>
+ 
 -#include <crypto/hash.h>
- #include <crypto/sha1.h>
- #include "tee_private.h"
++#include <crypto/sha1.h>
  
- #define TEE_NUM_DEVICES	32
+ #include <drm/display/drm_dp_helper.h>
+ #include <drm/display/drm_hdcp_helper.h>
+ #include <drm/drm_atomic_helper.h>
+ #include <drm/drm_bridge.h>
+@@ -2105,39 +2105,10 @@ static void it6505_hdcp_part1_auth(struct it6505 *it6505)
+ 			HDCP_TRIGGER_START);
  
-@@ -140,72 +139,36 @@ static int tee_release(struct inode *inode, struct file *filp)
-  * UUIDv5 is specific in RFC 4122.
-  *
-  * This implements section (for SHA-1):
-  * 4.3.  Algorithm for Creating a Name-Based UUID
-  */
--static int uuid_v5(uuid_t *uuid, const uuid_t *ns, const void *name,
--		   size_t size)
-+static void uuid_v5(uuid_t *uuid, const uuid_t *ns, const void *name,
-+		    size_t size)
- {
-+	struct sha1_ctx ctx;
- 	unsigned char hash[SHA1_DIGEST_SIZE];
--	struct crypto_shash *shash = NULL;
--	struct shash_desc *desc = NULL;
--	int rc;
--
--	shash = crypto_alloc_shash("sha1", 0, 0);
--	if (IS_ERR(shash)) {
--		rc = PTR_ERR(shash);
--		pr_err("shash(sha1) allocation failed\n");
--		return rc;
--	}
--
--	desc = kzalloc(sizeof(*desc) + crypto_shash_descsize(shash),
--		       GFP_KERNEL);
--	if (!desc) {
--		rc = -ENOMEM;
--		goto out_free_shash;
--	}
--
--	desc->tfm = shash;
- 
--	rc = crypto_shash_init(desc);
--	if (rc < 0)
--		goto out_free_desc;
--
--	rc = crypto_shash_update(desc, (const u8 *)ns, sizeof(*ns));
--	if (rc < 0)
--		goto out_free_desc;
--
--	rc = crypto_shash_update(desc, (const u8 *)name, size);
--	if (rc < 0)
--		goto out_free_desc;
--
--	rc = crypto_shash_final(desc, hash);
--	if (rc < 0)
--		goto out_free_desc;
-+	sha1_init(&ctx);
-+	sha1_update(&ctx, (const u8 *)ns, sizeof(*ns));
-+	sha1_update(&ctx, (const u8 *)name, size);
-+	sha1_final(&ctx, hash);
- 
- 	memcpy(uuid->b, hash, UUID_SIZE);
- 
- 	/* Tag for version 5 */
- 	uuid->b[6] = (hash[6] & 0x0F) | 0x50;
- 	uuid->b[8] = (hash[8] & 0x3F) | 0x80;
--
--out_free_desc:
--	kfree(desc);
--
--out_free_shash:
--	crypto_free_shash(shash);
--	return rc;
+ 	it6505->hdcp_status = HDCP_AUTH_GOING;
  }
  
- int tee_session_calc_client_uuid(uuid_t *uuid, u32 connection_method,
- 				 const u8 connection_data[TEE_IOCTL_UUID_LEN])
+-static int it6505_sha1_digest(struct it6505 *it6505, u8 *sha1_input,
+-			      unsigned int size, u8 *output_av)
+-{
+-	struct shash_desc *desc;
+-	struct crypto_shash *tfm;
+-	int err;
+-	struct device *dev = it6505->dev;
+-
+-	tfm = crypto_alloc_shash("sha1", 0, 0);
+-	if (IS_ERR(tfm)) {
+-		dev_err(dev, "crypto_alloc_shash sha1 failed");
+-		return PTR_ERR(tfm);
+-	}
+-	desc = kzalloc(sizeof(*desc) + crypto_shash_descsize(tfm), GFP_KERNEL);
+-	if (!desc) {
+-		crypto_free_shash(tfm);
+-		return -ENOMEM;
+-	}
+-
+-	desc->tfm = tfm;
+-	err = crypto_shash_digest(desc, sha1_input, size, output_av);
+-	if (err)
+-		dev_err(dev, "crypto_shash_digest sha1 failed");
+-
+-	crypto_free_shash(tfm);
+-	kfree(desc);
+-	return err;
+-}
+-
+ static int it6505_setup_sha1_input(struct it6505 *it6505, u8 *sha1_input)
  {
- 	gid_t ns_grp = (gid_t)-1;
- 	kgid_t grp = INVALID_GID;
- 	char *name = NULL;
- 	int name_len;
--	int rc;
-+	int rc = 0;
- 
- 	if (connection_method == TEE_IOCTL_LOGIN_PUBLIC ||
- 	    connection_method == TEE_IOCTL_LOGIN_REE_KERNEL) {
- 		/* Nil UUID to be passed to TEE environment */
- 		uuid_copy(uuid, &uuid_null);
-@@ -258,11 +221,11 @@ int tee_session_calc_client_uuid(uuid_t *uuid, u32 connection_method,
- 	default:
- 		rc = -EINVAL;
- 		goto out_free_name;
+ 	struct device *dev = it6505->dev;
+ 	u8 binfo[2];
+ 	int down_stream_count, err, msg_count = 0;
+@@ -2203,11 +2174,11 @@ static bool it6505_hdcp_part2_ksvlist_check(struct it6505 *it6505)
+ 	if (i <= 0) {
+ 		dev_err(dev, "SHA-1 Input length error %d", i);
+ 		return false;
  	}
  
--	rc = uuid_v5(uuid, &tee_client_uuid_ns, name, name_len);
-+	uuid_v5(uuid, &tee_client_uuid_ns, name, name_len);
- out_free_name:
- 	kfree(name);
+-	it6505_sha1_digest(it6505, it6505->sha1_input, i, (u8 *)av);
++	sha1(it6505->sha1_input, i, (u8 *)av);
+ 	/*1B-05 V' must retry 3 times */
+ 	for (retry = 0; retry < 3; retry++) {
+ 		err = it6505_get_dpcd(it6505, DP_AUX_HDCP_V_PRIME(0), (u8 *)bv,
+ 				      sizeof(bv));
  
- 	return rc;
- }
 -- 
 2.50.1
 
