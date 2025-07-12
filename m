@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-10214-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10215-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CCC1C83F1D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jul 2025 23:28:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69D43C83F10
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jul 2025 23:28:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bfl8W5Lbtz3brc;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bfl8W6WQdz3brr;
 	Sun, 13 Jul 2025 09:26:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752362795;
-	cv=none; b=b6OJtmvrYapkO89oPDi8aUDxUFRJXmuTNQhn1dHLc2i7LMlYII9h+nYldSOTJr3J+2CLKiuBgrUVHFbRZLrAicBau1jXmMLR9xkVwK4E4NH+Z/WOWwhIApAo2jr7j4ieFRf6cZck1+jpmQEwte6inPvuyim2Msijc4U6Cd2jUSAToOwiQ3BQV/8ZPx9G2A+KbIwZbSqEG56Kyyrn248HtQKVxBgYwLguneNUmIXfPxR5d4GESIBKyWN/nm+grTe6004RpK4NdwVrjlJE39fYfhaXrY3SIm3TiDmOa403riiOo5+6ZIf2N7/z8mubkAwGGRrLIEtvmRA1QWBoakW0gA==
+	cv=none; b=ay6hqwAJIJlcoaVNCVkELk/ciboM1FCYGpgOAgTvC5ayGlcTQbYDbnO4Myj+LbiDo9SJaNBpTZ5rk9eH8JSmAKcsb9NyLQ5GrqgfGSEQZo1LZWTQIQmU3IjuhCxJQQNmgXt5j8RhmMTStJwgdzhYrEw5dOibBEF6CjM/bkttj5otWpOTKr+IxLSJ8wkTOdJu8kKNXpfKp++bbN23MMyLjVmoSGqT3et19z0jHf67/eyOQ4GXj/GuJlQrBhS2miBpMOu2xW2o3AVVRlttg06R1rQKBuQ9XcHZ/5oX/vvK6RWf91hW1KJGN5hWnXKrsAEt2J2/16DgfkzOkQk/qFS2Lg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1752362795; c=relaxed/relaxed;
-	bh=YyW68gMBiKeRO9dxsH8aK6akyJ/CCbRVkgsVIUa+9nY=;
+	bh=jCXigeeWTrQIReJtJOpqtuS2wbvv8dq2DBtYSLrukBQ=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=dDL7dlQ75L2zs3NvtHs+QMlNMV1S/Sm7H6Vt7eJhKXDSeuCiHAU1aznIX1vr/HCSUcsFXwB2OPdZw8u1IQdwQ9FzWZj+ZinFyrK2fj8MlHOxxlSp/jUtCPKXtZv6bYZJKkjSDOmduh1ePzSmWSTz0QeZ5MgXAaHuINFANy+zO/rhrMjzOc6NF5bSkaG8dzcGLVPTf+QbmXAH0CJu0lxM+dQdtOc/LdFfUEvH+koSwFtgUNJ6e6tJppJkoCFMLftLyEXeOawYrFszki20tWjUGxT+LfrG8EDRVFrxIkgF0IBV7UquoH+F6naBiNLng3bUnwhmb1LPu7KtZJ7Fa6IIHA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NHeLA/KH; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=i0RFMVLnBFBg1OdaaxBpVuNxTlbhv7oqd+s3VSaTeOAdBEZ0dCO6xBj87dSBpNdM93JJHxSkxxJNXHIBE0ST1ik1mjl4TQfP8jFHpyP1202u2rUJ+XPPOQrJXbSFY9HsFU8pnvJZbO3CruxSTlOd1TmVxDhInB4za4Kzw64RVv2tD9cwn5hOULIAqQo6f7gDCTFOv7ArGMdmSm6h4cK9BGd8FKgDz18i/xpvNirq4oc5WiGStL7TpzuncV/gMDM/pVBP2r1gCPI67/JM9TKEM7MqagFNn76JhVwE7W2bCHrX3/9Prr+hOWYnxVC40e4EMdP5BQ1HxqogCOLAEWCzBw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dH9DsS2X; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NHeLA/KH;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=dH9DsS2X;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bfl8P2vNFz3bmY
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jul 2025 09:26:28 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bfl8P50Qbz3bn0
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jul 2025 09:26:29 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 3B546A54798;
-	Sat, 12 Jul 2025 23:26:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8D961C4CEF7;
-	Sat, 12 Jul 2025 23:26:25 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 042415C5570;
+	Sat, 12 Jul 2025 23:26:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 791B6C4CEEF;
+	Sat, 12 Jul 2025 23:26:27 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1752362785;
-	bh=LruJqtF+TwmkPV/aEz/JpTzpQv42VX6b1q36sAkdMHQ=;
+	s=k20201202; t=1752362787;
+	bh=0uuH9SjZ8K8+ACPJuo2m4qDOTTccNZS9uJItjIz8lEA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=NHeLA/KHLKl2QWc9TBszQnASmUzxeJUh4BNHOt6A3lNhYy9I4pp3sYrQKd72LR60z
-	 KGyJEWc1AzAAFX0ofjFZOaBPDWGm3LabMi5tr448sdAoMQAjXowUc2H82oe4Urk6qV
-	 GosEozTuBSz9eu2210F9B6S64TfigAzo5I5P25QUBsw50TxOqjpT+KMGWe/IcoB1AZ
-	 7gDqTHuRg1Ry3yGHTSm37EYcGLJFyh4cXIHMKu1j7fuB5ltEkmNCkhf0jYwsA2L88E
-	 y/V+h9TEba4VUQqRGtSmZ0vKvRQv3S8nFvJSvdRakRfQNE6hSFJyOT0BR021XuPglF
-	 jGIUNOMddbOZA==
+	b=dH9DsS2Xw3covYFWQE+Ugk+mBSxQ6BXP2pO4QGhLwVyEe44kLlMwoYGDWYEj3LbYU
+	 gNdRwNL79zti3WDAQqGT1htMpRbssnwYwxtC6lzR2Z7iMnN/nb5/eKFRmZfAYAyb7V
+	 n+j/QkLGWP4ObgYdRFiUCOqHz+h6ker+Ij6lHGSukFAD+bse5ep9FHfZvIUfPLxf24
+	 EWrvdOPariUuQs9pPs+WP2TbaKFCh/iYI+jCyHvElw1B3YGPSTjJIys9WkZcYN0Qv9
+	 x4K/cOgDkQB3FhwoiAqugSoucfjpSWvoeIMRrzhIV5GFjQ7fRsJv6EFguXNtbqYWBp
+	 h+kGyp8qif+ZQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -56,9 +56,9 @@ Cc: linux-kernel@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 12/26] lib/crypto: sparc/sha1: Migrate optimized code into library
-Date: Sat, 12 Jul 2025 16:23:03 -0700
-Message-ID: <20250712232329.818226-13-ebiggers@kernel.org>
+Subject: [PATCH 16/26] bpf: Use sha1() instead of sha1_transform() in bpf_prog_calc_tag()
+Date: Sat, 12 Jul 2025 16:23:07 -0700
+Message-ID: <20250712232329.818226-17-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20250712232329.818226-1-ebiggers@kernel.org>
 References: <20250712232329.818226-1-ebiggers@kernel.org>
@@ -77,264 +77,121 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Instead of exposing the sparc-optimized SHA-1 code via sparc-specific
-crypto_shash algorithms, instead just implement the sha1_blocks()
-library function.  This is much simpler, it makes the SHA-1 library
-functions be sparc-optimized, and it fixes the longstanding issue where
-the sparc-optimized SHA-1 code was disabled by default.  SHA-1 still
-remains available through crypto_shash, but individual architectures no
-longer need to handle it.
-
-Note: to see the diff from arch/sparc/crypto/sha1_glue.c to
-lib/crypto/sparc/sha1.h, view this commit with 'git show -M10'.
+Now that there's a proper SHA-1 library API, just use that instead of
+the low-level SHA-1 compression function.  This eliminates the need for
+bpf_prog_calc_tag() to implement the SHA-1 padding itself.  No
+functional change.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/sparc/crypto/Kconfig                     | 10 --
- arch/sparc/crypto/Makefile                    |  2 -
- arch/sparc/crypto/sha1_glue.c                 | 94 -------------------
- lib/crypto/Kconfig                            |  1 +
- lib/crypto/Makefile                           |  1 +
- lib/crypto/sparc/sha1.h                       | 43 +++++++++
- .../crypto => lib/crypto/sparc}/sha1_asm.S    |  0
- 7 files changed, 45 insertions(+), 106 deletions(-)
- delete mode 100644 arch/sparc/crypto/sha1_glue.c
- create mode 100644 lib/crypto/sparc/sha1.h
- rename {arch/sparc/crypto => lib/crypto/sparc}/sha1_asm.S (100%)
+ include/linux/filter.h |  6 ------
+ kernel/bpf/core.c      | 49 +++++++-----------------------------------
+ 2 files changed, 8 insertions(+), 47 deletions(-)
 
-diff --git a/arch/sparc/crypto/Kconfig b/arch/sparc/crypto/Kconfig
-index 9d8da9aef3a41..f5b2e720fec3c 100644
---- a/arch/sparc/crypto/Kconfig
-+++ b/arch/sparc/crypto/Kconfig
-@@ -24,20 +24,10 @@ config CRYPTO_MD5_SPARC64
- 	help
- 	  MD5 message digest algorithm (RFC1321)
+diff --git a/include/linux/filter.h b/include/linux/filter.h
+index f5cf4d35d83e9..3aa33e904a4ed 100644
+--- a/include/linux/filter.h
++++ b/include/linux/filter.h
+@@ -995,16 +995,10 @@ void bpf_prog_change_xdp(struct bpf_prog *prev_prog, struct bpf_prog *prog);
+ static inline u32 bpf_prog_insn_size(const struct bpf_prog *prog)
+ {
+ 	return prog->len * sizeof(struct bpf_insn);
+ }
  
- 	  Architecture: sparc64 using crypto instructions, when available
- 
--config CRYPTO_SHA1_SPARC64
--	tristate "Hash functions: SHA-1"
--	depends on SPARC64
--	select CRYPTO_SHA1
--	select CRYPTO_HASH
--	help
--	  SHA-1 secure hash algorithm (FIPS 180)
--
--	  Architecture: sparc64
--
- config CRYPTO_AES_SPARC64
- 	tristate "Ciphers: AES, modes: ECB, CBC, CTR"
- 	depends on SPARC64
- 	select CRYPTO_SKCIPHER
- 	help
-diff --git a/arch/sparc/crypto/Makefile b/arch/sparc/crypto/Makefile
-index 99a7e8fd13bc9..0d05a17988c4c 100644
---- a/arch/sparc/crypto/Makefile
-+++ b/arch/sparc/crypto/Makefile
-@@ -1,18 +1,16 @@
- # SPDX-License-Identifier: GPL-2.0
- #
- # Arch-specific CryptoAPI modules.
- #
- 
--obj-$(CONFIG_CRYPTO_SHA1_SPARC64) += sha1-sparc64.o
- obj-$(CONFIG_CRYPTO_MD5_SPARC64) += md5-sparc64.o
- 
- obj-$(CONFIG_CRYPTO_AES_SPARC64) += aes-sparc64.o
- obj-$(CONFIG_CRYPTO_DES_SPARC64) += des-sparc64.o
- obj-$(CONFIG_CRYPTO_CAMELLIA_SPARC64) += camellia-sparc64.o
- 
--sha1-sparc64-y := sha1_asm.o sha1_glue.o
- md5-sparc64-y := md5_asm.o md5_glue.o
- 
- aes-sparc64-y := aes_asm.o aes_glue.o
- des-sparc64-y := des_asm.o des_glue.o
- camellia-sparc64-y := camellia_asm.o camellia_glue.o
-diff --git a/arch/sparc/crypto/sha1_glue.c b/arch/sparc/crypto/sha1_glue.c
-deleted file mode 100644
-index ef19d5023b1bc..0000000000000
---- a/arch/sparc/crypto/sha1_glue.c
-+++ /dev/null
-@@ -1,94 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-only
--/* Glue code for SHA1 hashing optimized for sparc64 crypto opcodes.
-- *
-- * This is based largely upon arch/x86/crypto/sha1_ssse3_glue.c
-- *
-- * Copyright (c) Alan Smithee.
-- * Copyright (c) Andrew McDonald <andrew@mcdonald.org.uk>
-- * Copyright (c) Jean-Francois Dive <jef@linuxbe.org>
-- * Copyright (c) Mathias Krause <minipli@googlemail.com>
-- */
--
--#define pr_fmt(fmt)	KBUILD_MODNAME ": " fmt
--
--#include <asm/elf.h>
--#include <asm/opcodes.h>
--#include <asm/pstate.h>
--#include <crypto/internal/hash.h>
--#include <crypto/sha1.h>
--#include <crypto/sha1_base.h>
--#include <linux/kernel.h>
--#include <linux/module.h>
--
--asmlinkage void sha1_sparc64_transform(struct sha1_state *digest,
--				       const u8 *data, int rounds);
--
--static int sha1_sparc64_update(struct shash_desc *desc, const u8 *data,
--			       unsigned int len)
+-static inline u32 bpf_prog_tag_scratch_size(const struct bpf_prog *prog)
 -{
--	return sha1_base_do_update_blocks(desc, data, len,
--					  sha1_sparc64_transform);
+-	return round_up(bpf_prog_insn_size(prog) +
+-			sizeof(__be64) + 1, SHA1_BLOCK_SIZE);
 -}
 -
--/* Add padding and return the message digest. */
--static int sha1_sparc64_finup(struct shash_desc *desc, const u8 *src,
--			      unsigned int len, u8 *out)
--{
--	sha1_base_do_finup(desc, src, len, sha1_sparc64_transform);
--	return sha1_base_finish(desc, out);
--}
+ static inline unsigned int bpf_prog_size(unsigned int proglen)
+ {
+ 	return max(sizeof(struct bpf_prog),
+ 		   offsetof(struct bpf_prog, insns[proglen]));
+ }
+diff --git a/kernel/bpf/core.c b/kernel/bpf/core.c
+index dae281a1286d5..a1b727ffa4548 100644
+--- a/kernel/bpf/core.c
++++ b/kernel/bpf/core.c
+@@ -287,32 +287,23 @@ void __bpf_prog_free(struct bpf_prog *fp)
+ 	vfree(fp);
+ }
+ 
+ int bpf_prog_calc_tag(struct bpf_prog *fp)
+ {
+-	const u32 bits_offset = SHA1_BLOCK_SIZE - sizeof(__be64);
+-	u32 raw_size = bpf_prog_tag_scratch_size(fp);
+-	u32 digest[SHA1_DIGEST_WORDS];
+-	u32 ws[SHA1_WORKSPACE_WORDS];
+-	u32 i, bsize, psize, blocks;
++	size_t size = bpf_prog_insn_size(fp);
++	u8 digest[SHA1_DIGEST_SIZE];
+ 	struct bpf_insn *dst;
+ 	bool was_ld_map;
+-	u8 *raw, *todo;
+-	__be32 *result;
+-	__be64 *bits;
++	u32 i;
+ 
+-	raw = vmalloc(raw_size);
+-	if (!raw)
++	dst = vmalloc(size);
++	if (!dst)
+ 		return -ENOMEM;
+ 
+-	sha1_init_raw(digest);
+-	memset(ws, 0, sizeof(ws));
 -
--static struct shash_alg alg = {
--	.digestsize	=	SHA1_DIGEST_SIZE,
--	.init		=	sha1_base_init,
--	.update		=	sha1_sparc64_update,
--	.finup		=	sha1_sparc64_finup,
--	.descsize	=	SHA1_STATE_SIZE,
--	.base		=	{
--		.cra_name	=	"sha1",
--		.cra_driver_name=	"sha1-sparc64",
--		.cra_priority	=	SPARC_CR_OPCODE_PRIORITY,
--		.cra_flags	=	CRYPTO_AHASH_ALG_BLOCK_ONLY,
--		.cra_blocksize	=	SHA1_BLOCK_SIZE,
--		.cra_module	=	THIS_MODULE,
+ 	/* We need to take out the map fd for the digest calculation
+ 	 * since they are unstable from user space side.
+ 	 */
+-	dst = (void *)raw;
+ 	for (i = 0, was_ld_map = false; i < fp->len; i++) {
+ 		dst[i] = fp->insnsi[i];
+ 		if (!was_ld_map &&
+ 		    dst[i].code == (BPF_LD | BPF_IMM | BPF_DW) &&
+ 		    (dst[i].src_reg == BPF_PSEUDO_MAP_FD ||
+@@ -328,37 +319,13 @@ int bpf_prog_calc_tag(struct bpf_prog *fp)
+ 			dst[i].imm = 0;
+ 		} else {
+ 			was_ld_map = false;
+ 		}
+ 	}
+-
+-	psize = bpf_prog_insn_size(fp);
+-	memset(&raw[psize], 0, raw_size - psize);
+-	raw[psize++] = 0x80;
+-
+-	bsize  = round_up(psize, SHA1_BLOCK_SIZE);
+-	blocks = bsize / SHA1_BLOCK_SIZE;
+-	todo   = raw;
+-	if (bsize - psize >= sizeof(__be64)) {
+-		bits = (__be64 *)(todo + bsize - sizeof(__be64));
+-	} else {
+-		bits = (__be64 *)(todo + bsize + bits_offset);
+-		blocks++;
 -	}
--};
+-	*bits = cpu_to_be64((psize - 1) << 3);
 -
--static bool __init sparc64_has_sha1_opcode(void)
--{
--	unsigned long cfr;
--
--	if (!(sparc64_elf_hwcap & HWCAP_SPARC_CRYPTO))
--		return false;
--
--	__asm__ __volatile__("rd %%asr26, %0" : "=r" (cfr));
--	if (!(cfr & CFR_SHA1))
--		return false;
--
--	return true;
--}
--
--static int __init sha1_sparc64_mod_init(void)
--{
--	if (sparc64_has_sha1_opcode()) {
--		pr_info("Using sparc64 sha1 opcode optimized SHA-1 implementation\n");
--		return crypto_register_shash(&alg);
+-	while (blocks--) {
+-		sha1_transform(digest, todo, ws);
+-		todo += SHA1_BLOCK_SIZE;
 -	}
--	pr_info("sparc64 sha1 opcode not available.\n");
--	return -ENODEV;
--}
 -
--static void __exit sha1_sparc64_mod_fini(void)
--{
--	crypto_unregister_shash(&alg);
--}
+-	result = (__force __be32 *)digest;
+-	for (i = 0; i < SHA1_DIGEST_WORDS; i++)
+-		result[i] = cpu_to_be32(digest[i]);
+-	memcpy(fp->tag, result, sizeof(fp->tag));
 -
--module_init(sha1_sparc64_mod_init);
--module_exit(sha1_sparc64_mod_fini);
--
--MODULE_LICENSE("GPL");
--MODULE_DESCRIPTION("SHA1 Secure Hash Algorithm, sparc64 sha1 opcode accelerated");
--
--MODULE_ALIAS_CRYPTO("sha1");
--
--#include "crop_devid.c"
-diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
-index 2c55b75cea525..3405789bebbe6 100644
---- a/lib/crypto/Kconfig
-+++ b/lib/crypto/Kconfig
-@@ -149,10 +149,11 @@ config CRYPTO_LIB_SHA1_ARCH
- 	default y if ARM
- 	default y if ARM64 && KERNEL_MODE_NEON
- 	default y if MIPS && CPU_CAVIUM_OCTEON
- 	default y if PPC
- 	default y if S390
-+	default y if SPARC64
+-	vfree(raw);
++	sha1((const u8 *)dst, size, digest);
++	memcpy(fp->tag, digest, sizeof(fp->tag));
++	vfree(dst);
+ 	return 0;
+ }
  
- config CRYPTO_LIB_SHA256
- 	tristate
- 	help
- 	  Enable the SHA-256 library interface. This interface may be fulfilled
-diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
-index 3f4199c079307..6e49e00b4a0a2 100644
---- a/lib/crypto/Makefile
-+++ b/lib/crypto/Makefile
-@@ -81,10 +81,11 @@ endif
- libsha1-$(CONFIG_ARM64) += arm64/sha1-ce-core.o
- ifeq ($(CONFIG_PPC),y)
- libsha1-y += powerpc/sha1-powerpc-asm.o
- libsha1-$(CONFIG_SPE) += powerpc/sha1-spe-asm.o
- endif
-+libsha1-$(CONFIG_SPARC) += sparc/sha1_asm.o
- endif # CONFIG_CRYPTO_LIB_SHA1_ARCH
- 
- ################################################################################
- 
- obj-$(CONFIG_CRYPTO_LIB_SHA256) += libsha256.o
-diff --git a/lib/crypto/sparc/sha1.h b/lib/crypto/sparc/sha1.h
-new file mode 100644
-index 0000000000000..5015f93584b7e
---- /dev/null
-+++ b/lib/crypto/sparc/sha1.h
-@@ -0,0 +1,43 @@
-+/* SPDX-License-Identifier: GPL-2.0-only */
-+/*
-+ * SHA-1 accelerated using the sparc64 crypto opcodes
-+ *
-+ * Copyright (c) Alan Smithee.
-+ * Copyright (c) Andrew McDonald <andrew@mcdonald.org.uk>
-+ * Copyright (c) Jean-Francois Dive <jef@linuxbe.org>
-+ * Copyright (c) Mathias Krause <minipli@googlemail.com>
-+ */
-+
-+#include <asm/elf.h>
-+#include <asm/opcodes.h>
-+#include <asm/pstate.h>
-+
-+static __ro_after_init DEFINE_STATIC_KEY_FALSE(have_sha1_opcodes);
-+
-+asmlinkage void sha1_sparc64_transform(struct sha1_block_state *state,
-+				       const u8 *data, size_t nblocks);
-+
-+static void sha1_blocks(struct sha1_block_state *state,
-+			const u8 *data, size_t nblocks)
-+{
-+	if (static_branch_likely(&have_sha1_opcodes))
-+		sha1_sparc64_transform(state, data, nblocks);
-+	else
-+		sha1_blocks_generic(state, data, nblocks);
-+}
-+
-+#define sha1_mod_init_arch sha1_mod_init_arch
-+static inline void sha1_mod_init_arch(void)
-+{
-+	unsigned long cfr;
-+
-+	if (!(sparc64_elf_hwcap & HWCAP_SPARC_CRYPTO))
-+		return;
-+
-+	__asm__ __volatile__("rd %%asr26, %0" : "=r" (cfr));
-+	if (!(cfr & CFR_SHA1))
-+		return;
-+
-+	static_branch_enable(&have_sha1_opcodes);
-+	pr_info("Using sparc64 sha1 opcode optimized SHA-1 implementation\n");
-+}
-diff --git a/arch/sparc/crypto/sha1_asm.S b/lib/crypto/sparc/sha1_asm.S
-similarity index 100%
-rename from arch/sparc/crypto/sha1_asm.S
-rename to lib/crypto/sparc/sha1_asm.S
+ static int bpf_adj_delta_to_imm(struct bpf_insn *insn, u32 pos, s32 end_old,
+ 				s32 end_new, s32 curr, const bool probe_pass)
 -- 
 2.50.1
 
