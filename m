@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-10219-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10220-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6299C83F1D
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jul 2025 23:28:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 819C3C83F1D
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 12 Jul 2025 23:28:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bfl8Z3LwJz3btP;
-	Sun, 13 Jul 2025 09:26:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752362798;
-	cv=none; b=FasMav6rh5gVkenLzc30NhibtuJtHEamqb5A02S0awMgeOwypvc0IMC3ioMp+qTHYG7a3p9LaVjW+VT7emT2oNgWK4UUNuqoY4njYP50HH3PHCcd8uSCd63sE/qyZePSF/YWka63JeNgAPy3qSYWggoRhh7+riKCAkOwtFuBQHusIiVUKmDU6K6sBHvtWCxVQz0035zeEI5or3OSEXzvHmLFprWJRb0SGhqe5IPPupjLqfE0XUqk9y/EXSxmM7Ze0b9h1KO4k8stex9tobE9TdhziA17UmQUiY3EUlRzLS7R+4xKTjRg6T3tmf2cxW5aar7gMfXSaUekmPDVfGJqJA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bfl8b1Wm2z3bpL;
+	Sun, 13 Jul 2025 09:26:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752362799;
+	cv=none; b=i+HB7TCP83ZZaFb95oxdU3vaM5mxueU+TB2cOcva4kJ0KkKKdotBFu7nbPFx0Z0qyFvWh/s14bJ0mApAflsnyvK2ctmsMstNZCBk6X1dGRqkAZ67Z3XG33zTbTi9DTzTopwooNH2hGWmkwKeLeNXNDQsSrjuGX8PEewDH1jDxGVGSaMPScO1TpXgeukNhQr/GLqdr6gWwn4nYdzfQrc2WMGSzZIe14jf/2wXReHHE2y5cg0ZidIV57G9zFJMi7rHKLwyGpbdz1BUB/cy4TaX/8DvaxSv0lgRQBI7Qwr//YvKh3k7+nkJYXnHWpJxZBiYaL87lF+Lo5/gmx7qjCZdZw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752362798; c=relaxed/relaxed;
-	bh=zx0KRsr6Z94mFqcy8f/S8MW+ZSAXG2w2PHmp+/LpmB8=;
+	t=1752362799; c=relaxed/relaxed;
+	bh=ZYE7gLewlb47DZCT5sSzMCMauCIPSx/9IlBf7xfG/eg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=PQMDK65ti7xWTgHwbD/KjzZU/gVh6mR110jhJv9OEppo3l6W4Adkja5swvEKHAYroicaLkTgWmlWzkhNhzNtQABgS2HIKwxiZX7AnimRCOmIB02qv3As+BVGFSkYSa9ZRvx7jdltNIkxpXR93yHX3nZ3KhbGUfMSK85rKPeUvNC/31IiCFu1Nq//5Gz8+IJcoMlMWgpQksFsCmMqKymIIHCFJu/oA/AQ5pbtQt8xmYm8lEeryig/ofveA+ZzGuxlnitAdCM3QtS5ja/mJrmdTttbMPnKbMmV803xm3puYD1bJabTx0kXjk41vw31h2rC+SSkXF0YPp+RDS95953Tlg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IPqiN3o3; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=cqXW5/cAXXEZnk2FoYKzkQdNjKOPjHLvmVKPGwau2w3FNh8hGlJfWDeOQTwB1PmYQv7qJCA06tX5LWG2AUG+tmEoyt3hqWM8YgEjarjAPlVUD2nJNQui2hANZNuT1U5sWSHS1lspF7yaiBF226ySx4ULmetuK4c2sd+MneWzWQvqyMjyKWxMzdiLy9mIwKZYGP/ZU1KutFKkXTSMOxKx7HiGoFsorit2HcAkaKBYnTxy37QTzzql4eLODavNCG5CKgQbU67Ykbfs8aGRUORFrKrL/JgKY2az8uhAngxJCbRtCnSoyvR58BL+dbrqVeVISsKJKrEMORrXpPsvavT2NA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ROFWht91; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IPqiN3o3;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ROFWht91;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bfl8S4fjtz3bpL
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jul 2025 09:26:32 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bfl8Q49dHz30W5
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 13 Jul 2025 09:26:30 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id C44DE5C5586;
-	Sat, 12 Jul 2025 23:26:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 46D7EC4CEF7;
-	Sat, 12 Jul 2025 23:26:30 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id E615D5C559B;
+	Sat, 12 Jul 2025 23:26:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 68845C4CEF5;
+	Sat, 12 Jul 2025 23:26:28 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1752362790;
-	bh=CDCYvw9FzfgzLkUqSoVUscxv3AohvreIQRjFCF8Awe8=;
+	s=k20201202; t=1752362788;
+	bh=upgrbJIyKUJoRun4h/w8rzDBpBYiF16g2cfEnbcJkVg=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=IPqiN3o3F2CcnU/lSiSEcezOvpLqcfESj5gdIyQXIgp9TcpJNc4+SEOkjA/C+spGj
-	 Zfst73HKBkJ3RTDUfFDKvQl7Mmw5pFdQYEglIXAhZC+EODLHKRSiXTX9qIZsb0r+6+
-	 1IfmLcXJraIBl0WHAvq6RVh9qLNWkjfrS6B3lhzdE9bVdL3PclsJIcFWKGGHADQexc
-	 oT0UaUvZGa0iS8nC0/6k8yEYGLRNGqkkHiXlesa3+yHAYn4wA3zfIhdu47yh0jD44S
-	 7YhcfQhrICpQD72yjxbbQ4I94wj4xoa+kWSTHNjoYKh6ovpvEJkyWDNQRcS909kSeF
-	 7YLhXtd85zZdA==
+	b=ROFWht91DC5XpPUdH8iXRlXvtmJOeGAoILEueEXRbxTAPmypO9d9+eWkmEkY7OfkC
+	 EznYlgw770sM+2hauKHQe9ZXD1pmPfGnLAWBZEKvJ68wP2iozUUeXCcATDci9H+nql
+	 53wI7ihD56fb/OKj38J+495wElTRth1QNz9lquAmwXhzHyShTkHCCg1y7/9DV5nE7E
+	 DU6aJPNVq/OYfOPBT9oIPAopTGITq//h/vgYLJmpT7RxnkrmoKv6FuCRonUZesj0o0
+	 SKmYw0xcwLeiizFPDxQqieqRzqlDu+cKh4N4/Cjwnsv1xm5C8P4t3ULqlN0Wr+zUrc
+	 BRmisBhki99bw==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -56,9 +56,9 @@ Cc: linux-kernel@vger.kernel.org,
 	sparclinux@vger.kernel.org,
 	x86@kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 22/26] nfc: s3fwrn5: Use SHA-1 library instead of crypto_shash
-Date: Sat, 12 Jul 2025 16:23:13 -0700
-Message-ID: <20250712232329.818226-23-ebiggers@kernel.org>
+Subject: [PATCH 18/26] ipv6: sr: Use HMAC-SHA1 and HMAC-SHA256 library functions
+Date: Sat, 12 Jul 2025 16:23:09 -0700
+Message-ID: <20250712232329.818226-19-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20250712232329.818226-1-ebiggers@kernel.org>
 References: <20250712232329.818226-1-ebiggers@kernel.org>
@@ -77,80 +77,411 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Use the SHA-1 library instead of crypto_shash.  This is simpler and
-faster.
+Use the HMAC-SHA1 and HMAC-SHA256 library functions instead of
+crypto_shash.  This is simpler and faster.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- drivers/nfc/s3fwrn5/Kconfig    |  3 +--
- drivers/nfc/s3fwrn5/firmware.c | 17 +----------------
- 2 files changed, 2 insertions(+), 18 deletions(-)
+ include/net/seg6_hmac.h |  12 ---
+ net/ipv6/Kconfig        |   6 +-
+ net/ipv6/seg6.c         |   7 --
+ net/ipv6/seg6_hmac.c    | 199 ++++------------------------------------
+ 4 files changed, 22 insertions(+), 202 deletions(-)
 
-diff --git a/drivers/nfc/s3fwrn5/Kconfig b/drivers/nfc/s3fwrn5/Kconfig
-index 8a6b1a79de253..96386b73fa2b6 100644
---- a/drivers/nfc/s3fwrn5/Kconfig
-+++ b/drivers/nfc/s3fwrn5/Kconfig
-@@ -1,10 +1,9 @@
- # SPDX-License-Identifier: GPL-2.0-only
- config NFC_S3FWRN5
- 	tristate
+diff --git a/include/net/seg6_hmac.h b/include/net/seg6_hmac.h
+index 24f733b3e3fe9..3fe4123dbbf0a 100644
+--- a/include/net/seg6_hmac.h
++++ b/include/net/seg6_hmac.h
+@@ -17,11 +17,10 @@
+ #include <linux/route.h>
+ #include <net/seg6.h>
+ #include <linux/seg6_hmac.h>
+ #include <linux/rhashtable-types.h>
+ 
+-#define SEG6_HMAC_MAX_DIGESTSIZE	160
+ #define SEG6_HMAC_RING_SIZE		256
+ 
+ struct seg6_hmac_info {
+ 	struct rhash_head node;
+ 	struct rcu_head rcu;
+@@ -30,17 +29,10 @@ struct seg6_hmac_info {
+ 	char secret[SEG6_HMAC_SECRET_LEN];
+ 	u8 slen;
+ 	u8 alg_id;
+ };
+ 
+-struct seg6_hmac_algo {
+-	u8 alg_id;
+-	char name[64];
+-	struct crypto_shash * __percpu *tfms;
+-	struct shash_desc * __percpu *shashs;
+-};
+-
+ extern int seg6_hmac_compute(struct seg6_hmac_info *hinfo,
+ 			     struct ipv6_sr_hdr *hdr, struct in6_addr *saddr,
+ 			     u8 *output);
+ extern struct seg6_hmac_info *seg6_hmac_info_lookup(struct net *net, u32 key);
+ extern int seg6_hmac_info_add(struct net *net, u32 key,
+@@ -48,17 +40,13 @@ extern int seg6_hmac_info_add(struct net *net, u32 key,
+ extern int seg6_hmac_info_del(struct net *net, u32 key);
+ extern int seg6_push_hmac(struct net *net, struct in6_addr *saddr,
+ 			  struct ipv6_sr_hdr *srh);
+ extern bool seg6_hmac_validate_skb(struct sk_buff *skb);
+ #ifdef CONFIG_IPV6_SEG6_HMAC
+-extern int seg6_hmac_init(void);
+-extern void seg6_hmac_exit(void);
+ extern int seg6_hmac_net_init(struct net *net);
+ extern void seg6_hmac_net_exit(struct net *net);
+ #else
+-static inline int seg6_hmac_init(void) { return 0; }
+-static inline void seg6_hmac_exit(void) {}
+ static inline int seg6_hmac_net_init(struct net *net) { return 0; }
+ static inline void seg6_hmac_net_exit(struct net *net) {}
+ #endif
+ 
+ #endif
+diff --git a/net/ipv6/Kconfig b/net/ipv6/Kconfig
+index 1c9c686d9522f..76eb48e766382 100644
+--- a/net/ipv6/Kconfig
++++ b/net/ipv6/Kconfig
+@@ -302,14 +302,12 @@ config IPV6_SEG6_LWTUNNEL
+ 	  If unsure, say N.
+ 
+ config IPV6_SEG6_HMAC
+ 	bool "IPv6: Segment Routing HMAC support"
+ 	depends on IPV6
 -	select CRYPTO
--	select CRYPTO_HASH
+-	select CRYPTO_HMAC
+-	select CRYPTO_SHA1
+-	select CRYPTO_SHA256
 +	select CRYPTO_LIB_SHA1
++	select CRYPTO_LIB_SHA256
  	help
- 	  Core driver for Samsung S3FWRN5 NFC chip. Contains core utilities
- 	  of chip. It's intended to be used by PHYs to avoid duplicating lots
- 	  of common code.
+ 	  Support for HMAC signature generation and verification
+ 	  of SR-enabled packets.
  
-diff --git a/drivers/nfc/s3fwrn5/firmware.c b/drivers/nfc/s3fwrn5/firmware.c
-index 781cdbcac104c..64d61b2a715ae 100644
---- a/drivers/nfc/s3fwrn5/firmware.c
-+++ b/drivers/nfc/s3fwrn5/firmware.c
-@@ -6,11 +6,10 @@
-  * Robert Baldyga <r.baldyga@samsung.com>
-  */
+ 	  If unsure, say N.
+diff --git a/net/ipv6/seg6.c b/net/ipv6/seg6.c
+index 180da19c148c1..a5c4c629b788c 100644
+--- a/net/ipv6/seg6.c
++++ b/net/ipv6/seg6.c
+@@ -520,20 +520,14 @@ int __init seg6_init(void)
  
- #include <linux/completion.h>
- #include <linux/firmware.h>
--#include <crypto/hash.h>
- #include <crypto/sha1.h>
+ 	err = seg6_local_init();
+ 	if (err)
+ 		goto out_unregister_iptun;
  
- #include "s3fwrn5.h"
- #include "firmware.h"
+-	err = seg6_hmac_init();
+-	if (err)
+-		goto out_unregister_seg6;
+-
+ 	pr_info("Segment Routing with IPv6\n");
  
-@@ -409,31 +408,17 @@ bool s3fwrn5_fw_check_version(const struct s3fwrn5_fw_info *fw_info, u32 version
- int s3fwrn5_fw_download(struct s3fwrn5_fw_info *fw_info)
+ out:
+ 	return err;
+-out_unregister_seg6:
+-	seg6_local_exit();
+ out_unregister_iptun:
+ 	seg6_iptunnel_exit();
+ out_unregister_genl:
+ 	genl_unregister_family(&seg6_genl_family);
+ out_unregister_pernet:
+@@ -541,11 +535,10 @@ int __init seg6_init(void)
+ 	goto out;
+ }
+ 
+ void seg6_exit(void)
  {
- 	struct device *dev = &fw_info->ndev->nfc_dev->dev;
- 	struct s3fwrn5_fw_image *fw = &fw_info->fw;
- 	u8 hash_data[SHA1_DIGEST_SIZE];
+-	seg6_hmac_exit();
+ 	seg6_local_exit();
+ 	seg6_iptunnel_exit();
+ 	genl_unregister_family(&seg6_genl_family);
+ 	unregister_pernet_subsys(&ip6_segments_ops);
+ }
+diff --git a/net/ipv6/seg6_hmac.c b/net/ipv6/seg6_hmac.c
+index f78ecb6ad8383..17e57da813012 100644
+--- a/net/ipv6/seg6_hmac.c
++++ b/net/ipv6/seg6_hmac.c
+@@ -14,11 +14,10 @@
+ #include <linux/net.h>
+ #include <linux/netdevice.h>
+ #include <linux/in6.h>
+ #include <linux/icmpv6.h>
+ #include <linux/mroute6.h>
+-#include <linux/slab.h>
+ #include <linux/rhashtable.h>
+ 
+ #include <linux/netfilter.h>
+ #include <linux/netfilter_ipv6.h>
+ 
+@@ -32,11 +31,12 @@
+ #include <net/ndisc.h>
+ #include <net/ip6_route.h>
+ #include <net/addrconf.h>
+ #include <net/xfrm.h>
+ 
+-#include <crypto/hash.h>
++#include <crypto/sha1.h>
++#include <crypto/sha2.h>
+ #include <net/seg6.h>
+ #include <net/genetlink.h>
+ #include <net/seg6_hmac.h>
+ #include <linux/random.h>
+ 
+@@ -75,21 +75,10 @@ static const struct rhashtable_params rht_params = {
+ 	.key_len		= sizeof(u32),
+ 	.automatic_shrinking	= true,
+ 	.obj_cmpfn		= seg6_hmac_cmpfn,
+ };
+ 
+-static struct seg6_hmac_algo hmac_algos[] = {
+-	{
+-		.alg_id = SEG6_HMAC_ALGO_SHA1,
+-		.name = "hmac(sha1)",
+-	},
+-	{
+-		.alg_id = SEG6_HMAC_ALGO_SHA256,
+-		.name = "hmac(sha256)",
+-	},
+-};
+-
+ static struct sr6_tlv_hmac *seg6_get_tlv_hmac(struct ipv6_sr_hdr *srh)
+ {
+ 	struct sr6_tlv_hmac *tlv;
+ 
+ 	if (srh->hdrlen < (srh->first_segment + 1) * 2 + 5)
+@@ -105,79 +94,17 @@ static struct sr6_tlv_hmac *seg6_get_tlv_hmac(struct ipv6_sr_hdr *srh)
+ 		return NULL;
+ 
+ 	return tlv;
+ }
+ 
+-static struct seg6_hmac_algo *__hmac_get_algo(u8 alg_id)
+-{
+-	struct seg6_hmac_algo *algo;
+-	int i, alg_count;
+-
+-	alg_count = ARRAY_SIZE(hmac_algos);
+-	for (i = 0; i < alg_count; i++) {
+-		algo = &hmac_algos[i];
+-		if (algo->alg_id == alg_id)
+-			return algo;
+-	}
+-
+-	return NULL;
+-}
+-
+-static int __do_hmac(struct seg6_hmac_info *hinfo, const char *text, u8 psize,
+-		     u8 *output, int outlen)
+-{
+-	struct seg6_hmac_algo *algo;
 -	struct crypto_shash *tfm;
- 	u32 image_size, off;
- 	int ret;
- 
- 	image_size = fw_info->sector_size * fw->image_sectors;
- 
- 	/* Compute SHA of firmware data */
+-	struct shash_desc *shash;
+-	int ret, dgsize;
 -
--	tfm = crypto_alloc_shash("sha1", 0, 0);
--	if (IS_ERR(tfm)) {
--		dev_err(dev, "Cannot allocate shash (code=%pe)\n", tfm);
--		return PTR_ERR(tfm);
+-	algo = __hmac_get_algo(hinfo->alg_id);
+-	if (!algo)
+-		return -ENOENT;
+-
+-	tfm = *this_cpu_ptr(algo->tfms);
+-
+-	dgsize = crypto_shash_digestsize(tfm);
+-	if (dgsize > outlen) {
+-		pr_debug("sr-ipv6: __do_hmac: digest size too big (%d / %d)\n",
+-			 dgsize, outlen);
+-		return -ENOMEM;
 -	}
 -
--	ret = crypto_shash_tfm_digest(tfm, fw->image, image_size, hash_data);
--
--	crypto_free_shash(tfm);
--	if (ret) {
--		dev_err(dev, "Cannot compute hash (code=%d)\n", ret);
--		return ret;
+-	ret = crypto_shash_setkey(tfm, hinfo->secret, hinfo->slen);
+-	if (ret < 0) {
+-		pr_debug("sr-ipv6: crypto_shash_setkey failed: err %d\n", ret);
+-		goto failed;
 -	}
-+	sha1(fw->image, image_size, hash_data);
+-
+-	shash = *this_cpu_ptr(algo->shashs);
+-	shash->tfm = tfm;
+-
+-	ret = crypto_shash_digest(shash, text, psize, output);
+-	if (ret < 0) {
+-		pr_debug("sr-ipv6: crypto_shash_digest failed: err %d\n", ret);
+-		goto failed;
+-	}
+-
+-	return dgsize;
+-
+-failed:
+-	return ret;
+-}
+-
+ int seg6_hmac_compute(struct seg6_hmac_info *hinfo, struct ipv6_sr_hdr *hdr,
+ 		      struct in6_addr *saddr, u8 *output)
+ {
+ 	__be32 hmackeyid = cpu_to_be32(hinfo->hmackeyid);
+-	u8 tmp_out[SEG6_HMAC_MAX_DIGESTSIZE];
+-	int plen, i, dgsize, wrsize;
++	int plen, i, ret = 0;
+ 	char *ring, *off;
  
- 	/* Firmware update process */
+-	/* a 160-byte buffer for digest output allows to store highest known
+-	 * hash function (RadioGatun) with up to 1216 bits
+-	 */
+-
+ 	/* saddr(16) + first_seg(1) + flags(1) + keyid(4) + seglist(16n) */
+ 	plen = 16 + 1 + 1 + 4 + (hdr->first_segment + 1) * 16;
  
- 	dev_info(dev, "Firmware update: %s\n", fw_info->fw_name);
+ 	/* this limit allows for 14 segments */
+ 	if (plen >= SEG6_HMAC_RING_SIZE)
+@@ -216,26 +143,29 @@ int seg6_hmac_compute(struct seg6_hmac_info *hinfo, struct ipv6_sr_hdr *hdr,
+ 	for (i = 0; i < hdr->first_segment + 1; i++) {
+ 		memcpy(off, hdr->segments + i, 16);
+ 		off += 16;
+ 	}
  
+-	dgsize = __do_hmac(hinfo, ring, plen, tmp_out,
+-			   SEG6_HMAC_MAX_DIGESTSIZE);
++	memset(output, 0, SEG6_HMAC_FIELD_LEN);
++	switch (hinfo->alg_id) {
++	case SEG6_HMAC_ALGO_SHA1:
++		hmac_sha1_usingrawkey(hinfo->secret, hinfo->slen, ring, plen,
++				      output);
++		static_assert(SHA1_DIGEST_SIZE <= SEG6_HMAC_FIELD_LEN);
++		break;
++	case SEG6_HMAC_ALGO_SHA256:
++		hmac_sha256_usingrawkey(hinfo->secret, hinfo->slen, ring, plen,
++					output);
++		static_assert(SHA256_DIGEST_SIZE <= SEG6_HMAC_FIELD_LEN);
++		break;
++	default:
++		ret = -ENOENT;
++		break;
++	}
+ 	local_unlock_nested_bh(&hmac_storage.bh_lock);
+ 	local_bh_enable();
+-
+-	if (dgsize < 0)
+-		return dgsize;
+-
+-	wrsize = SEG6_HMAC_FIELD_LEN;
+-	if (wrsize > dgsize)
+-		wrsize = dgsize;
+-
+-	memset(output, 0, SEG6_HMAC_FIELD_LEN);
+-	memcpy(output, tmp_out, wrsize);
+-
+-	return 0;
++	return ret;
+ }
+ EXPORT_SYMBOL(seg6_hmac_compute);
+ 
+ /* checks if an incoming SR-enabled packet's HMAC status matches
+  * the incoming policy.
+@@ -357,106 +287,17 @@ int seg6_push_hmac(struct net *net, struct in6_addr *saddr,
+ 	rcu_read_unlock();
+ 	return err;
+ }
+ EXPORT_SYMBOL(seg6_push_hmac);
+ 
+-static int seg6_hmac_init_algo(void)
+-{
+-	struct seg6_hmac_algo *algo;
+-	struct crypto_shash *tfm;
+-	struct shash_desc *shash;
+-	int i, alg_count, cpu;
+-	int ret = -ENOMEM;
+-
+-	alg_count = ARRAY_SIZE(hmac_algos);
+-
+-	for (i = 0; i < alg_count; i++) {
+-		struct crypto_shash **p_tfm;
+-		int shsize;
+-
+-		algo = &hmac_algos[i];
+-		algo->tfms = alloc_percpu(struct crypto_shash *);
+-		if (!algo->tfms)
+-			goto error_out;
+-
+-		for_each_possible_cpu(cpu) {
+-			tfm = crypto_alloc_shash(algo->name, 0, 0);
+-			if (IS_ERR(tfm)) {
+-				ret = PTR_ERR(tfm);
+-				goto error_out;
+-			}
+-			p_tfm = per_cpu_ptr(algo->tfms, cpu);
+-			*p_tfm = tfm;
+-		}
+-
+-		p_tfm = raw_cpu_ptr(algo->tfms);
+-		tfm = *p_tfm;
+-
+-		shsize = sizeof(*shash) + crypto_shash_descsize(tfm);
+-
+-		algo->shashs = alloc_percpu(struct shash_desc *);
+-		if (!algo->shashs)
+-			goto error_out;
+-
+-		for_each_possible_cpu(cpu) {
+-			shash = kzalloc_node(shsize, GFP_KERNEL,
+-					     cpu_to_node(cpu));
+-			if (!shash)
+-				goto error_out;
+-			*per_cpu_ptr(algo->shashs, cpu) = shash;
+-		}
+-	}
+-
+-	return 0;
+-
+-error_out:
+-	seg6_hmac_exit();
+-	return ret;
+-}
+-
+-int __init seg6_hmac_init(void)
+-{
+-	return seg6_hmac_init_algo();
+-}
+-
+ int __net_init seg6_hmac_net_init(struct net *net)
+ {
+ 	struct seg6_pernet_data *sdata = seg6_pernet(net);
+ 
+ 	return rhashtable_init(&sdata->hmac_infos, &rht_params);
+ }
+ 
+-void seg6_hmac_exit(void)
+-{
+-	struct seg6_hmac_algo *algo = NULL;
+-	struct crypto_shash *tfm;
+-	struct shash_desc *shash;
+-	int i, alg_count, cpu;
+-
+-	alg_count = ARRAY_SIZE(hmac_algos);
+-	for (i = 0; i < alg_count; i++) {
+-		algo = &hmac_algos[i];
+-
+-		if (algo->shashs) {
+-			for_each_possible_cpu(cpu) {
+-				shash = *per_cpu_ptr(algo->shashs, cpu);
+-				kfree(shash);
+-			}
+-			free_percpu(algo->shashs);
+-		}
+-
+-		if (algo->tfms) {
+-			for_each_possible_cpu(cpu) {
+-				tfm = *per_cpu_ptr(algo->tfms, cpu);
+-				crypto_free_shash(tfm);
+-			}
+-			free_percpu(algo->tfms);
+-		}
+-	}
+-}
+-EXPORT_SYMBOL(seg6_hmac_exit);
+-
+ void __net_exit seg6_hmac_net_exit(struct net *net)
+ {
+ 	struct seg6_pernet_data *sdata = seg6_pernet(net);
+ 
+ 	rhashtable_free_and_destroy(&sdata->hmac_infos, seg6_free_hi, NULL);
 -- 
 2.50.1
 
