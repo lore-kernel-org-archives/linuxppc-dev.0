@@ -1,79 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-10254-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10255-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF914C83F27
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jul 2025 13:58:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74428C83F22
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jul 2025 20:11:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bhLPm3Kc6z30Tf;
-	Tue, 15 Jul 2025 23:58:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752587916;
-	cv=none; b=Xd9dVsEUU99lAtGqi5rdtFVddDrjkkptfuzzwuzTmu7nhEeqhUcwnbBKX6H3V+xpVXMdy4LuDxuq5IfHrIPq0/UAy0bVaIcaSSI04nThzsn49UtnIQQndBqBRm3mQ8zwmjoo+2FuKvWdPPzkeUUXGmKcZS0MRFb4kDYMo4kdtPY8bh5MZ2+Qpz3Ztrgzh9FDYmfMXuIxAnO4qJ4MuqEEXjnJNDU1EavX4CMET3RQAQfs28rZt91+FsuEGZO6paeIbNgMISIkLf+fUyQ+KmzQ5G5U8c/YQcxkTsI4CezQP3N5fbPFyC5StMdmj8jHCm2LzB0N15n6F9XxATsenTftHQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bhVgm0DpBz2xfR;
+	Wed, 16 Jul 2025 06:11:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.79.88.28
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752610275;
+	cv=none; b=YLOa0Pjw1dtEkVPolxe2ZT10u3v9WFu25KsqhyYu4v4fN1sWKx1JT1du8PFUHwyOlPxW2A9Ct7L4qEFSjVUYzoU8+iy/Y9tBHB9VuZ1jiSLXBb7qFDFXg7I4TdDcr6QixDa7B3Ki2HttchVwOXjBvQsOPbuQyhtlHJG0GqL71uOKUkb8CWotQPSfgXJJu1Z/c7jIWPXUnUBKLq48E2wyhHLrCnyBYhmLPfW3+SW4RMOimzE4k3wVzjgnGV7IKTT3QkW0SHlJY7lLXhU73jXv3ITn0yEBlmopQw2ldxnQHeZlJzy94JVISoOsTVO1KedCCRi+wMfe1e7Gs6qlBL2TBA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752587916; c=relaxed/relaxed;
-	bh=6nnCBwHTAKrHqcmaMGyNrB/ejXN9Xrce25gHVuAIWJI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=XxDWxHBGEWh9deq9/UyKbRRfQCzvCDKjooFXbXeT6V3pIZhVV0O1+g4B0NrFYP6FwZEDdHYX4C1E2NWvqcc/NHGRI3i2IM2QaDx72Qr/OwfsYqIA1Bh/7ddiuDP3Ry+A43yLgSlE4cNyGIC+gDhbnbMsq14EztRrjt3IkHwNkVm1MiTgo/NLPYo5ohgC2jmMMI3WL3bnh+GPJpEiHomwQEMaxCTGbBLOXp3vct4zMNUTKeJjj2T0jhKabcmZdF8+QAGKJKqLfFsoRVSL3qrVE3HFJJCW33khrK1iDDIZYSs0UrVEXHwBJX4nQeLeUgLv2aokG7Y29uEmjXaNUKUl0Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=l4Vizggn; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1752610275; c=relaxed/relaxed;
+	bh=5kPEQacK23+5d9HZEBwKwlf08U1WgpD16N1/izqmHtU=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=Bc6rky/OSu4QEBBrBNXqnOjQMU+rLnuxWHtTymcb837HFkCnD9kupob7bkr3DPhQUa8Xl7/ByA9iOIj76Gn3WrznAHrylkLXgZrgGxLV6O/GvnEIHK0NWuRR0Jg6y+qFoeemH3/jRlB3mb1WFSyG5nQ25LZzgkpfCI23WXGKNHQsH1R8rIdKc7ipxFkqO7YMRAtRLc0zd6Y6bCci26d7QFx2as+sxOLK4EFNuxZQLi4Kb+6Hdid3hj86HOMOLeGAIt8PHgOACCsr1j/gZOUPNX5JxLx2ligZX0HckwGk2Yow+IkuRS5RWFannFXX1nbvlnD/7cTHErUS4Fy0H3kA7w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lwn.net; dkim=pass (2048-bit key; unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256 header.s=20201203 header.b=pLbFDViD; dkim-atps=neutral; spf=pass (client-ip=45.79.88.28; helo=ms.lwn.net; envelope-from=corbet@lwn.net; receiver=lists.ozlabs.org) smtp.mailfrom=lwn.net
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lwn.net
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=l4Vizggn;
+	dkim=pass (2048-bit key; unprotected) header.d=lwn.net header.i=@lwn.net header.a=rsa-sha256 header.s=20201203 header.b=pLbFDViD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lwn.net (client-ip=45.79.88.28; helo=ms.lwn.net; envelope-from=corbet@lwn.net; receiver=lists.ozlabs.org)
+X-Greylist: delayed 447 seconds by postgrey-1.37 at boromir; Wed, 16 Jul 2025 06:11:11 AEST
+Received: from ms.lwn.net (ms.lwn.net [45.79.88.28])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bhLPl4Lrtz2yZS
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2025 23:58:35 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 9366FA5710B;
-	Tue, 15 Jul 2025 13:58:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6E39CC4CEE3;
-	Tue, 15 Jul 2025 13:58:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1752587913;
-	bh=fxS+g8tNbMk1/UdhRU/HlLfSUskJDrVIrYOCQQhuqIY=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=l4VizggnWo1DpwbZuWP/wgm3VApTeTCEOnymfwBXT+GilXimDEQE0iPIBqdfv6kCi
-	 kvrSMjoaH00P8jMdB4VBav7nnidtnHwAto4lOKuhIXdRUv9zLac0k9qGP1dt9vU+Kx
-	 besMzcLyEY6CL3CXJ/iulu2Ux2wmI6rIlbokZUIfssTq+7xCt4aR4/gUg5F8zwheNy
-	 38Z2YuBFkCPHKo42aC2RxBV7YCSsmJFp5Nn2VHoOI+x4EAhgotJS6lFClihLkokNmk
-	 clpPZozDwuZYTrNm/DjfETz/I7kal1xj7ibFiF39RZ8jyeg3fbnaBQWAnL0Q+x4geu
-	 jTleqek0Z+P7g==
-Date: Tue, 15 Jul 2025 16:58:28 +0300
-From: Leon Romanovsky <leon@kernel.org>
-To: Will Deacon <will@kernel.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
-	Christoph Hellwig <hch@lst.de>, Jonathan Corbet <corbet@lwn.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Robin Murphy <robin.murphy@arm.com>, Joerg Roedel <joro@8bytes.org>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Jason Wang <jasowang@redhat.com>,
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-	Eugenio =?iso-8859-1?Q?P=E9rez?= <eperezma@redhat.com>,
-	Alexander Potapenko <glider@google.com>,
-	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	=?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, iommu@lists.linux.dev,
-	virtualization@lists.linux.dev, kasan-dev@googlegroups.com,
-	linux-trace-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 8/8] mm/hmm: migrate to physical address-based DMA
- mapping API
-Message-ID: <20250715135828.GE5882@unreal>
-References: <cover.1750854543.git.leon@kernel.org>
- <8a85f4450905fcb6b17d146cc86c11410d522de4.1750854543.git.leon@kernel.org>
- <aHZWlu7Td9ijFhhh@willie-the-truck>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bhVgg3tmvz2xd6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2025 06:11:10 +1000 (AEST)
+DKIM-Filter: OpenDKIM Filter v2.11.0 ms.lwn.net 9F8524040B
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=lwn.net; s=20201203;
+	t=1752609816; bh=5kPEQacK23+5d9HZEBwKwlf08U1WgpD16N1/izqmHtU=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
+	b=pLbFDViDIrgJL8ZQateU2gyMeDQgIUGqckKBl894fT8zEhfferjsoQNUJfu/F2kmi
+	 bHgqmunluMg8/CrAP+1xeAzeyBkwb9k/D8gjRgUcLUtOue7x0CQjovVXSpittsvf8z
+	 QHuolRJl87REBezg0rRnN0jj+EqXpjmuFqUtc9a8Js+uKkCDBjoD5CsAi7GwFpawto
+	 N97D86OaxcchGHK0hiv4wr35SrKHUfZUNx1UUfyju4YWpNfSs3xE8Z4miAkT0VNoil
+	 DaHSRLO19jjiyqSuJMJn7MDoLLiQh2Yx9AB8i0FtGQmhUrD1RtCeNjc96fpMMNIzN4
+	 7g8TuYdwWsqRg==
+Received: from localhost (unknown [IPv6:2601:280:4600:2da9::1fe])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by ms.lwn.net (Postfix) with ESMTPSA id 9F8524040B;
+	Tue, 15 Jul 2025 20:03:36 +0000 (UTC)
+From: Jonathan Corbet <corbet@lwn.net>
+To: Bagas Sanjaya <bagasdotme@gmail.com>, Linux Kernel Mailing List
+ <linux-kernel@vger.kernel.org>, Linux Documentation
+ <linux-doc@vger.kernel.org>, Linux PowerPC
+ <linuxppc-dev@lists.ozlabs.org>, Linux Networking <netdev@vger.kernel.org>
+Cc: Richard Cochran <richardcochran@gmail.com>, Haren Myneni
+ <haren@linux.ibm.com>, Bagas Sanjaya <bagasdotme@gmail.com>, Madhavan
+ Srinivasan <maddy@linux.ibm.com>, Greg Kroah-Hartman
+ <gregkh@linuxfoundation.org>, Andrew Donnellan <ajd@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nathan Lynch
+ <nathanl@linux.ibm.com>
+Subject: Re: [PATCH v2 0/3] ioctl numbers list cleanup for
+ papr-physical-attestation.h
+In-Reply-To: <20250714015711.14525-1-bagasdotme@gmail.com>
+References: <20250714015711.14525-1-bagasdotme@gmail.com>
+Date: Tue, 15 Jul 2025 14:03:35 -0600
+Message-ID: <878qkpfch4.fsf@trenco.lwn.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,70 +76,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aHZWlu7Td9ijFhhh@willie-the-truck>
+Content-Type: text/plain
 
-On Tue, Jul 15, 2025 at 02:24:38PM +0100, Will Deacon wrote:
-> Hi Leon,
-> 
-> On Wed, Jun 25, 2025 at 04:19:05PM +0300, Leon Romanovsky wrote:
-> > From: Leon Romanovsky <leonro@nvidia.com>
-> > 
-> > Convert HMM DMA operations from the legacy page-based API to the new
-> > physical address-based dma_map_phys() and dma_unmap_phys() functions.
-> > This demonstrates the preferred approach for new code that should use
-> > physical addresses directly rather than page+offset parameters.
-> > 
-> > The change replaces dma_map_page() and dma_unmap_page() calls with
-> > dma_map_phys() and dma_unmap_phys() respectively, using the physical
-> > address that was already available in the code. This eliminates the
-> > redundant page-to-physical address conversion and aligns with the
-> > DMA subsystem's move toward physical address-centric interfaces.
-> > 
-> > This serves as an example of how new code should be written to leverage
-> > the more efficient physical address API, which provides cleaner interfaces
-> > for drivers that already have access to physical addresses.
-> 
-> I'm struggling a little to see how this is cleaner or more efficient
-> than the old code.
+Bagas Sanjaya <bagasdotme@gmail.com> writes:
 
-It is not, the main reason for hmm conversion is to show how the API is
-used. HMM is built around struct page.
+> Hi,
+>
+> This is the cleanup series following up from 03c9d1a5a30d93 ("Documentation:
+> Fix description format for powerpc RTAS ioctls"). It is based on docs-next
+> tree. The end result should be the same as my previous fixup patch [1].
+>
+> Enjoy!
+>
+> Changes since v1 (RESEND) [2]:
+>
+>   * Add Fixes: and Reviewed-by: trailers (Haren)
+>   * Expand tabs for uapi/misc/amd-apml.h to match other entries
+>
+> Jon: Would you like to apply this series on docs-next or should powerpc
+> folks handle it?
 
-> 
-> From what I can tell, dma_map_page_attrs() takes a 'struct page *' and
-> converts it to a physical address using page_to_phys() whilst your new
-> dma_map_phys() interface takes a physical address and converts it to
-> a 'struct page *' using phys_to_page(). In both cases, hmm_dma_map_pfn()
-> still needs the page for other reasons. If anything, existing users of
-> dma_map_page_attrs() now end up with a redundant page-to-phys-to-page
-> conversion which hopefully the compiler folds away.
-> 
-> I'm assuming there's future work which builds on top of the new API
-> and removes the reliance on 'struct page' entirely, is that right? If
-> so, it would've been nicer to be clearer about that as, on its own, I'm
-> not really sure this patch series achieves an awful lot and the
-> efficiency argument looks quite weak to me.
+I've applied it.  I took out the vast pile of Fixes tags, though; I
+don't think all that was justified for these tweaks.
 
-Yes, there is ongoing work, which is built on top of dma_map_phys() API
-and can't be built without DMA phys.
+Thanks,
 
-My WIP branch, where I'm using it can be found here:
-https://git.kernel.org/pub/scm/linux/kernel/git/leon/linux-rdma.git/log/?h=dmabuf-vfio
-
-In that branch, we save one phys_to_page conversion in block datapath:
-block-dma: migrate to dma_map_phys instead of map_page
-
-and implement DMABUF exporter for MMIO pages:
-vfio/pci: Allow MMIO regions to be exported through dma-buf
-see vfio_pci_dma_buf_map() function.
-
-Thanks
-
-> 
-> Cheers,
-> 
-> Will
-> 
+jon
 
