@@ -1,122 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-10243-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10244-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5D03C83F1D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jul 2025 05:37:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A21DEC83F17
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jul 2025 08:16:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bh7HT17K2z3byt;
-	Tue, 15 Jul 2025 15:37:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752557845;
-	cv=none; b=dInt/s9KQq3Up32GxW1mDXx+5pEqtZLC10PMYWaoGlxBgemKAQD3U3jhBcWakdQ7mEu52IcpR9TNxCfi+dSwvJiVAYgh8+xp9Qfio/f055rR4LMKzL8rJJB/eRgVFxE7O1G+mudUQMquC9BqBXYzsAojGt9K0b+gtL3XJGxdve3gO1BV7lQe4qUsXVwt0N1T8pml+iB9JcJtal9MI1K38ZtO37D0FQxbRi1Rpmcnk/yDcYAOblK0RG2OdYUOouEk8I6/E/WKurj3ELwRBEMU92/hDyRdHJ27k3DyRU0BAvfIQi30YOQn2CDOXp63cobaWP+uNqt0WllR01bdJnm76g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bhBq91lYvz3c57;
+	Tue, 15 Jul 2025 18:16:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:37:1000::53df:5f64:0"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752567397;
+	cv=none; b=BZVy9d5QYGTQ0S+LK8wyacFaMQOB1aKy9iQ5c5+zqETL8uHKl1J0kFgb49mYXbTtQiGyQpY+gimC3OFa2fdW6Q0sgaaV8jVOBKzdTdDEDwzBoqIZF9dW0MnxJyjxyWYxDKjDRRnZKyNA3KV9z9cnFhbSlx9kWGcBntJyaCIhkuuX5dXPJ8aBrkTSs6zTcZARxsgTCms0td+xKB2aJWYl3pHLDPhA02O/ZEzb5FmNw3WRy3i0us2dXYtGO1EJ+Iqo9Dzy/no+pF3mmdKZ1y7OqbPNrbmdpSwtg35UWlqz0CzL4JeEq99rhAtvGVR3R46Kvz53Qc0GeKQFx2dooAclTw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752557845; c=relaxed/relaxed;
-	bh=Tji+VPcRen1/CuQi6wUn6Tib/DXX/AwY4yutOlghfP4=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=mkTcfXJ/NR84QGddbCpQemUf7JwajHA6BKcSC17c31BJA8jKJFdh96+SxS0vsBV2rbXfEJ3ZMFytMsptX4oofDTpkeS+nyy1Hyf8Ja8H6+lqnUfF+neD5nQxhffYMyDHe2ByicCZgeiN5Avn13kMIS9qy6v4m1H9aSKjuBO8MMsZipq2zag7ZIobc12GRXaa7S9VwkK/EH1rif76KqxHJahqZcq6UL8OSJyhC4pzbCunmYHxCLAosdam/TyX4hS3T3iDIzpppAfFchVrTwFU9mm/NFebFRjF+C2buat3dqLn1BFKpuADzD8CIjIvtsNV9i3cSfZeq/MNsB7G/WaKog==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OD3WsebZ; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OD3WsebZ;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+	t=1752567397; c=relaxed/relaxed;
+	bh=VAO71PoTRT57v2tf32yzlu+uhqoq+aoYC6EYVWufyhM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=B4Ktd46hC1/f15ba8zl0ov2ZNzzmd1AzfMehQtJ4bef+HDR3XcA2TCD9HUgjPZVXkcYcFvFLn+h7BqL7at7F2HeDSUDCBhG4ch/UYyDCyBhYOH+5aRdE+tzWsyYj6JOT0sp6w3bBDWT/IoMs017MXCu7+A0omLWf8KhX1+uMcsWGtHXtaZPzkAd+1cjX0NILyANX6jaTc7oQgVxq9zgJ+r1vWkWxTqspRm4ronAF8Ai7JKvw7T5N6Y2okHQaXop6NvuwVKZnV80a8ZCfP9/wB1qALmgT4xCrLe1Dgw3nMwXujafDUF8jz5PVlRaPveUA/46211PmasASeXAHcRxFRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=2a01:37:1000::53df:5f64:0; helo=bmailout1.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org) smtp.helo=bmailout1.hostsharing.net
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=bmailout1.hostsharing.net (client-ip=2a01:37:1000::53df:5f64:0; helo=bmailout1.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org)
+Received: from bmailout1.hostsharing.net (bmailout1.hostsharing.net [IPv6:2a01:37:1000::53df:5f64:0])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bh7HR5GmPz3byF
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2025 15:37:23 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 7C443A4C138;
-	Tue, 15 Jul 2025 05:37:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 12609C4CEF4;
-	Tue, 15 Jul 2025 05:37:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1752557840;
-	bh=6J3hCrPuy++HUhp2ZStrBO9vMI6jCI0BvgNUFtgBHOI=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=OD3WsebZ74BNCweLXWK6ZDpiy1GYCnmXu2xh27/ENvLdsLSkrLFQ6mR5l1mP+HUMG
-	 MShniYJqNM1s31wMmQw8FxDkHjit4SvfyoI6wUc1GOv+6z5AyvmnmyD6drAojuQ7np
-	 fOs0Zsj44GMv/NBf25ahV1vQZSouQi2ASuXroB6TqmINioyqTPuLu3wfF4V0KxSSjK
-	 0PR45/X7hWdpadu6p9W0SgtO5vmgSyqWPe258S/Buu2TrZcJGDDU9K/fmM8I4Uoql0
-	 Hu69E3heOIAt/PsIe2m0WLAzWWr5PZ0Gr/ihpETockVthBQZ9NoB8xkXw0f93zawy2
-	 SFMRROjblWu6w==
-From: Kees Cook <kees@kernel.org>
-To: linux-kernel@vger.kernel.org,
-	Dave Martin <Dave.Martin@arm.com>
-Cc: Kees Cook <kees@kernel.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	Akihiko Odaki <akihiko.odaki@daynix.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Alexandre Ghiti <alex@ghiti.fr>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Brian Cain <bcain@kernel.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Chris Zankel <chris@zankel.net>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Dinh Nguyen <dinguyen@kernel.org>,
-	Geert Uytterhoeven <geert@linux-m68k.org>,
-	Guo Ren <guoren@kernel.org>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Helge Deller <deller@gmx.de>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	Ingo Molnar <mingo@redhat.com>,
-	Johannes Berg <johannes@sipsolutions.net>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Jonas Bonn <jonas@southpole.se>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Max Filippov <jcmvbkbc@gmail.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Oleg Nesterov <oleg@redhat.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Rich Felker <dalias@libc.org>,
-	Richard Weinberger <richard@nod.at>,
-	Russell King <linux@armlinux.org.uk>,
-	Stafford Horne <shorne@gmail.com>,
-	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Vineet Gupta <vgupta@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Will Deacon <will@kernel.org>,
-	Yoshinori Sato <ysato@users.sourceforge.jp>,
-	linux-arch@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-csky@vger.kernel.org,
-	linux-hexagon@vger.kernel.org,
-	linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org,
-	linux-openrisc@vger.kernel.org,
-	linux-parisc@vger.kernel.org,
-	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	linux-sh@vger.kernel.org,
-	linux-snps-arc@lists.infradead.org,
-	linux-um@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org,
-	loongarch@lists.linux.dev,
-	sparclinux@vger.kernel.org,
-	x86@kernel.org
-Subject: Re: [PATCH 00/23] binfmt_elf,arch/*: Use elf.h for coredump note names
-Date: Mon, 14 Jul 2025 22:37:11 -0700
-Message-Id: <175255782864.3413694.2008555655056311560.b4-ty@kernel.org>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250701135616.29630-1-Dave.Martin@arm.com>
-References: <20250701135616.29630-1-Dave.Martin@arm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bhBq76vqCz3c54
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 15 Jul 2025 18:16:33 +1000 (AEST)
+Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
+	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
+	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
+	by bmailout1.hostsharing.net (Postfix) with ESMTPS id 5578C2C06843;
+	Tue, 15 Jul 2025 10:16:27 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id 20CD4390420; Tue, 15 Jul 2025 10:16:27 +0200 (CEST)
+Date: Tue, 15 Jul 2025 10:16:27 +0200
+From: Lukas Wunner <lukas@wunner.de>
+To: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+Cc: Bjorn Helgaas <bhelgaas@google.com>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>, Will Deacon <will@kernel.org>,
+	Lorenzo Pieralisi <lpieralisi@kernel.org>,
+	Krzysztof Wilczy??ski <kwilczynski@kernel.org>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Rob Herring <robh@kernel.org>, Heiko Stuebner <heiko@sntech.de>,
+	Philipp Zabel <p.zabel@pengutronix.de>, linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org,
+	linux-rockchip@lists.infradead.org,
+	Niklas Cassel <cassel@kernel.org>,
+	Wilfred Mallawa <wilfred.mallawa@wdc.com>,
+	Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>
+Subject: Re: [PATCH v5 1/4] PCI/ERR: Add support for resetting the Root Ports
+ in a platform specific way
+Message-ID: <aHYOW3P0wvHo5a1j@wunner.de>
+References: <20250715-pci-port-reset-v5-0-26a5d278db40@oss.qualcomm.com>
+ <20250715-pci-port-reset-v5-1-26a5d278db40@oss.qualcomm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -130,75 +70,34 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250715-pci-port-reset-v5-1-26a5d278db40@oss.qualcomm.com>
 
-On Tue, 01 Jul 2025 14:55:53 +0100, Dave Martin wrote:
-> This series aims to clean up an aspect of coredump generation:
-> 
-> ELF coredumps contain a set of notes describing the state of machine
-> registers and other information about the dumped process.
-> 
-> Notes are identified by a numeric identifier n_type and a "name"
-> string, although this terminology is somewhat misleading.  Officially,
-> the "name" of a note is really an "originator" or namespace identifier
-> that indicates how to interpret n_type [1], although in practice it is
-> often used more loosely.
-> 
-> [...]
+On Tue, Jul 15, 2025 at 01:29:18PM +0530, Manivannan Sadhasivam wrote:
+> --- a/drivers/pci/pci.c
+> +++ b/drivers/pci/pci.c
+> @@ -4964,7 +4964,19 @@ void pci_reset_secondary_bus(struct pci_dev *dev)
+>  
+>  void __weak pcibios_reset_secondary_bus(struct pci_dev *dev)
+>  {
+> +	struct pci_host_bridge *host = pci_find_host_bridge(dev->bus);
+> +	int ret;
+> +
+> +	if (host->reset_root_port) {
+> +		ret = host->reset_root_port(host, dev);
+> +		if (ret)
+> +			pci_err(dev, "Failed to reset Root Port: %d\n", ret);
+> +
+> +		return;
+> +	}
+> +
 
-Applied to for-next/execve, thanks!
+There used to be a pci_is_root_bus() check here:
 
-[01/23] regset: Fix kerneldoc for struct regset_get() in user_regset
-        https://git.kernel.org/kees/c/6fd9e1aa0784
-[02/23] regset: Add explicit core note name in struct user_regset
-        https://git.kernel.org/kees/c/85a7f9cbf8a8
-[03/23] binfmt_elf: Dump non-arch notes with strictly matching name and type
-        https://git.kernel.org/kees/c/9674a1be4dd5
-[04/23] ARC: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/237dc8d79627
-[05/23] ARM: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/49b849d11cd1
-[06/23] arm64: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/87b0d081dc98
-[07/23] csky: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/2c2fb861fc59
-[08/23] hexagon: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/55821111b1b3
-[09/23] LoongArch: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/1260e3b13584
-[10/23] m68k: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/e572168e8d2a
-[11/23] MIPS: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/18bd88faa246
-[12/23] nios2: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/8368cd0e4636
-[13/23] openrisc: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/10cd957a895f
-[14/23] parisc: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/92acdd819b5d
-[15/23] powerpc/ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/307035acefbd
-[16/23] riscv: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/c9502cc7bef5
-[17/23] s390/ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/d6a883cb40fc
-[18/23] sh: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/afe74eecd88f
-[19/23] sparc: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/c9d4cb25e94e
-[20/23] x86/ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/3de0414dec7b
-[21/23] um: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/40d3a88594b5
-[22/23] xtensa: ptrace: Use USER_REGSET_NOTE_TYPE() to specify regset note names
-        https://git.kernel.org/kees/c/cb32fb722f4b
-[23/23] binfmt_elf: Warn on missing or suspicious regset note names
-        https://git.kernel.org/kees/c/a55128d392e8
+https://lore.kernel.org/r/20250524185304.26698-2-manivannan.sadhasivam@linaro.org/
 
-Take care,
+Thanks,
 
--- 
-Kees Cook
-
+Lukas
 
