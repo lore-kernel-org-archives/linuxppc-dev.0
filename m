@@ -1,56 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-10265-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10266-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EE8EC83F17
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jul 2025 21:51:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07922C83F27
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 15 Jul 2025 21:51:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bhXv611JJz2y8p;
-	Wed, 16 Jul 2025 07:51:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752589274;
-	cv=none; b=SimIu/4qQqoSCoczZUq7swmWo4CAp94cn+Ai3cFD7aTvDucwEN2TuigJ7b5iYqq5ou1WfYo5nQPqH87r9pmlWVHdrhuyZSk3M9pH96UHU16l961iKPNYGKJN6VGwc5t5G0dSLik8WMeTEpgJoF0xGRY2AMxDxzL+9h1XUs+dyjsgrEWiP//Pd600AkjbtTYf106ZONiwxbEfrV/eWWtJyj1LXtifooJbmGK1o2ASLclWvuIP9mRjpiMZVAwaNxONbyXeAZgvlcFO9Oc7bDch4qGSrtHADdXrrbu0BWDNvrLE/SaL6cvpAYRc04t75X/uH+W9V4NRCb4wCefh/ePNbw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bhXvD46YWz2y8W;
+	Wed, 16 Jul 2025 07:51:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752589275;
+	cv=none; b=EovnrDtjWn/IfTcjI7nchiq5QGrjU8BUQ7uHSvvTmesnFNgrVN5MOyc0YstIcub0SJm8S3hKXm/UdqKa+audwsxzOPoneEhTmjTCSHvuyU0OPJkGZV1xMFIfrVzAxlazA4JHF/gIwNUAIqtv4hBS+dI/mzQtO7j7S9YAw5W0J2LQASYZJLXe2lthlZj3imf/HHn/1qeeDAinm9qugOzDs5e1fP2upsIk/YnNNCXbJ9fjwhTYdW53oRg9S3iUsnriDpPJPERFUu3n3kU1CyTyL5KUJhNcaZqvKaLfqMz/cIFz8ibhni8hiK6XSL+KHeLTWGBiCWGXe09lECiOEMr5dA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752589274; c=relaxed/relaxed;
-	bh=D6ysnD/5iAXxosW1Gzuf3XgySRMmYSlmh1bTJIzJ3VY=;
+	t=1752589275; c=relaxed/relaxed;
+	bh=8oJOoCKvGzxUB7yyC4QZVPsDVyHCYC6fclUXTwf7YKA=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=l4tUMZzGd5Ayqu1nWH2tuKPRrJGrA4QW/x9rOMF9vaZoHYAYNX4/I6V4q4y5R8hrPok3o9VzIS5/NNg/SLuuD8V7ae0VSk/ljQSSoJUPZHQelg2hTWWuEhkSTsJconNGOavZhj/Q5bkstPV+aJsc5qK0jW9yDmu2RZRAKx8/nR6+mEvyzYVm25GEqJN6a1bHkw22NyZqCQo1NzoCxzoOSV92xg/JKymwGPZCIp7YnJC/dZBoxSQaGpu5D/g67PgKKVwN33CFq2wduZcNaYFUdTKjzjqkoXI9CvCe9aoIGVDIFUxKY6KDKJlJdbTcdkykh8WOYED07Rv59/Gv3qfVOQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BPRxkXAy; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 In-Reply-To:To:Cc; b=P4d0x6/NwgrVpfiSmkjXMWCIJ1/cZ74Mg0seT4G/2LrFYVpMedefygrYn2RBYKEcAOISWFovHXY4EKxOcP9liuNCTEWPfp754bQ7XY7ZKf0YkiuHBnSzSnnLfENTQE708xhXqjZEtuslvo6mJMFDYDyVp+EJP7j+CKkPl5pkaVV2FX7g6Bzu9qNs3fEn4G7gORQarBY4G9pBlpOV6KJIlfd61vuM7iaozqv9AGebILp9yNnYTxyrYbAHYVau+7r6cQ93+Y5gC/P4uEZiQPB30ubI9TXnh4co2XwNTBtfF6WYi5VUpXt2svu0Qj8S0msnQ2kqDCGDdaHMdAHXx7R3uQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cSOPpAqA; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BPRxkXAy;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cSOPpAqA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bhLvs71cxz2xTh
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2025 00:21:13 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bhLvt2GGcz2xd3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 16 Jul 2025 00:21:14 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id D7FE0A5712E;
+	by dfw.source.kernel.org (Postfix) with ESMTP id 9DCCA5C59BA;
 	Tue, 15 Jul 2025 14:21:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 259E8C4CEFA;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 08581C4CEF8;
 	Tue, 15 Jul 2025 14:21:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1752589271;
-	bh=G7l//qGdXYPqxEASGJgJ2nJDbecOqNR6zMbP4pmekmI=;
+	bh=HUiqe9BfJu8+IE5qBDSonrm/7cSZb3FrNqj6ffWbMIU=;
 	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=BPRxkXAy4avJ7lkPrwOdhgVDNXTOkUcLn6x2SrTuKEac80l0VDI3/+Y4FQOR+BKFE
-	 Gp9/omtL02JYojbJPlD6MCeiP6gJvVa8Y+FigNi1DvL04ddWq3eLBz9xPyqGSfP/8t
-	 7fogamvophjaLFCnTjfo3f6It80bs113w7x/adWHhDyBC0RFf8aG6RiFW5j1ht9xLV
-	 ktW8WilrIycmDXvvKrkvoyPNkj3E11Zqbrbqs7k1s/VMpPVr+/VONi90OOzF7gJUqI
-	 gxz7B8gAw596nRaJxobNaxwSeay3xvr20UZPwVvDB6OnBNLHu6D+qMqXb3/MfOw8pN
-	 /cicgn5DgRcaQ==
+	b=cSOPpAqAU6Kde3IQHaYWfRC1pHrB6jAYvqgThr6JdD9Ew4kffLWBRluaazgz5Gqa9
+	 W8s9IzIewr++ugD6yGjta08xl2b3O8/jtBOfDHLJW47SHtqu5J11sMlYZGryVQr6To
+	 GbZj3/DZPzu4+BrUrsqIY5wWlU1QPw0XIPHigvCm60WSw1SwRs/ldDLF6zEJSEY/8+
+	 VPBbElVM6/vj2XoO+Ie3ymB2t7I+XFQ/XHxWiUIkVSdOJNxJuA4+czOIPEPH9hNCEz
+	 ujjwEZSvRhHcslsgsznPRI86LJeLHJnuY65YyP0m4zUtNu9m/V+hbBeZxA2PL2F2tR
+	 GIHjjEaZClLsw==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 1A013C83F22;
-	Tue, 15 Jul 2025 14:21:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTP id EF759C83F2D;
+	Tue, 15 Jul 2025 14:21:10 +0000 (UTC)
 From: Manivannan Sadhasivam via B4 Relay <devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org>
-Date: Tue, 15 Jul 2025 19:51:07 +0530
-Subject: [PATCH v6 4/4] PCI: dw-rockchip: Add support to reset Root Port
- upon link down event
+Date: Tue, 15 Jul 2025 19:51:05 +0530
+Subject: [PATCH v6 2/4] PCI: host-common: Add link down handling for Root
+ Ports
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,7 +66,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20250715-pci-port-reset-v6-4-6f9cce94e7bb@oss.qualcomm.com>
+Message-Id: <20250715-pci-port-reset-v6-2-6f9cce94e7bb@oss.qualcomm.com>
 References: <20250715-pci-port-reset-v6-0-6f9cce94e7bb@oss.qualcomm.com>
 In-Reply-To: <20250715-pci-port-reset-v6-0-6f9cce94e7bb@oss.qualcomm.com>
 To: Bjorn Helgaas <bhelgaas@google.com>, 
@@ -83,18 +83,19 @@ Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
  Wilfred Mallawa <wilfred.mallawa@wdc.com>, 
  Krishna Chaitanya Chundru <krishna.chundru@oss.qualcomm.com>, 
  mani@kernel.org, Lukas Wunner <lukas@wunner.de>, 
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
+ Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, 
+ Manivannan Sadhasivam <mani@kernel.org>
 X-Mailer: b4 0.14.2
-X-Developer-Signature: v=1; a=openpgp-sha256; l=6494;
+X-Developer-Signature: v=1; a=openpgp-sha256; l=4883;
  i=manivannan.sadhasivam@oss.qualcomm.com; h=from:subject:message-id;
- bh=qm+3CMghWKFd+O3bZU1o020L8vQ/E6aH1MlFdMAO6mw=;
- b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBodmPUEht58g/m1MEl9CiEJpYG+gEPLb6qZmkLg
- 17gt0+/UWKJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaHZj1AAKCRBVnxHm/pHO
- 9bcvCACog/qU6v0/olHy9NV34E/7u439Cz/PsWLzz23mGRR95QAEtPckJ29Y1ReoXl9kRlBdEId
- s/ovkySUmIURZga8nOC7zVHFfFr23wBEF97zAJgyYKqRATv2x3wb2/OleIMcB6PgDH5arice5yO
- ZpIK7nMHSLoiqFBcPhdxbb/niu6d86Zqohw9mWyqObF9PweBctF/wXkvdg5Bh8JXyiOEH5VEQnK
- W69HHb4lv+/0WcQBvHfMuzFtzYb0wfcSLKzvzn1r9p48kJvfNjL1QdGxDHa8CXYybbkaWtgDvUX
- i0JqWYZjdOHMBKHRC9J+wqRHnGJyk238VRQsipjpNPJN4rxk
+ bh=yclKXg12a4Ms/Jc9pFHjTrFPlwGCKmI6VWDeeqlj8XE=;
+ b=owEBbQGS/pANAwAKAVWfEeb+kc71AcsmYgBodmPUesZqzIw510tKLlbnICAV2RA0RCl15yWpa
+ AkTWHG8fIqJATMEAAEKAB0WIQRnpUMqgUjL2KRYJ5dVnxHm/pHO9QUCaHZj1AAKCRBVnxHm/pHO
+ 9dMPCACpNns3R+yAsxZwXke3SJFVnnZNTmZk9e3XJZNXxBvOmDY3pXwmKOH2mjAf3Wyz6y4jBvR
+ lSDlRFXz/+BSPaZbQH6QD3WKSwwIPTCnJCeE2kjR8mf3pQ3XBpGjPNtXZ9waTI5p4eVgn7DgtvY
+ v8rY9FgrSqh1dk5yY1XqCi6KSUxP4mSd9BUdB0nSyN3A+/DKhwHuhYiJsg685g2+QsoYCh2wR4Y
+ riOaWlurn7idL8rwXGt16wKX1ZWQiq9/OaOzbDIoN16sRqRAMOBzQlPviLPxeHB4XpPhCTag/aF
+ h9bI6uBHzbzSxgCxjDVKkqU959ySUJMjGG5Q1UA9bWvD2Xjl
 X-Developer-Key: i=manivannan.sadhasivam@oss.qualcomm.com; a=openpgp;
  fpr=C668AEC3C3188E4C611465E7488550E901166008
 X-Endpoint-Received: by B4 Relay for
@@ -102,188 +103,125 @@ X-Endpoint-Received: by B4 Relay for
 X-Original-From: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 Reply-To: manivannan.sadhasivam@oss.qualcomm.com
 
-From: Wilfred Mallawa <wilfred.mallawa@wdc.com>
+From: Manivannan Sadhasivam <mani@kernel.org>
 
-The PCIe link may go down in cases like firmware crashes or unstable
-connections. When this occurs, the PCIe Root Port must be reset to restore
-the functionality. However, the current driver lacks link down handling,
-forcing users to reboot the system to recover.
+The PCI link, when down, needs to be recovered to bring it back. But on
+some platforms, that cannot be done in a generic way as link recovery
+procedure is platform specific. So add a new API
+pci_host_handle_link_down() that could be called by the host bridge drivers
+for a specific Root Port when the link goes down.
 
-This patch implements the `reset_root_port` callback for link down handling
-for Rockchip DWC PCIe host controller. In which, the RC is reset,
-reconfigured and link training initiated to recover from the link down
-event.
+The API accepts the 'pci_dev' corresponding to the Root Port which observed
+the link down event. If CONFIG_PCIEAER is enabled, the API calls
+pcie_do_recovery() function with 'pci_channel_io_frozen' as the state. This
+will result in the execution of the AER Fatal error handling code. Since
+the link down recovery is pretty much the same as AER Fatal error handling,
+pcie_do_recovery() helper is reused here. First, the AER error_detected()
+callback will be triggered for the bridge and then for the downstream
+devices. Finally, pci_host_reset_root_port() will be called for the Root
+Port, which will reset the Root Port using 'reset_root_port' callback to
+recover the link. Once that's done, resume message will be broadcasted to
+the bridge and the downstream devices, indicating successful link recovery.
 
-This also by extension fixes issues with sysfs initiated bus resets. In
-that, currently, when a sysfs initiated bus reset is issued, the endpoint
-device is non-functional after (may link up with downgraded link status).
-With the link down handling support, a sysfs initiated bus reset works as
-intended. Testing conducted on a ROCK5B board with an M.2 NVMe drive.
+But if CONFIG_PCIEAER is not enabled in the kernel, only
+pci_host_reset_root_port() API will be called, which will in turn call
+pci_bus_error_reset() to just reset the Root Port as there is no way we
+could inform the drivers about link recovery.
 
-Signed-off-by: Wilfred Mallawa <wilfred.mallawa@wdc.com>
-[mani: rebased on top of the new version of reset_root_port series]
+Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@linaro.org>
 Signed-off-by: Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>
 ---
- drivers/pci/controller/dwc/Kconfig            |  1 +
- drivers/pci/controller/dwc/pcie-dw-rockchip.c | 91 ++++++++++++++++++++++++++-
- 2 files changed, 90 insertions(+), 2 deletions(-)
+ drivers/pci/controller/pci-host-common.c | 33 ++++++++++++++++++++++++++++++++
+ drivers/pci/controller/pci-host-common.h |  1 +
+ drivers/pci/pci.c                        |  1 +
+ drivers/pci/pcie/err.c                   |  1 +
+ 4 files changed, 36 insertions(+)
 
-diff --git a/drivers/pci/controller/dwc/Kconfig b/drivers/pci/controller/dwc/Kconfig
-index ce04ee6fbd99cbcce5d2f3a75ebd72a17070b7b7..01e2650242ccc345bdd0568d08219527f00ed395 100644
---- a/drivers/pci/controller/dwc/Kconfig
-+++ b/drivers/pci/controller/dwc/Kconfig
-@@ -348,6 +348,7 @@ config PCIE_ROCKCHIP_DW_HOST
- 	depends on OF
- 	select PCIE_DW_HOST
- 	select PCIE_ROCKCHIP_DW
-+	select PCI_HOST_COMMON
- 	help
- 	  Enables support for the DesignWare PCIe controller in the
- 	  Rockchip SoC (except RK3399) to work in host mode.
-diff --git a/drivers/pci/controller/dwc/pcie-dw-rockchip.c b/drivers/pci/controller/dwc/pcie-dw-rockchip.c
-index 93171a3928794915ad1e8c03c017ce0afc1f9169..8f1a34c5fbabaacbd9624048ca4c4f8dc29f2171 100644
---- a/drivers/pci/controller/dwc/pcie-dw-rockchip.c
-+++ b/drivers/pci/controller/dwc/pcie-dw-rockchip.c
-@@ -23,6 +23,7 @@
- #include <linux/reset.h>
+diff --git a/drivers/pci/controller/pci-host-common.c b/drivers/pci/controller/pci-host-common.c
+index b0992325dd65f0da8e216ec8a2153af365225d1d..51eacb6cb57443338e995f17afd3b2564bbd1f83 100644
+--- a/drivers/pci/controller/pci-host-common.c
++++ b/drivers/pci/controller/pci-host-common.c
+@@ -12,9 +12,11 @@
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+ #include <linux/of_pci.h>
++#include <linux/pci.h>
+ #include <linux/pci-ecam.h>
+ #include <linux/platform_device.h>
  
- #include "../../pci.h"
-+#include "../pci-host-common.h"
- #include "pcie-designware.h"
++#include "../pci.h"
+ #include "pci-host-common.h"
  
- /*
-@@ -84,6 +85,9 @@ struct rockchip_pcie_of_data {
- 	const struct pci_epc_features *epc_features;
- };
- 
-+static int rockchip_pcie_rc_reset_root_port(struct pci_host_bridge *bridge,
-+				       struct pci_dev *pdev);
-+
- static int rockchip_pcie_readl_apb(struct rockchip_pcie *rockchip, u32 reg)
- {
- 	return readl_relaxed(rockchip->apb_base + reg);
-@@ -257,6 +261,7 @@ static int rockchip_pcie_host_init(struct dw_pcie_rp *pp)
- 					 rockchip);
- 
- 	rockchip_pcie_enable_l0s(pci);
-+	pp->bridge->reset_root_port = rockchip_pcie_rc_reset_root_port;
- 
- 	return 0;
+ static void gen_pci_unmap_cfg(void *ptr)
+@@ -104,5 +106,36 @@ void pci_host_common_remove(struct platform_device *pdev)
  }
-@@ -448,6 +453,7 @@ static irqreturn_t rockchip_pcie_rc_sys_irq_thread(int irq, void *arg)
- 	struct dw_pcie *pci = &rockchip->pci;
- 	struct dw_pcie_rp *pp = &pci->pp;
- 	struct device *dev = pci->dev;
-+	struct pci_dev *port;
- 	u32 reg;
+ EXPORT_SYMBOL_GPL(pci_host_common_remove);
  
- 	reg = rockchip_pcie_readl_apb(rockchip, PCIE_CLIENT_INTR_STATUS_MISC);
-@@ -456,6 +462,14 @@ static irqreturn_t rockchip_pcie_rc_sys_irq_thread(int irq, void *arg)
- 	dev_dbg(dev, "PCIE_CLIENT_INTR_STATUS_MISC: %#x\n", reg);
- 	dev_dbg(dev, "LTSSM_STATUS: %#x\n", rockchip_pcie_get_ltssm(rockchip));
- 
-+	if (reg & PCIE_LINK_REQ_RST_NOT_INT) {
-+		dev_dbg(dev, "hot reset or link-down reset\n");
-+		for_each_pci_bridge(port, pp->bridge->bus) {
-+			if (pci_pcie_type(port) == PCI_EXP_TYPE_ROOT_PORT)
-+				pci_host_handle_link_down(port);
-+		}
-+	}
-+
- 	if (reg & PCIE_RDLH_LINK_UP_CHGED) {
- 		if (rockchip_pcie_link_up(pci)) {
- 			dev_dbg(dev, "Received Link up event. Starting enumeration!\n");
-@@ -537,8 +551,8 @@ static int rockchip_pcie_configure_rc(struct platform_device *pdev,
- 		return ret;
- 	}
- 
--	/* unmask DLL up/down indicator */
--	val = HIWORD_UPDATE(PCIE_RDLH_LINK_UP_CHGED, 0);
-+	/* unmask DLL up/down indicator and hot reset/link-down reset irq */
-+	val = HIWORD_UPDATE(PCIE_RDLH_LINK_UP_CHGED | PCIE_LINK_REQ_RST_NOT_INT, 0);
- 	rockchip_pcie_writel_apb(rockchip, val, PCIE_CLIENT_INTR_MASK_MISC);
- 
- 	return ret;
-@@ -689,6 +703,79 @@ static int rockchip_pcie_probe(struct platform_device *pdev)
- 	return ret;
- }
- 
-+static int rockchip_pcie_rc_reset_root_port(struct pci_host_bridge *bridge,
-+					    struct pci_dev *pdev)
++static pci_ers_result_t pci_host_reset_root_port(struct pci_dev *dev)
 +{
-+	struct pci_bus *bus = bridge->bus;
-+	struct dw_pcie_rp *pp = bus->sysdata;
-+	struct dw_pcie *pci = to_dw_pcie_from_pp(pp);
-+	struct rockchip_pcie *rockchip = to_rockchip_pcie(pci);
-+	struct device *dev = rockchip->pci.dev;
-+	u32 val;
 +	int ret;
 +
-+	dw_pcie_stop_link(pci);
-+	clk_bulk_disable_unprepare(rockchip->clk_cnt, rockchip->clks);
-+	rockchip_pcie_phy_deinit(rockchip);
-+
-+	ret = reset_control_assert(rockchip->rst);
-+	if (ret)
-+		return ret;
-+
-+	ret = rockchip_pcie_phy_init(rockchip);
-+	if (ret)
-+		goto disable_regulator;
-+
-+	ret = reset_control_deassert(rockchip->rst);
-+	if (ret)
-+		goto deinit_phy;
-+
-+	ret = rockchip_pcie_clk_init(rockchip);
-+	if (ret)
-+		goto deinit_phy;
-+
-+	ret = pp->ops->init(pp);
++	ret = pci_bus_error_reset(dev);
 +	if (ret) {
-+		dev_err(dev, "Host init failed: %d\n", ret);
-+		goto deinit_clk;
++		pci_err(dev, "Failed to reset Root Port: %d\n", ret);
++		return PCI_ERS_RESULT_DISCONNECT;
 +	}
 +
-+	/* LTSSM enable control mode */
-+	val = HIWORD_UPDATE_BIT(PCIE_LTSSM_ENABLE_ENHANCE);
-+	rockchip_pcie_writel_apb(rockchip, val, PCIE_CLIENT_HOT_RESET_CTRL);
++	pci_info(dev, "Root Port has been reset\n");
 +
-+	rockchip_pcie_writel_apb(rockchip, PCIE_CLIENT_RC_MODE, PCIE_CLIENT_GENERAL_CON);
-+
-+	ret = dw_pcie_setup_rc(pp);
-+	if (ret) {
-+		dev_err(dev, "Failed to setup RC: %d\n", ret);
-+		goto deinit_clk;
-+	}
-+
-+	/* unmask DLL up/down indicator and hot reset/link-down reset irq */
-+	val = HIWORD_UPDATE(PCIE_RDLH_LINK_UP_CHGED | PCIE_LINK_REQ_RST_NOT_INT, 0);
-+	rockchip_pcie_writel_apb(rockchip, val, PCIE_CLIENT_INTR_MASK_MISC);
-+
-+	ret = dw_pcie_start_link(pci);
-+	if (ret)
-+		goto deinit_clk;
-+
-+	/* Ignore errors, the link may come up later */
-+	dw_pcie_wait_for_link(pci);
-+	dev_dbg(dev, "Root Port reset completed\n");
-+	return ret;
-+
-+deinit_clk:
-+	clk_bulk_disable_unprepare(rockchip->clk_cnt, rockchip->clks);
-+deinit_phy:
-+	rockchip_pcie_phy_deinit(rockchip);
-+disable_regulator:
-+	if (rockchip->vpcie3v3)
-+		regulator_disable(rockchip->vpcie3v3);
-+
-+	return ret;
++	return PCI_ERS_RESULT_RECOVERED;
 +}
 +
- static const struct rockchip_pcie_of_data rockchip_pcie_rc_of_data_rk3568 = {
- 	.mode = DW_PCIE_RC_TYPE,
- };
++static void pci_host_recover_root_port(struct pci_dev *port)
++{
++#if IS_ENABLED(CONFIG_PCIEAER)
++	pcie_do_recovery(port, pci_channel_io_frozen, pci_host_reset_root_port);
++#else
++	pci_host_reset_root_port(port);
++#endif
++}
++
++void pci_host_handle_link_down(struct pci_dev *port)
++{
++	pci_info(port, "Recovering Root Port due to Link Down\n");
++	pci_host_recover_root_port(port);
++}
++EXPORT_SYMBOL_GPL(pci_host_handle_link_down);
++
+ MODULE_DESCRIPTION("Common library for PCI host controller drivers");
+ MODULE_LICENSE("GPL v2");
+diff --git a/drivers/pci/controller/pci-host-common.h b/drivers/pci/controller/pci-host-common.h
+index 65bd9e032353827221a6af59858c46fdbe5916bf..cb0a07c8773ec87838164e994b34a62d2c8118be 100644
+--- a/drivers/pci/controller/pci-host-common.h
++++ b/drivers/pci/controller/pci-host-common.h
+@@ -16,5 +16,6 @@ int pci_host_common_probe(struct platform_device *pdev);
+ int pci_host_common_init(struct platform_device *pdev,
+ 			 const struct pci_ecam_ops *ops);
+ void pci_host_common_remove(struct platform_device *pdev);
++void pci_host_handle_link_down(struct pci_dev *port);
+ 
+ #endif
+diff --git a/drivers/pci/pci.c b/drivers/pci/pci.c
+index b29264aa2be33b18a58b3b3db1d1fb0f6483e5e8..39310422634a9551efc8aded565b7cc30f4989d0 100644
+--- a/drivers/pci/pci.c
++++ b/drivers/pci/pci.c
+@@ -5768,6 +5768,7 @@ int pci_bus_error_reset(struct pci_dev *bridge)
+ 	mutex_unlock(&pci_slot_mutex);
+ 	return pci_bus_reset(bridge->subordinate, PCI_RESET_DO_RESET);
+ }
++EXPORT_SYMBOL_GPL(pci_bus_error_reset);
+ 
+ /**
+  * pci_probe_reset_bus - probe whether a PCI bus can be reset
+diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
+index b834fc0d705938540d3d7d3d8739770c09fe7cf1..3e3084bb7cb7fa06b526e6fab60e77927aba0ad0 100644
+--- a/drivers/pci/pcie/err.c
++++ b/drivers/pci/pcie/err.c
+@@ -270,3 +270,4 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
+ 
+ 	return status;
+ }
++EXPORT_SYMBOL_GPL(pcie_do_recovery);
 
 -- 
 2.45.2
