@@ -1,42 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-10289-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10290-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B6A2C83F1B
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jul 2025 12:29:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A4A6C83F38
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jul 2025 14:27:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bjXKx4rlHz2yPd;
-	Thu, 17 Jul 2025 22:29:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752755365;
-	cv=none; b=A8cVH1uiCR067+5Arg6BAie1LZK8eCwCKB+bPVnST+j9kOHf2l47DCW6553+oRVU/JkL1kH3Xx96zDA2szP1eDeNBfKspk6sD+dDCM6uuABEKAvhZ4K4kO2jU8KP1n9lQaL9Ra9R6AtS8wzdJmYOd4GtjdYOfJnsudPShusVb7V7FDx+cMaStv5SPC2IiLNodHSHBwiaw6rO66tecISu93RPapWE3xekPTaXrkEuWDmwo0wKJnz25n65iqN0L+qokurt67BdclwwqyP2Ginb3y4lDkS+qajIeBcpu4ZMkPHuPbmkrcbKLTUEm0f1n3ywDTAGmtv32OCqfNjbu6AgRw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bjZyW023Nz307K;
+	Fri, 18 Jul 2025 00:27:47 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::129"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752762466;
+	cv=none; b=flHtxpmdm1EK9iSXKaBLwehkzh3BjyTML9iE6RnBye4rwyeOS2+sSeOreK0OopF6nm8NkztARztD7TcUTgRtKO4/DupRMCe1O46RWbHru1A/XEA0HG9f2Zure0f8NsfcFy5NCn9tyG9pCHnJiCHF75CuigXyLhEK3Fkj3fM8l2vEckSza6nu4b2VwFVOHj5txwly6rl8ebanyUJQS/tEHneGI3NbFYFh+n5i3x79VfK3zGtZZbAkVL1UhxLMWAHJiJg5YeC4+ZugPALHZvJC4UJuzn+NAugX6Mn+M+pJP58EPA6iTGnw0utkchujSaK3vji26r0FovZHM4NDEMiyCA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752755365; c=relaxed/relaxed;
-	bh=eia7fK07LYJQ8RP5F49fC+XG63ZnbbkF8ta6ZjPtRTg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=P+PmMW8mB9OV3DxgN6syMkieKgg1VALWki2tFfsgQCIqAouDBiV3yUSHRWV33DnxZwcsMMzRlKCvAk/m+Y1swYLSLhCfRViJMH/x9GJIEcMjD/Vhx7/p2f0HPWeYf/Ui2Txf4/KIciE0RvB5hrxnSK8yz5tloxHzSgkrtofmycZbobVILjnrJwqCvoK1fQkmxVxjF0Sp5c83scztVWBVPNhpJfBC3SihfmCmxAsCqAdLVEwwCt49HGDQKupSrD2Om6vgsfgaYv8U28QIZDp+wyogkNiioVBd+SVOsPDzJSJ5jFNwoVfCUxDtw89X/2MEXtuG8YQJV+98JOvw90dkNg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=gongruiqi1@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=gongruiqi1@huawei.com; receiver=lists.ozlabs.org)
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1752762466; c=relaxed/relaxed;
+	bh=S1+MAZvM+N/4+avawJ7fodWecsPBgKeK+9BQEGE2Ung=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=bHySy6iWWHQCewOJSVL0H58v19pQ14Bgp423KPy/Ii2HE86n2BHznd11sLtsWE+1FF7OcuTDkARlBBCRyl9KRhB8SKXTy8IiZaep7Oom07S/mlwu41SSwRYzwlOZR6Qz/dEnYDSrbmDnC1lrdF99+SLztTdEyCcRgpMLXTd5aF7uqxnKIGfqaJrsKAsaRuwn07wNh8yOtR+AydpMHvjsHLgiCaQduujhVrMT0wgS/oy9ZbenFQDL0U9mh9D3bThM4bvCr1rJBPOlzpY0sicCtQ4X6/9Qs5HBDvr5+X9j4VRxLThZKxh7KIR+7z9X/8iGRCt2RZk0hH377vG2lelJjQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=g7aohfnO; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::129; helo=mail-lf1-x129.google.com; envelope-from=snovitoll@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=g7aohfnO;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::129; helo=mail-lf1-x129.google.com; envelope-from=snovitoll@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bjXKt3tHHz2yMt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2025 22:29:20 +1000 (AEST)
-Received: from mail.maildlp.com (unknown [172.19.163.252])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTP id 4bjXGT3dmMzZhwR;
-	Thu, 17 Jul 2025 20:26:25 +0800 (CST)
-Received: from kwepemg100016.china.huawei.com (unknown [7.202.181.57])
-	by mail.maildlp.com (Postfix) with ESMTPS id D0B1D180B3F;
-	Thu, 17 Jul 2025 20:29:14 +0800 (CST)
-Received: from [10.67.110.48] (10.67.110.48) by kwepemg100016.china.huawei.com
- (7.202.181.57) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Thu, 17 Jul
- 2025 20:29:13 +0800
-Message-ID: <362b3e8a-0949-42d1-a1d0-90bd12d86b09@huawei.com>
-Date: Thu, 17 Jul 2025 20:29:07 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bjZyT39Xgz2yPd
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2025 00:27:44 +1000 (AEST)
+Received: by mail-lf1-x129.google.com with SMTP id 2adb3069b0e04-553e5df44f8so901693e87.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2025 07:27:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1752762461; x=1753367261; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=S1+MAZvM+N/4+avawJ7fodWecsPBgKeK+9BQEGE2Ung=;
+        b=g7aohfnORm6WDEl5Lg5Z0j7a9V8KQ3OjKz2yOH/af58xS/J9RXrQY9xlaSPbdnkrrP
+         KdYBtlguoD43Dk3K/LBw2kSN0+sf34MQOehAqKL8O+L8O2aJYITCGL36O0vM71M0UJQW
+         VIT2kkWzTTSFYfMnyuyF6Kg6mtKXTjJpPDD6RVugXbPuPsYPbO+OGXkyt7ZZ9ZSeMtpL
+         MDWhAMmBhVVxLj4romZfo91bJ+MyURPstHnf7wmIut/hSknoYV2X2+m1FAewA839m5Fj
+         7e0Yv2un2oq9y200qeDPrD82mmiU1qEpj8CzqhuZh6mEZK1R7f3/jiCQi5zL3//adq9p
+         +Ldg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1752762461; x=1753367261;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=S1+MAZvM+N/4+avawJ7fodWecsPBgKeK+9BQEGE2Ung=;
+        b=HEz86wsmyW2ovc6c2bm23I65UpznySAgEo3wCRYac3bU8BVO8ggBECuSgVw8o8Euaw
+         oW4Rxd22ZVcCTvDjoLpRMlGU/5ldTLR6+moHJuWUZauc8VmZQ1vt3B5xE3Uc8XxFEGXT
+         qKVD7f0u8VNFlStpX8JmGPW3tSOigWNxsskprAy0D9lJ50g35zGevhWKJQfGXZw4L8od
+         p0QfeQok7CofUQ+ygNmfsA5aA6AIy/OXY5fwq/CVT0FZBjW6xKgbMI3bGlxR/Ciyv9A+
+         gn3TVY/e1h1bZmlbYHIUtSzG8HPo967NjB2nZFXZcBx5oTAqTu/4PWfHmUOAXi67Orou
+         CVDg==
+X-Forwarded-Encrypted: i=1; AJvYcCWvJukOPYDR9pmJ/gI6+UG9OrKp91yMDO9BJVQv4dWZLLPjySstxpSLi9GPGnfwC+f6sJ74vp7b13kIdow=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxBfe21ZUODxtWy3ktF78fPELNbW96zgB9A/Pe5+uhSOBMSXENB
+	TJ6j03IpBNv/V44ldKxuA6Q0oeqFb0LD6dawDZNy2uGkcghZUy59B254
+X-Gm-Gg: ASbGnctPMsktvc9WeVOf33zLYrDXSLrnY1RiWxvCkt3jkd1j0eSm7uKE+Xcp+bq0Krt
+	/11kLjcywFI2+btVv01bPn2wWZt/42jmr0vDf+SGVWf3CUK+A8PbNBZIwLjL34ga7awRujxZFBy
+	fobhwbobdGELyBvc9xU0xxsFJRgrKsk7pNEhGZJdnJuvQT6r+0ED9WyDaHRQYGJgdywlGYfE8Rn
+	KAaxPHyUnQ27j4Oalm1mVVFi9QLP0G7dTmqGToPB/Mgsx/boCVZ6yOv+UN5SKYNVASIUc0dfRBc
+	RpGpcYIlViXI7+77fVKDaXXnNFZGmAmeGpyrQqjgH+XDrhDY+W+6D4Eh1fwgGLItIfxmHETxHWT
+	LnMJBusA1xR+gWm259uVwaVyfChzBY9bmhDj4sgJUQhZKJxFJXlvNfNh+dr1vOhkhmR6k
+X-Google-Smtp-Source: AGHT+IHqw++1wkJOZK6ynl4Q5tnH7hMmNdvDCLMPwyvX9yJ+k47Bz9P2wFC8+PCgt0lXOF+TLWoP4g==
+X-Received: by 2002:a05:6512:b17:b0:553:ad81:4de1 with SMTP id 2adb3069b0e04-55a23f2d227mr2243765e87.24.1752762460660;
+        Thu, 17 Jul 2025 07:27:40 -0700 (PDT)
+Received: from localhost.localdomain (178.90.89.143.dynamic.telecom.kz. [178.90.89.143])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-55989825fe3sm3022975e87.223.2025.07.17.07.27.37
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 17 Jul 2025 07:27:39 -0700 (PDT)
+From: Sabyrzhan Tasbolatov <snovitoll@gmail.com>
+To: hca@linux.ibm.com,
+	christophe.leroy@csgroup.eu,
+	andreyknvl@gmail.com,
+	agordeev@linux.ibm.com,
+	akpm@linux-foundation.org
+Cc: ryabinin.a.a@gmail.com,
+	glider@google.com,
+	dvyukov@google.com,
+	kasan-dev@googlegroups.com,
+	linux-kernel@vger.kernel.org,
+	loongarch@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org,
+	linux-um@lists.infradead.org,
+	linux-mm@kvack.org,
+	snovitoll@gmail.com
+Subject: [PATCH v3 00/12] kasan: unify kasan_arch_is_ready() and remove arch-specific implementations
+Date: Thu, 17 Jul 2025 19:27:20 +0500
+Message-Id: <20250717142732.292822-1-snovitoll@gmail.com>
+X-Mailer: git-send-email 2.34.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -50,98 +104,170 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] integrity: Extract secure boot enquiry function out of
- IMA
-To: Nayna Jain <nayna@linux.ibm.com>, Mimi Zohar <zohar@linux.ibm.com>,
-	Roberto Sassu <roberto.sassu@huawei.com>, Dmitry Kasatkin
-	<dmitry.kasatkin@gmail.com>, Jarkko Sakkinen <jarkko@kernel.org>, Madhavan
- Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
-	Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>
-CC: Eric Snowberg <eric.snowberg@oracle.com>, Christophe Leroy
-	<christophe.leroy@csgroup.eu>, Nicholas Piggin <npiggin@gmail.com>, Christian
- Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>,
-	"Lee, Chun-Yi" <jlee@suse.com>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-kernel@vger.kernel.org>, <linux-s390@vger.kernel.org>,
-	<linux-integrity@vger.kernel.org>, <keyrings@vger.kernel.org>, Lu Jialin
-	<lujialin4@huawei.com>
-References: <20250628063251.321370-1-gongruiqi1@huawei.com>
- <eb91dcf034db28e457a4482faa397dd7632f00fd.camel@linux.ibm.com>
- <4c59f417-86cc-4dec-ae45-8fcf8c7eb16a@huawei.com>
- <e8aa7f94-3e52-488d-a858-564d3d1edd4b@linux.ibm.com>
-Content-Language: en-US
-From: GONG Ruiqi <gongruiqi1@huawei.com>
-In-Reply-To: <e8aa7f94-3e52-488d-a858-564d3d1edd4b@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.67.110.48]
-X-ClientProxiedBy: kwepems200002.china.huawei.com (7.221.188.68) To
- kwepemg100016.china.huawei.com (7.202.181.57)
 
+This patch series addresses the fragmentation in KASAN initialization
+across architectures by introducing a unified approach that eliminates
+duplicate static keys and arch-specific kasan_arch_is_ready()
+implementations.
 
-On 7/8/2025 4:35 AM, Nayna Jain wrote:
-> 
-> On 7/2/25 10:07 PM, GONG Ruiqi wrote:
->> 
->> ...
->>
->> "We encountered a boot failure issue in an in-house testing, where the
->> kernel refused to load its modules since it couldn't verify their
->> signature. The root cause turned out to be the early return of
->> load_uefi_certs(), where arch_ima_get_secureboot() returned false
->> unconditionally due to CONFIG_IMA_SECURE_AND_OR_TRUSTED_BOOT=n, even
->> though the secure boot was enabled.
-> Thanks for sharing additional details.
-> 
-> From x86 Kconfig:
-> 
-> /For config x86:
-> 
->     imply IMA_SECURE_AND_OR_TRUSTED_BOOT    if EFI
-> /
-> And IMA_SECURE_AND_OR_TRUSTED_BOOT is dependent on IMA_ARCH_POLICY .
-> 
-> And from Linux Kernel Kbuild documentation( https://docs.kernel.org/
-> kbuild/kconfig-language.html) :
-> 
-> /weak reverse dependencies: “imply” <symbol> [“if” <expr>]
-> 
-> This is similar to “select” as it enforces a lower limit on another
-> symbol except that the “implied” symbol’s value may still be set to n
-> from a direct dependency or with a visible prompt.
-> 
-> /Following the example from the documentation, if  it is EFI enabled and
-> IMA_ARCH_POLICY is set to y then this config should be default enabled.
-> 
-> If it is EFI enabled and IMA_ARCH_POLICY is set to N, then the setting
-> for IMA_SECURE_AND_OR_TRUSTED_BOOT should be prompted during the build.
-> The default setting for prompt is N. So, the person doing the build
-> should actually select Y to enable IMA_ARCH_POLICY.
-> 
-> Wondering what is the scenario for you? Unless you have IMA_ARCH_POLICY
-> set to N, this config should have been ideally enabled. If you have
-> explicitly set it to N, am curious any specific reason for that.
+The core issue is that different architectures have inconsistent approaches
+to KASAN readiness tracking:
+- PowerPC, LoongArch, and um arch, each implement own kasan_arch_is_ready()
+- Only HW_TAGS mode had a unified static key (kasan_flag_enabled)
+- Generic and SW_TAGS modes relied on arch-specific solutions
+  or always-on behavior
 
-Hi Nayna. Sorry for the late reply. Super busy these days...
+This series implements two-level approach:
+1. kasan_enabled() - compile-time check for KASAN configuration
+2. kasan_shadow_initialized() - runtime check for shadow memory readiness
 
-Yes, IMA_ARCH_POLICY was not set. The testing was conducted on
-openEuler[1], a Linux distro mainly for arm64 & x86, and the kernel was
-compiled based on its own openeuler_defconfig[2], which set
-IMA_ARCH_POLICY to N.
+Key improvements:
+- Unified static key infrastructure across all KASAN modes
+- Runtime overhead only for architectures that actually need it
+- Compile-time optimization for arch. with early KASAN initialization
+- Complete elimination of arch-specific kasan_arch_is_ready()
+- Consistent interface and reduced code duplication
 
--Ruiqi
+Previous v2 thread: https://lore.kernel.org/all/20250626153147.145312-1-snovitoll@gmail.com/
 
-[1]: https://www.openeuler.org/en/
-[2]:
-https://gitee.com/openeuler/kernel/blob/OLK-6.6/arch/arm64/configs/openeuler_defconfig
+Changes in v3 (sorry for the 3-week gap):
 
+0. Included in TO, CC only KASAN devs and people who commented in v2.
 
-> 
-> Thanks & Regards,
-> 
->    - Nayna
->>
->> ...
+1. Addressed Andrey Konovalov's feedback:
+   - Kept separate kasan_enabled() and kasan_shadow_initialized() functions
+   - Added proper __wrapper functions with clean separation
+
+2. Addressed Christophe Leroy's performance comments:
+   - CONFIG_ARCH_DEFER_KASAN is only selected by architectures that need it
+   - No static key overhead for architectures that can enable KASAN early
+   - PowerPC 32-bit and book3e get compile-time optimization
+
+3. Addressed Heiko Carstens and Alexander Gordeev s390 comments:
+   - s390 doesn't select ARCH_DEFER_KASAN (no unnecessary static key overhead)
+   - kasan_enable() is a no-op for architectures with early KASAN setup
+
+4. Improved wrapper architecture:
+   - All existing wrapper functions in include/linux/kasan.h now check both
+     kasan_enabled() && kasan_shadow_initialized()
+   - Internal implementation functions focus purely on core functionality
+   - Shadow readiness logic is centralized in headers per Andrey's guidance
+
+Architecture-specific changes:
+- PowerPC radix MMU: selects ARCH_DEFER_KASAN for runtime control
+- LoongArch: selects ARCH_DEFER_KASAN, removes custom kasan_early_stage
+- um: selects ARCH_DEFER_KASAN, removes kasan_um_is_ready
+- Other architectures: get compile-time optimization, no runtime overhead
+
+The series maintains full backward compatibility while providing optimal
+performance for each architecture's needs.
+
+Closes: https://bugzilla.kernel.org/show_bug.cgi?id=217049
+
+=== Current mainline KUnit status
+
+To see if there is any regression, I've tested via compiling a kernel
+with CONFIG_KASAN_KUNIT_TEST and running QEMU VM. There are failing tests
+in SW_TAGS and GENERIC modes in arm64:
+
+arm64 CONFIG_KASAN_HW_TAGS:
+	# kasan: pass:62 fail:0 skip:13 total:75
+	# Totals: pass:62 fail:0 skip:13 total:75
+	ok 1 kasan
+
+arm64 CONFIG_KASAN_SW_TAGS=y:
+	# kasan: pass:65 fail:1 skip:9 total:75
+	# Totals: pass:65 fail:1 skip:9 total:75
+	not ok 1 kasan
+	# kasan_strings: EXPECTATION FAILED at mm/kasan/kasan_test_c.c:1598
+	KASAN failure expected in "strscpy(ptr, src + KASAN_GRANULE_SIZE, KASAN_GRANULE_SIZE)", but none occurred
+
+arm64 CONFIG_KASAN_GENERIC=y, CONFIG_KASAN_OUTLINE=y:
+	# kasan: pass:61 fail:1 skip:13 total:75
+	# Totals: pass:61 fail:1 skip:13 total:75
+	not ok 1 kasan
+	# same failure as above
+
+x86_64 CONFIG_KASAN_GENERIC=y:
+	# kasan: pass:58 fail:0 skip:17 total:75
+	# Totals: pass:58 fail:0 skip:17 total:75
+	ok 1 kasan
+
+=== Testing with patches
+
+Testing in v3:
+
+- Compiled every affected arch with no errors:
+
+$ make CC=clang LD=ld.lld AR=llvm-ar NM=llvm-nm STRIP=llvm-strip \
+	OBJCOPY=llvm-objcopy OBJDUMP=llvm-objdump READELF=llvm-readelf \
+	HOSTCC=clang HOSTCXX=clang++ HOSTAR=llvm-ar HOSTLD=ld.lld \
+	ARCH=$ARCH
+
+$ clang --version
+ClangBuiltLinux clang version 19.1.4
+Target: x86_64-unknown-linux-gnu
+Thread model: posix
+
+- make ARCH=um produces the warning during compiling:
+	MODPOST Module.symvers
+	WARNING: modpost: vmlinux: section mismatch in reference: \
+		kasan_init+0x43 (section: .ltext) -> \
+		kasan_init_generic (section: .init.text)
+
+AFAIU, it's due to the code in arch/um/kernel/mem.c, where kasan_init()
+is placed in own section ".kasan_init", which calls kasan_init_generic()
+which is marked with "__init".
+
+- Booting via qemu-system- and running KUnit tests:
+
+* arm64  (GENERIC, HW_TAGS, SW_TAGS): no regression, same above results.
+* x86_64 (GENERIC): no regression, no errors
+
+Sabyrzhan Tasbolatov (12):
+  lib/kasan: introduce CONFIG_ARCH_DEFER_KASAN option
+  kasan: unify static kasan_flag_enabled across modes
+  kasan/powerpc: select ARCH_DEFER_KASAN and call kasan_init_generic
+  kasan/arm64: call kasan_init_generic in kasan_init
+  kasan/arm: call kasan_init_generic in kasan_init
+  kasan/xtensa: call kasan_init_generic in kasan_init
+  kasan/loongarch: select ARCH_DEFER_KASAN and call kasan_init_generic
+  kasan/um: select ARCH_DEFER_KASAN and call kasan_init_generic
+  kasan/x86: call kasan_init_generic in kasan_init
+  kasan/s390: call kasan_init_generic in kasan_init
+  kasan/riscv: call kasan_init_generic in kasan_init
+  kasan: add shadow checks to wrappers and rename kasan_arch_is_ready
+
+ arch/arm/mm/kasan_init.c               |  2 +-
+ arch/arm64/mm/kasan_init.c             |  4 +--
+ arch/loongarch/Kconfig                 |  1 +
+ arch/loongarch/include/asm/kasan.h     |  7 -----
+ arch/loongarch/mm/kasan_init.c         |  7 ++---
+ arch/powerpc/Kconfig                   |  1 +
+ arch/powerpc/include/asm/kasan.h       | 12 --------
+ arch/powerpc/mm/kasan/init_32.c        |  2 +-
+ arch/powerpc/mm/kasan/init_book3e_64.c |  2 +-
+ arch/powerpc/mm/kasan/init_book3s_64.c |  6 +---
+ arch/riscv/mm/kasan_init.c             |  1 +
+ arch/s390/kernel/early.c               |  3 +-
+ arch/um/Kconfig                        |  1 +
+ arch/um/include/asm/kasan.h            |  5 ---
+ arch/um/kernel/mem.c                   |  4 +--
+ arch/x86/mm/kasan_init_64.c            |  2 +-
+ arch/xtensa/mm/kasan_init.c            |  2 +-
+ include/linux/kasan-enabled.h          | 34 ++++++++++++++++-----
+ include/linux/kasan.h                  | 42 ++++++++++++++++++++------
+ lib/Kconfig.kasan                      |  8 +++++
+ mm/kasan/common.c                      | 18 +++++++----
+ mm/kasan/generic.c                     | 23 ++++++++------
+ mm/kasan/hw_tags.c                     |  9 +-----
+ mm/kasan/kasan.h                       | 36 ++++++++++++++++------
+ mm/kasan/shadow.c                      | 32 +++++---------------
+ mm/kasan/sw_tags.c                     |  2 ++
+ 26 files changed, 146 insertions(+), 120 deletions(-)
+
+-- 
+2.34.1
 
 
