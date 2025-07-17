@@ -1,100 +1,207 @@
-Return-Path: <linuxppc-dev+bounces-10302-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10303-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72E39C83F22
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jul 2025 14:29:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 42A1FC83F1A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jul 2025 15:00:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bjZzD1CRzz3brR;
-	Fri, 18 Jul 2025 00:28:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::129"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752762504;
-	cv=none; b=M2jBRvKh6lyZ2ToaCiP2aLNmFG97fTASztafKHGkDxhssOt/r2NUjDdvfSEdF+sf++NYnf0uo1tCyAUA0YdeVfmf4arIDtEHOV7SwBOxuuFbS++hbtlUuPZiqP4oRpojp0rRdeELAocwDGN9gSqJwBS52k47sUY9nVqeuv5Rf9aWD6Rds66P4PK2nkH+XXe8i+8B5sV8HmTwZ4SRCRY8BrH0XdEC3Xohs1Vx9jKj4fuAG4fonr9ZcrKQDu0V9QWCw5NfnUHnIYYEDOSL2RoaC6SGah6nTm0qF4xiREk0tCWDrHcaq8u4G3Ww1nIrGhqVq83AwzQb66TibhvPyWF0GQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752762504; c=relaxed/relaxed;
-	bh=f7ZdWtvjGwx1QVMejTFRuKlxOMwOJa4SlH8rLzpLr/Q=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Gm7dZCZbV4F7nXHj7bM/+ch+la8wXwK+BVd6O/NGzt5ltgt25NgbnsmafyREArbvZ1JUrl40TOiE3ieywniYkMaWVrso8RecTHMibBlOEVFgw2JiWG1qnfOP3LDj49U4Zu9jra2wmkBU6BiMdSIOIfOa3Bp6b49Fg6RQFwgpfHAgJaUj7By6AWiaitH3Hs84EZjLHq2PuAPtf3UYOWfe1z/nI5B/5qWS9Y5KiEbLy1BlvGS8BbbwDNOMOI6Sa7MB97s9LywzLhaULg5WN5hHWZPlKOkI/efe3a3+HuwMW2uLECT4BLkcuiinUfqaTUkfA0EO+ymlcyPshE614ymAnw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=IxonGM54; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::129; helo=mail-lf1-x129.google.com; envelope-from=snovitoll@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bjbhK6xQxz3bvf;
+	Fri, 18 Jul 2025 01:00:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=fail smtp.remote-ip=192.198.163.8
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752757711;
+	cv=fail; b=B6D1pUbRn813hSWJMEylHc88wlvdKOpR0vZhsm1BI8BEARwMiT/FeJI30KKIaGCUPfH9PLi7zYntodMhpisNZIhnlgDheiMzRpflh8uDN8BOnOwFJ2CVjvGUfMCKJmLxARe7xZoQVXR3/wGWDugjIPTAgHYtCCHMoFoWP2Va/f+wwEHyyH3f6OvYNX4KjxaS8vJKUtjtAGfEHbOGkHuOugGKQYoLpufDJ3nKveyKBQuu7eWYpQmBkwtGKlpxVzfF/ml1XtbtMv/cYBtND8ZSeSMbCD1xTcKzmmmAukEyC34JICRdb5orVJmOEAH3rN2pWv9sglaZzT9IiHLzDj5xRw==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1752757711; c=relaxed/relaxed;
+	bh=NbCkgzqD/zeEojlMhvmh2IjIBqNJ1WfiLdNkEGvpAx0=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=h66/IrkhiFFnTk6yKEvEqcliImz91D8xO1guEfqgs1ze7Ck3JG0PBfAYQUZ9lhAgpHSmiTEjVZJVsFD8qi9wPx9438d2fluS1nxI/XqTRPTTsnBDyN+L+oZ3YGzmbQJ0Iv0NRsdb3Ysa8ExEKDjDfXfX4tbUMqhn3X11SfoIbhizpxWs7j+WC84TTXaB5Pwf7HuneyQlx5UqoCJAaH0j3avKLUghkqhC8MBgGBqsSKD2NkmK0UuCjE+FQ8Vun22WWPO4dMX6lV3eFQifT/BmvDjygMLtfahr4IB7yp4a48xrXAcnvde449alfxSMjaV2v0EbTpFnMFEpHc/sjt1UBw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=I9dTNv6j; dkim-atps=neutral; spf=pass (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=alexios.zavras@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=IxonGM54;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=I9dTNv6j;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::129; helo=mail-lf1-x129.google.com; envelope-from=snovitoll@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x129.google.com (mail-lf1-x129.google.com [IPv6:2a00:1450:4864:20::129])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=alexios.zavras@intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Thu, 17 Jul 2025 23:08:28 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bjZzB6Nx4z3bvf
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2025 00:28:22 +1000 (AEST)
-Received: by mail-lf1-x129.google.com with SMTP id 2adb3069b0e04-553e5df44f8so902388e87.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2025 07:28:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1752762500; x=1753367300; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=f7ZdWtvjGwx1QVMejTFRuKlxOMwOJa4SlH8rLzpLr/Q=;
-        b=IxonGM543RrbTzUjSILCD0ddXOEslHbF6FgvRkAcFBy4rP7gRTY/5nE1IKgjXy9snY
-         dJcFf/ZitOOl0a38g+HQmSM5FoS555vpwkkLhmY8utoTdcYNoFPNX2TQtYF/blNHk7Le
-         RVHKZx2t+AB7ye1y8xJnwDoq1MG2LSA66Ee+xcw+qmqGahrs9NOgopCMDrq6xfD5RI7M
-         kgaqjm1V6HPET/Oe8+tvZpNdjwUQf1eDGJsr3A+4MveiE6n+VGaoJ/pTgv52nP49x6dH
-         h1WU6BuaFTxyo567/G0rw2/qkdXMEOlQhV0ux9uMVM16qS0YSNz0elJjU57ibNcj8PfB
-         p8EA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1752762500; x=1753367300;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=f7ZdWtvjGwx1QVMejTFRuKlxOMwOJa4SlH8rLzpLr/Q=;
-        b=bZ3AL0nNEh6Uwpsubj58/G7jC1UM4XzznX3uYYM18cI+M5511iEe+TQuUaKJm7SsIj
-         WNro374+1D+uyL60ZrRqJR+/cN/n3JgQHiYMXnhhmLTlgPRbfiJ0lT1jC2x75fN7YtAt
-         e1Ooxxk90waNfbWgnHh+f/MWRrVO68Tgru2q0M5Q7x4N8uw3GdDRDEGfhl1evCVLREW9
-         J8iRji2fsds5YzIXuat47uDMXwyubyn8a+EtxiRyQla6Eg+UQ+af/equMCvz/kXT0p+y
-         eBlpxkUHJ+0v+/MOPpFCCWox6dKOjEJq9GbTIWV9GUynur5OOVK/zOaPvfBkW1efa0oC
-         msWA==
-X-Forwarded-Encrypted: i=1; AJvYcCXEp0lV33fYw53n34SQ+l5hGDv6JXvSMyiwFtHVI0ah5k7OA0aprIjk3uq/9MSIau3AMbwfPDIhM9omyfc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yw1zfyJsbVm3fmpAsB+heVPQsExi1uOtGqbr3WSPn43VTlgRdoW
-	FZY3Yp+UhEK8vxIub5WkmIqECSa+DgBuO7hfMZ9pej5gotbT56eLQb8i
-X-Gm-Gg: ASbGncvuSqXAwj0AsMWcGmoyUsR+pWr8QZwk5JSZ4xpyJLDy5H19gWXelHiDW/beczy
-	yzAZ1tJXF07WLVy7Ht0y4AWuyjVkGMTy6VN17LEOypehpYEZOqxiWkQmEpH4tvmXEntyzT+eI+y
-	n7S+/jQyY/nTcnwaQvaQrP5EhAtmZ8l7lTS5YpTPXK2/5UMFUOG8oG95cFSmGbijrG+NQ0RxMYL
-	cZydr7ne0ofgeYh9c+DC1wSQhfy/UTDcCsU56x6YMsxQVNsCN3fhuMyXu07ThGCPMoqOOOn+n6M
-	fKDSaOY0+aFUJJkzb0B6nh3u8dydnz2HcyBiARh/8b4gg1yOGlSf0R2BIvT+QajrUhduFdyg96S
-	oHfKJAyYNY9AJCe8P1ulr3mDTESzmNNu5JRtNjT++H5bfVPo3/ydEwk1NbKX+sTsqnc6P
-X-Google-Smtp-Source: AGHT+IGCxJLgxZY02tc8foSIT/rHsNNpSknOWUP3l3DGsuRGAuDE+1eyiieQPzZhElaS9ma13LLajg==
-X-Received: by 2002:a05:6512:2345:b0:558:f7fc:87c4 with SMTP id 2adb3069b0e04-55a23f7fc98mr2461079e87.32.1752762499563;
-        Thu, 17 Jul 2025 07:28:19 -0700 (PDT)
-Received: from localhost.localdomain (178.90.89.143.dynamic.telecom.kz. [178.90.89.143])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-55989825fe3sm3022975e87.223.2025.07.17.07.28.16
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 17 Jul 2025 07:28:18 -0700 (PDT)
-From: Sabyrzhan Tasbolatov <snovitoll@gmail.com>
-To: hca@linux.ibm.com,
-	christophe.leroy@csgroup.eu,
-	andreyknvl@gmail.com,
-	agordeev@linux.ibm.com,
-	akpm@linux-foundation.org
-Cc: ryabinin.a.a@gmail.com,
-	glider@google.com,
-	dvyukov@google.com,
-	kasan-dev@googlegroups.com,
-	linux-kernel@vger.kernel.org,
-	loongarch@lists.linux.dev,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	linux-mm@kvack.org,
-	snovitoll@gmail.com
-Subject: [PATCH v3 12/12] kasan: add shadow checks to wrappers and rename kasan_arch_is_ready
-Date: Thu, 17 Jul 2025 19:27:32 +0500
-Message-Id: <20250717142732.292822-13-snovitoll@gmail.com>
-X-Mailer: git-send-email 2.34.1
-In-Reply-To: <20250717142732.292822-1-snovitoll@gmail.com>
-References: <20250717142732.292822-1-snovitoll@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bjYC05sMmz2yPd
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 17 Jul 2025 23:08:28 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1752757709; x=1784293709;
+  h=from:to:cc:subject:date:message-id:references:
+   in-reply-to:mime-version;
+  bh=NbCkgzqD/zeEojlMhvmh2IjIBqNJ1WfiLdNkEGvpAx0=;
+  b=I9dTNv6jHbKeqx278I71/5rgM4eYixSoL2YO3l6DjXc5+ES77Wq2Stu4
+   ldwPbn2U8PYWPTYj1zfpFaG4w91DwyLQqxWQeSM4nsJljfsRbDZIHsj/i
+   lo+5TXUafdsB2h3ZEqQo/iTVuNFzUvgEo0g2xt+ulEmUgMdafQTjlnot+
+   LvcDEZ8u3qSsJv/sks27/SVXFYwP/LoM99DVnpB7HlrYNOo9kJ+XkbcAA
+   15azX8mUaTRZ4WhC2iOC8JOiwEyyopWvo1UL9fd8fUArChgEJ9b2ktVqi
+   qmkCMoFFkoDNXBM+vlJuReor5nml3oo7vUUtbAJKXQaeeDBzqxO6R5p9o
+   g==;
+X-CSE-ConnectionGUID: grBbj+joRQq0ZyZFfVhXxQ==
+X-CSE-MsgGUID: SIzPWrZDRNea3W5gxRO2Hw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11495"; a="72598069"
+X-IronPort-AV: E=Sophos;i="6.16,318,1744095600"; 
+   d="scan'208,217";a="72598069"
+Received: from fmviesa005.fm.intel.com ([10.60.135.145])
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2025 06:07:18 -0700
+X-CSE-ConnectionGUID: 3j4PjtnEQeGvSBWTwFbg9w==
+X-CSE-MsgGUID: J6gMntGCTcOLnN2aGU0Vbg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.16,318,1744095600"; 
+   d="scan'208,217";a="162087926"
+Received: from orsmsx903.amr.corp.intel.com ([10.22.229.25])
+  by fmviesa005.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Jul 2025 06:07:18 -0700
+Received: from ORSMSX901.amr.corp.intel.com (10.22.229.23) by
+ ORSMSX903.amr.corp.intel.com (10.22.229.25) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1748.26; Thu, 17 Jul 2025 06:07:17 -0700
+Received: from ORSEDG901.ED.cps.intel.com (10.7.248.11) by
+ ORSMSX901.amr.corp.intel.com (10.22.229.23) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1748.26 via Frontend Transport; Thu, 17 Jul 2025 06:07:17 -0700
+Received: from NAM02-BN1-obe.outbound.protection.outlook.com (40.107.212.53)
+ by edgegateway.intel.com (134.134.137.111) with Microsoft SMTP Server
+ (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.2.1748.26; Thu, 17 Jul 2025 06:07:16 -0700
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=iAzz8U56b6V5/K2gmP6oaLvnp4xkcmetZKjPys0C57ihu3jEECYtHJAhiIxBh3h4j5LzOOm+jo50j+OlfnsJSMkKpid3eOttu4x5tVq0dTHkSEibd1Cfriu2PZEe1ucVQpEbR/UxqUXRLqqcPnEiuS+QO1OMCiXPWTKFsVgrd/iYTgjburQSQd99uBcykQgVqd5nGwi1iusr9Zazx5IBDS30CUUnWc3zBTGINc/VOt+fuLxP0alpal7KJiiie27cp0BkrrvwK64ojbT1imvYAdqK8z+Ntyt6xxoZBNjZiS4MvpQJpv7olKlA2Kxn7VxGCo8E2hVaO7tucowq5RuhgQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=X5zvTEX0o5CmuIMVvNst4FA0breMv1ioLTM4gRSYg2U=;
+ b=OAMpEJfMtEBADC9eZO6YbflN6A34DloKbu12xBjSIQyHzFhUaUy1udAzZebpLkCcxhh33dmhEVa2TIW7BXz05CiXc/vvpO8Wvwjl5GW6GKRgc9f3w7M3C9PkM8nHaJoCJdv0Xc/LWFm3HzavzEtlZcOAmwoyblW5cXE6cYyQOT8IesY2WlAtCeGgYKHxREXYN4hsXP73X2L5MDyEf3aTx6J4CQGs/dMgWM7EMx7sfcwEANnMOZsp+JrY+gkFnb5pw1ppw8r+thgy07nbNBqJ3UFRdhnq8xZQ3TCFzadHvCozrAm5ZxU3QkNNP5WPmdrglpHu5PKUUR2OiqY6uJu+WA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=intel.com; dmarc=pass action=none header.from=intel.com;
+ dkim=pass header.d=intel.com; arc=none
+Received: from BL1PR11MB5400.namprd11.prod.outlook.com (2603:10b6:208:311::20)
+ by PH0PR11MB7658.namprd11.prod.outlook.com (2603:10b6:510:28d::14) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8880.21; Thu, 17 Jul
+ 2025 13:06:59 +0000
+Received: from BL1PR11MB5400.namprd11.prod.outlook.com
+ ([fe80::4da3:f9f3:4dc4:43ec]) by BL1PR11MB5400.namprd11.prod.outlook.com
+ ([fe80::4da3:f9f3:4dc4:43ec%6]) with mapi id 15.20.8922.037; Thu, 17 Jul 2025
+ 13:06:59 +0000
+From: "Zavras, Alexios" <alexios.zavras@intel.com>
+To: Richard Fontana <rfontana@redhat.com>, "Maciej W. Rozycki"
+	<macro@orcam.me.uk>
+CC: Segher Boessenkool <segher@kernel.crashing.org>, Greg Kroah-Hartman
+	<gregkh@linuxfoundation.org>, Christoph Hellwig <hch@infradead.org>, "Thomas
+ Huth" <thuth@redhat.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, "Michael
+ Ellerman" <mpe@ellerman.id.au>, Thomas Gleixner <tglx@linutronix.de>,
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
+	<christophe.leroy@csgroup.eu>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>, "linux-kernel@vger.kernel.org"
+	<linux-kernel@vger.kernel.org>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>,
+	"linux-spdx@vger.kernel.org" <linux-spdx@vger.kernel.org>, J Lovejoy
+	<opensource@jilayne.com>
+Subject: Re: [PATCH v2] powerpc: Replace the obsolete address of the FSF
+Thread-Topic: [PATCH v2] powerpc: Replace the obsolete address of the FSF
+Thread-Index: AQHb8iWnIlYuMC4FKk2vMUMFgL6wM7Qsa6cAgAAVcACAAAX6gIAAAK6AgAABnICAAOCFAIAAJIaAgAADjQCAAYfdAIAA9ZmAgAZDWDs=
+Date: Thu, 17 Jul 2025 13:06:59 +0000
+Message-ID: <BL1PR11MB54004B3A847152EAD3D30DBC8951A@BL1PR11MB5400.namprd11.prod.outlook.com>
+References: <20250711053509.194751-1-thuth@redhat.com>
+ <2025071125-talon-clammy-4971@gregkh>
+ <9f7242e8-1082-4a5d-bb6e-a80106d1b1f9@redhat.com>
+ <2025071152-name-spoon-88e8@gregkh> <aHC-Ke2oLri_m7p6@infradead.org>
+ <2025071119-important-convene-ab85@gregkh>
+ <CAC1cPGx0Chmz3s+rd5AJAPNCuoyZX-AGC=hfp9JPAG_-H_J6vw@mail.gmail.com>
+ <aHGafTZTcdlpw1gN@gate>
+ <CAC1cPGzLK8w2e=vz3rgPwWBkqs_2estcbPJgXD-RRx4GjdcB+A@mail.gmail.com>
+ <alpine.DEB.2.21.2507122332310.45111@angie.orcam.me.uk>
+ <CAC1cPGwa=0zSL_c+HrjQoPryus6w_LCw9Cha7uENKHqCKOQkRQ@mail.gmail.com>
+In-Reply-To: <CAC1cPGwa=0zSL_c+HrjQoPryus6w_LCw9Cha7uENKHqCKOQkRQ@mail.gmail.com>
+Accept-Language: en-US
+Content-Language: en-US
+X-MS-Has-Attach: 
+X-MS-TNEF-Correlator: 
+msip_labels: 
+authentication-results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=intel.com;
+x-ms-publictraffictype: Email
+x-ms-traffictypediagnostic: BL1PR11MB5400:EE_|PH0PR11MB7658:EE_
+x-ms-office365-filtering-correlation-id: ba8765a5-8e9e-4c2e-931f-08ddc532d09c
+x-ms-exchange-senderadcheck: 1
+x-ms-exchange-antispam-relay: 0
+x-microsoft-antispam: BCL:0;ARA:13230040|376014|366016|7416014|1800799024|13003099007|8096899003|7053199007|38070700018;
+x-microsoft-antispam-message-info: =?utf-8?B?cWpKeEhrSUVrTzRkMWZUS3RjTEk1RTlSbHdSZjJCZXdPY3BhcUZNNXc5OGha?=
+ =?utf-8?B?ellnWjNyTXU1akRIKzRLRUk3UFJ0dkRzZG1BK0lRZXpyamJzdW9mY29sblZ1?=
+ =?utf-8?B?RVE3ZFpSRzNETklVSzhxV21qV1d5bFoyNXF1eEtvNmdQTy93TlcrRjNNeHFT?=
+ =?utf-8?B?RFp6RzVRaW5wZ2hwZlRwVkhhRVl0eUJVeHFPcE1KWXNLYlZOTmNNN0ZSOEpH?=
+ =?utf-8?B?UnhRMUJxdVd2Z0JzcytXYnlYSDhkem9FT1RsS2xlWDc5bHgwY3lJMTJRUzcy?=
+ =?utf-8?B?SnkrOFdJVU5tZ1JNQkRtUkRKQnNURmVQVy96NVUrL01mUVNBOUhrN0tBRkJo?=
+ =?utf-8?B?U1Ezc1dEZ3hhV0NzdjRQTEFicGE3dzZNWkZkby90b3dPWHBXNzExVHQ5MjVB?=
+ =?utf-8?B?bHA4RWJjaXE3Y3VLSEFOYzNYaXQvZ1ZvbEh6cWhZaGNyUlpBZXlPOWdVVmJ5?=
+ =?utf-8?B?MlpZRUdwOEYvWHB6WHhCc3N0bm5ZMzJFMEdRYTlDMWYvODNQQzBsZWR6ZUhZ?=
+ =?utf-8?B?NTlJY2N6WkY5VWxwejhmenJWWEMwU1JpN2F4bm5ETlZWZ3lzd0s1M05ZY1NV?=
+ =?utf-8?B?SHVIVVVBMmdYUVh5VUhVWXBFR1Y5N1l0UTRKcWdlM0NJb0dWbVlNa1NNUTJN?=
+ =?utf-8?B?YnVqVEQrTHVkUDNuY2s1V2ZObzREWDJEUllKT2xJSTFZQmhVb214clBoOUcz?=
+ =?utf-8?B?V080WTBtcEk2NUl5Z3dRWEdkd2IxUUNRVlZxUzlCdThWVnE1aHFYKy9NVmNy?=
+ =?utf-8?B?a0Q5NXlyQkFaK3piZGg1QXg3TWZmRHppRnVlaG1oRXcvRUJrbHBkbVJzcWJq?=
+ =?utf-8?B?S3V2bFozRHNiZ29VcnZUbk9yQ1J3aEMzZmNFMDl5N2tQVmtNTGhOejFNVlVq?=
+ =?utf-8?B?bEtDWTY4T0tIYmpCTTdaZmxNenhQc0p2QTJMb2dtOXJaUlNGMFI0OUt3NHBT?=
+ =?utf-8?B?SlJJSzJNaDFNK3FITnVNcVMza1o0MjI2azVWdkZQWHdLb1p0Y3dJUTZlRFJV?=
+ =?utf-8?B?RFZZVnpHK1NkeUpOUVNnaTJOcDVxWFRSNjZTT1JEWjRaeHZCNDViZXZpQWRo?=
+ =?utf-8?B?MVVrNmlqbWVKZi95WnZ6NlY2eGJPazIyQWxqcU9Md281NlY2MExSeEVUYlh3?=
+ =?utf-8?B?SU9JVkVlbEJnU3dsV05SbzAxMDB2eE5waWpOY3RiQVZ1NjNaSGErcFVBWjhC?=
+ =?utf-8?B?WHVxc003TmdVTVJsam4zMVp5UFdaV0o3QVZTQ055Zk5ySGNhWHNqVCtROWJp?=
+ =?utf-8?B?LzZhL0VGNFlBb0dvVGptdWMrOHFjQ2U4Mzg4d0N0RnQ5Mnp0emJwSTNvcWc0?=
+ =?utf-8?B?bDJLQko0VG5hdDFsVEZzRUtyMVRGZGFrNHR2SUl3T3YydlcxTWNIeDZncEZT?=
+ =?utf-8?B?WWw5Y0FxQVhaYVJ6eWhwTkNpNGxiMG1weklpL0UyYXFDbTZyWEJtcVltd0ZY?=
+ =?utf-8?B?cm5mc0NnZUJYRnJ1bjRMSGlLRFh1U2l0WDZPdW14UEtLR0RnNUhtL28vNHFZ?=
+ =?utf-8?B?bXd4WG81Z1FQS1puazVTUktoZGQ2M2swNnAwcGYrUWZTa1l3bXpWZGpuRkR0?=
+ =?utf-8?B?WmtCc2VHYkdTSE0rVU16dnRsZklvV1NSd3E4K0Q0ZFVaZkkzbG54dlNoeGdl?=
+ =?utf-8?B?elYzQ2RmV3hsTUZudDVPT2o4SXpQN3BxMElLOFVHS2RvaVdCUFNERFdYUm0y?=
+ =?utf-8?B?VUJFaGRpQ3ROUHV2YjBNWlJqSWwzVk1aWFp4TDFZTWpUeXlGQTg2RGFOYzNt?=
+ =?utf-8?B?L2c4aHRNYzRtY0UvZE13ZEJEenh2MWtOc3N3REdZVHNvNG5vYmNhZVZzeGNQ?=
+ =?utf-8?B?TjE4Q3NDSTV5bldsVmhqU0FBNWdZMVQ0azdNUWpaeWZjRjU1TXZ0V0hPUDRW?=
+ =?utf-8?B?QkMzRStWSHgwcUdkUkovOHd5eGNpSDRiV0N2MGpqbWcva2Nkdi92MEVTQ2Ey?=
+ =?utf-8?Q?5/BMSoZw+c80lgS2xvihVkOPcwQM0U73?=
+x-forefront-antispam-report: CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:BL1PR11MB5400.namprd11.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(366016)(7416014)(1800799024)(13003099007)(8096899003)(7053199007)(38070700018);DIR:OUT;SFP:1101;
+x-ms-exchange-antispam-messagedata-chunkcount: 1
+x-ms-exchange-antispam-messagedata-0: =?utf-8?B?dFo3SC9OanM2OFhUUTFwOWlHY0d4RVQydjJwai9xQnZMajJ3QjlESzY1eHds?=
+ =?utf-8?B?SkFUYXRMbElNdThaaFNmaU1nbGhjdWhhYjlmNEpZcHlldWRkYlE4dUdsQVdx?=
+ =?utf-8?B?aERqRzQrUmRuM25VZlpIdUpXdFNvMjJnb05wRTJVMkhyOS9IZzBvR0RMa1oy?=
+ =?utf-8?B?U3NuNnRJWTdUTzErNEFHb0xTeTlsK0RoY29EN29kTk13emo0amdENHA3c1BM?=
+ =?utf-8?B?Rzh5T2tQT21ZdGlXOW5wNmpaTFFIK1VMMllXV2F0UTU3cC9YaDcvZVV6Z29K?=
+ =?utf-8?B?ZU5TRVlvWHBSbktmazBLMzdtVmk0V05IaXRsUkJyUUhDSDgzSCtUYWxRSm1w?=
+ =?utf-8?B?YUszY2RaRTc0NC82c0x6WmtrZEQ4WWk4UUNxQjVsNVdDeWk0dm5iRXhEb1BP?=
+ =?utf-8?B?TmlBa3V1WEZ1SzMzZkt5dlRReUw0OGFRNitoTFc1SU12R0ovWHYrUkNsNmp4?=
+ =?utf-8?B?eHBPMi96UVBRMDlDY3ZOZDJBemI5dllsNUxoL3g0WC9XWHQ4NkgzS2RXOHhr?=
+ =?utf-8?B?VVUvNU0weGVpeDIzS0Y5TmloNUV6eW54Qm5pVlo1MlYzV29aRGd5SWwyUE12?=
+ =?utf-8?B?UW1OMnhkbXlVM1JubUREYWNCVHJ4SGxreGNMOFNYUDJpeElISTFlK2VOZ3pZ?=
+ =?utf-8?B?UWZJM0kxRnJpQjI0V1ZVbklsR0lDOE1OcEd0dExWVmJjaVV6Tlg4aGtVVEw2?=
+ =?utf-8?B?RkJjalhrK1dGOVhHcm4zbUdyOW5CcUlyMW9qcU1FMTNaRWI2Q0I5R1VSbG44?=
+ =?utf-8?B?VXMvYXAwc1k3bUE5YUVmUmRyT0Q3MGhHb3Iwc3dZbVZPbXdoUENTNkRlSkxI?=
+ =?utf-8?B?bXZNQUFHOFVWTFZTUUJCbVNZaXRNWXp3dngvK1NXTWN1RHRLYjFqN1lSVVAw?=
+ =?utf-8?B?Vzd6YzBOcW1jVHVyK0lBZUtLZ2xrUllCa3JXRGxPS0dXdVk4Q3ZVck9kTU03?=
+ =?utf-8?B?NENXQ2NEdTQ4SWE1d2w3eEdoQjVaRGd2NGhrYW1ZemxIUzN6LzlwNmZPaVMr?=
+ =?utf-8?B?SlBzV1luZG5MYW1LekhvTkI5Y1B6N29JNjkxVjJrajY0RHVFM1hrckpqdElm?=
+ =?utf-8?B?ZURmYy9Ba205VWgxazUxaEV1cmNJeFV4QXRaK1FoaXJtaDFrV1h1Z0Q5YmND?=
+ =?utf-8?B?QWp1YkNvNlpJQ0lkVlp4Y3Bhc2ZtQ3p6MlF2ODBOYWxJbDNhNjNHTEZMRCtF?=
+ =?utf-8?B?bHVxcEt4dEVwN2VuSjZMSlNRVGdoOThxNlNraEMrR1Azano3MkJMVVd5SUNl?=
+ =?utf-8?B?T0MxVGtiV0lmQVVyZmV5emM1UU1kVkQxcVQxTkZiNGZsK0o3MENkRkJ3WVpO?=
+ =?utf-8?B?S0pEWVhsQzR6a0UycjI5R0w3ZWRVNDFWcDlncS9tck5mZnFYOVpWSDdJTHBh?=
+ =?utf-8?B?L2ExY2ltMmxOK0lCdUJaOUV1aVhrZ25aODlCNFNDNStZOGxCYW84S0RjUWVk?=
+ =?utf-8?B?OVdKKzFkWHdyUGI2WEZSRXdWbkNFZ0d5d2Zhd0VHbU5LamlDdmdrOHV5NG1p?=
+ =?utf-8?B?aUZPblhwaWxab2VSa0NrODFXVDY0Vkl5WUVnN2NScEVScmhCU0JlTzhqRnZQ?=
+ =?utf-8?B?aHFtQWdjRGlUKzU1YzRVS0ozc2doUFJkRW52d3FnZ0IwRG05Q05ad3BwdzNT?=
+ =?utf-8?B?eTZKZUNDS1JpMFZScFVUYmRWYUgvZzUyVDZ6ajVmU0F5czNKSU5YZjZuWmJv?=
+ =?utf-8?B?TkNEb3dncGZkM1R4cXlSc2hsN0MyMFJTQklQY28vdW9ia2VWQVFlaTI5eG1u?=
+ =?utf-8?B?V25OSndrd05VZGlpSmw0TlM3WnBwR2hRVmVVZmE3bzZqbjdDb25ZMEVET3Zw?=
+ =?utf-8?B?NjVZTmxvWTQ0MUk0MTdkei9uUkRTb05oMVZSVzk2N0dmSE1Ldlh1OExlRXpa?=
+ =?utf-8?B?M2Z5ckF6cC9CVHVDSHlVbkZQeGRsSFZxcVZUL1gwYmxYU2NGQW1JYUQwcDg0?=
+ =?utf-8?B?c0RabTJHN1IvR2lEaU82aTd3REF0b1MwQWFseWIrRGdLOGhRS1JNRkQ4Z0xQ?=
+ =?utf-8?B?eXNJb1d4REU3cUhpWlphOFVjS3lOSzFna2ZMUmNDclpXSDNoUk5iR3pkNVl2?=
+ =?utf-8?B?U0d4aDB6WFkxL1dqOVpIYzdwNEcrZFpyRXhPWGhSNGJOays1bjhqY0VUNXBu?=
+ =?utf-8?Q?QuwiIgEE0+NCZHj2dD8KD//uX?=
+Content-Type: multipart/alternative;
+	boundary="_000_BL1PR11MB54004B3A847152EAD3D30DBC8951ABL1PR11MB5400namp_"
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,425 +215,274 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-AuthSource: BL1PR11MB5400.namprd11.prod.outlook.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: ba8765a5-8e9e-4c2e-931f-08ddc532d09c
+X-MS-Exchange-CrossTenant-originalarrivaltime: 17 Jul 2025 13:06:59.5389
+ (UTC)
+X-MS-Exchange-CrossTenant-fromentityheader: Hosted
+X-MS-Exchange-CrossTenant-id: 46c98d88-e344-4ed4-8496-4ed7712e255d
+X-MS-Exchange-CrossTenant-mailboxtype: HOSTED
+X-MS-Exchange-CrossTenant-userprincipalname: UM8nV36Maaz4eqbyMNKWZ0t/tWXdDuhTDBc+FyCPkje8IK0WIjNMoyVwqW1Twu++pGFoWUURXOMABEzCa7xy6jYYUe1qhaQhovObyz0n2Ww=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR11MB7658
+X-OriginatorOrg: intel.com
 
-This patch completes:
-1. Adding kasan_shadow_initialized() checks to existing wrapper functions
-2. Replacing kasan_arch_is_ready() calls with kasan_shadow_initialized()
-3. Creating wrapper functions for internal functions that need shadow
-   readiness checks
-4. Removing the kasan_arch_is_ready() fallback definition
+--_000_BL1PR11MB54004B3A847152EAD3D30DBC8951ABL1PR11MB5400namp_
+Content-Type: text/plain; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
 
-The two-level approach is now fully implemented:
-- kasan_enabled() - controls whether KASAN is enabled at all.
-  (compile-time for most archs)
-- kasan_shadow_initialized() - tracks shadow memory initialization
-  (static key for ARCH_DEFER_KASAN archs, compile-time for others)
+VGhhbmtzLCBSaWNoYXJkLg0KDQpJJ3ZlIG9wZW5lZCBhbiBpc3N1ZSBmb3IgdGhlIFNQRFggTGlj
+ZW5zZSBMaXN0IGh0dHBzOi8vZ2l0aHViLmNvbS9zcGR4L2xpY2Vuc2UtbGlzdC1YTUwvaXNzdWVz
+LzI3ODUgYW5kIGlmIG5vIG9uZSBlbHNlIHJlYWN0cyBmYXN0ZXIsIEkgcGxhbiB0byBzdWJtaXQg
+YSBQUiB0byBpbXBsZW1lbnQgdGhpcyBuZXh0IHdlZWsuDQoNCi0tIHp2ciAtLQ0KX19fX19fX19f
+X19fX19fX19fX19fX19fX19fX19fX18NCkZyb206IFJpY2hhcmQgRm9udGFuYSA8cmZvbnRhbmFA
+cmVkaGF0LmNvbT4NClNlbnQ6IFN1bmRheSwgSnVseSAxMywgMjAyNSAxNjoyNw0KVG86IE1hY2ll
+aiBXLiBSb3p5Y2tpIDxtYWNyb0BvcmNhbS5tZS51az4NCkNjOiBTZWdoZXIgQm9lc3Nlbmtvb2wg
+PHNlZ2hlckBrZXJuZWwuY3Jhc2hpbmcub3JnPjsgR3JlZyBLcm9haC1IYXJ0bWFuIDxncmVna2hA
+bGludXhmb3VuZGF0aW9uLm9yZz47IENocmlzdG9waCBIZWxsd2lnIDxoY2hAaW5mcmFkZWFkLm9y
+Zz47IFRob21hcyBIdXRoIDx0aHV0aEByZWRoYXQuY29tPjsgTWFkaGF2YW4gU3Jpbml2YXNhbiA8
+bWFkZHlAbGludXguaWJtLmNvbT47IE1pY2hhZWwgRWxsZXJtYW4gPG1wZUBlbGxlcm1hbi5pZC5h
+dT47IFRob21hcyBHbGVpeG5lciA8dGdseEBsaW51dHJvbml4LmRlPjsgTmljaG9sYXMgUGlnZ2lu
+IDxucGlnZ2luQGdtYWlsLmNvbT47IENocmlzdG9waGUgTGVyb3kgPGNocmlzdG9waGUubGVyb3lA
+Y3Nncm91cC5ldT47IGxpbnV4cHBjLWRldkBsaXN0cy5vemxhYnMub3JnIDxsaW51eHBwYy1kZXZA
+bGlzdHMub3psYWJzLm9yZz47IGxpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcgPGxpbnV4LWtl
+cm5lbEB2Z2VyLmtlcm5lbC5vcmc+OyBrdm1Admdlci5rZXJuZWwub3JnIDxrdm1Admdlci5rZXJu
+ZWwub3JnPjsgbGludXgtc3BkeEB2Z2VyLmtlcm5lbC5vcmcgPGxpbnV4LXNwZHhAdmdlci5rZXJu
+ZWwub3JnPjsgSiBMb3Zlam95IDxvcGVuc291cmNlQGppbGF5bmUuY29tPg0KU3ViamVjdDogUmU6
+IFtQQVRDSCB2Ml0gcG93ZXJwYzogUmVwbGFjZSB0aGUgb2Jzb2xldGUgYWRkcmVzcyBvZiB0aGUg
+RlNGDQoNCk9uIFNhdCwgSnVsIDEyLCAyMDI1IGF0IDY6NDjigK9QTSBNYWNpZWogVy4gUm96eWNr
+aSA8bWFjcm9Ab3JjYW0ubWUudWs+IHdyb3RlOg0KPg0KPiBPbiBGcmksIDExIEp1bCAyMDI1LCBS
+aWNoYXJkIEZvbnRhbmEgd3JvdGU6DQo+DQo+ID4gPiA+IHdoaWxlIHRoaXMgb25lOg0KPiA+ID4g
+Pg0KPiA+ID4gPiAgKiAgICBBcyBhIHNwZWNpYWwgZXhjZXB0aW9uLCBpZiB5b3UgbGluayB0aGlz
+IGxpYnJhcnkgd2l0aCBmaWxlcw0KPiA+ID4gPiAgKiAgICBjb21waWxlZCB3aXRoIEdDQyB0byBw
+cm9kdWNlIGFuIGV4ZWN1dGFibGUsIHRoaXMgZG9lcyBub3QgY2F1c2UNCj4gPiA+ID4gICogICAg
+dGhlIHJlc3VsdGluZyBleGVjdXRhYmxlIHRvIGJlIGNvdmVyZWQgYnkgdGhlIEdOVSBHZW5lcmFs
+IFB1YmxpYyBMaWNlbnNlLg0KPiA+ID4gPiAgKiAgICBUaGlzIGV4Y2VwdGlvbiBkb2VzIG5vdCBo
+b3dldmVyIGludmFsaWRhdGUgYW55IG90aGVyIHJlYXNvbnMgd2h5DQo+ID4gPiA+ICAqICAgIHRo
+ZSBleGVjdXRhYmxlIGZpbGUgbWlnaHQgYmUgY292ZXJlZCBieSB0aGUgR05VIEdlbmVyYWwgUHVi
+bGljIExpY2Vuc2UuDQo+ID4gPiA+DQo+ID4gPiA+IGRvZXMgbm90IHNlZW0gdG8gYmUgaW4gdGhl
+IFNQRFggZXhjZXB0aW9uIGxpc3QuIEl0IGlzIHZlcnkgc2ltaWxhciB0bw0KPiA+ID4gPiBgR05V
+LWNvbXBpbGVyLWV4Y2VwdGlvbmAgZXhjZXB0IGl0IHNwZWNpZmljYWxseSBtZW50aW9ucyBHQ0Mg
+aW5zdGVhZA0KPiA+ID4gPiBvZiBzYXlpbmcgImEgR05VIGNvbXBpbGVyIi4NCj4gPiA+DQo+ID4g
+PiBodHRwczovL3NwZHgub3JnL2xpY2Vuc2VzL0dOVS1jb21waWxlci1leGNlcHRpb24uaHRtbA0K
+PiA+ID4NCj4gPiA+IGlzIGV4YWN0bHkgdGhpcy4NCj4gPg0KPiA+IE5vLCBiZWNhdXNlIGBHTlUt
+Y29tcGlsZXItZXhjZXB0aW9uYCBhcyBkZWZpbmVkIGhlcmUNCj4gPiBodHRwczovL2dpdGh1Yi5j
+b20vc3BkeC9saWNlbnNlLWxpc3QtWE1ML2Jsb2IvbWFpbi9zcmMvZXhjZXB0aW9ucy9HTlUtY29t
+cGlsZXItZXhjZXB0aW9uLnhtbA0KPiA+IGFzc3VtZXMgdXNlIG9mIHRoZSB0ZXJtICJHQ0MiIHJh
+dGhlciB0aGFuICJhIEdOVSBjb21waWxlciIuDQo+DQo+ICBJIGRvbid0IGtub3cgd2hhdCB0aGUg
+bGVnYWwgc3RhdHVzIG9mIHRoZSBzdGF0ZW1lbnQgcmVmZXJyZWQgaXMsIGhvd2V2ZXINCj4gdGhl
+IG9yaWdpbmFsIGV4Y2VwdGlvbiBhcyBwdWJsaXNoZWRbMV0gYnkgRlNGIHNheXM6DQo+DQo+ICci
+R0NDIiBtZWFucyBhIHZlcnNpb24gb2YgdGhlIEdOVSBDb21waWxlciBDb2xsZWN0aW9uLCB3aXRo
+IG9yIHdpdGhvdXQNCj4gbW9kaWZpY2F0aW9ucywgZ292ZXJuZWQgYnkgdmVyc2lvbiAzIChvciBh
+IHNwZWNpZmllZCBsYXRlciB2ZXJzaW9uKSBvZiB0aGUNCj4gR05VIEdlbmVyYWwgUHVibGljIExp
+Y2Vuc2UgKEdQTCkgd2l0aCB0aGUgb3B0aW9uIG9mIHVzaW5nIGFueSBzdWJzZXF1ZW50DQo+IHZl
+cnNpb25zIHB1Ymxpc2hlZCBieSB0aGUgRlNGLicNCg0KPiB3aGljaCBJIHRoaW5rIG1ha2VzIGl0
+IGNsZWFyIHRoYXQgIkdDQyIgaXMgYSBjb2xsZWN0aW9uIG9mICJHTlUgY29tcGlsZXJzIg0KPiBh
+bmQgdGhlcmVmb3JlIHRoZSB0d28gdGVybXMgYXJlIHN5bm9ueW1vdXMgdG8gZWFjaCBvdGhlciBm
+b3IgdGhlIHB1cnBvc2UNCj4gb2Ygc2FpZCBleGNlcHRpb24gKGluIHRoZSBvbGQgZGF5cyAiR0ND
+IiBzdG9vZCBmb3IgIkdOVSBDIENvbXBpbGVyIiwgYnV0DQo+IHRoZSBvbGQgbWVhbmluZyBtYWtl
+cyBubyBzZW5zZSBhbnltb3JlIG5vdyB0aGF0IHdlIGhhdmUgY29tcGlsZXJzIGZvciBBZGEsDQo+
+IEZvcnRyYW4gYW5kIG1hbnkgb3RoZXIgbGFuZ3VhZ2VzIGluY2x1ZGVkIGluIEdDQykuDQo+DQo+
+ICBOQiB1cCB0byBkYXRlIHZlcnNpb25zIG9mIENSVCBjb2RlIHJlZmVyIHRvIHRoZSBleGNlcHRp
+b24gYXMgcHVibGlzaGVkDQo+IHJhdGhlciB0aGFuIHBhc3RpbmcgYW4gb2xkIHZlcnNpb24gb2Yg
+aXRzIHRleHQ6DQo+DQo+ICdVbmRlciBTZWN0aW9uIDcgb2YgR1BMIHZlcnNpb24gMywgeW91IGFy
+ZSBncmFudGVkIGFkZGl0aW9uYWwNCj4gcGVybWlzc2lvbnMgZGVzY3JpYmVkIGluIHRoZSBHQ0Mg
+UnVudGltZSBMaWJyYXJ5IEV4Y2VwdGlvbiwgdmVyc2lvbg0KPiAzLjEsIGFzIHB1Ymxpc2hlZCBi
+eSB0aGUgRnJlZSBTb2Z0d2FyZSBGb3VuZGF0aW9uLicNCj4NCj4gUmVmZXJlbmNlczoNCj4NCj4g
+WzFdICJHQ0MgUnVudGltZSBMaWJyYXJ5IEV4Y2VwdGlvbiIsIHZlcnNpb24gMy4xLA0KPiAgICAg
+PGh0dHBzOi8vd3d3LmdudS5vcmcvbGljZW5zZXMvZ2NjLWV4Y2VwdGlvbi0zLjEuaHRtbD4NCg0K
+SSB0aGluayB3ZSdyZSBiYXNpY2FsbHkgdGFsa2luZyBwYXN0IGVhY2ggb3RoZXIuIFRoZSBkZWZp
+bml0aW9uIG9mDQoiR0NDIiBpbiB0aGUgR0NDIHJ1bnRpbWUgbGlicmFyeSBleGNlcHRpb24gMy4x
+IGlzIGlycmVsZXZhbnQgYmVjYXVzZQ0KdGhhdCBmaWxlIGRvZXMgbm90IHJlZmVyIHRvIHRoYXQg
+ZXhjZXB0aW9uLiBJbiBTUERYLCBsaWNlbnNlIChhbmQNCmV4Y2VwdGlvbikgaWRlbnRpZmllcnMg
+YXJlIHByZWNpc2VseSBkZWZpbmVkLiBVbmxlc3MgSSdtIG1pc3NpbmcNCnNvbWV0aGluZyB0aGVy
+ZSBpcyBubyBvZmZpY2lhbCBTUERYIGlkZW50aWZpZXIgdGhhdCBjb3JyZXNwb25kcyB0bw0KdGhp
+cyB0ZXh0Og0KDQogIEFzIGEgc3BlY2lhbCBleGNlcHRpb24sIGlmIHlvdSBsaW5rIHRoaXMgbGli
+cmFyeSB3aXRoIGZpbGVzDQogIGNvbXBpbGVkIHdpdGggR0NDIHRvIHByb2R1Y2UgYW4gZXhlY3V0
+YWJsZSwgdGhpcyBkb2VzIG5vdCBjYXVzZQ0KICB0aGUgcmVzdWx0aW5nIGV4ZWN1dGFibGUgdG8g
+YmUgY292ZXJlZCBieSB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UuDQogIFRoaXMgZXhj
+ZXB0aW9uIGRvZXMgbm90IGhvd2V2ZXIgaW52YWxpZGF0ZSBhbnkgb3RoZXIgcmVhc29ucyB3aHkN
+CiAgdGhlIGV4ZWN1dGFibGUgZmlsZSBtaWdodCBiZSBjb3ZlcmVkIGJ5IHRoZSBHTlUgR2VuZXJh
+bCBQdWJsaWMgTGljZW5zZS4NCg0KSSdtIG5vdCBwZXJzb25hbGx5IGEgbWFqb3Igc3VwcG9ydGVy
+IG9mIFNQRFggYW5kIEknbSB0aGUgbGFzdCBwZXJzb24NCndobyB3b3VsZCB3YW50IHRvIGJlIGFz
+c29jaWF0ZWQgd2l0aCBTUERYIHBlZGFudGljaXNtIGJ1dCBpdCdzIGENCnN0YW5kYXJkIGFuZCBp
+ZiB0aGUgTGludXgga2VybmVsIHByb2plY3QgaXMgZ29pbmcgdG8gdXNlIGl0IElNTyBpdA0Kc2hv
+dWxkIGNvbmZvcm0gdG8gdGhhdCBzdGFuZGFyZCwgb3RoZXJ3aXNlIHlvdSdyZSBiYXNpY2FsbHkg
+bWFraW5nIGFkDQpob2MgZGVmaW5pdGlvbnMgb2YgcHNldWRvLVNQRFggZXhwcmVzc2lvbnMgb3Ig
+cmVkZWZpbml0aW9ucyBvZg0KYWxyZWFkeS1kZWZpbmVkIFNQRFggaWRlbnRpZmllcnMsIHdoaWNo
+IHNlZW1zIHRvIGRlZmVhdCB0aGUgcHVycG9zZSBvZg0KdXNpbmcgU1BEWCBleHByZXNzaW9ucyBh
+dCBhbGwuIFVuZGVyIHRoYXQgc3RhbmRhcmQsIHRoZXJlIGlzIGN1cnJlbnRseQ0Kbm8gU1BEWCBp
+ZGVudGlmaWVyIHJlcHJlc2VudGluZyB0aGUgYWJvdmUgdGV4dCAoYXMgZmFyIGFzIEkgY2FuIHRl
+bGwpLg0KVGhlIHNvbHV0aW9uIGlzIGVpdGhlciB0byBwcm9wb3NlIGEgbW9kaWZpY2F0aW9uIG9m
+DQpgR05VLWNvbXBpbGVyLWV4Y2VwdGlvbmAgc28gdGhhdCAiR0NDIiBpcyBhY2NlcHRlZCBhcyBh
+biBhbHRlcm5hdGl2ZQ0KdG8gImEgR05VIGNvbXBpbGVyIiwgb3IgdG8gcHJvcG9zZSBhIG5ldyBl
+eGNlcHRpb24gdG8gYmUgYWRkZWQgdG8NClNQRFgncyBleGNlcHRpb24gbGlzdCwgb3IgdG8gdXNl
+IGEgY3VzdG9tLWRlZmluZWQgYEFkZGl0aW9uUmVmLWANCmlkZW50aWZpZXIuDQoNClJpY2hhcmQN
+Cg0KDQpJbnRlbCBEZXV0c2NobGFuZCBHbWJIDQpSZWdpc3RlcmVkIEFkZHJlc3M6IEFtIENhbXBl
+b24gMTAsIDg1NTc5IE5ldWJpYmVyZywgR2VybWFueQ0KVGVsOiArNDkgODkgOTkgODg1My0wLCB3
+d3cuaW50ZWwuZGUNCk1hbmFnaW5nIERpcmVjdG9yczogU2VhbiBGZW5uZWxseSwgSmVmZnJleSBT
+Y2huZWlkZXJtYW4sIFRpZmZhbnkgRG9vbiBTaWx2YQ0KQ2hhaXJwZXJzb24gb2YgdGhlIFN1cGVy
+dmlzb3J5IEJvYXJkOiBOaWNvbGUgTGF1DQpSZWdpc3RlcmVkIE9mZmljZTogTXVuaWNoDQpDb21t
+ZXJjaWFsIFJlZ2lzdGVyOiBBbXRzZ2VyaWNodCBNdWVuY2hlbiBIUkIgMTg2OTI4Cg==
 
-This provides complete elimination of kasan_arch_is_ready() calls from
-KASAN implementation while moving all shadow readiness logic to
-wrapper functions.
+--_000_BL1PR11MB54004B3A847152EAD3D30DBC8951ABL1PR11MB5400namp_
+Content-Type: text/html; charset="utf-8"
+MIME-Version: 1.0
+Content-Transfer-Encoding: base64
 
-Closes: https://bugzilla.kernel.org/show_bug.cgi?id=217049
-Signed-off-by: Sabyrzhan Tasbolatov <snovitoll@gmail.com>
----
-Changes in v3:
-- Addresses Andrey's feedback to move shadow checks to wrappers
-- Rename kasan_arch_is_ready with kasan_shadow_initialized
-- Added kasan_shadow_initialized() checks to all necessary wrapper functions
-- Eliminated all remaining kasan_arch_is_ready() usage per reviewer guidance
----
- include/linux/kasan.h | 36 +++++++++++++++++++++++++++---------
- mm/kasan/common.c     |  9 +++------
- mm/kasan/generic.c    | 12 +++---------
- mm/kasan/kasan.h      | 36 ++++++++++++++++++++++++++----------
- mm/kasan/shadow.c     | 32 +++++++-------------------------
- 5 files changed, 66 insertions(+), 59 deletions(-)
+PGh0bWw+DQo8aGVhZD4NCjxtZXRhIGh0dHAtZXF1aXY9IkNvbnRlbnQtVHlwZSIgY29udGVudD0i
+dGV4dC9odG1sOyBjaGFyc2V0PXV0Zi04Ij4NCjxzdHlsZSB0eXBlPSJ0ZXh0L2NzcyIgc3R5bGU9
+ImRpc3BsYXk6bm9uZTsiPiBQIHttYXJnaW4tdG9wOjA7bWFyZ2luLWJvdHRvbTowO30gPC9zdHls
+ZT4NCjwvaGVhZD4NCjxib2R5IGRpcj0ibHRyIj4NCjxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiBB
+cHRvcywgQXB0b3NfRW1iZWRkZWRGb250LCBBcHRvc19NU0ZvbnRTZXJ2aWNlLCBDYWxpYnJpLCBI
+ZWx2ZXRpY2EsIHNhbnMtc2VyaWY7IGZvbnQtc2l6ZTogMTFwdDsgY29sb3I6IHJnYigwLCAwLCAw
+KTsiIGNsYXNzPSJlbGVtZW50VG9Qcm9vZiI+DQpUaGFua3MsIFJpY2hhcmQuPC9kaXY+DQo8ZGl2
+IHN0eWxlPSJmb250LWZhbWlseTogQXB0b3MsIEFwdG9zX0VtYmVkZGVkRm9udCwgQXB0b3NfTVNG
+b250U2VydmljZSwgQ2FsaWJyaSwgSGVsdmV0aWNhLCBzYW5zLXNlcmlmOyBmb250LXNpemU6IDEx
+cHQ7IGNvbG9yOiByZ2IoMCwgMCwgMCk7IiBjbGFzcz0iZWxlbWVudFRvUHJvb2YiPg0KPGJyPg0K
+PC9kaXY+DQo8ZGl2IHN0eWxlPSJmb250LWZhbWlseTogQXB0b3MsIEFwdG9zX0VtYmVkZGVkRm9u
+dCwgQXB0b3NfTVNGb250U2VydmljZSwgQ2FsaWJyaSwgSGVsdmV0aWNhLCBzYW5zLXNlcmlmOyBm
+b250LXNpemU6IDExcHQ7IGNvbG9yOiByZ2IoMCwgMCwgMCk7IiBjbGFzcz0iZWxlbWVudFRvUHJv
+b2YiPg0KSSd2ZSBvcGVuZWQgYW4gaXNzdWUgZm9yIHRoZSBTUERYIExpY2Vuc2UgTGlzdCA8YSBp
+ZD0iTFBsbms3MTUzNzMiIGhyZWY9Imh0dHBzOi8vZ2l0aHViLmNvbS9zcGR4L2xpY2Vuc2UtbGlz
+dC1YTUwvaXNzdWVzLzI3ODUiPg0KaHR0cHM6Ly9naXRodWIuY29tL3NwZHgvbGljZW5zZS1saXN0
+LVhNTC9pc3N1ZXMvMjc4NTwvYT4mbmJzcDthbmQgaWYgbm8gb25lIGVsc2UgcmVhY3RzIGZhc3Rl
+ciwgSSBwbGFuIHRvIHN1Ym1pdCBhIFBSIHRvIGltcGxlbWVudCB0aGlzIG5leHQgd2Vlay48L2Rp
+dj4NCjxkaXYgY2xhc3M9ImVsZW1lbnRUb1Byb29mIiBpZD0iU2lnbmF0dXJlIj4NCjxkaXYgc3R5
+bGU9ImZvbnQtZmFtaWx5OiBBcHRvcywgQXB0b3NfRW1iZWRkZWRGb250LCBBcHRvc19NU0ZvbnRT
+ZXJ2aWNlLCBDYWxpYnJpLCBIZWx2ZXRpY2EsIHNhbnMtc2VyaWY7IGZvbnQtc2l6ZTogMTFwdDsg
+Y29sb3I6IHJnYigwLCAwLCAwKTsiIGNsYXNzPSJlbGVtZW50VG9Qcm9vZiI+DQo8YnI+DQo8L2Rp
+dj4NCjxkaXYgc3R5bGU9ImZvbnQtZmFtaWx5OiBBcHRvcywgQXB0b3NfRW1iZWRkZWRGb250LCBB
+cHRvc19NU0ZvbnRTZXJ2aWNlLCBDYWxpYnJpLCBIZWx2ZXRpY2EsIHNhbnMtc2VyaWY7IGZvbnQt
+c2l6ZTogMTFwdDsgY29sb3I6IHJnYigwLCAwLCAwKTsiIGNsYXNzPSJlbGVtZW50VG9Qcm9vZiI+
+DQotLSB6dnIgLS08L2Rpdj4NCjwvZGl2Pg0KPGRpdiBpZD0iYXBwZW5kb25zZW5kIj48L2Rpdj4N
+CjxociBzdHlsZT0iZGlzcGxheTppbmxpbmUtYmxvY2s7d2lkdGg6OTglIiB0YWJpbmRleD0iLTEi
+Pg0KPGRpdiBpZD0iZGl2UnBseUZ3ZE1zZyIgZGlyPSJsdHIiPjxmb250IGZhY2U9IkNhbGlicmks
+IHNhbnMtc2VyaWYiIHN0eWxlPSJmb250LXNpemU6MTFwdCIgY29sb3I9IiMwMDAwMDAiPjxiPkZy
+b206PC9iPiBSaWNoYXJkIEZvbnRhbmEgJmx0O3Jmb250YW5hQHJlZGhhdC5jb20mZ3Q7PGJyPg0K
+PGI+U2VudDo8L2I+IFN1bmRheSwgSnVseSAxMywgMjAyNSAxNjoyNzxicj4NCjxiPlRvOjwvYj4g
+TWFjaWVqIFcuIFJvenlja2kgJmx0O21hY3JvQG9yY2FtLm1lLnVrJmd0Ozxicj4NCjxiPkNjOjwv
+Yj4gU2VnaGVyIEJvZXNzZW5rb29sICZsdDtzZWdoZXJAa2VybmVsLmNyYXNoaW5nLm9yZyZndDs7
+IEdyZWcgS3JvYWgtSGFydG1hbiAmbHQ7Z3JlZ2toQGxpbnV4Zm91bmRhdGlvbi5vcmcmZ3Q7OyBD
+aHJpc3RvcGggSGVsbHdpZyAmbHQ7aGNoQGluZnJhZGVhZC5vcmcmZ3Q7OyBUaG9tYXMgSHV0aCAm
+bHQ7dGh1dGhAcmVkaGF0LmNvbSZndDs7IE1hZGhhdmFuIFNyaW5pdmFzYW4gJmx0O21hZGR5QGxp
+bnV4LmlibS5jb20mZ3Q7OyBNaWNoYWVsIEVsbGVybWFuICZsdDttcGVAZWxsZXJtYW4uaWQuYXUm
+Z3Q7Ow0KIFRob21hcyBHbGVpeG5lciAmbHQ7dGdseEBsaW51dHJvbml4LmRlJmd0OzsgTmljaG9s
+YXMgUGlnZ2luICZsdDtucGlnZ2luQGdtYWlsLmNvbSZndDs7IENocmlzdG9waGUgTGVyb3kgJmx0
+O2NocmlzdG9waGUubGVyb3lAY3Nncm91cC5ldSZndDs7IGxpbnV4cHBjLWRldkBsaXN0cy5vemxh
+YnMub3JnICZsdDtsaW51eHBwYy1kZXZAbGlzdHMub3psYWJzLm9yZyZndDs7IGxpbnV4LWtlcm5l
+bEB2Z2VyLmtlcm5lbC5vcmcgJmx0O2xpbnV4LWtlcm5lbEB2Z2VyLmtlcm5lbC5vcmcmZ3Q7OyBr
+dm1Admdlci5rZXJuZWwub3JnDQogJmx0O2t2bUB2Z2VyLmtlcm5lbC5vcmcmZ3Q7OyBsaW51eC1z
+cGR4QHZnZXIua2VybmVsLm9yZyAmbHQ7bGludXgtc3BkeEB2Z2VyLmtlcm5lbC5vcmcmZ3Q7OyBK
+IExvdmVqb3kgJmx0O29wZW5zb3VyY2VAamlsYXluZS5jb20mZ3Q7PGJyPg0KPGI+U3ViamVjdDo8
+L2I+IFJlOiBbUEFUQ0ggdjJdIHBvd2VycGM6IFJlcGxhY2UgdGhlIG9ic29sZXRlIGFkZHJlc3Mg
+b2YgdGhlIEZTRjwvZm9udD4NCjxkaXY+Jm5ic3A7PC9kaXY+DQo8L2Rpdj4NCjxkaXYgY2xhc3M9
+IkJvZHlGcmFnbWVudCI+PGZvbnQgc2l6ZT0iMiI+PHNwYW4gc3R5bGU9ImZvbnQtc2l6ZToxMXB0
+OyI+DQo8ZGl2IGNsYXNzPSJQbGFpblRleHQiPk9uIFNhdCwgSnVsIDEyLCAyMDI1IGF0IDY6NDji
+gK9QTSBNYWNpZWogVy4gUm96eWNraSAmbHQ7bWFjcm9Ab3JjYW0ubWUudWsmZ3Q7IHdyb3RlOjxi
+cj4NCiZndDs8YnI+DQomZ3Q7IE9uIEZyaSwgMTEgSnVsIDIwMjUsIFJpY2hhcmQgRm9udGFuYSB3
+cm90ZTo8YnI+DQomZ3Q7PGJyPg0KJmd0OyAmZ3Q7ICZndDsgJmd0OyB3aGlsZSB0aGlzIG9uZTo8
+YnI+DQomZ3Q7ICZndDsgJmd0OyAmZ3Q7PGJyPg0KJmd0OyAmZ3Q7ICZndDsgJmd0OyZuYnNwOyAq
+Jm5ic3A7Jm5ic3A7Jm5ic3A7IEFzIGEgc3BlY2lhbCBleGNlcHRpb24sIGlmIHlvdSBsaW5rIHRo
+aXMgbGlicmFyeSB3aXRoIGZpbGVzPGJyPg0KJmd0OyAmZ3Q7ICZndDsgJmd0OyZuYnNwOyAqJm5i
+c3A7Jm5ic3A7Jm5ic3A7IGNvbXBpbGVkIHdpdGggR0NDIHRvIHByb2R1Y2UgYW4gZXhlY3V0YWJs
+ZSwgdGhpcyBkb2VzIG5vdCBjYXVzZTxicj4NCiZndDsgJmd0OyAmZ3Q7ICZndDsmbmJzcDsgKiZu
+YnNwOyZuYnNwOyZuYnNwOyB0aGUgcmVzdWx0aW5nIGV4ZWN1dGFibGUgdG8gYmUgY292ZXJlZCBi
+eSB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UuPGJyPg0KJmd0OyAmZ3Q7ICZndDsgJmd0
+OyZuYnNwOyAqJm5ic3A7Jm5ic3A7Jm5ic3A7IFRoaXMgZXhjZXB0aW9uIGRvZXMgbm90IGhvd2V2
+ZXIgaW52YWxpZGF0ZSBhbnkgb3RoZXIgcmVhc29ucyB3aHk8YnI+DQomZ3Q7ICZndDsgJmd0OyAm
+Z3Q7Jm5ic3A7ICombmJzcDsmbmJzcDsmbmJzcDsgdGhlIGV4ZWN1dGFibGUgZmlsZSBtaWdodCBi
+ZSBjb3ZlcmVkIGJ5IHRoZSBHTlUgR2VuZXJhbCBQdWJsaWMgTGljZW5zZS48YnI+DQomZ3Q7ICZn
+dDsgJmd0OyAmZ3Q7PGJyPg0KJmd0OyAmZ3Q7ICZndDsgJmd0OyBkb2VzIG5vdCBzZWVtIHRvIGJl
+IGluIHRoZSBTUERYIGV4Y2VwdGlvbiBsaXN0LiBJdCBpcyB2ZXJ5IHNpbWlsYXIgdG88YnI+DQom
+Z3Q7ICZndDsgJmd0OyAmZ3Q7IGBHTlUtY29tcGlsZXItZXhjZXB0aW9uYCBleGNlcHQgaXQgc3Bl
+Y2lmaWNhbGx5IG1lbnRpb25zIEdDQyBpbnN0ZWFkPGJyPg0KJmd0OyAmZ3Q7ICZndDsgJmd0OyBv
+ZiBzYXlpbmcgJnF1b3Q7YSBHTlUgY29tcGlsZXImcXVvdDsuPGJyPg0KJmd0OyAmZ3Q7ICZndDs8
+YnI+DQomZ3Q7ICZndDsgJmd0OyA8YSBocmVmPSJodHRwczovL3NwZHgub3JnL2xpY2Vuc2VzL0dO
+VS1jb21waWxlci1leGNlcHRpb24uaHRtbCI+aHR0cHM6Ly9zcGR4Lm9yZy9saWNlbnNlcy9HTlUt
+Y29tcGlsZXItZXhjZXB0aW9uLmh0bWw8L2E+PGJyPg0KJmd0OyAmZ3Q7ICZndDs8YnI+DQomZ3Q7
+ICZndDsgJmd0OyBpcyBleGFjdGx5IHRoaXMuPGJyPg0KJmd0OyAmZ3Q7PGJyPg0KJmd0OyAmZ3Q7
+IE5vLCBiZWNhdXNlIGBHTlUtY29tcGlsZXItZXhjZXB0aW9uYCBhcyBkZWZpbmVkIGhlcmU8YnI+
+DQomZ3Q7ICZndDsgPGEgaHJlZj0iaHR0cHM6Ly9naXRodWIuY29tL3NwZHgvbGljZW5zZS1saXN0
+LVhNTC9ibG9iL21haW4vc3JjL2V4Y2VwdGlvbnMvR05VLWNvbXBpbGVyLWV4Y2VwdGlvbi54bWwi
+Pg0KaHR0cHM6Ly9naXRodWIuY29tL3NwZHgvbGljZW5zZS1saXN0LVhNTC9ibG9iL21haW4vc3Jj
+L2V4Y2VwdGlvbnMvR05VLWNvbXBpbGVyLWV4Y2VwdGlvbi54bWw8L2E+PGJyPg0KJmd0OyAmZ3Q7
+IGFzc3VtZXMgdXNlIG9mIHRoZSB0ZXJtICZxdW90O0dDQyZxdW90OyByYXRoZXIgdGhhbiAmcXVv
+dDthIEdOVSBjb21waWxlciZxdW90Oy48YnI+DQomZ3Q7PGJyPg0KJmd0OyZuYnNwOyBJIGRvbid0
+IGtub3cgd2hhdCB0aGUgbGVnYWwgc3RhdHVzIG9mIHRoZSBzdGF0ZW1lbnQgcmVmZXJyZWQgaXMs
+IGhvd2V2ZXI8YnI+DQomZ3Q7IHRoZSBvcmlnaW5hbCBleGNlcHRpb24gYXMgcHVibGlzaGVkWzFd
+IGJ5IEZTRiBzYXlzOjxicj4NCiZndDs8YnI+DQomZ3Q7ICcmcXVvdDtHQ0MmcXVvdDsgbWVhbnMg
+YSB2ZXJzaW9uIG9mIHRoZSBHTlUgQ29tcGlsZXIgQ29sbGVjdGlvbiwgd2l0aCBvciB3aXRob3V0
+PGJyPg0KJmd0OyBtb2RpZmljYXRpb25zLCBnb3Zlcm5lZCBieSB2ZXJzaW9uIDMgKG9yIGEgc3Bl
+Y2lmaWVkIGxhdGVyIHZlcnNpb24pIG9mIHRoZTxicj4NCiZndDsgR05VIEdlbmVyYWwgUHVibGlj
+IExpY2Vuc2UgKEdQTCkgd2l0aCB0aGUgb3B0aW9uIG9mIHVzaW5nIGFueSBzdWJzZXF1ZW50PGJy
+Pg0KJmd0OyB2ZXJzaW9ucyBwdWJsaXNoZWQgYnkgdGhlIEZTRi4nPGJyPg0KPGJyPg0KJmd0OyB3
+aGljaCBJIHRoaW5rIG1ha2VzIGl0IGNsZWFyIHRoYXQgJnF1b3Q7R0NDJnF1b3Q7IGlzIGEgY29s
+bGVjdGlvbiBvZiAmcXVvdDtHTlUgY29tcGlsZXJzJnF1b3Q7PGJyPg0KJmd0OyBhbmQgdGhlcmVm
+b3JlIHRoZSB0d28gdGVybXMgYXJlIHN5bm9ueW1vdXMgdG8gZWFjaCBvdGhlciBmb3IgdGhlIHB1
+cnBvc2U8YnI+DQomZ3Q7IG9mIHNhaWQgZXhjZXB0aW9uIChpbiB0aGUgb2xkIGRheXMgJnF1b3Q7
+R0NDJnF1b3Q7IHN0b29kIGZvciAmcXVvdDtHTlUgQyBDb21waWxlciZxdW90OywgYnV0PGJyPg0K
+Jmd0OyB0aGUgb2xkIG1lYW5pbmcgbWFrZXMgbm8gc2Vuc2UgYW55bW9yZSBub3cgdGhhdCB3ZSBo
+YXZlIGNvbXBpbGVycyBmb3IgQWRhLDxicj4NCiZndDsgRm9ydHJhbiBhbmQgbWFueSBvdGhlciBs
+YW5ndWFnZXMgaW5jbHVkZWQgaW4gR0NDKS48YnI+DQomZ3Q7PGJyPg0KJmd0OyZuYnNwOyBOQiB1
+cCB0byBkYXRlIHZlcnNpb25zIG9mIENSVCBjb2RlIHJlZmVyIHRvIHRoZSBleGNlcHRpb24gYXMg
+cHVibGlzaGVkPGJyPg0KJmd0OyByYXRoZXIgdGhhbiBwYXN0aW5nIGFuIG9sZCB2ZXJzaW9uIG9m
+IGl0cyB0ZXh0Ojxicj4NCiZndDs8YnI+DQomZ3Q7ICdVbmRlciBTZWN0aW9uIDcgb2YgR1BMIHZl
+cnNpb24gMywgeW91IGFyZSBncmFudGVkIGFkZGl0aW9uYWw8YnI+DQomZ3Q7IHBlcm1pc3Npb25z
+IGRlc2NyaWJlZCBpbiB0aGUgR0NDIFJ1bnRpbWUgTGlicmFyeSBFeGNlcHRpb24sIHZlcnNpb248
+YnI+DQomZ3Q7IDMuMSwgYXMgcHVibGlzaGVkIGJ5IHRoZSBGcmVlIFNvZnR3YXJlIEZvdW5kYXRp
+b24uJzxicj4NCiZndDs8YnI+DQomZ3Q7IFJlZmVyZW5jZXM6PGJyPg0KJmd0Ozxicj4NCiZndDsg
+WzFdICZxdW90O0dDQyBSdW50aW1lIExpYnJhcnkgRXhjZXB0aW9uJnF1b3Q7LCB2ZXJzaW9uIDMu
+MSw8YnI+DQomZ3Q7Jm5ic3A7Jm5ic3A7Jm5ic3A7Jm5ic3A7ICZsdDs8YSBocmVmPSJodHRwczov
+L3d3dy5nbnUub3JnL2xpY2Vuc2VzL2djYy1leGNlcHRpb24tMy4xLmh0bWwiPmh0dHBzOi8vd3d3
+LmdudS5vcmcvbGljZW5zZXMvZ2NjLWV4Y2VwdGlvbi0zLjEuaHRtbDwvYT4mZ3Q7PGJyPg0KPGJy
+Pg0KSSB0aGluayB3ZSdyZSBiYXNpY2FsbHkgdGFsa2luZyBwYXN0IGVhY2ggb3RoZXIuIFRoZSBk
+ZWZpbml0aW9uIG9mPGJyPg0KJnF1b3Q7R0NDJnF1b3Q7IGluIHRoZSBHQ0MgcnVudGltZSBsaWJy
+YXJ5IGV4Y2VwdGlvbiAzLjEgaXMgaXJyZWxldmFudCBiZWNhdXNlPGJyPg0KdGhhdCBmaWxlIGRv
+ZXMgbm90IHJlZmVyIHRvIHRoYXQgZXhjZXB0aW9uLiBJbiBTUERYLCBsaWNlbnNlIChhbmQ8YnI+
+DQpleGNlcHRpb24pIGlkZW50aWZpZXJzIGFyZSBwcmVjaXNlbHkgZGVmaW5lZC4gVW5sZXNzIEkn
+bSBtaXNzaW5nPGJyPg0Kc29tZXRoaW5nIHRoZXJlIGlzIG5vIG9mZmljaWFsIFNQRFggaWRlbnRp
+ZmllciB0aGF0IGNvcnJlc3BvbmRzIHRvPGJyPg0KdGhpcyB0ZXh0Ojxicj4NCjxicj4NCiZuYnNw
+OyBBcyBhIHNwZWNpYWwgZXhjZXB0aW9uLCBpZiB5b3UgbGluayB0aGlzIGxpYnJhcnkgd2l0aCBm
+aWxlczxicj4NCiZuYnNwOyBjb21waWxlZCB3aXRoIEdDQyB0byBwcm9kdWNlIGFuIGV4ZWN1dGFi
+bGUsIHRoaXMgZG9lcyBub3QgY2F1c2U8YnI+DQombmJzcDsgdGhlIHJlc3VsdGluZyBleGVjdXRh
+YmxlIHRvIGJlIGNvdmVyZWQgYnkgdGhlIEdOVSBHZW5lcmFsIFB1YmxpYyBMaWNlbnNlLjxicj4N
+CiZuYnNwOyBUaGlzIGV4Y2VwdGlvbiBkb2VzIG5vdCBob3dldmVyIGludmFsaWRhdGUgYW55IG90
+aGVyIHJlYXNvbnMgd2h5PGJyPg0KJm5ic3A7IHRoZSBleGVjdXRhYmxlIGZpbGUgbWlnaHQgYmUg
+Y292ZXJlZCBieSB0aGUgR05VIEdlbmVyYWwgUHVibGljIExpY2Vuc2UuPGJyPg0KPGJyPg0KSSdt
+IG5vdCBwZXJzb25hbGx5IGEgbWFqb3Igc3VwcG9ydGVyIG9mIFNQRFggYW5kIEknbSB0aGUgbGFz
+dCBwZXJzb248YnI+DQp3aG8gd291bGQgd2FudCB0byBiZSBhc3NvY2lhdGVkIHdpdGggU1BEWCBw
+ZWRhbnRpY2lzbSBidXQgaXQncyBhPGJyPg0Kc3RhbmRhcmQgYW5kIGlmIHRoZSBMaW51eCBrZXJu
+ZWwgcHJvamVjdCBpcyBnb2luZyB0byB1c2UgaXQgSU1PIGl0PGJyPg0Kc2hvdWxkIGNvbmZvcm0g
+dG8gdGhhdCBzdGFuZGFyZCwgb3RoZXJ3aXNlIHlvdSdyZSBiYXNpY2FsbHkgbWFraW5nIGFkPGJy
+Pg0KaG9jIGRlZmluaXRpb25zIG9mIHBzZXVkby1TUERYIGV4cHJlc3Npb25zIG9yIHJlZGVmaW5p
+dGlvbnMgb2Y8YnI+DQphbHJlYWR5LWRlZmluZWQgU1BEWCBpZGVudGlmaWVycywgd2hpY2ggc2Vl
+bXMgdG8gZGVmZWF0IHRoZSBwdXJwb3NlIG9mPGJyPg0KdXNpbmcgU1BEWCBleHByZXNzaW9ucyBh
+dCBhbGwuIFVuZGVyIHRoYXQgc3RhbmRhcmQsIHRoZXJlIGlzIGN1cnJlbnRseTxicj4NCm5vIFNQ
+RFggaWRlbnRpZmllciByZXByZXNlbnRpbmcgdGhlIGFib3ZlIHRleHQgKGFzIGZhciBhcyBJIGNh
+biB0ZWxsKS48YnI+DQpUaGUgc29sdXRpb24gaXMgZWl0aGVyIHRvIHByb3Bvc2UgYSBtb2RpZmlj
+YXRpb24gb2Y8YnI+DQpgR05VLWNvbXBpbGVyLWV4Y2VwdGlvbmAgc28gdGhhdCAmcXVvdDtHQ0Mm
+cXVvdDsgaXMgYWNjZXB0ZWQgYXMgYW4gYWx0ZXJuYXRpdmU8YnI+DQp0byAmcXVvdDthIEdOVSBj
+b21waWxlciZxdW90Oywgb3IgdG8gcHJvcG9zZSBhIG5ldyBleGNlcHRpb24gdG8gYmUgYWRkZWQg
+dG88YnI+DQpTUERYJ3MgZXhjZXB0aW9uIGxpc3QsIG9yIHRvIHVzZSBhIGN1c3RvbS1kZWZpbmVk
+IGBBZGRpdGlvblJlZi1gPGJyPg0KaWRlbnRpZmllci48YnI+DQo8YnI+DQpSaWNoYXJkPGJyPg0K
+PGJyPg0KPGJyPg0KPC9kaXY+DQo8L3NwYW4+PC9mb250PjwvZGl2Pg0KPHNwYW4+Jm5ic3A7PC9z
+cGFuPjxwIHN0eWxlPSJtYXJnaW46IDBjbTsiPjxzcGFuIHN0eWxlPSJmb250LXNpemU6IDEwcHQ7
+IGZvbnQtZmFtaWx5OiBBcmlhbCwgc2Fucy1zZXJpZjsiPkludGVsIERldXRzY2hsYW5kIEdtYkg8
+YnI+UmVnaXN0ZXJlZCBBZGRyZXNzOiBBbSBDYW1wZW9uIDEwLCA4NTU3OSBOZXViaWJlcmcsIEdl
+cm1hbnk8YnI+VGVsOiArNDkgODkgOTkgODg1My0wLCZuYnNwOzxhIGhyZWY9Imh0dHA6Ly93d3cu
+aW50ZWwuZGUvIj53d3cuaW50ZWwuZGU8L2E+PGJyPk1hbmFnaW5nIERpcmVjdG9yczombmJzcDtT
+ZWFuIEZlbm5lbGx5LCBKZWZmcmV5IFNjaG5laWRlcm1hbiwgVGlmZmFueSBEb29uIFNpbHZhPG86
+cD48L286cD48L3NwYW4+PC9wPjxwIHN0eWxlPSJtYXJnaW46IDBjbTsiPjxzcGFuIHN0eWxlPSJm
+b250LXNpemU6IDEwcHQ7IGZvbnQtZmFtaWx5OiBBcmlhbCwgc2Fucy1zZXJpZjsiPjxzcGFuIHN0
+eWxlPSJ0ZXh0LWRlY29yYXRpb246IHVuZGVybGluZTsiIDE6cD0iIj5DaGFpcnBlcnNvbiBvZiB0
+aGUgU3VwZXJ2aXNvcnkgQm9hcmQ6IE5pY29sZSBMYXU8YnI+UmVnaXN0ZXJlZCBPZmZpY2U6IE11
+bmljaDxicj5Db21tZXJjaWFsIFJlZ2lzdGVyOiBBbXRzZ2VyaWNodCBNdWVuY2hlbiBIUkIgMTg2
+OTI4PG86cD48L286cD48L3NwYW4+PC9zcGFuPjwvcD48ZGl2PjxzcGFuIHN0eWxlPSJmb250LXNp
+emU6IDEwcHQ7IGZvbnQtZmFtaWx5OiBBcmlhbCwgc2Fucy1zZXJpZjsiPjxicj48L3NwYW4+PC9i
+b2R5Pg0KPC9odG1sPg0K
 
-diff --git a/include/linux/kasan.h b/include/linux/kasan.h
-index 51a8293d1af..292bd741d8d 100644
---- a/include/linux/kasan.h
-+++ b/include/linux/kasan.h
-@@ -194,7 +194,7 @@ bool __kasan_slab_pre_free(struct kmem_cache *s, void *object,
- static __always_inline bool kasan_slab_pre_free(struct kmem_cache *s,
- 						void *object)
- {
--	if (kasan_enabled())
-+	if (kasan_enabled() && kasan_shadow_initialized())
- 		return __kasan_slab_pre_free(s, object, _RET_IP_);
- 	return false;
- }
-@@ -229,7 +229,7 @@ static __always_inline bool kasan_slab_free(struct kmem_cache *s,
- 						void *object, bool init,
- 						bool still_accessible)
- {
--	if (kasan_enabled())
-+	if (kasan_enabled() && kasan_shadow_initialized())
- 		return __kasan_slab_free(s, object, init, still_accessible);
- 	return false;
- }
-@@ -237,7 +237,7 @@ static __always_inline bool kasan_slab_free(struct kmem_cache *s,
- void __kasan_kfree_large(void *ptr, unsigned long ip);
- static __always_inline void kasan_kfree_large(void *ptr)
- {
--	if (kasan_enabled())
-+	if (kasan_enabled() && kasan_shadow_initialized())
- 		__kasan_kfree_large(ptr, _RET_IP_);
- }
- 
-@@ -302,7 +302,7 @@ bool __kasan_mempool_poison_pages(struct page *page, unsigned int order,
- static __always_inline bool kasan_mempool_poison_pages(struct page *page,
- 						       unsigned int order)
- {
--	if (kasan_enabled())
-+	if (kasan_enabled() && kasan_shadow_initialized())
- 		return __kasan_mempool_poison_pages(page, order, _RET_IP_);
- 	return true;
- }
-@@ -356,7 +356,7 @@ bool __kasan_mempool_poison_object(void *ptr, unsigned long ip);
-  */
- static __always_inline bool kasan_mempool_poison_object(void *ptr)
- {
--	if (kasan_enabled())
-+	if (kasan_enabled() && kasan_shadow_initialized())
- 		return __kasan_mempool_poison_object(ptr, _RET_IP_);
- 	return true;
- }
-@@ -568,11 +568,29 @@ static inline void kasan_init_hw_tags(void) { }
- #if defined(CONFIG_KASAN_GENERIC) || defined(CONFIG_KASAN_SW_TAGS)
- 
- void kasan_populate_early_vm_area_shadow(void *start, unsigned long size);
--int kasan_populate_vmalloc(unsigned long addr, unsigned long size);
--void kasan_release_vmalloc(unsigned long start, unsigned long end,
-+
-+int __kasan_populate_vmalloc(unsigned long addr, unsigned long size);
-+static inline int kasan_populate_vmalloc(unsigned long addr, unsigned long size)
-+{
-+	if (!kasan_shadow_initialized())
-+		return 0;
-+	return __kasan_populate_vmalloc(addr, size);
-+}
-+
-+void __kasan_release_vmalloc(unsigned long start, unsigned long end,
- 			   unsigned long free_region_start,
- 			   unsigned long free_region_end,
- 			   unsigned long flags);
-+static inline void kasan_release_vmalloc(unsigned long start,
-+			   unsigned long end,
-+			   unsigned long free_region_start,
-+			   unsigned long free_region_end,
-+			   unsigned long flags)
-+{
-+	if (kasan_shadow_initialized())
-+		__kasan_release_vmalloc(start, end, free_region_start,
-+			   free_region_end, flags);
-+}
- 
- #else /* CONFIG_KASAN_GENERIC || CONFIG_KASAN_SW_TAGS */
- 
-@@ -598,7 +616,7 @@ static __always_inline void *kasan_unpoison_vmalloc(const void *start,
- 						unsigned long size,
- 						kasan_vmalloc_flags_t flags)
- {
--	if (kasan_enabled())
-+	if (kasan_enabled() && kasan_shadow_initialized())
- 		return __kasan_unpoison_vmalloc(start, size, flags);
- 	return (void *)start;
- }
-@@ -607,7 +625,7 @@ void __kasan_poison_vmalloc(const void *start, unsigned long size);
- static __always_inline void kasan_poison_vmalloc(const void *start,
- 						 unsigned long size)
- {
--	if (kasan_enabled())
-+	if (kasan_enabled() && kasan_shadow_initialized())
- 		__kasan_poison_vmalloc(start, size);
- }
- 
-diff --git a/mm/kasan/common.c b/mm/kasan/common.c
-index c3a6446404d..b561734767d 100644
---- a/mm/kasan/common.c
-+++ b/mm/kasan/common.c
-@@ -259,7 +259,7 @@ static inline void poison_slab_object(struct kmem_cache *cache, void *object,
- bool __kasan_slab_pre_free(struct kmem_cache *cache, void *object,
- 				unsigned long ip)
- {
--	if (!kasan_arch_is_ready() || is_kfence_address(object))
-+	if (is_kfence_address(object))
- 		return false;
- 	return check_slab_allocation(cache, object, ip);
- }
-@@ -267,7 +267,7 @@ bool __kasan_slab_pre_free(struct kmem_cache *cache, void *object,
- bool __kasan_slab_free(struct kmem_cache *cache, void *object, bool init,
- 		       bool still_accessible)
- {
--	if (!kasan_arch_is_ready() || is_kfence_address(object))
-+	if (is_kfence_address(object))
- 		return false;
- 
- 	poison_slab_object(cache, object, init, still_accessible);
-@@ -291,9 +291,6 @@ bool __kasan_slab_free(struct kmem_cache *cache, void *object, bool init,
- 
- static inline bool check_page_allocation(void *ptr, unsigned long ip)
- {
--	if (!kasan_arch_is_ready())
--		return false;
--
- 	if (ptr != page_address(virt_to_head_page(ptr))) {
- 		kasan_report_invalid_free(ptr, ip, KASAN_REPORT_INVALID_FREE);
- 		return true;
-@@ -520,7 +517,7 @@ bool __kasan_mempool_poison_object(void *ptr, unsigned long ip)
- 		return true;
- 	}
- 
--	if (is_kfence_address(ptr) || !kasan_arch_is_ready())
-+	if (is_kfence_address(ptr))
- 		return true;
- 
- 	slab = folio_slab(folio);
-diff --git a/mm/kasan/generic.c b/mm/kasan/generic.c
-index 03b6d322ff6..1d20b925b9d 100644
---- a/mm/kasan/generic.c
-+++ b/mm/kasan/generic.c
-@@ -176,7 +176,7 @@ static __always_inline bool check_region_inline(const void *addr,
- 						size_t size, bool write,
- 						unsigned long ret_ip)
- {
--	if (!kasan_arch_is_ready())
-+	if (!kasan_shadow_initialized())
- 		return true;
- 
- 	if (unlikely(size == 0))
-@@ -200,13 +200,10 @@ bool kasan_check_range(const void *addr, size_t size, bool write,
- 	return check_region_inline(addr, size, write, ret_ip);
- }
- 
--bool kasan_byte_accessible(const void *addr)
-+bool __kasan_byte_accessible(const void *addr)
- {
- 	s8 shadow_byte;
- 
--	if (!kasan_arch_is_ready())
--		return true;
--
- 	shadow_byte = READ_ONCE(*(s8 *)kasan_mem_to_shadow(addr));
- 
- 	return shadow_byte >= 0 && shadow_byte < KASAN_GRANULE_SIZE;
-@@ -506,9 +503,6 @@ static void release_alloc_meta(struct kasan_alloc_meta *meta)
- 
- static void release_free_meta(const void *object, struct kasan_free_meta *meta)
- {
--	if (!kasan_arch_is_ready())
--		return;
--
- 	/* Check if free meta is valid. */
- 	if (*(u8 *)kasan_mem_to_shadow(object) != KASAN_SLAB_FREE_META)
- 		return;
-@@ -573,7 +567,7 @@ void kasan_save_alloc_info(struct kmem_cache *cache, void *object, gfp_t flags)
- 	kasan_save_track(&alloc_meta->alloc_track, flags);
- }
- 
--void kasan_save_free_info(struct kmem_cache *cache, void *object)
-+void __kasan_save_free_info(struct kmem_cache *cache, void *object)
- {
- 	struct kasan_free_meta *free_meta;
- 
-diff --git a/mm/kasan/kasan.h b/mm/kasan/kasan.h
-index 129178be5e6..67a0a1095d2 100644
---- a/mm/kasan/kasan.h
-+++ b/mm/kasan/kasan.h
-@@ -398,7 +398,13 @@ depot_stack_handle_t kasan_save_stack(gfp_t flags, depot_flags_t depot_flags);
- void kasan_set_track(struct kasan_track *track, depot_stack_handle_t stack);
- void kasan_save_track(struct kasan_track *track, gfp_t flags);
- void kasan_save_alloc_info(struct kmem_cache *cache, void *object, gfp_t flags);
--void kasan_save_free_info(struct kmem_cache *cache, void *object);
-+
-+void __kasan_save_free_info(struct kmem_cache *cache, void *object);
-+static inline void kasan_save_free_info(struct kmem_cache *cache, void *object)
-+{
-+	if (kasan_enabled() && kasan_shadow_initialized())
-+		__kasan_save_free_info(cache, object);
-+}
- 
- #ifdef CONFIG_KASAN_GENERIC
- bool kasan_quarantine_put(struct kmem_cache *cache, void *object);
-@@ -499,6 +505,7 @@ static inline bool kasan_byte_accessible(const void *addr)
- 
- #else /* CONFIG_KASAN_HW_TAGS */
- 
-+void __kasan_poison(const void *addr, size_t size, u8 value, bool init);
- /**
-  * kasan_poison - mark the memory range as inaccessible
-  * @addr: range start address, must be aligned to KASAN_GRANULE_SIZE
-@@ -506,7 +513,11 @@ static inline bool kasan_byte_accessible(const void *addr)
-  * @value: value that's written to metadata for the range
-  * @init: whether to initialize the memory range (only for hardware tag-based)
-  */
--void kasan_poison(const void *addr, size_t size, u8 value, bool init);
-+static inline void kasan_poison(const void *addr, size_t size, u8 value, bool init)
-+{
-+	if (kasan_shadow_initialized())
-+		__kasan_poison(addr, size, value, init);
-+}
- 
- /**
-  * kasan_unpoison - mark the memory range as accessible
-@@ -521,12 +532,19 @@ void kasan_poison(const void *addr, size_t size, u8 value, bool init);
-  */
- void kasan_unpoison(const void *addr, size_t size, bool init);
- 
--bool kasan_byte_accessible(const void *addr);
-+bool __kasan_byte_accessible(const void *addr);
-+static inline bool kasan_byte_accessible(const void *addr)
-+{
-+	if (!kasan_shadow_initialized())
-+		return true;
-+	return __kasan_byte_accessible(addr);
-+}
- 
- #endif /* CONFIG_KASAN_HW_TAGS */
- 
- #ifdef CONFIG_KASAN_GENERIC
- 
-+void __kasan_poison_last_granule(const void *address, size_t size);
- /**
-  * kasan_poison_last_granule - mark the last granule of the memory range as
-  * inaccessible
-@@ -536,7 +554,11 @@ bool kasan_byte_accessible(const void *addr);
-  * This function is only available for the generic mode, as it's the only mode
-  * that has partially poisoned memory granules.
-  */
--void kasan_poison_last_granule(const void *address, size_t size);
-+static inline void kasan_poison_last_granule(const void *address, size_t size)
-+{
-+	if (kasan_shadow_initialized())
-+		__kasan_poison_last_granule(address, size);
-+}
- 
- #else /* CONFIG_KASAN_GENERIC */
- 
-@@ -544,12 +566,6 @@ static inline void kasan_poison_last_granule(const void *address, size_t size) {
- 
- #endif /* CONFIG_KASAN_GENERIC */
- 
--#ifndef kasan_arch_is_ready
--static inline bool kasan_arch_is_ready(void)	{ return true; }
--#elif !defined(CONFIG_KASAN_GENERIC) || !defined(CONFIG_KASAN_OUTLINE)
--#error kasan_arch_is_ready only works in KASAN generic outline mode!
--#endif
--
- #if IS_ENABLED(CONFIG_KASAN_KUNIT_TEST)
- 
- void kasan_kunit_test_suite_start(void);
-diff --git a/mm/kasan/shadow.c b/mm/kasan/shadow.c
-index d2c70cd2afb..90c508cad63 100644
---- a/mm/kasan/shadow.c
-+++ b/mm/kasan/shadow.c
-@@ -121,13 +121,10 @@ void *__hwasan_memcpy(void *dest, const void *src, ssize_t len) __alias(__asan_m
- EXPORT_SYMBOL(__hwasan_memcpy);
- #endif
- 
--void kasan_poison(const void *addr, size_t size, u8 value, bool init)
-+void __kasan_poison(const void *addr, size_t size, u8 value, bool init)
- {
- 	void *shadow_start, *shadow_end;
- 
--	if (!kasan_arch_is_ready())
--		return;
--
- 	/*
- 	 * Perform shadow offset calculation based on untagged address, as
- 	 * some of the callers (e.g. kasan_poison_new_object) pass tagged
-@@ -145,14 +142,11 @@ void kasan_poison(const void *addr, size_t size, u8 value, bool init)
- 
- 	__memset(shadow_start, value, shadow_end - shadow_start);
- }
--EXPORT_SYMBOL_GPL(kasan_poison);
-+EXPORT_SYMBOL_GPL(__kasan_poison);
- 
- #ifdef CONFIG_KASAN_GENERIC
--void kasan_poison_last_granule(const void *addr, size_t size)
-+void __kasan_poison_last_granule(const void *addr, size_t size)
- {
--	if (!kasan_arch_is_ready())
--		return;
--
- 	if (size & KASAN_GRANULE_MASK) {
- 		u8 *shadow = (u8 *)kasan_mem_to_shadow(addr + size);
- 		*shadow = size & KASAN_GRANULE_MASK;
-@@ -353,7 +347,7 @@ static int ___alloc_pages_bulk(struct page **pages, int nr_pages)
- 	return 0;
- }
- 
--static int __kasan_populate_vmalloc(unsigned long start, unsigned long end)
-+static int __kasan_populate_vmalloc_do(unsigned long start, unsigned long end)
- {
- 	unsigned long nr_pages, nr_total = PFN_UP(end - start);
- 	struct vmalloc_populate_data data;
-@@ -385,14 +379,11 @@ static int __kasan_populate_vmalloc(unsigned long start, unsigned long end)
- 	return ret;
- }
- 
--int kasan_populate_vmalloc(unsigned long addr, unsigned long size)
-+int __kasan_populate_vmalloc(unsigned long addr, unsigned long size)
- {
- 	unsigned long shadow_start, shadow_end;
- 	int ret;
- 
--	if (!kasan_arch_is_ready())
--		return 0;
--
- 	if (!is_vmalloc_or_module_addr((void *)addr))
- 		return 0;
- 
-@@ -414,7 +405,7 @@ int kasan_populate_vmalloc(unsigned long addr, unsigned long size)
- 	shadow_start = PAGE_ALIGN_DOWN(shadow_start);
- 	shadow_end = PAGE_ALIGN(shadow_end);
- 
--	ret = __kasan_populate_vmalloc(shadow_start, shadow_end);
-+	ret = __kasan_populate_vmalloc_do(shadow_start, shadow_end);
- 	if (ret)
- 		return ret;
- 
-@@ -551,7 +542,7 @@ static int kasan_depopulate_vmalloc_pte(pte_t *ptep, unsigned long addr,
-  * pages entirely covered by the free region, we will not run in to any
-  * trouble - any simultaneous allocations will be for disjoint regions.
-  */
--void kasan_release_vmalloc(unsigned long start, unsigned long end,
-+void __kasan_release_vmalloc(unsigned long start, unsigned long end,
- 			   unsigned long free_region_start,
- 			   unsigned long free_region_end,
- 			   unsigned long flags)
-@@ -560,9 +551,6 @@ void kasan_release_vmalloc(unsigned long start, unsigned long end,
- 	unsigned long region_start, region_end;
- 	unsigned long size;
- 
--	if (!kasan_arch_is_ready())
--		return;
--
- 	region_start = ALIGN(start, KASAN_MEMORY_PER_SHADOW_PAGE);
- 	region_end = ALIGN_DOWN(end, KASAN_MEMORY_PER_SHADOW_PAGE);
- 
-@@ -611,9 +599,6 @@ void *__kasan_unpoison_vmalloc(const void *start, unsigned long size,
- 	 * with setting memory tags, so the KASAN_VMALLOC_INIT flag is ignored.
- 	 */
- 
--	if (!kasan_arch_is_ready())
--		return (void *)start;
--
- 	if (!is_vmalloc_or_module_addr(start))
- 		return (void *)start;
- 
-@@ -636,9 +621,6 @@ void *__kasan_unpoison_vmalloc(const void *start, unsigned long size,
-  */
- void __kasan_poison_vmalloc(const void *start, unsigned long size)
- {
--	if (!kasan_arch_is_ready())
--		return;
--
- 	if (!is_vmalloc_or_module_addr(start))
- 		return;
- 
--- 
-2.34.1
+--_000_BL1PR11MB54004B3A847152EAD3D30DBC8951ABL1PR11MB5400namp_--
 
 
