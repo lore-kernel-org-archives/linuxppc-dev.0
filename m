@@ -1,72 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-10308-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10309-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4EE97C83F1A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jul 2025 20:56:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00DCDC83F1A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 17 Jul 2025 22:10:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bjlbT69S6z30Vn;
-	Fri, 18 Jul 2025 06:56:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752785813;
-	cv=none; b=QQ+D5W8KDRrxrVmxLeqodsSwX1WJj5qAh4+StLVZvJsgSpk0m0i+pnxoDRF3/buZIdqGhFkHX9bKx68ZHq/pJWG/W+Pbf1luR2jndFjlZ6flqaJMcjVJTmLbgYiYV2hL+/RxRwkM1DGhFy18NQrCQNk9SaDloPhpQFvByUU5G0eS1SRFCTddoTBoo8UuXEh5wCBTNmvriBcvHpFbT5rRthVEoDE50tVmfWKX/HKrdq+8MvjFch+t9XNZhDBte9Vut30LskUxBzev0+J+qgHrEHq/1E2jQnBUna+7H3qXz4TUCSJ3X3Etnq1yPDIJkmSjbgu7aWcwqkdTYv7W/XB+zA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bjnDt2Yxzz2xTh;
+	Fri, 18 Jul 2025 08:10:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1752790254;
+	cv=none; b=K90Y5Ve+RcW+hpYUssOtHnqvF29WgwCTIfOpuby70hddxQlrAxzFa9qxcSEpIbgyfExU5gR+V3JLSX5FL1S61vl8qkIDa3SICAQc4VDAK+5gRv2mwoFefQDpi/MuI/mblzmdJak2fDWxf6iO8SNagPT6HlufjDz9xemT/Kfphu/9TDi/BHw2CcYU6ByIMq2ZlmGzNl6Sk4Yye/qzMgjaPFJ3Ulr2JbdTFr3fgEBrKLnwe5tBeufKX9QLxIHYr5GJa0cwrUgk/VvweamJvERFfNt2RJoq5a+6jBetgAhZXS6Ec0MHyD7gkUf7kM/g9KqGwBPUI1YFji8zL+ElkJDBFg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1752785813; c=relaxed/relaxed;
-	bh=qok/91CpfMpYj1F1RrwvnsPP6XEZsJNQymYAjgXzrq0=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
-	 MIME-Version:Content-Type; b=FZ0XIXIZpsyh53/T5+1TTIyRgUrOilAVyPkx3vxY7KZc7fPajSQwaheGHMWzg0fU03G26dRKRZ61C0cp32o6hPkRJLqSzXnD5LHD2cFpcrK6TvFTZp9aozNFxmpffuaF2D92Pax+w0ZbIYLkmr77PiCfNGF0fNEm77zgYshcsJco+LI2AXHEugiZTuvKM4cRAXvYsy4PJjGrVZS1IYbdwYmjmbrO+L6Urw8pf89Bwws8R1ziOXy+Ds8yT+zdjuVEpHT0BC5bd467Hz9QuKXB/8KhBBKX0rJvb/idOr3k+O5prqED7Sx/OhTFPFbYjP33MwUBGoAEpLPGe3qYp044PQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rWA/cVgw; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=puranjay@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1752790254; c=relaxed/relaxed;
+	bh=LZCCFSUO+wfzHPsPwgejKoRmReB7/qEwEHJdDzPicLw=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=ESN4fABtCXC1t639+ZgRIwv+ZgJG6NZ+DW3V8wM+AbD0DP5UGMqTKuZfI8XYpnCTXrKGJxGB7nk7wMJoTOqxOcUt2cLpSm72haLvCuiyqtgQJSCZzWHAm4z+Aczo6Z6fJPzCTjEg1t8gDFaR9amf+4ELv+p6GA+eqbaYTukrvG3In7JLZrT+DPkyXHvZ6Otr3pKf4gQD69b1D1kpD7dnHJXzoTAXW+h5OMfDL6qw2XlHbD0f2sI8XXhMvQ+YnB3b7zG7GRFqNJbFp50FD5UD7f7R4t6DCldkopu8TAt9k2sMYSUcNu6oBHLZyc+JGJeDTiOAkSErhXFtL+t0r0pN2g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=JnFTsEv6; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rWA/cVgw;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=JnFTsEv6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=puranjay@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bjlbT0WTdz30TY
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2025 06:56:53 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bjnDr2Hrpz2xS2
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 18 Jul 2025 08:10:51 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id EFE8A5C59D7;
-	Thu, 17 Jul 2025 20:56:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 48843C4CEE3;
-	Thu, 17 Jul 2025 20:56:49 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1752785809;
-	bh=Ys203Svg62wgyIV0TPHIA8gLtygtPUojKJwCWhI3mMs=;
-	h=From:To:Cc:Subject:In-Reply-To:References:Date:From;
-	b=rWA/cVgwaGrm6pq4B7i4gDgcU3D87a0eBpWBu6FZZv6GNu/oXL0sn2F7la8RX9keL
-	 ZIaOeZynH3rSAnQr7/ivnd9PGS8+RxmcNv7IqrApDqvJqViLlUEF/a+vIRWMtN3L0v
-	 VM/T8+IiOeS6/oba0yONX3gEq6E5ZJHPQQf5/3VXBcXoCm4SG56nnjD0x3ygYC9uU4
-	 VqWtTn4aaJQ6x53maV01dTbDeTI94kdV875y9BOY6yvUEg6Ip8QOfCumfCnINkJwHI
-	 aJweomH1oTn2dEaoxKbr+ft7C1RdnxvFMD3+5tgWKhHpIbXdFsiO7fir+0B6ws+nS1
-	 C4NK478mZE6wA==
-From: <puranjay@kernel.org>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman
- <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Christophe
- Leroy <christophe.leroy@csgroup.eu>, Alexei Starovoitov <ast@kernel.org>,
- Daniel Borkmann <daniel@iogearbox.net>, Andrii Nakryiko
- <andrii@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, Eduard
- Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, Yonghong Song
- <yonghong.song@linux.dev>, John Fastabend <john.fastabend@gmail.com>, KP
- Singh <kpsingh@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>, Hao Luo
- <haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>, Hari Bathini
- <hbathini@linux.ibm.com>, Naveen N Rao <naveen@kernel.org>, Mykola Lysenko
- <mykolal@fb.com>, Peilin Ye <yepeilin@google.com>, Kumar Kartikeya Dwivedi
- <memxor@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- bpf@vger.kernel.org, "Paul E . McKenney" <paulmck@kernel.org>,
- lkmm@lists.linux.dev
-Subject: Re: [PATCH RESEND bpf-next 1/1] powerpc64/bpf: Add jit support for
- load_acquire and store_release
-In-Reply-To: <20250717202935.29018-2-puranjay@kernel.org>
-References: <20250717202935.29018-1-puranjay@kernel.org>
- <20250717202935.29018-2-puranjay@kernel.org>
-Date: Thu, 17 Jul 2025 20:56:45 +0000
-Message-ID: <mb61pfreuy1rm.fsf@kernel.org>
+	by sea.source.kernel.org (Postfix) with ESMTP id 3C44A43447;
+	Thu, 17 Jul 2025 22:10:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A609C4CEE3;
+	Thu, 17 Jul 2025 22:10:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+	s=korg; t=1752790249;
+	bh=vZ0u5fd3DfJ6yBk3+g+sfM/GC0NNG81eBl17aO+ZI9c=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=JnFTsEv6asV1QHvn9oyLm0adlVD8YAwUk8D9+xSBsZ/4xRhcX7l4l0qMZNDgSRPEr
+	 VDRVgiNcFppstl5irHVMQqIlu2EyZC6EiTz9tDOSSNke5t727uDO0ipCsMi5ieUTgf
+	 xIAtuMC6pkfxnueF+6ZvQa0PYivWUcYkQ1GV4da4=
+Date: Thu, 17 Jul 2025 15:10:48 -0700
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Sabyrzhan Tasbolatov <snovitoll@gmail.com>
+Cc: hca@linux.ibm.com, christophe.leroy@csgroup.eu, andreyknvl@gmail.com,
+ agordeev@linux.ibm.com, ryabinin.a.a@gmail.com, glider@google.com,
+ dvyukov@google.com, kasan-dev@googlegroups.com,
+ linux-kernel@vger.kernel.org, loongarch@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-um@lists.infradead.org,
+ linux-mm@kvack.org
+Subject: Re: [PATCH v3 01/12] lib/kasan: introduce CONFIG_ARCH_DEFER_KASAN
+ option
+Message-Id: <20250717151048.bb6124bea54a31cd2b41faaf@linux-foundation.org>
+In-Reply-To: <20250717142732.292822-2-snovitoll@gmail.com>
+References: <20250717142732.292822-1-snovitoll@gmail.com>
+	<20250717142732.292822-2-snovitoll@gmail.com>
+X-Mailer: Sylpheed 3.7.0 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,126 +70,35 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Puranjay Mohan <puranjay@kernel.org> writes:
+On Thu, 17 Jul 2025 19:27:21 +0500 Sabyrzhan Tasbolatov <snovitoll@gmail.com> wrote:
 
-Somehow the cover letter for this patch was missed, adding it here:
+> Introduce CONFIG_ARCH_DEFER_KASAN to identify architectures that need
+> to defer KASAN initialization until shadow memory is properly set up.
+> 
+> Some architectures (like PowerPC with radix MMU) need to set up their
+> shadow memory mappings before KASAN can be safely enabled, while others
+> (like s390, x86, arm) can enable KASAN much earlier or even from the
+> beginning.
+> 
+> This option allows us to:
+> 1. Use static keys only where needed (avoiding overhead)
+> 2. Use compile-time constants for arch that don't need runtime checks
+> 3. Maintain optimal performance for both scenarios
+> 
+> Architectures that need deferred KASAN should select this option.
+> Architectures that can enable KASAN early will get compile-time
+> optimizations instead of runtime checks.
 
-To test the functionality of these special instructions, a tool called
-blitmus[0] was used to convert the following baseline litmus test[1] to bpf
-programs:
+Looks nice and appears quite mature.  I'm reluctant to add it to mm.git
+during -rc6, especially given the lack of formal review and ack tags.
 
- C MP+poonceonces
+But but but, that's what the mm-new branch is for.  I guess I'll add it
+to get some additional exposure, but whether I'll advance it into
+mm-unstable/linux-next for this cycle is unclear.
 
- (*
-  * Result: Sometimes
-  *
-  * Can the counter-intuitive message-passing outcome be prevented with
-  * no ordering at all?
-  *)
-
- {}
-
- P0(int *buf, int *flag)
- {
-         WRITE_ONCE(*buf, 1);
-         WRITE_ONCE(*flag, 1);
- }
-
- P1(int *buf, int *flag)
- {
-         int r0;
-         int r1;
-
-         r0 = READ_ONCE(*flag);
-         r1 = READ_ONCE(*buf);
- }
-
- exists (1:r0=1 /\ 1:r1=0) (* Bad outcome. *)
-
-Running the generated bpf program shows that the bad outcome is possible on
-powerpc:
-
- [fedora@linux-kernel blitmus]$ sudo ./mp_poonceonces
- Starting litmus test with configuration:
-   Test: MP+poonceonces
-   Iterations: 4100
-
- Test MP+poonceonces Allowed
- Histogram (4 states)
- 21548375 :>1:r0=0; 1:r1=0;
- 301187   :>1:r0=0; 1:r1=1;
- 337147   *>1:r0=1; 1:r1=0;
- 18813291 :>1:r0=1; 1:r1=1;
- Ok
-
- Witnesses
- Positive: 337147, Negative: 40662853
- Condition exists (1:r0=1 /\ 1:r1=0) is validated
- Observation MP+poonceonces Sometimes 337147 40662853
- Time MP+poonceonces 13.48
-
- Thu Jul 17 18:12:51 UTC
-
-Now the second write and the first read is converted to store_release and
-load_acquire and it gives us the following litmus test[2]
-
- C MP+pooncerelease+poacquireonce
-
- (*
-  * Result: Never
-  *
-  * This litmus test demonstrates that smp_store_release() and
-  * smp_load_acquire() provide sufficient ordering for the message-passing
-  * pattern.
-  *)
-
- {}
-
- P0(int *buf, int *flag)
- {
-         WRITE_ONCE(*buf, 1);
-         smp_store_release(flag, 1);
- }
-
- P1(int *buf, int *flag)
- {
-         int r0;
-         int r1;
-
-         r0 = smp_load_acquire(flag);
-         r1 = READ_ONCE(*buf);
- }
-
- exists (1:r0=1 /\ 1:r1=0) (* Bad outcome. *)
-
-
-Running the generated bpf program shows that the bad outcome is *not* possible
-on powerpc with the implementation in this patch:
-
- [fedora@linux-kernel blitmus]$ sudo ./mp_pooncerelease_poacquireonce
- Starting litmus test with configuration:
-   Test: MP+pooncerelease+poacquireonce
-   Iterations: 4100
-
- Test MP+pooncerelease+poacquireonce Allowed
- Histogram (3 states)
- 21036021 :>1:r0=0; 1:r1=0;
- 14488694 :>1:r0=0; 1:r1=1;
- 5475285  :>1:r0=1; 1:r1=1;
- No
-
- Witnesses
- Positive: 0, Negative: 41000000
- Condition exists (1:r0=1 /\ 1:r1=0) is NOT validated
- Observation MP+pooncerelease+poacquireonce Never 0 41000000
- Time MP+pooncerelease+poacquireonce 13.74
-
- Thu Jul 17 18:13:40 UTC
-
-[0] https://github.com/puranjaymohan/blitmus
-[1] https://github.com/puranjaymohan/blitmus/blob/main/litmus_tests/MP%2Bpoonceonces.litmus
-[2] https://github.com/puranjaymohan/blitmus/blob/main/litmus_tests/MP%2Bpooncerelease%2Bpoacquireonce.litmus
+What do you (and others) think?
 
