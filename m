@@ -1,95 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-10434-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10435-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A78EAC87FC9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jul 2025 14:04:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47FE1C83F26
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 29 Jul 2025 17:42:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4brxsy0SdRz2yLB;
-	Wed, 30 Jul 2025 00:04:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2009::615" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753797861;
-	cv=pass; b=JKrRuaEF+PQfukUy427vTSSX3wZhktFe/BdXHomoSWjr18FShT58lJ5vcT/Qy8d0O5YwnrkvcQpDMz4OyV+Df/C9p/r1dxskhQM1wwjXAjz728kS/gdFQkfMYz7HpE1X412vPhvvzBjeg6ZppUMefGDresmXhDUlDGNmvdYlad7BKPpdxiVUVyCnLZr6hjLPf1pucZWQTyhpJNEIb6gcXFPdkB0tvXN8JUu40hnI3EGrYtwCNP6zu70RFfpir90oRH805UeNcdkOfFFFQ75mg/ZSM2pFHPOhcP1Kz+W10YdbB83+s/+U1VP/Fs4PZlwyks5D/4lb/4nebxG/qVdVEg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753797861; c=relaxed/relaxed;
-	bh=u5lfGgoFWb4/4+iV9JZkuHXLSYAa/T+6htV4L/MoZs8=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=jA2DDEEacUNsZyBXI1zngz3wIfzWcAG+s9ll5lju3YVEqBcW3sZ8+LVds/R3c5UlSSmn0bRIuikmc480JF0jbj76n5uqCrcsEQ4BStoPC1BmYSx4iQNOsH4eDpq+Xmj8hOLsIq7lnniGxZvPeJrqK13tlE1y1/Oy9tf2BEWrQLZcgez9HVLIpdX0J+WaeSnmCu9MJ08Xsn38O09DtqaVUed+bQmvVkIwQ3sR1KjbTJkAtv1o8prEczlibdDlbncvIiOa/z+x/IB/wGX4kuSPQfY/Xtl43YekwRaSqFy9MCUCX6elm4EtFxtxtG6Vj04z+xAACP7VqTScGZ2Z7m8Miw==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=MJGL0LYX; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:2009::615; helo=nam10-bn7-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bs2jy4dhJz304Z;
+	Wed, 30 Jul 2025 03:42:46 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::104a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753810966;
+	cv=none; b=js1ZwZN33/D6DxLP4lj/ox3Q0RRrEoeDNrN94PemnrPhykoOLmIGHw+S9ry5r1YO7dbFib7kB80deYOlyDgBaVCOwB1nQvDK791/72KGbP0dWouzz4DeEF5NZhLDASsOH3BfF4sqDa29ySbBn/Bys6ZWhZtWsNfSk47dp6tkHwdkmH0AlDWF+ocTPRjOdoZUiwD1gD8cCimVVgPsxMoh5kLhz9w1Jl86JdB44QRX7HMcVhd4kS9z5ALWqVcHj2eVHX0zs/2fUuxqWrfXllOiNhQ7ro6JSAYvZZPxzzxzROjSptl25mhMhGHliYPDYoeP79fyAjyy+rE0lVWmOQ3urw==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1753810966; c=relaxed/relaxed;
+	bh=28d3iRVWXUX6sIuoOntS0GSvjTzmcc+IeE+Mf6uMd/w=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=PLd2dphU9Qpv+gjtS+MV2twm8i0oJBvoTUVY403Vo9TX3RrTvZq+5Ymrlk2Oj7/EACdjUR9DCIp5lfljiF0EFpS2rHrrB5rDux3LfwxY4RYvNL6vi5+tGWFnFyc0t0I4mtyJphlClgSWnuBOAvix88oltfjN3vJ57TNzIlHE77+7q/w4pYviOj0430cXfLyvg6GSEVYj24KbtxYTetoFaB2mt4Z4vlQaoix0GM0+SPd7yi1vXw6Zu0xmhYXqRx453Czd6e9PoB9mfabokIBLTjZRFBh7Au792D8jtbOGi7SsamD495NivsjP8jiIcdYH4kNUwxBzFhGv3tLvYHlhQw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=VlMB9t0x; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::104a; helo=mail-pj1-x104a.google.com; envelope-from=3ewijaaykdjie0w95y2aa270.ya8749gjbby-z0h74efe.al7wxe.ad2@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=MJGL0LYX;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=VlMB9t0x;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:2009::615; helo=nam10-bn7-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
-Received: from NAM10-BN7-obe.outbound.protection.outlook.com (mail-bn7nam10on20615.outbound.protection.outlook.com [IPv6:2a01:111:f403:2009::615])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::104a; helo=mail-pj1-x104a.google.com; envelope-from=3ewijaaykdjie0w95y2aa270.ya8749gjbby-z0h74efe.al7wxe.ad2@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x104a.google.com (mail-pj1-x104a.google.com [IPv6:2607:f8b0:4864:20::104a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4brxsw3HRHz2xRt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2025 00:04:19 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=Q286QejTJDIXHFapfkibLNE4d0vW5g+yEXNtM7EoPxHznM6tdcrfV9yTmGPv8bbk5J90mOjfiEkTqlc88pslH1zmCXHlDwXhGdyaxL87Tf8LLCSIu/h8tqLRx9Y5hq86j5TCRSky2h+3HmvgHvQ12HSs6bKDlIhkogwMuryL4wuyGQ0lcFPNpWaaFPF/IF4Qlz+6u0zXtKes5XWtVo2YMe5aaJk8P+Fn+WF65S8kTmPD3I8O0vQp1LqMOE5RpO30vs6N04n2gpZJDrvK0Pf5+x+lNciEZDMpY0Q7+wf+MhNEbee9J8vD7z4ZgiVqYvZCDQokvuZtP+TJmJqYCKhQRg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=u5lfGgoFWb4/4+iV9JZkuHXLSYAa/T+6htV4L/MoZs8=;
- b=Jpx1eV21ynmpqWNsWbpKm3/qanQ1OiPnbRMUrrIBFhZMjMt0tdV4uqFmdzzs0cTqKeTlUfhT0Nqp0B9B1Ep0hBXyi6YdUdgzheZSQuPus2n/m4Sko18LYJqqMGS0GwLju4/jUTcbZq9mRTGvyOECzo+67EE9cN76SS2k77Adp3wwzyvnwhDFR0tATgr9aXSiB+yzrpkgzuS+2HaHlnn7OGpiafrgwHal86f9uPytR37aa4WJbCgHTKY4xPhCjRSIsTlBwPNwRA4SBiBP8rM9QgpBy+vW65pbhk1MCjxtBqL7iyid2UzcOvuInJirgXlx716iwwVxaYEOrCty7/SGQQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=u5lfGgoFWb4/4+iV9JZkuHXLSYAa/T+6htV4L/MoZs8=;
- b=MJGL0LYXiYI1W+QNgkFkOYcm2ik4hCNRzFRQXflSgzV9S5hVwPZkggteDh0oMatx00Um4H3FtoHu0rOtr6+zUtpqq4sSB5s5ONTH/nZ5j7jYSu1/RLDPbrdIK7G0J+6g5PsaQ2S+Pe49/KPDSiQz9cthnPZ6ss/PvIgoYltJEH7vrxgj6/TBfRJYmkpAZdvgbe/AAkTyv2/f2Cm82Rr4H5CGvuvgBgWhc4UIlLniKxJMmrZ3dqbWKDVtkv6pV4Y+5pnqbp7Riw17eEThCfuFBcjb1Y1d7PwG1fzrMy9aBj/AXZh02QDfSbDUkZXC0dZsyPNXmsrBvgoq/NLdeId1+w==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from CH3PR12MB8659.namprd12.prod.outlook.com (2603:10b6:610:17c::13)
- by CYYPR12MB8923.namprd12.prod.outlook.com (2603:10b6:930:bc::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.8964.24; Tue, 29 Jul
- 2025 14:03:56 +0000
-Received: from CH3PR12MB8659.namprd12.prod.outlook.com
- ([fe80::6eb6:7d37:7b4b:1732]) by CH3PR12MB8659.namprd12.prod.outlook.com
- ([fe80::6eb6:7d37:7b4b:1732%7]) with mapi id 15.20.8964.024; Tue, 29 Jul 2025
- 14:03:56 +0000
-Date: Tue, 29 Jul 2025 11:03:55 -0300
-From: Jason Gunthorpe <jgg@nvidia.com>
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: Leon Romanovsky <leon@kernel.org>,
-	Marek Szyprowski <m.szyprowski@samsung.com>,
-	Christoph Hellwig <hch@lst.de>, Jonathan Corbet <corbet@lwn.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Jason Wang <jasowang@redhat.com>,
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-	Eugenio =?utf-8?B?UMOpcmV6?= <eperezma@redhat.com>,
-	Alexander Potapenko <glider@google.com>,
-	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	=?utf-8?B?SsOpcsO0bWU=?= Glisse <jglisse@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, iommu@lists.linux.dev,
-	virtualization@lists.linux.dev, kasan-dev@googlegroups.com,
-	linux-trace-kernel@vger.kernel.org, linux-mm@kvack.org
-Subject: Re: [PATCH 0/8] dma-mapping: migrate to physical address-based API
-Message-ID: <20250729140355.GA72736@nvidia.com>
-References: <cover.1750854543.git.leon@kernel.org>
- <751e7ece-8640-4653-b308-96da6731b8e7@arm.com>
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <751e7ece-8640-4653-b308-96da6731b8e7@arm.com>
-X-ClientProxiedBy: MN2PR07CA0013.namprd07.prod.outlook.com
- (2603:10b6:208:1a0::23) To CH3PR12MB8659.namprd12.prod.outlook.com
- (2603:10b6:610:17c::13)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bs2jx2dTVz2yrT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2025 03:42:45 +1000 (AEST)
+Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-3139c0001b5so5497897a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 29 Jul 2025 10:42:44 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1753810963; x=1754415763; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:reply-to:from:to:cc:subject:date:message-id:reply-to;
+        bh=28d3iRVWXUX6sIuoOntS0GSvjTzmcc+IeE+Mf6uMd/w=;
+        b=VlMB9t0xXW/zTjRbLeNpAOE1NoTHGwVF3zAxDwmsB0v0H3wYLMQIp4cdg4Yw7aEAdo
+         24dOf2/xtF3XEPk6TlKR9SQz2TWhd15vvVyiwbcrugQjE6Lc9GtSiublK2cESV6c5xdy
+         Qb3RC8I5/v8wK1gkhZ2eF+pil79VdA63xfFGMzJkBRJy70jDCG8BvEXBsqgsnX0WW9fW
+         iwvfGuePlq8J6oGYDPyu3Po1hdjdp8O0ZRSAPHGh8uT2bRYkB2TkJ+F+Q4Iv3w+Ru/ip
+         FXsIOV2v+1VIkCE/pLzdmDRNmIbTkOsZGrOS/6Zzxwlp4yBlulkc39Tnw+HRWY30w4C0
+         RrqA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1753810963; x=1754415763;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:reply-to:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=28d3iRVWXUX6sIuoOntS0GSvjTzmcc+IeE+Mf6uMd/w=;
+        b=nnk/puKT0/k4obZkIIIIXh1+G7HmLme0qqIMWadd8Ed0Q0mC3FYT5emlAtaUR+ntJc
+         uOe+aFqv9whsnzicf6wrLImYRCSTaf2OJJuLKOxk/eP6qc4zJTtieLEKg6SXQ2z1vb7L
+         m1X31G7Q1noZoCTEtNA+yUFANHKoUuzbdXBhHVg2MRyZV/Q2K7QVBiT63lrnidxySvg7
+         HS6tyhf6/oar1V1/8d9LQUXdyoqoOjVFG4RI6zwZjXdnMDyRuU2YJY8pKrXha9yiLp7b
+         otorglfmhvQHXcSI77LUiI19et/IBK5nFjmM5ju108RS4Ec2LNwBOOrNeZyFkCooAM2t
+         2t/Q==
+X-Gm-Message-State: AOJu0YzhjTHMLnMcUk0bLQM2oEerSfo89b3agwLta4aBbWrg1Ykgiopt
+	jwW5iUk/sMAXvixpzoLJQwCwbE+/EYzgjX0I0xtBCz+SdKl1NDyPeDXSeiddre+omIJg9efUiKY
+	MjP0dmA==
+X-Google-Smtp-Source: AGHT+IGrgXqonk21Zb71xxleI4T0pEaWNxg21m5l9HHcgxwGP0sMZOCP8Yhgfitp+Fk5/XHGu56nse7Bq+I=
+X-Received: from pjsc23.prod.google.com ([2002:a17:90a:bf17:b0:2e0:915d:d594])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4ac5:b0:31f:2efe:ced3
+ with SMTP id 98e67ed59e1d1-31f5de2f623mr482833a91.5.1753810963229; Tue, 29
+ Jul 2025 10:42:43 -0700 (PDT)
+Reply-To: Sean Christopherson <seanjc@google.com>
+Date: Tue, 29 Jul 2025 10:42:33 -0700
+In-Reply-To: <20250729174238.593070-1-seanjc@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,149 +77,103 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CH3PR12MB8659:EE_|CYYPR12MB8923:EE_
-X-MS-Office365-Filtering-Correlation-Id: 321d8f59-e99e-409a-58ef-08ddcea8c21a
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|7416014|376014|1800799024;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?gBJ85slrc/H3Axac9i3cCda2aAxYQWMhciU4YT1ZSRIY3Kfj1odW5Uu/4uzZ?=
- =?us-ascii?Q?Th2nB+KKROUt3u6rz9IdwrR8/TMjCbN7YpyDFFLPyJUIALGgkA2WF7SCM8BD?=
- =?us-ascii?Q?N0j69f9ROq7UIhu1/5nfiyfke3rPQPVXm8RfwqcuZlQnbVRk8p4RUftoXwyR?=
- =?us-ascii?Q?IRdn2vASVZCKP3zaRumg1ZGu+r06zmH+q2013BUz01OCKwXVKKy+Hw8UTKOT?=
- =?us-ascii?Q?5Q/V5EJ80NxpqLH+pNIUPoyjORO40+JDgUd57m6Xr19x4x0pE4VQf7ZNc/Na?=
- =?us-ascii?Q?RdNX/bNh7T7QBRFnAPFE3kbetAvuoprNJhUeCgVjz2lCAr+hmo5oKK44/dPq?=
- =?us-ascii?Q?w+Mac16vk5mqZq0uuWaTvTIb5hu0eQ8ZEyYXqheRkategZEeVU4Y/TgvSk1G?=
- =?us-ascii?Q?PJRSItOO9GujEq6dHTURGE+HON9LT4Zu4fn3LNSRcLWMqbjYO/5LnX2clhoh?=
- =?us-ascii?Q?/j72Rj4sxB4f7ewSsdhlQ1EzVk//FhE33XrXRdmRoyX8XX5uRSzGMdz1REZs?=
- =?us-ascii?Q?THdBB3S9L7sl09+ZlZliJNC92nXYvDmWVQbyCELiPUHNZCi5CsdKm47n9Msw?=
- =?us-ascii?Q?mj0DL8V7unmIvsHOU3Rf8L2P7gxvj+7D4OUeae/2EJkdVrkCLW8ctWlCu27p?=
- =?us-ascii?Q?yTjH/vptPB4ZM2ERifpougXel9iCDO5HQKeW5JLXSocGXF0Kpcl9zTn1XyXu?=
- =?us-ascii?Q?0NO3OVL5VsNmVz6LitocZXxZ3GcVfZzX5OmOYeUVTyBLEKxpBMlAAoDQ7AtP?=
- =?us-ascii?Q?88j13QO2n/n7ixeLPN6GqN1Kh6mmstX2inBpDcXkl+RFTO8rTKsMfbafuhq9?=
- =?us-ascii?Q?lZEtQ16IZT1zMpsEB0XyrbAjfwQB72vXkE+7YhssvjGK71tvUwn9fr9UPbIi?=
- =?us-ascii?Q?1wUWlYdrOvqvpw1VOJI2xPvCwwX6+hPqMMRgnH4kDh9+dEm9KQ8x1w01Me8U?=
- =?us-ascii?Q?V5rMVNEPKHNFL6RlxRHmxGl1DQ/o4DihgXMFyLRg7FWNpGx0DkG+BibqBCFM?=
- =?us-ascii?Q?mjlFyK916g/pCunDrYOdDWxw7aJRd1H0dmBxA+lDVARx736rw9tatnN3Y2vL?=
- =?us-ascii?Q?gYc+T2mPFuqQCUeo+nGBItlQIGzdnI+qOdkm8dtrXZETDbT91oeOGpiY6wkH?=
- =?us-ascii?Q?olqsT06as2CZ+gQUhcOuXnmau812h5/MaLQcYcLMnfkitR+D3fx5PY/UR4cw?=
- =?us-ascii?Q?FtOHYqXIjjXmWbmnzTOLsL9fOeYRQP4tNVSVbRuX5mlceZ1yvqhpi2o+zsU4?=
- =?us-ascii?Q?NSjEuQpKmhPUsW+e9gLRVcWU/frzhLhgs64v87vKw2PzijOI8VdxABFtdF9c?=
- =?us-ascii?Q?Gs3xt2UETfVAgTd3/0IDhYjJvOkjUoTRxR+7Mc/1fZDkOZXgjE5zwxBVVuXk?=
- =?us-ascii?Q?FK0aY2bGBnYM8AMsJkl18BySU6wZCFMTEO9bPRke9JJi+e8I9dOmu918iAaK?=
- =?us-ascii?Q?VInu15SYAPQ=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH3PR12MB8659.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(376014)(1800799024);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?5a1dp+PcEu42Bl4LnHwXyTw4eSaLO+UzWWWpSfLrouzmGwET7/dbWIljD0mZ?=
- =?us-ascii?Q?CqPH6aXmSdGs4teQg6zaU5brTHgD7e9bNxvGw4qsJvik+a0hHu1CSkmiQrK9?=
- =?us-ascii?Q?dCUqNmWNMgFkWq4iqpZ8fjRZccNQ8/zw0B4j4CFAsDXvOVNnwOaQOoR1Er1i?=
- =?us-ascii?Q?FPnLdXahxGGUjZTAB+bBIyIxTZwLmTEO14tNkBLZafgRuWxrDDpBMVHyASfI?=
- =?us-ascii?Q?POlKLSDszgJ/TKgFiEE/9IUyT0jB0HOQd/jkioQG4gL5omeOGKXGWogZj7kO?=
- =?us-ascii?Q?QHLCRaKAMNEPptNoNC0bWMOzDk6uO+OZnsa3XuBmsWI0LDFCa/g73PhZwPBP?=
- =?us-ascii?Q?6hNCEbwD2z0DaCJnGH2xynjxVPaEPanwjZ351oTP1Wgf+SfkqiSrSQk4DMVC?=
- =?us-ascii?Q?KM76VulrzGW2+TsxyVx3/iSGNBMqWRArlIsJGPZ33EYuXvt4FuzRcB1yLNrt?=
- =?us-ascii?Q?qJAwHrQHCpoVR0VvjJBTxluNh0xUaCfAXy5vN5gQfxM9kqK7sgF18vo8VqFV?=
- =?us-ascii?Q?uPaK3RrMsYzngXpRpbKfv8EC4mGVto+EZNw6ZeFQFGBmZuOMYZ6Uo7nFzccs?=
- =?us-ascii?Q?NDthcpIoL1qEiqrY3rzI3XMatWoo4Xu01JhkZhCH9klsZJ7cWwgThyU/abq/?=
- =?us-ascii?Q?3hbIE5muaIIHLO7stJImcl6trGCdB8ISgJ1aYLredv3xfAmXVtE+1RauvVQp?=
- =?us-ascii?Q?xTMZNTzC3D3+xLl2BJF7/0MNo2d+9giIbsVEK1424l0SjAVCu/EmVPgQfve8?=
- =?us-ascii?Q?IQAIF+7/jJUCSGb5cDtEjWIfp7cBsmoTSpMbvem0oE8qml5a0SHOAIICBYiL?=
- =?us-ascii?Q?HAtZT3KrX6cr/nJrat6mOZfsylmrdwTYtg/aVg7koMsDOFJKQqWoWtOsbxXj?=
- =?us-ascii?Q?ZoPNBykCwjRDfT/ou0WgQI6Ejcisub1huUrGeqDl8carEa98BL0M1X3J3hMP?=
- =?us-ascii?Q?gUyxRYOA5Tw9FpdXhzs9lsC1hXoukq6nusIdFwiJYDVBcbtcgLUJTDMm5zuc?=
- =?us-ascii?Q?r6dzw+LaJaVy5KcJuozT7WyMinjanxiweMzTSsNyu7rbbdSltFwNpAE5Cv0W?=
- =?us-ascii?Q?r+fTNIEguGVqblJwp3NBoxjB+5s16aeB9u+MxVIzvQvdh40YVqSbqYrbSLqy?=
- =?us-ascii?Q?y9Jwm0hymchv6jQXLOInE5Bd6Cq06tuEFKMZIAmg/CamXzQV/KErVsxG1T4S?=
- =?us-ascii?Q?yHdDY6Qm9OCokTOPoLLET3C9HFn/vS0AmM1nlzq0P/9XbtEypa5XbtKzBUIp?=
- =?us-ascii?Q?8aEOprdpGrlK9Ozowi7xn8YKS1ij9Yx1h1hOFs3yAJx82IBVokA4LbZ2sZlp?=
- =?us-ascii?Q?aqI7vFFduGfhaqKFRIYasvPgkRNnj9OGKpnSvWlIsk1/QfIJM30cRl0lc2iQ?=
- =?us-ascii?Q?Id6+TNyaeEMgyxgiNR4rruaLm4i/3CPoqBCEf4ANExLAdfkYUYcRKc3bL9ef?=
- =?us-ascii?Q?02hQHm865f2g36+CMO4vy1lVqUOj6pjOaTeQ3Pq+LRRs2hc60uSoPyulLOXH?=
- =?us-ascii?Q?wAXeNeaesJNf1zN0674/HdTpKrORnwcaj9ypKitSHA1eZ1LkOfW+pUrGHDzL?=
- =?us-ascii?Q?pL70o21MA1cmbIY0/lk=3D?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 321d8f59-e99e-409a-58ef-08ddcea8c21a
-X-MS-Exchange-CrossTenant-AuthSource: CH3PR12MB8659.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Jul 2025 14:03:56.5173
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: yc8LWxbq5e0SbTKy02jNs5Q8GqwjmWV3o9MPp6uCqLldf7/dPEmD7gEtGg23bxk4
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CYYPR12MB8923
+Mime-Version: 1.0
+References: <20250729174238.593070-1-seanjc@google.com>
+X-Mailer: git-send-email 2.50.1.552.g942d659e1b-goog
+Message-ID: <20250729174238.593070-2-seanjc@google.com>
+Subject: [PATCH 1/6] KVM: s390/vfio-ap: Use kvm_is_gpa_in_memslot() instead of
+ open coded equivalent
+From: Sean Christopherson <seanjc@google.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
+	Janosch Frank <frankja@linux.ibm.com>, Claudio Imbrenda <imbrenda@linux.ibm.com>, 
+	Andy Lutomirski <luto@kernel.org>, Xin Li <xin@zytor.com>, "H. Peter Anvin" <hpa@zytor.com>, 
+	Peter Zijlstra <peterz@infradead.org>, Ingo Molnar <mingo@redhat.com>, 
+	Arnaldo Carvalho de Melo <acme@kernel.org>, Namhyung Kim <namhyung@kernel.org>, 
+	Sean Christopherson <seanjc@google.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+	Thomas Gleixner <tglx@linutronix.de>, Borislav Petkov <bp@alien8.de>, Josh Poimboeuf <jpoimboe@kernel.org>, 
+	Jarkko Sakkinen <jarkko@kernel.org>, Vitaly Kuznetsov <vkuznets@redhat.com>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, "Kirill A. Shutemov" <kas@kernel.org>, 
+	Tony Krowiak <akrowiak@linux.ibm.com>, Halil Pasic <pasic@linux.ibm.com>, 
+	Jason Herne <jjherne@linux.ibm.com>, Harald Freudenberger <freude@linux.ibm.com>, 
+	Holger Dengler <dengler@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-perf-users@vger.kernel.org, 
+	linux-sgx@vger.kernel.org, x86@kernel.org, linux-coco@lists.linux.dev, 
+	linux-s390@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-On Fri, Jul 25, 2025 at 09:05:46PM +0100, Robin Murphy wrote:
+Use kvm_is_gpa_in_memslot() to check the validity of the notification
+indicator byte address instead of open coding equivalent logic in the VFIO
+AP driver.
 
-> But given what we do already know of from decades of experience, obvious
-> question: For the tiny minority of users who know full well when they're
-> dealing with a non-page-backed physical address, what's wrong with using
-> dma_map_resource?
+Opportunistically use a dedicated wrapper that exists and is exported
+expressly for the VFIO AP module.  kvm_is_gpa_in_memslot() is generally
+unsuitable for use outside of KVM; other drivers typically shouldn't rely
+on KVM's memslots, and using the API requires kvm->srcu (or slots_lock) to
+be held for the entire duration of the usage, e.g. to avoid TOCTOU bugs.
+handle_pqap() is a bit of a special case, as it's explicitly invoked from
+KVM with kvm->srcu already held, and the VFIO AP driver is in many ways an
+extension of KVM that happens to live in a separate module.
 
-I was also pushing for this, that we would have two seperate paths:
+Providing a dedicated API for the VFIO AP driver will allow restricting
+the vast majority of generic KVM's exports to KVM submodules (e.g. to x86's
+kvm-{amd,intel}.ko vendor mdoules).
 
-- the phys_addr was guarenteed to have a KVA (and today also struct page)
-- the phys_addr is non-cachable and no KVA may exist
+No functional change intended.
 
-This is basically already the distinction today between map resource
-and map page.
+Signed-off-by: Sean Christopherson <seanjc@google.com>
+---
+ arch/s390/include/asm/kvm_host.h  | 2 ++
+ arch/s390/kvm/priv.c              | 8 ++++++++
+ drivers/s390/crypto/vfio_ap_ops.c | 2 +-
+ 3 files changed, 11 insertions(+), 1 deletion(-)
 
-The caller would have to look at what it is trying to map, do the P2P
-evaluation and then call the cachable phys or resource path(s).
+diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
+index cb89e54ada25..449bc34e7cc3 100644
+--- a/arch/s390/include/asm/kvm_host.h
++++ b/arch/s390/include/asm/kvm_host.h
+@@ -719,6 +719,8 @@ bool kvm_s390_pv_cpu_is_protected(struct kvm_vcpu *vcpu);
+ extern int kvm_s390_gisc_register(struct kvm *kvm, u32 gisc);
+ extern int kvm_s390_gisc_unregister(struct kvm *kvm, u32 gisc);
+ 
++bool kvm_s390_is_gpa_in_memslot(struct kvm *kvm, gpa_t gpa);
++
+ static inline void kvm_arch_free_memslot(struct kvm *kvm,
+ 					 struct kvm_memory_slot *slot) {}
+ static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
+diff --git a/arch/s390/kvm/priv.c b/arch/s390/kvm/priv.c
+index 9253c70897a8..7773e1e323bc 100644
+--- a/arch/s390/kvm/priv.c
++++ b/arch/s390/kvm/priv.c
+@@ -605,6 +605,14 @@ static int handle_io_inst(struct kvm_vcpu *vcpu)
+ 	}
+ }
+ 
++#if IS_ENABLED(CONFIG_VFIO_AP)
++bool kvm_s390_is_gpa_in_memslot(struct kvm *kvm, gpa_t gpa)
++{
++	return kvm_is_gpa_in_memslot(kvm, gpa);
++}
++EXPORT_SYMBOL_GPL_FOR_MODULES(kvm_s390_is_gpa_in_memslot, "vfio_ap");
++#endif
++
+ /*
+  * handle_pqap: Handling pqap interception
+  * @vcpu: the vcpu having issue the pqap instruction
+diff --git a/drivers/s390/crypto/vfio_ap_ops.c b/drivers/s390/crypto/vfio_ap_ops.c
+index 766557547f83..eb5ff49f6fe7 100644
+--- a/drivers/s390/crypto/vfio_ap_ops.c
++++ b/drivers/s390/crypto/vfio_ap_ops.c
+@@ -354,7 +354,7 @@ static int vfio_ap_validate_nib(struct kvm_vcpu *vcpu, dma_addr_t *nib)
+ 
+ 	if (!*nib)
+ 		return -EINVAL;
+-	if (kvm_is_error_hva(gfn_to_hva(vcpu->kvm, *nib >> PAGE_SHIFT)))
++	if (!kvm_s390_is_gpa_in_memslot(vcpu->kvm, *nib))
+ 		return -EINVAL;
+ 
+ 	return 0;
+-- 
+2.50.1.552.g942d659e1b-goog
 
-Leon, I think you should revive the work you had along these lines. It
-would address my concerns with the dma_ops changes too. I continue to
-think we should not push non-cachable, non-KVA MMIO down the map_page
-ops, those should use the map_resource op.
-
-> Does it make sense to try to consolidate our p2p infrastructure so
-> dma_map_resource() could return bus addresses where appropriate?
-
-For some users but not entirely :( The sg path for P2P relies on
-storing information inside the scatterlist so unmap knows what to do.
-
-Changing map_resource to return a similar flag and then having drivers
-somehow store that flag and give it back to unmap is not a trivial
-change. It would be a good API for simple drivers, and I think we
-could build such a helper calling through the new flow. But places
-like DMABUF that have more complex lists will not like it.
-
-For them we've been following the approach of BIO where the
-driver/subystem will maintain a mapping list and be aware of when the
-P2P information is changing. Then it has to do different map/unmap
-sequences based on its own existing tracking.
-
-I view this as all very low level infrastructure, I'm really hoping we
-can get an agreement with Chritain and build a scatterlist replacement
-for DMABUF that encapsulates all this away from drivers like BIO does
-for block.
-
-But we can't start that until we have a DMA API working fully for
-non-struct page P2P memory. That is being driven by this series and
-the VFIO DMABUF implementation on top of it.
-
-> Are we trying to remove struct page from the kernel altogether? 
-
-Yes, it is a very long term project being pushed along with the
-folios, memdesc conversion and so forth. It is huge, with many
-aspects, but we can start to reasonably work on parts of them
-independently.
-
-A mid-term dream is to be able to go from pin_user_pages() -> DMA
-without drivers needing to touch struct page at all. 
-
-This is a huge project on its own, and we are progressing it slowly
-"bottom up" by allowing phys_addr_t in the DMA API then we can build
-more infrastructure for subsystems to be struct-page free, culminating
-in some pin_user_phyr() and phys_addr_t bio_vec someday.
-
-Certainly a big part of this series is influenced by requirements to
-advance pin_user_pages() -> DMA, while the other part is about
-allowing P2P to work using phys_addr_t without struct page.
-
-Jason
 
