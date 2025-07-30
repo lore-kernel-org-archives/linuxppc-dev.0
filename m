@@ -1,83 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-10459-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10460-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0463C87FCC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jul 2025 13:40:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AA920C87FCC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jul 2025 13:50:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bsYJ539vqz30Vq;
-	Wed, 30 Jul 2025 23:40:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753882837;
-	cv=none; b=n60wTO8UZp000zTMzSRl1x9zqf8UAP4l6o3VEmG4AimxmFAF6PdvWWyqV9P8/bf7JmWQCml83bqTo4HNWOsZFFvp1l5Vnf3ZDjamhsykiasBOYJQNYtHzzozk48ZEgIAlmsw76pavzjcW/rZFRxUwCiMgb/5dHEAnMQYyiMHW+5hXWcFf/fKgioqXAjADM4Zxi3JxdBOUKsmEZOBK1T6Y2wlAEMGwKkjdavm8o6UzMYtXK1wiaIDB/f7WiPJyGSQJq/hsGoCGSgkiVzXaqx17tkPYZDSWOcSzADtPJXwrMRp5aKTjho2Dj7YGSGhPr6EyfjTW4hXupFGpAe0QnN8fA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bsYWf1Hy1z30Vq;
+	Wed, 30 Jul 2025 23:50:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753883438;
+	cv=none; b=T7QTNi+TprcBbdoRueCkPV37W0MbsMOpE042m4sOUjOq66N8NxNicHFQ/ltLkfgSgbC6leFnTdVk44fZRiTsbjtaDe6F0Xvpw2JVkP+zQA5DANVHQU16LI6FOHtQXBuoI+Vd8BZg7OzX2e/ycwtVftuPZQ33Ag96zuWbJFF6mfUryaMXoPd0GmnKL0smCkIS3dAkNO+v8EMA9fa8PspsjHLo0I78A8eXAINIgt1djxk+2H9oLeK74WYnyjuJVVZJh1IpoOPd/fJD2ywJW8dpXOGd8UhuLrxuufDYp33FVE/2XpFjLDI0HzPOzrR1Y6fwdmXSG7c7kH9cRPr5FGbbqA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753882837; c=relaxed/relaxed;
-	bh=DwI8HW24x7jyl46fjynmA/WxmX0LnPGEQIHuMkllTKQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JLG+S5owFR+dDTyoCMl83SjvVejcPDmZ5bmPF7JnEyfwKclrxQzDpDP6I7PhqVRWzLkt9yMBSeskKU7uRHU8iTmzZEJO9vxKrFBEiM2f6OZh7LUoq4puSn+flrpDS+1CNGpZDtUU7npmyYQbo71If4XDdnPGei71I2TRwlGwokL7QMsG9GqGFuZKrM/IOgn8UV/9OaKCLVV7rmrYlT9CDrJY0A1JHKsqgIzEFsWlo6Gj8LemGiGFGa2bxKz9xKEJe/E8a6ku8eLQjx1aYUomVOlehB+M/m3lLTeqaKHWhxe8aTEi9MhFntsBMwpb1vcHMrw6w++oDJabBYNBDOM53Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m8TgLaML; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=m8TgLaML;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bsYJ40qc5z30RK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2025 23:40:35 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 67A16A5525C;
-	Wed, 30 Jul 2025 13:40:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 640CCC4CEE7;
-	Wed, 30 Jul 2025 13:40:32 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1753882833;
-	bh=r3n99v7PlKiifLXLh9htJtFm2A7cf2OiYGh/qh9Hb1A=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=m8TgLaMLadOIyx04mZ9ZYnn4myaayZRK7kgYZVWg3h0VvggYJqipkE7m8kihbxwWL
-	 9jKp14tTw38zaqtxLOs4+wPXQpdk5H5YuytkfRtotal19ho19vtLcN8uhZvhuvLRPX
-	 42c7rY/aM1/egztvkzXplhf+9bGFcggtgtx61kTgzCaXar98rSFW3YWyXa/FQaWlYW
-	 McArBA1HJxfYyEE59+8qhXBclPjUsdyQKbgOD5cwFnbRV+ycZ6W1VlL0iyN2sxk4Qa
-	 lAa5NhJYsRATLyxRQb00fyrj5qoDoGRC6J9qWpf+W0rI4zJpZixNNNgOGnHgjjxYGp
-	 gwqKIvjy1EGBw==
-Date: Wed, 30 Jul 2025 16:40:26 +0300
-From: Leon Romanovsky <leon@kernel.org>
-To: Robin Murphy <robin.murphy@arm.com>,
-	Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Christoph Hellwig <hch@lst.de>, Jonathan Corbet <corbet@lwn.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Joerg Roedel <joro@8bytes.org>, Will Deacon <will@kernel.org>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Jason Wang <jasowang@redhat.com>,
-	Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
-	Eugenio =?iso-8859-1?Q?P=E9rez?= <eperezma@redhat.com>,
-	Alexander Potapenko <glider@google.com>,
-	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	=?iso-8859-1?B?Suly9G1l?= Glisse <jglisse@redhat.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, iommu@lists.linux.dev,
-	virtualization@lists.linux.dev, kasan-dev@googlegroups.com,
-	linux-trace-kernel@vger.kernel.org, linux-mm@kvack.org,
-	Jason Gunthorpe <jgg@ziepe.ca>
-Subject: Re: [PATCH 0/8] dma-mapping: migrate to physical address-based API
-Message-ID: <20250730134026.GQ402218@unreal>
-References: <CGME20250625131920eucas1p271b196cde042bd39ac08fb12beff5baf@eucas1p2.samsung.com>
- <cover.1750854543.git.leon@kernel.org>
- <35df6f2a-0010-41fe-b490-f52693fe4778@samsung.com>
- <20250627170213.GL17401@unreal>
- <20250630133839.GA26981@lst.de>
- <69b177dc-c149-40d3-bbde-3f6bad0efd0e@samsung.com>
- <f912c446-1ae9-4390-9c11-00dce7bf0fd3@arm.com>
+	t=1753883438; c=relaxed/relaxed;
+	bh=p08GgTAtNuoUw16P9wD9ly2Q678Qz+Rj1+xTjHzeSgg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=O6G8P0Vr+stPhGOGg8E3QPtT1Tu48YMvVrpQFEKATibe952Bv4B+naMTGtOKU0XmIDy9QXkhqsxYJTlqU5EGe6Qj4hV0Ip/RdOyOAsHFRh65RHRsjVgat8Qmk6EJw3NJoMI8BgeukfbhKt5klLGAMGRpRP2euxf0dU16Ctm5hAgC9lx5+NK8iPTixadQtQ/A0+3V3jqthCcwyHD7IEFsC/gMHYkHLp15xIuXVh73WVX49hZKVFqAmPXBO4BqlRTsSzsCFlzttrxXYOsD2mcjBLKHYYI9NIMumDxhpz3TVQG/UWn4iyHi2EehOnXVy7Bq+7Fk4Uisn5IgVND99lHLuw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bsYWd3Nhhz30RK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2025 23:50:36 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4bsY9j1CV8z9t5l;
+	Wed, 30 Jul 2025 15:35:05 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 5ImwirM9pu7i; Wed, 30 Jul 2025 15:35:05 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4bsY9G3wCmz9t9W;
+	Wed, 30 Jul 2025 15:34:42 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 80A968B76E;
+	Wed, 30 Jul 2025 15:34:42 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id QWsmRx-KqxQF; Wed, 30 Jul 2025 15:34:42 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (unknown [10.25.207.160])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 663D88B763;
+	Wed, 30 Jul 2025 15:34:42 +0200 (CEST)
+Received: from PO20335.IDSI0.si.c-s.fr (localhost [127.0.0.1])
+	by PO20335.IDSI0.si.c-s.fr (8.18.1/8.17.1) with ESMTPS id 56UDYYp8271754
+	(version=TLSv1.3 cipher=TLS_AES_256_GCM_SHA384 bits=256 verify=NOT);
+	Wed, 30 Jul 2025 15:34:34 +0200
+Received: (from chleroy@localhost)
+	by PO20335.IDSI0.si.c-s.fr (8.18.1/8.18.1/Submit) id 56UDYXEC271753;
+	Wed, 30 Jul 2025 15:34:33 +0200
+X-Authentication-Warning: PO20335.IDSI0.si.c-s.fr: chleroy set sender to christophe.leroy@csgroup.eu using -f
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Qiang Zhao <qiang.zhao@nxp.com>, Linus Walleij <linus.walleij@linaro.org>,
+        Arnd Bergmann <arnd@arndb.de>, Bartosz Golaszewski <brgl@bgdev.pl>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+        linux-kernel@vger.kernel.org, linux-gpio@vger.kernel.org,
+        Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Subject: Re: [PATCH] soc: fsl: qe: convert set_multiple() to returning an integer
+Date: Wed, 30 Jul 2025 15:34:23 +0200
+Message-ID: <175388225169.270550.11152208847309594157.b4-ty@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20250721131511.75316-1-brgl@bgdev.pl>
+References: <20250721131511.75316-1-brgl@bgdev.pl>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,89 +77,24 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <f912c446-1ae9-4390-9c11-00dce7bf0fd3@arm.com>
+Content-Type: text/plain; charset="utf-8"
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1753882464; l=399; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=HnFftf19nbxbzRIzCXYRHL3Xne0RgZpbO7Z5YU6Gs8k=; b=jgrphHn/SaT3HhwtKAqT2ZOMETfLzyu0+6ajFuPkjx8YrmtBNGsTYaWFXkKiMYa6rt0KPIVXT vpYgu7zuB3tDrpXXojgB7IzPMrUz+7j3w4Jpp/m7ofw9yl+biDU2ER6
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 
-On Wed, Jul 30, 2025 at 12:11:32PM +0100, Robin Murphy wrote:
-> On 2025-07-08 11:27 am, Marek Szyprowski wrote:
-> > On 30.06.2025 15:38, Christoph Hellwig wrote:
-> > > On Fri, Jun 27, 2025 at 08:02:13PM +0300, Leon Romanovsky wrote:
-> > > > > Thanks for this rework! I assume that the next step is to add map_phys
-> > > > > callback also to the dma_map_ops and teach various dma-mapping providers
-> > > > > to use it to avoid more phys-to-page-to-phys conversions.
-> > > > Probably Christoph will say yes, however I personally don't see any
-> > > > benefit in this. Maybe I wrong here, but all existing .map_page()
-> > > > implementation platforms don't support p2p anyway. They won't benefit
-> > > > from this such conversion.
-> > > I think that conversion should eventually happen, and rather sooner than
-> > > later.
-> > 
-> > Agreed.
-> > 
-> > Applied patches 1-7 to my dma-mapping-next branch. Let me know if one
-> > needs a stable branch with it.
-> 
-> As the maintainer of iommu-dma, please drop the iommu-dma patch because it
-> is broken. It does not in any way remove the struct page dependency from
-> iommu-dma, it merely hides it so things can crash more easily in
-> circumstances that clearly nobody's bothered to test.
-> 
-> > Leon, it would be great if You could also prepare an incremental patch
-> > adding map_phys callback to the dma_maps_ops, so the individual
-> > arch-specific dma-mapping providers can be then converted (or simplified
-> > in many cases) too.
-> 
-> Marek, I'm surprised that even you aren't seeing why that would at best be
-> pointless churn. The fundamental design of dma_map_page() operating on
-> struct page is that it sits in between alloc_pages() at the caller and
-> kmap_atomic() deep down in the DMA API implementation (which also subsumes
-> any dependencies on having a kernel virtual address at the implementation
-> end). The natural working unit for whatever replaces dma_map_page() will be
-> whatever the replacement for alloc_pages() returns, and the replacement for
-> kmap_atomic() operates on. Until that exists (and I simply cannot believe it
-> would be an unadorned physical address) there cannot be any *meaningful*
-> progress made towards removing the struct page dependency from the DMA API.
-> If there is also a goal to kill off highmem before then, then logically we
-> should just wait for that to land, then revert back to dma_map_single()
-> being the first-class interface, and dma_map_page() can turn into a trivial
-> page_to_virt() wrapper for the long tail of caller conversions.
-> 
-> Simply obfuscating the struct page dependency today by dressing it up as a
-> phys_addr_t with implicit baggage is not not in any way helpful. It only
-> makes the code harder to understand and more bug-prone. Despite the
-> disingenuous claims, it is quite blatantly the opposite of "efficient" for
-> callers to do extra work to throw away useful information with
-> page_to_phys(), and the implementation then have to re-derive that
-> information with pfn_valid()/phys_to_page().
-> 
-> And by "bug-prone" I also include greater distractions like this misguided
-> idea that the same API could somehow work for non-memory addresses too, so
-> then everyone can move on bikeshedding VFIO while overlooking the
-> fundamental flaws in the whole premise. I mean, besides all the issues I've
-> already pointed out in that regard, not least the glaring fact that it's
-> literally just a worse version of *an API we already have*, as DMA API
-> maintainer do you *really* approve of a design that depends on callers
-> abusing DMA_ATTR_SKIP_CPU_SYNC, yet will still readily blow up if they did
-> then call a dma_sync op?
 
-Robin, Marek
-
-I would like to ask you to do not drop this series and allow me to
-gradually change the code during my VFIO DMABUF adventure.
-
-The most reasonable way to prevent DMA_ATTR_SKIP_CPU_SYNC leakage is to
-introduce new DMA attribute (let's call it DMA_ATTR_MMIO for now) and
-pass it to both dma_map_phys() and dma_iova_link(). This flag will
-indicate that p2p type is PCI_P2PDMA_MAP_THRU_HOST_BRIDGE and call to
-right callbacks which will set IOMMU_MMIO flag and skip CPU sync,
-
-dma_map_phys() isn't entirely wrong, it just needs an extra tweaks.
-
-Thanks
-
+On Mon, 21 Jul 2025 15:15:11 +0200, Bartosz Golaszewski wrote:
+> The conversion to using the new GPIO line setter callbacks missed the
+> set_multiple() in this file. Convert it to using the new callback.
 > 
-> Thanks,
-> Robin.
 > 
+
+Applied, thanks!
+
+[1/1] soc: fsl: qe: convert set_multiple() to returning an integer
+      (no commit info)
+
+Best regards,
+-- 
+Christophe Leroy <christophe.leroy@csgroup.eu>
 
