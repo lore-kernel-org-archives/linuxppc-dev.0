@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-10448-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10449-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3ABCAC87FCB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jul 2025 06:20:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3E85C87FC9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jul 2025 08:20:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bsMXP0xfYz2xnM;
-	Wed, 30 Jul 2025 16:20:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bsQBt0xQyz30Vq;
+	Wed, 30 Jul 2025 18:20:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753856437;
-	cv=none; b=U163LaC97E9BoPCJzNPJIvVBtYSM0zo1PsPgVEFuLiOtFuBvjBOLJePsJzKtH071bnogc+LUvJp8gxLVDjxlg7r5rAdu4uuy8VaX94ome8PXK/lA0JMEf4x11UNvaF1BPgHhiIbF6n5Wm2+W2ZHqcTOUIKy/C+Uje9vupV3SsAgj73/OYAFjl7uyTsl/Pn4Vhbqt3xgqHA3/625KAi/1WcChh3gh0Nq9/n7ywEx16DlwgqOxG1QeuubIa5c0mPbiLKpMyLlhw2TTrMEwGFuN8IJic+hYelN8NQkHNgxztrL0QWVR3p3YYNMeAYg/4PvY5VPZBDZ7ClBHkpSl8ihhaw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753863638;
+	cv=none; b=eVCZm3TimnU/r1IGi2wq2+ATvEFtf94AWkpAj36Yfn9x890q4TzLVH9zUSX1s5Ui2KpA3hGLAXJaEx9cdFaMK0AFfVzaZmyeV+fFE5G3l53k9cyz5K3r5+VJ4l2u1v/dYo4sqRhoTBWKo8n/yvi251Muam+VfXiQLdMgY4EkyiyiaNaiImpnMY8rL5AroH5rk81kcBk/zCdD7ftWoCvbybiCK4Q/y3BkdnvRnKVpGJyWgLi5aiKPRuYIGpPz3h18J2GnYVIzImkY6OjPYlAz4/91PS2mV91hsW5+xTrID61c39GanX0WYJPzSDNssdUuFUeA6hUOj0mCSAGwB0v9pw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753856437; c=relaxed/relaxed;
-	bh=HzjFcEj11408tBrp57f55Lr96MMAjcc+JloWTuuMHnc=;
+	t=1753863638; c=relaxed/relaxed;
+	bh=wEh5R4JHim8dOzje2Cz6ScN8YVj6C+k6f02MUhMEijg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jJjzmZGs0pWyCvxkKFoGCQYihzZ2PErYdjEF/nqIsDvhXB+/vzEfwaf23GCTMKboiB2BuMp+WyPLEjPnKlEDVc32rolzxSsTNGIzKy5zICRPELXR+MITFwF/IcitAisDhYVL+AD80T9vECUR0fhJXiY0c+LE/VWm7hjMe2+epbzfE1KrbC/njBjM3/PzStOOQhAicNEcWSbWml7QGHJFxUHoPD8Jg5FJxGhnDQ4T73PzphmPsn13W5Sxhrdk/JQdjcXKkl0xquD94EPaNG2I4S6OvOV3kM24pBGEghScMAMgfCXghkZOxmqNse9ipNqGOww63+T/Hvv3j3nDH21juw==
+	 In-Reply-To:Content-Type; b=I7ebNduM05yW+MbfSfALJDICnaXUfoj4LTrXerL9QJat/pB0blRvcEzDp+kGa9VbxZJ+JBzutWs2Gz9oxLiYhsprvSW/UQmKTFIJHp5kzgHnTZsCwiRu+3g7Nr+QM2abEDXBa1aOGQod1xWclgt0oCqkwLuFn0EMet5tIzKzGKYXvk3bKj7IWoR5ldbKsiqDUgANCY3dgyG9wQukTyx1vZOw0ylMInYsfP9yWAoubfkbHqRaGz8FkAZFHU5jz+WzMAght1FMQTygYlK0c5Vah1mjk9JtraYpF+JV56YQUz91bOvfgqkR3b4JlFajnmqdh0bBJKFKj7NjB0bwXqVaqg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bsMXN3GhHz2xlM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2025 16:20:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bsQBs1cKjz2yGf
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2025 18:20:35 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4bsMNp07k8z9sWd;
-	Wed, 30 Jul 2025 08:14:02 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4bsN6x3ypFz9t9W;
+	Wed, 30 Jul 2025 08:47:05 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id w5y7WMXPOvjy; Wed, 30 Jul 2025 08:14:01 +0200 (CEST)
+	with ESMTP id DUXy95aT7_bY; Wed, 30 Jul 2025 08:47:05 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4bsMNn674Yz9sWb;
-	Wed, 30 Jul 2025 08:14:01 +0200 (CEST)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4bsN6D4PRmz9tC6;
+	Wed, 30 Jul 2025 08:46:28 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id C64558B76C;
-	Wed, 30 Jul 2025 08:14:01 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9260C8B76C;
+	Wed, 30 Jul 2025 08:46:28 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 8syPEqNjGyEp; Wed, 30 Jul 2025 08:14:01 +0200 (CEST)
+	with ESMTP id 7zrCXI7WVVQW; Wed, 30 Jul 2025 08:46:28 +0200 (CEST)
 Received: from [10.25.207.160] (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9EAEE8B763;
-	Wed, 30 Jul 2025 08:14:01 +0200 (CEST)
-Message-ID: <62aa5231-ed31-43e2-84b7-d6b6ec86e78d@csgroup.eu>
-Date: Wed, 30 Jul 2025 08:14:01 +0200
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 719588B763;
+	Wed, 30 Jul 2025 08:46:28 +0200 (CEST)
+Message-ID: <7bba99d8-b171-4ac1-a33c-4c086f3684fd@csgroup.eu>
+Date: Wed, 30 Jul 2025 08:46:28 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,95 +59,83 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/xmon: replace sizeof calculations with ARRAY_SIZE
- macro
-To: Ruben Wauters <rubenru09@aol.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- kernel-janitors@vger.kernel.org
-References: <20250719225225.2132-2-rubenru09.ref@aol.com>
- <20250719225225.2132-2-rubenru09@aol.com>
+Subject: Re: [PATCH] powerpc/qspinlock: Add spinlock contention tracepoint
+To: "Nysal Jan K.A." <nysal@linux.ibm.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
+ <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org
+References: <20250725081432.1254986-1-nysal@linux.ibm.com>
 Content-Language: fr-FR
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <20250719225225.2132-2-rubenru09@aol.com>
+In-Reply-To: <20250725081432.1254986-1-nysal@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 20/07/2025 à 00:43, Ruben Wauters a écrit :
-> [Vous ne recevez pas souvent de courriers de rubenru09@aol.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
+Le 25/07/2025 à 10:14, Nysal Jan K.A. a écrit :
+> Add a lock contention tracepoint in the queued spinlock slowpath.
+> Also add the __lockfunc annotation so that in_lock_functions()
+> works as expected.
 > 
-> The calculations for operand/opcode/macro numbers are done in an
-> identical manner to the already existing ARRAY_SIZE macro in
-> linux/array_size.h
-> 
-> This patch replaces the sizeof calculations with the macro to make the
-> code cleaner and more immediately obvious what it is doing.
-> 
-> Signed-off-by: Ruben Wauters <rubenru09@aol.com>
+> Signed-off-by: Nysal Jan K.A. <nysal@linux.ibm.com>
 > ---
->   arch/powerpc/xmon/ppc-opc.c | 16 ++++++----------
+>   arch/powerpc/lib/qspinlock.c | 13 ++++++++-----
+>   1 file changed, 8 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/lib/qspinlock.c b/arch/powerpc/lib/qspinlock.c
+> index bcc7e4dff8c3..622e7f45c2ce 100644
+> --- a/arch/powerpc/lib/qspinlock.c
+> +++ b/arch/powerpc/lib/qspinlock.c
+> @@ -9,6 +9,7 @@
+>   #include <linux/sched/clock.h>
+>   #include <asm/qspinlock.h>
+>   #include <asm/paravirt.h>
+> +#include <trace/events/lock.h>
+>   
+>   #define MAX_NODES	4
+>   
+> @@ -708,8 +709,9 @@ static __always_inline void queued_spin_lock_mcs_queue(struct qspinlock *lock, b
+>   	qnodesp->count--;
+>   }
+>   
+> -void queued_spin_lock_slowpath(struct qspinlock *lock)
+> +void __lockfunc queued_spin_lock_slowpath(struct qspinlock *lock)
+>   {
+> +	trace_contention_begin(lock, LCB_F_SPIN);
+>   	/*
+>   	 * This looks funny, but it induces the compiler to inline both
+>   	 * sides of the branch rather than share code as when the condition
+> @@ -718,16 +720,17 @@ void queued_spin_lock_slowpath(struct qspinlock *lock)
+>   	if (IS_ENABLED(CONFIG_PARAVIRT_SPINLOCKS) && is_shared_processor()) {
+>   		if (try_to_steal_lock(lock, true)) {
+>   			spec_barrier();
+> -			return;
+> +		} else {
+> +			queued_spin_lock_mcs_queue(lock, true);
 
-This file is mostly taken from binutils, refer commit 08d96e0b127e 
-("powerpc/xmon: Apply binutils changes to upgrade disassembly").
+If I read correctly, now all this is single line so you have to drop the 
+braces , see 
+https://docs.kernel.org/process/coding-style.html#placing-braces-and-spaces
 
-I think your change should be done in binutils then backported to the 
-kernel. The more we diverge from binutils the worse it is.
+>   		}
+> -		queued_spin_lock_mcs_queue(lock, true);
+>   	} else {
+>   		if (try_to_steal_lock(lock, false)) {
+>   			spec_barrier();
+> -			return;
+> +		} else {
+> +			queued_spin_lock_mcs_queue(lock, false);
+>   		}
 
-Christophe
+Same here.
 
-
->   1 file changed, 6 insertions(+), 10 deletions(-)
-> 
-> diff --git a/arch/powerpc/xmon/ppc-opc.c b/arch/powerpc/xmon/ppc-opc.c
-> index 0774d711453e..de9b4236728c 100644
-> --- a/arch/powerpc/xmon/ppc-opc.c
-> +++ b/arch/powerpc/xmon/ppc-opc.c
-> @@ -954,8 +954,7 @@ const struct powerpc_operand powerpc_operands[] =
->     { 0xff, 11, NULL, NULL, PPC_OPERAND_SIGNOPT },
->   };
-> 
-> -const unsigned int num_powerpc_operands = (sizeof (powerpc_operands)
-> -                                          / sizeof (powerpc_operands[0]));
-> +const unsigned int num_powerpc_operands = ARRAY_SIZE(powerpc_operands);
-> 
->   /* The functions used to insert and extract complicated operands.  */
-> 
-> @@ -6968,9 +6967,8 @@ const struct powerpc_opcode powerpc_opcodes[] = {
->   {"fcfidu.",    XRC(63,974,1),  XRA_MASK, POWER7|PPCA2, PPCVLE,         {FRT, FRB}},
->   };
-> 
-> -const int powerpc_num_opcodes =
-> -  sizeof (powerpc_opcodes) / sizeof (powerpc_opcodes[0]);
-> -
-> +const int powerpc_num_opcodes = ARRAY_SIZE(powerpc_opcodes);
-> +
->   /* The VLE opcode table.
-> 
->      The format of this opcode table is the same as the main opcode table.  */
-> @@ -7207,9 +7205,8 @@ const struct powerpc_opcode vle_opcodes[] = {
->   {"se_bl",      BD8(58,0,1),    BD8_MASK,       PPCVLE, 0,              {B8}},
->   };
-> 
-> -const int vle_num_opcodes =
-> -  sizeof (vle_opcodes) / sizeof (vle_opcodes[0]);
-> -
-> +const int vle_num_opcodes = ARRAY_SIZE(vle_opcodes);
-> +
->   /* The macro table.  This is only used by the assembler.  */
-> 
->   /* The expressions of the form (-x ! 31) & (x | 31) have the value 0
-> @@ -7276,5 +7273,4 @@ const struct powerpc_macro powerpc_macros[] = {
->   {"e_clrlslwi",4, PPCVLE, "e_rlwinm %0,%1,%3,(%2)-(%3),31-(%3)"},
->   };
-> 
-> -const int powerpc_num_macros =
-> -  sizeof (powerpc_macros) / sizeof (powerpc_macros[0]);
-> +const int powerpc_num_macros = ARRAY_SIZE(powerpc_macros);
-> --
-> 2.49.1
-> 
+> -		queued_spin_lock_mcs_queue(lock, false);
+>   	}
+> +	trace_contention_end(lock, 0);
+>   }
+>   EXPORT_SYMBOL(queued_spin_lock_slowpath);
+>   
 
 
