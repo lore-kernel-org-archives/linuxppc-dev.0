@@ -1,44 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-10462-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10463-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 390D7C83F26
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jul 2025 13:50:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7C23C87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jul 2025 14:25:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bsYWx6d4rz3blH;
-	Wed, 30 Jul 2025 23:50:53 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.133
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753883453;
-	cv=none; b=azE2DBAf7JCfr8rmYoFrJV1eB7xQHw5vT9QKc4WWnOjMWkWCiQA0uo8sdYChBLVWHkfVo6+PHBxsiRX9PhcZk4OTgviTLWY6OpeztSWNwBQN93KXurx4YqQyABb4nIemvE5OsZ5MVjXlg/lpwjCg17c+xixDROz5loai0syjuVRqmCROXA3yhY37EgJETMQXWQuAwU50aWQxImFH7YUUfSpwRlLclpNNL00lgH9fubdVja1cYPttzVPUuBxkbBzSsq7urWWAGf/nhuqZLIpXaxF5cKZxfRwK2QGL/kQb1mK1BUZf0CfWGAav0jdG6oRUPhfnSvcJMhwPxjhMzKxj2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bsZHt0xH3z30Vq;
+	Thu, 31 Jul 2025 00:25:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753872417;
+	cv=none; b=bjoEbObpkpuMGzCnU9rQ8P70nxcMTkzN09biDRuIxcSTAwgO32Zz2mMn+nm+1jOcwYD4nUKQxLMx1j4SFx7uuNQXslr98/V2m3pRIrI994VGW1PExxrXXS9ZPiiC9nmfbWzDVVkZa03v51b90k1emKP/pWNdCevFep/ppi2zgGRWOF73KCBf+WIg/8jZTOpnnbd+q+CUhpM8RWlOrCBByECYVBpnMquY5LRzxKYPhpNITUIRpulgR1eDvqHb2Fbu7H3dF9kMmbG3hVq4a/FjBJMBjB/WysdwqedQ3GrYPFtcj08qRZ6Ayk6Djev+ODgXN4tun6veBMomyPIdf6YTMg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753883453; c=relaxed/relaxed;
-	bh=1MpGugib20n3vs7zkXtgRFQ9xp4jr9eeh6RMYkJ++vU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=mutXLtKCT0e5polPscRR3QnIHT/dCYEuqwcP0R5bkO1wlu4kk8ewXtlngQo5evi+ntVVVyHbtfKaBQ+6C3GsG4PGKfr4vvhbwsR0FDXPhOPBhoiAwys05YPypyVzM9Ctwec7fnc7UpY+xh0Hp8SP36xOHPp0T4I1yOWGZwUbmwDL9ZZZpPZqlnFa1acPcavT3ObxcYRbnEh1f+PI+cC7ILth0t+TxAWP9jh8lGbatV7SKqN/u6g+nniWIRU+HVjzK4eS4IOzv5JVGXPxYX0Oq8yuKZaZBpIBzUGr1d9X/PP8RlCyF85BODDwBXeHNB+7hoIBG4aIEMu45h30xOKDnw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=ZRkAWJoR; dkim-atps=neutral; spf=pass (client-ip=115.124.30.133; helo=out30-133.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+	t=1753872417; c=relaxed/relaxed;
+	bh=1z1uP49klDvnz1PCnlN/PgZalSHcJuI+oDjWq743grk=;
+	h=MIME-Version:Date:From:To:Cc:Subject:In-Reply-To:References:
+	 Message-ID:Content-Type; b=MNOMFyEm5oIMpIk3FcJd28rroLZFWEmDoJ2Lcrz91S7+2Br73pBLSgYukXV3fB8CE6Y8VsEKFjPIW6xKsovT5+mw8uNWukMNFmPtl3XRAAYkBtmVKET21QHJj+Sm8UzvLO+oqMVFAiTDML4Uem8jpFV5+uOtFlxJu9O+UsqNitHWvDGrseuNbCo9NXQ2fk2zECMdiPc+vh4ZUzB05mS4ujL5sHBOOyCMaOGdBp+KUxH92gGEGZFcfP5xLKBefqy3CQsaDV31QrORkQaVaTKoLdNIHmK4p8dgzPDa1Ka+hV/CKDKkNVGzGaAqrqWmh6UqGjRtMzF1hb5vb7k6iPgs2g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XiOzldYo; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=ZRkAWJoR;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XiOzldYo;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.133; helo=out30-133.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-133.freemail.mail.aliyun.com (out30-133.freemail.mail.aliyun.com [115.124.30.133])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=samir@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bsYWw22x3z30RK
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2025 23:50:50 +1000 (AEST)
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1753883446; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
-	bh=1MpGugib20n3vs7zkXtgRFQ9xp4jr9eeh6RMYkJ++vU=;
-	b=ZRkAWJoRR/i2jTyiRsGwEt5QE/bvoo4jwJo4m5uLcV6cr1bEy5R9z1uHEXa7/FVKM2zH63ZzmrT8x5YWMsMGUA5cGCKtFqlR5Fx5Gd9KSIU43KoE0EXeDKkhXFnVbvI3K9ORlHH73AZmr/boX0oqB0mDkXivrnNV+RuTeFzMCZQ=
-Received: from 30.246.181.19(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0WkV4r6F_1753883440 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Wed, 30 Jul 2025 21:50:41 +0800
-Message-ID: <a0839ff9-ea8d-44b9-8289-fcd5039e9263@linux.alibaba.com>
-Date: Wed, 30 Jul 2025 21:50:39 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bsTRh11X5z3091
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2025 20:46:55 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 56U0IOuf008962;
+	Wed, 30 Jul 2025 10:46:41 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=1z1uP4
+	9klDvnz1PCnlN/PgZalSHcJuI+oDjWq743grk=; b=XiOzldYoCf7A3Y44MCT27m
+	q8MUJmJXEz8QKOrk4fVIFXJrt6sCaw7xlpgKe+qQIaezo/h7yiirJTYhD3UBPKKX
+	2akX51QKbKS71bZL3ePqduuhsKQJ0Y5H+kilMUXqdo0QcmC8us7NmZbJwbm/16mY
+	qYyvKE6X7H/VXiDp84D96bcqAIXIxjSxf9bYh+Bj3MmIBcX8Ho1ZTTRdS+U04LOD
+	xiccWI1OOnA6Ulg0bIqGCNcMr/FfLjHAoH+jx3luD1eERHxDzsNWRHs/ANdijN6v
+	6AuLMnwShFHy7sJ3mHeX0j9pzF/xMZgvhPC8uerSlbbupEPrpnEVd9M/wm7S5F+w
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 484qcg45c6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Jul 2025 10:46:40 +0000 (GMT)
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 56UAkeDC013479;
+	Wed, 30 Jul 2025 10:46:40 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 484qcg45c1-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Jul 2025 10:46:40 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 56U6ZGwD016406;
+	Wed, 30 Jul 2025 10:46:39 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 485aumpvgu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 30 Jul 2025 10:46:39 +0000
+Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 56UAkcHF9438402
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 30 Jul 2025 10:46:38 GMT
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0C1A858063;
+	Wed, 30 Jul 2025 10:46:38 +0000 (GMT)
+Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 514A358059;
+	Wed, 30 Jul 2025 10:46:37 +0000 (GMT)
+Received: from ltc.linux.ibm.com (unknown [9.5.196.140])
+	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 30 Jul 2025 10:46:37 +0000 (GMT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -52,318 +85,199 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3] vmcoreinfo: Track and log recoverable hardware errors
-To: Breno Leitao <leitao@debian.org>
-Cc: Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
- "Rafael J. Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
- James Morse <james.morse@arm.com>, Robert Moore <robert.moore@intel.com>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Hanjun Guo <guohanjun@huawei.com>,
- Mauro Carvalho Chehab <mchehab@kernel.org>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
- linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
- acpica-devel@lists.linux.dev, osandov@osandov.com, konrad.wilk@oracle.com,
- linux-edac@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-pci@vger.kernel.org, kernel-team@meta.com
-References: <20250722-vmcore_hw_error-v3-1-ff0683fc1f17@debian.org>
- <7ce9731a-b212-4e27-8809-0559eb36c5f2@linux.alibaba.com>
- <4qh2wbcbzdajh2tvki26qe4tqjazmyvbn7v7aqqhkxpitdrexo@ucch4ppo7i4e>
- <fdb5dced-ea5a-48b8-bbb4-fc3ade7f3df8@linux.alibaba.com>
- <ldlansfiesfxf4a6dzp5z2etquz5jgiq6ttx3al6q7sesgros6@xh4lkevbzsow>
- <4ef01be1-44b2-4bf5-afec-a90d4f71e955@linux.alibaba.com>
- <2a7ok3hdq3hmz45fzosd5vve4qpn6zy5uoogg33warsekigazu@wgfi7qsg5ixo>
- <a87c5e74-082f-4be6-bbfd-4867bf72ddcc@linux.alibaba.com>
- <zc4jm3hwvtwo5y2knk2bqzwmpf7ma7bdzs6uv2osavzcdew3nk@lfjrlp6sr7zz>
-From: Shuai Xue <xueshuai@linux.alibaba.com>
-In-Reply-To: <zc4jm3hwvtwo5y2knk2bqzwmpf7ma7bdzs6uv2osavzcdew3nk@lfjrlp6sr7zz>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Date: Wed, 30 Jul 2025 16:16:36 +0530
+From: samir <samir@linux.ibm.com>
+To: "Nysal Jan K.A." <nysal@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman
+ <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy
+ <christophe.leroy@csgroup.eu>,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/qspinlock: Add spinlock contention tracepoint
+In-Reply-To: <20250725081432.1254986-1-nysal@linux.ibm.com>
+References: <20250725081432.1254986-1-nysal@linux.ibm.com>
+Message-ID: <7147ea4e429326e76723fd788e44b6f4@linux.ibm.com>
+X-Sender: samir@linux.ibm.com
+Content-Type: text/plain; charset=UTF-8;
+ format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNzMwMDA3NiBTYWx0ZWRfXwAX79tK09qbW
+ 5e5+oSGa2/Yw4n2KarCQ2xuyj44KEaALdhUff2413+RkR/1qQKAkYCiAm491OwuxhY6epA+9nWV
+ H7CjqHh+Tryl4dZs/jnNSJg+N6sZuixl/a3F+YWi6cu56RX3HYiPQedJqIsqB7ys47rEStT1zPP
+ TY5oQD5lMzE0OQVUePwwKQBwFUrPgBnpVH6deRpOmtRSB/3lO3X/HaNVPtgB0Aw980rkAi/6cr1
+ 93N/Ke8hEHo0ILd8ZchT/azySbG/Ekgj7vuKTlvyvLRLEs5QVRK8mAAxqT3QSuoXJu3owE/BE0o
+ TgQq/k+RZ1Mp0Rep3INZNSF3Od+0J9nI7IxW7srNMD6Kn3GcUHgfL5WA9YTuYr/OoTipauEeDzc
+ 6LR1KfBoF2AAOHeQe8NYTceIQw1s8l3EmfXVw0XSAxWcENDJL9gDzDtzhNoM2dYDjQSKxXF/
+X-Proofpoint-ORIG-GUID: nqb4w52MkUjpp6xb-tZ_24uc6Iw1NTz6
+X-Authority-Analysis: v=2.4 cv=Lp2Symdc c=1 sm=1 tr=0 ts=6889f810 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=Wb1JkmetP80A:10 a=NEAV23lmAAAA:8 a=VnNF1IyMAAAA:8
+ a=hfXmp_HCLgfKRUNig1YA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: uj1zfZhl9W3Qyuk1dGZIlUEWUTBXsx9D
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-07-30_04,2025-07-30_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 bulkscore=0 impostorscore=0 mlxscore=0 priorityscore=1501
+ adultscore=0 clxscore=1011 lowpriorityscore=0 malwarescore=0 suspectscore=0
+ mlxlogscore=999 spamscore=0 classifier=spam authscore=0 authtc=n/a authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2505280000
+ definitions=main-2507300076
 
+On 2025-07-25 13:44, Nysal Jan K.A. wrote:
+> Add a lock contention tracepoint in the queued spinlock slowpath.
+> Also add the __lockfunc annotation so that in_lock_functions()
+> works as expected.
+> 
+> Signed-off-by: Nysal Jan K.A. <nysal@linux.ibm.com>
+> ---
+>  arch/powerpc/lib/qspinlock.c | 13 ++++++++-----
+>  1 file changed, 8 insertions(+), 5 deletions(-)
+> 
+> diff --git a/arch/powerpc/lib/qspinlock.c 
+> b/arch/powerpc/lib/qspinlock.c
+> index bcc7e4dff8c3..622e7f45c2ce 100644
+> --- a/arch/powerpc/lib/qspinlock.c
+> +++ b/arch/powerpc/lib/qspinlock.c
+> @@ -9,6 +9,7 @@
+>  #include <linux/sched/clock.h>
+>  #include <asm/qspinlock.h>
+>  #include <asm/paravirt.h>
+> +#include <trace/events/lock.h>
+> 
+>  #define MAX_NODES	4
+> 
+> @@ -708,8 +709,9 @@ static __always_inline void
+> queued_spin_lock_mcs_queue(struct qspinlock *lock, b
+>  	qnodesp->count--;
+>  }
+> 
+> -void queued_spin_lock_slowpath(struct qspinlock *lock)
+> +void __lockfunc queued_spin_lock_slowpath(struct qspinlock *lock)
+>  {
+> +	trace_contention_begin(lock, LCB_F_SPIN);
+>  	/*
+>  	 * This looks funny, but it induces the compiler to inline both
+>  	 * sides of the branch rather than share code as when the condition
+> @@ -718,16 +720,17 @@ void queued_spin_lock_slowpath(struct qspinlock 
+> *lock)
+>  	if (IS_ENABLED(CONFIG_PARAVIRT_SPINLOCKS) && is_shared_processor()) {
+>  		if (try_to_steal_lock(lock, true)) {
+>  			spec_barrier();
+> -			return;
+> +		} else {
+> +			queued_spin_lock_mcs_queue(lock, true);
+>  		}
+> -		queued_spin_lock_mcs_queue(lock, true);
+>  	} else {
+>  		if (try_to_steal_lock(lock, false)) {
+>  			spec_barrier();
+> -			return;
+> +		} else {
+> +			queued_spin_lock_mcs_queue(lock, false);
+>  		}
+> -		queued_spin_lock_mcs_queue(lock, false);
+>  	}
+> +	trace_contention_end(lock, 0);
+>  }
+>  EXPORT_SYMBOL(queued_spin_lock_slowpath);
 
+Hello,
 
-在 2025/7/30 21:11, Breno Leitao 写道:
-> Hello Shuai,
-> 
-> On Wed, Jul 30, 2025 at 10:13:13AM +0800, Shuai Xue wrote:
->> In ghes_log_hwerr(), you're counting both CPER_SEV_CORRECTED and
->> CPER_SEV_RECOVERABLE errors:
-> 
-> Thanks. I was reading this code a bit more, and I want to make sure my
-> understanding is correct, giving I was confused about CORRECTED and
-> RECOVERABLE errors.
-> 
-> CPER_SEV_CORRECTED means it is corrected in the background, and the OS
-> was not even notified about it. That includes 1-bit ECC error.
+I have verified the patch with the latest upstream Linux kernel, and 
+here are my findings:
 
-Not quite correct. From ACPI spec:
+———Kernel Version———
+6.16.0-rc7-160000.11-default+
+———perf --version———
+perf version 6.16.rc7.g5f33ebd2018c
 
-     > A corrected error is a hardware error condition that has been
-     > corrected by the hardware or by the firmware by the time the OSPM is
-     > notified about the existence of the error condition.
+To test this patch, I used the Lockstorm benchmark, which rigorously 
+exercises spinlocks from kernel space.
 
-For example, 1-bit ECC errors can be reported via CMCI interrupt when
-the threshold of correctable errors exceeds the desired limit. The Linux
-GHES driver then initiates kernel actions like soft-offlining pages.
+Benchmark repository: https://github.com/lop-devops/lockstorm
+To capture all events related to the Lockstorm benchmark, I used the 
+following command:
+cmd: perf lock record -a insmod lockstorm.ko
+After generating the perf.data, I analyzed the results using:
+cmd: perf lock contention -a -i perf.data
 
-> THose are not the errors we are interested in, since they are irrelavant
-> to the OS.
-> 
-> If that is true, then I might not want count CPER_SEV_CORRECTED errors
-> at all, but only CPER_SEV_RECOVERABLE.
+————Logs————
+contended   total wait     max wait     avg wait         type   caller
 
-Yes, that's the right approach. Hardware corrects CE errors and software
-can continue running without intervention. Since HWERR_RECOV_MCE only
-records uncorrected errors, focusing on CPER_SEV_RECOVERABLE is more
-appropriate for crash correlation analysis.
+    6187241     12.50 m       2.30 ms    121.22 us     spinlock   
+kthread+0x160
+         78      8.23 ms    209.87 us    105.47 us     rwlock:W   
+do_exit+0x378
+         71      7.97 ms    208.07 us    112.24 us     spinlock   
+do_exit+0x378
+         68      4.18 ms    210.04 us     61.43 us     rwlock:W   
+release_task+0xe0
+         63      3.96 ms    204.02 us     62.90 us     spinlock   
+release_task+0xe0
+        115    477.15 us     19.69 us      4.15 us     spinlock   
+rcu_report_qs_rdp+0x40
+        250    437.34 us      5.34 us      1.75 us     spinlock   
+raw_spin_rq_lock_nested+0x24
+         32    156.32 us     13.56 us      4.88 us     spinlock   
+cgroup_exit+0x34
+         19     88.12 us     12.20 us      4.64 us     spinlock   
+exit_fs+0x44
+         12     23.25 us      3.09 us      1.94 us     spinlock   
+lock_hrtimer_base+0x4c
+          1     18.83 us     18.83 us     18.83 us      rwsem:R   
+btrfs_tree_read_lock_nested+0x38
+          1     17.84 us     17.84 us     17.84 us      rwsem:W   
+btrfs_tree_lock_nested+0x38
+         10     15.75 us      5.72 us      1.58 us     spinlock   
+raw_spin_rq_lock_nested+0x24
+          5     15.08 us      5.59 us      3.02 us     spinlock   
+mix_interrupt_randomness+0xb4
+          2     12.78 us      9.50 us      4.26 us     spinlock   
+raw_spin_rq_lock_nested+0x24
+          1     11.13 us     11.13 us     11.13 us     spinlock   
+__queue_work+0x338
+          3     10.79 us      7.04 us      3.60 us     spinlock   
+raw_spin_rq_lock_nested+0x24
+          3      8.17 us      4.58 us      2.72 us     spinlock   
+raw_spin_rq_lock_nested+0x24
+          3      7.99 us      3.13 us      2.66 us     spinlock   
+lock_hrtimer_base+0x4c
+          2      6.66 us      4.57 us      3.33 us     spinlock   
+free_pcppages_bulk+0x50
+          3      5.34 us      2.19 us      1.78 us     spinlock   
+ibmvscsi_handle_crq+0x1e4
+          2      3.71 us      2.32 us      1.85 us     spinlock   
+__hrtimer_run_queues+0x1b8
+          2      2.98 us      2.19 us      1.49 us     spinlock   
+raw_spin_rq_lock_nested+0x24
+          1      2.85 us      2.85 us      2.85 us     spinlock   
+raw_spin_rq_lock_nested+0x24
+          2      2.15 us      1.09 us      1.07 us     spinlock   
+raw_spin_rq_lock_nested+0x24
+          2      2.06 us      1.06 us      1.03 us     spinlock   
+raw_spin_rq_lock_nested+0x24
+          1      1.69 us      1.69 us      1.69 us     spinlock   
+raw_spin_rq_lock_nested+0x24
+          1      1.53 us      1.53 us      1.53 us     spinlock   
+__queue_work+0xd8
+          1      1.27 us      1.27 us      1.27 us     spinlock   
+pull_rt_task+0xa0
+          1      1.16 us      1.16 us      1.16 us     spinlock   
+raw_spin_rq_lock_nested+0x24
+          1       740 ns       740 ns       740 ns     spinlock   
+add_device_randomness+0x5c
+          1       566 ns       566 ns       566 ns     spinlock   
+raw_spin_rq_lock_nested+0x24
 
-> 
->> However, in the AER section, you're only handling AER_CORRECTABLE cases.
->> IMHO, Non-fatal errors are recoverable and correspond to
->> CPER_SEV_RECOVERABLE in the ACPI context.
->>
->> The mapping should probably be:
->>
->> - AER_CORRECTABLE → CPER_SEV_CORRECTED
->> - AER_NONFATAL → CPER_SEV_RECOVERABLE
-> 
-> Thanks. This means I want to count AER_NONFATAL but not AER_CORRECTABLE.
-> Is this right?
+ From the results, we were able to observe lock contention specifically 
+on spinlocks.
 
-Exactly. IMHO, the updated mapping looks correct:
+The patch works as expected.
+Thank you for the patch!
 
-     - GHES: Only CPER_SEV_RECOVERABLE
-     - AER: Only AER_NONFATAL (which maps to recoverable errors)
-     - MCE: Uncorrected errors that didn't cause panic
-
-> 
-> Summarizing, This is the a new version of the change, according to my
-> new understanding:
-> 
-> commit deca1c4b99dcfa64b29fe035f8422b4601212413
-> Author: Breno Leitao <leitao@debian.org>
-> Date:   Thu Jul 17 07:39:26 2025 -0700
-> 
->      vmcoreinfo: Track and log recoverable hardware errors
-> 
->      Introduce a generic infrastructure for tracking recoverable hardware
->      errors (HW errors that are visible to the OS but does not cause a panic)
->      and record them for vmcore consumption. This aids post-mortem crash
->      analysis tools by preserving a count and timestamp for the last
->      occurrence of such errors. On the other side, correctable errors, which
->      the OS typically remains unaware of because the underlying hardware
->      handles them transparently, are less relevant and therefore are NOT
->      tracked in this infrastructure.
-> 
->      Add centralized logging for sources of recoverable hardware
->      errors based on the subsystem it has been notified.
-> 
->      hwerror_data is write-only at kernel runtime, and it is meant to be read
->      from vmcore using tools like crash/drgn. For example, this is how it
->      looks like when opening the crashdump from drgn.
-> 
->              >>> prog['hwerror_data']
->              (struct hwerror_info[6]){
->                      {
->                              .count = (int)844,
->                              .timestamp = (time64_t)1752852018,
->                      },
->                      ...
-> 
->      This helps fleet operators quickly triage whether a crash may be
->      influenced by hardware recoverable errors (which executes a uncommon
->      code path in the kernel), especially when recoverable errors occurred
->      shortly before a panic, such as the bug fixed by
->      commit ee62ce7a1d90 ("page_pool: Track DMA-mapped pages and unmap them
->      when destroying the pool")
-> 
->      This is not intended to replace full hardware diagnostics but provides
->      a fast way to correlate hardware events with kernel panics quickly.
-> 
->      Suggested-by: Tony Luck <tony.luck@intel.com>
->      Signed-off-by: Breno Leitao <leitao@debian.org>
-> 
-> diff --git a/arch/x86/kernel/cpu/mce/core.c b/arch/x86/kernel/cpu/mce/core.c
-> index 4da4eab56c81d..f85759453f89a 100644
-> --- a/arch/x86/kernel/cpu/mce/core.c
-> +++ b/arch/x86/kernel/cpu/mce/core.c
-> @@ -45,6 +45,7 @@
->   #include <linux/task_work.h>
->   #include <linux/hardirq.h>
->   #include <linux/kexec.h>
-> +#include <linux/vmcore_info.h>
-> 
->   #include <asm/fred.h>
->   #include <asm/cpu_device_id.h>
-> @@ -1690,6 +1691,9 @@ noinstr void do_machine_check(struct pt_regs *regs)
->   	}
-> 
->   out:
-> +	/* Given it didn't panic, mark it as recoverable */
-> +	hwerr_log_error_type(HWERR_RECOV_MCE);
-> +
-
-Indentation: needs tab alignment.
-
-The current placement only logs errors that reach the out: label. Errors
-that go to `clear` lable won't be recorded. Would it be better to log at
-the beginning of do_machine_check() to capture all recoverable MCEs?
-
->   	instrumentation_end();
-> 
->   clear:
-> diff --git a/drivers/acpi/apei/ghes.c b/drivers/acpi/apei/ghes.c
-> index a0d54993edb3b..9c549c4a1a708 100644
-> --- a/drivers/acpi/apei/ghes.c
-> +++ b/drivers/acpi/apei/ghes.c
-> @@ -43,6 +43,7 @@
->   #include <linux/uuid.h>
->   #include <linux/ras.h>
->   #include <linux/task_work.h>
-> +#include <linux/vmcore_info.h>
-> 
->   #include <acpi/actbl1.h>
->   #include <acpi/ghes.h>
-> @@ -867,6 +868,40 @@ int cxl_cper_kfifo_get(struct cxl_cper_work_data *wd)
->   }
->   EXPORT_SYMBOL_NS_GPL(cxl_cper_kfifo_get, "CXL");
-> 
-> +static void ghes_log_hwerr(int sev, guid_t *sec_type)
-> +{
-> +	if (sev != CPER_SEV_RECOVERABLE)
-> +		return;
-> +
-> +	if (guid_equal(sec_type, &CPER_SEC_PROC_ARM) ||
-> +	    guid_equal(sec_type, &CPER_SEC_PROC_GENERIC) ||
-> +	    guid_equal(sec_type, &CPER_SEC_PROC_IA)) {
-> +		hwerr_log_error_type(HWERR_RECOV_CPU);
-> +		return;
-> +	}
-> +
-> +	if (guid_equal(sec_type, &CPER_SEC_CXL_PROT_ERR) ||
-> +	    guid_equal(sec_type, &CPER_SEC_CXL_GEN_MEDIA_GUID) ||
-> +	    guid_equal(sec_type, &CPER_SEC_CXL_DRAM_GUID) ||
-> +	    guid_equal(sec_type, &CPER_SEC_CXL_MEM_MODULE_GUID)) {
-> +		hwerr_log_error_type(HWERR_RECOV_CXL);
-> +		return;
-> +	}
-> +
-> +	if (guid_equal(sec_type, &CPER_SEC_PCIE) ||
-> +	    guid_equal(sec_type, &CPER_SEC_PCI_X_BUS) {
-> +		hwerr_log_error_type(HWERR_RECOV_PCI);
-> +		return;
-> +	}
-> +
-> +	if (guid_equal(sec_type, &CPER_SEC_PLATFORM_MEM)) {
-> +		hwerr_log_error_type(HWERR_RECOV_MEMORY);
-> +		return;
-> +	}
-> +
-> +	hwerr_log_error_type(HWERR_RECOV_OTHERS);
-> +}
-> +
->   static void ghes_do_proc(struct ghes *ghes,
->   			 const struct acpi_hest_generic_status *estatus)
->   {
-> @@ -888,6 +923,7 @@ static void ghes_do_proc(struct ghes *ghes,
->   		if (gdata->validation_bits & CPER_SEC_VALID_FRU_TEXT)
->   			fru_text = gdata->fru_text;
-> 
-> +		ghes_log_hwerr(sev, sec_type);
->   		if (guid_equal(sec_type, &CPER_SEC_PLATFORM_MEM)) {
->   			struct cper_sec_mem_err *mem_err = acpi_hest_get_payload(gdata);
-> 
-> diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-> index e286c197d7167..d814c06cdbee6 100644
-> --- a/drivers/pci/pcie/aer.c
-> +++ b/drivers/pci/pcie/aer.c
-> @@ -30,6 +30,7 @@
->   #include <linux/kfifo.h>
->   #include <linux/ratelimit.h>
->   #include <linux/slab.h>
-> +#include <linux/vmcore_info.h>
->   #include <acpi/apei.h>
->   #include <acpi/ghes.h>
->   #include <ras/ras_event.h>
-> @@ -751,6 +752,7 @@ static void pci_dev_aer_stats_incr(struct pci_dev *pdev,
->   		break;
->   	case AER_NONFATAL:
->   		aer_info->dev_total_nonfatal_errs++;
-> +		hwerr_log_error_type(HWERR_RECOV_PCI);
->   		counter = &aer_info->dev_nonfatal_errs[0];
->   		max = AER_MAX_TYPEOF_UNCOR_ERRS;
->   		break;
-> diff --git a/include/linux/vmcore_info.h b/include/linux/vmcore_info.h
-> index 37e003ae52626..538a3635fb1e5 100644
-> --- a/include/linux/vmcore_info.h
-> +++ b/include/linux/vmcore_info.h
-> @@ -77,4 +77,21 @@ extern u32 *vmcoreinfo_note;
->   Elf_Word *append_elf_note(Elf_Word *buf, char *name, unsigned int type,
->   			  void *data, size_t data_len);
->   void final_note(Elf_Word *buf);
-> +
-> +enum hwerr_error_type {
-> +	HWERR_RECOV_MCE,
-> +	HWERR_RECOV_CPU,
-> +	HWERR_RECOV_MEMORY,
-> +	HWERR_RECOV_PCI,
-> +	HWERR_RECOV_CXL,
-> +	HWERR_RECOV_OTHERS,
-> +	HWERR_RECOV_MAX,
-> +};
-> +
-> +#ifdef CONFIG_VMCORE_INFO
-> +noinstr void hwerr_log_error_type(enum hwerr_error_type src);
-> +#else
-> +static inline void hwerr_log_error_type(enum hwerr_error_type src) {};
-> +#endif
-> +
->   #endif /* LINUX_VMCORE_INFO_H */
-> diff --git a/kernel/vmcore_info.c b/kernel/vmcore_info.c
-> index e066d31d08f89..4b5ab45d468f5 100644
-> --- a/kernel/vmcore_info.c
-> +++ b/kernel/vmcore_info.c
-> @@ -31,6 +31,13 @@ u32 *vmcoreinfo_note;
->   /* trusted vmcoreinfo, e.g. we can make a copy in the crash memory */
->   static unsigned char *vmcoreinfo_data_safecopy;
-> 
-> +struct hwerr_info {
-> +	int __data_racy count;
-> +	time64_t __data_racy timestamp;
-> +};
-> +
-> +static struct hwerr_info hwerr_data[HWERR_RECOV_MAX];
-> +
->   Elf_Word *append_elf_note(Elf_Word *buf, char *name, unsigned int type,
->   			  void *data, size_t data_len)
->   {
-> @@ -118,6 +125,17 @@ phys_addr_t __weak paddr_vmcoreinfo_note(void)
->   }
->   EXPORT_SYMBOL(paddr_vmcoreinfo_note);
-> 
-> +void hwerr_log_error_type(enum hwerr_error_type src)
-> +{
-> +	if (src < 0 || src >= HWERR_RECOV_MAX)
-> +		return;
-> +
-> +	/* No need to atomics/locks given the precision is not important */
-> +	hwerr_data[src].count++;
-> +	hwerr_data[src].timestamp = ktime_get_real_seconds();
-> +}
-> +EXPORT_SYMBOL_GPL(hwerr_log_error_type);
-> +
->   static int __init crash_save_vmcoreinfo_init(void)
->   {
->   	vmcoreinfo_data = (unsigned char *)get_zeroed_page(GFP_KERNEL);
-
-Look good for me.
-
-Reviewed-by: Shuai Xue <xueshuai@linux.alibaba.com>
-
-It would be valuable to get additional review from other RAS experts.
-
-Thanks.
-Shuai
+Tested-by: Samir Mulani <samir@linux.ibm.com>
 
