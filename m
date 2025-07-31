@@ -1,89 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-10477-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10478-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE869C87FCB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 30 Jul 2025 22:08:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5ACFFC83F17
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jul 2025 05:58:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bsmYz0h5Nz2xHp;
-	Thu, 31 Jul 2025 08:08:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753907287;
-	cv=none; b=gV25mkEbU0iJYU2T+jZQ/izgEqCwL69IGB6om/ZI71PA2j735CPLWyto1M7UEO6tuQ05TDHY4UoUdWAUBpb6NH7SOXcYmRp3NmkVjrlw6EbgVnjtfi0eHnCEpP5sHh9hwewtUWP9tc5lR0qPtxZkxjsYX7FbvjgEn8SF2Z5me2CTf5EIuCtyIbCJe4b+g3QqeksPKAl8YKyc5S2IJFAKiBh+k6jgJqTMZ8lAms99JCDd3zrN+GGFutqfnaHf2iGHSfNzgCeGNVjJLnH/udhQkqUsK+F9CF5bAbvu/mpb4Emz8Qh/SqCafpIBRNjE7IDWza5DaqzZyG9k1V5rRueFKQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bsz0T3qNWz305v;
+	Thu, 31 Jul 2025 15:58:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.104.207.81
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753941513;
+	cv=none; b=VRtCBjrCsb1e/P8g0ZLzX0ULQtDbLu9uN6rFO2FJZpooQfUYlLFQf4dDT7bIzOAMpi/uq1Mvwxs107seFebiikptGnSoP2A1xA9nNclb9/LHVyIPU9bbLdsZXekJTYKqQkzWdeh90w+GG3jzwzChOComYZRBJqUgK5k3vRGmcT7GLk6eb03RgOo3VT6l8RTXhzGINNg+baXt8DEhQ1AoWMXS1phPtX28ImxaZbmJnkclofSj5xc+oSMxn2XgJZRb5QyKuR22m0BGfVT82Bm64W00rEkFtDjq/FBVqIy2KPu/wxl/nUTlWPhCA5+xLs+h//MdUdntiE4Fdr5qu91emw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753907287; c=relaxed/relaxed;
-	bh=ZgDycgduAUnq/4+6cJh6R3cHxik209mhVrzWhFm9578=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=F3jOX3HpryHPN73yD6kLmx9D8q2JLu+pnTk3xA66Loskhug6D1zg87Hz7y6waaKwtCt65cdJhcgtVSB55QILJ4t6ToJC0MrW/s8q4KJ2YP1VmrHfiUaeKg25HojtPyxGm23vrSMo8nYD3HThqxqjY7uxGBkVwZW96uz4kuV7mN57I7C8fCOHARGvAy5jbuiLBLndidWdiHSTvQ3HqYQBSIGbeBlF60U4FzEP/b32yUH8Ehcu9ANEdGlRykBTBuhaJimnK55yFtmt2R/iR5zu+UHl2urn+hw7BrLeBdhtm7DIA/pDO96HPd2mZtSpydTtL4CDuxLmkjU+WYuIvKSpBQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=bPXUrVS7; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=kriish.sharma2006@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1753941513; c=relaxed/relaxed;
+	bh=98SHBebru6MCJ/QnRQtH2DcDv15Ssbf4Sj22mQlx6D8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Cetiq1ps86A5zndaDSxdaqEHnHuWqmwjyWThxtV3rOgIb7oqnEpMvkTzklWBalYwwUfwboqCMBsYZaV7rcSZPqlW51YXXQ9on4gaLvobgYRbjsl6u9paAKlmb1zh8GQBCLBOTnsLmdW451I3uiifRE0+qYej6XO7ghOs+A/3yV2eZ2ETPrUOYewcRbzt1ZQIyTudtsfMHDDY6lJWaKWGnCS8ByhD6BGNGnpLak4OBjPZFmJBA6SH/u/dYzajIII1BBfpcNWR9JCbYWv1WZZ+6SwoSeggty1u4iNKuQE0b5O/zQv/fBgaC/aA3gKho2lrAhGI/M2bscVaubUpl0niKw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ew.tq-group.com; dkim=pass (2048-bit key; unprotected) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=ivMHBEJx; dkim=fail header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=dkim header.b=fYaC+P1x reason="key not found in DNS"; dkim-atps=neutral; spf=pass (client-ip=93.104.207.81; helo=mx1.tq-group.com; envelope-from=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org) smtp.mailfrom=ew.tq-group.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ew.tq-group.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=bPXUrVS7;
+	dkim=pass (2048-bit key; unprotected) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=ivMHBEJx;
+	dkim=fail reason="key not found in DNS" header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=dkim header.b=fYaC+P1x;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=kriish.sharma2006@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ew.tq-group.com (client-ip=93.104.207.81; helo=mx1.tq-group.com; envelope-from=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org)
+Received: from mx1.tq-group.com (mx1.tq-group.com [93.104.207.81])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bskLF2WV6z30RK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2025 06:28:04 +1000 (AEST)
-Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-74b52bf417cso168224b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 30 Jul 2025 13:28:04 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bsz0P5MSBz2yLB
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 31 Jul 2025 15:58:27 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1753907282; x=1754512082; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ZgDycgduAUnq/4+6cJh6R3cHxik209mhVrzWhFm9578=;
-        b=bPXUrVS7yapcUbMrfJg3KnbiWs8CFHbDxjswg8sYpaN0Kbw2U6w8SHtb+PZ3GUh1u9
-         sVb5OhLrwRN5SUnyhEIbrpArlpCUj/7AGL+t6gqiPW6ZnEUOKagld0HIYQwsnF2YvMwT
-         q9rn4oyOKnXcct9jATCcPQ6X4vTQHz2Nyir5E0VngS5CqEFYEKUKw+s4xHsIlDCuFmjC
-         XUG25C5a/kUTKiXxOwpfMo6C3Wv5kJIGPrgJa4OYju1IrM4zfLO0rV2MGAtTzClnS0gs
-         yzTkRL1dbn/oWdK6Yzwo08pjc0o4+7sjuntKMpTEXUvHIG7yaqerS0EHjrb38crvXpmR
-         4qrw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1753907282; x=1754512082;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=ZgDycgduAUnq/4+6cJh6R3cHxik209mhVrzWhFm9578=;
-        b=KSrZwSViM5I9N6OyrtkHTcgp3UfV6SNfAf8eBu3CQV5JM3A528nqd18lMDmDoYtS+b
-         fP7sYVBlEzjfThgk1HvHwnn8hwPTq2iiZfb4ykA/H26sPA+EVfAuNV3SCn9E2u8pMJCa
-         ZanBFkToMZ/t92MvxR/F/fj6iU6owqt1B8NnWzyJ/CuNktv1ykUdK94i2sClGTc7Kw96
-         AoUomk+IuNjMQE4+YNB3sG7y50n1wLuERTQrG7DrrtexvFYmgon2yBnY/nFunFvZ/Eoz
-         Ppdk1pued+Jjgn1+uQ/CfFaYVXrBjlrWA1hBnFB1MvQCep/dor7bWUC/B+JspxDyqLsq
-         2Atw==
-X-Gm-Message-State: AOJu0YyUl4f7mYoRCDoT+r+o2Nxupa1X4G9MsKNCGPFNOZ4gXuMhDiRX
-	xejR0nPU3ihxsfL61904AAn8dp3QLsuA6CaqDnEs9hRLNcBh15Yp2K5A
-X-Gm-Gg: ASbGnctYzcUZlkf1gkuAghZprkoOds9VgjvpVLtz8KlCYFNOj+Z+NT4tTWtUwuT7gmA
-	3Ku9Cc6vfC/xLHpuhqlq/m+5Rdg8nnxpI0bonBuVzgumYxhH6cNYvhKQm/ZlQSBzcBm2lVYzbV4
-	3DGmOLhGupmrpRxnIrfzrg0e7q73EGZb5m7bTBs6FO+qaJFWDtDGDOdhhrvPo3mG1gxGSL9ZXON
-	UHIXvPcb3vCHImLD8uJ/YHtYfGKnwyQAIRsZiCk2n8q/Q5woH+S5Y+OSXldlDYRuQSQ0vF9JESE
-	yUIbK1XL41mdDCF0PDTKlRcehTzAkVMC7+Xaii/KUa8TC3dptGq2XhgI65q7v1GisLQK/V9aGc9
-	FxT+rOI2sZFc7GV1tKegL1kGcn3fdA+XORmt2/gm+
-X-Google-Smtp-Source: AGHT+IGLjgh/EtllwpcMQugZfIpJCA620ysg4LhMRyO7EP5nKjIvcOaz4ACdWsWsKJ6bRdSt2resVw==
-X-Received: by 2002:a05:6a00:a06:b0:730:9946:5973 with SMTP id d2e1a72fcca58-76ab0924273mr7083720b3a.5.1753907281917;
-        Wed, 30 Jul 2025 13:28:01 -0700 (PDT)
-Received: from crl-3.node2.local ([125.63.65.162])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-76bc5d321c5sm812199b3a.113.2025.07.30.13.27.58
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 30 Jul 2025 13:28:01 -0700 (PDT)
-From: Kriish Sharma <kriish.sharma2006@gmail.com>
-To: skhan@linuxfoundation.org,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	corbet@lwn.net,
-	christophe.leroy@csgroup.eu,
-	npiggin@gmail.com,
-	linux-kernel-mentees@lists.linux.dev,
-	Kriish Sharma <kriish.sharma2006@gmail.com>
-Subject: [PATCH] docs/powerpc: add htm.rst to toctree to fix warning
-Date: Wed, 30 Jul 2025 20:27:52 +0000
-Message-Id: <20250730202752.8508-1-kriish.sharma2006@gmail.com>
-X-Mailer: git-send-email 2.34.1
+  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
+  t=1753941510; x=1785477510;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=98SHBebru6MCJ/QnRQtH2DcDv15Ssbf4Sj22mQlx6D8=;
+  b=ivMHBEJxe5U5MqUQcNhmsgkKsrfzOUH7Vk/zTUUVNpJB0Ho9EXkg/db/
+   Z2zF4W5Wi7VpM+Ogh/lMYc600aeaBSV4mVc7jjcUpB9IYj4XjsNm0Xirc
+   ZKB7L6Y/rH/dqd+mhY4d6vvIj9U0cf16okplNJPBCIUSO4mzjQuI+ZDty
+   K0dfOmszRDe2/r3vfYMI0Y9l+njNAbPd5h5Hnx7feHxpbCgKvZI+a6OC/
+   bpNOt9m4ktO3MVWr1tLTfKTSoFWUCn9qez5miY43s7GH2Z/xTPg5SIXis
+   ZIwTq2OQfON5Se6t7D1wALBDAou5PjvboLEzVdDhqfw2dL/b67GYASC5x
+   A==;
+X-CSE-ConnectionGUID: 42qa7/ZfSFKqzF0ESfeQZw==
+X-CSE-MsgGUID: Yx8XBTCYSbecOEUDS8gpeg==
+X-IronPort-AV: E=Sophos;i="6.16,353,1744063200"; 
+   d="scan'208";a="45509996"
+Received: from vmailcow01.tq-net.de ([10.150.86.48])
+  by mx1.tq-group.com with ESMTP; 31 Jul 2025 07:58:23 +0200
+X-CheckPoint: {688B05FF-6-FE216C80-D1ADDD01}
+X-MAIL-CPID: 343950EB2E7D3053FAAC216CA983035A_4
+X-Control-Analysis: str=0001.0A00210A.688B05FA.005F,ss=1,re=0.000,recu=0.000,reip=0.000,cl=1,cld=1,fgs=0
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 66CD616B0A1;
+	Thu, 31 Jul 2025 07:58:16 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ew.tq-group.com;
+	s=dkim; t=1753941498;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=98SHBebru6MCJ/QnRQtH2DcDv15Ssbf4Sj22mQlx6D8=;
+	b=fYaC+P1xLljM/NdSckBIk110Nhmd1J/Ou3zJkfO2E39fvTHYbPAkTpDurN7pZ5dqN1zv7t
+	32gjV002+v6EELCUgr6ThmxHXKVlNMeilROyXBWFtHOrK0mIg6HCLG64oHpx+lPUv3ZyOL
+	oicN55gMPoRsRRX1unSIYzfpsGYiaSf0SjHtbNCOw0DDPPsMmIgElei9iCHwFM6qnOwg90
+	GUNkwpWN+9KFonU63w42lG+IXMI72z4E4qP/behfKf2Z+uiAUe2y/iFVZVGqM9bgEErckL
+	ahkJBbhgEpYYOzgGirYRBYo6Scj5gXbNPfS2Omwhybral1ccJDG2LLXM/Cdz4w==
+From: Alexander Stein <alexander.stein@ew.tq-group.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Frank Li <Frank.Li@nxp.com>
+Cc: Alexander Stein <alexander.stein@ew.tq-group.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH v2 1/1] dt-bindings: fsl: fsl,rcpm: Add #power-domain-cells
+Date: Thu, 31 Jul 2025 07:58:04 +0200
+Message-ID: <20250731055806.2265628-1-alexander.stein@ew.tq-group.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,31 +92,44 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-Last-TLS-Session-Version: TLSv1.3
 
-The htm.rst file was not included in any toctree, leading to a Sphinx
-warning when building documentation.
+dtbs_check for ls1021.dtsi warns about unsupported property:
+ power-controller@1ee2140 (fsl,ls1021a-rcpm): '#power-domain-cells' does not match any of the regexes: '^pinctrl-[0-9]+$'
 
-Include it in Documentation/arch/powerpc/index.rst to fix the warning.
+But if removed the check warns about missing property:
+ power-controller@1ee2140 (fsl,ls1021a-rcpm): '#power-domain-cells' is a required property
 
-Signed-off-by: Kriish Sharma <kriish.sharma2006@gmail.com>
+Given commit 8bcf67b8d893b ("ARM: dts: ls1021a: add #power-domain-cells
+for power-controller node") explicitly added that property, add it
+to the expected property list as well.
+
+Fixes: ad21e3840a88 ("dt-bindings: soc: fsl: Convert rcpm to yaml format")
+Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
 ---
- Documentation/arch/powerpc/index.rst | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/Documentation/arch/powerpc/index.rst b/Documentation/arch/powerpc/index.rst
-index 0560cbae5fa1..ae0280383315 100644
---- a/Documentation/arch/powerpc/index.rst
-+++ b/Documentation/arch/powerpc/index.rst
-@@ -36,7 +36,7 @@ powerpc
-     vas-api
-     vcpudispatch_stats
-     vmemmap_dedup
--
-+    htm
-     features
+Changes in v2:
+* Add the property instead of referencinf power-domain.yaml
+* Adjust commit message
+* v1: https://lore.kernel.org/all/20250725055835.260930-1-alexander.stein@ew.tq-group.com/
+
+ Documentation/devicetree/bindings/soc/fsl/fsl,rcpm.yaml | 2 ++
+ 1 file changed, 2 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/soc/fsl/fsl,rcpm.yaml b/Documentation/devicetree/bindings/soc/fsl/fsl,rcpm.yaml
+index 03d71ab930d79..2aa8e8a2643ba 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/fsl,rcpm.yaml
++++ b/Documentation/devicetree/bindings/soc/fsl/fsl,rcpm.yaml
+@@ -49,6 +49,8 @@ properties:
+   reg:
+     maxItems: 1
  
- .. only::  subproject and html
++  "#power-domain-cells": true
++
+   "#fsl,rcpm-wakeup-cells":
+     description: |
+       The number of IPPDEXPCR register cells in the
 -- 
-2.34.1
+2.43.0
 
 
