@@ -1,50 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-10486-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10487-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 490EBC87FCA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jul 2025 14:50:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41159C87FCA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 31 Jul 2025 16:10:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4btBpP59Hrz2yLB;
-	Fri,  1 Aug 2025 00:50:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753973437;
-	cv=none; b=K9z5E6rBAHF/Zmdtq1SBkPZuc2eGCTFE4t01+TdoboerdRKyVD+cifZqqmrBZd+xtTTpUERUCqOjN2cqiQAHaGXaAK97SAlrbJ8e0lhU/+qrzLBJwe4luOYge/JcU4fXNSYgTtx5cTydYmnPUqDIqPV1rAq4KAbJmNA8Wh2Jwjb0iSd7akXDotZ5rnNP3KGOgaPSo2w/T+hp7L/iD9oRYWZf6rDUkBdNEzV6hb6XNmtb0Wvk4kDxtliVH2JIws8JQWhipemFI+m3quXNAE1VP/e9yV51l1wSQLInyOZGzosAIOJQsza68l+ZtKMIrVbUSITDomYObgLl7lhzYnGtXg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4btDb22dSwz2yLB;
+	Fri,  1 Aug 2025 02:10:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1753978254;
+	cv=none; b=cevmNnv5FKzOkK75e1qCbdYl5+d7Nz8ZfJLPSwFCyOwgKaGtkZTQS/gpU2hFihv/8n5LeExRzkAdVXu8k80zL5IfO9Sgqtyp6Hnbz7yE+v0oKKy35v4P6h1Ha52OYVl6o08enMY00ktply/6RDzVzM+iaZ75CMVonpBT2OKgf9kwNWACFRmUjPzSm8o9JCPy5S2Js/6+3QfclEAlNfUyJxFh0PdecBtbxEU9GB9InwczAxUIL+kvH1XF1K+0e7/7ITOJJEjZOHD7tZ1cEo/RsIQ2SH70ztaJHQnXHteaMHwUBEutLSOTKZFf8dMOdJfnm7Et8sPshvoZlrHJHRR+JA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1753973437; c=relaxed/relaxed;
-	bh=najB1DUtRW0BoWTJbMks7BTjn/WaIWdbcTteMDxw7WA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=bQxfmNEOIAdWuZS4Y3ikHYZ0JpVR7mxZqjp/QBzUVjK35/24ia+2/AuSX7lKqhWkluT138HmrlEJHykO+24DZJStiGx2D/PcErqVqEb/KqdE1zLd/PheieLwMCsDwRyKtuS2oxy4zN45yzITB9Tn55VzQGbVIsNJHEDkMA/h8MjPlP579uwz8uce7jGsv1KYWt+vpBVChV2R116c9lOTAPuhZk8NqpAYAAz4K05wuFPJKG0SST+A67zApGwdvlLkyPv4FYOxIuy9zz/iB1erL5OWwfhVJ5lrBOEtBQmgXxq+ZOsKwe6RTQcLtjlK8RkMVdPTnBz8u+5LCvvpMHyvaQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4btBpP0KXvz2yF1
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2025 00:50:35 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4btBTZ5DWGz9v2F;
-	Thu, 31 Jul 2025 16:36:02 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id WZlP0oQyI-4P; Thu, 31 Jul 2025 16:36:02 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4btBTT42bZz9tt4;
-	Thu, 31 Jul 2025 16:35:57 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 85BCB8B76E;
-	Thu, 31 Jul 2025 16:35:57 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id V6oOUUz4ZD7m; Thu, 31 Jul 2025 16:35:57 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 19FCF8B763;
-	Thu, 31 Jul 2025 16:35:57 +0200 (CEST)
-Message-ID: <97ec2636-915a-498c-903b-d66957420d21@csgroup.eu>
-Date: Thu, 31 Jul 2025 16:35:56 +0200
+	t=1753978254; c=relaxed/relaxed;
+	bh=AC7F7aSZ9IffCIsiUEpNx/AhsUPUBFRG5nFMl9MhQ9E=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=fuJsa/wFhOafuYgkgXh3RDGWzXgsLG61WRdSnqZaGqRazYs9rEN/7QrzF/yV1R3JZu9NoZDaB+eMflIzdtBQWcYcoCMO1SK7+zNNRD4pzc8ZsPl6Wk4Nun26ETAjhFouX8YNQjGGQQ0ooV3CArTrfaHUrEOS8WCZviv0yJHTng4oQrBNly/aGopskhu0+iqgqARLxFCq0j7KTJOL3LPs1nKyuSJG6bgD169eX550QVE8W0u0PSgJJ5qW1erGPpNrHbg2TOzbuHIbFyBNF/doVAe81SNq+DF5DpJHeQ0gk6ctzj5FY7p2aD3skPJtrl5VKR00EMXt6MhU3sdQ4VbZ6Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PTBofRPe; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=donettom@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=PTBofRPe;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=donettom@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4btDb11PkJz2yD5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  1 Aug 2025 02:10:52 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 56VBNhuc001913;
+	Thu, 31 Jul 2025 16:10:41 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=AC7F7aSZ9IffCIsiUEpNx/AhsUPU
+	BFRG5nFMl9MhQ9E=; b=PTBofRPeebA02tXMmXNTks7YHMYRipuBcN5p4RJY4TKD
+	Oepdwly+TUcX4meWBQDySM3ahVdNuOqtsagxcg2cAiUsPiUWorb1MMfZbrWwZIuK
+	jxzVYyQUbfz+xEAvuQeeK0S8o83rTQvlPjbQRyeXnwyi4ctZ/iVV1wy5b6rsd6I9
+	rQEW+KiCzbD2LR1IebgZspSUPWziR8IJCdK+zNLZD6aJXztan0+Z8pKDh0QmZNBH
+	J+LGdndzZhxXe2kaxUJevKhLv5EI65ObMRfLky3Xml6/WMQG2T6KqQWFsJdRyBEc
+	X5vToNAtr7gKuRURfvasV6gKSTVgs8EOKHGb9pJ14A==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 486c6j1sn6-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 31 Jul 2025 16:10:41 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 56VG1niK019275;
+	Thu, 31 Jul 2025 16:10:40 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 486c6j1smu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 31 Jul 2025 16:10:40 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 56VCYKrK028728;
+	Thu, 31 Jul 2025 16:10:39 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 485c22vwhu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 31 Jul 2025 16:10:39 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 56VGAaS218940160
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 31 Jul 2025 16:10:36 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 24E552004F;
+	Thu, 31 Jul 2025 16:10:36 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D31382004B;
+	Thu, 31 Jul 2025 16:10:32 +0000 (GMT)
+Received: from li-06431bcc-2712-11b2-a85c-a6fe68df28f9.ibm.com.com (unknown [9.39.19.108])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 31 Jul 2025 16:10:32 +0000 (GMT)
+From: Donet Tom <donettom@linux.ibm.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        linuxppc-dev@lists.ozlabs.org
+Cc: Ritesh Harjani <ritesh.list@gmail.com>, linux-kernel@vger.kernel.org,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Vishal Chourasia <vishalc@linux.ibm.com>,
+        Donet Tom <donettom@linux.ibm.com>
+Subject: [PATCH] powerpc/mm: Switch MMU context on hash MMU if SLB preload cache is aged
+Date: Thu, 31 Jul 2025 21:40:27 +0530
+Message-ID: <20250731161027.966196-1-donettom@linux.ibm.com>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,141 +96,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 07/33] tty: vt: use _IO() to define ioctl numbers
-To: "Jiri Slaby (SUSE)" <jirislaby@kernel.org>, gregkh@linuxfoundation.org,
- Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: linux-serial@vger.kernel.org, linux-kernel@vger.kernel.org,
- Nicolas Pitre <nico@fluxnic.net>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <20250611100319.186924-1-jirislaby@kernel.org>
- <20250611100319.186924-8-jirislaby@kernel.org>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250611100319.186924-8-jirislaby@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: AQlI__8eaXMhKdwYoEHMRrMuB_H_qp-d
+X-Authority-Analysis: v=2.4 cv=Mbtsu4/f c=1 sm=1 tr=0 ts=688b9581 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=Wb1JkmetP80A:10 a=pGLkceISAAAA:8 a=VnNF1IyMAAAA:8
+ a=FINkVeRlo5BJDc_9tkUA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: qTxxwih5DL7kS9UKzzfvZAzwrcxzWN2m
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwNzMxMDEwOCBTYWx0ZWRfX26fCvGxZwzzh
+ I7EzrPxxTYACk3kMHw2R3w7KCHVr01z2AIVO6WTYxkma9XK81vjHqZ3wlblz16eB4Fc9VV3405a
+ wiIwDBpbVM/HmSuVCUfvvxltO1v0Ae74XSGAfu0fVx3e+WPKWPQnpz2clo7SzlwIR0nTzvViZm0
+ 1Uq3262jFvAsaUIsBf7fxEehAq7uFlLQTawktjK8NIRj0s8X1ShGRUSH2dfGK6fX+vASSJNGT93
+ c5WCubiOKmfbFJfRTtWQKpUPekR+G6v671ngzZo2MvJsx6Mj64EThMRIcksP7Df/T+ttu6ADx3O
+ QH4oheAFiVAnqRnAzRLqAowKiwlFRP2ExVjThaGyFKb8VTAOqQbESWpBhDeVbTsfEPOvZehvPza
+ 80G2g7+WLC7dhkxn3dG/uiwU1+aUfsROheG2W2NdQ8Upj7+UEeA6I1yKt4Xg0vUuCJX8ykQs
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-07-31_03,2025-07-31_02,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1011 adultscore=0 bulkscore=0 suspectscore=0 priorityscore=1501
+ spamscore=0 mlxscore=0 impostorscore=0 phishscore=0 mlxlogscore=999
+ lowpriorityscore=0 malwarescore=0 classifier=spam authscore=0 authtc=n/a
+ authcc= route=outbound adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2505280000 definitions=main-2507310108
 
-Hi Jiri,
+On systems using the hash MMU, there is a software SLB preload cache that
+mirrors the entries loaded into the hardware SLB buffer. This preload
+cache is subject to periodic eviction — typically after every 256 context
+switches — to remove old entry.
 
-Le 11/06/2025 à 12:02, Jiri Slaby (SUSE) a écrit :
-> _IO*() is the proper way of defining ioctl numbers. All these vt numbers
-> were synthetically built up the same way the _IO() macro does.
-> 
-> So instead of implicit hex numbers, use _IO() properly.
-> 
-> To not change the pre-existing numbers, use only _IO() (and not _IOR()
-> or _IOW()). The latter would change the numbers indeed.
+Currently, the kernel skips the MMU context switch in switch_mm_irqs_off()
+if the prev and next mm_struct are the same, as an optimization. However,
+this behavior can lead to problems on hash MMU systems.
 
-On powerpc your assumption is wrong, because _IOC_NONE is not 0:
+Consider the following scenario: a process is running on CPU A and gets
+context-switched to CPU B. During this time, one of its SLB preload cache
+entries is evicted. Later, the process is rescheduled on CPU A, which was
+running swapper in the meantime, using the same mm_struct. Because
+prev == next, the kernel skips the MMU context switch. As a result, the
+hardware SLB buffer still contains the entry, but the software preload
+cache does not.
 
-$ git grep _IOC_NONE arch/powerpc/
-arch/powerpc/include/uapi/asm/ioctl.h:#define _IOC_NONE 1U
+The absence of the entry in the preload cache causes it to attempt to
+reload the SLB. However, since the entry is already present in the hardware
+SLB, this leads to a SLB multi-hit error.
 
-Therefore the value changes even with _IO(), leading to failure of Xorg 
-as reported by Christian.
+To fix this issue, we add a code change to always switch the MMU context on
+hash MMU if the SLB preload cache has aged. With this change, the
+SLB multi-hit error no longer occurs.
 
-Christophe
+Fixes: 5434ae74629a ("powerpc/64s/hash: Add a SLB preload cache")
+Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Signed-off-by: Donet Tom <donettom@linux.ibm.com>
+---
+ arch/powerpc/mm/book3s64/slb.c | 2 +-
+ arch/powerpc/mm/mmu_context.c  | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-> 
-> Objdump of vt_ioctl.o reveals no difference with this patch.
-> 
-> Again, VT_GETCONSIZECSRPOS already uses _IOR(), so everything is paved
-> for this patch.
-> 
-> Signed-off-by: Jiri Slaby (SUSE) <jirislaby@kernel.org>
-> Cc: Nicolas Pitre <nico@fluxnic.net>
-> ---
->   include/uapi/linux/vt.h | 34 +++++++++++++++++-----------------
->   1 file changed, 17 insertions(+), 17 deletions(-)
-> 
-> diff --git a/include/uapi/linux/vt.h b/include/uapi/linux/vt.h
-> index 714483d68c69..b60fcdfb2746 100644
-> --- a/include/uapi/linux/vt.h
-> +++ b/include/uapi/linux/vt.h
-> @@ -14,9 +14,9 @@
->   		/* Note: the ioctl VT_GETSTATE does not work for
->   		   consoles 16 and higher (since it returns a short) */
->   
-> -/* 0x56 is 'V', to avoid collision with termios and kd */
-> +/* 'V' to avoid collision with termios and kd */
->   
-> -#define VT_OPENQRY	0x5600	/* find available vt */
-> +#define VT_OPENQRY		_IO('V', 0x00)	/* find available vt */
->   
->   struct vt_mode {
->   	__u8 mode;		/* vt mode */
-> @@ -25,8 +25,8 @@ struct vt_mode {
->   	__s16 acqsig;		/* signal to raise on acquisition */
->   	__s16 frsig;		/* unused (set to 0) */
->   };
-> -#define VT_GETMODE	0x5601	/* get mode of active vt */
-> -#define VT_SETMODE	0x5602	/* set mode of active vt */
-> +#define VT_GETMODE		_IO('V', 0x01)	/* get mode of active vt */
-> +#define VT_SETMODE		_IO('V', 0x02)	/* set mode of active vt */
->   #define		VT_AUTO		0x00	/* auto vt switching */
->   #define		VT_PROCESS	0x01	/* process controls switching */
->   #define		VT_ACKACQ	0x02	/* acknowledge switch */
-> @@ -36,21 +36,21 @@ struct vt_stat {
->   	__u16 v_signal;	/* signal to send */
->   	__u16 v_state;		/* vt bitmask */
->   };
-> -#define VT_GETSTATE	0x5603	/* get global vt state info */
-> -#define VT_SENDSIG	0x5604	/* signal to send to bitmask of vts */
-> +#define VT_GETSTATE		_IO('V', 0x03)	/* get global vt state info */
-> +#define VT_SENDSIG		_IO('V', 0x04)	/* signal to send to bitmask of vts */
->   
-> -#define VT_RELDISP	0x5605	/* release display */
-> +#define VT_RELDISP		_IO('V', 0x05)	/* release display */
->   
-> -#define VT_ACTIVATE	0x5606	/* make vt active */
-> -#define VT_WAITACTIVE	0x5607	/* wait for vt active */
-> -#define VT_DISALLOCATE	0x5608  /* free memory associated to vt */
-> +#define VT_ACTIVATE		_IO('V', 0x06)	/* make vt active */
-> +#define VT_WAITACTIVE		_IO('V', 0x07)	/* wait for vt active */
-> +#define VT_DISALLOCATE		_IO('V', 0x08)  /* free memory associated to vt */
->   
->   struct vt_sizes {
->   	__u16 v_rows;		/* number of rows */
->   	__u16 v_cols;		/* number of columns */
->   	__u16 v_scrollsize;	/* number of lines of scrollback */
->   };
-> -#define VT_RESIZE	0x5609	/* set kernel's idea of screensize */
-> +#define VT_RESIZE		_IO('V', 0x09)	/* set kernel's idea of screensize */
->   
->   struct vt_consize {
->   	__u16 v_rows;	/* number of rows */
-> @@ -60,10 +60,10 @@ struct vt_consize {
->   	__u16 v_vcol;	/* number of pixel columns on screen */
->   	__u16 v_ccol;	/* number of pixel columns per character */
->   };
-> -#define VT_RESIZEX      0x560A  /* set kernel's idea of screensize + more */
-> -#define VT_LOCKSWITCH   0x560B  /* disallow vt switching */
-> -#define VT_UNLOCKSWITCH 0x560C  /* allow vt switching */
-> -#define VT_GETHIFONTMASK 0x560D  /* return hi font mask */
-> +#define VT_RESIZEX		_IO('V', 0x0A)  /* set kernel's idea of screensize + more */
-> +#define VT_LOCKSWITCH		_IO('V', 0x0B)  /* disallow vt switching */
-> +#define VT_UNLOCKSWITCH		_IO('V', 0x0C)  /* allow vt switching */
-> +#define VT_GETHIFONTMASK	_IO('V', 0x0D)  /* return hi font mask */
->   
->   struct vt_event {
->   	__u32 event;
-> @@ -77,14 +77,14 @@ struct vt_event {
->   	__u32 pad[4];		/* Padding for expansion */
->   };
->   
-> -#define VT_WAITEVENT	0x560E	/* Wait for an event */
-> +#define VT_WAITEVENT		_IO('V', 0x0E)	/* Wait for an event */
->   
->   struct vt_setactivate {
->   	__u32 console;
->   	struct vt_mode mode;
->   };
->   
-> -#define VT_SETACTIVATE	0x560F	/* Activate and set the mode of a console */
-> +#define VT_SETACTIVATE		_IO('V', 0x0F)	/* Activate and set the mode of a console */
->   
->   /* get console size and cursor position */
->   struct vt_consizecsrpos {
+diff --git a/arch/powerpc/mm/book3s64/slb.c b/arch/powerpc/mm/book3s64/slb.c
+index 6b783552403c..08daac3f978c 100644
+--- a/arch/powerpc/mm/book3s64/slb.c
++++ b/arch/powerpc/mm/book3s64/slb.c
+@@ -509,7 +509,7 @@ void switch_slb(struct task_struct *tsk, struct mm_struct *mm)
+ 	 * SLB preload cache.
+ 	 */
+ 	tsk->thread.load_slb++;
+-	if (!tsk->thread.load_slb) {
++	if (tsk->thread.load_slb == U8_MAX) {
+ 		unsigned long pc = KSTK_EIP(tsk);
+ 
+ 		preload_age(ti);
+diff --git a/arch/powerpc/mm/mmu_context.c b/arch/powerpc/mm/mmu_context.c
+index 3e3af29b4523..d7b9ac8c9971 100644
+--- a/arch/powerpc/mm/mmu_context.c
++++ b/arch/powerpc/mm/mmu_context.c
+@@ -84,7 +84,7 @@ void switch_mm_irqs_off(struct mm_struct *prev, struct mm_struct *next,
+ 	switch_mm_pgdir(tsk, next);
+ 
+ 	/* Nothing else to do if we aren't actually switching */
+-	if (prev == next)
++	if ((prev == next) && (tsk->thread.load_slb != U8_MAX))
+ 		return;
+ 
+ 	/*
+-- 
+2.50.1
 
 
