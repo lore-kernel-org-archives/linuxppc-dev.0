@@ -1,89 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-10519-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10520-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00698C87FCA
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Aug 2025 00:52:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E195EC87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  2 Aug 2025 02:41:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bv46F5MWFz30MY;
-	Sat,  2 Aug 2025 10:52:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.11
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754095941;
-	cv=none; b=Jt6Xe6yIc/OXtg7fOZLRkYbJa2/BLIYkhqfXFhbpKsdUohpSKaOQVOnd7cOKzeZlKscxZBpidqphU/KGoLR4qTZ33uerT6HnFNQXFwZu0UT7ra/HUtCAhBKcXk4td1qasbBueLi/Zis0nXxhUjoMtbhYh+Waj35vvn92q+2F0HFaBgPX0OE2JewJN4flWIxrG7l7rXau/VbX4M/+ATp8/M0X11Vc0eb0CnKHSQx8fd21xCtL2GaJMLSIiweZzjYeJGXaYHtR5DjjkeYvufCzOjYa76TpoqQlBXjwen+2BRtq+V0j2gRgJZjKHSbpD30u29U/rC3bgL/lwQRj9bqHBw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bv6XZ4dc8z30T9;
+	Sat,  2 Aug 2025 12:41:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754102510;
+	cv=none; b=FgZkoxVQhc9ltOUeGRd/RV7/4mL1jLNjYrWDmXjlJ1Yb3EA4hz9BCUgeVUzay/y7UrCSVaCuzo3ZaBBXllKxpZXXCc8oQHByseLFTp9tOI6uktVaYfT9Cs3cW6yZP7vZj/77Dni8+2qapkxbBgWeyB70ThsbJ+/iqdW+JCn2/UeYGIrHFyDfYJIFi4e8K52pVNYqqPOEjUJ3d6PpVazhBw/9NZNfpVw4MbjVXoELlUI4LhTZdaGauJ+F7MnKqO2TC7xTavIjeLhg+hMGTaEjFYpo5d3Au+8xFhk3ovbx6uMUBWMFUl5fCoO+fwDissjhjfQH4VCQ5WNCQLeLMKFIBw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754095941; c=relaxed/relaxed;
-	bh=XSSWycsYuEm8yHsbkftGEKkr32QLhfHisjTZW9aj39Y=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lCg7vrQpAS7KNQHMWlcP7cK8lMz4gRrFjsbSsGMFWf2qEz9/8dBt4P3BPUfiKTG7mMQ3kVXsQbuuVC4Z0A6PszPGszb5Oa4s/rxwzWrzbQbTe6pr3NkXxdF3Cl1OXXnqoDWxAUz/fMtGc9N33BSiuSSXDCbfgfkKoYWknSIPMLEtzB+00+TapLhXxtaU/pHZ4fw/AdySn9lpKVKz8/Zd7aH78r0gs8kjnV/bd6H2bTs0MK910N2KZEuZAq61ePTFLqswS+TQtdtKcgcnZnUJYbFHdzG9JrBt7AU1z1HKW3t8Gj0tatm8yuBvcnnusrBdHlD4hU380icBRQNeZ86X/g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GOXhJDMQ; dkim-atps=neutral; spf=pass (client-ip=192.198.163.11; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1754102510; c=relaxed/relaxed;
+	bh=W68NnLMr3Sy3cnwlboBjj3eARQAOJs/7n98ZhuKP6Eg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=PnO3MbK2y912QBssuDAdHtOnvxOQdezzguz5hZliFb0dNrLkdGVvyzWoPszKfkiG7OyrKWdz3b0UfDHHx8NN9/VOCp/uJscIqfEVmc/cMcb4wUTQRQ9KqJfrJl3bWhqLLr9iNbK/M44+WyFEkzsHQ6cqT3RkG7tRgWd6LzlDQ8BCz1LCfJZT57oFBC14KdF7UC9T53RES70izhNh7Gorujxnek+z0JqRvQtamjiq/cSx2+Kr2S2dW0uB9iqShwwz5//2gSOzFkCLbRbTobVfgiA1xXsNLNsTPxUR1zbTuys6WPI9ncNcVJh7iuYQvVQNm83R9ztTf7J9wR8AAIBzwA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=L0dYXwut; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GOXhJDMQ;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=L0dYXwut;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.11; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.11])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bv46C2m7qz30LS
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Aug 2025 10:52:17 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1754095940; x=1785631940;
-  h=date:from:to:cc:subject:message-id:references:
-   mime-version:in-reply-to;
-  bh=cLiV1YAVc0XpLVydFzX5qDQFT8RxMUqUxFC45R3+Hu0=;
-  b=GOXhJDMQ+4ddnZfgYfdLrHT0WWnP/Bi/p1hv7D/Mh/IqPYd7ObEmniTu
-   AtK3XfTq85UYRnmoy1/loK159H8VIfBGBx6EqWZ4UwEDjmH9TKAHpEFOd
-   VGwa03832jzJnMgITYNJAA9OSmF1etSZyeXscn/ObGQrmexidaX1aYvD7
-   oK4GEFJux8i7+frhF/CDJSFT0ykslYESxWR4s+6d51K7Y9ufF9aRTN8Ap
-   AdZgC+ozce6RX2Tfi3kwC+oS74QnZOmCwsEZd2gMe1iM26gWNZVvkEpqF
-   zgaOj22nnxWVfj0Hq6hwqN1kTnqS9wlo4Eg+obG7X92DHTD4JvwefPq1T
-   Q==;
-X-CSE-ConnectionGUID: T5X5SyIpQRybqEjlESn4ZQ==
-X-CSE-MsgGUID: S+Wf0mbNTqKej0IZnouJkg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11508"; a="67020074"
-X-IronPort-AV: E=Sophos;i="6.17,258,1747724400"; 
-   d="scan'208";a="67020074"
-Received: from fmviesa009.fm.intel.com ([10.60.135.149])
-  by fmvoesa105.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 01 Aug 2025 17:52:13 -0700
-X-CSE-ConnectionGUID: rhpO9yacQcSx45fuiX/l8g==
-X-CSE-MsgGUID: +seHoRPmSrS3nDsJ+5KE6g==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.17,258,1747724400"; 
-   d="scan'208";a="164083746"
-Received: from lkp-server01.sh.intel.com (HELO 160750d4a34c) ([10.239.97.150])
-  by fmviesa009.fm.intel.com with ESMTP; 01 Aug 2025 17:52:07 -0700
-Received: from kbuild by 160750d4a34c with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1ui0Tk-000536-2p;
-	Sat, 02 Aug 2025 00:52:04 +0000
-Date: Sat, 2 Aug 2025 08:51:49 +0800
-From: kernel test robot <lkp@intel.com>
-To: Breno Leitao <leitao@debian.org>,
-	"Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>, James Morse <james.morse@arm.com>,
-	Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>,
-	Robert Moore <robert.moore@intel.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, Hanjun Guo <guohanjun@huawei.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Bjorn Helgaas <helgaas@kernel.org>
-Cc: oe-kbuild-all@lists.linux.dev, linux-media@vger.kernel.org,
-	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
-	acpica-devel@lists.linux.dev, osandov@osandov.com,
-	xueshuai@linux.alibaba.com, konrad.wilk@oracle.com,
-	linux-edac@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-pci@vger.kernel.org, kernel-team@meta.com, osandov@fb.com,
-	Breno Leitao <leitao@debian.org>
-Subject: Re: [PATCH v4] vmcoreinfo: Track and log recoverable hardware errors
-Message-ID: <202508020814.lzX1CZpj-lkp@intel.com>
-References: <20250801-vmcore_hw_error-v4-1-fa1fe65edb83@debian.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bv6XY2Rntz2xHY
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  2 Aug 2025 12:41:48 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5721m6fj013381;
+	Sat, 2 Aug 2025 02:41:39 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=W68NnLMr3Sy3cnwlb
+	oBjj3eARQAOJs/7n98ZhuKP6Eg=; b=L0dYXwutTQxaKq6Y73vHkKOJwNxmz0UQo
+	pqJ8rlDnpfvnzw+f31oSxrX34F8Gn+Ft0O8c4sjwxYYzrR8E183c/YyJPETtObvO
+	VhBeuKNgU7Vr0xI6K1t1F1N6OWF+97GdCQE3CwbIlU1qH4od9R1wvhZBHyGcwbwz
+	sqVqMqlTPtD54ihmHcSeUkDDx9IgsjYuW1iNo6MXUbaGGAzTVJn3eomfs88Wkig+
+	mIblMnkx7gq4OpC+eBvunRDqxR6QSNBmyPJAQhClIyE/ULO7OtsUS+otZs7CwpV7
+	i79yy5/ibXaQBUX02KaPVW4H/sW2E4Tnf1hzE1QTWDLuNf/fwc4Vw==
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4864k8c9r3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 02 Aug 2025 02:41:39 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5722XX6T018307;
+	Sat, 2 Aug 2025 02:41:38 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 485abpm2x2-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 02 Aug 2025 02:41:38 +0000
+Received: from smtpav01.wdc07v.mail.ibm.com (smtpav01.wdc07v.mail.ibm.com [10.39.53.228])
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5722faVY32375452
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sat, 2 Aug 2025 02:41:36 GMT
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0BB3758055;
+	Sat,  2 Aug 2025 02:41:36 +0000 (GMT)
+Received: from smtpav01.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2127E5804B;
+	Sat,  2 Aug 2025 02:41:35 +0000 (GMT)
+Received: from li-4910aacc-2eed-11b2-a85c-d93b702d4d28.ibm.com.com (unknown [9.61.171.135])
+	by smtpav01.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Sat,  2 Aug 2025 02:41:34 +0000 (GMT)
+From: Haren Myneni <haren@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, msuchanek@suse.de,
+        mahesh@linux.ibm.com, tyreld@linux.ibm.com, hbabu@us.ibm.com,
+        haren@linux.ibm.com
+Subject: [PATCH 1/9] powerpc/pseries: Define papr-hvpipe ioctl
+Date: Fri,  1 Aug 2025 19:41:11 -0700
+Message-ID: <20250802024121.955274-2-haren@linux.ibm.com>
+X-Mailer: git-send-email 2.43.5
+In-Reply-To: <20250802024121.955274-1-haren@linux.ibm.com>
+References: <20250802024121.955274-1-haren@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,34 +88,102 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250801-vmcore_hw_error-v4-1-fa1fe65edb83@debian.org>
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: 87k6n9Y1KC_nmQ5UA2dbfqEMGgQFrB6H
+X-Proofpoint-GUID: 87k6n9Y1KC_nmQ5UA2dbfqEMGgQFrB6H
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODAyMDAxOCBTYWx0ZWRfX0GUfIJmdeBlk
+ j0liZHI5hbqdWtfTUF4Zz5lSbUW4h0fG3yg6t9ERD36plG4AaEyhHH5Q8SAJI30ep3J7G7uHTZC
+ cpbXqcsD4wRpfVIJ+4YurKGe49UTtTJyHrmONP2BU04KcyX1U+aLZINsWl4S4Gzgo7vuLcriaQU
+ jGojosl9rYTErMW4ygewx7iCDUI5JWg2uIz+OvJvgbj/7j+vyNzhLb/3U6jQFhg9lnHk9Sz5meI
+ /4hACIUrM/78jER02/yklX1LdQp/6aypkLViqkL3VCC2EiLAeNd3XEkR2V7yHeLqZcpCb3iSPia
+ 0jDSLgu2LjSMzKBrVNZqwqDXHOMnlv6fa/9j1pP+181yw1iLpWqU8ZoO/AV8ogZZmqSjB0hwplq
+ XsLdOwn3bRB9W+FbhEfm2Oo4ErGOVS5d1XCdrvETbqswd/Wid6kD5mn0NzB3YLF4CdVo8txT
+X-Authority-Analysis: v=2.4 cv=ZoDtK87G c=1 sm=1 tr=0 ts=688d7ae3 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=2OwXVqhp2XgA:10 a=VnNF1IyMAAAA:8 a=VwQbUJbxAAAA:8 a=hCPc-vyYqU3GlDZ_-9gA:9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-08-01_08,2025-08-01_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 priorityscore=1501 lowpriorityscore=0 mlxscore=0 clxscore=1015
+ adultscore=0 impostorscore=0 mlxlogscore=462 bulkscore=0 phishscore=0
+ suspectscore=0 malwarescore=0 classifier=spam authscore=0 authtc=n/a authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2505280000
+ definitions=main-2508020018
 
-Hi Breno,
+PowerPC FW introduced HVPIPE RTAS calls such as
+ibm,send-hvpipe-msg and ibm,receive-hvpipe-msg for the user space
+to exchange information with different sources such as Hardware
+Management Consoles (HMC).
 
-kernel test robot noticed the following build warnings:
+HVPIPE_IOC_CREATE_HANDLE is defined to use /dev/papr-hvpipe
+interface for ibm,send-hvpipe-msg and ibm,receive-hvpipe-msg
+RTAS calls.
 
-[auto build test WARNING on 89748acdf226fd1a8775ff6fa2703f8412b286c8]
+Also defined papr_hvpipe_hdr which will added in the payload
+that is passed between the kernel and the user space.
 
-url:    https://github.com/intel-lab-lkp/linux/commits/Breno-Leitao/vmcoreinfo-Track-and-log-recoverable-hardware-errors/20250801-211624
-base:   89748acdf226fd1a8775ff6fa2703f8412b286c8
-patch link:    https://lore.kernel.org/r/20250801-vmcore_hw_error-v4-1-fa1fe65edb83%40debian.org
-patch subject: [PATCH v4] vmcoreinfo: Track and log recoverable hardware errors
-config: x86_64-defconfig (https://download.01.org/0day-ci/archive/20250802/202508020814.lzX1CZpj-lkp@intel.com/config)
-compiler: gcc-11 (Debian 11.3.0-12) 11.3.0
-reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20250802/202508020814.lzX1CZpj-lkp@intel.com/reproduce)
+Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+---
+ .../userspace-api/ioctl/ioctl-number.rst      |  2 ++
+ arch/powerpc/include/uapi/asm/papr-hvpipe.h   | 33 +++++++++++++++++++
+ 2 files changed, 35 insertions(+)
+ create mode 100644 arch/powerpc/include/uapi/asm/papr-hvpipe.h
 
-If you fix the issue in a separate patch/commit (i.e. not just a new version of
-the same patch/commit), kindly add following tags
-| Reported-by: kernel test robot <lkp@intel.com>
-| Closes: https://lore.kernel.org/oe-kbuild-all/202508020814.lzX1CZpj-lkp@intel.com/
-
-All warnings (new ones prefixed by >>):
-
->> vmlinux.o: warning: objtool: hwerr_log_error_type+0x23: call to ktime_get_real_seconds() leaves .noinstr.text section
-
+diff --git a/Documentation/userspace-api/ioctl/ioctl-number.rst b/Documentation/userspace-api/ioctl/ioctl-number.rst
+index 4f1532a251d2..ff5827b074e1 100644
+--- a/Documentation/userspace-api/ioctl/ioctl-number.rst
++++ b/Documentation/userspace-api/ioctl/ioctl-number.rst
+@@ -370,6 +370,8 @@ Code  Seq#    Include File                                           Comments
+                                                                      <mailto:linuxppc-dev>
+ 0xB2  08     powerpc/include/uapi/asm/papr-physical-attestation.h    powerpc/pseries Physical Attestation API
+                                                                      <mailto:linuxppc-dev>
++0xB2  09     arch/powerpc/include/uapi/asm/papr-hvpipe.h             powerpc/pseries HVPIPE API
++                                                                     <mailto:linuxppc-dev>
+ 0xB3  00     linux/mmc/ioctl.h
+ 0xB4  00-0F  linux/gpio.h                                            <mailto:linux-gpio@vger.kernel.org>
+ 0xB5  00-0F  uapi/linux/rpmsg.h                                      <mailto:linux-remoteproc@vger.kernel.org>
+diff --git a/arch/powerpc/include/uapi/asm/papr-hvpipe.h b/arch/powerpc/include/uapi/asm/papr-hvpipe.h
+new file mode 100644
+index 000000000000..459a7bb0e6c9
+--- /dev/null
++++ b/arch/powerpc/include/uapi/asm/papr-hvpipe.h
+@@ -0,0 +1,33 @@
++/* SPDX-License-Identifier: GPL-2.0 WITH Linux-syscall-note */
++#ifndef _UAPI_PAPR_HVPIPE_H_
++#define _UAPI_PAPR_HVPIPE_H_
++
++#include <linux/types.h>
++#include <asm/ioctl.h>
++#include <asm/papr-miscdev.h>
++
++/*
++ * This header is included in payload between OS and the user
++ * space.
++ * flags: OS notifies the user space whether the hvpipe is
++ *        closed or the buffer has the payload.
++ */
++struct papr_hvpipe_hdr {
++	u8 version;
++	u8 reserved[3];
++	u32 flags;
++	u8 reserved2[40];
++};
++
++/*
++ * ioctl for /dev/papr-hvpipe
++ */
++#define PAPR_HVPIPE_IOC_CREATE_HANDLE	_IOW(PAPR_MISCDEV_IOC_ID, 9, __u32)
++
++/*
++ * hvpipe_hdr flags used for read()
++ */
++#define HVPIPE_MSG_AVAILABLE	0x01 /* Payload is available */
++#define HVPIPE_LOST_CONNECTION	0x02 /* Pipe connection is closed/unavailable */
++
++#endif /* _UAPI_PAPR_HVPIPE_H_ */
 -- 
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+2.43.5
+
 
