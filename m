@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-10540-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10541-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57559C87FCA
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Aug 2025 20:46:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5245C87FCA
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Aug 2025 20:46:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bwBXd4VYVz3bnJ;
-	Mon,  4 Aug 2025 06:45:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754253937;
-	cv=none; b=U+hnAoMQRHeFN70Hs4nJic4zU8TCXPR4azcWN8Q9s7rGKNgT06LL5racDKLrltbAnFMQLGouIm/0vfx9a7zzGe63576U8sJOhssxcMldlL9DFoKbHfS0RfrKTI4cL+cSS2SuVpagbdIWXyws2DUmT2rooBQpdrukW+U81UjYSE1meZMy9yH0kJKUcINytHm9YGgoWvqZGAJXKH4mjK8ikp/+BlN0w+lusOhpYrvfUmkkPLGxYCrJTfkGLmq0lXc7YUXkrk7dpYe6EnfohznZ4pZmia9b/j+UAn/aNzGxWsa1wO5kXQq8LpkQaaY7S+h6/UutJ/TwordwIrRuD6VTDA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bwBXf4Tlnz2yQH;
+	Mon,  4 Aug 2025 06:45:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754253938;
+	cv=none; b=JSCEcnC2ie9GyiwWOMVE0VDPpUyp2dYLqOH6DRbVt8NXOYqzcXVD2vWciqgujgJw405zT17uITYYQ+V2RKJxYng4oddrMkw4vPlgk7mdT2rzQznhiIigQ/57WEn984y9T1jSD8xvas7ra40Px/uPxtkj2xmLlcoYlTFyCw85BB9m2s8s8JpYiOxcjrqSRhEk7wzSra26lexl/uDivZIJQa1adU6e7DiF4CLtvQl7CLk85fWe8sTCkEQ6dhrtSK0lzdYez6Ih20+1DGMBeHslxcqCCX9k2PDKJ2r/QQg1Mm1pt4q+eXMtsgMfQmF8hrwv4eCltbIHhgutgLjT+9UWQA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754253937; c=relaxed/relaxed;
-	bh=hmt3kB+P6nsG47XIZO64gX6GNVveIKuA3RcrTIHU97w=;
+	t=1754253938; c=relaxed/relaxed;
+	bh=eMfGkrtxctQbmNULGkSpLbKbc4e5LgCl7j7yHq01dz0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=S6VUJvzA7Ia5pFXcV6E10YD9LfSyx1//Q1b3p2duTfjwVoTzOBrDoNmtq28GxqNCv2wK+MoXQIdKVxxlEW7uCBCxgOguUbGbS7ulEke4ov4/rdl8wt0tnMPbxfJykv4dg8FLy8wZchHQctDXMVdO19D5xbvs724ySv4fx2+HagnsvI0rm7RBRO0TP9fkHm0jixFmFRPsKtUlJ37wqlgUsOehGf6Y8+zGJvdFfsMHwDYI3BMSz0UKC0mD1U6lB8avI2icPUSA6bjWuiy71nzEQwVM5RmnLaORfT9rdc2HCJT+jkwsitWWNjdkqztG46B7ANp/EKt79jJTWsM8PeaVcQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=em3JLHcL; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=fs7wsfSEnIt/8NB5avO0s0mtU8kb6sE5/vU9WfDSCHk8rNMlNZRORd7zKu0ztSUX85xR2nEFqZVKD4lakf/O1YIE9xwKc7KMVjj6M2Gb70pxzlVyraIx9f+bcNsdpVZqBC+ZlvhTYeaYD7dyYBgzcN5wvgkbAUhZEIfx7uSTrbUPd6SnIL6EVPSCdCXQK7T0IqLLJFGETk8Ag/g8MjSYNRoQMQiRjYyB0BB6/aZNektY74CtbgFolaW1B2ihQcDfhFCfshPVPmSbicSPWPguuC3FsHzKOvr2adWdIzCFDAmuq9HluLF9ZMAfgQgVJhARwkGW7vXdtUWSYFEiJ8Bg0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NOK0sEaw; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=em3JLHcL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NOK0sEaw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwBXb2YDMz2yQH
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2025 06:45:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwBXc2frPz2xWc
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2025 06:45:36 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 6E46B45BEA;
-	Sun,  3 Aug 2025 20:45:32 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B6172C4CEEB;
-	Sun,  3 Aug 2025 20:45:31 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 506255C5B51;
+	Sun,  3 Aug 2025 20:45:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E507C4CEF9;
+	Sun,  3 Aug 2025 20:45:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1754253932;
-	bh=WVzR/sPd61gpCZfbjnLKuwGbqa/5KZl8JqrIevNYQJY=;
+	s=k20201202; t=1754253934;
+	bh=ZKqjBGMT1lPpSPEhosXQ6UaXTwS5COxO+pglv8pCRY0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=em3JLHcLtmxSZWK3sYVpF8WjDvuR5tBSYkjsKrj753tYews9fL+SBR6QDzUxyfTYW
-	 6dUr8h48QEQp0Yt7nCafb4/Y7a6zpEV0EYCIMYGU9MEu2jVvtE5Bj820QuMp9G+wwE
-	 RMym8ucmrUAbUToZiQCoFocCuYcHeldhFBJEyCSBZ2fbCNmuLJtbl/pYq5wRt63CdO
-	 PxVwWbhNMR5HaC4Vr5q4AVaTcnyEpm8wxqAc5tMMRd+W5V8n0hrWA87udqunvUyM/F
-	 1bfRGzjm0BX01yBncYqBbZNyhCHBeeJ2UuBckN5JYNRtm9WdnjIRbLfJG3JEzyTtQp
-	 XRLuNmk8+gJWg==
+	b=NOK0sEawntaqjNTr10YqcDWlLtWQjR0JYjE2TEA+vuLZwWUer7HGG3wQacp3kNZhJ
+	 iIQHx41eboAVWCAuE5p0D4FS9Y0wXogk1psDWboM33Ct8s1Al5eyxrYdaCXVZVSn1K
+	 NYc2CJDYxp9QtI+VIH4JH1zZLD2wU/UQxpP7hIdIZ7zwsGy/2zJlqiivmbnjevKjbT
+	 fTpLxXSp5YhMV4zVqrgSqYK36l4Bf51KrRM+dpC0jq4kw0ig5o6WAhS3rBvKSY0kb+
+	 nxaSCzmiEZZfMztQbYRXKKXNiTdALn3yM2UtXCm53K+2RI6VwSKn3iEcd53D+35wFL
+	 dcRLBgjudZ65g==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -53,9 +53,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	sparclinux@vger.kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 3/7] crypto: powerpc/md5 - Remove PowerPC optimized MD5 code
-Date: Sun,  3 Aug 2025 13:44:29 -0700
-Message-ID: <20250803204433.75703-4-ebiggers@kernel.org>
+Subject: [PATCH 5/7] lib/crypto: md5: Add MD5 and HMAC-MD5 library functions
+Date: Sun,  3 Aug 2025 13:44:31 -0700
+Message-ID: <20250803204433.75703-6-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20250803204433.75703-1-ebiggers@kernel.org>
 References: <20250803204433.75703-1-ebiggers@kernel.org>
@@ -74,452 +74,581 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-MD5 is insecure, is no longer commonly used, and has never been
-optimized for the most common architectures in the kernel.  Only mips,
-powerpc, and sparc have optimized MD5 code in the kernel.  Of these,
-only the powerpc one is actually testable in QEMU.  The mips one works
-only on Cavium Octeon SoCs.
+Add library functions for MD5, including HMAC support.  The MD5
+implementation is derived from crypto/md5.c.  This closely mirrors the
+corresponding SHA-1 and SHA-2 changes; however, support for architecture
+optimized MD5 implementations isn't included since it is unnecessary.
 
-Taken together, it's clear that it's time to retire these additional MD5
-implementations, and focus maintenance on the MD5 generic C code.
+While MD5 is an insecure legacy algorithm, it still has various
+in-kernel users that implement legacy protocols.  Switching to a simple
+library API, which is the way the code should have been organized
+originally, will greatly simplify their code.  For example:
 
-This commit removes the PowerPC optimized MD5 code.
+    MD5:
+        drivers/md/dm-crypt.c (for lmk IV generation)
+        fs/nfsd/nfs4recover.c
+        fs/ecryptfs/
+        fs/smb/client/
+        net/{ipv4,ipv6}/ (for TCP-MD5 signatures)
+
+    HMAC-MD5:
+        fs/smb/client/
+        fs/smb/server/
+
+(Also net/sctp/ if it continues using HMAC-MD5 for cookie generation.
+However, that use case has the flexibility to upgrade to a more modern
+algorithm, which I'll be proposing instead.)
+
+As usual, the "md5" and "hmac(md5)" crypto_shash algorithms will also be
+reimplemented on top of these library functions.  For "hmac(md5)" this
+will provide a faster, more streamlined implementation.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/powerpc/configs/powernv_defconfig |   1 -
- arch/powerpc/configs/ppc64_defconfig   |   1 -
- arch/powerpc/crypto/Kconfig            |   8 -
- arch/powerpc/crypto/Makefile           |   2 -
- arch/powerpc/crypto/md5-asm.S          | 235 -------------------------
- arch/powerpc/crypto/md5-glue.c         |  99 -----------
- 6 files changed, 346 deletions(-)
- delete mode 100644 arch/powerpc/crypto/md5-asm.S
- delete mode 100644 arch/powerpc/crypto/md5-glue.c
+ include/crypto/md5.h | 181 ++++++++++++++++++++++++++-
+ lib/crypto/Kconfig   |   6 +
+ lib/crypto/Makefile  |   3 +
+ lib/crypto/md5.c     | 290 +++++++++++++++++++++++++++++++++++++++++++
+ 4 files changed, 479 insertions(+), 1 deletion(-)
+ create mode 100644 lib/crypto/md5.c
 
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index d06388b0f66e3..bd4685612de6d 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -318,11 +318,10 @@ CONFIG_FTR_FIXUP_SELFTEST=y
- CONFIG_MSI_BITMAP_SELFTEST=y
- CONFIG_XMON=y
- CONFIG_CRYPTO_BENCHMARK=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
--CONFIG_CRYPTO_MD5_PPC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_WP512=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_BLOWFISH=m
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index ce34597e9f3e1..2d92c11eea7e4 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -385,11 +385,10 @@ CONFIG_CRYPTO_TWOFISH=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_WP512=m
- CONFIG_CRYPTO_LZO=m
--CONFIG_CRYPTO_MD5_PPC=m
- CONFIG_CRYPTO_AES_GCM_P10=m
- CONFIG_CRYPTO_DEV_NX=y
- CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
- CONFIG_CRYPTO_DEV_VMX=y
- CONFIG_SYSTEM_TRUSTED_KEYRING=y
-diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
-index cfe39fc221cf8..f4b779c7352de 100644
---- a/arch/powerpc/crypto/Kconfig
-+++ b/arch/powerpc/crypto/Kconfig
-@@ -13,18 +13,10 @@ config CRYPTO_CURVE25519_PPC64
- 	  Curve25519 algorithm
+diff --git a/include/crypto/md5.h b/include/crypto/md5.h
+index 28ee533a0507a..d8e4d3c7c0369 100644
+--- a/include/crypto/md5.h
++++ b/include/crypto/md5.h
+@@ -5,10 +5,11 @@
+ #include <crypto/hash.h>
+ #include <linux/types.h>
  
- 	  Architecture: PowerPC64
- 	  - Little-endian
+ #define MD5_DIGEST_SIZE		16
+ #define MD5_HMAC_BLOCK_SIZE	64
++#define MD5_BLOCK_SIZE		64
+ #define MD5_BLOCK_WORDS		16
+ #define MD5_HASH_WORDS		4
+ #define MD5_STATE_SIZE		24
  
--config CRYPTO_MD5_PPC
--	tristate "Digests: MD5"
--	select CRYPTO_HASH
--	help
--	  MD5 message digest algorithm (RFC1321)
--
--	  Architecture: powerpc
--
- config CRYPTO_AES_PPC_SPE
- 	tristate "Ciphers: AES, modes: ECB/CBC/CTR/XTS (SPE)"
- 	depends on SPE
- 	select CRYPTO_SKCIPHER
- 	help
-diff --git a/arch/powerpc/crypto/Makefile b/arch/powerpc/crypto/Makefile
-index bc8fd27344b8b..9eb59dce67f36 100644
---- a/arch/powerpc/crypto/Makefile
-+++ b/arch/powerpc/crypto/Makefile
-@@ -4,17 +4,15 @@
- #
- # Arch-specific CryptoAPI modules.
- #
+ #define MD5_H0	0x67452301UL
+@@ -25,6 +26,184 @@ struct md5_state {
+ 	u32 hash[MD5_HASH_WORDS];
+ 	u64 byte_count;
+ 	u32 block[MD5_BLOCK_WORDS];
+ };
  
- obj-$(CONFIG_CRYPTO_AES_PPC_SPE) += aes-ppc-spe.o
--obj-$(CONFIG_CRYPTO_MD5_PPC) += md5-ppc.o
- obj-$(CONFIG_CRYPTO_AES_GCM_P10) += aes-gcm-p10-crypto.o
- obj-$(CONFIG_CRYPTO_DEV_VMX_ENCRYPT) += vmx-crypto.o
- obj-$(CONFIG_CRYPTO_CURVE25519_PPC64) += curve25519-ppc64le.o
- 
- aes-ppc-spe-y := aes-spe-core.o aes-spe-keys.o aes-tab-4k.o aes-spe-modes.o aes-spe-glue.o
--md5-ppc-y := md5-asm.o md5-glue.o
- aes-gcm-p10-crypto-y := aes-gcm-p10-glue.o aes-gcm-p10.o ghashp10-ppc.o aesp10-ppc.o
- vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o aes_cbc.o aes_ctr.o aes_xts.o ghash.o
- curve25519-ppc64le-y := curve25519-ppc64le-core.o curve25519-ppc64le_asm.o
- 
- ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
-diff --git a/arch/powerpc/crypto/md5-asm.S b/arch/powerpc/crypto/md5-asm.S
-deleted file mode 100644
-index fa6bc440cf4ac..0000000000000
---- a/arch/powerpc/crypto/md5-asm.S
-+++ /dev/null
-@@ -1,235 +0,0 @@
--/* SPDX-License-Identifier: GPL-2.0-or-later */
--/*
-- * Fast MD5 implementation for PPC
-- *
-- * Copyright (c) 2015 Markus Stockhausen <stockhausen@collogia.de>
-- */
--#include <asm/ppc_asm.h>
--#include <asm/asm-offsets.h>
--#include <asm/asm-compat.h>
--
--#define rHP	r3
--#define rWP	r4
--
--#define rH0	r0
--#define rH1	r6
--#define rH2	r7
--#define rH3	r5
--
--#define rW00	r8
--#define rW01	r9
--#define rW02	r10
--#define rW03	r11
--#define rW04	r12
--#define rW05	r14
--#define rW06	r15
--#define rW07	r16
--#define rW08	r17
--#define rW09	r18
--#define rW10	r19
--#define rW11	r20
--#define rW12	r21
--#define rW13	r22
--#define rW14	r23
--#define rW15	r24
--
--#define rT0	r25
--#define rT1	r26
--
--#define INITIALIZE \
--	PPC_STLU r1,-INT_FRAME_SIZE(r1); \
--	SAVE_GPRS(14, 26, r1)		/* push registers onto stack	*/
--
--#define FINALIZE \
--	REST_GPRS(14, 26, r1);		/* pop registers from stack	*/ \
--	addi	r1,r1,INT_FRAME_SIZE
--
--#ifdef __BIG_ENDIAN__
--#define LOAD_DATA(reg, off) \
--	lwbrx		reg,0,rWP;	/* load data			*/
--#define INC_PTR \
--	addi		rWP,rWP,4;	/* increment per word		*/
--#define NEXT_BLOCK			/* nothing to do		*/
--#else
--#define LOAD_DATA(reg, off) \
--	lwz		reg,off(rWP);	/* load data			*/
--#define INC_PTR				/* nothing to do		*/
--#define NEXT_BLOCK \
--	addi		rWP,rWP,64;	/* increment per block		*/
 -#endif
--
--#define R_00_15(a, b, c, d, w0, w1, p, q, off, k0h, k0l, k1h, k1l) \
--	LOAD_DATA(w0, off)		/*    W				*/ \
--	and		rT0,b,c;	/* 1: f = b and c		*/ \
--	INC_PTR				/*    ptr++			*/ \
--	andc		rT1,d,b;	/* 1: f' = ~b and d		*/ \
--	LOAD_DATA(w1, off+4)		/*    W				*/ \
--	or		rT0,rT0,rT1;	/* 1: f = f or f'		*/ \
--	addi		w0,w0,k0l;	/* 1: wk = w + k		*/ \
--	add		a,a,rT0;	/* 1: a = a + f			*/ \
--	addis		w0,w0,k0h;	/* 1: wk = w + k'		*/ \
--	addis		w1,w1,k1h;	/* 2: wk = w + k		*/ \
--	add		a,a,w0;		/* 1: a = a + wk		*/ \
--	addi		w1,w1,k1l;	/* 2: wk = w + k'		*/ \
--	rotrwi		a,a,p;		/* 1: a = a rotl x		*/ \
--	add		d,d,w1;		/* 2: a = a + wk		*/ \
--	add		a,a,b;		/* 1: a = a + b			*/ \
--	and		rT0,a,b;	/* 2: f = b and c		*/ \
--	andc		rT1,c,a;	/* 2: f' = ~b and d		*/ \
--	or		rT0,rT0,rT1;	/* 2: f = f or f'		*/ \
--	add		d,d,rT0;	/* 2: a = a + f			*/ \
--	INC_PTR				/*    ptr++			*/ \
--	rotrwi		d,d,q;		/* 2: a = a rotl x		*/ \
--	add		d,d,a;		/* 2: a = a + b			*/
--
--#define R_16_31(a, b, c, d, w0, w1, p, q, k0h, k0l, k1h, k1l) \
--	andc		rT0,c,d;	/* 1: f = c and ~d		*/ \
--	and		rT1,b,d;	/* 1: f' = b and d		*/ \
--	addi		w0,w0,k0l;	/* 1: wk = w + k		*/ \
--	or		rT0,rT0,rT1;	/* 1: f = f or f'		*/ \
--	addis		w0,w0,k0h;	/* 1: wk = w + k'		*/ \
--	add		a,a,rT0;	/* 1: a = a + f			*/ \
--	addi		w1,w1,k1l;	/* 2: wk = w + k		*/ \
--	add		a,a,w0;		/* 1: a = a + wk		*/ \
--	addis		w1,w1,k1h;	/* 2: wk = w + k'		*/ \
--	andc		rT0,b,c;	/* 2: f = c and ~d		*/ \
--	rotrwi		a,a,p;		/* 1: a = a rotl x		*/ \
--	add		a,a,b;		/* 1: a = a + b			*/ \
--	add		d,d,w1;		/* 2: a = a + wk		*/ \
--	and		rT1,a,c;	/* 2: f' = b and d		*/ \
--	or		rT0,rT0,rT1;	/* 2: f = f or f'		*/ \
--	add		d,d,rT0;	/* 2: a = a + f			*/ \
--	rotrwi		d,d,q;		/* 2: a = a rotl x		*/ \
--	add		d,d,a;		/* 2: a = a +b			*/
--
--#define R_32_47(a, b, c, d, w0, w1, p, q, k0h, k0l, k1h, k1l) \
--	xor		rT0,b,c;	/* 1: f' = b xor c		*/ \
--	addi		w0,w0,k0l;	/* 1: wk = w + k		*/ \
--	xor		rT1,rT0,d;	/* 1: f = f xor f'		*/ \
--	addis		w0,w0,k0h;	/* 1: wk = w + k'		*/ \
--	add		a,a,rT1;	/* 1: a = a + f			*/ \
--	addi		w1,w1,k1l;	/* 2: wk = w + k		*/ \
--	add		a,a,w0;		/* 1: a = a + wk		*/ \
--	addis		w1,w1,k1h;	/* 2: wk = w + k'		*/ \
--	rotrwi		a,a,p;		/* 1: a = a rotl x		*/ \
--	add		d,d,w1;		/* 2: a = a + wk		*/ \
--	add		a,a,b;		/* 1: a = a + b			*/ \
--	xor		rT1,rT0,a;	/* 2: f = b xor f'		*/ \
--	add		d,d,rT1;	/* 2: a = a + f			*/ \
--	rotrwi		d,d,q;		/* 2: a = a rotl x		*/ \
--	add		d,d,a;		/* 2: a = a + b			*/
--
--#define R_48_63(a, b, c, d, w0, w1, p, q, k0h, k0l, k1h, k1l) \
--	addi		w0,w0,k0l;	/* 1: w = w + k			*/ \
--	orc		rT0,b,d;	/* 1: f = b or ~d		*/ \
--	addis		w0,w0,k0h;	/* 1: w = w + k'		*/ \
--	xor		rT0,rT0,c;	/* 1: f = f xor c		*/ \
--	add		a,a,w0;		/* 1: a = a + wk		*/ \
--	addi		w1,w1,k1l;	/* 2: w = w + k			*/ \
--	add		a,a,rT0;	/* 1: a = a + f			*/ \
--	addis		w1,w1,k1h;	/* 2: w = w + k'		*/ \
--	rotrwi		a,a,p;		/* 1: a = a rotl x		*/ \
--	add		a,a,b;		/* 1: a = a + b			*/ \
--	orc		rT0,a,c;	/* 2: f = b or ~d		*/ \
--	add		d,d,w1;		/* 2: a = a + wk		*/ \
--	xor		rT0,rT0,b;	/* 2: f = f xor c		*/ \
--	add		d,d,rT0;	/* 2: a = a + f			*/ \
--	rotrwi		d,d,q;		/* 2: a = a rotl x		*/ \
--	add		d,d,a;		/* 2: a = a + b			*/
--
--_GLOBAL(ppc_md5_transform)
--	INITIALIZE
--
--	mtctr		r5
--	lwz		rH0,0(rHP)
--	lwz		rH1,4(rHP)
--	lwz		rH2,8(rHP)
--	lwz		rH3,12(rHP)
--
--ppc_md5_main:
--	R_00_15(rH0, rH1, rH2, rH3, rW00, rW01, 25, 20, 0,
--		0xd76b, -23432, 0xe8c8, -18602)
--	R_00_15(rH2, rH3, rH0, rH1, rW02, rW03, 15, 10, 8,
--		0x2420, 0x70db, 0xc1be, -12562)
--	R_00_15(rH0, rH1, rH2, rH3, rW04, rW05, 25, 20, 16,
--		0xf57c, 0x0faf, 0x4788, -14806)
--	R_00_15(rH2, rH3, rH0, rH1, rW06, rW07, 15, 10, 24,
--		0xa830, 0x4613, 0xfd47, -27391)
--	R_00_15(rH0, rH1, rH2, rH3, rW08, rW09, 25, 20, 32,
--		0x6981, -26408, 0x8b45,  -2129)
--	R_00_15(rH2, rH3, rH0, rH1, rW10, rW11, 15, 10, 40,
--		0xffff, 0x5bb1, 0x895d, -10306)
--	R_00_15(rH0, rH1, rH2, rH3, rW12, rW13, 25, 20, 48,
--		0x6b90, 0x1122, 0xfd98, 0x7193)
--	R_00_15(rH2, rH3, rH0, rH1, rW14, rW15, 15, 10, 56,
--		0xa679, 0x438e, 0x49b4, 0x0821)
--
--	R_16_31(rH0, rH1, rH2, rH3, rW01, rW06, 27, 23,
--		0x0d56, 0x6e0c, 0x1810, 0x6d2d)
--	R_16_31(rH2, rH3, rH0, rH1, rW11, rW00, 18, 12,
--		0x9d02, -32109, 0x124c, 0x2332)
--	R_16_31(rH0, rH1, rH2, rH3, rW05, rW10, 27, 23,
--		0x8ea7, 0x4a33, 0x0245, -18270)
--	R_16_31(rH2, rH3, rH0, rH1, rW15, rW04, 18, 12,
--		0x8eee,  -8608, 0xf258,  -5095)
--	R_16_31(rH0, rH1, rH2, rH3, rW09, rW14, 27, 23,
--		0x969d, -10697, 0x1cbe, -15288)
--	R_16_31(rH2, rH3, rH0, rH1, rW03, rW08, 18, 12,
--		0x3317, 0x3e99, 0xdbd9, 0x7c15)
--	R_16_31(rH0, rH1, rH2, rH3, rW13, rW02, 27, 23,
--		0xac4b, 0x7772, 0xd8cf, 0x331d)
--	R_16_31(rH2, rH3, rH0, rH1, rW07, rW12, 18, 12,
--		0x6a28, 0x6dd8, 0x219a, 0x3b68)
--
--	R_32_47(rH0, rH1, rH2, rH3, rW05, rW08, 28, 21,
--		0x29cb, 0x28e5, 0x4218,  -7788)
--	R_32_47(rH2, rH3, rH0, rH1, rW11, rW14, 16,  9,
--		0x473f, 0x06d1, 0x3aae, 0x3036)
--	R_32_47(rH0, rH1, rH2, rH3, rW01, rW04, 28, 21,
--		0xaea1, -15134, 0x640b, -11295)
--	R_32_47(rH2, rH3, rH0, rH1, rW07, rW10, 16,  9,
--		0x8f4c, 0x4887, 0xbc7c, -22499)
--	R_32_47(rH0, rH1, rH2, rH3, rW13, rW00, 28, 21,
--		0x7eb8, -27199, 0x00ea, 0x6050)
--	R_32_47(rH2, rH3, rH0, rH1, rW03, rW06, 16,  9,
--		0xe01a, 0x22fe, 0x4447, 0x69c5)
--	R_32_47(rH0, rH1, rH2, rH3, rW09, rW12, 28, 21,
--		0xb7f3, 0x0253, 0x59b1, 0x4d5b)
--	R_32_47(rH2, rH3, rH0, rH1, rW15, rW02, 16,  9,
--		0x4701, -27017, 0xc7bd, -19859)
--
--	R_48_63(rH0, rH1, rH2, rH3, rW00, rW07, 26, 22,
--		0x0988,  -1462, 0x4c70, -19401)
--	R_48_63(rH2, rH3, rH0, rH1, rW14, rW05, 17, 11,
--		0xadaf,  -5221, 0xfc99, 0x66f7)
--	R_48_63(rH0, rH1, rH2, rH3, rW12, rW03, 26, 22,
--		0x7e80, -16418, 0xba1e, -25587)
--	R_48_63(rH2, rH3, rH0, rH1, rW10, rW01, 17, 11,
--		0x4130, 0x380d, 0xe0c5, 0x738d)
--	lwz		rW00,0(rHP)
--	R_48_63(rH0, rH1, rH2, rH3, rW08, rW15, 26, 22,
--		0xe837, -30770, 0xde8a, 0x69e8)
--	lwz		rW14,4(rHP)
--	R_48_63(rH2, rH3, rH0, rH1, rW06, rW13, 17, 11,
--		0x9e79, 0x260f, 0x256d, -27941)
--	lwz		rW12,8(rHP)
--	R_48_63(rH0, rH1, rH2, rH3, rW04, rW11, 26, 22,
--		0xab75, -20775, 0x4f9e, -28397)
--	lwz		rW10,12(rHP)
--	R_48_63(rH2, rH3, rH0, rH1, rW02, rW09, 17, 11,
--		0x662b, 0x7c56, 0x11b2, 0x0358)
--
--	add		rH0,rH0,rW00
--	stw		rH0,0(rHP)
--	add		rH1,rH1,rW14
--	stw		rH1,4(rHP)
--	add		rH2,rH2,rW12
--	stw		rH2,8(rHP)
--	add		rH3,rH3,rW10
--	stw		rH3,12(rHP)
--	NEXT_BLOCK
--
--	bdnz		ppc_md5_main
--
--	FINALIZE
--	blr
-diff --git a/arch/powerpc/crypto/md5-glue.c b/arch/powerpc/crypto/md5-glue.c
-deleted file mode 100644
-index 204440a90cd84..0000000000000
---- a/arch/powerpc/crypto/md5-glue.c
-+++ /dev/null
-@@ -1,99 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * Glue code for MD5 implementation for PPC assembler
-- *
-- * Based on generic implementation.
-- *
-- * Copyright (c) 2015 Markus Stockhausen <stockhausen@collogia.de>
-- */
--
--#include <crypto/internal/hash.h>
--#include <crypto/md5.h>
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/string.h>
--
--extern void ppc_md5_transform(u32 *state, const u8 *src, u32 blocks);
--
--static int ppc_md5_init(struct shash_desc *desc)
--{
--	struct md5_state *sctx = shash_desc_ctx(desc);
--
--	sctx->hash[0] = MD5_H0;
--	sctx->hash[1] = MD5_H1;
--	sctx->hash[2] = MD5_H2;
--	sctx->hash[3] =	MD5_H3;
--	sctx->byte_count = 0;
--
--	return 0;
--}
--
--static int ppc_md5_update(struct shash_desc *desc, const u8 *data,
--			unsigned int len)
--{
--	struct md5_state *sctx = shash_desc_ctx(desc);
--
--	sctx->byte_count += round_down(len, MD5_HMAC_BLOCK_SIZE);
--	ppc_md5_transform(sctx->hash, data, len >> 6);
--	return len - round_down(len, MD5_HMAC_BLOCK_SIZE);
--}
--
--static int ppc_md5_finup(struct shash_desc *desc, const u8 *src,
--			 unsigned int offset, u8 *out)
--{
--	struct md5_state *sctx = shash_desc_ctx(desc);
--	__le64 block[MD5_BLOCK_WORDS] = {};
--	u8 *p = memcpy(block, src, offset);
--	__le32 *dst = (__le32 *)out;
--	__le64 *pbits;
--
--	src = p;
--	p += offset;
--	*p++ = 0x80;
--	sctx->byte_count += offset;
--	pbits = &block[(MD5_BLOCK_WORDS / (offset > 55 ? 1 : 2)) - 1];
--	*pbits = cpu_to_le64(sctx->byte_count << 3);
--	ppc_md5_transform(sctx->hash, src, (pbits - block + 1) / 8);
--	memzero_explicit(block, sizeof(block));
--
--	dst[0] = cpu_to_le32(sctx->hash[0]);
--	dst[1] = cpu_to_le32(sctx->hash[1]);
--	dst[2] = cpu_to_le32(sctx->hash[2]);
--	dst[3] = cpu_to_le32(sctx->hash[3]);
--	return 0;
--}
--
--static struct shash_alg alg = {
--	.digestsize	=	MD5_DIGEST_SIZE,
--	.init		=	ppc_md5_init,
--	.update		=	ppc_md5_update,
--	.finup		=	ppc_md5_finup,
--	.descsize	=	MD5_STATE_SIZE,
--	.base		=	{
--		.cra_name	=	"md5",
--		.cra_driver_name=	"md5-ppc",
--		.cra_priority	=	200,
--		.cra_flags	=	CRYPTO_AHASH_ALG_BLOCK_ONLY,
--		.cra_blocksize	=	MD5_HMAC_BLOCK_SIZE,
--		.cra_module	=	THIS_MODULE,
--	}
--};
--
--static int __init ppc_md5_mod_init(void)
--{
--	return crypto_register_shash(&alg);
--}
--
--static void __exit ppc_md5_mod_fini(void)
--{
--	crypto_unregister_shash(&alg);
--}
--
--module_init(ppc_md5_mod_init);
--module_exit(ppc_md5_mod_fini);
--
--MODULE_LICENSE("GPL");
--MODULE_DESCRIPTION("MD5 Secure Hash Algorithm, PPC assembler");
--
--MODULE_ALIAS_CRYPTO("md5");
--MODULE_ALIAS_CRYPTO("md5-ppc");
++/* State for the MD5 compression function */
++struct md5_block_state {
++	u32 h[MD5_HASH_WORDS];
++};
++
++/**
++ * struct md5_ctx - Context for hashing a message with MD5
++ * @state: the compression function state
++ * @bytecount: number of bytes processed so far
++ * @buf: partial block buffer; bytecount % MD5_BLOCK_SIZE bytes are valid
++ */
++struct md5_ctx {
++	struct md5_block_state state;
++	u64 bytecount;
++	u8 buf[MD5_BLOCK_SIZE] __aligned(__alignof__(__le64));
++};
++
++/**
++ * md5_init() - Initialize an MD5 context for a new message
++ * @ctx: the context to initialize
++ *
++ * If you don't need incremental computation, consider md5() instead.
++ *
++ * Context: Any context.
++ */
++void md5_init(struct md5_ctx *ctx);
++
++/**
++ * md5_update() - Update an MD5 context with message data
++ * @ctx: the context to update; must have been initialized
++ * @data: the message data
++ * @len: the data length in bytes
++ *
++ * This can be called any number of times.
++ *
++ * Context: Any context.
++ */
++void md5_update(struct md5_ctx *ctx, const u8 *data, size_t len);
++
++/**
++ * md5_final() - Finish computing an MD5 message digest
++ * @ctx: the context to finalize; must have been initialized
++ * @out: (output) the resulting MD5 message digest
++ *
++ * After finishing, this zeroizes @ctx.  So the caller does not need to do it.
++ *
++ * Context: Any context.
++ */
++void md5_final(struct md5_ctx *ctx, u8 out[MD5_DIGEST_SIZE]);
++
++/**
++ * md5() - Compute MD5 message digest in one shot
++ * @data: the message data
++ * @len: the data length in bytes
++ * @out: (output) the resulting MD5 message digest
++ *
++ * Context: Any context.
++ */
++void md5(const u8 *data, size_t len, u8 out[MD5_DIGEST_SIZE]);
++
++/**
++ * struct hmac_md5_key - Prepared key for HMAC-MD5
++ * @istate: private
++ * @ostate: private
++ */
++struct hmac_md5_key {
++	struct md5_block_state istate;
++	struct md5_block_state ostate;
++};
++
++/**
++ * struct hmac_md5_ctx - Context for computing HMAC-MD5 of a message
++ * @hash_ctx: private
++ * @ostate: private
++ */
++struct hmac_md5_ctx {
++	struct md5_ctx hash_ctx;
++	struct md5_block_state ostate;
++};
++
++/**
++ * hmac_md5_preparekey() - Prepare a key for HMAC-MD5
++ * @key: (output) the key structure to initialize
++ * @raw_key: the raw HMAC-MD5 key
++ * @raw_key_len: the key length in bytes.  All key lengths are supported.
++ *
++ * Note: the caller is responsible for zeroizing both the struct hmac_md5_key
++ * and the raw key once they are no longer needed.
++ *
++ * Context: Any context.
++ */
++void hmac_md5_preparekey(struct hmac_md5_key *key,
++			 const u8 *raw_key, size_t raw_key_len);
++
++/**
++ * hmac_md5_init() - Initialize an HMAC-MD5 context for a new message
++ * @ctx: (output) the HMAC context to initialize
++ * @key: the prepared HMAC key
++ *
++ * If you don't need incremental computation, consider hmac_md5() instead.
++ *
++ * Context: Any context.
++ */
++void hmac_md5_init(struct hmac_md5_ctx *ctx, const struct hmac_md5_key *key);
++
++/**
++ * hmac_md5_init_usingrawkey() - Initialize an HMAC-MD5 context for a new
++ *				  message, using a raw key
++ * @ctx: (output) the HMAC context to initialize
++ * @raw_key: the raw HMAC-MD5 key
++ * @raw_key_len: the key length in bytes.  All key lengths are supported.
++ *
++ * If you don't need incremental computation, consider hmac_md5_usingrawkey()
++ * instead.
++ *
++ * Context: Any context.
++ */
++void hmac_md5_init_usingrawkey(struct hmac_md5_ctx *ctx,
++			       const u8 *raw_key, size_t raw_key_len);
++
++/**
++ * hmac_md5_update() - Update an HMAC-MD5 context with message data
++ * @ctx: the HMAC context to update; must have been initialized
++ * @data: the message data
++ * @data_len: the data length in bytes
++ *
++ * This can be called any number of times.
++ *
++ * Context: Any context.
++ */
++static inline void hmac_md5_update(struct hmac_md5_ctx *ctx,
++				   const u8 *data, size_t data_len)
++{
++	md5_update(&ctx->hash_ctx, data, data_len);
++}
++
++/**
++ * hmac_md5_final() - Finish computing an HMAC-MD5 value
++ * @ctx: the HMAC context to finalize; must have been initialized
++ * @out: (output) the resulting HMAC-MD5 value
++ *
++ * After finishing, this zeroizes @ctx.  So the caller does not need to do it.
++ *
++ * Context: Any context.
++ */
++void hmac_md5_final(struct hmac_md5_ctx *ctx, u8 out[MD5_DIGEST_SIZE]);
++
++/**
++ * hmac_md5() - Compute HMAC-MD5 in one shot, using a prepared key
++ * @key: the prepared HMAC key
++ * @data: the message data
++ * @data_len: the data length in bytes
++ * @out: (output) the resulting HMAC-MD5 value
++ *
++ * If you're using the key only once, consider using hmac_md5_usingrawkey().
++ *
++ * Context: Any context.
++ */
++void hmac_md5(const struct hmac_md5_key *key, const u8 *data, size_t data_len,
++	      u8 out[MD5_DIGEST_SIZE]);
++
++/**
++ * hmac_md5_usingrawkey() - Compute HMAC-MD5 in one shot, using a raw key
++ * @raw_key: the raw HMAC-MD5 key
++ * @raw_key_len: the key length in bytes.  All key lengths are supported.
++ * @data: the message data
++ * @data_len: the data length in bytes
++ * @out: (output) the resulting HMAC-MD5 value
++ *
++ * If you're using the key multiple times, prefer to use hmac_md5_preparekey()
++ * followed by multiple calls to hmac_md5() instead.
++ *
++ * Context: Any context.
++ */
++void hmac_md5_usingrawkey(const u8 *raw_key, size_t raw_key_len,
++			  const u8 *data, size_t data_len,
++			  u8 out[MD5_DIGEST_SIZE]);
++
++#endif /* _CRYPTO_MD5_H */
+diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
+index c2b65b6a9bb6f..f1b2a51450df2 100644
+--- a/lib/crypto/Kconfig
++++ b/lib/crypto/Kconfig
+@@ -99,10 +99,16 @@ config CRYPTO_LIB_CURVE25519
+ 	  one, if one is available and enabled.
+ 
+ config CRYPTO_LIB_DES
+ 	tristate
+ 
++config CRYPTO_LIB_MD5
++	tristate
++	help
++	  The MD5 and HMAC-MD5 library functions.  Select this if your module
++	  uses any of the functions from <crypto/md5.h>.
++
+ config CRYPTO_LIB_POLY1305_RSIZE
+ 	int
+ 	default 2 if MIPS
+ 	default 11 if X86_64
+ 	default 9 if ARM || ARM64
+diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
+index e4151be2ebd44..252480ab97e9c 100644
+--- a/lib/crypto/Makefile
++++ b/lib/crypto/Makefile
+@@ -57,10 +57,13 @@ libcurve25519-y					+= curve25519.o
+ libcurve25519-$(CONFIG_CRYPTO_SELFTESTS)	+= curve25519-selftest.o
+ 
+ obj-$(CONFIG_CRYPTO_LIB_DES)			+= libdes.o
+ libdes-y					:= des.o
+ 
++obj-$(CONFIG_CRYPTO_LIB_MD5)			+= libmd5.o
++libmd5-y					:= md5.o
++
+ obj-$(CONFIG_CRYPTO_LIB_POLY1305)		+= libpoly1305.o
+ libpoly1305-y					+= poly1305.o
+ 
+ obj-$(CONFIG_CRYPTO_LIB_POLY1305_GENERIC)	+= libpoly1305-generic.o
+ libpoly1305-generic-y				:= poly1305-donna32.o
+diff --git a/lib/crypto/md5.c b/lib/crypto/md5.c
+new file mode 100644
+index 0000000000000..17323340963b5
+--- /dev/null
++++ b/lib/crypto/md5.c
+@@ -0,0 +1,290 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
++/*
++ * MD5 and HMAC-MD5 library functions
++ *
++ * md5_transform() is derived from cryptoapi implementation, originally based on
++ * the public domain implementation written by Colin Plumb in 1993.
++ *
++ * Copyright (c) Cryptoapi developers.
++ * Copyright (c) 2002 James Morris <jmorris@intercode.com.au>
++ * Copyright 2025 Google LLC
++ */
++
++#include <crypto/hmac.h>
++#include <crypto/md5.h>
++#include <linux/export.h>
++#include <linux/kernel.h>
++#include <linux/module.h>
++#include <linux/string.h>
++#include <linux/unaligned.h>
++#include <linux/wordpart.h>
++
++static const struct md5_block_state md5_iv = {
++	.h = { MD5_H0, MD5_H1, MD5_H2, MD5_H3 },
++};
++
++#define F1(x, y, z) (z ^ (x & (y ^ z)))
++#define F2(x, y, z) F1(z, x, y)
++#define F3(x, y, z) (x ^ y ^ z)
++#define F4(x, y, z) (y ^ (x | ~z))
++
++#define MD5STEP(f, w, x, y, z, in, s) \
++	(w += f(x, y, z) + in, w = (w << s | w >> (32 - s)) + x)
++
++static void md5_transform(struct md5_block_state *state,
++			  const u8 data[MD5_BLOCK_SIZE])
++{
++	u32 in[MD5_BLOCK_WORDS];
++	u32 a, b, c, d;
++
++	memcpy(in, data, MD5_BLOCK_SIZE);
++	le32_to_cpu_array(in, ARRAY_SIZE(in));
++
++	a = state->h[0];
++	b = state->h[1];
++	c = state->h[2];
++	d = state->h[3];
++
++	MD5STEP(F1, a, b, c, d, in[0] + 0xd76aa478, 7);
++	MD5STEP(F1, d, a, b, c, in[1] + 0xe8c7b756, 12);
++	MD5STEP(F1, c, d, a, b, in[2] + 0x242070db, 17);
++	MD5STEP(F1, b, c, d, a, in[3] + 0xc1bdceee, 22);
++	MD5STEP(F1, a, b, c, d, in[4] + 0xf57c0faf, 7);
++	MD5STEP(F1, d, a, b, c, in[5] + 0x4787c62a, 12);
++	MD5STEP(F1, c, d, a, b, in[6] + 0xa8304613, 17);
++	MD5STEP(F1, b, c, d, a, in[7] + 0xfd469501, 22);
++	MD5STEP(F1, a, b, c, d, in[8] + 0x698098d8, 7);
++	MD5STEP(F1, d, a, b, c, in[9] + 0x8b44f7af, 12);
++	MD5STEP(F1, c, d, a, b, in[10] + 0xffff5bb1, 17);
++	MD5STEP(F1, b, c, d, a, in[11] + 0x895cd7be, 22);
++	MD5STEP(F1, a, b, c, d, in[12] + 0x6b901122, 7);
++	MD5STEP(F1, d, a, b, c, in[13] + 0xfd987193, 12);
++	MD5STEP(F1, c, d, a, b, in[14] + 0xa679438e, 17);
++	MD5STEP(F1, b, c, d, a, in[15] + 0x49b40821, 22);
++
++	MD5STEP(F2, a, b, c, d, in[1] + 0xf61e2562, 5);
++	MD5STEP(F2, d, a, b, c, in[6] + 0xc040b340, 9);
++	MD5STEP(F2, c, d, a, b, in[11] + 0x265e5a51, 14);
++	MD5STEP(F2, b, c, d, a, in[0] + 0xe9b6c7aa, 20);
++	MD5STEP(F2, a, b, c, d, in[5] + 0xd62f105d, 5);
++	MD5STEP(F2, d, a, b, c, in[10] + 0x02441453, 9);
++	MD5STEP(F2, c, d, a, b, in[15] + 0xd8a1e681, 14);
++	MD5STEP(F2, b, c, d, a, in[4] + 0xe7d3fbc8, 20);
++	MD5STEP(F2, a, b, c, d, in[9] + 0x21e1cde6, 5);
++	MD5STEP(F2, d, a, b, c, in[14] + 0xc33707d6, 9);
++	MD5STEP(F2, c, d, a, b, in[3] + 0xf4d50d87, 14);
++	MD5STEP(F2, b, c, d, a, in[8] + 0x455a14ed, 20);
++	MD5STEP(F2, a, b, c, d, in[13] + 0xa9e3e905, 5);
++	MD5STEP(F2, d, a, b, c, in[2] + 0xfcefa3f8, 9);
++	MD5STEP(F2, c, d, a, b, in[7] + 0x676f02d9, 14);
++	MD5STEP(F2, b, c, d, a, in[12] + 0x8d2a4c8a, 20);
++
++	MD5STEP(F3, a, b, c, d, in[5] + 0xfffa3942, 4);
++	MD5STEP(F3, d, a, b, c, in[8] + 0x8771f681, 11);
++	MD5STEP(F3, c, d, a, b, in[11] + 0x6d9d6122, 16);
++	MD5STEP(F3, b, c, d, a, in[14] + 0xfde5380c, 23);
++	MD5STEP(F3, a, b, c, d, in[1] + 0xa4beea44, 4);
++	MD5STEP(F3, d, a, b, c, in[4] + 0x4bdecfa9, 11);
++	MD5STEP(F3, c, d, a, b, in[7] + 0xf6bb4b60, 16);
++	MD5STEP(F3, b, c, d, a, in[10] + 0xbebfbc70, 23);
++	MD5STEP(F3, a, b, c, d, in[13] + 0x289b7ec6, 4);
++	MD5STEP(F3, d, a, b, c, in[0] + 0xeaa127fa, 11);
++	MD5STEP(F3, c, d, a, b, in[3] + 0xd4ef3085, 16);
++	MD5STEP(F3, b, c, d, a, in[6] + 0x04881d05, 23);
++	MD5STEP(F3, a, b, c, d, in[9] + 0xd9d4d039, 4);
++	MD5STEP(F3, d, a, b, c, in[12] + 0xe6db99e5, 11);
++	MD5STEP(F3, c, d, a, b, in[15] + 0x1fa27cf8, 16);
++	MD5STEP(F3, b, c, d, a, in[2] + 0xc4ac5665, 23);
++
++	MD5STEP(F4, a, b, c, d, in[0] + 0xf4292244, 6);
++	MD5STEP(F4, d, a, b, c, in[7] + 0x432aff97, 10);
++	MD5STEP(F4, c, d, a, b, in[14] + 0xab9423a7, 15);
++	MD5STEP(F4, b, c, d, a, in[5] + 0xfc93a039, 21);
++	MD5STEP(F4, a, b, c, d, in[12] + 0x655b59c3, 6);
++	MD5STEP(F4, d, a, b, c, in[3] + 0x8f0ccc92, 10);
++	MD5STEP(F4, c, d, a, b, in[10] + 0xffeff47d, 15);
++	MD5STEP(F4, b, c, d, a, in[1] + 0x85845dd1, 21);
++	MD5STEP(F4, a, b, c, d, in[8] + 0x6fa87e4f, 6);
++	MD5STEP(F4, d, a, b, c, in[15] + 0xfe2ce6e0, 10);
++	MD5STEP(F4, c, d, a, b, in[6] + 0xa3014314, 15);
++	MD5STEP(F4, b, c, d, a, in[13] + 0x4e0811a1, 21);
++	MD5STEP(F4, a, b, c, d, in[4] + 0xf7537e82, 6);
++	MD5STEP(F4, d, a, b, c, in[11] + 0xbd3af235, 10);
++	MD5STEP(F4, c, d, a, b, in[2] + 0x2ad7d2bb, 15);
++	MD5STEP(F4, b, c, d, a, in[9] + 0xeb86d391, 21);
++
++	state->h[0] += a;
++	state->h[1] += b;
++	state->h[2] += c;
++	state->h[3] += d;
++}
++
++void md5_init(struct md5_ctx *ctx)
++{
++	ctx->state = md5_iv;
++	ctx->bytecount = 0;
++}
++EXPORT_SYMBOL_GPL(md5_init);
++
++void md5_update(struct md5_ctx *ctx, const u8 *data, size_t len)
++{
++	size_t partial = ctx->bytecount % MD5_BLOCK_SIZE;
++
++	ctx->bytecount += len;
++
++	if (partial + len >= MD5_BLOCK_SIZE) {
++
++		if (partial) {
++			size_t l = MD5_BLOCK_SIZE - partial;
++
++			memcpy(&ctx->buf[partial], data, l);
++			data += l;
++			len -= l;
++
++			md5_transform(&ctx->state, ctx->buf);
++		}
++
++		while (len >= MD5_BLOCK_SIZE) {
++			md5_transform(&ctx->state, data);
++			data += MD5_BLOCK_SIZE;
++			len -= MD5_BLOCK_SIZE;
++		}
++		partial = 0;
++	}
++	if (len)
++		memcpy(&ctx->buf[partial], data, len);
++}
++EXPORT_SYMBOL_GPL(md5_update);
++
++static void __md5_final(struct md5_ctx *ctx, u8 out[MD5_DIGEST_SIZE])
++{
++	u64 bitcount = ctx->bytecount << 3;
++	size_t partial = ctx->bytecount % MD5_BLOCK_SIZE;
++
++	ctx->buf[partial++] = 0x80;
++	if (partial > MD5_BLOCK_SIZE - 8) {
++		memset(&ctx->buf[partial], 0, MD5_BLOCK_SIZE - partial);
++		md5_transform(&ctx->state, ctx->buf);
++		partial = 0;
++	}
++	memset(&ctx->buf[partial], 0, MD5_BLOCK_SIZE - 8 - partial);
++	*(__le64 *)&ctx->buf[MD5_BLOCK_SIZE - 8] = cpu_to_le64(bitcount);
++	md5_transform(&ctx->state, ctx->buf);
++
++	cpu_to_le32_array(ctx->state.h, ARRAY_SIZE(ctx->state.h));
++	memcpy(out, ctx->state.h, MD5_DIGEST_SIZE);
++}
++
++void md5_final(struct md5_ctx *ctx, u8 out[MD5_DIGEST_SIZE])
++{
++	__md5_final(ctx, out);
++	memzero_explicit(ctx, sizeof(*ctx));
++}
++EXPORT_SYMBOL_GPL(md5_final);
++
++void md5(const u8 *data, size_t len, u8 out[MD5_DIGEST_SIZE])
++{
++	struct md5_ctx ctx;
++
++	md5_init(&ctx);
++	md5_update(&ctx, data, len);
++	md5_final(&ctx, out);
++}
++EXPORT_SYMBOL_GPL(md5);
++
++static void __hmac_md5_preparekey(struct md5_block_state *istate,
++				  struct md5_block_state *ostate,
++				  const u8 *raw_key, size_t raw_key_len)
++{
++	union {
++		u8 b[MD5_BLOCK_SIZE];
++		unsigned long w[MD5_BLOCK_SIZE / sizeof(unsigned long)];
++	} derived_key = { 0 };
++
++	if (unlikely(raw_key_len > MD5_BLOCK_SIZE))
++		md5(raw_key, raw_key_len, derived_key.b);
++	else
++		memcpy(derived_key.b, raw_key, raw_key_len);
++
++	for (size_t i = 0; i < ARRAY_SIZE(derived_key.w); i++)
++		derived_key.w[i] ^= REPEAT_BYTE(HMAC_IPAD_VALUE);
++	*istate = md5_iv;
++	md5_transform(istate, derived_key.b);
++
++	for (size_t i = 0; i < ARRAY_SIZE(derived_key.w); i++)
++		derived_key.w[i] ^= REPEAT_BYTE(HMAC_OPAD_VALUE ^
++						HMAC_IPAD_VALUE);
++	*ostate = md5_iv;
++	md5_transform(ostate, derived_key.b);
++
++	memzero_explicit(&derived_key, sizeof(derived_key));
++}
++
++void hmac_md5_preparekey(struct hmac_md5_key *key,
++			 const u8 *raw_key, size_t raw_key_len)
++{
++	__hmac_md5_preparekey(&key->istate, &key->ostate, raw_key, raw_key_len);
++}
++EXPORT_SYMBOL_GPL(hmac_md5_preparekey);
++
++void hmac_md5_init(struct hmac_md5_ctx *ctx, const struct hmac_md5_key *key)
++{
++	ctx->hash_ctx.state = key->istate;
++	ctx->hash_ctx.bytecount = MD5_BLOCK_SIZE;
++	ctx->ostate = key->ostate;
++}
++EXPORT_SYMBOL_GPL(hmac_md5_init);
++
++void hmac_md5_init_usingrawkey(struct hmac_md5_ctx *ctx,
++			       const u8 *raw_key, size_t raw_key_len)
++{
++	__hmac_md5_preparekey(&ctx->hash_ctx.state, &ctx->ostate,
++			      raw_key, raw_key_len);
++	ctx->hash_ctx.bytecount = MD5_BLOCK_SIZE;
++}
++EXPORT_SYMBOL_GPL(hmac_md5_init_usingrawkey);
++
++void hmac_md5_final(struct hmac_md5_ctx *ctx, u8 out[MD5_DIGEST_SIZE])
++{
++	/* Generate the padded input for the outer hash in ctx->hash_ctx.buf. */
++	__md5_final(&ctx->hash_ctx, ctx->hash_ctx.buf);
++	memset(&ctx->hash_ctx.buf[MD5_DIGEST_SIZE], 0,
++	       MD5_BLOCK_SIZE - MD5_DIGEST_SIZE);
++	ctx->hash_ctx.buf[MD5_DIGEST_SIZE] = 0x80;
++	*(__le64 *)&ctx->hash_ctx.buf[MD5_BLOCK_SIZE - 8] =
++		cpu_to_le64(8 * (MD5_BLOCK_SIZE + MD5_DIGEST_SIZE));
++
++	/* Compute the outer hash, which gives the HMAC value. */
++	md5_transform(&ctx->ostate, ctx->hash_ctx.buf);
++	cpu_to_le32_array(ctx->ostate.h, ARRAY_SIZE(ctx->ostate.h));
++	memcpy(out, ctx->ostate.h, MD5_DIGEST_SIZE);
++
++	memzero_explicit(ctx, sizeof(*ctx));
++}
++EXPORT_SYMBOL_GPL(hmac_md5_final);
++
++void hmac_md5(const struct hmac_md5_key *key, const u8 *data, size_t data_len,
++	      u8 out[MD5_DIGEST_SIZE])
++{
++	struct hmac_md5_ctx ctx;
++
++	hmac_md5_init(&ctx, key);
++	hmac_md5_update(&ctx, data, data_len);
++	hmac_md5_final(&ctx, out);
++}
++EXPORT_SYMBOL_GPL(hmac_md5);
++
++void hmac_md5_usingrawkey(const u8 *raw_key, size_t raw_key_len,
++			  const u8 *data, size_t data_len,
++			  u8 out[MD5_DIGEST_SIZE])
++{
++	struct hmac_md5_ctx ctx;
++
++	hmac_md5_init_usingrawkey(&ctx, raw_key, raw_key_len);
++	hmac_md5_update(&ctx, data, data_len);
++	hmac_md5_final(&ctx, out);
++}
++EXPORT_SYMBOL_GPL(hmac_md5_usingrawkey);
++
++MODULE_DESCRIPTION("MD5 and HMAC-MD5 library functions");
++MODULE_LICENSE("GPL");
 -- 
 2.50.1
 
