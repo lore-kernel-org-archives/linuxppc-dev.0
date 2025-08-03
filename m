@@ -1,48 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-10536-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10537-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 226DCC87FCB
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Aug 2025 20:45:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BAA2C87FDA
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Aug 2025 20:45:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bwBXb18J4z2xgp;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bwBXb1dmXz2xnM;
 	Mon,  4 Aug 2025 06:45:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754253935;
-	cv=none; b=Sy3eImJPTWXwtUdCJ1U5pQ67PyGvCIhlOeS5sXaNPSFMV9I2cYLa8/f6XmEsgYz9G20OI4NIVksVEVPHuGrRLi/kdwvu5AwLx9SUJn6BnVNdDIBGNIQSwQP1abluOYrz1kXyctVDm46TA8slrmGlwWpQNsggUNAu3Bd/4jDyl59OJKr3A3COm3NlrAmUIMpdGF4dhyfuQFIYB1TzI6lhCy5hboHSaya923h/9rM4YBuLcePCaxUx5UlD0vCgk4e+OnCrxU+ydz/QrDNYC4OYdmx5C8+mipWmPaBk7NfHJcmCDD8d62vyMyC3DojYwLZfVdMnw3UtcbqVCyy22BCK+g==
+	cv=none; b=KHSUhOR49RNYTJZTOdmtbZSot8R4hbrHamdcZiL7JIenvzF+XH+5GkNIHHl5MB0guBiAOIWHv+3M/9grTnPFO7UEqUNFr8baKdA6Dmp9r0GPg9/o1KDBpqrHvnlJFHZlu1oN4e7i1cCIaeW7U/uf16ZfAWsy82gYNJtdSrv2NjbLAsjB6H9Ogi+36q7N6OrLf+Lo33dWagvYo/OlGOcotUoA2gt6qFJbPlND7S0/62I5EwTxQoNm2jqStCJqGoWZtwQIRRP0CEw4LKQcXdphsFzLiBfcjSbV4fYVEJoCD7FsLYwk8XnylIZdpEfyhivnT2m3qAQOol0OhVIyz3kEEQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1754253935; c=relaxed/relaxed;
-	bh=PZYk44aTgpZax9kpcH9dOmqktQCDzDmeHd3GYiP/TNI=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=lqlPzy5QY+QXdiLT6Kb6NvAg07wi3fxko8xhbmbyPWt+54lOkd279ABd76g2LdRQE9vHNpuyCqZBFf20yijPK83KSKZ3Zoj5zaVivhmPxF/iQ2+vCYNJFVaAgwA0nA1EYJW/ZZHvB7E7F342JQfI7OmaO9AzSRW7WiGIpC+7IFy0Dy2aFvlEj6wTg6dBuz4K2PPmRTsOo2DYPykZXHaGfvtgqZNeD0BXELhIrgFkUhnQFH0BEfP9D+/WsmdGOl4rUDCZlaSVYivoBPBAGElu5iIj0q2oLK96AsnqOEXwmHYSkaiqkvOVUNcFJOxJMx2DRaeJ1xJoD5eFk0LXQkEmcg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EWoNC4zj; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	bh=KR8tJYulY2d08m4FZpEvsSmEV84go/5qVLMyGP7Jh+0=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=lr2KDBRDC6fqcvRQa/Lwh22isil3zXK5ynqJzCAPFA7BZTb8aQpXPdxyKarfQ2QcskKqZWf3FXX9c6WC/cLj87XO/1t0C+uFUZ8pxwfufyySfVYSB4dhWGvfeGFdu1O+E2Jg7H6NksN5NmfIy57lCF3Qp9hAQyCaA27sZPVMu7Mjg6QpNcm64VDX0VKw3RS1NAq705thaGmzCUV1GjtTYOky3X+EzWRcKtjKYvK2pJjbuJ10hbWkkWk4uQtX+Z+V52BV5rXJqcIeH+fDolX/+XZsa40dZPn6DQ0vDjbPrrP/Zc9I4ONFlwfH/5OYP8lMvmpf0xgrJ8rIVIheMt+K2Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N+KsnGpw; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=EWoNC4zj;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N+KsnGpw;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwBXY51Qsz2xQ6
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwBXZ0w2gz2xWc
 	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2025 06:45:33 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 80405A52D6F;
+	by nyc.source.kernel.org (Postfix) with ESMTP id DB273A549BA;
+	Sun,  3 Aug 2025 20:45:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E213FC4CEF8;
 	Sun,  3 Aug 2025 20:45:30 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3AE1EC4CEEB;
-	Sun,  3 Aug 2025 20:45:29 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1754253929;
-	bh=fIsnggQ9bSogOYsC/oCooZJEKpFlIjgSJ+O2mM0ik/g=;
-	h=From:To:Cc:Subject:Date:From;
-	b=EWoNC4zj60IkF748py5lD143qrk8WMoOpmcQeQ+NC5PoeQKL1jJgTiyyteh1M5MC8
-	 wJP/9/XZnmxbN+qq/oM/Wj7x4a/abxCh+2BVJ9o0n00s80/plMl1wskCZLsiaiV8ns
-	 qjc4p9Xg+1Pet7M1z7PhtLPl1cKyB0aL67v35awvlDuhmwNVoivOT1fSrmF8bl5lfv
-	 2rytBpIDtMTon6+n+XvB9kUJZkWk8tgr+W/D4pVPKzXHmMAJVHU84etSXr0T9oEdF0
-	 cS9P1E0SO+IKSzuujuWHHIftTgkZ+FvAwEn/tI6CZuNW59BGG/XWXa+sydGqZns+Qu
-	 m9hMGJf1qFtSQ==
+	s=k20201202; t=1754253931;
+	bh=VRc4KV6AcWRLoeXQnbyPvjrtyrIbJyC0ogU8BITtRHo=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=N+KsnGpwwuxsYDM6Sea4+60NJiUpAY1xBL7i4Ncuh9/IGMN+PP98T5E33HylbqP5x
+	 ywCULf8wxqBHVYCyozXKT5KtiYKzTnv6N2133o0uDoVwjmQAZ0g7ISNmkU7ynDCy0u
+	 Z3AbK/lF0H4tUAlfc/8/8EXgbifVXGEzY1sT7mFWbjeWMNlnFb/aIdS5hLN1Dqj2PB
+	 SC/MQLHXzpVPseIOmW/BdQitYsHQbMCgpSg1DmhcS/w6aQ/UiRww15xIqbPCEC21Qt
+	 auxAaPZr3YaHE+cATbrrESlpIvPJSquumBHOI/8luwN/6JuUf77351xY1YfZ/qoJEU
+	 lsW4TtCEcyKYA==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -52,10 +53,12 @@ Cc: linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	sparclinux@vger.kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 0/7] MD5 library functions
-Date: Sun,  3 Aug 2025 13:44:26 -0700
-Message-ID: <20250803204433.75703-1-ebiggers@kernel.org>
+Subject: [PATCH 2/7] mips: cavium-octeon: Move octeon-crypto.c into parent dir
+Date: Sun,  3 Aug 2025 13:44:28 -0700
+Message-ID: <20250803204433.75703-3-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.1
+In-Reply-To: <20250803204433.75703-1-ebiggers@kernel.org>
+References: <20250803204433.75703-1-ebiggers@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,77 +74,54 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-This series is targeting libcrypto-next and can also be retrieved from:
+Since octeon-crypto.c is the only remaining source file in
+arch/mips/cavium-octeon/crypto/, move it into its parent directory
+arch/mips/cavium-octeon/.  Then remove the directory
+arch/mips/cavium-octeon/crypto/, including its Makefile.
 
-    git fetch https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git md5-lib-v1
-
-Patches 1-4 remove the MD5 implementations for mips, powerpc, and sparc.
-These were the only architecture-optimized MD5 implementations and are
-not worth keeping around.
-
-Patches 5-7 introduce a library API for MD5 and HMAC-MD5 and reimplement
-the crypto_shash "md5" and "hmac(md5)" on top of it.
-
-The library API will also be usable directly by various in-kernel users
-that are stuck with MD5 due to having to implement legacy protocols.
-
-This should again look quite boring and familiar, as it mirrors the
-SHA-1 and SHA-2 changes closely.  The MD5 changes are quite a bit
-simpler, though, since we'll only be supporting the generic C MD5 code.
-Of course there's also only one variant of MD5, unlike e.g. SHA-2.
-
-Eric Biggers (7):
-  mips: cavium-octeon: Remove Octeon optimized MD5 code
-  mips: cavium-octeon: Move octeon-crypto.c into parent dir
-  crypto: powerpc/md5 - Remove PowerPC optimized MD5 code
-  crypto: sparc/md5 - Remove SPARC64 optimized MD5 code
-  lib/crypto: md5: Add MD5 and HMAC-MD5 library functions
-  crypto: md5 - Wrap library and add HMAC support
-  lib/crypto: tests: Add KUnit tests for MD5 and HMAC-MD5
-
- arch/mips/cavium-octeon/Makefile              |   2 +-
- arch/mips/cavium-octeon/crypto/Makefile       |   8 -
- arch/mips/cavium-octeon/crypto/octeon-md5.c   | 214 -----------
- .../{crypto => }/octeon-crypto.c              |   0
- arch/mips/configs/cavium_octeon_defconfig     |   1 -
- arch/mips/crypto/Kconfig                      |  10 -
- arch/mips/include/asm/octeon/crypto.h         |  21 +-
- arch/powerpc/configs/powernv_defconfig        |   1 -
- arch/powerpc/configs/ppc64_defconfig          |   1 -
- arch/powerpc/crypto/Kconfig                   |   8 -
- arch/powerpc/crypto/Makefile                  |   2 -
- arch/powerpc/crypto/md5-asm.S                 | 235 ------------
- arch/powerpc/crypto/md5-glue.c                |  99 -----
- arch/sparc/crypto/Kconfig                     |  10 -
- arch/sparc/crypto/Makefile                    |   4 -
- arch/sparc/crypto/md5_asm.S                   |  70 ----
- arch/sparc/crypto/md5_glue.c                  | 174 ---------
- crypto/Kconfig                                |   2 +-
- crypto/md5.c                                  | 359 ++++++++----------
- crypto/testmgr.c                              |   3 +
- drivers/crypto/img-hash.c                     |   2 +-
- include/crypto/md5.h                          | 181 ++++++++-
- lib/crypto/Kconfig                            |   6 +
- lib/crypto/Makefile                           |   3 +
- lib/crypto/md5.c                              | 290 ++++++++++++++
- lib/crypto/tests/Kconfig                      |  10 +
- lib/crypto/tests/Makefile                     |   1 +
- lib/crypto/tests/md5-testvecs.h               | 186 +++++++++
- lib/crypto/tests/md5_kunit.c                  |  39 ++
- 29 files changed, 891 insertions(+), 1051 deletions(-)
+Signed-off-by: Eric Biggers <ebiggers@kernel.org>
+---
+ arch/mips/cavium-octeon/Makefile                     | 2 +-
+ arch/mips/cavium-octeon/crypto/Makefile              | 6 ------
+ arch/mips/cavium-octeon/{crypto => }/octeon-crypto.c | 0
+ 3 files changed, 1 insertion(+), 7 deletions(-)
  delete mode 100644 arch/mips/cavium-octeon/crypto/Makefile
- delete mode 100644 arch/mips/cavium-octeon/crypto/octeon-md5.c
  rename arch/mips/cavium-octeon/{crypto => }/octeon-crypto.c (100%)
- delete mode 100644 arch/powerpc/crypto/md5-asm.S
- delete mode 100644 arch/powerpc/crypto/md5-glue.c
- delete mode 100644 arch/sparc/crypto/md5_asm.S
- delete mode 100644 arch/sparc/crypto/md5_glue.c
- create mode 100644 lib/crypto/md5.c
- create mode 100644 lib/crypto/tests/md5-testvecs.h
- create mode 100644 lib/crypto/tests/md5_kunit.c
 
-
-base-commit: 186f3edfdd41f2ae87fc40a9ccba52a3bf930994
+diff --git a/arch/mips/cavium-octeon/Makefile b/arch/mips/cavium-octeon/Makefile
+index 2a59265788413..ab84ede0cbe0e 100644
+--- a/arch/mips/cavium-octeon/Makefile
++++ b/arch/mips/cavium-octeon/Makefile
+@@ -9,12 +9,12 @@
+ # Copyright (C) 2005-2009 Cavium Networks
+ #
+ 
+ obj-y := cpu.o setup.o octeon-platform.o octeon-irq.o csrc-octeon.o
+ obj-y += dma-octeon.o
++obj-y += octeon-crypto.o
+ obj-y += octeon-memcpy.o
+ obj-y += executive/
+-obj-y += crypto/
+ 
+ obj-$(CONFIG_MTD)		      += flash_setup.o
+ obj-$(CONFIG_SMP)		      += smp.o
+ obj-$(CONFIG_OCTEON_ILM)	      += oct_ilm.o
+diff --git a/arch/mips/cavium-octeon/crypto/Makefile b/arch/mips/cavium-octeon/crypto/Makefile
+deleted file mode 100644
+index b7d03e8a03187..0000000000000
+--- a/arch/mips/cavium-octeon/crypto/Makefile
++++ /dev/null
+@@ -1,6 +0,0 @@
+-# SPDX-License-Identifier: GPL-2.0
+-#
+-# OCTEON-specific crypto modules.
+-#
+-
+-obj-y += octeon-crypto.o
+diff --git a/arch/mips/cavium-octeon/crypto/octeon-crypto.c b/arch/mips/cavium-octeon/octeon-crypto.c
+similarity index 100%
+rename from arch/mips/cavium-octeon/crypto/octeon-crypto.c
+rename to arch/mips/cavium-octeon/octeon-crypto.c
 -- 
 2.50.1
 
