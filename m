@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-10541-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10542-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5245C87FCA
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Aug 2025 20:46:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C6B6FC87FCA
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  3 Aug 2025 20:46:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bwBXf4Tlnz2yQH;
-	Mon,  4 Aug 2025 06:45:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754253938;
-	cv=none; b=JSCEcnC2ie9GyiwWOMVE0VDPpUyp2dYLqOH6DRbVt8NXOYqzcXVD2vWciqgujgJw405zT17uITYYQ+V2RKJxYng4oddrMkw4vPlgk7mdT2rzQznhiIigQ/57WEn984y9T1jSD8xvas7ra40Px/uPxtkj2xmLlcoYlTFyCw85BB9m2s8s8JpYiOxcjrqSRhEk7wzSra26lexl/uDivZIJQa1adU6e7DiF4CLtvQl7CLk85fWe8sTCkEQ6dhrtSK0lzdYez6Ih20+1DGMBeHslxcqCCX9k2PDKJ2r/QQg1Mm1pt4q+eXMtsgMfQmF8hrwv4eCltbIHhgutgLjT+9UWQA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bwBXg0bXdz3bpL;
+	Mon,  4 Aug 2025 06:45:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754253939;
+	cv=none; b=HKp22nXZeZr3njr/rLjxZUlHc2n2zmQ11cDQzbrbExHgQEBnB2e/V5T9nMH/BRgCkhZUOomT7SoNEi9B698vdlE4MHsYHRhHvbTjwrX9ihJ9oxf6szNoaG1uKX8by675Tqwd/ktwvmcuuf+Hk2yPYFA+n/JHtDND4vx5GVQo15AroZ+QidScwYJG7tl1BuXJKpsfoOBGmKrwqEM3nsxBnSfNHfWYBK99H3Qw9L9NNZDnx1jhv0tMYivkzgYxKc1IBGkCldmleCF/54lSsbUwLvdjLbc0IHEmTYBExnX0Dwe53wfCrbNcogNzyXs2aa9Cd1lVXF/8ugnwgdZ2Dsxyfg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754253938; c=relaxed/relaxed;
-	bh=eMfGkrtxctQbmNULGkSpLbKbc4e5LgCl7j7yHq01dz0=;
+	t=1754253939; c=relaxed/relaxed;
+	bh=vYvOnIJVQoRlfrzXaXakbTrj+tnI5/rv9lIhA0dcR2E=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fs7wsfSEnIt/8NB5avO0s0mtU8kb6sE5/vU9WfDSCHk8rNMlNZRORd7zKu0ztSUX85xR2nEFqZVKD4lakf/O1YIE9xwKc7KMVjj6M2Gb70pxzlVyraIx9f+bcNsdpVZqBC+ZlvhTYeaYD7dyYBgzcN5wvgkbAUhZEIfx7uSTrbUPd6SnIL6EVPSCdCXQK7T0IqLLJFGETk8Ag/g8MjSYNRoQMQiRjYyB0BB6/aZNektY74CtbgFolaW1B2ihQcDfhFCfshPVPmSbicSPWPguuC3FsHzKOvr2adWdIzCFDAmuq9HluLF9ZMAfgQgVJhARwkGW7vXdtUWSYFEiJ8Bg0Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NOK0sEaw; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=AgXYKOQhtDdWS0QZQL9D7r5VMM5QkS4jG73X/G/0RZuTEsUMpuocfbGCCQXKA/pFJAvFAGo84R/BX6p+Qq1slI+PxA/x4jx2eX2ZN3lbKnTq+Vuq6/m5Days0DL+sVHtpc9UW+/fCOy9O9AIVi3c56J0OsioX13XizLvnoVyRbP99BlY/gi4dr/ncJfx9KK/uph42hVIiYIrMGrZqebJzSrJHwAnsRZ+TlpmF1wxV6miuX4HiCWJ3igHRgfxgsb/7XP34vfOagwNL/mQMhJxoj1g5ZeV8bvxVcpz0hY5P5nIN+6aJTGU7nyYoOu8lnQ5gvayE6FowsZ6UP5UJh/wVA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VUXiCPfP; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NOK0sEaw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VUXiCPfP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwBXc2frPz2xWc
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2025 06:45:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwBXd4Tjqz3bnB
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2025 06:45:37 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 506255C5B51;
+	by sea.source.kernel.org (Postfix) with ESMTP id 04FD445C93;
+	Sun,  3 Aug 2025 20:45:36 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0B487C4CEF9;
 	Sun,  3 Aug 2025 20:45:34 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5E507C4CEF9;
-	Sun,  3 Aug 2025 20:45:33 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1754253934;
-	bh=ZKqjBGMT1lPpSPEhosXQ6UaXTwS5COxO+pglv8pCRY0=;
+	s=k20201202; t=1754253935;
+	bh=boThjt8cR7TxwRjjaFjdaDJhkGbA4kE6Mndg6Kr8QuE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=NOK0sEawntaqjNTr10YqcDWlLtWQjR0JYjE2TEA+vuLZwWUer7HGG3wQacp3kNZhJ
-	 iIQHx41eboAVWCAuE5p0D4FS9Y0wXogk1psDWboM33Ct8s1Al5eyxrYdaCXVZVSn1K
-	 NYc2CJDYxp9QtI+VIH4JH1zZLD2wU/UQxpP7hIdIZ7zwsGy/2zJlqiivmbnjevKjbT
-	 fTpLxXSp5YhMV4zVqrgSqYK36l4Bf51KrRM+dpC0jq4kw0ig5o6WAhS3rBvKSY0kb+
-	 nxaSCzmiEZZfMztQbYRXKKXNiTdALn3yM2UtXCm53K+2RI6VwSKn3iEcd53D+35wFL
-	 dcRLBgjudZ65g==
+	b=VUXiCPfPD93bd9FYKlJYo5VE1L3Vtp70mitexZQ/xQUiX7/AtdAwjmFCjnGZTeiLJ
+	 FtuWf2ZYSozY8l7BTOQGmwbiGVQcEfnArJcC2shQsXP7wH0zokAFQsk1RgXW7lGgJF
+	 RwhNNxnJwwJKIOHZPDASOV3WT8T5wBMTh1Z9lrQIXVQOg3Qa70nzP2Gq90KsS1YS/O
+	 iM0SC6XVat7wu1BPipPdk54QNT7NoUuaLFl+GIG64YGWymlKdAyZIe3u3CqmMVizuT
+	 v8zd44Bt8jio5UrS7+b5Cz3j0Azs6gY9mExSs9uMoHR+74UfJms1JZGmTti9DAVuwa
+	 8lV9f4HcEuFkA==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -53,9 +53,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	sparclinux@vger.kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 5/7] lib/crypto: md5: Add MD5 and HMAC-MD5 library functions
-Date: Sun,  3 Aug 2025 13:44:31 -0700
-Message-ID: <20250803204433.75703-6-ebiggers@kernel.org>
+Subject: [PATCH 7/7] lib/crypto: tests: Add KUnit tests for MD5 and HMAC-MD5
+Date: Sun,  3 Aug 2025 13:44:33 -0700
+Message-ID: <20250803204433.75703-8-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20250803204433.75703-1-ebiggers@kernel.org>
 References: <20250803204433.75703-1-ebiggers@kernel.org>
@@ -74,580 +74,292 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add library functions for MD5, including HMAC support.  The MD5
-implementation is derived from crypto/md5.c.  This closely mirrors the
-corresponding SHA-1 and SHA-2 changes; however, support for architecture
-optimized MD5 implementations isn't included since it is unnecessary.
-
-While MD5 is an insecure legacy algorithm, it still has various
-in-kernel users that implement legacy protocols.  Switching to a simple
-library API, which is the way the code should have been organized
-originally, will greatly simplify their code.  For example:
-
-    MD5:
-        drivers/md/dm-crypt.c (for lmk IV generation)
-        fs/nfsd/nfs4recover.c
-        fs/ecryptfs/
-        fs/smb/client/
-        net/{ipv4,ipv6}/ (for TCP-MD5 signatures)
-
-    HMAC-MD5:
-        fs/smb/client/
-        fs/smb/server/
-
-(Also net/sctp/ if it continues using HMAC-MD5 for cookie generation.
-However, that use case has the flexibility to upgrade to a more modern
-algorithm, which I'll be proposing instead.)
-
-As usual, the "md5" and "hmac(md5)" crypto_shash algorithms will also be
-reimplemented on top of these library functions.  For "hmac(md5)" this
-will provide a faster, more streamlined implementation.
+Add a KUnit test suite for the MD5 library functions, including the
+corresponding HMAC support.  The core test logic is in the
+previously-added hash-test-template.h.  This commit just adds the actual
+KUnit suite, and it adds the generated test vectors to the tree so that
+gen-hash-testvecs.py won't have to be run at build time.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- include/crypto/md5.h | 181 ++++++++++++++++++++++++++-
- lib/crypto/Kconfig   |   6 +
- lib/crypto/Makefile  |   3 +
- lib/crypto/md5.c     | 290 +++++++++++++++++++++++++++++++++++++++++++
- 4 files changed, 479 insertions(+), 1 deletion(-)
- create mode 100644 lib/crypto/md5.c
+ lib/crypto/tests/Kconfig        |  10 ++
+ lib/crypto/tests/Makefile       |   1 +
+ lib/crypto/tests/md5-testvecs.h | 186 ++++++++++++++++++++++++++++++++
+ lib/crypto/tests/md5_kunit.c    |  39 +++++++
+ 4 files changed, 236 insertions(+)
+ create mode 100644 lib/crypto/tests/md5-testvecs.h
+ create mode 100644 lib/crypto/tests/md5_kunit.c
 
-diff --git a/include/crypto/md5.h b/include/crypto/md5.h
-index 28ee533a0507a..d8e4d3c7c0369 100644
---- a/include/crypto/md5.h
-+++ b/include/crypto/md5.h
-@@ -5,10 +5,11 @@
- #include <crypto/hash.h>
- #include <linux/types.h>
+diff --git a/lib/crypto/tests/Kconfig b/lib/crypto/tests/Kconfig
+index de7e8babb6afc..c21d53fd4b0ce 100644
+--- a/lib/crypto/tests/Kconfig
++++ b/lib/crypto/tests/Kconfig
+@@ -1,7 +1,17 @@
+ # SPDX-License-Identifier: GPL-2.0-or-later
  
- #define MD5_DIGEST_SIZE		16
- #define MD5_HMAC_BLOCK_SIZE	64
-+#define MD5_BLOCK_SIZE		64
- #define MD5_BLOCK_WORDS		16
- #define MD5_HASH_WORDS		4
- #define MD5_STATE_SIZE		24
- 
- #define MD5_H0	0x67452301UL
-@@ -25,6 +26,184 @@ struct md5_state {
- 	u32 hash[MD5_HASH_WORDS];
- 	u64 byte_count;
- 	u32 block[MD5_BLOCK_WORDS];
- };
- 
--#endif
-+/* State for the MD5 compression function */
-+struct md5_block_state {
-+	u32 h[MD5_HASH_WORDS];
-+};
-+
-+/**
-+ * struct md5_ctx - Context for hashing a message with MD5
-+ * @state: the compression function state
-+ * @bytecount: number of bytes processed so far
-+ * @buf: partial block buffer; bytecount % MD5_BLOCK_SIZE bytes are valid
-+ */
-+struct md5_ctx {
-+	struct md5_block_state state;
-+	u64 bytecount;
-+	u8 buf[MD5_BLOCK_SIZE] __aligned(__alignof__(__le64));
-+};
-+
-+/**
-+ * md5_init() - Initialize an MD5 context for a new message
-+ * @ctx: the context to initialize
-+ *
-+ * If you don't need incremental computation, consider md5() instead.
-+ *
-+ * Context: Any context.
-+ */
-+void md5_init(struct md5_ctx *ctx);
-+
-+/**
-+ * md5_update() - Update an MD5 context with message data
-+ * @ctx: the context to update; must have been initialized
-+ * @data: the message data
-+ * @len: the data length in bytes
-+ *
-+ * This can be called any number of times.
-+ *
-+ * Context: Any context.
-+ */
-+void md5_update(struct md5_ctx *ctx, const u8 *data, size_t len);
-+
-+/**
-+ * md5_final() - Finish computing an MD5 message digest
-+ * @ctx: the context to finalize; must have been initialized
-+ * @out: (output) the resulting MD5 message digest
-+ *
-+ * After finishing, this zeroizes @ctx.  So the caller does not need to do it.
-+ *
-+ * Context: Any context.
-+ */
-+void md5_final(struct md5_ctx *ctx, u8 out[MD5_DIGEST_SIZE]);
-+
-+/**
-+ * md5() - Compute MD5 message digest in one shot
-+ * @data: the message data
-+ * @len: the data length in bytes
-+ * @out: (output) the resulting MD5 message digest
-+ *
-+ * Context: Any context.
-+ */
-+void md5(const u8 *data, size_t len, u8 out[MD5_DIGEST_SIZE]);
-+
-+/**
-+ * struct hmac_md5_key - Prepared key for HMAC-MD5
-+ * @istate: private
-+ * @ostate: private
-+ */
-+struct hmac_md5_key {
-+	struct md5_block_state istate;
-+	struct md5_block_state ostate;
-+};
-+
-+/**
-+ * struct hmac_md5_ctx - Context for computing HMAC-MD5 of a message
-+ * @hash_ctx: private
-+ * @ostate: private
-+ */
-+struct hmac_md5_ctx {
-+	struct md5_ctx hash_ctx;
-+	struct md5_block_state ostate;
-+};
-+
-+/**
-+ * hmac_md5_preparekey() - Prepare a key for HMAC-MD5
-+ * @key: (output) the key structure to initialize
-+ * @raw_key: the raw HMAC-MD5 key
-+ * @raw_key_len: the key length in bytes.  All key lengths are supported.
-+ *
-+ * Note: the caller is responsible for zeroizing both the struct hmac_md5_key
-+ * and the raw key once they are no longer needed.
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_md5_preparekey(struct hmac_md5_key *key,
-+			 const u8 *raw_key, size_t raw_key_len);
-+
-+/**
-+ * hmac_md5_init() - Initialize an HMAC-MD5 context for a new message
-+ * @ctx: (output) the HMAC context to initialize
-+ * @key: the prepared HMAC key
-+ *
-+ * If you don't need incremental computation, consider hmac_md5() instead.
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_md5_init(struct hmac_md5_ctx *ctx, const struct hmac_md5_key *key);
-+
-+/**
-+ * hmac_md5_init_usingrawkey() - Initialize an HMAC-MD5 context for a new
-+ *				  message, using a raw key
-+ * @ctx: (output) the HMAC context to initialize
-+ * @raw_key: the raw HMAC-MD5 key
-+ * @raw_key_len: the key length in bytes.  All key lengths are supported.
-+ *
-+ * If you don't need incremental computation, consider hmac_md5_usingrawkey()
-+ * instead.
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_md5_init_usingrawkey(struct hmac_md5_ctx *ctx,
-+			       const u8 *raw_key, size_t raw_key_len);
-+
-+/**
-+ * hmac_md5_update() - Update an HMAC-MD5 context with message data
-+ * @ctx: the HMAC context to update; must have been initialized
-+ * @data: the message data
-+ * @data_len: the data length in bytes
-+ *
-+ * This can be called any number of times.
-+ *
-+ * Context: Any context.
-+ */
-+static inline void hmac_md5_update(struct hmac_md5_ctx *ctx,
-+				   const u8 *data, size_t data_len)
-+{
-+	md5_update(&ctx->hash_ctx, data, data_len);
-+}
-+
-+/**
-+ * hmac_md5_final() - Finish computing an HMAC-MD5 value
-+ * @ctx: the HMAC context to finalize; must have been initialized
-+ * @out: (output) the resulting HMAC-MD5 value
-+ *
-+ * After finishing, this zeroizes @ctx.  So the caller does not need to do it.
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_md5_final(struct hmac_md5_ctx *ctx, u8 out[MD5_DIGEST_SIZE]);
-+
-+/**
-+ * hmac_md5() - Compute HMAC-MD5 in one shot, using a prepared key
-+ * @key: the prepared HMAC key
-+ * @data: the message data
-+ * @data_len: the data length in bytes
-+ * @out: (output) the resulting HMAC-MD5 value
-+ *
-+ * If you're using the key only once, consider using hmac_md5_usingrawkey().
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_md5(const struct hmac_md5_key *key, const u8 *data, size_t data_len,
-+	      u8 out[MD5_DIGEST_SIZE]);
-+
-+/**
-+ * hmac_md5_usingrawkey() - Compute HMAC-MD5 in one shot, using a raw key
-+ * @raw_key: the raw HMAC-MD5 key
-+ * @raw_key_len: the key length in bytes.  All key lengths are supported.
-+ * @data: the message data
-+ * @data_len: the data length in bytes
-+ * @out: (output) the resulting HMAC-MD5 value
-+ *
-+ * If you're using the key multiple times, prefer to use hmac_md5_preparekey()
-+ * followed by multiple calls to hmac_md5() instead.
-+ *
-+ * Context: Any context.
-+ */
-+void hmac_md5_usingrawkey(const u8 *raw_key, size_t raw_key_len,
-+			  const u8 *data, size_t data_len,
-+			  u8 out[MD5_DIGEST_SIZE]);
-+
-+#endif /* _CRYPTO_MD5_H */
-diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
-index c2b65b6a9bb6f..f1b2a51450df2 100644
---- a/lib/crypto/Kconfig
-+++ b/lib/crypto/Kconfig
-@@ -99,10 +99,16 @@ config CRYPTO_LIB_CURVE25519
- 	  one, if one is available and enabled.
- 
- config CRYPTO_LIB_DES
- 	tristate
- 
-+config CRYPTO_LIB_MD5
-+	tristate
++config CRYPTO_LIB_MD5_KUNIT_TEST
++	tristate "KUnit tests for MD5" if !KUNIT_ALL_TESTS
++	depends on KUNIT
++	default KUNIT_ALL_TESTS || CRYPTO_SELFTESTS
++	select CRYPTO_LIB_BENCHMARK_VISIBLE
++	select CRYPTO_LIB_MD5
 +	help
-+	  The MD5 and HMAC-MD5 library functions.  Select this if your module
-+	  uses any of the functions from <crypto/md5.h>.
++	  KUnit tests for the MD5 cryptographic hash function and its
++	  corresponding HMAC.
 +
- config CRYPTO_LIB_POLY1305_RSIZE
- 	int
- 	default 2 if MIPS
- 	default 11 if X86_64
- 	default 9 if ARM || ARM64
-diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
-index e4151be2ebd44..252480ab97e9c 100644
---- a/lib/crypto/Makefile
-+++ b/lib/crypto/Makefile
-@@ -57,10 +57,13 @@ libcurve25519-y					+= curve25519.o
- libcurve25519-$(CONFIG_CRYPTO_SELFTESTS)	+= curve25519-selftest.o
+ config CRYPTO_LIB_POLY1305_KUNIT_TEST
+ 	tristate "KUnit tests for Poly1305" if !KUNIT_ALL_TESTS
+ 	depends on KUNIT
+ 	default KUNIT_ALL_TESTS || CRYPTO_SELFTESTS
+ 	select CRYPTO_LIB_BENCHMARK_VISIBLE
+diff --git a/lib/crypto/tests/Makefile b/lib/crypto/tests/Makefile
+index 8601dccd6fdda..f6f82c6f9cb5d 100644
+--- a/lib/crypto/tests/Makefile
++++ b/lib/crypto/tests/Makefile
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0-or-later
  
- obj-$(CONFIG_CRYPTO_LIB_DES)			+= libdes.o
- libdes-y					:= des.o
- 
-+obj-$(CONFIG_CRYPTO_LIB_MD5)			+= libmd5.o
-+libmd5-y					:= md5.o
-+
- obj-$(CONFIG_CRYPTO_LIB_POLY1305)		+= libpoly1305.o
- libpoly1305-y					+= poly1305.o
- 
- obj-$(CONFIG_CRYPTO_LIB_POLY1305_GENERIC)	+= libpoly1305-generic.o
- libpoly1305-generic-y				:= poly1305-donna32.o
-diff --git a/lib/crypto/md5.c b/lib/crypto/md5.c
++obj-$(CONFIG_CRYPTO_LIB_MD5_KUNIT_TEST) += md5_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_POLY1305_KUNIT_TEST) += poly1305_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_SHA1_KUNIT_TEST) += sha1_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_SHA256_KUNIT_TEST) += sha224_kunit.o sha256_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_SHA512_KUNIT_TEST) += sha384_kunit.o sha512_kunit.o
+diff --git a/lib/crypto/tests/md5-testvecs.h b/lib/crypto/tests/md5-testvecs.h
 new file mode 100644
-index 0000000000000..17323340963b5
+index 0000000000000..be6727feb2966
 --- /dev/null
-+++ b/lib/crypto/md5.c
-@@ -0,0 +1,290 @@
++++ b/lib/crypto/tests/md5-testvecs.h
+@@ -0,0 +1,186 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++/* This file was generated by: ./scripts/crypto/gen-hash-testvecs.py md5 */
++
++static const struct {
++	size_t data_len;
++	u8 digest[MD5_DIGEST_SIZE];
++} hash_testvecs[] = {
++	{
++		.data_len = 0,
++		.digest = {
++			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04,
++			0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
++		},
++	},
++	{
++		.data_len = 1,
++		.digest = {
++			0x16, 0x7b, 0x86, 0xf2, 0x1d, 0xf3, 0x76, 0xc9,
++			0x6f, 0x10, 0xa0, 0x61, 0x5b, 0x14, 0x20, 0x0b,
++		},
++	},
++	{
++		.data_len = 2,
++		.digest = {
++			0x2d, 0x30, 0x96, 0xc7, 0x43, 0x40, 0xed, 0xb2,
++			0xfb, 0x84, 0x63, 0x9a, 0xec, 0xc7, 0x3c, 0x3c,
++		},
++	},
++	{
++		.data_len = 3,
++		.digest = {
++			0xe5, 0x0f, 0xce, 0xe0, 0xc8, 0xff, 0x4e, 0x08,
++			0x5e, 0x19, 0xe5, 0xf2, 0x08, 0x11, 0x19, 0x16,
++		},
++	},
++	{
++		.data_len = 16,
++		.digest = {
++			0xe8, 0xca, 0x29, 0x05, 0x2f, 0xd1, 0xf3, 0x99,
++			0x40, 0x71, 0xf5, 0xc2, 0xf7, 0xf8, 0x17, 0x3e,
++		},
++	},
++	{
++		.data_len = 32,
++		.digest = {
++			0xe3, 0x20, 0xc1, 0xd8, 0x21, 0x14, 0x44, 0x59,
++			0x1a, 0xf5, 0x91, 0xaf, 0x69, 0xbe, 0x93, 0x9d,
++		},
++	},
++	{
++		.data_len = 48,
++		.digest = {
++			0xfb, 0x06, 0xb0, 0xf0, 0x00, 0x10, 0x4b, 0x68,
++			0x3d, 0x75, 0xf9, 0x70, 0xde, 0xbb, 0x32, 0x16,
++		},
++	},
++	{
++		.data_len = 49,
++		.digest = {
++			0x52, 0x86, 0x48, 0x8b, 0xae, 0x91, 0x7c, 0x4e,
++			0xc2, 0x2a, 0x69, 0x07, 0x35, 0xcc, 0xb2, 0x88,
++		},
++	},
++	{
++		.data_len = 63,
++		.digest = {
++			0xfa, 0xd3, 0xf6, 0xe6, 0x7b, 0x1a, 0xc6, 0x05,
++			0x73, 0x35, 0x02, 0xab, 0xc7, 0xb3, 0x47, 0xcb,
++		},
++	},
++	{
++		.data_len = 64,
++		.digest = {
++			0xc5, 0x59, 0x29, 0xe9, 0x0a, 0x4a, 0x86, 0x43,
++			0x7c, 0xaf, 0xdf, 0x83, 0xd3, 0xb8, 0x33, 0x5f,
++		},
++	},
++	{
++		.data_len = 65,
++		.digest = {
++			0x80, 0x05, 0x75, 0x39, 0xec, 0x44, 0x8a, 0x81,
++			0xe7, 0x6e, 0x8d, 0xd1, 0xc6, 0xeb, 0xc2, 0xf0,
++		},
++	},
++	{
++		.data_len = 127,
++		.digest = {
++			0x3f, 0x02, 0xe8, 0xc6, 0xb8, 0x6a, 0x39, 0xc3,
++			0xa4, 0x1c, 0xd9, 0x8f, 0x4a, 0x71, 0x40, 0x30,
++		},
++	},
++	{
++		.data_len = 128,
++		.digest = {
++			0x89, 0x4f, 0x79, 0x3e, 0xff, 0x0c, 0x22, 0x60,
++			0xa2, 0xdc, 0x10, 0x5f, 0x23, 0x0a, 0xe7, 0xc6,
++		},
++	},
++	{
++		.data_len = 129,
++		.digest = {
++			0x06, 0x56, 0x61, 0xb8, 0x8a, 0x82, 0x77, 0x1b,
++			0x2c, 0x35, 0xb8, 0x9f, 0xd6, 0xf7, 0xbd, 0x5a,
++		},
++	},
++	{
++		.data_len = 256,
++		.digest = {
++			0x5d, 0xdf, 0x7d, 0xc8, 0x43, 0x96, 0x3b, 0xdb,
++			0xc7, 0x0e, 0x44, 0x42, 0x23, 0xf7, 0xed, 0xdf,
++		},
++	},
++	{
++		.data_len = 511,
++		.digest = {
++			0xf6, 0x5f, 0x26, 0x51, 0x8a, 0x5a, 0x46, 0x8f,
++			0x48, 0x72, 0x90, 0x74, 0x9d, 0x87, 0xbd, 0xdf,
++		},
++	},
++	{
++		.data_len = 513,
++		.digest = {
++			0xd8, 0x2c, 0xc9, 0x76, 0xfa, 0x67, 0x2e, 0xa6,
++			0xc8, 0x12, 0x4a, 0x64, 0xaa, 0x0b, 0x3d, 0xbd,
++		},
++	},
++	{
++		.data_len = 1000,
++		.digest = {
++			0xe2, 0x7e, 0xb4, 0x5f, 0xe1, 0x74, 0x51, 0xfc,
++			0xe0, 0xc8, 0xd5, 0xe6, 0x8b, 0x40, 0xd2, 0x0e,
++		},
++	},
++	{
++		.data_len = 3333,
++		.digest = {
++			0xcd, 0x7d, 0x56, 0xa9, 0x4c, 0x47, 0xea, 0xc2,
++			0x34, 0x0b, 0x84, 0x05, 0xf9, 0xad, 0xbb, 0x46,
++		},
++	},
++	{
++		.data_len = 4096,
++		.digest = {
++			0x63, 0x6e, 0x58, 0xb3, 0x94, 0x6b, 0x83, 0x5f,
++			0x1f, 0x0e, 0xd3, 0x66, 0x78, 0x71, 0x98, 0x42,
++		},
++	},
++	{
++		.data_len = 4128,
++		.digest = {
++			0x9d, 0x68, 0xfc, 0x26, 0x8b, 0x4c, 0xa8, 0xe7,
++			0x30, 0x0b, 0x19, 0x52, 0x6e, 0xa5, 0x65, 0x1c,
++		},
++	},
++	{
++		.data_len = 4160,
++		.digest = {
++			0x1c, 0xaa, 0x7d, 0xee, 0x91, 0x01, 0xe2, 0x5a,
++			0xec, 0xe9, 0xde, 0x57, 0x0a, 0xb6, 0x4c, 0x2f,
++		},
++	},
++	{
++		.data_len = 4224,
++		.digest = {
++			0x1b, 0x31, 0xe3, 0x14, 0x07, 0x16, 0x17, 0xc6,
++			0x98, 0x79, 0x88, 0x23, 0xb6, 0x3b, 0x25, 0xc4,
++		},
++	},
++	{
++		.data_len = 16384,
++		.digest = {
++			0xc6, 0x3d, 0x56, 0x90, 0xf0, 0xf6, 0xe6, 0x50,
++			0xf4, 0x76, 0x78, 0x67, 0xa3, 0xdd, 0x62, 0x7b,
++		},
++	},
++};
++
++static const u8 hash_testvec_consolidated[MD5_DIGEST_SIZE] = {
++	0x70, 0x86, 0x9e, 0x6c, 0xa4, 0xc6, 0x71, 0x43,
++	0x26, 0x02, 0x1b, 0x3f, 0xfd, 0x56, 0x9f, 0xa6,
++};
++
++static const u8 hmac_testvec_consolidated[MD5_DIGEST_SIZE] = {
++	0x10, 0x02, 0x74, 0xf6, 0x4d, 0xb3, 0x3c, 0xc7,
++	0xa1, 0xf7, 0xe6, 0xd4, 0x32, 0x64, 0xfa, 0x6d,
++};
+diff --git a/lib/crypto/tests/md5_kunit.c b/lib/crypto/tests/md5_kunit.c
+new file mode 100644
+index 0000000000000..38bd52c25ae3e
+--- /dev/null
++++ b/lib/crypto/tests/md5_kunit.c
+@@ -0,0 +1,39 @@
 +// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
-+ * MD5 and HMAC-MD5 library functions
-+ *
-+ * md5_transform() is derived from cryptoapi implementation, originally based on
-+ * the public domain implementation written by Colin Plumb in 1993.
-+ *
-+ * Copyright (c) Cryptoapi developers.
-+ * Copyright (c) 2002 James Morris <jmorris@intercode.com.au>
 + * Copyright 2025 Google LLC
 + */
-+
-+#include <crypto/hmac.h>
 +#include <crypto/md5.h>
-+#include <linux/export.h>
-+#include <linux/kernel.h>
-+#include <linux/module.h>
-+#include <linux/string.h>
-+#include <linux/unaligned.h>
-+#include <linux/wordpart.h>
++#include "md5-testvecs.h"
 +
-+static const struct md5_block_state md5_iv = {
-+	.h = { MD5_H0, MD5_H1, MD5_H2, MD5_H3 },
++#define HASH md5
++#define HASH_CTX md5_ctx
++#define HASH_SIZE MD5_DIGEST_SIZE
++#define HASH_INIT md5_init
++#define HASH_UPDATE md5_update
++#define HASH_FINAL md5_final
++#define HMAC_KEY hmac_md5_key
++#define HMAC_CTX hmac_md5_ctx
++#define HMAC_PREPAREKEY hmac_md5_preparekey
++#define HMAC_INIT hmac_md5_init
++#define HMAC_UPDATE hmac_md5_update
++#define HMAC_FINAL hmac_md5_final
++#define HMAC hmac_md5
++#define HMAC_USINGRAWKEY hmac_md5_usingrawkey
++#include "hash-test-template.h"
++
++static struct kunit_case hash_test_cases[] = {
++	HASH_KUNIT_CASES,
++	KUNIT_CASE(benchmark_hash),
++	{},
 +};
 +
-+#define F1(x, y, z) (z ^ (x & (y ^ z)))
-+#define F2(x, y, z) F1(z, x, y)
-+#define F3(x, y, z) (x ^ y ^ z)
-+#define F4(x, y, z) (y ^ (x | ~z))
++static struct kunit_suite hash_test_suite = {
++	.name = "md5",
++	.test_cases = hash_test_cases,
++	.suite_init = hash_suite_init,
++	.suite_exit = hash_suite_exit,
++};
++kunit_test_suite(hash_test_suite);
 +
-+#define MD5STEP(f, w, x, y, z, in, s) \
-+	(w += f(x, y, z) + in, w = (w << s | w >> (32 - s)) + x)
-+
-+static void md5_transform(struct md5_block_state *state,
-+			  const u8 data[MD5_BLOCK_SIZE])
-+{
-+	u32 in[MD5_BLOCK_WORDS];
-+	u32 a, b, c, d;
-+
-+	memcpy(in, data, MD5_BLOCK_SIZE);
-+	le32_to_cpu_array(in, ARRAY_SIZE(in));
-+
-+	a = state->h[0];
-+	b = state->h[1];
-+	c = state->h[2];
-+	d = state->h[3];
-+
-+	MD5STEP(F1, a, b, c, d, in[0] + 0xd76aa478, 7);
-+	MD5STEP(F1, d, a, b, c, in[1] + 0xe8c7b756, 12);
-+	MD5STEP(F1, c, d, a, b, in[2] + 0x242070db, 17);
-+	MD5STEP(F1, b, c, d, a, in[3] + 0xc1bdceee, 22);
-+	MD5STEP(F1, a, b, c, d, in[4] + 0xf57c0faf, 7);
-+	MD5STEP(F1, d, a, b, c, in[5] + 0x4787c62a, 12);
-+	MD5STEP(F1, c, d, a, b, in[6] + 0xa8304613, 17);
-+	MD5STEP(F1, b, c, d, a, in[7] + 0xfd469501, 22);
-+	MD5STEP(F1, a, b, c, d, in[8] + 0x698098d8, 7);
-+	MD5STEP(F1, d, a, b, c, in[9] + 0x8b44f7af, 12);
-+	MD5STEP(F1, c, d, a, b, in[10] + 0xffff5bb1, 17);
-+	MD5STEP(F1, b, c, d, a, in[11] + 0x895cd7be, 22);
-+	MD5STEP(F1, a, b, c, d, in[12] + 0x6b901122, 7);
-+	MD5STEP(F1, d, a, b, c, in[13] + 0xfd987193, 12);
-+	MD5STEP(F1, c, d, a, b, in[14] + 0xa679438e, 17);
-+	MD5STEP(F1, b, c, d, a, in[15] + 0x49b40821, 22);
-+
-+	MD5STEP(F2, a, b, c, d, in[1] + 0xf61e2562, 5);
-+	MD5STEP(F2, d, a, b, c, in[6] + 0xc040b340, 9);
-+	MD5STEP(F2, c, d, a, b, in[11] + 0x265e5a51, 14);
-+	MD5STEP(F2, b, c, d, a, in[0] + 0xe9b6c7aa, 20);
-+	MD5STEP(F2, a, b, c, d, in[5] + 0xd62f105d, 5);
-+	MD5STEP(F2, d, a, b, c, in[10] + 0x02441453, 9);
-+	MD5STEP(F2, c, d, a, b, in[15] + 0xd8a1e681, 14);
-+	MD5STEP(F2, b, c, d, a, in[4] + 0xe7d3fbc8, 20);
-+	MD5STEP(F2, a, b, c, d, in[9] + 0x21e1cde6, 5);
-+	MD5STEP(F2, d, a, b, c, in[14] + 0xc33707d6, 9);
-+	MD5STEP(F2, c, d, a, b, in[3] + 0xf4d50d87, 14);
-+	MD5STEP(F2, b, c, d, a, in[8] + 0x455a14ed, 20);
-+	MD5STEP(F2, a, b, c, d, in[13] + 0xa9e3e905, 5);
-+	MD5STEP(F2, d, a, b, c, in[2] + 0xfcefa3f8, 9);
-+	MD5STEP(F2, c, d, a, b, in[7] + 0x676f02d9, 14);
-+	MD5STEP(F2, b, c, d, a, in[12] + 0x8d2a4c8a, 20);
-+
-+	MD5STEP(F3, a, b, c, d, in[5] + 0xfffa3942, 4);
-+	MD5STEP(F3, d, a, b, c, in[8] + 0x8771f681, 11);
-+	MD5STEP(F3, c, d, a, b, in[11] + 0x6d9d6122, 16);
-+	MD5STEP(F3, b, c, d, a, in[14] + 0xfde5380c, 23);
-+	MD5STEP(F3, a, b, c, d, in[1] + 0xa4beea44, 4);
-+	MD5STEP(F3, d, a, b, c, in[4] + 0x4bdecfa9, 11);
-+	MD5STEP(F3, c, d, a, b, in[7] + 0xf6bb4b60, 16);
-+	MD5STEP(F3, b, c, d, a, in[10] + 0xbebfbc70, 23);
-+	MD5STEP(F3, a, b, c, d, in[13] + 0x289b7ec6, 4);
-+	MD5STEP(F3, d, a, b, c, in[0] + 0xeaa127fa, 11);
-+	MD5STEP(F3, c, d, a, b, in[3] + 0xd4ef3085, 16);
-+	MD5STEP(F3, b, c, d, a, in[6] + 0x04881d05, 23);
-+	MD5STEP(F3, a, b, c, d, in[9] + 0xd9d4d039, 4);
-+	MD5STEP(F3, d, a, b, c, in[12] + 0xe6db99e5, 11);
-+	MD5STEP(F3, c, d, a, b, in[15] + 0x1fa27cf8, 16);
-+	MD5STEP(F3, b, c, d, a, in[2] + 0xc4ac5665, 23);
-+
-+	MD5STEP(F4, a, b, c, d, in[0] + 0xf4292244, 6);
-+	MD5STEP(F4, d, a, b, c, in[7] + 0x432aff97, 10);
-+	MD5STEP(F4, c, d, a, b, in[14] + 0xab9423a7, 15);
-+	MD5STEP(F4, b, c, d, a, in[5] + 0xfc93a039, 21);
-+	MD5STEP(F4, a, b, c, d, in[12] + 0x655b59c3, 6);
-+	MD5STEP(F4, d, a, b, c, in[3] + 0x8f0ccc92, 10);
-+	MD5STEP(F4, c, d, a, b, in[10] + 0xffeff47d, 15);
-+	MD5STEP(F4, b, c, d, a, in[1] + 0x85845dd1, 21);
-+	MD5STEP(F4, a, b, c, d, in[8] + 0x6fa87e4f, 6);
-+	MD5STEP(F4, d, a, b, c, in[15] + 0xfe2ce6e0, 10);
-+	MD5STEP(F4, c, d, a, b, in[6] + 0xa3014314, 15);
-+	MD5STEP(F4, b, c, d, a, in[13] + 0x4e0811a1, 21);
-+	MD5STEP(F4, a, b, c, d, in[4] + 0xf7537e82, 6);
-+	MD5STEP(F4, d, a, b, c, in[11] + 0xbd3af235, 10);
-+	MD5STEP(F4, c, d, a, b, in[2] + 0x2ad7d2bb, 15);
-+	MD5STEP(F4, b, c, d, a, in[9] + 0xeb86d391, 21);
-+
-+	state->h[0] += a;
-+	state->h[1] += b;
-+	state->h[2] += c;
-+	state->h[3] += d;
-+}
-+
-+void md5_init(struct md5_ctx *ctx)
-+{
-+	ctx->state = md5_iv;
-+	ctx->bytecount = 0;
-+}
-+EXPORT_SYMBOL_GPL(md5_init);
-+
-+void md5_update(struct md5_ctx *ctx, const u8 *data, size_t len)
-+{
-+	size_t partial = ctx->bytecount % MD5_BLOCK_SIZE;
-+
-+	ctx->bytecount += len;
-+
-+	if (partial + len >= MD5_BLOCK_SIZE) {
-+
-+		if (partial) {
-+			size_t l = MD5_BLOCK_SIZE - partial;
-+
-+			memcpy(&ctx->buf[partial], data, l);
-+			data += l;
-+			len -= l;
-+
-+			md5_transform(&ctx->state, ctx->buf);
-+		}
-+
-+		while (len >= MD5_BLOCK_SIZE) {
-+			md5_transform(&ctx->state, data);
-+			data += MD5_BLOCK_SIZE;
-+			len -= MD5_BLOCK_SIZE;
-+		}
-+		partial = 0;
-+	}
-+	if (len)
-+		memcpy(&ctx->buf[partial], data, len);
-+}
-+EXPORT_SYMBOL_GPL(md5_update);
-+
-+static void __md5_final(struct md5_ctx *ctx, u8 out[MD5_DIGEST_SIZE])
-+{
-+	u64 bitcount = ctx->bytecount << 3;
-+	size_t partial = ctx->bytecount % MD5_BLOCK_SIZE;
-+
-+	ctx->buf[partial++] = 0x80;
-+	if (partial > MD5_BLOCK_SIZE - 8) {
-+		memset(&ctx->buf[partial], 0, MD5_BLOCK_SIZE - partial);
-+		md5_transform(&ctx->state, ctx->buf);
-+		partial = 0;
-+	}
-+	memset(&ctx->buf[partial], 0, MD5_BLOCK_SIZE - 8 - partial);
-+	*(__le64 *)&ctx->buf[MD5_BLOCK_SIZE - 8] = cpu_to_le64(bitcount);
-+	md5_transform(&ctx->state, ctx->buf);
-+
-+	cpu_to_le32_array(ctx->state.h, ARRAY_SIZE(ctx->state.h));
-+	memcpy(out, ctx->state.h, MD5_DIGEST_SIZE);
-+}
-+
-+void md5_final(struct md5_ctx *ctx, u8 out[MD5_DIGEST_SIZE])
-+{
-+	__md5_final(ctx, out);
-+	memzero_explicit(ctx, sizeof(*ctx));
-+}
-+EXPORT_SYMBOL_GPL(md5_final);
-+
-+void md5(const u8 *data, size_t len, u8 out[MD5_DIGEST_SIZE])
-+{
-+	struct md5_ctx ctx;
-+
-+	md5_init(&ctx);
-+	md5_update(&ctx, data, len);
-+	md5_final(&ctx, out);
-+}
-+EXPORT_SYMBOL_GPL(md5);
-+
-+static void __hmac_md5_preparekey(struct md5_block_state *istate,
-+				  struct md5_block_state *ostate,
-+				  const u8 *raw_key, size_t raw_key_len)
-+{
-+	union {
-+		u8 b[MD5_BLOCK_SIZE];
-+		unsigned long w[MD5_BLOCK_SIZE / sizeof(unsigned long)];
-+	} derived_key = { 0 };
-+
-+	if (unlikely(raw_key_len > MD5_BLOCK_SIZE))
-+		md5(raw_key, raw_key_len, derived_key.b);
-+	else
-+		memcpy(derived_key.b, raw_key, raw_key_len);
-+
-+	for (size_t i = 0; i < ARRAY_SIZE(derived_key.w); i++)
-+		derived_key.w[i] ^= REPEAT_BYTE(HMAC_IPAD_VALUE);
-+	*istate = md5_iv;
-+	md5_transform(istate, derived_key.b);
-+
-+	for (size_t i = 0; i < ARRAY_SIZE(derived_key.w); i++)
-+		derived_key.w[i] ^= REPEAT_BYTE(HMAC_OPAD_VALUE ^
-+						HMAC_IPAD_VALUE);
-+	*ostate = md5_iv;
-+	md5_transform(ostate, derived_key.b);
-+
-+	memzero_explicit(&derived_key, sizeof(derived_key));
-+}
-+
-+void hmac_md5_preparekey(struct hmac_md5_key *key,
-+			 const u8 *raw_key, size_t raw_key_len)
-+{
-+	__hmac_md5_preparekey(&key->istate, &key->ostate, raw_key, raw_key_len);
-+}
-+EXPORT_SYMBOL_GPL(hmac_md5_preparekey);
-+
-+void hmac_md5_init(struct hmac_md5_ctx *ctx, const struct hmac_md5_key *key)
-+{
-+	ctx->hash_ctx.state = key->istate;
-+	ctx->hash_ctx.bytecount = MD5_BLOCK_SIZE;
-+	ctx->ostate = key->ostate;
-+}
-+EXPORT_SYMBOL_GPL(hmac_md5_init);
-+
-+void hmac_md5_init_usingrawkey(struct hmac_md5_ctx *ctx,
-+			       const u8 *raw_key, size_t raw_key_len)
-+{
-+	__hmac_md5_preparekey(&ctx->hash_ctx.state, &ctx->ostate,
-+			      raw_key, raw_key_len);
-+	ctx->hash_ctx.bytecount = MD5_BLOCK_SIZE;
-+}
-+EXPORT_SYMBOL_GPL(hmac_md5_init_usingrawkey);
-+
-+void hmac_md5_final(struct hmac_md5_ctx *ctx, u8 out[MD5_DIGEST_SIZE])
-+{
-+	/* Generate the padded input for the outer hash in ctx->hash_ctx.buf. */
-+	__md5_final(&ctx->hash_ctx, ctx->hash_ctx.buf);
-+	memset(&ctx->hash_ctx.buf[MD5_DIGEST_SIZE], 0,
-+	       MD5_BLOCK_SIZE - MD5_DIGEST_SIZE);
-+	ctx->hash_ctx.buf[MD5_DIGEST_SIZE] = 0x80;
-+	*(__le64 *)&ctx->hash_ctx.buf[MD5_BLOCK_SIZE - 8] =
-+		cpu_to_le64(8 * (MD5_BLOCK_SIZE + MD5_DIGEST_SIZE));
-+
-+	/* Compute the outer hash, which gives the HMAC value. */
-+	md5_transform(&ctx->ostate, ctx->hash_ctx.buf);
-+	cpu_to_le32_array(ctx->ostate.h, ARRAY_SIZE(ctx->ostate.h));
-+	memcpy(out, ctx->ostate.h, MD5_DIGEST_SIZE);
-+
-+	memzero_explicit(ctx, sizeof(*ctx));
-+}
-+EXPORT_SYMBOL_GPL(hmac_md5_final);
-+
-+void hmac_md5(const struct hmac_md5_key *key, const u8 *data, size_t data_len,
-+	      u8 out[MD5_DIGEST_SIZE])
-+{
-+	struct hmac_md5_ctx ctx;
-+
-+	hmac_md5_init(&ctx, key);
-+	hmac_md5_update(&ctx, data, data_len);
-+	hmac_md5_final(&ctx, out);
-+}
-+EXPORT_SYMBOL_GPL(hmac_md5);
-+
-+void hmac_md5_usingrawkey(const u8 *raw_key, size_t raw_key_len,
-+			  const u8 *data, size_t data_len,
-+			  u8 out[MD5_DIGEST_SIZE])
-+{
-+	struct hmac_md5_ctx ctx;
-+
-+	hmac_md5_init_usingrawkey(&ctx, raw_key, raw_key_len);
-+	hmac_md5_update(&ctx, data, data_len);
-+	hmac_md5_final(&ctx, out);
-+}
-+EXPORT_SYMBOL_GPL(hmac_md5_usingrawkey);
-+
-+MODULE_DESCRIPTION("MD5 and HMAC-MD5 library functions");
++MODULE_DESCRIPTION("KUnit tests and benchmark for MD5 and HMAC-MD5");
 +MODULE_LICENSE("GPL");
 -- 
 2.50.1
