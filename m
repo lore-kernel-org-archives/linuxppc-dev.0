@@ -1,73 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-10591-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10592-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 59F91C87FCF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Aug 2025 14:10:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 779E2C87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Aug 2025 14:25:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bwdjg6N2lz3byF;
-	Tue,  5 Aug 2025 00:09:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754316599;
-	cv=none; b=bM47+4UlFsItVEqZVe5vugL75oTFs+FyY/gtH+7ilZw3VH2lwFjY5cr/XHxdvvkuC0PQBKqyYE267JR9thrmxbMH4TkUltrm2U5u/dqHSc9fJbcuNj/GsMAIFfSWbBTiBiU5litwYgji4EFsRS1LfylTgpG3fDx9YeqYM4zSBjHRYwxjEHKhijon6RWJcEBC/SEaeaoNc3OsBTovjypOt9yp+4WCLjNx2QpIWkgspzPTQJJjO5PIjYOKJEST5K0AT1Trt1NBfcnxjLIKrNyGMCoTZTTkWljPaTGxGUUUi09W7As9V89XTOUYH5jwypC+a6zteg47l6j91CVliQo0oA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bwf3M3wtLz3bpP;
+	Tue,  5 Aug 2025 00:25:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754317519;
+	cv=none; b=IXqE2RS3IgIyVfuHEONg9b9aycQx5hsrdvKm1EXd9QoKpidRt0L+kCiJFTdx/gY0S0ROkj7ZfW73zuKy6KJAb99hRItUF5eeuFtSrxasKHa2KqhbxisCXu11B4STOP96qAQ+5DMhGq1MxH3JiDEzD64LeQah0rvp37IxeyPjsNJwbCgug7gfbqNYrjMB5n3Ew4NA785MHJbpFNNPHXwznXB4J1vG58vHKB1JvVyQoQ2z6lUiPrppguU0n0myaZzEMPHwAGoQ1pM+w1wlTmQiNODeqliht5Ot/aOcKXCZYVSv/Q0k3n1o6NXMEIKaDirO6bJaoOocC9alKia3Bpgc5Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754316599; c=relaxed/relaxed;
-	bh=maeUrwruKZ5pcRHm1lii96PPS/UgYKiMKyss5hALvWw=;
-	h=From:To:Subject:Date:Message-ID:Content-Type:MIME-Version; b=MkzadED76sUWZa9bBB+U0T3FNQKzFQKQJz80rTM9tDXzDLW1Mv8YPNWDXbmXZ2Mg4KhAGIDdPHrwHz5ROpXXJQ/DVbC/KIYMfpbz7W/4MUPiEoTsOOOYApxZS81lBygKB23XSjCfGOKLluPN6U3WJTN9bRUjy3vYn64/I0Hk4OQSnsCsmKfQuB1owjnnnLOezS+k/6H38ob95+otWtbzRhg6nE/wCPvT89vcdJJg5EhSYUfKtrMriGtIQgqfgbxHR1yvTHgtJezEC3HSxFDA55xoRcMOiAISOE1t2B2Mpoj1t/yhHbINegPMOU7FL40ewJzd6g6EVzdW5q+VyPG2iw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cwRGgNT2; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1754317519; c=relaxed/relaxed;
+	bh=JnE/XQebxhZoJ4GRVlUCrOpacOVFTDN+5mw2JDUfuYM=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=mAf0+rrGb8DfGVuFZE35VAh3b7comqh8qAEGNjaQdPLlfQc86ho2MoeYGYpvSGg25+wj4hvJZKQGmdhTUSaQEfMqAjatsHpojgOEdq6hBjag0uG1ECogoeFn/lyZ3GxCcT6hew9LWMOakgjVk6Nc5Gogv+YKTeRVQNmcoZ+QtwjzzP6RLwV0pDbmJ9y0WWX4U4QgKVFL14gNG5h9CwPPFg525pXpSVD+72KCK8WfZwsKXbgthmwJI9xuK49qC+G94dSEFEkxxkwXVbfmsmukaVbAkZ0a+tIdZhHLTSN/MA3u4vmiiy8Vg18FG+MqXiA17DE2VhsmHZNeARgttaAVNA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Age+vrxr; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=cwRGgNT2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Age+vrxr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=bugzilla-daemon@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwdjf733vz3by8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 00:09:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwf3L39f2z3bpG
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 00:25:18 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id B1D085C6251
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2025 14:09:56 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 5D0C1C4CEF6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2025 14:09:56 +0000 (UTC)
+	by dfw.source.kernel.org (Postfix) with ESMTP id 716D25C54BE
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2025 14:25:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 1A5D7C4CEE7
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2025 14:25:16 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1754316596;
-	bh=LBBjk71rUAycmLq8HPSd7ebX20gJuj9bSBiP+qiR7pY=;
-	h=From:To:Subject:Date:From;
-	b=cwRGgNT20FUCgZsWxlBsiU8+9CWejo5TldtGwyJ66Nztns+8TlRHgw5nvmKO2hGFO
-	 oRvRlxnfSrJm387VDebB//yJxhIkU/fDMjfh6Rg9oujWP2YCA7RUELG3cgrTrxOxbF
-	 o4lHDTXtnTQraDJEHT4IHdh9GPLYyxkTewnGN0RZRDxxV6wa1Ijkbt06uLhjlLHqQp
-	 1bIhWXjIlsu+sg82V7rnZoOu3R9Me1PBsczBe4oaub1W26XT59mbSNUwAJ8/ZBBpyu
-	 EI7y9Dydb5g1nLXHmQ95vu6bjWqqUf7Me1lQfEdKv8Rw8JTJ7ZOYkB7uqxrTwJC5Wb
-	 pY6ztoVqr9Lwg==
+	s=k20201202; t=1754317516;
+	bh=cphDNL22VYTOCLcH8OPM5SL76V4lXPM4lLaUzVaJFZo=;
+	h=From:To:Subject:Date:In-Reply-To:References:From;
+	b=Age+vrxreE37/9oheQxkdrwJ5rpPdBj0zism/mmwKcMAKwXPS45xqr7RvDo0UNTJn
+	 myCxdhQUlYv7S6VwE1aE2a4nNNKI2SlhM3bVZVO3m759pB704PSbhsUEMJcmzi0Ogq
+	 nTzm6piE69D3oe/VAnZ6zwgmWNGuQgJp+t16CltGqLTh6JydAh33RJ/b5Wbowi5/W0
+	 Ow73wlM0bwx8HbZ+MB4i1sfmbMYgTodr374nkauHR6la6zrUIbT1SVGM+8Zc9NdFrz
+	 1UG1gov6awTpIOIXQ7g6lEwZFFkFcUDMM+IxHXIftj7dphTwBZep/PhaWKIyTs1yl9
+	 lP6WP/djhNzig==
 Received: by aws-us-west-2-korg-bugzilla-1.web.codeaurora.org (Postfix, from userid 48)
-	id 4EE6BC4160E; Mon,  4 Aug 2025 14:09:56 +0000 (UTC)
+	id 113A2C41613; Mon,  4 Aug 2025 14:25:16 +0000 (UTC)
 From: bugzilla-daemon@kernel.org
 To: linuxppc-dev@lists.ozlabs.org
-Subject: [Bug 220407] New: arch/powerpc/boot/types.h:43:13: error: 'bool'
- cannot be defined via 'typedef' when building with GCC 15
-Date: Mon, 04 Aug 2025 14:09:56 +0000
+Subject: [Bug 220407] arch/powerpc/boot/types.h:43:13: error: 'bool' cannot
+ be defined via 'typedef' when building with GCC 15
+Date: Mon, 04 Aug 2025 14:25:15 +0000
 X-Bugzilla-Reason: None
-X-Bugzilla-Type: new
+X-Bugzilla-Type: changed
 X-Bugzilla-Watch-Reason: AssignedTo platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Product: Platform Specific/Hardware
 X-Bugzilla-Component: PPC-32
 X-Bugzilla-Version: 2.5
 X-Bugzilla-Keywords: 
 X-Bugzilla-Severity: normal
-X-Bugzilla-Who: anhollander516@gmail.com
+X-Bugzilla-Who: christophe.leroy@csgroup.eu
 X-Bugzilla-Status: NEW
 X-Bugzilla-Resolution: 
 X-Bugzilla-Priority: P3
 X-Bugzilla-Assigned-To: platform_ppc-32@kernel-bugs.osdl.org
 X-Bugzilla-Flags: 
-X-Bugzilla-Changed-Fields: bug_id short_desc product version rep_platform
- op_sys bug_status bug_severity priority component assigned_to reporter
- cf_regression attachments.created
-Message-ID: <bug-220407-206035@https.bugzilla.kernel.org/>
+X-Bugzilla-Changed-Fields: cc
+Message-ID: <bug-220407-206035-pL2Cw9FtiA@https.bugzilla.kernel.org/>
+In-Reply-To: <bug-220407-206035@https.bugzilla.kernel.org/>
+References: <bug-220407-206035@https.bugzilla.kernel.org/>
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 X-Bugzilla-URL: https://bugzilla.kernel.org/
@@ -88,229 +89,16 @@ MIME-Version: 1.0
 
 https://bugzilla.kernel.org/show_bug.cgi?id=3D220407
 
-            Bug ID: 220407
-           Summary: arch/powerpc/boot/types.h:43:13: error: 'bool' cannot
-                    be defined via 'typedef' when building with GCC 15
-           Product: Platform Specific/Hardware
-           Version: 2.5
-          Hardware: PPC-32
-                OS: Linux
-            Status: NEW
-          Severity: normal
-          Priority: P3
-         Component: PPC-32
-          Assignee: platform_ppc-32@kernel-bugs.osdl.org
-          Reporter: anhollander516@gmail.com
-        Regression: No
+Christophe Leroy (christophe.leroy@csgroup.eu) changed:
 
-Created attachment 308441
-  --> https://bugzilla.kernel.org/attachment.cgi?id=3D308441&action=3Dedit
-Gentoo default kernel config
+           What    |Removed                     |Added
+----------------------------------------------------------------------------
+                 CC|                            |christophe.leroy@csgroup.eu
 
-I have been slowly bringing up a Gentoo PPC system in QEMU to host binary
-packages for an iBook G3.
-
-The kernel fails to compile with GCC 15 due to C23 issues:
-
-  DESCEND objtool
-  CALL    scripts/checksyscalls.sh
-  INSTALL libsubcmd_headers
-  COPY    arch/powerpc/boot/inflate.c
-  COPY    arch/powerpc/boot/inffast.c
-  COPY    arch/powerpc/boot/inftrees.c
-  BOOTCC  arch/powerpc/boot/cuboot.o
-  COPY    arch/powerpc/boot/fdt.c
-  BOOTCC  arch/powerpc/boot/devtree.o
-  COPY    arch/powerpc/boot/fdt_ro.c
-  COPY    arch/powerpc/boot/fdt_rw.c
-  COPY    arch/powerpc/boot/fdt_strerror.c
-  COPY    arch/powerpc/boot/fdt_sw.c
-  COPY    arch/powerpc/boot/fdt_wip.c
-  BOOTCC  arch/powerpc/boot/libfdt-wrapper.o
-  BOOTCC  arch/powerpc/boot/main.o
-  BOOTCC  arch/powerpc/boot/ns16550.o
-  BOOTCC  arch/powerpc/boot/ofconsole.o
-  BOOTCC  arch/powerpc/boot/oflib.o
-  BOOTCC  arch/powerpc/boot/serial.o
-  BOOTCC  arch/powerpc/boot/simple_alloc.o
-  BOOTCC  arch/powerpc/boot/stdio.o
-  BOOTCC  arch/powerpc/boot/stdlib.o
-In file included from arch/powerpc/boot/ops.h:13,
-                 from arch/powerpc/boot/cuboot.c:12:
-arch/powerpc/boot/types.h:43:13: error: 'bool' cannot be defined via 'typed=
-ef'
-   43 | typedef int bool;
-      |             ^~~~
-arch/powerpc/boot/types.h:43:13: note: 'bool' is a keyword with '-std=3Dc23'
-onwards
-arch/powerpc/boot/types.h:43:1: warning: useless type name in empty declara=
-tion
-   43 | typedef int bool;
-      | ^~~~~~~
-In file included from arch/powerpc/boot/devtree.c:12:
-arch/powerpc/boot/types.h:43:13: error: 'bool' cannot be defined via 'typed=
-ef'
-   43 | typedef int bool;
-      |             ^~~~
-In file included from arch/powerpc/boot/serial.c:14:
-arch/powerpc/boot/types.h:43:13: error: 'bool' cannot be defined via 'typed=
-ef'
-   43 | typedef int bool;
-      |             ^~~~
-arch/powerpc/boot/types.h:43:13: note: 'bool' is a keyword with '-std=3Dc23'
-onwards
-In file included from arch/powerpc/boot/ns16550.c:13:
-arch/powerpc/boot/types.h:43:13: error: 'bool' cannot be defined via 'typed=
-ef'
-   43 | typedef int bool;
-      |             ^~~~
-arch/powerpc/boot/types.h:43:13: note: 'bool' is a keyword with '-std=3Dc23'
-onwards
-arch/powerpc/boot/types.h:43:13: note: 'bool' is a keyword with '-std=3Dc23'
-onwards
-arch/powerpc/boot/types.h:43:1: warning: useless type name in empty declara=
-tion
-   43 | typedef int bool;
-      | ^~~~~~~
-arch/powerpc/boot/types.h:43:1: warning: useless type name in empty declara=
-tion
-   43 | typedef int bool;
-      | ^~~~~~~
-arch/powerpc/boot/types.h:43:1: warning: useless type name in empty declara=
-tion
-   43 | typedef int bool;
-      | ^~~~~~~
-In file included from arch/powerpc/boot/ops.h:13,
-                 from arch/powerpc/boot/main.c:13:
-arch/powerpc/boot/types.h:43:13: error: 'bool' cannot be defined via 'typed=
-ef'
-   43 | typedef int bool;
-      |             ^~~~
-In file included from ./arch/powerpc/boot/libfdt_env.h:5,
-                 from ./arch/powerpc/boot/libfdt.h:9,
-                 from arch/powerpc/boot/libfdt-wrapper.c:13:
-./arch/powerpc/boot/types.h:43:13: error: 'bool' cannot be defined via
-'typedef'
-   43 | typedef int bool;
-      |             ^~~~
-arch/powerpc/boot/types.h:43:13: note: 'bool' is a keyword with '-std=3Dc23'
-onwards
-./arch/powerpc/boot/types.h:43:13: note: 'bool' is a keyword with '-std=3Dc=
-23'
-onwards
-./arch/powerpc/boot/types.h:43:1: warning: useless type name in empty
-declaration
-   43 | typedef int bool;
-      | ^~~~~~~
-arch/powerpc/boot/types.h:43:1: warning: useless type name in empty declara=
-tion
-   43 | typedef int bool;
-      | ^~~~~~~
-In file included from arch/powerpc/boot/oflib.c:6:
-arch/powerpc/boot/types.h:43:13: error: 'bool' cannot be defined via 'typed=
-ef'
-   43 | typedef int bool;
-      |             ^~~~
-In file included from arch/powerpc/boot/ofconsole.c:8:
-arch/powerpc/boot/types.h:43:13: error: 'bool' cannot be defined via 'typed=
-ef'
-   43 | typedef int bool;
-      |             ^~~~
-arch/powerpc/boot/types.h:43:13: note: 'bool' is a keyword with '-std=3Dc23'
-onwards
-arch/powerpc/boot/types.h:43:13: note: 'bool' is a keyword with '-std=3Dc23'
-onwards
-arch/powerpc/boot/types.h:43:1: warning: useless type name in empty declara=
-tion
-   43 | typedef int bool;
-      | ^~~~~~~
-arch/powerpc/boot/types.h:43:1: warning: useless type name in empty declara=
-tion
-   43 | typedef int bool;
-      | ^~~~~~~
-make[2]: *** [arch/powerpc/boot/Makefile:234: arch/powerpc/boot/cuboot.o] E=
-rror
-1
-make[2]: *** Waiting for unfinished jobs....
-In file included from arch/powerpc/boot/simple_alloc.c:11:
-arch/powerpc/boot/types.h:43:13: error: 'bool' cannot be defined via 'typed=
-ef'
-   43 | typedef int bool;
-      |             ^~~~
-arch/powerpc/boot/types.h:43:13: note: 'bool' is a keyword with '-std=3Dc23'
-onwards
-arch/powerpc/boot/types.h:43:1: warning: useless type name in empty declara=
-tion
-   43 | typedef int bool;
-      | ^~~~~~~
-In file included from arch/powerpc/boot/ops.h:13,
-                 from arch/powerpc/boot/stdio.c:9:
-arch/powerpc/boot/types.h:43:13: error: 'bool' cannot be defined via 'typed=
-ef'
-   43 | typedef int bool;
-      |             ^~~~
-arch/powerpc/boot/types.h:43:13: note: 'bool' is a keyword with '-std=3Dc23'
-onwards
-arch/powerpc/boot/types.h:43:1: warning: useless type name in empty declara=
-tion
-   43 | typedef int bool;
-      | ^~~~~~~
-make[2]: *** [arch/powerpc/boot/Makefile:234: arch/powerpc/boot/ns16550.o]
-Error 1
-make[2]: *** [arch/powerpc/boot/Makefile:234: arch/powerpc/boot/serial.o] E=
-rror
-1
-make[2]: *** [arch/powerpc/boot/Makefile:234: arch/powerpc/boot/devtree.o]
-Error 1
-make[2]: *** [arch/powerpc/boot/Makefile:234: arch/powerpc/boot/ofconsole.o]
-Error 1
-make[2]: *** [arch/powerpc/boot/Makefile:234: arch/powerpc/boot/main.o] Err=
-or 1
-make[2]: *** [arch/powerpc/boot/Makefile:234: arch/powerpc/boot/simple_allo=
-c.o]
-Error 1
-make[2]: *** [arch/powerpc/boot/Makefile:234: arch/powerpc/boot/oflib.o] Er=
-ror
-1
-make[2]: *** [arch/powerpc/boot/Makefile:234:
-arch/powerpc/boot/libfdt-wrapper.o] Error 1
-make[2]: *** [arch/powerpc/boot/Makefile:234: arch/powerpc/boot/stdio.o] Er=
-ror
-1
-make[1]: *** [arch/powerpc/Makefile:236: zImage] Error 2
-make: *** [Makefile:248: __sub-make] Error 2
-
-I tried adding KBUILD_CFLAGS +=3D -std=3Dgnu11 to arch/powerpc/boot/Makefil=
-e, but
-that didn't fix the issue. I am building Linux 6.15.9 because that is the
-latest that Gentoo has an official default config for, but
-arch/powerpc/boot/types.h and arch/powerpc/boot/Makefile haven't changed fr=
-om
-there to master. 6.12 fails too, for that matter.
-
-
-
-(Truncated) output from emerge --info (I am using a 64-bit kernel in the
-emulator, and building a 32-bit userland + kernel for the target system):
-
-Portage 3.0.68 (python 3.13.5-final-0, default/linux/ppc/23.0/desktop, gcc-=
-15,
-glibc-2.41-r4, 6.12.21-gentoo-ppc64-ppc ppc64)
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=
-=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D=3D
-System uname:
-Linux-6.12.21-gentoo-ppc64-ppc-ppc64-POWER9_-architected-,_altivec_supporte=
-d-with-glibc2.41
-KiB Mem:    24096492 total,  10071272 free
-KiB Swap:          0 total,         0 free
-Head commit of repository gentoo: 5fbe5609e04996b5d2c6bed17f8bc55970d759bb
-
-ld GNU ld (Gentoo 2.44 p4) 2.44.0
-sys-devel/binutils:        2.44-r3::gentoo, 2.45::gentoo
-sys-devel/gcc:             15.1.1_p20250705-r1::gentoo
-sys-kernel/linux-headers:  6.16::gentoo (virtual/os-headers)
-sys-libs/glibc:            2.41-r4::gentoo
+--- Comment #1 from Christophe Leroy (christophe.leroy@csgroup.eu) ---
+This is fixed with commit
+https://github.com/torvalds/linux/commit/5a821e2d69e26b51b7f3740b6b0c3462b8=
+cacaff
 
 --=20
 You may reply to this email to add a comment.
