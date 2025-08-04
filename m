@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-10582-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10583-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14A1CC87FCB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Aug 2025 12:44:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5469AC87FCF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Aug 2025 12:44:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bwbph3BlWz3brN;
-	Mon,  4 Aug 2025 22:44:12 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bwbpn55wHz3bs2;
+	Mon,  4 Aug 2025 22:44:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754311452;
-	cv=none; b=CwXldWXV+R0ka5zwJw7Q9h/Hf0RAKv7pfYArW+Em2qU0W0WXqjtvA+Dq/GOFPszCuwHhrGpHoo9Fy/MvdyOrBLqaFv2stu7Hp+h+MrxllZmNgHNmzjzxE9gpf9JhIJBW2NgjWs2B+ad1C0ImpYbG3ZU7z75p7ErpS3zUR7BREjQ468UyLDVROgxdsZGyNPtaw68Z4GC+s5AKJiMKn1lA8Zu7yUkXo4WzCGsDbcXKPgNbgsvCwK+dSAqoGasEBJmEKoVf/dLVoSCZQTTfvB0U8ir5b38m6txMed1DMGaA7zpQnyBKFah2yrnL7Nu6GIwqR0wbFIQqtQSlX522PhrTtQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754311457;
+	cv=none; b=lIrAkOK5ExXCe6ecIBBbqGqmzOwKF3JiCr2ByazkYKkoi6gMl++KGcKV83wFECULS9flgHDQAK7wsNCgzni3imsa3wj4e9m8DZv9vde0Y3QLkx+2LUMRYY2C84P0KGH0JS/N8LJpn8bMARiI4T3UXXQOZUlzLs+ZSb7SjZDnDk+EHSIKkO4fiqlMxcG2SxUcmpVx62cYOHYYjx2UV1gNecjlKjt9vpIGVovK20WQN3szXdJLMWoXohlbcY6tOs8cG2ByoYgTt516mntAgfFz5aWo4p4OfvAp1pq8XVRVMqTl1G8NdINLdjXS07yDbrc8xrtx5aQyIzHM5bmAwSCASg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754311452; c=relaxed/relaxed;
-	bh=ZQkh9YNjcmK4oEE8V4mODzcz3fsK3O/5hMC+kUDPf80=;
+	t=1754311457; c=relaxed/relaxed;
+	bh=njJVaIqIe6sqKLpFp72s28bWMOkerJgS7/NyUH+svec=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=K7AoYSSdZlrzwxJm+Kf2sIBYjitLM7xKoW8f40M6uwjub4lhLy0awagBX4E7bJKrZ8nGIZD6m/ZmQkqS9SGBCGqZFEqyy2gxS+CbFRb/dLNb+D3AGukPNw0MphZvpvHRzB1eYGtsizCYrEUEFTsc0bKnzGwAdoBe+1ziP59+d2V6ZH3YNTpaVOpNdjctoqzmZPnsgHW1LKZTcXGvaC7pfibEXsQ8+cHGlNtzHe85JECoO6f/NOFmeTFAbkvS3w79468eJe06M43UpHAkhf0sFUo9pf3A8X0vVrxKk10u/ilakKyXNrFUaU2r2/aGLZ2Xi6GmJIn7XtH5esQPkzYFlA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jbu+qcbq; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=RLiZ/o4KUJ62NAhMrctmADm0F7AGG4QhFUxeo5wMGTAVDW7+lUH8ERI+a0JlHrxRiprsiIFC4zxZhUGCuJ5XfIvahuhpJFUZDbXrbhaqajbWxf4zS4E7smbq0aCMj3LmYuZ3DxSyDxDUvBVvepm/XPn4RBvcEPciJ1SgFHm7up+zQGZG83CNSpNZ8cKw8RaOLUKxcbQ133aOuUHFQgxzQKykzN4NovZ+KZsqjViBgPOBj2H4jYeIZpIeaM5bzBLQQd983ns3iakY5QNxVGpY/GiaBYcn/pu2hQEh29PK5qxPwBr1KFKay5loua7ctfNIinIhUIiS9APXl7SgdCBd/Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OtgAnXB9; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=jbu+qcbq;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=OtgAnXB9;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
 Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwbpg4Z0rz3bV6
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2025 22:44:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwbpn03tCz3brx
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  4 Aug 2025 22:44:17 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id B24ACA55823;
-	Mon,  4 Aug 2025 12:44:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 41354C4CEE7;
-	Mon,  4 Aug 2025 12:44:08 +0000 (UTC)
+	by nyc.source.kernel.org (Postfix) with ESMTP id 0920DA55826;
+	Mon,  4 Aug 2025 12:44:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 58081C4CEF0;
+	Mon,  4 Aug 2025 12:44:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1754311449;
-	bh=71zLK4izXOep/KpMivpRm0s6UWtEl8Sf4NUkNJ/aIsU=;
+	s=k20201202; t=1754311454;
+	bh=qnVGWPERMw1BTa2/gk85Rr9nCLsamOSAPU4HKvyJS1c=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=jbu+qcbqIUowFpCDDbVzU+O+oDab7hCwuZ0M/xHzIA/m0ruu3KAVq7ylLBINY55If
-	 bo9Tk+feiAbmQkF4YUkUgIp0MAGQcmiQI/Mcg1NkiXwovDTkgHpeGsJGSuvqbW4nNb
-	 6fzLtf+WmA+A9sS3/Z9a3whJQW3+eizW1avVzK6HdjeWo/DTN9Zhf652jC0OiVqnIx
-	 daQ4NzeFJg9jNTgGGI/AIUyWbdPkZPaelF6ZKtGOEKFXm1v4YI2nWf6GfMuCj7zPG3
-	 LWho0rhThFQGEnh+1T8yylTXAtdwgRYiF8Q52vne/vV6b0+WWqLNv/LW3uBlxR2xc1
-	 8NgN+JwChrndA==
+	b=OtgAnXB9G/hO4kHiG6lUbx1lGdhplK8QSnQvERbDkZeJ2rBPi5BohP2fOcU1EY1H0
+	 LWK7JmM6eYjvDV85Iv2oqAeUvxpoecgv6pnhGevxoOAJjwoIKIBVlnyhDtWl6iMFdx
+	 RkkwEUkNj1PK4RIEa7lvhblH+3HASR9LDXUdd9ooPuLmkTQNLafsqp7vExm+lHX79L
+	 xgsW9Dlqtb1H+ROfUItFyQuMNgUa0HHgvJ+5cBoMm5E0OKANto/+eCMPooaSWD2S6k
+	 W4Hqu5Itep2BtJPMCEt1CECg7NNUHsl45+R6007i0eogZT7o+A+uJhsGr5xPHo73g0
+	 Vn+VRBXex4Xsg==
 From: Leon Romanovsky <leon@kernel.org>
 To: Marek Szyprowski <m.szyprowski@samsung.com>
 Cc: Leon Romanovsky <leonro@nvidia.com>,
@@ -82,9 +82,9 @@ Cc: Leon Romanovsky <leonro@nvidia.com>,
 	virtualization@lists.linux.dev,
 	Will Deacon <will@kernel.org>,
 	xen-devel@lists.xenproject.org
-Subject: [PATCH v1 12/16] mm/hmm: migrate to physical address-based DMA mapping API
-Date: Mon,  4 Aug 2025 15:42:46 +0300
-Message-ID: <6d5896c3c1eb4d481b7d49f1eb661f61353bcfdb.1754292567.git.leon@kernel.org>
+Subject: [PATCH v1 10/16] xen: swiotlb: Open code map_resource callback
+Date: Mon,  4 Aug 2025 15:42:44 +0300
+Message-ID: <e69e9510d9024d664133dc788f5186aac414318e.1754292567.git.leon@kernel.org>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <cover.1754292567.git.leon@kernel.org>
 References: <cover.1754292567.git.leon@kernel.org>
@@ -105,52 +105,51 @@ Content-Transfer-Encoding: 8bit
 
 From: Leon Romanovsky <leonro@nvidia.com>
 
-Convert HMM DMA operations from the legacy page-based API to the new
-physical address-based dma_map_phys() and dma_unmap_phys() functions.
-This demonstrates the preferred approach for new code that should use
-physical addresses directly rather than page+offset parameters.
-
-The change replaces dma_map_page() and dma_unmap_page() calls with
-dma_map_phys() and dma_unmap_phys() respectively, using the physical
-address that was already available in the code. This eliminates the
-redundant page-to-physical address conversion and aligns with the
-DMA subsystem's move toward physical address-centric interfaces.
-
-This serves as an example of how new code should be written to leverage
-the more efficient physical address API, which provides cleaner interfaces
-for drivers that already have access to physical addresses.
+General dma_direct_map_resource() is going to be removed
+in next patch, so simply open-code it in xen driver.
 
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- mm/hmm.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ drivers/xen/swiotlb-xen.c | 21 ++++++++++++++++++++-
+ 1 file changed, 20 insertions(+), 1 deletion(-)
 
-diff --git a/mm/hmm.c b/mm/hmm.c
-index d545e24949949..015ab243f0813 100644
---- a/mm/hmm.c
-+++ b/mm/hmm.c
-@@ -775,8 +775,8 @@ dma_addr_t hmm_dma_map_pfn(struct device *dev, struct hmm_dma_map *map,
- 		if (WARN_ON_ONCE(dma_need_unmap(dev) && !dma_addrs))
- 			goto error;
+diff --git a/drivers/xen/swiotlb-xen.c b/drivers/xen/swiotlb-xen.c
+index da1a7d3d377cf..dd7747a2de879 100644
+--- a/drivers/xen/swiotlb-xen.c
++++ b/drivers/xen/swiotlb-xen.c
+@@ -392,6 +392,25 @@ xen_swiotlb_sync_sg_for_device(struct device *dev, struct scatterlist *sgl,
+ 	}
+ }
  
--		dma_addr = dma_map_page(dev, page, 0, map->dma_entry_size,
--					DMA_BIDIRECTIONAL);
-+		dma_addr = dma_map_phys(dev, paddr, map->dma_entry_size,
-+					DMA_BIDIRECTIONAL, 0);
- 		if (dma_mapping_error(dev, dma_addr))
- 			goto error;
- 
-@@ -819,8 +819,8 @@ bool hmm_dma_unmap_pfn(struct device *dev, struct hmm_dma_map *map, size_t idx)
- 		dma_iova_unlink(dev, state, idx * map->dma_entry_size,
- 				map->dma_entry_size, DMA_BIDIRECTIONAL, attrs);
- 	} else if (dma_need_unmap(dev))
--		dma_unmap_page(dev, dma_addrs[idx], map->dma_entry_size,
--			       DMA_BIDIRECTIONAL);
-+		dma_unmap_phys(dev, dma_addrs[idx], map->dma_entry_size,
-+			       DMA_BIDIRECTIONAL, 0);
- 
- 	pfns[idx] &=
- 		~(HMM_PFN_DMA_MAPPED | HMM_PFN_P2PDMA | HMM_PFN_P2PDMA_BUS);
++static dma_addr_t xen_swiotlb_direct_map_resource(struct device *dev,
++						  phys_addr_t paddr,
++						  size_t size,
++						  enum dma_data_direction dir,
++						  unsigned long attrs)
++{
++	dma_addr_t dma_addr = paddr;
++
++	if (unlikely(!dma_capable(dev, dma_addr, size, false))) {
++		dev_err_once(dev,
++			     "DMA addr %pad+%zu overflow (mask %llx, bus limit %llx).\n",
++			     &dma_addr, size, *dev->dma_mask, dev->bus_dma_limit);
++		WARN_ON_ONCE(1);
++		return DMA_MAPPING_ERROR;
++	}
++
++	return dma_addr;
++}
++
+ /*
+  * Return whether the given device DMA address mask can be supported
+  * properly.  For example, if your device can only drive the low 24-bits
+@@ -426,5 +445,5 @@ const struct dma_map_ops xen_swiotlb_dma_ops = {
+ 	.alloc_pages_op = dma_common_alloc_pages,
+ 	.free_pages = dma_common_free_pages,
+ 	.max_mapping_size = swiotlb_max_mapping_size,
+-	.map_resource = dma_direct_map_resource,
++	.map_resource = xen_swiotlb_direct_map_resource,
+ };
 -- 
 2.50.1
 
