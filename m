@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-10600-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10601-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A87CFC87FCB
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Aug 2025 16:44:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CDFC3C87FCF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Aug 2025 16:44:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bwj7p14Xtz3brv;
-	Tue,  5 Aug 2025 02:44:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754325861;
-	cv=none; b=OoqR755UCEk+eNL1F9Cv6vB9cfOyjl6QyBuMPR3r0YTkhOLfBG8LTFqu/OdwtI5rWomf2KWCEigETomoisZ6imjv4Xd2DwJt75x8+RnbjNY42ZoaWoRA2H6LfHN8/QfK6VN2Jue3m8waBuufWaqZ+RuUp6CWZ2tbxQwwAPv3GrZLbORGpUEbn3jP0XqS6UJBpBuqK6/bThJI5YpxWnBOzxos7wdBYdisLlmDqC8yImG7wqw2YtUhci5S+UErevMcXETT680W0tkPpBXPgK3LTczGIRJ+CwLfaqVdk1Fsmkd8hEEqHf8WWQK6DIg2gBXC8xZHCVWQHzbFbtotq6VK9A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bwj7q3F2pz3bmC;
+	Tue,  5 Aug 2025 02:44:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754325863;
+	cv=none; b=I2/qaKjqysDIi75a728fa/1GNG96Sne9lZ2jhvks+1kHILraWZlqbDgHcY1TCBM5hMG5NE+LETnVNaa1Zwp2w9Y26BVOgMwdT4G7cbbO29h1Y+bH0Tp8x8C5CQNVnPf34o0R8eaS/Letz+X5Wm3P7HEO6exQCkj8HDhDaPqBigaVaLKgNOwnJK4NtfkkNG/BECnRzKlnfuKk6q6HQLgpr6576gnXsYUArBqRb1QxUqMjisMoxsHtwYBnMbkeeJXXYXaNxTkSxsJHtCN717mNU7Cd9Q9cvqYLG1HFnc98aIEZJXPEbLbeIquTpGztAtdRGVwIGV0qfefpBGsWxIBRpg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754325861; c=relaxed/relaxed;
-	bh=/4OSoANhgsDlGhYfSkvg0Ni8LWM0/cmuGU+uev8Bk7E=;
+	t=1754325863; c=relaxed/relaxed;
+	bh=aecGV9vGcDEwi4B/VTPJfGWOVYg/UwXxu1rNEJJYeTM=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=AS2uupGmWK79qVddFIf/ae4+wY2meCmFYcPkATAMfBMuFWXt06LH9EjIrPj79lUKfWFxCTbjRtj71xGdjE1naoCs71woRSgl8qg6nOlNyJeDAiZ+JI/10JbVDL7V45n/Eid5mTjtZoUnZWgq08IjPQciyjEiu2TJ8xbdllT4HXrD/2u97r8Z7aiWQ90hdl6MPHWMfhbTPF0/DqocRKpiF1/Z9NS+WUIqpLU55duWdeXSgia/XlczRWGAWScJOaKQMhOYjYqBO0jr+xo38V9iWxjLxoOwdLYijEKJQUh4ZHiHeRkhsnzZGKlq3cCuce+KuN6hqDzy9Rxw04HXAtwITw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RKm7fStn; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=gwIjyglUh1UxpIowvy7r6HVsKwJ2BN6gAPlAYpmMika/fVr6eXM5K+0qZGr2L+HeeMjFkvsDd1VF3XmBox54MAyFlOfc3QbMSIIA1R8+9VlMEo+lw7pCXMgWat0ZY0zkefh7C37PuciazTe+vyZ+lp5ADz472g/4xFR75myMFTXP4LfWs3pI/2iK0mJ6sqzoxnK0JB2TSI+ZzNl56QzysL1rgKs3Mx9EficgaURSjrJmKYw86NlR1sPV5je8ko6tiZ0tXP9gdDDV+pgMMgoHVoBfUamoBijxkTdna7xAQn5fQTB+A0tN7xmrJuC98+e+AAVVlYE/SdAVFHvf+bukRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iWE8VRfr; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RKm7fStn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=iWE8VRfr;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwj7m6Vfgz3bmC
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwj7m6j4Bz3bnJ
 	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 02:44:20 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 9A7235C5AEF;
+	by tor.source.kernel.org (Postfix) with ESMTP id 8F99D6111C;
 	Mon,  4 Aug 2025 16:44:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 38944C4CEFA;
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3B6F4C16AAE;
 	Mon,  4 Aug 2025 16:44:18 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1754325858;
-	bh=Blko/RG2lvaODf864DzTpEKxwCgrc6vWtsbWwn+kegM=;
+	bh=nxTQvOzC/JSvvXmGiwbBm389+tS3ydnEWu5ZjeE7uO8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=RKm7fStnT2f/O9WTNiGO7vEnfTrtD2BjrdbvAqXYGVLzrvGMKRZpwNljrVdV5Yc7F
-	 ms/UkNjaUp45VzaxYml1V2nd8lcIp45AXVOtEcUonr/GGOlwTuoYIbgkvoQhFG/wN6
-	 WKZh/vtDzYFHTHdBEIoe7UUh+2ifIrTv4JkUwkgI3r31kXpv/+gCV57tdSm5RVB+/O
-	 k/FFqo6u0bVzkLRl1/HE6qUBw2RV4HQjdVjWVDfm2DbICcjzwJ+2AIF2V6qq7UvY2s
-	 1GPhzwrTFl0I2J3UaB6SO0WN6XerugMXmpU92vxpkjKRJ1CQhkGFuh0FEX4P7zr0Pl
-	 YCvaKu3TYXMJw==
+	b=iWE8VRfr3OxYP3UO+d3IFdSlRFDUjVi2yt4abZfHzx8WHNZlmjZv+iW6tbZ1hMSed
+	 GMUdeyWXa93Rj3Q0kqxys9JnrtcHbS7zYtwpkZQRdwxgfGOKtH22uDHP/aPOYqk0zt
+	 gx8OrUhDzIOeYz/3ozZ66IT6SxVrbTOHmxAgWe1j9r7DVA49oSHPmCapszzzdVlvT5
+	 0rVKK5k/1PP3orjyxoddlYJAHhNu+cSVguk1WJNaR/vlpIK6zkQ5yksGOZcLTjvx5d
+	 +wES39FcF9VH0Zhaow4jkVDyWjetCNzprRgTQ6VOL3WnhLNsY4nqYgtVeNxI1xrh5K
+	 6EfQRLAP2s92A==
 From: Kees Cook <kees@kernel.org>
 To: linux-arch@vger.kernel.org
 Cc: Kees Cook <kees@kernel.org>,
@@ -63,9 +63,9 @@ Cc: Kees Cook <kees@kernel.org>,
 	sparclinux@vger.kernel.org,
 	llvm@lists.linux.dev,
 	linux-hardening@vger.kernel.org
-Subject: [PATCH 05/17] powerpc: Add __attribute_const__ to ffs()-family implementations
-Date: Mon,  4 Aug 2025 09:44:01 -0700
-Message-Id: <20250804164417.1612371-5-kees@kernel.org>
+Subject: [PATCH 08/17] hexagon: Add __attribute_const__ to ffs()-family implementations
+Date: Mon,  4 Aug 2025 09:44:04 -0700
+Message-Id: <20250804164417.1612371-8-kees@kernel.org>
 X-Mailer: git-send-email 2.34.1
 In-Reply-To: <20250804163910.work.929-kees@kernel.org>
 References: <20250804163910.work.929-kees@kernel.org>
@@ -82,7 +82,7 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1894; i=kees@kernel.org; h=from:subject; bh=Blko/RG2lvaODf864DzTpEKxwCgrc6vWtsbWwn+kegM=; b=owGbwMvMwCVmps19z/KJym7G02pJDBkTHkf8q+aJtHjfkMxRZhbRVyTe91hepyc95ULUY4Nmo RcSm190lLIwiHExyIopsgTZuce5eLxtD3efqwgzh5UJZAgDF6cATOTwfUaGT12nXSZdEFMMv1jN WH1s+TYRodUWp2689y1ICF67snCjFiPDy4IrLHkZtyc8f2I0KUiD65L66soy16kWMewJ/B3xN0J 4AA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2819; i=kees@kernel.org; h=from:subject; bh=nxTQvOzC/JSvvXmGiwbBm389+tS3ydnEWu5ZjeE7uO8=; b=owGbwMvMwCVmps19z/KJym7G02pJDBkTHkdOvim1XYmPabvy37zFTXdO+twPi7p8b1vSfFm/q OnG5olrO0pZGMS4GGTFFFmC7NzjXDzetoe7z1WEmcPKBDKEgYtTACZiJ8/wv6jRWDiHOXGy6K77 d0Jm7Hwj/e9RpO9Ez+OX9qfOXmB1yp7hr+z2vC+XouyPGE0/r/25u2hG61q+7x8rzLzfsxpPfBd xmwEA
 X-Developer-Key: i=kees@kernel.org; a=openpgp; fpr=A5C3F68F229DD60F723E6E138972F4DFDC6DC026
 Content-Transfer-Encoding: 8bit
 
@@ -95,40 +95,68 @@ __attribute__const__, the compiler had to assume the function might
 change variable states as a side-effect (which is not true for ffs(),
 which provides deterministic math results).
 
-Add missing __attribute_const__ annotations to PowerPC's implementations of
-fls() function. These are pure mathematical functions that always return
-the same result for the same input with no side effects, making them eligible
-for compiler optimization.
+Add missing __attribute_const__ annotations to Hexagon's implementations
+of fls(), ffs(), __ffs(), __fls(), and ffz() functions. These are
+pure mathematical functions that always return the same result for
+the same input with no side effects, making them eligible for compiler
+optimization.
 
-Build tested ARCH=powerpc defconfig with GCC powerpc-linux-gnu 14.2.0.
+Build tested ARCH=hexagon defconfig with Clang 21.0.0git (LLVM=1).
 
 Link: https://github.com/KSPP/linux/issues/364 [1]
 Signed-off-by: Kees Cook <kees@kernel.org>
 ---
- arch/powerpc/include/asm/bitops.h | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/hexagon/include/asm/bitops.h | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/bitops.h b/arch/powerpc/include/asm/bitops.h
-index 671ecc6711e3..0d0470cd5ac3 100644
---- a/arch/powerpc/include/asm/bitops.h
-+++ b/arch/powerpc/include/asm/bitops.h
-@@ -276,7 +276,7 @@ static inline void arch___clear_bit_unlock(int nr, volatile unsigned long *addr)
-  * fls: find last (most-significant) bit set.
+diff --git a/arch/hexagon/include/asm/bitops.h b/arch/hexagon/include/asm/bitops.h
+index 160d8f37fa1a..b23cb13833af 100644
+--- a/arch/hexagon/include/asm/bitops.h
++++ b/arch/hexagon/include/asm/bitops.h
+@@ -200,7 +200,7 @@ arch_test_bit_acquire(unsigned long nr, const volatile unsigned long *addr)
+  *
+  * Undefined if no zero exists, so code should check against ~0UL first.
+  */
+-static inline long ffz(int x)
++static inline long __attribute_const__ ffz(int x)
+ {
+ 	int r;
+ 
+@@ -217,7 +217,7 @@ static inline long ffz(int x)
+  * This is defined the same way as ffs.
   * Note fls(0) = 0, fls(1) = 1, fls(0x80000000) = 32.
   */
--static __always_inline int fls(unsigned int x)
-+static __always_inline __attribute_const__ int fls(unsigned int x)
+-static inline int fls(unsigned int x)
++static inline __attribute_const__ int fls(unsigned int x)
  {
- 	int lz;
+ 	int r;
  
-@@ -294,7 +294,7 @@ static __always_inline int fls(unsigned int x)
-  * 32-bit fls calls.
+@@ -238,7 +238,7 @@ static inline int fls(unsigned int x)
+  * the libc and compiler builtin ffs routines, therefore
+  * differs in spirit from the above ffz (man ffs).
   */
- #ifdef CONFIG_PPC64
--static __always_inline int fls64(__u64 x)
-+static __always_inline __attribute_const__ int fls64(__u64 x)
+-static inline int ffs(int x)
++static inline __attribute_const__ int ffs(int x)
  {
- 	int lz;
+ 	int r;
+ 
+@@ -260,7 +260,7 @@ static inline int ffs(int x)
+  * bits_per_long assumed to be 32
+  * numbering starts at 0 I think (instead of 1 like ffs)
+  */
+-static inline unsigned long __ffs(unsigned long word)
++static inline __attribute_const__ unsigned long __ffs(unsigned long word)
+ {
+ 	int num;
+ 
+@@ -278,7 +278,7 @@ static inline unsigned long __ffs(unsigned long word)
+  * Undefined if no set bit exists, so code should check against 0 first.
+  * bits_per_long assumed to be 32
+  */
+-static inline unsigned long __fls(unsigned long word)
++static inline __attribute_const__ unsigned long __fls(unsigned long word)
+ {
+ 	int num;
  
 -- 
 2.34.1
