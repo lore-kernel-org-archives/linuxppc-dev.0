@@ -1,50 +1,73 @@
-Return-Path: <linuxppc-dev+bounces-10594-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10595-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 35794C87FCF
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Aug 2025 14:50:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 199D7C87FCF
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  4 Aug 2025 15:35:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bwfcY60pYz3bxf;
-	Tue,  5 Aug 2025 00:50:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754319037;
-	cv=none; b=CaPjXSpUnL9fRaDs2TntlCBtHrxvTAF38hvSi2H5mVjHpyCw+aGUQ26z7dK2bWq+ee8rChH83XwkDfm2o8YziQxBV8vj4zNZCHEdL12NKbdJpJWHbBCer4T3QY9htfg28yLAkD65HqbQzT5GWqSgGeEl4b5JjzqER8nfrES/Py5iM5Pzlx8rrzdGPZ3r8i36AImePETgztn7xQAG/xNrQu4LFc06Hj2UROePvGToNVAxM+qNjRASIs9jX0V2l2M0Jv749jSAaGtWRJShCvSbZESAg720QFn9fYQO7bZFkVJTwryVhSNQxV4kXEec5szMWbljJNG1Yx9lsdz1jofpMw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bwgcG5nydz3bx0;
+	Tue,  5 Aug 2025 01:35:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.218.54
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754321726;
+	cv=none; b=aekBK8rYmpT92IdynTQxtx7kYZOjARpYSuesEU88p3RCeyIEVGcxcN51Ay5rww1sWO9ed1acSZZaEoBV7nbOf0oCVx3YAwgpcWN2PBshe13vU6Wo5IBP9mESSSw3P9dcRSNzydMKzefJCVkNsprIXVnnoyh0VHvzFquzc5LejBLSlf6OCk6rijgLrslDMMcUIKFOGAKXYmkaWFA46SytUOH1FqdRNjOrPu0uYADJIhi8gf3LVIFlxOYPrqcRlYOTZAKSCCUAGCT4BWFA7U6Ee1+VNvex21FLqvA70Fagj5Zime6BiHDPVHPjIKde/pFyOxHgXUvnY7N7ZiiWKgYFKA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754319037; c=relaxed/relaxed;
-	bh=vKxcm2Bk3faS3VLs5jBU85JbSxp1gIFdk6pboYvkzrA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=TLyIQpKnmNCsHnwq1t0NmEM/kUsvRMAD8gYEOo2QqJtFo91CDEEvoRynvCHqILxYd4KASMmrMDCzUVWqtXYiQNDEMP75nxs1D7YEsbMUtuQFw1yIv7AK2scpTHoyY5+atm81D0IZdLiy6RvAdJDg4MADJBaGwCguhJtNf1t3yjQXPhRPAlkqqmhjei3cf5wIhQcsXie7NH6V7oW6cweKVQ9JGeycIu+5x0xEz/WjNnqRg2dTo8NZ202bM1HUs5dSnjjZzjKb/xyPvcMZKjL5Hs/zmZnwPMIo8zbtprVHmBBvgfF8oaARsL0DKi8cWTl1sZqGj0Z39xqollCsN2hHbw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bwfcY1VS4z3bxR
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 00:50:36 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4bwdx61Fwbz9t2k;
-	Mon,  4 Aug 2025 16:19:54 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id aafYWNPsnuTc; Mon,  4 Aug 2025 16:19:54 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4bwdx60NySz9t2V;
-	Mon,  4 Aug 2025 16:19:54 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 0679F8B766;
-	Mon,  4 Aug 2025 16:19:54 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 25xDQtsmUhRS; Mon,  4 Aug 2025 16:19:53 +0200 (CEST)
-Received: from [10.25.207.160] (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id BF56C8B763;
-	Mon,  4 Aug 2025 16:19:53 +0200 (CEST)
-Message-ID: <7e1adda9-4348-4c4e-953e-3fd21e4ff3c5@csgroup.eu>
-Date: Mon, 4 Aug 2025 16:19:53 +0200
+	t=1754321726; c=relaxed/relaxed;
+	bh=UkvknQsIRTLNlHjYffIfMN8B8TJuS69lKIHDLLVrOcs=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jGe9KRlcBAC6ED+9diMBAnFNejJwLgarlDMFI4MYw7Dv0ejQIgy0N8Hu8R4DokzxVePo3jnV9uJaICmIy9/aloVbtzgnDHqpkF/JLSnTgblnH/fEqhDnLyTWOAM1huUjlNlfoZDAsNQcWtWO1qd2QYrYCXpjQBvgefJzTzVGs23uF70YQMxE9nZy9QhQL63EPWVhwSWa8lPFa8cdvevdcx/379oo4mhJcqhr7invm0mKsZFj5ddzO05JILt6GBhF7SMrkgxiZBcJjacjcaRkXcXisPB4eW5dmF+mZQ16IRsdhI4BSLsB8va2WUdPoBzgHpLmFkBHrC0pVC6wZZemuw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org; spf=pass (client-ip=209.85.218.54; helo=mail-ej1-f54.google.com; envelope-from=breno.debian@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=debian.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.218.54; helo=mail-ej1-f54.google.com; envelope-from=breno.debian@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-f54.google.com (mail-ej1-f54.google.com [209.85.218.54])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bwgcF6NT1z3bwf
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 01:35:25 +1000 (AEST)
+Received: by mail-ej1-f54.google.com with SMTP id a640c23a62f3a-af9618282a5so294901766b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 04 Aug 2025 08:35:25 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1754321722; x=1754926522;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=UkvknQsIRTLNlHjYffIfMN8B8TJuS69lKIHDLLVrOcs=;
+        b=lyMhAeHd8mN0KvDkpfk124cReDJUlEbgHyYVyXqqHUnBCmXSSGbMBHxxRE9w1XOA5o
+         AkUpKchWMUKWt16Vpa65/jldfwgjoeoLMlkwz5Ha/b98aGftsW31HgU5LrPqx30WAOlf
+         PrwtoGTOHY1Zh0TZE+YYQNqj8zN4hD8hhgeo7Lgw1M5eAfOzTRaBeGj1ylVPSE23pq0M
+         uXyF16rfBQaOV6lgYRf/YhpzTiTAb848M2lm9y2UBitPHM4lXAGvDTUreeWTMmr2NRYp
+         UvT39Ff3TEA9xCvL0ukRQQAklT2PorxcXt3pyA7cQOPswdxljg5o+qPAOhQdwGhbVs+u
+         G1GA==
+X-Forwarded-Encrypted: i=1; AJvYcCVPHOlCNyQURlEM+H1NLXU6KNCI9BJndN0QxI9i0fGp24Y5U3FctDmQd/ycFx4EQGLxYjIXSKVC8AtH5xQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxZ0OqPnNE0dQUQKyDu79cO6uwGW00ZAfnkD3EgNxybi3yilXSA
+	6TYQ0aUrtstU2kp6XhkffZTBoWAMAyoVWDGgcolmxyYzuD48IMqFd5rL
+X-Gm-Gg: ASbGncs/aPOFkEDCoCCYWIDo9J3hrPxtPpm1Lm/PgE21+rD0TqHgUIxShix3+8Mt+0Q
+	vpUx15yJnGW3f++tTINCgoozVt7wsMJWqDV6d3UMo/HN4cR/Vf8PSJHFo3CqByq+ZZ9eEWCrO9l
+	/vpmwkBWGLPlXRV/85iDsNmvHvOKd8kNGJVApkZwsYSyfeOeO8hRGl/DCSu2q2rJk2V4/3pXB+P
+	nEab08XPi+Qk3mUtaIjBtJcantrUr9dSd0dOAikm8z2ICRQkFt4zhCuxZ86a/eQ3zDVYt6lF+tu
+	ofW/Y6yGRQKvSKREK31hB4J6q8oqJnSwbid+LwDHpghHWhPuOcHsDOr8rflviBWFQC2cgLjgnZ5
+	L2h0V+Xt0X6GouE+LZg1Scdw=
+X-Google-Smtp-Source: AGHT+IGY6yKz+FByCTSLRPrfqErAuLhPrr9SDzfJMrRAtdl7cm5w7Ayr/q2YVc1pbEeuWrcQqViPkA==
+X-Received: by 2002:a17:907:c25:b0:ae3:4f80:ac4c with SMTP id a640c23a62f3a-af93ffc139emr1027516966b.12.1754321722244;
+        Mon, 04 Aug 2025 08:35:22 -0700 (PDT)
+Received: from gmail.com ([2a03:2880:30ff:4::])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-af91a2436a4sm753208266b.134.2025.08.04.08.35.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 04 Aug 2025 08:35:21 -0700 (PDT)
+Date: Mon, 4 Aug 2025 08:35:19 -0700
+From: Breno Leitao <leitao@debian.org>
+To: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>
+Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>, 
+	Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>, 
+	Jon Pan-Doh <pandoh@google.com>, linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, kernel-team@meta.com
+Subject: Re: [PATCH] PCI/AER: Check for NULL aer_info before ratelimiting in
+ pci_print_aer()
+Message-ID: <3kpkazpe4j4pws7rean5kelwmpfp5ij62psvdzvimcr37do47a@y2pvypskynno>
+References: <20250804-aer_crash_2-v1-1-fd06562c18a4@debian.org>
+ <9cd9f4cf-72ab-40f1-9ead-3e6807b4d474@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,173 +81,35 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 1/2] powerpc/ftrace: support
- CONFIG_FUNCTION_GRAPH_RETVAL
-To: Aditya Bodkhe <adityab1@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-Cc: linux-kernel@vger.kernel.org, linux-trace-kernel@vger.kernel.org,
- maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
- rostedt@goodmis.org, mhiramat@kernel.org, mark.rutland@arm.com,
- venkat88@linux.ibm.com
-References: <20250722085648.1640-1-adityab1@linux.ibm.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250722085648.1640-1-adityab1@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <9cd9f4cf-72ab-40f1-9ead-3e6807b4d474@linux.intel.com>
 
+Hello Sathyanarayanan,
 
+On Mon, Aug 04, 2025 at 06:50:30AM -0700, Sathyanarayanan Kuppuswamy wrote:
+> 
+> On 8/4/25 2:17 AM, Breno Leitao wrote:
+> > Similarly to pci_dev_aer_stats_incr(), pci_print_aer() may be called
+> > when dev->aer_info is NULL. Add a NULL check before proceeding to avoid
+> > calling aer_ratelimit() with a NULL aer_info pointer, returning 1, which
+> > does not rate limit, given this is fatal.
+> 
+> Why not add it to pci_print_aer() ?
+> 
+> > 
+> > This prevents a kernel crash triggered by dereferencing a NULL pointer
+> > in aer_ratelimit(), ensuring safer handling of PCI devices that lack
+> > AER info. This change aligns pci_print_aer() with pci_dev_aer_stats_incr()
+> > which already performs this NULL check.
+> 
+> Is this happening during the kernel boot ? What is the frequency and steps
+> to reproduce? I am curious about why pci_print_aer() is called for a PCI device
+> without aer_info. Not aer_info means, that particular device is already released
+> or in the process of release (pci_release_dev()). Is this triggered by using a stale
+> pci_dev pointer?
 
-Le 22/07/2025 à 10:56, Aditya Bodkhe a écrit :
-> commit a1be9ccc57f0 ("function_graph: Support recording and printing the
-> return value of function") introduced support for function graph return
-> value tracing.
-> 
-> Additionally, commit a3ed4157b7d8 ("fgraph: Replace fgraph_ret_regs with
-> ftrace_regs") further refactored and optimized the implementation,
-> making `struct fgraph_ret_regs` unnecessary.
-> 
-> This patch enables the above modifications for powerpc all, ensuring that
-> function graph return value tracing is available on this architecture.
-> 
-> In this patch we have redefined two functions:
-> - 'ftrace_regs_get_return_value()' - the existing implementation on
-> ppc returns -ve of return value based on some conditions not
-> relevant to our patch.
-> - 'ftrace_regs_get_frame_pointer()' - always returns 0 in current code .
-> 
-> We also allocate stack space to equivalent of 'SWITCH_FRAME_SIZE',
-> allowing us to directly use predefined offsets like 'GPR3' and 'GPR4'
-> this keeps code clean and consistent with already defined offsets .
-> 
-> After this patch, v6.14+ kernel can also be built with FPROBE on powerpc
-> but there are a few other build and runtime dependencies for FPROBE to
-> work properly. The next patch addresses them.
-> 
-> Signed-off-by: Aditya Bodkhe <adityab1@linux.ibm.com>
+I've reported some of these investigations in here:
 
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-
-> ---
-> 
-> Changelog:
-> v1 -> v2:
-> - Added explanation for redefining ftrace_regs_get_return_value()
-> and ftrace_regs_get_frame_pointer()
-> - Explained why stack space equivalent to 'SWITCH_FRAME_SIZE' is allocated.
-> 
->   arch/powerpc/Kconfig                     |  1 +
->   arch/powerpc/include/asm/ftrace.h        | 15 +++++++++
->   arch/powerpc/kernel/trace/ftrace_entry.S | 42 ++++++++++++++----------
->   3 files changed, 41 insertions(+), 17 deletions(-)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index c3e0cc83f120..9163521bc4b9 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -250,6 +250,7 @@ config PPC
->   	select HAVE_FUNCTION_ARG_ACCESS_API
->   	select HAVE_FUNCTION_DESCRIPTORS	if PPC64_ELF_ABI_V1
->   	select HAVE_FUNCTION_ERROR_INJECTION
-> +	select HAVE_FUNCTION_GRAPH_FREGS
->   	select HAVE_FUNCTION_GRAPH_TRACER
->   	select HAVE_FUNCTION_TRACER		if !COMPILE_TEST && (PPC64 || (PPC32 && CC_IS_GCC))
->   	select HAVE_GCC_PLUGINS			if GCC_VERSION >= 50200   # plugin support on gcc <= 5.1 is buggy on PPC
-> diff --git a/arch/powerpc/include/asm/ftrace.h b/arch/powerpc/include/asm/ftrace.h
-> index 82da7c7a1d12..6ffc9c9cf4e3 100644
-> --- a/arch/powerpc/include/asm/ftrace.h
-> +++ b/arch/powerpc/include/asm/ftrace.h
-> @@ -50,6 +50,21 @@ static __always_inline struct pt_regs *arch_ftrace_get_regs(struct ftrace_regs *
->   		asm volatile("mfmsr %0" : "=r" ((_regs)->msr));	\
->   	} while (0)
->   
-> +#undef ftrace_regs_get_return_value
-> +static __always_inline unsigned long
-> +ftrace_regs_get_return_value(const struct ftrace_regs *fregs)
-> +{
-> +	return arch_ftrace_regs(fregs)->regs.gpr[3];
-> +}
-> +#define ftrace_regs_get_return_value ftrace_regs_get_return_value
-> +
-> +#undef ftrace_regs_get_frame_pointer
-> +static __always_inline unsigned long
-> +ftrace_regs_get_frame_pointer(const struct ftrace_regs *fregs)
-> +{
-> +	return arch_ftrace_regs(fregs)->regs.gpr[1];
-> +}
-> +
->   static __always_inline void
->   ftrace_regs_set_instruction_pointer(struct ftrace_regs *fregs,
->   				    unsigned long ip)
-> diff --git a/arch/powerpc/kernel/trace/ftrace_entry.S b/arch/powerpc/kernel/trace/ftrace_entry.S
-> index 3565c67fc638..3da14d8271d9 100644
-> --- a/arch/powerpc/kernel/trace/ftrace_entry.S
-> +++ b/arch/powerpc/kernel/trace/ftrace_entry.S
-> @@ -409,23 +409,31 @@ EXPORT_SYMBOL(_mcount)
->   _GLOBAL(return_to_handler)
->   	/* need to save return values */
->   #ifdef CONFIG_PPC64
-> -	std	r4,  -32(r1)
-> -	std	r3,  -24(r1)
-> +	stdu	r1, -SWITCH_FRAME_SIZE(r1)
-> +	std	r4, GPR4(r1)
-> +	std	r3, GPR3(r1)
-> +	/* Save previous stack pointer (r1) */
-> +	addi	r3, r1, SWITCH_FRAME_SIZE
-> +	std	r3, GPR1(r1)
->   	/* save TOC */
-> -	std	r2,  -16(r1)
-> -	std	r31, -8(r1)
-> +	std	r2, 24(r1)
-> +	std	r31, 32(r1)
->   	mr	r31, r1
-> -	stdu	r1, -112(r1)
-> -
-> +	/* pass ftrace_regs/pt_regs to ftrace_return_to_handler */
-> +	addi	r3, r1, STACK_INT_FRAME_REGS
->   	/*
->   	 * We might be called from a module.
->   	 * Switch to our TOC to run inside the core kernel.
->   	 */
->   	LOAD_PACA_TOC()
->   #else
-> -	stwu	r1, -16(r1)
-> -	stw	r3, 8(r1)
-> -	stw	r4, 12(r1)
-> +	stwu	r1, -SWITCH_FRAME_SIZE(r1)
-> +	stw	r4, GPR4(r1)
-> +	stw	r3, GPR3(r1)
-> +	addi	r3, r1, SWITCH_FRAME_SIZE
-> +	stw	r3, GPR1(r1)
-> +	/* pass ftrace_regs/pt_regs to ftrace_return_to_handler */
-> +	addi	r3, r1, STACK_INT_FRAME_REGS
->   #endif
-> 
->   
->   	bl	ftrace_return_to_handler
-> @@ -435,15 +443,15 @@ _GLOBAL(return_to_handler)
->   	mtlr	r3
->   
->   #ifdef CONFIG_PPC64
-> -	ld	r1, 0(r1)
-> -	ld	r4,  -32(r1)
-> -	ld	r3,  -24(r1)
-> -	ld	r2,  -16(r1)
-> -	ld	r31, -8(r1)
-> +	ld	r4,  GPR4(r1)
-> +	ld	r3,  GPR3(r1)
-> +	ld	r2,  24(r1)
-> +	ld	r31, 32(r1)
-> +	ld	r1,  0(r1)
->   #else
-> -	lwz	r3, 8(r1)
-> -	lwz	r4, 12(r1)
-> -	addi	r1, r1, 16
-> +	lwz	r3, GPR3(r1)
-> +	lwz	r4, GPR4(r1)
-> +	addi	r1, r1, SWITCH_FRAME_SIZE
->   #endif
->   
->   	/* Jump back to real return address */
-
+https://lore.kernel.org/all/buduna6darbvwfg3aogl5kimyxkggu3n4romnmq6sozut6axeu@clnx7sfsy457/
 
