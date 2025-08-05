@@ -1,68 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-10641-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10642-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E6FDC87FD1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Aug 2025 08:13:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 398C3C87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Aug 2025 08:50:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bx5lY2gWHz3bh6;
-	Tue,  5 Aug 2025 18:13:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.221.177
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754381593;
-	cv=none; b=BNVjzW4OcI3oQ3Z3WQDchRMdqc/apz/e0QbV5GC8MeROCGDXCwvLGdrUH110OWtjusybIGHdhZORdQ2pVHxzhMHitwS1q0fuWBL6efY6xYJoWcxxuiHQRGC0bPAWZK3zemyymwazV1SmXWk3kgxmJEDflCd5QAz4bKPi0ZdJgXZ9EjRxTibmAgy32K9rNZsTmZpBtFzj4t5PHTYRuhbwdcJJ/LyDqST6LJyFJ+roXXpRCDupTxuikT3lzqejWVA84uo2TrOzcT9si1ZSy/FWkRWRgt7RwTPf1V06VKLbu53oecZugkyprt4wbliVdlm2Gx5ctlhCg16oWaksPaZLDQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bx6Zl61Vkz3bh6;
+	Tue,  5 Aug 2025 18:50:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754383839;
+	cv=none; b=I/XFHHI8c7QBZHFNTG6g6LednF6vIdLp/LmFc9qgazXpZFmu4iXZ9JUZHQaQ4qF2p+zr9o2bp7ZI6lRS2YJE4ndJPl3gmY6GLAO/VxAyMC1VrsZRb3aK0aBZqoCD7Rnsf+YEbQIYh2wm+jjdQcDm1uaGxYYN90H+wv0lVA19g1cHanxghxb0otFSWIM0eHdJN+kLYnnnsPBEQXQxU73a8V7H9LFNKZWEfOqz5jcuRNl42brr8rgXPYyWXZaaia3gFRxTdEwaw+BK/oFJza5KN0YPzNfQktZMMyTS2KjuZ39Qc653bJMHnUaHmowxNtehut97+xzGvqHtnXj0X7QdcA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754381593; c=relaxed/relaxed;
-	bh=FYbREyEF6GDi+6BqzkUaervyY8mSRtfMj7JERduR6Tc=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=FGlrFK8IBFE3e3QNBEZZWtn/uZ1Xr/7afTFUmQ3ZwpNaVbYpyqYu+rYLVb/jt//Kev81IwoRjkf91PgJjWnfI/ul3otoiqEbxvyZhdGSUUYXic1NyUK+8HA7RA3mTSoG8i/ao4DD4z++kh2192pR6dVX2HrqpjG6fPvYthIKjyY1V55jlwLyPaC04gbV8cMO/MI3dTN9ORUU2zP67x5orNvzNW2p7o25NHLcSzPlBKo23Re2Th2fD+zOqc3XuGf8WGi+wy5twrdjMORaRI8XSlvb3iP/blhs3o9BRVAJ0Mem1YAKAcK/PutNYwA8vrpsdCG9/Ke6UePDGRSj8VgOUA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.221.177; helo=mail-vk1-f177.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.221.177; helo=mail-vk1-f177.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-vk1-f177.google.com (mail-vk1-f177.google.com [209.85.221.177])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bx5lW4PP3z2xnM
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 18:13:10 +1000 (AEST)
-Received: by mail-vk1-f177.google.com with SMTP id 71dfb90a1353d-5397c00ad9eso538216e0c.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Aug 2025 01:13:10 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1754381588; x=1754986388;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=FYbREyEF6GDi+6BqzkUaervyY8mSRtfMj7JERduR6Tc=;
-        b=QzyfwVE6o48Xc6usgfgUByO29Ep9n7+eDzlVSXBWl2Tx3ah1OqCGIb3/+KYLXTg/n7
-         T0pWvKyp43ZOIYqRv7R/UA1j2Y6YOe3xivAL1dh/7X47FfNGYSz3Dx6+Esn9/W9lPJXt
-         GKZAuJKHtjo591y/ZgnznAQrklDwFUJRMEi5UuybNY0jDq1SazoMywgGtlMLRITFTpyY
-         S1j5prSrJvbqNfBQgb0q+GrhSgO1Sj/PDQq9f/KvqXuYoWElC490giafT8cYlKw9yMtJ
-         7eCk79WnVCh3w4lRxyRxfOlWdnxS2LKy6I/wpslfP31+KUTuYBO8g1LP530AdHd3kt2G
-         AMrQ==
-X-Forwarded-Encrypted: i=1; AJvYcCV52au0JXRYY8vhtfeHrRsOHljIgSoD1B55Q2ir1/UyqrOnuJyKEF8LH1Latlwik4MkTiU44ynBcwKE6rk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy89HwordcZJTY3pX6GZLRHob4IXvVgQMZxkcUXy0x8cr04tzFA
-	/abiFd5sVzf564CzPFglyk+SgdqELvOH3nh3UUILim29eL5n7Hu3+zNWay5ILcQs
-X-Gm-Gg: ASbGncu121v0wT728VAq1GifZlIB1DMMshrR+fV0AiPJmQD7vQH55YbVuNobFCBMP9g
-	yqDqBctpqpKG5mdYFH2zyIKg+3T8paBQ7nlV9Jo+P9UjC3m+OSAjv4NQq6khip341Y9EufDzk49
-	85feN9ch4Ek93PA0lSGdr/s+3UwcQcXcoVduxzQOTK8nL3OSVWNp3Kti53fF3kVkPpEDK8W2OM+
-	Gu6qpP6heROK3tCv+voSwbTT35tWA7lsXBjl3sXnIF8C3wbreYbRONnROg8W80sbp4dQRaHzFo7
-	0gxs7oXu1ei3sB4CexbQ2h3hSZzml+fTgcvaRHqK0zAwFQK0y354ojuQ34M9Vunw2UtqhTSro5m
-	xbWjI0k1Ixg19VzG7ws1AkNKqUFGzH1wlc/iu/A6CeZt3xUEhD15yuOS2E4cC
-X-Google-Smtp-Source: AGHT+IEi8+OQRgR/a5RZQE6QdqpYNge2H/5zOdKixm/XkanD0mH59MnzRbhtjbhTYQx79im2xBNdHg==
-X-Received: by 2002:a05:6122:30ac:b0:531:45f1:604d with SMTP id 71dfb90a1353d-5395f2ae17amr5140910e0c.6.1754381587987;
-        Tue, 05 Aug 2025 01:13:07 -0700 (PDT)
-Received: from mail-ua1-f42.google.com (mail-ua1-f42.google.com. [209.85.222.42])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-53936cb4c27sm3315443e0c.21.2025.08.05.01.13.07
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 05 Aug 2025 01:13:07 -0700 (PDT)
-Received: by mail-ua1-f42.google.com with SMTP id a1e0cc1a2514c-88bbfe763ecso1192578241.3
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 05 Aug 2025 01:13:07 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCVshLnX1STOpvzY4odP1jXdjNzHw12o2KSCFTLD9uBd6gpC73qcuVzemSQY93eBOthc2LJMAa2Gig90BO0=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:3a0b:b0:4d7:11d1:c24e with SMTP id
- ada2fe7eead31-4fdc480dc77mr4806207137.21.1754381587163; Tue, 05 Aug 2025
- 01:13:07 -0700 (PDT)
+	t=1754383839; c=relaxed/relaxed;
+	bh=kMDhKd5Fl+aMetzn4GN41MxMPR5HA5TFjb1LA112Qzc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=ciE5ULBHZE7DdrVD1nmqJKqRCSmsS0kLnw3vJLpVy7PMX/fuSm0YgUopd06tKxBz7+WdzYTcdM6XUArnm5Q0UZAZ6zr7pGVYPvjLj1LRdY9gZPepj8mSLOCjkq7dcyY3ohS2PO91NS207f0xuZbS/eO36B34LQpkEqOUAUIRjT4/BFnTG4S2b60KJdOzB5/htGAUGPalRfSbXlQ/8FXjfDe0qisHaoRd9pMoAk08lWxeDP+8AYmZaHTNGhjZlno/DCct0KVOCtA36Kh1XfikjU61j6ZSI6JCo7RPves9vG0ouEn5s4oxggZ/4tKhgzgRHYww2fQT/LirOdsOIx/grw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bx6Zj2VwCz2yLJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 18:50:36 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4bx3Gj2XBTz9sFT;
+	Tue,  5 Aug 2025 08:21:33 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id WDORRCn48EGH; Tue,  5 Aug 2025 08:21:33 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4bx3Gj1jK7z9sD3;
+	Tue,  5 Aug 2025 08:21:33 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 34A6B8B765;
+	Tue,  5 Aug 2025 08:21:33 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id luzBz1uWND4k; Tue,  5 Aug 2025 08:21:33 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C1F0A8B763;
+	Tue,  5 Aug 2025 08:21:32 +0200 (CEST)
+Message-ID: <f0d771d5-ed70-444c-957a-ad4c16f6c115@csgroup.eu>
+Date: Tue, 5 Aug 2025 08:21:32 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,59 +58,94 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250804163910.work.929-kees@kernel.org> <20250804164417.1612371-11-kees@kernel.org>
-In-Reply-To: <20250804164417.1612371-11-kees@kernel.org>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Tue, 5 Aug 2025 10:12:55 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdWRAxGqLxPY0eZkrg4zMr4qY5KUcTqPjNXEKOTeNYGc8A@mail.gmail.com>
-X-Gm-Features: Ac12FXxoASDmKZziFEtov1BZOWBk9xds-hH6z1CBqhINtQO4YVRNUk0c1YQzJUM
-Message-ID: <CAMuHMdWRAxGqLxPY0eZkrg4zMr4qY5KUcTqPjNXEKOTeNYGc8A@mail.gmail.com>
-Subject: Re: [PATCH 11/17] m68k: Add __attribute_const__ to ffs()-family implementations
-To: Kees Cook <kees@kernel.org>
-Cc: linux-arch@vger.kernel.org, linux-kernel@vger.kernel.org, x86@kernel.org, 
-	linux-alpha@vger.kernel.org, linux-csky@vger.kernel.org, 
-	linux-hexagon@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
-	linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
-	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, llvm@lists.linux.dev, 
-	linux-hardening@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 3/7] crypto: powerpc/md5 - Remove PowerPC optimized MD5
+ code
+To: Eric Biggers <ebiggers@kernel.org>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+ Ard Biesheuvel <ardb@kernel.org>, "Jason A . Donenfeld" <Jason@zx2c4.com>,
+ linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org
+References: <20250803204433.75703-1-ebiggers@kernel.org>
+ <20250803204433.75703-4-ebiggers@kernel.org>
+ <593b6997-9da4-439c-ba82-84e8bb2ed980@csgroup.eu>
+ <20250804180923.GA54248@google.com>
+ <187412bd-3ae0-4fe8-b526-f96af6bea6dc@csgroup.eu>
+ <20250804225901.GC54248@google.com> <20250804230926.GD54248@google.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <20250804230926.GD54248@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Mon, 4 Aug 2025 at 18:44, Kees Cook <kees@kernel.org> wrote:
-> While tracking down a problem where constant expressions used by
-> BUILD_BUG_ON() suddenly stopped working[1], we found that an added static
-> initializer was convincing the compiler that it couldn't track the state
-> of the prior statically initialized value. Tracing this down found that
-> ffs() was used in the initializer macro, but since it wasn't marked with
-> __attribute__const__, the compiler had to assume the function might
-> change variable states as a side-effect (which is not true for ffs(),
-> which provides deterministic math results).
->
-> Add missing __attribute_const__ annotations to M68K's implementations
-> of ffs(), __ffs(), fls(), __fls(), and ffz() functions. These are
-> pure mathematical functions that always return the same result for
-> the same input with no side effects, making them eligible for compiler
-> optimization.
->
-> Build tested ARCH=m68k defconfig with GCC m68k-linux-gnu 14.2.0.
->
-> Link: https://github.com/KSPP/linux/issues/364 [1]
-> Signed-off-by: Kees Cook <kees@kernel.org>
 
-Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
-Acked-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-# ffs: pass:9 fail:0 skip:0 total:9
+Le 05/08/2025 à 01:09, Eric Biggers a écrit :
+> On Mon, Aug 04, 2025 at 10:59:01PM +0000, Eric Biggers wrote:
+>> On Mon, Aug 04, 2025 at 09:02:27PM +0200, Christophe Leroy wrote:
+>>>
+>>>
+>>> Le 04/08/2025 à 20:09, Eric Biggers a écrit :
+>>>> On Mon, Aug 04, 2025 at 07:42:15PM +0200, Christophe Leroy wrote:
+>>>>>
+>>>>>
+>>>>> Le 03/08/2025 à 22:44, Eric Biggers a écrit :
+>>>>>> MD5 is insecure, is no longer commonly used, and has never been
+>>>>>> optimized for the most common architectures in the kernel.  Only mips,
+>>>>>> powerpc, and sparc have optimized MD5 code in the kernel.  Of these,
+>>>>>> only the powerpc one is actually testable in QEMU.  The mips one works
+>>>>>> only on Cavium Octeon SoCs.
+>>>>>>
+>>>>>> Taken together, it's clear that it's time to retire these additional MD5
+>>>>>> implementations, and focus maintenance on the MD5 generic C code.
+>>>>>
+>>>>> Sorry, for me it is not that clear. Even if MD5 is depracated we still have
+>>>>> several applications that use MD5 for various reasons on our boards.
+>>>>>
+>>>>> I ran the test on kernel v6.16 with following file:
+>>>>>
+>>>>> # ls -l avion.au
+>>>>> -rw-------    1 root     root      12130159 Jan  1  1970 avion.au
+>>>>>
+>>>>> With CONFIG_CRYPTO_MD5_PPC:
+>>>>>
+>>>>> # time md5sum avion.au
+>>>>> 6513851d6109d42477b20cd56bf57f28  avion.au
+>>>>> real    0m 1.02s
+>>>>> user    0m 0.01s
+>>>>> sys     0m 1.01s
+>>>>>
+>>>>> Without CONFIG_CRYPTO_MD5_PPC:
+>>>>>
+>>>>> # time md5sum avion.au
+>>>>> 6513851d6109d42477b20cd56bf57f28  avion.au
+>>>>> real    0m 1.35s
+>>>>> user    0m 0.01s
+>>>>> sys     0m 1.34s
+>>>>>
+>>>>> I think the difference is big enough to consider keeping optimised MD5 code.
+>>>>
+>>>> But md5sum doesn't use the kernel's MD5 code.  So it's implausible that
+>>>> it has any effect on md5sum.  The difference you saw must be due to an
+>>>> unrelated reason like I/O caching, CPU frequency, etc.  Try running your
+>>>> test multiple times to eliminate other sources of variation.
+>>>
+>>> md5sum uses the kernel's MD5 code:
+>>>
+>>> libkcapi.so.1 => /usr/lib/libkcapi.so.1 (0x6ffa0000)    <==
+> 
+> Oh, I think you used the obscure implementation of md5sum from
+> libkcapi-tools, instead of the normal md5sum.  Why?  Did you check how
+> the normal md5sum performs too?  Just doing the calculation in userspace
+> is much more efficient.
 
-Gr{oetje,eeting}s,
+Calculation in userspace is less efficient on my board:
 
-                        Geert
+# time md5sum avion.au
+6513851d6109d42477b20cd56bf57f28  avion.au
+real    0m 1.87s
+user    0m 1.51s
+sys     0m 0.35s
 
--- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
-
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
+Christophe
 
