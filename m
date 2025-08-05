@@ -1,50 +1,111 @@
-Return-Path: <linuxppc-dev+bounces-10644-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10645-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A47EEC87FD1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Aug 2025 09:20:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A7B6C87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Aug 2025 09:38:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bx7FK5d0mz3064;
-	Tue,  5 Aug 2025 19:20:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754385637;
-	cv=none; b=XIt6timpGalwPZTm5gJIf3q1cKyWqF6mC8qChNiJxMIFeKMCqa1DA8Jnoa+tjjMc588ufJrRJd/TdNF8LBNdS+tD0USsRhbF8c4UFfFMp0UOAsLu1Ab8FEfvT/9fBFw3/Tn2GbSW7lD5hF4ixrSQnfTyPWfnkZVFhzwC8wnQMy2zQrqpoc1wUfiZ8xOT32VKoed33QbVXze9u6n3jhOIinTSJ98CAb5LtS2eYX0PIMaUiShz/OB6pn+edT+jvDDC3XoRy0WnhUlcQvrwQ0cskpHWd8VgGjW3BFhGxybuThv2uB/4Of9MltcegyK9PC9POj54wyUm27/USt0eiiszBQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bx7dr57wRz3069;
+	Tue,  5 Aug 2025 19:38:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754386704;
+	cv=none; b=W8KPW+0oeoEOEmwfwz/QTTwl2FvD0vspVxtGpcfeUz/8ce7md8eOoyYSnPmwvsVfQznJEUrc0AUDSZUOmFPFKQGvQUfOSnA5rD26BZnRysRGJSdi76YKBu3kHDz9O7JKV1gzYFUqf5VXGiWa4k+7DBgaWyorE3GVclbjkBXwKi+GTxeHAp3ko1on7lYX3NQhSnFlN3Ur6vhNuZctqYx9dMyFyx/UDg5Zn0uVfQ6w+/7GLN0Me2WpPtGuX7ZDQAvARRJHIsUqituMHg6l6Rn+dmJqHDiqglSMEpnBWlSe5BvvUcCFTdU/PrQ9TE8iCgS6QfwRTCKuqO3kyNMJniH/dA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754385637; c=relaxed/relaxed;
-	bh=CBrrvSaPA5MonzYhzA5TrnEGvQfCVf5g6Ia5pCKwZ8g=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UE9cvMhHYVZzZ6RoGJqt3q/QLZgm3KxPpEzmlcYcfzSYqlqmAyZEenChG+NdtWsALVw8vDytCPqMHLo/hj0CjJIUJHFTO3P3RJcRw+sMazfaUHQ9lvKVIEancJdjrU5z5wIJHuYaM4TTRUWtcg8JQrwuR8fCz6tivosc6yHp/SEfN/UI8BvNzN5HzIuSmhFB6txxmbuec+nZnLzX9mAsILj/ZevK535Mt6er7AdGWVH/2NjwoNt9eMF4xwbwNwKQxT8Muos3mMN+VPf1ojaDWbunIMUhdX/fQTAALBYIQfI9fdanlixGkhspJKBX4wNyug/7kwi1mUdTvwAAUqlXIw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bx7FK1R8Pz3bh6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 19:20:37 +1000 (AEST)
-Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4bx57n0CXYz9tMd;
-	Tue,  5 Aug 2025 09:45:41 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase1.c-s.fr ([192.168.12.234])
-	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id IuSqCUxyKqzr; Tue,  5 Aug 2025 09:45:40 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4bx57m6FKRz9tMS;
-	Tue,  5 Aug 2025 09:45:40 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id CD7068B765;
-	Tue,  5 Aug 2025 09:45:40 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id flY4ShmDsG9w; Tue,  5 Aug 2025 09:45:40 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8ACC88B763;
-	Tue,  5 Aug 2025 09:45:39 +0200 (CEST)
-Message-ID: <5af0d7d9-71cb-4977-b496-6046c2c64d52@csgroup.eu>
-Date: Tue, 5 Aug 2025 09:45:39 +0200
+	t=1754386704; c=relaxed/relaxed;
+	bh=qq75wLn4Jr35PxKHT8Ir8YDRfOwxEOJ3fDUl+YJWOlw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Q8VabYWR46wcRp2P5FGdwvmjpskmd6L3eCEYxdNm7bJUzPPkl6oyaOL+klm77J7+syxpGmsn+tP7trfV3jddSlwv9UPjihXACgU8EgobSil7wAydS6L+7mUpJ/e7jMGzp65DhEpmcEp4kl4xU9BSZoHC6fhYj2+/JYLFNi5GNMGoLG87lXU9jmmXsESTXmJmJdjGW+1RUKQSXVmCNccKzA2JkRx+B6TTm4WPkRozbSwjFrQiTH/AQMAtL+WJ4++eWibFXF0Xzcr10mwbxCSYhOw0lQ06XK14f4MlJbGBcWBnk21oPvFnQ4rvpYV66sIvSSfKJqTFX6YZLUTShvMklg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WaqdWXeH; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WaqdWXeH;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bx7dq4s4bz3064
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 19:38:23 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 230995C3FEF;
+	Tue,  5 Aug 2025 09:38:20 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B73A3C4CEF7;
+	Tue,  5 Aug 2025 09:38:01 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1754386699;
+	bh=PtcIziWKmeZojE8NbukEIlxT+NCLvvfcRfGscENjViM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=WaqdWXeHFq4oltQn9PTlA505X/oL+/hHqNtgIoY7zKJ2rAIIyFMHaM+0OG/yh2pw4
+	 a4OPg6vNpHqwYzZOYWH9z2eFj0o9qdjphfKwQATxpDET/tUKgH15v5CCmaccGtiziI
+	 K47HqBXpuuIazHWs7f7nOBdJzkPcC6o7Uz2XE0NjVLokbL/vEdh4tvhC3lSlpz6wIJ
+	 cRJvBI/3D77VRI3Nw6Ov+py/jFgFc5Ni8OH6Dnx4eGST8kP5vZjYp9Nb+FQNxwUhWq
+	 2m2r86L7YkwtCZGME114r4pdSCFeteEHhrAOdiqvbKwV054IIClCJwCyv020K+cNSI
+	 X5cmccT7jkP9Q==
+Date: Tue, 5 Aug 2025 12:37:57 +0300
+From: Mike Rapoport <rppt@kernel.org>
+To: Uladzislau Rezki <urezki@gmail.com>
+Cc: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	Harry Yoo <harry.yoo@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Russell King <linux@armlinux.org.uk>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	"David S . Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Jarkko Sakkinen <jarkko@kernel.org>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+	"H . Peter Anvin" <hpa@zytor.com>,
+	Andy Lutomirski <luto@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+	Kees Cook <kees@kernel.org>, Peter Xu <peterx@redhat.com>,
+	David Hildenbrand <david@redhat.com>, Zi Yan <ziy@nvidia.com>,
+	Baolin Wang <baolin.wang@linux.alibaba.com>,
+	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
+	Nico Pache <npache@redhat.com>, Ryan Roberts <ryan.roberts@arm.com>,
+	Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
+	Xu Xin <xu.xin16@zte.com.cn>,
+	Chengming Zhou <chengming.zhou@linux.dev>,
+	Hugh Dickins <hughd@google.com>, Vlastimil Babka <vbabka@suse.cz>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>, Rik van Riel <riel@surriel.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Matthew Wilcox <willy@infradead.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	Jason Gunthorpe <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>,
+	Muchun Song <muchun.song@linux.dev>,
+	Oscar Salvador <osalvador@suse.de>, Jann Horn <jannh@google.com>,
+	Pedro Falcato <pfalcato@suse.de>,
+	Johannes Weiner <hannes@cmpxchg.org>,
+	Qi Zheng <zhengqi.arch@bytedance.com>,
+	Shakeel Butt <shakeel.butt@linux.dev>,
+	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-sgx@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
+	nvdimm@lists.linux.dev, linux-trace-kernel@vger.kernel.org
+Subject: Re: [PATCH 2/3] mm: update core kernel code to use vm_flags_t
+ consistently
+Message-ID: <aJHQ9XCLtibFjt93@kernel.org>
+References: <cover.1750274467.git.lorenzo.stoakes@oracle.com>
+ <d1588e7bb96d1ea3fe7b9df2c699d5b4592d901d.1750274467.git.lorenzo.stoakes@oracle.com>
+ <aIgSpAnU8EaIcqd9@hyeyoo>
+ <73764aaa-2186-4c8e-8523-55705018d842@lucifer.local>
+ <aIkVRTouPqhcxOes@pc636>
+ <69860c97-8a76-4ce5-b1d6-9d7c8370d9cd@lucifer.local>
+ <aJCRXVP-ZFEPtl1Y@pc636>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,130 +119,97 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [bpf-next 0/6] bpf,powerpc: Add support for bpf arena and arena
- atomics
-To: Saket Kumar Bhaskar <skb99@linux.ibm.com>, bpf@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Cc: hbathini@linux.ibm.com, sachinpb@linux.ibm.com, venkat88@linux.ibm.com,
- andrii@kernel.org, eddyz87@gmail.com, mykolal@fb.com, ast@kernel.org,
- daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
- yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
- sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org, naveen@kernel.org,
- maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
- memxor@gmail.com, iii@linux.ibm.com, shuah@kernel.org
-References: <20250805062747.3479221-1-skb99@linux.ibm.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250805062747.3479221-1-skb99@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aJCRXVP-ZFEPtl1Y@pc636>
 
+On Mon, Aug 04, 2025 at 12:54:21PM +0200, Uladzislau Rezki wrote:
+> Hello, Lorenzo!
+> 
+> > So sorry Ulad, I meant to get back to you on this sooner!
+> > 
+> > On Tue, Jul 29, 2025 at 08:39:01PM +0200, Uladzislau Rezki wrote:
+> > > On Tue, Jul 29, 2025 at 06:25:39AM +0100, Lorenzo Stoakes wrote:
+> > > > Andrew - FYI there's nothing to worry about here, the type remains
+> > > > precisely the same, and I'll send a patch to fix this trivial issue so when
+> > > > later this type changes vmalloc will be uaffected.
+> > > >
+> > > > On Tue, Jul 29, 2025 at 09:15:51AM +0900, Harry Yoo wrote:
+> > > > > [Adding Uladzislau to Cc]
+> > > >
+> > > > Ulad - could we PLEASE get rid of 'vm_flags' in vmalloc? It's the precise
+> > > > same name and (currently) type as vma->vm_flags and is already the source
+> > > > of confusion.
+> > > >
+> > > You mean all "vm_flags" variable names? "vm_struct" has flags as a
+> > > member. So you want:
+> > >
+> > > urezki@pc638:~/data/backup/coding/linux-not-broken.git$ grep -rn vm_flags mm/execmem.c
+> > > 29:                          pgprot_t pgprot, unsigned long vm_flags)
+> > > 39:             vm_flags |= VM_DEFER_KMEMLEAK;
+> > > 41:     if (vm_flags & VM_ALLOW_HUGE_VMAP)
+> > > 45:                              pgprot, vm_flags, NUMA_NO_NODE,
+> > > 51:                                      pgprot, vm_flags, NUMA_NO_NODE,
+> > > 85:                          pgprot_t pgprot, unsigned long vm_flags)
+> > > 259:    unsigned long vm_flags = VM_ALLOW_HUGE_VMAP;
+> > > 266:    p = execmem_vmalloc(range, alloc_size, PAGE_KERNEL, vm_flags);
+> > > 376:    unsigned long vm_flags = VM_FLUSH_RESET_PERMS;
+> > > 385:            p = execmem_vmalloc(range, size, pgprot, vm_flags);
+> > > urezki@pc638:~/data/backup/coding/linux-not-broken.git$ grep -rn vm_flags mm/vmalloc.c
+> > > 3853: * @vm_flags:                additional vm area flags (e.g. %VM_NO_GUARD)
+> > > 3875:                   pgprot_t prot, unsigned long vm_flags, int node,
+> > > 3894:   if (vmap_allow_huge && (vm_flags & VM_ALLOW_HUGE_VMAP)) {
+> > > 3912:                             VM_UNINITIALIZED | vm_flags, start, end, node,
+> > > 3977:   if (!(vm_flags & VM_DEFER_KMEMLEAK))
+> > > 4621:   vm_flags_set(vma, VM_DONTEXPAND | VM_DONTDUMP);
+> > > urezki@pc638:~/data/backup/coding/linux-not-broken.git$ grep -rn vm_flags mm/execmem.c
+> > > 29:                          pgprot_t pgprot, unsigned long vm_flags)
+> > > 39:             vm_flags |= VM_DEFER_KMEMLEAK;
+> > > 41:     if (vm_flags & VM_ALLOW_HUGE_VMAP)
+> > > 45:                              pgprot, vm_flags, NUMA_NO_NODE,
+> > > 51:                                      pgprot, vm_flags, NUMA_NO_NODE,
+> > > 85:                          pgprot_t pgprot, unsigned long vm_flags)
+> > > 259:    unsigned long vm_flags = VM_ALLOW_HUGE_VMAP;
+> > > 266:    p = execmem_vmalloc(range, alloc_size, PAGE_KERNEL, vm_flags);
+> > > 376:    unsigned long vm_flags = VM_FLUSH_RESET_PERMS;
+> > > 385:            p = execmem_vmalloc(range, size, pgprot, vm_flags);
+> > > urezki@pc638:~/data/backup/coding/linux-not-broken.git$ grep -rn vm_flags ./include/linux/vmalloc.h
+> > > 172:                    pgprot_t prot, unsigned long vm_flags, int node,
+> > > urezki@pc638:~/data/backup/coding/linux-not-broken.git$
+> > >
+> > > to rename all those "vm_flags" to something, for example, like "flags"?
+> > 
+> > Yeah, sorry I know it's a churny pain, but I think it's such a silly source
+> > of confusion _in general_, not only this series where I made a mistake (of
+> > course entirely my fault but certainly more understandable given the
+> > naming), but in the past I've certainly sat there thinking 'hmmm wait' :)
+> > 
+> > Really I think we should rename 'vm_struct' too, but if that causes _too
+> > much_ churn fair enough.
 
+Well, it's not that terrible :)
 
-Le 05/08/2025 à 08:27, Saket Kumar Bhaskar a écrit :
-> This patch series introduces support for the PROBE_MEM32,
-> bpf_addr_space_cast and PROBE_ATOMIC instructions in the powerpc BPF JIT,
-> facilitating the implementation of BPF arena and arena atomics.
+~/git/linux$ git grep -w vm_struct | wc -l
+173
 
-This series seems to be limited to powerpc64. Please make it explicit in 
-all patches subject, see exemple below:
+> > I think even though it's long-winded, 'vmalloc_flags' would be good, both
+> > in fields and local params as it makes things very very clear.
+> > 
+> > Equally 'vm_struct' -> 'vmalloc_struct' would be a good change.
 
-$ git log --oneline arch/powerpc/net/bpf_jit_comp64.c
-cf2a6de32cabb (tag: powerpc-6.17-2, origin/next-test, origin/next) 
-powerpc64/bpf: Add jit support for load_acquire and store_release
-59ba025948be2 powerpc/bpf: fix JIT code size calculation of bpf trampoline
-d243b62b7bd3d powerpc64/bpf: Add support for bpf trampolines
-9670f6d2097c4 powerpc64/bpf: Fold bpf_jit_emit_func_call_hlp() into 
-bpf_jit_emit_func_call_rel()
-fde318326daa4 powerpc64/bpf: jit support for signed division and modulo
-597b1710982d1 powerpc64/bpf: jit support for sign extended mov
-717756c9c8dda powerpc64/bpf: jit support for sign extended load
-a71c0b09a14db powerpc64/bpf: jit support for unconditional byte swap
-3c086ce222cef powerpc64/bpf: jit support for 32bit offset jmp instruction
-b1e7cee961274 powerpc/bpf: enforce full ordering for ATOMIC operations 
-with BPF_FETCH
-61688a82e047a powerpc/bpf: enable kfunc call
+Do we really need the _struct suffix?
+How about vmalloc_area?
 
+It also seems that struct vmap_area can be made private to mm/.
 
+> Uh.. This could be a pain :) I will have a look and see what we can do.
 > 
-> The last patch in the series has fix for arena spinlock selftest
-> failure.
+> Thanks!
 > 
-> This series is rebased on top of:
-> https://lore.kernel.org/bpf/20250717202935.29018-2-puranjay@kernel.org/
-> 
-> All selftests related to bpf_arena, bpf_arena_atomic(except
-> load_acquire/store_release) enablement are passing:
-> 
-> # ./test_progs -t arena_list
-> #5/1     arena_list/arena_list_1:OK
-> #5/2     arena_list/arena_list_1000:OK
-> #5       arena_list:OK
-> Summary: 1/2 PASSED, 0 SKIPPED, 0 FAILED
-> 
-> # ./test_progs -t arena_htab
-> #4/1     arena_htab/arena_htab_llvm:OK
-> #4/2     arena_htab/arena_htab_asm:OK
-> #4       arena_htab:OK
-> Summary: 1/2 PASSED, 0 SKIPPED, 0 FAILED
-> 
-> # ./test_progs -t verifier_arena
-> #464/1   verifier_arena/basic_alloc1:OK
-> #464/2   verifier_arena/basic_alloc2:OK
-> #464/3   verifier_arena/basic_alloc3:OK
-> #464/4   verifier_arena/iter_maps1:OK
-> #464/5   verifier_arena/iter_maps2:OK
-> #464/6   verifier_arena/iter_maps3:OK
-> #464     verifier_arena:OK
-> #465/1   verifier_arena_large/big_alloc1:OK
-> #465/2   verifier_arena_large/big_alloc2:OK
-> #465     verifier_arena_large:OK
-> Summary: 2/8 PASSED, 0 SKIPPED, 0 FAILED
-> 
-> # ./test_progs -t arena_atomics
-> #3/1     arena_atomics/add:OK
-> #3/2     arena_atomics/sub:OK
-> #3/3     arena_atomics/and:OK
-> #3/4     arena_atomics/or:OK
-> #3/5     arena_atomics/xor:OK
-> #3/6     arena_atomics/cmpxchg:OK
-> #3/7     arena_atomics/xchg:OK
-> #3/8     arena_atomics/uaf:OK
-> #3/9     arena_atomics/load_acquire:SKIP
-> #3/10    arena_atomics/store_release:SKIP
-> #3       arena_atomics:OK (SKIP: 2/10)
-> Summary: 1/8 PASSED, 2 SKIPPED, 0 FAILED
-> 
-> All selftests related to arena_spin_lock are passing:
-> 
-> # ./test_progs -t arena_spin_lock
-> #6/1     arena_spin_lock/arena_spin_lock_1:OK
-> #6/2     arena_spin_lock/arena_spin_lock_1000:OK
-> #6/3     arena_spin_lock/arena_spin_lock_50000:OK
-> #6       arena_spin_lock:OK
-> Summary: 1/3 PASSED, 0 SKIPPED, 0 FAILED
-> 
-> Saket Kumar Bhaskar (6):
->    bpf,powerpc: Introduce bpf_jit_emit_probe_mem_store() to emit store
->      instructions
->    bpf,powerpc: Implement PROBE_MEM32 pseudo instructions
->    bpf,powerpc: Implement bpf_addr_space_cast instruction
->    bpf,powerpc: Introduce bpf_jit_emit_atomic_ops() to emit atomic
->      instructions
->    bpf,powerpc: Implement PROBE_ATOMIC instructions
->    selftests/bpf: Fix arena_spin_lock selftest failure
-> 
->   arch/powerpc/net/bpf_jit.h                    |   6 +-
->   arch/powerpc/net/bpf_jit_comp.c               |  32 +-
->   arch/powerpc/net/bpf_jit_comp32.c             |   2 +-
->   arch/powerpc/net/bpf_jit_comp64.c             | 378 +++++++++++++-----
->   .../bpf/prog_tests/arena_spin_lock.c          |  23 +-
->   .../selftests/bpf/progs/arena_spin_lock.c     |   8 +-
->   .../selftests/bpf/progs/bpf_arena_spin_lock.h |   4 +-
->   7 files changed, 348 insertions(+), 105 deletions(-)
-> 
-> base-commit: ea2aecdf7a954a8c0015e185cc870c4191d1d93f
+> --
+> Uladzislau Rezki
 
+-- 
+Sincerely yours,
+Mike.
 
