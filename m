@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-10642-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10643-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 398C3C87FCB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Aug 2025 08:50:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AB54BC87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Aug 2025 09:20:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bx6Zl61Vkz3bh6;
-	Tue,  5 Aug 2025 18:50:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bx7FK1xQdz3bkL;
+	Tue,  5 Aug 2025 19:20:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754383839;
-	cv=none; b=I/XFHHI8c7QBZHFNTG6g6LednF6vIdLp/LmFc9qgazXpZFmu4iXZ9JUZHQaQ4qF2p+zr9o2bp7ZI6lRS2YJE4ndJPl3gmY6GLAO/VxAyMC1VrsZRb3aK0aBZqoCD7Rnsf+YEbQIYh2wm+jjdQcDm1uaGxYYN90H+wv0lVA19g1cHanxghxb0otFSWIM0eHdJN+kLYnnnsPBEQXQxU73a8V7H9LFNKZWEfOqz5jcuRNl42brr8rgXPYyWXZaaia3gFRxTdEwaw+BK/oFJza5KN0YPzNfQktZMMyTS2KjuZ39Qc653bJMHnUaHmowxNtehut97+xzGvqHtnXj0X7QdcA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754385637;
+	cv=none; b=OQ1LIACqKp1iVNldvsawtoeI2zPlfG9qPpwyWPvDqRE4IRSp2eMfXLmKfSzXcdHG74AxJESp1ecfNx4VX8UlgEMhiBWxTqoB8F0bT+ckpDBwldgQ5I7f5vGfn+hkN8J/cuaOipg/A2AKhAyvdwCJFkpt+tHO63txRae7vaAB3muRMuODv4anC7G4917E7kXkrFqoLwfof9QiJr8vPQ2DDPddJksEd3pOgyrMTfML+UL4zIxQ02vvuUMJfWp4ZM02vok9k181kWorlu4hxpVvYzJYdZGWeU495VpjJ+RvAm62IT4ab506iGa5eNNQV0y4WDEXpfaukFwxqffHa4xPTw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754383839; c=relaxed/relaxed;
-	bh=kMDhKd5Fl+aMetzn4GN41MxMPR5HA5TFjb1LA112Qzc=;
+	t=1754385637; c=relaxed/relaxed;
+	bh=/gBpGdEEOIoQW1AJhsbnrD9ob04PrfRclJXcWmZ09zc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ciE5ULBHZE7DdrVD1nmqJKqRCSmsS0kLnw3vJLpVy7PMX/fuSm0YgUopd06tKxBz7+WdzYTcdM6XUArnm5Q0UZAZ6zr7pGVYPvjLj1LRdY9gZPepj8mSLOCjkq7dcyY3ohS2PO91NS207f0xuZbS/eO36B34LQpkEqOUAUIRjT4/BFnTG4S2b60KJdOzB5/htGAUGPalRfSbXlQ/8FXjfDe0qisHaoRd9pMoAk08lWxeDP+8AYmZaHTNGhjZlno/DCct0KVOCtA36Kh1XfikjU61j6ZSI6JCo7RPves9vG0ouEn5s4oxggZ/4tKhgzgRHYww2fQT/LirOdsOIx/grw==
+	 In-Reply-To:Content-Type; b=cBibe21oIhYC74DRdaW5YrfI0YvWeXa6iRFOaHnG8nczidR96rjXjpJj0w6YnLgivGD18S3tgR3JHaI+nPOtoX/mqUaGwWJ/7/GTrnSnTWOLYt4ivWDqpADpG09r9Kq7Cg68D6J8YVXa3Iz19FdkArAynLMljX+ECJZG9f4Q94znLIz2PxnjDQbUXgdtHcGOUSEEx0uVRGYkn47YnkCFZITXd6qIIqCeztka7bJnC5YuG9cuiuJSFlkYF4CRcWuQKetEuQ4B67h9Tsa98NO8j4yU0xQPnggzUEcvkHuu/hBYd8bvK1VShH1l5ktJBi4FywPnVDl/SFcht422MAEYYA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bx6Zj2VwCz2yLJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 18:50:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bx7FJ3GCPz3064
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 19:20:36 +1000 (AEST)
 Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
-	by localhost (Postfix) with ESMTP id 4bx3Gj2XBTz9sFT;
-	Tue,  5 Aug 2025 08:21:33 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4bx4tk4fRkz9sqT;
+	Tue,  5 Aug 2025 09:34:22 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase1.c-s.fr ([192.168.12.234])
 	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id WDORRCn48EGH; Tue,  5 Aug 2025 08:21:33 +0200 (CEST)
+	with ESMTP id M2KWXNzhh9Q9; Tue,  5 Aug 2025 09:34:22 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase1.c-s.fr (Postfix) with ESMTP id 4bx3Gj1jK7z9sD3;
-	Tue,  5 Aug 2025 08:21:33 +0200 (CEST)
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4bx4tk3tHTz9sps;
+	Tue,  5 Aug 2025 09:34:22 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 34A6B8B765;
-	Tue,  5 Aug 2025 08:21:33 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7BB458B765;
+	Tue,  5 Aug 2025 09:34:22 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id luzBz1uWND4k; Tue,  5 Aug 2025 08:21:33 +0200 (CEST)
+	with ESMTP id 60eHZvnq60Lk; Tue,  5 Aug 2025 09:34:22 +0200 (CEST)
 Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id C1F0A8B763;
-	Tue,  5 Aug 2025 08:21:32 +0200 (CEST)
-Message-ID: <f0d771d5-ed70-444c-957a-ad4c16f6c115@csgroup.eu>
-Date: Tue, 5 Aug 2025 08:21:32 +0200
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4970B8B763;
+	Tue,  5 Aug 2025 09:34:21 +0200 (CEST)
+Message-ID: <e65548d0-14aa-4b9c-8051-7c91c5dffd1f@csgroup.eu>
+Date: Tue, 5 Aug 2025 09:34:21 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,93 +59,93 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/7] crypto: powerpc/md5 - Remove PowerPC optimized MD5
- code
-To: Eric Biggers <ebiggers@kernel.org>
-Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
- Ard Biesheuvel <ardb@kernel.org>, "Jason A . Donenfeld" <Jason@zx2c4.com>,
- linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org
-References: <20250803204433.75703-1-ebiggers@kernel.org>
- <20250803204433.75703-4-ebiggers@kernel.org>
- <593b6997-9da4-439c-ba82-84e8bb2ed980@csgroup.eu>
- <20250804180923.GA54248@google.com>
- <187412bd-3ae0-4fe8-b526-f96af6bea6dc@csgroup.eu>
- <20250804225901.GC54248@google.com> <20250804230926.GD54248@google.com>
+Subject: Re: [bpf-next 1/6] bpf,powerpc: Introduce
+ bpf_jit_emit_probe_mem_store() to emit store instructions
+To: Saket Kumar Bhaskar <skb99@linux.ibm.com>, bpf@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Cc: hbathini@linux.ibm.com, sachinpb@linux.ibm.com, venkat88@linux.ibm.com,
+ andrii@kernel.org, eddyz87@gmail.com, mykolal@fb.com, ast@kernel.org,
+ daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
+ yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
+ sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org, naveen@kernel.org,
+ maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+ memxor@gmail.com, iii@linux.ibm.com, shuah@kernel.org
+References: <20250805062747.3479221-1-skb99@linux.ibm.com>
+ <20250805062747.3479221-2-skb99@linux.ibm.com>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 Content-Language: fr-FR
-In-Reply-To: <20250804230926.GD54248@google.com>
+In-Reply-To: <20250805062747.3479221-2-skb99@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 05/08/2025 à 01:09, Eric Biggers a écrit :
-> On Mon, Aug 04, 2025 at 10:59:01PM +0000, Eric Biggers wrote:
->> On Mon, Aug 04, 2025 at 09:02:27PM +0200, Christophe Leroy wrote:
->>>
->>>
->>> Le 04/08/2025 à 20:09, Eric Biggers a écrit :
->>>> On Mon, Aug 04, 2025 at 07:42:15PM +0200, Christophe Leroy wrote:
->>>>>
->>>>>
->>>>> Le 03/08/2025 à 22:44, Eric Biggers a écrit :
->>>>>> MD5 is insecure, is no longer commonly used, and has never been
->>>>>> optimized for the most common architectures in the kernel.  Only mips,
->>>>>> powerpc, and sparc have optimized MD5 code in the kernel.  Of these,
->>>>>> only the powerpc one is actually testable in QEMU.  The mips one works
->>>>>> only on Cavium Octeon SoCs.
->>>>>>
->>>>>> Taken together, it's clear that it's time to retire these additional MD5
->>>>>> implementations, and focus maintenance on the MD5 generic C code.
->>>>>
->>>>> Sorry, for me it is not that clear. Even if MD5 is depracated we still have
->>>>> several applications that use MD5 for various reasons on our boards.
->>>>>
->>>>> I ran the test on kernel v6.16 with following file:
->>>>>
->>>>> # ls -l avion.au
->>>>> -rw-------    1 root     root      12130159 Jan  1  1970 avion.au
->>>>>
->>>>> With CONFIG_CRYPTO_MD5_PPC:
->>>>>
->>>>> # time md5sum avion.au
->>>>> 6513851d6109d42477b20cd56bf57f28  avion.au
->>>>> real    0m 1.02s
->>>>> user    0m 0.01s
->>>>> sys     0m 1.01s
->>>>>
->>>>> Without CONFIG_CRYPTO_MD5_PPC:
->>>>>
->>>>> # time md5sum avion.au
->>>>> 6513851d6109d42477b20cd56bf57f28  avion.au
->>>>> real    0m 1.35s
->>>>> user    0m 0.01s
->>>>> sys     0m 1.34s
->>>>>
->>>>> I think the difference is big enough to consider keeping optimised MD5 code.
->>>>
->>>> But md5sum doesn't use the kernel's MD5 code.  So it's implausible that
->>>> it has any effect on md5sum.  The difference you saw must be due to an
->>>> unrelated reason like I/O caching, CPU frequency, etc.  Try running your
->>>> test multiple times to eliminate other sources of variation.
->>>
->>> md5sum uses the kernel's MD5 code:
->>>
->>> libkcapi.so.1 => /usr/lib/libkcapi.so.1 (0x6ffa0000)    <==
+Le 05/08/2025 à 08:27, Saket Kumar Bhaskar a écrit :
+> bpf_jit_emit_probe_mem_store() is introduced to emit instructions for
+> storing memory values depending on the size (byte, halfword,
+> word, doubleword).
+
+Build break with this patch
+
+   CC      arch/powerpc/net/bpf_jit_comp64.o
+arch/powerpc/net/bpf_jit_comp64.c:395:12: error: 
+'bpf_jit_emit_probe_mem_store' defined but not used 
+[-Werror=unused-function]
+  static int bpf_jit_emit_probe_mem_store(struct codegen_context *ctx, 
+u32 src_reg, s16 off,
+             ^~~~~~~~~~~~~~~~~~~~~~~~~~~~
+cc1: all warnings being treated as errors
+make[4]: *** [scripts/Makefile.build:287: 
+arch/powerpc/net/bpf_jit_comp64.o] Error 1
+
+
 > 
-> Oh, I think you used the obscure implementation of md5sum from
-> libkcapi-tools, instead of the normal md5sum.  Why?  Did you check how
-> the normal md5sum performs too?  Just doing the calculation in userspace
-> is much more efficient.
+> Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
+> ---
+>   arch/powerpc/net/bpf_jit_comp64.c | 30 ++++++++++++++++++++++++++++++
+>   1 file changed, 30 insertions(+)
+> 
+> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+> index 025524378443..489de21fe3d6 100644
+> --- a/arch/powerpc/net/bpf_jit_comp64.c
+> +++ b/arch/powerpc/net/bpf_jit_comp64.c
+> @@ -409,6 +409,36 @@ asm (
+>   "		blr				;"
+>   );
+>   
+> +static int bpf_jit_emit_probe_mem_store(struct codegen_context *ctx, u32 src_reg, s16 off,
+> +					u32 code, u32 *image)
+> +{
+> +	u32 tmp1_reg = bpf_to_ppc(TMP_REG_1);
+> +	u32 tmp2_reg = bpf_to_ppc(TMP_REG_2);
+> +
+> +	switch (BPF_SIZE(code)) {
+> +	case BPF_B:
+> +		EMIT(PPC_RAW_STB(src_reg, tmp1_reg, off));
+> +		break;
+> +	case BPF_H:
+> +		EMIT(PPC_RAW_STH(src_reg, tmp1_reg, off));
+> +		break;
+> +	case BPF_W:
+> +		EMIT(PPC_RAW_STW(src_reg, tmp1_reg, off));
+> +		break;
+> +	case BPF_DW:
+> +		if (off % 4) {
+> +			EMIT(PPC_RAW_LI(tmp2_reg, off));
+> +			EMIT(PPC_RAW_STDX(src_reg, tmp1_reg, tmp2_reg));
+> +		} else {
+> +			EMIT(PPC_RAW_STD(src_reg, tmp1_reg, off));
+> +		}
+> +		break;
+> +	default:
+> +		return -EINVAL;
+> +	}
+> +	return 0;
+> +}
+> +
+>   static int emit_atomic_ld_st(const struct bpf_insn insn, struct codegen_context *ctx, u32 *image)
+>   {
+>   	u32 code = insn.code;
 
-Calculation in userspace is less efficient on my board:
-
-# time md5sum avion.au
-6513851d6109d42477b20cd56bf57f28  avion.au
-real    0m 1.87s
-user    0m 1.51s
-sys     0m 0.35s
-
-Christophe
 
