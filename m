@@ -1,111 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-10645-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10646-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2A7B6C87FCB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Aug 2025 09:38:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29469C87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Aug 2025 11:20:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bx7dr57wRz3069;
-	Tue,  5 Aug 2025 19:38:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754386704;
-	cv=none; b=W8KPW+0oeoEOEmwfwz/QTTwl2FvD0vspVxtGpcfeUz/8ce7md8eOoyYSnPmwvsVfQznJEUrc0AUDSZUOmFPFKQGvQUfOSnA5rD26BZnRysRGJSdi76YKBu3kHDz9O7JKV1gzYFUqf5VXGiWa4k+7DBgaWyorE3GVclbjkBXwKi+GTxeHAp3ko1on7lYX3NQhSnFlN3Ur6vhNuZctqYx9dMyFyx/UDg5Zn0uVfQ6w+/7GLN0Me2WpPtGuX7ZDQAvARRJHIsUqituMHg6l6Rn+dmJqHDiqglSMEpnBWlSe5BvvUcCFTdU/PrQ9TE8iCgS6QfwRTCKuqO3kyNMJniH/dA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bx9vp1Qldz3069;
+	Tue,  5 Aug 2025 21:20:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.236.30
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754392838;
+	cv=none; b=ic1ZEs66KAiPvLLBDb8PGoS0nFKBm68wrazJ544B0o8AKM0dGQ5SJJXcnua2YtnjOGxUxBx2favdR2GqYwuEuA893K32cLpkT3cbfncFjMmTrVtM51ISRW/uYd9JnAZS62b/9JGCpDR/VJWnBEbfUtf5lNsONNVYVTIyjmJhRO88TH126W5lFaVj/cXiyDrnjUPEVZqefumTW81wHRfT4uTcngVmID3cwHZYXM6Fnn8WkAkLiMKgHHtOduCx6fN1mj8mczSzoN62+yJBTzSEj3z5/AIzhy6+j22LEw2gRW1RB4XNP0RNRFoG0KkhfNWU3U6RNmDQDf5rkwoETpRDoA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754386704; c=relaxed/relaxed;
-	bh=qq75wLn4Jr35PxKHT8Ir8YDRfOwxEOJ3fDUl+YJWOlw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Q8VabYWR46wcRp2P5FGdwvmjpskmd6L3eCEYxdNm7bJUzPPkl6oyaOL+klm77J7+syxpGmsn+tP7trfV3jddSlwv9UPjihXACgU8EgobSil7wAydS6L+7mUpJ/e7jMGzp65DhEpmcEp4kl4xU9BSZoHC6fhYj2+/JYLFNi5GNMGoLG87lXU9jmmXsESTXmJmJdjGW+1RUKQSXVmCNccKzA2JkRx+B6TTm4WPkRozbSwjFrQiTH/AQMAtL+WJ4++eWibFXF0Xzcr10mwbxCSYhOw0lQ06XK14f4MlJbGBcWBnk21oPvFnQ4rvpYV66sIvSSfKJqTFX6YZLUTShvMklg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WaqdWXeH; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WaqdWXeH;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bx7dq4s4bz3064
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 19:38:23 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 230995C3FEF;
-	Tue,  5 Aug 2025 09:38:20 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B73A3C4CEF7;
-	Tue,  5 Aug 2025 09:38:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1754386699;
-	bh=PtcIziWKmeZojE8NbukEIlxT+NCLvvfcRfGscENjViM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=WaqdWXeHFq4oltQn9PTlA505X/oL+/hHqNtgIoY7zKJ2rAIIyFMHaM+0OG/yh2pw4
-	 a4OPg6vNpHqwYzZOYWH9z2eFj0o9qdjphfKwQATxpDET/tUKgH15v5CCmaccGtiziI
-	 K47HqBXpuuIazHWs7f7nOBdJzkPcC6o7Uz2XE0NjVLokbL/vEdh4tvhC3lSlpz6wIJ
-	 cRJvBI/3D77VRI3Nw6Ov+py/jFgFc5Ni8OH6Dnx4eGST8kP5vZjYp9Nb+FQNxwUhWq
-	 2m2r86L7YkwtCZGME114r4pdSCFeteEHhrAOdiqvbKwV054IIClCJwCyv020K+cNSI
-	 X5cmccT7jkP9Q==
-Date: Tue, 5 Aug 2025 12:37:57 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Uladzislau Rezki <urezki@gmail.com>
-Cc: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	Harry Yoo <harry.yoo@oracle.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Russell King <linux@armlinux.org.uk>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	"David S . Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Jarkko Sakkinen <jarkko@kernel.org>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	"H . Peter Anvin" <hpa@zytor.com>,
-	Andy Lutomirski <luto@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
-	Kees Cook <kees@kernel.org>, Peter Xu <peterx@redhat.com>,
-	David Hildenbrand <david@redhat.com>, Zi Yan <ziy@nvidia.com>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
-	Nico Pache <npache@redhat.com>, Ryan Roberts <ryan.roberts@arm.com>,
-	Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
-	Xu Xin <xu.xin16@zte.com.cn>,
-	Chengming Zhou <chengming.zhou@linux.dev>,
-	Hugh Dickins <hughd@google.com>, Vlastimil Babka <vbabka@suse.cz>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>, Rik van Riel <riel@surriel.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Matthew Wilcox <willy@infradead.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
-	Jason Gunthorpe <jgg@ziepe.ca>, John Hubbard <jhubbard@nvidia.com>,
-	Muchun Song <muchun.song@linux.dev>,
-	Oscar Salvador <osalvador@suse.de>, Jann Horn <jannh@google.com>,
-	Pedro Falcato <pfalcato@suse.de>,
-	Johannes Weiner <hannes@cmpxchg.org>,
-	Qi Zheng <zhengqi.arch@bytedance.com>,
-	Shakeel Butt <shakeel.butt@linux.dev>,
-	linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
-	sparclinux@vger.kernel.org, linux-sgx@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org, linux-mm@kvack.org,
-	nvdimm@lists.linux.dev, linux-trace-kernel@vger.kernel.org
-Subject: Re: [PATCH 2/3] mm: update core kernel code to use vm_flags_t
- consistently
-Message-ID: <aJHQ9XCLtibFjt93@kernel.org>
-References: <cover.1750274467.git.lorenzo.stoakes@oracle.com>
- <d1588e7bb96d1ea3fe7b9df2c699d5b4592d901d.1750274467.git.lorenzo.stoakes@oracle.com>
- <aIgSpAnU8EaIcqd9@hyeyoo>
- <73764aaa-2186-4c8e-8523-55705018d842@lucifer.local>
- <aIkVRTouPqhcxOes@pc636>
- <69860c97-8a76-4ce5-b1d6-9d7c8370d9cd@lucifer.local>
- <aJCRXVP-ZFEPtl1Y@pc636>
+	t=1754392838; c=relaxed/relaxed;
+	bh=Nerc2y0ZazWAm4E4mqD8MPdQgtQUjY9cjnQi6wChhCY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=nwNcRUF+MVCv+NMFF4b+PssDMagWw0IZBWwHakYSWNKvNAqiagpSmvIQVQcrV1hXRjqXmhME+rdIs8tcnyM/WBPoBAariq5xMSOaNwBBzoMXmcbxokCKF6DcB6JXFSmQMraMeg1yZ7rQwsXWn4WpEi4HGakaHFMV3rdKdmD+y1+D6dzDv33CAAXsCBdmpTkAV+qId+K/8QulplqMD1Gn9dMcl0zdODXse4ejWJCmGFdkAN86rpNndNcl5dXYl6Fw5/ZGNQRwh5rNJGRGIEcZM2X+Tjo9okiqjGCgsZnRd3TNgbc9hQ7R98Wd7fI4px65ZCwrGgurXX05LVmpzCLYUA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.236.30; helo=pegase1.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase1.c-s.fr (pegase1.c-s.fr [93.17.236.30])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bx9vn1yp5z3064
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 21:20:36 +1000 (AEST)
+Received: from localhost (mailhub3.si.c-s.fr [192.168.12.233])
+	by localhost (Postfix) with ESMTP id 4bx5365ZZNz9tKP;
+	Tue,  5 Aug 2025 09:41:38 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase1.c-s.fr ([192.168.12.234])
+	by localhost (pegase1.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 1OEbE3GMNzcM; Tue,  5 Aug 2025 09:41:38 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase1.c-s.fr (Postfix) with ESMTP id 4bx5364c1qz9tCB;
+	Tue,  5 Aug 2025 09:41:38 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 945C38B765;
+	Tue,  5 Aug 2025 09:41:38 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id SrGpeUTETfvg; Tue,  5 Aug 2025 09:41:38 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 54E308B763;
+	Tue,  5 Aug 2025 09:41:37 +0200 (CEST)
+Message-ID: <c53da8e9-c15d-47b4-9422-4461f0b7c188@csgroup.eu>
+Date: Tue, 5 Aug 2025 09:41:37 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -119,97 +58,308 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <aJCRXVP-ZFEPtl1Y@pc636>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [bpf-next 2/6] bpf,powerpc: Implement PROBE_MEM32 pseudo
+ instructions
+To: Saket Kumar Bhaskar <skb99@linux.ibm.com>, bpf@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Cc: hbathini@linux.ibm.com, sachinpb@linux.ibm.com, venkat88@linux.ibm.com,
+ andrii@kernel.org, eddyz87@gmail.com, mykolal@fb.com, ast@kernel.org,
+ daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
+ yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
+ sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org, naveen@kernel.org,
+ maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+ memxor@gmail.com, iii@linux.ibm.com, shuah@kernel.org
+References: <20250805062747.3479221-1-skb99@linux.ibm.com>
+ <20250805062747.3479221-3-skb99@linux.ibm.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <20250805062747.3479221-3-skb99@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Mon, Aug 04, 2025 at 12:54:21PM +0200, Uladzislau Rezki wrote:
-> Hello, Lorenzo!
+
+
+Le 05/08/2025 à 08:27, Saket Kumar Bhaskar a écrit :
+> Add support for [LDX | STX | ST], PROBE_MEM32, [B | H | W | DW]
+> instructions.  They are similar to PROBE_MEM instructions with the
+> following differences:
+> - PROBE_MEM32 supports store.
+> - PROBE_MEM32 relies on the verifier to clear upper 32-bit of the
+> src/dst register
+> - PROBE_MEM32 adds 64-bit kern_vm_start address (which is stored in _R26
+> in the prologue). Due to bpf_arena constructions such _R26 + reg +
+> off16 access is guaranteed to be within arena virtual range, so no
+> address check at run-time.
+> - PROBE_MEM32 allows STX and ST. If they fault the store is a nop. When
+> LDX faults the destination register is zeroed.
 > 
-> > So sorry Ulad, I meant to get back to you on this sooner!
-> > 
-> > On Tue, Jul 29, 2025 at 08:39:01PM +0200, Uladzislau Rezki wrote:
-> > > On Tue, Jul 29, 2025 at 06:25:39AM +0100, Lorenzo Stoakes wrote:
-> > > > Andrew - FYI there's nothing to worry about here, the type remains
-> > > > precisely the same, and I'll send a patch to fix this trivial issue so when
-> > > > later this type changes vmalloc will be uaffected.
-> > > >
-> > > > On Tue, Jul 29, 2025 at 09:15:51AM +0900, Harry Yoo wrote:
-> > > > > [Adding Uladzislau to Cc]
-> > > >
-> > > > Ulad - could we PLEASE get rid of 'vm_flags' in vmalloc? It's the precise
-> > > > same name and (currently) type as vma->vm_flags and is already the source
-> > > > of confusion.
-> > > >
-> > > You mean all "vm_flags" variable names? "vm_struct" has flags as a
-> > > member. So you want:
-> > >
-> > > urezki@pc638:~/data/backup/coding/linux-not-broken.git$ grep -rn vm_flags mm/execmem.c
-> > > 29:                          pgprot_t pgprot, unsigned long vm_flags)
-> > > 39:             vm_flags |= VM_DEFER_KMEMLEAK;
-> > > 41:     if (vm_flags & VM_ALLOW_HUGE_VMAP)
-> > > 45:                              pgprot, vm_flags, NUMA_NO_NODE,
-> > > 51:                                      pgprot, vm_flags, NUMA_NO_NODE,
-> > > 85:                          pgprot_t pgprot, unsigned long vm_flags)
-> > > 259:    unsigned long vm_flags = VM_ALLOW_HUGE_VMAP;
-> > > 266:    p = execmem_vmalloc(range, alloc_size, PAGE_KERNEL, vm_flags);
-> > > 376:    unsigned long vm_flags = VM_FLUSH_RESET_PERMS;
-> > > 385:            p = execmem_vmalloc(range, size, pgprot, vm_flags);
-> > > urezki@pc638:~/data/backup/coding/linux-not-broken.git$ grep -rn vm_flags mm/vmalloc.c
-> > > 3853: * @vm_flags:                additional vm area flags (e.g. %VM_NO_GUARD)
-> > > 3875:                   pgprot_t prot, unsigned long vm_flags, int node,
-> > > 3894:   if (vmap_allow_huge && (vm_flags & VM_ALLOW_HUGE_VMAP)) {
-> > > 3912:                             VM_UNINITIALIZED | vm_flags, start, end, node,
-> > > 3977:   if (!(vm_flags & VM_DEFER_KMEMLEAK))
-> > > 4621:   vm_flags_set(vma, VM_DONTEXPAND | VM_DONTDUMP);
-> > > urezki@pc638:~/data/backup/coding/linux-not-broken.git$ grep -rn vm_flags mm/execmem.c
-> > > 29:                          pgprot_t pgprot, unsigned long vm_flags)
-> > > 39:             vm_flags |= VM_DEFER_KMEMLEAK;
-> > > 41:     if (vm_flags & VM_ALLOW_HUGE_VMAP)
-> > > 45:                              pgprot, vm_flags, NUMA_NO_NODE,
-> > > 51:                                      pgprot, vm_flags, NUMA_NO_NODE,
-> > > 85:                          pgprot_t pgprot, unsigned long vm_flags)
-> > > 259:    unsigned long vm_flags = VM_ALLOW_HUGE_VMAP;
-> > > 266:    p = execmem_vmalloc(range, alloc_size, PAGE_KERNEL, vm_flags);
-> > > 376:    unsigned long vm_flags = VM_FLUSH_RESET_PERMS;
-> > > 385:            p = execmem_vmalloc(range, size, pgprot, vm_flags);
-> > > urezki@pc638:~/data/backup/coding/linux-not-broken.git$ grep -rn vm_flags ./include/linux/vmalloc.h
-> > > 172:                    pgprot_t prot, unsigned long vm_flags, int node,
-> > > urezki@pc638:~/data/backup/coding/linux-not-broken.git$
-> > >
-> > > to rename all those "vm_flags" to something, for example, like "flags"?
-> > 
-> > Yeah, sorry I know it's a churny pain, but I think it's such a silly source
-> > of confusion _in general_, not only this series where I made a mistake (of
-> > course entirely my fault but certainly more understandable given the
-> > naming), but in the past I've certainly sat there thinking 'hmmm wait' :)
-> > 
-> > Really I think we should rename 'vm_struct' too, but if that causes _too
-> > much_ churn fair enough.
-
-Well, it's not that terrible :)
-
-~/git/linux$ git grep -w vm_struct | wc -l
-173
-
-> > I think even though it's long-winded, 'vmalloc_flags' would be good, both
-> > in fields and local params as it makes things very very clear.
-> > 
-> > Equally 'vm_struct' -> 'vmalloc_struct' would be a good change.
-
-Do we really need the _struct suffix?
-How about vmalloc_area?
-
-It also seems that struct vmap_area can be made private to mm/.
-
-> Uh.. This could be a pain :) I will have a look and see what we can do.
+> To support these on powerpc, we do tmp1 = _R26 + src/dst reg and then use
+> tmp1 as the new src/dst register. This allows us to reuse most of the
+> code for normal [LDX | STX | ST].
 > 
-> Thanks!
+> Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
+> ---
+>   arch/powerpc/net/bpf_jit.h        |   5 +-
+>   arch/powerpc/net/bpf_jit_comp.c   |  10 ++-
+>   arch/powerpc/net/bpf_jit_comp32.c |   2 +-
+>   arch/powerpc/net/bpf_jit_comp64.c | 108 ++++++++++++++++++++++++++++--
+>   4 files changed, 114 insertions(+), 11 deletions(-)
 > 
-> --
-> Uladzislau Rezki
+> diff --git a/arch/powerpc/net/bpf_jit.h b/arch/powerpc/net/bpf_jit.h
+> index 4c26912c2e3c..2d095a873305 100644
+> --- a/arch/powerpc/net/bpf_jit.h
+> +++ b/arch/powerpc/net/bpf_jit.h
+> @@ -161,9 +161,10 @@ struct codegen_context {
+>   	unsigned int seen;
+>   	unsigned int idx;
+>   	unsigned int stack_size;
+> -	int b2p[MAX_BPF_JIT_REG + 2];
+> +	int b2p[MAX_BPF_JIT_REG + 3];
+>   	unsigned int exentry_idx;
+>   	unsigned int alt_exit_addr;
+> +	u64 arena_vm_start;
+>   };
+>   
+>   #define bpf_to_ppc(r)	(ctx->b2p[r])
+> @@ -201,7 +202,7 @@ int bpf_jit_emit_exit_insn(u32 *image, struct codegen_context *ctx, int tmp_reg,
+>   
+>   int bpf_add_extable_entry(struct bpf_prog *fp, u32 *image, u32 *fimage, int pass,
+>   			  struct codegen_context *ctx, int insn_idx,
+> -			  int jmp_off, int dst_reg);
+> +			  int jmp_off, int dst_reg, u32 code);
+>   
+>   #endif
+>   
+> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+> index c0684733e9d6..35bfdf4d8785 100644
+> --- a/arch/powerpc/net/bpf_jit_comp.c
+> +++ b/arch/powerpc/net/bpf_jit_comp.c
+> @@ -204,6 +204,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+>   
+>   	/* Make sure that the stack is quadword aligned. */
+>   	cgctx.stack_size = round_up(fp->aux->stack_depth, 16);
+> +	cgctx.arena_vm_start = bpf_arena_get_kern_vm_start(fp->aux->arena);
+>   
+>   	/* Scouting faux-generate pass 0 */
+>   	if (bpf_jit_build_body(fp, NULL, NULL, &cgctx, addrs, 0, false)) {
+> @@ -326,7 +327,7 @@ struct bpf_prog *bpf_int_jit_compile(struct bpf_prog *fp)
+>    */
+>   int bpf_add_extable_entry(struct bpf_prog *fp, u32 *image, u32 *fimage, int pass,
+>   			  struct codegen_context *ctx, int insn_idx, int jmp_off,
+> -			  int dst_reg)
+> +			  int dst_reg, u32 code)
+>   {
+>   	off_t offset;
+>   	unsigned long pc;
+> @@ -354,7 +355,12 @@ int bpf_add_extable_entry(struct bpf_prog *fp, u32 *image, u32 *fimage, int pass
+>   		(fp->aux->num_exentries * BPF_FIXUP_LEN * 4) +
+>   		(ctx->exentry_idx * BPF_FIXUP_LEN * 4);
+>   
+> -	fixup[0] = PPC_RAW_LI(dst_reg, 0);
+> +	if ((BPF_CLASS(code) == BPF_LDX && BPF_MODE(code) == BPF_PROBE_MEM32) ||
+> +	    (BPF_CLASS(code) == BPF_LDX && BPF_MODE(code) == BPF_PROBE_MEM))
+> +		fixup[0] = PPC_RAW_LI(dst_reg, 0);
+> +	else if (BPF_CLASS(code) == BPF_ST || BPF_CLASS(code) == BPF_STX)
+> +		fixup[0] = PPC_RAW_NOP();
+> +
 
--- 
-Sincerely yours,
-Mike.
+Is there also a 'else' to consider ? If not, why not just a 'else' 
+instead of an 'if else' ?
+
+>   	if (IS_ENABLED(CONFIG_PPC32))
+>   		fixup[1] = PPC_RAW_LI(dst_reg - 1, 0); /* clear higher 32-bit register too */
+>   
+> diff --git a/arch/powerpc/net/bpf_jit_comp32.c b/arch/powerpc/net/bpf_jit_comp32.c
+> index 0aace304dfe1..3087e744fb25 100644
+> --- a/arch/powerpc/net/bpf_jit_comp32.c
+> +++ b/arch/powerpc/net/bpf_jit_comp32.c
+> @@ -1087,7 +1087,7 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+>   				}
+>   
+>   				ret = bpf_add_extable_entry(fp, image, fimage, pass, ctx, insn_idx,
+> -							    jmp_off, dst_reg);
+> +							    jmp_off, dst_reg, code);
+>   				if (ret)
+>   					return ret;
+>   			}
+> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+> index 489de21fe3d6..16e62766c757 100644
+> --- a/arch/powerpc/net/bpf_jit_comp64.c
+> +++ b/arch/powerpc/net/bpf_jit_comp64.c
+> @@ -44,6 +44,7 @@
+>   /* BPF register usage */
+>   #define TMP_REG_1	(MAX_BPF_JIT_REG + 0)
+>   #define TMP_REG_2	(MAX_BPF_JIT_REG + 1)
+> +#define ARENA_VM_START  (MAX_BPF_JIT_REG + 2)
+>   
+>   /* BPF to ppc register mappings */
+>   void bpf_jit_init_reg_mapping(struct codegen_context *ctx)
+> @@ -61,6 +62,8 @@ void bpf_jit_init_reg_mapping(struct codegen_context *ctx)
+>   	ctx->b2p[BPF_REG_7] = _R28;
+>   	ctx->b2p[BPF_REG_8] = _R29;
+>   	ctx->b2p[BPF_REG_9] = _R30;
+> +	/* non volatile register for kern_vm_start address */
+> +	ctx->b2p[ARENA_VM_START] = _R26;
+>   	/* frame pointer aka BPF_REG_10 */
+>   	ctx->b2p[BPF_REG_FP] = _R31;
+>   	/* eBPF jit internal registers */
+> @@ -69,8 +72,8 @@ void bpf_jit_init_reg_mapping(struct codegen_context *ctx)
+>   	ctx->b2p[TMP_REG_2] = _R10;
+>   }
+>   
+> -/* PPC NVR range -- update this if we ever use NVRs below r27 */
+> -#define BPF_PPC_NVR_MIN		_R27
+> +/* PPC NVR range -- update this if we ever use NVRs below r26 */
+> +#define BPF_PPC_NVR_MIN		_R26
+>   
+>   static inline bool bpf_has_stack_frame(struct codegen_context *ctx)
+>   {
+> @@ -170,10 +173,17 @@ void bpf_jit_build_prologue(u32 *image, struct codegen_context *ctx)
+>   		if (bpf_is_seen_register(ctx, bpf_to_ppc(i)))
+>   			EMIT(PPC_RAW_STD(bpf_to_ppc(i), _R1, bpf_jit_stack_offsetof(ctx, bpf_to_ppc(i))));
+>   
+> +	if (ctx->arena_vm_start)
+> +		EMIT(PPC_RAW_STD(bpf_to_ppc(ARENA_VM_START), _R1,
+> +				 bpf_jit_stack_offsetof(ctx, bpf_to_ppc(ARENA_VM_START))));
+> +
+>   	/* Setup frame pointer to point to the bpf stack area */
+>   	if (bpf_is_seen_register(ctx, bpf_to_ppc(BPF_REG_FP)))
+>   		EMIT(PPC_RAW_ADDI(bpf_to_ppc(BPF_REG_FP), _R1,
+>   				STACK_FRAME_MIN_SIZE + ctx->stack_size));
+> +
+> +	if (ctx->arena_vm_start)
+> +		PPC_LI64(bpf_to_ppc(ARENA_VM_START), ctx->arena_vm_start);
+>   }
+>   
+>   static void bpf_jit_emit_common_epilogue(u32 *image, struct codegen_context *ctx)
+> @@ -185,6 +195,10 @@ static void bpf_jit_emit_common_epilogue(u32 *image, struct codegen_context *ctx
+>   		if (bpf_is_seen_register(ctx, bpf_to_ppc(i)))
+>   			EMIT(PPC_RAW_LD(bpf_to_ppc(i), _R1, bpf_jit_stack_offsetof(ctx, bpf_to_ppc(i))));
+>   
+> +	if (ctx->arena_vm_start)
+> +		EMIT(PPC_RAW_LD(bpf_to_ppc(ARENA_VM_START), _R1,
+> +				bpf_jit_stack_offsetof(ctx, bpf_to_ppc(ARENA_VM_START))));
+> +
+>   	/* Tear down our stack frame */
+>   	if (bpf_has_stack_frame(ctx)) {
+>   		EMIT(PPC_RAW_ADDI(_R1, _R1, BPF_PPC_STACKFRAME + ctx->stack_size));
+> @@ -990,6 +1004,50 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+>   			}
+>   			break;
+>   
+> +		case BPF_STX | BPF_PROBE_MEM32 | BPF_B:
+> +		case BPF_STX | BPF_PROBE_MEM32 | BPF_H:
+> +		case BPF_STX | BPF_PROBE_MEM32 | BPF_W:
+> +		case BPF_STX | BPF_PROBE_MEM32 | BPF_DW:
+> +
+> +			EMIT(PPC_RAW_ADD(tmp1_reg, dst_reg, bpf_to_ppc(ARENA_VM_START)));
+> +
+> +			ret = bpf_jit_emit_probe_mem_store(ctx, src_reg, off, code, image);
+> +			if (ret)
+> +				return ret;
+> +
+> +			ret = bpf_add_extable_entry(fp, image, fimage, pass, ctx,
+> +						    ctx->idx - 1, 4, -1, code);
+> +			if (ret)
+> +				return ret;
+> +
+> +			break;
+> +
+> +		case BPF_ST | BPF_PROBE_MEM32 | BPF_B:
+> +		case BPF_ST | BPF_PROBE_MEM32 | BPF_H:
+> +		case BPF_ST | BPF_PROBE_MEM32 | BPF_W:
+> +		case BPF_ST | BPF_PROBE_MEM32 | BPF_DW:
+> +
+> +			EMIT(PPC_RAW_ADD(tmp1_reg, dst_reg, bpf_to_ppc(ARENA_VM_START)));
+> +
+> +			if (BPF_SIZE(code) == BPF_W || BPF_SIZE(code) == BPF_DW) {
+> +				PPC_LI32(tmp2_reg, imm);
+> +				src_reg = tmp2_reg;
+> +			} else {
+> +				EMIT(PPC_RAW_LI(tmp2_reg, imm));
+> +				src_reg = tmp2_reg;
+> +			}
+> +
+> +			ret = bpf_jit_emit_probe_mem_store(ctx, src_reg, off, code, image);
+> +			if (ret)
+> +				return ret;
+> +
+> +			ret = bpf_add_extable_entry(fp, image, fimage, pass, ctx,
+> +						    ctx->idx - 1, 4, -1, code);
+> +			if (ret)
+> +				return ret;
+> +
+> +			break;
+> +
+>   		/*
+>   		 * BPF_STX ATOMIC (atomic ops)
+>   		 */
+> @@ -1142,9 +1200,10 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+>   				 * Check if 'off' is word aligned for BPF_DW, because
+>   				 * we might generate two instructions.
+>   				 */
+> -				if ((BPF_SIZE(code) == BPF_DW ||
+> -				    (BPF_SIZE(code) == BPF_B && BPF_MODE(code) == BPF_PROBE_MEMSX)) &&
+> -						(off & 3))
+> +				if ((BPF_SIZE(code) == BPF_DW && (off & 3)) ||
+> +				    (BPF_SIZE(code) == BPF_B &&
+> +				     BPF_MODE(code) == BPF_PROBE_MEMSX) ||
+> +				    (BPF_SIZE(code) == BPF_B && BPF_MODE(code) == BPF_MEMSX))
+>   					PPC_JMP((ctx->idx + 3) * 4);
+>   				else
+>   					PPC_JMP((ctx->idx + 2) * 4);
+> @@ -1190,12 +1249,49 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+>   
+>   			if (BPF_MODE(code) == BPF_PROBE_MEM) {
+>   				ret = bpf_add_extable_entry(fp, image, fimage, pass, ctx,
+> -							    ctx->idx - 1, 4, dst_reg);
+> +							    ctx->idx - 1, 4, dst_reg, code);
+>   				if (ret)
+>   					return ret;
+>   			}
+>   			break;
+>   
+> +		/* dst = *(u64 *)(ul) (src + ARENA_VM_START + off) */
+> +		case BPF_LDX | BPF_PROBE_MEM32 | BPF_B:
+> +		case BPF_LDX | BPF_PROBE_MEM32 | BPF_H:
+> +		case BPF_LDX | BPF_PROBE_MEM32 | BPF_W:
+> +		case BPF_LDX | BPF_PROBE_MEM32 | BPF_DW:
+> +
+> +			EMIT(PPC_RAW_ADD(tmp1_reg, src_reg, bpf_to_ppc(ARENA_VM_START)));
+> +
+> +			switch (size) {
+> +			case BPF_B:
+> +				EMIT(PPC_RAW_LBZ(dst_reg, tmp1_reg, off));
+> +				break;
+> +			case BPF_H:
+> +				EMIT(PPC_RAW_LHZ(dst_reg, tmp1_reg, off));
+> +				break;
+> +			case BPF_W:
+> +				EMIT(PPC_RAW_LWZ(dst_reg, tmp1_reg, off));
+> +				break;
+> +			case BPF_DW:
+> +				if (off % 4) {
+> +					EMIT(PPC_RAW_LI(tmp2_reg, off));
+> +					EMIT(PPC_RAW_LDX(dst_reg, tmp1_reg, tmp2_reg));
+> +				} else {
+> +					EMIT(PPC_RAW_LD(dst_reg, tmp1_reg, off));
+> +				}
+> +				break;
+> +			}
+> +
+> +			if (size != BPF_DW && insn_is_zext(&insn[i + 1]))
+> +				addrs[++i] = ctx->idx * 4;
+> +
+> +			ret = bpf_add_extable_entry(fp, image, fimage, pass, ctx,
+> +						    ctx->idx - 1, 4, dst_reg, code);
+> +			if (ret)
+> +				return ret;
+> +			break;
+> +
+>   		/*
+>   		 * Doubleword load
+>   		 * 16 byte instruction that uses two 'struct bpf_insn'
+
 
