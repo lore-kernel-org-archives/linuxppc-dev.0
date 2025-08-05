@@ -1,38 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-10668-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10669-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99AF6C87FCB
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Aug 2025 16:15:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41622C87FD1
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Aug 2025 16:18:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bxJSL22Bkz3bmC;
-	Wed,  6 Aug 2025 02:15:46 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8:216:3eff:fe9d:e7b4"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754410546;
-	cv=none; b=BvMD5uaaYRMLQOu6Mko7VWwE0bc1XbVUqx/oMwg/UZbpFPEpXdrXP73MG78xpKjApNyWLIG+x2QGaUKNU7nYibVaW2dlXAfW1kQXNrzfrrA4AIQkFmrx9Uid1ZAHTE+37CZtLfgwMu1dgCk211KuwNHASMWsa4vCevp9l2lzRzAXCe2ySmRDZMZSPxu90/DiT4WTLToMX/O7YVFE3HZQI2e5X30571jlw1UMsiChuR+SXEsGZmZ9gvN+OQyiNQm5y8JOvDCyKE+zmMU/2zqZaMMdeNaYiQBju/j4JuVYClmDEl6XbU0YTVpi3DGxGLjJrZojXSVa0BoSUN9hzNRk+w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bxJVw3bzDz3bmy;
+	Wed,  6 Aug 2025 02:18:00 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:45d1:ec00::3"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754410680;
+	cv=none; b=K/45ZOP4iT36N3vjMLxaH2IapHkzZAb3cb6T3YRaEtk2Ei5FBt2teNXg9jS2Hmauk4RxXYoX6FiIb9Z1PEtEKc2FKRx6tNU3mVHyW8hRtEO9n3arvOPcjGpbTzaje26o5p2STr1uNmYtoBbjW1yWZ8YDhsBCyAYXy6JZdwjRpAYiuciVYzqZJnMVc6RQ8CEs37As/Af3lxsKmUF6oZf1G9B4wnLBJU6G5JGq+jc3NWqz3UX2rjD7/kyuXjbEoTG0pMahs6lTa6BmMxCCMkpwsjAczFcucHuuYa9c5Y9uiGYCcWGDJ//Z6RolnLe1gulnf9JJP24ZMsst2e3eTk5K0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754410546; c=relaxed/relaxed;
-	bh=YKKJDDtdxUXV0lV5aN6SeraxUcBFKLa1fTZ3jSmMfEc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=d9hdkXbnY/aurzYLf6N0tZQbopus0fkpgavh8qDCf8i0aYvJpYIdSold8nRWm44BrJcC3GymlY1a05KtZ2H2jB2GvZYri7fmDLKhBUFVIORawDf3n5TFeYu7WsbcTIRNwFgBmP/ZAcaiU/mcJE0lrr21trjI38kMg+FTYaoVjKt0MxC1/eQrD1YTcHXNsvw3NzEWODNOryM07t+4im32pd5dpovdQ1Q3fYZcP6h17Lv6W8+SG6MlC68B8p6R9rjRo6SVxDWSG+sDVcEZSjrpamozi1EzddngviqeiA/xb1WFRBjXscqA6ScBBqNZj+TOFIQBlWZuIGVDSGUEOED98w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ghiti.fr; spf=pass (client-ip=2001:4b98:dc4:8:216:3eff:fe9d:e7b4; helo=mslow3.mail.gandi.net; envelope-from=alex@ghiti.fr; receiver=lists.ozlabs.org) smtp.mailfrom=ghiti.fr
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ghiti.fr (client-ip=2001:4b98:dc4:8:216:3eff:fe9d:e7b4; helo=mslow3.mail.gandi.net; envelope-from=alex@ghiti.fr; receiver=lists.ozlabs.org)
-Received: from mslow3.mail.gandi.net (mslow3.mail.gandi.net [IPv6:2001:4b98:dc4:8:216:3eff:fe9d:e7b4])
+	t=1754410680; c=relaxed/relaxed;
+	bh=mHXO8IlN+QUNSY+1isM85Y1ycRa50jDhXn2mJOFKUiI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=bmbgpUO6LiKm8xzqElsItTkr2X/fvTNw5pGphicpqSHXp02o4fk/OBYlj694Yt56oBipbTSI3rJraG3JkipiqlHb0rPswC8XbexC7XJpKeW79kFASCjs5Xt/K0f0tFQ3K/FnDaiZe7rSE9tYAFzdrcaFjgu+S387JRvQwdKtvme6w1G706siTAj4zqfbJp3mgtY367h/BNIB+Bg5bhDmsymsVLyoRthrr87WEaRAtuHgEoeS0XaDlO0C0FSWoKNF/BWH/hkDALqYIhsKnWRn/BS+h+css1xjVL3g8Tz/lpWowhD0y9VMGTegF5lRQbvcme0aes8sw8uT00BHzeVreQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RGWeO0hS; dkim-atps=neutral; spf=pass (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RGWeO0hS;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:45d1:ec00::3; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from nyc.source.kernel.org (nyc.source.kernel.org [IPv6:2604:1380:45d1:ec00::3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bxJSK3JBsz3bm3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2025 02:15:45 +1000 (AEST)
-Received: from relay8-d.mail.gandi.net (relay8-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::228])
-	by mslow3.mail.gandi.net (Postfix) with ESMTP id 89024581AC0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  5 Aug 2025 16:06:57 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 417DE44427;
-	Tue,  5 Aug 2025 16:06:42 +0000 (UTC)
-Message-ID: <20c1e656-512e-4424-9d4e-176af18bb7d6@ghiti.fr>
-Date: Tue, 5 Aug 2025 18:06:41 +0200
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bxJVv4n2fz3bmc
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2025 02:17:59 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by nyc.source.kernel.org (Postfix) with ESMTP id D3778A55F86;
+	Tue,  5 Aug 2025 16:17:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 36A72C4CEF0;
+	Tue,  5 Aug 2025 16:17:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1754410676;
+	bh=VEaguF/ogsUg8LpFDpHstynmmvNIK3mlr/svELCRauQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=RGWeO0hStuckHs5WZfjGH0bLLJm+w5iCYk2zGYNrIOgwN/hcs/wFYIwMndWkVSbgo
+	 qgZvcmHQt3X/4fCvF/UxmvF9KqJCb7RoFN65U30toLVfyxtkuV+mO9Mh7PK/CD+SIp
+	 rb0R8NkR0piFdJdCTdNpHJ1wVhc2jMioJOWGM8UvJEgOvqOnNhgyGBpn8ExFh7rzTA
+	 8WZOI8KC63QKsfGbeUrG2MMTHhbwktV9EAxdhBE5COUv5dgdB4B9LkDBeU/H4Ym88L
+	 KPaUsNEWXXm0EafpSZ0drDrttdXQ363VINQYNGlWx/xPmS9CDpv+cRMVtTaI81ArkK
+	 i0yUCuBtBwl6A==
+Date: Tue, 5 Aug 2025 09:16:57 -0700
+From: Eric Biggers <ebiggers@kernel.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Ard Biesheuvel <ardb@kernel.org>,
+	"Jason A . Donenfeld" <Jason@zx2c4.com>, linux-mips@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org
+Subject: Re: [PATCH 3/7] crypto: powerpc/md5 - Remove PowerPC optimized MD5
+ code
+Message-ID: <20250805161657.GB1286@sol>
+References: <20250803204433.75703-1-ebiggers@kernel.org>
+ <20250803204433.75703-4-ebiggers@kernel.org>
+ <593b6997-9da4-439c-ba82-84e8bb2ed980@csgroup.eu>
+ <20250804180923.GA54248@google.com>
+ <187412bd-3ae0-4fe8-b526-f96af6bea6dc@csgroup.eu>
+ <20250804225901.GC54248@google.com>
+ <c4191597-341d-4fd7-bc3d-13daf7666c41@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -46,68 +74,43 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 9/9] kasan/riscv: call kasan_init_generic in kasan_init
-To: Sabyrzhan Tasbolatov <snovitoll@gmail.com>, ryabinin.a.a@gmail.com,
- hca@linux.ibm.com, christophe.leroy@csgroup.eu, andreyknvl@gmail.com,
- agordeev@linux.ibm.com, akpm@linux-foundation.org, zhangqing@loongson.cn,
- chenhuacai@loongson.cn, trishalfonso@google.com, davidgow@google.com
-Cc: glider@google.com, dvyukov@google.com, kasan-dev@googlegroups.com,
- linux-kernel@vger.kernel.org, loongarch@lists.linux.dev,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-um@lists.infradead.org, linux-mm@kvack.org
-References: <20250805142622.560992-1-snovitoll@gmail.com>
- <20250805142622.560992-10-snovitoll@gmail.com>
-Content-Language: en-US
-From: Alexandre Ghiti <alex@ghiti.fr>
-In-Reply-To: <20250805142622.560992-10-snovitoll@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-GND-State: clean
-X-GND-Score: 0
-X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdefgdduudehiedtucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecunecujfgurhepkfffgggfuffvvehfhfgjtgfgsehtjeertddtvdejnecuhfhrohhmpeetlhgvgigrnhgurhgvucfihhhithhiuceorghlvgigsehghhhithhirdhfrheqnecuggftrfgrthhtvghrnhephffhuddtveegleeggeefledtudfhudelvdetudfhgeffffeigffgkeethfejudejnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucfkphepudelfedrfeefrdehjedrudelleenucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepihhnvghtpeduleefrdeffedrheejrdduleelpdhhvghloheplgduledvrdduieekrddvvddruddtudgnpdhmrghilhhfrhhomheprghlvgigsehghhhithhirdhfrhdpnhgspghrtghpthhtohepvddupdhrtghpthhtohepshhnohhvihhtohhllhesghhmrghilhdrtghomhdprhgtphhtthhopehrhigrsghinhhinhdrrgdrrgesghhmrghilhdrtghomhdprhgtphhtthhopehhtggrsehlihhnuhigrdhisghmrdgtohhmpdhrtghpthhtoheptghhrhhishhtohhphhgvrdhlvghrohihsegtshhgrhhouhhprdgvuhdprhgtphhtthhopegrnhgurhgvhihknhhvlhesghhmrghilhdrtghomhdprhgtphhtthhopegrghhorhguvggvvheslhhin
- hhugidrihgsmhdrtghomhdprhgtphhtthhopegrkhhpmheslhhinhhugidqfhhouhhnuggrthhiohhnrdhorhhgpdhrtghpthhtohepiihhrghnghhqihhngheslhhoohhnghhsohhnrdgtnh
-X-GND-Sasl: alex@ghiti.fr
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <c4191597-341d-4fd7-bc3d-13daf7666c41@csgroup.eu>
 
-Hi Sabyrzhan,
+On Tue, Aug 05, 2025 at 08:27:14AM +0200, Christophe Leroy wrote:
+> > What?  That's crazy.  Userspace MD5 code would be faster and more
+> > reliable.  No need to make syscalls, transfer data to and from the
+> > kernel, have an external dependency, etc.  Is this the coreutils md5sum?
+> > We need to get this reported and fixed.
+> 
+> Content of files is already buffered inside the kernel. likcapi doesn't
+> tranfer data, it uses splice().
+> 
+> As far as I know, coreutil is not able to use the TALITOS Security engine we
+> have on the mpc885 and mpc8321 microcontroleurs. We primarily use libkcapi
+> for that.
+> 
+> In order to keep things consistant, we use the same userspace on boards
+> which don't have a security engine, ie the mpc866, we rely on the kernel
+> providing an optimised software implementation fallback.
 
-On 8/5/25 16:26, Sabyrzhan Tasbolatov wrote:
-> Call kasan_init_generic() which handles Generic KASAN initialization
-> and prints the banner. Since riscv doesn't select ARCH_DEFER_KASAN,
-> kasan_enable() will be a no-op, and kasan_enabled() will return
-> IS_ENABLED(CONFIG_KASAN) for optimal compile-time behavior.
->
-> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=217049
-> Signed-off-by: Sabyrzhan Tasbolatov <snovitoll@gmail.com>
-> ---
->   arch/riscv/mm/kasan_init.c | 1 +
->   1 file changed, 1 insertion(+)
->
-> diff --git a/arch/riscv/mm/kasan_init.c b/arch/riscv/mm/kasan_init.c
-> index 41c635d6aca..ba2709b1eec 100644
-> --- a/arch/riscv/mm/kasan_init.c
-> +++ b/arch/riscv/mm/kasan_init.c
-> @@ -530,6 +530,7 @@ void __init kasan_init(void)
->   
->   	memset(kasan_early_shadow_page, KASAN_SHADOW_INIT, PAGE_SIZE);
->   	init_task.kasan_depth = 0;
-> +	kasan_init_generic();
+Even if the data is transferred in a zero-copy manner, the AF_ALG
+version still has a lot of overhead from system calls.  Running the
+exact same PPC optimized code in userspace would of course be faster.
 
+Now, it sounds like you don't have the PPC optimized MD5 code in
+userspace, and that's why you're measuring the AF_ALG based md5sum to be
+faster.  But that's just the wrong design, and it does not give optimal
+performance.  The fact that the kernel allows access to software code
+via AF_ALG is basically a bug.
 
-This is right before actually setting the new mapping to the mmu (which 
-is done below by setting a register called SATP). It does not seem to be 
-a problem though, just wanted to let you know.
+For now we'll keep the PPC optimized MD5 around in the kernel to
+accomodate userspace code that is depending on this bug, but for future
+reference we don't add new software implementations purely for use by
+userspace.  (And BTW this is nothing new; this has already been the
+policy for many years.)  Please work to bring the optimized code you
+need into userspace.  For example contribute it to OpenSSL.
 
-It boots fine with defconfig + kasan inline so:
-
-Tested-by: Alexandre Ghiti <alexghiti@rivosinc.com>
-
-Thanks,
-
-Alex
-
-
->   
->   	csr_write(CSR_SATP, PFN_DOWN(__pa(swapper_pg_dir)) | satp_mode);
->   	local_flush_tlb_all();
+- Eric
 
