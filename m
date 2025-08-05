@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-10679-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10680-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2E79AC87FD1
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Aug 2025 22:30:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 25962C87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  5 Aug 2025 22:30:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bxSmR1P5Dz3bpx;
-	Wed,  6 Aug 2025 08:30:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754433014;
-	cv=none; b=bM1k4iB+EF91C/9LP1Q4FjL/qlZt06yN9kYHGH/4boFrkQ2Zcy7MtyR5KBSuTAFoki5NuKjvqRiHZcq0KHKiPHuR2X0ntAU1WjtYKfQ8ITV4W1wwaFam+c2jxwU5ELIlbXpgLxNAP0qKk+h3nfnG7Hq+NyNoK+n+qO/ZWE0c+PMUOi5EyoG1+tEUPP8gBU9TxEedPZZLeO8PjaBEIRxi2Cm7bigwgdAeowX8wzC0q3PqWZkUJ1BcmOB/0iwz18AeHt7WzsDRXelWqxaGnge7kBGDgPqR1xsn6CtHA03IlFlKHby72E9F03pkx6b86guwsuMbK/jM2B+/AAgM70kPog==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bxSmS5X4Dz2ymc;
+	Wed,  6 Aug 2025 08:30:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754433016;
+	cv=none; b=DjaHs5TlGFbQoJGsGkES43X5mhK6owGCAy0Z+LPWiBvUxiQQT2jmwvbpgk45fHwFn0Wj6dWSjx6I4EHd87xL1APtJN8gxfR0iaazARC1w6NfO4PngHGvBVMcUn0rACe0Rgn9xc3Tanx9dEFSjXC5hEh9UdaK/J3f0CF8nRzXS+bz0deBzlikMcYoCXHS0l+FdTsyPYJlZtmc5ff1cxTYEPge41cYCZI7SDHKZw8KBXwfkolrNcXWxUpoJ9u7EcnFdCPwzXlCzA3ZnEuRGuTLsm2MitCjvsjk/64kbENAQXPkaSdPqhiQuWAhGW/dn1yJTtTcgG+fSxuFtdI6TVv8ag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754433014; c=relaxed/relaxed;
-	bh=4LXmQqcJBynvOEFthPkH8gIexprXbIn3fLM6G9j8mNo=;
+	t=1754433016; c=relaxed/relaxed;
+	bh=vYvOnIJVQoRlfrzXaXakbTrj+tnI5/rv9lIhA0dcR2E=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=IUZN8atvzfx2epePRAuEaL5uSgz3XQwZdN5vJHS9usLZpqbxtbZXcagxMW5epBaS+iCK0IMUgOIz/gPR+o4tJxoZoj+eZwBhQKhPmZ00zrAD6ViOdc3ivwksQXFnvyZzP5S69KMLuUQvb/HorZnCxbyjwXeb1aVY/6ojO6aDhq1pORXwbFZiavxDYNihPvvOtsPJjBIEr89pqc0JIqDGrhFj/rGLQ6teSlWUC8xFYEpXT4YTdJPHmGoE+C02NDhFXHRZjpUi/BsVYI3OGkXXxMcwNJnf0+Sav7ZN8qZrb7hUhcdjCpgtY2Nux6zFPQLYAPlE/sF7TzavSEzsS9PJKA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NM/B5cER; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=hokbg+6oND438TwQGL5SJl/xOYv7wVAoU5JHhaQ4KHnnMgWNmGuxRkJPw7idwFhGTegKxdRfrtfazx8d41HFcRKlzBHZKEoXH4OLALtQgalrQFtDyhZY2Mtaltos3zX9s5sX2J5QeGX2SUmbT821wc6zm+BDD9qWjIrbzhh0V6CmKTkqBGzAkZfeoZudCnfljNlMa96q6ZUB7mQ3d98V+3gasPp3oKG+dTQmO3vXWFJHxzritQD0Or7vJGBAB/xF6BIvNfdwdIMJp4DNf17FUomjnKQyh2F8GVAq1QUAxnDGF8dvhUIZw3qzGBrK0cIq38WcyQv3727dHzFX2KFomw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RSKW7I4L; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NM/B5cER;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RSKW7I4L;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bxSmN0KRtz2ymc
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bxSmP2ZLtz3bnq
 	for <linuxppc-dev@lists.ozlabs.org>; Wed,  6 Aug 2025 08:30:12 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 866CDA567E9;
-	Tue,  5 Aug 2025 22:30:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BB128C4CEF4;
-	Tue,  5 Aug 2025 22:30:08 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 63B8C45D86;
+	Tue,  5 Aug 2025 22:30:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BE1FFC4CEF4;
+	Tue,  5 Aug 2025 22:30:10 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1754433009;
-	bh=1MyX5/ScI+ABzLHp94uEiUWeHGKbS9SP8d6OkXKSCMU=;
+	s=k20201202; t=1754433011;
+	bh=boThjt8cR7TxwRjjaFjdaDJhkGbA4kE6Mndg6Kr8QuE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=NM/B5cER0kHM26PVRd5nsKUaz/6xEg3J0MAxmPDAYziStnyDLO6OqBjoCKDU05m1C
-	 jys9dP5LtFjHGTnaxTfOU/Ua8qJBFpyHVj80/br8jIsQQyqRbP53L8f/LBm65Y+97f
-	 PsKAFQmMiGvsWRMcrrV+zzjCHUO2BflRxLrZNM5s8c3CbyrfbdoPolcP0a7JXUMn0V
-	 etHV5/GqhZD4SQ4NYxgwn50Nsw3uQ248HAFWwtAbI5oSx+2iPxJXADWwf17S7a3Vmj
-	 3D62qWA1pG5Cm9uPj6XbTojhxBrv7T9i27VVjS9Qc0cqvWJfYmOt2/xfo1g5JJwv2V
-	 l/Wuov4vsgH8Q==
+	b=RSKW7I4L7nNMPftqpR3gqPEVjBLkgUbf4jfOejiYcOvrQzTTY6Na45OuQbsjxTrTi
+	 LgFnrzTt8k0+PmTr53GyzoYE5kSMR48pz+V8wTPlUaXoOKH2BEY+H385TQPPTiHnRR
+	 iMrj4yABBzlXQ5EA9lZuAImMTyh2DN4Hm0j9gasflky9rzaSDyRQwuBHPfmVrseXmn
+	 XEWFLAEFG5U/gondCiMw1cRi1+QH/hwfeVkJ+0v13FojgedTdBtjUN+f4v1ytNNnwB
+	 Gggw228sKUC3lFy5qYxnW4NzAijJH5A/lVaISUtgJyAJ61/B/TsVCQ24dAdvdOvJaR
+	 nmQIiDGYWRG8w==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -53,9 +53,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	sparclinux@vger.kernel.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH v2 4/7] lib/crypto: powerpc/md5: Migrate optimized code into library
-Date: Tue,  5 Aug 2025 15:28:52 -0700
-Message-ID: <20250805222855.10362-5-ebiggers@kernel.org>
+Subject: [PATCH v2 7/7] lib/crypto: tests: Add KUnit tests for MD5 and HMAC-MD5
+Date: Tue,  5 Aug 2025 15:28:55 -0700
+Message-ID: <20250805222855.10362-8-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20250805222855.10362-1-ebiggers@kernel.org>
 References: <20250805222855.10362-1-ebiggers@kernel.org>
@@ -74,266 +74,293 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Instead of exposing the powerpc-optimized MD5 code via powerpc-specific
-crypto_shash algorithms, instead just implement the md5_blocks() library
-function.  This is much simpler, it makes the MD5 library functions be
-powerpc-optimized, and it fixes the longstanding issue where the
-powerpc-optimized MD5 code was disabled by default.  MD5 still remains
-available through crypto_shash, but individual architectures no longer
-need to handle it.
+Add a KUnit test suite for the MD5 library functions, including the
+corresponding HMAC support.  The core test logic is in the
+previously-added hash-test-template.h.  This commit just adds the actual
+KUnit suite, and it adds the generated test vectors to the tree so that
+gen-hash-testvecs.py won't have to be run at build time.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/powerpc/configs/powernv_defconfig        |  1 -
- arch/powerpc/configs/ppc64_defconfig          |  1 -
- arch/powerpc/crypto/Kconfig                   |  8 --
- arch/powerpc/crypto/Makefile                  |  2 -
- arch/powerpc/crypto/md5-glue.c                | 99 -------------------
- lib/crypto/Kconfig                            |  1 +
- lib/crypto/Makefile                           |  1 +
- .../crypto => lib/crypto/powerpc}/md5-asm.S   |  0
- lib/crypto/powerpc/md5.h                      | 12 +++
- 9 files changed, 14 insertions(+), 111 deletions(-)
- delete mode 100644 arch/powerpc/crypto/md5-glue.c
- rename {arch/powerpc/crypto => lib/crypto/powerpc}/md5-asm.S (100%)
- create mode 100644 lib/crypto/powerpc/md5.h
+ lib/crypto/tests/Kconfig        |  10 ++
+ lib/crypto/tests/Makefile       |   1 +
+ lib/crypto/tests/md5-testvecs.h | 186 ++++++++++++++++++++++++++++++++
+ lib/crypto/tests/md5_kunit.c    |  39 +++++++
+ 4 files changed, 236 insertions(+)
+ create mode 100644 lib/crypto/tests/md5-testvecs.h
+ create mode 100644 lib/crypto/tests/md5_kunit.c
 
-diff --git a/arch/powerpc/configs/powernv_defconfig b/arch/powerpc/configs/powernv_defconfig
-index d06388b0f66e3..bd4685612de6d 100644
---- a/arch/powerpc/configs/powernv_defconfig
-+++ b/arch/powerpc/configs/powernv_defconfig
-@@ -318,11 +318,10 @@ CONFIG_FTR_FIXUP_SELFTEST=y
- CONFIG_MSI_BITMAP_SELFTEST=y
- CONFIG_XMON=y
- CONFIG_CRYPTO_BENCHMARK=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_HMAC=y
--CONFIG_CRYPTO_MD5_PPC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_WP512=m
- CONFIG_CRYPTO_ANUBIS=m
- CONFIG_CRYPTO_BLOWFISH=m
-diff --git a/arch/powerpc/configs/ppc64_defconfig b/arch/powerpc/configs/ppc64_defconfig
-index ce34597e9f3e1..2d92c11eea7e4 100644
---- a/arch/powerpc/configs/ppc64_defconfig
-+++ b/arch/powerpc/configs/ppc64_defconfig
-@@ -385,11 +385,10 @@ CONFIG_CRYPTO_TWOFISH=m
- CONFIG_CRYPTO_PCBC=m
- CONFIG_CRYPTO_MICHAEL_MIC=m
- CONFIG_CRYPTO_SHA256=y
- CONFIG_CRYPTO_WP512=m
- CONFIG_CRYPTO_LZO=m
--CONFIG_CRYPTO_MD5_PPC=m
- CONFIG_CRYPTO_AES_GCM_P10=m
- CONFIG_CRYPTO_DEV_NX=y
- CONFIG_CRYPTO_DEV_NX_ENCRYPT=m
- CONFIG_CRYPTO_DEV_VMX=y
- CONFIG_SYSTEM_TRUSTED_KEYRING=y
-diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
-index cfe39fc221cf8..f4b779c7352de 100644
---- a/arch/powerpc/crypto/Kconfig
-+++ b/arch/powerpc/crypto/Kconfig
-@@ -13,18 +13,10 @@ config CRYPTO_CURVE25519_PPC64
- 	  Curve25519 algorithm
+diff --git a/lib/crypto/tests/Kconfig b/lib/crypto/tests/Kconfig
+index de7e8babb6afc..c21d53fd4b0ce 100644
+--- a/lib/crypto/tests/Kconfig
++++ b/lib/crypto/tests/Kconfig
+@@ -1,7 +1,17 @@
+ # SPDX-License-Identifier: GPL-2.0-or-later
  
- 	  Architecture: PowerPC64
- 	  - Little-endian
++config CRYPTO_LIB_MD5_KUNIT_TEST
++	tristate "KUnit tests for MD5" if !KUNIT_ALL_TESTS
++	depends on KUNIT
++	default KUNIT_ALL_TESTS || CRYPTO_SELFTESTS
++	select CRYPTO_LIB_BENCHMARK_VISIBLE
++	select CRYPTO_LIB_MD5
++	help
++	  KUnit tests for the MD5 cryptographic hash function and its
++	  corresponding HMAC.
++
+ config CRYPTO_LIB_POLY1305_KUNIT_TEST
+ 	tristate "KUnit tests for Poly1305" if !KUNIT_ALL_TESTS
+ 	depends on KUNIT
+ 	default KUNIT_ALL_TESTS || CRYPTO_SELFTESTS
+ 	select CRYPTO_LIB_BENCHMARK_VISIBLE
+diff --git a/lib/crypto/tests/Makefile b/lib/crypto/tests/Makefile
+index 8601dccd6fdda..f6f82c6f9cb5d 100644
+--- a/lib/crypto/tests/Makefile
++++ b/lib/crypto/tests/Makefile
+@@ -1,6 +1,7 @@
+ # SPDX-License-Identifier: GPL-2.0-or-later
  
--config CRYPTO_MD5_PPC
--	tristate "Digests: MD5"
--	select CRYPTO_HASH
--	help
--	  MD5 message digest algorithm (RFC1321)
--
--	  Architecture: powerpc
--
- config CRYPTO_AES_PPC_SPE
- 	tristate "Ciphers: AES, modes: ECB/CBC/CTR/XTS (SPE)"
- 	depends on SPE
- 	select CRYPTO_SKCIPHER
- 	help
-diff --git a/arch/powerpc/crypto/Makefile b/arch/powerpc/crypto/Makefile
-index bc8fd27344b8b..9eb59dce67f36 100644
---- a/arch/powerpc/crypto/Makefile
-+++ b/arch/powerpc/crypto/Makefile
-@@ -4,17 +4,15 @@
- #
- # Arch-specific CryptoAPI modules.
- #
- 
- obj-$(CONFIG_CRYPTO_AES_PPC_SPE) += aes-ppc-spe.o
--obj-$(CONFIG_CRYPTO_MD5_PPC) += md5-ppc.o
- obj-$(CONFIG_CRYPTO_AES_GCM_P10) += aes-gcm-p10-crypto.o
- obj-$(CONFIG_CRYPTO_DEV_VMX_ENCRYPT) += vmx-crypto.o
- obj-$(CONFIG_CRYPTO_CURVE25519_PPC64) += curve25519-ppc64le.o
- 
- aes-ppc-spe-y := aes-spe-core.o aes-spe-keys.o aes-tab-4k.o aes-spe-modes.o aes-spe-glue.o
--md5-ppc-y := md5-asm.o md5-glue.o
- aes-gcm-p10-crypto-y := aes-gcm-p10-glue.o aes-gcm-p10.o ghashp10-ppc.o aesp10-ppc.o
- vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o aes_cbc.o aes_ctr.o aes_xts.o ghash.o
- curve25519-ppc64le-y := curve25519-ppc64le-core.o curve25519-ppc64le_asm.o
- 
- ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
-diff --git a/arch/powerpc/crypto/md5-glue.c b/arch/powerpc/crypto/md5-glue.c
-deleted file mode 100644
-index 204440a90cd84..0000000000000
---- a/arch/powerpc/crypto/md5-glue.c
-+++ /dev/null
-@@ -1,99 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0-or-later
--/*
-- * Glue code for MD5 implementation for PPC assembler
-- *
-- * Based on generic implementation.
-- *
-- * Copyright (c) 2015 Markus Stockhausen <stockhausen@collogia.de>
-- */
--
--#include <crypto/internal/hash.h>
--#include <crypto/md5.h>
--#include <linux/kernel.h>
--#include <linux/module.h>
--#include <linux/string.h>
--
--extern void ppc_md5_transform(u32 *state, const u8 *src, u32 blocks);
--
--static int ppc_md5_init(struct shash_desc *desc)
--{
--	struct md5_state *sctx = shash_desc_ctx(desc);
--
--	sctx->hash[0] = MD5_H0;
--	sctx->hash[1] = MD5_H1;
--	sctx->hash[2] = MD5_H2;
--	sctx->hash[3] =	MD5_H3;
--	sctx->byte_count = 0;
--
--	return 0;
--}
--
--static int ppc_md5_update(struct shash_desc *desc, const u8 *data,
--			unsigned int len)
--{
--	struct md5_state *sctx = shash_desc_ctx(desc);
--
--	sctx->byte_count += round_down(len, MD5_HMAC_BLOCK_SIZE);
--	ppc_md5_transform(sctx->hash, data, len >> 6);
--	return len - round_down(len, MD5_HMAC_BLOCK_SIZE);
--}
--
--static int ppc_md5_finup(struct shash_desc *desc, const u8 *src,
--			 unsigned int offset, u8 *out)
--{
--	struct md5_state *sctx = shash_desc_ctx(desc);
--	__le64 block[MD5_BLOCK_WORDS] = {};
--	u8 *p = memcpy(block, src, offset);
--	__le32 *dst = (__le32 *)out;
--	__le64 *pbits;
--
--	src = p;
--	p += offset;
--	*p++ = 0x80;
--	sctx->byte_count += offset;
--	pbits = &block[(MD5_BLOCK_WORDS / (offset > 55 ? 1 : 2)) - 1];
--	*pbits = cpu_to_le64(sctx->byte_count << 3);
--	ppc_md5_transform(sctx->hash, src, (pbits - block + 1) / 8);
--	memzero_explicit(block, sizeof(block));
--
--	dst[0] = cpu_to_le32(sctx->hash[0]);
--	dst[1] = cpu_to_le32(sctx->hash[1]);
--	dst[2] = cpu_to_le32(sctx->hash[2]);
--	dst[3] = cpu_to_le32(sctx->hash[3]);
--	return 0;
--}
--
--static struct shash_alg alg = {
--	.digestsize	=	MD5_DIGEST_SIZE,
--	.init		=	ppc_md5_init,
--	.update		=	ppc_md5_update,
--	.finup		=	ppc_md5_finup,
--	.descsize	=	MD5_STATE_SIZE,
--	.base		=	{
--		.cra_name	=	"md5",
--		.cra_driver_name=	"md5-ppc",
--		.cra_priority	=	200,
--		.cra_flags	=	CRYPTO_AHASH_ALG_BLOCK_ONLY,
--		.cra_blocksize	=	MD5_HMAC_BLOCK_SIZE,
--		.cra_module	=	THIS_MODULE,
--	}
--};
--
--static int __init ppc_md5_mod_init(void)
--{
--	return crypto_register_shash(&alg);
--}
--
--static void __exit ppc_md5_mod_fini(void)
--{
--	crypto_unregister_shash(&alg);
--}
--
--module_init(ppc_md5_mod_init);
--module_exit(ppc_md5_mod_fini);
--
--MODULE_LICENSE("GPL");
--MODULE_DESCRIPTION("MD5 Secure Hash Algorithm, PPC assembler");
--
--MODULE_ALIAS_CRYPTO("md5");
--MODULE_ALIAS_CRYPTO("md5-ppc");
-diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
-index fe2910c25f0ba..cfbbfaae9fe29 100644
---- a/lib/crypto/Kconfig
-+++ b/lib/crypto/Kconfig
-@@ -109,10 +109,11 @@ config CRYPTO_LIB_MD5
- 
- config CRYPTO_LIB_MD5_ARCH
- 	bool
- 	depends on CRYPTO_LIB_MD5 && !UML
- 	default y if MIPS && CPU_CAVIUM_OCTEON
-+	default y if PPC
- 
- config CRYPTO_LIB_POLY1305_RSIZE
- 	int
- 	default 2 if MIPS
- 	default 11 if X86_64
-diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
-index 25443e9ca7465..8360054481b84 100644
---- a/lib/crypto/Makefile
-+++ b/lib/crypto/Makefile
-@@ -63,10 +63,11 @@ libdes-y					:= des.o
- 
- obj-$(CONFIG_CRYPTO_LIB_MD5) += libmd5.o
- libmd5-y := md5.o
- ifeq ($(CONFIG_CRYPTO_LIB_MD5_ARCH),y)
- CFLAGS_md5.o += -I$(src)/$(SRCARCH)
-+libmd5-$(CONFIG_PPC) += powerpc/md5-asm.o
- endif # CONFIG_CRYPTO_LIB_MD5_ARCH
- 
- ################################################################################
- 
- obj-$(CONFIG_CRYPTO_LIB_POLY1305)		+= libpoly1305.o
-diff --git a/arch/powerpc/crypto/md5-asm.S b/lib/crypto/powerpc/md5-asm.S
-similarity index 100%
-rename from arch/powerpc/crypto/md5-asm.S
-rename to lib/crypto/powerpc/md5-asm.S
-diff --git a/lib/crypto/powerpc/md5.h b/lib/crypto/powerpc/md5.h
++obj-$(CONFIG_CRYPTO_LIB_MD5_KUNIT_TEST) += md5_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_POLY1305_KUNIT_TEST) += poly1305_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_SHA1_KUNIT_TEST) += sha1_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_SHA256_KUNIT_TEST) += sha224_kunit.o sha256_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_SHA512_KUNIT_TEST) += sha384_kunit.o sha512_kunit.o
+diff --git a/lib/crypto/tests/md5-testvecs.h b/lib/crypto/tests/md5-testvecs.h
 new file mode 100644
-index 0000000000000..540b08e34d1d5
+index 0000000000000..be6727feb2966
 --- /dev/null
-+++ b/lib/crypto/powerpc/md5.h
-@@ -0,0 +1,12 @@
++++ b/lib/crypto/tests/md5-testvecs.h
+@@ -0,0 +1,186 @@
 +/* SPDX-License-Identifier: GPL-2.0-or-later */
++/* This file was generated by: ./scripts/crypto/gen-hash-testvecs.py md5 */
++
++static const struct {
++	size_t data_len;
++	u8 digest[MD5_DIGEST_SIZE];
++} hash_testvecs[] = {
++	{
++		.data_len = 0,
++		.digest = {
++			0xd4, 0x1d, 0x8c, 0xd9, 0x8f, 0x00, 0xb2, 0x04,
++			0xe9, 0x80, 0x09, 0x98, 0xec, 0xf8, 0x42, 0x7e,
++		},
++	},
++	{
++		.data_len = 1,
++		.digest = {
++			0x16, 0x7b, 0x86, 0xf2, 0x1d, 0xf3, 0x76, 0xc9,
++			0x6f, 0x10, 0xa0, 0x61, 0x5b, 0x14, 0x20, 0x0b,
++		},
++	},
++	{
++		.data_len = 2,
++		.digest = {
++			0x2d, 0x30, 0x96, 0xc7, 0x43, 0x40, 0xed, 0xb2,
++			0xfb, 0x84, 0x63, 0x9a, 0xec, 0xc7, 0x3c, 0x3c,
++		},
++	},
++	{
++		.data_len = 3,
++		.digest = {
++			0xe5, 0x0f, 0xce, 0xe0, 0xc8, 0xff, 0x4e, 0x08,
++			0x5e, 0x19, 0xe5, 0xf2, 0x08, 0x11, 0x19, 0x16,
++		},
++	},
++	{
++		.data_len = 16,
++		.digest = {
++			0xe8, 0xca, 0x29, 0x05, 0x2f, 0xd1, 0xf3, 0x99,
++			0x40, 0x71, 0xf5, 0xc2, 0xf7, 0xf8, 0x17, 0x3e,
++		},
++	},
++	{
++		.data_len = 32,
++		.digest = {
++			0xe3, 0x20, 0xc1, 0xd8, 0x21, 0x14, 0x44, 0x59,
++			0x1a, 0xf5, 0x91, 0xaf, 0x69, 0xbe, 0x93, 0x9d,
++		},
++	},
++	{
++		.data_len = 48,
++		.digest = {
++			0xfb, 0x06, 0xb0, 0xf0, 0x00, 0x10, 0x4b, 0x68,
++			0x3d, 0x75, 0xf9, 0x70, 0xde, 0xbb, 0x32, 0x16,
++		},
++	},
++	{
++		.data_len = 49,
++		.digest = {
++			0x52, 0x86, 0x48, 0x8b, 0xae, 0x91, 0x7c, 0x4e,
++			0xc2, 0x2a, 0x69, 0x07, 0x35, 0xcc, 0xb2, 0x88,
++		},
++	},
++	{
++		.data_len = 63,
++		.digest = {
++			0xfa, 0xd3, 0xf6, 0xe6, 0x7b, 0x1a, 0xc6, 0x05,
++			0x73, 0x35, 0x02, 0xab, 0xc7, 0xb3, 0x47, 0xcb,
++		},
++	},
++	{
++		.data_len = 64,
++		.digest = {
++			0xc5, 0x59, 0x29, 0xe9, 0x0a, 0x4a, 0x86, 0x43,
++			0x7c, 0xaf, 0xdf, 0x83, 0xd3, 0xb8, 0x33, 0x5f,
++		},
++	},
++	{
++		.data_len = 65,
++		.digest = {
++			0x80, 0x05, 0x75, 0x39, 0xec, 0x44, 0x8a, 0x81,
++			0xe7, 0x6e, 0x8d, 0xd1, 0xc6, 0xeb, 0xc2, 0xf0,
++		},
++	},
++	{
++		.data_len = 127,
++		.digest = {
++			0x3f, 0x02, 0xe8, 0xc6, 0xb8, 0x6a, 0x39, 0xc3,
++			0xa4, 0x1c, 0xd9, 0x8f, 0x4a, 0x71, 0x40, 0x30,
++		},
++	},
++	{
++		.data_len = 128,
++		.digest = {
++			0x89, 0x4f, 0x79, 0x3e, 0xff, 0x0c, 0x22, 0x60,
++			0xa2, 0xdc, 0x10, 0x5f, 0x23, 0x0a, 0xe7, 0xc6,
++		},
++	},
++	{
++		.data_len = 129,
++		.digest = {
++			0x06, 0x56, 0x61, 0xb8, 0x8a, 0x82, 0x77, 0x1b,
++			0x2c, 0x35, 0xb8, 0x9f, 0xd6, 0xf7, 0xbd, 0x5a,
++		},
++	},
++	{
++		.data_len = 256,
++		.digest = {
++			0x5d, 0xdf, 0x7d, 0xc8, 0x43, 0x96, 0x3b, 0xdb,
++			0xc7, 0x0e, 0x44, 0x42, 0x23, 0xf7, 0xed, 0xdf,
++		},
++	},
++	{
++		.data_len = 511,
++		.digest = {
++			0xf6, 0x5f, 0x26, 0x51, 0x8a, 0x5a, 0x46, 0x8f,
++			0x48, 0x72, 0x90, 0x74, 0x9d, 0x87, 0xbd, 0xdf,
++		},
++	},
++	{
++		.data_len = 513,
++		.digest = {
++			0xd8, 0x2c, 0xc9, 0x76, 0xfa, 0x67, 0x2e, 0xa6,
++			0xc8, 0x12, 0x4a, 0x64, 0xaa, 0x0b, 0x3d, 0xbd,
++		},
++	},
++	{
++		.data_len = 1000,
++		.digest = {
++			0xe2, 0x7e, 0xb4, 0x5f, 0xe1, 0x74, 0x51, 0xfc,
++			0xe0, 0xc8, 0xd5, 0xe6, 0x8b, 0x40, 0xd2, 0x0e,
++		},
++	},
++	{
++		.data_len = 3333,
++		.digest = {
++			0xcd, 0x7d, 0x56, 0xa9, 0x4c, 0x47, 0xea, 0xc2,
++			0x34, 0x0b, 0x84, 0x05, 0xf9, 0xad, 0xbb, 0x46,
++		},
++	},
++	{
++		.data_len = 4096,
++		.digest = {
++			0x63, 0x6e, 0x58, 0xb3, 0x94, 0x6b, 0x83, 0x5f,
++			0x1f, 0x0e, 0xd3, 0x66, 0x78, 0x71, 0x98, 0x42,
++		},
++	},
++	{
++		.data_len = 4128,
++		.digest = {
++			0x9d, 0x68, 0xfc, 0x26, 0x8b, 0x4c, 0xa8, 0xe7,
++			0x30, 0x0b, 0x19, 0x52, 0x6e, 0xa5, 0x65, 0x1c,
++		},
++	},
++	{
++		.data_len = 4160,
++		.digest = {
++			0x1c, 0xaa, 0x7d, 0xee, 0x91, 0x01, 0xe2, 0x5a,
++			0xec, 0xe9, 0xde, 0x57, 0x0a, 0xb6, 0x4c, 0x2f,
++		},
++	},
++	{
++		.data_len = 4224,
++		.digest = {
++			0x1b, 0x31, 0xe3, 0x14, 0x07, 0x16, 0x17, 0xc6,
++			0x98, 0x79, 0x88, 0x23, 0xb6, 0x3b, 0x25, 0xc4,
++		},
++	},
++	{
++		.data_len = 16384,
++		.digest = {
++			0xc6, 0x3d, 0x56, 0x90, 0xf0, 0xf6, 0xe6, 0x50,
++			0xf4, 0x76, 0x78, 0x67, 0xa3, 0xdd, 0x62, 0x7b,
++		},
++	},
++};
++
++static const u8 hash_testvec_consolidated[MD5_DIGEST_SIZE] = {
++	0x70, 0x86, 0x9e, 0x6c, 0xa4, 0xc6, 0x71, 0x43,
++	0x26, 0x02, 0x1b, 0x3f, 0xfd, 0x56, 0x9f, 0xa6,
++};
++
++static const u8 hmac_testvec_consolidated[MD5_DIGEST_SIZE] = {
++	0x10, 0x02, 0x74, 0xf6, 0x4d, 0xb3, 0x3c, 0xc7,
++	0xa1, 0xf7, 0xe6, 0xd4, 0x32, 0x64, 0xfa, 0x6d,
++};
+diff --git a/lib/crypto/tests/md5_kunit.c b/lib/crypto/tests/md5_kunit.c
+new file mode 100644
+index 0000000000000..38bd52c25ae3e
+--- /dev/null
++++ b/lib/crypto/tests/md5_kunit.c
+@@ -0,0 +1,39 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
 +/*
-+ * MD5 optimized for PowerPC
++ * Copyright 2025 Google LLC
 + */
++#include <crypto/md5.h>
++#include "md5-testvecs.h"
 +
-+void ppc_md5_transform(u32 *state, const u8 *data, size_t nblocks);
++#define HASH md5
++#define HASH_CTX md5_ctx
++#define HASH_SIZE MD5_DIGEST_SIZE
++#define HASH_INIT md5_init
++#define HASH_UPDATE md5_update
++#define HASH_FINAL md5_final
++#define HMAC_KEY hmac_md5_key
++#define HMAC_CTX hmac_md5_ctx
++#define HMAC_PREPAREKEY hmac_md5_preparekey
++#define HMAC_INIT hmac_md5_init
++#define HMAC_UPDATE hmac_md5_update
++#define HMAC_FINAL hmac_md5_final
++#define HMAC hmac_md5
++#define HMAC_USINGRAWKEY hmac_md5_usingrawkey
++#include "hash-test-template.h"
 +
-+static void md5_blocks(struct md5_block_state *state,
-+		       const u8 *data, size_t nblocks)
-+{
-+	ppc_md5_transform(state->h, data, nblocks);
-+}
++static struct kunit_case hash_test_cases[] = {
++	HASH_KUNIT_CASES,
++	KUNIT_CASE(benchmark_hash),
++	{},
++};
++
++static struct kunit_suite hash_test_suite = {
++	.name = "md5",
++	.test_cases = hash_test_cases,
++	.suite_init = hash_suite_init,
++	.suite_exit = hash_suite_exit,
++};
++kunit_test_suite(hash_test_suite);
++
++MODULE_DESCRIPTION("KUnit tests and benchmark for MD5 and HMAC-MD5");
++MODULE_LICENSE("GPL");
 -- 
 2.50.1
 
