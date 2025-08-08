@@ -1,72 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-10746-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10747-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1987C87FCF
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  7 Aug 2025 22:22:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 422A2C87FD3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Aug 2025 05:24:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4byhV22cbGz2xQ4;
-	Fri,  8 Aug 2025 08:22:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754605322;
-	cv=none; b=Q4ME6UvaiLoEvnDH+QX7wGIAJ9tYYt4ed9gjSMIonb9+u7oqm/ueqqZ487kb3uVrv/vM3hFlkjZZqC66KJzrIWvG0QKRSLn5OQezoIobLH0SBJcnk79ocxdEZHJ/x2VYbA43JMfkH3NNx5E8D09J33i6HOPt5nd84CucmmTXiusv8DyFR0bmZjbupJYr90ygPP0d80jABt5aC7BXH1bGBiJzNLdwcQn4vHL7KcYSnYEeOLQAvpJt8N94HXHr11/Bs2A/aBOV7iJ1pkrGU8YODsjx76Fc23++wZDYMGV95r+x+UW8BEDgFEpRRD/KbOYO2AppZK4dPoO/ACuaXMVq6w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bysrv68DYz30WY;
+	Fri,  8 Aug 2025 15:23:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754630639;
+	cv=none; b=jZrHhCshv9HOQoa+zCS/zrZpKr1BOa5Tv0MytVRo5BGRl1sACkHcF5e3VSMAWOGB/c1eUEy1PP/yg3vTf222zh/GIX/Ls6N2IZaOPGgQsGZmvc6/bViN8pOcEoy0uvTsHnLaJcLETPvhTvLID28E3kvNB53QUCl5u38ZRnAuy1hUBEReYDr2tkWFNKo3iKa5xYsN3xmaPGnWfZEwjI2H3nb8vqnvoTDIwNV8H9Dby2q/c1lKGd+WeD1dosNXtHk1fWzGm5lkfyrg/1uPaT/c9b4f0nDoUo4S54QIeAEmQE0lV0kAeSywusb2/h05H5Udk/+xJm+d1N7Wki472XAWsw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754605322; c=relaxed/relaxed;
-	bh=r+v1685pW9f8pk9h8mH3lG3VKN/7ObemHtRwYuDpHZk=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=YbWZG9p3fVa5NP/DULPWkN2ct5uVLTKhG5TVHtXpB1O/QIdFD0xZ7W39b937dziJlNXCMmiL+kUgRDeWhE4LVlgZe0+xcpJtMFk2/U/0PyCsPcj8gjS/KZwctcoX6x0Q8nkOX8v/DIAAau4aVNirYY9WpnAxTlHkdit2jfssI5PMNZCTWzMF7xn4umWJseEcJL+dQKTnXeYDETJ7m3sfoTx7tWvRV8NkfL9aN8Ilzuk7dNVC1KiaWb3teMuYOCLo99CyBU+98bYMqDtlsqwW2LIhk2rOLOJGsz3eZpbGHXz0pvaNU9cgjopJYeKSTbOL6XAc0yshxVmeGOxOhQduUw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=J3LNqbPY; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=alexei.starovoitov@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=J3LNqbPY;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42d; helo=mail-wr1-x42d.google.com; envelope-from=alexei.starovoitov@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wr1-x42d.google.com (mail-wr1-x42d.google.com [IPv6:2a00:1450:4864:20::42d])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4byhV04h06z2xcD
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2025 08:21:59 +1000 (AEST)
-Received: by mail-wr1-x42d.google.com with SMTP id ffacd0b85a97d-3b7886bee77so1179678f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 07 Aug 2025 15:21:59 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1754605315; x=1755210115; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=r+v1685pW9f8pk9h8mH3lG3VKN/7ObemHtRwYuDpHZk=;
-        b=J3LNqbPY9jPuNBiw8b0Ur0xkHqSKZmj0a7fFeoMDrBfB4TTIIx7VLJv5utRgpBHlhx
-         AaSmPfu7McyaRlLQj1BSpGAnV4FH74Km/1lcdVnclRqAJg2vVsSlSw1FH5f6nJlZ7Ato
-         H93YFZ4vqOMvbeUlOt0VNiHmFrUPKbvq/LcH0bRRDGmBAM9eHzUEZ0b094V/Mm0ChAnB
-         J74OPoDRkUUQW6OXXb4RST0H+0xHmkm79Sxrh0ZpJdIDuaLDRkvU6lDydfb/BGtv1aR3
-         PNzs9vtsX6YDt3Qza9aA+o10G9zq9XJnW+hUYjo8RGzaTNB15gxISR/qvIRVGmmF+5vv
-         LDWg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1754605315; x=1755210115;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=r+v1685pW9f8pk9h8mH3lG3VKN/7ObemHtRwYuDpHZk=;
-        b=ndxVU2PdYBjLVtoketk5WBAk5yLV0xQmzhExISVkhDdR8di6nNsu8YgTyNyRUGZuRL
-         gY0Zg2Ywvpmi4DpLCiIqpNHY+o8wmJMiVjPxLK/Vwfg+GbQGAfpzBnGXtsx5Hn683MXg
-         4pxXp75f/T88m94HhEWyNaFpRi2uCvmbYhSylSmTWpuRLzRmNwJiLYu7HOqpO1jSyObE
-         EjwmrqKXIw/PgnfRi34epufxebYrNSsM1cu3wHn0xdioqU6lxhu+Y3yPC6JaPIXR6MNh
-         DRnKjak4zZ/N8a83bh8NRcExJmzxNp3XPK/WtzYVx9J56YbRoMIoo5EeU+wpP2D+I5R4
-         qeDA==
-X-Forwarded-Encrypted: i=1; AJvYcCXBx+UadJSB0YU/PdLXaCGZobHAB9iEWQplVvJYYjHwTY4ZlWsy+T3Is/PSwTRkuGmYx+HwXc6YBrapcYk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YytURplIf+M488uOSuR3ql+BHm3vMlRGIkaZBHQ7EAEGYNA8m2c
-	POHFHiJeMbyt1OWFGvDcWa7EQjjYCikPfLGLGfKyym/VJK+wmWpvNMJHJ23X24HheaAYjwyEdpz
-	beNUn7MqOv5RueEeSUDzA3XsUgj2bG74=
-X-Gm-Gg: ASbGncsMKRwY7hijyMbwkwClp82WFoY3uj03uw9Sk0XZonzxo6KAlqDygVoU8X/V56w
-	IFvo2ctItpPDFt7h2bzTUWQQ87J0jK3g3MKBrAJ95jjcUjYYmiEWetzHpqLvyP0xRSMPEB/CjVJ
-	2pEWuxblhvwHCOHax7EdHP9PiLUvHYjfaa+sqbjS5ldlObtLgU/M6+CJA+NWbaNSjaE4KsrnC7u
-	9ewGIK0szdcTVfBU0Jo5l8sRr0lzGHLi1PR
-X-Google-Smtp-Source: AGHT+IEUMHq7iW9MQ3cUOdQooyT7Txw/L00E2hEjDh9Gsvi8bdp6Bx2NyxY2bVc2+H/vdUoj0T9e6lrqJ8yqH6vT9m4=
-X-Received: by 2002:a05:6000:1785:b0:3b8:d16a:a4a5 with SMTP id
- ffacd0b85a97d-3b900905a8amr671383f8f.0.1754605314929; Thu, 07 Aug 2025
- 15:21:54 -0700 (PDT)
+	t=1754630639; c=relaxed/relaxed;
+	bh=PR3mXTvm1TEbk8uyyZeqYNJCeZ39LQ5LRG5oWb2m4C0=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=XUU1kEJCVHUDYBQe0WvD+dnhjxGe47CmqoPgOD6T/PyQDTx1fqP3o6uXRIFZLpPCY/gv8xUmvyhIboelALLowX51nakkskVzuQP/WsxxdXoMUJ+jEdrPbMlXG4eMwTWl1VJE2tFojvWRPe04ObGYY4+Yt3tB1hAdoRDDZQbUsYiypgW0K4x0fsJckgo2NYYKqa51ZJkl5EnKd63Te79fbKd4TvC40z1IXQQGbBVg/y8vbaKE6o5BZuB4Z2YUkoRPZEjmNesjPqaPSRl/40Ov2pLu6C7/AQ3c8i1VBEUruRNBoChgfLjOKne+iOAgAsGWDxHSlPpknuzT+thaJZTFXQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bysrt6jSRz30Vl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2025 15:23:57 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4bysTv1SGvz9sRs;
+	Fri,  8 Aug 2025 07:07:31 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 136VSEc6Znrg; Fri,  8 Aug 2025 07:07:31 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4bysTv0NP1z9sRk;
+	Fri,  8 Aug 2025 07:07:31 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id E9F118B770;
+	Fri,  8 Aug 2025 07:07:30 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id ibwVE1n70MLp; Fri,  8 Aug 2025 07:07:30 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id E61968B763;
+	Fri,  8 Aug 2025 07:07:28 +0200 (CEST)
+Message-ID: <07ffb27c-3416-43c9-a50a-164a76e5ab60@csgroup.eu>
+Date: Fri, 8 Aug 2025 07:07:28 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,69 +58,148 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250805062747.3479221-1-skb99@linux.ibm.com> <20250805062747.3479221-7-skb99@linux.ibm.com>
-In-Reply-To: <20250805062747.3479221-7-skb99@linux.ibm.com>
-From: Alexei Starovoitov <alexei.starovoitov@gmail.com>
-Date: Thu, 7 Aug 2025 15:21:42 -0700
-X-Gm-Features: Ac12FXz4ijaJwj8PQscV-ujyMkfM3WbQzkOj7RycHgVLmD9z3oTypfADROiDZ3s
-Message-ID: <CAADnVQ+BoEMQ3i01YpzdNPAaL_mdNogkvHp0Ef73TBG8w726Zw@mail.gmail.com>
-Subject: Re: [bpf-next 6/6] selftests/bpf: Fix arena_spin_lock selftest failure
-To: Saket Kumar Bhaskar <skb99@linux.ibm.com>
-Cc: bpf <bpf@vger.kernel.org>, ppc-dev <linuxppc-dev@lists.ozlabs.org>, 
-	"open list:KERNEL SELFTEST FRAMEWORK" <linux-kselftest@vger.kernel.org>, LKML <linux-kernel@vger.kernel.org>, 
-	Hari Bathini <hbathini@linux.ibm.com>, sachinpb@linux.ibm.com, 
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Andrii Nakryiko <andrii@kernel.org>, Eduard <eddyz87@gmail.com>, 
-	Mykola Lysenko <mykolal@fb.com>, Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
-	Martin KaFai Lau <martin.lau@linux.dev>, Song Liu <song@kernel.org>, 
-	Yonghong Song <yonghong.song@linux.dev>, John Fastabend <john.fastabend@gmail.com>, 
-	KP Singh <kpsingh@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>, Hao Luo <haoluo@google.com>, 
-	Jiri Olsa <jolsa@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	"Naveen N. Rao" <naveen@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	Kumar Kartikeya Dwivedi <memxor@gmail.com>, Ilya Leoshkevich <iii@linux.ibm.com>, Shuah Khan <shuah@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5 2/2] kasan: call kasan_init_generic in kasan_init
+To: Sabyrzhan Tasbolatov <snovitoll@gmail.com>, ryabinin.a.a@gmail.com,
+ bhe@redhat.com, hca@linux.ibm.com, andreyknvl@gmail.com,
+ akpm@linux-foundation.org, zhangqing@loongson.cn, chenhuacai@loongson.cn,
+ davidgow@google.co, glider@google.com, dvyukov@google.com
+Cc: alex@ghiti.fr, agordeev@linux.ibm.com, vincenzo.frascino@arm.com,
+ elver@google.com, kasan-dev@googlegroups.com,
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+ loongarch@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-um@lists.infradead.org, linux-mm@kvack.org,
+ Alexandre Ghiti <alexghiti@rivosinc.com>
+References: <20250807194012.631367-1-snovitoll@gmail.com>
+ <20250807194012.631367-3-snovitoll@gmail.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <20250807194012.631367-3-snovitoll@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Mon, Aug 4, 2025 at 11:29=E2=80=AFPM Saket Kumar Bhaskar <skb99@linux.ib=
-m.com> wrote:
->
-> @@ -60,9 +65,16 @@ static void test_arena_spin_lock_size(int size)
->                 return;
->         }
->
-> -       skel =3D arena_spin_lock__open_and_load();
-> -       if (!ASSERT_OK_PTR(skel, "arena_spin_lock__open_and_load"))
-> +       skel =3D arena_spin_lock__open();
-> +       if (!ASSERT_OK_PTR(skel, "arena_spin_lock__open"))
->                 return;
-> +
-> +       skel->rodata->nr_cpus =3D get_nprocs();
 
-...
 
-> --- a/tools/testing/selftests/bpf/progs/bpf_arena_spin_lock.h
-> +++ b/tools/testing/selftests/bpf/progs/bpf_arena_spin_lock.h
-> @@ -20,8 +20,6 @@
->  #define __arena __attribute__((address_space(1)))
->  #endif
->
-> -extern unsigned long CONFIG_NR_CPUS __kconfig;
-> -
->  /*
->   * Typically, we'd just rely on the definition in vmlinux.h for qspinloc=
-k, but
->   * PowerPC overrides the definition to define lock->val as u32 instead o=
-f
-> @@ -494,7 +492,7 @@ static __always_inline int arena_spin_lock(arena_spin=
-lock_t __arena *lock)
->  {
->         int val =3D 0;
->
-> -       if (CONFIG_NR_CPUS > 1024)
-> +       if (nr_cpus > 1024)
->                 return -EOPNOTSUPP;
+Le 07/08/2025 à 21:40, Sabyrzhan Tasbolatov a écrit :
+> Call kasan_init_generic() which handles Generic KASAN initialization.
+> For architectures that do not select ARCH_DEFER_KASAN,
+> this will be a no-op for the runtime flag but will
+> print the initialization banner.
+> 
+> For SW_TAGS and HW_TAGS modes, their respective init functions will
+> handle the flag enabling, if they are enabled/implemented.
+> 
+> Closes: https://bugzilla.kernel.org/show_bug.cgi?id=217049
+> Signed-off-by: Sabyrzhan Tasbolatov <snovitoll@gmail.com>
+> Tested-by: Alexandre Ghiti <alexghiti@rivosinc.com> # riscv
+> Acked-by: Alexander Gordeev <agordeev@linux.ibm.com> # s390
+> ---
+> Changes in v5:
+> - Unified arch patches into a single one, where we just call
+> 	kasan_init_generic()
+> - Added Tested-by tag for riscv (tested the same change in v4)
+> - Added Acked-by tag for s390 (tested the same change in v4)
+> ---
+>   arch/arm/mm/kasan_init.c    | 2 +-
+>   arch/arm64/mm/kasan_init.c  | 4 +---
+>   arch/riscv/mm/kasan_init.c  | 1 +
+>   arch/s390/kernel/early.c    | 3 ++-
+>   arch/x86/mm/kasan_init_64.c | 2 +-
+>   arch/xtensa/mm/kasan_init.c | 2 +-
+>   6 files changed, 7 insertions(+), 7 deletions(-)
+> 
+> diff --git a/arch/arm/mm/kasan_init.c b/arch/arm/mm/kasan_init.c
+> index 111d4f70313..c6625e808bf 100644
+> --- a/arch/arm/mm/kasan_init.c
+> +++ b/arch/arm/mm/kasan_init.c
+> @@ -300,6 +300,6 @@ void __init kasan_init(void)
+>   	local_flush_tlb_all();
+>   
+>   	memset(kasan_early_shadow_page, 0, PAGE_SIZE);
+> -	pr_info("Kernel address sanitizer initialized\n");
+>   	init_task.kasan_depth = 0;
+> +	kasan_init_generic();
+>   }
+> diff --git a/arch/arm64/mm/kasan_init.c b/arch/arm64/mm/kasan_init.c
+> index d541ce45dae..abeb81bf6eb 100644
+> --- a/arch/arm64/mm/kasan_init.c
+> +++ b/arch/arm64/mm/kasan_init.c
+> @@ -399,14 +399,12 @@ void __init kasan_init(void)
+>   {
+>   	kasan_init_shadow();
+>   	kasan_init_depth();
+> -#if defined(CONFIG_KASAN_GENERIC)
+> +	kasan_init_generic();
+>   	/*
+>   	 * Generic KASAN is now fully initialized.
+>   	 * Software and Hardware Tag-Based modes still require
+>   	 * kasan_init_sw_tags() and kasan_init_hw_tags() correspondingly.
+>   	 */
+> -	pr_info("KernelAddressSanitizer initialized (generic)\n");
+> -#endif
+>   }
+>   
+>   #endif /* CONFIG_KASAN_GENERIC || CONFIG_KASAN_SW_TAGS */
+> diff --git a/arch/riscv/mm/kasan_init.c b/arch/riscv/mm/kasan_init.c
+> index 41c635d6aca..ba2709b1eec 100644
+> --- a/arch/riscv/mm/kasan_init.c
+> +++ b/arch/riscv/mm/kasan_init.c
+> @@ -530,6 +530,7 @@ void __init kasan_init(void)
+>   
+>   	memset(kasan_early_shadow_page, KASAN_SHADOW_INIT, PAGE_SIZE);
+>   	init_task.kasan_depth = 0;
+> +	kasan_init_generic();
 
-We cannot do this. It will make arena_spin_lock much harder to use.
-BPF CI doesn't run on powerpc anyway, but you can document that this
-test is disable by creating selftests/bpf/DENYLIST.powerpc.
+I understood KASAN is really ready to function only once the csr_write() 
+and local_flush_tlb_all() below are done. Shouldn't kasan_init_generic() 
+be called after it ?
+
+>   
+>   	csr_write(CSR_SATP, PFN_DOWN(__pa(swapper_pg_dir)) | satp_mode);
+>   	local_flush_tlb_all();
+> diff --git a/arch/s390/kernel/early.c b/arch/s390/kernel/early.c
+> index 9adfbdd377d..544e5403dd9 100644
+> --- a/arch/s390/kernel/early.c
+> +++ b/arch/s390/kernel/early.c
+> @@ -21,6 +21,7 @@
+>   #include <linux/kernel.h>
+>   #include <asm/asm-extable.h>
+>   #include <linux/memblock.h>
+> +#include <linux/kasan.h>
+>   #include <asm/access-regs.h>
+>   #include <asm/asm-offsets.h>
+>   #include <asm/machine.h>
+> @@ -65,7 +66,7 @@ static void __init kasan_early_init(void)
+>   {
+>   #ifdef CONFIG_KASAN
+>   	init_task.kasan_depth = 0;
+> -	pr_info("KernelAddressSanitizer initialized\n");
+> +	kasan_init_generic();
+>   #endif
+>   }
+>   
+> diff --git a/arch/x86/mm/kasan_init_64.c b/arch/x86/mm/kasan_init_64.c
+> index 0539efd0d21..998b6010d6d 100644
+> --- a/arch/x86/mm/kasan_init_64.c
+> +++ b/arch/x86/mm/kasan_init_64.c
+> @@ -451,5 +451,5 @@ void __init kasan_init(void)
+>   	__flush_tlb_all();
+>   
+>   	init_task.kasan_depth = 0;
+> -	pr_info("KernelAddressSanitizer initialized\n");
+> +	kasan_init_generic();
+>   }
+> diff --git a/arch/xtensa/mm/kasan_init.c b/arch/xtensa/mm/kasan_init.c
+> index f39c4d83173..0524b9ed5e6 100644
+> --- a/arch/xtensa/mm/kasan_init.c
+> +++ b/arch/xtensa/mm/kasan_init.c
+> @@ -94,5 +94,5 @@ void __init kasan_init(void)
+>   
+>   	/* At this point kasan is fully initialized. Enable error messages. */
+>   	current->kasan_depth = 0;
+> -	pr_info("KernelAddressSanitizer initialized\n");
+> +	kasan_init_generic();
+>   }
+
 
