@@ -1,72 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-10756-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10757-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26CCAC87FD3
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Aug 2025 13:05:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E7E5C87FD3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Aug 2025 13:18:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bz44r192sz2xHp;
-	Fri,  8 Aug 2025 23:05:00 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4860:4864:20::2d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754658300;
-	cv=none; b=P+/cqDS6XvulgKgMCHKKFsVSZzBJLjCnT/lcI2TG3C9GoDj3TJ/8xbdKb3KkPDGz2iKCSkTULTMf8j/5kXFmxGz0iTrfRh19oGBj2NIKhVLXWkGCSCzQjAdnndZ3pubrvzSKxMKDH4oNbdcdkkD94jsrJiRBKw0oZIL7tGNZhNQLad1sX7CnhStaS3kjuplbco1Hx7l7Im7cmzW20/8+UyflY3Duw1fnbEi/FLCHibN6tZ15b2vLUNKxbBZA8U9rH5a4aD89RixGD0es01g44z4BznG1t2ILJ7KFEXPcTBDTZW512psNb6ysoykFvkdnaKpgv4883w4CP7Nq/T3FLg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754658300; c=relaxed/relaxed;
-	bh=MZbNINpDtNwPAODLw/p25kVPu0hlXgpqeNAl0WAMF5Y=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=X/t0/QuzCUzjL/b485pzG0RecChjhSQ6Wt+a0H0oPfrvunmWEgtzKiyvYBRc1xmF+cniIx9EiNJ7zeystefX1jd2p7EatwYrNCCvO5p9eDY1JSHgWJo5BVyp3t+efpEzOBdoMvFrEHOzeiYx7zMrPweCGjK0GbM4gkd2InC8LfTEAlEqHFM5Ck3QLi5O/E2Cu6hb53i5DAZVjCOMsycxhOjM4QnDT4KvEH98x+O2DPOmLRh33fdV1jIlKHzA1O7WaFEMvUyCOsyETKD0wxzxsqzQzB/p/ILw9Y0N7sLQuOBIhaKyCCSiKilJUtdpl5Q2cgtsY6pi6AXMK7wluFUXIw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FMCNmfrK; dkim-atps=neutral; spf=pass (client-ip=2001:4860:4864:20::2d; helo=mail-oa1-x2d.google.com; envelope-from=alexdeucher@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bz4N669GXz2xK2;
+	Fri,  8 Aug 2025 23:18:14 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=81.169.146.164 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754659094;
+	cv=pass; b=V412tdZQzqaPBfFp213LW1/gcMhG9p2sPTCx6kUuc9s3A6vE9wXWw7Qy87kJNEBz2FyhhBemmxFkuJwuaAauyNuOAaW4MCpA5SZBJHOBcF7nT4/5Z6IVpDXiQ8Vh3EtTgKOnrb1scrYFLTCNm6cUxX1tFCCzvIlgpHxJyT6riMJXfnY41dFQ3Q84vtHeT2a5UnH6scYyAozSI2vjV47vD9mcBW6IgEptC+0wt0ICY6QPZBRRs7deENgEH0r9y7scvMinsGixW2v9c3bqQUCJa4F+322lZ0eA59kAavvb+fR1IDOHWUpJKkK8uAr8V+RLnBnRt58JykYv2qozw4Y7tg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1754659094; c=relaxed/relaxed;
+	bh=p2Y45Ktt9CtkLqBn7fSn/cr8xfUX1/HkVgdCUE0axa0=;
+	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
+	 Cc:In-Reply-To:To; b=EFseFyrXzM03HSgSQcFKwKG1c1FFzsehaDVle/MQhYPeaKn1G4M1GCXiQ0iKPDe8I4DLT8H1IQAqL3/lA3MYlEwSPrx+yJvnM/xXE+0l4ZWRBc60QAxnr2tiXq6mvUEycIPSI4tS2FTVZj9FclcK2vP2bHriYfcByXFM1JLvBVxjvHdrBGfb7P4AJB34lrNRdWuqihzP0ZgSOEXgfjrQKGtqF7WsOLA4MFDzz0sl/XRZfGYkUScGl2q5VXL4/Tsu7dVL8HDJ3Ln+Qgrn1RmzjlRSWmkGCdY0UWfY0p3wnBY/P46xLhKlS8S5LmWQTkXSggk2ESdlQQwCoRO1ciWEjQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=XROLwC2e; dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=Ee0zbmUK; dkim-atps=neutral; spf=pass (client-ip=81.169.146.164; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p01-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FMCNmfrK;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=XROLwC2e;
+	dkim=pass header.d=xenosoft.de header.i=@xenosoft.de header.a=ed25519-sha256 header.s=strato-dkim-0003 header.b=Ee0zbmUK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2001:4860:4864:20::2d; helo=mail-oa1-x2d.google.com; envelope-from=alexdeucher@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oa1-x2d.google.com (mail-oa1-x2d.google.com [IPv6:2001:4860:4864:20::2d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p01-ob.smtp.rzone.de (client-ip=81.169.146.164; helo=mo4-p01-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p01-ob.smtp.rzone.de (mo4-p01-ob.smtp.rzone.de [81.169.146.164])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bz44l5Mm1z2xHY
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2025 23:04:54 +1000 (AEST)
-Received: by mail-oa1-x2d.google.com with SMTP id 586e51a60fabf-30b7eba97f5so839632fac.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 08 Aug 2025 06:04:54 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1754658289; x=1755263089; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=MZbNINpDtNwPAODLw/p25kVPu0hlXgpqeNAl0WAMF5Y=;
-        b=FMCNmfrK3MF8o6rmUZ4YJ/cKDaXkDrhCHaD+nSrp0OjtIJ1j4FagRputOgra4DMT4n
-         Af14NI6v0rpJMXOJe8PYI+L/zYXHm+7FjoX+t6AKML9t/bxNsZWc7pVGgRMspvcBj9vB
-         dtQkTvVrf/gWeHre5wXkd+ZYAtFY1MC6zG+09cSvyj+HyMyNUIS9IUG6AwXHZE+Q8QMd
-         uJcnL4OdA+jpm3rTRm+udcimyW5+YiHvNpS84b1tjYS6VgzaWKYrDihC8mPv333OaOb7
-         j2pZR0uCBuOZ7nsXPuvqSLuxTcLF/jql8uCOIqkKxMa3DOdryX0qTs/4tfDSy1/lMzu/
-         F9TQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1754658289; x=1755263089;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=MZbNINpDtNwPAODLw/p25kVPu0hlXgpqeNAl0WAMF5Y=;
-        b=XWS0whC7rdzPTTkNG6DT+6RSzbcp/60vh4w4SrrEsfw79+IQEk5z7H2NFKX/ncl4oB
-         PlZUL0KLhooTGmG5v7cFaA0u6/z6dGA1QPgYcncSC+kohW6raoEPRU/ASGNeZwSG2OIc
-         M1vlvtlWykvJ09khfz+TBapOoQoYbs66W0V5P96jqCnx+lBWnGojE6mKIv93R0vSE+dL
-         s8YYBpZoONt0g+FTdQlJmsXk1wW+hIlHzaB8PkG5dWftUXZ7O1++LaN1h3LWnLr7xhaG
-         z/8YxYYsgsP0uFQ5IevKWApwPiU8uC43rPY/159u5PmYxi4v+UVO7fuD7E6j+Rn4ToCZ
-         MFUw==
-X-Forwarded-Encrypted: i=1; AJvYcCW8kW1ajPiLNbOiBlAjqjzKQ5tcrONY2062kgoyCh81Pk9IPjjh2Ish/rO+aRPwnwf39WeCUYHL4BklmXI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxwyK4qx/9Ncx8mwkrvMHlKXZ+Lm/tGfVA44i0y6A/Y5Of2xnYF
-	QHMSLMbL7Aii62UqAguklxx0/Va4bQ9XoK1vOjOC3ipw68K0/1aoFBYQkbNFEk/RjwE3jDje4T0
-	o0YPAJ05SQHWD1dSoM5SSLPA6LidwWgCHkDSV
-X-Gm-Gg: ASbGncti1eGnXnuDsRghwk9dNTN7s7mE3jkUn4sOv2h05dt1oJX+dl4NSj8wzz+Ns6t
-	YImrq+43GzOQSl+v5tPB370mzEWFBbFvxeb2hDwcVmlLJc3scwuhRhvqdfojB+gTG40ymXzeN61
-	esHhzoyaRLl6l14262ssfRpH4K6quvzZ4m0YBISCYsGo2nkkPkdZONJIQ084ISbu68rDMa9ZDKW
-	p2md2U=
-X-Google-Smtp-Source: AGHT+IFlSvcxbL5GPPyPwmiE/DsA4FgAwXz1H3jaR/ZIQGjKmn+Ihg0nha5JLpTZM0CwWNa5eQTwI/sGz45V76qqNk8=
-X-Received: by 2002:a17:902:d503:b0:240:58a7:892f with SMTP id
- d9443c01a7336-242c202c051mr19191455ad.5.1754657803805; Fri, 08 Aug 2025
- 05:56:43 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bz4N341RQz2xHY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2025 23:18:09 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; t=1754653682; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=tWLrvsbigdmTagAoyCM142OOI2y9OaSUDlGbMFLVCrC4sTwZq0NH4ndLZiBmj2Ovzk
+    cxF6lZ6dVf8USDgY26onDBNxXDM0q+KYT2TKA/5LL6d7BmuO9ocoxAVHAD/kmUC8inGB
+    7pvQYTUema8eTnIpEE5JZNfVtXFQZl+T5XjskOL/TOfkhxTcqBiKhHZ7VViLVxXTDjp2
+    BmT+xgJb5RoBkJNt8igA27LyJcZLy2ZEGL0gTGuqJu+KyLwE6qUVM+4dibg3mEIPaok2
+    +uPIE8hag3FrmRUYaIXuRmwVPV2F8g7mF4PC30vnuKgMydeEhgezdkQ5WN7EJDdcunBL
+    TPTQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1754653682;
+    s=strato-dkim-0002; d=strato.com;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=p2Y45Ktt9CtkLqBn7fSn/cr8xfUX1/HkVgdCUE0axa0=;
+    b=Mu4/tESiVCocc0EJ5wdA+4/WhDPoo6H5QAxFdHQlH3pgFVEjFx3TRgiMMa4zbhRXVY
+    juXn8hqoNB3Zu8EvwlFh2Xem/ztMwAxCBgh8ybRL8jL9yMjr635L6fXhKUjHRFxEcF3Z
+    fst6nvEOA8/819pfU/0N29F0LV8XojB4Qt/4+/1yne1rfTEC27YmE48H/Y30n71HUyDs
+    bNvvnnH9q91+8059Mryv+HJSS9oriszxxgH84AlcmNUWZCEqyHNFGbVTBluwQBAdYA4Q
+    PVxhKfbyryBCZyWEpF8Fqhvkaa68b8etTgiKcNSayyhQmoBgBctGgZncK7ICP2OEVZiG
+    6sMw==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo01
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1754653682;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=p2Y45Ktt9CtkLqBn7fSn/cr8xfUX1/HkVgdCUE0axa0=;
+    b=XROLwC2epE0YLSozvEGGFc1KXr15OEYz0QfG2IY46UrBx0SC+61ApROLDPYsX/XtZn
+    scOKpAF8wOmMzpkxg1QPeFNyP5nWgdayXT70yY2eNLm8qeaXJZ/s/X/gxD0JCN90n5SN
+    7VYCah6Kc9zrX85PJOSl1TP/i4Rj4T+qKiOLPf+pis0siKExa82Fjb8LC2utuil+RQwz
+    Usxn9PGPJS1n3w0EjNq1WxZQ22qfOZnGJnUHnw3DXbpYe3qR/oaGH/ulZyl+a2KIIowZ
+    bzY/v3BnhfPLe/y0mMgHAJogkyoWGyvwytRTMZ+eHf1M1+hEQTNGIFeUp63Ei+cg4OqK
+    iJ7w==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1754653682;
+    s=strato-dkim-0003; d=xenosoft.de;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=p2Y45Ktt9CtkLqBn7fSn/cr8xfUX1/HkVgdCUE0axa0=;
+    b=Ee0zbmUKRhPFFqgm6EWJ7dLsgMrFyK6Cn5w/bHnuKIx0Xx5BhTcP+piUFqpRbb4XcH
+    6yNou6QlH+5qGv7Ye3DA==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7V7X5m2s3nHCn4174Rhb0mYyao0unG2oENUO6LNlA=="
+Received: from smtpclient.apple
+    by smtp.strato.de (RZmta 52.1.2 AUTH)
+    with ESMTPSA id e6066c178Bm16u4
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Fri, 8 Aug 2025 13:48:01 +0200 (CEST)
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,125 +93,115 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-References: <66083d23-e60c-4fce-bad0-81dbb9dcebde@kernel.org> <0B029DD9-085A-4AD2-B3A0-4C427A1540EA@xenosoft.de>
-In-Reply-To: <0B029DD9-085A-4AD2-B3A0-4C427A1540EA@xenosoft.de>
-From: Alex Deucher <alexdeucher@gmail.com>
-Date: Fri, 8 Aug 2025 08:56:31 -0400
-X-Gm-Features: Ac12FXwadau3sWLYns3mQnQjQQDJTmPDYbqhGMIZFHY0vTvoSi_qG5LusvZotvk
-Message-ID: <CADnq5_PMu0tqCaGccdL2JDZuHqSb2Q2mgo12Cba-pDAL9bAmBw@mail.gmail.com>
-Subject: Re: radeon_fbdev_river_fbdev: failed to initialize framebuffer and
- setup emulation
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: Mario Limonciello <superm1@kernel.org>, mad skateman <madskateman@gmail.com>, 
-	ville.syrjala@linux.intel.com, Jeff Johnson <quic_jjohnson@quicinc.com>, 
-	Darren Stevens <darren@stevens-zone.net>, hypexed@yahoo.com.au, 
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christian Zigotzky <info@xenosoft.de>, 
-	=?UTF-8?Q?Christian_K=C3=B6nig?= <ckoenig.leichtzumerken@gmail.com>, 
-	Hans de Goede <hdegoede@redhat.com>, Wu Hoi Pok <wuhoipok@gmail.com>, amd-gfx@lists.freedesktop.org, 
-	Alexander Deucher <Alexander.Deucher@amd.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>, bhelgaas@google.com, 
-	benato.denis96@gmail.com, Yijun_Shen@dell.com, 
-	David Perry <David.Perry@amd.com>, rafael@kernel.org, dri-devel@lists.freedesktop.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Mime-Version: 1.0 (1.0)
+Subject: Re: radeon_fbdev_river_fbdev: failed to initialize framebuffer and setup emulation
+Date: Fri, 8 Aug 2025 13:47:50 +0200
+Message-Id: <0B029DD9-085A-4AD2-B3A0-4C427A1540EA@xenosoft.de>
+References: <66083d23-e60c-4fce-bad0-81dbb9dcebde@kernel.org>
+Cc: mad skateman <madskateman@gmail.com>,
+ Alex Deucher <alexdeucher@gmail.com>, ville.syrjala@linux.intel.com,
+ Jeff Johnson <quic_jjohnson@quicinc.com>,
+ Darren Stevens <darren@stevens-zone.net>, hypexed@yahoo.com.au,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ Christian Zigotzky <info@xenosoft.de>,
+ =?utf-8?Q?Christian_K=C3=B6nig?= <ckoenig.leichtzumerken@gmail.com>,
+ Hans de Goede <hdegoede@redhat.com>, Wu Hoi Pok <wuhoipok@gmail.com>,
+ amd-gfx@lists.freedesktop.org,
+ Alexander Deucher <Alexander.Deucher@amd.com>,
+ "R.T.Dickinson" <rtd2@xtra.co.nz>, bhelgaas@google.com,
+ benato.denis96@gmail.com, Yijun_Shen@dell.com,
+ David Perry <David.Perry@amd.com>, rafael@kernel.org,
+ dri-devel@lists.freedesktop.org
+In-Reply-To: <66083d23-e60c-4fce-bad0-81dbb9dcebde@kernel.org>
+To: Mario Limonciello <superm1@kernel.org>
+X-Mailer: iPhone Mail (22G86)
 
-On Fri, Aug 8, 2025 at 7:48=E2=80=AFAM Christian Zigotzky
-<chzigotzky@xenosoft.de> wrote:
->
->
->
-> > On 08 August 2025 um 01:23 pm, Mario Limonciello <superm1@kernel.org> w=
-rote:
-> >
-> > =EF=BB=BF
-> >
-> >> On 8/8/25 2:36 AM, Christian Zigotzky wrote:
-> >> On 07 August 2025 at 04:21 pm, Limonciello, Mario <Mario.Limonciello@a=
-md.com> wrote:
-> >> Does applying
-> >> https://github.com/torvalds/linux/commit/907a7a2e5bf40c6a359b2f6cc53d6=
-fdca04009e0
-> >> help?
-> >> - - -
-> >> Hello Mario,
-> >> Thanks a lot for your patch.
-> >> I tested it today but unfortunately it doesn=E2=80=99t solve the issue=
- with the Radeon framebuffer.
-> >> I have created two kernels with and without the drm-next-2025-07-30 up=
-dates [1] because of the issue with the Radeon graphics framebuffer device =
-#15. [2]
-> >> Download and further information: https://github.com/chzigotzky/kernel=
-s/releases/tag/v6.17.0-alpha5
-> >> I have tested both kernels this week and I can definitely confirm, tha=
-t the issue is somewhere in the commit drm-next-2025-07-30 updates [1].
-> >> The Radeon graphics framebuffer doesn't work with the kernel with the =
-drm-next-2025-07-30 updates [1]. Without these updates, the framebuffer wor=
-ks.
-> >> I bisected yesterday. [2]
-> >> There are some other user reports:
-> >> - https://forum.hyperion-entertainment.com/viewtopic.php?p=3D60606#p60=
-606
-> >> - https://forum.hyperion-entertainment.com/viewtopic.php?p=3D60595#p60=
-595
-> >> They use other Radeon graphics chips.
-> >> @All
-> >> Please check the drm-next-2025-07-30 updates [1]
-> >> Thanks,
-> >> Christian
-> >> [1] https://web.git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux=
-.git/commit/?id=3D260f6f4fda93c8485c8037865c941b42b9cba5d2
-> >> [2] https://github.com/chzigotzky/kernels/issues/15
-> >
-> > I think there is a mistake in your bisect, which I notice from looking =
-at your other user reports.
-> >
-> > The original commit you identified in your bisect and thus CC'ed me cam=
-e in 6.16-rc1.
-> >
-> > =E2=9D=AF git describe --contains 4d4c10f763d7808fbade28d83d237411603bc=
-a05
-> > v6.16-rc1~50^2~19^2
-> >
-> > There absolutely was a regression for that was raised, but this was fix=
-ed in 6.16-rc3.
-> >
-> > =E2=9D=AF git describe --contains 907a7a2e5bf40c6a359b2f6cc53d6fdca0400=
-9e0
-> > v6.16-rc3~13^2~1
-> >
-> > Users in your forums posts talk about 6.16 final working fine.  So I th=
-ink that when you bisected you ran into multiple confounding issues and rep=
-licated in a similar fashion.  You should check every single bisect step to=
- see if 4d4c10f763d7808fbade28d83d237411603bca05 is applied.  If it's appli=
-ed but 907a7a2e5bf40c6a359b2f6cc53d6fdca04009e0 is not applied in that step=
- you should apply 907a7a2e5bf40c6a359b2f6cc53d6fdca04009e0.
-> >
-> > Hopefully that will get you down to the real cause.
->
-> Thanks for the hint. Unfortunately I don=E2=80=99t have more time for fig=
-uring out the issue.
 
-Does this patch help?
-https://patchwork.kernel.org/project/dri-devel/patch/20250805175752.690504-=
-4-imre.deak@intel.com/
 
-Alex
+> On 08 August 2025 um 01:23 pm, Mario Limonciello <superm1@kernel.org> wrot=
+e:
+>=20
+> =EF=BB=BF
+>=20
+>> On 8/8/25 2:36 AM, Christian Zigotzky wrote:
+>> On 07 August 2025 at 04:21 pm, Limonciello, Mario <Mario.Limonciello@amd.=
+com> wrote:
+>> Does applying
+>> https://github.com/torvalds/linux/commit/907a7a2e5bf40c6a359b2f6cc53d6fdc=
+a04009e0
+>> help?
+>> - - -
+>> Hello Mario,
+>> Thanks a lot for your patch.
+>> I tested it today but unfortunately it doesn=E2=80=99t solve the issue wi=
+th the Radeon framebuffer.
+>> I have created two kernels with and without the drm-next-2025-07-30 updat=
+es [1] because of the issue with the Radeon graphics framebuffer device #15.=
+ [2]
+>> Download and further information: https://github.com/chzigotzky/kernels/r=
+eleases/tag/v6.17.0-alpha5
+>> I have tested both kernels this week and I can definitely confirm, that t=
+he issue is somewhere in the commit drm-next-2025-07-30 updates [1].
+>> The Radeon graphics framebuffer doesn't work with the kernel with the drm=
+-next-2025-07-30 updates [1]. Without these updates, the framebuffer works.
+>> I bisected yesterday. [2]
+>> There are some other user reports:
+>> - https://forum.hyperion-entertainment.com/viewtopic.php?p=3D60606#p60606=
 
->
-> Two facts:
->
-> - The Radeon driver can no longer be used.
-> The Radeon driver is broken for us.
->
-> - The issue is somewhere in the commit drm-next-2025-07-30 updates [1].
->
-> I cannot provide any more due to time constraints.
->
-> I've already spent time that I didn't actually have.
->
-> Thanks for your help.
->
-> Christian
->
->
+>> - https://forum.hyperion-entertainment.com/viewtopic.php?p=3D60595#p60595=
+
+>> They use other Radeon graphics chips.
+>> @All
+>> Please check the drm-next-2025-07-30 updates [1]
+>> Thanks,
+>> Christian
+>> [1] https://web.git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.gi=
+t/commit/?id=3D260f6f4fda93c8485c8037865c941b42b9cba5d2
+>> [2] https://github.com/chzigotzky/kernels/issues/15
+>=20
+> I think there is a mistake in your bisect, which I notice from looking at y=
+our other user reports.
+>=20
+> The original commit you identified in your bisect and thus CC'ed me came i=
+n 6.16-rc1.
+>=20
+> =E2=9D=AF git describe --contains 4d4c10f763d7808fbade28d83d237411603bca05=
+
+> v6.16-rc1~50^2~19^2
+>=20
+> There absolutely was a regression for that was raised, but this was fixed i=
+n 6.16-rc3.
+>=20
+> =E2=9D=AF git describe --contains 907a7a2e5bf40c6a359b2f6cc53d6fdca04009e0=
+
+> v6.16-rc3~13^2~1
+>=20
+> Users in your forums posts talk about 6.16 final working fine.  So I think=
+ that when you bisected you ran into multiple confounding issues and replica=
+ted in a similar fashion.  You should check every single bisect step to see i=
+f 4d4c10f763d7808fbade28d83d237411603bca05 is applied.  If it's applied but 9=
+07a7a2e5bf40c6a359b2f6cc53d6fdca04009e0 is not applied in that step you shou=
+ld apply 907a7a2e5bf40c6a359b2f6cc53d6fdca04009e0.
+>=20
+> Hopefully that will get you down to the real cause.
+
+Thanks for the hint. Unfortunately I don=E2=80=99t have more time for figuri=
+ng out the issue.
+
+Two facts:
+
+- The Radeon driver can no longer be used.
+The Radeon driver is broken for us.
+
+- The issue is somewhere in the commit drm-next-2025-07-30 updates [1].
+
+I cannot provide any more due to time constraints.
+
+I've already spent time that I didn't actually have.
+
+Thanks for your help.
+
+Christian
+
+
 
