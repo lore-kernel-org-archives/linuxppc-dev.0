@@ -1,51 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-10774-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10775-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3199C87FDA
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Aug 2025 22:01:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EDDD6CA0EC0
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  8 Aug 2025 22:06:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4bzHzH2HF3z2yCM;
-	Sat,  9 Aug 2025 08:00:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754660942;
-	cv=none; b=bI8hXaN/JSkbwB7TRdA303sPy/s3aHo7EPrAZPqtAmL28jyHepwixmp+T9+epWoClxh2whOYxj+T2XEahC/QW7b4HuESEBpsYlrwl0JmNSf/kYT+Qy4/bQxhL9v4l28PJlh6zGk/XDm9YG6T4j2tsO1BfgsduiqlRswz0auSf+FGHa9o+B4rCp78n7gwV4YzTmR8skLM7BGv4fxjoGi24qXLdwhUEL25aYRsOEx/mK4B9piRrAwe5zGqqmbEQzPLcw9vZpX4bbBDoZIo+47pBv1tn/ZtpTSNObX8pcvdTAKmPVWWkck6fUesaWwdZFZrG8nvR1NANmhIFGHztt/waA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4bzJ5p4Z46z2xjP;
+	Sat,  9 Aug 2025 08:06:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=74.6.129.81
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754668925;
+	cv=none; b=bavccdnAqn8E9bWYg+N+p0y4jYHimz/v2/PzRzhhWWI2+PoP9LqeRWqzsceHZXom6+zmHEOmx4vFMuy1yUNUC8AjeP/a+R3xupmWF9HBTouPZagdwu5KX+q7bDL444jgYxUfysHs0ce3mWZTMBVg//tTHleX59utlMfcQW6dwHlzK5wb0ONhzPASGq82kBhYftQkCw6Klm0j6VO3se1Osx/xmg26Uz+monp5AoI/FTJMiINdpBDSvQVn3LX1rGBqzqSwxzwHnL2aIkw787qPCSFw13iPGvXvH24d4X4eRdxsP6YSbt1gsAX0KGIQp+MzOfIc7b/xXyKds/dO2yqgPA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754660942; c=relaxed/relaxed;
-	bh=5Xa6FaUkK/o3iZ5LAaj3jV8cT1SY6Rco2BLzF0R36is=;
+	t=1754668925; c=relaxed/relaxed;
+	bh=ZuO89GmtytgzWc6IU8wcFTYUedFni2KfhgSOdSCb36s=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=cs7Gy8c0v3ZIRQtFbKVjyXpTPtGI7/NhCns6Gaw/IcYPgYSRmqyeGug5SMnsZ0DDdie4lLdLN3ELN+rwdwFDLdcmwWCdw6sbHRknDhoHplXvsHbD9o8racDwsOSVW0XsaYA+yUi/JuMEirXHPSPklz21k4VA6BtB4eXhwCbI2MYoPpuWPCgaEDtBlPcUCTRQ+rnXwGjpO+TA4a29DD3N554XmxI93T2o2BarBs+vzZj6kNN5k3UoJ+9s8vb+J3c/b8KDc0GV113z96udFvu395k0XHhm2ZMJfwxi6BIMryPG5+ArqVMSNKvsrP7v+RWXlDrHxGR8BcOpom0XVdja6g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LdLoZQa/; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=superm1@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 In-Reply-To:Content-Type; b=dYUn3u0TFQAPaxwwl+5/NkIjYguTFHX5IfOnuru8pmyU3iHflFqoN6jLiM87k36nR7JoFLhpa/9zqICxI1UFrsUcUQbfRErbfvc8SXO5Khdo1V6ry6B6w4S2IzU7zlDwmi161M+vQj+7UVJDkz6sVfB8+FimwHiWgsGBrCK3rV24FinFGuGdgvoh5sWOREIGlPPPy9myGvjRNWi1+MdxMvdgLkCuAO7QRLmwR12qgchPW0UKSIcW4fjNI4K+HUUrHJ+HCXxIq23/wM+8o9KrJvO7g6kc3TGap0OcQ4h16tns4O9UEtylh4OovToMB2ORhtP1KWE8T7iqwrKWsy/8Sg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=yahoo.com.au; dkim=pass (2048-bit key; unprotected) header.d=yahoo.com.au header.i=@yahoo.com.au header.a=rsa-sha256 header.s=s2048 header.b=AZ/HNkrk; dkim-atps=neutral; spf=pass (client-ip=74.6.129.81; helo=sonic317-26.consmr.mail.bf2.yahoo.com; envelope-from=hypexed@yahoo.com.au; receiver=lists.ozlabs.org) smtp.mailfrom=yahoo.com.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=yahoo.com.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LdLoZQa/;
+	dkim=pass (2048-bit key; unprotected) header.d=yahoo.com.au header.i=@yahoo.com.au header.a=rsa-sha256 header.s=s2048 header.b=AZ/HNkrk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=superm1@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=yahoo.com.au (client-ip=74.6.129.81; helo=sonic317-26.consmr.mail.bf2.yahoo.com; envelope-from=hypexed@yahoo.com.au; receiver=lists.ozlabs.org)
+Received: from sonic317-26.consmr.mail.bf2.yahoo.com (sonic317-26.consmr.mail.bf2.yahoo.com [74.6.129.81])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4bz53d3Bh2z2xK7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  8 Aug 2025 23:49:01 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 6B90EA543F4;
-	Fri,  8 Aug 2025 11:23:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 44D46C4CEED;
-	Fri,  8 Aug 2025 11:23:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1754652206;
-	bh=GpV3W47n1bkfqRHZ3LaVYGNiCSl0JY+5MwvSCjMeAY8=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=LdLoZQa/2802qExL1hbwzNz1rYd8wJ57VsTmbSGEUnJSCBCAFkp1CyOZrArlp1u11
-	 dsB5iSjvP9U+bbHStAGf0d5g0g4kb5Mgjx1NPK38426apIMF6760299XoRTZ86Mm8q
-	 1q7jTm4AH3UjGLIG8CetS1bZHrf7KTiUABhoW11lncNVy5aEgB6ESF+EzIgn7XLvH8
-	 L2ViVy0RB1fxdu0YdHDIlkggB+J6UPdqcg8MpjuIn1/ChMz2lajBJTo8jQXxXH8x6W
-	 41rOf7qyH2prRyK4Iu7rA+8B9WEvOmRYYZAHqMJ0PpN7JqvAO2xJZ46FTx41zgpJ8o
-	 k5CH4WiPtZ85w==
-Message-ID: <66083d23-e60c-4fce-bad0-81dbb9dcebde@kernel.org>
-Date: Fri, 8 Aug 2025 06:23:23 -0500
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4bz8165MJMz2xK7
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  9 Aug 2025 02:02:01 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com.au; s=s2048; t=1754668917; bh=ZuO89GmtytgzWc6IU8wcFTYUedFni2KfhgSOdSCb36s=; h=Date:Subject:To:Cc:References:From:In-Reply-To:From:Subject:Reply-To; b=AZ/HNkrkUDeoOj8zjlfo/vqNsIK0HLT2jzrQYh8IdVPe/PLHlNYgEXCZsz5YzFvgI/7Z+1SVHol/LHjT8LFhqOGLAiLWYm1urwOAJz3wcy/pfw8LfTLOVmClw0xcTjsy4Y08nxgPDUMbIjeHGCawGO/ui4fMf2Lb5ew8ety/H2Zfl1wKYxUw/55fx2nmeyCfPg7FsBUfTK79EyajoqsSIYKXb/71S1oWxW4B93bWE82j7xE+s3MqnsA0C4KOqnFCjbMrCEXsKnNILt7HwXZtPvFHZdDO8MKEE26Q9EFt4HmHVHuMqOFST58HHRuWC2Bc7YDQ4dThmyEGVisU4z4h6A==
+X-SONIC-DKIM-SIGN: v=1; a=rsa-sha256; c=relaxed/relaxed; d=yahoo.com; s=s2048; t=1754668917; bh=4oQx52OL639rv6fFompwlB/B3iDXSaLB3C7B163eqX2=; h=X-Sonic-MF:Date:Subject:To:From:From:Subject; b=DKr80ooDmgWP8zVITJ0QTZJoejWF700NAR5r1xPBnzTw0VAkN5vGqdN6d10nFDpenBw6IsoH0LhUkzSz6Z9ADUWlCWwGtdBZNPiC4dGX6nuGuJsu/ZSrmCShNAVEUgsXIL/hz8/90LOBzxrovbEDvPk7Yri4EhHgRXAo1s6RSOPe0+eSdkumkyXN29ntqthcrBT1C/lVI/tKpSZ3gNCCRN5NWGa6tj7hC2DaZd/G489PubTCKrWIYpw9hBOZRx0w2n2vVHGo2CRR6lDUfB/vIxo4IxoMPXw599GBS24mild1xtsk9Iq4lScYhny9D6bp492uDYTuBE20qLNVCLbCGA==
+X-YMail-OSG: zqeLHdcVM1kz0n.mxcHVQzjLsmaKmUjsQNBteX69ndVsdEGw5uUlYYJGsstngNi
+ ryPVQx8kA.TMAHCRXocf5jNBcWyp3cD0mrRDsqNS2NXfRf0QKP5aXpvYblIKgpx5R3_1WE_aDbRc
+ HFWg0NvxE25bM_oJ4xEC9n3Qq.zOq9I2sCiaAUPhCNLgu9YVpyI5.6hFzOnnqs8GpnyYLAKmBSTq
+ p18NiFykZm.GfDOPbf5MbXFQR3QzRT3MiskZBaAWgoCp9DBsBH30sEA6F80eU2tVvLg1eWAnAD2t
+ WjkdDMANvc2W5wF4NoNtHyBmvmvTqbTE4wsBHZeUJPOrBebqI7n0eb6efJfVowSpC0v8E9H.Kg.x
+ 7.AgJmiHWkj5A_SqFqct.l9Toa_9sHUgu7NMmwDp9Tqmq.PO8HICkmNGa6auKdmGPf7jihVXrcKd
+ ZVQEYW6n_xLlXMEHzPJ4UcCU4AwdZ3RLDetaeU6JViWhReUaPZcIqUS4CNU2piN6gBFaJM8un56G
+ LNBTbPU28KrloIMoVMLQ4K8c7.qQnBrcPLA7iGhPr5af3mpjVajmxr38D2kLSdiRoZDqekPSvH9L
+ jtqxrMv03VvvvMMdtHCMcI3PmXJN6.mSWt2LylZUCVZJiAjiT65yvFIUNG_.aIHdTjMS832ca.4b
+ pANbZJ.8sWnrleuNdUlWGl8nWPEh71QQZuE8VAVgUCqW1nD0KeexcL3pOzrfu.LGPtMQvIc8gxYX
+ nNQDTv7QKzxOiKUAuP9fVG3QRcyaGKeilLaVyzv6_XraabSr9DsAh_mlJwenLanERW2GvufJkZuB
+ hJrWlHoF24hX9JbZhGRwCDB75rvdMfYRzxVNTfSJkpFeufWPf5oJUDdA8pUN2q7eFeG_MvPwIFBb
+ vWyYeFitDSwgz490pEqtVnKD3mAXD6Dx.rXuXRGAzG0MNr1lTUcAWLgZzJnyFjOQuthuqKutPB.6
+ lqCSEFvWscfYE4MOEwTsYQCFdh9YTeOnkbebjfIbgQPH56g3OiE42vHytDVZtP8RxJgUFFDVfVS0
+ iZTx_iu9Y9mqi0uoNYzq7gTxlnNokacm4pO40Ji_bZeyR7Qte9rGZTgCDHnEHIaAtXlhyCM6MhHC
+ FWeKtadeBEUU.drT8sQypJuXZbMDALLq3R6GvFF0pf0y.N4AXQUvMWK7h7nFwrJUA823.wDWB0QA
+ 467nmlbmIeemjnJkXtVLsYZGK7jdAB8DRXg7w79tZdNu.2fP6SRUH_yDJPLU_2IezXLHPz3_HMft
+ OG6LOBj2jgniXsvsxIuenE6UMjsrJbtpYRJGFHVC_YvqNDBm0aTGZqS941jnlW6KP.bZwAV1ule1
+ xZiUsrkuayjcJYkWItAKrqJKV7LZ77P8Xs9v1Q3n9HjhK.wpR_HIU9tQ1jr5VCdW6XyJSnwJf55w
+ Ucwl067lR0MAoNyte1hh8gd6EW1F.6sOejSaYm9B32eVIoxU.1GGesDoxXcFL5ud4i9ktfCVlgZT
+ jpqfj69Y86_PGF9nxCCZYUNCl3Gb2c34Fjv6f.3WqQRaE40pP615W3bW2B1PE0nSW0ltbWhAXFWf
+ 9LrC6wr2YTthVu.qoeMPzHatHMPmvzwrx0kk.Lt5YHTSXy2Dg3.va2HtLx5XOLaJCWHQ2Em8sZx8
+ lNAp2sZuSLjn5bxMsuXKThC8J0YQpzafynjmCydJK.B8_BaVaCvOS4RJFR9WcNAJerub8wBcZkdM
+ 9tYSnbDi_awCUK1Tlg31HBc_F7zxHWHaRtSsJihLYtUVKfSmpZk_.n_LPOv017OVpxYN6.wFjoPK
+ aGXqe2T_d27GyMT_E8T.g9398slDhusyevMsEjFEOlBRE76xyAM5c2TF3teXrg9_AaSPfSrSKcJ6
+ CTXDZ0QE1z3PGcP3QeSUmFd5iK5a6xSMubv6WkBrV7_3qE9jtUePAy7.0SC.Y41XiL4JjGhGGpYZ
+ GN0L5P4uuD7kLA6YIiWnb5leeawJ601b4HJKjeChBIDqkcQZJneGQa_MoOL2D_a5U79_cKx4482B
+ A50VTyVI8pWR5sCuv65zPkElactxl69DsLwWcz3.pLm8svRi93sjfvABmtrEufaLNbMUQrvI6sR4
+ AwyzZO8siN_mbzsf3QHPXo6K6AZRtir1rWX3SxL51nnN6ndimCeRQ27CFub77T07yDoaGCMsYJxh
+ uE.UxDWtlM8PR8k_6Um8Ml0q5UU5b9Cq2D2wjTCG_WViV7y0Kg2EfMnEhSZ0Xd7aO.KPh9InuQW7
+ UJAAY0oHKHB_Slgv3rZAnF_H3WmTX_oDA89AJDimhL_w_PLtFiz7JB6k_6N_9ilTgkX0rtOdrnGf
+ foXCtpa_znVMX
+X-Sonic-MF: <hypexed@yahoo.com.au>
+X-Sonic-ID: 56f3f109-12cb-4467-9d3f-5d50eb9b7caa
+Received: from sonic.gate.mail.ne1.yahoo.com by sonic317.consmr.mail.bf2.yahoo.com with HTTP; Fri, 8 Aug 2025 16:01:57 +0000
+Received: by hermes--production-gq1-74d64bb7d7-nccgl (Yahoo Inc. Hermes SMTP Server) with ESMTPA ID 10dbf4c146e19dfc3266b14fa0044a38;
+          Fri, 08 Aug 2025 16:01:53 +0000 (UTC)
+Message-ID: <4bab7915-9739-4aea-be67-5ea122de1f5c@yahoo.com.au>
+Date: Sat, 9 Aug 2025 02:01:45 +1000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,96 +86,43 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: radeon_fbdev_river_fbdev: failed to initialize framebuffer and
  setup emulation
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: mad skateman <madskateman@gmail.com>, Alex Deucher
- <alexdeucher@gmail.com>, ville.syrjala@linux.intel.com,
- Jeff Johnson <quic_jjohnson@quicinc.com>,
- Darren Stevens <darren@stevens-zone.net>, hypexed@yahoo.com.au,
+To: Christian Zigotzky <chzigotzky@xenosoft.de>,
+ Alex Deucher <alexdeucher@gmail.com>
+Cc: ville.syrjala@linux.intel.com, Jeff Johnson <quic_jjohnson@quicinc.com>,
+ mad skateman <madskateman@gmail.com>,
+ Darren Stevens <darren@stevens-zone.net>,
  linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
  Christian Zigotzky <info@xenosoft.de>,
  =?UTF-8?Q?Christian_K=C3=B6nig?= <ckoenig.leichtzumerken@gmail.com>,
  Hans de Goede <hdegoede@redhat.com>, Wu Hoi Pok <wuhoipok@gmail.com>,
- amd-gfx@lists.freedesktop.org, Alexander Deucher
- <Alexander.Deucher@amd.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>,
- bhelgaas@google.com, benato.denis96@gmail.com, Yijun_Shen@dell.com,
- David Perry <David.Perry@amd.com>, rafael@kernel.org,
- dri-devel@lists.freedesktop.org
-References: <69bac1ee-4fea-4225-b222-d7f274a8ea3c@amd.com>
- <EBCB1171-0CF8-4B7A-97C9-0E7816EBA6B5@xenosoft.de>
+ amd-gfx@lists.freedesktop.org, alexander.deucher@amd.com,
+ "R.T.Dickinson" <rtd2@xtra.co.nz>
+References: <CADnq5_PUi_2+kDYX8R_eanNF4iYN79MdXJ_PLcQbZKi6e4S8tg@mail.gmail.com>
+ <87F47F04-EBAC-48D6-AD0A-4BBE39DF43CE@xenosoft.de>
+ <1115cce7-cfdc-4c5b-b017-69cd32425650@xenosoft.de>
+ <6ba8d730-52f9-421f-8d8a-887545f0ceac@xenosoft.de>
+ <2cc83897-427d-47f4-b6a3-8db9682972cd@xenosoft.de>
+ <CADnq5_OpJdbc4YKtV-9+5JyeKyqd4+irhT6OtFq_K9KJF24VSQ@mail.gmail.com>
+ <48b61c14-f83d-4e4a-b5d3-857099058eda@xenosoft.de>
 Content-Language: en-US
-From: Mario Limonciello <superm1@kernel.org>
-In-Reply-To: <EBCB1171-0CF8-4B7A-97C9-0E7816EBA6B5@xenosoft.de>
+From: Damien Stewart <hypexed@yahoo.com.au>
+In-Reply-To: <48b61c14-f83d-4e4a-b5d3-857099058eda@xenosoft.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-Mailer: WebService/1.1.24260 mail.backend.jedi.jws.acl:role.jedi.acl.token.atz.jws.hermes.yahoo
+
+On 5/8/25 2:05 am, Christian Zigotzky wrote:
+>
+> @Hypex
+> Could you please attach your full dmesg output? 
+
+Hi. Sorry just found this. Do you still need a dmesg? I collected a few 
+and can provide one for any broken version.
 
 
+-- 
+My regards,
 
-On 8/8/25 2:36 AM, Christian Zigotzky wrote:
-> 
-> On 07 August 2025 at 04:21 pm, Limonciello, Mario <Mario.Limonciello@amd.com> wrote:
-> 
-> Does applying
-> https://github.com/torvalds/linux/commit/907a7a2e5bf40c6a359b2f6cc53d6fdca04009e0
-> help?
-> 
-> - - -
-> 
-> Hello Mario,
-> 
-> Thanks a lot for your patch.
-> 
-> I tested it today but unfortunately it doesn’t solve the issue with the Radeon framebuffer.
-> 
-> I have created two kernels with and without the drm-next-2025-07-30 updates [1] because of the issue with the Radeon graphics framebuffer device #15. [2]
-> 
-> Download and further information: https://github.com/chzigotzky/kernels/releases/tag/v6.17.0-alpha5
-> 
-> I have tested both kernels this week and I can definitely confirm, that the issue is somewhere in the commit drm-next-2025-07-30 updates [1].
-> 
-> The Radeon graphics framebuffer doesn't work with the kernel with the drm-next-2025-07-30 updates [1]. Without these updates, the framebuffer works.
-> 
-> I bisected yesterday. [2]
-> 
-> There are some other user reports:
-> 
-> - https://forum.hyperion-entertainment.com/viewtopic.php?p=60606#p60606
-> - https://forum.hyperion-entertainment.com/viewtopic.php?p=60595#p60595
-> 
-> They use other Radeon graphics chips.
-> 
-> @All
-> Please check the drm-next-2025-07-30 updates [1]
-> 
-> Thanks,
-> Christian
-> 
-> [1] https://web.git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=260f6f4fda93c8485c8037865c941b42b9cba5d2
-> 
-> [2] https://github.com/chzigotzky/kernels/issues/15
-> 
+Damien Stewart.
 
-I think there is a mistake in your bisect, which I notice from looking 
-at your other user reports.
-
-The original commit you identified in your bisect and thus CC'ed me came 
-in 6.16-rc1.
-
-❯ git describe --contains 4d4c10f763d7808fbade28d83d237411603bca05
-v6.16-rc1~50^2~19^2
-
-There absolutely was a regression for that was raised, but this was 
-fixed in 6.16-rc3.
-
-❯ git describe --contains 907a7a2e5bf40c6a359b2f6cc53d6fdca04009e0
-v6.16-rc3~13^2~1
-
-Users in your forums posts talk about 6.16 final working fine.  So I 
-think that when you bisected you ran into multiple confounding issues 
-and replicated in a similar fashion.  You should check every single 
-bisect step to see if 4d4c10f763d7808fbade28d83d237411603bca05 is 
-applied.  If it's applied but 907a7a2e5bf40c6a359b2f6cc53d6fdca04009e0 
-is not applied in that step you should apply 
-907a7a2e5bf40c6a359b2f6cc53d6fdca04009e0.
-
-Hopefully that will get you down to the real cause.
 
