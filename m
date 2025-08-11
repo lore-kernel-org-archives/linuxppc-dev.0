@@ -1,67 +1,140 @@
-Return-Path: <linuxppc-dev+bounces-10794-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10795-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 314CACA0EC0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Aug 2025 09:29:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B93B2C88CB9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 11 Aug 2025 11:26:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c0q8V2MYpz3cht;
-	Mon, 11 Aug 2025 19:29:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754904554;
-	cv=none; b=Q7rpt/OKC0FPfk/dUvR9pVR/jijnG34ERR7CYxGMqW8wT4UtE4bjc3kOXwWLVjJPW0bdWeLVUef5A40acHVFPnBN5/PQ2mz1yFaC5oIFKEsO3nXjv/lHHkQOLrPQxyzIFEntimPNijYNWIrreIYnDDbQBT7iEoZ/Ei9xEFWEIAcpPimj55ABZorIqJausrPB4eJIR6oAs5mmvQBthfLy6oBjzwkPfP92qVxE9VnvSm7EuSgUnzSuI8hsNNdtWej8FLRmU74vYlL6soGXCGrzV35Hx2s0UtJj35LUKe1yHGYp6hpgLyx7Myhe/m62NoPXt9EAKb1c5QVpTx5L6dEBMQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c0sm414xcz3cfR;
+	Mon, 11 Aug 2025 21:26:44 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754911604;
+	cv=none; b=UW9JayxHgmfk4d/Q8eAQdxRs2cCiOT7QXtW3o4flxOwQiqH938zbv60ZMvEaEAfjTTNHbfTZKlTbhelJrrnIY0+drohG3mrH/6eEgn26ZkE7HoDZHO/sFy4Z0NyjQw6m5sJFYMZTVhruJPmk+dLnVB9p+av8lDy44M04F6mSysnbnmB519a9xT3zN3Vpe/YKqR++XBkjILTuIr6C4D3IN8CjH6OAm2w3T+TQITV636EEWsk4VfW20IC0ekxGzHBVf8wMR+Y1IeQaSD4IASYubR+194h5mAbnC/BZrlHK6xbeLq12WIBzOI7A/JHNeO+OACPhM+zFXvsxdjG3d2AUGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754904554; c=relaxed/relaxed;
-	bh=AXKzVCw7IsUb34U/kKmIY7e47KoojqYo9HB446Sbrjg=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=WJEYSChNUaWDeABhCAfo/vVBGO+FIYWfQ6NSCEOmVHZGTCCgGpBDkHQQGiJ8Ky1dBBRMWb9Hp6vIb/wHRRNqlWeJgP12x9OqEUODyejJtDT3/mrgPiWPqsYDMtvGdRJ7hMia6cNhiwZRx0JO6UGGHwz37/QO0g3W+UoI0pJZJNyPSXdIhEAzDZh/JhNDDNxcHEIHVAf2J8zIbgjC0Y1VmnQ6Q5psviWhPdJhZN7Kmkc2H1SS8Es//D7ySQ8eiOR6GUTXVOxRqVPN8QJo+GR63YCcJVfL4w3sGmRiGZUbJ7BFS/ZTj3AllVeuIi9jF9KoS1w97vmntrtwbV8NZkh05Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=x/oxzYql; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=nAh/6cZb; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=namcao@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1754911604; c=relaxed/relaxed;
+	bh=Htya8lk0ohNZGoVKNkWH4Tb4G28S+mHG9GYTekXNGbw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:content-type; b=irGaeuRyNTu4d8P3ztPRQq3KMkqMeXLAL74I2qrzuQzQU65/klyAFWHCVNdLJ+cZDf+nX1CDhKoDYhNEecWPHk/pE6T46D+Wzh4l50lrv7yp0kGLQ3EOSlP7woAsD6nb9mGZqyPzX4SPXjmyqoSPc3D7seYzoHwSrQFMsWha6fkq2RgZ5KC0y+PWSwbDXZaOHgPmZ8vFHfQPUDbItoNt5GU1AX30S4OwYyMKWAX34AT4fvHqqxoOmJ5Cm3C7ecVgY4iGpXCxYe7lKo66BVtmu27oMR2DUzqH1nG3x5dpOJRhmbfyM8T3EgHPSkMPckNRx45AjMyaBw4ZIws/JHuEkw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BSFR/Fi3; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BSFR/Fi3; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=dhildenb@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=x/oxzYql;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=nAh/6cZb;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BSFR/Fi3;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=BSFR/Fi3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=namcao@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=dhildenb@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c0q8T529Nz3cjG
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2025 19:29:13 +1000 (AEST)
-From: Nam Cao <namcao@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1754904541;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c0sm30fytz3cfL
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2025 21:26:42 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1754911600;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=AXKzVCw7IsUb34U/kKmIY7e47KoojqYo9HB446Sbrjg=;
-	b=x/oxzYqlZ+jopJclpXABwRfCmmhNSAxw/zAMigRGh/gXsH3CQ3AAgQgpMBvnGc9Wt8tEAL
-	rPmpOMzzLkoMhJTH746XaQd6Qp4KNy2Flx1NiObT8MWu/F12ORjkPHuH0kHori96p1g6ea
-	Ll343aYX7u7KkwdSLtQOzWYSg4q9Eu2IGKyKMmz6P0BNFv3qgwPaij0PXureexBI1zYnbV
-	qNYnEyCeSma4SFLo1zH5feNR1JyGxm5NHPQAF7pBP/cj4VQ1w1aS5kOGl76h7XQNZkk6P1
-	1sjEMJoocSznpnak3o9mVrymW7g8AwN8osMMeXvpyHv2SQ7jwEAZhrVAZDbQJg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1754904541;
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Htya8lk0ohNZGoVKNkWH4Tb4G28S+mHG9GYTekXNGbw=;
+	b=BSFR/Fi34tP9TYXtSKf6EKayic9rWNswzONRojFnyHfcPvfZqbKbk1pYdoZv+k5ZXanlKC
+	4pj2xi/Wk1jDEb46x/FoHBY6I0DYUxjAeV1N1okm3WVuall1fJ8kl28ToTSspr0DYwffuY
+	xdWkElrZ4TN6nvSt5P+AYfKKi//FXn0=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1754911600;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:
-	 content-transfer-encoding:content-transfer-encoding;
-	bh=AXKzVCw7IsUb34U/kKmIY7e47KoojqYo9HB446Sbrjg=;
-	b=nAh/6cZbbnnR1MjZsdwQK1r/HmAyyfsRbnB/eXeB6CgQp9zOYVZTtwK/kl+ajKiDSNQyRj
-	9DhVImlDoky8wwDw==
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=Htya8lk0ohNZGoVKNkWH4Tb4G28S+mHG9GYTekXNGbw=;
+	b=BSFR/Fi34tP9TYXtSKf6EKayic9rWNswzONRojFnyHfcPvfZqbKbk1pYdoZv+k5ZXanlKC
+	4pj2xi/Wk1jDEb46x/FoHBY6I0DYUxjAeV1N1okm3WVuall1fJ8kl28ToTSspr0DYwffuY
+	xdWkElrZ4TN6nvSt5P+AYfKKi//FXn0=
+Received: from mail-wm1-f71.google.com (mail-wm1-f71.google.com
+ [209.85.128.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-483-vZueq5U-M5i0SPKycQhHNQ-1; Mon, 11 Aug 2025 07:26:38 -0400
+X-MC-Unique: vZueq5U-M5i0SPKycQhHNQ-1
+X-Mimecast-MFC-AGG-ID: vZueq5U-M5i0SPKycQhHNQ_1754911598
+Received: by mail-wm1-f71.google.com with SMTP id 5b1f17b1804b1-45526e19f43so14204975e9.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 11 Aug 2025 04:26:38 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1754911597; x=1755516397;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Htya8lk0ohNZGoVKNkWH4Tb4G28S+mHG9GYTekXNGbw=;
+        b=Na06iTP1RSbAZmk4vyzgrSULk39sJO/S7E7xbtn5am5JBRXwymX9y/Ex0WJCFJ5UzP
+         7BnmxdODoH8wmL7nsI5YyTjTHe1unAbbFyHEq4P4eA/wAG7oRqGZo3m4w3r9yC2KP1wP
+         YPB6fkoPaKKeqJNotngEYigbpj0gwobZjZkap6l5OzmT4zIQwYNHJM5yk1bmFCtJCRak
+         p74NbQMBYrzt0mXZ2z2VmVwGJF/J6bj/aF/syyij4nN29tztiao1xWhxm9WepjfBOwYg
+         NllYoSih5JzH65ScSNgQlzdAfx5I9f47J+qOkTpb+dJgHslwYqa/hUlJ8poy0oDmJUwE
+         40GA==
+X-Forwarded-Encrypted: i=1; AJvYcCVfGnPxfP/Vog3dijannEe//3yOllXuGtUtGw32WYJUjLvvvfamsFTgwM91WRXFxPR9G8bZaJqpD4Bp5gM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx6w53bkg96faxRfya1sbrjp4jcXNI9/2nv7JHVEgGMY9O1A6t8
+	YYs3KHg1IzbOQEPVRSQTXErgad2ZkFikCOiYiVbMqDW8uPZWaTZ731LKSMRj17/ywy/lqaAuUvF
+	gTZlCl8Cfgv4kf9915N+LN9bDlj586heR2BpRaGdT/P1fMnT7ZjXE+ej+XezUozCis1I=
+X-Gm-Gg: ASbGnctdGCJMQqqM78NMU02plccfBCzQ4jQcpq4vzTAKTqUo1H1Y7J7awAAYzGiHDga
+	R7CCRneOtxfkoNCzRfT+KBTC0vctb5eQQTo5V614tJJefwSnBTbBLOExLRdAmUvnp85tT36tvrr
+	8WuAjV+2lEbhh8kqzB8Eqlo0lDgY83lO3KfP1/TGbAiu1zKUZeSdk/OHzHuMPrUMmvJ0U7Q1G/N
+	J66PiLCp+R+o0lnkXAcmCsFR/5kPNmj40llrXJxsOkjVHQz7qOnGXkU0LPYEdPuxdtrcf3zL0DO
+	wg+s3KQmI8KJB/m+Wxoe8HiIQ+hGqcebHpmFf868z8I19vOhRWY8622hg95olIdwTzHb/9G0d1t
+	SfaW/xs9cd/qPIo4UpeDsAV60
+X-Received: by 2002:a05:600c:458b:b0:459:e3f8:92ec with SMTP id 5b1f17b1804b1-459f4eb4176mr127957845e9.10.1754911597508;
+        Mon, 11 Aug 2025 04:26:37 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IGdNxb5gc4DwQKatpkXot61uX7cGVvKpORGwTw8/tHuwPs0r2lWbt+TytrRicLCoC+zeQmPIg==
+X-Received: by 2002:a05:600c:458b:b0:459:e3f8:92ec with SMTP id 5b1f17b1804b1-459f4eb4176mr127957415e9.10.1754911596965;
+        Mon, 11 Aug 2025 04:26:36 -0700 (PDT)
+Received: from localhost (p200300d82f06a600a397de1d2f8bb66f.dip0.t-ipconnect.de. [2003:d8:2f06:a600:a397:de1d:2f8b:b66f])
+        by smtp.gmail.com with UTF8SMTPSA id ffacd0b85a97d-3b79c3abf33sm40550137f8f.7.2025.08.11.04.26.35
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 11 Aug 2025 04:26:36 -0700 (PDT)
+From: David Hildenbrand <david@redhat.com>
+To: linux-kernel@vger.kernel.org
+Cc: linux-mm@kvack.org,
+	xen-devel@lists.xenproject.org,
+	linux-fsdevel@vger.kernel.org,
+	nvdimm@lists.linux.dev,
+	linuxppc-dev@lists.ozlabs.org,
+	David Hildenbrand <david@redhat.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
 	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Marc Zyngier <maz@kernel.org>,
-	Gautam Menghani <gautam@linux.ibm.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Cc: Nam Cao <namcao@linutronix.de>
-Subject: [PATCH v2 0/3] powerpc: Cleanup and convert to MSI parent domain
-Date: Mon, 11 Aug 2025 11:28:53 +0200
-Message-Id: <cover.1754903590.git.namcao@linutronix.de>
+	Juergen Gross <jgross@suse.com>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+	Dan Williams <dan.j.williams@intel.com>,
+	Matthew Wilcox <willy@infradead.org>,
+	Jan Kara <jack@suse.cz>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>,
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@suse.cz>,
+	Mike Rapoport <rppt@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Zi Yan <ziy@nvidia.com>,
+	Baolin Wang <baolin.wang@linux.alibaba.com>,
+	Nico Pache <npache@redhat.com>,
+	Ryan Roberts <ryan.roberts@arm.com>,
+	Dev Jain <dev.jain@arm.com>,
+	Barry Song <baohua@kernel.org>,
+	Jann Horn <jannh@google.com>,
+	Pedro Falcato <pfalcato@suse.de>,
+	Hugh Dickins <hughd@google.com>,
+	Oscar Salvador <osalvador@suse.de>,
+	Lance Yang <lance.yang@linux.dev>,
+	Alistair Popple <apopple@nvidia.com>,
+	Wei Yang <richard.weiyang@gmail.com>
+Subject: [PATCH v3 01/11] mm/huge_memory: move more common code into insert_pmd()
+Date: Mon, 11 Aug 2025 13:26:21 +0200
+Message-ID: <20250811112631.759341-2-david@redhat.com>
+X-Mailer: git-send-email 2.50.1
+In-Reply-To: <20250811112631.759341-1-david@redhat.com>
+References: <20250811112631.759341-1-david@redhat.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,54 +148,170 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: quoted-printable
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: PRikxY5Pf6d-OE5jPPyuazAhFxLmMstfNUBIW9gm4BI_1754911598
+X-Mimecast-Originator: redhat.com
+Content-Transfer-Encoding: 8bit
+content-type: text/plain; charset="US-ASCII"; x-default=true
 
-The initial implementation of PCI/MSI interrupt domains in the hierarchical
-interrupt domain model used a shortcut by providing a global PCI/MSI
-domain.
+Let's clean it all further up.
 
-This works because the PCI/MSI[X] hardware is standardized and uniform, but
-it violates the basic design principle of hierarchical interrupt domains:
-Each hardware block involved in the interrupt delivery chain should have a
-separate interrupt domain.
+No functional change intended.
 
-For PCI/MSI[X], the interrupt controller is per PCI device and not a global
-made-up entity.
+Reviewed-by: Oscar Salvador <osalvador@suse.de>
+Reviewed-by: Alistair Popple <apopple@nvidia.com>
+Reviewed-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
+Reviewed-by: Wei Yang <richard.weiyang@gmail.com>
+Signed-off-by: David Hildenbrand <david@redhat.com>
+---
+ mm/huge_memory.c | 72 ++++++++++++++++--------------------------------
+ 1 file changed, 24 insertions(+), 48 deletions(-)
 
-Unsurprisingly, the shortcut turned out to have downsides as it does not
-allow dynamic allocation of interrupt vectors after initialization and it
-prevents supporting IMS on PCI. For further details, see:
-
-https://lore.kernel.org/lkml/20221111120501.026511281@linutronix.de/
-
-The solution is implementing per device MSI domains, this means the
-entities which provide global PCI/MSI domain so far have to implement MSI
-parent domain functionality instead.
-
-This series:
-
-   - Untangle XIVE driver from Powernv and Pseries drivers
-
-   - Convert the Powernv and Pseries drivers to implement MSI parent domain
-     functionality
-
-v2: Fix up boot issue with NVMe
-
-Nam Cao (3):
-  powerpc/xive: Untangle xive from child interrupt controller drivers
-  powerpc/powernv/pci: Switch to use msi_create_parent_irq_domain()
-  powerpc/pseries/msi: Switch to msi_create_parent_irq_domain()
-
- arch/powerpc/include/asm/pci-bridge.h     |   2 -
- arch/powerpc/include/asm/xive.h           |   1 -
- arch/powerpc/platforms/powernv/Kconfig    |   1 +
- arch/powerpc/platforms/powernv/pci-ioda.c |  96 ++++++----------
- arch/powerpc/platforms/pseries/Kconfig    |   1 +
- arch/powerpc/platforms/pseries/msi.c      | 132 ++++++++--------------
- arch/powerpc/sysdev/xive/common.c         |  63 +++++------
- 7 files changed, 117 insertions(+), 179 deletions(-)
-
---=20
-2.39.5
+diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+index 2b4ea5a2ce7d2..5314a89d676f1 100644
+--- a/mm/huge_memory.c
++++ b/mm/huge_memory.c
+@@ -1379,15 +1379,25 @@ struct folio_or_pfn {
+ 	bool is_folio;
+ };
+ 
+-static int insert_pmd(struct vm_area_struct *vma, unsigned long addr,
++static vm_fault_t insert_pmd(struct vm_area_struct *vma, unsigned long addr,
+ 		pmd_t *pmd, struct folio_or_pfn fop, pgprot_t prot,
+-		bool write, pgtable_t pgtable)
++		bool write)
+ {
+ 	struct mm_struct *mm = vma->vm_mm;
++	pgtable_t pgtable = NULL;
++	spinlock_t *ptl;
+ 	pmd_t entry;
+ 
+-	lockdep_assert_held(pmd_lockptr(mm, pmd));
++	if (addr < vma->vm_start || addr >= vma->vm_end)
++		return VM_FAULT_SIGBUS;
+ 
++	if (arch_needs_pgtable_deposit()) {
++		pgtable = pte_alloc_one(vma->vm_mm);
++		if (!pgtable)
++			return VM_FAULT_OOM;
++	}
++
++	ptl = pmd_lock(mm, pmd);
+ 	if (!pmd_none(*pmd)) {
+ 		const unsigned long pfn = fop.is_folio ? folio_pfn(fop.folio) :
+ 					  fop.pfn;
+@@ -1395,15 +1405,14 @@ static int insert_pmd(struct vm_area_struct *vma, unsigned long addr,
+ 		if (write) {
+ 			if (pmd_pfn(*pmd) != pfn) {
+ 				WARN_ON_ONCE(!is_huge_zero_pmd(*pmd));
+-				return -EEXIST;
++				goto out_unlock;
+ 			}
+ 			entry = pmd_mkyoung(*pmd);
+ 			entry = maybe_pmd_mkwrite(pmd_mkdirty(entry), vma);
+ 			if (pmdp_set_access_flags(vma, addr, pmd, entry, 1))
+ 				update_mmu_cache_pmd(vma, addr, pmd);
+ 		}
+-
+-		return -EEXIST;
++		goto out_unlock;
+ 	}
+ 
+ 	if (fop.is_folio) {
+@@ -1424,11 +1433,17 @@ static int insert_pmd(struct vm_area_struct *vma, unsigned long addr,
+ 	if (pgtable) {
+ 		pgtable_trans_huge_deposit(mm, pmd, pgtable);
+ 		mm_inc_nr_ptes(mm);
++		pgtable = NULL;
+ 	}
+ 
+ 	set_pmd_at(mm, addr, pmd, entry);
+ 	update_mmu_cache_pmd(vma, addr, pmd);
+-	return 0;
++
++out_unlock:
++	spin_unlock(ptl);
++	if (pgtable)
++		pte_free(mm, pgtable);
++	return VM_FAULT_NOPAGE;
+ }
+ 
+ /**
+@@ -1450,9 +1465,6 @@ vm_fault_t vmf_insert_pfn_pmd(struct vm_fault *vmf, unsigned long pfn,
+ 	struct folio_or_pfn fop = {
+ 		.pfn = pfn,
+ 	};
+-	pgtable_t pgtable = NULL;
+-	spinlock_t *ptl;
+-	int error;
+ 
+ 	/*
+ 	 * If we had pmd_special, we could avoid all these restrictions,
+@@ -1464,25 +1476,9 @@ vm_fault_t vmf_insert_pfn_pmd(struct vm_fault *vmf, unsigned long pfn,
+ 						(VM_PFNMAP|VM_MIXEDMAP));
+ 	BUG_ON((vma->vm_flags & VM_PFNMAP) && is_cow_mapping(vma->vm_flags));
+ 
+-	if (addr < vma->vm_start || addr >= vma->vm_end)
+-		return VM_FAULT_SIGBUS;
+-
+-	if (arch_needs_pgtable_deposit()) {
+-		pgtable = pte_alloc_one(vma->vm_mm);
+-		if (!pgtable)
+-			return VM_FAULT_OOM;
+-	}
+-
+ 	pfnmap_setup_cachemode_pfn(pfn, &pgprot);
+ 
+-	ptl = pmd_lock(vma->vm_mm, vmf->pmd);
+-	error = insert_pmd(vma, addr, vmf->pmd, fop, pgprot, write,
+-			   pgtable);
+-	spin_unlock(ptl);
+-	if (error && pgtable)
+-		pte_free(vma->vm_mm, pgtable);
+-
+-	return VM_FAULT_NOPAGE;
++	return insert_pmd(vma, addr, vmf->pmd, fop, pgprot, write);
+ }
+ EXPORT_SYMBOL_GPL(vmf_insert_pfn_pmd);
+ 
+@@ -1491,35 +1487,15 @@ vm_fault_t vmf_insert_folio_pmd(struct vm_fault *vmf, struct folio *folio,
+ {
+ 	struct vm_area_struct *vma = vmf->vma;
+ 	unsigned long addr = vmf->address & PMD_MASK;
+-	struct mm_struct *mm = vma->vm_mm;
+ 	struct folio_or_pfn fop = {
+ 		.folio = folio,
+ 		.is_folio = true,
+ 	};
+-	spinlock_t *ptl;
+-	pgtable_t pgtable = NULL;
+-	int error;
+-
+-	if (addr < vma->vm_start || addr >= vma->vm_end)
+-		return VM_FAULT_SIGBUS;
+ 
+ 	if (WARN_ON_ONCE(folio_order(folio) != PMD_ORDER))
+ 		return VM_FAULT_SIGBUS;
+ 
+-	if (arch_needs_pgtable_deposit()) {
+-		pgtable = pte_alloc_one(vma->vm_mm);
+-		if (!pgtable)
+-			return VM_FAULT_OOM;
+-	}
+-
+-	ptl = pmd_lock(mm, vmf->pmd);
+-	error = insert_pmd(vma, addr, vmf->pmd, fop, vma->vm_page_prot,
+-			   write, pgtable);
+-	spin_unlock(ptl);
+-	if (error && pgtable)
+-		pte_free(mm, pgtable);
+-
+-	return VM_FAULT_NOPAGE;
++	return insert_pmd(vma, addr, vmf->pmd, fop, vma->vm_page_prot, write);
+ }
+ EXPORT_SYMBOL_GPL(vmf_insert_folio_pmd);
+ 
+-- 
+2.50.1
 
 
