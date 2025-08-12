@@ -1,82 +1,82 @@
-Return-Path: <linuxppc-dev+bounces-10890-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10891-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74813CA0EC4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 19:44:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2D23CA0EC4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 20:46:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1hlp0s65z2xK3;
-	Wed, 13 Aug 2025 05:44:22 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.177.32 arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755027862;
-	cv=pass; b=MuEwiMQ+lbpiqi/oJ4HbMtGV+LQ9TTmepqYj58GVwganPCoqRdGCX7dgC32/6PdHwfrrFuwFSXRZPw7YwBeW+aiY3ZH9Bkm+n2pTpwNxyy1BlHeZdltzghNJi4XvSvuaegQtV5yG2EyKd0YlANz5978xtsuwYphqRSBvKgGMNbiD1Ys1xmzMpPe9QdnCpHem8FxlLO2GGAsr3avnr3rYUbOhctxar3afkJDf7yi2fdQ8wxa/uJ6M2dyTnlH993O7RG8Inz9dJQCeW1a6M+UIdgS1hQpt1DgAWOk0cUORzkYRIZizpuJUT/cnmqGJqf9IexUInNU/qLMoZHQhgNutxw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1k7f5FbDz2xK2;
+	Wed, 13 Aug 2025 06:46:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=205.220.165.32 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755031598;
+	cv=pass; b=Ys9VOkXWkip/yDPUmRI/iNygSplyQXc9x5x4OrsxPb6bvA72C8ebpLLkFPrzpXQ/4xIMk5zOyTXwDKzhMVs+ZfNoPj72OjggAWc4OqV8oT/0awpTqui1/nH6d/slhPMZGyNchfUyPWntciLJnJeaYu/z2QeSjiLuhwQyF1cOLQPbcwj+bL/x1A7PyrK0HavUSklRg7XohaO6LXTAGCdBWXtbTmpWZP6O+gDQB5iCC9Oz5s3KBp4ecxcm5xnU2dr9Nq9DB4daSl5UiwC9KYiNT3Gjx2VI8Ytot5AHRsL88SQUYdIpfgUI1e6DSbOkAouclmS5utwtkvBK4+/fI/20rw==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755027862; c=relaxed/relaxed;
-	bh=vC+cNKwnfXlOhdhIjEMvIyRCr6cTAm/bihqOKbqMuIo=;
+	t=1755031598; c=relaxed/relaxed;
+	bh=v/AKrkerpeKb8wxyWBbLojPfbnESsK47UPNkKQdRQBY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=mLXehuvn5LwkXDXtHsOOgFRQwRqKBHpzdF6cNKJVtB/qpr0SUmkzmJ4bYfIo+FUqS/X06vR8AxzvSVqXjfkcMML95IZ1kIe7NTbnDl4GaqJRqrdi1nrf+6PHccTcpaPY1qxCNcs9rS84Ay9/+HH+7ebiKj7qWnKwXe27igL0QBJW0CTBAXo5N8xQdJwuOFR7KKwm7HA2THbfjDlVSZD35Cf0uV1D9FbtPyrGaeHFjgpcQp51D1WMQQ4p13a4XJs6zZHjPDztjngKJPdQ+YnWNah0Ibts5a33hsH7f/Yvl7RK/WPPhSkgCeYU5rr5aVLTVQOeUg+A6srUQe0sq2GLtg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=TN3+SW4B; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=n7MDek2f; dkim-atps=neutral; spf=pass (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=lorenzo.stoakes@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
+	 Content-Disposition:In-Reply-To:MIME-Version; b=YExu7c5sYBvk1E5xql5bJyootk7i0UHK3q3oWqv64xoFlSMH6i+n71ZpnH3ILL/H0wZlZ9mpvAj0AeQNJ9eHw0F6DI4jrNav3dp5grycC2DWZvNkpweIZ4hGqGeSwNtVOhRRONakoTqhvm98gERfEFENTau4G2lOH4OK/JO9YHJ164KXiyrzfG0ndBM98WDVPkn7GP/cLnmLTo0FsFT8inBTeXkfSLi0F+vaqrYJG988k0jdbDRhOnGCC+t4584vT1N9O9YTaHSMjBdLdv1sLGi3GQ8xBAOxfcIFgsgBjeiDzNwBl+i9mxHHZ+F91AkgFe1wgi0nva4+IxTQVGAwaA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com; dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=A7U5T0BZ; dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=amhPi3u/; dkim-atps=neutral; spf=pass (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=lorenzo.stoakes@oracle.com; receiver=lists.ozlabs.org) smtp.mailfrom=oracle.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oracle.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=TN3+SW4B;
-	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=n7MDek2f;
+	dkim=pass (2048-bit key; unprotected) header.d=oracle.com header.i=@oracle.com header.a=rsa-sha256 header.s=corp-2025-04-25 header.b=A7U5T0BZ;
+	dkim=pass (1024-bit key; unprotected) header.d=oracle.onmicrosoft.com header.i=@oracle.onmicrosoft.com header.a=rsa-sha256 header.s=selector2-oracle-onmicrosoft-com header.b=amhPi3u/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.177.32; helo=mx0b-00069f02.pphosted.com; envelope-from=lorenzo.stoakes@oracle.com; receiver=lists.ozlabs.org)
-Received: from mx0b-00069f02.pphosted.com (mx0b-00069f02.pphosted.com [205.220.177.32])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oracle.com (client-ip=205.220.165.32; helo=mx0a-00069f02.pphosted.com; envelope-from=lorenzo.stoakes@oracle.com; receiver=lists.ozlabs.org)
+Received: from mx0a-00069f02.pphosted.com (mx0a-00069f02.pphosted.com [205.220.165.32])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1hln1nkwz2xHp
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 05:44:20 +1000 (AEST)
-Received: from pps.filterd (m0333520.ppops.net [127.0.0.1])
-	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57CJC37i003305;
-	Tue, 12 Aug 2025 19:43:37 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1k7d4Tk2z2xHp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 06:46:36 +1000 (AEST)
+Received: from pps.filterd (m0246629.ppops.net [127.0.0.1])
+	by mx0b-00069f02.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57CDBxJZ005442;
+	Tue, 12 Aug 2025 18:15:10 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=oracle.com; h=cc
 	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=corp-2025-04-25; bh=vC+cNKwnfXlOhdhIjE
-	MvIyRCr6cTAm/bihqOKbqMuIo=; b=TN3+SW4BbKjqmcEx+x2cL2h5nmURGOTrp2
-	bnsbrjSzXhFLICP0A/pojRNQUCcORCHAIYTtTeZ1hi9Q4uD6tLlQ0sQBfOCzl+Rc
-	YJtuAhtY7dXwmdUUl6cUVDJd41rhS7Dz+lF1eAqUbl3PIA00336wbIG+HIyqxBqN
-	n+BS8GnlbRV7mvDyothnVI6Y+5qRTuvNHQq0Dz63dy7H3MROvEyGujdxUHp5xCqr
-	GEGXv1UFrd0V0wvEHVMQBm/pVhAPQ21mkMr3ZTpsqL9r/ILs9idfAlOFpEO59bcb
-	5Nm/9UtgH71WM+grd000y4M845/2TMBQT1YjWHcW7WNph5MZQpfQ==
-Received: from iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (iadpaimrmta01.appoci.oracle.com [130.35.100.223])
-	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 48dxcf5m02-1
+	:references:subject:to; s=corp-2025-04-25; bh=v/AKrkerpeKb8wxyWB
+	bLojPfbnESsK47UPNkKQdRQBY=; b=A7U5T0BZgOBOFuD17g6/tHPcFwG//ysF1u
+	pGenndBpUcTS7xENzEco1TBWhd0hdKsnz4LlyJJBM1QBlj+GPsmSL/jIl4xNjgFC
+	Z0Ja9ClNN4ucrtIJSifbV3qU3DhpugpTR7iQtWGJoV3DCcEy1MqdPzlnBxwTci2M
+	vFcY3boYzX8KCs/vnJ3e+Ypa95C0GmT+MvZm0ttBTmLNKlD4Cr8sCTbCOlpUjpKl
+	1VhuAD3me797b1oJhLUcD6GLuJzEhYPsyeIdKyZidYZYGKE+yCmyTP2SJ8DBaLUx
+	LP3Yndb1IELk6PGWcbd5TTmiAnbC3imUXdt/Ft1KpEsaW08VGJSg==
+Received: from phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (phxpaimrmta03.appoci.oracle.com [138.1.37.129])
+	by mx0b-00069f02.pphosted.com (PPS) with ESMTPS id 48dx7dn86q-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 12 Aug 2025 19:43:37 +0000 (GMT)
-Received: from pps.filterd (iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com [127.0.0.1])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 57CIi4SK009833;
-	Tue, 12 Aug 2025 19:43:36 GMT
-Received: from nam10-dm6-obe.outbound.protection.outlook.com (mail-dm6nam10on2071.outbound.protection.outlook.com [40.107.93.71])
-	by iadpaimrmta01.imrmtpd1.prodappiadaev1.oraclevcn.com (PPS) with ESMTPS id 48dvsgqm85-1
+	Tue, 12 Aug 2025 18:15:09 +0000 (GMT)
+Received: from pps.filterd (phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com [127.0.0.1])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (8.18.1.2/8.18.1.2) with ESMTP id 57CH1LLR017385;
+	Tue, 12 Aug 2025 18:15:08 GMT
+Received: from nam11-dm6-obe.outbound.protection.outlook.com (mail-dm6nam11on2069.outbound.protection.outlook.com [40.107.223.69])
+	by phxpaimrmta03.imrmtpd1.prodappphxaev1.oraclevcn.com (PPS) with ESMTPS id 48dvsaarau-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 12 Aug 2025 19:43:36 +0000
+	Tue, 12 Aug 2025 18:15:08 +0000
 ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=AIiWHiEXy+ezadNwVaOtTHWGeoaqcNIl7oPLvIdubZpvW82atG4xMaYn5wCDinOISGhLu2w7BSMAfRWylDAj8B8h9/4F1bSmP9QwIJmL3d6Odo9XkKHj3IwHHaA7m1GqV3i81Ass4Y5pH4jNP0KJjhl1d0xV6THbFBhMdtLZXmjPeF6RG49wEhg19BXypRFp1BC3Aa5J8D/5LpKgmt4iYvJ/kmHLeqiyEyuHiVLmPt/E6RmBd7mH9U29bEsFG+cRizPohqwkQMDCMeF/KsOKtjlKo6N4LIwsmWiBbA8PFyscuLl9Ce9iTUMf/Lp+0/8n7wdRYrHgSqiX30+K3ya5UA==
+ b=aPmuu7Ic+Gn0EZSHv/4wSr8UOV6nGjaZGJMj/ccTi+Nvb31+ZYulH86CG/SOCB89do8mib8t0OQBlXx3vgBBxbrYEzIiVwFZ9/z3Q/5w9IxYHMGpmwOi3TlRrFJ5Z2IjrdkKwhcMHkpHgekpX6Q/GRDzPBlfJZu2JfJIvooIXNLo1x8V1XBOFZbt+ecuBMQ39KS6QRNJi2UDeRzWZoXscTp+zGk8zuqtxyYHuEG7aetmXKIUkBVSuUVHG7a+oTv1P6ujIzSB25I0oAgekYiXLT6OtgE5UwrF8LyQiF2F9A3Otk5ATzJP5O/HMNbth+doRliniyM7EQgFcltII0qJ+A==
 ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
  s=arcselector10001;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=vC+cNKwnfXlOhdhIjEMvIyRCr6cTAm/bihqOKbqMuIo=;
- b=P10RuFwObVTrDJ+EMpXZUZk3iboBqnI+78gHVZKEIOKofzOQ+WKOt5LWezbucT8Cv+ZF775uVwmOCYrijTZKNThmj2KWIfUs5oWlbDgtR+92ctOfS2D7Ubu6jRFVIu/gFcJkyqB+1Cd+qZ7ZoA7xOmxywajuCn5u7GJ6zcrqrld00b9Y4zWgLMsjWVE1CBh2QMsRx4lLTcXb+0bJJ2LzbTxe0b9KICwmTaHZ9ZeOPMj+iAGoS45wIa0XUoRLNIsupoCzMaFiu45GWiKPaWxtCpM7WEvAybN2nv5B/bk76m9GXoOSxwRdALGEbjM69M5iN8kGv2IbdqjLJca8/HDfWQ==
+ bh=v/AKrkerpeKb8wxyWBbLojPfbnESsK47UPNkKQdRQBY=;
+ b=E6tcC8wXwqHjyGAECBaiR1G1STp6z5pc++gUUjbiABtKG9YwRPAOikZUHtfrp6xzjXHKh8RoChHAE5ldxOgNv4cN9cHAaZ2xfvj/NQxI66abQp3snDaidvQPc/a61l26BB0SiadCNf46Pt2UIK6XiP0tSvl4heDy51DMxaS90+NNmlK7P9DNq+qPOTnITCsrERGRq8iqfRqglXLtPCH6Kkt2eAgSbdCe8QJjPf1K7Xmq3yisYU87ShVvT2Paw3JnEJCYB4vVkRc+9niI3HGhbOgrwwmXpYCW+MxqQHLGsRMcxekhrJ6GruLXndcVIwOI2lb6mZmdP9sMeHmJYBChQA==
 ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
  smtp.mailfrom=oracle.com; dmarc=pass action=none header.from=oracle.com;
  dkim=pass header.d=oracle.com; arc=none
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
  d=oracle.onmicrosoft.com; s=selector2-oracle-onmicrosoft-com;
  h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=vC+cNKwnfXlOhdhIjEMvIyRCr6cTAm/bihqOKbqMuIo=;
- b=n7MDek2fj75eBjwJwew+1m3M454Dbmqn0unjuVTMYhv7v+Tfz5UVvcnodTDXkLd13piDVl4HcEW/7mypDV0m7/1CY5mYE+GkR84GkSP8/iFLi/f3T0Mx6ZzHQGzcywGwtkJfvH3NQfT/FWZ1ItYlthjcQsog6JlNuEKTy2QDup0=
+ bh=v/AKrkerpeKb8wxyWBbLojPfbnESsK47UPNkKQdRQBY=;
+ b=amhPi3u/VQ2Pdu/3xBaov9uPN4b+0CT+9vEpk7gcssMjKGEWK3I537nTH9d9EgsE2t94vLAR2Xtd58CLOkP9ny6FjYCjP57Z3KY3Y77+ECwVJp8zfYnZ5t8vugd8/rL2A6eCSRnxZz7lkdmWUp7gr7LYt7+IRcl5cwHY40zZWsM=
 Received: from DM4PR10MB8218.namprd10.prod.outlook.com (2603:10b6:8:1cc::16)
- by CY8PR10MB7124.namprd10.prod.outlook.com (2603:10b6:930:75::12) with
+ by PH0PR10MB4744.namprd10.prod.outlook.com (2603:10b6:510:3c::8) with
  Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9009.21; Tue, 12 Aug
- 2025 19:43:31 +0000
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9009.22; Tue, 12 Aug
+ 2025 18:15:04 +0000
 Received: from DM4PR10MB8218.namprd10.prod.outlook.com
  ([fe80::2650:55cf:2816:5f2]) by DM4PR10MB8218.namprd10.prod.outlook.com
  ([fe80::2650:55cf:2816:5f2%5]) with mapi id 15.20.9031.012; Tue, 12 Aug 2025
- 19:43:31 +0000
-Date: Tue, 12 Aug 2025 20:43:20 +0100
+ 18:15:04 +0000
+Date: Tue, 12 Aug 2025 19:14:54 +0100
 From: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
 To: David Hildenbrand <david@redhat.com>
 Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
@@ -102,19 +102,17 @@ Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
         Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
         Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>,
         Hugh Dickins <hughd@google.com>, Oscar Salvador <osalvador@suse.de>,
-        Lance Yang <lance.yang@linux.dev>,
-        David Vrabel <david.vrabel@citrix.com>,
-        Wei Yang <richard.weiyang@gmail.com>
-Subject: Re: [PATCH v3 11/11] mm: rename vm_ops->find_special_page() to
- vm_ops->find_normal_page()
-Message-ID: <77ed5b25-1a82-44b5-be67-698b9674547f@lucifer.local>
+        Lance Yang <lance.yang@linux.dev>
+Subject: Re: [PATCH v3 05/11] mm/huge_memory: mark PMD mappings of the huge
+ zero folio special
+Message-ID: <511317b9-7155-40c7-91e0-faf134622b9d@lucifer.local>
 References: <20250811112631.759341-1-david@redhat.com>
- <20250811112631.759341-12-david@redhat.com>
+ <20250811112631.759341-6-david@redhat.com>
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250811112631.759341-12-david@redhat.com>
-X-ClientProxiedBy: GVZP280CA0076.SWEP280.PROD.OUTLOOK.COM
- (2603:10a6:150:274::13) To DM4PR10MB8218.namprd10.prod.outlook.com
+In-Reply-To: <20250811112631.759341-6-david@redhat.com>
+X-ClientProxiedBy: GVX0EPF0001A046.SWEP280.PROD.OUTLOOK.COM
+ (2603:10a6:158:401::48f) To DM4PR10MB8218.namprd10.prod.outlook.com
  (2603:10b6:8:1cc::16)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -130,286 +128,248 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: DM4PR10MB8218:EE_|CY8PR10MB7124:EE_
-X-MS-Office365-Filtering-Correlation-Id: b66055d1-a62d-4c30-62b2-08ddd9d8848f
+X-MS-TrafficTypeDiagnostic: DM4PR10MB8218:EE_|PH0PR10MB4744:EE_
+X-MS-Office365-Filtering-Correlation-Id: b335b214-0913-465a-4daf-08ddd9cc28d6
 X-MS-Exchange-SenderADCheck: 1
 X-MS-Exchange-AntiSpam-Relay: 0
 X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|376014|7416014|7053199007;
+	BCL:0;ARA:13230040|366016|376014|7416014|1800799024|7053199007;
 X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?4tCqJY6FFLzhEZFyPG/ICtr7ogd1l6C2aubIJn2uRYW8rplCUza5wzcSclaY?=
- =?us-ascii?Q?sdwNQ33mX2SlxF++ome3YUeNLUo0FO4zp1A+1tMGEBuOBnCyluadofAW+POC?=
- =?us-ascii?Q?o6SKy1p9Q4L6j9t59nlWVXubZSB3LgaXQt+dRPrdI8+LAzaVqYs3LNycy3yg?=
- =?us-ascii?Q?e8ut/Aod8pFCWWiKC0QFrgb0uBtKCz/hgczvlcYMumy69Be2uxVwb3GWircj?=
- =?us-ascii?Q?IUWjD5kKWSQXTAzEoaGVLKB9+Nt1gzFcwdB8tJa+UucL8e2OA4jm4b2YX9Jw?=
- =?us-ascii?Q?5UZ/SdlNzfDql3iQZjJhh6oQuEsCKioe34Zr9bo9PF7mRY2GOPVCBE9+naTF?=
- =?us-ascii?Q?FiGGcNXbDXaf/hS6SpRgn9uC03q5seWr0puW9hthiAodCkKospl6F4H/x4sa?=
- =?us-ascii?Q?DjOvOuJoQB8G22jaBnSUOIp2WE4all1PYU82eVuaSNppDUhrRRkaNyxchMF9?=
- =?us-ascii?Q?s3evuKr781d1nErOnA0qESdlFZcryiIr1APB5pxAcDzr2kDKEDmO8fg7f0tY?=
- =?us-ascii?Q?XEHPv/Ej/IDwhHvf0gS1uzDOqDoVZJnvZfak9f7q/YFpgfskETUiijlGjbmk?=
- =?us-ascii?Q?4wI1fmya/d898tNy4LusRmBWhHqmFUUE88rcNnG1b6nhr3cNl16iw/JIqs/i?=
- =?us-ascii?Q?AktvmMA44BnKlYeQ7/Jsb6MPQFLcqCAXokoMln4Bw4fXf8ERosgtAx2MLuGW?=
- =?us-ascii?Q?BvYEyjY8qz3V5B0x9WJEPxTySBzhfWnjfffhKcw74AxQ8BRHyMJpyT+cL+S3?=
- =?us-ascii?Q?dqHhFhoF/FfjravB461BvQIjoJPJL7QJVLykmV9ILGjq5MuEeKNg0VPh8TZf?=
- =?us-ascii?Q?US81ITPG8Zmf0fjTQnxdeTUd6R9ZIYAEaimgMSfwNpW70+3scWdH+dQtS3nR?=
- =?us-ascii?Q?p/5wopNTy7XzaBlhcfk/18ndUdpBQLc3CWAm6pNOTBP/vXZIfCXLGbvWjN5p?=
- =?us-ascii?Q?Tz71FJkyus568vLiuLx14513EwzDJ8oWStljb8irFC+DYXMJuPYBpmrDOsrw?=
- =?us-ascii?Q?gbYfIZkP1ghM9naIkrXYxpcskZDYKUyuY4gJbUdZXS3j4m3i/zwuPOWDcNB8?=
- =?us-ascii?Q?XGlDTZJlgZlSd2FVKRYk0biKjeCijyA5peJYet62VQkYsCGHX1mPj91s0DjK?=
- =?us-ascii?Q?O/VQRMnYBOKZOEjHiPrQ/LdOnESLnnieHF6pMr+30QFgCT68DNGRCMHrm/QY?=
- =?us-ascii?Q?i2BYSxAeZRJgF2/hjPwks8oz0bvqr71jRX9Dyr+HENAC/x2PTtlmEF+roKcI?=
- =?us-ascii?Q?mXtfW50/kOlFjmUGLk8jVeuX8hTbhEH+2IbVS/Z0fXGcZ/5wXsyCKaUxNubJ?=
- =?us-ascii?Q?4WYWTOGXNyWaze5Q1SmeF6wz73T2vRQuVw/ntHu+A1L/NqR8iEUeKdbbMAYS?=
- =?us-ascii?Q?GY4fd5KBkKRiTn25Bw/k7YONMx8xVV4iIn3u/xegW7SukS6vYtRgfWm0RvNx?=
- =?us-ascii?Q?aBZ8mu1EJ0k=3D?=
+	=?us-ascii?Q?tMymG0V27K0l2/9ZZj+4MboP1zKVNbFQyRpH+20gcAErkeTFY0vnERB5XhVI?=
+ =?us-ascii?Q?+Gi4IXtJ+ebBGs/25KIrlkBftedx9hfwqH+1lqNUmLeGpi+2DFB9WTyHXtz6?=
+ =?us-ascii?Q?FOsu2vNLXuyC1xPt4vFw2dTpbsQezQObIgRO7HvOyaW+EiMguGk05KhRJnLz?=
+ =?us-ascii?Q?jDOK9pBkRPRNb4Wkkcf8S+PDDBicCPJPsclFgvS8a0DDxgwVdHI+rxXcD8pp?=
+ =?us-ascii?Q?if4OVUjAE4ocRZV8ODgFZ2dZlGX43OVDp8YyGs14HCQEYzBkIDzLvFudkPJe?=
+ =?us-ascii?Q?NJJNzl+gis+azwsUJarUEtAd7A2WdJAJGssJnUQUtqTsWHGBn5H+DVTxB6ng?=
+ =?us-ascii?Q?fmlJ00IP83b/NflFiC6Eo5NU7fjrCNqd14EnuOW0AC8BY/piAs4POjUkvAvY?=
+ =?us-ascii?Q?Kh+2RtfUXaN6Qcw5JocENvUJz+u0qZ2nwnqoRZkbjsZCaiFeXac8o+75upb/?=
+ =?us-ascii?Q?xoRJr5q+tos24ih9Yq2nVo3hJNUwHdyV5C2ODoGwfgdXrHJvZSwGCnBXUhdi?=
+ =?us-ascii?Q?SukaNQmwEZgr4g0llNkQOSlc8R5VskoFKeGQAC/Uo2nhsKw5gSv97iytt5y7?=
+ =?us-ascii?Q?T1gaAuszfMMI4hA8LCl7McrPt+JLG9EAjik+8HnMDi9JS2Cz7+Mhq91vH5nr?=
+ =?us-ascii?Q?K+rWaAQZ1z/J0USDGJiCWSi5paUTAysCcrUpYPSfQhFaSGNLMepnaYH70/ht?=
+ =?us-ascii?Q?eWCBOqtS0JXXDkh5dRVSRlyH97amXHAW0lNSbsfIsrHdbe327JxIM/Jc29Dj?=
+ =?us-ascii?Q?/LVx2JGCYG5P94LPU/IiTvpDHROJkQN5XFVHUMHLomSqPDBUXl0eADoAaW75?=
+ =?us-ascii?Q?gTPN/Q6Q2yMDn+g6ndRKzRGJOIM9TAkWgROzzihub57sWS35jG/cwoltZBQF?=
+ =?us-ascii?Q?ZlanGmBR+Rn3MPSpnEtwW7qjKckw4BSfd7FPanKC0pWqn1LIkVy/hiJ77GGW?=
+ =?us-ascii?Q?tKSQTyxBVx3GpWncIless+adKnCUaOiKy+l9+E20JO3ehW8JiJ5ui4M5//pz?=
+ =?us-ascii?Q?zzFenbmzY0IDXjEc/s0LLv2My3chfUB/e+FvfMMTN0htZC/qylfdGsRK1g3N?=
+ =?us-ascii?Q?UFPc9e53/CF2RI4hyOo653Q0Y5MHK/1rAgXSaHdHmTxZkrhcH4qDw4KzaO+7?=
+ =?us-ascii?Q?n+o+pGPURfqfDtz+wH97ZGolLFSuLQyZyhjYelfL1h2DJzHkBtISfIHalsYU?=
+ =?us-ascii?Q?Cx+5Ki9xL2IXkIbO+3vf3n3BZCUQJDo9Vgqel8GO+VkHKTf5X/XM95tR7evz?=
+ =?us-ascii?Q?YFj6HD4Kk6XD3N/Kn3V5Kff6nXal42nH/8mC8FGk51FAVUdW2RYmmaJoi5Nk?=
+ =?us-ascii?Q?KMhtWD+L3fe6t5LwV7yR2xJznJtC1Z6W7/WHxGB1/1QpnmYroSuYorD1k2Ge?=
+ =?us-ascii?Q?/TG34ZEQxrgGIE3tUjmCFhgRxExxGP54m/zD844LHWsEgsZOelxXqhwjFuUo?=
+ =?us-ascii?Q?qo2BT78aH4M=3D?=
 X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR10MB8218.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(376014)(7416014)(7053199007);DIR:OUT;SFP:1101;
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:DM4PR10MB8218.namprd10.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(376014)(7416014)(1800799024)(7053199007);DIR:OUT;SFP:1101;
 X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?xyQUVEQ9sPKWyZ6FncEJccIzDxX6TN7k0HYxdSaPn6TsUVp0g5MIkbbxDS0X?=
- =?us-ascii?Q?mI7lrTjTqilrSNohCYeN2CV8l81Om2SsIePF80JThloKGadVIrhAHxNgZKhi?=
- =?us-ascii?Q?ryRfHTmInCK19IhQ5TmHl/NJvtD61XFw4VWLyZKp6Tc5O9YdONmFXqTEY5bB?=
- =?us-ascii?Q?CDZSGc4aQ7Gu5aIKDLSwt58z1j96Fqc+5xBwicIjfZWM3SboqeiRGP9bNGVl?=
- =?us-ascii?Q?yt7xoKLiyOMl8aNklNB9dXLjKlKMIEnt5ZAiwN+exJEUzgDfSJV4PRIsPpnD?=
- =?us-ascii?Q?tB+1R9LNUbnZJQBZES0aiaaBWgmAYn61B7w0zm3g/yiRPTOFtJwP0gXJjDEv?=
- =?us-ascii?Q?xUEKi7oB74IAO9gHibmZzOtO7HqePXqlAgvlxpH0u8am1kemR/Q7CDCbXV8e?=
- =?us-ascii?Q?dbhbexUD/yzVHWamWAWqqi2JGO6shOpCeDvHtHE1l1VlbbzfJFfl5JqLPuYd?=
- =?us-ascii?Q?WjDWR4EbPATjRHR8cadjZ91OcPNe46ZXmZsyWmToTzVbzj0EE4xCr6+9Y2bt?=
- =?us-ascii?Q?tYLGipukc217YM9uxIIH4X03aezBb3baGfdOXxylDv84j4CO8GpwHPxYXINv?=
- =?us-ascii?Q?sKGMgKEFVZY4BsONg8oSQTdjPFdrredWxBiTc1zY2MCHuPTs1yG3VA9YKLp+?=
- =?us-ascii?Q?vAtByJVQYxyIXCXUdRrEaon8q/87eqD/hZoSnnrHlF5/HfdwYyXXNGZo4rdB?=
- =?us-ascii?Q?nKu9OlNE+pPRQx3Emd3V3E5Lvui6A5IeTx6XZiEtn3OliKZPqx+EsGFGk2PS?=
- =?us-ascii?Q?IBwInbGI1hHEsC41V+W2PON/kWSOq4xt3xr6ZLVGOvaynm3/fR9XEfH8TSeF?=
- =?us-ascii?Q?kiVzs20crazU2nGz038+wfvXs41lRrFqHkdZHljjrhjTAo5I14zJ4xwPuySp?=
- =?us-ascii?Q?hFZ3yp6Ly7zNCL/44xgqaA017pnxAuPCOZq7+Qk4ZaKNe34gYEoB4GiG5l4d?=
- =?us-ascii?Q?ofRSK3sgA8lB7aRBGR0rvAghXGIOLHB6LjznUEAlh6q3ZSNgRodnlw2sZX1S?=
- =?us-ascii?Q?HbQ0s5ZZ8g4Mx3dZv4u1ant33watBrYL75fRjhgMPWyryGAEfjG20L7ImLQU?=
- =?us-ascii?Q?d+uzCBfkrmyJLsVq66NrW/cjlmOoSyzHIt/lwMcA/mNGx/pEKkWJFM9zNeaF?=
- =?us-ascii?Q?mTzYB4P3L+bAHK2dhPSiwWVUtSTlhFiOS2fVdqeLU77MvOQcbFtudjQjXkSh?=
- =?us-ascii?Q?mKGpDBADRibTg2foWXF/01Pgk436k1yBajsvJ8x6SRICUsuBSdg1h0HPa1T5?=
- =?us-ascii?Q?QLvzceVVplve456janNZmN/2HnyoNBBpWqDs65dEoWv4ovZFsHI/eV5ZJZNb?=
- =?us-ascii?Q?B08IGNZ+RkYcuZJ3HihfdnXshpzl6sSerZj2jYJPLxVMz5HBQ0Bz/KsvNcqJ?=
- =?us-ascii?Q?1fVmYHeqBWttWWy9BtFoaD/bWvW2Z09osz6dh24hXgGCKe38yaYWbRJgsnUT?=
- =?us-ascii?Q?dDQ/KEi2j93Jvi+ZB7JZVjgg+GuGReOKu8MmAvZbHDtY10JOlaomTsnJX+04?=
- =?us-ascii?Q?ZDODJkMqqmj92C+Oan1BSbSXcFeEgDR/ZyWO8MlgfCCsReGzq92GifeXE0cL?=
- =?us-ascii?Q?4qEZmhxNYMI8lEeI5+WQ2LSGV6iZshJKNGzaAONUsfwPs7jIyrrwdm1ACS/5?=
- =?us-ascii?Q?mA=3D=3D?=
+	=?us-ascii?Q?Tp7l9ZOSzL404BPsv7DRUVRtaVa+OWxKN0HUDCbfJDEqIyK/G789CiC6T0gu?=
+ =?us-ascii?Q?lziI+o1FgapymdkHFE5DF3mJ2inle1FI3YFr8mVDnWKNLuX4M5pDEECK9f9F?=
+ =?us-ascii?Q?Tq7v1RlioPX8gUhEPxXfCa0+EfabxWAhxBqHzDG/bGh4uaooLDINGPGPcBG5?=
+ =?us-ascii?Q?AzYY8LNMdrF1x5ET+WjmZHhOxNfhPv6E3nJJmSwA8QGWARWn0BQq9gaewBnd?=
+ =?us-ascii?Q?8x1ooYqjPhGYKwOTSsdQwhYdAKOn6PenJ6L09XcSzQAl2HBjy4068Gi6sKBo?=
+ =?us-ascii?Q?zs46ac/neaAU4K/Nt9I/BzFv3JuqJ9LoHeHz/+yLoNo9nAmrt6sh3C+4/sJS?=
+ =?us-ascii?Q?UHJacmeMGQQ3Ac/DqNOjE1HKdoofpDgnRIrkdTSywgNmUfTjMJ0hwQUxIXHf?=
+ =?us-ascii?Q?Y4MLciwtA/s5jkOIZZiL7RH+L9U7IuRpO3V2N9Ip3ThNDDledZ8I9SHHcE7Y?=
+ =?us-ascii?Q?G8PoVa+7Afj8pPJQguC0FDOWBRh12y0lC1KonVwQH/JeHSCryqsfCakWeD2z?=
+ =?us-ascii?Q?hdrYCM3L6xc7cCne4dNLgQfIdpL8h6Uo30ZLXINxZQGOJCEsdLwyGpBNZ2qE?=
+ =?us-ascii?Q?F8OESXniKqhUozpID3GL79O2/kI/Ppx+h4fQzOMH8LyUrVP9M8ax9Ak8KS5V?=
+ =?us-ascii?Q?641ZO6zTPhIYkK5WQptYfTbA/05Zm2vUXZ/hNios6xsaVs594K3/r9IixK7M?=
+ =?us-ascii?Q?6S9lv7pjRyhKcnoLzFP+QJbsXhaAegckdzzsx1KF5Sh8/fayBXF6PnekDykC?=
+ =?us-ascii?Q?p20v+/qNAsuEvAh+rY+2ycYXJkYJPYpoC5TkoYjWKee3748LaavXnx+GnmaG?=
+ =?us-ascii?Q?18irb7kfqXxFfNjjDMK5Sq+uY7SEFRonHuua+CYpGdL+vacjG9QJR/1AGcsw?=
+ =?us-ascii?Q?dj9uCWq/QMxhdq66yN+ASdW/hJWP8ZUR4pFKheWTgtTIza2m8soelxxohGn8?=
+ =?us-ascii?Q?YiXbnQcf3mCHvGm1dXNxpEFM43x8v/Iorq8ZW2vsJxSQDHe3SnoSR+9WVFTZ?=
+ =?us-ascii?Q?UXjG3X40BUm1jqA2zpkUcHQ8CiXXf2YlxM7kREOMYp8eSuTxz9AOHmP3DE8N?=
+ =?us-ascii?Q?3r3h7ewJO9fPa03HvW742CMcoBtSKBso9DoOjh1Yl81/eyek78l03hPIDe79?=
+ =?us-ascii?Q?FG5BJYjhXiXDefKGwGvFHuv6HQRHiBWLfOt5sJN6Etf4+zDd5kdsVfaEadtu?=
+ =?us-ascii?Q?ymSvmxAmv7jjcVJp52iMuVivxHC5EmK94GKyAcZRdTKrb6/z4DPlhO5dELIJ?=
+ =?us-ascii?Q?8BN/zJyEQm3mnI1A+iDbxhYthePlr8p+NNePdkPPJtm8wPlN28M2ZHBMLelP?=
+ =?us-ascii?Q?qy4QgFTMDHVlKk7K6IoO9QJeoyzx1v8Vb/nmxdxb/IOVPFNVE5XR06/Y3zte?=
+ =?us-ascii?Q?NRZHQN4o+r7d3ojkm+aZuVj6j7R4/uPFGy6XsXjvb5yIIHCKVkKCA3bHnuS6?=
+ =?us-ascii?Q?nmoY5N0qhIbzU+YybBQqrUoMsN3FGQWmo6G6mXkOjK0zC5TeeUqSJ+8K7pY6?=
+ =?us-ascii?Q?OZkVzBaSBIGoxNeWSXFjkgzd+aSitG2QACL6BmRB3vSA085YTfTyODd0QdnB?=
+ =?us-ascii?Q?JT5UlKgUxB5vqRJYX9h1g5i56IHWv+Vd5JeKUp/1Dmh+nh7p8oqMWQurpcoF?=
+ =?us-ascii?Q?qw=3D=3D?=
 X-MS-Exchange-AntiSpam-ExternalHop-MessageData-ChunkCount: 1
 X-MS-Exchange-AntiSpam-ExternalHop-MessageData-0:
-	1RvRVFfXGFrdbIdYDBTQoaOtT8VB+UHrwGC0mE21+epfiG+wPsx67vL2awT0dvudVwaWzGHi/kTk2lsk5Qty2zKibsWr7QCgEQhrH8NIDcMVxjf4efp+DQ4euC0AVLXmaLGwNWRFkfYx92T6tjAL0t4dioVVlyn3qwfWAdY9PSeV/WS6U+ob0sJ79qYvj+aVA1S3boRkK356l3c26swpi/FhJZbnIaZjoKSG/PChcQt8p60NjYHrWiCsbvbUWul/B0sek1N2R+EG5kMRwZJSfEumJZQbzg7ceZjzA3519AOs0uWNctQfy8hlXv5TieKR48WkbNhkkZGs4clvXwJkGeZVD98MfcfIaTLjbNBggG6l7Wg46cpGj3B6//PKiulaQ9QIWtgdf8iQT64KQ87i4ia73WPbFfZtmAxVfZWD4Oo6SVQigIvL9dhqEMIxPRVlS7U4jb+c7IG6ri/Mc2ylPMZmLbF3398p22+Os1q+ZkObeVk7ZXTCbKtUVtrDZd8stMcM5l+FTrwtJR10fO9CRKG5+alNWJh46NCtyA1+RwIjQt5SCYLBKqvgrQCgcJpycIiKl/jMtp4zbdF0adcRkVR8jIUZmcJKjI8XMPoAjco=
+	iYnNSPu9YTKkbldaUSFfMmrTQ+iu4XNtXU0KoaWKNoTlIJAHkbGxUnI8Pne4JJ7oKJKr1/QU/zIqDcdesnZBtJtDJnShYWj77lgzo0Sv1Ea0jGy/D/io+aLyGizCqpsxBFq2wWNDHpPVDzq4irZbOVIYM+pclhRxMjylBxlF8APJAxH0Kbtyshm+g7YSEp2CSueS82o/hTGt9nA5MwNWy5Pkf6HpmLt9KeHAMczpGmddSx8a3B9kfoYDuYHfC508SrYQyxMtDnDO9E25WoHcipSmO+oKlPTjnKcfo2b2/eAGM320pClCMf0QtdN7VH/aOl0ra+erqhZZrHdjfffR2Xoec4kkDcJUIvZQOGyJGcWiS+x3T/Yk/tFC38Jde+6eelcdFw7mWD8qldHCPvGYa3O9udIhq/XlTK7P+rR2m2j1s7QQv53T8C5yrrPG+dALRYsA0f5xuaD+nvkGp+BZH/7++5p2aL6WCvGWIY1hQY7yc5GcYLtQMHxdytmMtsLxupYYGMTSspNUUvL1S+W3XnP5Hwsh5rTDFb6QL6cwpa+dcGgh82VWI+6CoGaMZoh1nbUCkam6eJALDkpa+J6gilTYaekSWTxDmVpfccS9CFs=
 X-OriginatorOrg: oracle.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b66055d1-a62d-4c30-62b2-08ddd9d8848f
+X-MS-Exchange-CrossTenant-Network-Message-Id: b335b214-0913-465a-4daf-08ddd9cc28d6
 X-MS-Exchange-CrossTenant-AuthSource: DM4PR10MB8218.namprd10.prod.outlook.com
 X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Aug 2025 19:43:31.7871
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 12 Aug 2025 18:15:04.0333
  (UTC)
 X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
 X-MS-Exchange-CrossTenant-Id: 4e2c6054-71cb-48f1-bd6c-3a9705aca71b
 X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 5U0LzY1neFDn6pp9C/BetH8YyXoLcyPlYbTvPPTG69ZXhwJZfxKsSEOI3XClVEDN749Okupo0r8rbkp6nVo49FTmzxS8vItrS2j7AEcHXq4=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: CY8PR10MB7124
+X-MS-Exchange-CrossTenant-UserPrincipalName: ldZ+m4aQ4N3dt5m+lDX9Ax4aJNeTYPrEEcBwp81xt5nnpYYAQGgJeBIWxCqGO6HBrDnNzeQpJSo2/HutijZP/sdOmXvTTH3kpkqem9BE92A=
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PH0PR10MB4744
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
  definitions=2025-08-12_07,2025-08-11_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxlogscore=999 bulkscore=0
- adultscore=0 mlxscore=0 phishscore=0 spamscore=0 suspectscore=0
- malwarescore=0 classifier=spam adjust=0 reason=mlx scancount=1
- engine=8.12.0-2507300000 definitions=main-2508120189
-X-Proofpoint-GUID: 60Z0vjkLGIrZPgb25nhZCfbC_uANQV65
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODEyMDE4OSBTYWx0ZWRfX9WlsKwndrOAm
- 5l4Aj/wJRUaE9VWyZo+uCPG0zDBzCroKxdGlFKBckzhWcvAd310GCMAj+gOpO3Fk3rvh/nw4yBY
- h5Ux72xLxv36amyUX5LeZbDQacJfuZwDEA+W9jSNOa0JyzXi3dqhdGfwF/Ej7gGrcTFq1QT34tg
- QPgIn04W7ixeCYcEkSnk3tQ10+roAn1EBf9pmZJEkxnImlutrk97Riggqc2vts6PhWTNA4pyP8P
- 9G/MLFp6Eu0IPxHDT44pUfkGwQnoImG5vJnpSSMPbKE9hcxxPDaSh68isBP4K5YraXKcMDJbdop
- VlYPN9Zb3P5QnIM/3sOoSLRKIhe55Gaf4GR6bL5xq7V8CdGI20m0tXoNWIdYJUqsy2SZq1pz6WH
- CjXOAFLyZpokNv+CLzHhySrAMkF44ashln+KR9y33YpqtcYBztHX6hO2pin3BDg10LUDzonF
-X-Authority-Analysis: v=2.4 cv=W8M4VQWk c=1 sm=1 tr=0 ts=689b9969 b=1 cx=c_pps
- a=zPCbziy225d3KhSqZt3L1A==:117 a=zPCbziy225d3KhSqZt3L1A==:17
+X-Proofpoint-Spam-Details: rule=notspam policy=default score=0 mlxscore=0 malwarescore=0 bulkscore=0
+ phishscore=0 suspectscore=0 mlxlogscore=999 adultscore=0 spamscore=0
+ classifier=spam adjust=0 reason=mlx scancount=1 engine=8.12.0-2507300000
+ definitions=main-2508120175
+X-Proofpoint-ORIG-GUID: NKcoa3qSuGzEFtFsXdII5yncmscdT4Aa
+X-Authority-Analysis: v=2.4 cv=WecMa1hX c=1 sm=1 tr=0 ts=689b84ad b=1 cx=c_pps
+ a=WeWmnZmh0fydH62SvGsd2A==:117 a=WeWmnZmh0fydH62SvGsd2A==:17
  a=6eWqkTHjU83fiwn7nKZWdM+Sl24=:19 a=z/mQ4Ysz8XfWz/Q5cLBRGdckG28=:19
  a=lCpzRmAYbLLaTzLvsPZ7Mbvzbb8=:19 a=wKuvFiaSGQ0qltdbU6+NXLB8nM8=:19
  a=Ol13hO9ccFRV9qXi2t6ftBPywas=:19 a=xqWC_Br6kY4A:10 a=kj9zAlcOel0A:10
- a=2OwXVqhp2XgA:10 a=GoEa3M9JfhUA:10 a=tHz9FfFoAAAA:8 a=yPCof4ZbAAAA:8
- a=pGLkceISAAAA:8 a=20KFwNOVAAAA:8 a=oG9WTLIYOA6OTJ5yO9QA:9 a=CjuIK1q_8ugA:10
- cc=ntf awl=host:12069
-X-Proofpoint-ORIG-GUID: 60Z0vjkLGIrZPgb25nhZCfbC_uANQV65
+ a=2OwXVqhp2XgA:10 a=GoEa3M9JfhUA:10 a=20KFwNOVAAAA:8 a=yPCof4ZbAAAA:8
+ a=pssIr5Eb8AsxVtukJnQA:9 a=CjuIK1q_8ugA:10
+X-Proofpoint-GUID: NKcoa3qSuGzEFtFsXdII5yncmscdT4Aa
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODEyMDE3NSBTYWx0ZWRfX65/xqYCuka0P
+ S11Bp+J4FoBSyGI6DrU2U5M3I//JUkRALYzU+A1H2uXmbumfjX7VJTYN0BNnEAjrurpn8ydWm0O
+ D37UfOuF55ptmgW84Yq7XkmtO+7CUAaK7C3b2OBRyMiwXHl+DoW344wUFp6ApMoK5+8ZKbmn+2K
+ 9pR8N/d6A9E5GLoEPfXjgjymKxwEoY8LbpXGmy5uo+B7subW5eaYznd6Ehldyw6aq4ZymHeUi9Q
+ QPCqfajHJEnUSEOgPyMUCWTkLnztSy9rDdyBQueQajPr3z3JKmBRUYUEiPmsM5MreJbJ2pYu9Aa
+ JJ6/2svjqAEN0DNCmBwu2i1GjCpwjO+QXHIrG15kbyTkY0Y5euCajbBZ27KNZoNeGKMlCWLv4le
+ FTDKu2lm2j+BMg5rgQc88zo9knQ1r6OvqYeC/sxwXYmTrgs54h2LGyN1jay8Gpk50FKjNP00
 
-On Mon, Aug 11, 2025 at 01:26:31PM +0200, David Hildenbrand wrote:
-> ... and hide it behind a kconfig option. There is really no need for
-> any !xen code to perform this check.
+On Mon, Aug 11, 2025 at 01:26:25PM +0200, David Hildenbrand wrote:
+> The huge zero folio is refcounted (+mapcounted -- is that a word?)
+> differently than "normal" folios, similarly (but different) to the ordinary
+> shared zeropage.
 >
-> The naming is a bit off: we want to find the "normal" page when a PTE
-> was marked "special". So it's really not "finding a special" page.
+> For this reason, we special-case these pages in
+> vm_normal_page*/vm_normal_folio*, and only allow selected callers to
+> still use them (e.g., GUP can still take a reference on them).
+
+Hm, interestingly in gup_fast_pmd_leaf() we explicitly check pmd_special(),
+so surely setting the zero huge pmd special will change behaviour there?
+
+But I guess this is actually _more_ correct as it's not really sensible to
+grab the huge zero PMD page.
+
+Then again, follow_huge_pmd() _will_, afaict.
+
+I see the GUP fast change was introduced by commit ae3c99e650da ("mm/gup:
+detect huge pfnmap entries in gup-fast") so was specifically intended for
+pfnmap not the zero page.
+
 >
-> Improve the documentation, and add a comment in the code where XEN ends
-> up performing the pte_mkspecial() through a hypercall. More details can
-> be found in commit 923b2919e2c3 ("xen/gntdev: mark userspace PTEs as
-> special on x86 PV guests").
+> vm_normal_page_pmd() already filters out the huge zero folio, to
+> indicate it a special (return NULL). However, so far we are not making
+> use of pmd_special() on architectures that support it
+> (CONFIG_ARCH_HAS_PTE_SPECIAL), like we would with the ordinary shared
+> zeropage.
 >
-> Cc: David Vrabel <david.vrabel@citrix.com>
+> Let's mark PMD mappings of the huge zero folio similarly as special, so we
+> can avoid the manual check for the huge zero folio with
+> CONFIG_ARCH_HAS_PTE_SPECIAL next, and only perform the check on
+> !CONFIG_ARCH_HAS_PTE_SPECIAL.
+>
+> In copy_huge_pmd(), where we have a manual pmd_special() check to handle
+> PFNMAP, we have to manually rule out the huge zero folio. That code
+> needs a serious cleanup, but that's something for another day.
+>
+> While at it, update the doc regarding the shared zero folios.
+>
+> No functional change intended: vm_normal_page_pmd() still returns NULL
+> when it encounters the huge zero folio.
+>
 > Reviewed-by: Oscar Salvador <osalvador@suse.de>
-> Reviewed-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-> Reviewed-by: Wei Yang <richard.weiyang@gmail.com>
 > Signed-off-by: David Hildenbrand <david@redhat.com>
 
-Oh I already reviewed it. But anyway, may as well say - THANKS fof this
-it's great again :)
+I R-b this before, and Wei did also, did you drop because of changes?
+
+Anyway, apart from query about GUP-fast above, this LGTM so:
+
+Reviewed-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
 
 > ---
->  drivers/xen/Kconfig              |  1 +
->  drivers/xen/gntdev.c             |  5 +++--
->  include/linux/mm.h               | 18 +++++++++++++-----
->  mm/Kconfig                       |  2 ++
->  mm/memory.c                      | 12 ++++++++++--
->  tools/testing/vma/vma_internal.h | 18 +++++++++++++-----
->  6 files changed, 42 insertions(+), 14 deletions(-)
+>  mm/huge_memory.c |  8 ++++++--
+>  mm/memory.c      | 15 ++++++++++-----
+>  2 files changed, 16 insertions(+), 7 deletions(-)
 >
-> diff --git a/drivers/xen/Kconfig b/drivers/xen/Kconfig
-> index 24f485827e039..f9a35ed266ecf 100644
-> --- a/drivers/xen/Kconfig
-> +++ b/drivers/xen/Kconfig
-> @@ -138,6 +138,7 @@ config XEN_GNTDEV
->  	depends on XEN
->  	default m
->  	select MMU_NOTIFIER
-> +	select FIND_NORMAL_PAGE
->  	help
->  	  Allows userspace processes to use grants.
->
-> diff --git a/drivers/xen/gntdev.c b/drivers/xen/gntdev.c
-> index 1f21607656182..26f13b37c78e6 100644
-> --- a/drivers/xen/gntdev.c
-> +++ b/drivers/xen/gntdev.c
-> @@ -321,6 +321,7 @@ static int find_grant_ptes(pte_t *pte, unsigned long addr, void *data)
->  	BUG_ON(pgnr >= map->count);
->  	pte_maddr = arbitrary_virt_to_machine(pte).maddr;
->
-> +	/* Note: this will perform a pte_mkspecial() through the hypercall. */
->  	gnttab_set_map_op(&map->map_ops[pgnr], pte_maddr, flags,
->  			  map->grants[pgnr].ref,
->  			  map->grants[pgnr].domid);
-> @@ -528,7 +529,7 @@ static void gntdev_vma_close(struct vm_area_struct *vma)
->  	gntdev_put_map(priv, map);
->  }
->
-> -static struct page *gntdev_vma_find_special_page(struct vm_area_struct *vma,
-> +static struct page *gntdev_vma_find_normal_page(struct vm_area_struct *vma,
->  						 unsigned long addr)
+> diff --git a/mm/huge_memory.c b/mm/huge_memory.c
+> index ec89e0607424e..58bac83e7fa31 100644
+> --- a/mm/huge_memory.c
+> +++ b/mm/huge_memory.c
+> @@ -1309,6 +1309,7 @@ static void set_huge_zero_folio(pgtable_t pgtable, struct mm_struct *mm,
 >  {
->  	struct gntdev_grant_map *map = vma->vm_private_data;
-> @@ -539,7 +540,7 @@ static struct page *gntdev_vma_find_special_page(struct vm_area_struct *vma,
->  static const struct vm_operations_struct gntdev_vmops = {
->  	.open = gntdev_vma_open,
->  	.close = gntdev_vma_close,
-> -	.find_special_page = gntdev_vma_find_special_page,
-> +	.find_normal_page = gntdev_vma_find_normal_page,
->  };
+>  	pmd_t entry;
+>  	entry = folio_mk_pmd(zero_folio, vma->vm_page_prot);
+> +	entry = pmd_mkspecial(entry);
+>  	pgtable_trans_huge_deposit(mm, pmd, pgtable);
+>  	set_pmd_at(mm, haddr, pmd, entry);
+>  	mm_inc_nr_ptes(mm);
+> @@ -1418,7 +1419,9 @@ static vm_fault_t insert_pmd(struct vm_area_struct *vma, unsigned long addr,
+>  	if (fop.is_folio) {
+>  		entry = folio_mk_pmd(fop.folio, vma->vm_page_prot);
 >
->  /* ------------------------------------------------------------------ */
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 8ca7d2fa71343..3868ca1a25f9c 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -657,13 +657,21 @@ struct vm_operations_struct {
->  	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
->  					unsigned long addr, pgoff_t *ilx);
->  #endif
-> +#ifdef CONFIG_FIND_NORMAL_PAGE
->  	/*
-> -	 * Called by vm_normal_page() for special PTEs to find the
-> -	 * page for @addr.  This is useful if the default behavior
-> -	 * (using pte_page()) would not find the correct page.
-> +	 * Called by vm_normal_page() for special PTEs in @vma at @addr. This
-> +	 * allows for returning a "normal" page from vm_normal_page() even
-> +	 * though the PTE indicates that the "struct page" either does not exist
-> +	 * or should not be touched: "special".
-> +	 *
-> +	 * Do not add new users: this really only works when a "normal" page
-> +	 * was mapped, but then the PTE got changed to something weird (+
-> +	 * marked special) that would not make pte_pfn() identify the originally
-> +	 * inserted page.
->  	 */
-> -	struct page *(*find_special_page)(struct vm_area_struct *vma,
-> -					  unsigned long addr);
-> +	struct page *(*find_normal_page)(struct vm_area_struct *vma,
-> +					 unsigned long addr);
-> +#endif /* CONFIG_FIND_NORMAL_PAGE */
->  };
+> -		if (!is_huge_zero_folio(fop.folio)) {
+> +		if (is_huge_zero_folio(fop.folio)) {
+> +			entry = pmd_mkspecial(entry);
+> +		} else {
+>  			folio_get(fop.folio);
+>  			folio_add_file_rmap_pmd(fop.folio, &fop.folio->page, vma);
+>  			add_mm_counter(mm, mm_counter_file(fop.folio), HPAGE_PMD_NR);
+> @@ -1643,7 +1646,8 @@ int copy_huge_pmd(struct mm_struct *dst_mm, struct mm_struct *src_mm,
+>  	int ret = -ENOMEM;
 >
->  #ifdef CONFIG_NUMA_BALANCING
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index e443fe8cd6cf2..59a04d0b2e272 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -1381,6 +1381,8 @@ config PT_RECLAIM
->
->  	  Note: now only empty user PTE page table pages will be reclaimed.
->
-> +config FIND_NORMAL_PAGE
-> +	def_bool n
->
->  source "mm/damon/Kconfig"
->
+>  	pmd = pmdp_get_lockless(src_pmd);
+> -	if (unlikely(pmd_present(pmd) && pmd_special(pmd))) {
+> +	if (unlikely(pmd_present(pmd) && pmd_special(pmd) &&
+> +		     !is_huge_zero_pmd(pmd))) {
+
+OK yeah this is new I see from cover letter + ranged-diff.
+
+Yeah this is important actually wow, as otherwise the is_huge_zero_pmd()
+branch will not be executed.
+
+Good spot!
+
+>  		dst_ptl = pmd_lock(dst_mm, dst_pmd);
+>  		src_ptl = pmd_lockptr(src_mm, src_pmd);
+>  		spin_lock_nested(src_ptl, SINGLE_DEPTH_NESTING);
 > diff --git a/mm/memory.c b/mm/memory.c
-> index 6f806bf3cc994..002c28795d8b7 100644
+> index 0ba4f6b718471..626caedce35e0 100644
 > --- a/mm/memory.c
 > +++ b/mm/memory.c
-> @@ -639,6 +639,12 @@ static void print_bad_page_map(struct vm_area_struct *vma,
->   * trivial. Secondly, an architecture may not have a spare page table
->   * entry bit, which requires a more complicated scheme, described below.
+> @@ -555,7 +555,14 @@ static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
 >   *
-> + * With CONFIG_FIND_NORMAL_PAGE, we might have the "special" bit set on
-> + * page table entries that actually map "normal" pages: however, that page
-> + * cannot be looked up through the PFN stored in the page table entry, but
-> + * instead will be looked up through vm_ops->find_normal_page(). So far, this
-> + * only applies to PTEs.
+>   * "Special" mappings do not wish to be associated with a "struct page" (either
+>   * it doesn't exist, or it exists but they don't want to touch it). In this
+> - * case, NULL is returned here. "Normal" mappings do have a struct page.
+> + * case, NULL is returned here. "Normal" mappings do have a struct page and
+> + * are ordinarily refcounted.
 > + *
->   * A raw VM_PFNMAP mapping (ie. one that is not COWed) is always considered a
->   * special mapping (even if there are underlying and valid "struct pages").
->   * COWed pages of a VM_PFNMAP are always normal.
-> @@ -679,8 +685,10 @@ static inline struct page *__vm_normal_page(struct vm_area_struct *vma,
+> + * Page mappings of the shared zero folios are always considered "special", as
+> + * they are not ordinarily refcounted: neither the refcount nor the mapcount
+> + * of these folios is adjusted when mapping them into user page tables.
+> + * Selected page table walkers (such as GUP) can still identify mappings of the
+> + * shared zero folios and work with the underlying "struct page".
+
+Thanks for this.
+
+>   *
+>   * There are 2 broad cases. Firstly, an architecture may define a pte_special()
+>   * pte bit, in which case this function is trivial. Secondly, an architecture
+> @@ -585,9 +592,8 @@ static void print_bad_pte(struct vm_area_struct *vma, unsigned long addr,
+>   *
+>   * VM_MIXEDMAP mappings can likewise contain memory with or without "struct
+>   * page" backing, however the difference is that _all_ pages with a struct
+> - * page (that is, those where pfn_valid is true) are refcounted and considered
+> - * normal pages by the VM. The only exception are zeropages, which are
+> - * *never* refcounted.
+> + * page (that is, those where pfn_valid is true, except the shared zero
+> + * folios) are refcounted and considered normal pages by the VM.
+>   *
+>   * The disadvantage is that pages are refcounted (which can be slower and
+>   * simply not an option for some PFNMAP users). The advantage is that we
+> @@ -667,7 +673,6 @@ struct page *vm_normal_page_pmd(struct vm_area_struct *vma, unsigned long addr,
 >  {
->  	if (IS_ENABLED(CONFIG_ARCH_HAS_PTE_SPECIAL)) {
->  		if (unlikely(special)) {
-> -			if (vma->vm_ops && vma->vm_ops->find_special_page)
-> -				return vma->vm_ops->find_special_page(vma, addr);
-> +#ifdef CONFIG_FIND_NORMAL_PAGE
-> +			if (vma->vm_ops && vma->vm_ops->find_normal_page)
-> +				return vma->vm_ops->find_normal_page(vma, addr);
-> +#endif /* CONFIG_FIND_NORMAL_PAGE */
->  			if (vma->vm_flags & (VM_PFNMAP | VM_MIXEDMAP))
->  				return NULL;
->  			if (is_zero_pfn(pfn) || is_huge_zero_pfn(pfn))
-> diff --git a/tools/testing/vma/vma_internal.h b/tools/testing/vma/vma_internal.h
-> index 3639aa8dd2b06..cb1c2a8afe265 100644
-> --- a/tools/testing/vma/vma_internal.h
-> +++ b/tools/testing/vma/vma_internal.h
-> @@ -467,13 +467,21 @@ struct vm_operations_struct {
->  	struct mempolicy *(*get_policy)(struct vm_area_struct *vma,
->  					unsigned long addr, pgoff_t *ilx);
->  #endif
-> +#ifdef CONFIG_FIND_NORMAL_PAGE
->  	/*
-> -	 * Called by vm_normal_page() for special PTEs to find the
-> -	 * page for @addr.  This is useful if the default behavior
-> -	 * (using pte_page()) would not find the correct page.
-> +	 * Called by vm_normal_page() for special PTEs in @vma at @addr. This
-> +	 * allows for returning a "normal" page from vm_normal_page() even
-> +	 * though the PTE indicates that the "struct page" either does not exist
-> +	 * or should not be touched: "special".
-> +	 *
-> +	 * Do not add new users: this really only works when a "normal" page
-> +	 * was mapped, but then the PTE got changed to something weird (+
-> +	 * marked special) that would not make pte_pfn() identify the originally
-> +	 * inserted page.
->  	 */
-> -	struct page *(*find_special_page)(struct vm_area_struct *vma,
-> -					  unsigned long addr);
-> +	struct page *(*find_normal_page)(struct vm_area_struct *vma,
-> +					 unsigned long addr);
-> +#endif /* CONFIG_FIND_NORMAL_PAGE */
->  };
+>  	unsigned long pfn = pmd_pfn(pmd);
 >
->  struct vm_unmapped_area_info {
+> -	/* Currently it's only used for huge pfnmaps */
+>  	if (unlikely(pmd_special(pmd)))
+>  		return NULL;
+>
 > --
 > 2.50.1
 >
