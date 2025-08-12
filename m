@@ -1,67 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-10874-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10875-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7EF8CCA0EC4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 14:50:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7223C87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 15:24:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1ZDx4qx8z2xWc;
-	Wed, 13 Aug 2025 00:50:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755010241;
-	cv=none; b=c7hehyX99LVfKHSVeD4QMX4FvEFku3ms1XyHPwuplsCEnAnkAi5SQjYA1OcENlQYT+9NnZohb8ZhHU6wtczDsMYVFRoqVS9baSvp9IyTkHl0RvUDEx7K/v5H0fdGSuh0U7oxrcrjOx9gXhmol5HAaqODMPHvTfCx3N/ClEWjiz+QYPKs4zGc+6zd3oJmoK2oI2CCX5Z925AjGKywWPvgkqZCQF5wk0ZX8dTnrb62vNpMbJ3Ir6Mv2iOT1PviWJKEVpPMnliG/liykHSxViE9Ikcw9P6D0CECHSdJxlK5mJKcRHI9OxsYBC9oLt6LE54MH0VF3pdu8xi2LvGAksZrUw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1ZzP1Qp3z2xCW;
+	Wed, 13 Aug 2025 01:24:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755012241;
+	cv=none; b=hJPawmUudpao9gRyQi2Zf/nhCKT0wF2Fh+DBeTs2XYaC0/xOnaQbAylr7rqgfQc+jZyLSFKsUUoQfr6SwqvTNShCDBpt7jKIAbpLMtB2rpfvWz/OSGlTjoaLWExYn4amTHZVHS91LFVgl6f+C68jBTuYvpju/Bng9Onlb6blzm1bJhCsW+7llD8AJmVjigxUAr/vl5Je/4udg7JrhUY9ihVGiOr73JvA4F2kAdtw2eNt8Le+3lcRwp7LXNUMr+9p6jxvvL4bO1waeNhTTWbGnN2s+V2tPbugrpNTqb28ofEgS0gRO7nXU4J7rMsICPOeVtR6jFnghEn0o7zncabx5w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755010241; c=relaxed/relaxed;
-	bh=O8n6bDh4FZgkURMOCPjf6gdU5zRoop7LpjSpVYCLjO4=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=YeScGaJQoLRsXQP7McSVY0lsZkJdJwkxHftrenpyv1i/24Tf3vkUY+3DQrYjgk1eYD34OT5gjl1izVqRpPNXhfDtmYUnCJZ0g5HPgqOBZh1/lAcH+1fItmW11vddW8JYXkQlnsGhH+W9W45IH0kUX30tJDuu79EltO/GO+zUXrWSgZZsQznLUWEJ1YUiCJmPjBUiYVxg2e9jg7r9yEWZZCzTXVtDFFpgASs+cfybD0zsHmtYEJaIN/PLPQkjWPwPYxY6IynOsLGDjZPVBj+zNWelNfbHgc/oLWIAI27I5f//WbPRP0y3XVAhbl2MBVVOUzlqXPiTiw3zdfR3AdoQIw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1ZDw5n33z2xPw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 00:50:40 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c1TBP1bFMz9sSt;
-	Tue, 12 Aug 2025 13:03:09 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id THilcENmYILV; Tue, 12 Aug 2025 13:03:09 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c1TBN4pjRz9sSs;
-	Tue, 12 Aug 2025 13:03:08 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 902498B765;
-	Tue, 12 Aug 2025 13:03:08 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id XDZeo0gya3AY; Tue, 12 Aug 2025 13:03:08 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id EAD738B764;
-	Tue, 12 Aug 2025 13:03:07 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Qiang Zhao <qiang.zhao@nxp.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-gpio@vger.kernel.org,
-	devicetree@vger.kernel.org
-Subject: [PATCH 2/4] soc: fsl: qe: Change GPIO driver to a proper platform driver
-Date: Tue, 12 Aug 2025 13:02:52 +0200
-Message-ID: <f4d04d0c9d72d089af7490c6ce91bb4c455fbffd.1754996033.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1754996033.git.christophe.leroy@csgroup.eu>
-References: <cover.1754996033.git.christophe.leroy@csgroup.eu>
+	t=1755012241; c=relaxed/relaxed;
+	bh=DMj/X7ByCnHio4E+HPJpAiwgeu61rKX0epElnm7c0rA=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mYTWIgN7aHqYiA4aHi7YNMapG+xjsEgZk++mRap50vpbl40HiSVRbqM3jH+rJukBlbriI3SkmhQvdK1HdQrcCKam0PkqPR38nCUklu5X4MuS4LwsmcFmNQlflN0AkejoVJZkwJfaiOss37Fl+cBAFVx9jK926VKI4n9ChSLgWrDy6awVkVn9RItfrLkTThu54cTSiiI6ktX9W3vx6OsvUfAOUKkmuk+23VoyT+2sK42d0sYV0ZFMlBD2t5fDQqr8c2/L/26+e9kHsuDmw4C6y/6Y5AUPajDn5xcXh6Yr9cEZhwT4b+Q/feZtn6jetW4LlLbYvK/G+HkObrtF/977iQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=H4uw3FOF; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=H4uw3FOF;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1ZzN1jSKz2xC3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 01:24:00 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 635225C692E;
+	Tue, 12 Aug 2025 15:23:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 60CF1C4CEF6;
+	Tue, 12 Aug 2025 15:23:54 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1755012237;
+	bh=mX6tR4+Ke57loofg2X/TVfboE2bhITCHejUM+A1Udjg=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=H4uw3FOFtceDyVXfp2hkab8EBMAGh6+jXNXurLp3g7xpXd899UiLoYprwvEiDFj8g
+	 ysEXiSt0VNG2Vh142IEL2VQ3/otMit935/8wPO28T1lsOoxTYwvBiiB1LhVjcJ2qk+
+	 3PeRKrEQYmduxF/DJpS733Ojbu/CyCCKM6B5Guov+rJPQKeaeEAjNMeV3tqYnHIE4B
+	 GK82buDJxXO2p26YhMNXKvnSujwDkBCKgjVYpM7kgqwnUk2jJTPnxRRCGMSNDtFklu
+	 SBACn4xSHt8YauzOcYZ6KXAGsesPB1FO8SizrDD+iOInWtve73k4VoP1A18RyZfpGN
+	 21xQd2dgEtuiA==
+Message-ID: <0fd6fefc-9fad-4ea6-a619-e9f480747ac0@kernel.org>
+Date: Tue, 12 Aug 2025 17:23:52 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,131 +59,121 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1754996575; l=3238; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=VYssVgP/HSCvUsH61iWhixO+M16MVUEty2f4L9mgniA=; b=iodPhBkh8iWD/od14mpEwzyP2AImC5CmU51Db62oh3CqMDvFaocRNpunshUxSvRzZ/wMVVWaw WMzyeRAJqalAHJY+M1Y8ugaWisKOtZ46bpCFGqhsP7ObMLulySbbKO+
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 4/4] dt-bindings: soc: fsl: qe: Add an interrupt
+ controller for QUICC Engine Ports
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Qiang Zhao <qiang.zhao@nxp.com>, Linus Walleij <linus.walleij@linaro.org>,
+ Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
+ devicetree@vger.kernel.org
+References: <cover.1754996033.git.christophe.leroy@csgroup.eu>
+ <0b56ef403a7c8d0f8305e847d68959a1037d365e.1754996033.git.christophe.leroy@csgroup.eu>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <0b56ef403a7c8d0f8305e847d68959a1037d365e.1754996033.git.christophe.leroy@csgroup.eu>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-In order to be able to add interrupts to the GPIOs, first change the
-QE GPIO driver to the proper platform driver in order to allow
-initialisation to be done in the right order, otherwise the GPIOs
-get added before the interrupts are registered.
+On 12/08/2025 13:02, Christophe Leroy wrote:
+> The QUICC Engine provides interrupts for a few I/O ports. This is
+> handled via a separate interrupt ID and managed via a triplet of
+> dedicated registers hosted by the SoC.
+> 
+> Implement an interrupt driver for it for that those IRQs can then
+> be linked to the related GPIOs.
+> 
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  .../soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml       | 63 +++++++++++++++++++
+>  1 file changed, 63 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+> 
+> diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+> new file mode 100644
+> index 0000000000000..7c98706d03dd1
+> --- /dev/null
+> +++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+> @@ -0,0 +1,63 @@
+> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+> +
+> +title: Freescale QUICC Engine I/O Ports Interrupt Controller
+> +
+> +maintainers:
+> +  - name: Christophe Leroy
+> +    email: christophe.leroy@csgroup.eu
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- drivers/soc/fsl/qe/gpio.c | 88 +++++++++++++++++++++++----------------
- 1 file changed, 53 insertions(+), 35 deletions(-)
+Oh no...
 
-diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
-index 8df1e8fa86a5f..b502377193192 100644
---- a/drivers/soc/fsl/qe/gpio.c
-+++ b/drivers/soc/fsl/qe/gpio.c
-@@ -19,6 +19,7 @@
- #include <linux/slab.h>
- #include <linux/export.h>
- #include <linux/property.h>
-+#include <linux/platform_device.h>
- 
- #include <soc/fsl/qe/qe.h>
- 
-@@ -295,45 +296,62 @@ void qe_pin_set_gpio(struct qe_pin *qe_pin)
- }
- EXPORT_SYMBOL(qe_pin_set_gpio);
- 
--static int __init qe_add_gpiochips(void)
-+static int qe_gpio_probe(struct platform_device *ofdev)
- {
--	struct device_node *np;
--
--	for_each_compatible_node(np, NULL, "fsl,mpc8323-qe-pario-bank") {
--		int ret;
--		struct qe_gpio_chip *qe_gc;
--		struct of_mm_gpio_chip *mm_gc;
--		struct gpio_chip *gc;
--
--		qe_gc = kzalloc(sizeof(*qe_gc), GFP_KERNEL);
--		if (!qe_gc) {
--			ret = -ENOMEM;
--			goto err;
--		}
-+	struct device *dev = &ofdev->dev;
-+	struct device_node *np = dev->of_node;
-+	int ret;
-+	struct qe_gpio_chip *qe_gc;
-+	struct of_mm_gpio_chip *mm_gc;
-+	struct gpio_chip *gc;
-+
-+	qe_gc = kzalloc(sizeof(*qe_gc), GFP_KERNEL);
-+	if (!qe_gc) {
-+		ret = -ENOMEM;
-+		goto err;
-+	}
- 
--		spin_lock_init(&qe_gc->lock);
-+	spin_lock_init(&qe_gc->lock);
- 
--		mm_gc = &qe_gc->mm_gc;
--		gc = &mm_gc->gc;
-+	mm_gc = &qe_gc->mm_gc;
-+	gc = &mm_gc->gc;
- 
--		mm_gc->save_regs = qe_gpio_save_regs;
--		gc->ngpio = QE_PIO_PINS;
--		gc->direction_input = qe_gpio_dir_in;
--		gc->direction_output = qe_gpio_dir_out;
--		gc->get = qe_gpio_get;
--		gc->set = qe_gpio_set;
--		gc->set_multiple = qe_gpio_set_multiple;
-+	mm_gc->save_regs = qe_gpio_save_regs;
-+	gc->ngpio = QE_PIO_PINS;
-+	gc->direction_input = qe_gpio_dir_in;
-+	gc->direction_output = qe_gpio_dir_out;
-+	gc->get = qe_gpio_get;
-+	gc->set = qe_gpio_set;
-+	gc->set_multiple = qe_gpio_set_multiple;
- 
--		ret = of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
--		if (ret)
--			goto err;
--		continue;
-+	ret = of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
-+	if (!ret)
-+		return 0;
- err:
--		pr_err("%pOF: registration failed with status %d\n",
--		       np, ret);
--		kfree(qe_gc);
--		/* try others anyway */
--	}
--	return 0;
-+	dev_err(dev, "registration failed with status %d\n", ret);
-+	kfree(qe_gc);
-+
-+	return ret;
-+}
-+
-+static const struct of_device_id qe_gpio_match[] = {
-+	{
-+		.compatible = "fsl,mpc8323-qe-pario-bank",
-+	},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, qe_gpio_match);
-+
-+static struct platform_driver qe_gpio_driver = {
-+	.probe		= qe_gpio_probe,
-+	.driver		= {
-+		.name	= "qe-gpio",
-+		.of_match_table	= qe_gpio_match,
-+	},
-+};
-+
-+static int __init qe_gpio_init(void)
-+{
-+	return platform_driver_register(&qe_gpio_driver);
- }
--arch_initcall(qe_add_gpiochips);
-+arch_initcall(qe_gpio_init);
--- 
-2.49.0
+> +
+> +description: |
+> +  Interrupt controller for the QUICC Engine I/O ports found on some
+> +  Freescale/NXP PowerQUICC and QorIQ SoCs.
+> +
+> +properties:
+> +  compatible:
+> +    enum:
+> +      - fsl,mpc8323-qe-ports-ic
+> +      - fsl,mpc8360-qe-ports-ic
+> +      - fsl,mpc8568-qe-ports-ic
+> +
+> +  reg:
+> +    description: Base address and size of the QE I/O Ports Interrupt Controller registers.
+> +    minItems: 1
+> +    maxItems: 1
 
+This was never tested but more important this and everything further
+looks like generated by AI. Please don't do that or at least mark it
+clearly, so I will prioritize accordingly (hint: AI generates poor code
+and burden to decipher AI slop should not be on open source reviewers
+but on users of AI, but as one of maintainers probably you already know
+that, so sorry for lecturing).
+
+Best regards,
+Krzysztof
 
