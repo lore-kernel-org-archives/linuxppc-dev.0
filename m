@@ -1,76 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-10868-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10869-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A057BCA0EC4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 14:20:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93426C87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 14:20:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1YYv5yGsz2xcC;
-	Wed, 13 Aug 2025 00:20:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::12c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755008419;
-	cv=none; b=jJc1980Kx0rUcKKza8ZA4020NUYMcDpHD/WTE8haWKjeqRQDyUusPcsRZJuGh2GhaCOZ7XZMelg9iiXaM1eG7qxYw42o3g57nmUc3LcG+8c0kfWLfz0W8VFkQWGBD2XNFXV26Rvquu9VB8NZ9vhjd7caMt8YIR5LFQZPBW09Ymi4tLBKuMvxy0U58si5RSXTMJWyaO+z18iSIJPo3jX4sLtZ+M8PQoHmDwbWtOJz8g4lUDJS4UjvQy5XTYpQJdV+4ImWGTAKfzumjlU+59E18v/v5xnv/qdPAuKeEyGG2KhN20eQ5ha2dUIEi4yPMQYr7lR+qufhj2m3El8lWw90aA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1YZF6q0Dz2yMw;
+	Wed, 13 Aug 2025 00:20:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755008437;
+	cv=none; b=nyFRSj01COJPOUIBARYsDV6MRAJCZSHOCQUTZHAGWvoVmXkIRnvqdZCH3sSV/fj6BRKSqGbVpPyY/OYiaEvWIewCEGiz5UxvL8cE2zG3nOgaD3RN6DEYWJQdD9tUf64IBG/UQ9WS5eUIWvryDdb9s90ZN8NKr9xj0HpB9sOOpG5O5FecpYge3R5Qvp5QENWpLsUY/Y9aLLOA8eEbVIB+qmKM7mK9mGsHkSXJXAgcKdjMs54TQavreTJ+HqWgsrdM3Rfbz5qyZvnDvULUvRGoNCPvJlUw/13ZZ54FunEZNQNt3QHdLI7BudkVY49HORMIXOd+jna9Rm0iWkjzyi6I6w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755008419; c=relaxed/relaxed;
-	bh=zMY/csa2U5fal/bu+jvHfhppLjeOUw06LSvQ98vCN+Y=;
-	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=KRDGaudB7EDf90XgqDGoP6npn1gJscYhTK7uMKx565Il5MWtjMh48ncY3LpjMBG4fOto96LFAQ5htz5fkrH2V0oKY4+EhVmhQMwUJPUZySx6T+xl1RLc97g7IiJ+UIKfnsmoCNAtlhLo4ciHUtHXs+A6qxjDfYxoY8oUhZBC6Mv+67UggRzN90tFr9QoWs6aFDuEZmX4p49B5+TT2hW6jcsZtRc1TyRZio7gKzWKD3n8BV+tMJHa5PdUZmlL4QT4py+u/DTJYN0GezHqNrcPSmylKZcsOohQ8U2hNvQOAXeaZSe8p+ideefyyT3TKctbYfSb8Gceb0OoCndUYordCQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; dkim=pass (2048-bit key; unprotected) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=MfvcgC0n; dkim-atps=neutral; spf=none (client-ip=2a00:1450:4864:20::12c; helo=mail-lf1-x12c.google.com; envelope-from=brgl@bgdev.pl; receiver=lists.ozlabs.org) smtp.mailfrom=bgdev.pl
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=MfvcgC0n;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bgdev.pl (client-ip=2a00:1450:4864:20::12c; helo=mail-lf1-x12c.google.com; envelope-from=brgl@bgdev.pl; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x12c.google.com (mail-lf1-x12c.google.com [IPv6:2a00:1450:4864:20::12c])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1YYt5Cdhz2xc8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 00:20:18 +1000 (AEST)
-Received: by mail-lf1-x12c.google.com with SMTP id 2adb3069b0e04-55ba26abd62so6152536e87.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2025 07:20:18 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1755008415; x=1755613215; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:references:mime-version:in-reply-to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=zMY/csa2U5fal/bu+jvHfhppLjeOUw06LSvQ98vCN+Y=;
-        b=MfvcgC0nl4A3hvBn+eVxVFYugn2sr9GA0iSAKwfRh6pZlQcw4Krzj+BI0xFeR9VOxJ
-         tUvHqFM9TLdjR0XYh+WdUvvWx5S7p7dvC7P2BbREajvOvbU2q5x9Iojm5bIqopwW7gve
-         F61QoDDwkDfbhyV0H22SP6E3KvLSa5k7SJZ8ASVgHxIMnbSl9HsGeO1TxG2oeuJEXh8j
-         nvolzfJPmxd/p2gbz1v4Mr+D3CeGWEQgpR7I9G2CTdgVmNWK7qLRv46dw1eUTYZXagPQ
-         yThD5yA8/HBvtLCSd/JHWeIRZjIxwet+xl3ZUyikOaLJnhKZgvn4I6xzKt4GnnoK8oNZ
-         /OSw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755008415; x=1755613215;
-        h=cc:to:subject:message-id:date:references:mime-version:in-reply-to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=zMY/csa2U5fal/bu+jvHfhppLjeOUw06LSvQ98vCN+Y=;
-        b=xHZg6pjyFdCXTSD5epTRh0Na2jYJljD6OxqGwJAIqfNOrBrkqTo0RWAXYPLEk+sAZZ
-         9t4VuY3Hfgzr0oNIqRhfqdHy5LfTk6f2mAhs7+3NJ1jZ7C95SUKofCfuoDtbtdQBqTmN
-         GDP9LnxjcWlKcaZKCCo5/ZXryJxgDNlB7uu3xSQyO+A1R4gVeFoMtCNxQ/Hfo3sgKkd2
-         +r9u+ebC209LR5NlZTuIu4JLwZw8kOV+a+Cc4T0SVnUo2hjzdAgpDBvaIbpoNfd0lRpZ
-         tODejmOt9NBsEMN67/cfRNojpByK0JBtB1HROW/145uwC0oduy3iWaaqLA5S7HevoPr2
-         UN+A==
-X-Forwarded-Encrypted: i=1; AJvYcCXlmHKKJSo0ZZojSIpeuzIERfoEx9cgYeHePN7p4K7+cfztKY9cY9eVtqIFfz0PuoE4zFGmSI/nfC2k2aY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxRH5TxeszAJdHftJR4QUZPqUxXGl/TD0AkAxdSSxzZBQt3IPDh
-	EkfgO4AxzsS/WI2ON4WbNWl9PL7DLFhnarwN97y+BLk9LW9Np4ThrCK+hrlAb2wOyfMRj6BsxTb
-	NHaEMXimxyyxKeKPkX4STs+32uejvllMR6v0etf1N2g==
-X-Gm-Gg: ASbGncvungIGdNUfCR+mc6NBna6GcM8fzUbeMZrqXJ2d8fImAAMyueep9SmHAzyX1zY
-	O9m5Da7X2ctFggFfvzqSiDVl/cZehRdJJ4JMnOk4tAHaiD3ngowtrQU+XoEN1kbJJbw5RFWcSNP
-	5xsOajPrFGnvuePAwgsB14UUFBd19OpmD+de1PTFPuJoXjG96el3jPkKdiuSpJf3TtUJoZJ1DTw
-	KorQ3cavrYQkmUb3z3RePI+iUFv+vgWFK9a
-X-Google-Smtp-Source: AGHT+IHuu5wvW4QtT3XRKQhSqRyAl4ltkuZNueZbz0L47TOdCOtZKGDL/QaBXRZMyQYhkVVn0ozd5KBBIXmm6CR5nec=
-X-Received: by 2002:a05:6512:1193:b0:55b:84b9:9a32 with SMTP id
- 2adb3069b0e04-55cd7602a4dmr1190170e87.30.1755008414804; Tue, 12 Aug 2025
- 07:20:14 -0700 (PDT)
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 12 Aug 2025 10:20:14 -0400
-Received: from 969154062570 named unknown by gmailapi.google.com with
- HTTPREST; Tue, 12 Aug 2025 10:20:14 -0400
-From: Bartosz Golaszewski <brgl@bgdev.pl>
-In-Reply-To: <f4d04d0c9d72d089af7490c6ce91bb4c455fbffd.1754996033.git.christophe.leroy@csgroup.eu>
+	t=1755008437; c=relaxed/relaxed;
+	bh=ofsBEldww9kKGShjhxYh2YzTeLFqPmCs6uhKXnmiYVA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Sq3H381HzD1Q5+ioa2UoI7cGM91TTuKDqK4z2JyDWVkmXqpVAvYQd2wPRPK0lZVF2pePYB8EmIopfNldg5WmJ379aHK+WmEkkaugsZd2+jMmny+9v3BGS4h0EGNXISjNclMYgHI72TB8ZA59cvB2f5ziktK3olqQJkiCBrPnzHYLwP863QTeeYY5XIjRphxig91KV0f/vhYKGR8BdYZq5S6B+CorZd6Ay27mMKrSQucX/HRiW1gyQkLbeeMnDiCuJPEHuKuwNC+tkTCNjleXoPJ5hUeZlIsjReqdBgZY8IcrWdgRk3QPow6fEB0QapAPksaVer9Erabh61DycNHICw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1YZF0gnHz2xc8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 00:20:35 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4c1SwZ1yR4z9sSL;
+	Tue, 12 Aug 2025 12:51:10 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id TZTC41d0Ji7b; Tue, 12 Aug 2025 12:51:10 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c1SwZ10sYz9sSK;
+	Tue, 12 Aug 2025 12:51:10 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 090E48B764;
+	Tue, 12 Aug 2025 12:51:10 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id oYqVmKfN6oVn; Tue, 12 Aug 2025 12:51:09 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4C2A18B765;
+	Tue, 12 Aug 2025 12:51:09 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Herve Codina <herve.codina@bootlin.com>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-sound@vger.kernel.org
+Subject: [PATCH v2 1/4] soc: fsl: qmc: Only set completion interrupt when needed
+Date: Tue, 12 Aug 2025 12:50:55 +0200
+Message-ID: <badb68a85910e5e6f1094ef3b01805209ac21854.1754993232.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1754993232.git.christophe.leroy@csgroup.eu>
+References: <cover.1754993232.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,150 +78,115 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1754996033.git.christophe.leroy@csgroup.eu> <f4d04d0c9d72d089af7490c6ce91bb4c455fbffd.1754996033.git.christophe.leroy@csgroup.eu>
-Date: Tue, 12 Aug 2025 10:20:14 -0400
-X-Gm-Features: Ac12FXxJwAJyIiJkerY_ZMj0NVdYlnI0XD6BtSNaGx0TIql8RITghXtjTU4PQzQ
-Message-ID: <CAMRc=MfkaY5AgYrOE7eVSMbkPjWj6+5XLSrFoaSDjzUWX4Dn0Q@mail.gmail.com>
-Subject: Re: [PATCH 2/4] soc: fsl: qe: Change GPIO driver to a proper platform driver
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, 
-	devicetree@vger.kernel.org, Qiang Zhao <qiang.zhao@nxp.com>, 
-	Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh@kernel.org>, 
-	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1754995860; l=3383; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=btE/H/h8In+zFZ3coyNkPGTFp2sXECgeWwsH+bApf+k=; b=zVwDmHckJ9mDmT1RDuIFBLmmtGpvCrpdaM679R61Csv/878/XJddDu6BCqmg5MWdRPutlVzV8 Tx9V7OFk3U+Cl67z/fTXBHb4yPB9HbRBYFB3c7X4RnCAC8pKGvZDWFv
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 
-On Tue, 12 Aug 2025 13:02:52 +0200, Christophe Leroy
-<christophe.leroy@csgroup.eu> said:
-> In order to be able to add interrupts to the GPIOs, first change the
-> QE GPIO driver to the proper platform driver in order to allow
-> initialisation to be done in the right order, otherwise the GPIOs
-> get added before the interrupts are registered.
->
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
->  drivers/soc/fsl/qe/gpio.c | 88 +++++++++++++++++++++++----------------
->  1 file changed, 53 insertions(+), 35 deletions(-)
->
-> diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
-> index 8df1e8fa86a5f..b502377193192 100644
-> --- a/drivers/soc/fsl/qe/gpio.c
-> +++ b/drivers/soc/fsl/qe/gpio.c
-> @@ -19,6 +19,7 @@
->  #include <linux/slab.h>
->  #include <linux/export.h>
->  #include <linux/property.h>
-> +#include <linux/platform_device.h>
->
->  #include <soc/fsl/qe/qe.h>
->
-> @@ -295,45 +296,62 @@ void qe_pin_set_gpio(struct qe_pin *qe_pin)
->  }
->  EXPORT_SYMBOL(qe_pin_set_gpio);
->
-> -static int __init qe_add_gpiochips(void)
-> +static int qe_gpio_probe(struct platform_device *ofdev)
->  {
-> -	struct device_node *np;
-> -
-> -	for_each_compatible_node(np, NULL, "fsl,mpc8323-qe-pario-bank") {
-> -		int ret;
-> -		struct qe_gpio_chip *qe_gc;
-> -		struct of_mm_gpio_chip *mm_gc;
-> -		struct gpio_chip *gc;
-> -
-> -		qe_gc = kzalloc(sizeof(*qe_gc), GFP_KERNEL);
-> -		if (!qe_gc) {
-> -			ret = -ENOMEM;
-> -			goto err;
-> -		}
-> +	struct device *dev = &ofdev->dev;
-> +	struct device_node *np = dev->of_node;
-> +	int ret;
-> +	struct qe_gpio_chip *qe_gc;
-> +	struct of_mm_gpio_chip *mm_gc;
-> +	struct gpio_chip *gc;
-> +
-> +	qe_gc = kzalloc(sizeof(*qe_gc), GFP_KERNEL);
-> +	if (!qe_gc) {
-> +		ret = -ENOMEM;
-> +		goto err;
-> +	}
->
-> -		spin_lock_init(&qe_gc->lock);
-> +	spin_lock_init(&qe_gc->lock);
->
-> -		mm_gc = &qe_gc->mm_gc;
-> -		gc = &mm_gc->gc;
-> +	mm_gc = &qe_gc->mm_gc;
-> +	gc = &mm_gc->gc;
->
-> -		mm_gc->save_regs = qe_gpio_save_regs;
-> -		gc->ngpio = QE_PIO_PINS;
-> -		gc->direction_input = qe_gpio_dir_in;
-> -		gc->direction_output = qe_gpio_dir_out;
-> -		gc->get = qe_gpio_get;
-> -		gc->set = qe_gpio_set;
-> -		gc->set_multiple = qe_gpio_set_multiple;
-> +	mm_gc->save_regs = qe_gpio_save_regs;
-> +	gc->ngpio = QE_PIO_PINS;
-> +	gc->direction_input = qe_gpio_dir_in;
-> +	gc->direction_output = qe_gpio_dir_out;
-> +	gc->get = qe_gpio_get;
-> +	gc->set = qe_gpio_set;
-> +	gc->set_multiple = qe_gpio_set_multiple;
->
-> -		ret = of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
-> -		if (ret)
-> -			goto err;
-> -		continue;
-> +	ret = of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
+When no post-completion processing is expected, don't waste time
+handling useless interrupts.
 
-Actually scratch my R-b, on second glance - this should now be
-replaced with devm_gpiochip_add_data(). I don't see anything that
-would be in the way now that it's an actuall platform device.
+Only set QMC_BD_[R/T]X_I when a completion function is passed in,
+and perform seamless completion on submit for interruptless buffers.
 
-Bartosz
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v2: Keep the UB flag to mark not completed buffers and seamlessly flag them as completed during next submit.
+---
+ drivers/soc/fsl/qe/qmc.c | 44 ++++++++++++++++++++++++++++++----------
+ 1 file changed, 33 insertions(+), 11 deletions(-)
 
-> +	if (!ret)
-> +		return 0;
->  err:
-> -		pr_err("%pOF: registration failed with status %d\n",
-> -		       np, ret);
-> -		kfree(qe_gc);
-> -		/* try others anyway */
-> -	}
-> -	return 0;
-> +	dev_err(dev, "registration failed with status %d\n", ret);
-> +	kfree(qe_gc);
-> +
-> +	return ret;
-> +}
-> +
-> +static const struct of_device_id qe_gpio_match[] = {
-> +	{
-> +		.compatible = "fsl,mpc8323-qe-pario-bank",
-> +	},
-> +	{},
-> +};
-> +MODULE_DEVICE_TABLE(of, qe_gpio_match);
-> +
-> +static struct platform_driver qe_gpio_driver = {
-> +	.probe		= qe_gpio_probe,
-> +	.driver		= {
-> +		.name	= "qe-gpio",
-> +		.of_match_table	= qe_gpio_match,
-> +	},
-> +};
-> +
-> +static int __init qe_gpio_init(void)
-> +{
-> +	return platform_driver_register(&qe_gpio_driver);
->  }
-> -arch_initcall(qe_add_gpiochips);
-> +arch_initcall(qe_gpio_init);
-> --
-> 2.49.0
->
->
+diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
+index 36c0ccc06151f..8f76b9a5e385d 100644
+--- a/drivers/soc/fsl/qe/qmc.c
++++ b/drivers/soc/fsl/qe/qmc.c
+@@ -461,9 +461,16 @@ int qmc_chan_write_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
+ 
+ 	ctrl = qmc_read16(&bd->cbd_sc);
+ 	if (ctrl & (QMC_BD_TX_R | QMC_BD_TX_UB)) {
+-		/* We are full ... */
+-		ret = -EBUSY;
+-		goto end;
++		if (!(ctrl & QMC_BD_TX_I) && bd == chan->txbd_done) {
++			if (ctrl & QMC_BD_TX_W)
++				chan->txbd_done = chan->txbds;
++			else
++				chan->txbd_done++;
++		} else {
++			/* We are full ... */
++			ret = -EBUSY;
++			goto end;
++		}
+ 	}
+ 
+ 	qmc_write16(&bd->cbd_datlen, length);
+@@ -475,6 +482,10 @@ int qmc_chan_write_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
+ 
+ 	/* Activate the descriptor */
+ 	ctrl |= (QMC_BD_TX_R | QMC_BD_TX_UB);
++	if (complete)
++		ctrl |= QMC_BD_TX_I;
++	else
++		ctrl &= ~QMC_BD_TX_I;
+ 	wmb(); /* Be sure to flush the descriptor before control update */
+ 	qmc_write16(&bd->cbd_sc, ctrl);
+ 
+@@ -569,9 +580,16 @@ int qmc_chan_read_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
+ 
+ 	ctrl = qmc_read16(&bd->cbd_sc);
+ 	if (ctrl & (QMC_BD_RX_E | QMC_BD_RX_UB)) {
+-		/* We are full ... */
+-		ret = -EBUSY;
+-		goto end;
++		if (!(ctrl & QMC_BD_RX_I) && bd == chan->rxbd_done) {
++			if (ctrl & QMC_BD_RX_W)
++				chan->rxbd_done = chan->rxbds;
++			else
++				chan->rxbd_done++;
++		} else {
++			/* We are full ... */
++			ret = -EBUSY;
++			goto end;
++		}
+ 	}
+ 
+ 	qmc_write16(&bd->cbd_datlen, 0); /* data length is updated by the QMC */
+@@ -587,6 +605,10 @@ int qmc_chan_read_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
+ 
+ 	/* Activate the descriptor */
+ 	ctrl |= (QMC_BD_RX_E | QMC_BD_RX_UB);
++	if (complete)
++		ctrl |= QMC_BD_RX_I;
++	else
++		ctrl &= ~QMC_BD_RX_I;
+ 	wmb(); /* Be sure to flush data before descriptor activation */
+ 	qmc_write16(&bd->cbd_sc, ctrl);
+ 
+@@ -1482,19 +1504,19 @@ static int qmc_setup_chan(struct qmc *qmc, struct qmc_chan *chan)
+ 
+ 	/* Init Rx BDs and set Wrap bit on last descriptor */
+ 	BUILD_BUG_ON(QMC_NB_RXBDS == 0);
+-	val = QMC_BD_RX_I;
+ 	for (i = 0; i < QMC_NB_RXBDS; i++) {
+ 		bd = chan->rxbds + i;
+-		qmc_write16(&bd->cbd_sc, val);
++		qmc_write16(&bd->cbd_sc, 0);
+ 	}
+ 	bd = chan->rxbds + QMC_NB_RXBDS - 1;
+-	qmc_write16(&bd->cbd_sc, val | QMC_BD_RX_W);
++	qmc_write16(&bd->cbd_sc, QMC_BD_RX_W);
+ 
+ 	/* Init Tx BDs and set Wrap bit on last descriptor */
+ 	BUILD_BUG_ON(QMC_NB_TXBDS == 0);
+-	val = QMC_BD_TX_I;
+ 	if (chan->mode == QMC_HDLC)
+-		val |= QMC_BD_TX_L | QMC_BD_TX_TC;
++		val = QMC_BD_TX_L | QMC_BD_TX_TC;
++	else
++		val = 0;
+ 	for (i = 0; i < QMC_NB_TXBDS; i++) {
+ 		bd = chan->txbds + i;
+ 		qmc_write16(&bd->cbd_sc, val);
+-- 
+2.49.0
+
 
