@@ -1,67 +1,91 @@
-Return-Path: <linuxppc-dev+bounces-10860-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10861-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99A2DCA0EC4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 12:20:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 40D18CA0EC4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 13:10:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1Vvm40lDz3dSs;
-	Tue, 12 Aug 2025 22:20:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755001236;
-	cv=none; b=Rj8E6cvCPxoLjFrbVu8Oq5q5gRL1Hgjl+6eGlaJBG9HI2H8jPdf0AJePIx9l6Gxy3l6m8pHwZwWG6LP8NuJ8yhVY/QC7Hy6YCpiqc87wl7Vedmeacbg4TkrZrU2RAh2R2bKs/2YED8sgyYSHxxkOprUAna2/zlW73iAaWjvOipertT8boqQIJoA/BDTZWrDisIbjmygIvzefx6K/rBmBnlJbuKg6ksCM5ApvbJrveNFzfB0b1CCK+y0CUcZBTvDmec7QXgtgjkKT387JLExi1vLpp49ilWOcqoevvaAMJlphQ0pfBsncg8q9loFJ6fL09GDAkOeg4MNY3hLp9PdsDg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1X0r5t1bz3dRb;
+	Tue, 12 Aug 2025 23:10:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755004204;
+	cv=none; b=hCBh6O0Pm+3ARyWyDIewGe3hOT9R2wfWT+3eVzASRBskp614RTFPRd7pvQU+cc6kFey0bNjcKw2fe2vGrTSyToHNd0fvVT4BCfq+MLJ+eZPKzBVBFec6iiTdeDZ+UkDkmnJuY+dPKmnPntFIbgnvVBtyO5EROMXlfn7ZUHmQGPXmqOU5L82GdPbZP1r2uRXcdqS7PEd/u0BjokL6/XY/5EYvRgk9Qjrbeb6pUhcHqBrrsVChDscX+rY7yyppRkI+n7+ZzPz3nXR4vfaSwTEFp9jJ6ar+8LDbw2+e0yRkpVJ7ltKcDR6Ln31JIjsq8Dz0Laonsmxnl0eNI2TF2GbSVw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755001236; c=relaxed/relaxed;
-	bh=n/TDNILDuPSlaQFsB23LU5Lh6T1tog/xUO4qkj1maWM=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=g9kTOXxM5eAFrbqRi2a93E1uqX+RUZYVwQihhzfZyA5esxnRRwCl1A7rOmD33Q8qeLVL/dRTMeiKl2+YLkqRKSuGwq3DRq0tCkkFh+cVkWb874nb2WqgfxCtQc4Xoh6VbFDieSu3YCgPw7YKfhifFINvX399+BYlQ8QAR5fitq5kkUGqBasAc3y8JoKKIhh+P2Tvx3oJ5TBdAxX1StT94yG+mfdwzNfbRLHJ+hVCQcOvpwCJ97cJShhUAyThBawqcq7vvA532bY/URpGvfX+dYjOwGQo8kzjgumjUCDzI3ecFH4Uwq1vYFTxM+IfdBCpSfTuHhhpCVb+5A4pec8B+A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1Vvl5qw5z3dSZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2025 22:20:35 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c1SwY3Ysyz9sSH;
-	Tue, 12 Aug 2025 12:51:09 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id wJCeT-QG9HUg; Tue, 12 Aug 2025 12:51:09 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c1SwY2hXlz9sSC;
-	Tue, 12 Aug 2025 12:51:09 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 47B638B764;
-	Tue, 12 Aug 2025 12:51:09 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id WUmfHuHIqMrh; Tue, 12 Aug 2025 12:51:09 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9054F8B763;
-	Tue, 12 Aug 2025 12:51:08 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Herve Codina <herve.codina@bootlin.com>,
-	Qiang Zhao <qiang.zhao@nxp.com>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	t=1755004204; c=relaxed/relaxed;
+	bh=/cuxRnTF/+sbokXrks651YRr5s4tLHJAN7bhV7Yv7fM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-type; b=cYy71zHm7qk7NCBhLcuaFtza/Gn8INrlHP6OOeRr/WptqvDriI416Enxh1BVgEY294oNITZlWvdLO8zvtY+5YsCiR+DQHSfiQesELZZW/Nlb41fl3BWd50VtebdCUaRvnR/78hiJmscU4qZTKIFNvFivztj5VwHcg9bD7RhrIRmHXxxcP8XAReu53NwXorjxvG8H+1vs3VJXfcd0OOORiKe1xNDFaKL0YRybGl216TQcHd6wBbLXciXLJNw4S3jhLvVhyiE8qwMlztELGGAVeXhEeXQqIsNdY90DdR3SNbLdGbfWsPadJ6w4iipCSNpW/aMbJ9QUIg8rJJWhI+OZig==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FI4H7F/C; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FI4H7F/C; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FI4H7F/C;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=FI4H7F/C;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1X0q4qqWz3dRY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2025 23:10:00 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1755004195;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=/cuxRnTF/+sbokXrks651YRr5s4tLHJAN7bhV7Yv7fM=;
+	b=FI4H7F/CAR29cyBJxMXRA3e9PZKQhk8cnaAppHl3K3h4SBk/XcveNqZEDyiquxjamRYhfj
+	KjRh6ORF2idEVKd1clvTRchVg0p38lUyMAEsO4Fo70sZ56y5zIhy+jKGgP2aftQNLY5yKU
+	rqMAtttX0q4YNbyzuQJ+edFAXOnJKhw=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1755004195;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=/cuxRnTF/+sbokXrks651YRr5s4tLHJAN7bhV7Yv7fM=;
+	b=FI4H7F/CAR29cyBJxMXRA3e9PZKQhk8cnaAppHl3K3h4SBk/XcveNqZEDyiquxjamRYhfj
+	KjRh6ORF2idEVKd1clvTRchVg0p38lUyMAEsO4Fo70sZ56y5zIhy+jKGgP2aftQNLY5yKU
+	rqMAtttX0q4YNbyzuQJ+edFAXOnJKhw=
+Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-524-SArAZdPZOtigwjx2dT9jhA-1; Tue,
+ 12 Aug 2025 09:09:49 -0400
+X-MC-Unique: SArAZdPZOtigwjx2dT9jhA-1
+X-Mimecast-MFC-AGG-ID: SArAZdPZOtigwjx2dT9jhA_1755004186
+Received: from mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.17])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 87D20180036F;
+	Tue, 12 Aug 2025 13:09:45 +0000 (UTC)
+Received: from MiWiFi-R3L-srv.redhat.com (unknown [10.72.112.156])
+	by mx-prod-int-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 7BEA8195608F;
+	Tue, 12 Aug 2025 13:09:36 +0000 (UTC)
+From: Baoquan He <bhe@redhat.com>
+To: linux-mm@kvack.org
+Cc: snovitoll@gmail.com,
+	ryabinin.a.a@gmail.com,
+	christophe.leroy@csgroup.eu,
+	hca@linux.ibm.com,
+	andreyknvl@gmail.com,
+	akpm@linux-foundation.org,
+	chenhuacai@loongson.cn,
+	davidgow@google.com,
+	glider@google.com,
+	dvyukov@google.com,
+	alexghiti@rivosinc.com,
+	kasan-dev@googlegroups.com,
+	loongarch@lists.linux.dev,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
+	linux-um@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
-	linux-sound@vger.kernel.org
-Subject: [PATCH v2 0/4] ASoC: fsl: fsl_qmc_audio: Reduce amount of interrupts
-Date: Tue, 12 Aug 2025 12:50:54 +0200
-Message-ID: <cover.1754993232.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
+	agordeev@linux.ibm.com,
+	Baoquan He <bhe@redhat.com>
+Subject: [PATCH 0/4] mm/kasan: remove kasan_arch_is_ready()
+Date: Tue, 12 Aug 2025 21:09:29 +0800
+Message-ID: <20250812130933.71593-1-bhe@redhat.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,57 +99,52 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1754995860; l=2086; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=FRfbeaR7rhVdJf6odNPziauZN7ICtJBaAc+3BTSFO/Y=; b=m+XoSKxXt1CUMuWUoeYQjJDOTOPfYSKku1zZEwdalbQcCtNlcpJpL1GEWLIcaBA5FsSz9gnF4 VfjUyF3z/dJDj8+4m4MfsQjwe4fr+C5W2bdhOPsRmYVs+5m9nufHJ4m
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-type: text/plain
 Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.17
 
-This series reduces significantly the amount of interrupts on
-fsl_qmc_audio device.
+These are made on top of below patchset in which all functional functions
+will be skipped if kasan is disabled by checking kasan_enabled(). With
+the changes, kasan_arch_is_ready() can be easily cleaned up to simplify
+code.
 
-Patches 1 and 2 are preparatory patches.
-Patch 3 is the main change
-Patch 4 is a cleanup which is enabled by previous patch
+[PATCH v2 00/12] mm/kasan: make kasan=on|off work for all three modes
+https://lore.kernel.org/all/20250812124941.69508-1-bhe@redhat.com/T/#u
 
-Changes in v2:
-- Don't remove UB bit (Patch 1, comment from Herve Codina)
-- Make sure audio channels are ordered on TDM bus (Patch 2, new patch, comment from Herve Codina)
-- Drop struct qmc_dai_chan  (patch 4, new patch)
+The 1st three patches are from Sabyrzhan Tasbolatov's patchset. After
+clean up the kasan_arch_is_ready() definition in loongarch, power and UM, 
+we can simply remove kasan_arch_is_ready() checking in mm/kasan since
+all the checking has been covered by kasan_enabled().
 
-Backgroup (copied from patch 3):
+[PATCH v6 0/2] kasan: unify kasan_enabled() and remove arch-specific implementations
+https://lore.kernel.org/all/20250810125746.1105476-1-snovitoll@gmail.com/T/#u
 
-In non-interleaved mode, several QMC channels are used in sync.
-More details can be found in commit 188d9cae5438 ("ASoC: fsl:
-fsl_qmc_audio: Add support for non-interleaved mode.")
-At the time being, an interrupt is requested on each channel to
-perform capture/playback completion, allthough the completion is
-really performed only once all channels have completed their work.
+Test:
+======
+I have tested the effect of this patchset on loongarch, power and UM.
+Will try to find machine to do testing.
 
-This leads to a lot more interrupts than really needed. Looking at
-/proc/interrupts shows ~3800 interrupts per second when using
-4 capture and 4 playback devices with 5ms periods while
-only 1600 (200 x 4 + 200 x 4) periods are processed during one second.
+Baoquan He (1):
+  mm/kasan: remove kasan_arch_is_ready()
 
-The QMC channels work in sync, the one started first is the one
-finishing first and the one started last is the one finishing last,
-so when the last one finishes it is guaranteed that the other ones are
-finished as well. Therefore only request completion processing on the
-last QMC channel.
+Sabyrzhan Tasbolatov (3):
+  arch/loongarch: remove kasan_arch_is_ready()
+  arch/powerpc: remove kasan_arch_is_ready()
+  arch/um: remove kasan_arch_is_ready()
 
-On my board with the above exemple, on a kernel started with
-'threadirqs' option, the QMC irq thread uses 16% CPU time with this
-patch while it uses 26% CPU time without this patch.
-
-Christophe Leroy (4):
-  soc: fsl: qmc: Only set completion interrupt when needed
-  ASoc: fsl: fsl_qmc_audio: Ensure audio channels are ordered in TDM bus
-  ASoC: fsl: fsl_qmc_audio: Only request completion on last channel
-  ASoc: fsl: fsl_qmc_audio: Drop struct qmc_dai_chan
-
- drivers/soc/fsl/qe/qmc.c      |  44 +++++++++---
- sound/soc/fsl/fsl_qmc_audio.c | 125 +++++++++++++++-------------------
- 2 files changed, 87 insertions(+), 82 deletions(-)
+ arch/loongarch/include/asm/kasan.h     |  7 -------
+ arch/loongarch/mm/kasan_init.c         | 10 +++-------
+ arch/powerpc/include/asm/kasan.h       | 13 -------------
+ arch/powerpc/mm/kasan/init_book3s_64.c |  4 ----
+ arch/um/include/asm/kasan.h            |  5 ++---
+ arch/um/kernel/mem.c                   |  6 +++++-
+ mm/kasan/common.c                      |  9 +++------
+ mm/kasan/generic.c                     |  9 ---------
+ mm/kasan/kasan.h                       |  6 ------
+ mm/kasan/shadow.c                      | 18 ------------------
+ 10 files changed, 13 insertions(+), 74 deletions(-)
 
 -- 
-2.49.0
+2.41.0
 
 
