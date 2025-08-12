@@ -1,67 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-10884-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10885-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 615FFCA0EC4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 18:50:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38043CA0EDB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 18:50:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1gYr07rhz2xS9;
-	Wed, 13 Aug 2025 04:50:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1gYw14gFz2xck;
+	Wed, 13 Aug 2025 04:50:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755024639;
-	cv=none; b=OJ4p9/Ks0SZKBpZzgDudf7XbDxnenK14Deluq1Rqv+dHinr7I7vYkmNi7Qe3k9B7DjseLf2FS5T/SBrHNCTHwdjWiE2lFIdiIYU9SvpLbFLsuPwvkArDv+SJYMeY8eG386Y0pYUZOCH46ror2Wc5HbZskpCy2/WC6B0sRRGiEAu9U/Mlo/djEa26crwOk307tqAgTDEApeefy4H+H8Guw66qkPXNxnp3X51gbBwJ8ACxlEXr/HfoYBHg8AJivkQ4aHDqliw6u2EwrBV2IrfGCle1oddFK7lSGrXJm3mvz6DUaot1/5DJIzQwvQaBVJNtS/j1bxErb0+lWiOelGKDhQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755024644;
+	cv=none; b=oDPqn35/4jAWZ/nE1Rc+2H0P7TGDX9CoV0iKX4rG9U0W+p/sUqzC7tc5HcK+DC+K8vvhAQgFJmnlg1LiUUMHyPVSRF2aiyb0UJBxM0ZLP7TcF+WK97MRYeVo4uy2NKV8I+LXHNeOUEP03y1PT7iylC9eF2SaYkQ7wUnM24Yo84+z/ufVn5o5Z6BLN222AGfopl5g5Cpzor7IBcpCAu9A36S1LALuiS26QcVmti9/QGaE376mivG9ZEwgvFM5I97q+eSTLUIm5OH5Tui6SPf00+PweoCZcrDEXV+vl/8ArW+8oTZl7CVWiBFPeFpuA3Gm7Ydkbtg1xDf/uXGcBrPwlA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755024639; c=relaxed/relaxed;
-	bh=j0RfBy0B0ML64kaxdP09fhg7oili9kPFcYcwS1oIMyI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=nExr/aUXjrBkd59mSeCck4ScpIRMzP3G/6B/3YcN5m6RKXlFlVDfk9d7xZZW2CKoUIZS5q3S6gbBgdRoKa432jP205XRYt6ZJ1bfkI4ukU/3s4R730RhcEY6qTElgfO0rKdSx3J71IsqNLcBlRMuOHl0sMQAoX9HXWBz2f5b2NvkBnOHXKIbx5s+gW/7QiMFehYxGhucyA7ODmCmme25MwL2TcY+7O7v+k9OAxHdu0U3+vGHWpHFgkrCxjuP6JuB2eEmLVfsU5HXaOhvdDXL2eYDfa5jtJa4h5AVfIiIB00U/agmHxX27Jsj0g2fiPJ7KirbMvxKAFIgyV7A1rQdbw==
+	t=1755024644; c=relaxed/relaxed;
+	bh=CtG2kVxK8k1NQdvyEki9JRqyDdfWlHhua5AM1GdDq2k=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Y+/g37pMyDhsY/J71efuqOrSHh6TKXX/jdAPoE83kZAwoymzjPxeexFrbS7OOpQ2iX7DH3T0VoQBxEGtGgGVQp3+yZUz9PYJhk1qzTiHOyYoM1fjXbX8q/rf6/nhl+oGrFPhZlU9Agu5L/+SruZMDwXZ3gesge6WjUbcTLqUShnzY69h/jyt+rRDn+jtEt9MVuC+I/QvUxULZu2z7PPVIqk5MSx9wBDpSAoB0/d9wVA/CN2I1DD6H0E16JzfJxMQjE8sttINJlutDHlWM/ZJfrf9x9sozxzKyrS1CMhA3UNDYMH6W6wKw8s1wkPIcQ1R/ieiPYL3IlVDxIxF0R5q3Q==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1gYq3vbYz2xQ0
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 04:50:39 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1gYv3vlFz2xcD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 04:50:43 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c1TBR4kXzz9sT7;
-	Tue, 12 Aug 2025 13:03:11 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4c1gK71N21z9sSN;
+	Tue, 12 Aug 2025 20:39:39 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 3y8dTxRQA3KN; Tue, 12 Aug 2025 13:03:11 +0200 (CEST)
+	with ESMTP id W34agYFEkjYq; Tue, 12 Aug 2025 20:39:39 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c1TBP5hjWz9sSs;
-	Tue, 12 Aug 2025 13:03:09 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c1gK707Z2z9sSL;
+	Tue, 12 Aug 2025 20:39:39 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id AE0E58B763;
-	Tue, 12 Aug 2025 13:03:09 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D45368B764;
+	Tue, 12 Aug 2025 20:39:38 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id Qz7WChCQ-Wh5; Tue, 12 Aug 2025 13:03:09 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 20F128B764;
-	Tue, 12 Aug 2025 13:03:09 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Qiang Zhao <qiang.zhao@nxp.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-gpio@vger.kernel.org,
-	devicetree@vger.kernel.org
-Subject: [PATCH 4/4] dt-bindings: soc: fsl: qe: Add an interrupt controller for QUICC Engine Ports
-Date: Tue, 12 Aug 2025 13:02:54 +0200
-Message-ID: <0b56ef403a7c8d0f8305e847d68959a1037d365e.1754996033.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1754996033.git.christophe.leroy@csgroup.eu>
-References: <cover.1754996033.git.christophe.leroy@csgroup.eu>
+	with ESMTP id KCsZS5tQGZ3E; Tue, 12 Aug 2025 20:39:38 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 03CD88B763;
+	Tue, 12 Aug 2025 20:39:36 +0200 (CEST)
+Message-ID: <1cc6f739-3891-4cc7-84ac-676fef62c445@csgroup.eu>
+Date: Tue, 12 Aug 2025 20:39:36 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,93 +58,151 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1754996575; l=2493; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=sBDv7vR+It1XYOsUbKJGVxht0ECRwLjzMeT3ejRDm/U=; b=BOrAHvPX1MdgLy+6wlTvGbgoypCVvvGj7lfPu6JAC3QbSLnZxuD3Vq6NaU3gedK/5SowU993K yN7/zKYS8O5AWY9thNswXKEYACGBAOQv5dd7OmZYqNex0uG2y6q4nwB
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 06/11] powerpc/ptdump: rename "struct pgtable_level" to
+ "struct ptdump_pglevel"
+To: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ David Hildenbrand <david@redhat.com>
+Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+ xen-devel@lists.xenproject.org, linux-fsdevel@vger.kernel.org,
+ nvdimm@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Juergen Gross <jgross@suse.com>, Stefano Stabellini
+ <sstabellini@kernel.org>,
+ Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+ Dan Williams <dan.j.williams@intel.com>, Matthew Wilcox
+ <willy@infradead.org>, Jan Kara <jack@suse.cz>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>,
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>, Vlastimil Babka
+ <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>,
+ Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
+ Zi Yan <ziy@nvidia.com>, Baolin Wang <baolin.wang@linux.alibaba.com>,
+ Nico Pache <npache@redhat.com>, Ryan Roberts <ryan.roberts@arm.com>,
+ Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>,
+ Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>,
+ Hugh Dickins <hughd@google.com>, Oscar Salvador <osalvador@suse.de>,
+ Lance Yang <lance.yang@linux.dev>
+References: <20250811112631.759341-1-david@redhat.com>
+ <20250811112631.759341-7-david@redhat.com>
+ <dac9e243-33ce-4203-a598-2877cf908cad@lucifer.local>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <dac9e243-33ce-4203-a598-2877cf908cad@lucifer.local>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-The QUICC Engine provides interrupts for a few I/O ports. This is
-handled via a separate interrupt ID and managed via a triplet of
-dedicated registers hosted by the SoC.
+Hi Lorenzo,
 
-Implement an interrupt driver for it for that those IRQs can then
-be linked to the related GPIOs.
+Le 12/08/2025 à 20:23, Lorenzo Stoakes a écrit :
+> On Mon, Aug 11, 2025 at 01:26:26PM +0200, David Hildenbrand wrote:
+>> We want to make use of "pgtable_level" for an enum in core-mm. Other
+>> architectures seem to call "struct pgtable_level" either:
+>> * "struct pg_level" when not exposed in a header (riscv, arm)
+>> * "struct ptdump_pg_level" when expose in a header (arm64)
+>>
+>> So let's follow what arm64 does.
+>>
+>> Signed-off-by: David Hildenbrand <david@redhat.com>
+> 
+> This LGTM, but I'm super confused what these are for, they don't seem to be
+> used anywhere? Maybe I'm missing some macro madness, but it seems like dead
+> code anyway?
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- .../soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml       | 63 +++++++++++++++++++
- 1 file changed, 63 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+pg_level[] are used several times in arch/powerpc/mm/ptdump/ptdump.c, 
+for instance here:
 
-diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
-new file mode 100644
-index 0000000000000..7c98706d03dd1
---- /dev/null
-+++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
-@@ -0,0 +1,63 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+
-+title: Freescale QUICC Engine I/O Ports Interrupt Controller
-+
-+maintainers:
-+  - name: Christophe Leroy
-+    email: christophe.leroy@csgroup.eu
-+
-+description: |
-+  Interrupt controller for the QUICC Engine I/O ports found on some
-+  Freescale/NXP PowerQUICC and QorIQ SoCs.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - fsl,mpc8323-qe-ports-ic
-+      - fsl,mpc8360-qe-ports-ic
-+      - fsl,mpc8568-qe-ports-ic
-+
-+  reg:
-+    description: Base address and size of the QE I/O Ports Interrupt Controller registers.
-+    minItems: 1
-+    maxItems: 1
-+
-+  interrupt-controller:
-+    type: boolean
-+    description: Indicates this node is an interrupt controller.
-+
-+  '#address-cells':
-+    const: 0
-+    description: Must be 0.
-+
-+  '#interrupt-cells':
-+    const: 1
-+    description: Number of cells to encode an interrupt specifier.
-+
-+  interrupts:
-+    minItems: 1
-+    maxItems: 1
-+    description: Interrupt line to which the QE I/O Ports controller is connected.
-+
-+  interrupt-parent:
-+    description: Phandle to the parent interrupt controller.
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupt-controller
-+  - '#address-cells'
-+  - '#interrupt-cells'
-+  - interrupts
-+  - interrupt-parent
-+
-+examples:
-+  - |
-+    interrupt-controller@c00 {
-+      interrupt-controller;
-+      compatible = "fsl,mpc8323-qe-ports-ic";
-+      #address-cells = <0>;
-+      #interrupt-cells = <1>;
-+      reg = <0xc00 0x18>;
-+      interrupts = <74 0x8>;
-+      interrupt-parent = <&ipic>;
--- 
-2.49.0
+static void note_page_update_state(struct pg_state *st, unsigned long 
+addr, int level, u64 val)
+{
+	u64 flag = level >= 0 ? val & pg_level[level].mask : 0;
+	u64 pa = val & PTE_RPN_MASK;
+
+	st->level = level;
+	st->current_flags = flag;
+	st->start_address = addr;
+	st->start_pa = pa;
+
+	while (addr >= st->marker[1].start_address) {
+		st->marker++;
+		pt_dump_seq_printf(st->seq, "---[ %s ]---\n", st->marker->name);
+	}
+}
+
+> 
+> Anyway:
+> 
+> Reviewed-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
+> 
+>> ---
+>>   arch/powerpc/mm/ptdump/8xx.c      | 2 +-
+>>   arch/powerpc/mm/ptdump/book3s64.c | 2 +-
+>>   arch/powerpc/mm/ptdump/ptdump.h   | 4 ++--
+>>   arch/powerpc/mm/ptdump/shared.c   | 2 +-
+>>   4 files changed, 5 insertions(+), 5 deletions(-)
+>>
+>> diff --git a/arch/powerpc/mm/ptdump/8xx.c b/arch/powerpc/mm/ptdump/8xx.c
+>> index b5c79b11ea3c2..4ca9cf7a90c9e 100644
+>> --- a/arch/powerpc/mm/ptdump/8xx.c
+>> +++ b/arch/powerpc/mm/ptdump/8xx.c
+>> @@ -69,7 +69,7 @@ static const struct flag_info flag_array[] = {
+>>   	}
+>>   };
+>>
+>> -struct pgtable_level pg_level[5] = {
+>> +struct ptdump_pg_level pg_level[5] = {
+>>   	{ /* pgd */
+>>   		.flag	= flag_array,
+>>   		.num	= ARRAY_SIZE(flag_array),
+>> diff --git a/arch/powerpc/mm/ptdump/book3s64.c b/arch/powerpc/mm/ptdump/book3s64.c
+>> index 5ad92d9dc5d10..6b2da9241d4c4 100644
+>> --- a/arch/powerpc/mm/ptdump/book3s64.c
+>> +++ b/arch/powerpc/mm/ptdump/book3s64.c
+>> @@ -102,7 +102,7 @@ static const struct flag_info flag_array[] = {
+>>   	}
+>>   };
+>>
+>> -struct pgtable_level pg_level[5] = {
+>> +struct ptdump_pg_level pg_level[5] = {
+>>   	{ /* pgd */
+>>   		.flag	= flag_array,
+>>   		.num	= ARRAY_SIZE(flag_array),
+>> diff --git a/arch/powerpc/mm/ptdump/ptdump.h b/arch/powerpc/mm/ptdump/ptdump.h
+>> index 154efae96ae09..4232aa4b57eae 100644
+>> --- a/arch/powerpc/mm/ptdump/ptdump.h
+>> +++ b/arch/powerpc/mm/ptdump/ptdump.h
+>> @@ -11,12 +11,12 @@ struct flag_info {
+>>   	int		shift;
+>>   };
+>>
+>> -struct pgtable_level {
+>> +struct ptdump_pg_level {
+>>   	const struct flag_info *flag;
+>>   	size_t num;
+>>   	u64 mask;
+>>   };
+>>
+>> -extern struct pgtable_level pg_level[5];
+>> +extern struct ptdump_pg_level pg_level[5];
+>>
+>>   void pt_dump_size(struct seq_file *m, unsigned long delta);
+>> diff --git a/arch/powerpc/mm/ptdump/shared.c b/arch/powerpc/mm/ptdump/shared.c
+>> index 39c30c62b7ea7..58998960eb9a4 100644
+>> --- a/arch/powerpc/mm/ptdump/shared.c
+>> +++ b/arch/powerpc/mm/ptdump/shared.c
+>> @@ -67,7 +67,7 @@ static const struct flag_info flag_array[] = {
+>>   	}
+>>   };
+>>
+>> -struct pgtable_level pg_level[5] = {
+>> +struct ptdump_pg_level pg_level[5] = {
+>>   	{ /* pgd */
+>>   		.flag	= flag_array,
+>>   		.num	= ARRAY_SIZE(flag_array),
+>> --
+>> 2.50.1
+>>
 
 
