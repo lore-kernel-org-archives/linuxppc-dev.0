@@ -1,52 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-10872-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10873-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0308CA0EC4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 14:32:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E44FC87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 14:50:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1YrL3jNXz2xQ0;
-	Wed, 13 Aug 2025 00:32:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=147.75.193.91
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755009170;
-	cv=none; b=lj5a+nd8fQsQUs3y7AiRn5uO+i4Y10Jn9+9OtMHjoa/YCrxFe1b3w2MW+aXawY9NGPSDvRxYGXndiHRvMtUM9kcUTc+XePLcsp64juwJNfY2qu1JKsdZccD8vVD5Dgyca3JfwMClk91JEzvvLMY+m7JRtjoDmmas7dfEIS2qbJLelJLxSRXrnLuDg9t8m5C6nz7ZKfS1JuOZt5O71QBy/xH716wKE3ahvnHC9y8fyji5xfW64+8xJjHV7TGLssiho2KP9by8CX9a1/Sh6U1ZcHG+Bwg1aZt93OyCu3d5wTem/QpOX7xhmYMGfIus2mOL88cgqiPP9rxGZT034zbAzQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1ZDs3cY0z2xQ0;
+	Wed, 13 Aug 2025 00:50:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755010237;
+	cv=none; b=FZATky39IJzKWyPUGRrBWt7zW18u544m50Q+nrPVCDiw2vD8fD3Dfv4vJR33CvBmVXkf0RvXL5+Qm9qnDYmXhP9Y0cGVTZ0AthgRxdXd6bIUaW7vKkoLqimSdo6GGgHfTwmq4hUZCogHaC7POYvpD++r4U06bAxl3c4lbx12+H0F5xgxBf4ECZkZG2QJHmJL97doil0LHiHN0Pm95pPsXFvgVk6gmPzo/GN3obc+KtM7L9WZWOX7VLy1Ig4tDcsI/HcJj+4o4wn9c2Fqre0/RtPcAbHlDEzjQ6iWMjn9xSOvixmv4jtzWkJ1/ITH2jK8wK/09Bq/H1cY+xL2nxmwzA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755009170; c=relaxed/relaxed;
-	bh=QM/ExpRiQGiIvKcuq4d8ioQNq+y5f6GO8oNe3a6UauY=;
-	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
-	 Message-Id:Subject; b=oEf3YE0TI7EVZZ3vB6zku95c5GpcbtDNwT99Lo0MQCaBwrcdSVvwPJJco/AI5Z01OyPMC5d/mN5bQkLEjcwJHwdB03DFMLUjnH1Ukk2sakwczQnOVOWPyL/Zth/jKhNjSnBRoIRqiTXsKwvHTW+FSxsC3MFb/aHNRVLQM0U0+9WWc1rGQ/FpnlUWyHbjXb8QbXaZQvfbGjuWkLNSiUu/I1Mzf8hRKAoTpJ24XhyWAOLELUYU86Htt77FVZT0eYaetDiTQ2+E/9KySQAJbC0krUDz56Gkr4tc5ioaCsS/u0ltp2G+a/QvHDFOPU4nYjTrIVMUZrbxrjbu93xBr+EI7w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Aknfxh3m; dkim-atps=neutral; spf=pass (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Aknfxh3m;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=147.75.193.91; helo=nyc.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from nyc.source.kernel.org (nyc.source.kernel.org [147.75.193.91])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1YrJ66Ryz2xPw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 00:32:48 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by nyc.source.kernel.org (Postfix) with ESMTP id 0964CA57451;
-	Tue, 12 Aug 2025 14:32:46 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8632BC4CEF0;
-	Tue, 12 Aug 2025 14:32:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1755009165;
-	bh=fy2/TnxpQCa912cSSfOH0Jy+C/EZqNdGuJwRBGssE/M=;
-	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
-	b=Aknfxh3m9XKnn6/bFwYil95p5Oh1ky5mRX2z9Y7vzkTKQ/AHKRCTvEQMHpmkXm+Tj
-	 RVlRERrOzBPUqwUL+dGLwUyyrGgZbd9w4UcJkBgfk5a49SLvrgo4H0XliowoCGFGC6
-	 DqFwhS0ArYrsVlaU+Q7LKT1LZIe9SqxuzePXerFg39PBZxbaxUayacfXEt2YotHuvP
-	 zyUNCJ7tnCProE7MW2ExXNDMFfk/Wk33sz1iJ9srNdOuspXxEHc/XEZVMZfvInlCn4
-	 Xzna/m5QVKMOsKJkfvT5T8PidCMkD8f/LXZaVBtG4cMl4TnVXcUbl+BSJ5LHxC7/EM
-	 gnsNMKui+Xhew==
-Date: Tue, 12 Aug 2025 09:32:44 -0500
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
+	t=1755010237; c=relaxed/relaxed;
+	bh=Oi0Xxx1TJ8BNWP99I7t9epnQK0iYBf9hcB6LTNITS28=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aaxO2S5uy+YjX00qhSvObGGqTUHf3uAc/mrm+S3LyxCOn7mNLHDB7mFmHd4lMtBk3BxjhzZ033hMX3+acej5l8MANFV5R7jdyLphC3Ke2arpmvLQve+JgZgTbvafeeceEsCIFxJw9yTeF26+g/hRJZVjCSYxP4WNLBx8KXnz3jGmx8rk4K/lG5wz1zGo6AR9Wzgrc66IugPA4OC1ZEQi77sHblLvYeVFmmHV9pAXSh7VaeGjkdGOuFjhePHczEyx1DSZLl5GKDWEGQt1602rQdr0bDisxTGA8RIUdrYD0nn1rj2Z9b+2pUwTgCuetp9AiXE5eOENAqyAssWGxd7KlA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1ZDq4gw9z2xPw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 00:50:35 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4c1TBM3vkpz9sSq;
+	Tue, 12 Aug 2025 13:03:07 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id olXeWImUxYKy; Tue, 12 Aug 2025 13:03:07 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c1TBM395Mz9sSj;
+	Tue, 12 Aug 2025 13:03:07 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 56E5B8B764;
+	Tue, 12 Aug 2025 13:03:07 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id MNwkCkkNJAtR; Tue, 12 Aug 2025 13:03:07 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B2D138B763;
+	Tue, 12 Aug 2025 13:03:06 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org
+Subject: [PATCH 0/4] Add support of IRQs to QUICC ENGINE GPIOs
+Date: Tue, 12 Aug 2025 13:02:50 +0200
+Message-ID: <cover.1754996033.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,80 +72,39 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-From: "Rob Herring (Arm)" <robh@kernel.org>
-Cc: Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Linus Walleij <linus.walleij@linaro.org>, linux-kernel@vger.kernel.org, 
- linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, Bartosz Golaszewski <brgl@bgdev.pl>, 
- Conor Dooley <conor+dt@kernel.org>, linux-gpio@vger.kernel.org, 
- Qiang Zhao <qiang.zhao@nxp.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-In-Reply-To: <0b56ef403a7c8d0f8305e847d68959a1037d365e.1754996033.git.christophe.leroy@csgroup.eu>
-References: <cover.1754996033.git.christophe.leroy@csgroup.eu>
- <0b56ef403a7c8d0f8305e847d68959a1037d365e.1754996033.git.christophe.leroy@csgroup.eu>
-Message-Id: <175500916432.3488674.1706766155168772227.robh@kernel.org>
-Subject: Re: [PATCH 4/4] dt-bindings: soc: fsl: qe: Add an interrupt
- controller for QUICC Engine Ports
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1754996575; l=1268; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=Cv+al3RkR0a6hj2nZdT3jnct2NEsZKUY1Yamq/g80o8=; b=fFl+7sV7wvWfoxhth6KvVgNiahxwX5fogT8IfnRNTZTK/9CrJvm+FZscOIx5Gp5mTTYv+jMxX /4BNU07obY7DwKrRVoPtg/YU1mQp3Qpsf7Va6nL30foeAvVGTv6Sg5z
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 
+The QUICC Engine provides interrupts for a few I/O ports. This is
+handled via a separate interrupt ID and managed via a triplet of
+dedicated registers hosted by the SoC.
 
-On Tue, 12 Aug 2025 13:02:54 +0200, Christophe Leroy wrote:
-> The QUICC Engine provides interrupts for a few I/O ports. This is
-> handled via a separate interrupt ID and managed via a triplet of
-> dedicated registers hosted by the SoC.
-> 
-> Implement an interrupt driver for it for that those IRQs can then
-> be linked to the related GPIOs.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
->  .../soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml       | 63 +++++++++++++++++++
->  1 file changed, 63 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
-> 
+Implement an interrupt driver for those IRQs then add IRQs capability to
+the QUICC ENGINE GPIOs.
 
-My bot found errors running 'make dt_binding_check' on your patch:
+The number of GPIOs for which interrupts are supported depends on
+the microcontroller:
+- mpc8323 has 10 GPIOS supporting interrupts
+- mpc8360 has 28 GPIOS supporting interrupts
+- mpc8568 has 18 GPIOS supporting interrupts
 
-yamllint warnings/errors:
-./Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml:3:1: [error] missing document start "---" (document-start)
+Christophe Leroy (4):
+  soc: fsl: qe: Add an interrupt controller for QUICC Engine Ports
+  soc: fsl: qe: Change GPIO driver to a proper platform driver
+  soc: fsl: qe: Add support of IRQ in QE GPIO
+  dt-bindings: soc: fsl: qe: Add an interrupt controller for QUICC
+    Engine Ports
 
-dtschema/dtc warnings/errors:
-/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml: ignoring, error parsing file
-Traceback (most recent call last):
-  File "/usr/local/bin/dt-doc-validate", line 8, in <module>
-    sys.exit(main())
-             ^^^^^^
-  File "/usr/local/lib/python3.11/dist-packages/dtschema/doc_validate.py", line 66, in main
-    ret |= check_doc(f)
-           ^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/dist-packages/dtschema/doc_validate.py", line 22, in check_doc
-    dtsch = dtschema.DTSchema(filename, line_numbers=line_number)
-            ^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^^
-  File "/usr/local/lib/python3.11/dist-packages/dtschema/schema.py", line 83, in __init__
-    id = schema['$id'].rstrip('#')
-         ~~~~~~^^^^^^^
-KeyError: '$id'
-Error: Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.example.dts:34.3-35.1 syntax error
-FATAL ERROR: Unable to parse input tree
-make[2]: *** [scripts/Makefile.dtbs:132: Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.example.dtb] Error 1
-make[2]: *** Waiting for unfinished jobs....
-make[1]: *** [/builds/robherring/dt-review-ci/linux/Makefile:1527: dt_binding_check] Error 2
-make: *** [Makefile:248: __sub-make] Error 2
+ .../soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml       |  63 +++++++
+ drivers/soc/fsl/qe/Makefile                   |   2 +-
+ drivers/soc/fsl/qe/gpio.c                     | 108 ++++++++----
+ drivers/soc/fsl/qe/qe_ports_ic.c              | 156 ++++++++++++++++++
+ 4 files changed, 293 insertions(+), 36 deletions(-)
+ create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+ create mode 100644 drivers/soc/fsl/qe/qe_ports_ic.c
 
-doc reference errors (make refcheckdocs):
-
-See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/0b56ef403a7c8d0f8305e847d68959a1037d365e.1754996033.git.christophe.leroy@csgroup.eu
-
-The base for the series is generally the latest rc1. A different dependency
-should be noted in *this* patch.
-
-If you already ran 'make dt_binding_check' and didn't see the above
-error(s), then make sure 'yamllint' is installed and dt-schema is up to
-date:
-
-pip3 install dtschema --upgrade
-
-Please check and re-submit after running the above command yourself. Note
-that DT_SCHEMA_FILES can be set to your schema file to speed up checking
-your schema. However, it must be unset to test all examples with your schema.
+-- 
+2.49.0
 
 
