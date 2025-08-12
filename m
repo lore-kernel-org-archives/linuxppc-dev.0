@@ -1,59 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-10852-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10853-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8401C87FCB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 05:47:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A55EC87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 06:14:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1L7L49Ktz3dRf;
-	Tue, 12 Aug 2025 15:45:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754977502;
-	cv=none; b=ebn/DTi9aT7/2RFPKMhfLCI+9pMP81CfsVwUviBD0RoWCZW8bAafYWl7Npi/95Mzf9QxCWoHHRvc1zfBQRwZRu89bWqLR/jdxWa2eFO5bqmvYFTJ2nXDgnNmX/6cm05w4Xem2AuBRHs5FM7HcxcYd2yu9yPw1vZ4144I3sDWQKUJ4g8IH3+XZPIa9L1mFi/c+hRqc+ddXkdjGSoqgYQJxm3isQ/k/6ozQxQwgb+w2NuSgA1oKLuUOQu387VZs2yqcm6E+/ZgchESxqw9gpNM/p43q2lkdeG7UwSad0ur77XDlrU3aPSab4LdtCIlfdcZk7D6c3tM3KUKwNlWUjeTpQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1Lnb5Tw1z3dL3;
+	Tue, 12 Aug 2025 16:14:43 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.104.207.81
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754979283;
+	cv=none; b=mQk6sFLJdnESseT1e/YRSW864WNjxMHy+UWdp2FyI/hkyaLPExe6AWx7M4/35FFTeHDMZIKp2+yAlws5X1IjyUzPnvQp8SKOBB3Zl1u87GZvQdHLK7oxjSu3q49Bf9dm73hBScMKbDj9P4NxeqE0L3NryGR6NBbwp9f/c6kYqdlBd2ThBFxASpZsN65/93WA9Kdn101K7/LV6QVwB1iQuJB9j9NR6772OnhdFP7qYTeG1GF0eSpKRPLQ9pWKVopWLfS6AO15ZWTH5OqRG4qFZhzs9wD4fh0WEixQqzXx0yrFR39QtgKYvJvb0mY9Di0fpKKhO8334E3odmTK3AXaxg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754977502; c=relaxed/relaxed;
-	bh=cZ20UpxcMxk4CxqTAsOEg+d3tEufNIUEKrmXXn+g7es=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ZxoVOzRIxdrl4T8GwpOyf1oBfXPFHP/cA1G3KYVW8jU9jop/+i4LD0Kt3c6/RFL8VBFkqCM7u8CkXgyUMU9LtzzdHrkHFIXvb+QrYItQ1W97PDC0U8K9Fe7sRBwxugXqVlRSIGexza0c11FgIHx1ng8HBtlPOuoDi6AjvUXhVOF2EcIr45+YMxMrd9FQSvKe7CxFruk2UdM9Vm3de+E4cqk/72EuhSTz1u3q0AaSWtZsDH5ezKUpzsZEkEsRbUOSQHbtsnj18g8uR0uThUhHfjtkF9k6uj48w4AnPgSZrg06Crx7kD/1KkEzADgZcfTnwyjICqQ9wxNPd9zw5qGcTQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=u02ULTpX; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=dCjTzytX; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1754979283; c=relaxed/relaxed;
+	bh=7kDMXkiqwspte3OFxiCO5uJIctYbcK6fSwBNuY8L+04=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=du3+ITyENY3kJXU8u7wIjCQlHtKqXCPxLZcIOrITqaQVARMMebP/6GOf8jnbj7w6BYMCVBF01hFqG1+VWqM7jhMUgeU58sqJXrXR6bA5SsmmuJQ50Jh5V0ilX5tyS85MFBn3oeTFmDWvL3qomqXCDnR4HWodzB+C/RUMt9XXwq8VSYTo9CoAjabZqPK70z/BSjtvHbzTM9OEcVJugISMSFd/gUj4qXcnNxZnAYuyFKH3U0M6nbOCtvcPERBGjR8PR1Vum4kmF6CCF91OgXLjggLcHEJsaAb9b2H/lVBWtnyQiKE/ESyzrb/sI7zNXvYC75xzMApK9c5wtRWHWZoVHw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ew.tq-group.com; dkim=pass (2048-bit key; unprotected) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=Os6o45Pb; dkim=fail header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=dkim header.b=VOm5I74O reason="key not found in DNS"; dkim-atps=neutral; spf=pass (client-ip=93.104.207.81; helo=mx1.tq-group.com; envelope-from=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org) smtp.mailfrom=ew.tq-group.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=ew.tq-group.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=u02ULTpX;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=dCjTzytX;
+	dkim=pass (2048-bit key; unprotected) header.d=tq-group.com header.i=@tq-group.com header.a=rsa-sha256 header.s=key1 header.b=Os6o45Pb;
+	dkim=fail reason="key not found in DNS" header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=dkim header.b=VOm5I74O;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ew.tq-group.com (client-ip=93.104.207.81; helo=mx1.tq-group.com; envelope-from=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org)
+Received: from mx1.tq-group.com (mx1.tq-group.com [93.104.207.81])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4c1L7K5Gbzz3dL4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2025 15:45:01 +1000 (AEST)
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1754977482;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1LnW6dLDz3cfL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2025 16:14:38 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+  d=tq-group.com; i=@tq-group.com; q=dns/txt; s=key1;
+  t=1754979280; x=1786515280;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=7kDMXkiqwspte3OFxiCO5uJIctYbcK6fSwBNuY8L+04=;
+  b=Os6o45PbtRiYkw4CNH7WS3IMW5SHiCDyvz2k0DcLxsVFMpc3Md32j6fB
+   3PjoHI0Up6FnS5ZAd/w4SRDJQ8S0j3tLcn3Pc0eaynAjqoJoI2aYChtNo
+   yiX42GLgg7vVVfCkRBqbt9MjDNR/h5j3pFKCVpy9lflqZYynxF+N3KbDc
+   rlJLd2l+HeEaRpqok4rTSXMYn1OPO+wCXKF4SJYwKRIgWXUDDt/oxxp3X
+   X5mDvVM1y1CGhMicDyjZjcO2L7/OPkjUrFyXqGBDEGP1ZwLwYN9jvVCUt
+   rt/Px347NC89HBn0EzXrCHCbViV0mxpSPX7Ch6P1q4FdIVZDLm+7Oo4ME
+   g==;
+X-CSE-ConnectionGUID: B4ffp1ALSjKWb0uJfw2sUg==
+X-CSE-MsgGUID: 0MqoVO07Ql6hiYkpsM+9JA==
+X-IronPort-AV: E=Sophos;i="6.17,284,1747692000"; 
+   d="scan'208";a="45692356"
+Received: from vmailcow01.tq-net.de ([10.150.86.48])
+  by mx1.tq-group.com with ESMTP; 12 Aug 2025 08:14:30 +0200
+X-CheckPoint: {689ADBC6-33-AD8F5F64-F0EACAA5}
+X-MAIL-CPID: 742ED08D02BE758A2A1B26C8759E02E3_1
+X-Control-Analysis: str=0001.0A002104.689ADBC7.002A,ss=1,re=0.000,recu=0.000,reip=0.000,cl=1,cld=1,fgs=0
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 2AFFA16835C;
+	Tue, 12 Aug 2025 08:14:25 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ew.tq-group.com;
+	s=dkim; t=1754979266;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=cZ20UpxcMxk4CxqTAsOEg+d3tEufNIUEKrmXXn+g7es=;
-	b=u02ULTpXMKVYfa57toc79SeSvHFZXxCkrNoUYan+T5r+jzG+jErgF3lH3L6hpXG5GD7AiP
-	BIUXfeq2JImvh4BYaqWeRcsPcpQWyQhVM6L37lOS8/C3ZaJKOGeEyLxqjYZEbvX/ROLkBH
-	u79IO6ttBD1PVC+tYif7r2bAXlngTkKup+NLj++0//mmwP8JvHnpMe87VUFc0bOwAeIITA
-	jDpSHVlj7jvidjWsVLXDskx33s+au1U1XzyN/9KPs2LnIbFp5cV3y+a+R/VTZv4VZHKIAG
-	LWkElhMb8xt5p1hHetTPMUO1bZj316mgGQEbOwBvZ0KYDGtgbZwU0kEgUkCLYA==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1754977482;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=cZ20UpxcMxk4CxqTAsOEg+d3tEufNIUEKrmXXn+g7es=;
-	b=dCjTzytXjhSAHdYjPLNNi/GmmKuNlP6Pk8Piyd2jaSGduNETuOdwRfsVItAyacB+69vj23
-	yvuwshG6rMcH0pAw==
-Date: Tue, 12 Aug 2025 07:44:36 +0200
-Subject: [PATCH v4 23/24] MIPS: vdso: Enable the vdsocheck tool
+	bh=7kDMXkiqwspte3OFxiCO5uJIctYbcK6fSwBNuY8L+04=;
+	b=VOm5I74Oo5znWlaXmN6u8OJRm5q/YOa+tu/QK1DPY5JPD+J7KZGpK5JP+DU17ptUV0Hb3E
+	zH0KCm5pUcm6jc+JsrDLMmMdfbkLdqmuDZgGcNI/xvacXZt35YOmrj5rS/9qA01yQEkhMJ
+	qehK313US2ohYsMtXl+5cbLNmpe9CNMuB0qhy/HsC7aaAqu2XMQP6PVnkDcsIvmCJYaCfC
+	WjOI/fho5sWWLpFhNWOR9IAwC/vgZ4/7MJ2OQsWnx0gS9ILCSyIHS9ec+va7ZwIFDbnqM0
+	D2KA/TaS1pwf8V1K4T/3Ax/ptch+2mCRXDQ/5g5cJwC/31mROSUCp/lNkZNCXQ==
+From: Alexander Stein <alexander.stein@ew.tq-group.com>
+To: Krzysztof Kozlowski <krzk@kernel.org>, Frank Li <Frank.li@nxp.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
+ Conor Dooley <conor+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 1/1] dt-bindings: fsl: fsl,
+ rcpm: Add #power-domain-cells
+Date: Tue, 12 Aug 2025 08:14:24 +0200
+Message-ID: <2799138.mvXUDI8C0e@steina-w>
+Organization: TQ-Systems GmbH
+In-Reply-To: <aIv+CgkePusUoT6Q@lizhi-Precision-Tower-5810>
+References:
+ <20250731055806.2265628-1-alexander.stein@ew.tq-group.com>
+ <20250731-funky-crab-of-defense-7cd658@kuoka>
+ <aIv+CgkePusUoT6Q@lizhi-Precision-Tower-5810>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,149 +95,74 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20250812-vdso-absolute-reloc-v4-23-61a8b615e5ec@linutronix.de>
-References: <20250812-vdso-absolute-reloc-v4-0-61a8b615e5ec@linutronix.de>
-In-Reply-To: <20250812-vdso-absolute-reloc-v4-0-61a8b615e5ec@linutronix.de>
-To: Paul Walmsley <paul.walmsley@sifive.com>, 
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
- Alexandre Ghiti <alex@ghiti.fr>, Nathan Chancellor <nathan@kernel.org>, 
- Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
- Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, 
- Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
- Vincenzo Frascino <vincenzo.frascino@arm.com>, Kees Cook <kees@kernel.org>, 
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>, 
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
- "H. Peter Anvin" <hpa@zytor.com>, Richard Weinberger <richard@nod.at>, 
- Anton Ivanov <anton.ivanov@cambridgegreys.com>, 
- Johannes Berg <johannes@sipsolutions.net>, 
- Russell King <linux@armlinux.org.uk>, 
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Sven Schnelle <svens@linux.ibm.com>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- Miguel Ojeda <ojeda@kernel.org>, Alex Gaynor <alex.gaynor@gmail.com>, 
- Boqun Feng <boqun.feng@gmail.com>, Gary Guo <gary@garyguo.net>, 
- =?utf-8?q?Bj=C3=B6rn_Roy_Baron?= <bjorn3_gh@protonmail.com>, 
- Benno Lossin <lossin@kernel.org>, Andreas Hindborg <a.hindborg@kernel.org>, 
- Alice Ryhl <aliceryhl@google.com>, Trevor Gross <tmgross@umich.edu>, 
- Danilo Krummrich <dakr@kernel.org>, 
- Nicolas Schier <nicolas.schier@linux.dev>
-Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org, 
- llvm@lists.linux.dev, linux-mm@kvack.org, linux-um@lists.infradead.org, 
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
- loongarch@lists.linux.dev, linux-s390@vger.kernel.org, 
- linux-mips@vger.kernel.org, rust-for-linux@vger.kernel.org, 
- linux-kbuild@vger.kernel.org, Jan Stancek <jstancek@redhat.com>, 
- Arnaldo Carvalho de Melo <acme@redhat.com>, 
- Alexandre Ghiti <alexghiti@rivosinc.com>, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1754977469; l=3783;
- i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=zF65fVgprCI+5PEX2Gd11z0u6ua3JxVTHzfPFJcJjKs=;
- b=Esy6EbfOm7fmj2t+sBDFIgicd0JzbcJSTuk1wzj0YxPaqfzdPFEbZ+ivqSYv677dvrTRTHpOG
- hG06K4nNRAiASYK8xK3m4Pu8PF6fSaApaCF0D/lo8n5VKUT5XEMMGlM
-X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
- pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="iso-8859-1"
+X-Last-TLS-Session-Version: TLSv1.3
 
-The vdsocheck tool validates the object files and final .so library.
-It can detect if the compiler created relocations which are incompatible
-with the vDSO which need to be worked around.
+Hi Frank,
 
-Wire it up for the architecture.
+Am Freitag, 1. August 2025, 01:36:42 CEST schrieb Frank Li:
+> On Thu, Jul 31, 2025 at 08:32:57AM +0200, Krzysztof Kozlowski wrote:
+> > On Thu, Jul 31, 2025 at 07:58:04AM +0200, Alexander Stein wrote:
+> > > dtbs_check for ls1021.dtsi warns about unsupported property:
+> > >  power-controller@1ee2140 (fsl,ls1021a-rcpm): '#power-domain-cells' d=
+oes not match any of the regexes: '^pinctrl-[0-9]+$'
+> > >
+> > > But if removed the check warns about missing property:
+> > >  power-controller@1ee2140 (fsl,ls1021a-rcpm): '#power-domain-cells' i=
+s a required property
+> >
+> >
+> > And if any other warning says something, are you going to do that as
+> > well?
+> >
+> > >
+> > > Given commit 8bcf67b8d893b ("ARM: dts: ls1021a: add #power-domain-cel=
+ls
+> > > for power-controller node") explicitly added that property, add it
+> > > to the expected property list as well.
+> >
+> > No, commit does not explain why! It's one of this NXP commits without
+> > explanation, doing random things.
+> >
+> > No, explain why do you think this is a power domain provider - fast
+> > look told me that it is NOT.
+>=20
+> It is not power controller. rcpm controller enable wakeup source.
+>=20
+> In arm64, use below patch to fix warning
+>=20
+> commit e39f567e1c38c29629962ab327f0ad1a288dcab2
+> Author: Frank Li <Frank.Li@nxp.com>
+> Date:   Mon Jul 29 14:59:24 2024 -0400
+>=20
+>     arm64: dts: layerscape: rename rcpm as wakeup-control from power-cont=
+rol
+>=20
+>     Invoke power-domain.yaml if node name as 'power-control'.
+>=20
+>     Rcpm actually are not power domain controller. It just control wakeup
+>     capability. So rename it as wakeup-control. Fix below CHECK_DTBS warn=
+ing.
+>=20
+>     power-controller@1ee2140: '#power-domain-cells' is a required property
+>             from schema $id: http://devicetree.org/schemas/power/power-do=
+main.yaml#
+>=20
+>     Signed-off-by: Frank Li <Frank.Li@nxp.com>
+>     Signed-off-by: Shawn Guo <shawnguo@kernel.org>
+>=20
 
-Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
----
- arch/mips/vdso/Makefile     |  8 ++++----
- lib/vdso/Kconfig            |  1 +
- lib/vdso/check/vdsocheck.rs | 13 +++++++++++++
- 3 files changed, 18 insertions(+), 4 deletions(-)
+Thanks for the link. I've applied a similar change to ls1021 instead of thi=
+s patch.
 
-diff --git a/arch/mips/vdso/Makefile b/arch/mips/vdso/Makefile
-index 69d4593f64fee593c9ea5b030eabdea40b39b89a..24de045737580fb6a0148abb87e459d8f4be1d89 100644
---- a/arch/mips/vdso/Makefile
-+++ b/arch/mips/vdso/Makefile
-@@ -69,7 +69,7 @@ quiet_cmd_vdso_mips_check = VDSOCHK $@
- #
- 
- quiet_cmd_vdsold_and_vdso_check = LD      $@
--      cmd_vdsold_and_vdso_check = $(cmd_ld); $(cmd_vdso_check); $(cmd_vdso_mips_check)
-+      cmd_vdsold_and_vdso_check = $(cmd_ld_vdso); $(cmd_vdso_check); $(cmd_vdso_mips_check)
- 
- quiet_cmd_vdsoas_o_S = AS      $@
-       cmd_vdsoas_o_S = $(CC) $(a_flags) -c -o $@ $<
-@@ -106,7 +106,7 @@ $(obj-vdso): KBUILD_AFLAGS := $(aflags-vdso) $(native-abi)
- 
- $(obj)/vdso.lds: KBUILD_CPPFLAGS := $(ccflags-vdso) $(native-abi)
- 
--$(obj)/vdso.so.dbg.raw: $(obj)/vdso.lds $(obj-vdso) FORCE
-+$(obj)/vdso.so.dbg.raw: $(obj)/vdso.lds $(obj-vdso) $(vdsocheck) FORCE
- 	$(call if_changed,vdsold_and_vdso_check)
- 
- $(obj)/vdso-image.c: $(obj)/vdso.so.dbg.raw $(obj)/vdso.so.raw \
-@@ -144,7 +144,7 @@ $(obj)/vdso-o32.lds: KBUILD_CPPFLAGS := $(ccflags-vdso) -mabi=32
- $(obj)/vdso-o32.lds: $(src)/vdso.lds.S FORCE
- 	$(call if_changed_dep,cpp_lds_S)
- 
--$(obj)/vdso-o32.so.dbg.raw: $(obj)/vdso-o32.lds $(obj-vdso-o32) FORCE
-+$(obj)/vdso-o32.so.dbg.raw: $(obj)/vdso-o32.lds $(obj-vdso-o32) $(vdsocheck) FORCE
- 	$(call if_changed,vdsold_and_vdso_check)
- 
- $(obj)/vdso-o32-image.c: VDSO_NAME := o32
-@@ -184,7 +184,7 @@ $(obj)/vdso-n32.lds: KBUILD_CPPFLAGS := $(ccflags-vdso) -mabi=n32
- $(obj)/vdso-n32.lds: $(src)/vdso.lds.S FORCE
- 	$(call if_changed_dep,cpp_lds_S)
- 
--$(obj)/vdso-n32.so.dbg.raw: $(obj)/vdso-n32.lds $(obj-vdso-n32) FORCE
-+$(obj)/vdso-n32.so.dbg.raw: $(obj)/vdso-n32.lds $(obj-vdso-n32) $(vdsocheck) FORCE
- 	$(call if_changed,vdsold_and_vdso_check)
- 
- $(obj)/vdso-n32-image.c: VDSO_NAME := n32
-diff --git a/lib/vdso/Kconfig b/lib/vdso/Kconfig
-index b5b6673897e24a1f36147c21d00dff057f293980..567ac937a9c3084fd5669e1b890b667af8a2f12d 100644
---- a/lib/vdso/Kconfig
-+++ b/lib/vdso/Kconfig
-@@ -58,6 +58,7 @@ config HAVE_VDSOCHECK
- 	default y if RISCV
- 	default y if LOONGARCH
- 	default y if S390
-+	default y if MIPS
- 	help
- 	  Selected for architectures that are supported by the 'vdsocheck' progam.
- 	  Only transitional.
-diff --git a/lib/vdso/check/vdsocheck.rs b/lib/vdso/check/vdsocheck.rs
-index 01073062f2b2d276291ccfbc6aa516f14a13fdd5..d9e660385e154fea179665ef9c5ba90223bf72be 100644
---- a/lib/vdso/check/vdsocheck.rs
-+++ b/lib/vdso/check/vdsocheck.rs
-@@ -146,6 +146,19 @@ fn allowed_relocations_for_machine(machine: u16) -> Option<AllowedRelocations<'s
-                 bindings::R_390_PLT32DBL,
-             ],
-         }),
-+        bindings::EM_MIPS => Some(AllowedRelocations {
-+            ignored_object_file_sections: Some(&[".rel.pdr", ".rela.pdr"]),
-+            in_object_file: &[
-+                bindings::R_MIPS_PC16,
-+                bindings::R_MIPS_PC21_S2,
-+                bindings::R_MIPS_PC26_S2,
-+                bindings::R_MIPS_PC18_S3,
-+                bindings::R_MIPS_PC19_S2,
-+                bindings::R_MIPS_PCHI16,
-+                bindings::R_MIPS_PCLO16,
-+                bindings::R_MIPS_PC32,
-+            ],
-+        }),
-         _ => None,
-     }
- }
+Thanks and best regards,
+Alexander
+=2D-=20
+TQ-Systems GmbH | M=FChlstra=DFe 2, Gut Delling | 82229 Seefeld, Germany
+Amtsgericht M=FCnchen, HRB 105018
+Gesch=E4ftsf=FChrer: Detlef Schneider, R=FCdiger Stahl, Stefan Schneider
+http://www.tq-group.com/
 
--- 
-2.50.1
 
 
