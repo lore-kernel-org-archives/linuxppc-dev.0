@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-10833-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10834-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0010EC87FCB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 05:45:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A2A33CA0EDC
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 05:45:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1L6x4lmJz3dGt;
-	Tue, 12 Aug 2025 15:44:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1L6y1Rt6z3dHP;
+	Tue, 12 Aug 2025 15:44:42 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754977481;
-	cv=none; b=jZ03OBJK31uU/GIYxttoZYmvcsnpv740heBdFJ3vRwi9bIdp4j++Z1+IXiTR42AG/vKXZgU78bYGVYI9hZn+Vo3gnhUzDlCCdXlCXVEGytXCEvMfdMn96VLTbrHoDSNXEOrDc7LvtTiWSn00vAUkE4hKLjYvKuD6Aifb4nG1w8qnKsl7+ozTGrvwk+CXAKcvqbFPGDLZ4oyekZ/hzy88Y5hzJCXlLA7rTXeGIYhg5kaVhLL/hhuOVqXKKMp2iiG8CdVqrQ2rNsAd5x1ZIo2OsdbUHBj+pYLbkiDbeKJ7597iSOEWgqqx2hQ/ECVkb6+4MqtplXqZnLtxJ8TbaH1s9A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754977482;
+	cv=none; b=mrcMQm4SDi1SHEUy9iC1EKcLCmYRoQGJDKL+Nra81WP5W4rwO2IKjJ2c5abhVUs13UbaN/YcBMqgv5sZemUzlhvryUTATkhi8RAPuUf1q44vGvGrYMEOnV/Jok/Mj1zeeIxTrVIL//6R4VDedjzgi5TQitdVMx3p+tjgdyG+No3b4E0l22g3LAA4hh6whGghk//Aj/yoJ9twyCswOFwSaZZQOfiBdAucr+yQPQUxALFHAqnZyc7iXK8SRhmLHpWnDlMPjJWtBAGEmChvjr3cxSj/LSuZoc3I237N9n4t6Giwg4m8ooTniERuf9fSsUBzoSL7SQnTn/AzwxV+iWnViA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754977481; c=relaxed/relaxed;
-	bh=Fu8g+Fl052E34f4ajc7aTfb2t7+sWP8BOva3sbFf3lI=;
+	t=1754977482; c=relaxed/relaxed;
+	bh=bfNfmAZ2eWXIcM3gW1RToAS2jXuE+ttAWjtBaA8JivY=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=kXclHKKqdwkKTz2Vr/gSPM9dTkJw0UL/IakFNgagqXtseBLXissI+2pnNtlKrLYKCH7h+9FX6DIT2waHTxpkbOz1jB7APL/kLi/Nu4CEqast8XaG5+qAufBeUmwjNGpbmDROY9t6XoMg/JupmfFMj2bCXBg0o+U6UT7/r0ke9E9b+CeB857pAHo43MIMkeMXcdXbCXC3EwaUjT/z7MAJ/8uMcJ9vW2cUEr0HAdUgnqPsHUxBOdZiHWEaOXizIS4ETIMLsBbhokzz/nZ3bbWa/HYsOpAn7vGdWrej88xsQEONl+jgpeS4geu4hX8octEb0ye6XdsZW8qCzQaz11b55g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ag9FAR4S; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=u1ensITg; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=dzgcA9j7P9h52A9UGwIDC6YxSAYkZgm76lOWgoNmJaJQs/s+6BYM4IcvqUj+s+x35I9Rxa4KpgXdjnhcELYs+izsWGqkrGxYzgSIr75I5WAmeTk9VHoJ7wqyt6wEMG1RPCRw4p8VuirPRnkRBuC+LzpS9cGZbQ6m6bZV7g03IwuCrIXZSCO0q6kJxSKVprduqEScb8744B69Qd3T/56BJfKsvrMnud4EaGC/jL6UxK2i2xgV1IPQmGcqM0ROWl530w1Mw4ZiIjP0gvkQj39aTkZJu8VQU9MrlbUhCNc+7ZPRrh4yKlPA4oTLnkR/ncydlTsqJhabmKYKUD6iG2EAcw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=B1kpGRDy; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=XsxRG5no; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ag9FAR4S;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=u1ensITg;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=B1kpGRDy;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=XsxRG5no;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4c1L6w5hNvz3dHP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2025 15:44:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4c1L6x1fWQz3dHw
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2025 15:44:41 +1000 (AEST)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1754977474;
+	s=2020; t=1754977475;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Fu8g+Fl052E34f4ajc7aTfb2t7+sWP8BOva3sbFf3lI=;
-	b=ag9FAR4SoucTPGK9KbbFPSxHt3EGXWPDHgV/1vttnN8ZMg/XUycb91t+tFbpufLilWVZJc
-	iv7mLDRjfB/vUT6zU4juqwzTsGL37zfulfZnVoEffSqPyWLXRWe6mZoYNxwxgi2JsgZeOj
-	vaTIFKA8ZLwhTPnCXn8AcYRo2vbX4t0UfG3o8JCPvRgDywKfdUm4EIBExPwiXhJe6WRElC
-	XH/kqQovrfbFLDCwvKDA3Wr4Qs/rzupFlRIuuOsCstYKLVhwrpBvxiT2E23d3igcm2Nzad
-	+z+dNwP5ZwaDpNvYg/bP+/pZl5Qc6dW3Y1/iAuiY+hy3M+SDK4mp9VECVhhnng==
+	bh=bfNfmAZ2eWXIcM3gW1RToAS2jXuE+ttAWjtBaA8JivY=;
+	b=B1kpGRDy3pua7bopWb/954oKgIRuc3FpjRcj8N8/0woGocR6MrlC63NTftBUFibKS/AICQ
+	0l4yLvJDAUL9O9Iv8brOnKZbuEK46aY74M50FME3ez3Pqc0JNVP0cah4ZO+nwmJK1ZETG+
+	ahGQ2eL4oYMmBUubBb7TW5qooKJgC0dBGwDMZsgzk0S+hvVfKZybnmYIkMpJmtsWOmDXE/
+	7A3+CPHb6uwJ43WFXviOiwG4lW30wI8rFjFt/MBD45XXy8SmYdbOVBvgbqsdc9GpTPAv4z
+	YPBooaL0o00WA384eonGN+yemrymWJ8qP4EH0Mydpotgh3etmFhObcSWEnpSWw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1754977474;
+	s=2020e; t=1754977475;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Fu8g+Fl052E34f4ajc7aTfb2t7+sWP8BOva3sbFf3lI=;
-	b=u1ensITgZsRSuAKcfQs1pdhqsC2IlINyzHYx57P8Q57sYhYZ5ukMwC9TLF12sumTqJCETa
-	fnc0xR546UaaGWDA==
-Date: Tue, 12 Aug 2025 07:44:20 +0200
-Subject: [PATCH v4 07/24] LoongArch: Move relocation constants to UAPI
+	bh=bfNfmAZ2eWXIcM3gW1RToAS2jXuE+ttAWjtBaA8JivY=;
+	b=XsxRG5noqNi3QHUb3PsJMNnR3h1efFABfuNPsU4Tp4BzgulPHL9P4+dkMiySHq2nPf5wzI
+	aGxuMRcC3js1Y5AQ==
+Date: Tue, 12 Aug 2025 07:44:22 +0200
+Subject: [PATCH v4 09/24] MIPS: ELF: Move relocation constants to UAPI
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250812-vdso-absolute-reloc-v4-7-61a8b615e5ec@linutronix.de>
+Message-Id: <20250812-vdso-absolute-reloc-v4-9-61a8b615e5ec@linutronix.de>
 References: <20250812-vdso-absolute-reloc-v4-0-61a8b615e5ec@linutronix.de>
 In-Reply-To: <20250812-vdso-absolute-reloc-v4-0-61a8b615e5ec@linutronix.de>
 To: Paul Walmsley <paul.walmsley@sifive.com>, 
@@ -111,11 +111,11 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  Arnaldo Carvalho de Melo <acme@redhat.com>, 
  Alexandre Ghiti <alexghiti@rivosinc.com>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1754977469; l=8191;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1754977469; l=4434;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=ZVAGLGCFxsrer4ZyNLb2NhW6qORCMiIw2HqWP+N4aV4=;
- b=VNc1TNZKDL/LVFRVz5BOq//QDqCWfYoW6xL5masgZ6JYWblQeOQ1NV9Vtszx6Gx5w6k8t92RO
- XtANlYV7IFzCsW7AORv1Q1VBm7p4qIgmE7oOIsux5VBBNXD24DMBz6d
+ bh=URWumLq5cEfF9wP67bk+ZcYfaIdTPXBTgCA3fiF+CgA=;
+ b=L2h7+F73PT6iolsNxcu6S1mxeLogHfAutUNfzT1g4xN2qS8cRMLW7GI8H7DLrsC8VYfYYOVEW
+ 2yK3W8sGTl1CqHowhCCS2gkuE5kLBohKQe3c+i9dq+/6IUgTR2HRtCc
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
@@ -126,228 +126,135 @@ Move them from the kernel-private architecture-specific header to the UAPI.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- arch/loongarch/include/asm/elf.h | 100 ---------------------------------------
- include/uapi/linux/elf-r.h       | 100 +++++++++++++++++++++++++++++++++++++++
- 2 files changed, 100 insertions(+), 100 deletions(-)
+ arch/mips/include/asm/elf.h | 53 --------------------------------------------
+ include/uapi/linux/elf-r.h  | 54 +++++++++++++++++++++++++++++++++++++++++++++
+ 2 files changed, 54 insertions(+), 53 deletions(-)
 
-diff --git a/arch/loongarch/include/asm/elf.h b/arch/loongarch/include/asm/elf.h
-index f16bd42456e4ccf3ad6c8917165176b8ef5d8f05..5e4bcba21da2fe1b95045821156764a8f2c61fca 100644
---- a/arch/loongarch/include/asm/elf.h
-+++ b/arch/loongarch/include/asm/elf.h
-@@ -21,106 +21,6 @@
- #define EF_LOONGARCH_ABI_ILP32_SINGLE_FLOAT	0x6
- #define EF_LOONGARCH_ABI_ILP32_DOUBLE_FLOAT	0x7
+diff --git a/arch/mips/include/asm/elf.h b/arch/mips/include/asm/elf.h
+index dc8d2863752cfd5e8e2cbd750276f9463e0c32b8..347e12584beebbb5a7290efae3310b01220bbe0a 100644
+--- a/arch/mips/include/asm/elf.h
++++ b/arch/mips/include/asm/elf.h
+@@ -70,59 +70,6 @@
+ #define DT_MIPS_HIPAGENO	0x70000014
+ #define DT_MIPS_RLD_MAP		0x70000016
  
--/* LoongArch relocation types used by the dynamic linker */
--#define R_LARCH_NONE				0
--#define R_LARCH_32				1
--#define R_LARCH_64				2
--#define R_LARCH_RELATIVE			3
--#define R_LARCH_COPY				4
--#define R_LARCH_JUMP_SLOT			5
--#define R_LARCH_TLS_DTPMOD32			6
--#define R_LARCH_TLS_DTPMOD64			7
--#define R_LARCH_TLS_DTPREL32			8
--#define R_LARCH_TLS_DTPREL64			9
--#define R_LARCH_TLS_TPREL32			10
--#define R_LARCH_TLS_TPREL64			11
--#define R_LARCH_IRELATIVE			12
--#define R_LARCH_MARK_LA				20
--#define R_LARCH_MARK_PCREL			21
--#define R_LARCH_SOP_PUSH_PCREL			22
--#define R_LARCH_SOP_PUSH_ABSOLUTE		23
--#define R_LARCH_SOP_PUSH_DUP			24
--#define R_LARCH_SOP_PUSH_GPREL			25
--#define R_LARCH_SOP_PUSH_TLS_TPREL		26
--#define R_LARCH_SOP_PUSH_TLS_GOT		27
--#define R_LARCH_SOP_PUSH_TLS_GD			28
--#define R_LARCH_SOP_PUSH_PLT_PCREL		29
--#define R_LARCH_SOP_ASSERT			30
--#define R_LARCH_SOP_NOT				31
--#define R_LARCH_SOP_SUB				32
--#define R_LARCH_SOP_SL				33
--#define R_LARCH_SOP_SR				34
--#define R_LARCH_SOP_ADD				35
--#define R_LARCH_SOP_AND				36
--#define R_LARCH_SOP_IF_ELSE			37
--#define R_LARCH_SOP_POP_32_S_10_5		38
--#define R_LARCH_SOP_POP_32_U_10_12		39
--#define R_LARCH_SOP_POP_32_S_10_12		40
--#define R_LARCH_SOP_POP_32_S_10_16		41
--#define R_LARCH_SOP_POP_32_S_10_16_S2		42
--#define R_LARCH_SOP_POP_32_S_5_20		43
--#define R_LARCH_SOP_POP_32_S_0_5_10_16_S2	44
--#define R_LARCH_SOP_POP_32_S_0_10_10_16_S2	45
--#define R_LARCH_SOP_POP_32_U			46
--#define R_LARCH_ADD8				47
--#define R_LARCH_ADD16				48
--#define R_LARCH_ADD24				49
--#define R_LARCH_ADD32				50
--#define R_LARCH_ADD64				51
--#define R_LARCH_SUB8				52
--#define R_LARCH_SUB16				53
--#define R_LARCH_SUB24				54
--#define R_LARCH_SUB32				55
--#define R_LARCH_SUB64				56
--#define R_LARCH_GNU_VTINHERIT			57
--#define R_LARCH_GNU_VTENTRY			58
--#define R_LARCH_B16				64
--#define R_LARCH_B21				65
--#define R_LARCH_B26				66
--#define R_LARCH_ABS_HI20			67
--#define R_LARCH_ABS_LO12			68
--#define R_LARCH_ABS64_LO20			69
--#define R_LARCH_ABS64_HI12			70
--#define R_LARCH_PCALA_HI20			71
--#define R_LARCH_PCALA_LO12			72
--#define R_LARCH_PCALA64_LO20			73
--#define R_LARCH_PCALA64_HI12			74
--#define R_LARCH_GOT_PC_HI20			75
--#define R_LARCH_GOT_PC_LO12			76
--#define R_LARCH_GOT64_PC_LO20			77
--#define R_LARCH_GOT64_PC_HI12			78
--#define R_LARCH_GOT_HI20			79
--#define R_LARCH_GOT_LO12			80
--#define R_LARCH_GOT64_LO20			81
--#define R_LARCH_GOT64_HI12			82
--#define R_LARCH_TLS_LE_HI20			83
--#define R_LARCH_TLS_LE_LO12			84
--#define R_LARCH_TLS_LE64_LO20			85
--#define R_LARCH_TLS_LE64_HI12			86
--#define R_LARCH_TLS_IE_PC_HI20			87
--#define R_LARCH_TLS_IE_PC_LO12			88
--#define R_LARCH_TLS_IE64_PC_LO20		89
--#define R_LARCH_TLS_IE64_PC_HI12		90
--#define R_LARCH_TLS_IE_HI20			91
--#define R_LARCH_TLS_IE_LO12			92
--#define R_LARCH_TLS_IE64_LO20			93
--#define R_LARCH_TLS_IE64_HI12			94
--#define R_LARCH_TLS_LD_PC_HI20			95
--#define R_LARCH_TLS_LD_HI20			96
--#define R_LARCH_TLS_GD_PC_HI20			97
--#define R_LARCH_TLS_GD_HI20			98
--#define R_LARCH_32_PCREL			99
--#define R_LARCH_RELAX				100
--#define R_LARCH_DELETE				101
--#define R_LARCH_ALIGN				102
--#define R_LARCH_PCREL20_S2			103
--#define R_LARCH_CFA				104
--#define R_LARCH_ADD6				105
--#define R_LARCH_SUB6				106
--#define R_LARCH_ADD_ULEB128			107
--#define R_LARCH_SUB_ULEB128			108
--#define R_LARCH_64_PCREL			109
+-#define R_MIPS_NONE		0
+-#define R_MIPS_16		1
+-#define R_MIPS_32		2
+-#define R_MIPS_REL32		3
+-#define R_MIPS_26		4
+-#define R_MIPS_HI16		5
+-#define R_MIPS_LO16		6
+-#define R_MIPS_GPREL16		7
+-#define R_MIPS_LITERAL		8
+-#define R_MIPS_GOT16		9
+-#define R_MIPS_PC16		10
+-#define R_MIPS_CALL16		11
+-#define R_MIPS_GPREL32		12
+-/* The remaining relocs are defined on Irix, although they are not
+-   in the MIPS ELF ABI.	 */
+-#define R_MIPS_UNUSED1		13
+-#define R_MIPS_UNUSED2		14
+-#define R_MIPS_UNUSED3		15
+-#define R_MIPS_SHIFT5		16
+-#define R_MIPS_SHIFT6		17
+-#define R_MIPS_64		18
+-#define R_MIPS_GOT_DISP		19
+-#define R_MIPS_GOT_PAGE		20
+-#define R_MIPS_GOT_OFST		21
+-/*
+- * The following two relocation types are specified in the MIPS ABI
+- * conformance guide version 1.2 but not yet in the psABI.
+- */
+-#define R_MIPS_GOTHI16		22
+-#define R_MIPS_GOTLO16		23
+-#define R_MIPS_SUB		24
+-#define R_MIPS_INSERT_A		25
+-#define R_MIPS_INSERT_B		26
+-#define R_MIPS_DELETE		27
+-#define R_MIPS_HIGHER		28
+-#define R_MIPS_HIGHEST		29
+-/*
+- * The following two relocation types are specified in the MIPS ABI
+- * conformance guide version 1.2 but not yet in the psABI.
+- */
+-#define R_MIPS_CALLHI16		30
+-#define R_MIPS_CALLLO16		31
+-/*
+- * Introduced for MIPSr6.
+- */
+-#define R_MIPS_PC21_S2		60
+-#define R_MIPS_PC26_S2		61
+-/*
+- * This range is reserved for vendor specific relocations.
+- */
+-#define R_MIPS_LOVENDOR		100
+-#define R_MIPS_HIVENDOR		127
 -
- #ifndef ELF_ARCH
- 
- /* ELF register definitions */
+ #define SHN_MIPS_ACCOMON	0xff00		/* Allocated common symbols */
+ #define SHN_MIPS_TEXT		0xff01		/* Allocated test symbols.  */
+ #define SHN_MIPS_DATA		0xff02		/* Allocated data symbols.  */
 diff --git a/include/uapi/linux/elf-r.h b/include/uapi/linux/elf-r.h
-index 02e420c255df67f8f7e4bc3165f808b9935f5b1c..576d974db6e31f8a9cd995f7428c85bd41102415 100644
+index c1309a63a7dc4495f22e3d8b51d3f97ab5809190..78085d26f4ab27a003fde65c8e981f575f411758 100644
 --- a/include/uapi/linux/elf-r.h
 +++ b/include/uapi/linux/elf-r.h
-@@ -380,4 +380,104 @@
- #define R_RISCV_SET_ULEB128	60
- #define R_RISCV_SUB_ULEB128	61
+@@ -563,4 +563,58 @@
+ /* Keep this the last entry.  */
+ #define R_390_NUM	61
  
-+/* LoongArch relocation types used by the dynamic linker */
-+#define R_LARCH_NONE				0
-+#define R_LARCH_32				1
-+#define R_LARCH_64				2
-+#define R_LARCH_RELATIVE			3
-+#define R_LARCH_COPY				4
-+#define R_LARCH_JUMP_SLOT			5
-+#define R_LARCH_TLS_DTPMOD32			6
-+#define R_LARCH_TLS_DTPMOD64			7
-+#define R_LARCH_TLS_DTPREL32			8
-+#define R_LARCH_TLS_DTPREL64			9
-+#define R_LARCH_TLS_TPREL32			10
-+#define R_LARCH_TLS_TPREL64			11
-+#define R_LARCH_IRELATIVE			12
-+#define R_LARCH_MARK_LA				20
-+#define R_LARCH_MARK_PCREL			21
-+#define R_LARCH_SOP_PUSH_PCREL			22
-+#define R_LARCH_SOP_PUSH_ABSOLUTE		23
-+#define R_LARCH_SOP_PUSH_DUP			24
-+#define R_LARCH_SOP_PUSH_GPREL			25
-+#define R_LARCH_SOP_PUSH_TLS_TPREL		26
-+#define R_LARCH_SOP_PUSH_TLS_GOT		27
-+#define R_LARCH_SOP_PUSH_TLS_GD			28
-+#define R_LARCH_SOP_PUSH_PLT_PCREL		29
-+#define R_LARCH_SOP_ASSERT			30
-+#define R_LARCH_SOP_NOT				31
-+#define R_LARCH_SOP_SUB				32
-+#define R_LARCH_SOP_SL				33
-+#define R_LARCH_SOP_SR				34
-+#define R_LARCH_SOP_ADD				35
-+#define R_LARCH_SOP_AND				36
-+#define R_LARCH_SOP_IF_ELSE			37
-+#define R_LARCH_SOP_POP_32_S_10_5		38
-+#define R_LARCH_SOP_POP_32_U_10_12		39
-+#define R_LARCH_SOP_POP_32_S_10_12		40
-+#define R_LARCH_SOP_POP_32_S_10_16		41
-+#define R_LARCH_SOP_POP_32_S_10_16_S2		42
-+#define R_LARCH_SOP_POP_32_S_5_20		43
-+#define R_LARCH_SOP_POP_32_S_0_5_10_16_S2	44
-+#define R_LARCH_SOP_POP_32_S_0_10_10_16_S2	45
-+#define R_LARCH_SOP_POP_32_U			46
-+#define R_LARCH_ADD8				47
-+#define R_LARCH_ADD16				48
-+#define R_LARCH_ADD24				49
-+#define R_LARCH_ADD32				50
-+#define R_LARCH_ADD64				51
-+#define R_LARCH_SUB8				52
-+#define R_LARCH_SUB16				53
-+#define R_LARCH_SUB24				54
-+#define R_LARCH_SUB32				55
-+#define R_LARCH_SUB64				56
-+#define R_LARCH_GNU_VTINHERIT			57
-+#define R_LARCH_GNU_VTENTRY			58
-+#define R_LARCH_B16				64
-+#define R_LARCH_B21				65
-+#define R_LARCH_B26				66
-+#define R_LARCH_ABS_HI20			67
-+#define R_LARCH_ABS_LO12			68
-+#define R_LARCH_ABS64_LO20			69
-+#define R_LARCH_ABS64_HI12			70
-+#define R_LARCH_PCALA_HI20			71
-+#define R_LARCH_PCALA_LO12			72
-+#define R_LARCH_PCALA64_LO20			73
-+#define R_LARCH_PCALA64_HI12			74
-+#define R_LARCH_GOT_PC_HI20			75
-+#define R_LARCH_GOT_PC_LO12			76
-+#define R_LARCH_GOT64_PC_LO20			77
-+#define R_LARCH_GOT64_PC_HI12			78
-+#define R_LARCH_GOT_HI20			79
-+#define R_LARCH_GOT_LO12			80
-+#define R_LARCH_GOT64_LO20			81
-+#define R_LARCH_GOT64_HI12			82
-+#define R_LARCH_TLS_LE_HI20			83
-+#define R_LARCH_TLS_LE_LO12			84
-+#define R_LARCH_TLS_LE64_LO20			85
-+#define R_LARCH_TLS_LE64_HI12			86
-+#define R_LARCH_TLS_IE_PC_HI20			87
-+#define R_LARCH_TLS_IE_PC_LO12			88
-+#define R_LARCH_TLS_IE64_PC_LO20		89
-+#define R_LARCH_TLS_IE64_PC_HI12		90
-+#define R_LARCH_TLS_IE_HI20			91
-+#define R_LARCH_TLS_IE_LO12			92
-+#define R_LARCH_TLS_IE64_LO20			93
-+#define R_LARCH_TLS_IE64_HI12			94
-+#define R_LARCH_TLS_LD_PC_HI20			95
-+#define R_LARCH_TLS_LD_HI20			96
-+#define R_LARCH_TLS_GD_PC_HI20			97
-+#define R_LARCH_TLS_GD_HI20			98
-+#define R_LARCH_32_PCREL			99
-+#define R_LARCH_RELAX				100
-+#define R_LARCH_DELETE				101
-+#define R_LARCH_ALIGN				102
-+#define R_LARCH_PCREL20_S2			103
-+#define R_LARCH_CFA				104
-+#define R_LARCH_ADD6				105
-+#define R_LARCH_SUB6				106
-+#define R_LARCH_ADD_ULEB128			107
-+#define R_LARCH_SUB_ULEB128			108
-+#define R_LARCH_64_PCREL			109
++/* MIPS relocations defined by the ABIs */
++#define R_MIPS_NONE		0
++#define R_MIPS_16		1
++#define R_MIPS_32		2
++#define R_MIPS_REL32		3
++#define R_MIPS_26		4
++#define R_MIPS_HI16		5
++#define R_MIPS_LO16		6
++#define R_MIPS_GPREL16		7
++#define R_MIPS_LITERAL		8
++#define R_MIPS_GOT16		9
++#define R_MIPS_PC16		10
++#define R_MIPS_CALL16		11
++#define R_MIPS_GPREL32		12
++/* The remaining relocs are defined on Irix, although they are not
++   in the MIPS ELF ABI.	 */
++#define R_MIPS_UNUSED1		13
++#define R_MIPS_UNUSED2		14
++#define R_MIPS_UNUSED3		15
++#define R_MIPS_SHIFT5		16
++#define R_MIPS_SHIFT6		17
++#define R_MIPS_64		18
++#define R_MIPS_GOT_DISP		19
++#define R_MIPS_GOT_PAGE		20
++#define R_MIPS_GOT_OFST		21
++/*
++ * The following two relocation types are specified in the MIPS ABI
++ * conformance guide version 1.2 but not yet in the psABI.
++ */
++#define R_MIPS_GOTHI16		22
++#define R_MIPS_GOTLO16		23
++#define R_MIPS_SUB		24
++#define R_MIPS_INSERT_A		25
++#define R_MIPS_INSERT_B		26
++#define R_MIPS_DELETE		27
++#define R_MIPS_HIGHER		28
++#define R_MIPS_HIGHEST		29
++/*
++ * The following two relocation types are specified in the MIPS ABI
++ * conformance guide version 1.2 but not yet in the psABI.
++ */
++#define R_MIPS_CALLHI16		30
++#define R_MIPS_CALLLO16		31
++/*
++ * Introduced for MIPSr6.
++ */
++#define R_MIPS_PC21_S2		60
++#define R_MIPS_PC26_S2		61
++/*
++ * This range is reserved for vendor specific relocations.
++ */
++#define R_MIPS_LOVENDOR		100
++#define R_MIPS_HIVENDOR		127
 +
  #endif /* _UAPI_LINUX_ELF_R_H */
 
