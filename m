@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-10846-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10847-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F3131CA0EC4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 05:47:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3E9BC87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 05:47:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1L7C3GXBz3dLY;
-	Tue, 12 Aug 2025 15:44:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1L7D3kdnz3dLh;
+	Tue, 12 Aug 2025 15:44:56 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754977495;
-	cv=none; b=ahD8JPNnoShDTd6jDRq9AXcagtz8/bwFQVA+eUT/ASHVyAbDOmWnKxCsmE3NN+N48+sXBc9JZoFa2W6f43ltF3q18EEZOUq9QyDhqEQ8Nzi8eB90zQRzub6fJ6IcDI2bD0KLykO/hsqg5g+pZf7lCqevkAHBxDyFxhD8aRa6RjjhlT1Ry9Ppp6xRCIbedVLQTjLx3ioxe7a9ifLBf7PE6v39KMu9w/4JKNe/C40WNX2HU3ZxvN/cKHIGqFTu94y4Dupc8fI0TrK49IvtYwXJb2y7E+6Yn9WOWozobD5aGSrFI6TjUWubJfjqcT+o1sr/Hmr9W538i/p7nGc5Yte6gg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1754977496;
+	cv=none; b=T1wUsvvnDO3lV+8qCjAVlmPyCl1w7bn1TG056fQXxJdAOGOdwr/0w8NXLtHW3xyNNKQmIyLX+jg7V16l53LtAiP5Hv7eviUs1gYyE6lpOFMzQ4EVgzSxIX/S0N+GTusHWJH6ah9YDqinTmhY9ffnkjlTUx1p3Q0Jlvr12mhiFGFini36AJ45xVvFOMIbKwC2MODJV8F/osY7f2EUjzhrzIsAHkW4vgTgOHjjmGLnj2NOYw2Ny485s3Qkr6lzn0g1g60t6n7o0K6YtGY4jr/wcKVDhrpx2ifLtYIjpaOeLG2OXbLr0D1xw6suOd+L5KdhJDpqEL5fimUoHqccdDbVTw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1754977495; c=relaxed/relaxed;
-	bh=tKATP4n6UsYsKAR5HymmCjK/vOsSvbOqbAEjaPPKais=;
+	t=1754977496; c=relaxed/relaxed;
+	bh=Mxk1j7bQVP7gkeGhqiBaJTM8Rt+qR7YGqcRddWJjs3Q=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Gftq78OJYhCuIpviXI/1Fkh7Euk15GkWWblJ9WlqDEirjVTMX/M+v8LQ0/5OY7ee1JCMY5ad+a5BignvfrJ5yT0IKSxnH60OAF9cpoOKwyitO9tBGBRkXxfdHQoK8TiDNCDitnspg6icLpvLEvP3TMZ8MSd98X4KXeaIOMt+XEyd0oP4P3lPxeenWX3DGZ5JHl+KeFSYa5H1GFYVgthNJ+B4x8f6mDwHpCsTZcyYHEr8g7eiDpwipWx+zyQZ5DarM9cK71K47XSEbz5RjpX3OLfA9CiyxaS2AY/3+ssfrHcuza2xRCj8HL41m0c1NCIbG38me1dlgh5FMaNXWomj/g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=bex0uDqI; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=sTzojLz1; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=L05Rqt0GaNuEGukvxXgF8WAyCfS3LdhVE0DCWahOq/kAih1Be4cgs5qd02TJojbVAUiE+xXNKyhm/QQ4BFUQ0devwf2WRdEQQ84cUnd3IffklIOWvOr/s4wd6b0yxtP0HjO1ROIZ++r5M2V5OAcctp1tAKHh2obsTJdNRa0G4RpG7YYtv4mF9O6hY+B6lPNOYerG5p/G+wTNOdssEz2k43tn7pfTrRnXg5oLd/fDodyS5jio1v+2gr0vSTATZ+fQ747USYZR5v9cabA+7f7qCv9C+KHOtT3BHoV9MdcrvQHF6lCtRF1c3NRU882pbiwgZsBOZOc3MX5pKW+rYf2MgA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=y6kJZp/a; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=NXZQJgvp; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=bex0uDqI;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=sTzojLz1;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=y6kJZp/a;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=NXZQJgvp;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4c1L7B5vrPz3dL4
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2025 15:44:54 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4c1L7C45Xpz3dLb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2025 15:44:55 +1000 (AEST)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1754977479;
+	s=2020; t=1754977480;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=tKATP4n6UsYsKAR5HymmCjK/vOsSvbOqbAEjaPPKais=;
-	b=bex0uDqIIRryXaAvloStzvTEg31Q/TslhPGGgsXrYUJQEuDPVSuExWDJoQ+QwFi7lf0yAO
-	URQMEz948bdEqfzWNykOMmx0N0qCkowwyqQ/XW+cqX/t8XUfB3+thiAImpgwWl735nhTDn
-	MbXfvG9BhcCGaVw0dqDJx0TWqkzSw7fSuY/OCQ2k788QYQQXlSx3+N/IAcdMnXX7UbQ5NP
-	O71dXBXttz5NHvIyavgFoT4UKupvoxlm2Oj7aHwgXryEeW/GW1V3CPKqxcXs/yk7d2I4ko
-	Y2pHKtHhDLJcybmOM+Tx+MB/82qgi/3jBA6CJHxpAXP6N5KKv8bnwkxc3G1m1Q==
+	bh=Mxk1j7bQVP7gkeGhqiBaJTM8Rt+qR7YGqcRddWJjs3Q=;
+	b=y6kJZp/aMepqZyqIpu2Ge7fuGhIrg50IqAa8/kDWQydm7It5QCDOz2yKzkQ3nTVNspTLSa
+	0Z4k7oD1Q+xCqfzj5lYWkxPTS1MmOTr51kIJLK870+GnX/yGOhUkdCBK3uwWNwW6iPZVQC
+	tgpAkrU7Zb0EAA6ZRz5RBZ6MPFx1SbJhfTBFQA4FevsFC+l/Zzx62GlvL4c5g3ZKDTbJWh
+	7bvJslx0+0Y9/A2L7wtCdcBkbz4Hhs6lfksVYdjmQ5h4IYF4Bv1fx8akKwgCXeg+i8kq/k
+	X4D8gv59NZLmB7c4EWhKN/Uxh5AX9lhl4fWV3oXKTC2YK9nd/9yxz6HJGp2oAA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1754977479;
+	s=2020e; t=1754977480;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=tKATP4n6UsYsKAR5HymmCjK/vOsSvbOqbAEjaPPKais=;
-	b=sTzojLz1t1ocNTNz0HXeQczJ+INJVdOcOb3Rd0Buek8cjuenSqzq6kFPLpRAnPaQ1RQoA4
-	MvLiIPaAJKXQzDAA==
-Date: Tue, 12 Aug 2025 07:44:30 +0200
-Subject: [PATCH v4 17/24] riscv: vdso: Deduplicate CFLAGS_REMOVE_*
- variables
+	bh=Mxk1j7bQVP7gkeGhqiBaJTM8Rt+qR7YGqcRddWJjs3Q=;
+	b=NXZQJgvpthSi0X2yy7bk/mKr8cSd4B68z61qxsqtB551PCUPMszU49Btx/qpuXPqLXGzsR
+	LaQJ4RnSqXSXw+DA==
+Date: Tue, 12 Aug 2025 07:44:33 +0200
+Subject: [PATCH v4 20/24] LoongArch: vDSO: Enable the vdsocheck tool
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250812-vdso-absolute-reloc-v4-17-61a8b615e5ec@linutronix.de>
+Message-Id: <20250812-vdso-absolute-reloc-v4-20-61a8b615e5ec@linutronix.de>
 References: <20250812-vdso-absolute-reloc-v4-0-61a8b615e5ec@linutronix.de>
 In-Reply-To: <20250812-vdso-absolute-reloc-v4-0-61a8b615e5ec@linutronix.de>
 To: Paul Walmsley <paul.walmsley@sifive.com>, 
@@ -112,44 +111,95 @@ Cc: linux-riscv@lists.infradead.org, linux-kernel@vger.kernel.org,
  Arnaldo Carvalho de Melo <acme@redhat.com>, 
  Alexandre Ghiti <alexghiti@rivosinc.com>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1754977469; l=1337;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1754977469; l=3338;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=n7rZyBbT5pbmt5M5GrSidThNFcSgij4efiSpxxemwhg=;
- b=0JIHJbt9zi6gUHgjcuSIwo+4izQMegBN32Ik6FgPfMJGJcayTSsoHfu7UHm/d6C4nSaS3Btnn
- B/WNe5Tn1umCM3sBScvC+evhAbZ739AK6c1oCCk0CX0mwimaIdz7FBr
+ bh=1IZrubHrqMbaFtOk3hdvCwRPSsl7pLGR/UJMuiLBbOY=;
+ b=LqYg38rSkBwpE7p9p2L9QYuv0JUyTLtER245hHstQoHs7MiLUh2lPURSIZcAihCYxsat6bpQV
+ An04KjctmxQDRVzmaoiEcTtq1AzmJcVR/h2OWecT6+BVOcWz8b8Wtr+
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-All vDSO objects need the same treatment.
-To make changes to both the list of objects and the list of removed flags
-easier, introduce a helper variable.
+The vdsocheck tool validates the object files and final .so library.
+It can detect if the compiler created relocations which are incompatible
+with the vDSO which need to be worked around.
+
+Wire it up for the architecture.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
-Reviewed-by: Alexandre Ghiti <alexghiti@rivosinc.com>
-Reviewed-by: Nathan Chancellor <nathan@kernel.org>
-Tested-by: Jan Stancek <jstancek@redhat.com>
 ---
- arch/riscv/kernel/vdso/Makefile | 7 ++++---
- 1 file changed, 4 insertions(+), 3 deletions(-)
+ arch/loongarch/vdso/Makefile |  4 ++--
+ lib/vdso/Kconfig             |  1 +
+ lib/vdso/check/vdsocheck.rs  | 23 +++++++++++++++++++++++
+ 3 files changed, 26 insertions(+), 2 deletions(-)
 
-diff --git a/arch/riscv/kernel/vdso/Makefile b/arch/riscv/kernel/vdso/Makefile
-index 9ebb5e590f93a3228c451dca58e6d5cfbbc03ff7..c19c3c76f7c9f6b2f7523a59269de3b683656323 100644
---- a/arch/riscv/kernel/vdso/Makefile
-+++ b/arch/riscv/kernel/vdso/Makefile
-@@ -49,9 +49,10 @@ CPPFLAGS_vdso.lds += -DHAS_VGETTIMEOFDAY
- endif
+diff --git a/arch/loongarch/vdso/Makefile b/arch/loongarch/vdso/Makefile
+index d8316f993482406c2633b49b1daa475fc415a82c..a9b1934dce7c821df96e636a9833e70f22ee1b31 100644
+--- a/arch/loongarch/vdso/Makefile
++++ b/arch/loongarch/vdso/Makefile
+@@ -43,7 +43,7 @@ ldflags-y := -Bsymbolic --no-undefined -soname=linux-vdso.so.1 \
+ #
  
- # Disable -pg to prevent insert call site
--CFLAGS_REMOVE_vgettimeofday.o = $(CC_FLAGS_FTRACE) $(CC_FLAGS_SCS)
--CFLAGS_REMOVE_getrandom.o = $(CC_FLAGS_FTRACE) $(CC_FLAGS_SCS)
--CFLAGS_REMOVE_hwprobe.o = $(CC_FLAGS_FTRACE) $(CC_FLAGS_SCS)
-+CFLAGS_REMOVE_VDSO = $(CC_FLAGS_FTRACE) $(CC_FLAGS_SCS)
-+CFLAGS_REMOVE_vgettimeofday.o = $(CFLAGS_REMOVE_VDSO)
-+CFLAGS_REMOVE_getrandom.o = $(CFLAGS_REMOVE_VDSO)
-+CFLAGS_REMOVE_hwprobe.o = $(CFLAGS_REMOVE_VDSO)
+ quiet_cmd_vdsold_and_vdso_check = LD      $@
+-      cmd_vdsold_and_vdso_check = $(cmd_ld); $(cmd_vdso_check)
++      cmd_vdsold_and_vdso_check = $(cmd_ld_vdso); $(cmd_vdso_check)
  
- # Force dependency
- $(obj)/vdso.o: $(obj)/vdso.so
+ quiet_cmd_vdsoas_o_S = AS       $@
+       cmd_vdsoas_o_S = $(CC) $(a_flags) -c -o $@ $<
+@@ -72,7 +72,7 @@ $(obj-vdso): KBUILD_AFLAGS := $(aflags-vdso) $(native-abi)
+ 
+ $(obj)/vdso.lds: KBUILD_CPPFLAGS := $(ccflags-vdso) $(native-abi)
+ 
+-$(obj)/vdso.so.dbg: $(obj)/vdso.lds $(obj-vdso) FORCE
++$(obj)/vdso.so.dbg: $(obj)/vdso.lds $(obj-vdso) $(vdsocheck) FORCE
+ 	$(call if_changed,vdsold_and_vdso_check)
+ 
+ $(obj)/vdso.so: OBJCOPYFLAGS := -S
+diff --git a/lib/vdso/Kconfig b/lib/vdso/Kconfig
+index 441ff03e1028f7bde5104bd01941c6a9b006e21f..0fe70b3604f9925ef8c5608bb4cac24d3a28faab 100644
+--- a/lib/vdso/Kconfig
++++ b/lib/vdso/Kconfig
+@@ -56,6 +56,7 @@ config HAVE_VDSOCHECK
+ 	default y if ARM64
+ 	default y if PPC
+ 	default y if RISCV
++	default y if LOONGARCH
+ 	help
+ 	  Selected for architectures that are supported by the 'vdsocheck' progam.
+ 	  Only transitional.
+diff --git a/lib/vdso/check/vdsocheck.rs b/lib/vdso/check/vdsocheck.rs
+index d48c9da6f18270afe883d167955f73f061b9c472..93819f668d8a4f623f41403bb09b42c4aec2c8de 100644
+--- a/lib/vdso/check/vdsocheck.rs
++++ b/lib/vdso/check/vdsocheck.rs
+@@ -115,6 +115,29 @@ fn allowed_relocations_for_machine(machine: u16) -> Option<AllowedRelocations<'s
+                 bindings::R_RISCV_32_PCREL,
+             ],
+         }),
++        bindings::EM_LOONGARCH => Some(AllowedRelocations {
++            ignored_object_file_sections: None,
++            in_object_file: &[
++                bindings::R_LARCH_ADD8,
++                bindings::R_LARCH_ADD16,
++                bindings::R_LARCH_ADD24,
++                bindings::R_LARCH_ADD32,
++                bindings::R_LARCH_ADD64,
++                bindings::R_LARCH_SUB8,
++                bindings::R_LARCH_SUB16,
++                bindings::R_LARCH_SUB24,
++                bindings::R_LARCH_SUB32,
++                bindings::R_LARCH_SUB64,
++                bindings::R_LARCH_B16,
++                bindings::R_LARCH_B21,
++                bindings::R_LARCH_B26,
++                bindings::R_LARCH_PCALA_HI20,
++                bindings::R_LARCH_PCALA_LO12,
++                bindings::R_LARCH_PCALA64_LO20,
++                bindings::R_LARCH_PCALA64_HI12,
++                bindings::R_LARCH_32_PCREL,
++            ],
++        }),
+         _ => None,
+     }
+ }
 
 -- 
 2.50.1
