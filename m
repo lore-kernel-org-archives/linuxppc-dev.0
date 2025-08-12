@@ -1,70 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-10870-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10871-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D17A0CA0EC4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 14:20:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A641C87FCB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 14:21:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1YZL2HZvz2xc8;
-	Wed, 13 Aug 2025 00:20:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755008442;
-	cv=none; b=QCcfTTYnEv5WMT9eq3WMl6TottgnXT6I1K90fhCYkngah23RTIqsRHyMwTBqxhijS9waC6t81zW17HTIpe7UnK3oGO2f1ufStkXoCbZ6ynwD4iuBKpu4hnIC+WhE8glDn2LQ9s8+fRJU2O2XXcj00qJsFL+wsY7fjxkD7FW0LO6xA7l0+xuOO7O+1v4p5j8ic0PX7Se63I2VAGkEkXNu7M24TEGjEo+9m2LaQWD/RE6H5Xo3EIm2KUukxfI/Y5PsMUaABa7RXyxZLp2qJ8qYFY5yOmhlWVG6opHXcVUjSJFIl1BELi6TqCeiiR5uToqVXiI5fPXHJQNoA1lGskSClA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1Yb56H77z2xlL;
+	Wed, 13 Aug 2025 00:21:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::134"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755008481;
+	cv=none; b=JYvZkp/HXf5v8rxK8y6Ijs0JFUX1hUPnTm7lh/RVALscNZAlyhUR8BK5N+3YRbyhS9zW4TzzjfEbcIwekUKpl4NMrlcgARpJzmKA5GW0PFmdjozUevIMIfTZhBDFcf96iR6pzm8ZMTv+Bj/9RJIBf0bvfBxtVeZtKRBGoVwamIlOjFZH98Cq5K9agtDrexs0SnteSoy3yY8wXLiNfPf6TMSUmRq2u6YdMIteO1BWKdURhk8m+pdtrDKvA6q5/I24JxO19LKOFfEpn9skXiB3XdJVlAH5eV/PXFUn3SgzLxPWPNPkyDYsN0JypTqPzUv/69IrD5VJYesBawRx4NPTEA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755008442; c=relaxed/relaxed;
-	bh=tlCHKdloNnuDlI+3PXr5yZHhGm/T8e4Ko0EuQj8bSa0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=atqmSzENx9iRriKL4WYt54SaOSAY3KNonU1tDoDDWBoWMB1Ee9o9TbAI0HUP4CqLkmIlBQLmQDoiWERK5nPHolnwdhIQhMzsmVU4OxR6hea8D0AG60m7FwZMh7q+wmY9s2OGxo+g/cnFQ6O5KRiO8BhpZvdcDRXMRHJjOWnXAND1LFHnw3zv4sKN85YdrqrRAZIP+l4Qlw8WZ2BpyNfIsvMsYFGj1QmlCKYa8CbQjLA2LcwLOe9uyoXdGLwNpgsp2wXGNxuUZGpjOU5cABcvpZh3i8Z3pQakY7JUIqZGB4p7ONyIjKJqckuDg8hAEb34w8oWgmJ7AL3WuQilYMgqzg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1YZK5rwQz3cYL
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 00:20:41 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c1Swc0sHyz9sSR;
-	Tue, 12 Aug 2025 12:51:12 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id UZfLVWQ7jLtD; Tue, 12 Aug 2025 12:51:12 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c1Swb3wGkz9sSK;
-	Tue, 12 Aug 2025 12:51:11 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6C8CB8B764;
-	Tue, 12 Aug 2025 12:51:11 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 4GfoNMbtMS8g; Tue, 12 Aug 2025 12:51:11 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id AB8FE8B765;
-	Tue, 12 Aug 2025 12:51:10 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Herve Codina <herve.codina@bootlin.com>,
-	Qiang Zhao <qiang.zhao@nxp.com>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-sound@vger.kernel.org
-Subject: [PATCH v2 3/4] ASoC: fsl: fsl_qmc_audio: Only request completion on last channel
-Date: Tue, 12 Aug 2025 12:50:57 +0200
-Message-ID: <21eb89cc03a1c2135bdaba6a4dd1d0c2e624ce29.1754993232.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1754993232.git.christophe.leroy@csgroup.eu>
-References: <cover.1754993232.git.christophe.leroy@csgroup.eu>
+	t=1755008481; c=relaxed/relaxed;
+	bh=1pIv9AKRbkc8MISxXeVoPZny7F4ALH4S067Y82mAaRs=;
+	h=From:In-Reply-To:MIME-Version:References:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=QM9f9oFeFELJqmL98Aqgek99XNCH1WwfRBX8kno7Qh+ts/AROsp450foUveztK5Bbkpui+NsT7wYd8KKKOAR4PKwrIjsyMKuv4MWuQkJDItqjUTemNRd8+vHxKit53pyWx5+x3ByPqwoU8lC0PM/GV2GOI5ObLU3U56ivxZHyvsLAXAJwgjAqJPiOMyO34WYHYuwp9kQYdHTARygcXRknUd9zZw/cuGA2RjrmKsz3cs90NG2QjyQac1L0arL7wQdBgBQjFM/f4/FFnnSzRgFSQ5WV/J0rCvrgXH06HTsDI4bSe/hg4ZfZd3fk38EWA5v/t6joTqNtRJOkyN8VmjiKg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bgdev.pl; dkim=pass (2048-bit key; unprotected) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=TnbZL79S; dkim-atps=neutral; spf=none (client-ip=2a00:1450:4864:20::134; helo=mail-lf1-x134.google.com; envelope-from=brgl@bgdev.pl; receiver=lists.ozlabs.org) smtp.mailfrom=bgdev.pl
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=bgdev.pl
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bgdev-pl.20230601.gappssmtp.com header.i=@bgdev-pl.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=TnbZL79S;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=bgdev.pl (client-ip=2a00:1450:4864:20::134; helo=mail-lf1-x134.google.com; envelope-from=brgl@bgdev.pl; receiver=lists.ozlabs.org)
+Received: from mail-lf1-x134.google.com (mail-lf1-x134.google.com [IPv6:2a00:1450:4864:20::134])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1Yb46cVPz2xjP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 00:21:20 +1000 (AEST)
+Received: by mail-lf1-x134.google.com with SMTP id 2adb3069b0e04-55ba26abd62so6153896e87.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2025 07:21:20 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bgdev-pl.20230601.gappssmtp.com; s=20230601; t=1755008477; x=1755613277; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:references:mime-version:in-reply-to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=1pIv9AKRbkc8MISxXeVoPZny7F4ALH4S067Y82mAaRs=;
+        b=TnbZL79STBSpg+JvG29x063POHuPv3Mk9wfjX4oXUjfc6diWduPolgVkij0mCLTFt9
+         P0WI76iim/aegG5a/ahRtib4zXCIJb6OdOgeImPFU1EFSdmbukdsxjYxN0tkDmqxeF1u
+         MUKV9zvTDxguQcg/JeIhmv6qawWwKS+hhPsH060DGHmNzS59Knmf2CsbxBaReydzFlH8
+         twyLw1WN6737BmPLsNxsUrKnta6BXlCSVh5fULY7u1iPIp8G6jFHVNt5lxQvJ3ad1PsD
+         6tAbb9YyX2hjvitaunV0jT19PDpZLsbM0SvRIM3bDBMdxLLBtjU5+uXt0+Y2R1f6D/6u
+         Jpbg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1755008477; x=1755613277;
+        h=cc:to:subject:message-id:date:references:mime-version:in-reply-to
+         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=1pIv9AKRbkc8MISxXeVoPZny7F4ALH4S067Y82mAaRs=;
+        b=pwIYuV7RMYAiEWxaQ/m4/INdoXDX5696G7JXiYWcD8JcZvI5wMmPfz+b0N7eERzTkk
+         1gk645NPRuLF+rIIx37LtbPIyX9QqPs2VBINYz53/Gwv1tYrmmwolA/qlRRsxfgZFuSs
+         gyWLayYkcFwIoARbGg9m6Rjar0kEa8k4YWpf/khT66AQDuj2XxYbGUNTeKpf7sn+QvDy
+         CO5LAWdBLIAa+LaeloTVNEn3YLHamEF88AabyALQjtncFWHsEB3HzxpO8yGUEqBb61bL
+         tigkMCY/Yo5mA5SvW0j4GDwsnMjsCuFAHenNfC7z+xAaMTLbmYnuovhJdNkVDepH6lsU
+         F0kQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUurCbxXrVPUQ3RmaO+k+E3Jj5GHKD6dYJQQKI6n/r5VtCBhiCL0pWhWITdxZq1B6NiIsF4/cJ4f1VJQEk=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzMIEWifpOy7cFGFhgzXmWnvpeuygXHE4k/0CBadHyGxFhFvZqE
+	aVA6HtAxgr5RG0agE+KZaUuHAxT4Mza11QxXDEDHRBh3vHIsqwhiqIRhe00lzAWmjEmkF2T6+dB
+	cVcQg6N0IkZ3dZAdCeQa63VUT6jeTdJ8v4gzyy6+KEg==
+X-Gm-Gg: ASbGncv0zwnpdNXXOzWqPGZizkCMEZV7eCbku+mBwsKjw8L278u6Hr5pG24M2eDwUci
+	gomFjoP4Ejs7aCuZco3YIyUyQrp8p4x19QzshqAqFl3/UgP8CzMworv9vBHAIEHElucqEY6Ij9N
+	MwGAv2vzi80VSFWkaQKuaaKQRVayAmZkt5KWow/7LUlOe4qf9I+npmz1feEd+9aJqesx6SzP8kf
+	KZWJQD57yA5vFpBMXhUQhWIQ/4ZhCWqWS2htyb9rWuOuhg=
+X-Google-Smtp-Source: AGHT+IFpF97gii6lher4rE+Sc7yp8gRIDiPYexKTadETndnmLkjhegMyhbbEFCVjEnmVLwNTmnfVhhtavmnpc1sTYHY=
+X-Received: by 2002:a05:6512:15a7:b0:55c:bfe7:f056 with SMTP id
+ 2adb3069b0e04-55cd759716emr1203480e87.18.1755008477463; Tue, 12 Aug 2025
+ 07:21:17 -0700 (PDT)
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 12 Aug 2025 10:21:16 -0400
+Received: from 969154062570 named unknown by gmailapi.google.com with
+ HTTPREST; Tue, 12 Aug 2025 10:21:16 -0400
+From: Bartosz Golaszewski <brgl@bgdev.pl>
+In-Reply-To: <22b3847fd0011024c10aff48f1e5223894ce718a.1754996033.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,148 +84,120 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1754995860; l=4945; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=4WvVIASI4alTwJrylXkbVq3Sqy6GlVQKoVrURW7O4pc=; b=kK0HMFbQjUGoU9gCyvZ9al1SVU7DiGHBkSIKbM6b3PMB48xoPCApvkWX7TBmhMOhpYNbI3W0n YdaUjFo/BHbD6r+nRb+tGtUznllA2+KDoXIpFTPGrpkXMYtBHP9XA7H
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+References: <cover.1754996033.git.christophe.leroy@csgroup.eu> <22b3847fd0011024c10aff48f1e5223894ce718a.1754996033.git.christophe.leroy@csgroup.eu>
+Date: Tue, 12 Aug 2025 10:21:16 -0400
+X-Gm-Features: Ac12FXwYayzSV7JbaH60c8JY_pypspfPypyhh9tZpmA_WhfNTdKcELAccenZyWo
+Message-ID: <CAMRc=Mce3LHtCUd-oO3uZjVAS-fywn86Zn+qmehZPJTKLzk6Sg@mail.gmail.com>
+Subject: Re: [PATCH 3/4] soc: fsl: qe: Add support of IRQ in QE GPIO
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, 
+	devicetree@vger.kernel.org, Qiang Zhao <qiang.zhao@nxp.com>, 
+	Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski <brgl@bgdev.pl>, Rob Herring <robh@kernel.org>, 
+	Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+Content-Type: text/plain; charset="UTF-8"
 
-In non-interleaved mode, several QMC channels are used in sync.
-More details can be found in commit 188d9cae5438 ("ASoC: fsl:
-fsl_qmc_audio: Add support for non-interleaved mode.")
-At the time being, an interrupt is requested on each channel to
-perform capture/playback completion, allthough the completion is
-really performed only once all channels have completed their work.
+On Tue, 12 Aug 2025 13:02:53 +0200, Christophe Leroy
+<christophe.leroy@csgroup.eu> said:
+> In the QE, a few GPIOs are IRQ capable. Similarly to
+> commit 726bd223105c ("powerpc/8xx: Adding support of IRQ in MPC8xx
+> GPIO"), add IRQ support to QE GPIO.
+>
+> Add property 'fsl,qe-gpio-irq-mask' similar to
+> 'fsl,cpm1-gpio-irq-mask' that define which of the GPIOs have IRQs.
+>
+> Here is an exemple for port B of mpc8323 which has IRQs for
+> GPIOs PB7, PB9, PB25 and PB27.
+>
+> 	qe_pio_b: gpio-controller@1418 {
+> 		#gpio-cells = <2>;
+> 		compatible = "fsl,mpc8323-qe-pario-bank";
+> 		reg = <0x1418 0x18>;
+> 		interrupts = <4 5 6 7>;
+> 		fsl,qe-gpio-irq-mask = <0x01400050>;
+> 		interrupt-parent = <&qepic>;
+> 		gpio-controller;
+> 	};
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> ---
+>  drivers/soc/fsl/qe/gpio.c | 20 ++++++++++++++++++++
+>  1 file changed, 20 insertions(+)
+>
+> diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
+> index b502377193192..59145652ad850 100644
+> --- a/drivers/soc/fsl/qe/gpio.c
+> +++ b/drivers/soc/fsl/qe/gpio.c
+> @@ -13,6 +13,7 @@
+>  #include <linux/err.h>
+>  #include <linux/io.h>
+>  #include <linux/of.h>
+> +#include <linux/of_irq.h>
+>  #include <linux/gpio/legacy-of-mm-gpiochip.h>
+>  #include <linux/gpio/consumer.h>
+>  #include <linux/gpio/driver.h>
+> @@ -32,6 +33,8 @@ struct qe_gpio_chip {
+>
+>  	/* saved_regs used to restore dedicated functions */
+>  	struct qe_pio_regs saved_regs;
+> +
+> +	int irq[32];
+>  };
+>
+>  static void qe_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
+> @@ -141,6 +144,13 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+>  	return 0;
+>  }
+>
+> +static int qe_gpio_to_irq(struct gpio_chip *gc, unsigned int gpio)
+> +{
+> +	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
+> +
+> +	return qe_gc->irq[gpio] ? : -ENXIO;
+> +}
+> +
+>  struct qe_pin {
+>  	/*
+>  	 * The qe_gpio_chip name is unfortunate, we should change that to
+> @@ -304,6 +314,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+>  	struct qe_gpio_chip *qe_gc;
+>  	struct of_mm_gpio_chip *mm_gc;
+>  	struct gpio_chip *gc;
+> +	u32 mask;
+>
+>  	qe_gc = kzalloc(sizeof(*qe_gc), GFP_KERNEL);
+>  	if (!qe_gc) {
+> @@ -313,6 +324,14 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+>
+>  	spin_lock_init(&qe_gc->lock);
+>
+> +	if (!of_property_read_u32(np, "fsl,qe-gpio-irq-mask", &mask)) {
 
-This leads to a lot more interrupts than really needed. Looking at
-/proc/interrupts shows ~3800 interrupts per second when using
-4 capture and 4 playback devices with 5ms periods while
-only 1600 (200 x 4 + 200 x 4) periods are processed during one second.
+AFAICT: you can drop the of.h include and just use
+device_property_present() here.
 
-The QMC channels work in sync, the one started first is the one
-finishing first and the one started last is the one finishing last,
-so when the last one finishes it is guaranteed that the other ones are
-finished as well. Therefore only request completion processing on the
-last QMC channel.
+> +		int i, j;
+> +
+> +		for (i = 0, j = 0; i < 32; i++)
+> +			if (mask & (1 << (31 - i)))
+> +				qe_gc->irq[i] = irq_of_parse_and_map(np, j++);
+> +	}
+> +
+>  	mm_gc = &qe_gc->mm_gc;
+>  	gc = &mm_gc->gc;
+>
+> @@ -323,6 +342,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+>  	gc->get = qe_gpio_get;
+>  	gc->set = qe_gpio_set;
+>  	gc->set_multiple = qe_gpio_set_multiple;
+> +	gc->to_irq = qe_gpio_to_irq;
+>
+>  	ret = of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
+>  	if (!ret)
+> --
+> 2.49.0
+>
+>
 
-On my board with the above exemple, on a kernel started with
-'threadirqs' option, the QMC irq thread uses 16% CPU time with this
-patch while it uses 26% CPU time without this patch.
-
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- sound/soc/fsl/fsl_qmc_audio.c | 46 +++++------------------------------
- 1 file changed, 6 insertions(+), 40 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_qmc_audio.c b/sound/soc/fsl/fsl_qmc_audio.c
-index 0be29ccc1ff7b..92aa813aa3bee 100644
---- a/sound/soc/fsl/fsl_qmc_audio.c
-+++ b/sound/soc/fsl/fsl_qmc_audio.c
-@@ -57,7 +57,6 @@ struct qmc_dai_prtd {
- 	size_t ch_dma_offset;
- 
- 	unsigned int channels;
--	DECLARE_BITMAP(chans_pending, 64);
- 	struct snd_pcm_substream *substream;
- };
- 
-@@ -126,17 +125,14 @@ static int qmc_audio_pcm_write_submit(struct qmc_dai_prtd *prtd)
- 	int ret;
- 
- 	for (i = 0; i < prtd->channels; i++) {
--		bitmap_set(prtd->chans_pending, i, 1);
--
- 		ret = qmc_chan_write_submit(prtd->qmc_dai->chans[i].qmc_chan,
- 					    prtd->ch_dma_addr_current + i * prtd->ch_dma_offset,
- 					    prtd->ch_dma_size,
--					    qmc_audio_pcm_write_complete,
--					    &prtd->qmc_dai->chans[i]);
-+					    i == prtd->channels - 1 ? qmc_audio_pcm_write_complete :
-+								      NULL, prtd);
- 		if (ret) {
- 			dev_err(prtd->qmc_dai->dev, "write_submit %u failed %d\n",
- 				i, ret);
--			bitmap_clear(prtd->chans_pending, i, 1);
- 			return ret;
- 		}
- 	}
-@@ -146,20 +142,7 @@ static int qmc_audio_pcm_write_submit(struct qmc_dai_prtd *prtd)
- 
- static void qmc_audio_pcm_write_complete(void *context)
- {
--	struct qmc_dai_chan *chan = context;
--	struct qmc_dai_prtd *prtd;
--
--	prtd = chan->prtd_tx;
--
--	/* Mark the current channel as completed */
--	bitmap_clear(prtd->chans_pending, chan - prtd->qmc_dai->chans, 1);
--
--	/*
--	 * All QMC channels involved must have completed their transfer before
--	 * submitting a new one.
--	 */
--	if (!bitmap_empty(prtd->chans_pending, 64))
--		return;
-+	struct qmc_dai_prtd *prtd = context;
- 
- 	prtd->buffer_ended += prtd->period_size;
- 	if (prtd->buffer_ended >= prtd->buffer_size)
-@@ -182,17 +165,14 @@ static int qmc_audio_pcm_read_submit(struct qmc_dai_prtd *prtd)
- 	int ret;
- 
- 	for (i = 0; i < prtd->channels; i++) {
--		bitmap_set(prtd->chans_pending, i, 1);
--
- 		ret = qmc_chan_read_submit(prtd->qmc_dai->chans[i].qmc_chan,
- 					   prtd->ch_dma_addr_current + i * prtd->ch_dma_offset,
- 					   prtd->ch_dma_size,
--					   qmc_audio_pcm_read_complete,
--					   &prtd->qmc_dai->chans[i]);
-+					   i == prtd->channels - 1 ? qmc_audio_pcm_read_complete :
-+								     NULL, prtd);
- 		if (ret) {
- 			dev_err(prtd->qmc_dai->dev, "read_submit %u failed %d\n",
- 				i, ret);
--			bitmap_clear(prtd->chans_pending, i, 1);
- 			return ret;
- 		}
- 	}
-@@ -202,26 +182,13 @@ static int qmc_audio_pcm_read_submit(struct qmc_dai_prtd *prtd)
- 
- static void qmc_audio_pcm_read_complete(void *context, size_t length, unsigned int flags)
- {
--	struct qmc_dai_chan *chan = context;
--	struct qmc_dai_prtd *prtd;
--
--	prtd = chan->prtd_rx;
--
--	/* Mark the current channel as completed */
--	bitmap_clear(prtd->chans_pending, chan - prtd->qmc_dai->chans, 1);
-+	struct qmc_dai_prtd *prtd = context;
- 
- 	if (length != prtd->ch_dma_size) {
- 		dev_err(prtd->qmc_dai->dev, "read complete length = %zu, exp %zu\n",
- 			length, prtd->ch_dma_size);
- 	}
- 
--	/*
--	 * All QMC channels involved must have completed their transfer before
--	 * submitting a new one.
--	 */
--	if (!bitmap_empty(prtd->chans_pending, 64))
--		return;
--
- 	prtd->buffer_ended += prtd->period_size;
- 	if (prtd->buffer_ended >= prtd->buffer_size)
- 		prtd->buffer_ended = 0;
-@@ -249,7 +216,6 @@ static int qmc_audio_pcm_trigger(struct snd_soc_component *component,
- 
- 	switch (cmd) {
- 	case SNDRV_PCM_TRIGGER_START:
--		bitmap_zero(prtd->chans_pending, 64);
- 		prtd->buffer_ended = 0;
- 		prtd->ch_dma_addr_current = prtd->ch_dma_addr_start;
- 
--- 
-2.49.0
-
+Bart
 
