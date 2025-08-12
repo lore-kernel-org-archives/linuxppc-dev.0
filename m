@@ -1,88 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-10901-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10902-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DEC9CA0EDC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 22:58:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B844CCA0EC4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 23:20:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1n313VMkz2xgQ;
-	Wed, 13 Aug 2025 08:57:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755039469;
-	cv=none; b=S07YVxb1s3KjaMCxqOygOK463C6ZDUHutOBwnoU7379g/h7IKOpNXex1xfxc2GDZK1cWsPB56LdVpLMdAJqau/d8b5+PxrsbQ9cR5cQrLNaD6KHofvzF9FKq8lt2T6TaNMN65msgWIb9zwJqQTk3jKqjj7TLNphZT6kPKXCJ3TLBUzhd/0mKobEfnm5JAWphVj7bnobTR7xITdEP8zkktMTCCCuK7TlOXfsIFHo8WgUEl2LPScxouSPlaSavMIFC4gSgwpP+7xCO4v+jTO2QtIS3VYq9fP26zgz5wjjqbeTAGg+Pxz/vQsNy0F/b/0HMVDfH4R7pcJ8jVE/IU4ZMHg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1nYM33DHz2xHp;
+	Wed, 13 Aug 2025 09:20:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755040839;
+	cv=none; b=bPz2UL7u7awPdLKP2f2/ioN9lC9OX6Ssm0asAuPbdfPQeu6L149MlLAZeS/6+7R4TEaOp6KKV5imnQX0eeRH1N1rPG8Pc75fX5yaZGdoenXpG2woaxUB9uGFmW8eBM+a2eBccIXMuqjW2RLP3PczwqpC7fqK3L/+9fAE9aFlHyJ81v4VB6lmqFlHZh9vkdfeclSDSY1pSD95YV19qUxwKMWtFaFlj76cKTlYivIQb5dmkH39q9ilXjwmqjXEoShpQUhEaD5mOJGBlRi2zFR0IX8v0lLk2VsRfs2DZIaQNofeuvWSaaXHQWE2p50vHAmbbdLI6iZUy01tqkVoq+2O6A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755039469; c=relaxed/relaxed;
-	bh=51cF4PuE+IigW/UzV1+532NGaSza9JfJRLDdxBNaV5Y=;
+	t=1755040839; c=relaxed/relaxed;
+	bh=CGLmGMARoZegVFveNkSMvQaKvVur/MD7lgTb2txnSaU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=VNdvuZDn4f1V/wWm2enL2AxAaZ+7fGhPgmia1HD/JXbhvpUqB1jJcG7bdPcb7aL1X397H591EWUnsbUM8mpJKqO9Jy+2KJqYHZCXcMF0GkAsHeNrPZ8ESE+9gnyJ/L3luEe6RY2ajggdG2QKMvUXXeK4FD72ZvYxoSYKobWTpwgdS4gzqQa8NThwpWID4cLQ2B/CwjRVDM5qKG62wott78dNnxKplR8NhTlSq59G4QkZEt8Jwb0LrLaZjxObJ1UjIyJ5Hz5C21QjvRuWpiuTZw/103GDZaOZs6NLUa35nkJre/9ojVW1sr2G1w0MmeBHhv0w5NdlfIgGBTJUjg5Mjg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nEKtl/B1; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nEKtl/B1;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1n3065RYz30Vl
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 08:57:48 +1000 (AEST)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57CEJubM032216;
-	Tue, 12 Aug 2025 22:57:42 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=51cF4P
-	uE+IigW/UzV1+532NGaSza9JfJRLDdxBNaV5Y=; b=nEKtl/B1/eDEYVbKTPcZwu
-	Itluzm6tSDblePBRzIrB6kwvkgUHBBFI+DxeFCOLOO5o0fPreN3wZhjGNLMsjXNu
-	TyMEl8WX9ULlQDgbNa7qFR76w7rjxYp/MZ0GlNNIXkDoJlFCXUMFsRqU0u9s/1mo
-	7KVqBt1LulKE5PgRncJ/0Riw25QA4ys3f36Tc6KN7F4yJNvHY/ZbMOak/7H/Jypw
-	r+cztw7bErRYM2jOqUTiFqRo2M4bAX2CH4+cwT2dvSEYlMgX/0PQEKQxYsFwwKem
-	eDOAVc5fQOA7Wy7QDOeKENR1IkxXsBelLQVWspvBsQVOG39zaJXQc//V4Taee/nA
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48dx14hau3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 12 Aug 2025 22:57:41 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 57CMuvA7025877;
-	Tue, 12 Aug 2025 22:57:41 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48dx14haty-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 12 Aug 2025 22:57:41 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 57CLAZFn026282;
-	Tue, 12 Aug 2025 22:57:40 GMT
-Received: from smtprelay06.dal12v.mail.ibm.com ([172.16.1.8])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 48eh214t67-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 12 Aug 2025 22:57:40 +0000
-Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
-	by smtprelay06.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 57CMvbuo28902056
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 12 Aug 2025 22:57:38 GMT
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B1BB058059;
-	Tue, 12 Aug 2025 22:57:37 +0000 (GMT)
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8168658058;
-	Tue, 12 Aug 2025 22:57:36 +0000 (GMT)
-Received: from li-4910aacc-2eed-11b2-a85c-d93b702d4d28.ibm.com.com (unknown [9.61.44.118])
-	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 12 Aug 2025 22:57:36 +0000 (GMT)
-From: Haren Myneni <haren@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, msuchanek@suse.de,
-        mahesh@linux.ibm.com, tyreld@linux.ibm.com, npiggin@gmail.com,
-        bjking1@linux.ibm.com, hbabu@us.ibm.com, haren@linux.ibm.com
-Subject: [PATCH v2 9/9] powerpc/pseries: HVPIPE changes to support migration
-Date: Tue, 12 Aug 2025 15:57:13 -0700
-Message-ID: <20250812225715.339225-10-haren@linux.ibm.com>
-X-Mailer: git-send-email 2.43.5
-In-Reply-To: <20250812225715.339225-1-haren@linux.ibm.com>
-References: <20250812225715.339225-1-haren@linux.ibm.com>
+	 MIME-Version; b=dUo5692/ERpMqAgPxsBryrURkt5+tCHofLbS48z8YOdU6t3U4+Ks+RSFvhAa5xh2LNHvepIxsn1UsYdS9PBm3EzpAq22uG9SF3TfitGSvprPdzIBLe7K+1Xgwu1PCGAtfDC/QdV12IKE8xEkuPMmFGk4eXMC5LX0lktNiK4pEr990UCtD2/+gSbk7T5T/eujJDqqQR/HAA1PNQuhbxWErsnXOf96wf0AcnqC4W21HbzRYSjCF2EZ39pqL3FyfYcDRrDTjDWNAHSxAJp0FscikB98oKHzAcude4iPhPxRxBnAYbwbTOIc6fry5TEuL3diyFcNmXHogb6mMr73Ww8bYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1nYL4VWLz2xHY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 09:20:36 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4c1Swd6CHXz9sSX;
+	Tue, 12 Aug 2025 12:51:13 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id iI9dJ_a7pdSu; Tue, 12 Aug 2025 12:51:13 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c1Swc1tNfz9sSS;
+	Tue, 12 Aug 2025 12:51:12 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2D1808B764;
+	Tue, 12 Aug 2025 12:51:12 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id 4jorW_lag49m; Tue, 12 Aug 2025 12:51:12 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 685288B763;
+	Tue, 12 Aug 2025 12:51:11 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Herve Codina <herve.codina@bootlin.com>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-sound@vger.kernel.org
+Subject: [PATCH v2 4/4] ASoc: fsl: fsl_qmc_audio: Drop struct qmc_dai_chan
+Date: Tue, 12 Aug 2025 12:50:58 +0200
+Message-ID: <0e73d47d15cf38ad5c4c35fbab545153829dde75.1754993232.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1754993232.git.christophe.leroy@csgroup.eu>
+References: <cover.1754993232.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,219 +78,180 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1754995860; l=6627; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=D8aJWskat7D7j+YQUUJGr8krPsanE8nzMLSq+13eJYM=; b=sdXjy3Q5FBCRj+brdHzpE1YVcgqKY2OAvclAR2RvhgKoAGHu+CrM+KqAy40KOfN+VjEtaaeSL 1sImg+Jndj+Cd1xOlWkzqNaSAy1uJ/L/0iilFFGpdP8y8+O2C3bP6l6
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: GJFhLvst3KPj1M6n0e60HcZzjh9Z-aHt
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODEyMDIxOSBTYWx0ZWRfX5AXf3mRgUFis
- v0q3di+xadfVMC1HEV2aYxbefBjMiYET9Qri2mhmQSPT/JP3oo8+kOtMOuRVP/A+b8VLNxR17Wm
- WtjDS0HpsXcSP+HDTgIsXjHyhSxzE4yT7ohXcmbI8cKWlhb4iKbTzSIC+AmQ8SM+F7wUcsg4639
- e/fpjIjLCvV4j08l+7yfomYKqBTzTXphO5jYmqUYw16Mj7GzNOgNu+7BpCvI/psRZM9TvSFcpZz
- gvCuS5enffm3AgIZbkVJJC2MiNwmlWQuvNh1uPzqSixZo7KK4mL5CHBLb6qP0RTJyQsrLpx0Hxd
- 4TeAGkOYyx9pcE1TlVwnXe4hDwgJJyjNIX9JnGsja9pbtUyfWRGrbUwOE8NcNIiw63nwX8jMKJy
- unxLV/rKi9NQOCFflKlBEeyDA65WSfWQvv/kqysxpRBJzYtJ27z84GT4isfbzWLIQ9Xwlz4g
-X-Proofpoint-GUID: IO8f9qrGllCGpkoi73IjgmTuZBgxF3UJ
-X-Authority-Analysis: v=2.4 cv=fLg53Yae c=1 sm=1 tr=0 ts=689bc6e5 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10 a=VnNF1IyMAAAA:8 a=S7z50IwEaLHSfgsXjVMA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-08-12_08,2025-08-11_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- adultscore=0 lowpriorityscore=0 clxscore=1015 spamscore=0 priorityscore=1501
- impostorscore=0 phishscore=0 mlxlogscore=892 malwarescore=0 bulkscore=0
- mlxscore=0 suspectscore=0 classifier=spam authscore=0 authtc=n/a authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2507300000
- definitions=main-2508120219
 
-The hypervisor assigns one pipe per partition for all sources and
-assigns new pipe after migration. Also the partition ID that is
-used by source as its target ID may be changed after the migration.
-So disable hvpipe during SUSPEND event with ‘hvpipe enable’ system
-parameter value = 0 and enable it after migration during RESUME
-event with  hvpipe enable’ system parameter value = 1.
+prtd_tx and prtd_rx members are not used anymore and only qmc_chan
+member remains so struct qmc_dai_chan has become pointless.
 
-The user space calls such as ioctl()/ read() / write() / poll()
-returns  -ENXIO between SUSPEND and RESUME events. The user space
-process can close FD and reestablish connection with new FD after
-migration if needed (Example: source IDs are changed).
+Use qmc_chan directly and drop struct qmc_dai_chan.
 
-Signed-off-by: Haren Myneni <haren@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/platforms/pseries/mobility.c    |  3 +
- arch/powerpc/platforms/pseries/papr-hvpipe.c | 64 ++++++++++++++++++++
- arch/powerpc/platforms/pseries/papr-hvpipe.h |  6 ++
- 3 files changed, 73 insertions(+)
+v2: New
+---
+ sound/soc/fsl/fsl_qmc_audio.c | 50 +++++++++++++----------------------
+ 1 file changed, 19 insertions(+), 31 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 62bd8e2d5d4c..95fe802ccdfd 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -28,6 +28,7 @@
- #include <asm/rtas.h>
- #include "pseries.h"
- #include "vas.h"	/* vas_migration_handler() */
-+#include "papr-hvpipe.h"	/* hvpipe_migration_handler() */
- #include "../../kernel/cacheinfo.h"
+diff --git a/sound/soc/fsl/fsl_qmc_audio.c b/sound/soc/fsl/fsl_qmc_audio.c
+index 92aa813aa3bee..6719da1c81f1d 100644
+--- a/sound/soc/fsl/fsl_qmc_audio.c
++++ b/sound/soc/fsl/fsl_qmc_audio.c
+@@ -17,12 +17,6 @@
+ #include <sound/pcm_params.h>
+ #include <sound/soc.h>
  
- static struct kobject *mobility_kobj;
-@@ -744,6 +745,7 @@ static int pseries_migrate_partition(u64 handle)
- 	 * by closing VAS windows at the beginning of this function.
- 	 */
- 	vas_migration_handler(VAS_SUSPEND);
-+	hvpipe_migration_handler(HVPIPE_SUSPEND);
+-struct qmc_dai_chan {
+-	struct qmc_dai_prtd *prtd_tx;
+-	struct qmc_dai_prtd *prtd_rx;
+-	struct qmc_chan *qmc_chan;
+-};
+-
+ struct qmc_dai {
+ 	char *name;
+ 	int id;
+@@ -33,7 +27,7 @@ struct qmc_dai {
+ 	unsigned int nb_chans_avail;
+ 	unsigned int nb_chans_used_tx;
+ 	unsigned int nb_chans_used_rx;
+-	struct qmc_dai_chan *chans;
++	struct qmc_chan **qmc_chans;
+ };
  
- 	ret = wait_for_vasi_session_suspending(handle);
- 	if (ret)
-@@ -770,6 +772,7 @@ static int pseries_migrate_partition(u64 handle)
+ struct qmc_audio {
+@@ -125,7 +119,7 @@ static int qmc_audio_pcm_write_submit(struct qmc_dai_prtd *prtd)
+ 	int ret;
  
- out:
- 	vas_migration_handler(VAS_RESUME);
-+	hvpipe_migration_handler(HVPIPE_RESUME);
+ 	for (i = 0; i < prtd->channels; i++) {
+-		ret = qmc_chan_write_submit(prtd->qmc_dai->chans[i].qmc_chan,
++		ret = qmc_chan_write_submit(prtd->qmc_dai->qmc_chans[i],
+ 					    prtd->ch_dma_addr_current + i * prtd->ch_dma_offset,
+ 					    prtd->ch_dma_size,
+ 					    i == prtd->channels - 1 ? qmc_audio_pcm_write_complete :
+@@ -165,7 +159,7 @@ static int qmc_audio_pcm_read_submit(struct qmc_dai_prtd *prtd)
+ 	int ret;
  
+ 	for (i = 0; i < prtd->channels; i++) {
+-		ret = qmc_chan_read_submit(prtd->qmc_dai->chans[i].qmc_chan,
++		ret = qmc_chan_read_submit(prtd->qmc_dai->qmc_chans[i],
+ 					   prtd->ch_dma_addr_current + i * prtd->ch_dma_offset,
+ 					   prtd->ch_dma_size,
+ 					   i == prtd->channels - 1 ? qmc_audio_pcm_read_complete :
+@@ -206,7 +200,6 @@ static int qmc_audio_pcm_trigger(struct snd_soc_component *component,
+ 				 struct snd_pcm_substream *substream, int cmd)
+ {
+ 	struct qmc_dai_prtd *prtd = substream->runtime->private_data;
+-	unsigned int i;
+ 	int ret;
+ 
+ 	if (!prtd->qmc_dai) {
+@@ -220,9 +213,6 @@ static int qmc_audio_pcm_trigger(struct snd_soc_component *component,
+ 		prtd->ch_dma_addr_current = prtd->ch_dma_addr_start;
+ 
+ 		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
+-			for (i = 0; i < prtd->channels; i++)
+-				prtd->qmc_dai->chans[i].prtd_tx = prtd;
+-
+ 			/* Submit first chunk ... */
+ 			ret = qmc_audio_pcm_write_submit(prtd);
+ 			if (ret)
+@@ -238,9 +228,6 @@ static int qmc_audio_pcm_trigger(struct snd_soc_component *component,
+ 			if (ret)
+ 				return ret;
+ 		} else {
+-			for (i = 0; i < prtd->channels; i++)
+-				prtd->qmc_dai->chans[i].prtd_rx = prtd;
+-
+ 			/* Submit first chunk ... */
+ 			ret = qmc_audio_pcm_read_submit(prtd);
+ 			if (ret)
+@@ -610,9 +597,9 @@ static int qmc_dai_hw_params(struct snd_pcm_substream *substream,
+ 		chan_param.mode = QMC_TRANSPARENT;
+ 		chan_param.transp.max_rx_buf_size = params_period_bytes(params) / nb_chans_used;
+ 		for (i = 0; i < nb_chans_used; i++) {
+-			ret = qmc_chan_set_param(qmc_dai->chans[i].qmc_chan, &chan_param);
++			ret = qmc_chan_set_param(qmc_dai->qmc_chans[i], &chan_param);
+ 			if (ret) {
+-				dev_err(dai->dev, "chans[%u], set param failed %d\n",
++				dev_err(dai->dev, "qmc_chans[%u], set param failed %d\n",
+ 					i, ret);
+ 				return ret;
+ 			}
+@@ -654,7 +641,7 @@ static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 	case SNDRV_PCM_TRIGGER_RESUME:
+ 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
+ 		for (i = 0; i < nb_chans_used; i++) {
+-			ret = qmc_chan_start(qmc_dai->chans[i].qmc_chan, direction);
++			ret = qmc_chan_start(qmc_dai->qmc_chans[i], direction);
+ 			if (ret)
+ 				goto err_stop;
+ 		}
+@@ -663,13 +650,13 @@ static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 	case SNDRV_PCM_TRIGGER_STOP:
+ 		/* Stop and reset all QMC channels and return the first error encountered */
+ 		for (i = 0; i < nb_chans_used; i++) {
+-			ret_tmp = qmc_chan_stop(qmc_dai->chans[i].qmc_chan, direction);
++			ret_tmp = qmc_chan_stop(qmc_dai->qmc_chans[i], direction);
+ 			if (!ret)
+ 				ret = ret_tmp;
+ 			if (ret_tmp)
+ 				continue;
+ 
+-			ret_tmp = qmc_chan_reset(qmc_dai->chans[i].qmc_chan, direction);
++			ret_tmp = qmc_chan_reset(qmc_dai->qmc_chans[i], direction);
+ 			if (!ret)
+ 				ret = ret_tmp;
+ 		}
+@@ -681,7 +668,7 @@ static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
+ 		/* Stop all QMC channels and return the first error encountered */
+ 		for (i = 0; i < nb_chans_used; i++) {
+-			ret_tmp = qmc_chan_stop(qmc_dai->chans[i].qmc_chan, direction);
++			ret_tmp = qmc_chan_stop(qmc_dai->qmc_chans[i], direction);
+ 			if (!ret)
+ 				ret = ret_tmp;
+ 		}
+@@ -697,8 +684,8 @@ static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 
+ err_stop:
+ 	while (i--) {
+-		qmc_chan_stop(qmc_dai->chans[i].qmc_chan, direction);
+-		qmc_chan_reset(qmc_dai->chans[i].qmc_chan, direction);
++		qmc_chan_stop(qmc_dai->qmc_chans[i], direction);
++		qmc_chan_reset(qmc_dai->qmc_chans[i], direction);
+ 	}
  	return ret;
  }
-diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.c b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-index bc3d1f0b4491..0edc1a29d64d 100644
---- a/arch/powerpc/platforms/pseries/papr-hvpipe.c
-+++ b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-@@ -27,6 +27,7 @@ static unsigned char hvpipe_ras_buf[RTAS_ERROR_LOG_MAX];
- static struct workqueue_struct *papr_hvpipe_wq;
- static struct work_struct *papr_hvpipe_work = NULL;
- static int hvpipe_check_exception_token;
-+static bool hvpipe_feature;
+@@ -794,19 +781,20 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
+ 		return dev_err_probe(qmc_audio->dev, -EINVAL,
+ 				     "dai %d no QMC channel defined\n", qmc_dai->id);
  
- /*
-  * New PowerPC FW provides support for partitions and various
-@@ -233,6 +234,12 @@ static ssize_t papr_hvpipe_handle_write(struct file *file,
- 	unsigned long ret, len;
- 	char *area_buf;
+-	qmc_dai->chans = devm_kcalloc(qmc_audio->dev, count, sizeof(*qmc_dai->chans), GFP_KERNEL);
+-	if (!qmc_dai->chans)
++	qmc_dai->qmc_chans = devm_kcalloc(qmc_audio->dev, count, sizeof(*qmc_dai->qmc_chans),
++					  GFP_KERNEL);
++	if (!qmc_dai->qmc_chans)
+ 		return -ENOMEM;
  
-+	/*
-+	 * Return -ENXIO during migration
-+	 */
-+	if (!hvpipe_feature)
-+		return -ENXIO;
-+
- 	if (!src_info)
- 		return -EIO;
+ 	for (i = 0; i < count; i++) {
+-		qmc_dai->chans[i].qmc_chan = devm_qmc_chan_get_byphandles_index(qmc_audio->dev, np,
+-										"fsl,qmc-chan", i);
+-		if (IS_ERR(qmc_dai->chans[i].qmc_chan)) {
+-			return dev_err_probe(qmc_audio->dev, PTR_ERR(qmc_dai->chans[i].qmc_chan),
++		qmc_dai->qmc_chans[i] = devm_qmc_chan_get_byphandles_index(qmc_audio->dev, np,
++									   "fsl,qmc-chan", i);
++		if (IS_ERR(qmc_dai->qmc_chans[i])) {
++			return dev_err_probe(qmc_audio->dev, PTR_ERR(qmc_dai->qmc_chans[i]),
+ 					     "dai %d get QMC channel %d failed\n", qmc_dai->id, i);
+ 		}
  
-@@ -325,6 +332,12 @@ static ssize_t papr_hvpipe_handle_read(struct file *file,
- 	struct papr_hvpipe_hdr hdr;
- 	long ret;
- 
-+	/*
-+	 * Return -ENXIO during migration
-+	 */
-+	if (!hvpipe_feature)
-+		return -ENXIO;
-+
- 	if (!src_info)
- 		return -EIO;
- 
-@@ -401,6 +414,12 @@ static unsigned int papr_hvpipe_handle_poll(struct file *filp,
- {
- 	struct hvpipe_source_info *src_info = filp->private_data;
- 
-+	/*
-+	 * Return -ENXIO during migration
-+	 */
-+	if (!hvpipe_feature)
-+		return -ENXIO;
-+
- 	if (!src_info)
- 		return -EIO;
- 
-@@ -530,6 +549,12 @@ static long papr_hvpipe_dev_ioctl(struct file *filp, unsigned int ioctl,
- 	u32 srcID;
- 	long ret;
- 
-+	/*
-+	 * Return -ENXIO during migration
-+	 */
-+	if (!hvpipe_feature)
-+		return -ENXIO;
-+
- 	if (get_user(srcID, argp))
- 		return -EFAULT;
- 
-@@ -688,6 +713,44 @@ static int __init enable_hvpipe_IRQ(void)
- 	return 0;
- }
- 
-+void hvpipe_migration_handler(int action)
-+{
-+	pr_info("hvpipe migration event %d\n", action);
-+
-+	/*
-+	 * HVPIPE is not used (Failed to create /dev/papr-hvpipe).
-+	 * So nothing to do for migration.
-+	 */
-+	if (!papr_hvpipe_work)
-+		return;
-+
-+	switch (action) {
-+	case HVPIPE_SUSPEND:
-+		if (hvpipe_feature) {
-+			/*
-+			 * Disable hvpipe_feature to the user space.
-+			 * It will be enabled with RESUME event.
-+			 */
-+			hvpipe_feature = false;
-+			/*
-+			 * set system parameter hvpipe 'disable'
-+			 */
-+			set_hvpipe_sys_param(0);
-+		}
-+		break;
-+	case HVPIPE_RESUME:
-+		/*
-+		 * set system parameter hvpipe 'enable'
-+		 */
-+		if (!set_hvpipe_sys_param(1))
-+			hvpipe_feature = true;
-+		else
-+			pr_err("hvpipe is not enabled after migration\n");
-+
-+		break;
-+	}
-+}
-+
- static const struct file_operations papr_hvpipe_ops = {
- 	.unlocked_ioctl	=	papr_hvpipe_dev_ioctl,
- };
-@@ -731,6 +794,7 @@ static int __init papr_hvpipe_init(void)
- 
- 	if (!ret) {
- 		pr_info("hvpipe feature is enabled\n");
-+		hvpipe_feature = true;
- 		return 0;
- 	} else
- 		pr_err("hvpipe feature is not enabled %d\n", ret);
-diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.h b/arch/powerpc/platforms/pseries/papr-hvpipe.h
-index aab7f77e087d..c343f4230865 100644
---- a/arch/powerpc/platforms/pseries/papr-hvpipe.h
-+++ b/arch/powerpc/platforms/pseries/papr-hvpipe.h
-@@ -11,6 +11,11 @@
- 
- #define	HVPIPE_HDR_LEN	sizeof(struct papr_hvpipe_hdr)
- 
-+enum hvpipe_migrate_action {
-+	HVPIPE_SUSPEND,
-+	HVPIPE_RESUME,
-+};
-+
- struct hvpipe_source_info {
- 	struct list_head list;	/* list of sources */
- 	u32 srcID;
-@@ -33,4 +38,5 @@ struct hvpipe_event_buf {
- 				/* with specified src ID */
- };
- 
-+void hvpipe_migration_handler(int action);
- #endif /* _PAPR_HVPIPE_H */
+-		ret = qmc_chan_get_info(qmc_dai->chans[i].qmc_chan, &info);
++		ret = qmc_chan_get_info(qmc_dai->qmc_chans[i], &info);
+ 		if (ret) {
+ 			dev_err(qmc_audio->dev, "dai %d get QMC %d channel info failed %d\n",
+ 				qmc_dai->id, i, ret);
 -- 
-2.43.5
+2.49.0
 
 
