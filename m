@@ -1,59 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-10877-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10878-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E09DDC87FCB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 17:16:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 877D2CA0EC4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 18:21:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1dT525B9z2xHY;
-	Wed, 13 Aug 2025 03:16:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2604:1380:4641:c500::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755018985;
-	cv=none; b=o3EZj3McJoj/Z5RO/2BhqCGBfqhmDP9AD1pJ1QJeoO/R0V9OCQsCWm0B+/rldqeD9L0GiSfPvKV5LKtms6wTZc/lDhkSXHz6F4ZchViHkoy8+cL68lHYPquWD+sD9n1MntDrgMd9GUuDT2PDtrTHCdk7A6sK1w3RXdZOGDEBcYvf9ZqPwcwyJpt8PGPVh4qVQlnB0kVEe/Fs0bCTV7cM6JowUrrP7bHCZPH3QqYm4JMUFshl6XXtsgZFx3/8Mkva4Qe+LO+r7Z1fvCKyRyzHThYQtR8qktPMse5njrt5HWVKdppcbKd//7p8EQoUXG7CUoazuVn4aHKUjhl3eJd75A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1fwY4WJ7z2xHY;
+	Wed, 13 Aug 2025 04:21:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755022909;
+	cv=none; b=DnMTb9PeZGOV1Mk1XGn5SnPI5OKHh5ZUBcOwVVCGVFjJ3/BfFHu2U4CeWU1uuv/lFRQDDF2OfjrmwS4lV2is25FFUIebtWM97huMmCueBucJmEVbs21OpsahGnBa1UT9azPJ7u6+zdsQ0Fm6V4X9MeV8u6qB8GG7f9Vft7PaaW04lUMn4kQp8TF8QV+E++hGrESpk2y+twgT7bHdG4dx23C+1YNJ8dAwO/N6yEsrNLOd8mPBUQ0CFYZ3hY11ZIDaXi0JqlwrLsiazD2hL//thBRvPrNIcs0vMf1R2Doz/o2RAvq7E6jPUVIU52DJ1sRRaJAmvj1vOTduHHnDo13BDw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755018985; c=relaxed/relaxed;
-	bh=RR6Li5YSVDXFaaB/n5eOMtqh4EBeFoCLf7S8pn0aiho=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=hedQ6xh+7NK962iH6WEkqvftwiSplfsMip7hnfQ8mYnGaAT3q95Hbc39DlNCV83sHazGU74WwoDaPGsN+ceLNiAmWgKZ5Gt3MXdQZychxGTzH6xEon/LZn3zir9OSCiEZJ368kO7zBT3d9yk1Z8EmFwNlNc5gTcXVm0/4zgt6oM7jlx3e++7gNBq28BRFWqrKrYEziyXxrN2/pP2exHQ+QeEsKyH+GyFpOjBdqH5IhD4zuGQXY+PS1Uu0fe96bKX2OC2jyXndNAKUoRvigBXfcMSi6wGrYw49ee4IaVc/F7cOx2KkpCTQ8Nhr1rr8ChnbpgFimKX+a9kncLoz74H9A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rrx7ONev; dkim-atps=neutral; spf=pass (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1755022909; c=relaxed/relaxed;
+	bh=BhnJXJE+d2mDNDDlQFrlbM73+vFIf5rSe9uOzme4lvs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=nXiLxVwejYuCjmcaZ/DE+HNIloziEbvxyIcIlfv5/tjOqWlPeo9Qf7QRwEj5oh7mb2eD4wPm2v3mipzWXKSRLo/dsxXGrJLS2hysbkdJ1SJV6NJNMbkaMiO4PeAF3Ah5CzYwKe2xFC5BGP5HJ03Ah5qodwo+ipsg9qB8ZTMAl+nd/hyWJtemj4tl3vq1BGkJooVnbnidUNA/tlh9w1RsUMY/dmybGgbAUpNeVLkwJiQuHFyhuUJVucP+x9DU1R2FPc7xK51s1WrC6XFaU62WjC/x/7mff6exjxG3Ls843MyU0t1pJk6IzE+ysCOonKKckWBavWN7xrPVBuBxz5oYkw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UsGNFw9D; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rrx7ONev;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=UsGNFw9D;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2604:1380:4641:c500::1; helo=dfw.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
-Received: from dfw.source.kernel.org (dfw.source.kernel.org [IPv6:2604:1380:4641:c500::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1dT40nH5z2xCd
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 03:16:24 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by dfw.source.kernel.org (Postfix) with ESMTP id 3188B5C6AAA
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2025 17:16:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 00B01C4CEF6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2025 17:16:20 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1755018981;
-	bh=hiKx5h6WgJ1kRSlNqANQXTbZ/qufuAsjkmYJWLdzY/A=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=rrx7ONevt651nfLg0mqbamZT+I9vsT7FOdqYPWXahJLbdCSR9mxCrDH69WVkjOJFJ
-	 sQrSPjjyETzpVgPm/FHFSlCO56TxP9G1ojEVjiQONhbWjmHp/jN3AGYxeDXB4e9tl1
-	 glmCD6QGhW2LROTweKFIBVLIf3b2wlfF0JZzidE0Sv/duoSwFiK67XXeW0tyfVD0p1
-	 qFw12ZcpeprdH93mFyOicmwAeeVdeemJK2Apu8OvKbP5yYC2TKznK1bubWNGb9egnq
-	 3Gt1V6Wv6p+XqgkHEaM4Xh6Q+NAEFXFo+NMzcls9CuGdnwu7g9utWKlCFpqWlmxiMv
-	 j2QJ2LTmx0ywA==
-Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-af95ecfbd5bso950480566b.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 12 Aug 2025 10:16:20 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCWP6ID+9+639K1Bx7dREvZzDte4rZUEgLoRT1O0/VceUN+h+5fqPnG4n8ufVVC4+vzQLrEOCteIdeftkIM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yy2tS0OBr2yRdShXicYsrGKo9Swwzzv6YPe25xIMJSOVbsPz5d3
-	1cAzDgjBm54ObvoJY/GpkJF/AQCwjhW5VDg+fPgg3jdn1rk2kt+ln07x94YkMSIuxvo2WIK+Bn4
-	s6PLykm8ilWjF9s3LjQjtIvjjJ1TRfw==
-X-Google-Smtp-Source: AGHT+IEBE2ikhAU2DNl85LpL+NhY5CizUSURSGTC9MFOW45Us0P1xe9kfUVQc4IbWaS2z6b1ZX94B9hdIEwvFsOIwvk=
-X-Received: by 2002:a17:906:c145:b0:ae3:4f80:ac4c with SMTP id
- a640c23a62f3a-afca4cca31fmr10795866b.12.1755018979494; Tue, 12 Aug 2025
- 10:16:19 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1fwV5rSCz2xC3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 04:21:46 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57CCCoLP023786;
+	Tue, 12 Aug 2025 18:21:18 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=BhnJXJ
+	E+d2mDNDDlQFrlbM73+vFIf5rSe9uOzme4lvs=; b=UsGNFw9DsNDJfFhoDkffq/
+	X7HjIfVxQ7WRU3NmhCCJiSZsiEMVp42I7+KydiE+f3z/ltSDEo7vE/1UvutdF2U1
+	pOILs5277q1BfJjHpn3XrQxQvqc9eC5XGvG6EZ0lSF4d1c9LyFwIJqUROcXPhV66
+	DHU1TcFEaSgP4Uxe4vTTSwxlAtlDtGaTixDIx4mV/XrMnlALCFWokSMxUN59NXvd
+	p078z7oGJlhFjD0/Rz8tXMYZrg2ujmbXNIA/B2lbfIrRONyOq+AszVILxqvBvLpe
+	GjyWeXPJjlDp/2GqVnwWhHUYGFmvg5FO9T9ccj+0kjGYD+FENVdkQs0FLWyD9swA
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48duru854w-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 Aug 2025 18:21:17 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 57CFdDio017612;
+	Tue, 12 Aug 2025 18:21:17 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 48ekc3kd5g-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 12 Aug 2025 18:21:16 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 57CILDRj53412110
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 12 Aug 2025 18:21:13 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2679620043;
+	Tue, 12 Aug 2025 18:21:13 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 07D4E20040;
+	Tue, 12 Aug 2025 18:21:11 +0000 (GMT)
+Received: from [9.39.29.151] (unknown [9.39.29.151])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 12 Aug 2025 18:21:10 +0000 (GMT)
+Message-ID: <7c70fac4-3cc7-4bf1-a3f1-aa1c61f67425@linux.ibm.com>
+Date: Tue, 12 Aug 2025 23:51:10 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,94 +80,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1754996033.git.christophe.leroy@csgroup.eu>
- <0b56ef403a7c8d0f8305e847d68959a1037d365e.1754996033.git.christophe.leroy@csgroup.eu>
- <0fd6fefc-9fad-4ea6-a619-e9f480747ac0@kernel.org>
-In-Reply-To: <0fd6fefc-9fad-4ea6-a619-e9f480747ac0@kernel.org>
-From: Rob Herring <robh@kernel.org>
-Date: Tue, 12 Aug 2025 12:16:08 -0500
-X-Gmail-Original-Message-ID: <CAL_Jsq+1Aw5AyBeW+BhTuyWZ8BN8BJUq047oJCDKVQPZWxWYCA@mail.gmail.com>
-X-Gm-Features: Ac12FXw2MCpi_Gef6Ss--eZgTnXi88_EsAQqYxE-YlC_gadE4Co6lYS79wZ_vkE
-Message-ID: <CAL_Jsq+1Aw5AyBeW+BhTuyWZ8BN8BJUq047oJCDKVQPZWxWYCA@mail.gmail.com>
-Subject: Re: [PATCH 4/4] dt-bindings: soc: fsl: qe: Add an interrupt
- controller for QUICC Engine Ports
-To: Krzysztof Kozlowski <krzk@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Qiang Zhao <qiang.zhao@nxp.com>, Linus Walleij <linus.walleij@linaro.org>, 
-	Bartosz Golaszewski <brgl@bgdev.pl>, Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>, 
-	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org, 
-	devicetree@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/1] sched: preempt: Move dynamic keys into
+ kernel/sched
+To: mingo@redhat.com, peterz@infradead.org
+Cc: mark.rutland@arm.com, bigeasy@linutronix.de, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, venkat88@linux.ibm.com,
+        tglx@linutronix.de, maddy@linux.ibm.com, will@kernel.org
+References: <20250716094745.2232041-1-sshegde@linux.ibm.com>
+ <20250716094745.2232041-2-sshegde@linux.ibm.com>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <20250716094745.2232041-2-sshegde@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: haSnYq1kEpJqLZg92sejXHgMCJiOT0xe
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODEyMDE3NiBTYWx0ZWRfX2uUAJz+sPSMt
+ fzHrOb3+ZPGeateZtJF+Rn1YzjqF4st42vzyk59+7uBs+hxuTrRcxv3bE/Ae+ZpUK79eUkfVomS
+ rpoRY02k/6a9HDeXaSlF0HNI5wEvaSyDbBhl9rbL1W0q6aYa3DF8JbG3gtk6M7PMh0W9NYqOCHK
+ rzGSUkZvysZ+0m+9vQJfyKPrNl+CdO21VKcB1antFsN8iZU1tAQEd/eDizUVMh0qrFDNPQuEdLV
+ szNaG5gyhhKXuLx639vevO0JABMaAmSdqSQjbnMVFwGHSEtvhtFUfzZ8Kbkt5dN7YJYg5HozPVJ
+ 4E3q8XI9zew7V1Yat7WxnRWvLxNGPsmy0i89/9Qdohf+hcMsxZgU8VotHxbeH/k0dnPZgQVFh33
+ SdctTqgYbVgYI80EYWQJvrnAxiX4yumyKNLQHZke20CONR0UyLT6FU9hxrg+XLCaNB8MBei6
+X-Authority-Analysis: v=2.4 cv=QtNe3Uyd c=1 sm=1 tr=0 ts=689b861d cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10 a=VnNF1IyMAAAA:8 a=7CQSdrXTAAAA:8
+ a=VwQbUJbxAAAA:8 a=a-Bos3NDH3Xla9YzJLIA:9 a=QEXdDO2ut3YA:10
+ a=a-qgeE7W1pNrGK8U0ZQC:22
+X-Proofpoint-ORIG-GUID: haSnYq1kEpJqLZg92sejXHgMCJiOT0xe
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-08-12_07,2025-08-11_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 priorityscore=1501 lowpriorityscore=0 clxscore=1015
+ mlxlogscore=876 impostorscore=0 suspectscore=0 bulkscore=0 mlxscore=0
+ phishscore=0 malwarescore=0 spamscore=0 classifier=spam authscore=0
+ authtc=n/a authcc= route=outbound adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2507300000 definitions=main-2508120176
 
-On Tue, Aug 12, 2025 at 10:23=E2=80=AFAM Krzysztof Kozlowski <krzk@kernel.o=
-rg> wrote:
->
-> On 12/08/2025 13:02, Christophe Leroy wrote:
-> > The QUICC Engine provides interrupts for a few I/O ports. This is
-> > handled via a separate interrupt ID and managed via a triplet of
-> > dedicated registers hosted by the SoC.
-> >
-> > Implement an interrupt driver for it for that those IRQs can then
-> > be linked to the related GPIOs.
-> >
-> > Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> > ---
-> >  .../soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml       | 63 +++++++++++++++++++
-> >  1 file changed, 63 insertions(+)
-> >  create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fs=
-l,qe-ports-ic.yaml
-> >
-> > diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-po=
-rts-ic.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports=
--ic.yaml
-> > new file mode 100644
-> > index 0000000000000..7c98706d03dd1
-> > --- /dev/null
-> > +++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.=
-yaml
-> > @@ -0,0 +1,63 @@
-> > +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> > +
-> > +title: Freescale QUICC Engine I/O Ports Interrupt Controller
-> > +
-> > +maintainers:
-> > +  - name: Christophe Leroy
-> > +    email: christophe.leroy@csgroup.eu
->
-> Oh no...
->
-> > +
-> > +description: |
-> > +  Interrupt controller for the QUICC Engine I/O ports found on some
-> > +  Freescale/NXP PowerQUICC and QorIQ SoCs.
-> > +
-> > +properties:
-> > +  compatible:
-> > +    enum:
-> > +      - fsl,mpc8323-qe-ports-ic
-> > +      - fsl,mpc8360-qe-ports-ic
-> > +      - fsl,mpc8568-qe-ports-ic
-> > +
-> > +  reg:
-> > +    description: Base address and size of the QE I/O Ports Interrupt C=
-ontroller registers.
-> > +    minItems: 1
-> > +    maxItems: 1
->
-> This was never tested but more important this and everything further
-> looks like generated by AI. Please don't do that or at least mark it
-> clearly, so I will prioritize accordingly (hint: AI generates poor code
-> and burden to decipher AI slop should not be on open source reviewers
-> but on users of AI, but as one of maintainers probably you already know
-> that, so sorry for lecturing).
 
-If anyone needs some AI (chatgpt) converted bindings, my "dt-convert"
-branch has ~800 of them. Feeding the warnings back to AI to fix was
-somewhat effective. The result is not the worst I've seen submitted.
-It saves some of the boilerplate, but can't fix things that are just
-wrong or unclear in .txt bindings. Despite my 'prompt engineering'
-attempts, it still tends to get the same things wrong over and over.
 
-Rob
+On 7/16/25 15:17, Shrikanth Hegde wrote:
+> Dynamic preemption can be static key or static call based.
+> Static key is used to check kernel preemption depending on
+> the current preemption model. i.e enable for lazy, full.
+> 
+> Code is currently spread across entry/common.c, arm64 and latest being
+> powerpc. There is little arch specific to it. arm64, powerpc have the
+> same code. It is better to move it into kernel/sched since preemption
+> is more closely associated with scheduler.
+> 
+> Plus, Any new arch that wants dynamic preemption enabled need to have
+> only HAVE_PREEMPT_DYNAMIC_KEY.
+> 
+> Suggested-by: Sebastian Andrzej Siewior <bigeasy@linutronix.de>
+> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+> Acked-by: Mark Rutland <mark.rutland@arm.com>
+> Acked-by: Will Deacon <will@kernel.org>
+> Acked-by: Madhavan Srinivasan <maddy@linux.ibm.com>
+> ---
+>   arch/arm64/include/asm/preempt.h   |  1 -
+>   arch/arm64/kernel/entry-common.c   |  8 --------
+>   arch/powerpc/include/asm/preempt.h | 16 ----------------
+>   arch/powerpc/kernel/interrupt.c    |  4 ----
+>   include/linux/irq-entry-common.h   |  1 -
+>   include/linux/sched.h              |  8 ++++++++
+>   kernel/entry/common.c              |  1 -
+>   kernel/sched/core.c                |  4 ++++
+>   8 files changed, 12 insertions(+), 31 deletions(-)
+>   delete mode 100644 arch/powerpc/include/asm/preempt.h
+> 
+
+Hi Ingo, Peter.
+
+Does this change makes sense? Are there any further concerns that you see?
+Also can it go via tip tree?
+
+Patch applies on 6.17-rc1 (at commit ca76508b9352e8c770b58213cc6c4700e459b7c2)
 
