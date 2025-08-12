@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-10883-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10884-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0AABCA0EDB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 18:50:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 615FFCA0EC4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 12 Aug 2025 18:50:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1gYm3dlfz2xQ3;
-	Wed, 13 Aug 2025 04:50:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1gYr07rhz2xS9;
+	Wed, 13 Aug 2025 04:50:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755024636;
-	cv=none; b=lhOcqd7m2pSbWeRsatk/dBoOS7vBGPxjkv3D+8PhqUxzFbKDS+ku/JVE8SK9PL9p15kuZ2zQDAJM3HOm3Wm3ew7C+ynK6EzYD1SlmpMtNPcZlqC7lG5QTnQnPQbfOgVVLjkQMwzVsYg91h2uDf6Zx93vmVQwWTt+1EHu32v+Iya8KZlWJ+O4ukSQRcP+0ymL9Bw7e8oveGUHDShbvHZ7R+GqFKDRRtWNkQXDUTP315NQApeMwq7Jevs9rMzX4bQfcrQdgfTBXuzbHXlzNy4O++dte86z5Q+JBhfNFARVeOTp6M81h6mdPErjXi8IOg7pi6EI+ZtzSAOBUXVjHWUzgQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755024639;
+	cv=none; b=OJ4p9/Ks0SZKBpZzgDudf7XbDxnenK14Deluq1Rqv+dHinr7I7vYkmNi7Qe3k9B7DjseLf2FS5T/SBrHNCTHwdjWiE2lFIdiIYU9SvpLbFLsuPwvkArDv+SJYMeY8eG386Y0pYUZOCH46ror2Wc5HbZskpCy2/WC6B0sRRGiEAu9U/Mlo/djEa26crwOk307tqAgTDEApeefy4H+H8Guw66qkPXNxnp3X51gbBwJ8ACxlEXr/HfoYBHg8AJivkQ4aHDqliw6u2EwrBV2IrfGCle1oddFK7lSGrXJm3mvz6DUaot1/5DJIzQwvQaBVJNtS/j1bxErb0+lWiOelGKDhQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755024636; c=relaxed/relaxed;
-	bh=qOQ4ICaJXkPPokVadHiC/tEzgTL5y1tNib7FUhlkcAg=;
+	t=1755024639; c=relaxed/relaxed;
+	bh=j0RfBy0B0ML64kaxdP09fhg7oili9kPFcYcwS1oIMyI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=aC4KC5ruDUFrpTVIMwKvZIAA185Jdl1lBmqxEwjY2hFeXC7LOA1nUFuxDIN8Sct9aYusJPjy16ikcWUVfVLwvu7q7XBpZLzZytTEtQchAQF7tiHFHlAtMgA4H3Nu/xhbG8Znkk/fy5eFzp0NyfgU1XrsbvBLiPB4eeZA+MgL8S2MFcOxSLA40NTptXd8S8URoHt36kb4uM6dMOQZ4hcuDfbvvnqAN4yshCFtQz0swWq/SkL7q9ZJ1cCXc2bJX2Hgjlz+SmGXpePBCzjocO+NnQ729gWVY7hhgC4qTyq8fZ2/TorijnI/op32eVdofUWdwsUINs8gGT8kk9fB0m62FA==
+	 MIME-Version; b=nExr/aUXjrBkd59mSeCck4ScpIRMzP3G/6B/3YcN5m6RKXlFlVDfk9d7xZZW2CKoUIZS5q3S6gbBgdRoKa432jP205XRYt6ZJ1bfkI4ukU/3s4R730RhcEY6qTElgfO0rKdSx3J71IsqNLcBlRMuOHl0sMQAoX9HXWBz2f5b2NvkBnOHXKIbx5s+gW/7QiMFehYxGhucyA7ODmCmme25MwL2TcY+7O7v+k9OAxHdu0U3+vGHWpHFgkrCxjuP6JuB2eEmLVfsU5HXaOhvdDXL2eYDfa5jtJa4h5AVfIiIB00U/agmHxX27Jsj0g2fiPJ7KirbMvxKAFIgyV7A1rQdbw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1gYl6bTlz2xQ0
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 04:50:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1gYq3vbYz2xQ0
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 04:50:39 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c1TBN1Y3Gz9sSr;
-	Tue, 12 Aug 2025 13:03:08 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4c1TBR4kXzz9sT7;
+	Tue, 12 Aug 2025 13:03:11 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id aqZGFjYI7JVc; Tue, 12 Aug 2025 13:03:08 +0200 (CEST)
+	with ESMTP id 3y8dTxRQA3KN; Tue, 12 Aug 2025 13:03:11 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c1TBN0bxcz9sSj;
-	Tue, 12 Aug 2025 13:03:08 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c1TBP5hjWz9sSs;
+	Tue, 12 Aug 2025 13:03:09 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id F32678B765;
-	Tue, 12 Aug 2025 13:03:07 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id AE0E58B763;
+	Tue, 12 Aug 2025 13:03:09 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id goOITLSSY6vA; Tue, 12 Aug 2025 13:03:07 +0200 (CEST)
+	with ESMTP id Qz7WChCQ-Wh5; Tue, 12 Aug 2025 13:03:09 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5D1B88B763;
-	Tue, 12 Aug 2025 13:03:07 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 20F128B764;
+	Tue, 12 Aug 2025 13:03:09 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Qiang Zhao <qiang.zhao@nxp.com>,
 	Linus Walleij <linus.walleij@linaro.org>,
@@ -56,9 +56,9 @@ Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-gpio@vger.kernel.org,
 	devicetree@vger.kernel.org
-Subject: [PATCH 1/4] soc: fsl: qe: Add an interrupt controller for QUICC Engine Ports
-Date: Tue, 12 Aug 2025 13:02:51 +0200
-Message-ID: <1dcc9528e97d228ea7889caa00cc254ef0375ed4.1754996033.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH 4/4] dt-bindings: soc: fsl: qe: Add an interrupt controller for QUICC Engine Ports
+Date: Tue, 12 Aug 2025 13:02:54 +0200
+Message-ID: <0b56ef403a7c8d0f8305e847d68959a1037d365e.1754996033.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <cover.1754996033.git.christophe.leroy@csgroup.eu>
 References: <cover.1754996033.git.christophe.leroy@csgroup.eu>
@@ -75,7 +75,7 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1754996575; l=5167; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=WPex1Yqsty/iZf3dA0/61+TQ4SmTdE50vpw/kqBQT0g=; b=iuEPS/cUKH08Rr6/vdpWQIiuCh6T4gHqCrBGgyTNoCggCQ5IQOipYvvM6kxoRgpryGcWp+iGG bSNEG57GtPrCjg0JSMitvJRZ6t/FAF660q0V+hXERQCi0jLJn23HOsH
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1754996575; l=2493; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=sBDv7vR+It1XYOsUbKJGVxht0ECRwLjzMeT3ejRDm/U=; b=BOrAHvPX1MdgLy+6wlTvGbgoypCVvvGj7lfPu6JAC3QbSLnZxuD3Vq6NaU3gedK/5SowU993K yN7/zKYS8O5AWY9thNswXKEYACGBAOQv5dd7OmZYqNex0uG2y6q4nwB
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
@@ -86,192 +86,81 @@ dedicated registers hosted by the SoC.
 Implement an interrupt driver for it for that those IRQs can then
 be linked to the related GPIOs.
 
-The number of ports for which interrupts are supported depends on
-the microcontroller:
-- mpc8323 has 10 interrupts
-- mpc8360 has 28 interrupts
-- mpc8568 has 18 interrupts
-So add this information as data of the compatible.
-
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/soc/fsl/qe/Makefile      |   2 +-
- drivers/soc/fsl/qe/qe_ports_ic.c | 156 +++++++++++++++++++++++++++++++
- 2 files changed, 157 insertions(+), 1 deletion(-)
- create mode 100644 drivers/soc/fsl/qe/qe_ports_ic.c
+ .../soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml       | 63 +++++++++++++++++++
+ 1 file changed, 63 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
 
-diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
-index ec8506e131136..901a9c40d5eb7 100644
---- a/drivers/soc/fsl/qe/Makefile
-+++ b/drivers/soc/fsl/qe/Makefile
-@@ -11,4 +11,4 @@ obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
- obj-$(CONFIG_UCC_FAST)	+= ucc_fast.o
- obj-$(CONFIG_QE_TDM)	+= qe_tdm.o
- obj-$(CONFIG_QE_USB)	+= usb.o
--obj-$(CONFIG_QE_GPIO)	+= gpio.o
-+obj-$(CONFIG_QE_GPIO)	+= gpio.o qe_ports_ic.o
-diff --git a/drivers/soc/fsl/qe/qe_ports_ic.c b/drivers/soc/fsl/qe/qe_ports_ic.c
+diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
 new file mode 100644
-index 0000000000000..2ab82ac259564
+index 0000000000000..7c98706d03dd1
 --- /dev/null
-+++ b/drivers/soc/fsl/qe/qe_ports_ic.c
-@@ -0,0 +1,156 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * QUICC ENGINE I/O Ports Interrupt Controller
-+ *
-+ * Copyright (c) 2025 Christophe Leroy CS GROUP France (christophe.leroy@csgroup.eu)
-+ */
++++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+@@ -0,0 +1,63 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
 +
-+#include <linux/irq.h>
-+#include <linux/irqdomain.h>
-+#include <linux/platform_device.h>
++title: Freescale QUICC Engine I/O Ports Interrupt Controller
 +
-+/* QE IC registers offset */
-+#define CEPIER		0x0c
-+#define CEPIMR		0x10
-+#define CEPICR		0x14
++maintainers:
++  - name: Christophe Leroy
++    email: christophe.leroy@csgroup.eu
 +
-+struct qepic_data {
-+	void __iomem *reg;
-+	struct irq_domain *host;
-+};
++description: |
++  Interrupt controller for the QUICC Engine I/O ports found on some
++  Freescale/NXP PowerQUICC and QorIQ SoCs.
 +
-+static void qepic_mask(struct irq_data *d)
-+{
-+	struct qepic_data *data = irq_data_get_irq_chip_data(d);
++properties:
++  compatible:
++    enum:
++      - fsl,mpc8323-qe-ports-ic
++      - fsl,mpc8360-qe-ports-ic
++      - fsl,mpc8568-qe-ports-ic
 +
-+	clrbits32(data->reg + CEPIMR, 1 << (31 - irqd_to_hwirq(d)));
-+}
++  reg:
++    description: Base address and size of the QE I/O Ports Interrupt Controller registers.
++    minItems: 1
++    maxItems: 1
 +
-+static void qepic_unmask(struct irq_data *d)
-+{
-+	struct qepic_data *data = irq_data_get_irq_chip_data(d);
++  interrupt-controller:
++    type: boolean
++    description: Indicates this node is an interrupt controller.
 +
-+	setbits32(data->reg + CEPIMR, 1 << (31 - irqd_to_hwirq(d)));
-+}
++  '#address-cells':
++    const: 0
++    description: Must be 0.
 +
-+static void qepic_end(struct irq_data *d)
-+{
-+	struct qepic_data *data = irq_data_get_irq_chip_data(d);
++  '#interrupt-cells':
++    const: 1
++    description: Number of cells to encode an interrupt specifier.
 +
-+	out_be32(data->reg + CEPIER, 1 << (31 - irqd_to_hwirq(d)));
-+}
++  interrupts:
++    minItems: 1
++    maxItems: 1
++    description: Interrupt line to which the QE I/O Ports controller is connected.
 +
-+static int qepic_set_type(struct irq_data *d, unsigned int flow_type)
-+{
-+	struct qepic_data *data = irq_data_get_irq_chip_data(d);
-+	unsigned int vec = (unsigned int)irqd_to_hwirq(d);
++  interrupt-parent:
++    description: Phandle to the parent interrupt controller.
 +
-+	switch (flow_type & IRQ_TYPE_SENSE_MASK) {
-+	case IRQ_TYPE_EDGE_FALLING:
-+		setbits32(data->reg + CEPICR, 1 << (31 - vec));
-+		return 0;
-+	case IRQ_TYPE_EDGE_BOTH:
-+	case IRQ_TYPE_NONE:
-+		clrbits32(data->reg + CEPICR, 1 << (31 - vec));
-+		return 0;
-+	}
-+	return -EINVAL;
-+}
++required:
++  - compatible
++  - reg
++  - interrupt-controller
++  - '#address-cells'
++  - '#interrupt-cells'
++  - interrupts
++  - interrupt-parent
 +
-+static struct irq_chip qepic = {
-+	.name = "QEPIC",
-+	.irq_mask = qepic_mask,
-+	.irq_unmask = qepic_unmask,
-+	.irq_eoi = qepic_end,
-+	.irq_set_type = qepic_set_type,
-+};
-+
-+static int qepic_get_irq(struct irq_desc *desc)
-+{
-+	struct qepic_data *data = irq_desc_get_handler_data(desc);
-+	u32 event = in_be32(data->reg + CEPIER);
-+
-+	if (!event)
-+		return -1;
-+
-+	return irq_find_mapping(data->host, 32 - ffs(event));
-+}
-+
-+static void qepic_cascade(struct irq_desc *desc)
-+{
-+	generic_handle_irq(qepic_get_irq(desc));
-+}
-+
-+static int qepic_host_map(struct irq_domain *h, unsigned int virq, irq_hw_number_t hw)
-+{
-+	irq_set_chip_data(virq, h->host_data);
-+	irq_set_chip_and_handler(virq, &qepic, handle_fasteoi_irq);
-+	return 0;
-+}
-+
-+static const struct irq_domain_ops qepic_host_ops = {
-+	.map = qepic_host_map,
-+};
-+
-+static int qepic_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct qepic_data *data;
-+	int irq;
-+	int nb;
-+
-+	nb = (int)of_device_get_match_data(dev);
-+	if (nb < 1 || nb > 32)
-+		return -EINVAL;
-+
-+	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	data->reg = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(data->reg))
-+		return PTR_ERR(data->reg);
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0)
-+		return irq;
-+
-+	data->host = irq_domain_add_linear(dev->of_node, nb, &qepic_host_ops, data);
-+	if (!data->host)
-+		return -ENODEV;
-+
-+	irq_set_handler_data(irq, data);
-+	irq_set_chained_handler(irq, qepic_cascade);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id qepic_match[] = {
-+	{
-+		.compatible = "fsl,mpc8323-qe-ports-ic",
-+		.data = (void *)10,
-+	},
-+	{
-+		.compatible = "fsl,mpc8360-qe-ports-ic",
-+		.data = (void *)28,
-+	},
-+	{
-+		.compatible = "fsl,mpc8568-qe-ports-ic",
-+		.data = (void *)18,
-+	},
-+	{},
-+};
-+
-+static struct platform_driver qepic_driver = {
-+	.driver	= {
-+		.name		= "qe_ports_ic",
-+		.of_match_table	= qepic_match,
-+	},
-+	.probe	= qepic_probe,
-+};
-+
-+static int __init qepic_init(void)
-+{
-+	return platform_driver_register(&qepic_driver);
-+}
-+arch_initcall(qepic_init);
++examples:
++  - |
++    interrupt-controller@c00 {
++      interrupt-controller;
++      compatible = "fsl,mpc8323-qe-ports-ic";
++      #address-cells = <0>;
++      #interrupt-cells = <1>;
++      reg = <0xc00 0x18>;
++      interrupts = <74 0x8>;
++      interrupt-parent = <&ipic>;
 -- 
 2.49.0
 
