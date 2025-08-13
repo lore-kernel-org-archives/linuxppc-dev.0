@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-10942-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10943-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91D0CCA0EE6
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Aug 2025 17:02:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 380D0CA0EE5
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Aug 2025 17:02:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c2F6G5PBMz30WY;
-	Thu, 14 Aug 2025 03:02:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c2F6b72Dcz3blg;
+	Thu, 14 Aug 2025 03:02:31 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755104534;
-	cv=none; b=iOEf9RzfFPFaCYYguDdFZvbJB/EJUtL1H6X5cNkYVpLmZM4vmYa9I/LvyEoQNdO3XChZecl9G/D0N6UOU+HQT3FJ3hpf+4ZfFjYjaT8GAVmIniPNBvYB2HIxu3RonDmy8bEN+rYddGR8yNbptunAf0DwboCV1KnfxqZcMNDn/96v5yHOonHoAhJkjQJgtzBTDI/ubj82X0QOhBvyWMHytJxlOVdXjUAkw1fWi3JyisKjbqvOE+Vm99WYIbmmLkZZpXM29ysGXK8dhFZdZWKysxicFd5RcDuAJY20QYfz/xxfuqdqZyyiPQHqlXCoinPo0t10EmUfSoLQw54YqmETzg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755104551;
+	cv=none; b=aCUaNemdvsKTjE0tAVxeQH0L3+pxfSWrOnCftfVjptyVK3+fdbUrfLnvn/SSHH4uUUOaQHPNFkRf+TlqxUu4B2DN+nEq3Sr/JsOuaqf7Tu/XMrDtmMj/6x7CXu6+TV8MF51CLmhZPcNCQk+puwdha9ZKbD7s3QymBnEkE7Lb2n+ie8ijCXmbVNgGQ4G7VQnT378W2BFIVcaOEckuAuF+G0fl416LI0TMzDNwj6DcvLAFMkSmsznF8he4JfMhYYUHAiXI627vNSY3KgVkC5VTqe4V1qscsoB5IFbURT5khKeMiK/6wVI8RXXMqfzLA46cD00x6L9gKUvPdKHM+xEqzw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755104534; c=relaxed/relaxed;
-	bh=t8/JbHVO15yx7cykhqtVE5HcukYsP3H0m5cpQMtY1cY=;
+	t=1755104551; c=relaxed/relaxed;
+	bh=Uc8fOc4Lhu/m2WW5BM6aa9lqPgjYRi2ZfrHRXJ8mFBg=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=PWTd8T7APJwK95lboAz3Fh96avxy+BxzzpRjyafNoApPOtMoqVRUo03sQHEmHjEaoc8GI4ZK7k4TNxL1Z1qkye4CLA2xrVQnTLl+r6wnjyDtkf3ES3IA4OYTN6rZKzIhGHki9xQz5eDWB3ZC3X00lvYfqgVxoi7noDuWCy/zhx3gtQ/9feB/cf9BIjrT+q3QKItdlft5AagjHi9S6VOxW94imXcxMqzzuiRhGyNJuQatpf4eODPbEsOhuJNW4RkGlVaRQmgMS5HTaypEMrNwwcXiNMrS041rRdNh0NaY3YvmFB+fpucNJLuk6ECe9wGDesceHU1NX6wGnwRbx5YwMw==
+	 MIME-Version; b=EpNldndCbfz5E+veoeTyBRQ++N30YJAAtKr+qH4eRyiVmgDzXI23IXDBfd+SB2aITZbltdxAQmxrlYdB/EYbVFRU48+2Lc252YJcQw7yo4GZ9Kb55uUSIPCSvHYMiESWDcF/SO17RlDacu2DwIouKF53xVzroK//HSjBlXWeoCrY6K2u/vVHKFlKqeKxuiRWoFSdYB/IsHMmflMT5Q00oS+JkdgRcARfJ6HPgJxKKnGyfyMJ6pQJuEGTBKiCkHxv3Cig/H0rQaQYwVuqNn17PGWUlG5oNrgUuuWoDvwr4If+bKFcbelYmD8zZjEUi9TBqmirv6bsOd1Zq3bYFfuSwg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c2F6G26gLz30W5
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2025 03:02:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c2F6b3DwYz3bkP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2025 03:02:31 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 17EBF1BF3;
-	Wed, 13 Aug 2025 10:01:35 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 29D641C01;
+	Wed, 13 Aug 2025 10:01:44 -0700 (PDT)
 Received: from e121345-lin.cambridge.arm.com (e121345-lin.cambridge.arm.com [10.1.196.50])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 002723F738;
-	Wed, 13 Aug 2025 10:01:38 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 074E03F738;
+	Wed, 13 Aug 2025 10:01:47 -0700 (PDT)
 From: Robin Murphy <robin.murphy@arm.com>
 To: peterz@infradead.org,
 	mingo@redhat.com,
@@ -68,9 +68,9 @@ Cc: linux-perf-users@vger.kernel.org,
 	linux-cxl@vger.kernel.org,
 	linux-arm-msm@vger.kernel.org,
 	linux-riscv@lists.infradead.org
-Subject: [PATCH 04/19] perf/starfive: Fix group validation
-Date: Wed, 13 Aug 2025 18:00:56 +0100
-Message-Id: <6b9c9cf887c102c9154a1f28aea643a66787858f.1755096883.git.robin.murphy@arm.com>
+Subject: [PATCH 06/19] ARM: l2x0: Fix group validation
+Date: Wed, 13 Aug 2025 18:00:58 +0100
+Message-Id: <925c34a4b7f0defc3582a9fcccb6af1c21279a86.1755096883.git.robin.murphy@arm.com>
 X-Mailer: git-send-email 2.39.2.101.g768bb238c484.dirty
 In-Reply-To: <cover.1755096883.git.robin.murphy@arm.com>
 References: <cover.1755096883.git.robin.murphy@arm.com>
@@ -89,47 +89,43 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The group validation code here is superficially the right shape, but
-is failing to count the group leader, while also erroneously counting
-software siblings. Just correctly count the events which belong to our
-PMU, and let perf core worry about the rest.
+The group validation here is almost right, but fails to count the new
+event itself. While we fix that, also adopt the standard pattern to
+avoid racy access the sibling list and drop checks that are redundant
+with core code.
 
 Signed-off-by: Robin Murphy <robin.murphy@arm.com>
 ---
- drivers/perf/starfive_starlink_pmu.c | 18 +++++++-----------
- 1 file changed, 7 insertions(+), 11 deletions(-)
+ arch/arm/mm/cache-l2x0-pmu.c | 9 ++++-----
+ 1 file changed, 4 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/perf/starfive_starlink_pmu.c b/drivers/perf/starfive_starlink_pmu.c
-index 5e5a672b4229..e185f307e639 100644
---- a/drivers/perf/starfive_starlink_pmu.c
-+++ b/drivers/perf/starfive_starlink_pmu.c
-@@ -347,19 +347,15 @@ static bool starlink_pmu_validate_event_group(struct perf_event *event)
+diff --git a/arch/arm/mm/cache-l2x0-pmu.c b/arch/arm/mm/cache-l2x0-pmu.c
+index 93ef0502b7ff..6fc1171031a8 100644
+--- a/arch/arm/mm/cache-l2x0-pmu.c
++++ b/arch/arm/mm/cache-l2x0-pmu.c
+@@ -274,18 +274,17 @@ static bool l2x0_pmu_group_is_valid(struct perf_event *event)
+ 	struct pmu *pmu = event->pmu;
+ 	struct perf_event *leader = event->group_leader;
  	struct perf_event *sibling;
- 	int counter = 1;
- 
--	/*
--	 * Ensure hardware events in the group are on the same PMU,
--	 * software events are acceptable.
--	 */
--	if (event->group_leader->pmu != event->pmu &&
--	    !is_software_event(event->group_leader))
--		return false;
+-	int num_hw = 0;
++	int num_hw = 1;
++
 +	if (leader == event)
 +		return true;
-+
-+	if (leader->pmu == event->pmu)
-+		counter++;
+ 
+ 	if (leader->pmu == pmu)
+ 		num_hw++;
+-	else if (!is_software_event(leader))
+-		return false;
  
  	for_each_sibling_event(sibling, leader) {
--		if (sibling->pmu != event->pmu && !is_software_event(sibling))
+ 		if (sibling->pmu == pmu)
+ 			num_hw++;
+-		else if (!is_software_event(sibling))
 -			return false;
--
--		counter++;
-+		if (sibling->pmu == event->pmu)
-+			counter++;
  	}
  
- 	return counter <= STARLINK_PMU_NUM_COUNTERS;
+ 	return num_hw <= PMU_NR_COUNTERS;
 -- 
 2.39.2.101.g768bb238c484.dirty
 
