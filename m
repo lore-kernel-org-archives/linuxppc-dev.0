@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-10947-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10948-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECACBC87FCF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Aug 2025 17:03:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EEB4CA0EE0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Aug 2025 17:03:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c2F6f0JW6z3bqP;
-	Thu, 14 Aug 2025 03:02:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c2F6j2457z3cYH;
+	Thu, 14 Aug 2025 03:02:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755104554;
-	cv=none; b=hd1VlDPlJnBswfByejftVn9In0uV/kfCjxPeBXHB8QEdsruPOa7kTrNKW3ar2RbYfp0KAbj8WCP+h/HFL7pMZzbLwGZECiuu/KAW7mWQJ3zXdQtB5ywLpmXH/mk3nQZUBN2SxYZsDhir4pafEbzfy/8yM9SffVaAy6M9DpAotRPfYx+/VHch4ta29tt64FOYyPi2idWF9EjIC8hby8Pigs2ASVcAgfw9FdTkT20fN8+IfhzIO6vRPGxtEZEBRaSmDJHNYIaNMjiAOt7ZCsf2vCEG0LhTFauj79+3+eQRvLrWR5DaE9SFbe7ggpWvgMYmJdCTbkdlA+DogL4IrdWpzQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755104557;
+	cv=none; b=HKAmRKSyGY19NoZMJA5fTtcMYgLhFksM+rCBHymA8Ha6Ea9Yw2To+bEHPVLSqHqM+xJu/dLW3H3/t4CHEkZTdec9boLR6n4ON3r1uEpgqxXJ3EaghT5yV0N6C5yBxbGJIj03VR9/tIBvfawC7Wq9mWO8ots9JtrNEUO83gAkbuYKTrMNLgWyd3DtepP9jxPbCaz47ndtcGocUa7kXjYsWHB1QnXyuSdHaD6/uAvXRnDdjBbOwqjuhoameV8OHk3iTxyAzk2lWqMnTJEG46/YpMAcq6KiCgrmT2xtLoSc7YH+tkL5s2MZYxOHvDLfWPDY1IJFYCE3iJx7L0+wK3UPyA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755104554; c=relaxed/relaxed;
-	bh=eHwwlPAtand1e+7TeeNxrmIn7X9BoGhHY9gnNCUlrkI=;
+	t=1755104557; c=relaxed/relaxed;
+	bh=6zMyqiCv2M/U2yYZT3qMYAKyPv8u005FDdR0kHpu8uw=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=Fz/6XszvPZux0pfeIrJE4lrdM3OYTd28ebbeIm1Q31pvsWE55wxQgJDFDrXKqRMETlj5+qImxsIf/h1/Yx/7OKQoVv2etfRkjUcDXSIRaERESP7XklUTDzqNnW2mlI5z6wG8x6rZXgSaYBXkWBtsoW13pP2i1CCFpUAAsrZgmxobDwmVzhn/x91calBQObOgcT2eqk39L+nyfnC2pcJAfjBb3N7exFrYenABLXZtecf7zh7uIvqQr3UGEFTebijTcfik+/mDkj5JkpPc+TG0ZlRK2DQVUIO/yAg0wVfcfIPDt2rtsU/rpo+ZxL5ve/lChPEklpZ3ggDeP3zCPpGAGA==
+	 MIME-Version; b=kGat2BBWgPbNyG1gCDJbzuaH1np8OV+VnVA+h+hfrpuFNZtPYXb1S7aiPPlGOsuTq1Xhs05wNw5AuV4PLw7CliWgRqqlvd+yuK31dk9ALIMuZthsFqZamTMLliMr1vBhk9CyhbEdkEBzpGaUye3demTf9/fFUwkZgw/c30r2yn54qBAz080Iret6pdgl4aA0nU091oTaZ2mfDM3RieCniGg2giB/aCljAE+3vgX3Lm7RrFdwDXH5cMduzDtXlD2OkEwNFnxyuFrBB6auw4uPUTTVox1A3Xy4vuy1MtFXjF50mTwqjfE5e8cyaD8vzcQouOBJrvOp0FcpzbP6DkRMaQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=robin.murphy@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c2F6d35DTz3cQq
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2025 03:02:33 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c2F6h57hCz30Tf
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 14 Aug 2025 03:02:36 +1000 (AEST)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id BF4931E7D;
-	Wed, 13 Aug 2025 10:02:24 -0700 (PDT)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id AEBB71CE0;
+	Wed, 13 Aug 2025 10:01:57 -0700 (PDT)
 Received: from e121345-lin.cambridge.arm.com (e121345-lin.cambridge.arm.com [10.1.196.50])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id A75D43F738;
-	Wed, 13 Aug 2025 10:02:28 -0700 (PDT)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPA id 95E5A3F738;
+	Wed, 13 Aug 2025 10:02:01 -0700 (PDT)
 From: Robin Murphy <robin.murphy@arm.com>
 To: peterz@infradead.org,
 	mingo@redhat.com,
@@ -68,9 +68,9 @@ Cc: linux-perf-users@vger.kernel.org,
 	linux-cxl@vger.kernel.org,
 	linux-arm-msm@vger.kernel.org,
 	linux-riscv@lists.infradead.org
-Subject: [PATCH 15/19] perf: Simplify group validation
-Date: Wed, 13 Aug 2025 18:01:07 +0100
-Message-Id: <8e86d5021812c720219c8843e5179fe03e5c4de4.1755096883.git.robin.murphy@arm.com>
+Subject: [PATCH 09/19] perf/qcom: Improve group validation
+Date: Wed, 13 Aug 2025 18:01:01 +0100
+Message-Id: <ae74987481902e3937a8aa7ceaee4adcc681d7b4.1755096883.git.robin.murphy@arm.com>
 X-Mailer: git-send-email 2.39.2.101.g768bb238c484.dirty
 In-Reply-To: <cover.1755096883.git.robin.murphy@arm.com>
 References: <cover.1755096883.git.robin.murphy@arm.com>
@@ -89,135 +89,158 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-All of these drivers copy a pattern of actively policing cross-PMU
-groups, which is redundant since commit bf480f938566 ("perf/core: Don't
-allow grouping events from different hw pmus"). Clean up these checks to
-simplfy matters, especially for thunderx2 which can reduce right down to
-trivial counting.
+The L3 driver's group validation is almost right, except for erroneously
+counting a software group leader - which is benign other than
+artificially limiting the maximum size of such a group to one less than
+it could be. Correct that with the now-established pattern of simply
+ignoring all events which do not belong to our PMU.
+
+The L2 driver gets a cleanup of some slightly suspicious logic, and both
+can have the same overall simplification to not duplicate things that perf
+core will already do, and avoid racy access to the sibling list of group
+leader events.
 
 Signed-off-by: Robin Murphy <robin.murphy@arm.com>
 ---
- drivers/perf/arm_cspmu/arm_cspmu.c |  7 ++-----
- drivers/perf/arm_dsu_pmu.c         |  6 ++----
- drivers/perf/arm_pmu.c             | 11 ++---------
- drivers/perf/thunderx2_pmu.c       | 30 +++++++-----------------------
- 4 files changed, 13 insertions(+), 41 deletions(-)
+ drivers/perf/qcom_l2_pmu.c | 81 +++++++++++++++-----------------------
+ drivers/perf/qcom_l3_pmu.c | 14 +++----
+ 2 files changed, 37 insertions(+), 58 deletions(-)
 
-diff --git a/drivers/perf/arm_cspmu/arm_cspmu.c b/drivers/perf/arm_cspmu/arm_cspmu.c
-index efa9b229e701..7f5ea749b85c 100644
---- a/drivers/perf/arm_cspmu/arm_cspmu.c
-+++ b/drivers/perf/arm_cspmu/arm_cspmu.c
-@@ -561,12 +561,9 @@ static bool arm_cspmu_validate_event(struct pmu *pmu,
- 				 struct arm_cspmu_hw_events *hw_events,
- 				 struct perf_event *event)
- {
--	if (is_software_event(event))
--		return true;
--
--	/* Reject groups spanning multiple HW PMUs. */
-+	/* Ignore grouped events that aren't ours */
- 	if (event->pmu != pmu)
--		return false;
-+		return true;
- 
- 	return (arm_cspmu_get_event_idx(hw_events, event) >= 0);
- }
-diff --git a/drivers/perf/arm_dsu_pmu.c b/drivers/perf/arm_dsu_pmu.c
-index cb4fb59fe04b..7480fd6fe377 100644
---- a/drivers/perf/arm_dsu_pmu.c
-+++ b/drivers/perf/arm_dsu_pmu.c
-@@ -492,11 +492,9 @@ static bool dsu_pmu_validate_event(struct pmu *pmu,
- 				  struct dsu_hw_events *hw_events,
- 				  struct perf_event *event)
- {
--	if (is_software_event(event))
--		return true;
--	/* Reject groups spanning multiple HW PMUs. */
-+	/* Ignore grouped events that aren't ours */
- 	if (event->pmu != pmu)
--		return false;
-+		return true;
- 	return dsu_pmu_get_event_idx(hw_events, event) >= 0;
- }
- 
-diff --git a/drivers/perf/arm_pmu.c b/drivers/perf/arm_pmu.c
-index e8a3c8e99da0..2c1af3a0207c 100644
---- a/drivers/perf/arm_pmu.c
-+++ b/drivers/perf/arm_pmu.c
-@@ -375,16 +375,9 @@ validate_event(struct pmu *pmu, struct pmu_hw_events *hw_events,
- {
- 	struct arm_pmu *armpmu;
- 
--	if (is_software_event(event))
--		return 1;
--
--	/*
--	 * Reject groups spanning multiple HW PMUs (e.g. CPU + CCI). The
--	 * core perf code won't check that the pmu->ctx == leader->ctx
--	 * until after pmu->event_init(event).
--	 */
-+	/* Ignore grouped events that aren't ours */
- 	if (event->pmu != pmu)
--		return 0;
-+		return 1;
- 
- 	armpmu = to_arm_pmu(event->pmu);
- 	return armpmu->get_event_idx(hw_events, event) >= 0;
-diff --git a/drivers/perf/thunderx2_pmu.c b/drivers/perf/thunderx2_pmu.c
-index 6ed4707bd6bb..472eb4494fd1 100644
---- a/drivers/perf/thunderx2_pmu.c
-+++ b/drivers/perf/thunderx2_pmu.c
-@@ -519,19 +519,6 @@ static enum tx2_uncore_type get_tx2_pmu_type(struct acpi_device *adev)
- 	return (enum tx2_uncore_type)id->driver_data;
- }
- 
--static bool tx2_uncore_validate_event(struct pmu *pmu,
--				  struct perf_event *event, int *counters)
--{
--	if (is_software_event(event))
--		return true;
--	/* Reject groups spanning multiple HW PMUs. */
--	if (event->pmu != pmu)
--		return false;
--
--	*counters = *counters + 1;
--	return true;
--}
--
- /*
-  * Make sure the group of events can be scheduled at once
-  * on the PMU.
-@@ -539,23 +526,20 @@ static bool tx2_uncore_validate_event(struct pmu *pmu,
- static bool tx2_uncore_validate_event_group(struct perf_event *event,
- 		int max_counters)
- {
--	struct perf_event *sibling, *leader = event->group_leader;
--	int counters = 0;
-+	struct perf_event *sibling;
-+	int counters = 1;
- 
- 	if (event->group_leader == event)
- 		return true;
- 
--	if (!tx2_uncore_validate_event(event->pmu, leader, &counters))
--		return false;
-+	if (event->group_leader->pmu == event->pmu)
-+		++counters;
- 
--	for_each_sibling_event(sibling, leader) {
--		if (!tx2_uncore_validate_event(event->pmu, sibling, &counters))
--			return false;
-+	for_each_sibling_event(sibling, event->group_leader) {
-+		if (sibling->pmu == event->pmu)
-+			++counters;
+diff --git a/drivers/perf/qcom_l2_pmu.c b/drivers/perf/qcom_l2_pmu.c
+index ea8c85729937..9c4e1d89718d 100644
+--- a/drivers/perf/qcom_l2_pmu.c
++++ b/drivers/perf/qcom_l2_pmu.c
+@@ -468,23 +468,6 @@ static int l2_cache_event_init(struct perf_event *event)
+ 		return -EINVAL;
  	}
  
--	if (!tx2_uncore_validate_event(event->pmu, event, &counters))
--		return false;
+-	/* Don't allow groups with mixed PMUs, except for s/w events */
+-	if (event->group_leader->pmu != event->pmu &&
+-	    !is_software_event(event->group_leader)) {
+-		dev_dbg_ratelimited(&l2cache_pmu->pdev->dev,
+-			 "Can't create mixed PMU group\n");
+-		return -EINVAL;
+-	}
 -
+-	for_each_sibling_event(sibling, event->group_leader) {
+-		if (sibling->pmu != event->pmu &&
+-		    !is_software_event(sibling)) {
+-			dev_dbg_ratelimited(&l2cache_pmu->pdev->dev,
+-				 "Can't create mixed PMU group\n");
+-			return -EINVAL;
+-		}
+-	}
+-
+ 	cluster = get_cluster_pmu(l2cache_pmu, event->cpu);
+ 	if (!cluster) {
+ 		/* CPU has not been initialised */
+@@ -493,39 +476,6 @@ static int l2_cache_event_init(struct perf_event *event)
+ 		return -EINVAL;
+ 	}
+ 
+-	/* Ensure all events in a group are on the same cpu */
+-	if ((event->group_leader != event) &&
+-	    (cluster->on_cpu != event->group_leader->cpu)) {
+-		dev_dbg_ratelimited(&l2cache_pmu->pdev->dev,
+-			 "Can't create group on CPUs %d and %d",
+-			 event->cpu, event->group_leader->cpu);
+-		return -EINVAL;
+-	}
+-
+-	if ((event != event->group_leader) &&
+-	    !is_software_event(event->group_leader) &&
+-	    (L2_EVT_GROUP(event->group_leader->attr.config) ==
+-	     L2_EVT_GROUP(event->attr.config))) {
+-		dev_dbg_ratelimited(&l2cache_pmu->pdev->dev,
+-			 "Column exclusion: conflicting events %llx %llx\n",
+-		       event->group_leader->attr.config,
+-		       event->attr.config);
+-		return -EINVAL;
+-	}
+-
+-	for_each_sibling_event(sibling, event->group_leader) {
+-		if ((sibling != event) &&
+-		    !is_software_event(sibling) &&
+-		    (L2_EVT_GROUP(sibling->attr.config) ==
+-		     L2_EVT_GROUP(event->attr.config))) {
+-			dev_dbg_ratelimited(&l2cache_pmu->pdev->dev,
+-			     "Column exclusion: conflicting events %llx %llx\n",
+-					    sibling->attr.config,
+-					    event->attr.config);
+-			return -EINVAL;
+-		}
+-	}
+-
+ 	hwc->idx = -1;
+ 	hwc->config_base = event->attr.config;
+ 
+@@ -534,6 +484,37 @@ static int l2_cache_event_init(struct perf_event *event)
+ 	 * same cpu context, to avoid races on pmu_enable etc.
+ 	 */
+ 	event->cpu = cluster->on_cpu;
++	if (event->cpu != event->group_leader->cpu) {
++		dev_dbg_ratelimited(&l2cache_pmu->pdev->dev,
++			 "Can't create group on CPUs %d and %d",
++			 event->cpu, event->group_leader->cpu);
++		return -EINVAL;
++	}
++
++	if (event == event->group_leader)
++		return 0;
++
++	if ((event->group_leader->pmu == event->pmu) &&
++	    (L2_EVT_GROUP(event->group_leader->attr.config) ==
++	     L2_EVT_GROUP(event->attr.config))) {
++		dev_dbg_ratelimited(&l2cache_pmu->pdev->dev,
++			 "Column exclusion: conflicting events %llx %llx\n",
++		       event->group_leader->attr.config,
++		       event->attr.config);
++		return -EINVAL;
++	}
++
++	for_each_sibling_event(sibling, event->group_leader) {
++		if ((sibling->pmu == event->pmu) &&
++		    (L2_EVT_GROUP(sibling->attr.config) ==
++		     L2_EVT_GROUP(event->attr.config))) {
++			dev_dbg_ratelimited(&l2cache_pmu->pdev->dev,
++			     "Column exclusion: conflicting events %llx %llx\n",
++					    sibling->attr.config,
++					    event->attr.config);
++			return -EINVAL;
++		}
++	}
+ 
+ 	return 0;
+ }
+diff --git a/drivers/perf/qcom_l3_pmu.c b/drivers/perf/qcom_l3_pmu.c
+index 66e6cabd6fff..f0cf6c33418d 100644
+--- a/drivers/perf/qcom_l3_pmu.c
++++ b/drivers/perf/qcom_l3_pmu.c
+@@ -454,18 +454,16 @@ static bool qcom_l3_cache__validate_event_group(struct perf_event *event)
+ 	struct perf_event *sibling;
+ 	int counters = 0;
+ 
+-	if (leader->pmu != event->pmu && !is_software_event(leader))
+-		return false;
++	if (leader == event)
++		return true;
+ 
+ 	counters = event_num_counters(event);
+-	counters += event_num_counters(leader);
++	if (leader->pmu == event->pmu)
++		counters += event_num_counters(leader);
+ 
+ 	for_each_sibling_event(sibling, leader) {
+-		if (is_software_event(sibling))
+-			continue;
+-		if (sibling->pmu != event->pmu)
+-			return false;
+-		counters += event_num_counters(sibling);
++		if (sibling->pmu == event->pmu)
++			counters += event_num_counters(sibling);
+ 	}
+ 
  	/*
- 	 * If the group requires more counters than the HW has,
- 	 * it cannot ever be scheduled.
 -- 
 2.39.2.101.g768bb238c484.dirty
 
