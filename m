@@ -1,69 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-10931-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10932-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C56FCA0EE0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Aug 2025 10:20:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 714F8CA0EE0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Aug 2025 10:41:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c249x3zzGz30WY;
-	Wed, 13 Aug 2025 20:19:49 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8:216:3eff:fe9d:e7b4"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755080389;
-	cv=none; b=mXpTul2Th3VN8IROwweP8g+y8N1VpIPfPA2pJNoCjsuMBFgqz4tb9DN6y8SXXXsfkCg7c71tmKxHIiR/RooSwfIyKFrwrmfx1h61BTOCfWT/srNsHIaQ2xcCbRdv/mMa8LcQwghdrZaVPEB8A+/qPjvpg52h7f/e8cQpgUNDlBU76i8RboP6MXd5vo7RBwEkcU5S1p3/M7jL6XQpYNjb5KhkpAxwLgDjsG6zV48gmp1TNQWxOaS3ts9a83W4pkAUwWhO/jRJxxrvVdfD8S1txSkb7C3KqfViAcRKRZm23m36gOw3FE/Xic9LzMhmHUnOhmza8imtfBBVKuv6CbK6CQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c24gN0sKQz30T8;
+	Wed, 13 Aug 2025 20:41:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:41d0:203:375::ae"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755081712;
+	cv=none; b=T+rKVbFnH4Bakdj/ixfDLIcXTJdCPgxK/98JlW0/Czf2mQHHreQDThlHzA7neo3SXJyJf4QpSs/tUIaZ5HiNHg2DZ8PuFn6Va1QfsB9e75cx7atCAqj/pZP/JwO3tLMduL1Q2c5Nilg/OOvE6WWwHz/5jhMqYrbJECySl6qEQNEle22+1N1oHzgBOi/LLPLcwzGnE/Y7YqbZIFmcqXatfUca26cEUN2GRiwatN2OXu+knP9eT6CcUnLGcAjCZjwzDVMSZDnsz842tKv+ofQCLLsG79I2h3qhCo+zYjSseROFelFKhlDo1mzkzzrDqxRGal9B8CS9AccjHb953aTj3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755080389; c=relaxed/relaxed;
-	bh=/jkXDRZmWGRgRXzJOU+jIPIdQYDS6GexJmI7jPxQpAI=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=noFgok7kXAiYaAyPNfeiKfV7m3uOYmL6eLf/rUdXhXPD4xYVjLBAWZZXUFZ9ww3DrTTqlylgBVT/sh8gR5lMnbJdZCQXW+IJNALxiuh0xET3C+WOXSVdZ7QVFaivAU7Nrv6grdg/CnULXXM8fjG+NqvVfxcEmxr2AGLFzbvkHKCeK4AVdEe79zUgyfHqMoCYy6cerAk3+dvH2h+VneL1lXWg6V7oBFxqfW1qs9s59vfZ7wxuBxY54JPvzNlI7cwRscxOTteiVRl6mdjJ+rJeRTvP8iRx6dhei1yJuU568ULGmlVK/yzJc88VGsCV+4ykQWZY4Uk98gDFBYa84/oSAQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=pTGq3u7r; dkim-atps=neutral; spf=pass (client-ip=2001:4b98:dc4:8:216:3eff:fe9d:e7b4; helo=mslow3.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+	t=1755081712; c=relaxed/relaxed;
+	bh=yRug7LQyvFONu46jBMGRmPeIFE9+yuqhOdPPzW6dSeU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oa2uBgzKfNkQ6av8vC0cbxCNntqwCb596fDvNXNOtlqhpPuVD4t43n3hkWUqR3OOJG3WAJM0cRFqOzW9W+MJADsEufNf+bz+cUHXB1GBtzBe6dULAgDFMWEEbxcL0fuqArryXrw1j3djQzL42SUB0SmPHqwnqsfDyKKNodfMFJGtvk2RWkG0+j35ngDE01Z5yFMR1m1HpB4hAK/Uc1/f+JdCDw3laOTIPo4Fmc77VUdZ7DXmIku0e1tutFmHXESUDc3TRuVrZfEnC7ofSzVj0ueC9+9WTerqr82rrb2UbS2Lb2rRpDTEjcFqRT90dyzyB7UzncX2+Ty1kWKkJGnvYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=M7ij0xoP; dkim-atps=neutral; spf=pass (client-ip=2001:41d0:203:375::ae; helo=out-174.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=gm1 header.b=pTGq3u7r;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=M7ij0xoP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=2001:4b98:dc4:8:216:3eff:fe9d:e7b4; helo=mslow3.mail.gandi.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-Received: from mslow3.mail.gandi.net (mslow3.mail.gandi.net [IPv6:2001:4b98:dc4:8:216:3eff:fe9d:e7b4])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=2001:41d0:203:375::ae; helo=out-174.mta1.migadu.com; envelope-from=thorsten.blum@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 550 seconds by postgrey-1.37 at boromir; Wed, 13 Aug 2025 20:41:49 AEST
+Received: from out-174.mta1.migadu.com (out-174.mta1.migadu.com [IPv6:2001:41d0:203:375::ae])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c249t5Sqhz30TG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 20:19:46 +1000 (AEST)
-Received: from relay1-d.mail.gandi.net (relay1-d.mail.gandi.net [217.70.183.193])
-	by mslow3.mail.gandi.net (Postfix) with ESMTP id 87C83580907
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 10:07:05 +0000 (UTC)
-Received: by mail.gandi.net (Postfix) with ESMTPSA id 7C5EC43A11;
-	Wed, 13 Aug 2025 10:06:58 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=gm1;
-	t=1755079619;
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c24gK3d9jz2yFK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 20:41:49 +1000 (AEST)
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
+	t=1755081138;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=/jkXDRZmWGRgRXzJOU+jIPIdQYDS6GexJmI7jPxQpAI=;
-	b=pTGq3u7ruzEJwmP3IVkTm8+aqpnCbVjsWdRcvIh3Q1eeiiB6zc0LdpsX3zgpXnU3qPV/Js
-	7vCUVZF9PwpKUc2BathX3SkxvRM+DowdZnLhEUDHb582JJjcz3l4LZe7q3/Iiu2Yg8OdPL
-	k5trmBpbBEn4odsGQNqGx1oi73B1QEH2wWIi2+8VTHx67sY3f6qqk02rn9V1kuE+QlZUw7
-	eQ99L2ASzg6xFdwiyTMIhWU6XTyRstm4x3XOGhtAlaCy3mJB4keOqNnyiQs9hNCbwuVUba
-	WVcztX5VbiNe4k5/dXfWlhCG83nP1hAjnFgLDEhxdsAFiMjF6JR66dwCjw6sNg==
-Date: Wed, 13 Aug 2025 12:06:57 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang
- <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam
- <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, Liam Girdwood
- <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Jaroslav Kysela
- <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-sound@vger.kernel.org
-Subject: Re: [PATCH v2 2/4] ASoc: fsl: fsl_qmc_audio: Ensure audio channels
- are ordered in TDM bus
-Message-ID: <20250813120657.1e93b16b@bootlin.com>
-In-Reply-To: <8d01cf4599664188c92a515922d68c9834263384.1754993232.git.christophe.leroy@csgroup.eu>
-References: <cover.1754993232.git.christophe.leroy@csgroup.eu>
- <8d01cf4599664188c92a515922d68c9834263384.1754993232.git.christophe.leroy@csgroup.eu>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.43; x86_64-redhat-linux-gnu)
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=yRug7LQyvFONu46jBMGRmPeIFE9+yuqhOdPPzW6dSeU=;
+	b=M7ij0xoPfeD2CH1dQLA/0tV34M+LYKhKQFovdoB6gCYrIzbVZxdkMWBds9fseU3RgqQ6d/
+	vcTf3us3Ri+Jqeh6OoTjfaXWQgQSlOU+nNVEZU1l3/sHwIUuHjDiVoMYcRW4fcg6KRqYoB
+	CXvjEr+YP97xor1iZ3smZ8jn8bzzXWA=
+From: Thorsten Blum <thorsten.blum@linux.dev>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Kees Cook <kees@kernel.org>,
+	"Gustavo A. R. Silva" <gustavoars@kernel.org>
+Cc: linux-hardening@vger.kernel.org,
+	Thorsten Blum <thorsten.blum@linux.dev>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH RESEND] powerpc/rtas: Replace one-element array with flexible array member
+Date: Wed, 13 Aug 2025 12:30:59 +0200
+Message-ID: <20250813103101.163698-2-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,38 +66,37 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-GND-State: clean
-X-GND-Score: -100
-X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdefgddufeejleefucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpeffhffvvefukfgjfhhoofggtgfgsehtkeertdertdejnecuhfhrohhmpefjvghrvhgvucevohguihhnrgcuoehhvghrvhgvrdgtohguihhnrgessghoohhtlhhinhdrtghomheqnecuggftrfgrthhtvghrnhepveeiffefgeeitdelleeigefhjeelueeuveekveetgeffheeltdekgeduiefggfdvnecukfhppedvrgdtudemtggstdekmeelkeeltgemkedttddtmehfugekudemleehgegvmedvudehrgemfeeluddtnecuvehluhhsthgvrhfuihiivgepudenucfrrghrrghmpehinhgvthepvdgrtddumegtsgdtkeemleeklegtmeektddttdemfhgukedumeelheegvgemvdduhegrmeefledutddphhgvlhhopehlohgtrghlhhhoshhtpdhmrghilhhfrhhomhephhgvrhhvvgdrtghoughinhgrsegsohhothhlihhnrdgtohhmpdhnsggprhgtphhtthhopedugedprhgtphhtthhopegthhhrihhsthhophhhvgdrlhgvrhhohiestghsghhrohhuphdrvghupdhrtghpthhtohepqhhirghnghdriihhrghosehngihprdgtohhmpdhrtghpthhtohepshhhvghnghhjihhurdifrghnghesghhmrghilhdrtghomhdprhgtphhtthhop
- egiihhusghordfnvggvsehgmhgrihhlrdgtohhmpdhrtghpthhtohepfhgvshhtvghvrghmsehgmhgrihhlrdgtohhmpdhrtghpthhtohepnhhitgholhgvohhtshhukhgrsehgmhgrihhlrdgtohhmpdhrtghpthhtoheplhhgihhrugifohhougesghhmrghilhdrtghomhdprhgtphhtthhopegsrhhoohhnihgvsehkvghrnhgvlhdrohhrgh
-X-GND-Sasl: herve.codina@bootlin.com
+X-Migadu-Flow: FLOW_OUT
 
-Hi Christophe,
+Replace the deprecated one-element array with a modern flexible array
+member in the struct rtas_error_log and add the __counted_by_be()
+compiler attribute to improve access bounds-checking via
+CONFIG_UBSAN_BOUNDS and CONFIG_FORTIFY_SOURCE.
 
-On Tue, 12 Aug 2025 12:50:56 +0200
-Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
+Link: https://github.com/KSPP/linux/issues/79
+Signed-off-by: Thorsten Blum <thorsten.blum@linux.dev>
+---
+ arch/powerpc/include/asm/rtas-types.h | 5 +++--
+ 1 file changed, 3 insertions(+), 2 deletions(-)
 
-...
+diff --git a/arch/powerpc/include/asm/rtas-types.h b/arch/powerpc/include/asm/rtas-types.h
+index 9d5b16803cbb..5d40d187b965 100644
+--- a/arch/powerpc/include/asm/rtas-types.h
++++ b/arch/powerpc/include/asm/rtas-types.h
+@@ -42,8 +42,9 @@ struct rtas_error_log {
+ 	 */
+ 	u8		byte3;			/* General event or error*/
+ 	__be32		extended_log_length;	/* length in bytes */
+-	unsigned char	buffer[1];		/* Start of extended log */
+-						/* Variable length.      */
++
++	/* Start of extended log, variable length */
++	unsigned char	buffer[] __counted_by_be(extended_log_length);
+ };
+ 
+ /* RTAS general extended event log, Version 6. The extended log starts
+-- 
+2.50.1
 
-> @@ -879,6 +884,30 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
->  				return -EINVAL;
->  			}
->  		}
-> +
-> +		ret = qmc_chan_get_ts_info(qmc_dai->qmc_chans[i], &ts_info);
-> +		if (ret) {
-> +			dev_err(qmc_audio->dev, "dai %d get QMC %d channel TS info failed %d\n",
-> +				qmc_dai->id, i, ret);
-> +			return ret;
-> +		}
-> +
-> +		last_rx_ts = fls64(ts_info.rx_ts_mask);
-> +		last_tx_ts = fls64(ts_info.rx_ts_mask);
-                                              
-tx_ts_mask instead of rx_ts_mask for last_tx_ts.
-
-Best regards,
-Hervé
 
