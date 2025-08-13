@@ -1,54 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-10911-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-10912-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3F13ECA0EC4
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Aug 2025 05:51:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31CD0C87FCF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 13 Aug 2025 06:27:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c1yDg6Wnvz30Sy;
-	Wed, 13 Aug 2025 15:51:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=176.9.242.54
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755064307;
-	cv=none; b=HGxM9IvPUQf7qFlp2Bj2J4sDT/+G6YM2SMSvvDe2O7v++LCZlTyLd9A2IT2kqi2mvTzicLz6r276DpZb6bO8gdqcf+x6BLilTirA8oPIi6roQLuSmOGpmEuFvR4L9psCzW0tnnFfJzqvpkU7N2zPqE7x8gBooXvPAcb4MEyI76Cl4YmaZ/xJe5oFXiYCbc5ZygrbyU9VMXzmkKtYyNhPorBjtOR6DCC0QTyh8EYf305NvkBbJIAOdrpGCYZPQiqrS55Sic4zVRwgShOl3/OPkN9bXGdK0vm65H+6bYAkKuhyKnXUh6hIaasrQh71n3aaUtX0pf2NGfx0NpfePYXtuQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c1z1W3ydyz30Qk;
+	Wed, 13 Aug 2025 16:27:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755066431;
+	cv=none; b=dsOn2A+zxqhuPwK9dqC7vpMtGP/uMkq2jyjjVS5+LB5fk0fD6BAtbbDkt0Y366y1O2fQfSOcStuiQ15byIrhDe8+oAXs00c6pDyUwdUqihkh4JCLULtiDLeVamOyCkVCzHqrlDi1WvHLBE/S6UGRI54H2mRZFMza4WDcpVLM67Q2iHhdhuxTAzM4jfr6YyzViFq1GpJwnjCnPt3N4Gj/ruBrvoCcpnQegZPB8kg7SpfoDhK6F7sEVNcMHCwSzbo7e7xH477r88dGtXjdKVRy3PWA0tc1WFhzdJXlALPoznlJ7zwWnjvSXbVzq/FwNaGgLpEe1rowjJyKEejrKJsB6g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755064307; c=relaxed/relaxed;
-	bh=RAY9/t3Qk5CNoZCNn+tSlK1iiWBcUVJABbgyJ2JD2es=;
-	h=Message-ID:In-Reply-To:References:From:Date:Subject:To:Cc; b=n1GL4P4QhGRZkJBexlpbid2MJ5ycGn5Tow1qFV8l5bFbRj6jEJHUYK/aXaKbsrNKIklJmSDave8zPlt3iBgul0kmMPXBTIUgOVchqB+uzoqaf+vUaPURax7v2EaTLiTh3kw3A84Nn7A1jwHaRBW3VtyJVUqjKd1NihbopuQX3B7OcD9a5878GevV9f+JUUsRUfU+Bcv1qF/5prkKxu54fBpr0K50B0deKmHt743hhstO377y+f8doYPKrxKQUbU202rEhRa3isbwPg9JJpNWm+LTozuN2WPHGh1MWa6TZQhIs/FY95qTQ+nmCaqZ0XwqJ3uuh0Z6TAA9iFpZ1/qZNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=176.9.242.54; helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=176.9.242.54; helo=mailout3.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 424 seconds by postgrey-1.37 at boromir; Wed, 13 Aug 2025 15:51:47 AEST
-Received: from mailout3.hostsharing.net (mailout3.hostsharing.net [176.9.242.54])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1755066431; c=relaxed/relaxed;
+	bh=nrJVwyChoAP1347E6ULfn6WFMFSfSytfpEMcX/qwjy4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Gwkp2Tnyr+9aGJgHON6sV/hQoKcAOXBJP2xreUXrL5Be0KocCBiaHLt0NtDFnEQYFfLpIXQ8B3MVYQPt8mHv0+FbCbpBUTuiKxCCd2yMQmMJY2cfZFhFFgrKNkZvTUxv48kp0skne0lr4lUJMdHfxin+SY53FstJZZyV8lyLKWcnRteMDEepnVoHKNdwGCSdDXkato14cctasiJcWqR7oAlKpmQCKsF0uihPbJYSaUtu7b1HKNJWYAsUeuNe15anwR0CfZj+qbiGxJgleS04PKEJyDWFqQHhRoYPuJhmVr06fSAklhuNdKO2sc8ST2K01DBE6ArV2XF3qglbufRt/w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qwQS/bPG; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=qwQS/bPG;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4c1yDg1Twqz2xxr
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 15:51:47 +1000 (AEST)
-Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
-	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
-	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
-	by mailout3.hostsharing.net (Postfix) with UTF8SMTPS id 624AE3006AC8;
-	Wed, 13 Aug 2025 07:44:37 +0200 (CEST)
-Received: from localhost (unknown [89.246.108.87])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by h08.hostsharing.net (Postfix) with UTF8SMTPSA id 0DAAF6031F22;
-	Wed, 13 Aug 2025 07:44:37 +0200 (CEST)
-X-Mailbox-Line: From 1d72a891a7f57115e78a73046e776f7e0c8cd68f Mon Sep 17 00:00:00 2001
-Message-ID: <1d72a891a7f57115e78a73046e776f7e0c8cd68f.1755008151.git.lukas@wunner.de>
-In-Reply-To: <cover.1755008151.git.lukas@wunner.de>
-References: <cover.1755008151.git.lukas@wunner.de>
-From: Lukas Wunner <lukas@wunner.de>
-Date: Wed, 13 Aug 2025 07:11:05 +0200
-Subject: [PATCH 5/5] PCI/ERR: Remove remnants of .link_reset() callback
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Riana Tauro <riana.tauro@intel.com>, Aravind Iddamsetty <aravind.iddamsetty@linux.intel.com>, "Sean C. Dardis" <sean.c.dardis@intel.com>, Terry Bowman <terry.bowman@amd.com>, Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, Niklas Schnelle <schnelle@linux.ibm.com>, Linas Vepstas <linasvepstas@gmail.com>, "Mahesh J Salgaonkar" <mahesh@linux.ibm.com>, "Oliver OHalloran" <oohall@gmail.com>, Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org, Edward Cree <ecree.xilinx@gmail.com>, linux-net-drivers@amd.com, James Smart <james.smart@broadcom.com>, Dick Kennedy <dick.kennedy@broadcom.com>, "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, "Martin K. Petersen" <martin.petersen@oracle.com>, linux-scsi@vger.kernel.org, Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni
- @redhat.com>, netdev@vger.kernel.org
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c1z1V3mxfz2yFK
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 13 Aug 2025 16:27:10 +1000 (AEST)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57CNQT4C009277;
+	Wed, 13 Aug 2025 06:26:55 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=nrJVwyChoAP1347E6
+	ULfn6WFMFSfSytfpEMcX/qwjy4=; b=qwQS/bPGxt7TGG39EWVe6T3aCIPfJ5VeI
+	FPy2KDnNEUsJ41iLxhD0CIZRTGqrb3dDwvTBRZZnYxyA2PmENa1wS4mrdQd03c11
+	5dzGqZ40DDpV2vDV5Q4DVjpPC3agYU8yF8ZS/I2Oso+iP/puU0h5lm7I9rtCI4aL
+	L8NrQ5HbTkQGFgGspW14V6ehaF/N/fZSw5oG1Etj5tQqUYboaUNBwf6Wftt1VH49
+	5BY/Q1KSeXS6HTuTanX/UWGJEHQbU3a5W2iYjWVsUIp6Mw1Is5XI6cmuDhPQPRln
+	lrMomYXGN83Y/fimPM+oMGqGix+f82Ft3+9NbfNUWa/oLxDGTK3jQ==
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48duruav9t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 13 Aug 2025 06:26:55 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 57D1c7UT026279;
+	Wed, 13 Aug 2025 06:26:54 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 48eh21653b-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 13 Aug 2025 06:26:54 +0000
+Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 57D6QrkO9962414
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 13 Aug 2025 06:26:53 GMT
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6AE5D5805E;
+	Wed, 13 Aug 2025 06:26:53 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 66CB958059;
+	Wed, 13 Aug 2025 06:26:48 +0000 (GMT)
+Received: from jarvis.ozlabs.ibm.com.com (unknown [9.36.10.70])
+	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 13 Aug 2025 06:26:48 +0000 (GMT)
+From: Andrew Donnellan <ajd@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, linux-mm@kvack.org
+Cc: akpm@linux-foundation.org, x86@kernel.org, linux-riscv@lists.infradead.org,
+        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
+        pasha.tatashin@soleen.com, sweettea-kernel@dorminy.me,
+        nicholas@linux.ibm.com, christophe.leroy@csgroup.eu
+Subject: [PATCH v16 01/13] arm64/mm: Add addr parameter to __set_ptes_anysz()
+Date: Wed, 13 Aug 2025 16:26:02 +1000
+Message-ID: <20250813062614.51759-2-ajd@linux.ibm.com>
+X-Mailer: git-send-email 2.50.1
+In-Reply-To: <20250813062614.51759-1-ajd@linux.ibm.com>
+References: <20250813062614.51759-1-ajd@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,84 +88,138 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 1DmuEpzOEC91AhJGOz3CZKD6ylyDxymq
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODEyMDIyNCBTYWx0ZWRfX9mkUL6x9zxY2
+ 6Gh1cmtLtFG1OFrKTykCTN9l5yXY9y7nJIXtYKb7NVExjYcnhpFmoZGsazt/l5Qt/uBGDhkFhk+
+ yYO6Sihmqw4ta5TLtzOLE7kI8qK2nf+M6hZtDXHBTIcObTV00jRqz2KWwXLynRjhgGoKUE5OZaX
+ xQUX2Vt6+l85ynB36Tw59m2P/MMuXBITyhbsAl/T7mEY4YfR8vOAqLlVBQOFzOKM9c/sC8zbHzs
+ 1Ljcba4ASMebldPjFhu+IffpCtJMv1qW80BOoYC2H6VT3wg954WvoAArFf4rn+uyQB1bmNW+ZxX
+ Qo/l/sVagrf+MLN3EXBWYV9JCvkoP9V2iNk+OsdaQwPABsgOuvRFGR6i5lPuMCx2fqEBG4WkGmB
+ kIYiud5O
+X-Authority-Analysis: v=2.4 cv=QtNe3Uyd c=1 sm=1 tr=0 ts=689c302f cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=2OwXVqhp2XgA:10 a=VnNF1IyMAAAA:8 a=iO9NmEFvf90wNdx_zysA:9
+ a=0bXxn9q0MV6snEgNplNhOjQmxlI=:19
+X-Proofpoint-ORIG-GUID: 1DmuEpzOEC91AhJGOz3CZKD6ylyDxymq
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-08-12_08,2025-08-11_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 priorityscore=1501 phishscore=0 clxscore=1015 malwarescore=0
+ spamscore=0 suspectscore=0 impostorscore=0 bulkscore=0 classifier=typeunknown
+ authscore=0 authtc= authcc= route=outbound adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2507300000 definitions=main-2508120224
 
-Back in 2017, commit 2fd260f03b6a ("PCI/AER: Remove unused .link_reset()
-callback") removed .link_reset() from struct pci_error_handlers, but left
-a few code comments behind which still mention it.  Remove them.
+To provide support for page table check on powerpc, we need to reinstate the
+address parameter in several functions, including
+page_table_check_{ptes,pmds,puds}_set().
 
-The code comments in the SolarFlare Ethernet drivers point out that no
-.mmio_enabled() callback is needed because the driver's .error_detected()
-callback always returns PCI_ERS_RESULT_NEED_RESET, which causes
-pcie_do_recovery() to skip .mmio_enabled().  That's not quite correct
-because efx_io_error_detected() does return PCI_ERS_RESULT_RECOVERED under
-certain conditions and then .mmio_enabled() would indeed be called if it
-were implemented.  Remove this misleading portion of the code comment as
-well.
+In preparation for this, add the addr parameter to arm64's __set_ptes_anysz()
+and change its callsites accordingly.
 
-Signed-off-by: Lukas Wunner <lukas@wunner.de>
+Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
 ---
- drivers/net/ethernet/sfc/efx_common.c       | 3 ---
- drivers/net/ethernet/sfc/falcon/efx.c       | 3 ---
- drivers/net/ethernet/sfc/siena/efx_common.c | 3 ---
- drivers/scsi/lpfc/lpfc_init.c               | 2 +-
- 4 files changed, 1 insertion(+), 10 deletions(-)
+v15: new patch
+v16: rebase
+---
+ arch/arm64/include/asm/pgtable.h | 19 ++++++++-----------
+ arch/arm64/mm/hugetlbpage.c      | 10 +++++-----
+ 2 files changed, 13 insertions(+), 16 deletions(-)
 
-diff --git a/drivers/net/ethernet/sfc/efx_common.c b/drivers/net/ethernet/sfc/efx_common.c
-index 5a14d94163b1..e8fdbb62d872 100644
---- a/drivers/net/ethernet/sfc/efx_common.c
-+++ b/drivers/net/ethernet/sfc/efx_common.c
-@@ -1258,9 +1258,6 @@ static void efx_io_resume(struct pci_dev *pdev)
+diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+index abd2dee416b3..ed644be48d87 100644
+--- a/arch/arm64/include/asm/pgtable.h
++++ b/arch/arm64/include/asm/pgtable.h
+@@ -698,8 +698,8 @@ static inline pgprot_t pud_pgprot(pud_t pud)
+ 	return __pgprot(pud_val(pfn_pud(pfn, __pgprot(0))) ^ pud_val(pud));
+ }
  
- /* For simplicity and reliability, we always require a slot reset and try to
-  * reset the hardware when a pci error affecting the device is detected.
-- * We leave both the link_reset and mmio_enabled callback unimplemented:
-- * with our request for slot reset the mmio_enabled callback will never be
-- * called, and the link_reset callback is not used by AER or EEH mechanisms.
-  */
- const struct pci_error_handlers efx_err_handlers = {
- 	.error_detected = efx_io_error_detected,
-diff --git a/drivers/net/ethernet/sfc/falcon/efx.c b/drivers/net/ethernet/sfc/falcon/efx.c
-index b07f7e4e2877..0c784656fde9 100644
---- a/drivers/net/ethernet/sfc/falcon/efx.c
-+++ b/drivers/net/ethernet/sfc/falcon/efx.c
-@@ -3128,9 +3128,6 @@ static void ef4_io_resume(struct pci_dev *pdev)
+-static inline void __set_ptes_anysz(struct mm_struct *mm, pte_t *ptep,
+-				    pte_t pte, unsigned int nr,
++static inline void __set_ptes_anysz(struct mm_struct *mm, unsigned long addr,
++				    pte_t *ptep, pte_t pte, unsigned int nr,
+ 				    unsigned long pgsize)
+ {
+ 	unsigned long stride = pgsize >> PAGE_SHIFT;
+@@ -734,26 +734,23 @@ static inline void __set_ptes_anysz(struct mm_struct *mm, pte_t *ptep,
+ 	__set_pte_complete(pte);
+ }
  
- /* For simplicity and reliability, we always require a slot reset and try to
-  * reset the hardware when a pci error affecting the device is detected.
-- * We leave both the link_reset and mmio_enabled callback unimplemented:
-- * with our request for slot reset the mmio_enabled callback will never be
-- * called, and the link_reset callback is not used by AER or EEH mechanisms.
-  */
- static const struct pci_error_handlers ef4_err_handlers = {
- 	.error_detected = ef4_io_error_detected,
-diff --git a/drivers/net/ethernet/sfc/siena/efx_common.c b/drivers/net/ethernet/sfc/siena/efx_common.c
-index a0966f879664..35036cc902fe 100644
---- a/drivers/net/ethernet/sfc/siena/efx_common.c
-+++ b/drivers/net/ethernet/sfc/siena/efx_common.c
-@@ -1285,9 +1285,6 @@ static void efx_io_resume(struct pci_dev *pdev)
+-static inline void __set_ptes(struct mm_struct *mm,
+-			      unsigned long __always_unused addr,
++static inline void __set_ptes(struct mm_struct *mm, unsigned long addr,
+ 			      pte_t *ptep, pte_t pte, unsigned int nr)
+ {
+-	__set_ptes_anysz(mm, ptep, pte, nr, PAGE_SIZE);
++	__set_ptes_anysz(mm, addr, ptep, pte, nr, PAGE_SIZE);
+ }
  
- /* For simplicity and reliability, we always require a slot reset and try to
-  * reset the hardware when a pci error affecting the device is detected.
-- * We leave both the link_reset and mmio_enabled callback unimplemented:
-- * with our request for slot reset the mmio_enabled callback will never be
-- * called, and the link_reset callback is not used by AER or EEH mechanisms.
-  */
- const struct pci_error_handlers efx_siena_err_handlers = {
- 	.error_detected = efx_io_error_detected,
-diff --git a/drivers/scsi/lpfc/lpfc_init.c b/drivers/scsi/lpfc/lpfc_init.c
-index 4081d2a358ee..cf08bb5b37c3 100644
---- a/drivers/scsi/lpfc/lpfc_init.c
-+++ b/drivers/scsi/lpfc/lpfc_init.c
-@@ -14377,7 +14377,7 @@ lpfc_sli_prep_dev_for_perm_failure(struct lpfc_hba *phba)
-  * as desired.
-  *
-  * Return codes
-- * 	PCI_ERS_RESULT_CAN_RECOVER - can be recovered with reset_link
-+ *	PCI_ERS_RESULT_CAN_RECOVER - can be recovered without reset
-  * 	PCI_ERS_RESULT_NEED_RESET - need to reset before recovery
-  * 	PCI_ERS_RESULT_DISCONNECT - device could not be recovered
-  **/
+-static inline void __set_pmds(struct mm_struct *mm,
+-			      unsigned long __always_unused addr,
++static inline void __set_pmds(struct mm_struct *mm, unsigned long addr,
+ 			      pmd_t *pmdp, pmd_t pmd, unsigned int nr)
+ {
+-	__set_ptes_anysz(mm, (pte_t *)pmdp, pmd_pte(pmd), nr, PMD_SIZE);
++	__set_ptes_anysz(mm, addr, (pte_t *)pmdp, pmd_pte(pmd), nr, PMD_SIZE);
+ }
+ #define set_pmd_at(mm, addr, pmdp, pmd) __set_pmds(mm, addr, pmdp, pmd, 1)
+ 
+-static inline void __set_puds(struct mm_struct *mm,
+-			      unsigned long __always_unused addr,
++static inline void __set_puds(struct mm_struct *mm, unsigned long addr,
+ 			      pud_t *pudp, pud_t pud, unsigned int nr)
+ {
+-	__set_ptes_anysz(mm, (pte_t *)pudp, pud_pte(pud), nr, PUD_SIZE);
++	__set_ptes_anysz(mm, addr, (pte_t *)pudp, pud_pte(pud), nr, PUD_SIZE);
+ }
+ #define set_pud_at(mm, addr, pudp, pud) __set_puds(mm, addr, pudp, pud, 1)
+ 
+diff --git a/arch/arm64/mm/hugetlbpage.c b/arch/arm64/mm/hugetlbpage.c
+index 1d90a7e75333..1003b5020752 100644
+--- a/arch/arm64/mm/hugetlbpage.c
++++ b/arch/arm64/mm/hugetlbpage.c
+@@ -225,8 +225,8 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
+ 	ncontig = num_contig_ptes(sz, &pgsize);
+ 
+ 	if (!pte_present(pte)) {
+-		for (i = 0; i < ncontig; i++, ptep++)
+-			__set_ptes_anysz(mm, ptep, pte, 1, pgsize);
++		for (i = 0; i < ncontig; i++, ptep++, addr += pgsize)
++			__set_ptes_anysz(mm, addr, ptep, pte, 1, pgsize);
+ 		return;
+ 	}
+ 
+@@ -234,7 +234,7 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long addr,
+ 	if (pte_cont(pte) && pte_valid(__ptep_get(ptep)))
+ 		clear_flush(mm, addr, ptep, pgsize, ncontig);
+ 
+-	__set_ptes_anysz(mm, ptep, pte, ncontig, pgsize);
++	__set_ptes_anysz(mm, addr, ptep, pte, ncontig, pgsize);
+ }
+ 
+ pte_t *huge_pte_alloc(struct mm_struct *mm, struct vm_area_struct *vma,
+@@ -449,7 +449,7 @@ int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+ 	if (pte_young(orig_pte))
+ 		pte = pte_mkyoung(pte);
+ 
+-	__set_ptes_anysz(mm, ptep, pte, ncontig, pgsize);
++	__set_ptes_anysz(mm, addr, ptep, pte, ncontig, pgsize);
+ 	return 1;
+ }
+ 
+@@ -473,7 +473,7 @@ void huge_ptep_set_wrprotect(struct mm_struct *mm,
+ 	pte = get_clear_contig_flush(mm, addr, ptep, pgsize, ncontig);
+ 	pte = pte_wrprotect(pte);
+ 
+-	__set_ptes_anysz(mm, ptep, pte, ncontig, pgsize);
++	__set_ptes_anysz(mm, addr, ptep, pte, ncontig, pgsize);
+ }
+ 
+ pte_t huge_ptep_clear_flush(struct vm_area_struct *vma,
 -- 
-2.47.2
+2.50.1
 
 
