@@ -1,50 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-11036-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11037-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A8CBCA0EE4
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Aug 2025 19:20:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFA05CA0EE6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 14 Aug 2025 19:29:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c2w7T3kh0z3bTf;
-	Fri, 15 Aug 2025 05:20:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755199237;
-	cv=none; b=gQezbtaarJdGYM2PO4FP/HNHJ+tdyF5wVNrIAxEiYpd9iR19j/WKB1+jomJy/VcZL7hh3KgXwisupF5eOD/GpYJVHFWFNsnfInvJBOE/cil6pW+oGwM2nu0MTYBCeRPnrLSPiRXZJU0mT472tVVuFmYGYDgfNiiifTKPWJw5SoG7O5WQ14VoKYgtu8z04gKpfgjYu21YZmzZatzrKaLjuHpCHvioQPc101jq0GP//coHK01lVr9dzD9llsfHOSvPu4011M2Sg71SpApIUnTlgSKlCaR6/nc3BRu6N+fTvZQ8FLBfRKcRRJWioZmOmpzb8fzk8W6aJZ4ZDVeHfmKgqg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c2wKw3ymWz3bTf;
+	Fri, 15 Aug 2025 05:29:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.8
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755199780;
+	cv=none; b=HnoT+6N7HjiuRkazlM2GWqgw6/Vn8qBO9ivdIsX5Z5SXMLqM+uoe+6Nyua/WC7THC0ExSnQQr3yh5+w84gREt0XjOxQNLJ8LPYz+gZ2Wi/W/I4RrrtLipxMRobjIoqyFDIGg46UiGUVeO3xPJDBu12wUhLTlXlNEnxFPiJc1TDCxgwHuoFM/u/jLGVFKG5jRs8brTwqtgadLPBGYUn+vNlQeztPumhCESmOUf0t8/H5M6a2nqpdrk9qxVLXqJXreXUBFOg/a14qG+ZqxGvIxKnJvFWCXYZb5xqgWYuETUwAeai8Mc145YJkbVCeKSDEoYPg8iNRVSGiknvYEkJqvEQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755199237; c=relaxed/relaxed;
-	bh=YHyGC2tklvgN0REkQ0ldTWNmLFHcFMgQsr/26aDn6pU=;
+	t=1755199780; c=relaxed/relaxed;
+	bh=MJ0LWiov42gFKU6cKchdyGz/VlTSQJHWGZwbQtWT61s=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Xwwidmj47knMA1obVSIt/kGo4Cjui49ufnVo7QNoET1zNL00P+yL9QBuYpgOA1DwSLnsx+gGw0vtt34xOrcdnPiyI5TB6QqpsX6ZP6InFuONGXjdptiRU5XywnZEZefoDljtrUmIBQEP4cGpTPbXTBE4+yIU2lW7zGF6hP1/j9eppzfwBR9GyIg407r1KnrsKHZfiiYjLb/mdWytTAqo3xGOx+PaQoEsnZ+qcWk6IuEvVq1h1fdpg+3ZdP464EgLP2au59714b8QJBeTRNeFJZf+p1kOLC8/VfRjQfnztXPX/MXf5oAbhCSLMFa8ca/IImbNtrCDPuSXKJoXs5S5zQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c2w7S40kZz30Yb
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2025 05:20:36 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c2vpK65M9z9sSH;
-	Thu, 14 Aug 2025 21:05:45 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ZPu83EvDtL2B; Thu, 14 Aug 2025 21:05:45 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c2vpK3P9dz9sSC;
-	Thu, 14 Aug 2025 21:05:45 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 16AD08B764;
-	Thu, 14 Aug 2025 21:05:45 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id v81OkG88qzZ0; Thu, 14 Aug 2025 21:05:44 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 592BF8B763;
-	Thu, 14 Aug 2025 21:05:43 +0200 (CEST)
-Message-ID: <ccc8eeba-757a-440d-80d3-9158e80c19fe@csgroup.eu>
-Date: Thu, 14 Aug 2025 21:05:42 +0200
+	 In-Reply-To:Content-Type; b=PQ+wIR3zK69oiTmTfhyCjqbLE31P3xTqr7RPhhzSXgAFAs6hZ1148iBu2B+DRtNI5U8okCRgap5IT3vjFbq7KxH9x/iz2N+vlX+b0Tqk/ZupLPy1QEXADfKdu/GZwEaDGCXyieaztOvOziIgcUWUYETIlVsulK9BCOzICCiX1+DSSBrMEW9i4rxo5SiKnDqv73PlxwMf905BbhcgFOvxJ8Whm8Y6TDf2Uu6w1eBVbzA9dbAgWlfpj8fZf9l2VmrJo+96DqjBFubPejrSyZQRicKJv6duviSHqfbasjFxORTc5fk4t/sckUvineGBKeiSJCq+sZsO/4P9+roofhN0tw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=E9Vw2ckd; dkim-atps=neutral; spf=none (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=E9Vw2ckd;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c2wKt0Cjmz30Yb
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 15 Aug 2025 05:29:36 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1755199778; x=1786735778;
+  h=message-id:date:mime-version:subject:to:cc:references:
+   from:in-reply-to:content-transfer-encoding;
+  bh=C722KyueZgnml44yiZSKGL6Emhwa8sk1grG/A7G7Xiw=;
+  b=E9Vw2ckdtrqHWpQLJf+rRhAgYamqigralojPQLrfSf4orQyke4MRzwyj
+   GOKdOIymkXoAbOacztV2dJqxKSgyFrZ5Jz2CL7orkA3nRVITmUrLCtF5e
+   8x/G5SZFFh/lVz2vr0whtnMRP8D153c9OUKDCo+XguttO/oUB4YW6ID2W
+   1Ob7aIkd9r+hAMlnNdUNupq5VEq7kVZe+2qPqC2fOKo8PccANX8rbJ3ke
+   X+4H9ct/NX/fXAWNh4b66rfd9UsqEhLe0hbk9o0HJ7y4rUV5veYMgieDZ
+   gQ8n/ySgsQeL+QSv5xqR7UEKuQv0yIntKbqAoFfx50Iw9lcx3FDUuBPZe
+   w==;
+X-CSE-ConnectionGUID: DTKDZ+lSSnGiWyo6RwnQ7g==
+X-CSE-MsgGUID: Z7MTZV1jTGCdqpBMi7k8Uw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11522"; a="75096425"
+X-IronPort-AV: E=Sophos;i="6.17,290,1747724400"; 
+   d="scan'208";a="75096425"
+Received: from orviesa010.jf.intel.com ([10.64.159.150])
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Aug 2025 12:29:34 -0700
+X-CSE-ConnectionGUID: vx0X23xmR8+w93glgb0cww==
+X-CSE-MsgGUID: C81WM5VmTFmlpBHRfeABtg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.17,290,1747724400"; 
+   d="scan'208";a="166055654"
+Received: from linux.intel.com ([10.54.29.200])
+  by orviesa010.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 14 Aug 2025 12:29:34 -0700
+Received: from [10.124.223.17] (unknown [10.124.223.17])
+	by linux.intel.com (Postfix) with ESMTP id E9B1420B571C;
+	Thu, 14 Aug 2025 12:29:32 -0700 (PDT)
+Message-ID: <eec85830-e024-4801-bbc8-5cfa60048932@linux.intel.com>
+Date: Thu, 14 Aug 2025 12:29:25 -0700
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,181 +74,181 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 00/16] dma-mapping: migrate to physical address-based
- API
-To: Leon Romanovsky <leon@kernel.org>,
- Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Jason Gunthorpe <jgg@nvidia.com>,
- Abdiel Janulgue <abdiel.janulgue@gmail.com>,
- Alexander Potapenko <glider@google.com>, Alex Gaynor
- <alex.gaynor@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
- Christoph Hellwig <hch@lst.de>, Danilo Krummrich <dakr@kernel.org>,
- iommu@lists.linux.dev, Jason Wang <jasowang@redhat.com>,
- Jens Axboe <axboe@kernel.dk>, Joerg Roedel <joro@8bytes.org>,
- Jonathan Corbet <corbet@lwn.net>, Juergen Gross <jgross@suse.com>,
- kasan-dev@googlegroups.com, Keith Busch <kbusch@kernel.org>,
- linux-block@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linux-nvme@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- linux-trace-kernel@vger.kernel.org, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>,
- Michael Ellerman <mpe@ellerman.id.au>, "Michael S. Tsirkin"
- <mst@redhat.com>, Miguel Ojeda <ojeda@kernel.org>,
- Robin Murphy <robin.murphy@arm.com>, rust-for-linux@vger.kernel.org,
- Sagi Grimberg <sagi@grimberg.me>, Stefano Stabellini
- <sstabellini@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
- virtualization@lists.linux.dev, Will Deacon <will@kernel.org>,
- xen-devel@lists.xenproject.org
-References: <cover.1755193625.git.leon@kernel.org>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <cover.1755193625.git.leon@kernel.org>
+Subject: Re: [PATCH 1/5] PCI/AER: Allow drivers to opt in to Bus Reset on
+ Non-Fatal Errors
+To: Lukas Wunner <lukas@wunner.de>, Niklas Schnelle <schnelle@linux.ibm.com>
+Cc: Bjorn Helgaas <helgaas@kernel.org>, Riana Tauro <riana.tauro@intel.com>,
+ Aravind Iddamsetty <aravind.iddamsetty@linux.intel.com>,
+ "Sean C. Dardis" <sean.c.dardis@intel.com>,
+ Terry Bowman <terry.bowman@amd.com>, Linas Vepstas <linasvepstas@gmail.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Oliver OHalloran <oohall@gmail.com>,
+ Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
+ linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
+References: <cover.1755008151.git.lukas@wunner.de>
+ <28fd805043bb57af390168d05abb30898cf4fc58.1755008151.git.lukas@wunner.de>
+ <7c545fff40629b612267501c0c74bc40c3df29e2.camel@linux.ibm.com>
+ <aJ2uE6v46Zib30Jh@wunner.de>
+Content-Language: en-US
+From: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>
+In-Reply-To: <aJ2uE6v46Zib30Jh@wunner.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
 
 
+On 8/14/25 2:36 AM, Lukas Wunner wrote:
+> On Thu, Aug 14, 2025 at 09:56:09AM +0200, Niklas Schnelle wrote:
+>> On Wed, 2025-08-13 at 07:11 +0200, Lukas Wunner wrote:
+>>> +++ b/drivers/pci/pcie/err.c
+>>> @@ -217,15 +217,10 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
+>>>   	pci_walk_bridge(bridge, pci_pm_runtime_get_sync, NULL);
+>>>   
+>>>   	pci_dbg(bridge, "broadcast error_detected message\n");
+>>> -	if (state == pci_channel_io_frozen) {
+>>> +	if (state == pci_channel_io_frozen)
+>>>   		pci_walk_bridge(bridge, report_frozen_detected, &status);
+>>> -		if (reset_subordinates(bridge) != PCI_ERS_RESULT_RECOVERED) {
+>>> -			pci_warn(bridge, "subordinate device reset failed\n");
+>>> -			goto failed;
+>>> -		}
+>>> -	} else {
+>>> +	else
+>>>   		pci_walk_bridge(bridge, report_normal_detected, &status);
+>>> -	}
+>>>   
+>>>   	if (status == PCI_ERS_RESULT_CAN_RECOVER) {
+>>>   		status = PCI_ERS_RESULT_RECOVERED;
+>> On s390 PCI errors leave the device with MMIO blocked until either the
+>> error state is cleared or we reset via the firmware interface. With
+>> this change and the pci_channel_io_frozen case AER would now do the
+>> report_mmio_enabled() before the reset with nothing happening between
+>> report_frozen_detected() and report_mmio_enabled() is MMIO enabled at
+>> this point?
+> Yes, MMIO access is controlled through the Memory Space Enable and
+> Bus Master Enable bits in the Command Register (PCIe r7.0 sec 7.5.1.1.3).
+> Drivers generally set those bits on probe and they're not automatically
+> cleared by hardware upon an Uncorrectable Error.
+>
+> EEH and s390 blocking MMIO access likely serves the purpose of preventing
+> corrupted data being propagated upstream.  AER doesn't support that
+> (or at least doesn't mandate that -- certain implementations might
+> be capable of blocking poisoned data).
+>
+> Thus with AER, MMIO access is usually possible already in ->error_detected().
+> The only reason why drivers shouldn't be doing that and instead defer
+> MMIO access to ->mmio_enabled() is to be compatible with EEH and s390.
+>
+> There are exceptions to this rule:  E.g. if the Uncorrectable Error
+> was "Surprise Down", the link to the device is down and MMIO access
+> isn't possible, neither in ->error_detected() nor ->mmio_enabled().
+> Drivers should check whether an MMIO read results in an "all ones"
+> response (PCI_POSSIBLE_ERROR()), which is usually what the host bridge
+> fabricates upon a Completion Timeout caused by the link being down
+> and the Endpoint being inaccessible.
+>
+> (There's a list of all the errors with default severity etc in PCIe r7.0
+> sec 6.2.7.)
+>
+> I believe DPC was added to the PCIe Base Specification to prevent
+> propagating corrupted data upstream, similarly to EEH and s390.
+> DPC brings down the link immediately upon an Uncorrectable Error
+> (the Linux driver confines this to Fatal Errors), but as a side
+> effect this results in a Hot Reset being propagated down the
+> hierarchy, making it impossible to access the device in the
+> faulting state to retrieve debug information etc.  After the link
+> has been brought up again, the device is in post-reset state.
+> So DPC doesn't allow for reset-less recovery.
+>
+> With the ordering change introduced by this commit, ->mmio_enabled()
+> will no longer be able to access MMIO space in the DPC case because
+> the link hasn't been brought back up until ->slot_reset().  But as
+> explained in the commit message, I only found two drivers affected
+> by this.  One seems to be EEH-specific (drivers/scsi/ipr.c).
+> And the other one (drivers/scsi/sym53c8xx_2/sym_glue.c) dumps debug
+> registers in ->mmio_enabled() and I'm arguing that with this commit
+> it's dumping "all ones", but right now it's dumping the post-reset
+> state of the device, which isn't any more useful.
+>
+>> I think this callback really only makes sense if you have
+>> an equivalent to s390's clearing of the error state that enables MMIO
+>> but doesn't otherwise reset. Similarly EEH has eeh_pci_enable(pe,
+>> EEH_OPT_THAW_MMIO).
+> Right.
+>
+>>> @@ -233,6 +228,14 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
+>>>   		pci_walk_bridge(bridge, report_mmio_enabled, &status);
+>>>   	}
+>>>   
+>>> +	if (status == PCI_ERS_RESULT_NEED_RESET ||
+>>> +	    state == pci_channel_io_frozen) {
+>>> +		if (reset_subordinates(bridge) != PCI_ERS_RESULT_RECOVERED) {
+>>> +			pci_warn(bridge, "subordinate device reset failed\n");
+>>> +			goto failed;
+>>> +		}
+>>> +	}
+>>> +
+>>>   	if (status == PCI_ERS_RESULT_NEED_RESET) {
+>>>   		/*
+>>>   		 * TODO: Should call platform-specific
+>> I wonder if it might make sense to merge the reset into the above
+>> existing if.
+> There are drivers such as drivers/bus/mhi/host/pci_generic.c which
+> return PCI_ERS_RESULT_RECOVERED from ->error_detected().  So they
+> fall through directly to the ->resume() stage.  They're doing this
+> even in the pci_channel_io_frozen case (i.e. for Fatal Errors).
+>
+> But for DPC we must call reset_subordinates() to bring the link back up.
+> And for Fatal Errors, Documentation/PCI/pcieaer-howto.rst suggests that
+> we must likewise call it because the link may be unreliable.
 
-Le 14/08/2025 à 19:53, Leon Romanovsky a écrit :
-> Changelog:
-> v3:
->   * Fixed typo in "cacheable" word
->   * Simplified kmsan patch a lot to be simple argument refactoring
+For fatal errors, since we already ignore the value returned by
+->error_detected() (by calling reset_subordinates() unconditionally), why
+not update status accordingly in report_frozen_detected() and notify the
+driver about the reset?
 
-v2 sent today at 12:13, v3 sent today at 19:53 .... for only that ?
+That way, the reset logic could be unified under a single if
+(status == PCI_ERS_RESULT_NEED_RESET) condition.
 
-Have you read 
-https://docs.kernel.org//process/submitting-patches.html#don-t-get-discouraged-or-impatient 
-?
-
-Thanks
-Christophe
-
-> v2: https://lore.kernel.org/all/cover.1755153054.git.leon@kernel.org
->   * Used commit messages and cover letter from Jason
->   * Moved setting IOMMU_MMIO flag to dma_info_to_prot function
->   * Micro-optimized the code
->   * Rebased code on v6.17-rc1
-> v1: https://lore.kernel.org/all/cover.1754292567.git.leon@kernel.org
->   * Added new DMA_ATTR_MMIO attribute to indicate
->     PCI_P2PDMA_MAP_THRU_HOST_BRIDGE path.
->   * Rewrote dma_map_* functions to use thus new attribute
-> v0: https://lore.kernel.org/all/cover.1750854543.git.leon@kernel.org/
-> ------------------------------------------------------------------------
-> 
-> This series refactors the DMA mapping to use physical addresses
-> as the primary interface instead of page+offset parameters. This
-> change aligns the DMA API with the underlying hardware reality where
-> DMA operations work with physical addresses, not page structures.
-> 
-> The series maintains export symbol backward compatibility by keeping
-> the old page-based API as wrapper functions around the new physical
-> address-based implementations.
-> 
-> This series refactors the DMA mapping API to provide a phys_addr_t
-> based, and struct-page free, external API that can handle all the
-> mapping cases we want in modern systems:
-> 
->   - struct page based cachable DRAM
->   - struct page MEMORY_DEVICE_PCI_P2PDMA PCI peer to peer non-cachable
->     MMIO
->   - struct page-less PCI peer to peer non-cachable MMIO
->   - struct page-less "resource" MMIO
-> 
-> Overall this gets much closer to Matthew's long term wish for
-> struct-pageless IO to cachable DRAM. The remaining primary work would
-> be in the mm side to allow kmap_local_pfn()/phys_to_virt() to work on
-> phys_addr_t without a struct page.
-> 
-> The general design is to remove struct page usage entirely from the
-> DMA API inner layers. For flows that need to have a KVA for the
-> physical address they can use kmap_local_pfn() or phys_to_virt(). This
-> isolates the struct page requirements to MM code only. Long term all
-> removals of struct page usage are supporting Matthew's memdesc
-> project which seeks to substantially transform how struct page works.
-> 
-> Instead make the DMA API internals work on phys_addr_t. Internally
-> there are still dedicated 'page' and 'resource' flows, except they are
-> now distinguished by a new DMA_ATTR_MMIO instead of by callchain. Both
-> flows use the same phys_addr_t.
-> 
-> When DMA_ATTR_MMIO is specified things work similar to the existing
-> 'resource' flow. kmap_local_pfn(), phys_to_virt(), phys_to_page(),
-> pfn_valid(), etc are never called on the phys_addr_t. This requires
-> rejecting any configuration that would need swiotlb. CPU cache
-> flushing is not required, and avoided, as ATTR_MMIO also indicates the
-> address have no cachable mappings. This effectively removes any
-> DMA API side requirement to have struct page when DMA_ATTR_MMIO is
-> used.
-> 
-> In the !DMA_ATTR_MMIO mode things work similarly to the 'page' flow,
-> except on the common path of no cache flush, no swiotlb it never
-> touches a struct page. When cache flushing or swiotlb copying
-> kmap_local_pfn()/phys_to_virt() are used to get a KVA for CPU
-> usage. This was already the case on the unmap side, now the map side
-> is symmetric.
-> 
-> Callers are adjusted to set DMA_ATTR_MMIO. Existing 'resource' users
-> must set it. The existing struct page based MEMORY_DEVICE_PCI_P2PDMA
-> path must also set it. This corrects some existing bugs where iommu
-> mappings for P2P MMIO were improperly marked IOMMU_CACHE.
-> 
-> Since ATTR_MMIO is made to work with all the existing DMA map entry
-> points, particularly dma_iova_link(), this finally allows a way to use
-> the new DMA API to map PCI P2P MMIO without creating struct page. The
-> VFIO DMABUF series demonstrates how this works. This is intended to
-> replace the incorrect driver use of dma_map_resource() on PCI BAR
-> addresses.
-> 
-> This series does the core code and modern flows. A followup series
-> will give the same treatment to the legacy dma_ops implementation.
-> 
-> Thanks
-> 
-> Leon Romanovsky (16):
->    dma-mapping: introduce new DMA attribute to indicate MMIO memory
->    iommu/dma: implement DMA_ATTR_MMIO for dma_iova_link().
->    dma-debug: refactor to use physical addresses for page mapping
->    dma-mapping: rename trace_dma_*map_page to trace_dma_*map_phys
->    iommu/dma: rename iommu_dma_*map_page to iommu_dma_*map_phys
->    iommu/dma: extend iommu_dma_*map_phys API to handle MMIO memory
->    dma-mapping: convert dma_direct_*map_page to be phys_addr_t based
->    kmsan: convert kmsan_handle_dma to use physical addresses
->    dma-mapping: handle MMIO flow in dma_map|unmap_page
->    xen: swiotlb: Open code map_resource callback
->    dma-mapping: export new dma_*map_phys() interface
->    mm/hmm: migrate to physical address-based DMA mapping API
->    mm/hmm: properly take MMIO path
->    block-dma: migrate to dma_map_phys instead of map_page
->    block-dma: properly take MMIO path
->    nvme-pci: unmap MMIO pages with appropriate interface
-> 
->   Documentation/core-api/dma-api.rst        |   4 +-
->   Documentation/core-api/dma-attributes.rst |  18 ++++
->   arch/powerpc/kernel/dma-iommu.c           |   4 +-
->   block/blk-mq-dma.c                        |  15 ++-
->   drivers/iommu/dma-iommu.c                 |  61 +++++------
->   drivers/nvme/host/pci.c                   |  18 +++-
->   drivers/virtio/virtio_ring.c              |   4 +-
->   drivers/xen/swiotlb-xen.c                 |  21 +++-
->   include/linux/blk-mq-dma.h                |   6 +-
->   include/linux/blk_types.h                 |   2 +
->   include/linux/dma-direct.h                |   2 -
->   include/linux/dma-map-ops.h               |   8 +-
->   include/linux/dma-mapping.h               |  33 ++++++
->   include/linux/iommu-dma.h                 |  11 +-
->   include/linux/kmsan.h                     |   9 +-
->   include/trace/events/dma.h                |   9 +-
->   kernel/dma/debug.c                        |  71 ++++---------
->   kernel/dma/debug.h                        |  37 ++-----
->   kernel/dma/direct.c                       |  22 +---
->   kernel/dma/direct.h                       |  52 ++++++----
->   kernel/dma/mapping.c                      | 117 +++++++++++++---------
->   kernel/dma/ops_helpers.c                  |   6 +-
->   mm/hmm.c                                  |  19 ++--
->   mm/kmsan/hooks.c                          |   7 +-
->   rust/kernel/dma.rs                        |   3 +
->   tools/virtio/linux/kmsan.h                |   2 +-
->   26 files changed, 306 insertions(+), 255 deletions(-)
-> 
+Checking the drivers/bus/mhi/host/pci_generic.c implementation, it looks
+like calling slot_reset callback looks harmless.
+>
+> Hence the if-condition must use a boolean OR, i.e.:
+>
+> 	if (status == PCI_ERS_RESULT_NEED_RESET ||
+> 	    state == pci_channel_io_frozen) {
+>
+> ... whereas if I would move the invocation of reset_subordinates() inside
+> the existing "if (status == PCI_ERS_RESULT_NEED_RESET)", it would be
+> equivalent to a boolean AND.
+>
+> I would have to amend drivers such as drivers/bus/mhi/host/pci_generic.c
+> to work with the changed logic and I figured that it's simpler to only
+> change pcie_do_recovery() rather than touching all affected drivers.
+> I don't have any of that hardware and so it seems risky touching all
+> those drivers.
+>
+>> I'm a bit confused by that TODO comment and
+>> anyway, it asks for a platform-specific reset to be added bu
+>> reset_subordinate() already seems to allow platform specific behavior,
+>> so maybe the moved reset should replace the TODO?
+> Manivannan has a patch pending which removes the TODO:
+>
+> https://lore.kernel.org/all/20250715-pci-port-reset-v6-1-6f9cce94e7bb@oss.qualcomm.com/
+>
+>> Also I think for the
+>> kind of broken case where the state is pci_channel_io_frozen but the
+>> drivers just reports PCI_ERS_RESULT_CAN_RECOVER it looks like there
+>> would be a reset but no calls to ->slot_reset().
+> Right, but that's what AER is currently doing and drivers such as
+> drivers/bus/mhi/host/pci_generic.c are written to work with the
+> existing flow.
+>
+> Thanks,
+>
+> Lukas
+>
+-- 
+Sathyanarayanan Kuppuswamy
+Linux Kernel Developer
 
 
