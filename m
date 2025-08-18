@@ -1,67 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-11093-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11094-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48F21CA0EE4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 15:50:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8245BCA0ED1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 16:15:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5HHP2Ydyz3cbX;
-	Tue, 19 Aug 2025 01:50:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755532241;
-	cv=none; b=QWV65x/SmtuQzlc1CrEZPpgQHk1aBVJWDDYgnrbfMNKydnQP56usQY2sNrtxx3P5TPe5GLdbnh9j1MMfa3xOkch2ye21Mdff8L44beVND5Xcm3UbvO1LAEyi8WgHvsfYQwuxYB+S26Nztx2KLxt3iQJKNDbvlhLjG02CEYz++WwMWLxNmTlTXKsQk8Y6h81BIew694OmNiM7xcBdDWX70h9eHiSmsnh+cp0oPbTlqxbQ6Sq4hntyQJ17WW2rY4QTrM9W6hqxq+ujns/Jnbz+Im3UGCoAB6shwlvaxNclpwI2zTVdlBvH0JOLtxBG/IZWNZDSWtpzKmvJhOBW3XOLmw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5Hqm0vscz3cbW;
+	Tue, 19 Aug 2025 02:15:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.2
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755533716;
+	cv=none; b=FuM0CJD9dKDF3jmTcPgg28sFK+8XPNyS39FawhuZ29ph50EGG3VvwStdEcZuWge6PuYrykCoZtv+MAym04JWV6ro3dVx8P34A+aQbB6Z0m2jLqyLHyHixJtQo76KHp9TfiZ/h3B29391CwgB4hQBKYS7O3wbzQRFlvR9MXT72+WfV6xBycVRt42K17F6YGHRoLsA0Yk1FL5Fr8LWD48K/qcsTQsTxvoIwnckOX2oWck63t88i32rOk5HIvKLw7qDW9Kbk8+/iG8UHyee2gUt6JN0IjrSiTcScMy+WtAsXzQYAEGySVM2GO0HFkXFdK9w9mVHqY1IjARivSKacmgIpw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755532241; c=relaxed/relaxed;
-	bh=7VbbVIH8UFd/ZXRt8tTqoE2DEAgRPhZQ9cL0+DlJjmY=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dBPNIi2fo5lyfq8lTBHuxs11WKPLId2Ah/VpsJF0yvybVBLvj67lOiC7sxuYMJxuHvnqrS43z6nldcRkiW1ITFZ54gUG8wFLyY3aWE5UYbqQUfFO9Ke+xs2je7uj9vCpgbQJR3nvm0c0ebFucv5tMk80bYrP+34nZwp6MkMQFwu5RVO3oDYbx+L/wVgJ+H9Ze0p1Y2J4yXijj/DU555rNjZf3wACJ8fEsZKNPoSPaDkguN+tPSMrVyGu2rvC9yT2FegVjO50gip5ER+tota8g0zGGIonJPp6aywEd/3Iz1lAKKuZ90p3o9f9oFbp9ois8y9aXigJETWOE8m/q+EiZQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5HHN5rbxz3cbL
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 01:50:40 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c55HS397Bz9sW6;
-	Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id FMMyCDZPktia; Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55HS1ztdz9sW4;
-	Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2F1EB8B765;
-	Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id ymC4Y2tOtNpK; Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id F2BA48B763;
-	Mon, 18 Aug 2025 10:20:03 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Herve Codina <herve.codina@bootlin.com>,
-	Qiang Zhao <qiang.zhao@nxp.com>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	t=1755533716; c=relaxed/relaxed;
+	bh=3VQIEWJRrZqUWBIlYJxpy6ioV+MlB2SKV2d469TV62M=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=VSKLXHYKaPSLa7ZN3Ol/bYBCUtmbI/hh2NZLE1Pl7sM1DMT3/KPE0dw3XxTdOvmcHzGlrHb+hompxFLctAxvBk9JkWZLZwY5yrCXoYBj0qPiF2QOkEbBDsPFtUbAFacZ8gQGMih4zp/LYUr4fuMZi2lzYVGT/SDWlgz5eFvSN0LPOv/su5AZcOU33k7Lju0221JoBm1SP6SPYyROo9gLsuKdMG9s5/4sFrQsxCXoeoFNjRVmPK8eaYx4paW5OFVyM05nYx9/fXCpv3eOef7tzFuZwmoFahb/3IpLg3UlfzWAr2iLlBpsgQjkwcXl9Wlh74jKP25Ug7pzdzEUzajWtQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=nyVfvql5; dkim-atps=neutral; spf=pass (client-ip=117.135.210.2; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=nyVfvql5;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=117.135.210.2; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5Hqg4Y2Wz3cbL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 02:15:08 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=3V
+	QIEWJRrZqUWBIlYJxpy6ioV+MlB2SKV2d469TV62M=; b=nyVfvql5VzH3VYcRvZ
+	HkByrzNJt+wvtJLajSfmebqiaWrMCh+O1OhoMshxkui7bwmRW8C37rdAdQLG3CHc
+	ErE9jMHHVtQZRysrgFi4w0XpKv4u7/H7j/zL1I9HXRHnrkW6V/t4B+axJGkompxS
+	bdlMw+1Tx6z08riI6+hCCouAg=
+Received: from localhost.localdomain (unknown [])
+	by gzga-smtp-mtada-g0-0 (Coremail) with SMTP id _____wD3b8FtUaNopYAWCw--.8667S3;
+	Tue, 19 Aug 2025 00:14:41 +0800 (CST)
+From: Hans Zhang <18255117159@163.com>
+To: mahesh@linux.ibm.com,
+	bhelgaas@google.com
+Cc: oohall@gmail.com,
+	mani@kernel.org,
+	lukas@wunner.de,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
+	linux-pci@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	linux-sound@vger.kernel.org
-Subject: [PATCH v3 0/4] ASoC: fsl: fsl_qmc_audio: Reduce amount of interrupts
-Date: Mon, 18 Aug 2025 10:19:59 +0200
-Message-ID: <cover.1755504428.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
+	Hans Zhang <18255117159@163.com>
+Subject: [PATCH v4 1/2] PCI: Introduce pci_clear/set_config_dword()
+Date: Tue, 19 Aug 2025 00:14:30 +0800
+Message-Id: <20250818161431.372590-2-18255117159@163.com>
+X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20250818161431.372590-1-18255117159@163.com>
+References: <20250818161431.372590-1-18255117159@163.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,62 +64,48 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1755505199; l=2329; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=pbAuN88+fAvtq6e9c1Cuomlr5CexTJYFwYsjbKKxSv0=; b=kYoKb+1G4M+oBNjPSIblYLyr02FxdpGXktGAtambWltq8gWdILmpYrw9TuWcteLPOJ82HWcGW zHtiikDuJHPBlwm+8sNkaJ/GwOEiXWLXie2LYf+BV8zuMn5tZMMOKBw
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:_____wD3b8FtUaNopYAWCw--.8667S3
+X-Coremail-Antispam: 1Uf129KBjvJXoWrKw4rWrWxKrWxAFykCry7Awb_yoW8Jr15pF
+	Z8CFyfGFyxGFnIk3WDXay8Aw18WrWkXFWIgrW3K3s8ZFW2ya4vvF909r17Jwn3GrWvvr45
+	A393KFZY9r4qya7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0pR5rcfUUUUU=
+X-Originating-IP: [240e:b8f:919b:3100:3980:6173:5059:2d2a]
+X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/1tbiWw6to2ijSyq4ngAAsX
 
-This series reduces significantly the amount of interrupts on
-fsl_qmc_audio device.
+Add helper functions to clear or set bits in PCI config space.
+These helpers reduce code duplication and improve readability for config
+space modifications by encapsulating common read-modify-write patterns.
 
-Patches 1 and 2 are preparatory patches.
-Patch 3 is the main change
-Patch 4 is a cleanup which is enabled by previous patch
+Signed-off-by: Hans Zhang <18255117159@163.com>
+---
+ include/linux/pci.h | 12 ++++++++++++
+ 1 file changed, 12 insertions(+)
 
-Changes in v3:
-- Properly check the buffer descriptor is unused (Patch 1, comment from Herve Codina)
-- Fixed copy/paste error (patch 2, comment from Herve Codina)
-- Fixed build failure (patch 2, comment from Herve Codina and Test robot)
-
-Changes in v2:
-- Don't remove UB bit (Patch 1, comment from Herve Codina)
-- Make sure audio channels are ordered on TDM bus (Patch 2, new patch, comment from Herve Codina)
-- Drop struct qmc_dai_chan  (patch 4, new patch)
-
-Backgroup (copied from patch 3):
-
-In non-interleaved mode, several QMC channels are used in sync.
-More details can be found in commit 188d9cae5438 ("ASoC: fsl:
-fsl_qmc_audio: Add support for non-interleaved mode.")
-At the time being, an interrupt is requested on each channel to
-perform capture/playback completion, allthough the completion is
-really performed only once all channels have completed their work.
-
-This leads to a lot more interrupts than really needed. Looking at
-/proc/interrupts shows ~3800 interrupts per second when using
-4 capture and 4 playback devices with 5ms periods while
-only 1600 (200 x 4 + 200 x 4) periods are processed during one second.
-
-The QMC channels work in sync, the one started first is the one
-finishing first and the one started last is the one finishing last,
-so when the last one finishes it is guaranteed that the other ones are
-finished as well. Therefore only request completion processing on the
-last QMC channel.
-
-On my board with the above exemple, on a kernel started with
-'threadirqs' option, the QMC irq thread uses 16% CPU time with this
-patch while it uses 26% CPU time without this patch.
-
-Christophe Leroy (4):
-  soc: fsl: qmc: Only set completion interrupt when needed
-  ASoc: fsl: fsl_qmc_audio: Ensure audio channels are ordered in TDM bus
-  ASoC: fsl: fsl_qmc_audio: Only request completion on last channel
-  ASoc: fsl: fsl_qmc_audio: Drop struct qmc_dai_chan
-
- drivers/soc/fsl/qe/qmc.c      |  44 +++++++++---
- sound/soc/fsl/fsl_qmc_audio.c | 125 +++++++++++++++-------------------
- 2 files changed, 87 insertions(+), 82 deletions(-)
-
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 59876de13860..bb0dba2b7aee 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -1341,6 +1341,18 @@ static inline int pcie_capability_clear_dword(struct pci_dev *dev, int pos,
+ 	return pcie_capability_clear_and_set_dword(dev, pos, clear, 0);
+ }
+ 
++static inline void pci_clear_config_dword(const struct pci_dev *dev, int pos,
++					  u32 clear)
++{
++	pci_clear_and_set_config_dword(dev, pos, clear, 0);
++}
++
++static inline void pci_set_config_dword(const struct pci_dev *dev, int pos,
++					u32 set)
++{
++	pci_clear_and_set_config_dword(dev, pos, 0, set);
++}
++
+ /* User-space driven config access */
+ int pci_user_read_config_byte(struct pci_dev *dev, int where, u8 *val);
+ int pci_user_read_config_word(struct pci_dev *dev, int where, u16 *val);
 -- 
-2.49.0
+2.25.1
 
 
