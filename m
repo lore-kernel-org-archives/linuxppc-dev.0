@@ -1,53 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-11103-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11104-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E805FCA0EE4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 18:58:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 429D4CA0ED1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 19:50:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5MRg46y2z3cfy;
-	Tue, 19 Aug 2025 04:58:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755543487;
-	cv=none; b=TbjfoEFL7Qc+93CPrwDfdJ3DHjn5mUD6mWqeEqpk2k9DSyaqTy0kWzZ7Oa6QhtuzTa2b+dQIgEYlKv/XwR0HuSj+QnGCTtIR3pY+R8OTu9I6bSpn9k+tdURKeOOEErR9+Oox0Mk5O9AnXysN2xgcouIcVj6YLfi9A32akQJNCBKp6xnNiDdv1PXKdRqJURZzCU/n+KcvGZ63t0Apuqt+xJYDlPlLdq4qFB/+ZTE0sh/j0ZlCVtNtsKfljCfSlAKU0niFwovUT1xm+KPvfCArc6xcR06KnGK1ekkAjxunc6Fj9oMINuOSYTUgwF0F3f5LfCIc+EYZ6Oocg3M0mirCug==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5NcG4qpdz3cgW;
+	Tue, 19 Aug 2025 05:50:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755546638;
+	cv=none; b=kcetTlPe5v9kJYkiEmTBrkXzi34rAkxOke3xp+samNmjYCdsWU4Hmu71D2U31K4MxuwXpECjxWh+MA7QhiNkJ5O6stTWV61mM32/TEM+H26kuYUVV3kDmDvbN0aMzVOCAL3pVpTsx+sw43CnpCzapF79GNkou11lZwaO1xYV5UqJqolOyAJ3pFDF9crsCqtd7i4uivEW7m9HMSRPgxULd0e6HJwPZ4dSILYEMeS15GXKeP6uo8MD6kkcFJ//8pB8qSOsd06GqGqxJ4kHFDu6sAviSFZrLBn18pjhrhUKJUHN0W159J5zuH+vB8ZNfT2bS4Q6IetuusK2If7QvJnnjQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755543487; c=relaxed/relaxed;
-	bh=F44jMz9Hsa1vKmywJPEZgV4lEqpxYtIZH2O2br8S0xA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=jUMdHEMDJdFrCpOB0iHCh1333rOAb3lhrlGm2D6NkXsGKJoIOhP4ImfNkTrO80lYp8n0OtYic16LBhDKEqWO2JUB+b1vWoSgvrMffd3G6Ii/8FOWC6JgnW35Vux2ROkalCsmX/t3K9d8G6eiB8UyfsjfC/NdTdPurHyuZwm7t1Zh6YFYl7Kgj2/zeGcyP3cIsUCMohEaKQ3OxVN+csir9R/B1CckdUOyTUGQGNnmx8dUBPxlmaLxy8Rl4iZggxto6WJEYUyBvb79rkK1WQ1vKBZxX8ykPJ1nPCl0YCptSlXTXof7dVuPuKYGDUiifvjlLYYxn9Gu16ykdS30qlLBOA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Z6e3LWLq; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Z6e3LWLq;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c5MRg03zSz3cfj
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 04:58:06 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 78F0545F97;
-	Mon, 18 Aug 2025 18:58:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4B057C4CEF1;
-	Mon, 18 Aug 2025 18:58:01 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1755543484;
-	bh=Lo/ub4li53YNr1WaIGrKXm3nOcZoyqX45dFKpUE/HGc=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Z6e3LWLqwJMq1KH+qj0/Fmu8yDb1BBX9t4FTH54hI4h973CZnTpMdQe0yFL/IH9tA
-	 pCsSjXQo6APZddUNk0sy+2JT+p4C2qxmY791U2XOl3xcp+7M94oDFd68hAWk99eBnk
-	 NPkceO3ksRPXfp7ZCgh8lhQOMQ7v3MLGRhXBoF43I8oCa2iHIZ3kHqbp+LrPZ4X/AH
-	 uRG8bXG/fozVd8mjyYR/r0rex+Hr5EjOZHmgITuMF1sGZKgSoNXmhC5VjkQEz+0uKB
-	 kvqdj+Ha5FSRV2uynB83jevrQFdWxurd7TSK/FoyQMRhWdAgM0fq63IJ81wAnKKPO5
-	 8RvV5nFCkZ6DQ==
-From: Nathan Chancellor <nathan@kernel.org>
-Date: Mon, 18 Aug 2025 11:57:22 -0700
-Subject: [PATCH 06/10] powerpc: Drop unnecessary initializations in
- __copy_inst_from_kernel_nofault()
+	t=1755546638; c=relaxed/relaxed;
+	bh=GwXUHuW5lHiBitijhc/IX+d+bm9+/Ln5pfTojM9X4vs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=KBbeV9AZE+nKUySuWd5QVz0hmP6Jkz3RnetxXMLhovAcW12ID3PoLvbsrdjk1iYDD4l83vs28Fe7+BtQ9j27mh3ZAomUCE9nidxbA2lv1wEV3h8O7KAPbFqkqBUFnDhJYXBOW7KJGA0iWv5rerTKhYQHi/VrR1+N6vfoyqmduf19z/OLT4Z7hmJcKgt3wDqicpDTcdM3M/gGmxYe1w7TBLqtO5478pFxknqxEuxlL3JGQeP9jph71flbZkM2OpyEQj6L0nidttcr7yeovTmrk0WmriJNgJ7XlzbwnaWb6MGfYySb7VqPdtANyV05RBI59WLb4WiP77zLSvmOclgAcA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5NcF5J5Wz3cgV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 05:50:36 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4c5BYd0rhsz9sV3;
+	Mon, 18 Aug 2025 14:17:41 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id LUzjzR3pCnxq; Mon, 18 Aug 2025 14:17:41 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c5BYc0gBfz9sV0;
+	Mon, 18 Aug 2025 14:17:40 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id F2A748B763;
+	Mon, 18 Aug 2025 14:17:39 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id Ump101Aa9xV9; Mon, 18 Aug 2025 14:17:39 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C3BEB8B764;
+	Mon, 18 Aug 2025 14:17:39 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-gpio@vger.kernel.org,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Linus Walleij <linus.walleij@linaro.org>
+Subject: [PATCH 2/2] powerpc/44x: Drop legacy-of-mm-gpiochip.h header
+Date: Mon, 18 Aug 2025 14:17:35 +0200
+Message-ID: <2f8f16eac72b9ec202b6e593939b44308891a661.1755519343.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <29d89aa43536714b193d9710301341f838fcb5b7.1755519343.git.christophe.leroy@csgroup.eu>
+References: <29d89aa43536714b193d9710301341f838fcb5b7.1755519343.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,66 +72,145 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250818-bump-min-llvm-ver-15-v1-6-c8b1d0f955e0@kernel.org>
-References: <20250818-bump-min-llvm-ver-15-v1-0-c8b1d0f955e0@kernel.org>
-In-Reply-To: <20250818-bump-min-llvm-ver-15-v1-0-c8b1d0f955e0@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: Arnd Bergmann <arnd@arndb.de>, Kees Cook <kees@kernel.org>, 
- Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
- Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, 
- linux-kernel@vger.kernel.org, llvm@lists.linux.dev, patches@lists.linux.dev, 
- Nathan Chancellor <nathan@kernel.org>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- linuxppc-dev@lists.ozlabs.org
-X-Mailer: b4 0.15-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1386; i=nathan@kernel.org;
- h=from:subject:message-id; bh=Lo/ub4li53YNr1WaIGrKXm3nOcZoyqX45dFKpUE/HGc=;
- b=kA0DAAoWHWsmkXHAGpYByyZiAGijd6LIRMAmizf05GAFI656eYaM6oZfysm97od+caMT+X1qh
- Ih1BAAWCgAdFiEEe+MlxzExnM0B2MqSHWsmkXHAGpYFAmijd6IACgkQHWsmkXHAGpbCRQEAhZUJ
- c5moRU96wqS6sel3EZtjKLlCUhQfKQ+4rjjsf6AA/3YwNtKRMEcuUOZ/r8iucyJ4g/oC9S/y29F
- RkRUcIb0B
-X-Developer-Key: i=nathan@kernel.org; a=openpgp;
- fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755519455; l=4820; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=PLM/65JvqNc3NilFjJ1vKDYuZPfhd7TFnkWsRNB/R5A=; b=Zjq/6FK9sXzyA80Ffb9ZnhDUHevV7VYAjbbUcFcnIkEAr3H0LvJ9wrxocZC5UcGLVp3Oh7hrV 3XC/VOwClHACT50kbShSMq0VXZqNlEjXjdKEW/gab6AUUSk0gOtmVyK
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 
-Now that the minimum supported version of LLVM for building the kernel
-has been bumped to 15.0.0, the zero initializations of val and suffix
-added by commit 0d76914a4c99 ("powerpc/inst: Optimise
-copy_inst_from_kernel_nofault()") to avoid a bogus case of
--Wuninitialized can be dropped because the preprocessor condition is
-always false.
+Remove legacy-of-mm-gpiochip.h header file. The above mentioned
+file provides an OF API that's deprecated. There is no agnostic
+alternatives to it and we have to open code the logic which was
+hidden behind of_mm_gpiochip_add_data(). Note, most of the GPIO
+drivers are using their own labeling schemas and resource retrieval
+that only a few may gain of the code deduplication, so whenever
+alternative is appear we can move drivers again to use that one.
 
-Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+As a side effect this change fixes a potential memory leak on
+an error path, if of_mm_gpiochip_add_data() fails.
+
+[Text copied from commit 34064c8267a6 ("powerpc/8xx: Drop
+legacy-of-mm-gpiochip.h header")]
+
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/include/asm/inst.h | 4 ----
- 1 file changed, 4 deletions(-)
+ arch/powerpc/platforms/44x/Kconfig |  1 -
+ arch/powerpc/platforms/44x/gpio.c  | 33 +++++++++++++++++-------------
+ 2 files changed, 19 insertions(+), 15 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
-index 684d3f453282..ffa82167c860 100644
---- a/arch/powerpc/include/asm/inst.h
-+++ b/arch/powerpc/include/asm/inst.h
-@@ -143,10 +143,6 @@ static inline int __copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src)
- {
- 	unsigned int val, suffix;
+diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
+index 35a1f4b9f827..fc79f8466933 100644
+--- a/arch/powerpc/platforms/44x/Kconfig
++++ b/arch/powerpc/platforms/44x/Kconfig
+@@ -231,7 +231,6 @@ config PPC4xx_GPIO
+ 	bool "PPC4xx GPIO support"
+ 	depends on 44x
+ 	select GPIOLIB
+-	select OF_GPIO_MM_GPIOCHIP
+ 	help
+ 	  Enable gpiolib support for ppc440 based boards
  
--/* See https://github.com/ClangBuiltLinux/linux/issues/1521 */
--#if defined(CONFIG_CC_IS_CLANG) && CONFIG_CLANG_VERSION < 140000
--	val = suffix = 0;
--#endif
- 	__get_kernel_nofault(&val, src, u32, Efault);
- 	if (IS_ENABLED(CONFIG_PPC64) && get_op(val) == OP_PREFIX) {
- 		__get_kernel_nofault(&suffix, src + 1, u32, Efault);
-
+diff --git a/arch/powerpc/platforms/44x/gpio.c b/arch/powerpc/platforms/44x/gpio.c
+index a025b3248342..aea0d913b59d 100644
+--- a/arch/powerpc/platforms/44x/gpio.c
++++ b/arch/powerpc/platforms/44x/gpio.c
+@@ -14,7 +14,6 @@
+ #include <linux/spinlock.h>
+ #include <linux/io.h>
+ #include <linux/of.h>
+-#include <linux/gpio/legacy-of-mm-gpiochip.h>
+ #include <linux/gpio/driver.h>
+ #include <linux/types.h>
+ #include <linux/slab.h>
+@@ -46,7 +45,8 @@ struct ppc4xx_gpio {
+ };
+ 
+ struct ppc4xx_gpio_chip {
+-	struct of_mm_gpio_chip mm_gc;
++	struct gpio_chip gc;
++	void __iomem *regs;
+ 	spinlock_t lock;
+ };
+ 
+@@ -58,8 +58,8 @@ struct ppc4xx_gpio_chip {
+ 
+ static int ppc4xx_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+-	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++	struct ppc4xx_gpio_chip *chip = gpiochip_get_data(gc);
++	struct ppc4xx_gpio __iomem *regs = chip->regs;
+ 
+ 	return !!(in_be32(&regs->ir) & GPIO_MASK(gpio));
+ }
+@@ -67,8 +67,8 @@ static int ppc4xx_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+ static inline void
+ __ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+-	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++	struct ppc4xx_gpio_chip *chip = gpiochip_get_data(gc);
++	struct ppc4xx_gpio __iomem *regs = chip->regs;
+ 
+ 	if (val)
+ 		setbits32(&regs->or, GPIO_MASK(gpio));
+@@ -94,9 +94,8 @@ static int ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+ 
+ static int ppc4xx_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct ppc4xx_gpio_chip *chip = gpiochip_get_data(gc);
+-	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++	struct ppc4xx_gpio __iomem *regs = chip->regs;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&chip->lock, flags);
+@@ -124,9 +123,8 @@ static int ppc4xx_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+ static int
+ ppc4xx_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct ppc4xx_gpio_chip *chip = gpiochip_get_data(gc);
+-	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
++	struct ppc4xx_gpio __iomem *regs = chip->regs;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&chip->lock, flags);
+@@ -161,7 +159,6 @@ static int ppc4xx_gpio_probe(struct platform_device *ofdev)
+ 	struct device *dev = &ofdev->dev;
+ 	struct device_node *np = dev->of_node;
+ 	struct ppc4xx_gpio_chip *chip;
+-	struct of_mm_gpio_chip *mm_gc;
+ 	struct gpio_chip *gc;
+ 
+ 	chip = devm_kzalloc(dev, sizeof(*chip), GFP_KERNEL);
+@@ -170,16 +167,24 @@ static int ppc4xx_gpio_probe(struct platform_device *ofdev)
+ 
+ 	spin_lock_init(&chip->lock);
+ 
+-	mm_gc = &chip->mm_gc;
+-	gc = &mm_gc->gc;
++	gc = &chip->gc;
+ 
++	gc->base = -1;
+ 	gc->ngpio = 32;
+ 	gc->direction_input = ppc4xx_gpio_dir_in;
+ 	gc->direction_output = ppc4xx_gpio_dir_out;
+ 	gc->get = ppc4xx_gpio_get;
+ 	gc->set = ppc4xx_gpio_set;
+ 
+-	return of_mm_gpiochip_add_data(np, mm_gc, chip);
++	gc->label = devm_kasprintf(dev, GFP_KERNEL, "%pOF", np);
++	if (!gc->label)
++		return -ENOMEM;
++
++	chip->regs = devm_of_iomap(dev, np, 0, NULL);
++	if (IS_ERR(chip->regs))
++		return PTR_ERR(chip->regs);
++
++	return devm_gpiochip_add_data(dev, gc, chip);
+ }
+ 
+ static const struct of_device_id ppc4xx_gpio_match[] = {
 -- 
-2.50.1
+2.49.0
 
 
