@@ -1,64 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-11104-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11105-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 429D4CA0ED1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 19:50:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 550AECA0EE4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 20:20:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5NcG4qpdz3cgW;
-	Tue, 19 Aug 2025 05:50:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5PGr6l4Cz3chF;
+	Tue, 19 Aug 2025 06:20:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755546638;
-	cv=none; b=kcetTlPe5v9kJYkiEmTBrkXzi34rAkxOke3xp+samNmjYCdsWU4Hmu71D2U31K4MxuwXpECjxWh+MA7QhiNkJ5O6stTWV61mM32/TEM+H26kuYUVV3kDmDvbN0aMzVOCAL3pVpTsx+sw43CnpCzapF79GNkou11lZwaO1xYV5UqJqolOyAJ3pFDF9crsCqtd7i4uivEW7m9HMSRPgxULd0e6HJwPZ4dSILYEMeS15GXKeP6uo8MD6kkcFJ//8pB8qSOsd06GqGqxJ4kHFDu6sAviSFZrLBn18pjhrhUKJUHN0W159J5zuH+vB8ZNfT2bS4Q6IetuusK2If7QvJnnjQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755548436;
+	cv=none; b=cVlhY1jWc+oa/xQ67DEPousviccJ4uFuUaMGSZ7f41kzcv5PGTGsjWUPY4fpaGzOlG0OiT8RHiJJTuvWiK5Kkx5R7aGwm6ZoGSFioJlLjUVTTe0nfoMfcdcWJQXWxm55dpIb6vzvIUuxQEYyp125YN3ZQxpBfo2h405hApZSBQMjulFDTSFRMWuifQBja+/pOLfKznEYYmv+0BdxpEwUwfTrYVg02UXstV/DbfZsJpZocuQvPVnS8ctXzXE771aBYElJ0PWA/NyA/5hGYY60aYIqbZt9FN3x0/YfMOQSXKU2LdLiMD+AbOVqUkTlwzEItRxtROpxlAwlVNv0LEVD8Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755546638; c=relaxed/relaxed;
-	bh=GwXUHuW5lHiBitijhc/IX+d+bm9+/Ln5pfTojM9X4vs=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KBbeV9AZE+nKUySuWd5QVz0hmP6Jkz3RnetxXMLhovAcW12ID3PoLvbsrdjk1iYDD4l83vs28Fe7+BtQ9j27mh3ZAomUCE9nidxbA2lv1wEV3h8O7KAPbFqkqBUFnDhJYXBOW7KJGA0iWv5rerTKhYQHi/VrR1+N6vfoyqmduf19z/OLT4Z7hmJcKgt3wDqicpDTcdM3M/gGmxYe1w7TBLqtO5478pFxknqxEuxlL3JGQeP9jph71flbZkM2OpyEQj6L0nidttcr7yeovTmrk0WmriJNgJ7XlzbwnaWb6MGfYySb7VqPdtANyV05RBI59WLb4WiP77zLSvmOclgAcA==
+	t=1755548436; c=relaxed/relaxed;
+	bh=AwYuYWkD6HG/WmASteon2R3SgEbV3PMKCgt21o3VGAc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=fSh/isnXzv2rjUt2HJG8cJviXwygxWfdzCOCt/1WUIuqQhgN4H+z/f+JPCUBaGTmSJ4UQOhEYVGLhDkYdj9GJ/vGF2Uke++J8C44pguCcHDHq6ooSnj6GNjxmvyqgjsJoVVnijfo6H/eSBtUHSqUQuujcL/ZG6vZ7RmLddkiVw+rrVg/EdQw5fpVqJflSbtPNCiYV7dDObyroqBH+8MxITsIf9NhYiE1z3fItXjiBVu9vXQPY9U2MEFqNjcTo13hhAV9lU5dJyWFYXqAhDp+xYkJaNC/pVFEVE8cYB0VT75bFtsJxz0l71w7LibHsYqiSLiQPq/DQ0vxcLRTdHRjzQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5NcF5J5Wz3cgV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 05:50:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5PGr26Ydz3cfx
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 06:20:36 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c5BYd0rhsz9sV3;
-	Mon, 18 Aug 2025 14:17:41 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4c55g45CxBz9sWv;
+	Mon, 18 Aug 2025 10:37:04 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id LUzjzR3pCnxq; Mon, 18 Aug 2025 14:17:41 +0200 (CEST)
+	with ESMTP id ZkJOApxeOfnh; Mon, 18 Aug 2025 10:37:04 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c5BYc0gBfz9sV0;
-	Mon, 18 Aug 2025 14:17:40 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55g43xC4z9sWt;
+	Mon, 18 Aug 2025 10:37:04 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id F2A748B763;
-	Mon, 18 Aug 2025 14:17:39 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6ECF68B764;
+	Mon, 18 Aug 2025 10:37:04 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id Ump101Aa9xV9; Mon, 18 Aug 2025 14:17:39 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id C3BEB8B764;
-	Mon, 18 Aug 2025 14:17:39 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-gpio@vger.kernel.org,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH 2/2] powerpc/44x: Drop legacy-of-mm-gpiochip.h header
-Date: Mon, 18 Aug 2025 14:17:35 +0200
-Message-ID: <2f8f16eac72b9ec202b6e593939b44308891a661.1755519343.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <29d89aa43536714b193d9710301341f838fcb5b7.1755519343.git.christophe.leroy@csgroup.eu>
-References: <29d89aa43536714b193d9710301341f838fcb5b7.1755519343.git.christophe.leroy@csgroup.eu>
+	with ESMTP id U_Z-I48WiQ0s; Mon, 18 Aug 2025 10:37:04 +0200 (CEST)
+Received: from [10.25.207.160] (unknown [10.25.207.160])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3D1758B763;
+	Mon, 18 Aug 2025 10:37:04 +0200 (CEST)
+Message-ID: <a14e4ec5-74ff-4f0b-bc26-76c59ecb2357@csgroup.eu>
+Date: Mon, 18 Aug 2025 10:37:04 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,145 +58,86 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1755519455; l=4820; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=PLM/65JvqNc3NilFjJ1vKDYuZPfhd7TFnkWsRNB/R5A=; b=Zjq/6FK9sXzyA80Ffb9ZnhDUHevV7VYAjbbUcFcnIkEAr3H0LvJ9wrxocZC5UcGLVp3Oh7hrV 3XC/VOwClHACT50kbShSMq0VXZqNlEjXjdKEW/gab6AUUSk0gOtmVyK
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 4/4] dt-bindings: soc: fsl: qe: Add an interrupt
+ controller for QUICC Engine Ports
+To: Krzysztof Kozlowski <krzk@kernel.org>, Qiang Zhao <qiang.zhao@nxp.com>,
+ Linus Walleij <linus.walleij@linaro.org>, Bartosz Golaszewski
+ <brgl@bgdev.pl>, Rob Herring <robh@kernel.org>,
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
+ devicetree@vger.kernel.org
+References: <cover.1754996033.git.christophe.leroy@csgroup.eu>
+ <0b56ef403a7c8d0f8305e847d68959a1037d365e.1754996033.git.christophe.leroy@csgroup.eu>
+ <0fd6fefc-9fad-4ea6-a619-e9f480747ac0@kernel.org>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <0fd6fefc-9fad-4ea6-a619-e9f480747ac0@kernel.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-Remove legacy-of-mm-gpiochip.h header file. The above mentioned
-file provides an OF API that's deprecated. There is no agnostic
-alternatives to it and we have to open code the logic which was
-hidden behind of_mm_gpiochip_add_data(). Note, most of the GPIO
-drivers are using their own labeling schemas and resource retrieval
-that only a few may gain of the code deduplication, so whenever
-alternative is appear we can move drivers again to use that one.
 
-As a side effect this change fixes a potential memory leak on
-an error path, if of_mm_gpiochip_add_data() fails.
 
-[Text copied from commit 34064c8267a6 ("powerpc/8xx: Drop
-legacy-of-mm-gpiochip.h header")]
+Le 12/08/2025 à 17:23, Krzysztof Kozlowski a écrit :
+> On 12/08/2025 13:02, Christophe Leroy wrote:
+>> The QUICC Engine provides interrupts for a few I/O ports. This is
+>> handled via a separate interrupt ID and managed via a triplet of
+>> dedicated registers hosted by the SoC.
+>>
+>> Implement an interrupt driver for it for that those IRQs can then
+>> be linked to the related GPIOs.
+>>
+>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>> ---
+>>   .../soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml       | 63 +++++++++++++++++++
+>>   1 file changed, 63 insertions(+)
+>>   create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+>>
+>> diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+>> new file mode 100644
+>> index 0000000000000..7c98706d03dd1
+>> --- /dev/null
+>> +++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+>> @@ -0,0 +1,63 @@
+>> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
+>> +
+>> +title: Freescale QUICC Engine I/O Ports Interrupt Controller
+>> +
+>> +maintainers:
+>> +  - name: Christophe Leroy
+>> +    email: christophe.leroy@csgroup.eu
+> 
+> Oh no...
+> 
+>> +
+>> +description: |
+>> +  Interrupt controller for the QUICC Engine I/O ports found on some
+>> +  Freescale/NXP PowerQUICC and QorIQ SoCs.
+>> +
+>> +properties:
+>> +  compatible:
+>> +    enum:
+>> +      - fsl,mpc8323-qe-ports-ic
+>> +      - fsl,mpc8360-qe-ports-ic
+>> +      - fsl,mpc8568-qe-ports-ic
+>> +
+>> +  reg:
+>> +    description: Base address and size of the QE I/O Ports Interrupt Controller registers.
+>> +    minItems: 1
+>> +    maxItems: 1
+> 
+> This was never tested but more important this and everything further
+> looks like generated by AI. Please don't do that or at least mark it
+> clearly, so I will prioritize accordingly (hint: AI generates poor code
+> and burden to decipher AI slop should not be on open source reviewers
+> but on users of AI, but as one of maintainers probably you already know
+> that, so sorry for lecturing).
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/platforms/44x/Kconfig |  1 -
- arch/powerpc/platforms/44x/gpio.c  | 33 +++++++++++++++++-------------
- 2 files changed, 19 insertions(+), 15 deletions(-)
+Yes sorry, overconfidence into AI. Until now I knew almost nothing about 
+YAML and the generated file had a good look. I didn't know there was a 
+special procedure to test bindings, I thought checkpatch was doing all 
+necessary checks.
 
-diff --git a/arch/powerpc/platforms/44x/Kconfig b/arch/powerpc/platforms/44x/Kconfig
-index 35a1f4b9f827..fc79f8466933 100644
---- a/arch/powerpc/platforms/44x/Kconfig
-+++ b/arch/powerpc/platforms/44x/Kconfig
-@@ -231,7 +231,6 @@ config PPC4xx_GPIO
- 	bool "PPC4xx GPIO support"
- 	depends on 44x
- 	select GPIOLIB
--	select OF_GPIO_MM_GPIOCHIP
- 	help
- 	  Enable gpiolib support for ppc440 based boards
- 
-diff --git a/arch/powerpc/platforms/44x/gpio.c b/arch/powerpc/platforms/44x/gpio.c
-index a025b3248342..aea0d913b59d 100644
---- a/arch/powerpc/platforms/44x/gpio.c
-+++ b/arch/powerpc/platforms/44x/gpio.c
-@@ -14,7 +14,6 @@
- #include <linux/spinlock.h>
- #include <linux/io.h>
- #include <linux/of.h>
--#include <linux/gpio/legacy-of-mm-gpiochip.h>
- #include <linux/gpio/driver.h>
- #include <linux/types.h>
- #include <linux/slab.h>
-@@ -46,7 +45,8 @@ struct ppc4xx_gpio {
- };
- 
- struct ppc4xx_gpio_chip {
--	struct of_mm_gpio_chip mm_gc;
-+	struct gpio_chip gc;
-+	void __iomem *regs;
- 	spinlock_t lock;
- };
- 
-@@ -58,8 +58,8 @@ struct ppc4xx_gpio_chip {
- 
- static int ppc4xx_gpio_get(struct gpio_chip *gc, unsigned int gpio)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
--	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
-+	struct ppc4xx_gpio_chip *chip = gpiochip_get_data(gc);
-+	struct ppc4xx_gpio __iomem *regs = chip->regs;
- 
- 	return !!(in_be32(&regs->ir) & GPIO_MASK(gpio));
- }
-@@ -67,8 +67,8 @@ static int ppc4xx_gpio_get(struct gpio_chip *gc, unsigned int gpio)
- static inline void
- __ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
--	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
-+	struct ppc4xx_gpio_chip *chip = gpiochip_get_data(gc);
-+	struct ppc4xx_gpio __iomem *regs = chip->regs;
- 
- 	if (val)
- 		setbits32(&regs->or, GPIO_MASK(gpio));
-@@ -94,9 +94,8 @@ static int ppc4xx_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- 
- static int ppc4xx_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct ppc4xx_gpio_chip *chip = gpiochip_get_data(gc);
--	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
-+	struct ppc4xx_gpio __iomem *regs = chip->regs;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&chip->lock, flags);
-@@ -124,9 +123,8 @@ static int ppc4xx_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- static int
- ppc4xx_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct ppc4xx_gpio_chip *chip = gpiochip_get_data(gc);
--	struct ppc4xx_gpio __iomem *regs = mm_gc->regs;
-+	struct ppc4xx_gpio __iomem *regs = chip->regs;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&chip->lock, flags);
-@@ -161,7 +159,6 @@ static int ppc4xx_gpio_probe(struct platform_device *ofdev)
- 	struct device *dev = &ofdev->dev;
- 	struct device_node *np = dev->of_node;
- 	struct ppc4xx_gpio_chip *chip;
--	struct of_mm_gpio_chip *mm_gc;
- 	struct gpio_chip *gc;
- 
- 	chip = devm_kzalloc(dev, sizeof(*chip), GFP_KERNEL);
-@@ -170,16 +167,24 @@ static int ppc4xx_gpio_probe(struct platform_device *ofdev)
- 
- 	spin_lock_init(&chip->lock);
- 
--	mm_gc = &chip->mm_gc;
--	gc = &mm_gc->gc;
-+	gc = &chip->gc;
- 
-+	gc->base = -1;
- 	gc->ngpio = 32;
- 	gc->direction_input = ppc4xx_gpio_dir_in;
- 	gc->direction_output = ppc4xx_gpio_dir_out;
- 	gc->get = ppc4xx_gpio_get;
- 	gc->set = ppc4xx_gpio_set;
- 
--	return of_mm_gpiochip_add_data(np, mm_gc, chip);
-+	gc->label = devm_kasprintf(dev, GFP_KERNEL, "%pOF", np);
-+	if (!gc->label)
-+		return -ENOMEM;
-+
-+	chip->regs = devm_of_iomap(dev, np, 0, NULL);
-+	if (IS_ERR(chip->regs))
-+		return PTR_ERR(chip->regs);
-+
-+	return devm_gpiochip_add_data(dev, gc, chip);
- }
- 
- static const struct of_device_id ppc4xx_gpio_match[] = {
--- 
-2.49.0
-
+Fixed in v2.
 
