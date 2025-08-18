@@ -1,39 +1,40 @@
-Return-Path: <linuxppc-dev+bounces-11095-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11096-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 879CDCA0ED1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 16:15:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8983CA0ED1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 16:16:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5HrM1c2Pz3ccS;
-	Tue, 19 Aug 2025 02:15:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.197.31.3
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755533747;
-	cv=none; b=BzvF7VFjBAKSA0QrXRRFz1TjtBEZhXy1OlM/T5sHR4BZA5uC7f7oRT/JEmqQ4mCed07MLf8SeWM0uKP93/8iU+NxQy2Exrhpwz3q0mjD1KCsYPU9/3k+Z7sk/ChXBRD0lR3JWmcO9g3AqXTiWrrX+gIdJtjDXhXAm+7FrEA+V8FcCGIa/EbLV+BCFQ26bcPHbeyJXdWVgYsafe+2dzlxeRJ4zDHY2egYirJVcPMMY82Bpqi2lrH3oN1s4MUD3nnkxaPIlFzdcSbA2VXKdeLcDyEtb4ARZ3SuupPi2LeznVn/jk6QBIx3I8GrzVS9Vc6VO/vRICAAnPXIDJrBFA5izQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5Hrj2Y6Yz3ccr;
+	Tue, 19 Aug 2025 02:16:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.197.31.2
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755533765;
+	cv=none; b=RWwALeYODh8j02hQNU6uBYGVNU4InIE40Xkb2cClm3ugwLddxus2q/3G0FkSSNJAyE/NY3zHtyZPSHtLVVOJhny1rf/IHRgzHkqbNW0yK4cDB0G+qXt8DvLSnnVhLYqA8ooH2wrfuRxscR9rf1j4VNofh3ZnjA7RjtI7DHHP76BD/icIpz6ultUyd+vBW/6CCTcQGjZm6zJAEC5Zf070dGNanHe4xE/XUwzqBbusbQny4YUypJXq9XjZBDU+9xkQrTJ9D4tA88vApvY2HE+Cbn62EmPI9qvhOpSoDHdBN17jVDM6pz93shxkq8t5nFH9Gj1KuJ+6Cyn3D70LRJximA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755533747; c=relaxed/relaxed;
-	bh=9tP1LLYdRr/BqHbJev6RqyxqZPPW7NhIMvgXJosQ1o8=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=QXuNae8Tal+rmrQCDsI1zg3smQIABw1+CqVtE1OM6Kfa9fj5a/dGu3GMHyoNE987WmTOHaowWPeTUQkdX5I0Z6+u97eNMvJl9B8zgjL7kAO0nrq3hTuuLKK6BK+g3N1cQkAi5V/fCp4Ws5fefU7MzjmN84tFrh88JODIyvo4ppu5vXtAtCN7OZh9hXtkxMJaKl1ZqrBXShHVGjKp16YFMA0uaaM6+CK9wwgLyIKND4kURBg4bCWVgOyX386MW97QpY5X/Om5XsLLoPaDSVFmkBuTk2q/q0MXNCVdo0NjoBzbdCMieuuYJ2llTNFEkbh+yMiWVxcFr2mht07XCHjHyg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=KHnEZ0ly; dkim-atps=neutral; spf=pass (client-ip=220.197.31.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
+	t=1755533765; c=relaxed/relaxed;
+	bh=rTeDMOibmlghpQVXp52MOWLYZFEzyWAti7xjOoZt1/I=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=LCF+tpvfx5d8T9hYWzGgt+e70W5vV7U48mubKGNEcEF6zHJGX/jdjI9OcGEls6EU55fvScNh97RxJzK/71q+KQBTDC8yCIixkduVZLkym0l3h2hAiT5avz8MG52TdT20ln7LPgLN8tnkfcfTjzwGXPzqsM6S3RvO5BLKWQtdHF5yt4HdRj3ddj5FRksSJsuIDdLbMu7vh7lqGF737Nu+SVh3MzE7TL+0vhs6VyNkPKTHtovkyUTDPOOFqYcHTCLJllB2gLpLJ18ZusekFmG6elYybzWYZ3XXO8Z2lxy41w1C8/xaw2wMpJ+/O1iDZGYN0qqdSkwnyVVstw5gaDdjdg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=jDtBKNAB; dkim-atps=neutral; spf=pass (client-ip=220.197.31.2; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=KHnEZ0ly;
+	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=jDtBKNAB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=220.197.31.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
-Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.3])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5HrL1H36z3cbL
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 02:15:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=220.197.31.2; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
+Received: from m16.mail.163.com (m16.mail.163.com [220.197.31.2])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5Hrh1ygCz3ccF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 02:16:04 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
-	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=9t
-	P1LLYdRr/BqHbJev6RqyxqZPPW7NhIMvgXJosQ1o8=; b=KHnEZ0lyVwzwdPNgVe
-	Hyqi1jQNreJC1tNc25uUCxdOXYkUEW0iN6cYN+awwpff7+O0pk/mYlyMro4+r9ak
-	2NRIE7ZNLc+KfErfpp6hZcHHxNiadaa4eM3x3kCSXMv9aZXHgwZZeQVG78gr1Z0C
-	gNaGTsuyOc8pPqMTwh/RzVb44=
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=rT
+	eDMOibmlghpQVXp52MOWLYZFEzyWAti7xjOoZt1/I=; b=jDtBKNABYOT2msFHPw
+	lAeE7k2YHDSLf9JKXVrFbFAs+/q93OTWQZBvRB0FncP1gH3xEstZ83IFK/KlcXUQ
+	SeQKB61xvu08Xl3NPjHnyiprRrKOtDOPwTtKEfCtFcMAbNsLqs5CaMglWihuCBtv
+	5W7p5G8kPzVsPLaq+iV5I6UpI=
 Received: from localhost.localdomain (unknown [])
-	by gzga-smtp-mtada-g0-0 (Coremail) with SMTP id _____wD3b8FtUaNopYAWCw--.8667S2;
-	Tue, 19 Aug 2025 00:14:38 +0800 (CST)
+	by gzga-smtp-mtada-g0-0 (Coremail) with SMTP id _____wD3b8FtUaNopYAWCw--.8667S4;
+	Tue, 19 Aug 2025 00:14:42 +0800 (CST)
 From: Hans Zhang <18255117159@163.com>
 To: mahesh@linux.ibm.com,
 	bhelgaas@google.com
@@ -44,10 +45,12 @@ Cc: oohall@gmail.com,
 	linux-pci@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
 	Hans Zhang <18255117159@163.com>
-Subject: [PATCH v4 0/2] PCI: Introduce pci_clear/set_config_dword()
-Date: Tue, 19 Aug 2025 00:14:29 +0800
-Message-Id: <20250818161431.372590-1-18255117159@163.com>
+Subject: [PATCH v4 2/2] PCI/AER: Use pci_clear/set_config_dword to simplify code
+Date: Tue, 19 Aug 2025 00:14:31 +0800
+Message-Id: <20250818161431.372590-3-18255117159@163.com>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20250818161431.372590-1-18255117159@163.com>
+References: <20250818161431.372590-1-18255117159@163.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,52 +65,91 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:_____wD3b8FtUaNopYAWCw--.8667S2
-X-Coremail-Antispam: 1Uf129KBjvJXoWxJrW3Zr17tFykJFyUCw1fCrg_yoW8XrWUpr
-	WfZry3Xr47GFya9FW7WF12ka45Wan7AFWrGr13K34rZr43ZrW7XF9YqryrAF9rJrW8Jw4a
-	9rs7WF109w1qkFJanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0JUjQ6dUUUUU=
+X-CM-TRANSID:_____wD3b8FtUaNopYAWCw--.8667S4
+X-Coremail-Antispam: 1Uf129KBjvJXoWxZFyDAFy7AF15tw1kJr4ruFg_yoW5Xw1UpF
+	W3AFWfAr4UJF15ZrWDWaykJwn5AF97t34fKr93Kwn5XF48uFZrJ3sav34UJ345KFZ5X34r
+	Jws5Ka1rZF4UJ3JanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zNAp0kUUUUU=
 X-Originating-IP: [240e:b8f:919b:3100:3980:6173:5059:2d2a]
-X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/1tbiOhCto2ijSkC+8gACsr
+X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/1tbiQwSto2ijSoPLJQABsk
 
-This series introduces auxiliary functions for the PCI configuration space
-and simplifies the read and write operations of the AER driver, reducing a
-lot of repetitive code.
+Replace manual read-modify-write sequences in multiple functions with
+pci_clear/set_config_dword helper to reduce code duplication.
 
-Patch 1 adds pci_clear_config_dword() and pci_set_config_dword() helpers
-to reduce repetitive read-modify-write sequences when modifying PCI config
-space. These helpers improve code readability and maintainability.
-
-Patch 2 refactors the PCIe AER driver to use these new helpers,
-eliminating manual read-modify-write patterns and intermediate variable
-in several functions. This results in cleaner and more concise code.
-
+Signed-off-by: Hans Zhang <18255117159@163.com>
 ---
-Changes for v4:
-- Introduce pci_clear/set_config_dword()
-
-Changes for v3:
-https://patchwork.kernel.org/project/linux-pci/patch/20250816161743.340684-1-18255117159@163.com/
-
-- Rebase to v6.17-rc1.
-- The patch commit message were modified.
-- Add Acked-by: Manivannan Sadhasivam <mani@kernel.org>
-
-Changes for v2:
-- The patch commit message were modified.
-- New optimizations for the functions disable_ecrc_checking, aer_enable_irq, and aer_disable_irq have been added.
----
-
-Hans Zhang (2):
-  PCI: Introduce pci_clear/set_config_dword()
-  PCI/AER: Use pci_clear/set_config_dword to simplify code
-
  drivers/pci/pcie/aer.c | 29 ++++++++++-------------------
- include/linux/pci.h    | 12 ++++++++++++
- 2 files changed, 22 insertions(+), 19 deletions(-)
+ 1 file changed, 10 insertions(+), 19 deletions(-)
 
-
-base-commit: 8742b2d8935f476449ef37e263bc4da3295c7b58
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index e286c197d716..468d4a726a20 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -176,14 +176,12 @@ static int enable_ecrc_checking(struct pci_dev *dev)
+ static int disable_ecrc_checking(struct pci_dev *dev)
+ {
+ 	int aer = dev->aer_cap;
+-	u32 reg32;
+ 
+ 	if (!aer)
+ 		return -ENODEV;
+ 
+-	pci_read_config_dword(dev, aer + PCI_ERR_CAP, &reg32);
+-	reg32 &= ~(PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
+-	pci_write_config_dword(dev, aer + PCI_ERR_CAP, reg32);
++	pci_clear_config_dword(dev, aer + PCI_ERR_CAP,
++			       PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
+ 
+ 	return 0;
+ }
+@@ -1102,15 +1100,12 @@ static bool find_source_device(struct pci_dev *parent,
+ static void pci_aer_unmask_internal_errors(struct pci_dev *dev)
+ {
+ 	int aer = dev->aer_cap;
+-	u32 mask;
+ 
+-	pci_read_config_dword(dev, aer + PCI_ERR_UNCOR_MASK, &mask);
+-	mask &= ~PCI_ERR_UNC_INTN;
+-	pci_write_config_dword(dev, aer + PCI_ERR_UNCOR_MASK, mask);
++	pci_clear_config_dword(dev, aer + PCI_ERR_UNCOR_MASK,
++			       PCI_ERR_UNC_INTN);
+ 
+-	pci_read_config_dword(dev, aer + PCI_ERR_COR_MASK, &mask);
+-	mask &= ~PCI_ERR_COR_INTERNAL;
+-	pci_write_config_dword(dev, aer + PCI_ERR_COR_MASK, mask);
++	pci_clear_config_dword(dev, aer + PCI_ERR_COR_MASK,
++			       PCI_ERR_COR_INTERNAL);
+ }
+ 
+ static bool is_cxl_mem_dev(struct pci_dev *dev)
+@@ -1556,23 +1551,19 @@ static irqreturn_t aer_irq(int irq, void *context)
+ static void aer_enable_irq(struct pci_dev *pdev)
+ {
+ 	int aer = pdev->aer_cap;
+-	u32 reg32;
+ 
+ 	/* Enable Root Port's interrupt in response to error messages */
+-	pci_read_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, &reg32);
+-	reg32 |= ROOT_PORT_INTR_ON_MESG_MASK;
+-	pci_write_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, reg32);
++	pci_set_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND,
++			     ROOT_PORT_INTR_ON_MESG_MASK);
+ }
+ 
+ static void aer_disable_irq(struct pci_dev *pdev)
+ {
+ 	int aer = pdev->aer_cap;
+-	u32 reg32;
+ 
+ 	/* Disable Root Port's interrupt in response to error messages */
+-	pci_read_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, &reg32);
+-	reg32 &= ~ROOT_PORT_INTR_ON_MESG_MASK;
+-	pci_write_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, reg32);
++	pci_clear_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND,
++			       ROOT_PORT_INTR_ON_MESG_MASK);
+ }
+ 
+ /**
 -- 
 2.25.1
 
