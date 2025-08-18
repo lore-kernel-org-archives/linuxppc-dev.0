@@ -1,97 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-11077-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11078-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DBA6CA0EE4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 08:31:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34D67CA0ED1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 09:20:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c55XX0y9wz3blF;
-	Mon, 18 Aug 2025 18:31:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755505884;
-	cv=none; b=N0YYyUMhc+OFShAdRasfmVFavbV9j2/MAxMPLB5wv3NouCLGP6A40B61MtDlqDrwnr/CCBlEmZKhOvS6v/F24h8GB3kVESxUQ9tmg/6m2W0rji+DrmZTVqXeHZUcxO23diX+c1RaWyrxL9bo6B/D8oCWbW7wF21pf5WfAcGmgsen9WT6VOnigwWOS0nC/ITyICFMT/jRkuv/msL7wrkChqxcLAAt0Dnk3mniHIRDGNg4i9SZD1oyXTiENpj17qnNGtdkUKItTaaO8sbPnZYrzE2jXQltF4Gt49bMTYd/YXwBL0ZppBt0h4wAIGSiXJt3uexLp7thOsEreZ76CkYwIg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c56dN4lb6z3bn8;
+	Mon, 18 Aug 2025 19:20:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755508840;
+	cv=none; b=Lpy5KySNLB5lmH3bBJZbCP1U43TaUd6n5wldNcCvXzbzpZY2I5X97VwRyiVvCb9YjCfvsEERY6N+4kFXO77U2tNaHUT3AYlvfNPAmjnvmpg4RCwDI7fb6sHEFO1UPFF2/Fjb2ATTLFLGuAwk896q1nIbJf3Uj9mP7wg5ynIfqPRyuDOtWdj95jwNoklJssmfsgAscfL+2IVrpf+C9vS7Bw4F5xHb4Z/zZQDUqf/+j7bBoNuY6Bhs3BCdCcdgcv30cVjePaYPh3m3xhN+6F4LtUR/Ivf0ORJ+z5i6T6db6xE0yXoinxohUlbF0KJwEF/yhLzScaJZsYaAV4bGPU3z/g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755505884; c=relaxed/relaxed;
-	bh=IrBtZYA5Z28bn60ohedxv6GlFgI1zXS/Odi0JqkPxhE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=P8n2qI4MR5Bs+mziWNGbZmXFORuy/ALyAf9tNd8evlEDkMS/jqPpCorV0WlfFjSNc0dOXpCLwyhbraZbOoeU0UZOCFTNmrDozhhxzT8T2uZ1cTpbBZYvbX/dltvS66n7V9ulZJYA/3lvHrGT5/sM048EyHXvpB12slZOKZqpo2KoSPKH1HlzZdgcV/40lHHAaZmVE1BCWAYPTihkEqNohgQfiQSrf7+ohJst3+WD+FGQkEWpqBkLEA9FFPgYRrO1HRTsMxBnm4fG3H33M8gtAf7dehZjGoL6caWDvwq84boK233Z3IaL0YDA5Uyu5vUdvvcHwWs0vER4Quz05+eOSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=E5k9MU/B; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=E5k9MU/B; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=E5k9MU/B;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=E5k9MU/B;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c55XW1Zp5z3bkb
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 18:31:21 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1755505878;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=IrBtZYA5Z28bn60ohedxv6GlFgI1zXS/Odi0JqkPxhE=;
-	b=E5k9MU/BF7RTf/ZDvNdCXxi4Jt/lvDsAKkrgGTh9kuPfpf+b65NBVHpZWOV+JKEo7/Bgf2
-	0f2QCH3zTZ8wzhfNpyx02uxDN6kfJvqy8pFuf6/prwkhL5pM1VC6nt7vLjqeG5AbIN+SWr
-	15xP3F4LOsaNhYqkbY/+iLrMM0+rvK8=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1755505878;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=IrBtZYA5Z28bn60ohedxv6GlFgI1zXS/Odi0JqkPxhE=;
-	b=E5k9MU/BF7RTf/ZDvNdCXxi4Jt/lvDsAKkrgGTh9kuPfpf+b65NBVHpZWOV+JKEo7/Bgf2
-	0f2QCH3zTZ8wzhfNpyx02uxDN6kfJvqy8pFuf6/prwkhL5pM1VC6nt7vLjqeG5AbIN+SWr
-	15xP3F4LOsaNhYqkbY/+iLrMM0+rvK8=
-Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
- [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-394-JhrhHza0MFOXtijVFMnJnQ-1; Mon, 18 Aug 2025 04:31:16 -0400
-X-MC-Unique: JhrhHza0MFOXtijVFMnJnQ-1
-X-Mimecast-MFC-AGG-ID: JhrhHza0MFOXtijVFMnJnQ_1755505875
-Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-45a1b1015f8so15649035e9.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 01:31:16 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755505875; x=1756110675;
-        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
-         :from:references:cc:to:subject:user-agent:mime-version:date
-         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=IrBtZYA5Z28bn60ohedxv6GlFgI1zXS/Odi0JqkPxhE=;
-        b=q4xTg2McHmflhUkJuPqjhjOeWUA836vvbg5ZjGG5bPDAkEZYDSLRHvs+DDZ9/vYbe+
-         M5cli11BVYh3Nc5FnePu0PEM7RJFW+eT02ms4a8Xp3vENle6+pToSOysAG2cA41wEuBL
-         rVMB/b5s6yOmQL8P9QM4nyMIpa6+oo6TlDnUAy4aLHpDVGuTKhXAGAzYbPv6BCZnToqh
-         p57JY6PZIa8wUh4zsoX8NxzHlyFitswSL/0vL3N7gFxYhfty8ozkNBkCRwjKKbkGZUCL
-         AE7TAZXRgORvSX0p5raj/VHzwJg4b2bLHh29ogll22ot/1XfLW6hRoEjQFIH2ObY2oZu
-         67gQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVDdDVpxOLi23dIHSa9YeHokLk/rPpd0mSrapqWTr+koqP7qJ4Kv4DKT5G/44k+QaOuhTn2AzTpwMC9BSs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyWVrD2HkUu08ERugYwAhUITnfBsNqMO0IiB3305YREhXDzKr5V
-	2RLPIOWN/b8OpBkvsqfbCUkeESZyw2sUJnLbwhrrP084oGG5oSOKcljJxnPat7v9WZ/IR9XvoHR
-	OKt47aeNubP8Jg1a+0DMHzi6ZHsJxr1riaj/C+sOPUVvrOhnMnQYY8wWbLOJWACLItug=
-X-Gm-Gg: ASbGncuVduqoyWehL4htdrXvknHC+29Mu9sbhimXzvNMuyxLFvhR8ZzVKk8XxKpqebM
-	FtG52Pb7tW+T+Witqmk2os3/qAq+cXuAXgxypUPEuXaBJPzZZxjLkKKs93IMRH6OvW5yV9uFTyr
-	dJLdi3ReP7VYjJReEsU3x6ZKhpMiSz8mpoJyB3rrxjD6kwuhOZC9DNum539Y/cvmAYg5r1bIZdz
-	IJRgnc13sixgCbaFBZMnqGkExQpZNtXpcy6CPICzzbwD5/uyaUQxkXcOiEtCn/CdW08qQpZ8rpZ
-	AYDmRM04Bs4IoYfB3o9WVJV8LarBCPZ1wvnfPw7Inrt8cKIZMVv99MI1WTsUmGTCoTFMgXw4kY4
-	wD88+SX698A/hDIl9ijaE1Uomeq4UkRFaPaSesFWCZe+reLLqhGbr7SvqYvuIwEXs
-X-Received: by 2002:a05:600c:a43:b0:459:a1c7:99ad with SMTP id 5b1f17b1804b1-45a21839edbmr81793105e9.22.1755505875226;
-        Mon, 18 Aug 2025 01:31:15 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFUJ0JHZagWj9XCwRsqfc1oqsDUPxyV3bXjzLuhESOGbYeY8B2myjjJBUZ0Oh+caqJMAY5Uow==
-X-Received: by 2002:a05:600c:a43:b0:459:a1c7:99ad with SMTP id 5b1f17b1804b1-45a21839edbmr81792535e9.22.1755505874765;
-        Mon, 18 Aug 2025 01:31:14 -0700 (PDT)
-Received: from ?IPV6:2003:d8:2f22:600:53c7:df43:7dc3:ae39? (p200300d82f22060053c7df437dc3ae39.dip0.t-ipconnect.de. [2003:d8:2f22:600:53c7:df43:7dc3:ae39])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3bb64a40c3asm12015938f8f.14.2025.08.18.01.31.12
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 18 Aug 2025 01:31:14 -0700 (PDT)
-Message-ID: <63082884-1fe2-4740-8e6a-e1d06aa5e239@redhat.com>
-Date: Mon, 18 Aug 2025 10:31:12 +0200
+	t=1755508840; c=relaxed/relaxed;
+	bh=rfrcOadjj+5auBUnuI0XCrOeQQGJHs2AH2M6B9EosPo=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=QOJO/ysIljTJ44TCixeAwUJU75r8u/mkkRDUdGT6Nclz4QSnMDA7T/UY0W8ludYKKMiCldcwQEKt532zUIZ2izXdL7+ARYIa/DXpmhnaBX7FjI/mMJzei/7qVfYp9eaOLObn+JBYD1yWrEGwdysHefrR+51eflsnhx2sy3yvd5wOAoxIZZbYssBx7mZEIsmnzYRWLxadPnrUVqu9eqyZ4vx/D9KLFdTUi7r3Aw01GXMVo7QxX9/XJRUj5SniJTVEG/MtW8Rm8iG5kgLkSo+RgkyvC1dIvponJ3vKZ6Vo2/t2jniZkAks+SA/x1RIj1HhidDUQbBJDNWON1elkZe7Kw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c56dK4XNyz3bn4
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 19:20:36 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4c55sc2n60z9sX2;
+	Mon, 18 Aug 2025 10:46:12 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 5yhzdcCd9cYr; Mon, 18 Aug 2025 10:46:12 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55sZ07nwz9sWm;
+	Mon, 18 Aug 2025 10:46:10 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id E2A588B765;
+	Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id vns69XugoAlV; Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id AFEEF8B764;
+	Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org
+Subject: [PATCH v2 3/5] soc: fsl: qe: Drop legacy-of-mm-gpiochip.h header from GPIO driver
+Date: Mon, 18 Aug 2025 10:45:56 +0200
+Message-ID: <ad5d6bfb189e260dbfda160d087a203d8a68b0c4.1755506608.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1755506608.git.christophe.leroy@csgroup.eu>
+References: <cover.1755506608.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,121 +75,215 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] mm/numa: Rename memory_add_physaddr_to_nid to
- memory_get_phys_to_nid
-To: Pratyush Brahma <pratyush.brahma@oss.qualcomm.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, "Rafael J. Wysocki"
- <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
- Dan Williams <dan.j.williams@intel.com>,
- Vishal Verma <vishal.l.verma@intel.com>, Dave Jiang <dave.jiang@intel.com>,
- Ira Weiny <ira.weiny@intel.com>, Oscar Salvador <osalvador@suse.de>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Danilo Krummrich <dakr@kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
- Jonathan Cameron <jonathan.cameron@huawei.com>,
- Alison Schofield <alison.schofield@intel.com>,
- "K. Y. Srinivasan" <kys@microsoft.com>,
- Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
- Dexuan Cui <decui@microsoft.com>, Pankaj Gupta
- <pankaj.gupta.linux@gmail.com>, "Michael S. Tsirkin" <mst@redhat.com>,
- Jason Wang <jasowang@redhat.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
- =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
- Juergen Gross <jgross@suse.com>, Stefano Stabellini
- <sstabellini@kernel.org>,
- Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
- Andrew Morton <akpm@linux-foundation.org>, Mike Rapoport <rppt@kernel.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
- linux-s390@vger.kernel.org, linux-acpi@vger.kernel.org,
- nvdimm@lists.linux.dev, linux-mm@kvack.org, linux-cxl@vger.kernel.org,
- linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev,
- xen-devel@lists.xenproject.org
-References: <20250818-numa_memblks-v1-1-9eb29ade560a@oss.qualcomm.com>
- <d7cdb65d-c241-478c-aa01-bc1a5f188e4f@redhat.com>
- <CALzOmR0C8BFY+-u-_aprVeAhq4uPOQa+f2L5m+yZH+=XZ2cv_w@mail.gmail.com>
-From: David Hildenbrand <david@redhat.com>
-Autocrypt: addr=david@redhat.com; keydata=
- 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
- qIws/H2t
-In-Reply-To: <CALzOmR0C8BFY+-u-_aprVeAhq4uPOQa+f2L5m+yZH+=XZ2cv_w@mail.gmail.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: YxRydJs4VuvPGr8QYVifnu-O3hmuh68mzx-ykjzLO2Y_1755505875
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755506759; l=7343; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=71KPdI4+YFoLm/OfDlnRkk1s5xf+3TgUC7cT9RMRHUM=; b=uLPKXf9NshSiWxr6TU/TtnUKKebgXkRyN2MxNbWt7oMRNnZJNZ08ev4AXPWTa3SwmAwFMervp iJhwzk0GN49BE+t4v0u0UDf53h0vc4dJRBybudsYRBREJNV9K81yyCz
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-On 18.08.25 10:27, Pratyush Brahma wrote:
-> On Mon, Aug 18, 2025 at 12:29 PM David Hildenbrand <david@redhat.com> wrote:
->>
->> On 18.08.25 08:41, pratyush.brahma@oss.qualcomm.com wrote:
->>> From: Pratyush Brahma <pratyush.brahma@oss.qualcomm.com>
->>>
->>> The function `memory_add_physaddr_to_nid` seems a misnomer.
->>> It does not to "add" a physical address to a NID mapping,
->>> but rather it gets the NID associated with a given physical address.
->>
->> You probably misunderstood what the function is used for: memory hotplug
->> aka "memory_add".
-> Thanks for your feedback. I get the part about memory hotplug here but
-> using memory_add still seems a little odd as it doesn't truly reflect
-> what this api is doing.
-> However, I agree that my current suggestion
-> may not be the perfect choice for the name, so I'm open to suggestions.
-> 
-> Perhaps, something like "memory_add_get_nid_by_phys" may work here?
+Remove legacy-of-mm-gpiochip.h header file. The above mentioned
+file provides an OF API that's deprecated. There is no agnostic
+alternatives to it and we have to open code the logic which was
+hidden behind of_mm_gpiochip_add_data(). Note, most of the GPIO
+drivers are using their own labeling schemas and resource retrieval
+that only a few may gain of the code deduplication, so whenever
+alternative is appear we can move drivers again to use that one.
 
-I don't think this name is really any better and worth the churn :(
+As a side effect this change fixes a potential memory leak on
+an error path, if of_mm_gpiochip_add_data() fails.
 
+[Text copied from commit 34064c8267a6 ("powerpc/8xx: Drop
+legacy-of-mm-gpiochip.h header")]
+
+Suggested-by: Bartosz Golaszewski <brgl@bgdev.pl>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v2: New
+---
+ arch/powerpc/platforms/Kconfig |  1 -
+ drivers/soc/fsl/qe/gpio.c      | 51 ++++++++++++++++++----------------
+ 2 files changed, 27 insertions(+), 25 deletions(-)
+
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index fea3766eac0f..5b689bd3ddf4 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -232,7 +232,6 @@ config QE_GPIO
+ 	bool "QE GPIO support"
+ 	depends on QUICC_ENGINE
+ 	select GPIOLIB
+-	select OF_GPIO_MM_GPIOCHIP
+ 	help
+ 	  Say Y here if you're going to use hardware that connects to the
+ 	  QE GPIOs.
+diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
+index 93fcc6d85ac7..a338469cebe4 100644
+--- a/drivers/soc/fsl/qe/gpio.c
++++ b/drivers/soc/fsl/qe/gpio.c
+@@ -13,7 +13,6 @@
+ #include <linux/err.h>
+ #include <linux/io.h>
+ #include <linux/of.h>
+-#include <linux/gpio/legacy-of-mm-gpiochip.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/gpio/driver.h>
+ #include <linux/slab.h>
+@@ -24,7 +23,8 @@
+ #include <soc/fsl/qe/qe.h>
+ 
+ struct qe_gpio_chip {
+-	struct of_mm_gpio_chip mm_gc;
++	struct gpio_chip gc;
++	void __iomem *regs;
+ 	spinlock_t lock;
+ 
+ 	/* shadowed data register to clear/set bits safely */
+@@ -34,11 +34,9 @@ struct qe_gpio_chip {
+ 	struct qe_pio_regs saved_regs;
+ };
+ 
+-static void qe_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
++static void qe_gpio_save_regs(struct qe_gpio_chip *qe_gc)
+ {
+-	struct qe_gpio_chip *qe_gc =
+-		container_of(mm_gc, struct qe_gpio_chip, mm_gc);
+-	struct qe_pio_regs __iomem *regs = mm_gc->regs;
++	struct qe_pio_regs __iomem *regs = qe_gc->regs;
+ 
+ 	qe_gc->cpdata = ioread32be(&regs->cpdata);
+ 	qe_gc->saved_regs.cpdata = qe_gc->cpdata;
+@@ -51,8 +49,8 @@ static void qe_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
+ 
+ static int qe_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+-	struct qe_pio_regs __iomem *regs = mm_gc->regs;
++	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
++	struct qe_pio_regs __iomem *regs = qe_gc->regs;
+ 	u32 pin_mask = 1 << (QE_PIO_PINS - 1 - gpio);
+ 
+ 	return !!(ioread32be(&regs->cpdata) & pin_mask);
+@@ -60,9 +58,8 @@ static int qe_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+ 
+ static int qe_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
+-	struct qe_pio_regs __iomem *regs = mm_gc->regs;
++	struct qe_pio_regs __iomem *regs = qe_gc->regs;
+ 	unsigned long flags;
+ 	u32 pin_mask = 1 << (QE_PIO_PINS - 1 - gpio);
+ 
+@@ -83,9 +80,8 @@ static int qe_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+ static int qe_gpio_set_multiple(struct gpio_chip *gc,
+ 				unsigned long *mask, unsigned long *bits)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
+-	struct qe_pio_regs __iomem *regs = mm_gc->regs;
++	struct qe_pio_regs __iomem *regs = qe_gc->regs;
+ 	unsigned long flags;
+ 	int i;
+ 
+@@ -111,13 +107,12 @@ static int qe_gpio_set_multiple(struct gpio_chip *gc,
+ 
+ static int qe_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&qe_gc->lock, flags);
+ 
+-	__par_io_config_pin(mm_gc->regs, gpio, QE_PIO_DIR_IN, 0, 0, 0);
++	__par_io_config_pin(qe_gc->regs, gpio, QE_PIO_DIR_IN, 0, 0, 0);
+ 
+ 	spin_unlock_irqrestore(&qe_gc->lock, flags);
+ 
+@@ -126,7 +121,6 @@ static int qe_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+ 
+ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
+ 	unsigned long flags;
+ 
+@@ -134,7 +128,7 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ 
+ 	spin_lock_irqsave(&qe_gc->lock, flags);
+ 
+-	__par_io_config_pin(mm_gc->regs, gpio, QE_PIO_DIR_OUT, 0, 0, 0);
++	__par_io_config_pin(qe_gc->regs, gpio, QE_PIO_DIR_OUT, 0, 0, 0);
+ 
+ 	spin_unlock_irqrestore(&qe_gc->lock, flags);
+ 
+@@ -240,7 +234,7 @@ EXPORT_SYMBOL(qe_pin_free);
+ void qe_pin_set_dedicated(struct qe_pin *qe_pin)
+ {
+ 	struct qe_gpio_chip *qe_gc = qe_pin->controller;
+-	struct qe_pio_regs __iomem *regs = qe_gc->mm_gc.regs;
++	struct qe_pio_regs __iomem *regs = qe_gc->regs;
+ 	struct qe_pio_regs *sregs = &qe_gc->saved_regs;
+ 	int pin = qe_pin->num;
+ 	u32 mask1 = 1 << (QE_PIO_PINS - (pin + 1));
+@@ -269,7 +263,6 @@ void qe_pin_set_dedicated(struct qe_pin *qe_pin)
+ 
+ 	iowrite32be(qe_gc->cpdata, &regs->cpdata);
+ 	qe_clrsetbits_be32(&regs->cpodr, mask1, sregs->cpodr & mask1);
+-
+ 	spin_unlock_irqrestore(&qe_gc->lock, flags);
+ }
+ EXPORT_SYMBOL(qe_pin_set_dedicated);
+@@ -284,7 +277,7 @@ EXPORT_SYMBOL(qe_pin_set_dedicated);
+ void qe_pin_set_gpio(struct qe_pin *qe_pin)
+ {
+ 	struct qe_gpio_chip *qe_gc = qe_pin->controller;
+-	struct qe_pio_regs __iomem *regs = qe_gc->mm_gc.regs;
++	struct qe_pio_regs __iomem *regs = qe_gc->regs;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&qe_gc->lock, flags);
+@@ -301,7 +294,6 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ 	struct device *dev = &ofdev->dev;
+ 	struct device_node *np = dev->of_node;
+ 	struct qe_gpio_chip *qe_gc;
+-	struct of_mm_gpio_chip *mm_gc;
+ 	struct gpio_chip *gc;
+ 
+ 	qe_gc = devm_kzalloc(dev, sizeof(*qe_gc), GFP_KERNEL);
+@@ -310,18 +302,29 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ 
+ 	spin_lock_init(&qe_gc->lock);
+ 
+-	mm_gc = &qe_gc->mm_gc;
+-	gc = &mm_gc->gc;
++	gc = &qe_gc->gc;
+ 
+-	mm_gc->save_regs = qe_gpio_save_regs;
++	gc->base = -1;
+ 	gc->ngpio = QE_PIO_PINS;
+ 	gc->direction_input = qe_gpio_dir_in;
+ 	gc->direction_output = qe_gpio_dir_out;
+ 	gc->get = qe_gpio_get;
+ 	gc->set = qe_gpio_set;
+ 	gc->set_multiple = qe_gpio_set_multiple;
++	gc->parent = dev;
++	gc->owner = THIS_MODULE;
++
++	gc->label = devm_kasprintf(dev, GFP_KERNEL, "%pOF", np);
++	if (!gc->label)
++		return -ENOMEM;
++
++	qe_gc->regs = devm_of_iomap(dev, np, 0, NULL);
++	if (IS_ERR(qe_gc->regs))
++		return PTR_ERR(qe_gc->regs);
++
++	qe_gpio_save_regs(qe_gc);
+ 
+-	return of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
++	return devm_gpiochip_add_data(dev, gc, qe_gc);
+ }
+ 
+ static const struct of_device_id qe_gpio_match[] = {
 -- 
-Cheers
-
-David / dhildenb
+2.49.0
 
 
