@@ -1,58 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-11089-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11090-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1CE3CA0ED1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 13:20:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92937CA0ED1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 13:50:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5CyK642jz3cZM;
-	Mon, 18 Aug 2025 23:20:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5Dct0k5sz3cZB;
+	Mon, 18 Aug 2025 23:50:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755523241;
-	cv=none; b=jxrwPZxDA1tXPDkwqN+O2UsayXY9tPvmQHndcZGUtl3a3iRXUoyPQsn/9DyvG0pvAENDDdjvXPvbbU7pxIFYCPOfQSXAk8vuIQ2at9nfenMgmHV8B9cVHvG1gfvQFlMHSXDLCvxs2KU93Yc6trmpRkzYPDutQxIqrFe4vFo+wxeuZJ0LU4w75fjmDAvYNte5Yjo2b59DojPU4FJGeX/ERkBYzz0e4mYr/hXqOR0ck3YYYYhUSqlJNHatDkd514SETaynAmQ16gFqEdLEwjda2sbjdgKZwe674O1TZdGiDeoRrBHHRUpVBdvIwyLqy2XfxmUlbxkUS5t/r7A+B+MRIA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755525038;
+	cv=none; b=bs7lfeyq9WLSlRgQJFVh3wJeUoI+RK/+7/9Y+midRFujtwmdjK484QYaDbTYIJ9mlnaBY4ZSV7NkGSkU239MD7X8bKLdnEZsyDKbYnFh4jUT82C5jGkjlZXgA1R3N+VeSEWxLVjHG2INHaB6g2GBNwrgf7SXwPuDCBqr7fcp2lYPOSANFFLq2ZSY71C3ZdOR3EzzV1fn6efQG4VlyC0Suj/ys991Ay6KN9gViANx+vnhH/LY+mbk7YEJkGwrlqhI0Ng5QMJtOum/wiGJgJGH8uO+zZ27DOwfYbB19oO46wsvxPgesxm/XOe8tNBae3j4NtO8MPGs87qT4u9CYRa1GA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755523241; c=relaxed/relaxed;
-	bh=CZUWX28KhNYRYlRQRNReHvdiIfAAJY232P1NdvjHyiE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=oggfL7QvFGouRNEjZUGK/9w053sn3n1HauAycwX+7eY2HEvIa9mdtractmCP0yUOBkBFW4XkF8IlFhrOkLwqwNDZD837UgkYjIsj48qtAOkORcty2+KZC64NOYH+NdA8+loN6XDEKcXoTuYwNUpeNgYWbAgvZ75slWW6HVpbuzbzxKAL38Kz43ZJeNnZCKBLXENeuPo8pNEWXn447tlqkYzY9cSXmOGSATsMaMTBwfUnInBNU3bDrNWlL5Mv4V5MuH+7C7YsXOq8T6Ttoso6sF4xON5+r9ZkX4FvJn3dfcsV9d5C54U+8aW05XTzvnxQtPECVbfqNSZT2LtiXE1MSA==
+	t=1755525038; c=relaxed/relaxed;
+	bh=dpLXhn2v+vs/vaCOQE3UDaJD8EnvB4cfcuUxM0/g/pE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=YENGrZzotyJ8JSpU5Z5Q3fZ3cnFHfcp20GTWgx8z4fDydVq+Ck7uMgjoUFj2bhgTPxCFtCblhQFk2W/Qh7ZvbdF4lYW+5fZ+GNNSd5N8MiijD3wJ4qTFlvOmsToYeto2EpYsunzcheMqmE2affA9r1ByRK47OWpdBsBkArNoucSE+/ACS/I1nTIxzY75U8d0nx1OfKUHrvLmR7sIgkAtSqDGXoEmNpkdcQf2d2lvY3+YjYORZqxx4yK7VWSJxMBn28EyBGTnEQxA2w1AsXJzPLG59xECxU0vZ+TxQutnGKR8n1bHtc9sPWc3wZam4+yvryX69pQaJ5cxGD85Gp5AEA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5CyK2QDYz3cYx
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 23:20:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5Dcs1q02z3cYx
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 23:50:36 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c5C6R02grz9sSn;
-	Mon, 18 Aug 2025 14:42:39 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4c5BYc10C8z9sV2;
+	Mon, 18 Aug 2025 14:17:40 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id GsAukN0ObK6o; Mon, 18 Aug 2025 14:42:38 +0200 (CEST)
+	with ESMTP id zfh_z7hGOAcT; Mon, 18 Aug 2025 14:17:40 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c5C6Q68YSz9sSm;
-	Mon, 18 Aug 2025 14:42:38 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c5BYb6wb1z9sTs;
+	Mon, 18 Aug 2025 14:17:39 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id BE5318B764;
-	Mon, 18 Aug 2025 14:42:38 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D7CAA8B765;
+	Mon, 18 Aug 2025 14:17:39 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id sE7NHJzNPKm3; Mon, 18 Aug 2025 14:42:38 +0200 (CEST)
+	with ESMTP id FTlnGI7M_tX7; Mon, 18 Aug 2025 14:17:39 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 912DD8B763;
-	Mon, 18 Aug 2025 14:42:38 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A96458B763;
+	Mon, 18 Aug 2025 14:17:39 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
 Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-gpio@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Anatolij Gustschin <agust@denx.de>,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH] gpio: mpc5200: Drop legacy-of-mm-gpiochip.h header
-Date: Mon, 18 Aug 2025 14:42:24 +0200
-Message-ID: <9652736ef05b94d9113ea5ce7899734ef82343d1.1755520794.git.christophe.leroy@csgroup.eu>
+	linuxppc-dev@lists.ozlabs.org,
+	linux-gpio@vger.kernel.org,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Linus Walleij <linus.walleij@linaro.org>
+Subject: [PATCH 1/2] powerpc/44x: Change GPIO driver to a proper platform driver
+Date: Mon, 18 Aug 2025 14:17:34 +0200
+Message-ID: <29d89aa43536714b193d9710301341f838fcb5b7.1755519343.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.49.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -67,272 +69,118 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1755520944; l=9508; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=WIwD/aV2APN6RKkjI1zciy6jWLCpZwtUH96xPLDt4PU=; b=v6uxfxPYngNij24z+iG6/2f7mq8NGHCHim/IJGuC0KkKPlZlogsEZmUUfLDt/gDm8dOqC18Z7 8weUTGAVd1oAgeq2r/bpTNj9q436vvsvFUNE3y+3SX7PvMqmkebvhvO
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755519455; l=2973; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=cL3azlX2WcUbptT06I7EQvmQRQpz1mAubjk1mSKGiHQ=; b=oV6fRiM5cvSD8PBNYa0SCOuMFiBdwEjJTKMdrwCBL393tvhEaYJhzzYqFZtkGCBXqtkifauUH Wiy2icUwLcPCMHogvqGSuG33hJ4UPXw+9FZUV2+JiCKUwqX2mKN/3Pn
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-Remove legacy-of-mm-gpiochip.h header file. The above mentioned
-file provides an OF API that's deprecated. There is no agnostic
-alternatives to it and we have to open code the logic which was
-hidden behind of_mm_gpiochip_add_data(). Note, most of the GPIO
-drivers are using their own labeling schemas and resource retrieval
-that only a few may gain of the code deduplication, so whenever
-alternative is appear we can move drivers again to use that one.
-
-[text copied from commit 34064c8267a6 ("powerpc/8xx:
-Drop legacy-of-mm-gpiochip.h header")]
+In order to drop legacy-of-mm-gpiochip dependency, first change the
+44x GPIO driver to a proper platform driver.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/gpio/Kconfig        |  1 -
- drivers/gpio/gpio-mpc5200.c | 78 ++++++++++++++++++++-----------------
- 2 files changed, 43 insertions(+), 36 deletions(-)
+ arch/powerpc/platforms/44x/gpio.c | 83 +++++++++++++++++--------------
+ 1 file changed, 46 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/gpio/Kconfig b/drivers/gpio/Kconfig
-index e43abb322fa6..07be52f6db7a 100644
---- a/drivers/gpio/Kconfig
-+++ b/drivers/gpio/Kconfig
-@@ -485,7 +485,6 @@ config GPIO_MM_LANTIQ
- config GPIO_MPC5200
- 	def_bool y
- 	depends on PPC_MPC52xx
--	select OF_GPIO_MM_GPIOCHIP
- 
- config GPIO_MPC8XXX
- 	bool "MPC512x/MPC8xxx/QorIQ GPIO support"
-diff --git a/drivers/gpio/gpio-mpc5200.c b/drivers/gpio/gpio-mpc5200.c
-index dad0eca1ca2e..00f209157fd0 100644
---- a/drivers/gpio/gpio-mpc5200.c
-+++ b/drivers/gpio/gpio-mpc5200.c
-@@ -8,7 +8,7 @@
- #include <linux/of.h>
- #include <linux/kernel.h>
+diff --git a/arch/powerpc/platforms/44x/gpio.c b/arch/powerpc/platforms/44x/gpio.c
+index 08ab76582568..a025b3248342 100644
+--- a/arch/powerpc/platforms/44x/gpio.c
++++ b/arch/powerpc/platforms/44x/gpio.c
+@@ -18,6 +18,7 @@
+ #include <linux/gpio/driver.h>
+ #include <linux/types.h>
  #include <linux/slab.h>
--#include <linux/gpio/legacy-of-mm-gpiochip.h>
-+#include <linux/gpio/driver.h>
- #include <linux/io.h>
- #include <linux/platform_device.h>
- #include <linux/module.h>
-@@ -19,7 +19,8 @@
- static DEFINE_SPINLOCK(gpio_lock);
++#include <linux/platform_device.h>
  
- struct mpc52xx_gpiochip {
--	struct of_mm_gpio_chip mmchip;
-+	struct gpio_chip gc;
-+	void __iomem *regs;
- 	unsigned int shadow_dvo;
- 	unsigned int shadow_gpioe;
- 	unsigned int shadow_ddr;
-@@ -43,8 +44,8 @@ struct mpc52xx_gpiochip {
-  */
- static int mpc52xx_wkup_gpio_get(struct gpio_chip *gc, unsigned int gpio)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
--	struct mpc52xx_gpio_wkup __iomem *regs = mm_gc->regs;
-+	struct mpc52xx_gpiochip *chip = gpiochip_get_data(gc);
-+	struct mpc52xx_gpio_wkup __iomem *regs = chip->regs;
- 	unsigned int ret;
- 
- 	ret = (in_8(&regs->wkup_ival) >> (7 - gpio)) & 1;
-@@ -57,9 +58,8 @@ static int mpc52xx_wkup_gpio_get(struct gpio_chip *gc, unsigned int gpio)
- static inline void
- __mpc52xx_wkup_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct mpc52xx_gpiochip *chip = gpiochip_get_data(gc);
--	struct mpc52xx_gpio_wkup __iomem *regs = mm_gc->regs;
-+	struct mpc52xx_gpio_wkup __iomem *regs = chip->regs;
- 
- 	if (val)
- 		chip->shadow_dvo |= 1 << (7 - gpio);
-@@ -87,9 +87,8 @@ mpc52xx_wkup_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- 
- static int mpc52xx_wkup_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct mpc52xx_gpiochip *chip = gpiochip_get_data(gc);
--	struct mpc52xx_gpio_wkup __iomem *regs = mm_gc->regs;
-+	struct mpc52xx_gpio_wkup __iomem *regs = chip->regs;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&gpio_lock, flags);
-@@ -110,9 +109,8 @@ static int mpc52xx_wkup_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- static int
- mpc52xx_wkup_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
--	struct mpc52xx_gpio_wkup __iomem *regs = mm_gc->regs;
- 	struct mpc52xx_gpiochip *chip = gpiochip_get_data(gc);
-+	struct mpc52xx_gpio_wkup __iomem *regs = chip->regs;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&gpio_lock, flags);
-@@ -136,30 +134,41 @@ mpc52xx_wkup_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 
- static int mpc52xx_wkup_gpiochip_probe(struct platform_device *ofdev)
- {
-+	struct device *dev = &ofdev->dev;
-+	struct device_node *np = dev->of_node;
- 	struct mpc52xx_gpiochip *chip;
- 	struct mpc52xx_gpio_wkup __iomem *regs;
- 	struct gpio_chip *gc;
- 	int ret;
- 
--	chip = devm_kzalloc(&ofdev->dev, sizeof(*chip), GFP_KERNEL);
-+	chip = devm_kzalloc(dev, sizeof(*chip), GFP_KERNEL);
- 	if (!chip)
- 		return -ENOMEM;
- 
- 	platform_set_drvdata(ofdev, chip);
- 
--	gc = &chip->mmchip.gc;
-+	gc = &chip->gc;
- 
-+	gc->base             = -1;
- 	gc->ngpio            = 8;
- 	gc->direction_input  = mpc52xx_wkup_gpio_dir_in;
- 	gc->direction_output = mpc52xx_wkup_gpio_dir_out;
- 	gc->get              = mpc52xx_wkup_gpio_get;
- 	gc->set              = mpc52xx_wkup_gpio_set;
- 
--	ret = of_mm_gpiochip_add_data(ofdev->dev.of_node, &chip->mmchip, chip);
-+	gc->label = devm_kasprintf(dev, GFP_KERNEL, "%pOF", np);
-+	if (!gc->label)
-+		return -ENOMEM;
-+
-+	chip->regs = devm_of_iomap(dev, np, 0, NULL);
-+	if (IS_ERR(chip->regs))
-+		return PTR_ERR(chip->regs);
-+
-+	ret = devm_gpiochip_add_data(dev, gc, chip);
- 	if (ret)
- 		return ret;
- 
--	regs = chip->mmchip.regs;
-+	regs = chip->regs;
- 	chip->shadow_gpioe = in_8(&regs->wkup_gpioe);
- 	chip->shadow_ddr = in_8(&regs->wkup_ddr);
- 	chip->shadow_dvo = in_8(&regs->wkup_dvo);
-@@ -167,13 +176,6 @@ static int mpc52xx_wkup_gpiochip_probe(struct platform_device *ofdev)
+ #define GPIO_MASK(gpio)		(0x80000000 >> (gpio))
+ #define GPIO_MASK2(gpio)	(0xc0000000 >> ((gpio) * 2))
+@@ -155,42 +156,50 @@ ppc4xx_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
  	return 0;
  }
  
--static void mpc52xx_gpiochip_remove(struct platform_device *ofdev)
--{
--	struct mpc52xx_gpiochip *chip = platform_get_drvdata(ofdev);
+-static int __init ppc4xx_add_gpiochips(void)
++static int ppc4xx_gpio_probe(struct platform_device *ofdev)
+ {
+-	struct device_node *np;
 -
--	of_mm_gpiochip_remove(&chip->mmchip);
--}
+-	for_each_compatible_node(np, NULL, "ibm,ppc4xx-gpio") {
+-		int ret;
+-		struct ppc4xx_gpio_chip *ppc4xx_gc;
+-		struct of_mm_gpio_chip *mm_gc;
+-		struct gpio_chip *gc;
 -
- static const struct of_device_id mpc52xx_wkup_gpiochip_match[] = {
- 	{ .compatible = "fsl,mpc5200-gpio-wkup", },
- 	{}
-@@ -185,7 +187,6 @@ static struct platform_driver mpc52xx_wkup_gpiochip_driver = {
- 		.of_match_table = mpc52xx_wkup_gpiochip_match,
- 	},
- 	.probe = mpc52xx_wkup_gpiochip_probe,
--	.remove = mpc52xx_gpiochip_remove,
- };
- 
- /*
-@@ -207,8 +208,8 @@ static struct platform_driver mpc52xx_wkup_gpiochip_driver = {
-  */
- static int mpc52xx_simple_gpio_get(struct gpio_chip *gc, unsigned int gpio)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
--	struct mpc52xx_gpio __iomem *regs = mm_gc->regs;
-+	struct mpc52xx_gpiochip *chip = gpiochip_get_data(gc);
-+	struct mpc52xx_gpio __iomem *regs = chip->regs;
- 	unsigned int ret;
- 
- 	ret = (in_be32(&regs->simple_ival) >> (31 - gpio)) & 1;
-@@ -219,9 +220,8 @@ static int mpc52xx_simple_gpio_get(struct gpio_chip *gc, unsigned int gpio)
- static inline void
- __mpc52xx_simple_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct mpc52xx_gpiochip *chip = gpiochip_get_data(gc);
--	struct mpc52xx_gpio __iomem *regs = mm_gc->regs;
-+	struct mpc52xx_gpio __iomem *regs = chip->regs;
- 
- 	if (val)
- 		chip->shadow_dvo |= 1 << (31 - gpio);
-@@ -248,9 +248,8 @@ mpc52xx_simple_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- 
- static int mpc52xx_simple_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct mpc52xx_gpiochip *chip = gpiochip_get_data(gc);
--	struct mpc52xx_gpio __iomem *regs = mm_gc->regs;
-+	struct mpc52xx_gpio __iomem *regs = chip->regs;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&gpio_lock, flags);
-@@ -271,9 +270,8 @@ static int mpc52xx_simple_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- static int
- mpc52xx_simple_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct mpc52xx_gpiochip *chip = gpiochip_get_data(gc);
--	struct mpc52xx_gpio __iomem *regs = mm_gc->regs;
-+	struct mpc52xx_gpio __iomem *regs = chip->regs;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&gpio_lock, flags);
-@@ -298,30 +296,41 @@ mpc52xx_simple_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 
- static int mpc52xx_simple_gpiochip_probe(struct platform_device *ofdev)
- {
+-		ppc4xx_gc = kzalloc(sizeof(*ppc4xx_gc), GFP_KERNEL);
+-		if (!ppc4xx_gc) {
+-			ret = -ENOMEM;
+-			goto err;
+-		}
+-
+-		spin_lock_init(&ppc4xx_gc->lock);
+-
+-		mm_gc = &ppc4xx_gc->mm_gc;
+-		gc = &mm_gc->gc;
+-
+-		gc->ngpio = 32;
+-		gc->direction_input = ppc4xx_gpio_dir_in;
+-		gc->direction_output = ppc4xx_gpio_dir_out;
+-		gc->get = ppc4xx_gpio_get;
+-		gc->set = ppc4xx_gpio_set;
+-
+-		ret = of_mm_gpiochip_add_data(np, mm_gc, ppc4xx_gc);
+-		if (ret)
+-			goto err;
+-		continue;
+-err:
+-		pr_err("%pOF: registration failed with status %d\n", np, ret);
+-		kfree(ppc4xx_gc);
+-		/* try others anyway */
+-	}
+-	return 0;
 +	struct device *dev = &ofdev->dev;
 +	struct device_node *np = dev->of_node;
- 	struct mpc52xx_gpiochip *chip;
- 	struct gpio_chip *gc;
- 	struct mpc52xx_gpio __iomem *regs;
- 	int ret;
- 
--	chip = devm_kzalloc(&ofdev->dev, sizeof(*chip), GFP_KERNEL);
++	struct ppc4xx_gpio_chip *chip;
++	struct of_mm_gpio_chip *mm_gc;
++	struct gpio_chip *gc;
++
 +	chip = devm_kzalloc(dev, sizeof(*chip), GFP_KERNEL);
- 	if (!chip)
- 		return -ENOMEM;
- 
- 	platform_set_drvdata(ofdev, chip);
- 
--	gc = &chip->mmchip.gc;
-+	gc = &chip->gc;
- 
-+	gc->base             = -1;
- 	gc->ngpio            = 32;
- 	gc->direction_input  = mpc52xx_simple_gpio_dir_in;
- 	gc->direction_output = mpc52xx_simple_gpio_dir_out;
- 	gc->get              = mpc52xx_simple_gpio_get;
- 	gc->set              = mpc52xx_simple_gpio_set;
- 
--	ret = of_mm_gpiochip_add_data(ofdev->dev.of_node, &chip->mmchip, chip);
-+	gc->label = devm_kasprintf(dev, GFP_KERNEL, "%pOF", np);
-+	if (!gc->label)
++	if (!chip)
 +		return -ENOMEM;
 +
-+	chip->regs = devm_of_iomap(dev, np, 0, NULL);
-+	if (IS_ERR(chip->regs))
-+		return PTR_ERR(chip->regs);
++	spin_lock_init(&chip->lock);
 +
-+	ret = devm_gpiochip_add_data(dev, gc, chip);
- 	if (ret)
- 		return ret;
- 
--	regs = chip->mmchip.regs;
-+	regs = chip->regs;
- 	chip->shadow_gpioe = in_be32(&regs->simple_gpioe);
- 	chip->shadow_ddr = in_be32(&regs->simple_ddr);
- 	chip->shadow_dvo = in_be32(&regs->simple_dvo);
-@@ -340,7 +349,6 @@ static struct platform_driver mpc52xx_simple_gpiochip_driver = {
- 		.of_match_table = mpc52xx_simple_gpiochip_match,
- 	},
- 	.probe = mpc52xx_simple_gpiochip_probe,
--	.remove = mpc52xx_gpiochip_remove,
- };
- 
- static struct platform_driver * const drivers[] = {
++	mm_gc = &chip->mm_gc;
++	gc = &mm_gc->gc;
++
++	gc->ngpio = 32;
++	gc->direction_input = ppc4xx_gpio_dir_in;
++	gc->direction_output = ppc4xx_gpio_dir_out;
++	gc->get = ppc4xx_gpio_get;
++	gc->set = ppc4xx_gpio_set;
++
++	return of_mm_gpiochip_add_data(np, mm_gc, chip);
++}
++
++static const struct of_device_id ppc4xx_gpio_match[] = {
++	{
++		.compatible = "ibm,ppc4xx-gpio",
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, ppc4xx_gpio_match);
++
++static struct platform_driver ppc4xx_gpio_driver = {
++	.probe		= ppc4xx_gpio_probe,
++	.driver		= {
++		.name	= "ppc4xx-gpio",
++		.of_match_table	= ppc4xx_gpio_match,
++	},
++};
++
++static int __init ppc4xx_gpio_init(void)
++{
++	return platform_driver_register(&ppc4xx_gpio_driver);
+ }
+-arch_initcall(ppc4xx_add_gpiochips);
++arch_initcall(ppc4xx_gpio_init);
 -- 
 2.49.0
 
