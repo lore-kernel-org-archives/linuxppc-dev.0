@@ -1,68 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-11126-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11127-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83750CA0EEB
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Aug 2025 14:20:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83E8ACA0EE6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Aug 2025 14:20:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5sF16qmZz3d8M;
-	Wed, 20 Aug 2025 00:20:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5sF200dzz3d8R;
+	Wed, 20 Aug 2025 00:20:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755613237;
-	cv=none; b=CQL9ZDiiZy1vYzpvUbDxHoA7/gAf2CP30Y4qsVjEMKweo4pAQqf5dH/NNHXioXV8/aBpQkyl7Lc12SEYrK8nIH/UmIDnHbI5+znR1nDTqf2mbcLjP3npx1a7XZBt+iQcj1V/bCKPB49CpVhx15KQGLbs+cIuHlLanGObfRkpG98Cn9PgLjuElEbS2mCSjljfRqP1KWlnG13Sdj9JNOL5c+xVDlxHGl0pr2PpGQ249yHdAGZILFW7GBcbI06tBDl+1eajWfI4tIAKLpsLkaeAxFtw+Lq/1pC0BFs5XYjNmFuW3KVY3r89q4IMjbsvZ2+1wjzB+ra+iQvuWjOFzRGXQg==
+	cv=none; b=dKdKrkhl1TOMZp2a0Xu8XRmSk9WdpBYTdptyBi700Pzsvw5ucDcmNIQHAmEe+HbhqMfUELIW/yJ10XDir8JDMpJnBM/8IlV/ds1at6UG908JCbSH04eC0bWoR//sHmH8HELUG+MRrXndFX9h6lxFUepTQVBVjs6LvQB1ffpN9kyM/DOq9Dt3XCAHDHxvNm/viptZEtXAxTmdIIj9qRgQvJnwgJjfuAifIfKuPxPlLKEVYb+oDgGHe2gnuNj5G5ftTh/Duw4cTmJ1r+U3pF8ZnGz5gNFdB+1siSY9Pk/hPFsgVrogu2psbaH5ow0Rhks3WjDyoGoBYHY9Y56moioKDA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1755613237; c=relaxed/relaxed;
-	bh=jECw0EWcetWXM76TnmkDh1X6pVty3AuaeLP1zp9SKwg=;
+	bh=Cqdvo3S1OjjnblVUtSovD8KUiqHH2ESMhba61553Gtc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=eIYR/Bf29tT/QdYG+6jAbT17syi0xIxgBSDn7IwN4122RxXoz888OFv9OAsFXJI23FMctPVI6OX9am8ZiVwXD59XhfSMr3HRpro+nTQ9Q01tCSdXSRfpfTCu3RvZ9WSXV6xByRUoS93JjOp8vjJ39efj1s0GfAadnBfCJ4TRO728KXnm5ywBAOgY/id3rcHQG87JKIVNdE7KGLOKVkhuhGG8CttJUl/rTVNDwDgtGEhZQyiuRu4qvOn4lkrFGsAleNenAGphpRuljhPy9w2rCel2jh7WQFSoqcmfSn99l17yrz6pQ9JbAEhfhQSiDnZ0vVITTlE5/do1tf10bouv+Q==
+	 MIME-Version; b=eAvlDH3hZQJCzQx560olZ2ghjwM7xast4jYWHIruNppIC+HdZMwtruOy7hmgsZ8fSuZe+aIJYGw2JI4XP3vCfXsghy2QwGU/GOLWEXlbv0Ho3YsP8e/EsezJoWlKOYudi0fgpmbbAtwf+9Prg1Jun9Gq3nD3wljhTUQ40op6kLpjfJMGUmCrcCl+lOicnJwwIPlSFasSH9FPlg9n4KYiH4F44V+B7x6gL3EZ8AMsQfRVLGNG95x/IOjl06dvEbxCHLo40/93F8cqzJYFoUQe+A+78MMImf+ckYRxxI5XpYn8WsfksaYddC0Q2YuGVxfG0sPQ0i4B+r4eUEk+o9nNKg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5sF107Bqz3d8K
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5sF06WF0z3d8G
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2025 00:20:36 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c55sb5xm8z9sX1;
-	Mon, 18 Aug 2025 10:46:11 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4c55HX0qZFz9sWF;
+	Mon, 18 Aug 2025 10:20:08 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id srDhj_08AVtb; Mon, 18 Aug 2025 10:46:11 +0200 (CEST)
+	with ESMTP id 9syMfqubNB4p; Mon, 18 Aug 2025 10:20:08 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55sY6Nmlz9sWk;
-	Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55HS62zqz9sW7;
+	Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id C21A98B766;
-	Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B866F8B764;
+	Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id mZjBc2RFevRD; Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
+	with ESMTP id u3ByOgEZDKj3; Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8D79A8B763;
-	Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8B40F8B763;
+	Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Qiang Zhao <qiang.zhao@nxp.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>
+To: Herve Codina <herve.codina@bootlin.com>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>
 Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org,
-	linux-gpio@vger.kernel.org,
-	devicetree@vger.kernel.org,
-	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
-Subject: [PATCH v2 2/5] soc: fsl: qe: Change GPIO driver to a proper platform driver
-Date: Mon, 18 Aug 2025 10:45:55 +0200
-Message-ID: <0f534668e05631c9786c9d0382af470daeedecfd.1755506608.git.christophe.leroy@csgroup.eu>
+	linux-kernel@vger.kernel.org,
+	linux-sound@vger.kernel.org
+Subject: [PATCH v3 4/4] ASoc: fsl: fsl_qmc_audio: Drop struct qmc_dai_chan
+Date: Mon, 18 Aug 2025 10:20:03 +0200
+Message-ID: <ab9550c28280834152c6a0f51d58a68556abd1a1.1755504428.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1755506608.git.christophe.leroy@csgroup.eu>
-References: <cover.1755506608.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <cover.1755504428.git.christophe.leroy@csgroup.eu>
+References: <cover.1755504428.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,127 +78,187 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1755506759; l=3217; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=1uL2LicwjOlUIYno54f8JBgI5fU0qjg/pfIcjSsv9gk=; b=a3iAS5SgWnFLGYzcAQP1Hs3aUPLiJ9Kb6EOXH0JUUnDSmJHxVLljVaQVp+INS8wdONuBiGT33 T7zp17hda7cDS7eaYSg9UP/mTKJg2K6761bTFD7ruRa5i7O145Kk9AO
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755505200; l=7036; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=kTwze63IXhfJKmOMOziMBpN3ze0bvx7Dv9G4bd5j9oQ=; b=QhTyCGzMVd3HyrWxivP5SIyCJ3I9n7Zr9fLTH9jDUm9mguYkYHOz9yd/6ke7TQRUZGKs40xhm 34BRdv5LrO5BoLyge7Qs/ePpGM3uzM7E+ohnmIcWgnim6inJ7+Ag2Na
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-In order to be able to add interrupts to the GPIOs, first change the
-QE GPIO driver to the proper platform driver in order to allow
-initialisation to be done in the right order, otherwise the GPIOs
-get added before the interrupts are registered.
+prtd_tx and prtd_rx members are not used anymore and only qmc_chan
+member remains so struct qmc_dai_chan has become pointless.
+
+Use qmc_chan directly and drop struct qmc_dai_chan.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Acked-by: Herve Codina <herve.codina@bootlin.com>
 ---
-v2: Use devm_kzalloc() instead of kzalloc()
----
- drivers/soc/fsl/qe/gpio.c | 86 +++++++++++++++++++++------------------
- 1 file changed, 47 insertions(+), 39 deletions(-)
+ sound/soc/fsl/fsl_qmc_audio.c | 52 ++++++++++++++---------------------
+ 1 file changed, 20 insertions(+), 32 deletions(-)
 
-diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
-index 8df1e8fa86a5..93fcc6d85ac7 100644
---- a/drivers/soc/fsl/qe/gpio.c
-+++ b/drivers/soc/fsl/qe/gpio.c
-@@ -19,6 +19,7 @@
- #include <linux/slab.h>
- #include <linux/export.h>
- #include <linux/property.h>
-+#include <linux/platform_device.h>
+diff --git a/sound/soc/fsl/fsl_qmc_audio.c b/sound/soc/fsl/fsl_qmc_audio.c
+index 2790953543c5..3de448ef724c 100644
+--- a/sound/soc/fsl/fsl_qmc_audio.c
++++ b/sound/soc/fsl/fsl_qmc_audio.c
+@@ -17,12 +17,6 @@
+ #include <sound/pcm_params.h>
+ #include <sound/soc.h>
  
- #include <soc/fsl/qe/qe.h>
+-struct qmc_dai_chan {
+-	struct qmc_dai_prtd *prtd_tx;
+-	struct qmc_dai_prtd *prtd_rx;
+-	struct qmc_chan *qmc_chan;
+-};
+-
+ struct qmc_dai {
+ 	char *name;
+ 	int id;
+@@ -33,7 +27,7 @@ struct qmc_dai {
+ 	unsigned int nb_chans_avail;
+ 	unsigned int nb_chans_used_tx;
+ 	unsigned int nb_chans_used_rx;
+-	struct qmc_dai_chan *chans;
++	struct qmc_chan **qmc_chans;
+ };
  
-@@ -295,45 +296,52 @@ void qe_pin_set_gpio(struct qe_pin *qe_pin)
- }
- EXPORT_SYMBOL(qe_pin_set_gpio);
+ struct qmc_audio {
+@@ -125,7 +119,7 @@ static int qmc_audio_pcm_write_submit(struct qmc_dai_prtd *prtd)
+ 	int ret;
  
--static int __init qe_add_gpiochips(void)
-+static int qe_gpio_probe(struct platform_device *ofdev)
+ 	for (i = 0; i < prtd->channels; i++) {
+-		ret = qmc_chan_write_submit(prtd->qmc_dai->chans[i].qmc_chan,
++		ret = qmc_chan_write_submit(prtd->qmc_dai->qmc_chans[i],
+ 					    prtd->ch_dma_addr_current + i * prtd->ch_dma_offset,
+ 					    prtd->ch_dma_size,
+ 					    i == prtd->channels - 1 ? qmc_audio_pcm_write_complete :
+@@ -165,7 +159,7 @@ static int qmc_audio_pcm_read_submit(struct qmc_dai_prtd *prtd)
+ 	int ret;
+ 
+ 	for (i = 0; i < prtd->channels; i++) {
+-		ret = qmc_chan_read_submit(prtd->qmc_dai->chans[i].qmc_chan,
++		ret = qmc_chan_read_submit(prtd->qmc_dai->qmc_chans[i],
+ 					   prtd->ch_dma_addr_current + i * prtd->ch_dma_offset,
+ 					   prtd->ch_dma_size,
+ 					   i == prtd->channels - 1 ? qmc_audio_pcm_read_complete :
+@@ -206,7 +200,6 @@ static int qmc_audio_pcm_trigger(struct snd_soc_component *component,
+ 				 struct snd_pcm_substream *substream, int cmd)
  {
--	struct device_node *np;
--
--	for_each_compatible_node(np, NULL, "fsl,mpc8323-qe-pario-bank") {
--		int ret;
--		struct qe_gpio_chip *qe_gc;
--		struct of_mm_gpio_chip *mm_gc;
--		struct gpio_chip *gc;
--
--		qe_gc = kzalloc(sizeof(*qe_gc), GFP_KERNEL);
--		if (!qe_gc) {
--			ret = -ENOMEM;
--			goto err;
--		}
-+	struct device *dev = &ofdev->dev;
-+	struct device_node *np = dev->of_node;
-+	struct qe_gpio_chip *qe_gc;
-+	struct of_mm_gpio_chip *mm_gc;
-+	struct gpio_chip *gc;
+ 	struct qmc_dai_prtd *prtd = substream->runtime->private_data;
+-	unsigned int i;
+ 	int ret;
  
--		spin_lock_init(&qe_gc->lock);
+ 	if (!prtd->qmc_dai) {
+@@ -220,9 +213,6 @@ static int qmc_audio_pcm_trigger(struct snd_soc_component *component,
+ 		prtd->ch_dma_addr_current = prtd->ch_dma_addr_start;
+ 
+ 		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
+-			for (i = 0; i < prtd->channels; i++)
+-				prtd->qmc_dai->chans[i].prtd_tx = prtd;
 -
--		mm_gc = &qe_gc->mm_gc;
--		gc = &mm_gc->gc;
+ 			/* Submit first chunk ... */
+ 			ret = qmc_audio_pcm_write_submit(prtd);
+ 			if (ret)
+@@ -238,9 +228,6 @@ static int qmc_audio_pcm_trigger(struct snd_soc_component *component,
+ 			if (ret)
+ 				return ret;
+ 		} else {
+-			for (i = 0; i < prtd->channels; i++)
+-				prtd->qmc_dai->chans[i].prtd_rx = prtd;
 -
--		mm_gc->save_regs = qe_gpio_save_regs;
--		gc->ngpio = QE_PIO_PINS;
--		gc->direction_input = qe_gpio_dir_in;
--		gc->direction_output = qe_gpio_dir_out;
--		gc->get = qe_gpio_get;
--		gc->set = qe_gpio_set;
--		gc->set_multiple = qe_gpio_set_multiple;
--
--		ret = of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
--		if (ret)
--			goto err;
--		continue;
--err:
--		pr_err("%pOF: registration failed with status %d\n",
--		       np, ret);
--		kfree(qe_gc);
--		/* try others anyway */
--	}
--	return 0;
-+	qe_gc = devm_kzalloc(dev, sizeof(*qe_gc), GFP_KERNEL);
-+	if (!qe_gc)
-+		return -ENOMEM;
-+
-+	spin_lock_init(&qe_gc->lock);
-+
-+	mm_gc = &qe_gc->mm_gc;
-+	gc = &mm_gc->gc;
-+
-+	mm_gc->save_regs = qe_gpio_save_regs;
-+	gc->ngpio = QE_PIO_PINS;
-+	gc->direction_input = qe_gpio_dir_in;
-+	gc->direction_output = qe_gpio_dir_out;
-+	gc->get = qe_gpio_get;
-+	gc->set = qe_gpio_set;
-+	gc->set_multiple = qe_gpio_set_multiple;
-+
-+	return of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
-+}
-+
-+static const struct of_device_id qe_gpio_match[] = {
-+	{
-+		.compatible = "fsl,mpc8323-qe-pario-bank",
-+	},
-+	{},
-+};
-+MODULE_DEVICE_TABLE(of, qe_gpio_match);
-+
-+static struct platform_driver qe_gpio_driver = {
-+	.probe		= qe_gpio_probe,
-+	.driver		= {
-+		.name	= "qe-gpio",
-+		.of_match_table	= qe_gpio_match,
-+	},
-+};
-+
-+static int __init qe_gpio_init(void)
-+{
-+	return platform_driver_register(&qe_gpio_driver);
+ 			/* Submit first chunk ... */
+ 			ret = qmc_audio_pcm_read_submit(prtd);
+ 			if (ret)
+@@ -610,9 +597,9 @@ static int qmc_dai_hw_params(struct snd_pcm_substream *substream,
+ 		chan_param.mode = QMC_TRANSPARENT;
+ 		chan_param.transp.max_rx_buf_size = params_period_bytes(params) / nb_chans_used;
+ 		for (i = 0; i < nb_chans_used; i++) {
+-			ret = qmc_chan_set_param(qmc_dai->chans[i].qmc_chan, &chan_param);
++			ret = qmc_chan_set_param(qmc_dai->qmc_chans[i], &chan_param);
+ 			if (ret) {
+-				dev_err(dai->dev, "chans[%u], set param failed %d\n",
++				dev_err(dai->dev, "qmc_chans[%u], set param failed %d\n",
+ 					i, ret);
+ 				return ret;
+ 			}
+@@ -654,7 +641,7 @@ static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 	case SNDRV_PCM_TRIGGER_RESUME:
+ 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
+ 		for (i = 0; i < nb_chans_used; i++) {
+-			ret = qmc_chan_start(qmc_dai->chans[i].qmc_chan, direction);
++			ret = qmc_chan_start(qmc_dai->qmc_chans[i], direction);
+ 			if (ret)
+ 				goto err_stop;
+ 		}
+@@ -663,13 +650,13 @@ static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 	case SNDRV_PCM_TRIGGER_STOP:
+ 		/* Stop and reset all QMC channels and return the first error encountered */
+ 		for (i = 0; i < nb_chans_used; i++) {
+-			ret_tmp = qmc_chan_stop(qmc_dai->chans[i].qmc_chan, direction);
++			ret_tmp = qmc_chan_stop(qmc_dai->qmc_chans[i], direction);
+ 			if (!ret)
+ 				ret = ret_tmp;
+ 			if (ret_tmp)
+ 				continue;
+ 
+-			ret_tmp = qmc_chan_reset(qmc_dai->chans[i].qmc_chan, direction);
++			ret_tmp = qmc_chan_reset(qmc_dai->qmc_chans[i], direction);
+ 			if (!ret)
+ 				ret = ret_tmp;
+ 		}
+@@ -681,7 +668,7 @@ static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
+ 		/* Stop all QMC channels and return the first error encountered */
+ 		for (i = 0; i < nb_chans_used; i++) {
+-			ret_tmp = qmc_chan_stop(qmc_dai->chans[i].qmc_chan, direction);
++			ret_tmp = qmc_chan_stop(qmc_dai->qmc_chans[i], direction);
+ 			if (!ret)
+ 				ret = ret_tmp;
+ 		}
+@@ -697,8 +684,8 @@ static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
+ 
+ err_stop:
+ 	while (i--) {
+-		qmc_chan_stop(qmc_dai->chans[i].qmc_chan, direction);
+-		qmc_chan_reset(qmc_dai->chans[i].qmc_chan, direction);
++		qmc_chan_stop(qmc_dai->qmc_chans[i], direction);
++		qmc_chan_reset(qmc_dai->qmc_chans[i], direction);
+ 	}
+ 	return ret;
  }
--arch_initcall(qe_add_gpiochips);
-+arch_initcall(qe_gpio_init);
+@@ -794,19 +781,20 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
+ 		return dev_err_probe(qmc_audio->dev, -EINVAL,
+ 				     "dai %d no QMC channel defined\n", qmc_dai->id);
+ 
+-	qmc_dai->chans = devm_kcalloc(qmc_audio->dev, count, sizeof(*qmc_dai->chans), GFP_KERNEL);
+-	if (!qmc_dai->chans)
++	qmc_dai->qmc_chans = devm_kcalloc(qmc_audio->dev, count, sizeof(*qmc_dai->qmc_chans),
++					  GFP_KERNEL);
++	if (!qmc_dai->qmc_chans)
+ 		return -ENOMEM;
+ 
+ 	for (i = 0; i < count; i++) {
+-		qmc_dai->chans[i].qmc_chan = devm_qmc_chan_get_byphandles_index(qmc_audio->dev, np,
+-										"fsl,qmc-chan", i);
+-		if (IS_ERR(qmc_dai->chans[i].qmc_chan)) {
+-			return dev_err_probe(qmc_audio->dev, PTR_ERR(qmc_dai->chans[i].qmc_chan),
++		qmc_dai->qmc_chans[i] = devm_qmc_chan_get_byphandles_index(qmc_audio->dev, np,
++									   "fsl,qmc-chan", i);
++		if (IS_ERR(qmc_dai->qmc_chans[i])) {
++			return dev_err_probe(qmc_audio->dev, PTR_ERR(qmc_dai->qmc_chans[i]),
+ 					     "dai %d get QMC channel %d failed\n", qmc_dai->id, i);
+ 		}
+ 
+-		ret = qmc_chan_get_info(qmc_dai->chans[i].qmc_chan, &info);
++		ret = qmc_chan_get_info(qmc_dai->qmc_chans[i], &info);
+ 		if (ret) {
+ 			dev_err(qmc_audio->dev, "dai %d get QMC %d channel info failed %d\n",
+ 				qmc_dai->id, i, ret);
+@@ -851,7 +839,7 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
+ 			}
+ 		}
+ 
+-		ret = qmc_chan_get_ts_info(qmc_dai->chans[i].qmc_chan, &ts_info);
++		ret = qmc_chan_get_ts_info(qmc_dai->qmc_chans[i], &ts_info);
+ 		if (ret) {
+ 			dev_err(qmc_audio->dev, "dai %d get QMC %d channel TS info failed %d\n",
+ 				qmc_dai->id, i, ret);
 -- 
 2.49.0
 
