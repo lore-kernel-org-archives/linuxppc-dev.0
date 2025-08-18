@@ -1,72 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-11110-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11111-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C888CA0EE4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 23:18:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 96031CA0EE4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Aug 2025 00:50:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5TCh0cV6z3cjf;
-	Tue, 19 Aug 2025 09:18:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::336"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755559088;
-	cv=none; b=H1swm86O4bNsa+nAzpV6MnsoYs7PEYOjJN95GaiyeBz3xh1rVgE/Wryud2kp+y0hVKfJsmv7+YHvFCh6xU6SDTWO7V5kDl+IPUhZPlgElpt4GEaPuhpTIlesZJyo5d8uje866+1dCJl8A1EsT8HKmCNPDxoV/mvUyzm6PZL3BCxXtNDypLJAkbGhRG0dBsVbEGNN7JZS1V81BH/M0PQbiE6tBRdVmDE1/RCLBJwjtL8Nl+bgNHn7gcx4M/0qlBKP4b90HSZwf84vcxfYWGPQ0Myju4rkwX2nmyI23OMu9mkvq0nyDwNcQfqCFrBfa46UswR1Pn1fN0ypVLtZLC75/A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5WGP5wjrz3cdg;
+	Tue, 19 Aug 2025 10:50:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755564637;
+	cv=none; b=KU96mHqbnR3AxjX6fz4CbriLi1rAOon65Y/K9s8xnQr/SRqT7CiVRRfZolJsaVnOm2aGnWXQQVsg4A3Pb+fnbCvZuPdVxIIYfh9SXT4EPsPKot4rNzYR5ONQlTU7rvEXm/B1RmJrhXK0v/AhynylpcSfIuAYhaxTeW1H9DSZwD2yydL6f2aXlP78mP22W+Yp8QHlf3LJEUDGXo4fsZmmst+GfrXDcEhWeq2fMA1eUcXTZPb+DTCFt1NGsjJLFHKTBs67Cr+TLMGRP5Bs6YImFEAZyv+sOkcqa3rkn1oCHs9OA4Xu6zG3G/uadKpDvyrSfpBpwhaqjN/qh8XBPGHuog==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755559088; c=relaxed/relaxed;
-	bh=1b+2mp/yigIIHVfdgVDB2QpdrFZcohdIV7tToHX2gNY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=IKziBTHlhLBgIoqkgLj1joNDVy59GGEv1yaTNf5AZGtOx5RZGEq1GHKG2wJFYNa3nA5smZZgayd+I89YXV9N/ZFhjGEhKDp2yQdGzrKkmq0vwC/CMMzsIRcXS9OGqN40CDgT08KffU70DZgkLtZMC++wLkxB3oXxv2Ie+rIqlH4dDsLp0bqScldm2x5zS8JFpbhJ98d3lXW7zPhezwJn5d5iMZ9E183ok8uD+hoMMjGuWdaQ2+aLNeyg8p1Mp/JqUnY2fBwmJf3jI7xF+XMlpu5k/CWlwapZ6VK+//oHrNQfQMMKuhTn3F+0wdQW6vPVNq55E17/xIyNQLPaiE7vgQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=PHNbabON; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::336; helo=mail-ot1-x336.google.com; envelope-from=linasvepstas@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=PHNbabON;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::336; helo=mail-ot1-x336.google.com; envelope-from=linasvepstas@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ot1-x336.google.com (mail-ot1-x336.google.com [IPv6:2607:f8b0:4864:20::336])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c5TCf3vhVz3cft
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 09:18:05 +1000 (AEST)
-Received: by mail-ot1-x336.google.com with SMTP id 46e09a7af769-74381fbc6e3so1999176a34.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 16:18:05 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1755559083; x=1756163883; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :reply-to:in-reply-to:references:mime-version:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=1b+2mp/yigIIHVfdgVDB2QpdrFZcohdIV7tToHX2gNY=;
-        b=PHNbabONmkAD5DkcDAH2JV8g5ThZLfKDAkcSALqZnZ5KTcGvDLzksxZnTPOFyNcaS0
-         ynO+g3gblLd+WYFGeT8pak+VjxWGMpB1ok4CvtMfewQ/GQ7himb2+cOSi7QgXKIbJ0s8
-         aJsQTdUt9/FUn8nV16fDMJT9Y1k92xvwYM07WvqWSXQ9V5BzRIUQk4GWeCA2Nu+6GkdE
-         d32rSMU8xxbNIEdkWPnfTyBCnsH/1VsHb0x3gD00Qx+B8mIkH/F738i7VjEuNshlCgEQ
-         JXWSTLABiu5r0pwki/rHeG2seZnKYvD7wB5XCv5m0p7Dd9IGgHDkroBmnyFiL4spJ83B
-         lTJQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755559083; x=1756163883;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :reply-to:in-reply-to:references:mime-version:x-gm-message-state
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=1b+2mp/yigIIHVfdgVDB2QpdrFZcohdIV7tToHX2gNY=;
-        b=O5pRmifrLsEbh2X/qjXkDYBeqFH4Z6pLhF7tAvx1rS+np8P9XGKnsY2h6ihMFaWBtE
-         rb0G5HVelYEVLUJ4KKYOYDbOJeqJtXJCl7I22E5ca1IyAmLjrOob1SgTJ82qkAAx619m
-         EIANDp7VYqRt1ZJOWyrcciJ8u7zel7ZARrBL/IqjfYzV5ayNHUeUgTqMl1KfND4QoUep
-         bn4KwqFBF7T2tWMPe48vS2ZLGuF667LUp8S8rTFySqsgHzrbOZt/aIsG7L5ZyyCX3fgV
-         nY+ODTkncdYwFQ+j7oBu0CrJh6FQxhs2plgKBeHHDyV432mOzHg7ceZs59F3nSvNCwU3
-         pQ2Q==
-X-Forwarded-Encrypted: i=1; AJvYcCUppNKwimGlWCY8H0MDpdsvknBvu423X/tb6uP14zQ9iHP03LRmyyEJpauGt/giqGVIuwpDIZ2Su0ftmVo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwazcBuMyzD7zUY7LytA3Qbh0coFbS8kCsgFpR2gqrzlc1YJKum
-	mThN0IW0gxUhSDYF5MF5J3KdvjruDo5/EUnR/WcB+JoHAwXsMCDAJbvicOezLMwZQnvhVKqyE+p
-	PVitKd2YQiEcuYBUU+klcSAoAMB5I3os=
-X-Gm-Gg: ASbGncsx6FpttiCDyw/IoOu/idx4WpJZBnjzeni7kYAaH+IaAphZO+Iy9j5yU5BrPvm
-	itPgYAyHPB54gOidTkCrHtSpzDbGsyt+3euCpouiZ+VqFD9G9EdHx98ZxoFV/I7irhi0wCc0/Iz
-	53XxMk7WUlBbMC88ivfkVDHytBDLjxI/LUKZ4F0yjj7S5seI3nudIcbiKM6S3FRe6Zi/ew0MkhV
-	4EBCA2VsX8K4OFX
-X-Google-Smtp-Source: AGHT+IGRJXLntANEfq69fBWLU4IJo5Sovp0hsSpwPWXOm4Y8/hfOeFbowvnUWBRIYgeHJZFRZ4J33wlV1SVvt6TELAY=
-X-Received: by 2002:a05:6808:3c44:b0:435:f7a2:8ff with SMTP id
- 5614622812f47-436cdc938f8mr381698b6e.12.1755559082607; Mon, 18 Aug 2025
- 16:18:02 -0700 (PDT)
+	t=1755564637; c=relaxed/relaxed;
+	bh=uJhfmfXcnKwpyEJLFGJ9UiWptkJCc7SXnCjqoGSdTCU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=bksiBb4Xs0TpQ2+kVkdt4sG45KZLZkdTTXXbabV55iqpvbBY0JRKgmXa2Z3f6WvngyQeelFdF5Ohz3ItnY3xaFguTnLWpi3jF3/US86WDPBaMEXXCfngRDbpsTxD9MX02swgR2i2T4866v55VmmSDNtpZWFo63z0SfMLTQ6/psSIXTgDQ03lrJIef5FpgHbbsZg9aFTROO9uGzNiOyW/GwM7s+NYAljQ/0kxN9jCHTc6ofZoqk2WjlDjWy815X+ejH96fyvY7k602tf/Awxj4I7icSE3QA2Yr7O5ng+u9l/sMYUdBZi6MZKF6X92BNPJ7riWaJdFAkcWOVdYZVp5cg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5WGP1dyYz3cdT
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 10:50:36 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4c55sZ1CVfz9sWq;
+	Mon, 18 Aug 2025 10:46:10 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id 82XmJ-8e-6-P; Mon, 18 Aug 2025 10:46:10 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55sY5Dydz9sWh;
+	Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A0D0E8B765;
+	Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id UF1PVajMXdU5; Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6D9C48B764;
+	Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org
+Subject: [PATCH v2 1/5] soc: fsl: qe: Add an interrupt controller for QUICC Engine Ports
+Date: Mon, 18 Aug 2025 10:45:54 +0200
+Message-ID: <9a0405e10f70f747e75840967ea55193e6c75bb3.1755506608.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1755506608.git.christophe.leroy@csgroup.eu>
+References: <cover.1755506608.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,116 +75,206 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <cover.1755008151.git.lukas@wunner.de> <28fd805043bb57af390168d05abb30898cf4fc58.1755008151.git.lukas@wunner.de>
- <7c545fff40629b612267501c0c74bc40c3df29e2.camel@linux.ibm.com>
-In-Reply-To: <7c545fff40629b612267501c0c74bc40c3df29e2.camel@linux.ibm.com>
-Reply-To: linasvepstas@gmail.com
-From: Linas Vepstas <linasvepstas@gmail.com>
-Date: Mon, 18 Aug 2025 18:17:49 -0500
-X-Gm-Features: Ac12FXwvCNef1lGTrHQMtgrxrH734r9DdIijklrZKJzvHuzfvTB-RsjbXGpXUJU
-Message-ID: <CAHrUA37+0UBYDNzwsU1p8xYCpRypt_e_=ASC2e5QxT1z+D=YJQ@mail.gmail.com>
-Subject: Re: [PATCH 1/5] PCI/AER: Allow drivers to opt in to Bus Reset on
- Non-Fatal Errors
-To: Niklas Schnelle <schnelle@linux.ibm.com>
-Cc: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <helgaas@kernel.org>, 
-	Riana Tauro <riana.tauro@intel.com>, 
-	Aravind Iddamsetty <aravind.iddamsetty@linux.intel.com>, 
-	"Sean C. Dardis" <sean.c.dardis@intel.com>, Terry Bowman <terry.bowman@amd.com>, 
-	Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, 
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Oliver OHalloran <oohall@gmail.com>, 
-	Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>, linuxppc-dev@lists.ozlabs.org, 
-	linux-pci@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755506759; l=5277; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=ES8U2Yx+S0pmkhw2rCUU5KQ7Jju8hSUnIJwJ46d0Jxo=; b=yEn3iA7/GSe11JG0mGudkpVm3yiX7e0kIL8k113EotyPIHQjRCrs3JWRP8eldWsHfmenSsIgQ APCpXYy8KMUByRkn1u3bff9krR1OsJVKzqonAyQ4+b8dibYLnBMW5Sa
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 
-On Thu, Aug 14, 2025 at 2:56=E2=80=AFAM Niklas Schnelle <schnelle@linux.ibm=
-.com> wrote:
->
-> On Wed, 2025-08-13 at 07:11 +0200, Lukas Wunner wrote:
-> > When Advanced Error Reporting was introduced in September 2006 by commi=
-t
-> > 6c2b374d7485 ("PCI-Express AER implemetation: AER core and aerdriver"),=
- it
-> > sought to adhere to the recovery flow and callbacks specified in
-> > Documentation/PCI/pci-error-recovery.rst.
-> >
-> --- snip ---
-> > Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> > ---
-> >  drivers/pci/pcie/err.c | 17 ++++++++++-------
-> >  1 file changed, 10 insertions(+), 7 deletions(-)
-> >
-> > diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
-> > index de6381c690f5..e795e5ae6b03 100644
-> > --- a/drivers/pci/pcie/err.c
-> > +++ b/drivers/pci/pcie/err.c
-> > @@ -217,15 +217,10 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev =
-*dev,
-> >       pci_walk_bridge(bridge, pci_pm_runtime_get_sync, NULL);
-> >
-> >       pci_dbg(bridge, "broadcast error_detected message\n");
-> > -     if (state =3D=3D pci_channel_io_frozen) {
-> > +     if (state =3D=3D pci_channel_io_frozen)
-> >               pci_walk_bridge(bridge, report_frozen_detected, &status);
-> > -             if (reset_subordinates(bridge) !=3D PCI_ERS_RESULT_RECOVE=
-RED) {
-> > -                     pci_warn(bridge, "subordinate device reset failed=
-\n");
-> > -                     goto failed;
-> > -             }
-> > -     } else {
-> > +     else
-> >               pci_walk_bridge(bridge, report_normal_detected, &status);
-> > -     }
-> >
-> >       if (status =3D=3D PCI_ERS_RESULT_CAN_RECOVER) {
-> >               status =3D PCI_ERS_RESULT_RECOVERED;
->
-> On s390 PCI errors leave the device with MMIO blocked until either the
-> error state is cleared or we reset via the firmware interface. With
-> this change and the pci_channel_io_frozen case AER would now do the
-> report_mmio_enabled() before the reset with nothing happening between
-> report_frozen_detected() and report_mmio_enabled() is MMIO enabled at
-> this point? I think this callback really only makes sense if you have
-> an equivalent to s390's clearing of the error state that enables MMIO
-> but doesn't otherwise reset. Similarly EEH has eeh_pci_enable(pe,
-> EEH_OPT_THAW_MMIO).
+The QUICC Engine provides interrupts for a few I/O ports. This is
+handled via a separate interrupt ID and managed via a triplet of
+dedicated registers hosted by the SoC.
 
-The original intent was that if the channel locked up e.g. due to some
-uncorrectable ECC error or some transient errors due to electrical
-problems on the bus (bad reflection of some pulse off some poorly
-terminated connector) then such an error would almost surely be
-transient and very very unlikely to repeat.
+Implement an interrupt driver for it for that those IRQs can then
+be linked to the related GPIOs.
 
-Thus it would be OK to re-enable the MMIO (without otherwise resetting
-any channel controller state) and let the device driver examine the PCI
-config registers. If they all look good, don't contain any scrambled addrs
-or bitflags, then completely normal operations could be resumed without
-any further messing around, resetting, invalidating etc.
+The number of ports for which interrupts are supported depends on
+the microcontroller:
+- mpc8323 has 10 interrupts
+- mpc8360 has 28 interrupts
+- mpc8568 has 18 interrupts
+So add this information as data of the compatible.
 
-But first, the device driver needs to examine the config registers and
-that cannot be done unless MMIO is enabled.  If MMIO is enabled,
-and the PCI config regs appear to contain garbage, then that garbage
-can be logged in some error report or crash dump. After this
-got done, the device driver would invalidate any pending i/o (for example,
-half-finished blocks in some s390 orb, irb, schib, ioccw, whatever)
-make sure that assorted channel subsystems are actually halted,
-and then attempt  a reset of the bus, the bus controllers (390 channel
-or subchannel) and probably the device as well. If that reset succeeds,
-then the device driver can restart with a fresh, clean device and a working
-channel.  And maybe, if we're lucky, start handling any pending i/o request=
-s.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v2: Properly cast (void *) to long instead of int to enable warning-free build on PPC64
+---
+ drivers/soc/fsl/qe/Makefile      |   2 +-
+ drivers/soc/fsl/qe/qe_ports_ic.c | 156 +++++++++++++++++++++++++++++++
+ 2 files changed, 157 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/soc/fsl/qe/qe_ports_ic.c
 
-In practice, this worked great for network adapters. However, if the affect=
-ed
-device was some storage controller for e.g. some mounted filesystem then
-(way back when) it was hopeless, because the Linux block subsystem did
-not know how to deal with transient errors like this.  Trying to figure out=
- how
-to unscramble the block subsystem, and keep mounted filesystems shielded
-from this chaos was the one thing I couldn't figure out how to solve.  It s=
-eemed
-important.  But we've come a long way since then, so I dunno.
+diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
+index ec8506e13113..901a9c40d5eb 100644
+--- a/drivers/soc/fsl/qe/Makefile
++++ b/drivers/soc/fsl/qe/Makefile
+@@ -11,4 +11,4 @@ obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
+ obj-$(CONFIG_UCC_FAST)	+= ucc_fast.o
+ obj-$(CONFIG_QE_TDM)	+= qe_tdm.o
+ obj-$(CONFIG_QE_USB)	+= usb.o
+-obj-$(CONFIG_QE_GPIO)	+= gpio.o
++obj-$(CONFIG_QE_GPIO)	+= gpio.o qe_ports_ic.o
+diff --git a/drivers/soc/fsl/qe/qe_ports_ic.c b/drivers/soc/fsl/qe/qe_ports_ic.c
+new file mode 100644
+index 000000000000..9715643d36a6
+--- /dev/null
++++ b/drivers/soc/fsl/qe/qe_ports_ic.c
+@@ -0,0 +1,156 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * QUICC ENGINE I/O Ports Interrupt Controller
++ *
++ * Copyright (c) 2025 Christophe Leroy CS GROUP France (christophe.leroy@csgroup.eu)
++ */
++
++#include <linux/irq.h>
++#include <linux/irqdomain.h>
++#include <linux/platform_device.h>
++
++/* QE IC registers offset */
++#define CEPIER		0x0c
++#define CEPIMR		0x10
++#define CEPICR		0x14
++
++struct qepic_data {
++	void __iomem *reg;
++	struct irq_domain *host;
++};
++
++static void qepic_mask(struct irq_data *d)
++{
++	struct qepic_data *data = irq_data_get_irq_chip_data(d);
++
++	clrbits32(data->reg + CEPIMR, 1 << (31 - irqd_to_hwirq(d)));
++}
++
++static void qepic_unmask(struct irq_data *d)
++{
++	struct qepic_data *data = irq_data_get_irq_chip_data(d);
++
++	setbits32(data->reg + CEPIMR, 1 << (31 - irqd_to_hwirq(d)));
++}
++
++static void qepic_end(struct irq_data *d)
++{
++	struct qepic_data *data = irq_data_get_irq_chip_data(d);
++
++	out_be32(data->reg + CEPIER, 1 << (31 - irqd_to_hwirq(d)));
++}
++
++static int qepic_set_type(struct irq_data *d, unsigned int flow_type)
++{
++	struct qepic_data *data = irq_data_get_irq_chip_data(d);
++	unsigned int vec = (unsigned int)irqd_to_hwirq(d);
++
++	switch (flow_type & IRQ_TYPE_SENSE_MASK) {
++	case IRQ_TYPE_EDGE_FALLING:
++		setbits32(data->reg + CEPICR, 1 << (31 - vec));
++		return 0;
++	case IRQ_TYPE_EDGE_BOTH:
++	case IRQ_TYPE_NONE:
++		clrbits32(data->reg + CEPICR, 1 << (31 - vec));
++		return 0;
++	}
++	return -EINVAL;
++}
++
++static struct irq_chip qepic = {
++	.name = "QEPIC",
++	.irq_mask = qepic_mask,
++	.irq_unmask = qepic_unmask,
++	.irq_eoi = qepic_end,
++	.irq_set_type = qepic_set_type,
++};
++
++static int qepic_get_irq(struct irq_desc *desc)
++{
++	struct qepic_data *data = irq_desc_get_handler_data(desc);
++	u32 event = in_be32(data->reg + CEPIER);
++
++	if (!event)
++		return -1;
++
++	return irq_find_mapping(data->host, 32 - ffs(event));
++}
++
++static void qepic_cascade(struct irq_desc *desc)
++{
++	generic_handle_irq(qepic_get_irq(desc));
++}
++
++static int qepic_host_map(struct irq_domain *h, unsigned int virq, irq_hw_number_t hw)
++{
++	irq_set_chip_data(virq, h->host_data);
++	irq_set_chip_and_handler(virq, &qepic, handle_fasteoi_irq);
++	return 0;
++}
++
++static const struct irq_domain_ops qepic_host_ops = {
++	.map = qepic_host_map,
++};
++
++static int qepic_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct qepic_data *data;
++	unsigned long nb;
++	int irq;
++
++	nb = (unsigned long)of_device_get_match_data(dev);
++	if (nb < 1 || nb > 32)
++		return -EINVAL;
++
++	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->reg = devm_platform_ioremap_resource(pdev, 0);
++	if (IS_ERR(data->reg))
++		return PTR_ERR(data->reg);
++
++	irq = platform_get_irq(pdev, 0);
++	if (irq < 0)
++		return irq;
++
++	data->host = irq_domain_add_linear(dev->of_node, nb, &qepic_host_ops, data);
++	if (!data->host)
++		return -ENODEV;
++
++	irq_set_handler_data(irq, data);
++	irq_set_chained_handler(irq, qepic_cascade);
++
++	return 0;
++}
++
++static const struct of_device_id qepic_match[] = {
++	{
++		.compatible = "fsl,mpc8323-qe-ports-ic",
++		.data = (void *)10,
++	},
++	{
++		.compatible = "fsl,mpc8360-qe-ports-ic",
++		.data = (void *)28,
++	},
++	{
++		.compatible = "fsl,mpc8568-qe-ports-ic",
++		.data = (void *)18,
++	},
++	{},
++};
++
++static struct platform_driver qepic_driver = {
++	.driver	= {
++		.name		= "qe_ports_ic",
++		.of_match_table	= qepic_match,
++	},
++	.probe	= qepic_probe,
++};
++
++static int __init qepic_init(void)
++{
++	return platform_driver_register(&qepic_driver);
++}
++arch_initcall(qepic_init);
+-- 
+2.49.0
 
--- Linas
 
