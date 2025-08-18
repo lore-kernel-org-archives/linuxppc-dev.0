@@ -1,61 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-11091-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11092-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11913CA0EE4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 13:50:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB839CA0ED1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 15:50:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5Dcy0x04z3cZq;
-	Mon, 18 Aug 2025 23:50:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5HHK2JTNz3cb7;
+	Tue, 19 Aug 2025 01:50:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755525042;
-	cv=none; b=oSxOCVnUhTM23llP6VKdzP2q4UAkX0ddXXwCfppZahAeNibS37RXyW1ZBznCeMqy6igbuiqXElfkNp5pPyS0JRj6oaJ0+mODWiESZp9o32vgyFLKezFf3aRmCYp6TxlJKoXLTrmcB3NgqxbA8uRB1R/vYQso71SaCo5/kxsg6cxsts8DhmIwE7skJ+mXQiOiWS6hM+6RB0Td7+8k+JLEC7PxU59CQx+8qhZ3kGuqRFLAsbvkPfb3QI2WRIi+Ncveq99PGSZ5XMUfEar5LT+Aq8bq3tk9fHEN6TJxe6eLzFPtX2F8L4Xk/kp2fakPxuziLAQJWTB9J0GSpkP00uJ+yg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755532237;
+	cv=none; b=T5gSzVjaI7HdLewQriy84dupTnojK10n89JSUyd8H79TgBfSzqavGxR8F8w3YRXYWCDUu/11xBnUvEfB44NgI2eV+hsnZVyCKt77BOVADdM1sNgxpcPVx1AsOuBINW6GmolucYbwqB75k6DNgSKPBLQeI1smSCxeTZTbkPMkmiE/EPl18DRJEuyIey5tCCiWMSxwkYHob8CGVXcjPIBU4B14xHE4/o7BAJWguiRPO6SuyPkC2dpQDP4CTiKg5ArxORlRp1IRUFTg3Box6ER1tq2D+35Wr129KAPrY4CaGENl/uF5ZBqnHyVTYoweSz0RiQ6s2FylfJjddiEpZmR91A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755525042; c=relaxed/relaxed;
-	bh=0uuu94+B3/oxewnqYbFMnedzi6IMOSBvstkH4Cg6N0g=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gjlhTeRhampJs4ApzluDuXxYyZMXsRzVoPfelDFwM3YyWT1edhMtXIcNIa2kV64Ej8WJnVisUosS6PoJ/Z/BB8sDMirWKNa0M7OLVNRsA57oSw73gnMmyCmxZ8FOk8eQGCY4t3PLvGWlX8ipQW/rGovjKo/xYy3oFqevLg9mr/467nWZpGN6UTBYOG9F0kETwRgjFLFxgjmAeou5RU8lqCtI3xmptjrQcuX6kYTTD8ql0k/ZN2S3vj1WGn/mc0prTatAf1okJ2bZZf4sIFhuua4ZN4/v3kKi1WfQLkGMpM9r7MAbD84mSF8M2VroPpkFQy16xn/y3gY5eOeke6E/Vw==
+	t=1755532237; c=relaxed/relaxed;
+	bh=gGnE61Q2QHh4mXdvySBj+6ijyTcN2er6VH8hJjHDYiI=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=gYJWUIXVCedPPXvBl3ktsMVCuHrfMDZQXiauvDim70wzLc6zwngUAHLvO+Sc1qtO6WZCpePBbp+4heEOfMrbDDYFjsfv2Rh7OHcGiU8/V5PAFPSDznWX0PlG7auWCQYvmorTPIG7jiDY6WvGRyOBvnDUt4RC6bnOkKa5OePh1uAC24xCs5qBJfi4+Doyxvc1u4AiRxitWsMiaOiHi5yGdsYK73e//F9h31Z1lo8SQ7NC0pmw3g1DUje81ADD0pPO6B1b/Kc55nsrO1IEponm6rmpZurhkti12d8Hewc3/wbveOnBOvu4nOFFW4PIsxzgZ4kqX1RcXHVow960gkfSVQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5Dcx4CHXz3cZp
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 23:50:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5HHJ3tw1z300M
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 01:50:34 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c5BVG53JJz9sV1;
-	Mon, 18 Aug 2025 14:14:46 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4c55HV5XV9z9sW5;
+	Mon, 18 Aug 2025 10:20:06 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ts7rHCiLYxVq; Mon, 18 Aug 2025 14:14:46 +0200 (CEST)
+	with ESMTP id wIe-lmP6pu4s; Mon, 18 Aug 2025 10:20:06 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c5BVG3hg9z9sTn;
-	Mon, 18 Aug 2025 14:14:46 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55HS48Cfz9sW8;
+	Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 689778B764;
-	Mon, 18 Aug 2025 14:14:46 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 71F4D8B765;
+	Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id v5SaTmB0tJsW; Mon, 18 Aug 2025 14:14:46 +0200 (CEST)
+	with ESMTP id 3kaTHZm5b9PS; Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 38B258B763;
-	Mon, 18 Aug 2025 14:14:46 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 42BA08B763;
+	Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
+To: Herve Codina <herve.codina@bootlin.com>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>
 Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	linux-gpio@vger.kernel.org,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Linus Walleij <linus.walleij@linaro.org>
-Subject: [PATCH] powerpc/cpm2: Drop legacy-of-mm-gpiochip.h header
-Date: Mon, 18 Aug 2025 14:14:36 +0200
-Message-ID: <2662f24c539db393f11b27f0feae2dc14bb2f08f.1755518891.git.christophe.leroy@csgroup.eu>
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-sound@vger.kernel.org
+Subject: [PATCH v3 2/4] ASoc: fsl: fsl_qmc_audio: Ensure audio channels are ordered in TDM bus
+Date: Mon, 18 Aug 2025 10:20:01 +0200
+Message-ID: <fad43df132900d7001fea34a2ee563d819c74015.1755504428.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1755504428.git.christophe.leroy@csgroup.eu>
+References: <cover.1755504428.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,212 +78,74 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1755519277; l=7042; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=8RKYPBgcb30PVBpGEIRd0OTuJmNgZfajD3OtFlexfHU=; b=oOokUcmjwNZdcWy7b9jBwmz8uDBVVsYb17+K9YIYEqRQ/tfkozSrMR/zQWauwjNc4KoOTkrEo ITurVnxbWMWCwbbqG0Q9Sp+slmTw0vaf0jZ++qyPYlLuBG7qPM4B33e
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755505199; l=2217; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=SYbloYwYI2o2l9qWMT+5H0KmD0kacEnPhYcSkHfzxEw=; b=Uxas0iEZgPlcZBwnlSGDU/8/4rVUd4yigb4hH9u5SU6DZtVUdmKN2OuUc/rWZsAM4mXzkEijO vZrBAoq0e9MCqQjF+Z9g969K/eSnN68GhcOh89/95IwmbvmsH+WnOxS
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-Remove legacy-of-mm-gpiochip.h header file. The above mentioned
-file provides an OF API that's deprecated. There is no agnostic
-alternatives to it and we have to open code the logic which was
-hidden behind of_mm_gpiochip_add_data(). Note, most of the GPIO
-drivers are using their own labeling schemas and resource retrieval
-that only a few may gain of the code deduplication, so whenever
-alternative is appear we can move drivers again to use that one.
-
-As a side effect this change fixes a potential memory leak on
-an error path, if of_mm_gpiochip_add_data() fails.
-
-[text copied from commit 34064c8267a6 ("powerpc/8xx:
-Drop legacy-of-mm-gpiochip.h header")]
+To reduce complexity of interrupt handling in following patch, ensure
+audio channels are configured in the same order as timeslots on the
+TDM bus. If we need a given ordering of audio sources in the audio
+frame, it is possible to re-order codecs on the TDM bus, no need to
+mix up timeslots in channels.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- arch/powerpc/platforms/8xx/Kconfig |  1 -
- arch/powerpc/platforms/Kconfig     |  1 -
- arch/powerpc/sysdev/cpm_common.c   | 56 +++++++++++++++---------------
- 3 files changed, 28 insertions(+), 30 deletions(-)
+ sound/soc/fsl/fsl_qmc_audio.c | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
-diff --git a/arch/powerpc/platforms/8xx/Kconfig b/arch/powerpc/platforms/8xx/Kconfig
-index 8623aebfac48..abb2b45b2789 100644
---- a/arch/powerpc/platforms/8xx/Kconfig
-+++ b/arch/powerpc/platforms/8xx/Kconfig
-@@ -101,7 +101,6 @@ comment "Generic MPC8xx Options"
- config 8xx_GPIO
- 	bool "GPIO API Support"
- 	select GPIOLIB
--	select OF_GPIO_MM_GPIOCHIP
- 	help
- 	  Saying Y here will cause the ports on an MPC8xx processor to be used
- 	  with the GPIO API.  If you say N here, the kernel needs less memory.
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index fea3766eac0f..364eef32ddcc 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -243,7 +243,6 @@ config CPM2
- 	select CPM
- 	select HAVE_PCI
- 	select GPIOLIB
--	select OF_GPIO_MM_GPIOCHIP
- 	help
- 	  The CPM2 (Communications Processor Module) is a coprocessor on
- 	  embedded CPUs made by Freescale.  Selecting this option means that
-diff --git a/arch/powerpc/sysdev/cpm_common.c b/arch/powerpc/sysdev/cpm_common.c
-index f469f6a9f6e0..07ea605ab0e6 100644
---- a/arch/powerpc/sysdev/cpm_common.c
-+++ b/arch/powerpc/sysdev/cpm_common.c
-@@ -28,10 +28,6 @@
- 
- #include <mm/mmu_decl.h>
- 
--#if defined(CONFIG_CPM2) || defined(CONFIG_8xx_GPIO)
--#include <linux/gpio/legacy-of-mm-gpiochip.h>
--#endif
--
- static int __init cpm_init(void)
+diff --git a/sound/soc/fsl/fsl_qmc_audio.c b/sound/soc/fsl/fsl_qmc_audio.c
+index 5614a8b909ed..c0c7ef0a1511 100644
+--- a/sound/soc/fsl/fsl_qmc_audio.c
++++ b/sound/soc/fsl/fsl_qmc_audio.c
+@@ -791,12 +791,17 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
+ 			       struct qmc_dai *qmc_dai,
+ 			       struct snd_soc_dai_driver *qmc_soc_dai_driver)
  {
- 	struct device_node *np;
-@@ -91,32 +87,33 @@ void __init udbg_init_cpm(void)
- 
- #if defined(CONFIG_CPM2) || defined(CONFIG_8xx_GPIO)
- 
-+#include <linux/gpio/driver.h>
++	struct qmc_chan_ts_info ts_info;
+ 	struct qmc_chan_info info;
+ 	unsigned long rx_fs_rate;
+ 	unsigned long tx_fs_rate;
++	int prev_last_rx_ts = 0;
++	int prev_last_tx_ts = 0;
+ 	unsigned int nb_tx_ts;
+ 	unsigned int nb_rx_ts;
+ 	unsigned int i;
++	int last_rx_ts;
++	int last_tx_ts;
+ 	int count;
+ 	u32 val;
+ 	int ret;
+@@ -879,6 +884,30 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
+ 				return -EINVAL;
+ 			}
+ 		}
 +
- struct cpm2_ioports {
- 	u32 dir, par, sor, odr, dat;
- 	u32 res[3];
- };
- 
- struct cpm2_gpio32_chip {
--	struct of_mm_gpio_chip mm_gc;
-+	struct gpio_chip gc;
-+	void __iomem *regs;
- 	spinlock_t lock;
- 
- 	/* shadowed data register to clear/set bits safely */
- 	u32 cpdata;
- };
- 
--static void cpm2_gpio32_save_regs(struct of_mm_gpio_chip *mm_gc)
-+static void cpm2_gpio32_save_regs(struct cpm2_gpio32_chip *cpm2_gc)
- {
--	struct cpm2_gpio32_chip *cpm2_gc =
--		container_of(mm_gc, struct cpm2_gpio32_chip, mm_gc);
--	struct cpm2_ioports __iomem *iop = mm_gc->regs;
-+	struct cpm2_ioports __iomem *iop = cpm2_gc->regs;
- 
- 	cpm2_gc->cpdata = in_be32(&iop->dat);
- }
- 
- static int cpm2_gpio32_get(struct gpio_chip *gc, unsigned int gpio)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
--	struct cpm2_ioports __iomem *iop = mm_gc->regs;
-+	struct cpm2_gpio32_chip *cpm2_gc = gpiochip_get_data(gc);
-+	struct cpm2_ioports __iomem *iop = cpm2_gc->regs;
- 	u32 pin_mask;
- 
- 	pin_mask = 1 << (31 - gpio);
-@@ -124,11 +121,9 @@ static int cpm2_gpio32_get(struct gpio_chip *gc, unsigned int gpio)
- 	return !!(in_be32(&iop->dat) & pin_mask);
- }
- 
--static void __cpm2_gpio32_set(struct of_mm_gpio_chip *mm_gc, u32 pin_mask,
--	int value)
-+static void __cpm2_gpio32_set(struct cpm2_gpio32_chip *cpm2_gc, u32 pin_mask, int value)
- {
--	struct cpm2_gpio32_chip *cpm2_gc = gpiochip_get_data(&mm_gc->gc);
--	struct cpm2_ioports __iomem *iop = mm_gc->regs;
-+	struct cpm2_ioports __iomem *iop = cpm2_gc->regs;
- 
- 	if (value)
- 		cpm2_gc->cpdata |= pin_mask;
-@@ -140,14 +135,13 @@ static void __cpm2_gpio32_set(struct of_mm_gpio_chip *mm_gc, u32 pin_mask,
- 
- static int cpm2_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct cpm2_gpio32_chip *cpm2_gc = gpiochip_get_data(gc);
- 	unsigned long flags;
- 	u32 pin_mask = 1 << (31 - gpio);
- 
- 	spin_lock_irqsave(&cpm2_gc->lock, flags);
- 
--	__cpm2_gpio32_set(mm_gc, pin_mask, value);
-+	__cpm2_gpio32_set(cpm2_gc, pin_mask, value);
- 
- 	spin_unlock_irqrestore(&cpm2_gc->lock, flags);
- 
-@@ -156,16 +150,15 @@ static int cpm2_gpio32_set(struct gpio_chip *gc, unsigned int gpio, int value)
- 
- static int cpm2_gpio32_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct cpm2_gpio32_chip *cpm2_gc = gpiochip_get_data(gc);
--	struct cpm2_ioports __iomem *iop = mm_gc->regs;
-+	struct cpm2_ioports __iomem *iop = cpm2_gc->regs;
- 	unsigned long flags;
- 	u32 pin_mask = 1 << (31 - gpio);
- 
- 	spin_lock_irqsave(&cpm2_gc->lock, flags);
- 
- 	setbits32(&iop->dir, pin_mask);
--	__cpm2_gpio32_set(mm_gc, pin_mask, val);
-+	__cpm2_gpio32_set(cpm2_gc, pin_mask, val);
- 
- 	spin_unlock_irqrestore(&cpm2_gc->lock, flags);
- 
-@@ -174,9 +167,8 @@ static int cpm2_gpio32_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 
- static int cpm2_gpio32_dir_in(struct gpio_chip *gc, unsigned int gpio)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct cpm2_gpio32_chip *cpm2_gc = gpiochip_get_data(gc);
--	struct cpm2_ioports __iomem *iop = mm_gc->regs;
-+	struct cpm2_ioports __iomem *iop = cpm2_gc->regs;
- 	unsigned long flags;
- 	u32 pin_mask = 1 << (31 - gpio);
- 
-@@ -193,19 +185,17 @@ int cpm2_gpiochip_add32(struct device *dev)
- {
- 	struct device_node *np = dev->of_node;
- 	struct cpm2_gpio32_chip *cpm2_gc;
--	struct of_mm_gpio_chip *mm_gc;
- 	struct gpio_chip *gc;
- 
--	cpm2_gc = kzalloc(sizeof(*cpm2_gc), GFP_KERNEL);
-+	cpm2_gc = devm_kzalloc(dev, sizeof(*cpm2_gc), GFP_KERNEL);
- 	if (!cpm2_gc)
- 		return -ENOMEM;
- 
- 	spin_lock_init(&cpm2_gc->lock);
- 
--	mm_gc = &cpm2_gc->mm_gc;
--	gc = &mm_gc->gc;
-+	gc = &cpm2_gc->gc;
- 
--	mm_gc->save_regs = cpm2_gpio32_save_regs;
-+	gc->base = -1;
- 	gc->ngpio = 32;
- 	gc->direction_input = cpm2_gpio32_dir_in;
- 	gc->direction_output = cpm2_gpio32_dir_out;
-@@ -214,6 +204,16 @@ int cpm2_gpiochip_add32(struct device *dev)
- 	gc->parent = dev;
- 	gc->owner = THIS_MODULE;
- 
--	return of_mm_gpiochip_add_data(np, mm_gc, cpm2_gc);
-+	gc->label = devm_kasprintf(dev, GFP_KERNEL, "%pOF", np);
-+	if (!gc->label)
-+		return -ENOMEM;
++		ret = qmc_chan_get_ts_info(qmc_dai->chans[i].qmc_chan, &ts_info);
++		if (ret) {
++			dev_err(qmc_audio->dev, "dai %d get QMC %d channel TS info failed %d\n",
++				qmc_dai->id, i, ret);
++			return ret;
++		}
 +
-+	cpm2_gc->regs = devm_of_iomap(dev, np, 0, NULL);
-+	if (IS_ERR(cpm2_gc->regs))
-+		return PTR_ERR(cpm2_gc->regs);
++		last_rx_ts = fls64(ts_info.rx_ts_mask);
++		last_tx_ts = fls64(ts_info.tx_ts_mask);
 +
-+	cpm2_gpio32_save_regs(cpm2_gc);
++		if (prev_last_rx_ts > last_rx_ts) {
++			dev_err(qmc_audio->dev, "dai %d QMC chan %d unordered channels (RX timeslot %d before %d)\n",
++				qmc_dai->id, i, prev_last_rx_ts, last_rx_ts);
++			return -EINVAL;
++		}
++		if (prev_last_tx_ts > last_tx_ts) {
++			dev_err(qmc_audio->dev, "dai %d QMC chan %d unordered channels (TX timeslot %d before %d)\n",
++				qmc_dai->id, i, prev_last_tx_ts, last_tx_ts);
++			return -EINVAL;
++		}
 +
-+	return devm_gpiochip_add_data(dev, gc, cpm2_gc);
- }
- #endif /* CONFIG_CPM2 || CONFIG_8xx_GPIO */
++		prev_last_rx_ts = last_rx_ts;
++		prev_last_tx_ts = last_tx_ts;
+ 	}
+ 
+ 	qmc_dai->nb_chans_avail = count;
 -- 
 2.49.0
 
