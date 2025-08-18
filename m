@@ -1,65 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-11075-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11076-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22892CA0EE4
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 17 Aug 2025 16:11:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4494ACA0EE4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 06:59:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c4gp33qf9z3bV6;
-	Mon, 18 Aug 2025 02:11:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.14
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755447099;
-	cv=none; b=T1CZ1QuVPex+dpm7cCH339J2Xd1szFAohg2ntDSPTEMV6pGKD7cLcz7HbEiRVda7sF5Kz7FROt6QLefG7LhAm6ILC02weCLt78SFNVZK2zgOEqKhY90UD6PBoSMaMMnTVTe0nAJ2XgqDbI1R4zYBCRMgk0U4HHO5qiYzzkZEJQi0Fd7CcVfgKHQa9/e2EkCnk7Q3wJhvQzHCT+/MzrM9uN7XtZoTchRrqyqGtKgSY5O10gmexL9jCpPBNqKXf2KiN9enEOMU+8FD0q1XU3ZsB9Y3d7bHgX/YdjBs57b5/EaO/hlhhkK4GB6uHCjPXzhUyt4M3wgq9d5sODrXBYCp2A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c53V93Yfsz2ywR;
+	Mon, 18 Aug 2025 16:59:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755500353;
+	cv=none; b=QK2e10WAQ7FQ17gBYdhRNUS6kikIfbVWlKp7nHQpL2z+wBFkMahfcByC6xbPGwCcf/XCRvP0u4diWUtJuxDiAXLDyeJ5EeBHsX1mjX8AfgwBlh8OGA1e9ZfzxOFiydIgg9TvgRRHQSM4PhhpSdAlcnx4SxDTAiT6/URHCw9HQ8wcFUjl4KuhXx83JYeUVIz3NnTFKF120wy91M8YUHChhtgVp5P23iXQM+/FM2IusE/h+ZRVGf9/2bz8uAQs+3ssJqW9ZQpS8mW+/qAVOC6Wt4odNW6B3e0lWkt18Gm8EsriMYJUua5z/w/AZX6HabfqWq0DszIgMfw3Y/G2ALaKOQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755447099; c=relaxed/relaxed;
-	bh=34NrFUNvZl0GjYjV/T30TIvtpL1VcwzF6hoGN3AQ7lw=;
+	t=1755500353; c=relaxed/relaxed;
+	bh=tPhHppo9Id9H3Mf+xNXwTczb/fY9tmDFofhTHWpEmEI=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=FTdLrJatI51IS97cQWhdOUnk7ZbFNRR/chwd9gJIJIk8IB6xqe2WH6IWUIgqPRLq6CQBkIFWqBxbkQYofU+HotLcKKp/s8XVsaFvfVu4G9xnJWGRoyYUlTSwKA671dwVZ0J3y6lsdVrq8gGtoElha6YhQtl9BgLOK3IFv0rIWDWQwBAn9BdMaCtdaDfWzbLnLl7/9n0IsDEYg5+dMPQz0X6k+6iuzibArqnhVLqYpCzloQ+mc1jA1qMAUvRCBekp9nUsRwASVaOaQuEN3rr3Zn8Ye7mLbFaPFEwGyap0qYUcqgCEE6dGTxZeERH7yjLPmZqHpUILCcN1pgzGlfZhxw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=afVyT5RQ; dkim-atps=neutral; spf=none (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	 In-Reply-To:Content-Type; b=LvLuygfMzGr/RjTkUNmgk6Gq7B6L4y2mbDdOcxKuaD+QECjp9mcYIjoZmZTuD5i7fvTBETyQrEG+O2JF0hF/euFr/l49PsLH8nwXoSHax5bbRfqOH8rYeeT+RmGrb+UhyYOLmmmoXk2qXFZ1IBICWkEeQkeFz53Tv4IhowMLX0Znc4wXKpEe71r1k94AtJeGC4etGT5jad4CvwZGxQdqZ1PyaDKM/pLIk/F783li2O/8SrxaDeKoG9WaBEqeyugX6O6KwUbuq81/I5x4vfVNRWB9ZK9Lp/65+YrD6eLCwNJvo5Q8u68kj1qZW04CLOaP/tRMAqxBGr8LLfGtZ2OsKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Rq1FfMRq; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Rq1FfMRq; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=afVyT5RQ;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Rq1FfMRq;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Rq1FfMRq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=sathyanarayanan.kuppuswamy@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c4gp24Vmrz3bTf
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 02:11:38 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1755447099; x=1786983099;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=OmKfIZC4v/Yh+lxG9tt63RrqXnAkHxol+BcPkY7gV0w=;
-  b=afVyT5RQNabhyz02WcxZuGTb4M4+jWp+s50rzvVtp2cWa2s4zpGLLOzE
-   lZgGxksF+sxMLJdiIP7ylDdL91DQeuNhSOhMV476+/+Ir38CZXyoji7eH
-   z1mW/bIf6Oi6BmIGi+18qJ++71P8ZHph3RWHdz3Mr7HZFqngL7BTQXotF
-   ZSRgvWqtI/xWUo7lF6Vx8Oj/AO6GrUCu2cmgMsO936M/BDzSSrxyHHwrA
-   OF8RxOuf0DKcntq54F6ce2B1MmhONfEtoItI/uq40gG8LzpE5souRKicb
-   J7dwYeoso2lbb54JH2E5Tj27TBP8bsX9LYFw4wv/aSpmSXF/4ybCt7xPV
-   g==;
-X-CSE-ConnectionGUID: l+z7/K6+RTKMB/m2bRdWmA==
-X-CSE-MsgGUID: piTi4p89Rfu4gdQwoNnVqA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11524"; a="61523951"
-X-IronPort-AV: E=Sophos;i="6.17,293,1747724400"; 
-   d="scan'208";a="61523951"
-Received: from orviesa006.jf.intel.com ([10.64.159.146])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Aug 2025 09:11:37 -0700
-X-CSE-ConnectionGUID: TuFVHhY8QwC69x8GRdpclg==
-X-CSE-MsgGUID: 2cs05UscQxuFTiszn0qtIg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.17,293,1747724400"; 
-   d="scan'208";a="166563795"
-Received: from linux.intel.com ([10.54.29.200])
-  by orviesa006.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 17 Aug 2025 09:11:36 -0700
-Received: from [10.124.223.240] (unknown [10.124.223.240])
-	by linux.intel.com (Postfix) with ESMTP id A4C0F20B571C;
-	Sun, 17 Aug 2025 09:11:35 -0700 (PDT)
-Message-ID: <8491adbd-d8e8-465a-971e-3fe50e2561b1@linux.intel.com>
-Date: Sun, 17 Aug 2025 09:11:20 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c53V81V86z2xPw
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 16:59:10 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1755500346;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=tPhHppo9Id9H3Mf+xNXwTczb/fY9tmDFofhTHWpEmEI=;
+	b=Rq1FfMRq5qSvdE52tuMFTnvHM4X76J5Sob2h+duiJv0DF40XfL8OoniE0aBTbCzxb3bgPP
+	UlIJ+gAW48Pu9VgpnUAMm2/LT1c17cv5xR741jrX0coaAN/ighjlCXa72o2zN9rfxW42xS
+	7cj3COi04xz7z/Iu/egY3uF6TUNbPXQ=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1755500346;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=tPhHppo9Id9H3Mf+xNXwTczb/fY9tmDFofhTHWpEmEI=;
+	b=Rq1FfMRq5qSvdE52tuMFTnvHM4X76J5Sob2h+duiJv0DF40XfL8OoniE0aBTbCzxb3bgPP
+	UlIJ+gAW48Pu9VgpnUAMm2/LT1c17cv5xR741jrX0coaAN/ighjlCXa72o2zN9rfxW42xS
+	7cj3COi04xz7z/Iu/egY3uF6TUNbPXQ=
+Received: from mail-wm1-f70.google.com (mail-wm1-f70.google.com
+ [209.85.128.70]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-119-JYP21NHJNKObbz-4otIayA-1; Mon, 18 Aug 2025 02:59:03 -0400
+X-MC-Unique: JYP21NHJNKObbz-4otIayA-1
+X-Mimecast-MFC-AGG-ID: JYP21NHJNKObbz-4otIayA_1755500342
+Received: by mail-wm1-f70.google.com with SMTP id 5b1f17b1804b1-45a1b0cc989so19676635e9.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sun, 17 Aug 2025 23:59:03 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1755500342; x=1756105142;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=tPhHppo9Id9H3Mf+xNXwTczb/fY9tmDFofhTHWpEmEI=;
+        b=BO0lAJuA1o8EuEafu4JTiS2YQDmMrc67H2ligAyqwM046NByJU389qraOMzb5Y5ESg
+         0fc3LHDIctfKGdCiQMljF6lIZJPS9Utz/igHEZ6FgSDPowf/So7LGdxU0c4Vwq2DA1k9
+         wZZ8HxAJh8QR7kZkDvZFBnFQhOCjULP6RkJqgf5l7DCmrbqVypgE5I+XoXfSv6MgLgo9
+         amBU5FLXjRYrdMK9Cy10TbFVZFXGk0oBaRmY+FzXoimJvNEqz6SCXd2U1As/+rznA3ce
+         Zb1O/U9hz+1z/LC5i9heVBIyfxn2x/w+/05VfS9lQMOuepaXq48PvbevF5YgU8x/e1qM
+         bFyQ==
+X-Gm-Message-State: AOJu0YwycdiWwjupxM2W7OgqkHeMmSJYUBHg1MmBeGI6PG5LP4Mqvfpm
+	B44lyFzU11avtAVJ645ncXdscxBDArzI2Nq4Uf94mNo7AzsnoxMujUNK1FwmQa6Ick0ghKis1tG
+	vT4NiPaYTOTCRcc9q/2ccnVR4CSx01khnqab4slmGk+r1GBmBB8oOo+OffaW/OALtiS4=
+X-Gm-Gg: ASbGncvc6PjA1lze8poNqzgA2mcl41Xp7iZhjZtG8IOVXk+/uDsYRAPrrHh088GnjpI
+	vJwdW9T7q7eotoYyGQtYhdiqR9wP3snx6ETLO2Cozjk0mmIH5yidmzvxAmUxzsXCgZfBwZ4uCaS
+	NKuqeBvtRfouUKtSIfAJvQf3rS/2hNYP6P5EmdQUggoUdxyprQV8I/KWDskhmyzUH9fhP9Hqsud
+	gbiG1c6mZaVWekskPnmyagSA9t/t1Qm3466FA8y3htLP8mCbptGxzMKTBvjh3q6xkrbbnNHwWLL
+	OE2IEve/oPU9k1VAyJ9sLI6TGCr1WX/t3naxB5SIM0gKWS6JMtT/tNiNbOH/jgjQqXnychHQvqv
+	0MHN07i8MycvvHarcW/LKSIfFoifCvqzrHKK6LxQaE3g5Os8KTuZdrGPw3D1QLkMM
+X-Received: by 2002:a05:600c:3b0e:b0:458:aed1:f82c with SMTP id 5b1f17b1804b1-45a21844ae1mr69168555e9.22.1755500342369;
+        Sun, 17 Aug 2025 23:59:02 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IFRjJq0XIQ1oLnzV4tapEXxp+CDryL3RteLWPsUBJ810j9eh5EZSzNq0LPGyZErkVrGEekgEg==
+X-Received: by 2002:a05:600c:3b0e:b0:458:aed1:f82c with SMTP id 5b1f17b1804b1-45a21844ae1mr69168235e9.22.1755500341938;
+        Sun, 17 Aug 2025 23:59:01 -0700 (PDT)
+Received: from ?IPV6:2003:d8:2f22:600:53c7:df43:7dc3:ae39? (p200300d82f22060053c7df437dc3ae39.dip0.t-ipconnect.de. [2003:d8:2f22:600:53c7:df43:7dc3:ae39])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3bb676c9a72sm11554512f8f.34.2025.08.17.23.58.59
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Sun, 17 Aug 2025 23:59:01 -0700 (PDT)
+Message-ID: <d7cdb65d-c241-478c-aa01-bc1a5f188e4f@redhat.com>
+Date: Mon, 18 Aug 2025 08:58:59 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,152 +105,109 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/5] PCI/AER: Allow drivers to opt in to Bus Reset on
- Non-Fatal Errors
-To: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <helgaas@kernel.org>
-Cc: Riana Tauro <riana.tauro@intel.com>,
- Aravind Iddamsetty <aravind.iddamsetty@linux.intel.com>,
- "Sean C. Dardis" <sean.c.dardis@intel.com>,
- Terry Bowman <terry.bowman@amd.com>, Niklas Schnelle
- <schnelle@linux.ibm.com>, Linas Vepstas <linasvepstas@gmail.com>,
- Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
- Oliver OHalloran <oohall@gmail.com>,
- Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
- linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
-References: <cover.1755008151.git.lukas@wunner.de>
- <28fd805043bb57af390168d05abb30898cf4fc58.1755008151.git.lukas@wunner.de>
+Subject: Re: [PATCH] mm/numa: Rename memory_add_physaddr_to_nid to
+ memory_get_phys_to_nid
+To: pratyush.brahma@oss.qualcomm.com,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, "Rafael J. Wysocki"
+ <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Vishal Verma <vishal.l.verma@intel.com>, Dave Jiang <dave.jiang@intel.com>,
+ Ira Weiny <ira.weiny@intel.com>, Oscar Salvador <osalvador@suse.de>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Danilo Krummrich <dakr@kernel.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ Jonathan Cameron <jonathan.cameron@huawei.com>,
+ Alison Schofield <alison.schofield@intel.com>,
+ "K. Y. Srinivasan" <kys@microsoft.com>,
+ Haiyang Zhang <haiyangz@microsoft.com>, Wei Liu <wei.liu@kernel.org>,
+ Dexuan Cui <decui@microsoft.com>, Pankaj Gupta
+ <pankaj.gupta.linux@gmail.com>, "Michael S. Tsirkin" <mst@redhat.com>,
+ Jason Wang <jasowang@redhat.com>, Xuan Zhuo <xuanzhuo@linux.alibaba.com>,
+ =?UTF-8?Q?Eugenio_P=C3=A9rez?= <eperezma@redhat.com>,
+ Juergen Gross <jgross@suse.com>, Stefano Stabellini
+ <sstabellini@kernel.org>,
+ Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Mike Rapoport <rppt@kernel.org>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-s390@vger.kernel.org, linux-acpi@vger.kernel.org,
+ nvdimm@lists.linux.dev, linux-mm@kvack.org, linux-cxl@vger.kernel.org,
+ linux-hyperv@vger.kernel.org, virtualization@lists.linux.dev,
+ xen-devel@lists.xenproject.org
+References: <20250818-numa_memblks-v1-1-9eb29ade560a@oss.qualcomm.com>
+From: David Hildenbrand <david@redhat.com>
+Autocrypt: addr=david@redhat.com; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <20250818-numa_memblks-v1-1-9eb29ade560a@oss.qualcomm.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: 9mnNh-d_uzszK5gIRqzZ6_xSHV8q2Ta_ZL2Y6o0UGdg_1755500342
+X-Mimecast-Originator: redhat.com
 Content-Language: en-US
-From: Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>
-In-Reply-To: <28fd805043bb57af390168d05abb30898cf4fc58.1755008151.git.lukas@wunner.de>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
+On 18.08.25 08:41, pratyush.brahma@oss.qualcomm.com wrote:
+> From: Pratyush Brahma <pratyush.brahma@oss.qualcomm.com>
+> 
+> The function `memory_add_physaddr_to_nid` seems a misnomer.
+> It does not to "add" a physical address to a NID mapping,
+> but rather it gets the NID associated with a given physical address.
 
-On 8/12/25 10:11 PM, Lukas Wunner wrote:
-> When Advanced Error Reporting was introduced in September 2006 by commit
-> 6c2b374d7485 ("PCI-Express AER implemetation: AER core and aerdriver"), it
-> sought to adhere to the recovery flow and callbacks specified in
-> Documentation/PCI/pci-error-recovery.rst.
->
-> That document had been added in January 2006, when Enhanced Error Handling
-> (EEH) was introduced for PowerPC with commit 065c6359071c ("[PATCH] PCI
-> Error Recovery: documentation").
->
-> However the AER driver deviates from the document in that it never
-> performs a Secondary Bus Reset on Non-Fatal Errors, but always on Fatal
-> Errors.  By contrast, EEH allows drivers to opt in or out of a Bus Reset
-> regardless of error severity, by returning PCI_ERS_RESULT_NEED_RESET or
-> PCI_ERS_RESULT_CAN_RECOVER from their ->error_detected() callback.  If all
-> drivers agree that they can recover without a Bus Reset, EEH skips it.
-> Should one of them request a Bus Reset, it overrides all other drivers.
->
-> This inconsistency between EEH and AER seems problematic because drivers
-> need to be aware of and cope with it.
->
-> The file Documentation/PCI/pcieaer-howto.rst hints at a rationale for
-> always performing a Bus Reset on Fatal Errors:  "Fatal errors [...] cause
-> the link to be unreliable.  [...] This [reset_link] callback is used to
-> reset the PCIe physical link when a fatal error happens.  If an error
-> message indicates a fatal error, [...] performing link reset at upstream
-> is necessary."
->
-> There's no such rationale provided for never performing a Bus Reset on
-> Non-Fatal Errors.
->
-> The "xe" driver has a need to attempt a reset of local units on graphics
-> cards upon a Non-Fatal Error.  If that is insufficient for recovery, the
-> driver wants to opt in to a Bus Reset.
->
-> Accommodate such use cases and align AER more closely with EEH by
-> performing a Bus Reset in pcie_do_recovery() if drivers request it and the
-> faulting device's channel_state is pci_channel_io_normal.  The AER driver
-> sets this channel_state for Non-Fatal Errors.  For Fatal Errors, it uses
-> pci_channel_io_frozen.
->
-> This limits the deviation from Documentation/PCI/pci-error-recovery.rst
-> and EEH to the unconditional Bus Reset on Fatal Errors.
->
-> pcie_do_recovery() is also invoked by the Downstream Port Containment and
-> Error Disconnect Recover drivers.  They both set the channel_state to
-> pci_channel_io_frozen, hence pcie_do_recovery() continues to always invoke
-> the ->reset_subordinates() callback in their case.  That is necessary
-> because the callback brings the link back up at the containing Downstream
-> Port.
->
-> There are two behavioral changes resulting from this commit:
->
-> First, if channel_state is pci_channel_io_normal and one of the affected
-> drivers returns PCI_ERS_RESULT_NEED_RESET from its ->error_detected()
-> callback, a Bus Reset will now be performed.  There are drivers doing this
-> and although it would be possible to avoid a behavioral change by letting
-> them return PCI_ERS_RESULT_CAN_RECOVER instead, the impression I got from
-> examination of all drivers is that they actually expect or want a Bus
-> Reset (cxl_error_detected() is a case in point).  In any case, if they can
-> cope with a Bus Reset on Fatal Errors, they shouldn't have issues with a
-> Bus Reset on Non-Fatal Errors.
->
-> Second, if channel_state is pci_channel_io_frozen and all affected drivers
-> return PCI_ERS_RESULT_CAN_RECOVER from ->error_detected(), their
-> ->mmio_enabled() callback is now invoked prior to performing a Bus Reset,
-> instead of afterwards.  This actually makes sense:  For example,
-> drivers/scsi/sym53c8xx_2/sym_glue.c dumps debug registers in its
-> ->mmio_enabled() callback.  Doing so after reset right now captures the
-> post-reset state instead of the faulting state, which is useless.
->
-> There is only one other driver which implements ->mmio_enabled() and
-> returns PCI_ERS_RESULT_CAN_RECOVER from ->error_detected() for
-> channel_state pci_channel_io_frozen, drivers/scsi/ipr.c (IBM Power RAID).
-> It appears to only be used on EEH platforms.  So the second behavioral
-> change is limited to these two drivers.
->
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> ---
+You probably misunderstood what the function is used for: memory hotplug 
+aka "memory_add".
 
-Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+This patch is making matters worse by stripping that detail, unfortunately.
 
->   drivers/pci/pcie/err.c | 17 ++++++++++-------
->   1 file changed, 10 insertions(+), 7 deletions(-)
->
-> diff --git a/drivers/pci/pcie/err.c b/drivers/pci/pcie/err.c
-> index de6381c690f5..e795e5ae6b03 100644
-> --- a/drivers/pci/pcie/err.c
-> +++ b/drivers/pci/pcie/err.c
-> @@ -217,15 +217,10 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
->   	pci_walk_bridge(bridge, pci_pm_runtime_get_sync, NULL);
->   
->   	pci_dbg(bridge, "broadcast error_detected message\n");
-> -	if (state == pci_channel_io_frozen) {
-> +	if (state == pci_channel_io_frozen)
->   		pci_walk_bridge(bridge, report_frozen_detected, &status);
-> -		if (reset_subordinates(bridge) != PCI_ERS_RESULT_RECOVERED) {
-> -			pci_warn(bridge, "subordinate device reset failed\n");
-> -			goto failed;
-> -		}
-> -	} else {
-> +	else
->   		pci_walk_bridge(bridge, report_normal_detected, &status);
-> -	}
->   
->   	if (status == PCI_ERS_RESULT_CAN_RECOVER) {
->   		status = PCI_ERS_RESULT_RECOVERED;
-> @@ -233,6 +228,14 @@ pci_ers_result_t pcie_do_recovery(struct pci_dev *dev,
->   		pci_walk_bridge(bridge, report_mmio_enabled, &status);
->   	}
->   
-> +	if (status == PCI_ERS_RESULT_NEED_RESET ||
-> +	    state == pci_channel_io_frozen) {
-> +		if (reset_subordinates(bridge) != PCI_ERS_RESULT_RECOVERED) {
-> +			pci_warn(bridge, "subordinate device reset failed\n");
-> +			goto failed;
-> +		}
-> +	}
-> +
->   	if (status == PCI_ERS_RESULT_NEED_RESET) {
->   		/*
->   		 * TODO: Should call platform-specific
 
 -- 
-Sathyanarayanan Kuppuswamy
-Linux Kernel Developer
+Cheers
+
+David / dhildenb
 
 
