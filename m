@@ -1,48 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-11092-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11093-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB839CA0ED1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 15:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48F21CA0EE4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 15:50:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5HHK2JTNz3cb7;
-	Tue, 19 Aug 2025 01:50:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5HHP2Ydyz3cbX;
+	Tue, 19 Aug 2025 01:50:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755532237;
-	cv=none; b=T5gSzVjaI7HdLewQriy84dupTnojK10n89JSUyd8H79TgBfSzqavGxR8F8w3YRXYWCDUu/11xBnUvEfB44NgI2eV+hsnZVyCKt77BOVADdM1sNgxpcPVx1AsOuBINW6GmolucYbwqB75k6DNgSKPBLQeI1smSCxeTZTbkPMkmiE/EPl18DRJEuyIey5tCCiWMSxwkYHob8CGVXcjPIBU4B14xHE4/o7BAJWguiRPO6SuyPkC2dpQDP4CTiKg5ArxORlRp1IRUFTg3Box6ER1tq2D+35Wr129KAPrY4CaGENl/uF5ZBqnHyVTYoweSz0RiQ6s2FylfJjddiEpZmR91A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755532241;
+	cv=none; b=QWV65x/SmtuQzlc1CrEZPpgQHk1aBVJWDDYgnrbfMNKydnQP56usQY2sNrtxx3P5TPe5GLdbnh9j1MMfa3xOkch2ye21Mdff8L44beVND5Xcm3UbvO1LAEyi8WgHvsfYQwuxYB+S26Nztx2KLxt3iQJKNDbvlhLjG02CEYz++WwMWLxNmTlTXKsQk8Y6h81BIew694OmNiM7xcBdDWX70h9eHiSmsnh+cp0oPbTlqxbQ6Sq4hntyQJ17WW2rY4QTrM9W6hqxq+ujns/Jnbz+Im3UGCoAB6shwlvaxNclpwI2zTVdlBvH0JOLtxBG/IZWNZDSWtpzKmvJhOBW3XOLmw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755532237; c=relaxed/relaxed;
-	bh=gGnE61Q2QHh4mXdvySBj+6ijyTcN2er6VH8hJjHDYiI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=gYJWUIXVCedPPXvBl3ktsMVCuHrfMDZQXiauvDim70wzLc6zwngUAHLvO+Sc1qtO6WZCpePBbp+4heEOfMrbDDYFjsfv2Rh7OHcGiU8/V5PAFPSDznWX0PlG7auWCQYvmorTPIG7jiDY6WvGRyOBvnDUt4RC6bnOkKa5OePh1uAC24xCs5qBJfi4+Doyxvc1u4AiRxitWsMiaOiHi5yGdsYK73e//F9h31Z1lo8SQ7NC0pmw3g1DUje81ADD0pPO6B1b/Kc55nsrO1IEponm6rmpZurhkti12d8Hewc3/wbveOnBOvu4nOFFW4PIsxzgZ4kqX1RcXHVow960gkfSVQ==
+	t=1755532241; c=relaxed/relaxed;
+	bh=7VbbVIH8UFd/ZXRt8tTqoE2DEAgRPhZQ9cL0+DlJjmY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=dBPNIi2fo5lyfq8lTBHuxs11WKPLId2Ah/VpsJF0yvybVBLvj67lOiC7sxuYMJxuHvnqrS43z6nldcRkiW1ITFZ54gUG8wFLyY3aWE5UYbqQUfFO9Ke+xs2je7uj9vCpgbQJR3nvm0c0ebFucv5tMk80bYrP+34nZwp6MkMQFwu5RVO3oDYbx+L/wVgJ+H9Ze0p1Y2J4yXijj/DU555rNjZf3wACJ8fEsZKNPoSPaDkguN+tPSMrVyGu2rvC9yT2FegVjO50gip5ER+tota8g0zGGIonJPp6aywEd/3Iz1lAKKuZ90p3o9f9oFbp9ois8y9aXigJETWOE8m/q+EiZQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5HHJ3tw1z300M
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 01:50:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5HHN5rbxz3cbL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 01:50:40 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c55HV5XV9z9sW5;
-	Mon, 18 Aug 2025 10:20:06 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4c55HS397Bz9sW6;
+	Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id wIe-lmP6pu4s; Mon, 18 Aug 2025 10:20:06 +0200 (CEST)
+	with ESMTP id FMMyCDZPktia; Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55HS48Cfz9sW8;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55HS1ztdz9sW4;
 	Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 71F4D8B765;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2F1EB8B765;
 	Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 3kaTHZm5b9PS; Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
+	with ESMTP id ymC4Y2tOtNpK; Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 42BA08B763;
-	Mon, 18 Aug 2025 10:20:04 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id F2BA48B763;
+	Mon, 18 Aug 2025 10:20:03 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Herve Codina <herve.codina@bootlin.com>,
 	Qiang Zhao <qiang.zhao@nxp.com>,
@@ -59,12 +58,10 @@ Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	linux-sound@vger.kernel.org
-Subject: [PATCH v3 2/4] ASoc: fsl: fsl_qmc_audio: Ensure audio channels are ordered in TDM bus
-Date: Mon, 18 Aug 2025 10:20:01 +0200
-Message-ID: <fad43df132900d7001fea34a2ee563d819c74015.1755504428.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 0/4] ASoC: fsl: fsl_qmc_audio: Reduce amount of interrupts
+Date: Mon, 18 Aug 2025 10:19:59 +0200
+Message-ID: <cover.1755504428.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1755504428.git.christophe.leroy@csgroup.eu>
-References: <cover.1755504428.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,74 +75,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1755505199; l=2217; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=SYbloYwYI2o2l9qWMT+5H0KmD0kacEnPhYcSkHfzxEw=; b=Uxas0iEZgPlcZBwnlSGDU/8/4rVUd4yigb4hH9u5SU6DZtVUdmKN2OuUc/rWZsAM4mXzkEijO vZrBAoq0e9MCqQjF+Z9g969K/eSnN68GhcOh89/95IwmbvmsH+WnOxS
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755505199; l=2329; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=pbAuN88+fAvtq6e9c1Cuomlr5CexTJYFwYsjbKKxSv0=; b=kYoKb+1G4M+oBNjPSIblYLyr02FxdpGXktGAtambWltq8gWdILmpYrw9TuWcteLPOJ82HWcGW zHtiikDuJHPBlwm+8sNkaJ/GwOEiXWLXie2LYf+BV8zuMn5tZMMOKBw
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-To reduce complexity of interrupt handling in following patch, ensure
-audio channels are configured in the same order as timeslots on the
-TDM bus. If we need a given ordering of audio sources in the audio
-frame, it is possible to re-order codecs on the TDM bus, no need to
-mix up timeslots in channels.
+This series reduces significantly the amount of interrupts on
+fsl_qmc_audio device.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- sound/soc/fsl/fsl_qmc_audio.c | 29 +++++++++++++++++++++++++++++
- 1 file changed, 29 insertions(+)
+Patches 1 and 2 are preparatory patches.
+Patch 3 is the main change
+Patch 4 is a cleanup which is enabled by previous patch
 
-diff --git a/sound/soc/fsl/fsl_qmc_audio.c b/sound/soc/fsl/fsl_qmc_audio.c
-index 5614a8b909ed..c0c7ef0a1511 100644
---- a/sound/soc/fsl/fsl_qmc_audio.c
-+++ b/sound/soc/fsl/fsl_qmc_audio.c
-@@ -791,12 +791,17 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
- 			       struct qmc_dai *qmc_dai,
- 			       struct snd_soc_dai_driver *qmc_soc_dai_driver)
- {
-+	struct qmc_chan_ts_info ts_info;
- 	struct qmc_chan_info info;
- 	unsigned long rx_fs_rate;
- 	unsigned long tx_fs_rate;
-+	int prev_last_rx_ts = 0;
-+	int prev_last_tx_ts = 0;
- 	unsigned int nb_tx_ts;
- 	unsigned int nb_rx_ts;
- 	unsigned int i;
-+	int last_rx_ts;
-+	int last_tx_ts;
- 	int count;
- 	u32 val;
- 	int ret;
-@@ -879,6 +884,30 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
- 				return -EINVAL;
- 			}
- 		}
-+
-+		ret = qmc_chan_get_ts_info(qmc_dai->chans[i].qmc_chan, &ts_info);
-+		if (ret) {
-+			dev_err(qmc_audio->dev, "dai %d get QMC %d channel TS info failed %d\n",
-+				qmc_dai->id, i, ret);
-+			return ret;
-+		}
-+
-+		last_rx_ts = fls64(ts_info.rx_ts_mask);
-+		last_tx_ts = fls64(ts_info.tx_ts_mask);
-+
-+		if (prev_last_rx_ts > last_rx_ts) {
-+			dev_err(qmc_audio->dev, "dai %d QMC chan %d unordered channels (RX timeslot %d before %d)\n",
-+				qmc_dai->id, i, prev_last_rx_ts, last_rx_ts);
-+			return -EINVAL;
-+		}
-+		if (prev_last_tx_ts > last_tx_ts) {
-+			dev_err(qmc_audio->dev, "dai %d QMC chan %d unordered channels (TX timeslot %d before %d)\n",
-+				qmc_dai->id, i, prev_last_tx_ts, last_tx_ts);
-+			return -EINVAL;
-+		}
-+
-+		prev_last_rx_ts = last_rx_ts;
-+		prev_last_tx_ts = last_tx_ts;
- 	}
- 
- 	qmc_dai->nb_chans_avail = count;
+Changes in v3:
+- Properly check the buffer descriptor is unused (Patch 1, comment from Herve Codina)
+- Fixed copy/paste error (patch 2, comment from Herve Codina)
+- Fixed build failure (patch 2, comment from Herve Codina and Test robot)
+
+Changes in v2:
+- Don't remove UB bit (Patch 1, comment from Herve Codina)
+- Make sure audio channels are ordered on TDM bus (Patch 2, new patch, comment from Herve Codina)
+- Drop struct qmc_dai_chan  (patch 4, new patch)
+
+Backgroup (copied from patch 3):
+
+In non-interleaved mode, several QMC channels are used in sync.
+More details can be found in commit 188d9cae5438 ("ASoC: fsl:
+fsl_qmc_audio: Add support for non-interleaved mode.")
+At the time being, an interrupt is requested on each channel to
+perform capture/playback completion, allthough the completion is
+really performed only once all channels have completed their work.
+
+This leads to a lot more interrupts than really needed. Looking at
+/proc/interrupts shows ~3800 interrupts per second when using
+4 capture and 4 playback devices with 5ms periods while
+only 1600 (200 x 4 + 200 x 4) periods are processed during one second.
+
+The QMC channels work in sync, the one started first is the one
+finishing first and the one started last is the one finishing last,
+so when the last one finishes it is guaranteed that the other ones are
+finished as well. Therefore only request completion processing on the
+last QMC channel.
+
+On my board with the above exemple, on a kernel started with
+'threadirqs' option, the QMC irq thread uses 16% CPU time with this
+patch while it uses 26% CPU time without this patch.
+
+Christophe Leroy (4):
+  soc: fsl: qmc: Only set completion interrupt when needed
+  ASoc: fsl: fsl_qmc_audio: Ensure audio channels are ordered in TDM bus
+  ASoC: fsl: fsl_qmc_audio: Only request completion on last channel
+  ASoc: fsl: fsl_qmc_audio: Drop struct qmc_dai_chan
+
+ drivers/soc/fsl/qe/qmc.c      |  44 +++++++++---
+ sound/soc/fsl/fsl_qmc_audio.c | 125 +++++++++++++++-------------------
+ 2 files changed, 87 insertions(+), 82 deletions(-)
+
 -- 
 2.49.0
 
