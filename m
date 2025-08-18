@@ -1,79 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-11081-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11082-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D4ABCCA0EE4
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 09:35:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1754ECA0EE4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 09:35:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c56yB34Dhz3cR8;
-	Mon, 18 Aug 2025 19:35:14 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c56yj5SZvz3cYN;
+	Mon, 18 Aug 2025 19:35:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.180.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755506078;
-	cv=none; b=IFv29wTg2D+k86PU9vvLfixrNQcdoKyJET76pKBfah5f94v4RI6rC79lfcWaPXnLCMXOiOQIims1+XCELl5lZoqijBsKezLsR/C6XTwCFkz6lc7obtIiQ9I8DA6QTDha164wAXbCI8H8e7BJYDSk+shG7xSzIyPJxvWp5/id8IPdKYcEywA3x5u3t4TDzQBHCQzLRbGo8w0ecY+WVu/GxWqrVFAa48J4G+XKGAQ1eIGxtSIML6CTZgyvpNE3Q96lmb4dEN0eXZAu69HopiC/ExCvW0/RDJp0qv9UPWGDbCi/8aqb3fqlU1NwRMqrqwwCRGDUIC51WVmpTgnCZOHeUw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755507842;
+	cv=none; b=mRdKFyW+VWttcydjV8JOSm0jW1yraMIty98Lwqkqky6DDy6C1SXpI5ZYfKu61HzKJ44NY+iFp2l5UEl/KZMbQTxbziKtJBYCJkWzHaSiRfcLKNR7VwkekHKB54AE2gniofjXaTZedyrVdjBAASycJib6ZO9PmwshaUenhqS2Pw2XDyviu1bnotioW7VWpRZIZ8P0drmSM1nxppKP5Uaf99VZcO40YPmDG3m0WQXKjEA/erl+M9IkKH0K8HjtRDy02kADL9FCWI2W4oqDOQLKMNcu8j2iiHpwTCsQnYYQRwEM1Cwq1kPJDvT7RQMrmPT9qJ5Wr2BjEKwVtSKDXeIZKQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755506078; c=relaxed/relaxed;
-	bh=YKnYr324eUUhj+QvrdVq/1e4Gz0w8e7EzwXqGsvWiSk=;
+	t=1755507842; c=relaxed/relaxed;
+	bh=rq6946DzumILvEIR5XWexmQkysEBR7GbvltHkcSl6YA=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Bt9R5xBsO62S/BDvLou+td/7FNhCkzY54Dm3gVVrkxpFU+OP7cdjlnLJpp1iZHJ3mHMn1K1IDWI5Rt5IKIQjkss8DoqiZllfHJVkxQ6QGsw8ZdHZuru9qsvAxz8lCHpw90y4uWdfEVQk+4ZAJzFoyvhBIR21mEuqx8saRJ2RPZtuWvaHceF1Ws06hOI+QMR+MMHeTN/RVn06ejGj9I2d4UDuIeGqJ4eQPLFB16KMGU7LKIpD8pS43pOlcEnJX3POt5HIoa//7CHcjMDdHkH9N7KmZQEqPwP6nCw8WYioerE2KIaWV6fbx2Fw/08PD+LMaTO9rN21nj7ZUYYhM4BXKQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Aze4Y5K8; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=pratyush.brahma@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+	 To:Cc:Content-Type; b=T15QJzyn8Z1deHhF2Q3f7kapu+NAzte+sYgjENCc2t6IFxTGbOnH+lIQdushPjx1EogzJHHYb4pT5Sm6cCJ5uxLYfRCIYhX3e/lQThDTifJpzqHZTnxIj5ZDGXPV8785BcdklbK3fzFoQzLnbcSzD+g9mOGcSGyFRqprvA6D5SGiMHOyrvGShuGXAkFXMGRYvEI937KvhDyuU0CIEogwr9zHgA9TbdEGTDAqtqgVoSrH3w/HdQKgD3n57PnUrUHj7e+g4oMr2aYYjF/3bkR3gwCMwv4SIa5MkFJb4wqok77Jk2vWfbOY5qqjVb/OPj/NoxyBTmtYKB1C7TKaXkm0mg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=pH0jjYJT; dkim-atps=neutral; spf=pass (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=pratyush.brahma@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=Aze4Y5K8;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=pH0jjYJT;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.180.131; helo=mx0b-0031df01.pphosted.com; envelope-from=pratyush.brahma@oss.qualcomm.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 398 seconds by postgrey-1.37 at boromir; Mon, 18 Aug 2025 18:34:37 AEST
 Received: from mx0b-0031df01.pphosted.com (mx0b-0031df01.pphosted.com [205.220.180.131])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c55cF2wl3z3bmS
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 18:34:36 +1000 (AEST)
-Received: from pps.filterd (m0279871.ppops.net [127.0.0.1])
-	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57I8Uv9f017344
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 08:34:34 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c56G92r1rz3bn4
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 19:04:00 +1000 (AEST)
+Received: from pps.filterd (m0279869.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57HM02xk021396
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 08:27:54 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
 	cc:content-transfer-encoding:content-type:date:from:in-reply-to
 	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
-	YKnYr324eUUhj+QvrdVq/1e4Gz0w8e7EzwXqGsvWiSk=; b=Aze4Y5K8XQlzwnRF
-	KS2Vkdxd7n2qp5VewK8A0a6hxTVqbzMOozD5we+cTVDCFI/JgzI4KiILotlO/UDT
-	5nep91KwnnHHqgiAzY1H8M3CWe1zTEmZYyWHunj4Ox0D6WSd5grZgkLGRwPg1VDC
-	AV7KF5nJZeWoctIPiE0ufDcHdCnyV7xMUGfrwbXbmIslahVPylvI9zmR1/9esOJY
-	AFEx5vpmQjcRyyhWxPm+CoJZ5aqsnT0c5D/yh/yGTOu1npeEZWylk1LpzGMfAn+L
-	zrROeF6fcgqEzADtHMgH4NoIVLArFoA6z69DOF0yue7AxwnGRTjpFvxh/tfVJGe1
-	wi1rZg==
-Received: from mail-pl1-f197.google.com (mail-pl1-f197.google.com [209.85.214.197])
-	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 48jhjyby26-1
+	rq6946DzumILvEIR5XWexmQkysEBR7GbvltHkcSl6YA=; b=pH0jjYJTAl7re29P
+	eDXYy6doYRSC9/QrUBVDRGmaKfPZCRnt/27BpOESnbmKcDWYQWQE0TN4RjZHB26p
+	r31MIs4hA2/C4q4WvJs0F/TcGgCHu/dmVO2NTsFUfLgXGYc273YerMZN4+uFW9F7
+	hypGSTOfjNaHRAfD5yZE9ln9D4CBCF4ZoWT6/s894AJcWj4w2Ceci1tqrMg7FZ7T
+	8nC/lLMKExRJTWRCvcqmfiA5ilpDfF1xh3HEHJXusTG+HZ4HJHr6VZH5d8Jd3MdY
+	0E5ihcuWt8hBw0jAUsx0ZEQNIeQ0WCoiOmTnd4PZxYXj0A6xg9y5MRgUrzX0TcRD
+	r1n2kA==
+Received: from mail-pg1-f197.google.com (mail-pg1-f197.google.com [209.85.215.197])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 48jh073xk1-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES128-GCM-SHA256 bits=128 verify=NOT)
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 08:34:34 +0000 (GMT)
-Received: by mail-pl1-f197.google.com with SMTP id d9443c01a7336-244581950a1so43849685ad.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 01:34:34 -0700 (PDT)
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 08:27:54 +0000 (GMT)
+Received: by mail-pg1-f197.google.com with SMTP id 41be03b00d2f7-b4716fc56a9so6706505a12.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 18 Aug 2025 01:27:54 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755506073; x=1756110873;
+        d=1e100.net; s=20230601; t=1755505673; x=1756110473;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=YKnYr324eUUhj+QvrdVq/1e4Gz0w8e7EzwXqGsvWiSk=;
-        b=srWd2R/pDyw+iQRzmstKPngYS75AY7wzm8Uh4RpP30bXtsvRcbFbwSOfVfQdAu3y0d
-         LmYnN4LP7nf+MdZbfxCMuOR/LkGO3wpycqz9nMJBXaq+gbnjch+gpe+GQE9Hnk/AvOjp
-         KkPftmV7y9auTNJTqcpdJSDMbH+mmvsk93KgT36xDadUFWwISxN7kXzQO3jdaQ/8Bxbu
-         x2/zgww3hciqk0hSqrkICm97BKlGZMio3JVMWEKV7v8L9NynLzj4qiDaiLxGM3LH+2kD
-         d8oT7t8Ho8ox6KrtPxun9wEuC1ULM56QLvmiOOIsVpGC495/umr5ZbYJae6MQ/bj7P+7
-         aJIw==
-X-Forwarded-Encrypted: i=1; AJvYcCUXo+M4nQZ+kWBwSnp+tGpdcnXUBmAMwDI2I5xr1yS3SbbtbHbhtub5kH/wwgfUSMNdfHbOJ2Mh6Gj98ZQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzVM29mq9YECGHGiV6k83bijgPmUrgfMdL4YSsBm8WHLvr+/dMS
-	e7Oex9DQ6FodZyYL4EYP5b+g0Im60xls9SfAfEIfrSFv5NT+IJx+Lqd+j/Iv6+oQrY2Rn/SCsdV
-	b6rwpJ3f1XUMsqVy/cEeX0EJoR7WZmkLauiCYbl2arjOEHHn/5botYVNAtz22NiiQFWcOlYUdNQ
-	SFsVGoczqDw201MuaIrcX81CJ9pNVJnlNjhzffYlLx6GQ=
-X-Gm-Gg: ASbGncu0dPj35s9pueJdKBpRIoIdeEz+y6VQrMQsMPSZEkuFp/Lze4vAvF0MqsUV0Bl
-	zQe/nO0QDYpv8uOwygbZnMW4ETsuwPr22/0yYtZqcTKgwjh40MdjxMqbTgZfMBlU1ORFiWhYfGx
-	QBOHWN2C3mD8riYNaL0gKsOA==
-X-Received: by 2002:a17:903:b07:b0:23d:fa76:5c3b with SMTP id d9443c01a7336-2446d745130mr162002095ad.22.1755506072930;
-        Mon, 18 Aug 2025 01:34:32 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IF0iaKkOx5HF+G/2fDa+4Vn+rw7qYZXEvgZcGmIZ96t7UkZ4Y6iVl499qKwZ/lWHVbWQiw75ZkO9MQbjWLb6hM=
-X-Received: by 2002:a17:903:b07:b0:23d:fa76:5c3b with SMTP id
- d9443c01a7336-2446d745130mr162001485ad.22.1755506072460; Mon, 18 Aug 2025
- 01:34:32 -0700 (PDT)
+        bh=rq6946DzumILvEIR5XWexmQkysEBR7GbvltHkcSl6YA=;
+        b=hmuGOswtm/hszvsA/gqwESLFs1r/InnfRtG8dZ/zOtovbhKH8KMA7tPJapELPooG6M
+         nlKCczoSeKgL9WSEbtNygzdQ/InxuKo3QVWVm/6Pq90LKJDTjO+ukULhc5nGI6sUxNPy
+         5vcW1fg7sSv4vt4dD5L6I7v1lBaTSPkq4jMCC8dHKbgfjAdHBywMwQDKn1Hf/WJHnBo4
+         9QxygQZS86cnMHq4kMA8WaUd2J+3yi0jhPJ4bs1ZJf8vZhAi2InSX1oTxu7rKDO4sT7z
+         Gr37CfWcGT96x5ngBYqXidOGbP/nKLoksAh3PI5aCzfaB4Upp79AXY5p+cHiEc3CU6pG
+         ySbw==
+X-Forwarded-Encrypted: i=1; AJvYcCWak728/5TWXgUevfizDjClXinkt0rn5YyTvr32SyHsjZLeWYbJETMJ5csDJl5y7XuZdrBefGsU+5AfTwg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz5YBwH5K4B+hN8aZ9o9sWNwtcA+6XRbZXugd56YwmOjTv9LsEZ
+	o8QdeiYBLbKbQxpjtXTKwNQCC7rFAhUhSsKUr9cp+Znp/lwwdD1crVeUUiE0f7oNq7I1sW9lNse
+	1LKLRqdfITsbUuHxefRmbBurQhnTU2R25GMNABEpE5Dv+Q7mmA4QWtn7YQw0UtS6UMX4QTWjkzw
+	qI+MsdgsQCqdBcvT97p9flX/ve1KCYQITD7Ouu0b5y834=
+X-Gm-Gg: ASbGncuXuXIWv/e49NZs49kF9GXRM3qXr1c9Uf6cCYaQjfbe7b7A51QCnXuPUD7QdrM
+	+Z/4KPP7WIfxugi0/Q5vfbjuFo+uJ5egqq9epUZUV9NpPFUMuAaugKPMOsmctNBZaCi8PU1GYCl
+	lfXwry7Gd5cmBIxAkV8gAyJw==
+X-Received: by 2002:a17:902:e842:b0:235:ed01:18cd with SMTP id d9443c01a7336-2446d99e6acmr165826725ad.44.1755505673474;
+        Mon, 18 Aug 2025 01:27:53 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IGxmEX0bC4rGj0GsL0Ofny3nTaPHYYQ7bo5uu9L4GZIVv1jBDAAlTveYAPi+e7gAhEyyevMd3DrrsmVZDn0oyA=
+X-Received: by 2002:a17:902:e842:b0:235:ed01:18cd with SMTP id
+ d9443c01a7336-2446d99e6acmr165826455ad.44.1755505673065; Mon, 18 Aug 2025
+ 01:27:53 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,14 +86,12 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250818-numa_memblks-v1-1-9eb29ade560a@oss.qualcomm.com>
- <d7cdb65d-c241-478c-aa01-bc1a5f188e4f@redhat.com> <CALzOmR0C8BFY+-u-_aprVeAhq4uPOQa+f2L5m+yZH+=XZ2cv_w@mail.gmail.com>
- <63082884-1fe2-4740-8e6a-e1d06aa5e239@redhat.com>
-In-Reply-To: <63082884-1fe2-4740-8e6a-e1d06aa5e239@redhat.com>
+References: <20250818-numa_memblks-v1-1-9eb29ade560a@oss.qualcomm.com> <d7cdb65d-c241-478c-aa01-bc1a5f188e4f@redhat.com>
+In-Reply-To: <d7cdb65d-c241-478c-aa01-bc1a5f188e4f@redhat.com>
 From: Pratyush Brahma <pratyush.brahma@oss.qualcomm.com>
-Date: Mon, 18 Aug 2025 14:04:20 +0530
-X-Gm-Features: Ac12FXzX5PzSlv6roYThUOo89xclaREe5qOUHnsYKt7fIrY-t8kJ9YEJL5m2flQ
-Message-ID: <CALzOmR0MJv8EgPiFTvvbdkk8H_0BEDA4QQXKyqRPOCwwzGwjsw@mail.gmail.com>
+Date: Mon, 18 Aug 2025 13:57:41 +0530
+X-Gm-Features: Ac12FXzcSoeiNhok4BzoYQfoalKvL5KSge90N69qQ3e47Ph8xq7Ih6FtZXa_xiM
+Message-ID: <CALzOmR0C8BFY+-u-_aprVeAhq4uPOQa+f2L5m+yZH+=XZ2cv_w@mail.gmail.com>
 Subject: Re: [PATCH] mm/numa: Rename memory_add_physaddr_to_nid to memory_get_phys_to_nid
 To: David Hildenbrand <david@redhat.com>
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -134,61 +131,57 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
         virtualization@lists.linux.dev, xen-devel@lists.xenproject.org
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
-X-Proofpoint-ORIG-GUID: JZ6i4LKWDBmClenYOMXuHMJdN4B8WRVI
-X-Authority-Analysis: v=2.4 cv=ZJHXmW7b c=1 sm=1 tr=0 ts=68a2e59a cx=c_pps
- a=cmESyDAEBpBGqyK7t0alAg==:117 a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10
- a=20KFwNOVAAAA:8 a=EUspDBNiAAAA:8 a=AFlVVsuRyXfiT6IdkpsA:9 a=QEXdDO2ut3YA:10
- a=1OuFwYUASf3TG4hYMiVC:22
-X-Proofpoint-GUID: JZ6i4LKWDBmClenYOMXuHMJdN4B8WRVI
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODE2MDAyOCBTYWx0ZWRfX15pc0aYhdhYl
- 2TyBro+3UEF9b83J6BlewESajO/wFj5Vmw4KnWwGa8/LQWCW4K04/uiApLsN7nA+zUgNxhYqVi+
- 0bhPayYbCcRI/R97SeWXpd1BwKGxOCoXSXMGa3OYB2zWwgLC96RZugikGd+C0VkFY8hQrDrqxX3
- lE09ZsJbLjOFllYMav0QnMeASog4yMuCLNpioiRQzIYntO3BmNy2YK9Ig6O6HwSZXUe/5Irq5DB
- 6H29dphIdpLcohoht6FN+DwUUk3EZPRF5c+3MSbyFnWEZ2L85NIRooHbbd9+qnKbh3R4hJLQDYJ
- mYOk3gOo5SP/g2LEbQVfrobJYzhOr628713qG/1UKZ2duFNU5c2Zi+ZIuOqI8++W3fQjbcC/6QL
- ongTTxHa
+X-Proofpoint-ORIG-GUID: uj1ERgJZ8FOfbcKD7n_VFyXpe5miX_9e
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODE2MDAyMCBTYWx0ZWRfX7nVTBIKAiKhV
+ ijiK/vDo4v4RCtG1O9WDPsmnw3XM30gOsFowoFRZ3uAhJqwIJ674Z+WMJFlhDskxI/CPPpby2OU
+ lVGTfW40tkh7XYey+iugi7cgXjmxU1nbVImRPRqtdeByz8iMxzqrMHxMZUwqxbF9pFV9Mlu4Snb
+ 4Yesutublkv1gUVHfL3ybRHADqsTOtaqNhjJS2DCLAH2FdyoQYxuzBkdSs7nIc38Q3CxuFdNf0+
+ guZITvblENxIT3Kg3L1T/tmTGyrjX/2+5uiv9nCWhBraHM1XJ92vx3b2QeMrnUYRaC1PA5mcyGi
+ Dvd/TePH5LDo8NdlSA+vBQrZHCZzTmmZ+0y+IZhy5CHsC9Zb7eapA0Kj96IwjLfNU0gB3hRrJi4
+ XrXDjxF1
+X-Authority-Analysis: v=2.4 cv=a+Mw9VSF c=1 sm=1 tr=0 ts=68a2e40a cx=c_pps
+ a=rz3CxIlbcmazkYymdCej/Q==:117 a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10
+ a=20KFwNOVAAAA:8 a=EUspDBNiAAAA:8 a=uSFNSxTeKwDZCnUuY58A:9 a=QEXdDO2ut3YA:10
+ a=bFCP_H2QrGi7Okbo017w:22
+X-Proofpoint-GUID: uj1ERgJZ8FOfbcKD7n_VFyXpe5miX_9e
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
  definitions=2025-08-18_03,2025-08-14_01,2025-03-28_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0 phishscore=0 suspectscore=0 clxscore=1015
- bulkscore=0 spamscore=0 impostorscore=0 priorityscore=1501
+ spamscore=0 malwarescore=0 suspectscore=0 impostorscore=0 phishscore=0
+ adultscore=0 priorityscore=1501 clxscore=1015 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2508160028
+ reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2508160020
 
-On Mon, Aug 18, 2025 at 2:01=E2=80=AFPM David Hildenbrand <david@redhat.com=
-> wrote:
+On Mon, Aug 18, 2025 at 12:29=E2=80=AFPM David Hildenbrand <david@redhat.co=
+m> wrote:
 >
-> On 18.08.25 10:27, Pratyush Brahma wrote:
-> > On Mon, Aug 18, 2025 at 12:29=E2=80=AFPM David Hildenbrand <david@redha=
-t.com> wrote:
-> >>
-> >> On 18.08.25 08:41, pratyush.brahma@oss.qualcomm.com wrote:
-> >>> From: Pratyush Brahma <pratyush.brahma@oss.qualcomm.com>
-> >>>
-> >>> The function `memory_add_physaddr_to_nid` seems a misnomer.
-> >>> It does not to "add" a physical address to a NID mapping,
-> >>> but rather it gets the NID associated with a given physical address.
-> >>
-> >> You probably misunderstood what the function is used for: memory hotpl=
-ug
-> >> aka "memory_add".
-> > Thanks for your feedback. I get the part about memory hotplug here but
-> > using memory_add still seems a little odd as it doesn't truly reflect
-> > what this api is doing.
-> > However, I agree that my current suggestion
-> > may not be the perfect choice for the name, so I'm open to suggestions.
+> On 18.08.25 08:41, pratyush.brahma@oss.qualcomm.com wrote:
+> > From: Pratyush Brahma <pratyush.brahma@oss.qualcomm.com>
 > >
-> > Perhaps, something like "memory_add_get_nid_by_phys" may work here?
+> > The function `memory_add_physaddr_to_nid` seems a misnomer.
+> > It does not to "add" a physical address to a NID mapping,
+> > but rather it gets the NID associated with a given physical address.
 >
-> I don't think this name is really any better and worth the churn :(
+> You probably misunderstood what the function is used for: memory hotplug
+> aka "memory_add".
+Thanks for your feedback. I get the part about memory hotplug here but
+using memory_add still seems a little odd as it doesn't truly reflect
+what this api is doing.
+However, I agree that my current suggestion
+may not be the perfect choice for the name, so I'm open to suggestions.
+
+Perhaps, something like "memory_add_get_nid_by_phys" may work here?
 >
-Sure. Thanks for taking a look. Will drop this.
+> This patch is making matters worse by stripping that detail, unfortunatel=
+y.
+>
+>
 > --
 > Cheers
 >
 > David / dhildenb
 >
-Thanks & Regards
+Thanks and Regards
 Pratyush
 
