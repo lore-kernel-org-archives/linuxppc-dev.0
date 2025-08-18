@@ -1,50 +1,52 @@
-Return-Path: <linuxppc-dev+bounces-11106-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11107-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2ED6ECA0ED1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 20:20:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64ACFCA0EE4
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 18 Aug 2025 20:25:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5PGs1D5Yz3chK;
-	Tue, 19 Aug 2025 06:20:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755548437;
-	cv=none; b=G1XlJKlIH8PbH6+Pqld2XdY+vhj1KkLvYW6XOUvWlVtSAui6E0yKd0zmon4UOERKYAp/cfvEz0s6CSzzNxBA8SdbTgoc+Yvh1uFCLDxTfvzUZIeNn+x35TpLoUQWYzvknKQWOUf3Tc4WlPsMMmegtyCF31ddCztv3xAyeqs/HbUaDDFiuoNgADuFCDlaOU/iAmnmwF0sV6jVGrNw88mjCFpvmi0GlhiFXpqwbc/C8KCh2wyPrVn3I/ycLbabM4XXR+UDdSAIASVflwK3MqnKcitR0vCu8g5QZJcSlaa4/2B8zMgcj6z0sRYJoi5qcSovIOvi2V45gbXrbmei0DzxNg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5PN06tMZz3chL;
+	Tue, 19 Aug 2025 06:25:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755548704;
+	cv=none; b=TP0rRYAkqNi6DUrapneuzk5kqGseNotLLXBbJCXUKwX2Zz13Z8fbxBln8hNJ2YV5WxK7iAS/BWOlWtJDF6GkpEIKddtZHs6LZssvorLKWazwxR+Zy+yfKqLDut+pV77tAIs8qMucjiMlI4yKJE8xwTb0aYCNlVYvqWrj5AOIlvbpzDfg3jTOt6hSRZRD2zG4r/imz9RYjmkDspLoj7sy/qA7gMC/9Z6Hm8XradRjKOB3VLvzY4wVTP0Zql26Wjq1s8K478UA2xdO6+9B6gLZ6apa49siE2mdgYfs99w2KMj7Ef709KrAFVGpTreXPwhDyc3TC/Zsp2bsLS75N0QpTw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755548437; c=relaxed/relaxed;
-	bh=CxQvwWaMlHtmDIk/5Uaxuyq2WHRIQZy/jLZ2tazpre4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=lp4eoqOX61DDRDglqGvm9korQTkTrWySp6Bc/OMFika5P2IaOdnYd/1vTm4xFOyfalSupAZLSnWcIr0q+eKuKicec287Wgt9V0k5+3kKB9HOc0cEmvIeWnPafkZ+/eTsebUpqFlJCL3VFluVlnH6LzZMACdYhXvVqDbMbRgBkjCbxg1pGFQ5UXYhWM4k3WgCTIvk8KKttIz+pKA9UCiw5xccraVMb99ZS2/mG6unCjPaI7moHmONKcA8weYvhzw9P+RQHU5G3feuIauZSisOhmeqKPMnstlyAif7l8bKVwtI0VJlYIqCxDLC20KbJBfwxWFCGYwjMoYlEMhSBq3rew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5PGr2TjHz3cgl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 06:20:36 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c55ZV6vqDz9sVP;
-	Mon, 18 Aug 2025 10:33:06 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 5hybM51rxMvV; Mon, 18 Aug 2025 10:33:06 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55ZV5jRkz9sVL;
-	Mon, 18 Aug 2025 10:33:06 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id A2A4C8B764;
-	Mon, 18 Aug 2025 10:33:06 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id bcNwoLJxTpMP; Mon, 18 Aug 2025 10:33:06 +0200 (CEST)
-Received: from [10.25.207.160] (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 715818B763;
-	Mon, 18 Aug 2025 10:33:06 +0200 (CEST)
-Message-ID: <d085efdd-fe8b-4efa-92e1-34573c55ade5@csgroup.eu>
-Date: Mon, 18 Aug 2025 10:33:06 +0200
+	t=1755548704; c=relaxed/relaxed;
+	bh=qMTwWo2tpRt6tDLmvE1xF9OpcaykN/9Fdm0DYL6pKLw=;
+	h=Date:Content-Type:MIME-Version:From:Cc:To:In-Reply-To:References:
+	 Message-Id:Subject; b=Y9OI/4r51VcWFTX7Sw1Ip5qIGfV0DZAjcJULbUh8l3+ADptmWfUFVrFIShEgbfZ/vAqcOHw/xiWdnuTfSQ6TfBNSEhYXFrJer1zanERfT/Wl0kylQ6rMjX/YsJPjgCwoEe1BZw5a1dzW9xnjbXBAADcVP/jaadXiUAhQSJENC7Plds7n2OOTMKGP44rGJDRM0g5cfPNK85vARWtuWlmdMVkD04GYQ1VE87/JxkLgDmoLQYhsx/CggPa4rWa3qqHLSeJy7Mlwbve5dBJX+I0ZMHcO/3ehRWTo123P6+N0zonjqGEKyOHq8f+5+BVsp3lA7GI7Y6Jw7G/c2GNvILla0A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ic8tObN8; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ic8tObN8;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c5PMz6TrLz3cgl
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 06:25:03 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 0B22D601FF;
+	Mon, 18 Aug 2025 20:25:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8369DC4CEEB;
+	Mon, 18 Aug 2025 20:25:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1755548700;
+	bh=DWORNPSoaH+MkjUCn75Qd2KiRx9On7Gotf+b7ngssYs=;
+	h=Date:From:Cc:To:In-Reply-To:References:Subject:From;
+	b=ic8tObN8DjU6IWxKiOeUkHXlkzm6Ho162M8Ov3UaeqzH7pN/YMUQuwGmAuFx47ius
+	 MdA34L14QpFsZUs0iM3927gfqeD5/OwbmXbmADzTqvPTVUhqeniEQdqJkfBxHM+0yg
+	 5e/+nxMtA8SxUGZ9YQwSyOk/r7QlfQTMtlQwRtxIXDCImfQ/GQq1LXZ/w/4ShPCFKQ
+	 APvr+K1EZSLsflkmA4kop8gVAnr0ol6ed1pbWwh1JdxLppWSA6UZ/6fYBoKvBEYFOG
+	 UJuwBDZqBqgBAwFk3VLgWTX+vIn8FA+oOmyNXxzmA6bca0NeuEWNjfTIi06cPAIwJP
+	 qcpCS8jBN+WXA==
+Date: Mon, 18 Aug 2025 15:24:59 -0500
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,132 +60,66 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/4] soc: fsl: qe: Add support of IRQ in QE GPIO
-To: Bartosz Golaszewski <brgl@bgdev.pl>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-gpio@vger.kernel.org,
- devicetree@vger.kernel.org, Qiang Zhao <qiang.zhao@nxp.com>,
- Linus Walleij <linus.walleij@linaro.org>, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley <conor+dt@kernel.org>
-References: <cover.1754996033.git.christophe.leroy@csgroup.eu>
- <22b3847fd0011024c10aff48f1e5223894ce718a.1754996033.git.christophe.leroy@csgroup.eu>
- <CAMRc=Mce3LHtCUd-oO3uZjVAS-fywn86Zn+qmehZPJTKLzk6Sg@mail.gmail.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <CAMRc=Mce3LHtCUd-oO3uZjVAS-fywn86Zn+qmehZPJTKLzk6Sg@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+From: "Rob Herring (Arm)" <robh@kernel.org>
+Cc: imx@lists.linux.dev, Conor Dooley <conor+dt@kernel.org>, 
+ linuxppc-dev@lists.ozlabs.org, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>, 
+ linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org, 
+ devicetree@vger.kernel.org
+To: Frank Li <Frank.Li@nxp.com>
+In-Reply-To: <20250818183427.3601986-1-Frank.Li@nxp.com>
+References: <20250818183427.3601986-1-Frank.Li@nxp.com>
+Message-Id: <175554869942.1999698.5388783109628696157.robh@kernel.org>
+Subject: Re: [RESEND v2 1/1] dt-bindings: soc: add vf610 reboot syscon
+ controller
 
 
-
-Le 12/08/2025 à 16:21, Bartosz Golaszewski a écrit :
-> On Tue, 12 Aug 2025 13:02:53 +0200, Christophe Leroy
-> <christophe.leroy@csgroup.eu> said:
->> In the QE, a few GPIOs are IRQ capable. Similarly to
->> commit 726bd223105c ("powerpc/8xx: Adding support of IRQ in MPC8xx
->> GPIO"), add IRQ support to QE GPIO.
->>
->> Add property 'fsl,qe-gpio-irq-mask' similar to
->> 'fsl,cpm1-gpio-irq-mask' that define which of the GPIOs have IRQs.
->>
->> Here is an exemple for port B of mpc8323 which has IRQs for
->> GPIOs PB7, PB9, PB25 and PB27.
->>
->> 	qe_pio_b: gpio-controller@1418 {
->> 		#gpio-cells = <2>;
->> 		compatible = "fsl,mpc8323-qe-pario-bank";
->> 		reg = <0x1418 0x18>;
->> 		interrupts = <4 5 6 7>;
->> 		fsl,qe-gpio-irq-mask = <0x01400050>;
->> 		interrupt-parent = <&qepic>;
->> 		gpio-controller;
->> 	};
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->> ---
->>   drivers/soc/fsl/qe/gpio.c | 20 ++++++++++++++++++++
->>   1 file changed, 20 insertions(+)
->>
->> diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
->> index b502377193192..59145652ad850 100644
->> --- a/drivers/soc/fsl/qe/gpio.c
->> +++ b/drivers/soc/fsl/qe/gpio.c
->> @@ -13,6 +13,7 @@
->>   #include <linux/err.h>
->>   #include <linux/io.h>
->>   #include <linux/of.h>
->> +#include <linux/of_irq.h>
->>   #include <linux/gpio/legacy-of-mm-gpiochip.h>
->>   #include <linux/gpio/consumer.h>
->>   #include <linux/gpio/driver.h>
->> @@ -32,6 +33,8 @@ struct qe_gpio_chip {
->>
->>   	/* saved_regs used to restore dedicated functions */
->>   	struct qe_pio_regs saved_regs;
->> +
->> +	int irq[32];
->>   };
->>
->>   static void qe_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
->> @@ -141,6 +144,13 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
->>   	return 0;
->>   }
->>
->> +static int qe_gpio_to_irq(struct gpio_chip *gc, unsigned int gpio)
->> +{
->> +	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
->> +
->> +	return qe_gc->irq[gpio] ? : -ENXIO;
->> +}
->> +
->>   struct qe_pin {
->>   	/*
->>   	 * The qe_gpio_chip name is unfortunate, we should change that to
->> @@ -304,6 +314,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
->>   	struct qe_gpio_chip *qe_gc;
->>   	struct of_mm_gpio_chip *mm_gc;
->>   	struct gpio_chip *gc;
->> +	u32 mask;
->>
->>   	qe_gc = kzalloc(sizeof(*qe_gc), GFP_KERNEL);
->>   	if (!qe_gc) {
->> @@ -313,6 +324,14 @@ static int qe_gpio_probe(struct platform_device *ofdev)
->>
->>   	spin_lock_init(&qe_gc->lock);
->>
->> +	if (!of_property_read_u32(np, "fsl,qe-gpio-irq-mask", &mask)) {
+On Mon, 18 Aug 2025 14:34:26 -0400, Frank Li wrote:
+> Add vf610 reboot controller, which used to reboot whole system. Fix below
+> CHECK_DTB warnings:
 > 
-> AFAICT: you can drop the of.h include and just use
-> device_property_present() here.
-
-This line reads the value of the mask, I can't see how it can be 
-replaced by device_property_present().
-
+> arch/arm/boot/dts/nxp/vf/vf610-bk4.dtb: /soc/bus@40000000/src@4006e000:
+>     failed to match any schema with compatible: ['fsl,vf610-src', 'syscon']
 > 
->> +		int i, j;
->> +
->> +		for (i = 0, j = 0; i < 32; i++)
->> +			if (mask & (1 << (31 - i)))
->> +				qe_gc->irq[i] = irq_of_parse_and_map(np, j++);
->> +	}
->> +
->>   	mm_gc = &qe_gc->mm_gc;
->>   	gc = &mm_gc->gc;
->>
->> @@ -323,6 +342,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
->>   	gc->get = qe_gpio_get;
->>   	gc->set = qe_gpio_set;
->>   	gc->set_multiple = qe_gpio_set_multiple;
->> +	gc->to_irq = qe_gpio_to_irq;
->>
->>   	ret = of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
->>   	if (!ret)
->> --
->> 2.49.0
->>
->>
+> IC reference manual call it as system reset controller(SRC), but it is not
+> module as linux reset controller, which used to reset individual device.
+> SRC work as reboot controller, which reboot whole system. It provides a
+> syscon interface to syscon-reboot.
 > 
-> Bart
+> Signed-off-by: Frank Li <Frank.Li@nxp.com>
+> ---
+> Change in v2
+> - change description to avoid confuse about reset controller.
+> - it is legacy device, more than 10 year. So try keep existed dts as it.
+> ---
+>  .../bindings/soc/fsl/fsl,vf610-src.yaml       | 47 +++++++++++++++++++
+>  1 file changed, 47 insertions(+)
+>  create mode 100644 Documentation/devicetree/bindings/soc/fsl/fsl,vf610-src.yaml
+> 
+
+My bot found errors running 'make dt_binding_check' on your patch:
+
+yamllint warnings/errors:
+
+dtschema/dtc warnings/errors:
+/builds/robherring/dt-review-ci/linux/Documentation/devicetree/bindings/soc/fsl/fsl,vf610-src.yaml: $id: 'http://devicetree.org/schemas//soc/fsl/fsl,vf610-src.yaml#' does not match 'http://devicetree.org/schemas(/[^/ ]+)+\\.yaml#'
+	from schema $id: http://devicetree.org/meta-schemas/base.yaml#
+
+doc reference errors (make refcheckdocs):
+
+See https://patchwork.ozlabs.org/project/devicetree-bindings/patch/20250818183427.3601986-1-Frank.Li@nxp.com
+
+The base for the series is generally the latest rc1. A different dependency
+should be noted in *this* patch.
+
+If you already ran 'make dt_binding_check' and didn't see the above
+error(s), then make sure 'yamllint' is installed and dt-schema is up to
+date:
+
+pip3 install dtschema --upgrade
+
+Please check and re-submit after running the above command yourself. Note
+that DT_SCHEMA_FILES can be set to your schema file to speed up checking
+your schema. However, it must be unset to test all examples with your schema.
 
 
