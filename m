@@ -1,50 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-11118-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11119-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E408CA0EE9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Aug 2025 05:20:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12789CA0EF5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Aug 2025 09:50:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5dG318Cqz3cmx;
-	Tue, 19 Aug 2025 15:20:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5lFW2pnRz3d0s;
+	Tue, 19 Aug 2025 19:50:39 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755580843;
-	cv=none; b=HhTKt/AVnliCYektwr6KdfzCckMw9nJQ69oRuEYR5aVhbbsl57Xgj/60VenCm2fnVWlyRWYu+xR7uB4r0ZuBIX+mSrN7tMw41DBVcMdYDrKhNmPN0gCFF0mk7gMvEHfYEqqWH7gAnb0ek2lJ9bavx/TQ4hCTJI/L8LgBWijuseVYKoOJyhs72XPZP8aDo9ad5rUpTzPpT8D7lCvvuv1gXx+a4pDbiS0RwZ8PKo9GpPQmqEG9qxgWdBBMn0fqHGUZPR+qCR5LZKBBLyi2JaUYxsC+6336rjRe6umfYukozWlHYx5M4yML8icQ2RATbAvDA7b/JQxm2d0Utvl7Cq1foA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755597039;
+	cv=none; b=i3aTNc2yTWI+7YRw8G7WmNDzAi/pVXIWKjKcUN/GQfUf8GI7+mTMS4I3tYrxzQf8xVo7aoATd5AtV2+UhJT3QfudqSj57BvxqOPMJM207BV4nP5eDQSTFFLDymKvpVi2Dqbbm4BpuiMnr5iHCCuMaaDKKJ7oPbEq2llVPywVlhFjyTlSfqzQQVcaL6F2SoQazm6YRHAF66r4ZwZ2bH5xS1I/qwS+3p+s86b/N9qm4jV6n6mBsqXBgayP1VH0i3FGVi2lEZqLapXSPZQ86WR8jKkZuCc9xCkc8PerSo77TDBYeA+YfZdqsWZYKegmpyOhTTFmMHuYS74ShlQqcQ2z5Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755580843; c=relaxed/relaxed;
-	bh=YJn0U2/tyMFIB/SctjyxEAKJkay78f83rJ0olwVtaYU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=We7lxssQ+167F/IhpIRQ6sCHrUFuKgRUwJD4aexEvVYwXcgCUlQkl15muS6efb76HZvjFgaGD7m5Cg5d3qR5qEjcLlzDlFhWoTJ4riq8WdsULvCdIFr6YVFYOvFbLiOE9Y3QlximTVKEBn7/lJ35KDN3GSytZ4qnh7aC06nqj7vEAn1VvPVSjGzJa308L+zzcelrjBhs3vYTQcwozv7TeUjZyGoPgSf0e3qNBdGXAj65GARzC92SDSYxA2uyE7U8AMd5HEGhWclFop+R6n1P7Sqf7/ePODKUfX+8yztM13kM/WVJGtI638lHnBaBQB0sX1H6MRcWL4ijsXKJU36fiA==
+	t=1755597039; c=relaxed/relaxed;
+	bh=G33qec1A/DXZMt9q0GxW2rwRhVixwokeGAfVQ7PwBrw=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=MGrQdQxfJia6GiLvp5ng9jJiP1ovIoASZfhje0G73jXFJ+z9je1hhmRyKjeHFpn9GtlowLcagBnCJGCC4NPJUWxxuZgbtiWqjZ30jWG1ugFD2SyLxUETNVP0qqwevmuv4zZ63Qt4xUnCKZTMGO7GTwYQjL2l/rL8fcdktYVxyOzPFEndm83QqYC7A83+owT59sdzMqTrH+/HFpaXgsZi2iEajLsxJGBv71gkvOm/7Uqu4X5MOuwX1kpg5DdLP37js/aBbLSSTSXzc/5mhSgXycIDKU5mOjXLVsHb2dnOwte0kH8VA6SZDKa3AqffLaDxJ6TWKqNwDFwSvHO9f8FSxA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5dG24lYcz3cm7
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 15:20:42 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5lFV5drDz3cyc
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 19:50:38 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c55FY6wKBz9sW0;
-	Mon, 18 Aug 2025 10:18:25 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4c55sd6fBxz9sX3;
+	Mon, 18 Aug 2025 10:46:13 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id lMU1reJG0jOi; Mon, 18 Aug 2025 10:18:25 +0200 (CEST)
+	with ESMTP id lbLLFka9tjxC; Mon, 18 Aug 2025 10:46:13 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55FY69pzz9sVx;
-	Mon, 18 Aug 2025 10:18:25 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55sZ11XFz9sWn;
+	Mon, 18 Aug 2025 10:46:10 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id BD3768B764;
-	Mon, 18 Aug 2025 10:18:25 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 0D93C8B766;
+	Mon, 18 Aug 2025 10:46:10 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id E2DQQggsZVWb; Mon, 18 Aug 2025 10:18:25 +0200 (CEST)
-Received: from [10.25.207.160] (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8617A8B763;
-	Mon, 18 Aug 2025 10:18:25 +0200 (CEST)
-Message-ID: <384e2b94-186f-436c-aa69-3cc41a38552c@csgroup.eu>
-Date: Mon, 18 Aug 2025 10:18:25 +0200
+	with ESMTP id YFmZUm584ZmT; Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id CF60C8B763;
+	Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org
+Subject: [PATCH v2 4/5] soc: fsl: qe: Add support of IRQ in QE GPIO
+Date: Mon, 18 Aug 2025 10:45:57 +0200
+Message-ID: <cddc5e900b84826614a63b8b29a048c09dd20853.1755506608.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1755506608.git.christophe.leroy@csgroup.eu>
+References: <cover.1755506608.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,82 +75,142 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/4] ASoc: fsl: fsl_qmc_audio: Ensure audio channels
- are ordered in TDM bus
-To: Herve Codina <herve.codina@bootlin.com>
-Cc: Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-sound@vger.kernel.org
-References: <cover.1754993232.git.christophe.leroy@csgroup.eu>
- <8d01cf4599664188c92a515922d68c9834263384.1754993232.git.christophe.leroy@csgroup.eu>
- <20250814094502.4b350b3e@bootlin.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250814094502.4b350b3e@bootlin.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755506759; l=4414; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=KAXI/UdG1uKmQEqjT0xzFF6ZLrXwXMHk7giEW1/cpwI=; b=MW/ze3K9TK2iL0/rORULbghAvqryKWrfqy6TLbLvD5VVeZnLqeWtR7lBIzwSXSaoZHM8JT18w /wsaAaaP1BTDABTihOHtotOGJXdkcCKIOkhkfqAHIOgpIegdhqYENi+
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
+In the QE, a few GPIOs are IRQ capable. Similarly to
+commit 726bd223105c ("powerpc/8xx: Adding support of IRQ in MPC8xx
+GPIO"), add IRQ support to QE GPIO.
 
+Add property 'fsl,qe-gpio-irq-mask' similar to
+'fsl,cpm1-gpio-irq-mask' that define which of the GPIOs have IRQs.
 
-Le 14/08/2025 à 09:45, Herve Codina a écrit :
-> On Tue, 12 Aug 2025 12:50:56 +0200
-> Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
-> 
->> To reduce complexity of interrupt handling in following patch, ensure
->> audio channels are configured in the same order as timeslots on the
->> TDM bus. If we need a given ordering of audio sources in the audio
->> frame, it is possible to re-order codecs on the TDM bus, no need to
->> mix up timeslots in channels.
->>
->> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
->> ---
->> v2: New
->> ---
->>   sound/soc/fsl/fsl_qmc_audio.c | 29 +++++++++++++++++++++++++++++
->>   1 file changed, 29 insertions(+)
->>
->> diff --git a/sound/soc/fsl/fsl_qmc_audio.c b/sound/soc/fsl/fsl_qmc_audio.c
->> index 5614a8b909edf..0be29ccc1ff7b 100644
->> --- a/sound/soc/fsl/fsl_qmc_audio.c
->> +++ b/sound/soc/fsl/fsl_qmc_audio.c
->> @@ -791,12 +791,17 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
->>   			       struct qmc_dai *qmc_dai,
->>   			       struct snd_soc_dai_driver *qmc_soc_dai_driver)
->>   {
->> +	struct qmc_chan_ts_info ts_info;
->>   	struct qmc_chan_info info;
->>   	unsigned long rx_fs_rate;
->>   	unsigned long tx_fs_rate;
->> +	int prev_last_rx_ts = 0;
->> +	int prev_last_tx_ts = 0;
->>   	unsigned int nb_tx_ts;
->>   	unsigned int nb_rx_ts;
->>   	unsigned int i;
->> +	int last_rx_ts;
->> +	int last_tx_ts;
->>   	int count;
->>   	u32 val;
->>   	int ret;
->> @@ -879,6 +884,30 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
->>   				return -EINVAL;
->>   			}
->>   		}
->> +
->> +		ret = qmc_chan_get_ts_info(qmc_dai->qmc_chans[i], &ts_info);
-> 
-> qmc_chan_get_ts_info() need a struct qmc_chan as first parameter
-> 
-> qmc_dai->qmc_chans[i].qmc_chan instead of qmc_dai->qmc_chans[i].
-> 
-> The use of qmc_dai->qmc_chans[i] without .qmc_chan have to be done on patch 4 (cleanup patch).
+Here is an exemple for port B of mpc8323 which has IRQs for
+GPIOs PB7, PB9, PB25 and PB27.
 
-Fixed in v3
+	qe_pio_b: gpio-controller@1418 {
+		#gpio-cells = <2>;
+		compatible = "fsl,mpc8323-qe-pario-bank";
+		reg = <0x1418 0x18>;
+		interrupts = <4 5 6 7>;
+		fsl,qe-gpio-irq-mask = <0x01400050>;
+		interrupt-parent = <&qepic>;
+		gpio-controller;
+	};
 
-Thanks
-Christophe
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v2: Document fsl,qe-gpio-irq-mask
+---
+ .../bindings/soc/fsl/cpm_qe/qe/par_io.txt     | 19 ++++++++++++++++++
+ drivers/soc/fsl/qe/gpio.c                     | 20 +++++++++++++++++++
+ 2 files changed, 39 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt
+index 09b1b05fa677..9cd6e5ac2a7b 100644
+--- a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt
++++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt
+@@ -32,6 +32,15 @@ Required properties:
+   "fsl,mpc8323-qe-pario-bank".
+ - reg : offset to the register set and its length.
+ - gpio-controller : node to identify gpio controllers.
++Optional properties:
++- fsl,qe-gpio-irq-mask : For banks having interrupt capability this item tells
++  which ports have an associated interrupt (ports are listed in the same order
++  QE ports registers)
++- interrupts : This property provides the list of interrupt for each GPIO having
++  one as described by the fsl,cpm1-gpio-irq-mask property. There should be as
++  many interrupts as number of ones in the mask property. The first interrupt in
++  the list corresponds to the most significant bit of the mask.
++- interrupt-parent : Parent for the above interrupt property.
+ 
+ Example:
+ 	qe_pio_a: gpio-controller@1400 {
+@@ -42,6 +51,16 @@ Example:
+ 		gpio-controller;
+ 	  };
+ 
++	qe_pio_b: gpio-controller@1418 {
++		#gpio-cells = <2>;
++		compatible = "fsl,mpc8323-qe-pario-bank";
++		reg = <0x1418 0x18>;
++		interrupts = <4 5 6 7>;
++		fsl,qe-gpio-irq-mask = <0x01400050>;
++		interrupt-parent = <&qepic>;
++		gpio-controller;
++	  };
++
+ 	qe_pio_e: gpio-controller@1460 {
+ 		#gpio-cells = <2>;
+ 		compatible = "fsl,mpc8360-qe-pario-bank",
+diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
+index a338469cebe4..91d469403126 100644
+--- a/drivers/soc/fsl/qe/gpio.c
++++ b/drivers/soc/fsl/qe/gpio.c
+@@ -13,6 +13,7 @@
+ #include <linux/err.h>
+ #include <linux/io.h>
+ #include <linux/of.h>
++#include <linux/of_irq.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/gpio/driver.h>
+ #include <linux/slab.h>
+@@ -32,6 +33,8 @@ struct qe_gpio_chip {
+ 
+ 	/* saved_regs used to restore dedicated functions */
+ 	struct qe_pio_regs saved_regs;
++
++	int irq[32];
+ };
+ 
+ static void qe_gpio_save_regs(struct qe_gpio_chip *qe_gc)
+@@ -135,6 +138,13 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ 	return 0;
+ }
+ 
++static int qe_gpio_to_irq(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
++
++	return qe_gc->irq[gpio] ? : -ENXIO;
++}
++
+ struct qe_pin {
+ 	/*
+ 	 * The qe_gpio_chip name is unfortunate, we should change that to
+@@ -295,6 +305,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ 	struct device_node *np = dev->of_node;
+ 	struct qe_gpio_chip *qe_gc;
+ 	struct gpio_chip *gc;
++	u32 mask;
+ 
+ 	qe_gc = devm_kzalloc(dev, sizeof(*qe_gc), GFP_KERNEL);
+ 	if (!qe_gc)
+@@ -302,6 +313,14 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ 
+ 	spin_lock_init(&qe_gc->lock);
+ 
++	if (!of_property_read_u32(np, "fsl,qe-gpio-irq-mask", &mask)) {
++		int i, j;
++
++		for (i = 0, j = 0; i < ARRAY_SIZE(qe_gc->irq); i++)
++			if (mask & (1 << (31 - i)))
++				qe_gc->irq[i] = irq_of_parse_and_map(np, j++);
++	}
++
+ 	gc = &qe_gc->gc;
+ 
+ 	gc->base = -1;
+@@ -311,6 +330,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ 	gc->get = qe_gpio_get;
+ 	gc->set = qe_gpio_set;
+ 	gc->set_multiple = qe_gpio_set_multiple;
++	gc->to_irq = qe_gpio_to_irq;
+ 	gc->parent = dev;
+ 	gc->owner = THIS_MODULE;
+ 
+-- 
+2.49.0
+
 
