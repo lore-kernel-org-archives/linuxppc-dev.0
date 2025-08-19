@@ -1,67 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-11112-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11113-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F1A3BCA0EE4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Aug 2025 00:50:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 388E1CA0EE4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Aug 2025 00:55:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5WGV1jvFz3ckL;
-	Tue, 19 Aug 2025 10:50:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755564642;
-	cv=none; b=BWWtbqm2FdGBeEcdm9v3ziePZGF772GSLzwCm97wRU58FG8bNOlur9qXPw27jvtjjd3KGAqGucDcWbjay/27SbjqWuxC/7cKyZI5zINPeXqIM5NoySt4i8euO855EwYPb3KYmRo3/i/N521aW2lTA/GiHeh4RhrHDpLJg0Wdeg2DRVnt3Jy77Fp/wxDdFw+edJNu8RxGUJNPm+9q+18tGSnI2HelsGoVPduUQbMJ+XHgNGhnLSIvEDTu+P4bhFfDRn7b12CqT1HHsX2zlk54u1dsLaqfNAi4alMKDbsr1f5Gcv0IrtUMLxusfjnpSKvFeDYvnhdQIGGd4tCxa/qgcw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5WN55gD9z3ckP;
+	Tue, 19 Aug 2025 10:55:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=139.178.84.217
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755564933;
+	cv=none; b=I8ZYjiw0K1zY9Q2z4MYCbi/TiUZrl9evoA/7+5Xw8CCcfNx4/kT/5/DlT8sHBMaYY0P6f7bf9XvlNeg378XAelH2+bQkhYAZ2k81x4okxoJcpgDjRlVdXUoVYlPfuTsTacGPJjzlr+L/swi+tpeWxY8Gg7qtDdyEPppfF4Qwi9SPawxAyN8O4ByE8xCt9RVvp1kTCjMxxyuyIXyeeVFNVt4fcjyWEP5LlGmiRexZ6P+9o9zzuSjmijRVz9n2rYv5bsoFOQiGigXGy6ks/KNtEsK5RNzi5uc3MFkNLWZpLF49t1JDxvmKrNOir/rohDeV+SN9LSy4pNte+MxVjWRGhg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755564642; c=relaxed/relaxed;
-	bh=XbftxnTdOoHxXFPvYewuEGEsvUbcKwd8zCqgiFLL/Uw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ccgR4x2uyCjXIxmpcUwZ849HMOMiHdEZnhsoqontlPp8bUbtJnun0QErKNTRR3IwdQt1hJEcJ/WJV4h+xNV4tWe3SStn8AJMGnzwoTdqwSVvBPyuZgyW989bU2dfy50TQgA0BAD9JdYF7grQTRo2aWtEJMQ8GbojQx6Jf2mcMqvh4MTk/b5EJB0oU+O6tjNR3718nv0Tg6QDQ5twA5F2C0mnAF/DD40U4nZMYvgdzwA5YTvVlHlS7U+GFk0kdDKEYEcSzuTg5CZm+jEwo/f8ruon0W+550udBu3vwK1pl4WEZlZN0E6pPCzDvuQEfBeMYBxGcSFh7eYyMIerhO1aeQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5WGT41gcz3cdT
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 10:50:41 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c55sf33SKz9sX4;
-	Mon, 18 Aug 2025 10:46:14 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id rx4zHsvHPdak; Mon, 18 Aug 2025 10:46:14 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55sZ1ZzKz9sWh;
-	Mon, 18 Aug 2025 10:46:10 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 217968B763;
-	Mon, 18 Aug 2025 10:46:10 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id giALWGHkvImb; Mon, 18 Aug 2025 10:46:10 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id EDCBB8B764;
-	Mon, 18 Aug 2025 10:46:09 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Qiang Zhao <qiang.zhao@nxp.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
+	t=1755564933; c=relaxed/relaxed;
+	bh=JzfTMaSWFx+xn7Q0qfVZdQJA3fiAtavglfDwO1hdcSA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NpBR0eEpcmjVavetEOFhRDGMnQWEnhc86X9iF7MaGN8+e+Vvlb9LeKR4WI8sa/Kcz5uOns8w2RZt0VNJsTemacsDnTrVaZasj64pLeKDKfCnCrmxuRkQSRVERMeMcTTXXSSFlqNP97ilBIg98dKUqj6aAei9QGvvfhsi5CD+dT/W6QXdPte+Ddlw24REGkktjsfg9/Cqc3onNtj3kiye8Mk3KZIJQ6ojZ2B/oWJmmpATGyIOXlCrB+QN/KX04XBZuxn9uFKsi4P633ch3vnKBrsD5WsPx1n0nKZZETHSYe+Ffnt8LmdxkPxj3RPA3Lx2bKqrHrd3RfN7kjod1TDu4A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Xf9fcNQg; dkim-atps=neutral; spf=pass (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Xf9fcNQg;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=139.178.84.217; helo=dfw.source.kernel.org; envelope-from=kees@kernel.org; receiver=lists.ozlabs.org)
+Received: from dfw.source.kernel.org (dfw.source.kernel.org [139.178.84.217])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c5WN437kZz3ck2
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 10:55:32 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by dfw.source.kernel.org (Postfix) with ESMTP id 896C55C57B0;
+	Tue, 19 Aug 2025 00:55:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F0A33C4CEEB;
+	Tue, 19 Aug 2025 00:55:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1755564929;
+	bh=RHDDgdI1KU5gTd6q3RZ5KjPYkSkpxLcDr1NCuu19268=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Xf9fcNQgSU+Jeg+ZP/DY9xu+7OEGwXkut8IrHzRW8NQLSJst0aTV0vjj7mBLD2TMC
+	 w5Fy48Sn79iupubE3YtfbIfAZusLxLPs26rf7V0ryA7My7a+9RNPJSdkDFA+bypbef
+	 SxGw74sKCkXQJfaZC+ps0lk9znD9XBmUnvgdm6lcfG4Dymf7j7PwKOAneQrOIzbUez
+	 vCSoiI+k4kes3saiX75j3h1XiAq43lBTMSMpkalNwUodG0ItYSp05wxSQjcjHYl4v/
+	 z2RjuW+7g/v5dY5viRILFm+jyrKcdgAUsnv3ksqOxqwz7dYrU5SvTErUHtrouytaWZ
+	 aW3FdXzlx4+Dw==
+Date: Mon, 18 Aug 2025 17:55:28 -0700
+From: Kees Cook <kees@kernel.org>
+To: Nathan Chancellor <nathan@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+	Bill Wendling <morbo@google.com>,
+	Justin Stitt <justinstitt@google.com>, linux-kernel@vger.kernel.org,
+	llvm@lists.linux.dev, patches@lists.linux.dev,
+	linux-kbuild@vger.kernel.org, linux-hardening@vger.kernel.org,
+	Russell King <linux@armlinux.org.uk>,
+	Ard Biesheuvel <ardb@kernel.org>,
 	linux-arm-kernel@lists.infradead.org,
-	linux-gpio@vger.kernel.org,
-	devicetree@vger.kernel.org
-Subject: [PATCH v2 5/5] dt-bindings: soc: fsl: qe: Add an interrupt controller for QUICC Engine Ports
-Date: Mon, 18 Aug 2025 10:45:58 +0200
-Message-ID: <be8952a26d7a8d55ff96e4547f6c107094988220.1755506608.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1755506608.git.christophe.leroy@csgroup.eu>
-References: <cover.1755506608.git.christophe.leroy@csgroup.eu>
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	linux-mips@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linuxppc-dev@lists.ozlabs.org, Palmer Dabbelt <palmer@dabbelt.com>,
+	Alexandre Ghiti <alex@ghiti.fr>, linux-riscv@lists.infradead.org,
+	Josh Poimboeuf <jpoimboe@kernel.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Marco Elver <elver@google.com>, Dmitry Vyukov <dvyukov@google.com>,
+	kasan-dev@googlegroups.com, Alexander Potapenko <glider@google.com>
+Subject: Re: [PATCH 00/10] Bump minimum supported version of LLVM for
+ building the kernel to 15.0.0
+Message-ID: <202508181753.7204670E@keescook>
+References: <20250818-bump-min-llvm-ver-15-v1-0-c8b1d0f955e0@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,90 +88,29 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1755506759; l=2392; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=FsJjFzo97CaIj8ecmEYrlheS4JZRtCwCquhmLdyFc7U=; b=hFHnrqREIMbLuXYAIGjkJ3D28meiD7b8MHSCYawlfY+LlUHthVv1wORv0SDpFEM2Ka+xgcy44 ih8BI2ai0K2Dpx8Wvzs9qmU5X2t5EZKhQym3hoV6sJGw8lmJpxLC2XS
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250818-bump-min-llvm-ver-15-v1-0-c8b1d0f955e0@kernel.org>
 
-The QUICC Engine provides interrupts for a few I/O ports. This is
-handled via a separate interrupt ID and managed via a triplet of
-dedicated registers hosted by the SoC.
+On Mon, Aug 18, 2025 at 11:57:16AM -0700, Nathan Chancellor wrote:
+> s390 and x86 have required LLVM 15 since
+>
+>   30d17fac6aae ("scripts/min-tool-version.sh: raise minimum clang version to 15.0.0 for s390")
+>   7861640aac52 ("x86/build: Raise the minimum LLVM version to 15.0.0")
+>
+> respectively. This series bumps the rest of the kernel to 15.0.0 to
+> match, which allows for a decent number of clean ups.
 
-Implement an interrupt driver for it for that those IRQs can then
-be linked to the related GPIOs.
+Looks good to me!
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
-v2: Fixed problems reported by 'make dt_binding_check'
----
- .../soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml       | 58 +++++++++++++++++++
- 1 file changed, 58 insertions(+)
- create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+Reviewed-by: Kees Cook <kees@kernel.org>
 
-diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
-new file mode 100644
-index 000000000000..b7c74c66347c
---- /dev/null
-+++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
-@@ -0,0 +1,58 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Freescale QUICC Engine I/O Ports Interrupt Controller
-+
-+maintainers:
-+  - Christophe Leroy <christophe.leroy@csgroup.eu>
-+
-+description:
-+  Interrupt controller for the QUICC Engine I/O ports found on some Freescale/NXP PowerQUICC and QorIQ SoCs.
-+
-+properties:
-+  compatible:
-+    enum:
-+      - fsl,mpc8323-qe-ports-ic
-+      - fsl,mpc8360-qe-ports-ic
-+      - fsl,mpc8568-qe-ports-ic
-+
-+  reg:
-+    maxItems: 1
-+    description: Base address and size of the QE I/O Ports Interrupt Controller registers.
-+
-+  interrupt-controller: true
-+
-+  '#address-cells':
-+    const: 0
-+
-+  '#interrupt-cells':
-+    const: 1
-+
-+  interrupts:
-+    maxItems: 1
-+    description: Interrupt line to which the QE I/O Ports controller is connected.
-+
-+required:
-+  - compatible
-+  - reg
-+  - interrupt-controller
-+  - '#address-cells'
-+  - '#interrupt-cells'
-+  - interrupts
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    interrupt-controller@c00 {
-+      interrupt-controller;
-+      compatible = "fsl,mpc8323-qe-ports-ic";
-+      #address-cells = <0>;
-+      #interrupt-cells = <1>;
-+      reg = <0xc00 0x18>;
-+      interrupts = <74 0x8>;
-+      interrupt-parent = <&ipic>;
-+    };
--- 
-2.49.0
+> I think it makes sense for either Andrew to carry this via -mm on a
+> nonmm branch or me to carry this via the Kbuild tree, with the
+> appropriate acks.
 
+I vote you carry it with Kbuild. :)
+
+--
+Kees Cook
 
