@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-11141-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11142-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0708CA0EF5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Aug 2025 17:38:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EA99CA0EEB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Aug 2025 17:38:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5xdc2qhDz3dK7;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5xdc5mP5z3dJw;
 	Wed, 20 Aug 2025 03:38:44 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755625124;
-	cv=none; b=YEyOpqsh9I1D72Nb7k7huuKfCHfejgU9ICJmvM1OzJ4eZ1OdwYSSYOaA/+T5W0FEAKlosySZ3+hHFalsM8yXExhfk/5z8PjmflrnejUlOgq/d/Z4wQ4jjVesJHEW2xNkKzD8pkOvcyImAtoxueIupXHXzUpZJUNK7/9HGIecvjUoNw51CVJrAPHVaCZXNKvyKdF3rNwQhfsF/2leZh5bC4rs0ZLVf4kYfnQ89mHSxfYaDBk77Vdgcut1gSpd2N/2gq22jFjaGBCUYX4/M8f7jug3S1DrVcCc4regEDbea+SxmYb265GYtdksgPx+D0obZpQVcGRin9RwVxV8izlJkQ==
+	cv=none; b=mJfYvImoDiWLIlXnFzZ0JFU8ru+OT9nUPqgbVR78d3MiPqr6cpFFF6Sn4r5oN4uK+Yp9HDQJKNORLUCTR0b6OQpNDCaV9OWBDlGh/VcgfdD8Qk9D7Xh29g8Pr5BU4ccAoB4bE0Gcv7514LCUP4Tn7VNXt/sSJ4/7I8CyCNo72++qK9PdDIZiJob0kK66Zss8e8KiaRRvoQFTn47e02SjNas17TtaMYj1+RHVGPOzTbh4g8P925XQMNfmAn9Yk86RiiCJlcnSVoarDeV5lGH0Nd1empt160CDaptd3kWzaXUKIcsrfFmXUPYVAKACQ97WHvTZxxZZdaLKGoA4qVmDmw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1755625124; c=relaxed/relaxed;
-	bh=Py7VOBxcd4HwAc7HHDB+PTMRXMSLHO8b88vcAnVEU6A=;
+	bh=XPxNQF8Cx+yhCu6yL4faxmro9U88DCzv8Ndb1qLzzQ0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=kdpVldYg9HQPFNNk3KilIqno6RkXOC1Av+XIysIo13VHD49+ClgCKScfDUK6i2C1UBkS5mhX6FvNeU6UnZTFMpPeoAZmoB8lf0otREj4Ga1K6x2QBahjIYWO6AgZTRq+jeABwvHDQQ31NkbIKgFC5jC6hEZbv2qHQPvAKQeDOwDnZI0o9a0Kfb1v71aQkDUWxCKL+2qQKiBd2jUxNORsbIc7OTEouy9JxGQcb4vBH5BcKfXRisWBwQxBgqs4ydZznSTzQ39Dq2Nc3nAGG+8DjmV3NEQPJvXw7q1Kj84akCA1BtARiTpbttjqu02VPNBRqnTOSSnmJdES9iZokP0YEQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mqPmNYet; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=JXTtcf0GRNpwhRvVac3BlFlUjMyZoYtP7WfAIQ6Oesya5luDj8JD+oDEdAARj80DTpgCClx5vM3cwFDZZ5DMtRUIZDZdRZnQQZnaSJIof5Na6T8nxoK9bD3H8D82cTC4AtbmXkKLs77+au3Lv97SOMPWWjhj+bEiQsQ7TYxfTWGCmh1ryXSrs7qQBh+PU+ZK5q1p5VuBsSl/Y7/APnQcGquBSJz4L8EXjoEKFVYidvAzCjNrlUBVms8OgrUn8kZbrandEJHnWU7OjxfGlAVVLjjdgc1uDaEMJmA2yuS3MUxFEA0tQVzTMtraqQOE7mzutJL0LYeZl4Z/38kL4NEJ2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QF95AAuh; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mqPmNYet;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QF95AAuh;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c5xdb4pPjz3dJw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2025 03:38:43 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c5xdc2tr4z3dKJ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2025 03:38:44 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id D42D360209;
-	Tue, 19 Aug 2025 17:38:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 55B1EC4CEF4;
-	Tue, 19 Aug 2025 17:38:28 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 7DFD3613EF;
+	Tue, 19 Aug 2025 17:38:42 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7E8DC113D0;
+	Tue, 19 Aug 2025 17:38:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1755625109;
-	bh=0mJoy+46tPnckyRiCMrZ6rM11HgiRAqoXhfeDURewQs=;
+	s=k20201202; t=1755625122;
+	bh=stLVV7BdINySQbyeqCDmRbXyWeQEecbuIkQ/rhX45FU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=mqPmNYet1sH32wQnvqz+VvZ80hlj8hmAn5LZc210nMHXG8bXYuHHo6lQnpRQ7wdDm
-	 AVkPPjVfSjLNW0DehbYvlIM2mXfpwOQAjPxs6e3RlPIo73ds9O4X7lgEElc8ORAi/f
-	 C/x1WmcQqUdWnZImWQk08xqztT32jxKdhvXMOS9p8adbr0qesEwjEYXcIE7Gr89B9V
-	 D5kxqWCfk0RMLfyN34FLwGfWViKqrxfYSCkMcFA4I+yentRF7/d5qM2RviS+FzeTgP
-	 DNhrTd61vuyUNS97sahLp3RYlTbC6p901YEbBgWhZmWbk3sGcF6U+DBlT0qK2dJfvC
-	 h1+6GBB7poGFg==
+	b=QF95AAuhc8feQn+SEx82Pkl7/uTlNhnB5cHYHMn4haBNk3mIGB32W95xHVkQetyzQ
+	 l5pjdHoqmA32dwMVHHl2ireizeQrHrNOOpU6veVyXb4NV0jh1tYHCTnC8dcn2zvtTY
+	 J4nrUx7NhDiTec8s4jDArKOAkTIjbwvKXPPen+Vd16+uFXzd7usqZLmgr9JbeXZ1Jn
+	 WjodL0NO0sJNloB+WXRZ6xIN7Ll+mPyFWx7P66aJjQZw9otjgjVcZKNrK0y+CcuICc
+	 ddwwW0q2gx9LzWpv+xxfN0uj6Ze8uJX3Jlyv58Oh1O5dwZ9g8LdLLurbrm7l0u9gfU
+	 vhh2Z4HWzRNIw==
 From: Leon Romanovsky <leon@kernel.org>
 To: Marek Szyprowski <m.szyprowski@samsung.com>
 Cc: Leon Romanovsky <leonro@nvidia.com>,
@@ -82,9 +82,9 @@ Cc: Leon Romanovsky <leonro@nvidia.com>,
 	virtualization@lists.linux.dev,
 	Will Deacon <will@kernel.org>,
 	xen-devel@lists.xenproject.org
-Subject: [PATCH v4 10/16] xen: swiotlb: Open code map_resource callback
-Date: Tue, 19 Aug 2025 20:36:54 +0300
-Message-ID: <babeeb62fcfbafa39f352da1040a5dfa9d2a2719.1755624249.git.leon@kernel.org>
+Subject: [PATCH v4 14/16] block-dma: migrate to dma_map_phys instead of map_page
+Date: Tue, 19 Aug 2025 20:36:58 +0300
+Message-ID: <22b824931bc8ba090979ab902e4c1c2ec8327b65.1755624249.git.leon@kernel.org>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <cover.1755624249.git.leon@kernel.org>
 References: <cover.1755624249.git.leon@kernel.org>
@@ -105,52 +105,30 @@ Content-Transfer-Encoding: 8bit
 
 From: Leon Romanovsky <leonro@nvidia.com>
 
-General dma_direct_map_resource() is going to be removed
-in next patch, so simply open-code it in xen driver.
+After introduction of dma_map_phys(), there is no need to convert
+from physical address to struct page in order to map page. So let's
+use it directly.
 
-Reviewed-by: Juergen Gross <jgross@suse.com>
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- drivers/xen/swiotlb-xen.c | 21 ++++++++++++++++++++-
- 1 file changed, 20 insertions(+), 1 deletion(-)
+ block/blk-mq-dma.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/xen/swiotlb-xen.c b/drivers/xen/swiotlb-xen.c
-index da1a7d3d377c..dd7747a2de87 100644
---- a/drivers/xen/swiotlb-xen.c
-+++ b/drivers/xen/swiotlb-xen.c
-@@ -392,6 +392,25 @@ xen_swiotlb_sync_sg_for_device(struct device *dev, struct scatterlist *sgl,
- 	}
- }
- 
-+static dma_addr_t xen_swiotlb_direct_map_resource(struct device *dev,
-+						  phys_addr_t paddr,
-+						  size_t size,
-+						  enum dma_data_direction dir,
-+						  unsigned long attrs)
-+{
-+	dma_addr_t dma_addr = paddr;
-+
-+	if (unlikely(!dma_capable(dev, dma_addr, size, false))) {
-+		dev_err_once(dev,
-+			     "DMA addr %pad+%zu overflow (mask %llx, bus limit %llx).\n",
-+			     &dma_addr, size, *dev->dma_mask, dev->bus_dma_limit);
-+		WARN_ON_ONCE(1);
-+		return DMA_MAPPING_ERROR;
-+	}
-+
-+	return dma_addr;
-+}
-+
- /*
-  * Return whether the given device DMA address mask can be supported
-  * properly.  For example, if your device can only drive the low 24-bits
-@@ -426,5 +445,5 @@ const struct dma_map_ops xen_swiotlb_dma_ops = {
- 	.alloc_pages_op = dma_common_alloc_pages,
- 	.free_pages = dma_common_free_pages,
- 	.max_mapping_size = swiotlb_max_mapping_size,
--	.map_resource = dma_direct_map_resource,
-+	.map_resource = xen_swiotlb_direct_map_resource,
- };
+diff --git a/block/blk-mq-dma.c b/block/blk-mq-dma.c
+index ad283017caef..37e2142be4f7 100644
+--- a/block/blk-mq-dma.c
++++ b/block/blk-mq-dma.c
+@@ -87,8 +87,8 @@ static bool blk_dma_map_bus(struct blk_dma_iter *iter, struct phys_vec *vec)
+ static bool blk_dma_map_direct(struct request *req, struct device *dma_dev,
+ 		struct blk_dma_iter *iter, struct phys_vec *vec)
+ {
+-	iter->addr = dma_map_page(dma_dev, phys_to_page(vec->paddr),
+-			offset_in_page(vec->paddr), vec->len, rq_dma_dir(req));
++	iter->addr = dma_map_phys(dma_dev, vec->paddr, vec->len,
++			rq_dma_dir(req), 0);
+ 	if (dma_mapping_error(dma_dev, iter->addr)) {
+ 		iter->status = BLK_STS_RESOURCE;
+ 		return false;
 -- 
 2.50.1
 
