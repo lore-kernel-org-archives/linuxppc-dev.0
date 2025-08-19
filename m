@@ -1,50 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-11120-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11121-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A8570CA0EF5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Aug 2025 09:50:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A3EC7CA0EE6
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 19 Aug 2025 13:05:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5lFZ6WWPz3d28;
-	Tue, 19 Aug 2025 19:50:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755597042;
-	cv=none; b=dGIv1aIgbWMY1FFNJwFWrVKRZI0xTzBkPvlpqSjU4iPOQIlu4oAFyEvwXKyYt6vAs2yVBJKVzQv5pxovSK5hBizzNNHL23J+qgjzqs9Exea/eyZuYSssAd2oIEfc2OPlqSTp6HuDUrqg9608UvSzqimuJCVQxfFtZYU9NIssVcRMtd/FLCqSDpzpftkhpaTkQgCysf7t53xguVj9KihNiMXldoC56RNc+LVFYD+Y/lYZ4jw3AljnUWmRQ4o2eLbiu/RhrFbrnJaiLSNwndiJRVlT2FQo5hb8dIbfj6iKdoCHlRBhTVLImamA7JWIsyCIfQu3TpUxV3QUxO8/N74GJQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c5qYx1gRtz3d2w;
+	Tue, 19 Aug 2025 23:05:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::236"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755608709;
+	cv=none; b=AlMo2qjxzri8X5jBcBopqbmd9oqMc21jtCbUPtshXL1DVObG2990Op07ul8PgJ0qkLAZ8AFniWoPnnO/4a83xKK8OyvLhwMmQcs7cNSFkP9lA7aX2KAB5SFwk69HhOfz/htV2Wu2R8RPWop45/gbTUfgsD1qwnxK91ymarZVsZlpe8/QOGqq8XECtaaHmwZltgTIJiqlnTTqra2aN0yHo+hi4Ix2O6vXLPWcN13qG9lJqsMYiEpSxVchVGAptXGQOtca9rYr9h/7cnO53kzQJVZ3ubc9YgJVf+U0l/BwInfuPxOnAK1Y1xdD1xuXKEJFHVWnDQ5dUhVp6180ZDocfA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755597042; c=relaxed/relaxed;
-	bh=VKSZMsHxGJpaN9hFkYvVgxYMHGqP3GyUhVJIQ8h1HsM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=P3ycXDpUXus8tEQ/miIZgfWMtetdNj49S9/kCbMQSAB/DKrOE6Nq2gMFMWWscETqpKUGXNNh/PfGR5xZxp3n+EoRqtXgP9BzhuVJbDjEnQKi8CQdhqj0UZk56HVw9gFsz/58udDAtxk8I7EPVZ7ZCZqcmVllXcoeLuxDfDeCsfFKa/h4RG0SAwaRA+/IdN0dwRys2HG8RorAtgBXvwMNDyZn1XW5yGG01a7fAkFndEhJ1GFivXtXxMBWlvdhUrcya+OZHNvTBYdc9O+0esMyEq+XjcmCtORKss30J5nzPPMFC0MMkQlelTcAK5xFwzFx3vZLdP6W3g4fKJHPFpyHeg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c5lFZ3BQWz3cyc
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 19:50:42 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c55Fx3PBzz9sW3;
-	Mon, 18 Aug 2025 10:18:45 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Vnj3VDrR4Hnq; Mon, 18 Aug 2025 10:18:45 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c55Fx2gYYz9sW1;
-	Mon, 18 Aug 2025 10:18:45 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 465088B764;
-	Mon, 18 Aug 2025 10:18:45 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id uRYqQBvN43Yy; Mon, 18 Aug 2025 10:18:45 +0200 (CEST)
-Received: from [10.25.207.160] (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 137DE8B763;
-	Mon, 18 Aug 2025 10:18:45 +0200 (CEST)
-Message-ID: <aacc97c0-2cc6-4192-9b19-5234ccd93504@csgroup.eu>
-Date: Mon, 18 Aug 2025 10:18:44 +0200
+	t=1755608709; c=relaxed/relaxed;
+	bh=qjShZoo+NiNipfT3WS5f7U40KalFqQBXt1e9Tunigdg=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=bysOwGtMJxa4pzNNA4AZXoDk0fV9wceoBk5hbdR35LUQHfvlP2AW7ldfkHmEmbUNKEopr63OWT7BZSc07kYPXXHOhUXLdji0XhFQ2Wq0kG3sh6GNynugdTlFXEE/3Pl4yyvMUqQQuY+Be5s2n93WfsJLRKuzgyQXzYEIWxDmk5BuUEX6m5rqBc2seHVGxzP0gFubEXWdqYRlMaVccRg7PUXYY8048cMVfvqFhXAcxdQwxFIHGvYS0X/y//YSPklzrpqrzEa0lrOZFgY0+itudWA43ry8DpnuxbsbnJKut0RtpuWTgBUMI5ICB0ESD3qgy3xKWhQHsG5ckj1GbHvi8A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=nOlc5hOI; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::236; helo=mail-lj1-x236.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=nOlc5hOI;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::236; helo=mail-lj1-x236.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-lj1-x236.google.com (mail-lj1-x236.google.com [IPv6:2a00:1450:4864:20::236])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c5qYv5MNdz3d1B
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 23:05:06 +1000 (AEST)
+Received: by mail-lj1-x236.google.com with SMTP id 38308e7fff4ca-333f8d39e94so39997771fa.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 19 Aug 2025 06:05:06 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1755608702; x=1756213502; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=qjShZoo+NiNipfT3WS5f7U40KalFqQBXt1e9Tunigdg=;
+        b=nOlc5hOI/fm6Jh9nQPQ+zOoy12ObFnCycN+A9BSSfU6tDxya2NX0KPpjD44D6bSIMd
+         3A7oDoh3rx9Dwei8zq6FsNzBqXuee2y5nPQaFiRTXz+K1VI4hkgGTpAIfTrx2wX4+Z48
+         BBAlQz2H5sghQbHDXv7a2YD9YKSChQnMCB01ul848Yjv0mOV8ajhwNBsL9ksgR8Hflvs
+         22i3rmFhMeVGjV1BlaUV0guToWKKDqDdDYzktDJJvI11pcTLctKFMIT5y0ycplfNSj6p
+         Vz/s1M5VQdfzvkXC06eKsXsKj/y3cEB8dUmGscWRWJkEmMftBdb8SLO3l0Ju52YxssF5
+         h1Vg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1755608702; x=1756213502;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=qjShZoo+NiNipfT3WS5f7U40KalFqQBXt1e9Tunigdg=;
+        b=kpgdsXXPzSJVU2GxdSihujkJwkLsyonprwo+ec2fBw07RZqU0wzkcOdX77Xvd3RG+c
+         tnqBnufNYTQ4ntdebz7SMvTIGZUkmgL+r/TL8os7yG1+CK2m1HUnhTR6ebDo24nrTwsN
+         e3pvb7QgOHzGQr53gwA8rv6PzmJrOZo4vvB1zCg1tprG8fZ2RgJOYjanF6XZsBMxKGy7
+         uYnH+qgzfqiZ3IQSzSZkmC3Vx7fFrg7qW+4h+muK2IEWGYsHTt9I6ZcRD5t99di6uhmh
+         /xsfURW4sPBIOKzxicZs40i0AbhAZsmabWNm3vwrA/xYTYRlLMWdJIjISJhpTETBruAV
+         i9VQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXuiXc7R8m7pYvySTr4W2bFrfsSWyKL26B8YuXhkzrlqKkT5KqRs6ny/4xoL9Sjn+I59ZyuAdvVAG937oY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxqvKKVy73mz2zjd1D1Q1hO9OSBm+6FdZcqAmrLI8moWdjDAzo+
+	nNtuI51hcivC+XlXDQrJ9/L/64YzgodXmuFzrVok1vUCeb+U4IarjzNYb839e1F95btYai4hnxH
+	U/WaNu8sYDroNBX0Rqky4rPyCbHLZ3+hNNqCVvGHkqA==
+X-Gm-Gg: ASbGncuZTedi3fY5sK8csMRB5ru2Me/9vkyXi3MfMeqtFcSkjNorUpy/WJoW5yVlDiD
+	Bfgi2nmevUDbEwmu4FoZodr7nfK29e6e3XJGawN/q+z0ukBxcG8ce/p95qUkS8mdMIMMH2SHgbj
+	v3AaZMs9wVEVLFBu7Ie52RPVWp0FChOeyVOAz1qWU0m9GzAgE4OYMIynpZ0OVZZXQ7B1wVOJcFN
+	19vGur8qxEY
+X-Google-Smtp-Source: AGHT+IHKSCc3BRRWgi/b6UYlklkIt3JL2+XoqGQiac4wdYUlvtkEDiwhts0vXrUKD+OM1NJ41pIR4yVIK8ii7tqOrrE=
+X-Received: by 2002:a05:651c:553:b0:332:440d:43bf with SMTP id
+ 38308e7fff4ca-3353072126emr7293841fa.30.1755608701684; Tue, 19 Aug 2025
+ 06:05:01 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,56 +80,31 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/4] ASoc: fsl: fsl_qmc_audio: Ensure audio channels
- are ordered in TDM bus
-To: Herve Codina <herve.codina@bootlin.com>
-Cc: Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang <shengjiu.wang@gmail.com>,
- Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
- Nicolin Chen <nicoleotsuka@gmail.com>, Liam Girdwood <lgirdwood@gmail.com>,
- Mark Brown <broonie@kernel.org>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>, linuxppc-dev@lists.ozlabs.org,
- linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
- linux-sound@vger.kernel.org
-References: <cover.1754993232.git.christophe.leroy@csgroup.eu>
- <8d01cf4599664188c92a515922d68c9834263384.1754993232.git.christophe.leroy@csgroup.eu>
- <20250813120657.1e93b16b@bootlin.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250813120657.1e93b16b@bootlin.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <29d89aa43536714b193d9710301341f838fcb5b7.1755519343.git.christophe.leroy@csgroup.eu>
+In-Reply-To: <29d89aa43536714b193d9710301341f838fcb5b7.1755519343.git.christophe.leroy@csgroup.eu>
+From: Linus Walleij <linus.walleij@linaro.org>
+Date: Tue, 19 Aug 2025 15:04:50 +0200
+X-Gm-Features: Ac12FXzPE0z4aQDnczniJjhXVKo7ubVWbJ4EdzLUQpWqZoam6Goakc9VHrWgbMg
+Message-ID: <CACRpkdZcoT-hotYikqC1thmiOB_tc20tvXVrrOwu_ymgW=g3Dw@mail.gmail.com>
+Subject: Re: [PATCH 1/2] powerpc/44x: Change GPIO driver to a proper platform driver
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, linux-kernel@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-gpio@vger.kernel.org, 
+	Bartosz Golaszewski <brgl@bgdev.pl>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Mon, Aug 18, 2025 at 2:17=E2=80=AFPM Christophe Leroy
+<christophe.leroy@csgroup.eu> wrote:
 
+> In order to drop legacy-of-mm-gpiochip dependency, first change the
+> 44x GPIO driver to a proper platform driver.
+>
+> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-Le 13/08/2025 à 12:06, Herve Codina a écrit :
-> Hi Christophe,
-> 
-> On Tue, 12 Aug 2025 12:50:56 +0200
-> Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
-> 
-> ...
-> 
->> @@ -879,6 +884,30 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
->>   				return -EINVAL;
->>   			}
->>   		}
->> +
->> +		ret = qmc_chan_get_ts_info(qmc_dai->qmc_chans[i], &ts_info);
->> +		if (ret) {
->> +			dev_err(qmc_audio->dev, "dai %d get QMC %d channel TS info failed %d\n",
->> +				qmc_dai->id, i, ret);
->> +			return ret;
->> +		}
->> +
->> +		last_rx_ts = fls64(ts_info.rx_ts_mask);
->> +		last_tx_ts = fls64(ts_info.rx_ts_mask);
->                                                
-> tx_ts_mask instead of rx_ts_mask for last_tx_ts.
-> 
+Reviewed-by: Linus Walleij <linus.walleij@linaro.org>
 
-Fixed in v3
-
-Thanks
-Christophe
+Yours,
+Linus Walleij
 
