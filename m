@@ -1,90 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-11165-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11166-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91CCCCA0EDC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Aug 2025 12:40:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 44610CA0EDC
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Aug 2025 14:11:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c6Qyp5HzMz30Qb;
-	Wed, 20 Aug 2025 22:40:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c405::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755693305;
-	cv=pass; b=T+oCiegyveb1Uz/bmgiVzgL6TkuBh2kLbo2zxqaPxrdEUdLAZUDic377/52BPVtHzlbOOGZs3P3XcF01uGnHl2JJZMKxCFwo6a4iYGQ/Dj8BG4U3O20HH1b1j8ZTuqqolG5184uIXTBEDF9W265RXVwNVX2G2syG++VotVhFn0HrATfvZ6vZlrkbFvXcqdSAu3DPkc2gI0zL9tl4NeOTwan12jtyADTEUI8MwjEy2kZ3w7dD6Pnd/ThiY/HJ4gRCQRSdSntvvceai0n/hJrgDUs1cyb8Z83Yq0q44FV+cPr4VRK38s51DQUcH5YqVuQw5ZtXHDXDSSzns/8xM246lw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755693305; c=relaxed/relaxed;
-	bh=rrEuGZ/ge0YAm3T9H8VR3NXEApCCgq4PKndZr3uDlUU=;
-	h=From:To:Subject:Date:Message-Id:Content-Type:MIME-Version; b=fhOU8KucLyZudpkOVEU9iFAHrD+QaYS9isPBRRXFvOrA9EGF0oDKPNchhjDoyoaVVGf5DIg+d4JMQZNkDX5ZHqvzWdA2giwbTih6hQmNYj5Whoh4pnq/d83uaf6io5c1HCDQVASlYe00vBbDmNSL1z/dq6kdbfms5L/fNoZY/oIZSnZq6fGhBOW7FAsoQeXxlZIsFDNepE5TVQ2Kj+WWwVHdhpnp0jcvHxKYqbF42gy/gmHZ2xaSbysa2wBCydKXDjri/R8P1DLNQ4v596OS3OLau1ujUDCm1NOK1R96pJFVxhJ+wqTtQHZj32ziQJiIJxFBKdV8uRzZwZd0g0gc4Q==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com; dkim=pass (2048-bit key; unprotected) header.d=vivo.com header.i=@vivo.com header.a=rsa-sha256 header.s=selector2 header.b=Rdkp2fwG; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=rongqianfeng@vivo.com; receiver=lists.ozlabs.org) smtp.mailfrom=vivo.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c6T0C10Rhz2yhD;
+	Thu, 21 Aug 2025 00:11:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.18
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755699099;
+	cv=none; b=EQAfAqJ9vUEDJRpgY2wFlMl8TMPuqAnR+LuKu65iEoVRcSksPOlZO1Yg8yfGtk71bkiRC2zz6Dm/h4L5HaO//NQOqjIQdrka8t+LHFikA1Xk/SIxGilwrgfRAlHt+2c/3qY/orCm2W5Syy1OjlVssFnPegglta5J4lLCN2oYIkd/FcObXQIbKjnRCbG/28/lKFq/NGWnM4fHj/NnCeuRdlNM1ftFiCyVvD0kx0e3JsMh5jNwy1fTJJgsmtKdJDU6OVplOuIlcTygD2EsitGzocO24wGzLeLItBHPCk9DLOGp9hEQXNQdHZh1/aDoWVD3P8DZ0H41Kf8dksP+ngYlLA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1755699099; c=relaxed/relaxed;
+	bh=KcCCG63uWpRa+4mIeBMEtGvTor5sRVKqyuGK3CarDsw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=HaRQgy+ozGXAkLNMp1hyGBFMWMd//cIH6xRIeW1hLC4wFRy//Fd+UmvDFXwQ1V2soFGh3fYW0KTaWFMKD9a9Q8ga5KHePUcLDy6STQToHuDdSZphBunBj9VVc9vF3DxEpJEzGeiVcKtaCztca40CwV/bpHTZDyistTlz7bNekFgdt0BwRcuWTzzBsywlTY6FUbhpPAVpwjFjBHUFEAuoesiOjYQMG4dBoINBBgKPjp3S0XWbMoqRq+LiqXqzDHDJJrIasFGc8F2rMI69hrEgc3uMxQlrRnuLsT+JMlwaEBo7XEvMRdaYe7RLCBmpq8mqoD14ZBFw11E2zzpU4ANSTQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KoZlvCK6; dkim-atps=neutral; spf=none (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=vivo.com header.i=@vivo.com header.a=rsa-sha256 header.s=selector2 header.b=Rdkp2fwG;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=KoZlvCK6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=vivo.com (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=rongqianfeng@vivo.com; receiver=lists.ozlabs.org)
-Received: from TYDPR03CU002.outbound.protection.outlook.com (mail-japaneastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c405::7])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Thu, 21 Aug 2025 00:11:36 AEST
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c6Qrk5jRyz2yZ6
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2025 22:35:01 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=LrSaIjGPke1mJ9uJFAKo/wvSm9cQAv+ZxWaQuBST1qOr/aTRsNipRoNwDVxorIGwq5wKPa7oHPgBrdB9OsN9UY75ZHQmDoB9mxMWidPPQYX/DtgkrsxFOWsgGGbVReOPCizJ5fG+CiGSuLMFmm8DG0ega73AFORK7Rr4gmEvCTlEKx7H+LfbNqpxhk6JjcjqSpeINWwH2RVlaDey8HdI1SNGeyBWbLCs+S9B7E5mvXSN7PmyaJPYwLYlkQGFlQUqV7TCNrvN1jGVzrTQWN7kzaHMqHvcVglU2B0fjJw5PqjaM+gZ3s4YZwKzxZAu2ao8OzYk7kKcrHdT3+egOD8LDQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=rrEuGZ/ge0YAm3T9H8VR3NXEApCCgq4PKndZr3uDlUU=;
- b=Oi2iGzAs6vcLhNRt9PH1G5UP9+B7FAMZifDBWiFxZgCJCx6NPskCNXi24dcyzcqEYVg8Kak+SQ0MeLDUhprhF8yuj+8zhTGWIWN74eLCD4UM0LIUutqMXxd9I6VbRXOuMuhgeeOi95dNrmasVb20ga1MJzjrh7+/RsJtcOmbtwBOSfIgT2owitPH5k0rCYATAqJfInN3xmH/Zcml94gfZnpJxn9EmKeBdRS1x4ERZ4Ewqu9ks7z3yBhNbOAKbS07HPJLAoazZiK35EpRhBCzgRQDHIIQVI3tE3eAFRRPcbrqrO3/9tgQ9Dx2gzEWYPbPaJpYfvIykZWknz6xhCTFFQ==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
- dkim=pass header.d=vivo.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=rrEuGZ/ge0YAm3T9H8VR3NXEApCCgq4PKndZr3uDlUU=;
- b=Rdkp2fwGl2tB/UxioQ/zAs7Uh581fuUlCFpPk8zLid78ElO8ARlCOdt9jzNhIeB+ZvPJUqLKGK8x4/r4tIuiFgzsXctolHCcHddkUx4zsKi5mAaQF3lQOks/uvcMDrNKVYW0qbNcHIxVFYkFKCB723lHecMvlvNuR0lUiH6zx9vkRckc3q9UMd5LZuh/Qf6mIbYrQBtyUOB+eCN/0Bx6yibVQN2drM000n744rtjyJnKz768mFzqawasqJnWeLswN1/cXZkCrJQ4J0Hn5HyKM1KFheL9Oz907EuuYS+/lwQTmAyqPGjcm8btQYgW94h4o6YaUOnnegMIjGbA+iBZ/A==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=vivo.com;
-Received: from SI2PR06MB5140.apcprd06.prod.outlook.com (2603:1096:4:1af::9) by
- JH0PR06MB7177.apcprd06.prod.outlook.com (2603:1096:990:9b::10) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9052.13; Wed, 20 Aug 2025 12:34:37 +0000
-Received: from SI2PR06MB5140.apcprd06.prod.outlook.com
- ([fe80::468a:88be:bec:666]) by SI2PR06MB5140.apcprd06.prod.outlook.com
- ([fe80::468a:88be:bec:666%5]) with mapi id 15.20.9052.013; Wed, 20 Aug 2025
- 12:34:37 +0000
-From: Qianfeng Rong <rongqianfeng@vivo.com>
-To: Nick Li <nick.li@foursemi.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Shawn Guo <shawnguo@kernel.org>,
-	Sascha Hauer <s.hauer@pengutronix.de>,
-	Pengutronix Kernel Team <kernel@pengutronix.de>,
-	Kuninori Morimoto <kuninori.morimoto.gx@renesas.com>,
-	Andrew Davis <afd@ti.com>,
-	Chen Ni <nichen@iscas.ac.cn>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Qianfeng Rong <rongqianfeng@vivo.com>,
-	Al Viro <viro@zeniv.linux.org.uk>,
-	linux-sound@vger.kernel.org (open list:FOURSEMI AUDIO AMPLIFIER DRIVER),
-	linux-kernel@vger.kernel.org (open list),
-	linuxppc-dev@lists.ozlabs.org (open list:FREESCALE SOC SOUND DRIVERS),
-	imx@lists.linux.dev (open list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE),
-	linux-arm-kernel@lists.infradead.org (moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE)
-Subject: [PATCH 0/3] ASoC: Use kcalloc() instead of kzalloc()
-Date: Wed, 20 Aug 2025 20:34:17 +0800
-Message-Id: <20250820123423.470486-1-rongqianfeng@vivo.com>
-X-Mailer: git-send-email 2.34.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SG2PR01CA0127.apcprd01.prod.exchangelabs.com
- (2603:1096:4:40::31) To SI2PR06MB5140.apcprd06.prod.outlook.com
- (2603:1096:4:1af::9)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c6T082tJXz2yZ6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2025 00:11:36 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1755699097; x=1787235097;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:content-transfer-encoding:in-reply-to;
+  bh=yBTCe/hjFm230cCQYrtw8FKht4lpTzaJPb4j5vc77is=;
+  b=KoZlvCK6D25VMQZgxjTAhvsuw0EnceKT6vpQFfrQjdAU/D+YYVrhd7os
+   FC1rOyg81tTrlx4Q3lTvROfccIExgPXEjkgZVU60Hi9Tn0imYyiRp+kN6
+   T/eo0sqXT+XDiYMqKyma8k3tSYTTtY0WN+oLTYuZ1Urp8lpDXTraqFcXX
+   b8PUm/HROwbgoVM6Q5DOMKv9PHkmF6baAN+ENDsf0yX3B4aHp0jaQIny9
+   WWzgyZeajrGR7yoXH6n1akZWHJXUTUKR2LaXwDS/B6fkx2FxRkYbUsszd
+   nfroDZdqqHD/yDv9b9Ry7gWzNvJtCWoIGaS0AEvf+aM6jOqG0x9ks+hzv
+   A==;
+X-CSE-ConnectionGUID: tirdKofaTWqtjIPr4wzboQ==
+X-CSE-MsgGUID: 6vulWTWXQXi/bwyCYvko5Q==
+X-IronPort-AV: E=McAfee;i="6800,10657,11527"; a="58030881"
+X-IronPort-AV: E=Sophos;i="6.17,302,1747724400"; 
+   d="scan'208";a="58030881"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Aug 2025 07:10:27 -0700
+X-CSE-ConnectionGUID: DeO6UepqREmAMrM+2c55UA==
+X-CSE-MsgGUID: J7H6kWnMTFqol10RG3qTlw==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.17,302,1747724400"; 
+   d="scan'208";a="167753943"
+Received: from smile.fi.intel.com ([10.237.72.52])
+  by orviesa009.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 20 Aug 2025 07:10:25 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.98.2)
+	(envelope-from <andriy.shevchenko@linux.intel.com>)
+	id 1uojW9-00000006x9e-3KIH;
+	Wed, 20 Aug 2025 17:10:21 +0300
+Date: Wed, 20 Aug 2025 17:10:21 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Naveen N Rao <naveen@kernel.org>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Bartosz Golaszewski <brgl@bgdev.pl>
+Subject: Re: [PATCH v2 1/1] powerpc/8xx: Drop legacy-of-mm-gpiochip.h header
+Message-ID: <aKXXTcqpi-6TjWrU@smile.fi.intel.com>
+References: <20241118123254.620519-1-andriy.shevchenko@linux.intel.com>
+ <52be7ae1-34f7-49ef-80b0-0eb6577205ff@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,106 +86,37 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: SI2PR06MB5140:EE_|JH0PR06MB7177:EE_
-X-MS-Office365-Filtering-Correlation-Id: 67f09a36-9486-4425-e89e-08dddfe5ecad
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|52116014|376014|366016|1800799024|921020|38350700014;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?lWaBPJ1COwn9VhB/lju6qq6p6HWXxOEw1zeIVEn54TpRoOrOF1DT5+UT+Ocg?=
- =?us-ascii?Q?1c1RAuitW8wGsBrcnkaiD8nrk395ULih9PR92OEV7gZTY7/dbfSGvEeJlGwA?=
- =?us-ascii?Q?Va63a5alYanavZqH5vDVupIrTvsS3rQMOaWonjO8pHxC7fmKMJvF8CbQ8Cwe?=
- =?us-ascii?Q?lsReIbA9gMhE+3vgxdnuN6bSPs7tvUbj5wZbx/mMk9Xa45QRt6ehpaXIoZM4?=
- =?us-ascii?Q?/1l+GeuGUF02qtKuBgXaVmhSCY77PU05Nqf6HKOZ388060nj1oxMG47AnxUX?=
- =?us-ascii?Q?Jff68lgGP4VE7plsx1PJgKJknUcB1TItR0xyesbGB/Otyro2ZyXM0hZI9gF4?=
- =?us-ascii?Q?XnxzTtL+HURsUu6sHw5h4UPBWt09/FRdVyJh8RxZEXNin04RshzRu7/NImQB?=
- =?us-ascii?Q?9PT5v6Dkr+ObVAs8Gv+tmINB9SSxENQZCFTqqQHlTJW196fr5JaJvjjf25wf?=
- =?us-ascii?Q?QtuAL3cMI8mcz9wiJfa6ChGr/9urLzGyxzGuf+zIZqP/9mcZXQqXklB7AB26?=
- =?us-ascii?Q?S8DcuNWzG1fJoXYRvT/BMGEoK/gtZyYdxqruXS2OBcayudjkX/VvUiHJTWYa?=
- =?us-ascii?Q?E/5eEn6bd/uOPzE0y0sM/zYqKgtHTHf4gy+jI/PK2zDCmVh9p4eZCFLiyF3+?=
- =?us-ascii?Q?DWgEqIKxuo1eXHybM3dxBSaowB+h7emJrfGh9DP3CAFDQtBCOt0wYbWy8Z0x?=
- =?us-ascii?Q?+d/4vf+JO8UjMhN3b6OihO09YDC/mqvtAHnxzEKyUkcxQoKMJ1L59B4NHdVQ?=
- =?us-ascii?Q?VLLtnL9q5n86zafbktRYmRWEHRwKfQOO/8Z9WFHK5E1Kcn6cD8ySxcns2VYm?=
- =?us-ascii?Q?ewovPNjEb1lfTXUe7R2B1tYgdeax8/17FjUXCDfcKvoP3FzN1kFzKZVB1yJk?=
- =?us-ascii?Q?EmllS0pjk0OCP5GOpFINBZRmFHIQIAMLuYF9TbaQ9H2OxbDjRKgLlOiqXJu4?=
- =?us-ascii?Q?+l7bv/rLbvbxbLCsx9q1s2h+wIWZqFltPFf3pSOQo98p+2FvZaTQyUnX0K7r?=
- =?us-ascii?Q?JqtJceoXeC/R9vWt0zc2w7YlNBy4eAhv5YwEEsXsbjWR6DWoWRkJLqtrYxfd?=
- =?us-ascii?Q?U6kDzCR4Id+zqmBv0xMauTBbN4lrLs+TX32ujiCu07Htuy3kavIPUXF1/Y2+?=
- =?us-ascii?Q?NfGu7TfZ6+tSTkQ0qe+t+B/CddBDbM5bfygMMB2qvxjj7E4EdrWvgPO0e+mf?=
- =?us-ascii?Q?8IwAs3U/2zgXvw1hVqUkcfc7KXlLVyxeoHl45OszbnC5ODpkmGIgPMJ7pH6G?=
- =?us-ascii?Q?fgrGigVn6jU1WC496u3Q7ejZi4rzei9jxhQ0AnIFQgRZ5os9lYuR0esf7mu+?=
- =?us-ascii?Q?GUegDctwNc6U/aPiKWARy3Hyuo/Ickbg1zRBdqvgcb6MOFsBPuWHpEDJ6O/R?=
- =?us-ascii?Q?SwufYBUGQfNl5BrM0G20B2LNBBSkS8PBJrWOoyrNNwXtBW7PhhJ/D40VSzaI?=
- =?us-ascii?Q?l9pqn6b4dVNutLPBHqO8zckuLapDRH8+NSNiFETIxqwDwW24mPoBfgJs9LCD?=
- =?us-ascii?Q?+5nZAW4i/txYMT6PH9D2UyLFZ5kd83SuTVS7?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SI2PR06MB5140.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(52116014)(376014)(366016)(1800799024)(921020)(38350700014);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?N/IA0B84r1GFcleSxzjE2+M30p+ZWcGATpFjso5LUMv/4hqz95HUWACpSgXL?=
- =?us-ascii?Q?bW+OIJymNeDjAQrCwJ6NLXm8PSdAKMr6lsX2h9Sb91panc16mQ+lKFHn/vnY?=
- =?us-ascii?Q?UMnY4XwkI4RrfkHK8aHJTpbmKYpPhWzk1xUSVVP1eNHDSjXnHPq6HmQl4k+T?=
- =?us-ascii?Q?xUFeDN2kLitPhlCjwwnQSxtBzCkTWqtWw2YpRpm+Nc0km31t9AA75XnS1nIN?=
- =?us-ascii?Q?/PxKQz663l/aWiK8XOtlSVWRgR3wJB+gORrAKDlzroTITV7qLZSiTp1V7ElI?=
- =?us-ascii?Q?Cq58CSc4avlompMEeAVRzFpbikE8xC1LfzVcJY5l7x4HtEdSNBS25gz2u3ug?=
- =?us-ascii?Q?ScyZ9nh6gjXAD8JfnpMiWD+WtYxXsApAYzQD1pAT8RhSWdOFCJ0vrAYjaPLf?=
- =?us-ascii?Q?bE8SDXrS79y9udPTBku53PVvyUcSLtSTgKqb/Hed+/QjyFu0WKUpvHVb/qSB?=
- =?us-ascii?Q?DAktQk3bWjyKLn+0fiBq2PFZv8Gw288eFMafOHI4qgslTVJwbbkAJe5HFOdZ?=
- =?us-ascii?Q?VBFd/YooBVsHWm5Wh5XmLOlFV8mDkzdHFBclKVQbR6njtLPjlkVdzRv2UkCB?=
- =?us-ascii?Q?z9g8XKj9aQv6Bd0e0A2th+wkj9DUZe/R7A2YuxtjNWbPSfxiBX71ycW3jEKH?=
- =?us-ascii?Q?mtcxYGHzUjzRcRQfax1jtoAdxkfovDkeoQRxBoRzzzqzkmdrXt1L2X0EpiPg?=
- =?us-ascii?Q?rWUl245YzFX7DOG7Lyu3qASNRAIv1r3mvEWQVRY3Fywen+QEy8Mw+M04iBw7?=
- =?us-ascii?Q?TmsqvXvp3LDCwIN3h9NbPDDaomihrLRl5XN6BEbuEbjD9ZrKvhRonT93ij2T?=
- =?us-ascii?Q?ZYc2kvhJCKar1ZusxQChgqXzFVtxXbn28w3xn1C3YxLLnWyfAWe9iKYEBLN4?=
- =?us-ascii?Q?R5XKJJBbofenlODDJxkm5ehDLit53rY+mM/8s7taDubEWfJ7L5RZg86C17Cb?=
- =?us-ascii?Q?JHLvoapt6tnU6BeFNh1bsw6DrJjcBjwYgNu/f7k23Fo2Z1iHt849EIfBVtmd?=
- =?us-ascii?Q?eeZkzbPawvEO0f4rzvuwmJTJSaFJ/ds1VCWnNTyBi9wYERMGDFq+b7P2v3+P?=
- =?us-ascii?Q?neDupjypCwbG7upq+RCHumND5ibAMOAb/KCJN/GUc/MAtz2oOPJhuGplu5Vl?=
- =?us-ascii?Q?lw+jvz68BwfSmfqaDm02Z9NOV/3bya8z+f/pxQrHobTfYKNB6jCWY0hAm4Z/?=
- =?us-ascii?Q?gAlPMGQTMl6r48wJj0+sX3t4RF8k8No5ASM0aJVGQ1f+6k22LUYHMp+vIsB+?=
- =?us-ascii?Q?YYpPKos0h9FcEcYhqjDFGmNLqxze2gQ8m3Ftgd+CX1y37D1yHao+vNj7yiQE?=
- =?us-ascii?Q?qiCUcN2PKJXlrvYVwL1eL28ITPP2u9FqKe2R946BVIVPz7gpC3HXFjTdwE/d?=
- =?us-ascii?Q?gKS1qRyCEbUo/ny7h4txptuz8gmQxQm1pRwzHqimOceF1R/2xym9PvxA2bqV?=
- =?us-ascii?Q?PfHNi+JVRTYvNuwL1bG4+R9Usy3Xo2h0VodlxLOLdWzfmYwKiCAVbkj1djeX?=
- =?us-ascii?Q?H9romsTODrLbCJXkR9yFYS9HQ+COLn3/MZEBUT3IwoCaH1x9y6aKQGcQw4mZ?=
- =?us-ascii?Q?NASYmasSQFARCgaKK7//G3qW/ZcNPrkOYJYxl7Nw?=
-X-OriginatorOrg: vivo.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 67f09a36-9486-4425-e89e-08dddfe5ecad
-X-MS-Exchange-CrossTenant-AuthSource: SI2PR06MB5140.apcprd06.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Aug 2025 12:34:36.9445
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: 43o2CpXG9KbMFNXAyzZ9blxwJ/93yzReYjaJ+hXjug0QdExgAdfEZ01Gj0EO5p+Ki9ikebipNZYzoEsEUQcJsw==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: JH0PR06MB7177
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <52be7ae1-34f7-49ef-80b0-0eb6577205ff@csgroup.eu>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-Replace devm_kzalloc() with devm_kcalloc() in sound/soc.  As noted in the
-kernel documentation [1], open-coded multiplication in allocator arguments
-is discouraged because it can lead to integer overflow.
+On Thu, Aug 14, 2025 at 10:33:52AM +0200, Christophe Leroy wrote:
+> Le 18/11/2024 à 13:31, Andy Shevchenko a écrit :
+> > Remove legacy-of-mm-gpiochip.h header file. The above mentioned
+> > file provides an OF API that's deprecated. There is no agnostic
+> > alternatives to it and we have to open code the logic which was
+> > hidden behind of_mm_gpiochip_add_data(). Note, most of the GPIO
+> > drivers are using their own labeling schemas and resource retrieval
+> > that only a few may gain of the code deduplication, so whenever
+> > alternative is appear we can move drivers again to use that one.
+> > 
+> > As a side effect this change fixes a potential memory leak on
+> > an error path, if of_mm_gpiochip_add_data() fails.
+> 
+> Is there a reason for having done this change in cpm1_gpiochip_add16() and
+> cpm1_gpiochip_add32() [arch/powerpc/platform/8xx/cpm1.c] and not in
+> cpm2_gpiochip_add32() [arch/powerpc/sysdev/cpm_common.c] while all three
+> functions are called from cpm_gpio_probe() [arch/powerpc/sysdev/cpm_gpio.c]
+> ?
 
-Using devm_kcalloc() provides built-in overflow protection, making the
-memory allocation safer when calculating the allocation size compared
-to explicit multiplication.
-
-[1]: https://www.kernel.org/doc/html/next/process/deprecated.html#open-coded-arithmetic-in-allocator-arguments
-
-Qianfeng Rong (3):
-  ASoC: codecs: Use kcalloc() instead of kzalloc()
-  ASoC: fsl: Use kcalloc() instead of kzalloc()
-  ASoC: test-component: Use kcalloc() instead of kzalloc()
-
- sound/soc/codecs/fs-amp-lib.c      | 2 +-
- sound/soc/codecs/pcm6240.c         | 4 ++--
- sound/soc/fsl/fsl_sai.c            | 2 +-
- sound/soc/fsl/imx-audmux.c         | 2 +-
- sound/soc/generic/test-component.c | 4 ++--
- 5 files changed, 7 insertions(+), 7 deletions(-)
+No specific reason, just lack of time to have got all of the cases.
 
 -- 
-2.34.1
+With Best Regards,
+Andy Shevchenko
+
 
 
