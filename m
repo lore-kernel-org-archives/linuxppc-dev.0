@@ -1,79 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-11163-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11164-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C908CA0EDC
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Aug 2025 11:53:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F304CA0EE4
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 20 Aug 2025 12:39:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c6Pwm08g8z2yrT;
-	Wed, 20 Aug 2025 21:53:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755690807;
-	cv=none; b=YkyPxyH+nv/v7smYCX7dCLzXeOl5/aBCidXkDMWTAIZFykSf1HUsTRDw+RGi7Jpnw7i/0QH5fzM1J4WeEwze6iTokY+vxX8a+I62C7/o4PHFXcjf4SSgAYcgFUTYaKss/CxU17m4CgGgCQ5uJ1tHVWj+N5NiIQ/xR/lUoVha0QT4FJT8grXwnwoH8/miUVu94XjXOxUpjZ7c28BNgrGjS7ZR5ZSarG3XNrMpqyt8XiXSBWJJu9dbM3oUsFvC/wTaWkl2+LKpRvzcvrXkJknOcJEzo0mj3MP1ffiKw84IT4sVFQi3qhut4OWfDbt8psV5Y4Ye/RDL3X4TD1gWIHjnhQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755690807; c=relaxed/relaxed;
-	bh=5Lo8Oc4cV9m5sm6CmxKxC2Add4Cd2yjdPobh70fclDc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=W0jTJqVYxm21AyySm4y21t0rgc1QHCVsfYnT8n7zzTEcTl1wVR/inLRzV/chtqZr7zpgWscJm8rTbMyxlYBM4FSi7EaBZjbTY62mwTYidbnBx4BVwrNOLoW3BZX98mQza8Pu6AlJZ/l8nYADV4kHbiKNGFeUXBB9RYMdZkmZzFOX3bhfXfkpSYDGzwI8R5tBvH1LIXL4J2uIb3XLYmUfz1gNmMaimzMOxtuNuKDEaeTpLwjHUWli+pGAgplAxc3BIt3wHuyu8HjHrzNoyYtysk/vra53nOzlCX6nxCBydfZ8PpYBqv6eMqtkXpPXdPZl4AcYfroHwcv1/J246d5Sig==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Y0V4yw8Y; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c6Qy90dC1z2yrT;
+	Wed, 20 Aug 2025 22:39:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c405::7" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755693305;
+	cv=pass; b=SnmMhqchmmTHexBRcfWRkqqwXla1kyQj9e6S3GtFKASEhMOtApc6cON6Q78eaPbwi6gDfp428INEzSaRY9q71omif9kcX7HY/mrJvs3GfCxt0UIDT9dVoCuQhHpxZ5N9wQL4aO4whEWWLI9gfWavHys7glUJLvHD80EHHzBdMdAKQ6anAfZk67OSGxOGwOYbVTIYwX4dH/yuosL/1e+sxESWAXYOtjpRpwZKGZ1yyhCnjCne3ICB1vqVaQXVCIB03qDdmvyM9tW0TGtsSObOlAPEV6y+Ru8ohTz4wtXO+YqsZsmgeLR02IdHIfPjvIZ5E37tyMgmFQ+vEEfLtuLOnA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1755693305; c=relaxed/relaxed;
+	bh=Kv604vguj9Ujt5NoB/DezOqvihci2+dHznEyU7F/Dug=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 Content-Type:MIME-Version; b=XRf+CIoX8My9AdQsgQL4oPfBiYrZ+Cc8ZI/RVsLBZTDceqe2/3C6B9fA2dUxJ9FypnLdYGEQndLIjOD7iWvF82EXQuH7mu8eQmLeVo58JJqIeUWlHWS0hTmf4kewQry5Fc0hehQzX6ULvI3QQnsstitH7K+s67RLopTCU5+uZrVMCl4vy6xvJn8dQ9/Bu9rRbqaZoJtsihTHKZbPV2Y31wrbSBwV95E//F99LTAUVitCakaD6VIviO86o4lj6JdZNYaNUCMh965x5NsCqZm4aIHVivhtSlOsMetorCt1B5GjEpLt3GBAs/CXdQcUZpUWG01ivD5lUcPsWmDhjsJ6GA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com; dkim=pass (2048-bit key; unprotected) header.d=vivo.com header.i=@vivo.com header.a=rsa-sha256 header.s=selector2 header.b=FL+M8c6I; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=rongqianfeng@vivo.com; receiver=lists.ozlabs.org) smtp.mailfrom=vivo.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=vivo.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Y0V4yw8Y;
+	dkim=pass (2048-bit key; unprotected) header.d=vivo.com header.i=@vivo.com header.a=rsa-sha256 header.s=selector2 header.b=FL+M8c6I;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=vivo.com (client-ip=2a01:111:f403:c405::7; helo=tydpr03cu002.outbound.protection.outlook.com; envelope-from=rongqianfeng@vivo.com; receiver=lists.ozlabs.org)
+Received: from TYDPR03CU002.outbound.protection.outlook.com (mail-japaneastazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c405::7])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c6Pwl0WhWz2yZ6
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2025 21:53:26 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57JNmMha011916;
-	Wed, 20 Aug 2025 11:53:18 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=5Lo8Oc
-	4cV9m5sm6CmxKxC2Add4Cd2yjdPobh70fclDc=; b=Y0V4yw8YPMq057K4bX8RCW
-	bQnKSo+1eng+GOkwJq//InnFbyFWyBXlL9beGGt5qOktXe0COBgHDIaefG3FSO6w
-	1qzniX67QXDGSvR1IVOZCb7af7EJF9DBpPDsdE1QvnnI4zuhh7Z1urR5WPapfCa7
-	EIYAJ3d1OZWuHpvocwU5I5mOazgF2CN+VJ/61BDsB66IosGfyzf9FOocdUKLnGMN
-	mNotpnHqoKffkG/n0UuRFh6PxWu//FRycL44mDLbnWgtDcrv6pxloCWwJqvdFL4N
-	MWPnVFLu9wgzNcXhEnUlNHAebQ7+PfgkDhnVNk9avoTG5yrCZypIKdCQwMluBT8Q
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48n38vjkc2-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 20 Aug 2025 11:53:18 +0000 (GMT)
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 57KBeA6n010642;
-	Wed, 20 Aug 2025 11:53:18 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48n38vjkc0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 20 Aug 2025 11:53:18 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 57K9VSqb015619;
-	Wed, 20 Aug 2025 11:53:17 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 48my4233qw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 20 Aug 2025 11:53:17 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 57KBrDne49742252
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 20 Aug 2025 11:53:13 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9D04420043;
-	Wed, 20 Aug 2025 11:53:13 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 9910620040;
-	Wed, 20 Aug 2025 11:53:10 +0000 (GMT)
-Received: from [9.124.209.111] (unknown [9.124.209.111])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 20 Aug 2025 11:53:10 +0000 (GMT)
-Message-ID: <e6830e48-0356-4057-9b73-74b8fef0bd3b@linux.ibm.com>
-Date: Wed, 20 Aug 2025 17:23:09 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c6Qrn3HFqz2yZ6
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2025 22:35:05 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=FrPiNhiFu1aN3r79F3vloXuhTHp4nFv7ndQsa2d0jft1li7UNNL+LeS6eKfuXF+1qeXwn0fgCixG2Y7kIBotvUY9Cu1AFfIQNtJ2+92E1ZSsBDDTXLS9PSOFvpPK01qOg1efLLiiYMyAPFVC2Dp8sFqVra+UL/MxpvCy2Gy5DNsn9eyb1pKEXE1ZBZpZMr52DxfFpcnwuLEnl1wS/1aWdqpJvAjJyfY26Ct9rZ1HNUAQAeP3tSw7Dz18TB6bPP1cxXKvusJFv/glUb8MrU7RNqLX3MIaPbhyU1OtL6NSEkZkT2ZN6iGx7b+AF1jOo/ddDmBuzbk2RLx0AVI+xQMsrQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=Kv604vguj9Ujt5NoB/DezOqvihci2+dHznEyU7F/Dug=;
+ b=DBjbpy/rZLYBVSmiywvu73gqY3+DIs5CUv3s0C45V3oD4RAerNKybPuKJFslgEV5Wt8Bgzhilr+21nWLJnXNAzsSPmrwUgdQ83XRj6AX4ZXyqeAybl+Bgwf1WcMI2KMoXsFS+pjoYRTry/9fxbSLKwz2ZJiwki9qa34xm8uIJ26ei6Kuh650T5PeVznvFknu+Bj0c/H/KsoUCvlMCDygr52InJKw3E3udnhWFW2IQokttWm1JvmPoxOzYn853Sjc5YB5lCDwGbtFtTOXEgDP8AwDALcGHZc8ktrDWNnxF+xE4IPhYVUbdIsX+ojahIQ7KOBEo4U+Peu4u2VCxYiSiQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=vivo.com; dmarc=pass action=none header.from=vivo.com;
+ dkim=pass header.d=vivo.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=vivo.com; s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=Kv604vguj9Ujt5NoB/DezOqvihci2+dHznEyU7F/Dug=;
+ b=FL+M8c6ISFXTMf2PaSZpaGXQvgmpq7Ykctr2LUMKp7GU1cA26zYzd8/D1vOpAUrXzLYltsU1kg0gp/+5p5vxvyMkab362JRBUIy2Iz3gRew0/BKcp3cj9eJpVGT1OTF+hLeHjhRh9fqgWAq2m6qFjaV5e6WvL8LicnxiSe47x2fGHejQWqVYIKnaEaoXyVi/8gnaO/wXy6aSGe65AWAORjBuEuykqHQ87l5tyZmMfAtURnpMsR46v5bPhVTo23gTOGAUw4nR4Xnmx5lpXC1K6F0KjFzn8MfLLZ/hGDBylsYHw3Ydc1PuYHBymnqqLYSkVxrFELjTXIayxxrVMeCwGw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=vivo.com;
+Received: from SI2PR06MB5140.apcprd06.prod.outlook.com (2603:1096:4:1af::9) by
+ JH0PR06MB7177.apcprd06.prod.outlook.com (2603:1096:990:9b::10) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9052.13; Wed, 20 Aug 2025 12:34:48 +0000
+Received: from SI2PR06MB5140.apcprd06.prod.outlook.com
+ ([fe80::468a:88be:bec:666]) by SI2PR06MB5140.apcprd06.prod.outlook.com
+ ([fe80::468a:88be:bec:666%5]) with mapi id 15.20.9052.013; Wed, 20 Aug 2025
+ 12:34:48 +0000
+From: Qianfeng Rong <rongqianfeng@vivo.com>
+To: Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>,
+	Shawn Guo <shawnguo@kernel.org>,
+	Sascha Hauer <s.hauer@pengutronix.de>,
+	Pengutronix Kernel Team <kernel@pengutronix.de>,
+	linux-sound@vger.kernel.org (open list:FREESCALE SOC SOUND DRIVERS),
+	linuxppc-dev@lists.ozlabs.org (open list:FREESCALE SOC SOUND DRIVERS),
+	linux-kernel@vger.kernel.org (open list),
+	imx@lists.linux.dev (open list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE),
+	linux-arm-kernel@lists.infradead.org (moderated list:ARM/FREESCALE IMX / MXC ARM ARCHITECTURE)
+Cc: Qianfeng Rong <rongqianfeng@vivo.com>
+Subject: [PATCH 2/3] ASoC: fsl: Use kcalloc() instead of kzalloc()
+Date: Wed, 20 Aug 2025 20:34:19 +0800
+Message-Id: <20250820123423.470486-3-rongqianfeng@vivo.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20250820123423.470486-1-rongqianfeng@vivo.com>
+References: <20250820123423.470486-1-rongqianfeng@vivo.com>
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SG2PR01CA0127.apcprd01.prod.exchangelabs.com
+ (2603:1096:4:40::31) To SI2PR06MB5140.apcprd06.prod.outlook.com
+ (2603:1096:4:1af::9)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,475 +95,120 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 02/14] powerpc/vpa_dtl: Add interface to expose vpa dtl
- counters via perf
-To: Athira Rajeev <atrajeev@linux.ibm.com>, maddy@linux.ibm.com
-Cc: linux-perf-users@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        aboorvad@linux.ibm.com, kjain@linux.ibm.com,
-        hbathini@linux.vnet.ibm.com, Aditya.Bodkhe1@ibm.com,
-        venkat88@linux.ibm.com, acme@kernel.org, jolsa@kernel.org,
-        adrian.hunter@intel.com, irogers@google.com, namhyung@kernel.org
-References: <20250815083407.27953-1-atrajeev@linux.ibm.com>
- <20250815083407.27953-3-atrajeev@linux.ibm.com>
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-Content-Language: en-US
-In-Reply-To: <20250815083407.27953-3-atrajeev@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODE5MDIyMiBTYWx0ZWRfX9EhoV/VUvsqy
- ktl4qlDmisk5EdST9rLVjHGvYZekoEN1SBjAv04oMPIgdGIs2uNtNR/qVfzvwHzPWp/g3jkyO34
- Ue88UOnL+lt3/F21XykVtMeJ970VYnkQzybYFiHlm3Gayva4lgCcErG7Y//j96CQk7JBg+TCluF
- ICFnaRatwbKc15fYw4PqHgNMVrQm74uc+StaG19oDCE2ITQnOjXkMvbyDfqzVDMLDlxu6V42kS5
- 5haJN5+x/0mXqFUZzjqvqXpEQPsetGWJuIsw3cmFVAqiLmwfbndfdkjwZszNMbPxYd3oRUMlK8L
- xHl4B6ZZfTtlul+G6CfcMkWi5xDU4w4n5HZ5IXMs3xu8D+1gQd2p/QR0J1kChFf2GCNhCnbprGZ
- 5pQgZPCDPQFoXFeBqCztnwMh5Js7YA==
-X-Proofpoint-ORIG-GUID: HeSE9oyXT_VHPehA64oph6QPpHYWvO15
-X-Authority-Analysis: v=2.4 cv=T9nVj/KQ c=1 sm=1 tr=0 ts=68a5b72e cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10 a=VnNF1IyMAAAA:8 a=Flmnvu_SPvglLxEKF7EA:9
- a=QEXdDO2ut3YA:10 a=cPQSjfK2_nFv0Q5t_7PE:22
-X-Proofpoint-GUID: I7ClVTIx2puGbigXbOsh8uyamgB8qb5y
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-08-20_03,2025-08-20_02,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 malwarescore=0 phishscore=0 spamscore=0 clxscore=1011
- bulkscore=0 suspectscore=0 lowpriorityscore=0 priorityscore=1501 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2508110000 definitions=main-2508190222
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SI2PR06MB5140:EE_|JH0PR06MB7177:EE_
+X-MS-Office365-Filtering-Correlation-Id: 7bdc11d4-5be6-4716-09fe-08dddfe5f375
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|7416014|52116014|376014|366016|1800799024|921020|38350700014;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?Oi15oPWttKw74AbcV2jH25FxgoRtoN1knWqw9V/DGUPmsK6GI3z2wp0vevQu?=
+ =?us-ascii?Q?5wi+hP8XUyyOB+n81bPGR5OjrUMC6d2raEwRO7ESaQi+6EokV1z0qDjgp24h?=
+ =?us-ascii?Q?9p9M0w2xICX7FrW3lseErHU+4r9s1i0T99nmvFvcDJ8HFCr+a4rG6qgBvcW+?=
+ =?us-ascii?Q?IsmLO06pfXxJWMvv2vqGUrdJou+U2WihH7SympHhjKnwkDTiHb9tQFt4P9eM?=
+ =?us-ascii?Q?pIfPzk2wS4BOnj7I8vePOdKOfEBuZGSc3qRkdnah+uqLYdPa/r6e1TP6Aqdh?=
+ =?us-ascii?Q?y4BmUaCEzF0uy+8lRbnoyvAnRD9+0jTcD4pvidgHvVkK0GOp/mr+So33Kv8R?=
+ =?us-ascii?Q?u73mELd0GbxyPJh3B9t58X+d9rA8bBkuXNZsiGTtLliEK3QQ4XyTaNZqYLFJ?=
+ =?us-ascii?Q?shvPYX3Jp3ol4HywgGkp1tYww9sm4SD+WDqO6rv1kDd1SnXzFXBIIBu6MvBI?=
+ =?us-ascii?Q?8E+53BGQjQ4AY20l31LXGdZH1w8EJA2mA1dNevcHYcZmAVJCwyu94EEJw944?=
+ =?us-ascii?Q?4JztxiXXRafgbP9bBdttXpwWLlS9fgovKjm37m3E+pB+9y8p6Y/IFHNMejlI?=
+ =?us-ascii?Q?GVi7QqBn4Es/3Vy0gCNYyEBMMzAWGpFxwB7zIOzmp92VRj9JKPPhMrjrfarD?=
+ =?us-ascii?Q?NnHx5U79HsJfh+b7hf6bb7OmFwZMFC/HU6L88WXYdrkAPHtF2O13iaq8Br3m?=
+ =?us-ascii?Q?+c3M9xIBThQxljREcuM7bULUszvEtkyK+E1nJ72DrO5MDB/5hd97674Atsag?=
+ =?us-ascii?Q?+P7T40dcVs6sy0Ra3UT75c58v1i4sYNLsos4WMi4Lk8awHLVN3JA2j72E777?=
+ =?us-ascii?Q?GAYtGmx1HOvptIQW3fUN9Ls3zs2IHKo9aB7AsPvzvVH5+YIAbMG+VUlowmKa?=
+ =?us-ascii?Q?/kkDSj2ofJHHMURsv7aT3t8yZf7CZ97BE/sSotegOBFMV19MKkimbMVfd6t1?=
+ =?us-ascii?Q?LA8ck8NbWRoBSe97JoHEGIuwBM5930jfcpkNLwQLvbi0n9KcHIgfQlCko1jk?=
+ =?us-ascii?Q?FiVGEZYzImtumuoNCzTR3PdHPyBk+pHvK2X7ca/OSqWv9cVz+27sVOWH+Xg8?=
+ =?us-ascii?Q?MslFCJR+l1PZMJA5ANfhWrpApvGrsn8VuOJoDD+ksPsG2/0tjmwQT0QrqmFO?=
+ =?us-ascii?Q?txX+3btlqPxaAnn0ucGdJeCObW5SGTQBE6+0htOOlU4yG3pyaOgmBl5EVdZ8?=
+ =?us-ascii?Q?8NphUC8/cjrJjgiFCDI1RdA3HYq4kgPzsgHLCZbbGgLA/onYxXmMTP+kETiB?=
+ =?us-ascii?Q?FfykvdF9nof8ibNTKyGie96+yLNg3ryD0yFERTo9pVZbHl58i78h+jUfVrPY?=
+ =?us-ascii?Q?lYtnXnubAjPvW3GdnRS42CsPWztlQ/2p+zbETFmq0Nxi0u8BTOyv6bIpwncE?=
+ =?us-ascii?Q?pCRhkQ2PMD3QNrHs2mtEXFVJ4XrhnEXLZG1f0J9z4D2QWSzsatIHzftSmSDq?=
+ =?us-ascii?Q?DCfTc71rjunS6NX/pmrykF9tGF6OT60YnuazyPPn93CVz24pX1wW8A25iseN?=
+ =?us-ascii?Q?A9K3V82KxjYmeFg=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:SI2PR06MB5140.apcprd06.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(52116014)(376014)(366016)(1800799024)(921020)(38350700014);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?9oQYpsy7xQhEX3ZJK5ytJIOWUBPGb2BRwApuDIlKV6WU6YHE0WVylvvUgBer?=
+ =?us-ascii?Q?1o68VLuNdFZraneLyOQSt3pT+OFPmRuMy4P+mvFuQdiiPp2guRIc+Xu2qYZx?=
+ =?us-ascii?Q?tLv8qK+1sMc0t5DKZ0ZEvjofpE+VkZIR8XlPnghOEVAJ6Q7fmJpCrygwXy9G?=
+ =?us-ascii?Q?riQWllqtqR2NF5YkgQUotOsN9OMKMc4W6L6UG0FVdcSnywk2XYdFvAt5Fm95?=
+ =?us-ascii?Q?Vfb9l6QeHVL1AcONBcXaRfH4QgOOv2rYMmOkX7JnQubA9oAaLAF/Xaq0sCFT?=
+ =?us-ascii?Q?h6Fc83W0BXEy+3YpXp6kqkZCc8zGHwxSeA8Fc24O2YfrVpKRTBDc4uzHIAFV?=
+ =?us-ascii?Q?/9f81wb+FbrG9f8v4N81N/TT3oWiWPfNxb23s05I2gzVn0W3CqmdrzjFiFVH?=
+ =?us-ascii?Q?mfJxAlE1vAnGoeGR2tY8sfM2d/K1W7HgTaiam6bTKwWlCCTlGWZMjCzpoFQ0?=
+ =?us-ascii?Q?eOCl06JOUfIf0PPqmTvN0CiU4zJ1DKBcYGIFn0/9Vyzkoxf5aGUwDnunHdhz?=
+ =?us-ascii?Q?pXSnx/fobaIF2CT7SkHsI2uD5patyI20mzP+sYRMSYA+xvbwbdTm/qDJgQ+V?=
+ =?us-ascii?Q?uQ4hBtdMr6RaMR8QZil0/2OH/uv5Fhe6UsK4UOgs2V0sa9Y9mOkstbRq7qWy?=
+ =?us-ascii?Q?sF+pWEHtKGgx1Ev8OCGKo6ykskjTXL6l1iVLyyEq43BRSNy+HoSHHCL1YFB1?=
+ =?us-ascii?Q?q0TsEP/pkpLz4XQRCL2qjBUnbDU8DTzbpI9HkVo2VQ/kU1BzhdCaMhHJ3y9p?=
+ =?us-ascii?Q?ijkABw/Izc77L6s23WavZr+0tA1ai7UHLzqsZfS7PhDANjxq39GerylKyeC/?=
+ =?us-ascii?Q?ppRpFKByhVmo9On8Tueai/STFuRzQi2zGkuKDik13qwrMx8qbAHMlyfSpEnv?=
+ =?us-ascii?Q?qedDaeLY5Dhn50kuuYjAP4abNrstxZcO4VIxSXTpU8tUTj5KULvWrPKF60nX?=
+ =?us-ascii?Q?7aV4V7WWfOG5YN3SpCC14kSAT30vk/bHqTP/mmlszHS5dMekS5h6WLn+YEoc?=
+ =?us-ascii?Q?Qdbo1v3VL8JOmN6a38mHyrpbnWWyFgO/cFx+rrpOQuxh2HJb5Ef4GIkMD/Zj?=
+ =?us-ascii?Q?yA/DIBtsxbGNgJQ4p7tg4nqrdx1xNOQUTyKtUQR4TQd6Rahxtu6k+OEI2Cre?=
+ =?us-ascii?Q?lwoHv+TcUE4eqlrTxpcI1ZiwPpz64HYq2DeN61dDL/vyPaVamMW0TJ6HOu3G?=
+ =?us-ascii?Q?r69A88/eY4xgk7HgBKA1t8KS1ktppxg2QfoJIKXc+CPJnlNvrCTg7BrmR+mi?=
+ =?us-ascii?Q?uSBK3PaMsjMJZV6h2ORbzua2NipAW8X2JX28875UIGnoXpigJ3MO5e6xxbyb?=
+ =?us-ascii?Q?WjHMdkMz9Y9FQ5L3yxbQEZiXz8BJlhu7gzCFNWKAs8y0JmkPrROHerK4nFlq?=
+ =?us-ascii?Q?9QxIWP41DLadZ30wOFXo/EnJdTMXNPNzIsD32wIXGl8Ze5jx34KINDttvAcy?=
+ =?us-ascii?Q?byNo5yq2CY62envOFIyiPsNSccVZZtzE9BbyyqDhwMWwn3xE76VMuMo1zPNg?=
+ =?us-ascii?Q?Z9Gmssnwk0+IWI/QxbuGPUNmklrqLQCr7Uxh7SPRrUDpLre5TgR2czbcFOXO?=
+ =?us-ascii?Q?2lonR3dpcekeK0hi3YXxk8Q/TfUDO3h8DmVGvgjZ?=
+X-OriginatorOrg: vivo.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 7bdc11d4-5be6-4716-09fe-08dddfe5f375
+X-MS-Exchange-CrossTenant-AuthSource: SI2PR06MB5140.apcprd06.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 20 Aug 2025 12:34:48.3209
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 923e42dc-48d5-4cbe-b582-1a797a6412ed
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: WCC+fOUC02r2T2WbRy5ldrJVPwZgagPlqpa5LoLgeEuPRAG78APMTlLFkhfnkfpqvM6/QHSVpSQWuuckY4ELdw==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: JH0PR06MB7177
 
+Use devm_kcalloc() in fsl_sai_read_dlcfg() and imx_audmux_probe() to gain
+built-in overflow protection, making memory allocation safer when
+calculating allocation size compared to explicit multiplication.
 
+Signed-off-by: Qianfeng Rong <rongqianfeng@vivo.com>
+---
+ sound/soc/fsl/fsl_sai.c    | 2 +-
+ sound/soc/fsl/imx-audmux.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
 
-On 8/15/25 14:03, Athira Rajeev wrote:
-> From: Kajol Jain <kjain@linux.ibm.com>
-> 
-> The pseries Shared Processor Logical Partition(SPLPAR) machines
-> can retrieve a log of dispatch and preempt events from the
-> hypervisor using data from Disptach Trace Log(DTL) buffer.
-> With this information, user can retrieve when and why each dispatch &
-> preempt has occurred. Added an interface to expose the Virtual Processor
-> Area(VPA) DTL counters via perf.
-> 
-> The following events are available and exposed in sysfs:
-> 
->   vpa_dtl/dtl_cede/ - Trace voluntary (OS initiated) virtual processor waits
->   vpa_dtl/dtl_preempt/ - Trace time slice preempts
->   vpa_dtl/dtl_fault/ - Trace virtual partition memory page faults.
->   vpa_dtl/dtl_all/ - Trace all (dtl_cede/dtl_preempt/dtl_fault)
-> 
-> Added interface defines supported event list, config fields for the
-> event attributes and their corresponding bit values which are exported
-> via sysfs. User could use the standard perf tool to access perf events
-> exposed via vpa-dtl pmu.
-> 
-> The VPA DTL PMU counters do not interrupt on overflow or generate any
-> PMI interrupts. Therefore, the kernel needs to poll the counters, added
-> hrtimer code to do that. The timer interval can be provided by user via
-> sample_period field in nano seconds. There is one hrtimer added per
-> vpa-dtl pmu thread.
-> 
-> To ensure there are no other conflicting dtl users (example: debugfs dtl
-> or /proc/powerpc/vcpudispatch_stats), interface added code to use
-> "down_write_trylock" call to take the dtl_access_lock. The dtl_access_lock
-> is defined in dtl.h file. Also added global reference count variable called
-> "dtl_global_refc", to ensure dtl data can be captured per-cpu. Code also
-> added global lock called "dtl_global_lock" to avoid race condition.
-> 
-> Signed-off-by: Kajol Jain <kjain@linux.ibm.com>
-> ---
->   arch/powerpc/perf/Makefile  |   2 +-
->   arch/powerpc/perf/vpa-dtl.c | 349 ++++++++++++++++++++++++++++++++++++
->   2 files changed, 350 insertions(+), 1 deletion(-)
->   create mode 100644 arch/powerpc/perf/vpa-dtl.c
-> 
-> diff --git a/arch/powerpc/perf/Makefile b/arch/powerpc/perf/Makefile
-> index 7f53fcb7495a..78dd7e25219e 100644
-> --- a/arch/powerpc/perf/Makefile
-> +++ b/arch/powerpc/perf/Makefile
-> @@ -14,7 +14,7 @@ obj-$(CONFIG_PPC_POWERNV)	+= imc-pmu.o
->   obj-$(CONFIG_FSL_EMB_PERF_EVENT) += core-fsl-emb.o
->   obj-$(CONFIG_FSL_EMB_PERF_EVENT_E500) += e500-pmu.o e6500-pmu.o
->   
-> -obj-$(CONFIG_HV_PERF_CTRS) += hv-24x7.o hv-gpci.o hv-common.o
-> +obj-$(CONFIG_HV_PERF_CTRS) += hv-24x7.o hv-gpci.o hv-common.o vpa-dtl.o
->   
->   obj-$(CONFIG_VPA_PMU) += vpa-pmu.o
->   
-> diff --git a/arch/powerpc/perf/vpa-dtl.c b/arch/powerpc/perf/vpa-dtl.c
-> new file mode 100644
-> index 000000000000..e92756f88801
-> --- /dev/null
-> +++ b/arch/powerpc/perf/vpa-dtl.c
-> @@ -0,0 +1,349 @@
-> +// SPDX-License-Identifier: GPL-2.0-or-later
-> +/*
-> + * Perf interface to expose Dispatch Trace Log counters.
-> + *
-> + * Copyright (C) 2024 Kajol Jain, IBM Corporation
-> + */
-> +
-> +#ifdef CONFIG_PPC_SPLPAR
-> +#define pr_fmt(fmt) "vpa_dtl: " fmt
-> +
-> +#include <asm/dtl.h>
-> +#include <linux/perf_event.h>
-> +#include <asm/plpar_wrappers.h>
-> +
-> +#define EVENT(_name, _code)     enum{_name = _code}
-> +
-> +/*
-> + * Based on Power Architecture Platform Reference(PAPR) documentation,
-> + * Table 14.14. Per Virtual Processor Area, below Dispatch Trace Log(DTL)
-> + * Enable Mask used to get corresponding virtual processor dispatch
-> + * to preempt traces:
-> + *   DTL_CEDE(0x1): Trace voluntary (OS initiated) virtual
-> + *   processor waits
-> + *   DTL_PREEMPT(0x2): Trace time slice preempts
-> + *   DTL_FAULT(0x4): Trace virtual partition memory page
-> + faults.
-> + *   DTL_ALL(0x7): Trace all (DTL_CEDE | DTL_PREEMPT | DTL_FAULT)
-> + *
-> + * Event codes based on Dispatch Trace Log Enable Mask.
-> + */
-> +EVENT(DTL_CEDE,         0x1);
-> +EVENT(DTL_PREEMPT,      0x2);
-> +EVENT(DTL_FAULT,        0x4);
-> +EVENT(DTL_ALL,          0x7);
-> +
-> +GENERIC_EVENT_ATTR(dtl_cede, DTL_CEDE);
-> +GENERIC_EVENT_ATTR(dtl_preempt, DTL_PREEMPT);
-> +GENERIC_EVENT_ATTR(dtl_fault, DTL_FAULT);
-> +GENERIC_EVENT_ATTR(dtl_all, DTL_ALL);
-> +
-> +PMU_FORMAT_ATTR(event, "config:0-7");
-> +
-> +static struct attribute *events_attr[] = {
-> +	GENERIC_EVENT_PTR(DTL_CEDE),
-> +	GENERIC_EVENT_PTR(DTL_PREEMPT),
-> +	GENERIC_EVENT_PTR(DTL_FAULT),
-> +	GENERIC_EVENT_PTR(DTL_ALL),
-> +	NULL
-> +};
-> +
-> +static struct attribute_group event_group = {
-> +	.name = "events",
-> +	.attrs = events_attr,
-> +};
-> +
-> +static struct attribute *format_attrs[] = {
-> +	&format_attr_event.attr,
-> +	NULL,
-> +};
-> +
-> +static const struct attribute_group format_group = {
-> +	.name = "format",
-> +	.attrs = format_attrs,
-> +};
-> +
-> +static const struct attribute_group *attr_groups[] = {
-> +	&format_group,
-> +	&event_group,
-> +	NULL,
-> +};
-> +
-> +struct vpa_dtl {
-> +	struct dtl_entry	*buf;
-> +	u64			last_idx;
-> +	bool			active_lock;
-
-How is this active_lock being used?
-I see it is set/unset, but couldn't figure out how it is used.
-
-> +};
-> +
-> +static DEFINE_PER_CPU(struct vpa_dtl, vpa_dtl_cpu);
-> +
-> +/* variable to capture reference count for the active dtl threads */
-> +static int dtl_global_refc;
-> +static spinlock_t dtl_global_lock = __SPIN_LOCK_UNLOCKED(dtl_global_lock);
-> +
-> +/*
-> + * Function to dump the dispatch trace log buffer data to the
-> + * perf data.
-> + */
-> +static void vpa_dtl_dump_sample_data(struct perf_event *event)
-> +{
-> +	return;
-> +}
-> +
-> +/*
-> + * The VPA Dispatch Trace log counters do not interrupt on overflow.
-> + * Therefore, the kernel needs to poll the counters to avoid missing
-> + * an overflow using hrtimer. The timer interval is based on sample_period
-> + * count provided by user, and minimum interval is 1 millisecond.
-> + */
-> +static enum hrtimer_restart vpa_dtl_hrtimer_handle(struct hrtimer *hrtimer)
-> +{
-> +	struct perf_event *event;
-> +	u64 period;
-> +
-> +	event = container_of(hrtimer, struct perf_event, hw.hrtimer);
-> +
-> +	if (event->state != PERF_EVENT_STATE_ACTIVE)
-> +		return HRTIMER_NORESTART;
-> +
-> +	vpa_dtl_dump_sample_data(event);
-> +	period = max_t(u64, NSEC_PER_MSEC, event->hw.sample_period);
-> +	hrtimer_forward_now(hrtimer, ns_to_ktime(period));
-> +
-> +	return HRTIMER_RESTART;
-> +}
-> +
-> +static void vpa_dtl_start_hrtimer(struct perf_event *event)
-> +{
-> +	u64 period;
-> +	struct hw_perf_event *hwc = &event->hw;
-> +
-> +	period = max_t(u64, NSEC_PER_MSEC, hwc->sample_period);
-> +	hrtimer_start(&hwc->hrtimer, ns_to_ktime(period), HRTIMER_MODE_REL_PINNED);
-> +}
-> +
-> +static void vpa_dtl_stop_hrtimer(struct perf_event *event)
-> +{
-> +	struct hw_perf_event *hwc = &event->hw;
-> +
-> +	hrtimer_cancel(&hwc->hrtimer);
-> +}
-> +
-> +static void vpa_dtl_reset_global_refc(struct perf_event *event)
-> +{
-> +	spin_lock(&dtl_global_lock);
-> +	dtl_global_refc--;
-> +	if (dtl_global_refc <= 0) {
-> +		dtl_global_refc = 0;
-> +		up_write(&dtl_access_lock);
-> +	}
-> +	spin_unlock(&dtl_global_lock);
-> +}
-> +
-> +/* Allocate dtl buffer memory for given cpu. */
-
-The above comment is self explainable, may not be needed.
-
-> +static int vpa_dtl_mem_alloc(int cpu)
-> +{
-> +	struct vpa_dtl *dtl = &per_cpu(vpa_dtl_cpu, cpu);
-> +	struct dtl_entry *buf = NULL;
-> +
-> +	/* Check for dispatch trace log buffer cache */
-> +	if (!dtl_cache)
-> +		return -ENOMEM;
-> +
-> +	buf = kmem_cache_alloc_node(dtl_cache, GFP_KERNEL, cpu_to_node(cpu));
-
-You probably need GFP_ATOMIC here, since this is called when spinlocks are held.
-
-> +	if (!buf) {
-> +		pr_warn("buffer allocation failed for cpu %d\n", cpu);
-> +		return -ENOMEM;
-> +	}
-> +	dtl->buf = buf;
-> +	return 0;
-> +}
-> +
-> +static int vpa_dtl_event_init(struct perf_event *event)
-> +{
-> +	struct hw_perf_event *hwc = &event->hw;
-> +	struct vpa_dtl *dtl = &per_cpu(vpa_dtl_cpu, event->cpu);
-> +
-> +	/* test the event attr type for PMU enumeration */
-> +	if (event->attr.type != event->pmu->type)
-> +		return -ENOENT;
-> +
-> +	if (!perfmon_capable())
-> +		return -EACCES;
-> +
-> +	/* Return if this is a counting event */
-> +	if (!is_sampling_event(event))
-> +		return -EOPNOTSUPP;
-> +
-> +	/* no branch sampling */
-> +	if (has_branch_stack(event))
-> +		return -EOPNOTSUPP;
-> +
-> +	/* Invalid eventcode */
-> +	switch (event->attr.config) {
-> +	case DTL_LOG_CEDE:
-> +	case DTL_LOG_PREEMPT:
-> +	case DTL_LOG_FAULT:
-> +	case DTL_LOG_ALL:
-> +		break;
-> +	default:
-> +		return -EINVAL;
-> +	}
-> +
-> +	spin_lock(&dtl_global_lock);
-> +
-> +	/*
-> +	 * To ensure there are no other conflicting dtl users
-> +	 * (example: /proc/powerpc/vcpudispatch_stats or debugfs dtl),
-> +	 * below code try to take the dtl_access_lock.
-> +	 * The dtl_access_lock is a rwlock defined in dtl.h, which is used
-> +	 * to unsure there is no conflicting dtl users.
-> +	 * Based on below code, vpa_dtl pmu tries to take write access lock
-> +	 * and also checks for dtl_global_refc, to make sure that the
-> +	 * dtl_access_lock is taken by vpa_dtl pmu interface.
-> +	 */
-> +	if (dtl_global_refc == 0 && !down_write_trylock(&dtl_access_lock)) {
-> +		spin_unlock(&dtl_global_lock);
-> +		return -EBUSY;
-> +	}
-> +
-> +	/* Allocate dtl buffer memory */
-> +	if (vpa_dtl_mem_alloc(event->cpu)) {
-> +		spin_unlock(&dtl_global_lock);
-> +		return -ENOMEM;
-> +	}
-> +
-> +	/*
-> +	 * Increment the number of active vpa_dtl pmu threads. The
-> +	 * dtl_global_refc is used to keep count of cpu threads that
-> +	 * currently capturing dtl data using vpa_dtl pmu interface.
-> +	 */
-> +	dtl_global_refc++;
-> +
-> +	/*
-> +	 * active_lock is a per cpu variable which is set if
-> +	 * current cpu is running vpa_dtl perf record session.
-> +	 */
-> +	dtl->active_lock = true;
-> +	spin_unlock(&dtl_global_lock);
-> +
-> +	hrtimer_setup(&hwc->hrtimer, vpa_dtl_hrtimer_handle, CLOCK_MONOTONIC, HRTIMER_MODE_REL);
-> +
-> +	/*
-> +	 * Since hrtimers have a fixed rate, we can do a static freq->period
-> +	 * mapping and avoid the whole period adjust feedback stuff.
-> +	 */
-
-I didn't get this comment. What is meant by hrtimers have fixed rate? You can adjust the
-the period value for next expiry always.
-
-
-> +	if (event->attr.freq) {
-> +		long freq = event->attr.sample_freq;
-> +
-> +		event->attr.sample_period = NSEC_PER_SEC / freq;
-> +		hwc->sample_period = event->attr.sample_period;
-> +		local64_set(&hwc->period_left, hwc->sample_period);
-> +		hwc->last_period = hwc->sample_period;
-> +		event->attr.freq = 0;
-> +	}
-
-I am not very familiar with PMU stuff.
-What does the above do? what is period_left?
-
-> +
-> +	event->destroy = vpa_dtl_reset_global_refc;
-> +	return 0;
-> +}
-> +
-> +static int vpa_dtl_event_add(struct perf_event *event, int flags)
-> +{
-> +	int ret, hwcpu;
-> +	unsigned long addr;
-> +	struct vpa_dtl *dtl = &per_cpu(vpa_dtl_cpu, event->cpu);
-> +
-> +	/*
-> +	 * Register our dtl buffer with the hypervisor. The
-> +	 * HV expects the buffer size to be passed in the second
-> +	 * word of the buffer. Refer section '14.11.3.2. H_REGISTER_VPA'
-> +	 * from PAPR for more information.
-> +	 */
-> +	((u32 *)dtl->buf)[1] = cpu_to_be32(DISPATCH_LOG_BYTES);
-> +	dtl->last_idx = 0;
-> +
-> +	hwcpu = get_hard_smp_processor_id(event->cpu);
-> +	addr = __pa(dtl->buf);
-> +
-> +	ret = register_dtl(hwcpu, addr);
-> +	if (ret) {
-> +		pr_warn("DTL registration for cpu %d (hw %d) failed with %d\n",
-> +			event->cpu, hwcpu, ret);
-> +		return ret;
-> +	}
-> +
-> +	/* set our initial buffer indices */
-> +	lppaca_of(event->cpu).dtl_idx = 0;
-> +
-> +	/*
-> +	 * Ensure that our updates to the lppaca fields have
-> +	 * occurred before we actually enable the logging
-> +	 */
-> +	smp_wmb();
-> +
-> +	/* enable event logging */
-> +	lppaca_of(event->cpu).dtl_enable_mask = event->attr.config;
-> +
-> +	vpa_dtl_start_hrtimer(event);
-> +
-> +	return 0;
-> +}
-> +
-> +static void vpa_dtl_event_del(struct perf_event *event, int flags)
-> +{
-> +	int hwcpu = get_hard_smp_processor_id(event->cpu);
-> +	struct vpa_dtl *dtl = &per_cpu(vpa_dtl_cpu, event->cpu);
-> +
-> +	vpa_dtl_stop_hrtimer(event);
-> +	unregister_dtl(hwcpu);
-> +	kmem_cache_free(dtl_cache, dtl->buf);
-> +	dtl->buf = NULL;
-> +	lppaca_of(event->cpu).dtl_enable_mask = 0x0;
-> +	dtl->active_lock = false;
-> +}
-> +
-> +/*
-> + * This function definition is empty as vpa_dtl_dump_sample_data
-> + * is used to parse and dump the dispatch trace log data,
-> + * to perf data.
-> + */
-> +static void vpa_dtl_event_read(struct perf_event *event)
-> +{
-> +}
-> +
-> +static struct pmu vpa_dtl_pmu = {
-> +	.task_ctx_nr = perf_invalid_context,
-> +
-> +	.name = "vpa_dtl",
-> +	.attr_groups = attr_groups,
-> +	.event_init  = vpa_dtl_event_init,
-> +	.add         = vpa_dtl_event_add,
-> +	.del         = vpa_dtl_event_del,
-> +	.read        = vpa_dtl_event_read,
-> +	.capabilities = PERF_PMU_CAP_NO_EXCLUDE | PERF_PMU_CAP_EXCLUSIVE,
-> +};
-> +
-> +static int vpa_dtl_init(void)
-> +{
-> +	int r;
-> +
-> +	if (!firmware_has_feature(FW_FEATURE_SPLPAR)) {
-> +		pr_debug("not a shared virtualized system, not enabling\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	/* This driver is intended only for L1 host. */
-> +	if (is_kvm_guest()) {
-> +		pr_debug("Only supported for L1 host system\n");
-> +		return -ENODEV;
-> +	}
-> +
-> +	r = perf_pmu_register(&vpa_dtl_pmu, vpa_dtl_pmu.name, -1);
-> +	if (r)
-> +		return r;
-> +
-> +	return 0;
-> +}
-> +
-> +device_initcall(vpa_dtl_init);
-> +#endif //CONFIG_PPC_SPLPAR
+diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
+index cac064a60349..757e7868e322 100644
+--- a/sound/soc/fsl/fsl_sai.c
++++ b/sound/soc/fsl/fsl_sai.c
+@@ -1345,7 +1345,7 @@ static int fsl_sai_read_dlcfg(struct fsl_sai *sai)
+ 
+ 	num_cfg = elems / 3;
+ 	/*  Add one more for default value */
+-	cfg = devm_kzalloc(&pdev->dev, (num_cfg + 1) * sizeof(*cfg), GFP_KERNEL);
++	cfg = devm_kcalloc(&pdev->dev, num_cfg + 1, sizeof(*cfg), GFP_KERNEL);
+ 	if (!cfg)
+ 		return -ENOMEM;
+ 
+diff --git a/sound/soc/fsl/imx-audmux.c b/sound/soc/fsl/imx-audmux.c
+index cc2918ee2cf5..f8335a04595a 100644
+--- a/sound/soc/fsl/imx-audmux.c
++++ b/sound/soc/fsl/imx-audmux.c
+@@ -305,7 +305,7 @@ static int imx_audmux_probe(struct platform_device *pdev)
+ 		return -EINVAL;
+ 	}
+ 
+-	regcache = devm_kzalloc(&pdev->dev, sizeof(u32) * reg_max, GFP_KERNEL);
++	regcache = devm_kcalloc(&pdev->dev, reg_max, sizeof(u32), GFP_KERNEL);
+ 	if (!regcache)
+ 		return -ENOMEM;
+ 
+-- 
+2.34.1
 
 
