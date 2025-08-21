@@ -1,74 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-11174-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11175-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91629CA0EF8
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Aug 2025 07:07:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E5D31CA0EF8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Aug 2025 13:02:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c6vWp1LsPz2yhD;
-	Thu, 21 Aug 2025 17:07:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=143.55.148.243
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755760022;
-	cv=none; b=A5OCgRSsXYRr4CMEMdPEoz0jAJAxkPPliBr1VklaUMLpxDyqqkXQ9hnNS2bOvxbHt7lhDOytv9wNDI+AiqfcRD6BLNpZ/GN7cxbSWjFAGD/G6mEuj7oBD2a79/A9W7WjQA9uXR/68PAR9HdNi0wPr0bwhNuQpw8SWuISfhcReuwwPqElOPBs6tB0oTufQslJQepNWf7CrvdQChWUFBKLAjApSeXQGAI4lDLj7l3Yck/p4Fhu6MLmCdGII72NUYe/OV0j6Q4LJY1pkADyMVAavNAJFL5etg3Pc4IbyMKZyYvf2oxcR2J2F5LDPMDk/Hq1+0pNQVH9M617Nm2DQxAfRA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c73Q71xXCz30NP;
+	Thu, 21 Aug 2025 23:02:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755781359;
+	cv=none; b=PBWhot8gJzXFlxn/PMRVWS22jJt7ORLGf6cuckOOcaUPPi/NmCQiAVQdG0dju4piDlh8K/3M4MWCIqlsTzfv14GRQFKkQV19Y2S4OsRX5S7yudmtR9tK2z+3eZinjtfJGm+469A9RW3RuGoTRnp2R3z6Mvc6WFPStb9Il/HLH1IkTU7k44sMJ8tUcEGpNG97xhP0000bAhqtt9rEB1qV+QH926MrFjWmNuqZRmNiQikoWaikJjHkexSoX99e5LfzU3CpnI5/aHIcrwCw/v0TIrbjSQtMpNgvvfE5ZTSv6XVOiawzCoahkIBqB6/f6GMaFHQVjRXZ7u171UPtbhzE4Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755760022; c=relaxed/relaxed;
-	bh=9DtbzDD12Qz6WYnPW1b5T7iW+ThWte2lDCZ4Qh9R+PM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=fFoMF0zT1wsTiZbLJPnu78o/vMt7uVx4sQoKF7pYEYG9XRENDeZfolRVnNKSOBsZoou2dKZKnTvqkfvpjcRk6+O9xdceekGMqHYwlak8IMBTceg4DMmMIj+ByNzcdoJL495Nr2ZCw7SdLzFilVe4y5QEDBvmJUz6/An4xpc5QtP3s+34mGRxEZHWVE8UfFuLUEJ/lESP5cf7Tkvpazr8Bjvo7YPs8tt55QD5c828TRCXwrNO3sYaCAFgF7tFAo1vTvX+JsMlE3z19vL59pEa3GSKobMv+Bzhgl8KnSdmt7/BzKhw40DnoHKbYTgtDFvQpgHKxPuilM3S8h/tZsP2Lw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=iram.es; dkim=pass (2048-bit key; unprotected) header.d=iram.es header.i=@iram.es header.a=rsa-sha256 header.s=dkim3 header.b=XUUh+GI3; dkim-atps=neutral; spf=pass (client-ip=143.55.148.243; helo=mx08-006a4e02.pphosted.com; envelope-from=paubert@iram.es; receiver=lists.ozlabs.org) smtp.mailfrom=iram.es
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=iram.es
+	t=1755781359; c=relaxed/relaxed;
+	bh=zB5TEyFM+OyejbgaLfoSEmEPK4yTtbaBr+wHS0/rkho=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version:Content-Type; b=BI0SRVB2uJ9Ph61q/lPZOSqc5qyvO2a2PImqM0HYVXGgc5W0mKXZIvPgIFb424pZuN8c/88EzLoMcz0V6u1fZZdsUQlFz3U/6gsNuMzCT8cmkA1kh/Cm9L5ODDA7MgrdxFzQ83MSTKNDYM2Z+guUsx7XQWT1l/omThBlwQJ6hYhJdteNsN3eg+gNiTEsIJqogYbSPsbSOzaYPdZsaCdVdhVWYRCVuFtM6hmDcnOBRxCZvrm6aNlSidOUustrOdW7CPunderXCtRJteSqZ1luK9qOtv8ABGY7GhOjQpQbXKZsReWEZpkamguifkUh4KHZTEqx7B+QauppffWUQ+2qgw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZzjRLAxM; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=iram.es header.i=@iram.es header.a=rsa-sha256 header.s=dkim3 header.b=XUUh+GI3;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZzjRLAxM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iram.es (client-ip=143.55.148.243; helo=mx08-006a4e02.pphosted.com; envelope-from=paubert@iram.es; receiver=lists.ozlabs.org)
-X-Greylist: delayed 2617 seconds by postgrey-1.37 at boromir; Thu, 21 Aug 2025 17:06:59 AEST
-Received: from mx08-006a4e02.pphosted.com (mx08-006a4e02.pphosted.com [143.55.148.243])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mmc@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c6vWl4CfRz2xPy
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2025 17:06:57 +1000 (AEST)
-Received: from pps.filterd (m0316697.ppops.net [127.0.0.1])
-	by m0316697.ppops.net (8.18.1.2/8.18.1.2) with ESMTP id 57L4osO0023074;
-	Thu, 21 Aug 2025 08:22:53 +0200
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iram.es; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=dkim3; bh=9DtbzDD12Qz6WYnPW1b5T7iW+ThW
-	te2lDCZ4Qh9R+PM=; b=XUUh+GI3TzGW7zz9AONboijKAiLwkm+7dYKDCOosbynA
-	M1DTvMveqaWRNZqs+JFK+zipMsLxJqX8pYsL5jL+BS/X8kTjKuIKrWDt7pRlVOUi
-	fuZK8JbMbI4zJmVvtSQWwN6Iv3ym4PqqRwMRCIcHHuYQclauCyl5J3pBbuoyQtz2
-	AHa5Z+Gme1TTG3+FmCD7sH4VfJK86oACTM4SKTTE/KqbsBHwo2sCSIdw/K/OdRoI
-	UplzZbY9hXyWX2Ag5BWWKi79jdzGdx26SRx0mUpC9cXew2q7TIUWH0B3FtqjYxKO
-	OXsQkyIoitqkJfDEF+Ar0rvHLt+lLv7wazLvGItEVw==
-Received: from mta-out01.sim.rediris.es (mta-out01.sim.rediris.es [130.206.24.43])
-	by m0316697.ppops.net (PPS) with ESMTPS id 48n0tenm4e-1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c73Q625tlz2yCL
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2025 23:02:37 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57LA0OBG007842;
+	Thu, 21 Aug 2025 13:02:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=zB5TEyFM+OyejbgaLfoSEmEPK4yT
+	tbaBr+wHS0/rkho=; b=ZzjRLAxMQG3U3dNb2rlMy/N0AodccNQ4WZKyuA3sMqMu
+	nTzug2KuoT+02MVEFeSRXpNTYl8h7+77oQyXaxOX/mnHxwt8NxUzGvrspueVUx6d
+	fzDcI/75gt/siM0A4hWyFiv2QT7lj3giVgPKdlIhZxiaU/i2HgR7uQ+hLKbKoGrI
+	Qzna32yvMhpV12FNevcWbBfdbUIiZqzP6emKrsiPKfqTWubP06+9vpgOqD1gUnDF
+	eGPgy60F77MnrzXwAlmtwNrmC4HKsDwNOwIQvC7pwQdaZl+FQf0lEcw/3tBV3zCn
+	4W22rtWRpfjKjqpAmOwLGEUQbmUY0Tk4khx1ogu0ng==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48n38w0mr1-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 21 Aug 2025 08:22:52 +0200 (MEST)
-Received: from mta-out01.sim.rediris.es (localhost.localdomain [127.0.0.1])
-	by mta-out01.sim.rediris.es (Postfix) with ESMTPS id 3FF6F140749;
-	Thu, 21 Aug 2025 08:22:52 +0200 (CEST)
-Received: from localhost (localhost.localdomain [127.0.0.1])
-	by mta-out01.sim.rediris.es (Postfix) with ESMTP id 2E91E14074D;
-	Thu, 21 Aug 2025 08:22:52 +0200 (CEST)
-X-Amavis-Modified: Mail body modified (using disclaimer) -
- mta-out01.sim.rediris.es
-Received: from mta-out01.sim.rediris.es ([127.0.0.1])
- by localhost (mta-out01.sim.rediris.es [127.0.0.1]) (amavis, port 10026)
- with ESMTP id tZrUO9GERqxH; Thu, 21 Aug 2025 08:22:52 +0200 (CEST)
-Received: from lt-gp.iram.es (haproxy02.sim.rediris.es [130.206.24.70])
-	by mta-out01.sim.rediris.es (Postfix) with ESMTPA id 9A29D140749;
-	Thu, 21 Aug 2025 08:22:51 +0200 (CEST)
-Date: Thu, 21 Aug 2025 08:22:50 +0200
-From: Gabriel Paubert <paubert@iram.es>
-To: Rakuram Eswaran <rakuram.e96@gmail.com>
-Cc: linux-kselftest@vger.kernel.org, mpe@ellerman.id.au,
-        skhan@linuxfoundation.org, maddy@linux.ibm.com,
-        christophe.leroy@csgroup.eu, npiggin@gmail.com,
-        linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH] selftests/powerpc: fix typos in tm
-Message-ID: <aKa7Or9_QqmmMgKx@lt-gp.iram.es>
-References: <20250819123326.7025-1-rakuram.e96@gmail.com>
+	Thu, 21 Aug 2025 13:02:24 +0000 (GMT)
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 57LCvI0P009192;
+	Thu, 21 Aug 2025 13:02:23 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48n38w0mqu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 21 Aug 2025 13:02:23 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 57LB15jI016038;
+	Thu, 21 Aug 2025 13:02:23 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 48my428c64-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 21 Aug 2025 13:02:23 +0000
+Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 57LD2Cub7340656
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 21 Aug 2025 13:02:13 GMT
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 06C0258063;
+	Thu, 21 Aug 2025 13:02:21 +0000 (GMT)
+Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2126658059;
+	Thu, 21 Aug 2025 13:02:20 +0000 (GMT)
+Received: from localhost.localdomain (unknown [9.61.242.172])
+	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 21 Aug 2025 13:02:20 +0000 (GMT)
+From: Mingming Cao <mmc@linux.ibm.com>
+To: netdev@vger.kernel.org
+Cc: horms@kernel.org, bjking1@linux.ibm.com, haren@linux.ibm.com,
+        ricklind@linux.ibm.com, mmc@linux.ibm.com, kuba@kernel.org,
+        edumazet@google.com, pabeni@redhat.com, linuxppc-dev@lists.ozlabs.org,
+        maddy@linux.ibm.com, mpe@ellerman.id.au
+Subject: [PATCH net-next RESEND v4] ibmvnic: Increase max subcrq indirect entries with fallback
+Date: Thu, 21 Aug 2025 06:02:15 -0700
+Message-Id: <20250821130215.97960-1-mmc@linux.ibm.com>
+X-Mailer: git-send-email 2.39.3 (Apple Git-146)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -82,154 +93,255 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250819123326.7025-1-rakuram.e96@gmail.com>
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODE5MDE5NSBTYWx0ZWRfXzxUQCFWLDIGV
- LxI+iyXxRieTyKQ/4LCxMnxNSovfyWYwv3hsgaaFvjlYK91h474kGsG408QwU1mLZNU84ldQYq1
- e+a1Dg9KSv1cHfBKhchNvmev16AG7QdLuwNLmaO5QEzbVz0xdaejnRF91XdVUFztA0a4UDvjKpb
- 7xMxSLDLyz7EBkhuH9MT5cnbWC75vpdKxtioJqBR0uMd6RURvFnhJO1gTOH028CpAJr/2nheybj
- IS0G8TvD6b4JowL8QoNOjczIih0IIWdKjayF2DQEOfQmfyNeU1jw66UT/imFUv+s/ZxTYg4z+FX
- wzYM93Dp/XcOSe2MZJMHKeFzWACbiXAJWlvqBWxW5T3Sw5iLBrsLT2UDJhPTxW6bBB2TIVyMIoX
- QhH2FU72N9h0m+xM4/YIAbGQvElVnA==
-X-Proofpoint-ORIG-GUID: dekISzUxjEsl9mhdAw4dYyAVtqwl57f9
-X-Authority-Analysis: v=2.4 cv=FYpuBJ+6 c=1 sm=1 tr=0 ts=68a6bb3c cx=c_pps
- a=QKUl0uxKTaJPacWKUfn9WA==:117 a=QKUl0uxKTaJPacWKUfn9WA==:17
- a=kj9zAlcOel0A:10 a=2OwXVqhp2XgA:10 a=pGLkceISAAAA:8 a=iTEgFMkIZdcFuMyAKaIA:9
- a=CjuIK1q_8ugA:10 a=cPQSjfK2_nFv0Q5t_7PE:22
-X-Proofpoint-GUID: dekISzUxjEsl9mhdAw4dYyAVtqwl57f9
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: SCxp0sXttnbnYNYDHIZrAd-i1s84TnVH
+X-Proofpoint-GUID: H5gKCtC4hs_0EIDyxszbSKVpYQqDL15Z
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODE5MDIyMiBTYWx0ZWRfXwVKzehM2lcZK
+ DvEUwc2vMSk1mAeuX/JTKh89M2NaeqORKHiknzIdo0y/XQck8v3ZxemVry7MjWJ1NLVDVrQ/csk
+ UiYuRk+uHvo/6inlyPFmESWh5NYesvzfPhUdp0HmvvvGv+bh4d1ffTAFJm7g8ztythjMPTxfXjW
+ Lnp3hAUjUUDd5QxuqhLrQPYrqW24qxD9ssNvMFF8fTtImNdselCsyrJs4CZ865g5T1BoDkm3M/f
+ KCArOHr5LqppddaNwwse/5o9wDJ9ajsbHoS7uUZivH/MElEC8jhrmvXE0eV4C7BEs+c9IEW5TGv
+ GtefLe4SrG0X2283iTXryuwVCr1OSiC2ri46X2kZ3Ic47WZJs4nG8/kU+5gs9jinFhQ6dAP0Dwp
+ 7ASBBTIsj9QVjQO4EWrmkJ/GR7T2+A==
+X-Authority-Analysis: v=2.4 cv=a9dpNUSF c=1 sm=1 tr=0 ts=68a718e0 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10 a=OLL_FvSJAAAA:8 a=VnNF1IyMAAAA:8
+ a=VwQbUJbxAAAA:8 a=w0uWSLrWK22mGSI73woA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=sBcVD6HgrJwA:10 a=S0tEaOFY4U4A:10 a=om6-3txeEIcA:10 a=0HqUTnTcdJQA:10
+ a=oIrB72frpwYPwTMnlWqB:22 a=cPQSjfK2_nFv0Q5t_7PE:22
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-08-21_01,2025-08-20_03,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=salida_notspam policy=salida score=0
- malwarescore=0 spamscore=0 lowpriorityscore=0 bulkscore=0 impostorscore=0
- adultscore=0 priorityscore=1501 phishscore=0 clxscore=1011 suspectscore=0
+ definitions=2025-08-21_03,2025-08-20_03,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 spamscore=0 suspectscore=0 adultscore=0 impostorscore=0
+ malwarescore=0 bulkscore=0 priorityscore=1501 clxscore=1015 phishscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2508110000 definitions=main-2508190195
+ reason=mlx scancount=1 engine=8.19.0-2508110000 definitions=main-2508190222
 
-On Tue, Aug 19, 2025 at 06:03:24PM +0530, Rakuram Eswaran wrote:
-> Fixed multiple typos in powerpc/tm reported by Codespell
+POWER8 support a maximum of 16 subcrq indirect descriptor entries per
+ H_SEND_SUB_CRQ_INDIRECT call, while POWER9 and newer hypervisors
+ support up to 128 entries. Increasing the max number of indirect
+descriptor entries improves batching efficiency and reduces
+hcall overhead, which enhances throughput under large workload on POWER9+.
 
-I don't know what Codespell is, but if you don't understand the context,
-you end up with quite a few mistakes.
+Currently, ibmvnic driver always uses a fixed number of max indirect
+descriptor entries (16). send_subcrq_indirect() treats all hypervisor
+errors the same:
+ - Cleanup and Drop the entire batch of descriptors.
+ - Return an error to the caller.
+ - Rely on TCP/IP retransmissions to recover.
+ - If the hypervisor returns H_PARAMETER (e.g., because 128
+   entries are not supported on POWER8), the driver will continue
+   to drop batches, resulting in unnecessary packet loss.
 
-> 
-> Signed-off-by: Rakuram Eswaran <rakuram.e96@gmail.com>
-> ---
->  tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c | 2 +-
->  tools/testing/selftests/powerpc/tm/tm-signal-stack.c    | 4 ++--
->  tools/testing/selftests/powerpc/tm/tm-sigreturn.c       | 2 +-
->  tools/testing/selftests/powerpc/tm/tm-tar.c             | 2 +-
->  tools/testing/selftests/powerpc/tm/tm-tmspr.c           | 2 +-
->  tools/testing/selftests/powerpc/tm/tm-trap.c            | 4 ++--
->  6 files changed, 8 insertions(+), 8 deletions(-)
-> 
-> diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c b/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
-> index 4a61e9bd12b4..8aee18819603 100644
-> --- a/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
-> +++ b/tools/testing/selftests/powerpc/tm/tm-signal-msr-resv.c
-> @@ -42,7 +42,7 @@ void signal_usr1(int signum, siginfo_t *info, void *uc)
->  #else
->  	ucp->uc_mcontext.uc_regs->gregs[PT_MSR] |= (7ULL);
->  #endif
-> -	/* Should segv on return becuase of invalid context */
-> +	/* Should segv on return because of invalid context */
->  	segv_expected = 1;
->  }
->  
-> diff --git a/tools/testing/selftests/powerpc/tm/tm-signal-stack.c b/tools/testing/selftests/powerpc/tm/tm-signal-stack.c
-> index 68807aac8dd3..e793b5d97c48 100644
-> --- a/tools/testing/selftests/powerpc/tm/tm-signal-stack.c
-> +++ b/tools/testing/selftests/powerpc/tm/tm-signal-stack.c
-> @@ -2,7 +2,7 @@
->  /*
->   * Copyright 2015, Michael Neuling, IBM Corp.
->   *
-> - * Test the kernel's signal delievery code to ensure that we don't
-> + * Test the kernel's signal delivery code to ensure that we don't
->   * trelaim twice in the kernel signal delivery code.  This can happen
+In this patch:
+Raise the default maximum indirect entries to 128 to improve ibmvnic
+batching on morden platform. But also gracefully fall back to
+16 entries for Power 8 systems.
 
-trelaim does not exist AFAICS, but treclaim does (actually did since TM
-has been removed from the architecture).
+Since there is no VIO interface to query the hypervisor’s supported
+limit, vnic handles send_subcrq_indirect() H_PARAMETER errors:
+ - On first H_PARAMETER failure, log the failure context
+ - Reduce max_indirect_entries to 16 and allow the single batch to drop.
+ - Subsequent calls automatically use the correct lower limit,
+    avoiding repeated drops.
 
->   * if we trigger a signal when in a transaction and the stack pointer
->   * is bogus.
-> @@ -52,7 +52,7 @@ int tm_signal_stack()
->  
->  	/*
->  	 * The flow here is:
-> -	 * 1) register a signal handler (so signal delievery occurs)
-> +	 * 1) register a signal handler (so signal delivery occurs)
->  	 * 2) make stack pointer (r1) = NULL
->  	 * 3) start transaction
->  	 * 4) cause segv
-> diff --git a/tools/testing/selftests/powerpc/tm/tm-sigreturn.c b/tools/testing/selftests/powerpc/tm/tm-sigreturn.c
-> index ffe4e5515f33..4dfb25409393 100644
-> --- a/tools/testing/selftests/powerpc/tm/tm-sigreturn.c
-> +++ b/tools/testing/selftests/powerpc/tm/tm-sigreturn.c
-> @@ -5,7 +5,7 @@
->   *
->   * Test the kernel's signal returning code to check reclaim is done if the
->   * sigreturn() is called while in a transaction (suspended since active is
-> - * already dropped trough the system call path).
-> + * already dropped through the system call path).
->   *
->   * The kernel must discard the transaction when entering sigreturn, since
->   * restoring the potential TM SPRS from the signal frame is requiring to not be
-> diff --git a/tools/testing/selftests/powerpc/tm/tm-tar.c b/tools/testing/selftests/powerpc/tm/tm-tar.c
-> index f2a9137f3c1e..ea420caa3961 100644
-> --- a/tools/testing/selftests/powerpc/tm/tm-tar.c
-> +++ b/tools/testing/selftests/powerpc/tm/tm-tar.c
-> @@ -50,7 +50,7 @@ int test_tar(void)
->  			"bne	2b;"
->  			"tend.;"
->  
-> -			/* Transaction sucess! TAR should be 3 */
-> +			/* Transaction success! TAR should be 3 */
->  			"mfspr  7, %[tar];"
->  			"ori	%[res], 7, 4;"  // res = 3|4 = 7
->  			"b	4f;"
-> diff --git a/tools/testing/selftests/powerpc/tm/tm-tmspr.c b/tools/testing/selftests/powerpc/tm/tm-tmspr.c
-> index dd5ddffa28b7..e2c3ae7c9035 100644
-> --- a/tools/testing/selftests/powerpc/tm/tm-tmspr.c
-> +++ b/tools/testing/selftests/powerpc/tm/tm-tmspr.c
-> @@ -9,7 +9,7 @@
->   * - TFIAR  - stores address of location of transaction failure
->   * - TFHAR  - stores address of software failure handler (if transaction
->   *   fails)
-> - * - TEXASR - lots of info about the transacion(s)
-> + * - TEXASR - lots of info about the transaction(s)
->   *
->   * (1) create more threads than cpus
->   * (2) in each thread:
-> diff --git a/tools/testing/selftests/powerpc/tm/tm-trap.c b/tools/testing/selftests/powerpc/tm/tm-trap.c
-> index 97cb74768e30..99acb7c78403 100644
-> --- a/tools/testing/selftests/powerpc/tm/tm-trap.c
-> +++ b/tools/testing/selftests/powerpc/tm/tm-trap.c
-> @@ -91,9 +91,9 @@ void trap_signal_handler(int signo, siginfo_t *si, void *uc)
->  			 * LE endianness does in effect nothing, instruction (2)
->  			 * is then executed again as 'trap', generating a second
->  			 * trap event (note that in that case 'trap' is caught
-> -			 * not in transacional mode). On te other hand, if after
-> +			 * not in transactional mode). On the other hand, if after
->  			 * the return from the signal handler the endianness in-
-> -			 * advertently flipped, instruction (1) is tread as a
-> +			 * advertently flipped, instruction (1) is thread as a
+The goal is to  optimizes performance on modern systems while handles
+falling back for older POWER8 hypervisors.
 
-Looks like nonsense, it's actually very likely that the original author
-meant "treated" (or handled).
+Performance shows 40% improvements with MTU (1500) on largework load.
 
->  			 * branch instruction, i.e. b .+8, hence instruction (3)
->  			 * and (4) are executed (tbegin.; trap;) and we get sim-
->  			 * ilaly on the trap signal handler, but now in TM mode.
-> -- 
-> 2.43.0
-> 
-> 
+Signed-off-by: Mingming Cao <mmc@linux.ibm.com>
+Reviewed-by: Brian King <bjking1@linux.ibm.com>
+Reviewed-by: Haren Myneni <haren@linux.ibm.com>
+Reviewed-by: Simon Horman <horms@kernel.org>
+--------------------------------------
+Changes since v3:
+Link to v3: https://www.spinics.net/lists/netdev/msg1112828.html
+- consolidate H_PARAMTER handling & subcrq ind desc limit reset for RX/TX
+  into a helper function
+- Cleanup and clarify comments in post migration case
+- Renamed the limits to be a clear and simple name
 
+Changes since v2:
+link to v2: https://www.spinics.net/lists/netdev/msg1104669.html
 
-Gabriel
+-- was Patch 4 from a patch series v2. v2 introduced a module parameter
+for backward compatibility. Based on review feedback, This patch handles
+older systems fall back case without adding a module parameter.
+---
+ drivers/net/ethernet/ibm/ibmvnic.c | 59 ++++++++++++++++++++++++++----
+ drivers/net/ethernet/ibm/ibmvnic.h |  6 ++-
+ 2 files changed, 56 insertions(+), 9 deletions(-)
 
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.c b/drivers/net/ethernet/ibm/ibmvnic.c
+index eec971567aac..3808148c1fc7 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.c
++++ b/drivers/net/ethernet/ibm/ibmvnic.c
+@@ -756,6 +756,17 @@ static void deactivate_rx_pools(struct ibmvnic_adapter *adapter)
+ 		adapter->rx_pool[i].active = 0;
+ }
  
++static void ibmvnic_set_safe_max_ind_descs(struct ibmvnic_adapter *adapter)
++{
++	if (adapter->cur_max_ind_descs > IBMVNIC_SAFE_IND_DESC) {
++		netdev_info(adapter->netdev,
++			    "set max ind descs from %u to safe limit %u\n",
++			    adapter->cur_max_ind_descs,
++			    IBMVNIC_SAFE_IND_DESC);
++		adapter->cur_max_ind_descs = IBMVNIC_SAFE_IND_DESC;
++	}
++}
++
+ static void replenish_rx_pool(struct ibmvnic_adapter *adapter,
+ 			      struct ibmvnic_rx_pool *pool)
+ {
+@@ -843,7 +854,7 @@ static void replenish_rx_pool(struct ibmvnic_adapter *adapter,
+ 		sub_crq->rx_add.len = cpu_to_be32(pool->buff_size << shift);
+ 
+ 		/* if send_subcrq_indirect queue is full, flush to VIOS */
+-		if (ind_bufp->index == IBMVNIC_MAX_IND_DESCS ||
++		if (ind_bufp->index == adapter->cur_max_ind_descs ||
+ 		    i == count - 1) {
+ 			lpar_rc =
+ 				send_subcrq_indirect(adapter, handle,
+@@ -862,6 +873,14 @@ static void replenish_rx_pool(struct ibmvnic_adapter *adapter,
+ failure:
+ 	if (lpar_rc != H_PARAMETER && lpar_rc != H_CLOSED)
+ 		dev_err_ratelimited(dev, "rx: replenish packet buffer failed\n");
++
++	/* Detect platform limit H_PARAMETER */
++	if (lpar_rc == H_PARAMETER)
++		ibmvnic_set_safe_max_ind_descs(adapter);
++
++	/* For all error case, temporarily drop only this batch
++	 * Rely on TCP/IP retransmissions to retry and recover
++	 */
+ 	for (i = ind_bufp->index - 1; i >= 0; --i) {
+ 		struct ibmvnic_rx_buff *rx_buff;
+ 
+@@ -2381,16 +2400,28 @@ static int ibmvnic_tx_scrq_flush(struct ibmvnic_adapter *adapter,
+ 		rc = send_subcrq_direct(adapter, handle,
+ 					(u64 *)ind_bufp->indir_arr);
+ 
+-	if (rc)
++	if (rc) {
++		dev_err_ratelimited(&adapter->vdev->dev,
++				    "tx_flush failed, rc=%u (%llu entries dma=%pad handle=%llx)\n",
++				    rc, entries, &dma_addr, handle);
++		/* Detect platform limit H_PARAMETER */
++		if (rc == H_PARAMETER)
++			ibmvnic_set_safe_max_ind_descs(adapter);
++
++		/* For all error case, temporarily drop only this batch
++		 * Rely on TCP/IP retransmissions to retry and recover
++		 */
+ 		ibmvnic_tx_scrq_clean_buffer(adapter, tx_scrq);
+-	else
++	} else {
+ 		ind_bufp->index = 0;
++	}
+ 	return rc;
+ }
+ 
+ static netdev_tx_t ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
+ {
+ 	struct ibmvnic_adapter *adapter = netdev_priv(netdev);
++	u32 cur_max_ind_descs = adapter->cur_max_ind_descs;
+ 	int queue_num = skb_get_queue_mapping(skb);
+ 	u8 *hdrs = (u8 *)&adapter->tx_rx_desc_req;
+ 	struct device *dev = &adapter->vdev->dev;
+@@ -2590,7 +2621,7 @@ static netdev_tx_t ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
+ 	tx_crq.v1.n_crq_elem = num_entries;
+ 	tx_buff->num_entries = num_entries;
+ 	/* flush buffer if current entry can not fit */
+-	if (num_entries + ind_bufp->index > IBMVNIC_MAX_IND_DESCS) {
++	if (num_entries + ind_bufp->index > cur_max_ind_descs) {
+ 		lpar_rc = ibmvnic_tx_scrq_flush(adapter, tx_scrq, true);
+ 		if (lpar_rc != H_SUCCESS)
+ 			goto tx_flush_err;
+@@ -2603,7 +2634,7 @@ static netdev_tx_t ibmvnic_xmit(struct sk_buff *skb, struct net_device *netdev)
+ 	ind_bufp->index += num_entries;
+ 	if (__netdev_tx_sent_queue(txq, skb->len,
+ 				   netdev_xmit_more() &&
+-				   ind_bufp->index < IBMVNIC_MAX_IND_DESCS)) {
++				   ind_bufp->index < cur_max_ind_descs)) {
+ 		lpar_rc = ibmvnic_tx_scrq_flush(adapter, tx_scrq, true);
+ 		if (lpar_rc != H_SUCCESS)
+ 			goto tx_err;
+@@ -4006,7 +4037,7 @@ static void release_sub_crq_queue(struct ibmvnic_adapter *adapter,
+ 	}
+ 
+ 	dma_free_coherent(dev,
+-			  IBMVNIC_IND_ARR_SZ,
++			  IBMVNIC_IND_MAX_ARR_SZ,
+ 			  scrq->ind_buf.indir_arr,
+ 			  scrq->ind_buf.indir_dma);
+ 
+@@ -4063,7 +4094,7 @@ static struct ibmvnic_sub_crq_queue *init_sub_crq_queue(struct ibmvnic_adapter
+ 
+ 	scrq->ind_buf.indir_arr =
+ 		dma_alloc_coherent(dev,
+-				   IBMVNIC_IND_ARR_SZ,
++				   IBMVNIC_IND_MAX_ARR_SZ,
+ 				   &scrq->ind_buf.indir_dma,
+ 				   GFP_KERNEL);
+ 
+@@ -6369,6 +6400,19 @@ static int ibmvnic_reset_init(struct ibmvnic_adapter *adapter, bool reset)
+ 			rc = reset_sub_crq_queues(adapter);
+ 		}
+ 	} else {
++		if (adapter->reset_reason == VNIC_RESET_MOBILITY) {
++			/* After an LPM, reset the max number of indirect
++			 * subcrq descriptors per H_SEND_SUB_CRQ_INDIRECT
++			 * hcall to the default max (e.g POWER8 -> POWER10)
++			 *
++			 * If the new destination platform does not support
++			 * the higher limit max (e.g. POWER10-> POWER8 LPM)
++			 * H_PARAMETER will trigger automatic fallback to the
++			 * safe minimum limit.
++			 */
++			adapter->cur_max_ind_descs = IBMVNIC_MAX_IND_DESCS;
++		}
++
+ 		rc = init_sub_crqs(adapter);
+ 	}
+ 
+@@ -6520,6 +6564,7 @@ static int ibmvnic_probe(struct vio_dev *dev, const struct vio_device_id *id)
+ 
+ 	adapter->wait_for_reset = false;
+ 	adapter->last_reset_time = jiffies;
++	adapter->cur_max_ind_descs = IBMVNIC_MAX_IND_DESCS;
+ 
+ 	rc = register_netdev(netdev);
+ 	if (rc) {
+diff --git a/drivers/net/ethernet/ibm/ibmvnic.h b/drivers/net/ethernet/ibm/ibmvnic.h
+index 246ddce753f9..480dc587078f 100644
+--- a/drivers/net/ethernet/ibm/ibmvnic.h
++++ b/drivers/net/ethernet/ibm/ibmvnic.h
+@@ -29,8 +29,9 @@
+ #define IBMVNIC_BUFFS_PER_POOL	100
+ #define IBMVNIC_MAX_QUEUES	16
+ #define IBMVNIC_MAX_QUEUE_SZ   4096
+-#define IBMVNIC_MAX_IND_DESCS  16
+-#define IBMVNIC_IND_ARR_SZ	(IBMVNIC_MAX_IND_DESCS * 32)
++#define IBMVNIC_MAX_IND_DESCS 128
++#define IBMVNIC_SAFE_IND_DESC 16
++#define IBMVNIC_IND_MAX_ARR_SZ (IBMVNIC_MAX_IND_DESCS * 32)
+ 
+ #define IBMVNIC_TSO_BUF_SZ	65536
+ #define IBMVNIC_TSO_BUFS	64
+@@ -930,6 +931,7 @@ struct ibmvnic_adapter {
+ 	struct ibmvnic_control_ip_offload_buffer ip_offload_ctrl;
+ 	dma_addr_t ip_offload_ctrl_tok;
+ 	u32 msg_enable;
++	u32 cur_max_ind_descs;
+ 
+ 	/* Vital Product Data (VPD) */
+ 	struct ibmvnic_vpd *vpd;
+-- 
+2.39.3 (Apple Git-146)
 
 
