@@ -1,89 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-11172-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11173-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15D27CA0EE6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Aug 2025 03:38:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74C53CA0EF8
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Aug 2025 06:50:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c6pts5DNTz2xnM;
-	Thu, 21 Aug 2025 13:38:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::82f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755747087;
-	cv=none; b=diN1IqjRVNTmcRx9ngI2x4froK1kCOP5V1Ty+5Z9M+UsINoU0GdQwGF9u6X2kpEQ07GqHiR1UEZa2xD13OIb+uoa74ZK2hXa0mgeqVI7pPCBe7WkiHEkexs1tL7ivXh7lvR/jusGak2xhM2dtntTGWCk6Cp/biI2LmrxHcw1LXRvKSUUNsStRCkKC18HNw0dIgGibaPcKEteCKcU04DHYmv1MJIHH/4cCpLeq7RzdbLgmdTZ84HQ4SdZwr7vPj+fO3Ocr+k8eNMNzYsNQ37TkpKAjOUnR71SnGqN4VeVUnMT8tQEGY76Y+XE+yrMmCx15nktsrixiv5nw9bEC3dSXw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c6v8t0qtyz2yhD;
+	Thu, 21 Aug 2025 16:50:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755759038;
+	cv=none; b=Hg6Q+25fo+ok79rvsSTzhTVy9Jat82S3FVec8JbaBWtS/eIoTI1SPwi7+b79VIYvM4Lixj9aeWvhaFWQBvK8dAxI+jd1McNq3ZdeZTBRg2mzWkZ0jB0JPjRRROjT81xXj6ocxCTlBdhTbdwxBsLfbWtoahg6ut6HKgV4HNDZXaQ09a8W3/VacjvJeBni/bs23/5deFsjc2c9Nm340qGdsI4WkIIKyOYuTlBkVP9hXAVgq4pqk42lQaKoMWcFfg0OG4Mw1l/QTgAeXBiYBKWuqZMdkFwYWkDjk4HY1geO6sW+/R+Q6o0wgsvl3azcqD1nx/bfeqY+35tY5QihTk5awg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755747087; c=relaxed/relaxed;
-	bh=icRsK3KTpWigO3BokxIYIH8/TdR1BM20AbZoHc5m7is=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=m3YE8aGl6OIv88Tg+RhQs+Ylo6HrBhutV4wBcVasL5vORPQe3btFtHTz28WqmarANuGmE6rC2UPMcXUATbjJpL97+4aTobQHQtu/rvSnHhSSn++C0FBjFJuSmYM0rRc00y754X+Ao/iUC6VClplLNASBo++nAW61Prq6ShjPMVKuzX7vK4BGAIz2mDnGBCabWO27a3hP4Df7Yl0j9RDhJvQJgB8My6zIKeDUGSBPLU2qGBbL4o4Sr41tN7GvOFilzV1yii1mgsNk0ohdhr7kkoOIhSLPiWTe3l3j7x4nMhaxv9Z381Xgvx/3OjN/7Vg7mXYz/MLSZ6JG1CnsP+2izA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=SiN432+T; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::82f; helo=mail-qt1-x82f.google.com; envelope-from=albinbabuvarghese20@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=SiN432+T;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::82f; helo=mail-qt1-x82f.google.com; envelope-from=albinbabuvarghese20@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-qt1-x82f.google.com (mail-qt1-x82f.google.com [IPv6:2607:f8b0:4864:20::82f])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c6pl21Fkrz2xQt
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2025 13:31:25 +1000 (AEST)
-Received: by mail-qt1-x82f.google.com with SMTP id d75a77b69052e-4b1099192b0so10056451cf.0
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 20 Aug 2025 20:31:25 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1755747083; x=1756351883; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=icRsK3KTpWigO3BokxIYIH8/TdR1BM20AbZoHc5m7is=;
-        b=SiN432+T1W1R/imtTwgZoi/nGceuVpqba0QWuLces9NcqXMqBTJtfI1pwzXy+IB9EU
-         9+5iTPjETdDl2CPh6LkeYB0R7A0PcS03v+ddpIen7ozutZx7qLlvnZ5ppjhJk5Bokyc2
-         k84mTqTWtbPHpeIRDuKDjxs04IkDkzjdqn0XRPQsWk87gUxfydoqwkyKNyqYbtAfPfk8
-         tZMFBy8zrqjpxNKCrXRNkB/9cCHHeBLPLfjFoVvI/ccRLA3RWci2PzLhiGvxaYjVsRab
-         6AZjwB5nRvd11cAbSjSITkOOAZwjy+TIITBbZF+Mh8splG22SAeeoHD5Myic9gNkIosD
-         39ww==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755747083; x=1756351883;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=icRsK3KTpWigO3BokxIYIH8/TdR1BM20AbZoHc5m7is=;
-        b=kY+WZ+KjLiQau3iesJMl5Ng7vwnQYwgw8lnstLWIln9j3RtXOU4MZ8h20I8KF5lurs
-         fk79bkZ/pC1HysiznYhQfM4UJ5buqnLqp7c+OkEnZRNKs620Rn95m/9FFWcBAds5sj8+
-         t6noc3iRS3AXIzr0WP5B3aaoaZxYvdY7Qy9hYc+Fg8g82eGUcZXTtvq0BlFz5Ut/asKG
-         WUO6CbTYv60vZTz5Ea79XjVcTYG/MOBw75JkbDFbLlPM8/iSwYqbo4GwifYZ/oHezwfp
-         yck5ThuTVy0wex3rTb4PM1QOnzgURUWkmOPxfNe1jrqhjN2dTwLu6GHo4xjCAbYXw4DZ
-         HX4w==
-X-Gm-Message-State: AOJu0Yyt1IUjbfp0/XiK/8TOUZeCWf1qJiUixJMQ5xQx1SkL9OoGx1Ew
-	iwBqO82AUu0DMmnEB0pu2pfx6uaAsCkI1bHKzNv+B1PNfzLhId/gnPzd
-X-Gm-Gg: ASbGnct42K5vJ5TQhKFUFy0MY7qTEY0V40mMFDENOxNtX/Mr+XPrXFYf82Fh5cFFlbe
-	fgoWuhaIqesYuADE7tA/DYJ2PmiAiu7fwYJZminrwOa6iA8Ki9vY0+M4xnM67KPWMJX//ENYHa7
-	jxbf9oD1NMSM2k8eZtbWzyMZcU/KK/1MjBDfHV9HvOgKBMH2bmiGEjZVBOTcl7ddRf/NuMpaFae
-	KCsMTGm2VUD0qB+VIlKNhk4MioEIROk7VpjGrv93lyk7RS4ey/2u3DMduhEr6j0YOzySmklpJLc
-	WwXykA2bBEqGBM0SaM1HuPhQgMAnDAOCyjumPxK6QE+YK1DDBns+ZirA1Sw3xreK5BYi3u4Q5gc
-	UiuOX3R+1E0nK2xNP14dj6nPdsEOGGgCaJxzkwVk9KP1ltqea9QXwHFemnzte+yvg7VSJ6JWSkP
-	c=
-X-Google-Smtp-Source: AGHT+IH8BDknIEg8aOY7I0VpUcwOlM1TFgwrml5wA9EZ+EVgHVP56EFvVKYngKbQyG8yEXT2lkgb2w==
-X-Received: by 2002:a05:622a:28f:b0:4b0:cb1f:e390 with SMTP id d75a77b69052e-4b29fa53d05mr6498871cf.29.1755747082903;
-        Wed, 20 Aug 2025 20:31:22 -0700 (PDT)
-Received: from fedora (pool-99-240-65-82.cpe.net.cable.rogers.com. [99.240.65.82])
-        by smtp.gmail.com with ESMTPSA id d75a77b69052e-4b29bf0b493sm11703131cf.48.2025.08.20.20.31.21
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 20 Aug 2025 20:31:22 -0700 (PDT)
-From: Albin Babu Varghese <albinbabuvarghese20@gmail.com>
-To: Shuah Khan <skhan@linuxfoundation.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
+	t=1755759038; c=relaxed/relaxed;
+	bh=AsOgCFwMrCOl4tjM7v5ZSx6lIOE/x6qrhamTahUkojs=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=BhSMxngo07DSVP2SQ69RRMcHHY6P6S8A+2hjLhk8wQ6NuJs5kwq2wIvluk6zvtF24Lxd/HiIhXD37aeIPNYPVEVNGjSWvamDvU1QkzqxgK7zzHS3r52bScszkMVgLWXTIpucPk9pHpw/YxACSA/YVsCo5vYiJ01cVOCg/1t4Aq/NUTBVnHMSvLVclq/N5M9OgiwSBwXmUYvZh9GNkBKjt1fP1JP4a0CVEjDYHeF4f8w6WKjbrj4sS7STneCNwjXhSXa7hWQI1g1SN3YIzO9WzDNaB1mAXardJ378QLduniLKHg4Hx5TLLxTBsfAyG094ANPNYAicAzytTlo00HuRMQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c6v8s22txz2xPx
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2025 16:50:35 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4c6tjb6Dxlz9sRs;
+	Thu, 21 Aug 2025 08:30:27 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id cBZ596fMmV_9; Thu, 21 Aug 2025 08:30:27 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c6tjb5Sflz9sRk;
+	Thu, 21 Aug 2025 08:30:27 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A473D8B76C;
+	Thu, 21 Aug 2025 08:30:27 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id 9xKpAQnhDf4U; Thu, 21 Aug 2025 08:30:27 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 372FB8B763;
+	Thu, 21 Aug 2025 08:30:27 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Shuah Khan <shuah@kernel.org>,
-	Albin Babu Varghese <albinbabuvarghese20@gmail.com>
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kselftest@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: [PATCH] selftests/powerpc/tm: fix typo on a comment
-Date: Wed, 20 Aug 2025 23:29:44 -0400
-Message-ID: <20250821032950.44054-2-albinbabuvarghese20@gmail.com>
-X-Mailer: git-send-email 2.50.1
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH] powerpc/603: Really copy kernel PGD entries into all PGDIRs
+Date: Thu, 21 Aug 2025 08:30:18 +0200
+Message-ID: <752ab7514cae089a2dd7cc0f3d5e35849f76adb9.1755757797.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,29 +66,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755757819; l=2209; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=iyl6104RZSrIlJicOe4iR8mRE0MXWiG2nNwBytsDVko=; b=jrtj+Mhrve85dIiULvqBIHwkjs+0MUxfUNNTTBQwdFwyoZP1NSdSfQbyzXeXuAyUbarBVHbC4 1ab825nC7UaBkYOka/LjRy2gDK1c8nbIQ1duIz9ax+0mbH9198THgdr
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-Fix typo 'sucess' -> 'success' in comment.
+Commit 82ef440f9a38 ("powerpc/603: Copy kernel PGD entries into all
+PGDIRs and preallocate execmem page tables") was supposed to extend
+to powerpc 603 the copy of kernel PGD entries into all PGDIRs
+implemented in a previous patch on the 8xx. But 603 is book3s/32 and
+uses a duplicate of pgd_alloc() defined in another header.
 
-Signed-off-by: Albin Babu Varghese <albinbabuvarghese20@gmail.com>
+So really do the copy at the correct place for the 603.
+
+Fixes: 82ef440f9a38 ("powerpc/603: Copy kernel PGD entries into all PGDIRs and preallocate execmem page tables")
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- tools/testing/selftests/powerpc/tm/tm-tar.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/book3s/32/pgalloc.h | 10 ++++++++--
+ arch/powerpc/include/asm/nohash/pgalloc.h    |  2 +-
+ 2 files changed, 9 insertions(+), 3 deletions(-)
 
-diff --git a/tools/testing/selftests/powerpc/tm/tm-tar.c b/tools/testing/selftests/powerpc/tm/tm-tar.c
-index f2a9137f3c1e..ea420caa3961 100644
---- a/tools/testing/selftests/powerpc/tm/tm-tar.c
-+++ b/tools/testing/selftests/powerpc/tm/tm-tar.c
-@@ -50,7 +50,7 @@ int test_tar(void)
- 			"bne	2b;"
- 			"tend.;"
+diff --git a/arch/powerpc/include/asm/book3s/32/pgalloc.h b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+index dd4eb3063175..f4390704d5ba 100644
+--- a/arch/powerpc/include/asm/book3s/32/pgalloc.h
++++ b/arch/powerpc/include/asm/book3s/32/pgalloc.h
+@@ -7,8 +7,14 @@
  
--			/* Transaction sucess! TAR should be 3 */
-+			/* Transaction success! TAR should be 3 */
- 			"mfspr  7, %[tar];"
- 			"ori	%[res], 7, 4;"  // res = 3|4 = 7
- 			"b	4f;"
+ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+ {
+-	return kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
+-			pgtable_gfp_flags(mm, GFP_KERNEL));
++	pgd_t *pgd = kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
++				      pgtable_gfp_flags(mm, GFP_KERNEL));
++
++#ifdef CONFIG_PPC_BOOK3S_603
++	memcpy(pgd + USER_PTRS_PER_PGD, swapper_pg_dir + USER_PTRS_PER_PGD,
++	       (MAX_PTRS_PER_PGD - USER_PTRS_PER_PGD) * sizeof(pgd_t));
++#endif
++	return pgd;
+ }
+ 
+ static inline void pgd_free(struct mm_struct *mm, pgd_t *pgd)
+diff --git a/arch/powerpc/include/asm/nohash/pgalloc.h b/arch/powerpc/include/asm/nohash/pgalloc.h
+index bb5f3e8ea912..4ef780b291bc 100644
+--- a/arch/powerpc/include/asm/nohash/pgalloc.h
++++ b/arch/powerpc/include/asm/nohash/pgalloc.h
+@@ -22,7 +22,7 @@ static inline pgd_t *pgd_alloc(struct mm_struct *mm)
+ 	pgd_t *pgd = kmem_cache_alloc(PGT_CACHE(PGD_INDEX_SIZE),
+ 			pgtable_gfp_flags(mm, GFP_KERNEL));
+ 
+-#if defined(CONFIG_PPC_8xx) || defined(CONFIG_PPC_BOOK3S_603)
++#ifdef CONFIG_PPC_8xx
+ 	memcpy(pgd + USER_PTRS_PER_PGD, swapper_pg_dir + USER_PTRS_PER_PGD,
+ 	       (MAX_PTRS_PER_PGD - USER_PTRS_PER_PGD) * sizeof(pgd_t));
+ #endif
 -- 
-2.50.1
+2.49.0
 
 
