@@ -1,53 +1,122 @@
-Return-Path: <linuxppc-dev+bounces-11179-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11180-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 83D6FCA0EFA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Aug 2025 21:16:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 879A0CA0EEB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Aug 2025 22:09:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c7GMf1STNz3bkb;
-	Fri, 22 Aug 2025 07:16:14 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755810974;
-	cv=none; b=XnqcBqftGjr3NiW3Ia3csj16x/XxrGY7RuKH6tg/xiaMEleEGakJvPmkPhiXeULxJzSh7b3JuXdZ/uOfmqkhiFUbaK+idUhRfzkZOZGrN200uT7WIt3vMljx+O+Z1XN1T3sxqxrkiwnso4TCmaHmGQ/b7ENWpIxghZQeSlkCiT3/DQEkPQLv2psOOt7y6ArYE3DGjFv9WF0ldXf1wds3MZoq6ufGGnHvwRxaaAF9OrY0PXzQqukWL97eJDyqNGIV0X9z8fjcwZWgbFiJekXUdsG9qlgM9m/t+59LZnB8Ya7EhSW/1oOsyZff1AzVp4pE+SYAmvRZhUZpgNrzF/LzXg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c7HYL6DLSz2xQ2;
+	Fri, 22 Aug 2025 08:09:42 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::52d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755795541;
+	cv=none; b=mftiJzFSLOV4IDaViLdCOfAYR3eHnQ3wAaV0FGdYvjjVLgUCqnrXCvekk96cwpdeu1iEJtfnSrxhEsGaODKfnGqV81/i1+WHGnvBAPBdV49Xvcf2E+G80XvIUwMFHTY0zapm+9JrIq723Psw/3F7BPLgk9y5kMVsW7PRwlpfRpN8tTvSZnetdHT3iHJkVmbnsnlkRuM+XrvhL2z3pX+Fsi3ZqGUnXS6NQSocmex9JAlBtKMBSzSIUcmg0TM1nsxVK+lIVeQRf3EiT2QfHt3C/lqzUGEzijc61O6ZFPK9hYbnelDnxC2dEhBPCJPOS+gN5EjSAvz+IiZKryP7C5WdFg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755810974; c=relaxed/relaxed;
-	bh=uj+2zctA/B8YBGKL+tFXzZUHRtBm9aQ6xUhuVZMJ9EQ=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=l7+R3fyKYmuS2xB44CrQk2NipaGl9Nt/WZkSyyppNkt44SmisAoEBmWo/Qg0BYs5EaeC8BSFAgeQ4qsPpxmLi6w3fxTlaRrfCTwHyd5iUngQBRNoj2vZykNKFySApg++f+b9SZpmPBgru/2VppQPQlS0Rb7anwA1mp2cK2WK+bT8uFU8U64L9mZsWFxk76thEvsLQ66SBVT/WZshoEk1TQtsEMv3EX6TV/HqQLoaAYXIAsqZYaISpqRlJtHw3x8CDTXht/uoesoN6cr4SbleCC7A7TEBGySwoDxOGstCgWr3QNX6bNYoGgW+OWoZgxDZyv/VjQ0Zth3CKgXoMWuUuw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Dz2OPjIC; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1755795541; c=relaxed/relaxed;
+	bh=3A4U0mFlnkILhub4vGFum/rHOWkZrlTYW603OLEkJVY=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=hcUEj+x2+4f8zIpelUKzvPNaY634wkOB/3XSOgfvo9s3H9voigQMONduUOaLV7LN3Fn5axEe2R4Wz4DwVy3GMY0ktkg6qkTPdmKQO63xtTTbEXOI6oY3259f8QA9OdTEqVjToY+U6hYs/UKq3TDy+gGsmimi51bT/vwdOLA49SUHx0TtKezGkj00UocN6YH1uspSZ68segMNFtqX9wsl6Y4H8e0OaE0xoGDqu2FtWf7WzqyEwefyF4LjJFLkDXu9hdyZDtTx0jtf5WI5gzVZ3Ja/eAxGaP/8yf/Ye1i81snDm+Hy5+dfDS3pQQIxV+N3SSLLw7MzopoQmJ/62jioDQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=purestorage.com; dkim=pass (2048-bit key; unprotected) header.d=purestorage.com header.i=@purestorage.com header.a=rsa-sha256 header.s=google2022 header.b=UBoZZyt5; dkim-atps=neutral; spf=permerror (client-ip=2a00:1450:4864:20::52d; helo=mail-ed1-x52d.google.com; envelope-from=mattc@purestorage.com; receiver=lists.ozlabs.org) smtp.mailfrom=purestorage.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=purestorage.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Dz2OPjIC;
+	dkim=pass (2048-bit key; unprotected) header.d=purestorage.com header.i=@purestorage.com header.a=rsa-sha256 header.s=google2022 header.b=UBoZZyt5;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=permerror (SPF Permanent Error: Void lookup limit of 2 exceeded) smtp.mailfrom=purestorage.com (client-ip=2a00:1450:4864:20::52d; helo=mail-ed1-x52d.google.com; envelope-from=mattc@purestorage.com; receiver=lists.ozlabs.org)
+Received: from mail-ed1-x52d.google.com (mail-ed1-x52d.google.com [IPv6:2a00:1450:4864:20::52d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c7GMd4tmNz30T9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2025 07:16:13 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id DA7E4601F8;
-	Thu, 21 Aug 2025 21:16:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4B20C4AF09;
-	Thu, 21 Aug 2025 21:16:08 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1755810971;
-	bh=VGQQUffBKqpf2H5DeF+t1nkRASxbDSX8NAduqgnqPbk=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=Dz2OPjICxh9rvlzA1oWyJydNTsN/KJBpcD7R933teboo6pz8NFaVzKPhAChC6iq14
-	 FwZnGeeGI/9IqZwDuekx0JxcfFlgk2m73gb3cbvgr/nkAL+/Mg1Y8rdY/PTe+N3Uxo
-	 RFVAWKLCZ5u7zg7/ms8djejWF8uS3pooOaJQWCKbb15NP9zuGmRF9yE0uNm4OEjijK
-	 ChWjQMcqGP1FVnGCzYp7jNth24enrwHFLvlWNebGOlivrf8w/vR+Rylnm66O9m5Uiy
-	 4XGUGj1CcmaoPPaukJSj7GFSkaJ2KBpDKlWqFmacbPF5eOUZKyupGpI6tHeo6pBwS5
-	 hQqW0+uVafABA==
-From: Nathan Chancellor <nathan@kernel.org>
-Date: Thu, 21 Aug 2025 14:15:43 -0700
-Subject: [PATCH v2 06/12] powerpc: Drop unnecessary initializations in
- __copy_inst_from_kernel_nofault()
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c78fp2gRsz2yhD
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2025 02:58:57 +1000 (AEST)
+Received: by mail-ed1-x52d.google.com with SMTP id 4fb4d7f45d1cf-61c14b1689eso309696a12.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 21 Aug 2025 09:58:57 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=purestorage.com; s=google2022; t=1755795534; x=1756400334; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=3A4U0mFlnkILhub4vGFum/rHOWkZrlTYW603OLEkJVY=;
+        b=UBoZZyt5hCmb9nnhvD50nssH5t+EVveUVfJmnZsTTNkmixPwgrMKrCVza97TvUDgkX
+         OYB0SsvZ6MbhcEI4s4+IBSur2Ds/8mSu9BXU8F+krqhHxyj9smEfqyDl104dIvW6SdkP
+         if1OPsHyYbAlL4aZfkb5LqePQ+YnwGnwB9DpgrUaKJsx/yusQ2lHyn2vTs2Xit9TMON1
+         e9NYDrVFXMdq+nj7fFzDSz578bC6gf9+FXVdii472oZwMEfwGH/SQM+2zTDki4R0qB/z
+         sXB+YZOpmfM8S42+PO1q0TbRRtjqHnpKiPddMEQ1lE45NkGshP2kXJzQfG886sxfXyUv
+         WP8g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1755795534; x=1756400334;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=3A4U0mFlnkILhub4vGFum/rHOWkZrlTYW603OLEkJVY=;
+        b=TtssYHtAxV8t/gu74NrooYhPZeEIHSjLkpcUypuEKGcyxbe3tCPB9XsXs5HfKm1VzI
+         +Tb4b6I2nbzY8rNg+50rNANUQb49jaZLfTG4/rT6poC/4K3rym7JEoESizbZfFjwCVhy
+         pEVBcj5B+5mPPjYmKl4Xo1kNC0ffoFqM5YAL7gT6I6pvtMTAuwSj3cHCKfwvCT3eXvsr
+         go/Zzni+C1UAc10BJ3b0mAwOuCAU7jYYS75Xz0Z/U9x7KfoywS+3CymsI4MloaaakIxp
+         13fURGUvY67kMCWqwufvH4w6yzYQehF7/Gtl/zkE65gK6m14QLRXc/0YrgNuIr6onX0t
+         bVAQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWtDlfXwZFlcOAOTDudmF2mVHirnFsGBa/ugkg98fB7jt/o1qn6qHWIN9Ml8NKoCUyKfjkskFo3MOLFQTg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxojo8Is4ubB2310L7bnkUHZf92VJX9svAYWsR5pJvc8DZMk8eU
+	ilI4qsGM4Kg0tPW6jxga9eWe3RTFqwTF50pPo5NvZ2xYQLtilNKD+k2QxowjOTxv97E=
+X-Gm-Gg: ASbGncu0G5yMO0NfjK2zJTuCOiIARNTJbC7uXCDg2a/BjqGN8rwphzmWaLEh7hzx5Sj
+	UtxLi6KM7wthp0elsTMUXbIBbJ8G1WiyzXEx/W8/doFcp65VNh3MuCX0ljywykVzvu42UmOZmvP
+	nVkuTxlzjaAIjQs5G3pyaxGx5vRvvYxK7EvCfB/efh7NveIg3JKqynS7QPkLhCwi3qhRC4BtClC
+	UC7m74Jm6DUHcwuR0S9HFxwS7O9rnJ0cCANiUtMioPtMfHy1JgD4cmA0jDn/EFGjiGojcs2S0q/
+	2JhfdaoO3mkamyaf/bIvSOoKwEtpJuLXLlnob/nBHJayKYTLOjhKVGuOIUR3yppD4/TS7t47Sj8
+	lup8VBE/sWcfMYlAern/+N0cdaNo/L5duqGIr0zeJi1i76tpv
+X-Google-Smtp-Source: AGHT+IHbD3hrlfzfuV9dgz0//kT04PlITNsV9cNrzMXodwD/dQM9X/pgqOr/RoZqgWohk3JzCKOHjg==
+X-Received: by 2002:a05:6402:5057:b0:618:6fef:83e9 with SMTP id 4fb4d7f45d1cf-61bf8743d4cmr3099366a12.34.1755795533295;
+        Thu, 21 Aug 2025 09:58:53 -0700 (PDT)
+Received: from dev-mattc2.dev.purestorage.com ([208.88.159.128])
+        by smtp.googlemail.com with ESMTPSA id 4fb4d7f45d1cf-61a758ba909sm5450122a12.54.2025.08.21.09.58.46
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 21 Aug 2025 09:58:51 -0700 (PDT)
+From: Matthew W Carlis <mattc@purestorage.com>
+To: zhenzhong.duan@intel.com
+Cc: Smita.KoralahalliChannabasappa@amd.com,
+	adam.c.preble@intel.com,
+	alison.schofield@intel.com,
+	bhelgaas@google.com,
+	bp@alien8.de,
+	chao.p.peng@intel.com,
+	dan.j.williams@intel.com,
+	dave.jiang@intel.com,
+	dave@stgolabs.net,
+	erwin.tsaur@intel.com,
+	feiting.wanyan@intel.com,
+	helgaas@kernel.org,
+	ira.weiny@intel.com,
+	james.morse@arm.com,
+	lenb@kernel.org,
+	linux-acpi@vger.kernel.org,
+	linux-cxl@vger.kernel.org,
+	linux-edac@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	lukas@wunner.de,
+	mahesh@linux.ibm.com,
+	oohall@gmail.com,
+	qingshun.wang@linux.intel.com,
+	rafael@kernel.org,
+	rrichter@amd.com,
+	sathyanarayanan.kuppuswamy@intel.com,
+	tony.luck@intel.com,
+	vishal.l.verma@intel.com,
+	yudong.wang@intel.com,
+	msaggi@purestorage.com,
+	sconnor@purestorage.com,
+	ashishk@purestorage.com,
+	rhan@purestorage.com,
+	jrangi@purestorage.com,
+	agovindjee@purestorage.com,
+	bamstadt@purestorage.com
+Subject: [PATCH v5 0/2] PCI/AER: Handle Advisory Non-Fatal error
+Date: Thu, 21 Aug 2025 10:58:29 -0600
+Message-ID: <20250821165829.3471-1-mattc@purestorage.com>
+X-Mailer: git-send-email 2.46.0
+In-Reply-To: <SJ0PR11MB67441DAC71325558C8881EEF92A62@SJ0PR11MB6744.namprd11.prod.outlook.com>
+References: <SJ0PR11MB67441DAC71325558C8881EEF92A62@SJ0PR11MB6744.namprd11.prod.outlook.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,67 +130,15 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250821-bump-min-llvm-ver-15-v2-6-635f3294e5f0@kernel.org>
-References: <20250821-bump-min-llvm-ver-15-v2-0-635f3294e5f0@kernel.org>
-In-Reply-To: <20250821-bump-min-llvm-ver-15-v2-0-635f3294e5f0@kernel.org>
-To: linux-kernel@vger.kernel.org
-Cc: Arnd Bergmann <arnd@arndb.de>, Kees Cook <kees@kernel.org>, 
- Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
- Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, 
- llvm@lists.linux.dev, patches@lists.linux.dev, 
- Nathan Chancellor <nathan@kernel.org>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- linuxppc-dev@lists.ozlabs.org
-X-Mailer: b4 0.15-dev
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1428; i=nathan@kernel.org;
- h=from:subject:message-id; bh=VGQQUffBKqpf2H5DeF+t1nkRASxbDSX8NAduqgnqPbk=;
- b=owGbwMvMwCUmm602sfCA1DTG02pJDBnLe5qsbnOnbElI2r/nStGKR7NVeD9fqqrOF4jTmqh6p
- HPr5fYHHaUsDGJcDLJiiizVj1WPGxrOOct449QkmDmsTCBDGLg4BWAie3IZGRpyXQzenGP5fUO5
- OWj37vqDApfD321/ON+1kq+JScZ2uiwjw8b/k05Y3dU1+vnpp/ZK+3d165qdtCziv4Vo3fZM1Zj
- nxggA
-X-Developer-Key: i=nathan@kernel.org; a=openpgp;
- fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
+Content-Transfer-Encoding: 8bit
 
-Now that the minimum supported version of LLVM for building the kernel
-has been bumped to 15.0.0, the zero initializations of val and suffix
-added by commit 0d76914a4c99 ("powerpc/inst: Optimise
-copy_inst_from_kernel_nofault()") to avoid a bogus case of
--Wuninitialized can be dropped because the preprocessor condition is
-always false.
+Hello. My team had independently started to make a change similar to this
+before realizing that someone had already taken a stab at it. It is highly
+desirable in my mind to have an improved handling of Advisory Errors in
+the upstream kernel. Is there anything we can do to help move this effort
+along? Perhaps testing? We have a decent variety of system configurations &
+are able to inject various kinds of errors via special devices/commands etc.
 
-Reviewed-by: Kees Cook <kees@kernel.org>
-Signed-off-by: Nathan Chancellor <nathan@kernel.org>
----
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linuxppc-dev@lists.ozlabs.org
----
- arch/powerpc/include/asm/inst.h | 4 ----
- 1 file changed, 4 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/inst.h b/arch/powerpc/include/asm/inst.h
-index 684d3f453282..ffa82167c860 100644
---- a/arch/powerpc/include/asm/inst.h
-+++ b/arch/powerpc/include/asm/inst.h
-@@ -143,10 +143,6 @@ static inline int __copy_inst_from_kernel_nofault(ppc_inst_t *inst, u32 *src)
- {
- 	unsigned int val, suffix;
- 
--/* See https://github.com/ClangBuiltLinux/linux/issues/1521 */
--#if defined(CONFIG_CC_IS_CLANG) && CONFIG_CLANG_VERSION < 140000
--	val = suffix = 0;
--#endif
- 	__get_kernel_nofault(&val, src, u32, Efault);
- 	if (IS_ENABLED(CONFIG_PPC64) && get_op(val) == OP_PREFIX) {
- 		__get_kernel_nofault(&suffix, src + 1, u32, Efault);
-
--- 
-2.50.1
-
+Thanks,
+-Matt
 
