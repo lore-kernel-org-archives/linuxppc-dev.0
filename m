@@ -1,70 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-11177-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11178-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B059CCA0EFC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Aug 2025 16:32:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2EB03CA0EEB
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 21 Aug 2025 21:15:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c784322dnz3bVW;
-	Fri, 22 Aug 2025 02:32:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.246.84.56
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755793939;
-	cv=none; b=ZRAyw7XB++WBFBMqg5dmM7gSS1NdY3VvUb/RfMRaY0VjXBa8Nfc7PTlkAduY+U0rLf6oj+DIU7wA9Zl/ywsbHQX9iq/lj+3cVGemext3HDUPKWH8YONQD8LZjs58gDV3ERSjCbl85JkmSoAnmuw2vTPBQgWUROMYw3+SG4gwPwKdn8C3KbjDNWNR4V/wurRZEvkUjNhR7H7dxDwx+WwP/qHF9VZjtv3cutz9U0apnMtX+BxuYYro+G3Z8bEaNRfopFOUCqox31zM7u120qZSgClYwoe1t5QaDjtZEe2rSDT4xCla6X8fdEr58dqCzaizSZsvjBXwAgLJ2EzqfvpDag==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c7GML2ffzz3bVW;
+	Fri, 22 Aug 2025 07:15:58 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755810958;
+	cv=none; b=XpSecGmQeAvwJ3pCpA1UEZwyG2kFd5HAtWMsdijIXmdxlAXoB8/OY2S73uFBjHym35Aw37G2/QkWM4dPnTvCN33LOc/tMgoK09DmQpJBA8QXXewfckynh7wjxgm4MKd76S6DXv1nkfq5tjFNoF3uM6AXGQ+TGfUxcr6jTs+oiNAv6OCRIifvIYyHg6bo+gMRdQH4KLENvLsVS1tCp8uvrnKJUjUM29po1l2mT/Z8cHeQuX7n7sELssIlCmfRTgh+KIS1yT1OIr387ZcXkrhIIXmXq14mUSgEV9iPPebQiEQIPkSi9Aag1JhrvgUqmxSUcmbsUqB/mfHBPVX3foje6Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755793939; c=relaxed/relaxed;
-	bh=1M5Nb/GMJtc+X2GXJNcDemzZBR8bSjA86XYehPLVfcM=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=BJm2aAdgN+FvY14L4U55vM9ei7qh7rKrfWouDu8qY+WRKmpWdOWvfOnUSnfs+0STibHhG+BJAaJr+Wv43aM+VMj8kOCwwdKdfkkYPUbkVSERq014Sma1LkNXIL0cfeVFo2wjfz7pfZ+LQMLW/eJldp6atpOCzepM8dWFAjyELlrbOa4B1dGDR0jd+OmJjEzVRTTN50vfTVLbDf9TNo5r1ceBxIxjU2p43BOHcORRwgEGuPJrV5X65WwLGIi46ZdrplR/CRxtpcUQd19feZfS9YX+eaK5c+4DK0gqLOYj4wwGPUZ7L1A0jQfkDMdarZJmMKdAtQBTIKMExXjW0qhCsg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=KVCPARWL; dkim-atps=neutral; spf=pass (client-ip=185.246.84.56; helo=smtpout-02.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+	t=1755810958; c=relaxed/relaxed;
+	bh=9AFaKTNpzu3Wl7g0cbSUK5dGjCeHRl49IBORR+ozh/Y=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=gaHXvLNXwJY47mqaphxj/O+Sz8T8aypUotGF9/LaMoFS+BxKvYDekYpCunZnR1hSlfy8C73KI7hmfmooqSGG0tVPPJGW9w1qLAtqeTLwfhL4Zd8zyWx0X/p2OwLtzDylt3fnLFArDvj3sk8Y4hgkENE67WhYVwHqcZyqJz1kCunY+vkuhavV/79yOfTFCSQ56eZpus4/Thu8JPBbRW2JpQLmcjg/5iu4IwwlybuRSa0Yd6Gs5Mvfjj4QyRA53wsui5Et2LVmIP7IT3PP/ABPdehn3RUuaQED29+FqUyH0GhTNb7mG2C1KtXHZEPMBsxILGIinfrNhhQSuW+TnwgisA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uQZ01Sr4; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=KVCPARWL;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uQZ01Sr4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.246.84.56; helo=smtpout-02.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 516 seconds by postgrey-1.37 at boromir; Fri, 22 Aug 2025 02:32:18 AEST
-Received: from smtpout-02.galae.net (smtpout-02.galae.net [185.246.84.56])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c78424QVZz2xPy
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2025 02:32:18 +1000 (AEST)
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-02.galae.net (Postfix) with ESMTPS id BE28D1A098C;
-	Thu, 21 Aug 2025 16:23:36 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 83F24606AF;
-	Thu, 21 Aug 2025 16:23:36 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id AAA331C22CDE0;
-	Thu, 21 Aug 2025 18:23:13 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1755793415; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=1M5Nb/GMJtc+X2GXJNcDemzZBR8bSjA86XYehPLVfcM=;
-	b=KVCPARWLBBak7ha8ttTM+7mSUp1YOMn44fkE8/H8tGUXMy0+0lnJUZKwja2mTiFQWgTOf/
-	h5JQRzU7uU0UKzlfsawb+1jIJunssTSjuvp/WuRJI5SGaIR4c+20C+McMOq9F2hwTWA6w4
-	1H6K/QEvyZd3/J8WyJqmnQ17TZTioEQXlKTqdVEUH+hrEjAhh6+j/Xrq0idi/N90oJwrLf
-	0FsZf1PAbShVXrLvavCglq5Kta5HoiGUZUrVBOZ+WKoLTKrlq3jcXAvC39cZRfF179V4/O
-	ZAOVylEgw9reB1RLQo6ww7MB5XnnP+Pf9eDMwEo3HrKQpWESylbdHy9RM9fAYg==
-Date: Thu, 21 Aug 2025 18:23:07 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Qiang Zhao <qiang.zhao@nxp.com>, Shengjiu Wang
- <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam
- <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, Liam Girdwood
- <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>, Jaroslav Kysela
- <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
- linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
- linux-kernel@vger.kernel.org, linux-sound@vger.kernel.org
-Subject: Re: [PATCH v3 1/4] soc: fsl: qmc: Only set completion interrupt
- when needed
-Message-ID: <20250821182307.2f7c8aeb@bootlin.com>
-In-Reply-To: <f0c5260651822e8003daf11c7a76921796517152.1755504428.git.christophe.leroy@csgroup.eu>
-References: <cover.1755504428.git.christophe.leroy@csgroup.eu>
- <f0c5260651822e8003daf11c7a76921796517152.1755504428.git.christophe.leroy@csgroup.eu>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.43; x86_64-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c7GMK1sNGz30T9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2025 07:15:57 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id C7E18601F8;
+	Thu, 21 Aug 2025 21:15:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id AE9A8C4CEEB;
+	Thu, 21 Aug 2025 21:15:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1755810954;
+	bh=pOQAZPk+siIZkKBpkkHyydqf+iJWdipFSBVhf2HWXnk=;
+	h=From:Subject:Date:To:Cc:From;
+	b=uQZ01Sr4y5UBxZbhDZfvUDEeNvw7RqMPpecFt11yc7bsaW5ovYL0XUfzrWWsiNXzZ
+	 c8++tipPQjqwKYp0k0gDhrvljaAd7re4WVkFUF5WrFBqQqEIN8iR74Vee7BNt/CA+g
+	 /tG0RI1G9MmS/0WG3vAsp0ldl5sjGRh0EGxzNxVH1Tm0PYZoCyCQqG00dIozdKH/oE
+	 pE+AKTCsKwpp5uIo1NEGnmB8ycta84iEl1LU6UXiRm6kopTiphBIqE2wbsbInRJaJl
+	 x/kzDSN/k618a3jDJ0BA65cb43YnV0uqrkYoP768loOw8+WrPigrhNPUtuX3uXdZuq
+	 W/LW5Ik2tcyqg==
+From: Nathan Chancellor <nathan@kernel.org>
+Subject: [PATCH v2 00/12] Bump minimum supported version of LLVM for
+ building the kernel to 15.0.0
+Date: Thu, 21 Aug 2025 14:15:37 -0700
+Message-Id: <20250821-bump-min-llvm-ver-15-v2-0-635f3294e5f0@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,29 +61,115 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 7bit
+X-B4-Tracking: v=1; b=H4sIAHqMp2gC/22NQQ6CMBBFr0Jm7ZhOzSi48h6GhcAAE6GQVhsN4
+ e5W3Lp8L/nvLxDEqwQ4Zwt4iRp0cgnsLoO6v7lOUJvEYI1lcyKD1XOccVSHwxBHjOKRGAu2B2p
+ JqiMzpOnspdXXlr2WiXsNj8m/t5dIX/sL5pT/D0ZCg3VeUWPaglnM5S7eybCffAfluq4fb81km
+ bkAAAA=
+X-Change-ID: 20250710-bump-min-llvm-ver-15-95231f1eb655
+To: linux-kernel@vger.kernel.org
+Cc: Arnd Bergmann <arnd@arndb.de>, Kees Cook <kees@kernel.org>, 
+ Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, 
+ Bill Wendling <morbo@google.com>, Justin Stitt <justinstitt@google.com>, 
+ llvm@lists.linux.dev, patches@lists.linux.dev, 
+ Nicolas Schier <nsc@kernel.org>, Nathan Chancellor <nathan@kernel.org>, 
+ linux-kbuild@vger.kernel.org, linux-hardening@vger.kernel.org, 
+ Russell King <linux@armlinux.org.uk>, Ard Biesheuvel <ardb@kernel.org>, 
+ linux-arm-kernel@lists.infradead.org, Will Deacon <will@kernel.org>, 
+ Thomas Bogendoerfer <tsbogend@alpha.franken.de>, linux-mips@vger.kernel.org, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>, 
+ linuxppc-dev@lists.ozlabs.org, Palmer Dabbelt <palmer@dabbelt.com>, 
+ Alexandre Ghiti <alex@ghiti.fr>, linux-riscv@lists.infradead.org, 
+ Marco Elver <elver@google.com>, 
+ "Peter Zijlstra (Intel)" <peterz@infraded.org>, kasan-dev@googlegroups.com
+X-Mailer: b4 0.15-dev
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3775; i=nathan@kernel.org;
+ h=from:subject:message-id; bh=pOQAZPk+siIZkKBpkkHyydqf+iJWdipFSBVhf2HWXnk=;
+ b=owGbwMvMwCUmm602sfCA1DTG02pJDBnLexp5jt71uLBmLnPYsZJXWxZZ/jvpEC46Jadf9c7Uw
+ ETlF/9MO0pZGMS4GGTFFFmqH6seNzScc5bxxqlJMHNYmUCGMHBxCsBEbpkw/I9487fgnDGfn0/r
+ 3M6FSqzXJdY9UrRtFZK/fJjFtn+JsiAjw7+LX1KSfVQYtyp9370iKU3tw4SvX9nUW67uL1go/I+
+ LnxkA
+X-Developer-Key: i=nathan@kernel.org; a=openpgp;
+ fpr=2437CB76E544CB6AB3D9DFD399739260CB6CB716
 
-Hi Christophe,
+s390 and x86 have required LLVM 15 since
 
-On Mon, 18 Aug 2025 10:20:00 +0200
-Christophe Leroy <christophe.leroy@csgroup.eu> wrote:
+  30d17fac6aae ("scripts/min-tool-version.sh: raise minimum clang version to 15.0.0 for s390")
+  7861640aac52 ("x86/build: Raise the minimum LLVM version to 15.0.0")
 
-> When no post-completion processing is expected, don't waste time
-> handling useless interrupts.
-> 
-> Only set QMC_BD_[R/T]X_I when a completion function is passed in,
-> and perform seamless completion on submit for interruptless buffers.
-> 
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> ---
->  drivers/soc/fsl/qe/qmc.c | 44 ++++++++++++++++++++++++++++++----------
->  1 file changed, 33 insertions(+), 11 deletions(-)
-> 
+respectively. This series bumps the rest of the kernel to 15.0.0 to
+match, which allows for a decent number of clean ups.
 
-Acked-by: Herve Codina <herve.codina@bootlin.com>
+On the distros front, we will only leave behind Debian Bookworm and
+Ubuntu Jammy. In both of those cases, builders / developers can either
+use the kernel.org toolchains or https://apt.llvm.org to get newer
+versions that will run on those distributions, if they cannot upgrade.
+
+  archlinux:latest              clang version 20.1.8
+  debian:oldoldstable-slim      Debian clang version 11.0.1-2
+  debian:oldstable-slim         Debian clang version 14.0.6
+  debian:stable-slim            Debian clang version 19.1.7 (3+b1)
+  debian:testing-slim           Debian clang version 19.1.7 (3+b1)
+  debian:unstable-slim          Debian clang version 19.1.7 (3+b2)
+  fedora:41                     clang version 19.1.7 (Fedora 19.1.7-4.fc41)
+  fedora:latest                 clang version 20.1.8 (Fedora 20.1.8-3.fc42)
+  fedora:rawhide                clang version 20.1.8 (Fedora 20.1.8-3.fc43)
+  opensuse/leap:latest          clang version 17.0.6
+  opensuse/tumbleweed:latest    clang version 20.1.8
+  ubuntu:focal                  clang version 10.0.0-4ubuntu1
+  ubuntu:jammy                  Ubuntu clang version 14.0.0-1ubuntu1.1
+  ubuntu:noble                  Ubuntu clang version 18.1.3 (1ubuntu1)
+  ubuntu:latest                 Ubuntu clang version 18.1.3 (1ubuntu1)
+  ubuntu:rolling                Ubuntu clang version 20.1.2 (0ubuntu1)
+  ubuntu:devel                  Ubuntu clang version 20.1.8 (0ubuntu1)
+
+I plan to carry this via the Kbuild tree with the appropriate acks.
+
+---
+Changes in v2:
+- Add two new patches for RISC-V to clean up more LLD_VERSION checks
+  (Alex)
+- Pick up provided tags (thanks all!)
+- Link to v1: https://lore.kernel.org/r/20250818-bump-min-llvm-ver-15-v1-0-c8b1d0f955e0@kernel.org
+
+---
+Nathan Chancellor (12):
+      kbuild: Bump minimum version of LLVM for building the kernel to 15.0.0
+      arch/Kconfig: Drop always true condition from RANDOMIZE_KSTACK_OFFSET
+      ARM: Clean up definition of ARM_HAS_GROUP_RELOCS
+      arm64: Remove tautological LLVM Kconfig conditions
+      mips: Unconditionally select ARCH_HAS_CURRENT_STACK_POINTER
+      powerpc: Drop unnecessary initializations in __copy_inst_from_kernel_nofault()
+      riscv: Remove version check for LTO_CLANG selects
+      riscv: Unconditionally use linker relaxation
+      riscv: Remove ld.lld version checks from many TOOLCHAIN_HAS configs
+      lib/Kconfig.debug: Drop CLANG_VERSION check from DEBUG_INFO_DWARF_TOOLCHAIN_DEFAULT
+      objtool: Drop noinstr hack for KCSAN_WEAK_MEMORY
+      KMSAN: Remove tautological checks
+
+ Documentation/process/changes.rst |  2 +-
+ arch/Kconfig                      |  1 -
+ arch/arm/Kconfig                  | 11 ++++-------
+ arch/arm64/Kconfig                |  5 +----
+ arch/mips/Kconfig                 |  2 +-
+ arch/powerpc/include/asm/inst.h   |  4 ----
+ arch/riscv/Kconfig                | 21 +++++++--------------
+ arch/riscv/Makefile               |  9 +--------
+ lib/Kconfig.debug                 |  2 +-
+ lib/Kconfig.kcsan                 |  6 ------
+ lib/Kconfig.kmsan                 | 11 +----------
+ scripts/min-tool-version.sh       |  6 ++----
+ tools/objtool/check.c             | 10 ----------
+ 13 files changed, 19 insertions(+), 71 deletions(-)
+---
+base-commit: 8f5ae30d69d7543eee0d70083daf4de8fe15d585
+change-id: 20250710-bump-min-llvm-ver-15-95231f1eb655
 
 Best regards,
-Hervé
+--  
+Nathan Chancellor <nathan@kernel.org>
+
 
