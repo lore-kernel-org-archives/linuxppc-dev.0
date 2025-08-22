@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-11199-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11200-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD672CA0EEB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Aug 2025 14:58:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6A0C0CA0EEB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Aug 2025 14:58:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c7jwl4L1tz3cjH;
-	Sat, 23 Aug 2025 00:57:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.14
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755874679;
-	cv=none; b=b5VMkEqmlopwpYM7BA5og4fsiMQvFXFJTT/FmAe1MAXdzS5NzzRU6c9CTY+UEkhBGWl7UAfUYpsfghlozoSWwBP3Bx6awhf11KsSl5zpn4f3L/gUYfah93smqOdKZ2Bj8iuGWfSSnHwiISTQ6TQvpOCtC4UTvaFG+kvP5W3HuqUCJHWOvV150wpvP0/W8XAmf6iKrDwuR05d3QvLEQrQYVntiQUuTita3o2Va5lxcLQLwOpoBNBPFDitH0qGKoOpKUhjEgwbCK/SMh8mLrfZ0jUqXu7bxbNSUKRQHxMribbBGIyFa0KrAQKanasYpYgx0/Of1hWVj/1mBTKzv1sZ2w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c7jwq04mGz3ck4;
+	Sat, 23 Aug 2025 00:58:03 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.19
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755874682;
+	cv=none; b=i+IVaiC/m3KU1e2DqKYsvHZQujpRznDu4lC8Lg/vRxw5JDAFtmnBLBm127GbKVDWeAQCGSwzb1tvvWWdd81iNZPu4ZwKSUVlayHR5hsRASIaNXA1nEwtByNuCLAZCNbgNCphqAC/vxZj53yBkerIv6gjujXf5qj4g+18g3fMm00/gPHZnJ0TxDO/05Hb/kOFwsv8qynb1pgmMVq01TWRcwxp8IkLrF+IWN/K8SPJ+R2M9aRVYCGNtlndsytxxJ/ycfubrETmwYJTNXygVIGf58mDyKWV1JWwHINU+GG07RWexYM0Aap0TQsqqJwrMMNudfutbb7wPJL1RQp1sqR55A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755874679; c=relaxed/relaxed;
-	bh=KGlpLmlUMHY/HGijNQUdgv7EI6CKvEfYKwpx4tdtetI=;
+	t=1755874682; c=relaxed/relaxed;
+	bh=RiKBsdJiGCPj0Kmp8JVVifV/aCh+uKKONLCoB09pzrE=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=W3QIrLRSZZyQKtQu1gBhQ5nANYILvWKd6UfxDgKzOuKRI6iJxLJirFLWLf8VMcHpzJjtg6ktOkImIyhuy0I5VlqxuUWT29Cjtx1ypsTXZref635HAkO+Hs+C9uoOFML2WkdF7uvYVVfbM6PUy4CLToIJQJ6mBRCwiLiUrsG50ZXAwNOyP4pN42bEd8wC8Bz5ezfD4dF4BoWC9r6HcvlZPlyDTGb/YS/Kv2FX+mkyD19yIUsDCYjvKlCmZnGpua6gNI5OJeFnJ0N8l6azatcChJ24L3cw1ZMiIGTCucD+LdtSO2dTxqt+DNMiLTyJaMdEunjZyqQOBOKk9Tm8+4kbVw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hXfdau9j; dkim-atps=neutral; spf=none (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 MIME-Version:Content-Type; b=EW2noW3ptZnSL1AT2ft1yBgnfM6KwLTlbgh0HRRMzs/Aw9rZBvPQiZGJKduIw/TAIB4hRBEeQShjpmkniOhDjKAdKspxsNsESRQjgYnlxRfMkzhs20kJK9xWF6oF14wEDBH1w+DgToafrTsvIPvWSegAzWzUi0JgA/0YOuXAN6T67ONWPvxT6Z/Mw0uFgpviXVl5gSlL9dvlS9Fnx7psSkYxwxPpiNskEyItKsVePkbNkqaLDXP0hXOsdzylRpZRlRJixPKms/y2ppIYny1ED6hpvnYD8d8ewQEfSQaTlLa2qLKheTcDVekl0sd7LL0Ci3+UlVjYwMAtO+hFR/RuAQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LTStVWHs; dkim-atps=neutral; spf=none (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hXfdau9j;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LTStVWHs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c7jwk4ns1z3ck9
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2025 00:57:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c7jwn3gnpz3ck9
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2025 00:58:01 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1755874679; x=1787410679;
+  t=1755874681; x=1787410681;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=qAXdsDQW9N/Uavlh8yIRORIBMsvqG965+7HiERcw2Bc=;
-  b=hXfdau9jWCFlT2TrO2m2OjtMJt56HJZ7Nk05UevwlANLviXc53cBF6vw
-   zfcvtE0HtQDj7SUrjCRYm1IzrLmTZD4W7NU1G1jCIECob8vjkXXGQ4UbW
-   wg9orSZU0B0Mh20p+xXLHGSv0wFagzzkEFAh84zm3sZ4J+Vl+YqZm3lvp
-   Nz281R92KLDHnKx93qnpT69lG6vW7v7FduAHiQWYZ1OOqH2OLnt7XoZGa
-   EuDyHQtBty2ZrFHmI7d8QG6AXAJ+kpn8n3V6Y3olO/DZCy7kfNJS9cef+
-   kKCS/rYq8M0OEcWygIcMfVyxzSuWUIjpQWyPuDlNJNZWd/OTjmJbB2sIC
+  bh=nKDUWjSDj08uKyvTX9DBKESYugIunl4wAuN3dhOg4bY=;
+  b=LTStVWHs5GQ1Du/aFIIuUItNXjuhalqPmF9OSkY8L6tYx08A9VnULVcJ
+   9T+HFEsccIQutkLf//B+dmJMZ7w7v9YJbTkh9elZiG2wjH56DYFAbYrWi
+   cvIsqNP0mmsNIr76O2WErXfXljsWtGK0wj5RNT58cYwZjIhR3H9WImfu6
+   DkkP6Y4EPECYoLDTOm8Z9GKiDqpj9lfOHNq5a1oJ9P6CyC4Qeg1knWv0p
+   z+hxM+JSLZbnvfFuNSheehv56UlaEZgbxPJW5emU4+x06l8mF4O+cf7Kk
+   Tf31223tAgOGize9ZlGbo0ZGPrnVxCB3YiD/3oCYkyysI7np5ok9vaht3
    w==;
-X-CSE-ConnectionGUID: fCFG0CZWSe+5wphEDNEfdw==
-X-CSE-MsgGUID: sfq17LyUTiCklkbkljwU6A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11529"; a="62015797"
+X-CSE-ConnectionGUID: OZXHe2tRT0iH+ou858QNuA==
+X-CSE-MsgGUID: aBXxvu3qQji74g+dMSr5UQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11529"; a="57201405"
 X-IronPort-AV: E=Sophos;i="6.17,309,1747724400"; 
-   d="scan'208";a="62015797"
-Received: from fmviesa004.fm.intel.com ([10.60.135.144])
-  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Aug 2025 07:56:54 -0700
-X-CSE-ConnectionGUID: lzEm3K2FR72KwstWyYHG9Q==
-X-CSE-MsgGUID: TakxZF6vRGWLwfxTYMc+bA==
+   d="scan'208";a="57201405"
+Received: from orviesa008.jf.intel.com ([10.64.159.148])
+  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Aug 2025 07:57:59 -0700
+X-CSE-ConnectionGUID: C0xJ1+zrQqykpRB+mZXlLg==
+X-CSE-MsgGUID: wUiykzbVSkaqn73XadpgDQ==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.17,309,1747724400"; 
-   d="scan'208";a="173994571"
+   d="scan'208";a="168920545"
 Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.115])
-  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Aug 2025 07:56:49 -0700
+  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Aug 2025 07:57:54 -0700
 From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
 To: Andreas Larsson <andreas@gaisler.com>,
 	Bjorn Helgaas <bhelgaas@google.com>,
@@ -76,9 +76,9 @@ To: Andreas Larsson <andreas@gaisler.com>,
 Cc: =?UTF-8?q?Micha=C5=82=20Winiarski?= <michal.winiarski@intel.com>,
 	linuxppc-dev@lists.ozlabs.org,
 	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Subject: [PATCH 04/24] PCI: Move find_bus_resource_of_type() earlier
-Date: Fri, 22 Aug 2025 17:55:45 +0300
-Message-Id: <20250822145605.18172-5-ilpo.jarvinen@linux.intel.com>
+Subject: [PATCH 11/24] PCI: Add defines for bridge window indexing
+Date: Fri, 22 Aug 2025 17:55:52 +0300
+Message-Id: <20250822145605.18172-12-ilpo.jarvinen@linux.intel.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20250822145605.18172-1-ilpo.jarvinen@linux.intel.com>
 References: <20250822145605.18172-1-ilpo.jarvinen@linux.intel.com>
@@ -98,88 +98,56 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-Move find_bus_resource_of_type() earlier in setup-bus.c to be able to
-call it in upcoming changes.
+include/linux/pci.h provides PCI_BRIDGE_{IO,MEM,PREF_MEM}_WINDOW
+defines, however, they're based on the resource array indexing in the
+pci_dev struct. The struct pci_bus also has pointers to those same
+resource but they start from zeroth index.
+
+Add PCI_BUS_BRIDGE_{IO,MEM,PREF_MEM}_WINDOW defines to get rid of
+literal indexing.
 
 Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 ---
- drivers/pci/setup-bus.c | 56 ++++++++++++++++++++---------------------
- 1 file changed, 28 insertions(+), 28 deletions(-)
+ drivers/pci/pci.h   |  4 ++++
+ drivers/pci/probe.c | 10 +++++++---
+ 2 files changed, 11 insertions(+), 3 deletions(-)
 
-diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index def29506700e..4097d8703b8f 100644
---- a/drivers/pci/setup-bus.c
-+++ b/drivers/pci/setup-bus.c
-@@ -140,6 +140,34 @@ static void restore_dev_resource(struct pci_dev_resource *dev_res)
- 	res->flags = dev_res->flags;
- }
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index 34f65d69662e..1dc8a8066761 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -81,6 +81,10 @@ struct pcie_tlp_log;
+ #define PCIE_MSG_CODE_DEASSERT_INTC	0x26
+ #define PCIE_MSG_CODE_DEASSERT_INTD	0x27
  
-+/*
-+ * Helper function for sizing routines.  Assigned resources have non-NULL
-+ * parent resource.
-+ *
-+ * Return first unassigned resource of the correct type.  If there is none,
-+ * return first assigned resource of the correct type.  If none of the
-+ * above, return NULL.
-+ *
-+ * Returning an assigned resource of the correct type allows the caller to
-+ * distinguish between already assigned and no resource of the correct type.
-+ */
-+static struct resource *find_bus_resource_of_type(struct pci_bus *bus,
-+						  unsigned long type_mask,
-+						  unsigned long type)
-+{
-+	struct resource *r, *r_assigned = NULL;
++#define PCI_BUS_BRIDGE_IO_WINDOW	0
++#define PCI_BUS_BRIDGE_MEM_WINDOW	1
++#define PCI_BUS_BRIDGE_PREF_MEM_WINDOW	2
 +
-+	pci_bus_for_each_resource(bus, r) {
-+		if (r == &ioport_resource || r == &iomem_resource)
-+			continue;
-+		if (r && (r->flags & type_mask) == type && !r->parent)
-+			return r;
-+		if (r && (r->flags & type_mask) == type && !r_assigned)
-+			r_assigned = r;
-+	}
-+	return r_assigned;
-+}
-+
- static bool pdev_resources_assignable(struct pci_dev *dev)
- {
- 	u16 class = dev->class >> 8, command;
-@@ -876,34 +904,6 @@ static void pci_bridge_check_ranges(struct pci_bus *bus)
- 	}
- }
+ extern const unsigned char pcie_link_speed[];
+ extern bool pci_early_dump;
  
--/*
-- * Helper function for sizing routines.  Assigned resources have non-NULL
-- * parent resource.
-- *
-- * Return first unassigned resource of the correct type.  If there is none,
-- * return first assigned resource of the correct type.  If none of the
-- * above, return NULL.
-- *
-- * Returning an assigned resource of the correct type allows the caller to
-- * distinguish between already assigned and no resource of the correct type.
-- */
--static struct resource *find_bus_resource_of_type(struct pci_bus *bus,
--						  unsigned long type_mask,
--						  unsigned long type)
--{
--	struct resource *r, *r_assigned = NULL;
--
--	pci_bus_for_each_resource(bus, r) {
--		if (r == &ioport_resource || r == &iomem_resource)
--			continue;
--		if (r && (r->flags & type_mask) == type && !r->parent)
--			return r;
--		if (r && (r->flags & type_mask) == type && !r_assigned)
--			r_assigned = r;
--	}
--	return r_assigned;
--}
--
- static resource_size_t calculate_iosize(resource_size_t size,
- 					resource_size_t min_size,
- 					resource_size_t size1,
+diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
+index f31d27c7708a..eaeb66bec433 100644
+--- a/drivers/pci/probe.c
++++ b/drivers/pci/probe.c
+@@ -598,9 +598,13 @@ void pci_read_bridge_bases(struct pci_bus *child)
+ 	for (i = 0; i < PCI_BRIDGE_RESOURCE_NUM; i++)
+ 		child->resource[i] = &dev->resource[PCI_BRIDGE_RESOURCES+i];
+ 
+-	pci_read_bridge_io(child->self, child->resource[0], false);
+-	pci_read_bridge_mmio(child->self, child->resource[1], false);
+-	pci_read_bridge_mmio_pref(child->self, child->resource[2], false);
++	pci_read_bridge_io(child->self,
++			   child->resource[PCI_BUS_BRIDGE_IO_WINDOW], false);
++	pci_read_bridge_mmio(child->self,
++			     child->resource[PCI_BUS_BRIDGE_MEM_WINDOW], false);
++	pci_read_bridge_mmio_pref(child->self,
++				  child->resource[PCI_BUS_BRIDGE_PREF_MEM_WINDOW],
++				  false);
+ 
+ 	if (!dev->transparent)
+ 		return;
 -- 
 2.39.5
 
