@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-11196-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11197-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56F62CA0EEB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Aug 2025 14:57:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82877CA0EED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Aug 2025 14:58:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c7jwR0tQlz3chX;
-	Sat, 23 Aug 2025 00:57:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.19
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755874663;
-	cv=none; b=ARhT4P6Zl41OQGHNcd6FGN82jfxIu/s5cEdddzFmVfPihNNrz3rv19NMPEtVr6aiBlDLeTg7NdqFGNIcIR0jSZVJVdzXPFEer6bY/6Z1aHwdnJt+aMPKEg4/+P9jYuUIZ8JlwOVHYfXfuz4C1ebtEb1uHs6aKiOo1e5AZ+grxsORkQndEpO20uWpDQQR5RYgj9SPYdFfQwVZyHToJgCSO/51KZUaAjotIXF11yKzBZ+2L2BwyvNoa4oN6fw0CCwkRRKQZ0/FeeW8ydMnvnH+wlEuQRVJ/2ajtZmm5zWxKZ3f3Zd7NlE/HqiHjV8RPIw/bH82G/7ObO6wB7oRwzRBOg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c7jwZ478pz3cjT;
+	Sat, 23 Aug 2025 00:57:50 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.14
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755874670;
+	cv=none; b=HaW06CqmXgw+Vtrl40rgFI5DmzpjEZRBUW/PqXcmzgGWzcoNLXpe2lmpJLU34BNPE3u7yHnvDznEEnG6B0oBeKFzqvOleH8o/oPwSWIpV7c8y2xh+WzlxLqYK/fx8lQf91AhnoSXni6zIMDsETDXmKlmjApdXwMlrOA4AsL8BqvOsB6xS7lL5/wKJDX+d9zWGIzihp/gDxdEXw453/6qv1+MVBXjnw/nl52I48vw/aTb2UBH1eYmAT+8MpzVlaY9+1PVl6pRGxLSTa79BVVmBqvAecWNopTrJc8ibW5zvZ0tLpcBh9OP3UuNyVy9rcSgI4vkHyilzNax5iqjb3+ClQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755874663; c=relaxed/relaxed;
-	bh=ujplEvbDO1wFklyNcDE7UE0WyWOxOKVGzILaJlwSzy4=;
+	t=1755874670; c=relaxed/relaxed;
+	bh=9MLx/T9NtwRKV+XTCbOjgjiTV19qf3cDzE/LYh1/LJA=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=MONjG75itY1LjirLxwvrxkZK1ZvOfiydfkOIOlVeW0LjIKcjQQVB5Hz87q/Uwyqae0J+GKMaFX5N3YHodgFpqsjOc7t0a4eDEG5G2agi1YxkrUylMmi3DiKPskOBPgJH/OUFtKPeHtLfseXma1dCYmLDqd0H6p2IVyXNlua76TquyX7jFEhTf/b+UqWHm+tAm4VcelgIyMH9V5Os0SjluAkeYJDJPa0Jp9D0jPkZYF+hzeg+UzkTf6750ce3F4GJw86C1nlaIPjZ88jW67TBeRnPJPWZskROzSnxuer6nUJw/nq08aQlIWikGBSwGuevYhSyaSADT4cn9albcLcRCQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ipBWOXFk; dkim-atps=neutral; spf=none (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 MIME-Version:Content-Type; b=k1bHH3Bwba5toogr/aGyOU6EQ0m17sc73sFAMtNKdXPxPMBjDKIe6BHthVfqNTg68nTq/iA4+JYysnz4mZBi36aUSOytoITpTUoOx6wzzGMztvP0jpeCv9f5p8YlUyOYqAZkRyJT3rxENSKJCq77K5jNyXhotqA8Gyq7JqKBE9T6NRtbvZnu2BI+k1WeEJL4KWDmcg2kdR9SPqdW5MnsDzGaF5y2yH0dtYo3ChxJHYzpy7QAlEnnwOO3ec5qB+vCwmT6Q7nFwpt2hVz2G19fU63Z91H4dG40WbZeQvgAvswJTBMyJ40cJ5TVfdxTwQk8U/B5ihxFe9i4ze47DCijGA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NeEuII7b; dkim-atps=neutral; spf=none (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ipBWOXFk;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=NeEuII7b;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.14; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.14])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c7jwQ23vpz3chw
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2025 00:57:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c7jwY4h8nz3cjH
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2025 00:57:49 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1755874662; x=1787410662;
+  t=1755874670; x=1787410670;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=F2R5lm6B0zlfTPYSGNsRRvyNW/8MTuBWGQgTQj1Brew=;
-  b=ipBWOXFkVZsUuMbUxd3LK2MTfyQ4FEsLA64iTDzjKnZfK0hg1NamqE0l
-   aBvDnPUEPDBwvOEInqbpSZAEdFUQWvXh7ffA5TAzwYh0RL3vu71aSlbue
-   nUTw6J++hmmQLdPkyJStP2/OB7x7h+o6a42JZ5xb6JJR6CrJqMAw4ph3J
-   MY5lg8n+eLu+YDNDw50yiZyoQwSZmXoS6geKiJbdmRkUCu7k6II5TrS0Y
-   5vWqtJRbvuP2rGDjUDHl7BmJZNHK07+g0zFQ5X1ONASQapBPEU/JCsG2w
-   dnQ1c9M/L9MsbaB42kXsTo5qikBm4BS8OrX0SAZSf4tT6DduHn5TMAkDd
-   g==;
-X-CSE-ConnectionGUID: 8iBVyzrGSbKm2TPMnAGOpg==
-X-CSE-MsgGUID: E173XObkTWKCu69xYqhnYw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11529"; a="57201371"
+  bh=jBXSW/HvE/oTFKPyIiL0xTmEeLPgXFT+lohCoGdRapA=;
+  b=NeEuII7bM/T8F2UmdmxbsEiFZzyjTHmqPdziXZKbZEqzuJ9iY95t7X5P
+   WnkQ9Dd5/JDUY9aR+LZCxDKtMHvfAJ0nxRwdKmAs6Mg5SqOWBpIXRU9nX
+   k8FIBqXzqAHDMDvrJJY/QESAZyEU4dYoBMxlofz97U8FsdIndVG56vGnK
+   6CWEGuQYYkLiOt+foRfgwkL3LU3LMrX3kPxhoe+bcITNBOffTGHzE+Ifl
+   ad0hmzIVVF0T1AQMZufq4siscshZ4wUgjnxqeSffnh4oJfdcdyZH2y1iU
+   x3O4BwK+8sI5wEfyPwOBbLtWseeTpWhnlsmGRS9Kr8MbCVVF5BLvxxKn3
+   Q==;
+X-CSE-ConnectionGUID: WZUUGz7+TuaOSxmtpgKLnQ==
+X-CSE-MsgGUID: uWaSqbhNSBCRvu1p788Myg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11529"; a="62015782"
 X-IronPort-AV: E=Sophos;i="6.17,309,1747724400"; 
-   d="scan'208";a="57201371"
-Received: from orviesa008.jf.intel.com ([10.64.159.148])
-  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Aug 2025 07:57:40 -0700
-X-CSE-ConnectionGUID: dUvSFF9VS1qy+pJdy3UIkw==
-X-CSE-MsgGUID: wzKVwqaETQWyVrIJW+JaKQ==
+   d="scan'208";a="62015782"
+Received: from fmviesa004.fm.intel.com ([10.60.135.144])
+  by orvoesa106.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Aug 2025 07:56:45 -0700
+X-CSE-ConnectionGUID: ixYcXxcpSP2pUy6rUGsbsQ==
+X-CSE-MsgGUID: FOhRjr0IQkSfd3SUorEZlw==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.17,309,1747724400"; 
-   d="scan'208";a="168920509"
+   d="scan'208";a="173994552"
 Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.115])
-  by orviesa008-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Aug 2025 07:57:35 -0700
+  by fmviesa004-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Aug 2025 07:56:39 -0700
 From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
 To: Andreas Larsson <andreas@gaisler.com>,
 	Bjorn Helgaas <bhelgaas@google.com>,
@@ -76,9 +76,9 @@ To: Andreas Larsson <andreas@gaisler.com>,
 Cc: =?UTF-8?q?Micha=C5=82=20Winiarski?= <michal.winiarski@intel.com>,
 	linuxppc-dev@lists.ozlabs.org,
 	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Subject: [PATCH 09/24] PCI: Enable bridge even if bridge window fails to assign
-Date: Fri, 22 Aug 2025 17:55:50 +0300
-Message-Id: <20250822145605.18172-10-ilpo.jarvinen@linux.intel.com>
+Subject: [PATCH 03/24] MIPS: PCI: Use pci_enable_resources()
+Date: Fri, 22 Aug 2025 17:55:44 +0300
+Message-Id: <20250822145605.18172-4-ilpo.jarvinen@linux.intel.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20250822145605.18172-1-ilpo.jarvinen@linux.intel.com>
 References: <20250822145605.18172-1-ilpo.jarvinen@linux.intel.com>
@@ -98,98 +98,75 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-A normal PCI bridge has multiple bridge windows and not all of them are
-always required by devices underneath the bridge. If Root Port or
-bridge does not have a device underneath, no bridge windows get
-assigned. Yet, pci_enable_resources() is set to fail indiscriminantly
-on any resource assignment failure if the resource is not known to be
-optional.
+pci-legacy.c under MIPS has a copy of pci_enable_resources() named as
+pcibios_enable_resources(). Having own copy of same functionality could
+lead to inconsistencies in behavior, especially now as
+pci_enable_resources() and the bridge window resource flags behavior
+are going to be altered by upcoming changes.
 
-In practice, the code in pci_enable_resources() is currently largely
-dormant. The kernel sets resource flags to zero for any unused bridge
-window and resets flags to zero in case of an resource assignment
-failure, which short-circuits pci_enable_resources() because of this
-check:
+The check for !r->start && r->end is already covered by the more
+generic checks done in pci_enable_resources().
 
-	if (!(r->flags & (IORESOURCE_IO | IORESOURCE_MEM)))
-		continue;
-
-However, an upcoming change to resource flags will alter how bridge
-window flags resource flags behave activating these long dormants
-checks in pci_enable_resources().
-
-While complex logic could be built to selectively enable a bridge only
-under some conditions, a few versions of such logic were tried during
-development of this change and none of them worked satisfactorily.
-Thus, I just gave up and decided to enable any bridge regardless of the
-bridge windows as there seems to be no clear benefit from not enabling
-it but a major downside as pcieport will not be probed for the bridge
-if it's not enabled.
-
-Therefore, change pci_enable_resources() to not check if bridge window
-resources remain unassigned. Resource assignment failures are pretty
-noisy already so there is no need to log that for bridge windows in
-pci_enable_resources().
-
-Ignoring bridge window failures hopefully prevents an obvious sources
-of regressions when the upcoming change that no longer clears resource
-flags for bridge windows is enacted. I've hit this problem even during
-my own testing on multiple occassions so I expect it to be a quite
-common problem.
-
-This can always be revisited later if somebody thinks the enable check
-for bridges is not strict enough, but expect a mind-boggling number of
-regressions from such a change.
+Call pci_enable_resources() from MIPS's pcibios_enable_device() and
+remove pcibios_enable_resources().
 
 Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 ---
- drivers/pci/setup-res.c | 30 +++++++++++++++++-------------
- 1 file changed, 17 insertions(+), 13 deletions(-)
+ arch/mips/pci/pci-legacy.c | 38 ++------------------------------------
+ 1 file changed, 2 insertions(+), 36 deletions(-)
 
-diff --git a/drivers/pci/setup-res.c b/drivers/pci/setup-res.c
-index 0468c058b598..4e0e60256f04 100644
---- a/drivers/pci/setup-res.c
-+++ b/drivers/pci/setup-res.c
-@@ -527,22 +527,26 @@ int pci_enable_resources(struct pci_dev *dev, int mask)
- 		if (pci_resource_is_optional(dev, i))
- 			continue;
+diff --git a/arch/mips/pci/pci-legacy.c b/arch/mips/pci/pci-legacy.c
+index 66898fd182dc..d04b7c1294b6 100644
+--- a/arch/mips/pci/pci-legacy.c
++++ b/arch/mips/pci/pci-legacy.c
+@@ -249,45 +249,11 @@ static int __init pcibios_init(void)
  
--		if (r->flags & IORESOURCE_UNSET) {
--			pci_err(dev, "%s %pR: not assigned; can't enable device\n",
--				r_name, r);
--			return -EINVAL;
-+		if (i < PCI_BRIDGE_RESOURCES) {
-+			if (r->flags & IORESOURCE_UNSET) {
-+				pci_err(dev, "%s %pR: not assigned; can't enable device\n",
-+					r_name, r);
-+				return -EINVAL;
-+			}
-+
-+			if (!r->parent) {
-+				pci_err(dev, "%s %pR: not claimed; can't enable device\n",
-+					r_name, r);
-+				return -EINVAL;
-+			}
- 		}
+ subsys_initcall(pcibios_init);
  
--		if (!r->parent) {
--			pci_err(dev, "%s %pR: not claimed; can't enable device\n",
--				r_name, r);
--			return -EINVAL;
-+		if (r->parent) {
-+			if (r->flags & IORESOURCE_IO)
-+				cmd |= PCI_COMMAND_IO;
-+			if (r->flags & IORESOURCE_MEM)
-+				cmd |= PCI_COMMAND_MEMORY;
- 		}
+-static int pcibios_enable_resources(struct pci_dev *dev, int mask)
+-{
+-	u16 cmd, old_cmd;
+-	int idx;
+-	struct resource *r;
 -
+-	pci_read_config_word(dev, PCI_COMMAND, &cmd);
+-	old_cmd = cmd;
+-	pci_dev_for_each_resource(dev, r, idx) {
+-		/* Only set up the requested stuff */
+-		if (!(mask & (1<<idx)))
+-			continue;
+-
+-		if (!(r->flags & (IORESOURCE_IO | IORESOURCE_MEM)))
+-			continue;
+-		if ((idx == PCI_ROM_RESOURCE) &&
+-				(!(r->flags & IORESOURCE_ROM_ENABLE)))
+-			continue;
+-		if (!r->start && r->end) {
+-			pci_err(dev,
+-				"can't enable device: resource collisions\n");
+-			return -EINVAL;
+-		}
 -		if (r->flags & IORESOURCE_IO)
 -			cmd |= PCI_COMMAND_IO;
 -		if (r->flags & IORESOURCE_MEM)
 -			cmd |= PCI_COMMAND_MEMORY;
- 	}
+-	}
+-	if (cmd != old_cmd) {
+-		pci_info(dev, "enabling device (%04x -> %04x)\n", old_cmd, cmd);
+-		pci_write_config_word(dev, PCI_COMMAND, cmd);
+-	}
+-	return 0;
+-}
+-
+ int pcibios_enable_device(struct pci_dev *dev, int mask)
+ {
+-	int err = pcibios_enable_resources(dev, mask);
++	int err;
  
- 	if (cmd != old_cmd) {
++	err = pci_enable_resources(dev, mask);
+ 	if (err < 0)
+ 		return err;
+ 
 -- 
 2.39.5
 
