@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-11205-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11206-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32D73CA0EED
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Aug 2025 14:58:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31AE9CA0EED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Aug 2025 14:59:04 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c7jxF59xrz3clf;
-	Sat, 23 Aug 2025 00:58:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755874705;
-	cv=none; b=H5V8gAKt81RqtCN9mJBmWal18vnaU3RKg7uBFWemA8T2Fi0xG8A1E17dUAD+RefMv+S0sTSRK6Hl34VR8T3RUXVs10GrmQ1DA45MWZod5euBYcT2L+weJNLTUj86I6e2gNOrHSoqkSGQMM/ywPP6uW/00524cmY2/Dx25wZaPJi0NwhBxVhR0ZY48VG2rlFRbjKj8Xw9URG8lrq5GMQvTQeDpN0UsALcYl34XEQqvRx2aO4d7MtABfZcUa+NBBqbBujifOdj5XpPZMEEGANmr8rHZKkZysS5V5zt5y41w2lHjYaXY4wXYspNDErtvOg1D/rwwi9yUDVOAraqHjC8VA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c7jxL0dhhz3cmP;
+	Sat, 23 Aug 2025 00:58:30 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.9
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755874710;
+	cv=none; b=c4wTnqzDqAYgPR1TMKViopVsbv4PVYfkcDYevdIJZC66mKQqrPKbU7SHKDIDZRyMPHbgG4XiR9VTqhBh5PCm9pUt9UDz1PEmjU0c5W3Fgv94jeqvH66gZzoa69cqk8Ql5/45iVdTCIT32Ch7yO+OYoTE+0FWUtadIqyTfaXDS9C4jlg17BLyuJUx8U+oaS5gdqkp5dmlrAvbl+9FGTKbALdmbvEzT/4FYtaBt54fgFCSLsnfME31HyX9OgiX8Kqo49/0oXSX5pnuGt6SKmyw6DpsfWEEEmKjNf+1zWCYuq5/YkYwRtK/jiEQBFe3CkkY75csLxO/apaWwxB7QOR8ZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755874705; c=relaxed/relaxed;
-	bh=puMEaJNJgu1P3i4XhfLXkIyYtE5ZA0dKhgA4gEVbimI=;
+	t=1755874710; c=relaxed/relaxed;
+	bh=/+f7qtaHQyf0pv/p11QM0cvc/kLOwFYUbhiYRvjN9/E=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=esjbOLB65I3vhaQxYId9nTCMjviYoaxOfz4lijenXmkQXhohXHQoy8Ayhy6v4R4nlCJoqaB/8IY+dUxj82d/d4FQTfWp7b6Qna8lJOhjnk2hl9tZf3buG9DPkaJYwCBQnkKX8Qm7ER46FPXZ4o8MUd+B+6prnIyF0aJcUO+cxoQb/HIEcsvp1TKEuhigKffpSGZnJGK3PcKGPdlfslpwzvkF6P6hbczaHpxaI5/jofB2C+aFFFr7554zeg7Q7Olp7DTptHSe+BI7+G4vUD26dRqMGqgn0GlNt+PR/dxZSaeLKgbYYR/aU+kJhzdIwaGZ/C9828Io1SHkGW/t62XSHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EceU7khK; dkim-atps=neutral; spf=none (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 MIME-Version:Content-Type; b=JzGr/rMdXnIv8Wh8FZDQdFhV4wJGZPaec9Sk5c0u4/aCqjMHJB0aqtq948cOlRV0KZC9jNv4rFie9hei/yaJGIKCc3UZ6SYc8boVGJU6cidDDEpsqUWUJ2uOtYhCsmUfjiajAjozeQ5u/9BAI2bD5HYB2Xzf9sp+T/MgpaMN32C8IZlwdcbF/RKQAe3SoCA2faj7picYGYTK+xKDkPO0xogHRqafZ7/JKt6xWqOX7FhRDIU78aTLDlGsbpmn8xRAnxaCokBvfGHCALB+JMhJo6/rznULQ+QsArhEt9Rli3vuN5BQFq7yId4P8NqjF1FlkHjBFICUiM73/o5xcn+ygg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VPnFT9d1; dkim-atps=neutral; spf=none (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EceU7khK;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VPnFT9d1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c7jxD5kwVz3cls
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2025 00:58:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c7jxK1Pdpz3ckk
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2025 00:58:28 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1755874705; x=1787410705;
+  t=1755874710; x=1787410710;
   h=from:to:cc:subject:date:message-id:in-reply-to:
    references:mime-version:content-transfer-encoding;
-  bh=gchIaEGGMd1rP3k9+ZAelZgSdhp5C6iJlv32uxG+nxU=;
-  b=EceU7khKXO96/EmyfoWKr6F+7tqtTJQ1rdeNUlgsrRpxD2gHnmcG2e5a
-   XvbdNv58DUUVgQn5JU1ZDDPenXvXoskGI9FFUclxDxAjm9Rqp3EgrwLlE
-   I5DuFKVpIcKuDLNhBKJJz5D5oPQdt6PmG76DUGV2pptwQSf99wsmsW4CW
-   mVoGnFGWNrgUhj6h4mZkL2Lqu1TeoxpkvpnWHBQ1cMiSl2IJhyxvxdqwm
-   4sSfmLOKwcneK+23DV6sO1Yrwtg+nfc30PQl6l5ipjIoG3tf9slO1Y3Ri
-   7dxoTerZfpDtuKU8A4mKTY3gRzJGCmgGsqFB9ox5hLZHpxt+mbGAk4O8m
-   A==;
-X-CSE-ConnectionGUID: MyMw9n0QTd2nsnbgyTIVlA==
-X-CSE-MsgGUID: k8GFZPFETm2Rjpvj3fWm0Q==
-X-IronPort-AV: E=McAfee;i="6800,10657,11529"; a="69283158"
+  bh=lNB4OF2Frswq8A/Spc0itCO+i13cv1R1+OiD+b5mXBM=;
+  b=VPnFT9d134jvh+LLwBb78lVZCGjfuDK8JW3BY+jjPn1e4KT1F7/U5zqE
+   w6TELPkzEL6CY/plOV7hZLE9/Hb6aLomP0VXoNj8QDNqm+DOLzJdVqM1e
+   /JPFXAJV9ivCSeWIHsmphZ5ZIVkImzah+2Y/8sSqTxsSq/BYBoIHUL+r8
+   TLQrP8uzMJXdhgzU/P2ID33nlE9IJv4w0gkeGjL8aXOajxBEmhXvpOSTW
+   vCBjZNrUhSxqssl982Ebi65Emth3Lw6xnnQOmGzGyD/3EAoftqYminPlP
+   OAHwTU9K0LJRaByhgfMqUJYAWIG2Y8qZlnP0E7Il2sRsa92jDEZi6HdxB
+   Q==;
+X-CSE-ConnectionGUID: jh6FZfLNTUyT6lmQCmMKrQ==
+X-CSE-MsgGUID: mgF5ZyTNSTq0zIzK+3ULtg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11529"; a="80780572"
 X-IronPort-AV: E=Sophos;i="6.17,309,1747724400"; 
-   d="scan'208";a="69283158"
-Received: from fmviesa010.fm.intel.com ([10.60.135.150])
-  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Aug 2025 07:57:21 -0700
-X-CSE-ConnectionGUID: ypkw906bTXqIvRPHTHdqxg==
-X-CSE-MsgGUID: VaLoVjPPS6WX/H2vbHvugw==
+   d="scan'208";a="80780572"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Aug 2025 07:58:28 -0700
+X-CSE-ConnectionGUID: QdpNvnJ4TxqlKStF+Xcarg==
+X-CSE-MsgGUID: dx1mT04YSL+qjkrIT85xOA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.17,309,1747724400"; 
-   d="scan'208";a="169547108"
+   d="scan'208";a="168232435"
 Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.244.115])
-  by fmviesa010-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Aug 2025 07:57:16 -0700
+  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Aug 2025 07:58:22 -0700
 From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
 To: Andreas Larsson <andreas@gaisler.com>,
 	Bjorn Helgaas <bhelgaas@google.com>,
@@ -76,9 +76,9 @@ To: Andreas Larsson <andreas@gaisler.com>,
 Cc: =?UTF-8?q?Micha=C5=82=20Winiarski?= <michal.winiarski@intel.com>,
 	linuxppc-dev@lists.ozlabs.org,
 	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
-Subject: [PATCH 07/24] PCI: Disable non-claimed bridge window
-Date: Fri, 22 Aug 2025 17:55:48 +0300
-Message-Id: <20250822145605.18172-8-ilpo.jarvinen@linux.intel.com>
+Subject: [PATCH 14/24] PCI: Warn if bridge window cannot be released when resizing BAR
+Date: Fri, 22 Aug 2025 17:55:55 +0300
+Message-Id: <20250822145605.18172-15-ilpo.jarvinen@linux.intel.com>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20250822145605.18172-1-ilpo.jarvinen@linux.intel.com>
 References: <20250822145605.18172-1-ilpo.jarvinen@linux.intel.com>
@@ -98,119 +98,37 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-If clipping or claiming the bridge window fails, the bridge window is
-left into a state that does not match with the kernel's view on what
-the bridge window is.
+BAR resizing calls to pci_reassign_bridge_resources() that attempts to
+release any upstream bridge window to allow them to accommodate the new
+BAR size. The release can only be performed if there are no other child
+resources for the bridge window. The code just silently continues when
+this condition is detects.
 
-Disable the bridge window by writing the magic disable value into the
-Base and Limit Registers if clipping or claiming failed. To detect if
-claiming the resource was successful, add res->parent checks into the
-bridge setup functions.
+Add pci_warn() to inform user that a bridge window could not be
+released because of child resources. As too small bridge window is
+often the reason why the BAR resize cannot succeed, this warning will
+help to pinpoint to the cause.
 
 Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
 ---
- drivers/pci/setup-bus.c | 25 ++++++++++++-------------
- 1 file changed, 12 insertions(+), 13 deletions(-)
+ drivers/pci/setup-bus.c | 4 ++++
+ 1 file changed, 4 insertions(+)
 
 diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
-index b477f68b236c..6bdc1af887da 100644
+index 5ef6362b5166..55289cd58e2c 100644
 --- a/drivers/pci/setup-bus.c
 +++ b/drivers/pci/setup-bus.c
-@@ -660,7 +660,7 @@ void pci_setup_cardbus(struct pci_bus *bus)
+@@ -2556,6 +2556,10 @@ int pbus_reassign_bridge_resources(struct pci_bus *bus, struct resource *res)
+ 				goto cleanup;
  
- 	res = bus->resource[0];
- 	pcibios_resource_to_bus(bridge->bus, &region, res);
--	if (res->flags & IORESOURCE_IO) {
-+	if (res->parent && res->flags & IORESOURCE_IO) {
- 		/*
- 		 * The IO resource is allocated a range twice as large as it
- 		 * would normally need.  This allows us to set both IO regs.
-@@ -674,7 +674,7 @@ void pci_setup_cardbus(struct pci_bus *bus)
+ 			pci_release_resource(bridge, i);
++		} else {
++			pci_warn(bridge,
++				 "%s %pR: was not released (still contains assigned resources)\n",
++				 res_name, res);
+ 		}
  
- 	res = bus->resource[1];
- 	pcibios_resource_to_bus(bridge->bus, &region, res);
--	if (res->flags & IORESOURCE_IO) {
-+	if (res->parent && res->flags & IORESOURCE_IO) {
- 		pci_info(bridge, "  bridge window %pR\n", res);
- 		pci_write_config_dword(bridge, PCI_CB_IO_BASE_1,
- 					region.start);
-@@ -684,7 +684,7 @@ void pci_setup_cardbus(struct pci_bus *bus)
- 
- 	res = bus->resource[2];
- 	pcibios_resource_to_bus(bridge->bus, &region, res);
--	if (res->flags & IORESOURCE_MEM) {
-+	if (res->parent && res->flags & IORESOURCE_MEM) {
- 		pci_info(bridge, "  bridge window %pR\n", res);
- 		pci_write_config_dword(bridge, PCI_CB_MEMORY_BASE_0,
- 					region.start);
-@@ -694,7 +694,7 @@ void pci_setup_cardbus(struct pci_bus *bus)
- 
- 	res = bus->resource[3];
- 	pcibios_resource_to_bus(bridge->bus, &region, res);
--	if (res->flags & IORESOURCE_MEM) {
-+	if (res->parent && res->flags & IORESOURCE_MEM) {
- 		pci_info(bridge, "  bridge window %pR\n", res);
- 		pci_write_config_dword(bridge, PCI_CB_MEMORY_BASE_1,
- 					region.start);
-@@ -735,7 +735,7 @@ static void pci_setup_bridge_io(struct pci_dev *bridge)
- 	res = &bridge->resource[PCI_BRIDGE_IO_WINDOW];
- 	res_name = pci_resource_name(bridge, PCI_BRIDGE_IO_WINDOW);
- 	pcibios_resource_to_bus(bridge->bus, &region, res);
--	if (res->flags & IORESOURCE_IO) {
-+	if (res->parent && res->flags & IORESOURCE_IO) {
- 		pci_read_config_word(bridge, PCI_IO_BASE, &l);
- 		io_base_lo = (region.start >> 8) & io_mask;
- 		io_limit_lo = (region.end >> 8) & io_mask;
-@@ -767,7 +767,7 @@ static void pci_setup_bridge_mmio(struct pci_dev *bridge)
- 	res = &bridge->resource[PCI_BRIDGE_MEM_WINDOW];
- 	res_name = pci_resource_name(bridge, PCI_BRIDGE_MEM_WINDOW);
- 	pcibios_resource_to_bus(bridge->bus, &region, res);
--	if (res->flags & IORESOURCE_MEM) {
-+	if (res->parent && res->flags & IORESOURCE_MEM) {
- 		l = (region.start >> 16) & 0xfff0;
- 		l |= region.end & 0xfff00000;
- 		pci_info(bridge, "  %s %pR\n", res_name, res);
-@@ -796,7 +796,7 @@ static void pci_setup_bridge_mmio_pref(struct pci_dev *bridge)
- 	res = &bridge->resource[PCI_BRIDGE_PREF_MEM_WINDOW];
- 	res_name = pci_resource_name(bridge, PCI_BRIDGE_PREF_MEM_WINDOW);
- 	pcibios_resource_to_bus(bridge->bus, &region, res);
--	if (res->flags & IORESOURCE_PREFETCH) {
-+	if (res->parent && res->flags & IORESOURCE_PREFETCH) {
- 		l = (region.start >> 16) & 0xfff0;
- 		l |= region.end & 0xfff00000;
- 		if (res->flags & IORESOURCE_MEM_64) {
-@@ -848,6 +848,8 @@ static void pci_setup_bridge(struct pci_bus *bus)
- 
- int pci_claim_bridge_resource(struct pci_dev *bridge, int i)
- {
-+	int ret = -EINVAL;
-+
- 	if (i < PCI_BRIDGE_RESOURCES || i > PCI_BRIDGE_RESOURCE_END)
- 		return 0;
- 
-@@ -861,11 +863,8 @@ int pci_claim_bridge_resource(struct pci_dev *bridge, int i)
- 		return -EINVAL;
- 
- 	/* Try to clip the resource and claim the smaller window */
--	if (!pci_bus_clip_resource(bridge, i))
--		return -EINVAL;	/* Clipping didn't change anything */
--
--	if (!pci_claim_resource(bridge, i))
--		return -EINVAL;
-+	if (pci_bus_clip_resource(bridge, i))
-+		ret = pci_claim_resource(bridge, i);
- 
- 	switch (i) {
- 	case PCI_BRIDGE_IO_WINDOW:
-@@ -881,7 +880,7 @@ int pci_claim_bridge_resource(struct pci_dev *bridge, int i)
- 		return -EINVAL;
- 	}
- 
--	return 0;
-+	return ret;
- }
- 
- /*
+ 		bus = bus->parent;
 -- 
 2.39.5
 
