@@ -1,79 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-11189-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11190-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 89107CA0EEB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Aug 2025 14:18:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19B93CA0EEB
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Aug 2025 14:20:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c7j3b6kjwz3cgW;
-	Sat, 23 Aug 2025 00:18:51 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755871926;
-	cv=none; b=mBGFWPZEXppXijYZywhfx0fLSd9jag5wTBnyqHzY6T3ZLTS8m9NQ0LiHdxERwdiQY9Pv9Wdu+JaDejSaG6JuHEA1+GLtvAMCHzacj72ByYsi6fkvt4RNkvOgxQXWebp4HCAGBaVnu25WdC0MkonlfELjObwUbEhaeO6R9TMnVj9s5+O/xp9DA9eyV+VMtw7HcOqL2W4u964ocM+WDxjFWFKdfOeqd1I0BW1uS81/qVDzdTi/QlSBI9r8ifW8Kcdl/gCy/7vGCTnXW5UPqEvvtivXw4vgiN3rE8RJVuODiMB7/zJcOrtVDyyod4s0sTB72bfdUJ3Yd1hu4XQOVJWExA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c7j5d43nyz3cgh;
+	Sat, 23 Aug 2025 00:20:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755872437;
+	cv=none; b=DT00JWFzXKQaiAfyZIDlOj1S8f+EH2eGsbGU0CC6bVXpBgW4KdMhl+JahDhhslVWjiWpaxbetuA+d/AAFeJDBJcjz68tmNzsbtsmPnl4ogg6M5/dOzdIi2xnbHnkg0CLGkmYciZ3VoXmLxA2T6HF1guluE5JnjJrWCq9SC7OZY9DjKpW5R4Y+po7AySW7R7F+7dEyDPasNg5t0s05iBr8/DvJC86ZvGaROMZM68bclx3UWkozSwM7oLq5M8mgod6QO7CNsLzJH+KZxgzaRT2akqfFpujDYrVfhwji6r9o2TOu1Gc77y9vMTTnXvJFL40IWoj3HhFDTw5sAQGWxH0kA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755871926; c=relaxed/relaxed;
-	bh=SUrkI8gRxT8al9H8bcipd0cfLDrY2l84rj0Cw0HvR90=;
-	h=Message-ID:Date:MIME-Version:To:Cc:References:Subject:From:
-	 In-Reply-To:Content-Type; b=K5dRjKGrEF9Ps5Ws++Gt78VQ+j5KAmhIOxYRuGgj2Awln0p7P8H4cuq1GDfo4AhOpvirCXnh0wXu+QN241NRrvzKnF9y/G0rHm2a+o9YNzOt24aWbRH1Rgv+lFpAVpuuCLrhCmO/Qd4otlKX2w7cUdbe8mSUqTfvLHDg+DT+bcND399F34sGHiwwuVk1h2LRDcQ0V+kIYKvAIMpiLM+fFWYMrslkbFT9UtSsYCSGYQI1VN2idu2jC1xummSOgcV8kTW0OHKbwaZZ2sB59ezo2hCehuQHRxb7lKU3PK1x685a0kGxYeZ7bk1mGvL/RIqgy8vk4W54aMLv4E/Y6AcV3g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FWNX1N8S; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=giorgitchankvetadze1997@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FWNX1N8S;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::32f; helo=mail-wm1-x32f.google.com; envelope-from=giorgitchankvetadze1997@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32f.google.com (mail-wm1-x32f.google.com [IPv6:2a00:1450:4864:20::32f])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c7hvn5yfrz3cfv
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2025 00:12:04 +1000 (AEST)
-Received: by mail-wm1-x32f.google.com with SMTP id 5b1f17b1804b1-45b51bafcc1so612475e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 22 Aug 2025 07:12:04 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1755871921; x=1756476721; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language:subject
-         :references:cc:to:user-agent:mime-version:date:message-id:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=SUrkI8gRxT8al9H8bcipd0cfLDrY2l84rj0Cw0HvR90=;
-        b=FWNX1N8S6I3ApSuwOn27yx5gnjrY8OB2n/8dFoyRTjBU6eBUxYkqXO6Dn05UXAxBwn
-         eckyHHq39HqPgQqDDK4sFale54HdvQ0aypKDesteAUuWfgYOQea+NFtf3Orn+7VkJlKf
-         HLnvZl+j7OQ0a6dT9AfXePdLeont0revhcmTiqJJMkA/pAhSPSbmwy96NTxKcsxMWCS7
-         mlpoCHjrYj+14aQeHy+68wJhgAcKf4N5CFHNXK3boWkbyVL4gRdcR6bilqdcfeX9k38p
-         b5qcaVp3W2yu4TrlGOBid+/pMLDbgrR32GlRjZSiP0ptWbhqw+zNpcjNWoysyCXM15lN
-         y7Mg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1755871921; x=1756476721;
-        h=content-transfer-encoding:in-reply-to:from:content-language:subject
-         :references:cc:to:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=SUrkI8gRxT8al9H8bcipd0cfLDrY2l84rj0Cw0HvR90=;
-        b=MHL7GmAPK7AuVS+P8Ka7wG4K7j1718Av+O5btgD+bry9QGoxGXyw0RRC46J7XVEmR8
-         38sdDRoJW6IAvX7Ie/oIMNl1+PeGjqrIR4zC4oq4P5wma8hJ6MSjl1yEaDyGNPQGnGdJ
-         LaLJk7WUs+KXl6BsCwYVoKzqsqmI+t0hdNoD9D2N9mNHlV28lopst8iLgmr2hPj+xni5
-         DsQ0q+aZwooC5Z4afhUQNQWSkuSiGO50uyxz99O2elttFbFm4Am82EukZDoNf2pNA1a4
-         vxVrelo+w2jlBzUB+I3hI3tfZJozwrpTp+w/nvnFhUtFgsF0RJUlzr6eMfeTwPJcm4FG
-         1ETA==
-X-Forwarded-Encrypted: i=1; AJvYcCX4cBzw/yRRoNZdDyx0zoo4Xa/9ESLHDYZ+G1QD/wph3eWvBVYHj1Z6lSDV7dCmUA0S4YP7hUEkFgKpQQo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxLXHkzDZpWQmLDy9ZcY2kckYK9VGuijNv6o590GQKHboPA8A5w
-	5RHYhR2h1qXmXidpHIMIuATWPwy+ehHHuFSiqQnqBv5Q0/fGl7N4ve6e
-X-Gm-Gg: ASbGncsWVuF7J8ygm7ckyK+eDYX+QKlp4kLfy3ejrDwy01LJdvqhLmfjj3GfvUQnZbd
-	UuvuqJuvwg+34M/BTN/aN/Qr4+bNSL2V+T3+OGVH4JR5R4fCJUGu90PKkRxfkwhw8Nb+PC4uX2/
-	HPQscQiv+9A/WtA6S6bFQ3MYadXw8ahnowDekGAn5H2EUFKLb2K4HDrhxB0LUFQQm+CAUVr0pet
-	TSEMkwSMf8iURUSbOndCq8VQ/aBnEu6uvJr4rACqI0PgEy1bxvUSyR+kl45473jd7+HEisSrHiX
-	eFWCBWQzY8DwhHgnTTc9Oxi2kISSkmx++RWcn7Cq5wX/UY/Jq95paf7hCKkmmUwt+0xJj2dfdMN
-	aOHLI2Dm/T30kCr1825iASxjFiH4MiqoMh33EHFISovdxwGdLJdr6vE6tkSINp2tDL2wzrhbbi8
-	r2UrI2n48Q
-X-Google-Smtp-Source: AGHT+IFjwShx3D0jJMvSWdaLG4T39JgpaQyzemTxwtJre4OZUc8C3M5BPxw9JQYLkgJW8PLQe/esRQ==
-X-Received: by 2002:a05:6000:25c3:b0:3c5:7050:e2af with SMTP id ffacd0b85a97d-3c5dcdfc35fmr1024231f8f.9.1755871921342;
-        Fri, 22 Aug 2025 07:12:01 -0700 (PDT)
-Received: from [192.168.100.6] ([149.3.87.76])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3c6c737b303sm576035f8f.47.2025.08.22.07.11.58
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 22 Aug 2025 07:12:00 -0700 (PDT)
-Message-ID: <98191ca5-9581-44fd-b9b1-6f0b932f141e@gmail.com>
-Date: Fri, 22 Aug 2025 18:11:58 +0400
+	t=1755872437; c=relaxed/relaxed;
+	bh=LMrku/+hV+gSS7kLKAAreTIeCCFGj17q+6KCLLSm+C4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Pz6nNn16ep25fHETJO4lTYj1SwVJsKCBIh0Ke7ZUF/xckinqce87h4qPRvN5ZQ0yqmZ1JihSjxZ/cwqExOtUvPpyl/Llbdlv9hFxS5vVgZBUnHKDgTiaiF1I3epNXew76uKvjbBgnP9VlHJfr5gnGsuoUNfhOt48xuCG1FO+X5tgGkTj8zqNPB8Z0pajha+Sh3h7kylZmbvOFnNe0nr+yUKhTKD8V//ZrrJq1+PL08qHMz9XlnFpmdwEn+obv1SpeXQmaozqWwwhHtL4Lth3CQDfsEupx9xLEAhHor2+HUFRh8DqDfXxDw8WpMHpYStr+p3QPyidFq4nY7x5bewxww==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c7j5c6X4lz3cgT
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2025 00:20:36 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4c7bGv1dQ5z9sSg;
+	Fri, 22 Aug 2025 11:58:15 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Rouyl7AiVSEH; Fri, 22 Aug 2025 11:58:15 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c7bGv0Zshz9sSf;
+	Fri, 22 Aug 2025 11:58:15 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 001748B781;
+	Fri, 22 Aug 2025 11:58:14 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id DplApH3IrGdC; Fri, 22 Aug 2025 11:58:14 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id F189D8B780;
+	Fri, 22 Aug 2025 11:58:13 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>,
+	Jan Kara <jack@suse.cz>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Darren Hart <dvhart@infradead.org>,
+	Davidlohr Bueso <dave@stgolabs.net>,
+	"Andre Almeida" <andrealmeid@igalia.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Laight <david.laight.linux@gmail.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	Daniel Borkmann <daniel@iogearbox.net>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-fsdevel@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-block@vger.kernel.org
+Subject: [PATCH v2 08/10] powerpc/32s: Fix segments setup when TASK_SIZE is not a multiple of 256M
+Date: Fri, 22 Aug 2025 11:58:04 +0200
+Message-ID: <f8fa4d4b5b8b07c0ac97415fdf7dbf1d17f1deab.1755854833.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1755854833.git.christophe.leroy@csgroup.eu>
+References: <cover.1755854833.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,51 +86,134 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: torvalds@linux-foundation.org
-Cc: akpm@linux-foundation.org, andrealmeid@igalia.com, brauner@kernel.org,
- christophe.leroy@csgroup.eu, daniel@iogearbox.net,
- dave.hansen@linux.intel.com, dave@stgolabs.net,
- david.laight.linux@gmail.com, dvhart@infradead.org, jack@suse.cz,
- linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org,
- linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mingo@redhat.com,
- mpe@ellerman.id.au, npiggin@gmail.com, peterz@infradead.org,
- tglx@linutronix.de, viro@zeniv.linux.org.uk
-References: <CAHk-=whKeVCEtR2mQJQjT2ndSOXGDdb+L0=WoVUQUGumm88VpA@mail.gmail.com>
-Subject: Re: [PATCH v2 02/10] uaccess: Add speculation barrier to
- copy_from_user_iter()
-Content-Language: en-US
-From: Giorgi Tchankvetadze <giorgitchankvetadze1997@gmail.com>
-In-Reply-To: <CAHk-=whKeVCEtR2mQJQjT2ndSOXGDdb+L0=WoVUQUGumm88VpA@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755856679; l=4811; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=wvMxtbYlp4If4vdp7ThT8540zw2Qu4BJbU9ujWqfR94=; b=0XuuBKVXcmYYwRlGwBO3iW+/I/d5f9LBhxzTnJgplI/yzvAaD7n5HlA3+nF5oS7YSR/9hIYLw 8yogXkQaywPCaVJBpa6G7Gi3GpY9iDaMyFhJOv8VOsJKAj7rkSEY5AI
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 
-so we can use speculation barrier? and fix the problem locally
+For book3s/32 it is assumed that TASK_SIZE is a multiple of 256 Mbytes,
+but Kconfig allows any value for TASK_SIZE.
 
+In all relevant calculations, align TASK_SIZE to the upper 256 Mbytes
+boundary.
 
-On 8/22/2025 5:52 PM, Linus Torvalds wrote:
-> On Fri, 22 Aug 2025 at 05:58, Christophe Leroy
-> <christophe.leroy@csgroup.eu> wrote:
->> > The results of "access_ok()" can be mis-speculated. The result is 
-> that > you can end speculatively: > > if (access_ok(from, size)) > // 
-> Right here
-> I actually think that we should probably just make access_ok() itself do this.
-> 
-> We don't have *that* many users since we have been de-emphasizing the
-> "check ahead of time" model, and any that are performance-critical can
-> these days be turned into masked addresses.
-> 
-> As it is, now we're in the situation that careful places - like
-> _inline_copy_from_user(), and with your patch  copy_from_user_iter() -
-> do maybe wethis by hand and are ugly as a result, and lazy and
-> probably incorrect places don't do it at all.
-> 
-> That said, I don't object to this patch and maybe we should do that
-> access_ok() change later and independently of any powerpc work.
-> 
->                   Linus
-> 
+Also use ASM_CONST() in the definition of TASK_SIZE to ensure it is
+seen as an unsigned constant.
 
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/include/asm/book3s/32/mmu-hash.h | 5 ++++-
+ arch/powerpc/include/asm/task_size_32.h       | 2 +-
+ arch/powerpc/kernel/asm-offsets.c             | 2 +-
+ arch/powerpc/kernel/head_book3s_32.S          | 6 +++---
+ arch/powerpc/mm/book3s32/mmu.c                | 2 +-
+ arch/powerpc/mm/ptdump/segment_regs.c         | 2 +-
+ 6 files changed, 11 insertions(+), 8 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/book3s/32/mmu-hash.h b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
+index 78c6a5fde1d6..df00be5b4044 100644
+--- a/arch/powerpc/include/asm/book3s/32/mmu-hash.h
++++ b/arch/powerpc/include/asm/book3s/32/mmu-hash.h
+@@ -192,12 +192,15 @@ extern s32 patch__hash_page_B, patch__hash_page_C;
+ extern s32 patch__flush_hash_A0, patch__flush_hash_A1, patch__flush_hash_A2;
+ extern s32 patch__flush_hash_B;
+ 
++#include <linux/sizes.h>
++#include <linux/align.h>
++
+ #include <asm/reg.h>
+ #include <asm/task_size_32.h>
+ 
+ static __always_inline void update_user_segment(u32 n, u32 val)
+ {
+-	if (n << 28 < TASK_SIZE)
++	if (n << 28 < ALIGN(TASK_SIZE, SZ_256M))
+ 		mtsr(val + n * 0x111, n << 28);
+ }
+ 
+diff --git a/arch/powerpc/include/asm/task_size_32.h b/arch/powerpc/include/asm/task_size_32.h
+index de7290ee770f..30edc21f71fb 100644
+--- a/arch/powerpc/include/asm/task_size_32.h
++++ b/arch/powerpc/include/asm/task_size_32.h
+@@ -6,7 +6,7 @@
+ #error User TASK_SIZE overlaps with KERNEL_START address
+ #endif
+ 
+-#define TASK_SIZE (CONFIG_TASK_SIZE)
++#define TASK_SIZE ASM_CONST(CONFIG_TASK_SIZE)
+ 
+ /*
+  * This decides where the kernel will search for a free chunk of vm space during
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index b3048f6d3822..2c7fadddae4a 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -330,7 +330,7 @@ int main(void)
+ 
+ #ifndef CONFIG_PPC64
+ 	DEFINE(TASK_SIZE, TASK_SIZE);
+-	DEFINE(NUM_USER_SEGMENTS, TASK_SIZE>>28);
++	DEFINE(NUM_USER_SEGMENTS, ALIGN(TASK_SIZE, SZ_256M) >> 28);
+ #endif /* ! CONFIG_PPC64 */
+ 
+ 	/* datapage offsets for use by vdso */
+diff --git a/arch/powerpc/kernel/head_book3s_32.S b/arch/powerpc/kernel/head_book3s_32.S
+index cb2bca76be53..c1779455ea32 100644
+--- a/arch/powerpc/kernel/head_book3s_32.S
++++ b/arch/powerpc/kernel/head_book3s_32.S
+@@ -420,7 +420,7 @@ InstructionTLBMiss:
+ 	lwz	r2,0(r2)		/* get pmd entry */
+ #ifdef CONFIG_EXECMEM
+ 	rlwinm	r3, r0, 4, 0xf
+-	subi	r3, r3, (TASK_SIZE >> 28) & 0xf
++	subi	r3, r3, NUM_USER_SEGMENTS
+ #endif
+ 	rlwinm.	r2,r2,0,0,19		/* extract address of pte page */
+ 	beq-	InstructionAddressInvalid	/* return if no mapping */
+@@ -475,7 +475,7 @@ DataLoadTLBMiss:
+ 	lwz	r2,0(r1)		/* get pmd entry */
+ 	rlwinm	r3, r0, 4, 0xf
+ 	rlwinm.	r2,r2,0,0,19		/* extract address of pte page */
+-	subi	r3, r3, (TASK_SIZE >> 28) & 0xf
++	subi	r3, r3, NUM_USER_SEGMENTS
+ 	beq-	2f			/* bail if no mapping */
+ 1:	rlwimi	r2,r0,22,20,29		/* insert next 10 bits of address */
+ 	lwz	r2,0(r2)		/* get linux-style pte */
+@@ -554,7 +554,7 @@ DataStoreTLBMiss:
+ 	lwz	r2,0(r1)		/* get pmd entry */
+ 	rlwinm	r3, r0, 4, 0xf
+ 	rlwinm.	r2,r2,0,0,19		/* extract address of pte page */
+-	subi	r3, r3, (TASK_SIZE >> 28) & 0xf
++	subi	r3, r3, NUM_USER_SEGMENTS
+ 	beq-	2f			/* bail if no mapping */
+ 1:
+ 	rlwimi	r2,r0,22,20,29		/* insert next 10 bits of address */
+diff --git a/arch/powerpc/mm/book3s32/mmu.c b/arch/powerpc/mm/book3s32/mmu.c
+index be9c4106e22f..afc9b5cac5a6 100644
+--- a/arch/powerpc/mm/book3s32/mmu.c
++++ b/arch/powerpc/mm/book3s32/mmu.c
+@@ -225,7 +225,7 @@ int mmu_mark_initmem_nx(void)
+ 
+ 	BUILD_BUG_ON(ALIGN_DOWN(MODULES_VADDR, SZ_256M) < TASK_SIZE);
+ 
+-	for (i = TASK_SIZE >> 28; i < 16; i++) {
++	for (i = ALIGN(TASK_SIZE, SZ_256M) >> 28; i < 16; i++) {
+ 		/* Do not set NX on VM space for modules */
+ 		if (is_module_segment(i << 28))
+ 			continue;
+diff --git a/arch/powerpc/mm/ptdump/segment_regs.c b/arch/powerpc/mm/ptdump/segment_regs.c
+index 9df3af8d481f..c06704b18a2c 100644
+--- a/arch/powerpc/mm/ptdump/segment_regs.c
++++ b/arch/powerpc/mm/ptdump/segment_regs.c
+@@ -31,7 +31,7 @@ static int sr_show(struct seq_file *m, void *v)
+ 	int i;
+ 
+ 	seq_puts(m, "---[ User Segments ]---\n");
+-	for (i = 0; i < TASK_SIZE >> 28; i++)
++	for (i = 0; i < ALIGN(TASK_SIZE, SZ_256M) >> 28; i++)
+ 		seg_show(m, i);
+ 
+ 	seq_puts(m, "\n---[ Kernel Segments ]---\n");
+-- 
+2.49.0
 
 
