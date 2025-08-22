@@ -1,48 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-11221-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11222-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90637CA0EEB
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Aug 2025 18:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CFF7CA0EED
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 22 Aug 2025 18:50:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c7q590wz7z3clL;
-	Sat, 23 Aug 2025 04:50:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c7q5F0f1cz3cyM;
+	Sat, 23 Aug 2025 04:50:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755888637;
-	cv=none; b=UT5Fxzf9pfC0DlofFLyB5OUgECJlQAgv/GZyc9jCTyoUvHtDHLhVmQXy+pVfRcJVAg76cqLV6D6qjAXQKnrUyFALtWKbovDr21g7npifZ7klsxwUZbhOru5F+hlQkUFWzppiZutKeLJWOKn+uprM+avrlU4X2lXWXeopj3dHqne7+qMWfieAUcMTCOXOrPcxxJgQFyW/jdnoXICixdX/JLzt2s1r6EgNHWcKvUnhxzmfMiDKGqmyD5gLzQdqWrB8GfskxJE+Ua96ZS6dhkqLjg4mYM2gc2bdMVlL9S840555mqkOwlrlUMrrxAn71Bl2s6TkBs+vyWArscwEym1/iA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1755888641;
+	cv=none; b=OfI0rB16DuxoH8a8IeILR20ZXF+GvclAD+ZNvJ/ClPJitJwTnPiaANxUSQIW3IjcqPJJENFXsTE95P014bEHsTW9YEdBVOHWO/ECyjt0X8+RS8kaIkovdO9kSwwyp7PXtbLOMoJRCjhnlUxh7GumHcgH3hBGdcZa3CGwy3iBb1jqDlOPbw5nBSaNpGi3Doi7a2g9rk6nYigs5rMU5ib7hSpdNmP2Du/uug4cRh9RgPqKA27uQtpmqPPhWWgD3hEPV73q5eM9/j7V28XTE9INN8LkRHPPS2sAkTSMstzS03OCGBGxVVPzDoYkTY41BkwCzOPgDelYBmvlwWTKUPljRg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1755888637; c=relaxed/relaxed;
-	bh=o8buzcW/UN4/h4LCvWa/BS8NAykGhPfW596PyvWifB0=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=iyCPPojCs7ET7974cu50S7Gz3ZwlPQch13pEnXbNpmoc1rckuUkyV64PPT0vPVmyG6DLBlJ+Dy19oydVCtomllYbLyAD6ijFLxdSC6qDf/ErglRQ7U3SBeZdCEtmy4bnnLvBp3ojUYqlw+jBgz6NuSQBF0EZysLgiX/nZjYFUaM1UzfYaHSFDJTud+AFVxaLjS8WOvypAfYmzqznQw+1LRavAmEYRfTrO+swE5tBv/DGYSw+sMLnEnHiXvlKuKkaEuKnRmom6zmsSAKZzqHUJy0XbXQRXWnkyQgCOkn1M6OAUQmrf+DnRaYx7l4OHm8u7aPZ6C7XnWfxdZnGCCG9/g==
+	t=1755888641; c=relaxed/relaxed;
+	bh=FcS1WAEyrERG/l/cB7IXboLAElQpLk48UPtyl1AZjVc=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=jq1BYTlGy/CjeTJIn4bv88yQciFJHHFxaqV1cdBF/LdGwU0mgR2jMO3Q+JW+yHmW+VyWHyOoPXDDyneYTntVbbc9ko/cbFxYe6MlND0gkNQYOG8wtoxLYwFBKzTjullmlH0a/v0AB0qDhv9u24OXxQAZazZ/9L1Zm0LLrlq06MNGmkjQpXahdEi76zbhXgurxWQWuSYtDyS/RT3wIy0hjqTJohQ11ppgI1wLGVO+D3z3Y3UHaFN1UyC9D2qCItWPCM2H1TAf9oqoFP9OPRFw1ydRaIvqNf4MjjUWmAp0SK0gLqUuzOzLJC1hPUXen8ygnBQ5Qq6/8e476JJFTerulg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c7q583NYBz3cky
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2025 04:50:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c7q5D4PN7z3cy9
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 23 Aug 2025 04:50:40 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c7bGp5G2dz9sSW;
-	Fri, 22 Aug 2025 11:58:10 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4c7bGk5BLBz9sS8;
+	Fri, 22 Aug 2025 11:58:06 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id L-iQubse_0cd; Fri, 22 Aug 2025 11:58:10 +0200 (CEST)
+	with ESMTP id IWDZVwqsS1ox; Fri, 22 Aug 2025 11:58:06 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c7bGp4Kv4z9sSV;
-	Fri, 22 Aug 2025 11:58:10 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c7bGk4BThz9sRs;
+	Fri, 22 Aug 2025 11:58:06 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 799BB8B781;
-	Fri, 22 Aug 2025 11:58:10 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7BEF38B781;
+	Fri, 22 Aug 2025 11:58:06 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id Jh8il3hsJZQH; Fri, 22 Aug 2025 11:58:10 +0200 (CEST)
+	with ESMTP id eIHQVHg49t7f; Fri, 22 Aug 2025 11:58:06 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7612B8B775;
-	Fri, 22 Aug 2025 11:58:09 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6BEC98B775;
+	Fri, 22 Aug 2025 11:58:05 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Michael Ellerman <mpe@ellerman.id.au>,
 	Nicholas Piggin <npiggin@gmail.com>,
@@ -67,12 +66,10 @@ Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
 	linux-fsdevel@vger.kernel.org,
 	linux-mm@kvack.org,
 	linux-block@vger.kernel.org
-Subject: [PATCH v2 04/10] powerpc/uaccess: Move barrier_nospec() out of allow_read_{from/write}_user()
-Date: Fri, 22 Aug 2025 11:58:00 +0200
-Message-ID: <90ce0c90c53d3132023d753650b1741fab60dcd3.1755854833.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v2 00/10] powerpc: Implement masked user access
+Date: Fri, 22 Aug 2025 11:57:56 +0200
+Message-ID: <cover.1755854833.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1755854833.git.christophe.leroy@csgroup.eu>
-References: <cover.1755854833.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,92 +83,87 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1755856679; l=3128; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=W6hpcedkcWK/fNdxM9/tYip/yiX0Wu6MZIyees7Pogw=; b=DUD1UUmtiwXNWatGhsXc9CjjVSp+31iz3JZAC3Kq7lY2UnNgEKtP/hJS7JrJ7X+vsKhFuWqba zo1szpJqvm5BrN9GBW2DIAx7C5wqNiWIty4eJINj4EQofJ+cdDrJaFQ
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1755856678; l=3745; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=/phN/AgtMsLAd6ka2rRe1+fTTKRpm5UtXySxy3tBMG8=; b=1V9AFEKpjDyk6FnUrGnkLYoDWwBrkQcqv5fCGwg429FpoGvEzmMQhX1fRZY0SIQqSAI16OrRi R6sNAdKx0x1A+t4how5qZX/b5neGHfNC9U+6+4eTmM1L60Bhm6fz49y
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-Commit 74e19ef0ff80 ("uaccess: Add speculation barrier to
-copy_from_user()") added a redundant barrier_nospec() in
-copy_from_user(), because powerpc is already calling
-barrier_nospec() in allow_read_from_user() and
-allow_read_write_user(). But on other architectures that
-call to barrier_nospec() was missing. So change powerpc
-instead of reverting the above commit and having to fix
-other architectures one by one. This is now possible
-because barrier_nospec() has also been added in
-copy_from_user_iter().
+Masked user access avoids the address/size verification by access_ok().
+Allthough its main purpose is to skip the speculation in the
+verification of user address and size hence avoid the need of spec
+mitigation, it also has the advantage to reduce the amount of
+instructions needed so it also benefits to platforms that don't
+need speculation mitigation, especially when the size of the copy is
+not know at build time.
 
-Move barrier_nospec() out of allow_read_from_user() and
-allow_read_write_user(). This will also allow reuse of those
-functions when implementing masked user access which doesn't
-require barrier_nospec().
+Patches 1,2,4 are cleaning up some redundant barrier_nospec()
+introduced by commit 74e19ef0ff80 ("uaccess: Add speculation barrier
+to copy_from_user()"). To do that, a speculation barrier is added to
+copy_from_user_iter() so that the barrier in powerpc raw_copy_from_user()
+which is redundant with the one in copy_from_user() can be removed. To
+avoid impacting x86, copy_from_user_iter() is first converted to using
+masked user access.
 
-Don't add it back in raw_copy_from_user() as it is already called
-by copy_from_user() and copy_from_user_iter().
+Patch 3 adds masked_user_read_access_begin() and
+masked_user_write_access_begin() to match with user_read_access_end()
+and user_write_access_end().
 
-Fixes: 74e19ef0ff80 ("uaccess: Add speculation barrier to copy_from_user()")
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/kup.h     | 2 --
- arch/powerpc/include/asm/uaccess.h | 4 ++++
- 2 files changed, 4 insertions(+), 2 deletions(-)
+Patches 5,6,7 are cleaning up powerpc uaccess functions.
 
-diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
-index 2bb03d941e3e..6737416dde9f 100644
---- a/arch/powerpc/include/asm/kup.h
-+++ b/arch/powerpc/include/asm/kup.h
-@@ -134,7 +134,6 @@ static __always_inline void kuap_assert_locked(void)
- 
- static __always_inline void allow_read_from_user(const void __user *from, unsigned long size)
- {
--	barrier_nospec();
- 	allow_user_access(NULL, from, size, KUAP_READ);
- }
- 
-@@ -146,7 +145,6 @@ static __always_inline void allow_write_to_user(void __user *to, unsigned long s
- static __always_inline void allow_read_write_user(void __user *to, const void __user *from,
- 						  unsigned long size)
- {
--	barrier_nospec();
- 	allow_user_access(to, from, size, KUAP_READ_WRITE);
- }
- 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 4f5a46a77fa2..3987a5c33558 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -301,6 +301,7 @@ do {								\
- 	__typeof__(sizeof(*(ptr))) __gu_size = sizeof(*(ptr));	\
- 								\
- 	might_fault();					\
-+	barrier_nospec();					\
- 	allow_read_from_user(__gu_addr, __gu_size);		\
- 	__get_user_size_allowed(__gu_val, __gu_addr, __gu_size, __gu_err);	\
- 	prevent_read_from_user(__gu_addr, __gu_size);		\
-@@ -329,6 +330,7 @@ raw_copy_in_user(void __user *to, const void __user *from, unsigned long n)
- {
- 	unsigned long ret;
- 
-+	barrier_nospec();
- 	allow_read_write_user(to, from, n);
- 	ret = __copy_tofrom_user(to, from, n);
- 	prevent_read_write_user(to, from, n);
-@@ -415,6 +417,7 @@ static __must_check __always_inline bool user_access_begin(const void __user *pt
- 
- 	might_fault();
- 
-+	barrier_nospec();
- 	allow_read_write_user((void __user *)ptr, ptr, len);
- 	return true;
- }
-@@ -431,6 +434,7 @@ user_read_access_begin(const void __user *ptr, size_t len)
- 
- 	might_fault();
- 
-+	barrier_nospec();
- 	allow_read_from_user(ptr, len);
- 	return true;
- }
+Patches 8 and 9 prepare powerpc/32 for the necessary gap at the top
+of userspace.
+
+Last patch implements masked user access.
+
+Changes in v2:
+- Converted copy_from_user_iter() to using masked user access.
+- Cleaned up powerpc uaccess function to minimise code duplication
+when adding masked user access
+- Automated TASK_SIZE calculation to minimise use of BUILD_BUG_ON()
+- Tried to make some commit messages more clean based on feedback from
+version 1 of the series.
+
+Christophe Leroy (10):
+  iter: Avoid barrier_nospec() in copy_from_user_iter()
+  uaccess: Add speculation barrier to copy_from_user_iter()
+  uaccess: Add masked_user_{read/write}_access_begin
+  powerpc/uaccess: Move barrier_nospec() out of
+    allow_read_{from/write}_user()
+  powerpc/uaccess: Remove unused size and from parameters from
+    allow_access_user()
+  powerpc/uaccess: Remove
+    {allow/prevent}_{read/write/read_write}_{from/to/}_user()
+  powerpc/uaccess: Refactor user_{read/write/}_access_begin()
+  powerpc/32s: Fix segments setup when TASK_SIZE is not a multiple of
+    256M
+  powerpc/32: Automatically adapt TASK_SIZE based on constraints
+  powerpc/uaccess: Implement masked user access
+
+ arch/powerpc/Kconfig                          |   3 +-
+ arch/powerpc/include/asm/barrier.h            |   2 +-
+ arch/powerpc/include/asm/book3s/32/kup.h      |   3 +-
+ arch/powerpc/include/asm/book3s/32/mmu-hash.h |   5 +-
+ arch/powerpc/include/asm/book3s/32/pgtable.h  |   4 -
+ arch/powerpc/include/asm/book3s/64/kup.h      |   6 +-
+ arch/powerpc/include/asm/kup.h                |  52 +------
+ arch/powerpc/include/asm/nohash/32/kup-8xx.h  |   3 +-
+ arch/powerpc/include/asm/nohash/32/mmu-8xx.h  |   4 -
+ arch/powerpc/include/asm/nohash/kup-booke.h   |   3 +-
+ arch/powerpc/include/asm/task_size_32.h       |  28 +++-
+ arch/powerpc/include/asm/uaccess.h            | 134 +++++++++++++-----
+ arch/powerpc/kernel/asm-offsets.c             |   2 +-
+ arch/powerpc/kernel/head_book3s_32.S          |   6 +-
+ arch/powerpc/mm/book3s32/mmu.c                |   4 +-
+ arch/powerpc/mm/mem.c                         |   2 -
+ arch/powerpc/mm/nohash/8xx.c                  |   2 -
+ arch/powerpc/mm/ptdump/segment_regs.c         |   2 +-
+ fs/select.c                                   |   2 +-
+ include/linux/uaccess.h                       |   7 +
+ kernel/futex/futex.h                          |   4 +-
+ lib/iov_iter.c                                |  22 ++-
+ lib/strncpy_from_user.c                       |   2 +-
+ lib/strnlen_user.c                            |   2 +-
+ 24 files changed, 172 insertions(+), 132 deletions(-)
+
 -- 
 2.49.0
 
