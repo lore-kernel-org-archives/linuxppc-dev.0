@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-11246-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11247-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ECC3FCA0FE1
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 10:20:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 720BBCA0EFA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 10:20:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9RdJ3zxyz3cgP;
-	Mon, 25 Aug 2025 20:20:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9RdN4qgCz3cgh;
+	Mon, 25 Aug 2025 20:20:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756117236;
-	cv=none; b=fEnVi9LcW7PjVk592eAZEX8g4rUod8Za4ChdXNNhBqtYkYYMggpwVEGUt91TBTWN6Zuc/0NUF+XOqvOqwEBLw9eEAkx67JCEsrif563EXxCMFU2S0NrBRqPDq8x5W4bPUSMpeO/iDsh1PoaN6WsOZKfM87UB8kadsbzQ1oHRqIAzHhyeLyVH+sYBQ9zUG2A+6BRV8y87NOgteY7tCAoGJgh3F1dy2bkR2ml7qXU/0vIIw6JyeGjchICB8LQGob1vmocug9AgqV960KFFTuKJP4AfPi76Xu1fboAgoXf6SZopz4KlfgsYgD9JJ+pn69Jk7xU77lHd1/razjOnO/vWuQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756117240;
+	cv=none; b=egvMQdFs8rFSgXEVUHkhcprSx5BPt29BctpoBK/BAM4bwwtcuYgwS4A3A2jOxh3V3LRyPzz183wN7s61QdGHeyBzaJp4+OL+ArtFSIgLbeIqpfWS7kTQ8oof4ReWqAKRwW5HKV+76hNO1RLUNNYFvWGHRJw3vXMmd4oj6vw/+ilSDRZtIjpLXxzDC/srkHg2uPYq0BV+WOE8auKWCIfV6B2cX87hruXaNIeeAwcvtVtllnuRWywW4GFZ+prDN+2qxRmzLadCjq3DMzs4VR1xytz9lB75uhzNFUuxYolLreqXrElPSrYln+tvnRhJ+gqYNnCQk2C2fauC/nMn6EqLVw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756117236; c=relaxed/relaxed;
-	bh=0PCMP2DJBUtl6uDh+HQlNBdAOpBQeWcYe8UpTkRt06E=;
+	t=1756117240; c=relaxed/relaxed;
+	bh=jB0WKMT7crKcaopJPS36QIRBLD9yrujCjLgtznKE5t0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ghWPX6iG4oD0wAolJi6aaE5HVBCP8XkGhQr9smMlRwvFZLMMY6RK8CFziOpYj9nQCZCPxDG0fx2bETxEb92h/ArCVlPJaIswW5iN+9mEyEeWEytYkWMiqA5LnlzOmbGX1KDj2PSoDEMAtfCPT/5vQY5iuSvmcwAgmfPnZBoRje5lp7oNhKa6NqdOylw1bNv+LxJgzFwSbmNYbvB8bGakbyZArVHwkLGPB87tNtoCNOWBzg2jURn+xbaUonYG9pGn3VgjRczxXXeg5NhTKsK/I0ea0Vy3L6Z018s06Kd8tQ82L0nLuGmDJQE1ECTWQUBM7mJXT5+8FHO5MScu9dj04w==
+	 In-Reply-To:Content-Type; b=A96ZiixVkst+wScvROGWJQnUY3wgOIq/rLXDkj1sxSg0xig1DofOdE/gXkgi+16YyQc09XT98j2FbVb6sfKrQx1/LDwoMsMA4wYcq80Ni7FjfvBpto6/WqBDZjFv6BADJLrNsGzlU5ioVG6TF042GKrFzH4heTqN1WRAvHK/XgqJvRmVjMfIUJP+Iny7fmiUPrjAfSne0kTlXvbiIc8SlZvKr6NL3eLD51PJ83VnXHrTtRspSu2K20QoUWxnNzOsA7ubYzUoQV9WnrO3sZ8sCuLf/VNPLFQ4canHgFvbcGePqek7uxe5RVZrAX2xFQMvM2P2VzvBLpRGO0/wW6pL+Q==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9RdH6Tj7z3cg1
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2025 20:20:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9RdN0dR9z3cgg
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2025 20:20:40 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c9QlP1HkLz9sSh;
-	Mon, 25 Aug 2025 11:40:49 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4c9R2y0dHvz9sSc;
+	Mon, 25 Aug 2025 11:54:18 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id xXbQBsr7Ehxm; Mon, 25 Aug 2025 11:40:49 +0200 (CEST)
+	with ESMTP id cK2CLYDxHx9V; Mon, 25 Aug 2025 11:54:18 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9QlP04NMz9sSc;
-	Mon, 25 Aug 2025 11:40:49 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9R2x72D0z9sSb;
+	Mon, 25 Aug 2025 11:54:17 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D6B268B765;
-	Mon, 25 Aug 2025 11:40:48 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D93348B764;
+	Mon, 25 Aug 2025 11:54:17 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id gtwn_B0_QRlE; Mon, 25 Aug 2025 11:40:48 +0200 (CEST)
+	with ESMTP id EqBXMUSyP-Tb; Mon, 25 Aug 2025 11:54:17 +0200 (CEST)
 Received: from [10.25.207.160] (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 763DD8B764;
-	Mon, 25 Aug 2025 11:40:48 +0200 (CEST)
-Message-ID: <16679d56-5ee0-469d-a11c-475a45a1c2b9@csgroup.eu>
-Date: Mon, 25 Aug 2025 11:40:48 +0200
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B97568B763;
+	Mon, 25 Aug 2025 11:54:17 +0200 (CEST)
+Message-ID: <7b7cccf2-5899-4334-9aa0-e83f0772d484@csgroup.eu>
+Date: Mon, 25 Aug 2025 11:54:17 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,120 +59,66 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 10/10] powerpc/uaccess: Implement masked user access
-To: Gabriel Paubert <paubert@iram.es>
-Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin
- <npiggin@gmail.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
- Peter Zijlstra <peterz@infradead.org>, Darren Hart <dvhart@infradead.org>,
- Davidlohr Bueso <dave@stgolabs.net>, Andre Almeida <andrealmeid@igalia.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Laight <david.laight.linux@gmail.com>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- Linus Torvalds <torvalds@linux-foundation.org>,
- Daniel Borkmann <daniel@iogearbox.net>, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-fsdevel@vger.kernel.org,
- linux-mm@kvack.org, linux-block@vger.kernel.org
-References: <cover.1755854833.git.christophe.leroy@csgroup.eu>
- <647f1b1db985aec8ec1163bf97688563ae6f9609.1755854833.git.christophe.leroy@csgroup.eu>
- <aKwnMo7UllLZkOcK@lt-gp.iram.es>
+Subject: Re: Ozlabs patchwork notification not working anymore
+To: Jeremy Kerr <jk@ozlabs.org>, Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
+References: <8f6e5825-9468-4499-9bbd-4588a1eccc94@cs-soprasteria.com>
+ <20250729183222.15adbb95@canb.auug.org.au>
+ <cd2ee23092e3749f707b0f730af741a94f0986f0.camel@ozlabs.org>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 Content-Language: fr-FR
-In-Reply-To: <aKwnMo7UllLZkOcK@lt-gp.iram.es>
+In-Reply-To: <cd2ee23092e3749f707b0f730af741a94f0986f0.camel@ozlabs.org>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-Hi Gabriel,
+Hi Jeremy,
 
-Le 25/08/2025 à 11:04, Gabriel Paubert a écrit :
-> [Vous ne recevez pas souvent de courriers de paubert@iram.es. D?couvrez pourquoi ceci est important ? https://aka.ms/LearnAboutSenderIdentification ]
-> 
+Le 10/08/2025 à 05:12, Jeremy Kerr a écrit :
 > Hi Christophe,
 > 
-> On Fri, Aug 22, 2025 at 11:58:06AM +0200, Christophe Leroy wrote:
->> Masked user access avoids the address/size verification by access_ok().
->> Allthough its main purpose is to skip the speculation in the
->> verification of user address and size hence avoid the need of spec
->> mitigation, it also has the advantage of reducing the amount of
->> instructions required so it even benefits to platforms that don't
->> need speculation mitigation, especially when the size of the copy is
->> not know at build time.
->>
->> So implement masked user access on powerpc. The only requirement is
->> to have memory gap that faults between the top user space and the
->> real start of kernel area.
->>
->> On 64 bits platforms the address space is divided that way:
->>
->>        0xffffffffffffffff      +------------------+
->>                                |                  |
->>                                |   kernel space   |
->>                                |                  |
->>        0xc000000000000000      +------------------+  <== PAGE_OFFSET
->>                                |//////////////////|
->>                                |//////////////////|
->>        0x8000000000000000      |//////////////////|
->>                                |//////////////////|
->>                                |//////////////////|
->>        0x0010000000000000      +------------------+  <== TASK_SIZE_MAX
->>                                |                  |
->>                                |    user space    |
->>                                |                  |
->>        0x0000000000000000      +------------------+
->>
->> Kernel is always above 0x8000000000000000 and user always
->> below, with a gap in-between. It leads to a 4 instructions sequence:
->>
->>    80: 7c 69 1b 78     mr      r9,r3
->>    84: 7c 63 fe 76     sradi   r3,r3,63
->>    88: 7d 29 18 78     andc    r9,r9,r3
->>    8c: 79 23 00 4c     rldimi  r3,r9,0,1
->>
->> This sequence leaves r3 unmodified when it is below 0x8000000000000000
->> and clamps it to 0x8000000000000000 if it is above.
->>
+> I've (finally!) had some time to take a look at this. Looks like
+> timezone behaviour had changed, which affected notification expiry.
 > 
-> This comment looks wrong: the second instruction converts r3 to a
-> replicated sign bit of the address ((addr>0)?0:-1) if treating the
-> address as signed. After that the code only modifies the MSB of r3. So I
-> don't see how r3 could be unchanged from the original value...
+> It should be fixed now - I'm seeing test notifications myself. Let
+> me know how go.
 
-Unless I'm missing something, the above rldimi leaves the MSB of r3 
-unmodified and replaces all other bits by the same in r9.
+I still don't receive anything it seems. I have modified the status of 
+several patches over the last two weeks and haven't received any 
+notification from patchwork.
 
-This is the code generated by GCC for the following:
-
-	unsigned long mask = (unsigned long)((long)addr >> 63);
-
-	addr = ((addr & ~mask) & (~0UL >> 1)) | (mask & (1UL << 63));
-
+Christophe
 
 > 
-> OTOH, I believe the following 3 instructions sequence would work,
-> input address (a) in r3, scratch value (tmp) in r9, both intptr_t:
+> Cheers,
 > 
->          sradi r9,r3,63  ; tmp = (a >= 0) ? 0L : -1L;
->          andc r3,r3,r9   ; a = a & ~tmp; (equivalently a = (a >= 0) ? a : 0)
->          rldimi r3,r9,0,1 ; copy MSB of tmp to MSB of a
 > 
-> But maybe I goofed...
+> Jeremy
 > 
-
- From my understanding of rldimi, your proposed code would:
-- Keep r3 unmodified when it is above 0x8000000000000000
-- Set r3 to 0x7fffffffffffffff when it is below 0x8000000000000000
-
-Extract of ppc64 ABI:
-
-rldimi RA,RS,SH,MB
-
-The contents of register RS are rotated 64 left SH bits.
-A mask is generated having 1-bits from bit MB
-through bit 63− SH and 0-bits elsewhere. The rotated
-data are inserted into register RA under control of the
-generated mask.
-
+> On Tue, 2025-07-29 at 18:32 +1000, Stephen Rothwell wrote:
+>> Hi Christophe,
+>>
+>> On Tue, 29 Jul 2025 07:41:40 +0000 LEROY Christophe
+>> <christophe.leroy2@cs-soprasteria.com> wrote:
+>>>
+>>> If I remember correctly you maintain the Ozlabs patchwork aren't
+>>> you ?
+>>
+>> Actually Jeremy Kerr (cc'd) actually manages patchwork on
+>> patchwork.ozlabs.org (I just admin the server it runs on).
+>>
+>>> For more than one year now, patchwork for linuxppc-dev hasn't sent
+>>> notifications about patches status changes. Last notification I
+>>> received
+>>> was 11 June 2024.
+>>>
+>>> Is there a reason for that change ? I recently got questions from
+>>> people
+>>> asking me why they didn't get notified when I started looking at
+>>> their
+>>> patches.
+>>>
+>>> Is it possible to restore previous behaviour ?
+>>
+> 
 
 
