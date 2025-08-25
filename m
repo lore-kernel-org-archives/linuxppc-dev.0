@@ -1,67 +1,100 @@
-Return-Path: <linuxppc-dev+bounces-11261-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11262-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19E1ECA0FE7
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 15:50:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57310CA0EFA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 16:36:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9Zy94RGpz3clL;
-	Tue, 26 Aug 2025 01:50:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756137041;
-	cv=none; b=D12bUr32ltNqwiuZxTrn0jc2e1bi6T3u1OalsYuKbQFNyvR/G54pHFo/JVag8ZoCB60uTvmO7X1LLFFjptIoEHTlrlWjx4DpRPm+gy3SG/uZD3Ke/Baan0RvhIbgK1R6sWXuJ+dwrGUkaFz5u2CsprXYxTDAOvOwkMJWTj7IzOeBFtNUxhufT5V7rz/gl2PvkiwoxmdBPd5dKHNMoBL02IFCWfKN27UmlGzWCBX1WOP5fMRTfggh8I807Ukz1XnO8wXTRlIQDG3lFzL+jDV7gcZXPREm1AN3JL/MIFwWwNUYLOetg9y4xWTXJ4F4Jly5KAwQOqC93l0f0A9aFJUafg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9byY5r8bz3cYq;
+	Tue, 26 Aug 2025 02:36:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756139765;
+	cv=none; b=bqn7SI/Z2JIGX5+0UW6AF+lGT04M5hMhXBMDA+xLLJca853wFG4yzJH/yfYZLq2FjXEr4ihEiJRMDfJ1zOVIEvYJhHaQTFgDkW9zEmuR5uJxWtZmdplWOgP+RZSJC7MEXDlEf9atsFpdN2Dd1fNfPCuuajBsgQ5unoz0SwxTBkk53PzpI+MCiM0nKwAW3s9/xRaNOwcns7ZXoMcvaEj0rWOe8bxkLkWJGF8VWAfl221209cB2DedCaSXOMJXXunnMsLsT9BvNJceS14qYAheFBOZw0Eaw5B3yHmlBkkR8VEvQ0ijPX5Hzs18YkNQZGb+ZkWZYnFf5n7bpobgd3NyZA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756137041; c=relaxed/relaxed;
-	bh=NXI3kM9yBU2NFSNS1reV27GNn49zaiScl2ch3IUevK8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hFgBVgA4SZKlgXVDy07SaeTQ3UfEgTAgJeBxzctEv136U3/3Hg+M8TPb03oJZitOlnLfmNWiFQaHScKC96k0RRew3HN/kcepe+prDkx4prhjPXC9eGi/V8jsvASX6mcRAaxBbiGQK+OqNTcXKV6IdyvLOor+KPihrRPXOsD5GSg0W8PQlRxGMU1wZq4/MNeWSDlYQId0ClKUBwTvZncev6er+gVG6+Ot/l6Xt3RHN/ESpfhfUrF7E83O7RDB4TMVEz6b+WlNHm5hMbG//8iKyyaEym0A/x+3I7YhdPqmAyxlyInskr/oBah7zOQRQ2tayl6sI5I/2nvjnu5+pWj3ZA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9Zy9186Vz3clK
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 01:50:41 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c9M290qdHz9sSS;
-	Mon, 25 Aug 2025 08:53:21 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id WS6yEEqteSXJ; Mon, 25 Aug 2025 08:53:21 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9M286kZpz9sSH;
-	Mon, 25 Aug 2025 08:53:20 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D3E398B769;
-	Mon, 25 Aug 2025 08:53:20 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 94toZ_4Vro2v; Mon, 25 Aug 2025 08:53:20 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id A2F5F8B768;
-	Mon, 25 Aug 2025 08:53:20 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Qiang Zhao <qiang.zhao@nxp.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	t=1756139765; c=relaxed/relaxed;
+	bh=CYkENkG86CGpJX8tlASGD4qcKwdlUFc6LyyYgBUp7bk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=m51k4RrS0JAg5wyL0L8SwTfTDC553xCGjpoZQybNsfOIgB5RJgQokn/yuoCenSt58zeeS6oCXI8aMq5GHqpl4TvwM0pOQ5m5mKRimHbuHPT4cA0CfWmDfmmHUAP9XzfRZ3CaGsaEAoTthfHC4ujyslqAYZ8BDKo84DgpjqVIlkzo6R/PqrARdr67/Z/Zmxu9uKzSh5J8wkMHIimWgaRJVPCteKn6Bi2n8e2K1SS18u/OKAjhhSKdhAosl96k23RZnXLhCzCRt/8g84s3ID3LI3Mtltom/tsj1QiW15J8uQmPmYo2/zME7BUb7HTA3DOojmB7iIcxk39AzLyAJA8Dtw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EG4Y5TOf; dkim-atps=neutral; spf=none (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EG4Y5TOf;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c9byR5x7wz3cYb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 02:35:58 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1756139760; x=1787675760;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=L2un3Tp24kq84D49bPeqtKFgx0ttvdt2Oi+LfIRW2Jk=;
+  b=EG4Y5TOfTTeneF2U+iXkLIBI0GA5kVBePgKc97ZonPrRqnUJhuLd/NUd
+   w/dZ9VdorL37FJ6pkzz2oPw+E4uU9EQMNb+v6VGm3vLfBCIz47b1rlD+G
+   7JGBICZ92yi2+h7MkIw4MJbAbYe1/OragxO6j372GxFmrjoChyEJuB3vy
+   UAwykfMC0bMNwCp/5TPqipB7SZ5AvZsHv+KPxVX5FHIIgczEsSFv6VUmX
+   nS2vsKx8kQXxLKvz94Z/oyu4uYhYm6LeqVXad+nziUSp7lLiraOeDtZO8
+   dh+/znVywFiQKPDNS3rJ9CFkgmGqgL/x+49TDmkjF+mHMtUYA5JN9L6d3
+   A==;
+X-CSE-ConnectionGUID: 9+kMUbB+Rw2vqebUH2elog==
+X-CSE-MsgGUID: IcAYx+sHSzGj3DZXAhfqAQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11533"; a="69459516"
+X-IronPort-AV: E=Sophos;i="6.18,213,1751266800"; 
+   d="scan'208";a="69459516"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Aug 2025 09:35:55 -0700
+X-CSE-ConnectionGUID: orFQ8jjkTR+a1kLWJels8Q==
+X-CSE-MsgGUID: l5OrMqmGT8icT6nXAJqR8A==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.18,213,1751266800"; 
+   d="scan'208";a="169241087"
+Received: from black.igk.intel.com ([10.91.253.5])
+  by orviesa007.jf.intel.com with ESMTP; 25 Aug 2025 09:35:48 -0700
+Received: by black.igk.intel.com (Postfix, from userid 1003)
+	id D581B94; Mon, 25 Aug 2025 18:35:46 +0200 (CEST)
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Helge Deller <deller@gmx.de>,
+	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Thomas Fourier <fourier.thomas@gmail.com>,
+	linux-alpha@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
 	linux-arm-kernel@lists.infradead.org,
-	linux-gpio@vger.kernel.org,
-	devicetree@vger.kernel.org
-Subject: [PATCH v3 1/6] soc: fsl: qe: Add an interrupt controller for QUICC Engine Ports
-Date: Mon, 25 Aug 2025 08:53:16 +0200
-Message-ID: <6e6561f55c4cd51774e1b28268493ed2cd53ffc7.1756104334.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1756104334.git.christophe.leroy@csgroup.eu>
-References: <cover.1756104334.git.christophe.leroy@csgroup.eu>
+	linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org,
+	linux-parisc@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	sparclinux@vger.kernel.org,
+	linux-block@vger.kernel.org
+Cc: Richard Henderson <richard.henderson@linaro.org>,
+	Matt Turner <mattst88@gmail.com>,
+	Ian Molton <spyro@f2s.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Denis Efremov <efremov@linux.com>,
+	Jens Axboe <axboe@kernel.dk>,
+	Andrew Morton <akpm@linux-foundation.org>
+Subject: [PATCH v2 0/3] floppy: A couple of cleanups
+Date: Mon, 25 Aug 2025 18:32:54 +0200
+Message-ID: <20250825163545.39303-1-andriy.shevchenko@linux.intel.com>
+X-Mailer: git-send-email 2.50.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,204 +108,36 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756104796; l=5183; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=G7scsgL+yrYA4D+2n/22/LhhZgPYYRLFCIoU4FAox1M=; b=rdnea9DJY931Mv7VrEienQIjii0Xa12hnBl6Oo7Zx6SspCHJZXdBw5v2VY3Eu8BgzuQdlvdwt gacNAYu6GcRAbuHasgYXldbT95MuGZFpYsCEfMqUOkqiot8KEGMD33J
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-The QUICC Engine provides interrupts for a few I/O ports. This is
-handled via a separate interrupt ID and managed via a triplet of
-dedicated registers hosted by the SoC.
+There are a few places in architecture code for the floppy driver
+that may be cleaned up. Do it so.
 
-Implement an interrupt driver for it for that those IRQs can then
-be linked to the related GPIOs.
+Assumed to route via Andrew Morton's tree as floppy is basically orphaned.
 
-The number of ports for which interrupts are supported depends on
-the microcontroller:
-- mpc8323 has 10 interrupts
-- mpc8360 has 28 interrupts
-- mpc8568 has 18 interrupts
-So add this information as data of the compatible.
+Changelog v2:
+- combined separate patches sent earlier into a series
+- added tags (Helge, Geert)
+- fixed typo in the commit message (Geert)
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- drivers/soc/fsl/qe/Makefile      |   2 +-
- drivers/soc/fsl/qe/qe_ports_ic.c | 156 +++++++++++++++++++++++++++++++
- 2 files changed, 157 insertions(+), 1 deletion(-)
- create mode 100644 drivers/soc/fsl/qe/qe_ports_ic.c
+Andy Shevchenko (3):
+  floppy: Remove unused CROSS_64KB() macro from arch/ code
+  floppy: Replace custom SZ_64K constant
+  floppy: Sort headers alphabetically
 
-diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
-index ec8506e13113..901a9c40d5eb 100644
---- a/drivers/soc/fsl/qe/Makefile
-+++ b/drivers/soc/fsl/qe/Makefile
-@@ -11,4 +11,4 @@ obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
- obj-$(CONFIG_UCC_FAST)	+= ucc_fast.o
- obj-$(CONFIG_QE_TDM)	+= qe_tdm.o
- obj-$(CONFIG_QE_USB)	+= usb.o
--obj-$(CONFIG_QE_GPIO)	+= gpio.o
-+obj-$(CONFIG_QE_GPIO)	+= gpio.o qe_ports_ic.o
-diff --git a/drivers/soc/fsl/qe/qe_ports_ic.c b/drivers/soc/fsl/qe/qe_ports_ic.c
-new file mode 100644
-index 000000000000..9715643d36a6
---- /dev/null
-+++ b/drivers/soc/fsl/qe/qe_ports_ic.c
-@@ -0,0 +1,156 @@
-+// SPDX-License-Identifier: GPL-2.0
-+/*
-+ * QUICC ENGINE I/O Ports Interrupt Controller
-+ *
-+ * Copyright (c) 2025 Christophe Leroy CS GROUP France (christophe.leroy@csgroup.eu)
-+ */
-+
-+#include <linux/irq.h>
-+#include <linux/irqdomain.h>
-+#include <linux/platform_device.h>
-+
-+/* QE IC registers offset */
-+#define CEPIER		0x0c
-+#define CEPIMR		0x10
-+#define CEPICR		0x14
-+
-+struct qepic_data {
-+	void __iomem *reg;
-+	struct irq_domain *host;
-+};
-+
-+static void qepic_mask(struct irq_data *d)
-+{
-+	struct qepic_data *data = irq_data_get_irq_chip_data(d);
-+
-+	clrbits32(data->reg + CEPIMR, 1 << (31 - irqd_to_hwirq(d)));
-+}
-+
-+static void qepic_unmask(struct irq_data *d)
-+{
-+	struct qepic_data *data = irq_data_get_irq_chip_data(d);
-+
-+	setbits32(data->reg + CEPIMR, 1 << (31 - irqd_to_hwirq(d)));
-+}
-+
-+static void qepic_end(struct irq_data *d)
-+{
-+	struct qepic_data *data = irq_data_get_irq_chip_data(d);
-+
-+	out_be32(data->reg + CEPIER, 1 << (31 - irqd_to_hwirq(d)));
-+}
-+
-+static int qepic_set_type(struct irq_data *d, unsigned int flow_type)
-+{
-+	struct qepic_data *data = irq_data_get_irq_chip_data(d);
-+	unsigned int vec = (unsigned int)irqd_to_hwirq(d);
-+
-+	switch (flow_type & IRQ_TYPE_SENSE_MASK) {
-+	case IRQ_TYPE_EDGE_FALLING:
-+		setbits32(data->reg + CEPICR, 1 << (31 - vec));
-+		return 0;
-+	case IRQ_TYPE_EDGE_BOTH:
-+	case IRQ_TYPE_NONE:
-+		clrbits32(data->reg + CEPICR, 1 << (31 - vec));
-+		return 0;
-+	}
-+	return -EINVAL;
-+}
-+
-+static struct irq_chip qepic = {
-+	.name = "QEPIC",
-+	.irq_mask = qepic_mask,
-+	.irq_unmask = qepic_unmask,
-+	.irq_eoi = qepic_end,
-+	.irq_set_type = qepic_set_type,
-+};
-+
-+static int qepic_get_irq(struct irq_desc *desc)
-+{
-+	struct qepic_data *data = irq_desc_get_handler_data(desc);
-+	u32 event = in_be32(data->reg + CEPIER);
-+
-+	if (!event)
-+		return -1;
-+
-+	return irq_find_mapping(data->host, 32 - ffs(event));
-+}
-+
-+static void qepic_cascade(struct irq_desc *desc)
-+{
-+	generic_handle_irq(qepic_get_irq(desc));
-+}
-+
-+static int qepic_host_map(struct irq_domain *h, unsigned int virq, irq_hw_number_t hw)
-+{
-+	irq_set_chip_data(virq, h->host_data);
-+	irq_set_chip_and_handler(virq, &qepic, handle_fasteoi_irq);
-+	return 0;
-+}
-+
-+static const struct irq_domain_ops qepic_host_ops = {
-+	.map = qepic_host_map,
-+};
-+
-+static int qepic_probe(struct platform_device *pdev)
-+{
-+	struct device *dev = &pdev->dev;
-+	struct qepic_data *data;
-+	unsigned long nb;
-+	int irq;
-+
-+	nb = (unsigned long)of_device_get_match_data(dev);
-+	if (nb < 1 || nb > 32)
-+		return -EINVAL;
-+
-+	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
-+	if (!data)
-+		return -ENOMEM;
-+
-+	data->reg = devm_platform_ioremap_resource(pdev, 0);
-+	if (IS_ERR(data->reg))
-+		return PTR_ERR(data->reg);
-+
-+	irq = platform_get_irq(pdev, 0);
-+	if (irq < 0)
-+		return irq;
-+
-+	data->host = irq_domain_add_linear(dev->of_node, nb, &qepic_host_ops, data);
-+	if (!data->host)
-+		return -ENODEV;
-+
-+	irq_set_handler_data(irq, data);
-+	irq_set_chained_handler(irq, qepic_cascade);
-+
-+	return 0;
-+}
-+
-+static const struct of_device_id qepic_match[] = {
-+	{
-+		.compatible = "fsl,mpc8323-qe-ports-ic",
-+		.data = (void *)10,
-+	},
-+	{
-+		.compatible = "fsl,mpc8360-qe-ports-ic",
-+		.data = (void *)28,
-+	},
-+	{
-+		.compatible = "fsl,mpc8568-qe-ports-ic",
-+		.data = (void *)18,
-+	},
-+	{},
-+};
-+
-+static struct platform_driver qepic_driver = {
-+	.driver	= {
-+		.name		= "qe_ports_ic",
-+		.of_match_table	= qepic_match,
-+	},
-+	.probe	= qepic_probe,
-+};
-+
-+static int __init qepic_init(void)
-+{
-+	return platform_driver_register(&qepic_driver);
-+}
-+arch_initcall(qepic_init);
+ arch/alpha/include/asm/floppy.h    | 19 ----------
+ arch/arm/include/asm/floppy.h      |  2 --
+ arch/m68k/include/asm/floppy.h     |  4 ---
+ arch/mips/include/asm/floppy.h     | 15 --------
+ arch/parisc/include/asm/floppy.h   | 11 +++---
+ arch/powerpc/include/asm/floppy.h  |  5 ---
+ arch/sparc/include/asm/floppy_32.h |  3 --
+ arch/sparc/include/asm/floppy_64.h |  3 --
+ arch/x86/include/asm/floppy.h      |  8 ++---
+ drivers/block/floppy.c             | 56 ++++++++++++++----------------
+ 10 files changed, 34 insertions(+), 92 deletions(-)
+
 -- 
-2.49.0
+2.50.1
 
 
