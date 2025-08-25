@@ -1,61 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-11262-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11263-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57310CA0EFA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 16:36:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B4ACCA0EFA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 16:36:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9byY5r8bz3cYq;
-	Tue, 26 Aug 2025 02:36:05 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9byc6SC7z3cgM;
+	Tue, 26 Aug 2025 02:36:08 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756139765;
-	cv=none; b=bqn7SI/Z2JIGX5+0UW6AF+lGT04M5hMhXBMDA+xLLJca853wFG4yzJH/yfYZLq2FjXEr4ihEiJRMDfJ1zOVIEvYJhHaQTFgDkW9zEmuR5uJxWtZmdplWOgP+RZSJC7MEXDlEf9atsFpdN2Dd1fNfPCuuajBsgQ5unoz0SwxTBkk53PzpI+MCiM0nKwAW3s9/xRaNOwcns7ZXoMcvaEj0rWOe8bxkLkWJGF8VWAfl221209cB2DedCaSXOMJXXunnMsLsT9BvNJceS14qYAheFBOZw0Eaw5B3yHmlBkkR8VEvQ0ijPX5Hzs18YkNQZGb+ZkWZYnFf5n7bpobgd3NyZA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756139768;
+	cv=none; b=WlWJKgAlXZsw4d2gC35cPBXM8iIpQKwl+lHPJUIdpy/QCiXMZxpW/s3yI8EVC8+xsyKWBQJ981Kuo76Yx2bzXTiqE+g81T+D5OzuyRo386rryCtu6cqvT2LiYsDbtEK2BmjKKOvngyFdkBBbKU+XpUU7uLQBKXExohDUqXyh7CTNKcnOsKW1mYLUJQd+SltWzsEMQMZPwrE0RYVO/rvbWzmO24lXpVSP9IEGrDxO+mDlvzJD5gbtQWQ/o0E8bprRqOcgDK4ABT6GVCoPGs3qUWDF6953C9pPIYokNZubreXOIMgdFMKL4Ig0Mnjw2OrJvIxbAkt93zJCzbUt/9ewvw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756139765; c=relaxed/relaxed;
-	bh=CYkENkG86CGpJX8tlASGD4qcKwdlUFc6LyyYgBUp7bk=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=m51k4RrS0JAg5wyL0L8SwTfTDC553xCGjpoZQybNsfOIgB5RJgQokn/yuoCenSt58zeeS6oCXI8aMq5GHqpl4TvwM0pOQ5m5mKRimHbuHPT4cA0CfWmDfmmHUAP9XzfRZ3CaGsaEAoTthfHC4ujyslqAYZ8BDKo84DgpjqVIlkzo6R/PqrARdr67/Z/Zmxu9uKzSh5J8wkMHIimWgaRJVPCteKn6Bi2n8e2K1SS18u/OKAjhhSKdhAosl96k23RZnXLhCzCRt/8g84s3ID3LI3Mtltom/tsj1QiW15J8uQmPmYo2/zME7BUb7HTA3DOojmB7iIcxk39AzLyAJA8Dtw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EG4Y5TOf; dkim-atps=neutral; spf=none (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	t=1756139768; c=relaxed/relaxed;
+	bh=2WyGocCgHBIIkkkxcd3AEqFZiqE4Qc8dTTZQnUK0iu8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=eXZnoTMF+8Hfhm48jyxNRtr+TNbDC+8vWOVWyMns6a02fqKv0uo0Kuvws+AJne/mBd5spHefaMX0Eg/CHECEol8FiqlwPHO4wFkSDbZz1LTeK/PxVa7bt+zk0QtTWb1TRH0KBZ2Tn4E26gkuO+RZeeBlMOjmR8SJjRMCMOrqBpj2CdWVf7c+l+E56TfqUCprBVucnpNUXzPLIRcQsLbpxN6TncVDrskaMAVeXmliPhVk+olI7cGh/imBa7kHVgand15pXAflBdX99rAuDYgsgiSGpHu2ZtRdJUfN1ckvRyYEa4ckvtVA2LFMehBHheN2HBoynRT1uxUXe8xhCGynxQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CPZlKZyT; dkim-atps=neutral; spf=none (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=EG4Y5TOf;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=CPZlKZyT;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
 Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c9byR5x7wz3cYb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 02:35:58 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c9byZ1xy8z3cYb
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 02:36:05 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1756139760; x=1787675760;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=L2un3Tp24kq84D49bPeqtKFgx0ttvdt2Oi+LfIRW2Jk=;
-  b=EG4Y5TOfTTeneF2U+iXkLIBI0GA5kVBePgKc97ZonPrRqnUJhuLd/NUd
-   w/dZ9VdorL37FJ6pkzz2oPw+E4uU9EQMNb+v6VGm3vLfBCIz47b1rlD+G
-   7JGBICZ92yi2+h7MkIw4MJbAbYe1/OragxO6j372GxFmrjoChyEJuB3vy
-   UAwykfMC0bMNwCp/5TPqipB7SZ5AvZsHv+KPxVX5FHIIgczEsSFv6VUmX
-   nS2vsKx8kQXxLKvz94Z/oyu4uYhYm6LeqVXad+nziUSp7lLiraOeDtZO8
-   dh+/znVywFiQKPDNS3rJ9CFkgmGqgL/x+49TDmkjF+mHMtUYA5JN9L6d3
-   A==;
-X-CSE-ConnectionGUID: 9+kMUbB+Rw2vqebUH2elog==
-X-CSE-MsgGUID: IcAYx+sHSzGj3DZXAhfqAQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11533"; a="69459516"
+  t=1756139766; x=1787675766;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=WzmZWMms4bv8taptRv7sWNE6UwWdfM4GmVI+cXRz004=;
+  b=CPZlKZyTI5mX4enDxCXfYJi8USezyD61K2v/EYO3OwqMtTx4JoLnMUS8
+   JIrTkIMqmuDp9DavzV61W0N+DqtfowvqLAeHLWtq4Nioa+/ap0J1/yQ4+
+   r5PVwDSehsyf70gtTO2UX5yEpnIO5uUoynH6UoiRJKV7OY4yewqXc2lwa
+   58Me55X+ZKdUQcKhZH4UnSzoWL4cFjsSWM0yo9Olpk1pNhifHxz84y7DZ
+   q3nzXbycvAE+zxwUmtLNExbFe2mY0EIYJr8t5rpxk4X90/xLcNHyft3bs
+   x9vScilfhsiiaLeepowWZjFE6UKCCBNjj73DtXR8SBJnWSUApsOO6FVln
+   w==;
+X-CSE-ConnectionGUID: rFj2qNSMQg+Sd+BsDMuZHw==
+X-CSE-MsgGUID: 9tgkT0SnQYCeZxCXeWMNuw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11533"; a="69459539"
 X-IronPort-AV: E=Sophos;i="6.18,213,1751266800"; 
-   d="scan'208";a="69459516"
+   d="scan'208";a="69459539"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
   by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 25 Aug 2025 09:35:55 -0700
-X-CSE-ConnectionGUID: orFQ8jjkTR+a1kLWJels8Q==
-X-CSE-MsgGUID: l5OrMqmGT8icT6nXAJqR8A==
+X-CSE-ConnectionGUID: wGy2mzdEQBu6ep/2AqbnXQ==
+X-CSE-MsgGUID: NAapVdSxTk+ZacKhIWFZ9w==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.18,213,1751266800"; 
-   d="scan'208";a="169241087"
+   d="scan'208";a="169241086"
 Received: from black.igk.intel.com ([10.91.253.5])
   by orviesa007.jf.intel.com with ESMTP; 25 Aug 2025 09:35:48 -0700
 Received: by black.igk.intel.com (Postfix, from userid 1003)
-	id D581B94; Mon, 25 Aug 2025 18:35:46 +0200 (CEST)
+	id E1D6697; Mon, 25 Aug 2025 18:35:46 +0200 (CEST)
 From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
 To: Helge Deller <deller@gmx.de>,
 	Andy Shevchenko <andriy.shevchenko@linux.intel.com>,
@@ -91,10 +92,12 @@ Cc: Richard Henderson <richard.henderson@linaro.org>,
 	Denis Efremov <efremov@linux.com>,
 	Jens Axboe <axboe@kernel.dk>,
 	Andrew Morton <akpm@linux-foundation.org>
-Subject: [PATCH v2 0/3] floppy: A couple of cleanups
-Date: Mon, 25 Aug 2025 18:32:54 +0200
-Message-ID: <20250825163545.39303-1-andriy.shevchenko@linux.intel.com>
+Subject: [PATCH v2 3/3] floppy: Sort headers alphabetically
+Date: Mon, 25 Aug 2025 18:32:57 +0200
+Message-ID: <20250825163545.39303-4-andriy.shevchenko@linux.intel.com>
 X-Mailer: git-send-email 2.50.1
+In-Reply-To: <20250825163545.39303-1-andriy.shevchenko@linux.intel.com>
+References: <20250825163545.39303-1-andriy.shevchenko@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,33 +113,81 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-There are a few places in architecture code for the floppy driver
-that may be cleaned up. Do it so.
+Sorting headers alphabetically helps locating duplicates, and makes it
+easier to figure out where to insert new headers.
 
-Assumed to route via Andrew Morton's tree as floppy is basically orphaned.
+Signed-off-by: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+---
+ drivers/block/floppy.c | 54 +++++++++++++++++++++---------------------
+ 1 file changed, 27 insertions(+), 27 deletions(-)
 
-Changelog v2:
-- combined separate patches sent earlier into a series
-- added tags (Helge, Geert)
-- fixed typo in the commit message (Geert)
-
-Andy Shevchenko (3):
-  floppy: Remove unused CROSS_64KB() macro from arch/ code
-  floppy: Replace custom SZ_64K constant
-  floppy: Sort headers alphabetically
-
- arch/alpha/include/asm/floppy.h    | 19 ----------
- arch/arm/include/asm/floppy.h      |  2 --
- arch/m68k/include/asm/floppy.h     |  4 ---
- arch/mips/include/asm/floppy.h     | 15 --------
- arch/parisc/include/asm/floppy.h   | 11 +++---
- arch/powerpc/include/asm/floppy.h  |  5 ---
- arch/sparc/include/asm/floppy_32.h |  3 --
- arch/sparc/include/asm/floppy_64.h |  3 --
- arch/x86/include/asm/floppy.h      |  8 ++---
- drivers/block/floppy.c             | 56 ++++++++++++++----------------
- 10 files changed, 34 insertions(+), 92 deletions(-)
-
+diff --git a/drivers/block/floppy.c b/drivers/block/floppy.c
+index d769a223fcc8..61d62019a38d 100644
+--- a/drivers/block/floppy.c
++++ b/drivers/block/floppy.c
+@@ -163,35 +163,35 @@
+ 
+ /* do print messages for unexpected interrupts */
+ static int print_unex = 1;
+-#include <linux/module.h>
+-#include <linux/sched.h>
+-#include <linux/fs.h>
+-#include <linux/kernel.h>
+-#include <linux/timer.h>
+-#include <linux/workqueue.h>
+-#include <linux/fdreg.h>
+-#include <linux/fd.h>
+-#include <linux/hdreg.h>
+-#include <linux/errno.h>
+-#include <linux/slab.h>
+-#include <linux/mm.h>
+-#include <linux/bio.h>
+-#include <linux/string.h>
+-#include <linux/jiffies.h>
+-#include <linux/fcntl.h>
+-#include <linux/delay.h>
+-#include <linux/mc146818rtc.h>	/* CMOS defines */
+-#include <linux/ioport.h>
+-#include <linux/interrupt.h>
+-#include <linux/init.h>
+-#include <linux/major.h>
+-#include <linux/platform_device.h>
+-#include <linux/mod_devicetable.h>
+-#include <linux/mutex.h>
+-#include <linux/io.h>
+-#include <linux/uaccess.h>
+ #include <linux/async.h>
++#include <linux/bio.h>
+ #include <linux/compat.h>
++#include <linux/delay.h>
++#include <linux/errno.h>
++#include <linux/fcntl.h>
++#include <linux/fd.h>
++#include <linux/fdreg.h>
++#include <linux/fs.h>
++#include <linux/hdreg.h>
++#include <linux/init.h>
++#include <linux/interrupt.h>
++#include <linux/io.h>
++#include <linux/ioport.h>
++#include <linux/jiffies.h>
++#include <linux/kernel.h>
++#include <linux/major.h>
++#include <linux/mc146818rtc.h>	/* CMOS defines */
++#include <linux/mm.h>
++#include <linux/mod_devicetable.h>
++#include <linux/module.h>
++#include <linux/mutex.h>
++#include <linux/platform_device.h>
++#include <linux/sched.h>
++#include <linux/slab.h>
++#include <linux/string.h>
++#include <linux/timer.h>
++#include <linux/uaccess.h>
++#include <linux/workqueue.h>
+ 
+ /*
+  * PS/2 floppies have much slower step rates than regular floppies.
 -- 
 2.50.1
 
