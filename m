@@ -1,61 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-11266-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11267-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15B8BC8303F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 20:04:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64185C8303F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 20:20:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9hbH3Nx8z3clb;
-	Tue, 26 Aug 2025 06:04:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756152283;
-	cv=none; b=k04fMWE55WC92Y7Qw4skqu7mkfIxaGLw1eq5SVAMJbRuK9hdPQhuQVleVeeHiz8DhdD0WBUsSWeI+7uIPiPafAK86q+czfvfZM4xvvmMiFLx1vwBSNEZJeMMIX1UxLv4lLccJSxQFvCZnSVe3qTudPS0q2o141s7VJzgkHGnq0k6tQWcBgN30t3oWrGTUzWJbOYuWvS1CCAZP5GA+KyWIlg5newvsY8J8/prabpsvXHSMemWG1kS32weVH9co0DqvavvHXZqtAhzsJzFSOgzERsj0Zq0iOhBzpxw6PcjuTfscyT2QZm4PbO9bKeNPF7ugohOxRwSlwDgFiGkp01MwQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9hxf6sHqz3cmC;
+	Tue, 26 Aug 2025 06:20:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756153238;
+	cv=none; b=Wiv9vOPUZtui6E/hwx4XYF96yjze/5fcaDc4xWDHslfjkhBvmuRmC6jbTksHdmrBGaiM7FIIl9bOvdYq3tfNymV/YCoX3b3+FWHp8yihK3tdxrtiJYqtWY+GUUUh4IeF34MYVAJv8wdPiyJpA6MP7p5+skAN6L8RsK2rX+k9KMFIuHy7K5ROlXl81NYCrGEAk1ulVZF/ZwkY3PJ6UdxGfOihA41P3QdQpc0sTsIAR+O2H+GweqrpC5yWPswY+6ysgprmULmD51TLjDV6oGIOxtmq8D46H7duA+PwuDn8XVjjaH981N86Kb8TE1u+PI583VFNjmZO96ZH7JB1fiek3w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756152283; c=relaxed/relaxed;
-	bh=ggxBvHPp/Lej+KwZ4e6C7IZ6zx7TGdeeH5L6jFbsQiI=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=OuYOHZzH0dB+uW+H2/1xUyAMXyfUeB/IB9M1SYx76nFbGTNr4WDzdSlszzimq3RiprzSqA2+DxdSCcYZjzs0ewRZ9c84HYDbIktud4kkN7F6C865QQdSWWLDeyqk+eNsxQh7boWCop45JL5rcb/JRudtJa2MRVMZ30R2Oti2ybjIjri3jsko1f17fOjGLy63qtuQsCdoNTMme7TWdimjE8VAc2NHAgeninZnrZLU/WLQs4VHNEbf3lloCeCRQw4gK8dCucmEbm/L5i2kuAjVDESURpIza21YI1yl3Qcq39sDXMU5Q3A0OjQhFJpjq2DmaRRvT0oAtNxNErN0mHHf3g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UYIb/7F6; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=UYIb/7F6;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c9hbG5S1Nz3cl0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 06:04:42 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 4B40740346;
-	Mon, 25 Aug 2025 20:04:40 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 66D1BC113D0;
-	Mon, 25 Aug 2025 20:04:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756152280;
-	bh=zfoEC0qVaIxne+Ih7GOFCCmslaPPL3pdBZesCwuWO18=;
-	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=UYIb/7F6z/p/GP+mdnt7Qx6lRuw0WvsBXI59wavEe3ebR/bxsPORopOj2TBtdkrO3
-	 1x5T+pNYfTV7UoELqXsNXLibUw79tmZp1JXZaU6KsedmkosfIeKceywPs0oVL6voR/
-	 viiCgSO5Bzv8k4xGWc4y5Z6Pl2t3vpRH+saJmQvB208Dy3ZHzng0Zx7296ldDhbYfI
-	 X/eplYSnaj7E41O8x3oj8XRJ8JmcmpI6L3rzNeOTYzGzd09XmXeIOQY1ZQWpz0mi21
-	 TM2nRNgx56k1T3a79aMuEpP0RhsM5WXibX5PQJkdd4XSSKqs3FK1waqkPLVLRWeWcN
-	 cXkWhCa1T2paw==
-From: Mark Brown <broonie@kernel.org>
-To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
- nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
- shawnguo@kernel.org, s.hauer@pengutronix.de, kernel@pengutronix.de, 
- linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- imx@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
- linux-kernel@vger.kernel.org, Shengjiu Wang <shengjiu.wang@nxp.com>
-In-Reply-To: <20250820031641.2158261-1-shengjiu.wang@nxp.com>
-References: <20250820031641.2158261-1-shengjiu.wang@nxp.com>
-Subject: Re: [PATCH] ASoC: imx-hdmi: remove cpu_pdev related code
-Message-Id: <175615227355.226187.1520162312481432148.b4-ty@kernel.org>
-Date: Mon, 25 Aug 2025 21:04:33 +0100
+	t=1756153238; c=relaxed/relaxed;
+	bh=RiCneKkX46FlFEMJR9iteFwOUzphfopgwlv1WPH+dUs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=Z6liwZWiWEyF9u4t/lfEPKkZMcWLXXHRut2rPZgp8ymh1zVe0oopW5XkFenunuZ+5IlSnX7/MsaFJBKu54Eu+QrXoZ74vGlmT/bYd9Z2+IMo726UVg20l48xDwhIJ9BInxZ1NIDIxX6Of8+lBbUb/HzFMNFiz9DiqBwbUR9lGYg+qJlJuSFAZlNW7kDLe3dPSBRWtr+T3csFp/SQSRzUb2173g++shU0d72L5fHnMQXahJGY1Biq8DwXmYmxtZjCNfq2yph+501HIbkad7osAJAjqnQEZtHYVHDpZd1c1AGOIaWqpE2c82p3QFpTIpC/oK93dMMfTfRzI++O63sydQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9hxd6hjkz3cm7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 06:20:36 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4c9M2C0ly6z9sSN;
+	Mon, 25 Aug 2025 08:53:23 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id naGpTVgKY7N5; Mon, 25 Aug 2025 08:53:23 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9M291j4rz9sSH;
+	Mon, 25 Aug 2025 08:53:21 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 205568B775;
+	Mon, 25 Aug 2025 08:53:21 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id MMKRrkjN9_EK; Mon, 25 Aug 2025 08:53:21 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id DE6458B768;
+	Mon, 25 Aug 2025 08:53:20 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org
+Subject: [PATCH v3 3/6] soc: fsl: qe: Drop legacy-of-mm-gpiochip.h header from GPIO driver
+Date: Mon, 25 Aug 2025 08:53:18 +0200
+Message-ID: <9d02ad9f1b4881939ee53cdb2eedd7f87dbb62ac.1756104334.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1756104334.git.christophe.leroy@csgroup.eu>
+References: <cover.1756104334.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,44 +75,213 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15-dev-a9b2a
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756104796; l=7329; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=uSpdgVDcr8sbNwBtzV5UsjpLGA0Vuy5iqJlziDMf2qo=; b=KpU4FOlhYDuIOYcxlxivamXLCc665FKRW15mIBArruBniduHbHmnYFQLF4A3cWeStpgMJM/KZ hLBVEm6WPiEDtb1BcLOl0P0FMkAuw4GGry2MBUdDjTt3FZeZNcqH2F1
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 
-On Wed, 20 Aug 2025 11:16:41 +0800, Shengjiu Wang wrote:
-> If a defer probe happens for the cpu device, the return value for
-> cpu_pdev "ret = -EINVAL" breaks defer probe. As the cpus->dai_name
-> can be replaced by cpus->of_node, to simplify the code, remove related
-> code for cpu_pdev.
-> 
-> 
+Remove legacy-of-mm-gpiochip.h header file. The above mentioned
+file provides an OF API that's deprecated. There is no agnostic
+alternatives to it and we have to open code the logic which was
+hidden behind of_mm_gpiochip_add_data(). Note, most of the GPIO
+drivers are using their own labeling schemas and resource retrieval
+that only a few may gain of the code deduplication, so whenever
+alternative is appear we can move drivers again to use that one.
 
-Applied to
+As a side effect this change fixes a potential memory leak on
+an error path, if of_mm_gpiochip_add_data() fails.
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+[Text copied from commit 34064c8267a6 ("powerpc/8xx: Drop
+legacy-of-mm-gpiochip.h header")]
 
-Thanks!
+Suggested-by: Bartosz Golaszewski <brgl@bgdev.pl>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ arch/powerpc/platforms/Kconfig |  1 -
+ drivers/soc/fsl/qe/gpio.c      | 51 ++++++++++++++++++----------------
+ 2 files changed, 27 insertions(+), 25 deletions(-)
 
-[1/1] ASoC: imx-hdmi: remove cpu_pdev related code
-      commit: bc017f28b1c6c3d44c3631f8f6d152b7e703e990
-
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
-
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
+index fea3766eac0f..5b689bd3ddf4 100644
+--- a/arch/powerpc/platforms/Kconfig
++++ b/arch/powerpc/platforms/Kconfig
+@@ -232,7 +232,6 @@ config QE_GPIO
+ 	bool "QE GPIO support"
+ 	depends on QUICC_ENGINE
+ 	select GPIOLIB
+-	select OF_GPIO_MM_GPIOCHIP
+ 	help
+ 	  Say Y here if you're going to use hardware that connects to the
+ 	  QE GPIOs.
+diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
+index 93fcc6d85ac7..a338469cebe4 100644
+--- a/drivers/soc/fsl/qe/gpio.c
++++ b/drivers/soc/fsl/qe/gpio.c
+@@ -13,7 +13,6 @@
+ #include <linux/err.h>
+ #include <linux/io.h>
+ #include <linux/of.h>
+-#include <linux/gpio/legacy-of-mm-gpiochip.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/gpio/driver.h>
+ #include <linux/slab.h>
+@@ -24,7 +23,8 @@
+ #include <soc/fsl/qe/qe.h>
+ 
+ struct qe_gpio_chip {
+-	struct of_mm_gpio_chip mm_gc;
++	struct gpio_chip gc;
++	void __iomem *regs;
+ 	spinlock_t lock;
+ 
+ 	/* shadowed data register to clear/set bits safely */
+@@ -34,11 +34,9 @@ struct qe_gpio_chip {
+ 	struct qe_pio_regs saved_regs;
+ };
+ 
+-static void qe_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
++static void qe_gpio_save_regs(struct qe_gpio_chip *qe_gc)
+ {
+-	struct qe_gpio_chip *qe_gc =
+-		container_of(mm_gc, struct qe_gpio_chip, mm_gc);
+-	struct qe_pio_regs __iomem *regs = mm_gc->regs;
++	struct qe_pio_regs __iomem *regs = qe_gc->regs;
+ 
+ 	qe_gc->cpdata = ioread32be(&regs->cpdata);
+ 	qe_gc->saved_regs.cpdata = qe_gc->cpdata;
+@@ -51,8 +49,8 @@ static void qe_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
+ 
+ static int qe_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+-	struct qe_pio_regs __iomem *regs = mm_gc->regs;
++	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
++	struct qe_pio_regs __iomem *regs = qe_gc->regs;
+ 	u32 pin_mask = 1 << (QE_PIO_PINS - 1 - gpio);
+ 
+ 	return !!(ioread32be(&regs->cpdata) & pin_mask);
+@@ -60,9 +58,8 @@ static int qe_gpio_get(struct gpio_chip *gc, unsigned int gpio)
+ 
+ static int qe_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
+-	struct qe_pio_regs __iomem *regs = mm_gc->regs;
++	struct qe_pio_regs __iomem *regs = qe_gc->regs;
+ 	unsigned long flags;
+ 	u32 pin_mask = 1 << (QE_PIO_PINS - 1 - gpio);
+ 
+@@ -83,9 +80,8 @@ static int qe_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
+ static int qe_gpio_set_multiple(struct gpio_chip *gc,
+ 				unsigned long *mask, unsigned long *bits)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
+-	struct qe_pio_regs __iomem *regs = mm_gc->regs;
++	struct qe_pio_regs __iomem *regs = qe_gc->regs;
+ 	unsigned long flags;
+ 	int i;
+ 
+@@ -111,13 +107,12 @@ static int qe_gpio_set_multiple(struct gpio_chip *gc,
+ 
+ static int qe_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&qe_gc->lock, flags);
+ 
+-	__par_io_config_pin(mm_gc->regs, gpio, QE_PIO_DIR_IN, 0, 0, 0);
++	__par_io_config_pin(qe_gc->regs, gpio, QE_PIO_DIR_IN, 0, 0, 0);
+ 
+ 	spin_unlock_irqrestore(&qe_gc->lock, flags);
+ 
+@@ -126,7 +121,6 @@ static int qe_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
+ 
+ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ {
+-	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
+ 	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
+ 	unsigned long flags;
+ 
+@@ -134,7 +128,7 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ 
+ 	spin_lock_irqsave(&qe_gc->lock, flags);
+ 
+-	__par_io_config_pin(mm_gc->regs, gpio, QE_PIO_DIR_OUT, 0, 0, 0);
++	__par_io_config_pin(qe_gc->regs, gpio, QE_PIO_DIR_OUT, 0, 0, 0);
+ 
+ 	spin_unlock_irqrestore(&qe_gc->lock, flags);
+ 
+@@ -240,7 +234,7 @@ EXPORT_SYMBOL(qe_pin_free);
+ void qe_pin_set_dedicated(struct qe_pin *qe_pin)
+ {
+ 	struct qe_gpio_chip *qe_gc = qe_pin->controller;
+-	struct qe_pio_regs __iomem *regs = qe_gc->mm_gc.regs;
++	struct qe_pio_regs __iomem *regs = qe_gc->regs;
+ 	struct qe_pio_regs *sregs = &qe_gc->saved_regs;
+ 	int pin = qe_pin->num;
+ 	u32 mask1 = 1 << (QE_PIO_PINS - (pin + 1));
+@@ -269,7 +263,6 @@ void qe_pin_set_dedicated(struct qe_pin *qe_pin)
+ 
+ 	iowrite32be(qe_gc->cpdata, &regs->cpdata);
+ 	qe_clrsetbits_be32(&regs->cpodr, mask1, sregs->cpodr & mask1);
+-
+ 	spin_unlock_irqrestore(&qe_gc->lock, flags);
+ }
+ EXPORT_SYMBOL(qe_pin_set_dedicated);
+@@ -284,7 +277,7 @@ EXPORT_SYMBOL(qe_pin_set_dedicated);
+ void qe_pin_set_gpio(struct qe_pin *qe_pin)
+ {
+ 	struct qe_gpio_chip *qe_gc = qe_pin->controller;
+-	struct qe_pio_regs __iomem *regs = qe_gc->mm_gc.regs;
++	struct qe_pio_regs __iomem *regs = qe_gc->regs;
+ 	unsigned long flags;
+ 
+ 	spin_lock_irqsave(&qe_gc->lock, flags);
+@@ -301,7 +294,6 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ 	struct device *dev = &ofdev->dev;
+ 	struct device_node *np = dev->of_node;
+ 	struct qe_gpio_chip *qe_gc;
+-	struct of_mm_gpio_chip *mm_gc;
+ 	struct gpio_chip *gc;
+ 
+ 	qe_gc = devm_kzalloc(dev, sizeof(*qe_gc), GFP_KERNEL);
+@@ -310,18 +302,29 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ 
+ 	spin_lock_init(&qe_gc->lock);
+ 
+-	mm_gc = &qe_gc->mm_gc;
+-	gc = &mm_gc->gc;
++	gc = &qe_gc->gc;
+ 
+-	mm_gc->save_regs = qe_gpio_save_regs;
++	gc->base = -1;
+ 	gc->ngpio = QE_PIO_PINS;
+ 	gc->direction_input = qe_gpio_dir_in;
+ 	gc->direction_output = qe_gpio_dir_out;
+ 	gc->get = qe_gpio_get;
+ 	gc->set = qe_gpio_set;
+ 	gc->set_multiple = qe_gpio_set_multiple;
++	gc->parent = dev;
++	gc->owner = THIS_MODULE;
++
++	gc->label = devm_kasprintf(dev, GFP_KERNEL, "%pOF", np);
++	if (!gc->label)
++		return -ENOMEM;
++
++	qe_gc->regs = devm_of_iomap(dev, np, 0, NULL);
++	if (IS_ERR(qe_gc->regs))
++		return PTR_ERR(qe_gc->regs);
++
++	qe_gpio_save_regs(qe_gc);
+ 
+-	return of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
++	return devm_gpiochip_add_data(dev, gc, qe_gc);
+ }
+ 
+ static const struct of_device_id qe_gpio_match[] = {
+-- 
+2.49.0
 
 
