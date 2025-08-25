@@ -1,83 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-11244-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11245-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 931C9CA0EFA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 09:34:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6BEFECA0EFA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 10:20:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9QcP288pz3cfg;
-	Mon, 25 Aug 2025 19:34:45 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::329"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756114485;
-	cv=none; b=nNHd2t8OYgjKJAtYEAHT7IDPjW7OYftXUSUiQ6x6Xqby3mSCTb4FEI5N2pWraD+MStaAJezMqb/nr724Ae2L/oCG2ll8yUprn7+u7Xxz4JDYzRXsuBGOiLdeDGgl6og24jHxFA4Bm+wnY4RHDXceC2G1A1zJ+uF9TsqP3OZILmdgQHw2PdUEhOe0rThqGwbfjJufgWoJDzLAnx4KkxihZGeWDQCTzQ8aBkELkkhh4spN/b4S3y8WySwesGQNEDCIrQjNo7wAfLSBAtpmJ76ufqNB+LEirdOIUe3E5yVFee3i1lWI0/H8SpXd0n7n0dQ0ylWAqWIkfQgvZwYp+F/oQg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9Rcj0KVCz3cgB;
+	Mon, 25 Aug 2025 20:20:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=143.55.148.243
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756117204;
+	cv=none; b=Z9x+zd3pESVVzxSa5B9+Hu5JxCCFtKcF94iQarWICi/1d8J9aaPQzwN02IYpbYaLXLv9qtY1E7zPDLsVW2B6tAQhbX6v3fF/RopNC250uloRhkYheJl7mphXkjoCdEkiMk5EoEnS6cPDQYNxy6CQxd61NjGcB5Xqf+ni3pJLkM+pkRo2q1qnVgcKtwVpJptB30C4PptUIrYRtkPBzW3jioc5lheXRmPlxu/7c7Ecv5XCDKdxgWluU5nXCJbReLS6ihKVWyyAXgU96tmAvwnCjSnwi/eoKi9TLR3mH5DDKjkf+8LGf7Rd7RO5IYaF9N5S3i+covBrqUjqB+16FjUVBg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756114485; c=relaxed/relaxed;
-	bh=V0ekzX7hOfhzup1TYo38EYe+UPAgqh85cgI3qFYsCcU=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition; b=dme/4jnrMvadZmJszCvhZ7TdIftfH9BrTjoKxWy2rVq1cZJyAs4/T+y6RaA4QY170cslOeCDU5w/x8G3GjvneSCd+JL/4w+stui5oM2Q/qwoFOmATq6tOh/ATyC9m8WTNglvanbEpZMqxxzlUryEqhs4pPz7RQ1y5GGtsBp7pX9RyKJFCrhBbqgreXp6EwaBqBszayCUT8hVyfskyZu8fMe69fspsZZadFnxsXVx0DGVKxyDG9Z5IWn4Dks89aApzTx2fVm2BxgmyG1G+LYD/UHGCtI51Bn2hPima6i0vnVte3XDaL16gjD8oAkA98pJDA4pP+uKXYF35mbk1e1e/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RhEEJVAb; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=salah.triki@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1756117204; c=relaxed/relaxed;
+	bh=D2RQQU+xVYCIYE9iCJ4jbQxYZO59NkcR2A8V0GUG+Mo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=e9sIjgc5P7s+MHS3L8my6ZihRidkFzbp6dNSLOpyINqeq/SUxoFU/oynf6nQe+Lq+ohiCg3Olusr3O+gl7ZdLC1WlorT/uKsidwJhaLiS2W0GxViVPHFC/StISfN11reoJe7EeE9VY5hUTlqxjkfo7u5ZTIdJr90UnsTa9ywPyh3nXXbh4USnu4EYVdAFwlcEKShuXmVMMHSZX/6wl8VZIzCSLHfeylATGU6BKXv3z+td9LrHOPIO6Te8Rrg2elyfJcso5kPtJsdDQ0eL6B+nXBBX0yV8evCeNxqwOm8G3igJhtLpdjlZMaJPLKOwnsRBA71zMVRLbTQbRO9e3y2fA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=iram.es; dkim=pass (2048-bit key; unprotected) header.d=iram.es header.i=@iram.es header.a=rsa-sha256 header.s=dkim3 header.b=f276yTAV; dkim-atps=neutral; spf=pass (client-ip=143.55.148.243; helo=mx08-006a4e02.pphosted.com; envelope-from=paubert@iram.es; receiver=lists.ozlabs.org) smtp.mailfrom=iram.es
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=iram.es
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=RhEEJVAb;
+	dkim=pass (2048-bit key; unprotected) header.d=iram.es header.i=@iram.es header.a=rsa-sha256 header.s=dkim3 header.b=f276yTAV;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::329; helo=mail-wm1-x329.google.com; envelope-from=salah.triki@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x329.google.com (mail-wm1-x329.google.com [IPv6:2a00:1450:4864:20::329])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iram.es (client-ip=143.55.148.243; helo=mx08-006a4e02.pphosted.com; envelope-from=paubert@iram.es; receiver=lists.ozlabs.org)
+Received: from mx08-006a4e02.pphosted.com (mx08-006a4e02.pphosted.com [143.55.148.243])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c9QcM5FF2z3cfH
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2025 19:34:43 +1000 (AEST)
-Received: by mail-wm1-x329.google.com with SMTP id 5b1f17b1804b1-45b627ea685so2725615e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2025 02:34:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1756114479; x=1756719279; darn=lists.ozlabs.org;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=V0ekzX7hOfhzup1TYo38EYe+UPAgqh85cgI3qFYsCcU=;
-        b=RhEEJVAbBm/hPmh6rkL9E9wYOA3sEP9ZuPub4MIMv+8/sv+rZaVhY3vq82ZigIEOy5
-         U7UQFH8F23gZr2gftRMUiEwJo+lQWU2DxdWbBBCWqbtqbQj4FmnqJ/Q6IIvpEar6GUa2
-         dEgNeVdobr1VwiaDzQLcYgg8rMbttIdZXPmTNtfo3bvTDkmVblgTCs6xcynpvz7obEdD
-         kKEHTSy4OaN0FVv7xYfyr3xlE8d3aQ4WdGMC6vWoxfoio9eYkAUPVGJnE4bl1J0UXHDR
-         0jI5D3aW55wnvEKZCW9O0cvYPWZ0yRy+lgk+ipskJ0eVM2MArHG5brTZpgrJGv2BGqQS
-         qYTg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756114479; x=1756719279;
-        h=content-disposition:mime-version:message-id:subject:cc:to:from:date
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=V0ekzX7hOfhzup1TYo38EYe+UPAgqh85cgI3qFYsCcU=;
-        b=O8rV4GomLKtJB2VUJYyv2S/9aCt4i1vh0RS2EPRQioez+8Omh3UWgGUIhagBC0DvxS
-         VxxFTrZ8OfH2GSwVKoc/2cK8TXC3Y/K8C/Kqlt3FvJ+jJfEhwTj7wQJpOtDd0Jzoa+1v
-         jdTQFLx09fne/XYrxV+sb3ASd/agD4E/mzp6/JjbgbairxZlL58hByh7dbt64939Q1DA
-         HicJJxFs/bb+j3boHPPvCwVT8AQZUk1vPGWYGAl14i8PPJY/06PrIqReY494Yay/5FiG
-         wPZq/M8LDGnSdxXZk6lMUpTErSvDleC+F+4AT8+w5waZLgGD4xiEaru6NDNvJuE+V069
-         K4oQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUx2mH6x0VcB+y0XHpuDZ5CS5f89iYRjSJ0EWSs5FjEYppUcQqch9+c0h3LBqjoQPboulV4pJkbb2xbFXM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyoaSSTFeaZJbV9MUcaXbjUGi15ac1KMgHNq4U3rFCC71SafngJ
-	K125dvjXFL3AsiC5twqrgpMIl1JGD7F9PFa0k3v998M2VcpUAtLDMbmg
-X-Gm-Gg: ASbGncv6iXW9YD5d+eNwmrfJ363mz2Pet3PHcrvxL60Gu9bRdqVfT4kMUZKTCV0TzU2
-	GGOxvmlhgaYDUQbApdL8aXV8b67l8jTj4lrFslEmEQgNxBIYVF7x9sZTe9VChOaTOOWmm1Pgx/6
-	Pv+B2l3DkrwjlmM6RJBeEh7QW9hTFoKRvBr2tpO4i8ckn8Ou6LRVZ/PReBGsLY85dZa5MFFzl8M
-	76gC1SnHS+Ggipd0Lq+gq9NtXJovcyeISXGf19YGuV/fRETf5Qm7JCUo7jVUkBsdDHDQ3YJd6gB
-	sPsmEMZmAaoF93LDZGSGGumU/RBjC84qN1pa/y8g7pY0y9HZkg87Z8lp5jOHLkEYWwjbQUkhDDY
-	F4BCJMXtzGXNT
-X-Google-Smtp-Source: AGHT+IFcndbm4f3NcGG45AtxWvCWfIECRUoVl/7A3Y21V4o4YWwd+7uBs/nxY7ed57LZP0qUl1f1Yw==
-X-Received: by 2002:a05:600c:46d3:b0:459:dde3:1a56 with SMTP id 5b1f17b1804b1-45b517d2ab6mr92679845e9.28.1756114479052;
-        Mon, 25 Aug 2025 02:34:39 -0700 (PDT)
-Received: from pc ([196.235.191.98])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-45b5753ae41sm101865975e9.9.2025.08.25.02.34.37
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 25 Aug 2025 02:34:38 -0700 (PDT)
-Date: Mon, 25 Aug 2025 10:34:35 +0100
-From: Salah Triki <salah.triki@gmail.com>
-To: Ioana Ciornei <ioana.ciornei@nxp.com>,
-	Markus Elfring <Markus.Elfring@web.de>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: salah.triki@gmail.com
-Subject: [PATCH v2] bus: fsl-mc: Check return value of platform_get_resource()
-Message-ID: <aKwuK6TRr5XNYQ8u@pc>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c9Rcc6nvmz3cg1
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2025 20:19:58 +1000 (AEST)
+Received: from pps.filterd (m0316694.ppops.net [127.0.0.1])
+	by m0316694.ppops.net (8.18.1.2/8.18.1.2) with ESMTP id 57P6PW3W020069;
+	Mon, 25 Aug 2025 12:18:43 +0200
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=iram.es; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=dkim3; bh=D2RQ
+	QU+xVYCIYE9iCJ4jbQxYZO59NkcR2A8V0GUG+Mo=; b=f276yTAVV1SD26/ulkZ2
+	ssJY8XTewysYT4tMLHnjnSIBPzgblP8WuCw3pnh/XAa52lQyDLxmxShvX17t1EXs
+	AoQda248LCfIMXON/nZwXpeu4+MTA43njmbgfGliPSIcYHT6eGt5tvWcsz+Ebm8/
+	4lIyyZv8wrgSbUY90OllDWqU/MTlR6SEhvM2DfGVcewE1Kv7qk7AtlaNhqjqabwW
+	IOCDoLYjGRp5sJ9N4qvDQOAd9gPixccJfFHXTLWq+WrJuREyVW1zYVGsiH/zFMSl
+	OAyS7jVvPh7W7XrmyRecvqRovk6Azt/V4iwX6CHVY52rTnzQCWQmiOXOKm2ygevf
+	nw==
+Received: from sim.rediris.es (mta-out04.sim.rediris.es [130.206.24.46])
+	by m0316694.ppops.net (PPS) with ESMTPS id 48qs26hbtk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 25 Aug 2025 12:18:43 +0200 (MEST)
+Received: from sim.rediris.es (localhost.localdomain [127.0.0.1])
+	by sim.rediris.es (Postfix) with ESMTPS id 26F1D181FAE;
+	Mon, 25 Aug 2025 12:18:42 +0200 (CEST)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by sim.rediris.es (Postfix) with ESMTP id 00B66181FAC;
+	Mon, 25 Aug 2025 12:18:41 +0200 (CEST)
+X-Amavis-Modified: Mail body modified (using disclaimer) -
+ mta-out04.sim.rediris.es
+Received: from sim.rediris.es ([127.0.0.1])
+ by localhost (mta-out04.sim.rediris.es [127.0.0.1]) (amavis, port 10026)
+ with ESMTP id T0a5k0mKOE42; Mon, 25 Aug 2025 12:18:41 +0200 (CEST)
+Received: from lt-gp.iram.es (haproxy02.sim.rediris.es [130.206.24.70])
+	by sim.rediris.es (Postfix) with ESMTPA id 4570418007C;
+	Mon, 25 Aug 2025 12:18:40 +0200 (CEST)
+Date: Mon, 25 Aug 2025 12:18:38 +0200
+From: Gabriel Paubert <paubert@iram.es>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Alexander Viro <viro@zeniv.linux.org.uk>,
+        Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+        Peter Zijlstra <peterz@infradead.org>,
+        Darren Hart <dvhart@infradead.org>,
+        Davidlohr Bueso <dave@stgolabs.net>,
+        Andre Almeida <andrealmeid@igalia.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        David Laight <david.laight.linux@gmail.com>,
+        Dave Hansen <dave.hansen@linux.intel.com>,
+        Linus Torvalds <torvalds@linux-foundation.org>,
+        Daniel Borkmann <daniel@iogearbox.net>, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, linux-fsdevel@vger.kernel.org,
+        linux-mm@kvack.org, linux-block@vger.kernel.org
+Subject: Re: [PATCH v2 10/10] powerpc/uaccess: Implement masked user access
+Message-ID: <aKw4frSacjCoruSJ@lt-gp.iram.es>
+References: <cover.1755854833.git.christophe.leroy@csgroup.eu>
+ <647f1b1db985aec8ec1163bf97688563ae6f9609.1755854833.git.christophe.leroy@csgroup.eu>
+ <aKwnMo7UllLZkOcK@lt-gp.iram.es>
+ <16679d56-5ee0-469d-a11c-475a45a1c2b9@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,42 +97,147 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
+In-Reply-To: <16679d56-5ee0-469d-a11c-475a45a1c2b9@csgroup.eu>
+Content-Transfer-Encoding: quoted-printable
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODI0MDAxMSBTYWx0ZWRfXyQKmoH9DesXw
+ ky5qpDKRbPVEO1j5P6RR/dl92Vu5gG46S+qU0RD2h9TCpiV9lxYjE4Rf4eAAbziJN1WFf5iKIoL
+ vwHyFf4hVFUMvanQ6xRm7ygYHGMCvWURJrObfA0zrkO/dAoKD6EpbGdosihHgY3UjjtywmHeIhh
+ zadbuk6ri8Bjd//t+fuudKJvFfCA6JbBQ9N+HL1oXH8gyaqcVqF4z95oY0uvqMW92ZBVK+g2n6Z
+ F5336k0OeSJ784mGbOt0xTivvX2ToRO8PW2UCuoqsfP7MIu8uTDDGoglgFl+oLkNRfmAFLuzTMV
+ j3inHZqHmiMrvZjyNxDRXcurMFxlSzfQPLVCuFgRq2ZkLrTZLm79a044/SvNKtbKXHZ8D77pt49
+ kvezQV2k
+X-Proofpoint-GUID: gpjt9l5GPC7skcU5Z664_moW2gPMxUzU
+X-Authority-Analysis: v=2.4 cv=GqFC+l1C c=1 sm=1 tr=0 ts=68ac3883 cx=c_pps
+ a=Kke4r4mcy+kRAsMtzpf9hg==:117 a=Kke4r4mcy+kRAsMtzpf9hg==:17
+ a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10 a=_EeEMxcBAAAA:8 a=LQ9UBoVtz5yYhqZLJvEA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: gpjt9l5GPC7skcU5Z664_moW2gPMxUzU
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-08-25_05,2025-08-20_03,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=salida_notspam policy=salida score=0
+ priorityscore=1501 malwarescore=0 phishscore=0 bulkscore=0 adultscore=0
+ spamscore=0 suspectscore=0 clxscore=1011 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2508240011
 
-platform_get_resource() returns NULL in case of failure, so check its
-return value and propagate the error in order to prevent NULL pointer
-dereference.
+On Mon, Aug 25, 2025 at 11:40:48AM +0200, Christophe Leroy wrote:
+> Hi Gabriel,
+>=20
+> Le 25/08/2025 =C3=A0 11:04, Gabriel Paubert a =C3=A9crit=C2=A0:
+> > [Vous ne recevez pas souvent de courriers de paubert@iram.es. D?couvr=
+ez pourquoi ceci est important ? https://urldefense.com/v3/__https://aka.=
+ms/LearnAboutSenderIdentification__;!!D9dNQwwGXtA!QUcSIXoDBBj9wAtcyQ-z3nP=
+EAj-RnJpPgYwjOeb6LZWLejdLzq4uYsPMecQuK5Qy3147APjCNc-hcXGT71XuBh1AJI2M$  ]
+> >=20
+> > Hi Christophe,
+> >=20
+> > On Fri, Aug 22, 2025 at 11:58:06AM +0200, Christophe Leroy wrote:
+> > > Masked user access avoids the address/size verification by access_o=
+k().
+> > > Allthough its main purpose is to skip the speculation in the
+> > > verification of user address and size hence avoid the need of spec
+> > > mitigation, it also has the advantage of reducing the amount of
+> > > instructions required so it even benefits to platforms that don't
+> > > need speculation mitigation, especially when the size of the copy i=
+s
+> > > not know at build time.
+> > >=20
+> > > So implement masked user access on powerpc. The only requirement is
+> > > to have memory gap that faults between the top user space and the
+> > > real start of kernel area.
+> > >=20
+> > > On 64 bits platforms the address space is divided that way:
+> > >=20
+> > >        0xffffffffffffffff      +------------------+
+> > >                                |                  |
+> > >                                |   kernel space   |
+> > >                                |                  |
+> > >        0xc000000000000000      +------------------+  <=3D=3D PAGE_O=
+FFSET
+> > >                                |//////////////////|
+> > >                                |//////////////////|
+> > >        0x8000000000000000      |//////////////////|
+> > >                                |//////////////////|
+> > >                                |//////////////////|
+> > >        0x0010000000000000      +------------------+  <=3D=3D TASK_S=
+IZE_MAX
+> > >                                |                  |
+> > >                                |    user space    |
+> > >                                |                  |
+> > >        0x0000000000000000      +------------------+
+> > >=20
+> > > Kernel is always above 0x8000000000000000 and user always
+> > > below, with a gap in-between. It leads to a 4 instructions sequence=
+:
+> > >=20
+> > >    80: 7c 69 1b 78     mr      r9,r3
+> > >    84: 7c 63 fe 76     sradi   r3,r3,63
+> > >    88: 7d 29 18 78     andc    r9,r9,r3
+> > >    8c: 79 23 00 4c     rldimi  r3,r9,0,1
+> > >=20
+> > > This sequence leaves r3 unmodified when it is below 0x8000000000000=
+000
+> > > and clamps it to 0x8000000000000000 if it is above.
+> > >=20
+> >=20
+> > This comment looks wrong: the second instruction converts r3 to a
+> > replicated sign bit of the address ((addr>0)?0:-1) if treating the
+> > address as signed. After that the code only modifies the MSB of r3. S=
+o I
+> > don't see how r3 could be unchanged from the original value...
+>=20
+> Unless I'm missing something, the above rldimi leaves the MSB of r3
+> unmodified and replaces all other bits by the same in r9.
+>=20
+> This is the code generated by GCC for the following:
+>=20
+> 	unsigned long mask =3D (unsigned long)((long)addr >> 63);
+>=20
+> 	addr =3D ((addr & ~mask) & (~0UL >> 1)) | (mask & (1UL << 63));
+>=20
+>=20
+> >=20
+> > OTOH, I believe the following 3 instructions sequence would work,
+> > input address (a) in r3, scratch value (tmp) in r9, both intptr_t:
+> >=20
+> >          sradi r9,r3,63  ; tmp =3D (a >=3D 0) ? 0L : -1L;
+> >          andc r3,r3,r9   ; a =3D a & ~tmp; (equivalently a =3D (a >=3D=
+ 0) ? a : 0)
+> >          rldimi r3,r9,0,1 ; copy MSB of tmp to MSB of a
+> >=20
+> > But maybe I goofed...
+> >=20
+>=20
+> From my understanding of rldimi, your proposed code would:
+> - Keep r3 unmodified when it is above 0x8000000000000000
+> - Set r3 to 0x7fffffffffffffff when it is below 0x8000000000000000
+>=20
+> Extract of ppc64 ABI:
+>=20
+> rldimi RA,RS,SH,MB
+>=20
+> The contents of register RS are rotated 64 left SH bits.
+> A mask is generated having 1-bits from bit MB
+> through bit 63=E2=88=92 SH and 0-bits elsewhere. The rotated
+> data are inserted into register RA under control of the
+> generated mask.
 
-Fixes: 6305166c8771 ("bus: fsl-mc: Add ACPI support for fsl-mc")
-Cc: <stable@vger.kernel.org>
-Signed-off-by: Salah Triki <salah.triki@gmail.com>
----
-Changes in v2:
-   - Add Fixes and Cc tags, as suggested by Markus Elfring and Christophe
-     Leroy.
-   - Remove blank line before the if statement, as suggested by Markus
-     Elfring.
-   - Replace ENODEV with EINVAL, as suggestd by Christophe Leroy.
+Sorry, you are right, I got the polarity of the mask reversed in my
+head.
 
- drivers/bus/fsl-mc/fsl-mc-bus.c | 3 +++
- 1 file changed, 3 insertions(+)
 
-diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
-index 7671bd158545..cd83cd564736 100644
---- a/drivers/bus/fsl-mc/fsl-mc-bus.c
-+++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
-@@ -1105,6 +1105,9 @@ static int fsl_mc_bus_probe(struct platform_device *pdev)
- 	 * Get physical address of MC portal for the root DPRC:
- 	 */
- 	plat_res = platform_get_resource(pdev, IORESOURCE_MEM, 0);
-+	if (!plat_res)
-+		return -EINVAL;
-+
- 	mc_portal_phys_addr = plat_res->start;
- 	mc_portal_size = resource_size(plat_res);
- 	mc_portal_base_phys_addr = mc_portal_phys_addr & ~0x3ffffff;
--- 
-2.43.0
+Once again I may goof, but I believe that the following sequence
+would work:
+
+	sradi r9,r3,63
+	andc r3,r3,r9
+	rldimi r3,r9,63,0  ; insert LSB of r9 into MSB of R3
+
+Cheers,
+Gabriel
+ 
 
 
