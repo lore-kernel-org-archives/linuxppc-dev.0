@@ -1,50 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-11247-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11248-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 720BBCA0EFA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 10:20:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 118ADCA0FE1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 11:20:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9RdN4qgCz3cgh;
-	Mon, 25 Aug 2025 20:20:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9SyX4nk9z3cgg;
+	Mon, 25 Aug 2025 21:20:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756117240;
-	cv=none; b=egvMQdFs8rFSgXEVUHkhcprSx5BPt29BctpoBK/BAM4bwwtcuYgwS4A3A2jOxh3V3LRyPzz183wN7s61QdGHeyBzaJp4+OL+ArtFSIgLbeIqpfWS7kTQ8oof4ReWqAKRwW5HKV+76hNO1RLUNNYFvWGHRJw3vXMmd4oj6vw/+ilSDRZtIjpLXxzDC/srkHg2uPYq0BV+WOE8auKWCIfV6B2cX87hruXaNIeeAwcvtVtllnuRWywW4GFZ+prDN+2qxRmzLadCjq3DMzs4VR1xytz9lB75uhzNFUuxYolLreqXrElPSrYln+tvnRhJ+gqYNnCQk2C2fauC/nMn6EqLVw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756120836;
+	cv=none; b=F9mSH80rXCK7fq/mYWeTTp4Gf+yPaPOAJfwb2s03LjeFdl0VrZMfeO+LlLmF7RVzGCkfxGBfgjCnoQTNHWkCVPPJOS/9weT8PG4zDfUcw/1iiWoytRCuTSMMdiegdGiEizFp3WnTc7XUKUpWSoYu2ziil9jQbKz6XLM2XuRhDiuyaBO+GZ+R1cgJQKnZlSCVysv9Q/vD8RXtQY8i3cDEOie18Qv4L/1fju/xS+pxrrZJJyRo2ABqk1Z/ZQxd5xJrv88/AML2lEw1YXcdmDf8L4NzwQqgpUGoKsVjdsj06it9X4AKofg6wenDajz5qR+pEQzQJEcpe+GQHYw2IX5y2w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756117240; c=relaxed/relaxed;
-	bh=jB0WKMT7crKcaopJPS36QIRBLD9yrujCjLgtznKE5t0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=A96ZiixVkst+wScvROGWJQnUY3wgOIq/rLXDkj1sxSg0xig1DofOdE/gXkgi+16YyQc09XT98j2FbVb6sfKrQx1/LDwoMsMA4wYcq80Ni7FjfvBpto6/WqBDZjFv6BADJLrNsGzlU5ioVG6TF042GKrFzH4heTqN1WRAvHK/XgqJvRmVjMfIUJP+Iny7fmiUPrjAfSne0kTlXvbiIc8SlZvKr6NL3eLD51PJ83VnXHrTtRspSu2K20QoUWxnNzOsA7ubYzUoQV9WnrO3sZ8sCuLf/VNPLFQ4canHgFvbcGePqek7uxe5RVZrAX2xFQMvM2P2VzvBLpRGO0/wW6pL+Q==
+	t=1756120836; c=relaxed/relaxed;
+	bh=4BusRkfMunJmSCJRay5beSULnaj6QUDsS8cFSTCRnJk=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=lAwjYMDoktzoPmBjkip9JAG7iA+4PzasdwQK1a8JHgNl/rlAZDlDyu+cVrNWyjE1Zs0aZULM5liCFUd9kGkQcKW9pxvBKUehA01RfgXEFqXptZVctnKC9Nwz7PB+9M4VTyNsQ2enFng8ZR3lqB10KCDNo1SFHJMxSrw73JRboKmz6esHiHrMrB+w7HtDZQYkMrDNHsTbeLd/oud+fVfN9Qk3JaMnhvRRHsbpEQce+vQK705YPK+7U3/eLCW+hZ5vjdpB0sYts3hCDux6LM9VwTyzvV7l7ayL0y4dmfzu+Fae7u5dOTiwCtRmZB18PuXPs76/xa6IflPI/AgH5gznNA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9RdN0dR9z3cgg
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2025 20:20:40 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9SyW4Y8Tz3cgQ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 25 Aug 2025 21:20:35 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c9R2y0dHvz9sSc;
-	Mon, 25 Aug 2025 11:54:18 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4c9M2B27z8z9sSZ;
+	Mon, 25 Aug 2025 08:53:22 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id cK2CLYDxHx9V; Mon, 25 Aug 2025 11:54:18 +0200 (CEST)
+	with ESMTP id BxTwglZEBoXl; Mon, 25 Aug 2025 08:53:22 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9R2x72D0z9sSb;
-	Mon, 25 Aug 2025 11:54:17 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9M290k2Dz9sSN;
+	Mon, 25 Aug 2025 08:53:21 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id D93348B764;
-	Mon, 25 Aug 2025 11:54:17 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 00D6D8B769;
+	Mon, 25 Aug 2025 08:53:21 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id EqBXMUSyP-Tb; Mon, 25 Aug 2025 11:54:17 +0200 (CEST)
-Received: from [10.25.207.160] (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B97568B763;
-	Mon, 25 Aug 2025 11:54:17 +0200 (CEST)
-Message-ID: <7b7cccf2-5899-4334-9aa0-e83f0772d484@csgroup.eu>
-Date: Mon, 25 Aug 2025 11:54:17 +0200
+	with ESMTP id JlgrBfZGcztj; Mon, 25 Aug 2025 08:53:20 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id BD6058B765;
+	Mon, 25 Aug 2025 08:53:20 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Subject: [PATCH v3 2/6] soc: fsl: qe: Change GPIO driver to a proper platform driver
+Date: Mon, 25 Aug 2025 08:53:17 +0200
+Message-ID: <e05a0959d794016bde79e48e25ff71253cf51aae.1756104334.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1756104334.git.christophe.leroy@csgroup.eu>
+References: <cover.1756104334.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,67 +76,126 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: Ozlabs patchwork notification not working anymore
-To: Jeremy Kerr <jk@ozlabs.org>, Stephen Rothwell <sfr@canb.auug.org.au>
-Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
-References: <8f6e5825-9468-4499-9bbd-4588a1eccc94@cs-soprasteria.com>
- <20250729183222.15adbb95@canb.auug.org.au>
- <cd2ee23092e3749f707b0f730af741a94f0986f0.camel@ozlabs.org>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <cd2ee23092e3749f707b0f730af741a94f0986f0.camel@ozlabs.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756104796; l=3167; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=iOKElbqwupLuEZy+GEz6lWmpyZoaATgEwHhwbYEF5mU=; b=Hh/bYgwmPhFQ5ox1xmlCCnt1obNivYhduAFJkVrhh6p38QnP/D6Boyj03kw26hOsxUPvdoVn2 gcAY5Ur3XHpC8WTqZPaq/O7Glbpn6cjYCNhZhZwjCCjEu/BBFAyXdHa
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-Hi Jeremy,
+In order to be able to add interrupts to the GPIOs, first change the
+QE GPIO driver to the proper platform driver in order to allow
+initialisation to be done in the right order, otherwise the GPIOs
+get added before the interrupts are registered.
 
-Le 10/08/2025 à 05:12, Jeremy Kerr a écrit :
-> Hi Christophe,
-> 
-> I've (finally!) had some time to take a look at this. Looks like
-> timezone behaviour had changed, which affected notification expiry.
-> 
-> It should be fixed now - I'm seeing test notifications myself. Let
-> me know how go.
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+---
+ drivers/soc/fsl/qe/gpio.c | 86 +++++++++++++++++++++------------------
+ 1 file changed, 47 insertions(+), 39 deletions(-)
 
-I still don't receive anything it seems. I have modified the status of 
-several patches over the last two weeks and haven't received any 
-notification from patchwork.
-
-Christophe
-
-> 
-> Cheers,
-> 
-> 
-> Jeremy
-> 
-> On Tue, 2025-07-29 at 18:32 +1000, Stephen Rothwell wrote:
->> Hi Christophe,
->>
->> On Tue, 29 Jul 2025 07:41:40 +0000 LEROY Christophe
->> <christophe.leroy2@cs-soprasteria.com> wrote:
->>>
->>> If I remember correctly you maintain the Ozlabs patchwork aren't
->>> you ?
->>
->> Actually Jeremy Kerr (cc'd) actually manages patchwork on
->> patchwork.ozlabs.org (I just admin the server it runs on).
->>
->>> For more than one year now, patchwork for linuxppc-dev hasn't sent
->>> notifications about patches status changes. Last notification I
->>> received
->>> was 11 June 2024.
->>>
->>> Is there a reason for that change ? I recently got questions from
->>> people
->>> asking me why they didn't get notified when I started looking at
->>> their
->>> patches.
->>>
->>> Is it possible to restore previous behaviour ?
->>
-> 
+diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
+index 8df1e8fa86a5..93fcc6d85ac7 100644
+--- a/drivers/soc/fsl/qe/gpio.c
++++ b/drivers/soc/fsl/qe/gpio.c
+@@ -19,6 +19,7 @@
+ #include <linux/slab.h>
+ #include <linux/export.h>
+ #include <linux/property.h>
++#include <linux/platform_device.h>
+ 
+ #include <soc/fsl/qe/qe.h>
+ 
+@@ -295,45 +296,52 @@ void qe_pin_set_gpio(struct qe_pin *qe_pin)
+ }
+ EXPORT_SYMBOL(qe_pin_set_gpio);
+ 
+-static int __init qe_add_gpiochips(void)
++static int qe_gpio_probe(struct platform_device *ofdev)
+ {
+-	struct device_node *np;
+-
+-	for_each_compatible_node(np, NULL, "fsl,mpc8323-qe-pario-bank") {
+-		int ret;
+-		struct qe_gpio_chip *qe_gc;
+-		struct of_mm_gpio_chip *mm_gc;
+-		struct gpio_chip *gc;
+-
+-		qe_gc = kzalloc(sizeof(*qe_gc), GFP_KERNEL);
+-		if (!qe_gc) {
+-			ret = -ENOMEM;
+-			goto err;
+-		}
++	struct device *dev = &ofdev->dev;
++	struct device_node *np = dev->of_node;
++	struct qe_gpio_chip *qe_gc;
++	struct of_mm_gpio_chip *mm_gc;
++	struct gpio_chip *gc;
+ 
+-		spin_lock_init(&qe_gc->lock);
+-
+-		mm_gc = &qe_gc->mm_gc;
+-		gc = &mm_gc->gc;
+-
+-		mm_gc->save_regs = qe_gpio_save_regs;
+-		gc->ngpio = QE_PIO_PINS;
+-		gc->direction_input = qe_gpio_dir_in;
+-		gc->direction_output = qe_gpio_dir_out;
+-		gc->get = qe_gpio_get;
+-		gc->set = qe_gpio_set;
+-		gc->set_multiple = qe_gpio_set_multiple;
+-
+-		ret = of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
+-		if (ret)
+-			goto err;
+-		continue;
+-err:
+-		pr_err("%pOF: registration failed with status %d\n",
+-		       np, ret);
+-		kfree(qe_gc);
+-		/* try others anyway */
+-	}
+-	return 0;
++	qe_gc = devm_kzalloc(dev, sizeof(*qe_gc), GFP_KERNEL);
++	if (!qe_gc)
++		return -ENOMEM;
++
++	spin_lock_init(&qe_gc->lock);
++
++	mm_gc = &qe_gc->mm_gc;
++	gc = &mm_gc->gc;
++
++	mm_gc->save_regs = qe_gpio_save_regs;
++	gc->ngpio = QE_PIO_PINS;
++	gc->direction_input = qe_gpio_dir_in;
++	gc->direction_output = qe_gpio_dir_out;
++	gc->get = qe_gpio_get;
++	gc->set = qe_gpio_set;
++	gc->set_multiple = qe_gpio_set_multiple;
++
++	return of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
++}
++
++static const struct of_device_id qe_gpio_match[] = {
++	{
++		.compatible = "fsl,mpc8323-qe-pario-bank",
++	},
++	{},
++};
++MODULE_DEVICE_TABLE(of, qe_gpio_match);
++
++static struct platform_driver qe_gpio_driver = {
++	.probe		= qe_gpio_probe,
++	.driver		= {
++		.name	= "qe-gpio",
++		.of_match_table	= qe_gpio_match,
++	},
++};
++
++static int __init qe_gpio_init(void)
++{
++	return platform_driver_register(&qe_gpio_driver);
+ }
+-arch_initcall(qe_add_gpiochips);
++arch_initcall(qe_gpio_init);
+-- 
+2.49.0
 
 
