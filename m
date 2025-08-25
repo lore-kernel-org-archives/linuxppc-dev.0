@@ -1,48 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-11260-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11261-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E53A7CA0EFA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 15:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19E1ECA0FE7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 25 Aug 2025 15:50:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9Zy541ncz3cky;
-	Tue, 26 Aug 2025 01:50:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9Zy94RGpz3clL;
+	Tue, 26 Aug 2025 01:50:41 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756137037;
-	cv=none; b=QffjSyi38fOazZaUt7GdqawUrs/vAULY0a3gPd4cxGFwN7uKmfetc9os82qFlzqvTPIzBeTBCSkuRW/BEQYnaqMPyXXvj+YQWQ4LdBkrp+80peyc+xays6+CJPTqXqWif4gQcwiDL58e7obtKUi2nalnnAq9/oAa+5VW8pSLgQnQXVJ1ez00Yil6slnyIumujOOhaVwiK7KyUluhlONi2MHgn6WV0Jx4FDzc4MSCIihU6Y2SmLQZZ/gD7AcMlm0nIQKcrTIppcbJkYM/sQLicJeGuStNKnDu46LQiHAYYbJL7aRfmgA4az2z+QfnkBEPAi+wDwMti0Mkk4/DqjZmhA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756137041;
+	cv=none; b=D12bUr32ltNqwiuZxTrn0jc2e1bi6T3u1OalsYuKbQFNyvR/G54pHFo/JVag8ZoCB60uTvmO7X1LLFFjptIoEHTlrlWjx4DpRPm+gy3SG/uZD3Ke/Baan0RvhIbgK1R6sWXuJ+dwrGUkaFz5u2CsprXYxTDAOvOwkMJWTj7IzOeBFtNUxhufT5V7rz/gl2PvkiwoxmdBPd5dKHNMoBL02IFCWfKN27UmlGzWCBX1WOP5fMRTfggh8I807Ukz1XnO8wXTRlIQDG3lFzL+jDV7gcZXPREm1AN3JL/MIFwWwNUYLOetg9y4xWTXJ4F4Jly5KAwQOqC93l0f0A9aFJUafg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756137037; c=relaxed/relaxed;
-	bh=BhENlcfkNwyDufaRiGgcBZWw5IjhSNkLtITka6qKf/g=;
+	t=1756137041; c=relaxed/relaxed;
+	bh=NXI3kM9yBU2NFSNS1reV27GNn49zaiScl2ch3IUevK8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NcWB805ISPpQmkTosznXKhq2j33wzcCD0dotukzFNdQh/3BeSfzB3RiTjceKRSHWUZdbWydVkIU4eFko9mbQDoBOdzcCBtd0DoMOkClZJz65UUsO0dWwKXxghk+nm2EIkhn869bLmpu+yQh4X4fHP517IG2kChtVhFsqdvVi3O9fl3KgGASTWllR/1bZLcz6ok/m2UiGKAarRiCUHJEeEsGN/pcckoOT/oLycYvzhqtpelXhDbyybwWhz0VKIOE+kl1m0o2E/HdeP9HpiiAhkeeWKcMLJo01T6Z5rNgo6O3q4CyywMLg/vnTSNyr6duZtpiGqx07xuyzZCwGGo9kuA==
+	 MIME-Version; b=hFgBVgA4SZKlgXVDy07SaeTQ3UfEgTAgJeBxzctEv136U3/3Hg+M8TPb03oJZitOlnLfmNWiFQaHScKC96k0RRew3HN/kcepe+prDkx4prhjPXC9eGi/V8jsvASX6mcRAaxBbiGQK+OqNTcXKV6IdyvLOor+KPihrRPXOsD5GSg0W8PQlRxGMU1wZq4/MNeWSDlYQId0ClKUBwTvZncev6er+gVG6+Ot/l6Xt3RHN/ESpfhfUrF7E83O7RDB4TMVEz6b+WlNHm5hMbG//8iKyyaEym0A/x+3I7YhdPqmAyxlyInskr/oBah7zOQRQ2tayl6sI5I/2nvjnu5+pWj3ZA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9Zy46GjNz3ckk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 01:50:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9Zy9186Vz3clK
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 01:50:41 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c9M2D4bxpz9sSd;
-	Mon, 25 Aug 2025 08:53:24 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4c9M290qdHz9sSS;
+	Mon, 25 Aug 2025 08:53:21 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 4916ElkUcXer; Mon, 25 Aug 2025 08:53:24 +0200 (CEST)
+	with ESMTP id WS6yEEqteSXJ; Mon, 25 Aug 2025 08:53:21 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9M292RWPz9sSV;
-	Mon, 25 Aug 2025 08:53:21 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9M286kZpz9sSH;
+	Mon, 25 Aug 2025 08:53:20 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3EDC08B769;
-	Mon, 25 Aug 2025 08:53:21 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D3E398B769;
+	Mon, 25 Aug 2025 08:53:20 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 4Ub9RjFzb6BR; Mon, 25 Aug 2025 08:53:21 +0200 (CEST)
+	with ESMTP id 94toZ_4Vro2v; Mon, 25 Aug 2025 08:53:20 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 0C4968B765;
-	Mon, 25 Aug 2025 08:53:21 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A2F5F8B768;
+	Mon, 25 Aug 2025 08:53:20 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Qiang Zhao <qiang.zhao@nxp.com>,
 	Linus Walleij <linus.walleij@linaro.org>,
@@ -56,9 +56,9 @@ Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-gpio@vger.kernel.org,
 	devicetree@vger.kernel.org
-Subject: [PATCH v3 4/6] soc: fsl: qe: Add support of IRQ in QE GPIO
-Date: Mon, 25 Aug 2025 08:53:19 +0200
-Message-ID: <372550a2633586d2f98b077d3f520f3262ca0e2a.1756104334.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v3 1/6] soc: fsl: qe: Add an interrupt controller for QUICC Engine Ports
+Date: Mon, 25 Aug 2025 08:53:16 +0200
+Message-ID: <6e6561f55c4cd51774e1b28268493ed2cd53ffc7.1756104334.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <cover.1756104334.git.christophe.leroy@csgroup.eu>
 References: <cover.1756104334.git.christophe.leroy@csgroup.eu>
@@ -75,101 +75,203 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756104796; l=2710; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=73IQ37tskzYmvonToad8R3pHY7nT1ylYyENPfX+baes=; b=1Mw+uBZnRMBUW5TPgXymjz8dvEQOBdUgMzXytx0Smi78Dl04GaGVcXxpPem3A54R13AakQw75 tgt//oO2kqfDJlJRyyRuRIbhnogLScEB/ixa/LUl6Zzem4yDI49rlNw
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756104796; l=5183; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=G7scsgL+yrYA4D+2n/22/LhhZgPYYRLFCIoU4FAox1M=; b=rdnea9DJY931Mv7VrEienQIjii0Xa12hnBl6Oo7Zx6SspCHJZXdBw5v2VY3Eu8BgzuQdlvdwt gacNAYu6GcRAbuHasgYXldbT95MuGZFpYsCEfMqUOkqiot8KEGMD33J
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-In the QE, a few GPIOs are IRQ capable. Similarly to
-commit 726bd223105c ("powerpc/8xx: Adding support of IRQ in MPC8xx
-GPIO"), add IRQ support to QE GPIO.
+The QUICC Engine provides interrupts for a few I/O ports. This is
+handled via a separate interrupt ID and managed via a triplet of
+dedicated registers hosted by the SoC.
 
-Add property 'fsl,qe-gpio-irq-mask' similar to
-'fsl,cpm1-gpio-irq-mask' that define which of the GPIOs have IRQs.
+Implement an interrupt driver for it for that those IRQs can then
+be linked to the related GPIOs.
 
-Here is an exemple for port B of mpc8323 which has IRQs for
-GPIOs PB7, PB9, PB25 and PB27.
-
-	qe_pio_b: gpio-controller@1418 {
-		compatible = "fsl,mpc8323-qe-pario-bank";
-		reg = <0x1418 0x18>;
-		interrupts = <4 5 6 7>;
-		interrupt-parent = <&qepic>;
-		gpio-controller;
-		#gpio-cells = <2>;
-		fsl,qe-gpio-irq-mask = <0x01400050>;
-	};
+The number of ports for which interrupts are supported depends on
+the microcontroller:
+- mpc8323 has 10 interrupts
+- mpc8360 has 28 interrupts
+- mpc8568 has 18 interrupts
+So add this information as data of the compatible.
 
 Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/soc/fsl/qe/gpio.c | 20 ++++++++++++++++++++
- 1 file changed, 20 insertions(+)
+ drivers/soc/fsl/qe/Makefile      |   2 +-
+ drivers/soc/fsl/qe/qe_ports_ic.c | 156 +++++++++++++++++++++++++++++++
+ 2 files changed, 157 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/soc/fsl/qe/qe_ports_ic.c
 
-diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
-index a338469cebe4..91d469403126 100644
---- a/drivers/soc/fsl/qe/gpio.c
-+++ b/drivers/soc/fsl/qe/gpio.c
-@@ -13,6 +13,7 @@
- #include <linux/err.h>
- #include <linux/io.h>
- #include <linux/of.h>
-+#include <linux/of_irq.h>
- #include <linux/gpio/consumer.h>
- #include <linux/gpio/driver.h>
- #include <linux/slab.h>
-@@ -32,6 +33,8 @@ struct qe_gpio_chip {
- 
- 	/* saved_regs used to restore dedicated functions */
- 	struct qe_pio_regs saved_regs;
+diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
+index ec8506e13113..901a9c40d5eb 100644
+--- a/drivers/soc/fsl/qe/Makefile
++++ b/drivers/soc/fsl/qe/Makefile
+@@ -11,4 +11,4 @@ obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
+ obj-$(CONFIG_UCC_FAST)	+= ucc_fast.o
+ obj-$(CONFIG_QE_TDM)	+= qe_tdm.o
+ obj-$(CONFIG_QE_USB)	+= usb.o
+-obj-$(CONFIG_QE_GPIO)	+= gpio.o
++obj-$(CONFIG_QE_GPIO)	+= gpio.o qe_ports_ic.o
+diff --git a/drivers/soc/fsl/qe/qe_ports_ic.c b/drivers/soc/fsl/qe/qe_ports_ic.c
+new file mode 100644
+index 000000000000..9715643d36a6
+--- /dev/null
++++ b/drivers/soc/fsl/qe/qe_ports_ic.c
+@@ -0,0 +1,156 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * QUICC ENGINE I/O Ports Interrupt Controller
++ *
++ * Copyright (c) 2025 Christophe Leroy CS GROUP France (christophe.leroy@csgroup.eu)
++ */
 +
-+	int irq[32];
- };
- 
- static void qe_gpio_save_regs(struct qe_gpio_chip *qe_gc)
-@@ -135,6 +138,13 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 	return 0;
- }
- 
-+static int qe_gpio_to_irq(struct gpio_chip *gc, unsigned int gpio)
++#include <linux/irq.h>
++#include <linux/irqdomain.h>
++#include <linux/platform_device.h>
++
++/* QE IC registers offset */
++#define CEPIER		0x0c
++#define CEPIMR		0x10
++#define CEPICR		0x14
++
++struct qepic_data {
++	void __iomem *reg;
++	struct irq_domain *host;
++};
++
++static void qepic_mask(struct irq_data *d)
 +{
-+	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
++	struct qepic_data *data = irq_data_get_irq_chip_data(d);
 +
-+	return qe_gc->irq[gpio] ? : -ENXIO;
++	clrbits32(data->reg + CEPIMR, 1 << (31 - irqd_to_hwirq(d)));
 +}
 +
- struct qe_pin {
- 	/*
- 	 * The qe_gpio_chip name is unfortunate, we should change that to
-@@ -295,6 +305,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
- 	struct device_node *np = dev->of_node;
- 	struct qe_gpio_chip *qe_gc;
- 	struct gpio_chip *gc;
-+	u32 mask;
- 
- 	qe_gc = devm_kzalloc(dev, sizeof(*qe_gc), GFP_KERNEL);
- 	if (!qe_gc)
-@@ -302,6 +313,14 @@ static int qe_gpio_probe(struct platform_device *ofdev)
- 
- 	spin_lock_init(&qe_gc->lock);
- 
-+	if (!of_property_read_u32(np, "fsl,qe-gpio-irq-mask", &mask)) {
-+		int i, j;
++static void qepic_unmask(struct irq_data *d)
++{
++	struct qepic_data *data = irq_data_get_irq_chip_data(d);
 +
-+		for (i = 0, j = 0; i < ARRAY_SIZE(qe_gc->irq); i++)
-+			if (mask & (1 << (31 - i)))
-+				qe_gc->irq[i] = irq_of_parse_and_map(np, j++);
++	setbits32(data->reg + CEPIMR, 1 << (31 - irqd_to_hwirq(d)));
++}
++
++static void qepic_end(struct irq_data *d)
++{
++	struct qepic_data *data = irq_data_get_irq_chip_data(d);
++
++	out_be32(data->reg + CEPIER, 1 << (31 - irqd_to_hwirq(d)));
++}
++
++static int qepic_set_type(struct irq_data *d, unsigned int flow_type)
++{
++	struct qepic_data *data = irq_data_get_irq_chip_data(d);
++	unsigned int vec = (unsigned int)irqd_to_hwirq(d);
++
++	switch (flow_type & IRQ_TYPE_SENSE_MASK) {
++	case IRQ_TYPE_EDGE_FALLING:
++		setbits32(data->reg + CEPICR, 1 << (31 - vec));
++		return 0;
++	case IRQ_TYPE_EDGE_BOTH:
++	case IRQ_TYPE_NONE:
++		clrbits32(data->reg + CEPICR, 1 << (31 - vec));
++		return 0;
 +	}
++	return -EINVAL;
++}
 +
- 	gc = &qe_gc->gc;
- 
- 	gc->base = -1;
-@@ -311,6 +330,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
- 	gc->get = qe_gpio_get;
- 	gc->set = qe_gpio_set;
- 	gc->set_multiple = qe_gpio_set_multiple;
-+	gc->to_irq = qe_gpio_to_irq;
- 	gc->parent = dev;
- 	gc->owner = THIS_MODULE;
- 
++static struct irq_chip qepic = {
++	.name = "QEPIC",
++	.irq_mask = qepic_mask,
++	.irq_unmask = qepic_unmask,
++	.irq_eoi = qepic_end,
++	.irq_set_type = qepic_set_type,
++};
++
++static int qepic_get_irq(struct irq_desc *desc)
++{
++	struct qepic_data *data = irq_desc_get_handler_data(desc);
++	u32 event = in_be32(data->reg + CEPIER);
++
++	if (!event)
++		return -1;
++
++	return irq_find_mapping(data->host, 32 - ffs(event));
++}
++
++static void qepic_cascade(struct irq_desc *desc)
++{
++	generic_handle_irq(qepic_get_irq(desc));
++}
++
++static int qepic_host_map(struct irq_domain *h, unsigned int virq, irq_hw_number_t hw)
++{
++	irq_set_chip_data(virq, h->host_data);
++	irq_set_chip_and_handler(virq, &qepic, handle_fasteoi_irq);
++	return 0;
++}
++
++static const struct irq_domain_ops qepic_host_ops = {
++	.map = qepic_host_map,
++};
++
++static int qepic_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct qepic_data *data;
++	unsigned long nb;
++	int irq;
++
++	nb = (unsigned long)of_device_get_match_data(dev);
++	if (nb < 1 || nb > 32)
++		return -EINVAL;
++
++	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->reg = devm_platform_ioremap_resource(pdev, 0);
++	if (IS_ERR(data->reg))
++		return PTR_ERR(data->reg);
++
++	irq = platform_get_irq(pdev, 0);
++	if (irq < 0)
++		return irq;
++
++	data->host = irq_domain_add_linear(dev->of_node, nb, &qepic_host_ops, data);
++	if (!data->host)
++		return -ENODEV;
++
++	irq_set_handler_data(irq, data);
++	irq_set_chained_handler(irq, qepic_cascade);
++
++	return 0;
++}
++
++static const struct of_device_id qepic_match[] = {
++	{
++		.compatible = "fsl,mpc8323-qe-ports-ic",
++		.data = (void *)10,
++	},
++	{
++		.compatible = "fsl,mpc8360-qe-ports-ic",
++		.data = (void *)28,
++	},
++	{
++		.compatible = "fsl,mpc8568-qe-ports-ic",
++		.data = (void *)18,
++	},
++	{},
++};
++
++static struct platform_driver qepic_driver = {
++	.driver	= {
++		.name		= "qe_ports_ic",
++		.of_match_table	= qepic_match,
++	},
++	.probe	= qepic_probe,
++};
++
++static int __init qepic_init(void)
++{
++	return platform_driver_register(&qepic_driver);
++}
++arch_initcall(qepic_init);
 -- 
 2.49.0
 
