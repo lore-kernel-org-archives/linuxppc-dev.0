@@ -1,65 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-11300-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11301-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68F76CA0EFA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 06:21:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2CDD4CA0EFA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 06:50:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9yH00pCMz3dJg;
-	Tue, 26 Aug 2025 16:21:32 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=176.9.242.62
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756189292;
-	cv=none; b=TawsQthVm3+qyydSKrsEiKCO4Ugz16BFrQBuPh2L9vCn/12wjylqxx2g/tePAzaSPy+joMHZuYy2hRGAsG9NEXNX2AFTGIHq1zcJ8MvII4XQa0dvhKY8PRzt81R1fDl7xbIEZd6PNMm1lFVNH2tFR+zCDUe2jLCvt5tTUpdqhBxFjMvckQimbJZJ6gHYV+eRxBlJEgD55dodd7NXY9nkTHxUsbKRJH6v0WVbRyLCxI3p/raq9woBNaYS93uYPtPHuQRPPKx2/aEyvMpZzVz+XjR8GQxkYWroOFcyZ9IGBwSvntAygVcag2Gs6SUJarqj+W+3Mwd6Lqi0gehLhA5h7g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9ywZ5GXFz3dKG;
+	Tue, 26 Aug 2025 16:50:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756191038;
+	cv=none; b=IkOGcRrvQHOlNoE++7twyI6SocHhQi8a35m9AsSyIQap1X5/Guc1Hyfttai5n24Hlk/STynaIjmURuzbCAF+JYjmF4C5TqL5VTTiAuEBGRAKjBGXjYiGM4bP5M2Qq7Px1z5/hgkmNMOSsyJ0CUNXwC3+6PNieH+yrun4YF33H8liX9lQOWo+yRm5eMAfJhVhZVGlC8iM5Hi9yHIKFOgsXIyXanDDGC70zIY9hJkWJog63Gjs46NgyR0SaJv9pT332id9tLKv8QHZvDoRHSNRAKLy7rxijSwbnvIYirtoHWbWbJsc2Rp0zKeo7MGDuE3Rbad+Bj0Z9D+diBwWRgjmoA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756189292; c=relaxed/relaxed;
-	bh=ILvWheSw7axbg3krBZNj8XsIqzPcs7LCGiznkPNeZiA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=lq5T4yrZUwbnEHHtgTCIaiAaDhJNFZ5IqzE14upynXpDkJ1yAR3NN92sbvV6cAia16iMmxTInRoxMC7NjQ1RjB/yx888frP6t7S6V0bguAomxfIcem+S1IvLWoFnAtKY9XKmK/VnTbbxFn/PNbFeuy7SoEVgn72weTSNlhjSWurMCJ/paVCdyWm39bAPoH6TY++qdrMkM/vgVRPP4x32duccrsoqm5ImVfWiScW971JVt5lonQ7GGLgRyYtLs+mdMCWl71YKXDh1K8Z1fGpQjblpcw/KH+7gpSogLy5/LJdax4+coU9xhuxap/y9fHNBDRU3EgLxF0rUDbilUasH0A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=176.9.242.62; helo=bmailout3.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org) smtp.helo=bmailout3.hostsharing.net
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=bmailout3.hostsharing.net (client-ip=176.9.242.62; helo=bmailout3.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org)
-Received: from bmailout3.hostsharing.net (bmailout3.hostsharing.net [176.9.242.62])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4c9yGz0g4Pz3dJM
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 16:21:29 +1000 (AEST)
-Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
-	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
-	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
-	by bmailout3.hostsharing.net (Postfix) with ESMTPS id 4063C2C05262;
-	Tue, 26 Aug 2025 08:21:24 +0200 (CEST)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id 16EC962C37; Tue, 26 Aug 2025 08:21:24 +0200 (CEST)
-Date: Tue, 26 Aug 2025 08:21:24 +0200
-From: Lukas Wunner <lukas@wunner.de>
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: Niklas Schnelle <schnelle@linux.ibm.com>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Linas Vepstas <linasvepstas@gmail.com>,
-	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Peter Oberparleiter <oberpar@linux.ibm.com>,
-	Matthew Rosato <mjrosato@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>, Sinan Kaya <okaya@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
-	Keith Busch <kbusch@kernel.org>
-Subject: Re: [PATCH v5 0/3] PCI/ERR: s390/pci: Use pci_uevent_ers() in PCI
- recovery
-Message-ID: <aK1SZGJBjrOx0s6y@wunner.de>
-References: <20250807-add_err_uevents-v5-0-adf85b0620b0@linux.ibm.com>
- <20250814210201.GA348169@bhelgaas>
+	t=1756191038; c=relaxed/relaxed;
+	bh=gxxeDFxhp2TuDhl4ZWiPgJwQ2AisTJ135smkh9/X7Eo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=N+eAdGtJroe3TAoeDStXsqY9ew75mkwiXDLu3INJXFNY2AMdl6LOaVtdcRvPc5zMR575HqqpXYtiWW2+FG3uUDNCS93uC0kw0dXz0njJz4JvbMJuIcFEpy0mCtc8O5XhkqCoWXBJX3ZlwS23WsBKidpkFUqsdWYH5djNslZv+ch97mc/nTYkfoNEpyk1UgICbvZbMQifvflStzsMIdfmBs1Kg3oRvH8DpinOd6XevFc2RkYZVu5fhdwRfIQ/mItCxTpJCPqQhr9fla1vwne7IoMZ121OOwbI3J+FqtlYQrjYg3fuVRDVXmMg03EI2TCyJhAbTjoymN3+yJ+EDLKHMQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9ywZ0WXRz3dKC
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 16:50:37 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4c9wnp3pJPz9sSY;
+	Tue, 26 Aug 2025 07:14:38 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id dEmYXdeORp8H; Tue, 26 Aug 2025 07:14:38 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9wnp2XzBz9sSX;
+	Tue, 26 Aug 2025 07:14:38 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3C7C08B764;
+	Tue, 26 Aug 2025 07:14:38 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id 5Jvj8WfM3QuB; Tue, 26 Aug 2025 07:14:38 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 577028B763;
+	Tue, 26 Aug 2025 07:14:36 +0200 (CEST)
+Message-ID: <e926a154-0f4e-49b2-aefa-1e778530c34c@csgroup.eu>
+Date: Tue, 26 Aug 2025 07:14:36 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,67 +58,117 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250814210201.GA348169@bhelgaas>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 6/8] sched/topology: Unify tl_cls_mask() across core
+ and x86
+To: K Prateek Nayak <kprateek.nayak@amd.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+ Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
+ Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
+ thomas.weissschuh@linutronix.de, Li Chen <chenl311@chinatelecom.cn>,
+ Bibo Mao <maobibo@loongson.cn>, Mete Durlu <meted@linux.ibm.com>,
+ Tobias Huschle <huschle@linux.ibm.com>,
+ Easwar Hariharan <easwar.hariharan@linux.microsoft.com>,
+ Guo Weikang <guoweikang.kernel@gmail.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Brian Gerst <brgerst@gmail.com>,
+ Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>,
+ Swapnil Sapkal <swapnil.sapkal@amd.com>,
+ "Yury Norov [NVIDIA]" <yury.norov@gmail.com>,
+ Sudeep Holla <sudeep.holla@arm.com>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ Andrea Righi <arighi@nvidia.com>, Yicong Yang <yangyicong@hisilicon.com>,
+ Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+ Tim Chen <tim.c.chen@linux.intel.com>,
+ Vinicius Costa Gomes <vinicius.gomes@intel.com>
+References: <20250826041319.1284-1-kprateek.nayak@amd.com>
+ <20250826041319.1284-7-kprateek.nayak@amd.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <20250826041319.1284-7-kprateek.nayak@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Thu, Aug 14, 2025 at 04:02:01PM -0500, Bjorn Helgaas wrote:
-> On Thu, Aug 07, 2025 at 03:55:37PM +0200, Niklas Schnelle wrote:
-> > Niklas Schnelle (3):
-> >       PCI/AER: Fix missing uevent on recovery when a reset is requested
-> >       PCI/ERR: s390/pci: Use pci_uevent_ers() in PCI recovery
-> >       powerpc/eeh: Use result of error_detected() in uevent
-> > 
-> >  arch/powerpc/kernel/eeh_driver.c | 2 +-
-> >  arch/s390/pci/pci_event.c        | 3 +++
-> >  drivers/pci/pci-driver.c         | 3 ++-
-> >  include/linux/pci.h              | 2 +-
-> >  4 files changed, 7 insertions(+), 3 deletions(-)
+
+
+Le 26/08/2025 à 06:13, K Prateek Nayak a écrit :
+> Unify the tl_cls_mask() used by both the scheduler core and x86.
+> No functional changes intended.
 > 
-> Applied on pci/aer for v6.18, thanks!  This on top of Lukas's series:
+> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
+> ---
+>   arch/x86/kernel/smpboot.c      | 4 ----
+>   include/linux/sched/topology.h | 8 +++++++-
+>   kernel/sched/topology.c        | 7 -------
+>   3 files changed, 7 insertions(+), 12 deletions(-)
 > 
->   https://lore.kernel.org/all/cover.1755008151.git.lukas@wunner.de/
-> 
-> Expect the whole branch to be rebased to add Reviewed-by, etc.
+> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> index 03ff6270966a..81a40d777d65 100644
+> --- a/arch/x86/kernel/smpboot.c
+> +++ b/arch/x86/kernel/smpboot.c
+> @@ -470,10 +470,6 @@ static int x86_cluster_flags(void)
+>   {
+>   	return cpu_cluster_flags() | x86_sched_itmt_flags();
+>   }
+> -static const struct cpumask *tl_cls_mask(struct sched_domain_topology_level *tl, int cpu)
+> -{
+> -	return cpu_clustergroup_mask(cpu);
+> -}
+>   #endif
+>   
+>   #ifdef CONFIG_SCHED_MC
+> diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
+> index d75fbb7d9667..e54501cc8e47 100644
+> --- a/include/linux/sched/topology.h
+> +++ b/include/linux/sched/topology.h
+> @@ -50,7 +50,13 @@ static inline int cpu_cluster_flags(void)
+>   {
+>   	return SD_CLUSTER | SD_SHARE_LLC;
+>   }
+> -#endif
+> +
+> +static const __maybe_unused
 
-In case it helps, these are all the tags that were offered for my series
-and that haven't been added to the pci/aer branch yet:
+Same as previous patch, don't hide dust under the carpet, if you need 
+__maybe_unused it means there is a problem in the construct.
 
-d0a2dee7d458 PCI/AER: Allow drivers to opt in to Bus Reset on Non-Fatal Errors
-  Reviewed-by: Linas Vepstas <linasvepstas@gmail.com>
-  https://lore.kernel.org/r/CAHrUA34fVV48MShC4CrXSmveR9i8MC4KAQxtM+XQY_Ao8joBQw@mail.gmail.com/
-  Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-  https://lore.kernel.org/r/8491adbd-d8e8-465a-971e-3fe50e2561b1@linux.intel.com/
+> +struct cpumask *tl_cls_mask(struct sched_domain_topology_level *tl, int cpu)
+> +{
+> +	return cpu_clustergroup_mask(cpu);
+> +}
+> +#endif /* CONFIG_SCHED_CLUSTER */
+>   
+>   #ifdef CONFIG_SCHED_MC
+>   static inline int cpu_core_flags(void)
+> diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+> index 92165fe56a2d..4530cbad41e1 100644
+> --- a/kernel/sched/topology.c
+> +++ b/kernel/sched/topology.c
+> @@ -1724,13 +1724,6 @@ sd_init(struct sched_domain_topology_level *tl,
+>   	return sd;
+>   }
+>   
+> -#ifdef CONFIG_SCHED_CLUSTER
+> -static const struct cpumask *tl_cls_mask(struct sched_domain_topology_level *tl, int cpu)
+> -{
+> -	return cpu_clustergroup_mask(cpu);
+> -}
+> -#endif
+> -
+>   #ifdef CONFIG_SCHED_MC
+>   static const struct cpumask *tl_mc_mask(struct sched_domain_topology_level *tl, int cpu)
+>   {
 
-1cbc5e25fb70 PCI/ERR: Fix uevent on failure to recover
-  Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-  https://lore.kernel.org/r/f0b59604-ae4d-4afe-8522-a8fbe5568e96@linux.intel.com/
-  Reviewed-by: Linas Vepstas <linasvepstas@gmail.com>
-  https://lore.kernel.org/r/CAHrUA34fVV48MShC4CrXSmveR9i8MC4KAQxtM+XQY_Ao8joBQw@mail.gmail.com/
-  Reviewed-by: Niklas Schnelle <schnelle@linux.ibm.com>
-  https://lore.kernel.org/r/a4419480c3d494a5940e87fea0c7b9864dc3e85b.camel@linux.ibm.com/
-
-9011f0667c93 PCI/ERR: Notify drivers on failure to recover
-  Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-  https://lore.kernel.org/r/fa9f42ab-bced-4c7f-9977-c0b611e92e2e@linux.intel.com/
-  Reviewed-by: Linas Vepstas <linasvepstas@gmail.com>
-  https://lore.kernel.org/r/CAHrUA34fVV48MShC4CrXSmveR9i8MC4KAQxtM+XQY_Ao8joBQw@mail.gmail.com/
-
-45bc82563d55 PCI/ERR: Update device error_state already after reset
-  Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-  https://lore.kernel.org/r/004298f7-ae08-428e-9b98-995fc56e55b1@linux.intel.com/
-  Reviewed-by: Linas Vepstas <linasvepstas@gmail.com>
-  https://lore.kernel.org/r/CAHrUA34fVV48MShC4CrXSmveR9i8MC4KAQxtM+XQY_Ao8joBQw@mail.gmail.com/
-
-cc4a7a21e815 PCI/ERR: Remove remnants of .link_reset() callback
-  Reviewed-by: Linas Vepstas <linasvepstas@gmail.com>
-  https://lore.kernel.org/r/CAHrUA34fVV48MShC4CrXSmveR9i8MC4KAQxtM+XQY_Ao8joBQw@mail.gmail.com/
-  Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
-  https://lore.kernel.org/r/59308229-24ed-4b8a-b398-cc47c61dfc47@linux.intel.com/
-  Reviewed-by: Justin Tee <justin.tee@broadcom.com>
-  https://lore.kernel.org/r/CABPRKS_Ut8Z+rvM4+-E0YvEwUKbMb0SDpLBdH+g1sYEh+YcxFA@mail.gmail.com/
-
-Thanks!
-
-Lukas
 
