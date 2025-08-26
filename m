@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-11292-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11293-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DFE7CA0EFA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 06:19:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D8123CA0EFA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 06:20:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9yDW6j92z3dK5;
-	Tue, 26 Aug 2025 16:19:23 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756189155;
-	cv=none; b=eEV9MMxuJRy65AGgnZ/kcmaIqqWAcNdafualibWxPG+E5UGqTAhWpw0BKCNYSTQbtpJA7qjC1QJTlMl1S1bh/4O63fdCXQlo9EyfIHGiGO8MP6vAdLMDK91PsK3SqJZAYlghfWWAL8OTg7qNtzzPBB9Hh9v3x+LvqXV0zsfVtI0T7lzF9JVZwZxwPcAUeu5L1QZ4nkTLck/pNi6UnLDDgzOffpCpRyhbj/jc+sCP6LgFKPB5LFJ+lzJfgCjkZJfYY5EkPoziPjXhGjlbtQBGRM4FJ/yVmG/KqnETjq1YdpmWd41/2nk4ISplUZMdRi+JKppLjmX/M1ENRl23eeqKJg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9yDX5P4Yz3dKL;
+	Tue, 26 Aug 2025 16:19:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756189164;
+	cv=none; b=Il+i+mg2JTJbZGDj35ajKPqyl44w45YP6XKg4Cj/KL1Bk5GWR/ZhI0wzpeRKgIbbUd5UhACz3hupStOh+N/F7hbj+h1Gu+Okx/1g/C1Rky3wWJKONu+L66MQSckGSyAxM9Rvx02FAr3WN8+bjVPdbcUZ829d1sJ21/ED/CrnvPiFIr/ic1shr+RhM8JlqGKhFHbb33NRaDUJQEOBsYmPPmn2cngrhQEGhmbXJTmyKYSefLq9qupZAi02LQvPFNgcJ2x2WFAccc1rIFh6NF5Hr9loSSgPGGJ1Z4H0gXYXX4MdSPfXY0F5Kj/nzaa08SKXrVLjkztI6odVmu02UGWLXQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756189155; c=relaxed/relaxed;
-	bh=Uszkh3lqv/KNmuDmi3U8LEjAUFp6txufWN65uYpGjyY=;
+	t=1756189164; c=relaxed/relaxed;
+	bh=DrBALLudUMMQIpB9Jb++BwmBRlfN0yHG1/njX6fnTE0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=SSuhxKxpSuo5Cai3zOI7VVnc/K7myRMYwhurxS4rTTInKlAhE859R2cDKhzxur5lAb1cwSPqmDFGleNxh1rl0IJ5CXxXGEY9Sxa8sh9wP+LUfFYakp5MOp/4USfi9Z+dVmN+48cjJOlELbaLrMJ0rPNVwfjXw0UuwjuYysNvAgxG+6mkMCNznj/DwVFf2IKaOHH3F/VD1FCYStGMdSKS2IF1Z5urjW2aW70Hw8pXOpoEKN5kYarX0d7kY0ybND/7AVEnYlnh6AWBmHi2vq8PFDlDYVJ3Css7l4lovYGf79fFTd+k4gcp9LBfolzUB8ygWCP0tqHSxhansblyNQ29gg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Y7BA+StB; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=eX4ApMd4; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=KJX7dtUNjQ06J0TlsJ6+cuuZX2yp1CmO0xQ51OBS8jwilP6uM7Ku6rnnc2nWd0tXqY9Lyt/7faplY7NsdkbRfyUj6Ghacr7P/IfC7qpRo9OZ2gcyrHVMfgybsSBD97J0tD6W4Qnve4vG+JulDAYG3+h4P8BEdgbSIHr2cbVBy8e09o8JhTS6mEzokZsM7kT94E+9zl/hf9Fde6aW2DEBe8/l/y2b/QoGJI90pYTzTHBbrwQlHKijdNTwbCLM9J1dOATay+7/LKA4QBfe7J0+WUXCDvZNO9GdB9UhVvRKmI93b5CjKQ3+YwDrsh7n/7Bqx7GpPl4YSjYMTgh6IxpsDg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=s4Tv7+zx; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=aMy3eGdf; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Y7BA+StB;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=eX4ApMd4;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=s4Tv7+zx;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=aMy3eGdf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4c9yCN5jR4z3dHm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 16:18:24 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4c9yCZ2dqjz3dHf
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 16:18:29 +1000 (AEST)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1756189099;
+	s=2020; t=1756189102;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Uszkh3lqv/KNmuDmi3U8LEjAUFp6txufWN65uYpGjyY=;
-	b=Y7BA+StBK859WKGDBThqNJzUURHkFFg61E0vffUNTCQF1VxCAHN6xIXKlyiHbm9eajvVvI
-	Jt2GBaIF/pi7LvI0utN6sJQhfLqKDQPZOqDyCHKEfKrCO50+UW590sV1dM+eZn6te1RbF9
-	PyeES+znaqYbX/ssIrN39kD3Kk09hoWNTLMrNZp3to3aZHXhrk/vJALCBcxIxdORkBp/am
-	uLQaB0JAQI/GDq9oYJJEaiJmug7ASdO6OyB8IVh15jxqnnvzCkRVdctLGYZ4k8F1iN9Zvz
-	muN/flVMNl5dCVqSsfywVPrbMq2Yg/EKUtf+JWnprwsvjdX/+lc9kWIeQ4TJsQ==
+	bh=DrBALLudUMMQIpB9Jb++BwmBRlfN0yHG1/njX6fnTE0=;
+	b=s4Tv7+zxFO1UuAQBOJqY36fYzoMoq9HBwuIpEoBOQcWaZh9/ewd4GAmLh1SU0pUebpqr7O
+	IrbBTzCLj7CJDuzlV6Dcdr1OqFm6SyO764o/62pnvhkTGUXW7ugMG+bh1U2I/2k0NNBSr5
+	OP1XpFRZEaXTaVFqIq3YdSg5+qsRfdKUKvpdsuwozMooSfzSGI0VUbRnkjOqSx5qOrar6I
+	ypdEH+UclFWViex+hKIMMrHA9akYZJ7i5W7/rVbBGGVIoe66Tmy8jOSesu8OQcaEiRtLvM
+	BHYdoRiODg0CG8wUQD0HRSdvaeLU921bXP6hDATICdIR91DBtxAh0Kw0aN0s1A==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1756189099;
+	s=2020e; t=1756189102;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Uszkh3lqv/KNmuDmi3U8LEjAUFp6txufWN65uYpGjyY=;
-	b=eX4ApMd4ziFJ+O7XtN9ONWYbWvF8LT00ruUQ8zsD0FgJE7m4FLwFuEe2Mo8xsi0CtiVh9r
-	4pAcBkCmeL70n1BQ==
-Date: Tue, 26 Aug 2025 08:17:05 +0200
-Subject: [PATCH 02/11] ARM: VDSO: remove cntvct_ok global variable
+	bh=DrBALLudUMMQIpB9Jb++BwmBRlfN0yHG1/njX6fnTE0=;
+	b=aMy3eGdfoQdV0esGEjqNzj2T+GNVN9Gu5aP0E8xfdTY9CE2D/Ql6h41CsmHASq33jrTvgS
+	d2ksM8s+JfbrYcAg==
+Date: Tue, 26 Aug 2025 08:17:10 +0200
+Subject: [PATCH 07/11] vdso: Drop kconfig GENERIC_VDSO_32
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,8 +68,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250826-vdso-cleanups-v1-2-d9b65750e49f@linutronix.de>
+Content-Transfer-Encoding: 8bit
+Message-Id: <20250826-vdso-cleanups-v1-7-d9b65750e49f@linutronix.de>
 References: <20250826-vdso-cleanups-v1-0-d9b65750e49f@linutronix.de>
 In-Reply-To: <20250826-vdso-cleanups-v1-0-d9b65750e49f@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
@@ -98,80 +98,67 @@ Cc: linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
  linux-kselftest@vger.kernel.org, 
  Rasmus Villemoes <linux@rasmusvillemoes.dk>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756189098; l=2467;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756189098; l=1702;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=SraZm0ID4pbqm566wM3v0Ccba0fElQJFwVMRPDgnQv0=;
- b=gZMwdBr81Gd7SfGI9zA49QzosCdIhBKgEYiZOU6oZRlEUfUXED78+TGCO1Aix2Xt9rw5NrYMT
- tA6ghwW+GTLCIiMiWaHkprmyw7TLEyHTqzP7iQQA/CqwF/kDQFk1ywg
+ bh=MIu9l2pTXbhJrvGPCmWjImoXUcbBkNjVmM+9aAFDkec=;
+ b=VT2YYQvzHfODm57uAqR09c1duKjkkmGSVqmCVlLdgGb/ARCoX9KqMLFcxG4POgZTTs3Rm7rqY
+ RTH8Lz9nPvLBWpZeMT5QB55ugWOPWVYU1mHssRVmDUpj+5tIKw9H+EU
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-From: Rasmus Villemoes <linux@rasmusvillemoes.dk>
+This configuration is never used.
 
-The cntvct_ok variable has not had any external user since commit
-c7a18100bdff ("lib/vdso: Avoid highres update if clocksource is not
-VDSO capable").
+Remove it.
 
-It also only has one user in vdso.c, once during init, so rather than
-having the caller of patch_vdso() initialize cntvct_ok, just call
-cntvct_functional() directly and avoid the global variable entirely.
-
-Signed-off-by: Rasmus Villemoes <linux@rasmusvillemoes.dk>
-Reviewed-by: Vincenzo Frascino <vincenzo.frascino@arm.com>
+Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- arch/arm/include/asm/vdso/vsyscall.h |  2 --
- arch/arm/kernel/vdso.c               | 10 +++-------
- 2 files changed, 3 insertions(+), 9 deletions(-)
+ arch/arm/mm/Kconfig | 1 -
+ arch/x86/Kconfig    | 1 -
+ lib/vdso/Kconfig    | 7 -------
+ 3 files changed, 9 deletions(-)
 
-diff --git a/arch/arm/include/asm/vdso/vsyscall.h b/arch/arm/include/asm/vdso/vsyscall.h
-index 4e7226ad02ec4dcf88203c9046e1b320a10e7373..ff1c729af05f03ac5db86c28276db2e4a31c775c 100644
---- a/arch/arm/include/asm/vdso/vsyscall.h
-+++ b/arch/arm/include/asm/vdso/vsyscall.h
-@@ -7,8 +7,6 @@
- #include <vdso/datapage.h>
- #include <asm/cacheflush.h>
+diff --git a/arch/arm/mm/Kconfig b/arch/arm/mm/Kconfig
+index 5c1023a6d78c1b4db67b2d62b71af5a79b7e701f..2347988cf6417b91d8d3580387b53e610ed49a00 100644
+--- a/arch/arm/mm/Kconfig
++++ b/arch/arm/mm/Kconfig
+@@ -926,7 +926,6 @@ config VDSO
+ 	default y if ARM_ARCH_TIMER
+ 	select HAVE_GENERIC_VDSO
+ 	select GENERIC_TIME_VSYSCALL
+-	select GENERIC_VDSO_32
+ 	select GENERIC_GETTIMEOFDAY
+ 	select GENERIC_VDSO_DATA_STORE
+ 	help
+diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
+index 58d890fe2100eb6990880bcf5ba600cdefb0a7d1..4f120070a51bd4e225256440649a2dae17025c41 100644
+--- a/arch/x86/Kconfig
++++ b/arch/x86/Kconfig
+@@ -14,7 +14,6 @@ config X86_32
+ 	select ARCH_WANT_IPC_PARSE_VERSION
+ 	select CLKSRC_I8253
+ 	select CLONE_BACKWARDS
+-	select GENERIC_VDSO_32
+ 	select HAVE_DEBUG_STACKOVERFLOW
+ 	select KMAP_LOCAL
+ 	select MODULES_USE_ELF_REL
+diff --git a/lib/vdso/Kconfig b/lib/vdso/Kconfig
+index 45df764b49ad62479e6456e00c053e46131936a3..76157c26931d28327750ad53bfcae5109a29d998 100644
+--- a/lib/vdso/Kconfig
++++ b/lib/vdso/Kconfig
+@@ -12,13 +12,6 @@ config GENERIC_GETTIMEOFDAY
+ 	  Each architecture that enables this feature has to
+ 	  provide the fallback implementation.
  
--extern bool cntvct_ok;
+-config GENERIC_VDSO_32
+-	bool
+-	depends on GENERIC_GETTIMEOFDAY && !64BIT
+-	help
+-	  This config option helps to avoid possible performance issues
+-	  in 32 bit only architectures.
 -
- static __always_inline
- void __arch_sync_vdso_time_data(struct vdso_time_data *vdata)
- {
-diff --git a/arch/arm/kernel/vdso.c b/arch/arm/kernel/vdso.c
-index 325448ffbba0c29895ea5d97e60d6f51e552cb2e..e38a30477f3d70939f6d57c79fad52eed73c49b4 100644
---- a/arch/arm/kernel/vdso.c
-+++ b/arch/arm/kernel/vdso.c
-@@ -54,11 +54,9 @@ struct elfinfo {
- 	char		*dynstr;	/* ptr to .dynstr section */
- };
- 
--/* Cached result of boot-time check for whether the arch timer exists,
-- * and if so, whether the virtual counter is useable.
-+/* Boot-time check for whether the arch timer exists, and if so,
-+ * whether the virtual counter is usable.
-  */
--bool cntvct_ok __ro_after_init;
--
- static bool __init cntvct_functional(void)
- {
- 	struct device_node *np;
-@@ -159,7 +157,7 @@ static void __init patch_vdso(void *ehdr)
- 	 * want programs to incur the slight additional overhead of
- 	 * dispatching through the VDSO only to fall back to syscalls.
- 	 */
--	if (!cntvct_ok) {
-+	if (!cntvct_functional()) {
- 		vdso_nullpatch_one(&einfo, "__vdso_gettimeofday");
- 		vdso_nullpatch_one(&einfo, "__vdso_clock_gettime");
- 		vdso_nullpatch_one(&einfo, "__vdso_clock_gettime64");
-@@ -197,8 +195,6 @@ static int __init vdso_init(void)
- 	vdso_total_pages = VDSO_NR_PAGES; /* for the data/vvar pages */
- 	vdso_total_pages += text_pages;
- 
--	cntvct_ok = cntvct_functional();
--
- 	patch_vdso(vdso_start);
- 
- 	return 0;
+ config GENERIC_COMPAT_VDSO
+ 	bool
+ 	help
 
 -- 
 2.50.1
