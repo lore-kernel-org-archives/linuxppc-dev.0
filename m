@@ -1,60 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-11319-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11320-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2BB5DCA0FE9
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 11:16:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4BD19CA0FE9
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 11:50:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cB4q05nlHz3dRm;
-	Tue, 26 Aug 2025 21:16:12 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756206972;
-	cv=none; b=T8eTenLCO90smCF4I8hTaWobdlaFwrEieomZi/Luwyi2472Dux+4ZCkAgvjQ2xlSj7EFKAjxZVsGVS7+i+3GZPMVCIZt9PSQaY1MRnmGxVI3ws/6QeBmfl52Q3ixAZHwQvIETNlch3sNuM9jDFxQFQET1sqR82sHUDrBT9YU279IGjDz2eZJMG4pkSMT0UJOgDvkyKOzYcSamfv/xbM86eKlP8jJqfRFPsj/cafND9afcRjo5MgsXDn4ptoGeG92EyV6O3vx3zhoRUi4x9F7CHvS8656U+NqAyKlVqst+r/x8jQWdPbxxuKrwct7Mt5+gcIxkbBOM2O40gCwoEi71g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cB5Zm61zcz3dSR;
+	Tue, 26 Aug 2025 21:50:40 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756209040;
+	cv=none; b=ZRyejwv6ff2gRX7Sec5AYUoSrVa4s1LoPdf4iCtWpCLm2xNI7qO1P/9dx6MZjVKax5RCotEeGQ9jTIx8w6lQ5/ziySLFr/SU9YawQ5Df/qrbALGHxHqEv/KlmV4u/Jgbhk6tBxtMTWp6MBHxQ8iHfZSRxD9n1n/2Tovj+ZZi+vBxjT3OIcteyn1k4X9JnaXR5efONUpavR7yjMx8pwsoaWZXI6dIfDsQscp/qf457qJPQXh3iI900ugzSUFiBtOLmlxO9B6hlgX0kQwEi40eqtgs7CSJ9ua6IQ205b3eDUIIUYlrRQPo5pEq87zueDaTiUG8YU3hbeFEHKe5f5opVQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756206972; c=relaxed/relaxed;
-	bh=WdcZGco1brKkCvqK3OI1tB4ut3wEQd56prbkyXuFUMU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=isL+p4IvbzPWjXBFyb+DGBlHt2+A4LZtEJgSqwf/kp2tYVA7rY0uS5fqBTR4bUq0auXSxNp4VkPNp/0xStXcx+n4oZtBLLQbPJD4n0YvhP2lnQKg3zMixJn6WB5zWAYzUEO/O/m+MxbkqEap3fE7+kp36TMM3bt07tnpDltdsZrOEAfYoDjUzGSl598+HNJSc6FfFpqVziwqV0RajAncbkaJX7Q+GG1cLMAp9gRhpP98prrI0IV+h3ZiMaOQSjSz5SZKcR8Y/Qy5+N7dnr2S+45UVRi/uyGpaJqIkrFCYVbKoimoIBSHZyTPw4h5J5i+IVcc4eNZPtMTwf93G2H9NQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cB4q00WQNz3dJs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 21:16:11 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 0E7AF1A00;
-	Tue, 26 Aug 2025 04:15:32 -0700 (PDT)
-Received: from J2N7QTR9R3 (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 663C13F63F;
-	Tue, 26 Aug 2025 04:15:28 -0700 (PDT)
-Date: Tue, 26 Aug 2025 12:15:23 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: peterz@infradead.org, mingo@redhat.com, will@kernel.org,
-	acme@kernel.org, namhyung@kernel.org,
-	alexander.shishkin@linux.intel.com, jolsa@kernel.org,
-	irogers@google.com, adrian.hunter@intel.com,
-	kan.liang@linux.intel.com, linux-perf-users@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-	linux-snps-arc@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
-	linux-csky@vger.kernel.org, loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	sparclinux@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-rockchip@lists.infradead.org, dmaengine@vger.kernel.org,
-	linux-fpga@vger.kernel.org, amd-gfx@lists.freedesktop.org,
-	dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
-	intel-xe@lists.freedesktop.org, coresight@lists.linaro.org,
-	iommu@lists.linux.dev, linux-amlogic@lists.infradead.org,
-	linux-cxl@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-	linux-riscv@lists.infradead.org
-Subject: Re: [PATCH 02/19] perf/hisilicon: Fix group validation
-Message-ID: <aK2XS_GhLw1EQ2ml@J2N7QTR9R3>
-References: <cover.1755096883.git.robin.murphy@arm.com>
- <c7b877e66ba0d34d8558c5af8bbb620e8c0e47d9.1755096883.git.robin.murphy@arm.com>
+	t=1756209040; c=relaxed/relaxed;
+	bh=WhHPZ19/cEM7iqonGs8G7Mgn3LlE53oubopyYFkWhKs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=dj5Q6VYN6C7NrPeBtsTW9Gx9+4lp66nKrZVA184vMwC9Alo3NXGTX9RBAkVIMgh0hHCOnjnVvnsNxYOo8ZD4k+QsZTJBcEID0s723UWsrXHxsuAShHKeTeNNuvvdX6V5fxQH8HXRCQdpltZLHkF+tWsIEsKxmXDzpekZX6pclXVAn2LW3SDmtB3x+cVhGAJpme1UudkZqU1WOODQzVrmeaXDi4p5lZKBKd2N9bXFGzbPn88p2y/jJr3jeCMgULhKbPqbHeRo5uloE7Wzm/nlRQbhctp0qEOxWAjzV1ZoA9j6SgpJeWPjZTKXWPAo2sjOETqUIOV06Ec99tMt66i+jA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cB5Zh4r3lz3dRW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 21:50:35 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4cB3LZ3MDjz9sSg;
+	Tue, 26 Aug 2025 12:09:58 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id CY5rl8dKhYd7; Tue, 26 Aug 2025 12:09:58 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cB3LZ2B35z9sSX;
+	Tue, 26 Aug 2025 12:09:58 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 007558B764;
+	Tue, 26 Aug 2025 12:09:58 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id tuoxyMldcTmb; Tue, 26 Aug 2025 12:09:57 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B600F8B763;
+	Tue, 26 Aug 2025 12:09:57 +0200 (CEST)
+Message-ID: <2a1aa3c7-d741-4044-9d0d-d6e1e0c3f9a2@csgroup.eu>
+Date: Tue, 26 Aug 2025 12:09:57 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,158 +58,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <c7b877e66ba0d34d8558c5af8bbb620e8c0e47d9.1755096883.git.robin.murphy@arm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: Ozlabs patchwork notification not working anymore
+To: Jeremy Kerr <jk@ozlabs.org>, Stephen Rothwell <sfr@canb.auug.org.au>
+Cc: linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
+References: <8f6e5825-9468-4499-9bbd-4588a1eccc94@cs-soprasteria.com>
+ <20250729183222.15adbb95@canb.auug.org.au>
+ <cd2ee23092e3749f707b0f730af741a94f0986f0.camel@ozlabs.org>
+ <7b7cccf2-5899-4334-9aa0-e83f0772d484@csgroup.eu>
+ <7f5a74dd2e50877408a47e5cca7d241de7053579.camel@ozlabs.org>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <7f5a74dd2e50877408a47e5cca7d241de7053579.camel@ozlabs.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Wed, Aug 13, 2025 at 06:00:54PM +0100, Robin Murphy wrote:
-> The group validation logic shared by the HiSilicon HNS3/PCIe drivers is
-> a bit off, in that given a software group leader, it will consider that
-> event *in place of* the actual new event being opened. At worst this
-> could theoretically allow an unschedulable group if the software event
-> config happens to look like one of the hardware siblings.
+Hi Jeremy,
+
+Le 26/08/2025 à 04:24, Jeremy Kerr a écrit :
+> Hi Christophe,
+>> I still don't receive anything it seems. I have modified the status
+>> of several patches over the last two weeks and haven't received any
+>> notification from patchwork.
 > 
-> The uncore framework avoids that particular issue,
+> In your case, it looks like you have previously opted-out of email
+> notifications from patchwork (for this sender address, at least).
 
-What is "the uncore framework"? I'm not sure exactly what you're
-referring to, nor how that composes with the problem described above.
+Hum ... yes I should receive notifications on 
+christophe.leroy2@cs-soprasteria.com , and as the three email addresses 
+are linked together in patchwork I'd expect to receive notification for 
+patches coming from any one of the three addresses.
 
-> but all 3 also share the common issue of not preventing racy access to
-> the sibling list,
+Nevertheless lets try to opt-in on the other address and see what happens.
 
-Can you please elaborate on this racy access to the silbing list? I'm
-not sure exactly what you're referring to.
+Thanks for your help
+Christophe
 
-> and some redundant checks which can be cleaned up.
 > 
-> Signed-off-by: Robin Murphy <robin.murphy@arm.com>
-> ---
->  drivers/perf/hisilicon/hisi_pcie_pmu.c   | 17 ++++++-----------
->  drivers/perf/hisilicon/hisi_uncore_pmu.c | 23 +++++++----------------
->  drivers/perf/hisilicon/hns3_pmu.c        | 17 ++++++-----------
->  3 files changed, 19 insertions(+), 38 deletions(-)
+> Your user profile page ( https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Fpatchwork.ozlabs.org%2Fuser%2F&data=05%7C02%7Cchristophe.leroy2%40cs-soprasteria.com%7Cf01234b980d04f2b14bf08dde447ae62%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C638917718727770462%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=vov7L5o1fQrTYrDSPT6NNQHj5FWYjwgSosFMjGcudYw%3D&reserved=0 ) will list
+> the addresses associated with your account, and whether those are
+> enabled for notifications.
 > 
-> diff --git a/drivers/perf/hisilicon/hisi_pcie_pmu.c b/drivers/perf/hisilicon/hisi_pcie_pmu.c
-> index c5394d007b61..3b0b2f7197d0 100644
-> --- a/drivers/perf/hisilicon/hisi_pcie_pmu.c
-> +++ b/drivers/perf/hisilicon/hisi_pcie_pmu.c
-> @@ -338,21 +338,16 @@ static bool hisi_pcie_pmu_validate_event_group(struct perf_event *event)
->  	int counters = 1;
->  	int num;
->  
-> -	event_group[0] = leader;
-> -	if (!is_software_event(leader)) {
-> -		if (leader->pmu != event->pmu)
-> -			return false;
-> +	if (leader == event)
-> +		return true;
->  
-> -		if (leader != event && !hisi_pcie_pmu_cmp_event(leader, event))
-> -			event_group[counters++] = event;
-> -	}
-> +	event_group[0] = event;
-> +	if (leader->pmu == event->pmu && !hisi_pcie_pmu_cmp_event(leader, event))
-> +		event_group[counters++] = leader;
-
-Looking at this, the existing logic to share counters (which
-hisi_pcie_pmu_cmp_event() is trying to permit) looks to be bogus, given
-that the start/stop callbacks will reprogram the HW counters (and hence
-can fight with one another).
-
-I suspect that can be removed *entirely*, and this can be simplified
-down to allocating N counters, without a quadratic event comparison.  We
-don't try to share counters in other PMU drivers, and there was no
-rationale for trying to do this when this wa introduced in commit:
-
-  8404b0fbc7fbd42e ("drivers/perf: hisi: Add driver for HiSilicon PCIe PMU")
-
-The 'link' tag in that comment goes to v13, which doesn't link to prior
-postings, so I'm not going to dig further.
-
-Mark.
-
->  
->  	for_each_sibling_event(sibling, event->group_leader) {
-> -		if (is_software_event(sibling))
-> -			continue;
-> -
->  		if (sibling->pmu != event->pmu)
-> -			return false;
-> +			continue;
->  
->  		for (num = 0; num < counters; num++) {
->  			/*
-> diff --git a/drivers/perf/hisilicon/hisi_uncore_pmu.c b/drivers/perf/hisilicon/hisi_uncore_pmu.c
-> index a449651f79c9..3c531b36cf25 100644
-> --- a/drivers/perf/hisilicon/hisi_uncore_pmu.c
-> +++ b/drivers/perf/hisilicon/hisi_uncore_pmu.c
-> @@ -101,26 +101,17 @@ static bool hisi_validate_event_group(struct perf_event *event)
->  	/* Include count for the event */
->  	int counters = 1;
->  
-> -	if (!is_software_event(leader)) {
-> -		/*
-> -		 * We must NOT create groups containing mixed PMUs, although
-> -		 * software events are acceptable
-> -		 */
-> -		if (leader->pmu != event->pmu)
-> -			return false;
-> +	if (leader == event)
-> +		return true;
->  
-> -		/* Increment counter for the leader */
-> -		if (leader != event)
-> -			counters++;
-> -	}
-> +	/* Increment counter for the leader */
-> +	if (leader->pmu == event->pmu)
-> +		counters++;
->  
->  	for_each_sibling_event(sibling, event->group_leader) {
-> -		if (is_software_event(sibling))
-> -			continue;
-> -		if (sibling->pmu != event->pmu)
-> -			return false;
->  		/* Increment counter for each sibling */
-> -		counters++;
-> +		if (sibling->pmu == event->pmu)
-> +			counters++;
->  	}
->  
->  	/* The group can not count events more than the counters in the HW */
-> diff --git a/drivers/perf/hisilicon/hns3_pmu.c b/drivers/perf/hisilicon/hns3_pmu.c
-> index c157f3572cae..382e469257f9 100644
-> --- a/drivers/perf/hisilicon/hns3_pmu.c
-> +++ b/drivers/perf/hisilicon/hns3_pmu.c
-> @@ -1058,21 +1058,16 @@ static bool hns3_pmu_validate_event_group(struct perf_event *event)
->  	int counters = 1;
->  	int num;
->  
-> -	event_group[0] = leader;
-> -	if (!is_software_event(leader)) {
-> -		if (leader->pmu != event->pmu)
-> -			return false;
-> +	if (leader == event)
-> +		return true;
->  
-> -		if (leader != event && !hns3_pmu_cmp_event(leader, event))
-> -			event_group[counters++] = event;
-> -	}
-> +	event_group[0] = event;
-> +	if (leader->pmu == event->pmu && !hns3_pmu_cmp_event(leader, event))
-> +		event_group[counters++] = leader;
->  
->  	for_each_sibling_event(sibling, event->group_leader) {
-> -		if (is_software_event(sibling))
-> -			continue;
-> -
->  		if (sibling->pmu != event->pmu)
-> -			return false;
-> +			continue;
->  
->  		for (num = 0; num < counters; num++) {
->  			/*
-> -- 
-> 2.39.2.101.g768bb238c484.dirty
+> Cheers,
 > 
+> 
+> Jeremy
+> 
+
 
