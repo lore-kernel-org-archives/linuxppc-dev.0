@@ -1,61 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-11327-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11328-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CB08CCA0EFA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 13:19:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80332CA0EFA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 13:29:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cB7Xj3KM6z3dTV;
-	Tue, 26 Aug 2025 23:19:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756214341;
-	cv=none; b=WctbXBlYG1V9nvut90RKJRKf9pWfhrFXgpKxUszwpKUaWOvV8gkJS3zOAyzG1NJ94k0YWZO1K4POfOXXa9fEaMu4sxL4ZDQ+Yx9wbZbUwIuQn85aFHg9swKpz29nS2Xs3ABlbmZXMzlGVY3yOGXj2XeHx4o6DxmORBUNybR1JXZLTTWF8BTtTvFcfiGhCto7HAvufsVNf1UFKq8sLCvb9hqNCiYHp9ZWnaRUeiniJUMbWJbTj5sGIRbE2PtXmb7gaTv8xDIU72qX+m0IVegcD13A2rTZbMnlY713ZO+vmeB9KESdpd3eBN1jn40oOp7Wje/1w5HIfjsXLv9QgUTEXg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cB7mN10n1z3dTk;
+	Tue, 26 Aug 2025 23:29:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756214948;
+	cv=none; b=gu/BB+uzme1EvzHWZ/elMW9c9x3YY2VLrsJDofHHB0S7bUzZL64ClhOG9q83KZU9bSB6FSXt2eJNy8l/8UQUC4GS1oHPIkmBWsIVDYjvF1lUZgrL6c5ElBXeIuhVtNtkFeLBwMjfKTK4CSGiyKqR8VDItDH47vZJWFrcCEkZ92f/JXG7r2wq0gE39lQVC6LJW40doZa8ccVPO9526rP+10vbhDFOqk65pgnPon7ggM7zLBgkT1SZse4mmdsFsWcoyKUZPn1hXfymw87zelc4AC+k4INqXgzodNunB1rVV8FFfwv8IeM4zAEvWCbnj2ocO5tuGW60SZnIdZgsxPaklw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756214341; c=relaxed/relaxed;
-	bh=HMGS7IGSOXk5Q1/Q6qxTcm4ZlvzCxxVLFiwmv/SBWY0=;
+	t=1756214948; c=relaxed/relaxed;
+	bh=fOXXYg1NukWIx/zlQCPDzIFeJGiay2wbUo04Q9XqD9g=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Khp+diZcTUx9VK5SPIUYQGJV4/Bk9xikqjb/p3N+aHNmrNA96iDpbCDEie8rKMCo6L54Tore3cBC5lMMOcP2t3QX8wSrBfM/kI7W8zTgnvaJGzoVkZDrIisurQp1Y+rq11IUqzio/tDcDdCaXmCCcKkPAneCYl9xnoszR1t3bWa2K4MlsalkCs3o0zOfQhn3cSUcHuFVSycz5eHRYYUVXEXU0BssBQJWdNlCWIBd3hneDDrQ9HVBQcjs4rH4dVr0Ea1XjZzXDRXwNxh4Z7PTEBQL8M8n8eWZ8N2tc9IzjB+pVAJCt6Hb7ptJP82BV/LbfU+/XmkyjUc/qXOO+dZroA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=mark.rutland@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cB7Xh40Jpz3dTS
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 23:18:59 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B0DEB1A25;
-	Tue, 26 Aug 2025 06:18:20 -0700 (PDT)
-Received: from J2N7QTR9R3 (usa-sjc-imap-foss1.foss.arm.com [10.121.207.14])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id E10B23F63F;
-	Tue, 26 Aug 2025 06:18:22 -0700 (PDT)
-Date: Tue, 26 Aug 2025 14:18:16 +0100
-From: Mark Rutland <mark.rutland@arm.com>
-To: Robin Murphy <robin.murphy@arm.com>
-Cc: peterz@infradead.org, mingo@redhat.com, will@kernel.org,
-	acme@kernel.org, namhyung@kernel.org,
-	alexander.shishkin@linux.intel.com, jolsa@kernel.org,
-	irogers@google.com, adrian.hunter@intel.com,
-	kan.liang@linux.intel.com, linux-perf-users@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
-	linux-snps-arc@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
-	linux-csky@vger.kernel.org, loongarch@lists.linux.dev,
-	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
-	sparclinux@vger.kernel.org, linux-pm@vger.kernel.org,
-	linux-rockchip@lists.infradead.org, dmaengine@vger.kernel.org,
-	linux-fpga@vger.kernel.org, amd-gfx@lists.freedesktop.org,
-	dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
-	intel-xe@lists.freedesktop.org, coresight@lists.linaro.org,
-	iommu@lists.linux.dev, linux-amlogic@lists.infradead.org,
-	linux-cxl@vger.kernel.org, linux-arm-msm@vger.kernel.org,
-	linux-riscv@lists.infradead.org
-Subject: Re: [PATCH 02/19] perf/hisilicon: Fix group validation
-Message-ID: <aK20GP5g1iu9DGrQ@J2N7QTR9R3>
-References: <cover.1755096883.git.robin.murphy@arm.com>
- <c7b877e66ba0d34d8558c5af8bbb620e8c0e47d9.1755096883.git.robin.murphy@arm.com>
- <aK2XS_GhLw1EQ2ml@J2N7QTR9R3>
+	 Content-Type:Content-Disposition:In-Reply-To; b=PupGC0RcGoXWeR6axLbB3D3tVPFytU43C8BBDm4uMM+25Pq/sORYJZ926h2R+WNDcOWmQGHc3GuOfEHQdfvkzJdKkyCHmbs/lxpP9rJX3OF2XIeglGUFq0tmpVagnMkmXlt/YYVou5pyVFcAXQu0SJM6Gdz6hXE3DeoS1LWKD1ANgMYv3KYborgf7x0YNdeQdizSgzfLQDJ31TBju1QjSZa6wX4CDMuawihMfAOl+Meuv/dGZm41E0xn1AC6yhAUFVpkArp3ot5JW/meTTTucvtWsEsLPXQtz8ARCDR6Eh9aTi0fBLGcpp5OiY4w4yazSicR1lcXlURnQoAAdP/8/w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PTMUnBFu; dkim-atps=neutral; spf=none (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=PTMUnBFu;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=andriy.shevchenko@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cB7mK6NCYz3dTg
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 23:29:04 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1756214946; x=1787750946;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=WONqwahE1t7tG5WMekP4ROtP2MyOMiDAgeptG1B8c8o=;
+  b=PTMUnBFu2qjk28Z/I0Z5l8hArhgdqhWjWECp9725ZUxDCb7JEKMkn48c
+   GoW8u6uBFKo7in97T7l2m9J5UcCYjwWbZg/seCJawwYwDdmkl3eROf40H
+   sqYxqiHe/ECQ7xmGZrPO74hdU/bsfSRJY39Q84SpBTKi5KmwDBpoulu/N
+   68D/jjSv5FX1eBAodZWoC4CY0poyCzRJl2YvCtIb7eTF4VuZdEsfxH0FW
+   hEwvUTZdVFaZO3yTwWesSK9Z19mudY9Z1b+lIfHBqEl9gWwmgyyIV/6aj
+   hnH2s13iEO4FXhOjmY+Bq+XaYKJ7mSjiJM65kQWgqU+WXY7bFpcZww+/F
+   A==;
+X-CSE-ConnectionGUID: YhwdB6r5Q9atEMpETLWPlg==
+X-CSE-MsgGUID: 5HOK9tXoSBKmsF2ocxGy8w==
+X-IronPort-AV: E=McAfee;i="6800,10657,11534"; a="57649673"
+X-IronPort-AV: E=Sophos;i="6.18,214,1751266800"; 
+   d="scan'208";a="57649673"
+Received: from fmviesa003.fm.intel.com ([10.60.135.143])
+  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Aug 2025 06:29:01 -0700
+X-CSE-ConnectionGUID: yZ/HNeJPSH+ByFL3yfAtLw==
+X-CSE-MsgGUID: 3/+Gz3kfTi6VujhV0pZ9kw==
+X-ExtLoop1: 1
+Received: from smile.fi.intel.com ([10.237.72.52])
+  by fmviesa003.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 26 Aug 2025 06:28:54 -0700
+Received: from andy by smile.fi.intel.com with local (Exim 4.98.2)
+	(envelope-from <andriy.shevchenko@linux.intel.com>)
+	id 1uqtjF-00000008mqQ-2YXp;
+	Tue, 26 Aug 2025 16:28:49 +0300
+Date: Tue, 26 Aug 2025 16:28:49 +0300
+From: Andy Shevchenko <andriy.shevchenko@linux.intel.com>
+To: Jens Axboe <axboe@kernel.dk>
+Cc: Helge Deller <deller@gmx.de>, Geert Uytterhoeven <geert@linux-m68k.org>,
+	Thomas Fourier <fourier.thomas@gmail.com>,
+	linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	sparclinux@vger.kernel.org, linux-block@vger.kernel.org,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Matt Turner <mattst88@gmail.com>, Ian Molton <spyro@f2s.com>,
+	Russell King <linux@armlinux.org.uk>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, Denis Efremov <efremov@linux.com>,
+	Andrew Morton <akpm@linux-foundation.org>
+Subject: Re: [PATCH v2 0/3] floppy: A couple of cleanups
+Message-ID: <aK22kUhlxlyvVLax@smile.fi.intel.com>
+References: <20250825163545.39303-1-andriy.shevchenko@linux.intel.com>
+ <175615490112.25116.3742797696959119744.b4-ty@kernel.dk>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,62 +102,38 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <aK2XS_GhLw1EQ2ml@J2N7QTR9R3>
+In-Reply-To: <175615490112.25116.3742797696959119744.b4-ty@kernel.dk>
+Organization: Intel Finland Oy - BIC 0357606-4 - c/o Alberga Business Park, 6
+ krs, Bertel Jungin Aukio 5, 02600 Espoo
 
-On Tue, Aug 26, 2025 at 12:15:23PM +0100, Mark Rutland wrote:
-> On Wed, Aug 13, 2025 at 06:00:54PM +0100, Robin Murphy wrote:
-> > The group validation logic shared by the HiSilicon HNS3/PCIe drivers is
-> > a bit off, in that given a software group leader, it will consider that
-> > event *in place of* the actual new event being opened. At worst this
-> > could theoretically allow an unschedulable group if the software event
-> > config happens to look like one of the hardware siblings.
+On Mon, Aug 25, 2025 at 02:48:21PM -0600, Jens Axboe wrote:
+> On Mon, 25 Aug 2025 18:32:54 +0200, Andy Shevchenko wrote:
+> > There are a few places in architecture code for the floppy driver
+> > that may be cleaned up. Do it so.
 > > 
-> > The uncore framework avoids that particular issue,
-> 
-> What is "the uncore framework"? I'm not sure exactly what you're
-> referring to, nor how that composes with the problem described above.
-> 
-> > but all 3 also share the common issue of not preventing racy access to
-> > the sibling list,
-> 
-> Can you please elaborate on this racy access to the silbing list? I'm
-> not sure exactly what you're referring to.
+> > Assumed to route via Andrew Morton's tree as floppy is basically orphaned.
+> > 
+> > Changelog v2:
+> > - combined separate patches sent earlier into a series
+> > - added tags (Helge, Geert)
+> > - fixed typo in the commit message (Geert)
 
-Ah, I think you're referring to the issue in:
+[...]
 
-  https://lore.kernel.org/linux-arm-kernel/Zg0l642PgQ7T3a8Z@FVFF77S0Q05N/
+> Applied, thanks!
 
-... where when creatign a new event which is its own group leader,
-lockdep_assert_event_ctx(event) fires in for_each_sibling_event(),
-because the new event's context isn't locked...
+Ah, thanks! It's good to know you can take (and actually did that) them.
 
-> > diff --git a/drivers/perf/hisilicon/hisi_uncore_pmu.c b/drivers/perf/hisilicon/hisi_uncore_pmu.c
-> > index a449651f79c9..3c531b36cf25 100644
-> > --- a/drivers/perf/hisilicon/hisi_uncore_pmu.c
-> > +++ b/drivers/perf/hisilicon/hisi_uncore_pmu.c
-> > @@ -101,26 +101,17 @@ static bool hisi_validate_event_group(struct perf_event *event)
-> >  	/* Include count for the event */
-> >  	int counters = 1;
-> >  
-> > -	if (!is_software_event(leader)) {
-> > -		/*
-> > -		 * We must NOT create groups containing mixed PMUs, although
-> > -		 * software events are acceptable
-> > -		 */
-> > -		if (leader->pmu != event->pmu)
-> > -			return false;
-> > +	if (leader == event)
-> > +		return true;
+> [1/3] floppy: Remove unused CROSS_64KB() macro from arch/ code
+>       commit: d74968780bf287958e2815be5f088dd6c7b7aa19
+> [2/3] floppy: Replace custom SZ_64K constant
+>       commit: 8e7ee0f6fa33934373c1c37e8cfb71cff2acea09
+> [3/3] floppy: Sort headers alphabetically
+>       commit: d4399e6eb27a803b73d17fe984448a823b4d3a30
 
-... and hence bailing out here avoids that?
+-- 
+With Best Regards,
+Andy Shevchenko
 
-It's not strictly "racy access to the sibling list", becuase there's
-nothing else accessing the list; it's just that this is the simplest way
-to appease lockdep while avoiding false negatives.
 
-It'd probably be better to say something like "the common issue of
-calling for_each_sibling_event() when initialising a new group leader",
-and maybe to spell that out a bit.
-
-Mark.
 
