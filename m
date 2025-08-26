@@ -1,50 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-11299-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11300-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DAACCA0EFA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 06:20:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68F76CA0EFA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 06:21:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9yFx2v9vz3dKq;
-	Tue, 26 Aug 2025 16:20:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756189237;
-	cv=none; b=KzfWAaS1n0SX/H58seIxtmJQ/YeechU8I/2calx2yXmMZnuG/0S/PlBQJSQtpViLDesNL7xMG9+BW61nDKXytDtO6bPZT4hOSQI0xQT97MMyOi9F+PTN5fkqr2XyacuHuaoWErbskXr7dPWXJ+b2aGYi7/wr/AunP77exJBf8pE3FxjSPcnVhMOJ8rmV+4icKed0fShXsZEitoYNtr/oiwMlLkxizwtcST6nr/6T90Kr8RUIdWYtElVQPuJGsD150S4EJEl49NQePtnBCcf1Gtd2uRlJtLBgmc79R+CBOLVSPAee8k28epUPJcZr/kCmxHRe9gviDPfnDsV0IlYDvA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9yH00pCMz3dJg;
+	Tue, 26 Aug 2025 16:21:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=176.9.242.62
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756189292;
+	cv=none; b=TawsQthVm3+qyydSKrsEiKCO4Ugz16BFrQBuPh2L9vCn/12wjylqxx2g/tePAzaSPy+joMHZuYy2hRGAsG9NEXNX2AFTGIHq1zcJ8MvII4XQa0dvhKY8PRzt81R1fDl7xbIEZd6PNMm1lFVNH2tFR+zCDUe2jLCvt5tTUpdqhBxFjMvckQimbJZJ6gHYV+eRxBlJEgD55dodd7NXY9nkTHxUsbKRJH6v0WVbRyLCxI3p/raq9woBNaYS93uYPtPHuQRPPKx2/aEyvMpZzVz+XjR8GQxkYWroOFcyZ9IGBwSvntAygVcag2Gs6SUJarqj+W+3Mwd6Lqi0gehLhA5h7g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756189237; c=relaxed/relaxed;
-	bh=av5G/K7WalZakJE6AxJgVD7Y0vIdm4CmWgYsSqrkrAI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JdTPxeoPeRkzjEM7+STPsVAfDofOqcK8vz5PK1w6c5VvWopa7+PP/nyGSuT2GRnouuFpKvwyEAzuXBB8yD3GoRoYnE6o4aVKKV/d0v6rDsKGTMkEUy9ZVzSMke0g1Jb6p3C4tgXJFsEr5RmlRmnxpsE8JNRPH+y4D1evOgrtfaIvfTZWl21Ui+O+Iyk8Ql6HrTxM/Nf4Lf3ynSD1Z1AmaPePuSpGDnXheXR+gTOUzfaFA8jgboUfQPFWN3pCX3/JEQ2hE9L2d1jqO5CvuP66aYt/zeSzIAObifGW9tjkXbJrZALUq/RSd2E1rZENULDyDwyq9seLp9PA0VRxMGT1Mg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9yFw5MMtz3dJ9
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 16:20:35 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c9wDs5fW7z9sSH;
-	Tue, 26 Aug 2025 06:49:33 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 9WAMtYgIKbQJ; Tue, 26 Aug 2025 06:49:33 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9wDs4Dc9z9sS8;
-	Tue, 26 Aug 2025 06:49:33 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6B3918B764;
-	Tue, 26 Aug 2025 06:49:33 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id cTXo-oIxDOpC; Tue, 26 Aug 2025 06:49:33 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8219A8B763;
-	Tue, 26 Aug 2025 06:49:31 +0200 (CEST)
-Message-ID: <609a980b-cbe3-442b-a492-91722870b156@csgroup.eu>
-Date: Tue, 26 Aug 2025 06:49:29 +0200
+	t=1756189292; c=relaxed/relaxed;
+	bh=ILvWheSw7axbg3krBZNj8XsIqzPcs7LCGiznkPNeZiA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=lq5T4yrZUwbnEHHtgTCIaiAaDhJNFZ5IqzE14upynXpDkJ1yAR3NN92sbvV6cAia16iMmxTInRoxMC7NjQ1RjB/yx888frP6t7S6V0bguAomxfIcem+S1IvLWoFnAtKY9XKmK/VnTbbxFn/PNbFeuy7SoEVgn72weTSNlhjSWurMCJ/paVCdyWm39bAPoH6TY++qdrMkM/vgVRPP4x32duccrsoqm5ImVfWiScW971JVt5lonQ7GGLgRyYtLs+mdMCWl71YKXDh1K8Z1fGpQjblpcw/KH+7gpSogLy5/LJdax4+coU9xhuxap/y9fHNBDRU3EgLxF0rUDbilUasH0A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=176.9.242.62; helo=bmailout3.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org) smtp.helo=bmailout3.hostsharing.net
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=bmailout3.hostsharing.net (client-ip=176.9.242.62; helo=bmailout3.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org)
+Received: from bmailout3.hostsharing.net (bmailout3.hostsharing.net [176.9.242.62])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4c9yGz0g4Pz3dJM
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 16:21:29 +1000 (AEST)
+Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
+	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
+	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
+	by bmailout3.hostsharing.net (Postfix) with ESMTPS id 4063C2C05262;
+	Tue, 26 Aug 2025 08:21:24 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id 16EC962C37; Tue, 26 Aug 2025 08:21:24 +0200 (CEST)
+Date: Tue, 26 Aug 2025 08:21:24 +0200
+From: Lukas Wunner <lukas@wunner.de>
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Niklas Schnelle <schnelle@linux.ibm.com>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Linas Vepstas <linasvepstas@gmail.com>,
+	Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Peter Oberparleiter <oberpar@linux.ibm.com>,
+	Matthew Rosato <mjrosato@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>, Sinan Kaya <okaya@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org,
+	Keith Busch <kbusch@kernel.org>
+Subject: Re: [PATCH v5 0/3] PCI/ERR: s390/pci: Use pci_uevent_ers() in PCI
+ recovery
+Message-ID: <aK1SZGJBjrOx0s6y@wunner.de>
+References: <20250807-add_err_uevents-v5-0-adf85b0620b0@linux.ibm.com>
+ <20250814210201.GA348169@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,157 +73,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 4/8] powerpc/smp: Introduce CONFIG_SCHED_MC to guard MC
- scheduling bits
-To: K Prateek Nayak <kprateek.nayak@amd.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
- Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
- Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
- thomas.weissschuh@linutronix.de, Li Chen <chenl311@chinatelecom.cn>,
- Bibo Mao <maobibo@loongson.cn>, Mete Durlu <meted@linux.ibm.com>,
- Tobias Huschle <huschle@linux.ibm.com>,
- Easwar Hariharan <easwar.hariharan@linux.microsoft.com>,
- Guo Weikang <guoweikang.kernel@gmail.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Brian Gerst <brgerst@gmail.com>,
- Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>,
- Swapnil Sapkal <swapnil.sapkal@amd.com>,
- "Yury Norov [NVIDIA]" <yury.norov@gmail.com>,
- Sudeep Holla <sudeep.holla@arm.com>,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- Andrea Righi <arighi@nvidia.com>, Yicong Yang <yangyicong@hisilicon.com>,
- Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Tim Chen <tim.c.chen@linux.intel.com>,
- Vinicius Costa Gomes <vinicius.gomes@intel.com>
-References: <20250826041319.1284-1-kprateek.nayak@amd.com>
- <20250826041319.1284-5-kprateek.nayak@amd.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250826041319.1284-5-kprateek.nayak@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250814210201.GA348169@bhelgaas>
 
-
-
-Le 26/08/2025 à 06:13, K Prateek Nayak a écrit :
-> PowerPC enables the MC scheduling domain by default on systems with
-> coregroup support without having a SCHED_MC config in Kconfig.
+On Thu, Aug 14, 2025 at 04:02:01PM -0500, Bjorn Helgaas wrote:
+> On Thu, Aug 07, 2025 at 03:55:37PM +0200, Niklas Schnelle wrote:
+> > Niklas Schnelle (3):
+> >       PCI/AER: Fix missing uevent on recovery when a reset is requested
+> >       PCI/ERR: s390/pci: Use pci_uevent_ers() in PCI recovery
+> >       powerpc/eeh: Use result of error_detected() in uevent
+> > 
+> >  arch/powerpc/kernel/eeh_driver.c | 2 +-
+> >  arch/s390/pci/pci_event.c        | 3 +++
+> >  drivers/pci/pci-driver.c         | 3 ++-
+> >  include/linux/pci.h              | 2 +-
+> >  4 files changed, 7 insertions(+), 3 deletions(-)
 > 
-> The scheduler uses CONFIG_SCHED_MC to introduce the MC domain in the
-> default topology (core) and to optimize the default CPU selection
-> routine (sched-ext).
+> Applied on pci/aer for v6.18, thanks!  This on top of Lukas's series:
 > 
-> Introduce CONFIG_SCHED_MC for powerpc and note that it should be
-> preferably enabled given the current default behavior. This also ensures
-> PowerPC is tested during future developments that come to depend on
-> CONFIG_SCHED_MC.
+>   https://lore.kernel.org/all/cover.1755008151.git.lukas@wunner.de/
 > 
-> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
-> ---
->   arch/powerpc/Kconfig           | 9 +++++++++
->   arch/powerpc/include/asm/smp.h | 2 ++
->   arch/powerpc/kernel/smp.c      | 4 ++++
->   3 files changed, 15 insertions(+)
-> 
-> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-> index 93402a1d9c9f..e954ab3f635f 100644
-> --- a/arch/powerpc/Kconfig
-> +++ b/arch/powerpc/Kconfig
-> @@ -971,6 +971,15 @@ config SCHED_SMT
->   	  when dealing with POWER5 cpus at a cost of slightly increased
->   	  overhead in some places. If unsure say N here.
->   
-> +config SCHED_MC
-> +	bool "Multi-Core Cache (MC) scheduler support"
-> +	depends on PPC64 && SMP
-> +	default y
-> +	help
-> +	  MC scheduler support improves the CPU scheduler's decision making
-> +	  when dealing with POWER systems that contain multiple Last Level
-> +	  Cache instances on the same socket. If unsure say Y here.
-> +
+> Expect the whole branch to be rebased to add Reviewed-by, etc.
 
-You shouldn't duplicate CONFIG_SCHED_MC in every architecture, instead 
-you should define a CONFIG_ARCH_HAS_SCHED_MC in arch/Kconfig that gets 
-selected by architectures then have CONFIG_SCHED_MC defined in 
-init/Kconfig or kernel/Kconfig or so.
+In case it helps, these are all the tags that were offered for my series
+and that haven't been added to the pci/aer branch yet:
 
->   config PPC_DENORMALISATION
->   	bool "PowerPC denormalisation exception handling"
->   	depends on PPC_BOOK3S_64
-> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-> index 86de4d0dd0aa..9a320d96e891 100644
-> --- a/arch/powerpc/include/asm/smp.h
-> +++ b/arch/powerpc/include/asm/smp.h
-> @@ -148,7 +148,9 @@ static inline const struct cpumask *cpu_smt_mask(int cpu)
->   }
->   #endif /* CONFIG_SCHED_SMT */
->   
-> +#ifdef CONFIG_SCHED_MC
->   extern const struct cpumask *cpu_coregroup_mask(int cpu);
-> +#endif
+d0a2dee7d458 PCI/AER: Allow drivers to opt in to Bus Reset on Non-Fatal Errors
+  Reviewed-by: Linas Vepstas <linasvepstas@gmail.com>
+  https://lore.kernel.org/r/CAHrUA34fVV48MShC4CrXSmveR9i8MC4KAQxtM+XQY_Ao8joBQw@mail.gmail.com/
+  Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+  https://lore.kernel.org/r/8491adbd-d8e8-465a-971e-3fe50e2561b1@linux.intel.com/
 
-Why do you need this ifdef ? Leaving it outside #ifdef allows you to do 
-constructs like:
+1cbc5e25fb70 PCI/ERR: Fix uevent on failure to recover
+  Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+  https://lore.kernel.org/r/f0b59604-ae4d-4afe-8522-a8fbe5568e96@linux.intel.com/
+  Reviewed-by: Linas Vepstas <linasvepstas@gmail.com>
+  https://lore.kernel.org/r/CAHrUA34fVV48MShC4CrXSmveR9i8MC4KAQxtM+XQY_Ao8joBQw@mail.gmail.com/
+  Reviewed-by: Niklas Schnelle <schnelle@linux.ibm.com>
+  https://lore.kernel.org/r/a4419480c3d494a5940e87fea0c7b9864dc3e85b.camel@linux.ibm.com/
 
-	if (IS_ENABLED(CONFIG_SCHED_MC))
-		cpu_coregroup_mask(cpu);
+9011f0667c93 PCI/ERR: Notify drivers on failure to recover
+  Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+  https://lore.kernel.org/r/fa9f42ab-bced-4c7f-9977-c0b611e92e2e@linux.intel.com/
+  Reviewed-by: Linas Vepstas <linasvepstas@gmail.com>
+  https://lore.kernel.org/r/CAHrUA34fVV48MShC4CrXSmveR9i8MC4KAQxtM+XQY_Ao8joBQw@mail.gmail.com/
 
-Otherwise you'll need to ensure all calls to cpu_coregroup_mask() are 
-also inside #ifdefs, which is not the recommended way nowadays.
+45bc82563d55 PCI/ERR: Update device error_state already after reset
+  Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+  https://lore.kernel.org/r/004298f7-ae08-428e-9b98-995fc56e55b1@linux.intel.com/
+  Reviewed-by: Linas Vepstas <linasvepstas@gmail.com>
+  https://lore.kernel.org/r/CAHrUA34fVV48MShC4CrXSmveR9i8MC4KAQxtM+XQY_Ao8joBQw@mail.gmail.com/
 
->   
->   /* Since OpenPIC has only 4 IPIs, we use slightly different message numbers.
->    *
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index e623f2864dc4..7f79b853b221 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -1059,6 +1059,7 @@ static bool has_coregroup_support(void)
->   	return coregroup_enabled;
->   }
->   
-> +#ifdef CONFIG_SCHED_MC
->   const struct cpumask *cpu_coregroup_mask(int cpu)
->   {
->   	if (has_coregroup_support())
-> @@ -1071,6 +1072,7 @@ static const struct cpumask *cpu_mc_mask(struct sched_domain_topology_level *tl,
->   {
->   	return cpu_corgrp_mask(cpu);
->   }
-> +#endif
->   
->   static const struct cpumask *cpu_pkg_mask(struct sched_domain_topology_level *tl, int cpu)
->   {
-> @@ -1729,10 +1731,12 @@ static void __init build_sched_topology(void)
->   			SDTL_INIT(shared_cache_mask, powerpc_shared_cache_flags, CACHE);
->   	}
->   
-> +#ifdef CONFIG_SCHED_MC
+cc4a7a21e815 PCI/ERR: Remove remnants of .link_reset() callback
+  Reviewed-by: Linas Vepstas <linasvepstas@gmail.com>
+  https://lore.kernel.org/r/CAHrUA34fVV48MShC4CrXSmveR9i8MC4KAQxtM+XQY_Ao8joBQw@mail.gmail.com/
+  Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+  https://lore.kernel.org/r/59308229-24ed-4b8a-b398-cc47c61dfc47@linux.intel.com/
+  Reviewed-by: Justin Tee <justin.tee@broadcom.com>
+  https://lore.kernel.org/r/CABPRKS_Ut8Z+rvM4+-E0YvEwUKbMb0SDpLBdH+g1sYEh+YcxFA@mail.gmail.com/
 
-As I said above, define the function prototype at all time in smp.h and 
-use IS_ENABLED(CONFIG_SCHED_MC) here instead of a #ifdef
+Thanks!
 
->   	if (has_coregroup_support()) {
->   		powerpc_topology[i++] =
->   			SDTL_INIT(cpu_mc_mask, powerpc_shared_proc_flags, MC);
->   	}
-> +#endif
->   
->   	powerpc_topology[i++] = SDTL_INIT(cpu_pkg_mask, powerpc_shared_proc_flags, PKG);
->   
-
+Lukas
 
