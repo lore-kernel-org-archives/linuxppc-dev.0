@@ -1,50 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-11302-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11303-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AD504CA0EFA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 06:50:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A6C7BCA0EFA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 07:45:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9ywf1K92z3dKd;
-	Tue, 26 Aug 2025 16:50:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756191042;
-	cv=none; b=fUUAWbBY4qKP3qNUdEzhGM+QK0otFwF28KCkUy5uR0Ty9Dm2KmBxWb5vLQYcDxfVqtfLOeOR+KOt0XbMPQlfdNRYwS0FfuNpInZpBt+qHeEUzvxz2Js8vDGqkEp3ilCMpvv10D1ummaEXrtBoDjbDs78X/jtkho5LmnGoQ5n+0/bJMVIfeBden06Q4PjOQ2lXPHLj2AXpXnSim1TLPetyhfWr+a7lFYdyC6UYfHoMY62PnpEMoZADHhZTq7sKtoDx4GtQEWyvR99Y5XsNipmPU/B81t+NpNMSKSM9akI1SdSme/qZweVOZygYKnKPCXeScaEHBxfhq6B5PtYRZ4B+w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cB07H2024z3dKC;
+	Tue, 26 Aug 2025 17:44:59 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756194299;
+	cv=none; b=Z7hJq433+guvf86wLPomS+AmUkIg9co0dUVRo/IyJvE5+UvCz+Q2TSUX0eNwmznxx5Hu7+xA/x8bBxWgr/r3HizQNhVmmCGNpurzKVwKdkFroEbLb90RA+lOrzg+C+QuRJrEe2iQkIjO0tyzuUZxAizjHJlRsfRKIpcw9veWDtX1wE9kwUAZl1NfBGCPvCAPQM4G1r10iMBBswrptsrK5xW2mQTWQEPCLqe3ODPTVz8/Donaizb7UAyvrOZgME4yToj5mILMy+cHkI8q/ZXSG3qWH523WU4DXivtO0Y7mdOwXHOBR8KtIboU6XcIpvd2cvAk6c6wLneMStdfiRErDQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756191042; c=relaxed/relaxed;
-	bh=buzbl3Oc+HYGPTJoOVg2jLIbAi9/OWjIxvks2w/Vsr4=;
+	t=1756194299; c=relaxed/relaxed;
+	bh=BDrWwBla1QrTDzNI7yFzBveJvJXRu3aajUikrOKKqUc=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ThLXRu6NVYXrQZFn2kc+ZTWOc+w67305GyHyCKoBIMHbcSYHe8Y56y/wHCTJwAW9C08vH8j/Bk2dTPqAYZqwIImR9L4emEIZx0t7lu8Ff1ajZrwtMG8rAMIGRAMs2ydGn9/kyiDR2T/w/tJiBZo93oNj8VCEOIpnbPNYbg8/z2NS/E6aNU2gBlwuHnPtvvvgEfh4JLOlNWvyh9U/qM4JeDqqKDPUG09V2zVt3uJSXztztdbBdPejrurWLskRgnLBN47Yw2bFuwiTmkdmuNOid4nPilFR7ZehwJFf7SmFzQxSJ3qMliE57AW0p9oTCfQnkXXZLTyfb67XKp2Aknd0TQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9ywd4qm7z3dKb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 16:50:41 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c9wqw191fz9sSd;
-	Tue, 26 Aug 2025 07:16:28 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 8QBWi60LJ5rv; Tue, 26 Aug 2025 07:16:28 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9wqw02g8z9sSc;
-	Tue, 26 Aug 2025 07:16:28 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id DA3DE8B764;
-	Tue, 26 Aug 2025 07:16:27 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id w2QSnjtwcJ6v; Tue, 26 Aug 2025 07:16:27 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 139828B763;
-	Tue, 26 Aug 2025 07:16:26 +0200 (CEST)
-Message-ID: <154fd466-5305-431f-b49a-a5ccec81507a@csgroup.eu>
-Date: Tue, 26 Aug 2025 07:16:25 +0200
+	 In-Reply-To:Content-Type; b=cjMP6T0O6wlEh+hDwKEMuyuND6hsjTUgiGCnbjxG97v1MzzSm7yz66qhCLagqViRBFI+IZFxamjnVF62KHobuMRTjllyB4OsCKaDgBpxKpp+72Gc0kbt8qtMnGAQHbeg68A7cX//usLzxjh9qytkQm+hBLlEMbteETc+LHdAkPavTzXVtde4F2NXyiB2Q86pAgEAqYhdniZSudIuW6vDIokZnToQA6m40Ao1HighaS7CDE3XvfCefAhFrJbnG4yDI1DhwgmJHcToe99CUluUp2jBUamvttn0A0/N9Vq2KWzQawBQ86vSsL8mbPVxo9O7AGMKpJtlA9O8KbJ7Tq4l/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Avgil2AX; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Avgil2AX; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Avgil2AX;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Avgil2AX;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=pabeni@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cB07F0L6sz3dJV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 17:44:54 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1756194290;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=BDrWwBla1QrTDzNI7yFzBveJvJXRu3aajUikrOKKqUc=;
+	b=Avgil2AXMj/Y3XhyYlWzp32f0SMIEjaWBHc13KOiwultTMGDPXENjqeidDxDKHrmkEcva7
+	81tOpRprLYv34tbvBzYXh1l8bv4uIRfTDPv79gje72XO8u/xG66YEuTmJOzaIxYbKye3sz
+	7ewLqzl9/heqz7VkqeLo3ZzNzvTuhTc=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1756194290;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=BDrWwBla1QrTDzNI7yFzBveJvJXRu3aajUikrOKKqUc=;
+	b=Avgil2AXMj/Y3XhyYlWzp32f0SMIEjaWBHc13KOiwultTMGDPXENjqeidDxDKHrmkEcva7
+	81tOpRprLYv34tbvBzYXh1l8bv4uIRfTDPv79gje72XO8u/xG66YEuTmJOzaIxYbKye3sz
+	7ewLqzl9/heqz7VkqeLo3ZzNzvTuhTc=
+Received: from mail-qv1-f71.google.com (mail-qv1-f71.google.com
+ [209.85.219.71]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-621-oYXpHa2BNAGGrtkNd9PfCA-1; Tue, 26 Aug 2025 03:44:48 -0400
+X-MC-Unique: oYXpHa2BNAGGrtkNd9PfCA-1
+X-Mimecast-MFC-AGG-ID: oYXpHa2BNAGGrtkNd9PfCA_1756194288
+Received: by mail-qv1-f71.google.com with SMTP id 6a1803df08f44-70d9a65c355so84805186d6.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 00:44:48 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1756194288; x=1756799088;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=BDrWwBla1QrTDzNI7yFzBveJvJXRu3aajUikrOKKqUc=;
+        b=HqI6BjqA+iMUyRQmzJKFQQx57xvs0y1p+R06jPIvHo6btH5x7AtA6r8HuB2OEzKBQb
+         kB6yocU7QAmpnWhSEx5KnjKX4pkZXkp4Q0KXdXuEps0a6Kvu3oblnPWAz8jhhIFo/u2U
+         LNXJfY+EfFjHCtfTi7hatk7vmRy7UWq56lWHBaQ/IXy9+PXQ32wmHKn42Idhr/j/jTC0
+         Guz1kT9mG+6GZmFrZfeEsZ2wrE7ZUfRUVvcuj18dhZpWk7jQPdPenJtuqDqadQMpWARS
+         vNW2HDrgYKUMtfIdSCFZtYjIWWCtaGfLWsNwleyOoss+lY8V7q16t+IddgBftvM+D0Xe
+         onCg==
+X-Forwarded-Encrypted: i=1; AJvYcCX3XG06AmqV2Ne6Z9BDbHirbmxeHCXhEeVsH/QFzkAfnPWRxnWK2D5qKUvb9CYhpVNUJB0ITjjUZ3c+9Ec=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw6Ayj+aQcQLsv5/FtgRj9xDol2GLdoVwF9fG3DuLI+xBYK3bKg
+	23TWp0Ltq38sHqWCAvbxy3oB2ZkMzHEKRg7rPskRJYg1aS45fszp+ZAsgo96r0jL2AJbHzuY8PV
+	jn0yxVZapBXPqZGKwyLP5nEAeu1u2MauP6z/brK/m0p/of9k4pZRc/3cwDHLe4Co99JU=
+X-Gm-Gg: ASbGncvi6PRo7rVyeNKpi5zHFSlffL41Zdcqn2PtwvXAONWaHJ5rPVTM+/ZRYln5PUg
+	cU86nnrMI04Y3UBW1/53qB823+RW408mi5vR4yWIny9/m0LZIKDCKAcYDDujeidBx2UuuLDNwbC
+	cV6POGQgGo45/tVC3jMSMFLJA+hFJkZQG/I4SEPh4GInXrkrVxDR1n9WHVrOLjcQosq8VgTlOWU
+	pwb2IHdD/GYBYkkz9WkxRCIZR4pCp97ctDJySUKra9ggLA1afzTailZYaMkdOk0bONHJ8dQNZqG
+	19o8SodFRIeKZ/4pLDEdFHzpWf3+ZWyd5Nfm8kjHcet0orD2IutuxTcGfi8jKVpfPThG7DycZ6r
+	De9RbpXu173c=
+X-Received: by 2002:a05:6214:acc:b0:70d:c4b3:9443 with SMTP id 6a1803df08f44-70dd59c1759mr4350916d6.31.1756194287964;
+        Tue, 26 Aug 2025 00:44:47 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IGhzhn5+Yg77HtcZk5KiF7sJitx0Vz2y9+jpRKcTifYsTOJze6b9AG3bPnC6Fl6hT2Uuy6Org==
+X-Received: by 2002:a05:6214:acc:b0:70d:c4b3:9443 with SMTP id 6a1803df08f44-70dd59c1759mr4350726d6.31.1756194287545;
+        Tue, 26 Aug 2025 00:44:47 -0700 (PDT)
+Received: from ?IPV6:2a0d:3344:2712:7e10:4d59:d956:544f:d65c? ([2a0d:3344:2712:7e10:4d59:d956:544f:d65c])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-70da72d6a53sm60101456d6.72.2025.08.26.00.44.44
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 26 Aug 2025 00:44:46 -0700 (PDT)
+Message-ID: <fcd38381-b5d8-412e-bc22-f1f5e4fc0b4a@redhat.com>
+Date: Tue, 26 Aug 2025 09:44:43 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,164 +105,68 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 8/8] sched/topology: Unify tl_pkg_mask() across core
- and all arch
-To: K Prateek Nayak <kprateek.nayak@amd.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
- Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
- Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
- thomas.weissschuh@linutronix.de, Li Chen <chenl311@chinatelecom.cn>,
- Bibo Mao <maobibo@loongson.cn>, Mete Durlu <meted@linux.ibm.com>,
- Tobias Huschle <huschle@linux.ibm.com>,
- Easwar Hariharan <easwar.hariharan@linux.microsoft.com>,
- Guo Weikang <guoweikang.kernel@gmail.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Brian Gerst <brgerst@gmail.com>,
- Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>,
- Swapnil Sapkal <swapnil.sapkal@amd.com>,
- "Yury Norov [NVIDIA]" <yury.norov@gmail.com>,
- Sudeep Holla <sudeep.holla@arm.com>,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- Andrea Righi <arighi@nvidia.com>, Yicong Yang <yangyicong@hisilicon.com>,
- Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Tim Chen <tim.c.chen@linux.intel.com>,
- Vinicius Costa Gomes <vinicius.gomes@intel.com>
-References: <20250826041319.1284-1-kprateek.nayak@amd.com>
- <20250826041319.1284-9-kprateek.nayak@amd.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250826041319.1284-9-kprateek.nayak@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: Re: [PATCH net-next RESEND v4] ibmvnic: Increase max subcrq indirect
+ entries with fallback
+To: Mingming Cao <mmc@linux.ibm.com>, netdev@vger.kernel.org
+Cc: horms@kernel.org, bjking1@linux.ibm.com, haren@linux.ibm.com,
+ ricklind@linux.ibm.com, kuba@kernel.org, edumazet@google.com,
+ linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com, mpe@ellerman.id.au
+References: <20250821130215.97960-1-mmc@linux.ibm.com>
+From: Paolo Abeni <pabeni@redhat.com>
+In-Reply-To: <20250821130215.97960-1-mmc@linux.ibm.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: BvUOwp4RJT9Le-_92dhJhgFCvLmskjSAFhFFTTKbVVI_1756194288
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-
-
-Le 26/08/2025 à 06:13, K Prateek Nayak a écrit :
-> Unify the tl_pkg_mask() wrapper around cpu_nod_mask() across core, x86,
-> powerpc, and s390.
+On 8/21/25 3:02 PM, Mingming Cao wrote:
+> POWER8 support a maximum of 16 subcrq indirect descriptor entries per
+>  H_SEND_SUB_CRQ_INDIRECT call, while POWER9 and newer hypervisors
+>  support up to 128 entries. Increasing the max number of indirect
+> descriptor entries improves batching efficiency and reduces
+> hcall overhead, which enhances throughput under large workload on POWER9+.
 > 
-> No functional changes intended.
+> Currently, ibmvnic driver always uses a fixed number of max indirect
+> descriptor entries (16). send_subcrq_indirect() treats all hypervisor
+> errors the same:
+>  - Cleanup and Drop the entire batch of descriptors.
+>  - Return an error to the caller.
+>  - Rely on TCP/IP retransmissions to recover.
+>  - If the hypervisor returns H_PARAMETER (e.g., because 128
+>    entries are not supported on POWER8), the driver will continue
+>    to drop batches, resulting in unnecessary packet loss.
 > 
-> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
-> ---
->   arch/powerpc/kernel/smp.c      | 7 +------
->   arch/s390/kernel/topology.c    | 7 +------
->   arch/x86/kernel/smpboot.c      | 5 -----
->   include/linux/sched/topology.h | 6 ++++++
->   kernel/sched/topology.c        | 5 -----
->   5 files changed, 8 insertions(+), 22 deletions(-)
+> In this patch:
+> Raise the default maximum indirect entries to 128 to improve ibmvnic
+> batching on morden platform. But also gracefully fall back to
+> 16 entries for Power 8 systems.
 > 
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 40719679385b..8e869c13f7ed 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -1064,11 +1064,6 @@ const struct cpumask *cpu_coregroup_mask(int cpu)
->   }
->   #endif
->   
-> -static const struct cpumask *cpu_pkg_mask(struct sched_domain_topology_level *tl, int cpu)
-> -{
-> -	return cpu_node_mask(cpu);
-> -}
-> -
->   static int __init init_big_cores(void)
->   {
->   	int cpu;
-> @@ -1728,7 +1723,7 @@ static void __init build_sched_topology(void)
->   	}
->   #endif
->   
-> -	powerpc_topology[i++] = SDTL_INIT(cpu_pkg_mask, powerpc_shared_proc_flags, PKG);
-> +	powerpc_topology[i++] = SDTL_INIT(tl_pkg_mask, powerpc_shared_proc_flags, PKG);
->   
->   	/* There must be one trailing NULL entry left.  */
->   	BUG_ON(i >= ARRAY_SIZE(powerpc_topology) - 1);
-> diff --git a/arch/s390/kernel/topology.c b/arch/s390/kernel/topology.c
-> index 8dbf32f362e1..8f5b6ecc055f 100644
-> --- a/arch/s390/kernel/topology.c
-> +++ b/arch/s390/kernel/topology.c
-> @@ -524,17 +524,12 @@ static const struct cpumask *cpu_drawer_mask(struct sched_domain_topology_level
->   	return &cpu_topology[cpu].drawer_mask;
->   }
->   
-> -static const struct cpumask *cpu_pkg_mask(struct sched_domain_topology_level *tl, int cpu)
-> -{
-> -	return cpu_node_mask(cpu);
-> -}
-> -
->   static struct sched_domain_topology_level s390_topology[] = {
->   	SDTL_INIT(tl_smt_mask, cpu_smt_flags, SMT),
->   	SDTL_INIT(tl_mc_mask, cpu_core_flags, MC),
->   	SDTL_INIT(cpu_book_mask, NULL, BOOK),
->   	SDTL_INIT(cpu_drawer_mask, NULL, DRAWER),
-> -	SDTL_INIT(cpu_pkg_mask, NULL, PKG),
-> +	SDTL_INIT(tl_pkg_mask, NULL, PKG),
->   	{ NULL, },
->   };
->   
-> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> index bfbcac9a73d1..6c0ab30a80e2 100644
-> --- a/arch/x86/kernel/smpboot.c
-> +++ b/arch/x86/kernel/smpboot.c
-> @@ -472,11 +472,6 @@ static int x86_cluster_flags(void)
->   }
->   #endif
->   
-> -static const struct cpumask *tl_pkg_mask(struct sched_domain_topology_level *tl, int cpu)
-> -{
-> -	return cpu_node_mask(cpu);
-> -}
-> -
->   /*
->    * Set if a package/die has multiple NUMA nodes inside.
->    * AMD Magny-Cours, Intel Cluster-on-Die, and Intel
-> diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
-> index 075d1f063668..807603bfe8ff 100644
-> --- a/include/linux/sched/topology.h
-> +++ b/include/linux/sched/topology.h
-> @@ -71,6 +71,12 @@ struct cpumask *tl_mc_mask(struct sched_domain_topology_level *tl, int cpu)
->   }
->   #endif /* CONFIG_SCHED_MC */
->   
-> +static const __maybe_unused
+> Since there is no VIO interface to query the hypervisor’s supported
+> limit, vnic handles send_subcrq_indirect() H_PARAMETER errors:
+>  - On first H_PARAMETER failure, log the failure context
+>  - Reduce max_indirect_entries to 16 and allow the single batch to drop.
+>  - Subsequent calls automatically use the correct lower limit,
+>     avoiding repeated drops.
+> 
+> The goal is to  optimizes performance on modern systems while handles
+> falling back for older POWER8 hypervisors.
+> 
+> Performance shows 40% improvements with MTU (1500) on largework load.
+> 
+> Signed-off-by: Mingming Cao <mmc@linux.ibm.com>
+> Reviewed-by: Brian King <bjking1@linux.ibm.com>
+> Reviewed-by: Haren Myneni <haren@linux.ibm.com>
+> Reviewed-by: Simon Horman <horms@kernel.org>
+> --------------------------------------
+> Changes since v3:
+> Link to v3: https://www.spinics.net/lists/netdev/msg1112828.html
 
-Same as the three previous patches, __maybe_unused shouldn't be required.
+For future memory: please use lore links instead.
 
-> +struct cpumask *tl_pkg_mask(struct sched_domain_topology_level *tl, int cpu)
-> +{
-> +	return cpu_node_mask(cpu);
-> +}
-> +
->   #ifdef CONFIG_NUMA
->   static inline int cpu_numa_flags(void)
->   {
-> diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-> index 77d14430c5e1..18889bd97e22 100644
-> --- a/kernel/sched/topology.c
-> +++ b/kernel/sched/topology.c
-> @@ -1724,11 +1724,6 @@ sd_init(struct sched_domain_topology_level *tl,
->   	return sd;
->   }
->   
-> -static const struct cpumask *tl_pkg_mask(struct sched_domain_topology_level *tl, int cpu)
-> -{
-> -	return cpu_node_mask(cpu);
-> -}
-> -
->   /*
->    * Topology list, bottom-up.
->    */
+Thanks,
+
+Paolo
 
 
