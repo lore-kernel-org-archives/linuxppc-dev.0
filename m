@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-11296-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11297-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E0AECA0EE4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 06:20:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3EB09CA0EFA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 06:20:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9yDZ1vvdz3dKy;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9yDZ2hl7z3dK1;
 	Tue, 26 Aug 2025 16:19:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756189166;
-	cv=none; b=B2GJ1E7UMjJ5GHMLjzdf1BZvccS+akebrh6cg8ZgE8qHtc7OHbaBAzgc5TGJqWCVn1Jll4oFNmdm4/yz6ey/z75pBoxdqDSvptuNXwn0K2DenQ8pk2KcBKzvmws2LH84QXH4vtYfMCi+hn3HHnMVeDOh7lVpX8X/M0mRr9DfbMJ1EZ5rqCW0148qqzCR6p4w93Awo3UOwwxmg7CbJot6X92VLIKP6AnSnMIvamjg29nTZPAp7KX7TacqMUnyRxx2ZtDT4rz/RbVfEGVAbMMBZdKh/K/ioRRsjZNu5fru5qm/RJ2MXRpPNRyWq3D+Vx1bNs/4EOADqCwxmjp7J2o7Qw==
+	cv=none; b=Htrke3DHKnxN0u+qpPwOeW/sF4qhtq5cfDq6iez+gUhPk5sa0iC87U37+rAmOxIlfNr2WA/DZhUPTR3xQueq9FiHQnRFYflR3R9ODYYgvotYsm9YF52MB7W6QkfhyGGmSp+1OaoD3SjUZ7i+XVUeBe0mlleMopX8/oD6mZbpdGyWb85H6ryNkB3HuO3WVStjntGC8tYZIYcsQGD4HYmw5En3hvu4sVNo/p7+1WqrD6zw7z9Z714gttT4WFah7VJ2HVomjs/u8P/x2YqK+mBFU9OwYUUBo8qVDulAoen0dM2TJjJ1GjD2NYGbaTCj2cMByYpox7rQR6co+8qwhPI1FA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1756189166; c=relaxed/relaxed;
-	bh=3/oLlHMS/fCP6P1KLSn+cvJJv6PKUv3DICeaKqETsd4=;
+	bh=0t+60eV41IKUZ9ezcmekgKTWqNgupDcJulsKXmUteXI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=M8fp6V8Pj192OgK3Sizn0VcmU3l0ohWSaAstBPglKT5s+E+TQuy/paT4MFOkzk6e7V/xiROwb23kysRuwDpzFFT6gynb7QfWrw1nMytO46k/ufNm8Z6q981OfddHBwvYCndKUt51LM+9zSNnK0Ej3RabYTw+coM2zURgzWETI9k1gACfCNDIvTUXKgi9L0TNHHgCM0PjQMTinkfEJBPwKZfzo+TTT3Lt4ELj9SgbPU/52kjExysnVnfhqHkR2zbwvBA94SOyHyIJF5J6ZESJErKpWqhu+euZ0Ki+ao5EjABQit3WHcOZKznNNuPtsWa1/ah0G7bq71U1qDr1QUN3rg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=vM/cvVQM; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vA9RQwkS; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=REjQrfOOX1gPIGSvr2Xf5XEgyza8XclL1xiaJP9UT/mBThe5haBxWnFlhIkTQBuyLaHCvhzqp/WAnJQaJmkxZs7Zrj4Hb7uQjw3J9y/8R0XhS/LeW3aNTHi83OzVBYwH4oSwxiafYoHWTxpBG4c248bj5skBz5k0hrq5/KAl3QPJZLZg18f3TaeejVX9J9hQb8cwQ5Y2h5uu8sGAPqzWDi/mSWjMb7+WSbHdvpzbiVfxin/aJ5m9KD/L6Ts/NVkxZcqtpbBaC34doX3CGoQqc7y8+Hjx3vxGkSCzmSCJHsjts397T5oAJwOSXos6bmmBSnC2oIzgXKzeuTY7Cknkcg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=RgDlVbjO; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=8pcUg9Do; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=vM/cvVQM;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vA9RQwkS;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=RgDlVbjO;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=8pcUg9Do;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4c9yDX2txKz3dKC
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 16:18:55 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4c9yDX2dn8z3dK9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 16:18:29 +1000 (AEST)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1756189101;
+	s=2020; t=1756189103;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=3/oLlHMS/fCP6P1KLSn+cvJJv6PKUv3DICeaKqETsd4=;
-	b=vM/cvVQMAyhS92V8y5yVESyKxIqQ5R3zffJXNT39DFeEehqGvQ4cgcMYsWOtpmbyjLR+Jk
-	we8S1VPZLk08HyevreXbtrS0WfURWLCD0C1udndZaGXsxcvNVQ2IAa/sI7wZ5EjfeBV3QB
-	Xl1IBk2dQX2DHCg8P+mvsjehyFDzZ/AjK26U/WIM/Dx6E1r9CZ+xl3vYpcz/43dfXeL8zq
-	t+0oYU9wuduujEn9b3gXCqd8/s4+brqyYCVM79YY7DmkOuCIKG5XnjOxrX8XloYENkIp6J
-	frOXYpfPBh2KaqVqKhcgIbWwZ8GW0EG4XRusd22yhv2ylnUvt+X8LNumqRAcrg==
+	bh=0t+60eV41IKUZ9ezcmekgKTWqNgupDcJulsKXmUteXI=;
+	b=RgDlVbjO8jhuoPY4mfKuN7Slnu45ISnAWFOw/cSKuUrM166A5Xf4Erm/D2UDrSZRjb+TRd
+	kgmua8gHOCLunG9wwz2DpSTBXdpmSEa71Lb0hP+HK5ysGZ4To/F9r9b4YwQ9GRjarwPVe9
+	uS9AhT4Sz0+dbivk9lEzt4gd1nc4bK5HMZCjdAVtZW/0Fq3ATh+T7SGWw+DWsEEnez8l0S
+	l+JOMfNCM36pb3xgaN/Xdoh5jXwrQ/yCb90R7Ig/RRuSEtYwhJZ6k4ETPQI7pdrgOQZwVs
+	cqIUgd5QTF7ISENOyaqbvQpo+sHhZmxunt2tS6GEfzGIrgBnNf5Lv/0G9tlpGA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1756189101;
+	s=2020e; t=1756189103;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=3/oLlHMS/fCP6P1KLSn+cvJJv6PKUv3DICeaKqETsd4=;
-	b=vA9RQwkSkeW435dz89cXdm1JlqEJ1IVbHIFd6A9tNEpJZ0qLZJMeeSzlzAhq24mxpdVhVM
-	OJzV+jwkYkep1fAA==
-Date: Tue, 26 Aug 2025 08:17:08 +0200
-Subject: [PATCH 05/11] time: Build generic update_vsyscall() only with
- generic time vDSO
+	bh=0t+60eV41IKUZ9ezcmekgKTWqNgupDcJulsKXmUteXI=;
+	b=8pcUg9DoAWVBxDLyXzgtGwnNadG0alezHP8Es7YoGFl4eRzHD98RNasRncD8HY+yHWoxjq
+	+eUsVcLyCZNMQYCA==
+Date: Tue, 26 Aug 2025 08:17:11 +0200
+Subject: [PATCH 08/11] vdso: Drop kconfig GENERIC_COMPAT_VDSO
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250826-vdso-cleanups-v1-5-d9b65750e49f@linutronix.de>
+Message-Id: <20250826-vdso-cleanups-v1-8-d9b65750e49f@linutronix.de>
 References: <20250826-vdso-cleanups-v1-0-d9b65750e49f@linutronix.de>
 In-Reply-To: <20250826-vdso-cleanups-v1-0-d9b65750e49f@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
@@ -99,36 +98,52 @@ Cc: linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
  linux-kselftest@vger.kernel.org, 
  Rasmus Villemoes <linux@rasmusvillemoes.dk>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756189098; l=943;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756189098; l=1240;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=0FWlozWesIsQ0qQyaOP1bY0lFjVrbfKxBVeB1PCnS50=;
- b=9pNh5a5NaguFfKkfKR0EeNJ5Hqk/rS5JHEaeEmX/n8dUdZlkDqHcQrQvn3JOYAA8u+Wl7yvQz
- BQudoqsm8axAvusAQkTMXCgGoVnMLts+duG7XkK6Eop3MTQ6RNupbR9
+ bh=t5/9HDmyIs2t4g7FWEeD3BGuAZjUNxjgX5TY/5a0ZYE=;
+ b=CNBKp7BJyz4ivh16tO14JDMhakvNZC/uzVXIEyWpElrKLVyg8TDExe/3LZIlXzjfpdnGKz/bi
+ sJVuBe1Vf4yBKs8TudfOmPB/74FMQCcA5A/RjRFrYkYOWqYvHO0ISoL
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-The generic vDSO can be used without the time-related functionality.
-In that case the generic update_vsyscall() from kernel/time/vsyscall.c
-should not be built.
+This configuration is never used.
+
+Remove it.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- kernel/time/Makefile | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/arm64/Kconfig | 1 -
+ lib/vdso/Kconfig   | 5 -----
+ 2 files changed, 6 deletions(-)
 
-diff --git a/kernel/time/Makefile b/kernel/time/Makefile
-index e6e9b85d4db5f8dd5d9b574ef7bb0a281b9daa6d..f7d52d9543cc7a2d1a18db179229a8d7936317d3 100644
---- a/kernel/time/Makefile
-+++ b/kernel/time/Makefile
-@@ -26,7 +26,7 @@ obj-$(CONFIG_LEGACY_TIMER_TICK)			+= tick-legacy.o
- ifeq ($(CONFIG_SMP),y)
-  obj-$(CONFIG_NO_HZ_COMMON)			+= timer_migration.o
- endif
--obj-$(CONFIG_HAVE_GENERIC_VDSO)			+= vsyscall.o
-+obj-$(CONFIG_GENERIC_GETTIMEOFDAY)		+= vsyscall.o
- obj-$(CONFIG_DEBUG_FS)				+= timekeeping_debug.o
- obj-$(CONFIG_TEST_UDELAY)			+= test_udelay.o
- obj-$(CONFIG_TIME_NS)				+= namespace.o
+diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+index e9bbfacc35a64d7ef1793a5d7f7ff8db138f2814..5c61b19ea9c80559ca3c4d1aa0732c6126494cb0 100644
+--- a/arch/arm64/Kconfig
++++ b/arch/arm64/Kconfig
+@@ -1782,7 +1782,6 @@ config COMPAT_VDSO
+ 	bool "Enable vDSO for 32-bit applications"
+ 	depends on !CPU_BIG_ENDIAN
+ 	depends on (CC_IS_CLANG && LD_IS_LLD) || "$(CROSS_COMPILE_COMPAT)" != ""
+-	select GENERIC_COMPAT_VDSO
+ 	default y
+ 	help
+ 	  Place in the process address space of 32-bit applications an
+diff --git a/lib/vdso/Kconfig b/lib/vdso/Kconfig
+index 76157c26931d28327750ad53bfcae5109a29d998..2594dd7185be762a4a94aa38ecec5db016776f85 100644
+--- a/lib/vdso/Kconfig
++++ b/lib/vdso/Kconfig
+@@ -12,11 +12,6 @@ config GENERIC_GETTIMEOFDAY
+ 	  Each architecture that enables this feature has to
+ 	  provide the fallback implementation.
+ 
+-config GENERIC_COMPAT_VDSO
+-	bool
+-	help
+-	  This config option enables the compat VDSO layer.
+-
+ config GENERIC_VDSO_TIME_NS
+ 	bool
+ 	help
 
 -- 
 2.50.1
