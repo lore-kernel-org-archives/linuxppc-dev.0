@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-11339-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11340-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E0A4CA0FE7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 17:20:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E2BDCA0FF2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 18:20:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cBDvV6gXjz3dW4;
-	Wed, 27 Aug 2025 03:20:38 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cBGDj08VYz3dHC;
+	Wed, 27 Aug 2025 04:20:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756228838;
-	cv=none; b=Eg+LAA2+5oLowdnic9ot02zMszTvDj07iJW9uFAqinWA/C+Ijz7mHoh+1SGlkPm9DP4khG53US1S5YwllIWQK5nec7TyDq/kNcBPQH2s2ixecnGUuZqIurMZjAs81bCogD0sb4xGuWCnmx5IwVS3zPeEu8g9f4J3vnnTNdQ2tBtKi2zYvJyWCitK6j87OarKYlSWZk5wWCzZEf6KwzcFai0Wrbf+GSMTr8YSu71zP+MIOuuYtmUatB13LKbYirDzwdppREDLG14v5PHmSwqXPgUaWRxY5RdMhc473Xd2/v27wGWfAhmDDHQY3//A9A2axY6xeuObwFIbP7wkquhQxw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756232436;
+	cv=none; b=EKihEs6O3HNFVXwNwHZ2AVfQ7f7OUqcGrfziV/xaeOoNRQ4Gcr8H3i38nMj6whbdj4yQ0LYHqo+JX0aMfKGO42X97/GwN8400qTM+QOJk15RmkyYgL7Pkxw2snKjUGrnSBmU8HdPPQA0w36qzhn/gMVzS6B2K8SxOrwZd91BfQ/hJOZ9Y/dwPBoxvPVO9gTHIQHLu5P795MEhlVLqf/clwa8E2K2/AhRojGATHYzRT84pS+Jm+6Qk1sCa3MsS6pXYPdphpNbmoZltyjrWdy6/iElDcK639SlTPejWGV2jxTYQuVn4Hnm3KLWn1qTHZyNecXoBGzKNYdpXt3luiw7VA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756228838; c=relaxed/relaxed;
-	bh=kLAoIWxfXXWp18UmYU7Vgd4EKnPZ48N8OZ8j2I0nv7A=;
+	t=1756232436; c=relaxed/relaxed;
+	bh=4KEH2u08nM+KrNB8eUu36NxHIacVWyf4V1Cuy0P/MTM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kB3xMLdG2us676HjUfBgAfrSHYHEMaRKK1pQJrQnDk+AKz6MQFS8f7DFjwxFAVcT5OB/Xs6qp14pe3ltdBi06wm+CwObnuF7sRzJWojKv00z4tOaoSyNm4vVAVFAsT+MMcpHUVO7BnEYNq3XA3fVzh7QX4lXGK4NHV1YryzFrEOx/Xb/9ejP33AQYqfIBse2Nfrho56D5aRSy3nTrQ6l47HLsbx3yXSdadHrjYYa/MdDAGmN/JgOcIS+Qt1eDj5flwrf9YYka0fl4rWdo5xH9IfQBORUsuUwLpJf+uz0kVYMSfzOAuz/bY9zQ8RpS1EtufJnzZBJnY+ri4OBw2mHKA==
+	 In-Reply-To:Content-Type; b=IpqezaCYvxoQSlj+1cYv5UWM3kI5xNtfRqClGI/C2vj5Cr8L0v5itdlnpQuBuQQScyi4zfaXAMKpd7xkDH/4BG30b3MpcQKFcVlDua++obDWXwy2zLrttWTlW4IBero6STy0aOT7XS9v3DBpvgl+X1jjH8sbFpzgfh9q/Q7bM0OJqx4to+dRq6WbpYm+RYvovFtlPfpF8kilmXe9054pJ6tctzJ6I4g1deKUowZPd5jW5A/YF366YvbYyIYLWdXklSePlG9g9f6NB8Wijxuf4bIZ7Aq7xl5VsmYQTEh8i0VGp8iwNWJBARwfKBYroGhdqBnMTsUrIxReGobvqZ7dxg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cBDvT6X9Vz3dW3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2025 03:20:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cBGDh1Bxnz3dGt
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2025 04:20:35 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c9wm35hHkz9sSW;
-	Tue, 26 Aug 2025 07:13:07 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4c9wLb6DMvz9sSL;
+	Tue, 26 Aug 2025 06:54:31 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id L3zqoWmt2kyq; Tue, 26 Aug 2025 07:13:07 +0200 (CEST)
+	with ESMTP id NrvWrUS7BScP; Tue, 26 Aug 2025 06:54:31 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9wm34Kgtz9sSV;
-	Tue, 26 Aug 2025 07:13:07 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9wLb4cWgz9sSK;
+	Tue, 26 Aug 2025 06:54:31 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 755518B764;
-	Tue, 26 Aug 2025 07:13:07 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 75E4E8B764;
+	Tue, 26 Aug 2025 06:54:31 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id db8ZhuQxPbOU; Tue, 26 Aug 2025 07:13:07 +0200 (CEST)
+	with ESMTP id F2eraKjHbKgo; Tue, 26 Aug 2025 06:54:31 +0200 (CEST)
 Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 760E08B763;
-	Tue, 26 Aug 2025 07:13:05 +0200 (CEST)
-Message-ID: <d2ccc708-ab0e-4d25-8fc9-f989cdd0ae55@csgroup.eu>
-Date: Tue, 26 Aug 2025 07:13:05 +0200
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 93E148B763;
+	Tue, 26 Aug 2025 06:54:29 +0200 (CEST)
+Message-ID: <1c8392b8-ea7b-48ef-8932-02f41e1233a3@csgroup.eu>
+Date: Tue, 26 Aug 2025 06:54:29 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,8 +59,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 5/8] sched/topology: Unify tl_smt_mask() across core
- and all arch
+Subject: Re: [PATCH v7 3/8] powerpc/smp: Export cpu_coregroup_mask()
 To: K Prateek Nayak <kprateek.nayak@amd.com>,
  Madhavan Srinivasan <maddy@linux.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
@@ -94,135 +93,84 @@ Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>,
  Tim Chen <tim.c.chen@linux.intel.com>,
  Vinicius Costa Gomes <vinicius.gomes@intel.com>
 References: <20250826041319.1284-1-kprateek.nayak@amd.com>
- <20250826041319.1284-6-kprateek.nayak@amd.com>
+ <20250826041319.1284-4-kprateek.nayak@amd.com>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 Content-Language: fr-FR
-In-Reply-To: <20250826041319.1284-6-kprateek.nayak@amd.com>
+In-Reply-To: <20250826041319.1284-4-kprateek.nayak@amd.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
 Le 26/08/2025 à 06:13, K Prateek Nayak a écrit :
-> Unify the tl_smt_mask() wrapper around cpu_smt_mask() across core, x86,
-> ppc, and s390.
+> Deine cpu_coregroup_mask() to export the per-cpu cpu_corgrp_map when
+> coregroups are supported(). When has_coregroup_support() returns false,
+> cpu_coregroup_mask() returns the mask used by the PKG domain.
 > 
-> On s390, include/linux/topology.c defines an explicit cpu_smt_mask()
-> wrapper around topology_sibling_cpumask() when cpu_smt_mask() is not
-> defined by the arch/ bits and topology_sibling_cpumask() on s390 returns
-> &cpu_topology[cpu].thread_mask.
-> 
-> No functional changes intended.
+> Since this will only be used after CONFIG_SCHED_MC is added for PowerPC,
+> no functional changes are intended at this point.
 > 
 > Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
 > ---
->   arch/powerpc/kernel/smp.c      | 5 -----
->   arch/s390/kernel/topology.c    | 8 +-------
->   arch/x86/kernel/smpboot.c      | 5 -----
->   include/linux/sched/topology.h | 8 +++++++-
->   kernel/sched/topology.c        | 7 -------
->   5 files changed, 8 insertions(+), 25 deletions(-)
+>   arch/powerpc/include/asm/smp.h | 2 ++
+>   arch/powerpc/kernel/smp.c      | 8 ++++++++
+>   2 files changed, 10 insertions(+)
 > 
+> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
+> index b77927ccb0ab..86de4d0dd0aa 100644
+> --- a/arch/powerpc/include/asm/smp.h
+> +++ b/arch/powerpc/include/asm/smp.h
+> @@ -148,6 +148,8 @@ static inline const struct cpumask *cpu_smt_mask(int cpu)
+>   }
+>   #endif /* CONFIG_SCHED_SMT */
+>   
+> +extern const struct cpumask *cpu_coregroup_mask(int cpu);
+
+'extern' keyword is pointless for function prototypes, remove it.
+
+See report from checkpatch:
+
+$ ./scripts/checkpatch.pl --strict -g a064a30c52a5
+CHECK: extern prototypes should be avoided in .h files
+#28: FILE: arch/powerpc/include/asm/smp.h:151:
++extern const struct cpumask *cpu_coregroup_mask(int cpu);
+
+total: 0 errors, 0 warnings, 1 checks, 22 lines checked
+
+NOTE: For some of the reported defects, checkpatch may be able to
+       mechanically convert to the typical style using --fix or 
+--fix-inplace.
+
+Commit a064a30c52a5 ("powerpc/smp: Export cpu_coregroup_mask()") has 
+style problems, please review.
+
+NOTE: If any of the errors are false positives, please report
+       them to the maintainer, see CHECKPATCH in MAINTAINERS.
+
+
+
+> +
+>   /* Since OpenPIC has only 4 IPIs, we use slightly different message numbers.
+>    *
+>    * Make sure this matches openpic_request_IPIs in open_pic.c, or what shows up
 > diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 7f79b853b221..c58ddf84fe63 100644
+> index 4f48262658cc..e623f2864dc4 100644
 > --- a/arch/powerpc/kernel/smp.c
 > +++ b/arch/powerpc/kernel/smp.c
-> @@ -1038,11 +1038,6 @@ static const struct cpumask *smallcore_smt_mask(struct sched_domain_topology_lev
->   {
->   	return cpu_smallcore_mask(cpu);
->   }
-> -
-> -static const struct cpumask *tl_smt_mask(struct sched_domain_topology_level *tl, int cpu)
-> -{
-> -	return cpu_smt_mask(cpu);
-> -}
->   #endif
->   
->   static struct cpumask *cpu_corgrp_mask(int cpu)
-> diff --git a/arch/s390/kernel/topology.c b/arch/s390/kernel/topology.c
-> index 5129e3ffa7f5..c88eda847309 100644
-> --- a/arch/s390/kernel/topology.c
-> +++ b/arch/s390/kernel/topology.c
-> @@ -509,12 +509,6 @@ int topology_cpu_init(struct cpu *cpu)
->   	return rc;
+> @@ -1059,6 +1059,14 @@ static bool has_coregroup_support(void)
+>   	return coregroup_enabled;
 >   }
 >   
-> -static const struct cpumask *cpu_thread_mask(struct sched_domain_topology_level *tl, int cpu)
-> -{
-> -	return &cpu_topology[cpu].thread_mask;
-> -}
-> -
-> -
->   const struct cpumask *cpu_coregroup_mask(int cpu)
->   {
->   	return &cpu_topology[cpu].core_mask;
-> @@ -541,7 +535,7 @@ static const struct cpumask *cpu_pkg_mask(struct sched_domain_topology_level *tl
->   }
->   
->   static struct sched_domain_topology_level s390_topology[] = {
-> -	SDTL_INIT(cpu_thread_mask, cpu_smt_flags, SMT),
-> +	SDTL_INIT(tl_smt_mask, cpu_smt_flags, SMT),
->   	SDTL_INIT(cpu_mc_mask, cpu_core_flags, MC),
->   	SDTL_INIT(cpu_book_mask, NULL, BOOK),
->   	SDTL_INIT(cpu_drawer_mask, NULL, DRAWER),
-> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> index 4cd3d69741cf..03ff6270966a 100644
-> --- a/arch/x86/kernel/smpboot.c
-> +++ b/arch/x86/kernel/smpboot.c
-> @@ -463,11 +463,6 @@ static int x86_core_flags(void)
->   {
->   	return cpu_core_flags() | x86_sched_itmt_flags();
->   }
-> -
-> -static const struct cpumask *tl_smt_mask(struct sched_domain_topology_level *tl, int cpu)
-> -{
-> -	return cpu_smt_mask(cpu);
-> -}
->   #endif
->   
->   #ifdef CONFIG_SCHED_CLUSTER
-> diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
-> index 602508130c8a..d75fbb7d9667 100644
-> --- a/include/linux/sched/topology.h
-> +++ b/include/linux/sched/topology.h
-> @@ -37,7 +37,13 @@ static inline int cpu_smt_flags(void)
->   {
->   	return SD_SHARE_CPUCAPACITY | SD_SHARE_LLC;
->   }
-> -#endif
-> +
-> +static const __maybe_unused
-> +struct cpumask *tl_smt_mask(struct sched_domain_topology_level *tl, int cpu)
-
-__maybe_unused hides the dust under the carpet.
-
-Leave the function in kernel/sched/topology.c and make it non-static 
-with a prototype in linux/sched/topology.h
-
+> +const struct cpumask *cpu_coregroup_mask(int cpu)
 > +{
-> +	return cpu_smt_mask(cpu);
+> +	if (has_coregroup_support())
+> +		return per_cpu(cpu_corgrp_map, cpu);
+> +
+> +	return cpu_node_mask(cpu);
 > +}
-> +#endif /* CONFIG_SCHED_SMT */
->   
->   #ifdef CONFIG_SCHED_CLUSTER
->   static inline int cpu_cluster_flags(void)
-> diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-> index dfc754e0668c..92165fe56a2d 100644
-> --- a/kernel/sched/topology.c
-> +++ b/kernel/sched/topology.c
-> @@ -1724,13 +1724,6 @@ sd_init(struct sched_domain_topology_level *tl,
->   	return sd;
->   }
->   
-> -#ifdef CONFIG_SCHED_SMT
-> -static const struct cpumask *tl_smt_mask(struct sched_domain_topology_level *tl, int cpu)
-> -{
-> -	return cpu_smt_mask(cpu);
-> -}
-> -#endif
-> -
->   #ifdef CONFIG_SCHED_CLUSTER
->   static const struct cpumask *tl_cls_mask(struct sched_domain_topology_level *tl, int cpu)
+> +
+>   static const struct cpumask *cpu_mc_mask(struct sched_domain_topology_level *tl, int cpu)
 >   {
+>   	return cpu_corgrp_mask(cpu);
 
 
