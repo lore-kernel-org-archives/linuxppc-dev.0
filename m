@@ -1,59 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-11295-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11296-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51F2ECA0EE4
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 06:20:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E0AECA0EE4
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 06:20:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4c9yDY5qL7z3dKp;
-	Tue, 26 Aug 2025 16:19:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4c9yDZ1vvdz3dKy;
+	Tue, 26 Aug 2025 16:19:26 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756189165;
-	cv=none; b=FayN1nee9aEEaTu8mOMjjnnVNqjLUq3n8CX2oD1SgH4UftyKsUkiFyTaHoEEInA7junt4wodcCqHOovLD3H2lJx9mOH7DQT9wlapn5wCUWEs1wfIPBujJRdCGXdzZ/+bqTS4YBZXhbU1v6azD0ZRbh0OHZ8X94D9T22M+fWHOvId0d8krIm0SkcY+OLvQzTcEU8D05bAqQVBmKKD7Dw09mawAdthG0Vn97mL92LFx3tJeP5C6ezlrPDiPGhS4eiQfWNlXSq+R8hIBeeecFsTY1FfKWGIMsG3ecTQRI5lUOw38dVPpBeQuVUNnKHQAxFH7WAGwmezHoFidKL51q6PHQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756189166;
+	cv=none; b=B2GJ1E7UMjJ5GHMLjzdf1BZvccS+akebrh6cg8ZgE8qHtc7OHbaBAzgc5TGJqWCVn1Jll4oFNmdm4/yz6ey/z75pBoxdqDSvptuNXwn0K2DenQ8pk2KcBKzvmws2LH84QXH4vtYfMCi+hn3HHnMVeDOh7lVpX8X/M0mRr9DfbMJ1EZ5rqCW0148qqzCR6p4w93Awo3UOwwxmg7CbJot6X92VLIKP6AnSnMIvamjg29nTZPAp7KX7TacqMUnyRxx2ZtDT4rz/RbVfEGVAbMMBZdKh/K/ioRRsjZNu5fru5qm/RJ2MXRpPNRyWq3D+Vx1bNs/4EOADqCwxmjp7J2o7Qw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756189165; c=relaxed/relaxed;
-	bh=00y01OmKPjr+YdPvdy9NsH/C2OJJ9fAEykZ3VyZpYfg=;
+	t=1756189166; c=relaxed/relaxed;
+	bh=3/oLlHMS/fCP6P1KLSn+cvJJv6PKUv3DICeaKqETsd4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=OAuobJyALfotdwpLARDDwGejH0JnAFqvO9kUPdpx9kruWftKwASUi3z4hhme+deZaOWBp48Q2DpS/78tYFCpUTFIGtFaOTUUoMwSvE2A7wxA1NAR+zjcgAi9UgkoIA4BRScPxX1S/Gb7CAPR2ZcPeNEs+34Ss9nRmbAIFaeJ/3Z4JXQxx7PPCMrepaOGMr1XZ+x0nulZ6oV5t/jMg41WeCDLigON23raZ3K8YhMdcq4BjNbuSCl9toAGyre8yOEn5DbGKV6DBzNDpGdp2c0Zso5rpp8hU8D3hVvslyVReSlwX8INi3ahAna8vzOXgLaR7GEu0fdC0yWODF8tKMM5tQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=DAc4iLrK; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=AX9iVgCX; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=M8fp6V8Pj192OgK3Sizn0VcmU3l0ohWSaAstBPglKT5s+E+TQuy/paT4MFOkzk6e7V/xiROwb23kysRuwDpzFFT6gynb7QfWrw1nMytO46k/ufNm8Z6q981OfddHBwvYCndKUt51LM+9zSNnK0Ej3RabYTw+coM2zURgzWETI9k1gACfCNDIvTUXKgi9L0TNHHgCM0PjQMTinkfEJBPwKZfzo+TTT3Lt4ELj9SgbPU/52kjExysnVnfhqHkR2zbwvBA94SOyHyIJF5J6ZESJErKpWqhu+euZ0Ki+ao5EjABQit3WHcOZKznNNuPtsWa1/ah0G7bq71U1qDr1QUN3rg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=vM/cvVQM; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vA9RQwkS; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=DAc4iLrK;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=AX9iVgCX;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=vM/cvVQM;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vA9RQwkS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4c9yDB4bH0z3dK1
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 16:19:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4c9yDX2txKz3dKC
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 16:18:55 +1000 (AEST)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1756189104;
+	s=2020; t=1756189101;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=00y01OmKPjr+YdPvdy9NsH/C2OJJ9fAEykZ3VyZpYfg=;
-	b=DAc4iLrKuN+M+TOt2+xBDr6GUf8Y+cWVjZjW54ZqF9gbyUcomycDMYt0MNd+RCDVDFxGIj
-	GWBLzIDOIEBZI2Q3+lI6pDJsjVzN2ky5/94njRSPQaA7XWRC7BOPy1Mz55nIW5YH/9cDx7
-	G6899qdmXG1N5aBrGBR5SbfPnYPkKZ8njo6qC7PIonCtPdxCvUB9VNos964+cOQgPbd5r6
-	w8cIWWRNKPfx4djdnrulbwrK8dHtTKzVUsXIVZl+HtzorafUAt8NuoNQ1iKJJlZTyBZjSa
-	SAC2qNDuNew7qNYdA2d8Y7fs4rF9WW+J9j0qgdNerC8HQxVUXghOykmTYnFhcw==
+	bh=3/oLlHMS/fCP6P1KLSn+cvJJv6PKUv3DICeaKqETsd4=;
+	b=vM/cvVQMAyhS92V8y5yVESyKxIqQ5R3zffJXNT39DFeEehqGvQ4cgcMYsWOtpmbyjLR+Jk
+	we8S1VPZLk08HyevreXbtrS0WfURWLCD0C1udndZaGXsxcvNVQ2IAa/sI7wZ5EjfeBV3QB
+	Xl1IBk2dQX2DHCg8P+mvsjehyFDzZ/AjK26U/WIM/Dx6E1r9CZ+xl3vYpcz/43dfXeL8zq
+	t+0oYU9wuduujEn9b3gXCqd8/s4+brqyYCVM79YY7DmkOuCIKG5XnjOxrX8XloYENkIp6J
+	frOXYpfPBh2KaqVqKhcgIbWwZ8GW0EG4XRusd22yhv2ylnUvt+X8LNumqRAcrg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1756189104;
+	s=2020e; t=1756189101;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=00y01OmKPjr+YdPvdy9NsH/C2OJJ9fAEykZ3VyZpYfg=;
-	b=AX9iVgCXqKuu4L6HhXkJ+97B1ymhvpjttVlSkJHN09WecyWSAf6K0wAjn4fwnsw/AEPVrD
-	zB+AR9YgMKMJ1XAQ==
-Date: Tue, 26 Aug 2025 08:17:13 +0200
-Subject: [PATCH 10/11] vdso: Drop kconfig GENERIC_VDSO_TIME_NS
+	bh=3/oLlHMS/fCP6P1KLSn+cvJJv6PKUv3DICeaKqETsd4=;
+	b=vA9RQwkSkeW435dz89cXdm1JlqEJ1IVbHIFd6A9tNEpJZ0qLZJMeeSzlzAhq24mxpdVhVM
+	OJzV+jwkYkep1fAA==
+Date: Tue, 26 Aug 2025 08:17:08 +0200
+Subject: [PATCH 05/11] time: Build generic update_vsyscall() only with
+ generic time vDSO
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,7 +70,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20250826-vdso-cleanups-v1-10-d9b65750e49f@linutronix.de>
+Message-Id: <20250826-vdso-cleanups-v1-5-d9b65750e49f@linutronix.de>
 References: <20250826-vdso-cleanups-v1-0-d9b65750e49f@linutronix.de>
 In-Reply-To: <20250826-vdso-cleanups-v1-0-d9b65750e49f@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
@@ -98,154 +99,36 @@ Cc: linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
  linux-kselftest@vger.kernel.org, 
  Rasmus Villemoes <linux@rasmusvillemoes.dk>, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756189098; l=5371;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756189098; l=943;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=N7oBdG4JS+7twrqHzr/Z86nbv0D0RBhgF8hDZPGWiNM=;
- b=vy3GZ3Eshc21Vat8tHZboKb1mtEwhlFsFG8/DJ24/IXqJYOQoeYjtQ3coAR4v/XIPXTGTA7XY
- 6MLp0cx58eVBMdqbybOMVOS4l6C3HhEy0OibmDevHkFXDXmPSE/hSy/
+ bh=0FWlozWesIsQ0qQyaOP1bY0lFjVrbfKxBVeB1PCnS50=;
+ b=9pNh5a5NaguFfKkfKR0EeNJ5Hqk/rS5JHEaeEmX/n8dUdZlkDqHcQrQvn3JOYAA8u+Wl7yvQz
+ BQudoqsm8axAvusAQkTMXCgGoVnMLts+duG7XkK6Eop3MTQ6RNupbR9
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-All architectures implementing time-related functionality in the vDSO are
-using the generic vDSO library which handles time namespaces properly.
-
-Remove the now unnecessary kconfig symbol.
-
-Enables the use of time namespaces on architectures, which use the
-generic vDSO but did not enable GENERIC_VDSO_TIME_NS, namely MIPS and arm.
+The generic vDSO can be used without the time-related functionality.
+In that case the generic update_vsyscall() from kernel/time/vsyscall.c
+should not be built.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
-
 ---
-Technically this is still too restrictive, as it prevents architectures
-without a real vDSO to enable CONFIG_TIME_NS. Right now this restriction
-only protects the SPARC vDSO. I have patches to drop it completely,
-as soon as SPARC is usingthe generic vDSO.
----
- arch/arm64/Kconfig                   | 1 -
- arch/loongarch/Kconfig               | 1 -
- arch/powerpc/Kconfig                 | 1 -
- arch/riscv/Kconfig                   | 1 -
- arch/s390/Kconfig                    | 1 -
- arch/x86/Kconfig                     | 1 -
- init/Kconfig                         | 2 +-
- lib/vdso/Kconfig                     | 6 ------
- tools/testing/selftests/pidfd/config | 1 -
- 9 files changed, 1 insertion(+), 14 deletions(-)
+ kernel/time/Makefile | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
-index b0f007b396c81906d3a0a66f8a240d97e0ae2d88..e19b006842e223441b87370a5ae23756e0e85883 100644
---- a/arch/arm64/Kconfig
-+++ b/arch/arm64/Kconfig
-@@ -162,7 +162,6 @@ config ARM64
- 	select GENERIC_SMP_IDLE_THREAD
- 	select GENERIC_TIME_VSYSCALL
- 	select GENERIC_GETTIMEOFDAY
--	select GENERIC_VDSO_TIME_NS
- 	select HARDIRQS_SW_RESEND
- 	select HAS_IOPORT
- 	select HAVE_MOVE_PMD
-diff --git a/arch/loongarch/Kconfig b/arch/loongarch/Kconfig
-index d15b201d55f951d95435a38789cf47ea9f0adac9..754626b58b929e605d51c441cfa862bd504b5892 100644
---- a/arch/loongarch/Kconfig
-+++ b/arch/loongarch/Kconfig
-@@ -108,7 +108,6 @@ config LOONGARCH
- 	select GENERIC_SCHED_CLOCK
- 	select GENERIC_SMP_IDLE_THREAD
- 	select GENERIC_TIME_VSYSCALL
--	select GENERIC_VDSO_TIME_NS
- 	select GPIOLIB
- 	select HAS_IOPORT
- 	select HAVE_ARCH_AUDITSYSCALL
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 78c82af955616c57ab38ea1241e3471eb8d0a65d..d715e3d65b5c29e0010b0a5e5821aee34e31e176 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -207,7 +207,6 @@ config PPC
- 	select GENERIC_PCI_IOMAP		if PCI
- 	select GENERIC_SMP_IDLE_THREAD
- 	select GENERIC_TIME_VSYSCALL
--	select GENERIC_VDSO_TIME_NS
- 	select HAS_IOPORT			if PCI
- 	select HAVE_ARCH_AUDITSYSCALL
- 	select HAVE_ARCH_HUGE_VMALLOC		if HAVE_ARCH_HUGE_VMAP
-diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
-index f6cf9180ccf2c9774248fea93a8276de3791ad71..6e5efbeb83d7f0fe556bc04ec9f58b80d2780b43 100644
---- a/arch/riscv/Kconfig
-+++ b/arch/riscv/Kconfig
-@@ -121,7 +121,6 @@ config RISCV
- 	select GENERIC_SCHED_CLOCK
- 	select GENERIC_SMP_IDLE_THREAD
- 	select GENERIC_TIME_VSYSCALL if GENERIC_GETTIMEOFDAY
--	select GENERIC_VDSO_TIME_NS if GENERIC_GETTIMEOFDAY
- 	select HARDIRQS_SW_RESEND
- 	select HAS_IOPORT if MMU
- 	select HAVE_ALIGNED_STRUCT_PAGE
-diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
-index 696d2243d64b04e77b9b4631fc8bc301916b48ae..e06ebbd860da93a8c838113c3c1b946d51dfe1b4 100644
---- a/arch/s390/Kconfig
-+++ b/arch/s390/Kconfig
-@@ -167,7 +167,6 @@ config S390
- 	select GENERIC_GETTIMEOFDAY
- 	select GENERIC_SMP_IDLE_THREAD
- 	select GENERIC_TIME_VSYSCALL
--	select GENERIC_VDSO_TIME_NS
- 	select GENERIC_IOREMAP if PCI
- 	select HAVE_ALIGNED_STRUCT_PAGE
- 	select HAVE_ARCH_AUDITSYSCALL
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 1e74b2a356e42bdc0ede258f44e18ba29dd90174..d1961811e291e8adcf0b46fafbd53f0a44b5d25b 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -181,7 +181,6 @@ config X86
- 	select GENERIC_SMP_IDLE_THREAD
- 	select GENERIC_TIME_VSYSCALL
- 	select GENERIC_GETTIMEOFDAY
--	select GENERIC_VDSO_TIME_NS
- 	select GENERIC_VDSO_OVERFLOW_PROTECT
- 	select GUP_GET_PXX_LOW_HIGH		if X86_PAE
- 	select HARDIRQS_SW_RESEND
-diff --git a/init/Kconfig b/init/Kconfig
-index 83632025121937527523f5977a493bd3ae24ed9f..5c429a184d1b0550dda9f075ffcbffb68c6d8f50 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -1346,7 +1346,7 @@ config UTS_NS
- 
- config TIME_NS
- 	bool "TIME namespace"
--	depends on GENERIC_VDSO_TIME_NS
-+	depends on GENERIC_GETTIMEOFDAY
- 	default y
- 	help
- 	  In this namespace boottime and monotonic clocks can be set.
-diff --git a/lib/vdso/Kconfig b/lib/vdso/Kconfig
-index 48ffb0f6fa413ea7da4e43c7f7a24cb232b38ea1..3d2c2b90d193f984e3a202e701fa7f0bfa8f1938 100644
---- a/lib/vdso/Kconfig
-+++ b/lib/vdso/Kconfig
-@@ -12,12 +12,6 @@ config GENERIC_GETTIMEOFDAY
- 	  Each architecture that enables this feature has to
- 	  provide the fallback implementation.
- 
--config GENERIC_VDSO_TIME_NS
--	bool
--	help
--	  Selected by architectures which support time namespaces in the
--	  VDSO
--
- config GENERIC_VDSO_OVERFLOW_PROTECT
- 	bool
- 	help
-diff --git a/tools/testing/selftests/pidfd/config b/tools/testing/selftests/pidfd/config
-index 6133524710f790c1f83af6f2b628de9b62eee6c3..cf7cc0ce02484e91799b7cb132447283f818d729 100644
---- a/tools/testing/selftests/pidfd/config
-+++ b/tools/testing/selftests/pidfd/config
-@@ -4,6 +4,5 @@ CONFIG_USER_NS=y
- CONFIG_PID_NS=y
- CONFIG_NET_NS=y
- CONFIG_TIME_NS=y
--CONFIG_GENERIC_VDSO_TIME_NS=y
- CONFIG_CGROUPS=y
- CONFIG_CHECKPOINT_RESTORE=y
+diff --git a/kernel/time/Makefile b/kernel/time/Makefile
+index e6e9b85d4db5f8dd5d9b574ef7bb0a281b9daa6d..f7d52d9543cc7a2d1a18db179229a8d7936317d3 100644
+--- a/kernel/time/Makefile
++++ b/kernel/time/Makefile
+@@ -26,7 +26,7 @@ obj-$(CONFIG_LEGACY_TIMER_TICK)			+= tick-legacy.o
+ ifeq ($(CONFIG_SMP),y)
+  obj-$(CONFIG_NO_HZ_COMMON)			+= timer_migration.o
+ endif
+-obj-$(CONFIG_HAVE_GENERIC_VDSO)			+= vsyscall.o
++obj-$(CONFIG_GENERIC_GETTIMEOFDAY)		+= vsyscall.o
+ obj-$(CONFIG_DEBUG_FS)				+= timekeeping_debug.o
+ obj-$(CONFIG_TEST_UDELAY)			+= test_udelay.o
+ obj-$(CONFIG_TIME_NS)				+= namespace.o
 
 -- 
 2.50.1
