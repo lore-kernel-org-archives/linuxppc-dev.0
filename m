@@ -1,50 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-11322-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11323-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 41457CA0EFA
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 12:50:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D1F8CA0FE7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 13:03:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cB6w21cMHz3dSx;
-	Tue, 26 Aug 2025 22:50:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756212642;
-	cv=none; b=a+iQGKp2AYbLMIqm77YIV5rG6Odbl1orBqpWbjzy16lmMm6gVZSVjyWFeccyC61vv+RXwb42pMKt2h1M5shVHPfjriLpP74iOL44frqeh8t7BajYaGq2CUthVmBvfhlpWBIsbbGT2ivfbX5e0VHDzdAQRyPldJ7sC0hvJ9YKLpsf5CDKFrk3jJin9aXhhM0d6ALrw3TrgzrFnCM+yQvVoFl+HpGxY0OtdhWBGK/OJo3xs+T+CHfUVijPpzfCgyF0AdjqJfjXB14jABO7Pf1nhY6CWBkgG519Whcc90KapB8VKFfJ2P2UeKZ04IC/PSWEMg5kBtsN3Lvp7kEV/4eJIA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cB7C55k95z3dT4;
+	Tue, 26 Aug 2025 23:03:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756213425;
+	cv=none; b=J+TIACz1ZrMcsVRcD4/V7Daf1WQjMsPlXvJ5l+/5YremmSjHx4pN5L92wDsO5cSZle1B2Pd+5/ri8BdLod09K7gOGNKexc1ya7uDwVyF+lSQ/I1hXPIa8AjM0qnJIa1bgOxoRNrawBcoxG2lcXii37SS9pg2erONcCvUih4xyaE1t+tS9GhNytaxHKQ+YmXIzp7E2U3Sg1+eZyoXGUgEmaB1SDtASwU3emkk+CKZBpAZLJp+7HVZH0ZYKuk2htfhdS6ITGKV4n8Z9p9UPuBXPC6VPL9XLiYfkYGyEH1Iy0cs+JyHXYRXBSnH5Lxvb4w9quICrcV7rL/eVhTOFYeXUA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756212642; c=relaxed/relaxed;
-	bh=zOMuv7XiYdrC2OEZVLRsmvpNjyVA7Jum/ISxVJPON6I=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Lf/crlBAsx/vLDkOO8jM0HYn1TLEkYmtRWmdHylFF0pN7leCvgx7/ap2c+7XaydxoNWTkLmw0ebW33E3ElV5mNnXPeVqKb/5OLOEPTsSKe4ZGWKr9S3uTZJtIuK+apcNg43MfU93wBVz6p6Eo94ESY3THSAHYi9TScMk0LGubDDlF4oRTOBHDZth5hPgR1OkLncCxeHjsjDSPlJ1e0RuAXOUvzXLnmEiHHi8fIsgyNVqvqIisZiXjq8iDrN2b12HH5vro0wpI50TMtKxTmBzTigaNRx/v6i4aapOhINViFu1yCk91OZNNlq6XCbuB/qX6pJqMTBiOmehmufT2ti6eA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cB6w14TbFz3dRZ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 22:50:41 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c9wqD4n9Lz9sSb;
-	Tue, 26 Aug 2025 07:15:52 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id rpB2O40BvjbE; Tue, 26 Aug 2025 07:15:52 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9wqD3f1Fz9sSZ;
-	Tue, 26 Aug 2025 07:15:52 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5FE698B764;
-	Tue, 26 Aug 2025 07:15:52 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id QeAqRAElDkH6; Tue, 26 Aug 2025 07:15:52 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 70BC98B763;
-	Tue, 26 Aug 2025 07:15:50 +0200 (CEST)
-Message-ID: <29c26faf-98da-42fa-9408-0e0d2932bb13@csgroup.eu>
-Date: Tue, 26 Aug 2025 07:15:50 +0200
+	t=1756213425; c=relaxed/relaxed;
+	bh=pe5SE8cLTPPyLKyF6S5l44TjxJSycuwoPwH53Hc4MBc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jskxjagMXZU+mdvm4NY7oZiyjZBcT9UvHgnhe+3lk5XirP7lty0M81QVqGqgeb8Ex9XIYhzjudPHH1C4R5KJlBPU6c8NpQ239qscEC2kVRX1vpYDGfgUuOqkS1PV8kA2lIHWdDOzTTp8W20Hp0fjiG+XaOXd9aoVlrbu8xv7cdojGs52RopsazfD4qqyZnLqhF2FpGW+vNjqNSnRofZePpE5vpJksCqHEczmNLAVa9xnyrGCVVIqoiu+SYIXZhTF/lnFTLNbONXqChrYRUPIOxPHyPqoeL//yqPnxb1twNOKpA151eH0em8dQUsFmI1uso2MIVue9cw6nwj0KC00fg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=s5T3h8Qu; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=s5T3h8Qu;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cB7C14tq9z3dSv
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 23:03:41 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=pe5SE8cLTPPyLKyF6S5l44TjxJSycuwoPwH53Hc4MBc=; b=s5T3h8QunORHMVi1lJq+TueBjc
+	cEFljtvjN5QJ03jRIuUbqZT2dzYWLCkq7EIgZ1HjiZepKSvKZUS4jhIftbJpUomzAxLkXpo4MhYIl
+	ZCvpLQBdWeqllwk2L5LEakNCj50aVxzY1I5n8BnO+qCbmyfysUZaBrevf4ZwX/NHQuj2PrtwGK3Is
+	jhSt6FlQLnGrrRwVWOG3VEhB1mGDJu+1EhbkwSGhAG25rhQM5DyWklhsvsXQh2tW5FYLoYbc8dttl
+	tsa9sX+EEmcEbn/jBCdJY0wOlh7GZntWiVjKPlxT8hw9CmspDWHiAZfhSZSTIR8f/mKGoVnI/OKYV
+	DfymEZ2w==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by casper.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uqtKk-00000002CWx-1CxP;
+	Tue, 26 Aug 2025 13:03:31 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id E7FAC3002C5; Tue, 26 Aug 2025 15:03:29 +0200 (CEST)
+Date: Tue, 26 Aug 2025 15:03:29 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Robin Murphy <robin.murphy@arm.com>
+Cc: mingo@redhat.com, will@kernel.org, mark.rutland@arm.com,
+	acme@kernel.org, namhyung@kernel.org,
+	alexander.shishkin@linux.intel.com, jolsa@kernel.org,
+	irogers@google.com, adrian.hunter@intel.com,
+	kan.liang@linux.intel.com, linux-perf-users@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org, imx@lists.linux.dev,
+	linux-csky@vger.kernel.org, loongarch@lists.linux.dev,
+	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-pm@vger.kernel.org,
+	linux-rockchip@lists.infradead.org, dmaengine@vger.kernel.org,
+	linux-fpga@vger.kernel.org, amd-gfx@lists.freedesktop.org,
+	dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org,
+	intel-xe@lists.freedesktop.org, coresight@lists.linaro.org,
+	iommu@lists.linux.dev, linux-amlogic@lists.infradead.org,
+	linux-cxl@vger.kernel.org, linux-arm-msm@vger.kernel.org,
+	linux-riscv@lists.infradead.org
+Subject: Re: [PATCH 12/19] perf: Ignore event state for group validation
+Message-ID: <20250826130329.GX4067720@noisy.programming.kicks-ass.net>
+References: <cover.1755096883.git.robin.murphy@arm.com>
+ <d6cda4e2999aba5794c8178f043c91068fa8080c.1755096883.git.robin.murphy@arm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,173 +84,31 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 7/8] sched/topology: Unify tl_mc_mask() across core and
- all arch
-To: K Prateek Nayak <kprateek.nayak@amd.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
- Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
- Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
- thomas.weissschuh@linutronix.de, Li Chen <chenl311@chinatelecom.cn>,
- Bibo Mao <maobibo@loongson.cn>, Mete Durlu <meted@linux.ibm.com>,
- Tobias Huschle <huschle@linux.ibm.com>,
- Easwar Hariharan <easwar.hariharan@linux.microsoft.com>,
- Guo Weikang <guoweikang.kernel@gmail.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Brian Gerst <brgerst@gmail.com>,
- Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>,
- Swapnil Sapkal <swapnil.sapkal@amd.com>,
- "Yury Norov [NVIDIA]" <yury.norov@gmail.com>,
- Sudeep Holla <sudeep.holla@arm.com>,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- Andrea Righi <arighi@nvidia.com>, Yicong Yang <yangyicong@hisilicon.com>,
- Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Tim Chen <tim.c.chen@linux.intel.com>,
- Vinicius Costa Gomes <vinicius.gomes@intel.com>
-References: <20250826041319.1284-1-kprateek.nayak@amd.com>
- <20250826041319.1284-8-kprateek.nayak@amd.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250826041319.1284-8-kprateek.nayak@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <d6cda4e2999aba5794c8178f043c91068fa8080c.1755096883.git.robin.murphy@arm.com>
 
+On Wed, Aug 13, 2025 at 06:01:04PM +0100, Robin Murphy wrote:
+> It may have been different long ago, but today it seems wrong for these
+> drivers to skip counting disabled sibling events in group validation,
+> given that perf_event_enable() could make them schedulable again, and
+> thus increase the effective size of the group later. Conversely, if a
+> sibling event is truly dead then it stands to reason that the whole
+> group is dead, so it's not worth going to any special effort to try to
+> squeeze in a new event that's never going to run anyway. Thus, we can
+> simply remove all these checks.
 
+So currently you can do sort of a manual event rotation inside an
+over-sized group and have it work.
 
-Le 26/08/2025 à 06:13, K Prateek Nayak a écrit :
-> Unify the tl_mc_mask() wrapper around cpu_coregroup_mask() used by core,
-> x86, powerpc, and s390.
-> 
-> No functional changes intended.
-> 
-> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
-> ---
->   arch/powerpc/kernel/smp.c      | 7 +------
->   arch/s390/kernel/topology.c    | 7 +------
->   arch/x86/kernel/smpboot.c      | 7 -------
->   include/linux/sched/topology.h | 8 +++++++-
->   kernel/sched/topology.c        | 7 -------
->   5 files changed, 9 insertions(+), 27 deletions(-)
-> 
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index c58ddf84fe63..40719679385b 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -1062,11 +1062,6 @@ const struct cpumask *cpu_coregroup_mask(int cpu)
->   
->   	return cpu_node_mask(cpu);
->   }
-> -
-> -static const struct cpumask *cpu_mc_mask(struct sched_domain_topology_level *tl, int cpu)
-> -{
-> -	return cpu_corgrp_mask(cpu);
-> -}
->   #endif
->   
->   static const struct cpumask *cpu_pkg_mask(struct sched_domain_topology_level *tl, int cpu)
-> @@ -1729,7 +1724,7 @@ static void __init build_sched_topology(void)
->   #ifdef CONFIG_SCHED_MC
->   	if (has_coregroup_support()) {
->   		powerpc_topology[i++] =
-> -			SDTL_INIT(cpu_mc_mask, powerpc_shared_proc_flags, MC);
-> +			SDTL_INIT(tl_mc_mask, powerpc_shared_proc_flags, MC);
->   	}
->   #endif
->   
-> diff --git a/arch/s390/kernel/topology.c b/arch/s390/kernel/topology.c
-> index c88eda847309..8dbf32f362e1 100644
-> --- a/arch/s390/kernel/topology.c
-> +++ b/arch/s390/kernel/topology.c
-> @@ -514,11 +514,6 @@ const struct cpumask *cpu_coregroup_mask(int cpu)
->   	return &cpu_topology[cpu].core_mask;
->   }
->   
-> -static const struct cpumask *cpu_mc_mask(struct sched_domain_topology_level *tl, int cpu)
-> -{
-> -	return &cpu_topology[cpu].core_mask;
-> -}
-> -
->   static const struct cpumask *cpu_book_mask(struct sched_domain_topology_level *tl, int cpu)
->   {
->   	return &cpu_topology[cpu].book_mask;
-> @@ -536,7 +531,7 @@ static const struct cpumask *cpu_pkg_mask(struct sched_domain_topology_level *tl
->   
->   static struct sched_domain_topology_level s390_topology[] = {
->   	SDTL_INIT(tl_smt_mask, cpu_smt_flags, SMT),
-> -	SDTL_INIT(cpu_mc_mask, cpu_core_flags, MC),
-> +	SDTL_INIT(tl_mc_mask, cpu_core_flags, MC),
->   	SDTL_INIT(cpu_book_mask, NULL, BOOK),
->   	SDTL_INIT(cpu_drawer_mask, NULL, DRAWER),
->   	SDTL_INIT(cpu_pkg_mask, NULL, PKG),
-> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
-> index 81a40d777d65..bfbcac9a73d1 100644
-> --- a/arch/x86/kernel/smpboot.c
-> +++ b/arch/x86/kernel/smpboot.c
-> @@ -472,13 +472,6 @@ static int x86_cluster_flags(void)
->   }
->   #endif
->   
-> -#ifdef CONFIG_SCHED_MC
-> -static const struct cpumask *tl_mc_mask(struct sched_domain_topology_level *tl, int cpu)
-> -{
-> -	return cpu_coregroup_mask(cpu);
-> -}
-> -#endif
-> -
->   static const struct cpumask *tl_pkg_mask(struct sched_domain_topology_level *tl, int cpu)
->   {
->   	return cpu_node_mask(cpu);
-> diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
-> index e54501cc8e47..075d1f063668 100644
-> --- a/include/linux/sched/topology.h
-> +++ b/include/linux/sched/topology.h
-> @@ -63,7 +63,13 @@ static inline int cpu_core_flags(void)
->   {
->   	return SD_SHARE_LLC;
->   }
-> -#endif
-> +
-> +static const __maybe_unused
+I'm not sure if anybody actually does this, but its possible.
 
-Same as the two previous patches, __maybe_unused shouldn't be required.
+Eg. on a PMU that supports only 4 counters, create a group of 5 and
+periodically cycle which of the 5 events is off.
 
-> +struct cpumask *tl_mc_mask(struct sched_domain_topology_level *tl, int cpu)
-> +{
-> +	return cpu_coregroup_mask(cpu);
-> +}
-> +#endif /* CONFIG_SCHED_MC */
->   
->   #ifdef CONFIG_NUMA
->   static inline int cpu_numa_flags(void)
-> diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
-> index 4530cbad41e1..77d14430c5e1 100644
-> --- a/kernel/sched/topology.c
-> +++ b/kernel/sched/topology.c
-> @@ -1724,13 +1724,6 @@ sd_init(struct sched_domain_topology_level *tl,
->   	return sd;
->   }
->   
-> -#ifdef CONFIG_SCHED_MC
-> -static const struct cpumask *tl_mc_mask(struct sched_domain_topology_level *tl, int cpu)
-> -{
-> -	return cpu_coregroup_mask(cpu);
-> -}
-> -#endif
-> -
->   static const struct cpumask *tl_pkg_mask(struct sched_domain_topology_level *tl, int cpu)
->   {
->   	return cpu_node_mask(cpu);
+So I'm not against changing this, but changing stuff like this always
+makes me a little fearful -- it wouldn't be the first time that when it
+finally trickles down to some 'enterprise' user in 5 years someone comes
+and finally says, oh hey, you broke my shit :-(
 
 
