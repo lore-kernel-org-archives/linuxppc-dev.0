@@ -1,50 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-11340-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11341-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E2BDCA0FF2
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 18:20:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28F25CA0FF2
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 18:49:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cBGDj08VYz3dHC;
-	Wed, 27 Aug 2025 04:20:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756232436;
-	cv=none; b=EKihEs6O3HNFVXwNwHZ2AVfQ7f7OUqcGrfziV/xaeOoNRQ4Gcr8H3i38nMj6whbdj4yQ0LYHqo+JX0aMfKGO42X97/GwN8400qTM+QOJk15RmkyYgL7Pkxw2snKjUGrnSBmU8HdPPQA0w36qzhn/gMVzS6B2K8SxOrwZd91BfQ/hJOZ9Y/dwPBoxvPVO9gTHIQHLu5P795MEhlVLqf/clwa8E2K2/AhRojGATHYzRT84pS+Jm+6Qk1sCa3MsS6pXYPdphpNbmoZltyjrWdy6/iElDcK639SlTPejWGV2jxTYQuVn4Hnm3KLWn1qTHZyNecXoBGzKNYdpXt3luiw7VA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cBGsd1vMJz3dW1;
+	Wed, 27 Aug 2025 04:49:09 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::636"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756234149;
+	cv=none; b=R1A/WbH+1RFSRMSyqIk2ZpekTAGWD7NZQ5fuOJvkRfb2KYK14fOOL+P8zoy1PnsZKMMV8s4I8dnALy/ofLwEwepf7dt6NltsQkYb7zsV/1xmnsnDmPbxraa5VNXx/xh75DMEwaG6mzSXJFbXAjWZeo4I7U3yYH+dqwNr68XDk7dmBSGUjfsfrluxu8Vfnt4rz3D5HJ79j4XXkaAH//iHYZn+YWKBt86GLBY6b1FolTktF6BXBVMdtE1jkpV3UgxO+3W9LvEEiArNk3D9T9HuGBbcWxMYPHkOPWJedj7bL4YosOKOSydo8IMA3zdrfs4+pcia9dLUdXj1S5FkdcsYbQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756232436; c=relaxed/relaxed;
-	bh=4KEH2u08nM+KrNB8eUu36NxHIacVWyf4V1Cuy0P/MTM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=IpqezaCYvxoQSlj+1cYv5UWM3kI5xNtfRqClGI/C2vj5Cr8L0v5itdlnpQuBuQQScyi4zfaXAMKpd7xkDH/4BG30b3MpcQKFcVlDua++obDWXwy2zLrttWTlW4IBero6STy0aOT7XS9v3DBpvgl+X1jjH8sbFpzgfh9q/Q7bM0OJqx4to+dRq6WbpYm+RYvovFtlPfpF8kilmXe9054pJ6tctzJ6I4g1deKUowZPd5jW5A/YF366YvbYyIYLWdXklSePlG9g9f6NB8Wijxuf4bIZ7Aq7xl5VsmYQTEh8i0VGp8iwNWJBARwfKBYroGhdqBnMTsUrIxReGobvqZ7dxg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cBGDh1Bxnz3dGt
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2025 04:20:35 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4c9wLb6DMvz9sSL;
-	Tue, 26 Aug 2025 06:54:31 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id NrvWrUS7BScP; Tue, 26 Aug 2025 06:54:31 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9wLb4cWgz9sSK;
-	Tue, 26 Aug 2025 06:54:31 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 75E4E8B764;
-	Tue, 26 Aug 2025 06:54:31 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id F2eraKjHbKgo; Tue, 26 Aug 2025 06:54:31 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 93E148B763;
-	Tue, 26 Aug 2025 06:54:29 +0200 (CEST)
-Message-ID: <1c8392b8-ea7b-48ef-8932-02f41e1233a3@csgroup.eu>
-Date: Tue, 26 Aug 2025 06:54:29 +0200
+	t=1756234149; c=relaxed/relaxed;
+	bh=E/Ye7/SL7tqTx9oBx/tviBmGnvw5YMp+2zk7nWejWf0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=bqZ3ZLWjfTGuF1kbxXSW7mB+eZ/As+5dsIvg4tgS4aJ7Fget+KEbJLgvaJGzcB6QdpDgtQlxfopei2m2UvfbDUIPdNKBm4oCMdAASoiihNjCg35FXWrfW8WzL6xFM8j5Y/W1rw0wcgBvpKJGHVWNP5A+CQyjd17czpypB3K6WX1fAI9Fb3I21m/XifE8Qtcyis9yHgypmFPYOF51SS1pWZkVIdCnk1gA+tAVulawnEjVUyeqhxEftCTsvi21/fQWZZ5qmLbh2hEK2FscM4+IKBYSoF9UBS2cuRsEMFERX++TKwyv7U90JdcCSRkclXbgY8dNsTywq9L8qJBZ0NLIhw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=SX4SktT1; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org) smtp.mailfrom=google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=SX4SktT1;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=google.com (client-ip=2607:f8b0:4864:20::636; helo=mail-pl1-x636.google.com; envelope-from=irogers@google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x636.google.com (mail-pl1-x636.google.com [IPv6:2607:f8b0:4864:20::636])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cBGsW4hnQz3dTD
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2025 04:49:03 +1000 (AEST)
+Received: by mail-pl1-x636.google.com with SMTP id d9443c01a7336-248681b5892so43925ad.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 11:49:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1756234141; x=1756838941; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=E/Ye7/SL7tqTx9oBx/tviBmGnvw5YMp+2zk7nWejWf0=;
+        b=SX4SktT19LYmUSciqzX+MMD6kmAb6M9Qer3NBFNeFopWrmZvGOgNJOahw8+4VO0BcI
+         OJTHOFN45MBB+NCw3RWgauKMq32N8CDjNZWm8OZ7Cc+HJ+Y+K0KUvUlW/Xjo2SCTRdxg
+         7c7hDzhOmtd5VPjfr9Jf9fP+eACpO0RO0/vLwZhRPBGh/OZhZ1uEsPVTj1cWfQmMT5a7
+         chAUoP6dXYF21e4eWNwi3gCd5WLDcBmolDnnQIOYt0/po5gQcCdui4VJOFCS+aEbRtzS
+         lX0jU/1dUKMyd65MGSCMP7dhwWWQyNR4jv6noisiHQze/S6cd0Awj3T0P1rHXECdmBc1
+         TwUQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1756234141; x=1756838941;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=E/Ye7/SL7tqTx9oBx/tviBmGnvw5YMp+2zk7nWejWf0=;
+        b=bk8IMKZ2YfrhI12PDvRGXv/Kx7xnWZxhx7XqLVCG2r4xSmOqpy4nqU+09psSlly685
+         LJxqiFs+aq3v3SjOA2SSibnWxbnG7doiEpq6wTUjZYVE/jDFI8UQRiFIP2sJ+G80dYDS
+         4Q8X0BDwuPtw7Ao2YzPWFxzyXPl+SA/0JzlSV1sJ6gChZimehfPX6oFSpe5xJ3Vpza/w
+         GCe0ssC52IdmmYaBkadkDVmW7QGTLjweThIoVmK1fVaR3tkYG+PqANS0Sm04oC2EC4ja
+         ZG93cP1whgkadWhoIbHD5++Gevg2FOb6znJdhO808ECeCLc35NSyr4jgo6e4baA4PY6C
+         rzwg==
+X-Forwarded-Encrypted: i=1; AJvYcCUnQEmhlCSNLdJ2KH/5sGXSc8eWh6KJVavAXZ9X9nMmI0aosJOugbYR8E62CpE34z5eIGt/yJegxCdRu/s=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxFXqMcb+7mril2wEwyGOSS4jXYXfOReyD1pK1oDTPN9u3XBP0T
+	93QxV5rWeJckp7eyOSCh7nCozS+ecOwuDul4GmvnNsP+RQ0QiNaFCNaM8bm1aLo6V9+6TZmUs8m
+	tWNgYJ4aF5Yg5ZR9KLNHAWBLW0Lw4m+pEcP+pX0/o
+X-Gm-Gg: ASbGncvQ+mqtDR82XR7V6bFue5d6cCdt9Aknh5JP3QNZaw6Cq5951RM2Dn6ju3Tr9vT
+	l6cI4o1+ASZxSBkj8/Hp7bPg2HNXhepvxKlwpUk4kVOP8Sb37SENymGU3uGV7x7T3jikVG2YXDd
+	+P4hjpkMvvE5YQSGT6FIbp9Yr1QZf50+nbcMzCKaVyrBI0sbuXKl8Jd19hLUmZJ3fxw/PaEBvF0
+	ZS/k1Q58SkDOW06FHoZUFCDOMgxB6xAefgCL+Fm4UUt3s6/VMxtoHnoqhNjngtk
+X-Google-Smtp-Source: AGHT+IG+ollMBmiaOYcyGD4fK0EXbH34IwD2F+IqBBnZbD5S5EK8GUe1Cco16tj20beWZxJ5YP1hQInru/5q0vhDcUY=
+X-Received: by 2002:a17:903:228c:b0:243:afef:cd88 with SMTP id
+ d9443c01a7336-2486395f193mr4627105ad.11.1756234140425; Tue, 26 Aug 2025
+ 11:49:00 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,119 +80,100 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 3/8] powerpc/smp: Export cpu_coregroup_mask()
-To: K Prateek Nayak <kprateek.nayak@amd.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
- Alexander Gordeev <agordeev@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
- Juri Lelli <juri.lelli@redhat.com>,
- Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
-Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>,
- Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
- Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
- thomas.weissschuh@linutronix.de, Li Chen <chenl311@chinatelecom.cn>,
- Bibo Mao <maobibo@loongson.cn>, Mete Durlu <meted@linux.ibm.com>,
- Tobias Huschle <huschle@linux.ibm.com>,
- Easwar Hariharan <easwar.hariharan@linux.microsoft.com>,
- Guo Weikang <guoweikang.kernel@gmail.com>,
- "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
- Brian Gerst <brgerst@gmail.com>,
- Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>,
- Swapnil Sapkal <swapnil.sapkal@amd.com>,
- "Yury Norov [NVIDIA]" <yury.norov@gmail.com>,
- Sudeep Holla <sudeep.holla@arm.com>,
- Jonathan Cameron <Jonathan.Cameron@huawei.com>,
- Andrea Righi <arighi@nvidia.com>, Yicong Yang <yangyicong@hisilicon.com>,
- Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
- Tim Chen <tim.c.chen@linux.intel.com>,
- Vinicius Costa Gomes <vinicius.gomes@intel.com>
-References: <20250826041319.1284-1-kprateek.nayak@amd.com>
- <20250826041319.1284-4-kprateek.nayak@amd.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250826041319.1284-4-kprateek.nayak@amd.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <cover.1755096883.git.robin.murphy@arm.com> <d6cda4e2999aba5794c8178f043c91068fa8080c.1755096883.git.robin.murphy@arm.com>
+ <20250826130329.GX4067720@noisy.programming.kicks-ass.net> <6080e45d-032e-48c2-8efc-3d7e5734d705@arm.com>
+In-Reply-To: <6080e45d-032e-48c2-8efc-3d7e5734d705@arm.com>
+From: Ian Rogers <irogers@google.com>
+Date: Tue, 26 Aug 2025 11:48:48 -0700
+X-Gm-Features: Ac12FXxL0fQGFTk6-3SCJz15Qd8Ums9V_bcQA6gIxaEwQacWk3scYfeQZZ7cYZQ
+Message-ID: <CAP-5=fXF2x3hW4Sk+A362T-50cBbw6HVd7KY+QEUjFwT+JL37Q@mail.gmail.com>
+Subject: Re: [PATCH 12/19] perf: Ignore event state for group validation
+To: Robin Murphy <robin.murphy@arm.com>
+Cc: Peter Zijlstra <peterz@infradead.org>, mingo@redhat.com, will@kernel.org, 
+	mark.rutland@arm.com, acme@kernel.org, namhyung@kernel.org, 
+	alexander.shishkin@linux.intel.com, jolsa@kernel.org, adrian.hunter@intel.com, 
+	kan.liang@linux.intel.com, linux-perf-users@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-alpha@vger.kernel.org, 
+	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
+	imx@lists.linux.dev, linux-csky@vger.kernel.org, loongarch@lists.linux.dev, 
+	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
+	sparclinux@vger.kernel.org, linux-pm@vger.kernel.org, 
+	linux-rockchip@lists.infradead.org, dmaengine@vger.kernel.org, 
+	linux-fpga@vger.kernel.org, amd-gfx@lists.freedesktop.org, 
+	dri-devel@lists.freedesktop.org, intel-gfx@lists.freedesktop.org, 
+	intel-xe@lists.freedesktop.org, coresight@lists.linaro.org, 
+	iommu@lists.linux.dev, linux-amlogic@lists.infradead.org, 
+	linux-cxl@vger.kernel.org, linux-arm-msm@vger.kernel.org, 
+	linux-riscv@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, Aug 26, 2025 at 8:32=E2=80=AFAM Robin Murphy <robin.murphy@arm.com>=
+ wrote:
+>
+> On 2025-08-26 2:03 pm, Peter Zijlstra wrote:
+> > On Wed, Aug 13, 2025 at 06:01:04PM +0100, Robin Murphy wrote:
+> >> It may have been different long ago, but today it seems wrong for thes=
+e
+> >> drivers to skip counting disabled sibling events in group validation,
+> >> given that perf_event_enable() could make them schedulable again, and
+> >> thus increase the effective size of the group later. Conversely, if a
+> >> sibling event is truly dead then it stands to reason that the whole
+> >> group is dead, so it's not worth going to any special effort to try to
+> >> squeeze in a new event that's never going to run anyway. Thus, we can
+> >> simply remove all these checks.
+> >
+> > So currently you can do sort of a manual event rotation inside an
+> > over-sized group and have it work.
+> >
+> > I'm not sure if anybody actually does this, but its possible.
+> >
+> > Eg. on a PMU that supports only 4 counters, create a group of 5 and
+> > periodically cycle which of the 5 events is off.
 
+I'm not sure this is true, I thought this would fail in the
+perf_event_open when adding the 5th event and there being insufficient
+counters for the group. Not all PMUs validate a group will fit on the
+counters, but I thought at least Intel's core PMU would validate and
+not allow this. Fwiw, the metric code is reliant on this behavior as
+by default all events are placed into a weak group:
+https://web.git.kernel.org/pub/scm/linux/kernel/git/perf/perf-tools-next.gi=
+t/tree/tools/perf/util/metricgroup.c?h=3Dperf-tools-next#n631
+Weak groups are really just groups that when the perf_event_open fails
+retry with the grouping removed. PMUs that don't fail the
+perf_event_open are problematic as the reads just report "not counted"
+and the metric doesn't work. Sometimes the PMU can't help it due to
+errata. There are a bunch of workarounds for those cases carried in
+the perf tool, but in general weak groups working is relied upon:
+https://web.git.kernel.org/pub/scm/linux/kernel/git/perf/perf-tools-next.gi=
+t/tree/tools/perf/pmu-events/pmu-events.h?h=3Dperf-tools-next#n16
 
-Le 26/08/2025 à 06:13, K Prateek Nayak a écrit :
-> Deine cpu_coregroup_mask() to export the per-cpu cpu_corgrp_map when
-> coregroups are supported(). When has_coregroup_support() returns false,
-> cpu_coregroup_mask() returns the mask used by the PKG domain.
-> 
-> Since this will only be used after CONFIG_SCHED_MC is added for PowerPC,
-> no functional changes are intended at this point.
-> 
-> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
-> ---
->   arch/powerpc/include/asm/smp.h | 2 ++
->   arch/powerpc/kernel/smp.c      | 8 ++++++++
->   2 files changed, 10 insertions(+)
-> 
-> diff --git a/arch/powerpc/include/asm/smp.h b/arch/powerpc/include/asm/smp.h
-> index b77927ccb0ab..86de4d0dd0aa 100644
-> --- a/arch/powerpc/include/asm/smp.h
-> +++ b/arch/powerpc/include/asm/smp.h
-> @@ -148,6 +148,8 @@ static inline const struct cpumask *cpu_smt_mask(int cpu)
->   }
->   #endif /* CONFIG_SCHED_SMT */
->   
-> +extern const struct cpumask *cpu_coregroup_mask(int cpu);
+Thanks,
+Ian
 
-'extern' keyword is pointless for function prototypes, remove it.
-
-See report from checkpatch:
-
-$ ./scripts/checkpatch.pl --strict -g a064a30c52a5
-CHECK: extern prototypes should be avoided in .h files
-#28: FILE: arch/powerpc/include/asm/smp.h:151:
-+extern const struct cpumask *cpu_coregroup_mask(int cpu);
-
-total: 0 errors, 0 warnings, 1 checks, 22 lines checked
-
-NOTE: For some of the reported defects, checkpatch may be able to
-       mechanically convert to the typical style using --fix or 
---fix-inplace.
-
-Commit a064a30c52a5 ("powerpc/smp: Export cpu_coregroup_mask()") has 
-style problems, please review.
-
-NOTE: If any of the errors are false positives, please report
-       them to the maintainer, see CHECKPATCH in MAINTAINERS.
-
-
-
-> +
->   /* Since OpenPIC has only 4 IPIs, we use slightly different message numbers.
->    *
->    * Make sure this matches openpic_request_IPIs in open_pic.c, or what shows up
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 4f48262658cc..e623f2864dc4 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -1059,6 +1059,14 @@ static bool has_coregroup_support(void)
->   	return coregroup_enabled;
->   }
->   
-> +const struct cpumask *cpu_coregroup_mask(int cpu)
-> +{
-> +	if (has_coregroup_support())
-> +		return per_cpu(cpu_corgrp_map, cpu);
-> +
-> +	return cpu_node_mask(cpu);
-> +}
-> +
->   static const struct cpumask *cpu_mc_mask(struct sched_domain_topology_level *tl, int cpu)
->   {
->   	return cpu_corgrp_mask(cpu);
-
+> > So I'm not against changing this, but changing stuff like this always
+> > makes me a little fearful -- it wouldn't be the first time that when it
+> > finally trickles down to some 'enterprise' user in 5 years someone come=
+s
+> > and finally says, oh hey, you broke my shit :-(
+>
+> Eww, I see what you mean... and I guess that's probably lower-overhead
+> than actually deleting and recreating the sibling event(s) each time,
+> and potentially less bother then wrangling multiple groups for different
+> combinations of subsets when one simply must still approximate a complex
+> metric that requires more counters than the hardware offers.
+>
+> I'm also not keen to break anything that wasn't already somewhat broken,
+> especially since this patch is only intended as cleanup, so either we
+> could just drop it altogether, or perhaps I can wrap the existing
+> behaviour in a helper that can at least document this assumption and
+> discourage new drivers from copying it. Am I right that only
+> PERF_EVENT_STATE_{OFF,ERROR} would matter for this, though, and my
+> reasoning for state <=3D PERF_EVENT_STATE_EXIT should still stand? As for
+> the fiddly discrepancy with enable_on_exec between arm_pmu and others
+> I'm not really sure what to think...
+>
+> Thanks,
+> Robin.
 
