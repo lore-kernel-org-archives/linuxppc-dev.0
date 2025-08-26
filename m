@@ -1,98 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-11338-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11339-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0225ECA0FE7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 16:37:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E0A4CA0FE7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 26 Aug 2025 17:20:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cBCy03LRKz3dVf;
-	Wed, 27 Aug 2025 02:37:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52c"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756226264;
-	cv=none; b=Maw1cZ+QvPQp70i/DtJInl01C8r9BxfPetwiymLHZFgRopoEWs8qTkb4J0E0nKv6mSTSsX085OUwSpPGjBXQ18cSaUWW4nbCxdvIz1hLc5pNIkCnmd5jl0DCaoybzv4oHLIbmRFi8Lev86d+0d+mv6LQbSY/vGsB7xoaNJIasirF70ZrrP/USYxdMDmhNGR/Nihq+nv/ond98EORlqU16jv7oaMVsgKz2rGDc1Hmn1v/jd4o1juGIs1iBxog6kPil9Jv3syJVd/ZB1IGpvt0Rfouy2OYCuQZ4P+P8DUIkslIlxcK3MfJdRLIY6EgPWlBKBJOkAgX7SQn5MTYC8fGoQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cBDvV6gXjz3dW4;
+	Wed, 27 Aug 2025 03:20:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756228838;
+	cv=none; b=Eg+LAA2+5oLowdnic9ot02zMszTvDj07iJW9uFAqinWA/C+Ijz7mHoh+1SGlkPm9DP4khG53US1S5YwllIWQK5nec7TyDq/kNcBPQH2s2ixecnGUuZqIurMZjAs81bCogD0sb4xGuWCnmx5IwVS3zPeEu8g9f4J3vnnTNdQ2tBtKi2zYvJyWCitK6j87OarKYlSWZk5wWCzZEf6KwzcFai0Wrbf+GSMTr8YSu71zP+MIOuuYtmUatB13LKbYirDzwdppREDLG14v5PHmSwqXPgUaWRxY5RdMhc473Xd2/v27wGWfAhmDDHQY3//A9A2axY6xeuObwFIbP7wkquhQxw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756226264; c=relaxed/relaxed;
-	bh=jyPF/dL+2YqZRv98PVCshXGneATY8Fvhth5O4vhMkWc=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-Version:Content-Type; b=SpY9sC5k04c7hCV/49x+YX6rC8CyuxMQ00dh5jCl2X1Pkt8j4ztWup/FAirEXdyiNrFpCG/sYJIllw5SZlcWZmxkm/RT1Is18O6GjlgerEbOuRV1fFcAdwA99gJmJCWDh2Mp8lIirHn0BEQPxa56mbSw1GJbHSsqJ/Bijk4Hy1lJ7Dj+se9OiiBs6l8eeyAGymoMO+RhFVRoBmmAkUnOWVbmdqJetoxEjYCciLVxidP6k45d7GtmrVm8eIqX336AvhgAPvboT8mfHIZem/OQ4Mt/NHqbijYCvR1ymNE3mPYo5D/SOArNvlqYcyn8UuitxgLEGkekszZc0JiuJc755w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=S2hfD5Mq; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52c; helo=mail-pg1-x52c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=S2hfD5Mq;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52c; helo=mail-pg1-x52c.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52c.google.com (mail-pg1-x52c.google.com [IPv6:2607:f8b0:4864:20::52c])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cBCxz2vFHz3dSr
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2025 02:37:43 +1000 (AEST)
-Received: by mail-pg1-x52c.google.com with SMTP id 41be03b00d2f7-b47174c8e45so5627451a12.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 26 Aug 2025 09:37:43 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1756226261; x=1756831061; darn=lists.ozlabs.org;
-        h=mime-version:references:message-id:date:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=jyPF/dL+2YqZRv98PVCshXGneATY8Fvhth5O4vhMkWc=;
-        b=S2hfD5MqYUBbiwa40/E1ZzfRRYWvF8w++gwDMzMcAYMmeWij8FZuTUuwf/6BMc9ymH
-         p5rIAhxF6bu7Z5n9sZ/bfb5iMQYHyiP7Zh6k3Hon1Ah4795n0Gtdl1yFokj0JA22d2oK
-         /1DaU2spYIzMsPqVdWrrvLPLJ7PPDeDIvZF6k0aIj/WZTKp51jZN+pQ2FVzpOpHHCkSD
-         lJ6aOvpPDnOttZO6f8KGqcVAroTvZk0AiUsQ90IXNdbpCBHRgI5av2yNbD8BXtYHNgpc
-         oayC+pKYvEVrfslu62s4Fqd4QatgWaIgzIn8m9d0N9O6+xnSBH6Bcz2ckYOz3Eqj49Xm
-         hMNQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756226261; x=1756831061;
-        h=mime-version:references:message-id:date:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=jyPF/dL+2YqZRv98PVCshXGneATY8Fvhth5O4vhMkWc=;
-        b=s4BR+Z9LJbsGnXgh+Hnrg+rjqNsRfI5zrt2cB9V7NYJ5pV/0q3yWOyIDJ3sCMN5gYW
-         C+rkjDAXZ3kx4ohMK1sZ7cKpExkHu9VuFuqKnKdN7jsjhlY7JTv+PuqYqlumPiHKRXWg
-         ag2/gA/lgSbf24GtQHKShlKZ2KvhWezxXu9zGvPLT4SgrQOJFAdqmn7nW0v9v/W0vCqH
-         Lu1zgNkivdgqyb8C9ravkeKilKt0Z+b7KSVBeig4ZDZGZ8bizSauCJgtrhYeq3dPP9YE
-         ief2EwmNtcuDKC7ZwlcTu/p/FQqH+YIlnB424JUPSM+MgROeXXgxe0rEsaGa6TlYeORu
-         zxIg==
-X-Forwarded-Encrypted: i=1; AJvYcCV8hUNk2mVoyr4swG3CgBd9ZTWU7cjv6kcjtUWuz7kX+V02bVFn+O58aCZcFas2DYGXHQwCMoyqho2gTtA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyPSKhqNV+zAAv+ICuz0wlpF7xQvNEooXlh9jseeVcn9AIbiuhF
-	gg9eoeqbM8bfgvEqkOI2GygTh6iOBtFH5RCMEGUhW9RZXkNUBbt2Ts6K
-X-Gm-Gg: ASbGnctBAZM1nwsgfHTdg7dk670ckC379Eywps01UXi3Xu9hwBMjMIYFWF5lak0Y+pN
-	2F8NCoHv0MSOkmOYOxLIJcZXsSdM8JRW5FTU23gvhtiT+Vz7OQF6AZjXD0NpcvJDWY/B+Trx+GU
-	fE91GRN3AdX1Y7YnB9hYrJeWsi44jcwpZxqUPhqYRLCnlLLVZCkT/ESSAnWxeo3PycdwPnyG++r
-	deKRc4xeonPOqZuDGcDJco0yitOpNewleNHRKlays6e0YdykwOnXgkDeYdXyp/WvGnmKxVsA1v/
-	fmgCm9q/rxlPnmc+A0Ok2M7BZ92UW/4DOj+zK++OvBPaBdY3Rc7zdZbtzH5ooNLlIahZ71d1IMc
-	qhP8Br8srrwJwHA==
-X-Google-Smtp-Source: AGHT+IHkpBzdMdA7eE7qfwfc1lxqW0m87+LkJnM6/YhAHtUnIYSPMtiSiZLKGMu2nLQJcFkeNv4YGw==
-X-Received: by 2002:a17:903:32c8:b0:248:79d4:939b with SMTP id d9443c01a7336-24879d4978cmr26372675ad.54.1756226260428;
-        Tue, 26 Aug 2025 09:37:40 -0700 (PDT)
-Received: from dw-tp ([171.76.82.15])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-248681adacdsm21450705ad.10.2025.08.26.09.37.30
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 26 Aug 2025 09:37:39 -0700 (PDT)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, xen-devel@lists.xenproject.org, 
-	linux-fsdevel@vger.kernel.org, nvdimm@lists.linux.dev, 
-	linuxppc-dev@lists.ozlabs.org, David Hildenbrand <david@redhat.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, Juergen Gross <jgross@suse.com>, 
-	Stefano Stabellini <sstabellini@kernel.org>, 
-	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>, Dan Williams <dan.j.williams@intel.com>, 
-	Matthew Wilcox <willy@infradead.org>, Jan Kara <jack@suse.cz>, 
-	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, 
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
-	Vlastimil Babka <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, 
-	Michal Hocko <mhocko@suse.com>, Zi Yan <ziy@nvidia.com>, 
-	Baolin Wang <baolin.wang@linux.alibaba.com>, Nico Pache <npache@redhat.com>, 
-	Ryan Roberts <ryan.roberts@arm.com>, Dev Jain <dev.jain@arm.com>, Barry Song <baohua@kernel.org>, 
-	Jann Horn <jannh@google.com>, Pedro Falcato <pfalcato@suse.de>, Hugh Dickins <hughd@google.com>, 
-	Oscar Salvador <osalvador@suse.de>, Lance Yang <lance.yang@linux.dev>
-Subject: Re: [PATCH v3 06/11] powerpc/ptdump: rename "struct pgtable_level" to "struct ptdump_pglevel"
-In-Reply-To: <20250811112631.759341-7-david@redhat.com>
-Date: Tue, 26 Aug 2025 21:58:09 +0530
-Message-ID: <87a53mqc86.fsf@gmail.com>
-References: <20250811112631.759341-1-david@redhat.com> <20250811112631.759341-7-david@redhat.com>
+	t=1756228838; c=relaxed/relaxed;
+	bh=kLAoIWxfXXWp18UmYU7Vgd4EKnPZ48N8OZ8j2I0nv7A=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=kB3xMLdG2us676HjUfBgAfrSHYHEMaRKK1pQJrQnDk+AKz6MQFS8f7DFjwxFAVcT5OB/Xs6qp14pe3ltdBi06wm+CwObnuF7sRzJWojKv00z4tOaoSyNm4vVAVFAsT+MMcpHUVO7BnEYNq3XA3fVzh7QX4lXGK4NHV1YryzFrEOx/Xb/9ejP33AQYqfIBse2Nfrho56D5aRSy3nTrQ6l47HLsbx3yXSdadHrjYYa/MdDAGmN/JgOcIS+Qt1eDj5flwrf9YYka0fl4rWdo5xH9IfQBORUsuUwLpJf+uz0kVYMSfzOAuz/bY9zQ8RpS1EtufJnzZBJnY+ri4OBw2mHKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cBDvT6X9Vz3dW3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2025 03:20:36 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4c9wm35hHkz9sSW;
+	Tue, 26 Aug 2025 07:13:07 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id L3zqoWmt2kyq; Tue, 26 Aug 2025 07:13:07 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4c9wm34Kgtz9sSV;
+	Tue, 26 Aug 2025 07:13:07 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 755518B764;
+	Tue, 26 Aug 2025 07:13:07 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id db8ZhuQxPbOU; Tue, 26 Aug 2025 07:13:07 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 760E08B763;
+	Tue, 26 Aug 2025 07:13:05 +0200 (CEST)
+Message-ID: <d2ccc708-ab0e-4d25-8fc9-f989cdd0ae55@csgroup.eu>
+Date: Tue, 26 Aug 2025 07:13:05 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,97 +58,171 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7 5/8] sched/topology: Unify tl_smt_mask() across core
+ and all arch
+To: K Prateek Nayak <kprateek.nayak@amd.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
+ Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+ "H. Peter Anvin" <hpa@zytor.com>, Peter Zijlstra <peterz@infradead.org>,
+ Juri Lelli <juri.lelli@redhat.com>,
+ Vincent Guittot <vincent.guittot@linaro.org>, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, linux-s390@vger.kernel.org
+Cc: Dietmar Eggemann <dietmar.eggemann@arm.com>,
+ Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
+ Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>,
+ thomas.weissschuh@linutronix.de, Li Chen <chenl311@chinatelecom.cn>,
+ Bibo Mao <maobibo@loongson.cn>, Mete Durlu <meted@linux.ibm.com>,
+ Tobias Huschle <huschle@linux.ibm.com>,
+ Easwar Hariharan <easwar.hariharan@linux.microsoft.com>,
+ Guo Weikang <guoweikang.kernel@gmail.com>,
+ "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
+ Brian Gerst <brgerst@gmail.com>,
+ Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>,
+ Swapnil Sapkal <swapnil.sapkal@amd.com>,
+ "Yury Norov [NVIDIA]" <yury.norov@gmail.com>,
+ Sudeep Holla <sudeep.holla@arm.com>,
+ Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+ Andrea Righi <arighi@nvidia.com>, Yicong Yang <yangyicong@hisilicon.com>,
+ Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
+ Tim Chen <tim.c.chen@linux.intel.com>,
+ Vinicius Costa Gomes <vinicius.gomes@intel.com>
+References: <20250826041319.1284-1-kprateek.nayak@amd.com>
+ <20250826041319.1284-6-kprateek.nayak@amd.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <20250826041319.1284-6-kprateek.nayak@amd.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-David Hildenbrand <david@redhat.com> writes:
 
-> We want to make use of "pgtable_level" for an enum in core-mm. Other
-> architectures seem to call "struct pgtable_level" either:
-> * "struct pg_level" when not exposed in a header (riscv, arm)
-> * "struct ptdump_pg_level" when expose in a header (arm64)
->
-> So let's follow what arm64 does.
->
-> Signed-off-by: David Hildenbrand <david@redhat.com>
+
+Le 26/08/2025 à 06:13, K Prateek Nayak a écrit :
+> Unify the tl_smt_mask() wrapper around cpu_smt_mask() across core, x86,
+> ppc, and s390.
+> 
+> On s390, include/linux/topology.c defines an explicit cpu_smt_mask()
+> wrapper around topology_sibling_cpumask() when cpu_smt_mask() is not
+> defined by the arch/ bits and topology_sibling_cpumask() on s390 returns
+> &cpu_topology[cpu].thread_mask.
+> 
+> No functional changes intended.
+> 
+> Signed-off-by: K Prateek Nayak <kprateek.nayak@amd.com>
 > ---
->  arch/powerpc/mm/ptdump/8xx.c      | 2 +-
->  arch/powerpc/mm/ptdump/book3s64.c | 2 +-
->  arch/powerpc/mm/ptdump/ptdump.h   | 4 ++--
->  arch/powerpc/mm/ptdump/shared.c   | 2 +-
->  4 files changed, 5 insertions(+), 5 deletions(-)
+>   arch/powerpc/kernel/smp.c      | 5 -----
+>   arch/s390/kernel/topology.c    | 8 +-------
+>   arch/x86/kernel/smpboot.c      | 5 -----
+>   include/linux/sched/topology.h | 8 +++++++-
+>   kernel/sched/topology.c        | 7 -------
+>   5 files changed, 8 insertions(+), 25 deletions(-)
+> 
+> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
+> index 7f79b853b221..c58ddf84fe63 100644
+> --- a/arch/powerpc/kernel/smp.c
+> +++ b/arch/powerpc/kernel/smp.c
+> @@ -1038,11 +1038,6 @@ static const struct cpumask *smallcore_smt_mask(struct sched_domain_topology_lev
+>   {
+>   	return cpu_smallcore_mask(cpu);
+>   }
+> -
+> -static const struct cpumask *tl_smt_mask(struct sched_domain_topology_level *tl, int cpu)
+> -{
+> -	return cpu_smt_mask(cpu);
+> -}
+>   #endif
+>   
+>   static struct cpumask *cpu_corgrp_mask(int cpu)
+> diff --git a/arch/s390/kernel/topology.c b/arch/s390/kernel/topology.c
+> index 5129e3ffa7f5..c88eda847309 100644
+> --- a/arch/s390/kernel/topology.c
+> +++ b/arch/s390/kernel/topology.c
+> @@ -509,12 +509,6 @@ int topology_cpu_init(struct cpu *cpu)
+>   	return rc;
+>   }
+>   
+> -static const struct cpumask *cpu_thread_mask(struct sched_domain_topology_level *tl, int cpu)
+> -{
+> -	return &cpu_topology[cpu].thread_mask;
+> -}
+> -
+> -
+>   const struct cpumask *cpu_coregroup_mask(int cpu)
+>   {
+>   	return &cpu_topology[cpu].core_mask;
+> @@ -541,7 +535,7 @@ static const struct cpumask *cpu_pkg_mask(struct sched_domain_topology_level *tl
+>   }
+>   
+>   static struct sched_domain_topology_level s390_topology[] = {
+> -	SDTL_INIT(cpu_thread_mask, cpu_smt_flags, SMT),
+> +	SDTL_INIT(tl_smt_mask, cpu_smt_flags, SMT),
+>   	SDTL_INIT(cpu_mc_mask, cpu_core_flags, MC),
+>   	SDTL_INIT(cpu_book_mask, NULL, BOOK),
+>   	SDTL_INIT(cpu_drawer_mask, NULL, DRAWER),
+> diff --git a/arch/x86/kernel/smpboot.c b/arch/x86/kernel/smpboot.c
+> index 4cd3d69741cf..03ff6270966a 100644
+> --- a/arch/x86/kernel/smpboot.c
+> +++ b/arch/x86/kernel/smpboot.c
+> @@ -463,11 +463,6 @@ static int x86_core_flags(void)
+>   {
+>   	return cpu_core_flags() | x86_sched_itmt_flags();
+>   }
+> -
+> -static const struct cpumask *tl_smt_mask(struct sched_domain_topology_level *tl, int cpu)
+> -{
+> -	return cpu_smt_mask(cpu);
+> -}
+>   #endif
+>   
+>   #ifdef CONFIG_SCHED_CLUSTER
+> diff --git a/include/linux/sched/topology.h b/include/linux/sched/topology.h
+> index 602508130c8a..d75fbb7d9667 100644
+> --- a/include/linux/sched/topology.h
+> +++ b/include/linux/sched/topology.h
+> @@ -37,7 +37,13 @@ static inline int cpu_smt_flags(void)
+>   {
+>   	return SD_SHARE_CPUCAPACITY | SD_SHARE_LLC;
+>   }
+> -#endif
+> +
+> +static const __maybe_unused
+> +struct cpumask *tl_smt_mask(struct sched_domain_topology_level *tl, int cpu)
 
+__maybe_unused hides the dust under the carpet.
 
-As mentioned in commit msg mostly a mechanical change to convert 
-"struct pgtable_level" to "struct ptdump_pg_level" for aforementioned purpose.. 
+Leave the function in kernel/sched/topology.c and make it non-static 
+with a prototype in linux/sched/topology.h
 
-The patch looks ok and compiles fine on my book3s64 and ppc32 platform. 
+> +{
+> +	return cpu_smt_mask(cpu);
+> +}
+> +#endif /* CONFIG_SCHED_SMT */
+>   
+>   #ifdef CONFIG_SCHED_CLUSTER
+>   static inline int cpu_cluster_flags(void)
+> diff --git a/kernel/sched/topology.c b/kernel/sched/topology.c
+> index dfc754e0668c..92165fe56a2d 100644
+> --- a/kernel/sched/topology.c
+> +++ b/kernel/sched/topology.c
+> @@ -1724,13 +1724,6 @@ sd_init(struct sched_domain_topology_level *tl,
+>   	return sd;
+>   }
+>   
+> -#ifdef CONFIG_SCHED_SMT
+> -static const struct cpumask *tl_smt_mask(struct sched_domain_topology_level *tl, int cpu)
+> -{
+> -	return cpu_smt_mask(cpu);
+> -}
+> -#endif
+> -
+>   #ifdef CONFIG_SCHED_CLUSTER
+>   static const struct cpumask *tl_cls_mask(struct sched_domain_topology_level *tl, int cpu)
+>   {
 
-I think we should fix the subject line.. s/ptdump_pglevel/ptdump_pg_level
-
-Otherwise the changes looks good to me. So please feel free to add - 
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-
-
-
->
-> diff --git a/arch/powerpc/mm/ptdump/8xx.c b/arch/powerpc/mm/ptdump/8xx.c
-> index b5c79b11ea3c2..4ca9cf7a90c9e 100644
-> --- a/arch/powerpc/mm/ptdump/8xx.c
-> +++ b/arch/powerpc/mm/ptdump/8xx.c
-> @@ -69,7 +69,7 @@ static const struct flag_info flag_array[] = {
->  	}
->  };
->  
-> -struct pgtable_level pg_level[5] = {
-> +struct ptdump_pg_level pg_level[5] = {
->  	{ /* pgd */
->  		.flag	= flag_array,
->  		.num	= ARRAY_SIZE(flag_array),
-> diff --git a/arch/powerpc/mm/ptdump/book3s64.c b/arch/powerpc/mm/ptdump/book3s64.c
-> index 5ad92d9dc5d10..6b2da9241d4c4 100644
-> --- a/arch/powerpc/mm/ptdump/book3s64.c
-> +++ b/arch/powerpc/mm/ptdump/book3s64.c
-> @@ -102,7 +102,7 @@ static const struct flag_info flag_array[] = {
->  	}
->  };
->  
-> -struct pgtable_level pg_level[5] = {
-> +struct ptdump_pg_level pg_level[5] = {
->  	{ /* pgd */
->  		.flag	= flag_array,
->  		.num	= ARRAY_SIZE(flag_array),
-> diff --git a/arch/powerpc/mm/ptdump/ptdump.h b/arch/powerpc/mm/ptdump/ptdump.h
-> index 154efae96ae09..4232aa4b57eae 100644
-> --- a/arch/powerpc/mm/ptdump/ptdump.h
-> +++ b/arch/powerpc/mm/ptdump/ptdump.h
-> @@ -11,12 +11,12 @@ struct flag_info {
->  	int		shift;
->  };
->  
-> -struct pgtable_level {
-> +struct ptdump_pg_level {
->  	const struct flag_info *flag;
->  	size_t num;
->  	u64 mask;
->  };
->  
-> -extern struct pgtable_level pg_level[5];
-> +extern struct ptdump_pg_level pg_level[5];
->  
->  void pt_dump_size(struct seq_file *m, unsigned long delta);
-> diff --git a/arch/powerpc/mm/ptdump/shared.c b/arch/powerpc/mm/ptdump/shared.c
-> index 39c30c62b7ea7..58998960eb9a4 100644
-> --- a/arch/powerpc/mm/ptdump/shared.c
-> +++ b/arch/powerpc/mm/ptdump/shared.c
-> @@ -67,7 +67,7 @@ static const struct flag_info flag_array[] = {
->  	}
->  };
->  
-> -struct pgtable_level pg_level[5] = {
-> +struct ptdump_pg_level pg_level[5] = {
->  	{ /* pgd */
->  		.flag	= flag_array,
->  		.num	= ARRAY_SIZE(flag_array),
-> -- 
-> 2.50.1
 
