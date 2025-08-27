@@ -1,36 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-11377-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11378-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A96DCCA0EFF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Aug 2025 12:28:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19312CA0FED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Aug 2025 13:41:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cBkNV2GcHz30HB;
-	Wed, 27 Aug 2025 22:28:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756285994;
-	cv=none; b=DcFBZBHJ/mCm2Kkd30qR7HDAkOMrV6jUFnesOtDzCxKPRNCNH2QP7CMpbhH4y+1V7u5pIGR1KJ20QLtrc53mq2HGa618L1j1+93lt/XbcTloWTWODgVpdzBsVtHiv2qhbc9nXcjmtQO9wadkSYp8X5ZOgFEiyFGVQK/mleHAXsdNANzabZqAgz3fRPmKrKBZdBPeR/SXrjhCwFDIlpeN30dPysfnsb1X/4TQV8IcrdF+V9aD4GeW80jc1Dl+1HzA3Z+r98ZjkLz+TpJdzSkOXBqw7o+24DC+SWkfjY0ZA5l4Eh7Yo/gQCQ+CLWJUEwsZmDi2R6/E/dxIPYqZUTJyhw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cBm05391pz300M;
+	Wed, 27 Aug 2025 23:41:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a01:37:3000::53df:4ef0:0"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756302085;
+	cv=none; b=nmi0sS1yOiSyuqIYq9zLDAI/heYk3NwU3AnTmOno8PwEvfzG99U1ufOhuIfRwwnkvN2oWrs5wCF1fDetLmdcinGuHyBoIwDchtCiW5LqwqwjJEoOK2QZxVtQteTAaLc6AWJvxQ0MEGECAYrrOITyNSWQejBEMYet+VgIv/mX7Hxba6ukNsL45ijKohoJlMfS82e4Vy090Leehj6NtWUySvMJKIaLdKwPEJQmCIsXEPns5NNruhRzFdMbSZ0tiUEHPQP5iSW8BdvvZMw2r/r2LVkecy+WDAk71AKO/WtWiPPQod4u1XgmROJcQHsp0DLlGhHX5DdtiSliWLwwOi8PLA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756285994; c=relaxed/relaxed;
-	bh=C/GiYtVT6cqX6QUZSaJsKPKD/rdfU281D1XLmmUxVLc=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nEkWVX5sLPs9ktxo39Ellk+NAkFA/NoFJwalgut3zL1CgcyB38is/lZemau5OlCAp7IOX7LT9uhMaAiB06Oe8vrt/1aCVTGNmQqvUjjUsKqafPjyioVPPv7bxLKCQWZPjoG9qRO4f5Qw75y9AVmKvs0yLV3O2+OZeEZ55IZikxgrNR8rR6y2QZ2R+uwqPYEpCaX/aDlFftkP+1LqEP4DF8xfsvdi6juHo22syU9S+vzpkVlV/C5RKnP06NmsGq+7Q0fA32Igkb+eB39Cklv6r9gFva4zVknGtxyzIXjT+MgkXW4dhWIwGulYOKALKT3HHTFz8kLce/fGcVh4oADCIg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ben.horgan@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ben.horgan@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cBf2d3tRZz2xK1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2025 19:13:11 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 27EF4153B;
-	Wed, 27 Aug 2025 02:12:31 -0700 (PDT)
-Received: from [10.1.196.46] (e134344.arm.com [10.1.196.46])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 5C3023F738;
-	Wed, 27 Aug 2025 02:12:30 -0700 (PDT)
-Message-ID: <e7e9d8f5-9a4b-4efa-9634-7443ca7af2a6@arm.com>
-Date: Wed, 27 Aug 2025 10:12:28 +0100
+	t=1756302085; c=relaxed/relaxed;
+	bh=2uniMGUwYVEOB37oks1mk7ka8f7EMl70bjyao4ka2A0=;
+	h=Message-Id:From:Date:Subject:To:Cc; b=M8WHKr8tr6qJ7vGgyWNOuw3l0zVjBgWcGkF/R9xDRiwt0JBANmsKj6dLG8Q1COMpP6aXTjRENCAqNS7IWz3NlI6L51q+g1FhLJscvbQNThgEG4UzXNLqLwaGkosyj7vng8SbuqhwTPcxSu4B6YNULa4kFylWXe93vS3los4iSezNI4WryCi/yJhiLt2XA8EtWKp54lsuu3EPpEy+UXr4ruHXqXHJheViZ2LOMdnULpuVwZZW5U/oFNwHI1MVxL3d8RFNmb/MSEr4oHCgom9Ug4VmorfpW95v+nP0toeIgD9QmVo8Nyo0fCPa+u9uNTXqGQV8FjIBkTMZ2M+Bsr+dLw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=2a01:37:3000::53df:4ef0:0; helo=bmailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org) smtp.mailfrom=wunner.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wunner.de (client-ip=2a01:37:3000::53df:4ef0:0; helo=bmailout2.hostsharing.net; envelope-from=lukas@wunner.de; receiver=lists.ozlabs.org)
+Received: from bmailout2.hostsharing.net (bmailout2.hostsharing.net [IPv6:2a01:37:3000::53df:4ef0:0])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cBm043YhXz2ySY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2025 23:41:24 +1000 (AEST)
+Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
+	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
+	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
+	by bmailout2.hostsharing.net (Postfix) with ESMTPS id E24FC2009195;
+	Wed, 27 Aug 2025 15:41:12 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id CCCE34E5500; Wed, 27 Aug 2025 15:41:12 +0200 (CEST)
+Message-Id: <21f1875b18d4078c99353378f37dcd6b994f6d4e.1756301211.git.lukas@wunner.de>
+From: Lukas Wunner <lukas@wunner.de>
+Date: Wed, 27 Aug 2025 15:41:09 +0200
+Subject: [PATCH] PCI/AER: Support errors introduced by PCIe r6.0
+To: Bjorn Helgaas <helgaas@kernel.org>
+Cc: Ilpo Jarvinen <ilpo.jarvinen@linux.intel.com>, Sathyanarayanan Kuppuswamy <sathyanarayanan.kuppuswamy@linux.intel.com>, "Mahesh J Salgaonkar" <mahesh@linux.ibm.com>, Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -43,141 +52,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 01/18] arm64: topology: Use __free(put_cpufreq_policy)
- for policy reference
-To: Zihuan Zhang <zhangzihuan@kylinos.cn>,
- "Rafael J . wysocki" <rafael@kernel.org>,
- Viresh Kumar <viresh.kumar@linaro.org>,
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
- Sean Christopherson <seanjc@google.com>, Paolo Bonzini
- <pbonzini@redhat.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, Markus Mayer
- <mmayer@broadcom.com>, Florian Fainelli <florian.fainelli@broadcom.com>,
- Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Krzysztof Kozlowski
- <krzk@kernel.org>, Alim Akhtar <alim.akhtar@samsung.com>,
- Thierry Reding <thierry.reding@gmail.com>,
- Jonathan Hunter <jonathanh@nvidia.com>,
- MyungJoo Ham <myungjoo.ham@samsung.com>,
- Kyungmin Park <kyungmin.park@samsung.com>,
- Chanwoo Choi <cw00.choi@samsung.com>,
- Jani Nikula <jani.nikula@linux.intel.com>,
- Joonas Lahtinen <joonas.lahtinen@linux.intel.com>,
- Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
- <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Daniel Lezcano <daniel.lezcano@kernel.org>,
- Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>,
- Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>,
- Matthias Brugger <matthias.bgg@gmail.com>,
- AngeloGioacchino Del Regno <angelogioacchino.delregno@collabora.com>
-Cc: zhenglifeng <zhenglifeng1@huawei.com>, "H . Peter Anvin" <hpa@zytor.com>,
- Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Lukasz Luba <lukasz.luba@arm.com>,
- Pengutronix Kernel Team <kernel@pengutronix.de>,
- Beata Michalska <beata.michalska@arm.com>, Fabio Estevam
- <festevam@gmail.com>, Pavel Machek <pavel@kernel.org>,
- Sumit Gupta <sumitg@nvidia.com>,
- Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
- Sudeep Holla <sudeep.holla@arm.com>, Yicong Yang <yangyicong@hisilicon.com>,
- linux-pm@vger.kernel.org, x86@kernel.org, kvm@vger.kernel.org,
- linux-acpi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-samsung-soc@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
- linux-tegra@vger.kernel.org, intel-gfx@lists.freedesktop.org,
- dri-devel@lists.freedesktop.org, imx@lists.linux.dev,
- linux-omap@vger.kernel.org, linux-mediatek@lists.infradead.org,
- linux-kernel@vger.kernel.org
-References: <20250827023202.10310-1-zhangzihuan@kylinos.cn>
- <20250827023202.10310-2-zhangzihuan@kylinos.cn>
- <70f4c2ce-1dbd-4596-af78-bca1cdbbb581@arm.com>
- <57016487-0fee-4821-9cd5-d6e5fe80a65d@kylinos.cn>
-From: Ben Horgan <ben.horgan@arm.com>
-Content-Language: en-US
-In-Reply-To: <57016487-0fee-4821-9cd5-d6e5fe80a65d@kylinos.cn>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 
-Hi Zihuan,
+PCIe r6.0 defined five additional errors in the Uncorrectable Error
+Status, Mask and Severity Registers (PCIe r7.0 sec 7.8.4.2ff).
 
-On 8/27/25 09:55, Zihuan Zhang wrote:
-> Hi,
-> 
-> 在 2025/8/27 16:30, Ben Horgan 写道:
->> Hi Zihuan,
->>
->> On 8/27/25 03:31, Zihuan Zhang wrote:
->>> Replace the manual cpufreq_cpu_put() with __free(put_cpufreq_policy)
->>> annotation for policy references. This reduces the risk of reference
->>> counting mistakes and aligns the code with the latest kernel style.
->>>
->>> No functional change intended.
->>>
->>> Signed-off-by: Zihuan Zhang <zhangzihuan@kylinos.cn>
->>> ---
->>>   arch/arm64/kernel/topology.c | 9 +++------
->>>   1 file changed, 3 insertions(+), 6 deletions(-)
->>>
->>> diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
->>> index 5d07ee85bdae..e3cb6d54f35b 100644
->>> --- a/arch/arm64/kernel/topology.c
->>> +++ b/arch/arm64/kernel/topology.c
->>> @@ -307,17 +307,16 @@ int arch_freq_get_on_cpu(int cpu)
->>>            */
->>>           if (!housekeeping_cpu(cpu, HK_TYPE_TICK) ||
->>>               time_is_before_jiffies(last_update +
->>> msecs_to_jiffies(AMU_SAMPLE_EXP_MS))) {
->>> -            struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
->>> +            struct cpufreq_policy *policy __free(put_cpufreq_policy);
->> Based on the guidance, in include/linux/cleanup.h, I would expect the
->> assignment to be done on this line.
->>
->> "...the recommendation is to always define and assign variables in one
->>   * statement and not group variable definitions at the top of the
->>   * function when __free() is used."
-> 
-> 
-> The reason I split the assignment into multiple lines is because
-> scripts/checkpatch.pl gave a warning about the line being too long.
-> 
-> But if you think a single-line assignment is better, I will modify it
-> accordingly.
+lspci has been supporting them since commit 144b0911cc0b ("ls-ecaps:
+extend decode support for more fields for AER CE and UE status"):
 
-My preference, for what it's worth, would be to keep it one statement
-and split the line after the =.
+https://git.kernel.org/pub/scm/utils/pciutils/pciutils.git/commit/?id=144b0911cc0b
 
-> 
->>>               int ref_cpu;
->>>   +            policy = cpufreq_cpu_get(cpu);
->>>               if (!policy)
->>>                   return -EINVAL;
->>>                 if (!cpumask_intersects(policy->related_cpus,
->>> -                        housekeeping_cpumask(HK_TYPE_TICK))) {
->>> -                cpufreq_cpu_put(policy);
->>> +                        housekeeping_cpumask(HK_TYPE_TICK)))
->>>                   return -EOPNOTSUPP;
->>> -            }
->>>                 for_each_cpu_wrap(ref_cpu, policy->cpus, cpu + 1) {
->>>                   if (ref_cpu == start_cpu) {
->>> @@ -329,8 +328,6 @@ int arch_freq_get_on_cpu(int cpu)
->>>                       break;
->>>               }
->>>   -            cpufreq_cpu_put(policy);
->>> -
->>>               if (ref_cpu >= nr_cpu_ids)
->>>                   /* No alternative to pull info from */
->>>                   return -EAGAIN;
->> Thanks,
->>
->> Ben
->>
+Amend the AER driver to recognize them as well, instead of logging them as
+"Unknown Error Bit".
 
-Thanks,
+Signed-off-by: Lukas Wunner <lukas@wunner.de>
+Cc: stable@vger.kernel.org
+---
+Last amendment of aer_uncorrectable_error_string[] was in 2019 for an
+error introduced in PCIe r3.1, see commit 6458b438ebc1 ("PCI/AER: Add
+PoisonTLPBlocked to Uncorrectable error counters").
 
-Ben
+ drivers/pci/pcie/aer.c | 12 ++++++------
+ 1 file changed, 6 insertions(+), 6 deletions(-)
+
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index e286c19..15ed541 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -43,7 +43,7 @@
+ #define AER_ERROR_SOURCES_MAX		128
+ 
+ #define AER_MAX_TYPEOF_COR_ERRS		16	/* as per PCI_ERR_COR_STATUS */
+-#define AER_MAX_TYPEOF_UNCOR_ERRS	27	/* as per PCI_ERR_UNCOR_STATUS*/
++#define AER_MAX_TYPEOF_UNCOR_ERRS	32	/* as per PCI_ERR_UNCOR_STATUS*/
+ 
+ struct aer_err_source {
+ 	u32 status;			/* PCI_ERR_ROOT_STATUS */
+@@ -525,11 +525,11 @@ void pci_aer_exit(struct pci_dev *dev)
+ 	"AtomicOpBlocked",		/* Bit Position 24	*/
+ 	"TLPBlockedErr",		/* Bit Position 25	*/
+ 	"PoisonTLPBlocked",		/* Bit Position 26	*/
+-	NULL,				/* Bit Position 27	*/
+-	NULL,				/* Bit Position 28	*/
+-	NULL,				/* Bit Position 29	*/
+-	NULL,				/* Bit Position 30	*/
+-	NULL,				/* Bit Position 31	*/
++	"DMWrReqBlocked",		/* Bit Position 27	*/
++	"IDECheck",			/* Bit Position 28	*/
++	"MisIDETLP",			/* Bit Position 29	*/
++	"PCRC_CHECK",			/* Bit Position 30	*/
++	"TLPXlatBlocked",		/* Bit Position 31	*/
+ };
+ 
+ static const char *aer_agent_string[] = {
+-- 
+2.47.2
 
 
