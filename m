@@ -1,22 +1,22 @@
-Return-Path: <linuxppc-dev+bounces-11366-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11367-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29190CA0EFF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Aug 2025 07:32:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8843CA0EFF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Aug 2025 07:32:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cBbnq5KXWz3cYH;
-	Wed, 27 Aug 2025 17:31:59 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cBbp139kyz3cYh;
+	Wed, 27 Aug 2025 17:32:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=124.126.103.232
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756270988;
-	cv=none; b=WAoW8ydPhsjwV9jsmgAZ8ccFRgxXO9WBNyBqf0OeRWt9REBM6BdGtWVXHgAd7hA/exwRwboMGsn/U1S9OwFLli6GwDIbiwvQH+mhMHoqTyyPqXT+bghdUE6CjS82GsD0A2EJSFd0ckW8m9/O9/gmIdQK22f7KmQ99Vg7i17NSxVhhKSz7qJmsLJuwdQO0dlCZrcLgN9GAGB4oJl4OQ8S/A/yYf6cC4AxHNG6wvI9PwDZxAP4O5hYCN2KyGTG0Cn5qt3Bl1OR7C+rXOozKdm6MtLI5Td4o08p35z5Gv10t41EZhDVtCvGMUN1cMC/QgW72/1WEM/r4EAGp2geG5P//Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756271286;
+	cv=none; b=bTwTKRf5zE2qmMljbk8/bvJZTIs5Yjf2UtQgpDYeA0PW5Uz+B16PdPUHt/O7AjrTmBV9EPo82dfyc3ox90YR0f3qdYSMajIDOmtNYoJtEN0wwz6X+QIOpln31WIzD56/JKP6FkmK7yTtPYyxDCZQv/0/QgjA25RXf+UuouL9uAZFOkaXKTVDJw/ppMk+tVl7P+ADiwkuUw6B5w2P+HhoAxN8XR/hcZO3D9vn2oNaaCd0GUpY0xeIuFMMUDpOyRTKelGK68Ov6HBVX0fq36WArDr92uSuIao+zQ86kVaGHLx7ODW0P8fTRuhBG5/emMBRKtIqBmdYwt/YoCFPWlWmSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756270988; c=relaxed/relaxed;
+	t=1756271286; c=relaxed/relaxed;
 	bh=pAyMWgexEz6ELtLyIl6a7V43YZz8wxxYEW9iDs3FLrU=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=oHUcCNsw1TrNrjy1pZkaHZsnEAff9AJj2dgrsjKmGkttxTeW/t++AdlVJcPPGPnq3R1mDAW9i2W+eMzYMRR0Gr5wHCKEBVrbXHCTFWhbTfzNvPD4VhUC5L7/lhuGcjvznituzPJHdSSVZsJ2l9GvXPU5wOOvYHcaXzUXsU064A21XlqkW0MgzWni0PtSXPhMdyQU7r9P37jvMt5ViRtvpMnGau+5M9aZN2RQ3Lg5j4mDrNTXFxCCqw5G20oGrPh6qsLBbT6ea4LUdwQBo/7xDpPaZwl+J3jsMOLQNwAczRt+VTqhcBLUtQAtFnVrohwFGXqOgRjy3XreBzOZ1zVqAg==
+	 MIME-Version; b=oorF18Su8jrZvKKAwOnZ9DrHXwd0matmR5WyxAtA3iiQkBuofvSMu/Qeel5wEorAXmOiIBoQekgFAJIac0Sy11M97Xf+jpXltTwOZMAIWAxNttEprfxWT2xNUnIv+n14ZCQr9BBaEsvgDp34xBdV1i1MkzFMUKYjSt39C6SUGFqkS9rj1DvJcCDhTqCU9pNyjlWD1gyhh8IXf6KnvNEjSnvfP1bpUYU9e+7pFKvTHpxMYdYTWDSO/lwn0aiIuLhsj3ilxJCGYZXsKdbUQqHDwrilYOo5XKOFgO9+LPVjvi94iY3eEV+a/GHFnXAh3s91laimKryDsA6bHis6jbCOdg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=zhangzihuan@kylinos.cn; receiver=lists.ozlabs.org) smtp.mailfrom=kylinos.cn
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kylinos.cn (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=zhangzihuan@kylinos.cn; receiver=lists.ozlabs.org)
@@ -24,11 +24,12 @@ Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cBXV34rzQz30WF
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2025 15:03:04 +1000 (AEST)
-X-UUID: f37f2f18830211f0b29709d653e92f7d-20250827
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cBXbm6hmMz30Vf
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2025 15:08:04 +1000 (AEST)
+X-UUID: a66d9060830311f0b29709d653e92f7d-20250827
+X-CID-CACHE: Type:Local,Time:202508271301+08,HitQuantity:2
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.45,REQID:1c415ba0-fb13-418e-8a8d-f939331ccbe2,IP:0,U
+X-CID-O-INFO: VERSION:1.1.45,REQID:b7ef6e9a-902b-422c-af90-2b1db3b52361,IP:0,U
 	RL:0,TC:0,Content:-25,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
 	N:release,TS:-25
 X-CID-META: VersionHash:6493067,CLOUDID:7871a2c7ca51f2bc02737c897857e02d,BulkI
@@ -38,18 +39,18 @@ X-CID-META: VersionHash:6493067,CLOUDID:7871a2c7ca51f2bc02737c897857e02d,BulkI
 X-CID-BVR: 0
 X-CID-BAS: 0,_,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR
-X-UUID: f37f2f18830211f0b29709d653e92f7d-20250827
+X-UUID: a66d9060830311f0b29709d653e92f7d-20250827
 Received: from mail.kylinos.cn [(10.44.16.175)] by mailgw.kylinos.cn
 	(envelope-from <zhangzihuan@kylinos.cn>)
 	(Generic MTA)
-	with ESMTP id 208371796; Wed, 27 Aug 2025 13:01:54 +0800
+	with ESMTP id 1447545758; Wed, 27 Aug 2025 13:06:54 +0800
 Received: from mail.kylinos.cn (localhost [127.0.0.1])
-	by mail.kylinos.cn (NSMail) with SMTP id C320CE008FAB;
-	Wed, 27 Aug 2025 10:34:49 +0800 (CST)
-X-ns-mid: postfix-68AE6EC9-204746223
+	by mail.kylinos.cn (NSMail) with SMTP id AE1AEE008FB6;
+	Wed, 27 Aug 2025 11:51:18 +0800 (CST)
+X-ns-mid: postfix-68AE80B6-481635499
 Received: from localhost.localdomain (unknown [172.25.120.24])
-	by mail.kylinos.cn (NSMail) with ESMTPA id ECEDDE008FAC;
-	Wed, 27 Aug 2025 10:34:43 +0800 (CST)
+	by mail.kylinos.cn (NSMail) with ESMTPA id 49687E008FB2;
+	Wed, 27 Aug 2025 11:51:01 +0800 (CST)
 From: Zihuan Zhang <zhangzihuan@kylinos.cn>
 To: "Rafael J . wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>,
@@ -117,8 +118,8 @@ Cc: zhenglifeng <zhenglifeng1@huawei.com>,
 	linux-kernel@vger.kernel.org,
 	Zihuan Zhang <zhangzihuan@kylinos.cn>
 Subject: [PATCH v2 15/18] powercap: dtpm_cpu: Use __free(put_cpufreq_policy) for policy reference
-Date: Wed, 27 Aug 2025 10:31:59 +0800
-Message-Id: <20250827023202.10310-16-zhangzihuan@kylinos.cn>
+Date: Wed, 27 Aug 2025 11:50:56 +0800
+Message-Id: <20250827035056.353772-1-zhangzihuan@kylinos.cn>
 X-Mailer: git-send-email 2.25.1
 In-Reply-To: <20250827023202.10310-1-zhangzihuan@kylinos.cn>
 References: <20250827023202.10310-1-zhangzihuan@kylinos.cn>
