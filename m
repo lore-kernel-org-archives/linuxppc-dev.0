@@ -1,21 +1,22 @@
-Return-Path: <linuxppc-dev+bounces-11347-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11348-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23AD1CA0EFF
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Aug 2025 03:45:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 53126CA0EFF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 27 Aug 2025 03:45:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cBVlw37Qhz2xcC;
-	Wed, 27 Aug 2025 13:45:00 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cBVm56s9tz3bV6;
+	Wed, 27 Aug 2025 13:45:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=124.126.103.232
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756262032;
-	cv=none; b=mIiIhKO3p+Oi5hBFBNmIsOpvsrR4QNLYSCMs6HhixPi9EAngD84xgCuqxWHjlPsku0uarOLZ2qJzErUZoZFsPEmM4WS6t3yYjtCl2LhYe1ozyRuJfG+p81Ig9WKe65Pkabuotdj1oxA0LywhjnDU3aTBbaLWd52KvhrHOWRpEkYGCd8J9lws53u84KZ80q10WVAodpk3+ig15QUHBgmvJIXymqtlzYMdKyL889g6nq2ZYQbR2xdwJ9GCtkjeilbPZpW32n76eFs9N3xxb4VXU/iaqBuEB3r40PtY1284kOMvjSJVb7jct9rI6tTkQCntJ3HgZJgjhbGi8SR2e8EDhw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756262033;
+	cv=none; b=Eia2/4FUIdFRCw73Rpzha6Qioxjt9DBbj7uGSz1ze91fgTQtgbBtFHuFDUG7AcoK+yBQGgJxZF2s8O2jcN5stcgsyYvigVL80j9/QqHznSUt5NW1DFyJE1TKho0CaGfldcnl7jEwewL5kGJBca4ikmHiSfME6dR9NR9BHyU2UC1ZmBCegHwCTJ0LZuzDdhMK/ONpIMkW6X8PEZTrdLs3KletkIvB0XiJmbQUKT2qsIOjI5z65Bt063pqi+a03BpL1tKlOjcxILQ3nxuV1O19yUayM9E2xdL3hiBr/qb6//NEzw3Qf/1sjM0hN3DK/6vSCdFx/oB6LHlNfC0Rw9lgXg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756262032; c=relaxed/relaxed;
-	bh=PpgQ5XhljIfFIHu+yBPXlXKeCfLTb/QJAew60j+OiZY=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=oki8YUpO04cYiBlKb6Do/cKbJW3yEG0gqANOdfTuRfGFYQPrGklgRw8i3uBqNJZniN0ddCxkJasUlkSyJXbogUcYxCswq6Ifte/k+O/PwI1W5q5LmTj+p0z9fge/3RhXuzkM5Rf3k2gmHHerdAz5oCCJP43n/VP6ADujnBprVLTbccQRhIUwXyZGW+jm6yYAM2Tn+CC59agWbtoLswbTHmKEpXz0GvjR7HQZAV4mmmU2R0fwEs0h9fvZJGi00PdL4zXlUgBM4DvHNZCgrnCzqABq/vMh2Jr4iQn7lkgK6rS7sW6lVTIBK5EWCSUuC4HVFM0FGZCIoquFiiJ7vrYLdA==
+	t=1756262033; c=relaxed/relaxed;
+	bh=WybotI36Fb22c0U8UY4RDPNG2ZwEfXuZfoutkT/RpXU=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=DoKuLRioGMS0XJLvlTHkgNkFPeqbAZ1CMeApbejQ+z4qlCA0av5IaVGWHPMO/t1myCvMaBwqPuypgjHs8jfvm90Hxz5EWYCOpW+v5MvbpLdJt2hutgWdU04acRLWpDIcqnjdaQ7vO7U6YNSrqlMnQrgJiUISs492Plb7UN5kGfx3vmAo/ySrWjGtAQNToRQiHm12noYEUCMY+/rbtNk/MvJ0OPC/SFG5k4s9LlyN2cG0WAZFmhuYOR3FWnbfsDZ0kZQjqZjAPWn//kBBHJxVpcKLCwS9eTKu2CtpL6zyMtsnhpHCy3eKodXfW/lZrOgv2tlbMKruaQzJwFfMOFTKQA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn; spf=pass (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=zhangzihuan@kylinos.cn; receiver=lists.ozlabs.org) smtp.mailfrom=kylinos.cn
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kylinos.cn
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kylinos.cn (client-ip=124.126.103.232; helo=mailgw.kylinos.cn; envelope-from=zhangzihuan@kylinos.cn; receiver=lists.ozlabs.org)
@@ -23,32 +24,32 @@ Received: from mailgw.kylinos.cn (mailgw.kylinos.cn [124.126.103.232])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cBT9n70q2z2yMw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2025 12:33:46 +1000 (AEST)
-X-UUID: 1608347c82ee11f0b29709d653e92f7d-20250827
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cBT9r5rVyz2yMw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 27 Aug 2025 12:33:52 +1000 (AEST)
+X-UUID: 42b59a0a82ee11f0b29709d653e92f7d-20250827
 X-CID-P-RULE: Release_Ham
-X-CID-O-INFO: VERSION:1.1.45,REQID:9ef84008-8d93-4efc-b22c-c01a63cd65b6,IP:0,U
-	RL:0,TC:0,Content:30,EDM:0,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTION
-	:release,TS:30
-X-CID-META: VersionHash:6493067,CLOUDID:9b84e483923621b91582f098a4e5a9f9,BulkI
-	D:nil,BulkQuantity:0,Recheck:0,SF:102|850,TC:nil,Content:4|50,EDM:-3,IP:ni
-	l,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:0,LES
-	:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
+X-CID-O-INFO: VERSION:1.1.45,REQID:4fdd3bf5-e2bd-43a8-a24a-bb872f3f34b9,IP:0,U
+	RL:0,TC:0,Content:0,EDM:-25,RT:0,SF:0,FILE:0,BULK:0,RULE:Release_Ham,ACTIO
+	N:release,TS:-25
+X-CID-META: VersionHash:6493067,CLOUDID:577cc75fc3de27249cb3c463a6e188d5,BulkI
+	D:nil,BulkQuantity:0,Recheck:0,SF:81|82|102|850,TC:nil,Content:0|50,EDM:1,
+	IP:nil,URL:0,File:nil,RT:nil,Bulk:nil,QS:nil,BEC:nil,COL:0,OSI:0,OSA:0,AV:
+	0,LES:1,SPR:NO,DKR:0,DKP:0,BRR:0,BRE:0,ARC:0
 X-CID-BVR: 0
 X-CID-BAS: 0,_,0,_
 X-CID-FACTOR: TF_CID_SPAM_SNR
-X-UUID: 1608347c82ee11f0b29709d653e92f7d-20250827
+X-UUID: 42b59a0a82ee11f0b29709d653e92f7d-20250827
 Received: from mail.kylinos.cn [(10.44.16.175)] by mailgw.kylinos.cn
 	(envelope-from <zhangzihuan@kylinos.cn>)
 	(Generic MTA)
-	with ESMTP id 1094580345; Wed, 27 Aug 2025 10:32:33 +0800
+	with ESMTP id 2109732789; Wed, 27 Aug 2025 10:33:48 +0800
 Received: from mail.kylinos.cn (localhost [127.0.0.1])
-	by mail.kylinos.cn (NSMail) with SMTP id 85EFFE008FAC;
-	Wed, 27 Aug 2025 10:32:32 +0800 (CST)
-X-ns-mid: postfix-68AE6E40-207889202
+	by mail.kylinos.cn (NSMail) with SMTP id 41BF9E008FAC;
+	Wed, 27 Aug 2025 10:33:47 +0800 (CST)
+X-ns-mid: postfix-68AE6E8A-406372209
 Received: from localhost.localdomain (unknown [172.25.120.24])
-	by mail.kylinos.cn (NSMail) with ESMTPA id C0D71E008FAA;
-	Wed, 27 Aug 2025 10:32:14 +0800 (CST)
+	by mail.kylinos.cn (NSMail) with ESMTPA id E7D32E008FAE;
+	Wed, 27 Aug 2025 10:33:25 +0800 (CST)
 From: Zihuan Zhang <zhangzihuan@kylinos.cn>
 To: "Rafael J . wysocki" <rafael@kernel.org>,
 	Viresh Kumar <viresh.kumar@linaro.org>,
@@ -115,10 +116,12 @@ Cc: zhenglifeng <zhenglifeng1@huawei.com>,
 	linux-mediatek@lists.infradead.org,
 	linux-kernel@vger.kernel.org,
 	Zihuan Zhang <zhangzihuan@kylinos.cn>
-Subject: [PATCH v2 00/18] cpufreq: use __free() for all cpufreq_cpu_get() references
-Date: Wed, 27 Aug 2025 10:31:44 +0800
-Message-Id: <20250827023202.10310-1-zhangzihuan@kylinos.cn>
+Subject: [PATCH v2 05/18] cpufreq: CPPC: Use __free(put_cpufreq_policy) for policy reference
+Date: Wed, 27 Aug 2025 10:31:49 +0800
+Message-Id: <20250827023202.10310-6-zhangzihuan@kylinos.cn>
 X-Mailer: git-send-email 2.25.1
+In-Reply-To: <20250827023202.10310-1-zhangzihuan@kylinos.cn>
+References: <20250827023202.10310-1-zhangzihuan@kylinos.cn>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -134,69 +137,42 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: quoted-printable
 
-This patchset converts all remaining cpufreq users to rely on the
-__free(put_cpufreq_policy) annotation for policy references, instead of
-calling cpufreq_cpu_put() manually.
+Replace the manual cpufreq_cpu_put() with __free(put_cpufreq_policy)
+annotation for policy references. This reduces the risk of reference
+counting mistakes and aligns the code with the latest kernel style.
 
-Motivation:
-- Reduce the chance of reference counting mistakes
-- Make the code more consistent with the latest kernel style
-- behavior remains the same, but reference counting is now safer=20
-  and easier to maintain.
+No functional change intended.
 
-The changes are split into 18 patches as they touch different subsystems
-and are maintained by different people. There is no functional change.
+Signed-off-by: Zihuan Zhang <zhangzihuan@kylinos.cn>
+---
+ drivers/cpufreq/cppc_cpufreq.c | 4 +---
+ 1 file changed, 1 insertion(+), 3 deletions(-)
 
-V2:
- - Fix compile error in powernv-cpufreq.c
- - Split patch to separate logical changes
-
-Zihuan Zhang (18):
-  arm64: topology: Use __free(put_cpufreq_policy) for policy reference
-  KVM: x86: Use __free(put_cpufreq_policy) for policy reference
-  ACPI: processor: thermal: Use __free(put_cpufreq_policy) for policy
-    reference
-  cpufreq: brcmstb-avs-cpufreq: Use __free(put_cpufreq_policy) for
-    policy reference
-  cpufreq: CPPC: Use __free(put_cpufreq_policy) for policy reference
-  cpufreq: intel_pstate: Use __free(put_cpufreq_policy) for policy
-    reference
-  cpufreq: longhaul: Use __free(put_cpufreq_policy) for policy reference
-  cpufreq: mediatek: Use __free(put_cpufreq_policy) for policy reference
-  cpufreq: powernv: Use __free(put_cpufreq_policy) for policy reference
-  cpufreq: s5pv210: Use __free(put_cpufreq_policy) for policy reference
-  cpufreq: tegra186: Use __free(put_cpufreq_policy) for policy reference
-  PM / devfreq: Use __free(put_cpufreq_policy) for policy reference
-  drm/i915: Use __free(put_cpufreq_policy) for policy reference
-  cpufreq: powerpc: macintosh: Use __free(put_cpufreq_policy) for policy
-    reference
-  powercap: dtpm_cpu: Use __free(put_cpufreq_policy) for policy
-    reference
-  thermal: imx: Use __free(put_cpufreq_policy) for policy reference
-  thermal/drivers/ti-soc-thermal:  Use __free(put_cpufreq_policy) for
-    policy reference
-  PM: EM: Use __free(put_cpufreq_policy) for policy reference
-
- arch/arm64/kernel/topology.c                  |  9 +++----
- arch/x86/kvm/x86.c                            | 10 ++++----
- drivers/acpi/processor_thermal.c              | 12 +++-------
- drivers/cpufreq/brcmstb-avs-cpufreq.c         |  4 +---
- drivers/cpufreq/cppc_cpufreq.c                |  4 +---
- drivers/cpufreq/intel_pstate.c                |  3 +--
- drivers/cpufreq/longhaul.c                    |  3 +--
- drivers/cpufreq/mediatek-cpufreq.c            |  6 ++---
- drivers/cpufreq/powernv-cpufreq.c             |  7 +++---
- drivers/cpufreq/s5pv210-cpufreq.c             |  3 +--
- drivers/cpufreq/tegra186-cpufreq.c            |  3 +--
- drivers/devfreq/governor_passive.c            | 19 ++++-----------
- drivers/gpu/drm/i915/gt/intel_llc.c           |  3 +--
- drivers/macintosh/windfarm_cpufreq_clamp.c    |  4 +---
- drivers/powercap/dtpm_cpu.c                   | 24 ++++++-------------
- drivers/thermal/imx_thermal.c                 | 13 ++++------
- .../ti-soc-thermal/ti-thermal-common.c        | 12 ++++------
- kernel/power/energy_model.c                   |  7 ++----
- 18 files changed, 46 insertions(+), 100 deletions(-)
-
+diff --git a/drivers/cpufreq/cppc_cpufreq.c b/drivers/cpufreq/cppc_cpufre=
+q.c
+index 4a17162a392d..7183754b1f31 100644
+--- a/drivers/cpufreq/cppc_cpufreq.c
++++ b/drivers/cpufreq/cppc_cpufreq.c
+@@ -726,7 +726,7 @@ static int cppc_get_perf_ctrs_sample(int cpu,
+ static unsigned int cppc_cpufreq_get_rate(unsigned int cpu)
+ {
+ 	struct cppc_perf_fb_ctrs fb_ctrs_t0 =3D {0}, fb_ctrs_t1 =3D {0};
+-	struct cpufreq_policy *policy =3D cpufreq_cpu_get(cpu);
++	struct cpufreq_policy *policy __free(put_cpufreq_policy) =3D cpufreq_cp=
+u_get(cpu);
+ 	struct cppc_cpudata *cpu_data;
+ 	u64 delivered_perf;
+ 	int ret;
+@@ -736,8 +736,6 @@ static unsigned int cppc_cpufreq_get_rate(unsigned in=
+t cpu)
+=20
+ 	cpu_data =3D policy->driver_data;
+=20
+-	cpufreq_cpu_put(policy);
+-
+ 	ret =3D cppc_get_perf_ctrs_sample(cpu, &fb_ctrs_t0, &fb_ctrs_t1);
+ 	if (ret) {
+ 		if (ret =3D=3D -EFAULT)
 --=20
 2.25.1
 
