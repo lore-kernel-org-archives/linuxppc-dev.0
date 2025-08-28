@@ -1,90 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-11413-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11414-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C5E6CA0EED
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Aug 2025 06:33:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 427C2C8303F
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Aug 2025 08:21:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cCBRy07GVz3cYg;
-	Thu, 28 Aug 2025 16:33:34 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756362813;
-	cv=none; b=QQVG2/3gVnpeBq0OefINcyhNqWTFOOA9yd7/CukN+vWxAwkHv74LjR6HZwJc2KampVOIRpkz/4BpvphvPGPfbpzGqbohlVYJ+W1uVOERZteiwHRI67J+LQQ3O0W/QVggzSa7U02Gqo/Woa4pnr5CDxqjTv16/jZJGMP/7m+lnX7AGVoWbDgkHyLqH1PT/PFJ03kpNfSFk/42rkgvGBn716HrkN3e9BNoWt4AP709Ej9YUtua21Bic7JFlCkUiLgaa0Ff3fVajNCPaSebV/3P11xrFaWQQRfL12MVcFON3X5yuqd9+JbKXEqok/atiuNP/5bUusd3x+uaNDgP6x2kTg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cCDr66Txcz2yGx;
+	Thu, 28 Aug 2025 18:21:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.175.24.41
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756369270;
+	cv=none; b=mZ5zV0D1sFK4hfbQvLg0srPh0c/VhC7NxFxJu3QFQtLz8kSwv4WxHm+gEXggLXWHhO2x3gYxUHy4/kcyPV0EqYlHafmaUetTr1V1/k7n1GURm1JBoNxcWAlZGMjHKNxPFK7OH/ZNnHYSkUQ6gbhx+DWEkGtq8YBLG61C5VrzUi0OOH29T1Xfx39rwnWg5uzEBXg6xR5Iz98S7jWXUxUEpJ9EszPJucs/kcFJG+Yj1LzBO7rRc7tfXvPKsj1yw8Z9xyXY3g4mlsWrUVQQbDfq3ySXLVC2XccJ72Xt86q8nCKAiFrt8bU0+3u7G0gkzoNYXl96odHfNo6mU3Z5aCny/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756362813; c=relaxed/relaxed;
-	bh=WewHb0G7p+TfHjPAe2pbPhcWmEOiO7ieeExDAA3U8ow=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ZTMCy10zCfvM77AKE7sbKBbg4WaOzGhDuKZ47cHyUheXpHGoADT37XPLW4hw3llSH55Tyw7qdkUFnw1lOd8eMwEV6K4YurYOEoT2P1r+9LXBZZJE2uAOg2dQ51PgvlPBY5e79QWotSkif740FmZLZA3fx3I3OI8bntmsFuQsdkc+KpiQGCbpXd18aiFIYSZG3fz+kxAJMtrF5FFj8B9SY0I91IXoOMZNMdSFlc4V0rhKb++vEqf6EN5+nuhJFakaRhGkx/jj3umgD3PgqrodxbT6w3+oIEx4fiHGOfLFMqx/Vkwib6yK5qN364GDVVSjKWlWPHVbrpWNsCWYI0WbQA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MtdLzpnR; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=MtdLzpnR;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cCBRx2QxDz3cQx
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2025 16:33:33 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57S5jvgd004119;
-	Thu, 28 Aug 2025 06:33:03 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=WewHb0
-	G7p+TfHjPAe2pbPhcWmEOiO7ieeExDAA3U8ow=; b=MtdLzpnRDa0nkT7SX2DB9q
-	uMJUx/a7FJt0MWpPjfyceGk4GpuN8DZ1IlN3WCRQJquXn+husqD5Amb3YhfNJRvT
-	km081JqvK1TQNOc16uCI0Il1rEhhXVw/7y+g7D1VfLOIn6w1NWvpewB993mftGOT
-	9JuKCh6tAniuaI5PUII9v264VIxoRHHSu0L7arGdMPirH4ZuDmk8q4+LWSdcg8xA
-	JyoXG8A7LhArc3JA1UazI1kNP7HLVeqA0V5TsryvNcR98ynAY9vgVLgTJyAcfYqG
-	Gp1mrQDgKcc31nV1M7pwtVZmTlaADC8HKsg4zyC/309DJISaG73Cn67pUWpOmj4Q
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48q558886s-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 28 Aug 2025 06:33:02 +0000 (GMT)
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 57S6VQbk030110;
-	Thu, 28 Aug 2025 06:33:02 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48q558886p-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 28 Aug 2025 06:33:02 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 57S3rudM007813;
-	Thu, 28 Aug 2025 06:33:01 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 48qqyuktvd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 28 Aug 2025 06:33:01 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 57S6WxDw52822398
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 28 Aug 2025 06:32:59 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BD9A120043;
-	Thu, 28 Aug 2025 06:32:59 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BAC9F20040;
-	Thu, 28 Aug 2025 06:32:57 +0000 (GMT)
-Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.ibm.com.com (unknown [9.43.64.161])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 28 Aug 2025 06:32:57 +0000 (GMT)
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: "Jiri Slaby (SUSE)" <jirislaby@kernel.org>
-Cc: linux-kernel@vger.kernel.org, tglx@linutronix.de,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>, Naveen N Rao <naveen@kernel.org>,
-        linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH -resend] powerpc: Use dev_fwnode()
-Date: Thu, 28 Aug 2025 12:02:56 +0530
-Message-ID: <175635911050.1554354.2788619788744225581.b4-ty@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20250723062842.1831271-1-jirislaby@kernel.org>
-References: <20250723062842.1831271-1-jirislaby@kernel.org>
+	t=1756369270; c=relaxed/relaxed;
+	bh=cVO9XoyfsV4Hh0cmwo3HIYjphpMP51iRhEJkXNqV+bA=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=UbgCkIV4CcLv6TeFphChzkhzdI25PH7Lid8faN+VBBtZiJwlZBy2NhvKdw/hK1+dTpLV5kUEXKz0VOapoyfG6Vnnfubn/cR5fx4UO2a94i0N70ksdzry1irRKS4k9iyocu4ErQ8mqK44+SA+SoaM5RHiKStDUjsXis86s2eJGTqYwluc7YLWTGvA40Hcvihw7I08c9tQQXbsBvdqJR+E8XLwHIJrICpuUTYaKG5ntZpbkDMSJCTkEOsvpS8Z/y5/rFAt3BwvCn027waqN+wAbLBlSNbF1Jg5JJDKlvkNQFur1DMUSZKeXI0uEZRIxqADiQx95BkJaSQHgh/1Bw5LnQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=alpha.franken.de; spf=pass (client-ip=193.175.24.41; helo=elvis.franken.de; envelope-from=tsbogend@alpha.franken.de; receiver=lists.ozlabs.org) smtp.mailfrom=alpha.franken.de
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=alpha.franken.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alpha.franken.de (client-ip=193.175.24.41; helo=elvis.franken.de; envelope-from=tsbogend@alpha.franken.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 2549 seconds by postgrey-1.37 at boromir; Thu, 28 Aug 2025 18:21:09 AEST
+Received: from elvis.franken.de (elvis.franken.de [193.175.24.41])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cCDr52f0hz2xVq
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 28 Aug 2025 18:21:09 +1000 (AEST)
+Received: from uucp by elvis.franken.de with local-rmail (Exim 3.36 #1)
+	id 1urXDA-0001jz-00; Thu, 28 Aug 2025 09:38:20 +0200
+Received: by alpha.franken.de (Postfix, from userid 1000)
+	id 09775C04FD; Thu, 28 Aug 2025 08:57:33 +0200 (CEST)
+Date: Thu, 28 Aug 2025 08:57:33 +0200
+From: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
+To: Ilpo =?iso-8859-1?Q?J=E4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Cc: Andreas Larsson <andreas@gaisler.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+	linux-pci@vger.kernel.org, sparclinux@vger.kernel.org,
+	Christian =?iso-8859-1?Q?K=F6nig?= <christian.koenig@amd.com>,
+	Yinghai Lu <yinghai@kernel.org>,
+	Igor Mammedov <imammedo@redhat.com>,
+	"Rafael J . Wysocki" <rafael@kernel.org>,
+	Jonathan Cameron <Jonathan.Cameron@huawei.com>,
+	Lorenzo Pieralisi <lorenzo.pieralisi@arm.com>,
+	Krzysztof =?utf-8?Q?Wilczy=C5=84ski?= <kw@linux.com>,
+	linux-kernel@vger.kernel.org,
+	=?utf-8?Q?Micha=C5=82?= Winiarski <michal.winiarski@intel.com>,
+	linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH 03/24] MIPS: PCI: Use pci_enable_resources()
+Message-ID: <aK_93U_PnpKayqZD@alpha.franken.de>
+References: <20250822145605.18172-1-ilpo.jarvinen@linux.intel.com>
+ <20250822145605.18172-4-ilpo.jarvinen@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,45 +64,32 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 5aiVQFuLFuy7wIBUCu-Uday2szU5L5Ty
-X-Proofpoint-ORIG-GUID: DpWR1_O5Y7bjye9EvgacAspuQAcGMnCp
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODIzMDAyMSBTYWx0ZWRfXwAmwZwosf82l
- 00MlQikWZpzaVdVBiWqRXvpuDCd5NUt5PbPQVIvfdncEBAMpUaD8CuENBSAd4Pxo1qmTmAZ38wF
- iSvXTI9uQoNKRKaUiKKhyE4QFyMUX27mRBNl0p2c9aELQI73qBPvDkMP9MRgFg6Y9r77IL3QW7T
- S9ABP62ln62r1fr4PtQiSQg7JlkDqiZRT6ZwkewjWrBoQE9gUa+btfV4FG51XQX0DlopIJiftHT
- 3RxTqmYZpiJuEf0/jcdNZUO4LXo8BWqB93vLvxljo/48eDyi4JIEXYhWrqobuOgYNXiDB+ha6+x
- HXSdsgSrMf6Qb91QwuaLK9x2CNhlNmNZKuxrED7VExsuVm0kJHxhLSVwJNFuo3alGx0d20f7woh
- iiBT9bgc
-X-Authority-Analysis: v=2.4 cv=A8ZsP7WG c=1 sm=1 tr=0 ts=68aff81f cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10 a=VwQbUJbxAAAA:8 a=aJsWLRHQfULh26m7tKQA:9
- a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-08-28_01,2025-08-26_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 adultscore=0 priorityscore=1501 suspectscore=0 clxscore=1015
- spamscore=0 impostorscore=0 malwarescore=0 bulkscore=0 classifier=typeunknown
- authscore=0 authtc= authcc= route=outbound adjust=0 reason=mlx scancount=1
- engine=8.19.0-2507300000 definitions=main-2508230021
+In-Reply-To: <20250822145605.18172-4-ilpo.jarvinen@linux.intel.com>
 
-On Wed, 23 Jul 2025 08:28:42 +0200, Jiri Slaby (SUSE) wrote:
-> irq_domain_create_simple() takes fwnode as the first argument. It can be
-> extracted from the struct device using dev_fwnode() helper instead of
-> using of_node with of_fwnode_handle().
+On Fri, Aug 22, 2025 at 05:55:44PM +0300, Ilpo Järvinen wrote:
+> pci-legacy.c under MIPS has a copy of pci_enable_resources() named as
+> pcibios_enable_resources(). Having own copy of same functionality could
+> lead to inconsistencies in behavior, especially now as
+> pci_enable_resources() and the bridge window resource flags behavior
+> are going to be altered by upcoming changes.
 > 
-> So use the dev_fwnode() helper.
+> The check for !r->start && r->end is already covered by the more
+> generic checks done in pci_enable_resources().
 > 
+> Call pci_enable_resources() from MIPS's pcibios_enable_device() and
+> remove pcibios_enable_resources().
 > 
-> [...]
+> Signed-off-by: Ilpo Järvinen <ilpo.jarvinen@linux.intel.com>
+> ---
+>  arch/mips/pci/pci-legacy.c | 38 ++------------------------------------
+>  1 file changed, 2 insertions(+), 36 deletions(-)
 
-Applied to powerpc/fixes.
+Acked-by: Thomas Bogendoerfer <tsbogend@alpha.franken.de>
 
-[1/1] powerpc: Use dev_fwnode()
-      https://git.kernel.org/powerpc/c/b018bb26c42049e05d3d65b057cc1250d17d9b0a
-
-Thanks
+-- 
+Crap can work. Given enough thrust pigs will fly, but it's not necessarily a
+good idea.                                                [ RFC1925, 2.3 ]
 
