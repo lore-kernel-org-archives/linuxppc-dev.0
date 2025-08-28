@@ -1,85 +1,86 @@
-Return-Path: <linuxppc-dev+bounces-11451-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11452-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E28FCA0FF6
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Aug 2025 23:09:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 112C6CA0FF6
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 28 Aug 2025 23:10:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cCcXk2t2wz2yrR;
-	Fri, 29 Aug 2025 09:09:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cCcXm14mFz2ytV;
+	Fri, 29 Aug 2025 09:09:12 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756422550;
-	cv=none; b=bDnL8AGFpofNPKaG3oLLU1K/Ou2nR6Uys0V4lMgF9Zeztpvi4cYZ+2pP0OhLTS5YBrr2gXJ1Of17F5MWcbKc6osiL+U56QMfQVZoGrPXO/GB7KJV2LVPG8h1//tzGwB/zJo8Ai4R2FicfFDCcmQYJcHIQUzaTCNHdWs+4pEGlGct84pkXJTAU+EonPfYlGt/7anYwX8FpJBs1Q6GC4Q7xvcgwHH/DLPgqyCgzm287c9eRMpi52A7voNCDP2Muu1zvcyWemWgTeN5zUrlXMrJBCLq7Cg4wSCjpcml40zPs76VShzIpH0jdQzslZ9UhTUNSymoVoF9jJFh6+Ik8C5O/Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756422552;
+	cv=none; b=NlmV9GvwfXiz7xyQWws/cE1zZzbWJcaS9SZrHUDI/0rIUUK5NgJvQ5luqfGwGjmUXcVOi/XqM5ZaGMxKnOO+ugrZyLuVOstDDBaMJ2WECm0QILUN7NFHoG8qCMJ4oGDUFfP1u/+mlhlHmVYMtfn6lWDqgxnnO+2yLyPNcwXy/h7N243uAKyvEXdu+y4DnxwEzvjHQapH+Zvq1Ll27bemBj5f/dAHTxUGvd76zaXVF0L80+pp4jtXhJqXiIHzBJdm0Bj3AELj1k7pF+se3zCbfPqVKxHyYqrjAMc+HlAsW3TRLL6OJySCQDigu+fhuyRYz2KT8W2S/2x2OOQ4A4Qtww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756422550; c=relaxed/relaxed;
-	bh=fK6QsOVS/v/A+AaDWdSi2wsP6pvNrEQx30LNsp78I40=;
+	t=1756422552; c=relaxed/relaxed;
+	bh=T4xRVLGUUTDpaoC8uGdT1PnR2qdtuA39VepBY44SrF8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Pma5hcy1r0wfAqyrpifMJbHEPyhdL5gPgmdQYLtYjf/bKq1noEjMlTOFrgihPfTRRx5bRXev43S9FDV8gwiCndiihBKZgUXCsWuXxS9wSHCRPdPZ/iBQHH1kdfPh7fsWehPMfi6w6SxWlUvWNqVgWfYoFcrdpi77SW22aPAq0Fk5c6pgH0q3quO3fgUffF745RpEj1DNjmPI7np7JqRsp6g8YatoCinhI+UAsM5xrmOL7WtLmqEJMCLNBuR5gDDC3zWwk+74e8jicCel2iosPqFcIoVV56VQtAQXIF6VTb/tm2E6sqcD9U6wFq9sTwthJgMx7rWD1fyQTvrIFz6VTA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VFXOtdoK; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version:Content-Type; b=lmWyPGTs/rpLUBREdImLQPwWdbRUgPYsHx3g20DoHz0frLuX6/foscMP+KeYAXXIgiMG50xN+unvpUbx8KohgLk1QJHtO0eXry8n7kpDLXGhhR/Rh4wPXLXM3tfvx15Kl2ykP7zOm9w0WpzUwhvG182WdwGL/r4o/1xOn4Am1N34fu1M2B6hGfo2pwSe+CxSEfafqImyDwD85XqVYe7TRzyEPe8rZ/ZF64r43r71eZ1Wbk56PswZb93BH1emGPmuxoeILiHbg+t4rrPA+ct78S2bDgnC1l9DjapeB2WbHYXGDWex84HuzZpkg3IqRwtu+tkHUd4ed76HFhTHIZGIcQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=q3OPINaQ; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VFXOtdoK;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=q3OPINaQ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cCcXj4JB9z2yrl
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2025 09:09:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cCcXl2nX0z2yrl
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 29 Aug 2025 09:09:11 +1000 (AEST)
 Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57SMcwvk025123;
-	Thu, 28 Aug 2025 23:09:01 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57SHK2Up002846;
+	Thu, 28 Aug 2025 23:09:04 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=fK6QsOVS/v/A+AaDW
-	dSi2wsP6pvNrEQx30LNsp78I40=; b=VFXOtdoKt9KdVnoY0XBRAqGRduVGH8yUm
-	GeyMxEmKaBLxCP0WO1Si1mFJFHfzp4EuyBRwLbNzcExxDfqb8hRFjiVisnBX4SH4
-	NBGG7HfJDCDpNalVh8WNOC4yj4HbyQJRNwglZzeNlIXVbGhsXwtQ0IznZXatXEXX
-	W4W42YbFm58Ro6i5U93tLzYfgVVqOT4xcd4tQoXWa6Qbov9rc5USHiaVszoi9N8P
-	6EvSCUbmK4pllXtIhNko/WGQNmsGmBHgqmVobHYhRXgSufRwgmu73Zo82Nz/8rtR
-	nzVsAnZBVh8b8Qk7ovULLTCMTwrb1ZpgRypS/YoBcG66WTzcMenhw==
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=T4xRVL
+	GUUTDpaoC8uGdT1PnR2qdtuA39VepBY44SrF8=; b=q3OPINaQZv3o/rOTfVVZRC
+	d27miLkusnPGXf45m7d9l+9OUAG2WnrB1hu1H2eq/n+fGe0zzIxM1etjizmE+Rkz
+	RT62FNbi7J4SVePhODIddECkS2TMZik4N0mznrrcDKvz1IF6UYmbExvQBVM5Gu9v
+	IIq0/miTHlqNBeAUtekWLzFfX4pVcI2lYTvIhX4cp8nYJMeQRQrJlCVOwG2ySlgE
+	0uVGWjc9/s1/2sruIvQp0Q4YJrzXGxGifWKLiupMadfRrHTyJCe1ZGTD3Bgd6jVt
+	VcPNgTvDRaImap4bknifWCIwu+D5vnBYrWeoTNxdpr/HB1YuiNvQ2lv2uCqo2Y1A
+	==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48q5hqcddp-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48q5hqcddv-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 28 Aug 2025 23:09:01 +0000 (GMT)
+	Thu, 28 Aug 2025 23:09:03 +0000 (GMT)
 Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 57SN4gPf004254;
-	Thu, 28 Aug 2025 23:09:00 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48q5hqcddk-1
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 57SN93wS012682;
+	Thu, 28 Aug 2025 23:09:03 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48q5hqcddt-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 28 Aug 2025 23:09:00 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 57SJsKT7007514;
-	Thu, 28 Aug 2025 23:08:59 GMT
-Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 48qqyuqfbe-1
+	Thu, 28 Aug 2025 23:09:03 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 57SLW72k029871;
+	Thu, 28 Aug 2025 23:09:02 GMT
+Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 48qsfmy68w-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 28 Aug 2025 23:08:59 +0000
+	Thu, 28 Aug 2025 23:09:02 +0000
 Received: from smtpav03.dal12v.mail.ibm.com (smtpav03.dal12v.mail.ibm.com [10.241.53.102])
-	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 57SN8uMa32047762
+	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 57SN8xFh8127420
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 28 Aug 2025 23:08:56 GMT
+	Thu, 28 Aug 2025 23:08:59 GMT
 Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5A9AD58068;
-	Thu, 28 Aug 2025 23:08:56 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id C830C58068;
+	Thu, 28 Aug 2025 23:08:59 +0000 (GMT)
 Received: from smtpav03.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7A16258061;
-	Thu, 28 Aug 2025 23:08:55 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id F14B458061;
+	Thu, 28 Aug 2025 23:08:58 +0000 (GMT)
 Received: from li-4c4c4544-0038-3410-8038-c4c04f423534.ibm.com (unknown [9.61.165.221])
 	by smtpav03.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Thu, 28 Aug 2025 23:08:55 +0000 (GMT)
+	Thu, 28 Aug 2025 23:08:58 +0000 (GMT)
 From: Haren Myneni <haren@linux.ibm.com>
 To: linuxppc-dev@lists.ozlabs.org
 Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
         msuchanek@suse.de, mahesh@linux.ibm.com, tyreld@linux.ibm.com,
         hbabu@us.ibm.com, haren@linux.ibm.com, shashank.gowda@in.ibm.com,
         bjking1@linux.ibm.com
-Subject: [PATCH v3 5/9] powerpc/pseries: Receive payload with ibm,receive-hvpipe-msg RTAS
-Date: Thu, 28 Aug 2025 16:08:39 -0700
-Message-ID: <20250828230845.2291249-6-haren@linux.ibm.com>
+Subject: [PATCH v3 7/9] powerpc/pseries: Enable HVPIPE event message interrupt
+Date: Thu, 28 Aug 2025 16:08:41 -0700
+Message-ID: <20250828230845.2291249-8-haren@linux.ibm.com>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20250828230845.2291249-1-haren@linux.ibm.com>
 References: <20250828230845.2291249-1-haren@linux.ibm.com>
@@ -96,20 +97,22 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODIzMDAyMSBTYWx0ZWRfX25LaCvgksDOk
- WHN8YBWzQNvwmuXULfDPgWDEMj8fTjQR3GSwmma6cEb9aRojTuYFYGLVQvM7fYnnnu++VjuRpwZ
- twsET5i8GBdZI0yhRB14KQt0Nutb09JoLZnh7OnpOPJmBcSwwFLgrCS1VDGrB7eVJBiF9SmV9bY
- H0suTEhFPLwdz5ZOFnwP04CEMK0oesbqVfMJaZNEJA5eApbIn5mHqj7Qu4p7+Wn4hu15X47J/O+
- dOKicNdRIFDNi1r/rbqgQllsjF8ifezf6gcWZ7X1Mqs8FQKsitUjrpwRo7FxpeA+KVqsUVskBMC
- GNoxtjGTaT9uEKQBWyF0e4yze4Tp1j/zh3A8rgK6DfLqk51jWhPDXBLx13Dz2NHJFvf2fpqgzoO
- YqBA9vvz
-X-Proofpoint-ORIG-GUID: yXIllhME5peRa7yeJrc4R8MFibUFlDZ7
-X-Proofpoint-GUID: GQMw_fGZ-_mmsUtJ9DgP2404nY8E9aDb
-X-Authority-Analysis: v=2.4 cv=Ndbm13D4 c=1 sm=1 tr=0 ts=68b0e18d cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=2OwXVqhp2XgA:10 a=VnNF1IyMAAAA:8 a=Fb0vpKKBCbXNAd5_CAcA:9
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODIzMDAyMSBTYWx0ZWRfXz8QhhHJcls7w
+ HleUWNHfxeJ1qpAJkEj3gP6PXCjuZF8jWT1D/HB836cBjw2h4Qj5wZi4op6cIQ/h1vNqWKVtIDV
+ TzyYWsbNtQmATG9Djlyg9UYuhgQkvA23BTi69Qmipr8Jk7XV8OOCJmLZ6Y116dzOz8CjGfjcZ2X
+ 2oCEEEzNN+f5lDOxzwxpFyD2IFnSFgaTHUTt6zdfq8zdVMRriMtyiSNHxjVp/MIG9LGyzZOQw4b
+ sLFYgyt2TVzRsh3Tw7mQH057syBFIcQ8MlA1RgIOAnPuKa8uzU24SPWNpEvaj2brvdAxjHsfGF2
+ qf/s4nicEpKa2UTqfxKiPjw0xdBIwgm1+nfJCB+Nl/g487BpL65SKIDg1T6iDLgg5wviSOG6ccL
+ 9Em5VWc0
+X-Proofpoint-ORIG-GUID: 4JXP5x67bBeI2a-ppOGZNEGfSKXdR_6Q
+X-Proofpoint-GUID: s8oK4upEA-DDCLN99MQv94KetHAmQfB5
+X-Authority-Analysis: v=2.4 cv=Ndbm13D4 c=1 sm=1 tr=0 ts=68b0e18f cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10 a=VnNF1IyMAAAA:8 a=mpe9e9lYSJgyPEw17A0A:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
  definitions=2025-08-28_04,2025-08-28_01,2025-03-28_01
@@ -119,245 +122,232 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  authscore=0 authtc= authcc= route=outbound adjust=0 reason=mlx scancount=1
  engine=8.19.0-2507300000 definitions=main-2508230021
 
-ibm,receive-hvpipe-msg RTAS call is used to receive data from the
-source (Ex: Hardware Management Console) over the hypervisor
-pipe. The hypervisor will signal the OS via a Hypervisor Pipe
-Event external interrupt when data is available to be received
-from the pipe and the event message has the source ID and the
-message type such as payload or closed pipe to the specific
-source. The hypervisor will not generate another interrupt for
-the next payload until the partition reads the previous payload.
-It means the hvpipe is blocked and will not deliver other events
-for any source. The maximum data length of 4048 bytes is
-supported with this RTAS call right now.
+The hypervisor signals the OS via a Hypervisor Pipe Event external
+interrupt when data is available to be received from the pipe.
+Then the OS  should call RTAS check-exception and provide the input
+Event Mask as defined for the ‘ibm,hvpipe-msg-events’. In response,
+check-exception will return an event log containing an Pipe Events
+message. This message contains the source ID for which this
+message is intended to and the pipe status such as whether the
+payload is pending in the hypervisor or pipe to source is closed.
 
-The user space uses read() to receive data from HMC which issues
-ibm,receive-hvpipe-msg RTAS and the kernel returns the buffer
-length (including papr_hvpipe_hdr length) to the user space for
-success or RTAS failure error. If the message is regarding the
-pipe closed, kernel just returns the  papr_hvpipe_hdr with
-flags = HVPIPE_LOST_CONNECTION and expects the user space to
-close FD for the corresponding source.
+If there is any user space process waiting in the wait_queue for
+the payload from this source ID, wake up that process which can
+issue read() to obtain payload with ibm,receive-hvpipe-msg RTAS
+or close FD if the pipe to source is closed.
 
-bm,receive-hvpipe-msg RTAS call passes the buffer and returns
-the source ID from where this payload is received and the
-payload length.
+The hypervisor has one pipe per partition for all sources and it
+will not deliver another hvpipe event message until the partition
+reads the payload for the previous hvpipe event. So if the source
+ID is not found in the source list, issue the dummy
+ibm,receive-hvpipe-msg RTAS so that pipe will not blocked.
+
+Register hvpipe event source interrupt based on entries from
+/proc/device-tree//event-sources/ibm,hvpipe-msg-events property.
 
 Signed-off-by: Haren Myneni <haren@linux.ibm.com>
 Reviewed-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
 Tested-by: Shashank MS <shashank.gowda@in.ibm.com>
 ---
- arch/powerpc/platforms/pseries/papr-hvpipe.c | 164 ++++++++++++++++++-
- arch/powerpc/platforms/pseries/papr-hvpipe.h |   1 +
- 2 files changed, 163 insertions(+), 2 deletions(-)
+ arch/powerpc/platforms/pseries/papr-hvpipe.c | 146 ++++++++++++++++++-
+ arch/powerpc/platforms/pseries/papr-hvpipe.h |  14 ++
+ 2 files changed, 155 insertions(+), 5 deletions(-)
 
 diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.c b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-index a7f0c49c7bdd..eb1b5f1f976e 100644
+index 1e7636c0b275..0969efb39d95 100644
 --- a/arch/powerpc/platforms/pseries/papr-hvpipe.c
 +++ b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-@@ -60,6 +60,54 @@ static LIST_HEAD(hvpipe_src_list);
-  *   return code for failure.
-  */
+@@ -22,6 +22,11 @@
+ static DEFINE_SPINLOCK(hvpipe_src_list_lock);
+ static LIST_HEAD(hvpipe_src_list);
  
-+/*
-+ * ibm,receive-hvpipe-msg RTAS call.
-+ * @area: Caller-provided work area buffer for results.
-+ * @srcID: Source ID returned by the RTAS call.
-+ * @bytesw: Bytes written by RTAS call to @area.
-+ */
-+static int rtas_ibm_receive_hvpipe_msg(struct rtas_work_area *area,
-+					u32 *srcID, u32 *bytesw)
-+{
-+	const s32 token = rtas_function_token(RTAS_FN_IBM_RECEIVE_HVPIPE_MSG);
-+	u32 rets[2];
-+	s32 fwrc;
-+	int ret;
-+
-+	if (token == RTAS_UNKNOWN_SERVICE)
-+		return -ENOENT;
-+
-+	do {
-+		fwrc = rtas_call(token, 2, 3, rets,
-+				rtas_work_area_phys(area),
-+				rtas_work_area_size(area));
-+
-+	} while (rtas_busy_delay(fwrc));
-+
-+	switch (fwrc) {
-+	case RTAS_SUCCESS:
-+		*srcID = rets[0];
-+		*bytesw = rets[1];
-+		ret = 0;
-+		break;
-+	case RTAS_HARDWARE_ERROR:
-+		ret = -EIO;
-+		break;
-+	case RTAS_INVALID_PARAMETER:
-+		ret = -EINVAL;
-+		break;
-+	case RTAS_FUNC_NOT_SUPPORTED:
-+		ret = -EOPNOTSUPP;
-+		break;
-+	default:
-+		ret = -EIO;
-+		pr_err_ratelimited("unexpected ibm,receive-hvpipe-msg status %d\n", fwrc);
-+		break;
-+	}
-+
-+	return ret;
-+}
++static unsigned char hvpipe_ras_buf[RTAS_ERROR_LOG_MAX];
++static struct workqueue_struct *papr_hvpipe_wq;
++static struct work_struct *papr_hvpipe_work = NULL;
++static int hvpipe_check_exception_token;
 +
  /*
-  * ibm,send-hvpipe-msg RTAS call
-  * @area: Caller-provided work area buffer to send.
-@@ -116,9 +164,60 @@ static struct hvpipe_source_info *hvpipe_find_source(u32 srcID)
- 	return NULL;
+  * New PowerPC FW provides support for partitions and various
+  * sources (Ex: remote hardware management console (HMC)) to
+@@ -556,6 +561,117 @@ static long papr_hvpipe_dev_ioctl(struct file *filp, unsigned int ioctl,
+ 	return ret;
  }
  
 +/*
-+ * This work function collects receive buffer with recv HVPIPE
-+ * RTAS call. Called from read()
-+ * @buf: User specified buffer to copy the payload that returned
-+ *       from recv HVPIPE RTAS.
-+ * @size: Size of buffer user passed.
++ * papr_hvpipe_work_fn - called to issue recv HVPIPE RTAS for
++ * sources that are not monitored by user space so that pipe
++ * will not be blocked.
 + */
-+static int hvpipe_rtas_recv_msg(char __user *buf, int size)
++static void papr_hvpipe_work_fn(struct work_struct *work)
 +{
-+	struct rtas_work_area *work_area;
-+	u32 srcID, bytes_written;
-+	int ret;
-+
-+	work_area = rtas_work_area_alloc(SZ_4K);
-+	if (!work_area) {
-+		pr_err("Could not allocate RTAS buffer for recv pipe\n");
-+		return -ENOMEM;
-+	}
-+
-+	ret = rtas_ibm_receive_hvpipe_msg(work_area, &srcID,
-+					&bytes_written);
-+	if (!ret) {
-+		/*
-+		 * Recv HVPIPE RTAS is successful.
-+		 * When releasing FD or no one is waiting on the
-+		 * specific source, issue recv HVPIPE RTAS call
-+		 * so that pipe is not blocked - this func is called
-+		 * with NULL buf.
-+		 */
-+		if (buf) {
-+			if (size < bytes_written) {
-+				pr_err("Received the payload size = %d, but the buffer size = %d\n",
-+					bytes_written, size);
-+				bytes_written = size;
-+			}
-+			ret = copy_to_user(buf,
-+					rtas_work_area_raw_buf(work_area),
-+					bytes_written);
-+			if (!ret)
-+				ret = bytes_written;
-+		}
-+	} else {
-+		pr_err("ibm,receive-hvpipe-msg failed with %d\n",
-+				ret);
-+	}
-+
-+	rtas_work_area_free(work_area);
-+	return ret;
++	hvpipe_rtas_recv_msg(NULL, 0);
 +}
 +
- /*
-  * papr_hvpipe_handle_write -  Issue send HVPIPE RTAS and return
-- * the RTAS status to the user space
-+ * the size (payload + HVPIPE_HDR_LEN) for RTAS success.
-+ * Otherwise returns the status of RTAS to the user space
-  */
- static ssize_t papr_hvpipe_handle_write(struct file *file,
- 	const char __user *buf, size_t size, loff_t *off)
-@@ -217,11 +316,72 @@ static ssize_t papr_hvpipe_handle_read(struct file *file,
- {
++/*
++ * HVPIPE event message IRQ handler.
++ * The hypervisor sends event IRQ if the partition has payload
++ * and generates another event only after payload is read with
++ * recv HVPIPE RTAS.
++ */
++static irqreturn_t hvpipe_event_interrupt(int irq, void *dev_id)
++{
++	struct hvpipe_event_buf *hvpipe_event;
++	struct pseries_errorlog *pseries_log;
++	struct hvpipe_source_info *src_info;
++	struct rtas_error_log *elog;
++	int rc;
++
++	rc = rtas_call(hvpipe_check_exception_token, 6, 1, NULL,
++		RTAS_VECTOR_EXTERNAL_INTERRUPT, virq_to_hw(irq),
++		RTAS_HVPIPE_MSG_EVENTS, 1, __pa(&hvpipe_ras_buf),
++		rtas_get_error_log_max());
++
++	if (rc != 0) {
++		pr_err_ratelimited("unexpected hvpipe-event-notification failed %d\n", rc);
++		return IRQ_HANDLED;
++	}
++
++	elog = (struct rtas_error_log *)hvpipe_ras_buf;
++	if (unlikely(rtas_error_type(elog) != RTAS_TYPE_HVPIPE)) {
++		pr_warn_ratelimited("Unexpected event type %d\n",
++				rtas_error_type(elog));
++		return IRQ_HANDLED;
++	}
++
++	pseries_log = get_pseries_errorlog(elog,
++				PSERIES_ELOG_SECT_ID_HVPIPE_EVENT);
++	hvpipe_event = (struct hvpipe_event_buf *)pseries_log->data;
++
++	/*
++	 * The hypervisor notifies partition when the payload is
++	 * available to read with recv HVPIPE RTAS and it will not
++	 * notify another event for any source until the previous
++	 * payload is read. Means the pipe is blocked in the
++	 * hypervisor until the payload is read.
++	 *
++	 * If the source is ready to accept payload and wakeup the
++	 * corresponding FD. Hold lock and update hvpipe_status
++	 * and this lock is needed in case the user space process
++	 * is in release FD instead of poll() so that release()
++	 * reads the payload to unblock pipe before closing FD.
++	 *
++	 * otherwise (means no other user process waiting for the
++	 * payload, issue recv HVPIPE RTAS (papr_hvpipe_work_fn())
++	 * to unblock pipe.
++	 */
++	spin_lock(&hvpipe_src_list_lock);
++	src_info = hvpipe_find_source(be32_to_cpu(hvpipe_event->srcID));
++	if (src_info) {
++		u32 flags = 0;
++
++		if (hvpipe_event->event_type & HVPIPE_LOST_CONNECTION)
++			flags = HVPIPE_LOST_CONNECTION;
++		else if (hvpipe_event->event_type & HVPIPE_MSG_AVAILABLE)
++			flags = HVPIPE_MSG_AVAILABLE;
++
++		src_info->hvpipe_status |= flags;
++		wake_up(&src_info->recv_wqh);
++		spin_unlock(&hvpipe_src_list_lock);
++	} else {
++		spin_unlock(&hvpipe_src_list_lock);
++		/*
++		 * user space is not waiting on this source. So
++		 * execute receive pipe RTAS so that pipe will not
++		 * be blocked.
++		 */
++		if (hvpipe_event->event_type & HVPIPE_MSG_AVAILABLE)
++			queue_work(papr_hvpipe_wq, papr_hvpipe_work);
++	}
++
++	return IRQ_HANDLED;
++}
++
++static int __init enable_hvpipe_IRQ(void)
++{
++	struct device_node *np;
++
++	hvpipe_check_exception_token = rtas_function_token(RTAS_FN_CHECK_EXCEPTION);
++	if (hvpipe_check_exception_token  == RTAS_UNKNOWN_SERVICE)
++		return -ENODEV;
++
++	/* hvpipe events */
++	np = of_find_node_by_path("/event-sources/ibm,hvpipe-msg-events");
++	if (np != NULL) {
++		request_event_sources_irqs(np, hvpipe_event_interrupt,
++					"HPIPE_EVENT");
++		of_node_put(np);
++	} else {
++		pr_err("Can not enable hvpipe event IRQ\n");
++		return -ENODEV;
++	}
++
++	return 0;
++}
++
+ static const struct file_operations papr_hvpipe_ops = {
+ 	.unlocked_ioctl	=	papr_hvpipe_dev_ioctl,
+ };
+@@ -578,12 +694,32 @@ static int __init papr_hvpipe_init(void)
+ 		!rtas_function_implemented(RTAS_FN_IBM_RECEIVE_HVPIPE_MSG))
+ 		return -ENODEV;
  
- 	struct hvpipe_source_info *src_info = file->private_data;
-+	struct papr_hvpipe_hdr hdr;
-+	long ret;
- 
- 	if (!src_info)
- 		return -EIO;
+-	ret = misc_register(&papr_hvpipe_dev);
+-	if (ret) {
+-		pr_err("misc-dev registration failed %d\n", ret);
+-		return ret;
++	papr_hvpipe_work = kzalloc(sizeof(struct work_struct), GFP_ATOMIC);
++	if (!papr_hvpipe_work)
++		return -ENOMEM;
++
++	INIT_WORK(papr_hvpipe_work, papr_hvpipe_work_fn);
++
++	papr_hvpipe_wq = alloc_ordered_workqueue("papr hvpipe workqueue", 0);
++	if (!papr_hvpipe_wq) {
++		ret = -ENOMEM;
++		goto out;
+ 	}
  
 -	return 0;
-+	/*
-+	 * Max payload is 4048 (HVPIPE_MAX_WRITE_BUFFER_SIZE)
-+	 */
-+	if ((size > (HVPIPE_HDR_LEN + HVPIPE_MAX_WRITE_BUFFER_SIZE)) ||
-+		(size < HVPIPE_HDR_LEN))
-+		return -EINVAL;
++	ret = enable_hvpipe_IRQ();
++	if (!ret)
++		ret = misc_register(&papr_hvpipe_dev);
 +
-+	/*
-+	 * Payload is not available to receive or source pipe
-+	 * is not closed.
-+	 */
-+	if (!src_info->hvpipe_status)
++	if (!ret) {
++		pr_info("hvpipe feature is enabled\n");
 +		return 0;
++	} else
++		pr_err("hvpipe feature is not enabled %d\n", ret);
 +
-+	hdr.version = 0;
-+	hdr.flags = 0;
-+
-+	/*
-+	 * In case if the hvpipe has payload and also the
-+	 * hypervisor closed the pipe to the source, retrieve
-+	 * the payload and return to the user space first and
-+	 * then notify the userspace about the hvpipe close in
-+	 * next read().
-+	 */
-+	if (src_info->hvpipe_status & HVPIPE_MSG_AVAILABLE)
-+		hdr.flags = HVPIPE_MSG_AVAILABLE;
-+	else if (src_info->hvpipe_status & HVPIPE_LOST_CONNECTION)
-+		hdr.flags = HVPIPE_LOST_CONNECTION;
-+	else
-+		/*
-+		 * Should not be here without one of the above
-+		 * flags set
-+		 */
-+		return -EIO;
-+
-+	ret = copy_to_user(buf, &hdr, HVPIPE_HDR_LEN);
-+	if (ret)
-+		return ret;
-+
-+	/*
-+	 * Message event has payload, so get the payload with
-+	 * recv HVPIPE RTAS.
-+	 */
-+	if (hdr.flags & HVPIPE_MSG_AVAILABLE) {
-+		ret = hvpipe_rtas_recv_msg(buf + HVPIPE_HDR_LEN,
-+				size - HVPIPE_HDR_LEN);
-+		if (ret > 0) {
-+			src_info->hvpipe_status &= ~HVPIPE_MSG_AVAILABLE;
-+			ret += HVPIPE_HDR_LEN;
-+		}
-+	} else if (hdr.flags & HVPIPE_LOST_CONNECTION) {
-+		/*
-+		 * Hypervisor is closing the pipe for the specific
-+		 * source. So notify user space.
-+		 */
-+		src_info->hvpipe_status &= ~HVPIPE_LOST_CONNECTION;
-+		ret = HVPIPE_HDR_LEN;
-+	}
-+
++	destroy_workqueue(papr_hvpipe_wq);
++out:
++	kfree(papr_hvpipe_work);
++	papr_hvpipe_work = NULL;
 +	return ret;
  }
- 
- /*
+ machine_device_initcall(pseries, papr_hvpipe_init);
 diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.h b/arch/powerpc/platforms/pseries/papr-hvpipe.h
-index 6f98da4ec45f..125658e6b596 100644
+index 125658e6b596..aab7f77e087d 100644
 --- a/arch/powerpc/platforms/pseries/papr-hvpipe.h
 +++ b/arch/powerpc/platforms/pseries/papr-hvpipe.h
-@@ -14,6 +14,7 @@
- struct hvpipe_source_info {
- 	struct list_head list;	/* list of sources */
- 	u32 srcID;
-+	u32 hvpipe_status;
- 	wait_queue_head_t recv_wqh;	 /* wake up poll() waitq */
+@@ -19,4 +19,18 @@ struct hvpipe_source_info {
  	struct task_struct *tsk;
  };
+ 
++/*
++ * Source ID Format 0xCCRRQQQQ
++ * CC = indicating value is source type (ex: 0x02 for HMC)
++ * RR = 0x00 (reserved)
++ * QQQQ = 0x0000 – 0xFFFF indicating the source index indetifier
++ */
++struct hvpipe_event_buf {
++	__be32	srcID;		/* Source ID */
++	u8	event_type;	/* 0x01 for hvpipe message available */
++				/* from specified src ID */
++				/* 0x02 for loss of pipe connection */
++				/* with specified src ID */
++};
++
+ #endif /* _PAPR_HVPIPE_H */
 -- 
 2.50.1
 
