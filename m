@@ -1,89 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-11532-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11533-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05088CA0FFF
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Aug 2025 06:05:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A53ADCA0FFF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Aug 2025 07:27:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cDPjG4QHhz302l;
-	Sat, 30 Aug 2025 16:04:18 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756533858;
-	cv=none; b=cICh+v7ZWbZA+96Fs+4rjMyT/1n+657HgqvICtdK65bDi0XLjER0Ep21Wqg5lTwwzPpx8tn0cJAd4a/U6uecoqDm12eVJZ13czHns9kIfFFeNCqzBixOKFWEc8Ka37sM+dlRPEEP6Ch2HzEJK0xMZLRZMsEYZS7RPWybipnSf7e8EnTrA/s5h/yBsASlGsrfFiyIj8S9DCtVHCHcv9qONNQjtDddb5ZNS1M9tN2BWAFuR0E3DvN9mcWieybpaRJTWDjfROpV/EYRt3IlINwnZU6x8nM8PiyrtMCWhNYuMKK1bn4INjuWDJK05IcVSiEDTNFbpozChzTjDEt3Q5yLqw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cDRXq06g6z2yvv;
+	Sat, 30 Aug 2025 17:27:07 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::434"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756538826;
+	cv=none; b=ikqbVZ/+ZXYgze/A/dwmkUOAjSuYMJzEF+Hz9gOE8nyKUqHjYQvAdUxJqvKsEhYnuhJl2X70ndB9PvNtk9a32msTmmFVzmdrgHC4KXPETTjcML2THCvPXJ6hU+vMhjRwYD8iiH9MwtpVGihXIuN9IYt1xLR+tH8ycepk4TJeBrDaUMYj+TM4yLZWI369foNQQsUdv2vUzvVhk82dWuNDhCxWrDWtvkvAMirQnWLwe+CY9ENQSEia5kd0rDpkx9v/xGdprVAfrcdSfaUW9ADx5PBHoz9KaCC4FSXUBPPwC2O+sY5ZZ+sWUq4+056XuOeD7WlvUZKl2kJZgceJCWjpNQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756533858; c=relaxed/relaxed;
-	bh=kQVknEgtsl8pLWyGmQ1/MTI8XM+bKzKQjchrQAzgwgA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=HHTOqoS/7MBBs3MHxcjr8vE22xwjvsxJtFeHORR5kzQ7fJ5GnVlLqWSBGHnAz0kyuEvijAhM1SeNlDcRlUt4P4YGyEudOr2Wg6ji8JNNOn551GKGrefSHwBm5bSMfOetN502C7WCp8u+mXz5JxW/Dyq2XsYh40t6+zD8ZH7tDFdjZ+vSptiOFfypmmK10Az/t/sDWs/9Sdp5LWkkJgbUnZJCJhoXPGTJ3ZEkr4GJdcV9hChL5GAoxuw1m0NsKlUOclzP0zBQtDH1AqBCuIxWptYVZ1nuXjdOKIAdUwhSkD0RPaiaiv2YZBqEVuug1Ye+n8znwHgMGcUpqjgW+fFZsg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IlXlGSb8; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1756538826; c=relaxed/relaxed;
+	bh=5ISyIR88byJ1xzBu4RO31FrBG8EHIYsHh+pFtfb71NE=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-version:Content-type; b=etlU3Pq24P5CrHheG4TH1EmeS4DBh4VAb6oDqkQBra6pxj4It7RcFnRrtQliVOqXuDWUuMWo6NNPqiVQx4mkqGglJI1RexlWrbLsYYcdtlQzI7vCK5zspTuAeNOdNEW1a0knrO/dorF5nk2PGKKy6TdPjBImhxKSScDD1pniy/vOas9PDaHCNX2k9ezriex/pvsqpCL2SB0NHd8i8dqz4lY+1Fe6e6dKVRzizyDKZVOhp3CORnToObolT11Dwk36te+lWkVgKAffILhvHw4OIOhTK/sqMmjCiD7LelWVCJH7JOEi56GcsHNxvA2sYUrmVxCk+yPwpQtXQhe9uFGDvQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=HrH5Jx6q; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=IlXlGSb8;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=HrH5Jx6q;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cDPjF6pv3z2xd6
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2025 16:04:17 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 57U4HL7L009081;
-	Sat, 30 Aug 2025 06:04:11 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=kQVknE
-	gtsl8pLWyGmQ1/MTI8XM+bKzKQjchrQAzgwgA=; b=IlXlGSb8+sz6wbsQNYYNOI
-	qBrxn35Cvr1hPXZh8DzgZZX9VoMqC04qYDWvWh501ISqoFt5EbvtO5qcfgFP86kX
-	AlQLDaAi49oh0grj23l+sFcoqT/MAI6K0TFp1XrWjGrp2Lw0y3UPkpFWydKKnMlK
-	zOvUhC1pf7RjmemmTFrG3qzmOpuZCzYKBa/fSL0Sr4BRbJ2d2Bf20eJUskpEpXMf
-	0Kl/Gtew6zVGil9voJ7017ITqtb9SkgSqzrRcB1hgB+iyUIvPrDAG53Su9hty3pl
-	8iQ4uTH5RzCay1YmtdNhvKp+xpKQbiIHJQy6rxgOCsIiR0h4nf1l9VQSUjpFtV4w
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48usuqg9yh-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 30 Aug 2025 06:04:11 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 57U64A6O006116;
-	Sat, 30 Aug 2025 06:04:10 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48usuqg9yd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 30 Aug 2025 06:04:10 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 57U3Y4gS032637;
-	Sat, 30 Aug 2025 06:04:09 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 48qrc1567h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 30 Aug 2025 06:04:09 +0000
-Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 57U645r716122604
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 30 Aug 2025 06:04:05 GMT
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 124C35805B;
-	Sat, 30 Aug 2025 06:04:05 +0000 (GMT)
-Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DA49758059;
-	Sat, 30 Aug 2025 06:04:03 +0000 (GMT)
-Received: from li-4c4c4544-0038-3410-8038-c4c04f423534.ibm.com (unknown [9.61.165.221])
-	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 30 Aug 2025 06:04:03 +0000 (GMT)
-From: Haren Myneni <haren@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        msuchanek@suse.de, mahesh@linux.ibm.com, tyreld@linux.ibm.com,
-        hbabu@us.ibm.com, haren@linux.ibm.com, shashank.gowda@in.ibm.com,
-        bjking1@linux.ibm.com
-Subject: [PATCH v4 9/9] powerpc/pseries: HVPIPE changes to support migration
-Date: Fri, 29 Aug 2025 23:03:42 -0700
-Message-ID: <20250830060343.2656729-10-haren@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20250830060343.2656729-1-haren@linux.ibm.com>
-References: <20250830060343.2656729-1-haren@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cDRXn5ph1z2yN2
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2025 17:27:04 +1000 (AEST)
+Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-77201f3d389so3068573b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2025 00:27:04 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1756538822; x=1757143622; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=5ISyIR88byJ1xzBu4RO31FrBG8EHIYsHh+pFtfb71NE=;
+        b=HrH5Jx6qFkq5swuuWk07ompQeBGsU7tYc2i9mYQisvze13gIpMqEv/wYQ+kq4vWT3d
+         Ky7zASwEKS+ngB3Ng2N0Q/9/bOoBGQYYHetKFDyBEaw7M6sK86gB8QCNGiQhdMBQSmU2
+         ka3e8Ows7u00f+54elAGIUB5M6yWpRrBRw6A0PpsxauuTpADFmRL/pWWiFTopa0NLMkr
+         R3QEK0+Y7alqR+Ky549MVxoIVZKEv/HTtzRTWhjLxTWDvc0LxJMptiyoOiQJIuTi0p3V
+         TvZci4iVhLLHph+skaL0VpYiLS8RLaY4Fg7xo2j0IV4ubQ2DcM8Cz5/PSe9O2C0gbbdZ
+         mI1Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1756538822; x=1757143622;
+        h=content-transfer-encoding:mime-version:references:message-id:date
+         :in-reply-to:subject:cc:to:from:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=5ISyIR88byJ1xzBu4RO31FrBG8EHIYsHh+pFtfb71NE=;
+        b=mf9OIpo3xUVykLklym2xHTXVE7lTy8fe+whzd//jZFRkH4vd5EWxRljprFPU34fmtu
+         6PyItD20hkOtT+zAHSUlSmf3Y4QUO7WPwwvlfmHi9+zmYWazXaUL3z4jGeEkCnL3C/+j
+         z89WbhApZCbIQ9tuz6YG5UNyccoAb5hmqwH7NomAlBJxPwLsWtAUMmDg3h626s8MKPd9
+         LmaarT2bR+nFMS7VeeiqhB51JB+gVhWwKRqAohzATcv/5CuJqn/w+eFtuKy3/9ucPsGZ
+         vTJ1aFlF4zyrWAPPI0dCMDVye7GQWk+pOFgceoLCigMfraCjZ0+7GK5SZqjHYP8H2awm
+         mTvg==
+X-Forwarded-Encrypted: i=1; AJvYcCWIuyvKC8GsGHcB2n6qKW5uDhUKw33Ym5cfgRPCOvRBxHDpJPhR7j3OdYuT208RA3K4w1GjLOGmckI0C/A=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxGUIDvMiJBLp7POh6KzddxVu8K3CgOuSogorFP1imsf7jWznAq
+	+5FJsWqr52/qKGkaflCAwcNHVUvdZCyUMbLBe2EGag+3/cYU95RX+Wla
+X-Gm-Gg: ASbGncsMX5P3+Gu3QSky79yinY8pGpLageIFhl/rEvjogssPWiw0+Dt9gRMRYE1lPN+
+	nVItM3JHeeF2z46H7JFmA+8oLjIwKbayncv3EaDPkq7e0FNs4SRRuwe4FfrsEq3lXRDL9VQoT6N
+	B8Ojjeje4PRJHd3bIxTB6g1xf+grdwI/dRRr4CtFsaMMOB5nqO4LSvY319IqL/bJQhVQrSpbkDC
+	9NrYPsuSxgCNem7iGn+Icr9N4B+kBVFvjdenSCnp6ElrbqscYyATOf501r4qD+Y5rhWuK7AFU9/
+	8fcOKhy9s7uukWFavK9Wa9hMtgBEiHZazBn9hDBoSZD9sjBntQv44WkSLZpneCqosPqQseTmMFs
+	HHPSOYnqW9OzDPe7SzfI/QSVrkA==
+X-Google-Smtp-Source: AGHT+IG5ppTvFgvfe3RrV3eizhBPvjO/ibEub9MSBJrTc9ASSzYV+xJVFYWLreNM2LEAxY11zO2nCw==
+X-Received: by 2002:a05:6a20:4324:b0:23d:6a77:78c9 with SMTP id adf61e73a8af0-243d6dd15camr1865813637.7.1756538821743;
+        Sat, 30 Aug 2025 00:27:01 -0700 (PDT)
+Received: from dw-tp ([171.76.86.139])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7722a269e9csm4481642b3a.17.2025.08.30.00.26.58
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 30 Aug 2025 00:27:01 -0700 (PDT)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, linuxppc-dev@lists.ozlabs.org
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Paul Mackerras <paulus@ozlabs.org>, "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>, Donet Tom <donettom@linux.ibm.com>
+Subject: Re: [RFC 5/8] powerpc/ptdump: Dump PXX level info for kernel_page_tables
+In-Reply-To: <12739812-aa4e-4124-8296-b98adecbc6eb@csgroup.eu>
+Date: Sat, 30 Aug 2025 12:55:49 +0530
+Message-ID: <87wm6ljmo2.fsf@gmail.com>
+References: <cover.1756522067.git.ritesh.list@gmail.com> <3c3dfc8d2e6c45f9d0fc4a3f969b93a3b7520c46.1756522067.git.ritesh.list@gmail.com> <12739812-aa4e-4124-8296-b98adecbc6eb@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -96,222 +91,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+MIME-version: 1.0
+Content-type: text/plain; charset=utf-8
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODMwMDAzMCBTYWx0ZWRfXx6ArgqFqdKto
- Kxj8Fj67l4IVT6b4ThDN2sL4RCGjJ7n+ZzHGyX3RbcotKraq2N00SSuVim1WPpFXJrQcl6bx1fv
- IjvC1bTWI1sjn/4LsnKdSWfWfDV7cg/d6umls+OrFBn7DNl2xTFXfdrTinI07JlXSAn2/EbzD3h
- yrC8QSjgzvSg1I9eKZ86UOP+zNHeAwTXDf9MZMCFfGl3razzHSsb0f8/sYQPrvPD8RdVKerngiz
- jpKgeQ79Q+0ZhhSLoO9cTo/Vvt1IZj0vTcxpVJmtF85nvPddh2SIz97ZO51GXQtUedFYRGDgVtQ
- gHb9pCG/eKlpm9zP6sMhtVTrOP8GKuBH9ueycciuQ4gxY9S6PhG+eNyHZ4xOT+Du4RI24nTGp4z
- WuLcOeZW
-X-Proofpoint-GUID: EDkK7MDbit8B_MOYQGxVLaERVo--n-n4
-X-Proofpoint-ORIG-GUID: 3iZ-Bnc8o82LpAMHp8yBdvsab979Ywzt
-X-Authority-Analysis: v=2.4 cv=Ao/u3P9P c=1 sm=1 tr=0 ts=68b2945b cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=2OwXVqhp2XgA:10 a=VnNF1IyMAAAA:8 a=S7z50IwEaLHSfgsXjVMA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-08-30_01,2025-08-28_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 phishscore=0 impostorscore=0 priorityscore=1501 spamscore=0
- suspectscore=0 bulkscore=0 adultscore=0 malwarescore=0 classifier=typeunknown
- authscore=0 authtc= authcc= route=outbound adjust=0 reason=mlx scancount=1
- engine=8.19.0-2507300000 definitions=main-2508300030
 
-The hypervisor assigns one pipe per partition for all sources and
-assigns new pipe after migration. Also the partition ID that is
-used by source as its target ID may be changed after the migration.
-So disable hvpipe during SUSPEND event with ‘hvpipe enable’ system
-parameter value = 0 and enable it after migration during RESUME
-event with  hvpipe enable’ system parameter value = 1.
+Christophe Leroy <christophe.leroy@csgroup.eu> writes:
 
-The user space calls such as ioctl()/ read() / write() / poll()
-returns  -ENXIO between SUSPEND and RESUME events. The user space
-process can close FD and reestablish connection with new FD after
-migration if needed (Example: source IDs are changed).
+> Le 30/08/2025 à 05:51, Ritesh Harjani (IBM) a écrit :
+>> This patch adds PGD/PUD/PMD/PTE level information while dumping kernel
+>> page tables. Before this patch it was hard to identify which entries
+>> belongs to which page table level e.g.
+>> 
+>> ~ # dmesg |grep -i radix
+>> [0.000000] radix-mmu: Mapped 0x0000000000000000-0x0000000005400000 with 2.00 MiB pages (exec)
+>> [0.000000] radix-mmu: Mapped 0x0000000005400000-0x0000000040000000 with 2.00 MiB pages
+>> [0.000000] radix-mmu: Mapped 0x0000000040000000-0x0000000100000000 with 1.00 GiB pages
+>> [0.000000] radix-mmu: Initializing Radix MMU
+>> 
+>> Before:
+>> ---[ Start of kernel VM ]---
+>> 0xc000000000000000-0xc000000003ffffff  XXX   64M   r      X   pte  valid  present  dirty  accessed
+>> 0xc000000004000000-0xc00000003fffffff  XXX  960M   r  w       pte  valid  present  dirty  accessed
+>> 0xc000000040000000-0xc0000000ffffffff  XXX    3G   r  w       pte  valid  present  dirty  accessed
+>> ...
+>> ---[ vmemmap start ]---
+>> 0xc00c000000000000-0xc00c0000003fffff  XXX    4M   r  w       pte  valid  present  dirty  accessed
+>> 
+>> After:
+>> ---[ Start of kernel VM ]---
+>> 0xc000000000000000-0xc000000003ffffff  XXX   64M PMD  r      X   pte  valid  present  dirty  accessed
+>> 0xc000000004000000-0xc00000003fffffff  XXX  960M PMD  r  w       pte  valid  present  dirty  accessed
+>> 0xc000000040000000-0xc0000000ffffffff  XXX    3G PUD  r  w       pte  valid  present  dirty  accessed
+>> ...
+>> ---[ vmemmap start ]---
+>> 0xc00c000000000000-0xc00c0000003fffff  XXX    4M PMD  r  w       pte  valid  present  dirty  accessed
+>> 
+>> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>> Cc: Nicholas Piggin <npiggin@gmail.com>
+>> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+>> Cc: Paul Mackerras <paulus@ozlabs.org>
+>> Cc: "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>
+>> Cc: Donet Tom <donettom@linux.ibm.com>
+>> Cc: linuxppc-dev@lists.ozlabs.org
+>> Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>> ---
+>>   arch/powerpc/mm/ptdump/8xx.c      | 5 +++++
+>>   arch/powerpc/mm/ptdump/book3s64.c | 5 +++++
+>>   arch/powerpc/mm/ptdump/ptdump.c   | 1 +
+>>   arch/powerpc/mm/ptdump/ptdump.h   | 1 +
+>>   arch/powerpc/mm/ptdump/shared.c   | 5 +++++
+>>   5 files changed, 17 insertions(+)
+>> 
+>> diff --git a/arch/powerpc/mm/ptdump/8xx.c b/arch/powerpc/mm/ptdump/8xx.c
+>> index b5c79b11ea3c..1dc0f2438a73 100644
+>> --- a/arch/powerpc/mm/ptdump/8xx.c
+>> +++ b/arch/powerpc/mm/ptdump/8xx.c
+>> @@ -71,18 +71,23 @@ static const struct flag_info flag_array[] = {
+>> 
+>>   struct pgtable_level pg_level[5] = {
+>>   	{ /* pgd */
+>> +		.name	= "PGD",
+>>   		.flag	= flag_array,
+>>   		.num	= ARRAY_SIZE(flag_array),
+>>   	}, { /* p4d */
+>> +		.name	= "P4D",
+>>   		.flag	= flag_array,
+>>   		.num	= ARRAY_SIZE(flag_array),
+>>   	}, { /* pud */
+>> +		.name	= "PUD",
+>>   		.flag	= flag_array,
+>>   		.num	= ARRAY_SIZE(flag_array),
+>>   	}, { /* pmd */
+>> +		.name	= "PMD",
+>>   		.flag	= flag_array,
+>>   		.num	= ARRAY_SIZE(flag_array),
+>>   	}, { /* pte */
+>> +		.name	= "PTX",
+>
+> Why PTX not PTE ?
+>
 
-Signed-off-by: Haren Myneni <haren@linux.ibm.com>
-Reviewed-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Reviewed-by: Tyrel Datwyler <tyreld@linux.ibm.com>
-Tested-by: Shashank MS <shashank.gowda@in.ibm.com>
----
- arch/powerpc/platforms/pseries/mobility.c    |  3 +
- arch/powerpc/platforms/pseries/papr-hvpipe.c | 64 ++++++++++++++++++++
- arch/powerpc/platforms/pseries/papr-hvpipe.h |  6 ++
- 3 files changed, 73 insertions(+)
+My bad I was checking something on 8xx and I missed reverting that back. 
+Thanks for pointing out. Will fix it in the next revision.
 
-diff --git a/arch/powerpc/platforms/pseries/mobility.c b/arch/powerpc/platforms/pseries/mobility.c
-index 62bd8e2d5d4c..95fe802ccdfd 100644
---- a/arch/powerpc/platforms/pseries/mobility.c
-+++ b/arch/powerpc/platforms/pseries/mobility.c
-@@ -28,6 +28,7 @@
- #include <asm/rtas.h>
- #include "pseries.h"
- #include "vas.h"	/* vas_migration_handler() */
-+#include "papr-hvpipe.h"	/* hvpipe_migration_handler() */
- #include "../../kernel/cacheinfo.h"
- 
- static struct kobject *mobility_kobj;
-@@ -744,6 +745,7 @@ static int pseries_migrate_partition(u64 handle)
- 	 * by closing VAS windows at the beginning of this function.
- 	 */
- 	vas_migration_handler(VAS_SUSPEND);
-+	hvpipe_migration_handler(HVPIPE_SUSPEND);
- 
- 	ret = wait_for_vasi_session_suspending(handle);
- 	if (ret)
-@@ -770,6 +772,7 @@ static int pseries_migrate_partition(u64 handle)
- 
- out:
- 	vas_migration_handler(VAS_RESUME);
-+	hvpipe_migration_handler(HVPIPE_RESUME);
- 
- 	return ret;
- }
-diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.c b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-index 504d7f20f0b1..350b416d2e76 100644
---- a/arch/powerpc/platforms/pseries/papr-hvpipe.c
-+++ b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-@@ -27,6 +27,7 @@ static unsigned char hvpipe_ras_buf[RTAS_ERROR_LOG_MAX];
- static struct workqueue_struct *papr_hvpipe_wq;
- static struct work_struct *papr_hvpipe_work = NULL;
- static int hvpipe_check_exception_token;
-+static bool hvpipe_feature;
- 
- /*
-  * New PowerPC FW provides support for partitions and various
-@@ -233,6 +234,12 @@ static ssize_t papr_hvpipe_handle_write(struct file *file,
- 	unsigned long ret, len;
- 	char *area_buf;
- 
-+	/*
-+	 * Return -ENXIO during migration
-+	 */
-+	if (!hvpipe_feature)
-+		return -ENXIO;
-+
- 	if (!src_info)
- 		return -EIO;
- 
-@@ -325,6 +332,12 @@ static ssize_t papr_hvpipe_handle_read(struct file *file,
- 	struct papr_hvpipe_hdr hdr;
- 	long ret;
- 
-+	/*
-+	 * Return -ENXIO during migration
-+	 */
-+	if (!hvpipe_feature)
-+		return -ENXIO;
-+
- 	if (!src_info)
- 		return -EIO;
- 
-@@ -401,6 +414,12 @@ static unsigned int papr_hvpipe_handle_poll(struct file *filp,
- {
- 	struct hvpipe_source_info *src_info = filp->private_data;
- 
-+	/*
-+	 * Return -ENXIO during migration
-+	 */
-+	if (!hvpipe_feature)
-+		return -ENXIO;
-+
- 	if (!src_info)
- 		return -EIO;
- 
-@@ -541,6 +560,12 @@ static long papr_hvpipe_dev_ioctl(struct file *filp, unsigned int ioctl,
- 	u32 srcID;
- 	long ret;
- 
-+	/*
-+	 * Return -ENXIO during migration
-+	 */
-+	if (!hvpipe_feature)
-+		return -ENXIO;
-+
- 	if (get_user(srcID, argp))
- 		return -EFAULT;
- 
-@@ -699,6 +724,44 @@ static int __init enable_hvpipe_IRQ(void)
- 	return 0;
- }
- 
-+void hvpipe_migration_handler(int action)
-+{
-+	pr_info("hvpipe migration event %d\n", action);
-+
-+	/*
-+	 * HVPIPE is not used (Failed to create /dev/papr-hvpipe).
-+	 * So nothing to do for migration.
-+	 */
-+	if (!papr_hvpipe_work)
-+		return;
-+
-+	switch (action) {
-+	case HVPIPE_SUSPEND:
-+		if (hvpipe_feature) {
-+			/*
-+			 * Disable hvpipe_feature to the user space.
-+			 * It will be enabled with RESUME event.
-+			 */
-+			hvpipe_feature = false;
-+			/*
-+			 * set system parameter hvpipe 'disable'
-+			 */
-+			set_hvpipe_sys_param(0);
-+		}
-+		break;
-+	case HVPIPE_RESUME:
-+		/*
-+		 * set system parameter hvpipe 'enable'
-+		 */
-+		if (!set_hvpipe_sys_param(1))
-+			hvpipe_feature = true;
-+		else
-+			pr_err("hvpipe is not enabled after migration\n");
-+
-+		break;
-+	}
-+}
-+
- static const struct file_operations papr_hvpipe_ops = {
- 	.unlocked_ioctl	=	papr_hvpipe_dev_ioctl,
- };
-@@ -742,6 +805,7 @@ static int __init papr_hvpipe_init(void)
- 
- 	if (!ret) {
- 		pr_info("hvpipe feature is enabled\n");
-+		hvpipe_feature = true;
- 		return 0;
- 	} else
- 		pr_err("hvpipe feature is not enabled %d\n", ret);
-diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.h b/arch/powerpc/platforms/pseries/papr-hvpipe.h
-index aab7f77e087d..c343f4230865 100644
---- a/arch/powerpc/platforms/pseries/papr-hvpipe.h
-+++ b/arch/powerpc/platforms/pseries/papr-hvpipe.h
-@@ -11,6 +11,11 @@
- 
- #define	HVPIPE_HDR_LEN	sizeof(struct papr_hvpipe_hdr)
- 
-+enum hvpipe_migrate_action {
-+	HVPIPE_SUSPEND,
-+	HVPIPE_RESUME,
-+};
-+
- struct hvpipe_source_info {
- 	struct list_head list;	/* list of sources */
- 	u32 srcID;
-@@ -33,4 +38,5 @@ struct hvpipe_event_buf {
- 				/* with specified src ID */
- };
- 
-+void hvpipe_migration_handler(int action);
- #endif /* _PAPR_HVPIPE_H */
--- 
-2.50.1
-
+-ritesh
 
