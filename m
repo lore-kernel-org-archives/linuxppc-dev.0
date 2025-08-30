@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-11540-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11541-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84D97CA0FFD
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Aug 2025 10:20:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E446ECA0EFF
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 30 Aug 2025 10:50:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cDWP11f5xz2yN2;
-	Sat, 30 Aug 2025 20:20:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cDX3d3qRXz2yN2;
+	Sat, 30 Aug 2025 20:50:37 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756549237;
-	cv=none; b=kxJKoIwF7EzQxCGSSBTeK41lNZMaJqMyVNGpGTbznpZ645Oee84vt/bO3DXhOAdUM5wXh9NUKGaehrIMf03k/piORAUu8hbsdIaHfrIBK/Uk9VEzROVro5uWXGLNaNpBqPfBsfuT+/dp/EGTAiZZ13fpEJVrTlnhCTXS9N5hzEjnI6jIoDP+CEG/lIlUu82IXYZ9TJIdoNNb7qKj5+WxB81gCTHqFH+oMfi5wPcBZVpNO4aI11HYDGzisKl+ZFoCeSTpa4EjNGNH5mv/vyIHpkLC33XyY+VXyVfEOtqnRKnipxNCKa3NFiVjErFmHvAbkkHvr/IPP38KbMEh+1RXsw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756551037;
+	cv=none; b=KX2sELNEHPQspMI2m7XVQpR3sRJoneD0otn9Fzwe8lbiw4T/koFd8Ta/ALs38/h8NGFwsJ55BcR1CxFKSTHdU4MuLjRJBQXuqzzVDNA87oCIzC7PwMEYIe/a14vx59njuAEwSS319+gR8zHi8GV+/C2C89E/jL9bMr9dDk+IrWvc8YcpDhp9G56Ndh2sUdHHr4Fc6DfFlDn8EO7LJVHjbj0p7OO1LPTLbVsKPVIV/w0JFfxsn535PyOBXaUtXylnQsLa5JFpA309gqr5l4IFtYGmqU6q0ZcWY/DEqxcMQFSRpYwcZ5UhxqyqTpmExcxirPb6jLsjM/UJG+RGpiKHKg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756549237; c=relaxed/relaxed;
-	bh=Sg4DUdO8k1wuWRXs3zz42R4Sjc4H3rGWBIo4Cx8iTb8=;
+	t=1756551037; c=relaxed/relaxed;
+	bh=YuptrA6ZjtMoKrH9DFBQbOFnY2voOZN+B19Vgxfe6pE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ErF0kAqBd79lSSoF2EFkeOGMZgwWfIBr8lZI0naI0jf6zYg9tpHf/FCGunKoUy461785JwSm3Av+SDPumUtHWDWNCDxvCbVC12vIKNB+fa25/Z0v4DDJ+mafaeVow0zXYuQUb3hs7CWQtnwS0CT4Z8Xrs4ML7FA3bYJ6UcEeFCwxZNJgEyJClRvLCcL9n3L5Fvs/y2BvMtEje5VxnGmbkq9XFCNJessRcii14g2G3Ddz+w6zcxIDKg2lQRrn2ucJPwKiVEQDkiiQlZSvyEAor0bweXfwWSkHT3X4HcOszNBPcR+RUAnXAVNUZ7KuAVA+mfwGjHf50Dls69Ns3UAtwg==
+	 In-Reply-To:Content-Type; b=Ydt0A2lTjZG5BY6irmt0aZRwjEbVI+K5bCZvfcQWrVfT2KZ72DitvgUxOsRqzHiPpNuCklyzXFNwMC2MMaynkJ6s5kUi0xBJXPlXVOEuRvfuf5FLxBsLLTOSmUbqlZmBDM5SboClFIxEzuGw9a3q4g4vf3BYAw2zI4zs5iV60E9ZqCCYcU/jx5EEAznUTknCLo9mYvImrQXk0IAAoMNw9IH45eCzhu1B3pVZTKtbf/n0J9o8FBlwm04NrDTbNFAlTi3/zAbhu1WFOXVjiMxAtF5SRbreor3jMC9QxFJRTNo8+lASzy8N7KZdp4Q8xnKbVj0br6gEsqOqt9g/WVszUA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cDWP040y8z2xWQ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2025 20:20:35 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cDX3c4Qfvz2xcB
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 30 Aug 2025 20:50:36 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cDQQb63LTz9sSN;
-	Sat, 30 Aug 2025 08:36:39 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4cDQBy0n2fz9sS7;
+	Sat, 30 Aug 2025 08:26:34 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id j1omiCCaRbP8; Sat, 30 Aug 2025 08:36:39 +0200 (CEST)
+	with ESMTP id fXZkS-WuuqIS; Sat, 30 Aug 2025 08:26:34 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cDQQb5BNGz9sSL;
-	Sat, 30 Aug 2025 08:36:39 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cDQBy00ZLz9sRy;
+	Sat, 30 Aug 2025 08:26:34 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9ED5C8B778;
-	Sat, 30 Aug 2025 08:36:39 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id DF4CC8B778;
+	Sat, 30 Aug 2025 08:26:33 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id HvuU5xK1e8Gy; Sat, 30 Aug 2025 08:36:39 +0200 (CEST)
+	with ESMTP id NemkWVkBglny; Sat, 30 Aug 2025 08:26:33 +0200 (CEST)
 Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2779F8B776;
-	Sat, 30 Aug 2025 08:36:39 +0200 (CEST)
-Message-ID: <e1222528-911d-4558-b483-bceed8a99f2b@csgroup.eu>
-Date: Sat, 30 Aug 2025 08:36:38 +0200
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 770528B776;
+	Sat, 30 Aug 2025 08:26:33 +0200 (CEST)
+Message-ID: <824bfe0d-7a16-4b35-a0ec-565e4df3223e@csgroup.eu>
+Date: Sat, 30 Aug 2025 08:26:33 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,8 +59,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC 6/8] powerpc/book3s64/slb: Make preload_add return type as
- void
+Subject: Re: [RFC 3/8] book3s64/hash: Fix phys_addr_t printf format in
+ htab_initialize()
 To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
  linuxppc-dev@lists.ozlabs.org
 Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
@@ -69,26 +69,25 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
  "Aneesh Kumar K.V" <aneesh.kumar@kernel.org>,
  Donet Tom <donettom@linux.ibm.com>
 References: <cover.1756522067.git.ritesh.list@gmail.com>
- <90acc8e1de6e9575f31f41182077571e7c34a794.1756522067.git.ritesh.list@gmail.com>
+ <20a8d7bb22c45eeab5cc1b7e5a78446dc1506777.1756522067.git.ritesh.list@gmail.com>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 Content-Language: fr-FR
-In-Reply-To: <90acc8e1de6e9575f31f41182077571e7c34a794.1756522067.git.ritesh.list@gmail.com>
+In-Reply-To: <20a8d7bb22c45eeab5cc1b7e5a78446dc1506777.1756522067.git.ritesh.list@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
 Le 30/08/2025 à 05:51, Ritesh Harjani (IBM) a écrit :
-> We dropped preload_new_slb_context() in the previous patch. That means
-
-slb_setup_new_exec() was also checking preload_add() returned value but 
-is also gone.
-
-> we don't really need preload_add() return type anymore. So let's make
-> it's return type to void.
-
-s/it's/its
-
+> We get below errors when we try to enable debug logs in book3s64/hash_utils.c
+> This patch fixes these errors related to phys_addr_t printf format.
+> 
+> arch/powerpc/mm/book3s64/hash_utils.c: In function ‘htab_initialize’:
+> arch/powerpc/mm/book3s64/hash_utils.c:1401:21: error: format ‘%lx’ expects argument of type ‘long unsigned int’, but argument 2 has type ‘phys_addr_t’ {aka ‘long long unsigned int’} [-Werror=format=]
+>   1401 |                 DBG("creating mapping for region: %lx..%lx (prot: %lx)\n",
+> arch/powerpc/mm/book3s64/hash_utils.c:1401:21: error: format ‘%lx’ expects argument of type ‘long unsigned int’, but argument 3 has type ‘phys_addr_t’ {aka ‘long long unsigned int’} [-Werror=format=]
+> cc1: all warnings being treated as errors
+> make[6]: *** [../scripts/Makefile.build:287: arch/powerpc/mm/book3s64/hash_utils.o] Error 1
 > 
 > Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
 > Cc: Michael Ellerman <mpe@ellerman.id.au>
@@ -100,43 +99,28 @@ s/it's/its
 > Cc: linuxppc-dev@lists.ozlabs.org
 > Signed-off-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 > ---
->   arch/powerpc/mm/book3s64/slb.c | 6 +++---
->   1 file changed, 3 insertions(+), 3 deletions(-)
+>   arch/powerpc/mm/book3s64/hash_utils.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> diff --git a/arch/powerpc/mm/book3s64/slb.c b/arch/powerpc/mm/book3s64/slb.c
-> index 7e053c561a09..780792b9a1e5 100644
-> --- a/arch/powerpc/mm/book3s64/slb.c
-> +++ b/arch/powerpc/mm/book3s64/slb.c
-> @@ -294,7 +294,7 @@ static bool preload_hit(struct thread_info *ti, unsigned long esid)
->   	return false;
->   }
+> diff --git a/arch/powerpc/mm/book3s64/hash_utils.c b/arch/powerpc/mm/book3s64/hash_utils.c
+> index 1e062056cfb8..495b6da6f5d4 100644
+> --- a/arch/powerpc/mm/book3s64/hash_utils.c
+> +++ b/arch/powerpc/mm/book3s64/hash_utils.c
+> @@ -1394,7 +1394,7 @@ static void __init htab_initialize(void)
+>   		size = end - base;
+>   		base = (unsigned long)__va(base);
 > 
-> -static bool preload_add(struct thread_info *ti, unsigned long ea)
-> +static void preload_add(struct thread_info *ti, unsigned long ea)
->   {
->   	unsigned char idx;
->   	unsigned long esid;
-> @@ -308,7 +308,7 @@ static bool preload_add(struct thread_info *ti, unsigned long ea)
->   	esid = ea >> SID_SHIFT;
-> 
->   	if (preload_hit(ti, esid))
-> -		return false;
-> +		return;
-> 
->   	idx = (ti->slb_preload_tail + ti->slb_preload_nr) % SLB_PRELOAD_NR;
->   	ti->slb_preload_esid[idx] = esid;
-> @@ -317,7 +317,7 @@ static bool preload_add(struct thread_info *ti, unsigned long ea)
->   	else
->   		ti->slb_preload_nr++;
-> 
-> -	return true;
-> +	return;
+> -		DBG("creating mapping for region: %lx..%lx (prot: %lx)\n",
+> +		DBG("creating mapping for region: %llx..%llx (prot: %lx)\n",
 
-You don't need a valueless return at the end of a function
+Use %pa
 
->   }
+See 
+https://docs.kernel.org/core-api/printk-formats.html#physical-address-types-phys-addr-t
+
+>   		    base, size, prot);
 > 
->   static void preload_age(struct thread_info *ti)
+>   		if ((base + size) >= H_VMALLOC_START) {
 > --
 > 2.50.1
 > 
