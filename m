@@ -1,67 +1,161 @@
-Return-Path: <linuxppc-dev+bounces-11578-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11579-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E17F3CA0FF0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 13:50:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22CAECA100C
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 13:58:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cFqyX0sgCz2ywh;
-	Mon,  1 Sep 2025 23:50:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756734644;
-	cv=none; b=jJ1eoRof4JZrmqSMvUUS4haisZlT5/HAFgGCsuvLQuFvTKxdmER4WQJuPTam8ytI+AiSWIFczeZOvQ0BQbTvEI8tiRCZuQgtpNaAQOf6732CROI1P1CSBCPPT6kJBUlZcErcJppRgQ18ick9tagftJO66sHHPsfFppEG9e4/R/xoCRFhWh6SDxk3UGQh8pcEFREqaMT397HWVe5frFvX1tswHQBFRMtICfH3tmiP0SGzpKL51ht1mdj8YJvrLfD9/rj4VTGPbafVkkaPy87Y58b/n3w2Bkgn7IPOcQm6mktZ00NuPMLj10qYZhEWhp/JiZvDUjAipXP/jwmg/X1C2w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cFr7s5lpWz2xxr;
+	Mon,  1 Sep 2025 23:58:49 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4d48:ad52:32c8:5054:ff:fe00:142"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756735129;
+	cv=none; b=XqbA7VPiZ3kDBDSNBwrObiz1Mp8i9KDC14Sj3P7NHGaoX61ZSUr7IckFimYMF+ysCgggar21N0eaw+RoxsLegJyW6BLFULvRkOptysz3/6pu714XTXvQVdUv4+5EtYChcwkbr0u0+zY6eAte8xvzEM1yXeF6vFHO/6ouY7PEr5nu3mfaebq+lumXp78hr6g3GzMgLEePhz83k9IHBZc6U/jS2DylYw1KStBVA4M6oj7/rZBgOo9QJAHtjKqdxb85hN0ocrhEJlCGDnXzVZNItb67L2hupChoR6C8b2Mn+oVIcjHYdGZOJSMK0F+PzYXfkJyCqZxzzqD2Tg81fIf1hg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756734644; c=relaxed/relaxed;
-	bh=Jtz4NMD0OIuFJ1vGUjeFJCuc29nxu0XN/MgbJYMuBGE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=I1ZJeuiYKIXYugv/uXQo1i1n5n0r3ncjtcvyfs7GViPkqUNfU95DtW/vC781JX7/wy33BeJsdNifKLTJOglMjO8eYBZ7yT54rdCA1stsm/MzH9vZ8WEVTs3nxq8FGBUSoDX0KZcavv2/wbrua3ES6/i2IqjBqZ0WSPDCLybDdGUyIHKsQNw6uqmtoFnXW5fKQ7ppiE2aaEV1h4wIZKOyKeXTbW/uIlAoCAjx0yDZQto0kyQutIj/Py6Gb7KcL1HwcKzhITKiUk+FBKHRtJSeE8ppkQDhhmqelcDCOdlAebzaSq5cJWnjCViNs2IuKcc9wkiuIdZnt7jgGT4y9GvJIQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cFqyW4T7Lz2xC3
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Sep 2025 23:50:43 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cFndG1JW7z9sSj;
-	Mon,  1 Sep 2025 14:05:38 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id YjItXt-aDJex; Mon,  1 Sep 2025 14:05:38 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cFndC3wLgz9sSn;
-	Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6DFC88B790;
-	Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 8IHJKJa_apLX; Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 397938B796;
-	Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Qiang Zhao <qiang.zhao@nxp.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-gpio@vger.kernel.org,
-	devicetree@vger.kernel.org
-Subject: [PATCH v5 3/7] soc: fsl: qe: Drop legacy-of-mm-gpiochip.h header from GPIO driver
-Date: Mon,  1 Sep 2025 14:05:10 +0200
-Message-ID: <c5788504a473625faeb9f99b08d3bca5e7135120.1756727747.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1756727747.git.christophe.leroy@csgroup.eu>
-References: <cover.1756727747.git.christophe.leroy@csgroup.eu>
+	t=1756735129; c=relaxed/relaxed;
+	bh=RM6LIropo7RLNuOlTPTbxv1QAM+nDQ9b+UYR09aJlMc=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=PuEfcr7WqbLC4K2HJuIw2HjpJLwFo0ExD9h/36RIL3XBrgzG3QeiU/RFIKFRcejGCSiVNeHMUrIt90bPkOtg6kH0t4hd0+kJ2bbfZ4+aJyIXCdHDgPZofzZFbM5mB72TdDgFHmlfr3EaPtYfUnuvuMYi9mbEIIFSiq4QQnEeP8FuTLrm6E7wKgCEeAY9u1EtTeEmgrCsU2/5sGvUsuweozGLef2ZcbcwfggrH0tFrQb3eJUwfZpBZaDdAi8VeTgzAsAgeXsB370f/WOFxruLJ3npiwdpZ/oKylaNqM1inqQQ0slbBX5unfUewuXMfFMGJ2rGt33Kvr+6aoRrb5TdcQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk; dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=NNSzbKKB; dkim-atps=neutral; spf=none (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=armlinux.org.uk
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=armlinux.org.uk
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=armlinux.org.uk header.i=@armlinux.org.uk header.a=rsa-sha256 header.s=pandora-2019 header.b=NNSzbKKB;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=armlinux.org.uk (client-ip=2001:4d48:ad52:32c8:5054:ff:fe00:142; helo=pandora.armlinux.org.uk; envelope-from=linux+linuxppc-dev=lists.ozlabs.org@armlinux.org.uk; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1142 seconds by postgrey-1.37 at boromir; Mon, 01 Sep 2025 23:58:47 AEST
+Received: from pandora.armlinux.org.uk (pandora.armlinux.org.uk [IPv6:2001:4d48:ad52:32c8:5054:ff:fe00:142])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cFr7q1t95z2xcC
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Sep 2025 23:58:47 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=armlinux.org.uk; s=pandora-2019; h=Sender:In-Reply-To:Content-Type:
+	MIME-Version:References:Message-ID:Subject:Cc:To:From:Date:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description:Resent-Date:
+	Resent-From:Resent-Sender:Resent-To:Resent-Cc:Resent-Message-ID:List-Id:
+	List-Help:List-Unsubscribe:List-Subscribe:List-Post:List-Owner:List-Archive;
+	bh=RM6LIropo7RLNuOlTPTbxv1QAM+nDQ9b+UYR09aJlMc=; b=NNSzbKKBeoEQGxwz3UzllieC1n
+	kkE+xlduoA52cvOVJ8jOeYLDnjA7TzQmjejbtL/0tWAG+9d4cE2J/ONuut1GmEa2n3uOYVKgHatSS
+	w4Pb99DVV7gUtXUUtv6Qx59huahgFOdJBcfSG4lUebtJeMJaPx19VfAFP2QEL4ctfUaF16C9hBX6y
+	UUPVHnFWBwC7t9uM24Paclia8molYqT3MAEK8yHzR94WSPflnoyYPEejoREz0fOEhzCs5Hixi72jB
+	Yl/2zQ9LpnM0jtO2PdNy13LLDGJvB2fRUarVsgOUcI8Geow897XPZQtus3nSRYJ6D2M2cBF4hHkXw
+	gfRh6OfA==;
+Received: from shell.armlinux.org.uk ([fd8f:7570:feb6:1:5054:ff:fe00:4ec]:55422)
+	by pandora.armlinux.org.uk with esmtpsa  (TLS1.3) tls TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384
+	(Exim 4.98.2)
+	(envelope-from <linux@armlinux.org.uk>)
+	id 1ut4kt-000000006Fy-1UpL;
+	Mon, 01 Sep 2025 14:39:31 +0100
+Received: from linux by shell.armlinux.org.uk with local (Exim 4.98.2)
+	(envelope-from <linux@shell.armlinux.org.uk>)
+	id 1ut4kV-00000000739-2a6T;
+	Mon, 01 Sep 2025 14:39:07 +0100
+Date: Mon, 1 Sep 2025 14:39:07 +0100
+From: "Russell King (Oracle)" <linux@armlinux.org.uk>
+To: schuster.simon@siemens-energy.com
+Cc: Dinh Nguyen <dinguyen@kernel.org>,
+	Christian Brauner <brauner@kernel.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	David Hildenbrand <david@redhat.com>,
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>, Ingo Molnar <mingo@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Juri Lelli <juri.lelli@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Ben Segall <bsegall@google.com>, Mel Gorman <mgorman@suse.de>,
+	Valentin Schneider <vschneid@redhat.com>,
+	Kees Cook <kees@kernel.org>,
+	Paul Walmsley <paul.walmsley@sifive.com>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Albert Ou <aou@eecs.berkeley.edu>, Alexandre Ghiti <alex@ghiti.fr>,
+	Guo Ren <guoren@kernel.org>, Oleg Nesterov <oleg@redhat.com>,
+	Jens Axboe <axboe@kernel.dk>,
+	Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>,
+	Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>,
+	Michal =?iso-8859-1?Q?Koutn=FD?= <mkoutny@suse.com>,
+	Paul Moore <paul@paul-moore.com>, Serge Hallyn <sergeh@kernel.org>,
+	James Morris <jmorris@namei.org>,
+	"Serge E. Hallyn" <serge@hallyn.com>,
+	Anna-Maria Behnsen <anna-maria@linutronix.de>,
+	Frederic Weisbecker <frederic@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Eric Dumazet <edumazet@google.com>,
+	Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
+	Simon Horman <horms@kernel.org>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	Arnaldo Carvalho de Melo <acme@kernel.org>,
+	Namhyung Kim <namhyung@kernel.org>,
+	Mark Rutland <mark.rutland@arm.com>,
+	Alexander Shishkin <alexander.shishkin@linux.intel.com>,
+	Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>,
+	Adrian Hunter <adrian.hunter@intel.com>,
+	John Johansen <john.johansen@canonical.com>,
+	Stephen Smalley <stephen.smalley.work@gmail.com>,
+	Ondrej Mosnacek <omosnace@redhat.com>,
+	Kentaro Takeda <takedakn@nttdata.co.jp>,
+	Tetsuo Handa <penguin-kernel@i-love.sakura.ne.jp>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Brian Cain <bcain@kernel.org>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Michal Simek <monstr@monstr.eu>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Jonas Bonn <jonas@southpole.se>,
+	Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>,
+	Stafford Horne <shorne@gmail.com>,
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
+	Helge Deller <deller@gmx.de>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Yoshinori Sato <ysato@users.sourceforge.jp>,
+	Rich Felker <dalias@libc.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Richard Weinberger <richard@nod.at>,
+	Anton Ivanov <anton.ivanov@cambridgegreys.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>,
+	Max Filippov <jcmvbkbc@gmail.com>, linux-mm@kvack.org,
+	linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org,
+	linux-csky@vger.kernel.org, linux-block@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org, cgroups@vger.kernel.org,
+	linux-security-module@vger.kernel.org,
+	linux-trace-kernel@vger.kernel.org, netdev@vger.kernel.org,
+	linux-perf-users@vger.kernel.org, apparmor@lists.ubuntu.com,
+	selinux@vger.kernel.org, linux-alpha@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org,
+	linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org,
+	loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org,
+	linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org,
+	linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-um@lists.infradead.org
+Subject: Re: [PATCH v2 3/4] arch: copy_thread: pass clone_flags as u64
+Message-ID: <aLWh-1ElIVNBYctw@shell.armlinux.org.uk>
+References: <20250901-nios2-implement-clone3-v2-0-53fcf5577d57@siemens-energy.com>
+ <20250901-nios2-implement-clone3-v2-3-53fcf5577d57@siemens-energy.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,213 +169,37 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756728308; l=7337; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=zHMhkGOir99C4zE6CP2P9w4fbrPG2js+Iq37Oh0usVQ=; b=JCxpWDQg8OT10Z6xzFFQz7qWBVLJ3RJwav5YcIOtO07QXfDpRAg1A9uG5tFz3Z3jwLeuwAyfi deFgDBXXM30Alvf3L3FJ/ZG2MGYKdoX18I2J2JmSoeiso2DstWnIpJG
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250901-nios2-implement-clone3-v2-3-53fcf5577d57@siemens-energy.com>
+Sender: Russell King (Oracle) <linux@armlinux.org.uk>
 
-Remove legacy-of-mm-gpiochip.h header file. The above mentioned
-file provides an OF API that's deprecated. There is no agnostic
-alternatives to it and we have to open code the logic which was
-hidden behind of_mm_gpiochip_add_data(). Note, most of the GPIO
-drivers are using their own labeling schemas and resource retrieval
-that only a few may gain of the code deduplication, so whenever
-alternative is appear we can move drivers again to use that one.
+On Mon, Sep 01, 2025 at 03:09:52PM +0200, Simon Schuster via B4 Relay wrote:
+> diff --git a/arch/arm/kernel/process.c b/arch/arm/kernel/process.c
+> index e16ed102960c..d7aa95225c70 100644
+> --- a/arch/arm/kernel/process.c
+> +++ b/arch/arm/kernel/process.c
+> @@ -234,7 +234,7 @@ asmlinkage void ret_from_fork(void) __asm__("ret_from_fork");
+>  
+>  int copy_thread(struct task_struct *p, const struct kernel_clone_args *args)
+>  {
+> -	unsigned long clone_flags = args->flags;
+> +	u64 clone_flags = args->flags;
+>  	unsigned long stack_start = args->stack;
+>  	unsigned long tls = args->tls;
+>  	struct thread_info *thread = task_thread_info(p);
 
-As a side effect this change fixes a potential memory leak on
-an error path, if of_mm_gpiochip_add_data() fails.
+We only have one user of clone_flags in this function, which is:
 
-[Text copied from commit 34064c8267a6 ("powerpc/8xx: Drop
-legacy-of-mm-gpiochip.h header")]
+        if (clone_flags & CLONE_SETTLS)
 
-Suggested-by: Bartosz Golaszewski <brgl@bgdev.pl>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/platforms/Kconfig |  1 -
- drivers/soc/fsl/qe/gpio.c      | 51 ++++++++++++++++++----------------
- 2 files changed, 27 insertions(+), 25 deletions(-)
+I would much rather clone_flags was removed, and this changed to:
 
-diff --git a/arch/powerpc/platforms/Kconfig b/arch/powerpc/platforms/Kconfig
-index fea3766eac0f..5b689bd3ddf4 100644
---- a/arch/powerpc/platforms/Kconfig
-+++ b/arch/powerpc/platforms/Kconfig
-@@ -232,7 +232,6 @@ config QE_GPIO
- 	bool "QE GPIO support"
- 	depends on QUICC_ENGINE
- 	select GPIOLIB
--	select OF_GPIO_MM_GPIOCHIP
- 	help
- 	  Say Y here if you're going to use hardware that connects to the
- 	  QE GPIOs.
-diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
-index 04b44fc2bb58..c54154b404df 100644
---- a/drivers/soc/fsl/qe/gpio.c
-+++ b/drivers/soc/fsl/qe/gpio.c
-@@ -12,7 +12,6 @@
- #include <linux/spinlock.h>
- #include <linux/err.h>
- #include <linux/io.h>
--#include <linux/gpio/legacy-of-mm-gpiochip.h>
- #include <linux/gpio/consumer.h>
- #include <linux/gpio/driver.h>
- #include <linux/slab.h>
-@@ -24,7 +23,8 @@
- #define PIN_MASK(gpio) (1UL << (QE_PIO_PINS - 1 - (gpio)))
- 
- struct qe_gpio_chip {
--	struct of_mm_gpio_chip mm_gc;
-+	struct gpio_chip gc;
-+	void __iomem *regs;
- 	spinlock_t lock;
- 
- 	/* shadowed data register to clear/set bits safely */
-@@ -34,11 +34,9 @@ struct qe_gpio_chip {
- 	struct qe_pio_regs saved_regs;
- };
- 
--static void qe_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
-+static void qe_gpio_save_regs(struct qe_gpio_chip *qe_gc)
- {
--	struct qe_gpio_chip *qe_gc =
--		container_of(mm_gc, struct qe_gpio_chip, mm_gc);
--	struct qe_pio_regs __iomem *regs = mm_gc->regs;
-+	struct qe_pio_regs __iomem *regs = qe_gc->regs;
- 
- 	qe_gc->cpdata = ioread32be(&regs->cpdata);
- 	qe_gc->saved_regs.cpdata = qe_gc->cpdata;
-@@ -51,8 +49,8 @@ static void qe_gpio_save_regs(struct of_mm_gpio_chip *mm_gc)
- 
- static int qe_gpio_get(struct gpio_chip *gc, unsigned int gpio)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
--	struct qe_pio_regs __iomem *regs = mm_gc->regs;
-+	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
-+	struct qe_pio_regs __iomem *regs = qe_gc->regs;
- 	u32 pin_mask = PIN_MASK(gpio);
- 
- 	return !!(ioread32be(&regs->cpdata) & pin_mask);
-@@ -60,9 +58,8 @@ static int qe_gpio_get(struct gpio_chip *gc, unsigned int gpio)
- 
- static int qe_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
--	struct qe_pio_regs __iomem *regs = mm_gc->regs;
-+	struct qe_pio_regs __iomem *regs = qe_gc->regs;
- 	unsigned long flags;
- 	u32 pin_mask = PIN_MASK(gpio);
- 
-@@ -83,9 +80,8 @@ static int qe_gpio_set(struct gpio_chip *gc, unsigned int gpio, int val)
- static int qe_gpio_set_multiple(struct gpio_chip *gc,
- 				unsigned long *mask, unsigned long *bits)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
--	struct qe_pio_regs __iomem *regs = mm_gc->regs;
-+	struct qe_pio_regs __iomem *regs = qe_gc->regs;
- 	unsigned long flags;
- 	int i;
- 
-@@ -111,13 +107,12 @@ static int qe_gpio_set_multiple(struct gpio_chip *gc,
- 
- static int qe_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&qe_gc->lock, flags);
- 
--	__par_io_config_pin(mm_gc->regs, gpio, QE_PIO_DIR_IN, 0, 0, 0);
-+	__par_io_config_pin(qe_gc->regs, gpio, QE_PIO_DIR_IN, 0, 0, 0);
- 
- 	spin_unlock_irqrestore(&qe_gc->lock, flags);
- 
-@@ -126,7 +121,6 @@ static int qe_gpio_dir_in(struct gpio_chip *gc, unsigned int gpio)
- 
- static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- {
--	struct of_mm_gpio_chip *mm_gc = to_of_mm_gpio_chip(gc);
- 	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
- 	unsigned long flags;
- 
-@@ -134,7 +128,7 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
- 
- 	spin_lock_irqsave(&qe_gc->lock, flags);
- 
--	__par_io_config_pin(mm_gc->regs, gpio, QE_PIO_DIR_OUT, 0, 0, 0);
-+	__par_io_config_pin(qe_gc->regs, gpio, QE_PIO_DIR_OUT, 0, 0, 0);
- 
- 	spin_unlock_irqrestore(&qe_gc->lock, flags);
- 
-@@ -240,7 +234,7 @@ EXPORT_SYMBOL(qe_pin_free);
- void qe_pin_set_dedicated(struct qe_pin *qe_pin)
- {
- 	struct qe_gpio_chip *qe_gc = qe_pin->controller;
--	struct qe_pio_regs __iomem *regs = qe_gc->mm_gc.regs;
-+	struct qe_pio_regs __iomem *regs = qe_gc->regs;
- 	struct qe_pio_regs *sregs = &qe_gc->saved_regs;
- 	int pin = qe_pin->num;
- 	u32 mask1 = 1 << (QE_PIO_PINS - (pin + 1));
-@@ -269,7 +263,6 @@ void qe_pin_set_dedicated(struct qe_pin *qe_pin)
- 
- 	iowrite32be(qe_gc->cpdata, &regs->cpdata);
- 	qe_clrsetbits_be32(&regs->cpodr, mask1, sregs->cpodr & mask1);
--
- 	spin_unlock_irqrestore(&qe_gc->lock, flags);
- }
- EXPORT_SYMBOL(qe_pin_set_dedicated);
-@@ -284,7 +277,7 @@ EXPORT_SYMBOL(qe_pin_set_dedicated);
- void qe_pin_set_gpio(struct qe_pin *qe_pin)
- {
- 	struct qe_gpio_chip *qe_gc = qe_pin->controller;
--	struct qe_pio_regs __iomem *regs = qe_gc->mm_gc.regs;
-+	struct qe_pio_regs __iomem *regs = qe_gc->regs;
- 	unsigned long flags;
- 
- 	spin_lock_irqsave(&qe_gc->lock, flags);
-@@ -301,7 +294,6 @@ static int qe_gpio_probe(struct platform_device *ofdev)
- 	struct device *dev = &ofdev->dev;
- 	struct device_node *np = dev->of_node;
- 	struct qe_gpio_chip *qe_gc;
--	struct of_mm_gpio_chip *mm_gc;
- 	struct gpio_chip *gc;
- 
- 	qe_gc = devm_kzalloc(dev, sizeof(*qe_gc), GFP_KERNEL);
-@@ -310,18 +302,29 @@ static int qe_gpio_probe(struct platform_device *ofdev)
- 
- 	spin_lock_init(&qe_gc->lock);
- 
--	mm_gc = &qe_gc->mm_gc;
--	gc = &mm_gc->gc;
-+	gc = &qe_gc->gc;
- 
--	mm_gc->save_regs = qe_gpio_save_regs;
-+	gc->base = -1;
- 	gc->ngpio = QE_PIO_PINS;
- 	gc->direction_input = qe_gpio_dir_in;
- 	gc->direction_output = qe_gpio_dir_out;
- 	gc->get = qe_gpio_get;
- 	gc->set = qe_gpio_set;
- 	gc->set_multiple = qe_gpio_set_multiple;
-+	gc->parent = dev;
-+	gc->owner = THIS_MODULE;
-+
-+	gc->label = devm_kasprintf(dev, GFP_KERNEL, "%pOF", np);
-+	if (!gc->label)
-+		return -ENOMEM;
-+
-+	qe_gc->regs = devm_of_iomap(dev, np, 0, NULL);
-+	if (IS_ERR(qe_gc->regs))
-+		return PTR_ERR(qe_gc->regs);
-+
-+	qe_gpio_save_regs(qe_gc);
- 
--	return of_mm_gpiochip_add_data(np, mm_gc, qe_gc);
-+	return devm_gpiochip_add_data(dev, gc, qe_gc);
- }
- 
- static const struct of_device_id qe_gpio_match[] = {
+	if (args->flags & CLONE_SETTLS)
+
+Thanks.
+
 -- 
-2.49.0
-
+RMK's Patch system: https://www.armlinux.org.uk/developer/patches/
+FTTP is here! 80Mbps down 10Mbps up. Decent connectivity at last!
 
