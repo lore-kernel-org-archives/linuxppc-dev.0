@@ -1,79 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-11590-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11591-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E2C3CA0FF0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 17:08:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C385CA1005
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 19:50:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cFwLP20Zwz2ywh;
-	Tue,  2 Sep 2025 03:08:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756746493;
-	cv=none; b=XR7HfVPXUzk1Nnp1nkzWuk5i5qS4Nbd1IkXMA8O3CjihzmMJzd2E9tJxSamxhQH/sKKTAyFdpzDFZlh2VH0CgsE9KinPxaI98wnBWbOvJ0n/vLFxBy+qAFGPusmvGvugWegj5ZcPGOmwuGgxdY48Ct98iZpwIuxRiv1MLxuUrEul0i7aGZM7PNfeSHXWmmRIeILLA0d1+y8TCnH6MMrgF8OvTIBTA1EGEgcp8eIPLH9wcS10nHYK5CE6JMTYikOQjhiwRIBfMfSPXztr26qjtRvLh1WzUvfg1a28T16LvH3vhAO66SQ9MIxxc2cZQ+F3+WUqgV1B2yFWyLN1OorLmw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cFzxp61gkz2yys;
+	Tue,  2 Sep 2025 05:50:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756756238;
+	cv=none; b=lpQi+lFwV+W+WD6r5SQkiRIPjzVGCRE17MkY/9nebiMSrIpq4ftRha0VRSqrN6Gm7SbHz0JpaDANCqd/Xe8k3Cbx30wEa+4eofbjyPG5/qlmqZYzyLC42CqCfjduhbfDQPhbCgDEuHTPZsbAw5vHbD7XYA2QDYbg95plrcJkOOhk3VkczK9DW3Ss8hlcxmrDFje9E2ikl0yXiwvngBN4WS9hV/1Nch4+PoV1xsRldLVLw4GwWlbAtf+95mBE3tNXiFn+fLv2SHU2r7pShsPOHgGvIjtKuTwHMmqR5wSiSwC3RuVfqakfEiR007Pxy9p0XzGLd+5dzI+gtrXGv8vqfw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756746493; c=relaxed/relaxed;
-	bh=r7TOSxJvoSA+1s5N9qqBPrp+KwUNdbucdgWwePjfXTs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NQD6e8XicCkV6h79OxVSoTOnfd98SvEYqDy6UvGC3jo1/bBcDEy/W7VXCGdgdOIeAQD22Nv6DLPtuxYYM2Khl9aJ/vHZaKAnsyu/rTSB4xjXe/hU5Qh6OKMEK8YIIfFwA/tAIzwH7U2AsAZNn+11kgDxdO51T+b9Gh+c6wd8VJ6sEVQ1wV01v76wfF9DpNpcV9vY2bslqaX5n3mFZ8M2K/U+MfQejFlkn4XjCBinnh6R77iV6HlE6TxrSXwFZWw+/w8PY8ewPdWRwAwsCAaM1erVb6SWllIipIdmbDc8wqe088tdQvAoeb+Kq2hS0gXE4Vq2181PlN0yzd1cHDJsWQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=A23Zxf7S; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=A23Zxf7S;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cFwLM6bwTz2yDH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Sep 2025 03:08:11 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5819eiFa027567;
-	Mon, 1 Sep 2025 17:06:56 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=r7TOSx
-	JvoSA+1s5N9qqBPrp+KwUNdbucdgWwePjfXTs=; b=A23Zxf7SGvUD7i3F3A7Ihq
-	Mgrdp6wxmrD3U107IbRRMfJWqB7w13pen1yCB1xmIclO/1lUJ46tYNSKh8sILjao
-	HPWROA6XfF4sbwETXcp7VfjJB9U+G6Tco5q523VshsifiJgAUmFFiwhHWFksWhkg
-	8TauF6MGWkOTu6iw6836TOQAQaq4qLI419RrL7I+D5P0bnZm/HgRXLKu86wOPKmo
-	zaKeMooIIUN+8jfDd+SpyDrAvf9IIntvI9z7Kwc1Zu/Jfh30q1SXfdQOHh7vuShm
-	npLWbBq78hUZptxsWLOw72zgApEXMLhXarSgUn82sXfidpdYN2oVuRpXOtxbDIZw
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48usvfhydc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 01 Sep 2025 17:06:55 +0000 (GMT)
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 581H6tIo008017;
-	Mon, 1 Sep 2025 17:06:55 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48usvfhyd9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 01 Sep 2025 17:06:55 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 581Dghh7021191;
-	Mon, 1 Sep 2025 17:06:54 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 48vcmpeupn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 01 Sep 2025 17:06:54 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 581H6oSQ43385100
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 1 Sep 2025 17:06:50 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 37D6620043;
-	Mon,  1 Sep 2025 17:06:50 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id C3DDF20040;
-	Mon,  1 Sep 2025 17:06:40 +0000 (GMT)
-Received: from [9.124.217.216] (unknown [9.124.217.216])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  1 Sep 2025 17:06:40 +0000 (GMT)
-Message-ID: <8eadbf18-f930-41ab-bd0c-344f95324687@linux.ibm.com>
-Date: Mon, 1 Sep 2025 22:36:39 +0530
+	t=1756756238; c=relaxed/relaxed;
+	bh=9iW9GqJeabnoj2ZbnLX4Izkc8n16oSwp2JzekmlHdqs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=asy6pigKD1q9718lio0GIfjsuEq6hHU4T23mNZ9QdxYpB+OLbVBRGSARR235ORtrn1Bt9KopLbD/oMIrX3ZN865xS6zVf7/Ezi68/4Lxaj9XwHEWCF1gcahs+Lfbr1RHp9SSKoKpDS+nzp+OY28GZDHPNSl9x4UwE36ZpSBL46L6CKEO1gdJ0dqIAe+XQN8fFmu6tqzODaiLnvv6YAJFqfxQda/ErqP+54h5fsiuEybvbXzGniDwAd+Q5VRVdTI2X3hsrqgCx/5dycXO4563lrtnm4e2Op4zdG+hqyuPTh9tJ4s+lt/uW63MCuLhPOS/EJcjl2icDgngqEuXTeoRRw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cFzxn0P3gz2yqW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Sep 2025 05:50:36 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4cFndH59YJz9sT1;
+	Mon,  1 Sep 2025 14:05:39 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id I7IsBlKEXMdn; Mon,  1 Sep 2025 14:05:39 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cFndC4hv4z9sSp;
+	Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8E5B78B796;
+	Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id edUMA0anltQY; Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5A3228B77B;
+	Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Subject: [PATCH v5 4/7] soc: fsl: qe: Add support of IRQ in QE GPIO
+Date: Mon,  1 Sep 2025 14:05:11 +0200
+Message-ID: <1234b2b7105443654c5f2bb97d25cf16408d6003.1756727747.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1756727747.git.christophe.leroy@csgroup.eu>
+References: <cover.1756727747.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,143 +76,185 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v7 0/8] sched/fair: Get rid of sched_domains_curr_level
- hack for tl->cpumask()
-To: Peter Zijlstra <peterz@infradead.org>
-Cc: Valentin Schneider <vschneid@redhat.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        K Prateek Nayak <kprateek.nayak@amd.com>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>,
-        Mel Gorman <mgorman@suse.de>, thomas.weissschuh@linutronix.de,
-        Li Chen <chenl311@chinatelecom.cn>, Bibo Mao <maobibo@loongson.cn>,
-        Mete Durlu <meted@linux.ibm.com>,
-        Tobias Huschle <huschle@linux.ibm.com>,
-        Easwar Hariharan <easwar.hariharan@linux.microsoft.com>,
-        Guo Weikang <guoweikang.kernel@gmail.com>,
-        "Rafael J. Wysocki" <rafael.j.wysocki@intel.com>,
-        Brian Gerst <brgerst@gmail.com>,
-        Patryk Wlazlyn <patryk.wlazlyn@linux.intel.com>,
-        Swapnil Sapkal <swapnil.sapkal@amd.com>,
-        "Yury Norov [NVIDIA]" <yury.norov@gmail.com>,
-        Sudeep Holla <sudeep.holla@arm.com>,
-        Jonathan Cameron <Jonathan.Cameron@huawei.com>,
-        Andrea Righi <arighi@nvidia.com>,
-        Yicong Yang <yangyicong@hisilicon.com>,
-        Ricardo Neri <ricardo.neri-calderon@linux.intel.com>,
-        Tim Chen <tim.c.chen@linux.intel.com>,
-        Vinicius Costa Gomes <vinicius.gomes@intel.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-        Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-        "H. Peter Anvin" <hpa@zytor.com>, Juri Lelli <juri.lelli@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        linux-s390@vger.kernel.org
-References: <20250826041319.1284-1-kprateek.nayak@amd.com>
- <b64c820d-084a-40d9-bb4e-82986b9e6482@linux.ibm.com>
- <20250826101328.GV4067720@noisy.programming.kicks-ass.net>
- <xhsmh7bymlg2f.mognet@vschneid-thinkpadt14sgen2i.remote.csb>
- <5ec9ca8a-9ba9-4600-a7a2-f7bd790fca83@linux.ibm.com>
- <20250901085815.GE4067720@noisy.programming.kicks-ass.net>
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-Content-Language: en-US
-In-Reply-To: <20250901085815.GE4067720@noisy.programming.kicks-ass.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=behrUPPB c=1 sm=1 tr=0 ts=68b5d2b0 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=Sj5KfFTFUvDWxMll-IgA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: ey1UAu3pK9f_WbwA0sN_jX0wb-cb_G0w
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODMwMDAzNCBTYWx0ZWRfX/QfoAP97NVM7
- XKphrqhfzjL/bZlQ33D04vSK/Y5g0HsDiqvirGGVLX9joP5tg9AhgxxKu6qmHaXWl0wlRQmQk5m
- GI4F78mcjE8S4/qpfTKnPlSvBnaccaQrUKJN0fiKXBuLB2idWkCGVV2CChSvkWv+rKtCt9hQpT2
- wio6oFLnztXEn/g7lLVTY/xLs+9fbiTOtCNzopCPaQ61Ip8PZoTJAW97xbD+TpEKxt9TVslvPh0
- sbTKVUpW9k/LnhUOK4kIPlR5UTX0coo3L4KN83ZlNSSOlzVrAjhEcf/QJaVWRqeZqmwnNg5Jc9p
- g7hYaPG3n5liTQvl1IQnRnxH3fthaFqyMin2gEvHocb8aVxhG6/sHu1L47Vw55L4ipo5eCDFLwo
- 5jYAwNPn
-X-Proofpoint-GUID: 90AWoj7fnTbaX3KKwPhpLIJMKqs0ANIN
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1099,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-01_06,2025-08-28_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 impostorscore=0 spamscore=0 clxscore=1015 phishscore=0
- priorityscore=1501 adultscore=0 bulkscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2508300034
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756728308; l=6021; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=s8KjGqMF8kQALqNMwLbzLGaJh7U5Yszt7n4kjPjPFPY=; b=5Q0lKuhrQBfag3F7DCmjgG6MlKlaxMv0YyRWMF8h3A82sy9PbLmMLb+o/21C9Bt418k4hJ5m/ 6sPuEoVkJz7D1rfCaQRi8Vuo7IC6FUSSLs9q+m8UgwIgu9cYetjKS/I
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 
+In the QE, a few GPIOs have an associated IRQ to notify changes.
+Add IRQ support to QE GPIO.
 
+As not all GPIOs have an associated IRQ, the driver needs to know
+to which GPIO corresponds each provided IRQ. This is provided via
+multiple compatible properties:
 
-On 9/1/25 2:28 PM, Peter Zijlstra wrote:
-> On Fri, Aug 29, 2025 at 02:23:06PM +0530, Shrikanth Hegde wrote:
-> 
->> I was looking at: https://git.kernel.org/pub/scm/linux/kernel/git/peterz/queue.git/log/?h=sched/core
->>
->> Current code doesn't allow one to enable/disable SCHED_MC on ppc since it is set always in kconfig.
->> Used the below patch:
->>
->> I think since the config is there, it would be good to provide a option to disable. no?
-> 
-> So current PPC code has this MC thing unconditional. I've been
-> preserving that behaviour. If PPC maintainers feel they want this
-> selectable, I'm happy to include something like the below, but as a
-> separate patch with a separate changelog that states this explicit
-> choice.
-> 
+	compatible = "fsl,mpc8323-qe-pario-bank-a"
+	compatible = "fsl,mpc8323-qe-pario-bank-b"
+	compatible = "fsl,mpc8323-qe-pario-bank-c"
 
-Fair enough. Will send it as separate patch.
+	compatible = "fsl,mpc8360-qe-pario-bank-a"
+	compatible = "fsl,mpc8360-qe-pario-bank-b"
+	compatible = "fsl,mpc8360-qe-pario-bank-c"
+	compatible = "fsl,mpc8360-qe-pario-bank-d"
+	compatible = "fsl,mpc8360-qe-pario-bank-e"
+	compatible = "fsl,mpc8360-qe-pario-bank-f"
+	compatible = "fsl,mpc8360-qe-pario-bank-g"
 
->> ---
->>
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index fc0d1c19f5a1..da5b2f8d3686 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -170,9 +170,8 @@ config PPC
->>   	select ARCH_STACKWALK
->>   	select ARCH_SUPPORTS_ATOMIC_RMW
->>   	select ARCH_SUPPORTS_DEBUG_PAGEALLOC	if PPC_BOOK3S || PPC_8xx
->> -	select ARCH_SUPPORTS_SCHED_SMT		if PPC64 && SMP
->>   	select ARCH_SUPPORTS_SCHED_MC		if PPC64 && SMP
->> -	select SCHED_MC				if ARCH_SUPPORTS_SCHED_MC
->> +	select ARCH_SUPPORTS_SCHED_SMT		if PPC64 && SMP
->>   	select ARCH_USE_BUILTIN_BSWAP
->>   	select ARCH_USE_CMPXCHG_LOCKREF		if PPC64
->>   	select ARCH_USE_MEMTEST
->> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
->> index 68edb66c2964..458ec5bd859e 100644
->> --- a/arch/powerpc/kernel/smp.c
->> +++ b/arch/powerpc/kernel/smp.c
->> @@ -1706,10 +1706,12 @@ static void __init build_sched_topology(void)
->>   			SDTL_INIT(tl_cache_mask, powerpc_shared_cache_flags, CACHE);
->>   	}
->> +#ifdef CONFIG_SCHED_MC
->>   	if (has_coregroup_support()) {
->>   		powerpc_topology[i++] =
->>   			SDTL_INIT(tl_mc_mask, powerpc_shared_proc_flags, MC);
->>   	}
->> +#endif
->>   	powerpc_topology[i++] = SDTL_INIT(tl_pkg_mask, powerpc_shared_proc_flags, PKG);
->>
+	compatible = "fsl,mpc8568-qe-pario-bank-a"
+	compatible = "fsl,mpc8568-qe-pario-bank-b"
+	compatible = "fsl,mpc8568-qe-pario-bank-c"
+	compatible = "fsl,mpc8568-qe-pario-bank-d"
+	compatible = "fsl,mpc8568-qe-pario-bank-e"
+	compatible = "fsl,mpc8568-qe-pario-bank-f"
 
+When not using IRQ and for banks having no IRQ (like bank D on mpc8323)
+the origin compatible = "fsl,mpc8323-qe-pario-bank" is sufficient.
 
-If possible for below two, please consider tags.
+Here is an exemple for port B of mpc8323 which has IRQs for
+GPIOs PB7, PB9, PB25 and PB27.
 
-https://git.kernel.org/pub/scm/linux/kernel/git/peterz/queue.git/commit/?h=sched/core&id=496d4cc3d478a662f90cce3a3e3be4af56f78a02
-https://git.kernel.org/pub/scm/linux/kernel/git/peterz/queue.git/commit/?h=sched/core&id=a912f3e2c6d91f7ea7b294c02796b59af4f50078
+	qe_pio_b: gpio-controller@1418 {
+		compatible = "fsl,mpc8323-qe-pario-bank-b";
+		reg = <0x1418 0x18>;
+		interrupts = <4 5 6 7>;
+		interrupt-parent = <&qepic>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
 
-Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+---
+v5: Provide the mask via the compatible data instead of adding a property in device tree
+---
+ drivers/soc/fsl/qe/gpio.c | 72 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 72 insertions(+)
 
-for powerpc bits:
-Tested-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
+index c54154b404df..8632b0d37255 100644
+--- a/drivers/soc/fsl/qe/gpio.c
++++ b/drivers/soc/fsl/qe/gpio.c
+@@ -12,6 +12,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/err.h>
+ #include <linux/io.h>
++#include <linux/of_irq.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/gpio/driver.h>
+ #include <linux/slab.h>
+@@ -32,6 +33,8 @@ struct qe_gpio_chip {
+ 
+ 	/* saved_regs used to restore dedicated functions */
+ 	struct qe_pio_regs saved_regs;
++
++	int irq[QE_PIO_PINS];
+ };
+ 
+ static void qe_gpio_save_regs(struct qe_gpio_chip *qe_gc)
+@@ -135,6 +138,13 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ 	return 0;
+ }
+ 
++static int qe_gpio_to_irq(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
++
++	return qe_gc->irq[gpio] ? : -ENXIO;
++}
++
+ struct qe_pin {
+ 	/*
+ 	 * The qe_gpio_chip name is unfortunate, we should change that to
+@@ -295,6 +305,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ 	struct device_node *np = dev->of_node;
+ 	struct qe_gpio_chip *qe_gc;
+ 	struct gpio_chip *gc;
++	u32 mask;
+ 
+ 	qe_gc = devm_kzalloc(dev, sizeof(*qe_gc), GFP_KERNEL);
+ 	if (!qe_gc)
+@@ -302,6 +313,15 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ 
+ 	spin_lock_init(&qe_gc->lock);
+ 
++	mask = (u32)of_device_get_match_data(dev);
++	if (mask) {
++		int i, j;
++
++		for (i = 0, j = 0; i < ARRAY_SIZE(qe_gc->irq); i++)
++			if (mask & PIN_MASK(i))
++				qe_gc->irq[i] = irq_of_parse_and_map(np, j++);
++	}
++
+ 	gc = &qe_gc->gc;
+ 
+ 	gc->base = -1;
+@@ -311,6 +331,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ 	gc->get = qe_gpio_get;
+ 	gc->set = qe_gpio_set;
+ 	gc->set_multiple = qe_gpio_set_multiple;
++	gc->to_irq = qe_gpio_to_irq;
+ 	gc->parent = dev;
+ 	gc->owner = THIS_MODULE;
+ 
+@@ -330,6 +351,57 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ static const struct of_device_id qe_gpio_match[] = {
+ 	{
+ 		.compatible = "fsl,mpc8323-qe-pario-bank",
++	}, {
++		.compatible = "fsl,mpc8323-qe-pario-bank-a",
++		.data = (void *)(PIN_MASK(8) | PIN_MASK(10) | PIN_MASK(26) | PIN_MASK(28)),
++	}, {
++		.compatible = "fsl,mpc8323-qe-pario-bank-b",
++		.data = (void *)(PIN_MASK(7) | PIN_MASK(9) | PIN_MASK(25) | PIN_MASK(27)),
++	}, {
++		.compatible = "fsl,mpc8323-qe-pario-bank-c",
++		.data = (void *)(PIN_MASK(24) | PIN_MASK(29)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-a",
++		.data = (void *)(PIN_MASK(15) | PIN_MASK(16) | PIN_MASK(29) | PIN_MASK(30)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-b",
++		.data = (void *)(PIN_MASK(3) | PIN_MASK(5) | PIN_MASK(12) | PIN_MASK(13) |
++				 PIN_MASK(26) | PIN_MASK(27)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-c",
++		.data = (void *)(PIN_MASK(27) | PIN_MASK(28) | PIN_MASK(29)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-d",
++		.data = (void *)(PIN_MASK(12) | PIN_MASK(13) | PIN_MASK(16) | PIN_MASK(17) |
++				 PIN_MASK(26) | PIN_MASK(27)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-e",
++		.data = (void *)(PIN_MASK(12) | PIN_MASK(13) | PIN_MASK(24) | PIN_MASK(25) |
++				 PIN_MASK(26) | PIN_MASK(27) | PIN_MASK(31)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-f",
++		.data = (void *)(PIN_MASK(20)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-g",
++		.data = (void *)(PIN_MASK(31)),
++	}, {
++		.compatible = "fsl,mpc8568-qe-pario-bank-a",
++		.data = (void *)(PIN_MASK(22) | PIN_MASK(23)),
++	}, {
++		.compatible = "fsl,mpc8568-qe-pario-bank-b",
++		.data = (void *)(PIN_MASK(12) | PIN_MASK(13) | PIN_MASK(28) | PIN_MASK(29)),
++	}, {
++		.compatible = "fsl,mpc8568-qe-pario-bank-c",
++		.data = (void *)(PIN_MASK(16) | PIN_MASK(17) | PIN_MASK(25) | PIN_MASK(26)),
++	}, {
++		.compatible = "fsl,mpc8568-qe-pario-bank-d",
++		.data = (void *)(PIN_MASK(18) | PIN_MASK(19)),
++	}, {
++		.compatible = "fsl,mpc8568-qe-pario-bank-e",
++		.data = (void *)(PIN_MASK(12) | PIN_MASK(16) | PIN_MASK(30)),
++	}, {
++		.compatible = "fsl,mpc8568-qe-pario-bank-f",
++		.data = (void *)(PIN_MASK(12) | PIN_MASK(16) | PIN_MASK(30)),
+ 	},
+ 	{},
+ };
+-- 
+2.49.0
+
 
