@@ -1,56 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-11585-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11586-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B6EECA0FF0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 14:25:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B2ADACA1009
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 15:17:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cFrkX6d1jz301N;
-	Tue,  2 Sep 2025 00:25:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756732256;
-	cv=none; b=TQetMOMoyzAJ5PAU7rHQ1n0mnOedQ0BSR4OLWCen+gCj4KXbZayPIUuVkUlgwp6EoM8P/almQL0f6Uv/KcKDa/IoXkcMZ4vkLs5zD1fFNbTn2hcmDCmRTeXbZH79es6ZRD5GIoSisCCJjj15v6Mv+LRIY0FhXpIVpKnk7zpwIlBWmEH67cjmvRzKq3oLC+OPL/qPCXLGI2uq/vE/b5HYwIcGtF68XuPiwJtNYa0L31YmG8SWecWFRWHkxmZS4qvf2p8HD6jVOy/ZlTG3sWVNg14IP2jK/PaHwUhZAqqvIlJbh+/UfLiONq1oMc9CJWi8sYTzgSz2m9cyqfcLcf8wbA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cFstT29Vyz2ywh;
+	Tue,  2 Sep 2025 01:17:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756739841;
+	cv=none; b=howD+Z73yh32poaEl/GGDBzZMW8K/x2w9py723FcjtjyehMbKXlFvioC/4i8R3r3DFpn9ue6dKh0JNZgNp/6kFSyaKYeKQMCRLvQbvJj6uXCJRdqIB8qP8ovI4bFIBgjbudEtXYrhvAOo90t/dQxgoHx7B2kdy6Rbcpg5B6xNABRvXPHKyECbSczXCF3QOJzZ2jfFY3vJDV5Td+u9XgSDdN8Ta4gcK1by5Of4uGW5vI0HMzYTEdNC7UbD8fUAmMzn8AGEmXa0irVXrb87n8pFGogpur/AP53DxdLegEnT0F9+ThWBNhkDfKMTpfTnzLTbiR9N6l/DmVxW1T3JXILyg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756732256; c=relaxed/relaxed;
-	bh=xioHQ5KTG+jebQzTOOBaTVLdwwFRjLNCqggcN57Q9EM=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=PwG42tz9XBVXRmj95nYaCciRGExw5wdcv1SM2tAgbdadMuGkfi7rEy0nvCpGs6o5b0+XA89KFs3VCn5/pagLIysMzosTz5YJySnZg8Mh+jMtlWer2rTJ7rlg3s1i1Rx3UUlOu9hj0vonhel3uwGzll2SXY3xkMmY/GaSLVmHeI7lnzxbtQIUMuO+FaeoDKQe2b587vnMlw72nK37ClxelKMCtnh8o14vQKnjQhXBwtJdCXYFTFnBr5Jx2CFGFEKxh8tsCLeBGIio2K7CM/U5X2KBzzeMO5sigHhABwMsWO/DfmAz+HsHLh/B6mfqd4pktIFBEFkknN1uxgAuE3avZA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=j4YsDfs0; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+schuster.simon.siemens-energy.com@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1756739841; c=relaxed/relaxed;
+	bh=6TImWhcAqndssQTrfnkjNKmhvD9vElOxFN8zK455Rmc=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=eeO4+L84eAxhZyzh0HQ4xW8AweGEbSz21Hc/BWK8gF1wK7uiTkFTkO6JOUeb7vUhIL+1a+2N0yctV/Rul6mkJlN2zx8tnCWzjWIChAS+KytRt5wtjVg5nCT4wEekg/NF9ezuGBpgcZSJtV/n4YLHYGPCaNudpKjKIpZ7oMpONOCHkUEQvU5NR+Rv7R7ELCOklPL9DZVmggkke5hEOP1hSowqeD7Iz2bsDm86Rpg3Ct/SH7ewUphX6dyMnwNTXWT5TIR+TKb/327Ysid6PplNZJWJFJl0/dcd1lOHLV0EwKG+CpwHF9zPfTIZJ6A3loEcN1NcIgZY8WgK6SRoVIOyQA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fHSscyxU; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rafael@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=j4YsDfs0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fHSscyxU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+schuster.simon.siemens-energy.com@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rafael@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cFq4c09l2z2ywh
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Sep 2025 23:10:56 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cFstS3rCPz2yqP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Sep 2025 01:17:20 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 0ED504501F;
-	Mon,  1 Sep 2025 13:10:50 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id A3F4DC4CEFA;
-	Mon,  1 Sep 2025 13:10:49 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id EFC09601DE
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Sep 2025 15:17:17 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A3888C4CEF0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Sep 2025 15:17:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756732249;
-	bh=VOxu8arS/s7gFRMCG19RKI+wB0Hc+6Kyu4sWG8FSmZ0=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=j4YsDfs041pcEA4PsPM9Fv3cx+Fety1JSDdn80JTlpQfdfbDx49Pj5d73mfbToakx
-	 PgLya/HeSbiEPI6JiRWwnf1/+pAmv8a8iYyHCBp4Ds6IqCe4hIez3MU/eu+hu2SbYz
-	 lB4Gfs5Y6gmt4q60PKIgOXRBHP3WM5szwT1cuKL2dPIwcwbo6IwaMAPb7M6vbKuZPg
-	 afObqthiKmeuNnWe2LTyybg0Ox7TgWLw5aDYxA3PnhAkUwFQMdAsEPqIaAFdzVpS01
-	 mAjgyzCoEp77jX8f+cQSGeAlXuVYIZcMVOt/vaDMeLJVmMQHLoFTN/48ISQ6HnWeAn
-	 I5XBnsB1pmvdQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 8BCDDCA0FF0;
-	Mon,  1 Sep 2025 13:10:49 +0000 (UTC)
-From: Simon Schuster via B4 Relay <devnull+schuster.simon.siemens-energy.com@kernel.org>
-Date: Mon, 01 Sep 2025 15:09:53 +0200
-Subject: [PATCH v2 4/4] nios2: implement architecture-specific portion of
- sys_clone3
+	s=k20201202; t=1756739837;
+	bh=5weQGGRb22PrjCyP/g4zxlVoFtpKwJSJ+1zX1sG+Ceo=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=fHSscyxUBqa2PrUEAJYH4gjbe394x6UINLLLJtU3No/ch07okasdYpPcLQVZ4fQdz
+	 QQVpadnQL9+K/Bpr7PRPb1lji/ueyUJo0Nz3wjlJnIDs6gj2K0bIoBRm5dUqa4DnzM
+	 DY2h8b80jorHneNn39SEcsZRb6GHqyX/EXJ0F/BwtNCV5dmP3SHyX9yn+TVbM49IPg
+	 gJX0lOPTuzPnXXKhNhXoblUzf/66Yb6hsnXIc36xlN9G/S8hlUTrrtuZhlzHc+/YLr
+	 6Fj48VcKspQFdxqqBYoze3u/d/wGFeYtGEBYBk9/cEEhhvcPXXMosbjDG8tSDIKFer
+	 oYp4KruBpNFcA==
+Received: by mail-oa1-f50.google.com with SMTP id 586e51a60fabf-315bb486e6dso2248896fac.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Sep 2025 08:17:17 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXfZlP6E6Br14qkw9Fg0I4Cw1C6gVKRfJVrCiylPuqzYLkPgAwMMStORFjzbQURoCZmZTjvX2tt/Zd4He8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxaSEoReip7Dl7yr9eYUSZutAkcL+lVpTrsrMwrtMmTGiTtpeuA
+	V7Hk75kmOuxXokVbP13tmKuK8kgtJdoWS4ItNqB0w+LsMvMs7s7+/f7AgT2q2ZBX0LGAWtwDWj8
+	HXklj9he7QEQcRUYFMMg0XBou+pela+I=
+X-Google-Smtp-Source: AGHT+IEqozTSDrtoR1W72zJmy9Z1LH1mlLFPdwzpw5V1Yv8IGBwtb8EBAZercDEFewoqAI3YKrAtdKI2Ii3KK+l5mg4=
+X-Received: by 2002:a05:6870:9b09:b0:30b:b123:b6c9 with SMTP id
+ 586e51a60fabf-319630e13fbmr3523480fac.12.1756739836982; Mon, 01 Sep 2025
+ 08:17:16 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -64,178 +67,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20250901-nios2-implement-clone3-v2-4-53fcf5577d57@siemens-energy.com>
-References: <20250901-nios2-implement-clone3-v2-0-53fcf5577d57@siemens-energy.com>
-In-Reply-To: <20250901-nios2-implement-clone3-v2-0-53fcf5577d57@siemens-energy.com>
-To: Dinh Nguyen <dinguyen@kernel.org>, 
- Christian Brauner <brauner@kernel.org>, Arnd Bergmann <arnd@arndb.de>, 
- Andrew Morton <akpm@linux-foundation.org>, 
- David Hildenbrand <david@redhat.com>, 
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, 
- "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
- Vlastimil Babka <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>, 
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
- Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, 
- Juri Lelli <juri.lelli@redhat.com>, 
- Vincent Guittot <vincent.guittot@linaro.org>, 
- Dietmar Eggemann <dietmar.eggemann@arm.com>, 
- Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, 
- Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>, 
- Kees Cook <kees@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, 
- Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
- Alexandre Ghiti <alex@ghiti.fr>, Guo Ren <guoren@kernel.org>, 
- Oleg Nesterov <oleg@redhat.com>, Jens Axboe <axboe@kernel.dk>, 
- Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, 
- Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>, 
- =?utf-8?q?Michal_Koutn=C3=BD?= <mkoutny@suse.com>, 
- Paul Moore <paul@paul-moore.com>, Serge Hallyn <sergeh@kernel.org>, 
- James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
- Anna-Maria Behnsen <anna-maria@linutronix.de>, 
- Frederic Weisbecker <frederic@kernel.org>, 
- Thomas Gleixner <tglx@linutronix.de>, 
- Masami Hiramatsu <mhiramat@kernel.org>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Simon Horman <horms@kernel.org>, 
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
- Arnaldo Carvalho de Melo <acme@kernel.org>, 
- Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
- Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
- Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>, 
- Adrian Hunter <adrian.hunter@intel.com>, 
- John Johansen <john.johansen@canonical.com>, 
- Stephen Smalley <stephen.smalley.work@gmail.com>, 
- Ondrej Mosnacek <omosnace@redhat.com>, 
- Kentaro Takeda <takedakn@nttdata.co.jp>, 
- Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, 
- Richard Henderson <richard.henderson@linaro.org>, 
- Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>, 
- Russell King <linux@armlinux.org.uk>, 
- Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
- Brian Cain <bcain@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, 
- WANG Xuerui <kernel@xen0n.name>, Geert Uytterhoeven <geert@linux-m68k.org>, 
- Michal Simek <monstr@monstr.eu>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- Jonas Bonn <jonas@southpole.se>, 
- Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
- Stafford Horne <shorne@gmail.com>, 
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
- Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Sven Schnelle <svens@linux.ibm.com>, 
- Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
- Andreas Larsson <andreas@gaisler.com>, Richard Weinberger <richard@nod.at>, 
- Anton Ivanov <anton.ivanov@cambridgegreys.com>, 
- Johannes Berg <johannes@sipsolutions.net>, Borislav Petkov <bp@alien8.de>, 
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
- "H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>, 
- Max Filippov <jcmvbkbc@gmail.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org, 
- linux-riscv@lists.infradead.org, linux-csky@vger.kernel.org, 
- linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org, 
- cgroups@vger.kernel.org, linux-security-module@vger.kernel.org, 
- linux-trace-kernel@vger.kernel.org, netdev@vger.kernel.org, 
- linux-perf-users@vger.kernel.org, apparmor@lists.ubuntu.com, 
- selinux@vger.kernel.org, linux-alpha@vger.kernel.org, 
- linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, 
- linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev, 
- linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
- linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
- linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, 
- linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, 
- linux-um@lists.infradead.org, 
- Simon Schuster <schuster.simon@siemens-energy.com>
-X-Mailer: b4 0.14.3-dev-2ce6c
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756732247; l=2260;
- i=schuster.simon@siemens-energy.com; s=20250818;
- h=from:subject:message-id;
- bh=af84J4YQt0c2u1+xik140Isbk9cuIhCMOLjW6thJwsY=;
- b=d7NLA1iQDxLQGisMH0KtrKIUv8tslRZQ31+BK5A9IfF7XRRqtN0/NtBHPN1763CSVsp/AaVUs
- Xc5SawZJT/gDUL4ePU56689mSaXuGDc8R0/3KXZ7O8sV4jJB/D/Z4M0
-X-Developer-Key: i=schuster.simon@siemens-energy.com; a=ed25519;
- pk=PUhOMiSp43aSeRE1H41KApxYOluamBFFiMfKlBjocvo=
-X-Endpoint-Received: by B4 Relay for
- schuster.simon@siemens-energy.com/20250818 with auth_id=495
-X-Original-From: Simon Schuster <schuster.simon@siemens-energy.com>
-Reply-To: schuster.simon@siemens-energy.com
+References: <20250901085748.36795-1-zhangzihuan@kylinos.cn> <20250901085748.36795-4-zhangzihuan@kylinos.cn>
+In-Reply-To: <20250901085748.36795-4-zhangzihuan@kylinos.cn>
+From: "Rafael J. Wysocki" <rafael@kernel.org>
+Date: Mon, 1 Sep 2025 17:17:05 +0200
+X-Gmail-Original-Message-ID: <CAJZ5v0hu48NrMr6Vkjn_UyHywJMx7F5N6yWf2LiXxykZF79EKA@mail.gmail.com>
+X-Gm-Features: Ac12FXy28aQLAZnDRwhZh3hbZ0aFKhCyHW17tDgFwo0nHMN5cP-adgYEeM5GYyY
+Message-ID: <CAJZ5v0hu48NrMr6Vkjn_UyHywJMx7F5N6yWf2LiXxykZF79EKA@mail.gmail.com>
+Subject: Re: [PATCH v3 03/12] cpufreq: intel_pstate: Use scope-based cleanup helper
+To: Zihuan Zhang <zhangzihuan@kylinos.cn>
+Cc: "Rafael J . wysocki" <rafael@kernel.org>, Viresh Kumar <viresh.kumar@linaro.org>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
+	Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, 
+	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Krzysztof Kozlowski <krzk@kernel.org>, Alim Akhtar <alim.akhtar@samsung.com>, 
+	Thierry Reding <thierry.reding@gmail.com>, MyungJoo Ham <myungjoo.ham@samsung.com>, 
+	Kyungmin Park <kyungmin.park@samsung.com>, Chanwoo Choi <cw00.choi@samsung.com>, 
+	Jani Nikula <jani.nikula@linux.intel.com>, Rodrigo Vivi <rodrigo.vivi@intel.com>, 
+	Tvrtko Ursulin <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>, 
+	Simona Vetter <simona@ffwll.ch>, Daniel Lezcano <daniel.lezcano@kernel.org>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>, 
+	Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>, Ben Horgan <ben.horgan@arm.com>, 
+	zhenglifeng <zhenglifeng1@huawei.com>, Zhang Rui <rui.zhang@intel.com>, 
+	Len Brown <lenb@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>, 
+	Pengutronix Kernel Team <kernel@pengutronix.de>, Beata Michalska <beata.michalska@arm.com>, 
+	Fabio Estevam <festevam@gmail.com>, Pavel Machek <pavel@kernel.org>, Sumit Gupta <sumitg@nvidia.com>, 
+	Prasanna Kumar T S M <ptsm@linux.microsoft.com>, Sudeep Holla <sudeep.holla@arm.com>, 
+	Yicong Yang <yangyicong@hisilicon.com>, linux-pm@vger.kernel.org, 
+	linux-acpi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-arm-kernel@lists.infradead.org, intel-gfx@lists.freedesktop.org, 
+	dri-devel@lists.freedesktop.org, imx@lists.linux.dev, 
+	linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-From: Simon Schuster <schuster.simon@siemens-energy.com>
+On Mon, Sep 1, 2025 at 10:58=E2=80=AFAM Zihuan Zhang <zhangzihuan@kylinos.c=
+n> wrote:
+>
+> Replace the manual cpufreq_cpu_put() with __free(put_cpufreq_policy)
+> annotation for policy references. This reduces the risk of reference
+> counting mistakes and aligns the code with the latest kernel style.
+>
+> No functional change intended.
+>
+> Signed-off-by: Zihuan Zhang <zhangzihuan@kylinos.cn>
+> ---
+>  drivers/cpufreq/intel_pstate.c | 8 +++-----
+>  1 file changed, 3 insertions(+), 5 deletions(-)
+>
+> diff --git a/drivers/cpufreq/intel_pstate.c b/drivers/cpufreq/intel_pstat=
+e.c
+> index f366d35c5840..4abc1ef2d2b0 100644
+> --- a/drivers/cpufreq/intel_pstate.c
+> +++ b/drivers/cpufreq/intel_pstate.c
+> @@ -1502,9 +1502,8 @@ static void __intel_pstate_update_max_freq(struct c=
+pufreq_policy *policy,
+>
+>  static bool intel_pstate_update_max_freq(struct cpudata *cpudata)
+>  {
+> -       struct cpufreq_policy *policy __free(put_cpufreq_policy);
+> +       struct cpufreq_policy *policy __free(put_cpufreq_policy) =3D cpuf=
+req_cpu_get(cpudata->cpu);
+>
+> -       policy =3D cpufreq_cpu_get(cpudata->cpu);
+>         if (!policy)
+>                 return false;
 
-This commit adds the sys_clone3 entry point for nios2. An
-architecture-specific wrapper (__sys_clone3) is required to save and
-restore additional registers to the kernel stack via SAVE_SWITCH_STACK
-and RESTORE_SWITCH_STACK.
-
-Signed-off-by: Simon Schuster <schuster.simon@siemens-energy.com>
----
- arch/nios2/include/asm/syscalls.h | 1 +
- arch/nios2/include/asm/unistd.h   | 2 --
- arch/nios2/kernel/entry.S         | 6 ++++++
- arch/nios2/kernel/syscall_table.c | 1 +
- 4 files changed, 8 insertions(+), 2 deletions(-)
-
-diff --git a/arch/nios2/include/asm/syscalls.h b/arch/nios2/include/asm/syscalls.h
-index b4d4ed3bf9c8..0e214b0a0ac8 100644
---- a/arch/nios2/include/asm/syscalls.h
-+++ b/arch/nios2/include/asm/syscalls.h
-@@ -7,6 +7,7 @@
- 
- int sys_cacheflush(unsigned long addr, unsigned long len,
- 				unsigned int op);
-+asmlinkage long __sys_clone3(struct clone_args __user *uargs, size_t size);
- 
- #include <asm-generic/syscalls.h>
- 
-diff --git a/arch/nios2/include/asm/unistd.h b/arch/nios2/include/asm/unistd.h
-index 1146e56473c5..213f6de3cf7b 100644
---- a/arch/nios2/include/asm/unistd.h
-+++ b/arch/nios2/include/asm/unistd.h
-@@ -7,6 +7,4 @@
- #define __ARCH_WANT_STAT64
- #define __ARCH_WANT_SET_GET_RLIMIT
- 
--#define __ARCH_BROKEN_SYS_CLONE3
--
- #endif
-diff --git a/arch/nios2/kernel/entry.S b/arch/nios2/kernel/entry.S
-index 99f0a65e6234..dd40dfd908e5 100644
---- a/arch/nios2/kernel/entry.S
-+++ b/arch/nios2/kernel/entry.S
-@@ -403,6 +403,12 @@ ENTRY(sys_clone)
- 	addi    sp, sp, 4
- 	RESTORE_SWITCH_STACK
- 	ret
-+/* long syscall(SYS_clone3, struct clone_args *cl_args, size_t size); */
-+ENTRY(__sys_clone3)
-+	SAVE_SWITCH_STACK
-+	call	sys_clone3
-+	RESTORE_SWITCH_STACK
-+	ret
- 
- ENTRY(sys_rt_sigreturn)
- 	SAVE_SWITCH_STACK
-diff --git a/arch/nios2/kernel/syscall_table.c b/arch/nios2/kernel/syscall_table.c
-index 434694067d8f..c99818aac9e1 100644
---- a/arch/nios2/kernel/syscall_table.c
-+++ b/arch/nios2/kernel/syscall_table.c
-@@ -13,6 +13,7 @@
- #define __SYSCALL_WITH_COMPAT(nr, native, compat)        __SYSCALL(nr, native)
- 
- #define sys_mmap2 sys_mmap_pgoff
-+#define sys_clone3 __sys_clone3
- 
- void *sys_call_table[__NR_syscalls] = {
- 	[0 ... __NR_syscalls-1] = sys_ni_syscall,
-
--- 
-2.39.5
-
-
+The structure of the code is intentional here and there's no reason to
+change it.
 
