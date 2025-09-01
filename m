@@ -1,66 +1,54 @@
-Return-Path: <linuxppc-dev+bounces-11599-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11600-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 72BCACA1005
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 20:20:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 809AFCA1002
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 21:48:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cG0bv6Zkkz30Pl;
-	Tue,  2 Sep 2025 06:20:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756758011;
-	cv=none; b=GI6M0/oeto2M1OqD5yRrgmNcVLHtgeJxcUbebzeUk/UQS6RiEYEyO5r9B6FhTY3iodrVMwWVTG20nobZg1o5taYS+LEyjNviCvcWcMeUe1s4l6GlvdFK3W6Lc2lSokG51skqiuiR1ijz8D9QLWt794LKBNWgWqgYJ5+DlzbCIT4pF27hysocuI74LQm1YSTMBwFWQL2wJHDdocz8RH6erLTedJNl8EJO41trO96Nh8lI0lp8NpxtxtLMp2EGkby3ua++hnK8PeNgDfDwnwjmmVDAru3AnIW35l0rWI8tXaOHDG32s7WhNhoxNItHFNYSiG4JC9CRc3Xh5ER0XhGYwg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cG2Yd0FHvz2yqq;
+	Tue,  2 Sep 2025 07:48:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=210.118.77.12
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756763300;
+	cv=none; b=cth2x+JQNsZ9UUR3zzykdDOU2GT8Q5ph91foBU1oHWeiHuxP20LBX3Y3vVyJLORax9O05/7HWNapA0Ne4C6vUGUNRa0i+IfcNc29BcidzABBgAOYv5uwhhlOcibxdrLbmnsRSkOXd6xpdNitBhLEj2+aZ7+3ZHu159QjZxSBl2ZJHi4ydF80mHPBTjiBXRP8z94FZPcX3eihqmYNQ7QBh30RF6GZgL1Y+LnodEQiUH0CdoPT6ZoczPyK8seg7IwvtWkuZ4OApyKZYVgFQqbDC2IxTSwL9a8i2jr3nVOZsqv304lNWbFxCngFJC0uONKK25juRgPs4fvpOOkTJKuFag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756758011; c=relaxed/relaxed;
-	bh=9uhrFD/vYsdj0h963DKynmrnwTlXHxQqVFywnLF2a/s=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZefA2IwQgzDsybeQ2pprnfRhpRXa21xJNy24stl/3bIxeuMxicVxH0Y3GwtWYGK+Nx0kWoUc6EHggZXp6nSsHbOGZu4M2zkYod1BOTPklW6HYjccrkvmoiVSd59TmchXE2EXcbQybYf92khC/+CxrhnNs7M2PlodreAPzKK9+rqyelKD3HyKoP24rgvtD9/vqnozDFOCoLu6s9lU3JvkUzK2ZK04DvBduytqLN5+BFxYNBUehMGg2fQ6fy/T773MZJ2yY3+u2/PCzpWSfI/lIlEb7cQUMCK4hD3Tut4PTaAhgM5Xn5Wpo9u3PDqLKzI1iyqMTHoa70Nwox4V5Smd6g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=roGLZfiq; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1756763300; c=relaxed/relaxed;
+	bh=nDcHitW6y2xbmXlK2jIcbndjdtco2y22djXFkarI+Kk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:From:In-Reply-To:
+	 Content-Type:References; b=YsW8N5/5WQjQWg8uCZHSpPR2sIeyOqo+FC8WpERiwLRCMxJYIiyfj6nD0+NjttTPkWBliEUuOX6JLB0tGTzZrdAH7zIAnUja6K4aoYNL3jkR5pvO1G3eLLSOITr3refHI2vJXo17E/qjjRR4j8T/y8uAyJxDYzGiyOqOk/GM7LzpS5Gf7vFhsEoVCKY+MLltnuTA0vlEnuZQH5vuZmwkN/nBQ0Ns4B8rsUsNzIkiEfFWQDHXBbB+WOlmCQl3LM1yVO8Pvzam8jbLFhSOdA8tHxLNEFV34qxcrkg736KmDDVau0rGR/OSzgZs7EztvYRSCGYrTcaOTSwZk1oGaMjDzQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com; dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=FxjRf7+C; dkim-atps=neutral; spf=pass (client-ip=210.118.77.12; helo=mailout2.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org) smtp.mailfrom=samsung.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=samsung.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=roGLZfiq;
+	dkim=pass (1024-bit key; unprotected) header.d=samsung.com header.i=@samsung.com header.a=rsa-sha256 header.s=mail20170921 header.b=FxjRf7+C;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=samsung.com (client-ip=210.118.77.12; helo=mailout2.w1.samsung.com; envelope-from=m.szyprowski@samsung.com; receiver=lists.ozlabs.org)
+Received: from mailout2.w1.samsung.com (mailout2.w1.samsung.com [210.118.77.12])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cG0bp5vBxz307q
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Sep 2025 06:20:06 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id D1834451C0;
-	Mon,  1 Sep 2025 20:20:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 6ECEFC4CEF0;
-	Mon,  1 Sep 2025 20:20:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756758004;
-	bh=QOMqlcOFBLAVbrllK3DKq6nvUKB0xqaJAJzvmyO/MC0=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=roGLZfiq0+KvDkfgOCfb/6FJmchCmTQA688JEV43tKNqWkSNIM47ycaSYBfxjomCY
-	 DEj/qhGVI1FNKEI66BokU4AMA2yIjh65qpMzW7Mdkldbf75ty7Afk3fAX9hVp1Arwy
-	 8qnY2QdcrfLwMHxVn1nYL1iXnkNmZb+SCOsi5iO8fLSqNc3dOEvv+zj0V60M+s/z5f
-	 76+7UglYgWW9gqbFLGife5h+6sF8/aemqxPgCjZCJDZIgt7XxibLUWwWL9QN6VJaMW
-	 KxzJZeyHbB2UWyR7IKNvqunnr7YIuXWUSz7iZpmD3U/rZ5g+o9i+lbTyNq3d3WVAkA
-	 Q+hxhso2TllsA==
-From: Eric Biggers <ebiggers@kernel.org>
-To: linux-crypto@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	Ard Biesheuvel <ardb@kernel.org>,
-	"Jason A . Donenfeld" <Jason@zx2c4.com>,
-	Zhiqi Song <songzhiqi1@huawei.com>,
-	Longfang Liu <liulongfang@huawei.com>,
-	x86@kernel.org,
-	linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 5/6] lib/crypto: curve25519: Consolidate into single module
-Date: Mon,  1 Sep 2025 13:18:14 -0700
-Message-ID: <20250901201815.594177-6-ebiggers@kernel.org>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20250901201815.594177-1-ebiggers@kernel.org>
-References: <20250901201815.594177-1-ebiggers@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cG2YX1bbcz2yqh
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Sep 2025 07:48:15 +1000 (AEST)
+Received: from eucas1p1.samsung.com (unknown [182.198.249.206])
+	by mailout2.w1.samsung.com (KnoxPortal) with ESMTP id 20250901214803euoutp02d79d0cf4cda6546a5817575ed420314a~hRuYkNP0O2070420704euoutp02b;
+	Mon,  1 Sep 2025 21:48:03 +0000 (GMT)
+DKIM-Filter: OpenDKIM Filter v2.11.0 mailout2.w1.samsung.com 20250901214803euoutp02d79d0cf4cda6546a5817575ed420314a~hRuYkNP0O2070420704euoutp02b
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=samsung.com;
+	s=mail20170921; t=1756763283;
+	bh=nDcHitW6y2xbmXlK2jIcbndjdtco2y22djXFkarI+Kk=;
+	h=Date:Subject:To:Cc:From:In-Reply-To:References:From;
+	b=FxjRf7+Ccpl7snsYCn9LacCiGJXvASl2Bcyshcc3MWcU7wbky050oQOcx4xKJlMqc
+	 EH1xZePjtKif6niNm/ZZNmDVZoJ/hrllrH2T7muDX2gjk12tpAmaQkZRCflGuSDB6/
+	 tvmSX006Ss83xwBwmshU6YU5Q3rwG2epCzq8Yjqg=
+Received: from eusmtip2.samsung.com (unknown [203.254.199.222]) by
+	eucas1p2.samsung.com (KnoxPortal) with ESMTPA id
+	20250901214802eucas1p2e3b4b360d054bc640a8654e364047c28~hRuXfQpr52428424284eucas1p2C;
+	Mon,  1 Sep 2025 21:48:02 +0000 (GMT)
+Received: from [106.210.134.192] (unknown [106.210.134.192]) by
+	eusmtip2.samsung.com (KnoxPortal) with ESMTPA id
+	20250901214759eusmtip26af756ba90f133971e3a66f9c5275b48~hRuUiYUac1463914639eusmtip2j;
+	Mon,  1 Sep 2025 21:47:59 +0000 (GMT)
+Message-ID: <26bd901a-0812-492d-9736-4a7bb2e6d6b4@samsung.com>
+Date: Mon, 1 Sep 2025 23:47:59 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,678 +62,248 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Betterbird (Windows)
+Subject: Re: [PATCH v4 00/16] dma-mapping: migrate to physical address-based
+ API
+To: Leon Romanovsky <leon@kernel.org>
+Cc: Jason Gunthorpe <jgg@nvidia.com>, Abdiel Janulgue
+	<abdiel.janulgue@gmail.com>, Alexander Potapenko <glider@google.com>, Alex
+	Gaynor <alex.gaynor@gmail.com>, Andrew Morton <akpm@linux-foundation.org>,
+	Christoph Hellwig <hch@lst.de>, Danilo Krummrich <dakr@kernel.org>,
+	iommu@lists.linux.dev, Jason Wang <jasowang@redhat.com>, Jens Axboe
+	<axboe@kernel.dk>, Joerg Roedel <joro@8bytes.org>, Jonathan Corbet
+	<corbet@lwn.net>, Juergen Gross <jgross@suse.com>,
+	kasan-dev@googlegroups.com, Keith Busch <kbusch@kernel.org>,
+	linux-block@vger.kernel.org, linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	linux-nvme@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+	linux-trace-kernel@vger.kernel.org, Madhavan Srinivasan
+	<maddy@linux.ibm.com>, Masami Hiramatsu <mhiramat@kernel.org>, Michael
+	Ellerman <mpe@ellerman.id.au>, "Michael S. Tsirkin" <mst@redhat.com>, Miguel
+	Ojeda <ojeda@kernel.org>, Robin Murphy <robin.murphy@arm.com>,
+	rust-for-linux@vger.kernel.org, Sagi Grimberg <sagi@grimberg.me>, Stefano
+	Stabellini <sstabellini@kernel.org>, Steven Rostedt <rostedt@goodmis.org>,
+	virtualization@lists.linux.dev, Will Deacon <will@kernel.org>,
+	xen-devel@lists.xenproject.org
+Content-Language: en-US
+From: Marek Szyprowski <m.szyprowski@samsung.com>
+In-Reply-To: <20250828115729.GA10073@unreal>
 Content-Transfer-Encoding: 8bit
+X-CMS-MailID: 20250901214802eucas1p2e3b4b360d054bc640a8654e364047c28
+X-Msg-Generator: CA
+Content-Type: text/plain; charset="utf-8"
+X-RootMTR: 20250828115738eucas1p24f3c17326b318c95a5569a2c9651ff92
+X-EPHeader: CA
+X-CMS-RootMailID: 20250828115738eucas1p24f3c17326b318c95a5569a2c9651ff92
+References: <cover.1755624249.git.leon@kernel.org>
+	<CGME20250828115738eucas1p24f3c17326b318c95a5569a2c9651ff92@eucas1p2.samsung.com>
+	<20250828115729.GA10073@unreal>
 
-Reorganize the Curve25519 library code:
 
-- Build a single libcurve25519 module, instead of up to three modules:
-  libcurve25519, libcurve25519-generic, and an arch-specific module.
+On 28.08.2025 13:57, Leon Romanovsky wrote:
+> On Tue, Aug 19, 2025 at 08:36:44PM +0300, Leon Romanovsky wrote:
+>> Changelog:
+>> v4:
+>>   * Fixed kbuild error with mismatch in kmsan function declaration due to
+>>     rebase error.
+>> v3: https://lore.kernel.org/all/cover.1755193625.git.leon@kernel.org
+>>   * Fixed typo in "cacheable" word
+>>   * Simplified kmsan patch a lot to be simple argument refactoring
+>> v2: https://lore.kernel.org/all/cover.1755153054.git.leon@kernel.org
+>>   * Used commit messages and cover letter from Jason
+>>   * Moved setting IOMMU_MMIO flag to dma_info_to_prot function
+>>   * Micro-optimized the code
+>>   * Rebased code on v6.17-rc1
+>> v1: https://lore.kernel.org/all/cover.1754292567.git.leon@kernel.org
+>>   * Added new DMA_ATTR_MMIO attribute to indicate
+>>     PCI_P2PDMA_MAP_THRU_HOST_BRIDGE path.
+>>   * Rewrote dma_map_* functions to use thus new attribute
+>> v0: https://lore.kernel.org/all/cover.1750854543.git.leon@kernel.org/
+>> ------------------------------------------------------------------------
+>>
+>> This series refactors the DMA mapping to use physical addresses
+>> as the primary interface instead of page+offset parameters. This
+>> change aligns the DMA API with the underlying hardware reality where
+>> DMA operations work with physical addresses, not page structures.
+>>
+>> The series maintains export symbol backward compatibility by keeping
+>> the old page-based API as wrapper functions around the new physical
+>> address-based implementations.
+>>
+>> This series refactors the DMA mapping API to provide a phys_addr_t
+>> based, and struct-page free, external API that can handle all the
+>> mapping cases we want in modern systems:
+>>
+>>   - struct page based cachable DRAM
+>>   - struct page MEMORY_DEVICE_PCI_P2PDMA PCI peer to peer non-cachable
+>>     MMIO
+>>   - struct page-less PCI peer to peer non-cachable MMIO
+>>   - struct page-less "resource" MMIO
+>>
+>> Overall this gets much closer to Matthew's long term wish for
+>> struct-pageless IO to cachable DRAM. The remaining primary work would
+>> be in the mm side to allow kmap_local_pfn()/phys_to_virt() to work on
+>> phys_addr_t without a struct page.
+>>
+>> The general design is to remove struct page usage entirely from the
+>> DMA API inner layers. For flows that need to have a KVA for the
+>> physical address they can use kmap_local_pfn() or phys_to_virt(). This
+>> isolates the struct page requirements to MM code only. Long term all
+>> removals of struct page usage are supporting Matthew's memdesc
+>> project which seeks to substantially transform how struct page works.
+>>
+>> Instead make the DMA API internals work on phys_addr_t. Internally
+>> there are still dedicated 'page' and 'resource' flows, except they are
+>> now distinguished by a new DMA_ATTR_MMIO instead of by callchain. Both
+>> flows use the same phys_addr_t.
+>>
+>> When DMA_ATTR_MMIO is specified things work similar to the existing
+>> 'resource' flow. kmap_local_pfn(), phys_to_virt(), phys_to_page(),
+>> pfn_valid(), etc are never called on the phys_addr_t. This requires
+>> rejecting any configuration that would need swiotlb. CPU cache
+>> flushing is not required, and avoided, as ATTR_MMIO also indicates the
+>> address have no cachable mappings. This effectively removes any
+>> DMA API side requirement to have struct page when DMA_ATTR_MMIO is
+>> used.
+>>
+>> In the !DMA_ATTR_MMIO mode things work similarly to the 'page' flow,
+>> except on the common path of no cache flush, no swiotlb it never
+>> touches a struct page. When cache flushing or swiotlb copying
+>> kmap_local_pfn()/phys_to_virt() are used to get a KVA for CPU
+>> usage. This was already the case on the unmap side, now the map side
+>> is symmetric.
+>>
+>> Callers are adjusted to set DMA_ATTR_MMIO. Existing 'resource' users
+>> must set it. The existing struct page based MEMORY_DEVICE_PCI_P2PDMA
+>> path must also set it. This corrects some existing bugs where iommu
+>> mappings for P2P MMIO were improperly marked IOMMU_CACHE.
+>>
+>> Since ATTR_MMIO is made to work with all the existing DMA map entry
+>> points, particularly dma_iova_link(), this finally allows a way to use
+>> the new DMA API to map PCI P2P MMIO without creating struct page. The
+>> VFIO DMABUF series demonstrates how this works. This is intended to
+>> replace the incorrect driver use of dma_map_resource() on PCI BAR
+>> addresses.
+>>
+>> This series does the core code and modern flows. A followup series
+>> will give the same treatment to the legacy dma_ops implementation.
+>>
+>> Thanks
+>>
+>> Leon Romanovsky (16):
+>>    dma-mapping: introduce new DMA attribute to indicate MMIO memory
+>>    iommu/dma: implement DMA_ATTR_MMIO for dma_iova_link().
+>>    dma-debug: refactor to use physical addresses for page mapping
+>>    dma-mapping: rename trace_dma_*map_page to trace_dma_*map_phys
+>>    iommu/dma: rename iommu_dma_*map_page to iommu_dma_*map_phys
+>>    iommu/dma: extend iommu_dma_*map_phys API to handle MMIO memory
+>>    dma-mapping: convert dma_direct_*map_page to be phys_addr_t based
+>>    kmsan: convert kmsan_handle_dma to use physical addresses
+>>    dma-mapping: handle MMIO flow in dma_map|unmap_page
+>>    xen: swiotlb: Open code map_resource callback
+>>    dma-mapping: export new dma_*map_phys() interface
+>>    mm/hmm: migrate to physical address-based DMA mapping API
+>>    mm/hmm: properly take MMIO path
+>>    block-dma: migrate to dma_map_phys instead of map_page
+>>    block-dma: properly take MMIO path
+>>    nvme-pci: unmap MMIO pages with appropriate interface
+>>
+>>   Documentation/core-api/dma-api.rst        |   4 +-
+>>   Documentation/core-api/dma-attributes.rst |  18 ++++
+>>   arch/powerpc/kernel/dma-iommu.c           |   4 +-
+>>   block/blk-mq-dma.c                        |  15 ++-
+>>   drivers/iommu/dma-iommu.c                 |  61 +++++------
+>>   drivers/nvme/host/pci.c                   |  18 +++-
+>>   drivers/virtio/virtio_ring.c              |   4 +-
+>>   drivers/xen/swiotlb-xen.c                 |  21 +++-
+>>   include/linux/blk-mq-dma.h                |   6 +-
+>>   include/linux/blk_types.h                 |   2 +
+>>   include/linux/dma-direct.h                |   2 -
+>>   include/linux/dma-map-ops.h               |   8 +-
+>>   include/linux/dma-mapping.h               |  33 ++++++
+>>   include/linux/iommu-dma.h                 |  11 +-
+>>   include/linux/kmsan.h                     |   9 +-
+>>   include/trace/events/dma.h                |   9 +-
+>>   kernel/dma/debug.c                        |  71 ++++---------
+>>   kernel/dma/debug.h                        |  37 ++-----
+>>   kernel/dma/direct.c                       |  22 +---
+>>   kernel/dma/direct.h                       |  52 ++++++----
+>>   kernel/dma/mapping.c                      | 117 +++++++++++++---------
+>>   kernel/dma/ops_helpers.c                  |   6 +-
+>>   mm/hmm.c                                  |  19 ++--
+>>   mm/kmsan/hooks.c                          |   5 +-
+>>   rust/kernel/dma.rs                        |   3 +
+>>   tools/virtio/linux/kmsan.h                |   2 +-
+>>   26 files changed, 305 insertions(+), 254 deletions(-)
+> Marek,
+>
+> So what are the next steps here? This series is pre-requirement for the
+> VFIO MMIO patches.
 
-- Move the arch-specific Curve25519 code from arch/$(SRCARCH)/crypto/ to
-  lib/crypto/$(SRCARCH)/.  Centralize the build rules into
-  lib/crypto/Makefile and lib/crypto/Kconfig.
+I waited a bit with a hope to get a comment from Robin. It looks that 
+there is no other alternative for the phys addr in the struct page 
+removal process.
 
-- Include the arch-specific code directly in lib/crypto/curve25519.c via
-  a header, rather than using a separate .c file.
+I would like to give those patches a try in linux-next, but in meantime 
+I tested it on my test farm and found a regression in dma_map_resource() 
+handling. Namely the dma_map_resource() is no longer possible with size 
+not aligned to kmalloc()'ed buffer, as dma_direct_map_phys() calls 
+dma_kmalloc_needs_bounce(), which in turn calls 
+dma_kmalloc_size_aligned(). It looks that the check for !(attrs & 
+DMA_ATTR_MMIO) should be moved one level up in dma_direct_map_phys(). 
+Here is the log:
 
-- Eliminate the entanglement with CRYPTO.  CRYPTO_LIB_CURVE25519 no
-  longer selects CRYPTO, and the arch-specific Curve25519 code no longer
-  depends on CRYPTO.
+------------[ cut here ]------------
+dma-pl330 fe550000.dma-controller: DMA addr 0x00000000fe410024+4 
+overflow (mask ffffffff, bus limit 0).
+WARNING: kernel/dma/direct.h:116 at dma_map_phys+0x3a4/0x3ec, CPU#1: 
+speaker-test/405
+Modules linked in: ...
+CPU: 1 UID: 0 PID: 405 Comm: speaker-test Not tainted 
+6.17.0-rc4-next-20250901+ #10958 PREEMPT
+Hardware name: Hardkernel ODROID-M1 (DT)
+pstate: 604000c9 (nZCv daIF +PAN -UAO -TCO -DIT -SSBS BTYPE=--)
+pc : dma_map_phys+0x3a4/0x3ec
+lr : dma_map_phys+0x3a4/0x3ec
+...
+Call trace:
+  dma_map_phys+0x3a4/0x3ec (P)
+  dma_map_resource+0x14/0x20
+  pl330_prep_slave_fifo+0x78/0xd0
+  pl330_prep_dma_cyclic+0x70/0x2b0
+  snd_dmaengine_pcm_trigger+0xec/0x8bc [snd_pcm_dmaengine]
+  dmaengine_pcm_trigger+0x18/0x24 [snd_soc_core]
+  snd_soc_pcm_component_trigger+0x164/0x208 [snd_soc_core]
+  soc_pcm_trigger+0xe4/0x1ec [snd_soc_core]
+  snd_pcm_do_start+0x44/0x70 [snd_pcm]
+  snd_pcm_action_single+0x48/0xa4 [snd_pcm]
+  snd_pcm_action+0x7c/0x98 [snd_pcm]
+  snd_pcm_action_lock_irq+0x48/0xb4 [snd_pcm]
+  snd_pcm_common_ioctl+0xf00/0x1f1c [snd_pcm]
+  snd_pcm_ioctl+0x30/0x48 [snd_pcm]
+  __arm64_sys_ioctl+0xac/0x104
+  invoke_syscall+0x48/0x110
+  el0_svc_common.constprop.0+0x40/0xe8
+  do_el0_svc+0x20/0x2c
+  el0_svc+0x4c/0x160
+  el0t_64_sync_handler+0xa0/0xe4
+  el0t_64_sync+0x198/0x19c
+irq event stamp: 6596
+hardirqs last  enabled at (6595): [<ffff800081344624>] 
+_raw_spin_unlock_irqrestore+0x74/0x78
+hardirqs last disabled at (6596): [<ffff8000813439b0>] 
+_raw_spin_lock_irq+0x78/0x7c
+softirqs last  enabled at (6076): [<ffff8000800c2294>] 
+handle_softirqs+0x4c4/0x4dc
+softirqs last disabled at (6071): [<ffff800080010690>] 
+__do_softirq+0x14/0x20
+---[ end trace 0000000000000000 ]---
+rockchip-i2s-tdm fe410000.i2s: ASoC error (-12): at 
+soc_component_trigger() on fe410000.i2s
 
-This brings Curve25519 in line with the latest conventions for
-lib/crypto/, used by other algorithms.  The exception is that I kept the
-generic code in separate translation units for now.  (Some of the
-function names collide between the x86 and generic Curve25519 code.  And
-the Curve25519 functions are very long anyway, so inlining doesn't
-matter as much for Curve25519 as it does for some other algorithms.)
-
-Signed-off-by: Eric Biggers <ebiggers@kernel.org>
----
- arch/arm/crypto/Kconfig                       | 12 -----
- arch/arm/crypto/Makefile                      |  2 -
- arch/powerpc/crypto/Kconfig                   | 12 -----
- arch/powerpc/crypto/Makefile                  |  2 -
- arch/x86/crypto/Kconfig                       | 12 -----
- arch/x86/crypto/Makefile                      |  5 ---
- include/crypto/curve25519.h                   | 10 -----
- lib/crypto/Kconfig                            | 37 ++++++---------
- lib/crypto/Makefile                           | 26 ++++++++---
- .../crypto/arm}/curve25519-core.S             |  0
- .../crypto/arm/curve25519.h                   | 29 +++---------
- lib/crypto/curve25519-generic.c               | 25 -----------
- lib/crypto/curve25519.c                       | 45 ++++++++++++-------
- .../crypto/powerpc}/curve25519-ppc64le_asm.S  |  0
- .../crypto/powerpc/curve25519.h               | 19 +++-----
- lib/crypto/tests/Kconfig                      |  3 +-
- .../crypto/x86/curve25519.h                   | 31 +++----------
- 17 files changed, 84 insertions(+), 186 deletions(-)
- rename {arch/arm/crypto => lib/crypto/arm}/curve25519-core.S (100%)
- rename arch/arm/crypto/curve25519-glue.c => lib/crypto/arm/curve25519.h (61%)
- delete mode 100644 lib/crypto/curve25519-generic.c
- rename {arch/powerpc/crypto => lib/crypto/powerpc}/curve25519-ppc64le_asm.S (100%)
- rename arch/powerpc/crypto/curve25519-ppc64le-core.c => lib/crypto/powerpc/curve25519.h (88%)
- rename arch/x86/crypto/curve25519-x86_64.c => lib/crypto/x86/curve25519.h (98%)
-
-diff --git a/arch/arm/crypto/Kconfig b/arch/arm/crypto/Kconfig
-index 97718d86f6007..c436eec22d86c 100644
---- a/arch/arm/crypto/Kconfig
-+++ b/arch/arm/crypto/Kconfig
-@@ -1,21 +1,9 @@
- # SPDX-License-Identifier: GPL-2.0
- 
- menu "Accelerated Cryptographic Algorithms for CPU (arm)"
- 
--config CRYPTO_CURVE25519_NEON
--	tristate
--	depends on KERNEL_MODE_NEON
--	select CRYPTO_LIB_CURVE25519_GENERIC
--	select CRYPTO_ARCH_HAVE_LIB_CURVE25519
--	default CRYPTO_LIB_CURVE25519_INTERNAL
--	help
--	  Curve25519 algorithm
--
--	  Architecture: arm with
--	  - NEON (Advanced SIMD) extensions
--
- config CRYPTO_GHASH_ARM_CE
- 	tristate "Hash functions: GHASH (PMULL/NEON/ARMv8 Crypto Extensions)"
- 	depends on KERNEL_MODE_NEON
- 	select CRYPTO_AEAD
- 	select CRYPTO_HASH
-diff --git a/arch/arm/crypto/Makefile b/arch/arm/crypto/Makefile
-index 4f23999ae17df..6346a73effc06 100644
---- a/arch/arm/crypto/Makefile
-+++ b/arch/arm/crypto/Makefile
-@@ -5,17 +5,15 @@
- 
- obj-$(CONFIG_CRYPTO_AES_ARM) += aes-arm.o
- obj-$(CONFIG_CRYPTO_AES_ARM_BS) += aes-arm-bs.o
- obj-$(CONFIG_CRYPTO_BLAKE2B_NEON) += blake2b-neon.o
- obj-$(CONFIG_CRYPTO_NHPOLY1305_NEON) += nhpoly1305-neon.o
--obj-$(CONFIG_CRYPTO_CURVE25519_NEON) += curve25519-neon.o
- 
- obj-$(CONFIG_CRYPTO_AES_ARM_CE) += aes-arm-ce.o
- obj-$(CONFIG_CRYPTO_GHASH_ARM_CE) += ghash-arm-ce.o
- 
- aes-arm-y	:= aes-cipher-core.o aes-cipher-glue.o
- aes-arm-bs-y	:= aes-neonbs-core.o aes-neonbs-glue.o
- blake2b-neon-y  := blake2b-neon-core.o blake2b-neon-glue.o
- aes-arm-ce-y	:= aes-ce-core.o aes-ce-glue.o
- ghash-arm-ce-y	:= ghash-ce-core.o ghash-ce-glue.o
- nhpoly1305-neon-y := nh-neon-core.o nhpoly1305-neon-glue.o
--curve25519-neon-y := curve25519-core.o curve25519-glue.o
-diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
-index 6106a219da6af..662aed46f9c79 100644
---- a/arch/powerpc/crypto/Kconfig
-+++ b/arch/powerpc/crypto/Kconfig
-@@ -1,21 +1,9 @@
- # SPDX-License-Identifier: GPL-2.0
- 
- menu "Accelerated Cryptographic Algorithms for CPU (powerpc)"
- 
--config CRYPTO_CURVE25519_PPC64
--	tristate
--	depends on PPC64 && CPU_LITTLE_ENDIAN
--	select CRYPTO_LIB_CURVE25519_GENERIC
--	select CRYPTO_ARCH_HAVE_LIB_CURVE25519
--	default CRYPTO_LIB_CURVE25519_INTERNAL
--	help
--	  Curve25519 algorithm
--
--	  Architecture: PowerPC64
--	  - Little-endian
--
- config CRYPTO_AES_PPC_SPE
- 	tristate "Ciphers: AES, modes: ECB/CBC/CTR/XTS (SPE)"
- 	depends on SPE
- 	select CRYPTO_SKCIPHER
- 	help
-diff --git a/arch/powerpc/crypto/Makefile b/arch/powerpc/crypto/Makefile
-index 9eb59dce67f36..5960e5300db71 100644
---- a/arch/powerpc/crypto/Makefile
-+++ b/arch/powerpc/crypto/Makefile
-@@ -6,16 +6,14 @@
- #
- 
- obj-$(CONFIG_CRYPTO_AES_PPC_SPE) += aes-ppc-spe.o
- obj-$(CONFIG_CRYPTO_AES_GCM_P10) += aes-gcm-p10-crypto.o
- obj-$(CONFIG_CRYPTO_DEV_VMX_ENCRYPT) += vmx-crypto.o
--obj-$(CONFIG_CRYPTO_CURVE25519_PPC64) += curve25519-ppc64le.o
- 
- aes-ppc-spe-y := aes-spe-core.o aes-spe-keys.o aes-tab-4k.o aes-spe-modes.o aes-spe-glue.o
- aes-gcm-p10-crypto-y := aes-gcm-p10-glue.o aes-gcm-p10.o ghashp10-ppc.o aesp10-ppc.o
- vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o aes_cbc.o aes_ctr.o aes_xts.o ghash.o
--curve25519-ppc64le-y := curve25519-ppc64le-core.o curve25519-ppc64le_asm.o
- 
- ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
- override flavour := linux-ppc64le
- else
- ifdef CONFIG_PPC64_ELF_ABI_V2
-diff --git a/arch/x86/crypto/Kconfig b/arch/x86/crypto/Kconfig
-index 6a895a571b00e..d9c6fc78cf332 100644
---- a/arch/x86/crypto/Kconfig
-+++ b/arch/x86/crypto/Kconfig
-@@ -1,21 +1,9 @@
- # SPDX-License-Identifier: GPL-2.0
- 
- menu "Accelerated Cryptographic Algorithms for CPU (x86)"
- 
--config CRYPTO_CURVE25519_X86
--	tristate
--	depends on 64BIT
--	select CRYPTO_LIB_CURVE25519_GENERIC
--	select CRYPTO_ARCH_HAVE_LIB_CURVE25519
--	default CRYPTO_LIB_CURVE25519_INTERNAL
--	help
--	  Curve25519 algorithm
--
--	  Architecture: x86_64 using:
--	  - ADX (large integer arithmetic)
--
- config CRYPTO_AES_NI_INTEL
- 	tristate "Ciphers: AES, modes: ECB, CBC, CTS, CTR, XCTR, XTS, GCM (AES-NI/VAES)"
- 	select CRYPTO_AEAD
- 	select CRYPTO_LIB_AES
- 	select CRYPTO_LIB_GF128MUL
-diff --git a/arch/x86/crypto/Makefile b/arch/x86/crypto/Makefile
-index d402963d6b579..dfba7e5e88ea6 100644
---- a/arch/x86/crypto/Makefile
-+++ b/arch/x86/crypto/Makefile
-@@ -60,12 +60,10 @@ polyval-clmulni-y := polyval-clmulni_asm.o polyval-clmulni_glue.o
- obj-$(CONFIG_CRYPTO_NHPOLY1305_SSE2) += nhpoly1305-sse2.o
- nhpoly1305-sse2-y := nh-sse2-x86_64.o nhpoly1305-sse2-glue.o
- obj-$(CONFIG_CRYPTO_NHPOLY1305_AVX2) += nhpoly1305-avx2.o
- nhpoly1305-avx2-y := nh-avx2-x86_64.o nhpoly1305-avx2-glue.o
- 
--obj-$(CONFIG_CRYPTO_CURVE25519_X86) += curve25519-x86_64.o
--
- obj-$(CONFIG_CRYPTO_SM3_AVX_X86_64) += sm3-avx-x86_64.o
- sm3-avx-x86_64-y := sm3-avx-asm_64.o sm3_avx_glue.o
- 
- obj-$(CONFIG_CRYPTO_SM4_AESNI_AVX_X86_64) += sm4-aesni-avx-x86_64.o
- sm4-aesni-avx-x86_64-y := sm4-aesni-avx-asm_64.o sm4_aesni_avx_glue.o
-@@ -79,8 +77,5 @@ aria-aesni-avx-x86_64-y := aria-aesni-avx-asm_64.o aria_aesni_avx_glue.o
- obj-$(CONFIG_CRYPTO_ARIA_AESNI_AVX2_X86_64) += aria-aesni-avx2-x86_64.o
- aria-aesni-avx2-x86_64-y := aria-aesni-avx2-asm_64.o aria_aesni_avx2_glue.o
- 
- obj-$(CONFIG_CRYPTO_ARIA_GFNI_AVX512_X86_64) += aria-gfni-avx512-x86_64.o
- aria-gfni-avx512-x86_64-y := aria-gfni-avx512-asm_64.o aria_gfni_avx512_glue.o
--
--# Disable GCOV in odd or sensitive code
--GCOV_PROFILE_curve25519-x86_64.o := n
-diff --git a/include/crypto/curve25519.h b/include/crypto/curve25519.h
-index 78aa5f28c847f..db63a5577c004 100644
---- a/include/crypto/curve25519.h
-+++ b/include/crypto/curve25519.h
-@@ -11,24 +11,14 @@
- 
- enum curve25519_lengths {
- 	CURVE25519_KEY_SIZE = 32
- };
- 
--extern const u8 curve25519_null_point[];
--extern const u8 curve25519_base_point[];
--
- void curve25519_generic(u8 out[CURVE25519_KEY_SIZE],
- 			const u8 scalar[CURVE25519_KEY_SIZE],
- 			const u8 point[CURVE25519_KEY_SIZE]);
- 
--void curve25519_arch(u8 out[CURVE25519_KEY_SIZE],
--		     const u8 scalar[CURVE25519_KEY_SIZE],
--		     const u8 point[CURVE25519_KEY_SIZE]);
--
--void curve25519_base_arch(u8 pub[CURVE25519_KEY_SIZE],
--			  const u8 secret[CURVE25519_KEY_SIZE]);
--
- bool __must_check curve25519(u8 mypublic[CURVE25519_KEY_SIZE],
- 			     const u8 secret[CURVE25519_KEY_SIZE],
- 			     const u8 basepoint[CURVE25519_KEY_SIZE]);
- 
- bool __must_check curve25519_generate_public(u8 pub[CURVE25519_KEY_SIZE],
-diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
-index 37d85e0c9b979..eea17e36a22be 100644
---- a/lib/crypto/Kconfig
-+++ b/lib/crypto/Kconfig
-@@ -52,39 +52,28 @@ config CRYPTO_LIB_CHACHA_ARCH
- 	default y if PPC64 && CPU_LITTLE_ENDIAN && VSX
- 	default y if RISCV && 64BIT && RISCV_ISA_V && TOOLCHAIN_HAS_VECTOR_CRYPTO
- 	default y if S390
- 	default y if X86_64
- 
--config CRYPTO_ARCH_HAVE_LIB_CURVE25519
--	bool
--	help
--	  Declares whether the architecture provides an arch-specific
--	  accelerated implementation of the Curve25519 library interface,
--	  either builtin or as a module.
--
--config CRYPTO_LIB_CURVE25519_GENERIC
-+config CRYPTO_LIB_CURVE25519
- 	tristate
- 	select CRYPTO_LIB_UTILS
- 	help
--	  This symbol can be depended upon by arch implementations of the
--	  Curve25519 library interface that require the generic code as a
--	  fallback, e.g., for SIMD implementations. If no arch specific
--	  implementation is enabled, this implementation serves the users
--	  of CRYPTO_LIB_CURVE25519.
-+	  The Curve25519 library functions.  Select this if your module uses any
-+	  of the functions from <crypto/curve25519.h>.
- 
--config CRYPTO_LIB_CURVE25519_INTERNAL
--	tristate
--	select CRYPTO_LIB_CURVE25519_GENERIC if CRYPTO_ARCH_HAVE_LIB_CURVE25519=n
-+config CRYPTO_LIB_CURVE25519_ARCH
-+	bool
-+	depends on CRYPTO_LIB_CURVE25519 && !UML && !KMSAN
-+	default y if ARM && KERNEL_MODE_NEON
-+	default y if PPC64 && CPU_LITTLE_ENDIAN
-+	default y if X86_64
- 
--config CRYPTO_LIB_CURVE25519
--	tristate
--	select CRYPTO
--	select CRYPTO_LIB_CURVE25519_INTERNAL
--	help
--	  Enable the Curve25519 library interface. This interface may be
--	  fulfilled by either the generic implementation or an arch-specific
--	  one, if one is available and enabled.
-+config CRYPTO_LIB_CURVE25519_GENERIC
-+	bool
-+	depends on CRYPTO_LIB_CURVE25519
-+	default y if !CRYPTO_LIB_CURVE25519_ARCH || ARM || X86_64
- 
- config CRYPTO_LIB_DES
- 	tristate
- 
- config CRYPTO_LIB_MD5
-diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
-index 6c3be971ace09..bded351aeacef 100644
---- a/lib/crypto/Makefile
-+++ b/lib/crypto/Makefile
-@@ -74,21 +74,35 @@ endif # CONFIG_CRYPTO_LIB_CHACHA_ARCH
- 
- obj-$(CONFIG_CRYPTO_LIB_CHACHA20POLY1305)	+= libchacha20poly1305.o
- libchacha20poly1305-y				+= chacha20poly1305.o
- libchacha20poly1305-$(CONFIG_CRYPTO_SELFTESTS)	+= chacha20poly1305-selftest.o
- 
--obj-$(CONFIG_CRYPTO_LIB_CURVE25519_GENERIC)	+= libcurve25519-generic.o
--libcurve25519-generic-y				:= curve25519-fiat32.o
--libcurve25519-generic-$(CONFIG_ARCH_SUPPORTS_INT128)	:= curve25519-hacl64.o
--libcurve25519-generic-y				+= curve25519-generic.o
-+################################################################################
-+
-+obj-$(CONFIG_CRYPTO_LIB_CURVE25519) += libcurve25519.o
-+libcurve25519-y := curve25519.o
-+
-+# Disable GCOV in odd or sensitive code
-+GCOV_PROFILE_curve25519.o := n
-+
-+ifeq ($(CONFIG_ARCH_SUPPORTS_INT128),y)
-+libcurve25519-$(CONFIG_CRYPTO_LIB_CURVE25519_GENERIC) += curve25519-hacl64.o
-+else
-+libcurve25519-$(CONFIG_CRYPTO_LIB_CURVE25519_GENERIC) += curve25519-fiat32.o
-+endif
- # clang versions prior to 18 may blow out the stack with KASAN
- ifeq ($(call clang-min-version, 180000),)
- KASAN_SANITIZE_curve25519-hacl64.o := n
- endif
- 
--obj-$(CONFIG_CRYPTO_LIB_CURVE25519)		+= libcurve25519.o
--libcurve25519-y					+= curve25519.o
-+ifeq ($(CONFIG_CRYPTO_LIB_CURVE25519_ARCH),y)
-+CFLAGS_curve25519.o += -I$(src)/$(SRCARCH)
-+libcurve25519-$(CONFIG_ARM) += arm/curve25519-core.o
-+libcurve25519-$(CONFIG_PPC) += powerpc/curve25519-ppc64le_asm.o
-+endif
-+
-+################################################################################
- 
- obj-$(CONFIG_CRYPTO_LIB_DES)			+= libdes.o
- libdes-y					:= des.o
- 
- ################################################################################
-diff --git a/arch/arm/crypto/curve25519-core.S b/lib/crypto/arm/curve25519-core.S
-similarity index 100%
-rename from arch/arm/crypto/curve25519-core.S
-rename to lib/crypto/arm/curve25519-core.S
-diff --git a/arch/arm/crypto/curve25519-glue.c b/lib/crypto/arm/curve25519.h
-similarity index 61%
-rename from arch/arm/crypto/curve25519-glue.c
-rename to lib/crypto/arm/curve25519.h
-index 3076020d8fbeb..be9aecf6a8f3c 100644
---- a/arch/arm/crypto/curve25519-glue.c
-+++ b/lib/crypto/arm/curve25519.h
-@@ -10,53 +10,38 @@
- #include <asm/hwcap.h>
- #include <asm/neon.h>
- #include <asm/simd.h>
- #include <crypto/internal/simd.h>
- #include <linux/types.h>
--#include <linux/module.h>
--#include <linux/init.h>
- #include <linux/jump_label.h>
--#include <crypto/curve25519.h>
- 
- asmlinkage void curve25519_neon(u8 mypublic[CURVE25519_KEY_SIZE],
- 				const u8 secret[CURVE25519_KEY_SIZE],
- 				const u8 basepoint[CURVE25519_KEY_SIZE]);
- 
- static __ro_after_init DEFINE_STATIC_KEY_FALSE(have_neon);
- 
--void curve25519_arch(u8 out[CURVE25519_KEY_SIZE],
--		     const u8 scalar[CURVE25519_KEY_SIZE],
--		     const u8 point[CURVE25519_KEY_SIZE])
-+static void curve25519_arch(u8 out[CURVE25519_KEY_SIZE],
-+			    const u8 scalar[CURVE25519_KEY_SIZE],
-+			    const u8 point[CURVE25519_KEY_SIZE])
- {
- 	if (static_branch_likely(&have_neon) && crypto_simd_usable()) {
- 		kernel_neon_begin();
- 		curve25519_neon(out, scalar, point);
- 		kernel_neon_end();
- 	} else {
- 		curve25519_generic(out, scalar, point);
- 	}
- }
--EXPORT_SYMBOL(curve25519_arch);
- 
--void curve25519_base_arch(u8 pub[CURVE25519_KEY_SIZE],
--			  const u8 secret[CURVE25519_KEY_SIZE])
-+static void curve25519_base_arch(u8 pub[CURVE25519_KEY_SIZE],
-+				 const u8 secret[CURVE25519_KEY_SIZE])
- {
- 	return curve25519_arch(pub, secret, curve25519_base_point);
- }
--EXPORT_SYMBOL(curve25519_base_arch);
- 
--static int __init arm_curve25519_init(void)
-+#define curve25519_mod_init_arch curve25519_mod_init_arch
-+static void curve25519_mod_init_arch(void)
- {
- 	if (elf_hwcap & HWCAP_NEON)
- 		static_branch_enable(&have_neon);
--	return 0;
- }
--
--static void __exit arm_curve25519_exit(void)
--{
--}
--
--module_init(arm_curve25519_init);
--module_exit(arm_curve25519_exit);
--
--MODULE_DESCRIPTION("Public key crypto: Curve25519 (NEON-accelerated)");
--MODULE_LICENSE("GPL v2");
-diff --git a/lib/crypto/curve25519-generic.c b/lib/crypto/curve25519-generic.c
-deleted file mode 100644
-index f8aa70c9f5598..0000000000000
---- a/lib/crypto/curve25519-generic.c
-+++ /dev/null
-@@ -1,25 +0,0 @@
--// SPDX-License-Identifier: GPL-2.0 OR MIT
--/*
-- * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
-- *
-- * This is an implementation of the Curve25519 ECDH algorithm, using either
-- * a 32-bit implementation or a 64-bit implementation with 128-bit integers,
-- * depending on what is supported by the target compiler.
-- *
-- * Information: https://cr.yp.to/ecdh.html
-- */
--
--#include <crypto/curve25519.h>
--#include <linux/export.h>
--#include <linux/module.h>
--
--const u8 curve25519_null_point[CURVE25519_KEY_SIZE] __aligned(32) = { 0 };
--const u8 curve25519_base_point[CURVE25519_KEY_SIZE] __aligned(32) = { 9 };
--
--EXPORT_SYMBOL(curve25519_null_point);
--EXPORT_SYMBOL(curve25519_base_point);
--EXPORT_SYMBOL(curve25519_generic);
--
--MODULE_LICENSE("GPL v2");
--MODULE_DESCRIPTION("Curve25519 scalar multiplication");
--MODULE_AUTHOR("Jason A. Donenfeld <Jason@zx2c4.com>");
-diff --git a/lib/crypto/curve25519.c b/lib/crypto/curve25519.c
-index 1b786389d714a..510b4a3048960 100644
---- a/lib/crypto/curve25519.c
-+++ b/lib/crypto/curve25519.c
-@@ -13,19 +13,36 @@
- #include <crypto/utils.h>
- #include <linux/export.h>
- #include <linux/init.h>
- #include <linux/module.h>
- 
-+static const u8 curve25519_null_point[CURVE25519_KEY_SIZE] __aligned(32) = { 0 };
-+static const u8 curve25519_base_point[CURVE25519_KEY_SIZE] __aligned(32) = { 9 };
-+
-+#ifdef CONFIG_CRYPTO_LIB_CURVE25519_ARCH
-+#include "curve25519.h" /* $(SRCARCH)/curve25519.h */
-+#else
-+static void curve25519_arch(u8 mypublic[CURVE25519_KEY_SIZE],
-+			    const u8 secret[CURVE25519_KEY_SIZE],
-+			    const u8 basepoint[CURVE25519_KEY_SIZE])
-+{
-+	curve25519_generic(mypublic, secret, basepoint);
-+}
-+
-+static void curve25519_base_arch(u8 pub[CURVE25519_KEY_SIZE],
-+				 const u8 secret[CURVE25519_KEY_SIZE])
-+{
-+	curve25519_generic(pub, secret, curve25519_base_point);
-+}
-+#endif
-+
- bool __must_check
- curve25519(u8 mypublic[CURVE25519_KEY_SIZE],
- 	   const u8 secret[CURVE25519_KEY_SIZE],
- 	   const u8 basepoint[CURVE25519_KEY_SIZE])
- {
--	if (IS_ENABLED(CONFIG_CRYPTO_ARCH_HAVE_LIB_CURVE25519))
--		curve25519_arch(mypublic, secret, basepoint);
--	else
--		curve25519_generic(mypublic, secret, basepoint);
-+	curve25519_arch(mypublic, secret, basepoint);
- 	return crypto_memneq(mypublic, curve25519_null_point,
- 			     CURVE25519_KEY_SIZE);
- }
- EXPORT_SYMBOL(curve25519);
- 
-@@ -34,29 +51,27 @@ curve25519_generate_public(u8 pub[CURVE25519_KEY_SIZE],
- 			   const u8 secret[CURVE25519_KEY_SIZE])
- {
- 	if (unlikely(!crypto_memneq(secret, curve25519_null_point,
- 				    CURVE25519_KEY_SIZE)))
- 		return false;
--
--	if (IS_ENABLED(CONFIG_CRYPTO_ARCH_HAVE_LIB_CURVE25519))
--		curve25519_base_arch(pub, secret);
--	else
--		curve25519_generic(pub, secret, curve25519_base_point);
-+	curve25519_base_arch(pub, secret);
- 	return crypto_memneq(pub, curve25519_null_point, CURVE25519_KEY_SIZE);
- }
- EXPORT_SYMBOL(curve25519_generate_public);
- 
--static int __init curve25519_init(void)
-+#ifdef curve25519_mod_init_arch
-+static int __init curve25519_mod_init(void)
- {
-+	curve25519_mod_init_arch();
- 	return 0;
- }
-+subsys_initcall(curve25519_mod_init);
- 
--static void __exit curve25519_exit(void)
-+static void __exit curve25519_mod_exit(void)
- {
- }
--
--module_init(curve25519_init);
--module_exit(curve25519_exit);
-+module_exit(curve25519_mod_exit);
-+#endif
- 
- MODULE_LICENSE("GPL v2");
--MODULE_DESCRIPTION("Curve25519 scalar multiplication");
-+MODULE_DESCRIPTION("Curve25519 algorithm");
- MODULE_AUTHOR("Jason A. Donenfeld <Jason@zx2c4.com>");
-diff --git a/arch/powerpc/crypto/curve25519-ppc64le_asm.S b/lib/crypto/powerpc/curve25519-ppc64le_asm.S
-similarity index 100%
-rename from arch/powerpc/crypto/curve25519-ppc64le_asm.S
-rename to lib/crypto/powerpc/curve25519-ppc64le_asm.S
-diff --git a/arch/powerpc/crypto/curve25519-ppc64le-core.c b/lib/crypto/powerpc/curve25519.h
-similarity index 88%
-rename from arch/powerpc/crypto/curve25519-ppc64le-core.c
-rename to lib/crypto/powerpc/curve25519.h
-index 6eb18ee19cad3..dee6234c48e92 100644
---- a/arch/powerpc/crypto/curve25519-ppc64le-core.c
-+++ b/lib/crypto/powerpc/curve25519.h
-@@ -5,16 +5,13 @@
-  * X25519 scalar multiplication with 51 bits limbs for PPC64le.
-  *   Based on RFC7748 and AArch64 optimized implementation for X25519
-  *     - Algorithm 1 Scalar multiplication of a variable point
-  */
- 
--#include <crypto/curve25519.h>
--
- #include <linux/types.h>
- #include <linux/jump_label.h>
- #include <linux/kernel.h>
--#include <linux/module.h>
- 
- #include <linux/cpufeature.h>
- #include <linux/processor.h>
- 
- typedef uint64_t fe51[5];
-@@ -173,23 +170,17 @@ static void curve25519_fe51(uint8_t out[32], const uint8_t scalar[32],
- 	finv(z2, z2);
- 	fmul(x2, x2, z2);
- 	fe51_tobytes(out, x2);
- }
- 
--void curve25519_arch(u8 mypublic[CURVE25519_KEY_SIZE],
--		     const u8 secret[CURVE25519_KEY_SIZE],
--		     const u8 basepoint[CURVE25519_KEY_SIZE])
-+static void curve25519_arch(u8 mypublic[CURVE25519_KEY_SIZE],
-+			    const u8 secret[CURVE25519_KEY_SIZE],
-+			    const u8 basepoint[CURVE25519_KEY_SIZE])
- {
- 	curve25519_fe51(mypublic, secret, basepoint);
- }
--EXPORT_SYMBOL(curve25519_arch);
- 
--void curve25519_base_arch(u8 pub[CURVE25519_KEY_SIZE],
--			  const u8 secret[CURVE25519_KEY_SIZE])
-+static void curve25519_base_arch(u8 pub[CURVE25519_KEY_SIZE],
-+				 const u8 secret[CURVE25519_KEY_SIZE])
- {
- 	curve25519_fe51(pub, secret, curve25519_base_point);
- }
--EXPORT_SYMBOL(curve25519_base_arch);
--
--MODULE_DESCRIPTION("PPC64le Curve25519 scalar multiplication with 51 bits limbs");
--MODULE_LICENSE("GPL v2");
--MODULE_AUTHOR("Danny Tsen <dtsen@us.ibm.com>");
-diff --git a/lib/crypto/tests/Kconfig b/lib/crypto/tests/Kconfig
-index 7e4e66f30a7a6..c0f3b64489dd6 100644
---- a/lib/crypto/tests/Kconfig
-+++ b/lib/crypto/tests/Kconfig
-@@ -11,13 +11,14 @@ config CRYPTO_LIB_BLAKE2S_KUNIT_TEST
- 	  KUnit tests for the BLAKE2s cryptographic hash function.
- 
- config CRYPTO_LIB_CURVE25519_KUNIT_TEST
- 	tristate "KUnit tests for Curve25519" if !KUNIT_ALL_TESTS
- 	depends on KUNIT
--	default KUNIT_ALL_TESTS
-+	default KUNIT_ALL_TESTS || CRYPTO_SELFTESTS
- 	select CRYPTO_LIB_BENCHMARK_VISIBLE
- 	select CRYPTO_LIB_CURVE25519
-+	select CRYPTO_LIB_CURVE25519_GENERIC
- 	help
- 	  KUnit tests for Curve25519.
- 
- config CRYPTO_LIB_MD5_KUNIT_TEST
- 	tristate "KUnit tests for MD5" if !KUNIT_ALL_TESTS
-diff --git a/arch/x86/crypto/curve25519-x86_64.c b/lib/crypto/x86/curve25519.h
-similarity index 98%
-rename from arch/x86/crypto/curve25519-x86_64.c
-rename to lib/crypto/x86/curve25519.h
-index ab91368284a47..5c0b8408852de 100644
---- a/arch/x86/crypto/curve25519-x86_64.c
-+++ b/lib/crypto/x86/curve25519.h
-@@ -2,17 +2,13 @@
- /*
-  * Copyright (C) 2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
-  * Copyright (c) 2016-2020 INRIA, CMU and Microsoft Corporation
-  */
- 
--#include <crypto/curve25519.h>
--
--#include <linux/export.h>
- #include <linux/types.h>
- #include <linux/jump_label.h>
- #include <linux/kernel.h>
--#include <linux/module.h>
- 
- #include <asm/cpufeature.h>
- #include <asm/processor.h>
- 
- static __always_inline u64 eq_mask(u64 a, u64 b)
-@@ -1588,43 +1584,30 @@ static void curve25519_ever64_base(u8 *out, const u8 *priv)
- 	memzero_explicit(tmp, sizeof(tmp));
- }
- 
- static __ro_after_init DEFINE_STATIC_KEY_FALSE(curve25519_use_bmi2_adx);
- 
--void curve25519_arch(u8 mypublic[CURVE25519_KEY_SIZE],
--		     const u8 secret[CURVE25519_KEY_SIZE],
--		     const u8 basepoint[CURVE25519_KEY_SIZE])
-+static void curve25519_arch(u8 mypublic[CURVE25519_KEY_SIZE],
-+			    const u8 secret[CURVE25519_KEY_SIZE],
-+			    const u8 basepoint[CURVE25519_KEY_SIZE])
- {
- 	if (static_branch_likely(&curve25519_use_bmi2_adx))
- 		curve25519_ever64(mypublic, secret, basepoint);
- 	else
- 		curve25519_generic(mypublic, secret, basepoint);
- }
--EXPORT_SYMBOL(curve25519_arch);
- 
--void curve25519_base_arch(u8 pub[CURVE25519_KEY_SIZE],
--			  const u8 secret[CURVE25519_KEY_SIZE])
-+static void curve25519_base_arch(u8 pub[CURVE25519_KEY_SIZE],
-+				 const u8 secret[CURVE25519_KEY_SIZE])
- {
- 	if (static_branch_likely(&curve25519_use_bmi2_adx))
- 		curve25519_ever64_base(pub, secret);
- 	else
- 		curve25519_generic(pub, secret, curve25519_base_point);
- }
--EXPORT_SYMBOL(curve25519_base_arch);
- 
--static int __init curve25519_mod_init(void)
-+#define curve25519_mod_init_arch curve25519_mod_init_arch
-+static void curve25519_mod_init_arch(void)
- {
- 	if (boot_cpu_has(X86_FEATURE_BMI2) && boot_cpu_has(X86_FEATURE_ADX))
- 		static_branch_enable(&curve25519_use_bmi2_adx);
--	return 0;
--}
--
--static void __exit curve25519_mod_exit(void)
--{
- }
--
--module_init(curve25519_mod_init);
--module_exit(curve25519_mod_exit);
--
--MODULE_DESCRIPTION("Curve25519 algorithm, ADX optimized");
--MODULE_LICENSE("GPL v2");
--MODULE_AUTHOR("Jason A. Donenfeld <Jason@zx2c4.com>");
+Best regards
 -- 
-2.50.1
+Marek Szyprowski, PhD
+Samsung R&D Institute Poland
 
 
