@@ -1,48 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-11588-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11589-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 37304CA0FF0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 15:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8946FCA0FF0
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 15:50:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cFtcr5KsWz2ywh;
-	Tue,  2 Sep 2025 01:50:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cFtcw5Df9z3000;
+	Tue,  2 Sep 2025 01:50:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756741836;
-	cv=none; b=bZwUB8QOTOKodPJtn1hBxOjgPMy4voVbJbZ17A2DsUg/kb5B+dwB9ag2P73gQXDiiUSOqlfYUKyq+I27VsTuvrbggZwE7rex8iydHDta6sslo+iXkxsfcOic5cZ/pBQgKCdW3CVBhpf6NMPv2a5CRX1BKJRQ3VXHSAR0b6vSjrb9DlsDc9N7Kexwqj3CAEZbPUFUrYi/33+c4Qb3Dg7WPzfunL4MWUgr5+ZFNkRB4kMXySt/r6OKDkjEjH7CTSaNg+Rv4puCK1YhOyPDcVW1mgfyP9VITP+b4MCLBgWy6MwZr3abfQF94AOPyauhwJqfyELk5HECbfDesQ6QfQ+ulA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756741840;
+	cv=none; b=VAMoBsiq4Qy3cPtjmxnnBy8Mp0t/nMWBcsGv/ajQURraKnPbh79BnRW8PEA8drEaXliRSdKXsk/9vqOoxrAwJ9BJ8ZzpOV8b2KqWJL5ytk9e4ahPIoCMQb+qgpcFh1hsRcBSDDPKdyhEIZkn6NsHmgz2vOtLvY4Hxe8y0fu3kJHfFNMrF6Lh9IaGBpPDgssX3gsKwRaoelihWJxvfbwIwjNYlE2uzjHSbYf3tPZ5BGeebTH7jUs/5971QRrVx3MxKbztQH4I4iIzh7JbEZuVNi5juVKPtrCpDUr6VUJAm9xsUTkWUvBc0288CZRYOPqr97JzbbHBkOw46/x0deMrvg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756741836; c=relaxed/relaxed;
-	bh=irXPgS42zFgkQHjW10ATbOmLq7FuFJt14i+mSxGaFpM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=m5kJErAQvVrdocKg/fpbkOEc32wTXqO+zPzSmX7+oV6O1WQ58t1vLPvKwEHrDkHDTbtvhrm90GVT9hJFArImPQMyMQ//yQ2URAuFlvHH9qWEjvNQztK6CacL43BOEdbwaGBmnA345S77u1+pbrXt7MrUN8QVzFb8ipPBIPaS4lBUWyIBYU/65j7BIWdvXYp80FGR8imZI5sqQSqyZQfNngQ5fHqZs+9gpDiid+OqCZV+WxiK3m1DDclPjpdXfc7mflC5AAZFd+JERsCCcTuE+PKGT8/v6MZs/itUXm5tm5Flmnv6YwfLrjhQVVgSTQVBOVTtjtwABCgt4eAK8MY0MA==
+	t=1756741840; c=relaxed/relaxed;
+	bh=+NcYjXUcgSUfyONIom0k0pSDonkPMPGHVx9VdH1/2wY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hkWsrleh4NBazeJffL+3Aj3JUI164ca/V5sXX0jumf981lM0P9nfc/YQ52qqra7TZmMkmA03YLTZQSaANA0CsYgFHbcOFpcpBkjPpPpWdqCfkebTfx+9pzZYD9ckK+uO9YNuaezX29Uo/xnRnCZTBIFXDvuxEMUhaUcRHmf+2oamkUa0pSFt+mmXS3ZgpaBc/r0XtkVG31KKopEG97FFx6h+t0MvZX9xVZWCab1r4sQplSE5eTKpxhcbiCDMZhPzYvP9ssIXxbkcLvXw5iahftRcFmeSblfPP9d1iW/nQtsCfm9Oj2/R/Jc9aS0Z+RfuSaGw0wOuBk2p04/e6ltHNA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cFtcq66qWz2yqP
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Sep 2025 01:50:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cFtcw1n7dz2yqP
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Sep 2025 01:50:40 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cFndK1HxPz9sT7;
-	Mon,  1 Sep 2025 14:05:41 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4cFndC21Vkz9sSh;
+	Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id AoA5S3BHDBbU; Mon,  1 Sep 2025 14:05:41 +0200 (CEST)
+	with ESMTP id eGxryqrUX_hV; Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cFndC6fbFz9sSr;
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cFndC0tmwz9sSb;
 	Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id CE69E8B790;
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 0A7888B790;
 	Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id r-KaAi8_MPiL; Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
+	with ESMTP id MoqCpBZoSEHQ; Mon,  1 Sep 2025 14:05:34 +0200 (CEST)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 9AED58B77B;
-	Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D60908B77B;
+	Mon,  1 Sep 2025 14:05:34 +0200 (CEST)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Qiang Zhao <qiang.zhao@nxp.com>,
 	Linus Walleij <linus.walleij@linaro.org>,
@@ -56,12 +55,10 @@ Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-gpio@vger.kernel.org,
 	devicetree@vger.kernel.org
-Subject: [PATCH v5 6/7] dt-bindings: soc: fsl: qe: Convert QE GPIO to DT schema
-Date: Mon,  1 Sep 2025 14:05:13 +0200
-Message-ID: <48b4e7b25878b94dcb738f8239c815be484cf9c9.1756727747.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v5 0/7] Add support of IRQs to QUICC ENGINE GPIOs
+Date: Mon,  1 Sep 2025 14:05:07 +0200
+Message-ID: <cover.1756727747.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1756727747.git.christophe.leroy@csgroup.eu>
-References: <cover.1756727747.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,114 +72,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1756728308; l=3362; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=NiGGEzSVsJLntFwP1MIryFHdxpjk8igr3FrrVNxKPP0=; b=5WGZ5OgL+UExib3sv3fqbTbNCnvFZWxhkGlIIBNdXJikd0CcgFn/iAKdoshFpSqdsfhcw8u+A AJl1zujb3KNA/2ZISoit2AJr8HNP+vrVFJqtJpC2pYIMie16Qi8gN0s
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756728307; l=2473; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=OQso3M18Z5ORcR/fPWxtfj+ukdTn1jxV4K9Dtp+9ezM=; b=Sa0OBzCBpoGN4HMRxzJnWdq9fZNM5lvmxW/10//o9X7BqvBcy9RkfTft0Q6Nj/WX5r6Z8iMS8 woenspJQt4yAzoKwVux1Pqldu+JN1n3addpi4kD64aZS57VTiqX3XlF
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-Convert QE QPIO devicetree binding to DT schema.
+The QUICC Engine provides interrupts for a few I/O ports. This is
+handled via a separate interrupt ID and managed via a triplet of
+dedicated registers hosted by the SoC.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
-v5: New
----
- .../fsl/cpm_qe/fsl,mpc8323-qe-pario-bank.yaml | 53 +++++++++++++++++++
- .../bindings/soc/fsl/cpm_qe/qe/par_io.txt     | 26 +--------
- 2 files changed, 54 insertions(+), 25 deletions(-)
+Implement an interrupt driver for those IRQs then add change
+notification capability to the QUICC ENGINE GPIOs.
+
+The number of GPIOs for which interrupts are supported depends on
+the microcontroller:
+- mpc8323 has 10 GPIOS supporting interrupts
+- mpc8360 has 28 GPIOS supporting interrupts
+- mpc8568 has 18 GPIOS supporting interrupts
+
+Changes in v5:
+- Replaced new DT property "fsl,qe-gpio-irq-mask" by a mask encoded
+in the of_device_id table
+- Converted QE QPIO DT bindings to DT schema
+
+Changes in v4:
+- Removed unused headers
+- Using device_property_read_u32() instead of of_property_read_u32()
+
+Changes in v3:
+- Splited dt-bindings update out of patch "soc: fsl: qe: Add support of IRQ in QE GPIO"
+- Reordered DTS node exemples iaw dts-coding-style.rst
+
+Changes in v2:
+- Fixed warning on PPC64 build (Patch 1)
+- Using devm_kzalloc() instead of kzalloc (Patch 2)
+- Stop using of-mm-gpiochip (New patch 3)
+- Added fsl,qe-gpio-irq-mask propertie in DT binding doc (Patch 4)
+- Fixed problems reported by 'make dt_binding_check' (Patch 5)
+
+Christophe Leroy (7):
+  soc: fsl: qe: Add an interrupt controller for QUICC Engine Ports
+  soc: fsl: qe: Change GPIO driver to a proper platform driver
+  soc: fsl: qe: Drop legacy-of-mm-gpiochip.h header from GPIO driver
+  soc: fsl: qe: Add support of IRQ in QE GPIO
+  dt-bindings: soc: fsl: qe: Add an interrupt controller for QUICC
+    Engine Ports
+  dt-bindings: soc: fsl: qe: Convert QE GPIO to DT schema
+  dt-bindings: soc: fsl: qe: Add support of IRQ in QE GPIO
+
+ .../fsl/cpm_qe/fsl,mpc8323-qe-pario-bank.yaml |  76 +++++++
+ .../soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml       |  58 +++++
+ .../bindings/soc/fsl/cpm_qe/qe/par_io.txt     |  26 +--
+ arch/powerpc/platforms/Kconfig                |   1 -
+ drivers/soc/fsl/qe/Makefile                   |   2 +-
+ drivers/soc/fsl/qe/gpio.c                     | 209 ++++++++++++------
+ drivers/soc/fsl/qe/qe_ports_ic.c              | 156 +++++++++++++
+ 7 files changed, 438 insertions(+), 90 deletions(-)
  create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,mpc8323-qe-pario-bank.yaml
+ create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+ create mode 100644 drivers/soc/fsl/qe/qe_ports_ic.c
 
-diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,mpc8323-qe-pario-bank.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,mpc8323-qe-pario-bank.yaml
-new file mode 100644
-index 000000000000..e6ba319a75c1
---- /dev/null
-+++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,mpc8323-qe-pario-bank.yaml
-@@ -0,0 +1,53 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/soc/fsl/cpm_qe/fsl,mpc8323-qe-pario-bank.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Freescale QUICC Engine Parallel I/O (QE PARIO) GPIO Bank
-+
-+maintainers:
-+  - Christophe Leroy <christophe.leroy@csgroup.eu>
-+
-+description:
-+  Bindings for the Freescale QUICC Engine Parallel I/O (PARIO) GPIO controller.
-+
-+properties:
-+  compatible:
-+    items:
-+      - enum:
-+          - fsl,chip-qe-pario-bank
-+      - const: fsl,mpc8323-qe-pario-bank
-+
-+  reg:
-+    maxItems: 1
-+    description: Offset to the register set and its length.
-+
-+  gpio-controller: true
-+
-+  '#gpio-cells':
-+    const: 2
-+
-+required:
-+  - compatible
-+  - reg
-+  - gpio-controller
-+  - '#gpio-cells'
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    qe_pio_a: gpio-controller@1400 {
-+        compatible = "fsl,mpc8360-qe-pario-bank", "fsl,mpc8323-qe-pario-bank";
-+        reg = <0x1400 0x18>;
-+        gpio-controller;
-+        #gpio-cells = <2>;
-+    };
-+
-+    qe_pio_e: gpio-controller@1460 {
-+        compatible = "fsl,mpc8360-qe-pario-bank", "fsl,mpc8323-qe-pario-bank";
-+        reg = <0x1460 0x18>;
-+        gpio-controller;
-+        #gpio-cells = <2>;
-+    };
-diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt
-index 09b1b05fa677..782699c14567 100644
---- a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt
-+++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt
-@@ -24,28 +24,4 @@ par_io@1400 {
- 
- Note that "par_io" nodes are obsolete, and should not be used for
- the new device trees. Instead, each Par I/O bank should be represented
--via its own gpio-controller node:
--
--Required properties:
--- #gpio-cells : should be "2".
--- compatible : should be "fsl,<chip>-qe-pario-bank",
--  "fsl,mpc8323-qe-pario-bank".
--- reg : offset to the register set and its length.
--- gpio-controller : node to identify gpio controllers.
--
--Example:
--	qe_pio_a: gpio-controller@1400 {
--		#gpio-cells = <2>;
--		compatible = "fsl,mpc8360-qe-pario-bank",
--		"fsl,mpc8323-qe-pario-bank";
--		reg = <0x1400 0x18>;
--		gpio-controller;
--	  };
--
--	qe_pio_e: gpio-controller@1460 {
--		#gpio-cells = <2>;
--		compatible = "fsl,mpc8360-qe-pario-bank",
--			     "fsl,mpc8323-qe-pario-bank";
--		reg = <0x1460 0x18>;
--		gpio-controller;
--	  };
-+via its own gpio-controller node.
 -- 
 2.49.0
 
