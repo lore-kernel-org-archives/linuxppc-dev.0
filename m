@@ -1,102 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-11601-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11602-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4823ACA1002
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 22:23:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B835FCA1002
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Sep 2025 00:20:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cG3L76NLVz2yhb;
-	Tue,  2 Sep 2025 08:23:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:2416::619" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756765407;
-	cv=pass; b=RBjXrXZV8gQME97kYH0eEfII1lbViFO9E1nc33eWCXfR7CSvtM1HUOoaHT5fJovuqPqCqq9jzeT/5/pL5AXQOdR0oonX5UHK1G1A4c6rnAYo6z/KCi38EXv5yd2GAuXunmcxpuCPPnBenJufFXp2ehjaB4trHcLTVcZgWg3/jq0PITWnDBvF/gZoTBCsx87I1IobqZ/m1wjD1uWdw9hjKrHuNiinWTGq1AwAv99X1gnPT4l38+qwuYl5XG9w6l5wJTJSICPyEvSmDBooKpDxD5oOi95i2laDJtQVa5Hg/1XKSoQnoTbHtM3pSouFPYz7oAExQjXP0tIgw+TUHESnzw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756765407; c=relaxed/relaxed;
-	bh=9PcD09FKAh1vF3qniFuOOvXvPYB3eKU4OoIktmAdxRs=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
-	 Content-Disposition:In-Reply-To:MIME-Version; b=YanMkGsEXbPWKEOzYFY6eGay9zbwMkUAO1ExABoeH2FTeRzld7RhrrdESERaRncrXxoRU5GICfwiLCRrWYDn4e6ssvjdGKCyySvoxVCLBJxT6V08IXSInjffBj6xYlipHFoNbDJr+24ZA/tUkz36aTFMaTIZP6NTVAoRVg51KYJembMlo8HoCXaF168ixVK9kk7VgWSbtfpKKTUTH7BRRBcUhnalgP0d08GY+iMXapltNmDZNJw+6iB1v5tFS2LygUTudabUD6RB3RDCLEaltl24ZBCFIHRS2SszyuFtP7znsq7bwpgchb1nXZ6oj8Lp+up357WpCcxXnHJc/GApmA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=iv80n33E; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:2416::619; helo=nam11-co1-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=iv80n33E;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:2416::619; helo=nam11-co1-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
-Received: from NAM11-CO1-obe.outbound.protection.outlook.com (mail-co1nam11on20619.outbound.protection.outlook.com [IPv6:2a01:111:f403:2416::619])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (secp384r1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cG3L55J1wz2yN1
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Sep 2025 08:23:25 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=bS1daFUznnVp//4wMYjsC7mQ61wfIUfOOaXIhB/KaP2C0FWv8GZ+AgFHdNow9W+6LXe4icajYJ2+WxXsc3zUbDKHO5qLBwEuMw+Q9bPQuu+vMYEQBHOuug5k1pMM+CHRmqItzRdnFmk0yd9gP1Dz8dtvUDuBXv37ceqZgk4JkGoauVNdC7DCt21lV4fbSKhkV5UqbzVrfG15J2hRPgi77evgwJcR5AbM88DSP+44Jl9DoMtdqDfb7NmsFMEjmsqpPAOnDztFEHEvqFK124YgXyGcVctt2NDvsBD9+LotYwcs40TPnAp0q4vlNtCGwMuLIVI1Kmi6+1vjV6I4h+6LPw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=9PcD09FKAh1vF3qniFuOOvXvPYB3eKU4OoIktmAdxRs=;
- b=WD2g5hBKoBkYOk72WapCvsuBh+eJvISk6j/e7JOqGTjIMxvJ6yAKX/KGI8zX0b5x+4+D7HcK3ab0wk3SSgkNNQppdXjtXvwPBNcDl/9NZoiOPLVlA8jNZj4FT0aSixw2m2UOrq1lugxBIVYkegHX2pu9CTI0Plgmcu0xrdJl/XdmmG2pvxFen7O4klgiyYAPTFe38ZrLdRzIPoHJi1rLN5fMWUI5o1tfon6zz69GRkz9LZxZUWlRiWWC9ogwpn6NCnXrDMvwgcJSwnxSofKEcQ8vMyV9E7xVIeOfnxtX5z0kY9O2R0Z8GRkFx68JvIa68t9nPT2dARPCjIyNbT6RZA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
- dkim=pass header.d=nvidia.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
- s=selector2;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=9PcD09FKAh1vF3qniFuOOvXvPYB3eKU4OoIktmAdxRs=;
- b=iv80n33ELEVJgtxrACFzsV82DMFeFd43SDMUiVLoegOHzbTYcA7r4CMH1sbGiPoY6cwkuw8VulWQXba0j3FeFjvT99gIiZa4vX8Tzxx6ip5ceePsWwkLhRXSXlIYIfhDj575uqeU9wxrHXDHja0UAN2pR+vtTxAgO4nG3CyLXU+T05mEaLRUYs7E4y+fRcEbPSVIgJ8eY0kCgCrTk+rYKNed0UZd8lKNowWUkVaZ3s3qL7UShVOncZb5UGp2klTxwCLlqBGluBQPWABO3E40ijffqC669j7VNVkElnT7UPJLbWBGvdbKL4Mnt4A5edHgaXkcDk65Yj3I1HAbQh/hKw==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nvidia.com;
-Received: from CH3PR12MB8659.namprd12.prod.outlook.com (2603:10b6:610:17c::13)
- by IA1PR12MB7495.namprd12.prod.outlook.com (2603:10b6:208:419::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9073.27; Mon, 1 Sep
- 2025 22:23:03 +0000
-Received: from CH3PR12MB8659.namprd12.prod.outlook.com
- ([fe80::6eb6:7d37:7b4b:1732]) by CH3PR12MB8659.namprd12.prod.outlook.com
- ([fe80::6eb6:7d37:7b4b:1732%4]) with mapi id 15.20.9073.026; Mon, 1 Sep 2025
- 22:23:03 +0000
-Date: Mon, 1 Sep 2025 19:23:02 -0300
-From: Jason Gunthorpe <jgg@nvidia.com>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Leon Romanovsky <leon@kernel.org>,
-	Abdiel Janulgue <abdiel.janulgue@gmail.com>,
-	Alexander Potapenko <glider@google.com>,
-	Alex Gaynor <alex.gaynor@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Christoph Hellwig <hch@lst.de>, Danilo Krummrich <dakr@kernel.org>,
-	iommu@lists.linux.dev, Jason Wang <jasowang@redhat.com>,
-	Jens Axboe <axboe@kernel.dk>, Joerg Roedel <joro@8bytes.org>,
-	Jonathan Corbet <corbet@lwn.net>, Juergen Gross <jgross@suse.com>,
-	kasan-dev@googlegroups.com, Keith Busch <kbusch@kernel.org>,
-	linux-block@vger.kernel.org, linux-doc@vger.kernel.org,
-	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
-	linux-nvme@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-	linux-trace-kernel@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Miguel Ojeda <ojeda@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>, rust-for-linux@vger.kernel.org,
-	Sagi Grimberg <sagi@grimberg.me>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	virtualization@lists.linux.dev, Will Deacon <will@kernel.org>,
-	xen-devel@lists.xenproject.org
-Subject: Re: [PATCH v4 00/16] dma-mapping: migrate to physical address-based
- API
-Message-ID: <20250901222302.GA186519@nvidia.com>
-References: <cover.1755624249.git.leon@kernel.org>
- <CGME20250828115738eucas1p24f3c17326b318c95a5569a2c9651ff92@eucas1p2.samsung.com>
- <20250828115729.GA10073@unreal>
- <26bd901a-0812-492d-9736-4a7bb2e6d6b4@samsung.com>
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <26bd901a-0812-492d-9736-4a7bb2e6d6b4@samsung.com>
-X-ClientProxiedBy: YT2PR01CA0016.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:b01:38::21) To CH3PR12MB8659.namprd12.prod.outlook.com
- (2603:10b6:610:17c::13)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cG5xL1NGVz2ypw;
+	Tue,  2 Sep 2025 10:20:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756772438;
+	cv=none; b=IX2MaKJoQ1046l8N9+4WkkGqWrr83HTmwBHKv6CA0dZ3atC2R9TVCXNUvd6oe1CZaqemp49JACyiaHkMELBrV5dxnOKX5WAxXwu4Ln2in7z1AgAPEk22xW8b6/nmfAk7gW5C6S0jUfiLC3wbXsMnLVYwS0QDNw50x2rhS3mBCvYprs9yHEwPrih9Nc5IHtsSi3uUr2ZybkDScbbx/5OxYfENN/KxUgaqA7ePIVzldVnEha+Grt74tygGkd4nEHNGz/2saVCo7Nnk3MFJdM8DjY24EDzdDLh+lEJnRconSi+iY1E6w/MsUO8MxcqMF/JmazvETR4rbV/fs/x1ecah8w==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1756772438; c=relaxed/relaxed;
+	bh=NXI3kM9yBU2NFSNS1reV27GNn49zaiScl2ch3IUevK8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=S6UUu8li1bFQry0RqwQttFX9Vjo5Ix6O2RWTVZZmCOTQ1OZkNNc84BpKB+INzDj8n5023gULwOztr7CrwNOYwvvSbq9Q/WFTf471JJJFmUIW+gLy5prUMDsKXrp3/gIehUzYLtL7z235FZ/CweF+vd1K680JSdXlXFsNbXMOHWS1J1TNEZaWbgWSd777sRU0l07JFDrHZ0TARkWGTwORvqUHSO+Ew923EdhM7NWGQrs5fNOxuAq61Bnt/DGaacVo0o27OcdyaAP8UIKjp8dJseh+A5EMUnlZ1B95+HQNlat1mv4XcadHvngGK1WIHi8RaGgkFYruqmgee3QdPBt79g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cG5xK2bkYz2y06
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  2 Sep 2025 10:20:36 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4cFndD0jHzz9sSt;
+	Mon,  1 Sep 2025 14:05:36 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id xYKkqZEcVcMN; Mon,  1 Sep 2025 14:05:36 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cFndC2JMCz9sSb;
+	Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 365E48B790;
+	Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id V01hOpFiDPpU; Mon,  1 Sep 2025 14:05:35 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [10.25.207.160])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 003E48B78C;
+	Mon,  1 Sep 2025 14:05:34 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org
+Subject: [PATCH v5 1/7] soc: fsl: qe: Add an interrupt controller for QUICC Engine Ports
+Date: Mon,  1 Sep 2025 14:05:08 +0200
+Message-ID: <5d7d9e236b638519b210d8401982a8c275520f25.1756727747.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1756727747.git.christophe.leroy@csgroup.eu>
+References: <cover.1756727747.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,139 +75,204 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CH3PR12MB8659:EE_|IA1PR12MB7495:EE_
-X-MS-Office365-Filtering-Correlation-Id: 2712e776-387d-4145-20bb-08dde9a61dfa
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|1800799024|376014|7416014|366016;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?V0E1b1lMQkNvUlZFcUJCUEU4NWNRZTNUNnMwT3J1MjJOc0N0MTRoUWdhTkd1?=
- =?utf-8?B?VW9GZ1FISlp2ekpIeGRia1RkR1F5VThDUituWGpVWVVHOWlNZzB3bExoZVNn?=
- =?utf-8?B?SDJGRmcwYmlDTVcyQ1NkQ2lvd0lwVWIwcDlYYURNVFFBdHZMUHBvMURRR1Ir?=
- =?utf-8?B?OGc3UG42ZTRlMktlN1BCVUR4NHNCRDA2T2V2dUJBN1liUlRjTGxIT0hZMkhN?=
- =?utf-8?B?YmJaV0dTZ3VYS292S1VMb2hJSWNhYzRmWDJOZnFxaktvTWplVGRDUjQ0RlJ3?=
- =?utf-8?B?U2VVY0pxaHlmallkNkd2ZElUd2l3L0FDelhSeHQyTlNTd2hwS2xvMDF0RFlI?=
- =?utf-8?B?R2xVTTJ1NUxZTWgvSnNvTGp0Y0ovQ21LcTkvaFV5UmpTUzlTUDhEV0pibXhU?=
- =?utf-8?B?ejlXZkN3Z3NtRDR2bUx6dUVVL3BtM0ZyN3BDbGMrVHJpaS9BM0p6T2Uyclpw?=
- =?utf-8?B?eE1ESmxUNkFWSHkwZkFLdDhDaHloMUwvMFM0ZmtNaWtIaGhZRDdIZEZVcVYw?=
- =?utf-8?B?TC85ckZTa1M1bWtVQ3F1azFyeDFWb3lyL2crMEtVcVcrZjczTGRxdU1pY3lH?=
- =?utf-8?B?bXhlT2Rla2VpdDdIQUV4b21uQ3FGTnA0dU9ZU0lmSVo2TEJPcG1LaDVBTG1o?=
- =?utf-8?B?cW9INzArVVJlZUNUUXY0QytHN1J4M3VWRUpRZHlMYTFyZTA1RHdWVlo4dktW?=
- =?utf-8?B?dHNPdnl4dHovK0EyOHBneUN4aC9WdWhyamZodytPNTBzcHg2bU9nOCtpN2JG?=
- =?utf-8?B?TTB2NkRnT1FKWWo0bkNDdXZBY2dMVzVocHBXTnp6TXRGdDk5UlJSNWZsSWUw?=
- =?utf-8?B?YmRBRjc4RTNKdXdkTzc2MmtyaWt1VEphMTR2c3Q3UzBJOEhUYzBGQXdvYlpL?=
- =?utf-8?B?OW9VbDQ5dDJERTZRMW9Ib0R2bnduMFVSMVBBZ083YzBSSzNxM1hyU1RDTmVX?=
- =?utf-8?B?UHJEMnNsdC8vSmJDWUwvaW1ScXBGQUpnMGJCb1lIWVJSNW43Qm9rVTVCTVRD?=
- =?utf-8?B?aTIyMUUyUm9KelBESWc2UUJ4YWNEc2Z5ODBsRjVOKzM0SEQrMVF3QXV4SnQ5?=
- =?utf-8?B?T0t0dC94bGxHaUo4eml1UFY5bmtWQjNpdEZXZ1BsNE1nZmFyTlQwU1p4enZC?=
- =?utf-8?B?amFHa2pLM2c5Tk9wUk5ObUFFRnN3SjhIVUFEclhzN20wdG1tbmxYYjE1NnNU?=
- =?utf-8?B?dFM3dUhIWVZEN3E4ODFxS1lRUjVHSG1VNG9qMm5hRFRsOEYxb2F1MkxKdmdP?=
- =?utf-8?B?ajFQTU1VUVNrL2Rrb21mTkg2bXdSZThLUHJOSEhKSHh2SWlwM0t4RVl5ZXpo?=
- =?utf-8?B?bW1DNk9KOHNBMkcrWkwvM1JUZ1FPU2d5c0JHZmNvL1hrc1NsalRHUlExZTho?=
- =?utf-8?B?RFdDSDM0NXo5cW1kTlk4RDVGaWc3YUhTZTdMWHRJbXJ3Y3FwRjNkQUkxRW1i?=
- =?utf-8?B?VVRBUm4rQ3QydHNxMlRFaU9KM0h4N3VCMVE3dWlVay94V0o4ZzQrVDdoaU9C?=
- =?utf-8?B?d0hLZ0JWWDE2UXY3THY3T05hMFVkNjFvMG9GL3M4UytyaThINkRXTXhNVlhV?=
- =?utf-8?B?WTQyMnNqZk1TT1loRXdYSWV3ZjhsMURMRllTQVZvZFZ6MHhicyt3S3NTVm9y?=
- =?utf-8?B?NkkvVEttZU1nSUtmMDNhcE5UTjYxTXpGYVVuby9HQkY1MXQxVDdDdi9ZMzh6?=
- =?utf-8?B?dWtsc2dGTkJiWWNnVGVlbGw1V1VHb25CWmcvQmFjTTJvN3lHdlFsc1J0cFp4?=
- =?utf-8?B?b1BOMmFtWjhYVTZ6NjdleTlFVEFvSUNiYnc5MDNBUURpQk1VcFoyV01tSW41?=
- =?utf-8?B?WVg4N0kvUmxnVFhuZkZJZE1NRnVpQWowVW03bWRIZ1dSQ2FuTXdwVXEzMkRZ?=
- =?utf-8?B?V1IxblJ1L3A2N0Z4N2t3VGVaT1JNR0IzbHZVdlBtUk5qVFpSZnZGY1NsdXBN?=
- =?utf-8?Q?9gT21r84I2k=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH3PR12MB8659.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(376014)(7416014)(366016);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?RkpjdmdHb1RMcitLaVM5OG5FZUZkYlU1WndDVjBnR1RrdEwxT3Jvdk8rVklj?=
- =?utf-8?B?d3NEVm1qSzBERU1wdVptRFhTUGZRTG43SDVvSHRCL25yMnZaSUMvVE1sUDJE?=
- =?utf-8?B?aldBMXRhTnNYN0c3NUVxK1M4dGFNNjQ2VFBnMmV0MnJzSCt0YTJGWlhLM0Fy?=
- =?utf-8?B?WjBjVVFiMDFmL2JLby8yWk9KYkk2REh1TFVQVGtxSUtFbytRY0xhMWt0VWxG?=
- =?utf-8?B?VW5GcEozb25ZaHUxWGQ5N3RTa3g4L1ZQeUQ2SVY2T2VmdHFnV29pa2lNc0h6?=
- =?utf-8?B?YVgwZTlyRDgyNmlxY3g4V2FyaVNsKzUzTzRlL0R2TFUyUzljZWx2SmY0VEpw?=
- =?utf-8?B?WFUxeTBrczh5MytEUUtVbU5XT0pOZ2U5T3NMR0xxUW5BNTd2MjNEVEZKVTJ1?=
- =?utf-8?B?Z1BHckFwWlJxZUVKckNsSUxFdGlScEtxM2ZBMkRHcHFtaGtkeGc0TEFRbEdt?=
- =?utf-8?B?ZnlXd1BzdEdZYUZxVFJXRmlFVks5MDlnNUYyVk0raHJ4NUpWbnozNG14RW1B?=
- =?utf-8?B?YzVIVEdERkUreVZaZlhUMTlDbDdBVzRRb3NCM0hiZGg0cXhuVGkzNm1oc1VU?=
- =?utf-8?B?TG4vSXZON2F5ZGUzUk1KMFM3SlRtQ0hyQkJlSmFFM0lnRGlnaVZEbC9EL2V2?=
- =?utf-8?B?VlhYdDZWL082a3pidkNQeEpGZEUwc2NWTStKQlByZnNLV2p0bGpmR2VVM2ho?=
- =?utf-8?B?ZFU1V3NrbGNaWlgyRFUvYTlKaUV3Kys0Qk91N1AxemVMemVhOURUYTRkQmln?=
- =?utf-8?B?MnNCSSsydW9KWFhQS0d1eVdEUTlITGVTVzNFZXlyd3BxeTRrZkg4Sk03bEw2?=
- =?utf-8?B?TWU3TE5mRVNDRU9VMmQ3V09yNlN6cWFrMjNOTjN5bXIwTVQ0RWJKU0tXdUFH?=
- =?utf-8?B?b0t3MkJoYkc5ZlR2c3R6YjRaU2RWVFBYdnFnQ1kraU9tc0ZXNlExa2xMeVZU?=
- =?utf-8?B?RFEwQWJtbGZGRHR0NXlSYXZhV0E0THk3WGRERUU4a3gzYjlTMnJlUWZ6eDM4?=
- =?utf-8?B?d0M3Ti9NNy83S1lCWGFqT0luTkF2VzF0ZUo5OW1sWUwzRXVpZzd4cnJhNmx6?=
- =?utf-8?B?K0dnLzhOZVdqMTBjVjgrL3pUTlByL3Z4WitmbkRSaEFwZGp1VVdJUDhsQWY5?=
- =?utf-8?B?akZpMlh2aDVYSUhwVXNpZWVjTnJqVXZ4T0prNDdQL2JSN200dlZ6NlBocnow?=
- =?utf-8?B?clorWUFjejM3WnpURWFkU1k2dDlSZUZ3RHJCZm1ZU2s0VmxKVDVvVlNNc2Ro?=
- =?utf-8?B?NW10T3ZYdi9LRXQ0dVdBRmVURHdaRlMzaUJzRm1SLzdzU1NVZ0QrcGU3UEVT?=
- =?utf-8?B?ZklXY1l3cFE3M09uT2w4bjkzcHpMcXZHT3k3bjhTcmpuT3dnQ2RMRmdDMmRQ?=
- =?utf-8?B?UzBDMXpoVlpwb3RVVVNqY2FUbkttYmplV01RRlQ5K1Ruc3p3QmFmSytaWnJM?=
- =?utf-8?B?RGJiVWQ3eWp5RTVFYXhmQWUrYzJlbmVjbzA2d1NCKzN1eS9LYlBLbWtnNEd0?=
- =?utf-8?B?RVdQMHVFdWZwTnVFcnFMQkpneXhocmw3d0ZMalo2dHMwQmhnY0VwNjI5Mkta?=
- =?utf-8?B?ZUNDQmhtZlg5eUpyVFhPM2s1NFZhbGVkbU9DZ1lxL1RCbGR6Q201WmsyMXE4?=
- =?utf-8?B?T2laZ1Bqb1NDNmNjU1dFVXZQb0xQOXd5Q1VwbWZQeXJhSkxmamRJa0MvTDQ0?=
- =?utf-8?B?bU00WXVZWlNYOTd5SlJBWUNydkpNVVhIUkVabkI3OHI1VWV1QlowOC9TdVZY?=
- =?utf-8?B?cm0vNlViOVp1V2Nxc2czaWZjbW1VVDBURVlCbHc5L3JtN2gycDNGNkNUNis2?=
- =?utf-8?B?ZkdyWnN6UU9rNzJ5bFFLZFJreTZkanlIUkRibk1MMEk2L0VXcFhLcGp3TW1T?=
- =?utf-8?B?dnlQUE9RRmFheVRaUitFbTZQaG1oenBLSXg4WFFiZXFJbHV5d3RMYUN5azZI?=
- =?utf-8?B?ZmlmMHR4YytsKzlaeUJ1dXpjdG9EYkJka2tMd0pMOXk1RGRIS2JJaStRdEk0?=
- =?utf-8?B?a0NkRTlmcVY4RloxUUI3Q21LU01Md2MxUzhqTUZ6TjdiVisrWUR3aFpKMjZQ?=
- =?utf-8?B?Y3lDWVlqZC9iUzB3dmtEWjJOK0NldjA5SWxxejlxZnNUTUZBZW56OVBOVW1r?=
- =?utf-8?Q?mYgQ=3D?=
-X-OriginatorOrg: Nvidia.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 2712e776-387d-4145-20bb-08dde9a61dfa
-X-MS-Exchange-CrossTenant-AuthSource: CH3PR12MB8659.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 01 Sep 2025 22:23:03.5273
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: w4znFzS8ZQTnhjINhC0mXrOLe3RICQMXCayvRTPzL4tTrPL8qJPNdtjBo+rtk6D0
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA1PR12MB7495
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1756728308; l=5183; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=G7scsgL+yrYA4D+2n/22/LhhZgPYYRLFCIoU4FAox1M=; b=3pUtK+QB1fKQzXx+BZc8q7IwWOWqvoZ7mDNJ3iBLQy0CPXl83KHuczuRMxqrHjlrpue9UcnlH e48EMSGUVW1CYMRb24pqE+cf64x9JChqyLf4vrMxyhEkjA058uLYTNp
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 
-On Mon, Sep 01, 2025 at 11:47:59PM +0200, Marek Szyprowski wrote:
-> I would like to give those patches a try in linux-next, but in meantime 
-> I tested it on my test farm and found a regression in dma_map_resource() 
-> handling. Namely the dma_map_resource() is no longer possible with size 
-> not aligned to kmalloc()'ed buffer, as dma_direct_map_phys() calls 
-> dma_kmalloc_needs_bounce(),
+The QUICC Engine provides interrupts for a few I/O ports. This is
+handled via a separate interrupt ID and managed via a triplet of
+dedicated registers hosted by the SoC.
 
-Hmm, it's this bit:
+Implement an interrupt driver for it for that those IRQs can then
+be linked to the related GPIOs.
 
-	capable = dma_capable(dev, dma_addr, size, !(attrs & DMA_ATTR_MMIO));
-	if (unlikely(!capable) || dma_kmalloc_needs_bounce(dev, size, dir)) {
-		if (is_swiotlb_active(dev) && !(attrs & DMA_ATTR_MMIO))
-			return swiotlb_map(dev, phys, size, dir, attrs);
+The number of ports for which interrupts are supported depends on
+the microcontroller:
+- mpc8323 has 10 interrupts
+- mpc8360 has 28 interrupts
+- mpc8568 has 18 interrupts
+So add this information as data of the compatible.
 
-		goto err_overflow;
-	}
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ drivers/soc/fsl/qe/Makefile      |   2 +-
+ drivers/soc/fsl/qe/qe_ports_ic.c | 156 +++++++++++++++++++++++++++++++
+ 2 files changed, 157 insertions(+), 1 deletion(-)
+ create mode 100644 drivers/soc/fsl/qe/qe_ports_ic.c
 
-We shouldn't be checking dma_kmalloc_needs_bounce() on mmio as there
-is no cache flushing so the "dma safe alignment" for non-coherent DMA
-does not apply.
+diff --git a/drivers/soc/fsl/qe/Makefile b/drivers/soc/fsl/qe/Makefile
+index ec8506e13113..901a9c40d5eb 100644
+--- a/drivers/soc/fsl/qe/Makefile
++++ b/drivers/soc/fsl/qe/Makefile
+@@ -11,4 +11,4 @@ obj-$(CONFIG_UCC_SLOW)	+= ucc_slow.o
+ obj-$(CONFIG_UCC_FAST)	+= ucc_fast.o
+ obj-$(CONFIG_QE_TDM)	+= qe_tdm.o
+ obj-$(CONFIG_QE_USB)	+= usb.o
+-obj-$(CONFIG_QE_GPIO)	+= gpio.o
++obj-$(CONFIG_QE_GPIO)	+= gpio.o qe_ports_ic.o
+diff --git a/drivers/soc/fsl/qe/qe_ports_ic.c b/drivers/soc/fsl/qe/qe_ports_ic.c
+new file mode 100644
+index 000000000000..9715643d36a6
+--- /dev/null
++++ b/drivers/soc/fsl/qe/qe_ports_ic.c
+@@ -0,0 +1,156 @@
++// SPDX-License-Identifier: GPL-2.0
++/*
++ * QUICC ENGINE I/O Ports Interrupt Controller
++ *
++ * Copyright (c) 2025 Christophe Leroy CS GROUP France (christophe.leroy@csgroup.eu)
++ */
++
++#include <linux/irq.h>
++#include <linux/irqdomain.h>
++#include <linux/platform_device.h>
++
++/* QE IC registers offset */
++#define CEPIER		0x0c
++#define CEPIMR		0x10
++#define CEPICR		0x14
++
++struct qepic_data {
++	void __iomem *reg;
++	struct irq_domain *host;
++};
++
++static void qepic_mask(struct irq_data *d)
++{
++	struct qepic_data *data = irq_data_get_irq_chip_data(d);
++
++	clrbits32(data->reg + CEPIMR, 1 << (31 - irqd_to_hwirq(d)));
++}
++
++static void qepic_unmask(struct irq_data *d)
++{
++	struct qepic_data *data = irq_data_get_irq_chip_data(d);
++
++	setbits32(data->reg + CEPIMR, 1 << (31 - irqd_to_hwirq(d)));
++}
++
++static void qepic_end(struct irq_data *d)
++{
++	struct qepic_data *data = irq_data_get_irq_chip_data(d);
++
++	out_be32(data->reg + CEPIER, 1 << (31 - irqd_to_hwirq(d)));
++}
++
++static int qepic_set_type(struct irq_data *d, unsigned int flow_type)
++{
++	struct qepic_data *data = irq_data_get_irq_chip_data(d);
++	unsigned int vec = (unsigned int)irqd_to_hwirq(d);
++
++	switch (flow_type & IRQ_TYPE_SENSE_MASK) {
++	case IRQ_TYPE_EDGE_FALLING:
++		setbits32(data->reg + CEPICR, 1 << (31 - vec));
++		return 0;
++	case IRQ_TYPE_EDGE_BOTH:
++	case IRQ_TYPE_NONE:
++		clrbits32(data->reg + CEPICR, 1 << (31 - vec));
++		return 0;
++	}
++	return -EINVAL;
++}
++
++static struct irq_chip qepic = {
++	.name = "QEPIC",
++	.irq_mask = qepic_mask,
++	.irq_unmask = qepic_unmask,
++	.irq_eoi = qepic_end,
++	.irq_set_type = qepic_set_type,
++};
++
++static int qepic_get_irq(struct irq_desc *desc)
++{
++	struct qepic_data *data = irq_desc_get_handler_data(desc);
++	u32 event = in_be32(data->reg + CEPIER);
++
++	if (!event)
++		return -1;
++
++	return irq_find_mapping(data->host, 32 - ffs(event));
++}
++
++static void qepic_cascade(struct irq_desc *desc)
++{
++	generic_handle_irq(qepic_get_irq(desc));
++}
++
++static int qepic_host_map(struct irq_domain *h, unsigned int virq, irq_hw_number_t hw)
++{
++	irq_set_chip_data(virq, h->host_data);
++	irq_set_chip_and_handler(virq, &qepic, handle_fasteoi_irq);
++	return 0;
++}
++
++static const struct irq_domain_ops qepic_host_ops = {
++	.map = qepic_host_map,
++};
++
++static int qepic_probe(struct platform_device *pdev)
++{
++	struct device *dev = &pdev->dev;
++	struct qepic_data *data;
++	unsigned long nb;
++	int irq;
++
++	nb = (unsigned long)of_device_get_match_data(dev);
++	if (nb < 1 || nb > 32)
++		return -EINVAL;
++
++	data = devm_kzalloc(dev, sizeof(*data), GFP_KERNEL);
++	if (!data)
++		return -ENOMEM;
++
++	data->reg = devm_platform_ioremap_resource(pdev, 0);
++	if (IS_ERR(data->reg))
++		return PTR_ERR(data->reg);
++
++	irq = platform_get_irq(pdev, 0);
++	if (irq < 0)
++		return irq;
++
++	data->host = irq_domain_add_linear(dev->of_node, nb, &qepic_host_ops, data);
++	if (!data->host)
++		return -ENODEV;
++
++	irq_set_handler_data(irq, data);
++	irq_set_chained_handler(irq, qepic_cascade);
++
++	return 0;
++}
++
++static const struct of_device_id qepic_match[] = {
++	{
++		.compatible = "fsl,mpc8323-qe-ports-ic",
++		.data = (void *)10,
++	},
++	{
++		.compatible = "fsl,mpc8360-qe-ports-ic",
++		.data = (void *)28,
++	},
++	{
++		.compatible = "fsl,mpc8568-qe-ports-ic",
++		.data = (void *)18,
++	},
++	{},
++};
++
++static struct platform_driver qepic_driver = {
++	.driver	= {
++		.name		= "qe_ports_ic",
++		.of_match_table	= qepic_match,
++	},
++	.probe	= qepic_probe,
++};
++
++static int __init qepic_init(void)
++{
++	return platform_driver_register(&qepic_driver);
++}
++arch_initcall(qepic_init);
+-- 
+2.49.0
 
-Like you say looks good to me, and more of the surrouding code can be
-pulled in too, no sense in repeating the boolean logic:
-
-	if (attrs & DMA_ATTR_MMIO) {
-		dma_addr = phys;
-		if (unlikely(!dma_capable(dev, dma_addr, size, false)))
-			goto err_overflow;
-	} else {
-		dma_addr = phys_to_dma(dev, phys);
-		if (unlikely(!dma_capable(dev, dma_addr, size, true)) ||
-		    dma_kmalloc_needs_bounce(dev, size, dir)) {
-			if (is_swiotlb_active(dev))
-				return swiotlb_map(dev, phys, size, dir, attrs);
-
-			goto err_overflow;
-		}
-		if (!dev_is_dma_coherent(dev) &&
-		    !(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-			arch_sync_dma_for_device(phys, size, dir);
-	}
-
-Jason
 
