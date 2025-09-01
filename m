@@ -1,69 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-11569-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11570-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 906E3CA0FF0
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 13:26:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19803CA1002
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 13:31:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cFqQJ1y7Wz2yx7;
-	Mon,  1 Sep 2025 23:26:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cFqXh59cPz2yxN;
+	Mon,  1 Sep 2025 23:31:48 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.137
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756733176;
-	cv=none; b=AVo6Nvo+k425oP0q51eVkCHSkuQzXPnH8Mg48DTYuTGEWfrvtglHDVOVw23d8tIEqttLxLI/CZ0qAGzgmL5Pt78B7TaV4pqiBaQLNb+UZRakDO4F2Hmt4BWsIvT3hq7LVeMwmNGjEp8mgs/5aqCv1DdCbkXiVcLMJogyk4xpUOiHoI+kJB1DvWhdNuzuhceMor3GJZFrSFqZT326P1bwSq2+Fv+zkQNYa6SI/YuNVD9QzaIxATaDL+F3q/LvFBQQQi8QRo+ekiYrFk48vuAdROnhEt3ucCiSeP/K1MBLlU1bniKMk91afJaY6+zHKAidghTadN+AMMi9CpEzC2Qe+g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756733508;
+	cv=none; b=UmGw/UZQxJaRvGGGWPMzpzeKLwZpGg/8McH4TbR8PknW8w82qzas8aCJh0mcSjeW5c2JDHdjSiW2/8Nq8GBqHSE4ZSIS/BPM2UU8Rc9sn3QIcoyt3vDVFhTO8CFm4OsK893Mrz7H3yB4WYfnpN5rLSWCMcIhgh4zHorwJc0nJeyE7kDuf9NEFkSTepGVkUWkvfcvBS/TEcrfcz2b5z+Q8i5HqHtX+ar7ELU0ioUGfSi5qR8qohGETkp0rw2FuN5bM3cqaqaExZlurOVybPq3YyNMuXLsuBKqMUzFuVdxnOsQ+knqBanCkbCwSbliQMuAUm0EfjJwtBcrV6HrEuscbw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756733176; c=relaxed/relaxed;
-	bh=Mw8Cn4/OCWn4lPhhW5QgwqsK4SmxabwHi0TRYO6VF1s=;
+	t=1756733508; c=relaxed/relaxed;
+	bh=Eznu89d4Wi9DxarExeHtKpzVjwvcq68i7OTy3S868gA=;
 	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=HWx4YDGYcqQB/D5AoekXYtM1BV1aemm1bg2rMKgOlDkDnKKyU3oPXbtrw09d12TqcDcYnAqBnPcvNMcOdxrY/9Mph3RDsc6z6OIoF3UJbdxr1fo1k9O9wZeey4x1E61Q9rykvM2b941CirkARoZTCHoLad6dbx8t6zp0oMDRi030ApfRaA25GL9RN4nKS2CyihpNgDDtabfdF9f010A/sMV4Azo1zOBNRQbc/rPIj03k2wP1N1RWmvpkeOmXLr/ULQ5jg93A8saauedpis6fEpzWw4OPbxDt2HAgXQZTank6ochdq57La3nDJnLFsQheE2ZDhZqYOUIi3mburzntFg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=tLTVNY7s; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=IzqfGdUJ; dkim-atps=neutral; spf=pass (client-ip=202.12.124.137; helo=flow-b2-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
+	 Subject:Content-Type; b=aDAn0ZSvDKuuUve5+YWLDpYFrKOyvmkGFFszz7/67Ixd/EmR4vbuSyn1DNsC0joO6+XBGEVRL1lhkmmrBJG+KNvZu+U/VJ5Gn2kLFYzonktfZiVCMFRytfKufx88rTTT6VarED5BeSFugZh/+jFHH96fNAW/V7oAPCn3Xqoy5TXF0tvgJFz0p+NimMbvSN1Gdta4m1lerFoJ2arAIzMdyT9XKpYpyfkTJUVnZhiu+DiQKk3T0qV7dGmCkt9nHAcRfsYUTHZf0X5X0+q860WmfgCGsm+9YnkdHhdJJckjrgpsAX0YLElADOst2VNAcsdNntAoJKux+jokdUA74NbiUw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=j6cv+uWE; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=DSMSTkhz; dkim-atps=neutral; spf=pass (client-ip=202.12.124.137; helo=flow-b2-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=tLTVNY7s;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=IzqfGdUJ;
+	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm3 header.b=j6cv+uWE;
+	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=DSMSTkhz;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.137; helo=flow-b2-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 368 seconds by postgrey-1.37 at boromir; Mon, 01 Sep 2025 23:26:11 AEST
 Received: from flow-b2-smtp.messagingengine.com (flow-b2-smtp.messagingengine.com [202.12.124.137])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cFqQC3zH2z2yt0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Sep 2025 23:26:11 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cFqXg2dCcz2yx8
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Sep 2025 23:31:47 +1000 (AEST)
 Received: from phl-compute-05.internal (phl-compute-05.internal [10.202.2.45])
-	by mailflow.stl.internal (Postfix) with ESMTP id A6FC21300863;
-	Mon,  1 Sep 2025 09:19:56 -0400 (EDT)
+	by mailflow.stl.internal (Postfix) with ESMTP id 5D0C61300A65;
+	Mon,  1 Sep 2025 09:31:43 -0400 (EDT)
 Received: from phl-imap-02 ([10.202.2.81])
-  by phl-compute-05.internal (MEProxy); Mon, 01 Sep 2025 09:19:57 -0400
+  by phl-compute-05.internal (MEProxy); Mon, 01 Sep 2025 09:31:44 -0400
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
 	:cc:content-transfer-encoding:content-type:content-type:date
 	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm3; t=1756732796;
-	 x=1756739996; bh=Mw8Cn4/OCWn4lPhhW5QgwqsK4SmxabwHi0TRYO6VF1s=; b=
-	tLTVNY7szoigfD1bdhldSITh7Kox+Ycn17T1yGQFuN7jiGG9Sp2E3OoIEgt4BlYR
-	rNhkEYaaTwW9AY8m/x59u8SKCEV8qlVaBwXQvzGnzQoPzBL4TjVy5CdpcL+u+JqB
-	KmJ3jHWtf+GNS20ntReqncPg5QMylzMw0aOyUz8qs6cq7e90TqtTjq8VaJiUu84j
-	0Hbrt3spucncVfrk667VYr7pw5WfvWM/7x1uij9C9tbA0VlIJi04Xfi/PwUtHZjH
-	tp2QLWr1i5c0AXIenHSE0ClgWTuzdKOBvYNRbC8MWhIAWUeC6kCgPRh8m9F4uMyi
-	KzWTcNLbW1JaPQ2Aw11NKg==
+	:references:reply-to:subject:subject:to:to; s=fm3; t=1756733503;
+	 x=1756740703; bh=Eznu89d4Wi9DxarExeHtKpzVjwvcq68i7OTy3S868gA=; b=
+	j6cv+uWEmN4tRp4L+tzI/9Zq6plmAiANvC3bo2w95zYsUC+H+2erTLZ0M6N7rnUE
+	0WJqmOlYYzOb6wa1b0ygTdG8BC5pYAWdzw2aqVPy+8gMQw3BlT0hWNGrjJ5655BK
+	jDWe+Joso3PW8J2CnKz3MeMzgwGqXtpLwj39pSqXUuiPUDezRBK0v5/xoU+sFox3
+	GWlZUV/LVedziW2nrloxdmm+vcN5X4cO58hdosyWO1W7tMLZTaRBkEP/5cheXfwp
+	+K5jjBJhDLT22wliXgMPdBEhiHMG/Km2fCAWR75bU4MZMr7W2ppn+8l8thXubf8x
+	H1W/5LtJ+sW5tj5YEJdOHw==
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
 	messagingengine.com; h=cc:cc:content-transfer-encoding
 	:content-type:content-type:date:date:feedback-id:feedback-id
 	:from:from:in-reply-to:in-reply-to:message-id:mime-version
 	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1756732796; x=
-	1756739996; bh=Mw8Cn4/OCWn4lPhhW5QgwqsK4SmxabwHi0TRYO6VF1s=; b=I
-	zqfGdUJTZYsd9+VQGEkI1q4f285SfJOyQUijCL8E0cG2BY7oScLcaHaB4U4dSd6C
-	amMI/0oCv9Bb0UfFnGfGYioT9dMJyeughesxg0Wy1rdEh8SQOGdyCUffECW6u3Ik
-	7Yt199ahGI90eOSQbbYW4SeXGJc3EXxwFehYo9jcgKLtOkWvo9SKPtZekLd+KcYs
-	Z/Fffj6kergS+JKtkBMxaKu8MQZtZradNzWqlU+a2WBOqFRrht0dAWPgSu3etycz
-	k7O/f+D6scJuUcbaLBYenYfBxURlHHBUlfglvq526uItPCjL8pAUcIHJOR7e07hM
-	zb1rPxkwOSlF3dLiDllTQ==
-X-ME-Sender: <xms:d521aOf13Zr5ThFIjcbvwdTTV2pPmE198UZ83DSiYsB0vWHFjqexWQ>
-    <xme:d521aINZWaZx6d4hdtzCY3ReTpNDHMXU4y76p-zL9tbADaAIKToEoWjoFLEFK0nJN
-    uZjL5twG3OOu4Cx9a0>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdefgdduledvvdeiucetufdoteggodetrf
+	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1756733503; x=
+	1756740703; bh=Eznu89d4Wi9DxarExeHtKpzVjwvcq68i7OTy3S868gA=; b=D
+	SMSTkhz+YqIgiIvkfFhIfiL/7qZcqhBI4oCB9ZKy/r9OlCO0VYO0928G7HzW3t1X
+	R5CRMBk05X1v8XiPu0gU8Dsn6nFpXoqjPCqceWub8u0XqW6tCJ1OP7wG35dQCrI7
+	aSnljlc2n08wq1OFKrRVZX0kwVGoKguuQ/7/Dcw10oaWILbODGBPN66UY2hV+Hsl
+	Pxzc3wqxsF+FDOrc6yCoojuU69bPtOK3gY/ELK/7yp9zj2ym+EvtTx/qYimHAc9i
+	BoY9nsK3bIOPmDgoDjHr1nj4App+jYB2XmiH3LFMvgce7UfNmWvVI5wf8Kk3A7Gi
+	iHW0WInKpkLoSLGn621+A==
+X-ME-Sender: <xms:PKC1aIcONhsW8pFWOV14Sq7PTSfGUzdsPiv1pf9lSeQIoeQuUROA1Q>
+    <xme:PKC1aKOVe-VGCwHjIr1-HCUTyP2eI6IVsjiZwzoJs8XrW5uMtrI3FpSZ6Dsf67EKk
+    UVTmDVgbd78EjylEJU>
+X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdefgdduledvvdekucetufdoteggodetrf
     dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
     rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
     gurhepofggfffhvfevkfgjfhfutgfgsehtjeertdertddtnecuhfhrohhmpedftehrnhgu
@@ -79,14 +78,14 @@ X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdefgdduledvvdeiucetufdote
     htthhotheslhhinhgrrhhordhorhhgpdhrtghpthhtoheprghnnhgrqdhmrghrihgrsehl
     ihhnuhhtrhhonhhigidruggvpdhrtghpthhtohepthhglhigsehlihhnuhhtrhhonhhigi
     druggv
-X-ME-Proxy: <xmx:d521aFWUjfBNEEbfvfRsOXSgs_xr9RfZnAPjyB2Gss4aiPQVe79b8A>
-    <xmx:d521aOB9sbKqEptN3OSwQ4xRQk_xYmG1ZydhuFGxz43PvXYNa2Ks1g>
-    <xmx:d521aHACv2QrtY793xhqmmRyjqkD5ZVdMHOozOYGDyCY3vyLPOZbWQ>
-    <xmx:d521aMbQNOQ3kj5F7xBftwDq3uTM_HtOBAYus1Iszp-XmI0rzGHioA>
-    <xmx:fJ21aLW9J1hdKeVm-quvjTtf5v_yEVzzCp7GK-rbIpJMpKdzZjrbFv0P>
+X-ME-Proxy: <xmx:PKC1aPW1RGYxcaPPwQB08we1CrOb0vWdovfn6r5qNGsSUnTRNoysJw>
+    <xmx:PKC1aACPYBlQb5Uv6Ak1zXW3vbtk9zPb7jxSCaujwkmIdsz7VISSsA>
+    <xmx:PKC1aBANLPAWF_L6c2MK_OSvCPKCWVpa-XxY8Gz3G2h9a5ymRg7i6Q>
+    <xmx:PKC1aOYWrsQphouZ9KK0mtpQNLo0VBdm9yK6cb4vr0A_2uyW7_Wa4w>
+    <xmx:P6C1aLu2umbwmZJroLvt1vyRUndw9ctOMRaDydbyr815g78VacSqp4S2>
 Feedback-ID: i56a14606:Fastmail
 Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 76793700065; Mon,  1 Sep 2025 09:19:51 -0400 (EDT)
+	id 68A5D700068; Mon,  1 Sep 2025 09:31:40 -0400 (EDT)
 X-Mailer: MessagingEngine.com Webmail Interface
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -101,8 +100,8 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: AngmsHLdt4H3
-Date: Mon, 01 Sep 2025 15:19:31 +0200
+X-ThreadId: A1XJ5FccVF4B
+Date: Mon, 01 Sep 2025 15:30:20 +0200
 From: "Arnd Bergmann" <arnd@arndb.de>
 To: "schuster.simon@siemens-energy.com" <schuster.simon@siemens-energy.com>,
  "Dinh Nguyen" <dinguyen@kernel.org>,
@@ -199,29 +198,36 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  "linux-openrisc@vger.kernel.org" <linux-openrisc@vger.kernel.org>,
  linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-um@lists.infradead.org,
- stable@vger.kernel.org
-Message-Id: <13f8ca46-92f0-47bb-a046-165402122a44@app.fastmail.com>
+ sparclinux@vger.kernel.org, linux-um@lists.infradead.org
+Message-Id: <78ca3a1f-2ed9-4450-95ef-d690cf4aace1@app.fastmail.com>
 In-Reply-To: 
- <20250901-nios2-implement-clone3-v2-1-53fcf5577d57@siemens-energy.com>
+ <20250901-nios2-implement-clone3-v2-3-53fcf5577d57@siemens-energy.com>
 References: 
  <20250901-nios2-implement-clone3-v2-0-53fcf5577d57@siemens-energy.com>
- <20250901-nios2-implement-clone3-v2-1-53fcf5577d57@siemens-energy.com>
-Subject: Re: [PATCH v2 1/4] copy_sighand: Handle architectures where sizeof(unsigned
- long) < sizeof(u64)
+ <20250901-nios2-implement-clone3-v2-3-53fcf5577d57@siemens-energy.com>
+Subject: Re: [PATCH v2 3/4] arch: copy_thread: pass clone_flags as u64
 Content-Type: text/plain
 Content-Transfer-Encoding: 7bit
 
 On Mon, Sep 1, 2025, at 15:09, Simon Schuster via B4 Relay wrote:
-
-> This commit fixes the bug by always passing clone_flags to copy_sighand
-> via their declared u64 type, invariant of architecture-dependent integer
-> sizes.
+> From: Simon Schuster <schuster.simon@siemens-energy.com>
 >
-> Fixes: b612e5df4587 ("clone3: add CLONE_CLEAR_SIGHAND")
-> Cc: stable@vger.kernel.org # linux-5.5+
+> With the introduction of clone3 in commit 7f192e3cd316 ("fork: add
+> clone3") the effective bit width of clone_flags on all architectures was
+> increased from 32-bit to 64-bit, with a new type of u64 for the flags.
+> However, for most consumers of clone_flags the interface was not
+> changed from the previous type of unsigned long.
+>
+> While this works fine as long as none of the new 64-bit flag bits
+> (CLONE_CLEAR_SIGHAND and CLONE_INTO_CGROUP) are evaluated, this is still
+> undesirable in terms of the principle of least surprise.
+>
+> Thus, this commit fixes all relevant interfaces of the copy_thread
+> function that is called from copy_process to consistently pass
+> clone_flags as u64, so that no truncation to 32-bit integers occurs on
+> 32-bit architectures.
+>
 > Signed-off-by: Simon Schuster <schuster.simon@siemens-energy.com>
-> Reviewed-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
 
 Reviewed-by: Arnd Bergmann <arnd@arndb.de>
 
