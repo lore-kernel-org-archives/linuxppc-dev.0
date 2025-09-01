@@ -1,97 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-11573-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11574-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9450FCA1002
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 13:38:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF721CA1006
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  1 Sep 2025 13:39:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cFqht1ZCnz2ywh;
-	Mon,  1 Sep 2025 23:38:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756733934;
-	cv=none; b=WQYSAuJZ+lAxFKnB2PJOjbo7eImqCbnFm6zqrF4Z8f5pVf/1tMS2/CguV+rL21kbPpo3foZNv1MvmA7IPALd6C0U5VqEe1mk9rtOaT1lqknud0mwsfLIbXYzI1yGSGy4SU4MTlr9by0o76Wu7aYVGAgA2V+xUIMsezOtAbQMVKyHmpT7t2ElLRoMFllg/xTDytLeTjWMTolhfUYx8kiuCZZKFDSHKWhruS9D4+XcQXsea5U3Xdog6NCGqbTpjD+Ka25Dw/w6lqa4fzdmukB5eHBl1ws4OFzO0btuSYGakXZWfUiDqzMDctgIJiJxX4WGo8KEjxkME5teP/ri8oT7SQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cFqk13X4nz2ywC;
+	Mon,  1 Sep 2025 23:39:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756733993;
+	cv=none; b=QaiOOWYcPMPvfhMuoWXWgdZkJbiFLr7CZ7d1Pg6vr+70A+PKbWguD8oqHGvdSTra5bJ4QzD+bYvIuyjzYkzjXwwu/GlemYk7H6r9Lz/4EWAVk91vQiKiNd1ooAp+PLTBWLvrA57EPYj7blozQh2LEnieaI2ukpc7LV8btjYBy/iwmjZzHwky04hQ66gMY24Hwr8LrvLgVc9FzcBff1yTXu3gCb+Ve8Nvcl1Qm3W4v5sL59Ze3WGTMVTpTqMLhwZU4ox0wfOGukfei39tM4RZiK2GUGIsY8VBMbLSbE+j2nZ4NbTMzXMLYh3Kh/KQEmF5ZREGxhpE1/mytzfWHkgsDQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756733934; c=relaxed/relaxed;
-	bh=WYwpi82W7VIihj8uBfuL+qMQaHX4FplKNy0RIRsXcCU=;
+	t=1756733993; c=relaxed/relaxed;
+	bh=H3id/gOofLyuF/iZzklWJhNUkAhzxEH18RZFHORTa7Q=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=nfU98iOfL5jf5nQ/iHDtZ3ChPBa/7ptXq781qwN/rLS2OPL1Wl/afOaaL8ajf+mpW3B2N6GfJYJ/iGGN0Atj6saGTkdfXUpW0K0SNR2D1CLZUisugjcT+YHye1ImPX4JPlmgLx5R+2YCCmCWjituxrATGYUPXh51OGNIzbfQIyUAb+jnVyi5Hw81cYcMqetLIa6IX6fpXrLK9Wz8cCGjoq4Fbym7WnK7+Dq2pPYLTAtYfzgr/GRAfd6LDTBCweOViUDaNWJ09aPN0scROTxEDW1GyOQw+f0RrUNJqc+ttZaaFh56sEFPvv7t3ae/gdccIXMXZ0clEEGZCdHivifGAA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YRG/ThSg; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ak46Uone; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+	 In-Reply-To:Content-Type; b=mP4gwzU4KOYBBgoP3XFPc+Us5ynOzNVrnxUKfe+qMweJ75AXiUXCfm3C2lQbmV776jjyPVHAmTIDoKiKphSQSKFzm+9tSsHaoH30Khh0jv/PeycSoMvFmX+etN+wnM5Kwtrm7PO1bRag08d/YDdigYMgnTeXiX2Nm5HOIDLzfVIWDDV1hPW8uPdQ5JnBZfpLJPiAjAI1bykCBNgfdVC5o0Uz7aFBDqdWwFVsvf95/ZkRFc21ePFaqHqR0VEXob/BgjdU2OB1eY90Mg/ZC4W6UGgVVNn0rdgz8NWKINikJWjm1W+DwaBLVz3QtKo9DMrkM9muKUU4iq2c+M6t3UCHRg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OhIIMhDh; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=S5nrA4z3; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=YRG/ThSg;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ak46Uone;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=OhIIMhDh;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=S5nrA4z3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cFqhs2fRLz2ywC
-	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Sep 2025 23:38:52 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cFqk03XP3z2xC3
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  1 Sep 2025 23:39:52 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1756733928;
+	s=mimecast20190719; t=1756733989;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=WYwpi82W7VIihj8uBfuL+qMQaHX4FplKNy0RIRsXcCU=;
-	b=YRG/ThSg+vf5ZEJ0hj2j8TYCJ4er4FkTLnR1/gq83+s3TxcBZqDhnQySUgR9xO7vhHDhmn
-	AbEZAOz+jBQGdZPcNm63wz97VnaIYBcnnpqiseo6iNrP2L37bjQm+cU2EoXTCjAktb+2t8
-	l5LNVEYzkIPyOgP7qjr6/Xdz8/W0Js4=
+	bh=H3id/gOofLyuF/iZzklWJhNUkAhzxEH18RZFHORTa7Q=;
+	b=OhIIMhDhN0R9e+Qpi4e5rhyVhRYRQcc0i7MzxZ/PzPpDCXrV7EI5Z5wzzXSVR1a9nxXWYI
+	lW28PCavEN3yDNWWrdQP/UTU9w/PhTXyBCXOrWLH4r2KlgMvNUSyTEfmbAPZI6A0fBESuY
+	s/lWoMCFvoP13WdsDtmRy64Dg72jUWU=
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1756733929;
+	s=mimecast20190719; t=1756733990;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=WYwpi82W7VIihj8uBfuL+qMQaHX4FplKNy0RIRsXcCU=;
-	b=Ak46UonehMniajiTrRMr6wCXxaH61dDahe/bdZBz+kZ9v7Of+5h2gWW8tsR77s8+GkY7m/
-	hsY9BWVh9EzwO3+Qbclt8eHnoDvlL7mv88QAXrkKuTPVAV3qBLntjBv7lnQM8Oemw+b7kK
-	MmOL0IhEV1NTTJxQOuREdyAexfOFw/Q=
-Received: from mail-wr1-f70.google.com (mail-wr1-f70.google.com
- [209.85.221.70]) by relay.mimecast.com with ESMTP with STARTTLS
+	bh=H3id/gOofLyuF/iZzklWJhNUkAhzxEH18RZFHORTa7Q=;
+	b=S5nrA4z35c09AVrVMVEYu9HROB7xDPqxipPRCtLU2RLNkXz+1KIXCCKshj3n0TwBOxomej
+	D+kkFksgwX8R/ca4sDAxtdTsMPIRuvMS+6d4M2vR9CZ7nrghls21sF2uj/FrusTg4CHEMb
+	NQcpCfyya+y1t0mWbjeTAvoAptPX9DI=
+Received: from mail-wr1-f71.google.com (mail-wr1-f71.google.com
+ [209.85.221.71]) by relay.mimecast.com with ESMTP with STARTTLS
  (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-640-aSbeuOZGOrKCeoYEMdlZWQ-1; Mon, 01 Sep 2025 09:38:47 -0400
-X-MC-Unique: aSbeuOZGOrKCeoYEMdlZWQ-1
-X-Mimecast-MFC-AGG-ID: aSbeuOZGOrKCeoYEMdlZWQ_1756733926
-Received: by mail-wr1-f70.google.com with SMTP id ffacd0b85a97d-3cceb92ea73so2518216f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Sep 2025 06:38:47 -0700 (PDT)
+ us-mta-589-1ndKqgSgNdKhShIibHR3TQ-1; Mon, 01 Sep 2025 09:39:48 -0400
+X-MC-Unique: 1ndKqgSgNdKhShIibHR3TQ-1
+X-Mimecast-MFC-AGG-ID: 1ndKqgSgNdKhShIibHR3TQ_1756733987
+Received: by mail-wr1-f71.google.com with SMTP id ffacd0b85a97d-3ce7f782622so1854674f8f.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 01 Sep 2025 06:39:48 -0700 (PDT)
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756733926; x=1757338726;
+        d=1e100.net; s=20230601; t=1756733987; x=1757338787;
         h=content-transfer-encoding:in-reply-to:autocrypt:content-language
          :from:references:cc:to:subject:user-agent:mime-version:date
          :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=WYwpi82W7VIihj8uBfuL+qMQaHX4FplKNy0RIRsXcCU=;
-        b=oNDmvrpKw3pXJ3SqPbqxMmq/xuy/UqjIzqgRBMTBiJa3Ub2NkIAd0lNhFuCJKpxGnF
-         YnUCgQDr91Ij+P1YtmivLY0d9affJRJQLytdBGFUcUmj/qN0iaLoaDVsps+FJHWZB9Va
-         CFewyD/+Me+hf67V+2SfM7IZa8PonXyhR90/RfEGflJFZHGTwoh5yGgUIiBOknDRXrT/
-         ek0wIeU2kkF6ep9PoqJpKo+EwMLHpH1+VovdtuLBEfM8urxbSGNubyVC0V4xI3Gd5JpA
-         OYcR9mj8l6D1Nx+HAbgYRHZbb0A/nrs0izxFKnU5cIMas/1VgHnbSgjp8junkh1PSSxg
-         M3YA==
-X-Forwarded-Encrypted: i=1; AJvYcCWQXg0/eCjkV1MCUWGN/lUSEa76kB2jmZKWtaSyOYo26fUfGCkW1ABudlMlJ5sJ6ZGklu9JKVhwmyicIvQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxXiSuUo56NCcBwjunSgdxYT68PqKaHFzeXfdRnUm68xnHe2APg
-	9cbacGi1Ul4In2kehLtKf8KjVdJgJtqReU6kP0aI5xOXLbfYaz4cOsFi4pzQX8VqHbVOXBl+KWB
-	wEK8KY+Z7TWYsyok51dntnqLBqWMqsQu4mvl4RfGIP2YFV7iebHqdGgXWrhzZSLDFohM=
-X-Gm-Gg: ASbGnctq1P+fiLmHuta9UvR8WL0IPh7W8/NzJ0EAq+zjJH0hn2bVdwq9UcAsiCB6L0Y
-	atuxt22iU5hI2MH1MBw0563FN8Kw8zxZY0UQF2I4JcVxfYGOUaCKZAXHxs03DWuexpU/neoAgDY
-	mDTpLiJKslYFmEs/whfsWFiXIKMTUvGg4bSXWW2uKTnyOXz3EOcm1A5QJRaBdijbqGSD9sYzWBS
-	RS3SAQfqODTv+MSbOwwjunOrQ9K2bYOT9zlTes62Uf0gelMSdXTnDI2idJOn7Hp/rY8nOxlDyKR
-	MlVSV5b+oZQQA33l7RDmF5HKmWrz6l6y98Hj53P9NwBW2VzBU1NwlkPTHRK9FRlmdkVecN4E4wB
-	gipQ4q8VqtRDZqMsX/R/F4m0vRg48r2JptNickNODnkBGcGp8TWg9OV+YiKBZ6QWVeq4=
-X-Received: by 2002:a05:6000:2102:b0:3d3:8711:d934 with SMTP id ffacd0b85a97d-3d38711dcc7mr3315100f8f.14.1756733925975;
-        Mon, 01 Sep 2025 06:38:45 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IF3DliMw41VU4hxaIWHMLNG+OBiPKQ08qUXWAlqHFXtcpv953/vrh5P5rTJMXfl1jn2z2RQzw==
-X-Received: by 2002:a05:6000:2102:b0:3d3:8711:d934 with SMTP id ffacd0b85a97d-3d38711dcc7mr3315078f8f.14.1756733925456;
-        Mon, 01 Sep 2025 06:38:45 -0700 (PDT)
+        bh=H3id/gOofLyuF/iZzklWJhNUkAhzxEH18RZFHORTa7Q=;
+        b=g5VN3Zq2rJrTrCI7gIHQogQd1eNHBLFvTJZLkIBpqdMHpC9vmtEa69L6C4h35SjUYQ
+         TGP+gbM3SqPXjGOPwl3gMez+7KVb/1BcIMlripaLXHL1vzagrxKuKMKQlIhogZXjqLGL
+         o7qebdIi74BB67bRI6ca+Qg3W8iRSWrTuP5rjSdhfETRYCMbZDJXVtMicZ2cYK+2KwLQ
+         BApRcI86ETfciuPLPp9Mayg5Bv1LKOhIX3Wljz+fY1n/xzjbeL0iw1x6QusEbgLL5HhM
+         2cZ3YBb2pQNEKjSWMFa0TQbKzDUHwBw+fXf4qTK9/owTKBkwv+GFjODEwDWs7H2Ieyq9
+         WiaQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVh62VZgRf2mrcGgvEkSqCbRCmMogFaEy4hZpyZVsU7sx/rwU8+QwglDhyxmjEktyG4vjCAUpFVDI7Vp4M=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwC/S2+kBtGZl4iaGqXpuqfanXxYJiDGOVfydQ6dFCIc0uJsw8d
+	ZQODqluGXJIjVfi+aPPBprA72MsIUJv/+0fdLisZSdmtymNRI/cLwIBmkWw1itf/ebLnkxcfmti
+	fHefz8JxTzj7MwwkSfRnlf7ejsA5Pnf2+6m5+09ihPSMnAqmQ9zcsGJBHAYIXTfBrUZY=
+X-Gm-Gg: ASbGnctNPMV4giB4upyezk/LC5bY+7SDHeyyx9B+34zak3CARuqBi9ydmcuxwMUGwcc
+	+AKzCMUHVrltIukRJNAQfGjlK9+4ssP8rqETjfCQHCvVNwcnDiQ9RGtjMIEa27RD7iYbhLSo0zH
+	rX9Qz+/asYNtlrpgCic5M9GanwWdO6lTp9xJ4mEV6RYddSOLuNCtrZyShPVDDmQ+nB55i8UhUD1
+	HZBdILu03g6hpdi+dveddC7SZC99EfASxuhNywnpUTC1peIwWEjy0leEyE4L2NVYUUFkZCzvcUN
+	p7RoRyFJBiAUTSKznD10ZD4Qmyvz2sWj1llpn+L+th6WqzLeXKu4HjP6UG2VtVNzR0D99IDU0zx
+	oO50CVxfliO/waMy+vQWk4AnnT7z5GWZv4pph2XYhoXtQ2b68WEpVJutRdQHbKaduG4E=
+X-Received: by 2002:a05:6000:659:10b0:3d2:633f:d02e with SMTP id ffacd0b85a97d-3d2634f1711mr4945709f8f.2.1756733987313;
+        Mon, 01 Sep 2025 06:39:47 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IF16bYB/CPbtI8bBu7Fukc9/QEkuztuZV5dc0Mxq3hfWjQ0mUxmJtka4Y09bvawf1aVKd4/5g==
+X-Received: by 2002:a05:6000:659:10b0:3d2:633f:d02e with SMTP id ffacd0b85a97d-3d2634f1711mr4945678f8f.2.1756733986750;
+        Mon, 01 Sep 2025 06:39:46 -0700 (PDT)
 Received: from ?IPV6:2003:d8:2f37:2b00:948c:dd9f:29c8:73f4? (p200300d82f372b00948cdd9f29c873f4.dip0.t-ipconnect.de. [2003:d8:2f37:2b00:948c:dd9f:29c8:73f4])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3d21a80c723sm10359081f8f.9.2025.09.01.06.38.43
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-45b6f0c6fe5sm238421945e9.5.2025.09.01.06.39.45
         (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 01 Sep 2025 06:38:45 -0700 (PDT)
-Message-ID: <48ee3dd0-9af3-4513-aef2-25e185cce349@redhat.com>
-Date: Mon, 1 Sep 2025 15:38:42 +0200
+        Mon, 01 Sep 2025 06:39:46 -0700 (PDT)
+Message-ID: <72558e21-2ebf-448a-a93a-3d1a3181a592@redhat.com>
+Date: Mon, 1 Sep 2025 15:39:44 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,8 +106,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/4] copy_process: pass clone_flags as u64 across
- calltree
+Subject: Re: [PATCH v2 3/4] arch: copy_thread: pass clone_flags as u64
 To: schuster.simon@siemens-energy.com, Dinh Nguyen <dinguyen@kernel.org>,
  Christian Brauner <brauner@kernel.org>, Arnd Bergmann <arnd@arndb.de>,
  Andrew Morton <akpm@linux-foundation.org>,
@@ -129,7 +128,7 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
  linux-sh@vger.kernel.org, sparclinux@vger.kernel.org,
  linux-um@lists.infradead.org
 References: <20250901-nios2-implement-clone3-v2-0-53fcf5577d57@siemens-energy.com>
- <20250901-nios2-implement-clone3-v2-2-53fcf5577d57@siemens-energy.com>
+ <20250901-nios2-implement-clone3-v2-3-53fcf5577d57@siemens-energy.com>
 From: David Hildenbrand <david@redhat.com>
 Autocrypt: addr=david@redhat.com; keydata=
  xsFNBFXLn5EBEAC+zYvAFJxCBY9Tr1xZgcESmxVNI/0ffzE/ZQOiHJl6mGkmA1R7/uUpiCjJ
@@ -175,9 +174,9 @@ Autocrypt: addr=david@redhat.com; keydata=
  3iyY2Nsd7JxfKu1PRhCGwXzRw5TlfEsoRI7V9A8isUCoqE2Dzh3FvYHVeX4Us+bRL/oqareJ
  CIFqgYMyvHj7Q06kTKmauOe4Nf0l0qEkIuIzfoLJ3qr5UyXc2hLtWyT9Ir+lYlX9efqh7mOY
  qIws/H2t
-In-Reply-To: <20250901-nios2-implement-clone3-v2-2-53fcf5577d57@siemens-energy.com>
+In-Reply-To: <20250901-nios2-implement-clone3-v2-3-53fcf5577d57@siemens-energy.com>
 X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: h0sPi9dQYsHmjjVkcWDYRZJfrqcJ-NgIz7mCPFLy4YQ_1756733926
+X-Mimecast-MFC-PROC-ID: _clOk4ISmGehOu5HU60NyNqp6oYUkLRqa1OqyUaVCrU_1756733987
 X-Mimecast-Originator: redhat.com
 Content-Language: en-US
 Content-Type: text/plain; charset=UTF-8; format=flowed
@@ -196,65 +195,43 @@ On 01.09.25 15:09, Simon Schuster via B4 Relay wrote:
 > (CLONE_CLEAR_SIGHAND and CLONE_INTO_CGROUP) are evaluated, this is still
 > undesirable in terms of the principle of least surprise.
 > 
-> Thus, this commit fixes all relevant interfaces of callees to
-> sys_clone3/copy_process (excluding the architecture-specific
-> copy_thread) to consistently pass clone_flags as u64, so that
-> no truncation to 32-bit integers occurs on 32-bit architectures.
+> Thus, this commit fixes all relevant interfaces of the copy_thread
+> function that is called from copy_process to consistently pass
+> clone_flags as u64, so that no truncation to 32-bit integers occurs on
+> 32-bit architectures.
 > 
 > Signed-off-by: Simon Schuster <schuster.simon@siemens-energy.com>
-> Reviewed-by: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
 > ---
->   block/blk-ioc.c                | 2 +-
->   fs/namespace.c                 | 2 +-
->   include/linux/cgroup.h         | 4 ++--
->   include/linux/cred.h           | 2 +-
->   include/linux/iocontext.h      | 6 +++---
->   include/linux/ipc_namespace.h  | 4 ++--
->   include/linux/lsm_hook_defs.h  | 2 +-
->   include/linux/mnt_namespace.h  | 2 +-
->   include/linux/nsproxy.h        | 2 +-
->   include/linux/pid_namespace.h  | 4 ++--
->   include/linux/rseq.h           | 4 ++--
->   include/linux/sched/task.h     | 2 +-
->   include/linux/security.h       | 4 ++--
->   include/linux/sem.h            | 4 ++--
->   include/linux/time_namespace.h | 4 ++--
->   include/linux/uprobes.h        | 4 ++--
->   include/linux/user_events.h    | 4 ++--
->   include/linux/utsname.h        | 4 ++--
->   include/net/net_namespace.h    | 4 ++--
->   include/trace/events/task.h    | 6 +++---
->   ipc/namespace.c                | 2 +-
->   ipc/sem.c                      | 2 +-
->   kernel/cgroup/namespace.c      | 2 +-
->   kernel/cred.c                  | 2 +-
->   kernel/events/uprobes.c        | 2 +-
->   kernel/fork.c                  | 8 ++++----
->   kernel/nsproxy.c               | 4 ++--
->   kernel/pid_namespace.c         | 2 +-
->   kernel/sched/core.c            | 4 ++--
->   kernel/sched/fair.c            | 2 +-
->   kernel/sched/sched.h           | 4 ++--
->   kernel/time/namespace.c        | 2 +-
->   kernel/utsname.c               | 2 +-
->   net/core/net_namespace.c       | 2 +-
->   security/apparmor/lsm.c        | 2 +-
->   security/security.c            | 2 +-
->   security/selinux/hooks.c       | 2 +-
->   security/tomoyo/tomoyo.c       | 2 +-
->   38 files changed, 59 insertions(+), 59 deletions(-)
+>   arch/alpha/kernel/process.c      | 2 +-
+>   arch/arc/kernel/process.c        | 2 +-
+>   arch/arm/kernel/process.c        | 2 +-
+>   arch/arm64/kernel/process.c      | 2 +-
+>   arch/csky/kernel/process.c       | 2 +-
+>   arch/hexagon/kernel/process.c    | 2 +-
+>   arch/loongarch/kernel/process.c  | 2 +-
+>   arch/m68k/kernel/process.c       | 2 +-
+>   arch/microblaze/kernel/process.c | 2 +-
+>   arch/mips/kernel/process.c       | 2 +-
+>   arch/nios2/kernel/process.c      | 2 +-
+>   arch/openrisc/kernel/process.c   | 2 +-
+>   arch/parisc/kernel/process.c     | 2 +-
+>   arch/powerpc/kernel/process.c    | 2 +-
+>   arch/riscv/kernel/process.c      | 2 +-
+>   arch/s390/kernel/process.c       | 2 +-
+>   arch/sh/kernel/process_32.c      | 2 +-
+>   arch/sparc/kernel/process_32.c   | 2 +-
+>   arch/sparc/kernel/process_64.c   | 2 +-
+>   arch/um/kernel/process.c         | 2 +-
+>   arch/x86/include/asm/fpu/sched.h | 2 +-
+>   arch/x86/include/asm/shstk.h     | 4 ++--
+>   arch/x86/kernel/fpu/core.c       | 2 +-
+>   arch/x86/kernel/process.c        | 2 +-
+>   arch/x86/kernel/shstk.c          | 2 +-
+>   arch/xtensa/kernel/process.c     | 2 +-
+>   26 files changed, 27 insertions(+), 27 deletions(-)
 > 
-> diff --git a/block/blk-ioc.c b/block/blk-ioc.c
-> index 9fda3906e5f5..d15918d7fabb 100644
-> --- a/block/blk-ioc.c
 
-(adjust To: list)
-
-Hopefully we caught most of them. The ones not called "clone_flags" are 
-a bit nasty.
-
-We could have split of some changes (e.g., trace event), but likely not 
-worth  it.
+(Adjust To: list)
 
 Thanks!
 
