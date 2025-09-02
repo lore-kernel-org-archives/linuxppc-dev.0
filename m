@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-11625-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11626-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D25BCCA1005
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Sep 2025 14:49:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17C2CCA0FFE
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Sep 2025 14:49:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cGTCt1df4z30T8;
-	Wed,  3 Sep 2025 00:49:30 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756824570;
-	cv=none; b=PQXyyPjJuixRb756HChgMkjPDTqFkEh9ssMm3sft7UMQhbk8UbkCptScuqr7fJ71ihO27VMjFRZC6n5TNQ7fZOgTuWIcqaY1vVO0EbvIUjJUTY2oKANVUTjUgvU9MRTfHa6jMOkgbzf9uMug9aCvVg3QBWhHuwHf341kbeQIIG5vOXjdtNaHDp3uhIFbvZhODytr4AxWgi4x6NL7BiW2HLqcCS/bF2vhCEZmLt+HPb0VBSyUciDlj+NzDDvE8r52CS81MuPaQfL5EzVYPr6T8BanWZ7j2Yz847z6/hKOUYTl2pVNaqU3J071nU0gFPseVXFyxYqj28zsb5GhBqV0gg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cGTCy2KgCz2yhD;
+	Wed,  3 Sep 2025 00:49:34 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756824574;
+	cv=none; b=hqxKdXT5GhaOhRMAgBsGcoEq6qb80Pru7/VPGe5/5ke5FdelrntImZ/6Vz8fzLOklzrSLSHsfb9dI1IGOsISy2WqCnzfftXrJsSEZp/FD1xtjcfHMYdBYrDudmQpOmfOjqhLWNqUwEYurPWhHQtt8z8jGHLWMe4YVIRTQlSnCo+alb5gmz8+wcjAPt/V3eCvJSsYGRKnUHAIl3kwJZTfhDNdltaeVjqPBwgMRJi57vkDNkzawYzNyUTerV639BDD1SWSdAGwiBhr1GTNZ3N5T9RwVvBexjtU4QdUU4+VddNN6O7nmmG4qFTakDlw7dkdlZQ9jErRfH+lBAU07yprcw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756824570; c=relaxed/relaxed;
-	bh=c3g1lMNzmhoxt7IeBcgSIV29OAcSm7jebsMcZqg087g=;
+	t=1756824574; c=relaxed/relaxed;
+	bh=FQapdzLEWvib4wee/iBeh13SXG3LZXCh6iREE8hdeBg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cNk+0hvGHzItw0b5Gu8PT6gF2kvto5zXQRuN1R8yOB7lccBswiu94Cqh9CrUvkimKCkIF/RnVp/54ZG6oxwZmbFXFrXwuNB1jKU3P7G06g8JpLtmlccd6sd3HyhiQFXzcfS3KwnQ8KrBH17vcXzTEZDO6iqNzgxpNfRNjIhM4DxKOqPIp12QWopndtq89fVZMYL+K3D1Uf+DivF/i/t8GYaR2unNyckNybXY9RdUfQaQe0wMMAi1HEKb1f4HMp/gaYzC5EL1+8UxVksNruD0Dc6F6zGTE33OaeMIKfLF74cFvQwQ93nqlPU4dUi9jUQjzFA/vv1y3XnhzIboofc4iQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=i1626xjV; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=J5BZnHOXn6BDNQ9pxL/cc3L50O6Udb+F1JEP3KjM+F5GyhGRNEl8mvBaj2gzxCBNVaeV0Zp79NZVM8/AUFE00meEUAAOvyPaST2N21c8B1isixped0XQrBiWRf21DNdngReqJSbzVz/HUwr+xd6j8RQkOND71iV0qPDL3DEgkvf8oqfjQW5DYTozezzfAj13AZoA9aW60fjIFtMekKFDiJJ55m6JURME2SiLbW4hVWfEqAc3ScsD8eR1SFHGWwvjzlNUAqJIWgezkjOTGi78JjaXj1du1q851/KEE2+cCJnk2ngLwnxXMaCHa/+4GjFdPNwuERa/+uA/QqYFHIxOQQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=agxG7jxN; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=i1626xjV;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=agxG7jxN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cGTCs327Yz30TL
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2025 00:49:29 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cGTCx4MtYz30TG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2025 00:49:33 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 7F0616021C;
-	Tue,  2 Sep 2025 14:49:27 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 61C06C4CEED;
-	Tue,  2 Sep 2025 14:49:26 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 0C51C41994;
+	Tue,  2 Sep 2025 14:49:32 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A196C4CEED;
+	Tue,  2 Sep 2025 14:49:30 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756824567;
-	bh=uH7MCAz6dsaq9sct7ho6H+zYeVokmgR17T1ZOZaSB5I=;
+	s=k20201202; t=1756824571;
+	bh=H1qNdYxU1ovtF/Kf8Q7B45B32+Se6GftrqzmrTG8Akc=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=i1626xjVt6rHPzjustWTh89OBItu5qQ/mpVf7G/FH1ewKFbLrncF9oXFg1ZN+Aa6Z
-	 D/OqGkivSxO+Wp/kh3rml8ZUgNX1VybO2kl7i0RlTjM7W98E8gxeBLn9vDdbpI60Lx
-	 sX5XKNZ4y3/vbcAN8Mp1j7NkZJc6hy3Rc9S1pcheGm8yN0vIstlHnUbc6dvYARbx/P
-	 YcXonxterBEeyDHNgUd8PWvIyyAGyIM67qT/YT7M9W+8Rgi4I3FHqD/9KIyjajW2Jj
-	 aLwXwchnsh4pPdnWnxqKHsXxeTVFAYi1AAfai0l1Mv/GgMBiSP0uTjG/NGvHxE1yxM
-	 CcCWiInzqH5Jw==
+	b=agxG7jxNimedr+ehl5VL/FJJfWkaMHUW9N3eCg0O1tgYvMT9NgSaMNfnGfPrLahCh
+	 MRH1C8p1el2Pgvm6wVDXipR3AG8Cd5bz4MqKL18T/Dx8bMePVeLJKWgKIXU/CR7L+H
+	 kCCZ3f3LPrlMrDe3F1UUx75y9f4NLS4LEtQlywCdR4bgQwwX+S6jvPJagcFtGMPE2X
+	 18Vq5j7QMhSuaasP6mIygRbKdmAJPXzruNfGaofMHxh1hw3iiwoIeHGDeEcyX/bdFo
+	 gt5fyWKJRg+d1ClXnnM4W0BdfqF95sxrSjrW7Ew2g0fYmKCUI+NQI0yGYZwDj9TiCH
+	 zcQjLoumK7NAg==
 From: Leon Romanovsky <leon@kernel.org>
 To: Marek Szyprowski <m.szyprowski@samsung.com>
 Cc: Leon Romanovsky <leonro@nvidia.com>,
@@ -83,9 +83,9 @@ Cc: Leon Romanovsky <leonro@nvidia.com>,
 	virtualization@lists.linux.dev,
 	Will Deacon <will@kernel.org>,
 	xen-devel@lists.xenproject.org
-Subject: [PATCH v5 03/16] dma-debug: refactor to use physical addresses for page mapping
-Date: Tue,  2 Sep 2025 17:48:40 +0300
-Message-ID: <ae1df479d6d99ef9053b2772f3da3bf0524491ac.1756822782.git.leon@kernel.org>
+Subject: [PATCH v5 07/16] dma-mapping: convert dma_direct_*map_page to be phys_addr_t based
+Date: Tue,  2 Sep 2025 17:48:44 +0300
+Message-ID: <6b2f4cb436c98d6342db69e965a5621707b9711f.1756822782.git.leon@kernel.org>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <cover.1756822782.git.leon@kernel.org>
 References: <cover.1756822782.git.leon@kernel.org>
@@ -106,274 +106,213 @@ Content-Transfer-Encoding: 8bit
 
 From: Leon Romanovsky <leonro@nvidia.com>
 
-Convert the DMA debug infrastructure from page-based to physical address-based
-mapping as a preparation to rely on physical address for DMA mapping routines.
+Convert the DMA direct mapping functions to accept physical addresses
+directly instead of page+offset parameters. The functions were already
+operating on physical addresses internally, so this change eliminates
+the redundant page-to-physical conversion at the API boundary.
 
-The refactoring renames debug_dma_map_page() to debug_dma_map_phys() and
-changes its signature to accept a phys_addr_t parameter instead of struct page
-and offset. Similarly, debug_dma_unmap_page() becomes debug_dma_unmap_phys().
-A new dma_debug_phy type is introduced to distinguish physical address mappings
-from other debug entry types. All callers throughout the codebase are updated
-to pass physical addresses directly, eliminating the need for page-to-physical
-conversion in the debug layer.
+The functions dma_direct_map_page() and dma_direct_unmap_page() are
+renamed to dma_direct_map_phys() and dma_direct_unmap_phys() respectively,
+with their calling convention changed from (struct page *page,
+unsigned long offset) to (phys_addr_t phys).
 
-This refactoring eliminates the need to convert between page pointers and
-physical addresses in the debug layer, making the code more efficient and
-consistent with the DMA mapping API's physical address focus.
+Architecture-specific functions arch_dma_map_page_direct() and
+arch_dma_unmap_page_direct() are similarly renamed to
+arch_dma_map_phys_direct() and arch_dma_unmap_phys_direct().
+
+The is_pci_p2pdma_page() checks are replaced with DMA_ATTR_MMIO checks
+to allow integration with dma_direct_map_resource and dma_direct_map_phys()
+is extended to support MMIO path either.
 
 Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- Documentation/core-api/dma-api.rst |  4 ++--
- include/linux/page-flags.h         |  1 +
- kernel/dma/debug.c                 | 38 +++++++++++++++++-------------
- kernel/dma/debug.h                 | 16 ++++++-------
- kernel/dma/mapping.c               | 15 ++++++------
- 5 files changed, 39 insertions(+), 35 deletions(-)
+ arch/powerpc/kernel/dma-iommu.c |  4 +--
+ include/linux/dma-map-ops.h     |  8 ++---
+ kernel/dma/direct.c             |  6 ++--
+ kernel/dma/direct.h             | 57 +++++++++++++++++++++------------
+ kernel/dma/mapping.c            |  8 ++---
+ 5 files changed, 49 insertions(+), 34 deletions(-)
 
-diff --git a/Documentation/core-api/dma-api.rst b/Documentation/core-api/dma-api.rst
-index 3087bea715ed..ca75b3541679 100644
---- a/Documentation/core-api/dma-api.rst
-+++ b/Documentation/core-api/dma-api.rst
-@@ -761,7 +761,7 @@ example warning message may look like this::
- 	[<ffffffff80235177>] find_busiest_group+0x207/0x8a0
- 	[<ffffffff8064784f>] _spin_lock_irqsave+0x1f/0x50
- 	[<ffffffff803c7ea3>] check_unmap+0x203/0x490
--	[<ffffffff803c8259>] debug_dma_unmap_page+0x49/0x50
-+	[<ffffffff803c8259>] debug_dma_unmap_phys+0x49/0x50
- 	[<ffffffff80485f26>] nv_tx_done_optimized+0xc6/0x2c0
- 	[<ffffffff80486c13>] nv_nic_irq_optimized+0x73/0x2b0
- 	[<ffffffff8026df84>] handle_IRQ_event+0x34/0x70
-@@ -855,7 +855,7 @@ that a driver may be leaking mappings.
- dma-debug interface debug_dma_mapping_error() to debug drivers that fail
- to check DMA mapping errors on addresses returned by dma_map_single() and
- dma_map_page() interfaces. This interface clears a flag set by
--debug_dma_map_page() to indicate that dma_mapping_error() has been called by
-+debug_dma_map_phys() to indicate that dma_mapping_error() has been called by
- the driver. When driver does unmap, debug_dma_unmap() checks the flag and if
- this flag is still set, prints warning message that includes call trace that
- leads up to the unmap. This interface can be called from dma_mapping_error()
-diff --git a/include/linux/page-flags.h b/include/linux/page-flags.h
-index 8d3fa3a91ce4..dfbc4ba86bba 100644
---- a/include/linux/page-flags.h
-+++ b/include/linux/page-flags.h
-@@ -614,6 +614,7 @@ FOLIO_FLAG(dropbehind, FOLIO_HEAD_PAGE)
-  * available at this point.
-  */
- #define PageHighMem(__p) is_highmem_idx(page_zonenum(__p))
-+#define PhysHighMem(__p) (PageHighMem(phys_to_page(__p)))
- #define folio_test_highmem(__f)	is_highmem_idx(folio_zonenum(__f))
+diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
+index 4d64a5db50f3..0359ab72cd3b 100644
+--- a/arch/powerpc/kernel/dma-iommu.c
++++ b/arch/powerpc/kernel/dma-iommu.c
+@@ -14,7 +14,7 @@
+ #define can_map_direct(dev, addr) \
+ 	((dev)->bus_dma_limit >= phys_to_dma((dev), (addr)))
+ 
+-bool arch_dma_map_page_direct(struct device *dev, phys_addr_t addr)
++bool arch_dma_map_phys_direct(struct device *dev, phys_addr_t addr)
+ {
+ 	if (likely(!dev->bus_dma_limit))
+ 		return false;
+@@ -24,7 +24,7 @@ bool arch_dma_map_page_direct(struct device *dev, phys_addr_t addr)
+ 
+ #define is_direct_handle(dev, h) ((h) >= (dev)->archdata.dma_offset)
+ 
+-bool arch_dma_unmap_page_direct(struct device *dev, dma_addr_t dma_handle)
++bool arch_dma_unmap_phys_direct(struct device *dev, dma_addr_t dma_handle)
+ {
+ 	if (likely(!dev->bus_dma_limit))
+ 		return false;
+diff --git a/include/linux/dma-map-ops.h b/include/linux/dma-map-ops.h
+index f48e5fb88bd5..71f5b3025415 100644
+--- a/include/linux/dma-map-ops.h
++++ b/include/linux/dma-map-ops.h
+@@ -392,15 +392,15 @@ void *arch_dma_set_uncached(void *addr, size_t size);
+ void arch_dma_clear_uncached(void *addr, size_t size);
+ 
+ #ifdef CONFIG_ARCH_HAS_DMA_MAP_DIRECT
+-bool arch_dma_map_page_direct(struct device *dev, phys_addr_t addr);
+-bool arch_dma_unmap_page_direct(struct device *dev, dma_addr_t dma_handle);
++bool arch_dma_map_phys_direct(struct device *dev, phys_addr_t addr);
++bool arch_dma_unmap_phys_direct(struct device *dev, dma_addr_t dma_handle);
+ bool arch_dma_map_sg_direct(struct device *dev, struct scatterlist *sg,
+ 		int nents);
+ bool arch_dma_unmap_sg_direct(struct device *dev, struct scatterlist *sg,
+ 		int nents);
  #else
- PAGEFLAG_FALSE(HighMem, highmem)
-diff --git a/kernel/dma/debug.c b/kernel/dma/debug.c
-index e43c6de2bce4..a0b135455119 100644
---- a/kernel/dma/debug.c
-+++ b/kernel/dma/debug.c
-@@ -39,6 +39,7 @@ enum {
- 	dma_debug_sg,
- 	dma_debug_coherent,
- 	dma_debug_resource,
-+	dma_debug_phy,
- };
- 
- enum map_err_types {
-@@ -141,6 +142,7 @@ static const char *type2name[] = {
- 	[dma_debug_sg] = "scatter-gather",
- 	[dma_debug_coherent] = "coherent",
- 	[dma_debug_resource] = "resource",
-+	[dma_debug_phy] = "phy",
- };
- 
- static const char *dir2name[] = {
-@@ -1051,17 +1053,16 @@ static void check_unmap(struct dma_debug_entry *ref)
- 	dma_entry_free(entry);
+-#define arch_dma_map_page_direct(d, a)		(false)
+-#define arch_dma_unmap_page_direct(d, a)	(false)
++#define arch_dma_map_phys_direct(d, a)		(false)
++#define arch_dma_unmap_phys_direct(d, a)	(false)
+ #define arch_dma_map_sg_direct(d, s, n)		(false)
+ #define arch_dma_unmap_sg_direct(d, s, n)	(false)
+ #endif
+diff --git a/kernel/dma/direct.c b/kernel/dma/direct.c
+index 24c359d9c879..fa75e3070073 100644
+--- a/kernel/dma/direct.c
++++ b/kernel/dma/direct.c
+@@ -453,7 +453,7 @@ void dma_direct_unmap_sg(struct device *dev, struct scatterlist *sgl,
+ 		if (sg_dma_is_bus_address(sg))
+ 			sg_dma_unmark_bus_address(sg);
+ 		else
+-			dma_direct_unmap_page(dev, sg->dma_address,
++			dma_direct_unmap_phys(dev, sg->dma_address,
+ 					      sg_dma_len(sg), dir, attrs);
+ 	}
  }
- 
--static void check_for_stack(struct device *dev,
--			    struct page *page, size_t offset)
-+static void check_for_stack(struct device *dev, phys_addr_t phys)
- {
- 	void *addr;
- 	struct vm_struct *stack_vm_area = task_stack_vm_area(current);
- 
- 	if (!stack_vm_area) {
- 		/* Stack is direct-mapped. */
--		if (PageHighMem(page))
-+		if (PhysHighMem(phys))
- 			return;
--		addr = page_address(page) + offset;
-+		addr = phys_to_virt(phys);
- 		if (object_is_on_stack(addr))
- 			err_printk(dev, NULL, "device driver maps memory from stack [addr=%p]\n", addr);
- 	} else {
-@@ -1069,10 +1070,12 @@ static void check_for_stack(struct device *dev,
- 		int i;
- 
- 		for (i = 0; i < stack_vm_area->nr_pages; i++) {
--			if (page != stack_vm_area->pages[i])
-+			if (__phys_to_pfn(phys) !=
-+			    page_to_pfn(stack_vm_area->pages[i]))
- 				continue;
- 
--			addr = (u8 *)current->stack + i * PAGE_SIZE + offset;
-+			addr = (u8 *)current->stack + i * PAGE_SIZE +
-+			       (phys % PAGE_SIZE);
- 			err_printk(dev, NULL, "device driver maps memory from stack [probable addr=%p]\n", addr);
+@@ -476,8 +476,8 @@ int dma_direct_map_sg(struct device *dev, struct scatterlist *sgl, int nents,
+ 			 */
  			break;
- 		}
-@@ -1201,9 +1204,8 @@ void debug_dma_map_single(struct device *dev, const void *addr,
+ 		case PCI_P2PDMA_MAP_NONE:
+-			sg->dma_address = dma_direct_map_page(dev, sg_page(sg),
+-					sg->offset, sg->length, dir, attrs);
++			sg->dma_address = dma_direct_map_phys(dev, sg_phys(sg),
++					sg->length, dir, attrs);
+ 			if (sg->dma_address == DMA_MAPPING_ERROR) {
+ 				ret = -EIO;
+ 				goto out_unmap;
+diff --git a/kernel/dma/direct.h b/kernel/dma/direct.h
+index d2c0b7e632fc..3f4792910604 100644
+--- a/kernel/dma/direct.h
++++ b/kernel/dma/direct.h
+@@ -80,42 +80,57 @@ static inline void dma_direct_sync_single_for_cpu(struct device *dev,
+ 		arch_dma_mark_clean(paddr, size);
  }
- EXPORT_SYMBOL(debug_dma_map_single);
  
--void debug_dma_map_page(struct device *dev, struct page *page, size_t offset,
--			size_t size, int direction, dma_addr_t dma_addr,
--			unsigned long attrs)
-+void debug_dma_map_phys(struct device *dev, phys_addr_t phys, size_t size,
-+		int direction, dma_addr_t dma_addr, unsigned long attrs)
+-static inline dma_addr_t dma_direct_map_page(struct device *dev,
+-		struct page *page, unsigned long offset, size_t size,
+-		enum dma_data_direction dir, unsigned long attrs)
++static inline dma_addr_t dma_direct_map_phys(struct device *dev,
++		phys_addr_t phys, size_t size, enum dma_data_direction dir,
++		unsigned long attrs)
  {
- 	struct dma_debug_entry *entry;
+-	phys_addr_t phys = page_to_phys(page) + offset;
+-	dma_addr_t dma_addr = phys_to_dma(dev, phys);
++	dma_addr_t dma_addr;
  
-@@ -1218,19 +1220,21 @@ void debug_dma_map_page(struct device *dev, struct page *page, size_t offset,
- 		return;
- 
- 	entry->dev       = dev;
--	entry->type      = dma_debug_single;
--	entry->paddr	 = page_to_phys(page) + offset;
-+	entry->type      = dma_debug_phy;
-+	entry->paddr	 = phys;
- 	entry->dev_addr  = dma_addr;
- 	entry->size      = size;
- 	entry->direction = direction;
- 	entry->map_err_type = MAP_ERR_NOT_CHECKED;
- 
--	check_for_stack(dev, page, offset);
-+	if (!(attrs & DMA_ATTR_MMIO)) {
-+		struct page *page = phys_to_page(phys);
-+		size_t offset = offset_in_page(page);
- 
--	if (!PageHighMem(page)) {
--		void *addr = page_address(page) + offset;
-+		check_for_stack(dev, phys);
- 
--		check_for_illegal_area(dev, addr, size);
-+		if (!PhysHighMem(phys))
-+			check_for_illegal_area(dev, phys_to_virt(phys), size);
+ 	if (is_swiotlb_force_bounce(dev)) {
+-		if (is_pci_p2pdma_page(page))
+-			return DMA_MAPPING_ERROR;
++		if (attrs & DMA_ATTR_MMIO)
++			goto err_overflow;
++
+ 		return swiotlb_map(dev, phys, size, dir, attrs);
  	}
  
- 	add_dma_entry(entry, attrs);
-@@ -1274,11 +1278,11 @@ void debug_dma_mapping_error(struct device *dev, dma_addr_t dma_addr)
- }
- EXPORT_SYMBOL(debug_dma_mapping_error);
+-	if (unlikely(!dma_capable(dev, dma_addr, size, true)) ||
+-	    dma_kmalloc_needs_bounce(dev, size, dir)) {
+-		if (is_pci_p2pdma_page(page))
+-			return DMA_MAPPING_ERROR;
+-		if (is_swiotlb_active(dev))
+-			return swiotlb_map(dev, phys, size, dir, attrs);
+-
+-		dev_WARN_ONCE(dev, 1,
+-			     "DMA addr %pad+%zu overflow (mask %llx, bus limit %llx).\n",
+-			     &dma_addr, size, *dev->dma_mask, dev->bus_dma_limit);
+-		return DMA_MAPPING_ERROR;
++	if (attrs & DMA_ATTR_MMIO) {
++		dma_addr = phys;
++		if (unlikely(dma_capable(dev, dma_addr, size, false)))
++			goto err_overflow;
++	} else {
++		dma_addr = phys_to_dma(dev, phys);
++		if (unlikely(!dma_capable(dev, dma_addr, size, true)) ||
++		    dma_kmalloc_needs_bounce(dev, size, dir)) {
++			if (is_swiotlb_active(dev))
++				return swiotlb_map(dev, phys, size, dir, attrs);
++
++			goto err_overflow;
++		}
+ 	}
  
--void debug_dma_unmap_page(struct device *dev, dma_addr_t dma_addr,
-+void debug_dma_unmap_phys(struct device *dev, dma_addr_t dma_addr,
- 			  size_t size, int direction)
- {
- 	struct dma_debug_entry ref = {
--		.type           = dma_debug_single,
-+		.type           = dma_debug_phy,
- 		.dev            = dev,
- 		.dev_addr       = dma_addr,
- 		.size           = size,
-diff --git a/kernel/dma/debug.h b/kernel/dma/debug.h
-index f525197d3cae..76adb42bffd5 100644
---- a/kernel/dma/debug.h
-+++ b/kernel/dma/debug.h
-@@ -9,12 +9,11 @@
- #define _KERNEL_DMA_DEBUG_H
- 
- #ifdef CONFIG_DMA_API_DEBUG
--extern void debug_dma_map_page(struct device *dev, struct page *page,
--			       size_t offset, size_t size,
--			       int direction, dma_addr_t dma_addr,
-+extern void debug_dma_map_phys(struct device *dev, phys_addr_t phys,
-+			       size_t size, int direction, dma_addr_t dma_addr,
- 			       unsigned long attrs);
- 
--extern void debug_dma_unmap_page(struct device *dev, dma_addr_t addr,
-+extern void debug_dma_unmap_phys(struct device *dev, dma_addr_t addr,
- 				 size_t size, int direction);
- 
- extern void debug_dma_map_sg(struct device *dev, struct scatterlist *sg,
-@@ -55,14 +54,13 @@ extern void debug_dma_sync_sg_for_device(struct device *dev,
- 					 struct scatterlist *sg,
- 					 int nelems, int direction);
- #else /* CONFIG_DMA_API_DEBUG */
--static inline void debug_dma_map_page(struct device *dev, struct page *page,
--				      size_t offset, size_t size,
--				      int direction, dma_addr_t dma_addr,
--				      unsigned long attrs)
-+static inline void debug_dma_map_phys(struct device *dev, phys_addr_t phys,
-+				      size_t size, int direction,
-+				      dma_addr_t dma_addr, unsigned long attrs)
- {
+-	if (!dev_is_dma_coherent(dev) && !(attrs & DMA_ATTR_SKIP_CPU_SYNC))
++	if (!dev_is_dma_coherent(dev) &&
++	    !(attrs & (DMA_ATTR_SKIP_CPU_SYNC | DMA_ATTR_MMIO)))
+ 		arch_sync_dma_for_device(phys, size, dir);
+ 	return dma_addr;
++
++err_overflow:
++	dev_WARN_ONCE(
++		dev, 1,
++		"DMA addr %pad+%zu overflow (mask %llx, bus limit %llx).\n",
++		&dma_addr, size, *dev->dma_mask, dev->bus_dma_limit);
++	return DMA_MAPPING_ERROR;
  }
  
--static inline void debug_dma_unmap_page(struct device *dev, dma_addr_t addr,
-+static inline void debug_dma_unmap_phys(struct device *dev, dma_addr_t addr,
- 					size_t size, int direction)
+-static inline void dma_direct_unmap_page(struct device *dev, dma_addr_t addr,
++static inline void dma_direct_unmap_phys(struct device *dev, dma_addr_t addr,
+ 		size_t size, enum dma_data_direction dir, unsigned long attrs)
  {
- }
+-	phys_addr_t phys = dma_to_phys(dev, addr);
++	phys_addr_t phys;
++
++	if (attrs & DMA_ATTR_MMIO)
++		/* nothing to do: uncached and no swiotlb */
++		return;
+ 
++	phys = dma_to_phys(dev, addr);
+ 	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
+ 		dma_direct_sync_single_for_cpu(dev, addr, size, dir);
+ 
 diff --git a/kernel/dma/mapping.c b/kernel/dma/mapping.c
-index 107e4a4d251d..4c1dfbabb8ae 100644
+index 58482536db9b..80481a873340 100644
 --- a/kernel/dma/mapping.c
 +++ b/kernel/dma/mapping.c
-@@ -157,6 +157,7 @@ dma_addr_t dma_map_page_attrs(struct device *dev, struct page *page,
- 		unsigned long attrs)
- {
- 	const struct dma_map_ops *ops = get_dma_ops(dev);
-+	phys_addr_t phys = page_to_phys(page) + offset;
- 	dma_addr_t addr;
- 
- 	BUG_ON(!valid_dma_direction(dir));
-@@ -165,16 +166,15 @@ dma_addr_t dma_map_page_attrs(struct device *dev, struct page *page,
+@@ -166,8 +166,8 @@ dma_addr_t dma_map_page_attrs(struct device *dev, struct page *page,
  		return DMA_MAPPING_ERROR;
  
  	if (dma_map_direct(dev, ops) ||
--	    arch_dma_map_page_direct(dev, page_to_phys(page) + offset + size))
-+	    arch_dma_map_page_direct(dev, phys + size))
- 		addr = dma_direct_map_page(dev, page, offset, size, dir, attrs);
+-	    arch_dma_map_page_direct(dev, phys + size))
+-		addr = dma_direct_map_page(dev, page, offset, size, dir, attrs);
++	    arch_dma_map_phys_direct(dev, phys + size))
++		addr = dma_direct_map_phys(dev, phys, size, dir, attrs);
  	else if (use_dma_iommu(dev))
- 		addr = iommu_dma_map_page(dev, page, offset, size, dir, attrs);
+ 		addr = iommu_dma_map_phys(dev, phys, size, dir, attrs);
  	else
- 		addr = ops->map_page(dev, page, offset, size, dir, attrs);
- 	kmsan_handle_dma(page, offset, size, dir);
--	trace_dma_map_page(dev, page_to_phys(page) + offset, addr, size, dir,
--			   attrs);
--	debug_dma_map_page(dev, page, offset, size, dir, addr, attrs);
-+	trace_dma_map_page(dev, phys, addr, size, dir, attrs);
-+	debug_dma_map_phys(dev, phys, size, dir, addr, attrs);
+@@ -187,8 +187,8 @@ void dma_unmap_page_attrs(struct device *dev, dma_addr_t addr, size_t size,
  
- 	return addr;
- }
-@@ -194,7 +194,7 @@ void dma_unmap_page_attrs(struct device *dev, dma_addr_t addr, size_t size,
+ 	BUG_ON(!valid_dma_direction(dir));
+ 	if (dma_map_direct(dev, ops) ||
+-	    arch_dma_unmap_page_direct(dev, addr + size))
+-		dma_direct_unmap_page(dev, addr, size, dir, attrs);
++	    arch_dma_unmap_phys_direct(dev, addr + size))
++		dma_direct_unmap_phys(dev, addr, size, dir, attrs);
+ 	else if (use_dma_iommu(dev))
+ 		iommu_dma_unmap_phys(dev, addr, size, dir, attrs);
  	else
- 		ops->unmap_page(dev, addr, size, dir, attrs);
- 	trace_dma_unmap_page(dev, addr, size, dir, attrs);
--	debug_dma_unmap_page(dev, addr, size, dir);
-+	debug_dma_unmap_phys(dev, addr, size, dir);
- }
- EXPORT_SYMBOL(dma_unmap_page_attrs);
- 
-@@ -712,7 +712,8 @@ struct page *dma_alloc_pages(struct device *dev, size_t size,
- 	if (page) {
- 		trace_dma_alloc_pages(dev, page_to_virt(page), *dma_handle,
- 				      size, dir, gfp, 0);
--		debug_dma_map_page(dev, page, 0, size, dir, *dma_handle, 0);
-+		debug_dma_map_phys(dev, page_to_phys(page), size, dir,
-+				   *dma_handle, 0);
- 	} else {
- 		trace_dma_alloc_pages(dev, NULL, 0, size, dir, gfp, 0);
- 	}
-@@ -738,7 +739,7 @@ void dma_free_pages(struct device *dev, size_t size, struct page *page,
- 		dma_addr_t dma_handle, enum dma_data_direction dir)
- {
- 	trace_dma_free_pages(dev, page_to_virt(page), dma_handle, size, dir, 0);
--	debug_dma_unmap_page(dev, dma_handle, size, dir);
-+	debug_dma_unmap_phys(dev, dma_handle, size, dir);
- 	__dma_free_pages(dev, size, page, dma_handle, dir);
- }
- EXPORT_SYMBOL_GPL(dma_free_pages);
 -- 
 2.50.1
 
