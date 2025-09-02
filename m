@@ -1,95 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-11644-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11645-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F9E4CA1007
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Sep 2025 22:22:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F93ACA1005
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Sep 2025 23:25:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cGgGw5j40z2xlM;
-	Wed,  3 Sep 2025 08:22:48 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756825023;
-	cv=none; b=ToJOjxi8Ao1/77bUyltbdJmx6qVA+59CXo+gZjXmjI2gyqActaq8vcwo0vMIzNCWJg7FAyRB9pWYsVM3ULTBcRO2Dt4veIrzqjqoAlTwtKsP5KtJbF6k8YPz04ACK3hB5oSItpnVlTFRralEoXlnnqozB6AOv9xldZfiyvjcGso3vwH1ex6p8sCXUVFAT2PxiAEf0kgaz0ZDSvrzAY0L5o7TVLfLSCu7ldBOvjy27lUgrHIErKx0okNu+QbjjYb09ndgcM7K5sATjhcYDk65pWcNr940OK7zYbKa9L3zMBW1WdN/PznoKGdbYZsUMwn9/oh3rXgoaaynDXe6vILu8w==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756825023; c=relaxed/relaxed;
-	bh=iQAoY+64PekjTVVz5Aci7Us6O8LqMJNZMBqivTa7EXM=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=AUbOUXd01Nqus+i5OnmY1hRQeDh10cxq6pItL+c0hLG0jPGUoYP/9ROiPLzifQZwbbufQqdskElwIY7SeG5YcjyfybZh4YcBGe7A4uMio7zWtePyrwqgPGoj1ZZrmCM+i/zialiIUcRFRQ96ArckfzPMEf07BjjkdX1Uhn3zJB30z4LCVLOMbSKs6mgofLPmgR6XkHZTp+dghQGZv1KbB0dJBEIa70/PudHv0XDdH1Op5OCVFqbAbAIJnneFb6hgqHnb+WVfn5YZ1BrCK6Z34R5lB+cpukyobseZ1JhoG5nzzN7E0Mt1AMW6iH4J8zXEChWk2D6+tPJpE+4ljNc72w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wbinvd.org; dkim=pass (2048-bit key; secure) header.d=wbinvd.org header.i=@wbinvd.org header.a=rsa-sha256 header.s=wbinvd header.b=Qzl8bO33; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=calvin@wbinvd.org; receiver=lists.ozlabs.org) smtp.mailfrom=wbinvd.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wbinvd.org
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cGhg45K4Dz2yr1;
+	Wed,  3 Sep 2025 09:25:20 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:200a::627" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756855520;
+	cv=pass; b=Ok3Egecv3NzGdMxCP4zhd7S0+YpFURC/JZtflgS/wBlsDPg+5GxIJj6EjhNhChKD66G6H911Ou0B0WBoQEiKvQ7bMs0YoPHJNT7kgD6/gozaLGWIpC2Rk7LkhjP0P7MsSYkyYAktYOyffUoSx39DWaiBm+zHL7Dt7ymtv0Pd9jmVqC7xYv9RTNAVpQCyGZMmGjqZ7lgnLC8e19Zv8uvqxAuiFN9FLpDkTFttc/WyobeoJWZVFN2v8PIPd0obkASYwc+vQnc64Zs+/uIeUk+IOmsu0140dyDttDqlg7FtPNrEkXKNNWAeho0eHgrO4CDT5kAHMDKR6WJih39taYKqnA==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1756855520; c=relaxed/relaxed;
+	bh=5WhB/bSCKzhLBnuuHt7TF4nSB4uzH/8ebtNNvqKnLZo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:Content-Type:
+	 Content-Disposition:In-Reply-To:MIME-Version; b=FDjkf9ZgdoqyUFa6lxEI0x2YMJxksjeu2e/dNMmAYg2Eavrd9pBv6Z3UMD4P0HwqPvm5h3eGpJeuEinwvxZBpbR+ng3/X/S4DN0VonHWKQIq8IRFum1OkXRw+W7ubY6GrqQtZnyhd6ApVOSNfr6vqwgVwkbAVVidC3ditrKrpDXX5Zl5T8JU8PEMXb8XJSgdasfPF/bRVYLIJ74FdqUL/peDtaD9OiHf8Sjgh7WibI9/WWbWQJFNhix2vvOVGBYzrl9Pf5A6PaZPCkMQz6QRRjxjsCHDW0jblByF7hz7tQ+BuSLdSzbBuPYFMFFzLgpFtFHdWljpsFt4FlxbdfAesw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com; dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=FrwZLjyp; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:200a::627; helo=nam12-mw2-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org) smtp.mailfrom=nvidia.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=nvidia.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=wbinvd.org header.i=@wbinvd.org header.a=rsa-sha256 header.s=wbinvd header.b=Qzl8bO33;
+	dkim=pass (2048-bit key; unprotected) header.d=Nvidia.com header.i=@Nvidia.com header.a=rsa-sha256 header.s=selector2 header.b=FrwZLjyp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wbinvd.org (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=calvin@wbinvd.org; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nvidia.com (client-ip=2a01:111:f403:200a::627; helo=nam12-mw2-obe.outbound.protection.outlook.com; envelope-from=jgg@nvidia.com; receiver=lists.ozlabs.org)
+Received: from NAM12-MW2-obe.outbound.protection.outlook.com (mail-mw2nam12on20627.outbound.protection.outlook.com [IPv6:2a01:111:f403:200a::627])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cGTNZ4nNqz30TG
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2025 00:57:01 +1000 (AEST)
-Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-7724cacc32bso1990115b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Sep 2025 07:57:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=wbinvd.org; s=wbinvd; t=1756825019; x=1757429819; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=iQAoY+64PekjTVVz5Aci7Us6O8LqMJNZMBqivTa7EXM=;
-        b=Qzl8bO335fdyBCm5LUl5F9tRcPfvPW9YuE02HdtEMmFN1xhOLCqb4JejA9nHKFfVwQ
-         t1KJmxQ+rm2b8Wqm1nzKKAzJogARSZUiU9ZJOBgOGIwQlrk6/zONZLcZrK59nrpbj6+d
-         ZGf/Ik7frD2oW9HG826enUPEtWGlmiiE6eGIfKMbOcnREIfsUpK63eRS+fMbfeWvPO3T
-         OxoF/4JUUmivJxNrtQLGB+Owk5QvKAUX8wMdNzimJ3XF3TvtqMgQLa1mfuSxiD8QWPrs
-         ltrdxSIG1MzjFzQel9BSbIAm3aByKgpdYHcl/zPD7TWSatGnqwZW1//3w/K2bMMEH0rz
-         wP6w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1756825019; x=1757429819;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=iQAoY+64PekjTVVz5Aci7Us6O8LqMJNZMBqivTa7EXM=;
-        b=i6MgooLOOUXpkry58XHQKcMMAtJT7jrtNTzdwnua7SFgCPVcQT+6iMWovbJP3aq7ne
-         58ODAyd7j6d2bM0fbIFP2MUshtQ9x41k19mQ1Ci88b/7as5rExksiEQh8l+6pd2gcxha
-         gjRta2IZ9+speudvxjWuBAWxV1neO1PpxdnVDRfRAKXQsrM/PCXnBHHbv+6pE8LQ9C6r
-         zAet8Rp8Y7/clg+ySkPocoZiYKICZRMDzkzGMWHzhTO7TYMcnlmxXFwioMpKPaFRETDE
-         0VhDz0kjZ3k8Krw2kY3eX+z4ZtzdpScHeC1tKx5SmM4KilWDHLdoSrBl6wh2RJFkuq1v
-         LSEA==
-X-Forwarded-Encrypted: i=1; AJvYcCVFzcEfF2mOxRqeJKIpk2Mni2t9Kpc2M6GmMke9lZunwnn2wW/D0ARv2uCkGXTqfS0L7vsGUpxruM+loGQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz9+AZ3PRn07q+oBE1Y+siMg7IXzCPEuiqhwtWhagYLL/lI5bOR
-	ZQ2+bBi5zR1taveojrNE+FJs7L16hUDBSajgsvPGAKFEfyHuelaOuQ+Z1arp7v/NghQaAh+FJCk
-	WJQVF
-X-Gm-Gg: ASbGncu3O6I/GAGvZbMbCUpOCGHv6fDY6gpfge4V8TK6nt8xBFpdmjIxjLM10ROOvAu
-	Oj2jsijNT05q4gtI2asaHdSwDlHFbLysEQwhIdePc/dkXUwMlksoAskg9UxPPyEB5LU73SJyrIz
-	+vY8JD0pbaHch2zcWpvFHB0KHKxxqtph/3buO8GzcQeDHqxcbRA5YJ0/dBxXm99UFJdM/R8jMTT
-	6kZk6JKG8UPSzekKACXzdStxivqtnTk/3vqHVeIVu6tYsB5W7RKFoAwbjuox5MhhOkk920L0SQm
-	ob3jn2lT80U3Kv0W+Or/gBTBL+F7+bd6op6ZTpYfMWFbLaHfWS8EZIWKt2/QrNc7nsJE5SvdcKn
-	BYN2O5y3m5Wa9e5tjPsjW3QMD
-X-Google-Smtp-Source: AGHT+IG4NJOSwfNOiJPCZCADKuS/Hi0VsrUQ00UwdvcAjo/IiTHURdMNRbeFN9pERyT8kiit7L+DiA==
-X-Received: by 2002:a05:6a00:1748:b0:76e:7aee:35f1 with SMTP id d2e1a72fcca58-7723e3fcb56mr15007816b3a.29.1756825018957;
-        Tue, 02 Sep 2025 07:56:58 -0700 (PDT)
-Received: from mozart.vkv.me ([192.184.167.117])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7722a26bfe2sm14027937b3a.14.2025.09.02.07.56.57
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Sep 2025 07:56:58 -0700 (PDT)
-Date: Tue, 2 Sep 2025 07:56:58 -0700
-From: Calvin Owens <calvin@wbinvd.org>
-To: Naresh Kamboju <naresh.kamboju@linaro.org>
-Cc: linux-bluetooth@vger.kernel.org,
-	open list <linux-kernel@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	lkft-triage@lists.linaro.org,
-	Linux Regressions <regressions@lists.linux.dev>,
-	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
-	Marcel Holtmann <marcel@holtmann.org>, pmenzel@molgen.mpg.de,
-	Luiz Augusto von Dentz <luiz.von.dentz@intel.com>,
-	Dan Carpenter <dan.carpenter@linaro.org>,
-	Arnd Bergmann <arnd@arndb.de>,
-	Anders Roxell <anders.roxell@linaro.org>,
-	Ben Copeland <benjamin.copeland@linaro.org>
-Subject: Re: next-20250901 drivers bluetooth bpa10x.c:77:33: error: array
- type has incomplete element type 'struct h4_recv_pkt'
-Message-ID: <aLcFuqRuB2NFu-ZE@mozart.vkv.me>
-References: <CA+G9fYsgiqTo7t3e36P5cysc+jEX5Fub1quTj+fuKGM8jkxbFA@mail.gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cGhg33qSyz2xQ4
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2025 09:25:18 +1000 (AEST)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=EPPUGTpBQtvDStMLISia+THnTG3E+xG7M30x/PlBo2tAa/Nr/FmSG//W8J1ytvmYfhHAim/W9vQgGujfcSuDILGI3MLD6pI6zS/OBY6OjTRcOngtk4jHhyGUh7jyRRB7szMQuPkC0FVnIUpnLJxS17iQdNA6AwS8d3tSA1dKuSftvGm2YCpQt3teeyNM/4nDnpsnuHxKCtSsm4ZxJ7lDZKrevojcXGC2x64W2xWlegQeMIK2rdxpSOR3mUEg+68waaoLnziZs6CRUl9OORYmCDYjZdsiUhla3kDKGqETPLX9l+jUVxkpUfFVQZaaMQUTmy9sd4idVJ3XjDo1oc5Fqg==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=5WhB/bSCKzhLBnuuHt7TF4nSB4uzH/8ebtNNvqKnLZo=;
+ b=Bp8uobg7Bc/BzSSDdn/btXqGPCvh/sMoJV2WrMiwae2gLXXMNa74iBFMOK8/Kd3nIe9DK65EPLAHjJyQmW8DOXDs0DsFGRmQLve8gYV8a6tY17tfpTo8zCgFv5+3GgNHnagEytgV8j4HLlBahFH4W76yI1oHiycXqbmiQtuJxjyhuu6icEqsWPa7LoOyNl2pEd2PzvwHOQbnGhYo3Fzzd9EA/sudkNK/l5w4yDPSkDAmsiZvXW6QfcWhCsAF2m1x/v5zC7XkqaqZe82trwitDyL1DcbG/w15m/gyz76Y438tMp0oBXpcw+HMFmc6FRhQx7LSn25C6eW1Cargibj6zQ==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nvidia.com; dmarc=pass action=none header.from=nvidia.com;
+ dkim=pass header.d=nvidia.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=Nvidia.com;
+ s=selector2;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=5WhB/bSCKzhLBnuuHt7TF4nSB4uzH/8ebtNNvqKnLZo=;
+ b=FrwZLjypAbDrjjqAKk256crdzVZq5Sew5KLCSVqXFIm6JyrV7WWqseMrpiu6vHBAy6Xlq7hJUsVrsT/FkYId14wsn536VKml4D6dVf0nX1pDWvZdYx95NPTtj+TUehlsqj5w0TNjWea9EzqyGH1Szex82Slu5m16O469Jqf4vo8LVpYziiKli7KTd/FS6+moUTxeys5qqRTu4BHPio4D6BiG9luxRnn5KUs1cBGj9i9sQBFRtT+dthQPMa8u8xyA4r41LbqjNUFXR0e1kW0r+ZfYYrCZlj/fR+WLDmZd8zFTpgKVynLwnmDbpnxukVNhCQvtdttg4v7iM17l9idL/Q==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nvidia.com;
+Received: from CH3PR12MB8659.namprd12.prod.outlook.com (2603:10b6:610:17c::13)
+ by CH1PR12MB9574.namprd12.prod.outlook.com (2603:10b6:610:2ae::16) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9073.27; Tue, 2 Sep
+ 2025 23:24:58 +0000
+Received: from CH3PR12MB8659.namprd12.prod.outlook.com
+ ([fe80::6eb6:7d37:7b4b:1732]) by CH3PR12MB8659.namprd12.prod.outlook.com
+ ([fe80::6eb6:7d37:7b4b:1732%4]) with mapi id 15.20.9073.026; Tue, 2 Sep 2025
+ 23:24:58 +0000
+Date: Tue, 2 Sep 2025 20:24:57 -0300
+From: Jason Gunthorpe <jgg@nvidia.com>
+To: Keith Busch <kbusch@kernel.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
+	Leon Romanovsky <leon@kernel.org>,
+	Leon Romanovsky <leonro@nvidia.com>,
+	Abdiel Janulgue <abdiel.janulgue@gmail.com>,
+	Alexander Potapenko <glider@google.com>,
+	Alex Gaynor <alex.gaynor@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Christoph Hellwig <hch@lst.de>, Danilo Krummrich <dakr@kernel.org>,
+	iommu@lists.linux.dev, Jason Wang <jasowang@redhat.com>,
+	Jens Axboe <axboe@kernel.dk>, Joerg Roedel <joro@8bytes.org>,
+	Jonathan Corbet <corbet@lwn.net>, Juergen Gross <jgross@suse.com>,
+	kasan-dev@googlegroups.com, linux-block@vger.kernel.org,
+	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org, linux-nvme@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org, linux-trace-kernel@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	Miguel Ojeda <ojeda@kernel.org>,
+	Robin Murphy <robin.murphy@arm.com>, rust-for-linux@vger.kernel.org,
+	Sagi Grimberg <sagi@grimberg.me>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	virtualization@lists.linux.dev, Will Deacon <will@kernel.org>,
+	xen-devel@lists.xenproject.org
+Subject: Re: [PATCH v4 14/16] block-dma: migrate to dma_map_phys instead of
+ map_page
+Message-ID: <20250902232457.GC470103@nvidia.com>
+References: <cover.1755624249.git.leon@kernel.org>
+ <CGME20250819173845eucas1p221cd6842839f5e7130f131cd341df566@eucas1p2.samsung.com>
+ <22b824931bc8ba090979ab902e4c1c2ec8327b65.1755624249.git.leon@kernel.org>
+ <2d8e67b2-4ab2-4c1f-9ef3-470810f99d07@samsung.com>
+ <aLdoyWevrQMQUGyz@kbusch-mbp>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aLdoyWevrQMQUGyz@kbusch-mbp>
+X-ClientProxiedBy: YT4PR01CA0469.CANPRD01.PROD.OUTLOOK.COM
+ (2603:10b6:b01:d6::7) To CH3PR12MB8659.namprd12.prod.outlook.com
+ (2603:10b6:610:17c::13)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -103,112 +111,137 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <CA+G9fYsgiqTo7t3e36P5cysc+jEX5Fub1quTj+fuKGM8jkxbFA@mail.gmail.com>
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: CH3PR12MB8659:EE_|CH1PR12MB9574:EE_
+X-MS-Office365-Filtering-Correlation-Id: 63dbd94d-8dd9-4729-0d10-08ddea77eed5
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam: BCL:0;ARA:13230040|7416014|376014|366016|1800799024;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?Higtp3/WM5oOHXkSSI5Z6pkQhOJorSSmJ1rnzoaJINMSn5inopVW+5S1K/Ek?=
+ =?us-ascii?Q?7UrVD4MqKyLijH5h/vlsnHGvvpnFBsM7bvA+EFOiGdGldsWfaZYD8zUnE+Ia?=
+ =?us-ascii?Q?ecNJ/0eJumt+b4s+tCBkkWx3wAlbR3L7ZwRembGJ0qEAW5a8nMcl2O4pKBo3?=
+ =?us-ascii?Q?PdQLHRgzmpB+Zi9Fyvs7ObYDwqrX3SvjiyXTY7dfz6xgl2cNvZLi0VYii1/b?=
+ =?us-ascii?Q?MkmMnZxsMlCME5PY63Vbs+iSk/IsvqtWZHysYL4ru2GKkqHySeU/UxTsKS9H?=
+ =?us-ascii?Q?NCQuJHY9AoYkjqmoR9wiyV8tPiNXWxpRtpTZLV+P9wxTPx+sIP6lmWoS5/S8?=
+ =?us-ascii?Q?tScHp8k0n3YfKg3GgKbdM3XqOzkoumuJYdU2wWmSvEiefzhn121027ScVc0M?=
+ =?us-ascii?Q?mgzvNL4BID9woA1Jopw2qWMOUr6I42j9dddH10a2Hv1fG7SqI425nv/pOe0t?=
+ =?us-ascii?Q?XJLZrlOU3bEWKkS5qf5qLZ4koodOuW/or2bHHG01Kw+qVJViR5uQMQErX1Rn?=
+ =?us-ascii?Q?dtqR9Vv9ju+N686ia1iq1DS9dkK7YGKHd5W0b0ulhNTSQMFxZH3cWGGjfWTk?=
+ =?us-ascii?Q?pjUR3HiLnhZ/Gd+XDqBYF4iqr14XCZkC491u0cxXUHDii+HrI0WlyWJ2BKs0?=
+ =?us-ascii?Q?dBy7a/RbGYkwaioywaADLcf4CQNWk5/2GrFCGWhBSwYB4ZjprP1MGHvYdI3R?=
+ =?us-ascii?Q?DMzz2x8pNRL7Mivdz1EtHsC/rhFLc7JonZiWPL/pvdgvSnbboCWHS7c6QOpl?=
+ =?us-ascii?Q?0swby8pOQj4N0n49XZtvW/idwcbe4eNzXJ0jm7wrkcFtMMUxVvl8m7yvIDtZ?=
+ =?us-ascii?Q?lkBLoshQkBjqhFQ/rMBX0tNenSjQGAw3q6U+TAYT6ONJyKzPzXMD6ONMEEr2?=
+ =?us-ascii?Q?lM7nczTb/5U62gC4bHgrqTQZG0/IV/K146tgoh4kVZhRNS4+1TDwn85Ef00w?=
+ =?us-ascii?Q?b25m6ZgpKhrAxPuKScb48bdqsiYSeRjlub9AcOjtrsTjupvo5g4b1uCSu360?=
+ =?us-ascii?Q?ihn81VgyyrErWwvwyxXUY+zUoPHstPTvUXgO4hhJQGEphLgRHf5IZJ8FNF9E?=
+ =?us-ascii?Q?y8aOe+19T3uf4BgYrljrHnyl7H7Ivmy/M3TWnpkf0Ne3P/rxpcFURQqPyxrA?=
+ =?us-ascii?Q?nmax8Lk0p77thdRstB+Hc504ESJo3wkqm2nGrwePMZqg9Ex+ZwuwPzIh+yFc?=
+ =?us-ascii?Q?NW4E84kHyQmH9bigD2OQ2nj80E+nsEUiEfPtQu9DDNkHPhsc3DWmsQp5F5ID?=
+ =?us-ascii?Q?v2iXvkdUv4q4fUxzbDu8lvbKB34fT2OkWHmduiMObfU44H+8USLbzFbYGHvp?=
+ =?us-ascii?Q?W+zopG0awjW8HwejpiP/r5KxoNSrY51NLps/3h1ryMebgbOTFkdvuQ/1Jubh?=
+ =?us-ascii?Q?wHoM62r1+0y7npOtu7w7ng34SwuefUBlBMTA1ghgxypuzWM4sbecLls4XAyK?=
+ =?us-ascii?Q?d1RHM5UhoGk=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:CH3PR12MB8659.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(7416014)(376014)(366016)(1800799024);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?p5eHAhSaNlykrbWpG/UPoqPb+iB4di9SrzYYl3qOPeAc97/mV6PDVi69YGjb?=
+ =?us-ascii?Q?/G5ZcFGR6SHgsNA89667543XYP54vL2aGbWD7mO+dDPSxdYPwrSwbR4OZKGj?=
+ =?us-ascii?Q?0uZ/4QYa3QBppOpU7LU6Ruc7Eb3ZaXR3MCTcpATP7+YKn3PKMq/qRJBInuh0?=
+ =?us-ascii?Q?mndkVYAZ72At+hxcF5ZZ1QA16/AxGYtIV/Rwnv1vRZM5FjoG/84e4j5oYx0S?=
+ =?us-ascii?Q?ocyFVke+zLfEuBT2oM5/3BmRbPrJY0izl9cUqeCfBv+jquc7o7TVk014BH20?=
+ =?us-ascii?Q?TrICRhQ3NARiEsVmZK87iG72oNredufI/8XNg3bhNZYwsHRYRQcEPg6aDbLL?=
+ =?us-ascii?Q?mT/NPGXf52sa56OYUv6OkB7bxN24Uich0CeXNjMtCeNXO2pASJCwHnwEB1gZ?=
+ =?us-ascii?Q?PV0X5lZBA2ewO+tX4LQUKqqT3mB8MTEJYbqCa94pF3vxk5cbJMuob9np/A/L?=
+ =?us-ascii?Q?o6CfmeH6x+Z7S8Pfqgb/Q12IwsSGyQFRPyo7W8hR2V/qW5e7ER223wB7eCyx?=
+ =?us-ascii?Q?ZIg3y+y0vcamWCdg2D0pXVK9J4+85ZPfxV7N1YX2oez3G9epg/ohsdHic9fu?=
+ =?us-ascii?Q?JxCIJgemIxztEXy4YoOTaMsgz4GYwTVodoS1cZ0NYpMROKPBCTm7xT4XBjq6?=
+ =?us-ascii?Q?2+DE2mLQ/UCL5jhiTp6poXSCR0qBOgWzUJKyaLwjQ1GZAyzxbNrcljo82ame?=
+ =?us-ascii?Q?TKeXuuv6aBzpD/6RZMBMAZzh2sr9hg0LORN8vJe5fFvmR5JRmNzsO7Q9ris6?=
+ =?us-ascii?Q?HfrkG070I/eqfwuSBDJ4nzLvACcAJoQhez6FytC0UcpRlbOPD+r1rMwKdl+w?=
+ =?us-ascii?Q?8lx/vYLaNoXVZSsWZEpftqg+gPlzE2ccC3sAfFDqYq3osSe3yhfuGgjIngrI?=
+ =?us-ascii?Q?N763ZBm1UZHKcOoUIJkq1IlWBPaat+KVqpOv53f9E59PqJtGu2/h6H95WyRJ?=
+ =?us-ascii?Q?bW7CcTqQM9bEWsW9kzofp/5dvkCxlaWHY3Nh4Nxjy0jS2fGPWAPM3qZAc0jS?=
+ =?us-ascii?Q?V9kmZydsir6/Cx30g7K33l3dwibq6q46+W03IF+gjL9XnaWlmCieooWek8lW?=
+ =?us-ascii?Q?h/uGyVI8CqH12zNfrFojddv8yK/hTDrQN9jYSkA1ahEv6ZL1DLwqBlMya4Ap?=
+ =?us-ascii?Q?/r5/qlXRyAHu5A0QAwyPDGs5ml3qsMX2ajkBGSk9X0ntPihhkWkUqk8sd2hO?=
+ =?us-ascii?Q?rlkadpZpHqJepYOKHZrUdi3WSU0xKSSJeQ+u71wDEK9qghkKVjSYjER13IuG?=
+ =?us-ascii?Q?i4NUzxZ2pIKqaql+Ty58blZQRf1++v8itAdRiREY4lAVu2ikKLoPkfJFvxNJ?=
+ =?us-ascii?Q?Q1hdIWrcRdvBX+JaZtvjSYcRpyrhBZdKBE0l39mN8fcvqiw5hQ3glHMoqD8j?=
+ =?us-ascii?Q?ccHD1YCwdTzvyjY8bMoZJ/h7M+UAHuTS16dOswEl+UJKX5koND+Ql9PGkxhP?=
+ =?us-ascii?Q?9fgidwA9mzNyZdN9S2gZjRAls3FnVg2GPr6TkGVDXf8WJ8ZImtMPr+uZU7Kx?=
+ =?us-ascii?Q?C3uqBfEEQfmHvbJAVwFTC6HZU+GYssMua51pl763bOE6Zw39qHuaSaSowPOq?=
+ =?us-ascii?Q?x1wOdD6P+giXyxbN/Ko=3D?=
+X-OriginatorOrg: Nvidia.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: 63dbd94d-8dd9-4729-0d10-08ddea77eed5
+X-MS-Exchange-CrossTenant-AuthSource: CH3PR12MB8659.namprd12.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 02 Sep 2025 23:24:58.6964
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 43083d15-7273-40c1-b7db-39efd9ccc17a
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: zp9UTtFHtRHHEdUZ3DhGe9qQeSrMw2x+t/nR0QIEskMOvB26XU5zEDnMfQkF+y5a
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: CH1PR12MB9574
 
-On Tuesday 09/02 at 15:00 +0530, Naresh Kamboju wrote:
-> The following build warnings / errors are noticed on powerpc ppc6xx_defconfig
-> with gcc-13 toolchain running on Linux next-20250901 and next-20250902.
+On Tue, Sep 02, 2025 at 03:59:37PM -0600, Keith Busch wrote:
+> On Tue, Sep 02, 2025 at 10:49:48PM +0200, Marek Szyprowski wrote:
+> > On 19.08.2025 19:36, Leon Romanovsky wrote:
+> > > @@ -87,8 +87,8 @@ static bool blk_dma_map_bus(struct blk_dma_iter *iter, struct phys_vec *vec)
+> > >   static bool blk_dma_map_direct(struct request *req, struct device *dma_dev,
+> > >   		struct blk_dma_iter *iter, struct phys_vec *vec)
+> > >   {
+> > > -	iter->addr = dma_map_page(dma_dev, phys_to_page(vec->paddr),
+> > > -			offset_in_page(vec->paddr), vec->len, rq_dma_dir(req));
+> > > +	iter->addr = dma_map_phys(dma_dev, vec->paddr, vec->len,
+> > > +			rq_dma_dir(req), 0);
+> > >   	if (dma_mapping_error(dma_dev, iter->addr)) {
+> > >   		iter->status = BLK_STS_RESOURCE;
+> > >   		return false;
+> > 
+> > I wonder where is the corresponding dma_unmap_page() call and its change 
+> > to dma_unmap_phys()...
 > 
-> Regression Analysis:
-> - New regression? yes
-> - Reproducibility? yes
-> 
-> First seen on next-20250901
-> Bad: next-20250901 and next-20250902
-> Good: next-20250829
-> 
-> Build regression: next-20250901 drivers bluetooth bpa10x.c:77:33:
-> error: array type has incomplete element type 'struct h4_recv_pkt'
-> 
-> Reported-by: Linux Kernel Functional Testing <lkft@linaro.org>
-> 
-> Powerpc:
->   build:
->     * gcc-13-ppc6xx_defconfig
->     * gcc-8-ppc6xx_defconfig
+> You can't do that in the generic layer, so it's up to the caller. The
+> dma addrs that blk_dma_iter yield are used in a caller specific
+> structure. For example, for NVMe, it goes into an NVMe PRP. The generic
+> layer doesn't know what that is, so the driver has to provide the
+> unmapping.
 
-Hi Naresh,
+To be specific I think it is this hunk in another patch that matches
+the above:
 
-This should fix it:
-https://lore.kernel.org/all/aLNRvzXE4O9dKZoN@mozart.vkv.me/
+@@ -682,11 +682,15 @@ static void nvme_free_prps(struct request *req)
+ {
+        struct nvme_iod *iod = blk_mq_rq_to_pdu(req);
+        struct nvme_queue *nvmeq = req->mq_hctx->driver_data;
++       unsigned int attrs = 0;
+        unsigned int i;
+ 
++       if (req->cmd_flags & REQ_MMIO)
++               attrs = DMA_ATTR_MMIO;
++
+        for (i = 0; i < iod->nr_dma_vecs; i++)
+-               dma_unmap_page(nvmeq->dev->dev, iod->dma_vecs[i].addr,
+-                               iod->dma_vecs[i].len, rq_dma_dir(req));
++               dma_unmap_phys(nvmeq->dev->dev, iod->dma_vecs[i].addr,
++                               iod->dma_vecs[i].len, rq_dma_dir(req), attrs);
 
-Thanks,
-Calvin
 
-> Build error:
-> drivers/bluetooth/bpa10x.c:77:33: error: array type has incomplete
-> element type 'struct h4_recv_pkt'
->    77 | static const struct h4_recv_pkt bpa10x_recv_pkts[] = {
->       |                                 ^~~~~~~~~~~~~~~~
-> drivers/bluetooth/bpa10x.c:78:11: error: 'H4_RECV_ACL' undeclared here
-> (not in a function)
->    78 |         { H4_RECV_ACL,     .recv = hci_recv_frame },
->       |           ^~~~~~~~~~~
-> drivers/bluetooth/bpa10x.c:79:11: error: 'H4_RECV_SCO' undeclared here
-> (not in a function)
->    79 |         { H4_RECV_SCO,     .recv = hci_recv_frame },
->       |           ^~~~~~~~~~~
-> drivers/bluetooth/bpa10x.c:80:11: error: 'H4_RECV_EVENT' undeclared
-> here (not in a function)
->    80 |         { H4_RECV_EVENT,   .recv = hci_recv_frame },
->       |           ^~~~~~~~~~~~~
-> drivers/bluetooth/bpa10x.c: In function 'bpa10x_rx_complete':
-> drivers/bluetooth/bpa10x.c:99:37: error: implicit declaration of
-> function 'h4_recv_buf' [-Werror=implicit-function-declaration]
->    99 |                 data->rx_skb[idx] = h4_recv_buf(hdev, data->rx_skb[idx],
->       |                                     ^~~~~~~~~~~
-> In file included from include/linux/array_size.h:5,
->                  from include/linux/kernel.h:16,
->                  from drivers/bluetooth/bpa10x.c:9:
-> include/linux/compiler.h:197:82: error: expression in static assertion
-> is not an integer
->   197 | #define __BUILD_BUG_ON_ZERO_MSG(e, msg, ...)
-> ((int)sizeof(struct {_Static_assert(!(e), msg);}))
->       |
->                   ^
-> include/linux/compiler.h:202:33: note: in expansion of macro
-> '__BUILD_BUG_ON_ZERO_MSG'
->   202 | #define __must_be_array(a)
-> __BUILD_BUG_ON_ZERO_MSG(!__is_array(a), \
->       |                                 ^~~~~~~~~~~~~~~~~~~~~~~
-> include/linux/array_size.h:11:59: note: in expansion of macro '__must_be_array'
->    11 | #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) +
-> __must_be_array(arr))
->       |
-> ^~~~~~~~~~~~~~~
-> drivers/bluetooth/bpa10x.c:103:49: note: in expansion of macro 'ARRAY_SIZE'
->   103 |
-> ARRAY_SIZE(bpa10x_recv_pkts));
->       |                                                 ^~~~~~~~~~
-> drivers/bluetooth/bpa10x.c: At top level:
-> drivers/bluetooth/bpa10x.c:77:33: warning: 'bpa10x_recv_pkts' defined
-> but not used [-Wunused-variable]
->    77 | static const struct h4_recv_pkt bpa10x_recv_pkts[] = {
->       |                                 ^~~~~~~~~~~~~~~~
-> cc1: some warnings being treated as errors
-> 
-> 
-> ## Source
-> * Kernel version: 6.17.0-rc4
-> * Git tree: https://kernel.googlesource.com/pub/scm/linux/kernel/git/next/linux-next.git
-> * Git describe: next-20250902
-> * Git commit: 3db46a82d467bd23d9ebc473d872a865785299d8
-> * Architectures: powerpc
-> * Toolchains: gcc-13
-> * Kconfigs: ppc6xx_defconfig
-> 
-> ## Build
-> * Build log: https://qa-reports.linaro.org/lkft/linux-next-master/build/next-20250902/testrun/29725581/suite/build/test/gcc-13-ppc6xx_defconfig/log
-> * Build details:
-> https://regressions.linaro.org/lkft/linux-next-master/next-20250901/log-parser-build-gcc/gcc-compiler-drivers_bluetooth_bpax_c-error-array-type-has-incomplete-element-type-struct-h_recv_pkt/
-> * Build plan: https://tuxapi.tuxsuite.com/v1/groups/linaro/projects/lkft/builds/328DwMMwNOpSAj0qnRpJavgtz9C
-> * Build link: https://storage.tuxsuite.com/public/linaro/lkft/builds/328DwMMwNOpSAj0qnRpJavgtz9C/
-> * Kernel config:
-> https://storage.tuxsuite.com/public/linaro/lkft/builds/328DwMMwNOpSAj0qnRpJavgtz9C/config
-> 
-> --
-> Linaro LKFT
-> https://lkft.linaro.org
+And it is functionally fine to split the series like this because
+unmap_page is a nop around unmap_phys:
+
+void dma_unmap_page_attrs(struct device *dev, dma_addr_t addr, size_t size,
+                 enum dma_data_direction dir, unsigned long attrs)
+{
+        if (unlikely(attrs & DMA_ATTR_MMIO))
+                return;
+
+        dma_unmap_phys(dev, addr, size, dir, attrs);
+}
+EXPORT_SYMBOL(dma_unmap_page_attrs);
+
+Jason
 
