@@ -1,51 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-11620-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11621-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D072CA0FFE
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Sep 2025 14:49:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0CBF4CA1005
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Sep 2025 14:49:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cGTCT5H3Jz2yN1;
-	Wed,  3 Sep 2025 00:49:09 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756824549;
-	cv=none; b=PRch/ezMi1/6qQ1coU5r99D4HLdA/8dCmqIhlaBMcgbTnm7NcpDmqfZFRAJ9xIvCg9kGxnU47d2Yl4Av4Nyi6IMadaq2K7lC3EFYnb2J3JE7NYL/r2JcoqLMPETXvHK/6gAhM5ISxK7zYJv25R5FqPdNbTt5pdqT+neC77GtWbx3is2ClObDX2oxYw31lMGYrm/RyuYcomNr33g20JwRIxlQ5Hy4Iv0qCITUO94r9O9Cm4u4FWVY7cz7muWGFPbdVJnMMEBm8Vf46C7nRr53c5DbDpEyV16uTeDipJ3rKp5Z17/q8SFDirP+XQ1Sz8twfT610CpmTJLYP7BGoH1Thg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cGTCY4QQ4z3050;
+	Wed,  3 Sep 2025 00:49:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756824553;
+	cv=none; b=kaEJ02onom8CZE7YNod3m5E6lqa+c7XGSBQxBTWFiz2tUWTyYflpfN6EKhETspuj3rNHESsgFv81TADbTsqKQ84llc/7Ufo2xwrWk/9B0YkHSUqCq8KAueD0PhSZnnaHTfecZRekCfntb3etq137BfKQZXtuC9RFkeAFVQpzOIg+r4GHTdbvRs+JilaF69BoSa9sQHxvVeHsp7NocpWZXLXtY0ALiJZv6WFxwbNQnf0L6BtTc1tcFKAXS71MWFqOSmVJzwVrLX3zi5pklJbxNWOtL840+BIIG2Wz4/NaQckI9w5fgdKmM190uH+TWjCeHMZyDp3X0FH3eEu3cwxPNg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756824549; c=relaxed/relaxed;
-	bh=DjH6W2VoAh0Kv3N0VHTv3PO+Q5Ud4SkBBjk+irt/fhU=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=PYyqIEyEaaHqUCeDBnM6KHhP+H0iSTIfAzY9hvSXa19GRv0sE7tt3l+4xFvjR0WhV96ZjvJReqgXYMWXcKDmAYiPuzkowT08KykE5HdViY0MnYAjEfmrSc1sKTFltiWtzA/sQ9FsB50Z97BiqwyaNPMxZp6e4woCXigvVWmj3mw776GxpEKLm2+wqRUhb72ea9JgkSU3IuUJoCelcnZN/JGM/DKGIPxC2mm07V2J3hApNQ4uBIl0xa8P1HgZytAxFsJWAmpcNFzAOjkGstXRvWkGe57jRqweBrCuRlwuf9VssR+/czjvr8BONou7bogIIrnbyAOkdCE2/JsrO8zgbQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=T4z/viMp; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1756824553; c=relaxed/relaxed;
+	bh=KfgzUojTM/DB/MYkk7DA2Hi+SCW1x3wlstgTHhLqb3I=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=YlVvO9U6xbVf8V7uG71yzqoixd/CRUKRfCvRy3bIm0m1QRo6SVjpVp6XHjRcVcEyTOOaLP/RuCERXlOLwZlNUncEeY4sDE33VL2RXPIqF5GFAAeoyNfkksLSNO5x4vxj13RL6/DwQXnUy43kIIqrf3M5o4um/6nZCr4cCSn5do8vrAMNvp+ThFrM9nhuWR8RADVXX2/QU5XzNkP4lQnk/8aRFH9w9KX6TTIe47uQUzUQN9eGVCg1dAZETu1mWAOGdeKRQsuHxJlqO93qQ8Ens8kfzZ5llpdnY7YMi5IPd+EnaLSPGhvZ1EEQQy/3WHwYHQ1ZeaVy3nCBB3WRS2vUtQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U0Qv8COD; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=T4z/viMp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U0Qv8COD;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cGTCS02sqz2xdg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2025 00:49:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cGTCX5fpKz2xdg
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2025 00:49:12 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id DE20A43910;
-	Tue,  2 Sep 2025 14:49:05 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id ACFA9C4CEED;
-	Tue,  2 Sep 2025 14:49:04 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 272106021C;
+	Tue,  2 Sep 2025 14:49:10 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 2C5C6C4CEED;
+	Tue,  2 Sep 2025 14:49:09 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756824545;
-	bh=3SAFSguWc3mEh+7tLjgls851bpgvCDXeoOLUKYRDCQw=;
-	h=From:To:Cc:Subject:Date:From;
-	b=T4z/viMpK/6nZf/nQZOIsRAAm3EHCx98H3vJy/7M+HoAOU06u4ge/kUryG+aCfwUr
-	 EPLJmc0enqvgMLu/ql+aqcT5Fj2w9kmxR9H/m3pCJndhGClrY92+csP8H8rqa+M2F0
-	 +/tg51ze5lLUyJvb9GuRMyJ6Mnz6YmTZuEbkE8BZXJxNc0WBeGGkH6nfvvoKcKyT7D
-	 72RQkLhAK72Yfulrr+BomhHq1M5YBXZDuDEbusIH/tJezD3AHPAbYmPt0An2e0azvi
-	 DpDSFe11OrTeaTIEkB3Rx5xhIiAEjLUzU+nXQYo+9uCB+p85bgbRHkcFyUX4QjIfNW
-	 +sNnsW+E+uHqg==
+	s=k20201202; t=1756824549;
+	bh=mXPBKGOTAXMaA8YnIACrT4VeK6ColaZH6f/lOi0T5+M=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=U0Qv8COD9vJg/sj1gHJxX08tsa8mkqMwlswZW+JY7U0WZ8zpN+E0gqojH+zijJe4+
+	 GuuBOfJJ7E92NxE/euEVPxir80asPMfJZGfrlBFEkkFiMxs1fGRxbBrARGWJDsvYEz
+	 0KVNHATZmZLhqAH2lHu7WLDB7F7EQbI17lR4MqOQH/5s2HbhqrH3xM/s+mDuyDQQmx
+	 m02cD9zShxiSGxZ84PSZ2YclbBHgJpT4c2BpGr1yygJDBWMAsAnP+j3X0VDKrUyWPN
+	 1KTnwLeTF/x2Orxw9fuAs97O/ssJyp2QOTAnt7oAnZkpfXEk2bpm2MqXqfbqd52vql
+	 XZaWqMxq2z8vg==
 From: Leon Romanovsky <leon@kernel.org>
 To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Jason Gunthorpe <jgg@nvidia.com>,
+Cc: Leon Romanovsky <leonro@nvidia.com>,
+	Jason Gunthorpe <jgg@nvidia.com>,
 	Abdiel Janulgue <abdiel.janulgue@gmail.com>,
 	Alexander Potapenko <glider@google.com>,
 	Alex Gaynor <alex.gaynor@gmail.com>,
@@ -81,10 +83,12 @@ Cc: Jason Gunthorpe <jgg@nvidia.com>,
 	virtualization@lists.linux.dev,
 	Will Deacon <will@kernel.org>,
 	xen-devel@lists.xenproject.org
-Subject: [PATCH v5 00/16] dma-mapping: migrate to physical address-based API
-Date: Tue,  2 Sep 2025 17:48:37 +0300
-Message-ID: <cover.1756822782.git.leon@kernel.org>
+Subject: [PATCH v5 02/16] iommu/dma: implement DMA_ATTR_MMIO for dma_iova_link().
+Date: Tue,  2 Sep 2025 17:48:39 +0300
+Message-ID: <5a279b1ce492ba8635eb3fa6bb9a22fd77366672.1756822782.git.leon@kernel.org>
 X-Mailer: git-send-email 2.50.1
+In-Reply-To: <cover.1756822782.git.leon@kernel.org>
+References: <cover.1756822782.git.leon@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,166 +104,70 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Marek,
+From: Leon Romanovsky <leonro@nvidia.com>
 
-Please pay attention that I'm resending all patches which includes
-nvme/blk conversion too. The code is based on clean -rc3, but NVMe
-tree got patch in this cycle which removes one of their REQ_* bits,
-on which I'm relying.
+This will replace the hacky use of DMA_ATTR_SKIP_CPU_SYNC to avoid
+touching the possibly non-KVA MMIO memory.
 
-This is the patch:
-https://git.kernel.org/pub/scm/linux/kernel/git/axboe/linux-block.git/commit/?h=for-6.18/block&id=7092639031a1bd5320ab827e8f665350f332b7ce
-and this is Keith's attempt to restore it:
-https://lore.kernel.org/linux-block/20250829142307.3769873-3-kbusch@meta.com/
+Also correct the incorrect caching attribute for the IOMMU, MMIO
+memory should not be cachable inside the IOMMU mapping or it can
+possibly create system problems. Set IOMMU_MMIO for DMA_ATTR_MMIO.
 
-So there are two possible options:
-1. Apply only first 13 patches and I'll resend nvme/blk patches in next
-cycle with the hope that REQ_* bits issue is sorted.
-2. Apply whole series and deal with merge conflicts by sending PR to
-Jens and ask him to merge this DMA series.
+Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
+Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
+---
+ drivers/iommu/dma-iommu.c | 18 ++++++++++++++----
+ 1 file changed, 14 insertions(+), 4 deletions(-)
 
-Thanks
-
-------------------------------------------------------------------------
-Changelog:
-v5:
- * Added Jason's and Keith's Reviewed-by tags
- * Fixed DMA_ATTR_MMIO check in dma_direct_map_phys
- * Jason's cleanup suggestions
-v4: https://lore.kernel.org/all/cover.1755624249.git.leon@kernel.org/
- * Fixed kbuild error with mismatch in kmsan function declaration due to
-   rebase error.
-v3: https://lore.kernel.org/all/cover.1755193625.git.leon@kernel.org
- * Fixed typo in "cacheable" word
- * Simplified kmsan patch a lot to be simple argument refactoring
-v2: https://lore.kernel.org/all/cover.1755153054.git.leon@kernel.org
- * Used commit messages and cover letter from Jason
- * Moved setting IOMMU_MMIO flag to dma_info_to_prot function
- * Micro-optimized the code
- * Rebased code on v6.17-rc1
-v1: https://lore.kernel.org/all/cover.1754292567.git.leon@kernel.org
- * Added new DMA_ATTR_MMIO attribute to indicate
-   PCI_P2PDMA_MAP_THRU_HOST_BRIDGE path.
- * Rewrote dma_map_* functions to use thus new attribute
-v0: https://lore.kernel.org/all/cover.1750854543.git.leon@kernel.org/
-------------------------------------------------------------------------
-
-This series refactors the DMA mapping to use physical addresses
-as the primary interface instead of page+offset parameters. This
-change aligns the DMA API with the underlying hardware reality where
-DMA operations work with physical addresses, not page structures.
-
-The series maintains export symbol backward compatibility by keeping
-the old page-based API as wrapper functions around the new physical
-address-based implementations.
-
-This series refactors the DMA mapping API to provide a phys_addr_t
-based, and struct-page free, external API that can handle all the
-mapping cases we want in modern systems:
-
- - struct page based cacheable DRAM
- - struct page MEMORY_DEVICE_PCI_P2PDMA PCI peer to peer non-cacheable
-   MMIO
- - struct page-less PCI peer to peer non-cacheable MMIO
- - struct page-less "resource" MMIO
-
-Overall this gets much closer to Matthew's long term wish for
-struct-pageless IO to cacheable DRAM. The remaining primary work would
-be in the mm side to allow kmap_local_pfn()/phys_to_virt() to work on
-phys_addr_t without a struct page.
-
-The general design is to remove struct page usage entirely from the
-DMA API inner layers. For flows that need to have a KVA for the
-physical address they can use kmap_local_pfn() or phys_to_virt(). This
-isolates the struct page requirements to MM code only. Long term all
-removals of struct page usage are supporting Matthew's memdesc
-project which seeks to substantially transform how struct page works.
-
-Instead make the DMA API internals work on phys_addr_t. Internally
-there are still dedicated 'page' and 'resource' flows, except they are
-now distinguished by a new DMA_ATTR_MMIO instead of by callchain. Both
-flows use the same phys_addr_t.
-
-When DMA_ATTR_MMIO is specified things work similar to the existing
-'resource' flow. kmap_local_pfn(), phys_to_virt(), phys_to_page(),
-pfn_valid(), etc are never called on the phys_addr_t. This requires
-rejecting any configuration that would need swiotlb. CPU cache
-flushing is not required, and avoided, as ATTR_MMIO also indicates the
-address have no cacheable mappings. This effectively removes any
-DMA API side requirement to have struct page when DMA_ATTR_MMIO is
-used.
-
-In the !DMA_ATTR_MMIO mode things work similarly to the 'page' flow,
-except on the common path of no cache flush, no swiotlb it never
-touches a struct page. When cache flushing or swiotlb copying
-kmap_local_pfn()/phys_to_virt() are used to get a KVA for CPU
-usage. This was already the case on the unmap side, now the map side
-is symmetric.
-
-Callers are adjusted to set DMA_ATTR_MMIO. Existing 'resource' users
-must set it. The existing struct page based MEMORY_DEVICE_PCI_P2PDMA
-path must also set it. This corrects some existing bugs where iommu
-mappings for P2P MMIO were improperly marked IOMMU_CACHE.
-
-Since ATTR_MMIO is made to work with all the existing DMA map entry
-points, particularly dma_iova_link(), this finally allows a way to use
-the new DMA API to map PCI P2P MMIO without creating struct page. The
-VFIO DMABUF series demonstrates how this works. This is intended to
-replace the incorrect driver use of dma_map_resource() on PCI BAR
-addresses.
-
-This series does the core code and modern flows. A followup series
-will give the same treatment to the legacy dma_ops implementation.
-
-Thanks
-
-Leon Romanovsky (16):
-  dma-mapping: introduce new DMA attribute to indicate MMIO memory
-  iommu/dma: implement DMA_ATTR_MMIO for dma_iova_link().
-  dma-debug: refactor to use physical addresses for page mapping
-  dma-mapping: rename trace_dma_*map_page to trace_dma_*map_phys
-  iommu/dma: rename iommu_dma_*map_page to iommu_dma_*map_phys
-  iommu/dma: implement DMA_ATTR_MMIO for iommu_dma_(un)map_phys()
-  dma-mapping: convert dma_direct_*map_page to be phys_addr_t based
-  kmsan: convert kmsan_handle_dma to use physical addresses
-  dma-mapping: implement DMA_ATTR_MMIO for dma_(un)map_page_attrs()
-  xen: swiotlb: Open code map_resource callback
-  dma-mapping: export new dma_*map_phys() interface
-  mm/hmm: migrate to physical address-based DMA mapping API
-  mm/hmm: properly take MMIO path
-  block-dma: migrate to dma_map_phys instead of map_page
-  block-dma: properly take MMIO path
-  nvme-pci: unmap MMIO pages with appropriate interface
-
- Documentation/core-api/dma-api.rst        |   4 +-
- Documentation/core-api/dma-attributes.rst |  18 ++++
- arch/powerpc/kernel/dma-iommu.c           |   4 +-
- block/blk-mq-dma.c                        |  15 ++-
- drivers/iommu/dma-iommu.c                 |  61 +++++------
- drivers/nvme/host/pci.c                   |  18 +++-
- drivers/virtio/virtio_ring.c              |   4 +-
- drivers/xen/swiotlb-xen.c                 |  21 +++-
- include/linux/blk-mq-dma.h                |   6 +-
- include/linux/blk_types.h                 |   2 +
- include/linux/dma-direct.h                |   2 -
- include/linux/dma-map-ops.h               |   8 +-
- include/linux/dma-mapping.h               |  33 ++++++
- include/linux/iommu-dma.h                 |  11 +-
- include/linux/kmsan.h                     |   9 +-
- include/linux/page-flags.h                |   1 +
- include/trace/events/dma.h                |   9 +-
- kernel/dma/debug.c                        |  81 ++++-----------
- kernel/dma/debug.h                        |  37 ++-----
- kernel/dma/direct.c                       |  22 +---
- kernel/dma/direct.h                       |  57 +++++++----
- kernel/dma/mapping.c                      | 117 +++++++++++++---------
- kernel/dma/ops_helpers.c                  |   6 +-
- mm/hmm.c                                  |  19 ++--
- mm/kmsan/hooks.c                          |   8 +-
- rust/kernel/dma.rs                        |   3 +
- tools/virtio/linux/kmsan.h                |   2 +-
- 27 files changed, 315 insertions(+), 263 deletions(-)
-
+diff --git a/drivers/iommu/dma-iommu.c b/drivers/iommu/dma-iommu.c
+index ea2ef53bd4fe..e1185ba73e23 100644
+--- a/drivers/iommu/dma-iommu.c
++++ b/drivers/iommu/dma-iommu.c
+@@ -724,7 +724,12 @@ static int iommu_dma_init_domain(struct iommu_domain *domain, struct device *dev
+ static int dma_info_to_prot(enum dma_data_direction dir, bool coherent,
+ 		     unsigned long attrs)
+ {
+-	int prot = coherent ? IOMMU_CACHE : 0;
++	int prot;
++
++	if (attrs & DMA_ATTR_MMIO)
++		prot = IOMMU_MMIO;
++	else
++		prot = coherent ? IOMMU_CACHE : 0;
+ 
+ 	if (attrs & DMA_ATTR_PRIVILEGED)
+ 		prot |= IOMMU_PRIV;
+@@ -1838,12 +1843,13 @@ static int __dma_iova_link(struct device *dev, dma_addr_t addr,
+ 		unsigned long attrs)
+ {
+ 	bool coherent = dev_is_dma_coherent(dev);
++	int prot = dma_info_to_prot(dir, coherent, attrs);
+ 
+-	if (!coherent && !(attrs & DMA_ATTR_SKIP_CPU_SYNC))
++	if (!coherent && !(attrs & (DMA_ATTR_SKIP_CPU_SYNC | DMA_ATTR_MMIO)))
+ 		arch_sync_dma_for_device(phys, size, dir);
+ 
+ 	return iommu_map_nosync(iommu_get_dma_domain(dev), addr, phys, size,
+-			dma_info_to_prot(dir, coherent, attrs), GFP_ATOMIC);
++			prot, GFP_ATOMIC);
+ }
+ 
+ static int iommu_dma_iova_bounce_and_link(struct device *dev, dma_addr_t addr,
+@@ -1949,9 +1955,13 @@ int dma_iova_link(struct device *dev, struct dma_iova_state *state,
+ 		return -EIO;
+ 
+ 	if (dev_use_swiotlb(dev, size, dir) &&
+-	    iova_unaligned(iovad, phys, size))
++	    iova_unaligned(iovad, phys, size)) {
++		if (attrs & DMA_ATTR_MMIO)
++			return -EPERM;
++
+ 		return iommu_dma_iova_link_swiotlb(dev, state, phys, offset,
+ 				size, dir, attrs);
++	}
+ 
+ 	return __dma_iova_link(dev, state->addr + offset - iova_start_pad,
+ 			phys - iova_start_pad,
 -- 
 2.50.1
 
