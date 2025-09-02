@@ -1,84 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-11643-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11644-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C221CCA1007
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Sep 2025 21:59:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F9E4CA1007
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Sep 2025 22:22:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cGfmJ5lWKz3050;
-	Wed,  3 Sep 2025 07:59:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756850384;
-	cv=none; b=f9lntfg9bG4l/pjDvwS5OROtyAghraqz4i8Zr97EMe2EwD25id5Ulp4iSuADiQ4NLVfBKtgXkd8xVI+t+ykqKWjdlyeKh/ly+GABO/GxszBAHd/hVOSDYt0WZVr1zPmehUJp0isEpuNdM1AlbyiF4rNdbZ1BoYpkhFZD1JoEO40WI5mZ2rhCozMR0pgesTrH2J51jDUbskf2t/2JXgsc0blcn5x0ejrPP6glRkgf8gSiaf3FzzyhDy87m9G6OAdd9lSSk1MnwDV2EjiWICBfs4NDkuQ0iEKVGIlFge6+rjWOZV7qFZQyH5b36EdkBWPM6rOhaPFvjvJDN4y2Lttu9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cGgGw5j40z2xlM;
+	Wed,  3 Sep 2025 08:22:48 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756825023;
+	cv=none; b=ToJOjxi8Ao1/77bUyltbdJmx6qVA+59CXo+gZjXmjI2gyqActaq8vcwo0vMIzNCWJg7FAyRB9pWYsVM3ULTBcRO2Dt4veIrzqjqoAlTwtKsP5KtJbF6k8YPz04ACK3hB5oSItpnVlTFRralEoXlnnqozB6AOv9xldZfiyvjcGso3vwH1ex6p8sCXUVFAT2PxiAEf0kgaz0ZDSvrzAY0L5o7TVLfLSCu7ldBOvjy27lUgrHIErKx0okNu+QbjjYb09ndgcM7K5sATjhcYDk65pWcNr940OK7zYbKa9L3zMBW1WdN/PznoKGdbYZsUMwn9/oh3rXgoaaynDXe6vILu8w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756850384; c=relaxed/relaxed;
-	bh=wxLWaOMzyFn1TCsduloGVD+a0ZYJgwe6TduwxzO1EKw=;
+	t=1756825023; c=relaxed/relaxed;
+	bh=iQAoY+64PekjTVVz5Aci7Us6O8LqMJNZMBqivTa7EXM=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=VbBrvG9CQVSsU+7n0GyMWWe+TSScisG/ofl1jdyViNnXxk8buiWkjSGwwtZn2l5s/jYHTxy+uKOv2BKXrUcaLdkp0lTnJ3Ie8OedqlLSwf/wVrN/otTVUjVh7Cn7GAKaaqPiThJZcTTrNXO3QEbyz8OsZw+z+5/MvRhZUNfgf36fHJJhPPifjVQtA/fXZre59mD85cmFdKgbhU1ayyILJD54nXbc1CNeJFS9R6ordeNWy2/WOAgVEEwOel4b/ayIyehLZciC88Z1EX38Vm6abMrMI4qJY7TO3tXGQlDETjLxXNx8rRoTnDo6ydSQYgomqcsOnI1cqv4cswYFOiBjDA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=t/Eu3Rve; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kbusch@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=AUbOUXd01Nqus+i5OnmY1hRQeDh10cxq6pItL+c0hLG0jPGUoYP/9ROiPLzifQZwbbufQqdskElwIY7SeG5YcjyfybZh4YcBGe7A4uMio7zWtePyrwqgPGoj1ZZrmCM+i/zialiIUcRFRQ96ArckfzPMEf07BjjkdX1Uhn3zJB30z4LCVLOMbSKs6mgofLPmgR6XkHZTp+dghQGZv1KbB0dJBEIa70/PudHv0XDdH1Op5OCVFqbAbAIJnneFb6hgqHnb+WVfn5YZ1BrCK6Z34R5lB+cpukyobseZ1JhoG5nzzN7E0Mt1AMW6iH4J8zXEChWk2D6+tPJpE+4ljNc72w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wbinvd.org; dkim=pass (2048-bit key; secure) header.d=wbinvd.org header.i=@wbinvd.org header.a=rsa-sha256 header.s=wbinvd header.b=Qzl8bO33; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=calvin@wbinvd.org; receiver=lists.ozlabs.org) smtp.mailfrom=wbinvd.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wbinvd.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=t/Eu3Rve;
+	dkim=pass (2048-bit key; secure) header.d=wbinvd.org header.i=@wbinvd.org header.a=rsa-sha256 header.s=wbinvd header.b=Qzl8bO33;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=kbusch@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=wbinvd.org (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=calvin@wbinvd.org; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cGfmH32bgz2yN1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2025 07:59:43 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 55E3F405D0;
-	Tue,  2 Sep 2025 21:59:41 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A15CEC4CEED;
-	Tue,  2 Sep 2025 21:59:39 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756850381;
-	bh=zUOixGI5e23gDVx/zmq/5QWAYGpvZZ1gzj0irhRA2AU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=t/Eu3RveeWFJ7QPQZS0HMJnJ18RJisbVk4Pk4B2mkUogsXCsDnOh5nmkT6QJ4KkpV
-	 WAD5v3cszsJls2vJneW0RL/RKpho+ZzAZhFpATDVsn7wwLvJDFu6zSx6RUEKSctSsY
-	 MYZrvd5dFbrPEZmkILy8ZxDbNlA6Ej38GRHuRquE0I86IxDtV1kdU0Sm1EDnwtGqEF
-	 c1keYzFalxZPfGjORlUbEIAtFrtMdhOixv+lPDaKzXO5a+aOyNEdMKgtKZcG+wqmef
-	 IRgJjgP6zlr77O2RCDhrfy6xxK73ZGX0o3JyM4rB09vZuyTewz4+/r6JUDL31Kg2Mp
-	 O1zPH9rjxq5Aw==
-Date: Tue, 2 Sep 2025 15:59:37 -0600
-From: Keith Busch <kbusch@kernel.org>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Leon Romanovsky <leon@kernel.org>, Leon Romanovsky <leonro@nvidia.com>,
-	Jason Gunthorpe <jgg@nvidia.com>,
-	Abdiel Janulgue <abdiel.janulgue@gmail.com>,
-	Alexander Potapenko <glider@google.com>,
-	Alex Gaynor <alex.gaynor@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Christoph Hellwig <hch@lst.de>, Danilo Krummrich <dakr@kernel.org>,
-	iommu@lists.linux.dev, Jason Wang <jasowang@redhat.com>,
-	Jens Axboe <axboe@kernel.dk>, Joerg Roedel <joro@8bytes.org>,
-	Jonathan Corbet <corbet@lwn.net>, Juergen Gross <jgross@suse.com>,
-	kasan-dev@googlegroups.com, linux-block@vger.kernel.org,
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, linux-nvme@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, linux-trace-kernel@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Miguel Ojeda <ojeda@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>, rust-for-linux@vger.kernel.org,
-	Sagi Grimberg <sagi@grimberg.me>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	virtualization@lists.linux.dev, Will Deacon <will@kernel.org>,
-	xen-devel@lists.xenproject.org
-Subject: Re: [PATCH v4 14/16] block-dma: migrate to dma_map_phys instead of
- map_page
-Message-ID: <aLdoyWevrQMQUGyz@kbusch-mbp>
-References: <cover.1755624249.git.leon@kernel.org>
- <CGME20250819173845eucas1p221cd6842839f5e7130f131cd341df566@eucas1p2.samsung.com>
- <22b824931bc8ba090979ab902e4c1c2ec8327b65.1755624249.git.leon@kernel.org>
- <2d8e67b2-4ab2-4c1f-9ef3-470810f99d07@samsung.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cGTNZ4nNqz30TG
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2025 00:57:01 +1000 (AEST)
+Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-7724cacc32bso1990115b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Sep 2025 07:57:01 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=wbinvd.org; s=wbinvd; t=1756825019; x=1757429819; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=iQAoY+64PekjTVVz5Aci7Us6O8LqMJNZMBqivTa7EXM=;
+        b=Qzl8bO335fdyBCm5LUl5F9tRcPfvPW9YuE02HdtEMmFN1xhOLCqb4JejA9nHKFfVwQ
+         t1KJmxQ+rm2b8Wqm1nzKKAzJogARSZUiU9ZJOBgOGIwQlrk6/zONZLcZrK59nrpbj6+d
+         ZGf/Ik7frD2oW9HG826enUPEtWGlmiiE6eGIfKMbOcnREIfsUpK63eRS+fMbfeWvPO3T
+         OxoF/4JUUmivJxNrtQLGB+Owk5QvKAUX8wMdNzimJ3XF3TvtqMgQLa1mfuSxiD8QWPrs
+         ltrdxSIG1MzjFzQel9BSbIAm3aByKgpdYHcl/zPD7TWSatGnqwZW1//3w/K2bMMEH0rz
+         wP6w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1756825019; x=1757429819;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=iQAoY+64PekjTVVz5Aci7Us6O8LqMJNZMBqivTa7EXM=;
+        b=i6MgooLOOUXpkry58XHQKcMMAtJT7jrtNTzdwnua7SFgCPVcQT+6iMWovbJP3aq7ne
+         58ODAyd7j6d2bM0fbIFP2MUshtQ9x41k19mQ1Ci88b/7as5rExksiEQh8l+6pd2gcxha
+         gjRta2IZ9+speudvxjWuBAWxV1neO1PpxdnVDRfRAKXQsrM/PCXnBHHbv+6pE8LQ9C6r
+         zAet8Rp8Y7/clg+ySkPocoZiYKICZRMDzkzGMWHzhTO7TYMcnlmxXFwioMpKPaFRETDE
+         0VhDz0kjZ3k8Krw2kY3eX+z4ZtzdpScHeC1tKx5SmM4KilWDHLdoSrBl6wh2RJFkuq1v
+         LSEA==
+X-Forwarded-Encrypted: i=1; AJvYcCVFzcEfF2mOxRqeJKIpk2Mni2t9Kpc2M6GmMke9lZunwnn2wW/D0ARv2uCkGXTqfS0L7vsGUpxruM+loGQ=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz9+AZ3PRn07q+oBE1Y+siMg7IXzCPEuiqhwtWhagYLL/lI5bOR
+	ZQ2+bBi5zR1taveojrNE+FJs7L16hUDBSajgsvPGAKFEfyHuelaOuQ+Z1arp7v/NghQaAh+FJCk
+	WJQVF
+X-Gm-Gg: ASbGncu3O6I/GAGvZbMbCUpOCGHv6fDY6gpfge4V8TK6nt8xBFpdmjIxjLM10ROOvAu
+	Oj2jsijNT05q4gtI2asaHdSwDlHFbLysEQwhIdePc/dkXUwMlksoAskg9UxPPyEB5LU73SJyrIz
+	+vY8JD0pbaHch2zcWpvFHB0KHKxxqtph/3buO8GzcQeDHqxcbRA5YJ0/dBxXm99UFJdM/R8jMTT
+	6kZk6JKG8UPSzekKACXzdStxivqtnTk/3vqHVeIVu6tYsB5W7RKFoAwbjuox5MhhOkk920L0SQm
+	ob3jn2lT80U3Kv0W+Or/gBTBL+F7+bd6op6ZTpYfMWFbLaHfWS8EZIWKt2/QrNc7nsJE5SvdcKn
+	BYN2O5y3m5Wa9e5tjPsjW3QMD
+X-Google-Smtp-Source: AGHT+IG4NJOSwfNOiJPCZCADKuS/Hi0VsrUQ00UwdvcAjo/IiTHURdMNRbeFN9pERyT8kiit7L+DiA==
+X-Received: by 2002:a05:6a00:1748:b0:76e:7aee:35f1 with SMTP id d2e1a72fcca58-7723e3fcb56mr15007816b3a.29.1756825018957;
+        Tue, 02 Sep 2025 07:56:58 -0700 (PDT)
+Received: from mozart.vkv.me ([192.184.167.117])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7722a26bfe2sm14027937b3a.14.2025.09.02.07.56.57
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 02 Sep 2025 07:56:58 -0700 (PDT)
+Date: Tue, 2 Sep 2025 07:56:58 -0700
+From: Calvin Owens <calvin@wbinvd.org>
+To: Naresh Kamboju <naresh.kamboju@linaro.org>
+Cc: linux-bluetooth@vger.kernel.org,
+	open list <linux-kernel@vger.kernel.org>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+	lkft-triage@lists.linaro.org,
+	Linux Regressions <regressions@lists.linux.dev>,
+	Luiz Augusto von Dentz <luiz.dentz@gmail.com>,
+	Marcel Holtmann <marcel@holtmann.org>, pmenzel@molgen.mpg.de,
+	Luiz Augusto von Dentz <luiz.von.dentz@intel.com>,
+	Dan Carpenter <dan.carpenter@linaro.org>,
+	Arnd Bergmann <arnd@arndb.de>,
+	Anders Roxell <anders.roxell@linaro.org>,
+	Ben Copeland <benjamin.copeland@linaro.org>
+Subject: Re: next-20250901 drivers bluetooth bpa10x.c:77:33: error: array
+ type has incomplete element type 'struct h4_recv_pkt'
+Message-ID: <aLcFuqRuB2NFu-ZE@mozart.vkv.me>
+References: <CA+G9fYsgiqTo7t3e36P5cysc+jEX5Fub1quTj+fuKGM8jkxbFA@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,30 +103,112 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <2d8e67b2-4ab2-4c1f-9ef3-470810f99d07@samsung.com>
+In-Reply-To: <CA+G9fYsgiqTo7t3e36P5cysc+jEX5Fub1quTj+fuKGM8jkxbFA@mail.gmail.com>
 
-On Tue, Sep 02, 2025 at 10:49:48PM +0200, Marek Szyprowski wrote:
-> On 19.08.2025 19:36, Leon Romanovsky wrote:
-> > @@ -87,8 +87,8 @@ static bool blk_dma_map_bus(struct blk_dma_iter *iter, struct phys_vec *vec)
-> >   static bool blk_dma_map_direct(struct request *req, struct device *dma_dev,
-> >   		struct blk_dma_iter *iter, struct phys_vec *vec)
-> >   {
-> > -	iter->addr = dma_map_page(dma_dev, phys_to_page(vec->paddr),
-> > -			offset_in_page(vec->paddr), vec->len, rq_dma_dir(req));
-> > +	iter->addr = dma_map_phys(dma_dev, vec->paddr, vec->len,
-> > +			rq_dma_dir(req), 0);
-> >   	if (dma_mapping_error(dma_dev, iter->addr)) {
-> >   		iter->status = BLK_STS_RESOURCE;
-> >   		return false;
+On Tuesday 09/02 at 15:00 +0530, Naresh Kamboju wrote:
+> The following build warnings / errors are noticed on powerpc ppc6xx_defconfig
+> with gcc-13 toolchain running on Linux next-20250901 and next-20250902.
 > 
-> I wonder where is the corresponding dma_unmap_page() call and its change 
-> to dma_unmap_phys()...
+> Regression Analysis:
+> - New regression? yes
+> - Reproducibility? yes
+> 
+> First seen on next-20250901
+> Bad: next-20250901 and next-20250902
+> Good: next-20250829
+> 
+> Build regression: next-20250901 drivers bluetooth bpa10x.c:77:33:
+> error: array type has incomplete element type 'struct h4_recv_pkt'
+> 
+> Reported-by: Linux Kernel Functional Testing <lkft@linaro.org>
+> 
+> Powerpc:
+>   build:
+>     * gcc-13-ppc6xx_defconfig
+>     * gcc-8-ppc6xx_defconfig
 
-You can't do that in the generic layer, so it's up to the caller. The
-dma addrs that blk_dma_iter yield are used in a caller specific
-structure. For example, for NVMe, it goes into an NVMe PRP. The generic
-layer doesn't know what that is, so the driver has to provide the
-unmapping.
+Hi Naresh,
+
+This should fix it:
+https://lore.kernel.org/all/aLNRvzXE4O9dKZoN@mozart.vkv.me/
+
+Thanks,
+Calvin
+
+> Build error:
+> drivers/bluetooth/bpa10x.c:77:33: error: array type has incomplete
+> element type 'struct h4_recv_pkt'
+>    77 | static const struct h4_recv_pkt bpa10x_recv_pkts[] = {
+>       |                                 ^~~~~~~~~~~~~~~~
+> drivers/bluetooth/bpa10x.c:78:11: error: 'H4_RECV_ACL' undeclared here
+> (not in a function)
+>    78 |         { H4_RECV_ACL,     .recv = hci_recv_frame },
+>       |           ^~~~~~~~~~~
+> drivers/bluetooth/bpa10x.c:79:11: error: 'H4_RECV_SCO' undeclared here
+> (not in a function)
+>    79 |         { H4_RECV_SCO,     .recv = hci_recv_frame },
+>       |           ^~~~~~~~~~~
+> drivers/bluetooth/bpa10x.c:80:11: error: 'H4_RECV_EVENT' undeclared
+> here (not in a function)
+>    80 |         { H4_RECV_EVENT,   .recv = hci_recv_frame },
+>       |           ^~~~~~~~~~~~~
+> drivers/bluetooth/bpa10x.c: In function 'bpa10x_rx_complete':
+> drivers/bluetooth/bpa10x.c:99:37: error: implicit declaration of
+> function 'h4_recv_buf' [-Werror=implicit-function-declaration]
+>    99 |                 data->rx_skb[idx] = h4_recv_buf(hdev, data->rx_skb[idx],
+>       |                                     ^~~~~~~~~~~
+> In file included from include/linux/array_size.h:5,
+>                  from include/linux/kernel.h:16,
+>                  from drivers/bluetooth/bpa10x.c:9:
+> include/linux/compiler.h:197:82: error: expression in static assertion
+> is not an integer
+>   197 | #define __BUILD_BUG_ON_ZERO_MSG(e, msg, ...)
+> ((int)sizeof(struct {_Static_assert(!(e), msg);}))
+>       |
+>                   ^
+> include/linux/compiler.h:202:33: note: in expansion of macro
+> '__BUILD_BUG_ON_ZERO_MSG'
+>   202 | #define __must_be_array(a)
+> __BUILD_BUG_ON_ZERO_MSG(!__is_array(a), \
+>       |                                 ^~~~~~~~~~~~~~~~~~~~~~~
+> include/linux/array_size.h:11:59: note: in expansion of macro '__must_be_array'
+>    11 | #define ARRAY_SIZE(arr) (sizeof(arr) / sizeof((arr)[0]) +
+> __must_be_array(arr))
+>       |
+> ^~~~~~~~~~~~~~~
+> drivers/bluetooth/bpa10x.c:103:49: note: in expansion of macro 'ARRAY_SIZE'
+>   103 |
+> ARRAY_SIZE(bpa10x_recv_pkts));
+>       |                                                 ^~~~~~~~~~
+> drivers/bluetooth/bpa10x.c: At top level:
+> drivers/bluetooth/bpa10x.c:77:33: warning: 'bpa10x_recv_pkts' defined
+> but not used [-Wunused-variable]
+>    77 | static const struct h4_recv_pkt bpa10x_recv_pkts[] = {
+>       |                                 ^~~~~~~~~~~~~~~~
+> cc1: some warnings being treated as errors
+> 
+> 
+> ## Source
+> * Kernel version: 6.17.0-rc4
+> * Git tree: https://kernel.googlesource.com/pub/scm/linux/kernel/git/next/linux-next.git
+> * Git describe: next-20250902
+> * Git commit: 3db46a82d467bd23d9ebc473d872a865785299d8
+> * Architectures: powerpc
+> * Toolchains: gcc-13
+> * Kconfigs: ppc6xx_defconfig
+> 
+> ## Build
+> * Build log: https://qa-reports.linaro.org/lkft/linux-next-master/build/next-20250902/testrun/29725581/suite/build/test/gcc-13-ppc6xx_defconfig/log
+> * Build details:
+> https://regressions.linaro.org/lkft/linux-next-master/next-20250901/log-parser-build-gcc/gcc-compiler-drivers_bluetooth_bpax_c-error-array-type-has-incomplete-element-type-struct-h_recv_pkt/
+> * Build plan: https://tuxapi.tuxsuite.com/v1/groups/linaro/projects/lkft/builds/328DwMMwNOpSAj0qnRpJavgtz9C
+> * Build link: https://storage.tuxsuite.com/public/linaro/lkft/builds/328DwMMwNOpSAj0qnRpJavgtz9C/
+> * Kernel config:
+> https://storage.tuxsuite.com/public/linaro/lkft/builds/328DwMMwNOpSAj0qnRpJavgtz9C/config
+> 
+> --
+> Linaro LKFT
+> https://lkft.linaro.org
 
