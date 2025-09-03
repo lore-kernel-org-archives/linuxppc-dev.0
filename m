@@ -1,59 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-11677-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11678-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9FD8CA1010
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Sep 2025 13:41:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A0D8CA1009
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  3 Sep 2025 13:43:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cH3g95DXyz30Bd;
-	Wed,  3 Sep 2025 23:41:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cH3jK2Np4z2yrl;
+	Wed,  3 Sep 2025 23:43:33 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756906901;
-	cv=none; b=dKvT7sqhpJhT1LeyIqTLvFzaR1NX7ZZpiT8i86aiEpDHeclHHXCISi2fJCyllNXCx/7SOKNjaTJIU9PbI1MXeEEmuIAyFAPcQOUWOQiqHi7WT4KehxOC36UnIG7IhTIWu24wILvgZ3GNMlpAsVx6HBZJwsCdNfljG1+0mYEIcEiEo3/iEhqM18Af/Tom+zDXmDv4k4InocQUO8SjxwqsGQWbbqiDE5PGS7eusoJWgb7Dy83JL1OVxfXTSsxqHsyttcXiE9WSKyU86hnJJBRIwQ/lAjOdHRVC0uXDY/KrGPaoVYuE/7CvIpuZOnD9bC5GzfXZmliFP89JgH8A+4gQLQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756907013;
+	cv=none; b=e+I7zyy1mizmONs3GShOw88+VHkpAPRsPyz7MEER9vhlmZbI+oaYJUAgiSR/wnzctqbr41lAMTvpf8JgZsKBiPuNEhDr5SEFjCaPzSnsTxtvhrgu8PCiqAyi2rslwv8MUe2zc15WR1toMEDgfKftwah0uG2bkkc6G61cO9FwJmQg6gpydjVaSCTUMcE2senYCdcNSAcr2FKu/drQ0A1014D1ywTXUSNSzKrkX6d51GMb+1hlSaEPcmS7zO8L4rhVE9nnItNlUF2jElgnbsuBVeWXRQAbG8DA7LkiMFT41/4Ly96TpoGhzxjDYxylHnkVjXYIWPEegCIZZ8WSrzv6gQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756906901; c=relaxed/relaxed;
-	bh=A8mClpVxiqUUuW2AJ7FygEu78/AmPq4S0W+oewFRLjY=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=ouB/jNyLrXDSwHkB37cl/OkeDNVdb+kRNaXf7+6nJSqtA4XT+5Zjh7Uc5YVAjdkbZZU0SarwJ0y+/gDv75m07yVLqcMjE0uqLt3/b18S/twnviqOj4tqAuImz3+qS7AdWQ9aZiQjn0x26Ni5E2IS7ILb4cBaMOqvHwq8+LrgGi8JWZcvq5p8rzlvywbNFy3B64lXIRrSfuNNAldu6gJN1PrlMyWJVSdapfzrl8dvKhfH+nvGjN8oqWCwTycdG/eL8Q+7eqE7G9benIJFUZbjSIozzjtyGh4xe+/KwMdMovB346/kHdRJ3RGe26T2RCf3Elwp7Ta/BHwS/1ZSpuUA7A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gREu3S3c; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rafael@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1756907013; c=relaxed/relaxed;
+	bh=Rhm8SKxH6RS17h5tGE5X3in15RSNyKo1mBjndP9jH0s=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=bJ5JiDyQHZanoeHfW2EHH3Lww0Cqh9r4p4IqcY3vJ+1lZCCXNgzNZGedG+qIk2Gi4lFhVMnuYCV0pLKwIcEk0Jx0y1mCc1QYS1JzXsG+EHQjjxp4xmgC4J/pW9mPqWGyylOVQC+GTgEbz4Ywhp4sLdzVZgkMa/FKQWwe02sNt6wCR0eCLujcG7yLU2rMWTvvpP45+O9ODI7ugT6wuapUUjQoxbZy4Bd/6RZDTuLokBhhAu9/dpt+S23hUgXKhul8aPLMHRPTkkIYiJEpK9gqN/C/UAuiNxgm/GigCAFjCSxqn7azEmExAzcLZBz/50kQRD36ZElzkWi63lEr6sCiTQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NpZb6c9V; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gREu3S3c;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=NpZb6c9V;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=rafael@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cH3g90S0Mz2xlM
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2025 23:41:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cH3jJ4Rwxz2xrL
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2025 23:43:32 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5E271447C4
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2025 13:41:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 39FBEC4CEFB
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  3 Sep 2025 13:41:39 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 0146D448A7;
+	Wed,  3 Sep 2025 13:43:31 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 46819C4CEFB;
+	Wed,  3 Sep 2025 13:43:20 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756906899;
-	bh=GdyS+4iaGJbGIJ9ctC+uFtQbJ57ANyqF8rmhb7Dc65Y=;
-	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
-	b=gREu3S3cIIExxWuJPsc+munhlGaJtSwRMnS15DA4v0a6bQz6CWCrmik3TzYj/QUJj
-	 3ZloY/8FCzhwS85PBka4CYNFeEOJbr7uVgfvXPdZeoAikj7Uo0dnGkAxWxGkG+5qsO
-	 Ubyh/2IuzT8yKsZ/kPtNv09e6T7qhzcGrsaH6Y8fwLeZyjglfWVXXhr2JNPe5wC7Yw
-	 F1Qxtcff4RNjFLRfNMG69ZKoOHxIslevyytvdomIhf8ZQZp2ywnG4IJCrefXprlYQy
-	 PWeQU1n7TY41TrGtpOURB7CSxfyFAU/wyFf1li3R+PGyBGvuiJDKyH0k8eoNUsZlzO
-	 OT60wNUwudvhQ==
-Received: by mail-ot1-f46.google.com with SMTP id 46e09a7af769-74557b7703aso1520682a34.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Sep 2025 06:41:39 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCW2Vnf2simw01I07A6xFG/p6o5AZz4nuOxaO0wI2Gg7+NYCyqG8qWou/0O7uzo1twVdwp6chROK4SPvO5k=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyO5gAsTvXndLDlbxXqMAj4kdZREe6aE3ZKJX2n6Ii8RyRDXy9q
-	4RpCJr5/DP3wl0rlyE9/IQJaw7BKSwP5oyT6dF0Tj5ndMpaN4c8ezUVN6HTE2Q4knM9D+Hdx/uJ
-	gKM7cCcIjc9hCnYCmf45i44oKXB6aasQ=
-X-Google-Smtp-Source: AGHT+IE8CKY9R9M90mIkT56C6rGxrcA7dBv19VhPe7gEVCnw2r6FCP2pLXabMt9+rlKIM6nRFLb5/otuT90mPVIOHdY=
-X-Received: by 2002:a05:6808:8219:b0:434:97b:5eb9 with SMTP id
- 5614622812f47-437f7d74afbmr6249755b6e.28.1756906898553; Wed, 03 Sep 2025
- 06:41:38 -0700 (PDT)
+	s=k20201202; t=1756907010;
+	bh=D162+8O8cmaasiVj/obiwhSyFaYRPx2I71FurFV8M48=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=NpZb6c9ViNMdgB1PRHFMslrJul5GGdKnmUSpOv6B3EBAo+Lb43S4oo/4/Obh934Lh
+	 gutPaLvMw7QcL3aamCSDLTExbQAcp5I+oEXHdG70EileDFmC09ZDbCQIndOr474Hzq
+	 EAUdE+4G61qcQQeUCgvZ/xxOOsnFBlMz1IHjc2rbV56dQb3rgteTJQXjD0lIC+WVhM
+	 Q/IKOJAXUDGhQ1M8mlvq+bvHk/Pa81v6UuIWm1jYAGG0Zp6ppv1YWfLQ8G73HM9wUN
+	 bc59nB919vWFpiZvDLpm+87+U+f5fJH+gfm/kWb8a+1Kr2n5MhsrdOjLT522sEMvjH
+	 uZ8zpuvScAnVA==
+Message-ID: <037855bf-c878-4794-b145-266a36302fc3@kernel.org>
+Date: Wed, 3 Sep 2025 15:43:18 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,80 +59,116 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250903131733.57637-1-zhangzihuan@kylinos.cn>
- <20250903131733.57637-11-zhangzihuan@kylinos.cn> <34b5e01e-2f4a-4d57-93ca-ab4549681b17@kernel.org>
-In-Reply-To: <34b5e01e-2f4a-4d57-93ca-ab4549681b17@kernel.org>
-From: "Rafael J. Wysocki" <rafael@kernel.org>
-Date: Wed, 3 Sep 2025 15:41:26 +0200
-X-Gmail-Original-Message-ID: <CAJZ5v0hisM6vfdNXaY7qCGtcMb1FENGxiBb=E=tkqDbRyjs=bA@mail.gmail.com>
-X-Gm-Features: Ac12FXyg097RI81OLcVmXs8LtZCLVL9SQzq0jRH5EJZq7nDwUhDORw8eege7vFE
-Message-ID: <CAJZ5v0hisM6vfdNXaY7qCGtcMb1FENGxiBb=E=tkqDbRyjs=bA@mail.gmail.com>
+User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH v4 10/10] PM: EM: Use scope-based cleanup helper
-To: Krzysztof Kozlowski <krzk@kernel.org>
-Cc: Zihuan Zhang <zhangzihuan@kylinos.cn>, "Rafael J . wysocki" <rafael@kernel.org>, 
-	Viresh Kumar <viresh.kumar@linaro.org>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Will Deacon <will@kernel.org>, Borislav Petkov <bp@alien8.de>, 
-	Dave Hansen <dave.hansen@linux.intel.com>, 
-	Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Alim Akhtar <alim.akhtar@samsung.com>, Thierry Reding <thierry.reding@gmail.com>, 
-	MyungJoo Ham <myungjoo.ham@samsung.com>, Kyungmin Park <kyungmin.park@samsung.com>, 
-	Chanwoo Choi <cw00.choi@samsung.com>, Jani Nikula <jani.nikula@linux.intel.com>, 
-	Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin <tursulin@ursulin.net>, 
-	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>, 
-	Daniel Lezcano <daniel.lezcano@kernel.org>, Sascha Hauer <s.hauer@pengutronix.de>, 
-	Shawn Guo <shawnguo@kernel.org>, Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>, 
-	Ben Horgan <ben.horgan@arm.com>, zhenglifeng <zhenglifeng1@huawei.com>, 
-	Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>, Lukasz Luba <lukasz.luba@arm.com>, 
-	Pengutronix Kernel Team <kernel@pengutronix.de>, Beata Michalska <beata.michalska@arm.com>, 
-	Fabio Estevam <festevam@gmail.com>, Pavel Machek <pavel@kernel.org>, Sumit Gupta <sumitg@nvidia.com>, 
-	Prasanna Kumar T S M <ptsm@linux.microsoft.com>, Sudeep Holla <sudeep.holla@arm.com>, 
-	Yicong Yang <yangyicong@hisilicon.com>, linux-pm@vger.kernel.org, 
-	linux-acpi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-arm-kernel@lists.infradead.org, intel-gfx@lists.freedesktop.org, 
-	dri-devel@lists.freedesktop.org, imx@lists.linux.dev, 
-	linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+To: "Rafael J. Wysocki" <rafael@kernel.org>
+Cc: Zihuan Zhang <zhangzihuan@kylinos.cn>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Alim Akhtar
+ <alim.akhtar@samsung.com>, Thierry Reding <thierry.reding@gmail.com>,
+ MyungJoo Ham <myungjoo.ham@samsung.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Chanwoo Choi <cw00.choi@samsung.com>,
+ Jani Nikula <jani.nikula@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
+ <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Daniel Lezcano <daniel.lezcano@kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>,
+ Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>,
+ Ben Horgan <ben.horgan@arm.com>, zhenglifeng <zhenglifeng1@huawei.com>,
+ Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+ Lukasz Luba <lukasz.luba@arm.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Beata Michalska <beata.michalska@arm.com>, Fabio Estevam
+ <festevam@gmail.com>, Pavel Machek <pavel@kernel.org>,
+ Sumit Gupta <sumitg@nvidia.com>,
+ Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
+ Sudeep Holla <sudeep.holla@arm.com>, Yicong Yang <yangyicong@hisilicon.com>,
+ linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+ imx@lists.linux.dev, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20250903131733.57637-1-zhangzihuan@kylinos.cn>
+ <20250903131733.57637-11-zhangzihuan@kylinos.cn>
+ <34b5e01e-2f4a-4d57-93ca-ab4549681b17@kernel.org>
+ <CAJZ5v0hisM6vfdNXaY7qCGtcMb1FENGxiBb=E=tkqDbRyjs=bA@mail.gmail.com>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <CAJZ5v0hisM6vfdNXaY7qCGtcMb1FENGxiBb=E=tkqDbRyjs=bA@mail.gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Wed, Sep 3, 2025 at 3:22=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.org=
-> wrote:
->
-> On 03/09/2025 15:17, Zihuan Zhang wrote:
-> > Replace the manual cpufreq_cpu_put() with __free(put_cpufreq_policy)
-> > annotation for policy references. This reduces the risk of reference
-> > counting mistakes and aligns the code with the latest kernel style.
-> >
-> > No functional change intended.
-> >
-> > Signed-off-by: Zihuan Zhang <zhangzihuan@kylinos.cn>
-> > ---
-> >  kernel/power/energy_model.c | 7 ++-----
-> >  1 file changed, 2 insertions(+), 5 deletions(-)
-> >
-> > diff --git a/kernel/power/energy_model.c b/kernel/power/energy_model.c
-> > index ea7995a25780..99401678e809 100644
-> > --- a/kernel/power/energy_model.c
-> > +++ b/kernel/power/energy_model.c
-> > @@ -451,7 +451,7 @@ static void
-> >  em_cpufreq_update_efficiencies(struct device *dev, struct em_perf_stat=
-e *table)
-> >  {
-> >       struct em_perf_domain *pd =3D dev->em_pd;
-> > -     struct cpufreq_policy *policy;
-> > +     struct cpufreq_policy *policy __free(put_cpufreq_policy) =3D NULL=
-;
->
-> This is not really correct coding style. Please read how to use
-> cleanup.h expressed in that header. You should have here proper
-> constructor or this should be moved. Or this should not be __free()...
+On 03/09/2025 15:41, Rafael J. Wysocki wrote:
+>>>  em_cpufreq_update_efficiencies(struct device *dev, struct em_perf_state *table)
+>>>  {
+>>>       struct em_perf_domain *pd = dev->em_pd;
+>>> -     struct cpufreq_policy *policy;
+>>> +     struct cpufreq_policy *policy __free(put_cpufreq_policy) = NULL;
+>>
+>> This is not really correct coding style. Please read how to use
+>> cleanup.h expressed in that header. You should have here proper
+>> constructor or this should be moved. Or this should not be __free()...
+> 
+> I gather that this is what you mean (quoted verbatim from cleanup.h)
+> 
+>  * Given that the "__free(...) = NULL" pattern for variables defined at
+>  * the top of the function poses this potential interdependency problem
+>  * the recommendation is to always define and assign variables in one
+>  * statement and not group variable definitions at the top of the
+>  * function when __free() is used.
+> 
+> and thanks for pointing this out!
 
-I gather that this is what you mean (quoted verbatim from cleanup.h)
 
- * Given that the "__free(...) =3D NULL" pattern for variables defined at
- * the top of the function poses this potential interdependency problem
- * the recommendation is to always define and assign variables in one
- * statement and not group variable definitions at the top of the
- * function when __free() is used.
+... and the only exception would be if there is no single constructor,
+but multiple (in if() block). That's not the case here, I think.
 
-and thanks for pointing this out!
+Best regards,
+Krzysztof
 
