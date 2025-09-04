@@ -1,73 +1,35 @@
-Return-Path: <linuxppc-dev+bounces-11725-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11726-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4679CA1016
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Sep 2025 11:55:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B8324CA1015
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Sep 2025 12:27:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cHdGH4Qyqz302g;
-	Thu,  4 Sep 2025 21:55:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756986935;
-	cv=none; b=cwxamQCTIEn/hNmtOqkksQyI5+LFsPJXFDOD5FsHILV3eo2CbXKlyP2zN7uPq04l1pv27xPe3zY7O1zhk6JNbI+lF+79TyUMLDtDb8MoK/4J2Pb/VDYXZapsI6k49XT4rlUh6ccdeIWvNRlANiPp/ns13IJmuQd+vQbWhqP6adO72CQs+0pw3PmUR+rOBdIe2gmLmaSHXN3eEOCBePbh+LLT9aiYaE+lvWMpmMa2z5AQ4//EYTHREQlZwugTKchdq6GNgRgwRcFvL8xOUFPG8TVjtmvDzSJalgUzMoaYW4xhTMGk6HOY5LM3yw1x84DOtRhU0+hC5nqkaiZgZ71KTQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cHdym1Mk1z303F;
+	Thu,  4 Sep 2025 22:27:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:4b98:dc4:8::227"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756988832;
+	cv=none; b=UPR6XjQ0+PtZIt05cNgpajKoxPWsRsbb0oPQ9JQz0QY9E/ee7x34KbrbXUW9mnSUL04uopqmu4uVVB/CMLYaFIU66C4IpzqRTMG1Wd4YE8dt0n89gxpFxCLIAfVlxYeUoZpp9bHgtm6823v4rRy9YNi6fqGzWK7mGBl3TzF1loa5k1tMBFI/SPP9S5wQNTgPFQROTV97AfNrEDwNAIrDKZKlt22YbSumCJtQjfag8w6PRRg+KHsgNL/tKG5yq4ZH3xcbBLz84m0odkUdPfCWvZxSCxYicFLuMdvoaZg5xxW7OVm6QTxBZpQk49F9d36KKEi0u9CnohhtR2wijSFBuQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756986935; c=relaxed/relaxed;
-	bh=jgcDdqOqUi/8D0xc5CjYvzb5Vi4Dqd8Gi3YciLv8nXI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=F17JjMbpcgy4iDOeGiYHXhSPtQbJCQUwDQyuByN/nuN8up9RRB9lUcv1TqRpzqszb9yRi+nE5GmHDMQWXRAWengG53wtNQjykyMfwjtniiCQvFoLmRd3fODNKQuTRDR3oZ72JrUtRpKDhlkNf5uSrDveCRm0BCo0CekW4IjNHbdQs4dAvyEu1DYrjHEoJCZAX+oXkF90QhJvbz6gB3yC9HUJp/RkMOcw5yti7EjZjUXf2NnUWUJBADVoA+PD0ThKF1DIpluIzrXO46letANu+4zKA7YAw0jwPzol0RmhCNwt44D5ddBAsJd4NPCom4h58w/mMZAFLp1c2FRUx/DHJw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=a6mjvK+4; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=a6mjvK+4;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	t=1756988832; c=relaxed/relaxed;
+	bh=ap/u/LxI4jJId+wwpbfiqajsfGDukKXM8oCDW1Th5dw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=D+PBvS62qE750pmbYtPSSaJXDBspf9k5R1bgOJE3jgMfP5k+jhU3+vOlc8zU4ZSkAOdUzdlEzrHPMGs+AyRTNd94oWeThY9eayqML5NTVadAPkekCNGoeICljlLOQk6gr73LK3ysdkcR6WTHQ7Rnu+8Mzwuh/V6D8X/1k5pOPVgSA76JLe8km9WhWQqqBv7s/Vpone2yDRuAc7fwPkb8jZX12muuf67YMZlmcATG1bsffPeqLoEeddYpoI+C1EU4srcOVt+VUkQVdSkdgoxgMBH9fmr1JVrqCnRUaoQ4UZdPUmkR47CVtwD8l5WXFGD2zQnf/3OrU9Xe9A9gbKiZiQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ghiti.fr; spf=pass (client-ip=2001:4b98:dc4:8::227; helo=relay7-d.mail.gandi.net; envelope-from=alex@ghiti.fr; receiver=lists.ozlabs.org) smtp.mailfrom=ghiti.fr
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ghiti.fr
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ghiti.fr (client-ip=2001:4b98:dc4:8::227; helo=relay7-d.mail.gandi.net; envelope-from=alex@ghiti.fr; receiver=lists.ozlabs.org)
+Received: from relay7-d.mail.gandi.net (relay7-d.mail.gandi.net [IPv6:2001:4b98:dc4:8::227])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cHdGH0Y20z3020
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2025 21:55:35 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 235AD60212;
-	Thu,  4 Sep 2025 11:55:33 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 43A6DC4CEF0;
-	Thu,  4 Sep 2025 11:55:24 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1756986932;
-	bh=L9cH6bNwYJRlk6FzxhgqsLMYSpGTEmwCEBwi3x9KT/I=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=a6mjvK+469qhzIL3ZY7OLkZG43jt44zcrcpC0SLg+x90jVrWCN4wHiXo7MpMy7adT
-	 rFtCuOtKzPv3SCl+1a8iA9VpOzMBrPDZJJ1d9Vgu/n0MZO+y/Z28JeLMsddhB0cWea
-	 RleDBDLnf3OLJlwClV84wBgTsGkZkS81LNVCy38Ye4/7nOnd4gE/t0eSwIeO5ttp3B
-	 H+owTOKY2NwyL6jQxgmnOxrwFpmn6Ou6pQwbhAXkR9KUmS6EjJSZ5jPtIfC8BuANMa
-	 8R3iX32k2EwaEj3QR0QO5ZPrGtPX/z8LW7tiqgfBgjIhl4xmzLimlzEm30SP6ANOKo
-	 kaDVgda/8+bIA==
-Date: Thu, 4 Sep 2025 14:55:21 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: "Vishal Moola (Oracle)" <vishal.moola@gmail.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	Andrew Morton <akpm@linux-foundation.org>,
-	linux-block@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
-	linux-efi@vger.kernel.org, virtualization@lists.linux.dev,
-	Justin Sanders <justin@coraid.com>, Jens Axboe <axboe@kernel.dk>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Andy Lutomirski <luto@kernel.org>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Paul Walmsley <paul.walmsley@sifive.com>,
-	Palmer Dabbelt <palmer@dabbelt.com>,
-	Albert Ou <aou@eecs.berkeley.edu>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	David Hildenbrand <david@redhat.com>
-Subject: Re: [PATCH v3 0/7] Cleanup free_pages() misuse
-Message-ID: <aLl-Kd4nmgSEr8WV@kernel.org>
-References: <20250903185921.1785167-1-vishal.moola@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cHdyl1qg4z302g
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2025 22:27:09 +1000 (AEST)
+Received: by mail.gandi.net (Postfix) with ESMTPSA id 99F8842D83;
+	Thu,  4 Sep 2025 12:27:02 +0000 (UTC)
+Message-ID: <113262ca-214a-4cd4-86f2-c0e3e4bb1a06@ghiti.fr>
+Date: Thu, 4 Sep 2025 14:27:02 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,49 +43,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250903185921.1785167-1-vishal.moola@gmail.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 4/7] riscv: Stop calling page_address() in free_pages()
+To: "Vishal Moola (Oracle)" <vishal.moola@gmail.com>, linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, Andrew Morton <akpm@linux-foundation.org>,
+ linux-block@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-efi@vger.kernel.org, virtualization@lists.linux.dev,
+ Paul Walmsley <paul.walmsley@sifive.com>, Palmer Dabbelt
+ <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>
+References: <20250903185921.1785167-1-vishal.moola@gmail.com>
+ <20250903185921.1785167-5-vishal.moola@gmail.com>
+Content-Language: en-US
+From: Alexandre Ghiti <alex@ghiti.fr>
+In-Reply-To: <20250903185921.1785167-5-vishal.moola@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-GND-State: clean
+X-GND-Score: -100
+X-GND-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdeggdeitddvucetufdoteggodetrfdotffvucfrrhhofhhilhgvmecuifetpfffkfdpucggtfgfnhhsuhgsshgtrhhisggvnecuuegrihhlohhuthemuceftddunecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjughrpefkffggfgfuvfevfhfhjggtgfesthejredttddvjeenucfhrhhomheptehlvgigrghnughrvgcuifhhihhtihcuoegrlhgvgiesghhhihhtihdrfhhrqeenucggtffrrghtthgvrhhnpedthfelfeejgeehveegleejleelgfevhfekieffkeeujeetfedvvefhledvgeegieenucfkphepvddttddumeekiedumeeffeekvdemvghfledtmeekheeftgemfegrfhegmegvfhegheemsggvudejnecuvehluhhsthgvrhfuihiivgeptdenucfrrghrrghmpehinhgvthepvddttddumeekiedumeeffeekvdemvghfledtmeekheeftgemfegrfhegmegvfhegheemsggvudejpdhhvghloheplgfkrfggieemvddttddumeekiedumeeffeekvdemvghfledtmeekheeftgemfegrfhegmegvfhegheemsggvudejngdpmhgrihhlfhhrohhmpegrlhgvgiesghhhihhtihdrfhhrpdhnsggprhgtphhtthhopedufedprhgtphhtthhopehvihhshhgrlhdrmhhoohhlrgesghhmrghilhdrtghomhdprhgtphhtthhopehlihhnuhigqdhmmheskhhvrggtkhdrohhrghdprhgtphhtthhopehlihhnuhigqdhkvghrnhgvlhesvhhgvghrrdhkvghrnhgvl
+ hdrohhrghdprhgtphhtthhopegrkhhpmheslhhinhhugidqfhhouhhnuggrthhiohhnrdhorhhgpdhrtghpthhtoheplhhinhhugidqsghlohgtkhesvhhgvghrrdhkvghrnhgvlhdrohhrghdprhgtphhtthhopehlihhnuhigqdgrrhhmqdhkvghrnhgvlheslhhishhtshdrihhnfhhrrgguvggrugdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhishhtshdrohiilhgrsghsrdhorhhgpdhrtghpthhtoheplhhinhhugidqrhhishgtvheslhhishhtshdrihhnfhhrrgguvggrugdrohhrgh
+X-GND-Sasl: alex@ghiti.fr
 
-On Wed, Sep 03, 2025 at 11:59:14AM -0700, Vishal Moola (Oracle) wrote:
-> free_pages() is supposed to be called when we only have a virtual address.
-> __free_pages() is supposed to be called when we have a page.
-> 
-> There are a number of callers that use page_address() to get a page's
-> virtual address then call free_pages() on it when they should just call
-> __free_pages() directly.
-> 
-> Add kernel-docs for free_pages() to help callers better understand which
-> function they should be calling, and replace the obvious cases of
-> misuse.
-> 
-> Vishal Moola (Oracle) (7):
->   mm/page_alloc: Add kernel-docs for free_pages()
->   aoe: Stop calling page_address() in free_page()
->   x86: Stop calling page_address() in free_pages()
->   riscv: Stop calling page_address() in free_pages()
->   powerpc: Stop calling page_address() in free_pages()
->   arm64: Stop calling page_address() in free_pages()
->   virtio_balloon: Stop calling page_address() in free_pages()
+Hi Vishal,
 
-Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+On 9/3/25 20:59, Vishal Moola (Oracle) wrote:
+> free_pages() should be used when we only have a virtual address. We
+> should call __free_pages() directly on our page instead.
+>
+> Signed-off-by: Vishal Moola (Oracle) <vishal.moola@gmail.com>
+> ---
+>   arch/riscv/mm/init.c | 4 ++--
+>   1 file changed, 2 insertions(+), 2 deletions(-)
+>
+> diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
+> index 15683ae13fa5..1056c11d3251 100644
+> --- a/arch/riscv/mm/init.c
+> +++ b/arch/riscv/mm/init.c
+> @@ -1624,7 +1624,7 @@ static void __meminit free_pud_table(pud_t *pud_start, p4d_t *p4d)
+>   	if (PageReserved(page))
+>   		free_reserved_page(page);
+>   	else
+> -		free_pages((unsigned long)page_address(page), 0);
+> +		__free_pages(page, 0);
+>   	p4d_clear(p4d);
+>   }
+>   
+> @@ -1646,7 +1646,7 @@ static void __meminit free_vmemmap_storage(struct page *page, size_t size,
+>   		return;
+>   	}
+>   
+> -	free_pages((unsigned long)page_address(page), order);
+> +	__free_pages(page, order);
+>   }
+>   
+>   static void __meminit remove_pte_mapping(pte_t *pte_base, unsigned long addr, unsigned long end,
 
->  arch/arm64/mm/mmu.c                      | 2 +-
->  arch/powerpc/mm/book3s64/radix_pgtable.c | 2 +-
->  arch/riscv/mm/init.c                     | 4 ++--
->  arch/x86/mm/init_64.c                    | 2 +-
->  arch/x86/platform/efi/memmap.c           | 2 +-
->  drivers/block/aoe/aoecmd.c               | 2 +-
->  drivers/virtio/virtio_balloon.c          | 8 +++-----
->  mm/page_alloc.c                          | 9 +++++++++
->  8 files changed, 19 insertions(+), 12 deletions(-)
-> 
-> -- 
-> 2.51.0
-> 
-> 
 
--- 
-Sincerely yours,
-Mike.
+Acked-by: Alexandre Ghiti <alexghiti@rivosinc.com>
+
+Thanks,
+
+Alex
+
 
