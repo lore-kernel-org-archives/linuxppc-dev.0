@@ -1,75 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-11734-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11735-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0224BCA1002
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Sep 2025 12:59:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FF1ECA1015
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Sep 2025 13:05:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cHfh05f0Qz3020;
-	Thu,  4 Sep 2025 22:59:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756990768;
-	cv=none; b=IClbax5Tdp76yg+YmpLwTUxBoQmLs6cVO/GdlbtjNQ0SzFyKItYYgE2jV0S2YBfbOvumcKteIBOHSxP6ZetC3cSvjmx0a6LHtJ3M39f3tUUHbL+vke61cLlFVWjT+mab2f/S5vpGgdhiE8kODCejJDaF9SHKW7OBF1T957FJV9kEsDed1yhSobCxwFSwDKyplBMenCKOqIP/TBD3hop7jt8g+kkBCTAM56wMUxk9k56cUCNfFQG77k1nnAmPlHpKmnZ4cr1zIZd3wUJZHHiTWQUh/1dDoBJR53bfg+rrHzaojDxqvL4S3tec8gqDUpIy+JsQ29eswHYsg7o8V4+qQQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cHfpZ58d5z2xnM;
+	Thu,  4 Sep 2025 23:05:10 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b35"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756991110;
+	cv=none; b=jNhf3IKCBQ9iFasKXw1TWgWxfAj6zsF3n/kybZeIv5iT61cLwG0xBHBYIzIczXNuUMJHGKBK2kLteLCaGZmUAkAs0Hw+9zTk0fTdCP9rXIiuPkJeRk0jHyuWIg0/u61PCdfVXuJg95geXpxe31+S3UDEOu10Kv3QZK+3quFGtzwl2erVjdmJa2eSpgzUFS6okaD+eDgFbEAU1KzrQmSGeTO0pqgMh3faEfEQiywRfngbClhKpv+D+yWj9UOwCIseZE60HJPHuvJ7mKb50tqO/OeOEMwmkPeoDS+FxDTsDb49Lg2boRp4AnEbdyqBwzIQ3H2eJAzNP82Z44YxL1Geew==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756990768; c=relaxed/relaxed;
-	bh=0BUJXONwqTBSysHPr42gCRrrCMl1Y1aaFX8/rMouS8A=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=P8ZE5KfKfQCPhl+L0osawRjH+8N05tRe9X9/aJozEaye2hWFRuu9+eVHAFvg+gUFGZkI5CWbRo4smt9rWChMdUFIKcBXHpjdO3y7W+KWsUYrFeSsuoIC8dKgh9XYvs9EUUe5hAGVlqpP5r9U8eEPUzce5Bvpfu/s0o+eshtnZu1e+u2+IydQNokrVCn6fnMMqQUky/Z6jUJfwKBd9Z5jdlEsbChsQbP+ciESBGLTyzVg7ANPbG3T5ox/YgxVz9HFKngtltHox/KQmCvZfXOBQoJ0oBoCM6AkbcOqJGfTD6SYaLuI6OpBpkGSFCyQXWALyaCgejJEybQHRYFO/7dZbg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cHfh0069Gz3bcJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2025 22:59:28 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 00A6F2ED2;
-	Thu,  4 Sep 2025 05:58:37 -0700 (PDT)
-Received: from e123572-lin.arm.com (e123572-lin.cambridge.arm.com [10.1.194.54])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id C0CAA3F6A8;
-	Thu,  4 Sep 2025 05:58:40 -0700 (PDT)
-From: Kevin Brodsky <kevin.brodsky@arm.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org,
-	Kevin Brodsky <kevin.brodsky@arm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	David Hildenbrand <david@redhat.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Ingo Molnar <mingo@redhat.com>,
-	Jann Horn <jannh@google.com>,
-	Juergen Gross <jgross@suse.com>,
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Michal Hocko <mhocko@suse.com>,
-	Mike Rapoport <rppt@kernel.org>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Ryan Roberts <ryan.roberts@arm.com>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Vlastimil Babka <vbabka@suse.cz>,
-	Will Deacon <will@kernel.org>,
-	linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org,
-	sparclinux@vger.kernel.org,
-	xen-devel@lists.xenproject.org
-Subject: [PATCH 5/7] powerpc/mm: support nested lazy_mmu sections
-Date: Thu,  4 Sep 2025 13:57:34 +0100
-Message-ID: <20250904125736.3918646-6-kevin.brodsky@arm.com>
-X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20250904125736.3918646-1-kevin.brodsky@arm.com>
-References: <20250904125736.3918646-1-kevin.brodsky@arm.com>
+	t=1756991110; c=relaxed/relaxed;
+	bh=VRAIqJuFoUxn0IlxAYdnfU5ZQhjUgE5v1C3tZfihKz8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=hZYt+769RbaOBz3sWt4svjGdFYDl5U8hvoC7lUDxbPpQI0OaG7OjiRyLmcmzTtyZDWQm6CddCutlosDbwhr2RzhPbdaSZEVGOe4JsaGdCq7UnlcVAe5zwwep8J6USYz/m6BX+oSMG9/g9zJE+mdagxYfjS1oQy03NTkQ6CrtbX30tZdR2MC9wAQhmw+0cezzjsJD6Jf/533ky4BDySdBiCxS3kC/A3BnjQjiSvhFlH7oYhW3GzZHP9btINMwbMOIW3FJY/7s4zOEhBARllY/6zvtCndba0vBSfSA705QiKHKbPDN5h0wg+fz5djM+Sq7jAvfPfWx7Rd7Y/dzg9gHrg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=N02mjv3+; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b35; helo=mail-yb1-xb35.google.com; envelope-from=richardcochran@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=N02mjv3+;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b35; helo=mail-yb1-xb35.google.com; envelope-from=richardcochran@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yb1-xb35.google.com (mail-yb1-xb35.google.com [IPv6:2607:f8b0:4864:20::b35])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cHfpY5DWlz2xPx
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2025 23:05:09 +1000 (AEST)
+Received: by mail-yb1-xb35.google.com with SMTP id 3f1490d57ef6-e96d8722c6eso1174697276.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 04 Sep 2025 06:05:09 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1756991106; x=1757595906; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=VRAIqJuFoUxn0IlxAYdnfU5ZQhjUgE5v1C3tZfihKz8=;
+        b=N02mjv3+SZaV+wMuHHpbmOYGMJYRAAYcmNicIGHUUhjRvXsn9K+LYEt7spSylOAXxY
+         TpTUDWHD0zFELuFdroA959uOjNrZr02QFP9LCVPo7bFiiVxI6EWgHlt9D0p+Ikx1cF0I
+         hsN1KuMKhDw7t0p4iLvBId9j3Lmasr6oMIXQNSBAkvTQ1T5Fs2RQkxEETPnX9Je6Zm3h
+         i8Mx+OrfKovqbwf+E/te7Viwue/bN4pgLnbCwjX0KZYKkAF4yHAI4ZTxVzh7SXo02ACa
+         aAAoQvOHN1g0XaKoxMQD9OmgDKjjQxOndj1AyPZocunlFxLPmHhGNcS1kU9y4hTPVTfc
+         88FQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1756991106; x=1757595906;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=VRAIqJuFoUxn0IlxAYdnfU5ZQhjUgE5v1C3tZfihKz8=;
+        b=xDgUEJt4ZZ66WVmDn4x5C3t0N6Et1VrXMuuLzU9jmEI9DrVMVkNwwKo/rxI87pxLMj
+         RlOLFrbDD9ib6E1UWAcp+55OJM80pFeS+UhrkKwVa+Uwx2U4bAgzJx2JyBebZ4L6QW+R
+         h0CX0fiq/TXVzFjXyaHsvL4YHQuSziB+iaOXlHbRnwq7z4Iipm5mxZvzMHDsbbXe2lG+
+         0oBblhu1O/SLuMdqkKg0P7RM21qeWi0UWkgYPYuvNXrN/D6AyQfsoHGVJf89sIkzi9e6
+         Q3coAvJ04kS2NddEpb5JgVb+A6MgUFieiFKW9YBvgWjcEqV2FkEbPjRj+eMK9d/Hvvjd
+         oqrQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXKpU0MQxhNlZ8AuVew59j/ihZ2Cf1NpXYq1s3uNXJZjOgIFjRNyKxu9o3FSACo/ddAgI+WaCk3g/jR0DE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yxqbpp2/sOQ0XhrVTikWpwXuDJssDzybyU5oIbtqbhArLjtU7cO
+	t7mmILDZ0BcCMMMx2ZKUGK4xZopOfSIBwi5tYlhC9hf+voJndNnwHDdj
+X-Gm-Gg: ASbGncva+SLXIT97rUAF61QEYDTwRkR32iqcyyqq/2yhFVBzGwakXEt5AknonLAnKes
+	aui5DK3WLk4fE3LMoqT7y+EYMsSURrplYFfUITKBCUUik0CdgtqzHH1ObdImw/SYga1A5JZ68ku
+	e8Sjv2Y84OoXP9mWgevjG60YlMdQC9XRARc8E+ggRwGiGxgWIlunpV2/yb8wFiczh88xu+FWk8X
+	3uUmnKgc4BKQPfRD+IZy21t2H2Im/fHve1dV7NcYcHWQ4X3x77IgIxy+8chkwp1il3CbkdslOgT
+	UKKgFEcJDDqnTn5njv1DlqsXOppT+Z9cOzxylPTOdzGjMIZpMez1PD3k7JjCR9iAI4Myljv6Ylw
+	OjAbCKfcICIY9mIwj5M/XU8axkuBEGrBhOokbBEiA7Jh1ZJSYEKiqnViQfrI1KTQ=
+X-Google-Smtp-Source: AGHT+IHmWVZV9smFiDb5EAWgukKWH2yUMaPX0VME1uD4yW4vCM5Ef44xf0wr2EDvqQBA5WuTd7GVIQ==
+X-Received: by 2002:a05:690e:164b:b0:600:b3e5:d4ff with SMTP id 956f58d0204a3-601782d338bmr2063081d50.31.1756991105967;
+        Thu, 04 Sep 2025 06:05:05 -0700 (PDT)
+Received: from hoboy.vegasvil.org ([2600:1700:2430:6f6f:e2d5:5eff:fea5:802f])
+        by smtp.gmail.com with ESMTPSA id 3f1490d57ef6-e9bbdf6d877sm2261100276.15.2025.09.04.06.05.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 04 Sep 2025 06:05:05 -0700 (PDT)
+Date: Thu, 4 Sep 2025 06:05:02 -0700
+From: Richard Cochran <richardcochran@gmail.com>
+To: Wei Fang <wei.fang@nxp.com>
+Cc: "andrew+netdev@lunn.ch" <andrew+netdev@lunn.ch>,
+	"davem@davemloft.net" <davem@davemloft.net>,
+	"edumazet@google.com" <edumazet@google.com>,
+	"kuba@kernel.org" <kuba@kernel.org>,
+	"pabeni@redhat.com" <pabeni@redhat.com>,
+	Vladimir Oltean <vladimir.oltean@nxp.com>,
+	Clark Wang <xiaoning.wang@nxp.com>, Frank Li <frank.li@nxp.com>,
+	"Y.B. Lu" <yangbo.lu@nxp.com>,
+	"christophe.leroy@csgroup.eu" <christophe.leroy@csgroup.eu>,
+	"netdev@vger.kernel.org" <netdev@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>,
+	"imx@lists.linux.dev" <imx@lists.linux.dev>
+Subject: Re: [PATCH net-next 0/3] ptp: add pulse signal loopback support for
+ debugging
+Message-ID: <aLmOfsgjumBX3ftE@hoboy.vegasvil.org>
+References: <20250903083749.1388583-1-wei.fang@nxp.com>
+ <aLhFiqHoUnsBAVR7@hoboy.vegasvil.org>
+ <PAXPR04MB8510785442793740E5237AFA8800A@PAXPR04MB8510.eurprd04.prod.outlook.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,69 +106,20 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <PAXPR04MB8510785442793740E5237AFA8800A@PAXPR04MB8510.eurprd04.prod.outlook.com>
 
-The lazy_mmu API now allows nested sections to be handled by arch
-code: enter() can return a flag if called inside another lazy_mmu
-section, so that the matching call to leave() leaves any
-optimisation enabled.
+On Thu, Sep 04, 2025 at 01:55:43AM +0000, Wei Fang wrote:
+> Vladimir helped explain its purpose in the thread, do you still think
+> it is pointless?
 
-This patch implements that new logic for powerpc: if there is an
-active batch, then enter() returns LAZY_MMU_NESTED and the matching
-leave() leaves batch->active set. The preempt_{enable,disable} calls
-are left untouched as they already handle nesting themselves.
+Vladimir gave practical examples for the use case, so no objection
+from my side.  I just wanted to understand how this is useful.
 
-TLB flushing is still done in leave() regardless of the nesting
-level, as the caller may rely on it whether nesting is occurring or
-not.
+Next time, it would be helpful to have that info in the cover letter.
 
-Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
----
- .../powerpc/include/asm/book3s/64/tlbflush-hash.h | 15 ++++++++++++---
- 1 file changed, 12 insertions(+), 3 deletions(-)
-
-diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-index c9f1e819e567..001c474da1fe 100644
---- a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-+++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-@@ -30,6 +30,7 @@ typedef int lazy_mmu_state_t;
- static inline lazy_mmu_state_t arch_enter_lazy_mmu_mode(void)
- {
- 	struct ppc64_tlb_batch *batch;
-+	int lazy_mmu_nested;
- 
- 	if (radix_enabled())
- 		return LAZY_MMU_DEFAULT;
-@@ -39,9 +40,14 @@ static inline lazy_mmu_state_t arch_enter_lazy_mmu_mode(void)
- 	 */
- 	preempt_disable();
- 	batch = this_cpu_ptr(&ppc64_tlb_batch);
--	batch->active = 1;
-+	lazy_mmu_nested = batch->active;
- 
--	return LAZY_MMU_DEFAULT;
-+	if (!lazy_mmu_nested) {
-+		batch->active = 1;
-+		return LAZY_MMU_DEFAULT;
-+	} else {
-+		return LAZY_MMU_NESTED;
-+	}
- }
- 
- static inline void arch_leave_lazy_mmu_mode(lazy_mmu_state_t state)
-@@ -54,7 +60,10 @@ static inline void arch_leave_lazy_mmu_mode(lazy_mmu_state_t state)
- 
- 	if (batch->index)
- 		__flush_tlb_pending(batch);
--	batch->active = 0;
-+
-+	if (state != LAZY_MMU_NESTED)
-+		batch->active = 0;
-+
- 	preempt_enable();
- }
- 
--- 
-2.47.0
+Thanks,
+Richard
 
 
