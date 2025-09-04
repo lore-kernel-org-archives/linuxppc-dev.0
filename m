@@ -1,50 +1,96 @@
-Return-Path: <linuxppc-dev+bounces-11719-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11720-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26C95CA1002
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Sep 2025 10:20:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9E80CA1012
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Sep 2025 10:35:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cHb926FyKz305M;
-	Thu,  4 Sep 2025 20:20:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756981254;
-	cv=none; b=GhpFzpiDGNYt46DmdWa3uAxeAws6kjJ/CaVs0mWz/E5Nbo+F/xhQi/m/q+iYeXLjIauUaGQI7qEYRgW47wX7M54mqcvCX1OGipbtXjvK+Fn5n29m6PJLJAL9EdefYGrCxNVr5OmdUbYkqEfl9Qwo5XpU0V/uxSzx/WlREvrHoMSBlWXOSOBPLGcgJ/XpSnPSW70Jdmgxm/Al5ZW1UN8m7UnjafmuAmuUr6ajRTlLuIls0pzvaay0Gr6MD9dG2FXRYrO4GioAWDywcpSxXKkoA8kTp4ac8NR2f6SZndJKGV+EiGNTKzIG+dAvqU1AHTnA4+opCnB2NaMyOjKf27tFUg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cHbTY00Rvz3020;
+	Thu,  4 Sep 2025 20:35:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756982112;
+	cv=none; b=E3AXfHYd+CxGsERe7Vhzj7f0G1tWhTjyVhBfw0KYUTuuTI497gl6i1Tf/IpMT39fm40xPb8TB7GL3m3TZggcVvG3+CDYtMZC5h8RFHz2O0zRCuqM0Qf9OL5i7cHyz690lydnm+9aCOd6L01/RlZr9i+aN30dSQu+K+gqK2BdKGOxpB+jG/znQKP1nDZFNQf2d8eahfkNM1olc3WaZgAn/DlrFZyxLOo6pZK5uEW9Zv6jHt8pV7SAZDpCNc/3EvgYib2utCQMbmkr0IiZgClxZbJEPkMtpB9Iz3rzpT0elUBAWsW/q5QEodmm4rYuWAzLdspKOZdn9YpmfKN2eQ56CA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756981254; c=relaxed/relaxed;
-	bh=BQmbhejF+e0qnjPryp1MsoQsUba5Yjtm1KKLYFklkQo=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=FMJBR62aIZcufKS2M1Q8wrRxcwQcbVyq9svkjGAOnwPS44pvUg0zzpcnGPn2Xil2enfAtbMWs+RIAk5tQrWu/CKKQRaOwmmNft3LDGiomYCvxqnC+DueP/DQZMefph4jbj8GPVlfFG9QbU+mFTyinmVFoabSE5VmG3SFTeDbIhRyg0N2kSKPP/lJX2ScGpFDRuhpFzqXUlYIc04ruS9GolNzzimVX7P6VsIWs1uGb1BkYpRCQPiYiPrCfEWg9e0rOP/IcoFcMsht9ZFDtAGmnLmluzfIvjuGL9nnvNIe3C2AseZIlo7ovo37EPvoNuJ6qkoul+qvQDRPOpErjjnP6Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cHb921QM6z2xd6
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2025 20:20:54 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cHZqH2y4Jz9sVb;
-	Thu,  4 Sep 2025 12:05:31 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id AAhIw7ZjnRgG; Thu,  4 Sep 2025 12:05:31 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cHZqH1tFVz9sVY;
-	Thu,  4 Sep 2025 12:05:31 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2AAB08B769;
-	Thu,  4 Sep 2025 12:05:31 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id 1r3m4fedKK3e; Thu,  4 Sep 2025 12:05:31 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id E565C8B765;
-	Thu,  4 Sep 2025 12:05:30 +0200 (CEST)
-Message-ID: <c62b68f9-134a-4950-bb90-c805da8eebd2@csgroup.eu>
-Date: Thu, 4 Sep 2025 12:05:30 +0200
+	t=1756982112; c=relaxed/relaxed;
+	bh=OvDgBHL1QfReUGKYA4TnrNVX3xlVsuPP0C+YfIarv60=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=ncuVVymH6AT7NusA7TgPHhYPHx9KbeUR98fHsa4RoIhVGWPihkPF462+0/lehsIZoAjNDlYcn3WE7WA9ULY5y12eQfy5SFKaru/UT1nJMFfK2+t+clNH0UFyx9JUBHhNihrNPyDUL3D9a9jZFCV6xJQQzvRaC3ekP/wPJ0u0F4bstj7dm8UdJoE3+u+gsJ7l0dSoBJhDKMLiyOb5kp4BD3QIp5dVy4o7QW8NK9O5PzCrOwPiF27CU2U4qqaO95a4KL5hrbQ5YyC/ahqVAxXrJEBBcZhjk6BeBuslx5fjwtyQWytG2ef4WbCrCTdzzZU9FsCptkRr4LfhKuYPFVJ+5g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RZeaEfc+; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=RZeaEfc+;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cHbTW6RxPz2yrp
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2025 20:35:11 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5846XDBX005735;
+	Thu, 4 Sep 2025 10:34:45 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-type:date:from:in-reply-to:message-id:mime-version
+	:references:subject:to; s=pp1; bh=OvDgBHL1QfReUGKYA4TnrNVX3xlVsu
+	PP0C+YfIarv60=; b=RZeaEfc+QyLLLd1zPZ+nrjAJbmteGpF+7BUCrhbLCLa7pv
+	qg4GXrJW6hqW5dcMxQn0qTwnCDQ9gH6f7XvIuYzF5tMN192PPfSBG0SDZIqXg5tj
+	1fZIBiC4ujMcdNNfHkRYmPvzy86U1ud+FYKfCecZT7RJA6ddvlIZp/hW/v9QAkaD
+	gAEWsryshCvlMASnhfVHC5pyHgmtMJLUmT3kPI+1Ab3TNOD5Ts26JmpGB9qe4chW
+	vTb9j5p949w8iWPeTw6hrpOnb7JQvzKVp3akw6m/Zcst1j374xo4xPSgjRziGa7H
+	Gyw+Fq/rboGYPThdTezKcPac4gfPWEVIBaPj94eg==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48usua93bk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 04 Sep 2025 10:34:44 +0000 (GMT)
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 584AYiaC021619;
+	Thu, 4 Sep 2025 10:34:44 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48usua93be-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 04 Sep 2025 10:34:44 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5846sw0g019925;
+	Thu, 4 Sep 2025 10:34:43 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 48vbmuc916-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 04 Sep 2025 10:34:43 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 584AYdTh34669154
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 4 Sep 2025 10:34:39 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6CC3B2004B;
+	Thu,  4 Sep 2025 10:34:39 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id DA28420043;
+	Thu,  4 Sep 2025 10:34:34 +0000 (GMT)
+Received: from linux.ibm.com (unknown [9.109.219.153])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu,  4 Sep 2025 10:34:34 +0000 (GMT)
+Date: Thu, 4 Sep 2025 16:04:32 +0530
+From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
+To: Hari Bathini <hbathini@linux.ibm.com>
+Cc: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org,
+        sachinpb@linux.ibm.com, venkat88@linux.ibm.com, andrii@kernel.org,
+        eddyz87@gmail.com, mykolal@fb.com, ast@kernel.org,
+        daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
+        yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
+        sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org,
+        christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com, memxor@gmail.com,
+        iii@linux.ibm.com, shuah@kernel.org
+Subject: Re: [PATCH bpf-next v2 5/5] selftests/bpf: Fix arena_spin_lock
+ selftest failure
+Message-ID: <aLlrOFzwRZotcpY4@linux.ibm.com>
+References: <20250829165135.1273071-1-skb99@linux.ibm.com>
+ <20250829165135.1273071-6-skb99@linux.ibm.com>
+ <46243c40-8e5e-47d3-97bd-71f29eeb0127@linux.ibm.com>
+ <aLlNBK9Zm+N4zarF@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,188 +104,135 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: Kernel v6.17-rc4 with STATIC_CALL_SELFTEST=y enabled fails to
- boot at early stage (PowerMac G4 DP)
-To: Andrew Donnellan <ajd@linux.ibm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Erhard Furtner <erhard_f@mailbox.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
-References: <342b4120-911c-4723-82ec-d8c9b03a8aef@mailbox.org>
- <98dbafee-aad3-439b-9efb-76f80c6668fd@csgroup.eu>
- <ca440403-0108-4703-bf07-bc3ac7e3d108@linux.ibm.com>
- <e042d4ca-c66b-49ec-8572-442ab697c430@csgroup.eu>
- <21ad3bf6-4654-43a5-9dc3-ebcdc676d542@linux.ibm.com>
- <98b226684e39543a4706f3c4632d9b1856346660.camel@linux.ibm.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <98b226684e39543a4706f3c4632d9b1856346660.camel@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aLlNBK9Zm+N4zarF@linux.ibm.com>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: 9n8EctKyMzCe8PS3p37W_1wCfXqHauvi
+X-Authority-Analysis: v=2.4 cv=U6uSDfru c=1 sm=1 tr=0 ts=68b96b44 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=kj9zAlcOel0A:10 a=yJojWOMRYYMA:10 a=VnNF1IyMAAAA:8 a=hPZlYmIs_T5Z1BX5r4cA:9
+ a=CjuIK1q_8ugA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODMwMDAzNCBTYWx0ZWRfXyNkE/eE9EHWO
+ mzrckl80bYebef7rCxE+x1P2GWjYiILUCBT/Q5NxUMLsjxwXCS68+NstCr87T44YyqAWg22C1Ow
+ vIvQEbzfT6icQh23JY7FIolv+WkKvyrM2EsAr0iMYFbCKm5x6cXYS7e+hpHzCd/7c0PsjtqPNck
+ zVk/WaXuSwRNpZOQG5adBjsfa0XocwxpbqhIqr5q0z9vBBf2ApaSEXqYbbY3FFGJHg4YQbtpqPp
+ mQxeLXPktPz8uGMS7+41h6mQnPVfaA1VOT8o0vkJSveq9YbNXA2ikuJ+tnc1L0QNQcuUqUXgO9d
+ yDuQzH5tel4jJp+0O7mPhUiy2ZZ9cL/WYoinTDgZ22x6OAuC9Uaq7+zf3CK1CiSubqYyQRHQAqw
+ qQyXZ29O
+X-Proofpoint-ORIG-GUID: he6RjKqFBXFh-cUXmKn7R90-MiZdl3jj
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-09-04_03,2025-08-28_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 phishscore=0 adultscore=0 clxscore=1015 suspectscore=0
+ priorityscore=1501 spamscore=0 bulkscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2508300034
 
-
-
-Le 04/09/2025 à 11:57, Andrew Donnellan a écrit :
-> On Thu, 2025-09-04 at 14:33 +0530, Madhavan Srinivasan wrote:
->>>> I am using qemu with -M mac99 and it boots
->>>>
->>>> Hardware name: PowerMac3,1 7400 0xc0209 PowerMac
->>>> printk: legacy bootconsole [udbg0] enabled
->>>> -----------------------------------------------------
->>>> phys_mem_size     = 0x8000000
->>>> dcache_bsize      = 0x20
->>>>
->>>> I am missing something here. Digging some more
->>>
->>>
->>> Did you use the .config provided by Erhard ?
->>>
->>
->> Oops. sorry for the noise
+On Thu, Sep 04, 2025 at 01:55:40PM +0530, Saket Kumar Bhaskar wrote:
+> On Thu, Sep 04, 2025 at 01:39:31PM +0530, Hari Bathini wrote:
+> > 
+> > 
+> > On 29/08/25 10:21 pm, Saket Kumar Bhaskar wrote:
+> > > For systems having CONFIG_NR_CPUS set to > 1024 in kernel config
+> > > the selftest fails as arena_spin_lock_irqsave() returns EOPNOTSUPP.
+> > > 
+> > > The selftest is skipped incase bpf program returns EOPNOTSUPP,
+> > > with a descriptive message logged.
+> > > 
+> > > Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
+> > > ---
+> > >   .../selftests/bpf/prog_tests/arena_spin_lock.c      | 13 +++++++++++++
+> > >   tools/testing/selftests/bpf/progs/arena_spin_lock.c |  5 ++++-
+> > >   2 files changed, 17 insertions(+), 1 deletion(-)
+> > > 
+> > > diff --git a/tools/testing/selftests/bpf/prog_tests/arena_spin_lock.c b/tools/testing/selftests/bpf/prog_tests/arena_spin_lock.c
+> > > index 0223fce4db2b..1ec1ca987893 100644
+> > > --- a/tools/testing/selftests/bpf/prog_tests/arena_spin_lock.c
+> > > +++ b/tools/testing/selftests/bpf/prog_tests/arena_spin_lock.c
+> > > @@ -40,8 +40,13 @@ static void *spin_lock_thread(void *arg)
+> > >   	err = bpf_prog_test_run_opts(prog_fd, &topts);
+> > >   	ASSERT_OK(err, "test_run err");
+> > > +
+> > > +	if (topts.retval == -EOPNOTSUPP)
+> > > +		goto end;
+> > > +
+> > >   	ASSERT_EQ((int)topts.retval, 0, "test_run retval");
+> > > +end:
+> > >   	pthread_exit(arg);
+> > >   }
+> > > @@ -63,6 +68,7 @@ static void test_arena_spin_lock_size(int size)
+> > >   	skel = arena_spin_lock__open_and_load();
+> > >   	if (!ASSERT_OK_PTR(skel, "arena_spin_lock__open_and_load"))
+> > >   		return;
+> > > +
+> > >   	if (skel->data->test_skip == 2) {
+> > >   		test__skip();
+> > >   		goto end;
+> > > @@ -86,6 +92,13 @@ static void test_arena_spin_lock_size(int size)
+> > >   			goto end_barrier;
+> > >   	}
+> > > +	if (skel->data->test_skip == 2) {
+> > > +		printf("%s:SKIP: %d CPUs exceed the maximum supported by arena spinlock\n",
+> > > +		       __func__, get_nprocs());
+> > > +		test__skip();
+> > > +		goto end_barrier;
+> > > +	}
+> > > +
+> > >   	ASSERT_EQ(skel->bss->counter, repeat * nthreads, "check counter value");
+> > >   end_barrier:
+> > > diff --git a/tools/testing/selftests/bpf/progs/arena_spin_lock.c b/tools/testing/selftests/bpf/progs/arena_spin_lock.c
+> > > index c4500c37f85e..a475b974438e 100644
+> > > --- a/tools/testing/selftests/bpf/progs/arena_spin_lock.c
+> > > +++ b/tools/testing/selftests/bpf/progs/arena_spin_lock.c
+> > > @@ -37,8 +37,11 @@ int prog(void *ctx)
+> > >   #if defined(ENABLE_ATOMICS_TESTS) && defined(__BPF_FEATURE_ADDR_SPACE_CAST)
+> > >   	unsigned long flags;
+> > > -	if ((ret = arena_spin_lock_irqsave(&lock, flags)))
+> > > +	if ((ret = arena_spin_lock_irqsave(&lock, flags))) {
+> > > +		if (ret == -EOPNOTSUPP)
+> > > +			test_skip = 2;
+> > >   		return ret;
+> > 
+> > test_skip being set to `1` when the test runs seems counter intuitive.
+> > How about setting test_skip to `0` when run conditions are met
+> > and test_skip=1 if run conditions are not met and
+> > test_skip=2 when operation is not supported?
+> > 
+> > - Hari
+> That seems reasonable to me, but right now -EOPNOTSUPP is also
+> returned when run condition is not met i.e.:
 > 
-> I noticed that I don't hit this using defconfigs (with JUMP_LABEL and
-> STATIC_CALL_SELFTEST manually enabled), so I did some config bisection with
-> Erhard's config.
+>   if (CONFIG_NR_CPUS > 1024)
+>                 return -EOPNOTSUPP;
 > 
-> It looks like you need CONFIG_KFENCE=y, and CONFIG_XMON=n.
+> So do we really need test_skip = 2 ?
 > 
-> Attached is a minimal config for current mainline, allnoconfig + CONFIG_PPC_PMAC
-> (so I can get console output in qemu) + CONFIG_KFENCE + CONFIG_JUMP_LABEL +
-> CONFIG_STATIC_CALL_SELFTEST.
-> 
-> Running with qemu-system-ppc -M mac99, we get the below.
-> 
-> Christophe: I'm not exactly sure what changes when you enable/disable KFENCE on
-> book3s32, but it looks to me like it affects whether .init.text is mapped using
-> BATs or not?
+> Thanks,
+> Saket
+Also, when test_skip is initialized to 0 it is moved to bss segment 
+from data segment:
 
-As I said in previous response, the problem seems to come from here:
+        struct arena_spin_lock__arena {
+                struct arena_qnode qnodes[1024][4];
+                struct __qspinlock lock;
+        } *arena;
+        struct arena_spin_lock__bss {
+                int test_skip;
+                int counter;
+                int limit;
+                int cs_count;
+        } *bss;
 
-arch/powerpc/include/asm/pgtable.h :
+I dont have enough background here, as to if there is any specific 
+reason to keep it in data segment:
 
-/*
-  * Protection used for kernel text. We want the debuggers to be able to
-  * set breakpoints anywhere, so don't write protect the kernel text
-  * on platforms where such control is possible.
-  */
-#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || 
-defined(CONFIG_BDI_SWITCH) || \
-     defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
-#define PAGE_KERNEL_TEXT    PAGE_KERNEL_X
-#else
-#define PAGE_KERNEL_TEXT    PAGE_KERNEL_ROX
-#endif
+        if (skel->data->test_skip == 2) {
+                test__skip();
+                goto end;
+        }
 
-If you have neither CONFIG_KGDB nor CONFIG_XMON nor CONFIG_BDI_SWITCH 
-nor CONFIG_KPROBES or CONFIG_DYNAMIC_FTRACE, kernel text is mapped 
-Read-Only.
-
-Using BATs or not shouldn't make any difference because:
-
-With BATs we do:
-arch/powerpc/mm/book3s32/mmu.c:         setibat(i++, PAGE_OFFSET + base, 
-base, size, PAGE_KERNEL_TEXT);
-arch/powerpc/mm/book3s32/mmu.c:         setibat(i++, PAGE_OFFSET + base, 
-base, size, PAGE_KERNEL_TEXT);
-
-Without BATs we do:
-arch/powerpc/mm/pgtable_32.c:           map_kernel_page(v, p, ktext ? 
-PAGE_KERNEL_TEXT : PAGE_KERNEL);
-
-
-
-> 
-> Andrew
-> 
-> ---------------------------------
-> 
->>> =============================================================
->>> OpenBIOS 1.1 [Feb 12 2025 13:02]
->>> Configuration device id QEMU version 1 machine id 1
->>> CPUs: 1
->>> Memory: 128M
->>> UUID: 00000000-0000-0000-0000-000000000000
->>> CPU type PowerPC,G4
-> milliseconds isn't unique.
-> Welcome to OpenBIOS v1.1 built on Feb 12 2025 13:02
->>> [ppc] Kernel already loaded (0x01000000 + 0x004fcb28) (initrd 0x00000000 +
-> 0x00000000)
->>> [ppc] Kernel command line: console=serial
->>> switching to new context:
-> OF stdout device is: /pci@f2000000/mac-io@c/escc@13000/ch-a@13020
-> Preparing to boot Linux version 6.17.0-rc4+ (ajd@jarvis.ozlabs.ibm.com)
-> (powerpc64-linux-gnu-gcc (GCC) 15.2.1 20250808 (Red Hat Cross 15.2.1-1), GNU ld
-> version 2.44-1.fc42) #2 Thu Sep  4 16:21:41 AEST 2025
-> Detected machine type: 00000400
-> command line:
-> memory layout at init:
->    memory_limit : 00000000 (16 MB aligned)
->    alloc_bottom : 01501000
->    alloc_top    : 08000000
->    alloc_top_hi : 08000000
->    rmo_top      : 08000000
->    ram_top      : 08000000
-> found display   : /pci@f2000000/QEMU,VGA@e, opening... done
-> copying OF device tree...
-> Building dt strings...
-> Building dt structure...
-> Device tree strings 0x01502000 -> 0x015010a4
-> Device tree struct  0x01503000 -> 0x07de7eb0
-> Quiescing Open Firmware ...
-> Booting Linux via __start() @ 0x01000000 ...
-> Hello World !
-> Total memory = 128MB; using 256kB for hash table
-> Linux version 6.17.0-rc4+ (ajd@jarvis.ozlabs.ibm.com) (powerpc64-linux-gnu-gcc
-> (GCC) 15.2.1 20250808 (Red Hat Cross 15.2.1-1), GNU ld version 2.44-1.fc42) #2
-> Thu Sep  4 16:21:41 AEST 2025
-> OF: reserved mem: Reserved memory: No reserved-memory node in the DT
-> ioremap() called early from pmac_feature_init+0xe0/0xb00. Use early_ioremap()
-> instead
-> Found UniNorth memory controller & host bridge @ 0xf8000000 revision: 0x07
-> Mapped at 0xffb9e000
-> ioremap() called early from probe_one_macio+0x134/0x24c. Use early_ioremap()
-> instead
-> Found a Keylargo mac-io controller, rev: 0, mapped at 0x(ptrval)
-> PowerMac motherboard: PowerMac G4 AGP Graphics
-> ioremap() called early from udbg_scc_init+0x190/0x398. Use early_ioremap()
-> instead
-> Hardware name: PowerMac3,1 7400 0xc0209 PowerMac
-> printk: legacy bootconsole [udbg0] enabled
-> -----------------------------------------------------
-> phys_mem_size     = 0x8000000
-> dcache_bsize      = 0x20
-> icache_bsize      = 0x20
-> cpu_features      = 0x000000000401a008
->    possible        = 0x00000000277de008
->    always          = 0x0000000000000000
-> cpu_user_features = 0x8c000001 0x00000000
-> mmu_features      = 0x00000001
-> Hash_size         = 0x40000
-> Hash_mask         = 0xfff
-> -----------------------------------------------------
-> ioremap() called early from pmac_setup_arch+0x110/0x224. Use early_ioremap()
-> instead
-> WARNING ! Your machine is CUDA-based but your kernel
->            wasn't compiled with CONFIG_ADB_CUDA option !
-> Zone ranges:
->    DMA      [mem 0x0000000000000000-0x0000000007ffffff]
->    Normal   empty
-> Movable zone start for each node
-> Early memory node ranges
->    node   0: [mem 0x0000000000000000-0x0000000007ffffff]
-> Initmem setup node 0 [mem 0x0000000000000000-0x0000000007ffffff]
-> Kernel panic - not syncing: arch_static_call_transform: patching failed
-> func_a+0x0/0x8 at 0x0
-> CPU: 0 UID: 0 PID: 0 Comm: swapper Not tainted 6.17.0-rc4+ #2 NONE
-> Hardware name: PowerMac3,1 7400 0xc0209 PowerMac
-> Call Trace:
-> [c04b9eb0] [c0292e00] dump_stack_lvl+0x50/0x78 (unreliable)
-> [c04b9ed0] [c002d19c] vpanic+0xfc/0x2b4
-> [c04b9f00] [c002d3b0] cpu_mitigations_off+0x0/0x14
-> [c04b9f40] [c00127ac] fixup_cpc710_pci64+0x0/0x20
-> [c04b9f70] [c035082c] static_call_init+0x108/0x140
-> [c04b9fa0] [c0342ed0] start_kernel+0x78/0x4a8
-> [c04b9ff0] [00003500] 0x3500
-> Rebooting in 180 seconds..
-
+Thanks,
+Saket
 
