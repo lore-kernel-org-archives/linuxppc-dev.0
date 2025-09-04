@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-11710-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11711-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF2DFCA1002
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Sep 2025 09:50:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08F68CA1012
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Sep 2025 09:50:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cHZV42Qtpz2xnM;
-	Thu,  4 Sep 2025 19:50:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cHZV84ffrz305M;
+	Thu,  4 Sep 2025 19:50:40 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756979436;
-	cv=none; b=GGbotY8ZlSJuMMZiLhdMB9HuMoyrp7ApWSzNxUfw753rfLOXHtWuE7ydPIfCSkcXpDRnQnI5gpbHWmzN5lEiwi2e59lNJLoX6xZvpdJZ8OD0oRcOwmYHCm/L4MCvdOh0hyUXBOgjt6BVedxDjIs+o7VaZZa2IWlFhL8Cwnd/OWbnv/V/+h+8Cz6qqCDo209mBwAW5tJQTg47TgSrC8oIh/cwHphFBYyXraHTHYfYrCzXs7JeDr50bvMTLjj8hcK5GXeElmuPOEyebTY+aB1ea9DSEaVOVycNC85fu5sdDJIZjA4w7v+ZLkYTh6pm0AivD36qz3cM+36P6W1XWaFtSg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756979440;
+	cv=none; b=j2H7Wz7tAUKR4xsNGHFqV5wUjYQFzRqDBmI3rs2yLG+ZddosU4sM3Ze1+4Tdx4DHwqw6nSJtZLVnHQz/dl4XH3+xg4/qhJ/Ham+ZC6oucJfOp8IvT2w7jvE6gEx+zhIfEysX+nLrrEhS9J9aogjY+0PiIdFnbVqvTFif0OfapfoM4eDU8WBH57flMafD5ITGb3Gee6SA3g+JvkLX8a0I4YhCawpX63ebN3LTlLHnfG2i7DXRfb1lJtKmqI5QCw9Io+07X+TSuwvMwaNW8Er/bH+yo1rzrvU316OoBZNewHkRvUN5kEOMB9akHmNsnCrBd/7QIMHm4sdWBqTCIPbA5Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756979436; c=relaxed/relaxed;
-	bh=i4u6Mu381p5jH8eD4ZzHyiz1fIrkqSakQkKnaMeMuZ8=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ndiG1pQwUwV5ZC91tKBUOVJEt1dMwDL/9IcstRaM9w5GPwZrajr6pnq0qH0x8pRw2GV0OxCXoqnfrGzVCC23bF50QYP2HoU4vhOqJSPKOL4qSmhUkRwxjuqE77t7bbP9+h58yTeHEUtYWNkM/np231z19PtlgmMhI+02+IXnGfpFfnR02qGJ4vJVOKFjQtetam0SMJ+CCGthJJnQH9cogMQQWdLcf9hAJqeANp0DmyBf3A40HTJchemtTd0sCL2KXiUlg9pXFEnfg6Kreo/t3WWly+KBxfdVz0HEBU5twXt3LOZsz1aRhT+PNPRZRNye6o7AAtp7cLFXyoSFasiuRw==
+	t=1756979440; c=relaxed/relaxed;
+	bh=MBrdlz0VjSUTVfRkZT8dD8Oj6WFwjZVxgdNMHOTx+NI=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=Bk2GGzBf1fqnLxMWmzJGPE7iAjJtQ7bsLEBr1j+BpR3tncBhcj2Px17sFxDNJa2Vo3o2pu8Ya1xIU/kcXAz33h/9HO89xfwQFSjPe9tNNXELQWjiomMCPC4z1XvIfTmuDhb2HwW3O0g+qMHu7vvM4PChQxkySZstvBL/oTUraU1VffUgviwkL9MVKW9tIrxNST2+sQGqG5I+e6rZyQZi485HzWe2q0hlt0ONIil6/o9+EKKlzEXKpYRN/IrEx9J+xApW2QTkLJAdhkC1sXh3BHXaSboR2EAckiRrPnzWrN61LzDNBcvyENTO0CSZf0TUGi8ImT/tOGAeOZ1HH04Kcg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cHZV32fZ0z2xlM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2025 19:50:34 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cHZV81HP9z2xlM
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2025 19:50:40 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cHXPv6szdz9sSb;
-	Thu,  4 Sep 2025 10:16:51 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4cHXNM6jLZz9sSZ;
+	Thu,  4 Sep 2025 10:15:31 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Q0bCBb93aCZt; Thu,  4 Sep 2025 10:16:51 +0200 (CEST)
+	with ESMTP id 18SI7UcBawKu; Thu,  4 Sep 2025 10:15:31 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cHXPZ2N6dz9sSK;
-	Thu,  4 Sep 2025 10:16:34 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cHXNM5kn3z9sSR;
+	Thu,  4 Sep 2025 10:15:31 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3C32C8B764;
-	Thu,  4 Sep 2025 10:16:34 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B11998B764;
+	Thu,  4 Sep 2025 10:15:31 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id zHQ165OB1h7X; Thu,  4 Sep 2025 10:16:34 +0200 (CEST)
+	with ESMTP id wK9n_Hr5zaWm; Thu,  4 Sep 2025 10:15:31 +0200 (CEST)
 Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 03CAE8B763;
-	Thu,  4 Sep 2025 10:16:33 +0200 (CEST)
-Message-ID: <97fc7eed-c67e-4b5e-90bb-93eb8dd058d7@csgroup.eu>
-Date: Thu, 4 Sep 2025 10:16:33 +0200
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 87ADC8B763;
+	Thu,  4 Sep 2025 10:15:31 +0200 (CEST)
+Message-ID: <548521de-1bc2-41f5-a288-d450dfb6bab4@csgroup.eu>
+Date: Thu, 4 Sep 2025 10:15:31 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,78 +59,102 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 5.4 only v2] powerpc: boot: Remove leading zero in label
- in udelay()
-To: Nathan Chancellor <nathan@kernel.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Sasha Levin <sashal@kernel.org>
-Cc: stable@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- linuxppc-dev@lists.ozlabs.org
-References: <20250903211158.2844032-1-nathan@kernel.org>
+Subject: Re: Kernel v6.17-rc4 with STATIC_CALL_SELFTEST=y enabled fails to
+ boot at early stage (PowerMac G4 DP)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Erhard Furtner <erhard_f@mailbox.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Andrew Donnellan <ajd@linux.ibm.com>
+References: <342b4120-911c-4723-82ec-d8c9b03a8aef@mailbox.org>
+ <98dbafee-aad3-439b-9efb-76f80c6668fd@csgroup.eu>
 Content-Language: fr-FR
-In-Reply-To: <20250903211158.2844032-1-nathan@kernel.org>
+In-Reply-To: <98dbafee-aad3-439b-9efb-76f80c6668fd@csgroup.eu>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
+Hi Again,
 
+Le 04/09/2025 à 09:31, Christophe Leroy a écrit :
+> Hi Erhard,
+> 
+> Le 04/09/2025 à 00:44, Erhard Furtner a écrit :
+>> Greetings!
+>>
+>> In a conversation with Andrew about his page table check code for 
+>> PowerPC he found out there seems to be a general problem of the code 
+>> patching code on ppc:
+>>
+>>  > I note that STATIC_CALL_SELFTEST seems to fail, which could be but 
+>> isn't
+>>  > necessarily related.
+>>
+>>  > Specifically, it looks like code patching fails if the instruction 
+>> being patched
+>>  > is in an __init function, and in this case, that occurs due to
+>>  > page_table_check_pte_clear() being inlined into ptep_clear(), which 
+>> is in turn
+>>  > inlined into pte_clear_tests() in debug_vm_pgtable.c which is 
+>> marked __init.
+>>  > Very curious!
+>>
+>> Indeed, when I enable STATIC_CALL_SELFTEST=y on my G4 the kernel fails 
+>> to boot at an early stage, the OpenFirmware console showing only:
+>>
+>> done
+>> found display   : /pci@f0000000/ATY,AlteracParent@10/ATY,Alterac_B@1, 
+>> opening...
+>>
+>> Without STATIC_CALL_SELFTEST the kernel boots just fine.
+>>
+>> Kernel .config attached.
+> 
+> With your .config, on QEMU I get the following. I will investigate.
+> 
+> [    0.000000] Kernel panic - not syncing: arch_static_call_transform: 
+> patching failed func_a+0x0/0x10 at 0x0
+> [    0.000000] CPU: 0 UID: 0 PID: 0 Comm: swapper Not tainted 6.17.0- 
+> rc4-PMacG4+ #1628 PREEMPTLAZY
+> [    0.000000] Hardware name: PowerMac3,1 7400 0xc0209 PowerMac
+> [    0.000000] Call Trace:
+> [    0.000000] [c0dd7e60] [c0810e54] dump_stack_lvl+0x70/0x8c (unreliable)
+> [    0.000000] [c0dd7e80] [c004b220] vpanic+0x114/0x2e4
+> [    0.000000] [c0dd7eb0] [c004b45c] arch_set_bit+0x0/0x38
+> [    0.000000] [c0dd7f00] [c00155fc] arch_static_call_transform+0xec/0x1e8
+> [    0.000000] [c0dd7f30] [c0176944] __static_call_init+0x110/0x288
+> [    0.000000] [c0dd7f80] [c0c19ab0] static_call_init+0x4c/0x9c
+> [    0.000000] [c0dd7fa0] [c0c02e00] start_kernel+0x7c/0x664
+> [    0.000000] [c0dd7ff0] [000035d0] 0x35d0
+> [    0.000000] Rebooting in 40 seconds..
 
-Le 03/09/2025 à 23:11, Nathan Chancellor a écrit :
-> When building powerpc configurations in linux-5.4.y with binutils 2.43
-> or newer, there is an assembler error in arch/powerpc/boot/util.S:
-> 
->    arch/powerpc/boot/util.S: Assembler messages:
->    arch/powerpc/boot/util.S:44: Error: junk at end of line, first unrecognized character is `0'
->    arch/powerpc/boot/util.S:49: Error: syntax error; found `b', expected `,'
->    arch/powerpc/boot/util.S:49: Error: junk at end of line: `b'
-> 
-> binutils 2.43 contains stricter parsing of certain labels [1], namely
-> that leading zeros are no longer allowed. The GNU assembler
-> documentation already somewhat forbade this construct:
-> 
->    To define a local label, write a label of the form 'N:' (where N
->    represents any non-negative integer).
-> 
-> Eliminate the leading zero in the label to fix the syntax error. This is
-> only needed in linux-5.4.y because commit 8b14e1dff067 ("powerpc: Remove
-> support for PowerPC 601") removed this code altogether in 5.10.
-> 
-> Link: https://sourceware.org/git/?p=binutils-gdb.git;a=commit;h=226749d5a6ff0d5c607d6428d6c81e1e7e7a994b [1]
-> Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+The problem comes from the following in arch/powerpc/include/asm/pgtable.h :
 
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+/*
+  * Protection used for kernel text. We want the debuggers to be able to
+  * set breakpoints anywhere, so don't write protect the kernel text
+  * on platforms where such control is possible.
+  */
+#if defined(CONFIG_KGDB) || defined(CONFIG_XMON) || 
+defined(CONFIG_BDI_SWITCH) || \
+	defined(CONFIG_KPROBES) || defined(CONFIG_DYNAMIC_FTRACE)
+#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
+#else
+#define PAGE_KERNEL_TEXT	PAGE_KERNEL_ROX
+#endif
 
-> ---
-> v1 -> v2:
-> - Adjust commit message to make it clearer this construct was already
->    incorrect under the existing GNU assembler documentation (Segher)
-> 
-> v1: https://lore.kernel.org/20250902235234.2046667-1-nathan@kernel.org/
-> ---
->   arch/powerpc/boot/util.S | 4 ++--
->   1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/util.S b/arch/powerpc/boot/util.S
-> index f11f0589a669..5ab2bc864e66 100644
-> --- a/arch/powerpc/boot/util.S
-> +++ b/arch/powerpc/boot/util.S
-> @@ -41,12 +41,12 @@ udelay:
->   	srwi	r4,r4,16
->   	cmpwi	0,r4,1		/* 601 ? */
->   	bne	.Ludelay_not_601
-> -00:	li	r0,86	/* Instructions / microsecond? */
-> +0:	li	r0,86	/* Instructions / microsecond? */
->   	mtctr	r0
->   10:	addi	r0,r0,0 /* NOP */
->   	bdnz	10b
->   	subic.	r3,r3,1
-> -	bne	00b
-> +	bne	0b
->   	blr
->   
->   .Ludelay_not_601:
-> 
-> base-commit: c25f780e491e4734eb27d65aa58e0909fd78ad9f
+I don't know what the best fix is at the moment. This probably comes 
+from the old days when we didn't have CONFIG_STRICT_KERNEL_RWX. Would it 
+nowadays be acceptable to inconditionnally set:
 
+	#define PAGE_KERNEL_TEXT	PAGE_KERNEL_X
+
+It propably would, taking into account it is used exclusively on powerpc/32:
+
+arch/powerpc/mm/book3s32/mmu.c:         setibat(i++, PAGE_OFFSET + base, 
+base, size, PAGE_KERNEL_TEXT);
+arch/powerpc/mm/book3s32/mmu.c:         setibat(i++, PAGE_OFFSET + base, 
+base, size, PAGE_KERNEL_TEXT);
+arch/powerpc/mm/pgtable_32.c:           map_kernel_page(v, p, ktext ? 
+PAGE_KERNEL_TEXT : PAGE_KERNEL);
+
+Christophe
 
