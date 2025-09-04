@@ -1,93 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-11717-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11718-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08A1FCA1012
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Sep 2025 10:09:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36185CA1002
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Sep 2025 10:20:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cHZw00TCfz30W9;
-	Thu,  4 Sep 2025 20:09:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756980576;
-	cv=none; b=YEyWcjvVGkevqTcuJihyw3Dk8V5ESJ6lqj0kY2L3plv1MwwFjDTdxbcLYDH/zS2Xm5aWnnaQ5qfbsGu8Q/ZAyt/HPeKe4RXuTgXf0DrtpyxbqAar5DEd4NtS6y8cuNMFH1Aku7/LROfn4hupyfg6pSumpFunUu2/DfNI1ZhXoyn+MtmgbHVZFMtCbaIC7WyKT1zPIkLL6WxQi55FkGlSGen3HcBmlDKK9aSouRawrf0UIbFxDNEoZdgGVrbEeS/J5JWDv89YxsWoOC/UueaztjD9QQTWgN5AHuM2/NGNWTlAi43DoIs2gbRYXU+B4uPBUV+SZiMscXYN1wZnhqoccA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cHb8k5sfTz2xnM;
+	Thu,  4 Sep 2025 20:20:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1756981238;
+	cv=none; b=JRSqlnCI9cDic5VpOnc5yo7s9C/ZiYNdxYXKqEW3D0mb3z1rosTb+JGcji51CFHNbk3QYo38jSodb2vpdwKqWsl3VS69hayzsF8gmmFJnPPWL0Zk2bXHMQxx9/mkeujDEskMvmMVWCrq4ijKZr3yz/Ho4pQD5iW5VTdEqyd95zbKYyt/tHvj/yc9VxuF0z6o1aoC32dR/Tn/haB70eilG7pHTOE/sTmdKtwn9FSWygX9kKMTfHAfAYKacwZ3uc4NrMS8lT2MhqFFWj3akk0NFNEP1ZrNvt3+UPOVF7Dy3bCUakoe1t1on2tx/C0xuDiLcV74mj3moBsdKMNj6+99ng==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1756980576; c=relaxed/relaxed;
-	bh=SO75t8E32ZyWyF9mdP6KV1AdkCGIcYvhJZLy2lWIr6s=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ig2vjCfFwmivdltDK23IdabcPxwZ8GAGSB7F61UdeAzRsem3dD0kEP0ODovmgzsR+gtFHgVTCsJ3K6PfhUjX81N9o30peSnyYbtMsSwh1VHhPAxRMdooPqnSr2NSN/dFDosPA7V+Q3R9H00iTGXPcebmxquo88hqVMa4eaF0xXNezhArDHDif8FyJdfHHc06Dc8EHh8gaeJCfNQEX4RRrwBaWDZu0QVImGnGl4LmzP+jDmPzEEGzrQyxNeH777CR3D/FfOXmtfxpjMs+bkTkbjT6xCRVehJCTjt92n76c1xKjZ2wwUp3nwMfzPizzvTj7TigRJ+00jBrAs/jr5DHBQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eLnEGrYO; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eLnEGrYO;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cHZvz1gk5z301n
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2025 20:09:35 +1000 (AEST)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 583Ms8gs001199;
-	Thu, 4 Sep 2025 10:09:05 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=SO75t8E32ZyWyF9md
-	P6KV1AdkCGIcYvhJZLy2lWIr6s=; b=eLnEGrYOq0muF4kZmF13uM0XeNBCFLHNc
-	JHWmZdPGgGLaHMKxsoMhQO1c5u1WviUuO8qBpKDNi2W15+Hcz4u4RERy0hpMIKh1
-	rLThpeu4uCV/viI2TzQVqALxAOn1qkhGFgOyork3ID5HA6ZRq/kSt7WUZ7lzJEt7
-	1y0O4sUCrZKpBRrAFaD9aEbh1KkKG0NB6zvERLbLw3rfsEeHyqKz7Zz71hKvRqG6
-	2+HYnEyXzrcrwrc5lBSrQxdaRqrVLjLqKWjPBqtoZQt+HZjfTD9n6VgV+kpVaEcN
-	kJdsMmm47IyMtqbi3hsXsUG3KlUYrrNl5o3FvFbC8+7EPskzXXrCA==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48wshf573x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 04 Sep 2025 10:09:05 +0000 (GMT)
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 584A94LA011517;
-	Thu, 4 Sep 2025 10:09:04 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48wshf573u-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 04 Sep 2025 10:09:04 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 584711Qi017222;
-	Thu, 4 Sep 2025 10:09:03 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 48vc10v2vs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 04 Sep 2025 10:09:03 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 584A90V346596466
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 4 Sep 2025 10:09:00 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 62BF72007B;
-	Thu,  4 Sep 2025 10:09:00 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E008B20067;
-	Thu,  4 Sep 2025 10:08:55 +0000 (GMT)
-Received: from li-621bac4c-27c7-11b2-a85c-c2bf7c4b3c07.in.ibm.com (unknown [9.109.219.153])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  4 Sep 2025 10:08:55 +0000 (GMT)
-From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
-To: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: hbathini@linux.ibm.com, sachinpb@linux.ibm.com, venkat88@linux.ibm.com,
-        andrii@kernel.org, eddyz87@gmail.com, mykolal@fb.com, ast@kernel.org,
-        daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
-        yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
-        sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org,
-        christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, memxor@gmail.com,
-        iii@linux.ibm.com, shuah@kernel.org
-Subject: [PATCH bpf-next v3 4/4] powerpc64/bpf: Implement PROBE_ATOMIC instructions
-Date: Thu,  4 Sep 2025 15:38:35 +0530
-Message-ID: <20250904100835.1100423-5-skb99@linux.ibm.com>
-X-Mailer: git-send-email 2.43.5
-In-Reply-To: <20250904100835.1100423-1-skb99@linux.ibm.com>
-References: <20250904100835.1100423-1-skb99@linux.ibm.com>
+	t=1756981238; c=relaxed/relaxed;
+	bh=oBgey+SXKxNwN0UFSl6NzJUItsG701jt62B5comsJAg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=mAXs6I4+StriPjQA6PkcbQjGyuIGR4oSMev5PFoPO1pvKJtMHNFlAUubvWTWy5fDP5mTIOo1YLXjE910/6h2ygIqqxxFoF0gfNKJFiER7jHn5UtO/x7QG8Kv/I706uZGqG10F1k0k27QmQQdfiyKWIsB3Su2NCJUlRc+YINfJtM17Xt8ojfAfUPeBbjS9E5jE+yuNJSw3WxbhRyd9NKCNq2o21jV9Xm7ueBqBb93tY9pWAfeXsxyR71XA2YVQDL9gl/UFwxmwl2U4s8SxWXdbdMPLgfIMii8L+sU21kSFcZGwJIKztcJzrxzESV8zBQaxqvjQawCunBhcvzVqVjIog==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cHb8h67Msz2xd6
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  4 Sep 2025 20:20:36 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4cHY2x2Nj3z9sSC;
+	Thu,  4 Sep 2025 10:45:29 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id RbpVFRObFkEX; Thu,  4 Sep 2025 10:45:29 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cHY2x1gzZz9sRy;
+	Thu,  4 Sep 2025 10:45:29 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 25A068B764;
+	Thu,  4 Sep 2025 10:45:29 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id ZZ6PRxhQp6oY; Thu,  4 Sep 2025 10:45:29 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id F25AF8B763;
+	Thu,  4 Sep 2025 10:45:28 +0200 (CEST)
+Message-ID: <e042d4ca-c66b-49ec-8572-442ab697c430@csgroup.eu>
+Date: Thu, 4 Sep 2025 10:45:28 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,115 +58,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: Kernel v6.17-rc4 with STATIC_CALL_SELFTEST=y enabled fails to
+ boot at early stage (PowerMac G4 DP)
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Erhard Furtner <erhard_f@mailbox.org>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+Cc: Andrew Donnellan <ajd@linux.ibm.com>
+References: <342b4120-911c-4723-82ec-d8c9b03a8aef@mailbox.org>
+ <98dbafee-aad3-439b-9efb-76f80c6668fd@csgroup.eu>
+ <ca440403-0108-4703-bf07-bc3ac7e3d108@linux.ibm.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <ca440403-0108-4703-bf07-bc3ac7e3d108@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: Xo9cL5xBECnU35L6Fv5kpH-1kX0VkmW9
-X-Authority-Analysis: v=2.4 cv=do3bC0g4 c=1 sm=1 tr=0 ts=68b96541 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=yJojWOMRYYMA:10 a=VnNF1IyMAAAA:8 a=A3AlPsS74hsQCGrZRX4A:9
-X-Proofpoint-ORIG-GUID: y3DJb659C20TPRkMeHBu-52wcY6O0bLO
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTAyMDA0MCBTYWx0ZWRfX2Pz6il/Zb9VI
- wjnoqg/yXP40uJES/vFDwJeruCJ+N1rZTVP5Us8hXhJzdDFFnjYURXyXWEA5WZXvg7OgUL7umHl
- L7dZtvbkJY684ir09zUuwqSKFsPHNO2crrmH+GLfJLkKJbWFnoXSTVHc3nQQCgOj3AiWwc8IMa9
- jo3zhyWs6UqRVTrcgg0Zb1hCl9GcP+MR6joNVj5B50YN1qTmnsRwirJZn2HICz3BzPVUaInsW9X
- resTTJGqKsFZjz6ZZuwU4TUjlnybx38Fog8DIRq5SGoFZzomtysVMFpugxyMjGeRMs9Ndh3K8yT
- C+u/p46HabZJuoNrXLHMVmWCRAfljoFnADJq9Kh6Fxr3DYTkJygdT/dYMGEpFCm1j8/7n/TwLDZ
- JNj5Go5A
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-04_03,2025-08-28_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 clxscore=1015 impostorscore=0 bulkscore=0 suspectscore=0
- malwarescore=0 spamscore=0 priorityscore=1501 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509020040
 
-powerpc supports BPF atomic operations using a loop around
-Load-And-Reserve(LDARX/LWARX) and Store-Conditional(STDCX/STWCX)
-instructions gated by sync instructions to enforce full ordering.
 
-To implement arena_atomics, arena vm start address is added to the
-dst_reg to be used for both the LDARX/LWARX and STDCX/STWCX instructions.
-Further, an exception table entry is added for LDARX/LWARX
-instruction to land after the loop on fault. At the end of sequence,
-dst_reg is restored by subtracting arena vm start address.
 
-bpf_jit_supports_insn() is introduced to selectively enable instruction
-support as in other architectures like x86 and arm64.
+Le 04/09/2025 à 10:40, Madhavan Srinivasan a écrit :
+> 
+> 
+> On 9/4/25 1:01 PM, Christophe Leroy wrote:
+>> Hi Erhard,
+>>
+>> Le 04/09/2025 à 00:44, Erhard Furtner a écrit :
+>>> Greetings!
+>>>
+>>> In a conversation with Andrew about his page table check code for PowerPC he found out there seems to be a general problem of the code patching code on ppc:
+>>>
+>>>   > I note that STATIC_CALL_SELFTEST seems to fail, which could be but isn't
+>>>   > necessarily related.
+>>>
+>>>   > Specifically, it looks like code patching fails if the instruction being patched
+>>>   > is in an __init function, and in this case, that occurs due to
+>>>   > page_table_check_pte_clear() being inlined into ptep_clear(), which is in turn
+>>>   > inlined into pte_clear_tests() in debug_vm_pgtable.c which is marked __init.
+>>>   > Very curious!
+>>>
+>>> Indeed, when I enable STATIC_CALL_SELFTEST=y on my G4 the kernel fails to boot at an early stage, the OpenFirmware console showing only:
+>>>
+>>> done
+>>> found display   : /pci@f0000000/ATY,AlteracParent@10/ATY,Alterac_B@1, opening...
+>>>
+>>> Without STATIC_CALL_SELFTEST the kernel boots just fine.
+>>>
+>>> Kernel .config attached.
+>>
+>> With your .config, on QEMU I get the following. I will investigate.
+>>
+>> [    0.000000] Kernel panic - not syncing: arch_static_call_transform: patching failed func_a+0x0/0x10 at 0x0
+>> [    0.000000] CPU: 0 UID: 0 PID: 0 Comm: swapper Not tainted 6.17.0-rc4-PMacG4+ #1628 PREEMPTLAZY
+>> [    0.000000] Hardware name: PowerMac3,1 7400 0xc0209 PowerMac
+>> [    0.000000] Call Trace:
+> 
+> I am using qemu with -M mac99 and it boots
+> 
+> Hardware name: PowerMac3,1 7400 0xc0209 PowerMac
+> printk: legacy bootconsole [udbg0] enabled
+> -----------------------------------------------------
+> phys_mem_size     = 0x8000000
+> dcache_bsize      = 0x20
+> 
+> I am missing something here. Digging some more
 
-Reviewed-by: Hari Bathini <hbathini@linux.ibm.com>
-Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
----
- arch/powerpc/net/bpf_jit_comp.c   | 16 ++++++++++++++++
- arch/powerpc/net/bpf_jit_comp64.c | 26 ++++++++++++++++++++++++++
- 2 files changed, 42 insertions(+)
 
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index cfa84cab0a18..88ad5ba7b87f 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -450,6 +450,22 @@ bool bpf_jit_supports_far_kfunc_call(void)
- 	return IS_ENABLED(CONFIG_PPC64);
- }
- 
-+bool bpf_jit_supports_insn(struct bpf_insn *insn, bool in_arena)
-+{
-+	if (!in_arena)
-+		return true;
-+	switch (insn->code) {
-+	case BPF_STX | BPF_ATOMIC | BPF_H:
-+	case BPF_STX | BPF_ATOMIC | BPF_B:
-+	case BPF_STX | BPF_ATOMIC | BPF_W:
-+	case BPF_STX | BPF_ATOMIC | BPF_DW:
-+		if (bpf_atomic_is_load_store(insn))
-+			return false;
-+		return IS_ENABLED(CONFIG_PPC64);
-+	}
-+	return true;
-+}
-+
- void *arch_alloc_bpf_trampoline(unsigned int size)
- {
- 	return bpf_prog_pack_alloc(size, bpf_jit_fill_ill_insns);
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index cb4d1e954961..1fe37128c876 100644
---- a/arch/powerpc/net/bpf_jit_comp64.c
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -1163,6 +1163,32 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
- 
- 			break;
- 
-+		/*
-+		 * BPF_STX PROBE_ATOMIC (arena atomic ops)
-+		 */
-+		case BPF_STX | BPF_PROBE_ATOMIC | BPF_W:
-+		case BPF_STX | BPF_PROBE_ATOMIC | BPF_DW:
-+			EMIT(PPC_RAW_ADD(dst_reg, dst_reg, bpf_to_ppc(ARENA_VM_START)));
-+			ret = bpf_jit_emit_atomic_ops(image, ctx, &insn[i],
-+						      &jmp_off, &tmp_idx, &addrs[i + 1]);
-+			if (ret) {
-+				if (ret == -EOPNOTSUPP) {
-+					pr_err_ratelimited(
-+						"eBPF filter atomic op code %02x (@%d) unsupported\n",
-+						code, i);
-+				}
-+				return ret;
-+			}
-+			/* LDARX/LWARX should land here on exception. */
-+			ret = bpf_add_extable_entry(fp, image, fimage, pass, ctx,
-+						    tmp_idx, jmp_off, dst_reg, code);
-+			if (ret)
-+				return ret;
-+
-+			/* Retrieve the dst_reg */
-+			EMIT(PPC_RAW_SUB(dst_reg, dst_reg, bpf_to_ppc(ARENA_VM_START)));
-+			break;
-+
- 		/*
- 		 * BPF_STX ATOMIC (atomic ops)
- 		 */
--- 
-2.43.5
+Did you use the .config provided by Erhard ?
+
+Christophe
 
 
