@@ -1,41 +1,41 @@
-Return-Path: <linuxppc-dev+bounces-11774-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11775-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 92E7FCA1013
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Sep 2025 09:50:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1431FCA0FED
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Sep 2025 09:55:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cJBQz287rz30RT;
-	Fri,  5 Sep 2025 19:50:03 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cJBXg5C7pz3bxL;
+	Fri,  5 Sep 2025 19:54:59 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.176.79.56
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757065803;
-	cv=none; b=aYjTKc0vNQkyGyBA+R5s/oFq6F9WIsC321h5GBAyRqjKEODUXP7YI+H7hom+go/fRkPHVXw2btTlNAD9uqHxxYY8BA8qAeJfvGQjX/paI4gY2N1LQOsImVsK62xCeGYP8O2eIToDaZs+Y5F4h8kIJg8GA37qIa7IwjRx7MTcrv/Pz18M4o2pzHkO99Q7JBqy+zfZvYjz9f5tkUkdGOQdKX4QTkvOeZSE00bslsS/eOJhZN97sJ3dv1uC6gW9BotZARu7XkU5VnvQVHM805RP0RMunZKKvyEoE8YqEWcnMtahVMCpm43wJiKXhKS1rLFXz2/m2/xjWxcs0uaM9ctY8Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757066099;
+	cv=none; b=G8FMSLvDFJ5c8pbdXtO5Qv3VpYVcoOQ4kdtCHqlfBWJX8ty2RgnRwpkLsYQgmA9D2xKg/2YvCPfL81NL3CwGzPQlhb2SgC/DkDWGPjXeBvHstz2nvk1jqVrTxJ3AcbPjHljVcNtsvsj2D4SxCav32vPVoSTIs+SVNS4YMlGGtDLIuJEZdygbBtLyGx0lpgU4hKh3VmdWBGYEYU8DEXqqEgeSosNqenBkEOsTfsHZONL6u9Qpz4N7NPOjVLcGrtncS0OcD4gfrJLyyosa99CVz6gwIQZgNuiG+Zv4tOcEAsZvGONkIR3+LOzI0JV/JWNYfNm7I19jdWbA0avLcLbXAQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757065803; c=relaxed/relaxed;
-	bh=Zabr4izodvM0NLvpzUp1pSHNTxcY22KRnJgx4e5O7ko=;
+	t=1757066099; c=relaxed/relaxed;
+	bh=tfqcFl+HFKzT0Enb40sxo3AyDq2g5ZpWrpQBxkg0uxk=;
 	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=cvhtJ3iTvv5QChzVea3W1o7z76HI4tu5mqLRTdJjrxvMx6puAEvoqMprG0jF8qTDoLaupEFJ27yVPIEepTha8udapKDxemvbP4LaJgAE6ajT+OeJcDaLzC0noY14AYjxWcbYVFM75BPmSl4CZkT4YGkRkvzKBQURHvrkFb/Q85UxgTBpLylAEzBR+DVdIWIhrpCW0OBSBwBJhhgWQgntJJI8wUhZSYO0eRsBaRJiSbQn6+fU5LbeS0xZun2hWdXdznfupian+i5ZA4vH68bxtqjrAgKeks9NB84iDhIBOcDC81U20GdVdYRWvA2jQwCtBe1+Cxy0Bq5yHi1703J8Tg==
+	 MIME-Version:Content-Type; b=X9Ca0zEhoCRB/nLltQDXiEpRsCdzfCCKDSMv2/v7ztYjQB9XPPqv86Hckz8QC8xUtic8GWBJ3+ruUly7yebWLjhooFfN/RvHh1SHx706idnX+feHKWzNw/riNR2oXC9UWiFXkHPzqpY4tXSQ38+ZtwThc4V0UAedci5AOsVuwll3qlZ6XJfFWQ9bXB8IPg0GzGmn4PL7wPwWHCY8K0DEG53XCy6Nh1J8MP/COoonpOcWSAUBwlB+tCjskf2FS4ddOVD3qwzYX/b2/OhNyhMBmf7lZURU39feed2fr/krFT0RH3cHCMSgtn273DPu8Yh12TDwGVKOXAqm9Kx2TWuAhQ==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
 Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJBQy34Fcz2yGM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2025 19:50:00 +1000 (AEST)
-Received: from mail.maildlp.com (unknown [172.18.186.216])
-	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4cJBPj4s43z6JBLl;
-	Fri,  5 Sep 2025 17:48:57 +0800 (CST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJBXf6fRbz30RT
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2025 19:54:58 +1000 (AEST)
+Received: from mail.maildlp.com (unknown [172.18.186.231])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4cJB5B08w6z6L5Vh;
+	Fri,  5 Sep 2025 17:34:38 +0800 (CST)
 Received: from frapeml500008.china.huawei.com (unknown [7.182.85.71])
-	by mail.maildlp.com (Postfix) with ESMTPS id 172721402E9;
-	Fri,  5 Sep 2025 17:49:56 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id CEA161402CB;
+	Fri,  5 Sep 2025 17:38:31 +0800 (CST)
 Received: from localhost (10.203.177.15) by frapeml500008.china.huawei.com
  (7.182.85.71) with Microsoft SMTP Server (version=TLS1_2,
  cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.1.2507.39; Fri, 5 Sep
- 2025 11:49:54 +0200
-Date: Fri, 5 Sep 2025 10:49:52 +0100
+ 2025 11:38:29 +0200
+Date: Fri, 5 Sep 2025 10:38:28 +0100
 From: Jonathan Cameron <jonathan.cameron@huawei.com>
 To: Zihuan Zhang <zhangzihuan@kylinos.cn>
 CC: "Rafael J . wysocki" <rafael@kernel.org>, Viresh Kumar
@@ -64,12 +64,12 @@ CC: "Rafael J . wysocki" <rafael@kernel.org>, Viresh Kumar
 	<intel-gfx@lists.freedesktop.org>, <dri-devel@lists.freedesktop.org>,
 	<imx@lists.linux.dev>, <linux-omap@vger.kernel.org>,
 	<linux-kernel@vger.kernel.org>
-Subject: Re: [PATCH v4 04/10] cpufreq: powernv: Use scope-based cleanup
+Subject: Re: [PATCH v4 01/10] arm64: topology: Use scope-based cleanup
  helper
-Message-ID: <20250905104952.00002f58@huawei.com>
-In-Reply-To: <20250903131733.57637-5-zhangzihuan@kylinos.cn>
+Message-ID: <20250905103828.0000726c@huawei.com>
+In-Reply-To: <20250903131733.57637-2-zhangzihuan@kylinos.cn>
 References: <20250903131733.57637-1-zhangzihuan@kylinos.cn>
-	<20250903131733.57637-5-zhangzihuan@kylinos.cn>
+	<20250903131733.57637-2-zhangzihuan@kylinos.cn>
 X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -90,7 +90,7 @@ X-Originating-IP: [10.203.177.15]
 X-ClientProxiedBy: lhrpeml100002.china.huawei.com (7.191.160.241) To
  frapeml500008.china.huawei.com (7.182.85.71)
 
-On Wed,  3 Sep 2025 21:17:27 +0800
+On Wed,  3 Sep 2025 21:17:24 +0800
 Zihuan Zhang <zhangzihuan@kylinos.cn> wrote:
 
 > Replace the manual cpufreq_cpu_put() with __free(put_cpufreq_policy)
@@ -100,63 +100,64 @@ Zihuan Zhang <zhangzihuan@kylinos.cn> wrote:
 > No functional change intended.
 > 
 > Signed-off-by: Zihuan Zhang <zhangzihuan@kylinos.cn>
-This one is a little more weak wrt to justification.  Kernel style
-isn't to use __free() where there isn't a significant benefit.
+Diff is being slightly annoying in not quite showing enough context
+to see that it is fine to release this at the end of scope.
+What you have done looks correct to me but there is a further
+potential cleanup
 
-Up to maintainer of the driver on this one so I'll not offer
-a tag.
+	for_each_cpu_wrap(ref_cpu, policy->cpus, cpu + 1) {
+		if (ref_cpu == start_cpu) {
+			/* Prevent verifying same CPU twice */
+			ref_cpu = nr_cpu_ids;
+			break;
+//here, might as well return -EAGAIN as only thing in this block
+//and now no advantage in sharing the exit path with the one that
+//says we never matched the next condition.
+		}
+		if (!idle_cpu(ref_cpu))
+			break;
+		}
+
+Either way I'm fine with this.
+Reviewed-by: Jonathan Cameron <jonathan.cameron@huawei.com>
 
 > ---
->  drivers/cpufreq/powernv-cpufreq.c | 11 +++++------
->  1 file changed, 5 insertions(+), 6 deletions(-)
+>  arch/arm64/kernel/topology.c | 9 +++------
+>  1 file changed, 3 insertions(+), 6 deletions(-)
 > 
-> diff --git a/drivers/cpufreq/powernv-cpufreq.c b/drivers/cpufreq/powernv-cpufreq.c
-> index 7d9a5f656de8..811fdbf398fa 100644
-> --- a/drivers/cpufreq/powernv-cpufreq.c
-> +++ b/drivers/cpufreq/powernv-cpufreq.c
-> @@ -892,15 +892,15 @@ static int powernv_cpufreq_reboot_notifier(struct notifier_block *nb,
->  				unsigned long action, void *unused)
->  {
->  	int cpu;
-> -	struct cpufreq_policy *cpu_policy;
+> diff --git a/arch/arm64/kernel/topology.c b/arch/arm64/kernel/topology.c
+> index 5d07ee85bdae..0eebd3492669 100644
+> --- a/arch/arm64/kernel/topology.c
+> +++ b/arch/arm64/kernel/topology.c
+> @@ -307,17 +307,16 @@ int arch_freq_get_on_cpu(int cpu)
+>  		 */
+>  		if (!housekeeping_cpu(cpu, HK_TYPE_TICK) ||
+>  		    time_is_before_jiffies(last_update + msecs_to_jiffies(AMU_SAMPLE_EXP_MS))) {
+> -			struct cpufreq_policy *policy = cpufreq_cpu_get(cpu);
+> +			struct cpufreq_policy *policy __free(put_cpufreq_policy) =
+> +				cpufreq_cpu_get(cpu);
+>  			int ref_cpu;
 >  
->  	rebooting = true;
->  	for_each_online_cpu(cpu) {
-> -		cpu_policy = cpufreq_cpu_get(cpu);
-> +		struct cpufreq_policy *cpu_policy __free(put_cpufreq_policy) =
-> +			cpufreq_cpu_get(cpu);
-> +
->  		if (!cpu_policy)
->  			continue;
->  		powernv_cpufreq_target_index(cpu_policy, get_nominal_index());
-> -		cpufreq_cpu_put(cpu_policy);
->  	}
+>  			if (!policy)
+>  				return -EINVAL;
 >  
->  	return NOTIFY_DONE;
-> @@ -913,7 +913,6 @@ static struct notifier_block powernv_cpufreq_reboot_nb = {
->  static void powernv_cpufreq_work_fn(struct work_struct *work)
->  {
->  	struct chip *chip = container_of(work, struct chip, throttle);
-> -	struct cpufreq_policy *policy;
->  	unsigned int cpu;
->  	cpumask_t mask;
+>  			if (!cpumask_intersects(policy->related_cpus,
+> -						housekeeping_cpumask(HK_TYPE_TICK))) {
+> -				cpufreq_cpu_put(policy);
+> +						housekeeping_cpumask(HK_TYPE_TICK)))
+>  				return -EOPNOTSUPP;
+> -			}
 >  
-> @@ -928,14 +927,14 @@ static void powernv_cpufreq_work_fn(struct work_struct *work)
->  	chip->restore = false;
->  	for_each_cpu(cpu, &mask) {
->  		int index;
-> +		struct cpufreq_policy *policy __free(put_cpufreq_policy) =
-> +			cpufreq_cpu_get(cpu);
+>  			for_each_cpu_wrap(ref_cpu, policy->cpus, cpu + 1) {
+>  				if (ref_cpu == start_cpu) {
+> @@ -329,8 +328,6 @@ int arch_freq_get_on_cpu(int cpu)
+>  					break;
+>  			}
 >  
-> -		policy = cpufreq_cpu_get(cpu);
->  		if (!policy)
->  			continue;
->  		index = cpufreq_table_find_index_c(policy, policy->cur, false);
->  		powernv_cpufreq_target_index(policy, index);
->  		cpumask_andnot(&mask, &mask, policy->cpus);
-> -		cpufreq_cpu_put(policy);
->  	}
->  out:
->  	cpus_read_unlock();
+> -			cpufreq_cpu_put(policy);
+> -
+>  			if (ref_cpu >= nr_cpu_ids)
+>  				/* No alternative to pull info from */
+>  				return -EAGAIN;
 
 
