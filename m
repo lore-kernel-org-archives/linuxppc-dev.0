@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-11780-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11781-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E06A7CA1013
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Sep 2025 11:01:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C33EBCA1013
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Sep 2025 11:14:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cJD132lYKz3c2R;
-	Fri,  5 Sep 2025 21:01:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757070071;
-	cv=none; b=c2xluSR8rcO+kvo9hh+KzneZi3hoE9XlE+SPeQSy923WIXuSKH/aCQUy8FQkfo/eOYaIRyNkVHFMDh8IgpnZOXR3MnXKILFvdVk2vcPLcAKXa/ocb+8JWmPEbEYOC6VBjvKMiMrhrEnFH2uontKyhOHDAmcNT3Ji4DhrQCzhu9kg3zOszNfuZc/ycIJlA+2UwPy4ZWYlh3yq1JkuhYEve7bOdjo7iaj+DeOQ0QNrz6G126Yly4fLi2oF25UwsaFFmBE6cf5iqXGRIamatNvVCeBwxQmNIZI9hSCW0so1LLCou8Xpt5SJhtSVLMyRp53w6Te9BlIwWQtwggX4dpOHUg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cJDJ01qLjz3c2R;
+	Fri,  5 Sep 2025 21:14:08 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757070848;
+	cv=none; b=GIZB/1GAdWzhcXnJii7F9mOVhC4nFkukJ39yXHUFaKzwK7H76io0Hh8forW5S9EevajwwbQEtlW3rnQP8CzZqUBbQyAWbTEX1WNbIUAg8LQDT0PIRXLkJqAQLbw49HKWuVRZpPKkkcCSk1mrCx8hvaaJ4iJz+eB/YUdAilWRUAstswROEswo27eZboWoB/w0OiidGGVyA/5tZYrBkGYV1yOnQZe6XNViGIPCMZz+nvMsik7TsKibgwxm2Y0AQGmPO5BNd1hhjapZ9YOYTg1DiPt7bbjP7qyIB1+eipAIl0nfdZFytuY9NPUaz+sXw0ZqY6+hfn27zXK923JZN94XwQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757070071; c=relaxed/relaxed;
-	bh=jWjfStJ6xVgrWeWyv/waZRzeET/q2kIvfT9KYMUeqWo=;
+	t=1757070848; c=relaxed/relaxed;
+	bh=g/wt05ObpdxwaNVDkgazUTN9jzFwrbxwSbbI3oRgsSg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eUd2YmZ6tf6Um3ICUg8zjklQzktnE4JrggbmGTa+LbHMwnsp1DDzCprOazVJDzKTKY1ZN8EUXT6LM933xftDSwIlBDv7IEs/8B1D7Hsg3wmxYPfssxASA5oxhNcpMYobD6+YRYNqmObCcUUevXBycOLGxeX8xcwdJY95gV9Yk+wHyNixLjFwuDmcSUsJELizLeJlDu8A4XnXcD2VzTUlPsO05Wy603F++NQ5cDhebqTm3Ri8kl1uTXih4i0+36BAssaXlkh9KpfDbMYveROVCpVZzH6cKSyJnfvXqzEMdm4msQfaph0Z8HdAk2n91Mb2p9jAb+iJts4cUAAe6SATJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U7+DnpZ0; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=HGTUODVmgi1t1q/qL4bppIOQUOc/trLsvmAGF6rpG0BA08m+C3J8iHFmEAdegkrRbi90mxhx9+Mji0fA6S1zrU7M24ZOTCrdV9/+i1nACuujVNIhZiWc8d8yy21ttK6IjsymmVYwE0yAmnW++wnPWGrPDTPZvf1ioxmAX6wboTgfEOFNnvezUFaux5VoeSlkYTsj4S/vcNbOjF6vVfOt97um/1DmNaHUhcOYECTdmXaDm5jfM3ZRG3DmBFS9V8qmH5sGVigj86E9jWi96++aPuVni0tS+3dtNOf9waziCtqRjziDXmbelj48RW/kwiDwk8mzS4uDWCeNRYSr4I9DfQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ihMD5Uip; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=U7+DnpZ0;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ihMD5Uip;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJD0y0qRYz3c2L
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2025 21:01:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJDHz3Dp7z3c2P
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2025 21:14:07 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id CACB4442A6;
-	Fri,  5 Sep 2025 11:01:03 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id C2257C4CEF1;
-	Fri,  5 Sep 2025 11:00:53 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id D8DF860280;
+	Fri,  5 Sep 2025 11:14:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 93F34C4CEF1;
+	Fri,  5 Sep 2025 11:13:54 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757070063;
-	bh=YZ1wTIYoB930tSA5MeqtdhO0LxdCLchTUQFtsum00QY=;
+	s=k20201202; t=1757070844;
+	bh=kDpzhB/6Cz5cknkR7vg25nX23vQb619EzR6gJMWg0zE=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=U7+DnpZ0s1JKbZszxSjLy0wzG4FuSPqezXeI+JVM+MWhXKMk7hbSMLMR/Ap70xViw
-	 Grd6dhed7yIRR8Yu73fJN0N7pkSYFsDBBJo92L9gty0NMlP0j/ofYzR8Udwhhqz0oh
-	 CUbTDNzSsrto9aiXPTcXZ/bGs5k+wjoB6qyCquH8g/JPTbP7OqDNsG+bte2OrVpi4n
-	 zx6H4iTAqk8cmGshjWzK/jnlqFQq/hJysU/x9N1c9QnwDh2XIGq4oxaydCWq1cwWGV
-	 2fRPyoqYacVZpZfy0SFEibM7KjqfNwOBpyIxsFAfubouuDw7Z5Ombt9MKgcN6WzQfQ
-	 4CK8xb4S08BQg==
-Date: Fri, 5 Sep 2025 14:00:50 +0300
+	b=ihMD5UipqP42+z3YN+MrXn99n6Ycd3YsueOx6CaMNo+hdxO5RgsqI0SQxPdExPL3V
+	 BxsONFBqcXHbav7x1SkdqIDD48PmtLWsgPm58G0QlMiay/oaIVskT0KF8NuPaK9VFd
+	 /7wzkSZr/Kf5WRucMN8/UCNMZojnjOtaAmAF95Bjf8RmpqIT1ej5HygOv9JaajJW8G
+	 3sqfezMFb01ibM/+0hkAjFN8sRUuYHQxj5dBVnj+if/YJu29wWq859HwQBz6EYrcmA
+	 3EU4AmTwTsfLSifdqQkLCIzFzeBG/3X8Ze/ePLiEQWW6Tfu9V10hDtY4xQjiB241cI
+	 b5217/1pBB0Eg==
+Date: Fri, 5 Sep 2025 14:13:50 +0300
 From: Mike Rapoport <rppt@kernel.org>
 To: Kevin Brodsky <kevin.brodsky@arm.com>
 Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
@@ -72,10 +72,10 @@ Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
 	Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>,
 	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
 	sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org
-Subject: Re: [PATCH 1/7] mm: remove arch_flush_lazy_mmu_mode()
-Message-ID: <aLrC4reKPAz6YFn1@kernel.org>
+Subject: Re: [PATCH 7/7] mm: update lazy_mmu documentation
+Message-ID: <aLrF7qi85tmHfWRf@kernel.org>
 References: <20250904125736.3918646-1-kevin.brodsky@arm.com>
- <20250904125736.3918646-2-kevin.brodsky@arm.com>
+ <20250904125736.3918646-8-kevin.brodsky@arm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,106 +91,45 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20250904125736.3918646-2-kevin.brodsky@arm.com>
+In-Reply-To: <20250904125736.3918646-8-kevin.brodsky@arm.com>
 
-On Thu, Sep 04, 2025 at 01:57:30PM +0100, Kevin Brodsky wrote:
-> This function has only ever been used in arch/x86, so there is no
-> need for other architectures to implement it. Remove it from
-> linux/pgtable.h and all architectures besides x86.
-> 
-> The arm64 implementation is not empty but it is only called from
-> arch_leave_lazy_mmu_mode(), so we can simply fold it there.
+On Thu, Sep 04, 2025 at 01:57:36PM +0100, Kevin Brodsky wrote:
+> We now support nested lazy_mmu sections on all architectures
+> implementing the API. Update the API comment accordingly.
 > 
 > Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
 
 Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 
 > ---
->  arch/arm64/include/asm/pgtable.h                   | 9 +--------
->  arch/powerpc/include/asm/book3s/64/tlbflush-hash.h | 2 --
->  arch/sparc/include/asm/tlbflush_64.h               | 1 -
->  arch/x86/include/asm/pgtable.h                     | 3 ++-
->  include/linux/pgtable.h                            | 1 -
->  5 files changed, 3 insertions(+), 13 deletions(-)
+>  include/linux/pgtable.h | 14 ++++++++++++--
+>  1 file changed, 12 insertions(+), 2 deletions(-)
 > 
-> diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-> index abd2dee416b3..728d7b6ed20a 100644
-> --- a/arch/arm64/include/asm/pgtable.h
-> +++ b/arch/arm64/include/asm/pgtable.h
-> @@ -101,21 +101,14 @@ static inline void arch_enter_lazy_mmu_mode(void)
->  	set_thread_flag(TIF_LAZY_MMU);
->  }
->  
-> -static inline void arch_flush_lazy_mmu_mode(void)
-> +static inline void arch_leave_lazy_mmu_mode(void)
->  {
->  	if (in_interrupt())
->  		return;
->  
->  	if (test_and_clear_thread_flag(TIF_LAZY_MMU_PENDING))
->  		emit_pte_barriers();
-> -}
-> -
-> -static inline void arch_leave_lazy_mmu_mode(void)
-> -{
-> -	if (in_interrupt())
-> -		return;
->  
-> -	arch_flush_lazy_mmu_mode();
->  	clear_thread_flag(TIF_LAZY_MMU);
->  }
->  
-> diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-> index 146287d9580f..176d7fd79eeb 100644
-> --- a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-> +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-> @@ -55,8 +55,6 @@ static inline void arch_leave_lazy_mmu_mode(void)
->  	preempt_enable();
->  }
->  
-> -#define arch_flush_lazy_mmu_mode()      do {} while (0)
-> -
->  extern void hash__tlbiel_all(unsigned int action);
->  
->  extern void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize,
-> diff --git a/arch/sparc/include/asm/tlbflush_64.h b/arch/sparc/include/asm/tlbflush_64.h
-> index 8b8cdaa69272..cd144eb31bdd 100644
-> --- a/arch/sparc/include/asm/tlbflush_64.h
-> +++ b/arch/sparc/include/asm/tlbflush_64.h
-> @@ -44,7 +44,6 @@ void flush_tlb_kernel_range(unsigned long start, unsigned long end);
->  void flush_tlb_pending(void);
->  void arch_enter_lazy_mmu_mode(void);
->  void arch_leave_lazy_mmu_mode(void);
-> -#define arch_flush_lazy_mmu_mode()      do {} while (0)
->  
->  /* Local cpu only.  */
->  void __flush_tlb_all(void);
-> diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
-> index e33df3da6980..14fd672bc9b2 100644
-> --- a/arch/x86/include/asm/pgtable.h
-> +++ b/arch/x86/include/asm/pgtable.h
-> @@ -117,7 +117,8 @@ extern pmdval_t early_pmd_flags;
->  #define pte_val(x)	native_pte_val(x)
->  #define __pte(x)	native_make_pte(x)
->  
-> -#define arch_end_context_switch(prev)	do {} while(0)
-> +#define arch_end_context_switch(prev)	do {} while (0)
-> +#define arch_flush_lazy_mmu_mode()	do {} while (0)
->  #endif	/* CONFIG_PARAVIRT_XXL */
->  
->  static inline pmd_t pmd_set_flags(pmd_t pmd, pmdval_t set)
 > diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-> index 4c035637eeb7..8848e132a6be 100644
+> index 6932c8e344ab..be0f059beb4d 100644
 > --- a/include/linux/pgtable.h
 > +++ b/include/linux/pgtable.h
-> @@ -234,7 +234,6 @@ static inline int pmd_dirty(pmd_t pmd)
+> @@ -228,8 +228,18 @@ static inline int pmd_dirty(pmd_t pmd)
+>   * of the lazy mode. So the implementation must assume preemption may be enabled
+>   * and cpu migration is possible; it must take steps to be robust against this.
+>   * (In practice, for user PTE updates, the appropriate page table lock(s) are
+> - * held, but for kernel PTE updates, no lock is held). Nesting is not permitted
+> - * and the mode cannot be used in interrupt context.
+> + * held, but for kernel PTE updates, no lock is held). The mode cannot be used
+> + * in interrupt context.
+> + *
+> + * Calls may be nested: an arch_{enter,leave}_lazy_mmu_mode() pair may be called
+> + * while the lazy MMU mode has already been enabled. An implementation should
+> + * handle this using the state returned by enter() and taken by the matching
+> + * leave() call; the LAZY_MMU_{DEFAULT,NESTED} flags can be used to indicate
+> + * whether this enter/leave pair is nested inside another or not. (It is up to
+> + * the implementation to track whether the lazy MMU mode is enabled at any point
+> + * in time.) The expectation is that leave() will flush any batched state
+> + * unconditionally, but only leave the lazy MMU mode if the passed state is not
+> + * LAZY_MMU_NESTED.
+>   */
 >  #ifndef __HAVE_ARCH_ENTER_LAZY_MMU_MODE
->  #define arch_enter_lazy_mmu_mode()	do {} while (0)
->  #define arch_leave_lazy_mmu_mode()	do {} while (0)
-> -#define arch_flush_lazy_mmu_mode()	do {} while (0)
->  #endif
->  
->  #ifndef pte_batch_hint
+>  typedef int lazy_mmu_state_t;
 > -- 
 > 2.47.0
 > 
