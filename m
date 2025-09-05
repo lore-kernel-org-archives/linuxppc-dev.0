@@ -1,81 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-11782-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11783-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B47F7CA0FED
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Sep 2025 11:19:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 33069CA0FED
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Sep 2025 11:20:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cJDQ72l7Tz3c3K;
-	Fri,  5 Sep 2025 21:19:27 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757071167;
-	cv=none; b=VzEC20DMEltfvW2MxoXtWfkftINfrje4MC4YcnNZh+wvTbMQ34MIWO/psziA582Di/8XqH+GQE1VYBD0WlPTGAhp9cudtkW22xsA3lJlOyBrm+XLjiEPeBN99ryg2UxChII70nzCDs1LsqmKBoNvhFy/qDV4JvGSl37LbZgKL7ceP/1y5aslXHhP9CYug/RJM6vdjnelybGq2xlSXLmhi5COMmvh5ZBLEhR27gWVYOSpXQzdYGyVXhzFKX1QKqZvaog9cgFWEVJYwF+27ncEjkGfZ1yTm9+rVNQhuo3EQpfsh8l7HFlVxSCY+w/k+Y60+YV/UQ2zHSBCm3/gE2PTDg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cJDRT5mYWz3c3v;
+	Fri,  5 Sep 2025 21:20:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757071237;
+	cv=none; b=Y5Uj58Ko/sodxq9Zs4vr92Qyxb2uKebmo9QdQ+LMjKPd+d2hGmCd/s6aIhL/gCSU42romt0ueIBPdEQO/NdOmSW+jHJzLMTbT9szw2ROALoEpFq6H0GXuySAA3cMijR+f7IprcHji7LD+E1GPR9xuFNiHY32yy8lhplFTNN1t/3P0tow3y1MeLszOLR6cKq5FDTbgdx1W7jHbf2Xy2t1n6W/sVZE+lbeg83RdgUfx+JqJSjrKnLBbYydYyiwvlnBssBg+juFl6Xg0wgOwDfxIwLQ3r85FBa74OAQecGSRT2NXk2Cm3YzcxsJYR2WYYLaEdhOAUMQ8owHMUD5sIWNpA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757071167; c=relaxed/relaxed;
-	bh=vSe61z5BayeoSR86wiQVMBpcSVw9JUSiFDv132hHJEw=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RiS6QbJdvjGm+z2Sbrfs2shFW5jd58dZiVxppF6tSJhPTOO9k82ObwAY3W7bc3BeRyALvW9oufawkZwkwZcPIeLEOPK8tekrZB10jpxlmc/mZQGNZ1j8Rjn+YxTuxGxsSOMtPLXXG3AS2Jy+/og+bWoPgGCLjAGXza2OQ/+3btafuR5pmZNI3ezyPd0naAWXWsCCmizO2msHLMcaFFsY+98skvSHR86ytZAXURLSl1tA+RCLOBeqLCgrAgwsqT5p4r8baQMT/JC7tvxvIP9/HkrY8qlmfZVvQnknS897TNb34SDJBZNXfMYUaS7Ft9+tH24XHRVPw5ituLsbHZzDnQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=A/QIh2dd; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=A/QIh2dd;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJDQ6484Lz3c2R
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2025 21:19:26 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 89B416027B;
-	Fri,  5 Sep 2025 11:19:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4C27C4CEF1;
-	Fri,  5 Sep 2025 11:19:15 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757071164;
-	bh=RHLqjtmoQ09sM+x+rrDllENxQeIkKdioDv+JW9P+Aos=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=A/QIh2ddmPQW9GbhkGscvwZJAOdlvRvh05eTseLWqDi0NqX5VoUz3c+rFGi5te6gs
-	 FeVf6cxesM0g4NssvOVujDWyj9mrdK8LpKlTGDp/6FZss2dq4STW6zOMrER9uue5m7
-	 gYM0YJqrGGelTJTg/Wae0ezZ+Ln5Z9a7rQdsrtvsC5aJMkzJDUejnZeo9niA5S9ZsO
-	 rAiiZhiID4hhFyLR0EPR+sXVy1LHpEREWSJ9XWSwcd0WYCKy66BICmsJmvPOks/99s
-	 KUtvAv0iw5WXUoAptM66b1336WnWvdA8iRqYrawyqjKazn3DqpgdPmx5ld20pIZHkT
-	 94jShf4NQqhcQ==
-Date: Fri, 5 Sep 2025 14:19:11 +0300
-From: Mike Rapoport <rppt@kernel.org>
-To: Kevin Brodsky <kevin.brodsky@arm.com>
-Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	David Hildenbrand <david@redhat.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-	Jann Horn <jannh@google.com>, Juergen Gross <jgross@suse.com>,
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Michal Hocko <mhocko@suse.com>, Nicholas Piggin <npiggin@gmail.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Ryan Roberts <ryan.roberts@arm.com>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>,
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-	sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org
-Subject: Re: [PATCH 2/7] mm: introduce local state for lazy_mmu sections
-Message-ID: <aLrHL-C_UXfUbCd9@kernel.org>
-References: <20250904125736.3918646-1-kevin.brodsky@arm.com>
- <20250904125736.3918646-3-kevin.brodsky@arm.com>
+	t=1757071237; c=relaxed/relaxed;
+	bh=bLyLCuEUyK2k0G91YYQ9WCYspnnsWwQHa0g+X3q1yyM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BSz5DDvjpcHsI5GAFvr0EmC+hbkFGDFsQrVNGSpG66ATWQlaE4BivLdS3UwmOGYBnZTmJ7hYBFWhG9CP96vCaEiYNyHMF+i9ECTkw0CBlSFVyuxtPD1b5l1GftZTb2mWf7BXxsP1jk/X64MJaoDQ8ODFkx8x88HqSDaRTHJdqSIo13d6+Apjo0rIOGtPSOMFilXwW3VdZ0I8GoWDbFBHr4GVyolmcHtQSq+rfOBKeHwryVEf4rP0lof2VxTVKaEpsT93hcDu+shvUxc+Y1744HurAyV6NpeUOPu6bTF1F0BT1n90KF239bh5Kx2pHFFfSTWCyx95cyC6uaNfxeoLCA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cJDRT1N9kz3c3K
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2025 21:20:35 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4cJBQF6cZVz9sSh;
+	Fri,  5 Sep 2025 11:49:25 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id RcDlpa8gf6Cl; Fri,  5 Sep 2025 11:49:25 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cJBQD56YSz9sSf;
+	Fri,  5 Sep 2025 11:49:24 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 97D228B774;
+	Fri,  5 Sep 2025 11:49:24 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id RTrywvFHm_LN; Fri,  5 Sep 2025 11:49:24 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id D74578B773;
+	Fri,  5 Sep 2025 11:49:23 +0200 (CEST)
+Message-ID: <d5bfa13f-379f-493a-a410-400dd3782207@csgroup.eu>
+Date: Fri, 5 Sep 2025 11:49:23 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,68 +58,58 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250904125736.3918646-3-kevin.brodsky@arm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] tty: remove redundant condition checks
+To: Xichao Zhao <zhao.xichao@vivo.com>, gregkh@linuxfoundation.org,
+ jirislaby@kernel.org
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+ linux-serial@vger.kernel.org, linux-arm-msm@vger.kernel.org
+References: <20250905091321.437476-1-zhao.xichao@vivo.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <20250905091321.437476-1-zhao.xichao@vivo.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Thu, Sep 04, 2025 at 01:57:31PM +0100, Kevin Brodsky wrote:
-> arch_{enter,leave}_lazy_mmu_mode() currently have a stateless API
-> (taking and returning no value). This is proving problematic in
-> situations where leave() needs to restore some context back to its
-> original state (before enter() was called). In particular, this
-> makes it difficult to support the nesting of lazy_mmu sections -
-> leave() does not know whether the matching enter() call occurred
-> while lazy_mmu was already enabled, and whether to disable it or
-> not.
-> 
-> This patch gives all architectures the chance to store local state
-> while inside a lazy_mmu section by making enter() return some value,
-> storing it in a local variable, and having leave() take that value.
-> That value is typed lazy_mmu_state_t - each architecture defining
-> __HAVE_ARCH_ENTER_LAZY_MMU_MODE is free to define it as it sees fit.
-> For now we define it as int everywhere, which is sufficient to
-> support nesting.
-> 
-> The diff is unfortunately rather large as all the API changes need
-> to be done atomically. Main parts:
-> 
-> * Changing the prototypes of arch_{enter,leave}_lazy_mmu_mode()
->   in generic and arch code, and introducing lazy_mmu_state_t.
-> 
-> * Introducing LAZY_MMU_{DEFAULT,NESTED} for future support of
->   nesting. enter() always returns LAZY_MMU_DEFAULT for now.
->   (linux/mm_types.h is not the most natural location for defining
->   those constants, but there is no other obvious header that is
->   accessible where arch's implement the helpers.)
-> 
-> * Changing all lazy_mmu sections to introduce a lazy_mmu_state
->   local variable, having enter() set it and leave() take it. Most of
->   these changes were generated using the Coccinelle script below.
-> 
-> @@
-> @@
-> {
-> + lazy_mmu_state_t lazy_mmu_state;
-> ...
-> - arch_enter_lazy_mmu_mode();
-> + lazy_mmu_state = arch_enter_lazy_mmu_mode();
-> ...
-> - arch_leave_lazy_mmu_mode();
-> + arch_leave_lazy_mmu_mode(lazy_mmu_state);
-> ...
-> }
-> 
-> Note: it is difficult to provide a default definition of
-> lazy_mmu_state_t for architectures implementing lazy_mmu, because
-> that definition would need to be available in
-> arch/x86/include/asm/paravirt_types.h and adding a new generic
->  #include there is very tricky due to the existing header soup.
-> 
-> Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
 
-Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 
--- 
-Sincerely yours,
-Mike.
+Le 05/09/2025 à 11:13, Xichao Zhao a écrit :
+> Remove redundant condition checks and replace else if with else.
+> 
+> Signed-off-by: Xichao Zhao <zhao.xichao@vivo.com>
+
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+
+> ---
+>   drivers/tty/hvc/hvc_console.c   | 2 +-
+>   drivers/tty/serial/msm_serial.c | 2 +-
+>   2 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/tty/hvc/hvc_console.c b/drivers/tty/hvc/hvc_console.c
+> index cd1f657f782d..fffc30b9ea54 100644
+> --- a/drivers/tty/hvc/hvc_console.c
+> +++ b/drivers/tty/hvc/hvc_console.c
+> @@ -184,7 +184,7 @@ static void hvc_console_print(struct console *co, const char *b,
+>   					hvc_console_flush(cons_ops[index],
+>   						      vtermnos[index]);
+>   				}
+> -			} else if (r > 0) {
+> +			} else {
+>   				i -= r;
+>   				if (i > 0)
+>   					memmove(c, c+r, i);
+> diff --git a/drivers/tty/serial/msm_serial.c b/drivers/tty/serial/msm_serial.c
+> index 3449945493ce..2e999cb9c974 100644
+> --- a/drivers/tty/serial/msm_serial.c
+> +++ b/drivers/tty/serial/msm_serial.c
+> @@ -1102,7 +1102,7 @@ msm_find_best_baud(struct uart_port *port, unsigned int baud,
+>   
+>   			if (result == baud)
+>   				break;
+> -		} else if (entry->divisor > divisor) {
+> +		} else {
+>   			old = target;
+>   			target = clk_round_rate(msm_port->clk, old + 1);
+>   			/*
+
 
