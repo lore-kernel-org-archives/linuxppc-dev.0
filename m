@@ -1,97 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-11765-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11766-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3C01DCA0FED
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Sep 2025 06:57:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34FE9CA0FED
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Sep 2025 07:02:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cJ6bs6cNhz3bWX;
-	Fri,  5 Sep 2025 16:57:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757055449;
-	cv=none; b=okpNfKhhc3rIKoRcGAd3Q05JoZsZ354wztijarkRge2NEx20CItTaUSe8tRaxWIkTyMbxRLAnUc9zVw8zfH6O07M2WWdPDNPLQ2xW0VMpXfJPPJwfXmzWKhlDs37tDfpJS+qIxJ41jswuYGcDvabkBqZXZKh5es3e4y4xncHMvmdcZ5Jxwu1ehGhQRYDDdcl5K+KAEJ0Lm6gnNK87O9yvFcUgBXlkSEDOE3i1YgjByb6e4kvfZmkB2ZfquYxNRebIteY0PUxoWvBBxj8VTdVpDh9NwY6Rab50V0cO5csJWAQiSWRabwY/eax3skfbfSaoPzIF4uSl9rGdQhbeBeqQA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cJ6jX6S82z3bWX;
+	Fri,  5 Sep 2025 17:02:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757055744;
+	cv=none; b=G19ErRn1WE4DgFhg/QYv0jIYsuUE5PpJlomcG9ghsQjLoM8Q0Ie7VoW4wQlYjOeqgJqcDzKuQNay4nPmzXWVrj73ON56rR4QboHye25k/9Wra3FZWrvZq6Cg1km6hv8+0zDQ0z7h3FAa8Yb22H00RGkfuKWWU9wRJKupzW68cY4pwnqDwGX4QnpW26UBGXc6Be+PF1G0MQF1BbWJweF0o4xAVXPc1qKUskq3YE2ogqMPZfJVlOdQ+H579nj+XOSLTZa6CFsJadnzzbw56TyzHAsWoB50Ld5+QMeJVqg0ysrUH7W57jISHbZ1IIGQkoHlEyNGJqs9vKxZhYb2ot/Wag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757055449; c=relaxed/relaxed;
-	bh=i6iIRwlL08m7ddD00gWRDzn7fpP62voWSOHllYdsQfM=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=J2WdjV2mzAwSdvV2mW4twfhZtwg8ASMSzVIiOOmeDul0hTy4HA7nQv/7bW8j7dz84e5eioqR3kD0k/VitPj9JERYIUkhG+TUPIkDokbIPtaLAmkAE3lvN1uRKEBNvu1RCfiSGZ9lF/fLg847aWJQbvHSnn0gXGW8jirdIXOTynbvxx+6V4VpDMydZ5U/XCLEjw0GYZKx/0VE/lxCe9uSWxaM4NSR8/FRtKhbWRFBXPu1YyLUvfHtdaP8mKF2MMm939B5rQFu//gCYGZhlkcTWIP6CmYUYryYdNWvqT5mQCpKTPQ331VyGjFdmyBQzWYknaFqAwaHEzVh356x7f6xEQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VoXxllUZ; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1757055744; c=relaxed/relaxed;
+	bh=BCztibAhhBTDHSkAF2yablH6ptehaXCUGtBPhE4VLI8=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=oM8qlQUD5CD5oJ9whk26MKiOuBv7l0ztd8ALJaBAAKIZT2BindA2ADlkJotsy7PeBcZLE58bqjqVi4q4g/nEzRUHCNwcar7imup0hhpyQDYN8iul4URO+wPT5BrZYjLpK9MThEo25K25LSEmHNlbs50rJwasXcdDakwZq36P8AhK9i3YGc6w+0n6z6NB3i9nHcL7BbRzNglzajfTQcQcd+4RCUu693fjToQdMxFeTYe4fBpTJ+Q+OCfYVNnQQFHlyhyN2FoiS3z7Gajd44DMBSj3amhxpu2Vt+A1pX1qDGcGC5WMgQYR0bB235/uLofDP3qr17CpinVXeYnTrwSqYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TtM6XFxq; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VoXxllUZ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TtM6XFxq;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ajd@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=krzk@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJ6bs0Btmz30VQ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2025 16:57:28 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 584K5SFc012012;
-	Fri, 5 Sep 2025 06:57:17 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=i6iIRw
-	lL08m7ddD00gWRDzn7fpP62voWSOHllYdsQfM=; b=VoXxllUZm8+7DgckRp/NLN
-	zPYc8QI+ZJf5ogWCoo7J5wJRm06a8olnHUjPs5I4lnlQ1pJ2SVDXYCMOnl1yfuDz
-	IRdUBU3ovvzTd9CfzMYu9JseXs2+QDOMHsAXJERd+pwKPw4qWWv5Nh05Lk0kuKMb
-	46dkr7qUULAlXRms5uaUgiq6a+zMEoSr2LXCiAxDfEsdKasNhfI/FN9cYaw285Ob
-	x34bbjE+AK7fRdORJ6RsxSgN4iQ9EKI6yPsoJfx4kQHbj3BEegmP0XJr7zU4h6BQ
-	G7S/9kusQKbeFzhqa1bl7UvW7gePEjBse2wfS38iWiCCFJxDKgV/m2SrjoqE+biw
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48usurerb4-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 05 Sep 2025 06:57:17 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5856vGnm000584;
-	Fri, 5 Sep 2025 06:57:16 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 48usurerb0-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 05 Sep 2025 06:57:16 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 58567HMB014052;
-	Fri, 5 Sep 2025 06:57:15 GMT
-Received: from smtprelay07.dal12v.mail.ibm.com ([172.16.1.9])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 48veb3qy6w-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 05 Sep 2025 06:57:15 +0000
-Received: from smtpav06.wdc07v.mail.ibm.com (smtpav06.wdc07v.mail.ibm.com [10.39.53.233])
-	by smtprelay07.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5856vFrs27919074
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 5 Sep 2025 06:57:15 GMT
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4191558054;
-	Fri,  5 Sep 2025 06:57:15 +0000 (GMT)
-Received: from smtpav06.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D502158060;
-	Fri,  5 Sep 2025 06:57:12 +0000 (GMT)
-Received: from jarvis.ozlabs.ibm.com (unknown [9.90.171.232])
-	by smtpav06.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  5 Sep 2025 06:57:12 +0000 (GMT)
-Message-ID: <977ad5eef4f8726e9d5bff31b758918f0341659d.camel@linux.ibm.com>
-Subject: Re: [PATCH] powerpc/32: Remove PAGE_KERNEL_TEXT to fix startup
- failure
-From: Andrew Donnellan <ajd@linux.ibm.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Michael Ellerman	
- <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Madhavan
- Srinivasan	 <maddy@linux.ibm.com>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        Erhard
- Furtner	 <erhard_f@mailbox.org>
-Date: Fri, 05 Sep 2025 16:57:11 +1000
-In-Reply-To: <4b5e6eb281d7b1ea77619bee17095f905a125168.1757003584.git.christophe.leroy@csgroup.eu>
-References: <342b4120-911c-4723-82ec-d8c9b03a8aef@mailbox.org>
-	 <4b5e6eb281d7b1ea77619bee17095f905a125168.1757003584.git.christophe.leroy@csgroup.eu>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2 (3.56.2-1.fc42) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJ6jX0CyQz3bV5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  5 Sep 2025 17:02:23 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 7328B60278;
+	Fri,  5 Sep 2025 07:02:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 61182C4CEF1;
+	Fri,  5 Sep 2025 07:02:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1757055741;
+	bh=fTBkavZ91ssgIY3s9ptez3AviwpoecTcBhXYPHGbbbM=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=TtM6XFxqtN3QeBsuHZlpZfezN9qmURrZfJfI5CCDT5eGvBRGhyX9PdD9MGup8yjnn
+	 0p9KCIiNdorRgLjz3L3MYT1Z5S78sCbEjPaYAd5TxYTGTYxlzNpe7dyP6ctX6eXSTt
+	 wmEFEgieMnkUhnyQscTQ323sCBTvrUj+AFt1Az5eyDJQY3Y7/v1/1MNoRdo0djg0Cg
+	 BGN7Js2b+GPfHh7BDZdtkTHST45y2B/DgwyGbWoz80F94Z0WMwrnI3fpho1XctpIDt
+	 7jr1TSxMsWIG+Ru4C3Lhao5f3LzrMHUw1awATjvXu0RsNrOievNIEjJhefvmsZ/tIM
+	 btioibLovSD7A==
+Message-ID: <a04f3aa8-e7e3-4d20-bc86-5496c7abe272@kernel.org>
+Date: Fri, 5 Sep 2025 09:02:09 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,88 +59,155 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwODMwMDAzMCBTYWx0ZWRfXzvkHakOeeGWc
- xIxAT6pze9qsFX2mdazJPm3UogZYYT8H/DDeR0e3NxWMqNV+L/KW/42Mqwo+Vj4yLHIwlNsxCRw
- y4Cx1kEVZuv6j3lI0TcUCBHkL7YnImsOkm/1JuLhTws//g8cUABTtC8ph+r1EC+TalhoX3WG9v+
- pvrcoWem1opzF2XFSOCtmMEht2oey7X0tS6pHW7HV47XoRLT4jer/ihdax65sHV//YjCa1ADgP9
- qtuClyebYb4sdNW+ig9lIGnicxh/e74/+EmIYPkG1MmVz5u/HtnuamGZuCVlzOn+BTdTWM5DVrF
- AAuvR8dr4sH6JcM8jC3uKEAH7/Fu6+vDPPx3x/OlXoNOAP7Eci/sRHqssn/lmEp2fs9aBD5TIuW
- M+MFTaX+
-X-Proofpoint-GUID: HLJBueF4UV6soL6npRI4I6Onc-nK5ppq
-X-Proofpoint-ORIG-GUID: O4JRA3B6Hh-HfKmWIdX2yTs_2TdtcoRY
-X-Authority-Analysis: v=2.4 cv=Ao/u3P9P c=1 sm=1 tr=0 ts=68ba89cd cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VwQbUJbxAAAA:8 a=b3CbU_ItAAAA:8
- a=VnNF1IyMAAAA:8 a=1UX6Do5GAAAA:8 a=kZQNDw5qEIdUIES3TQEA:9 a=QEXdDO2ut3YA:10
- a=Rv2g8BkzVjQTVhhssdqe:22 a=Et2XPkok5AAZYJIKzHr1:22
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-05_02,2025-09-04_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 phishscore=0 impostorscore=0 priorityscore=1501 spamscore=0
- suspectscore=0 bulkscore=0 adultscore=0 malwarescore=0 classifier=typeunknown
- authscore=0 authtc= authcc= route=outbound adjust=0 reason=mlx scancount=1
- engine=8.19.0-2507300000 definitions=main-2508300030
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 09/10] thermal/drivers/ti-soc-thermal: Use scope-based
+ cleanup helper
+To: Andreas Kemnade <andreas@kemnade.info>,
+ Zihuan Zhang <zhangzihuan@kylinos.cn>
+Cc: "Rafael J . wysocki" <rafael@kernel.org>,
+ Viresh Kumar <viresh.kumar@linaro.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ Srinivas Pandruvada <srinivas.pandruvada@linux.intel.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Alim Akhtar
+ <alim.akhtar@samsung.com>, Thierry Reding <thierry.reding@gmail.com>,
+ MyungJoo Ham <myungjoo.ham@samsung.com>,
+ Kyungmin Park <kyungmin.park@samsung.com>,
+ Chanwoo Choi <cw00.choi@samsung.com>,
+ Jani Nikula <jani.nikula@linux.intel.com>,
+ Rodrigo Vivi <rodrigo.vivi@intel.com>, Tvrtko Ursulin
+ <tursulin@ursulin.net>, David Airlie <airlied@gmail.com>,
+ Simona Vetter <simona@ffwll.ch>, Daniel Lezcano <daniel.lezcano@kernel.org>,
+ Sascha Hauer <s.hauer@pengutronix.de>, Shawn Guo <shawnguo@kernel.org>,
+ Eduardo Valentin <edubezval@gmail.com>, Keerthy <j-keerthy@ti.com>,
+ Ben Horgan <ben.horgan@arm.com>, zhenglifeng <zhenglifeng1@huawei.com>,
+ Zhang Rui <rui.zhang@intel.com>, Len Brown <lenb@kernel.org>,
+ Lukasz Luba <lukasz.luba@arm.com>,
+ Pengutronix Kernel Team <kernel@pengutronix.de>,
+ Beata Michalska <beata.michalska@arm.com>, Fabio Estevam
+ <festevam@gmail.com>, Pavel Machek <pavel@kernel.org>,
+ Sumit Gupta <sumitg@nvidia.com>,
+ Prasanna Kumar T S M <ptsm@linux.microsoft.com>,
+ Sudeep Holla <sudeep.holla@arm.com>, Yicong Yang <yangyicong@hisilicon.com>,
+ linux-pm@vger.kernel.org, linux-acpi@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ intel-gfx@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+ imx@lists.linux.dev, linux-omap@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20250903131733.57637-1-zhangzihuan@kylinos.cn>
+ <20250903131733.57637-10-zhangzihuan@kylinos.cn>
+ <20250905085726.2bc6fcb4@akair>
+From: Krzysztof Kozlowski <krzk@kernel.org>
+Content-Language: en-US
+Autocrypt: addr=krzk@kernel.org; keydata=
+ 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 a/A=
+In-Reply-To: <20250905085726.2bc6fcb4@akair>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-On Thu, 2025-09-04 at 18:33 +0200, Christophe Leroy wrote:
-> PAGE_KERNEL_TEXT is an old macro that is used to tell kernel whether
-> kernel text has to be mapped read-only or read-write based on build
-> time options.
->=20
-> But nowadays, with functionnalities like jump_labels, static links,
-> etc ... more only less all kernels need to be read-write at some
-> point, and some combinations of configs failed to work due to
-> innacurate setting of PAGE_KERNEL_TEXT. On the other hand, today
-> we have CONFIG_STRICT_KERNEL_RWX which implements a more controlled
-> access to kernel modifications.
->=20
-> Instead of trying to keep PAGE_KERNEL_TEXT accurate with all
-> possible options that may imply kernel text modification, always
-> set kernel text read-write at startup and rely on
-> CONFIG_STRICT_KERNEL_RWX to provide accurate protection.
->=20
-> Reported-by: Erhard Furtner <erhard_f@mailbox.org>
-> Closes:
-> https://lore.kernel.org/all/342b4120-911c-4723-82ec-d8c9b03a8aef@mailbox.=
-org/
-> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+On 05/09/2025 08:57, Andreas Kemnade wrote:
+> Am Wed,  3 Sep 2025 21:17:32 +0800
+> schrieb Zihuan Zhang <zhangzihuan@kylinos.cn>:
+> 
+>> Replace the manual cpufreq_cpu_put() with __free(put_cpufreq_policy)
+>> annotation for policy references. This reduces the risk of reference
+>> counting mistakes and aligns the code with the latest kernel style.
+>>
+>> No functional change intended.
+>>
+>> Signed-off-by: Zihuan Zhang <zhangzihuan@kylinos.cn>
+>> ---
+>>  drivers/thermal/ti-soc-thermal/ti-thermal-common.c | 13 ++++---------
+>>  1 file changed, 4 insertions(+), 9 deletions(-)
+>>
+>> diff --git a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+>> index 0cf0826b805a..37d06468913a 100644
+>> --- a/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+>> +++ b/drivers/thermal/ti-soc-thermal/ti-thermal-common.c
+>> @@ -27,7 +27,6 @@
+>>  
+>>  /* common data structures */
+>>  struct ti_thermal_data {
+>> -	struct cpufreq_policy *policy;
+>>  	struct thermal_zone_device *ti_thermal;
+>>  	struct thermal_zone_device *pcb_tz;
+>>  	struct thermal_cooling_device *cool_dev;
+>> @@ -218,6 +217,7 @@ int ti_thermal_register_cpu_cooling(struct ti_bandgap *bgp, int id)
+>>  {
+>>  	struct ti_thermal_data *data;
+>>  	struct device_node *np = bgp->dev->of_node;
+>> +	struct cpufreq_policy *policy __free(put_cpufreq_policy) = cpufreq_cpu_get(0);
+>>  
+> this looks as it changes the lifecycle from the device lifetime to just
+> this function...
+> 
+>>  	/*
+>>  	 * We are assuming here that if one deploys the zone
+>> @@ -234,19 +234,17 @@ int ti_thermal_register_cpu_cooling(struct ti_bandgap *bgp, int id)
+>>  	if (!data)
+>>  		return -EINVAL;
+>>  
+>> -	data->policy = cpufreq_cpu_get(0);
+>> -	if (!data->policy) {
+>> +	if (!policy) {
+>>  		pr_debug("%s: CPUFreq policy not found\n", __func__);
+>>  		return -EPROBE_DEFER;
+>>  	}
+>>  
+>>  	/* Register cooling device */
+>> -	data->cool_dev = cpufreq_cooling_register(data->policy);
+>> +	data->cool_dev = cpufreq_cooling_register(policy);
+> 
+> and it is passed on to something living beyond this function. I see no
+> _get(policy) in cpufreq_cooling_register().
+> Am I missing something?
+Yeah, " No functional change intended." is clearly incorrect.
 
-The original issue that Erhard and I were investigating was why the latest
-version of the PowerPC page table check series[0] was failing on his G4, wh=
-en
-built as part of a config with many other debugging options enabled.
+I already commented on this series that it is very bad and author should
+does not understand how cleanup.h works, and here is another example.
 
-With further instrumentation, it turns out that this was due to a failed
-instruction patch while setting up a jump label for the
-page_table_check_disabled static key, which was being checked in
-page_table_check_pte_clear(), which was in turn inlined ultimately into
-debug_vm_pgtable().
+IMO, entire patchset should be dropped.
 
-This patch seems to fix the problem, so:
-
-Tested-by: Andrew Donnellan <ajd@linux.ibm.com>
-
-But I'm still curious about why I only see the issue when:
-
-  (a) CONFIG_KFENCE=3Dy (even when disabled using kfence.sample_interval=3D=
-0) -
-noting that changing CONFIG_KFENCE doesn't change the definition of
-PAGE_KERNEL_TEXT; and
-
-  (b) when the jump label ends up in a __init function (removing __init fro=
-m
-debug_vm_pgtable() and its associated functions, or changing the code in su=
-ch a
-way that the static key check doesn't get inlined, resolves the issue, and
-similarly for test_static_call_init() when CONFIG_STATIC_CALL_SELFTEST=3Dy)=
-.
-
-I don't understand the mm code well enough to make sense of this.
-
-[0] https://lore.kernel.org/all/20250813062614.51759-1-ajd@linux.ibm.com/
-
---=20
-Andrew Donnellan    OzLabs, ADL Canberra
-ajd@linux.ibm.com   IBM Australia Limited
+Best regards,
+Krzysztof
 
