@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-11841-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11842-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F148ACA1002
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Sep 2025 21:37:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F294CA0FED
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Sep 2025 21:38:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cK64M2gW1z3d2g;
-	Sun,  7 Sep 2025 07:37:07 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cK64P3SDRz3d8K;
+	Sun,  7 Sep 2025 07:37:09 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757194627;
-	cv=none; b=lvoXsYp69amxQ8n7Ufzsln6wrSEiyiE+xVp8mBtv6mDXcoz42rrEf6qHuP0HO3m2kt5bIxOZqG4awswax6+OAVNYcxVKwy6xp1bdPHXHzCS5ad6WOX4QT6JXxgKLH+EIjZaaM2dbOghLPXqYYdZTnZkHbXPR+bVmr/6RAF2soAXu1RuHTQWcyqhra+lpGgbgNVR7nGP5EP4J470wQ9Xucrr+tWtuoyYmMrCcWXX/O6meBabAYY4TBGi2TN0Lx3/t3zOAWzkpVpugVA4tz6W6hkaLU2wea2eoPLzMugIp3V9q0uz83L+vOTB1kRB1Do2cDRsSCyrFmTEyjtQE1E8f8g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757194629;
+	cv=none; b=UdKsjyrFEiOlQDcXGIx4NHFdl0VplCIYO9dD7YwOTVcanUiPf9lQcwHRzgrb5tQRKrfia4Xx33+kixU/Q79Fs0qKjTINUCcdedE4zWNqlmXGyciGKPKEIHaiVTE7vTZMib11bYwLgAJU74/0TXtTwtRFnCozicmh9jkNTtm1yjYXaXD0j24U0KWvpxNb0Fpmzg23K7bV5Ms0+3G88f4BfiWQcMUNVo8dmvKwf30g99Lb/wqChK5DjCHNPeJUD1lo5RdoIg3od8xe+CArFyeXNQSyOdpbUUknVHs3aJvyHSd0i/px6xN/84FCekWKeNbFYhqOG0pfHHM5zJlWwRKZmw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757194627; c=relaxed/relaxed;
-	bh=SCb89IgsLwOFhpz4MbAPn0pNdnEI/VMM8b0yUQaEIW4=;
+	t=1757194629; c=relaxed/relaxed;
+	bh=F/TySS+sPDgfTLpKhbalwp0GPsQF0JNaQ9zH44WJfNM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=S8paFzg/6olg5evdgi9eHkefP0zbO9LOvHS8tyfpO6G/BnBRWnU3CXDMY2KQtT3LzOQRRs26etfVpUHmMJGuu2Bu6hKczBYdCoJKjd7vR4oq0PpnGZM4nIaTL42x0/Z+UcLBgBnRUpB9Ck9t4jjPz73qw6dR0SRmBH7A1P8+tpOLy/SRVxTXVk1xoCRRXWUUuFaggK1DAP19InGfFGEwHEQkNqUf7fLcyZ0Al+YcYmsv0QFoMGmrQMVrOR7xBdnAKYOy4I7eLvm/ZL45n1bB+GKtDeTysxWfpx08vI9psljLlOILU23XJqUGzbgalpja7no8ZPKabnfHGqksY67hmg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HnoS8wHm; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=jl0x+F4vi0IQNLEzBfIVAZFp771Yf7p58oAN7Rm6Fdsi/ScH8Cry6zvIaKKD4qX/Wkyzf7N7j0tJTWa9f9HvS5e5yKFPH4I8X8m5LjFb26GphrMIZIrYZR+x7DvWS3hOgNIp9Vi8fF0UtOcyAUyrM9YOK+8D37Wx8AKKawJ/feSyoIRfowSMG1l/orlR87wdM54Y0ZczCUc4jZ55VG/TuhAR97TfDj10bOnEwQe9WfRZglXPJYCB7MwpXVDdYvVnJ8YdFxlXmNq+Fit0cRy+Pc6w/v2YmoMcva7ZZce841jOKMfbs6tZsVr/+SKL/swVRcv8DojoJZBM14f5ZgDGUg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aN33jdNb; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HnoS8wHm;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=aN33jdNb;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cK64L0Dvjz3cnk
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Sep 2025 07:37:06 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cK64N6xd0z3d8J
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Sep 2025 07:37:08 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7A9E645243;
-	Sat,  6 Sep 2025 21:37:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id AC403C4CEF9;
-	Sat,  6 Sep 2025 21:37:03 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 6516C45251;
+	Sat,  6 Sep 2025 21:37:07 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A72FC4CEF5;
+	Sat,  6 Sep 2025 21:37:06 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757194624;
-	bh=qgC3ZMySIzbT7snif3jifRd6wEGhkdEbMg6+X/hdkEc=;
+	s=k20201202; t=1757194627;
+	bh=C5+a7mCYIvqBEAn5lQppE669dnFrkzWQF1zk0YiPpuo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=HnoS8wHmNnAGXmjtE/Ly7bQ7EaKSHOs35JkeDWyFwsdG9Ef0wGj/vRGGJi9LdHgEG
-	 6554LkhwPyJSQdav86Ah8LR1Az7qGvnT8pakFGsdrktTJPFodmNAYNDA7mplknq9hY
-	 OW/gW6f8vnby4h7cHEhDMspXJQB2bekl39gTwXoKOksiJVJQ+fLpNSmlq3qGP4RllR
-	 mruhQRhcwQXyF50nfeUOnWCxZ05ApEJuyYd5Ns1efTg6CeAPdnoat3/ddkoslV6bvx
-	 BmzBRNBrkqfhfamYYWCtEEgKPMzOAiRgIM6VVp721vi9qCEbm0FQHrHW2VfmKizDAJ
-	 oKm6HcxZ1EZYA==
+	b=aN33jdNbPPWCFS3rSncFy4YrpwJkk5GYVzpu/ZqZXYHs5pb7KD6mE/1nYTW0uwBnf
+	 CuHEMW/f3i3Av7mUSLDXUucUvQbO0Ifxb4QQUa2m5NldzAh1levjiV/RC8l6NH/Vlj
+	 jPrKaMMPtz6zW+NFbCYz2MszvmppHiQGp6fx348XONW90N+aL3rDFM335dTfmWjwGS
+	 Fu4lcw9Zezc1Fp5TVuqYxucMlguTKBQYxNUCO5MU7XlJHWnsa2wyMf6IWdZHjDTmLn
+	 cQmp7bIPWl4b3bZaLUlHs7wYTXFCZ35BiAjqlyqG072Tn5Xsc9TQ5/2TUvUsp2/LDX
+	 siufRL71HJrLw==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -55,9 +55,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linuxppc-dev@lists.ozlabs.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH v2 08/12] lib/crypto: tests: Add Curve25519 benchmark
-Date: Sat,  6 Sep 2025 14:35:19 -0700
-Message-ID: <20250906213523.84915-9-ebiggers@kernel.org>
+Subject: [PATCH v2 11/12] lib/crypto: tests: Enable Curve25519 test when CRYPTO_SELFTESTS
+Date: Sat,  6 Sep 2025 14:35:22 -0700
+Message-ID: <20250906213523.84915-12-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20250906213523.84915-1-ebiggers@kernel.org>
 References: <20250906213523.84915-1-ebiggers@kernel.org>
@@ -76,75 +76,34 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Add a benchmark to curve25519_kunit.  This brings it in line with the
-other crypto KUnit tests and provides an easy way to measure
-performance.
+Now that the Curve25519 library has been disentangled from CRYPTO,
+adding CRYPTO_SELFTESTS as a default value of
+CRYPTO_LIB_CURVE25519_KUNIT_TEST no longer causes a recursive kconfig
+dependency.  Do this, which makes this option consistent with the other
+crypto KUnit test options in the same file.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- lib/crypto/tests/curve25519_kunit.c | 31 +++++++++++++++++++++++++++++
- 1 file changed, 31 insertions(+)
+ lib/crypto/tests/Kconfig | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/lib/crypto/tests/curve25519_kunit.c b/lib/crypto/tests/curve25519_kunit.c
-index 0d1c46ca74018..355ad79a210d1 100644
---- a/lib/crypto/tests/curve25519_kunit.c
-+++ b/lib/crypto/tests/curve25519_kunit.c
-@@ -3,10 +3,11 @@
-  * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
-  */
+diff --git a/lib/crypto/tests/Kconfig b/lib/crypto/tests/Kconfig
+index eaca60d3e0a36..578af717e13a7 100644
+--- a/lib/crypto/tests/Kconfig
++++ b/lib/crypto/tests/Kconfig
+@@ -11,11 +11,11 @@ config CRYPTO_LIB_BLAKE2S_KUNIT_TEST
+ 	  KUnit tests for the BLAKE2s cryptographic hash function.
  
- #include <crypto/curve25519.h>
- #include <kunit/test.h>
-+#include <linux/timekeeping.h>
+ config CRYPTO_LIB_CURVE25519_KUNIT_TEST
+ 	tristate "KUnit tests for Curve25519" if !KUNIT_ALL_TESTS
+ 	depends on KUNIT
+-	default KUNIT_ALL_TESTS
++	default KUNIT_ALL_TESTS || CRYPTO_SELFTESTS
+ 	select CRYPTO_LIB_BENCHMARK_VISIBLE
+ 	select CRYPTO_LIB_CURVE25519
+ 	help
+ 	  KUnit tests for the Curve25519 Diffie-Hellman function.
  
- struct curve25519_test_vector {
- 	u8 private[CURVE25519_KEY_SIZE];
- 	u8 public[CURVE25519_KEY_SIZE];
- 	u8 result[CURVE25519_KEY_SIZE];
-@@ -1314,13 +1315,43 @@ static void test_curve25519_basepoint(struct kunit *test)
- 		KUNIT_EXPECT_MEMEQ_MSG(test, out, out2, CURVE25519_KEY_SIZE,
- 				       "in=%*phN", CURVE25519_KEY_SIZE, in);
- 	}
- }
- 
-+static void benchmark_curve25519(struct kunit *test)
-+{
-+	const u8 *private = curve25519_test_vectors[0].private;
-+	const u8 *public = curve25519_test_vectors[0].public;
-+	const size_t warmup_niter = 5000;
-+	const size_t benchmark_niter = 1024;
-+	u8 out[CURVE25519_KEY_SIZE];
-+	bool ok = true;
-+	u64 t;
-+
-+	if (!IS_ENABLED(CONFIG_CRYPTO_LIB_BENCHMARK))
-+		kunit_skip(test, "not enabled");
-+
-+	/* Warm-up */
-+	for (size_t i = 0; i < warmup_niter; i++)
-+		ok &= curve25519(out, private, public);
-+
-+	/* Benchmark */
-+	preempt_disable();
-+	t = ktime_get_ns();
-+	for (size_t i = 0; i < benchmark_niter; i++)
-+		ok &= curve25519(out, private, public);
-+	t = ktime_get_ns() - t;
-+	preempt_enable();
-+	KUNIT_EXPECT_TRUE(test, ok);
-+	kunit_info(test, "%llu ops/s",
-+		   div64_u64((u64)benchmark_niter * NSEC_PER_SEC, t ?: 1));
-+}
-+
- static struct kunit_case curve25519_test_cases[] = {
- 	KUNIT_CASE(test_curve25519),
- 	KUNIT_CASE(test_curve25519_basepoint),
-+	KUNIT_CASE(benchmark_curve25519),
- 	{},
- };
- 
- static struct kunit_suite curve25519_test_suite = {
- 	.name = "curve25519",
 -- 
 2.50.1
 
