@@ -1,81 +1,90 @@
-Return-Path: <linuxppc-dev+bounces-11817-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11818-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 246B0CA1002
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Sep 2025 10:08:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 17A8FCA1012
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Sep 2025 10:08:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cJpmw71HSz30WT;
-	Sat,  6 Sep 2025 20:07:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cJpn945nsz2xMV;
+	Sat,  6 Sep 2025 20:07:57 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757153264;
-	cv=none; b=jXocGtklyCJQAOPHazcmkwbW/Q5jDLc5ttBrK/URIiMW0sNRQSsYrfK+TU7r1EE53mOPc2uehtkbv36X/8aXX3YS+uRwEPxLqgX+qisY6mNdoPpWUrTyWb7ZYe6qM/pZpQNw4Ok5PwzAbxkIGvUAJM3pOBTbq3bO4QXmYzEAFNEgKc7JevCrGODMJb/1ELs3VI+p9oR2d1b85y5UzOcGM5YOrDrDs6WJ/wQ8aEU6qE7gUjEl5QHrS10RgRw+bLC3aHubCEy3LFiPIporKlmbWt9ReR3qjdQk9fJOAFT1OaAcFnnw5cLhaIjDQcE6s2L3koTGSqBvUXLSzVIn7FXiiw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757153277;
+	cv=none; b=cgtGEkq6+op9l8B/jLrFpPWGIWl0m7wYBRl3MvXsF/ZaSxJRN/uxdY54FEswOwKbJl5g027OHVLgixSZ/EsmdX0q2SgCRM0H7cTCO7JTH3SH04zy7IAr1h+Lz8NsqV+dzP+Y1G6vaqZpn/lHVJJDz73F3FN09FdibXrzL+KG3YASB8sekS6secB9c3wAIQkUv09iv19J6J5+qTA2fW5Ji6Z8dCiyeLBI34r1WfaKR1SNvHWK1P8wgkfu5pX1UaghHP0XiPRH3rceGqju1nzlIhVEXbaXtWURnaHs9V8hZQrQMPg4urWERkj9zTBkJ+PchZJYGm5mHDcp9kGczckr6g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757153264; c=relaxed/relaxed;
-	bh=CZNn1C8CL/q+WGmv+vcch3PsxrOMEvOrvNkL1/C4qU8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=Lm+VYhsSnQ+uXY0F20azNWAn/je56Y/KRhR+QMNyAxzPkr9NRtuyEPK1I+6gZkdgAUDVad1cBb8dRL9pkon7GSVG2EKaidmuafHQEdWRVuxGYPF3mC3tRfuhX+YpXoLebKJ8jmW5oOPJpAX8g0+9ifQtxm7LcZiUgomk7SVO8ulPOSZG/ofOShh5jFQuQaCtI9Tm55L55cGvVdINL/vEURs+2LH7LqPT8AGjopp+ZM36Yxta7y2gvagT0U0FaH5TJ4NKWEZDm7Co9TvOBO8S9ngxvIDkW+PQrdwyLlhnKZU3dHexN8ngNhOfxfWTe48jJDnrAHALhaXAzuPh2ITGtA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gZdilHPI; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1757153277; c=relaxed/relaxed;
+	bh=D2K6WADPfyzF1q6psUiFGQ/kUjPlrOypEDH+Sv7nKw8=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=fDRLkmVFSkbRBF32jQcmd0x1AWrbDsHYEnJKuIrJgUGT/ZkwaGt36lu8y+YMX4fFakqCibj2+2VHdjZ1ZR8+VL+CtgBZC0mdlreO7RtfL+IqEoIxjdIC35bFryVOB32cEYNmYPn4XUcrZqJdLGDW9pSfmh6HtZ/KZdTHPbwpvIOjPbNWC09ZWSZJXP9zJKwyXG9f6iANOyrC/MXj088HN9eUNRXZk4NSI9R/gzcOuw3vK61/78L+vY/Ebim8/A0V6OklMcEM4bsgDz7Q+b3BvibvmR42Muf45iwJ8doO/rNw8I4niEnSMzAYWLPAvE8RVY6dLXwnI1UjNHGSYLXnlg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OJJtA2DA; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gZdilHPI;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=OJJtA2DA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJpmw29fbz30Pl
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Sep 2025 20:07:44 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJpn86KBHz3050
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Sep 2025 20:07:56 +1000 (AEST)
 Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5863ofLC025614;
-	Sat, 6 Sep 2025 10:07:35 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=CZNn1C
-	8CL/q+WGmv+vcch3PsxrOMEvOrvNkL1/C4qU8=; b=gZdilHPIyTe+0GxEoyHNr4
-	RNs2pmrNXTGzC/kPL97lBgMx+gC0fVEPe2V/V8RrwsK6n7xXdQqIZYR1M0lPTWK5
-	nf+bFcxYiOmyVC2X2bu+j9DYDCLZA2gzNanBZp2ILmq1Xw2N+zIsIkiMwXkTrubm
-	HVvafHYC+J2FTJzC7MUp3f90feLzXJE2noK8v1q05EGbs9Rco/vKvBjcHXrbfBLI
-	TrseXm2tsTqAeGaouG/T7XzWCEpxyJ/71TXGzP0+RoAZ1ZoqAiPA/zWeStU30MTQ
-	UClqJscyQtDtoc2KMSXOyWhpTDfk+kbQJ2Ntt5j8PUwmhtCsLu7sxTELn4old/Kw
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5864eb2m017518;
+	Sat, 6 Sep 2025 10:07:22 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=D2K6WA
+	DPfyzF1q6psUiFGQ/kUjPlrOypEDH+Sv7nKw8=; b=OJJtA2DAoDKvu6geyd3kIm
+	BMn2Gu9qCOpzF6ziWyfFaVRVjEmftpM3piOD8GjKshqh0eRUyzFliFWWsrtOwGS7
+	hvhhpRU4JMJvYrGZqRE1XOuKe0R5qFXsrNTKfnIJftZ5ShcLOPfE+rTZjxn2bs04
+	71NVUV7fkHM0f3Nby0IfZAmqOFTwc2pYx41pfQ57fkhvsxTfdixQRtdndcu+lB5J
+	0FmgEaBKIXa21Z9Io/snOiM1VM/5IWWzNuZ34czyZmONdsC+C/Y2WyQXbFakcHgh
+	wDUBBjG2Ja/O5p4q+/U1RFabr1/yn5FwCz++DWyqaNTMCfNrLLAuRgCHeP25mTiA
 	==
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490cfes4sf-1
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490cfes4rx-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 06 Sep 2025 10:07:34 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5868QaqR019363;
-	Sat, 6 Sep 2025 10:07:33 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 48vd4nd9w9-1
+	Sat, 06 Sep 2025 10:07:22 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 586A7LWR003043;
+	Sat, 6 Sep 2025 10:07:21 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490cfes4rt-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 06 Sep 2025 10:07:33 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 586A7V0j22217152
+	Sat, 06 Sep 2025 10:07:21 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5864Xon6014038;
+	Sat, 6 Sep 2025 10:07:20 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 48veb3w4fy-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 06 Sep 2025 10:07:20 +0000
+Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 586A7Jnw50921814
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 6 Sep 2025 10:07:31 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 830BA2005A;
-	Sat,  6 Sep 2025 10:07:31 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 763632004D;
-	Sat,  6 Sep 2025 10:07:29 +0000 (GMT)
+	Sat, 6 Sep 2025 10:07:19 GMT
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0A3DD20063;
+	Sat,  6 Sep 2025 10:07:19 +0000 (GMT)
+Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 11E532004E;
+	Sat,  6 Sep 2025 10:07:16 +0000 (GMT)
 Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.ibm.com.com (unknown [9.43.107.45])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat,  6 Sep 2025 10:07:29 +0000 (GMT)
+	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sat,  6 Sep 2025 10:07:15 +0000 (GMT)
 From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Michael Ellerman <mpe@ellerman.id.au>,
-        Thomas Huth <thuth@redhat.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-        linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v3 0/2] powerpc: Replace __ASSEMBLY__ with __ASSEMBLER__ in header files
-Date: Sat,  6 Sep 2025 15:37:28 +0530
-Message-ID: <175715312004.95031.8015199240329986989.b4-ty@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Gautam Menghani <gautam@linux.ibm.com>,
+        =?UTF-8?q?C=C3=A9dric=20Le=20Goater?= <clg@kaod.org>,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+        Nam Cao <namcao@linutronix.de>
+Subject: Re: [PATCH 0/2] powerpc: Fix integer underflow & leak
+Date: Sat,  6 Sep 2025 15:37:14 +0530
+Message-ID: <175715312006.95031.18312967895718915434.b4-ty@linux.ibm.com>
 X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20250801082007.32904-1-thuth@redhat.com>
-References: <20250801082007.32904-1-thuth@redhat.com>
+In-Reply-To: <cover.1754300646.git.namcao@linutronix.de>
+References: <cover.1754300646.git.namcao@linutronix.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,47 +101,44 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: We6pR1ypHcundy0I6w2ZJYLChoqwxF28
-X-Proofpoint-GUID: We6pR1ypHcundy0I6w2ZJYLChoqwxF28
-X-Authority-Analysis: v=2.4 cv=EYDIQOmC c=1 sm=1 tr=0 ts=68bc07e6 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VwQbUJbxAAAA:8 a=zwY7vhdFYRJvcIJZdwUA:9
- a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA2MDAyMCBTYWx0ZWRfX9K7J0/NLjj7t
- ijCllUkn6w09quDCssmPwXZ1c7yHqmhSdJY3EeBUy5lbUpHpD9Y0Ck2MoctxpcbWUixm3WgZLTq
- jWP5wVD5tn5BZCircc0nAY1WThSCT+JeqaW1cwa97BKSmOOWZr5EjfQXQ4QxCDIelD6Za5eL6je
- y5W+FHSGUniZwmhgySIiaTnf8rgOhdRSGYQdNaegh/Voe47EBMSS5FGpnkpfokUgRZRCp8IKd/5
- M1KNoP6Wbbbf0XPBcrZP8l++SJaz75Dnn3GH7qKdQcWDWNP2PjzoyqFGatwKsOeoEYV/x1d3NBw
- 9zNcbYVnJ5Ztc7fK7uewkmcpRwidFBc2gGXitY+6izJhFBNVPFrrli/jRz4ucOmBhYfaeEehwCp
- fN/Z5InZ
+X-Proofpoint-ORIG-GUID: 4gvLGvKcbmaw3umDgGbo51QpLT67bZS9
+X-Proofpoint-GUID: 1OIDBU-VTOMSl_r5wYuRk3p2k-DTLKAO
+X-Authority-Analysis: v=2.4 cv=EYDIQOmC c=1 sm=1 tr=0 ts=68bc07da cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=ZiPmK-8AuTT3vM0SIfQA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA2MDAyMCBTYWx0ZWRfXx+b4GHjNA7nV
+ z83Q7YBTcTBRDa7JQsvJy29fgFibTNhqL+kUFZDv1vi0MErUXUKLXcoKBS9/FMQ+SWbLbge147r
+ yJAegcubFOufCUfLRPtfGz3ItHEf6KF8aVgVdAIZ+p6FRs+rbFadao7UvjvrWAAB57fwa3mjOdx
+ 8TyMa0194znE4ZujR5gsJi+wI7niweESN+6YpJbSoSXC8e7Vgnn374Vu7WEx2s1foNifrEc+iyz
+ Osjf0TWk7FeNAR2RVZE23KDWwwgaJZuGP2QpKadoRW9b0ySxuwr9lEf92SytAzifcKhKRWq15Lk
+ 5Vh1x94ZLqTtRYGpxLn7CLiM+fo1KnUVPgSMkUh8inlybtopBb2pcf47C/lrc8sd8KRtQgamep1
+ L7ayFWjp
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
  definitions=2025-09-06_02,2025-09-04_01,2025-03-28_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  malwarescore=0 adultscore=0 suspectscore=0 spamscore=0 impostorscore=0
- priorityscore=1501 phishscore=0 clxscore=1015 bulkscore=0
+ priorityscore=1501 phishscore=0 clxscore=1011 bulkscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509060020
 
-On Fri, 01 Aug 2025 10:20:05 +0200, Thomas Huth wrote:
-> The kernel Makefiles define the __ASSEMBLY__ macro to provide
-> a way to use headers in both, assembly and C source code. This is bad
-> since macros starting with two underscores are names that are reserved
-> by the C language.
-> Additionally, all the supported versions of the GCC and Clang compilers
-> also define the macro __ASSEMBLER__ automatically already when compiling
-> assembly code, so some kernel headers are using __ASSEMBLER__ instead.
-> With regards to userspace code, this seems also to be constant source
-> of confusion, see for example these links here:
+On Mon, 04 Aug 2025 12:07:26 +0200, Nam Cao wrote:
+> This series fixes integer overflow & leak problem. I noticed this problem
+> when Gautam reported a kernel bug with another patch series of mine:
+> https://lore.kernel.org/linuxppc-dev/aH9Na8ZqrI0jPhtl@li-c6426e4c-27cf-11b2-a85c-95d65bc0de0e.ibm.com/
+> 
+> The root cause of that report is a bug in that series. However, that bug
+> triggered another existing bug, causing the reported end results.
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/2] powerpc: Replace __ASSEMBLY__ with __ASSEMBLER__ in uapi headers
-      https://git.kernel.org/powerpc/c/8e0665eb85394ea9823fb965a73ae9a6265af4b0
-[2/2] powerpc: Replace __ASSEMBLY__ with __ASSEMBLER__ in non-uapi headers
-      https://git.kernel.org/powerpc/c/74db6cc331b0da5c48c62b7af68d747ec9af1984
+[1/2] powerpc/pseries/msi: Fix potential underflow and leak issue
+      https://git.kernel.org/powerpc/c/3443ff3be6e59b80d74036bb39f5b6409eb23cc9
+[2/2] powerpc/powernv/pci: Fix underflow and leak issue
+      https://git.kernel.org/powerpc/c/a39087905af9ffecaa237a918a2c03a04e479934
 
 Thanks
 
