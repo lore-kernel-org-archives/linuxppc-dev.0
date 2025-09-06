@@ -1,50 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-11813-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11814-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 99878CA1012
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Sep 2025 06:50:40 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EF1CCA1012
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Sep 2025 10:07:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cJkPW073Tz2xlL;
-	Sat,  6 Sep 2025 16:50:39 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757141438;
-	cv=none; b=GtITzKKFn2YCKd5x/fDJbDCY/RpJygPT1p/LsT5PPOMuEn4Z/XQcH2C/SjGdDXPwDjvquFRJpOe7INUYWvmRkIex29/DMZ6E2fExZgEod4/AgiM8x8Sj6AuiUj2RJeMd4tDSKcZSZiSm6MLMqO0qTy/vQJbJy1EuuZPXvWohzIaG7IaMzYoCN0eOuoUsIgBeDzQhh9wAx4EbzaIL1MrDXcL4AhZuMcIGiDihqFEQHQ3G81Y8IM+ESWubqgw7azHaDP0v95uL7/DQWCKyN4Levb3gfR4E3LuMMB8Z+JX8xnT7BR8vK+541Dwt2nqbBUwMwMznAPVLYVjf5o2ABWCglw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cJpmp5857z301n;
+	Sat,  6 Sep 2025 20:07:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757153258;
+	cv=none; b=Imk3154rfu4ktXSZyy5jZ51ujHJUyd6V5bE0nMAId4P6BZAkFaql9vdXWZV3OeomUAA4WSpa2hOqyWQqn7ibUKWLHvjd7jhsX7hrRpWRx4rKXwiNOZIj3Fi+lzSHVzPgV0NJLdOvlKuHSoqgFNkr7Dw/e+2+laBc0Uhgw1MwEkxrvpmC+x0us1NGTS/NjfxyC0VAETLOWif4LvRGESN6JPaCj4dgNjTf+DdgcVC0EUkZhrf0GJhFpzKrWfUywOP47r5ZLRHEefMEFGhhsCpdjRbNDbon7fqyYOOKHGKYFeM6n+Td3i29URJ23nzH9GeA13nNoB/o0KjvkWrFnPFmwA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757141438; c=relaxed/relaxed;
-	bh=dpBGWw+mJPLnFD6HSROqWmI5f9BubfnO3nxg14iJW3w=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kmjVaZpGbhHTGAiOEADM0VZ/wQj+8r0vVXjIFQfbhToUYDg7MtyRAfH1/e4Gg/iXrobz1g7g1jTamqOw5z9faMyhKLK8Udnwd4Hebtg/QS0lYx2ZEpAYojkgrdcIWT2w2OGqplvPruT7cI/G8co5sYtDKMJFTD8vhKxxbYpKxllszOyKcd8t2cR6Gp82yfgMaDnyTY2VUcK5fOxoPp/EmtRsAd+Dst5bB5LL42M6TNgyQzdXppdLLTx8WEbkouZUHzauuHy9xgOqZ0C33INxp4CyAiedNZ08abkEXVPCjDyLjFpHIHmyyxyMtFCa4/jcsXPyCO0y4qaXRsSgeCwZVQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cJkPV1Gpbz2xgQ
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Sep 2025 16:50:36 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cJkCj5Mvkz9sS7;
-	Sat,  6 Sep 2025 08:42:09 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ofr8zKUh7ixS; Sat,  6 Sep 2025 08:42:09 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cJkCj4F9Kz9sRy;
-	Sat,  6 Sep 2025 08:42:09 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 769E58B776;
-	Sat,  6 Sep 2025 08:42:09 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id O04ntYOWCf3E; Sat,  6 Sep 2025 08:42:09 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id BDEE08B773;
-	Sat,  6 Sep 2025 08:42:08 +0200 (CEST)
-Message-ID: <1b4cc6d5-5f5b-4b39-8fdf-ac02c94cd5e2@csgroup.eu>
-Date: Sat, 6 Sep 2025 08:42:07 +0200
+	t=1757153258; c=relaxed/relaxed;
+	bh=HDSNsaPbgbsbf4K5WddRszFCvFluY+cX5Wbvk7aLnP8=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=eFZvlmxHCR26DONuxHYXZg8HHimqwwisLqW/MjGyV/n02P5ELOFRrzItWPu6R4/AM5Zh5yxTbvkHi6SY9YfLGINl6/JCeV1C7IOceIpN9f9vEERIEcrmZtUtvEtvnU/ByOSIID3QTnQ3hq7WeslOf57RgYAMZlJg8bWRkMKj00oZqYPIvaUV8fzCdfukwR1KfeBxp1k4pbgPJ039B6lQA7rhNdFIwKymkAUz/wo2iFTHTAmldJ+VXzqnuXPikVfIw6ZYCoVybYE0QejcZHeCB42yRYRiY2zqGlQzjDd6TMMJ1G/LCPiKGAAXsA5yp1fCkdBaEkRK+HgzQs1dRue4QQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rg/+sDe8; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=rg/+sDe8;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cJpmn63y3z3000
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  6 Sep 2025 20:07:37 +1000 (AEST)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 586308hj017310;
+	Sat, 6 Sep 2025 10:07:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=HDSNsa
+	Pbgbsbf4K5WddRszFCvFluY+cX5Wbvk7aLnP8=; b=rg/+sDe8ngQ0BNeSQniZ6K
+	Fjv47UA5MloVgxhX3HapgG7shw54sqifOH7xpLUDGZqV2xd/QpzlxlW+I9A3SLVW
+	x4faeg9hRQ+/WxmDoHr1SN+EjsusSHhH0Pz6rapjPY4AqrPQpl0s0bDd2la4Bjyz
+	Cw4WMkWrYgrH/5gjzLTG41UkTbyZyakSXiXCsTzHYVtQ522jez5FLO3vJyWgczOY
+	GSoFinhiO6tZgn3MUAG7qqncgiT7v478lB8G0IqOdP7Uits+4+rBG0yxoD87iT8M
+	Bls1M6lX/R3q6lxPdNGWm2ouhoS4uw3JdLZsL+SJD0Ex/5zBc04nreKPKlOVOYjg
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490cmw943r-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 06 Sep 2025 10:07:27 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 586A7QWr018286;
+	Sat, 6 Sep 2025 10:07:26 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490cmw943n-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 06 Sep 2025 10:07:26 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5867DubK017217;
+	Sat, 6 Sep 2025 10:07:25 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 48vc115hwb-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sat, 06 Sep 2025 10:07:25 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 586A7NGt44761560
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sat, 6 Sep 2025 10:07:23 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3D6F12004D;
+	Sat,  6 Sep 2025 10:07:23 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D9A592004B;
+	Sat,  6 Sep 2025 10:07:20 +0000 (GMT)
+Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.ibm.com.com (unknown [9.43.107.45])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sat,  6 Sep 2025 10:07:20 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Nysal Jan K.A." <nysal@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2] powerpc/qspinlock: Add spinlock contention tracepoint
+Date: Sat,  6 Sep 2025 15:37:19 +0530
+Message-ID: <175715312005.95031.13686272189997770445.b4-ty@linux.ibm.com>
+X-Mailer: git-send-email 2.50.1
+In-Reply-To: <20250731061856.1858898-1-nysal@linux.ibm.com>
+References: <20250725081432.1254986-1-nysal@linux.ibm.com> <20250731061856.1858898-1-nysal@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,140 +97,42 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC] powerpc: Panic on jump label code patching failure
-To: "Ritesh Harjani (IBM)" <riteshh@linux.ibm.com>,
- Andrew Donnellan <ajd@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, maddy@linux.ibm.com, mpe@ellerman.id.au,
- peterz@infradead.org, jpoimboe@kernel.org, jbaron@akamai.com
-Cc: npiggin@gmail.com, rostedt@goodmis.org, ardb@kernel.org,
- Erhard Furtner <erhard_f@mailbox.org>
-References: <20250905061135.1451362-1-ajd@linux.ibm.com>
- <87qzwki6fv.fsf@ritesh.list@gmail.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <87qzwki6fv.fsf@ritesh.list@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: yQM7L3OfKa3_xKUTbtPYHfhUZeRNxDTn
+X-Proofpoint-ORIG-GUID: bU146MjV4rBY6_QoDjG3ZFVtVM6AQFp8
+X-Authority-Analysis: v=2.4 cv=J52q7BnS c=1 sm=1 tr=0 ts=68bc07df cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VwQbUJbxAAAA:8 a=NXXni1WiAo173Buuo_gA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA2MDAyNSBTYWx0ZWRfX+xAZcOGF6E48
+ DBKg9CuaQasAQTYb8SXS0B+8zirk5j/n+LypivJgNw8tvgRnOMN819r7jxtn0yWDQkGY9OOwD9s
+ 2CneTtP/L23fSfsmRoWj88i8069ZxzO+jrgC+nqrCb+jndzio6lYacBuR96kFxqQOXGI0+K5G8D
+ dCo69R43ilL5R14LzoyOvwq7/DYyzZ0uYjnJkcQD4Qi9V6aoXRLi/OKW1uNDZQIKYr2ALGIq/rh
+ lr62g6F5WTkwdtMH3StYrQQ76tv6/4yH0CWals/aucz0kQdv++8NJ8OqeKMcPNNsUKtgqxExrnS
+ xxUQgs5stOdknaUOlEHSOXSM5gksMrNgM+KOjIDi0J0BOtVtrr5zoSit7rxbdN/okfoTzHL9GSs
+ 8jUSONgY
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-09-06_02,2025-09-04_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 clxscore=1015 suspectscore=0 spamscore=0 phishscore=0
+ bulkscore=0 adultscore=0 malwarescore=0 priorityscore=1501
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509060025
 
-
-
-Le 06/09/2025 à 05:52, Ritesh Harjani a écrit :
-> [Vous ne recevez pas souvent de courriers de riteshh@linux.ibm.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
+On Thu, 31 Jul 2025 11:48:53 +0530, Nysal Jan K.A. wrote:
+> Add a lock contention tracepoint in the queued spinlock slowpath.
+> Also add the __lockfunc annotation so that in_lock_functions()
+> works as expected.
 > 
-> Andrew Donnellan <ajd@linux.ibm.com> writes:
 > 
->> If patch_branch() or patch_instruction() fails while updating a jump
->> label, we presently fail silently, leading to unpredictable behaviour
->> later on.
->>
->> Change arch_jump_label_transform() to panic on a code patching failure,
->> matching the existing behaviour of arch_static_call_transform().
->>
->> Reported-by: Erhard Furtner <erhard_f@mailbox.org>
->> Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
->>
->> ---
->>
->> Ran into this while debugging an issue that Erhard reported to me about my
->> PAGE_TABLE_CHECK series on a G4, where updating a static key failed
->> silently, but only for one call site, leading to an incorrect reference
->> count later on. This looks to be due to the issue fixed in [0]. A loud
->> failure would have saved us all considerable debugging time.
->>
->> Should I change the return type of arch_jump_label_transform() and handle
->> this in an arch-independent way? Are there other users of code patching
->> in powerpc that ought to be hardened?
->>
->> Or is this excessive?
->>
->> [0] https://patchwork.ozlabs.org/project/linuxppc-dev/patch/4b5e6eb281d7b1ea77619bee17095f905a125168.1757003584.git.christophe.leroy@csgroup.eu/
->> ---
->>   arch/powerpc/kernel/jump_label.c | 9 +++++++--
->>   1 file changed, 7 insertions(+), 2 deletions(-)
->>
->> diff --git a/arch/powerpc/kernel/jump_label.c b/arch/powerpc/kernel/jump_label.c
->> index 2659e1ac8604..80d41ed7ac50 100644
->> --- a/arch/powerpc/kernel/jump_label.c
->> +++ b/arch/powerpc/kernel/jump_label.c
->> @@ -12,9 +12,14 @@ void arch_jump_label_transform(struct jump_entry *entry,
->>                               enum jump_label_type type)
->>   {
->>        u32 *addr = (u32 *)jump_entry_code(entry);
->> +     int err;
->>
->>        if (type == JUMP_LABEL_JMP)
->> -             patch_branch(addr, jump_entry_target(entry), 0);
->> +             err = patch_branch(addr, jump_entry_target(entry), 0);
->>        else
->> -             patch_instruction(addr, ppc_inst(PPC_RAW_NOP()));
->> +             err = patch_instruction(addr, ppc_inst(PPC_RAW_NOP()));
->> +
->> +     if (err)
->> +             panic("%s: patching failed, err %d, type %d, addr %pS, target %pS\n",
->> +                   __func__, err, type, addr, (void *)jump_entry_target(entry));
->>   }
-> 
-> arch_jump_label_transform() is mainly getting called from
-> __jump_level_update() and it's used for enabling or updating static keys / branch.
-> 
-> But static keys can also be used by drivers / module subsystem whose
-> initialization happens late. Although I understand that if the above
-> fails, it might fail much before, from the arch setup code itself, but
-> panic() still feels like a big hammer.
 
-But not being able to patch the kernel as required means that you get a 
-kernel behaving differently from what is expected.
+Applied to powerpc/next.
 
-Imagine a kernel running on a board that is controlling a saw. There is 
-a patch_instruction() to activate the safety feature which detects when 
-your hands are too close to the blade. Do you want the kernel to 
-continue running seamlessly when that patch_instruction() fails ? I'm 
-sure you don't !
+[1/1] powerpc/qspinlock: Add spinlock contention tracepoint
+      https://git.kernel.org/powerpc/c/4f61d54d2245c15b23ad78a89f854fb2496b6216
 
-> 
-> Would pr_err() print with WARN_ON_ONCE(1) would suffice in case of an
-> err?
-
-No, that's not enough, you can't rely on a kernel that will no behave as 
-expected.
-
-> 
-> Also you said you ran into a problem at just one call site where above
-> was silently failing. With the above change are you able to hit the
-> panic() now? Because from what I see in patch_instruction(), it mainly
-> will boil down to calling __patch_mem() which always returns 0.
-
-As far as I can see, __patch_mem() returns -EPERM when 
-__put_kernel_nofault() fails:
-
-static int __patch_mem(void *exec_addr, unsigned long val, void 
-*patch_addr, bool is_dword)
-{
-	if (!IS_ENABLED(CONFIG_PPC64) || likely(!is_dword)) {
-		/* For big endian correctness: plain address would use the wrong half */
-		u32 val32 = val;
-
-		__put_kernel_nofault(patch_addr, &val32, u32, failed);
-	} else {
-		__put_kernel_nofault(patch_addr, &val, u64, failed);
-	}
-
-	asm ("dcbst 0, %0; sync; icbi 0,%1; sync; isync" :: "r" (patch_addr),
-							    "r" (exec_addr));
-
-	return 0;
-
-failed:
-	mb();  /* sync */
-	return -EPERM;
-}
-
-
-> Although there are other places where there can be an error returned,
-> so I was wondering if that is what you were hitting or something else?
-
-Andrew was hitting the -EPERM because the memory area was read-only.
-
-Christophe
+Thanks
 
