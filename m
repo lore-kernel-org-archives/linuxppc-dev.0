@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-11836-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11837-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C72DECA1002
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Sep 2025 21:37:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B64DACA1002
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Sep 2025 21:37:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cK64G6jhsz3cjL;
-	Sun,  7 Sep 2025 07:37:02 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cK64J4dHhz3clR;
+	Sun,  7 Sep 2025 07:37:04 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757194622;
-	cv=none; b=kxG4L71ORhLTTXmyO8qEIbkFdidJQ7/2g3kknABmEl0tzjAMLlPgZakJ0hUIUPR1nSh1MCruyNNqOdRp7IVw7cRBL2ZmBuwcphGskviNCT8ZVLKa9miVpoz1BFgBAwilYxABXp3poi61RKJONZDw1fN55UYTrclbvaH1hD1Y22JHSUk3WvTPcAhHAYycgpnA/73XZsvVcE41d35zAXn/0D3ryxMs3a1oAJ2Rx6CLk7Kh9TTjxs3SDB70cduAtWIxQsCT6pyY/dKo03LoBfKLUYwokR7c6FFY95Ke+h01ZEscOj8Cq2Q8qLrPvR3xmuTBFpuy0QBLXRY3qXuAYx4A6w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757194624;
+	cv=none; b=UQvWFGRlrcnzgUgUlBJoRwaVEssbdBMeU/9OGHDcMvT0uTjdRNy6JGO3zZNssDWxsbhnUOsAPagTeOdqotSLGolwfpokR7whC9JlpYm2LT/o1t7os0kUyY0S7aWYaWcPy6nWZAjrsYGBQmPaG4FQyOCNZUEwYe2VNaDCqLflRG9D4JHGJerzMbKwyknTdTZy3yrmPWIpovf4jrBYwbuHCONJq1wFAXvIXQwLvyKDsJ5Tjo2+WenUTexHLOu++52Kxu5INH0rBtTQ/21yiSHQlaPWrQHYgWEg62cYZkm8QY+aFQMEMbJJYZBwCRmkjuPQ5EYD1IwU4Wn3OaCQsXc6sQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757194622; c=relaxed/relaxed;
-	bh=rEFy3QeOsaNn90nmhahSvyIX2HqbK/8GtlGkK1ieXQI=;
+	t=1757194624; c=relaxed/relaxed;
+	bh=4aGMKZBDa8hDoeyqdUpcdMNEFPuSZkIYM6NHxXta34Q=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DWHS8NFl0iDFDvWH1HHBgNsPoKSlR8wsEAmN7U3j2WZRt4zXQZYPIrReHLk8Xw3QGa7h0zdslkmZRlK7e8/8PA78SAS2Lit6VATESpX/PjEO43DvfxYjkAIp1Np4SNt5e7e1n8WRzv7tG0LzARgwVLWe7Vpd058zxwmlkzXM+W9tHWWqObftws4VQGgiElmd2ncUPv4kiI+Psf204V1MOqi6E1CQkyqmBx4N0OTtwOOiSRwUEpehMzgmuL5iqhLuJSCsf3KDjKI92xX3sbjdhPFOQ4LJJ8+K+f4bUzSfGDFyNGoo6Amk3WmIr+i649TrIFMLW6we0irH2lDKgLXIYA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ui3AP+Vw; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=ihIkcXLPp95BlNQrPVBc+9/H7dJC0C2/ovxBOeslFc3FmBioWjYIHjJBw0fMf1iBMpVG/KbI6l1Yfef9Kh5ECMaH+MrSYKtXobtBTeylFbZPlPAt+bRISBYb2VsAWkc/GNeDyjQyFdtRzaAIoCqizHfb9zLS17CMJjWRqTiDqLuPcBBD+XoKm9s8DUq4mR474QXx4zyMFesxcmjp7xaQHcH5gevV7PDJkiKuyHkMqLMBtn/iig6QGx8no2SlxQecmyyNQ4JuYL+HxrIAYCASScHDH/U7YH7/3v4qZWP3ms8zV9lHN3dvRf1dTI/F3avvBXBTlfwx4pkaadNUmFjwow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rHpEawtO; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Ui3AP+Vw;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rHpEawtO;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cK64G0gttz3cgN
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Sep 2025 07:37:01 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cK64H6fTpz3clH
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  7 Sep 2025 07:37:03 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 18FD44523D;
-	Sat,  6 Sep 2025 21:37:00 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4AECFC4CEF9;
-	Sat,  6 Sep 2025 21:36:59 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 9BAE645260;
+	Sat,  6 Sep 2025 21:37:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id C4550C4CEE7;
+	Sat,  6 Sep 2025 21:37:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757194620;
-	bh=b2kyrv9GFCik/BKIFbZ27LKOAd7AEvTjfTWJfDtuZc4=;
+	s=k20201202; t=1757194623;
+	bh=tzGI0nGLAWdIcbdPPsgLKUoZLaVZT1uXpdHfuiLD0g0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Ui3AP+Vwt2+C0Wwth5KD5a1GA7Y0lDSKB/05nC07zKJG6qYA3fflzkHi63TuHJjkt
-	 nOmmgDsiYO3KOHgpAg9ZanfcC53poi6noKU5idw3F/I0L2YHmNM+ek63DJqHc/BXRy
-	 3PzbXbkgp6mU1+oigacKmZcEXT8QFteYSoLStAWpE0EbAXvFm3uNTtUzzgk410X9TE
-	 IG4ivYk5HDze/2UYiHlqo07IWxq+UDWqKNdFG1s4Out4kerTjLjYB0cpI+y2dl4N1K
-	 E3xzm8akEZCP6aDXpz6x7te/y2C6v7UzYXvKm05hwQKuqvvzTTh8MbTrBTrXjqUQkF
-	 eI5Y/Qc4+BQ2Q==
+	b=rHpEawtOaPMFgazeibQBP4YKM4CphYALdcZ5G0xnacCc6i8Ak32AsUJpFuOVUzJzz
+	 Jj4wAKaqjNGnPQuORFGDndAHzzGw/h3QgB66ELqxwB1XJzXvpa1ZKXjqgNAgVVntFn
+	 qj2267pYscDwQuziV9Sl/7b94Re54nq+y8CpH+Lge2eGc0VLyUJNNoMQdzair8ju4e
+	 j5u9Y2SMCHLEyY/aiqqurKQzyxH3ezm+NpUieTZx3JFRvAHcLQFmyF1FFii9C168kk
+	 QGPT8s31r3SqK/9fvdeNIzYR9gHAQ3yGpuP9zhMWreu2KEwpeYkzo8lFCM6DLq1qx6
+	 lqVdy+qFmaf5w==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -55,9 +55,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
 	linuxppc-dev@lists.ozlabs.org,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH v2 04/12] crypto: x86/curve25519 - Remove unused kpp support
-Date: Sat,  6 Sep 2025 14:35:15 -0700
-Message-ID: <20250906213523.84915-5-ebiggers@kernel.org>
+Subject: [PATCH v2 07/12] lib/crypto: tests: Migrate Curve25519 self-test to KUnit
+Date: Sat,  6 Sep 2025 14:35:18 -0700
+Message-ID: <20250906213523.84915-8-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.50.1
 In-Reply-To: <20250906213523.84915-1-ebiggers@kernel.org>
 References: <20250906213523.84915-1-ebiggers@kernel.org>
@@ -76,180 +76,235 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Curve25519 is used only via the library API, not the crypto_kpp API.  In
-preparation for removing the unused crypto_kpp API for Curve25519,
-remove the unused "curve25519-x86" kpp algorithm.
+Move the Curve25519 test from an ad-hoc self-test to a KUnit test.
 
-Note that the underlying x86_64 optimized Curve25519 code remains fully
-supported and accessible via the library API.
+Generally keep the same test logic for now, just translated to KUnit.
+There's one exception, which is that I dropped the incomplete test of
+curve25519_generic().  The approach I'm taking to cover the different
+implementations with the KUnit tests is to just rely on booting kernels
+in QEMU with different '-cpu' options, rather than try to make the tests
+(incompletely) test multiple implementations on one CPU.  This way, both
+the test and the library API are simpler.
 
-It's also worth noting that even if the kpp support for Curve25519 comes
-back later, there is no need for arch-specific kpp glue code like this,
-as a single kpp algorithm that wraps the library API is sufficient.
+This commit makes the file lib/crypto/curve25519.c no longer needed, as
+its only purpose was to call the self-test.  However, keep it for now,
+since a later commit will add code to it again.
+
+Temporarily omit the default value of CRYPTO_SELFTESTS that the other
+lib/crypto/ KUnit tests have.  It would cause a recursive kconfig
+dependency, since the Curve25519 code is still entangled with CRYPTO.  A
+later commit will fix that.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/x86/crypto/Kconfig             |  1 -
- arch/x86/crypto/curve25519-x86_64.c | 98 +----------------------------
- 2 files changed, 1 insertion(+), 98 deletions(-)
+ include/crypto/curve25519.h                   |  2 -
+ lib/crypto/Makefile                           |  1 -
+ lib/crypto/curve25519.c                       |  3 -
+ lib/crypto/tests/Kconfig                      |  9 +++
+ lib/crypto/tests/Makefile                     |  1 +
+ .../curve25519_kunit.c}                       | 70 +++++++++++--------
+ 6 files changed, 49 insertions(+), 37 deletions(-)
+ rename lib/crypto/{curve25519-selftest.c => tests/curve25519_kunit.c} (97%)
 
-diff --git a/arch/x86/crypto/Kconfig b/arch/x86/crypto/Kconfig
-index 94016c60561e2..6a895a571b00e 100644
---- a/arch/x86/crypto/Kconfig
-+++ b/arch/x86/crypto/Kconfig
-@@ -3,11 +3,10 @@
- menu "Accelerated Cryptographic Algorithms for CPU (x86)"
+diff --git a/include/crypto/curve25519.h b/include/crypto/curve25519.h
+index ece6a9b5fafc8..4e6dc840b1592 100644
+--- a/include/crypto/curve25519.h
++++ b/include/crypto/curve25519.h
+@@ -26,12 +26,10 @@ void curve25519_arch(u8 out[CURVE25519_KEY_SIZE],
+ 		     const u8 point[CURVE25519_KEY_SIZE]);
  
- config CRYPTO_CURVE25519_X86
- 	tristate
- 	depends on 64BIT
--	select CRYPTO_KPP
- 	select CRYPTO_LIB_CURVE25519_GENERIC
- 	select CRYPTO_ARCH_HAVE_LIB_CURVE25519
- 	default CRYPTO_LIB_CURVE25519_INTERNAL
+ void curve25519_base_arch(u8 pub[CURVE25519_KEY_SIZE],
+ 			  const u8 secret[CURVE25519_KEY_SIZE]);
+ 
+-bool curve25519_selftest(void);
+-
+ static inline
+ bool __must_check curve25519(u8 mypublic[CURVE25519_KEY_SIZE],
+ 			     const u8 secret[CURVE25519_KEY_SIZE],
+ 			     const u8 basepoint[CURVE25519_KEY_SIZE])
+ {
+diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
+index ad27c5bf99e11..6c3be971ace09 100644
+--- a/lib/crypto/Makefile
++++ b/lib/crypto/Makefile
+@@ -85,11 +85,10 @@ ifeq ($(call clang-min-version, 180000),)
+ KASAN_SANITIZE_curve25519-hacl64.o := n
+ endif
+ 
+ obj-$(CONFIG_CRYPTO_LIB_CURVE25519)		+= libcurve25519.o
+ libcurve25519-y					+= curve25519.o
+-libcurve25519-$(CONFIG_CRYPTO_SELFTESTS)	+= curve25519-selftest.o
+ 
+ obj-$(CONFIG_CRYPTO_LIB_DES)			+= libdes.o
+ libdes-y					:= des.o
+ 
+ ################################################################################
+diff --git a/lib/crypto/curve25519.c b/lib/crypto/curve25519.c
+index 6850b76a80c9e..25f16777865bf 100644
+--- a/lib/crypto/curve25519.c
++++ b/lib/crypto/curve25519.c
+@@ -13,13 +13,10 @@
+ #include <linux/module.h>
+ #include <linux/init.h>
+ 
+ static int __init curve25519_init(void)
+ {
+-	if (IS_ENABLED(CONFIG_CRYPTO_SELFTESTS) &&
+-	    WARN_ON(!curve25519_selftest()))
+-		return -ENODEV;
+ 	return 0;
+ }
+ 
+ static void __exit curve25519_exit(void)
+ {
+diff --git a/lib/crypto/tests/Kconfig b/lib/crypto/tests/Kconfig
+index fd341aa12f157..eaca60d3e0a36 100644
+--- a/lib/crypto/tests/Kconfig
++++ b/lib/crypto/tests/Kconfig
+@@ -8,10 +8,19 @@ config CRYPTO_LIB_BLAKE2S_KUNIT_TEST
+ 	# No need to select CRYPTO_LIB_BLAKE2S here, as that option doesn't
+ 	# exist; the BLAKE2s code is always built-in for the /dev/random driver.
  	help
- 	  Curve25519 algorithm
-diff --git a/arch/x86/crypto/curve25519-x86_64.c b/arch/x86/crypto/curve25519-x86_64.c
-index d587f05c3c8c3..ab91368284a47 100644
---- a/arch/x86/crypto/curve25519-x86_64.c
-+++ b/arch/x86/crypto/curve25519-x86_64.c
-@@ -3,18 +3,16 @@
-  * Copyright (C) 2020 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
-  * Copyright (c) 2016-2020 INRIA, CMU and Microsoft Corporation
+ 	  KUnit tests for the BLAKE2s cryptographic hash function.
+ 
++config CRYPTO_LIB_CURVE25519_KUNIT_TEST
++	tristate "KUnit tests for Curve25519" if !KUNIT_ALL_TESTS
++	depends on KUNIT
++	default KUNIT_ALL_TESTS
++	select CRYPTO_LIB_BENCHMARK_VISIBLE
++	select CRYPTO_LIB_CURVE25519
++	help
++	  KUnit tests for the Curve25519 Diffie-Hellman function.
++
+ config CRYPTO_LIB_MD5_KUNIT_TEST
+ 	tristate "KUnit tests for MD5" if !KUNIT_ALL_TESTS
+ 	depends on KUNIT
+ 	default KUNIT_ALL_TESTS || CRYPTO_SELFTESTS
+ 	select CRYPTO_LIB_BENCHMARK_VISIBLE
+diff --git a/lib/crypto/tests/Makefile b/lib/crypto/tests/Makefile
+index be7de929af2cc..a71fad19922ba 100644
+--- a/lib/crypto/tests/Makefile
++++ b/lib/crypto/tests/Makefile
+@@ -1,8 +1,9 @@
+ # SPDX-License-Identifier: GPL-2.0-or-later
+ 
+ obj-$(CONFIG_CRYPTO_LIB_BLAKE2S_KUNIT_TEST) += blake2s_kunit.o
++obj-$(CONFIG_CRYPTO_LIB_CURVE25519_KUNIT_TEST) += curve25519_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_MD5_KUNIT_TEST) += md5_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_POLY1305_KUNIT_TEST) += poly1305_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_SHA1_KUNIT_TEST) += sha1_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_SHA256_KUNIT_TEST) += sha224_kunit.o sha256_kunit.o
+ obj-$(CONFIG_CRYPTO_LIB_SHA512_KUNIT_TEST) += sha384_kunit.o sha512_kunit.o
+diff --git a/lib/crypto/curve25519-selftest.c b/lib/crypto/tests/curve25519_kunit.c
+similarity index 97%
+rename from lib/crypto/curve25519-selftest.c
+rename to lib/crypto/tests/curve25519_kunit.c
+index c85e85381e788..0d1c46ca74018 100644
+--- a/lib/crypto/curve25519-selftest.c
++++ b/lib/crypto/tests/curve25519_kunit.c
+@@ -2,18 +2,19 @@
+ /*
+  * Copyright (C) 2015-2019 Jason A. Donenfeld <Jason@zx2c4.com>. All Rights Reserved.
   */
  
  #include <crypto/curve25519.h>
--#include <crypto/internal/kpp.h>
++#include <kunit/test.h>
  
- #include <linux/export.h>
- #include <linux/types.h>
- #include <linux/jump_label.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
--#include <linux/scatterlist.h>
+ struct curve25519_test_vector {
+ 	u8 private[CURVE25519_KEY_SIZE];
+ 	u8 public[CURVE25519_KEY_SIZE];
+ 	u8 result[CURVE25519_KEY_SIZE];
+ 	bool valid;
+ };
+-static const struct curve25519_test_vector curve25519_test_vectors[] __initconst = {
++static const struct curve25519_test_vector curve25519_test_vectors[] = {
+ 	{
+ 		.private = { 0x77, 0x07, 0x6d, 0x0a, 0x73, 0x18, 0xa5, 0x7d,
+ 			     0x3c, 0x16, 0xc1, 0x72, 0x51, 0xb2, 0x66, 0x45,
+ 			     0xdf, 0x4c, 0x2f, 0x87, 0xeb, 0xc0, 0x99, 0x2a,
+ 			     0xb1, 0x77, 0xfb, 0xa5, 0x1d, 0xb9, 0x2c, 0x2a },
+@@ -1278,44 +1279,51 @@ static const struct curve25519_test_vector curve25519_test_vectors[] __initconst
+ 			    0xd9, 0x8b, 0xb9, 0x1b, 0x3e, 0x0b, 0xe0, 0x35 },
+ 		.valid = true
+ 	}
+ };
  
- #include <asm/cpufeature.h>
- #include <asm/processor.h>
- 
- static __always_inline u64 eq_mask(u64 a, u64 b)
-@@ -1611,116 +1609,22 @@ void curve25519_base_arch(u8 pub[CURVE25519_KEY_SIZE],
- 	else
- 		curve25519_generic(pub, secret, curve25519_base_point);
- }
- EXPORT_SYMBOL(curve25519_base_arch);
- 
--static int curve25519_set_secret(struct crypto_kpp *tfm, const void *buf,
--				 unsigned int len)
--{
--	u8 *secret = kpp_tfm_ctx(tfm);
--
--	if (!len)
--		curve25519_generate_secret(secret);
--	else if (len == CURVE25519_KEY_SIZE &&
--		 crypto_memneq(buf, curve25519_null_point, CURVE25519_KEY_SIZE))
--		memcpy(secret, buf, CURVE25519_KEY_SIZE);
--	else
--		return -EINVAL;
--	return 0;
--}
--
--static int curve25519_generate_public_key(struct kpp_request *req)
--{
--	struct crypto_kpp *tfm = crypto_kpp_reqtfm(req);
--	const u8 *secret = kpp_tfm_ctx(tfm);
--	u8 buf[CURVE25519_KEY_SIZE];
--	int copied, nbytes;
--
--	if (req->src)
--		return -EINVAL;
--
--	curve25519_base_arch(buf, secret);
--
--	/* might want less than we've got */
--	nbytes = min_t(size_t, CURVE25519_KEY_SIZE, req->dst_len);
--	copied = sg_copy_from_buffer(req->dst, sg_nents_for_len(req->dst,
--								nbytes),
--				     buf, nbytes);
--	if (copied != nbytes)
--		return -EINVAL;
--	return 0;
--}
--
--static int curve25519_compute_shared_secret(struct kpp_request *req)
--{
--	struct crypto_kpp *tfm = crypto_kpp_reqtfm(req);
--	const u8 *secret = kpp_tfm_ctx(tfm);
--	u8 public_key[CURVE25519_KEY_SIZE];
--	u8 buf[CURVE25519_KEY_SIZE];
--	int copied, nbytes;
--
--	if (!req->src)
--		return -EINVAL;
--
--	copied = sg_copy_to_buffer(req->src,
--				   sg_nents_for_len(req->src,
--						    CURVE25519_KEY_SIZE),
--				   public_key, CURVE25519_KEY_SIZE);
--	if (copied != CURVE25519_KEY_SIZE)
--		return -EINVAL;
--
--	curve25519_arch(buf, secret, public_key);
--
--	/* might want less than we've got */
--	nbytes = min_t(size_t, CURVE25519_KEY_SIZE, req->dst_len);
--	copied = sg_copy_from_buffer(req->dst, sg_nents_for_len(req->dst,
--								nbytes),
--				     buf, nbytes);
--	if (copied != nbytes)
--		return -EINVAL;
--	return 0;
--}
--
--static unsigned int curve25519_max_size(struct crypto_kpp *tfm)
--{
--	return CURVE25519_KEY_SIZE;
--}
--
--static struct kpp_alg curve25519_alg = {
--	.base.cra_name		= "curve25519",
--	.base.cra_driver_name	= "curve25519-x86",
--	.base.cra_priority	= 200,
--	.base.cra_module	= THIS_MODULE,
--	.base.cra_ctxsize	= CURVE25519_KEY_SIZE,
--
--	.set_secret		= curve25519_set_secret,
--	.generate_public_key	= curve25519_generate_public_key,
--	.compute_shared_secret	= curve25519_compute_shared_secret,
--	.max_size		= curve25519_max_size,
--};
--
--
- static int __init curve25519_mod_init(void)
+-bool __init curve25519_selftest(void)
++static void test_curve25519(struct kunit *test)
  {
- 	if (boot_cpu_has(X86_FEATURE_BMI2) && boot_cpu_has(X86_FEATURE_ADX))
- 		static_branch_enable(&curve25519_use_bmi2_adx);
--	else
--		return 0;
--	return IS_REACHABLE(CONFIG_CRYPTO_KPP) ?
--		crypto_register_kpp(&curve25519_alg) : 0;
-+	return 0;
+-	bool success = true, ret, ret2;
+-	size_t i = 0, j;
+-	u8 in[CURVE25519_KEY_SIZE];
+-	u8 out[CURVE25519_KEY_SIZE], out2[CURVE25519_KEY_SIZE],
+-	   out3[CURVE25519_KEY_SIZE];
++	for (size_t i = 0; i < ARRAY_SIZE(curve25519_test_vectors); ++i) {
++		const struct curve25519_test_vector *vec =
++			&curve25519_test_vectors[i];
++		u8 out[CURVE25519_KEY_SIZE] = {};
++		bool ret;
+ 
+-	for (i = 0; i < ARRAY_SIZE(curve25519_test_vectors); ++i) {
+-		memset(out, 0, CURVE25519_KEY_SIZE);
+-		ret = curve25519(out, curve25519_test_vectors[i].private,
+-				 curve25519_test_vectors[i].public);
+-		if (ret != curve25519_test_vectors[i].valid ||
+-		    memcmp(out, curve25519_test_vectors[i].result,
+-			   CURVE25519_KEY_SIZE)) {
+-			pr_err("curve25519 self-test %zu: FAIL\n", i + 1);
+-			success = false;
+-		}
++		ret = curve25519(out, vec->private, vec->public);
++		KUNIT_EXPECT_EQ_MSG(test, ret, vec->valid,
++				    "Wrong return value with test vector %zu",
++				    i);
++		KUNIT_EXPECT_MEMEQ_MSG(test, out, vec->result, sizeof(out),
++				       "Wrong output with test vector %zu", i);
+ 	}
++}
++
++static void test_curve25519_basepoint(struct kunit *test)
++{
++	for (size_t i = 0; i < 5; ++i) {
++		u8 in[CURVE25519_KEY_SIZE];
++		u8 out[CURVE25519_KEY_SIZE];
++		u8 out2[CURVE25519_KEY_SIZE];
++		bool ret, ret2;
+ 
+-	for (i = 0; i < 5; ++i) {
+ 		get_random_bytes(in, sizeof(in));
+ 		ret = curve25519_generate_public(out, in);
+ 		ret2 = curve25519(out2, in, (u8[CURVE25519_KEY_SIZE]){ 9 });
+-		curve25519_generic(out3, in, (u8[CURVE25519_KEY_SIZE]){ 9 });
+-		if (ret != ret2 ||
+-		    memcmp(out, out2, CURVE25519_KEY_SIZE) ||
+-		    memcmp(out, out3, CURVE25519_KEY_SIZE)) {
+-			pr_err("curve25519 basepoint self-test %zu: FAIL: input - 0x",
+-			       i + 1);
+-			for (j = CURVE25519_KEY_SIZE; j-- > 0;)
+-				printk(KERN_CONT "%02x", in[j]);
+-			printk(KERN_CONT "\n");
+-			success = false;
+-		}
++		KUNIT_EXPECT_EQ_MSG(test, ret, ret2,
++				    "in=%*phN", CURVE25519_KEY_SIZE, in);
++		KUNIT_EXPECT_MEMEQ_MSG(test, out, out2, CURVE25519_KEY_SIZE,
++				       "in=%*phN", CURVE25519_KEY_SIZE, in);
+ 	}
+-
+-	return success;
  }
- 
- static void __exit curve25519_mod_exit(void)
- {
--	if (IS_REACHABLE(CONFIG_CRYPTO_KPP) &&
--	    static_branch_likely(&curve25519_use_bmi2_adx))
--		crypto_unregister_kpp(&curve25519_alg);
- }
- 
- module_init(curve25519_mod_init);
- module_exit(curve25519_mod_exit);
- 
--MODULE_ALIAS_CRYPTO("curve25519");
--MODULE_ALIAS_CRYPTO("curve25519-x86");
- MODULE_DESCRIPTION("Curve25519 algorithm, ADX optimized");
- MODULE_LICENSE("GPL v2");
- MODULE_AUTHOR("Jason A. Donenfeld <Jason@zx2c4.com>");
++
++static struct kunit_case curve25519_test_cases[] = {
++	KUNIT_CASE(test_curve25519),
++	KUNIT_CASE(test_curve25519_basepoint),
++	{},
++};
++
++static struct kunit_suite curve25519_test_suite = {
++	.name = "curve25519",
++	.test_cases = curve25519_test_cases,
++};
++kunit_test_suite(curve25519_test_suite);
 -- 
 2.50.1
 
