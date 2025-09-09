@@ -1,113 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-11971-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11972-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E54D0CA0FED
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Sep 2025 14:39:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56BF8CAC582
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Sep 2025 18:09:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cLmgM1NTBz30Lt;
-	Wed, 10 Sep 2025 00:39:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757428783;
-	cv=none; b=EmOUUM7qrYI/YKu70VHGvQwLyHWorvMwKtw7/zoLoBHiByuHqlcGXaElVTnHpjDh6jFlpNjX/sSRnhCwDabGRgz5GN2g828EU2/9Z1J8UaJqV1m/D/iHSGzKF3nQ/VF5Qsrb7KmkfE+kNLyEpWMF8taUsS6fB/m+1qsQJftEDQ92FL96h/dwKFHPDJlOD5iKf/30/FXywa8HjWGzuPPX2uYwaOFyhPMo0S4XNQpYcAtfYiCaIZ4H3lIOZzjS3/W0DwsRwghvoBR0oq0qJXJwlH0Yujcmv0g4Nt+QylEmKURWIv1EaP3L2ZLpUQ/u+GF4YeD76CmTkfmvEGukzza5Lg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cLsK422cfz2yr8;
+	Wed, 10 Sep 2025 04:09:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757441352;
+	cv=none; b=jBDUIx1eyUW/THi+/vqBpVL+ipGrmrFLBAhjcwI4jyPPRu8jQ5AP7uSrd9co1S/Va84WtjDBMY1nbTM5LH5iJ9PYCT8fnysG0KXTLyYQL9nBzK8Kdr0EXXSTowzU0tHMhK4DJGV34xyas35GoWFmL2bmfUPkxWzuI0D1DdVsNKROSEWsFYr6RmY96T8KWI66jkZuDls5vMDe+56fe6EfevPFEgunKBZMgKkM3z0crBr9HFKPChENSQZuFwrVcOnakLIQQoWimJPBiNJJ6CZpV+2Zg45da/KlQH61q6UBq9PdXeTYK9lctVeY5+rFuxsaZuu8Q2G/YHkbWH9/7nVXIQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757428783; c=relaxed/relaxed;
-	bh=PZxnElgXfWNXHVRkPVUlwCfE0YEzKBATAK/iNRyCHno=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mjRSqh6gzMQDkbLqTiRNd3WYWDBbZMseXn1rNCNt2dbvdkXcgEANipou7PEJ6MhMuPlmbFZ01UA/8U/Dc1r1divYgiNQ5OLzQuIrqC9ABvGQkeHkH5924NRLlbIIUOg3+jRObNwe91KXCCN6sP4HuhniZpjUvCNXQM4hSRsxzoirkt/HtkSUcnmHI/QqxzvruJFUy9dAUw1cF1t7jd17kY0f0zgxxegGiTtXhHAo1Y2wp9SfIwouF8xoxKizMWu4LmduqQ8hU5ImDl5Ci3LkPIh3HjiQhxIVywCXP2rC/6F/wKIOrW9gGXx1TPeJrUAgyQqs5sVhCepKKopiBaCn5w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eAw85XMT; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1757441352; c=relaxed/relaxed;
+	bh=cFnHMKKJvw2hNIRz44gCdMjVIEH9NTGpycW1myzuOAs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=Xw2oE2Mt/flDi39Ay/3VFIUX3EHCUduN68p1wdhK81UA1XCojqT0wlcru/pSXXwy9tkRXlzu3w3dSoP0Jl1wGPYY0pIGZFYVEgkm3hX2Suuo+9VejG4IajgvMLSDhxJj8EldU2NGx9kUMAIwN7jqm1ienZEjNIi7lmVzvZTpE0TQFFDgab/QBp96e9xXizKCkNqfYXhYr5pNbedmnBy6rkdroKvK7ZByB+jW8a5bfcLAyXo094kw+ZQaWPe4hNXWw6nfAy2zdwd3Z7fVGog3GhKfFb8mzisDjfdq+9ivm2PzBQqFOow2sNgH8ADmJdvmEcXZwnYItllxVHhZxvNv5A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=ocixYpl6; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=ocixYpl6; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=jgross@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eAw85XMT;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=ocixYpl6;
+	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=ocixYpl6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=jgross@suse.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 25882 seconds by postgrey-1.37 at boromir; Wed, 10 Sep 2025 04:09:10 AEST
+Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cLmgL0lMYz30FR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2025 00:39:41 +1000 (AEST)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 589BBEbn028671;
-	Tue, 9 Sep 2025 14:38:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=PZxnEl
-	gXfWNXHVRkPVUlwCfE0YEzKBATAK/iNRyCHno=; b=eAw85XMTzWR9vGa1/hE9vj
-	mydHz5ZGmT77GHt0U64/1YAtQ+lSFTmIp9CIEXj9AqCB1xpfIW94Ks0mq2SdgDpJ
-	0FPArRwybEixPfZaOslsDAe44oIe3Tm1gRsGZY/RLa+8mT3lM30D87vp64U0OPcE
-	AyEhpKjxohjXf8zMTSl45uNLe+xdcC+WMRvNiK8F4OVX4+mUboi1o5W9xWOJyuG4
-	YBGbdgCpU8wPxsq98ebD9TZKO89s1xp8D5BcFUSvtxMjUPUOH9oIgZBJ+OTTT7hW
-	3ZKsxlOOkqxL4/35WGGIhaGdo6h3UOz5oPnEPsFraOl5KI9HlFyrZTNClQjrf38A
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490xycw9r8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Sep 2025 14:38:52 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 589EUjFv007959;
-	Tue, 9 Sep 2025 14:38:52 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490xycw9r3-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Sep 2025 14:38:51 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 589AvumM017218;
-	Tue, 9 Sep 2025 14:38:50 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4911gmbdxs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Sep 2025 14:38:50 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 589EcnS049545616
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 9 Sep 2025 14:38:49 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0279320043;
-	Tue,  9 Sep 2025 14:38:49 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2791F2004B;
-	Tue,  9 Sep 2025 14:38:48 +0000 (GMT)
-Received: from li-008a6a4c-3549-11b2-a85c-c5cc2836eea2.ibm.com (unknown [9.155.204.135])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Tue,  9 Sep 2025 14:38:48 +0000 (GMT)
-Date: Tue, 9 Sep 2025 16:38:46 +0200
-From: Alexander Gordeev <agordeev@linux.ibm.com>
-To: Kevin Brodsky <kevin.brodsky@arm.com>
-Cc: David Hildenbrand <david@redhat.com>, linux-mm@kvack.org,
-        linux-kernel@vger.kernel.org, Andreas Larsson <andreas@gaisler.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-        Borislav Petkov <bp@alien8.de>,
-        Catalin Marinas <catalin.marinas@arm.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Dave Hansen <dave.hansen@linux.intel.com>,
-        "David S. Miller" <davem@davemloft.net>,
-        "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
-        Jann Horn <jannh@google.com>, Juergen Gross <jgross@suse.com>,
-        "Liam R. Howlett" <Liam.Howlett@oracle.com>,
-        Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
-        Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Ryan Roberts <ryan.roberts@arm.com>,
-        Suren Baghdasaryan <surenb@google.com>,
-        Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
-        Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>,
-        linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-        sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org
-Subject: Re: [PATCH v2 2/7] mm: introduce local state for lazy_mmu sections
-Message-ID: <b2e52967-7ca1-411e-9c66-8d3483624ca7-agordeev@linux.ibm.com>
-References: <20250908073931.4159362-1-kevin.brodsky@arm.com>
- <20250908073931.4159362-3-kevin.brodsky@arm.com>
- <d23ea683-cca4-4973-88b1-4f6fd9b22314@redhat.com>
- <ca2054ad-b163-4e61-8ec4-6f2e36461628-agordeev@linux.ibm.com>
- <e7acb889-1fe9-4db3-acf4-39f4960e8ccd@redhat.com>
- <2fecfae7-1140-4a23-a352-9fd339fcbae5-agordeev@linux.ibm.com>
- <e521b1f4-3f2b-48cd-9568-b9a4cf4c4830@redhat.com>
- <47ee1df7-1602-4200-af94-475f84ca8d80@arm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cLsK2265tz2ynf
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2025 04:09:09 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out1.suse.de (Postfix) with ESMTPS id D28BD33713;
+	Tue,  9 Sep 2025 10:57:43 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1757415463; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=cFnHMKKJvw2hNIRz44gCdMjVIEH9NTGpycW1myzuOAs=;
+	b=ocixYpl6AVe2j8JrYrDSOCw4ykekhXgRlgZ0kyF3sjF1/lbNYGQmfQ8B32P6YMos9IeVzr
+	wLQT7C/N6jUDIR9QUop/hROMVW2CRK79XLgHWNp0NfV/Pb0+sd0Q7ej1hKw5ugckTmrpcL
+	wBh7tK2HBUXbjFx9voyOqbQN0Ym78OY=
+Authentication-Results: smtp-out1.suse.de;
+	none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1757415463; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=cFnHMKKJvw2hNIRz44gCdMjVIEH9NTGpycW1myzuOAs=;
+	b=ocixYpl6AVe2j8JrYrDSOCw4ykekhXgRlgZ0kyF3sjF1/lbNYGQmfQ8B32P6YMos9IeVzr
+	wLQT7C/N6jUDIR9QUop/hROMVW2CRK79XLgHWNp0NfV/Pb0+sd0Q7ej1hKw5ugckTmrpcL
+	wBh7tK2HBUXbjFx9voyOqbQN0Ym78OY=
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id A3FB51388C;
+	Tue,  9 Sep 2025 10:57:42 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id LT2UJiYIwGhgKwAAD6G6ig
+	(envelope-from <jgross@suse.com>); Tue, 09 Sep 2025 10:57:42 +0000
+Message-ID: <f6965a43-c299-4726-896e-6cccd0a23ae5@suse.com>
+Date: Tue, 9 Sep 2025 12:57:41 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,148 +80,292 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <47ee1df7-1602-4200-af94-475f84ca8d80@arm.com>
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: w3un9YJFAnj-nx4lP2drAL9l1yJOP1En
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA2MDIzNSBTYWx0ZWRfX5AD3L9SkswSm
- yrVgoGtIISKP604rm8z2wlBI+9ePIXNFYQAYLSzjXIjHlXrJz/N5CyEoKiLBFH0S6cAaacNg8MI
- /uqSqt+AyIfCoA2W1PycTsyoA9dnPphhk2M6Dy7RNUKN5o43iFF9IXyIGVBQKdc5LYc5Tqn/OPM
- HPGZJ2R+BrI/nWN/OrWkeMYz3esjc3UK9kdBknkAwa1vw44DfXe2kcF7OMH8RK37Zmyzfk8ftAT
- Mah9tj2mXv8ZZFGcLXNuNYIctcCpzvNgMf9Y+RDBJM2AEQkCBcXflTuYScwL6Aa0Fdpz3OLg/9L
- oof/OuMSKGRkSalY70FlPW8UQK4wZ6ys9K9DbelwH72mhkNMfgbwQ1G8LikJGVg3ZsfCHBBKKvz
- o+6LVfHA
-X-Proofpoint-GUID: kEu557zaNP3aZma9JIWXWvvSIckTRd-u
-X-Authority-Analysis: v=2.4 cv=F59XdrhN c=1 sm=1 tr=0 ts=68c03bfc cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=8nJEP1OIZ-IA:10 a=yJojWOMRYYMA:10 a=0nQrape7h3WL6H1kZSkA:9
- a=3ZKOabzyN94A:10 a=wPNLvfGTeEIA:10
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-09_02,2025-09-08_02,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 malwarescore=0 suspectscore=0 phishscore=0 clxscore=1015
- impostorscore=0 bulkscore=0 adultscore=0 spamscore=0 classifier=typeunknown
- authscore=0 authtc= authcc= route=outbound adjust=0 reason=mlx scancount=1
- engine=8.19.0-2507300000 definitions=main-2509060235
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/7] mm: introduce local state for lazy_mmu sections
+To: David Hildenbrand <david@redhat.com>,
+ Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
+ <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
+ Ingo Molnar <mingo@redhat.com>, Jann Horn <jannh@google.com>,
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
+ Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ryan Roberts <ryan.roberts@arm.com>,
+ Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
+ Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org
+References: <20250908073931.4159362-1-kevin.brodsky@arm.com>
+ <20250908073931.4159362-3-kevin.brodsky@arm.com>
+ <d23ea683-cca4-4973-88b1-4f6fd9b22314@redhat.com>
+Content-Language: en-US
+From: Juergen Gross <jgross@suse.com>
+Autocrypt: addr=jgross@suse.com; keydata=
+ xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjrioyspZKOB
+ ycWxw3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2kaV2KL9650I1SJve
+ dYm8Of8Zd621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i1TXkH09XSSI8mEQ/ouNcMvIJ
+ NwQpd369y9bfIhWUiVXEK7MlRgUG6MvIj6Y3Am/BBLUVbDa4+gmzDC9ezlZkTZG2t14zWPvx
+ XP3FAp2pkW0xqG7/377qptDmrk42GlSKN4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEB
+ AAHNH0p1ZXJnZW4gR3Jvc3MgPGpncm9zc0BzdXNlLmNvbT7CwHkEEwECACMFAlOMcK8CGwMH
+ CwkIBwMCAQYVCAIJCgsEFgIDAQIeAQIXgAAKCRCw3p3WKL8TL8eZB/9G0juS/kDY9LhEXseh
+ mE9U+iA1VsLhgDqVbsOtZ/S14LRFHczNd/Lqkn7souCSoyWsBs3/wO+OjPvxf7m+Ef+sMtr0
+ G5lCWEWa9wa0IXx5HRPW/ScL+e4AVUbL7rurYMfwCzco+7TfjhMEOkC+va5gzi1KrErgNRHH
+ kg3PhlnRY0Udyqx++UYkAsN4TQuEhNN32MvN0Np3WlBJOgKcuXpIElmMM5f1BBzJSKBkW0Jc
+ Wy3h2Wy912vHKpPV/Xv7ZwVJ27v7KcuZcErtptDevAljxJtE7aJG6WiBzm+v9EswyWxwMCIO
+ RoVBYuiocc51872tRGywc03xaQydB+9R7BHPzsBNBFOMcBYBCADLMfoA44MwGOB9YT1V4KCy
+ vAfd7E0BTfaAurbG+Olacciz3yd09QOmejFZC6AnoykydyvTFLAWYcSCdISMr88COmmCbJzn
+ sHAogjexXiif6ANUUlHpjxlHCCcELmZUzomNDnEOTxZFeWMTFF9Rf2k2F0Tl4E5kmsNGgtSa
+ aMO0rNZoOEiD/7UfPP3dfh8JCQ1VtUUsQtT1sxos8Eb/HmriJhnaTZ7Hp3jtgTVkV0ybpgFg
+ w6WMaRkrBh17mV0z2ajjmabB7SJxcouSkR0hcpNl4oM74d2/VqoW4BxxxOD1FcNCObCELfIS
+ auZx+XT6s+CE7Qi/c44ibBMR7hyjdzWbABEBAAHCwF8EGAECAAkFAlOMcBYCGwwACgkQsN6d
+ 1ii/Ey9D+Af/WFr3q+bg/8v5tCknCtn92d5lyYTBNt7xgWzDZX8G6/pngzKyWfedArllp0Pn
+ fgIXtMNV+3t8Li1Tg843EXkP7+2+CQ98MB8XvvPLYAfW8nNDV85TyVgWlldNcgdv7nn1Sq8g
+ HwB2BHdIAkYce3hEoDQXt/mKlgEGsLpzJcnLKimtPXQQy9TxUaLBe9PInPd+Ohix0XOlY+Uk
+ QFEx50Ki3rSDl2Zt2tnkNYKUCvTJq7jvOlaPd6d/W0tZqpyy7KVay+K4aMobDsodB3dvEAs6
+ ScCnh03dDAFgIq5nsB11j3KPKdVoPlfucX2c7kGNH+LUMbzqV6beIENfNexkOfxHfw==
+In-Reply-To: <d23ea683-cca4-4973-88b1-4f6fd9b22314@redhat.com>
+Content-Type: multipart/signed; micalg=pgp-sha256;
+ protocol="application/pgp-signature";
+ boundary="------------GRqgesMXsTlpWDpme2z20vFJ"
+X-Spamd-Result: default: False [-6.20 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	SIGNED_PGP(-2.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	MIME_GOOD(-0.20)[multipart/signed,multipart/mixed,text/plain];
+	NEURAL_HAM_SHORT(-0.20)[-0.998];
+	MIME_BASE64_TEXT(0.10)[];
+	MIME_UNKNOWN(0.10)[application/pgp-keys];
+	MIME_TRACE(0.00)[0:+,1:+,2:+,3:+,4:~,5:~];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	ARC_NA(0.00)[];
+	TO_DN_SOME(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[imap1.dmz-prg2.suse.org:helo,suse.com:mid];
+	RCPT_COUNT_TWELVE(0.00)[34];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com];
+	MID_RHS_MATCH_FROM(0.00)[];
+	R_RATELIMIT(0.00)[to_ip_from(RLfdszjqhz8kzzb9uwpzdm8png)];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[vger.kernel.org,linux.ibm.com,gaisler.com,linux-foundation.org,oracle.com,alien8.de,arm.com,csgroup.eu,linux.intel.com,davemloft.net,zytor.com,redhat.com,google.com,ellerman.id.au,suse.com,kernel.org,gmail.com,infradead.org,linutronix.de,suse.cz,lists.infradead.org,lists.ozlabs.org,lists.xenproject.org];
+	RCVD_TLS_ALL(0.00)[];
+	FROM_EQ_ENVFROM(0.00)[];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	DKIM_SIGNED(0.00)[suse.com:s=susede1];
+	HAS_ATTACHMENT(0.00)[]
 
-On Tue, Sep 09, 2025 at 03:49:46PM +0200, Kevin Brodsky wrote:
-> On 09/09/2025 13:54, David Hildenbrand wrote:
-> > On 09.09.25 13:45, Alexander Gordeev wrote:
-> >> On Tue, Sep 09, 2025 at 12:09:48PM +0200, David Hildenbrand wrote:
-> >>> On 09.09.25 11:40, Alexander Gordeev wrote:
-> >>>> On Tue, Sep 09, 2025 at 11:07:36AM +0200, David Hildenbrand wrote:
-> >>>>> On 08.09.25 09:39, Kevin Brodsky wrote:
-> >>>>>> arch_{enter,leave}_lazy_mmu_mode() currently have a stateless API
-> >>>>>> (taking and returning no value). This is proving problematic in
-> >>>>>> situations where leave() needs to restore some context back to its
-> >>>>>> original state (before enter() was called). In particular, this
-> >>>>>> makes it difficult to support the nesting of lazy_mmu sections -
-> >>>>>> leave() does not know whether the matching enter() call occurred
-> >>>>>> while lazy_mmu was already enabled, and whether to disable it or
-> >>>>>> not.
-> >>>>>>
-> >>>>>> This patch gives all architectures the chance to store local state
-> >>>>>> while inside a lazy_mmu section by making enter() return some value,
-> >>>>>> storing it in a local variable, and having leave() take that value.
-> >>>>>> That value is typed lazy_mmu_state_t - each architecture defining
-> >>>>>> __HAVE_ARCH_ENTER_LAZY_MMU_MODE is free to define it as it sees fit.
-> >>>>>> For now we define it as int everywhere, which is sufficient to
-> >>>>>> support nesting.
-> >>>> ...
-> >>>>>> {
-> >>>>>> + lazy_mmu_state_t lazy_mmu_state;
-> >>>>>> ...
-> >>>>>> - arch_enter_lazy_mmu_mode();
-> >>>>>> + lazy_mmu_state = arch_enter_lazy_mmu_mode();
-> >>>>>> ...
-> >>>>>> - arch_leave_lazy_mmu_mode();
-> >>>>>> + arch_leave_lazy_mmu_mode(lazy_mmu_state);
-> >>>>>> ...
-> >>>>>> }
-> >>>>>>
-> >>>>>> * In a few cases (e.g. xen_flush_lazy_mmu()), a function knows that
-> >>>>>>      lazy_mmu is already enabled, and it temporarily disables it by
-> >>>>>>      calling leave() and then enter() again. Here we want to ensure
-> >>>>>>      that any operation between the leave() and enter() calls is
-> >>>>>>      completed immediately; for that reason we pass
-> >>>>>> LAZY_MMU_DEFAULT to
-> >>>>>>      leave() to fully disable lazy_mmu. enter() will then
-> >>>>>> re-enable it
-> >>>>>>      - this achieves the expected behaviour, whether nesting
-> >>>>>> occurred
-> >>>>>>      before that function was called or not.
-> >>>>>>
-> >>>>>> Note: it is difficult to provide a default definition of
-> >>>>>> lazy_mmu_state_t for architectures implementing lazy_mmu, because
-> >>>>>> that definition would need to be available in
-> >>>>>> arch/x86/include/asm/paravirt_types.h and adding a new generic
-> >>>>>>     #include there is very tricky due to the existing header soup.
-> >>>>>
-> >>>>> Yeah, I was wondering about exactly that.
-> >>>>>
-> >>>>> In particular because LAZY_MMU_DEFAULT etc resides somewehere
-> >>>>> compeltely
-> >>>>> different.
-> >>>>>
-> >>>>> Which raises the question: is using a new type really of any
-> >>>>> benefit here?
-> >>>>>
-> >>>>> Can't we just use an "enum lazy_mmu_state" and call it a day?
-> >>>>
-> >>>> I could envision something completely different for this type on s390,
-> >>>> e.g. a pointer to a per-cpu structure. So I would really ask to stick
-> >>>> with the current approach.
-> 
-> This is indeed the motivation - let every arch do whatever it sees fit.
-> lazy_mmu_state_t is basically an opaque type as far as generic code is
-> concerned, which also means that this API change is the first and last
-> one we need (famous last words, I know). 
-> 
-> I mentioned in the cover letter that the pkeys-based page table
-> protection series [1] would have an immediate use for lazy_mmu_state_t.
-> In that proposal, any helper writing to pgtables needs to modify the
-> pkey register and then restore it. To reduce the overhead, lazy_mmu is
-> used to set the pkey register only once in enter(), and then restore it
-> in leave() [2]. This currently relies on storing the original pkey
-> register value in thread_struct, which is suboptimal and most
-> importantly doesn't work if lazy_mmu sections nest. With this series, we
-> could instead store the pkey register value in lazy_mmu_state_t
-> (enlarging it to 64 bits or more).
-> 
-> I also considered going further and making lazy_mmu_state_t a pointer as
-> Alexander suggested - more complex to manage, but also a lot more flexible.
-> 
-> >>> Would that integrate well with LAZY_MMU_DEFAULT etc?
-> >>
-> >> Hmm... I though the idea is to use LAZY_MMU_* by architectures that
-> >> want to use it - at least that is how I read the description above.
-> >>
-> >> It is only kasan_populate|depopulate_vmalloc_pte() in generic code
-> >> that do not follow this pattern, and it looks as a problem to me.
-> 
-> This discussion also made me realise that this is problematic, as the
-> LAZY_MMU_{DEFAULT,NESTED} macros were meant only for architectures'
-> convenience, not for generic code (where lazy_mmu_state_t should ideally
-> be an opaque type as mentioned above). It almost feels like the kasan
-> case deserves a different API, because this is not how enter() and
-> leave() are meant to be used. This would mean quite a bit of churn
-> though, so maybe just introduce another arch-defined value to pass to
-> leave() for such a situation - for instance,
-> arch_leave_lazy_mmu_mode(LAZY_MMU_FLUSH)?
+This is an OpenPGP/MIME signed message (RFC 4880 and 3156)
+--------------GRqgesMXsTlpWDpme2z20vFJ
+Content-Type: multipart/mixed; boundary="------------XzcF73Vy0QpbV8oE9lMvMlg0";
+ protected-headers="v1"
+From: Juergen Gross <jgross@suse.com>
+To: David Hildenbrand <david@redhat.com>,
+ Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
+ <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
+ Ingo Molnar <mingo@redhat.com>, Jann Horn <jannh@google.com>,
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
+ Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ryan Roberts <ryan.roberts@arm.com>,
+ Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
+ Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org
+Message-ID: <f6965a43-c299-4726-896e-6cccd0a23ae5@suse.com>
+Subject: Re: [PATCH v2 2/7] mm: introduce local state for lazy_mmu sections
+References: <20250908073931.4159362-1-kevin.brodsky@arm.com>
+ <20250908073931.4159362-3-kevin.brodsky@arm.com>
+ <d23ea683-cca4-4973-88b1-4f6fd9b22314@redhat.com>
+In-Reply-To: <d23ea683-cca4-4973-88b1-4f6fd9b22314@redhat.com>
 
-What about to adjust the semantics of apply_to_page_range() instead?
+--------------XzcF73Vy0QpbV8oE9lMvMlg0
+Content-Type: multipart/mixed; boundary="------------d9o8Vv6o396RywxeHiihFy53"
 
-It currently assumes any caller is fine with apply_to_pte_range() to
-enter the lazy mode. By contrast, kasan_(de)populate_vmalloc_pte() are
-not fine at all and must leave the lazy mode. That literally suggests
-the original assumption is incorrect.
+--------------d9o8Vv6o396RywxeHiihFy53
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: base64
 
-We could change int apply_to_pte_range(..., bool create, ...) to e.g.
-apply_to_pte_range(..., unsigned int flags, ...) and introduce a flag
-that simply skips entering the lazy mmu mode.
+T24gMDkuMDkuMjUgMTE6MDcsIERhdmlkIEhpbGRlbmJyYW5kIHdyb3RlOg0KPiBPbiAwOC4w
+OS4yNSAwOTozOSwgS2V2aW4gQnJvZHNreSB3cm90ZToNCj4+IGFyY2hfe2VudGVyLGxlYXZl
+fV9sYXp5X21tdV9tb2RlKCkgY3VycmVudGx5IGhhdmUgYSBzdGF0ZWxlc3MgQVBJDQo+PiAo
+dGFraW5nIGFuZCByZXR1cm5pbmcgbm8gdmFsdWUpLiBUaGlzIGlzIHByb3ZpbmcgcHJvYmxl
+bWF0aWMgaW4NCj4+IHNpdHVhdGlvbnMgd2hlcmUgbGVhdmUoKSBuZWVkcyB0byByZXN0b3Jl
+IHNvbWUgY29udGV4dCBiYWNrIHRvIGl0cw0KPj4gb3JpZ2luYWwgc3RhdGUgKGJlZm9yZSBl
+bnRlcigpIHdhcyBjYWxsZWQpLiBJbiBwYXJ0aWN1bGFyLCB0aGlzDQo+PiBtYWtlcyBpdCBk
+aWZmaWN1bHQgdG8gc3VwcG9ydCB0aGUgbmVzdGluZyBvZiBsYXp5X21tdSBzZWN0aW9ucyAt
+DQo+PiBsZWF2ZSgpIGRvZXMgbm90IGtub3cgd2hldGhlciB0aGUgbWF0Y2hpbmcgZW50ZXIo
+KSBjYWxsIG9jY3VycmVkDQo+PiB3aGlsZSBsYXp5X21tdSB3YXMgYWxyZWFkeSBlbmFibGVk
+LCBhbmQgd2hldGhlciB0byBkaXNhYmxlIGl0IG9yDQo+PiBub3QuDQo+Pg0KPj4gVGhpcyBw
+YXRjaCBnaXZlcyBhbGwgYXJjaGl0ZWN0dXJlcyB0aGUgY2hhbmNlIHRvIHN0b3JlIGxvY2Fs
+IHN0YXRlDQo+PiB3aGlsZSBpbnNpZGUgYSBsYXp5X21tdSBzZWN0aW9uIGJ5IG1ha2luZyBl
+bnRlcigpIHJldHVybiBzb21lIHZhbHVlLA0KPj4gc3RvcmluZyBpdCBpbiBhIGxvY2FsIHZh
+cmlhYmxlLCBhbmQgaGF2aW5nIGxlYXZlKCkgdGFrZSB0aGF0IHZhbHVlLg0KPj4gVGhhdCB2
+YWx1ZSBpcyB0eXBlZCBsYXp5X21tdV9zdGF0ZV90IC0gZWFjaCBhcmNoaXRlY3R1cmUgZGVm
+aW5pbmcNCj4+IF9fSEFWRV9BUkNIX0VOVEVSX0xBWllfTU1VX01PREUgaXMgZnJlZSB0byBk
+ZWZpbmUgaXQgYXMgaXQgc2VlcyBmaXQuDQo+PiBGb3Igbm93IHdlIGRlZmluZSBpdCBhcyBp
+bnQgZXZlcnl3aGVyZSwgd2hpY2ggaXMgc3VmZmljaWVudCB0bw0KPj4gc3VwcG9ydCBuZXN0
+aW5nLg0KPj4NCj4+IFRoZSBkaWZmIGlzIHVuZm9ydHVuYXRlbHkgcmF0aGVyIGxhcmdlIGFz
+IGFsbCB0aGUgQVBJIGNoYW5nZXMgbmVlZA0KPj4gdG8gYmUgZG9uZSBhdG9taWNhbGx5LiBN
+YWluIHBhcnRzOg0KPj4NCj4+ICogQ2hhbmdpbmcgdGhlIHByb3RvdHlwZXMgb2YgYXJjaF97
+ZW50ZXIsbGVhdmV9X2xhenlfbW11X21vZGUoKQ0KPj4gwqDCoCBpbiBnZW5lcmljIGFuZCBh
+cmNoIGNvZGUsIGFuZCBpbnRyb2R1Y2luZyBsYXp5X21tdV9zdGF0ZV90Lg0KPj4NCj4+ICog
+SW50cm9kdWNpbmcgTEFaWV9NTVVfe0RFRkFVTFQsTkVTVEVEfSBmb3IgZnV0dXJlIHN1cHBv
+cnQgb2YNCj4+IMKgwqAgbmVzdGluZy4gZW50ZXIoKSBhbHdheXMgcmV0dXJucyBMQVpZX01N
+VV9ERUZBVUxUIGZvciBub3cuDQo+PiDCoMKgIChsaW51eC9tbV90eXBlcy5oIGlzIG5vdCB0
+aGUgbW9zdCBuYXR1cmFsIGxvY2F0aW9uIGZvciBkZWZpbmluZw0KPj4gwqDCoCB0aG9zZSBj
+b25zdGFudHMsIGJ1dCB0aGVyZSBpcyBubyBvdGhlciBvYnZpb3VzIGhlYWRlciB0aGF0IGlz
+DQo+PiDCoMKgIGFjY2Vzc2libGUgd2hlcmUgYXJjaCdzIGltcGxlbWVudCB0aGUgaGVscGVy
+cy4pDQo+Pg0KPj4gKiBDaGFuZ2luZyBhbGwgbGF6eV9tbXUgc2VjdGlvbnMgdG8gaW50cm9k
+dWNlIGEgbGF6eV9tbXVfc3RhdGUNCj4+IMKgwqAgbG9jYWwgdmFyaWFibGUsIGhhdmluZyBl
+bnRlcigpIHNldCBpdCBhbmQgbGVhdmUoKSB0YWtlIGl0LiBNb3N0IG9mDQo+PiDCoMKgIHRo
+ZXNlIGNoYW5nZXMgd2VyZSBnZW5lcmF0ZWQgdXNpbmcgdGhlIGZvbGxvd2luZyBDb2NjaW5l
+bGxlIHNjcmlwdDoNCj4+DQo+PiBAQA0KPj4gQEANCj4+IHsNCj4+ICsgbGF6eV9tbXVfc3Rh
+dGVfdCBsYXp5X21tdV9zdGF0ZTsNCj4+IC4uLg0KPj4gLSBhcmNoX2VudGVyX2xhenlfbW11
+X21vZGUoKTsNCj4+ICsgbGF6eV9tbXVfc3RhdGUgPSBhcmNoX2VudGVyX2xhenlfbW11X21v
+ZGUoKTsNCj4+IC4uLg0KPj4gLSBhcmNoX2xlYXZlX2xhenlfbW11X21vZGUoKTsNCj4+ICsg
+YXJjaF9sZWF2ZV9sYXp5X21tdV9tb2RlKGxhenlfbW11X3N0YXRlKTsNCj4+IC4uLg0KPj4g
+fQ0KPj4NCj4+ICogSW4gYSBmZXcgY2FzZXMgKGUuZy4geGVuX2ZsdXNoX2xhenlfbW11KCkp
+LCBhIGZ1bmN0aW9uIGtub3dzIHRoYXQNCj4+IMKgwqAgbGF6eV9tbXUgaXMgYWxyZWFkeSBl
+bmFibGVkLCBhbmQgaXQgdGVtcG9yYXJpbHkgZGlzYWJsZXMgaXQgYnkNCj4+IMKgwqAgY2Fs
+bGluZyBsZWF2ZSgpIGFuZCB0aGVuIGVudGVyKCkgYWdhaW4uIEhlcmUgd2Ugd2FudCB0byBl
+bnN1cmUNCj4+IMKgwqAgdGhhdCBhbnkgb3BlcmF0aW9uIGJldHdlZW4gdGhlIGxlYXZlKCkg
+YW5kIGVudGVyKCkgY2FsbHMgaXMNCj4+IMKgwqAgY29tcGxldGVkIGltbWVkaWF0ZWx5OyBm
+b3IgdGhhdCByZWFzb24gd2UgcGFzcyBMQVpZX01NVV9ERUZBVUxUIHRvDQo+PiDCoMKgIGxl
+YXZlKCkgdG8gZnVsbHkgZGlzYWJsZSBsYXp5X21tdS4gZW50ZXIoKSB3aWxsIHRoZW4gcmUt
+ZW5hYmxlIGl0DQo+PiDCoMKgIC0gdGhpcyBhY2hpZXZlcyB0aGUgZXhwZWN0ZWQgYmVoYXZp
+b3VyLCB3aGV0aGVyIG5lc3Rpbmcgb2NjdXJyZWQNCj4+IMKgwqAgYmVmb3JlIHRoYXQgZnVu
+Y3Rpb24gd2FzIGNhbGxlZCBvciBub3QuDQo+Pg0KPj4gTm90ZTogaXQgaXMgZGlmZmljdWx0
+IHRvIHByb3ZpZGUgYSBkZWZhdWx0IGRlZmluaXRpb24gb2YNCj4+IGxhenlfbW11X3N0YXRl
+X3QgZm9yIGFyY2hpdGVjdHVyZXMgaW1wbGVtZW50aW5nIGxhenlfbW11LCBiZWNhdXNlDQo+
+PiB0aGF0IGRlZmluaXRpb24gd291bGQgbmVlZCB0byBiZSBhdmFpbGFibGUgaW4NCj4+IGFy
+Y2gveDg2L2luY2x1ZGUvYXNtL3BhcmF2aXJ0X3R5cGVzLmggYW5kIGFkZGluZyBhIG5ldyBn
+ZW5lcmljDQo+PiDCoCAjaW5jbHVkZSB0aGVyZSBpcyB2ZXJ5IHRyaWNreSBkdWUgdG8gdGhl
+IGV4aXN0aW5nIGhlYWRlciBzb3VwLg0KPiANCj4gWWVhaCwgSSB3YXMgd29uZGVyaW5nIGFi
+b3V0IGV4YWN0bHkgdGhhdC4NCj4gDQo+IEluIHBhcnRpY3VsYXIgYmVjYXVzZSBMQVpZX01N
+VV9ERUZBVUxUIGV0YyByZXNpZGVzIHNvbWV3ZWhlcmUgY29tcGVsdGVseSBkaWZmZXJlbnQu
+DQo+IA0KPiBXaGljaCByYWlzZXMgdGhlIHF1ZXN0aW9uOiBpcyB1c2luZyBhIG5ldyB0eXBl
+IHJlYWxseSBvZiBhbnkgYmVuZWZpdCBoZXJlPw0KPiANCj4gQ2FuJ3Qgd2UganVzdCB1c2Ug
+YW4gImVudW0gbGF6eV9tbXVfc3RhdGUiIGFuZCBjYWxsIGl0IGEgZGF5Pw0KPiANCg0KVGhl
+IGNvbW1lbnQgYWJvdXQgdGhlICJoZWFkZXIgc291cCIgbWFkZSBtZSBsb29rIGludG8gdGhp
+cyBwcm9ibGVtOg0KDQpJdCBzZWVtcyBzb21lIG9mIHRoZSAiI2luY2x1ZGUgPGFzbS9wYXJh
+dmlydC5oPiIgaW5zdGFuY2VzIGluIHRoZSBjb2RlDQpiYXNlIGNhbiBqdXN0IGJlIGRyb3Bw
+ZWQuDQoNCkZvciB0aGUgcmVtYWluaW5nIGNhc2VzIEknZCBsaWtlIHRvIHN1Z2dlc3QgYSBy
+ZW9yZyBvZiB0aGUgcmVsYXRlZCBoZWFkZXJzOg0KSW5zdGVhZCBvZiBoYXZpbmcgdGhlIG5v
+bi1wYXJhdmlydCBkZWZpbml0aW9uIGluIG9uZSBoZWFkZXIgYW5kIHRoZSBwYXJhdmlydA0K
+b25lcyBpbiBwYXJhdmlydC5oLCBtYXliZSBpdCB3b3VsZCBiZSBiZXR0ZXIgdG8gaGF2ZSBv
+bmx5IHRoZSBwYXJhdmlydA0KZ2VuZXJpYyBkZWZpbml0aW9ucyBpbiBwYXJhdmlydC5oIGFu
+ZCB0aGUgc3BlY2lmaWMgZnVuY3Rpb25zIGluIHRoZSBoZWFkZXINCmRlZmluaW5nIHRoZSBu
+b24tcGFyYXZpcnQgdmFyaWFudC4gVGhpcyB3b3VsZCBwcm9iYWJseSByZXNvbHZlIHRoZSBw
+cm9ibGVtDQp3aXRoIHRoZSAic291cCIsIGFzIHBhcmF2aXJ0Lmggd291bGRuJ3QgcmVseSBv
+biBzbyBtYW55IG90aGVyIGhlYWRlcnMuDQoNCkknbSBqdXN0IHByZXBhcmluZyBhIHBhdGNo
+IGRvaW5nIHRoZSByZW1vdmFsIG9mIHRoZSBub3QgbmVlZGVkIGluY2x1ZGVzLCBidXQNCkkn
+ZCBiZSB3aWxsaW5nIHRvIGFkZHJlc3MgdGhlIGRpc2VudGFuZ2xpbmcgYXMgbm90ZWQgYWJv
+dmUuDQoNClRob3VnaHRzPw0KDQoNCkp1ZXJnZW4NCg==
+--------------d9o8Vv6o396RywxeHiihFy53
+Content-Type: application/pgp-keys; name="OpenPGP_0xB0DE9DD628BF132F.asc"
+Content-Disposition: attachment; filename="OpenPGP_0xB0DE9DD628BF132F.asc"
+Content-Description: OpenPGP public key
+Content-Transfer-Encoding: quoted-printable
 
-Thanks!
+-----BEGIN PGP PUBLIC KEY BLOCK-----
+
+xsBNBFOMcBYBCACgGjqjoGvbEouQZw/ToiBg9W98AlM2QHV+iNHsEs7kxWhKMjri
+oyspZKOBycWxw3ie3j9uvg9EOB3aN4xiTv4qbnGiTr3oJhkB1gsb6ToJQZ8uxGq2
+kaV2KL9650I1SJvedYm8Of8Zd621lSmoKOwlNClALZNew72NjJLEzTalU1OdT7/i
+1TXkH09XSSI8mEQ/ouNcMvIJNwQpd369y9bfIhWUiVXEK7MlRgUG6MvIj6Y3Am/B
+BLUVbDa4+gmzDC9ezlZkTZG2t14zWPvxXP3FAp2pkW0xqG7/377qptDmrk42GlSK
+N4z76ELnLxussxc7I2hx18NUcbP8+uty4bMxABEBAAHNHEp1ZXJnZW4gR3Jvc3Mg
+PGpnQHBmdXBmLm5ldD7CwHkEEwECACMFAlOMcBYCGwMHCwkIBwMCAQYVCAIJCgsE
+FgIDAQIeAQIXgAAKCRCw3p3WKL8TL0KdB/93FcIZ3GCNwFU0u3EjNbNjmXBKDY4F
+UGNQH2lvWAUy+dnyThpwdtF/jQ6j9RwE8VP0+NXcYpGJDWlNb9/JmYqLiX2Q3Tye
+vpB0CA3dbBQp0OW0fgCetToGIQrg0MbD1C/sEOv8Mr4NAfbauXjZlvTj30H2jO0u
++6WGM6nHwbh2l5O8ZiHkH32iaSTfN7Eu5RnNVUJbvoPHZ8SlM4KWm8rG+lIkGurq
+qu5gu8q8ZMKdsdGC4bBxdQKDKHEFExLJK/nRPFmAuGlId1E3fe10v5QL+qHI3EIP
+tyfE7i9Hz6rVwi7lWKgh7pe0ZvatAudZ+JNIlBKptb64FaiIOAWDCx1SzR9KdWVy
+Z2VuIEdyb3NzIDxqZ3Jvc3NAc3VzZS5jb20+wsB5BBMBAgAjBQJTjHCvAhsDBwsJ
+CAcDAgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/Ey/HmQf/RtI7kv5A2PS4
+RF7HoZhPVPogNVbC4YA6lW7DrWf0teC0RR3MzXfy6pJ+7KLgkqMlrAbN/8Dvjoz7
+8X+5vhH/rDLa9BuZQlhFmvcGtCF8eR0T1v0nC/nuAFVGy+67q2DH8As3KPu0344T
+BDpAvr2uYM4tSqxK4DURx5INz4ZZ0WNFHcqsfvlGJALDeE0LhITTd9jLzdDad1pQ
+SToCnLl6SBJZjDOX9QQcyUigZFtCXFst4dlsvddrxyqT1f17+2cFSdu7+ynLmXBK
+7abQ3rwJY8SbRO2iRulogc5vr/RLMMlscDAiDkaFQWLoqHHOdfO9rURssHNN8WkM
+nQfvUewRz80hSnVlcmdlbiBHcm9zcyA8amdyb3NzQG5vdmVsbC5jb20+wsB5BBMB
+AgAjBQJTjHDXAhsDBwsJCAcDAgEGFQgCCQoLBBYCAwECHgECF4AACgkQsN6d1ii/
+Ey8PUQf/ehmgCI9jB9hlgexLvgOtf7PJnFOXgMLdBQgBlVPO3/D9R8LtF9DBAFPN
+hlrsfIG/SqICoRCqUcJ96Pn3P7UUinFG/I0ECGF4EvTE1jnDkfJZr6jrbjgyoZHi
+w/4BNwSTL9rWASyLgqlA8u1mf+c2yUwcGhgkRAd1gOwungxcwzwqgljf0N51N5Jf
+VRHRtyfwq/ge+YEkDGcTU6Y0sPOuj4Dyfm8fJzdfHNQsWq3PnczLVELStJNdapwP
+OoE+lotufe3AM2vAEYJ9rTz3Cki4JFUsgLkHFqGZarrPGi1eyQcXeluldO3m91NK
+/1xMI3/+8jbO0tsn1tqSEUGIJi7ox80eSnVlcmdlbiBHcm9zcyA8amdyb3NzQHN1
+c2UuZGU+wsB5BBMBAgAjBQJTjHDrAhsDBwsJCAcDAgEGFQgCCQoLBBYCAwECHgEC
+F4AACgkQsN6d1ii/Ey+LhQf9GL45eU5vOowA2u5N3g3OZUEBmDHVVbqMtzwlmNC4
+k9Kx39r5s2vcFl4tXqW7g9/ViXYuiDXb0RfUpZiIUW89siKrkzmQ5dM7wRqzgJpJ
+wK8Bn2MIxAKArekWpiCKvBOB/Cc+3EXE78XdlxLyOi/NrmSGRIov0karw2RzMNOu
+5D+jLRZQd1Sv27AR+IP3I8U4aqnhLpwhK7MEy9oCILlgZ1QZe49kpcumcZKORmzB
+TNh30FVKK1EvmV2xAKDoaEOgQB4iFQLhJCdP1I5aSgM5IVFdn7v5YgEYuJYx37Io
+N1EblHI//x/e2AaIHpzK5h88NEawQsaNRpNSrcfbFmAg987ATQRTjHAWAQgAyzH6
+AOODMBjgfWE9VeCgsrwH3exNAU32gLq2xvjpWnHIs98ndPUDpnoxWQugJ6MpMncr
+0xSwFmHEgnSEjK/PAjppgmyc57BwKII3sV4on+gDVFJR6Y8ZRwgnBC5mVM6JjQ5x
+Dk8WRXljExRfUX9pNhdE5eBOZJrDRoLUmmjDtKzWaDhIg/+1Hzz93X4fCQkNVbVF
+LELU9bMaLPBG/x5q4iYZ2k2ex6d47YE1ZFdMm6YBYMOljGkZKwYde5ldM9mo45mm
+we0icXKLkpEdIXKTZeKDO+Hdv1aqFuAcccTg9RXDQjmwhC3yEmrmcfl0+rPghO0I
+v3OOImwTEe4co3c1mwARAQABwsBfBBgBAgAJBQJTjHAWAhsMAAoJELDendYovxMv
+Q/gH/1ha96vm4P/L+bQpJwrZ/dneZcmEwTbe8YFsw2V/Buv6Z4Mysln3nQK5ZadD
+534CF7TDVft7fC4tU4PONxF5D+/tvgkPfDAfF77zy2AH1vJzQ1fOU8lYFpZXTXIH
+b+559UqvIB8AdgR3SAJGHHt4RKA0F7f5ipYBBrC6cyXJyyoprT10EMvU8VGiwXvT
+yJz3fjoYsdFzpWPlJEBRMedCot60g5dmbdrZ5DWClAr0yau47zpWj3enf1tLWaqc
+suylWsviuGjKGw7KHQd3bxALOknAp4dN3QwBYCKuZ7AddY9yjynVaD5X7nF9nO5B
+jR/i1DG86lem3iBDXzXsZDn8R3/CwO0EGAEIACAWIQSFEmdy6PYElKXQl/ew3p3W
+KL8TLwUCWt3w0AIbAgCBCRCw3p3WKL8TL3YgBBkWCAAdFiEEUy2wekH2OPMeOLge
+gFxhu0/YY74FAlrd8NAACgkQgFxhu0/YY75NiwD/fQf/RXpyv9ZX4n8UJrKDq422
+bcwkujisT6jix2mOOwYBAKiip9+mAD6W5NPXdhk1XraECcIspcf2ff5kCAlG0DIN
+aTUH/RIwNWzXDG58yQoLdD/UPcFgi8GWtNUp0Fhc/GeBxGipXYnvuWxwS+Qs1Qay
+7/Nbal/v4/eZZaWs8wl2VtrHTS96/IF6q2o0qMey0dq2AxnZbQIULiEndgR625EF
+RFg+IbO4ldSkB3trsF2ypYLij4ZObm2casLIP7iB8NKmQ5PndL8Y07TtiQ+Sb/wn
+g4GgV+BJoKdDWLPCAlCMilwbZ88Ijb+HF/aipc9hsqvW/hnXC2GajJSAY3Qs9Mib
+4Hm91jzbAjmp7243pQ4bJMfYHemFFBRaoLC7ayqQjcsttN2ufINlqLFPZPR/i3IX
+kt+z4drzFUyEjLM1vVvIMjkUoJs=3D
+=3DeeAB
+-----END PGP PUBLIC KEY BLOCK-----
+
+--------------d9o8Vv6o396RywxeHiihFy53--
+
+--------------XzcF73Vy0QpbV8oE9lMvMlg0--
+
+--------------GRqgesMXsTlpWDpme2z20vFJ
+Content-Type: application/pgp-signature; name="OpenPGP_signature.asc"
+Content-Description: OpenPGP digital signature
+Content-Disposition: attachment; filename="OpenPGP_signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+wsB5BAABCAAjFiEEhRJncuj2BJSl0Jf3sN6d1ii/Ey8FAmjACCYFAwAAAAAACgkQsN6d1ii/Ey+Y
+rAf/a4oKv1HBGDLbyN8w9JJ1cvmDi8HCAVfE8JpHcscFZ6WfY0W3x7b2BXcNBGAweVtspi+Khbh7
+p2jCnvCaEWA68NFXxp/i+Jgk8dzbtvEga/H/v3E/MysbxG2y5GzDrh03L6TJpzLinkMabDXj2YLh
+0dh415a3I+mSGd8oIAETpH0UsCL8f5SSY7jl9NwNPSelfslAY0AjNVQz/DnrmyIr8QfGeyAOuyWN
+u1ECkDwVJb/Egirn8Yur5N8Mhsre0q02WSdIQdohQ3RJIcUNCQ3DNTR2vqNXjEf1wEQmU5nMxbnA
+dy5/GJfBm79JHqzXY+qTn4mz44Xy8GnnpNtRKt6lZQ==
+=I/jH
+-----END PGP SIGNATURE-----
+
+--------------GRqgesMXsTlpWDpme2z20vFJ--
 
