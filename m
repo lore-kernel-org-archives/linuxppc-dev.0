@@ -1,89 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-11915-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11916-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5466BCAC589
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Sep 2025 08:45:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC3F6CAC589
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Sep 2025 08:47:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cLcnW5kkGz3clR;
-	Tue,  9 Sep 2025 18:44:31 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cLcrP3zF3z30V1;
+	Tue,  9 Sep 2025 18:47:01 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757407471;
-	cv=none; b=TVLCEhdKdSwrc9PYqK3nP23PD2xqYQ0ykW0QxaAlyChhLU5RGtWPKLk8G9Jqvnmmdg7+Zhoz9HWfZk2H57s2MXluaclPWHiCUK/aw5TlvFF/dnqym+mLGyPtJVckVGJtUJJfdmXmQsJH6+tpj2AIjvFXrjCp/L5GqiK8Ls+HKjNKmLclAQ1jzTJCkUgp+pJHHI6tr6EIlq4/o+U9jw1+gFSYnWTV/pclkC7t7DRrYl6msH5fLX/GxCEhpB6zj1olAU2g7zMlP8T/qSgfn7lj1mFzNGCmsBNFACGUcBStNtx6IOlN7AGe4aW+w9aSlZ8xMEeqYUsM/pgp6ARi3Zu/uA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757407621;
+	cv=none; b=BjE8ZID3+mh8Dan/Rjm/Cdz/zs9eNy4yCR3HhuVaMLKAqbNsK7a4jngfUsjsMHzn8BdKngpbInPAHcGiST7mFv4mpVYRYkprGYBVyXTrIvAEIlE0i9bS6lzl5z3u2u1xcMbZnuwP6ErQfaA8JJgR87HpGedb9x0WJH6rntR4MNqevnZatGmneK+jFjIFN8THFVZRLWxfGaqXp3yTdygJ8Tu8T+LmRroaVaS7fNPRiiatyNozRBFih2/c+nSuJqLJpuKc7MPCiv2NdtSUKShYHtUvFwWbY5sASkRx0XGu2FVZR6PsP/b7pCuEsAXH5iSVBSEUsmRjJwfftTdigZ6xkw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757407471; c=relaxed/relaxed;
-	bh=KHijWXmzKn9DdPDI8M/sRukIYJtnXVktKhDJLoT4vdI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=iAHbeXBjPapKh5PBTymzm/10q3SZOGcssr2EFvcIeNrJG7kStje7QeTx1JrDIyuCbfuxbYfQTRdxSF9uZgAEvhXY3n/AR17izwdV+fsY3vkvZosf1F1DhlCU/9D6r4Xl65wn9LlVRSKF/Gu/APYL/aGL4PX36plkGvI3kd/DJ2n5eVkbat7JJD3RR6TLV8YTepG+WCzsGI/tyISSTlBSoVvYLxpn6bS2hwnPh1YP5P5Lz3HmvZtPpmm2xMkKVoQN49+eoJscTMnC9XZAF9wqEzHWt2fRQcjTZzA2ec2zbQmBGNGdAp6YHcnaPkMMRhBS3BNBjrp1OoKRLpdJSoxCFg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eMMByvKA; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1757407621; c=relaxed/relaxed;
+	bh=qlEAMkCRMmlN5bIEaUH8aHyGNYn6dZofdlf44oFUN1c=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=F0IMj08YsSVBItYo5CDzUXuo40ZjAZoWBO2qbjumgeATagRYeH9hd5G6fX+wKxkh+p3+LoLEDL6AbV0vMTIW0HLgcZXc7U5UjstQUDIWsCCktfJi/K9z9X3E8Oi1p1g6e2ikVQC+bjJI2KzOdW4p4pGJMg0alUG7HNSxoBijOAf42BOzKRcLSN2BMohYbygR4uClPN+qeqno7PuVmG7GUanCarruWGy3Cso9U4fRhGlYuj+5dwyoTy7NFTweNWDqG41XUALGpgpDcJ/Nk3heb+PlPC5Dw9p+3E59VterU9UYHaB5QoiwAlsU4yRan3CvQz7WS2PZQQyFW8ZKtGGmyQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nd5tYO/y; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mchauras@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eMMByvKA;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nd5tYO/y;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=haren@linux.ibm.com; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mchauras@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cLcnW14Jsz3ckl
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2025 18:44:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cLcrN5ZK7z30Ff
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2025 18:47:00 +1000 (AEST)
 Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 588KUepP019498;
-	Tue, 9 Sep 2025 08:44:23 GMT
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5893M0RV022815;
+	Tue, 9 Sep 2025 08:46:39 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=KHijWX
-	mzKn9DdPDI8M/sRukIYJtnXVktKhDJLoT4vdI=; b=eMMByvKA4bM+U50BCSQpyw
-	7LbSDnauCLNcuatlpRdP4ycrKXlVMHh9BlUWwWpIU8i9XRFqHwuWwlrx5wep8Ymg
-	fU6Mxuv1O261Aof4V98pAHSaC4f17YlD7ifryjdxaZb4y+vib9fc1YdLqdhRa9ZZ
-	v4TQOLBE8hGH1GGyvzGNfLIZ+I6QPxGRkk7RcyACSpLfpX+t0aYOr8rWCl33DL69
-	9C4+QQZNqcqOxO2PXmzw9iyBZsyxjMMSS/HmfAnihxP+M/oxDMZHb2B1mhditnCS
-	wFD9UmEqRYq7BI33wqB+iF6QJ9c19ZaoqIBC8Js+TlMuWbpboS0mSBQObXecunbw
+	:message-id:mime-version:references:subject:to; s=pp1; bh=qlEAMk
+	CRMmlN5bIEaUH8aHyGNYn6dZofdlf44oFUN1c=; b=nd5tYO/yG5FxSencqDtpLY
+	SesSFVvibos4l0SKbWpUnkiQuxBEW6e0kWaNYezuswtNoLJyGAvjgs5g+aHfNnEG
+	N0MRohwLdnlbaBTMbtj0NNyO6we0gTYywinwva/Ou5VPcSJ3LxbFNYn2JN3cDvmz
+	XLrsEW0/znbcLxLn0IWM//OEbwVxWDcvxqS3tkM5K1zBRJ1FX3bSFKibnu/c2M2F
+	WK9jiWgKY0wKN900tvh0WoeaYE1tvP6J6ETp6qhTUyjVpmImbCjSWCGso5VT2VPc
+	PAEr8hQya7/BXQKsWW8XfgmPCj2z8XZBzULjVCpbf/mmgS7Ygfart01kuhmb/aDg
 	==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490bcspbqy-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490bcspc1t-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Sep 2025 08:44:22 +0000 (GMT)
+	Tue, 09 Sep 2025 08:46:38 +0000 (GMT)
 Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5898hTFp020019;
-	Tue, 9 Sep 2025 08:44:22 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490bcspbqw-1
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5898hTFx020019;
+	Tue, 9 Sep 2025 08:46:38 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490bcspc1p-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Sep 2025 08:44:22 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5897tLip001163;
-	Tue, 9 Sep 2025 08:44:21 GMT
-Received: from smtprelay01.wdc07v.mail.ibm.com ([172.16.1.68])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4912039wwe-1
+	Tue, 09 Sep 2025 08:46:38 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5895h3jt020700;
+	Tue, 9 Sep 2025 08:46:37 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 490yp0tc2k-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Sep 2025 08:44:21 +0000
-Received: from smtpav01.dal12v.mail.ibm.com (smtpav01.dal12v.mail.ibm.com [10.241.53.100])
-	by smtprelay01.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5898iId028574104
+	Tue, 09 Sep 2025 08:46:37 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5898kWZx17039650
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 9 Sep 2025 08:44:18 GMT
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 0301758059;
-	Tue,  9 Sep 2025 08:44:18 +0000 (GMT)
-Received: from smtpav01.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 327F358057;
-	Tue,  9 Sep 2025 08:44:17 +0000 (GMT)
-Received: from li-4c4c4544-0038-3410-8038-c4c04f423534.ibm.com (unknown [9.61.139.105])
-	by smtpav01.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  9 Sep 2025 08:44:17 +0000 (GMT)
-From: Haren Myneni <haren@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        msuchanek@suse.de, mahesh@linux.ibm.com, tyreld@linux.ibm.com,
-        hbabu@us.ibm.com, haren@linux.ibm.com, shashank.gowda@in.ibm.com,
-        bjking1@linux.ibm.com
-Subject: [PATCH v7 8/9] powerpc/pseries: Enable hvpipe with ibm,set-system-parameter RTAS
-Date: Tue,  9 Sep 2025 01:44:00 -0700
-Message-ID: <20250909084402.1488456-9-haren@linux.ibm.com>
-X-Mailer: git-send-email 2.50.1
-In-Reply-To: <20250909084402.1488456-1-haren@linux.ibm.com>
-References: <20250909084402.1488456-1-haren@linux.ibm.com>
+	Tue, 9 Sep 2025 08:46:32 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 992962004D;
+	Tue,  9 Sep 2025 08:46:32 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E04FD20040;
+	Tue,  9 Sep 2025 08:46:23 +0000 (GMT)
+Received: from [9.109.207.139] (unknown [9.109.207.139])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  9 Sep 2025 08:46:23 +0000 (GMT)
+Message-ID: <4adc3f46-15df-4a0a-af81-eecf81127c44@linux.ibm.com>
+Date: Tue, 9 Sep 2025 14:16:01 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,22 +87,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC V2 8/8] powerpc: Enable Generic Entry/Exit for syscalls.
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu, oleg@redhat.com, kees@kernel.org,
+        luto@amacapital.net, wad@chromium.org, deller@gmx.de, ldv@strace.io,
+        macro@orcam.me.uk, charlie@rivosinc.com, akpm@linux-foundation.org,
+        bigeasy@linutronix.de, ankur.a.arora@oracle.com, naveen@kernel.org,
+        thomas.weissschuh@linutronix.de, Jason@zx2c4.com, peterz@infradead.org,
+        tglx@linutronix.de, namcao@linutronix.de, kan.liang@linux.intel.com,
+        mingo@kernel.org, oliver.upton@linux.dev, mark.barnett@arm.com,
+        atrajeev@linux.vnet.ibm.com, rppt@kernel.org, coltonlewis@google.com,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20250908210235.137300-2-mchauras@linux.ibm.com>
+ <20250908210235.137300-11-mchauras@linux.ibm.com>
+ <5ffe0761-67c0-42ce-be3f-13915aa67080@linux.ibm.com>
+Content-Language: en-US
+From: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+In-Reply-To: <5ffe0761-67c0-42ce-be3f-13915aa67080@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA2MDAxMCBTYWx0ZWRfX/4U89wXHpCZN
- JG5rDDqB4l7DpGFvxAbSKyGmYP0PZ15zEhMhpVmytLzPOMyvq1zCxvj+AKaxg+eD1MeaYcUsw+o
- 8di0u6g87ZW5SV5PqNavu7dWY9ozlC+TutUScclgBjduEd0SUmLBvtZkc3XtAfEt6vFxkjV4PUN
- pRmbI7KGaYt5e8TgT5nwNrLt4qHjOIS82lYRq0flNH/eukvVnlqddybO6GAh50Y4dWKB64qnXoO
- CAY3ZNcQNAF1Ag+INh9m883RCpUsPkA7yvvctDTheofgmK7ygN0CrUDedlD56jZIG8SamyWZYKt
- hlskgbbu00GzQw8VwROCESr7XVQFzfYvf22rp6Ge8orAuOkErlN061MbQFQFerVPIavaR24cnAA
- WfnsIlEw
-X-Authority-Analysis: v=2.4 cv=SKNCVPvH c=1 sm=1 tr=0 ts=68bfe8e7 cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VnNF1IyMAAAA:8 a=L9SJR8mG7j7vUmVWBfwA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: bgbs70wSewyYxOt85RXuJBBc36LjF-dO
-X-Proofpoint-ORIG-GUID: Kse656x181HZfa2gcuqtyeUSRPQ9vABY
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA2MDAxMCBTYWx0ZWRfX/BdCXo/BRzgc
+ Tp6r3jO3z/Wl9Dr9uSSEYf6ZbLnodweBzN4n0cKr3jfiISST/1/MfecPw7zrcd+BMBNmoYWFrUR
+ ps5EiWiL9FcE1J9EEAtFEfQMe1I8c31mqhU9UqJFtVVKtXNZxKCTuN2IsN/KP+eomapfE6Y1Nka
+ xH4YFi7HoUHPSBQt/yuEeNR8K7frueJRCr2BYJvmTcVppEP64bif4OXUBBLsF0QvzXP2Faa97sR
+ oM1JDRTerxmXBXM66l/1C6XIehEwTwxgVhajvH240CSwFzwSoquPRxtdEhPHckfH2vkvyfUHsKe
+ xgI02+Iwvyku5mrgQFh89TuJ2QWvKdjrArc9h5VeSs6D5tdxIY2hsw6bfNe5eX22mAj4lyzdeUR
+ VIfCUwUs
+X-Authority-Analysis: v=2.4 cv=SKNCVPvH c=1 sm=1 tr=0 ts=68bfe96e cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=FuRnj6zlySlOp9212E8A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: 9lp2iKdIHfY5574hIX0sj19ASl8QMMw7
+X-Proofpoint-ORIG-GUID: JBKS3Y9ITvdVsPxH3T5ZUxsJaCOeOTRT
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
  definitions=2025-09-08_06,2025-09-08_02,2025-03-28_01
@@ -122,97 +131,93 @@ X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
  reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509060010
 
-The partition uses “Hypervisor Pipe OS Enablement Notification”
-system parameter token (value = 64) to enable / disable hvpipe in
-the hypervisor. Once hvpipe is enabled, the hypervisor notifies
-OS if the payload is pending for that partition from any source.
-This system parameter token takes 1 byte length of data with
-1 = Enable and 0 = Disable.
 
-Enable hvpipe in the hypervisor with ibm,set-system-parameter
-RTAS after registering hvpipe event source interrupt.
 
-Signed-off-by: Haren Myneni <haren@linux.ibm.com>
-Reviewed-by: Mahesh Salgaonkar <mahesh@linux.ibm.com>
-Reviewed-by: Tyrel Datwyler <tyreld@linux.ibm.com>
-Tested-by: Shashank MS <shashank.gowda@in.ibm.com>
----
- arch/powerpc/include/asm/papr-sysparm.h      |  1 +
- arch/powerpc/platforms/pseries/papr-hvpipe.c | 34 ++++++++++++++++++--
- 2 files changed, 33 insertions(+), 2 deletions(-)
+On 9/9/25 12:24, Shrikanth Hegde wrote:
+>
+>
+> On 9/9/25 2:32 AM, Mukesh Kumar Chaurasiya wrote:
+>> Enable the syscall entry and exit path from generic framework.
+>>
+>> Signed-off-by: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+>> ---
+>
+> Hi Mukesh.
+> Thanks for working on this and getting it to better shape.
+>
+>>   arch/powerpc/Kconfig |   1 +
+>>   arch/powerpc/include/asm/entry-common.h |   2 +-
+>>   arch/powerpc/kernel/interrupt.c         | 135 +++++++----------------
+>>   arch/powerpc/kernel/ptrace/ptrace.c     | 141 ------------------------
+>>   arch/powerpc/kernel/signal.c            |  10 +-
+>>   arch/powerpc/kernel/syscall.c           | 119 +-------------------
+>>   6 files changed, 49 insertions(+), 359 deletions(-)
+>>
+>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>> index e0c51d7b5638d..e67294a72e4d4 100644
+>> --- a/arch/powerpc/Kconfig
+>> +++ b/arch/powerpc/Kconfig
+>> @@ -199,6 +199,7 @@ config PPC
+>>       select GENERIC_CPU_AUTOPROBE
+>>       select GENERIC_CPU_VULNERABILITIES    if PPC_BARRIER_NOSPEC
+>>       select GENERIC_EARLY_IOREMAP
+>> +    select GENERIC_ENTRY
+>>       select GENERIC_GETTIMEOFDAY
+>>       select GENERIC_IDLE_POLL_SETUP
+>>       select GENERIC_IOREMAP
+>> diff --git a/arch/powerpc/include/asm/entry-common.h 
+>> b/arch/powerpc/include/asm/entry-common.h
+>> index d3f4a12aeafca..8fb74e6aa9560 100644
+>> --- a/arch/powerpc/include/asm/entry-common.h
+>> +++ b/arch/powerpc/include/asm/entry-common.h
+>> @@ -3,7 +3,7 
+>
+> There could be some of the configs we need to take care while enabling 
+> generic entry. Since powerpc
+> didn't have it earlier, there could areas which needs cleanup. One for 
+> example dynamic preemption.
+> There could be more. Do some git history checks and see.
+>
+> Issue with dynamic preemption:
+>
+> ld: 
+> kernel/entry/common.o:/home/shrikanth/sched_tip/kernel/entry/common.c:161: 
+> multiple definition of `sk_dynamic_irqentry_exit_cond_resched';
+> arch/powerpc/kernel/interrupt.o:/home/shrikanth/sched_tip/arch/powerpc/kernel/interrupt.c:29: 
+> first defined here
+>
+> Below diff helps to fix and changing preemption modes help. Also 
+> verified preempt lazy works too.
+>
+> ---
+> diff --git a/arch/powerpc/kernel/interrupt.c 
+> b/arch/powerpc/kernel/interrupt.c
+> index 642e22527f9d..e1e0f0da4165 100644
+> --- a/arch/powerpc/kernel/interrupt.c
+> +++ b/arch/powerpc/kernel/interrupt.c
+> @@ -25,10 +25,6 @@
+>  unsigned long global_dbcr0[NR_CPUS];
+>  #endif
+>
+> -#if defined(CONFIG_PREEMPT_DYNAMIC)
+> -DEFINE_STATIC_KEY_TRUE(sk_dynamic_irqentry_exit_cond_resched);
+> -#endif
+> -
+>  #ifdef CONFIG_PPC_BOOK3S_64
+>  DEFINE_STATIC_KEY_FALSE(interrupt_exit_not_reentrant);
+>  static inline bool exit_must_hard_disable(void)
+>
+>
+Hey Srikanth,
 
-diff --git a/arch/powerpc/include/asm/papr-sysparm.h b/arch/powerpc/include/asm/papr-sysparm.h
-index c3cd5b131033..a3b5a0d05db6 100644
---- a/arch/powerpc/include/asm/papr-sysparm.h
-+++ b/arch/powerpc/include/asm/papr-sysparm.h
-@@ -21,6 +21,7 @@ typedef struct {
- #define PAPR_SYSPARM_COOP_MEM_OVERCOMMIT_ATTRS     mk_papr_sysparm(44)
- #define PAPR_SYSPARM_TLB_BLOCK_INVALIDATE_ATTRS    mk_papr_sysparm(50)
- #define PAPR_SYSPARM_LPAR_NAME                     mk_papr_sysparm(55)
-+#define PAPR_SYSPARM_HVPIPE_ENABLE                 mk_papr_sysparm(64)
- 
- /**
-  * struct papr_sysparm_buf - RTAS work area layout for system parameter functions.
-diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.c b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-index eb312594b1f0..65368dbb134b 100644
---- a/arch/powerpc/platforms/pseries/papr-hvpipe.c
-+++ b/arch/powerpc/platforms/pseries/papr-hvpipe.c
-@@ -15,6 +15,7 @@
- #include <asm/machdep.h>
- #include <asm/rtas.h>
- #include <asm/rtas-work-area.h>
-+#include <asm/papr-sysparm.h>
- #include <uapi/asm/papr-hvpipe.h>
- #include "pseries.h"
- #include "papr-hvpipe.h"
-@@ -648,6 +649,32 @@ static irqreturn_t hvpipe_event_interrupt(int irq, void *dev_id)
- 	return IRQ_HANDLED;
- }
- 
-+/*
-+ * Enable hvpipe by system parameter set with parameter
-+ * token = 64 and with 1 byte buffer data:
-+ * 0 = hvpipe not in use/disable
-+ * 1 = hvpipe in use/enable
-+ */
-+static int set_hvpipe_sys_param(u8 val)
-+{
-+	struct papr_sysparm_buf *buf;
-+	int ret;
-+
-+	buf = papr_sysparm_buf_alloc();
-+	if (!buf)
-+		return -ENOMEM;
-+
-+	buf->len = cpu_to_be16(1);
-+	buf->val[0] = val;
-+	ret = papr_sysparm_set(PAPR_SYSPARM_HVPIPE_ENABLE, buf);
-+	if (ret)
-+		pr_err("Can not enable hvpipe %d\n", ret);
-+
-+	papr_sysparm_buf_free(buf);
-+
-+	return ret;
-+}
-+
- static int __init enable_hvpipe_IRQ(void)
- {
- 	struct device_node *np;
-@@ -705,8 +732,11 @@ static int __init papr_hvpipe_init(void)
- 	}
- 
- 	ret = enable_hvpipe_IRQ();
--	if (!ret)
--		ret = misc_register(&papr_hvpipe_dev);
-+	if (!ret) {
-+		ret = set_hvpipe_sys_param(1);
-+		if (!ret)
-+			ret = misc_register(&papr_hvpipe_dev);
-+	}
- 
- 	if (!ret) {
- 		pr_info("hvpipe feature is enabled\n");
--- 
-2.50.1
+Thanks for this. I will add this in next revision.
+
+Mukesh
+> ----
+> Though ideal thing is move them to sched/core instead of being in 
+> generic code. Like below.
+> https://lore.kernel.org/all/20250716094745.2232041-1-sshegde@linux.ibm.com/ 
+>
+>
 
 
