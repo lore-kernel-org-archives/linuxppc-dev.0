@@ -1,79 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-11916-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11917-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CC3F6CAC589
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Sep 2025 08:47:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19C27CAC587
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Sep 2025 09:00:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cLcrP3zF3z30V1;
-	Tue,  9 Sep 2025 18:47:01 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757407621;
-	cv=none; b=BjE8ZID3+mh8Dan/Rjm/Cdz/zs9eNy4yCR3HhuVaMLKAqbNsK7a4jngfUsjsMHzn8BdKngpbInPAHcGiST7mFv4mpVYRYkprGYBVyXTrIvAEIlE0i9bS6lzl5z3u2u1xcMbZnuwP6ErQfaA8JJgR87HpGedb9x0WJH6rntR4MNqevnZatGmneK+jFjIFN8THFVZRLWxfGaqXp3yTdygJ8Tu8T+LmRroaVaS7fNPRiiatyNozRBFih2/c+nSuJqLJpuKc7MPCiv2NdtSUKShYHtUvFwWbY5sASkRx0XGu2FVZR6PsP/b7pCuEsAXH5iSVBSEUsmRjJwfftTdigZ6xkw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cLd834HLHz3bgh;
+	Tue,  9 Sep 2025 19:00:35 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757408435;
+	cv=none; b=Ho0NWF3ZM8YAxWnpFaxIn89tT+efsyOJZAF08CPLszKaQuhhOE1OUOz5ty5yoqsl3Fuu0R6dFJxeVidJTH1HciJ5QRT05Lq6n53HINSx34bjFWbg/mChEr8S+muW54OdbOodUIs0ro34ZAnNLjW39vHQ6MiLNBeNf6XeYRgYNtBM0kmJgCA5FawuR1DXEcHWXSwFbzrUcQ97LWhrXFwkqcBeVqoLRFGJpjoHZXFtY3LI3sMeypXEH9eETQTPmoFQWNzg5ZsLyfpgT+lXgwpwnDIFi3v9EG4xr/UyIeHKvuIEVqW9aPUcIiAP/2ycSpOXgOUo5vf+782Hg4cKjD825Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757407621; c=relaxed/relaxed;
-	bh=qlEAMkCRMmlN5bIEaUH8aHyGNYn6dZofdlf44oFUN1c=;
+	t=1757408435; c=relaxed/relaxed;
+	bh=FFaNWFCl2wdsjl/T84rwbCzslw/ZOsn9DcOtT4QWrC0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=F0IMj08YsSVBItYo5CDzUXuo40ZjAZoWBO2qbjumgeATagRYeH9hd5G6fX+wKxkh+p3+LoLEDL6AbV0vMTIW0HLgcZXc7U5UjstQUDIWsCCktfJi/K9z9X3E8Oi1p1g6e2ikVQC+bjJI2KzOdW4p4pGJMg0alUG7HNSxoBijOAf42BOzKRcLSN2BMohYbygR4uClPN+qeqno7PuVmG7GUanCarruWGy3Cso9U4fRhGlYuj+5dwyoTy7NFTweNWDqG41XUALGpgpDcJ/Nk3heb+PlPC5Dw9p+3E59VterU9UYHaB5QoiwAlsU4yRan3CvQz7WS2PZQQyFW8ZKtGGmyQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nd5tYO/y; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mchauras@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	 In-Reply-To:Content-Type; b=k8nBpiFPbqQwh8Oz8ex1+L8+GIwukrn/oFK/loSiEqP39xUbOWS0PeJgrxh5NoYK+lyVO8afSVeTKy9icRAtAPIZOy5WxNdS8PX5hvlRgzgAqiYDAEueFHc7I32rBwPkdw9G8I4QTJYaZOT0jFYEi6k4sgwasaoOhVkhVgyKTizD5fwWoCqp1rjWV78uzx7iB859CDHopN1W0gYJG+F13BKm3nJ1lPcYlPITrf3IBo9ZT0SlUO+GR2HfCW5zecGowOHHUB8iZySN+dbBAvPMbFDbxlk8eIe6JH5B+9Z2XmxZYmvKHzzQFAgIeACrt9Q+nMqVCft8OKcrRrbQzQ0Qgg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=O8XofVYI; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=O8XofVYI; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nd5tYO/y;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=O8XofVYI;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=O8XofVYI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mchauras@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cLcrN5ZK7z30Ff
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2025 18:47:00 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5893M0RV022815;
-	Tue, 9 Sep 2025 08:46:39 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=qlEAMk
-	CRMmlN5bIEaUH8aHyGNYn6dZofdlf44oFUN1c=; b=nd5tYO/yG5FxSencqDtpLY
-	SesSFVvibos4l0SKbWpUnkiQuxBEW6e0kWaNYezuswtNoLJyGAvjgs5g+aHfNnEG
-	N0MRohwLdnlbaBTMbtj0NNyO6we0gTYywinwva/Ou5VPcSJ3LxbFNYn2JN3cDvmz
-	XLrsEW0/znbcLxLn0IWM//OEbwVxWDcvxqS3tkM5K1zBRJ1FX3bSFKibnu/c2M2F
-	WK9jiWgKY0wKN900tvh0WoeaYE1tvP6J6ETp6qhTUyjVpmImbCjSWCGso5VT2VPc
-	PAEr8hQya7/BXQKsWW8XfgmPCj2z8XZBzULjVCpbf/mmgS7Ygfart01kuhmb/aDg
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490bcspc1t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Sep 2025 08:46:38 +0000 (GMT)
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5898hTFx020019;
-	Tue, 9 Sep 2025 08:46:38 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490bcspc1p-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Sep 2025 08:46:38 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5895h3jt020700;
-	Tue, 9 Sep 2025 08:46:37 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 490yp0tc2k-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 09 Sep 2025 08:46:37 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5898kWZx17039650
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 9 Sep 2025 08:46:32 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 992962004D;
-	Tue,  9 Sep 2025 08:46:32 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E04FD20040;
-	Tue,  9 Sep 2025 08:46:23 +0000 (GMT)
-Received: from [9.109.207.139] (unknown [9.109.207.139])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue,  9 Sep 2025 08:46:23 +0000 (GMT)
-Message-ID: <4adc3f46-15df-4a0a-af81-eecf81127c44@linux.ibm.com>
-Date: Tue, 9 Sep 2025 14:16:01 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cLd824H65z30WY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  9 Sep 2025 19:00:32 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1757408428;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=FFaNWFCl2wdsjl/T84rwbCzslw/ZOsn9DcOtT4QWrC0=;
+	b=O8XofVYIRJ7JdydV/AcXJE6OL/CzP5apt68h114P/51brpsJaH1b/Lk9wp9D3jOzjTm5bj
+	SyY3GBBRZRzFnFY7fcz8XB/q8rGkqbGxoqAOTaUA7SNVtSB4zIzNQ1/e+SGFAGkJkKXwxK
+	BxXiUxINIGEbRczdgB4W20L0dgBeFxg=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1757408428;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=FFaNWFCl2wdsjl/T84rwbCzslw/ZOsn9DcOtT4QWrC0=;
+	b=O8XofVYIRJ7JdydV/AcXJE6OL/CzP5apt68h114P/51brpsJaH1b/Lk9wp9D3jOzjTm5bj
+	SyY3GBBRZRzFnFY7fcz8XB/q8rGkqbGxoqAOTaUA7SNVtSB4zIzNQ1/e+SGFAGkJkKXwxK
+	BxXiUxINIGEbRczdgB4W20L0dgBeFxg=
+Received: from mail-wm1-f72.google.com (mail-wm1-f72.google.com
+ [209.85.128.72]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-323-qATRscRuMQ-67d6JtdAE_g-1; Tue, 09 Sep 2025 05:00:27 -0400
+X-MC-Unique: qATRscRuMQ-67d6JtdAE_g-1
+X-Mimecast-MFC-AGG-ID: qATRscRuMQ-67d6JtdAE_g_1757408426
+Received: by mail-wm1-f72.google.com with SMTP id 5b1f17b1804b1-45deddf34b9so2423675e9.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Sep 2025 02:00:26 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757408426; x=1758013226;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=FFaNWFCl2wdsjl/T84rwbCzslw/ZOsn9DcOtT4QWrC0=;
+        b=Ib0NuYhEPk9dL7xrxIZ/yCJ1fFB7B5pIucn9s9qngNIcS1/2T8ia2s6HgjdZjvSFN3
+         DXONd56v6iprXmYRfdk49OpkbbJzLYiE3J0aXEknMD6zbpcSWOEpqLITHNVM3VV/5DEG
+         2hdwTkK92RTxlOjrSSgHaDhss4p0NSbxPXIvusKfVIiX09UjuyesFLy04UxFLrbCefpe
+         SGM3Ml814RqiSuJjA4QHglmeML8yjgjJcU0JAUMdqaclNw8o/9m4VEE0sbYIGsxVBxkq
+         32as7gVSUFF3Jjq4GwY7WlhjOSyCeFmiv7v2ZYXT80wzfLuvt7Gi487jKSFgYi+ysMaN
+         AhWA==
+X-Forwarded-Encrypted: i=1; AJvYcCVJoDl6bwBStPhNvr/R/j5PX+PxG9N6km3wWRzpadXgCjSgcUwXq1DbQmGxFCrGaKzwhBwfvKxj92KhDpw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyQfpWn/OuynxSFIqjRaYJjP9lBMipxV4BQejxBhpmq7ePwyDN2
+	2YxDsLPi+upC5n+WuYhnmpLPwjwBU2bx7Yte0OenxDTFYqVVwSyJHIOiDjOzxiv3rdOI0Wx3/B1
+	x1KNqGC8cFTVtWrWGbXkfwRvf8JRMEw1RD5SzSAxCLFr6417lzxAP/gn8aIvHA7FUWH8=
+X-Gm-Gg: ASbGnctrjpUYvWgwXoYoJ8MX4ElW8nZEPtVdQblX65eE4Hk2i2/BnS4iNJV7fq7Tazy
+	uLRnRz52b39n4b51NpmkO6CfPeY4ulrFANWMAkEvTHUzy0a1F2Sl5N4Ik54jvuxXoB3+R/6VbFH
+	icow4ly/kAV55xAfiyD41GJjORjywqschNK9IRxvUjsBanK+sc5pHpJv83AvEwu2SdMEwoUHZ6G
+	LEckhlbR7On0uZjBiAjCRueuLs3Xn9epYYNmOigUMCBNbfeBGI/PR826Bqi901G7Qb+O0TCfn0j
+	GvxTJRDaxJlwoLAu30xRtCtgTUFXZzSKHHVCFyX3oEBe7GstoISe8GLBZUlzDpahW1K3jvifmh5
+	s84IlPkNTbEgdRDxA0rfcdbE1GtREwWa9VWhQ3trzP0GVTMplV56mSc+xEdUl//eTQcU=
+X-Received: by 2002:a05:6000:250c:b0:3e0:b982:ca49 with SMTP id ffacd0b85a97d-3e627a7cc9bmr9939814f8f.2.1757408425679;
+        Tue, 09 Sep 2025 02:00:25 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHjFbjC0Ku1RkV979c1EkKILIgMIbFwdRAtmt79V1a4P0VkSugVjLkyPMCm81yr9ZzkyWnCIw==
+X-Received: by 2002:a05:6000:250c:b0:3e0:b982:ca49 with SMTP id ffacd0b85a97d-3e627a7cc9bmr9939756f8f.2.1757408425189;
+        Tue, 09 Sep 2025 02:00:25 -0700 (PDT)
+Received: from ?IPV6:2003:d8:2f23:9c00:d1f6:f7fe:8f14:7e34? (p200300d82f239c00d1f6f7fe8f147e34.dip0.t-ipconnect.de. [2003:d8:2f23:9c00:d1f6:f7fe:8f14:7e34])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-3e752238997sm1838274f8f.37.2025.09.09.02.00.23
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Tue, 09 Sep 2025 02:00:24 -0700 (PDT)
+Message-ID: <97b8023e-90ad-425d-8645-c3dd258e0ff8@redhat.com>
+Date: Tue, 9 Sep 2025 11:00:22 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,136 +106,100 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC V2 8/8] powerpc: Enable Generic Entry/Exit for syscalls.
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        christophe.leroy@csgroup.eu, oleg@redhat.com, kees@kernel.org,
-        luto@amacapital.net, wad@chromium.org, deller@gmx.de, ldv@strace.io,
-        macro@orcam.me.uk, charlie@rivosinc.com, akpm@linux-foundation.org,
-        bigeasy@linutronix.de, ankur.a.arora@oracle.com, naveen@kernel.org,
-        thomas.weissschuh@linutronix.de, Jason@zx2c4.com, peterz@infradead.org,
-        tglx@linutronix.de, namcao@linutronix.de, kan.liang@linux.intel.com,
-        mingo@kernel.org, oliver.upton@linux.dev, mark.barnett@arm.com,
-        atrajeev@linux.vnet.ibm.com, rppt@kernel.org, coltonlewis@google.com,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20250908210235.137300-2-mchauras@linux.ibm.com>
- <20250908210235.137300-11-mchauras@linux.ibm.com>
- <5ffe0761-67c0-42ce-be3f-13915aa67080@linux.ibm.com>
+Subject: Re: [PATCH v2 1/7] mm: remove arch_flush_lazy_mmu_mode()
+To: Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
+ <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
+ Ingo Molnar <mingo@redhat.com>, Jann Horn <jannh@google.com>,
+ Juergen Gross <jgross@suse.com>, "Liam R. Howlett"
+ <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
+ Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ryan Roberts <ryan.roberts@arm.com>,
+ Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
+ Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org
+References: <20250908073931.4159362-1-kevin.brodsky@arm.com>
+ <20250908073931.4159362-2-kevin.brodsky@arm.com>
+From: David Hildenbrand <david@redhat.com>
+Autocrypt: addr=david@redhat.com; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <20250908073931.4159362-2-kevin.brodsky@arm.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: qbgKCO2Or3MqOexefsuFG2rKpQ65kf8wiq6ub769-rA_1757408426
+X-Mimecast-Originator: redhat.com
 Content-Language: en-US
-From: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
-In-Reply-To: <5ffe0761-67c0-42ce-be3f-13915aa67080@linux.ibm.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA2MDAxMCBTYWx0ZWRfX/BdCXo/BRzgc
- Tp6r3jO3z/Wl9Dr9uSSEYf6ZbLnodweBzN4n0cKr3jfiISST/1/MfecPw7zrcd+BMBNmoYWFrUR
- ps5EiWiL9FcE1J9EEAtFEfQMe1I8c31mqhU9UqJFtVVKtXNZxKCTuN2IsN/KP+eomapfE6Y1Nka
- xH4YFi7HoUHPSBQt/yuEeNR8K7frueJRCr2BYJvmTcVppEP64bif4OXUBBLsF0QvzXP2Faa97sR
- oM1JDRTerxmXBXM66l/1C6XIehEwTwxgVhajvH240CSwFzwSoquPRxtdEhPHckfH2vkvyfUHsKe
- xgI02+Iwvyku5mrgQFh89TuJ2QWvKdjrArc9h5VeSs6D5tdxIY2hsw6bfNe5eX22mAj4lyzdeUR
- VIfCUwUs
-X-Authority-Analysis: v=2.4 cv=SKNCVPvH c=1 sm=1 tr=0 ts=68bfe96e cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=FuRnj6zlySlOp9212E8A:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: 9lp2iKdIHfY5574hIX0sj19ASl8QMMw7
-X-Proofpoint-ORIG-GUID: JBKS3Y9ITvdVsPxH3T5ZUxsJaCOeOTRT
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-08_06,2025-09-08_02,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 spamscore=0 priorityscore=1501 bulkscore=0 malwarescore=0
- adultscore=0 suspectscore=0 impostorscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509060010
+Content-Transfer-Encoding: 7bit
 
-
-
-On 9/9/25 12:24, Shrikanth Hegde wrote:
->
->
-> On 9/9/25 2:32 AM, Mukesh Kumar Chaurasiya wrote:
->> Enable the syscall entry and exit path from generic framework.
->>
->> Signed-off-by: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
->> ---
->
-> Hi Mukesh.
-> Thanks for working on this and getting it to better shape.
->
->>   arch/powerpc/Kconfig |   1 +
->>   arch/powerpc/include/asm/entry-common.h |   2 +-
->>   arch/powerpc/kernel/interrupt.c         | 135 +++++++----------------
->>   arch/powerpc/kernel/ptrace/ptrace.c     | 141 ------------------------
->>   arch/powerpc/kernel/signal.c            |  10 +-
->>   arch/powerpc/kernel/syscall.c           | 119 +-------------------
->>   6 files changed, 49 insertions(+), 359 deletions(-)
->>
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index e0c51d7b5638d..e67294a72e4d4 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -199,6 +199,7 @@ config PPC
->>       select GENERIC_CPU_AUTOPROBE
->>       select GENERIC_CPU_VULNERABILITIES    if PPC_BARRIER_NOSPEC
->>       select GENERIC_EARLY_IOREMAP
->> +    select GENERIC_ENTRY
->>       select GENERIC_GETTIMEOFDAY
->>       select GENERIC_IDLE_POLL_SETUP
->>       select GENERIC_IOREMAP
->> diff --git a/arch/powerpc/include/asm/entry-common.h 
->> b/arch/powerpc/include/asm/entry-common.h
->> index d3f4a12aeafca..8fb74e6aa9560 100644
->> --- a/arch/powerpc/include/asm/entry-common.h
->> +++ b/arch/powerpc/include/asm/entry-common.h
->> @@ -3,7 +3,7 
->
-> There could be some of the configs we need to take care while enabling 
-> generic entry. Since powerpc
-> didn't have it earlier, there could areas which needs cleanup. One for 
-> example dynamic preemption.
-> There could be more. Do some git history checks and see.
->
-> Issue with dynamic preemption:
->
-> ld: 
-> kernel/entry/common.o:/home/shrikanth/sched_tip/kernel/entry/common.c:161: 
-> multiple definition of `sk_dynamic_irqentry_exit_cond_resched';
-> arch/powerpc/kernel/interrupt.o:/home/shrikanth/sched_tip/arch/powerpc/kernel/interrupt.c:29: 
-> first defined here
->
-> Below diff helps to fix and changing preemption modes help. Also 
-> verified preempt lazy works too.
->
+On 08.09.25 09:39, Kevin Brodsky wrote:
+> This function has only ever been used in arch/x86, so there is no
+> need for other architectures to implement it. Remove it from
+> linux/pgtable.h and all architectures besides x86.
+> 
+> The arm64 implementation is not empty but it is only called from
+> arch_leave_lazy_mmu_mode(), so we can simply fold it there.
+> 
+> Acked-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
 > ---
-> diff --git a/arch/powerpc/kernel/interrupt.c 
-> b/arch/powerpc/kernel/interrupt.c
-> index 642e22527f9d..e1e0f0da4165 100644
-> --- a/arch/powerpc/kernel/interrupt.c
-> +++ b/arch/powerpc/kernel/interrupt.c
-> @@ -25,10 +25,6 @@
->  unsigned long global_dbcr0[NR_CPUS];
->  #endif
->
-> -#if defined(CONFIG_PREEMPT_DYNAMIC)
-> -DEFINE_STATIC_KEY_TRUE(sk_dynamic_irqentry_exit_cond_resched);
-> -#endif
-> -
->  #ifdef CONFIG_PPC_BOOK3S_64
->  DEFINE_STATIC_KEY_FALSE(interrupt_exit_not_reentrant);
->  static inline bool exit_must_hard_disable(void)
->
->
-Hey Srikanth,
 
-Thanks for this. I will add this in next revision.
+Acked-by: David Hildenbrand <david@redhat.com>
 
-Mukesh
-> ----
-> Though ideal thing is move them to sched/core instead of being in 
-> generic code. Like below.
-> https://lore.kernel.org/all/20250716094745.2232041-1-sshegde@linux.ibm.com/ 
->
->
+-- 
+Cheers
+
+David / dhildenb
 
 
