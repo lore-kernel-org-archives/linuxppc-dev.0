@@ -1,72 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-11989-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11990-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 172A5CAC583
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Sep 2025 13:10:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BDF4DCA0FED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Sep 2025 14:05:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cMLds4jKKz3d0s;
-	Wed, 10 Sep 2025 23:10:25 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::12f"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757509825;
-	cv=none; b=bwxITHSvRabBRoM6bLMbZe3unBiDS8iXpaUB2RaLM6uh9venwp2QUfNModIcR7dCJu4tVvf28AyRTyiuaz8jdw9sAG1iB9jOaX8Ww5V974GcOaZvYH1NRh1gr5HuqetDbje6UBSAY9PoZvKulTklNJjb+mDQKdlITh0OEdWdNxabvU2Tn0QNlvrtVlH2vTpRYdpAaSOkz7s55AQGs/R/2pEcW/92oV0tn2b6OdztuJNtdVS7M9yAeTvC69VGjpWvvZEfV1sPaxLk50Xcil7oylwWXM8WdwGs3YCFS2NJ2kIE8oZsaTXFPdrnOGNaPHhhc1G6/2wp5r0P6oJc7n1fnQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cMMrw2P0lz3dCH;
+	Thu, 11 Sep 2025 00:05:04 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757513104;
+	cv=none; b=nygGKI785OMLM/Q3sIwGFVtvMwIi22sryi6bA7nfvmk8Ei8NzCedk6MD9/1UiXg7+7Ga/PR7hwB4yP+ajB3QmcqkojWADrjCC8qAGdh3lcWWcBGB8OkJECk/oBsxh0OfVcZ5tDbRS2tBEoidWMDQLZQpkUy2C/Ayt9HF9nDt5ZwIp4dstskVzx6zI4cJpc56H0V+gDu+tHsfH078Q2aipBGX88MO9kJfQvQdCvux/OF3H6WJ00u+8JNfv93OTCe+0mxsSXdOPLw0lB8JSMwialrSS0uS0FmNcu1AgfSg+uyPGrIR2qICsAA0IdImXUc063lj4F5CGvo+kmmsiENc7A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757509825; c=relaxed/relaxed;
-	bh=1LsnFE1xI0qQhVi+l6O9JAbITiONruUrWb3tpAPA1P4=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=JU3Nf6ilyFjPqJXpUp+1WCZ83LHpRwR3cOMN7mcxPt+6LeE9a+xsjdHACQsBBS8WTtyQbb7Chq53UW921K0/VpPUpq1Xp3ZLpbGcip6C81wpu8S6Nkwc8WW+4Tgz1SeEe+mrESRYvqr4mbAMQNZE8DHHL2TqfhUQS1tVzWiSRXioZip/kHUBsO1wCXCcvtKZfY7QfH91pd7ClLCBLPWWMdltYnXW7GZmLCAsXn/GKK/s9CkhRKVw55lKakxluSQgIje7B//5RsURAirftUxkPdRi3o7Cxn3RMTK+HoRo0QVQANWBgARXyVqadffEhiep5mJr1JbPkK6w4Yx/wiZZFg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=KJsWKbdO; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::12f; helo=mail-lf1-x12f.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+	t=1757513104; c=relaxed/relaxed;
+	bh=mKSB+4xL7cCmeYE/ZtEdtCjsvm7CIgVIfr0teJIjFAU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=XYzxrkTKLUYoBJpJ0fzVDJEBXKmy02K/kZ7NatqCNAFiMR74Ggl1DLsZZq84jQLL5YQ93mwzZq2qWKPjzE0PzXlnDgPBhb1OTfyNK1Ng8keggkH2L20F9XKndba2FSYdcEf7Wwgrh1Rnh+5Gfx+51ihMXvLZfOwYiruFcKvy1om+N9sNAN6kD3K8sOoQtsO9jsTxP3nIZNlskPow8ZrXyFg3IeDRt0g5JVpT8jGZyiJHgzcygp/mD2qOSOSo9XHdWH4WqvEenxsHapiRpg+R+03p00x7oB/X197KyuQ50Dczsy/tDjc1ZaxbCxnCCKeSPRnaO3XEnGPoTNqn5qLy7g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=dofEW7af; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=KJsWKbdO;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=dofEW7af;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=2a00:1450:4864:20::12f; helo=mail-lf1-x12f.google.com; envelope-from=linus.walleij@linaro.org; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x12f.google.com (mail-lf1-x12f.google.com [IPv6:2a00:1450:4864:20::12f])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=willy@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cMLdr2GnXz2yx8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2025 23:10:23 +1000 (AEST)
-Received: by mail-lf1-x12f.google.com with SMTP id 2adb3069b0e04-55f7c0fb972so7434825e87.3
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2025 06:10:22 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linaro.org; s=google; t=1757509819; x=1758114619; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=1LsnFE1xI0qQhVi+l6O9JAbITiONruUrWb3tpAPA1P4=;
-        b=KJsWKbdOj5h+vqM8pZIEaTQHtPbQ2913DN1zwuEVfhtZ0Km4tk5n7DOX7mvt6qNfNd
-         D5FEdqm17vm1A3TWXar8IvmqDGLLv1x8dgR2oNGRzkiN7x3WynYhIqU+T09pVo57C9Z6
-         6ho9KQfW9ohsYqH8ka42O1/b7Vj4Tjqu8C4ul3qXvMkcgsdV0NEefzhGCYvQUBLZTlX5
-         TRjTG910g5qA3kqZ2A7s95KqwKdPC9zmRUTDTTX4AImbuciKa3iIE/7JOhBTYKg/3Wmj
-         87AWGIseQFuF6hLU3f8c3RtZQAV5Z5X1tXOOdxMDXuO+ETM3ce54RvIPckXhPC11+laD
-         BjjQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757509819; x=1758114619;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=1LsnFE1xI0qQhVi+l6O9JAbITiONruUrWb3tpAPA1P4=;
-        b=dlaQsFKFHBB8RsoDgkfJztCHULZ0ww0f021vNmUgTpqT2nQhP6jAJs0ME0HbpRHiFu
-         08HXdyQvM71r9bYk4Nk+4orTT4GHvISoV3/FgBK5w0rswE+yCcRUmcCOXUAMVF/G4Fsp
-         a4yGTWRqQ+vOuTWNKw4nnIkTAmC4FuNsE/2YoPriXh8lH4XK+lDpGMnJRrRhzjFs5sEs
-         fc5x01DU0Ygc94bbyKcT4pOqd2GCCfL7umr/oBbF9f3W6U4IBUhqSb8LuDe/7wC0A7Yi
-         E7387bSoR/kCtDahG6Jelk13A17ZVE7+Wdbn6h4CaM3Y8sYJB/3cASOwdkRdor5Nz7yF
-         ldew==
-X-Forwarded-Encrypted: i=1; AJvYcCUGxjUdLAfbzQmu/0CWrlrNPj+wCgFZmL//yGULUasqc8rNO00yGJr7CxFbv1YTc83nuV34uaNkBYZ/UAg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyCEI1RbNmqbtjn0dLipsfjLNNH+Uz73dGe4EtG1xc1hy/CPC0q
-	YgmusOx2niFrMstWExl3/j854Qk6Lrk89TKBJLAuzonmvob0uFQZxA/j4/OIDA6w5QkyrOMmne6
-	/2lNqx1/Zyxa4OMRvuUSB/XP/TwhhIu4f/WTnXt40GQ==
-X-Gm-Gg: ASbGncvuQiOBbU0zo+3ighTF3EGQH7oQTRPgtShLtXTfh7T0r9O5ljXLhCQy5q82M+7
-	BPXCWh7meFrRw2zBCxwTX9GWyXz512kGTUI5027nyUnzjOQv93aONStuywKVKxCi3YuM8AOUtx/
-	Ip4P6SEUvBvVpSzw0b6oZ0Dc/OkKIUBNQt6kVmbg0vaPJeAN0B6IvakW+02iKULCjm6unVLK/tT
-	nJYPSk=
-X-Google-Smtp-Source: AGHT+IGgInBj1Ic/f5mZf9DHaSimxT6oABg1gWpLpcYCM/ousRHHwwGjp7S7ZCbmXiMiFXeqAGANnBbsml0uYfwnmj8=
-X-Received: by 2002:a05:6512:39cc:b0:55f:47a9:7d33 with SMTP id
- 2adb3069b0e04-5626425ccd6mr5952206e87.44.1757509818943; Wed, 10 Sep 2025
- 06:10:18 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cMMrr6G1bz3dBt
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2025 00:05:00 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=mKSB+4xL7cCmeYE/ZtEdtCjsvm7CIgVIfr0teJIjFAU=; b=dofEW7af/ejhmNipPt2aD1zjQc
+	r/T1X53PF0e+BEfGBFGmptVoarxZBEN1Hr7xriD76R1w+M+nvAcyFt2PcHdzuHg+TQmoMQFUdBQaA
+	jm/o6jj1rPqB5i/QW6QVLU4W6O2YAUS0S3TvZPMLDfVQol1YTS76QR+/j8xxBFEpwnMLWAqId4scS
+	bdUpC9Pcr4BH4JRwC/mCjcKWJe0ye/ZaEnL2OllK0B+92NxsmXiDMXLQP/kJYOtEetOYDdThozbzr
+	U+eiVsgCMI71Rea2iE366+z3/3jQiRamjgJEHnieliGZegYbRdaVVmJTC4g6lcXbzYemC7sUUzZ3A
+	gI/iBz2w==;
+Received: from willy by casper.infradead.org with local (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1uwLRO-0000000A1bz-3lAQ;
+	Wed, 10 Sep 2025 14:04:54 +0000
+Date: Wed, 10 Sep 2025 15:04:54 +0100
+From: Matthew Wilcox <willy@infradead.org>
+To: Linus Walleij <linus.walleij@linaro.org>
+Cc: Arnd Bergmann <arnd@arndb.de>, ksummit@lists.linux.dev,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
+	linux-mm@kvack.org, imx@lists.linux.dev,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Richard Weinberger <richard@nod.at>,
+	Lucas Stach <l.stach@pengutronix.de>,
+	Geert Uytterhoeven <geert+renesas@glider.be>,
+	Ankur Arora <ankur.a.arora@oracle.com>,
+	David Hildenbrand <david@redhat.com>,
+	Mike Rapoport <rppt@kernel.org>,
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@suse.cz>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Ira Weiny <ira.weiny@intel.com>, Nishanth Menon <nm@ti.com>,
+	Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>,
+	Alexander Sverdlin <alexander.sverdlin@gmail.com>,
+	"Chester A. Unal" <chester.a.unal@arinc9.com>,
+	Sergio Paracuellos <sergio.paracuellos@gmail.com>,
+	Andreas Larsson <andreas@gaisler.com>
+Subject: Re: [TECH TOPIC] Reaching consensus on CONFIG_HIGHMEM phaseout
+Message-ID: <aMGFhuHyQwtwyF7B@casper.infradead.org>
+References: <4ff89b72-03ff-4447-9d21-dd6a5fe1550f@app.fastmail.com>
+ <CACRpkdb=E-_6fZ+4mX5FJas9C5Njp3Gwrygs-cAfWNdbP594cw@mail.gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,89 +84,24 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <4ff89b72-03ff-4447-9d21-dd6a5fe1550f@app.fastmail.com>
-In-Reply-To: <4ff89b72-03ff-4447-9d21-dd6a5fe1550f@app.fastmail.com>
-From: Linus Walleij <linus.walleij@linaro.org>
-Date: Wed, 10 Sep 2025 15:10:05 +0200
-X-Gm-Features: Ac12FXx4fqtngzlb3aPI-q1c6xVbomqK3jaNECwBf_yyF7AQZ2ofNJeHmlxFUVw
-Message-ID: <CACRpkdb=E-_6fZ+4mX5FJas9C5Njp3Gwrygs-cAfWNdbP594cw@mail.gmail.com>
-Subject: Re: [TECH TOPIC] Reaching consensus on CONFIG_HIGHMEM phaseout
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: ksummit@lists.linux.dev, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-mips@vger.kernel.org, linux-mm@kvack.org, imx@lists.linux.dev, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, Richard Weinberger <richard@nod.at>, 
-	Lucas Stach <l.stach@pengutronix.de>, Geert Uytterhoeven <geert+renesas@glider.be>, 
-	Ankur Arora <ankur.a.arora@oracle.com>, David Hildenbrand <david@redhat.com>, 
-	Mike Rapoport <rppt@kernel.org>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, 
-	Matthew Wilcox <willy@infradead.org>, Andrew Morton <akpm@linux-foundation.org>, 
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>, Vlastimil Babka <vbabka@suse.cz>, 
-	Suren Baghdasaryan <surenb@google.com>, Ira Weiny <ira.weiny@intel.com>, Nishanth Menon <nm@ti.com>, 
-	=?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, 
-	Alexander Sverdlin <alexander.sverdlin@gmail.com>, 
-	"Chester A. Unal" <chester.a.unal@arinc9.com>, 
-	Sergio Paracuellos <sergio.paracuellos@gmail.com>, Andreas Larsson <andreas@gaisler.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <CACRpkdb=E-_6fZ+4mX5FJas9C5Njp3Gwrygs-cAfWNdbP594cw@mail.gmail.com>
 
-On Tue, Sep 9, 2025 at 11:24=E2=80=AFPM Arnd Bergmann <arnd@arndb.de> wrote=
-:
+On Wed, Sep 10, 2025 at 03:10:05PM +0200, Linus Walleij wrote:
+> This is is done so that we can unmap *most* of the kernel
+> memory but *keep* the VMALLOC area, so that e.g. exceptions
+> can still execute and save to stack when they occur, and we can
+> call into the kernel to execute said exceptions.
+> 
+> This in practice means the area 0xf1000000-0xffffffff
+> which also includes the high exception vectors that must for
+> natural reasons also be kept in the mapping.
+> What we have mapped today (all of the time) is
+> 0xc0000000-0xffffffff.
+> 
+> A minimal 256 MB mapping from 0xf0000000-0xffffffff
+> should be able to cover this.
 
-> - ARMv7 machines with 4GB and more exist and keep getting
->   kernel upgrades, but to my knowledge are not in production any
->   more. These are mainly 2010-2015 era chips based on rare
->   out-of-order cores like A15, A17 or PJ4 that were designed for
->   low-end servers, chromebooks and network equipment but replaced
->   with 64-bit chips shortly after. We had planned to bring a
->   CONFIG_VMSPLIT_4G_4G option to ARMv7VE to keep supporting the full
->   memory at a performance penalty, but currently have no plan to
->   finish this (volunteers welcome).
-
-I'll fill in on the details on that, because I tried, to the best of my
-ability to prototype this but I failed, so far.
-
-Here is what I managed to do:
-
-1. Building on another rough prototype by Afzal Mohammed, I managed
-to compile the ARM32 kernel into the VMALLOC area, this works
-fine and here are the patches:
-https://git.kernel.org/pub/scm/linux/kernel/git/linusw/linux-integrator.git=
-/log/?h=3Dkernel-in-vmalloc-v6.10-rc1
-
-This is is done so that we can unmap *most* of the kernel
-memory but *keep* the VMALLOC area, so that e.g. exceptions
-can still execute and save to stack when they occur, and we can
-call into the kernel to execute said exceptions.
-
-This in practice means the area 0xf1000000-0xffffffff
-which also includes the high exception vectors that must for
-natural reasons also be kept in the mapping.
-What we have mapped today (all of the time) is
-0xc0000000-0xffffffff.
-
-A minimal 256 MB mapping from 0xf0000000-0xffffffff
-should be able to cover this.
-
-So when we are talking about a 4G/4G split we are talking
-about (4G-256MB)/(4GB-256MB) split to be exact,
-we would keep the bottom 256 MB.
-
-2. On top of this I tried to decouple kernelspace and userspace
-allocations, in essence making anything outside vmalloc invisible to
-userspace by unmapping it using the fact that ARM32 (LPAE) has
-two separate translation table base registers: one for kernelspace
-and one for userspace.
-
-Step 2 makes sense because we know the reverse can work:
-PAN (privileged access never) makes userspace memory
-inaccessible from kernelspace unless explicitly requested and
-that works fine already, and we implemented it for LPAE
-with similar trickery, see commit 7af5b901e847.
-
-It's harder than it looks though and I never got it to fly, but
-maybe I will try again. My patches is a mess but I am a bit
-smarter now due to reoccurring MM-related work.
-
-Yours,
-Linus Walleij
+Can I ask where the MMIO (PCI?) window lives?
 
