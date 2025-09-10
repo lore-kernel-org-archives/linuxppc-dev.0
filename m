@@ -1,36 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-11996-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-11997-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 792DCCA0FED
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Sep 2025 16:12:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E7F1CA0FED
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Sep 2025 17:20:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cMQh45RcTz3dBy;
-	Thu, 11 Sep 2025 02:12:36 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757520756;
-	cv=none; b=imuSLEtnhItJh3eT5wbY9HsXHvWEMEqwVK0zsX80Jgz/iQQwIIyswMfEZW4SNJpcLe9V6ugqoGtY9lWB43tVyddS58USGI23Y7Tusc1Wtdi94kNd/YwG1hUQwbUYt1Se/Vj/PmlV7UxFIC/g0SDJrmL/OT1RrMvYIWlzKYD2iFp9Jt7wf6jPLgOaNrxNBzxeChG97yWS8Ke67o7bGJcx+T6iWSBebSDKk8GkUQbG6xBVNfWqVjVLsPhpXPdsoi2Px3AammpBNW7KIK0bWpkLS0UgUQqlfDMTvJx638rOVW2mpyemDayMPLtH0zh2m50KeQJdUNhPL72TYnB/FQsaOg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cMSBZ01Zmz3dH4;
+	Thu, 11 Sep 2025 03:20:38 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757524837;
+	cv=none; b=QDyyNRHTTlnEJZbDEQBicVoCG1NhCh4zIbu62WVmfuoC/EyuE/BF+XCWzgYedvYuQOzkOlNtkncfJGcHOywLGMC1kmQgirwYTxokVK36O4NkNQr2CPc8i4UxEpbcgf/hFP0ynBxfRy7dEdOkRJ+xtTlq5J7LLvG3c45n7tCuQQeucKlR/YPFWS3tilKUrkVHbL3dMdwaeGTerUBpLEi5Kam0zDTfiGxg18ETx+vzeDzsu5WYmG4lEgMIzrtrG37XqvyCxfpFV9y6L8VHQJIYrYDPHH94F6g118U6TNZqkZAPcM4zwlcff6nr9hWufJY5sFFydKiLfDxgomIBDpbtnA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757520756; c=relaxed/relaxed;
-	bh=cdS8DQ91Fk2KRig7JcdWAE1Tb1sePXx/4ByqYYrByXY=;
+	t=1757524837; c=relaxed/relaxed;
+	bh=pPunqbRdAk7Q1BPoWeHrXopoyeCo3AMqxUdPg7y0U0M=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=PIzWaHRmwWgljkIJITRXUmI0QqUIlnk4o0hJizM/xCTexqDtQHsN4fGyPF98XG+JgJWCeGnSfd5z4HnZvy9SD6MzB1Z8XJxNUJUNMyvY/o/tpiziyQcHCrEgRH4FJc5BByhCN5PaLdq48NfXVVwXywINyjLxnbPj3o+tyLjrTAYhkW6vrcnHI5lpXjWLzgEJxchX8Feuv5N/gMuF7dHKOk1vEN2TI2Z9/VGxamW1b4U234CTADuXh+Uzghgn6vb2s0m1qj2J3mniqLY+uZfgGRZpXzbmFseh/fdIiom/DtgXjUDlPF9sfuZvlwtuwzldlImKd6ia6MCfbGa5c4UIoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cMQh35s1Bz3dBY
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2025 02:12:35 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B91C716F2;
-	Wed, 10 Sep 2025 09:11:55 -0700 (PDT)
-Received: from [10.57.67.148] (unknown [10.57.67.148])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 8F3D43F63F;
-	Wed, 10 Sep 2025 09:11:56 -0700 (PDT)
-Message-ID: <250835cd-f07a-4b8a-bc01-ace24b407efc@arm.com>
-Date: Wed, 10 Sep 2025 18:11:54 +0200
+	 In-Reply-To:Content-Type; b=ML8KAlTnVcnR04Y4l5Q7BzaF/8oJvlLcJU6WgYeHKmDeJtMmGW2N6lPZNMAul5/JmYwgFSr7OAxeZLW+xDecUBUZJLQQImbCsmFvRTsHS8KWipmMvGqu2e7Q1ul81GAO4+rWLEPPaFg0xPvEpy3tqw1JSyvOQjcDZqhjXo6ANSCrQgE9ypVfABMuWK4XyxG7UEMC+pwhIGqAy2Ctc+H90HWiWHWjhadLv6M1OgtS3OwUfsjYdLh1ouWRnfciTE2C72wb6M1eP/s3rT2QOOpo+udZAngeXyKo+x5cRPyoU8g6kRBZTAP++wG2E44o/1g02NBW10bRrRPO25l5GiR6qQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cMSBY0BD9z3dBr
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2025 03:20:36 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4cMS006bWmz9sj9;
+	Wed, 10 Sep 2025 19:11:28 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id mnbxQRtTxTSD; Wed, 10 Sep 2025 19:11:28 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cMS005XY2z9sj8;
+	Wed, 10 Sep 2025 19:11:28 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 8550B8B7A7;
+	Wed, 10 Sep 2025 19:11:28 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id tVGSEt2GMt0K; Wed, 10 Sep 2025 19:11:28 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C99E88B764;
+	Wed, 10 Sep 2025 19:11:26 +0200 (CEST)
+Message-ID: <d9caedb4-41c8-4ef7-99b9-51d891aee555@csgroup.eu>
+Date: Wed, 10 Sep 2025 19:11:26 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -45,77 +59,92 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 2/7] mm: introduce local state for lazy_mmu sections
-To: Alexander Gordeev <agordeev@linux.ibm.com>
-Cc: David Hildenbrand <david@redhat.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Andreas Larsson <andreas@gaisler.com>,
+Subject: Re: [TECH TOPIC] Reaching consensus on CONFIG_HIGHMEM phaseout
+To: Richard Weinberger <richard@nod.at>, Arnd Bergmann <arnd@arndb.de>
+Cc: ksummit <ksummit@lists.linux.dev>,
+ linux-kernel <linux-kernel@vger.kernel.org>,
+ linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
+ linuxppc-dev@lists.ozlabs.org, linux-mips <linux-mips@vger.kernel.org>,
+ linux-mm <linux-mm@kvack.org>, imx@lists.linux.dev,
+ Lucas Stach <l.stach@pengutronix.de>,
+ Linus Walleij <linus.walleij@linaro.org>,
+ Geert Uytterhoeven <geert+renesas@glider.be>,
+ Ankur Arora <ankur.a.arora@oracle.com>, David Hildenbrand
+ <david@redhat.com>, Mike Rapoport <rppt@kernel.org>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Matthew Wilcox <willy@infradead.org>,
  Andrew Morton <akpm@linux-foundation.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
- <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
- Ingo Molnar <mingo@redhat.com>, Jann Horn <jannh@google.com>,
- Juergen Gross <jgross@suse.com>, "Liam R. Howlett"
- <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
- Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Peter Zijlstra <peterz@infradead.org>, Ryan Roberts <ryan.roberts@arm.com>,
- Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner
- <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
- Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org,
- Mark Rutland <Mark.Rutland@arm.com>
-References: <20250908073931.4159362-1-kevin.brodsky@arm.com>
- <20250908073931.4159362-3-kevin.brodsky@arm.com>
- <d23ea683-cca4-4973-88b1-4f6fd9b22314@redhat.com>
- <ca2054ad-b163-4e61-8ec4-6f2e36461628-agordeev@linux.ibm.com>
- <e7acb889-1fe9-4db3-acf4-39f4960e8ccd@redhat.com>
- <2fecfae7-1140-4a23-a352-9fd339fcbae5-agordeev@linux.ibm.com>
- <e521b1f4-3f2b-48cd-9568-b9a4cf4c4830@redhat.com>
- <47ee1df7-1602-4200-af94-475f84ca8d80@arm.com>
- <b2e52967-7ca1-411e-9c66-8d3483624ca7-agordeev@linux.ibm.com>
-Content-Language: en-GB
-From: Kevin Brodsky <kevin.brodsky@arm.com>
-In-Reply-To: <b2e52967-7ca1-411e-9c66-8d3483624ca7-agordeev@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>, vbabka <vbabka@suse.cz>,
+ Suren Baghdasaryan <surenb@google.com>, Ira Weiny <ira.weiny@intel.com>,
+ Nishanth Menon <nm@ti.com>, heiko <heiko@sntech.de>,
+ Alexander Sverdlin <alexander.sverdlin@gmail.com>,
+ "Chester A. Unal" <chester.a.unal@arinc9.com>,
+ Sergio Paracuellos <sergio.paracuellos@gmail.com>,
+ Andreas Larsson <andreas@gaisler.com>
+References: <4ff89b72-03ff-4447-9d21-dd6a5fe1550f@app.fastmail.com>
+ <497308537.21756.1757513073548.JavaMail.zimbra@nod.at>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <497308537.21756.1757513073548.JavaMail.zimbra@nod.at>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On 09/09/2025 16:38, Alexander Gordeev wrote:
->>>>> Would that integrate well with LAZY_MMU_DEFAULT etc?
->>>> Hmm... I though the idea is to use LAZY_MMU_* by architectures that
->>>> want to use it - at least that is how I read the description above.
->>>>
->>>> It is only kasan_populate|depopulate_vmalloc_pte() in generic code
->>>> that do not follow this pattern, and it looks as a problem to me.
->> This discussion also made me realise that this is problematic, as the
->> LAZY_MMU_{DEFAULT,NESTED} macros were meant only for architectures'
->> convenience, not for generic code (where lazy_mmu_state_t should ideally
->> be an opaque type as mentioned above). It almost feels like the kasan
->> case deserves a different API, because this is not how enter() and
->> leave() are meant to be used. This would mean quite a bit of churn
->> though, so maybe just introduce another arch-defined value to pass to
->> leave() for such a situation - for instance,
->> arch_leave_lazy_mmu_mode(LAZY_MMU_FLUSH)?
-> What about to adjust the semantics of apply_to_page_range() instead?
->
-> It currently assumes any caller is fine with apply_to_pte_range() to
-> enter the lazy mode. By contrast, kasan_(de)populate_vmalloc_pte() are
-> not fine at all and must leave the lazy mode. That literally suggests
-> the original assumption is incorrect.
->
-> We could change int apply_to_pte_range(..., bool create, ...) to e.g.
-> apply_to_pte_range(..., unsigned int flags, ...) and introduce a flag
-> that simply skips entering the lazy mmu mode.
+Hi Richard,
 
-This is pretty much what Ryan proposed [1r] some time ago, although for
-a different purpose (avoiding nesting). There wasn't much appetite for
-it then, but I agree that this would be a more logical way to go about it.
+Le 10/09/2025 à 16:04, Richard Weinberger a écrit :
+> Arnd,
+> 
+> ----- Ursprüngliche Mail -----
+>> Von: "Arnd Bergmann" <arnd@arndb.de>
+>> High memory is one of the least popular features of the Linux kernel.
+>> Added in 1999 for linux-2.3.16 to support large x86 machines, there
+>> are very few systems that still need it. I talked about about this
+>> recently at the Embedded Linux Conference on 32-bit systems [1][2][3]
+>> and there were a few older discussions before[4][5][6].
+>>
+>> While removing a feature that is actively used is clearly a regression
+>> and not normally done, I expect removing highmem is going to happen
+>> at some point anyway when there are few enough users, but the question
+>> is when that time will be.
+>>
+>> I'm still collecting information about which of the remaining highmem
+>> users plan to keep updating their kernels and for what reason. Some
+>> users obviously are alarmed about potentially losing this ability,
+>> so I hope to get a broad consensus on a specific timeline for how long
+>> we plan to support highmem in the page cache and to give every user
+>> sufficient time to migrate to a well-tested alternative setup if that
+>> is possible, or stay on a highmem-enabled LTS kernel for as long
+>> as necessary.
+> 
+> I am part of a team responsible for products based on various 32-bit SoCs,
+> so I'm alarmed.
+> These products, which include ARMv7 and PPC32 architectures with up to 2 GiB of RAM,
+> are communication systems with five-figure deployments worldwide.
+> 
+> Removing high memory will have an impact on these systems.
+> The oldest kernel version they run is 4.19 LTS, with upgrades to a more recent
+> LTS release currently in progress.
+> We typically upgrade the kernel every few years and will continue to support
+> these systems for at least the next 10 years.
+> 
+> Even with a new memory split, which could utilize most of the available memory,
+> I expect there to be issues with various applications and FPGA device drivers.
 
-- Kevin
+Can you tell which PPC32 model/family you are using ? Is it mpc85xx or 
+and/or other variants ? Maybe we can look at keeping CONFIG_HIGHMEM or 
+find alternatives for that subset of PPC32 only.
 
-[1r]
-https://lore.kernel.org/all/20250530140446.2387131-4-ryan.roberts@arm.com/
+Could you also elaborate a bit on the kind of issues you forsee or fear 
+with applications and FPGA device drivers.
+
+FWIW I sent out today a patch that removes CONFIG_HIGHMEM complely on 
+powerpc in order to get a better view of the impacted areas and allow 
+people to test what it looks like on their system without 
+CONFIG_HIGHMEM. See [1].
+
+Christophe
+
+[1] 
+https://patchwork.ozlabs.org/project/linuxppc-dev/patch/28d908b95fe358129db18f69b30891788e15ada0.1757512010.git.christophe.leroy@csgroup.eu/
+
 
