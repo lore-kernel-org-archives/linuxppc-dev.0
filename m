@@ -1,38 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-12016-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12017-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1221CA0FED
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Sep 2025 22:20:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67691CAC58E
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 11 Sep 2025 01:53:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cMZrJ29sMz3cf7;
-	Thu, 11 Sep 2025 08:20:16 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.145.64.142
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757522577;
-	cv=none; b=Xb1H5RAHWT9Z3UreLh5nY34eprX+ohg20aTcwWl59QZLPOTM6U4OQWS7xQ88cZc2JNWZbPsHF/ZxbeVecCctMWDo5U1pADpOuvw+mRckV3PvFemDHCreuTRntWpIqln2Pw4lSB5ra3Wexdz1WfkAFbHctyoWKfoUZfT6iFLfd+MxfT6y7ZXPU3scQb6poKpcdU+ZLBwMb6DB75dN27h4KFP0U6YbDawiii2oLz9oNNvwIbczSw71RhAHDSivn4CB7iagHMGqhYoA8+5+5xTUMWemf3QB1d3iaygfPcETpqh0zD9jsVV8S9c5/YDpisGYTZJM+lZU29A3Unj2W9vkow==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cMgZ10TPbz2xnq;
+	Thu, 11 Sep 2025 11:53:13 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::431"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757555592;
+	cv=none; b=oZJp89YfYf/XiUR8BueuvIOJgGOVT8xjKdwEU7Hd2mUzTSKtKqFuzbXpO2x9hd+YezLeSYmsODdgmfbZxBTfTiSBqKEdEUK+j+CO1SSLHA1wICCnXFjVQuSrOM6dPR/e0qPdzC8uQk0NGmg9zC7seE1QseeH1dAkyoIIwZB0Dplx+5rfeIh5Cut4FXPFSGYQD7LpI+2pGT1IPyUTxGxiQZdvNkI+m6bbQeTLbR1llN8xmxZy39sRgVEuvQ026vLlAr+OYEmmRKkak5QLP4D6QI+3SNeZR/H1Jiy1mFTTW/cBjJtOMrndGIwJrtpYU2GLcoU36F9N8+44PgZJoPADMw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757522577; c=relaxed/relaxed;
-	bh=G1VGNtTxsSa5nO2Imc+ky+WEMJh0OsY2+KqAjaV/88Q=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ILy4QgyDI0Wpj+HmEUajIFfGPMMHA8ig3Ad1wD1+OsoOJ0nx35JeYEQmWjSxrdKgH1RmHT0qanLnb3ZXmJ2OcA64Mz6jPzCVraZCPQil9ScsA3mbmdFZ/R4wN7jEy5p2Go5xO6MqMRxXHP0+iCMJX1w0BHNvJjEC7YgihUd8E+xL7hRfGySwphdgCajk7Yzgc/ith+jEa9o6PtlxvVfS5FaYC9rxdykudrRuWjBwydcTD8w4649h4xNQMQL2LODMoBIELUYzmLNkAxO4epzrb+/LcgKc+Hy3JWSY7AdmbNSLEfBwWU4SuQj/Mx5UICr8O6kclqNUNt5+2NaSHVpsKg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=sr71.net; spf=pass (client-ip=198.145.64.142; helo=blackbird.sr71.net; envelope-from=dave@sr71.net; receiver=lists.ozlabs.org) smtp.mailfrom=sr71.net
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=sr71.net
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=sr71.net (client-ip=198.145.64.142; helo=blackbird.sr71.net; envelope-from=dave@sr71.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 485 seconds by postgrey-1.37 at boromir; Thu, 11 Sep 2025 02:42:56 AEST
-Received: from blackbird.sr71.net (blackbird.sr71.net [198.145.64.142])
+	t=1757555592; c=relaxed/relaxed;
+	bh=2ftEC8QkQSW9Yu26ixMKaFncSw8YIxtS0maQQ86n+mo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Msq7DNzKnnVv9qO5KbcUD6dNBuWBBFZzgkGF0rzaGlGw93gcJ+uqXAeYY2IHzyxMPYx3EEWipnma+t3hpJvjLey0yABRB2e6cLPggfnRlzKvxVVTTUUVZFFwwrsx4npYJUsFoecXWBTrNt8TQ5mX5mW/AVdtB/wWACWkAeI7fVLKAt+1MbStKatL424CoO4aW7p14s028mB1/Obcx62WPigzfc1h1GZRAht3FMmKruGcXp0kDi9nhp8/l/8SKsiaQtyd+QZ4etjZRv1z6OTLMLQ8eZW/x7MERnNmPa53/lVSfFqPCJzeEDLMyfc84NmpaMjgkTnZR45ujqfXhbe3aA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FDfn/ZKv; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=yury.norov@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=FDfn/ZKv;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=yury.norov@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cMRM436kCz3dCH
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2025 02:42:55 +1000 (AEST)
-Received: from [0.0.0.0] (unknown [134.134.139.69])
-	(Authenticated sender: dave)
-	by blackbird.sr71.net (Postfix) with ESMTPSA id 4234E20193;
-	Wed, 10 Sep 2025 09:34:45 -0700 (PDT)
-Message-ID: <dec53524-97ee-4e56-8795-c7549c295fac@sr71.net>
-Date: Wed, 10 Sep 2025 09:34:43 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cMgYz57Msz2xnk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 11 Sep 2025 11:53:10 +1000 (AEST)
+Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-76e4fc419a9so175002b3a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Sep 2025 18:53:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1757555587; x=1758160387; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=2ftEC8QkQSW9Yu26ixMKaFncSw8YIxtS0maQQ86n+mo=;
+        b=FDfn/ZKvNeUOwfxkptIiMnm1X6RuxJ1tD+rCO5YUUwrAjhY3PKrSBEiMNP0zEvkwfs
+         xr9W/MHW0XjT4neMcHieb38aMEHbd7qpNq9Ue7y6Lw8Rgl3/N+Kn9jrTNvyIzlcyc5Vc
+         CefFmrZqTyEr7l+nbVgEvuxi87t7vVdxdWgkryJestFueYTcpQWm3nba402EPSfRcAmc
+         oLw3iiF4SMNNv2a7WF5Eob95ZV7zYfZ+naC881jxhBEyHLNbrmK1D1+UdCFT68HsUcmR
+         EJg+3eLmM20mFiE/rDFpLmkuOVeBKleB7D15iqwqo+TJMbGEOqcBPoHz03rnNa8at57N
+         gG8Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757555587; x=1758160387;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=2ftEC8QkQSW9Yu26ixMKaFncSw8YIxtS0maQQ86n+mo=;
+        b=nvKKdh69vAtcQTsLprP0AJs3Gd1ryI1glg9W1e52bAQ3DeJK50czwh4C2GgYJOv+h1
+         YT5sNf0cN0iedG5WuTIwgvGugG4WuNAIecnX5qSVqHF6IQrcn7yxOkt2RI9vhM9meMKg
+         39wo+Ke0qZDZzMAhci1PAlEby4tOl0b9sUDj6IZxAJrQRSZ9PYeAOxSwCyqinisDfkfh
+         TUsyp4Oy3lArsYz79gNuo/VMzo/Bn+tPwdzKOHbZOiYuz1BiO7cZkH4dMD/4p2Hdp0F4
+         HxQtA8JC89QlPrA7JBZ7ylDD5opEkDfGbkdeKrEyUab6bKzAEEJw43H8ng+a3X2khK+Y
+         Cs1w==
+X-Forwarded-Encrypted: i=1; AJvYcCW/ISLrYSdORGsVhTQbUCVRbeMslA6VYKFv94VyzK+sBA9jZZywyr4ZtQfTuk61QSRG4pq3vfLVuEKr4Bw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyvZ7ucJvkDY20uZYvaOuEBZAOMca+ifplG0sVcDbh3BoWTCuky
+	T0AdpgESHGPRHtp7WR4gzC94ihSzUIejWrdBTbfdVy5ROkCnMoOVAwFM
+X-Gm-Gg: ASbGncuqCkb+wElPt7ZUDFfj64Hkm3W0DuVDwAiOuEoNq2QyDQJJQuoo3Gs2g9SgOS/
+	uKcb68yMERZjHudbx1a/mU7TwFmycNNvYVgDBd4wtN1kkKGuR7U9AmdczQb8/SagDfabA0ppv5/
+	NUpNXDJVnIBb0c9a38/aK305n4kJPQwecRIrxjbnMc0xZ7eH/Vx7/0m1u7gn518UU1pkrkIseU0
+	MdA/scLFteFxsHJpbeyBRfs1eWaPv4cAgOmtskoXB4g2VmRY37RkuVtQ6kG4NZI852rTPfX8bFh
+	ZJcGsixzy9gB3fR6tQ+VM9FYyCXLK0txQmYr1KlGyV6TmT+r1MwmTbbL1ea9W3f/L7nu9ewLuX6
+	v/LsXOX27JSQ8UuDG1cGsqHBvJQwG7EFIwBwhX1wQW7g=
+X-Google-Smtp-Source: AGHT+IGndbB5UAuz3dgDmvjY2BUvfTTSKWff8fM1hjgOiYID8XfDtIeSMvF+llPYiazanhdjQzxrIQ==
+X-Received: by 2002:a05:6a20:4311:b0:24f:5ac4:664a with SMTP id adf61e73a8af0-2534594fbc1mr25666734637.46.1757555586723;
+        Wed, 10 Sep 2025 18:53:06 -0700 (PDT)
+Received: from localhost ([216.228.125.130])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b54a35ba7f4sm177683a12.9.2025.09.10.18.53.05
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 10 Sep 2025 18:53:06 -0700 (PDT)
+Date: Wed, 10 Sep 2025 21:53:04 -0400
+From: Yury Norov <yury.norov@gmail.com>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
+	vincent.guittot@linaro.org, tglx@linutronix.de, maddy@linux.ibm.com,
+	linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	gregkh@linuxfoundation.org, vschneid@redhat.com, iii@linux.ibm.com,
+	huschle@linux.ibm.com, rostedt@goodmis.org,
+	dietmar.eggemann@arm.com, vineeth@bitbyteword.org, jgross@suse.com,
+	pbonzini@redhat.com, seanjc@google.com
+Subject: Re: [RFC PATCH v3 03/10] sched: Static key to check paravirt cpu push
+Message-ID: <aMIrgI9J4fuXntRz@yury>
+References: <20250910174210.1969750-1-sshegde@linux.ibm.com>
+ <20250910174210.1969750-4-sshegde@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -46,58 +97,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [TECH TOPIC] Reaching consensus on CONFIG_HIGHMEM phaseout
-To: Richard Weinberger <richard@nod.at>, Arnd Bergmann <arnd@arndb.de>
-Cc: ksummit <ksummit@lists.linux.dev>,
- linux-kernel <linux-kernel@vger.kernel.org>,
- linux-arm-kernel <linux-arm-kernel@lists.infradead.org>,
- linuxppc-dev@lists.ozlabs.org, linux-mips <linux-mips@vger.kernel.org>,
- linux-mm <linux-mm@kvack.org>, imx@lists.linux.dev,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Lucas Stach <l.stach@pengutronix.de>,
- Linus Walleij <linus.walleij@linaro.org>,
- Geert Uytterhoeven <geert+renesas@glider.be>,
- Ankur Arora <ankur.a.arora@oracle.com>, David Hildenbrand
- <david@redhat.com>, Mike Rapoport <rppt@kernel.org>,
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- Matthew Wilcox <willy@infradead.org>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Liam R. Howlett" <Liam.Howlett@oracle.com>, vbabka <vbabka@suse.cz>,
- Suren Baghdasaryan <surenb@google.com>, Ira Weiny <ira.weiny@intel.com>,
- Nishanth Menon <nm@ti.com>, heiko <heiko@sntech.de>,
- Alexander Sverdlin <alexander.sverdlin@gmail.com>,
- "Chester A. Unal" <chester.a.unal@arinc9.com>,
- Sergio Paracuellos <sergio.paracuellos@gmail.com>,
- Andreas Larsson <andreas@gaisler.com>
-References: <4ff89b72-03ff-4447-9d21-dd6a5fe1550f@app.fastmail.com>
- <497308537.21756.1757513073548.JavaMail.zimbra@nod.at>
-From: Dave Hansen <dave@sr71.net>
-Content-Language: en-US
-In-Reply-To: <497308537.21756.1757513073548.JavaMail.zimbra@nod.at>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250910174210.1969750-4-sshegde@linux.ibm.com>
 
-On 9/10/25 07:04, Richard Weinberger wrote:
-> I am part of a team responsible for products based on various 32-bit
-> SoCs, so I'm alarmed. These products, which include ARMv7 and PPC32
-> architectures with up to 2 GiB of RAM, are communication systems
-> with five-figure deployments worldwide.
+On Wed, Sep 10, 2025 at 11:12:03PM +0530, Shrikanth Hegde wrote:
+> CPUs are marked paravirt when there is contention for underlying
+> physical CPU.
 > 
-> Removing high memory will have an impact on these systems. The
-> oldest kernel version they run is 4.19 LTS, with upgrades to a more
-> recent LTS release currently in progress. We typically upgrade the
-> kernel every few years and will continue to support these systems
-> for at least the next 10 years.
+> The push mechanism and check for paravirt CPUs are in sched tick
+> and wakeup. It should be close to no-op when there is no need for it.
+> Achieve that using static key.
 > 
-> Even with a new memory split, which could utilize most of the
-> available memory, I expect there to be issues with various
-> applications and FPGA device drivers.
-I'd be really curious what the _actual_ issues would be with a
-non-standard split. There are a lot of "maybe" problems and solutions
-here, but it's hard to move forward without known practical problems to
-tackle.
+> Architecture needs to enable this key when it decides there are
+> paravirt CPUs. Disable it when there are no paravirt CPUs.
 
-Has anybody run into actual end user visible problems when using one of
-weirdo PAGE_OFFSET configs?
+Testing a bit is quite close to a no-op, isn't it? Have you measured
+the performance impact that would advocate the static key? Please
+share some numbers then. I believe I asked you about it on the previous
+round.
+
+> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+> ---
+>  kernel/sched/core.c  |  1 +
+>  kernel/sched/sched.h | 17 +++++++++++++++++
+>  2 files changed, 18 insertions(+)
+> 
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 0f1e36bb5779..b8a84e4691c8 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -10967,4 +10967,5 @@ void sched_enq_and_set_task(struct sched_enq_and_set_ctx *ctx)
+>  #ifdef CONFIG_PARAVIRT
+>  struct cpumask __cpu_paravirt_mask __read_mostly;
+>  EXPORT_SYMBOL(__cpu_paravirt_mask);
+> +DEFINE_STATIC_KEY_FALSE(cpu_paravirt_push_tasks);
+>  #endif
+> diff --git a/kernel/sched/sched.h b/kernel/sched/sched.h
+> index b5367c514c14..8f9991453d36 100644
+> --- a/kernel/sched/sched.h
+> +++ b/kernel/sched/sched.h
+> @@ -3880,4 +3880,21 @@ void sched_enq_and_set_task(struct sched_enq_and_set_ctx *ctx);
+>  
+>  #include "ext.h"
+>  
+> +#ifdef CONFIG_PARAVIRT
+> +DECLARE_STATIC_KEY_FALSE(cpu_paravirt_push_tasks);
+> +
+> +static inline bool is_cpu_paravirt(int cpu)
+> +{
+> +	if (static_branch_unlikely(&cpu_paravirt_push_tasks))
+> +		return cpu_paravirt(cpu);
+> +
+> +	return false;
+> +}
+
+So is_cpu_paravirt and cpu_paravirt are exactly the same in terms of
+functionality. If you really believe that static branch benefits the
+performance, it should go straight to the cpu_paravirt().
+
+> +#else	/* !CONFIG_PARAVIRT */
+> +static inline bool is_cpu_paravirt(int cpu)
+> +{
+> +	return false;
+> +}
+> +#endif	/* !CONFIG_PARAVIRT */
+> +
+>  #endif /* _KERNEL_SCHED_SCHED_H */
+> -- 
+> 2.47.3
 
