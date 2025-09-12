@@ -1,89 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-12055-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12056-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8750CA101F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Sep 2025 03:56:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 119A8CAC582
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Sep 2025 03:57:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cNLFp1rjNz3cj2;
-	Fri, 12 Sep 2025 13:56:30 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cNLGD0DnBz3cgt;
+	Fri, 12 Sep 2025 13:56:52 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757649390;
-	cv=none; b=auojwFlGl5T8ZdGWDUPD+sFkl0t1XXS/+UTmtkJjwqigo/dA6AMDm/4JZP5weIO5dDvJku2tICx3qvYDkeHAKC7/1k7YkYYYywErD+oAIqxm29S8c1K0VHo131/ldowe1yzLoO6K6szNs+9Rxr1iNNLbf/r9utlUnX81gmlDlQJg09Y4YtcG4N2p8D0ySoL1LQRH2mplTP99fgzNcuRn5tsgBPz2AmbSjJhw3vArdSN81ZF3pXQn8UGiyG90K99KZgwI/8dhUuAbJKY7hsXpwlo/EldUmY1UE+nPGrlVi/qTOnreRB1o7ikppc5b7if2iEI/8IVHqiuIRsvKwrWIWw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757649411;
+	cv=none; b=n9MNUaODp6v4pJ+oYscLvGTVAE5R56R/a6znQ1pjtb1S3In8V5BLbI7D/OxcG+jUuNIpmol4fy3UTRXZRabRxGOJY51iCdkwTxgh5xLAhl7ZbrRb66gt7hHyJNNl8O8TT76AvgFFmWHFD7jC1EE6SXSzpxE90Vj8QxvuKME0xH4U+IbcxkkzpoVjPROn9eLrFZHOcYC6actHoDeszu/hy7z4DLDpfmi8uxY/h2UY0RkHwwOKlurX82K1u0C4Efu3q4sLkt3N1FDGAc2Dm93IrHNswL0FovxHNoADKgIR81DHqLAVs2gWn1bJG8SxPB//E7UFGhF65C6t6H/e55YYkA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757649390; c=relaxed/relaxed;
-	bh=Qebb0/OFExe/rv0LsvRncySq7WnREswckrL/cMozwyA=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=oX67pFbAenGYJBGAiZDrO3K4VAYKdfJOj2ZsuOmH55nSmW0ird5nyRI9QVHZ5nx6XEBVWvJqwcfyEMGjwjevtwGbcFAciVhtC7D9unaDqvX7jFi3qrApA1kODKNPyiV45NmGI3pYid2CtJz+R5AjTKyaypqc3TApOYHr5Nf1cVcK4JjAtoieOq3/OoZXhiAMrkTU6VQqojOVU3MXfEvAbpK49/Bi29JhKk7WeozG9oeBzHd8vrnVGuBtIOgFI7/i1gMGyTvk9yRiHuFzI6AGsPbu+nQUBOoz8atfhNXw0Awoy2LeP4zQ7KUwLUvU9vD7NZ3wiVEhQ2MYUvlP1v2zBA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GFV6sL2m; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1757649411; c=relaxed/relaxed;
+	bh=vrrVEH8tAjFNV3upvm/jC7WnGRQXBkPj0N1pG029RZU=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=NYJzeEJl1W2ZZKaNT/cK32XHtVjwdK9khrfl99cTcLHSRObYFg89si3s+Fk15pJ63eH4QqUUIHfqvl7nEik6hdkWM/eAnZxgKYLLat2wwSGaK3DZ7G955BjUaSuXcwKoWMRSs02EeMRG+aEZaP7f4NhJ7KxtpD32BdBA9yezOBLugokKGmftoWd8kSvNuztXVynkMEV4uNmkeLCtJMPQ3wZ7IJqd+jFsD8VdrHTCAGCHtAg3DL8eesqy/KtJbolY9SnSwaTNlNtzPvaSXvmxhBTj0qyUjQje+uYYEd1Uwjr26F2Eso4hgfEf/tgR90gswTSJLYAP7wbWiogKdBXohA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TF7xVJPl; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=GFV6sL2m;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TF7xVJPl;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cNLFn47Xpz3cb1
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2025 13:56:29 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58C07ndT015943;
-	Fri, 12 Sep 2025 03:56:16 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=Qebb0/
-	OFExe/rv0LsvRncySq7WnREswckrL/cMozwyA=; b=GFV6sL2mpNyVQgSLhXLmxg
-	sGEtZZp0IPTr4gVzc7lyLN9tbbmrnq6MtZEc8GCOrjofJv5B5qr92v0HTL3oQOho
-	LA7xbZEast4rKAEVyIWopUrct5omHLUKxwxgvRso5ZCkcxn1Cu2yPeNks73YH1+m
-	b47lTFc24d/vRb96rpwQX3Il689DEuHWyr5+NEYNzcCo6Fy1d7Y00gYvPbg6fen2
-	eGdaTatgUmd5isWGogIRFCCKCc1DswCQ14Ly4juxrJcz7Q9wCbSms4pxh9ffGaM/
-	xpKQxCNR6dWsIQaaa8W53meWjWIY8PaQ/QfebdZ7DwXqMcCsk3fbrynj42HUyLjA
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cNLGC2WyYz3cfW
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2025 13:56:51 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58BKDKol028671;
+	Fri, 12 Sep 2025 03:56:27 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=vrrVEH
+	8tAjFNV3upvm/jC7WnGRQXBkPj0N1pG029RZU=; b=TF7xVJPl8gH9vJ4D5E7RZy
+	+J4SUEnmPOFZtFMKGTNZ8ZmCGa7Hg5Hqk1kngguLOYw5bwDGx/Q4jZnuENgs1avX
+	QR9nw5fbdJu9g0Ksw4QwKMAnvdjbazZZHQ2cIGQje893Eru1T2DiOpfshB2fg03G
+	vRgTerj+HPAf9uZVndcnTJbuBNuFe6TJpACRyDNjEVu9E3wRd4ijVAzlZ94kl51B
+	kJdoh/fRqmnj377NwpaqFqOn8cvi6EfRnl0qc4SuAeMTkPvtwuwe58F4O2jmQkXS
+	MSKxIaK40C7apzvHjjQVQB/YYN7ckL8PH0mUQPCJ6qVGeJuoixxZRsbGlHtA/IVg
 	==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490cffs132-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490xyddtqj-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 12 Sep 2025 03:56:16 +0000 (GMT)
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 58C3uFt9013813;
-	Fri, 12 Sep 2025 03:56:15 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490cffs12x-1
+	Fri, 12 Sep 2025 03:56:27 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 58C3uRaF019098;
+	Fri, 12 Sep 2025 03:56:27 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 490xyddtqf-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 12 Sep 2025 03:56:15 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 58C1jcAr010605;
-	Fri, 12 Sep 2025 03:56:14 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4910sn8yd3-1
+	Fri, 12 Sep 2025 03:56:27 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 58C1LvD8007912;
+	Fri, 12 Sep 2025 03:56:25 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 49109q11e7-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 12 Sep 2025 03:56:14 +0000
+	Fri, 12 Sep 2025 03:56:25 +0000
 Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 58C3uC7V56230348
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 58C3uN4H39649644
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 12 Sep 2025 03:56:12 GMT
+	Fri, 12 Sep 2025 03:56:24 GMT
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7022E2004B;
-	Fri, 12 Sep 2025 03:56:12 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id C9BA52004B;
+	Fri, 12 Sep 2025 03:56:23 +0000 (GMT)
 Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F417E20040;
-	Fri, 12 Sep 2025 03:56:09 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id A0C0A2004D;
+	Fri, 12 Sep 2025 03:56:21 +0000 (GMT)
 Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.in.ibm.com (unknown [9.98.111.108])
 	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 12 Sep 2025 03:56:09 +0000 (GMT)
+	Fri, 12 Sep 2025 03:56:21 +0000 (GMT)
 From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+To: Geoff Levand <geoff@infradead.org>, Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
         Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Thomas Gleixner <tglx@linutronix.de>, Marc Zyngier <maz@kernel.org>,
-        Gautam Menghani <gautam@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org, Nam Cao <namcao@linutronix.de>
-Subject: Re: [PATCH v2 0/3] powerpc: Cleanup and convert to MSI parent domain
-Date: Fri, 12 Sep 2025 09:26:08 +0530
-Message-ID: <175764920913.610338.16071353255211421986.b4-ty@linux.ibm.com>
+        Thorsten Blum <thorsten.blum@linux.dev>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/ps3: Use str_write_read() in ps3stor_read_write_sectors()
+Date: Fri, 12 Sep 2025 09:26:20 +0530
+Message-ID: <175764920912.610338.11006366512834680585.b4-ty@linux.ibm.com>
 X-Mailer: git-send-email 2.50.1
-In-Reply-To: <cover.1754903590.git.namcao@linutronix.de>
-References: <cover.1754903590.git.namcao@linutronix.de>
+In-Reply-To: <20250819165829.714344-2-thorsten.blum@linux.dev>
+References: <20250819165829.714344-2-thorsten.blum@linux.dev>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,48 +100,42 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: Q30Q0NxNwgJ09JOmuQab1a8-kos94hmD
-X-Proofpoint-GUID: unepgJDJccu8cM8LciLhngab_Fl5dnhv
-X-Authority-Analysis: v=2.4 cv=EYDIQOmC c=1 sm=1 tr=0 ts=68c399e0 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VwQbUJbxAAAA:8 a=r7hqeWRgI3asRjLWeCMA:9
+X-Proofpoint-ORIG-GUID: CcvW4kbXSzDPVuoHyqqRjJzI-R7--lWL
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA2MDIzNSBTYWx0ZWRfX+rpKQNEpkmw5
+ Ttpvx5SDDmADyJooRUJVENpesLoFBJ5qlozqjJevfSKge+xVFsM/r9RzomJuqt+JVqXYY0CnNkQ
+ eTXIrQVzvs6sr5b2aiyuJPKsHMe9Z/5ZlrLHYvuCQNhWfOtxy/cD25qWbQd+RCIBi6zJlTtCosw
+ hJtptjlBjbqi79IJFAonx7E3v9IyNG1YkVQwUgZtRoDmBJEiXtldTLWcEX5A6keob6PtVvd6fm/
+ JRbfBoOBZTRS6FedbAnfjdqssVeAbfv276TmwkDgvHPlV8b0WYaNuwp+yXrLinkvMriyd580/Lv
+ JArGlnSRfNBrbVF+APeRcPC7QV+27Twynb89tHxefquGnNVhfRb7AeEkczx93A9oDQXFxPstkFC
+ tfG8RwtL
+X-Proofpoint-GUID: -ZSTadxp-uBK_BYyzehJEhm3LmdZs_0V
+X-Authority-Analysis: v=2.4 cv=F59XdrhN c=1 sm=1 tr=0 ts=68c399eb cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VwQbUJbxAAAA:8 a=CSAOVHq4OqcpjwAznNoA:9
  a=QEXdDO2ut3YA:10
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTA2MDAyMCBTYWx0ZWRfXxwISTgqken9B
- buy3jR21ofUFvxWVnJCxa2sRGyDPBWiDn2OzkcDTD73AY414r0jxtvGTK4hceEGmo16vVImVD+2
- Vv8667aVCVQu8JcnL5li5nKvBLCQoTyl2PHZ45JMk81edn7Tpq+Wb7ZoYxqQfb+qbDlK7VGLoXd
- iGoP/EqKFRnVmvuWZokZSpNgSAKo2HJGZFnGbH4g4ApmVn+q41Onkpp/J2e8ubuLnwPzfg3RZRN
- HObzz5lQOw04Ptfkm1J8/Q8lIAcWtPc4euBcmexlJJJI9Qg7JxfBmfLXgETywP63+sJoHW1TPLr
- O2PTy/BBSZ8BLGHemc9Moz4gO2X3CcceNN48T1sSSax1YZ2OsL1JeXWbBuMF6SFYFMJxkhmajyW
- juYRCLyY
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
  definitions=2025-09-12_01,2025-09-11_02,2025-03-28_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0 suspectscore=0 spamscore=0 impostorscore=0
- priorityscore=1501 phishscore=0 clxscore=1015 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509060020
+ priorityscore=1501 malwarescore=0 suspectscore=0 phishscore=0 clxscore=1011
+ impostorscore=0 bulkscore=0 adultscore=0 spamscore=0 classifier=typeunknown
+ authscore=0 authtc= authcc= route=outbound adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2507300000 definitions=main-2509060235
 
-On Mon, 11 Aug 2025 11:28:53 +0200, Nam Cao wrote:
-> The initial implementation of PCI/MSI interrupt domains in the hierarchical
-> interrupt domain model used a shortcut by providing a global PCI/MSI
-> domain.
+On Tue, 19 Aug 2025 18:58:29 +0200, Thorsten Blum wrote:
+> Remove hard-coded strings by using the str_write_read() helper function
+> and silence the following Coccinelle/coccicheck warning reported by
+> string_choices.cocci:
 > 
-> This works because the PCI/MSI[X] hardware is standardized and uniform, but
-> it violates the basic design principle of hierarchical interrupt domains:
-> Each hardware block involved in the interrupt delivery chain should have a
-> separate interrupt domain.
+>   opportunity for str_write_read(write)
+> 
 > 
 > [...]
 
 Applied to powerpc/next.
 
-[1/3] powerpc/xive: Untangle xive from child interrupt controller drivers
-      https://git.kernel.org/powerpc/c/cc0cc23babc979e399f34f53e4bccf702a389558
-[2/3] powerpc/powernv/pci: Switch to use msi_create_parent_irq_domain()
-      https://git.kernel.org/powerpc/c/f0ac60e6e311062f1a452d93376055787db4b070
-[3/3] powerpc/pseries/msi: Switch to msi_create_parent_irq_domain()
-      https://git.kernel.org/powerpc/c/daaa574aba6f9c683408b58a7ab2dc775ece2f98
+[1/1] powerpc/ps3: Use str_write_read() in ps3stor_read_write_sectors()
+      https://git.kernel.org/powerpc/c/6dc5d0770dc99d6bf9b786fa3c8fc04be2091648
 
 Thanks
 
