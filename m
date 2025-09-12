@@ -1,58 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-12069-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12070-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DD11CAC582
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Sep 2025 08:50:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CD7C3CA101F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Sep 2025 08:56:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cNSnF53yxz3clp;
-	Fri, 12 Sep 2025 18:50:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757667041;
-	cv=none; b=Tq2rFoqn7lYYPEM3AkPMaJ/FY2wbAzlAorX6vk+vrpZkjFtXGgLvTHvFoWvuNBLqucuk7lpJXlGqefI52Jwv+5hOMhGnpFI30xyCMSEgSNFLuoWSm3UqEfsohQW3UXpeeGibN8PcfzN6/kzCrAIzL1q+y/XkU95SjFSxNJvGv8N8BCeuPcnFm/cNV1vPeKF3rHCZJK/j9R/rM/7KYpHOtOiUfRE2wlouBds/ISDYWCM7MrHuGXUwjnYckasACvQDxILUxJu5X9Y9NtJ9ZvFgv4WtNtRSlzPVfkj2e6R5NmOepSdY14kie2e0NivI3yuIB9duCy6ygNgm3v2TAqEdZA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cNSvQ2mnwz30Sv;
+	Fri, 12 Sep 2025 18:56:02 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757667362;
+	cv=none; b=AQb3cBf7msw+q0rtc4bR6T5dwsq/GHNrZj5pk6y1PqEPx2AiBsUB9MsdhTLz4GSctf7bR1wG/k8yFtcnzyCBnv6I8x8AK6fumNjWCD+QFnI1IVcbc4mKhp6Et+pwY13G3f9lQF1SFetmjSfzCwkewZQAknwNeq11WHbfDeXOJ1+Kz7HvIQuoAFHPOGSsvFf6VSuSp4X0ZcZsAtW1rc3qlLiGMMtDr+niqp0qB4VxeWxuNfwZi7lOqSyfZw3brGpn0XGeAXSvDLqyZ+hsrRJFAIb+n+btVCsciQSM+gMTeyvgABnVzYv3Oku65podlb5AMmYgRuycrOGYCgDPlWdNDw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757667041; c=relaxed/relaxed;
-	bh=VyYg3tT1yjWMqcgX/FyCcAdmg/99j2cY7/NQA4kBkQg=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Pi7GM8ouD/uehD3jen2xU95VtnyULwY0a3IH0T9W62+bCE7+qp8ajWGn0dq91cGA6NwoFyNYlBrSPDWdD7pjhhhveCj7QjWD+RnxOFHkOEIXdFfVSwRRsuNdyrnXzka2HAxR4tirn5Eh5vvN4PusdYEmhO0I35ynoBEDe5I0UzNAgqNyg+CrrcS4yQp4MGL+Df8z+Pq29vFhkaZ7r3sm/bZPkBqiA9vpIY8ecuSaObxJJABiquExCauUkpLmG9xF9y1c4QfBDXdK5KsMUiRJ0+L7kIjqr71zN6CcvCN8/E9utZcregS3Ryo/F4ew0eM6QVbi/4ahMZss0EnCYtQlOA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cNSnF0YTmz3ckc
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2025 18:50:39 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cNSV810Hnz9sjH;
-	Fri, 12 Sep 2025 10:37:36 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id dJsHGcZ--gTw; Fri, 12 Sep 2025 10:37:36 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cNSV80JmJz9sjD;
-	Fri, 12 Sep 2025 10:37:36 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id EA7988B7A7;
-	Fri, 12 Sep 2025 10:37:35 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id WbMpPa6hMifm; Fri, 12 Sep 2025 10:37:35 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B0EF98B764;
-	Fri, 12 Sep 2025 10:37:35 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v2] powerpc/32: Fix unpaired stwcx. on interrupt exit
-Date: Fri, 12 Sep 2025 10:37:34 +0200
-Message-ID: <6040b5dbcf5cdaa1cd919fcf0790f12974ea6e5a.1757666244.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
+	t=1757667362; c=relaxed/relaxed;
+	bh=yhSXL+2pa9oDbDGRuQ4gQlpl18vQ+30/sPKc3K6z7Uo=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=VmW/cmnm9/eUzhNDd1tWvmxVgyYX5hIvVwqaJ+PHqmSTNdwuSyUjDY6EPJ2mzBwm68Lx7Q7qlhhnk4iHHVF8bC5bWOG1qbWnQWc1sRSE1XWRryCnt30saABNEhmofF0j2FSZKDw/PfeqoXidmBRio9yg0IvjllW7c6DV2QE1Wp+H/WyNkOv1d8vQqey8mtF7vc21t8vS8XYXFZLwrHLsvYuyR7lWxIBYJigCFCVBQePKjPMKnsQMmeRN3WZBpALP0u/diM9POCSZdDwx3j0oPOgZjevW75E6xg8TImWVfWpE642YlLYdG/WS62GG8vY3TP5k66TzkR9DTezpugzdVg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IveBiTgu; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IveBiTgu; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IveBiTgu;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=IveBiTgu;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cNSvP3Z9Vz30P3
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2025 18:56:00 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1757667356;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=yhSXL+2pa9oDbDGRuQ4gQlpl18vQ+30/sPKc3K6z7Uo=;
+	b=IveBiTgu6K6wb46I3mtmTdpkQZdEaqeL7kwT/a8yxdSlKW8E78iZo7pxHlYZUQtPHxFiux
+	ab9FzjtoPCb2eSDilf1UonpvzWM9HIJYBUUXLpll/e4fZlMu3/EBp+6NQjhHgc7kmlbz7v
+	K1OjrPcQbN3bxuuhO2kLH+8V/cZFQEk=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1757667356;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
+	bh=yhSXL+2pa9oDbDGRuQ4gQlpl18vQ+30/sPKc3K6z7Uo=;
+	b=IveBiTgu6K6wb46I3mtmTdpkQZdEaqeL7kwT/a8yxdSlKW8E78iZo7pxHlYZUQtPHxFiux
+	ab9FzjtoPCb2eSDilf1UonpvzWM9HIJYBUUXLpll/e4fZlMu3/EBp+6NQjhHgc7kmlbz7v
+	K1OjrPcQbN3bxuuhO2kLH+8V/cZFQEk=
+Received: from mail-wm1-f69.google.com (mail-wm1-f69.google.com
+ [209.85.128.69]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-304-iKE36pBjPtmhDOmLrmVxuQ-1; Fri, 12 Sep 2025 04:55:54 -0400
+X-MC-Unique: iKE36pBjPtmhDOmLrmVxuQ-1
+X-Mimecast-MFC-AGG-ID: iKE36pBjPtmhDOmLrmVxuQ_1757667353
+Received: by mail-wm1-f69.google.com with SMTP id 5b1f17b1804b1-45de27bf706so7924325e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2025 01:55:54 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757667353; x=1758272153;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=yhSXL+2pa9oDbDGRuQ4gQlpl18vQ+30/sPKc3K6z7Uo=;
+        b=w4LprwZ4O1Ze8JRh1TppLk2XOjDTud62AJzqn1tUvHNY0FNQiA+L4VMU7M6amENRvk
+         vqgbRfQKnZyMMao7tG2Kec/MjcewIIGQkt91vHgouGHmsb2WssamqkTXpEbOPx+VoFBM
+         BvosUWAH3ckC2SH1rhtkccngPTFT0KzvTqdepKmSIYcsVCXrrMSJ7pp4Ga94Bh0HLoUy
+         5NpFJZvsC0/chBgLm3Hdond3h20ByqogS45JLja7dphgpbIjLd8IS+0m48s2HcAPNJxX
+         HUFA3pHLk2V5gsbIAnKVA1PODvvJP8Fzp+NY5ivNapFOPtee38AvpX5QHiPg6YdS2wsp
+         sqsQ==
+X-Forwarded-Encrypted: i=1; AJvYcCWWDracQpGAXZNqmkrdrou/gsYaJ7AmMRkDsWXYgctgFgHBvb4tNq+SEOa73NDgAtsOOPuyVFO26vpV3gI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyA9jXV+JcVIF5V0BUsHf9z2vIfAC2bxQuIqzuJ0O68UUXveVAp
+	bOgnapN6PoeVj9Pt0cwBJ+zaboxUST4StpXXbfVrcbJ2WB4hKTWjIysa/LskY+5V7FmejVcMJUR
+	KX+T7sDzLboIcF6NPmux3lBQjmOw5Oc/cX0UkDqglatPPUprtOiGQfulmBhpe/p1xRmA=
+X-Gm-Gg: ASbGncu7b5ZghRzdjltqiHAfiw5nTT1cj0ixmqetXQwtmPTAtHtIGCtHaxDNpUE1DqV
+	8YcR3SzYynUZb5rxads0grF6MKae0iSNOH+vM8heI2EJKUj9pRlIqfcbcyUfYpla2W7jYKzq7pz
+	yEHD3stjSt/v4EpHhuNWuB+i79eAR+RA03J4sfTrRLwkCm6R1sYnOpWAGE70IMV0q/eXT/AQfAL
+	YIGZJY2looSPitrJxIBQd62dqKGqy5Med3P8vHY9dNkIqK8UNb+V7tNVCStoxSoAACDWE979bWX
+	Egg/U69P4OWRhl5BXFnfAetj85hzpuQzlY8lAXinWWt0vYt99DsZVFKvqP7XePArQsFiVKTmRBd
+	qN4yLMAEg8/NVGYHeTob2bwzMi7rm+7vX2bmn+x/vmYpOlVPyPV88uU4nY4PPvyON05I=
+X-Received: by 2002:a05:600c:228f:b0:45b:6743:2242 with SMTP id 5b1f17b1804b1-45f211f86c5mr15325875e9.22.1757667353232;
+        Fri, 12 Sep 2025 01:55:53 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IGWDKbJzbJR4/u84XZSgPwx14/k9hN3sfQaLT2TQm5sKZh16Dp+Cgzni1IYyZJBI43U7rR/8A==
+X-Received: by 2002:a05:600c:228f:b0:45b:6743:2242 with SMTP id 5b1f17b1804b1-45f211f86c5mr15325425e9.22.1757667352826;
+        Fri, 12 Sep 2025 01:55:52 -0700 (PDT)
+Received: from ?IPV6:2003:d8:2f20:da00:b70a:d502:3b51:1f2d? (p200300d82f20da00b70ad5023b511f2d.dip0.t-ipconnect.de. [2003:d8:2f20:da00:b70a:d502:3b51:1f2d])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-45e037c3ce5sm54255495e9.16.2025.09.12.01.55.50
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 12 Sep 2025 01:55:52 -0700 (PDT)
+Message-ID: <a17ab4e3-627a-4989-a5a5-d430eadabb86@redhat.com>
+Date: Fri, 12 Sep 2025 10:55:50 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,58 +105,113 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1757666254; l=1672; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=5vI3e5CRVNaH9YfMQbqIK6M5whINX0HsBG3gpHpgdQU=; b=3HUtWsJBTeDbibwPdJ+3dy4s3u4+rRHfi40L3ROeVYjn4DCFzLT+fuMd9GQJOPMQI2Z2zJv9x WmDkcA8GXr7A0KnhVg1qliOBwOZ7lBUUSEBBZA5Gt1eNPpoFDVaMahj
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 2/7] mm: introduce local state for lazy_mmu sections
+To: Kevin Brodsky <kevin.brodsky@arm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>
+Cc: linux-mm@kvack.org, linux-kernel@vger.kernel.org,
+ Andreas Larsson <andreas@gaisler.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
+ <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
+ Ingo Molnar <mingo@redhat.com>, Jann Horn <jannh@google.com>,
+ Juergen Gross <jgross@suse.com>, "Liam R. Howlett"
+ <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
+ Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ryan Roberts <ryan.roberts@arm.com>,
+ Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
+ Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Mark Rutland <Mark.Rutland@arm.com>
+References: <20250908073931.4159362-1-kevin.brodsky@arm.com>
+ <20250908073931.4159362-3-kevin.brodsky@arm.com>
+ <d23ea683-cca4-4973-88b1-4f6fd9b22314@redhat.com>
+ <ca2054ad-b163-4e61-8ec4-6f2e36461628-agordeev@linux.ibm.com>
+ <e7acb889-1fe9-4db3-acf4-39f4960e8ccd@redhat.com>
+ <2fecfae7-1140-4a23-a352-9fd339fcbae5-agordeev@linux.ibm.com>
+ <e521b1f4-3f2b-48cd-9568-b9a4cf4c4830@redhat.com>
+ <47ee1df7-1602-4200-af94-475f84ca8d80@arm.com>
+ <29383ee2-d6d6-4435-9052-d75a263a5c45@redhat.com>
+ <9de08024-adfc-421b-8799-62653468cf63@arm.com>
+ <ef343405-c394-4763-a79f-21381f217b6c@redhat.com>
+ <4b4971fd-0445-4d86-8f3a-6ba3d68d15b7@arm.com>
+ <4aa28016-5678-4c66-8104-8dcc3fa2f5ce@redhat.com>
+ <15d01c8b-5475-442e-9df5-ca37b0d5dc04@arm.com>
+ <7953a735-6129-4d22-be65-ce736630d539@redhat.com>
+ <781a6450-1c0b-4603-91cf-49f16cd78c28@arm.com>
+From: David Hildenbrand <david@redhat.com>
+Autocrypt: addr=david@redhat.com; keydata=
+ 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
+ qIws/H2t
+In-Reply-To: <781a6450-1c0b-4603-91cf-49f16cd78c28@arm.com>
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: kRI2nuoRNaA40fHbwcUFeSWhWfPsvYUzfEifRlzsI9g_1757667353
+X-Mimecast-Originator: redhat.com
+Content-Language: en-US
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Commit b96bae3ae2cb ("powerpc/32: Replace ASM exception exit by C
-exception exit from ppc64") erroneouly copied to powerpc/32 the logic
-from powerpc/64 based on feature CPU_FTR_STCX_CHECKS_ADDRESS which is
-always 0 on powerpc/32.
 
-Re-instate the logic implemented by commit b64f87c16f3c ("[POWERPC]
-Avoid unpaired stwcx. on some processors") which is based on
-CPU_FTR_NEED_PAIRED_STWCX feature.
+> I also wondered about that. I think the safest is to make them
+> respectively arch_leave() and arch_enter() - the flushing entailed by
+> arch_leave() might not be required, but it is safer. Additionally,
+> powerpc/sparc disable preemption while in lazy_mmu, so it seems like a
+> good idea to re-enable it while paused (by calling arch_leave()).
 
-Fixes: b96bae3ae2cb ("powerpc/32: Replace ASM exception exit by C exception exit from ppc64")
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
-v2: Fixed the commit message (Wrong patch reference in the beginning)
----
- arch/powerpc/kernel/entry_32.S | 10 ++++------
- 1 file changed, 4 insertions(+), 6 deletions(-)
+Great, looking forward to seeing this all getting cleaned up and done 
+properly for good.
 
-diff --git a/arch/powerpc/kernel/entry_32.S b/arch/powerpc/kernel/entry_32.S
-index 61ffd2989e7b..16f8ee6cb2cd 100644
---- a/arch/powerpc/kernel/entry_32.S
-+++ b/arch/powerpc/kernel/entry_32.S
-@@ -275,10 +275,9 @@ interrupt_return:
- 	mtspr	SPRN_SRR1,r12
- 
- BEGIN_FTR_SECTION
-+	lwarx   r0,0,r1
-+END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
- 	stwcx.	r0,0,r1		/* to clear the reservation */
--FTR_SECTION_ELSE
--	lwarx	r0,0,r1
--ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 
- 	lwz	r3,_CCR(r1)
- 	lwz	r4,_LINK(r1)
-@@ -319,10 +318,9 @@ ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 	mtspr	SPRN_SRR1,r12
- 
- BEGIN_FTR_SECTION
-+	lwarx   r0,0,r1
-+END_FTR_SECTION_IFSET(CPU_FTR_NEED_PAIRED_STWCX)
- 	stwcx.	r0,0,r1		/* to clear the reservation */
--FTR_SECTION_ELSE
--	lwarx	r0,0,r1
--ALT_FTR_SECTION_END_IFCLR(CPU_FTR_STCX_CHECKS_ADDRESS)
- 
- 	lwz	r3,_LINK(r1)
- 	lwz	r4,_CTR(r1)
 -- 
-2.49.0
+Cheers
+
+David / dhildenb
 
 
