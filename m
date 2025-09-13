@@ -1,42 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-12144-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12145-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8CA9FCAC58E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Sep 2025 07:46:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA455CAC58E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Sep 2025 11:00:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cP3JG0CC6z2yMw;
-	Sat, 13 Sep 2025 17:46:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757749565;
-	cv=none; b=DYIrkQDvQ8EvCMSMHig7Tuef87EXlv4PnGZkN3F6RHbLFZzKE4gFH2RURcgrhEuWgWncC+oi7J8oePjCPK6Ba7GbMi6F9LKRrKxmCkGOMv+tFX93ksQB7F9WcjpUmFrH4wae6U5QVANEnfCLoUDKJhDB6qj10BRdZFtmA4UMdGmum3YiUnbSY6gvewsDlqxPNzR4pYi4ApAP2aZxwxwXzmR/XaQkNjJd9DXkGdQ0uZudRogoew42Dp9Doe/XY7DVacBRx+4nx77LcB4zkNB/Fvz2D5NPlq6GDlfRlTZCPBr/cJc7GDXcz/cZ84ZkgNUHLiHno58Ad6h/UhuMM/8Q9w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cP7d06gzMz2xlK;
+	Sat, 13 Sep 2025 21:00:52 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757761252;
+	cv=none; b=O5bQg1rnEd1mAJNbAlSVTzhTZkagtjg6dszz3t+OZd5IrHGIfy0HABQ2XnL8ZerFCL6dpqm5G6Et0Y/TGJczMVUVkjWETkX8nm9oLstd2atfQaMPpmSSOOB5HbvqvkWO0S2ymGwP7AJNGNF6YcDEWvbNaA2mkuOpAyG5J/BIRqv9oaG/7cxJexcylPkJtKbwd2mmS600pc/wAEjSJQHeqmsLtkmfqhxVXjvCNvBUoXpwCfmhgLpRm9AZBLxdzjAKlFyHwYX2kXV/LjWY1lRe1Pb1qD4jV6yaFd1MQVnj3P/nyvS56JKGWqBG5MK84r03Ffm3nTPkWi/FxU7bHr1Znw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757749565; c=relaxed/relaxed;
-	bh=MIQJUr2n3bqnRg04yuYiP90LHsbvZ4+KfmPIT8f4BxI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=j+vvjRwPOoWD+uy9EYkzzIjoCJ8rQU4KTGncWJ3X/N0oh7uUxmSRoizrcnNYdDyYMP0HDhLvrLH/cgzPGUXa+rf7miU0UGlif48RiP73Bxuk0ISMreprEAg4N0Bo1PynV58aSCChYlYhytkI49ovicjRVGSbKyAYE+2eCR1pnu74CqZBcn4G1gRL9+mDgmA8vKDo8kQw7CSG/irFdXtMXh63g/b0S7qKurw4/8RwjPsNuzzI8wHpvYyJWTClf8Yyq2lGpTIXkZv7Jq2IhILQrNtqD12Uz6i8ZDto7OC+bts5UaQnjafVaVDiMP17jV2t1wbb3iAbTEdL9r4KaVAFhQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cP3J856w2z2yD5
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Sep 2025 17:45:59 +1000 (AEST)
-Received: from gate.crashing.org (localhost [127.0.0.1])
-	by gate.crashing.org (8.18.1/8.18.1/Debian-2) with ESMTP id 58D7jsDu091520;
-	Sat, 13 Sep 2025 02:45:55 -0500
-Received: (from segher@localhost)
-	by gate.crashing.org (8.18.1/8.18.1/Submit) id 58D7jsKB091517;
-	Sat, 13 Sep 2025 02:45:54 -0500
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Sat, 13 Sep 2025 02:45:54 -0500
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Mark Cave-Ayland <mark.cave-ayland@ilande.co.uk>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: Re: RFI: powerpc cpus supporting BLRM for MSR_LE
-Message-ID: <aMUhMomd752SWzUm@gate>
-References: <5dddd2be-e53d-4067-82aa-02146c39223d@ilande.co.uk>
+	t=1757761252; c=relaxed/relaxed;
+	bh=1iZiELOPGgRZDBi2au223SZgjALhV2isPuOLR/SKVds=;
+	h=Message-ID:Date:MIME-Version:From:Subject:To:Cc:Content-Type; b=lSHG6oE/ee2Qhtpm41ZGqEPLYnPZij3kIqlZz6wLINWXPZcXLxbCFdtjh4WTgmzUpjN0oqXDxvrnXDOFjw4EoNibMN1tBdkICN94BHoyyxa5I1nbsC0SpjPGpT/XyAaXB/crlMqed7MFl1Kxq4eqKCr9s+DEHEvIj4dRa+g1WoEwQnBJ21RqAkKvnsWnFTX5h8R3othfABPwrWQqFlM90UydEiyPFm2Z+j28VjVQXKcq1yaKzVI1iEXzqsBR6JX9WmqtfkRJNvHVid2uPjFvHPEfpwuPlZsDz6e+2QsHUWgL0UF31gTXhvIVZZ588++yVhFbJabHzhogF5a2znuI2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=heyquark.com; dkim=pass (2048-bit key; secure) header.d=heyquark.com header.i=@heyquark.com header.a=rsa-sha256 header.s=key1 header.b=ZPwflY85; dkim-atps=neutral; spf=pass (client-ip=91.218.175.172; helo=out-172.mta0.migadu.com; envelope-from=ash@heyquark.com; receiver=lists.ozlabs.org) smtp.mailfrom=heyquark.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=heyquark.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=heyquark.com header.i=@heyquark.com header.a=rsa-sha256 header.s=key1 header.b=ZPwflY85;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=heyquark.com (client-ip=91.218.175.172; helo=out-172.mta0.migadu.com; envelope-from=ash@heyquark.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 425 seconds by postgrey-1.37 at boromir; Sat, 13 Sep 2025 21:00:49 AEST
+Received: from out-172.mta0.migadu.com (out-172.mta0.migadu.com [91.218.175.172])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cP7cx5ngtz2xjv
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Sep 2025 21:00:49 +1000 (AEST)
+Message-ID: <3e8cb683-a084-4847-8f69-e1f4d9125c45@heyquark.com>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=heyquark.com;
+	s=key1; t=1757760798;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=1iZiELOPGgRZDBi2au223SZgjALhV2isPuOLR/SKVds=;
+	b=ZPwflY854lfR6+0k+h4yDgxJWLkTlhGcfYHnB/PhTWkU+vIwyWhZXL2UE3uTJ/Xix0zK+U
+	66IwEf6xsXakDFWxyhzg5a83nJTtKwd9NJnINz/rCmXaV9Cc68bKyH7w0BLmHPvxDQnBrH
+	/+l9KErxJkMkbsE2KDFnkgWqLYMw5nWZqZS9Px0jM1D+spx4jdK6KajIco0RNkdxxcHtaV
+	3Eoi6Mp6KFCk2A78L+jA21XKKsmGZPFZGrvggAWwSeXCADlOjNHhaRyrU4FTMwimAHNr1o
+	t7axN5rc/TW5uDrrhmLVPsGCp+EF2UhBiCCo9Je2k3qGp0KZ+JF6VdQTsEaskQ==
+Date: Sat, 13 Sep 2025 20:53:08 +1000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -50,62 +55,87 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <5dddd2be-e53d-4067-82aa-02146c39223d@ilande.co.uk>
+X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
+From: Ash Logan <ash@heyquark.com>
+Subject: 32-bit HIGHMEM and game console downstreams
+Content-Language: en-US
+To: arnd@arndb.de, christophe.leroy@csgroup.eu
+Cc: "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+ "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+ officialTechflashYT@gmail.com, AWilcox@Wilcox-Tech.com,
+ Michael Ellerman <mpe@ellerman.id.au>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-Migadu-Flow: FLOW_OUT
 
-Hi!
+Hello!
 
-On Fri, Sep 12, 2025 at 08:21:10PM +0100, Mark Cave-Ayland wrote:
-> Whilst the patch is fairly complete, the problem I have is that there
-> doesn't appear to be a concise list of CPUs that use BLRM (as opposed to
-> proper LE memory accesses) when MSR_LE is enabled.
+LWN recently did a piece on 32-bit support in the kernel, and thought as 
+a user of 32-bit I would share my 2c. [1]
 
-*All* older PowerPC have everything on the system busses in BE, and
-when the CPU has MSR[LE]=1 it just swaps some lanes somewhere where
-stuff is transfered to the execution cores.  Exactly how this is done
-is quite funky, but not-naturally-aligned accesses in LE mode always
-were disallowed anyway!
+I maintain a downstream fork of 6.6 to support the Nintendo Wii U 
+hardware [2]. I'm also in regular contact with another doing the same 
+for the older Wii [3]. Linux on this era of game consoles is doing 
+pretty well :)
 
-I'm not sure how LE is done on 970 (aka "G5"), a 64-bit core (it is
-derived from GQ, POWER4+).
+The Wii and Wii U are both 32-bit PowerPC machines with holes in their 
+memory map, which I think makes them interesting for this discussion. 
+Let me summarize the hardware and kernels involved:
 
-For the more current cores, since Power8 all LE and misaligned accesses
-are supported with hardly any delay at all (sometimes the hardware needs
-to do two memory accesses, but there is no exception and interrupt
-caused, etc.)  And the hardware does a real shift, a big fat barrel
-shifter in the load/store unit.
+Wii (2006)
+- 1x PowerPC 750CL "Broadway" @ 729MHz
+- 24MB "MEM1" + 64MB "MEM2" (non-contiguous - MEM2 starts 256MiB in)
+- Kernel 4.19 (+ CIP patchset), dev has been working on forward-porting 
+all the drivers one major version at a time (he's currently up to 5.15 
+last I checked) + limited upstream support (hardware bringup, UART, not 
+many peripherals)
 
-Oh, and also since P8 instructions in LE mode are stored byteswapped in
-memory, too (older CPUs had instructions in BE always).  This is done
-somewhere between the instruction cache and predecode.
+Wii U (2012)
+- 3x PowerPC 750CL "Espresso" @ 1.2GHz
+- 32MB "MEM1" + 2GB "MEM2" (also starts 256MiB in) + various small SRAMs
+- Kernel 6.6 (+ LTS patchset), I also had a run at upstreaming some of 
+it in 2022 [4] and would eventually like to go again
 
-> From what I can gather all 64-bit CPUs use proper LE memory accesses, but
+Special mention to the GameCube, basically a slower Wii with only 24MB 
+direct RAM and 16MB of non-mapped "ARAM". Wii Linux has experimental 
+support for this where they use the ARAM as swap.
 
-They don't.
+All of these are flatmem devices, as that's all the 32-bit PowerPC arch 
+supports, with the Wii U additionally enabling highmem for its 2GB of 
+RAM. Both devices have a small memory area (MEM1) with the "bulk" of RAM 
+starting at 256MiB. The Wii U in particular sounds like a candidate 
+system for densemem - I would like to read up more about this if I can, 
+I was only able to find seemingly unrelated information about CXL when 
+searching online.
 
-> it's not clear whether for 32-bit CPUs the use of BLRM can be derived from
-> the PVR or other CPU registers.
+There is a somewhat active userbase for both devices. I only have stats 
+for the Wii U side, but some rough nginx grepping for the last few days 
+- Sep 7th-Sep 12th - shows 39 downloads of distribution tarballs and 
+bootloader binaries in that period, not including torrents. In the past 
+2 weeks - Aug 29th-Sep 12th - 9 people joined the community Discord, 442 
+total. Anecdotally, the Wii Linux userbase appears at least twice as big 
+(based on their Discord activity).
 
-It is still not clear to me what "BLRM" really means.
+Distribution-wise, we're supported by ArchPOWER [5], Adélie Linux [6], 
+and other distros. The Wii U's Espresso has CPU errata requiring a 
+patched compiler, and both distributions ship separate package repos for 
+this CPU. ArchPOWER requested I rebase onto 6.6 so they could have 
+firmware compression - previously the Wii U was on 4.19 - so there is 
+some demand for newer kernel features as well.
 
-> Can anyone provide any insight as to which CPUs make use of BLRM for MSR_LE?
+I know I'm talking about hobbyist use - and mostly downstream use at 
+that - and I do suspect that in the event of a wider 32-bit deprecation 
+we'd be fine on the final LTS, whatever that ends up being. Still, I 
+think the Wii and Wii U represent a decent number of 32-bit users, so I 
+wanted to add to the conversation here.
 
-*All* CPUs that use the 6xx bus simply swap *and duplicate* some byte
-lanes, in such a way that all naturally aligned accesses work as-if a
-"real LE access" was done.  You can investigate it on real hardware by
-seeing what happens to weird accesses.  There was something on the
-Dolphin (GCN and Wii emulator) mailing lists some years ago you might
-be able to find (I fail to currently, but I didn't look very far).
+Thanks,
+Ash
 
-Btw:
-
->   g2               PVR 00810011
-
-That is mpc82xx, which uses a "603e" core.  *All* 603 and 604 are called
-G2 (G1 was 601, G3 is 740/750, G4 is 7400/7450 (two quite different
-cores!), G5 is 970).
-
-
-Segher
+[1] https://lwn.net/Articles/1035727/
+[2] https://linux-wiiu.org/
+[3] https://wii-linux.org/
+[4] https://lore.kernel.org/lkml/20221119113041.284419-1-ash@heyquark.com/
+[5] https://archlinuxpower.org/
+[6] https://www.adelielinux.org/
 
