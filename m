@@ -1,116 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-12140-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12141-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF560CAC587
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Sep 2025 03:21:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74A80CAC587
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Sep 2025 05:04:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cNxQx3LQSz3clh;
-	Sat, 13 Sep 2025 13:21:29 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=136.143.188.95 arc.chain=zohomail.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757717015;
-	cv=pass; b=kyenCjopFson1NovFodpBixo+KtG3kwX64Mo9e2yL9XARpXvfBF8qZ7CZxSAX0LrsWlVLN6e2IV3W8BlJ6nqF3rvH8EIpKiZk5bOu18gtr1alec+mLRuQEWpe56H5Qhz8eMPwBrC6fsXtbioJn09p6wlu31bP+6lEFhHb+d2WRwMTvN38MZVFoKwqLhQo0xBdJTWH4Z0+91D3rQLvuYf4ql2H4t1YfLIYofBOwqtvd0kySb5s/Ms7cx+0gRf3KfA8i7k8YwV8adj9aZTeUtLm/5WACGTEakpurIBu7uerXAkGRxOL/56Nq7r9byeVjtpDGrLN0d5bmjmQEQtJDx2Uw==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757717015; c=relaxed/relaxed;
-	bh=SYQdtnldOj5iXBTtfoBoCGBeYnnDL0Qn954gCAYQljw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=SDo+DCcUrHAmDVygQKBwzNbDeKwWtrUjfOM7uS8KGCjcAwDUD3FTySAGm7uZaYV2RKzrRSORa6dr5qkrEb+YJQJ97+5lESOItuAtpGHyvTUo+9AYJV9e0V8oRhyDrJ8Eaxo7hOHdKf6V2qq7YcDvsLXrR2/f5D5oRk78rzKmt7XekCpMbUXBAnGMtVyM4KARxszdnhepvWqp0/b7MSn9adje2RC/CGUG4gJs0eYstfGf1qstZ+rNnlxDIcU/p63HTbE0Vb2/FbUnc9wIQChiXzz3kgN3QwgY8TtDAELhs2igeilL+EEaxtz8lO//vla+dCUSpf4LyxpK+mQH2qrqDg==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=zohomail.com; dkim=pass (1024-bit key; unprotected) header.d=zohomail.com header.i=safinaskar@zohomail.com header.a=rsa-sha256 header.s=zm2022 header.b=A3GYAw/Z; dkim-atps=neutral; spf=pass (client-ip=136.143.188.95; helo=sender4-pp-o95.zoho.com; envelope-from=safinaskar@zohomail.com; receiver=lists.ozlabs.org) smtp.mailfrom=zohomail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=zohomail.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cNzjw0NK0z2yD5;
+	Sat, 13 Sep 2025 15:04:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.8
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757739875;
+	cv=none; b=FQyMIMqhjQSI02ZwQO+gzGPeiN/IM1L96PyNOWv+i2+23/mbgZFqEhp1S6NG3gqbdPDXrlSrtRD7G5+FQQh4WJr1R1uliIjyFKnpXfJZflaCCdJ0OtWT6r1XlzNdfP++KhLRwCHEosLdma+xgiYeAxNzl3wuoVOK06U8RIn1NJVuLoJZ6klOIIzvTdpY9D0WYbCkoE0t9tklf9KFjNO4iFD5cgaBjjRPeGugTS8/tagFk8ndIpzIhYoJWW6rp/7xKS0+bktF05fOBiFrmRmk4aaQIavkvD0hrG4d+9H4OMzWyjqGM8D8PFVd0gwlZiI98funDmbDsnoWKVDOebqAwA==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1757739875; c=relaxed/relaxed;
+	bh=t3KEUd9Y4/EUm6FeB6FCflckGTzNtzFYAfrdt8Pl/fg=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=cZlOWCHOkHD5HLZXUzM5tRnAoA25w9WNZcQOG5O+zorj0H6tTWFI70ZlF6PKoDsNj46nvNCrQsCflSQBr23wzdn8D3QnOibitc+cbnpcPcc6m7Ep9vdG5OOqJSGXlvNeYDLGGyxthWVIXoT31u67MEQug1f/ZO7VnZlkSsIpZvZd6NwlD3DJAPmjeHtKUih8LXlhbS2WSGNAYcgQYuPvgOkuJ4oqzvJ3x26Nx6ykGSxwinc+QJL+TjOzc+d4farXaKgOLbNpFuMTnKXU0Wh93klIvy65is6HxBGBScOsu3sFyoPYkMiK/VtHR2xjzeo7nl7m3bI12p/tK60oQ48BQQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hoi6geOP; dkim-atps=neutral; spf=pass (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=zohomail.com header.i=safinaskar@zohomail.com header.a=rsa-sha256 header.s=zm2022 header.b=A3GYAw/Z;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=hoi6geOP;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=zohomail.com (client-ip=136.143.188.95; helo=sender4-pp-o95.zoho.com; envelope-from=safinaskar@zohomail.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 80 seconds by postgrey-1.37 at boromir; Sat, 13 Sep 2025 08:43:34 AEST
-Received: from sender4-pp-o95.zoho.com (sender4-pp-o95.zoho.com [136.143.188.95])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cNqGG39wgz2xnr
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Sep 2025 08:43:34 +1000 (AEST)
-ARC-Seal: i=1; a=rsa-sha256; t=1757716851; cv=none; 
-	d=zohomail.com; s=zohoarc; 
-	b=D/MbJkF6AKfvpv0KL6fUxAFccpOhKdTbd8tMJBVU0KluuFdJoz4DAHQskLiuCD6jemVKBiLyxr7txdQPlkWZPDa0QtvV+d0miqL1m2sAfZFpE9OBTIFjInQdUyiSqAG9spF+KW+IC+0XwaAWfdeOFJt0clbMI6LGdYT8wT0QIQw=
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=zohomail.com; s=zohoarc; 
-	t=1757716851; h=Content-Transfer-Encoding:Cc:Cc:Date:Date:From:From:In-Reply-To:MIME-Version:Message-ID:References:Subject:Subject:To:To:Message-Id:Reply-To; 
-	bh=SYQdtnldOj5iXBTtfoBoCGBeYnnDL0Qn954gCAYQljw=; 
-	b=iiaIGMolvqMVa2ZoIN+a0+HOKshhObLXpBRbawH2sXZ+e4hLHYJIjFKNkjVjMy15B297x3UZaXQRUv1GjAxpLGKeFph+jdJoOqUT92ZBEiCPj8zAem55Ab/u6rl/NGy+riwfElUsXLx/pooWVgA/Igjoj8ix+ZQhPrV+d7C6WHI=
-ARC-Authentication-Results: i=1; mx.zohomail.com;
-	dkim=pass  header.i=zohomail.com;
-	spf=pass  smtp.mailfrom=safinaskar@zohomail.com;
-	dmarc=pass header.from=<safinaskar@zohomail.com>
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; t=1757716851;
-	s=zm2022; d=zohomail.com; i=safinaskar@zohomail.com;
-	h=From:From:To:To:Cc:Cc:Subject:Subject:Date:Date:Message-ID:In-Reply-To:References:MIME-Version:Content-Transfer-Encoding:Feedback-ID:Message-Id:Reply-To;
-	bh=SYQdtnldOj5iXBTtfoBoCGBeYnnDL0Qn954gCAYQljw=;
-	b=A3GYAw/ZcLeXiPs5c9a4Kkhl99J7rRYEGNqnJyqhr5vDfGmnDpP0pmrxeAG/VPDL
-	E/qJq2zYgALVxkA82lIxgCUaNsztP/B+ROtM2apTYe4/NCfVYxJGb0VT5iRYMAEDqY4
-	zW4owjqeotGVu4e4gXxuCL736W9X3EQMyrJh/VUw=
-Received: by mx.zohomail.com with SMTPS id 1757716849242717.553449294329;
-	Fri, 12 Sep 2025 15:40:49 -0700 (PDT)
-From: Askar Safin <safinaskar@zohomail.com>
-To: linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Christian Brauner <brauner@kernel.org>,
-	Al Viro <viro@zeniv.linux.org.uk>,
-	Jan Kara <jack@suse.cz>,
-	Christoph Hellwig <hch@lst.de>,
-	Jens Axboe <axboe@kernel.dk>,
-	Andy Shevchenko <andy.shevchenko@gmail.com>,
-	Aleksa Sarai <cyphar@cyphar.com>,
-	=?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
-	Julian Stecklina <julian.stecklina@cyberus-technology.de>,
-	Gao Xiang <hsiangkao@linux.alibaba.com>,
-	Art Nikpal <email2tema@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Eric Curtin <ecurtin@redhat.com>,
-	Alexander Graf <graf@amazon.com>,
-	Rob Landley <rob@landley.net>,
-	Lennart Poettering <mzxreary@0pointer.de>,
-	linux-arch@vger.kernel.org,
-	linux-alpha@vger.kernel.org,
-	linux-snps-arc@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-csky@vger.kernel.org,
-	linux-hexagon@vger.kernel.org,
-	loongarch@lists.linux.dev,
-	linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org,
-	linux-openrisc@vger.kernel.org,
-	linux-parisc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	linux-sh@vger.kernel.org,
-	sparclinux@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	x86@kernel.org,
-	Ingo Molnar <mingo@redhat.com>,
-	linux-block@vger.kernel.org,
-	initramfs@vger.kernel.org,
-	linux-api@vger.kernel.org,
-	linux-doc@vger.kernel.org,
-	linux-efi@vger.kernel.org,
-	linux-ext4@vger.kernel.org,
-	"Theodore Y . Ts'o" <tytso@mit.edu>,
-	linux-acpi@vger.kernel.org,
-	Michal Simek <monstr@monstr.eu>,
-	devicetree@vger.kernel.org,
-	Luis Chamberlain <mcgrof@kernel.org>,
-	Kees Cook <kees@kernel.org>,
-	Thorsten Blum <thorsten.blum@linux.dev>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	patches@lists.linux.dev
-Subject: [PATCH 01/62] init: remove deprecated "load_ramdisk" command line parameter, which does nothing
-Date: Fri, 12 Sep 2025 22:38:36 +0000
-Message-ID: <20250912223937.3735076-2-safinaskar@zohomail.com>
-X-Mailer: git-send-email 2.47.2
-In-Reply-To: <20250912223937.3735076-1-safinaskar@zohomail.com>
-References: <20250912223937.3735076-1-safinaskar@zohomail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cNzjs5PTRz2xnr
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Sep 2025 15:04:31 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1757739874; x=1789275874;
+  h=date:from:to:cc:subject:message-id;
+  bh=TZvfY4/BWbsRG3NmUdAyUrC6bS92dWaKrmPszbA4ZxM=;
+  b=hoi6geOP4C7BI7TGjPyAh0bLPLRG48C7EojHJ7qoPnzfe80TeW3fUmNw
+   gQASw4FCe8AHY0AM9b0NSw+zN/1+KdYookXu8aIrzZ/fxY8ndkBsU5wAg
+   3KDZdZBIgrW6hKplkc4QsrcKwULAWT1yNoVf+2XTfDRKXUDi3jbZl3rSM
+   7i7+mKWN8UJLJ+0eCTOm1bPGzm2WBF1O1+8WVaoKDyOwP/aUybYq5ueIH
+   uymJ5VKoXJEltZI3Di7vT6RFoQ26HzgO3NVTtq0j2/vcA+DESh9Pjgn3v
+   PH3Z2WNYNPAARDfVRGW6u/sLs1OqzI2xgW7yTvgBdRkF65/A49XDJSJf9
+   g==;
+X-CSE-ConnectionGUID: n/Vi0HnmSZWIsm0+/B+HkQ==
+X-CSE-MsgGUID: SAcSRhfBTgWf0sfrbXztFA==
+X-IronPort-AV: E=McAfee;i="6800,10657,11551"; a="77692579"
+X-IronPort-AV: E=Sophos;i="6.18,261,1751266800"; 
+   d="scan'208";a="77692579"
+Received: from fmviesa008.fm.intel.com ([10.60.135.148])
+  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 12 Sep 2025 22:04:29 -0700
+X-CSE-ConnectionGUID: g2X61R4ARRaUBsJEjXx6Fw==
+X-CSE-MsgGUID: KIsvLQVLT4KXYNpFwqbmWg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.18,261,1751266800"; 
+   d="scan'208";a="174541475"
+Received: from lkp-server02.sh.intel.com (HELO eb5fdfb2a9b7) ([10.239.97.151])
+  by fmviesa008.fm.intel.com with ESMTP; 12 Sep 2025 22:04:28 -0700
+Received: from kbuild by eb5fdfb2a9b7 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1uxIQz-0001My-2S;
+	Sat, 13 Sep 2025 05:04:25 +0000
+Date: Sat, 13 Sep 2025 13:03:49 +0800
+From: kernel test robot <lkp@intel.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [powerpc:merge] BUILD SUCCESS
+ ee89a44e586888e6a221c905869ce5502039ea38
+Message-ID: <202509131339.LfpgFc8N-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -123,65 +77,158 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Feedback-ID: rr080112270190de3dd5742b4859dd6fd300005ebcccd4ca6fab5ababf817285cc72b2eaa8b08ebe8935229e:zu0801122760defd381de7d2a61c6dfd0000001473317922e0fc7bf6260a44626f1d9f1d56c51eecea9f9c33:rf0801122c81215cd2ba1d33e7868182610000d14c8fcdc879b9380d9b59a7c5ae3dbfb2890e3fef86e1e712ab0140ed82:ZohoMail
-X-ZohoMailClient: External
 
-This is preparation for initrd removal
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: ee89a44e586888e6a221c905869ce5502039ea38  Automatic merge of 'next' into merge (2025-09-12 09:09)
 
-Signed-off-by: Askar Safin <safinaskar@zohomail.com>
----
- Documentation/admin-guide/kernel-parameters.txt | 2 --
- arch/arm/configs/neponset_defconfig             | 2 +-
- init/do_mounts.c                                | 7 -------
- 3 files changed, 1 insertion(+), 10 deletions(-)
+elapsed time: 1447m
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 747a55abf494..d3b05ce249ff 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -3275,8 +3275,6 @@
- 			If there are multiple matching configurations changing
- 			the same attribute, the last one is used.
- 
--	load_ramdisk=	[RAM] [Deprecated]
--
- 	lockd.nlm_grace_period=P  [NFS] Assign grace period.
- 			Format: <integer>
- 
-diff --git a/arch/arm/configs/neponset_defconfig b/arch/arm/configs/neponset_defconfig
-index 2227f86100ad..16f7300239da 100644
---- a/arch/arm/configs/neponset_defconfig
-+++ b/arch/arm/configs/neponset_defconfig
-@@ -9,7 +9,7 @@ CONFIG_ASSABET_NEPONSET=y
- CONFIG_ZBOOT_ROM_TEXT=0x80000
- CONFIG_ZBOOT_ROM_BSS=0xc1000000
- CONFIG_ZBOOT_ROM=y
--CONFIG_CMDLINE="console=ttySA0,38400n8 cpufreq=221200 rw root=/dev/mtdblock2 mtdparts=sa1100:512K(boot),1M(kernel),2560K(initrd),4M(root) load_ramdisk=1 prompt_ramdisk=0 mem=32M noinitrd initrd=0xc0800000,3M"
-+CONFIG_CMDLINE="console=ttySA0,38400n8 cpufreq=221200 rw root=/dev/mtdblock2 mtdparts=sa1100:512K(boot),1M(kernel),2560K(initrd),4M(root) prompt_ramdisk=0 mem=32M noinitrd initrd=0xc0800000,3M"
- CONFIG_FPE_NWFPE=y
- CONFIG_PM=y
- CONFIG_MODULES=y
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 6af29da8889e..0f2f44e6250c 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -34,13 +34,6 @@ static int root_wait;
- 
- dev_t ROOT_DEV;
- 
--static int __init load_ramdisk(char *str)
--{
--	pr_warn("ignoring the deprecated load_ramdisk= option\n");
--	return 1;
--}
--__setup("load_ramdisk=", load_ramdisk);
--
- static int __init readonly(char *str)
- {
- 	if (*str)
--- 
-2.47.2
+configs tested: 137
+configs skipped: 4
 
+The following configs have been built successfully.
+More configs may be tested in the coming days.
+
+tested configs:
+alpha                             allnoconfig    gcc-15.1.0
+alpha                            allyesconfig    gcc-15.1.0
+alpha                               defconfig    gcc-15.1.0
+arc                              allmodconfig    gcc-15.1.0
+arc                               allnoconfig    gcc-15.1.0
+arc                              allyesconfig    gcc-15.1.0
+arc                                 defconfig    gcc-15.1.0
+arc                     nsimosci_hs_defconfig    gcc-15.1.0
+arc                   randconfig-001-20250912    gcc-10.5.0
+arc                   randconfig-001-20250913    gcc-10.5.0
+arc                   randconfig-002-20250912    gcc-12.5.0
+arc                   randconfig-002-20250913    gcc-11.5.0
+arc                        vdk_hs38_defconfig    gcc-15.1.0
+arm                              allmodconfig    gcc-15.1.0
+arm                               allnoconfig    clang-22
+arm                              allyesconfig    gcc-15.1.0
+arm                   randconfig-001-20250912    clang-22
+arm                   randconfig-001-20250913    clang-20
+arm                   randconfig-002-20250912    gcc-14.3.0
+arm                   randconfig-002-20250913    clang-22
+arm                   randconfig-003-20250912    clang-22
+arm                   randconfig-003-20250913    clang-22
+arm                   randconfig-004-20250912    gcc-10.5.0
+arm                   randconfig-004-20250913    gcc-14.3.0
+arm64                            allmodconfig    clang-19
+arm64                             allnoconfig    gcc-15.1.0
+arm64                 randconfig-001-20250912    clang-20
+arm64                 randconfig-001-20250913    clang-22
+arm64                 randconfig-002-20250912    clang-16
+arm64                 randconfig-002-20250913    gcc-14.3.0
+arm64                 randconfig-003-20250912    clang-22
+arm64                 randconfig-003-20250913    clang-22
+arm64                 randconfig-004-20250912    clang-19
+arm64                 randconfig-004-20250913    gcc-8.5.0
+csky                              allnoconfig    gcc-15.1.0
+csky                  randconfig-001-20250912    gcc-15.1.0
+csky                  randconfig-001-20250913    gcc-11.5.0
+csky                  randconfig-002-20250912    gcc-11.5.0
+hexagon                          allmodconfig    clang-17
+hexagon                           allnoconfig    clang-22
+hexagon                          allyesconfig    clang-22
+hexagon               randconfig-001-20250912    clang-22
+hexagon               randconfig-002-20250912    clang-22
+i386                             allmodconfig    gcc-14
+i386                              allnoconfig    gcc-14
+i386        buildonly-randconfig-001-20250912    gcc-14
+i386        buildonly-randconfig-002-20250912    clang-20
+i386        buildonly-randconfig-003-20250912    gcc-13
+i386        buildonly-randconfig-004-20250912    clang-20
+i386        buildonly-randconfig-005-20250912    gcc-14
+i386        buildonly-randconfig-006-20250912    clang-20
+i386                                defconfig    clang-20
+loongarch                         allnoconfig    clang-22
+loongarch             randconfig-001-20250912    gcc-15.1.0
+loongarch             randconfig-002-20250912    clang-22
+m68k                             allmodconfig    gcc-15.1.0
+m68k                              allnoconfig    gcc-15.1.0
+m68k                             allyesconfig    gcc-15.1.0
+m68k                       bvme6000_defconfig    gcc-15.1.0
+microblaze                       allmodconfig    gcc-15.1.0
+microblaze                        allnoconfig    gcc-15.1.0
+microblaze                       allyesconfig    gcc-15.1.0
+microblaze                          defconfig    gcc-15.1.0
+mips                              allnoconfig    gcc-15.1.0
+mips                     loongson1b_defconfig    clang-22
+nios2                             allnoconfig    gcc-11.5.0
+nios2                               defconfig    gcc-11.5.0
+nios2                 randconfig-001-20250912    gcc-11.5.0
+nios2                 randconfig-002-20250912    gcc-11.5.0
+openrisc                          allnoconfig    gcc-15.1.0
+openrisc                         allyesconfig    gcc-15.1.0
+openrisc                            defconfig    gcc-15.1.0
+parisc                           allmodconfig    gcc-15.1.0
+parisc                            allnoconfig    gcc-15.1.0
+parisc                           allyesconfig    gcc-15.1.0
+parisc                              defconfig    gcc-15.1.0
+parisc                randconfig-001-20250912    gcc-14.3.0
+parisc                randconfig-002-20250912    gcc-8.5.0
+parisc64                            defconfig    gcc-15.1.0
+powerpc                          allmodconfig    gcc-15.1.0
+powerpc                           allnoconfig    gcc-15.1.0
+powerpc                          allyesconfig    clang-22
+powerpc                      pasemi_defconfig    clang-22
+powerpc               randconfig-001-20250912    gcc-8.5.0
+powerpc               randconfig-002-20250912    clang-22
+powerpc               randconfig-003-20250912    clang-17
+powerpc64             randconfig-001-20250912    gcc-12.5.0
+powerpc64             randconfig-002-20250912    clang-22
+powerpc64             randconfig-003-20250912    clang-19
+riscv                            allmodconfig    clang-22
+riscv                             allnoconfig    gcc-15.1.0
+riscv                            allyesconfig    clang-16
+riscv                               defconfig    clang-22
+riscv                 randconfig-001-20250912    clang-16
+riscv                 randconfig-002-20250912    gcc-9.5.0
+s390                             allmodconfig    clang-18
+s390                              allnoconfig    clang-22
+s390                             allyesconfig    gcc-15.1.0
+s390                                defconfig    clang-22
+s390                  randconfig-001-20250912    gcc-10.5.0
+s390                  randconfig-002-20250912    gcc-10.5.0
+s390                  randconfig-002-20250913    gcc-8.5.0
+sh                               allmodconfig    gcc-15.1.0
+sh                                allnoconfig    gcc-15.1.0
+sh                               allyesconfig    gcc-15.1.0
+sh                                  defconfig    gcc-15.1.0
+sh                    randconfig-001-20250912    gcc-15.1.0
+sh                    randconfig-002-20250912    gcc-15.1.0
+sparc                            allmodconfig    gcc-15.1.0
+sparc                             allnoconfig    gcc-15.1.0
+sparc                               defconfig    gcc-15.1.0
+sparc                 randconfig-001-20250912    gcc-8.5.0
+sparc                 randconfig-002-20250912    gcc-13.4.0
+sparc64                             defconfig    clang-20
+sparc64               randconfig-001-20250912    gcc-8.5.0
+sparc64               randconfig-002-20250912    clang-20
+um                               allmodconfig    clang-19
+um                                allnoconfig    clang-22
+um                               allyesconfig    gcc-14
+um                                  defconfig    clang-22
+um                             i386_defconfig    gcc-14
+um                    randconfig-001-20250912    clang-22
+um                    randconfig-002-20250912    gcc-14
+um                           x86_64_defconfig    clang-22
+x86_64                            allnoconfig    clang-20
+x86_64                           allyesconfig    clang-20
+x86_64      buildonly-randconfig-001-20250912    gcc-14
+x86_64      buildonly-randconfig-002-20250912    gcc-14
+x86_64      buildonly-randconfig-003-20250912    clang-20
+x86_64      buildonly-randconfig-004-20250912    clang-20
+x86_64      buildonly-randconfig-005-20250912    clang-20
+x86_64      buildonly-randconfig-006-20250912    gcc-14
+x86_64                              defconfig    gcc-14
+x86_64                          rhel-9.4-rust    clang-20
+xtensa                            allnoconfig    gcc-15.1.0
+xtensa                randconfig-001-20250912    gcc-9.5.0
+xtensa                randconfig-002-20250912    gcc-12.5.0
+
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
