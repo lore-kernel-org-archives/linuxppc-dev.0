@@ -1,72 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-12099-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12100-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 910DFCA101F
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 12 Sep 2025 21:29:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEB56CAC58E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Sep 2025 03:10:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cNncq1MFGz2yPS;
-	Sat, 13 Sep 2025 07:29:31 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1134"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757682986;
-	cv=none; b=feyJM0+PP2UEA+Kt3gelh0jwQmjqLjVnKpy8ariYwhWvkjiKjGt83LlNUngJcYJa4P8bcXLacvN/gv9nvO7izv0Cghr8m2LMc3C92xkJWNFsqUqvk2lcLpnb9NYZl2+pNW8X3u5cynyrCsCLtww9/hOnS/shep9ZxnbzOjpBDiedcAkszuOdwoGmdZsOq4S7S7tyAJ7V02kSVTsVkmEWJFvjjB4PcCTBOGDHq3jwpmhqTWQOiRpZWMLCYP0/bdTaEHPUC1XO45/SDi/X/ht2rHogz6ukoBadwENZfEWoerl+LNqm/7zey99CjNl2M6hS/Qhg2NKm94m8F5Vqr69+Ng==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cNxBk2P0bz2yD5;
+	Sat, 13 Sep 2025 13:10:54 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b12b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757731710;
+	cv=none; b=QWi9BGHi4nba/q8YI1Blb0/ocPJCpzwoM5cOpKaDLcrWAXh2wu1BGPFUaXyohpNgR1fu75AaF8a6QM3k3kShDq+3mM2crLe6oj0tJJyLAaWMN6T22SUn8kh3r2Rb3+3deNq/fVKFEfPu26Jy+TVJ6saHReJkMV/h07F7xC8KizFlPKCb+7qX659DWwSayO6An9ti1kDA40wugzcV+28Xn8PAUY8Ikh+53zuzn9G+GkdtTdapz4+or1aSnHZaa3TPtOKpDiggRg3Nugx90iCqlxHw+I4Vdo2dlzeBxGB38EsuWcl4y2tb1BAmm2b78GyVuGpo+HSfNwMWdULdNXUagg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757682986; c=relaxed/relaxed;
-	bh=WacX0Y225mfF5Mr+dq8TTghuE82OqAke+XlwrZchO4o=;
+	t=1757731710; c=relaxed/relaxed;
+	bh=dkY2yS7RSwh45nVEv3otHU3VH9SAKoF62TZrQgSQhHE=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=fWohZWDl8zTVQ7719vX+gLYv0k2IgznNFmWw53KojQju01zB3/Ea7Aqm2i+T4hqlBmFHG67fiZfHPR7vB9PBxNZl9HgStQc9ahigi+kCHP9MPokCUGTwe4A5jbMAQZTUk2l08IZWpm8GF7azj9/HxBIK9+L2Z7uigUdrpIngQUZLKfZivXQ3eeSbn7q2Z4IOyhXYKMcGNdFTtLB9xtzq+qlD34aupvpxb1syvL9Vd6uDtcqY4NdRGMQmhx7DauxTzrocB4G5A53wuNtWCe0lh0+D22wrLGnrLcLSyqNf2vM6XNIvUfLJ3ocb/deOVrs342BVWqNbC7csYy0flby+UA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=PZduWXaH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1134; helo=mail-yw1-x1134.google.com; envelope-from=sunjunchao@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+	 To:Cc:Content-Type; b=FAtK0WhzTELrRPu71kXbi2X62EGNmt/I1BU3ikGi166/d6SXyBs12wTZJL6L8XvR1b71Vn83p68eu8z8mJs0KsusroSM0JzMUZ5SJZE0lya6JPpRXGxE8FP0kkSMlhkhtP3ypVi9VIBsia0N2xbOdF9UUGgYLzEkpbqI0smrL0cfOKEHOihraSWkbeY3dgM8yaI/LIRPyPggvcJOHuJVdFe32Q2An7ZTQNhYFKHHqVSpi9cd9gInnCwDgSd8HpKh81sDWn5ybt8EI/3wZZMe2/QkWhhn9GmWj1ALLRd+7lTtXQqDK9GfYZdhXrihYFNafNQ6ED1BDA33XUr030Keew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=SqX+Dt/i; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b12b; helo=mail-yx1-xb12b.google.com; envelope-from=sunjunchao@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=PZduWXaH;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=SqX+Dt/i;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::1134; helo=mail-yw1-x1134.google.com; envelope-from=sunjunchao@bytedance.com; receiver=lists.ozlabs.org)
-Received: from mail-yw1-x1134.google.com (mail-yw1-x1134.google.com [IPv6:2607:f8b0:4864:20::1134])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::b12b; helo=mail-yx1-xb12b.google.com; envelope-from=sunjunchao@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb12b.google.com (mail-yx1-xb12b.google.com [IPv6:2607:f8b0:4864:20::b12b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cNZgq6Jbmz3dCt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2025 23:16:22 +1000 (AEST)
-Received: by mail-yw1-x1134.google.com with SMTP id 00721157ae682-71d60150590so12013677b3.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2025 06:16:21 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cNwhr3bNfz2xnr
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Sep 2025 12:48:26 +1000 (AEST)
+Received: by mail-yx1-xb12b.google.com with SMTP id 956f58d0204a3-62470472ebaso1304781d50.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 12 Sep 2025 19:48:26 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=bytedance.com; s=google; t=1757682979; x=1758287779; darn=lists.ozlabs.org;
+        d=bytedance.com; s=google; t=1757731703; x=1758336503; darn=lists.ozlabs.org;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:from:to:cc:subject:date
          :message-id:reply-to;
-        bh=WacX0Y225mfF5Mr+dq8TTghuE82OqAke+XlwrZchO4o=;
-        b=PZduWXaHWJUcNeGJHQaLBXoAM+tTlt8pzWZVVuAk5nDsAxcbTmIg3ChjA3EfmEBFST
-         EM534NP+/O6xjDEKPnel9dxs42/eNOUvyx744qh2AYkjjepUgyHv85FhHZOZKKPzGnX2
-         hNIGANvMSjJkMl0eAc38oCKhZ3/6CF/v0Rp9Nf/FO8ggtM7FbRsjfby+XiNclrnHhtut
-         7moNYbStQ4TA6pPkPaZUvFVPmxNuuLPZdp3jY6I466Fm5xPCIWiSROi2vuVx92dhM0u4
-         7qHIlORqN5YiH08if8AwFPHvT9l6T4+knOKTxuCPxeHfiREqLia+JyH9UhfqWl2sis2h
-         OOdA==
+        bh=dkY2yS7RSwh45nVEv3otHU3VH9SAKoF62TZrQgSQhHE=;
+        b=SqX+Dt/i6Er9YfoF3ayuouVV5tN82ByW86K0fZ58E8jH6+ra+L+D34S18ncYQgyWzg
+         1f2htTE2zqCG/0OemzRZRpAAhhAk2SRdC89dDbe2DtSosvjNpunwxvLBp8VFjD1J+R7P
+         bWd9Bcnt5rVmMszrC2yjr9t4XeWP4pyi1vgq3PTl3nd1YLiRkYF9criO0PjmEiolUlBK
+         iH1RX38kpycAvyY1W3fjuzMFijWjJNLa0tkcCRmwlxlZEA8+0kQyyymnBtTsD+XV7bLO
+         tzcTRxuUH+G62Ptz7jHOuvA1EFRSoNoODtZbsnVSXpDv3U3kl6FN45xFUFva3t/TA51z
+         OqJQ==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757682979; x=1758287779;
+        d=1e100.net; s=20230601; t=1757731703; x=1758336503;
         h=content-transfer-encoding:cc:to:subject:message-id:date:from
          :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=WacX0Y225mfF5Mr+dq8TTghuE82OqAke+XlwrZchO4o=;
-        b=sJfwKeQ5sW0/T1dC6BkUpTKr1Q34tr+Yud57qCRgHFPDBQ069rhmKoeWJL/vZUxup9
-         chG/qvPNsWIyK5+267FL0fd8sUdb1whwCbmf29+5ztymbrMGOjc9ypJZDtf5+SmhQjaq
-         Ih6lUZG5ODL+VACN32e6pJSnviDOY1J6ONRH092phqN+1O/ZSG84kgXRLjEaB4sp/FmI
-         kPyp5/9zEl1DscrFQVUI+mJNEpL4rP+cH825REftpmIxpndjcXlP4FZ5uaI/cnjpd63C
-         OSKo5h9v1tCKUD24xdafOClODhUb8kV+MmHXjHDAawOUKQ9BoT+t5lWZIIUhhA8shWpJ
-         WGdA==
-X-Forwarded-Encrypted: i=1; AJvYcCXHi3M+oINu1fsIfg5pFy6Knm1tSrun+couReNxna4vmm1rJODUpopjp0PAV7pk645ixYjxZ1hrh+2rC3o=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyGaFn6t6r/PO4Rsh6Hk03bI801hEcBqmvB8ag4kvCOjUo3B0A5
-	+szK+UUZCLN7MuY4Sl/VSbOjTln/deO4AFmEPmHEget0mHMU3hkhvGpp0P8i+pPmCXPeZSj+3df
-	T8zzIq7etaom1O/TN2DdC8aDJpspAXmSuMxHW4BMKUw==
-X-Gm-Gg: ASbGncuPfPwwdY9KBJ1Wie0KfDajdkYEfbvUddY2yhmV5+z/6bjfOilbwZUx337hsQE
-	s1yXfsJBp7hU9WScuhUC2QVohBo7ws3iebtkOnkjJuUsu5LoAGPUgOkO5+Tp8cIEuO5Uk4Co28M
-	zW4huAkkD8nA0iecuf1v9NAhlRuU0nYGLqNd9yU9BeYSc6BENJWYHbUhZHwIYKGbPfWL19KQGtV
-	+aHx/rN+VYiag4=
-X-Google-Smtp-Source: AGHT+IGYP/z3abyUgCJL16DnEpbMeZjMz4kBCICiy0J25UHYR5eBa2TN11vPJBGTBUTyY1a8ErBJ1zUjhD2KUm8MoWo=
-X-Received: by 2002:a05:690c:c90:b0:723:b3d4:1cfd with SMTP id
- 00721157ae682-73065dac45bmr29462097b3.54.1757682978514; Fri, 12 Sep 2025
- 06:16:18 -0700 (PDT)
+        bh=dkY2yS7RSwh45nVEv3otHU3VH9SAKoF62TZrQgSQhHE=;
+        b=LrX7TXR4XED2PR3bQhjD0CZ+HpGBEmUwL3Qh93IPoJXfsLRcRjF15wLjskctMNq5/M
+         xhQn/4OSyRv8ln9zFzro+SE6Z7vTSvFB6MXDWsrz68C4FSnofAMTWwMb72DurNEry3bs
+         fI6+60ElicNw8cdh/g9B6hvw9mUrBySrOeKMikLgUz5qZ29/OgYsLuhxqzjSctH8S8vs
+         IjkHEQSGJhZJXG6fkxI+9qDTaT8ZKl949qiocBVtG9C0fiXAlaJIOkHNoDcLlMRxYMVb
+         yVAyYt9Fcby13AlW1ltKGYYuqa3q264CKBkvKeMU8OxlVkUUx05lzf4JvpcIBrnl/EIA
+         fgTg==
+X-Forwarded-Encrypted: i=1; AJvYcCUo1njYgJM5YcRJ47xoJVSgAvSxnBP7RqSsAyZ+AGpoGeYZ8svQ15JajUEwf9q/C5l9CLUlJ1veNEudrbA=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyghCNa0wA7nGizZy+dwgYlYObrzebs375/aCNcrTaihLMB4Wew
+	xqEhbxGzn9fCcJ1FlRt+H4kBkeiT52JAchaWqtyYobAl2C0Smy/epEKBRYBKll5vZxO04aOUlXQ
+	g29Tz8OS4G5Eev1EVwqJFsd6wAd86WWD7hsbRDZvGeQ==
+X-Gm-Gg: ASbGncscWHbospYAuA+9VAsxIcSkEa8CjCAVTZixfn/Owm1ClJYtAZJO7+zr0/wwJ7L
+	OQKZ+37THtHk4wk6td4BFFmKU88c+NKeNe755Byoyp4JAbyWV7qVV3o4QGO+qfAYu4qRiccNMFm
+	RLrxyBQRto/WqjhuMg1hOIrdREAxfznNpUhkvOUTGhA+b0W7UHE5WfidsTsfzZ3dEVjWxBWNwHN
+	bXLAtBcddg58uk=
+X-Google-Smtp-Source: AGHT+IGiKD+4jzf4TGq8bTBu8gsWjwWmWFiXXnkLbYhS2Yr6yBghdtRZuNxqqC+KU1Yu03Hdf+Hg2fEWLC9p8tq8dhA=
+X-Received: by 2002:a53:e712:0:b0:5fe:91c3:f0fb with SMTP id
+ 956f58d0204a3-627234f4904mr3827458d50.32.1757731703206; Fri, 12 Sep 2025
+ 19:48:23 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,9 +83,9 @@ MIME-Version: 1.0
 References: <8957c526-d05c-4c0d-bfed-0eb6e6d2476c@linux.ibm.com> <BAEAC2F7-7D7F-49E4-AB21-10FC0E4BF5F3@linux.ibm.com>
 In-Reply-To: <BAEAC2F7-7D7F-49E4-AB21-10FC0E4BF5F3@linux.ibm.com>
 From: Julian Sun <sunjunchao@bytedance.com>
-Date: Fri, 12 Sep 2025 21:16:07 +0800
-X-Gm-Features: Ac12FXxgWzP6HGChGViD5jg5oUeivsG-aZaYxectxJJdHUjuwBlW_e-BOMpk6RE
-Message-ID: <CAHSKhteONXP5n9m0=Xia0jTFvLWnfpSKHYWyzRVigT0VwmGcgQ@mail.gmail.com>
+Date: Sat, 13 Sep 2025 10:48:12 +0800
+X-Gm-Features: Ac12FXxyQ3rupesgBRE_rBBovmGPVj00T36Qe6boIv2jYp-KBN6pOz85tL_EOvs
+Message-ID: <CAHSKhteHC26yXVFtjgdanfM7+vsOVZ+HHWnBYD01A4eiRHibVQ@mail.gmail.com>
 Subject: Re: [External] Re: [linux-next20250911]Kernel OOPs while running
  generic/256 on Pmem device
 To: Venkat <venkat88@linux.ibm.com>
@@ -100,7 +100,33 @@ Cc: tj@kernel.org, akpm@linux-foundation.org, stable@vger.kernel.org,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Thanks for the report. I will take a look at this issue.
+Hi,
+
+Does this fix make sense to you?
+
+diff --git a/mm/memcontrol.c b/mm/memcontrol.c
+index d0dfaa0ccaba..ed24dcece56a 100644
+--- a/mm/memcontrol.c
++++ b/mm/memcontrol.c
+@@ -3945,9 +3945,10 @@ static void mem_cgroup_css_free(struct
+cgroup_subsys_state *css)
+                 * Not necessary to wait for wb completion which might
+cause task hung,
+                 * only used to free resources. See
+memcg_cgwb_waitq_callback_fn().
+                 */
+-               __add_wait_queue_entry_tail(wait->done.waitq, &wait->wq_ent=
+ry);
+                if (atomic_dec_and_test(&wait->done.cnt))
+-                       wake_up_all(wait->done.waitq);
++                       kfree(wait);
++               else
++                       __add_wait_queue_entry_tail(wait->done.waitq,
+&wait->wq_entry);;
+        }
+ #endif
+        if (cgroup_subsys_on_dfl(memory_cgrp_subsys) && !cgroup_memory_noso=
+cket)
 
 On Fri, Sep 12, 2025 at 8:33=E2=80=AFPM Venkat <venkat88@linux.ibm.com> wro=
 te:
@@ -315,7 +341,7 @@ ing")
 > >
 >
 
-Thanks,
+
 --=20
 Julian Sun <sunjunchao@bytedance.com>
 
