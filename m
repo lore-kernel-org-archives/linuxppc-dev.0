@@ -1,137 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-12176-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12177-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BCAE5CAC58F
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Sep 2025 05:32:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 54942CAC582
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Sep 2025 09:03:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cPcHD2ypvz3chv;
-	Sun, 14 Sep 2025 15:32:08 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::636"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757822087;
-	cv=none; b=bzyDW11kW7OZirAm0b99Ip/Cb4FkS345p30xfcUGF7sNcykHlDgeQaJFfcaReEsw4oRMncdRyQDX6lzeaLpwdFbBAlqCFHyu2IuKvreRoW7PDNXuNOP1eg8yeNpGLFWzt+H6CQR4l5XODfmJenEn9lZ37YuAlxy/rRsJQA44S1/vmTGSMWKRYTWRAXwHBJZc8xhr3cWCKVKz2xtw6iAtw3vvThF4k7A48M35T0OJQAzPvW5PWPcJHdXDQdoNmdSkQfE3ux7O9EJg+mLNrFTiUC7/mWc/h820MBGwVSxXJfILwQ+s1tDZh0dgysbtvylf2OOL15bxG+0mZtatKKL49g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cPhz155B2z3cYk;
+	Sun, 14 Sep 2025 19:03:25 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757840605;
+	cv=none; b=L8d3lxd9mbRmsiND1++0NEfD/x4D0p5boSmM8u7rWdDR3EePluY7CBiK67BK8F8Zwer68vQZZebn/ZlfyQNgN6YKnRAk2jwWmq9VYcdTFwQm6umn8AofNVjPpPQqWY034fn51rdMS4rspiliTMhRNkWwINg5NQhYoZTq5ZMQvU45CJ+DTa9sZQNRjRLNIg2G8O/0MZVvWoh3kepUC0KZ4In3nW1WO/L8LFd5Q8c+OELNy9wmcg6ozpeaCCSnTg47mvWYO09FBipSKh6fdb0cYixzkyJuxwgRI+IcUxghkdwQ0HlQzOvEU/fUE3gEPB5xwbFhAeeEcGnR0lcXJNmWtw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757822087; c=relaxed/relaxed;
-	bh=pjKVSjXysip/b5UNUwgMX+OIg9u3DNn6e0+I8Cmpn0k=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=G2VkSqg7fhtLmCpgN/wNR2hEgL+ESYRw806n4nkbOvp3d5//Y2fAzZiNOgQfWpgdJEZdWQSMHMIRJPtRURGgT9vhDxFkpq5Z9LnYPeK/b8KZqFM4daZ+yK8GMCoEvCudWmWL+kd1b3M+deHtUaDXqvuAkxtUpLGygrIiBGCdf940U8NTfFkGrstq43OIuxNlKLiUe5q4iBIq0EA5tZLVko19ASkN712fMQNqlUcBlIc6TbC8TU1240X1bHIiUfo1EpgB0JkDeqgEA4b5inNgHwHApwDsk6zFP68raxwZaL+4jQkG1ZCrTK5ZaQB6UsZ528uTztTGlUtd7CpSI2DRcw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y/l5KDl2; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::636; helo=mail-ej1-x636.google.com; envelope-from=safinaskar@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1757840605; c=relaxed/relaxed;
+	bh=FcbN245cf2PHg1U9jA4JXjqihqRuIVDI5eszvfiebNc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:Cc:
+	 In-Reply-To:Content-Type; b=Yfn4w3jmwdg8xR/6DvqNrx3t1SM+V1wkx/ZAIEb6PkCqIBU/XRamAyofmgEMM7VoUmwz6tAdDL/51uyDF5JSU/lMV1GiDvPXedEwFuHgcWdptJ6gT2ONNj9MuzIjXoD8dGBLlgCKj3wRJWAWB5UMk0xbEqq7MW0cDeWK3gVHDSObkY+j/rbwcwINv7AZ9/uawmSkzYmfHXFx2jaFO3ZiLg+mrTEI5/WNx4ON6tP4sRSTIo4dGSbtsqTKF0OF9OYoLYE0V8S2B7gSWM8j3QJe0WBVKrZelCz+WDjDuCZc0rptL53UeGQ6S1hS4Q2NHNDWmSiiicSGqA9dqEm01AiRkA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Rp4P//8W; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y/l5KDl2;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Rp4P//8W;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::636; helo=mail-ej1-x636.google.com; envelope-from=safinaskar@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com [IPv6:2a00:1450:4864:20::636])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cPZ6t3nVQz2yrg
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Sep 2025 13:54:46 +1000 (AEST)
-Received: by mail-ej1-x636.google.com with SMTP id a640c23a62f3a-b07e3a77b72so134360666b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Sep 2025 20:54:46 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1757822083; x=1758426883; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=pjKVSjXysip/b5UNUwgMX+OIg9u3DNn6e0+I8Cmpn0k=;
-        b=Y/l5KDl26H+TPzyVcYZ3i5MU7nWM41amgtB8uYQZgPhoh68wZXwK5SciHTo0BzolSh
-         yIKNjm4yNRSEthFqjOxqn0noFpyxm9t0RsPEDizJZ7UHfVjUGWH6O29drrcfI8xIjbVW
-         q0xEkM7nHeK22Xlnl/UlR6MEBMMuYOjR94mUvmp6sUfOLiD7nNybWRZJT8DqERltv+Cc
-         qsa14Q+pXqFYDJWluAD7ahA94i9NjuUuwEgLjC8NPHx8bYfaY8mH1fpWVuTo/1M23+ar
-         RB4biG7z+eaZnJlmKla5S66cOTbG2+qQy5wFm+4wai8kiurWNYMRprFeRWhyXFlRtkR6
-         Di4Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1757822083; x=1758426883;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:date:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=pjKVSjXysip/b5UNUwgMX+OIg9u3DNn6e0+I8Cmpn0k=;
-        b=EkzSxnH90q7ZapdVy0cLe1/1gdzN7bol75iO95QOnxmg98dFK5bJMCA/tfVB0J0VSJ
-         ZIb8ZBFhm4uy9uprr/kQje5gZeJBBSBS1sQ9P/5MKceaELBa3v/7WzKyeeilsFGxXMm2
-         0DvevzcWNKB9YYrUbQwTD7TT+vYW4ws8QtS8HuFFgt8IUbieBBzCdJ3MdAsW51oqDMxr
-         SB7yPdS5ZQBgsZd2v+3Ua81avuAQ1m+Qtg3nWhiFJ42psaFWe6QpWFRYAgcUee/Mn/pG
-         J+Q69qkXXvVrwjMn/JctRHQYNDtSE6ihsXcyHX3kQCV0m///o1FW4TCzVx8BKjzBKBre
-         gY+g==
-X-Forwarded-Encrypted: i=1; AJvYcCUn6it9wmTgHanysX+8N2n3QmVolBrb96TfIsg4vNRjlwjB+KHYxoBJhL6MqLBfN5+ynwk3s2QiQpdTDsM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzn7pzz8Gpf5ZiLtoauPNK54a2rcwYn5XfQs6Z33fo598DPc808
-	HbvnC3VOMlz2hHVn5moCm0FjwjMAr1V/1eBvXN5r2b5R1T1fVAGIKeAm
-X-Gm-Gg: ASbGncvZKqxtNgWodjo8X1iu9ftgiCIMJItTLpsamC5B9eQDBIWg8g9P1P1LubO0dZ7
-	uf+ggrbiMVtr/vsRiBb05OlN//ZQXbAbmefD1K5ynTrwW1MVIm7VpzoJAhLhLFORDQ6niRswdWp
-	LBv6YFu9tqTaaln96ESXQ/9WWNSt40rjpUrTre84H+2UlsU3j+K1h+kj3eXZYDAT0Aj7PZlyguT
-	geTkP3ET7RMQqLsmbtEAjXRlSqkHRrDgbLmq+CUq6ZmRRdTlcZdlqPFAOQdpgRJYCLNjgXfCcZi
-	eUdZRLg3wu7cA5rjulTkjvEGEaTVh3Uq7Zr2s6Zzp50XZ5nYgEUnDmSU9dzrCGgvLRwF0vWjUWS
-	jQ4xH2xwiCLaOfGxyHYupRUqgC53S9A==
-X-Google-Smtp-Source: AGHT+IFpMpCVJeNrUipt0dZC4eBHRTy08fiFy9cwywIocPIoMawoMDT0bJrFyHi72vkPeUNRc3Oodg==
-X-Received: by 2002:a17:906:114e:b0:b0b:35d8:248e with SMTP id a640c23a62f3a-b0b35d8267fmr237998166b.18.1757822083468;
-        Sat, 13 Sep 2025 20:54:43 -0700 (PDT)
-Received: from localhost ([212.73.77.104])
-        by smtp.gmail.com with UTF8SMTPSA id a640c23a62f3a-b07b32dd5a9sm665619166b.57.2025.09.13.20.54.39
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 13 Sep 2025 20:54:43 -0700 (PDT)
-From: Askar Safin <safinaskar@gmail.com>
-To: linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
-	Christian Brauner <brauner@kernel.org>,
-	Al Viro <viro@zeniv.linux.org.uk>,
-	Jan Kara <jack@suse.cz>,
-	Christoph Hellwig <hch@lst.de>,
-	Jens Axboe <axboe@kernel.dk>,
-	Andy Shevchenko <andy.shevchenko@gmail.com>,
-	Aleksa Sarai <cyphar@cyphar.com>,
-	=?UTF-8?q?Thomas=20Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
-	Julian Stecklina <julian.stecklina@cyberus-technology.de>,
-	Gao Xiang <hsiangkao@linux.alibaba.com>,
-	Art Nikpal <email2tema@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Eric Curtin <ecurtin@redhat.com>,
-	Alexander Graf <graf@amazon.com>,
-	Rob Landley <rob@landley.net>,
-	Lennart Poettering <mzxreary@0pointer.de>,
-	linux-arch@vger.kernel.org,
-	linux-alpha@vger.kernel.org,
-	linux-snps-arc@lists.infradead.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-csky@vger.kernel.org,
-	linux-hexagon@vger.kernel.org,
-	loongarch@lists.linux.dev,
-	linux-m68k@lists.linux-m68k.org,
-	linux-mips@vger.kernel.org,
-	linux-openrisc@vger.kernel.org,
-	linux-parisc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	linux-sh@vger.kernel.org,
-	sparclinux@vger.kernel.org,
-	linux-um@lists.infradead.org,
-	x86@kernel.org,
-	Ingo Molnar <mingo@redhat.com>,
-	linux-block@vger.kernel.org,
-	initramfs@vger.kernel.org,
-	linux-api@vger.kernel.org,
-	linux-doc@vger.kernel.org,
-	linux-efi@vger.kernel.org,
-	linux-ext4@vger.kernel.org,
-	"Theodore Y . Ts'o" <tytso@mit.edu>,
-	linux-acpi@vger.kernel.org,
-	Michal Simek <monstr@monstr.eu>,
-	devicetree@vger.kernel.org,
-	Luis Chamberlain <mcgrof@kernel.org>,
-	Kees Cook <kees@kernel.org>,
-	Thorsten Blum <thorsten.blum@linux.dev>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	patches@lists.linux.dev
-Subject: [PATCH RESEND 45/62] doc: kernel-parameters: replace [RAM] with [INITRAMFS]
-Date: Sun, 14 Sep 2025 06:54:38 +0300
-Message-ID: <20250914035438.3682240-1-safinaskar@gmail.com>
-X-Mailer: git-send-email 2.47.2
-In-Reply-To: <20250913003842.41944-1-safinaskar@gmail.com>
-References: <20250913003842.41944-1-safinaskar@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cPhz02lBPz3cBW
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Sep 2025 19:03:23 +1000 (AEST)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58E703Fo013144;
+	Sun, 14 Sep 2025 09:02:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=FcbN24
+	5cf2PHg1U9jA4JXjqihqRuIVDI5eszvfiebNc=; b=Rp4P//8W8b1ZUUuHx3uMxU
+	YpCrgNp0vVIyM7MzM0WcCHQSpSOMn9jwR8mOO82c4w4B0pyvnvPBcKidQuHaFi7P
+	QJ1hpGo3Zs7cueu5/IEwJcUJB2SD1n7xHV5cyHRF4a34F8Bs80JnKAOYrcd5z+Dm
+	dVtHDuGEYkWPEfh7Xira7Cr7TKhgmYZPKWyMhhyN53Uio9WVV/wbNfPEpQNrq8Gj
+	BvMssgkE0otiDNCm5Kj7rXLZN6Yc0EI8hFM2jRbnN2fa0szDERFiN00NL3BGnaU8
+	ioIkzWLBM981O8yFUmYiUssNe03yOV89u2yZRe6BrospxtzRXK+zYnXHJEDe/uIw
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 49504avkn3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 14 Sep 2025 09:02:37 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 58E92anr005634;
+	Sun, 14 Sep 2025 09:02:36 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 49504avkmv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 14 Sep 2025 09:02:36 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 58E8bqAs009367;
+	Sun, 14 Sep 2025 09:02:35 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 495nn30x82-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 14 Sep 2025 09:02:35 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 58E92VAP35127824
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 14 Sep 2025 09:02:31 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 8B43D20043;
+	Sun, 14 Sep 2025 09:02:31 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6593620040;
+	Sun, 14 Sep 2025 09:02:18 +0000 (GMT)
+Received: from [9.61.95.215] (unknown [9.61.95.215])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sun, 14 Sep 2025 09:02:17 +0000 (GMT)
+Message-ID: <188f79ef-6ad4-4144-b73b-9e1090f4fc95@linux.ibm.com>
+Date: Sun, 14 Sep 2025 14:32:16 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -145,120 +87,249 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [RFC V2 3/8] powerpc: introduce arch_enter_from_user_mode
+To: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+References: <20250908210235.137300-2-mchauras@linux.ibm.com>
+ <20250908210235.137300-5-mchauras@linux.ibm.com>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Content-Language: en-US
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu, oleg@redhat.com, kees@kernel.org,
+        luto@amacapital.net, wad@chromium.org, deller@gmx.de, ldv@strace.io,
+        macro@orcam.me.uk, charlie@rivosinc.com, akpm@linux-foundation.org,
+        bigeasy@linutronix.de, ankur.a.arora@oracle.com, naveen@kernel.org,
+        thomas.weissschuh@linutronix.de, Jason@zx2c4.com, peterz@infradead.org,
+        tglx@linutronix.de, namcao@linutronix.de, kan.liang@linux.intel.com,
+        mingo@kernel.org, oliver.upton@linux.dev, mark.barnett@arm.com,
+        atrajeev@linux.vnet.ibm.com, rppt@kernel.org, coltonlewis@google.com,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+In-Reply-To: <20250908210235.137300-5-mchauras@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTEzMDAyMCBTYWx0ZWRfXydJfEtyOMTaR
+ skO8TUcN423tHXlR0ByIjODRe5WErlqrZehFA3U4QIhD9rez7d/7UDOzQiCo3xmTPGnxQD/GiiS
+ G5R9NEcQ9sTsSK6EM9fbdhANmad1K2f3lkkTOiW48irkZNXiKKOR7APpWbpn9SQfL+W6C5n1ebb
+ xnMhHTJrDa4emUa7yPYxNOY/HDtEKzxLzqz07pqqK0EKV9cpDEbqAxGMSLovuvIH3qzffzg4qEU
+ EAKCAARMeGb5knG6ajkBBRFFfsCVhgkvvHC8rS//z3nuRIfsWL5c96RfsFQ30uCDgP8geTD2mpb
+ wcGupMVPh5DqgnfroO0PcU5lVrG6Vu8DUfvA2zQZZntJ878doQ7x+DaeuU1rm9SQ6tbcu9C9XM0
+ bpr+N20x
+X-Proofpoint-ORIG-GUID: rYR5iObNo_pb8F-yGfVXSaHmOtLJUpaB
+X-Authority-Analysis: v=2.4 cv=dt/bC0g4 c=1 sm=1 tr=0 ts=68c684ad cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VnNF1IyMAAAA:8 a=lQVaECI8AZnJP4KHH_4A:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: wtcnjzJoUQ4SEcnHk3MA937O09RA2Hid
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-09-14_03,2025-09-12_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 impostorscore=0 adultscore=0 malwarescore=0 bulkscore=0
+ spamscore=0 clxscore=1015 priorityscore=1501 phishscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509130020
 
-Also, do other initramfs-related edits, while we are here
 
-Signed-off-by: Askar Safin <safinaskar@gmail.com>
----
- .../admin-guide/kernel-parameters.rst         |  4 ++--
- .../admin-guide/kernel-parameters.txt         | 20 +++++++++----------
- 2 files changed, 12 insertions(+), 12 deletions(-)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.rst b/Documentation/admin-guide/kernel-parameters.rst
-index 39d0e7ff0965..22af6bbffc35 100644
---- a/Documentation/admin-guide/kernel-parameters.rst
-+++ b/Documentation/admin-guide/kernel-parameters.rst
-@@ -123,7 +123,7 @@ is applicable::
- 	CMA	Contiguous Memory Area support is enabled.
- 	DRM	Direct Rendering Management support is enabled.
- 	DYNAMIC_DEBUG Build in debug messages and enable them at runtime
--	EARLY	Parameter processed too early to be embedded in initrd.
-+	EARLY	Parameter processed too early to be embedded in initramfs.
- 	EDD	BIOS Enhanced Disk Drive Services (EDD) is enabled
- 	EFI	EFI Partitioning (GPT) is enabled
- 	EVM	Extended Verification Module
-@@ -134,6 +134,7 @@ is applicable::
- 	HW	Appropriate hardware is enabled.
- 	HYPER_V HYPERV support is enabled.
- 	IMA     Integrity measurement architecture is enabled.
-+	INITRAMFS Initramfs support is enabled.
- 	IP_PNP	IP DHCP, BOOTP, or RARP is enabled.
- 	IPV6	IPv6 support is enabled.
- 	ISAPNP	ISA PnP code is enabled.
-@@ -167,7 +168,6 @@ is applicable::
- 	PPT	Parallel port support is enabled.
- 	PS2	Appropriate PS/2 support is enabled.
- 	PV_OPS	A paravirtualized kernel is enabled.
--	RAM	RAM disk support is enabled.
- 	RDT	Intel Resource Director Technology.
- 	RISCV	RISCV architecture is enabled.
- 	S390	S390 architecture is enabled.
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index 0805d3ebc75a..8e10abac4cc7 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -565,7 +565,7 @@
- 			Format: integer
- 
- 	bootconfig	[KNL,EARLY]
--			Extended command line options can be added to an initrd
-+			Extended command line options can be added to an initramfs
- 			and this will cause the kernel to look for it.
- 
- 			See Documentation/admin-guide/bootconfig.rst
-@@ -1005,7 +1005,7 @@
- 			may be missing from the dump.
- 
- 			A standard crashkernel reservation, as described above,
--			is still needed to hold the crash kernel and initrd.
-+			is still needed to hold the crash kernel and initramfs.
- 
- 			This option increases the risk of a kdump failure: DMA
- 			transfers configured by the first kernel may end up
-@@ -2298,7 +2298,7 @@
- 			initcall functions.  Useful for debugging built-in
- 			modules and initcalls.
- 
--	initramfs_async= [KNL]
-+	initramfs_async= [INITRAMFS,KNL]
- 			Format: <bool>
- 			Default: 1
- 			This parameter controls whether the initramfs
-@@ -2310,10 +2310,10 @@
- 			unpacking being completed before device_ and
- 			late_ initcalls.
- 
--	initrd=		[BOOT,EARLY] Specify the location of the initial ramdisk
-+	initrd=		[BOOT,EARLY,INITRAMFS,KNL] Same as initrdmem=
- 
--	initrdmem=	[KNL,EARLY] Specify a physical address and size from which to
--			load the initrd. If an initrd is compiled in or
-+	initrdmem=	[BOOT,EARLY,INITRAMFS,KNL] Specify a physical address and size from which to
-+			load initramfs. If initramfs is compiled in or
- 			specified in the bootparams, it takes priority over this
- 			setting.
- 			Format: ss[KMG],nn[KMG]
-@@ -2749,7 +2749,7 @@
- 			between unregistering the boot console and initializing
- 			the real console.
- 
--	keepinitrd	[HW,ARM] See retain_initrd.
-+	keepinitrd	[HW,ARM,INITRAMFS] See retain_initrd.
- 
- 	kernelcore=	[KNL,X86,PPC,EARLY]
- 			Format: nn[KMGTPE] | nn% | "mirror"
-@@ -6129,8 +6129,8 @@
- 
- 	rdinit=		[KNL]
- 			Format: <full_path>
--			Run specified binary instead of /init from the ramdisk,
--			used for early userspace startup. See initrd.
-+			Run specified binary instead of /init from initramfs,
-+			used for early userspace startup.
- 
- 	rdrand=		[X86,EARLY]
- 			force - Override the decision by the kernel to hide the
-@@ -6324,7 +6324,7 @@
- 			Useful for devices that are detected asynchronously
- 			(e.g. USB and MMC devices).
- 
--	retain_initrd	[RAM] Keep initrd memory after extraction. After boot, it will
-+	retain_initrd	[INITRAMFS] Keep initramfs memory after extraction. After boot, it will
- 			be accessible via /sys/firmware/initrd.
- 
- 	retbleed=	[X86] Control mitigation of RETBleed (Arbitrary
--- 
-2.47.2
+On 9/9/25 2:32 AM, Mukesh Kumar Chaurasiya wrote:
+> - Implement the hook arch_enter_from_user_mode for syscall entry.
+
+nit: for generic syscall infra.
+
+> - Move booke_load_dbcr0 from interrupt.c to interrupt.h
+> 
+> No functional change intended.
+>
+> Signed-off-by: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+> ---
+>   arch/powerpc/include/asm/entry-common.h | 96 +++++++++++++++++++++++++
+>   arch/powerpc/include/asm/interrupt.h    | 23 ++++++
+>   arch/powerpc/kernel/interrupt.c         | 22 ------
+>   3 files changed, 119 insertions(+), 22 deletions(-)
+> 
+> diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
+> index 3af16d821d07e..49607292bf5a5 100644
+> --- a/arch/powerpc/include/asm/entry-common.h
+> +++ b/arch/powerpc/include/asm/entry-common.h
+> @@ -5,7 +5,103 @@
+>   
+>   #ifdef CONFIG_GENERIC_IRQ_ENTRY
+>   
+> +#include <asm/cputime.h>
+> +#include <asm/interrupt.h>
+>   #include <asm/stacktrace.h>
+> +#include <asm/tm.h>
+> +
+> +static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs)
+> +{
+> +	if (IS_ENABLED(CONFIG_PPC_IRQ_SOFT_MASK_DEBUG))
+> +		BUG_ON(irq_soft_mask_return() != IRQS_ALL_DISABLED);
+> +
+> +	BUG_ON(regs_is_unrecoverable(regs));
+> +	BUG_ON(!user_mode(regs));
+> +	BUG_ON(regs_irqs_disabled(regs));
+> +
+> +#ifdef CONFIG_PPC_PKEY
+> +	if (mmu_has_feature(MMU_FTR_PKEY)) {
+> +		unsigned long amr, iamr;
+> +		bool flush_needed = false;
+> +		/*
+> +		 * When entering from userspace we mostly have the AMR/IAMR
+> +		 * different from kernel default values. Hence don't compare.
+> +		 */
+> +		amr = mfspr(SPRN_AMR);
+> +		iamr = mfspr(SPRN_IAMR);
+> +		regs->amr  = amr;
+> +		regs->iamr = iamr;
+> +		if (mmu_has_feature(MMU_FTR_KUAP)) {
+> +			mtspr(SPRN_AMR, AMR_KUAP_BLOCKED);
+> +			flush_needed = true;
+> +		}
+> +		if (mmu_has_feature(MMU_FTR_BOOK3S_KUEP)) {
+> +			mtspr(SPRN_IAMR, AMR_KUEP_BLOCKED);
+> +			flush_needed = true;
+> +		}
+> +		if (flush_needed)
+> +			isync();
+> +	} else
+> +#endif
+> +		kuap_assert_locked();
+> +
+> +	booke_restore_dbcr0();
+> +
+> +	account_cpu_user_entry();
+> +
+> +	account_stolen_time();
+> +
+> +	/*
+> +	 * This is not required for the syscall exit path, but makes the
+> +	 * stack frame look nicer. If this was initialised in the first stack
+> +	 * frame, or if the unwinder was taught the first stack frame always
+> +	 * returns to user with IRQS_ENABLED, this store could be avoided!
+> +	 */
+> +	irq_soft_mask_regs_set_state(regs, IRQS_ENABLED);
+> +
+> +	/*
+> +	 * If system call is called with TM active, set _TIF_RESTOREALL to
+> +	 * prevent RFSCV being used to return to userspace, because POWER9
+> +	 * TM implementation has problems with this instruction returning to
+> +	 * transactional state. Final register values are not relevant because
+> +	 * the transaction will be aborted upon return anyway. Or in the case
+> +	 * of unsupported_scv SIGILL fault, the return state does not much
+> +	 * matter because it's an edge case.
+> +	 */
+> +	if (IS_ENABLED(CONFIG_PPC_TRANSACTIONAL_MEM) &&
+> +			unlikely(MSR_TM_TRANSACTIONAL(regs->msr)))
+> +		set_bits(_TIF_RESTOREALL, &current_thread_info()->flags);
+> +
+> +	/*
+> +	 * If the system call was made with a transaction active, doom it and
+> +	 * return without performing the system call. Unless it was an
+> +	 * unsupported scv vector, in which case it's treated like an illegal
+> +	 * instruction.
+> +	 */
+> +#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
+> +	if (unlikely(MSR_TM_TRANSACTIONAL(regs->msr)) &&
+> +	    !trap_is_unsupported_scv(regs)) {
+> +		/* Enable TM in the kernel, and disable EE (for scv) */
+> +		hard_irq_disable();
+> +		mtmsr(mfmsr() | MSR_TM);
+> +
+> +		/* tabort, this dooms the transaction, nothing else */
+> +		asm volatile(".long 0x7c00071d | ((%0) << 16)"
+> +				:: "r"(TM_CAUSE_SYSCALL|TM_CAUSE_PERSISTENT));
+> +
+> +		/*
+> +		 * Userspace will never see the return value. Execution will
+> +		 * resume after the tbegin. of the aborted transaction with the
+> +		 * checkpointed register state. A context switch could occur
+> +		 * or signal delivered to the process before resuming the
+> +		 * doomed transaction context, but that should all be handled
+> +		 * as expected.
+> +		 */
+> +		return;
+> +	}
+> +#endif // CONFIG_PPC_TRANSACTIONAL_MEM
+
+nit: Better to follow standard comment practices.
+		/* CONFIG_PPC_TRANSACTIONAL_MEM */
+
+> +}
+> +#define arch_enter_from_user_mode arch_enter_from_user_mode
+>   
+>   #endif /* CONFIG_GENERIC_IRQ_ENTRY */
+>   #endif /* _ASM_PPC_ENTRY_COMMON_H */
+> diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+> index 56bc8113b8cde..6edf064a0fea2 100644
+> --- a/arch/powerpc/include/asm/interrupt.h
+> +++ b/arch/powerpc/include/asm/interrupt.h
+> @@ -138,6 +138,29 @@ static inline void nap_adjust_return(struct pt_regs *regs)
+>   #endif
+>   }
+>   
+> +static inline void booke_load_dbcr0(void)
+> +{
+> +#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+> +       unsigned long dbcr0 = current->thread.debug.dbcr0;
+> +
+> +       if (likely(!(dbcr0 & DBCR0_IDM)))
+> +               return;
+> +
+> +       /*
+> +        * Check to see if the dbcr0 register is set up to debug.
+> +        * Use the internal debug mode bit to do this.
+> +        */
+> +       mtmsr(mfmsr() & ~MSR_DE);
+> +       if (IS_ENABLED(CONFIG_PPC32)) {
+> +               isync();
+> +               global_dbcr0[smp_processor_id()] = mfspr(SPRN_DBCR0);
+> +       }
+> +       mtspr(SPRN_DBCR0, dbcr0);
+> +       mtspr(SPRN_DBSR, -1);
+> +#endif
+> +}
+> +
+
+Please run checkpatch.pl --strict on the series and fix the simple
+ones such as need to using tabs, spaces and alignments, extra lines etc.
+
+> +
+>   static inline void booke_restore_dbcr0(void)
+>   {
+>   #ifdef CONFIG_PPC_ADV_DEBUG_REGS
+> diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+> index 0d8fd47049a19..2a09ac5dabd62 100644
+> --- a/arch/powerpc/kernel/interrupt.c
+> +++ b/arch/powerpc/kernel/interrupt.c
+> @@ -78,28 +78,6 @@ static notrace __always_inline bool prep_irq_for_enabled_exit(bool restartable)
+>   	return true;
+>   }
+>   
+> -static notrace void booke_load_dbcr0(void)
+> -{
+> -#ifdef CONFIG_PPC_ADV_DEBUG_REGS
+> -	unsigned long dbcr0 = current->thread.debug.dbcr0;
+> -
+> -	if (likely(!(dbcr0 & DBCR0_IDM)))
+> -		return;
+> -
+> -	/*
+> -	 * Check to see if the dbcr0 register is set up to debug.
+> -	 * Use the internal debug mode bit to do this.
+> -	 */
+> -	mtmsr(mfmsr() & ~MSR_DE);
+> -	if (IS_ENABLED(CONFIG_PPC32)) {
+> -		isync();
+> -		global_dbcr0[smp_processor_id()] = mfspr(SPRN_DBCR0);
+> -	}
+> -	mtspr(SPRN_DBCR0, dbcr0);
+> -	mtspr(SPRN_DBSR, -1);
+> -#endif
+> -}
+> -
+>   static notrace void check_return_regs_valid(struct pt_regs *regs)
+>   {
+>   #ifdef CONFIG_PPC_BOOK3S_64
 
 
