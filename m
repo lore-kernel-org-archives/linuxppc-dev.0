@@ -1,50 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-12215-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12216-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B49D0CAC597
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 10:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9755FCAC593
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 11:20:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQMJF36t1z30Qk;
-	Mon, 15 Sep 2025 20:50:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757933437;
-	cv=none; b=VPlv7CnZFBarAArB1wP0dcGTweSHQ8Kh2JuJIIJszyhpoNnYn/mtOzj5nXylOkPraG+9iQQgAWAriyyT4g09M7d0w3putDU+tC8Wg+gPZ+F/VT2SVnezbxYZ3USyUu1+3gpUfUWrUQ+AipXlQNoCF8UOrdXtAJptMeFH0EIOwskTxp/6F70FAkftr7Zf+6jdwpygLpvl7mYJSXPxxEcbyv9H19aiP6xCakc0mDgrxour9ftz+XeSX97CnkXdzSZnHnTfQd+emdwRtoIxHeHsKFeiYbvu1HCAFs22uw8oVADZthIAI+nDZ7CfDKw2/pJAe/oMXckC1lU+fu5skwSMMA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQMyR1kMJz3dLl;
+	Mon, 15 Sep 2025 21:20:15 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757935215;
+	cv=none; b=JO1axfol9q4qdLCmtiGOv9k4z2vmc3oqw7mTqusOxbHthY5YICOjwo9z01SiHjFghefBDdji9nRfXEc7HmgvztEdHB91FV1Ij2XruIwnCpH8MXXRteM3kDgq9lQ4ckz+K9gjpmtnPmWBDWEkFvR51TKh91vhB4RUxnMjd0gs+JP5F7yYdthaHp3eLzF/my2NMGb7ogCSC4lxbmTAwO3eZTNp9h5Qwv8iT83tAtK5U8rYiUp/+Mp4kErCNeJCO/FYLdkuJra6mBYjN0ff9TCOiDmnB6iFDBt2qLCV3S/0IaC8xjoZ5RL/y2pzsiLkFL/hJcEtnc0TQqALf0vZItGa6g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757933437; c=relaxed/relaxed;
-	bh=VtI765DIx2xQZZo7VQVH2HkrLTihkYGKkElurlUhLAI=;
+	t=1757935215; c=relaxed/relaxed;
+	bh=ezmIh4yAIIyC5Ofx9OYfMJK6a3eTs8fzX06OGshPKFg=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ow2NPYh05GpnG1VQf0gSJH/A5LWdbt2oJXoCZKgLgTow0WLvmWSGGFELzMQYonlE/tGwT8o1jfOaoToh2W+8ukVEah1jx+DQf8ekJSJTL6K+MxOcMppvuhZfjImQhrj1hGhFOwE8lg8yb9RNxTJJEN36pw5To1Wc1BrP+C96/K0xgMm9grK/uMWPSSNrdxKmsMxoVhswByiXkxt4dpYuqUtSKpUuT3YIgaU+7V9hQTRA4zm3R8DX4scXuPQ2T/+3mT6trD3oHOU5fLJarPH3FhgRCC3Qz8NIwHKpzx8/gY6xKB3/A95RDsDM283hQYQGbvzu+TcdBld/xvQsXeiLVA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQMJD5VWvz2ynf
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 20:50:35 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cQM2p1Pc9z9sxY;
-	Mon, 15 Sep 2025 12:38:58 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id GczDd0MPrivs; Mon, 15 Sep 2025 12:38:58 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cQM2p004Pz9sxX;
-	Mon, 15 Sep 2025 12:38:57 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id DC98C8B765;
-	Mon, 15 Sep 2025 12:38:57 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id L12I9pCXFpTn; Mon, 15 Sep 2025 12:38:57 +0200 (CEST)
-Received: from [10.25.207.160] (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id A34148B763;
-	Mon, 15 Sep 2025 12:38:57 +0200 (CEST)
-Message-ID: <bc6c17d2-298b-4629-9de1-dcecc3aac58f@csgroup.eu>
-Date: Mon, 15 Sep 2025 12:38:57 +0200
+	 In-Reply-To:Content-Type; b=jn1dIT2CXQKKpaKERY6xMiJBXjVj9QdQ8J2fxR4M/gUQCv0LjrHapM1Nh6xxNLBBya7eyv0QWcEyCx9U0X1Bk+1kO12h3bYO4xGN6XOW+tkb6/0cs1pDrEzN0wg1HwthstPk++aJ+YOaD6ZqT4M0JF5XS2diXzTeozgyGkuhxXbnkDn3z0IdnR/x8PVAdpJAZPsuHKuH1RKZBoJKWaxGRhXmrWdOzitGoYxEcIyNiS98omiKTR1INU9ZsGX3SQM/GPb85fyf4IVfie7mUuA6yaSKVR/IPKpOsLbE4ieJPrltdCu7Ke2tcZsO3ewVC06hrF+fFxjKirfAKU1olNtwoA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQMyP6cjZz3dL0
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 21:20:12 +1000 (AEST)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4D6971424;
+	Mon, 15 Sep 2025 04:19:31 -0700 (PDT)
+Received: from [10.57.70.220] (unknown [10.57.70.220])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6C7D73F694;
+	Mon, 15 Sep 2025 04:19:34 -0700 (PDT)
+Message-ID: <d407a381-099b-4ec6-a20e-aeff4f3d750f@arm.com>
+Date: Mon, 15 Sep 2025 13:19:32 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,75 +45,111 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH V3 0/7] Add interface to expose vpa dtl counters via
-To: Athira Rajeev <atrajeev@linux.ibm.com>
-Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
- irogers@google.com, namhyung@kernel.org, linux-perf-users@vger.kernel.org,
- aboorvad@linux.ibm.com, sshegde@linux.ibm.com, hbathini@linux.vnet.ibm.com,
- Aditya.Bodkhe1@ibm.com, venkat88@linux.ibm.com, Tejas.Manhas1@ibm.com,
- linuxppc-dev@lists.ozlabs.org, maddy@linux.ibm.com
-References: <20250915102947.26681-1-atrajeev@linux.ibm.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250915102947.26681-1-atrajeev@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: Re: [PATCH v2 0/7] Nesting support for lazy MMU mode
+To: Alexander Gordeev <agordeev@linux.ibm.com>
+Cc: David Hildenbrand <david@redhat.com>,
+ Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
+ linux-kernel@vger.kernel.org, Andreas Larsson <andreas@gaisler.com>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
+ <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
+ Ingo Molnar <mingo@redhat.com>, Jann Horn <jannh@google.com>,
+ Juergen Gross <jgross@suse.com>, "Liam R. Howlett"
+ <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
+ Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ryan Roberts <ryan.roberts@arm.com>,
+ Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
+ Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org,
+ Mark Rutland <Mark.Rutland@arm.com>
+References: <20250908073931.4159362-1-kevin.brodsky@arm.com>
+ <20250908191602.61160a7990b9ea418de758c7@linux-foundation.org>
+ <d1b4ff2a-052f-4556-91ae-273962edbed0@redhat.com>
+ <338ef811-1dab-4c4e-bc5f-8ebd8cb68435@arm.com>
+ <5a0818bb-75d4-47df-925c-0102f7d598f4-agordeev@linux.ibm.com>
+Content-Language: en-GB
+From: Kevin Brodsky <kevin.brodsky@arm.com>
+In-Reply-To: <5a0818bb-75d4-47df-925c-0102f7d598f4-agordeev@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
+On 15/09/2025 08:28, Alexander Gordeev wrote:
+> On Fri, Sep 12, 2025 at 05:25:27PM +0200, Kevin Brodsky wrote:
+>
+> Hi Kevin,
+>
+>> Based on the outcome of the discussion with David on patch 2 [1p], there
+>> is indeed an alternative approach that we should seriously consider. In
+>> summary:
+>>
+>> * Keep the API stateless, handle nesting with a counter in task_struct
+>> * Introduce new functions to temporarily disable lazy_mmu without
+>> impacting nesting, track that with a bool in task_struct (addresses the
+>> situation in mm/kasan/shadow.c and possibly some x86 cases too)
+>> * Move as much handling from arch_* to generic functions
+>>
+>> What the new generic infrastructure would look like:
+>>
+>> struct task_struct {
+>>     ...
+>> #ifdef CONFIG_ARCH_LAZY_MMU
+>>     struct {
+>>         uint8_t count;
+>>         bool enabled; /* or paused, see below */
+>>     } lazy_mmu_state;
+>> #endif
+>> }
+>>
+>> * lazy_mmu_mode_enable():
+> This helper is parameter-free, assuming the MMU unit does not need any
+> configuration other than turning it on/off. That is currently true, but
+> (as I noted in my other mail) I am going to introduce a friend enable
+> function that accepts parameters, creates an arch-specific state and
+> uses it while the lazy mmu mode is active.
 
+Yes I think that's fine.
 
-Le 15/09/2025 à 12:29, Athira Rajeev a écrit :
-> The pseries Shared Processor Logical Partition(SPLPAR) machines can
-> retrieve a log of dispatch and preempt events from the hypervisor
-> using data from Disptach Trace Log(DTL) buffer. With this information,
-> user can retrieve when and why each dispatch & preempt has occurred.
-> The vpa-dtl PMU exposes the Virtual Processor Area(VPA) DTL counters
-> via perf.
-> 
-> - Patches 1 to 6 has powerpc PMU driver code changes to capture DTL
->    trace in perf.data. And patch 7 has documentation update.
-> 
-> Infrastructure used
-> ===================
-> 
-> The VPA DTL PMU counters do not interrupt on overflow or generate any
-> PMI interrupts. Therefore, hrtimer is used to poll the DTL data. The timer
-> nterval can be provided by user via sample_period field in nano seconds.
-> vpa dtl pmu has one hrtimer added per vpa-dtl pmu thread. DTL (Dispatch
-> Trace Log) contains information about dispatch/preempt, enqueue time etc.
-> We directly copy the DTL buffer data as part of auxiliary buffer and it
-> will be processed later. This will avoid time taken to create samples
-> in the kernel space. The PMU driver collecting Dispatch Trace Log (DTL)
-> entries makes use of AUX support in perf infrastructure. On the tools side,
-> this data is made available as PERF_RECORD_AUXTRACE records.
-> 
-> To corelate each DTL entry with other events across CPU's, an auxtrace_queue
-> is created for each CPU. Each auxtrace queue has a array/list of auxtrace buffers.
-> All auxtrace queues is maintained in auxtrace heap. The queues are sorted
-> based on timestamp. When the different PERF_RECORD_XX records are processed,
-> compare the timestamp of perf record with timestamp of top element in the
-> auxtrace heap so that DTL events can be co-related with other events
-> Process the auxtrace queue if the timestamp of element from heap is
-> lower than timestamp from entry in perf record. Sometimes it could happen that
-> one buffer is only partially processed. if the timestamp of occurrence of
-> another event is more than currently processed element in the queue, it will
-> move on to next perf record. So keep track of position of buffer to continue
-> processing next time. Update the timestamp of the auxtrace heap with the timestamp
-> of last processed entry from the auxtrace buffer.
-> 
-> This infrastructure ensures dispatch trace log entries can be corelated
-> and presented along with other events like sched.
-> 
-> With the kernel changes;
-> 
->    # ls /sys/devices/vpa_dtl/
->    events  format  perf_event_mux_interval_ms  power  subsystem  type  uevent
-> 
-> Thanks
-> Athira
+> That does not impact your design (AFAICT), except one change below.
+>
+>>     if (!lazy_mmu_state.count) {
+>>         arch_enter_lazy_mmu_mode();
+>>         lazy_mmu_state.enabled = true;
+>>     }
+>>     lazy_mmu_state.count++;
+>>
+>> * lazy_mmu_mode_disable():
+>>     lazy_mmu_count--;
+>>     if (!lazy_mmu_state.count) {
+>>         lazy_mmu_state.enabled = false;
+>>         arch_leave_lazy_mmu_mode();
+>>     } else {
+>>         arch_flush_lazy_mmu_mode();
+>>     }
+>>
+>> * lazy_mmu_mode_pause():
+>>     lazy_mmu_state.enabled = false;
+>>     arch_leave_lazy_mmu_mode();
+> This needs to be arch_pause_lazy_mmu_mode(), otherwise the arch-specific
+> state will be lost.
+>
+>> * lazy_mmu_mode_resume();
+>>     arch_enter_lazy_mmu_mode();
+> Conversely, this needs to be arch_resume_lazy_mmu_mode(). And it can not
+> be arch_enter_lazy_mmu_mode(), since a lazy_mmu_mode_resume() caller does
+> not know the parameters passed to the lazy_mmu_mode_enable(...)-friend.
 
-What is the difference between this version of the series and the V2 
-sent 3 hours ago ?
+Got it, that makes sense. Even without your proposal, it is probably a
+good idea to allow arch's to behave differently on pause/resume.
 
-Christophe
+I hope we can avoid forcing all arch's to define arch_pause/arch_resume
+though, since only s390 will use it for the foreseeable future. Using
+optional macros should do the trick.
 
+- Kevin
 
