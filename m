@@ -1,60 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-12245-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12246-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFFDFCAC592
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 16:20:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0DE4CAC59A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 16:44:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQVdM28Rvz3dTM;
-	Tue, 16 Sep 2025 02:20:55 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757953255;
-	cv=none; b=SHj47Bg4GDw3rEeo3D2NyLq84Hky8GgP2Ss3ZEW36ha/yFolChKg1JT4oOcHjJhbirYL67k7Ggwr5sRWgr5elRwBUNUbcUwqZwSfAmI51ZQSDRKURoo229M9gnah+HFmhdDNWtFUlQwkD1MFQJe4JdA1ozNHkiJFwXezAuHMkMbOVPVDqKE0Hv7RU8rIa3RzcBprkf4gaJ2aHJJ/ujydVIzoVoZ4XJNKS9SV3LjWK4un6kIeLtRmfIiJnvytaOyFsvfjqj/mGUjG0n1K4rVW14vgu+wc+QJDj6XwYwEo2GRKxa95zWGOqTygf+I3XaPfS7qJqyLezvGyE6wPNavntg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQW8J3STKz3f17;
+	Tue, 16 Sep 2025 02:44:16 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757950359;
+	cv=none; b=cUgJ7q6GZgzUpHx5/nSLGCOlK1Gezsyc5dMqLd37+rPzDQByiIKdYREbTsX+TrLGXCXber7tEmwx+n4ABGfm5D4VIrK3swtOt/4/lqI0EG0NJ5PeyQaHZjqoCjTa0mmjYCjDFjczlDzkjg5sIiTsGG6Ip2mE04tt+EYIXXiaehbdpduDGbSevziQ40Ik+ptuoPFJXi4WsPXac5JS3N2r/OFJ4NpWGFMsClmvE6UbHPx76zutIjiAIkpYJAonZ9qtumavsv4EnczutTkOVMQ1qa6gbmuvOEdG8qD10iHXsveNiM7aDoPnv79NNtI4Je10nv6/zm6cCzN7KAmpNuKPYA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757953255; c=relaxed/relaxed;
-	bh=G9SQTqrBOVctis2CGVfZ3Pf9Ziye0iOOUfIC0e8jglg=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=CAwtUMFVv2/ElZkc47Iz/3w7cAlMrR9sjtLA2vL0dv9JYIrclmttJNRQ4GkSbqJCKfVzKy+H5TiRvRfjeiOCfEPcL8zG1k+Cr0JEZvlFSywZCoKhX8hHrU+W93kF+mqdXCPPPWIsdaUl6g8AzHsRwsuMHOkwBhNVPzcIm8/E04aclgnAqQGGorCyjbi3DMQcjEvEckIUkJkKk4Av97KI6q5ORPhwEPFfXpiufYqtTuzC6jpf73zPBrCQLJE/byDa2yvIMIQWVXcczRGKHHUW9Xo3RvZogOWcWTP8tlxc7EMY40P34pd1ftgI8Urst/A/ze+LMMwJii7ts7MRKLaskw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=F1eEEi3P; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1757950359; c=relaxed/relaxed;
+	bh=7O6H4yncJtI6jRPxDIzl6fb1efR8GujWZKD7CmF704s=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=aSjWEdEoxmdn4fF7iVfnobHrlVw25chjFOwEh2gjbhj3tQcKkiti4O5nZcbh4zBE8Tcu97xUL+0O5ssIoNeQZX+DT9dZxXd2762OeSGeHfINIw8iNdMIS1AOdM5lteXF9yHy8g0yi3mSVzcBC9hKPK2iEurKvWqxitTQjcsNqhPGmMYLxAc5chaDPLnoLDKlOVF3oUbx6KKM/BbH5d3o60Mf+u1n38p+TFH4lPUB9rEXawpaWtiPFyZeH7a1E/rhFzyWNxrZIVBF8M0PGYF6LORxw8ax8+jWuX8DVudllfImfNZuSxOyr5jD4PNKLozfm7CWb9cMhm/hpf7458BTjQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=JuKhUUpb; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=JuKhUUpb; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=antonio.feijoo@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=F1eEEi3P;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=JuKhUUpb;
+	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=JuKhUUpb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=antonio.feijoo@suse.com; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQVdL30X3z3dSW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 02:20:54 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id EB7F441A35;
-	Mon, 15 Sep 2025 16:20:51 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7C939C4CEF1;
-	Mon, 15 Sep 2025 16:20:48 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757953251;
-	bh=yO0OtTf4tibabKMaQbj6as/6p1x2/RbPqYkzFHJWeRI=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=F1eEEi3P8Oal2RdCJlQQLkn9HUmgO/RjO0pcyhVlEhHUE45Tcg2bB9KCEl3guO60w
-	 80hTMQPzrAZ7I3DIB2hxaR6V1PjuGALE3T/QBVWxYvnnTsVmuuBBoyOboNqd2EMKwZ
-	 8N9V7w+/YSi52aErC4s5/CEEYCP+9naxq9YD2ZqqkPi9cGrwD72xSgpSbLvrc3s1p3
-	 kxDqrfodmlF4cPwsQy3FWVBkK1xyRpwTO7VzsYHjzELlF9eV2j5fTzyukBtEUpxorN
-	 EJAyL5RQJJyv1UEgD/7sfw2yAmaXpdGzCimPxze2Y3cYwFD+PFx7CsZbreqgtJVuxi
-	 F4JzAtnmzr2Rg==
-Date: Mon, 15 Sep 2025 11:20:44 -0500
-From: Eric Biggers <ebiggers@kernel.org>
-To: linux-crypto@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org, Ard Biesheuvel <ardb@kernel.org>,
-	"Jason A . Donenfeld" <Jason@zx2c4.com>,
-	Zhiqi Song <songzhiqi1@huawei.com>,
-	Longfang Liu <liulongfang@huawei.com>, x86@kernel.org,
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org
-Subject: Re: [PATCH v2 00/12] Curve25519 cleanup
-Message-ID: <20250915162044.GD1993@quark>
-References: <20250906213523.84915-1-ebiggers@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQTYg1gnsz3dVJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 01:32:39 +1000 (AEST)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id BB6F91FBAB;
+	Mon, 15 Sep 2025 15:32:31 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1757950351; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=7O6H4yncJtI6jRPxDIzl6fb1efR8GujWZKD7CmF704s=;
+	b=JuKhUUpbXUa1W7YY+T5rdcwhDB/7E13XHKiW4CfOyWC87oUWcFiS62vFZZBZsc0Fw/2wCK
+	5/5n1tTDzrOjXG0t9lNaB8pxbkDTFf0GWj1FxY/6K4WaTrPDUpOImweNs+ltILsrhoH5nf
+	4qKfqWggHCttYdzup5Hb82ydICXMrUQ=
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.com header.s=susede1 header.b=JuKhUUpb
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
+	t=1757950351; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
+	bh=7O6H4yncJtI6jRPxDIzl6fb1efR8GujWZKD7CmF704s=;
+	b=JuKhUUpbXUa1W7YY+T5rdcwhDB/7E13XHKiW4CfOyWC87oUWcFiS62vFZZBZsc0Fw/2wCK
+	5/5n1tTDzrOjXG0t9lNaB8pxbkDTFf0GWj1FxY/6K4WaTrPDUpOImweNs+ltILsrhoH5nf
+	4qKfqWggHCttYdzup5Hb82ydICXMrUQ=
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 2C8A31368D;
+	Mon, 15 Sep 2025 15:32:31 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id U8grB48xyGjVdwAAD6G6ig
+	(envelope-from <antonio.feijoo@suse.com>); Mon, 15 Sep 2025 15:32:31 +0000
+From: Antonio Alvarez Feijoo <antonio.feijoo@suse.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>
+Cc: Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	Antonio Alvarez Feijoo <antonio.feijoo@suse.com>
+Subject: [PATCH 1/2] powerpc/boot: Add missing compression methods to usage
+Date: Mon, 15 Sep 2025 17:31:14 +0200
+Message-ID: <20250915153114.40578-1-antonio.feijoo@suse.com>
+X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -68,35 +86,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20250906213523.84915-1-ebiggers@kernel.org>
+Content-Transfer-Encoding: 8bit
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[99.99%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	R_DKIM_ALLOW(-0.20)[suse.com:s=susede1];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	TO_DN_SOME(0.00)[];
+	DKIM_SIGNED(0.00)[suse.com:s=susede1];
+	ARC_NA(0.00)[];
+	MIME_TRACE(0.00)[0:+];
+	RCVD_TLS_ALL(0.00)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	FROM_EQ_ENVFROM(0.00)[];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:mid,suse.com:dkim,suse.com:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns];
+	RCVD_COUNT_TWO(0.00)[2];
+	FROM_HAS_DN(0.00)[];
+	FREEMAIL_CC(0.00)[gmail.com,csgroup.eu,vger.kernel.org,lists.ozlabs.org,suse.com];
+	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	RCPT_COUNT_SEVEN(0.00)[7];
+	DKIM_TRACE(0.00)[suse.com:+];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com]
+X-Rspamd-Queue-Id: BB6F91FBAB
+X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
+X-Rspamd-Action: no action
 
-On Sat, Sep 06, 2025 at 02:35:11PM -0700, Eric Biggers wrote:
-> This series is targeting libcrypto-next.  It can also be retrieved from:
-> 
->     git fetch https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git curve25519-v2
-> 
-> This series removes the unused crypto_kpp support for Curve25519,
-> migrates curve25519-selftest to a KUnit test suite, and reorganizes the
-> generic and arch-optimized Curve25519 code to all be located in
-> lib/crypto/ and built into a single libcurve25519 module.
-> 
-> Changed from v1:
-> - Split kpp removal into multiple patches
-> - Don't select CRYPTO_LIB_CURVE25519_GENERIC from KUnit test
-> - Removed unnecessary parameter from hpre_ecc_clear_ctx()
-> - Removed unnecessary 'return' from arm curve25519_base_arch()
-> - Updated file comment in lib/crypto/curve25519.c
-> - Made kconfig help text for KUnit test more consistent with other tests
-> - Used initializer in test_curve25519()
-> - Removed unnecessary newlines from messages in test_curve25519()
-> - Use NSEC_PER_SEC instead of literal 1000000000
-> - Added an Acked-by
+lzma and lzo are also supported.
 
-Applied to https://git.kernel.org/pub/scm/linux/kernel/git/ebiggers/linux.git/log/?h=libcrypto-next
+Signed-off-by: Antonio Alvarez Feijoo <antonio.feijoo@suse.com>
+---
+ arch/powerpc/boot/wrapper | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-Reviews and acks would still be appreciated, of course.
+diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
+index 3d8dc822282a..50607bc47d05 100755
+--- a/arch/powerpc/boot/wrapper
++++ b/arch/powerpc/boot/wrapper
+@@ -21,7 +21,7 @@
+ #		(default ./arch/powerpc/boot)
+ # -W dir	specify working directory for temporary files (default .)
+ # -z		use gzip (legacy)
+-# -Z zsuffix    compression to use (gz, xz or none)
++# -Z zsuffix    compression to use (gz, xz, lzma, lzo or none)
+ 
+ # Stop execution if any command fails
+ set -e
+@@ -69,7 +69,7 @@ usage() {
+     echo 'Usage: wrapper [-o output] [-p platform] [-i initrd]' >&2
+     echo '       [-d devtree] [-s tree.dts] [-e esm_blob]' >&2
+     echo '       [-c] [-C cross-prefix] [-D datadir] [-W workingdir]' >&2
+-    echo '       [-Z (gz|xz|none)] [--no-compression] [vmlinux]' >&2
++    echo '       [-Z (gz|xz|lzma|lzo|none)] [--no-compression] [vmlinux]' >&2
+     exit 1
+ }
+ 
+-- 
+2.51.0
 
-- Eric
 
