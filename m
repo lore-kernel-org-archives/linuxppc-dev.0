@@ -1,50 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-12251-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12252-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA36CCAC597
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 18:20:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E8BB0CAC597
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 18:21:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQYHT3F0kz30N8;
-	Tue, 16 Sep 2025 04:20:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757960437;
-	cv=none; b=IXcprOA299nccgxxpewfjq2o1W3tQZmZBFAIPBpWwgqmv+EGHkxGKtUj+NlMYcxEqNxk1aXw1vnjRO51TfVptRsxc7YrhQKpua9B44E74PL5MzAIoDTyLTPRSiEu5dTxkltkSw1cNUz25vdtPTwyT0okkQ+2lTSBiORd4R2c639dwgwp1pp1Uw4RyOoprkXEJFs7d4/rcDBaw0kmDM+c3gNVWX5Pi24uKnoWr7Z7ndnxRONpbkqnH+bp57NxDMGiHla0gj+dVuaOslqmGDRyFYGHp0ycOMeYiIiepbMCEGY0D8QUBsmtM7wu+7didaRrFrIjmS8zMKPdNJsY/1Wl7Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQYJ74cYdz306S;
+	Tue, 16 Sep 2025 04:21:11 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1134"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757960471;
+	cv=none; b=Cy6W5ZA80zHSDDyxVxcjlEqP8RfD2s7gx4ymhUhYOJ6TdWZbF50umxcLtxxJqD1KglU/jE8cn7nv77URiIxvYruEtJvdgTTN0wIQKwxreVYNn+njyCXy+U6dpoNEwaJVeCYEXZ7H5H4mj66pKZ5t2ut1e0aedJPXGwdCodFL3Ta7rSmxd5qVqLvbmcKOxYbP0p4QJy8Op9OhUp5BmM4T24P/iOyNnh9duTO3+dOJD6qg1U9wfTf/G2S9LwwGi4RZ76z22s9cZlUTyMlmY8hcupbRWqeCbK4C29Me3eTS0kIWKjDKfVP5Okg1R7LK5MXhH4Hc1jsg9vkVaMTqqOdLIQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757960437; c=relaxed/relaxed;
-	bh=O1XbvmLD6s56hdCCZ7aKsrxIqtTrO4/3OkagSH/bFM4=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DpK/jCJn+TByCpW22x+Veocq60JtVu5v+l695vQbHb8SrXrdJTI7cFcdaMqUof2rpNUR4oGrGRIXqxNOPq0ioulGifu/hkZakm8FvxrB0nrEZ7elqtQ3ysmeHlW+UHJbNCprN6+paHoT9Y852JTWnpLaiKD1jqqUSJm3/8LLix0nOMNrr2nhXh+SOUILLUyT1YOolw1Y/pVnveWjbxIVt0Z6x2jjw5HgQ+MTsRa5nU9u+7Mj5MrPRO0mFmUqZjbyNDeb5Bu6/KyPTe+DfMkiqQhyHghMRdlb6UxdhgvdpSDZ2up3aRADJ3GKHOHRVg9opya6peQySUINJf1S31hP3A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQYHS5Y3dz306S
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 04:20:36 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cQNnR0pmTz9sxp;
-	Mon, 15 Sep 2025 13:57:31 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id CofbtF7b-0VV; Mon, 15 Sep 2025 13:57:31 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cQNnQ5DNGz9sxl;
-	Mon, 15 Sep 2025 13:57:30 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 981DC8B766;
-	Mon, 15 Sep 2025 13:57:30 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id aYicW_kKuipv; Mon, 15 Sep 2025 13:57:30 +0200 (CEST)
-Received: from [10.25.207.160] (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 227808B763;
-	Mon, 15 Sep 2025 13:57:30 +0200 (CEST)
-Message-ID: <99563c3d-7322-4164-81f3-0d28e91ed653@csgroup.eu>
-Date: Mon, 15 Sep 2025 13:57:29 +0200
+	t=1757960471; c=relaxed/relaxed;
+	bh=D+GliT1Pd8d53HWEdMQBU1YHyq1rnSI3P+2j/fil2q0=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=g5zPt5tElvORmVF3jFTW88HIryibXO0qIfCah7CpNS51rDbmykDpse2zeR2f0E5pBZwRVfG2hTeU3NTpg4REDwAEt+l2PZKDNvd5TXV0IYNRnVEazvHdMdVBLvMUXpvqatfSpTN1QtdudqaO+igVR1461JUpl6K7OsAjUFBwUniYbd353vXsiPTntFnIma9xPNvdZtRZm6qnNORnCzgMXBmCLQmc2U7Ma4dg2jJx9CaEmxZNFqQrPxn7JuYgSd4J+Wweo7NJgA74z7tMiYzdF1oguR2no59Sknc4v3Z1xkSgdRVeK3PIxItbgH6+HnrqGX/hLWmmoSZtjp5wB1niQw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com; dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=TFs/NJU5; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1134; helo=mail-yw1-x1134.google.com; envelope-from=sunjunchao@bytedance.com; receiver=lists.ozlabs.org) smtp.mailfrom=bytedance.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=bytedance.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=bytedance.com header.i=@bytedance.com header.a=rsa-sha256 header.s=google header.b=TFs/NJU5;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bytedance.com (client-ip=2607:f8b0:4864:20::1134; helo=mail-yw1-x1134.google.com; envelope-from=sunjunchao@bytedance.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x1134.google.com (mail-yw1-x1134.google.com [IPv6:2607:f8b0:4864:20::1134])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQYJ70Flwz3cgQ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 04:21:10 +1000 (AEST)
+Received: by mail-yw1-x1134.google.com with SMTP id 00721157ae682-72e565bf2feso31443017b3.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 11:21:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=bytedance.com; s=google; t=1757960469; x=1758565269; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=D+GliT1Pd8d53HWEdMQBU1YHyq1rnSI3P+2j/fil2q0=;
+        b=TFs/NJU5vQ10sMQxC3odp3S0aQ0kkMGIGVLz/D1xF8btf+AygCfYdVOm8U0fakanb1
+         SqsC7sCJXee95a7rKquiwQ2TtlWDwS1fkixV1HMYQYwHAxBcrP3uOJe4/CpZ61viG3sp
+         hfE4lKB3NTYXsKcntQvvYYaY8ot1lm0cDqMtbnMbbno93E2CVhEIc1/3qhvxa0FRFmPP
+         r8vZz31lg48uEMdSRkh+YsrMDV6mLgkVHLKsgQjpj/qbFhO6oCOxBqiAMsqXSLQNfpcj
+         LH3WgLASKFxtc2gt0X6CZZEkpELbaoNuEL9r+MQLCMOkO8K6Pq4HVk+pxGldvs64eDnY
+         O8zw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757960469; x=1758565269;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=D+GliT1Pd8d53HWEdMQBU1YHyq1rnSI3P+2j/fil2q0=;
+        b=NuuYvzf4G0vWakZWE5vs6tVyYYvvFXAT/vvTKca000vKNMuSUV1Q6nMfTMvemie1kz
+         QDXCS6ONcYWLqDrHXRL9VCdbe4s1YJcfXP45MbC3jKIW8jqNpnXYOzD7SxWdUgFJJLoE
+         UvHN8ENfkkSNlAwyN4fQk02VsoGquF0QjhR6kPbGTo4wR3nprG1gD5uWiCbYE64UAHD9
+         KYXVANq6gi7pPW/SkdZyohuSrHa77OH15UFbouM+Mz/0npYQrhhboQR44wwrGNFPwmwW
+         SDrUpPr/11m0TabdGjBEntA//MOd++yE3B4WKcnr/6FrUYp378iveMMloemfslCwHXor
+         0cQQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXbgv8NMBT+xOhO/t5eMw72BVdLop5raMWatHvMj53YBlASmmH84L7kpVOuJOVEomvAuoyLpJiR6nA236k=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz58WluXmLhi6w4+MM1ux86Q1YbiQmgtH4/1YsvtbuuUQ03vzud
+	MfuJMaS0nYSUDCIfcSkiZ+uLOAmuNZcxOJiHAcD62NO49iLInPaUPcNxm2j42pO+Z5uQqdk9+q8
+	D5NhyNDCJE2AWPeZgKKV+U4oskvGLH1Bb8tSWJTd3/A==
+X-Gm-Gg: ASbGncsZd/q+YcupU2s/V2jMuBeYzmWLiO6SvqWliMJpbDIijFquZGRdl+W7XrhRTM/
+	x3Vfw6dV7bSTAiCavaYKEozWguzm3R1XhxwbnlPwf5FQKNjJ0ARpAhboAZEGiWfVrPdj81tT550
+	3fOatoC4Bu3BThWSttvbkqXs9cAN40Yv6HToHOss5vm2eiEO84mGNkQSHOYt6S+IiABxGP7M91P
+	KmXbB7Rj6yumA4=
+X-Google-Smtp-Source: AGHT+IEDp5ZYxkbjon4yCrRZanz3ywO+1Dqvmg43vzDGc4l+oL6FL33NrpAa1korZr0/WJwLYzGBFv1kfMtD4v4LVjo=
+X-Received: by 2002:a05:690c:9c0c:b0:71c:1a46:48d5 with SMTP id
+ 00721157ae682-73063480b69mr133022797b3.21.1757960468639; Mon, 15 Sep 2025
+ 11:21:08 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,133 +80,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND 06/62] arm: init: remove special logic for setting
- brd.rd_size
-To: Askar Safin <safinaskar@gmail.com>, linux-fsdevel@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Christian Brauner <brauner@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
- Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>,
- Jens Axboe <axboe@kernel.dk>, Andy Shevchenko <andy.shevchenko@gmail.com>,
- Aleksa Sarai <cyphar@cyphar.com>,
- =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
- Julian Stecklina <julian.stecklina@cyberus-technology.de>,
- Gao Xiang <hsiangkao@linux.alibaba.com>, Art Nikpal <email2tema@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>, Eric Curtin <ecurtin@redhat.com>,
- Alexander Graf <graf@amazon.com>, Rob Landley <rob@landley.net>,
- Lennart Poettering <mzxreary@0pointer.de>, linux-arch@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
- linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
- linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
- linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-um@lists.infradead.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-block@vger.kernel.org,
- initramfs@vger.kernel.org, linux-api@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-efi@vger.kernel.org,
- linux-ext4@vger.kernel.org, "Theodore Y . Ts'o" <tytso@mit.edu>,
- linux-acpi@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
- devicetree@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>,
- Kees Cook <kees@kernel.org>, Thorsten Blum <thorsten.blum@linux.dev>,
- Heiko Carstens <hca@linux.ibm.com>, patches@lists.linux.dev
-References: <20250913003842.41944-1-safinaskar@gmail.com>
- <20250913003842.41944-7-safinaskar@gmail.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250913003842.41944-7-safinaskar@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <8957c526-d05c-4c0d-bfed-0eb6e6d2476c@linux.ibm.com>
+ <BAEAC2F7-7D7F-49E4-AB21-10FC0E4BF5F3@linux.ibm.com> <CAHSKhteHC26yXVFtjgdanfM7+vsOVZ+HHWnBYD01A4eiRHibVQ@mail.gmail.com>
+ <240A7968-D530-4135-856A-CE90D269D5E6@linux.ibm.com> <20250915142612.1412769A80-agordeev@linux.ibm.com>
+In-Reply-To: <20250915142612.1412769A80-agordeev@linux.ibm.com>
+From: Julian Sun <sunjunchao@bytedance.com>
+Date: Tue, 16 Sep 2025 02:20:55 +0800
+X-Gm-Features: Ac12FXz4gtGN6Jqt9p3sI4NDKpM8RKfj3WgCz5dLwYdzbiuc_wRBtKzbSNJCafg
+Message-ID: <CAHSKhtc-514tQoyCSukK1sLbDbc+Ne_TnwEks-h+gQWv8ZKHOA@mail.gmail.com>
+Subject: Re: [External] Re: [linux-next20250911]Kernel OOPs while running
+ generic/256 on Pmem device
+To: Alexander Gordeev <agordeev@linux.ibm.com>
+Cc: Venkat <venkat88@linux.ibm.com>, tj@kernel.org, akpm@linux-foundation.org, 
+	stable@vger.kernel.org, songmuchun@bytedance.com, shakeelb@google.com, 
+	hannes@cmpxchg.org, roman.gushchin@linux.dev, mhocko@suse.com, 
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, riteshh@linux.ibm.com, 
+	ojaswin@linux.ibm.com, linux-fsdevel@vger.kernel.org, 
+	linux-xfs@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Linux Next Mailing List <linux-next@vger.kernel.org>, 
+	cgroups@vger.kernel.org, linux-mm@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+Hi,
+
+On Mon, Sep 15, 2025 at 10:26=E2=80=AFPM Alexander Gordeev
+<agordeev@linux.ibm.com> wrote:
+>
+> On Mon, Sep 15, 2025 at 07:49:26PM +0530, Venkat wrote:
+> > Hello,
+> >
+> > Thanks for the fix. This is fixing the reported issue.
+> >
+> > While sending out the patch please add below tag as well.
+> >
+> > Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+>
+> And Reported-by as well, if I may add ;)
+>
+
+I'd like to but I will resend the whole patch which is used to address
+another issue.  Thanks a lot for reporting anyway =E2=80=94 it=E2=80=99s ve=
+ry helpful!
+> > Regards,
+> > Venkat.
+>
+> Thanks!
 
 
-
-Le 13/09/2025 à 02:37, Askar Safin a écrit :
-> [Vous ne recevez pas souvent de courriers de safinaskar@gmail.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
-> 
-> There is no any reason for having special mechanism
-> for setting ramdisk size.
-> 
-> Also this allows us to change rd_size variable to static
-
-Can you squash patches 6 to 9 all together ?
-
-> 
-> Signed-off-by: Askar Safin <safinaskar@gmail.com>
-> ---
->   arch/arm/kernel/atags_parse.c | 12 ------------
->   drivers/block/brd.c           |  8 ++++----
->   include/linux/initrd.h        |  3 ---
->   3 files changed, 4 insertions(+), 19 deletions(-)
-> 
-> diff --git a/arch/arm/kernel/atags_parse.c b/arch/arm/kernel/atags_parse.c
-> index a3f0a4f84e04..615d9e83c9b5 100644
-> --- a/arch/arm/kernel/atags_parse.c
-> +++ b/arch/arm/kernel/atags_parse.c
-> @@ -87,18 +87,6 @@ static int __init parse_tag_videotext(const struct tag *tag)
->   __tagtable(ATAG_VIDEOTEXT, parse_tag_videotext);
->   #endif
-> 
-> -#ifdef CONFIG_BLK_DEV_RAM
-> -static int __init parse_tag_ramdisk(const struct tag *tag)
-> -{
-> -       if (tag->u.ramdisk.size)
-> -               rd_size = tag->u.ramdisk.size;
-> -
-> -       return 0;
-> -}
-> -
-> -__tagtable(ATAG_RAMDISK, parse_tag_ramdisk);
-> -#endif
-> -
->   static int __init parse_tag_serialnr(const struct tag *tag)
->   {
->          system_serial_low = tag->u.serialnr.low;
-> diff --git a/drivers/block/brd.c b/drivers/block/brd.c
-> index 0c2eabe14af3..72f02d2b8a99 100644
-> --- a/drivers/block/brd.c
-> +++ b/drivers/block/brd.c
-> @@ -27,6 +27,10 @@
-> 
->   #include <linux/uaccess.h>
-> 
-> +static unsigned long rd_size = CONFIG_BLK_DEV_RAM_SIZE;
-> +module_param(rd_size, ulong, 0444);
-> +MODULE_PARM_DESC(rd_size, "Size of each RAM disk in kbytes.");
-> +
->   /*
->    * Each block ramdisk device has a xarray brd_pages of pages that stores
->    * the pages containing the block device's contents.
-> @@ -209,10 +213,6 @@ static int rd_nr = CONFIG_BLK_DEV_RAM_COUNT;
->   module_param(rd_nr, int, 0444);
->   MODULE_PARM_DESC(rd_nr, "Maximum number of brd devices");
-> 
-> -unsigned long rd_size = CONFIG_BLK_DEV_RAM_SIZE;
-> -module_param(rd_size, ulong, 0444);
-> -MODULE_PARM_DESC(rd_size, "Size of each RAM disk in kbytes.");
-> -
->   static int max_part = 1;
->   module_param(max_part, int, 0444);
->   MODULE_PARM_DESC(max_part, "Num Minors to reserve between devices");
-> diff --git a/include/linux/initrd.h b/include/linux/initrd.h
-> index 6320a9cb6686..b42235c21444 100644
-> --- a/include/linux/initrd.h
-> +++ b/include/linux/initrd.h
-> @@ -5,9 +5,6 @@
-> 
->   #define INITRD_MINOR 250 /* shouldn't collide with /dev/ram* too soon ... */
-> 
-> -/* size of a single RAM disk */
-> -extern unsigned long rd_size;
-> -
->   /* 1 if it is not an error if initrd_start < memory_start */
->   extern int initrd_below_start_ok;
-> 
-> --
-> 2.47.2
-> 
-> 
-
+Thanks,
+--=20
+Julian Sun <sunjunchao@bytedance.com>
 
