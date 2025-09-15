@@ -1,50 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-12255-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12256-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CA723CAC592
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 19:20:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B9936CAC597
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 20:51:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQZcj6dYkz2xQ2;
-	Tue, 16 Sep 2025 05:20:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757964037;
-	cv=none; b=a3G9VEvz/mrp0YnhYbAt7chpYJFG5jVexwMl7sunXBaKmwjcLbgiebQWzjtoBJwbSH08Z/gOXtGNSNnejjuMoZI+FRWAyI6PH/Kwk7jj+6GSnP48Mkv/b/y3wd5ar+kVf2uCx2aUJFo130b8AKGPiY1ZAj4ELY1AL1vj0TjR7/3ZroeDnZJoRq+gzbPbrJJS6qWjYi5sexeFl2N3GQK+vRbHvYAJJJxjYUAF0dFtYrgiuAwG0l0yTKSQmWuNq5DxyFrnxxeoR5mBulIRg2Y/wqgCH9bTHmmE56m5f/n9sGT3cc2Dn0Y7fMoveo6Jw1FKw+LJ7XU4sZpfaMbe1LJigQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQcdb6dp9z2xpn;
+	Tue, 16 Sep 2025 06:51:31 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757969491;
+	cv=none; b=XeLa0R7kJxSyq7OVDrYSSmAsYcj4sRWW54UcBMOfDSQIWQsCm6ehpXkulCGatT8lt2tPslagF5LHt92CqBMg5iLr+kyeBlpxOoVQrcH603s8pmKeW9+o0+PxP248oKX8k6ALVVXGhW8hWnZv2W/GtRA3s5KnY3WaKoVGxJEbJvAikgosbHX5mWLiBNvS68kAi31Pz3OdYvtt0tTXzb3gkgnuyeA/j9wn1IJl1UfgW2/QyUe6XidgHi8lurvklvMCbD+JUfzi6G4nuq6BhwSY4rvRYGt06NzY7wCtb4tm/HZgsJFmOPm95KbO5iFCA0ZzwtAhudiNZCfP46nHoRKUSA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757964037; c=relaxed/relaxed;
-	bh=vxB3h+WtgQ+HrdZMynkuAbpQeMT6bWxh3Yog2UqVf9A=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=FaymAlkN/hJPviqTNn2nTWNYq6BJExQ/XHSy7GnjGaB33YsAqpLnTqEUH8eaVu8BgusY1Jb2S4z98Qp3lY1Tk7CV0V9vpneG8457y3vjj2Fppj1ztrnurf+6+Oj6thJjsGFEBDBxZi2b3H3haRMDNah6MD+d33rYhfpvSCExF2GVSufRGP0axUQvB4BlzEe83++Ov0TGZxWZW3Ez0z1k9/TaUi0tnSC09VWSjj+ctH9kGH9cKU/Fk27hvWSOANHgYLyikoseDJEUbRgqmh0UX3JJC11OpD31yLNqsZw8L+1h3NemUd0etchd/JuspWuvjeThzeUifSezFE7cWTOtWA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQZch4slFz2xS2
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 05:20:36 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cQNZf0vcmz9syy;
-	Mon, 15 Sep 2025 13:48:10 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 94pnKAlpBYHg; Mon, 15 Sep 2025 13:48:10 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cQNZd5CrVz9syw;
-	Mon, 15 Sep 2025 13:48:09 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7E35C8B766;
-	Mon, 15 Sep 2025 13:48:09 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id uLBCpzlqUS-U; Mon, 15 Sep 2025 13:48:09 +0200 (CEST)
-Received: from [10.25.207.160] (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id DC6128B763;
-	Mon, 15 Sep 2025 13:48:08 +0200 (CEST)
-Message-ID: <fe3aea1c-24eb-49f4-9ce3-8f132d8814be@csgroup.eu>
-Date: Mon, 15 Sep 2025 13:48:08 +0200
+	t=1757969491; c=relaxed/relaxed;
+	bh=7rPOUNSKjPh4xy6BLtaDSFDtBxmH2telq/K+IIfMn+E=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=RZym1yZE7ccfNcpyUfgrcs2H5G4qnSeA4oNNoF98pHk/SwmdQm+UcczfARLStmiA1JS0Fi96I3grtJ+ffY+ME0clVIyhFFoO0hKzU1IHdnGOvMY8j0rxrF7ISFZw+X4Y8UmUokOD8UcDYFWD0P0rKCuueFKVDdv08jcQ5V6vTApEaz92/HG4Y+rE8LnyFwK+XhUrQMpzCxLX71U9ZAYJqzysGdcF/kI5orSogpADLMjyy0p7HhOYniInie0yFDg3QJMt1EuR2BJl1krdkuFNt9HnlIogbbnEn4rn91adZ49BLvhG0WzTw+/MFwDjiX5XDnjbv3HVMuUlbrTDdioD7g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Z92rmyCy; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ul2WS9wG; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Z92rmyCy;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Ul2WS9wG;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=thuth@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQcdZ3xnSz2xnx
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 06:51:27 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1757969482;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=7rPOUNSKjPh4xy6BLtaDSFDtBxmH2telq/K+IIfMn+E=;
+	b=Z92rmyCyxBQyJj9ytIY6jSJAPnhbOq0rHa9SIWFWpRKEIAaiYrb5FrSKdNhOD22GQ9Eg7d
+	Pcy/Pgz90x6KZWDgxG3TVcoJy7vOLcmp+g90OJelnzYjQd/gDmuYWi4ATeY6YrNj+MX2CX
+	XFyLz0PWIu3webS1SfSNY7HyfR9Axvk=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1757969483;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=7rPOUNSKjPh4xy6BLtaDSFDtBxmH2telq/K+IIfMn+E=;
+	b=Ul2WS9wGPl0IYPbc8D+DTKZMydqm1GjVFLiUUVYHEM65ntpHjX4icvFiFc73UU7g7xCJXv
+	B3kHJcvZgaDXQtDPorLrTXO+zn50eg8jEYBNvCpEqRKvxgsgEH60CXxlORwzMtTvdjesV6
+	ECJYbXc2jkwO8FtDKRn/fNeHSEouf6I=
+Received: from mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-35-165-154-97.us-west-2.compute.amazonaws.com [35.165.154.97]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-43-bCfdDYtiNDq6GW0h-gRsqg-1; Mon,
+ 15 Sep 2025 16:51:20 -0400
+X-MC-Unique: bCfdDYtiNDq6GW0h-gRsqg-1
+X-Mimecast-MFC-AGG-ID: bCfdDYtiNDq6GW0h-gRsqg_1757969478
+Received: from mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.4])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-08.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id EE9101800350;
+	Mon, 15 Sep 2025 20:51:17 +0000 (UTC)
+Received: from thuth-p1g4.redhat.com (unknown [10.45.224.77])
+	by mx-prod-int-01.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 5CA7F300021A;
+	Mon, 15 Sep 2025 20:51:13 +0000 (UTC)
+From: Thomas Huth <thuth@redhat.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Thomas Gleixner <tglx@linutronix.de>,
+	linux-kernel@vger.kernel.org,
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+	linux-spdx@vger.kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Johannes Berg <johannes.berg@intel.com>
+Subject: [PATCH] macintosh/via-pmu: Replace GPLv2 boilerplate text with SPDX
+Date: Mon, 15 Sep 2025 22:51:12 +0200
+Message-ID: <20250915205112.353656-1-thuth@redhat.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,122 +88,81 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND 05/62] init: remove "ramdisk_start" command line
- parameter, which controls starting block number of initrd
-To: Askar Safin <safinaskar@gmail.com>, linux-fsdevel@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Christian Brauner <brauner@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
- Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>,
- Jens Axboe <axboe@kernel.dk>, Andy Shevchenko <andy.shevchenko@gmail.com>,
- Aleksa Sarai <cyphar@cyphar.com>,
- =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
- Julian Stecklina <julian.stecklina@cyberus-technology.de>,
- Gao Xiang <hsiangkao@linux.alibaba.com>, Art Nikpal <email2tema@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>, Eric Curtin <ecurtin@redhat.com>,
- Alexander Graf <graf@amazon.com>, Rob Landley <rob@landley.net>,
- Lennart Poettering <mzxreary@0pointer.de>, linux-arch@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
- linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
- linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
- linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-um@lists.infradead.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-block@vger.kernel.org,
- initramfs@vger.kernel.org, linux-api@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-efi@vger.kernel.org,
- linux-ext4@vger.kernel.org, "Theodore Y . Ts'o" <tytso@mit.edu>,
- linux-acpi@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
- devicetree@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>,
- Kees Cook <kees@kernel.org>, Thorsten Blum <thorsten.blum@linux.dev>,
- Heiko Carstens <hca@linux.ibm.com>, patches@lists.linux.dev
-References: <20250913003842.41944-1-safinaskar@gmail.com>
- <20250913003842.41944-6-safinaskar@gmail.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250913003842.41944-6-safinaskar@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.4
 
-Have a simpler subject,
+From: Thomas Huth <thuth@redhat.com>
 
-Le 13/09/2025 à 02:37, Askar Safin a écrit :
-> [Vous ne recevez pas souvent de courriers de safinaskar@gmail.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
-> 
-> This is preparation for initrd removal
+The FSF does not reside in 51 Franklin Street anymore, so we should
+not ask the people to write to that address in case they need a
+copy of the GPL. To fix it, replace the boilerplate text by a proper
+SPDX tag.
 
-and make a more interesting message.
+Signed-off-by: Thomas Huth <thuth@redhat.com>
+---
+ drivers/macintosh/via-pmu-event.c | 17 +----------------
+ drivers/macintosh/via-pmu-led.c   | 17 +----------------
+ 2 files changed, 2 insertions(+), 32 deletions(-)
 
-
-For me it would make more sense to remove ramdisk_start and ramdisk_size 
-at the same time.
-
-Christophe
-
-> 
-> Signed-off-by: Askar Safin <safinaskar@gmail.com>
-> ---
->   Documentation/admin-guide/blockdev/ramdisk.rst  | 3 +--
->   Documentation/admin-guide/kernel-parameters.txt | 2 --
->   init/do_mounts_rd.c                             | 7 -------
->   3 files changed, 1 insertion(+), 11 deletions(-)
-> 
-> diff --git a/Documentation/admin-guide/blockdev/ramdisk.rst b/Documentation/admin-guide/blockdev/ramdisk.rst
-> index 9ce6101e8dd9..e57c61108dbc 100644
-> --- a/Documentation/admin-guide/blockdev/ramdisk.rst
-> +++ b/Documentation/admin-guide/blockdev/ramdisk.rst
-> @@ -74,12 +74,11 @@ arch/x86/boot/Makefile.
-> 
->   Some of the kernel command line boot options that may apply here are::
-> 
-> -  ramdisk_start=N
->     ramdisk_size=M
-> 
->   If you make a boot disk that has LILO, then for the above, you would use::
-> 
-> -       append = "ramdisk_start=N ramdisk_size=M"
-> +       append = "ramdisk_size=M"
-> 
->   4) An Example of Creating a Compressed RAM Disk
->   -----------------------------------------------
-> diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> index f940c1184912..07e8878f1e13 100644
-> --- a/Documentation/admin-guide/kernel-parameters.txt
-> +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -5285,8 +5285,6 @@
->          ramdisk_size=   [RAM] Sizes of RAM disks in kilobytes
->                          See Documentation/admin-guide/blockdev/ramdisk.rst.
-> 
-> -       ramdisk_start=  [RAM] RAM disk image start address
-> -
->          random.trust_cpu=off
->                          [KNL,EARLY] Disable trusting the use of the CPU's
->                          random number generator (if available) to
-> diff --git a/init/do_mounts_rd.c b/init/do_mounts_rd.c
-> index 8e0a774a9c6f..864fa88d9f89 100644
-> --- a/init/do_mounts_rd.c
-> +++ b/init/do_mounts_rd.c
-> @@ -17,13 +17,6 @@
->   static struct file *in_file, *out_file;
->   static loff_t in_pos, out_pos;
-> 
-> -static int __init ramdisk_start_setup(char *str)
-> -{
-> -       /* will be removed in next commit */
-> -       return 1;
-> -}
-> -__setup("ramdisk_start=", ramdisk_start_setup);
-> -
->   static int __init crd_load(decompress_fn deco);
-> 
->   /*
-> --
-> 2.47.2
-> 
-> 
+diff --git a/drivers/macintosh/via-pmu-event.c b/drivers/macintosh/via-pmu-event.c
+index 25cd56542328c..7a73956e9b8a6 100644
+--- a/drivers/macintosh/via-pmu-event.c
++++ b/drivers/macintosh/via-pmu-event.c
+@@ -1,23 +1,8 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+  * via-pmu event device for reporting some events that come through the PMU
+  *
+  * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
+- * NON INFRINGEMENT.  See the GNU General Public License for more
+- * details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+- *
+  */
+ 
+ #include <linux/input.h>
+diff --git a/drivers/macintosh/via-pmu-led.c b/drivers/macintosh/via-pmu-led.c
+index fc1af74b65967..cbbb0036254cb 100644
+--- a/drivers/macintosh/via-pmu-led.c
++++ b/drivers/macintosh/via-pmu-led.c
+@@ -1,23 +1,8 @@
++// SPDX-License-Identifier: GPL-2.0-or-later
+ /*
+  * via-pmu LED class device
+  *
+  * Copyright 2006 Johannes Berg <johannes@sipsolutions.net>
+- *
+- * This program is free software; you can redistribute it and/or modify
+- * it under the terms of the GNU General Public License as published by
+- * the Free Software Foundation; either version 2 of the License, or
+- * (at your option) any later version.
+- *
+- * This program is distributed in the hope that it will be useful, but
+- * WITHOUT ANY WARRANTY; without even the implied warranty of
+- * MERCHANTABILITY OR FITNESS FOR A PARTICULAR PURPOSE, GOOD TITLE or
+- * NON INFRINGEMENT.  See the GNU General Public License for more
+- * details.
+- *
+- * You should have received a copy of the GNU General Public License
+- * along with this program; if not, write to the Free Software
+- * Foundation, Inc., 51 Franklin St, Fifth Floor, Boston, MA  02110-1301 USA
+- *
+  */
+ #include <linux/types.h>
+ #include <linux/kernel.h>
+-- 
+2.51.0
 
 
