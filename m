@@ -1,158 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-12240-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12241-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 022A5CAC597
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 15:47:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34E02CAC597
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 15:47:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQTtM45zfz3dW1;
-	Tue, 16 Sep 2025 01:47:07 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757951227;
-	cv=none; b=RdLxl9c5Up4Q0QvK1roALQ+/iOAebOAybVmy/Y69IR55hgT9L2qoHVjOmt52jjcz/HRcrJ5An28zwhTJcV3OIogr1KMB+UkQKKpgRT7b4mjVFYMXb3+DVDNoEn13xSyNvT41PD6CAtM51SkmbQndhNcNUeQVlbUesA9VxrxzDSH0r9zDDuHiP1E/njfOWITcQnYTp8SEAA4CM8X3wa2nOw2RcQncmqEgy/MsjyFymoLzQRrz2vYaXkD1bkWJ4dv69FbpZgZNbYlBzyu/7SS/hv6ODlJQD6BMvS1FpEv2aFru8J6Rgb+NNWC4L6yoejCRu00uwvvmJFo4smI/kT1XcQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQTtg6G6Bz3f5L;
+	Tue, 16 Sep 2025 01:47:23 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::f2f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757951243;
+	cv=none; b=MY4AlyBh+sS4UhPgXJpbz6Bd7V6oscZFydoaC9Fi5SNrEHnrshDL9KutloUO6HYJ82VpF8s84sO5OIuhtSH5pxOPK6UUPFmBgVbJ/CXKNvZk3U2KdlsiEq4AVPblu2/aH+UQDJtomW6KAgWlAlMHZS3RCbIUH7pU+zT1D3nLhTQ8WBdLjMYcSzkpRjGl5O0HUOlHQM0qpboIE6RLC2P/q+6ZYWZk/n72Q3lhYK4HBNyI5w+6Nxn1bAzrLO/1ePKd1IZeIpa1VnqRKcQoeWrFU26ZSqnaN28/wFDml4TGjR7SEOaOAry4TGQER6564G1adbQVb+gm6QF82NJLnG9yLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757951227; c=relaxed/relaxed;
-	bh=EClZ5jZsXIeH/TGEm1DVB6BJqaK85USt9OEE92mSRVw=;
-	h=Message-ID:Subject:From:To:Cc:Date:In-Reply-To:References:
-	 Content-Type:MIME-Version; b=deyJJ1CGjpzZifGe9JxsVEDdvDpAWklQ7KEmN4PM8NfMEF3lqzbhXDEAEeNMTp3qYdukbgrnUI8FfEolKKgqC7pwAPpLH298PiGnm4kKk5+fQ7Hos3Ongq7pTwwA7XIhwOndLICItN7+mjQYpuJNwIje35tia2eOOZ1iVgbEi7W6CyRlbSH8OLRWyXH8ILAVBppJppRT9XjiEY5Q5lsbGKY8OyrI4whM1VTUyFauwfoTTzlDgT5qBS7oCzgvq1MGh50vZmSnOrIJt/A6NGwmDWOIjkvQmVfWsfxIlEGQlSny3+YYgOt89wnxKh1As/wVqigI9VHnFXHSUytg/Rf/dw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q3lPTHyL; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=schnelle@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1757951243; c=relaxed/relaxed;
+	bh=sF9n47OKYupJ+YpHurEgKB2LmOn4YAEsHDSQn4dI9Aw=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=Ij49aD7brskjnfN9VISugBLpKkQEXu4+pWiXdct5LAhf2z5IpN5ismzNpOPT10mm0K6LvqzLQWzoy5tfkx6k0kyTfHGoXr3DEGFLMfnxC4lS8NaULQ94TlZO462NLUGIL4wDZUTmj7wb2DWtTtdWKGUNaS31ZKdaXcsOHZl4Tzfv5ruQ/54J0Etd3jGz3pwa1YFCE6Iff6C2vAxVBwNyZyhkOvJkNV9E071TwvPy++H3wkavGmICMCUnKkN3R+6+IZTZOer4ovItVujTIdFxl/Wf6JiXDTMObyobWMEyzWwi6C5i7q31LRsFiOHnoDU1o/x9/9HMZlnaHDH0uv3R7w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org; dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=AdYqaKAH; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::f2f; helo=mail-qv1-xf2f.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org) smtp.mailfrom=chromium.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=chromium.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Q3lPTHyL;
+	dkim=pass (1024-bit key; unprotected) header.d=chromium.org header.i=@chromium.org header.a=rsa-sha256 header.s=google header.b=AdYqaKAH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=schnelle@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=chromium.org (client-ip=2607:f8b0:4864:20::f2f; helo=mail-qv1-xf2f.google.com; envelope-from=dianders@chromium.org; receiver=lists.ozlabs.org)
+Received: from mail-qv1-xf2f.google.com (mail-qv1-xf2f.google.com [IPv6:2607:f8b0:4864:20::f2f])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQTtL4fvMz3dVJ
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 01:47:06 +1000 (AEST)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58FBedq4003338;
-	Mon, 15 Sep 2025 15:46:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=EClZ5j
-	ZsXIeH/TGEm1DVB6BJqaK85USt9OEE92mSRVw=; b=Q3lPTHyLWD+b6nFG3YMUka
-	B1RVpV1iuI8q2Tu8wrKjwVpEkVAZ3HRr2IKulCohkWLdxVmSS2WhYZqBxm7o8a/g
-	KRRUzNAPTg4lcasiUc+4944+uq70cSSaPVQaJL+dhsGBjDKpQlk/8jtko8slFwJL
-	ppYSu7dDJ9MWdtVi8LCyREbgN/PuNdPbPpOgh4YhCPDtbRU4lILzxyK1wSYrOenB
-	pBHnx2SqtduEQCBNA2OhqBfyQND6aX//bmyv6MGtRg6JWM5pmXEcrsOUfIKTiY56
-	5X4Tl8HLzVPiktfiKF58tM3NA1t17CO6T0mthWlzNHbHZVoEIEmrRR8V2Q3UJBJA
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 494y1x35wj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 15 Sep 2025 15:46:58 +0000 (GMT)
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 58FFLrBt011041;
-	Mon, 15 Sep 2025 15:46:57 GMT
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 494y1x35wd-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 15 Sep 2025 15:46:57 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 58FFeJgx018637;
-	Mon, 15 Sep 2025 15:46:56 GMT
-Received: from smtprelay03.dal12v.mail.ibm.com ([172.16.1.5])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 495n5m707q-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 15 Sep 2025 15:46:56 +0000
-Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
-	by smtprelay03.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 58FFkuRf29622870
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 15 Sep 2025 15:46:56 GMT
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 8747F58052;
-	Mon, 15 Sep 2025 15:46:56 +0000 (GMT)
-Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 77CF458056;
-	Mon, 15 Sep 2025 15:46:54 +0000 (GMT)
-Received: from [9.111.35.47] (unknown [9.111.35.47])
-	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 15 Sep 2025 15:46:54 +0000 (GMT)
-Message-ID: <4fa71778403c8025a85f30dd8a7dcf5bc9a4eaf9.camel@linux.ibm.com>
-Subject: Re: [PATCH v2 4/4] Documentation: PCI: Tidy error recovery doc's
- PCIe nomenclature
-From: Niklas Schnelle <schnelle@linux.ibm.com>
-To: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <helgaas@kernel.org>,
-        Jonathan Corbet
-	 <corbet@lwn.net>
-Cc: Terry Bowman <terry.bowman@amd.com>,
-        Ilpo Jarvinen	
- <ilpo.jarvinen@linux.intel.com>,
-        Sathyanarayanan Kuppuswamy	
- <sathyanarayanan.kuppuswamy@linux.intel.com>,
-        Linas Vepstas	
- <linasvepstas@gmail.com>,
-        Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-        Oliver OHalloran <oohall@gmail.com>, linuxppc-dev@lists.ozlabs.org,
-        linux-pci@vger.kernel.org, linux-doc@vger.kernel.org,
-        Brian Norris
- <briannorris@chromium.org>
-Date: Mon, 15 Sep 2025 17:46:53 +0200
-In-Reply-To: <db56b7ef12043f709a04ce67c1d1e102ab5f4e19.1757942121.git.lukas@wunner.de>
-References: <cover.1757942121.git.lukas@wunner.de>
-	 <db56b7ef12043f709a04ce67c1d1e102ab5f4e19.1757942121.git.lukas@wunner.de>
-Autocrypt: addr=schnelle@linux.ibm.com; prefer-encrypt=mutual;
- keydata=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
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
-User-Agent: Evolution 3.56.2 (3.56.2-2.fc42) 
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQTtf5XGwz3f1P
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 01:47:22 +1000 (AEST)
+Received: by mail-qv1-xf2f.google.com with SMTP id 6a1803df08f44-765936cbdfeso40680246d6.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 08:47:22 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=chromium.org; s=google; t=1757951238; x=1758556038; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=sF9n47OKYupJ+YpHurEgKB2LmOn4YAEsHDSQn4dI9Aw=;
+        b=AdYqaKAHVKK0DA4Dj9hRF5bt7i3ApadwxuHrEUJAumS8bnkKLP8G5EfpK2hDe9fsAx
+         Z0aXxAszFJOvkiTnozqqdbdlSN27aYg6+sc1OtMYtfpbYtzp6CBc3QeYDfW09uzmv+AA
+         PuV83AmfONokV2mK/V7B7cQ5vN/HMcSpYjTpQ=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757951238; x=1758556038;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=sF9n47OKYupJ+YpHurEgKB2LmOn4YAEsHDSQn4dI9Aw=;
+        b=eypkAQk1x+wUehVlDq+xYco7m+dyBXIRFD3QSI471MbNQknRsRx2OVcJLkgZt0LVde
+         YpfpYtXnLq1ERTYrPYgRPopC0T6cohbLXNJPtMZYZ/sgO5IsOE9Z8l9Gm+/L5vEstVGw
+         9vT4pSAC8Gh+EXRF3LlkL3fdLPFPHWeHjKEeIac0R/+7Y/MM2NHQaa4slEHl8FW3l+Qm
+         ZhbDcn212KCLUpeTtN3TZkOEnExTZxkyhE5uICzAS50YTbyLapjZwK6n26MDmKuICMdO
+         GG4Xm8n6IZS5WaQR0DUeCRmoGadwgPXcpqvdGlQA/9DEADL7ZYGn3cjES4Fliduh7SBU
+         rxdQ==
+X-Forwarded-Encrypted: i=1; AJvYcCXCzVu3ZgviP7+IVIHGd9rWmcOXx6cvPhSh92Ionb+yR9zGQS1a91tDBs2Joe3e5zEim2sk0Lb+RlJDyM0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw23UI2CEZyGCI9580BbJbg+nfx+MNKkFXfEEX6ZL00e+f6lcfR
+	aOHf9bvuaxrraQVnzTVUS2lWIWebaxzuHDOcF22vM1IQkta6FNwfcAx7+bLBcttB/XR5x1pmPcj
+	92Pw=
+X-Gm-Gg: ASbGncs3dSUaEOrf4/yNSqjw7u58XzPSTLvss9ljjMKIxhwmF+1Ze85NB36YGfOkcwa
+	ywh1SWDCLbwpApFtiA9c3bXSsWoWTXLDsUevSVOlMHeIw7uf2NRbIVYbwRNssjE6SrU6FIMicEJ
+	YfX6e0WXR6DoOGGN3yFwIi4oe7dBZ4QppiNbszNQk5sEuKU9K+GgsVNjtAF7CCzT+T1lSMkHsZ7
+	WbNN3ZOaRKEuHcksoupUEBbTh+tjSvHxFXyGjsZn5/tQ/TY0K0M/FigWFhg1j9GOyw+OVJ8vJMo
+	039370X177ZPPCENorhPkn4zmvtGDZ9JP0ISzBY0HJONo7tSlJ9WSnQSvr5/7LPQ3wAhArcNAFm
+	SviSBhTQHyS0VllGPY5wf6FyIAoiVoPzreC+/beB+o83kt8LZ6zQ4HOCbjeYRg/sVRA==
+X-Google-Smtp-Source: AGHT+IHqkm1BfpPrQZ2DwOFBZ8W7FPRIf76A6Rmw7EJ6k32K2fSnVaUTzOhy6uwuaUarXbOfcPdQDw==
+X-Received: by 2002:a05:6214:f2e:b0:72b:5e10:55bb with SMTP id 6a1803df08f44-767c3772ce3mr155176646d6.48.1757951238350;
+        Mon, 15 Sep 2025 08:47:18 -0700 (PDT)
+Received: from mail-qk1-f181.google.com (mail-qk1-f181.google.com. [209.85.222.181])
+        by smtp.gmail.com with ESMTPSA id 6a1803df08f44-77ef70bcc4esm27582876d6.41.2025.09.15.08.47.17
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 15 Sep 2025 08:47:18 -0700 (PDT)
+Received: by mail-qk1-f181.google.com with SMTP id af79cd13be357-826fe3b3e2cso195154585a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 08:47:17 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXJhyLygY6iZL2JXep4ZreAWG7SIM2uLtExOpniFIqgUy1PfoAkQWFVB9t5R0GtRjJTZvcMHMlekgvpnK8=@lists.ozlabs.org
+X-Received: by 2002:a17:902:e80c:b0:264:ee2:c3f5 with SMTP id
+ d9443c01a7336-2640ee2d03bmr82023175ad.19.1757950933588; Mon, 15 Sep 2025
+ 08:42:13 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -166,123 +89,72 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTEzMDAxMCBTYWx0ZWRfX14HVU/Ad9H+s
- dIMMkG8ig5O2lYnBuhe29UZ6F+0hs+ERgs4O5n2QAuFIsbuzoyCmXOjowH6kf89mU9CDjy27SF1
- 4OJUqST7Hmh7pB6YD4SPRef98HzUoBj+faVEEWeKyKnyDhJTXoWLXBOE6yXM2kUKUwmKISxfv1X
- HJo9nIXgdheUKAz8gvh6+xfa/1Xhs8RKjKgvgWJkiolKHxxvK/GqdfNCGQ2b5OlGcaWGOSPM5nZ
- 84dstqf+fCAku3f4XO/1MEKzL+P9fLE/WjLV9sHrB5bF3X/SfnJv4IISHzcw2hCq4Y8Zz9aWBf2
- XO6D1eJufvs2CV/4fDJtMFRGsJ8aA3xL0flXHDCHAhlzOpD5Dk52z37amULIDES2R63NGOrwFRM
- /9Ya7jUA
-X-Proofpoint-ORIG-GUID: 5J-H0mxm43hN5dGBn6qJ-0K5DhG9kypG
-X-Authority-Analysis: v=2.4 cv=euPfzppX c=1 sm=1 tr=0 ts=68c834f2 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=cm27Pg_UAAAA:8 a=VnNF1IyMAAAA:8
- a=XEWlu9VqNwFSst1M3Z8A:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: 5-0ZgXorGEHd5_Td74dNKWHL9i0MXvvs
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-15_06,2025-09-12_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 malwarescore=0 phishscore=0 suspectscore=0 spamscore=0
- bulkscore=0 impostorscore=0 priorityscore=1501 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509130010
+References: <20250915035355.10846-1-cuiyunhui@bytedance.com>
+ <aMfpwYPX6_i6ROOY@willie-the-truck> <20250915103506.GA3245006@noisy.programming.kicks-ass.net>
+In-Reply-To: <20250915103506.GA3245006@noisy.programming.kicks-ass.net>
+From: Doug Anderson <dianders@chromium.org>
+Date: Mon, 15 Sep 2025 08:42:00 -0700
+X-Gmail-Original-Message-ID: <CAD=FV=Vr67+uRK2bYu34MDXRJN4w_VH_EO7OW4eVLJ3wqUUBog@mail.gmail.com>
+X-Gm-Features: Ac12FXzAoIBOvB7DdouVYRPtMAe3U5Dl3CUX53Fx6WzMzB918sSg5cv2FslrCvs
+Message-ID: <CAD=FV=Vr67+uRK2bYu34MDXRJN4w_VH_EO7OW4eVLJ3wqUUBog@mail.gmail.com>
+Subject: Re: [PATCH] watchdog: remove HARDLOCKUP_DETECTOR_PERF
+To: Peter Zijlstra <peterz@infradead.org>
+Cc: Will Deacon <will@kernel.org>, Yunhui Cui <cuiyunhui@bytedance.com>, akpm@linux-foundation.org, 
+	catalin.marinas@arm.com, maddy@linux.ibm.com, mpe@ellerman.id.au, 
+	npiggin@gmail.com, christophe.leroy@csgroup.eu, tglx@linutronix.de, 
+	mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com, hpa@zytor.com, 
+	acme@kernel.org, namhyung@kernel.org, mark.rutland@arm.com, 
+	alexander.shishkin@linux.intel.com, jolsa@kernel.org, irogers@google.com, 
+	adrian.hunter@intel.com, kan.liang@linux.intel.com, kees@kernel.org, 
+	masahiroy@kernel.org, aliceryhl@google.com, ojeda@kernel.org, 
+	thomas.weissschuh@linutronix.de, xur@google.com, ruanjinjie@huawei.com, 
+	gshan@redhat.com, maz@kernel.org, suzuki.poulose@arm.com, 
+	zhanjie9@hisilicon.com, yangyicong@hisilicon.com, gautam@linux.ibm.com, 
+	arnd@arndb.de, zhao.xichao@vivo.com, rppt@kernel.org, lihuafei1@huawei.com, 
+	coxu@redhat.com, jpoimboe@kernel.org, yaozhenguo1@gmail.com, 
+	luogengkun@huaweicloud.com, max.kellermann@ionos.com, tj@kernel.org, 
+	wangjinchao600@gmail.com, yury.norov@gmail.com, thorsten.blum@linux.dev, 
+	x86@kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
+	linux-perf-users@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Mon, 2025-09-15 at 15:50 +0200, Lukas Wunner wrote:
-> Commit 11502feab423 ("Documentation: PCI: Tidy AER documentation")
-> replaced the terms "PCI-E", "PCI-Express" and "PCI Express" with "PCIe"
-> in the AER documentation.
->=20
-> Do the same in the documentation on PCI error recovery.  While at it,
-> add a missing period and a missing blank.
->=20
-> Signed-off-by: Lukas Wunner <lukas@wunner.de>
-> Reviewed-by: Brian Norris <briannorris@chromium.org>
-> ---
->  Documentation/PCI/pci-error-recovery.rst | 14 +++++++-------
->  1 file changed, 7 insertions(+), 7 deletions(-)
->=20
-> diff --git a/Documentation/PCI/pci-error-recovery.rst b/Documentation/PCI=
-/pci-error-recovery.rst
-> index 9e1e2f2a13fa..5df481ac6193 100644
-> --- a/Documentation/PCI/pci-error-recovery.rst
-> +++ b/Documentation/PCI/pci-error-recovery.rst
-> @@ -13,7 +13,7 @@ PCI Error Recovery
->  Many PCI bus controllers are able to detect a variety of hardware
->  PCI errors on the bus, such as parity errors on the data and address
->  buses, as well as SERR and PERR errors.  Some of the more advanced
-> -chipsets are able to deal with these errors; these include PCI-E chipset=
-s,
-> +chipsets are able to deal with these errors; these include PCIe chipsets=
-,
->  and the PCI-host bridges found on IBM Power4, Power5 and Power6-based
->  pSeries boxes. A typical action taken is to disconnect the affected devi=
-ce,
->  halting all I/O to it.  The goal of a disconnection is to avoid system
-> @@ -206,7 +206,7 @@ reset or some such, but not restart operations. This =
-callback is made if
->  all drivers on a segment agree that they can try to recover and if no au=
-tomatic
->  link reset was performed by the HW. If the platform can't just re-enable=
- IOs
->  without a slot reset or a link reset, it will not call this callback, an=
-d
-> -instead will have gone directly to STEP 3 (Link Reset) or STEP 4 (Slot R=
-eset)
-> +instead will have gone directly to STEP 3 (Link Reset) or STEP 4 (Slot R=
-eset).
-> =20
->  .. note::
-> =20
-> @@ -259,14 +259,14 @@ The driver should return one of the following resul=
-t codes:
-> =20
->  The next step taken depends on the results returned by the drivers.
->  If all drivers returned PCI_ERS_RESULT_RECOVERED, then the platform
-> -proceeds to either STEP3 (Link Reset) or to STEP 5 (Resume Operations).
-> +proceeds to either STEP 3 (Link Reset) or to STEP 5 (Resume Operations).
-> =20
->  If any driver returned PCI_ERS_RESULT_NEED_RESET, then the platform
->  proceeds to STEP 4 (Slot Reset)
-> =20
->  STEP 3: Link Reset
->  ------------------
-> -The platform resets the link.  This is a PCI-Express specific step
-> +The platform resets the link.  This is a PCIe specific step
->  and is done whenever a fatal error has been detected that can be
->  "solved" by resetting the link.
-> =20
-> @@ -288,13 +288,13 @@ that is equivalent to what it would be after a fres=
-h system
->  power-on followed by power-on BIOS/system firmware initialization.
->  Soft reset is also known as hot-reset.
-> =20
-> -Powerpc fundamental reset is supported by PCI Express cards only
-> +Powerpc fundamental reset is supported by PCIe cards only
->  and results in device's state machines, hardware logic, port states and
->  configuration registers to initialize to their default conditions.
-> =20
->  For most PCI devices, a soft reset will be sufficient for recovery.
->  Optional fundamental reset is provided to support a limited number
-> -of PCI Express devices for which a soft reset is not sufficient
-> +of PCIe devices for which a soft reset is not sufficient
->  for recovery.
-> =20
->  If the platform supports PCI hotplug, then the reset might be
-> @@ -338,7 +338,7 @@ Result codes:
->  	- PCI_ERS_RESULT_DISCONNECT
->  	  Same as above.
-> =20
-> -Drivers for PCI Express cards that require a fundamental reset must
-> +Drivers for PCIe cards that require a fundamental reset must
->  set the needs_freset bit in the pci_dev structure in their probe functio=
-n.
->  For example, the QLogic qla2xxx driver sets the needs_freset bit for cer=
-tain
->  PCI card types::
+Hi,
 
-Thanks for the bringing this in sync.
+On Mon, Sep 15, 2025 at 3:35=E2=80=AFAM Peter Zijlstra <peterz@infradead.or=
+g> wrote:
+>
+> On Mon, Sep 15, 2025 at 11:26:09AM +0100, Will Deacon wrote:
+>
+> >   | If all CPUs are hard locked up at the same time the buddy system
+> >   | can't detect it.
+> >
+> > Ok, so why is that limitation acceptable? It looks to me like you're
+> > removing useful functionality.
+>
+> Yeah, this. I've run into this case waaay too many times to think it
+> reasonable to remove the perf/NMI based lockup detector.
 
-Reviewed-by: Niklas Schnelle <schnelle@linux.ibm.com>
+I am a bit curious how this comes to be in cases where you've seen it.
+What causes all CPUs to be stuck looping all with interrupts disabled
+(but still able to execute NMIs)? Certainly one can come up with a
+synthetic way to make that happen, but I would imagine it to be
+exceedingly rare in real life. Maybe all CPUs are deadlocked waiting
+on spinlocks or something? There shouldn't be a lot of other reasons
+that all CPUs should be stuck indefinitely with interrupts disabled...
+If that's what's happening, (just spitballing) I wonder if hooking
+into the slowpath of spinlocks to look for lockups would help? Maybe
+every 10000 failures to acquire the spinlock we check for a lockup?
+Obviously you could still come up with synthetic ways to make a
+non-caught watchdog, but hopefully in those types of cases we can at
+least reset the device with a hardware watchdog?
+
+Overall the issue is that it's really awkward to have both types of
+lockup detectors, especially since you've got to pick at compile time.
+The perf lockup detector has a pile of things that make it pretty
+awkward and it seems like people have been toward the buddy detector
+because of this...
+
+-Doug
 
