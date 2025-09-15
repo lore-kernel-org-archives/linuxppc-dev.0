@@ -1,53 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-12221-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12222-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E6B20CAC592
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 13:09:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3A79CAC597
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 13:22:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQQNK2mGhz3dTY;
-	Mon, 15 Sep 2025 23:09:21 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.72.192.78
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757941761;
-	cv=none; b=f/MgDfV3PYmUkdcWLv3uz8upremwS9NK5UHDcnhD2mnFNY+WWbBwSxVz4xNEzfHJhRL/hd5U4ExSyM2LEtxEV/vS+mHVcDTeK/vonkRA0OQWqMXPT8cF6dkXdNyv6i1wtUA6xsNP5Ey/c+a7AGEJGnHu1fDyCYD9UbEnr8ww++MX+tGvIhMNu9CoU5q6M7WUh22A3lPAgmGBE/yW4z9sS4bNwuHLpmd3vGeiVpzqp5b56Bym1GVBr7prrj27G3f092OIGqLJ0VkkecqXLGeDkQB2dU4qXX2qUg3J9SnPDGD/hibjaTPmKZ/iVwl+MLC5bFaW9s/X3UvtACJ7knEIZQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQQg128Mnz3dVv;
+	Mon, 15 Sep 2025 23:22:05 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757942525;
+	cv=none; b=kQAKGQppf8JfXaWWsWQf8kKa5CreA2l7Z0jVUx0VPxBcm0mFaN9Dch9t6KHeARR1hQcJDB01S4GqCeY5t3tUD1DK+gUOTsy1XS+IKl+7ndYWVkxhLcWHROC2FSIAqcM/BLmRhvkqz7qjkiyHBxcHBzBHPSDRzUeD9t1eU4kL5JiQHWuXI4dNV4Yd6tkCMQDpxXex2QM2rCTPOLVaRvfC3v+NjAuNtRriFqaheFQW+Kt7tTqUkt/RmeC+5Gz9vYRkBeUxhpbqCydKvetbabj0VS4rSrySfhhiWAMHaInH/CXCHqGJSHlSwHIHeXvnTWPa7EEo/m+J06Wna2Fv3xGoig==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757941761; c=relaxed/relaxed;
-	bh=NhtemnjAxvA/8fLmGMmQnGfrrMMgLd4Wke3MQ3tQQMs=;
-	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=mgK3vwOnDs/uu3d48nyDwi2iPHBvzw2LrqqS+dti3ciKjp9O1RVDv8NnYGAkEcu6SoN6qGx/bX+yuY8xKyPoj+3wBm2ENS7Wz0DI+3HcOvhoa+tJnYqEc1VAJQ5XiuFlqrW9oCq2rJyCsehiuDvZL+ur4DnTHJmlPd1dsgYwoFj/IrPI+44C0f/0tjtplD+/nQoyhrud/F9lxjAeqFgU6a4qRL6D9WQmorQWHOC/2zwxinT1Uy6EXUaTWyTaWGnUBSwF6gwatIYoZFyMdo6HBL/ItPLfRgexhzt5ySP6mVUZlA728Lt/H3Vt9NiwFKREjs+0zmrQFcYT+zWLU5KG3w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=gFbcfHWU; dkim-atps=neutral; spf=pass (client-ip=217.72.192.78; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=gFbcfHWU;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=217.72.192.78; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 529 seconds by postgrey-1.37 at boromir; Mon, 15 Sep 2025 23:09:16 AEST
-Received: from mout.web.de (mout.web.de [217.72.192.78])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQQND6Swbz3dKw
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 23:09:15 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1757941752; x=1758546552; i=markus.elfring@web.de;
-	bh=NhtemnjAxvA/8fLmGMmQnGfrrMMgLd4Wke3MQ3tQQMs=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:From:
-	 Subject:Content-Type:Content-Transfer-Encoding:cc:
-	 content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=gFbcfHWU/8giPk/NKU9QWM+aeaM3t4K5XjV/MD/5OMMFhx5qggMxTrPGBntZ2kqi
-	 wbr93PtPhPCopzErVDVGnCv39GgG2bfHVVXws3am9hxYSsB99f1fq5W5UEWy0tSPR
-	 DVF5bzevH3NtwQrAFbQ/Yl+pT26TTZjbGSsvITBZFJX5mJrZJ1t81JYdpgAolRQmr
-	 k4LNCsI6HsNVb4cEtJC89/dC5a4VpFCe1E2iHYfHdTlmGR9PeMp0Lihtfu8iIrvEd
-	 H/OGYah5mKOl7Q8cPTfgiL0ocgMA3HP37Gut4Ig2fadSSa5Cy6+wd5d8RsLTHXRAK
-	 eeIaZ+hPBNOzd9Wm2g==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.29] ([94.31.69.188]) by smtp.web.de (mrweb106
- [213.165.67.124]) with ESMTPSA (Nemesis) id 1MFrxl-1vB6ai2Sit-00Di0i; Mon, 15
- Sep 2025 14:52:59 +0200
-Message-ID: <80453b77-01ca-4fff-8a5a-deed4203be0f@web.de>
-Date: Mon, 15 Sep 2025 14:52:42 +0200
+	t=1757942525; c=relaxed/relaxed;
+	bh=8LbZZQXBwakk1o8HoHgvDq6wMKD6k92z7xv9wHGbqAg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=WWJUJYjChnTUzU/EpZtLYn1TQQ8d8cbAYUFuYQwdMBIJzL/ucS9wLFeFfP4ApO1uQi3lcf678U0UaUoVBfPCfH9OVvXe5t0Xlg1zIe1JZhvk7aVwSmwXpxqDaZg/io1fu0tvOT+GjpSStBnNbROrn08Nf6OuWFB8tna0KxJeasUN9DSZtBddSokJDlAfn139RcE90VBAW543yaC6sGOnQ5EjN3qFIIzfjKaG1ptsvi8PWDuVc0TD/dEyao3drGGrg0Joqt0cjfcIDsDQQlCNPm+PxK/7m4/CIcZNShRbFEUsQ6CtjRinrTxtSxYQQgWbmIkGs7S4Xmc5U7meSAtL3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQQg02B6Zz3dTg
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 23:22:02 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4cQNk651SSz9sxh;
+	Mon, 15 Sep 2025 13:54:38 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id zyKNPbK2UxYX; Mon, 15 Sep 2025 13:54:38 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cQNk52qX4z9sxf;
+	Mon, 15 Sep 2025 13:54:37 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 307338B766;
+	Mon, 15 Sep 2025 13:54:37 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id kYegUs-5AFEi; Mon, 15 Sep 2025 13:54:37 +0200 (CEST)
+Received: from [10.25.207.160] (unknown [10.25.207.160])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 92F668B763;
+	Mon, 15 Sep 2025 13:54:36 +0200 (CEST)
+Message-ID: <a246ee31-1ea3-4278-b103-65fda6e692a9@csgroup.eu>
+Date: Mon, 15 Sep 2025 13:54:36 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,114 +59,93 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-To: linuxppc-dev@lists.ozlabs.org, Kumar Gala <galak@kernel.crashing.org>,
- Alexandre Bounine <alexandre.bounine@idt.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Jin Qing <b24347@freescale.com>, Li Yang <leoli@freescale.com>,
- Liu Gang <Gang.Liu@freescale.com>, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>
-Content-Language: en-GB, de-DE
-Cc: LKML <linux-kernel@vger.kernel.org>, kernel-janitors@vger.kernel.org
-From: Markus Elfring <Markus.Elfring@web.de>
-Subject: [bug report] powerpc/fsl_rio: Missing of_node_put() calls in
- fsl_rio_setup()
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:ZWxN3Ysz7mZYnylO6nqSUzTVLku6/7Sr4VvsnGOn1UNtzXXh8lq
- hhbS/eTW8oiqPNDG6Rrum+DkZxXhTWbACybnryoGioY493DKc0cxvv+f/T+8NAfphMIooIJ
- bt4FVnEl1EeM0XnFaD6knIrF01eFQgd8gzV7EUdwxKtcUzRHcnaytQt6LeThujLQHNA3CnQ
- vs3bFkT34/0HDwOLURgjA==
-UI-OutboundReport: notjunk:1;M01:P0:FVc9glNrJFU=;TN+H0+AVB8A9IdtnTU0nKS097fZ
- OIKjhOQPGEoicoGcTw6VNmjZaoj4LW27bRxD1lNuRF7/6p0PdfwufKaTr2vOKJ/ifZYd8JU2j
- LrhnLFrbzyXNGhfkNhPFNxyWEsks4aJxLUnc3JVwAJ8aqRGgSDZe1oC95jCyDNyDGg34N2GLO
- q4hCawPpeJCcZy5qGDOO/XTHHvnfBz+COtwJ7gktRdf5/OHT9Vj3v7eeFTZwVHYztlu1UuxLe
- DSwAdKinL71ciWFQHMhEAh7GD2+eabTl6vmDbixuJmC85YYDDWslAuG+QbgOo9UYJNp4Te54z
- QFB+Q/xF40BfMw6u9LSpW6ZSO78hCJzcGEfg3AJ/OUKnf/pfNeN+262CHXpaR4iuDqxzUMcol
- G/MDNQiGI9ibmGWzlKOjjNHkb/JtbAYkqTga5mO6XZ76wpQyGFqGi5BSyLYISAdISS27pjBNa
- M8NoL9Z89nzzLprzIxzbgh6dETVOoCovEw517I3p60Pjg4x1XW5Q5ehxDxtMoJENu6OpWVe9H
- cQ8CGuhlVsrJ4UaZj396jKh1tEDQGYVM4wLzvGDsuh5ZLGoWLtFlQMOTQD7SHR6eHxhzpgPOF
- +UPxUFfkqhuKnBJNGzsR5OmtZVRLGNfw13eIK+j29k/ZpA6+pbcsf3PWRcjvcJNBIKUy43Kkw
- mkbD/KuQ70kn2vHdVxhoHgjym9u4zw1dI1hfY2fTjuCwc343sjIL/tVXVLEAE0/XdMI2w8ac0
- NoKWyiE1KluR5XbFyfw1bgVpznK3y9HFkcbjJyyBSnOUVaAd7wuumyvEGuxEXa9ArwS5L39lS
- vgNLZPK/tan2oKag8sqW0Z653QzlXDLO9uxqKffkucjwkzfKVZjf2Jd/oAfCCs0JxKVbPuWgx
- /6Cn0r4N1ix0l9e34VqahJFs584GbMfmaPM+PhDvgBF7WUnVjQeJXK8x5HlGhewZF8Trw/n6R
- 7O2OYF5etutg+H3IGuYwrqzrG0j12gvDeDdzn2iU1JkXef9rfUsYCw6jLbDPLMmKTee+FC7fi
- DaUx2NL3YDAKLClYhUSaOPZWwgBCK6ytRXxHwL359LqG6SghfGoVK+xr/AG681n1vX9F+XnG1
- 8rHZNx0NMw9oRqYYOkeIll++y50aqDnoqRUZ+Xt/rJPNMqGyvahUpOV4QEPRA+e9C0jaBG3X1
- s2Ull5/ChzcVS6OCKgD9s1BEi/OcwiSdxMPrKun5RvJgUFd74ygaRuyK2yjvWBVe6DNU84nYU
- bH7aL81lJBKFeKj2t3j/SKGjYu+mLVV4Vkt74QzKZp2ZSKL968dJSfvVGd9zKCYxqUjWS6KZN
- ABrW70+Lt5h5AKUValBZjY+BwpPLl+Um+jAbWPGGVWmU+/sYpomzuSA6VxOzca+nX375cHE6m
- Xwedw7xAlqi9VxbZUlXOmQiCyh4uaox/ZciJskLyAEoetg3MgxFIxj25/CIJ2XAV3HvP0xKaQ
- oDbqa8A3vYPDAgZbc9J5L28xzz1tL5pdugyUBWE1aHcImbfXRpkO4qhqDN46JmCAX7gz//pQc
- j0yayRJYdNXCogwfMMuWar/3J2foZDLJZW2Z0uKawdBgJBt6l635jIA8KMXwJbTq9Jklv7Vg5
- HQ1K4sgbvzxsTdelGJETNKmwIoHJu/9P7K9XCkP5OOJI4/l68O/JifK/ggLr9230LBQI/qk2+
- GLEMIT3vLcd9loPBXDTd5sUpKuAyWHrxRfgRP5ZsqUW32qSN5C1bBgX20enTn67DZsM928qAA
- xeAZLXPbYG6Sk9JyxwGfxl4ybxfJLhnI+CgRGzfKt4YBvPx6eJiYs0JcBsCrpEGsSr+XR7W/Q
- /cG4nDzg4F16EZaEfAmAAnby5RyoTmOSozYweqhvTqgq7p8Vc9PCvSwHhk/JCvxx4WSfrIpUB
- RutDDpZLrqAYVjzqh60gZAU6EacQUkCoIG0K0cBYrlaZVK+jQkU3Mo3mDLwP/Q+rureW4ty3X
- MeaSgWTc6he1XFBs3ZxrHX5Dzz55wLcMp3Yc0Dzv1Q6roh6f6/gHh+QvCScnXP8Mgs28GEHKG
- btmXh46bfLEx3l/WkXCG5Dg0hFf9xL4FXdoHfoiSYD6XVaRiWNWvyU+hOIcJYCB5Kk8LfcjMF
- 4EPq4Vm3e0YoYB9497iGqKQ4AR0FGinnlkWEVaIZdnSez4i1ZNGaAvJ3adF9sMYM/1HROd3VT
- r3jruXYzqDAjzDQhckPBbWi6MpWvJGG/n1finvdj5To3LEOTuCM2ZFaOCwKtHnLjmUnXHX30m
- 3qo0BOUkvS499MkiCLLgCmH6H2y67VXT6c2Rg7m55g/uxge2FL0JnaWUuucKSfS//RlYAI19L
- BHHBS6godvjJT59BDs7CLCiWNuRZTDJQnDWjzABhMrIdyXEqgzDxt37vVoLoewnV53qzBuxpb
- ECilYETNtJxAB6bitQ9NYC24XhvXCy/9CZsuqV4TFakad2pcBRG0LBBTbqi554OCPBlPIBeB8
- fP496JqXOYHZihSwfGutzCcYJXw/dvXG9mpVvVKXs1fOjJGr4TZagTmh1aMNkrrztJP2x68mZ
- IGarAVsSK4oqovRHDNcBaLA3zuRLeelkmUNKDec+UUyiCKMywmWd1a8COp50nmGtfsufIc1EO
- L6pYQzaPwBLw1xKZzmwpBL7rDpiW8lyvmIrbKL2/JK66FVSIrCZtYXVvWTzKQVLfgfrCVgQtn
- tbMaVzNC9JF/i5ezpb+FUud31nrs+gLuVas8pwmVVXv/S0gBdQ88ptqo5hWMgTLDSUlVSVbDo
- pkaoPgMzOp2w8tmt9bqosd0KwPwtHuZK3ewNnbFGyUp3bBplFaUVoQUL3ITKLzr+pLodeuA7v
- dJ56m0DKyRjBYIj+5/9h3W1H8yfJ5yMuofc0tvTksrHTUE5rrDLTWRuhebQbm7BXyjscFUgQX
- jjkC2cbZ2oFbptV3zMe+JulSwOfG8rWCY+g9p1E7lswFN/wwISxHgDbTD0z7IkLoYHOoUyQTY
- ByNu2T49wjKsgczbOXcTsm90ppoqh0lBnF09mWFfQFQjdXZy5xIf2vI9kpfW7/T5hLBaVl0U5
- Ofne1EhAuqhB5/ZmqSFVZr6zoBXO522DVWDiTgkKGc2tDmshHe2wlZP9ayV8do85XhhPrG2Ct
- y2BZze1MEdCJ2k2L6lIPO5/uDGEzwQz36DJZ/IlcbmfaMCcgVzD0XaZJ0oPBa/fsWrFd6k777
- PbEPJ4KxOMXznlnW3BvVk6tDp6wnYVlMZ2No/zZehyo7fm1Duo+FaEmOlcab/dhQKJlFwSsBN
- X06NQNjyDf6CMm+UDURs60ySMKn9Jr9w/TB2lxZ+q5xxX0Tz2XiWWibdIXdyXdqiAA4ufhYUY
- M8Ml0UpESY3m1fFJykUFfwzHSei21Aeux2rnBeInMqf0oQzq0FO4eakfiQzBMczP7XXkwydmM
- t7JzAuht9/w3da6BDRoWobH5oHEIMn7cjdncds3L6OCvN4xRgVvxNK3f21wQMuwqv914TVpXc
- dvns8BIYfYZtiCuiQLNz1AYcV7L99+Kjd4H2vyi3RTuaPXdY2WH+bVYYM26podveB73KpswRp
- PdiHPZAAy34q8eTp1RVdmA/jnutU9A9DyV9h3Si9+r48qfU/cGEknHEY78qBqeI4veORyi/zj
- VSFrIzVVhqpgtXek3ebsIC2jB4vTKJByZf/rMtW9FtQWmqLAN2UfNgBlveOjH/UnQlKfBK/FW
- YMfuSwHuMB9TRYNCAlPARrWWiQUAV8Em0CEmZ9f26uOKVR+SmWaqnDZOStFgzgnODm0PdJMdS
- dqG1fuUYiVWGxQqxiZyuUj+5lHwNIkJP+k0J4OI5MZuEsKKbWYm9EWKVCs8q3tuSS6k888BFG
- BcTC0KlxE1ksoiM98Xcjs7mSukuu36kx6JROLXbtU1jsqBVYQRKQ66uyzZ2pPcL86JkgBtvws
- aNkDEC/GOc+ByTt5r/6kZU2hFUMZ/2nV16x75vyttAoKE2pnjsRL4Pz+ovwaZkZCzxsfSpRBN
- QD340+NL9bwenDH5xvNiuViIq5FUW4mqd43SZGDiRs+4ZdLtFQ5kvGOqTRrzk/3WGU7WywSFm
- 5/0hfETNh+Sg9ZIPjQBN+9lw+HHlL39qVX712kwbOY4O005S4VsiYW5JVDX9x1jJ1rO5yYj/N
- HNvxn1C7DxJ1Uem3gtzYE93M2FaIdSr66uJxpTlN/ULD/XOSPlgrTq0NxWSJq4GHZvkHXV0UH
- jwkyqVw1AVf3+LHZ+Tw3pieyfCfLNAn7NV6Gui9YMr/Tn2Wu83eZsRrCKfg/YHIFP5veQnOnH
- Wv2Oo64Fr0lD3ATfNmSLy7M8SzjEhWkLjnsZJ77+2SN6IWiIkg7KHL9CDgW1oflePaWHVnBQJ
- iYY/iQRcLU4JVJaybGLEtGxisZW+kJemH8q2rFNBsl/sCr62I8TDtb6QAkVq4DJdR27LFCX30
- eelC1iaBwEhJyGieSGMutD7/3US+D8dS7vb3uNgGwtIuF492nmWZxJmVRvmcvzuJr6g13Vj+r
- yvQrgz1s57p6hspKDM6ktbWD7wO/1kT19vzbY7LXvz8RBi76/nG1/u9Pk/yNdqIYN0xQehIeB
- GvbRM0RyiQkvw00YcGiaNLa3OTfHMC9lgnvs67X77v8bvLexDkzn7hbEjRLDYlm7ZSBntauHq
- 7RtXPmWbrwzy04my72FTC2Rzk3+Uspqu+FGYMPQZ8tCXFIA3wM7LDhdWf0PYbMlgaJS2DW+Gz
- m+247JZNRcEIuQtXnlIcNoIc1d1Zet6aFAuOOBoPRNdBCI+MdLGY7KyOhjTZH2k+avhMr6Y=
-
-Hello,
-
-Another script for the semantic patch language (Coocinelle software) point=
-ed
-details out also according to the implementation of the function =E2=80=9C=
-fsl_rio_setup=E2=80=9D
-for further development considerations.
-https://elixir.bootlin.com/linux/v6.17-rc5/source/arch/powerpc/sysdev/fsl_=
-rio.c#L439-L731
-https://lore.kernel.org/cocci/504107f9-09eb-47fe-96ea-53e375b17eac@web.de/
-https://sympa.inria.fr/sympa/arc/cocci/2025-09/msg00023.html
-
-* I got the impression then that the function =E2=80=9Cof_node_put=E2=80=
-=9D should be called
-  in more cases here.
-
-* How do you think about to avoid a bit of duplicate source code
-  by another update step?
-
-* Further implementation details can be improved.
+Subject: Re: [PATCH RESEND 08/62] arm: init: remove FLAG_RDLOAD and
+ FLAG_RDPROMPT
+To: Askar Safin <safinaskar@gmail.com>, linux-fsdevel@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Christian Brauner <brauner@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>,
+ Jens Axboe <axboe@kernel.dk>, Andy Shevchenko <andy.shevchenko@gmail.com>,
+ Aleksa Sarai <cyphar@cyphar.com>,
+ =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
+ Julian Stecklina <julian.stecklina@cyberus-technology.de>,
+ Gao Xiang <hsiangkao@linux.alibaba.com>, Art Nikpal <email2tema@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Eric Curtin <ecurtin@redhat.com>,
+ Alexander Graf <graf@amazon.com>, Rob Landley <rob@landley.net>,
+ Lennart Poettering <mzxreary@0pointer.de>, linux-arch@vger.kernel.org,
+ linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
+ linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+ linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-um@lists.infradead.org, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, linux-block@vger.kernel.org,
+ initramfs@vger.kernel.org, linux-api@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-efi@vger.kernel.org,
+ linux-ext4@vger.kernel.org, "Theodore Y . Ts'o" <tytso@mit.edu>,
+ linux-acpi@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+ devicetree@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>,
+ Kees Cook <kees@kernel.org>, Thorsten Blum <thorsten.blum@linux.dev>,
+ Heiko Carstens <hca@linux.ibm.com>, patches@lists.linux.dev
+References: <20250913003842.41944-1-safinaskar@gmail.com>
+ <20250913003842.41944-9-safinaskar@gmail.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <20250913003842.41944-9-safinaskar@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
 
-Regards,
-Markus
+
+Le 13/09/2025 à 02:37, Askar Safin a écrit :
+> [Vous ne recevez pas souvent de courriers de safinaskar@gmail.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
+> 
+> They are unused since previous commit
+
+Since which commit ?
+
+> 
+> Signed-off-by: Askar Safin <safinaskar@gmail.com>
+> ---
+>   Documentation/arch/arm/setup.rst | 4 ++--
+>   arch/arm/kernel/atags_compat.c   | 2 --
+>   2 files changed, 2 insertions(+), 4 deletions(-)
+> 
+> diff --git a/Documentation/arch/arm/setup.rst b/Documentation/arch/arm/setup.rst
+> index 8e12ef3fb9a7..be77d4b2aac1 100644
+> --- a/Documentation/arch/arm/setup.rst
+> +++ b/Documentation/arch/arm/setup.rst
+> @@ -35,8 +35,8 @@ below:
+>       =====   ========================
+>       bit 0   1 = mount root read only
+>       bit 1   unused
+> -    bit 2   0 = load ramdisk
+> -    bit 3   0 = prompt for ramdisk
+> +    bit 2   unused
+> +    bit 3   unused
+>       =====   ========================
+> 
+>    rootdev
+> diff --git a/arch/arm/kernel/atags_compat.c b/arch/arm/kernel/atags_compat.c
+> index b9747061fa97..8d04edee3066 100644
+> --- a/arch/arm/kernel/atags_compat.c
+> +++ b/arch/arm/kernel/atags_compat.c
+> @@ -44,8 +44,6 @@ struct param_struct {
+>              unsigned long ramdisk_size;         /*  8 */
+>              unsigned long flags;                /* 12 */
+>   #define FLAG_READONLY  1
+> -#define FLAG_RDLOAD    4
+> -#define FLAG_RDPROMPT  8
+>              unsigned long rootdev;              /* 16 */
+>              unsigned long video_num_cols;       /* 20 */
+>              unsigned long video_num_rows;       /* 24 */
+> --
+> 2.47.2
+> 
+> 
+
 
