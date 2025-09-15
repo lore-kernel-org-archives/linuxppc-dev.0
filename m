@@ -1,83 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-12185-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12186-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BFA28CA101F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 05:48:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2C855CAC58E
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 05:52:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQDbZ2q1Pz3cnt;
-	Mon, 15 Sep 2025 15:48:26 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757915306;
-	cv=none; b=WvSkl0dE9mMolejMAhd4ncC2cDawwSO5K/2iOHpsfCtQ+ZocmiXrtmT5IMMgy2xXOD2zC6MujdZxCREKuhZhxYSZZFHwr3zKEZwMWPjpao0+KeiJMzf+q6S1M/kkOk7HQqRutOOzaoUGWVZ9TW7B6g73tIiNVFvp1ZKwckpgKf1Uh7TusM4q0gVYxECtn1Tb81VczazE47cX2g1xL5I9OquyAxpMEfEqUqH2tAMmLgRBO0jkodLNDC3xPAiS9kf2yvTl0wh6dfg8LxCTs9Hv8D+2kXU951rnAgNSbe04Z1qjXgpGdRN3mKxOGSlqNiCW8jyRbFDFFmNaspknKjS5LA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQDhT5ppVz3cyf;
+	Mon, 15 Sep 2025 15:52:41 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757915561;
+	cv=none; b=ddbUN6Bdovx9HN8muUl4h8JvBY/NCSnj08sIYR44wCs9aJEwBLt3YATR8fgfZCStvopNWCN0a2mDh9jS7SlPUK8VD0aMmr4CQG7cVlnPtD4tmDSKrqVmAADrhICpZ5v+azgGOa1768lJF339pFIZFO2Rc8X9ULmSCYv8Iw21tS+e15InaqonFHXbIRc1YG+g91XN477ZOiUEyudjj/M26oDvTc4FjiLIT5hv6pVXGwaJUiVe7UIgY7k+ZL+2G4+LOYGP/GPMg/gII16+DBFXO4gKFCie+C2mc7yDaZMsOmJnNqC6IzNb1R5OL67Bnvr7WRmk5SQ++BQ3FavcTh7bwQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757915306; c=relaxed/relaxed;
-	bh=JXL3zMOfk7HJmj1hH5tcjC1ukwS1rzTdhMLd/yhlMo8=;
+	t=1757915561; c=relaxed/relaxed;
+	bh=Fpmgojx4q43DInOuMee4dKSZEvOQciSeFTFHo0lna0A=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=BfxGBT8riUMCXaaumfukaxwoyNORjbrJgNPwH78YrEl07KSt/KLnsRFfCNGPU8Mg77k1EPvfOvTZd6b+3ZJR9tfayoMScO+OOTu97xd+wQ/7YFHiZucC2szGzkjPWkAyZjdWOb4vb15pXg/XkHcKOb9xGUo7wZcbJsQOd8qPXD1r3UkrdspLTnLhGueY8NftIZQ9dH155VXidK3nVuQA/1qEcJo44ue6nzwK/cRL2fB+TMEqEKBjQ8o717XpyQSe9lwZ68yWG8Ybe8+o81qYsgb7Sz6hd9qom83qHhdnpZAGg8sYlc86HrqsN3SvcP6LhH8Px7KQ/01xnnuO7Uoc6A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LY4R44OP; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=Kg8r/8jpf7BNtd7VOCrhPrJo0zAlBVFRZh5GfDReRKdV4mUU4uhHUJz+8LteXrFMoteAupfw/vJKmX/yY04MWimp+oUaEpuv9KBeVLNrGQEBbVa5iifU6k4lfbO0RM2ueLlPhJdpb2G07Zbqt5pnz0QkIrLgK1h6dv2ChC7zasAu2AP8bhQa6YLsBS4jeutGKO15ITmzOQ9BO1Vy43Tq+nd4zLhEuPCCsh2fkhaCD8kUasZava9vywmN5q3c/SHQJQXDPWCnW4N3a8HlRe4y0iNydJrHfsLQXaIZryU76j+H5OQX5z7+duqTNnpCwGFGm9UI7Tyf5LWprm+T5F7rUA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HKgQ34JA; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LY4R44OP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HKgQ34JA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQDbY4CrGz3cnk
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 15:48:25 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQDhT1H8dz3cyc
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 15:52:41 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 05E2143F68;
-	Mon, 15 Sep 2025 05:48:23 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E1FCDC4CEF1;
-	Mon, 15 Sep 2025 05:48:21 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id C974A6014D;
+	Mon, 15 Sep 2025 05:52:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 8E3A5C4CEF1;
+	Mon, 15 Sep 2025 05:52:36 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1757915302;
-	bh=QmA1uWtopyZKqYFa3aB5R38vcRhwp6UNA5QEhCCpxlY=;
+	s=k20201202; t=1757915558;
+	bh=yJ4G6gWCyHjvrSjk2ZSLA+uz7hH91T4w1eX4A3rCfAE=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=LY4R44OPNzL3Qer2vVNQup9uUTcNx43gZqh5FwLU0Oh1PdFVX0Y/KMu9Uvifa32bq
-	 LKQg8b7U2pc5ik4+PxHv4Vxaw4OOg+vsmxh8TnpYqhx/pMCEM27S4kfw09R8Z3+SrS
-	 WOCH3NphTYB7cis3wXHahmF9XEuFQFnTdwnEgrsxicfvxKQHyvsgH5+RBeSZZNlt+1
-	 jN5OeNDI/I13LeozFgh3Z/w6y7Zqmf8gbZ1coqUma25WZo+AQ3j6hF69NbTonbiUow
-	 a8r0c3Mzdr4L7umKhPtyml+GICc0Iz7CXrXjBFFY5PAmWMihDcJf2V0TWoeJPC1g6V
-	 RKkFNq598mfYQ==
-Date: Fri, 12 Sep 2025 12:03:27 +0300
-From: Leon Romanovsky <leon@kernel.org>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Jason Gunthorpe <jgg@nvidia.com>,
-	Abdiel Janulgue <abdiel.janulgue@gmail.com>,
-	Alexander Potapenko <glider@google.com>,
-	Alex Gaynor <alex.gaynor@gmail.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Christoph Hellwig <hch@lst.de>, Danilo Krummrich <dakr@kernel.org>,
-	David Hildenbrand <david@redhat.com>, iommu@lists.linux.dev,
-	Jason Wang <jasowang@redhat.com>, Jens Axboe <axboe@kernel.dk>,
-	Joerg Roedel <joro@8bytes.org>, Jonathan Corbet <corbet@lwn.net>,
-	Juergen Gross <jgross@suse.com>, kasan-dev@googlegroups.com,
-	Keith Busch <kbusch@kernel.org>, linux-block@vger.kernel.org,
-	linux-doc@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-mm@kvack.org, linux-nvme@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, linux-trace-kernel@vger.kernel.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Masami Hiramatsu <mhiramat@kernel.org>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Miguel Ojeda <ojeda@kernel.org>,
-	Robin Murphy <robin.murphy@arm.com>, rust-for-linux@vger.kernel.org,
-	Sagi Grimberg <sagi@grimberg.me>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Steven Rostedt <rostedt@goodmis.org>,
-	virtualization@lists.linux.dev, Will Deacon <will@kernel.org>,
-	xen-devel@lists.xenproject.org
-Subject: Re: [PATCH v6 00/16] dma-mapping: migrate to physical address-based
- API
-Message-ID: <20250912090327.GU341237@unreal>
-References: <CGME20250909132821eucas1p1051ce9e0270ddbf520e105c913fa8db6@eucas1p1.samsung.com>
- <cover.1757423202.git.leonro@nvidia.com>
- <0db9bce5-40df-4cf5-85ab-f032c67d5c71@samsung.com>
+	b=HKgQ34JAUlu71k2SZGcwbA654jSNxgYoE+aE97e/xNM7ErB5sqxs46nGARIjtRO8K
+	 YOhvgRzrqom27m6SvB/doA5ozBQvRK+ZPcSfJyszdsHEjLkElqH44eJ4p4GXRJPDe/
+	 cyrwOk+HJjkU9VH64Qo4eZC6q1eSyWfmnTY+fk+ifm32Jn6wsliLJvOSnKSxWQIjUw
+	 VsE3TFs1lSKMloK512v0L8zVYPxs/8INBeeqmC5sLNLttu8UnK3ZDwLoSt72Y3vgq8
+	 1qWYJWHx7nb6bC34OHMVvpT92zQYlD3/tapLWFZuTcUa5ok+MufWN72xU9ZlXzo0XY
+	 D9eiF6O35r3gg==
+Date: Mon, 15 Sep 2025 11:13:35 +0530
+From: Naveen N Rao <naveen@kernel.org>
+To: Joe Lawrence <joe.lawrence@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org, live-patching@vger.kernel.org, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>
+Subject: Re: [PATCH v2 0/3] powerpc/ftrace: Fix livepatch module OOL ftrace
+ corruption
+Message-ID: <zu74w6gtt4z6jqwkwjqamro4e3v5qwcotwwp76fgu7oghgwqla@bjhg53sknonx>
+References: <20250912142740.3581368-1-joe.lawrence@redhat.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,117 +69,49 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <0db9bce5-40df-4cf5-85ab-f032c67d5c71@samsung.com>
+In-Reply-To: <20250912142740.3581368-1-joe.lawrence@redhat.com>
 
-On Fri, Sep 12, 2025 at 12:25:38AM +0200, Marek Szyprowski wrote:
-> On 09.09.2025 15:27, Leon Romanovsky wrote:
-> > From: Leon Romanovsky <leonro@nvidia.com>
-> >
-> > Changelog:
-> > v6:
-> >   * Based on "dma-debug: don't enforce dma mapping check on noncoherent
-> >     allocations" patch.
-> >   * Removed some unused variables from kmsan conversion.
-> >   * Fixed missed ! in dma check.
-> > v5: https://lore.kernel.org/all/cover.1756822782.git.leon@kernel.org
-> >   * Added Jason's and Keith's Reviewed-by tags
-> >   * Fixed DMA_ATTR_MMIO check in dma_direct_map_phys
-> >   * Jason's cleanup suggestions
-> > v4: https://lore.kernel.org/all/cover.1755624249.git.leon@kernel.org/
-> >   * Fixed kbuild error with mismatch in kmsan function declaration due to
-> >     rebase error.
-> > v3: https://lore.kernel.org/all/cover.1755193625.git.leon@kernel.org
-> >   * Fixed typo in "cacheable" word
-> >   * Simplified kmsan patch a lot to be simple argument refactoring
-> > v2: https://lore.kernel.org/all/cover.1755153054.git.leon@kernel.org
-> >   * Used commit messages and cover letter from Jason
-> >   * Moved setting IOMMU_MMIO flag to dma_info_to_prot function
-> >   * Micro-optimized the code
-> >   * Rebased code on v6.17-rc1
-> > v1: https://lore.kernel.org/all/cover.1754292567.git.leon@kernel.org
-> >   * Added new DMA_ATTR_MMIO attribute to indicate
-> >     PCI_P2PDMA_MAP_THRU_HOST_BRIDGE path.
-> >   * Rewrote dma_map_* functions to use thus new attribute
-> > v0: https://lore.kernel.org/all/cover.1750854543.git.leon@kernel.org/
-> > ------------------------------------------------------------------------
-> >
-> > This series refactors the DMA mapping to use physical addresses
-> > as the primary interface instead of page+offset parameters. This
-> > change aligns the DMA API with the underlying hardware reality where
-> > DMA operations work with physical addresses, not page structures.
-> >
-> > The series maintains export symbol backward compatibility by keeping
-> > the old page-based API as wrapper functions around the new physical
-> > address-based implementations.
-> >
-> > This series refactors the DMA mapping API to provide a phys_addr_t
-> > based, and struct-page free, external API that can handle all the
-> > mapping cases we want in modern systems:
-> >
-> >   - struct page based cacheable DRAM
-> >   - struct page MEMORY_DEVICE_PCI_P2PDMA PCI peer to peer non-cacheable
-> >     MMIO
-> >   - struct page-less PCI peer to peer non-cacheable MMIO
-> >   - struct page-less "resource" MMIO
-> >
-> > Overall this gets much closer to Matthew's long term wish for
-> > struct-pageless IO to cacheable DRAM. The remaining primary work would
-> > be in the mm side to allow kmap_local_pfn()/phys_to_virt() to work on
-> > phys_addr_t without a struct page.
-> >
-> > The general design is to remove struct page usage entirely from the
-> > DMA API inner layers. For flows that need to have a KVA for the
-> > physical address they can use kmap_local_pfn() or phys_to_virt(). This
-> > isolates the struct page requirements to MM code only. Long term all
-> > removals of struct page usage are supporting Matthew's memdesc
-> > project which seeks to substantially transform how struct page works.
-> >
-> > Instead make the DMA API internals work on phys_addr_t. Internally
-> > there are still dedicated 'page' and 'resource' flows, except they are
-> > now distinguished by a new DMA_ATTR_MMIO instead of by callchain. Both
-> > flows use the same phys_addr_t.
-> >
-> > When DMA_ATTR_MMIO is specified things work similar to the existing
-> > 'resource' flow. kmap_local_pfn(), phys_to_virt(), phys_to_page(),
-> > pfn_valid(), etc are never called on the phys_addr_t. This requires
-> > rejecting any configuration that would need swiotlb. CPU cache
-> > flushing is not required, and avoided, as ATTR_MMIO also indicates the
-> > address have no cacheable mappings. This effectively removes any
-> > DMA API side requirement to have struct page when DMA_ATTR_MMIO is
-> > used.
-> >
-> > In the !DMA_ATTR_MMIO mode things work similarly to the 'page' flow,
-> > except on the common path of no cache flush, no swiotlb it never
-> > touches a struct page. When cache flushing or swiotlb copying
-> > kmap_local_pfn()/phys_to_virt() are used to get a KVA for CPU
-> > usage. This was already the case on the unmap side, now the map side
-> > is symmetric.
-> >
-> > Callers are adjusted to set DMA_ATTR_MMIO. Existing 'resource' users
-> > must set it. The existing struct page based MEMORY_DEVICE_PCI_P2PDMA
-> > path must also set it. This corrects some existing bugs where iommu
-> > mappings for P2P MMIO were improperly marked IOMMU_CACHE.
-> >
-> > Since ATTR_MMIO is made to work with all the existing DMA map entry
-> > points, particularly dma_iova_link(), this finally allows a way to use
-> > the new DMA API to map PCI P2P MMIO without creating struct page. The
-> > VFIO DMABUF series demonstrates how this works. This is intended to
-> > replace the incorrect driver use of dma_map_resource() on PCI BAR
-> > addresses.
-> >
-> > This series does the core code and modern flows. A followup series
-> > will give the same treatment to the legacy dma_ops implementation.
+On Fri, Sep 12, 2025 at 10:27:37AM -0400, Joe Lawrence wrote:
+> This patch series fixes a couple of bugs in the powerpc64 out-of-line
+> (OOL) ftrace support for modules, and follows up with a patch to
+> simplify the module .stubs allocation code. An analysis of the module
+> stub area corruption that prompted this work can be found in the v1
+> thread [1].
 > 
-> Applied patches 1-13 into dma-mapping-for-next branch. Let's check if it 
-> works fine in linux-next.
+> The first two patches fix bugs introduced by commit eec37961a56a
+> ("powerpc64/ftrace: Move ftrace sequence out of line"). The first,
+> suggested by Naveen, ensures that a NOP'd ftrace call site has its
+> ftrace_ops record updated correctly. The second patch corrects a loop in
+> setup_ftrace_ool_stubs() to ensure all required stubs are reserved, not
+> just the first. Together, these bugs lead to potential corruption of the
+> OOL ftrace stubs area for livepatch modules.
+> 
+> The final patch replaces the sentinel-based allocation in the module
+> .stubs section with an explicit counter. This improves clarity and helps
+> prevent similar problems in the future.
+> 
+> Changes since v1: https://lore.kernel.org/live-patching/df7taxdxpbo4qfn7lniggj5o4ili6kweg4nytyb2fwwwgmnyo4@halp5gf244nn/T/
+> 
+> - Split into parts: bug fix x2, code cleanup
+> - Call ftrace_rec_set_nop_ops() from ftrace_init_nop() [Naveen]
+> - Update commit msg on cleanup patch [Naveen]
+> 
+> Joe Lawrence (3):
+>   powerpc/ftrace: ensure ftrace record ops are always set for NOPs
+>   powerpc64/modules: correctly iterate over stubs in
+>     setup_ftrace_ool_stubs
+>   powerpc64/modules: replace stub allocation sentinel with an explicit
+>     counter
+> 
+>  arch/powerpc/include/asm/module.h  |  1 +
+>  arch/powerpc/kernel/module_64.c    | 26 ++++++++------------------
+>  arch/powerpc/kernel/trace/ftrace.c | 10 ++++++++--
+>  3 files changed, 17 insertions(+), 20 deletions(-)
 
-Thanks a lot.
+Thanks for fixing this! For the series:
+Acked-by: Naveen N Rao (AMD) <naveen@kernel.org>
 
-> 
-> Best regards
-> -- 
-> Marek Szyprowski, PhD
-> Samsung R&D Institute Poland
-> 
-> 
+
+- Naveen
+
 
