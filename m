@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-12253-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12254-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A192BCAC592
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 18:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5405DCAC592
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 19:20:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQYy52RjBz2xgX;
-	Tue, 16 Sep 2025 04:50:37 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQZch72pSz2xcC;
+	Tue, 16 Sep 2025 05:20:36 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757962237;
-	cv=none; b=B6E2Xei7CQ/UCuanzLvFeAm7RO3Sit1hXwNbu3txnO9fdrIrwxaHvqD0UUlQz3TZWtbzX14eQkBeSKzkZW0D9gvqrz0+2fvfrIyubd0ZHSJ6Bj5qX8oHATVue+38ababGcT0ATnPq0PCWVNbeBREvXCqekRNEwszyuIl91QJGIfTRWHK4HR11LdG+L0RLw8meO2MRgD3YCwMXaiSTQ/EkDoI3pXZwcswOh3Ey2ZU9wZgqi0OwHcSEXpf837p/9yV8KqJcalT/6X2OUC7VVYuxhqBmPaDmLQ2PBh379BCTvITfz2RVWOkrliw4cKj78TwIgkiyuN3ziIJ/dhUQc9fDQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757964036;
+	cv=none; b=YEWdtzoCCwLHjBWwR8630ZuBXBkc/nwfF/d3cKmE6EP0163PmWacwTBfUzJtFMulebj1u0zPdcgvBiKO8COpODgrHYveh1F9cIlB3jesx25HCw/8MB2DFMBlumIAUW5KLFKOSTox5eWnZ5vXhlNBCbh02RTzuICe9PfQgWASRFwfwBlqVQ77idy3lJ9PJqM0tdJaafJgvzAzphhD/zrAUVZi6Ho7lq4+BgtQ+MnWa52K04NqcWIppuAC0EBA4cJGVcqQBzXutpjMxxqdKciWPX9Kgpqm2TB6VXejtlL9gWP2miJLnJ6954Le6nSyrogVQBAF6X1ChN33BNRk6MprqQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757962237; c=relaxed/relaxed;
-	bh=UyGL1Kv7K7G6eyqTiZkKtRx60x568m5SsjYKxhj8jYs=;
+	t=1757964036; c=relaxed/relaxed;
+	bh=F10Z0OsYT+kNHV3Z5mbBWTZLBFcFmmcfUW5nyLJWgQ4=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=RCyJ9jIwCnG05GR3uCwAHqXuN55nBaoyjMCkLXUtq8xC6ll4VVHbdwaormjE6UUjB0kUbhfVrrSNBTFOaWLx13mus0cjlOufaImgZ608crEG2FCsuIrEhfUldJcwuGsDFRSMcv/eMJ1XcwR9g2DVR5EC0H/uz0tbCOPD9zm7NPcj74/gv4P0aGwW9ASeMitw3UYlxzHaMsvoFSwPYu8yEZwDn6LuKul80SRKuRI1riYv0fX8eyVgPjt8uc1CcAJHTxnTNtyDkkIGGNRCa6cUva8SB2h5LOjcK4WeYvSNe3Su4jK1DpDDkjzMV445EvQbQOH2Cq48vRS7qtmbL3lApQ==
+	 In-Reply-To:Content-Type; b=SOBgsnA53gn9XAZqHWlJZanb5IgaKxw9xXHdhycN1P+LbvA5HTvSghuJi8NuEvyhq9RgNye8pGS8+Ui/MMbw4XAKLGV95jrH3Vd0vZ7zkjpkikcwQHlcELtjnEp6YkCJlHIcX/QyPchMP3WnOUYWOktfCDDVlaKHrVw94OOuJa9dPRAn63rnCNST1SfME/KGQrvE/8jXDLI+Pot80vSNAoMvhVq5ytTIktCi10F+xRmNW4LhSrJv/qDFx0uj9psGwZvrGWdCEFe4xCTVNhAsw/nn/JO1Gw+HUi9LaQGi1RZJ4Iie1aUY8OpSxpLMJonbtiblTCou7uKJCbA8pCP9Uw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQYy43bPrz2xdg
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 04:50:36 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQZch1xzZz2xQ2
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 05:20:36 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cQMtW5q8Yz9sxd;
-	Mon, 15 Sep 2025 13:16:51 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4cQNbF5mghz9t06;
+	Mon, 15 Sep 2025 13:48:41 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id OLcbQxt2yUNY; Mon, 15 Sep 2025 13:16:51 +0200 (CEST)
+	with ESMTP id lGkOMbzCsqbk; Mon, 15 Sep 2025 13:48:41 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cQMtV4LnCz9sxb;
-	Mon, 15 Sep 2025 13:16:50 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cQNbD4NF4z9t02;
+	Mon, 15 Sep 2025 13:48:40 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 706ED8B766;
-	Mon, 15 Sep 2025 13:16:50 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 63D1F8B766;
+	Mon, 15 Sep 2025 13:48:40 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id sggpKi6r1EPD; Mon, 15 Sep 2025 13:16:50 +0200 (CEST)
+	with ESMTP id OqxzzIPrAedJ; Mon, 15 Sep 2025 13:48:40 +0200 (CEST)
 Received: from [10.25.207.160] (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B33B28B763;
-	Mon, 15 Sep 2025 13:16:49 +0200 (CEST)
-Message-ID: <053f39a9-06dc-4fbd-ad1b-325f9d3f3f66@csgroup.eu>
-Date: Mon, 15 Sep 2025 13:16:49 +0200
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B11BF8B763;
+	Mon, 15 Sep 2025 13:48:39 +0200 (CEST)
+Message-ID: <2757ca88-5841-4024-932e-637130ac6b0b@csgroup.eu>
+Date: Mon, 15 Sep 2025 13:48:39 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,8 +59,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND 02/62] init: remove deprecated "prompt_ramdisk"
- command line parameter, which does nothing
+Subject: Re: [PATCH RESEND 16/62] brd: remove "ramdisk_size" command line
+ parameter
 To: Askar Safin <safinaskar@gmail.com>, linux-fsdevel@vger.kernel.org,
  linux-kernel@vger.kernel.org
 Cc: Linus Torvalds <torvalds@linux-foundation.org>,
@@ -92,10 +92,10 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  Kees Cook <kees@kernel.org>, Thorsten Blum <thorsten.blum@linux.dev>,
  Heiko Carstens <hca@linux.ibm.com>, patches@lists.linux.dev
 References: <20250913003842.41944-1-safinaskar@gmail.com>
- <20250913003842.41944-3-safinaskar@gmail.com>
+ <20250913003842.41944-17-safinaskar@gmail.com>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 Content-Language: fr-FR
-In-Reply-To: <20250913003842.41944-3-safinaskar@gmail.com>
+In-Reply-To: <20250913003842.41944-17-safinaskar@gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
@@ -104,67 +104,104 @@ Content-Transfer-Encoding: 8bit
 Le 13/09/2025 à 02:37, Askar Safin a écrit :
 > [Vous ne recevez pas souvent de courriers de safinaskar@gmail.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
 > 
-> This is preparation for initrd removal
+> It was used mostly for initrd. It could be used only if
+> brd is built-in. Use "brd.rd_size" instead
 
-Squash patch 1 and patch 2 together and say this is cleanup of two 
-options deprecated by commit c8376994c86c ("initrd: remove support for 
-multiple floppies") with the documentation by commit 6b99e6e6aa62 
-("Documentation/admin-guide: blockdev/ramdisk: remove use of "rdev"")
+For me it would make more sense to remove ramdisk_start and ramdisk_size 
+at the same time.
 
-Christophe
 
 > 
 > Signed-off-by: Askar Safin <safinaskar@gmail.com>
 > ---
->   Documentation/admin-guide/kernel-parameters.txt | 2 --
->   arch/arm/configs/neponset_defconfig             | 2 +-
->   init/do_mounts_rd.c                             | 7 -------
->   3 files changed, 1 insertion(+), 10 deletions(-)
+>   .../admin-guide/kernel-parameters.txt         |  3 ---
+>   Documentation/arch/m68k/kernel-options.rst    | 20 ++-----------------
+>   arch/arm/configs/s3c6400_defconfig            |  2 +-
+>   drivers/block/brd.c                           | 10 ----------
+>   4 files changed, 3 insertions(+), 32 deletions(-)
 > 
 > diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-> index d3b05ce249ff..f940c1184912 100644
+> index ad52e3d26014..e862a7b1d2ec 100644
 > --- a/Documentation/admin-guide/kernel-parameters.txt
 > +++ b/Documentation/admin-guide/kernel-parameters.txt
-> @@ -5229,8 +5229,6 @@
->                          Param: <number> - step/bucket size as a power of 2 for
->                                  statistical time based profiling.
+> @@ -5279,9 +5279,6 @@
+>          raid=           [HW,RAID]
+>                          See Documentation/admin-guide/md.rst.
 > 
-> -       prompt_ramdisk= [RAM] [Deprecated]
+> -       ramdisk_size=   [RAM] Sizes of RAM disks in kilobytes
+> -                       See Documentation/admin-guide/blockdev/ramdisk.rst.
 > -
->          prot_virt=      [S390] enable hosting protected virtual machines
->                          isolated from the hypervisor (if hardware supports
->                          that). If enabled, the default kernel base address
-> diff --git a/arch/arm/configs/neponset_defconfig b/arch/arm/configs/neponset_defconfig
-> index 16f7300239da..4d720001c12e 100644
-> --- a/arch/arm/configs/neponset_defconfig
-> +++ b/arch/arm/configs/neponset_defconfig
-> @@ -9,7 +9,7 @@ CONFIG_ASSABET_NEPONSET=y
->   CONFIG_ZBOOT_ROM_TEXT=0x80000
->   CONFIG_ZBOOT_ROM_BSS=0xc1000000
->   CONFIG_ZBOOT_ROM=y
-> -CONFIG_CMDLINE="console=ttySA0,38400n8 cpufreq=221200 rw root=/dev/mtdblock2 mtdparts=sa1100:512K(boot),1M(kernel),2560K(initrd),4M(root) prompt_ramdisk=0 mem=32M noinitrd initrd=0xc0800000,3M"
-> +CONFIG_CMDLINE="console=ttySA0,38400n8 cpufreq=221200 rw root=/dev/mtdblock2 mtdparts=sa1100:512K(boot),1M(kernel),2560K(initrd),4M(root) mem=32M noinitrd initrd=0xc0800000,3M"
->   CONFIG_FPE_NWFPE=y
->   CONFIG_PM=y
->   CONFIG_MODULES=y
-> diff --git a/init/do_mounts_rd.c b/init/do_mounts_rd.c
-> index ac021ae6e6fa..f7d53bc21e41 100644
-> --- a/init/do_mounts_rd.c
-> +++ b/init/do_mounts_rd.c
-> @@ -17,13 +17,6 @@
->   static struct file *in_file, *out_file;
->   static loff_t in_pos, out_pos;
+>          random.trust_cpu=off
+>                          [KNL,EARLY] Disable trusting the use of the CPU's
+>                          random number generator (if available) to
+> diff --git a/Documentation/arch/m68k/kernel-options.rst b/Documentation/arch/m68k/kernel-options.rst
+> index 2008a20b4329..f6469ebeb2c7 100644
+> --- a/Documentation/arch/m68k/kernel-options.rst
+> +++ b/Documentation/arch/m68k/kernel-options.rst
+> @@ -215,27 +215,11 @@ Devices possible for Atari:
+>              seconds.
 > 
-> -static int __init prompt_ramdisk(char *str)
+> 
+> -2.6) ramdisk_size=
+> -------------------
+> -
+> -:Syntax: ramdisk_size=<size>
+> -
+> -This option instructs the kernel to set up a ramdisk of the given
+> -size in KBytes. Do not use this option if the ramdisk contents are
+> -passed by bootstrap! In this case, the size is selected automatically
+> -and should not be overwritten.
+> -
+> -The only application is for root filesystems on floppy disks, that
+> -should be loaded into memory. To do that, select the corresponding
+> -size of the disk as ramdisk size, and set the root device to the disk
+> -drive (with "root=").
+> -
+> -
+> -2.7) swap=
+> +2.5) swap=
+> 
+>     I can't find any sign of this option in 2.2.6.
+> 
+> -2.8) buff=
+> +2.6) buff=
+>   -----------
+> 
+>     I can't find any sign of this option in 2.2.6.
+> diff --git a/arch/arm/configs/s3c6400_defconfig b/arch/arm/configs/s3c6400_defconfig
+> index a37e6ac40825..23635d5b9322 100644
+> --- a/arch/arm/configs/s3c6400_defconfig
+> +++ b/arch/arm/configs/s3c6400_defconfig
+> @@ -4,7 +4,7 @@ CONFIG_ARCH_MULTI_V6=y
+>   # CONFIG_ARCH_MULTI_V7 is not set
+>   CONFIG_ARCH_S3C64XX=y
+>   CONFIG_MACH_WLF_CRAGG_6410=y
+> -CONFIG_CMDLINE="console=ttySAC0,115200 root=/dev/ram init=/linuxrc initrd=0x51000000,6M ramdisk_size=6144"
+> +CONFIG_CMDLINE="console=ttySAC0,115200 root=/dev/ram init=/linuxrc initrd=0x51000000,6M"
+>   CONFIG_VFP=y
+>   CONFIG_MODULES=y
+>   CONFIG_MODULE_UNLOAD=y
+> diff --git a/drivers/block/brd.c b/drivers/block/brd.c
+> index 72f02d2b8a99..05c4325904d2 100644
+> --- a/drivers/block/brd.c
+> +++ b/drivers/block/brd.c
+> @@ -222,16 +222,6 @@ MODULE_LICENSE("GPL");
+>   MODULE_ALIAS_BLOCKDEV_MAJOR(RAMDISK_MAJOR);
+>   MODULE_ALIAS("rd");
+> 
+> -#ifndef MODULE
+> -/* Legacy boot options - nonmodular */
+> -static int __init ramdisk_size(char *str)
 > -{
-> -       pr_warn("ignoring the deprecated prompt_ramdisk= option\n");
+> -       rd_size = simple_strtol(str, NULL, 0);
 > -       return 1;
 > -}
-> -__setup("prompt_ramdisk=", prompt_ramdisk);
+> -__setup("ramdisk_size=", ramdisk_size);
+> -#endif
 > -
->   int __initdata rd_image_start;         /* starting block # of image */
-> 
->   static int __init ramdisk_start_setup(char *str)
+>   /*
+>    * The device scheme is derived from loop.c. Keep them in synch where possible
+>    * (should share code eventually).
 > --
 > 2.47.2
 > 
