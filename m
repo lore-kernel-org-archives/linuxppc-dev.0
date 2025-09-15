@@ -1,36 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-12216-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12217-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9755FCAC593
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 11:20:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC8FBCAC592
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 11:49:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQMyR1kMJz3dLl;
-	Mon, 15 Sep 2025 21:20:15 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757935215;
-	cv=none; b=JO1axfol9q4qdLCmtiGOv9k4z2vmc3oqw7mTqusOxbHthY5YICOjwo9z01SiHjFghefBDdji9nRfXEc7HmgvztEdHB91FV1Ij2XruIwnCpH8MXXRteM3kDgq9lQ4ckz+K9gjpmtnPmWBDWEkFvR51TKh91vhB4RUxnMjd0gs+JP5F7yYdthaHp3eLzF/my2NMGb7ogCSC4lxbmTAwO3eZTNp9h5Qwv8iT83tAtK5U8rYiUp/+Mp4kErCNeJCO/FYLdkuJra6mBYjN0ff9TCOiDmnB6iFDBt2qLCV3S/0IaC8xjoZ5RL/y2pzsiLkFL/hJcEtnc0TQqALf0vZItGa6g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQNcD0ZGfz3dTf;
+	Mon, 15 Sep 2025 21:49:32 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.17
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757936972;
+	cv=none; b=jqzDENfHMeT1mgadeZjAJIlN5Rsy5XGoJJa7wq5SpAeXotegns96hQBYGn45mgPrujNdS28oeVXDxziXtI+63bTO26/ZqYYaGa2r6CIqAWsUcdNhVWPu6OuUdLR5njPvGjB9JwP6DDaCRs/hHFt0e+e6Bjqgg5i956oLGeYyufw/b9hvDkuYiR9qZOrVxE2evcMrWRmLIZwBz618wJpoGNLXNjsaSu6q62e5Rt1Q8swaqphjceL/Uaay+W3KPXmlpewMC5/yRgrVhzaRsO4BQHBCfJyiNpteU7tA0tZOlgIYsEv7f+okLtlJlBo857K8ShSZMN7y+GsmZvHD1D8kiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757935215; c=relaxed/relaxed;
-	bh=ezmIh4yAIIyC5Ofx9OYfMJK6a3eTs8fzX06OGshPKFg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jn1dIT2CXQKKpaKERY6xMiJBXjVj9QdQ8J2fxR4M/gUQCv0LjrHapM1Nh6xxNLBBya7eyv0QWcEyCx9U0X1Bk+1kO12h3bYO4xGN6XOW+tkb6/0cs1pDrEzN0wg1HwthstPk++aJ+YOaD6ZqT4M0JF5XS2diXzTeozgyGkuhxXbnkDn3z0IdnR/x8PVAdpJAZPsuHKuH1RKZBoJKWaxGRhXmrWdOzitGoYxEcIyNiS98omiKTR1INU9ZsGX3SQM/GPb85fyf4IVfie7mUuA6yaSKVR/IPKpOsLbE4ieJPrltdCu7Ke2tcZsO3ewVC06hrF+fFxjKirfAKU1olNtwoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQMyP6cjZz3dL0
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 21:20:12 +1000 (AEST)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4D6971424;
-	Mon, 15 Sep 2025 04:19:31 -0700 (PDT)
-Received: from [10.57.70.220] (unknown [10.57.70.220])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6C7D73F694;
-	Mon, 15 Sep 2025 04:19:34 -0700 (PDT)
-Message-ID: <d407a381-099b-4ec6-a20e-aeff4f3d750f@arm.com>
-Date: Mon, 15 Sep 2025 13:19:32 +0200
+	t=1757936972; c=relaxed/relaxed;
+	bh=5hE1j227LuFctY7JI+EtaR7TcnVRLXNqgikhnlLcy7c=;
+	h=Date:From:To:Cc:Subject:Message-ID; b=B0TYdQJGZwhUFY8RmzgcqOxau96nHAX2Q5W2O1m0rlZywIFXqmJJ3P+Utofyw9HwDEms/j3UgKUGm5/XyzWzWgjGEu8p8yZAqnY4SpacGIpnLSG+v+kXOZbQTyG/r8PltqYC263O4Hu/maum8es6EwmpJlhC+PGyEtQkSDOhH9lYgJXCnOJg+73iMHpLOecWYpcMeWlInWQjydW8VnMWfRLU5sqpkz2nxJ0fiM/4Z62z186YvN0ZEWkU1y01eEaSGi/IvsrDDNVn92OZwWgrfJVBe3ey7saIyZtxB3mL38CF/UKD8JPVfcxAI4blZfoc9XLSFSFZZ/Dhn3G2Ae4OFw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VYYXdGPV; dkim-atps=neutral; spf=pass (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=VYYXdGPV;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.17; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.17])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQNc94Zyyz3dTZ
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 21:49:27 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1757936969; x=1789472969;
+  h=date:from:to:cc:subject:message-id;
+  bh=+VDVRRUSC6NRX9CHdRFZDuyDloPkJYlRNsdlcZOQgY4=;
+  b=VYYXdGPVib8ysadqb8ktaFMF5oB+Fc3t0VP5P1RwLlOsmCn3nRAXx8sV
+   OfMbWhtqeuOrt8XhNt+3Gn/W6aGd/Hl7kDuE030rua9aO0MslGGrGeQTM
+   6rkdk/r6L022iJ2xA4pmC1XS01nkm2od6Rlg2p8+VVdhlfw+scWkRPQ0q
+   8PuALDhO2guDpN2gdUIWKu+UaGfzgar4cTSHgVcGxCjC8MPNPWs3zY1I8
+   oJOdSlU0V4VdFkM0eYdXT28O48G6eGFro88SpuV3Fc1MyZOUKZqYGMXgR
+   8aNR8fTMlgVoNYDyMDN05AhqsPbNjmuXTnrxmXcAETs3OOM9mLCWzO6TH
+   g==;
+X-CSE-ConnectionGUID: uypgL67TRqG7tccPyqgCfg==
+X-CSE-MsgGUID: BYMu8G+URLyWJ+IzxJszGw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11531"; a="60133145"
+X-IronPort-AV: E=Sophos;i="6.17,312,1747724400"; 
+   d="scan'208";a="60133145"
+Received: from fmviesa010.fm.intel.com ([10.60.135.150])
+  by orvoesa109.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 15 Sep 2025 04:49:23 -0700
+X-CSE-ConnectionGUID: EOMYCEKUTKObC97VNpp+Qg==
+X-CSE-MsgGUID: ez2WvuwESliyJaBoRSdLVg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.18,266,1751266800"; 
+   d="scan'208";a="175408610"
+Received: from lkp-server01.sh.intel.com (HELO 5b01dd97f97c) ([10.239.97.150])
+  by fmviesa010.fm.intel.com with ESMTP; 15 Sep 2025 04:49:22 -0700
+Received: from kbuild by 5b01dd97f97c with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1uy7hw-0000B9-1A;
+	Mon, 15 Sep 2025 11:49:20 +0000
+Date: Mon, 15 Sep 2025 19:49:19 +0800
+From: kernel test robot <lkp@intel.com>
+To: Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org
+Subject: [powerpc:merge] BUILD SUCCESS
+ 5df49b805a8e2a18138a8def7fdaae72cb86583b
+Message-ID: <202509151907.oY3PH0Lx-lkp@intel.com>
+User-Agent: s-nail v14.9.24
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -43,113 +77,155 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 0/7] Nesting support for lazy MMU mode
-To: Alexander Gordeev <agordeev@linux.ibm.com>
-Cc: David Hildenbrand <david@redhat.com>,
- Andrew Morton <akpm@linux-foundation.org>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Andreas Larsson <andreas@gaisler.com>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
- <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
- Ingo Molnar <mingo@redhat.com>, Jann Horn <jannh@google.com>,
- Juergen Gross <jgross@suse.com>, "Liam R. Howlett"
- <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
- Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Peter Zijlstra <peterz@infradead.org>, Ryan Roberts <ryan.roberts@arm.com>,
- Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner
- <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
- Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org,
- Mark Rutland <Mark.Rutland@arm.com>
-References: <20250908073931.4159362-1-kevin.brodsky@arm.com>
- <20250908191602.61160a7990b9ea418de758c7@linux-foundation.org>
- <d1b4ff2a-052f-4556-91ae-273962edbed0@redhat.com>
- <338ef811-1dab-4c4e-bc5f-8ebd8cb68435@arm.com>
- <5a0818bb-75d4-47df-925c-0102f7d598f4-agordeev@linux.ibm.com>
-Content-Language: en-GB
-From: Kevin Brodsky <kevin.brodsky@arm.com>
-In-Reply-To: <5a0818bb-75d4-47df-925c-0102f7d598f4-agordeev@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
 
-On 15/09/2025 08:28, Alexander Gordeev wrote:
-> On Fri, Sep 12, 2025 at 05:25:27PM +0200, Kevin Brodsky wrote:
->
-> Hi Kevin,
->
->> Based on the outcome of the discussion with David on patch 2 [1p], there
->> is indeed an alternative approach that we should seriously consider. In
->> summary:
->>
->> * Keep the API stateless, handle nesting with a counter in task_struct
->> * Introduce new functions to temporarily disable lazy_mmu without
->> impacting nesting, track that with a bool in task_struct (addresses the
->> situation in mm/kasan/shadow.c and possibly some x86 cases too)
->> * Move as much handling from arch_* to generic functions
->>
->> What the new generic infrastructure would look like:
->>
->> struct task_struct {
->>     ...
->> #ifdef CONFIG_ARCH_LAZY_MMU
->>     struct {
->>         uint8_t count;
->>         bool enabled; /* or paused, see below */
->>     } lazy_mmu_state;
->> #endif
->> }
->>
->> * lazy_mmu_mode_enable():
-> This helper is parameter-free, assuming the MMU unit does not need any
-> configuration other than turning it on/off. That is currently true, but
-> (as I noted in my other mail) I am going to introduce a friend enable
-> function that accepts parameters, creates an arch-specific state and
-> uses it while the lazy mmu mode is active.
+tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
+branch HEAD: 5df49b805a8e2a18138a8def7fdaae72cb86583b  Automatic merge of 'master' into merge (2025-09-14 20:44)
 
-Yes I think that's fine.
+elapsed time: 1447m
 
-> That does not impact your design (AFAICT), except one change below.
->
->>     if (!lazy_mmu_state.count) {
->>         arch_enter_lazy_mmu_mode();
->>         lazy_mmu_state.enabled = true;
->>     }
->>     lazy_mmu_state.count++;
->>
->> * lazy_mmu_mode_disable():
->>     lazy_mmu_count--;
->>     if (!lazy_mmu_state.count) {
->>         lazy_mmu_state.enabled = false;
->>         arch_leave_lazy_mmu_mode();
->>     } else {
->>         arch_flush_lazy_mmu_mode();
->>     }
->>
->> * lazy_mmu_mode_pause():
->>     lazy_mmu_state.enabled = false;
->>     arch_leave_lazy_mmu_mode();
-> This needs to be arch_pause_lazy_mmu_mode(), otherwise the arch-specific
-> state will be lost.
->
->> * lazy_mmu_mode_resume();
->>     arch_enter_lazy_mmu_mode();
-> Conversely, this needs to be arch_resume_lazy_mmu_mode(). And it can not
-> be arch_enter_lazy_mmu_mode(), since a lazy_mmu_mode_resume() caller does
-> not know the parameters passed to the lazy_mmu_mode_enable(...)-friend.
+configs tested: 134
+configs skipped: 4
 
-Got it, that makes sense. Even without your proposal, it is probably a
-good idea to allow arch's to behave differently on pause/resume.
+The following configs have been built successfully.
+More configs may be tested in the coming days.
 
-I hope we can avoid forcing all arch's to define arch_pause/arch_resume
-though, since only s390 will use it for the foreseeable future. Using
-optional macros should do the trick.
+tested configs:
+alpha                             allnoconfig    gcc-15.1.0
+alpha                            allyesconfig    gcc-15.1.0
+alpha                               defconfig    gcc-15.1.0
+arc                              allmodconfig    gcc-15.1.0
+arc                               allnoconfig    gcc-15.1.0
+arc                              allyesconfig    gcc-15.1.0
+arc                                 defconfig    gcc-15.1.0
+arc                   randconfig-001-20250914    gcc-9.5.0
+arc                   randconfig-002-20250914    gcc-10.5.0
+arm                              allmodconfig    gcc-15.1.0
+arm                               allnoconfig    clang-22
+arm                              allyesconfig    gcc-15.1.0
+arm                        clps711x_defconfig    clang-22
+arm                                 defconfig    clang-22
+arm                   randconfig-001-20250914    clang-22
+arm                   randconfig-002-20250914    clang-19
+arm                   randconfig-003-20250914    gcc-14.3.0
+arm                   randconfig-004-20250914    gcc-12.5.0
+arm64                            allmodconfig    clang-19
+arm64                             allnoconfig    gcc-15.1.0
+arm64                               defconfig    gcc-15.1.0
+arm64                 randconfig-001-20250914    gcc-9.5.0
+arm64                 randconfig-002-20250914    clang-22
+arm64                 randconfig-003-20250914    clang-17
+arm64                 randconfig-004-20250914    gcc-8.5.0
+csky                              allnoconfig    gcc-15.1.0
+csky                                defconfig    gcc-15.1.0
+csky                  randconfig-001-20250914    gcc-15.1.0
+csky                  randconfig-002-20250914    gcc-13.4.0
+hexagon                          allmodconfig    clang-17
+hexagon                           allnoconfig    clang-22
+hexagon                          allyesconfig    clang-22
+hexagon                             defconfig    clang-22
+hexagon               randconfig-001-20250914    clang-22
+hexagon               randconfig-002-20250914    clang-22
+i386                              allnoconfig    gcc-14
+i386                             allyesconfig    gcc-14
+i386        buildonly-randconfig-001-20250914    gcc-13
+i386        buildonly-randconfig-002-20250914    gcc-14
+i386        buildonly-randconfig-003-20250914    gcc-14
+i386        buildonly-randconfig-004-20250914    gcc-14
+i386        buildonly-randconfig-005-20250914    clang-20
+i386        buildonly-randconfig-006-20250914    gcc-14
+i386                                defconfig    clang-20
+loongarch                        allmodconfig    clang-19
+loongarch                         allnoconfig    clang-22
+loongarch                           defconfig    clang-19
+loongarch             randconfig-001-20250914    clang-22
+loongarch             randconfig-002-20250914    gcc-15.1.0
+m68k                             allmodconfig    gcc-15.1.0
+m68k                              allnoconfig    gcc-15.1.0
+m68k                             allyesconfig    gcc-15.1.0
+m68k                                defconfig    gcc-15.1.0
+microblaze                       allmodconfig    gcc-15.1.0
+microblaze                        allnoconfig    gcc-15.1.0
+microblaze                       allyesconfig    gcc-15.1.0
+microblaze                          defconfig    gcc-15.1.0
+mips                              allnoconfig    gcc-15.1.0
+nios2                         3c120_defconfig    gcc-11.5.0
+nios2                             allnoconfig    gcc-11.5.0
+nios2                               defconfig    gcc-11.5.0
+nios2                 randconfig-001-20250914    gcc-10.5.0
+nios2                 randconfig-002-20250914    gcc-11.5.0
+openrisc                          allnoconfig    gcc-15.1.0
+openrisc                         allyesconfig    gcc-15.1.0
+openrisc                            defconfig    gcc-15.1.0
+parisc                           alldefconfig    gcc-15.1.0
+parisc                           allmodconfig    gcc-15.1.0
+parisc                            allnoconfig    gcc-15.1.0
+parisc                           allyesconfig    gcc-15.1.0
+parisc                              defconfig    gcc-15.1.0
+parisc                randconfig-001-20250914    gcc-8.5.0
+parisc                randconfig-002-20250914    gcc-10.5.0
+parisc64                            defconfig    gcc-15.1.0
+powerpc                          allmodconfig    gcc-15.1.0
+powerpc                           allnoconfig    gcc-15.1.0
+powerpc                          allyesconfig    clang-22
+powerpc                       eiger_defconfig    clang-22
+powerpc               randconfig-001-20250914    clang-22
+powerpc               randconfig-002-20250914    clang-22
+powerpc               randconfig-003-20250914    clang-22
+powerpc                     skiroot_defconfig    clang-22
+powerpc64             randconfig-001-20250914    clang-22
+powerpc64             randconfig-002-20250914    clang-22
+powerpc64             randconfig-003-20250914    gcc-13.4.0
+riscv                            allmodconfig    clang-22
+riscv                             allnoconfig    gcc-15.1.0
+riscv                            allyesconfig    clang-16
+riscv                               defconfig    clang-22
+riscv                 randconfig-001-20250914    clang-22
+riscv                 randconfig-002-20250914    gcc-12.5.0
+s390                             allmodconfig    clang-18
+s390                              allnoconfig    clang-22
+s390                             allyesconfig    gcc-15.1.0
+s390                                defconfig    clang-22
+s390                  randconfig-001-20250914    gcc-10.5.0
+s390                  randconfig-002-20250914    gcc-15.1.0
+sh                               allmodconfig    gcc-15.1.0
+sh                                allnoconfig    gcc-15.1.0
+sh                               allyesconfig    gcc-15.1.0
+sh                                  defconfig    gcc-15.1.0
+sh                    randconfig-001-20250914    gcc-15.1.0
+sh                    randconfig-002-20250914    gcc-10.5.0
+sh                           se7724_defconfig    gcc-15.1.0
+sparc                            allmodconfig    gcc-15.1.0
+sparc                             allnoconfig    gcc-15.1.0
+sparc                               defconfig    gcc-15.1.0
+sparc                 randconfig-001-20250914    gcc-11.5.0
+sparc                 randconfig-002-20250914    gcc-14.3.0
+sparc64                             defconfig    clang-20
+sparc64               randconfig-001-20250914    gcc-8.5.0
+sparc64               randconfig-002-20250914    clang-22
+um                               allmodconfig    clang-19
+um                                allnoconfig    clang-22
+um                               allyesconfig    gcc-14
+um                                  defconfig    clang-22
+um                             i386_defconfig    gcc-14
+um                    randconfig-001-20250914    clang-22
+um                    randconfig-002-20250914    clang-18
+um                           x86_64_defconfig    clang-22
+x86_64                            allnoconfig    clang-20
+x86_64                           allyesconfig    clang-20
+x86_64      buildonly-randconfig-001-20250914    clang-20
+x86_64      buildonly-randconfig-002-20250914    clang-20
+x86_64      buildonly-randconfig-003-20250914    clang-20
+x86_64      buildonly-randconfig-004-20250914    clang-20
+x86_64      buildonly-randconfig-005-20250914    gcc-14
+x86_64      buildonly-randconfig-006-20250914    clang-20
+x86_64                              defconfig    gcc-14
+x86_64                          rhel-9.4-rust    clang-20
+xtensa                            allnoconfig    gcc-15.1.0
+xtensa                randconfig-001-20250914    gcc-14.3.0
+xtensa                randconfig-002-20250914    gcc-8.5.0
+xtensa                    smp_lx200_defconfig    gcc-15.1.0
 
-- Kevin
+--
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
