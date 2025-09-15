@@ -1,77 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-12247-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12248-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6864CCAC59A
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 16:44:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2091BCAC59A
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 16:45:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQW8m74HKz3fNd;
-	Tue, 16 Sep 2025 02:44:40 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757950250;
-	cv=none; b=DNi5oVxEFmhDn7USrEwrbIar7wa7yd1ECTYXPK82gABWzZwJ8sC/9uPeHwhuG150CLCUBGVW6VGEula3Rlws/QH1yRt0e0G87ZbhNmK/wOe2+Mlc+dquc5EukFdZwpQ44BCoYySjVC8zVi3C4idf4eXenEsWrm95gPe37gvstJdbY0joVMQo9HGyqdgN3qyNcoETRII/t/vkBYvKrQsJIygA8ssOpe7cxHA7C8Pq7sBoezTQFPqOBgwjBN347ENo5IuH5Fhh5CAENxvz6kzYyTRcySklfUtTr6dpXn/OsicgbR1oOaqikYkeh0cweAncNICt8GfcUMG3JpraR8A+ag==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQW9h5p81z3cYy;
+	Tue, 16 Sep 2025 02:45:28 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757945941;
+	cv=none; b=FkAInee0NRVfzBpEXI35g3gNLLWXBb5H5BCWwWK2nn9zij/Xxj0K6Riq70/dOTFRIv5/81VFwNzDA8Fx24AnUUT1DkMr16GGAuUvulLTFvmkrM4k8gbd+jn2cBt+rPHU6ML/LQfmzOcNNeT1pbRrWmuc9BkkaI8obh8wcXLo5bh3qRR8muWvjY0WNEu9LULiUHoZkaAJHXFZfTsrxrQB16YEGw75gPhhEVJ0Dy9o49gm6Fds39ax0aJ8va4L4Wh4+N7nqc4DyRzBfK1jZzadiLpGGxkHuQmrMRcvqXxTxff5t5oPGIGWA3qP/o4nODyB6COpkak1C3pTXWu7RF1G/A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757950250; c=relaxed/relaxed;
-	bh=gnpp7yykBMu415Och8szW/n2ntzL+rYn469m57fFnFs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Gf6FmpLZ4+e3YvXOHKAOmCNL7lpGJ3KxOI8NIWtUg2EJ/4Wt2PEShveUpmTF1u50wBHg36p/Y14dyYjsJqNyCVWjvu0W5UhaIQJFM85RXlstybl4nXwAST+lHpbEdp4gtsxWCGAGeHVye+QKcWpD/f9nL5BPS/jPSj78BVszFxEO1x5xgAlBw3Qilj/O9F4CHGHgoAZ7eCcWli18i/j54nENyI18dM4buf/aumDOm7Ezei1VaCUIUH0tec4Xt2tT1aldwPYoqSGMRY9Si0bIbyI5Vz0PusFe+Zn8rxOhzBxQKAmOnxAyzdpWzdvkukye2kYgdR0fRvCsLJWWpdF+tg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=bCJY872m; dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=FV50nokF; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=antonio.feijoo@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	t=1757945941; c=relaxed/relaxed;
+	bh=ZpbkITrua1vhJUKN7WiR48HkRmbVKO0hyDxhB8JjHlQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=n8ViDQumT90hp/lsHZ1lqWkGEPnMJWZQSfXHGzlrlqG4KThfKO/cHA91ddHPqEcFH6NuAASFObmm/dudDqDgMZR9TMthskKWcVm5hOLcgkTis4x04g7qwtjDN8P8pm3B8k1M4+sz64uGfP04qiGf1bwXKarKBmkLRD8aTriX9R9A7/iGZErX1p50lU7pGsbyH4TITwKNKJWTehtdfRNXoTTKDe6Pyeiv/K3lSQlM43lxTZVWO14Iegug9kVXTeAAaD24CNcA18acepAufqGVHcOVqUU25HMA4LCTAyu5jKMI2mjXrMzsTXuq1fKXcBgsU5aH9a51dbXfLIDmHvTNLw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=WDydSg6V; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42b; helo=mail-wr1-x42b.google.com; envelope-from=mikisabate@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=bCJY872m;
-	dkim=pass (1024-bit key) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=susede1 header.b=FV50nokF;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=WDydSg6V;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=antonio.feijoo@suse.com; receiver=lists.ozlabs.org)
-Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::42b; helo=mail-wr1-x42b.google.com; envelope-from=mikisabate@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42b.google.com (mail-wr1-x42b.google.com [IPv6:2a00:1450:4864:20::42b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQTWY4V7Pz3dTY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 01:30:49 +1000 (AEST)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out2.suse.de (Postfix) with ESMTPS id D4DDE1FBAB;
-	Mon, 15 Sep 2025 15:30:45 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-	t=1757950246; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=gnpp7yykBMu415Och8szW/n2ntzL+rYn469m57fFnFs=;
-	b=bCJY872mXHDXETNHNhDYQsrjwuBnkcN5HPTxf6UmJPoANlDiNMLKh4XOWtK7jItX3Cp0VF
-	k9wH7XyPk6m33poMqh8grve+dFcXum023rO/aJLLEscoLZ20wT9r7seHrWeQdI4TcBJG5X
-	huwNPcWXSAoKqQoCMFHgF0gt8cb4DSk=
-Authentication-Results: smtp-out2.suse.de;
-	dkim=pass header.d=suse.com header.s=susede1 header.b=FV50nokF
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.com; s=susede1;
-	t=1757950245; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=gnpp7yykBMu415Och8szW/n2ntzL+rYn469m57fFnFs=;
-	b=FV50nokFLmUNK60m6RPXfupYsn4T5PZ/I+9ut6WJaddVBvMAUGk9FRVkA6NYC9IoQPxDBQ
-	HKpNwyVBPJ4VXxRnK1XKdqQuT69vklitz7D3asOt1ZLVouyMETKLIuGromhGJwVpT+TyT1
-	LX+5YVgVX448m/j81XFhAKQoRnfjZtI=
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 312481368D;
-	Mon, 15 Sep 2025 15:30:45 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id jcQ6CCUxyGhNdwAAD6G6ig
-	(envelope-from <antonio.feijoo@suse.com>); Mon, 15 Sep 2025 15:30:45 +0000
-From: Antonio Alvarez Feijoo <antonio.feijoo@suse.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	Antonio Alvarez Feijoo <antonio.feijoo@suse.com>
-Subject: [PATCH] powerpc/boot: Fix check of supported compression methods
-Date: Mon, 15 Sep 2025 17:25:30 +0200
-Message-ID: <20250915152530.40256-1-antonio.feijoo@suse.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQRwh3MvGz3dWn
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 00:18:59 +1000 (AEST)
+Received: by mail-wr1-x42b.google.com with SMTP id ffacd0b85a97d-3dae49b1293so2412544f8f.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 07:18:59 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1757945936; x=1758550736; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=ZpbkITrua1vhJUKN7WiR48HkRmbVKO0hyDxhB8JjHlQ=;
+        b=WDydSg6VhHZCTR32Rxd9QB4hGtZIWigaHY2r03JcmuzW8Zih2+HPaiw2DAR+vkcrpB
+         oytUAjYy6kff5Uw/UigAySbnXNAuvE3usDqSOS495FDbRMphNHb+XONrDtU5vKhiNGKy
+         zZvgnFfw33TXjCY+Q8flOKXGqz1AsKl9bMpYw7Lu7/jKdHExcqAczoc0yobM6uhdnAUw
+         d8tetuTxt/6nPXaF/TzNsGz3YD02kqKABpUSFPuIRWAUmY6Q5krJ/rW8445MwyDSnn1H
+         UDyg4XPMvzyXmBkhDXV0uJl5JcW3a5K/wQAICbsCdoJuUsA1JSemfiVofAwZ+sVTrkez
+         avyQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757945936; x=1758550736;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=ZpbkITrua1vhJUKN7WiR48HkRmbVKO0hyDxhB8JjHlQ=;
+        b=fdDt963aRglFPSctWGcTCNhwOFDOAx19075iFizfbXc/A+v9a1aZfHWiraKIfuyFFD
+         ULO4GyORxRgoC9u3eJz4k/WxzcXnCHHvTdG1QqIDwBx/F8pi5uJ9XZRVEb9aHs8cqekU
+         obPQYeosSs9GS7cLcAF9frBLT/w07b4t6i1QB21gCNDRtDcgGRWEO+LnDQ1+dreSvHNF
+         vWC4+obO5Lwwi5PXJohTyBJ+u15KUM1Un54GiZ6vT1flVrYIs+UX0Z54u5B+RCFTqO7j
+         mCJvuM47T1He0r/k73C7eihO2Co4tLUMP5mie6KuKtHkMW3NpHGACrhjqr7QviPLR3eQ
+         V1Tg==
+X-Gm-Message-State: AOJu0YyILu8SI1dnvDyQVpUCOwGGB2NaNVB8WBmatYOt2KfqI2r9FcpU
+	oPB+E9/Php0zRpfqeTr/btQZnHAcl4Gm6vekzQzlwtDjTxm4sxqBnNaD/lQSYYii
+X-Gm-Gg: ASbGnctpiigd9M3WOsoo+xaz+P0A2zZxaSfPGDn9opokNMc2WjvDS696Jtj2HkO1CgO
+	fnujhvjnlplxC9lS6Ney8BkExTgqgKOOxYgrffO7RcO0G2RLttXuTCkqleTaQe8Y/Q1+o34EWQl
+	cRhjCJx4XEsbZnbsXqWafHPpQnIigjPWBY17inK1e4/X+IDMbmVDEnqbSvqy+8vjZA6JY/8I4Sd
+	Xuu0hyHXelijJu8lkp6usfeHLn6mbPX3HZ3M3sRA/q/lWDTPZ9T5T1yvNDgYslAE803HLn4jbzT
+	zQCN0/c4f3nKK0Tvz3e+aMy/gXq+T8I/RhVN35qgbrywXLbMTEp8+ZceMX7ptlxMrmVsoZ2m5Pl
+	klFwM4gUxlWTSZCXfC8S/gDGXwmgoCcAd4sActeBvQDw=
+X-Google-Smtp-Source: AGHT+IHYmgT2onMqBufUPZRupmR3CnSUVb0/r+MRCOJUXUaouM7O2XSBxIvDmBdJHyG24thxg2NLpQ==
+X-Received: by 2002:a5d:588f:0:b0:3eb:9447:b986 with SMTP id ffacd0b85a97d-3eb9447bb89mr1990966f8f.6.1757945935851;
+        Mon, 15 Sep 2025 07:18:55 -0700 (PDT)
+Received: from localhost.localdomain ([37.72.3.43])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-45e037b9ebbsm191083595e9.11.2025.09.15.07.18.54
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 15 Sep 2025 07:18:55 -0700 (PDT)
+From: =?UTF-8?q?Miquel=20Sabat=C3=A9=20Sol=C3=A0?= <mikisabate@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: linux-kernel@vger.kernel.org,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	christophe.leroy@csgroup.eu,
+	mikisabate@gmail.com
+Subject: [PATCH] powerpc: kgdb: Remove OUTBUFMAX constant
+Date: Mon, 15 Sep 2025 16:18:08 +0200
+Message-ID: <20250915141808.146695-1-mikisabate@gmail.com>
 X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -86,61 +93,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.com:s=susede1];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	TO_DN_SOME(0.00)[];
-	DKIM_SIGNED(0.00)[suse.com:s=susede1];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCVD_COUNT_TWO(0.00)[2];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.com:mid,suse.com:dkim,suse.com:email,imap1.dmz-prg2.suse.org:helo,imap1.dmz-prg2.suse.org:rdns];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	FREEMAIL_CC(0.00)[gmail.com,csgroup.eu,vger.kernel.org,lists.ozlabs.org,suse.com];
-	DNSWL_BLOCKED(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	RCPT_COUNT_SEVEN(0.00)[7];
-	DKIM_TRACE(0.00)[suse.com:+];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com]
-X-Rspamd-Queue-Id: D4DDE1FBAB
-X-Rspamd-Server: rspamd2.dmz-prg2.suse.org
-X-Rspamd-Action: no action
 
-The current check is bogus and would allow to pass any value with the -Z
-option.
+This constant was introduced in commit 17ce452f7ea3 ("kgdb, powerpc:
+arch specific powerpc kgdb support"), but it is no longer used anywhere
+in the source tree.
 
-Signed-off-by: Antonio Alvarez Feijoo <antonio.feijoo@suse.com>
+Signed-off-by: Miquel Sabaté Solà <mikisabate@gmail.com>
 ---
- arch/powerpc/boot/wrapper | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/powerpc/include/asm/kgdb.h | 1 -
+ 1 file changed, 1 deletion(-)
 
-diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-index 50607bc47d05..8fbc4b98cfce 100755
---- a/arch/powerpc/boot/wrapper
-+++ b/arch/powerpc/boot/wrapper
-@@ -148,7 +148,7 @@ while [ "$#" -gt 0 ]; do
-     -Z)
- 	shift
- 	[ "$#" -gt 0 ] || usage
--        [ "$1" != "gz" -o "$1" != "xz" -o "$1" != "lzma" -o "$1" != "lzo" -o "$1" != "none" ] || usage
-+        [ "$1" = "gz" -o "$1" = "xz" -o "$1" = "lzma" -o "$1" = "lzo" -o "$1" = "none" ] || usage
+diff --git a/arch/powerpc/include/asm/kgdb.h b/arch/powerpc/include/asm/kgdb.h
+index 715c18b75334..4c0afde87e97 100644
+--- a/arch/powerpc/include/asm/kgdb.h
++++ b/arch/powerpc/include/asm/kgdb.h
+@@ -25,7 +25,6 @@
  
- 	compression=".$1"
- 	uboot_comp=$1
+ #define BREAK_INSTR_SIZE	4
+ #define BUFMAX			((NUMREGBYTES * 2) + 512)
+-#define OUTBUFMAX		((NUMREGBYTES * 2) + 512)
+ 
+ #define BREAK_INSTR		0x7d821008	/* twge r2, r2 */
+ 
 -- 
 2.51.0
 
