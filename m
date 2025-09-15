@@ -1,50 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-12222-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12223-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3A79CAC597
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 13:22:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5C8BCAC597
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 13:34:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQQg128Mnz3dVv;
-	Mon, 15 Sep 2025 23:22:05 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757942525;
-	cv=none; b=kQAKGQppf8JfXaWWsWQf8kKa5CreA2l7Z0jVUx0VPxBcm0mFaN9Dch9t6KHeARR1hQcJDB01S4GqCeY5t3tUD1DK+gUOTsy1XS+IKl+7ndYWVkxhLcWHROC2FSIAqcM/BLmRhvkqz7qjkiyHBxcHBzBHPSDRzUeD9t1eU4kL5JiQHWuXI4dNV4Yd6tkCMQDpxXex2QM2rCTPOLVaRvfC3v+NjAuNtRriFqaheFQW+Kt7tTqUkt/RmeC+5Gz9vYRkBeUxhpbqCydKvetbabj0VS4rSrySfhhiWAMHaInH/CXCHqGJSHlSwHIHeXvnTWPa7EEo/m+J06Wna2Fv3xGoig==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQQxd2WxCz3dW1;
+	Mon, 15 Sep 2025 23:34:45 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757943285;
+	cv=none; b=n7ZS2dLVlgFXeXko/hqwVzqBu04H448XLCBcBrQHzv2FLVkaTkkeNqIZOflGImMhy41qn4wgHMbK/HsPmgpHnXq8W4XFmkTjOr47XPhEiRcH2fvP/HXkEyi2s5Y3jIiMaj6vXmkGKIztYGXUGeYv+dGMvdoeZPoJ9aP5QAzo0ZObnJApHr6YZmvFosp+r51YLicMAE7T6K6ODddfAKRysr4pkx/YNFn9i4EqbmY8C+e5GE0rlEPROuqsIGL0pztKdnGaHwVl+Tb1taZdblqy+YI0hYi2bQXuMh4dIN7OhG54EHKAYh+xOYU0q/lZYO2mAi+bWNdko6r2OO422aL5NQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757942525; c=relaxed/relaxed;
-	bh=8LbZZQXBwakk1o8HoHgvDq6wMKD6k92z7xv9wHGbqAg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WWJUJYjChnTUzU/EpZtLYn1TQQ8d8cbAYUFuYQwdMBIJzL/ucS9wLFeFfP4ApO1uQi3lcf678U0UaUoVBfPCfH9OVvXe5t0Xlg1zIe1JZhvk7aVwSmwXpxqDaZg/io1fu0tvOT+GjpSStBnNbROrn08Nf6OuWFB8tna0KxJeasUN9DSZtBddSokJDlAfn139RcE90VBAW543yaC6sGOnQ5EjN3qFIIzfjKaG1ptsvi8PWDuVc0TD/dEyao3drGGrg0Joqt0cjfcIDsDQQlCNPm+PxK/7m4/CIcZNShRbFEUsQ6CtjRinrTxtSxYQQgWbmIkGs7S4Xmc5U7meSAtL3Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQQg02B6Zz3dTg
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 23:22:02 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cQNk651SSz9sxh;
-	Mon, 15 Sep 2025 13:54:38 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zyKNPbK2UxYX; Mon, 15 Sep 2025 13:54:38 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cQNk52qX4z9sxf;
-	Mon, 15 Sep 2025 13:54:37 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 307338B766;
-	Mon, 15 Sep 2025 13:54:37 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id kYegUs-5AFEi; Mon, 15 Sep 2025 13:54:37 +0200 (CEST)
-Received: from [10.25.207.160] (unknown [10.25.207.160])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 92F668B763;
-	Mon, 15 Sep 2025 13:54:36 +0200 (CEST)
-Message-ID: <a246ee31-1ea3-4278-b103-65fda6e692a9@csgroup.eu>
-Date: Mon, 15 Sep 2025 13:54:36 +0200
+	t=1757943285; c=relaxed/relaxed;
+	bh=G1pxbFOuDJsJnBF0m+5CY6Xwwfubv5cFdvznrZJvWPg=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=K2O5mPcr8RyDT7IoVxTHmO594qriOQSqaNukSOgkdYDQOAi+9GUZI39LMHAEFSEq7HQdrDxN3Lmj8JT9IZ7R/BS34HndLDIR79DnAmlPGv7SK9IkB/hC+Q7HyXS8O+9xEbl+5OYmjwwyD8zfihqWY4RqV0mQr0AZj3MJ2kCm0/IyrVbaAtqlJPwy++/m3KURr6ebWUNpEM99CALX5kNl9AjX9Czbx/d9vW7AfkV5l5YtsyG/ri4iaHesDHbi3MFgKQ65ZSKWJ/0h0GNgl9YyzIb0kIPSG5nafcCv1rbueZsZdA517Usy+dhty3qarK8dsdgWnEOl4RWZ3DXMJA6+ZA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BJGZ1vBQ; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BJGZ1vBQ;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQQxb6qFpz3dVv
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 23:34:43 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 9585860237;
+	Mon, 15 Sep 2025 13:34:40 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 06662C4CEF5;
+	Mon, 15 Sep 2025 13:34:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1757943280;
+	bh=G1pxbFOuDJsJnBF0m+5CY6Xwwfubv5cFdvznrZJvWPg=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=BJGZ1vBQTvO1OLFpsKgtQvIkjtAVvJey56ZqhZxYzVB3EDoeucwA9j3Ikra0r96a5
+	 jQw9/XHjAdC85R6jORBqXH6OkpLRRmI0UaRxSBMlJTyGu8sObrPf6EYsRHYnpzWABK
+	 4guOhpliPb5aYSSJ1cikDCiA9fl38O9CJLfhWdf/1FUDPbaUHhsgjd/BUigP/DwSAR
+	 ZgzXa5kZ1LN2Vwu2d8y8wxYWU6XMdt47ld5N4t1CFweo+0HtUX4GHSNgmsq7QjI/jF
+	 wghZzlNvaq7LpEjMzkOqler37Pf0I1gD2UiJKUJFEipxphTk6d9TTXloxjbYPhi7oP
+	 Dxi908vsrFrMg==
+Date: Mon, 15 Sep 2025 15:34:26 +0200
+From: Christian Brauner <brauner@kernel.org>
+To: Askar Safin <safinaskar@gmail.com>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Linus Torvalds <torvalds@linux-foundation.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	Al Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>, 
+	Jens Axboe <axboe@kernel.dk>, Andy Shevchenko <andy.shevchenko@gmail.com>, 
+	Aleksa Sarai <cyphar@cyphar.com>, 
+	Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, Julian Stecklina <julian.stecklina@cyberus-technology.de>, 
+	Gao Xiang <hsiangkao@linux.alibaba.com>, Art Nikpal <email2tema@gmail.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Eric Curtin <ecurtin@redhat.com>, 
+	Alexander Graf <graf@amazon.com>, Rob Landley <rob@landley.net>, 
+	Lennart Poettering <mzxreary@0pointer.de>, linux-arch@vger.kernel.org, linux-alpha@vger.kernel.org, 
+	linux-snps-arc@lists.infradead.org, linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org, 
+	linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, 
+	linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, 
+	linux-sh@vger.kernel.org, sparclinux@vger.kernel.org, linux-um@lists.infradead.org, 
+	x86@kernel.org, Ingo Molnar <mingo@redhat.com>, linux-block@vger.kernel.org, 
+	initramfs@vger.kernel.org, linux-api@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linux-efi@vger.kernel.org, linux-ext4@vger.kernel.org, "Theodore Y . Ts'o" <tytso@mit.edu>, 
+	linux-acpi@vger.kernel.org, Michal Simek <monstr@monstr.eu>, devicetree@vger.kernel.org, 
+	Luis Chamberlain <mcgrof@kernel.org>, Kees Cook <kees@kernel.org>, 
+	Thorsten Blum <thorsten.blum@linux.dev>, Heiko Carstens <hca@linux.ibm.com>, patches@lists.linux.dev
+Subject: Re: [PATCH RESEND 00/62] initrd: remove classic initrd support
+Message-ID: <20250915-modebranche-marken-fc832a25e05d@brauner>
+References: <20250913003842.41944-1-safinaskar@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,94 +84,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND 08/62] arm: init: remove FLAG_RDLOAD and
- FLAG_RDPROMPT
-To: Askar Safin <safinaskar@gmail.com>, linux-fsdevel@vger.kernel.org,
- linux-kernel@vger.kernel.org
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Christian Brauner <brauner@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
- Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>,
- Jens Axboe <axboe@kernel.dk>, Andy Shevchenko <andy.shevchenko@gmail.com>,
- Aleksa Sarai <cyphar@cyphar.com>,
- =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
- Julian Stecklina <julian.stecklina@cyberus-technology.de>,
- Gao Xiang <hsiangkao@linux.alibaba.com>, Art Nikpal <email2tema@gmail.com>,
- Andrew Morton <akpm@linux-foundation.org>, Eric Curtin <ecurtin@redhat.com>,
- Alexander Graf <graf@amazon.com>, Rob Landley <rob@landley.net>,
- Lennart Poettering <mzxreary@0pointer.de>, linux-arch@vger.kernel.org,
- linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
- linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
- linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
- linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
- linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- sparclinux@vger.kernel.org, linux-um@lists.infradead.org, x86@kernel.org,
- Ingo Molnar <mingo@redhat.com>, linux-block@vger.kernel.org,
- initramfs@vger.kernel.org, linux-api@vger.kernel.org,
- linux-doc@vger.kernel.org, linux-efi@vger.kernel.org,
- linux-ext4@vger.kernel.org, "Theodore Y . Ts'o" <tytso@mit.edu>,
- linux-acpi@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
- devicetree@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>,
- Kees Cook <kees@kernel.org>, Thorsten Blum <thorsten.blum@linux.dev>,
- Heiko Carstens <hca@linux.ibm.com>, patches@lists.linux.dev
-References: <20250913003842.41944-1-safinaskar@gmail.com>
- <20250913003842.41944-9-safinaskar@gmail.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250913003842.41944-9-safinaskar@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20250913003842.41944-1-safinaskar@gmail.com>
 
+On Sat, Sep 13, 2025 at 12:37:39AM +0000, Askar Safin wrote:
+> Intro
+> ====
+> This patchset removes classic initrd (initial RAM disk) support,
+> which was deprecated in 2020.
 
+This is a good idea but the patchset does a bit too much and it's pretty
+convoluted and mixes cleanups with the removal of initrd support and so
+it's not that great to review let alone merge especially considering
+that a revert might be needed.
 
-Le 13/09/2025 à 02:37, Askar Safin a écrit :
-> [Vous ne recevez pas souvent de courriers de safinaskar@gmail.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
-> 
-> They are unused since previous commit
+Split it up into multiple patch series. Send a first series that
+focusses only on removing the generic infrastructure keeping it as
+contained as possible. Only do non-generic cleanups that are absolutely
+essential for the removal. Then the cleanups can go in separate series
+later.
 
-Since which commit ?
-
-> 
-> Signed-off-by: Askar Safin <safinaskar@gmail.com>
-> ---
->   Documentation/arch/arm/setup.rst | 4 ++--
->   arch/arm/kernel/atags_compat.c   | 2 --
->   2 files changed, 2 insertions(+), 4 deletions(-)
-> 
-> diff --git a/Documentation/arch/arm/setup.rst b/Documentation/arch/arm/setup.rst
-> index 8e12ef3fb9a7..be77d4b2aac1 100644
-> --- a/Documentation/arch/arm/setup.rst
-> +++ b/Documentation/arch/arm/setup.rst
-> @@ -35,8 +35,8 @@ below:
->       =====   ========================
->       bit 0   1 = mount root read only
->       bit 1   unused
-> -    bit 2   0 = load ramdisk
-> -    bit 3   0 = prompt for ramdisk
-> +    bit 2   unused
-> +    bit 3   unused
->       =====   ========================
-> 
->    rootdev
-> diff --git a/arch/arm/kernel/atags_compat.c b/arch/arm/kernel/atags_compat.c
-> index b9747061fa97..8d04edee3066 100644
-> --- a/arch/arm/kernel/atags_compat.c
-> +++ b/arch/arm/kernel/atags_compat.c
-> @@ -44,8 +44,6 @@ struct param_struct {
->              unsigned long ramdisk_size;         /*  8 */
->              unsigned long flags;                /* 12 */
->   #define FLAG_READONLY  1
-> -#define FLAG_RDLOAD    4
-> -#define FLAG_RDPROMPT  8
->              unsigned long rootdev;              /* 16 */
->              unsigned long video_num_cols;       /* 20 */
->              unsigned long video_num_rows;       /* 24 */
-> --
-> 2.47.2
-> 
-> 
-
+As usual I'm happy to try to shed old code but I wouldn't be too
+optimistic that we'll get away with this and if so it needs to be
+surgical.
 
