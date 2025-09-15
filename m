@@ -1,96 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-12230-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12231-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13278CAC592
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 14:27:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 06B81CAC597
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 15 Sep 2025 14:50:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQS6b3dFJz3dWc;
-	Tue, 16 Sep 2025 00:27:35 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757946455;
-	cv=none; b=e1vZQCkgUXJH6Z51mgJ9IEeY8VLXcWdR7FhNtN8u9hkvRMWobsdxraXHAohmKKceeGm+AaGg3Ji/vnVKtJNCFndW6Mdm3QN27/s+ZzsNatUSCn/fJw3Zq8aX4ZltNpwpy9XOpgoutWaDJd0blfBlXp8gZNK7g0dNraLq1mCwAQjYUKHamZUFxnnv9RXwCUeuHianpu5PWjYdVUA0jrMTSjv7lSYaaz1C8+ztH8uXuaAFaOZdqFZ+p08qGXgl5pWI7kc1cE5o/98t6HpknO5dpqpD4xaZWPzuw8EMdtlBzrBicBuh2W8C2YpvxtTl0AbkrHaZWrnnmo8iAA0a1cxYCw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQSd859CWz3dRD;
+	Tue, 16 Sep 2025 00:50:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757947836;
+	cv=none; b=VD47rbBXSKsL+mGgqq3XjQN8A+7TycQnpk2wOmtYsmobVMDrlZdqsxZQ72WN1SYbaPKxHzHbCRod+cLxnBwhP7EbuzDvxzjD/Dgp3bym4Tu7AvLLptQ1HDyCLp63/RlnvaD6jvWvWMaSSWa1LIUq1Phx+tEZk5THze25P+ZRUCi6AMusZgYKLl+3C2ai6Wl2cNf3nnURDwd/feZLJj2nLMwVWmTQkXSy2VnWq+9tfaLeW6FHUvBIfwVr7E7FVEwoNIkPgDMRbxOAtOK+ffem9u1BDudFStlOwPULLTgwcod/3W7lffivJYtWoeCuy6x3YU14NYei99odhsmx9MMKuA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757946455; c=relaxed/relaxed;
-	bh=93gOvoDcBdDF+uhxagbjeVgcwGtEHX2Ajjpa7s8ksys=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=iiyfgLBqfW5XxhzrlNqLVzhu2BOzKLKNV3sdcx4ZDN5aC9oMNKuW5xPhcQZhsqaZxKGofi2nkCArxKdB9gC+UFEBCs/WsR0Go2EpDs/SBijzRssAaObFC80r/rrZeatSy8LdaDkx1Zz5TONdiDAMWj8FzUWStK8LIYnxQrLhcP4tVigFavlEbixsdNoWgDZkXqC0DQLJgSMIRBS4ltl/bINSdpCiyy+UMuPb++VTsTFdClkuDA/I4DlhYH5VxXqdXds2DsBBYU8Ub1BdEwkZHZViARvTGHf/kK0F/kQybx7u1jzkVgkafr0McMFT9Az5WzdbnYJSMhJOblnhda9sUg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r3sqyolF; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=r3sqyolF;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=agordeev@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQS6Z58q2z3dWH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 00:27:34 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58F9auat018700;
-	Mon, 15 Sep 2025 14:26:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-type:date:from:in-reply-to:message-id:mime-version
-	:references:subject:to; s=pp1; bh=93gOvoDcBdDF+uhxagbjeVgcwGtEHX
-	2Ajjpa7s8ksys=; b=r3sqyolFInDCeWDViJZMPqSncd/mubfFPzlJRMqhGniqLt
-	i0svHLuD24/wgKmko+PVfQ0dPS0L2xwCX9nuPIoU9im8LEl3TB6JbNtlFKrp9c9f
-	Ul60BOC/R1QomaUkpW5Q9qksws694I8cEAxtvwtovsRKjGRlT3J0aqxOTYqF6d6F
-	65szjdMct/qYq2awarrH5MXGmNQCWF78ggkDxUs1cPXK6zLVHGdYKWYt9f44VC0R
-	iMQ5o1EkXSywDP5INlMBBEKuZ8lwCbdbwIVBDtjv9MI/zOk6rAAfdIJXxv56KfMZ
-	xAJIJDE73H9lJu0ZuWDBOHseGxExRNhG51NBsHxA==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 496gat1gxj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 15 Sep 2025 14:26:19 +0000 (GMT)
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 58FE2KcE000732;
-	Mon, 15 Sep 2025 14:26:19 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 496gat1gxc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 15 Sep 2025 14:26:19 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 58FBale5022328;
-	Mon, 15 Sep 2025 14:26:18 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 495kxpevrj-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 15 Sep 2025 14:26:17 +0000
-Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 58FEQD2U58196468
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 15 Sep 2025 14:26:14 GMT
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E294D20043;
-	Mon, 15 Sep 2025 14:26:13 +0000 (GMT)
-Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id AE34720040;
-	Mon, 15 Sep 2025 14:26:13 +0000 (GMT)
-Received: from tuxmaker.boeblingen.de.ibm.com (unknown [9.152.85.9])
-	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTPS;
-	Mon, 15 Sep 2025 14:26:13 +0000 (GMT)
-Date: Mon, 15 Sep 2025 16:26:12 +0200
-From: Alexander Gordeev <agordeev@linux.ibm.com>
-To: Venkat <venkat88@linux.ibm.com>
-Cc: Julian Sun <sunjunchao@bytedance.com>, tj@kernel.org,
-        akpm@linux-foundation.org, stable@vger.kernel.org,
-        songmuchun@bytedance.com, shakeelb@google.com, hannes@cmpxchg.org,
-        roman.gushchin@linux.dev, mhocko@suse.com,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, riteshh@linux.ibm.com,
-        ojaswin@linux.ibm.com, linux-fsdevel@vger.kernel.org,
-        linux-xfs@vger.kernel.org, LKML <linux-kernel@vger.kernel.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Linux Next Mailing List <linux-next@vger.kernel.org>,
-        cgroups@vger.kernel.org, linux-mm@vger.kernel.org
-Subject: Re: [linux-next20250911]Kernel OOPs while running generic/256 on
- Pmem device
-Message-ID: <20250915142612.1412769A80-agordeev@linux.ibm.com>
-References: <8957c526-d05c-4c0d-bfed-0eb6e6d2476c@linux.ibm.com>
- <BAEAC2F7-7D7F-49E4-AB21-10FC0E4BF5F3@linux.ibm.com>
- <CAHSKhteHC26yXVFtjgdanfM7+vsOVZ+HHWnBYD01A4eiRHibVQ@mail.gmail.com>
- <240A7968-D530-4135-856A-CE90D269D5E6@linux.ibm.com>
+	t=1757947836; c=relaxed/relaxed;
+	bh=Vbe0w4DAnuCL8J2vrzWlMqCh99kSyQCieLV52a77G+Y=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TY3PNMig6MXrvTWSr2XTTKh8I+14NZJxywb73viQTdG0VflbQetjw6WskJpvG2ZaUzKiPUajcTfTvPRsx+NVfDK3kyl6KgnlocIPV2hIJtBwtzCm8LkxPE9wb8Q2PgecZ/AxQ4TIiax9J0/8SqDe2t5nVuehhDngEkNtpgU3miKkJvhl8SYDTWVr/RWovrG1REHy91NXR65N9hMQ5Beo04qL7iGdGhwLTGv7MV0n6CBOiA9Nn0z0nWKpYqj6W+J0RPiA4dGTYbYTH6uK2un62GQwY9UCo/1NbgKPySI1gyrIslPDlzRmZQwTtVh5Q1eFqQWD5HhTpOSFvXKUxL5rbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQSd80F6Cz3dGr
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 00:50:35 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4cQMxX3w10z9sxn;
+	Mon, 15 Sep 2025 13:19:28 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id lsQzt4OAL5QC; Mon, 15 Sep 2025 13:19:28 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cQMxW2nkYz9sxl;
+	Mon, 15 Sep 2025 13:19:27 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 27EFC8B766;
+	Mon, 15 Sep 2025 13:19:27 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id niL9xnZy0o5E; Mon, 15 Sep 2025 13:19:27 +0200 (CEST)
+Received: from [10.25.207.160] (unknown [10.25.207.160])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6E3148B763;
+	Mon, 15 Sep 2025 13:19:26 +0200 (CEST)
+Message-ID: <c52c2589-9d7b-4ac7-a61f-68fa9ba18308@csgroup.eu>
+Date: Mon, 15 Sep 2025 13:19:26 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,45 +58,139 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <240A7968-D530-4135-856A-CE90D269D5E6@linux.ibm.com>
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=BKWzrEQG c=1 sm=1 tr=0 ts=68c8220b cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=kj9zAlcOel0A:10 a=yJojWOMRYYMA:10 a=VnNF1IyMAAAA:8 a=OU48e3ldqOrICINtdUEA:9
- a=CjuIK1q_8ugA:10
-X-Proofpoint-GUID: jgtZKvDpLeX2b3zEu8f2-Dy7WMTShlp-
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTE1MDA4NiBTYWx0ZWRfX8rssnOatAT47
- qK4h0PeWsydAe0MHXzSRtuYWyO575+9NysLJBvrGV6juLdCCu6snHKxKDFdJJKo31gh+AWG/lqp
- JCbTkekkCgnHIudxddKp5Qsj6Oml6txHzFZZ9iIojl35whvWSirBu9qgHHJv8DQGtPo2cWmsM/2
- 9FAJt4Li/srUK7PgaVNFHZBjmDdiOd5Dd+kercpV0Bi7B13WgEbXUfQ+HnBrquXDnF/YWzlLxdH
- tMQLRuqWhsSlZNYbKpbyOYLYG2l5k743FHJi7SvDZBILwkoM9LfFHD2/7WhlFAz4mbKI8BV5b65
- nxLJnGik0jq5Ld2KyrctTPfSI0E/JuANG6/mVJ8F7SbxuLsxOtqFfb9+I+x3sOH/LJwyeMP44J3
- z2t7BtXP
-X-Proofpoint-ORIG-GUID: k3kwdpkBN8cmqlPUljTfmONvIC_Jnwqg
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-15_05,2025-09-12_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 clxscore=1011 malwarescore=0 priorityscore=1501 adultscore=0
- suspectscore=0 impostorscore=0 bulkscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509150086
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH RESEND 03/62] init: sh, sparc, x86: remove unused
+ constants RAMDISK_PROMPT_FLAG and RAMDISK_LOAD_FLAG
+To: Askar Safin <safinaskar@gmail.com>, linux-fsdevel@vger.kernel.org,
+ linux-kernel@vger.kernel.org
+Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+ Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+ Christian Brauner <brauner@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>,
+ Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>,
+ Jens Axboe <axboe@kernel.dk>, Andy Shevchenko <andy.shevchenko@gmail.com>,
+ Aleksa Sarai <cyphar@cyphar.com>,
+ =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
+ Julian Stecklina <julian.stecklina@cyberus-technology.de>,
+ Gao Xiang <hsiangkao@linux.alibaba.com>, Art Nikpal <email2tema@gmail.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Eric Curtin <ecurtin@redhat.com>,
+ Alexander Graf <graf@amazon.com>, Rob Landley <rob@landley.net>,
+ Lennart Poettering <mzxreary@0pointer.de>, linux-arch@vger.kernel.org,
+ linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
+ linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev,
+ linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+ linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+ sparclinux@vger.kernel.org, linux-um@lists.infradead.org, x86@kernel.org,
+ Ingo Molnar <mingo@redhat.com>, linux-block@vger.kernel.org,
+ initramfs@vger.kernel.org, linux-api@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-efi@vger.kernel.org,
+ linux-ext4@vger.kernel.org, "Theodore Y . Ts'o" <tytso@mit.edu>,
+ linux-acpi@vger.kernel.org, Michal Simek <monstr@monstr.eu>,
+ devicetree@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>,
+ Kees Cook <kees@kernel.org>, Thorsten Blum <thorsten.blum@linux.dev>,
+ Heiko Carstens <hca@linux.ibm.com>, patches@lists.linux.dev,
+ stable+noautosel@kernel.org
+References: <20250913003842.41944-1-safinaskar@gmail.com>
+ <20250913003842.41944-4-safinaskar@gmail.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <20250913003842.41944-4-safinaskar@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Mon, Sep 15, 2025 at 07:49:26PM +0530, Venkat wrote:
-> Hello,
+
+
+Le 13/09/2025 à 02:37, Askar Safin a écrit :
+> [Vous ne recevez pas souvent de courriers de safinaskar@gmail.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
 > 
-> Thanks for the fix. This is fixing the reported issue.
+> They were used for initrd before c8376994c86.
 > 
-> While sending out the patch please add below tag as well.
+> c8376994c86c made them unused and forgot to remove them
 > 
-> Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+> Fixes: c8376994c86c ("initrd: remove support for multiple floppies")
+> Cc: <stable+noautosel@kernel.org> # because changes uapi headers
+> Signed-off-by: Askar Safin <safinaskar@gmail.com>
 
-And Reported-by as well, if I may add ;)
+Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-> Regards,
-> Venkat.
+> ---
+>   arch/sh/kernel/setup.c                | 2 --
+>   arch/sparc/kernel/setup_32.c          | 2 --
+>   arch/sparc/kernel/setup_64.c          | 2 --
+>   arch/x86/include/uapi/asm/bootparam.h | 2 --
+>   arch/x86/kernel/setup.c               | 2 --
+>   5 files changed, 10 deletions(-)
+> 
+> diff --git a/arch/sh/kernel/setup.c b/arch/sh/kernel/setup.c
+> index 039a51291002..d66f098e9e9f 100644
+> --- a/arch/sh/kernel/setup.c
+> +++ b/arch/sh/kernel/setup.c
+> @@ -71,8 +71,6 @@ EXPORT_SYMBOL(sh_mv);
+>   extern int root_mountflags;
+> 
+>   #define RAMDISK_IMAGE_START_MASK       0x07FF
+> -#define RAMDISK_PROMPT_FLAG            0x8000
+> -#define RAMDISK_LOAD_FLAG              0x4000
+> 
+>   static char __initdata command_line[COMMAND_LINE_SIZE] = { 0, };
+> 
+> diff --git a/arch/sparc/kernel/setup_32.c b/arch/sparc/kernel/setup_32.c
+> index 704375c061e7..eb60be31127f 100644
+> --- a/arch/sparc/kernel/setup_32.c
+> +++ b/arch/sparc/kernel/setup_32.c
+> @@ -172,8 +172,6 @@ extern unsigned short root_flags;
+>   extern unsigned short root_dev;
+>   extern unsigned short ram_flags;
+>   #define RAMDISK_IMAGE_START_MASK       0x07FF
+> -#define RAMDISK_PROMPT_FLAG            0x8000
+> -#define RAMDISK_LOAD_FLAG              0x4000
+> 
+>   extern int root_mountflags;
+> 
+> diff --git a/arch/sparc/kernel/setup_64.c b/arch/sparc/kernel/setup_64.c
+> index 63615f5c99b4..f728f1b00aca 100644
+> --- a/arch/sparc/kernel/setup_64.c
+> +++ b/arch/sparc/kernel/setup_64.c
+> @@ -145,8 +145,6 @@ extern unsigned short root_flags;
+>   extern unsigned short root_dev;
+>   extern unsigned short ram_flags;
+>   #define RAMDISK_IMAGE_START_MASK       0x07FF
+> -#define RAMDISK_PROMPT_FLAG            0x8000
+> -#define RAMDISK_LOAD_FLAG              0x4000
+> 
+>   extern int root_mountflags;
+> 
+> diff --git a/arch/x86/include/uapi/asm/bootparam.h b/arch/x86/include/uapi/asm/bootparam.h
+> index dafbf581c515..f53dd3f319ba 100644
+> --- a/arch/x86/include/uapi/asm/bootparam.h
+> +++ b/arch/x86/include/uapi/asm/bootparam.h
+> @@ -6,8 +6,6 @@
+> 
+>   /* ram_size flags */
+>   #define RAMDISK_IMAGE_START_MASK       0x07FF
+> -#define RAMDISK_PROMPT_FLAG            0x8000
+> -#define RAMDISK_LOAD_FLAG              0x4000
+> 
+>   /* loadflags */
+>   #define LOADED_HIGH    (1<<0)
+> diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+> index 1b2edd07a3e1..6409e766fb17 100644
+> --- a/arch/x86/kernel/setup.c
+> +++ b/arch/x86/kernel/setup.c
+> @@ -223,8 +223,6 @@ extern int root_mountflags;
+>   unsigned long saved_video_mode;
+> 
+>   #define RAMDISK_IMAGE_START_MASK       0x07FF
+> -#define RAMDISK_PROMPT_FLAG            0x8000
+> -#define RAMDISK_LOAD_FLAG              0x4000
+> 
+>   static char __initdata command_line[COMMAND_LINE_SIZE];
+>   #ifdef CONFIG_CMDLINE_BOOL
+> --
+> 2.47.2
+> 
+> 
 
-Thanks!
 
