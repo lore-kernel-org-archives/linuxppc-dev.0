@@ -1,79 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-12265-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12266-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1EAECAC592
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Sep 2025 04:17:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49405CAC587
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Sep 2025 04:19:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cQpXf5qbCz2ySb;
-	Tue, 16 Sep 2025 14:17:54 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757996274;
-	cv=none; b=Rfd2IvXbVhHdCaahlW0rR1FccLB6Y4G24T/Oi8SENmwXUUGMGQD737FiI6lc53+drWtEyBSYsbMXmCvxjqXJAbbhFIrEFwQXkRSOm3/zxGSwdBc10B0JhTjmj+SxvSsumQJrERUw82GfoY1aHL2tBfH4O2DWOWLF8fc9s2ClR9ORJmK8ptOGI1PmCy6/Rii+f4/9MOGp0L2T6rOf1BRe8WCiGaKdhE9jqbBWmI55JDDqnQ4qrfDLrgds98WeqsEJhHmQvC9NioI9iyllUz4MPAuEH7SC/s+P+VxDOaeeRZvFMsgviYTsewvrxwvwuHQKmv7Uhrq2n28RAUypi/Q8Ug==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cQpZ86qMrz2ySb;
+	Tue, 16 Sep 2025 14:19:12 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::436"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1757987232;
+	cv=none; b=BjsKy5di1yceIxliefRhMJOuy5mb1BkkSd1hdcG21yqpDhWWc0Jd/647jS7egkM9cBdUbhjz0SZlz9qzGW9Ap/GwQri50Wf6bvtIozPrUjic6pNx+uEtn8srTUUOpjPFv/XEJuERZnwO5hW6r722TUrMhPP0oIJEqD21qu4imbWtf0aAyeMfEIgcWpsJjtdJGvxy9fux54DtGq02ur5YbdjsRdejynZdMlDpuQrYHrZLN/fcWXtPVGGExRCZ2xXguzz+ejKde9URS2vUTXbSZhI4IU07C3zHdKVgn9rYxOzSCOm/WJYUxZTGmVsxSyl6fZ/FyDraQFGDvoW+BVytKA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1757996274; c=relaxed/relaxed;
-	bh=4F6UvByT7S+F1pTQGc9GqOaJ/R92h1u5yz25FL4ll9s=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:Cc:
-	 In-Reply-To:Content-Type; b=P9BiKymVBcM0F4I8TxwXPf4YBQox6rgznFOHseDt4TsaFuREusQlGS5NapS2hM/kFfd8fVNwbjtm2Wn3Z2mjlFOmekUYrrUOGwWGJjrPBZ2lfFWBIM/30FgdathOIIDHC+RxOZnBEH+CbfAjZtqVLMa+O3xV18ZDL1b35/tjciUom6MZBzVugtWhSpPKKZ8yu7xO3Ffl994QK2SpusJYEHefP4NH4B5E4GOqKpSn9zd06o9gEiGDUdahMI1u26MEjexwms8ppIggxcB1TxTWcxxdkwReu2y1kcRLOrfE6x+Hx3RY/mTJhzKH69ZpoLR4bwcQIGMWp4CR7eO54JfNcw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nUmF0YXb; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1757987232; c=relaxed/relaxed;
+	bh=RiFj7ZcI9WNx+PCt1N/twq4GLIPGrm80taj6KBbbDlU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=XFTPcoBYxisR4YKdOU0T6DN2LwnCooZSGJFdNEwNF8eUm0S7epNtWy8XrJq99M3sO867fpnnCvz8iIF5ldpllHn/rxZ3ntz1XUu2IdFR21/VogdnJ5N5tF3/nLHCbwrbJ2kNw/+GQZtsLqhhv8EYOBLhPZvU5sQTZ01uOBdnblMWwghPfJ2SEl3cfQuz5R/dKS3XIFJ/Tp6vhnLVI1wWGf2x9z2P8TpPx/v6lsiAGgDtfcfUwh6lfJFxlIVKRqGw6ZjkouOburcvxncidqfUBv8F3h37rxd1OPoAhwUPnKVJYcTEy53o4MJitbPGV46/0dAcgBC3IpCHAvR9n4qKfA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Eyh4GuX6; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=wangjinchao600@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=nUmF0YXb;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Eyh4GuX6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::436; helo=mail-pf1-x436.google.com; envelope-from=wangjinchao600@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x436.google.com (mail-pf1-x436.google.com [IPv6:2607:f8b0:4864:20::436])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQpXd3dPQz2yPd
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 14:17:53 +1000 (AEST)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58FI99SN018817;
-	Tue, 16 Sep 2025 04:17:14 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=4F6UvB
-	yT7S+F1pTQGc9GqOaJ/R92h1u5yz25FL4ll9s=; b=nUmF0YXbYANEgLcyMdP+HT
-	YAN8gRGqaMqsswOP8QD70DpWd/fL6x6/I4PnYg0Y4ytZzKcygaOdNpo5n0613X2I
-	9iN/EQ1/MXjnq62LDKyv1COFEd8PcynF8IMTpS71S+FrCzHKEww7L6B0VOTqmOxY
-	cRonnVjrVxH+zCQcMKUDdw3UayvtxQdPsBkYcYOUqBVWsqmOLeDOVg7xg0zK9csn
-	qeLkYFgEcNTKbKfskyVSeRvRerzoQv03kqfvu6sXfN+z0vK9IB2i6wtfsjftdhc5
-	++d+PbP9mnwEgwDv0arXf1z2N0f4dllcrXpi4+6HLtGTsWpjY8A8CIHiACDI13dA
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 496gat54gn-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 16 Sep 2025 04:17:14 +0000 (GMT)
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 58G4EN23020499;
-	Tue, 16 Sep 2025 04:17:13 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 496gat54fw-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 16 Sep 2025 04:17:13 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 58G3EQck027349;
-	Tue, 16 Sep 2025 04:16:55 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 495men1wwq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 16 Sep 2025 04:16:54 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 58G4GpnQ13894028
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 16 Sep 2025 04:16:51 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 02A7620040;
-	Tue, 16 Sep 2025 04:16:51 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1966820043;
-	Tue, 16 Sep 2025 04:16:38 +0000 (GMT)
-Received: from [9.61.35.209] (unknown [9.61.35.209])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 16 Sep 2025 04:16:37 +0000 (GMT)
-Message-ID: <589f259e-1db9-4ec2-accc-b27966d09a3e@linux.ibm.com>
-Date: Tue, 16 Sep 2025 09:46:36 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQlBl3q14z302b
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 11:47:10 +1000 (AEST)
+Received: by mail-pf1-x436.google.com with SMTP id d2e1a72fcca58-7724df82cabso5030397b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 18:47:10 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1757987227; x=1758592027; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :from:to:cc:subject:date:message-id:reply-to;
+        bh=RiFj7ZcI9WNx+PCt1N/twq4GLIPGrm80taj6KBbbDlU=;
+        b=Eyh4GuX6GB5Iz5F3BNF1w+gOCW5DVmO5CuhrcmfAlp7FvFk+BRcuBTkqK/IXjG5J+5
+         7fQHh2nut8kCxaiTWGCD3RZ+6ufvCk2IQPDUlEZdsnaZu8AkjVO77eTpaPHLGsbOrfMT
+         zNN1HqKHi4G0W46P69A6OBJo+OObwYsuNmF7HziKsm/zZFtbb6rdgcMo4tGE67UbMPBv
+         9jH4AuhbyU35C1tiZps7ufgmpNefQvSFev/odlknAOCZksEsRsdBElHWvODJGXct0Kmi
+         7F9tjj6asBBfLv/Dd4KMjcuzodr6o4QIAiHb244yyPLveoF2R0aHJBFbpx/A4LRfHaLK
+         jruw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1757987227; x=1758592027;
+        h=content-transfer-encoding:in-reply-to:from:content-language
+         :references:cc:to:subject:user-agent:mime-version:date:message-id
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=RiFj7ZcI9WNx+PCt1N/twq4GLIPGrm80taj6KBbbDlU=;
+        b=Upr9evZAsmPF579sI8SN4BmWbbQQcWP3tSEHAQ4IgHzZJ6vmqvNH6Y4iExihKzXld9
+         CUV8pkS147xXHfDGejA7rqkCuf4x9JvNF87aU9RqXtgboZzz+9dANs68/xFuic+hIDkv
+         gAIfUs+0qqmFhNHB9/QFa5xP1by9u0h2ZUiZ+VCQTTo9bZYhluJHqHWCiw4s0svuEH9D
+         cxsma3MoEwa5nU+QxQO4DAsBH5swycbC6xom+lSXynY/e+yXxqff8asGaaYhni6xWAGM
+         z7byZ3ZGZoRrNBxcN0l9CvoVnnrL5khS/UUa0fpmVltxfLc+rSZm01QUrCRIcrC7SjhV
+         wsfw==
+X-Forwarded-Encrypted: i=1; AJvYcCVFGR2f1BXugEyHUlElbCtmsZ3ErQYNzPjO7wB6ncjYaxoFojpILnJwQvrIPYReQFm8zqmf/Et6E91F93I=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywhu3XfbS58lfVUqtDbJ/L6BHKJsLGjwA8hy80CaTBlWGTzXmJj
+	uxXWPyPAYcj1spSf4reY8O+W0PxctRlA2Vhsvr+V7MCeXe4up1ZSdMVu
+X-Gm-Gg: ASbGnctteGE4M8M6iOhvhjihLI+mNYBpwW4qMw0WVpXWS14TxYR8ty3bcxicmyfIAAc
+	Xvf4s/METmjflg+vV4M6Upgl9P0b9L39hTpxvjgqsEIo8trSU95ztLtdzTXe6yGD/PyTFDebmhz
+	AKBFVyS1Zu5NuSHf+gFPKPkaWDl5/K63NbAQtBUtit3yo0MMxYoFV57RskViCsnmzRP9sAV/1nA
+	kDUzKm3ImMFiPICNIpqAURYeyYP+In07vLrDXzhVDFTIZkXmaKsIDM4RhS0lDfJfP1q8MfOQdDo
+	2P2jDlQi/UhOi1A1MbE62n0q/Ssdp4Frbi5jjTCqAdNrOIV5Kzy2QNM+PDeejGt5T6YCy7CkxwD
+	IwRmkdjYZs2M3vOamsJ8=
+X-Google-Smtp-Source: AGHT+IHJPmOLXIdspKyA83O/BAcGlrfnU5dISVvn02DWV9qPvrZzZVyEnyHMg3+oATLbcf7uKM0HhA==
+X-Received: by 2002:a05:6a20:7f90:b0:249:fd42:fa33 with SMTP id adf61e73a8af0-2602a28e8edmr15663072637.4.1757987227306;
+        Mon, 15 Sep 2025 18:47:07 -0700 (PDT)
+Received: from [127.0.0.1] ([2604:a840:3::30f3])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7760793b5fasm14930150b3a.16.2025.09.15.18.46.55
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 15 Sep 2025 18:47:06 -0700 (PDT)
+Message-ID: <7366f87a-1924-4dac-8945-389e6674213f@gmail.com>
+Date: Tue, 16 Sep 2025 09:46:53 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,105 +87,78 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC V2 7/8] powerpc: Enable IRQ generic entry/exit path.
-To: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu
-References: <20250908210235.137300-2-mchauras@linux.ibm.com>
- <20250908210235.137300-10-mchauras@linux.ibm.com>
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-Content-Language: en-US
-Cc: oleg@redhat.com, kees@kernel.org, luto@amacapital.net, wad@chromium.org,
-        deller@gmx.de, ldv@strace.io, macro@orcam.me.uk, charlie@rivosinc.com,
-        akpm@linux-foundation.org, bigeasy@linutronix.de,
-        ankur.a.arora@oracle.com, naveen@kernel.org,
-        thomas.weissschuh@linutronix.de, Jason@zx2c4.com, peterz@infradead.org,
-        tglx@linutronix.de, namcao@linutronix.de, kan.liang@linux.intel.com,
-        mingo@kernel.org, oliver.upton@linux.dev, mark.barnett@arm.com,
-        atrajeev@linux.vnet.ibm.com, rppt@kernel.org, coltonlewis@google.com,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-In-Reply-To: <20250908210235.137300-10-mchauras@linux.ibm.com>
+Subject: Re: [PATCH] watchdog: remove HARDLOCKUP_DETECTOR_PERF
+To: Doug Anderson <dianders@chromium.org>,
+ Peter Zijlstra <peterz@infradead.org>
+Cc: Will Deacon <will@kernel.org>, Yunhui Cui <cuiyunhui@bytedance.com>,
+ akpm@linux-foundation.org, catalin.marinas@arm.com, maddy@linux.ibm.com,
+ mpe@ellerman.id.au, npiggin@gmail.com, christophe.leroy@csgroup.eu,
+ tglx@linutronix.de, mingo@redhat.com, bp@alien8.de,
+ dave.hansen@linux.intel.com, hpa@zytor.com, acme@kernel.org,
+ namhyung@kernel.org, mark.rutland@arm.com,
+ alexander.shishkin@linux.intel.com, jolsa@kernel.org, irogers@google.com,
+ adrian.hunter@intel.com, kan.liang@linux.intel.com, kees@kernel.org,
+ masahiroy@kernel.org, aliceryhl@google.com, ojeda@kernel.org,
+ thomas.weissschuh@linutronix.de, xur@google.com, ruanjinjie@huawei.com,
+ gshan@redhat.com, maz@kernel.org, suzuki.poulose@arm.com,
+ zhanjie9@hisilicon.com, yangyicong@hisilicon.com, gautam@linux.ibm.com,
+ arnd@arndb.de, zhao.xichao@vivo.com, rppt@kernel.org, lihuafei1@huawei.com,
+ coxu@redhat.com, jpoimboe@kernel.org, yaozhenguo1@gmail.com,
+ luogengkun@huaweicloud.com, max.kellermann@ionos.com, tj@kernel.org,
+ yury.norov@gmail.com, thorsten.blum@linux.dev, x86@kernel.org,
+ linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, linux-perf-users@vger.kernel.org
+References: <20250915035355.10846-1-cuiyunhui@bytedance.com>
+ <aMfpwYPX6_i6ROOY@willie-the-truck>
+ <20250915103506.GA3245006@noisy.programming.kicks-ass.net>
+ <CAD=FV=Vr67+uRK2bYu34MDXRJN4w_VH_EO7OW4eVLJ3wqUUBog@mail.gmail.com>
+Content-Language: en-CA
+From: Jinchao Wang <wangjinchao600@gmail.com>
+In-Reply-To: <CAD=FV=Vr67+uRK2bYu34MDXRJN4w_VH_EO7OW4eVLJ3wqUUBog@mail.gmail.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=BKWzrEQG c=1 sm=1 tr=0 ts=68c8e4ca cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VnNF1IyMAAAA:8 a=0PegofB9Ehvu-5fvZ-0A:9
- a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: cFHjTyaiwG-2xZoHkKLBrdYb5i7Ajopr
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTE1MDA4NiBTYWx0ZWRfX/MiUy93ScqHQ
- TK/XilKI282VEMPGrs+ZuM83QHIB6c+odFVOzaSltZDqsJIpjfryIufz1yTcRT/C4/Lr1+6iz0U
- 81F7xeMJuR6MBTTaB3asQ67YMt5YJuw5O+i4mD0nAdWRysJS6tM3Lp9eyzt2HtNfxtlKsfCtuO6
- L94fTra1/pwZAvCPA7E4GkHGwHsCJ9Jn0WyzYl3pBUuwlktCzlEXIA+ar/9VzbHknBjIlkuu/vv
- /wWt8u1c51HQj41SUVP+nvAFUAJydMHyHfvqm4vuKro+Idn3j33YjfhhYbWE929DurTu3j0/Tfs
- HkN8800Q0G9a6tAkUjX4MBcOizlfy1lfrotFtOxlRQlbUCoQZKUWhbrLQrydfuWp/s0RBT5CSUY
- 5L6is53O
-X-Proofpoint-ORIG-GUID: huUVE0SOMz9TpgoGifUCpWb_sly1_8Hl
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-09-16_01,2025-09-12_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 clxscore=1015 malwarescore=0 priorityscore=1501 adultscore=0
- suspectscore=0 impostorscore=0 bulkscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509150086
+Content-Transfer-Encoding: 8bit
 
-
-
-On 9/9/25 2:32 AM, Mukesh Kumar Chaurasiya wrote:
-> Enable generic entry/exit path for ppc irq.
+On 9/15/25 23:42, Doug Anderson wrote:
+> Hi,
 > 
-> Signed-off-by: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
-> ---
->   arch/powerpc/Kconfig                    |   1 +
->   arch/powerpc/include/asm/entry-common.h |  93 ++---
->   arch/powerpc/include/asm/interrupt.h    | 492 +++---------------------
->   arch/powerpc/kernel/interrupt.c         |   9 +-
->   arch/powerpc/kernel/interrupt_64.S      |   2 -
->   5 files changed, 92 insertions(+), 505 deletions(-)
+> On Mon, Sep 15, 2025 at 3:35 AM Peter Zijlstra <peterz@infradead.org> wrote:
+>>
+>> On Mon, Sep 15, 2025 at 11:26:09AM +0100, Will Deacon wrote:
+>>
+>>>    | If all CPUs are hard locked up at the same time the buddy system
+>>>    | can't detect it.
+>>>
+>>> Ok, so why is that limitation acceptable? It looks to me like you're
+>>> removing useful functionality.
+>>
+>> Yeah, this. I've run into this case waaay too many times to think it
+>> reasonable to remove the perf/NMI based lockup detector.
 > 
-								\
-> diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
-> index f53d432f60870..7bb8a31b24ea7 100644
-> --- a/arch/powerpc/kernel/interrupt.c
-> +++ b/arch/powerpc/kernel/interrupt.c
-> @@ -297,13 +297,8 @@ notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs)
->   		/* Returning to a kernel context with local irqs enabled. */
->   		WARN_ON_ONCE(!(regs->msr & MSR_EE));
->   again:
-> -		if (need_irq_preemption()) {
-> -			/* Return to preemptible kernel context */
-> -			if (unlikely(read_thread_flags() & _TIF_NEED_RESCHED)) {
-> -				if (preempt_count() == 0)
-> -					preempt_schedule_irq();
-> -			}
-> -		}
-> +		if (need_irq_preemption())
-> +			irqentry_exit_cond_resched();
+> I am a bit curious how this comes to be in cases where you've seen it.
+> What causes all CPUs to be stuck looping all with interrupts disabled
+> (but still able to execute NMIs)? Certainly one can come up with a
+> synthetic way to make that happen, but I would imagine it to be
+> exceedingly rare in real life. Maybe all CPUs are deadlocked waiting
+> on spinlocks or something? There shouldn't be a lot of other reasons
+> that all CPUs should be stuck indefinitely with interrupts disabled...
+> If that's what's happening, (just spitballing) I wonder if hooking
+> into the slowpath of spinlocks to look for lockups would help? Maybe
+> every 10000 failures to acquire the spinlock we check for a lockup?
+> Obviously you could still come up with synthetic ways to make a
+> non-caught watchdog, but hopefully in those types of cases we can at
+> least reset the device with a hardware watchdog?
+> 
+> Overall the issue is that it's really awkward to have both types of
+> lockup detectors, especially since you've got to pick at compile time.
+> The perf lockup detector has a pile of things that make it pretty
+> awkward and it seems like people have been toward the buddy detector
+> because of this...
+> 
+> -Doug
 
-irqentry_exit_cond_resched is also called in irqentry_exit. It would be 
-better if we can find ways to avoid calling it again.
+Should we support both modularization and changing the backend after 
+boot, so that the user has the choice?
 
-I see a loop here. But comment says it is not enabling irq again. so the 
-loop is bounded. So might be okay to remove cond_resched here. do run
-preemptirq, irq tracers to ensure that is case.
-
-Also, what is this "soft_interrupts"?
-
->   
->   		check_return_regs_valid(regs);
->   
-> diff --git a/arch/powerpc/kernel/interrupt_64.S b/arch/powerpc/kernel/interrupt_64.S
-> index 1ad059a9e2fef..6aa88fe91fb6a 100644
-> --- a/arch/powerpc/kernel/interrupt_64.S
-> +++ b/arch/powerpc/kernel/interrupt_64.S
-> @@ -418,8 +418,6 @@ _ASM_NOKPROBE_SYMBOL(interrupt_return_\srr\())
->   	beq	interrupt_return_\srr\()_kernel
->   interrupt_return_\srr\()_user: /* make backtraces match the _kernel variant */
->   _ASM_NOKPROBE_SYMBOL(interrupt_return_\srr\()_user)
-> -	addi	r3,r1,STACK_INT_FRAME_REGS
-> -	bl	CFUNC(interrupt_exit_user_prepare)
->   #ifndef CONFIG_INTERRUPT_SANITIZE_REGISTERS
->   	cmpdi	r3,0
->   	bne-	.Lrestore_nvgprs_\srr
-
+-- 
+Jinchao
 
