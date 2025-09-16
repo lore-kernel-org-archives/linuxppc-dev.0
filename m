@@ -1,79 +1,48 @@
-Return-Path: <linuxppc-dev+bounces-12290-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12291-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4EBACAC598
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Sep 2025 15:21:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 259FECAC598
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Sep 2025 15:42:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cR5GJ2brkz30PF;
-	Wed, 17 Sep 2025 01:21:28 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::335"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758003515;
-	cv=none; b=agY5F+B+0ytEABaws8hQO4DTwcgrP5GNOqBad6a7zxJhLBhULLimCtEr2Hf9thozOoNhhF/6LSZmTsDMlTq00ryzvCsv+VaIx/q5zMeEECE3JrFxianNLeyfBqgVOFhtFZIqNNV/BRo/lVE3fdDAnZhxqF4XPoHCUnxROsKaami4mY+s07q8QqSBfMGLd3Ydu67PhxeVqgpYau/1FPT7ykDil9t/CXSTTYvHTH1RfUPV+NuB+FXfcLLNBXy4H642bf6iFN8Wkpt4KrDB+OLP4VoZhcPiHrzorXWu939rGBJjM43Jsl61X2J/hO7huPqegKzu2FnOgmlX7YLangzALw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cR5kK4rh6z300F;
+	Wed, 17 Sep 2025 01:42:17 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758037337;
+	cv=none; b=C80YuXJz83r7+7GqCDx7bx9kxyr3z7mRt6SAYkqEj5MTeEvKgW5d7ORAgel7b0UoiWDIa7hrzsZpjYhD2Tj/qEcR4t0ozBpr5768t1B1pIR2ol6BosryCKVx6gMteCReWZQToMrkvL8B2fCWpOzqEWM5SQ/SPky3WGDY7omxFKQ/rDrblsI7k28thxMfEXPOWlW3Humrus3fkKQhvCTYesfqzUMfcYHEShWt/4Gavww2YbmXCi50dFu7HbFwoCfTd2qPl7Qk0vo0W+lr8MbbMHyqYlB7KiFg4xihCfXybaYy/TCCA8mb5gnR/O7HMiB9iqIgJD11nrpXFHf/itcnbg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758003515; c=relaxed/relaxed;
-	bh=yE36FkE2n6Nf6sdtAOUC4xWShp56TIuhQU2XNORUnm0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jmnYC7fFwp7DFNt+8EjJGhZOR5/c6mv13OkoMWyXnV67Bmw3UJM4gAi8b1lP8t7d0FLll8Fb2LdfBracXvQzS5ij7mvssDqD1PFp4lggEfnH4SzBQ7QDrmNToEF6RNOEbOpUf/scfIcYWZTEV/A+DKz3194989zDM8pCXqhDPdXgit5Xb7kbO6tGT8+qTwtaEL2YaDDA8U41F2hdy9gi9WvrRhNzxlOohQp94yel1JR7673zfxulxLZLcVtuQxGbM0755BKKroMc6F7MGl2MPpztpadELSnC265vMuqq6sH1HfWEez/jj7ZOOjb8Wnh8qdLBcFH1dfES9HQWL23rgA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Wpx2y5PX; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::335; helo=mail-wm1-x335.google.com; envelope-from=antonio.feijoo@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Wpx2y5PX;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::335; helo=mail-wm1-x335.google.com; envelope-from=antonio.feijoo@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x335.google.com (mail-wm1-x335.google.com [IPv6:2a00:1450:4864:20::335])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cQsCt3hpBz2yrF
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 16:18:33 +1000 (AEST)
-Received: by mail-wm1-x335.google.com with SMTP id 5b1f17b1804b1-45ddc7d5731so35185325e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Sep 2025 23:18:33 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1758003508; x=1758608308; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=yE36FkE2n6Nf6sdtAOUC4xWShp56TIuhQU2XNORUnm0=;
-        b=Wpx2y5PXB27BCiwKPJp9tiMlbqwWTHXAh2y1wKqM97+BubrVlk+UUzAlBd2Uw5jMA5
-         rio/kAj9bHm3ilIoaIrICzH82zupzLIcvRtcZbBnmDv6bCB8Vy5BrxdksoyxEAFvT1Ta
-         6Fwh5RZOBzSjly5ida/YdE0OQ0Lrxawf579KzIoZZlBQykBdXLOs/stNzGkgpsM/zZsW
-         Mrb6U+5+1U88nLb6LV3R3HQM6aNyT2xsBjtQ/A/g2P6lOfUXSVFi3a2IhM7ORhF+BUb1
-         6/Prp/kP/IS2+AkxOREf+1EefZTAEgBCD+SnkhKopQNDvz1TSX6r+nVE0EOPnMco21he
-         pRrQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758003508; x=1758608308;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=yE36FkE2n6Nf6sdtAOUC4xWShp56TIuhQU2XNORUnm0=;
-        b=wFtBpIqcf/Kl8aafZIXdSFrmECWBghS3bK6Xda99QDX1FTd3CshAlSvor1QHWDYBdi
-         7HzaXAhNcJ7SJzDLk/BsBPMBYzFV8R0Qc6kAfld/IOs5YxE10IRedwwfiXM1T9WAd5vE
-         t5BrMG/5Wx45rZjTVIVERBzgNjnPsJ/UO8aBhvI/YrAwxEs4aXiKvOHQkICHqMV2fA8X
-         MpvvNn/vSE/miwUBB8kkMUA8z6QhZCeBXw+tOfyR7wMasr//mR/szxfZ76h26ROIRixC
-         IH7NZPNsZuY0O9r9E3L1s60aVCa8epPso8E5xAyPYipjgXVMun9CC4U4f91Knc97ndyK
-         R+Wg==
-X-Forwarded-Encrypted: i=1; AJvYcCWa/yy2LXLJEv2zPcY2vgIm2owpb0w4WGgkFsIsf/XTfkroXWfMkthkE22WXE+uGqKPYuZMDg8TQ/wqoLE=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyzgfhyQkSKlgylYcZaHt3sN/VvvZOY2l1LTjtrpC41AbdSwGOv
-	dkEzRXTCq/Ljf2Qdzm4/3HBVluUoLtdRy7XRk9eMQb7Wowp9nH1PtefxwY+S9hUrCSDktPBxwdr
-	s/Hvg
-X-Gm-Gg: ASbGncsrNKRQkXZxrOxvQrVamEMttyOssf2MwAwYYnRSftmPOuNJpbB2biBTyqmLmz1
-	jJq6xiJ+FUS2EZLEa9tQ8GrD/lyZQVoB2dG07R1ngERjuCaYjWnJEJ9+WIxI79osFgrz2g7KWjY
-	IoXxT208W4J2yvpE6WkS3ODg6Y8COz99TJ1yooIbSXHFStdhm/e1E3fxNp4dEsJzcH7J8YYNsCz
-	/CDSvFJ6IpwOV+sUigRdPQJKodieF82PmF1yuXTe71zTg19kUcx/dowzKowIZwRK5N9NA0wqdUJ
-	dROHA+F7On/SRk/nyVUQ4OwV4RBWTvPebn5MaXHU9+UizjQzTPfmZlAxJH5l/hIYGBTeBKXf1cx
-	yJ/g8QkV1o4oez5BNit5qMfUpr7nJ8rjF
-X-Google-Smtp-Source: AGHT+IGcaZaJsKjIbaiVHIrRn4D20wudJAA8cvj0MPlUEtXe2fB7JX4ecViL1+EV5ZvPuLWEqJHr3w==
-X-Received: by 2002:a05:600c:4454:b0:45b:97d9:4127 with SMTP id 5b1f17b1804b1-45f211e53femr132015985e9.1.1758003508477;
-        Mon, 15 Sep 2025 23:18:28 -0700 (PDT)
-Received: from [192.168.68.105] ([91.116.119.58])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-45e016b5cbcsm211728785e9.11.2025.09.15.23.18.27
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 15 Sep 2025 23:18:28 -0700 (PDT)
-Message-ID: <a6169ca9-51b5-4ac7-99c9-e8be695d831c@suse.com>
-Date: Tue, 16 Sep 2025 08:18:26 +0200
+	t=1758037337; c=relaxed/relaxed;
+	bh=H+g/7Jbkf5vwP8J72528bcpP20mfz7LBE7e2465Pz74=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=jwiwtGKo/rOyM/cN4KIVVuoXSR84Jk1LK1Ych6rF3CfMdv3j8hVD73bis97TXG/DPiy17l5Fg7L4yQn6mwBTGoVPNOGNb9+vOdHF7XOBpKEsGWBGeO227VA42I9+6WdZjmrz6fPh3sczJB2tARebTZWeuXCMHoS5euUlrTaGY+QQCr10RLBH1tF45si4Swk6sIYytBa3Ddf97rfrvlJTML1d01+pPmJK5KST9UXES6WeSvObyv5faD8CuOoMFHcT4Fx6eaCyduQjnr6iie/o0j505x7zZDM88iHEIMhoEYd8DQt347i813ajiH5cRd1Njfizlxyj138k0qmtZplXmQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
+Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cR5kG0GyJz2yVP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2025 01:42:13 +1000 (AEST)
+Received: from gate.crashing.org (localhost [127.0.0.1])
+	by gate.crashing.org (8.18.1/8.18.1/Debian-2) with ESMTP id 58GFfn80294667;
+	Tue, 16 Sep 2025 10:41:49 -0500
+Received: (from segher@localhost)
+	by gate.crashing.org (8.18.1/8.18.1/Submit) id 58GFfmi4294661;
+	Tue, 16 Sep 2025 10:41:48 -0500
+X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
+Date: Tue, 16 Sep 2025 10:41:48 -0500
+From: Segher Boessenkool <segher@kernel.crashing.org>
+To: Ash Logan <ash@heyquark.com>
+Cc: arnd@arndb.de, christophe.leroy@csgroup.eu,
+        "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
+        "linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+        officialTechflashYT@gmail.com, AWilcox@wilcox-tech.com,
+        Michael Ellerman <mpe@ellerman.id.au>
+Subject: Re: 32-bit HIGHMEM and game console downstreams
+Message-ID: <aMmFPCwU-mVxBbsv@gate>
+References: <3e8cb683-a084-4847-8f69-e1f4d9125c45@heyquark.com>
+ <aMbNwBrxtBSPl8NQ@gate>
+ <95d176d1-e1be-4594-91bd-caf0d68fd532@heyquark.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,56 +56,108 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/2] powerpc/boot: Add missing compression methods to
- usage
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-References: <20250915153114.40578-1-antonio.feijoo@suse.com>
-Content-Language: en-US
-From: Antonio Feijoo <antonio.feijoo@suse.com>
-In-Reply-To: <20250915153114.40578-1-antonio.feijoo@suse.com>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <95d176d1-e1be-4594-91bd-caf0d68fd532@heyquark.com>
 
-Error on the subject, I'll resend the patch.
-
-On 15/09/2025 17.31, Antonio Alvarez Feijoo wrote:
-> lzma and lzo are also supported.
+On Tue, Sep 16, 2025 at 12:10:14PM +1000, Ash Logan wrote:
+> On 15/9/25 00:14, Segher Boessenkool wrote:
+> > On Sat, Sep 13, 2025 at 08:53:08PM +1000, Ash Logan wrote:
+> > > Wii (2006)
+> > > - 1x PowerPC 750CL "Broadway" @ 729MHz
+> > > - 24MB "MEM1" + 64MB "MEM2" (non-contiguous - MEM2 starts 256MiB in)
+> > > - Kernel 4.19 (+ CIP patchset), dev has been working on forward-porting all
+> > > the drivers one major version at a time (he's currently up to 5.15 last I
+> > > checked) + limited upstream support (hardware bringup, UART, not many
+> > > peripherals)
+> > 
+> > There *aren't* many peripherals, so that is quite okay :-)
 > 
-> Signed-off-by: Antonio Alvarez Feijoo <antonio.feijoo@suse.com>
-> ---
->  arch/powerpc/boot/wrapper | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/wrapper b/arch/powerpc/boot/wrapper
-> index 3d8dc822282a..50607bc47d05 100755
-> --- a/arch/powerpc/boot/wrapper
-> +++ b/arch/powerpc/boot/wrapper
-> @@ -21,7 +21,7 @@
->  #		(default ./arch/powerpc/boot)
->  # -W dir	specify working directory for temporary files (default .)
->  # -z		use gzip (legacy)
-> -# -Z zsuffix    compression to use (gz, xz or none)
-> +# -Z zsuffix    compression to use (gz, xz, lzma, lzo or none)
->  
->  # Stop execution if any command fails
->  set -e
-> @@ -69,7 +69,7 @@ usage() {
->      echo 'Usage: wrapper [-o output] [-p platform] [-i initrd]' >&2
->      echo '       [-d devtree] [-s tree.dts] [-e esm_blob]' >&2
->      echo '       [-c] [-C cross-prefix] [-D datadir] [-W workingdir]' >&2
-> -    echo '       [-Z (gz|xz|none)] [--no-compression] [vmlinux]' >&2
-> +    echo '       [-Z (gz|xz|lzma|lzo|none)] [--no-compression] [vmlinux]' >&2
->      exit 1
->  }
->  
+> That's true. The lack of a UART or similar does make USB kinda essential for
+> an input device in my opinion, though getting it working is Complicated for
+> DMA reasons. (I think this is the main thing holding the downstream back in
+> their rebasing efforts)
 
--- 
-Antonio Ãlvarez Feijoo
-System Boot and Init
-SUSE
+We often threw something on the EXI bus, either something that directly
+converts to USB (like the EXIUSB board we did), or anything goes really,
+it is a really simple bus so an FPGA or a CPLD or XS1 or even pure
+software works.
+
+> > > Wii U (2012)
+> > > - 3x PowerPC 750CL "Espresso" @ 1.2GHz
+> > 
+> > It is not a 750CL.  We never found out what the model # is, if indeed it
+> > has one!  But the CPU cores are compatible to the Broadway, sure, there
+> > even are configuration bits to make it do the bugs that were fixed in
+> > Espresso!  (Just like Broadway can emulate a Gekko, 750CXe, the GCN
+> > thing).
+> > 
+> > It does have its own PVR value of course, that is something at least :-)
+> > 
+> > (Espresso is one chip btw, with three mostly symmetrical cores).
+> 
+> Yeah, I was just going for the closest "public" chip :) I think the PVR is
+> closer to the CXe too, but all the HIDs, missing THRM, missing frequency
+> scaling - it's very CL-y...
+
+The 750CX and 750CXe (and so, Gekko as well) have a PVN of 8, it is
+just a 750 after all.  750FX has 0x7000 though, and 750GX has 0x7002.
+Espresso is 0x7001, maybe it is somwhat inbetween FX and GX wrt
+implementation process or the like.
+
+The numbering is a bit of a mess, yeah :-)
+
+> > > - 32MB "MEM1" + 2GB "MEM2" (also starts 256MiB in) + various small SRAMs
+> > 
+> > It has 32MB MEM1?  Huh.  Why?
+> 
+> New generation upgrade? MEM1 does get used for Wii U software too, usually
+> to keep framebuffers and other 3D things, so I guess they wanted just a
+> little more for all the 1080p buffers the new console juggles.
+
+Ah, it appears the MEM1 is not implemented as 1T-SRAM anymore, but just
+is a hunk of off-the-shelf DDR2 (or GDDR3, or DDR3, or whatever they
+used; it doesn't matter so much).  Those come in power-of-two sizes
+mostly :-)
+
+There only is 3MB of 1T on WiiU, for the graphics memory.
+
+> > > Distribution-wise, we're supported by ArchPOWER [5], Adélie Linux [6], and
+> > > other distros. The Wii U's Espresso has CPU errata requiring a patched
+> > > compiler,
+> > 
+> > Can you remind me what that is about?  It shouldn't be too hard to
+> > include it in mainline GCC.
+> 
+> The short version is "every stwcx. should be prefaced with a dcbst" -
+> something to do with bus snooping (store-with-flush, store-with-kill) I'd
+> guess. I have some GCC patches drafted (activated by -mcpu=espresso) here:
+> https://gitlab.com/linux-wiiu/smp-patches
+
+Ah cool.  I'm maintainer for PowerPC GCC these days, I'll be happy to
+work with whoever wants to do a good patch (not this one, it is not a
+different CPU type, we shouldn't pretend it is, the actual patch can be
+just a handful of lines).
+
+> I'm impressed by how often IBM stuffed up atomics during this generation.
+> The Xbox 360 has an extremely similar issue despite being an entirely
+> different lineage of chip.
+
+It is not very similar at all.  Both have some issues related to
+(off-core) coherency stuff, something for which there were no good
+testing frameworks in that era.  And that is where the similarity ends.
+
+This needs full-system emulation to test well, probably interpreting
+the whole VHDL, for all cores and the caches and the fabric.  Or special
+ASICs to implement the whole thing at a hundred of a percent of real
+speed.
+
+> No surprise the console vendors all went to x86
+> and ARM right after, I suppose.
+
+Both of which had similar (but even worse) bugs, yeah :-)
+
+
+Segher
 
