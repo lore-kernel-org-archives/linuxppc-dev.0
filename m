@@ -1,72 +1,108 @@
-Return-Path: <linuxppc-dev+bounces-12438-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12439-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0584ACAC597
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Sep 2025 04:06:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50601CAC597
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Sep 2025 04:25:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cTG5H4dPKz2yyx;
-	Sat, 20 Sep 2025 14:06:11 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b32"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758340540;
-	cv=none; b=EGrRV6sxgpx8lJODDmn+z/K+Ns/raGTOoBfreF87Ss6orNq3laMdMrBjbRwBPdZRDcrrnl5E5TMWdPA5dXHQzolBquvdDqU2OoqpJuO/qNoLAaUChcwQokokst9+p9wwdnnIsvt55My+I3PU2+sav7jF4TbSmUHxjPOg26P+GJ0V3Fem4OAVLAkL3+00+xteqfUMSEC984Pc+RN527Vob1dEhjCdP+zD2DnAAHrzihhCiKaM+drh7hsWq3yYy0uS30YfENnewe7lx4Df0DDBsEiCqG9ioJK/5YqvO09TnMu77BYZWPqsy52ip8hv89E6EHICwf0bXCQP30FC8RqTIA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cTGWM0GdPz2yyx;
+	Sat, 20 Sep 2025 14:25:19 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42d"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758089654;
+	cv=none; b=nwyTYZFKc2negHEChqFJbZWUIaimuTd/R6EEceE0V9GVt0ExgfknF2EzHYHAb4VinJmE52iNZSF43D47Qqxe0oLUW8DnYvyA1NoXls+n/1NbWMSQKBbNq20Qcjm7qek/JMQ8i6Q736m8wyVvlPxMw/MC9KDpdAdQyI55Bt23pcvxp8CSrldHYXVPpy+4QuVMvBRjNrfN0NEluUJR9KT1QTJZdWdx76BvYSrlmmKsot/Ecy1hd7/w2IiEz8eRANBnW170EU9cnauLLBfTUMdRMW6TBB6pcHjkS6CWDoxf1VzA5x3uhaqyQK5LrTkkZ8vUG08Eiz3eRab6/ijePLiYrQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758340540; c=relaxed/relaxed;
-	bh=wLR5A4WVJygISPHG42IIvYb+LPD25B9I3WH7jC2e5xU=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=PSJVwmza/e4vf1KxY9JbtLReVC0ctE0HkQIrKgnwYem1nkoFelwu++pMlq6HYi8JbB/glVicy63Tc2sPJ7LyYO0O3cAbzOTbdsm7TTMjSQ+8DLOGmYay1/B+rP/XfA1+xfP2H7FeII5YgEWb3NaZXlQGP2EC+RsWYKT9+C67v8+o+prYGfZ3r5AJ6MjQyDTghLpIzxIyfMb9rfLfMGWhs90sDfTt9TGtQo8vEmnel9Qg445s6YK6dCqlgtzO+UPxug4CHd2HcYZenz0bKAnci2dZJhBGgXfcVDvRJzuloa9sliEVQm4wvMbNCmG1S6sOxlU1+uccU+a1HT3JDtk7qQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=hj+KK0iF; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b32; helo=mail-yb1-xb32.google.com; envelope-from=safinaskar@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1758089654; c=relaxed/relaxed;
+	bh=FmzfgTfio2uU1BYpRua3Nqm7f01ztuczzsg9vKgt8Hk=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=cy48JHR3w52UBGiuC/WcSPdP6FqJTkAM8SrG9AuQlyCJUYqNrzPbTjQv6Mml5+5CbKFFSiCvcgwy6WtvfZZO5+Ec2kZB6KT9cRJOdEJCT5RFueCAald+eEAle+OZTZj/9XZrwfc/YfojAFaSNXMoitfJWmT5yLMEFq7UI9aMX/ua40spBMSUw04IvcYj5f6q+2p/Dg74ele9qa/tP3Ef+TuoZPNn0Ud2CalomB0yV3UT09DX5b/5vQg0mb4bf3UNIaK+fs9FkE62SpoZKLTw5t2noqkLSgZrprMyLyj42+bYhwVOH5ug8ThtIWazlmDcPqiW/GZiCDSeVBRpTiGGRw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=UtvlO8dL; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=wangjinchao600@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=hj+KK0iF;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=UtvlO8dL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b32; helo=mail-yb1-xb32.google.com; envelope-from=safinaskar@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yb1-xb32.google.com (mail-yb1-xb32.google.com [IPv6:2607:f8b0:4864:20::b32])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42d; helo=mail-pf1-x42d.google.com; envelope-from=wangjinchao600@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42d.google.com (mail-pf1-x42d.google.com [IPv6:2607:f8b0:4864:20::42d])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cTFs651JCz2xS9
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Sep 2025 13:55:37 +1000 (AEST)
-Received: by mail-yb1-xb32.google.com with SMTP id 3f1490d57ef6-ea63e86b79aso1890048276.2
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 20:55:37 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cRT4P6MNcz3cYJ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2025 16:14:12 +1000 (AEST)
+Received: by mail-pf1-x42d.google.com with SMTP id d2e1a72fcca58-772627dd50aso575913b3a.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Sep 2025 23:14:12 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1758340534; x=1758945334; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=wLR5A4WVJygISPHG42IIvYb+LPD25B9I3WH7jC2e5xU=;
-        b=hj+KK0iFIbXfruY5ZrqxsUWH2bFeFyJnszTLFNoj0heAM9WYMtj0AyRm03zXEJxpT7
-         4dcAG+k1sBg0j2C7wRkHhn8d1l70UQqLqUPir8uupuuzwMgjvD/vHqjAra26oVgDG45A
-         qN91c1k7iz2TVCgNZQDaCfv74+xJbjxyTCnkA0iW2FavMAtbn8CAMHJT8FToiDVxHBuE
-         eH8iNTWnPz3qlUVUPaguTu9SsPcvlCwvCbz3S7VtDpUKR4NgtjDkOyDPTsAg82xFREeH
-         3nSU+ALI4CIaOOEtkA6FttzHxdW9J5/3wsnrgWSfpBX5jXUhHiyqD2EhTLwOAYmgMXoH
-         5xSg==
+        d=gmail.com; s=20230601; t=1758089651; x=1758694451; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=FmzfgTfio2uU1BYpRua3Nqm7f01ztuczzsg9vKgt8Hk=;
+        b=UtvlO8dLtz1EHZ3+uQGQyqGA23uRjxJ2P88aoa/5ENI7mrdyJrR8mRxMXqqJRpajBQ
+         LIhzHHT+87DAqZ2ci5bz+zfCP02M14lODOpAETk1rU02ap5pWUo0hsUSVomkOeaDEEHD
+         cVChVjIrB0Ro0/g5UAevw2WMzWO370MbS5/Pe9V5sNYZi3rWBEJIEeXpLfJ+Dr7NOioJ
+         BFFVTLaPBzXPwPVJOjgDR8WIujc7jM+gNygzrgGD0sZuu8nw1r9lBQ6KDtCJhNFNV7cM
+         SNEJdnznxndFQHAAfwk3uBiZf5SwY8VYWyBXyBm0Zul6UNrO9a7Uab6/HWJxY4kmP5Zp
+         c7dg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758340534; x=1758945334;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=wLR5A4WVJygISPHG42IIvYb+LPD25B9I3WH7jC2e5xU=;
-        b=WczpLq9JtOxVhhOzmf3zQ9nxPWcBsRf3lw2aACr3WylcwFmMH2knT5uuXjwXzosbg9
-         ihWVa1McjM9QSYpqj6izQu0nP11mC7pITT/ADCgsHMl7AgnI0Q7raHQQlCbPsw/dFRMr
-         Q3FhF5QYdI3LISOCeScNsvW+DnAukPU8WcpbdzlP5zJGXVbO1/Fc9Zivn1LuQv6KENmv
-         QNvmtnsz9ccgPIQNB33IRkgkpLIhZF/hjCvlhv6erYxGsYaWr/2X/1izQrYta2X/ydHt
-         G+ERdkfFlv2cob72GO+W0t88U+UA5VBGu/nLvK+yA39hjmaH+IaLiFbNHZHTcUctsOtC
-         8+Bg==
-X-Forwarded-Encrypted: i=1; AJvYcCV3+O86dNTwEn1ppf2edxkKrW436jk9+ULIzA7lFnPFxk3j++IIKmqP3Wp1/jdsDTm8OySDvnQUd0cdzrY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx3pMtoX0dO7Uh8L64leQFW/BFSriwi7gpkINOIJscGoVhsYrNA
-	CxBbS/3wvUXo/GWnStRgJ/RdDt9e6KSL2e6hL+mI4z4T+hdkDTdXbNg/2LnO+eLIpjFKLfq2/6v
-	jTKCr/QYhtH9s911+Z1160frGjRqTXMQ=
-X-Gm-Gg: ASbGncugGB62BMUDP1rBy2vLGC8q1rHRieFiEz6j4OalR2jB+RYVhXzSGomk3xiJdBE
-	XJrfmPvXShsq28PbnPdyL0OSj/RiWLStt3TFwCIjKxqPmw/x1rcUcxe0RvEWOEH0WIf/actNHKT
-	5rzaMbKU27nbpdLlpiMQbo6GkZT4xjSIbTNIAWTLJkmj8R05OEv+1+d7q0zb/K9hmLCgttMBYM+
-	Dy1Fnc=
-X-Google-Smtp-Source: AGHT+IH7cxRQcDAWrx6iopGK0fgAvvotX/SwRt/T/KElvH4XQULrd96czgOrVv1CSvA0vDpbRNCMKcVlhfdowxEBryU=
-X-Received: by 2002:a53:b3c5:0:b0:622:4818:ce38 with SMTP id
- 956f58d0204a3-6347f610c7emr3546092d50.37.1758340534336; Fri, 19 Sep 2025
- 20:55:34 -0700 (PDT)
+        d=1e100.net; s=20230601; t=1758089651; x=1758694451;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=FmzfgTfio2uU1BYpRua3Nqm7f01ztuczzsg9vKgt8Hk=;
+        b=wSMZCSqJIqKQcUVNVE1LGEe3SvoxNsb84ICuRrp7Pl/lCNIlpxjFShcrkDkIahbfGJ
+         wO9hpF+xECym/bN3/g9VNcqThY6Qk+W9GHf6NS+i/vpGa1AEnLUGH43teJOBvYU2zIxY
+         fgGxxeJlHWU6o36toc3Tr+PS2erpgnvOrbNVkiaJ2nKulFTEZuxONyJklN0MHADt1A7v
+         uX2vTFS78GW9u2qjIv0VXYNuEO8wPCrZYBQ+BNKeU+gK6HzqFRGAoCgoWu/Ug0tEt5Si
+         blyKG2RCm1c47tZel204YNdODEZTV8wXNtyiAIEZAPvoVINOnffYhWKgTvfJlIkKLIeP
+         cnCg==
+X-Forwarded-Encrypted: i=1; AJvYcCWBKHcsggrdlC5twnjACR10fu8gDpVeOe8sSkYFWNJM0SE8P3f8l5BXqQGSRvK6N7VUgDo2nhQ5WQUOj0k=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxANSIfiVjYorLSF3JDJGckuu9uoB2WrYFAzkf0UkdL139UOEfS
+	s69I7SyV8Qx2z7rDbyoceC4GuVH7aRjiznFeJaM7ZOZaGR/8KbJuQTXK
+X-Gm-Gg: ASbGnctORe6l/kUz76NHGzlzCSFIbRUtOAR9Krxly/67t0ORCISPKs+3mqHRYR7X8at
+	DpiCrHx8tu0zmmbE7voju/i5tl+fuVWAsCZ5/mavVGgtIpdp6DmEerZtIv3oZ4VeU33sfLGTlDt
+	AIsNL90J59Yw2J+RAKcNUQsYcRFDcs8Fp5hMRLTUX//QJME8UVx0B1tkFK4GM+RVOpyk0ZmZotW
+	b0Su8sQhU7evNhyW7UU7+zX7JhrFKEtdkXOBkPHHU7hIcwNiyKjVAckXDeEBfp98KkaVAF63Otc
+	/mbrGBALCA/HmHgTc8dm+nYctH3i5sh+ZZeDiA7wxefK6mrkV55GVZoW2HKkU6O33bDwiuHyH+k
+	5u+a3vB9qR/Ziuq2QSXhgKuRKyyVksr+Wac9cb8M7
+X-Google-Smtp-Source: AGHT+IFbOOUPuUp71MZLUCXJnIvNlVqkzTniqbE7azWA2KDlmn7NJjUtb/+FLQYp6JRxCAhLg6/vEQ==
+X-Received: by 2002:a05:6a20:3d10:b0:243:b089:9fbe with SMTP id adf61e73a8af0-26701102125mr7170178637.31.1758089650568;
+        Tue, 16 Sep 2025 23:14:10 -0700 (PDT)
+Received: from localhost ([146.19.163.62])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-b54b169f2edsm12638506a12.19.2025.09.16.23.14.09
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 16 Sep 2025 23:14:10 -0700 (PDT)
+Date: Wed, 17 Sep 2025 14:14:02 +0800
+From: Jinchao Wang <wangjinchao600@gmail.com>
+To: Namhyung Kim <namhyung@kernel.org>
+Cc: Ian Rogers <irogers@google.com>, Doug Anderson <dianders@chromium.org>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Will Deacon <will@kernel.org>, Yunhui Cui <cuiyunhui@bytedance.com>,
+	akpm@linux-foundation.org, catalin.marinas@arm.com,
+	maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+	christophe.leroy@csgroup.eu, tglx@linutronix.de, mingo@redhat.com,
+	bp@alien8.de, dave.hansen@linux.intel.com, hpa@zytor.com,
+	acme@kernel.org, mark.rutland@arm.com,
+	alexander.shishkin@linux.intel.com, jolsa@kernel.org,
+	adrian.hunter@intel.com, kan.liang@linux.intel.com, kees@kernel.org,
+	masahiroy@kernel.org, aliceryhl@google.com, ojeda@kernel.org,
+	thomas.weissschuh@linutronix.de, xur@google.com,
+	ruanjinjie@huawei.com, gshan@redhat.com, maz@kernel.org,
+	suzuki.poulose@arm.com, zhanjie9@hisilicon.com,
+	yangyicong@hisilicon.com, gautam@linux.ibm.com, arnd@arndb.de,
+	zhao.xichao@vivo.com, rppt@kernel.org, lihuafei1@huawei.com,
+	coxu@redhat.com, jpoimboe@kernel.org, yaozhenguo1@gmail.com,
+	luogengkun@huaweicloud.com, max.kellermann@ionos.com, tj@kernel.org,
+	yury.norov@gmail.com, thorsten.blum@linux.dev, x86@kernel.org,
+	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org, linux-perf-users@vger.kernel.org
+Subject: Re: [RFC PATCH V1] watchdog: Add boot-time selection for hard lockup
+ detector
+Message-ID: <aMpRqlDXXOR5qYFd@mdev>
+References: <20250916145122.416128-1-wangjinchao600@gmail.com>
+ <CAP-5=fWWOQ-6SWiNVBvb5mCofe0kZUURG_bm0PDsVFWqwDwrXg@mail.gmail.com>
+ <aMoTOXIKBYVTj7PV@mdev>
+ <CAP-5=fX7NJmBjd1v5y4xCa0Ce5rNZ8Dqg0LXd12gPrdEQCERVA@mail.gmail.com>
+ <aMpIsqcgpOH1AObN@z2>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,61 +116,98 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250918152830.438554-1-nschichan@freebox.fr> <20250918195806.6337-1-safinaskar@gmail.com>
- <CAHNNwZAzecVcJXZmycX063-=p-M5jVkfStfgYVKJruOFo7y9zg@mail.gmail.com>
-In-Reply-To: <CAHNNwZAzecVcJXZmycX063-=p-M5jVkfStfgYVKJruOFo7y9zg@mail.gmail.com>
-From: Askar Safin <safinaskar@gmail.com>
-Date: Sat, 20 Sep 2025 06:54:58 +0300
-X-Gm-Features: AS18NWCqg0xtU5KiNe17DWjmiPCEbBI_FSj5NCOyDGZFj_7oFaRqSu7O_vUKCrA
-Message-ID: <CAPnZJGDwETQVVURezSRxZB8ZAwBETQ5fwbXyeMpfDLuLW4rVdg@mail.gmail.com>
-Subject: Re: [PATCH RESEND 00/62] initrd: remove classic initrd support
-To: Nicolas Schichan <nschichan@freebox.fr>
-Cc: akpm@linux-foundation.org, andy.shevchenko@gmail.com, axboe@kernel.dk, 
-	brauner@kernel.org, cyphar@cyphar.com, devicetree@vger.kernel.org, 
-	ecurtin@redhat.com, email2tema@gmail.com, graf@amazon.com, 
-	gregkh@linuxfoundation.org, hca@linux.ibm.com, hch@lst.de, 
-	hsiangkao@linux.alibaba.com, initramfs@vger.kernel.org, jack@suse.cz, 
-	julian.stecklina@cyberus-technology.de, kees@kernel.org, 
-	linux-acpi@vger.kernel.org, linux-alpha@vger.kernel.org, 
-	linux-api@vger.kernel.org, linux-arch@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, 
-	linux-csky@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linux-efi@vger.kernel.org, linux-ext4@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
-	linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
-	linux-snps-arc@lists.infradead.org, linux-um@lists.infradead.org, 
-	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, mcgrof@kernel.org, 
-	mingo@redhat.com, monstr@monstr.eu, mzxreary@0pointer.de, 
-	patches@lists.linux.dev, rob@landley.net, sparclinux@vger.kernel.org, 
-	thomas.weissschuh@linutronix.de, thorsten.blum@linux.dev, 
-	torvalds@linux-foundation.org, tytso@mit.edu, viro@zeniv.linux.org.uk, 
-	x86@kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <aMpIsqcgpOH1AObN@z2>
 
-On Fri, Sep 19, 2025 at 6:25=E2=80=AFPM Nicolas Schichan <nschichan@freebox=
-.fr> wrote:
-> Considering that the deprecation message didn't get displayed in some
-> configurations, maybe it's a bit early at the very least.
+On Tue, Sep 16, 2025 at 10:35:46PM -0700, Namhyung Kim wrote:
+> Hello,
+> 
+> On Tue, Sep 16, 2025 at 10:13:12PM -0700, Ian Rogers wrote:
+> > On Tue, Sep 16, 2025 at 6:47 PM Jinchao Wang <wangjinchao600@gmail.com> wrote:
+> > >
+> > > On Tue, Sep 16, 2025 at 05:03:48PM -0700, Ian Rogers wrote:
+> > > > On Tue, Sep 16, 2025 at 7:51 AM Jinchao Wang <wangjinchao600@gmail.com> wrote:
+> > > > >
+> > > > > Currently, the hard lockup detector is selected at compile time via
+> > > > > Kconfig, which requires a kernel rebuild to switch implementations.
+> > > > > This is inflexible, especially on systems where a perf event may not
+> > > > > be available or may be needed for other tasks.
+> > > > >
+> > > > > This commit refactors the hard lockup detector to replace a rigid
+> > > > > compile-time choice with a flexible build-time and boot-time solution.
+> > > > > The patch supports building the kernel with either detector
+> > > > > independently, or with both. When both are built, a new boot parameter
+> > > > > `hardlockup_detector="perf|buddy"` allows the selection at boot time.
+> > > > > This is a more robust and user-friendly design.
+> > > > >
+> > > > > This patch is a follow-up to the discussion on the kernel mailing list
+> > > > > regarding the preference and future of the hard lockup detectors. It
+> > > > > implements a flexible solution that addresses the community's need to
+> > > > > select an appropriate detector at boot time.
+> > > > >
+> > > > > The core changes are:
+> > > > > - The `perf` and `buddy` watchdog implementations are separated into
+> > > > >   distinct functions (e.g., `watchdog_perf_hardlockup_enable`).
+> > > > > - Global function pointers are introduced (`watchdog_hardlockup_enable_ptr`)
+> > > > >   to serve as a single API for the entire feature.
+> > > > > - A new `hardlockup_detector=` boot parameter is added to allow the
+> > > > >   user to select the desired detector at boot time.
+> > > > > - The Kconfig options are simplified by removing the complex
+> > > > >   `HARDLOCKUP_DETECTOR_PREFER_BUDDY` and allowing both detectors to be
+> > > > >   built without mutual exclusion.
+> > > > > - The weak stubs are updated to call the new function pointers,
+> > > > >   centralizing the watchdog logic.
+> > > >
+> > > > What is the impact on  /proc/sys/kernel/nmi_watchdog ? Is that
+> > > > enabling and disabling whatever the boot time choice was? I'm not sure
+> > > > why this has to be a boot time option given the ability to configure
+> > > > via /proc/sys/kernel/nmi_watchdog.
+> > > The new hardlockup_detector boot parameter and the existing
+> > > /proc/sys/kernel/nmi_watchdog file serve different purposes.
+> > >
+> > > The boot parameter selects the type of hard lockup detector (perf or buddy).
+> > > This choice is made once at boot.
+> > >
+> > >  /proc/sys/kernel/nmi_watchdog, on the other hand, is only a simple on/off
+> > > switch for the currently selected detector. It does not change the detector's
+> > > type.
+> > 
+> > So the name "nmi_watchdog" for the buddy watchdog is wrong for fairly
+> > obvious naming reasons but also because we can't differentiate when a
+> > perf event has been taken or not - this impacts perf that is choosing
+> > not to group events in metrics because of it, reducing the metric's
+> > accuracy. We need an equivalent "buddy_watchdog" file to the
+> > "nmi_watchdog" file. If we have such a file then if I did "echo 1 >
+> > /proc/sys/kernel/nmi_watchdog" I'd expect the buddy watchdog to be
+> > disabled and the perf event one to be enabled. Similarly, if I did
+> > "echo 1 > /proc/sys/kernel/buddy_watchdog" then I would expect the
+> > perf event watchdog to be disabled and the buddy one enabled. If I did
+> >  "echo 0 > /proc/sys/kernel/nmi_watchdog; echo 0 >
+> > /proc/sys/kernel/buddy_watchdog" then I'd expect neither to be
+> > enabled. I don't see why choosing the type of watchdog implementation
+> > at boot time is particularly desirable. It seems sensible to default
+> > normal people to using the buddy watchdog (more perf events, power...)
+> > and  CONFIG_DEBUG_KERNEL type people to using the perf event one. As
+> > the "nmi_watchdog" file may be assumed to control the buddy watchdog,
+> > perhaps a compatibility option (where the "nmi_watchdog" file controls
+> > the buddy watchdog) is needed so that user code has time to migrate.
+> 
+> Sounds good to me.  For perf tools, it'd be great if we can have a run-
+> time check which watchdog is selected.
+Considering backward compatibility, I prefer to keep
+/proc/sys/kernel/nmi_watchdog and introduce a new file called
+/proc/sys/kernel/hardlockup_detector_type, which only shows the default string
+or the boot parameter.
 
-I changed my opinion.
-Breaking users, who did not see a deprecation message at all,
-is unfair.
-I will send a patchset soon, which will remove initrd codepath,
-which currently contains deprecation notice. And I will put
-deprecation notice to
-other codepath.
+The global str pointer hardlockup_detector_type was already introduced in the
+patch, so exposing it in a file is straightforward.
+> 
+> Thanks,
+> Namhyung
+> 
 
-Then in September 2026 I will fully remove initrd.
-
-> SMTP server I used wasn't authenticated to google, so all gmail
-> recipients were dropped. Hopefully this work better today.
-
-Yes, this time I got your email
-
---=20
-Askar Safin
+-- 
+Jinchao
 
