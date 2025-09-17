@@ -1,59 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-12306-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12307-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2427ECAC598
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Sep 2025 06:34:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B6FF0CAC598
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Sep 2025 09:00:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cRTWL6grGz3cgB;
-	Wed, 17 Sep 2025 16:34:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758090846;
-	cv=none; b=G4DnUmn1wHAAwq2PFYsDaSCLalcXiL29EB3CQcZJJVJI4ZwihuOT+dPFK4HUyisJcgp+irQrbiQSa7wax7fuAbv4sHv/BZcX61u59UxblGklAx2if5yZ4UyxSAtPTIB6aZDVKPC9+7m9RzpaCD1t6mqz96+818BASGJMwkILItCZkszidrolNLOHS9Rs6pKXs5r1j2hKVyj/toiFSf16cRbPqLBjAPhwjgSIAe55Rl8dzLBJgTIG8D1NwERXGcGtk3ZaZxjvUFtIWjXYWscrqmuw++rKHmRLdSEmK6Aml+wCbY4W1kn6cw1xEz5C5KmQ2Vy3VzkRDuLi6p6fKErUDA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cRXlj1zc2z3cYL;
+	Wed, 17 Sep 2025 19:00:01 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758099601;
+	cv=none; b=i7mABIoiquOFy/kygnOd4uXg3poFkrG+oufTwUGIfcTGMeeF8JTJAUI+kaqwF7CyEPDmBuwKQqzf7yg1f5fsC5x7PR5i+TvJTCjWg1VS19+MFjaCj9ZTYId3dFgZww3OlC3AqoLVPD7EWEOWEykIQ3tskfR4L7o2nvVaqVTkcS8NN8R1oW3tVZVZRsNIzJatkf+LNs3W6wdldQjfuRjv1bCPwBBh9jviklpA+3L+uKvnul37XTZQ+2RtRlu++pCOmlXSlfDjOqRLHTh2enAXamJQ20gJ+s/gi+j9TS4Aw49QyZF65eQcgtjQDLmwbiAL1Iv8uGwxsxtamqIbbG1jpQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758090846; c=relaxed/relaxed;
-	bh=l7cInLt2viFP86GcrWWMRNS3v9Fhvd3HCaJy6F6UZxk=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=PmO871jVD9ZoZt2gXCnMOigW4vfqzGkxhl2Dgj871wu+qaC67tu1Xm3w+QoZ6tMRDiYjJ7jO6Aldnxfo0dyw+vnMkix/aOSnNXvoaGGMttOzqMJnFx75fjz1e5hN5tlTVmT7zeObmdffj/+Jk4C+raxWqPi4bAiBUGMTRLYB2tO/iPPDC5bwFhhdue3bGphyLxO9y645ZNGNDAjdsagT6/al15pIVCenDP6CPf51tWITcfz4VhDtGjj4dhvO2Mh9+PL8lZ/lZw/jlfqeOc1Pwx4KrtfhyM7S7dVQZW8G63f4IFBDdar+uo2HW97MO3pQAqmS0mJsNW3fip1niJ64+Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=O3FmQx7P; dkim-atps=neutral; spf=pass (client-ip=115.124.30.101; helo=out30-101.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
+	t=1758099601; c=relaxed/relaxed;
+	bh=y9JuROOv1Z8bodf9acv20lw8Oh9qlIy+EEy+myOvzeU=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=NnMMaXXy+Jn8N3kseT4El+VEbX1HjoUVRFSH688046/FhyT9i2DRMglnMIuBP7acMFCTyC/ElRungDO45YbKYEX8L/7UCUHu3DC9NrJLzjH+XVVp8sJKr6ElkJSZ8rmEHHcu9U81lYl5cftYZMSbE5OE5IQu7auVfhx+hkL73dc6XI6KGb2VC6Po8kJUc7zEa2hPsw1ef1GFu5pEub+HMk1J7qCY3kbA7fR0m8M2MtKC6EfEkhUVUEozKeoHIUMvr/3PakOlCS+th7kqwiddKydgdozGBjmoYLgxrwL+5j2cEyFZKKJYx0UDj6gy5S5Ds80fUXU/t2GLE8IltPLsKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JpJZZ+3V; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tejas05@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=O3FmQx7P;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JpJZZ+3V;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.101; helo=out30-101.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-101.freemail.mail.aliyun.com (out30-101.freemail.mail.aliyun.com [115.124.30.101])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=tejas05@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cRTWH5VTWz3cQx
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2025 16:34:02 +1000 (AEST)
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1758090836; h=From:To:Subject:Date:Message-Id:MIME-Version;
-	bh=l7cInLt2viFP86GcrWWMRNS3v9Fhvd3HCaJy6F6UZxk=;
-	b=O3FmQx7PXpdQlcBNNOnsdbPY5u6UtAc6jnmuIVw14FwKU/LER1rFKNoIIqpiLMYyUGq+mrMtHLJPpzXU/eMgpP1VkcwysDN8cB/qcgxUisREO3YlzsjoB9ou+gBuVhWsKi3riSIohoQiwqyV/xtjDpLf1tHNrnX4nqHooYn03K4=
-Received: from localhost.localdomain(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0WoBL8KM_1758090835 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Wed, 17 Sep 2025 14:33:55 +0800
-From: Shuai Xue <xueshuai@linux.alibaba.com>
-To: bhelgaas@google.com,
-	mahesh@linux.ibm.com,
-	mani@kernel.org,
-	Jonathan.Cameron@huawei.com,
-	sathyanarayanan.kuppuswamy@linux.intel.com
-Cc: oohall@gmail.com,
-	xueshuai@linux.alibaba.com,
-	linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 2/3] PCI/DPC: Run recovery on device that detected the error
-Date: Wed, 17 Sep 2025 14:33:51 +0800
-Message-Id: <20250917063352.19429-3-xueshuai@linux.alibaba.com>
-X-Mailer: git-send-email 2.39.5 (Apple Git-154)
-In-Reply-To: <20250917063352.19429-1-xueshuai@linux.alibaba.com>
-References: <20250917063352.19429-1-xueshuai@linux.alibaba.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cRXlf4Gwpz304h
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Sep 2025 18:59:57 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58GLlspB011459;
+	Wed, 17 Sep 2025 08:59:45 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=y9JuRO
+	Ov1Z8bodf9acv20lw8Oh9qlIy+EEy+myOvzeU=; b=JpJZZ+3VG4bannOqaiaG1m
+	4giCkik1qNm+qk8TnCDuBtYuIvhEA/Aw2aUb7xdnM5LnD50L+FbFqpI41uaZikyx
+	AB0PAX3kyGZgdZQROlAKCq5yCcEOPZDbiovjzafRtbaB2lH4A5Fu9udOYmY7gj88
+	8bFa7uBmMlKA63Ri9IJHeASOxw5Dt3NnfClbBWLhKPUSNzUcq9nm5RTWk+HXn8n6
+	0NWOAk0Iz0Wl6wvZGkzSNkTQGQKE8sxdizP/I0h+OqZYKYKpk1Uz9Wl3mOXxXo2A
+	frTp0ftM4D2aiBzDHK8PN/eTcQynDNYcCBJDksBpf/TBdHPANGxqQdnR0wzPctlg
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 497g4j2hmn-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 17 Sep 2025 08:59:45 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 58H8xi34022318;
+	Wed, 17 Sep 2025 08:59:44 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 497g4j2hmj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 17 Sep 2025 08:59:44 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 58H5ht1k005923;
+	Wed, 17 Sep 2025 08:59:43 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 495jxu8jcg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 17 Sep 2025 08:59:43 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 58H8xeYV32309836
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 17 Sep 2025 08:59:40 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 02E5920040;
+	Wed, 17 Sep 2025 08:59:40 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id A29AF20043;
+	Wed, 17 Sep 2025 08:59:35 +0000 (GMT)
+Received: from [9.124.214.27] (unknown [9.124.214.27])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 17 Sep 2025 08:59:35 +0000 (GMT)
+Message-ID: <320a93c0-befb-49df-98b4-b10906c3148d@linux.ibm.com>
+Date: Wed, 17 Sep 2025 14:29:34 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,160 +87,131 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH V3 0/7] Add interface to expose vpa dtl counters via
+To: Athira Rajeev <atrajeev@linux.ibm.com>, maddy@linux.ibm.com,
+        linuxppc-dev@lists.ozlabs.org
+Cc: acme@kernel.org, jolsa@kernel.org, adrian.hunter@intel.com,
+        irogers@google.com, namhyung@kernel.org,
+        linux-perf-users@vger.kernel.org, aboorvad@linux.ibm.com,
+        sshegde@linux.ibm.com, hbathini@linux.vnet.ibm.com,
+        Aditya.Bodkhe1@ibm.com, venkat88@linux.ibm.com, Tejas.Manhas1@ibm.com
+References: <20250915102947.26681-1-atrajeev@linux.ibm.com>
+Content-Language: en-US
+From: tejas05 <tejas05@linux.ibm.com>
+In-Reply-To: <20250915102947.26681-1-atrajeev@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=Qf5mvtbv c=1 sm=1 tr=0 ts=68ca7881 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VnNF1IyMAAAA:8 a=okJC4TyXnK7yox6SSLIA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: RRzJMI1AgSPOucvLeTHXHgHcCmpN2-iZ
+X-Proofpoint-GUID: OJxL40TGkGpp0gv7_PaOZ-te41SpRnmq
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTE2MDIwNCBTYWx0ZWRfX+pOzl6bObUB8
+ le1eBR3NQWAIid/Kr9xyGAR9WwH4qY1TDAZ2qUhV5k5HScnsvC0ZxioNB117r2m2EAPiaelEwMF
+ 3HnHHmsFSA/Kb6pz20mr65kzWOHBcFUP1e/ipy4BJAb6/W/On4F0hJTPIr+K4N22TOgHHJUKlfc
+ lpF/TE3/cADPeGeGKtEJRBos/JBhJkFlq7lkYZ2BICDwqDBFaLv2nVcdAaHQvCurKbvaaw/abSP
+ 7cmDWwcN61CJIJ6bltGkIcWeNJVUiXz3CxKbzl0BvMBdKGJD4N0YdLWPM59pBkB5eyqQZvUryiI
+ QxflzG9pTrn8Ozc4O7Q5xoipOV+GTGcd/aoJHL9olw7DfqTNWO2cKkmyphL9QsV6xGMQha2LOEp
+ xixCz8am
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-09-16_02,2025-09-17_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 clxscore=1015 phishscore=0 suspectscore=0 adultscore=0
+ priorityscore=1501 malwarescore=0 bulkscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509160204
 
-The current implementation of pcie_do_recovery() assumes that the
-recovery process is executed for the device that detected the error.
-However, the DPC driver currently passes the error port that experienced
-the DPC event to pcie_do_recovery().
+> The pseries Shared Processor Logical Partition(SPLPAR) machines can
+> retrieve a log of dispatch and preempt events from the hypervisor
+> using data from Disptach Trace Log(DTL) buffer. With this information,
+> user can retrieve when and why each dispatch & preempt has occurred.
+> The vpa-dtl PMU exposes the Virtual Processor Area(VPA) DTL counters
+> via perf.
+>
+> - Patches 1 to 6 has powerpc PMU driver code changes to capture DTL
+>    trace in perf.data. And patch 7 has documentation update.
+>
+> Infrastructure used
+> ===================
+>
+> The VPA DTL PMU counters do not interrupt on overflow or generate any
+> PMI interrupts. Therefore, hrtimer is used to poll the DTL data. The timer
+> nterval can be provided by user via sample_period field in nano seconds.
+> vpa dtl pmu has one hrtimer added per vpa-dtl pmu thread. DTL (Dispatch
+> Trace Log) contains information about dispatch/preempt, enqueue time etc.
+> We directly copy the DTL buffer data as part of auxiliary buffer and it
+> will be processed later. This will avoid time taken to create samples
+> in the kernel space. The PMU driver collecting Dispatch Trace Log (DTL)
+> entries makes use of AUX support in perf infrastructure. On the tools side,
+> this data is made available as PERF_RECORD_AUXTRACE records.
+>
+> To corelate each DTL entry with other events across CPU's, an auxtrace_queue
+> is created for each CPU. Each auxtrace queue has a array/list of auxtrace buffers.
+> All auxtrace queues is maintained in auxtrace heap. The queues are sorted
+> based on timestamp. When the different PERF_RECORD_XX records are processed,
+> compare the timestamp of perf record with timestamp of top element in the
+> auxtrace heap so that DTL events can be co-related with other events
+> Process the auxtrace queue if the timestamp of element from heap is
+> lower than timestamp from entry in perf record. Sometimes it could happen that
+> one buffer is only partially processed. if the timestamp of occurrence of
+> another event is more than currently processed element in the queue, it will
+> move on to next perf record. So keep track of position of buffer to continue
+> processing next time. Update the timestamp of the auxtrace heap with the timestamp
+> of last processed entry from the auxtrace buffer.
+>
+> This infrastructure ensures dispatch trace log entries can be corelated
+> and presented along with other events like sched.
+>
+> With the kernel changes;
+>
+>    # ls /sys/devices/vpa_dtl/
+>    events  format  perf_event_mux_interval_ms  power  subsystem  type  uevent
+>
+> Thanks
+> Athira
+>
+> Aboorva Devarajan (1):
+>    powerpc/time: Expose boot_tb via accessor
+>
+> Athira Rajeev (4):
+>    powerpc/perf/vpa-dtl: Add support to setup and free aux buffer for
+>      capturing DTL data
+>    powerpc/perf/vpa-dtl: Add support to capture DTL data in aux buffer
+>    powerpc/perf/vpa-dtl: Handle the writing of perf record when aux wake
+>      up is needed
+>    powerpc/perf/vpa-dtl: Add documentation for VPA dispatch trace log PMU
+>
+> Kajol Jain (2):
+>    powerpc/vpa_dtl: Add interface to expose vpa dtl counters via perf
+>    docs: ABI: sysfs-bus-event_source-devices-vpa-dtl: Document sysfs
+>      event format entries for vpa_dtl pmu
+>
+>   .../sysfs-bus-event_source-devices-vpa-dtl    |  25 +
+>   Documentation/arch/powerpc/index.rst          |   1 +
+>   Documentation/arch/powerpc/vpa-dtl.rst        | 156 +++++
+>   arch/powerpc/include/asm/time.h               |   4 +
+>   arch/powerpc/kernel/time.c                    |   8 +-
+>   arch/powerpc/perf/Makefile                    |   2 +-
+>   arch/powerpc/perf/vpa-dtl.c                   | 596 ++++++++++++++++++
+>   7 files changed, 790 insertions(+), 2 deletions(-)
+>   create mode 100644 Documentation/ABI/testing/sysfs-bus-event_source-devices-vpa-dtl
+>   create mode 100644 Documentation/arch/powerpc/vpa-dtl.rst
+>   create mode 100644 arch/powerpc/perf/vpa-dtl.c
+>
+Hi Athira,
 
-Use the SOURCE ID register to correctly identify the device that
-detected the error. When passing the error device, the
-pcie_do_recovery() will find the upstream bridge and walk bridges
-potentially AER affected. And subsequent commits will be able to
-accurately access AER status of the error device.
+I have tested the above patchset on the mainline kernel [ 6.17.0-rc6], 
+it is working fine. The vpa-dtl pmu is recognizable and the perf record 
+report works as expected. Please add the tag below, for the entire series.
 
-Should not observe any functional changes.
+Tested-by: Tejas Manhas <tejas05@linux.ibm.com>
 
-Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
-Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
----
- drivers/pci/pci.h      |  2 +-
- drivers/pci/pcie/dpc.c | 25 +++++++++++++++++++++----
- drivers/pci/pcie/edr.c |  7 ++++---
- 3 files changed, 26 insertions(+), 8 deletions(-)
+Thanks & Regards,
 
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 34f65d69662e..de2f07cefa72 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -654,7 +654,7 @@ struct rcec_ea {
- void pci_save_dpc_state(struct pci_dev *dev);
- void pci_restore_dpc_state(struct pci_dev *dev);
- void pci_dpc_init(struct pci_dev *pdev);
--void dpc_process_error(struct pci_dev *pdev);
-+struct pci_dev *dpc_process_error(struct pci_dev *pdev);
- pci_ers_result_t dpc_reset_link(struct pci_dev *pdev);
- bool pci_dpc_recovered(struct pci_dev *pdev);
- unsigned int dpc_tlp_log_len(struct pci_dev *dev);
-diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
-index bff29726c6a5..f6069f621683 100644
---- a/drivers/pci/pcie/dpc.c
-+++ b/drivers/pci/pcie/dpc.c
-@@ -260,10 +260,20 @@ static int dpc_get_aer_uncorrect_severity(struct pci_dev *dev,
- 	return 1;
- }
- 
--void dpc_process_error(struct pci_dev *pdev)
-+/**
-+ * dpc_process_error - handle the DPC error status
-+ * @pdev: the port that experienced the containment event
-+ *
-+ * Return: the device that detected the error.
-+ *
-+ * NOTE: The device reference count is increased, the caller must decrement
-+ * the reference count by calling pci_dev_put().
-+ */
-+struct pci_dev *dpc_process_error(struct pci_dev *pdev)
- {
- 	u16 cap = pdev->dpc_cap, status, source, reason, ext_reason;
- 	struct aer_err_info info = {};
-+	struct pci_dev *err_dev;
- 
- 	pci_read_config_word(pdev, cap + PCI_EXP_DPC_STATUS, &status);
- 
-@@ -279,6 +289,7 @@ void dpc_process_error(struct pci_dev *pdev)
- 			pci_aer_clear_nonfatal_status(pdev);
- 			pci_aer_clear_fatal_status(pdev);
- 		}
-+		err_dev = pci_dev_get(pdev);
- 		break;
- 	case PCI_EXP_DPC_STATUS_TRIGGER_RSN_NFE:
- 	case PCI_EXP_DPC_STATUS_TRIGGER_RSN_FE:
-@@ -290,6 +301,8 @@ void dpc_process_error(struct pci_dev *pdev)
- 				"ERR_FATAL" : "ERR_NONFATAL",
- 			 pci_domain_nr(pdev->bus), PCI_BUS_NUM(source),
- 			 PCI_SLOT(source), PCI_FUNC(source));
-+		err_dev = pci_get_domain_bus_and_slot(pci_domain_nr(pdev->bus),
-+					    PCI_BUS_NUM(source), source & 0xff);
- 		break;
- 	case PCI_EXP_DPC_STATUS_TRIGGER_RSN_IN_EXT:
- 		ext_reason = status & PCI_EXP_DPC_STATUS_TRIGGER_RSN_EXT;
-@@ -304,8 +317,11 @@ void dpc_process_error(struct pci_dev *pdev)
- 		if (ext_reason == PCI_EXP_DPC_STATUS_TRIGGER_RSN_RP_PIO &&
- 		    pdev->dpc_rp_extensions)
- 			dpc_process_rp_pio_error(pdev);
-+		err_dev = pci_dev_get(pdev);
- 		break;
- 	}
-+
-+	return err_dev;
- }
- 
- static void pci_clear_surpdn_errors(struct pci_dev *pdev)
-@@ -361,7 +377,7 @@ static bool dpc_is_surprise_removal(struct pci_dev *pdev)
- 
- static irqreturn_t dpc_handler(int irq, void *context)
- {
--	struct pci_dev *err_port = context;
-+	struct pci_dev *err_port = context, *err_dev;
- 
- 	/*
- 	 * According to PCIe r6.0 sec 6.7.6, errors are an expected side effect
-@@ -372,10 +388,11 @@ static irqreturn_t dpc_handler(int irq, void *context)
- 		return IRQ_HANDLED;
- 	}
- 
--	dpc_process_error(err_port);
-+	err_dev = dpc_process_error(err_port);
- 
- 	/* We configure DPC so it only triggers on ERR_FATAL */
--	pcie_do_recovery(err_port, pci_channel_io_frozen, dpc_reset_link);
-+	pcie_do_recovery(err_dev, pci_channel_io_frozen, dpc_reset_link);
-+	pci_dev_put(err_dev);
- 
- 	return IRQ_HANDLED;
- }
-diff --git a/drivers/pci/pcie/edr.c b/drivers/pci/pcie/edr.c
-index 521fca2f40cb..3f971bb04433 100644
---- a/drivers/pci/pcie/edr.c
-+++ b/drivers/pci/pcie/edr.c
-@@ -150,7 +150,7 @@ static int acpi_send_edr_status(struct pci_dev *pdev, struct pci_dev *edev,
- 
- static void edr_handle_event(acpi_handle handle, u32 event, void *data)
- {
--	struct pci_dev *pdev = data, *err_port;
-+	struct pci_dev *pdev = data, *err_port, *err_dev;
- 	pci_ers_result_t estate = PCI_ERS_RESULT_DISCONNECT;
- 	u16 status;
- 
-@@ -190,7 +190,7 @@ static void edr_handle_event(acpi_handle handle, u32 event, void *data)
- 		goto send_ost;
- 	}
- 
--	dpc_process_error(err_port);
-+	err_dev = dpc_process_error(err_port);
- 	pci_aer_raw_clear_status(err_port);
- 
- 	/*
-@@ -198,7 +198,7 @@ static void edr_handle_event(acpi_handle handle, u32 event, void *data)
- 	 * or ERR_NONFATAL, since the link is already down, use the FATAL
- 	 * error recovery path for both cases.
- 	 */
--	estate = pcie_do_recovery(err_port, pci_channel_io_frozen, dpc_reset_link);
-+	estate = pcie_do_recovery(err_dev, pci_channel_io_frozen, dpc_reset_link);
- 
- send_ost:
- 
-@@ -215,6 +215,7 @@ static void edr_handle_event(acpi_handle handle, u32 event, void *data)
- 		acpi_send_edr_status(pdev, err_port, EDR_OST_FAILED);
- 	}
- 
-+	pci_dev_put(err_dev);
- 	pci_dev_put(err_port);
- }
- 
--- 
-2.39.3
+Tejas
 
 
