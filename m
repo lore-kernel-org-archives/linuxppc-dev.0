@@ -1,44 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-12408-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12409-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00E64CAC597
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Sep 2025 01:42:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DC65CA1013
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Sep 2025 03:20:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSZxQ3tyDz30Qk;
-	Fri, 19 Sep 2025 11:42:02 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.132
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758246122;
-	cv=none; b=AUhP7lXR+vcZEMfOUsjd+cNXlDJnqktTczL5eAsbi2dWhjmeaU/emEJq4oUCDEUZhrGuy5JZ0gjD2gBO9HCZRsDV+KvwLAKtTYyAkFx5HSZetf/oCie8Ym4w4+Gbn5xcD+q+Ye20fFAQX6+PSu89sFGuA+B1Tm3w2Mf2ZLPaY64rOw7JL+G6MakxFilA8JLbiLuBuiOyeELMMrtQefvq5jNPA9XQINBI3qeuyzIQKCTNOBePUbsBoK39+VKmuOuomaKznrAe7hWmyYblZ0IQgfUJduRXB5BKfP2fJDOZx29gzA5bGkfRY3/7mYj6xtqrUpQLkPmlo5pa2qidSkPiNQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSd784xSMz30QJ;
+	Fri, 19 Sep 2025 13:20:36 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758252036;
+	cv=none; b=gGCBcYh2Pu/FCsrLS10v357n2NH5Qv7jLslcM66orqvciQYhIi/ibY46AcJ0W+Edn8O7PuDXHw4pbA8lmJKty0+E//50peinuN/irlqWjB5ysDoBk8JmjjfwZU4fXVMMeW7n1DtQ6ZmLrT9z/SwNyKIXGCYlLqEJML+aMRPBl1op13rjMEiSH0OsH0T+SDeFz6L+Eb7eVed8E/tOUtccTFTn1bK40bO3yI/2SAK8m9wtROEeb5vGIkXAkcfL7Cye0pw1oJRTpaVJ1Z5d0X78ARfe7yo0uWYuBppiM6oFYfg2Js3sKwvZxKgWJ1HimnQEfbKSdNuKr1oCialVTa7GhA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758246122; c=relaxed/relaxed;
-	bh=5F2mu+HPJmOD+g9xW2Kjsqxc2iUpO4ZGC562yuztetI=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=DUjZU02MRkZJwqA+DZODf0unxyDqOKE2O3i/KP8uBGobhPcVMbyVMSs9ePr+aSG26FfA6TS9U80gHaVyuraov4jH8vDenzMkKFr9PdoJdG7JLhISEI7GDR2gbGlABXNtvKdwPS0JzpVL9/ElTGm8nCdheAwUvDvw7jFt3tKOreTn2Awk5rFlowZx3NCvNAA7Mube/Z85duTEeQurW9BYnGNw+eSIopnMSw4V659uCy6Qwpa3fWf6hwBGDaeP/lI6KiU8zTXQ5fqLYSjTNzpFEeDIFzvjA3PZQlbyzKmA7um7MPup0RQaV0m5XaPq5ufkVRC2wQIJ4w9h0oFyfLfoGg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=HshGbMEH; dkim-atps=neutral; spf=pass (client-ip=115.124.30.132; helo=out30-132.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=HshGbMEH;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.132; helo=out30-132.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
-Received: from out30-132.freemail.mail.aliyun.com (out30-132.freemail.mail.aliyun.com [115.124.30.132])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSZxN3rW7z2yys
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 11:41:59 +1000 (AEST)
-DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
-	d=linux.alibaba.com; s=default;
-	t=1758246115; h=Message-ID:Date:MIME-Version:Subject:To:From:Content-Type;
-	bh=5F2mu+HPJmOD+g9xW2Kjsqxc2iUpO4ZGC562yuztetI=;
-	b=HshGbMEHaqXn/WUJSD8VGo5/avZyhn4JyiAMahWOPN/R4aHDtNlvXfEahnvJlPZRFjkjardOj9cIRxynGoz2eyUUsegJ7Rx+RuMU7XaxYEajpA3YGgGACND3ySYEMYc/E5sdfvPJBdWxIScldEO+Ps/WUdIxlwHOxVFOO8fBvsk=
-Received: from 30.246.178.33(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0WoHzP3E_1758246112 cluster:ay36)
-          by smtp.aliyun-inc.com;
-          Fri, 19 Sep 2025 09:41:53 +0800
-Message-ID: <47b52f6f-d27d-49bc-a999-382441aa310e@linux.alibaba.com>
-Date: Fri, 19 Sep 2025 09:41:52 +0800
+	t=1758252036; c=relaxed/relaxed;
+	bh=ZGjfls1IO/dyQR5XAfpQV+7Vf7CBwKjyBGjw14u4Gwg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=WYuHGXs5jhxS1tTW287ySWulHgD+mZYWNLMWt1PWkJXWGzp+2qbDqSSwoLJ2gHCL8fidPi/XERCI7yZIswIgcx5dq9yO0HDzEiRMELKioIUox1L9Wp5r40AWzP3CeAL8RCEPfNpIE2dP3sXV7xdn8rucSTxO57c7fCdkAWdZ4uAfoPFN9EUIde84wKj/E2+rTOmw1CW4e0eRpPLGP/LXxU2A0NGArAF8VPfYu3emFRYxMoYZyiKYUMZmdO4xrVoGvBBglV53vhz+ElnGPNIxKO9FWSojmflX+r1I1v0HOYCCcIdc9cLNSDe2tWneya4GvDZFg4gnp0OPUQ9UfFSeuw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSd780Klzz2xQ1
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 13:20:35 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4cSLY550rVz9sfy;
+	Thu, 18 Sep 2025 18:23:37 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id H8HCMn0Ik6Ho; Thu, 18 Sep 2025 18:23:37 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cSLY40Gyqz9sft;
+	Thu, 18 Sep 2025 18:23:36 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id EC8AC8B778;
+	Thu, 18 Sep 2025 18:23:35 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id 4GRJcVK8mL3E; Thu, 18 Sep 2025 18:23:35 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3A2A18B767;
+	Thu, 18 Sep 2025 18:23:35 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org,
+	Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Subject: [PATCH v6 4/7] soc: fsl: qe: Add support of IRQ in QE GPIO
+Date: Thu, 18 Sep 2025 18:23:24 +0200
+Message-ID: <9a4d8bc1145f708a5ee6dde24fe2bd85cff006e2.1758212309.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1758212309.git.christophe.leroy@csgroup.eu>
+References: <cover.1758212309.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -52,47 +76,185 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 3/3] PCI/AER: Report fatal errors of RCiEP and EP if
- link recoverd
-To: Bjorn Helgaas <helgaas@kernel.org>
-Cc: bhelgaas@google.com, mahesh@linux.ibm.com, mani@kernel.org,
- Jonathan.Cameron@huawei.com, sathyanarayanan.kuppuswamy@linux.intel.com,
- oohall@gmail.com, linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org
-References: <20250918203315.GA1920702@bhelgaas>
-From: Shuai Xue <xueshuai@linux.alibaba.com>
-In-Reply-To: <20250918203315.GA1920702@bhelgaas>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1758212605; l=6045; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=ECnVefXmhNl1JmdZzgG8I7sGGtwU4E9wPX7lONyQWKg=; b=BCYsDj1HWoo7ACd1jnIWD1gvVC+4kIJPnu4mQAebHTYtdnONQI8aBWW2ByUbOLumzvmOVOvo5 7M0NqjAB6jlCtOfaAQF5rhWMlJ2Q2LShqj9FcaDbvVkQV0AVwpz/yil
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
+In the QE, a few GPIOs have an associated IRQ to notify changes.
+Add IRQ support to QE GPIO.
 
+As not all GPIOs have an associated IRQ, the driver needs to know
+to which GPIO corresponds each provided IRQ. This is provided via
+multiple compatible properties:
 
-在 2025/9/19 04:33, Bjorn Helgaas 写道:
-> On Wed, Sep 17, 2025 at 02:33:52PM +0800, Shuai Xue wrote:
->> The AER driver has historically avoided reading the configuration space of
->> an endpoint or RCiEP that reported a fatal error, considering the link to
->> that device unreliable. Consequently, when a fatal error occurs, the AER
->> and DPC drivers do not report specific error types, resulting in logs like:
->>
->> 	pcieport 0015:00:00.0: EDR: EDR event received
->> 	pcieport 0015:00:00.0: EDR: Reported EDR dev: 0015:00:00.0
->> 	pcieport 0015:00:00.0: DPC: containment event, status:0x200d, ERR_FATAL received from 0015:01:00.0
->> 	pcieport 0015:00:00.0: AER: broadcast error_detected message
->> 	pcieport 0015:00:00.0: AER: broadcast mmio_enabled message
->> 	pcieport 0015:00:00.0: AER: broadcast resume message
->> 	pcieport 0015:00:00.0: pciehp: Slot(21): Link Down/Up ignored
->> 	pcieport 0015:00:00.0: AER: device recovery successful
->> 	pcieport 0015:00:00.0: EDR: DPC port successfully recovered
->> 	pcieport 0015:00:00.0: EDR: Status for 0015:00:00.0: 0x80
-> 
-> When you update this series, can you indent these messages with two
-> spaces instead of a tab?  That will preserve a little space and also
-> preserve the formatting when "git log" adds its own indentation.
+	compatible = "fsl,mpc8323-qe-pario-bank-a"
+	compatible = "fsl,mpc8323-qe-pario-bank-b"
+	compatible = "fsl,mpc8323-qe-pario-bank-c"
 
+	compatible = "fsl,mpc8360-qe-pario-bank-a"
+	compatible = "fsl,mpc8360-qe-pario-bank-b"
+	compatible = "fsl,mpc8360-qe-pario-bank-c"
+	compatible = "fsl,mpc8360-qe-pario-bank-d"
+	compatible = "fsl,mpc8360-qe-pario-bank-e"
+	compatible = "fsl,mpc8360-qe-pario-bank-f"
+	compatible = "fsl,mpc8360-qe-pario-bank-g"
 
-Sure, will align with space.
+	compatible = "fsl,mpc8568-qe-pario-bank-a"
+	compatible = "fsl,mpc8568-qe-pario-bank-b"
+	compatible = "fsl,mpc8568-qe-pario-bank-c"
+	compatible = "fsl,mpc8568-qe-pario-bank-d"
+	compatible = "fsl,mpc8568-qe-pario-bank-e"
+	compatible = "fsl,mpc8568-qe-pario-bank-f"
 
-Thanks.
-Shuai
+When not using IRQ and for banks having no IRQ (like bank D on mpc8323)
+the origin compatible = "fsl,mpc8323-qe-pario-bank" is sufficient.
+
+Here is an exemple for port B of mpc8323 which has IRQs for
+GPIOs PB7, PB9, PB25 and PB27.
+
+	qe_pio_b: gpio-controller@1418 {
+		compatible = "fsl,mpc8323-qe-pario-bank-b";
+		reg = <0x1418 0x18>;
+		interrupts = <4 5 6 7>;
+		interrupt-parent = <&qepic>;
+		gpio-controller;
+		#gpio-cells = <2>;
+	};
+
+Reviewed-by: Bartosz Golaszewski <bartosz.golaszewski@linaro.org>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+v6: Changed mask local var to unsigned long instead of u32 to avoid build failure on 64 bits
+---
+ drivers/soc/fsl/qe/gpio.c | 72 +++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 72 insertions(+)
+
+diff --git a/drivers/soc/fsl/qe/gpio.c b/drivers/soc/fsl/qe/gpio.c
+index c54154b404df..7a23eb220217 100644
+--- a/drivers/soc/fsl/qe/gpio.c
++++ b/drivers/soc/fsl/qe/gpio.c
+@@ -12,6 +12,7 @@
+ #include <linux/spinlock.h>
+ #include <linux/err.h>
+ #include <linux/io.h>
++#include <linux/of_irq.h>
+ #include <linux/gpio/consumer.h>
+ #include <linux/gpio/driver.h>
+ #include <linux/slab.h>
+@@ -32,6 +33,8 @@ struct qe_gpio_chip {
+ 
+ 	/* saved_regs used to restore dedicated functions */
+ 	struct qe_pio_regs saved_regs;
++
++	int irq[QE_PIO_PINS];
+ };
+ 
+ static void qe_gpio_save_regs(struct qe_gpio_chip *qe_gc)
+@@ -135,6 +138,13 @@ static int qe_gpio_dir_out(struct gpio_chip *gc, unsigned int gpio, int val)
+ 	return 0;
+ }
+ 
++static int qe_gpio_to_irq(struct gpio_chip *gc, unsigned int gpio)
++{
++	struct qe_gpio_chip *qe_gc = gpiochip_get_data(gc);
++
++	return qe_gc->irq[gpio] ? : -ENXIO;
++}
++
+ struct qe_pin {
+ 	/*
+ 	 * The qe_gpio_chip name is unfortunate, we should change that to
+@@ -295,6 +305,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ 	struct device_node *np = dev->of_node;
+ 	struct qe_gpio_chip *qe_gc;
+ 	struct gpio_chip *gc;
++	unsigned long mask;
+ 
+ 	qe_gc = devm_kzalloc(dev, sizeof(*qe_gc), GFP_KERNEL);
+ 	if (!qe_gc)
+@@ -302,6 +313,15 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ 
+ 	spin_lock_init(&qe_gc->lock);
+ 
++	mask = (unsigned long)of_device_get_match_data(dev);
++	if (mask) {
++		int i, j;
++
++		for (i = 0, j = 0; i < ARRAY_SIZE(qe_gc->irq); i++)
++			if (mask & PIN_MASK(i))
++				qe_gc->irq[i] = irq_of_parse_and_map(np, j++);
++	}
++
+ 	gc = &qe_gc->gc;
+ 
+ 	gc->base = -1;
+@@ -311,6 +331,7 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ 	gc->get = qe_gpio_get;
+ 	gc->set = qe_gpio_set;
+ 	gc->set_multiple = qe_gpio_set_multiple;
++	gc->to_irq = qe_gpio_to_irq;
+ 	gc->parent = dev;
+ 	gc->owner = THIS_MODULE;
+ 
+@@ -330,6 +351,57 @@ static int qe_gpio_probe(struct platform_device *ofdev)
+ static const struct of_device_id qe_gpio_match[] = {
+ 	{
+ 		.compatible = "fsl,mpc8323-qe-pario-bank",
++	}, {
++		.compatible = "fsl,mpc8323-qe-pario-bank-a",
++		.data = (void *)(PIN_MASK(8) | PIN_MASK(10) | PIN_MASK(26) | PIN_MASK(28)),
++	}, {
++		.compatible = "fsl,mpc8323-qe-pario-bank-b",
++		.data = (void *)(PIN_MASK(7) | PIN_MASK(9) | PIN_MASK(25) | PIN_MASK(27)),
++	}, {
++		.compatible = "fsl,mpc8323-qe-pario-bank-c",
++		.data = (void *)(PIN_MASK(24) | PIN_MASK(29)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-a",
++		.data = (void *)(PIN_MASK(15) | PIN_MASK(16) | PIN_MASK(29) | PIN_MASK(30)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-b",
++		.data = (void *)(PIN_MASK(3) | PIN_MASK(5) | PIN_MASK(12) | PIN_MASK(13) |
++				 PIN_MASK(26) | PIN_MASK(27)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-c",
++		.data = (void *)(PIN_MASK(27) | PIN_MASK(28) | PIN_MASK(29)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-d",
++		.data = (void *)(PIN_MASK(12) | PIN_MASK(13) | PIN_MASK(16) | PIN_MASK(17) |
++				 PIN_MASK(26) | PIN_MASK(27)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-e",
++		.data = (void *)(PIN_MASK(12) | PIN_MASK(13) | PIN_MASK(24) | PIN_MASK(25) |
++				 PIN_MASK(26) | PIN_MASK(27) | PIN_MASK(31)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-f",
++		.data = (void *)(PIN_MASK(20)),
++	}, {
++		.compatible = "fsl,mpc8360-qe-pario-bank-g",
++		.data = (void *)(PIN_MASK(31)),
++	}, {
++		.compatible = "fsl,mpc8568-qe-pario-bank-a",
++		.data = (void *)(PIN_MASK(22) | PIN_MASK(23)),
++	}, {
++		.compatible = "fsl,mpc8568-qe-pario-bank-b",
++		.data = (void *)(PIN_MASK(12) | PIN_MASK(13) | PIN_MASK(28) | PIN_MASK(29)),
++	}, {
++		.compatible = "fsl,mpc8568-qe-pario-bank-c",
++		.data = (void *)(PIN_MASK(16) | PIN_MASK(17) | PIN_MASK(25) | PIN_MASK(26)),
++	}, {
++		.compatible = "fsl,mpc8568-qe-pario-bank-d",
++		.data = (void *)(PIN_MASK(18) | PIN_MASK(19)),
++	}, {
++		.compatible = "fsl,mpc8568-qe-pario-bank-e",
++		.data = (void *)(PIN_MASK(12) | PIN_MASK(16) | PIN_MASK(30)),
++	}, {
++		.compatible = "fsl,mpc8568-qe-pario-bank-f",
++		.data = (void *)(PIN_MASK(12) | PIN_MASK(16) | PIN_MASK(30)),
+ 	},
+ 	{},
+ };
+-- 
+2.49.0
+
 
