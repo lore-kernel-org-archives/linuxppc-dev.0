@@ -1,68 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-12412-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12413-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 32010CAC592
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Sep 2025 07:17:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B89C6CAC59A
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Sep 2025 07:50:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSkP21fd2z2yrK;
-	Fri, 19 Sep 2025 17:17:58 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.221.169
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758266278;
-	cv=none; b=ZLBKM/4KJ8pP0OJtCIi/QVWRkNVMVGziUtHivDa/2CwZLYdu4dzov3OQxiP6lwHS4wD5dxuATDPeS2RsjZcJ7rd9EY9D7sHEy050CWPN38Z+aY7zdtcC4rjcPCwXW/kSgxo+aBgZZkv54jKr37HJIOhO+l3z02cGJ6DkEe6m7J+ZAey+/2bsrLps1qqsQUtYb40OdbqH3dMRdfFjsyS/lYrB5mjBi3Q8qZq+cHDbIc0m8S35kW9ZibDiaOqswDyd3ARNuY5S7em/qqvhxjyzir3jtMLO9KFGyinhfLZz3k+oaSWmgE2Txjcgb0pqTp2e/c6Maw1Quy7DvzUVWJpl6g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSl6l2ThJz2yrK;
+	Fri, 19 Sep 2025 17:50:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758268239;
+	cv=none; b=lg7BxLuoW9upyxyH+451KFonUZ6eLLAq4hF5fXMDs17EA1DO9dw4S/j8uy/KsVGinmY1PGs+idjk/nz/hAiwctsy4AveMWo+alDjgGGuiElV3rMzvbLdEQcqKrS7UEPnK0YPS012rG+U0w/rXdOiAfoYqjAaPzPL07zRPJefIYATlLmhohwJBoRUPprVEOyctYppiFwz2Pt7pHG11aKDcCgTTU5tCxwTtZMqI8xXNFff9Vu/ZsHXjr/cQgY/yRRAB5RLmF5f9+2ItoEK5lBKWewFmdwHcysd/fbFJnNIvECOimd8YbcWQAGIOr7EKxR9MMS9EJ6ccbtw3n7xrKx0hg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758266278; c=relaxed/relaxed;
-	bh=jN8ls4Umh9EIXSEQoAkCyXxQ8L8mjN2Gdzzs4J/riyA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=jRtRft0RcJtQQzCw8+oqWHFJi0wBnR9gCZBROz3u40uhqrGx3VVmxSE4OxFe7tI1nlu/PyaFTfVpN/CKXzT+bC6xfCXcuqCHFoptjMeeQouQMeDMTkcxBLjVCFcHc/SFYtRWccncTV1ZUEXKZwuZ8ZXTGkZwoBBxzHKGLqNAlxdJwcFjmoiOnu/eyHjHFC17bgXx18w/V5m4v+4ZTqnWPqnvI3kihQ826yU8xVX8HXu3Fmah7xMNZJ9MkpGbU07bM0WQoaiTi+nQvMNfFywLxCKAf9+y79MPJmdQ+NqUhejVnUeVsC+TObuqj3nFoWSq2+o69cf0zxO9kT/eNxxWTw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.221.169; helo=mail-vk1-f169.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.221.169; helo=mail-vk1-f169.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-vk1-f169.google.com (mail-vk1-f169.google.com [209.85.221.169])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSkP04t8Tz2yD5
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 17:17:55 +1000 (AEST)
-Received: by mail-vk1-f169.google.com with SMTP id 71dfb90a1353d-545df2bb95dso739029e0c.0
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 00:17:55 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758266272; x=1758871072;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=jN8ls4Umh9EIXSEQoAkCyXxQ8L8mjN2Gdzzs4J/riyA=;
-        b=wpTiwxpgxqvahLKU7adN6Hens66dcYFgaIKTo+Y0pNP3Y3YV43v4Lmkin2jCmV8uGx
-         kdq/1zArMnjU+Pp3TuBhlmcujT3dVAzPjJlL0eMHGWI98cB2GY7mwe6GdpBnKHLNIpgj
-         hSefIVQYOGoDHhk5fdlKZgaPYs+hSD7FFa4QJeKuLyNq4GG72ExLK+rcs0gfAFyALOSD
-         rr7tHPCxnaM4atoC8zkVjgipdGDd9ati1nM3m/E5AllKIFWp4CdMMZ1Bkm7DK4zCt5Qa
-         5Ci8D7S9orn0bLiAU+nkzRmxnTtRvt0F5jbU81AvvCLTVtevrptpqfGLwdl6lskRKo1W
-         kWTQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWrkG/arBnPVo+0iYDKu0JJEEMrqyKFl6G5uwoMXgHs+6ZWQSYzdC0eTlBGCkO4VB4O/SMdhvT08eXyNy8=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxB5IucUJZjqsiYCGNsmjrCAGvUvXZkvLIeZE6Bqu058vW0amPN
-	b5DFRJAN5ySH1pHoJhtT+iL4UWb0MrwimmgvsESMHkdUrDik0WVoU25seZZEuHXI
-X-Gm-Gg: ASbGnct94T2FevfY/QP0km7KpNbwZjB8XR69qnLteYatI/S1QQEIK5iZtMR+ZyobGJg
-	0wwJaRVmndkvqPl0clqdyjYzpUvbqte2YqFxKUvCmfKbXtizLUz9AzMw/JcG9eoxbkGvQKET719
-	1k2qhXPG6eFWvtPdLmn7y5Q4wT6uyX1Hd3/HX42P96cz1GC9vRE/ovtYEe/Cx+nfOovW4xzob16
-	mJVoCpfOYSpYI6+gShytBek6Cfl801XIIRBM91vzbOC+zHx+LfnzUZLwEKvq0KG0qHTWsb7mUQ8
-	p+WmJmtb3zGOdQL5fthUmO4szlbPBkKWiO/0KsR0AdS6CNttsWQ6zUzAWJWgeP5XKKYSbKx+z6u
-	qeR5fErICk1l0iU2TYG3+23oK4s2sqWFZjin1yQSJgyvqbSUxe0jPnaSlfxca
-X-Google-Smtp-Source: AGHT+IFe+FKUZ9OZO0qyzLOZ4hCPVZbceFmbSUTilC03Rvq2OCYXamQ461ZGr5xuiqgmPbzpVC4smw==
-X-Received: by 2002:a05:6122:caa:b0:544:9414:105f with SMTP id 71dfb90a1353d-54a837c5148mr769603e0c.2.1758266272346;
-        Fri, 19 Sep 2025 00:17:52 -0700 (PDT)
-Received: from mail-vs1-f47.google.com (mail-vs1-f47.google.com. [209.85.217.47])
-        by smtp.gmail.com with ESMTPSA id 71dfb90a1353d-54a7275993dsm1018845e0c.10.2025.09.19.00.17.52
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 19 Sep 2025 00:17:52 -0700 (PDT)
-Received: by mail-vs1-f47.google.com with SMTP id ada2fe7eead31-58bf3b15575so47159137.3
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 00:17:52 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCWr84jkgpKNUf7uwqsDiIS98oRXPMZFPTthMd/oBLQ7RFV4HiLH21s41SBaOWg2ol+PYhbrK7Qani9oHK4=@lists.ozlabs.org
-X-Received: by 2002:a05:6102:534c:b0:55d:b35e:7a58 with SMTP id
- ada2fe7eead31-588f3357b74mr639278137.23.1758266271934; Fri, 19 Sep 2025
- 00:17:51 -0700 (PDT)
+	t=1758268239; c=relaxed/relaxed;
+	bh=b8KIaKaIf8ymEygY/rIs+aRe2fxMAW4DXWCks+G/B7g=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=oC/sVXbhmIywq3gFOq61R+nc20Z/Q0o9Wasy8+0cShvnJlkwSCQ/JfzZxEKYZNQrE3KyAyLqKN0Jx+kIhmMy87f/EpZNH/oLIxi73mSTdVWAo5+FTSXFk9q/ruPRl4E1hc7ucOHw/czj+5vVoPsTlAnSc0A05NjonynFgmfezSLfgiqIWPI3FoMzEA6RYuLRQvC3kdoslwPk0wl+9CMu1/VoZKgWZvXDzHfKhF0a8uQtyiWZZi9OoooMdeM5zoK1EZ7uU6TQGvS4NKCzEWpXI3P+mypJyp/LgLBCTecZiHB6pjrQ6/hB1wYWRsta9wfi732WPsVfTqKYvq/MllmyjA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSl6k58k5z2xck
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 17:50:37 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4cSKSR28vLz9sg1;
+	Thu, 18 Sep 2025 17:34:31 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id Z7_lta6qXCna; Thu, 18 Sep 2025 17:34:31 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cSKSR15xZz9sfv;
+	Thu, 18 Sep 2025 17:34:31 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 15DCD8B767;
+	Thu, 18 Sep 2025 17:34:31 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id dYGLOMvVr6vT; Thu, 18 Sep 2025 17:34:31 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 40FA78B775;
+	Thu, 18 Sep 2025 17:34:30 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Herve Codina <herve.codina@bootlin.com>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-sound@vger.kernel.org
+Subject: [PATCH RESEND v3 2/4] ASoc: fsl: fsl_qmc_audio: Ensure audio channels are ordered in TDM bus
+Date: Thu, 18 Sep 2025 17:34:09 +0200
+Message-ID: <4ff40afdf3d032b05dd4af6c0f777d4d4b445a76.1758209158.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1758209158.git.christophe.leroy@csgroup.eu>
+References: <cover.1758209158.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -76,68 +78,76 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <4ff89b72-03ff-4447-9d21-dd6a5fe1550f@app.fastmail.com>
- <20250917125951.GA1390993@nvidia.com> <02b0f383-1c43-4eeb-a76f-830c2970b833@app.fastmail.com>
-In-Reply-To: <02b0f383-1c43-4eeb-a76f-830c2970b833@app.fastmail.com>
-From: Geert Uytterhoeven <geert@linux-m68k.org>
-Date: Fri, 19 Sep 2025 09:17:40 +0200
-X-Gmail-Original-Message-ID: <CAMuHMdVecUeLZ2LPpa457C0a=uduvDhQ4KZJx-++dEFJraRi3w@mail.gmail.com>
-X-Gm-Features: AS18NWAI1tRNfDFQjIFUy24j2rmv5VjIZdZQpBy05JHeqlSMB-7iVf4odZQDlmM
-Message-ID: <CAMuHMdVecUeLZ2LPpa457C0a=uduvDhQ4KZJx-++dEFJraRi3w@mail.gmail.com>
-Subject: Re: [TECH TOPIC] Reaching consensus on CONFIG_HIGHMEM phaseout
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Jason Gunthorpe <jgg@nvidia.com>, ksummit@lists.linux.dev, linux-kernel@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
-	linux-mips@vger.kernel.org, linux-mm@kvack.org, imx@lists.linux.dev, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, Richard Weinberger <richard@nod.at>, 
-	Lucas Stach <l.stach@pengutronix.de>, Linus Walleij <linus.walleij@linaro.org>, 
-	Geert Uytterhoeven <geert+renesas@glider.be>, Ankur Arora <ankur.a.arora@oracle.com>, 
-	David Hildenbrand <david@redhat.com>, Mike Rapoport <rppt@kernel.org>, 
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Matthew Wilcox <willy@infradead.org>, 
-	Andrew Morton <akpm@linux-foundation.org>, "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
-	Vlastimil Babka <vbabka@suse.cz>, Suren Baghdasaryan <surenb@google.com>, Ira Weiny <ira.weiny@intel.com>, 
-	Nishanth Menon <nm@ti.com>, =?UTF-8?Q?Heiko_St=C3=BCbner?= <heiko@sntech.de>, 
-	Alexander Sverdlin <alexander.sverdlin@gmail.com>, 
-	"Chester A. Unal" <chester.a.unal@arinc9.com>, 
-	Sergio Paracuellos <sergio.paracuellos@gmail.com>, Andreas Larsson <andreas@gaisler.com>
-Content-Type: text/plain; charset="UTF-8"
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1758209657; l=2268; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=PhCdmcBJPdWMbFjoZdGBw3gyDb5r2JgdoYXKwih9mSw=; b=ruBvohcdwTV13JzsoBOhlDufd3DsKpD4cOPOEYuGWSfm6Ozs7idM1/CNZLZUOMe9VBZP4mWZ2 thJrF3KAZaWDljbSlUr+XfoKg14q6ra/HyrJIPSjZZGr0vqZjORgflI
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 
-Hi Arnd,
+To reduce complexity of interrupt handling in following patch, ensure
+audio channels are configured in the same order as timeslots on the
+TDM bus. If we need a given ordering of audio sources in the audio
+frame, it is possible to re-order codecs on the TDM bus, no need to
+mix up timeslots in channels.
 
-On Thu, 18 Sept 2025 at 15:13, Arnd Bergmann <arnd@arndb.de> wrote:
-> On Wed, Sep 17, 2025, at 14:59, Jason Gunthorpe wrote:
-> > On Tue, Sep 09, 2025 at 11:23:37PM +0200, Arnd Bergmann wrote:
-> >
-> >> I'm still collecting information about which of the remaining highmem
-> >> users plan to keep updating their kernels and for what reason.
-> >
-> > On this topic of removing some parts of highmem, can we say goodbye to
-> > kmap_high_get()? Only ARM uses it and only for
-> > !cache_is_vipt_nonaliasing() systems.
->
-> Good idea. I think we are almost there, just need to verify that
-> there is actually no impact for existing users. I already knew
-> that there is very little highmem usage on ARMv6 and earlier, but
-> I tried to recheck all platforms that might be affected:
+Acked-by: Herve Codina <herve.codina@bootlin.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+---
+ sound/soc/fsl/fsl_qmc_audio.c | 29 +++++++++++++++++++++++++++++
+ 1 file changed, 29 insertions(+)
 
-> * Microchip SAM9x7 is the newest ARMv5 chip, clearly does
->   get kernel updates, and the only one I can think of with
->   DDR3 support, but seems to be limited to 256MB total memory.
-
-Are they limited to DDR3?
-
-IIRC, someone (you? ;-) told me at ELCE that Microchip keeps on spinning
-new variants of old SoCs, to accommodate the changing DDR landscape
-and market.  So perhaps they also accept larger RAM sizes?
-
-Gr{oetje,eeting}s,
-
-                        Geert
-
+diff --git a/sound/soc/fsl/fsl_qmc_audio.c b/sound/soc/fsl/fsl_qmc_audio.c
+index 5614a8b909ed..c0c7ef0a1511 100644
+--- a/sound/soc/fsl/fsl_qmc_audio.c
++++ b/sound/soc/fsl/fsl_qmc_audio.c
+@@ -791,12 +791,17 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
+ 			       struct qmc_dai *qmc_dai,
+ 			       struct snd_soc_dai_driver *qmc_soc_dai_driver)
+ {
++	struct qmc_chan_ts_info ts_info;
+ 	struct qmc_chan_info info;
+ 	unsigned long rx_fs_rate;
+ 	unsigned long tx_fs_rate;
++	int prev_last_rx_ts = 0;
++	int prev_last_tx_ts = 0;
+ 	unsigned int nb_tx_ts;
+ 	unsigned int nb_rx_ts;
+ 	unsigned int i;
++	int last_rx_ts;
++	int last_tx_ts;
+ 	int count;
+ 	u32 val;
+ 	int ret;
+@@ -879,6 +884,30 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
+ 				return -EINVAL;
+ 			}
+ 		}
++
++		ret = qmc_chan_get_ts_info(qmc_dai->chans[i].qmc_chan, &ts_info);
++		if (ret) {
++			dev_err(qmc_audio->dev, "dai %d get QMC %d channel TS info failed %d\n",
++				qmc_dai->id, i, ret);
++			return ret;
++		}
++
++		last_rx_ts = fls64(ts_info.rx_ts_mask);
++		last_tx_ts = fls64(ts_info.tx_ts_mask);
++
++		if (prev_last_rx_ts > last_rx_ts) {
++			dev_err(qmc_audio->dev, "dai %d QMC chan %d unordered channels (RX timeslot %d before %d)\n",
++				qmc_dai->id, i, prev_last_rx_ts, last_rx_ts);
++			return -EINVAL;
++		}
++		if (prev_last_tx_ts > last_tx_ts) {
++			dev_err(qmc_audio->dev, "dai %d QMC chan %d unordered channels (TX timeslot %d before %d)\n",
++				qmc_dai->id, i, prev_last_tx_ts, last_tx_ts);
++			return -EINVAL;
++		}
++
++		prev_last_rx_ts = last_rx_ts;
++		prev_last_tx_ts = last_tx_ts;
+ 	}
+ 
+ 	qmc_dai->nb_chans_avail = count;
 -- 
-Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k.org
+2.49.0
 
-In personal conversations with technical people, I call myself a hacker. But
-when I'm talking to journalists I just say "programmer" or something like that.
-                                -- Linus Torvalds
 
