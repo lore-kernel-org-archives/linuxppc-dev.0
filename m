@@ -1,78 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-12368-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12369-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EC23CAC59A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Sep 2025 14:12:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B372ACA1013
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Sep 2025 14:53:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSHdC4SV9z2xnr;
-	Fri, 19 Sep 2025 00:11:59 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=156.67.10.101
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758204719;
-	cv=none; b=NJC0CAakEIg7n6ZRlcdsYFt5PL+DSG13F4n/Fxzl0sHHPJwETutQkZslzaaFq2VXaohb5YzMvWoEgaVScUETYsHGIkP0fzI+lxl/pamBI49C1cwHvk6gOZQLMH4lMXcmTWXrBeyOWFrgfF3t6uUn2NRhTLHaBURAbcn1srrN2v7dXRiEQHDzm9KyNQ2UV3bUIvVp/7jSMtWUfUm0U1C4Sl9ChqFVyMkU2iPVISF2p2JA3nj1d/u+udP4RPwnxkH5zXpvpLk33QJQvKb68v1hyoXQQupm4gLTLwkQOtJXQzRGay8xHQ9A6CaFz1WmolaPBwE2qWPdClWWyND8aNENmQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSJY92F0dz2xnh;
+	Fri, 19 Sep 2025 00:53:33 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::34a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758205000;
+	cv=none; b=XbAEoFyoMPvOsV/OwWUFcQda2sf+ehHP+HjzzJkZCWs1CQaQzgNc7Ve8iaN7e5CBxPMUEY2bq6F7osuiNZsl/OtTIi721kp00E9Bo1ViSSXQHgueL2VcF/hsZIprt+ZNyZTWPNVZSyKyRNRPYmoyU9h70hXUzEjjnKa+Agd/A2alQUdvuE7mahK4+7QHUJhG/jAw+12So7/vMLPcN2mAuIVXOQyEx3l2W4ijgHf4pPu/4DcckjEZ5Ky27TMs/iSap56oLX/sWwnO20uWjja5r8KyedeBDV7pgPxAih/efNDyQyqDIy9QlUO1eiyLzWzUxpiQkSxjFrv06LzNalfLcg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758204719; c=relaxed/relaxed;
-	bh=2WK7RF7NsYG+8NsyTTvySh7GNGT5jm6UcDa778flAEQ=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=JiZY793vEARhKrRufzxPzIU/UgVvTni8355WWqDTD+qbx9NTrXodkPlmqIQPagnELg6EwAWr0yYV294UadC8dM7+ohwjgPgeRRWGfAY7Z83SIBUqbOXH8VdNmMUY7N5tl0B+H4PZ2KfyPu48vHFFypaBsc3ZuljdsiOKGfPI86Cy52r+4kcTDLVznCkEQfeRBVYWgXluFTdrlWUwGB0ZhwBqXQGjti4IsM6J9lvQZJYhSXlAqO6bIhTlRBj80X5Fv/J87NWtcOuOqdf4MgYfnckP3srBblWJpY8XRd7mIv2Exs3aVGkSoQqrYBFMaSu+RsMjP2vgiT6ykCiacHzYWA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch; dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=mffiEw3N; dkim-atps=neutral; spf=pass (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org) smtp.mailfrom=lunn.ch
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=lunn.ch
+	t=1758205000; c=relaxed/relaxed;
+	bh=4VpmXSIu+qpJvsDpO1PV+NUaPdBqqdiEw/vU8U+iM14=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=LvFeDlwBb2kpAL9Sh31Dx5Wk8+hvJQl9H4Huukn3QDj0oB/+Iqy9WRiw9ggFwTVZjfUR8f0SBJuzohHE67Z0K4Uqvoekyr1Caye5qeHxfdm4oy4sIr0bHxO4RzTV+eNMecUAFP0DsCnLa4dEyC4YHrMUROEdKGnZS/Qjuap2CRDIb4LMTvFsip//1WRewxW4GNkTvDJ3me8DM03t/YSx87fXGt8vCjI9fgAi7dmOADuPZGNdHw3/3K3mualbv3k/QkQjEQRXeexhdtC+9i2MOjEwRo8fvhGFrRf2AJBqezQjl+Dk6UcfA4e/VgpPYEfiqdN0y9MZRlaILSUroA3dsA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=K1Q+b1cU; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3rbtmaackdoklmlcyldrzzrwp.nzxwtyfiaan-opgwtded.zkwlmd.zcr@flex--abarnas.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--abarnas.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=lunn.ch header.i=@lunn.ch header.a=rsa-sha256 header.s=20171124 header.b=mffiEw3N;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=K1Q+b1cU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=lunn.ch (client-ip=156.67.10.101; helo=vps0.lunn.ch; envelope-from=andrew@lunn.ch; receiver=lists.ozlabs.org)
-X-Greylist: delayed 2236 seconds by postgrey-1.37 at boromir; Fri, 19 Sep 2025 00:11:58 AEST
-Received: from vps0.lunn.ch (vps0.lunn.ch [156.67.10.101])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--abarnas.bounces.google.com (client-ip=2a00:1450:4864:20::34a; helo=mail-wm1-x34a.google.com; envelope-from=3rbtmaackdoklmlcyldrzzrwp.nzxwtyfiaan-opgwtded.zkwlmd.zcr@flex--abarnas.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x34a.google.com (mail-wm1-x34a.google.com [IPv6:2a00:1450:4864:20::34a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSHdB5mwRz2xlR
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 00:11:58 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed; d=lunn.ch;
-	s=20171124; h=In-Reply-To:Content-Disposition:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:From:Sender:Reply-To:Subject:
-	Date:Message-ID:To:Cc:MIME-Version:Content-Type:Content-Transfer-Encoding:
-	Content-ID:Content-Description:Content-Disposition:In-Reply-To:References;
-	bh=2WK7RF7NsYG+8NsyTTvySh7GNGT5jm6UcDa778flAEQ=; b=mffiEw3N0Xsy0iehgYkPk5d+dg
-	sWKIhv5XK/zUNW+x7cpwzMKn+fWVigxBkekrLwF/YIOd76oce1YtRzHGNOghxSvsx4TZKrO8BB5yX
-	oA6G/OA6kjESeDYNowdA/HoKupolfgZZgm9ZJ1RTWZMa7p8eDc9puB5qodRd9gcxhoms=;
-Received: from andrew by vps0.lunn.ch with local (Exim 4.94.2)
-	(envelope-from <andrew@lunn.ch>)
-	id 1uzEmL-008pSt-MZ; Thu, 18 Sep 2025 15:34:29 +0200
-Date: Thu, 18 Sep 2025 15:34:29 +0200
-From: Andrew Lunn <andrew@lunn.ch>
-To: Arnd Bergmann <arnd@arndb.de>
-Cc: Jason Gunthorpe <jgg@nvidia.com>, ksummit@lists.linux.dev,
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
-	linux-mm@kvack.org, imx@lists.linux.dev,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Richard Weinberger <richard@nod.at>,
-	Lucas Stach <l.stach@pengutronix.de>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Geert Uytterhoeven <geert+renesas@glider.be>,
-	Ankur Arora <ankur.a.arora@oracle.com>,
-	David Hildenbrand <david@redhat.com>,
-	Mike Rapoport <rppt@kernel.org>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	Matthew Wilcox <willy@infradead.org>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
-	Vlastimil Babka <vbabka@suse.cz>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Ira Weiny <ira.weiny@intel.com>, Nishanth Menon <nm@ti.com>,
-	Heiko =?iso-8859-1?Q?St=FCbner?= <heiko@sntech.de>,
-	Alexander Sverdlin <alexander.sverdlin@gmail.com>,
-	"Chester A. Unal" <chester.a.unal@arinc9.com>,
-	Sergio Paracuellos <sergio.paracuellos@gmail.com>,
-	Andreas Larsson <andreas@gaisler.com>
-Subject: Re: [TECH TOPIC] Reaching consensus on CONFIG_HIGHMEM phaseout
-Message-ID: <ca6fc8dc-d1ee-41a8-a1c9-11ed2907207f@lunn.ch>
-References: <4ff89b72-03ff-4447-9d21-dd6a5fe1550f@app.fastmail.com>
- <20250917125951.GA1390993@nvidia.com>
- <02b0f383-1c43-4eeb-a76f-830c2970b833@app.fastmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSHkb37Qnz2xnh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 00:16:38 +1000 (AEST)
+Received: by mail-wm1-x34a.google.com with SMTP id 5b1f17b1804b1-45b98de0e34so10505025e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2025 07:16:38 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1758204996; x=1758809796; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:from:subject:message-id
+         :mime-version:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=4VpmXSIu+qpJvsDpO1PV+NUaPdBqqdiEw/vU8U+iM14=;
+        b=K1Q+b1cUyKomKYEgP4MacM+YcIffEPeWnL7D/2Kl19yhMYOGdYYV5nKyrshWa7ZgtU
+         KQAQcbn57r/KO9WKIYnYr3ctBCQdZZQ6HeJevi4cNXpkRtO9+ZGvHVrmKPPrCNnNIZOs
+         CkscWBFVmvnXhUpIcf/cwg1FHc6t/TWyY2blm7Wg3yWo/MZZBq67lzxgELVv9QMj4UsG
+         gUrmXI4cH3IA3WxxF0HxduBJNKhlGJVsEPoK99i3OgkcHw1+LMZ+caTYXtEmCkVLRlOz
+         fWNU8ieuJp9dARnf7OuueMs19AxqA1Y53SsxT/e7U21PU1hSIBc3UTIATZBHXFxNktEb
+         17/w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1758204996; x=1758809796;
+        h=content-transfer-encoding:cc:to:from:subject:message-id
+         :mime-version:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=4VpmXSIu+qpJvsDpO1PV+NUaPdBqqdiEw/vU8U+iM14=;
+        b=qoyqqfrrvx0rY0OQRTfNx3DPZzloZ1zVicdLz3FYlylpP5nE9zP8t6+P830FrM6Mw7
+         sOMfjHEgM8QQ+x0yfHpJ0hYfNoUs4a6110S5mvUNp2/XWGoqt1v/0aGZ6mfaGQH/GR0+
+         GtV8b5BbZmthIXZCJxKePcARP5d5uxsZjqAKANN9OoezRojZE4alnoxvj9kU5S3WrWYY
+         24woul3ObcygE+1ofMLjWVmpLEOjSA3AzvX94SEHgnHu+PuAe2hTq0XIWN/tqYVvbJta
+         9WlPbe/+EwGYyB4gz+0ACIpTtgjHS6Gb7DfkA7o/LBgEzsG8Xf32CGEHWU7hS/SssBoX
+         DtdA==
+X-Forwarded-Encrypted: i=1; AJvYcCXUY8hAOX38fc5Psx0NEVWm5i8w/0bba+iHOQGT9l+Ez9mZKNg8PDHxBs3FJZ20xOHu3sSqfhcm0mkKYqg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywy/r3bzucJsH4H1l8el1uorSs7C9YCeguKq2gkIy9PoITcu2bh
+	BPUjnhzknsrfERy9uZ4ye8NX/b5ouW2oNomci8sT7+jRUjl8BolMyzW9atv+O15epxWUacSJdbI
+	ncgIon+IIcg==
+X-Google-Smtp-Source: AGHT+IFG/CG36IeKleqVuSqLctsPfpA2xFgjVVKw4opNjMh9ri6iTo2cGwDFZ3VXvHE8Jmqqc1cSa0C77UST
+X-Received: from wmoi20.prod.google.com ([2002:a05:600c:4814:b0:459:d8e5:ae9d])
+ (user=abarnas job=prod-delivery.src-stubby-dispatcher) by 2002:a05:600c:4e93:b0:45f:2d21:cb36
+ with SMTP id 5b1f17b1804b1-462074c576amr50115025e9.35.1758204996093; Thu, 18
+ Sep 2025 07:16:36 -0700 (PDT)
+Date: Thu, 18 Sep 2025 14:16:33 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,28 +75,43 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <02b0f383-1c43-4eeb-a76f-830c2970b833@app.fastmail.com>
+Mime-Version: 1.0
+X-Mailer: git-send-email 2.51.0.470.ga7dc726c21-goog
+Message-ID: <20250918141633.339803-1-abarnas@google.com>
+Subject: [PATCH] powerpc: cell: make spu_subsys const
+From: "=?UTF-8?q?Adrian=20Barna=C5=9B?=" <abarnas@google.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
+	"=?UTF-8?q?Adrian=20Barna=C5=9B?=" <abarnas@google.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-> * Marvell mv78xx0 and kirkwood (armv5 pj1) were fairly
->   powerful in 2008 and could support at least 1GB of RAM,
->   but I only found one machine (OpenBlocks A7) that does
->   this. It's unclear if anyone is still updating kernels
->   on this machine, but they could /probably/ use
->   VMSPLIT_3G_OPT if they do.
+Because driver core can properly handle constant struct bus_type,
+move the spu_subsys to be a constant structure as well, placing it into
+read-only memory which can not be modified at runtime.
 
-If i remember correctly, there was a design issue with the OpenBlocks
-A7, and it would not run with its full amount of memory. To get a
-stable system you had to limit the RAM. I don't remember if that was
-just with the NULL series, and it was fixed for mass production
-devices, or they are all broken.
+Signed-off-by: Adrian Barna=C5=9B <abarnas@google.com>
+---
+ arch/powerpc/platforms/cell/spu_base.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-I doubt there are any mv78xx0 machines left, why where never very
-popular, but there are still Kirkwood NAS boxes around. I keep mine up
-to date, put an LTS kernel on it once a year, update to the latest
-debian sid.
+diff --git a/arch/powerpc/platforms/cell/spu_base.c b/arch/powerpc/platform=
+s/cell/spu_base.c
+index 2c07387201d0..733b512992c0 100644
+--- a/arch/powerpc/platforms/cell/spu_base.c
++++ b/arch/powerpc/platforms/cell/spu_base.c
+@@ -464,7 +464,7 @@ void spu_init_channels(struct spu *spu)
+ }
+ EXPORT_SYMBOL_GPL(spu_init_channels);
+=20
+-static struct bus_type spu_subsys =3D {
++static const struct bus_type spu_subsys =3D {
+ 	.name =3D "spu",
+ 	.dev_name =3D "spu",
+ };
+--=20
+2.51.0.470.ga7dc726c21-goog
 
-	Andrew
 
