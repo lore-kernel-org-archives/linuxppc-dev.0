@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-12384-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12385-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9C6E6CA1013
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Sep 2025 16:50:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5EE0BCAC59A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Sep 2025 18:20:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSM8K6CM6z3cQx;
-	Fri, 19 Sep 2025 02:50:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSP860QBJz2xnr;
+	Fri, 19 Sep 2025 04:20:38 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758214241;
-	cv=none; b=R/dZgvip7M7Tgrj0BZs3cDxLuMnOhuBK86tWB/RVKJHmj/h5e+cN3D8ehEgpHlJQ9o9i8s8QNa+3y7SvJHDICBcm8nG/WYqPE1T8Wsic+Rjky2p0SDNWwPZMsRg8zOfQRU/8gozp0NHxs5ItzJ/pw0bpdVZl+z52OHit6LnpdShWKh1WpphmWBn5RKYI688OEQdwst1YYBmu3q2HJNJOailFGa0q0BmaDcVKSZfN6Cp12uK/tLlf5xXNFXkEGxjp3u7HHATqPXu64sFC5Nw5bzz0dbtY9yDGL7xcr4vP2MQ5n0bveHCG2OP4WVGroCd/tihd1SUm4l2e/KbfkaUFcA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758219638;
+	cv=none; b=MYJXkP+/Z79F9llz8CLet9hPVernJAKFSyhOo4FI6K8wmRNNe4qe2+CMFFa1PlWe8fyHS3UCmKGhpTOe3SfvhfNmQP6T4CDPz43lIYHGzWc+8NQLlPBth0QHC6i07bP2mmIoB8cmYhUUOFyAsD2qPR7f4TzBAX7/Dl8qUhysPhxvmUPdDgWVXKdW/alsm103Ppj5Ep5jB50nkO/OE8XF4ANSaoK8NUgLJA8ZaTRvCJoEyikZBAiSTSYt/HTkV54iktHxAHIPZhyNnDwiO9/VrlN13sd9EjT9rbYR5dSB99qkhaZb8/CRXCse2Z9zrR/5ZramQc8NYahPjONvIKDakA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758214241; c=relaxed/relaxed;
-	bh=1hrkKIr90ran6knul6gyeMK0S/D2N6iHzxqgIpeMC48=;
+	t=1758219638; c=relaxed/relaxed;
+	bh=7oNy9QkuVfOzMkFgXo7Ye5EoocJCEZK9za4vo0VAhr0=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Mb7sKsxSrRHKxeU7Fgn9aMUJNSPInmRDPVsgp0otfY2ujtx3njQH3CkTY9UEz/4BiHHZ8J2KJPSRne/hotlzhA6hHFIN35w9YE8urv/jv8kFK7OkCycqqw3aXhFZXPpYrJp5Alu7rXO0wwl54t0bf1qH5+twQDjVf4lOzcyIKAxIuLMTR0no49/fFji6GmcUaqRdNuCG56OmrqFXJqckqVBjwFSwXYkbzhIB0w1IpAx7BUoSUxgnXC8iO036M7kyrF365hluU3vBGAk7YDhX8oM3hE20oaMWw7QyUR7jtmDYPC0Sbg0za0e/Ig2+3nxqXWddEWcurGS07OJFX7TruQ==
+	 In-Reply-To:Content-Type; b=DuFF9OP0N2tptRii8JjtNBRM0XP88CSLMELI9AWDv9J0PLVXzioo09tsuDZBEp7YxvXdQ/Gt1XgY3DbuSx4TSFY5mLgsRNCXBQN5F1OQWH54a/xOnKOiJv3dc52rDvgoo+pq5GN6NTq36HlvuI84kROREiPx9VS4ZinAnmSXSKOaGHrTelQWxmpGNqteEfNShNs0tHlI815YiUrKHQQHBD6kRSrN2LIHkmX/eLn5SYqmA5T04kGYATS2zL0QzuxR3WmtYj2lKq+iCod8oGA9lcvi389jG3/rYq13fuN3cOmG7ohpWXuCI3XGukeqROck1k121tgfocZvL8k61tBuAg==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSM8K2SNVz3cQq
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 02:50:41 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSP8539pHz2xnh
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 04:20:36 +1000 (AEST)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cSK5K1F5gz9shQ;
-	Thu, 18 Sep 2025 17:17:57 +0200 (CEST)
+	by localhost (Postfix) with ESMTP id 4cSLsR0SvSz9sgS;
+	Thu, 18 Sep 2025 18:37:47 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id FqKmve-d9GL7; Thu, 18 Sep 2025 17:17:57 +0200 (CEST)
+	with ESMTP id c-Hjp8AA_eSf; Thu, 18 Sep 2025 18:37:46 +0200 (CEST)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cSK5K0PKRz9shF;
-	Thu, 18 Sep 2025 17:17:57 +0200 (CEST)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cSLsQ6Hsnz9sgR;
+	Thu, 18 Sep 2025 18:37:46 +0200 (CEST)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id EFA5D8B775;
-	Thu, 18 Sep 2025 17:17:56 +0200 (CEST)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C0B908B776;
+	Thu, 18 Sep 2025 18:37:46 +0200 (CEST)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id yA9-sMw8lPFZ; Thu, 18 Sep 2025 17:17:56 +0200 (CEST)
+	with ESMTP id OohEcxeSfQe1; Thu, 18 Sep 2025 18:37:46 +0200 (CEST)
 Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 55C098B767;
-	Thu, 18 Sep 2025 17:17:56 +0200 (CEST)
-Message-ID: <7c0c53bc-1436-4a48-8afa-8bfff439ce67@csgroup.eu>
-Date: Thu, 18 Sep 2025 17:17:55 +0200
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id EFF928B767;
+	Thu, 18 Sep 2025 18:37:45 +0200 (CEST)
+Message-ID: <bad14e16-0d1c-411a-8b3d-89d8df05b9b5@csgroup.eu>
+Date: Thu, 18 Sep 2025 18:37:45 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,64 +59,85 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/smp: Add check for kcalloc() in
- parse_thread_groups()
-To: Guangshuo Li <lgs201920130244@gmail.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Naveen N Rao <naveen@kernel.org>,
- =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
- Thomas Gleixner <tglx@linutronix.de>,
- "Gautham R. Shenoy" <ego@linux.vnet.ibm.com>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-Cc: stable@vger.kernel.org
-References: <20250918131513.3557422-1-lgs201920130244@gmail.com>
+Subject: Re: [PATCH RESEND v3 0/4] ASoC: fsl: fsl_qmc_audio: Reduce amount of
+ interrupts
+To: Herve Codina <herve.codina@bootlin.com>, Qiang Zhao <qiang.zhao@nxp.com>,
+ Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>,
+ Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>,
+ Liam Girdwood <lgirdwood@gmail.com>, Mark Brown <broonie@kernel.org>,
+ Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+ linux-kernel@vger.kernel.org, linux-sound@vger.kernel.org
+References: <cover.1758209158.git.christophe.leroy@csgroup.eu>
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 Content-Language: fr-FR
-In-Reply-To: <20250918131513.3557422-1-lgs201920130244@gmail.com>
+In-Reply-To: <cover.1758209158.git.christophe.leroy@csgroup.eu>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 18/09/2025 à 15:15, Guangshuo Li a écrit :
-> [Vous ne recevez pas souvent de courriers de lgs201920130244@gmail.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
-> 
-> As kcalloc() may fail, check its return value to avoid a NULL pointer
-> dereference when passing it to of_property_read_u32_array().
-> 
-> Fixes: 790a1662d3a26 ("powerpc/smp: Parse ibm,thread-groups with multiple properties")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Guangshuo Li <lgs201920130244@gmail.com>
-> ---
->   arch/powerpc/kernel/smp.c | 4 ++++
->   1 file changed, 4 insertions(+)
-> 
-> diff --git a/arch/powerpc/kernel/smp.c b/arch/powerpc/kernel/smp.c
-> index 5ac7084eebc0..fa0cd3f7a93c 100644
-> --- a/arch/powerpc/kernel/smp.c
-> +++ b/arch/powerpc/kernel/smp.c
-> @@ -822,6 +822,10 @@ static int parse_thread_groups(struct device_node *dn,
-> 
->          count = of_property_count_u32_elems(dn, "ibm,thread-groups");
->          thread_group_array = kcalloc(count, sizeof(u32), GFP_KERNEL);
-> +       if (!thread_group_array) {
-> +               ret = -ENOMEM;
-> +               goto out_free;
+Le 18/09/2025 à 17:34, Christophe Leroy a écrit :
+> This is a RESEND of v3 sent one month ago, see:
+> https://lore.kernel.org/all/cover.1754993232.git.christophe.leroy@csgroup.eu/
 
-out_free does nothing as thread_group_array is NULL, so don't goto 
-out_free, instead return -ENOMEM immediately:
+Sorry for the noise, v3 was 
+https://lore.kernel.org/all/cover.1755504428.git.christophe.leroy@csgroup.eu/
+The resent is correct though, only this reference in the cover is wrong.
 
-	if (!thread_group_array)
-		return -ENOMEM;
+Christophe
 
-
-> +       }
->          ret = of_property_read_u32_array(dn, "ibm,thread-groups",
->                                           thread_group_array, count);
->          if (ret)
-> --
-> 2.43.0
+> 
+> This series reduces significantly the amount of interrupts on
+> fsl_qmc_audio device.
+> 
+> Patches 1 and 2 are preparatory patches.
+> Patch 3 is the main change
+> Patch 4 is a cleanup which is enabled by previous patch
+> 
+> Changes in v3:
+> - Properly check the buffer descriptor is unused (Patch 1, comment from Herve Codina)
+> - Fixed copy/paste error (patch 2, comment from Herve Codina)
+> - Fixed build failure (patch 2, comment from Herve Codina and Test robot)
+> 
+> Changes in v2:
+> - Don't remove UB bit (Patch 1, comment from Herve Codina)
+> - Make sure audio channels are ordered on TDM bus (Patch 2, new patch, comment from Herve Codina)
+> - Drop struct qmc_dai_chan  (patch 4, new patch)
+> 
+> Backgroup (copied from patch 3):
+> 
+> In non-interleaved mode, several QMC channels are used in sync.
+> More details can be found in commit 188d9cae5438 ("ASoC: fsl:
+> fsl_qmc_audio: Add support for non-interleaved mode.")
+> At the time being, an interrupt is requested on each channel to
+> perform capture/playback completion, allthough the completion is
+> really performed only once all channels have completed their work.
+> 
+> This leads to a lot more interrupts than really needed. Looking at
+> /proc/interrupts shows ~3800 interrupts per second when using
+> 4 capture and 4 playback devices with 5ms periods while
+> only 1600 (200 x 4 + 200 x 4) periods are processed during one second.
+> 
+> The QMC channels work in sync, the one started first is the one
+> finishing first and the one started last is the one finishing last,
+> so when the last one finishes it is guaranteed that the other ones are
+> finished as well. Therefore only request completion processing on the
+> last QMC channel.
+> 
+> On my board with the above exemple, on a kernel started with
+> 'threadirqs' option, the QMC irq thread uses 16% CPU time with this
+> patch while it uses 26% CPU time without this patch.
+> 
+> Christophe Leroy (4):
+>    soc: fsl: qmc: Only set completion interrupt when needed
+>    ASoc: fsl: fsl_qmc_audio: Ensure audio channels are ordered in TDM bus
+>    ASoC: fsl: fsl_qmc_audio: Only request completion on last channel
+>    ASoc: fsl: fsl_qmc_audio: Drop struct qmc_dai_chan
+> 
+>   drivers/soc/fsl/qe/qmc.c      |  44 +++++++++---
+>   sound/soc/fsl/fsl_qmc_audio.c | 125 +++++++++++++++-------------------
+>   2 files changed, 87 insertions(+), 82 deletions(-)
 > 
 
 
