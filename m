@@ -1,71 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-12371-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12372-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D34D5CAC59A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Sep 2025 14:54:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF72BCA1013
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Sep 2025 14:54:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSJZ83wGnz30Pg;
-	Fri, 19 Sep 2025 00:54:24 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::549"
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSJZR17r8z2yqR;
+	Fri, 19 Sep 2025 00:54:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::349"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758204506;
-	cv=none; b=N73vqNBKc+Y4HmvxQ/zipwweTqAbRIysLkuVUxZVQvnMooFNHMyRBWKYCES3i9zEaOOREgDTBySP/8jiwPI4gw987khPPwk6XAXBEW+P00/2EFg/PTcb0IZVEXk0PVhF87HwtpNOPkwDDmwjtlQeS7KiiiUsvzR3Mhch/C6gt7R2zK5aU8wTDU0fT82HwC1N5GZQlHEj6UIO97bUn0nccAexSNjd48Nr7XtNfHJQtFJ406bs/D+FaRkE1Rq5YDqSBqbDO3kQzGKmYKnhKzEPP3qRHB9598tdd6QWWcNivFTXBPFv+dM5P1+SB72/Ad7UBfqDg7YPlRMOfpahi2YycA==
+	cv=none; b=ksegnhDdts0XeSufGfdxu1VHo3WEnjphRoMoD3rwk3CdrIy64o5vsevAOPIlPse2K4hq1dBmzLPpvzimqca4pjKsAEXzi5T2Hy6NGREhXSJegxt1FQsZQK7qXEOME3iERNe+M3qrgREJHvEM5ODun3LM0xN6CPYaBJgOLk29z5GAeCO8cwhPrwb8muGYSTOg6T05A+ISIU510cy1FK05chhC+sZGHhdwrSDB29eCIHBhcwDOwnccrnUDfe/LdpHo8UojyNKKr44H/XU9sJO2Sp5hmbHwzIDorbiYJboQ0deHaUMF0u8y2IB57ph9djuWaDAjaBgsSYUtTWTuLO9juA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1758204506; c=relaxed/relaxed;
-	bh=DgRqLSSOT3PxiLx5xxJiQMGC6CiLApOU4Ty9j4Na8zg=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=i4smtE/qaritNwtj1RnSsKyq960Rhe+wWjkwgWwzI1yurkTlVUgtymdn3wpweMsy7lNjDWHQTinyN/zfnk7jwCDJeVVT0Jus9qPlXxAi7H4QkjqLJvUoqyvXXaDtjVLS88prHYZgxb70zaTRAaRB5EbW9WRFlejEkGbWIFXJTqX359YA8QFnBkBHXqGREaesdJGT/2pubEaIIap+hL4lNNCT8iyRvlUwARR4ju1Ts/xwPZ9xMCb5U0F1uW/5pyOztk+ZifvhM+lIhlPJlBp4M42JYfKY1TujXstMdEotZxc4+3IGDOZipg5yo3v2YsksJIEtJiz7mqixV96X087uqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=yNpld7X5; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::549; helo=mail-ed1-x549.google.com; envelope-from=3vrlmaackdpyyzyplyqemmejc.amkjglsvnna-bctjgqrq.mxjyzq.mpe@flex--abarnas.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--abarnas.bounces.google.com
+	bh=zX8hRmCAzatzTP7W5f8Y/6xpy5/2V7FwxYbZWinrYv8=;
+	h=Date:Mime-Version:Message-ID:Subject:From:To:Cc:Content-Type; b=PVOxQNAZwhWs3PQEs/p96ZPKQ7tJy4cK1vDo35C0q701w3U80f4WrrEGT26J56WK3LNt7kUaWqDumBpgqwl//jBF1sxEZbyJw2c4cuIQbFouPiWg7TG62MXhqQZNUuTZzl24bB/FfFkfX64jqffikLasqjxCMzR338oIws6+fKbgGFK7QA30CXHcHnAFS9OEhhlXYzRrswUS7vwTHmNNkktEMMsQTAIkxUdadeU4w6l4H7zSkTFi6PUwG540cbRZic+0lVH56BFxt2FLYsdwbsNwK0RlU3/fHXr1noOVRmMXAZQBJgXE1ETemb7nyZQSFYPlgQak+bOtMRYDFgPHbQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=QQpnD4C6; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::349; helo=mail-wm1-x349.google.com; envelope-from=3uxlmaackdpqwxwnjwockkcha.ykihejqtlly-zarheopo.kvhwxo.knc@flex--abarnas.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--abarnas.bounces.google.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=yNpld7X5;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=QQpnD4C6;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--abarnas.bounces.google.com (client-ip=2a00:1450:4864:20::549; helo=mail-ed1-x549.google.com; envelope-from=3vrlmaackdpyyzyplyqemmejc.amkjglsvnna-bctjgqrq.mxjyzq.mpe@flex--abarnas.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-ed1-x549.google.com (mail-ed1-x549.google.com [IPv6:2a00:1450:4864:20::549])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--abarnas.bounces.google.com (client-ip=2a00:1450:4864:20::349; helo=mail-wm1-x349.google.com; envelope-from=3uxlmaackdpqwxwnjwockkcha.ykihejqtlly-zarheopo.kvhwxo.knc@flex--abarnas.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-x349.google.com (mail-wm1-x349.google.com [IPv6:2a00:1450:4864:20::349])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSHY52lLxz2yGM
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 00:08:25 +1000 (AEST)
-Received: by mail-ed1-x549.google.com with SMTP id 4fb4d7f45d1cf-62806a204d9so1004408a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2025 07:08:25 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSHY468vXz2xlR
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 00:08:24 +1000 (AEST)
+Received: by mail-wm1-x349.google.com with SMTP id 5b1f17b1804b1-45f2f15003aso6534825e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Sep 2025 07:08:24 -0700 (PDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1758204502; x=1758809302; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=DgRqLSSOT3PxiLx5xxJiQMGC6CiLApOU4Ty9j4Na8zg=;
-        b=yNpld7X5yYftzFOtgiRnsH26ndkMGSulqzPNhb1UJGYWFOCQUMXcAkxee0CCxNNZzc
-         NzoKSBXIuOmqZnmAG2j5FJw24Lxk6kJ4It7rWkIuTvWu3dwq+7fqGT4GVy7aqItZL807
-         DxgIZX5m4wdvVp/p8xFotTJ6W8gtByvJEd6F6P9rMwoa8lrMHLLgkoew4C8e5KQCdBeO
-         Wf41IZwDub/I11LGqijR5FBK8Pt/ASSqSKCyI6bKF+ttCDkHCSPVjch8vWEBXKyyeee1
-         uHDKoKygAGBpfOTF1vaGgKD6QXJT35/14zTGeto0DCBeK/dVvasCJffbFMJ4VlA1i5sA
-         2IpQ==
+        d=google.com; s=20230601; t=1758204499; x=1758809299; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:from:subject:message-id
+         :mime-version:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=zX8hRmCAzatzTP7W5f8Y/6xpy5/2V7FwxYbZWinrYv8=;
+        b=QQpnD4C6JsJ44nnESgg41X1Qf5kiQaDuSTlDyB3QrgTECoLIyBzoNnmHVh42w2dz8s
+         XENPLbZN4qNMB42WxmtIkTZpXNw62J16EIM7SJPWXKPq5Oov8o9EYO+1ncQNK4l2BlmJ
+         Sf3xu6oW5AAy8xrsNajBOzENip4rZR/PsblIVVjoSXZ2fEIhDIVVQWTq6OE6orClhe33
+         cpnxy2aHw9gfCCH3vgRLKt/aoAnuqUVyYGDJ7J6rJKQVu1LKfQBD4TJyutg8Dui3MGGH
+         /XplawgGZKdQ/JAmy39b3r9yz5vkCOdlLs97odp7JtvOpOaZX5Ox7uwSdRTBJELrhcat
+         PCrA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758204502; x=1758809302;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=DgRqLSSOT3PxiLx5xxJiQMGC6CiLApOU4Ty9j4Na8zg=;
-        b=Co71SvC3i3OEDR1vXqCaBxXkV4jaY1T77v7Im6usVQafW+LaTTwSqNi47srD/QR4UX
-         akaEunz0jQkFrx3X3xMvYZYO/lME7/4r1tirRiBbbURVpM+BnYzst1i1cYVc8QddD1yF
-         Tmy6ZDqb3U+Yjo0vXla6gwYcuJg81hCpgnjUxFP/2iqpC+cEn5hsqVxy/LV5PXzhqpjR
-         C03ncavInTfe8hz2s4Lpx4ttAzR9YqnQm7gzT5qoBoA1FhQly1DPfFJnIGTjwAPnIS9R
-         h8Rit6WlNTSz4xeDmYb6gH4kpiJk6uIpCTe9eGMZyhn4NJanM7ClZHDOLF62WxsPyQ7c
-         G6Hg==
-X-Forwarded-Encrypted: i=1; AJvYcCWbbzD1ZJsTDZQ5yFIrXOnSh7pdP1R9y9Q+KBQviZtoqHpZVWmVhGalVWa8/BfqyQlNKmq3aLQRFn7OM/k=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yzk1CA+CBtsrP6vlwUpWlQuphw0y/wgxn+E7SEmc+WVaeEgXYlx
-	VK7D4Sr7HCMXd+vnCZ85xV17XVjfzUKt03GfWoD1o7DpD3qtEXG+w/INsYfixlnPDbo8MnPaHhn
-	FJADbfqizNA==
-X-Google-Smtp-Source: AGHT+IHPVGSdrE8o17sF95aDg0BJq+Gm5S9XjEdsZl4DGTYeID7CtPhrC3cVgG3JYaHRggbIvqDrfyHMNHxp
-X-Received: from edt23.prod.google.com ([2002:a05:6402:4557:b0:62b:a7ca:c421])
- (user=abarnas job=prod-delivery.src-stubby-dispatcher) by 2002:a05:6402:848:b0:629:7973:e8b1
- with SMTP id 4fb4d7f45d1cf-62f83c32c0fmr5545831a12.7.1758204501828; Thu, 18
- Sep 2025 07:08:21 -0700 (PDT)
-Date: Thu, 18 Sep 2025 14:08:16 +0000
-In-Reply-To: <20250918140816.335916-1-abarnas@google.com>
+        d=1e100.net; s=20230601; t=1758204499; x=1758809299;
+        h=content-transfer-encoding:cc:to:from:subject:message-id
+         :mime-version:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=zX8hRmCAzatzTP7W5f8Y/6xpy5/2V7FwxYbZWinrYv8=;
+        b=Pn5B8Ar6Nwrsq7ejVWkONVNnUsxE3TgW6gwaT+el+IofTYr+8d2wTtEPLyMgT6NHR0
+         foYt7bPrDZREb/k9IKScRns6RcXsyUZhwxDjHwwQmG2Zig/aXpF5VL6uHUYvqKXvw3AP
+         NsESt2hX8eXL/V6y58gadaeZqkWzdcbWqq08x6RsEgeGAkrzrDyJai2FdLj8cX+Bjbx/
+         zZ8K7HphVF9rPYbDU0Um4LUf7eXd9C3N+auwsMZ4vHSlxrVwzTcDkrvjUr2qcnoxIfz7
+         jlPKVfwRn9mqiBHzuP0LmdwiGvIJ1YYIaHLdfoC7CnXjGq2tXt3ESuCmnzfXVTjiG+f+
+         O/3g==
+X-Forwarded-Encrypted: i=1; AJvYcCXNQbOeRQZoMvCNDIbtJUADwBFxOU+Iwdn20c7uzr3OyPfnaVKQWv9knx1SuLrZ0ua9JcSLi8wC3RFKefs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxiwXwdLEcIAuv7dRaP7y0we02uqkLsdH+7FRpIdvy0gCHi7RSW
+	2B4SOEmeJBgwBzylUM/AeDEfI7wosBYSsfTZ+5sSBOohvmZHo7kkG6EGZVydcR20skuwaZFuY1l
+	m4jbvYjXIog==
+X-Google-Smtp-Source: AGHT+IF1RQGSRNYZqdScgFD6eUa92ab9fa9/BqynjtzBd+gLQZAlGCMW8rWJZNptgVbcM6q8cADYm4uMJB3v
+X-Received: from wmbdp7.prod.google.com ([2002:a05:600c:6487:b0:45b:9acb:6940])
+ (user=abarnas job=prod-delivery.src-stubby-dispatcher) by 2002:a05:600c:470f:b0:45b:615c:cd2
+ with SMTP id 5b1f17b1804b1-46201f8a4b9mr68058415e9.8.1758204499266; Thu, 18
+ Sep 2025 07:08:19 -0700 (PDT)
+Date: Thu, 18 Sep 2025 14:08:14 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,10 +76,9 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 Mime-Version: 1.0
-References: <20250918140816.335916-1-abarnas@google.com>
 X-Mailer: git-send-email 2.51.0.470.ga7dc726c21-goog
-Message-ID: <20250918140816.335916-3-abarnas@google.com>
-Subject: [PATCH 2/2] powerpc: pseries: make cmm_subsys const
+Message-ID: <20250918140816.335916-1-abarnas@google.com>
+Subject: [PATCH 0/2] powerpc: pseries: making bus_type structures const
 From: "=?UTF-8?q?Adrian=20Barna=C5=9B?=" <abarnas@google.com>
 To: Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
 	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
@@ -92,29 +88,18 @@ Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
 Content-Type: text/plain; charset="UTF-8"
 Content-Transfer-Encoding: quoted-printable
 
-Because driver core can properly handle constant struct bus_type,
-move the cmm_subsys to be a constant structure as well, placing it into
-read-only memory which can not be modified at runtime.
+Current driver core properly handle constant bus_type structures.
+Both changes are moving bus_type structures to be constant.
+It is a part of tree clean-up from non const bus_type structures
 
-Signed-off-by: Adrian Barna=C5=9B <abarnas@google.com>
----
- arch/powerpc/platforms/pseries/cmm.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+Adrian Barna=C5=9B (2):
+  powerpc: pseries: make suspend_subsys const
+  powerpc: pseries: make cmm_subsys const
 
-diff --git a/arch/powerpc/platforms/pseries/cmm.c b/arch/powerpc/platforms/=
-pseries/cmm.c
-index 5e0a718d1be7..913642647fe9 100644
---- a/arch/powerpc/platforms/pseries/cmm.c
-+++ b/arch/powerpc/platforms/pseries/cmm.c
-@@ -375,7 +375,7 @@ static struct device_attribute *cmm_attrs[] =3D {
- static DEVICE_ULONG_ATTR(simulate_loan_target_kb, 0644,
- 			 simulate_loan_target_kb);
-=20
--static struct bus_type cmm_subsys =3D {
-+static const struct bus_type cmm_subsys =3D {
- 	.name =3D "cmm",
- 	.dev_name =3D "cmm",
- };
+ arch/powerpc/platforms/pseries/cmm.c     | 2 +-
+ arch/powerpc/platforms/pseries/suspend.c | 2 +-
+ 2 files changed, 2 insertions(+), 2 deletions(-)
+
 --=20
 2.51.0.470.ga7dc726c21-goog
 
