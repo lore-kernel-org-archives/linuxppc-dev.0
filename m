@@ -1,87 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-12395-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12396-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1EC11CAC59A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Sep 2025 18:46:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49814CA1013
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Sep 2025 19:20:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSPjd6D6Jz30T8;
-	Fri, 19 Sep 2025 04:46:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758221173;
-	cv=none; b=QnqbPFaQElpAvOqjBlzSFmYJMcuZ7Kt558uAdlrvAtT7iTA5mZFbGwLX53azJ/3JlyeKQxta40bfbgts1fyex1GDpp5E9ktFLX+86gF5hggdRaOrn0iOWPvd1iIro/nKfZDSS/g6s4wjItcsHUCZEvcNtkK1R+qsYg+HeUXJHpJPX3q3zKZe2YRh528wbZo+1Om4xzuPjnXAmWfEa9VE+vDuM4crim1LoPQduJHj18LF7Ew3my5PFdwsS2VIaZYhC4NygKB+fBgy/CkE1rLab//jG4Qa1vbWQPLVE4z5WawD6STN/gNK4WnJ/jOhX4krC5oGYz1j1OW3oTrvM6Wniw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSQTK5XJBz3ckQ;
+	Fri, 19 Sep 2025 05:20:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758223237;
+	cv=none; b=EXiOaeH0qGLTamIKbkJrVpUqbUMCc9VTelVuR/+17WXImPVJ4tiCBLjjSSEPsPKb15/1J6h20UKoRQbQxiZHfXLBdDMxSMurMkFJsZ++kvb5Xv70ptNUVCsRAwyxWaSI2A9lfOcT/L6RqNBqLLJ1bUVbss2swVqjRCwTxpoAewukoHQGtB283LmSu9B5CeH8dlgogAN0x/DX5fsux6Vqhor/oyTfSYs3n9rrSS80wCFGYF38wwg1io93z3HrSs3ueaTmnv4/1rdAnUFuSUXsBhIPM7X848w+fbZZa5FKlDBSQ577jEVxN/wbZ1P/wOsCQdN9Rxeew9McxOp+WRUdIQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758221173; c=relaxed/relaxed;
-	bh=PqUci7OKZb5rhYbLe6roHnru9rUzL16Jv9A0eB8jT0s=;
+	t=1758223237; c=relaxed/relaxed;
+	bh=JYFZYMb5VsOSOUmvdt1QpwgUgCQDyiISEdj9j4qpufI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HtEzIwNihqh6gUyaCMRwHHYcfIVQFEoKPDxFsP/ItNoxxgW57z3ft0nV9WS5GzxzcN5YKR/YIhx2M2dE6v7oTY5zdzNJDOVGsbbfb9nkQKlBkuFu64ZjVfR0r54W8Gyd1H+I4Y32H1OUTjKEOWXm0zUjgGPMvR9ojBEpOkTVboMszkxjl+0xf3kBVUluT29eu5Smq0M20nLwzRSMkYWEBIS72tjj+HsOQ7xKocA8xrC+dsq6h2Ln9UfHn2Z2QFAzSHT4E/+NoZbmG/f+qZoBME6+JpUYgvpkSzwwCRWfQGhHvdnSYQ0xJxgvrOA5/cu3nrvtLjvuvX5aPcphuLL59g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XcDUWoml; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XcDUWoml;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSPjd0tZ6z3cYy
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 04:46:13 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 4988060207;
-	Thu, 18 Sep 2025 18:46:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 41BE7C4CEE7;
-	Thu, 18 Sep 2025 18:46:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758221171;
-	bh=uXtCKxAn4lJIk0uyzU0s1tMehbPq4hSpIpuFU2JE2Qo=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=XcDUWomlStMMeFZ3/TJvShNKVI2ne4pT3ymiWQxIQ5cB6pCz+OArBrbwKpELnS63X
-	 AsFRL1spAgwyeCLnIS2Br262lbJnqBbpCVd4ULOZVZtnj2C10kT6CvJ8n+8JUEAfYP
-	 jFqxdtfM+opMXomXA3Ct9jKZuU3nvXXXih1anUIUmeYA2+NA0FUjI4Yl436qNKhCCW
-	 Aa/Vm8u8X4+psfEgiqdpsNqbGjvUEPS8JA0bNbKSpeXk0dd7H1N/gfHZ8mh5pUso/C
-	 fhMyzuZ9ej7kREv+eyKj/qcU15OhLAX2+3kVxzRJlcJjo/s2nJbBu1ygM503fdcjcp
-	 lkA9Tjnlkw/og==
-From: Leon Romanovsky <leon@kernel.org>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Leon Romanovsky <leonro@nvidia.com>,
-	Jason Gunthorpe <jgg@nvidia.com>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Geoff Levand <geoff@infradead.org>,
-	Helge Deller <deller@gmx.de>,
-	Ingo Molnar <mingo@redhat.com>,
-	iommu@lists.linux.dev,
-	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
-	Jason Wang <jasowang@redhat.com>,
-	Juergen Gross <jgross@suse.com>,
-	linux-alpha@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-mips@vger.kernel.org,
-	linux-parisc@vger.kernel.org,
+	 MIME-Version; b=lo+H9WmNLycuDAIivFWjYRTO0Oe9pu0gZwbxkBPHVw+9zUxBR4IwMOLN+RmbtLK8YZIec4tM8UFR8i7t5sWyiFePpDCgGs3F5Kx39+YkFOKqIPnbL2Hay4/CDNMD40cPOQbrZIPppOMGBgY0BngIldvdzq7jCCJeIIs5JuKfMMzAC6bznx7A+rkSei/HfYq22VbXnjiLBm+1JmpupJ3EhhUwoqHZly6gVJSQXHyeuzCgiqYKYXw1gB2T1wHk9GW0Ektqhc4SyfvB8/Ma0fnpPXyQbMrDsGWJngC/+5pndPqXySqjj5+mddffSzDoGC74zeI1yKoeZ2D+cGTOL1WfZw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSQTK04gpz3cjL
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 05:20:36 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4cSKSQ3kppz9sg0;
+	Thu, 18 Sep 2025 17:34:30 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id HDEkcH1IVVyx; Thu, 18 Sep 2025 17:34:30 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cSKSQ2bD1z9sfv;
+	Thu, 18 Sep 2025 17:34:30 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 439198B776;
+	Thu, 18 Sep 2025 17:34:30 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id LGlByoGo7Cr9; Thu, 18 Sep 2025 17:34:30 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 76C7A8B767;
+	Thu, 18 Sep 2025 17:34:29 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Herve Codina <herve.codina@bootlin.com>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>,
+	Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Mark Brown <broonie@kernel.org>,
+	Jaroslav Kysela <perex@perex.cz>,
+	Takashi Iwai <tiwai@suse.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
 	linuxppc-dev@lists.ozlabs.org,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Matt Turner <mattst88@gmail.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	"Michael S. Tsirkin" <mst@redhat.com>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	sparclinux@vger.kernel.org,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	virtualization@lists.linux.dev,
-	x86@kernel.org,
-	xen-devel@lists.xenproject.org
-Subject: [PATCH 8/9] xen: swiotlb: Convert mapping routine to rely  on physical address
-Date: Thu, 18 Sep 2025 21:45:08 +0300
-Message-ID: <bdc496de560c8a62ab934a65ebab4137421c4cb1.1758219787.git.leon@kernel.org>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <cover.1758219786.git.leon@kernel.org>
-References: <cover.1758219786.git.leon@kernel.org>
+	linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org,
+	linux-sound@vger.kernel.org
+Subject: [PATCH RESEND v3 1/4] soc: fsl: qmc: Only set completion interrupt when needed
+Date: Thu, 18 Sep 2025 17:34:08 +0200
+Message-ID: <40b41b53a26e77a50b3a5f68fcecc6f9a40a84b4.1758209158.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1758209158.git.christophe.leroy@csgroup.eu>
+References: <cover.1758209158.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -95,94 +78,114 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1758209657; l=3349; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=3ueV0+TWEXT+lbHC1mnyBhAYLOCSJuYccHwKxxNUhFc=; b=7YoDVmchoSPIi4mkTR5smUVwENM9xsvOMPjROEZI9uTWYid5RyMwIeB5cXfTLUQ7gKIPzZfPK woyB7SkM8ZiCdywhXXs3gY5r5gykus9J3L5aR213Bh6Wb4klHtJd3sV
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
 Content-Transfer-Encoding: 8bit
 
-From: Leon Romanovsky <leonro@nvidia.com>
+When no post-completion processing is expected, don't waste time
+handling useless interrupts.
 
-Switch to .map_phys callback instead of .map_page.
+Only set QMC_BD_[R/T]X_I when a completion function is passed in,
+and perform seamless completion on submit for interruptless buffers.
 
-Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
+Acked-by: Herve Codina <herve.codina@bootlin.com>
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/xen/grant-dma-ops.c | 20 ++++++++++++--------
- 1 file changed, 12 insertions(+), 8 deletions(-)
+ drivers/soc/fsl/qe/qmc.c | 44 ++++++++++++++++++++++++++++++----------
+ 1 file changed, 33 insertions(+), 11 deletions(-)
 
-diff --git a/drivers/xen/grant-dma-ops.c b/drivers/xen/grant-dma-ops.c
-index 29257d2639dbf..7f76e516fe24c 100644
---- a/drivers/xen/grant-dma-ops.c
-+++ b/drivers/xen/grant-dma-ops.c
-@@ -163,18 +163,22 @@ static void xen_grant_dma_free_pages(struct device *dev, size_t size,
- 	xen_grant_dma_free(dev, size, page_to_virt(vaddr), dma_handle, 0);
- }
+diff --git a/drivers/soc/fsl/qe/qmc.c b/drivers/soc/fsl/qe/qmc.c
+index 36c0ccc06151..da5ea6d35618 100644
+--- a/drivers/soc/fsl/qe/qmc.c
++++ b/drivers/soc/fsl/qe/qmc.c
+@@ -461,9 +461,16 @@ int qmc_chan_write_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
  
--static dma_addr_t xen_grant_dma_map_page(struct device *dev, struct page *page,
--					 unsigned long offset, size_t size,
-+static dma_addr_t xen_grant_dma_map_phys(struct device *dev, phys_addr_t phys,
-+					 size_t size,
- 					 enum dma_data_direction dir,
- 					 unsigned long attrs)
- {
- 	struct xen_grant_dma_data *data;
-+	unsigned long offset = offset_in_page(phys);
- 	unsigned long dma_offset = xen_offset_in_page(offset),
- 			pfn_offset = XEN_PFN_DOWN(offset);
- 	unsigned int i, n_pages = XEN_PFN_UP(dma_offset + size);
- 	grant_ref_t grant;
- 	dma_addr_t dma_handle;
- 
-+	if (attrs & DMA_ATTR_MMIO)
-+		return DMA_MAPPING_ERROR;
-+
- 	if (WARN_ON(dir == DMA_NONE))
- 		return DMA_MAPPING_ERROR;
- 
-@@ -190,7 +194,7 @@ static dma_addr_t xen_grant_dma_map_page(struct device *dev, struct page *page,
- 
- 	for (i = 0; i < n_pages; i++) {
- 		gnttab_grant_foreign_access_ref(grant + i, data->backend_domid,
--				pfn_to_gfn(page_to_xen_pfn(page) + i + pfn_offset),
-+				pfn_to_gfn(page_to_xen_pfn(phys_to_page(phys)) + i + pfn_offset),
- 				dir == DMA_TO_DEVICE);
+ 	ctrl = qmc_read16(&bd->cbd_sc);
+ 	if (ctrl & (QMC_BD_TX_R | QMC_BD_TX_UB)) {
+-		/* We are full ... */
+-		ret = -EBUSY;
+-		goto end;
++		if (!(ctrl & (QMC_BD_TX_R | QMC_BD_TX_I)) && bd == chan->txbd_done) {
++			if (ctrl & QMC_BD_TX_W)
++				chan->txbd_done = chan->txbds;
++			else
++				chan->txbd_done++;
++		} else {
++			/* We are full ... */
++			ret = -EBUSY;
++			goto end;
++		}
  	}
  
-@@ -199,7 +203,7 @@ static dma_addr_t xen_grant_dma_map_page(struct device *dev, struct page *page,
- 	return dma_handle;
- }
+ 	qmc_write16(&bd->cbd_datlen, length);
+@@ -475,6 +482,10 @@ int qmc_chan_write_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
  
--static void xen_grant_dma_unmap_page(struct device *dev, dma_addr_t dma_handle,
-+static void xen_grant_dma_unmap_phys(struct device *dev, dma_addr_t dma_handle,
- 				     size_t size, enum dma_data_direction dir,
- 				     unsigned long attrs)
- {
-@@ -242,7 +246,7 @@ static void xen_grant_dma_unmap_sg(struct device *dev, struct scatterlist *sg,
- 		return;
+ 	/* Activate the descriptor */
+ 	ctrl |= (QMC_BD_TX_R | QMC_BD_TX_UB);
++	if (complete)
++		ctrl |= QMC_BD_TX_I;
++	else
++		ctrl &= ~QMC_BD_TX_I;
+ 	wmb(); /* Be sure to flush the descriptor before control update */
+ 	qmc_write16(&bd->cbd_sc, ctrl);
  
- 	for_each_sg(sg, s, nents, i)
--		xen_grant_dma_unmap_page(dev, s->dma_address, sg_dma_len(s), dir,
-+		xen_grant_dma_unmap_phys(dev, s->dma_address, sg_dma_len(s), dir,
- 				attrs);
- }
+@@ -569,9 +580,16 @@ int qmc_chan_read_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
  
-@@ -257,7 +261,7 @@ static int xen_grant_dma_map_sg(struct device *dev, struct scatterlist *sg,
- 		return -EINVAL;
+ 	ctrl = qmc_read16(&bd->cbd_sc);
+ 	if (ctrl & (QMC_BD_RX_E | QMC_BD_RX_UB)) {
+-		/* We are full ... */
+-		ret = -EBUSY;
+-		goto end;
++		if (!(ctrl & (QMC_BD_RX_E | QMC_BD_RX_I)) && bd == chan->rxbd_done) {
++			if (ctrl & QMC_BD_RX_W)
++				chan->rxbd_done = chan->rxbds;
++			else
++				chan->rxbd_done++;
++		} else {
++			/* We are full ... */
++			ret = -EBUSY;
++			goto end;
++		}
+ 	}
  
- 	for_each_sg(sg, s, nents, i) {
--		s->dma_address = xen_grant_dma_map_page(dev, sg_page(s), s->offset,
-+		s->dma_address = xen_grant_dma_map_phys(dev, sg_phys(s),
- 				s->length, dir, attrs);
- 		if (s->dma_address == DMA_MAPPING_ERROR)
- 			goto out;
-@@ -286,8 +290,8 @@ static const struct dma_map_ops xen_grant_dma_ops = {
- 	.free_pages = xen_grant_dma_free_pages,
- 	.mmap = dma_common_mmap,
- 	.get_sgtable = dma_common_get_sgtable,
--	.map_page = xen_grant_dma_map_page,
--	.unmap_page = xen_grant_dma_unmap_page,
-+	.map_phys = xen_grant_dma_map_phys,
-+	.unmap_phys = xen_grant_dma_unmap_phys,
- 	.map_sg = xen_grant_dma_map_sg,
- 	.unmap_sg = xen_grant_dma_unmap_sg,
- 	.dma_supported = xen_grant_dma_supported,
+ 	qmc_write16(&bd->cbd_datlen, 0); /* data length is updated by the QMC */
+@@ -587,6 +605,10 @@ int qmc_chan_read_submit(struct qmc_chan *chan, dma_addr_t addr, size_t length,
+ 
+ 	/* Activate the descriptor */
+ 	ctrl |= (QMC_BD_RX_E | QMC_BD_RX_UB);
++	if (complete)
++		ctrl |= QMC_BD_RX_I;
++	else
++		ctrl &= ~QMC_BD_RX_I;
+ 	wmb(); /* Be sure to flush data before descriptor activation */
+ 	qmc_write16(&bd->cbd_sc, ctrl);
+ 
+@@ -1482,19 +1504,19 @@ static int qmc_setup_chan(struct qmc *qmc, struct qmc_chan *chan)
+ 
+ 	/* Init Rx BDs and set Wrap bit on last descriptor */
+ 	BUILD_BUG_ON(QMC_NB_RXBDS == 0);
+-	val = QMC_BD_RX_I;
+ 	for (i = 0; i < QMC_NB_RXBDS; i++) {
+ 		bd = chan->rxbds + i;
+-		qmc_write16(&bd->cbd_sc, val);
++		qmc_write16(&bd->cbd_sc, 0);
+ 	}
+ 	bd = chan->rxbds + QMC_NB_RXBDS - 1;
+-	qmc_write16(&bd->cbd_sc, val | QMC_BD_RX_W);
++	qmc_write16(&bd->cbd_sc, QMC_BD_RX_W);
+ 
+ 	/* Init Tx BDs and set Wrap bit on last descriptor */
+ 	BUILD_BUG_ON(QMC_NB_TXBDS == 0);
+-	val = QMC_BD_TX_I;
+ 	if (chan->mode == QMC_HDLC)
+-		val |= QMC_BD_TX_L | QMC_BD_TX_TC;
++		val = QMC_BD_TX_L | QMC_BD_TX_TC;
++	else
++		val = 0;
+ 	for (i = 0; i < QMC_NB_TXBDS; i++) {
+ 		bd = chan->txbds + i;
+ 		qmc_write16(&bd->cbd_sc, val);
 -- 
-2.51.0
+2.49.0
 
 
