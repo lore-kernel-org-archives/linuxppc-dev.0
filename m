@@ -1,67 +1,65 @@
-Return-Path: <linuxppc-dev+bounces-12397-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12398-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0888CAC597
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Sep 2025 19:20:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9F8D8CA1013
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Sep 2025 20:19:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSQTQ59xYz30Vl;
-	Fri, 19 Sep 2025 05:20:42 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758223242;
-	cv=none; b=Ej8Q2KLR/sr5BH4dFJkobvovUc2x9pw9b5z5NSfmO/geY6kYzCVo9bKtwGCC+OtlJ0W00qIPHpZ7v0vYYK9rnik9ncFe5bz3IdY1zl4raqg7ZbLYt3gv6Ujx9x33cRNXOwtiZQe4P+R9HMjBpVcSy0NuAHsG81CMoMaEFEb9oOsj10JCqkq3hLxcyyeXXg+FsU3qHfX4KrixtoDHRCQcNvc3rbW2LxzrR4a4130E91q/SWSG1Mjg9oHWwaIQjpMHt22e1JAjQsFnqYKpBt/KrcS//Ly7tZ08X7OR/O3XLuotDVeQKKZnJWkxOapMFxg20lei7KPXQ6wm+6ZuZlLm1A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSRnj1Zrzz2yrf;
+	Fri, 19 Sep 2025 06:19:53 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758226793;
+	cv=none; b=HCcb3TPM4wPbAQnUYvQaBBM6LmE9vVgmVv1y3o2utq9cky+pmBzR4920XAC+JO6Ia1oj0LarN6zk+o1vczl846aKFwlYaDvbFeOdc3okugo7G3iqxKiZ6jHxqmUKfFJr/Pev8RRPMbRp43H23GFtGh3HubvzwiAmy5EHL8eYfnra/rJEU5TVdpe4nLlhlcnUcuSliq9tmriIHopYeEVOXfH1Wyh4joAYXbgyn7oS7bNKXAIwONgUvlWZJVDJ/uOrgUdUKEdvUUpr5uWo12QUPQoiASW5oVoyjM384rNmgJknB0YPDzF4udUARdca21zZZHDNfHsimYAJ9yO3BrZ//w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758223242; c=relaxed/relaxed;
-	bh=SY8YfrMPM1w7k+zZUF/W7O4HfLrCqyRv5XrwplgvkFU=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Llcd+0VpffODQ9clTyefNMiws3cOMLHioAVAMMbh8DjwfG4Xj4o/5yUYLOxJNuzMGUMWZt33kxUX73+hiz2AU7bsJJA0rFCXFYJVxHvaLGhH/QMutEL/qAwqoE11WR8eF/546la1wwpbqXIS+mjMGS8Fifzploa/gOZmyD0X85Hh+48xBteQwWkjADKO1GPhueJp0y4CQkp4CTBWhkj1mB+b5XpcDFKzjVVql1BvxcugQmDamvEvGAdoHgF+kJNAw/SL6pkl28NX5Iqxm8g58DKqX/MxmVe+98VDj1SQPhALRmtS54m+kssoUtCTkmAsNCPqOsvDAZK1CyQ0SiHKew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSQTP6Tl9z3cZL
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 05:20:41 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cSLY71M6Mz9sg6;
-	Thu, 18 Sep 2025 18:23:39 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 39bHytEGPYRx; Thu, 18 Sep 2025 18:23:39 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cSLY53wZdz9sfx;
-	Thu, 18 Sep 2025 18:23:37 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 768F88B767;
-	Thu, 18 Sep 2025 18:23:37 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id MPO8j3rwFKzz; Thu, 18 Sep 2025 18:23:37 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id B88608B776;
-	Thu, 18 Sep 2025 18:23:36 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Qiang Zhao <qiang.zhao@nxp.com>,
-	Linus Walleij <linus.walleij@linaro.org>,
-	Bartosz Golaszewski <brgl@bgdev.pl>,
-	Rob Herring <robh@kernel.org>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-gpio@vger.kernel.org,
-	devicetree@vger.kernel.org
-Subject: [PATCH v6 6/7] dt-bindings: soc: fsl: qe: Convert QE GPIO to DT schema
-Date: Thu, 18 Sep 2025 18:23:26 +0200
-Message-ID: <5c4f831404857dd6eeefebe2ecdf2bb8ad503538.1758212309.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1758212309.git.christophe.leroy@csgroup.eu>
-References: <cover.1758212309.git.christophe.leroy@csgroup.eu>
+	t=1758226793; c=relaxed/relaxed;
+	bh=PByJ7k8MypBjr8KylepCawZGFe+rnZUkeGFV381LFME=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fMJzqU4O6kAtKGS7Qc9hbKvUQ65r4lYDr7AEwjYc4DSxIb+ltmF1qH0bthgRM//X5dZndYoj0ZyoWGMGc+vlpWR7VzMaXSktHycJywzARYJ+zBgIzUJgZtdmXoiQ7xRTfaJ46nE3hCrM/wYToDIqoKN+5lANQJTcZz0LgIWhwBJZEk0lbYsw9euNNuPtCuQQyjPHGOtHkmZwviG8YRBHGWKZ/RIzHkUeyloQ+F97/Tl3fc5b5M0wIGOIwZELt93eYai/SQvtOTQNleaDfd4durG6NYsJcxVCBLD+Ox5cqagyvN+oXI2QNNSQP+1tT2rOayBUJxsWdSZxHd8JmAdTTw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c1TtGk9a; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c1TtGk9a;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSRnh4VnFz2xgQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 06:19:52 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 8BAD7601D5;
+	Thu, 18 Sep 2025 20:19:50 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 67BB3C4CEE7;
+	Thu, 18 Sep 2025 20:19:47 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1758226790;
+	bh=5v643+f4mhCNNCitIuEUQGOWs/3qK3dOdQaqXP7H++4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=c1TtGk9acaMHlhl0KnNwMmIZrnQ53Ie/77CghdF9h5mKWNNTrynrlDVej9cl6SlbK
+	 rKUGUQrMokaXsmp5tBp5dRYtlunEd1tzcwHZlhwBRdmjvmyGETbHRsJPANiXi9N5Vt
+	 5TJgn0hLF/ICqJ4d2uixvrAOp7R4K+nRoFQeISZ5JaCPp9dS9PTpxknVeb8Vjj1Sm4
+	 BuNCZTPhVTVLnCQ6sDpE01BlgX8WnBMVmQNPQa3HzRHOGkqIcn62VYnZcS6sWTj8tN
+	 Su1qCm7a1pAsKvJrq4wGAy1uwdyNskLZcYn/QvcZ25WDw8M/njUbzjbLNRKbJCzQPC
+	 B2SIqSKLAv7xw==
+Date: Thu, 18 Sep 2025 21:19:44 +0100
+From: Mark Brown <broonie@kernel.org>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Herve Codina <herve.codina@bootlin.com>,
+	Qiang Zhao <qiang.zhao@nxp.com>,
+	Shengjiu Wang <shengjiu.wang@gmail.com>,
+	Xiubo Li <Xiubo.Lee@gmail.com>, Fabio Estevam <festevam@gmail.com>,
+	Nicolin Chen <nicoleotsuka@gmail.com>,
+	Liam Girdwood <lgirdwood@gmail.com>,
+	Jaroslav Kysela <perex@perex.cz>, Takashi Iwai <tiwai@suse.com>,
+	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
+	linux-kernel@vger.kernel.org, linux-sound@vger.kernel.org
+Subject: Re: [PATCH RESEND v3 0/4] ASoC: fsl: fsl_qmc_audio: Reduce amount of
+ interrupts
+Message-ID: <d735d395-d56f-448e-8bfc-4fdc9bcffd9d@sirena.org.uk>
+References: <cover.1758209158.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,111 +73,39 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1758212606; l=3281; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=Dvuwwh8MSNUgRklML1mjdeLSnlO6YfBO8ze0l2VRvwk=; b=772HlsH6h7UbPeuqAuXNjZe1qUDYjxe+koslvNmvWWXiaDk343uXnAoM6Ktsbnm/d8eLZYDLB GfJSIX1NDfkAW8rn07MXW6bSNkPxrqaok3BYmgU4ZotlEFyuJ2gkImU
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+Content-Type: multipart/signed; micalg=pgp-sha512;
+	protocol="application/pgp-signature"; boundary="OG03h1ZJQmsi4o6W"
+Content-Disposition: inline
+In-Reply-To: <cover.1758209158.git.christophe.leroy@csgroup.eu>
+X-Cookie: Victory uber allies!
 
-Convert QE QPIO devicetree binding to DT schema.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
-v6: Comments from Rob taken into account except the comment on fsl,<chip>-qe-pario-bank becoming fsl,chip-qe-pario-bank as I don't know what to do.
----
- .../gpio/fsl,mpc8323-qe-pario-bank.yaml       | 49 +++++++++++++++++++
- .../bindings/soc/fsl/cpm_qe/qe/par_io.txt     | 26 +---------
- 2 files changed, 50 insertions(+), 25 deletions(-)
- create mode 100644 Documentation/devicetree/bindings/gpio/fsl,mpc8323-qe-pario-bank.yaml
+--OG03h1ZJQmsi4o6W
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-diff --git a/Documentation/devicetree/bindings/gpio/fsl,mpc8323-qe-pario-bank.yaml b/Documentation/devicetree/bindings/gpio/fsl,mpc8323-qe-pario-bank.yaml
-new file mode 100644
-index 000000000000..0dd9c0e6ca39
---- /dev/null
-+++ b/Documentation/devicetree/bindings/gpio/fsl,mpc8323-qe-pario-bank.yaml
-@@ -0,0 +1,49 @@
-+# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-+%YAML 1.2
-+---
-+$id: http://devicetree.org/schemas/soc/fsl/cpm_qe/fsl,mpc8323-qe-pario-bank.yaml#
-+$schema: http://devicetree.org/meta-schemas/core.yaml#
-+
-+title: Freescale QUICC Engine Parallel I/O (QE PARIO) GPIO Bank
-+
-+maintainers:
-+  - Christophe Leroy <christophe.leroy@csgroup.eu>
-+
-+properties:
-+  compatible:
-+    items:
-+      - enum:
-+          - fsl,chip-qe-pario-bank
-+      - const: fsl,mpc8323-qe-pario-bank
-+
-+  reg:
-+    maxItems: 1
-+
-+  gpio-controller: true
-+
-+  '#gpio-cells':
-+    const: 2
-+
-+required:
-+  - compatible
-+  - reg
-+  - gpio-controller
-+  - '#gpio-cells'
-+
-+additionalProperties: false
-+
-+examples:
-+  - |
-+    gpio-controller@1400 {
-+        compatible = "fsl,mpc8360-qe-pario-bank", "fsl,mpc8323-qe-pario-bank";
-+        reg = <0x1400 0x18>;
-+        gpio-controller;
-+        #gpio-cells = <2>;
-+    };
-+
-+    gpio-controller@1460 {
-+        compatible = "fsl,mpc8360-qe-pario-bank", "fsl,mpc8323-qe-pario-bank";
-+        reg = <0x1460 0x18>;
-+        gpio-controller;
-+        #gpio-cells = <2>;
-+    };
-diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt
-index 09b1b05fa677..782699c14567 100644
---- a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt
-+++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/qe/par_io.txt
-@@ -24,28 +24,4 @@ par_io@1400 {
- 
- Note that "par_io" nodes are obsolete, and should not be used for
- the new device trees. Instead, each Par I/O bank should be represented
--via its own gpio-controller node:
--
--Required properties:
--- #gpio-cells : should be "2".
--- compatible : should be "fsl,<chip>-qe-pario-bank",
--  "fsl,mpc8323-qe-pario-bank".
--- reg : offset to the register set and its length.
--- gpio-controller : node to identify gpio controllers.
--
--Example:
--	qe_pio_a: gpio-controller@1400 {
--		#gpio-cells = <2>;
--		compatible = "fsl,mpc8360-qe-pario-bank",
--		"fsl,mpc8323-qe-pario-bank";
--		reg = <0x1400 0x18>;
--		gpio-controller;
--	  };
--
--	qe_pio_e: gpio-controller@1460 {
--		#gpio-cells = <2>;
--		compatible = "fsl,mpc8360-qe-pario-bank",
--			     "fsl,mpc8323-qe-pario-bank";
--		reg = <0x1460 0x18>;
--		gpio-controller;
--	  };
-+via its own gpio-controller node.
--- 
-2.49.0
+On Thu, Sep 18, 2025 at 05:34:07PM +0200, Christophe Leroy wrote:
+> This is a RESEND of v3 sent one month ago, see:
+> https://lore.kernel.org/all/cover.1754993232.git.christophe.leroy@csgroup.eu/
 
+That's a link to v2 which had substantial review comments and build
+issues...  I did actually go searching for v3 and didn't see similar
+there though.
+
+--OG03h1ZJQmsi4o6W
+Content-Type: application/pgp-signature; name="signature.asc"
+
+-----BEGIN PGP SIGNATURE-----
+
+iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmjMaV8ACgkQJNaLcl1U
+h9CZvgf8CPU7RnocQ9l6sM8liGp/RotKn2IBpogMBPMA+/oJ0/jeIohYua1IvRlB
+LYkPh0mbBziixdS5LLfoaIUwuOA1yaXmQp1VNwQWY9ECun37kSxQI64up7mVJV4H
+5YMl9DNWJzDAEYBeVbKPIfZ7dykLyMd/d/63kRyz4LBaQE6s7eLArLZBcKdtuitu
+4oX7hZm6NoxmftnYwv3vcrtpcR72IulbhSEAWSCBazblbL3iay2O/Y8oyM2B274L
+1ndxpotDDaK+ghauhqvnJeSousc0gEmQ7GNa5085nl9zKj0aigIBKZa9zc9/JvLf
+6zbu7eCxY4m0Xv4b6uBM7Nz4QDAC+g==
+=xY/X
+-----END PGP SIGNATURE-----
+
+--OG03h1ZJQmsi4o6W--
 
