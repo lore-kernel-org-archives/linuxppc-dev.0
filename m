@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-12390-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12391-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5C479CAC59A
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Sep 2025 18:46:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1547DCAC59A
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Sep 2025 18:46:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSPjB6FNvz2yqh;
-	Fri, 19 Sep 2025 04:45:50 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758221150;
-	cv=none; b=hxynan7QnFjcmESuxA6DxqN3ujrqXOr4hKlZiZIk6r1oYLL+ZptRi5Pwog1gHDKJOir087fPRIFK3pdQ9YDOrNXNKHDoSCFnftTpuSVbHZX9QK3mJi/y79EiEvTgB0LG7boYSGLFlUPjdvAKbcvBt5E7V5W+YYI9f9yEwYDFYw8dvK4w4yyfo9iDMWfuxorni9sdulNuHR9t6Qne7fRDAbDmowm3NOvpI6r7GGNJRoruji6C18nz4eJo3GoDXtUe6B3ITM5fupfM97MDLYRM1ZicgAVTh65ghJq8GzSg1sVb2MWPLd9EkHUY3WpgwxZcU5uIZbpvgarBSxP6BJuQ3Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSPjJ1jBBz30RK;
+	Fri, 19 Sep 2025 04:45:56 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758221156;
+	cv=none; b=PD+KQHfBWiFQtKmZBWsF4XIJCAmHIdICGBmmyZfiiU0kdfcNusHu1nKE/mfCTbTbUhFacMCxLK+jjx3TiXHlh5kYZCJK7czj/rJ2H+VSvgpzyj9Ia/EYCYToJlwvvO2QsNJ/z5Ah/HMMBTl8qztkSku/qIoNwc6558VNW8n3ehqIiWQzc77ND7jerBfxPTLJqQJjx5CRAZHomW5kHr5QmmlhKqoDwEhLXo/T8ZfWMJEpZcHqZrOLYahrdhhi3g6mkTpjx33NyaTjdKpM4GGO9Z9fZ0fidJ4F/N6BKxIKKBptPZy4NsWoTdO9lRzlzuVwfNNRY+Hj3kBr1MZEtObC3g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758221150; c=relaxed/relaxed;
-	bh=bg8xqpMBUtdlqTI2ykkShdQnC07dLGsTGDMSd10qgbo=;
+	t=1758221156; c=relaxed/relaxed;
+	bh=aWaC+c7hwZ5eRPvtgnbBjwtRjkdyMblq8zSMhxF4ppc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EyYKajpyszr0QC5zhMCCsD+gt7tB+NaoXgVKUErGjEO0Cm0MZ3RaJKtCKDmxv2FfPoTQ9NOdZiPnWO3Ax1LcohTddmVhtFQCVq0wz92Po3CTEn5nbrmJPyFW3aaAAS327KGPVSXAbUQwIQiSfXP03EHxuPxAA6jD86vttu5FeKIYbu/Eu7HdK2+6BVPNMp/kh/t5SJKVlIVWwKolfBjSeDB9r2hHsq5m9Ah2BGz73jc/6V/wuo0uFEhdzWvN7XZzUba0ptYOAy8G6R12VSAzLwHlWciVPCTStYzWdt2zDhCNONx+HxBiuW3Jalac0oFGhxASkDVqx84qQR5TW6vz8A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sNr2edIl; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=f/7ueD2oIZJg9k0SpNtugzjuPRb+bZjEQN5sPSUdLW/m7F2TXMQhLItYvxkLDYNV2kof2ESdtUqJM1yYL4zMTQVGBnPfG7Vt2udqu9fjlWqO4RBDUo7sYTbLoFsoJ8h1TyKQ7DquI+S0PpQcOQ4xBLW4MAF9UA3nRO01aWHoPnL7LB8LIDKGUi7ULqTAmKyz2gck702y3E66YKNoMmlLJE7BSt9mnV9M2gfkP/s1KSpDH+ES/nutcNkHExCSr1Xv57V90HdlduLg+KrL9pERhsTc6h2dDNEF2fhuXFtDnb7f3a3efPBYelqCFFwUpmjRgccK6zD+/aoj0F1+sYCDCg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ApQAftbQ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=sNr2edIl;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ApQAftbQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSPjB0kmQz2yTK
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 04:45:50 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSPjH3Ycwz2yTK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 04:45:55 +1000 (AEST)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 441A56020F;
-	Thu, 18 Sep 2025 18:45:48 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 160A2C4CEE7;
-	Thu, 18 Sep 2025 18:45:47 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id F2518444D6;
+	Thu, 18 Sep 2025 18:45:52 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BED33C4CEF1;
+	Thu, 18 Sep 2025 18:45:51 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758221147;
-	bh=cZbejEi6nkNmkzheeCBAGk92h84S9bA1MI/LRocXjWE=;
+	s=k20201202; t=1758221152;
+	bh=t2K4sW07xLmohMbEHNKuCoco8SWkCKi7+Pye3QSpGNA=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=sNr2edIlUVPpwBqbOV9yBQP1/FOhaJ6YeDv3YF3kmR8I+TMxL1QjnGjSU1FxrbpQ/
-	 lQ6VcMvO1t0Fx87meU0SneChvQ6BiwlfAXAVkQw/+mZLpALEBWt/7dbuxqQajOetpg
-	 E0UpfldbzcJ5ehVg/st5XBRiSC6U7x11vRJ6y4GDfv5SOH4qS/egi0PrkYatzt2/al
-	 IaK4aFx2ASuaQdtIxto4VB/hGINa/kGkbBcnJ0j1gtF3HkRNcWWSOO8gn40Leemglo
-	 4dtHyTyMQB3UcRW4eJch2wTwtgCcaQp2MoPH5kDS581Z+XWWHAWeK4xod4u549Jg4N
-	 Sqf5FMk/Rnwhw==
+	b=ApQAftbQR/jnJU2HzvT/hfBSzMBH8l9oVxYJvIJILBwOkF6XJJC/bSesqHAbmBP6u
+	 P4kPqKENM/py7u+cYWOMrhH3+pE/5jyp4qqyE4UDzVb5l/1iNNb4ImC6JoUa2UrQ9g
+	 HoDSVJ65VO2VyCLe7wSh33JQyAtAUnbol0LakPZkT5VHxvJDQfwyo07wdmIvS+pi4k
+	 JMnu0sgJrSZKHOTVtah/XqsI+nbf7OeODzaRmr6BIlvfuaSaKWkBbjh/9OLnt/fQR+
+	 lKPYEZvVCBIvFLx87aT6KZk9bOv12pyvRFyBIive/3aZYoD0fFeZBsrH9oOTiFNFcj
+	 4zp+LosB4q3Vw==
 From: Leon Romanovsky <leon@kernel.org>
 To: Marek Szyprowski <m.szyprowski@samsung.com>
 Cc: Leon Romanovsky <leonro@nvidia.com>,
@@ -76,9 +76,9 @@ Cc: Leon Romanovsky <leonro@nvidia.com>,
 	virtualization@lists.linux.dev,
 	x86@kernel.org,
 	xen-devel@lists.xenproject.org
-Subject: [PATCH 2/9] MIPS/jazzdma: Provide physical address directly
-Date: Thu, 18 Sep 2025 21:45:02 +0300
-Message-ID: <a2e23245b2b6d43c72dd9d994131743b47f6b285.1758219787.git.leon@kernel.org>
+Subject: [PATCH 6/9] x86: Use physical address for DMA mapping
+Date: Thu, 18 Sep 2025 21:45:06 +0300
+Message-ID: <d79efd8add2678d883d79aedda68d54add61d3ec.1758219787.git.leon@kernel.org>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <cover.1758219786.git.leon@kernel.org>
 References: <cover.1758219786.git.leon@kernel.org>
@@ -99,59 +99,74 @@ Content-Transfer-Encoding: 8bit
 
 From: Leon Romanovsky <leonro@nvidia.com>
 
-MIPS jazz uses physical addresses for mapping pages, so convert
-it to get them directly from DMA mapping routine.
+Perform mechanical conversion from DMA .map_page to .map_phys.
 
 Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
 ---
- arch/mips/jazz/jazzdma.c | 20 +++++++++++++-------
- 1 file changed, 13 insertions(+), 7 deletions(-)
+ arch/x86/kernel/amd_gart_64.c | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
-diff --git a/arch/mips/jazz/jazzdma.c b/arch/mips/jazz/jazzdma.c
-index c97b089b99029..45fe71aa454b7 100644
---- a/arch/mips/jazz/jazzdma.c
-+++ b/arch/mips/jazz/jazzdma.c
-@@ -521,18 +521,24 @@ static void jazz_dma_free(struct device *dev, size_t size, void *vaddr,
- 	__free_pages(virt_to_page(vaddr), get_order(size));
+diff --git a/arch/x86/kernel/amd_gart_64.c b/arch/x86/kernel/amd_gart_64.c
+index 3485d419c2f5e..f1ffdc0e4a3ab 100644
+--- a/arch/x86/kernel/amd_gart_64.c
++++ b/arch/x86/kernel/amd_gart_64.c
+@@ -222,13 +222,14 @@ static dma_addr_t dma_map_area(struct device *dev, dma_addr_t phys_mem,
  }
  
--static dma_addr_t jazz_dma_map_page(struct device *dev, struct page *page,
--		unsigned long offset, size_t size, enum dma_data_direction dir,
--		unsigned long attrs)
-+static dma_addr_t jazz_dma_map_phys(struct device *dev, phys_addr_t phys,
-+		size_t size, enum dma_data_direction dir, unsigned long attrs)
+ /* Map a single area into the IOMMU */
+-static dma_addr_t gart_map_page(struct device *dev, struct page *page,
+-				unsigned long offset, size_t size,
+-				enum dma_data_direction dir,
++static dma_addr_t gart_map_phys(struct device *dev, phys_addr_t paddr,
++				size_t size, enum dma_data_direction dir,
+ 				unsigned long attrs)
  {
--	phys_addr_t phys = page_to_phys(page) + offset;
+ 	unsigned long bus;
+-	phys_addr_t paddr = page_to_phys(page) + offset;
++
 +	if (attrs & DMA_ATTR_MMIO)
-+		/*
-+		 * This check is included because older versions of the code lacked
-+		 * MMIO path support, and my ability to test this path is limited.
-+		 * However, from a software technical standpoint, there is no restriction,
-+		 * as the following code operates solely on physical addresses.
-+		 */
 +		return DMA_MAPPING_ERROR;
  
- 	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
- 		arch_sync_dma_for_device(phys, size, dir);
- 	return vdma_alloc(phys, size);
+ 	if (!need_iommu(dev, paddr, size))
+ 		return paddr;
+@@ -242,7 +243,7 @@ static dma_addr_t gart_map_page(struct device *dev, struct page *page,
+ /*
+  * Free a DMA mapping.
+  */
+-static void gart_unmap_page(struct device *dev, dma_addr_t dma_addr,
++static void gart_unmap_phys(struct device *dev, dma_addr_t dma_addr,
+ 			    size_t size, enum dma_data_direction dir,
+ 			    unsigned long attrs)
+ {
+@@ -282,7 +283,7 @@ static void gart_unmap_sg(struct device *dev, struct scatterlist *sg, int nents,
+ 	for_each_sg(sg, s, nents, i) {
+ 		if (!s->dma_length || !s->length)
+ 			break;
+-		gart_unmap_page(dev, s->dma_address, s->dma_length, dir, 0);
++		gart_unmap_phys(dev, s->dma_address, s->dma_length, dir, 0);
+ 	}
  }
  
--static void jazz_dma_unmap_page(struct device *dev, dma_addr_t dma_addr,
-+static void jazz_dma_unmap_phys(struct device *dev, dma_addr_t dma_addr,
- 		size_t size, enum dma_data_direction dir, unsigned long attrs)
+@@ -487,7 +488,7 @@ static void
+ gart_free_coherent(struct device *dev, size_t size, void *vaddr,
+ 		   dma_addr_t dma_addr, unsigned long attrs)
  {
- 	if (!(attrs & DMA_ATTR_SKIP_CPU_SYNC))
-@@ -607,8 +613,8 @@ static void jazz_dma_sync_sg_for_cpu(struct device *dev,
- const struct dma_map_ops jazz_dma_ops = {
- 	.alloc			= jazz_dma_alloc,
- 	.free			= jazz_dma_free,
--	.map_page		= jazz_dma_map_page,
--	.unmap_page		= jazz_dma_unmap_page,
-+	.map_phys		= jazz_dma_map_phys,
-+	.unmap_phys		= jazz_dma_unmap_phys,
- 	.map_sg			= jazz_dma_map_sg,
- 	.unmap_sg		= jazz_dma_unmap_sg,
- 	.sync_single_for_cpu	= jazz_dma_sync_single_for_cpu,
+-	gart_unmap_page(dev, dma_addr, size, DMA_BIDIRECTIONAL, 0);
++	gart_unmap_phys(dev, dma_addr, size, DMA_BIDIRECTIONAL, 0);
+ 	dma_direct_free(dev, size, vaddr, dma_addr, attrs);
+ }
+ 
+@@ -668,8 +669,8 @@ static __init int init_amd_gatt(struct agp_kern_info *info)
+ static const struct dma_map_ops gart_dma_ops = {
+ 	.map_sg				= gart_map_sg,
+ 	.unmap_sg			= gart_unmap_sg,
+-	.map_page			= gart_map_page,
+-	.unmap_page			= gart_unmap_page,
++	.map_phys			= gart_map_phys,
++	.unmap_phys			= gart_unmap_phys,
+ 	.alloc				= gart_alloc_coherent,
+ 	.free				= gart_free_coherent,
+ 	.mmap				= dma_common_mmap,
 -- 
 2.51.0
 
