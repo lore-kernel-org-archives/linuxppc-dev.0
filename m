@@ -1,70 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-12410-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12411-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B91AECA1013
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Sep 2025 03:20:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E3937CAC592
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Sep 2025 06:31:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSd7927Whz3cDN;
-	Fri, 19 Sep 2025 13:20:37 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758252037;
-	cv=none; b=X4UcUR/H5v+6l3krikz2ZWLCeiXgVVHx/9ndhkt2l46fLBgZwm9Ga7BZ2SBd2mVZIZBJUyYRvq8frlCyDEbpHWwxmgF4bxPWpB3qTUmqwkcNvRD41c7lJPz1y7oLu/sHG6zt3A+qiMWSpRh27prZy4rufU7jngaaNRYpN8cAHdaHqUO2M7Xe4VeaYjC9np1nAUsCzLAsnmRTrxsRL/qoAm/TjSrtZEs/Z+vQ0AvB0hD6t207v+ifgTah9ACkadP1N0AR2C6j5EAfc09yfjU4rXFepBTD2MDNq5F+R/T0xBE0C40k2qTtgVbm5pC8YifEOP1F/omFHM/TUSsREp2zCA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSjMJ4Jhbz2yrK;
+	Fri, 19 Sep 2025 16:31:24 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758263484;
+	cv=none; b=esR2JFBgmYfaj/aarK/o3MRA0hazobJAJkd4+/ioFUm3t9btrTlFbW6DybAGQ335PdtqBY81woe/JN4A4d+Ihuh+rPjdMO0OA+kjoinLJCBJ60GfPyQR174ROv/4Y4jE8CvB6O4N1ZcvN8H7loYTjz0WBFjZwbP56P/sb1EZnQTOen0VecchFxonvqC0sgP1S/NwG/G70o6IvveOc7uEU2b5rBhu4R2tmBymsZ9nkh0zhL+ITkVTl7nrFMR4a1aOjraSpoUkdLuGwSKsY/P2uzMKAYUTYZ438sbFUzHca7XOJBiiNoLoIVPspavzFGSRDohf+b+A1/I6kuW3IfVrLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758252037; c=relaxed/relaxed;
-	bh=THITgQPLO2Jlzu1WPiog3Wg7UV32YJiN+8RHPCLQhVw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Rp2xhTV8VVUrBo41srhX/xiBp1AXrvpM8VIVIkISnpv6g10RWBLhj/RWTd5HHzAbkRPboeuDwvXmUJjzHZJw7dUsl0Qv6XbFvJx9fKemw/9GZjMVZykOsq25ddwvx3Y4SDxh6u3vViXz/j9HfavT4GY9mkuSvk7W2YUTpQrKN73oPKoFR+/0YDRtbl8FCIUUuSZhq9KodhU/2SCir+M/8PNHfh2jYNq8pMO5qP/2C19OdOMEaR3HhLu44mjM3RYJDmbVWdfksUgQd4WT5bj8IPiIsoXjAhO0WXwyTHMsS+n2taS3eNvayAWK+h568hM9dQh3UXkQ+jKfsUucXHy50g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSd7845q1z30HB
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 13:20:36 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cSKSS1qhmz9sg3;
-	Thu, 18 Sep 2025 17:34:32 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Hva2kIU2-6vX; Thu, 18 Sep 2025 17:34:32 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cSKSS0Z9jz9sg2;
-	Thu, 18 Sep 2025 17:34:32 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id E8B178B767;
-	Thu, 18 Sep 2025 17:34:31 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id QD_i62Bf5ayM; Thu, 18 Sep 2025 17:34:31 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 212A18B775;
-	Thu, 18 Sep 2025 17:34:31 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Herve Codina <herve.codina@bootlin.com>,
-	Qiang Zhao <qiang.zhao@nxp.com>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-sound@vger.kernel.org
-Subject: [PATCH RESEND v3 3/4] ASoC: fsl: fsl_qmc_audio: Only request completion on last channel
-Date: Thu, 18 Sep 2025 17:34:10 +0200
-Message-ID: <bbd5167d190bbb45c3a4cd6ef2dece8817e0cc1e.1758209158.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1758209158.git.christophe.leroy@csgroup.eu>
-References: <cover.1758209158.git.christophe.leroy@csgroup.eu>
+	t=1758263484; c=relaxed/relaxed;
+	bh=AKXTRUMWL+ox9rBx/hXoJNoCYAi39BF6mftgBjv8suY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=MrtZpftimmQyfEkjRSW1xu822rMXIMztkmC0s8GZiE5hZw8UQMIRXLC+a6diYRUO+curkH8USQQ5H2Z+aJRm2tSbExPYkuIkD3+suHfQq+pGHUuC8NKx/An9Tsg9iEBKbqGSTIVVZ9p+qphMVN8f2rDQ6Ey2Sc/oftlLt463i9Osu3LRjcccghpb6oPxEGcaVgrEvHVm/qiU/FdqPFa7W2QCfEp5gSnkNhVM5Gpe4RtgSmGB9OPWXjPlHOnTSApA/FRkdoUsjkgEot9dnB3MCStCaIyyiKv42T/KGjii/3mlrU2JvK3iNuI2MrIkEucYMWcuhvAQ4UIaQxY7u1Sp0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mk/ZD93M; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=borntraeger@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mk/ZD93M;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=borntraeger@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSjMH3HRCz2yQH
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 16:31:22 +1000 (AEST)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58J3KlCx011575;
+	Fri, 19 Sep 2025 06:31:19 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=AKXTRU
+	MWL+ox9rBx/hXoJNoCYAi39BF6mftgBjv8suY=; b=mk/ZD93Muag+UjLD7/ffZS
+	3/OSHdlEixKtDxg/iE0cyOkIJCFgiBDaIfjhXRqvCJtAMWIO7cZhNGV0VDbNviv0
+	4ays7a4m0fbTfLK5VkJ8IWgOaOrDymA+avDlUoTu6UqTFeIFbCGhJ57p9v7YvJwK
+	XiLPV24xC/VBSbhFUebXwsOEnQqd3hKY95b6w2SPWjQsIjwfzoA78YSGBNIHovL0
+	6o5WxXYt7UuiEW8C688Ty3YYJTx/AhjiI9J9cQmmBmHUXxzQa+y0N4M/pCJKWx/m
+	MlakNlRQZnf1sAHkFsKgBf0wTVw5sZLWd7NpPrNRAuM1lnHuxWkGurnoVs5FdvQA
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 497g4np9s0-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 19 Sep 2025 06:31:18 +0000 (GMT)
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 58J6VIPR025809;
+	Fri, 19 Sep 2025 06:31:18 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 497g4np9rv-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 19 Sep 2025 06:31:18 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 58J30QR8009395;
+	Fri, 19 Sep 2025 06:31:17 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 495nn3t8dw-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 19 Sep 2025 06:31:17 +0000
+Received: from smtpav03.fra02v.mail.ibm.com (smtpav03.fra02v.mail.ibm.com [10.20.54.102])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 58J6VEei37880162
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 19 Sep 2025 06:31:14 GMT
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E2E0420043;
+	Fri, 19 Sep 2025 06:31:13 +0000 (GMT)
+Received: from smtpav03.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3138520040;
+	Fri, 19 Sep 2025 06:31:13 +0000 (GMT)
+Received: from [9.111.68.111] (unknown [9.111.68.111])
+	by smtpav03.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 19 Sep 2025 06:31:13 +0000 (GMT)
+Message-ID: <d0c954dc-6961-4536-b103-d7fdf1afb313@linux.ibm.com>
+Date: Fri, 19 Sep 2025 08:31:06 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,149 +87,126 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1758209657; l=4994; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=X4wuqoJpWXmIdrxYayEnw6eOSBXb//enGdJw05ySXnk=; b=5i6LXaaOIEGn520Ma2k6jL70nix73aVbzgnhaVpZ96giQjjDNoTQigsFLYRNulLzciRKhomQw T17+p9Jsyw+CV8tEilZBBmbOg7wVXk8HGtmOEUvRzIvM8IgLSuRMana
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v2 1/5] KVM: s390/vfio-ap: Use kvm_is_gpa_in_memslot()
+ instead of open coded equivalent
+To: Sean Christopherson <seanjc@google.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Janosch Frank <frankja@linux.ibm.com>,
+        Claudio Imbrenda <imbrenda@linux.ibm.com>,
+        Paolo Bonzini <pbonzini@redhat.com>,
+        Vitaly Kuznetsov <vkuznets@redhat.com>,
+        Tony Krowiak <akrowiak@linux.ibm.com>,
+        Halil Pasic <pasic@linux.ibm.com>, Jason Herne <jjherne@linux.ibm.com>,
+        Harald Freudenberger <freude@linux.ibm.com>,
+        Holger Dengler <dengler@linux.ibm.com>
+Cc: linuxppc-dev@lists.ozlabs.org, kvm@vger.kernel.org,
+        linux-s390@vger.kernel.org, linux-kernel@vger.kernel.org
+References: <20250919003303.1355064-1-seanjc@google.com>
+ <20250919003303.1355064-2-seanjc@google.com>
+Content-Language: en-US
+From: Christian Borntraeger <borntraeger@linux.ibm.com>
+In-Reply-To: <20250919003303.1355064-2-seanjc@google.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=MN5gmNZl c=1 sm=1 tr=0 ts=68ccf8b7 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VnNF1IyMAAAA:8 a=1XWaLZrsAAAA:8
+ a=WMn4R6eJaF8VgN3aVUEA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: md5iwfiyFe2OTejpXCjJPdxQmjbfiyb-
+X-Proofpoint-ORIG-GUID: DXgSIvc5M_qRAWhURQ1HdkyzBqz_Qyoc
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTE2MDIwNCBTYWx0ZWRfX/BVrxPcE3PG2
+ qtrYAMokM4pZJJN97Ey//DXDj5ryel8jNsk3kaQAMcY4cvdBVgSqsLzhhuKOhCo6a9s1QjEHT8Z
+ LxUZ+NcKDumMSiUjjlnyFpqwglBskTojSluoYSHV3BHtvAzX/1bBW0oyU4JmfjPGoKqLqS6VWWe
+ +iPOybn8095kSdqUIUCner1Hq9z6pvyS4nzDuIl+c5gGG62dJGyIgONiorxk2gZozbrEhkKZAEt
+ dHVmV0RMF0kKOBKBx9RVyBjTRSjo+bYvNF196+lQPmbLsxKFSPhy+Gu4VcAiFJdliAk09Z2aZ2h
+ FWf/tXahLW+IMOrIMTIgckz3ZPcFw+rtayAovz0F3Hn/b/Z743nzTUr+zRpaMtSCXVM2xljoTvV
+ UkqgHXkD
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-09-18_03,2025-09-19_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1011 spamscore=0 priorityscore=1501 bulkscore=0 impostorscore=0
+ malwarescore=0 adultscore=0 phishscore=0 suspectscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509160204
 
-In non-interleaved mode, several QMC channels are used in sync.
-More details can be found in commit 188d9cae5438 ("ASoC: fsl:
-fsl_qmc_audio: Add support for non-interleaved mode.")
-At the time being, an interrupt is requested on each channel to
-perform capture/playback completion, allthough the completion is
-really performed only once all channels have completed their work.
+Am 19.09.25 um 02:32 schrieb Sean Christopherson:
+> Use kvm_is_gpa_in_memslot() to check the validity of the notification
+> indicator byte address instead of open coding equivalent logic in the VFIO
+> AP driver.
+> 
+> Opportunistically use a dedicated wrapper that exists and is exported
+> expressly for the VFIO AP module.  kvm_is_gpa_in_memslot() is generally
+> unsuitable for use outside of KVM; other drivers typically shouldn't rely
+> on KVM's memslots, and using the API requires kvm->srcu (or slots_lock) to
+> be held for the entire duration of the usage, e.g. to avoid TOCTOU bugs.
+> handle_pqap() is a bit of a special case, as it's explicitly invoked from
+> KVM with kvm->srcu already held, and the VFIO AP driver is in many ways an
+> extension of KVM that happens to live in a separate module.
+> 
+> Providing a dedicated API for the VFIO AP driver will allow restricting
+> the vast majority of generic KVM's exports to KVM submodules (e.g. to x86's
+> kvm-{amd,intel}.ko vendor mdoules).
+> 
+> No functional change intended.
+> 
+> Acked-by: Anthony Krowiak <akrowiak@linux.ibm.com>
+> Signed-off-by: Sean Christopherson <seanjc@google.com>
 
-This leads to a lot more interrupts than really needed. Looking at
-/proc/interrupts shows ~3800 interrupts per second when using
-4 capture and 4 playback devices with 5ms periods while
-only 1600 (200 x 4 + 200 x 4) periods are processed during one second.
+Reviewed-by: Christian Borntraeger <borntraeger@linux.ibm.com>
 
-The QMC channels work in sync, the one started first is the one
-finishing first and the one started last is the one finishing last,
-so when the last one finishes it is guaranteed that the other ones are
-finished as well. Therefore only request completion processing on the
-last QMC channel.
-
-On my board with the above exemple, on a kernel started with
-'threadirqs' option, the QMC irq thread uses 16% CPU time with this
-patch while it uses 26% CPU time without this patch.
-
-Acked-by: Herve Codina <herve.codina@bootlin.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- sound/soc/fsl/fsl_qmc_audio.c | 46 +++++------------------------------
- 1 file changed, 6 insertions(+), 40 deletions(-)
-
-diff --git a/sound/soc/fsl/fsl_qmc_audio.c b/sound/soc/fsl/fsl_qmc_audio.c
-index c0c7ef0a1511..2790953543c5 100644
---- a/sound/soc/fsl/fsl_qmc_audio.c
-+++ b/sound/soc/fsl/fsl_qmc_audio.c
-@@ -57,7 +57,6 @@ struct qmc_dai_prtd {
- 	size_t ch_dma_offset;
- 
- 	unsigned int channels;
--	DECLARE_BITMAP(chans_pending, 64);
- 	struct snd_pcm_substream *substream;
- };
- 
-@@ -126,17 +125,14 @@ static int qmc_audio_pcm_write_submit(struct qmc_dai_prtd *prtd)
- 	int ret;
- 
- 	for (i = 0; i < prtd->channels; i++) {
--		bitmap_set(prtd->chans_pending, i, 1);
--
- 		ret = qmc_chan_write_submit(prtd->qmc_dai->chans[i].qmc_chan,
- 					    prtd->ch_dma_addr_current + i * prtd->ch_dma_offset,
- 					    prtd->ch_dma_size,
--					    qmc_audio_pcm_write_complete,
--					    &prtd->qmc_dai->chans[i]);
-+					    i == prtd->channels - 1 ? qmc_audio_pcm_write_complete :
-+								      NULL, prtd);
- 		if (ret) {
- 			dev_err(prtd->qmc_dai->dev, "write_submit %u failed %d\n",
- 				i, ret);
--			bitmap_clear(prtd->chans_pending, i, 1);
- 			return ret;
- 		}
- 	}
-@@ -146,20 +142,7 @@ static int qmc_audio_pcm_write_submit(struct qmc_dai_prtd *prtd)
- 
- static void qmc_audio_pcm_write_complete(void *context)
- {
--	struct qmc_dai_chan *chan = context;
--	struct qmc_dai_prtd *prtd;
--
--	prtd = chan->prtd_tx;
--
--	/* Mark the current channel as completed */
--	bitmap_clear(prtd->chans_pending, chan - prtd->qmc_dai->chans, 1);
--
--	/*
--	 * All QMC channels involved must have completed their transfer before
--	 * submitting a new one.
--	 */
--	if (!bitmap_empty(prtd->chans_pending, 64))
--		return;
-+	struct qmc_dai_prtd *prtd = context;
- 
- 	prtd->buffer_ended += prtd->period_size;
- 	if (prtd->buffer_ended >= prtd->buffer_size)
-@@ -182,17 +165,14 @@ static int qmc_audio_pcm_read_submit(struct qmc_dai_prtd *prtd)
- 	int ret;
- 
- 	for (i = 0; i < prtd->channels; i++) {
--		bitmap_set(prtd->chans_pending, i, 1);
--
- 		ret = qmc_chan_read_submit(prtd->qmc_dai->chans[i].qmc_chan,
- 					   prtd->ch_dma_addr_current + i * prtd->ch_dma_offset,
- 					   prtd->ch_dma_size,
--					   qmc_audio_pcm_read_complete,
--					   &prtd->qmc_dai->chans[i]);
-+					   i == prtd->channels - 1 ? qmc_audio_pcm_read_complete :
-+								     NULL, prtd);
- 		if (ret) {
- 			dev_err(prtd->qmc_dai->dev, "read_submit %u failed %d\n",
- 				i, ret);
--			bitmap_clear(prtd->chans_pending, i, 1);
- 			return ret;
- 		}
- 	}
-@@ -202,26 +182,13 @@ static int qmc_audio_pcm_read_submit(struct qmc_dai_prtd *prtd)
- 
- static void qmc_audio_pcm_read_complete(void *context, size_t length, unsigned int flags)
- {
--	struct qmc_dai_chan *chan = context;
--	struct qmc_dai_prtd *prtd;
--
--	prtd = chan->prtd_rx;
--
--	/* Mark the current channel as completed */
--	bitmap_clear(prtd->chans_pending, chan - prtd->qmc_dai->chans, 1);
-+	struct qmc_dai_prtd *prtd = context;
- 
- 	if (length != prtd->ch_dma_size) {
- 		dev_err(prtd->qmc_dai->dev, "read complete length = %zu, exp %zu\n",
- 			length, prtd->ch_dma_size);
- 	}
- 
--	/*
--	 * All QMC channels involved must have completed their transfer before
--	 * submitting a new one.
--	 */
--	if (!bitmap_empty(prtd->chans_pending, 64))
--		return;
--
- 	prtd->buffer_ended += prtd->period_size;
- 	if (prtd->buffer_ended >= prtd->buffer_size)
- 		prtd->buffer_ended = 0;
-@@ -249,7 +216,6 @@ static int qmc_audio_pcm_trigger(struct snd_soc_component *component,
- 
- 	switch (cmd) {
- 	case SNDRV_PCM_TRIGGER_START:
--		bitmap_zero(prtd->chans_pending, 64);
- 		prtd->buffer_ended = 0;
- 		prtd->ch_dma_addr_current = prtd->ch_dma_addr_start;
- 
--- 
-2.49.0
+> ---
+>   arch/s390/include/asm/kvm_host.h  | 2 ++
+>   arch/s390/kvm/priv.c              | 8 ++++++++
+>   drivers/s390/crypto/vfio_ap_ops.c | 2 +-
+>   3 files changed, 11 insertions(+), 1 deletion(-)
+> 
+> diff --git a/arch/s390/include/asm/kvm_host.h b/arch/s390/include/asm/kvm_host.h
+> index f870d09515cc..ee25eeda12fd 100644
+> --- a/arch/s390/include/asm/kvm_host.h
+> +++ b/arch/s390/include/asm/kvm_host.h
+> @@ -722,6 +722,8 @@ extern int kvm_s390_enter_exit_sie(struct kvm_s390_sie_block *scb,
+>   extern int kvm_s390_gisc_register(struct kvm *kvm, u32 gisc);
+>   extern int kvm_s390_gisc_unregister(struct kvm *kvm, u32 gisc);
+>   
+> +bool kvm_s390_is_gpa_in_memslot(struct kvm *kvm, gpa_t gpa);
+> +
+>   static inline void kvm_arch_free_memslot(struct kvm *kvm,
+>   					 struct kvm_memory_slot *slot) {}
+>   static inline void kvm_arch_memslots_updated(struct kvm *kvm, u64 gen) {}
+> diff --git a/arch/s390/kvm/priv.c b/arch/s390/kvm/priv.c
+> index 9253c70897a8..9a71b6e00948 100644
+> --- a/arch/s390/kvm/priv.c
+> +++ b/arch/s390/kvm/priv.c
+> @@ -605,6 +605,14 @@ static int handle_io_inst(struct kvm_vcpu *vcpu)
+>   	}
+>   }
+>   
+> +#if IS_ENABLED(CONFIG_VFIO_AP)
+> +bool kvm_s390_is_gpa_in_memslot(struct kvm *kvm, gpa_t gpa)
+> +{
+> +	return kvm_is_gpa_in_memslot(kvm, gpa);
+> +}
+> +EXPORT_SYMBOL_FOR_MODULES(kvm_s390_is_gpa_in_memslot, "vfio_ap");
+> +#endif
+> +
+>   /*
+>    * handle_pqap: Handling pqap interception
+>    * @vcpu: the vcpu having issue the pqap instruction
+> diff --git a/drivers/s390/crypto/vfio_ap_ops.c b/drivers/s390/crypto/vfio_ap_ops.c
+> index 766557547f83..eb5ff49f6fe7 100644
+> --- a/drivers/s390/crypto/vfio_ap_ops.c
+> +++ b/drivers/s390/crypto/vfio_ap_ops.c
+> @@ -354,7 +354,7 @@ static int vfio_ap_validate_nib(struct kvm_vcpu *vcpu, dma_addr_t *nib)
+>   
+>   	if (!*nib)
+>   		return -EINVAL;
+> -	if (kvm_is_error_hva(gfn_to_hva(vcpu->kvm, *nib >> PAGE_SHIFT)))
+> +	if (!kvm_s390_is_gpa_in_memslot(vcpu->kvm, *nib))
+>   		return -EINVAL;
+>   
+>   	return 0;
 
 
