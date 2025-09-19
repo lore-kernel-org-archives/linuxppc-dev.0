@@ -1,70 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-12414-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12415-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 71ACECAC592
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Sep 2025 07:50:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3E444CAC592
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Sep 2025 08:07:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSl6q6sKBz3cYr;
-	Fri, 19 Sep 2025 17:50:43 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758268243;
-	cv=none; b=bw6Mn/VJBo8suogC/ESgWDViPa6QJOiYJiYtB55yna5Zfoz3NqUTIEoZPPBkhpKUuUA3gwpaSAKplPbYFgvTlkJMDiUNj98WgMUxnEkZwWSdltU94K3YJkwZf6Cvqo0Q5u39sw0OUW++Uqs09cI9amKloCm5GNEKjsLbcZPO4Zlg1IRroCqU5NjVqY2BKAGB4kzJ0jA4Hyz3GzrHk1DQmGjx/SwjmwRWGrXVQG7IBO68a1Ak2cyWcJ31ojtjD/lwqk+s4exOZAPKyfTnDrczzrx9WhPlDNSoLKOu+0hJO8kGs1HYcQpWFlEYKEnDNzzK7K1OMXD7eK7Uc3kZqnrB5w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSlV16fCzz2xnt;
+	Fri, 19 Sep 2025 18:07:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.222.54
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758269241;
+	cv=none; b=CUwaGCK01C19YMvncYkBE4SPtvOmisxgDyRGNVQH7FeC7T/9vaOGBpk8XBSZ4ZQc+jRVM+RlyaXc4trTUK9vJ9mcPGtAqvkc4KCDOMOCd00Hu5F4SUh1iIwx3DwphoOYol+BhCy9rGMSmMRBGv3YggZroIsjMculqQDZuyaoFIsJ0zt21ZMBJJoPUFESxbUDWBel7i4CNQvAVlWZfAgc/kNn1KdIpUZ8yhjpRDcFCdxowOpktB6JpNRPuTWDEZE+px1luw+aGGZQ4IdhX9Jtvjc7YjrOYTRNDT6w6EB7ko+CUKxX4g7FQCJSsKOaaRly9nnKqACUOihetiqSH9tn7Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758268243; c=relaxed/relaxed;
-	bh=Bx1ChTp5Xu+UX1wwwT6Pl2wkfsfmGGNNNOM2ljRCf+s=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=DGHF4GoGrCsG2W4SDNnCMDFr0NfsYFdg6/tc21NiT6CvoSkLmMekZjAxf5TFNp8jXEgaFijeXq1onOrL2ivovUNkP73lDcszoT0R0B9o91K3tnhnFse2gUf1wMD0dX5Y7TcI+iPJelx9FUAdz218LabqvbC/R8jadQOJttKZRcvQnbJ6BmRBryBO4ZtXGSWEUgXWxTSqYVDHB8VrFOqyqnwMFWN4jwR8izF1M8TglkqMjlKpWhtR892FkAz2POSmu2ZL1/htVB74WDnFcSwubE+wz3fMgdiNP2zqBTbLPU5ltbI0lcyn8bIypf0JFMcO2TGrEMZYkdrgGiye0QYtmw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSl6q3Vcrz3cYk
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 17:50:43 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cSKST1lJVz9sg5;
-	Thu, 18 Sep 2025 17:34:33 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id oX_2heg6YaBY; Thu, 18 Sep 2025 17:34:33 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cSKST04Rcz9sg4;
-	Thu, 18 Sep 2025 17:34:33 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id C02FB8B767;
-	Thu, 18 Sep 2025 17:34:32 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id XD6WzEdXVtAS; Thu, 18 Sep 2025 17:34:32 +0200 (CEST)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id E966A8B776;
-	Thu, 18 Sep 2025 17:34:31 +0200 (CEST)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Herve Codina <herve.codina@bootlin.com>,
-	Qiang Zhao <qiang.zhao@nxp.com>,
-	Shengjiu Wang <shengjiu.wang@gmail.com>,
-	Xiubo Li <Xiubo.Lee@gmail.com>,
-	Fabio Estevam <festevam@gmail.com>,
-	Nicolin Chen <nicoleotsuka@gmail.com>,
-	Liam Girdwood <lgirdwood@gmail.com>,
-	Mark Brown <broonie@kernel.org>,
-	Jaroslav Kysela <perex@perex.cz>,
-	Takashi Iwai <tiwai@suse.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org,
-	linux-sound@vger.kernel.org
-Subject: [PATCH RESEND v3 4/4] ASoc: fsl: fsl_qmc_audio: Drop struct qmc_dai_chan
-Date: Thu, 18 Sep 2025 17:34:11 +0200
-Message-ID: <9c729bbd9f1b61120a09a87fb76176ef344c5153.1758209158.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1758209158.git.christophe.leroy@csgroup.eu>
-References: <cover.1758209158.git.christophe.leroy@csgroup.eu>
+	t=1758269241; c=relaxed/relaxed;
+	bh=Jr2Z8JjLLW516ZnDw+SHlM+3eks1R5blpHFwbmMf0GY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=X7vCR1X9YWCQTp/m+P01PW7PWvJFqGb6Kar0JBv62YuyblDhuZBsJ1CwH9PIRrA/SZXrr2ZbD3aPPOcmDENmcu6w4UkJJRjqUrbRHLPF2vMvQvgCGxD8qX+BnrRGbiCxy8mc4HQI3lOgo9bhjf4e/HHd3whTdfmrkhmiu+5PvRkIsDiMo2KOI0deGYBun6ksS+K8PRx/6iVudQEth0IQ4f8G3GDQY49CDMBiBSEvp/xFDhS3rOE0KyX4zVBEvKlZJVcvEKmnOvANE3CpJzfXl50KS4fxCOeSYZ39Rpdh8hLInnmF97jECV+YnCQXG946SkOlMNKEses0c2e8sXcKeA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; spf=pass (client-ip=209.85.222.54; helo=mail-ua1-f54.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.222.54; helo=mail-ua1-f54.google.com; envelope-from=geert.uytterhoeven@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ua1-f54.google.com (mail-ua1-f54.google.com [209.85.222.54])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSlV10mNjz2xdg
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 18:07:20 +1000 (AEST)
+Received: by mail-ua1-f54.google.com with SMTP id a1e0cc1a2514c-8ddcd2cd4e9so769848241.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 01:07:20 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1758269238; x=1758874038;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=Jr2Z8JjLLW516ZnDw+SHlM+3eks1R5blpHFwbmMf0GY=;
+        b=EzbnP0m0aYbp5FP/uMXpOfsiDqvzXSBVC2JKAyjGwC/v/71Nfvrubc92xZGPuhE90u
+         UhYtGD04Pbr+EVP7x8grYcOeb4VNrNLSLIhEFJikGbapbiU689OOB67cZf/RUxGGNklh
+         mkNkl2r5YyZaqAwgkMd+ch2QoOCO/HrR6/jYntAYomUk5naYoVfMACO+kmkJaRWX79b3
+         unZ3Jkne/M52VxMSM24MvU7XI99THIGkgixwZVYBNJAbWL4JFth21KQF5E28Z4DhZS8/
+         wqtAcjmGRPsdbNfdHT72MCAKDOgHBtIiodtYt9PS2M/LQ+4iRRBYQjylGvxfl/WuWpJi
+         OKvw==
+X-Forwarded-Encrypted: i=1; AJvYcCV46c1MkBbdewpn5Xq7ivSnSlu8zzipIGbuv6d2q5ZYwLxppuc6MHjEzqki0q9YlAre/rNqldYQPiWwXng=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyY8RBievz5ngTSmp+FpmrjPszMCyw3VwQ9yQ5u6W17vqhE4NZ/
+	/4qQ1ld8VigjZVefR949p+12yriPE8vfFjahCC8MhCfigtmvIAhcboCLcH039ORD
+X-Gm-Gg: ASbGnctOrgp0wH5bjVCAipJ/ClO8mLP3UwmtnvjHEVqfEUcyzLc8WqOiGAcoc6aPrQV
+	yDe6E1oTykBG6VCuUMIn+Ah+CUI48W4tkyj0D+uVIQmR67150koL6aolhPREjZzQpCtvo73tZhB
+	X7rgezmvHbxvT6dAYOBWntX7FUs33BelQgKM8qUjL2UE5E/lBuJYAWwxufXEOTi+A430eVMUT1g
+	zm2vf7k/mZV6RjPPTXNd5+8yCKLaq7k2WdvSEoLjkpUZsGeub9UT7tJz1F9bW1lBM7NmOemu2U8
+	jGvkfOoVR7GjEMDTBB2Hq6nOXmb+3G7n+F6quFZwL/Y3AEO+PJ07fyPisM+Jtttj2zZx+hSlYqi
+	xn2PngqwncKLNl13H+c/rGiB973FQ9AkgHt/oRlFJxMbYXZQTolarMs8bcioj
+X-Google-Smtp-Source: AGHT+IHknL+02mfWzJhY/AbORfOchzZsloPL2ZgnXxUDf7Ggqlll69ViWNJJEYqSUpFuLCnFBxzBbQ==
+X-Received: by 2002:a05:6102:943:b0:52a:7083:2f67 with SMTP id ada2fe7eead31-588ee660bd6mr529212137.24.1758269237422;
+        Fri, 19 Sep 2025 01:07:17 -0700 (PDT)
+Received: from mail-ua1-f45.google.com (mail-ua1-f45.google.com. [209.85.222.45])
+        by smtp.gmail.com with ESMTPSA id a1e0cc1a2514c-8e3e2e04775sm863741241.0.2025.09.19.01.07.16
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Fri, 19 Sep 2025 01:07:16 -0700 (PDT)
+Received: by mail-ua1-f45.google.com with SMTP id a1e0cc1a2514c-89018e97232so584363241.0
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 01:07:16 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCVg/rt63zI9+N1Gozjw0t4jXKh7QP/IcDEBteZ1iqfRWKz0IXYGgp8FhCh9WlpqsMiBer2hzB2OmmI552I=@lists.ozlabs.org
+X-Received: by 2002:a05:6102:1627:b0:4ec:c548:e10e with SMTP id
+ ada2fe7eead31-588d76ebbc2mr727213137.3.1758269235705; Fri, 19 Sep 2025
+ 01:07:15 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,188 +76,43 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1758209657; l=7036; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=hiFVvDsKhsZYm/v2+/bRrQVP0aSM357pzO7qX7bdClA=; b=oA3dKiOCZ31kqBYOQcNUMFTkOTmgYgQtxij9M8WvelR5/+bYlgZQBVItZWNy4YPLRccDMKo6Q dV61RhOSRLWAzLjZP/dUyAWPZSYf0HGD7vPtuOYVP9fwia3krRLHUdr
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
-Content-Transfer-Encoding: 8bit
+References: <20250918114840.53581-1-abarnas@google.com>
+In-Reply-To: <20250918114840.53581-1-abarnas@google.com>
+From: Geert Uytterhoeven <geert@linux-m68k.org>
+Date: Fri, 19 Sep 2025 10:07:03 +0200
+X-Gmail-Original-Message-ID: <CAMuHMdUi1z3T5dFL15x23ZmkW-m9tzLADYtS0rwKb7KuZrTegg@mail.gmail.com>
+X-Gm-Features: AS18NWA24mwTgPwJuiV4lrTa76WLXSZxDgw8vBVbC4rxB2V-sO3NiQxEmyRWCCo
+Message-ID: <CAMuHMdUi1z3T5dFL15x23ZmkW-m9tzLADYtS0rwKb7KuZrTegg@mail.gmail.com>
+Subject: Re: [PATCH] arch: powerpc: ps3: Make ps3_system_bus_type const
+To: =?UTF-8?Q?Adrian_Barna=C5=9B?= <abarnas@google.com>
+Cc: Geoff Levand <geoff@infradead.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+	Christophe Leroy <christophe.leroy@csgroup.eu>, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org, Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-prtd_tx and prtd_rx members are not used anymore and only qmc_chan
-member remains so struct qmc_dai_chan has become pointless.
+On Thu, 18 Sept 2025 at 13:49, Adrian Barna=C5=9B <abarnas@google.com> wrot=
+e:
+> Because driver core can properly handle constant struct bus_type,
+> move the ps3_system_bus_type to be a constant structure as well,
+> placing it into read-only memory which can not be modified at runtime.
+>
+> Signed-off-by: Adrian Barna=C5=9B <abarnas@google.com>
 
-Use qmc_chan directly and drop struct qmc_dai_chan.
+Reviewed-by: Geert Uytterhoeven <geert@linux-m68k.org>
 
-Acked-by: Herve Codina <herve.codina@bootlin.com>
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- sound/soc/fsl/fsl_qmc_audio.c | 52 ++++++++++++++---------------------
- 1 file changed, 20 insertions(+), 32 deletions(-)
+Gr{oetje,eeting}s,
 
-diff --git a/sound/soc/fsl/fsl_qmc_audio.c b/sound/soc/fsl/fsl_qmc_audio.c
-index 2790953543c5..3de448ef724c 100644
---- a/sound/soc/fsl/fsl_qmc_audio.c
-+++ b/sound/soc/fsl/fsl_qmc_audio.c
-@@ -17,12 +17,6 @@
- #include <sound/pcm_params.h>
- #include <sound/soc.h>
- 
--struct qmc_dai_chan {
--	struct qmc_dai_prtd *prtd_tx;
--	struct qmc_dai_prtd *prtd_rx;
--	struct qmc_chan *qmc_chan;
--};
--
- struct qmc_dai {
- 	char *name;
- 	int id;
-@@ -33,7 +27,7 @@ struct qmc_dai {
- 	unsigned int nb_chans_avail;
- 	unsigned int nb_chans_used_tx;
- 	unsigned int nb_chans_used_rx;
--	struct qmc_dai_chan *chans;
-+	struct qmc_chan **qmc_chans;
- };
- 
- struct qmc_audio {
-@@ -125,7 +119,7 @@ static int qmc_audio_pcm_write_submit(struct qmc_dai_prtd *prtd)
- 	int ret;
- 
- 	for (i = 0; i < prtd->channels; i++) {
--		ret = qmc_chan_write_submit(prtd->qmc_dai->chans[i].qmc_chan,
-+		ret = qmc_chan_write_submit(prtd->qmc_dai->qmc_chans[i],
- 					    prtd->ch_dma_addr_current + i * prtd->ch_dma_offset,
- 					    prtd->ch_dma_size,
- 					    i == prtd->channels - 1 ? qmc_audio_pcm_write_complete :
-@@ -165,7 +159,7 @@ static int qmc_audio_pcm_read_submit(struct qmc_dai_prtd *prtd)
- 	int ret;
- 
- 	for (i = 0; i < prtd->channels; i++) {
--		ret = qmc_chan_read_submit(prtd->qmc_dai->chans[i].qmc_chan,
-+		ret = qmc_chan_read_submit(prtd->qmc_dai->qmc_chans[i],
- 					   prtd->ch_dma_addr_current + i * prtd->ch_dma_offset,
- 					   prtd->ch_dma_size,
- 					   i == prtd->channels - 1 ? qmc_audio_pcm_read_complete :
-@@ -206,7 +200,6 @@ static int qmc_audio_pcm_trigger(struct snd_soc_component *component,
- 				 struct snd_pcm_substream *substream, int cmd)
- {
- 	struct qmc_dai_prtd *prtd = substream->runtime->private_data;
--	unsigned int i;
- 	int ret;
- 
- 	if (!prtd->qmc_dai) {
-@@ -220,9 +213,6 @@ static int qmc_audio_pcm_trigger(struct snd_soc_component *component,
- 		prtd->ch_dma_addr_current = prtd->ch_dma_addr_start;
- 
- 		if (substream->stream == SNDRV_PCM_STREAM_PLAYBACK) {
--			for (i = 0; i < prtd->channels; i++)
--				prtd->qmc_dai->chans[i].prtd_tx = prtd;
--
- 			/* Submit first chunk ... */
- 			ret = qmc_audio_pcm_write_submit(prtd);
- 			if (ret)
-@@ -238,9 +228,6 @@ static int qmc_audio_pcm_trigger(struct snd_soc_component *component,
- 			if (ret)
- 				return ret;
- 		} else {
--			for (i = 0; i < prtd->channels; i++)
--				prtd->qmc_dai->chans[i].prtd_rx = prtd;
--
- 			/* Submit first chunk ... */
- 			ret = qmc_audio_pcm_read_submit(prtd);
- 			if (ret)
-@@ -610,9 +597,9 @@ static int qmc_dai_hw_params(struct snd_pcm_substream *substream,
- 		chan_param.mode = QMC_TRANSPARENT;
- 		chan_param.transp.max_rx_buf_size = params_period_bytes(params) / nb_chans_used;
- 		for (i = 0; i < nb_chans_used; i++) {
--			ret = qmc_chan_set_param(qmc_dai->chans[i].qmc_chan, &chan_param);
-+			ret = qmc_chan_set_param(qmc_dai->qmc_chans[i], &chan_param);
- 			if (ret) {
--				dev_err(dai->dev, "chans[%u], set param failed %d\n",
-+				dev_err(dai->dev, "qmc_chans[%u], set param failed %d\n",
- 					i, ret);
- 				return ret;
- 			}
-@@ -654,7 +641,7 @@ static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
- 	case SNDRV_PCM_TRIGGER_RESUME:
- 	case SNDRV_PCM_TRIGGER_PAUSE_RELEASE:
- 		for (i = 0; i < nb_chans_used; i++) {
--			ret = qmc_chan_start(qmc_dai->chans[i].qmc_chan, direction);
-+			ret = qmc_chan_start(qmc_dai->qmc_chans[i], direction);
- 			if (ret)
- 				goto err_stop;
- 		}
-@@ -663,13 +650,13 @@ static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
- 	case SNDRV_PCM_TRIGGER_STOP:
- 		/* Stop and reset all QMC channels and return the first error encountered */
- 		for (i = 0; i < nb_chans_used; i++) {
--			ret_tmp = qmc_chan_stop(qmc_dai->chans[i].qmc_chan, direction);
-+			ret_tmp = qmc_chan_stop(qmc_dai->qmc_chans[i], direction);
- 			if (!ret)
- 				ret = ret_tmp;
- 			if (ret_tmp)
- 				continue;
- 
--			ret_tmp = qmc_chan_reset(qmc_dai->chans[i].qmc_chan, direction);
-+			ret_tmp = qmc_chan_reset(qmc_dai->qmc_chans[i], direction);
- 			if (!ret)
- 				ret = ret_tmp;
- 		}
-@@ -681,7 +668,7 @@ static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
- 	case SNDRV_PCM_TRIGGER_PAUSE_PUSH:
- 		/* Stop all QMC channels and return the first error encountered */
- 		for (i = 0; i < nb_chans_used; i++) {
--			ret_tmp = qmc_chan_stop(qmc_dai->chans[i].qmc_chan, direction);
-+			ret_tmp = qmc_chan_stop(qmc_dai->qmc_chans[i], direction);
- 			if (!ret)
- 				ret = ret_tmp;
- 		}
-@@ -697,8 +684,8 @@ static int qmc_dai_trigger(struct snd_pcm_substream *substream, int cmd,
- 
- err_stop:
- 	while (i--) {
--		qmc_chan_stop(qmc_dai->chans[i].qmc_chan, direction);
--		qmc_chan_reset(qmc_dai->chans[i].qmc_chan, direction);
-+		qmc_chan_stop(qmc_dai->qmc_chans[i], direction);
-+		qmc_chan_reset(qmc_dai->qmc_chans[i], direction);
- 	}
- 	return ret;
- }
-@@ -794,19 +781,20 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
- 		return dev_err_probe(qmc_audio->dev, -EINVAL,
- 				     "dai %d no QMC channel defined\n", qmc_dai->id);
- 
--	qmc_dai->chans = devm_kcalloc(qmc_audio->dev, count, sizeof(*qmc_dai->chans), GFP_KERNEL);
--	if (!qmc_dai->chans)
-+	qmc_dai->qmc_chans = devm_kcalloc(qmc_audio->dev, count, sizeof(*qmc_dai->qmc_chans),
-+					  GFP_KERNEL);
-+	if (!qmc_dai->qmc_chans)
- 		return -ENOMEM;
- 
- 	for (i = 0; i < count; i++) {
--		qmc_dai->chans[i].qmc_chan = devm_qmc_chan_get_byphandles_index(qmc_audio->dev, np,
--										"fsl,qmc-chan", i);
--		if (IS_ERR(qmc_dai->chans[i].qmc_chan)) {
--			return dev_err_probe(qmc_audio->dev, PTR_ERR(qmc_dai->chans[i].qmc_chan),
-+		qmc_dai->qmc_chans[i] = devm_qmc_chan_get_byphandles_index(qmc_audio->dev, np,
-+									   "fsl,qmc-chan", i);
-+		if (IS_ERR(qmc_dai->qmc_chans[i])) {
-+			return dev_err_probe(qmc_audio->dev, PTR_ERR(qmc_dai->qmc_chans[i]),
- 					     "dai %d get QMC channel %d failed\n", qmc_dai->id, i);
- 		}
- 
--		ret = qmc_chan_get_info(qmc_dai->chans[i].qmc_chan, &info);
-+		ret = qmc_chan_get_info(qmc_dai->qmc_chans[i], &info);
- 		if (ret) {
- 			dev_err(qmc_audio->dev, "dai %d get QMC %d channel info failed %d\n",
- 				qmc_dai->id, i, ret);
-@@ -851,7 +839,7 @@ static int qmc_audio_dai_parse(struct qmc_audio *qmc_audio, struct device_node *
- 			}
- 		}
- 
--		ret = qmc_chan_get_ts_info(qmc_dai->chans[i].qmc_chan, &ts_info);
-+		ret = qmc_chan_get_ts_info(qmc_dai->qmc_chans[i], &ts_info);
- 		if (ret) {
- 			dev_err(qmc_audio->dev, "dai %d get QMC %d channel TS info failed %d\n",
- 				qmc_dai->id, i, ret);
--- 
-2.49.0
+                        Geert
 
+--=20
+Geert Uytterhoeven -- There's lots of Linux beyond ia32 -- geert@linux-m68k=
+.org
+
+In personal conversations with technical people, I call myself a hacker. Bu=
+t
+when I'm talking to journalists I just say "programmer" or something like t=
+hat.
+                                -- Linus Torvalds
 
