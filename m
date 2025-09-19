@@ -1,136 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-12431-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12432-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4787CAC59A
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Sep 2025 16:50:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 998A7CAC592
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Sep 2025 18:56:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSz5z298Lz3chy;
-	Sat, 20 Sep 2025 02:50:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758210680;
-	cv=none; b=jpWGmX6POFyPFmQjC3vElIByCvOrMMK9rB2Jtcm0ELCEUm6SZr9Phr718FbzRexHvcxDSJ/VqXjgZEDAY+jQGCOsEC5WHU5o3V1AvQkVzOV3Zv6h1viDhnb7LSwr4K80iNVCdGyOz8WhKT5c49mDY6EIdRG2dA3dmsfycPbO6jvb5TpPgtkvpzRHv1zkJRpqyYk8CUzJIfgi/EJf5PrH350Hf87R3OpSUgNbztobGdA+UE7FQYcRLk3V4qKZDhHNu1l7zHyyE0E/mHTmxvtq6tozvuw8KMuXU14GjQ7OPMsLYbude3QiveHfw4K5hFgJAnppgqkNHAL7K+k2Kk9VkQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cT1ts4BzPz2ypW;
+	Sat, 20 Sep 2025 04:56:21 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.133.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758308181;
+	cv=none; b=BQ+ZiP1kwTouR22OjeK3BCr4d3zJfwO8ODEVYv7CKCkg2CiNFjqLBN8q8hEuByLvcV36xxFG4Dnbhhs3ASQezuOeDRecmIWFFjb9jB88GaTMq45Y5hI4NmwcayNP+dVrVwh37YU7MTl5BFzwmikZ6NUuIcZ+EDYJU+cmLP+ERR2lVWNhTn3l3lFaQfZpA0JR2i20aEA0xXsRIQxh5gTOFjpbE+MlbfGWtrLNOAe/RXFkx2lpnZhJp7Rrgg8Gcp3Flidfi5/XdB3KNc2Vd7+iPkOEUCv86mZL9FGNNvXx3p3J/awLeTx8SVU3oT5aZXDlDjCtd2Z4HIXHleIZquvERw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758210680; c=relaxed/relaxed;
-	bh=fl//kCkijlzCVR9mkoTjy3hmrs7lH+dhZH4qnaeCWrc=;
-	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=Ds3N8LvWewTRB6dlB8BP+x1tZAunX9hc6ENyPpu2xMuwE6IrhxMLO7o6lYAOpVCCp/YAloKFK3jDcJqOYFlpG1Y7a41vLLO7dpEf58kjp3lZmU695AIGpI0o1XTLe3a5u7XSSUeUAFM6+llkvOmAHGf7hj0si+3wmFBpUDig2WJht7Db4qChACW6OnEVoyqaCMcpBXtdurny2AdzMAzH9k8nq8LbqClkfcEG8jE2WGBn6uOHrR3jfa3ie9K70VlI1AU9RHSNo9NzNf5aTgRyM6IqZos6bH8weN/Qjl01O4UU8GpcT6x9GbA1LtNqIgT8s22wVstP5qVNiK3L4fzd5g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lAxccBgH; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=pjw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1758308181; c=relaxed/relaxed;
+	bh=lVj38TV6NFlRJUveEKKnf4vw+DN0Kar28r+mnlIexw0=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=V51tuERiy5CTx6/rkI6W8Y9uKtmlAYmnXWDeQsqSFi/qeu316xfghLtzKf544pgW8VlF3EHYDKpNMXaaw3SBfH3xh2NOpJX0VTPyyg4173d1P0s9hJTXGxZTCRm0n0NYg/l+AIo/16kkroTIeEJ2Zgr/kqad+DcupebPleWGKKqN/kwYvAMr5NEvO8ZKHwKggBg9grH02Jn6McZCkGwdOLTqI6YjkB6Smd5AqjJt/i2dwtPoS6OoXlI9zzYXbxih3KBupj58RS4mwasTx+3CRB29/psDiZRerpYs+Zs7pFlFfNPHfyxe+sUG+t3kJqFLBIZQH1aPCnrXwehZ+ckTWw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZxszoSaQ; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dIB9OBQ0; dkim-atps=neutral; spf=pass (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=alex.williamson@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=lAxccBgH;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=ZxszoSaQ;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=dIB9OBQ0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=pjw@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.133.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=alex.williamson@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.133.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSKqq4Pxsz2xgQ
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 01:51:19 +1000 (AEST)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3015643217;
-	Thu, 18 Sep 2025 15:51:17 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D77DBC4CEE7;
-	Thu, 18 Sep 2025 15:51:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1758210677;
-	bh=e6XJbeklgFNXwruDywAZe7vowNbZUbwBKpZS63m54og=;
-	h=Date:From:To:cc:Subject:In-Reply-To:References:From;
-	b=lAxccBgHQJMGKL6W5XO/kIBHMi2AladIz8qPWx4MBG7gpBrzHZckIimBwgkALGSoK
-	 RTpLe7661eFC5B/7BhfypSLu8ciNLbjbhnW0/Uiw7F9qtuf/K/hOn+NGzmTK4Elius
-	 Puw/h1XtP570vHRTCm/o6CmMUjRekyChiJ42E7YZlGDJw6uFwLqKV4izLQfNVxc+1W
-	 3GgwOdBMEpO6bPhXxyYgbuGAlwFII7VeYUA20OL3bsW1JzfLATB4CEE7Um16odYOB9
-	 O8FOQqOy+9iE5VgV50GipK6qrDd5viCwdSnAqnhpyMVlV7VT8suWp23kcrZWa2l0BA
-	 qFbk69uCk7f8g==
-Date: Thu, 18 Sep 2025 09:51:07 -0600 (MDT)
-From: Paul Walmsley <pjw@kernel.org>
-To: Simon Schuster <schuster.simon@siemens-energy.com>
-cc: Dinh Nguyen <dinguyen@kernel.org>, Christian Brauner <brauner@kernel.org>, 
-    Arnd Bergmann <arnd@arndb.de>, Andrew Morton <akpm@linux-foundation.org>, 
-    David Hildenbrand <david@redhat.com>, 
-    Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, 
-    "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
-    Vlastimil Babka <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>, 
-    Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, 
-    Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>, 
-    Juri Lelli <juri.lelli@redhat.com>, 
-    Vincent Guittot <vincent.guittot@linaro.org>, 
-    Dietmar Eggemann <dietmar.eggemann@arm.com>, 
-    Steven Rostedt <rostedt@goodmis.org>, Ben Segall <bsegall@google.com>, 
-    Mel Gorman <mgorman@suse.de>, Valentin Schneider <vschneid@redhat.com>, 
-    Kees Cook <kees@kernel.org>, Paul Walmsley <paul.walmsley@sifive.com>, 
-    Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
-    Alexandre Ghiti <alex@ghiti.fr>, Guo Ren <guoren@kernel.org>, 
-    Oleg Nesterov <oleg@redhat.com>, Jens Axboe <axboe@kernel.dk>, 
-    Alexander Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, 
-    Tejun Heo <tj@kernel.org>, Johannes Weiner <hannes@cmpxchg.org>, 
-    =?ISO-8859-15?Q?Michal_Koutn=FD?= <mkoutny@suse.com>, 
-    Paul Moore <paul@paul-moore.com>, Serge Hallyn <sergeh@kernel.org>, 
-    James Morris <jmorris@namei.org>, "Serge E. Hallyn" <serge@hallyn.com>, 
-    Anna-Maria Behnsen <anna-maria@linutronix.de>, 
-    Frederic Weisbecker <frederic@kernel.org>, 
-    Thomas Gleixner <tglx@linutronix.de>, 
-    Masami Hiramatsu <mhiramat@kernel.org>, 
-    "David S. Miller" <davem@davemloft.net>, 
-    Eric Dumazet <edumazet@google.com>, Jakub Kicinski <kuba@kernel.org>, 
-    Paolo Abeni <pabeni@redhat.com>, Simon Horman <horms@kernel.org>, 
-    Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, 
-    Arnaldo Carvalho de Melo <acme@kernel.org>, 
-    Namhyung Kim <namhyung@kernel.org>, Mark Rutland <mark.rutland@arm.com>, 
-    Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
-    Jiri Olsa <jolsa@kernel.org>, Ian Rogers <irogers@google.com>, 
-    Adrian Hunter <adrian.hunter@intel.com>, 
-    John Johansen <john.johansen@canonical.com>, 
-    Stephen Smalley <stephen.smalley.work@gmail.com>, 
-    Ondrej Mosnacek <omosnace@redhat.com>, 
-    Kentaro Takeda <takedakn@nttdata.co.jp>, 
-    Tetsuo Handa <penguin-kernel@I-love.SAKURA.ne.jp>, 
-    Richard Henderson <richard.henderson@linaro.org>, 
-    Matt Turner <mattst88@gmail.com>, Vineet Gupta <vgupta@kernel.org>, 
-    Russell King <linux@armlinux.org.uk>, 
-    Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, 
-    Brian Cain <bcain@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, 
-    WANG Xuerui <kernel@xen0n.name>, Geert Uytterhoeven <geert@linux-m68k.org>, 
-    Michal Simek <monstr@monstr.eu>, 
-    Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
-    Jonas Bonn <jonas@southpole.se>, 
-    Stefan Kristiansson <stefan.kristiansson@saunalahti.fi>, 
-    Stafford Horne <shorne@gmail.com>, 
-    "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>, 
-    Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
-    Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-    Christophe Leroy <christophe.leroy@csgroup.eu>, 
-    Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
-    Alexander Gordeev <agordeev@linux.ibm.com>, 
-    Christian Borntraeger <borntraeger@linux.ibm.com>, 
-    Sven Schnelle <svens@linux.ibm.com>, 
-    Yoshinori Sato <ysato@users.sourceforge.jp>, Rich Felker <dalias@libc.org>, 
-    John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
-    Andreas Larsson <andreas@gaisler.com>, Richard Weinberger <richard@nod.at>, 
-    Anton Ivanov <anton.ivanov@cambridgegreys.com>, 
-    Johannes Berg <johannes@sipsolutions.net>, Borislav Petkov <bp@alien8.de>, 
-    Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org, 
-    "H. Peter Anvin" <hpa@zytor.com>, Chris Zankel <chris@zankel.net>, 
-    Max Filippov <jcmvbkbc@gmail.com>, linux-mm@kvack.org, 
-    linux-kernel@vger.kernel.org, linux-riscv@lists.infradead.org, 
-    linux-csky@vger.kernel.org, linux-block@vger.kernel.org, 
-    linux-fsdevel@vger.kernel.org, cgroups@vger.kernel.org, 
-    linux-security-module@vger.kernel.org, linux-trace-kernel@vger.kernel.org, 
-    netdev@vger.kernel.org, linux-perf-users@vger.kernel.org, 
-    apparmor@lists.ubuntu.com, selinux@vger.kernel.org, 
-    linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org, 
-    linux-arm-kernel@lists.infradead.org, linux-hexagon@vger.kernel.org, 
-    loongarch@lists.linux.dev, linux-m68k@lists.linux-m68k.org, 
-    linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org, 
-    linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-    linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
-    sparclinux@vger.kernel.org, linux-um@lists.infradead.org
-Subject: Re: [PATCH v2 3/4] arch: copy_thread: pass clone_flags as u64
-In-Reply-To: <20250901-nios2-implement-clone3-v2-3-53fcf5577d57@siemens-energy.com>
-Message-ID: <ffb22e54-6b7d-5b88-4217-e67870051c6e@kernel.org>
-References: <20250901-nios2-implement-clone3-v2-0-53fcf5577d57@siemens-energy.com> <20250901-nios2-implement-clone3-v2-3-53fcf5577d57@siemens-energy.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cT1tr36D0z2xpn
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Sep 2025 04:56:18 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1758308174;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=lVj38TV6NFlRJUveEKKnf4vw+DN0Kar28r+mnlIexw0=;
+	b=ZxszoSaQ/aNernkoTLJg3I+OjMp0luGQgrmPDeD9cz+4JLQl29iwWiCDiGLldjuAWXz1nZ
+	1cq6BBJttKpqsdrQWGnJ1YEiyLgi/fP0zWl7xDRriYuWw5XJNk8h9qv9qo6Bnxt9t1NUua
+	NbdSWhQRo1DBQkFpaX0/dk4ypB6q0w0=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1758308175;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=lVj38TV6NFlRJUveEKKnf4vw+DN0Kar28r+mnlIexw0=;
+	b=dIB9OBQ07EX3BPwIKmZZ9XeRFtE8UKDtLyKd3THchO5RdGdM1VnGqEGj2bqRPp/xJmIwA/
+	DheWlEhHDdkHpB1I/a0TnQVrbaLlTWeBIiMNZW0oZuI8YeIxVteEWkkj9oVI0szV7bDIKa
+	+A1siXp15900XaGjzpDybvJpUQ1L9h8=
+Received: from mail-il1-f198.google.com (mail-il1-f198.google.com
+ [209.85.166.198]) by relay.mimecast.com with ESMTP with STARTTLS
+ (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
+ us-mta-36-fDsCJamsMHirAI45o1FvDQ-1; Fri, 19 Sep 2025 14:56:07 -0400
+X-MC-Unique: fDsCJamsMHirAI45o1FvDQ-1
+X-Mimecast-MFC-AGG-ID: fDsCJamsMHirAI45o1FvDQ_1758308166
+Received: by mail-il1-f198.google.com with SMTP id e9e14a558f8ab-4198fcc4a80so4711165ab.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 11:56:07 -0700 (PDT)
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1758308166; x=1758912966;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=lVj38TV6NFlRJUveEKKnf4vw+DN0Kar28r+mnlIexw0=;
+        b=oDqks4GCHQ1iBOuvk2dyMJHr16aafkIfpBPDTARgigysEodsq6PtVpPi6cuNBLnhAS
+         GM6rPwe+iH9jh8DaeHH8sxHSeGVboeu3g6N8m6tUgZ1JCHoi65VmrU04l7zNhCaU6SwQ
+         0F55Zpgu1XIG5aWIM/JAny3s6obXFtqv7/Gk1MRh67pKcIGUQxOXSxPLbk/hYLS+s1qI
+         UIy+gRUtyh7btwiO+IRzL+ORNSxWEXJ5ARdf8aJF1U7OkgR3Nk7+XZxhQq0F3Zg5iH81
+         /O2CA7epVpoJkLz/2JHwbo9yXCG8DVAKzxNh0xQXdTAySSMeQGrPyxmhf9VWMmpcVwG3
+         TVtg==
+X-Forwarded-Encrypted: i=1; AJvYcCWsoqQh35VRIbVKZgrrk+QDUxV1zIQSO+Xxe5RrLOYJBUeDNjt9bYZcE5EJL47dXCPsXBmq9fWvwTYNGsI=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyxkRMmLP0DtmWs6+1D0jOINbL1Ca0zpcyg2jH3elBjivxJuxYW
+	eujXtTe7JZWySqfLPonE0hUF5Azcm2CtmJjRW9FdhGhvpfLYVLq0kknAFIp/gVW04XKj9gejn78
+	sRZ2tUwTxEHQw8sdwVGltyjbreiXI7lVCI5RlEkHlS+jMXNHaSsGxEvVMXrW92IBzQXk=
+X-Gm-Gg: ASbGnctPS+jKs59gu2ok7tx6q+/jg2g0xNTh50fwu2ffAH2DLcHQXOiSGZuUOMTKvhm
+	1+XI8nYJ9aRwfdseiKJaL0jYhGReWs8cQeIaQYtRACNLhHCuUPI/4vifdIifxiVA6pSf4vRtOai
+	SL68HqnVRN3HS2k1Oav/ZUqjfjmjMrO6tYl91wbZWtuSGiORZ1WCL8c7W7R5CNBfzkVKC/XKIJ9
+	yphpJxmdedaX5mZ5OqN/RKkZLRh8wcQrSOcagvOTuHAerR2etOwdXtQ34h+WH9uYKahGgLKyQnJ
+	f7mrnoTA58OLukwG1XA2Cl5Gbnbo0UNs0XVVUUdWTVc=
+X-Received: by 2002:a92:c24a:0:b0:419:de32:2d01 with SMTP id e9e14a558f8ab-42481989234mr25313805ab.4.1758308166453;
+        Fri, 19 Sep 2025 11:56:06 -0700 (PDT)
+X-Google-Smtp-Source: AGHT+IHeRMlVVwJSn2J+eoiOVihrmI8BY3L8aB3kwLEGCqd+cR5IVXI2iK+bf/xhrrP0TTZWi378yA==
+X-Received: by 2002:a92:c24a:0:b0:419:de32:2d01 with SMTP id e9e14a558f8ab-42481989234mr25313645ab.4.1758308165944;
+        Fri, 19 Sep 2025 11:56:05 -0700 (PDT)
+Received: from redhat.com ([38.15.36.11])
+        by smtp.gmail.com with ESMTPSA id 8926c6da1cb9f-53d539906dfsm2442600173.56.2025.09.19.11.56.04
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 19 Sep 2025 11:56:05 -0700 (PDT)
+Date: Fri, 19 Sep 2025 12:56:03 -0600
+From: Alex Williamson <alex.williamson@redhat.com>
+To: Timothy Pearson <tpearson@raptorengineering.com>
+Cc: kvm <kvm@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [PATCH] vfio/pci: Fix INTx handling on legacy DisINTx- PCI
+ devices
+Message-ID: <20250919125603.08f600ac.alex.williamson@redhat.com>
+In-Reply-To: <663798478.1707537.1757450926706.JavaMail.zimbra@raptorengineeringinc.com>
+References: <663798478.1707537.1757450926706.JavaMail.zimbra@raptorengineeringinc.com>
+X-Mailer: Claws Mail 4.3.1 (GTK 3.24.43; x86_64-redhat-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -144,33 +111,96 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: MPqOU7YcjL9L3t9ex7Z_3EvDxG3NOJvdfZpslYIFQYM_1758308166
+X-Mimecast-Originator: redhat.com
 Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Mon, 1 Sep 2025, Simon Schuster via B4 Relay wrote:
+On Tue, 9 Sep 2025 15:48:46 -0500 (CDT)
+Timothy Pearson <tpearson@raptorengineering.com> wrote:
 
-> From: Simon Schuster <schuster.simon@siemens-energy.com>
+> PCI devices prior to PCI 2.3 both use level interrupts and do not support
+> interrupt masking, leading to a failure when passed through to a KVM guest on
+> at least the ppc64 platform, which does not utilize the resample IRQFD. This
+> failure manifests as receiving and acknowledging a single interrupt in the guest
+> while leaving the host physical device VFIO IRQ pending.
 > 
-> With the introduction of clone3 in commit 7f192e3cd316 ("fork: add
-> clone3") the effective bit width of clone_flags on all architectures was
-> increased from 32-bit to 64-bit, with a new type of u64 for the flags.
-> However, for most consumers of clone_flags the interface was not
-> changed from the previous type of unsigned long.
+> Level interrupts in general require special handling due to their inherently
+> asynchronous nature; both the host and guest interrupt controller need to
+> remain in synchronization in order to coordinate mask and unmask operations.
+> When lazy IRQ masking is used on DisINTx- hardware, the following sequence
+> occurs:
+>
+>  * Level IRQ assertion on host
+>  * IRQ trigger within host interrupt controller, routed to VFIO driver
+>  * Host EOI with hardware level IRQ still asserted
+>  * Software mask of interrupt source by VFIO driver
+>  * Generation of event and IRQ trigger in KVM guest interrupt controller
+>  * Level IRQ deassertion on host
+>  * Guest EOI
+>  * Guest IRQ level deassertion
+>  * Removal of software mask by VFIO driver
 > 
-> While this works fine as long as none of the new 64-bit flag bits
-> (CLONE_CLEAR_SIGHAND and CLONE_INTO_CGROUP) are evaluated, this is still
-> undesirable in terms of the principle of least surprise.
+> Note that no actual state change occurs within the host interrupt controller,
+> unlike what would happen with either DisINTx+ hardware or message interrupts.
+> The host EOI is not fired with the hardware level IRQ deasserted, and the
+> level interrupt is not re-armed within the host interrupt controller, leading
+> to an unrecoverable stall of the device.
 > 
-> Thus, this commit fixes all relevant interfaces of the copy_thread
-> function that is called from copy_process to consistently pass
-> clone_flags as u64, so that no truncation to 32-bit integers occurs on
-> 32-bit architectures.
+> Work around this by disabling lazy IRQ masking for DisINTx- INTx devices.
+
+I'm not really following here.  It's claimed above that no actual state
+change occurs within the host interrupt controller, but that's exactly
+what disable_irq_nosync() intends to do, mask the interrupt line at the
+controller.  The lazy optimization that's being proposed here should
+only change the behavior such that the interrupt is masked at the call
+to disable_irq_nosync() rather than at a subsequent re-assertion of the
+interrupt.  In any case, enable_irq() should mark the line enabled and
+reenable the controller if necessary.
+
+Also, contrary to above, when a device supports DisINT+ we're not
+manipulating the host controller.  We're able to mask the interrupt at
+the device.  MSI is edge triggered, we don't mask it, so it's not
+relevant to this discussion afaict.
+
+There may be good reason to disable the lazy masking behavior as you're
+proposing, but I'm not able to glean it from this discussion of the
+issue.
+
 > 
-> Signed-off-by: Simon Schuster <schuster.simon@siemens-energy.com>
+> ---
+>  drivers/vfio/pci/vfio_pci_intrs.c | 5 +++++
+>  1 file changed, 5 insertions(+)
+> 
+> diff --git a/drivers/vfio/pci/vfio_pci_intrs.c b/drivers/vfio/pci/vfio_pci_intrs.c
+> index 123298a4dc8f..011169ca7a34 100644
+> --- a/drivers/vfio/pci/vfio_pci_intrs.c
+> +++ b/drivers/vfio/pci/vfio_pci_intrs.c
+> @@ -304,6 +304,9 @@ static int vfio_intx_enable(struct vfio_pci_core_device *vdev,
+>  
+>  	vdev->irq_type = VFIO_PCI_INTX_IRQ_INDEX;
+>  
+> +	if (is_intx(vdev) && !vdev->pci_2_3)
 
-Acked-by: Paul Walmsley <pjw@kernel.org> # for RISC-V
+We just set irq_type, which is what is_intx() tests, how could it be
+anything other?  Thanks,
 
-Thanks!
+Alex
 
+> +		irq_set_status_flags(pdev->irq, IRQ_DISABLE_UNLAZY);
+> +
+>  	ret = request_irq(pdev->irq, vfio_intx_handler,
+>  			  irqflags, ctx->name, ctx);
+>  	if (ret) {
+> @@ -351,6 +354,8 @@ static void vfio_intx_disable(struct vfio_pci_core_device *vdev)
+>  	if (ctx) {
+>  		vfio_virqfd_disable(&ctx->unmask);
+>  		vfio_virqfd_disable(&ctx->mask);
+> +		if (!vdev->pci_2_3)
+> +			irq_clear_status_flags(pdev->irq, IRQ_DISABLE_UNLAZY);
+>  		free_irq(pdev->irq, ctx);
+>  		if (ctx->trigger)
+>  			eventfd_ctx_put(ctx->trigger);
 
-- Paul
 
