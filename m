@@ -1,71 +1,85 @@
-Return-Path: <linuxppc-dev+bounces-12425-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12426-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC5E2CAC5AA
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Sep 2025 15:25:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7CF48CAC592
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Sep 2025 16:08:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cSxC64FyRz3cZ9;
-	Sat, 20 Sep 2025 01:25:06 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::135"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758295506;
-	cv=none; b=Kqx5Bmz9ZUHp9ciouiIbmx2yaBGmxB/wfnbHQfg2svAkypQNhSNISTB1j6xnBMjAI+6YLk86TnYapTloIJVqFkIN9uYtiwgZ6lunVUBusUKbw4q9ZITODhMeiEBioMMeYGrkAdyAseYDz3uGFwF16nSxAsAfkAF660XHQwXtfeM+e8z6mJjNIamCYdpQtDxlzTQnJpTq5ySs+JBil7e3r+W/TzoXMX8PBsmf3enPljgRIZ29mF00mc5ABqXfyFXljd08y7/JXs+6aswwfkQ9bzbBJwe76IID0rdBsMip4931715CfcHOr4976lyExnlJM7AZIQZ+1CAffznzc0mruQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cSy990tlnz3cZ9;
+	Sat, 20 Sep 2025 02:08:29 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758298109;
+	cv=none; b=EnCRoeViDv+aPsw5OD5h4phsRFeubuk59NewUfVMfbQjHJ+0LPFV8IZMoMGO1n7VnSHtIN9LtK2X2LvOyM8FktU474tQyooyoK4hGPik+coXfZQm1D2oVeduvb2T+/xiACpfc+Tc5eqicEw4/aW9GYktFuq+WAOKbKInblfr8AngvzAq+heBPascUaBxJrf9BbZ7YVg65iPeGIZQRUe1pxJ2RczMb7l0uVini0ylezMeVpTR5hZzi6aohcIXc83Otq+L4y8+m/S4zfg/zrk7OnRNPxybtX8VNHz8tdjAUK83sMDG4IcaSCVNyAf9NnVgd4VZYcGMO09PzE0tRCFUcQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758295506; c=relaxed/relaxed;
-	bh=EztjVQ+y07YMfegmHOd0VyK62XkODMWu0LdNE29WAS0=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=NQMFnAR8otXXKv/jJLQIvzlMVcmlMD0cQrQa4X6aCdZ2WSkF5pXzZtMdr1XPDTMlzb2BMuEe3vMAVUnOc68gAE68yu+7g8oj+YCmaMzIDfq/DfYCrrNzGKlw5h7RVXL1SeGKrvyCWDcSEsNLXTRZYC+5Vwf5BXfaqMuonCJZUQkIDUy/gKrWe5X3iXvnYsBId3o5oSlrwMehe531JdLH9K8/0BBBhV9NSmjKKQVV+QbSxXrrsYKr6boaby8dDwFyh78HP5j6cdJosax06QTxEMMxE5nhpmxC7xflzWNvWAh2oSA3RDhj8CCBmoFkIzcnJYyarKHt/C/9ydBVxmFQSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=freebox.fr; dkim=pass (2048-bit key; unprotected) header.d=freebox-fr.20230601.gappssmtp.com header.i=@freebox-fr.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=T6/Qw5ae; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::135; helo=mail-lf1-x135.google.com; envelope-from=nschichan@freebox.fr; receiver=lists.ozlabs.org) smtp.mailfrom=freebox.fr
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=freebox.fr
+	t=1758298109; c=relaxed/relaxed;
+	bh=93+iChQy8k9w2vSLxjsMF2tpsbL6StUGENS3z0mFMo0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=D749yYpjazS1jS8wLCNUUbQMPRe7VvlqpSLZu4SqjrtHR+1HAphnO8h7m47fZJVrTGGY4Vtb8XYC8qaW59oBSuy9TUU1ANecXbNPqLN3a7pQPFtj52ObIGog5gpnVXIDNQxMLBnFd6fLwbA7ztNOIraEclAj45RB4o1FLzsw/2hKM/8bOane1gNRq3RIPu+5pt0jYOK/O/jUMSQzSY4+fbcfvy1pAwY/T1Oy4eFMGb8vQm6QPDso4jPRExLuXC6flBe4gWCWS+TMq26SKqIIt6sVZXIpSzYQkgUCn0an1pN40hFmD+bMbYzZXTxPsYgNWXMobU7zw3x4qwZ1sbtztg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gxcwNWOd; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kbusch@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=freebox-fr.20230601.gappssmtp.com header.i=@freebox-fr.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=T6/Qw5ae;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gxcwNWOd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=freebox.fr (client-ip=2a00:1450:4864:20::135; helo=mail-lf1-x135.google.com; envelope-from=nschichan@freebox.fr; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x135.google.com (mail-lf1-x135.google.com [IPv6:2a00:1450:4864:20::135])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=kbusch@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSxC42PTkz3cYR
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Sep 2025 01:25:03 +1000 (AEST)
-Received: by mail-lf1-x135.google.com with SMTP id 2adb3069b0e04-55f7ab2a84eso2641337e87.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Sep 2025 08:25:03 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=freebox-fr.20230601.gappssmtp.com; s=20230601; t=1758295500; x=1758900300; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=EztjVQ+y07YMfegmHOd0VyK62XkODMWu0LdNE29WAS0=;
-        b=T6/Qw5aebizCk8J1e/Olt8S+3IrHcxj0/kC7dbSs50E1AhlLbF8LLxw9loMnuf/4E8
-         a1tequZ4xoPeX166tJvLrC0clH6gfhi4cXBcTUH/0QHDSISP3rWW5k9MoNZfhmteP+E3
-         U7n9TpUASCHZ+uguChbWtdSqLOo3Ehf3jT7xPUv++SlfmO20tmCAiRD3fHFg1A4nEbOv
-         MxjYSh9LNzsV1hUoZa2SNZ3EfjDr33phbufltO09ljauYfTp2L/hVRbSnUyBS1bXhJ21
-         IxcIy8FTrkk/S2P7gVwZlFL6GvUPKcpNIx+x4EVVc1CI6lwcaHSRS9uGbfwo/IJfQ2wk
-         pHhw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758295500; x=1758900300;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=EztjVQ+y07YMfegmHOd0VyK62XkODMWu0LdNE29WAS0=;
-        b=U697UwhKqS59IUbFWB32zOm1k04YkZoISjZpFiNPy5tqJtIFzzKTS+nh3O8S8ktCgZ
-         kIH6Rb6oXu0g2me0kkYMCgiT+/Mq63lrnAr4ofKOjTgMowdgJZey1HfpgxKch/sNbHvO
-         AZZxHFM3s1Sm5YKfN1asMs9xExBIOy/eE4FUhPbRWPnFxf4JijhSQYbx5HuNxqa7ERAR
-         S/pFAYEq/6/vghUiZxr25119oGriJtFAGLq8Kky1loIeSODC5A/+YFWEwju9RlfZ/XVU
-         k7iTImbY3oexzItv94D9ZP9ZxrMwnw/Ek7GnIXXCRRtTPTk3HFVtz1a4xqM8vQ3XaZQn
-         Vb2A==
-X-Forwarded-Encrypted: i=1; AJvYcCX/fnUR15ktotRdCF/O40km+a4yOpETir3Utwg7BmhllwDmREbr+Qpn/kt62clKrO6337dt17u7TstAhTk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yyd47DP0daiiuSFejsRIUuhbXQUB9Yv7AT0X7Zo3b5Vrs1NeBnC
-	AgU3NYoMlITQKhL1LVzSowg++kvIJ1IShqZ+iGouPWrKbxQbFWPDsOQ/oc6Dj/w/AFNb9flVh8O
-	C5DEWaofArpc6nWhU4YcrrzmU2HpvclU/3rIMB+oqMA==
-X-Gm-Gg: ASbGnctoQYCzzmMN+/T7vMoA25f1d1F0nqm8O5qGpInq54DL6XJHBWJ5ST90BHpcgJc
-	vwbFQ1E27wRaR9tzMfbaajafH1mGREJHIWzDH9nS3KxteTcGeGKBSHqgMg1/CAAdwbKLzgM+HcN
-	7g9FUZ7fnqcb9TTZTx/X5tsDEOTU7gTrYW8YMuomIQhJg3LyukfnNqx4b9CwFLfpiSOMW0HyEPz
-	/I4dJ/ZdtaZzBg=
-X-Google-Smtp-Source: AGHT+IHin4gQus9SrkFEog2pTedfunr2Ers950l0f82oxrEtfjemfexmsAorW/Dsqdjvay/GpFMt6pfW/hwC+qBHF14=
-X-Received: by 2002:a05:6512:2c0b:b0:571:b70b:7dbf with SMTP id
- 2adb3069b0e04-579e2507c81mr1455897e87.17.1758295499599; Fri, 19 Sep 2025
- 08:24:59 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cSy980mFnz3cYg
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Sep 2025 02:08:28 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 581BF60140;
+	Fri, 19 Sep 2025 16:08:25 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 76C8EC4CEF0;
+	Fri, 19 Sep 2025 16:08:23 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1758298105;
+	bh=KR7+2nE82F6C0RiPmuqmiCYxfBNwhzjUQ6Re6K7PmkQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=gxcwNWOdwyYYCt/Mr4IoNw/QjfiG4fCy9ykIixLtIZgzxpvEaTh0ZrsRzbEkVlnG2
+	 m8b1wOyRgj64SHlplGanM4IqWdr6Ywznq35IYlrDTPSiuH1HbSJA9OSV6F3cLQ0fmv
+	 gIfqZUpL6QTaZY7lchfgfbbV/HzPQ9GlWuIYB09YAq8LPsugW8lRkDPp3pD3pmqfjH
+	 MMDTa/BarqpIPeeM6zxgfbm5MTp42dkz6/ahu8QcAFUE+eO/S+U7a/1bN3BopMvk86
+	 +JRB492i+MxOTtI0yVlp8MJ781GY30PjuvtN+/6jEMPcnyQy8X2xhocLeJS5gf/FQl
+	 TeUW9JwC+yaOg==
+Date: Fri, 19 Sep 2025 10:08:21 -0600
+From: Keith Busch <kbusch@kernel.org>
+To: Leon Romanovsky <leon@kernel.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
+	Jason Gunthorpe <jgg@nvidia.com>,
+	Abdiel Janulgue <abdiel.janulgue@gmail.com>,
+	Alexander Potapenko <glider@google.com>,
+	Alex Gaynor <alex.gaynor@gmail.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Christoph Hellwig <hch@lst.de>, Danilo Krummrich <dakr@kernel.org>,
+	David Hildenbrand <david@redhat.com>, iommu@lists.linux.dev,
+	Jason Wang <jasowang@redhat.com>, Jens Axboe <axboe@kernel.dk>,
+	Joerg Roedel <joro@8bytes.org>, Jonathan Corbet <corbet@lwn.net>,
+	Juergen Gross <jgross@suse.com>, kasan-dev@googlegroups.com,
+	linux-block@vger.kernel.org, linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org, linux-mm@kvack.org,
+	linux-nvme@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+	linux-trace-kernel@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Masami Hiramatsu <mhiramat@kernel.org>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	"Michael S. Tsirkin" <mst@redhat.com>,
+	Miguel Ojeda <ojeda@kernel.org>,
+	Robin Murphy <robin.murphy@arm.com>, rust-for-linux@vger.kernel.org,
+	Sagi Grimberg <sagi@grimberg.me>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	virtualization@lists.linux.dev, Will Deacon <will@kernel.org>,
+	xen-devel@lists.xenproject.org
+Subject: Re: [PATCH v6 00/16] dma-mapping: migrate to physical address-based
+ API
+Message-ID: <aM1_9cS_LGl4GFC5@kbusch-mbp>
+References: <CGME20250909132821eucas1p1051ce9e0270ddbf520e105c913fa8db6@eucas1p1.samsung.com>
+ <cover.1757423202.git.leonro@nvidia.com>
+ <0db9bce5-40df-4cf5-85ab-f032c67d5c71@samsung.com>
+ <20250912090327.GU341237@unreal>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,74 +93,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20250918152830.438554-1-nschichan@freebox.fr> <20250918195806.6337-1-safinaskar@gmail.com>
-In-Reply-To: <20250918195806.6337-1-safinaskar@gmail.com>
-From: Nicolas Schichan <nschichan@freebox.fr>
-Date: Fri, 19 Sep 2025 17:24:48 +0200
-X-Gm-Features: AS18NWBwMqIXE_dMXDlT0ngUIReSbekPPTszWv5gIfg03bAEg3Id33JL3Yqjedw
-Message-ID: <CAHNNwZAzecVcJXZmycX063-=p-M5jVkfStfgYVKJruOFo7y9zg@mail.gmail.com>
-Subject: Re: [PATCH RESEND 00/62] initrd: remove classic initrd support
-To: Askar Safin <safinaskar@gmail.com>
-Cc: akpm@linux-foundation.org, andy.shevchenko@gmail.com, axboe@kernel.dk, 
-	brauner@kernel.org, cyphar@cyphar.com, devicetree@vger.kernel.org, 
-	ecurtin@redhat.com, email2tema@gmail.com, graf@amazon.com, 
-	gregkh@linuxfoundation.org, hca@linux.ibm.com, hch@lst.de, 
-	hsiangkao@linux.alibaba.com, initramfs@vger.kernel.org, jack@suse.cz, 
-	julian.stecklina@cyberus-technology.de, kees@kernel.org, 
-	linux-acpi@vger.kernel.org, linux-alpha@vger.kernel.org, 
-	linux-api@vger.kernel.org, linux-arch@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linux-block@vger.kernel.org, 
-	linux-csky@vger.kernel.org, linux-doc@vger.kernel.org, 
-	linux-efi@vger.kernel.org, linux-ext4@vger.kernel.org, 
-	linux-fsdevel@vger.kernel.org, linux-hexagon@vger.kernel.org, 
-	linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
-	linux-mips@vger.kernel.org, linux-openrisc@vger.kernel.org, 
-	linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org, 
-	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
-	linux-snps-arc@lists.infradead.org, linux-um@lists.infradead.org, 
-	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, mcgrof@kernel.org, 
-	mingo@redhat.com, monstr@monstr.eu, mzxreary@0pointer.de, 
-	patches@lists.linux.dev, rob@landley.net, sparclinux@vger.kernel.org, 
-	thomas.weissschuh@linutronix.de, thorsten.blum@linux.dev, 
-	torvalds@linux-foundation.org, tytso@mit.edu, viro@zeniv.linux.org.uk, 
-	x86@kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20250912090327.GU341237@unreal>
 
-Hello,
+On Fri, Sep 12, 2025 at 12:03:27PM +0300, Leon Romanovsky wrote:
+> On Fri, Sep 12, 2025 at 12:25:38AM +0200, Marek Szyprowski wrote:
+> > >
+> > > This series does the core code and modern flows. A followup series
+> > > will give the same treatment to the legacy dma_ops implementation.
+> > 
+> > Applied patches 1-13 into dma-mapping-for-next branch. Let's check if it 
+> > works fine in linux-next.
+> 
+> Thanks a lot.
 
-> > When booting with root=/dev/ram0 in the kernel commandline,
-> > handle_initrd() where the deprecation message resides is never called,
-> > which is rather unfortunate (init/do_mounts_initrd.c):
+Just fyi, when dma debug is enabled, we're seeing this new warning
+below. I have not had a chance to look into it yet, so I'm just
+reporting the observation.
 
-> Yes, this is unfortunate.
->
-> I personally still think that initrd should be removed.
+ DMA-API: nvme 0006:01:00.0: cacheline tracking EEXIST, overlapping mappings aren't supported
+ WARNING: kernel/dma/debug.c:598 at add_dma_entry+0x26c/0x328, CPU#1: (udev-worker)/773
+ Modules linked in: acpi_power_meter(E) loop(E) efivarfs(E) autofs4(E)
+ CPU: 1 UID: 0 PID: 773 Comm: (udev-worker) Tainted: G            E    N  6.17.0-rc6-next-20250918-debug #6 PREEMPT(none)
+ Tainted: [E]=UNSIGNED_MODULE, [N]=TEST
+ pstate: 63400009 (nZCv daif +PAN -UAO +TCO +DIT -SSBS BTYPE=--)
+ pc : add_dma_entry+0x26c/0x328
+ lr : add_dma_entry+0x26c/0x328
+ sp : ffff80009fe0f460
+ x29: ffff80009fe0f470 x28: 0000000000000001 x27: 0000000000000001
+ x26: ffff8000835d7f38 x25: ffff8000835d7000 x24: ffff8000835d7e60
+ x23: 0000000000000000 x22: 0000000006e2cc00 x21: 0000000000000000
+ x20: ffff800082e8f218 x19: ffff0000a908ff80 x18: 00000000ffffffff
+ x17: ffff8000801972a0 x16: ffff800080197054 x15: 0000000000000000
+ x14: 0000000000000000 x13: 0000000000000004 x12: 0000000000020006
+ x11: 0000000030e4ef9f x10: ffff800083443358 x9 : ffff80008019499c
+ x8 : 00000000fffeffff x7 : ffff800083443358 x6 : 0000000000000000
+ x5 : 00000000000bfff4 x4 : 0000000000000000 x3 : ffff0000bb005ac0
+ x2 : 0000000000000000 x1 : 0000000000000000 x0 : ffff0000bb005ac0
+ Call trace:
+  add_dma_entry+0x26c/0x328 (P)
+  debug_dma_map_phys+0xc4/0xf0
+  dma_map_phys+0xe0/0x410
+  dma_map_page_attrs+0x94/0xf8
+  blk_dma_map_direct.isra.0+0x64/0xb8
+  blk_rq_dma_map_iter_next+0x6c/0xc8
+  nvme_prep_rq+0x894/0xa98
+  nvme_queue_rqs+0xb0/0x1a0
+  blk_mq_dispatch_queue_requests+0x268/0x3b8
+  blk_mq_flush_plug_list+0x90/0x188
+  __blk_flush_plug+0x104/0x170
+  blk_finish_plug+0x38/0x50
+  read_pages+0x1a4/0x3b8
+  page_cache_ra_unbounded+0x1a0/0x400
+  force_page_cache_ra+0xa8/0xd8
+  page_cache_sync_ra+0xa0/0x3f8
+  filemap_get_pages+0x104/0x950
+  filemap_read+0xf4/0x498
+  blkdev_read_iter+0x88/0x180
+  vfs_read+0x214/0x310
+  ksys_read+0x70/0x110
+  __arm64_sys_read+0x20/0x30
+  invoke_syscall+0x4c/0x118
+  el0_svc_common.constprop.0+0xc4/0xf0
+  do_el0_svc+0x24/0x38
+  el0_svc+0x1a0/0x340
+  el0t_64_sync_handler+0x98/0xe0
+  el0t_64_sync+0x17c/0x180
+ ---[ end trace 0000000000000000 ]---
 
-Considering that the deprecation message didn't get displayed in some
-configurations, maybe it's a bit early at the very least.
-
-> I suggest using workaround I described in cover letter.
-
-I'm not too keen on having an initramfs just to loop-mount
-/sys/firmware/initrd, after all current kernels are able to handle the
-use case just fine.
-
-It looks like there is a lot of code calling into specific filesystems
-so that the initrd code can guess the size of the file system before
-copying into /dev/ram0, and I believe this is what causes the main
-gripe against initrd today. What is wrong with just copying
-/initrd.image using its actual size into /dev/ram0 instead of guessing
-it with the help of filesystem specific code ?
-
-> Also, for unknown reasons I didn't get your letter in my inbox.
-> (Not even in spam folder.) I ocasionally found it on lore.kernel.org .
-
-Sorry about that, When I used git-send-email yesterday to reply, the
-SMTP server I used wasn't authenticated to google, so all gmail
-recipients were dropped. Hopefully this work better today.
-
-Regards,
-
--- 
-Nicolas Schichan
 
