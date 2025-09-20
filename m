@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-12451-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12452-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07CA4CAC597
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 65B14CAC5A8
 	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Sep 2025 07:49:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cTM1X26Cdz3cyd;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cTM1X2VBhz3cyg;
 	Sat, 20 Sep 2025 17:48:16 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758354496;
-	cv=none; b=K6aCYzQyBI2Gzi9bOQ7WcdJ1HKLFMb4pMAK7H35FqcnWDsErXf3Xau0v690ws+gtD+2dVLX73NpPBX7sW+acd5qPSxpN8oZW/wC35+gXEGGYKdzH7pBn6/EGIuq01Sae+Ukd51eJlubJWrl+v5yq38DRzWecEWrw5HkIal4ebkmjq1PvzKBm6XJA1QRHtRRDsNZzdCqebqgmI66NCk1Ma94/YjbPV6BXad9JhlQkz8rWb0++E5m1+V1Dg7b+PTz4hW8vS5r2LRBFUO2NgV7DL/l3f9C7GsCs8no/AmTCQ1QrkGDZlAk6/IXQGSto7nEpIDH9JBR6uw20Y2IDXwS0aw==
+	cv=none; b=Q5+CLukWLXQMEPN7rGM9R1tQiXbhbIXfYHcPavJP7ND5PN8BFHZ/jk2qrKr/z7ZT1MjWoedV/e042cDHMuxevgMlvxW+pDwa/W6BGvFhwVATjsEJ5WDT+Ap4x0cgPEogijqPp1cxrJWlfvwFCIIe1z/w2+p+PzHY1zz5mWLL8sEfkcgi7126bc8HlQw1gj3DELIiQ2Rvw22zqejUTi1JRCuWIkwqHxNMAC3gr7MUvLgWtH3QpOoDSogAaBvPOhcdf2hT/iq2GcRXItzVAm1fPiiv0M7Wz1zoF50V9knec7CF4pzFnMo86CYPPyKNRhxRZDu1s2V0I8zbDE2ZM8596g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1758354496; c=relaxed/relaxed;
-	bh=o9BTpDV5VmWnukcbyFgJ+P2WXRi71atTyZvcwK8Zv7c=;
+	bh=h7zac5CXxUxkb7q5ONcJstI1n7DJUlke+AKINjwUKhw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ovdzZ8SXGOcU3UzFTYq39vykyCm0Wg58mnMtCosXn0jcDVSIsWP4cWGqN9PT2yLTtPRmoQWixg6tYU3/oaxEKNQ3Dv+epi4DueUV8gZOGkPOxMohHXdcKi/ZotwepX05xNO05VyO89GQHHvSA3dGiEL4bqFzP8c8vqVXiG4nAKwec/P29nAjs07ZAUOWytjj3htSoI0+ai5DGCoamzwidvqy5sz4MvXatS7X3eh7IUAHUW7W6zzC0m0VxiE/ildONGunKU3ovakQhaAMf8x5x0asZ5IfD0ErXyp2BBMxESTyBI6m2AC8IzxE5zcD0WaE5MPo2xGvPtj761ftpp+rrg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=VPFh5Puu; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=ZwljrdkCV4Byp4GF8DvbxeXDJ5aVKIAR4jq1s7187aauxvmyZ+5C4J0OJwdfuH5tmopvz/46XMhTAj4PzoyBfUeU9XaiHbGKVi2gxJzjiP49x9wPaVvTuLMmPOfb8ZYTBP8j5c6yHuvZcBjvMcwM/dN/DyiV1GMu3WdliVIxmZuQeyrpYS8Oy97L1JYI3QBBRy8aewZUN+zM2Ca4pN1XGA34npt7XmZUxdd+yMMCbwrmYwp6EAy3er+2qTCJzt6yGxeNRHINDrRK6nGASQI20gcQ+jJFd+lzE+C/G9trC86fhXACZu/wr/Z0pnuDDvFt5kmYv8D1mSqFEGmARNOuFA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=gOsZ11R9; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=VPFh5Puu;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=gOsZ11R9;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cTM1Q1gCjz3cZ9
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Sep 2025 17:48:09 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cTM1R1MXLz3cbL
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Sep 2025 17:48:10 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=o9BTpDV5VmWnukcbyFgJ+P2WXRi71atTyZvcwK8Zv7c=; b=VPFh5PuuaMKxBR9c/9xK9PyU+I
-	l76/TxnbuYUnnilAzgMGQ1YnsTfp8GJp7DbrlcsfjcAZtgnC9SUxWBJthCRDQYqaEB71fGBBz+nF5
-	ELSGR3cuXetxT9KKlNjspGjtTVs45vUd6RrKquZcSizGH2ATXf/KrsLPHyfGy6hW6nu04mF7veP5u
-	27RpfqzNmMLl7ODNZL166avZaqKsSZXVXsOv1/bUThsnYcUulH+9WX502lHTqdFzXMFICa1MMciLi
-	DeJmUu6nOjRqzGMVLQG61vb7SIzEr55IEyW5E5z3GVO3hB0SzU4jr9bfFd9ZxPvqR30yEBe3f/Ych
-	myzgouKg==;
+	bh=h7zac5CXxUxkb7q5ONcJstI1n7DJUlke+AKINjwUKhw=; b=gOsZ11R95Mc6khqYieAvGNI546
+	t4Q3F2LQ7usNltEcKyWm/9q4pggxTthiwjrBd5D4D6ge/9g4pAacGuMO+LGMFkuKgNcAetY1uRIjn
+	1qm8refseK5xgcF0CtotO59paOWWy2bEc6aCmUneBZZJ2yDM3AirMhLl3Fuz4pwnJS4EJnLbHoDJs
+	7ZfBeVXB9yoK+zD+iEbTR75Eao9+iKvcSvcdLCPmoLcgSC1KsAv1kl7D2ExJ2MaIaiLRuPw1Ivapi
+	0y0XdSclxK2XOFjXsEvYABaBSFZ/vhA541uq1Fso7uSMCuhN5Du2vVdFUz8AQy/207j12dYYopi5y
+	SapVXyqA==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uzsK7-0000000ExBd-3kjG;
-	Sat, 20 Sep 2025 07:48:00 +0000
+	id 1uzsK9-0000000ExCp-1Qie;
+	Sat, 20 Sep 2025 07:48:01 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -61,12 +61,13 @@ Cc: torvalds@linux-foundation.org,
 	casey@schaufler-ca.com,
 	linuxppc-dev@lists.ozlabs.org,
 	borntraeger@linux.ibm.com
-Subject: [PATCH 01/39] new helper: simple_remove_by_name()
-Date: Sat, 20 Sep 2025 08:47:20 +0100
-Message-ID: <20250920074759.3564072-1-viro@zeniv.linux.org.uk>
+Subject: [PATCH 10/39] convert smackfs
+Date: Sat, 20 Sep 2025 08:47:29 +0100
+Message-ID: <20250920074759.3564072-10-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20250920074156.GK39973@ZenIV>
+In-Reply-To: <20250920074759.3564072-1-viro@zeniv.linux.org.uk>
 References: <20250920074156.GK39973@ZenIV>
+ <20250920074759.3564072-1-viro@zeniv.linux.org.uk>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,81 +84,27 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-simple_recursive_removal(), but instead of victim dentry it takes
-parent + name.
-
-Used to be open-coded in fs/fuse/control.c, but there's no need to expose
-the guts of that thing there and there are other potential users, so
-let's lift it into libfs...
+Entirely static tree populated by simple_fill_super().  Can use
+kill_anon_super() as-is.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/fuse/control.c  |  7 +------
- fs/libfs.c         | 13 +++++++++++++
- include/linux/fs.h |  2 ++
- 3 files changed, 16 insertions(+), 6 deletions(-)
+ security/smack/smackfs.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/fs/fuse/control.c b/fs/fuse/control.c
-index bb407705603c..31fa816d0189 100644
---- a/fs/fuse/control.c
-+++ b/fs/fuse/control.c
-@@ -289,18 +289,13 @@ static void remove_one(struct dentry *dentry)
-  */
- void fuse_ctl_remove_conn(struct fuse_conn *fc)
- {
--	struct dentry *dentry;
- 	char name[32];
+diff --git a/security/smack/smackfs.c b/security/smack/smackfs.c
+index b1e5e62f5cbd..e989ae3890c7 100644
+--- a/security/smack/smackfs.c
++++ b/security/smack/smackfs.c
+@@ -2960,7 +2960,7 @@ static int smk_init_fs_context(struct fs_context *fc)
+ static struct file_system_type smk_fs_type = {
+ 	.name		= "smackfs",
+ 	.init_fs_context = smk_init_fs_context,
+-	.kill_sb	= kill_litter_super,
++	.kill_sb	= kill_anon_super,
+ };
  
- 	if (!fuse_control_sb || fc->no_control)
- 		return;
- 
- 	sprintf(name, "%u", fc->dev);
--	dentry = lookup_noperm_positive_unlocked(&QSTR(name), fuse_control_sb->s_root);
--	if (!IS_ERR(dentry)) {
--		simple_recursive_removal(dentry, remove_one);
--		dput(dentry);	// paired with lookup_noperm_positive_unlocked()
--	}
-+	simple_remove_by_name(fuse_control_sb->s_root, name, remove_one);
- }
- 
- static int fuse_ctl_fill_super(struct super_block *sb, struct fs_context *fsc)
-diff --git a/fs/libfs.c b/fs/libfs.c
-index ce8c496a6940..d029aff41f66 100644
---- a/fs/libfs.c
-+++ b/fs/libfs.c
-@@ -655,6 +655,19 @@ void simple_recursive_removal(struct dentry *dentry,
- }
- EXPORT_SYMBOL(simple_recursive_removal);
- 
-+void simple_remove_by_name(struct dentry *parent, const char *name,
-+                           void (*callback)(struct dentry *))
-+{
-+	struct dentry *dentry;
-+
-+	dentry = lookup_noperm_positive_unlocked(&QSTR(name), parent);
-+	if (!IS_ERR(dentry)) {
-+		simple_recursive_removal(dentry, callback);
-+		dput(dentry);	// paired with lookup_noperm_positive_unlocked()
-+	}
-+}
-+EXPORT_SYMBOL(simple_remove_by_name);
-+
- /* caller holds parent directory with I_MUTEX_PARENT */
- void locked_recursive_removal(struct dentry *dentry,
-                               void (*callback)(struct dentry *))
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index d7ab4f96d705..3a33c68249e2 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -3628,6 +3628,8 @@ extern int simple_rename(struct mnt_idmap *, struct inode *,
- 			 unsigned int);
- extern void simple_recursive_removal(struct dentry *,
-                               void (*callback)(struct dentry *));
-+extern void simple_remove_by_name(struct dentry *, const char *,
-+                              void (*callback)(struct dentry *));
- extern void locked_recursive_removal(struct dentry *,
-                               void (*callback)(struct dentry *));
- extern int noop_fsync(struct file *, loff_t, loff_t, int);
+ static struct vfsmount *smackfs_mount;
 -- 
 2.47.3
 
