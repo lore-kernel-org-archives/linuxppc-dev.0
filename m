@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-12453-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12454-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C62B3CAC5A0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Sep 2025 07:49:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14E8CCAC5A0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Sep 2025 07:49:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cTM1X3kkpz3d26;
-	Sat, 20 Sep 2025 17:48:16 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cTM1Y0Rbdz3d3Z;
+	Sat, 20 Sep 2025 17:48:17 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758354496;
-	cv=none; b=fkF31MUEDpt9tljewXOYfkk2R6SIGYHsaeDSHI/Lxsv58EqcTBq2/gBCN9y01u/v+N+i5MbbZrWU0LY7lW1fYs41RV8rXSyODJemVQY7L6Mf4UwYkHBIzH4A284ZxL2u/k/5bvsfw/3hbcY0C4w3U26spHSBZXV8/pNjXEBnHV4vkZTh1dwPqOt0hE/ZSNiDj4GQmqi8pPhqcBjrsWGC4NradNSplNtOiMR4lLXpVxehIO1kl5ztEV/o1qvbxO+yxuosoaO2SKOwJmbuNnhkw4sFjAlq8fQD+N0o02D1wiEyfWLPCPdosGtjl7sk2eTEj3X2p5YeYXVE8ios7DhVgg==
+	cv=none; b=QfsYoi/4R/9U2R0u9sij3016Qu8e8CfFX6K6XoLBHlY2+5WIU7CGaZ8+Bd7l6gSulk2og/mZdjgdcCPFKdV1AQUJlV2MkK4BZK/cGJU0ILCMgRDo6XtKRV8EEM3eLWXCjXwtxF3gqFmoMFcWQmPVVBx7uOm6r5cSFPVvSSiVIA153/9lRIxzVhu5Ef/XEDZAZsI97Bf3S/7FGdC4t2iYAxP/SfKmP9f+CtXK1IznoC8RFK0DjVCt168BLVoi/PDp9scrih43sTYGrPiRt2KMcpKcmq8MA3gK48SDxEcZipbjAMF+cOA+uS9c7zF6bpPRQRpWkXNok1pLsKWk3Qq87g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1758354496; c=relaxed/relaxed;
-	bh=fWCUlMHi5omKZPse+rHltZIDpXcWWINKvoa2e5LYjd4=;
+	bh=09KvsjW0ORXF5yAgFsWr4BmJpUanJ8JfB+m1F7eGQps=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=fpPX/PMflU38Cvcn1J2zOMbXkQjqq/tbllOZUNkdPPhvaoChMRyRWi2y31gpDJ18hZ1Oce/VSV8MGk0vmmZoNOwdF1nrztcGlKl49Ha+F6/dpIJPVUBwWCGCxiOpDbXCWsn2swMFS7Mbfk8CdeSqkCi5bsSHA+HVTp2KPY9GT2RfTJ9EO3wITmaAgDT0JX6GU0+utkZXoZm24doFs74wLw3WhLE/RgmOtDinnDSEeAYz61vUAE+rEeIZCd7A8lK2gOOLEpAsGQeetLxjE+1ThRalq5gxKxhA2uQoSywp9cledUuXCxcT9Eg8wfO54OdqIwWc6Fx+EedjM5aidGa40A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=OQ5r0/I/; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=YhIxhVdjc0IfTRZzUCbvvnXuvezZhQzdE10YLcRh01fsql+gxmz01NWvPZBqRcl5dGGIuvJEYqRtaRjpjgoxSFCg+orYvipvVRfWVdgSREIKFqxctpQRYOq64VftnZLHqAHoyIOsKhMJIUOoyiOQ5D9tvndDcpWwmHK/EDsPaNB46MccmYh1yS67jPPhCcsVeeF6bJN4EnAPU9TFI9wI8ruNSEcEux5ujh0LLlZhYNn77qayuP4iWXuN8Uw49FGEh54yRWpoNQ0A9AZTmdmRAtzcpY7GhO6c0CrNN9jfjiqQNZ8WgzeXu0GguZ8/ZE/PoQvHEMs6Pr2ug4XmqqvPlw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=jaQK8cKf; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=OQ5r0/I/;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=jaQK8cKf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cTM1R1Rkhz3cbg
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Sep 2025 17:48:10 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cTM1R33WBz3ccF
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Sep 2025 17:48:11 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=fWCUlMHi5omKZPse+rHltZIDpXcWWINKvoa2e5LYjd4=; b=OQ5r0/I/W6hUt+8wYII9TXI3wg
-	zfMjZaN34q0Ac1B99Lez2+ujRCnk1aQp8ARPfAvAk68N6YSBlmO+HGFatdr1fYzQjHYSMZjRHE1Zt
-	kaUyGIy2gHYuaGfG1meTLYQho2c7tPjSRrwm7oaHXte/uU6vFyh3TaNlkVx12zYqg4nHwOwg43JZb
-	QqcaKOpff728N/6TdZ0WPMKp1IaidA6NJSGjvwObYSNsO08+R3DLlY5fIsaqw1xiGnD1AW0QABOVF
-	7iw2dGUfxkNxRmIkTipCa/rLuayyHJAfnGPslDHNrGXxtoM86CMGESCM9fYweXe0NWDct/PI/7ln+
-	cYyomVEA==;
+	bh=09KvsjW0ORXF5yAgFsWr4BmJpUanJ8JfB+m1F7eGQps=; b=jaQK8cKfGBnniJ4xeduBuQ4mdy
+	Z8Qh0j68aqBnrjxEeoVTW67vl2L9GR+wcjUmE89Mle6Q0bb7rqeHVynY9bc9tpgu5c4WmNLaHTz8X
+	pFRwaQvcdhRslmEdhfemL9wmhLt/ZRnjNK8/6wVMphnzkYT81oAUr3WBFPmzUNXaKcTJoPn5wwBwc
+	3gT57+VI+M0C00eOsH5pS2UWTzhm3bdqs39h/XrVkl+cBOEFT7NpLQAwdCOKXhmimfGv9/rNxJhf8
+	Nk/W5J5B2wgPV7mcNvQdzkMn0mOJWtnkhY+5Q6eDuX1azINcV1hEDsPAZ76dQYgApjHI3y0T0qVvI
+	VWGDlqAw==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uzsK9-0000000ExDn-44H6;
-	Sat, 20 Sep 2025 07:48:02 +0000
+	id 1uzsKC-0000000ExGw-3OF2;
+	Sat, 20 Sep 2025 07:48:04 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -61,9 +61,9 @@ Cc: torvalds@linux-foundation.org,
 	casey@schaufler-ca.com,
 	linuxppc-dev@lists.ozlabs.org,
 	borntraeger@linux.ibm.com
-Subject: [PATCH 15/39] convert fuse_ctl
-Date: Sat, 20 Sep 2025 08:47:34 +0100
-Message-ID: <20250920074759.3564072-15-viro@zeniv.linux.org.uk>
+Subject: [PATCH 26/39] binderfs_binder_ctl_create(): kill a bogus check
+Date: Sat, 20 Sep 2025 08:47:45 +0100
+Message-ID: <20250920074759.3564072-26-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250920074759.3564072-1-viro@zeniv.linux.org.uk>
 References: <20250920074156.GK39973@ZenIV>
@@ -84,52 +84,34 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-objects are created in fuse_ctl_add_dentry() by d_alloc_name()+d_add(),
-removed by simple_remove_by_name().
+It's called once, during binderfs mount, right after allocating
+root dentry.  Checking that it hadn't been already called is
+only obfuscating things.
 
-What we return is a borrowed reference - it is valid until the call of
-fuse_ctl_remove_conn() and we depend upon the exclusion (on fuse_mutex)
-for safety.  Return value is used only within the caller
-(fuse_ctl_add_conn()).
-
-Replace d_add() with d_make_persistent() + dput().  dput() is paired
-with d_alloc_name() and return value is the result of d_make_persistent().
+Looks like that bogosity had been copied from devpts...
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/fuse/control.c | 12 +++++++++---
- 1 file changed, 9 insertions(+), 3 deletions(-)
+ drivers/android/binderfs.c | 6 ------
+ 1 file changed, 6 deletions(-)
 
-diff --git a/fs/fuse/control.c b/fs/fuse/control.c
-index 31fa816d0189..adcb81e04802 100644
---- a/fs/fuse/control.c
-+++ b/fs/fuse/control.c
-@@ -234,8 +234,14 @@ static struct dentry *fuse_ctl_add_dentry(struct dentry *parent,
- 	inode->i_fop = fop;
- 	set_nlink(inode, nlink);
- 	inode->i_private = fc;
--	d_add(dentry, inode);
+diff --git a/drivers/android/binderfs.c b/drivers/android/binderfs.c
+index 41a0f3c26fcf..bb81280a3e9f 100644
+--- a/drivers/android/binderfs.c
++++ b/drivers/android/binderfs.c
+@@ -395,12 +395,6 @@ static int binderfs_binder_ctl_create(struct super_block *sb)
+ 	if (!device)
+ 		return -ENOMEM;
+ 
+-	/* If we have already created a binder-control node, return. */
+-	if (info->control_dentry) {
+-		ret = 0;
+-		goto out;
+-	}
 -
-+	d_make_persistent(dentry, inode);
-+	dput(dentry);
-+
-+	/*
-+	 * We are returning a borrowed reference here - it's only good while
-+	 * fuse_mutex is held.  Actually it's d_make_persistent() return
-+	 * value...
-+	 */
- 	return dentry;
- }
- 
-@@ -345,7 +351,7 @@ static void fuse_ctl_kill_sb(struct super_block *sb)
- 	fuse_control_sb = NULL;
- 	mutex_unlock(&fuse_mutex);
- 
--	kill_litter_super(sb);
-+	kill_anon_super(sb);
- }
- 
- static struct file_system_type fuse_ctl_fs_type = {
+ 	ret = -ENOMEM;
+ 	inode = new_inode(sb);
+ 	if (!inode)
 -- 
 2.47.3
 
