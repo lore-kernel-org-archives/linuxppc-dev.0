@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-12474-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12475-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 62F49CAC5A0
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5A7ACAC5A8
 	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Sep 2025 07:52:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cTM1m3VxYz3f3g;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cTM1m3cvHz3f3s;
 	Sat, 20 Sep 2025 17:48:28 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758354508;
-	cv=none; b=kVj6JDdCHclOMiGA8p2651p97DXDnZ4/JabF7QJZ2MOkNDByALZtM1GOjq3e+7LdHXEdaCOxCkDi5EiJaCLzMZXaWUOnfGoDkKesV9olyf/CJ/oMDwXhwAHXfhRn+NkuzFx8orFyi4ejN1Y0unBa0/DvG1Npy71uMOhyJS/2Ub4cuXp/b5qRYIQR7MdLUzvsjVwG430qbXxtF6GgcU+3re7YpXqf8Kl/siWi7EPXoPLIKA+Br4fLaSLbTlZ1+lMNzTQOV0NeQAjvUm2lu2hGxN8D0x8WBrlMVRxoj3Na4TIKGMhh11FqPhjvlAfYlk/+b84BpO/5t3+6HaM84AXd/w==
+	cv=none; b=mUt3VZZXmTnMyGpCi3CbGC+JeekNR5X4JH3HIDCdWWUXLurBWarhpd+HZsrEKzBBS4pr0wvQKEnB2o+JGq9fQCYCJ9/UOv3NV4a4/tcpNoOy1rCruN+nCmahnQ8GmSPI/vlFck7gjVfjGZG7onc8XEnlGCqszDGt5eznPbRBTxbrloUKlP23k0rcUMqS40NWfDQu+joxo/Ov8qnwc+hsSJ2JyKPDa2JOWvbrR1PVk/vx4KyXe264ooDwErVbJbim6ngLxyT8UL50MzERVgk1oRKwp/9jl+WuUwNtY2awF3CxJuE/y65wN/XsFmV/+Y0gye4Mv7L7+c/E9fqfRVEWCg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1758354508; c=relaxed/relaxed;
-	bh=V2I7OUIWBFRscgYYRdCjjF8wTtyFfkGTFabZVJfLoxo=;
+	bh=Kt5xEHMx+oGXrg9a3wt3WFau1p2+Ow+pw2GQ7mKAvTs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=oPttLGd/K6jYNS5ASIu/ORnA1TcIesS2C15a2r4gC1P44/MsqC5E7ewIVHJyBCS4HM1M6BOfcK0u94SOFS9xwzq53GoyQ0LhJnuVBHbpT3yqGjSVMIRW9EzTUJahemiLstplmdRT7YXiNIS7BYw2HJz2A3NG7wj5MNKvV87c+TFIyMb2m7Pz6MF0Dc2tYz79bYHbiWzQE9KTmgrmn341VqWxn7NwxlyJMFXzwRS3GxZTxpjHxteWV2N0obMiwj6jC9YPs94PJC4ZlpY7WHKHDuLLz2Fb8LhKUThXNNvfQxJeOMCQtUkL/1dR90s5Q9LXqvIOJFAux12SzFMXKMz5bg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=pD4mFh9B; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=gJpthtDoTrsfTYuEsdgImLna8r6KPbV3An8LvGvAqbHAOiM9IhP2ZTpbrHW3RBCBrS/bGnD7nYZ0uJfkoJXmp3hwXqVXD8OMuu3tY66L+1YdMtPzyefSGU4N+47g7vn8yPGjC8/aTLunVuVOFPAxRIqYzSlvQdAbU6O6AcjN5QupPO0GFLB3DWJy2xXhS+IxRqw/XsJFDXixiCpa8ZCAW1nEca/eOK/DgZ0Jfesp7XwwUTJ4KNFCOXg3W/vB9azBDi+osqYy8FsSwJW9mH7hxMxNmb8hIJe80L5DH5k3zgFg+U6exM/SUtptOv8HNWxEbPkBX8gYwjiwF7x9RIAyCQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=ZUHKPj2l; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=pD4mFh9B;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=ZUHKPj2l;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cTM1W3T85z3cnS
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cTM1W1m1mz3cmP
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Sep 2025 17:48:15 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=V2I7OUIWBFRscgYYRdCjjF8wTtyFfkGTFabZVJfLoxo=; b=pD4mFh9BRC1dnf7SHGUZrVB5mK
-	DAk58StnHJnuz34FnQl1HvRD1TDl7iszbrHoYPbCnfwpkOZ4dMuc3AqXH1j+jPnxfvYbNcAbJJiFx
-	VP36scCd152zIzcX4mPaDfgvAoAxZ3WA5qaNbw+gIMfly4BtzasSyDqP4MrJGi6QtPbNdRTPcMW81
-	kvAFyxYkNsNfG8mtqR8OeIfZ5dE1tOHl9wEUBz4jlw2Yo1JdSpey0kK4JhBqHh+jzIVmrR63gbild
-	iDbqrfLYFJj3lRworHvKrFPvSn+sxdmkiSFcU11T0z/7RsZ8F0nT8ANZ7dCoQE9nbuWzk2b9tC1Ld
-	eidcKYJA==;
+	bh=Kt5xEHMx+oGXrg9a3wt3WFau1p2+Ow+pw2GQ7mKAvTs=; b=ZUHKPj2lbGLNsYW8Syb9BRS8nI
+	BqdgFmG5vH/cRfmJdLB8IEVySftrB7QN3XLbg1KTpOBqXEoSz2W50qPojXFUfxCDhEf4IlmIg7j33
+	svCQMkaQTLbjB+8soDcP8DDIiqkKER4DPHbNciqLVaLJ/O17uQ8lJmjpHIjLzipsYarOcUg3FfEk4
+	2dsEwfXY+EhFX04i88FrIw76g0YuF4HUvCNHSHphC5stRvSuy7PRJbR2+vfsFDkSQkzqVksiDaRoz
+	tqvx6ILXHYuIyZltN2mTzpSNZgyZgnUOU2O8TEVzZeRLf+A1n2uizUFFrnwLcGw2EB406YgdVVTIQ
+	qMXK/Jyg==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uzsKH-0000000ExMv-23xH;
-	Sat, 20 Sep 2025 07:48:09 +0000
+	id 1uzsKG-0000000ExLx-2Ynu;
+	Sat, 20 Sep 2025 07:48:08 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -61,9 +61,9 @@ Cc: torvalds@linux-foundation.org,
 	casey@schaufler-ca.com,
 	linuxppc-dev@lists.ozlabs.org,
 	borntraeger@linux.ibm.com
-Subject: [PATCH 35/39] convert gadgetfs
-Date: Sat, 20 Sep 2025 08:47:54 +0100
-Message-ID: <20250920074759.3564072-35-viro@zeniv.linux.org.uk>
+Subject: [PATCH 33/39] convert functionfs
+Date: Sat, 20 Sep 2025 08:47:52 +0100
+Message-ID: <20250920074759.3564072-33-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250920074759.3564072-1-viro@zeniv.linux.org.uk>
 References: <20250920074156.GK39973@ZenIV>
@@ -84,18 +84,27 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-same as functionfs
+All files are regular; ep0 is there all along, other ep* may appear
+and go away during the filesystem lifetime; all of those are guaranteed
+to be gone by the time we umount it.
+
+Object creation is in ffs_sb_create_file(), removals - at ->kill_sb()
+time (for ep0) or by simple_remove_by_name() from ffs_epfiles_destroy()
+(for the rest of them).
+
+Switch ffs_sb_create_file() to simple_start_creating()/d_make_persistent()/
+simple_done_creating() and that's it.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/usb/gadget/legacy/inode.c | 19 +++++++++++--------
- 1 file changed, 11 insertions(+), 8 deletions(-)
+ drivers/usb/gadget/function/f_fs.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/usb/gadget/legacy/inode.c b/drivers/usb/gadget/legacy/inode.c
-index fcc5f5455625..6b7adf153407 100644
---- a/drivers/usb/gadget/legacy/inode.c
-+++ b/drivers/usb/gadget/legacy/inode.c
-@@ -1989,17 +1989,20 @@ static int gadgetfs_create_file (struct super_block *sb, char const *name,
+diff --git a/drivers/usb/gadget/function/f_fs.c b/drivers/usb/gadget/function/f_fs.c
+index 5c9a7bd4e41e..65d9109b4051 100644
+--- a/drivers/usb/gadget/function/f_fs.c
++++ b/drivers/usb/gadget/function/f_fs.c
+@@ -1870,17 +1870,18 @@ static int ffs_sb_create_file(struct super_block *sb, const char *name,
  	struct dentry	*dentry;
  	struct inode	*inode;
  
@@ -103,35 +112,33 @@ index fcc5f5455625..6b7adf153407 100644
 -	if (!dentry)
 -		return -ENOMEM;
 -
- 	inode = gadgetfs_make_inode (sb, data, fops,
- 			S_IFREG | (default_perm & S_IRWXUGO));
+ 	inode = ffs_sb_make_inode(sb, data, fops, NULL, &ffs->file_perms);
 -	if (!inode) {
 -		dput(dentry);
 +	if (!inode)
  		return -ENOMEM;
-+
 +	dentry = simple_start_creating(sb->s_root, name);
 +	if (IS_ERR(dentry)) {
 +		iput(inode);
 +		return PTR_ERR(dentry);
  	}
--	d_add (dentry, inode);
-+
+ 
+-	d_add(dentry, inode);
 +	d_make_persistent(dentry, inode);
 +
 +	simple_done_creating(dentry);
  	return 0;
  }
  
-@@ -2096,7 +2099,7 @@ static void
- gadgetfs_kill_sb (struct super_block *sb)
+@@ -2067,7 +2068,7 @@ static int ffs_fs_init_fs_context(struct fs_context *fc)
+ static void
+ ffs_fs_kill_sb(struct super_block *sb)
  {
- 	mutex_lock(&sb_mutex);
--	kill_litter_super (sb);
-+	kill_anon_super (sb);
- 	if (the_device) {
- 		put_dev (the_device);
- 		the_device = NULL;
+-	kill_litter_super(sb);
++	kill_anon_super(sb);
+ 	if (sb->s_fs_info)
+ 		ffs_data_closed(sb->s_fs_info);
+ }
 -- 
 2.47.3
 
