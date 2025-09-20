@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-12461-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12462-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2534CAC5A0
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Sep 2025 07:50:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8E484CAC5A0
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Sep 2025 07:50:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cTM1d68Dsz3dKG;
-	Sat, 20 Sep 2025 17:48:21 +1000 (AEST)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cTM1f0Rjzz3dKw;
+	Sat, 20 Sep 2025 17:48:22 +1000 (AEST)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758354501;
-	cv=none; b=n9xYfA2THDxwrLPIKUH2Q/DJDyV/LiNNe0o2SqcLXMpQKBH/aMaGt4kIRBi2iV8xU+KHJBtAXR1PwmVsqGo8CNh0XtSSWlyUtnIVfgpsW3QyxV90spavedaKhnDDPlQI64P5j1Uue//xEJPy/jjEzLzu+kU7rC1zetHA3Qu075vVZaQDDUcdQVRmnio2X/D1RfFn2iXUC04DNgDuKRldtnUORfa5WWUugeL304kM4WrDuYLs8P25j9oC6QPga9GjOnJnmo4dMqfoDi4khjGi5jRc3i2tGOGbe6pM/jFkVn4aSI0ckF89x7uwmneCi5SmssVEjYaXvM4DIIUvKujDzA==
+	cv=none; b=EvSSyg8WrVeCAsQv0ztjmeJVnAz3ZqEwhgr10c6iRBeKEb0xiRTfmWH3SPElv32EQXYH2P1LRGqP5O1b+DsVMa4qTWYy6IPIEYcyQdZN56Lmz1LvT9Iz4yrL/o4oM64Ei7sNHTsHF6zKChpP6DNhviDH9/MQQThcFfCTLQfj1TiC+bAJcq04uK/v3u47mdcLNERLYp/iwoAsUopQsvKyy3PTQ2vqE1b1/mrvPj3c6LD8QeX72VVhsDC7M9S01psgmgbXhV8w4kPT7YaJMWTtd5xO8lB9doXgZcnojQJbyryAUShhDOqH6saIkyVzVzaE9JDL6bvhCn/cGNjAIGE7bg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1758354501; c=relaxed/relaxed;
-	bh=JiG9nHcsxcwZpHb/L0Tx41DaV7imD29tLb/ai1sU578=;
+	bh=iptZlDUSgeJMZimnaKy5XNXCMU4JgUkSmnMoXg8r0tc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=c7V+mo48wsR+bTMnxDaMHF2TmnNHnZYVXEQaOTeEk3YeYfAwymvbXFcMszZ4z4Ua9Nia0+cjWEDnaR4KGd4L/hGkhuuK8W7Xf4Hhc8hxCzbh++GYm9uyqvJCT7p8gC4mVTZRGvh4RkmS5WcqLTYBQ8t7tJ97glJqEw/JbjBKHs/+hYiJ0zPhdvTNnu8pT5bTdf+8tiXC/3wcAJf+1Rx1nhhC7SXfpjDU9iGovSYoc+dO7kL6W6J7j3FJ7rpZTpgFxwjbIsQoJNrzJ/VJDaaWwmKtGIQxJVg8Wx8H7pbu935sYkeZa5ay0LV59wXwb5r8EPRXG2Ln7GON84g9dh+vJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=vtuBnJp1; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=dlkBQa+uF07lGB1aLeft/h28EQBF6ubp3UCrmzYPu2TJUL2ls+ggQTKqcwuLn6zBcSb3tu71+RNv34WNGeOvf/m2Ks+LpTVsL/l4lO9jJb4YtKCVv/w8K7YmG8ZdFrh1l2NZ7jQCfo0zOAdzPYJzLObik97sW9IsmBjqEVkhPYgX1rnKUiTEmemebhPBQ/GMNs30zPcvXQsHVWxQYsgMJqK+vROPnpVJakg8bc+JK2CgQqMDecOx+mUej9A0LUCatvikPo3VRGFfJQG+S1YawC7nh+52HroQLKvmbnjuBjjtDRFOcuCW2JRup9IVLLp63odUpqiuGzC0RHz/ihK1uQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=BqjTpvmA; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=vtuBnJp1;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=BqjTpvmA;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cTM1S0NCqz3cdR
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cTM1S0lhxz3cdb
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Sep 2025 17:48:10 +1000 (AEST)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=JiG9nHcsxcwZpHb/L0Tx41DaV7imD29tLb/ai1sU578=; b=vtuBnJp1FKdRJaUi9wf6dBa+cw
-	yFyba5mUeAFRsUmJroWbhRl2eUzKZlVVNqj5veAhvT6EC9M+C9P1/Y8zGdTeqZE/bI1HCme8sHdO9
-	GcPjmOj3eT9y485+3rjAUNq69uFkp69CbzOdiVe81V46rzs0RvAuwHALDxEHK9F+mtRy7IyEHwrkQ
-	W48r8UtFZtMv4LD8awybcvRGhiXenr5wHvuktQ8hFQb+XjdjbkZfFpItsbQfdQktAwp+/VAEU1+5f
-	6XYhchXPqQgz+DLx4WbjOi5xYPuroCrhW+UL2w1nNz90dt4otfrX1DERefvNIrWozjB1cTQ8oHCXr
-	q1esPHew==;
+	bh=iptZlDUSgeJMZimnaKy5XNXCMU4JgUkSmnMoXg8r0tc=; b=BqjTpvmAp+ZuBLY+me0sMv0oDQ
+	FBY5K7U7NuU8mZvn4OoTgrwUVe36YEpYKouzkK9OzJQoTK7cr2lMGBogSQWs6GC3rjHqbYYPag5eH
+	7yHIHJUI51199azXGFvUwV0AgvekMFItQRYHeEUlxYQuQ1ddbgveoRMt+GmgdX/5I4jlBd7zNQcrV
+	qjKHNC61eTMfhuxgOdmr9VNK+bUSWg6AEbUw7cW4uZPBhAkqCnPMCVL6jSpzwYiiF2kYtBqmMngLD
+	sDS3s3qonfFaibrB1hz4zz1BBoDPCAAKe8W1TxsAvCjU97uRExtoZz8UqFn+ZXmXtmUWcEqVNV2md
+	I1Mqcwcw==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1uzsK9-0000000ExD1-2NQ8;
-	Sat, 20 Sep 2025 07:48:01 +0000
+	id 1uzsKB-0000000ExFt-3CgV;
+	Sat, 20 Sep 2025 07:48:03 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -61,9 +61,9 @@ Cc: torvalds@linux-foundation.org,
 	casey@schaufler-ca.com,
 	linuxppc-dev@lists.ozlabs.org,
 	borntraeger@linux.ibm.com
-Subject: [PATCH 12/39] convert mqueue
-Date: Sat, 20 Sep 2025 08:47:31 +0100
-Message-ID: <20250920074759.3564072-12-viro@zeniv.linux.org.uk>
+Subject: [PATCH 22/39] convert ibmasmfs
+Date: Sat, 20 Sep 2025 08:47:41 +0100
+Message-ID: <20250920074759.3564072-22-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20250920074759.3564072-1-viro@zeniv.linux.org.uk>
 References: <20250920074156.GK39973@ZenIV>
@@ -84,56 +84,86 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-All modifications via normal VFS codepaths; just take care of making
-persistent in in mqueue_create_attr() and discardable in mqueue_unlink()
-and it doesn't need kill_litter_super() at all.
+static contents for each "service processor", whatever the fuck it is.
+Congruent subdirectories of root, created at mount time, taken out
+by kill_litter_super().  All dentries created with d_alloc_name() and are
+left pinned.  The odd part is that the list of service providers is
+assumed to be unchanging - no locking, nothing to handle removals or
+extra elements added later on.
 
-mqueue_unlink() side is best handled by having it call simple_unlink()
-rather than duplicating its guts...
+... and it's a PCI device.  If you ever tell it to remove an instance,
+you are fucked - it doesn't bother with removing its directory from filesystem,
+it has a strange check that presumably wanted to be a check for removed
+devices, but it had never been fleshed out.
+
+Anyway, d_add() -> d_make_persistent()+dput() in ibmasmfs_create_dir() and
+ibmasmfs_create_file(), and make the latter return int - no need to even
+borrow that dentry, callers completely ignore it.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- ipc/mqueue.c | 12 +++---------
- 1 file changed, 3 insertions(+), 9 deletions(-)
+ drivers/misc/ibmasm/ibmasmfs.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/ipc/mqueue.c b/ipc/mqueue.c
-index 093551fe66a7..5737130137bf 100644
---- a/ipc/mqueue.c
-+++ b/ipc/mqueue.c
-@@ -599,8 +599,7 @@ static int mqueue_create_attr(struct dentry *dentry, umode_t mode, void *arg)
- 	dir->i_size += DIRENT_SIZE;
- 	simple_inode_init_ts(dir);
+diff --git a/drivers/misc/ibmasm/ibmasmfs.c b/drivers/misc/ibmasm/ibmasmfs.c
+index c44de892a61e..785ce294f4b9 100644
+--- a/drivers/misc/ibmasm/ibmasmfs.c
++++ b/drivers/misc/ibmasm/ibmasmfs.c
+@@ -103,7 +103,7 @@ static struct file_system_type ibmasmfs_type = {
+ 	.owner          = THIS_MODULE,
+ 	.name           = "ibmasmfs",
+ 	.init_fs_context = ibmasmfs_init_fs_context,
+-	.kill_sb        = kill_litter_super,
++	.kill_sb        = kill_anon_super,
+ };
+ MODULE_ALIAS_FS("ibmasmfs");
  
--	d_instantiate(dentry, inode);
--	dget(dentry);
-+	d_make_persistent(dentry, inode);
- 	return 0;
- out_unlock:
- 	spin_unlock(&mq_lock);
-@@ -617,13 +616,8 @@ static int mqueue_create(struct mnt_idmap *idmap, struct inode *dir,
- 
- static int mqueue_unlink(struct inode *dir, struct dentry *dentry)
- {
--	struct inode *inode = d_inode(dentry);
--
--	simple_inode_init_ts(dir);
- 	dir->i_size -= DIRENT_SIZE;
--	drop_nlink(inode);
--	dput(dentry);
--	return 0;
-+	return simple_unlink(dir, dentry);
+@@ -144,7 +144,7 @@ static struct inode *ibmasmfs_make_inode(struct super_block *sb, int mode)
+ 	return ret;
  }
  
- /*
-@@ -1638,7 +1632,7 @@ static const struct fs_context_operations mqueue_fs_context_ops = {
- static struct file_system_type mqueue_fs_type = {
- 	.name			= "mqueue",
- 	.init_fs_context	= mqueue_init_fs_context,
--	.kill_sb		= kill_litter_super,
-+	.kill_sb		= kill_anon_super,
- 	.fs_flags		= FS_USERNS_MOUNT,
- };
+-static struct dentry *ibmasmfs_create_file(struct dentry *parent,
++static int ibmasmfs_create_file(struct dentry *parent,
+ 			const char *name,
+ 			const struct file_operations *fops,
+ 			void *data,
+@@ -155,19 +155,20 @@ static struct dentry *ibmasmfs_create_file(struct dentry *parent,
  
+ 	dentry = d_alloc_name(parent, name);
+ 	if (!dentry)
+-		return NULL;
++		return -ENOMEM;
+ 
+ 	inode = ibmasmfs_make_inode(parent->d_sb, S_IFREG | mode);
+ 	if (!inode) {
+ 		dput(dentry);
+-		return NULL;
++		return -ENOMEM;
+ 	}
+ 
+ 	inode->i_fop = fops;
+ 	inode->i_private = data;
+ 
+-	d_add(dentry, inode);
+-	return dentry;
++	d_make_persistent(dentry, inode);
++	dput(dentry);
++	return 0;
+ }
+ 
+ static struct dentry *ibmasmfs_create_dir(struct dentry *parent,
+@@ -189,8 +190,9 @@ static struct dentry *ibmasmfs_create_dir(struct dentry *parent,
+ 	inode->i_op = &simple_dir_inode_operations;
+ 	inode->i_fop = ibmasmfs_dir_ops;
+ 
+-	d_add(dentry, inode);
+-	return dentry;
++	d_make_persistent(dentry, inode);
++	dput(dentry);
++	return dentry; // borrowed
+ }
+ 
+ int ibmasmfs_register(void)
 -- 
 2.47.3
 
