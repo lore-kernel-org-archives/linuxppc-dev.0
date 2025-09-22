@@ -1,50 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-12526-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12527-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D72A8CA100F
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Sep 2025 19:20:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id AEFC3CA100F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Sep 2025 21:04:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cVtHV3BgVz2yr6;
-	Tue, 23 Sep 2025 05:20:38 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758568838;
-	cv=none; b=U8Gfmc7sSHb7Duk5z3MNaCFT1J+l1JPKEObhO+6IbZTyPPvlPukl9iWdWX1EvvbwjKZoSZtFL+ABjkWIQHYdABEw+54s+D4oYHakPr7SPv/mWOFx88VqLCng1/Tqb5mWozoUrEQ6y1iQQUnsQpMarq/UWN1Upum1VQHSEyyRJUE/2gyp8rjCBSUVYzFWI6V4GGxmyosmxzpos1bWfTWxSNiNjGI5yHovXaUmmJcZ/ruZ2sMT19tp9ncSEAnsQKCQiU7BFO5Xv3iDLraTywM6j9Xdcn+5dia5oo12Cn1F2/i4DlGYfWs544tnBmxogR6QyABZiGPZoemoJ9q7ayJVuw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cVwbG2NCyz2ytV;
+	Tue, 23 Sep 2025 07:04:26 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::636"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758575066;
+	cv=none; b=PO4Mgdxcqt81/mnv1U6HWQAzZ8pW3BptfmF4j226qMoya127MJ8S4QYrVcrhI4jgXb5HdRnC0WsN309U9nygtKnGMXwmXzYEx3UjPO6EqSuVXevCXuZIHoXc31zVVcJAqki8Af8htIvfyiBWs882zp7CqHMlRz6jfo1rPWhaV4bOg9H2EyqeTjJvSDaiFwhmL8xzJmUl9UJp/FxwOxh6/MPFS6sRiT5hx6p8kXDlvDz0kYT4/SxACMb7Gl6J4z6tPsYDIdqPoOz3qv/y3XHKkpK7aZXWgNFTIiB9wC6v7CVt3zRfukm8TeWrRTIF8OCpz9vNld/glxItN6ZKN3dUMg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758568838; c=relaxed/relaxed;
-	bh=3/c0zL5CtyedjX9xlkdHNzhrCuYLjzP3fiy9CkFYxNQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UlsuoauqMYw5jWdqrgx1hxd6CKTO1Cy3Ijuxg2Mie6MaO+2dI/Db2MB09gWENJq5+MXCxzuKq5a+nbn+Y2q/zQlvM0eGtJkmjj+MGo/caGwvQE/qoKSFsqN1iX/a4aHWhaRUcI2VQoPOgqDEBS6KQbUf3PMFd2aYuyV74M6VEgt2a/ZU2iT8n13cKOKRzitZzCrOvzGrLYS/TVh91IJZZYrOoioeD7VibGjLLDrlaW3qIk1U3cwiPzuisPPTu//y+wBF8LAnbV4MaJzydvG4HlC/35NI02cM9vxUIIstJFgvMTE5wDOWj07JabI859tW2dr0m70uSdtOiZpxHFSbOg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cVtHT4K3qz2xnt
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2025 05:20:35 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cVmSt6JfJz9sSs;
-	Mon, 22 Sep 2025 16:58:22 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id KnfmKuq3WAna; Mon, 22 Sep 2025 16:58:22 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cVmSt5ZMnz9sSr;
-	Mon, 22 Sep 2025 16:58:22 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id ACC408B768;
-	Mon, 22 Sep 2025 16:58:22 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id AJ0qCR0yksLS; Mon, 22 Sep 2025 16:58:22 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3A2CC8B763;
-	Mon, 22 Sep 2025 16:58:22 +0200 (CEST)
-Message-ID: <617e83e9-c9ad-45d1-bc5a-eba2ecd7965f@csgroup.eu>
-Date: Mon, 22 Sep 2025 16:58:21 +0200
+	t=1758575066; c=relaxed/relaxed;
+	bh=uh7Hyul+h5lwAcNtxj/DI9qojjFccIciQ/b88SlaL0g=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=etP838pMvW6stP5IxJhCxwwedvhyHIvbLCp8LKcWC2Mg9dhZVRPzLXqvFEfkTCa5jBcXjaeW26N+o998KxpC/p1V4g9ufVnnOVnTUHp9FJlEKCHfXGVdz8gL4J4XDbKf9MXD7bNNh8SwO2wlffAJGp6w/fUJ6TiC+uVaUL9Djiow36tCWcpaCT6WnFmHGEV18V0vqkpVk7M+i9y0JMmEukcIrFAEPckGae4VBzH+/jt/w8v3w06wIVeA5mXO7OrbqSY/7oI8UxzPjEnUpXoJSpc9HofaWeuhHT2/VyWat55IAbctK/gAvQntvyDx0HpRNFCd1F6V8LX5i1zhlG3AEw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NhyvcXCL; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::636; helo=mail-ej1-x636.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NhyvcXCL;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::636; helo=mail-ej1-x636.google.com; envelope-from=linmag7@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x636.google.com (mail-ej1-x636.google.com [IPv6:2a00:1450:4864:20::636])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cVwbD4g8Lz2xnt
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2025 07:04:23 +1000 (AEST)
+Received: by mail-ej1-x636.google.com with SMTP id a640c23a62f3a-b07883a5feeso972314666b.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Sep 2025 14:04:23 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1758575058; x=1759179858; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=uh7Hyul+h5lwAcNtxj/DI9qojjFccIciQ/b88SlaL0g=;
+        b=NhyvcXCLtpF7u3CFtlLl0b3xEEZtFTXNSRDWcjP5DvNTmsTyGjhh1RZpe+GYt9ZmT4
+         gI/QTNnedtaBa91xMaofiupgwZgwSTlkG1FMAJhp4H1HzESneHRTEIwC5TZfLAiqYC0L
+         48jz+ovhodm0S+zey8RoaKKzGKcqabcXbqhK7MwzerdTGMlbBbkWbx8CiMRXRf5u2+tC
+         Rn9ey/a2x3BzwoT/UEYfbzCQytOG9jPASsKgsT9AK5Vj1sFT2O5m5tnppGMQukNbUiqt
+         x7jJ0t35ZFXbJlF9Gn+12A9GwiYxcGr6LMtKLv09lG8TJwtuDIc+P/h/DVR7rVa1PqyZ
+         UA8w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1758575058; x=1759179858;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=uh7Hyul+h5lwAcNtxj/DI9qojjFccIciQ/b88SlaL0g=;
+        b=WvTE9rsRWkfhkeHAqkwgFI99UsCNxtORncpY8vCUq05C6MJLryW+UOEAEBsfqjUDei
+         AdAKiYGQuPpyp1t2LjjoaiJ4/D+4qEc5WqO1r/zN1pS4kCHBlTivs2P/GYSZgoG/ae4w
+         VTvLaGaiJX1pWXqUPPBS4jroRjULjjq6Ys/NLa6+k7eodbWI9K+8RYpufJrUtrJfYFqC
+         X+E128hLg72lYxyQ5tCNgna9VZxgNlkLJRxwJBZsc0QIF663kSz1V+6yZQYoAC90qAOK
+         +KJ+KsQiiqYfVFnpt8psJm3SIrm39fKh0AbempMG3661EJLc0Sxy7OKeoKF5vbbeByLW
+         SkBg==
+X-Forwarded-Encrypted: i=1; AJvYcCXw8zfzwTcA8R5ssWIofoROpan6C9amLcjO9KFnXqfbnHPEZ9f1+UPs8tq3XbB1gmPshTcyg+UB2/Z8zRw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzgcrHAcRvC8ETKKfqEyCavqouQh8hN9/Ez2ohGjYpV+B+wC5St
+	immAzIKPKyy4TFiOvobdwLvmAHHmhSH/PimBsDWW7cr0RLWzbRySBAJO3NXwq/kRcOjc5ro5KDK
+	sHy8p0e0sVMh//7iwqT6tV2ugqSm1VMI=
+X-Gm-Gg: ASbGnct1orS6VUr+JmMF4BLzRO+c+OwBRSWwqCjlBtedJilNdGamklBXNPXPvKJrsPg
+	h9ZENdKp/SsaHfB9AnkPjVwp4oSCdEdj+bdy4uvibnqlxCi1GiLUJZzyG8Zh6shxt0TFJwNVjpK
+	JxyV8q+AphA46bK6c2HQYWzISkH4OrI9wsN8O58QZOXHVpvcbz/+HiCVPZgvc7fNu3Ea3CtQYiz
+	s/Ir1BdDdZqGIvRkZU=
+X-Google-Smtp-Source: AGHT+IFr06URzpJ6aUp4DpRFc3gqIF/QKzvPatkXOguRNAK+5vyBht27Wi77YYUi7cw/QJFO8eHWzN6Nc8/pR3lh7aU=
+X-Received: by 2002:a17:907:72cb:b0:afe:d590:b6af with SMTP id
+ a640c23a62f3a-b3026c84e0cmr5356866b.20.1758575058272; Mon, 22 Sep 2025
+ 14:04:18 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,65 +80,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2] bus: fsl-mc: Replace snprintf and sprintf with
- sysfs_emit in sysfs show functions
-To: Chelsy Ratnawat <chelsyratnawat2001@gmail.com>, ioana.ciornei@nxp.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-References: <20250822124339.1739290-1-chelsyratnawat2001@gmail.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250822124339.1739290-1-chelsyratnawat2001@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <cover.1758219786.git.leon@kernel.org> <0c64474985af55b1aa934b857808068a0e609c6e.1758219787.git.leon@kernel.org>
+In-Reply-To: <0c64474985af55b1aa934b857808068a0e609c6e.1758219787.git.leon@kernel.org>
+From: Magnus Lindholm <linmag7@gmail.com>
+Date: Mon, 22 Sep 2025 23:04:06 +0200
+X-Gm-Features: AS18NWDVFMZZnWEreuo7vPXyYUB8RQkWA0R_TESbZnVi7LcEMvax5dEHcVzVJVI
+Message-ID: <CA+=Fv5Q8dVUFVBh82mAe=fy3mV6mWtQT_0pBPLQwLNBt3f8E1g@mail.gmail.com>
+Subject: Re: [PATCH 1/9] alpha: Convert mapping routine to rely on physical address
+To: Leon Romanovsky <leon@kernel.org>
+Cc: Marek Szyprowski <m.szyprowski@samsung.com>, Leon Romanovsky <leonro@nvidia.com>, 
+	Jason Gunthorpe <jgg@nvidia.com>, Andreas Larsson <andreas@gaisler.com>, Borislav Petkov <bp@alien8.de>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, "David S. Miller" <davem@davemloft.net>, 
+	Geoff Levand <geoff@infradead.org>, Helge Deller <deller@gmx.de>, Ingo Molnar <mingo@redhat.com>, 
+	iommu@lists.linux.dev, 
+	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>, Jason Wang <jasowang@redhat.com>, 
+	Juergen Gross <jgross@suse.com>, linux-alpha@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Matt Turner <mattst88@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	"Michael S. Tsirkin" <mst@redhat.com>, Richard Henderson <richard.henderson@linaro.org>, 
+	sparclinux@vger.kernel.org, Stefano Stabellini <sstabellini@kernel.org>, 
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Thomas Gleixner <tglx@linutronix.de>, 
+	virtualization@lists.linux.dev, x86@kernel.org, 
+	xen-devel@lists.xenproject.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
+
+On Thu, Sep 18, 2025 at 8:45=E2=80=AFPM Leon Romanovsky <leon@kernel.org> w=
+rote:
+>
+> From: Leon Romanovsky <leonro@nvidia.com>
+>
+> Alpha doesn't need struct *page and can perform mapping based on
+> physical addresses. So convert it to implement new .map_phys callback.
 
 
+Hi,
 
-Le 22/08/2025 à 14:43, Chelsy Ratnawat a écrit :
-> [Vous ne recevez pas souvent de courriers de chelsyratnawat2001@gmail.com. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
-> 
-> Use sysfs_emit() instead of snprintf()/sprintf()  when writing
-> to sysfs buffers, as recommended by the kernel documentation.
-> 
-> Signed-off-by: Chelsy Ratnawat <chelsyratnawat2001@gmail.com>
-> ---
-> Changes in v2:
->   - replace sprintf() with sysfs_emit() in modalias_show()
->   - change commit msg to include the change for sprintf
-> 
->   drivers/bus/fsl-mc/fsl-mc-bus.c | 6 +++---
->   1 file changed, 3 insertions(+), 3 deletions(-)
-> 
-> diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
-> index c1c0a4759c7e..88fea34a55b9 100644
-> --- a/drivers/bus/fsl-mc/fsl-mc-bus.c
-> +++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
-> @@ -176,8 +176,8 @@ static ssize_t modalias_show(struct device *dev, struct device_attribute *attr,
->   {
->          struct fsl_mc_device *mc_dev = to_fsl_mc_device(dev);
-> 
-> -       return sprintf(buf, "fsl-mc:v%08Xd%s\n", mc_dev->obj_desc.vendor,
-> -                      mc_dev->obj_desc.type);
-> +       return sysfs_emit(buf, "fsl-mc:v%08Xd%s\n", mc_dev->obj_desc.vendor,
-> +                       mc_dev->obj_desc.type);
->   }
->   static DEVICE_ATTR_RO(modalias);
-> 
-> @@ -203,7 +203,7 @@ static ssize_t driver_override_show(struct device *dev,
->   {
->          struct fsl_mc_device *mc_dev = to_fsl_mc_device(dev);
-> 
-> -       return snprintf(buf, PAGE_SIZE, "%s\n", mc_dev->driver_override);
-> +       return sysfs_emit(buf, "%s\n", mc_dev->driver_override);
->   }
->   static DEVICE_ATTR_RW(driver_override);
-> 
-> --
-> 2.47.3
-> 
-> 
+SInce this patch affects the Alpha platform I got curious and decided to
+try it out. The patch series requires some preparatory patches. Leon
+provided me with links to his dmabuf-vfio branch, which had the
+patches (and some prerequisite stuff) applied already.
 
-Applied, thanks!
+Based on the dmabuf-vfio branch,  I've built a kernel and tested it on
+my ES40 Alphaserver, the kernel booted fine but after a while of
+moderate filesystem load I started seeing some ext3/4 related error
+messages in the system logs. Rebooting with my old kernel into
+single user mode, I was able to recover the filesystem using fsck.
+Clearly this set of patches breaks things (at least on Alpha).
 
-Christophe
+I haven't yet dug any deeper into the root causes of the file system
+corruptions and I've only tested this on Alpha, maybe there has been
+more testing done on other platforms targeted by this set
+of patches?
+
+Regards
+
+Magnus Lindholm
 
