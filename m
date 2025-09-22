@@ -1,109 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-12516-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12517-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA381CAC592
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Sep 2025 16:47:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7051BCA100F
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Sep 2025 16:50:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cVptT2V07z2yr6;
-	Tue, 23 Sep 2025 02:47:13 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758559633;
-	cv=none; b=erMLhXdnS9emBaI4ET/bYPeA99ZWXlKtVk2oW41FvLFl9bhtQ3IZOxqjDrjWUD16G/ntE/Kp/cizimXSHCJR2oFdOjgWdEFeYY2FFSkfhmoRcdAtPD2ZHEAc7d3RzqpJG0l2tphe/EHZS+HOlbu0PEpNYa/rvNBTUC7qdlKAHsLv+F/1n9nIEDJUGAJ/kirReXbR8xOVIlrwhFZnvoYhQ2ZbydSuwhsqDO9Gbqf8AaTmOdWrk3TF9cm3H6m8NR3r2YEhdgcs4f1ikippacZNk5kO6xqkA6E7Ay6mjO4fcKDEmaQk/85SYqnaUdamxtre5OblSkFM9DggPEKBiufZVA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cVpyP1GBwz2yr1;
+	Tue, 23 Sep 2025 02:50:37 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758559837;
+	cv=none; b=NdO9EenDwzUphkahKNCuyWB3lI/aQPeaUkNrCm2iPXKF2pREpQfZ6DO3iIAjjG4p26rJ4FAhtHo+lOht0isFs7mYSRLyFVBesQzi08v9//xNgcc01MDTmFttRIAAMCrnoNF7CYMYKIEC8KI+dMv1MN3oDzQ0my0Iie6+OwxI2BTBgjntCNNCTMZAKek4MzfHqvSLE7gQX+6oiBAslwR8QnsvDv/MHK/L6rnYI83iKiI8w0ebzcAeRKBdzGG31hH+AGbq9PLwYLpoBcwYNPacbwUk+xhOughHCRNaR1BFPNfu0/p2uF87sKN9QRMLaaxS8JMawN1536Uwf+6C3Xbn+Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758559633; c=relaxed/relaxed;
-	bh=fRdA7nsQf+ROdRRV/X8F80rPVzMRc7WYaZxeLJaoIjA=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=QsZpkcmbN4uAnuwgVkpvh4GwCpNTgcPEIMBAAjRq+ZlKqRDxwkJu95lBO55b+E6bgzOFlr1XNxS9z5ma2y8tPe4o6HgJhqzG11nPQUDPgXguEKz8rXTuf9LgSB9XcdJ1zT7TaFwYC7QpHjmINUAgzlJVZV/Scdm/xIG03QdLgwMHzzF0Tv3sVeXomRr3G487QgXKkae7/clN63eXEE/4WH7flRWzn6X818w9l4q386QOw+e+nUIwPfSXcyCjk0/HOQNqAnLPOEqIJdR1uwLibHY7fb8e4wa1E8u/XPkqxsrk3e0BSmuMn1bQHDNssz6GYRTPk4D9fFZffIsryxZuHA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CRnQgE0m; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CRnQgE0m; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=alex.williamson@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CRnQgE0m;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=CRnQgE0m;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=alex.williamson@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cVptQ1LBnz2xck
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2025 02:47:08 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1758559625;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=fRdA7nsQf+ROdRRV/X8F80rPVzMRc7WYaZxeLJaoIjA=;
-	b=CRnQgE0mfUmlA62y1D2mdbEGP+B7JczMzn91jb7oVg48dDj1+q4PaJFS/Sg6uIvptyn99R
-	3Q/F+QZXATm+FCQzYMLRNDVSYr6UyU80DwqNUe6FcxqYRkgttEt8G3APn0seMRsEKOVfSP
-	JjuWLXPkrOnQCIiap+/jJ1+lWj1PBFg=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1758559625;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=fRdA7nsQf+ROdRRV/X8F80rPVzMRc7WYaZxeLJaoIjA=;
-	b=CRnQgE0mfUmlA62y1D2mdbEGP+B7JczMzn91jb7oVg48dDj1+q4PaJFS/Sg6uIvptyn99R
-	3Q/F+QZXATm+FCQzYMLRNDVSYr6UyU80DwqNUe6FcxqYRkgttEt8G3APn0seMRsEKOVfSP
-	JjuWLXPkrOnQCIiap+/jJ1+lWj1PBFg=
-Received: from mail-io1-f70.google.com (mail-io1-f70.google.com
- [209.85.166.70]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-79-RoIrtCGNNx2Lx3ooFkKfog-1; Mon, 22 Sep 2025 12:47:03 -0400
-X-MC-Unique: RoIrtCGNNx2Lx3ooFkKfog-1
-X-Mimecast-MFC-AGG-ID: RoIrtCGNNx2Lx3ooFkKfog_1758559622
-Received: by mail-io1-f70.google.com with SMTP id ca18e2360f4ac-8935214d60bso106419739f.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Sep 2025 09:47:03 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758559622; x=1759164422;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=fRdA7nsQf+ROdRRV/X8F80rPVzMRc7WYaZxeLJaoIjA=;
-        b=qVJ+8NCc9qslDn/5Zk45dJj1Csg9fHqjkZlkB/aaYEN5al4ctrfvdjz+IOKpbT3Bkx
-         Gu5eWgIyO5l1bLdXdvGU4JDEhCNOzEN/M68hKkzQyMtjs8T87ijAdcjKHjtcv2sMxgQJ
-         iX+Gq9qkcp7WphUzy2X3tOeH104UcdZmoF6FdOKeI8XYEJ9DBIrsQAepg17mY63GJ4PQ
-         zygHBO026D6IBKAoLSdvaSzYNKMHXaa0qTurJbWjf09svOz4/5fTJQe9OcYmzv3APOik
-         +a7OXszlsAyi1iagwgTULa57EIBLjXTs1XlGf9T0uTtJq2fc0BWDI0Hk0UW5I12mMhG1
-         K2Qw==
-X-Forwarded-Encrypted: i=1; AJvYcCUFnzUAdIbzJS7AVp1E3nLR9EUmb46FLXP8MKAPAokrew3hq4HkKB8AR/O94XpL+OfrC6GIdzUxItT1zgA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyOl3b2n7wHvTJeQXoYcdWzDl6lZoJ9ABTS9qFnNM7IEMy0Q8Nb
-	WOpuXN8+9a9kCZfFHgNuqTuYL9x3Hz1vzR+vaL+TcD89BLf58J7xKsLN9Bd1AuE107Jzw+KUiw/
-	ouGqNtYlB6o7mpZLZ90YSe2xzyk7tG3havsmQmbCKJQBgjPyPl2pbELwCiAOCu0+yW7Q=
-X-Gm-Gg: ASbGnct5/myqTEpF9r1b8PTTrr5B+5U3yp/dZJLP9dvoLiPp5R91d7Pd/A4WK0Qc4ZU
-	jtne35/NS5dv1T35jkJB3S6s/4ak8x4dKIMiUv7I0Ph68Al8BGMlJb1m0dvc8ei9/KIyytsvNoD
-	49SOxZ2igiswHuZ3DZI5IC/YU5prnnrvd1uiehm2L8mSxGRtHEcifr/F+HiX+UvsiHy0CxD3cM7
-	3OKWvWX9LYM1jJCyB433mhrTDCfThxZ/T7U1o1skC/KT1+AG5aCqPvjtvWj9RouxxfW9qi9E+LA
-	+3iP4rR6SpCwWnMes/Ck4BdoxSD9qv8JG4+4Oj8ukTQ=
-X-Received: by 2002:a05:6602:1492:b0:886:b1ad:5926 with SMTP id ca18e2360f4ac-8ade85dce23mr773714139f.4.1758559622319;
-        Mon, 22 Sep 2025 09:47:02 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IEkFiz0OlFYWl2yJOU/iZB/JsOzK1cROcUGrsewO7Eh+2ZzvoGxAdaxPxrlYTqdudrZ2m5WLA==
-X-Received: by 2002:a05:6602:1492:b0:886:b1ad:5926 with SMTP id ca18e2360f4ac-8ade85dce23mr773711839f.4.1758559621755;
-        Mon, 22 Sep 2025 09:47:01 -0700 (PDT)
-Received: from redhat.com ([38.15.36.11])
-        by smtp.gmail.com with ESMTPSA id ca18e2360f4ac-8a483230f4dsm467144739f.25.2025.09.22.09.47.00
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 22 Sep 2025 09:47:01 -0700 (PDT)
-Date: Mon, 22 Sep 2025 10:46:58 -0600
-From: Alex Williamson <alex.williamson@redhat.com>
-To: Timothy Pearson <tpearson@raptorengineering.com>
-Cc: kvm <kvm@vger.kernel.org>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: Re: [PATCH] vfio/pci: Fix INTx handling on legacy DisINTx- PCI
- devices
-Message-ID: <20250922104658.7c2b775e.alex.williamson@redhat.com>
-In-Reply-To: <456215532.1742889.1758558863369.JavaMail.zimbra@raptorengineeringinc.com>
-References: <663798478.1707537.1757450926706.JavaMail.zimbra@raptorengineeringinc.com>
-	<20250919125603.08f600ac.alex.williamson@redhat.com>
-	<1916735949.1739694.1758315074669.JavaMail.zimbra@raptorengineeringinc.com>
-	<20250919162721.7a38d3e2.alex.williamson@redhat.com>
-	<537354829.1740670.1758396303861.JavaMail.zimbra@raptorengineeringinc.com>
-	<20250922100143.1397e28b.alex.williamson@redhat.com>
-	<456215532.1742889.1758558863369.JavaMail.zimbra@raptorengineeringinc.com>
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.43; x86_64-redhat-linux-gnu)
+	t=1758559837; c=relaxed/relaxed;
+	bh=zuVT/NXt6gs791D+SZCmhqxz/igNEd5Yz8i1Mnw+YiE=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=Z+AjvvXslF+qbSHqZEioaryhtY+TxGzubmGjqoQL6hgm/nuS/3wWjJvmTPkHRz5VWPWWSu+UKD2wmOOPCAbtDrHst//TH4eWHWoflmg+1RTSxXc1An0V8AcER1gToumfIcEDVKIlLhynRJy1SzITCYrlMPYnIoU1nyKWzPv0G9xt/kQXmX0kJXYuXOBiibiyKObfpUHRSVGkAoFx+SR8IuFbIPZV7qTqMMRVLHe0UruyrrmyhLrzFLxH21iBLQWScRYccd5pJhS404lpKNxBj7U2m0b/7gUD2VeRTrfnDqkORDeBOfzkxTlrzRPdJf+mgsKAJJx37v1pVdjjghnZ0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cVpyN3pZpz2xQ3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2025 02:50:36 +1000 (AEST)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4cVmQ46hrnz9sSS;
+	Mon, 22 Sep 2025 16:55:56 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id yAj35bzrK7Eo; Mon, 22 Sep 2025 16:55:56 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cVmQ45vFpz9sSN;
+	Mon, 22 Sep 2025 16:55:56 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B53D88B768;
+	Mon, 22 Sep 2025 16:55:56 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id Wc8vrIHa2uK1; Mon, 22 Sep 2025 16:55:56 +0200 (CEST)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3A1E68B763;
+	Mon, 22 Sep 2025 16:55:55 +0200 (CEST)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+	Linus Walleij <linus.walleij@linaro.org>,
+	Bartosz Golaszewski <brgl@bgdev.pl>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	linux-gpio@vger.kernel.org,
+	devicetree@vger.kernel.org
+Subject: Re: (subset) [PATCH v6 0/7] Add support of IRQs to QUICC ENGINE GPIOs
+Date: Mon, 22 Sep 2025 16:55:46 +0200
+Message-ID: <175855270809.96300.15498969212421871816.b4-ty@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1758212309.git.christophe.leroy@csgroup.eu>
+References: <cover.1758212309.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -117,73 +75,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: lM8k2cA7YPPKT0LHppprTMAM01QR9vJUxC_bqToomGQ_1758559622
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset="utf-8"
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1758552948; l=721; i=christophe.leroy@csgroup.eu; s=20211009; h=from:subject:message-id; bh=aYbrvM60FKtWFyNikef1uJvt0soMLPkWIUod5zKQIfE=; b=o2vh0AbkgZRDTZfD+sDgtiYH+hiDvCfPGLBCRbBvfV9mgwoWZUllSFmykcseyTH9sUcVFu429 IYzJdwjwgF9CXkzFUSH2+wxK1i3QMoVm1UnTnl//mmS0VCVqqVvVmhE
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=ed25519; pk=HIzTzUj91asvincQGOFx6+ZF5AoUuP9GdOtQChs7Mm0=
+Content-Transfer-Encoding: 8bit
 
-On Mon, 22 Sep 2025 11:34:23 -0500 (CDT)
-Timothy Pearson <tpearson@raptorengineering.com> wrote:
 
-> ----- Original Message -----
-> > From: "Alex Williamson" <alex.williamson@redhat.com>
-> > To: "Timothy Pearson" <tpearson@raptorengineering.com>
-> > Cc: "kvm" <kvm@vger.kernel.org>, "linuxppc-dev" <linuxppc-dev@lists.ozlabs.org>
-> > Sent: Monday, September 22, 2025 11:01:43 AM
-> > Subject: Re: [PATCH] vfio/pci: Fix INTx handling on legacy DisINTx- PCI devices  
+On Thu, 18 Sep 2025 18:23:20 +0200, Christophe Leroy wrote:
+> The QUICC Engine provides interrupts for a few I/O ports. This is
+> handled via a separate interrupt ID and managed via a triplet of
+> dedicated registers hosted by the SoC.
 > 
-> > On Sat, 20 Sep 2025 14:25:03 -0500 (CDT)
-> > Timothy Pearson <tpearson@raptorengineering.com> wrote:  
-> >> Personally, I'd argue that such old devices were intended to work
-> >> with much slower host systems, therefore the slowdown probably
-> >> doesn't matter vs. being more correct in terms of interrupt handling.
-> >>  In terms of general kernel design, my understanding has always been
-> >> is that best practice is to always mask, disable, or clear a level
-> >> interrupt before exiting the associated IRQ handler, and the current
-> >> design seems to violate that rule.  In that context, I'd personally
-> >> want to see an argument as to why echewing this traditional IRQ
-> >> handler design is beneficial enough to justify making the VFIO driver
-> >> dependent on platform-specific behavior.  
-> > 
-> > Yep, I kind of agree.  The unlazy flag seems to provide the more
-> > intended behavior.  It moves the irq chip masking into the fast path,
-> > whereas it would have been asynchronous on a subsequent interrupt
-> > previously, but the impact is only to ancient devices operating in INTx
-> > mode, so as long as we can verify those still work on both ppc and x86,
-> > I don't think it's worth complicating the code to make setting the
-> > unlazy flag conditional on anything other than the device support.
-> > 
-> > Care to send out a new version documenting the actual sequence fixed by
-> > this change and updating the code based on this thread?  Note that we
-> > can test non-pci2.3 mode for any device/driver that supports INTx using
-> > the nointxmask=1 option for vfio-pci and booting a linux guest with
-> > pci=nomsi.  Thanks,
-> > 
-> > Alex  
+> Implement an interrupt driver for those IRQs then add change
+> notification capability to the QUICC ENGINE GPIOs.
 > 
-> Sure, I can update the commit message easily enough, but I must have
-> missed something in regard to a needed code update.  The existing
-> patch only sets unlazy for non-PCI 2.3 INTX devices, and as I
-> understand it that's the behavior we have both agreed on at this
-> point?
+> [...]
 
-I had commented[1] that testing the interrupt type immediately after
-setting the interrupt type is redundant.  Also, looking again, if we
-set the flag before request_irq, it seems logical that we'd clear the
-flag after free_irq.  I think there are also some unaccounted error
-paths where we can set the flag without clearing it that need to be
-considered.
+Applied, thanks!
 
-> I've tested this on ppc64el and it works quite well, repairing the
-> broken behavior where the guest would receive exactly one interrupt
-> on the legacy PCI device per boot.  I don't have amd64 systems
-> available to test on, however.
+[2/7] soc: fsl: qe: Change GPIO driver to a proper platform driver
+      commit: 156460811def1ae699eebe40d9678e4ce3d1d9bc
+[3/7] soc: fsl: qe: Drop legacy-of-mm-gpiochip.h header from GPIO driver
+      commit: e9713655b29a47d23cbf07aacf50b0ce8ee0a850
 
-Noted, I'll incorporate some targeted testing here.  Thanks,
-
-Alex
-
-[1]https://lore.kernel.org/all/20250919125603.08f600ac.alex.williamson@redhat.com/
-
+Best regards,
+-- 
+Christophe Leroy <christophe.leroy@csgroup.eu>
 
