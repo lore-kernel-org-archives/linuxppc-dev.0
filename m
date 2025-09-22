@@ -1,89 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-12496-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12497-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1EFACAC592
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Sep 2025 04:21:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A23E9CAC5A7
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Sep 2025 05:44:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cVVLM3GGvz30N8;
-	Mon, 22 Sep 2025 14:21:47 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::529"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758501908;
-	cv=none; b=CIV/3nzXikScUV1dThVvT/yo1S9V3odPj29YB1ITsIZ6Z1kK+pra+n2rmVpRbhoPdqMiGI/2s7w+8PVBGyoi8+H9g3Re6LjHLtrFf8HSwlh/N+rbPPmwTNj+rIVIg0/vl/j4P8SdKk0lh6O3YQoD3MfUrDycZZvwVnJAUSimsI18COn9+mkJqZywgTzYYilhNVz9phaiZvjc4zvz0YuFPaPM3gVV6S6B3gRXIWR4WxviEn9KBrxYnXBKule/NHGJlH7rIhcNskxOqKmm6l1ivbWolPToGOmPrpwMhdp1sqQ6I/+NA/b6NFi+dtglBNMRZyUtUS4sDDrd/gF58MYVLA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cVX9L124Wz301K;
+	Mon, 22 Sep 2025 15:44:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758519846;
+	cv=none; b=XSf1OGvtt2+5tg1kFnk5zhjQgK5anA4ecnHHiK8/qKqgpgdAdIw0fnZwCd1RpYB2O9hjt7uEfJIqarViADVVRmcxRe+xuqs6JkwPg5ZEELqtoa5J2PpzELOor93pYID3HSCjzzLLRVY12hG3BK4WCdJE0EAQfTmSTUE76c3kzJfPZM277mzZVSINFf/eufrnDnN3EWrk+34U69BJl2btYFVr4GrkRNWoRZm5h6vdYTwEO+MwcHXPQWri+DPmMKuopSK7mSVgFspROg05eewH2b+zs59VB2Afq0m7ko3VdfEMm+2xoEVgXkwes3aKKeCAg5GUGFVOo+sMI7QbwQzvaQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758501908; c=relaxed/relaxed;
-	bh=+4TpF34W3PHvsBrekGwm1rvuPQAafzFCgW5mxOcoS+s=;
-	h=From:To:Subject:Date:Message-ID:MIME-Version; b=ahHTxjzvZEDKbH6O7ohMEKiz3Mb+I8N3FYbzQaezR95KRMBWr0+J5eX+8mq/PKZslwQ/yaZFW6Qq7iMs3ul6XyyDQUTTYmyXUW52XDi5xxsUbEoEs40fm6JAf8hoHXdjONK1dDEyl5+ktQaI+sGf70OxZa4lmWyl0hi3pBQ/T7MUNwtcJcRL1Lvj3VnU8wNRA6GEzRoW4sguo0WLa3MHWZWpjCSZsk3yr4wT+z3tElVrTNBTpoULqZZSsywGYgm7IiUEMGsDsUqfe/e+uPLcXpz0SIF14RE1D87td1sT3l74kdnxYEICr52H/EQb2DZJei0jyDBcum9QWnRMkvQsCg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=K3ecqX2V; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=krishnagopi487@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1758519846; c=relaxed/relaxed;
+	bh=IMWYoxwZD/4pz1AvW/u55mqtG47ap6rRBfxjw/7eJoQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=GPBDDhet2Ns0J3GLcS26AhVr3mQETTdbJKwRAu7lSZp7J2RUX/O7h9osmfEFmyDEjw2rKBXa69bHq9WatTvTQv+6dMVCjkHkClBiEiXh825gBth5gzfIHP1lqQTzrN5IwAuhinUIHz31y08ljZB7ZKZ0AlFRKgdVTaM7xp2ZzJH6nfp4Az8dCNdPcPXcl3w1oOhMnm2bYekZoYJ4QI/L4iGpZwixnW4WeIP4mTkFYOEw2npkCBBqTAsXrlmKIQil9NXmZAIulbuPx0rbm4bflkw/1EC9cLiwvN0hsuaiUiS992c8LIU7spE8d3PxRPvtzLPZ1NXm4aPtx9dvkinrng==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gPguHyIh; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=K3ecqX2V;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=gPguHyIh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::529; helo=mail-pg1-x529.google.com; envelope-from=krishnagopi487@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x529.google.com (mail-pg1-x529.google.com [IPv6:2607:f8b0:4864:20::529])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cVPXM30bqz2xck
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Sep 2025 10:45:06 +1000 (AEST)
-Received: by mail-pg1-x529.google.com with SMTP id 41be03b00d2f7-b550eff972eso2159070a12.3
-        for <linuxppc-dev@lists.ozlabs.org>; Sun, 21 Sep 2025 17:45:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1758501904; x=1759106704; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=+4TpF34W3PHvsBrekGwm1rvuPQAafzFCgW5mxOcoS+s=;
-        b=K3ecqX2Vak2GgI4PHaaxlIlOX6B7LHVbELjN7wO9lbabsYx5Eu5eS3D4OOcE4QnYeQ
-         cp/hDXMMzn3+pKfPJJFRTnctjpbLmoYEnvd/VXMLe1dcfdfYOvVQar4u2A0/jrVUHFLz
-         HGgyHyk8bQjGJzuDxoGy/rR/QU9jo7TN2CPECIMopnUcqpJCoIjWIYoUCq4pj8r+1BtC
-         /VFJM8Hotyk4/jjnu7AchanhgTssXbZWs4agxESH/ZoDGDfkIFhlca2uITAu4g4dkarQ
-         5DZbCyZREfs/zMdLBu7m2RWRVabkC1YN9S3v1sSBqa39SsErIrvFT20BNvO1hmCSp624
-         cyhQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1758501904; x=1759106704;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=+4TpF34W3PHvsBrekGwm1rvuPQAafzFCgW5mxOcoS+s=;
-        b=aXNdW/Npar+uiBsaV3UGQvevkQyB44FoOwzuH3ycLrpIbwjAQCRTOQW0JkhLA2Rrk8
-         knePzjNNDSNMMl8z8wKWKWacs+XkCcPrZ/0nuk9/kovUZSpF/0wbAQZ87cLPStCrIFva
-         9g287sHp13/yzADUOiryPfO0zOcxiulofQJFI1+umuw/Q+bXFk3jHagZ0bOWve9lZ02A
-         LZsBKiUBzvJjVwQGEQXcVWdnNHjEVADUr8kbdjODXAFUznd9/GCu2235xDI/uqWa3Rf2
-         J/tOHVOfmI9l9bYj+LOjAwv4PmgaQNFKHzU5h050k6Q7eH74UFRbUk3H4XM5W7QLzz0D
-         CtcQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWh/Pn8Z1XUjcyAFMh4qy/4Pe+2rTfiI2ESB6wVQic59dZx9sB65Vp0urUlPlNWBadQV1fT2gW7SE5t220=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yx6iP5JkAd1jlQ24LomiHX3u8I7zwPxvhW30TeosKdKVaunwHGy
-	72WmX4p49jClIjmNtG6juT+ecR8vwsB1KmZauDgAk4cZVMHJCUQfJxLz
-X-Gm-Gg: ASbGncsZMV+CsOFvgn/dKMCTB1x1oAxWVZIvgOL3h3ZSvCCb8jPtGHp1OyBHoncQ7tm
-	T49BIaDrwa5Y0GSSK6UI1ll85YET7R7enS0rSIwab63icyszshCJed8RqmdUAle2BcGTsJWvT8c
-	+zzZCor44eJmAA5IWywEX0UvHrDVN81EiYsINKMgz0dCh5gLNFoW9Zxej2X4jJyhz1Fd1iLl/hZ
-	AtM7cOyDlMUSFuefDOVdQNM2nbWIJBSGfOJuDWYZHvMR0UjGxWFsQrkAbTw9BAW4nmrhYMFgdVW
-	2fX2Egdfbk58VJUy6B20YwOZ9oLjparHq7/khJUZu+4yDNSKOsK8OxoImnH0AFIRhmDn1Qw5IlQ
-	HWUDDbWNX2vIozMRnGJJEAZthTs8WacmMS+Wjoz0UUeMNsksE+14Z
-X-Google-Smtp-Source: AGHT+IGeGCeJGDQO792G7blZZbjio2dz2UzvLzPbvR3uVFdQj+v9IaRb+EMqbWNhfxxc4quvxfrw7A==
-X-Received: by 2002:a17:902:cf4c:b0:267:776b:a315 with SMTP id d9443c01a7336-269ba508205mr140392845ad.32.1758501903638;
-        Sun, 21 Sep 2025 17:45:03 -0700 (PDT)
-Received: from kforge.gk.pfsense.com ([103.70.166.143])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-77f0da42fdesm6769810b3a.66.2025.09.21.17.44.59
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sun, 21 Sep 2025 17:45:03 -0700 (PDT)
-From: Gopi Krishna Menon <krishnagopi487@gmail.com>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	christophe.leroy@csgroup.eu,
-	shuah@kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-kselftest@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	linux-kernel-mentees@lists.linux.dev,
-	skhan@linuxfoundation.org,
-	krishnagopi487@gmail.com
-Subject: [PATCH RESEND] selftests/powerpc/pmu/: Add check_extended_reg_test to .gitignore
-Date: Mon, 22 Sep 2025 06:11:23 +0530
-Message-ID: <20250922004439.2395-1-krishnagopi487@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cVX9K2j04z2yrr
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 22 Sep 2025 15:44:04 +1000 (AEST)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58LHBdtD029199;
+	Mon, 22 Sep 2025 05:43:53 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=IMWYox
+	wZD/4pz1AvW/u55mqtG47ap6rRBfxjw/7eJoQ=; b=gPguHyIhQGkL9kWyTIHhRu
+	EDLDMRkDyyXgm2asIygnqFEDBSzhAyneB6hoTYqY3LsrplsXvqDl+T9j5PQDUtni
+	y867hfWbS+UWo+xvRc+d3zqKHGtJLAMjRbyT/8OFrB+7ZvHVtUCPda8JoLfpodZP
+	62tEiBivJr9guIYJljG9cJ4dj1GaMbag3XD+erwHp4h3Jrt4sP8rvOdH53Y7uhrI
+	MPzqgVAJJJ4E4hE3hmdnSOlfHPbu5HbsYB3C1hsyWe2JFUB1k2ojoJtNTwh9kq03
+	d6c/pmWHhjGoZD/zt8FQ/11GvBJk4qeaeuNcAOkvyJ7PUt/q4raQ4Wt7vkEHAfwg
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 499n0j8jbp-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 22 Sep 2025 05:43:53 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 58M5dJoB018943;
+	Mon, 22 Sep 2025 05:43:52 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 499n0j8jbm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 22 Sep 2025 05:43:52 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 58M58Tb6019732;
+	Mon, 22 Sep 2025 05:43:51 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 49a83jvg67-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Mon, 22 Sep 2025 05:43:51 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 58M5hnjB51970378
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Mon, 22 Sep 2025 05:43:49 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 56D9320040;
+	Mon, 22 Sep 2025 05:43:49 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C89FB20049;
+	Mon, 22 Sep 2025 05:43:47 +0000 (GMT)
+Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.ibm.com.com (unknown [9.43.82.69])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Mon, 22 Sep 2025 05:43:47 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+To: Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH] powerpc/603: Really copy kernel PGD entries into all PGDIRs
+Date: Mon, 22 Sep 2025 11:13:46 +0530
+Message-ID: <175851974396.1538174.14407108972132454918.b4-ty@linux.ibm.com>
+X-Mailer: git-send-email 2.50.1
+In-Reply-To: <752ab7514cae089a2dd7cc0f3d5e35849f76adb9.1755757797.git.christophe.leroy@csgroup.eu>
+References: <752ab7514cae089a2dd7cc0f3d5e35849f76adb9.1755757797.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,28 +95,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTIwMDAzMyBTYWx0ZWRfX/EH9VyigILfd
+ Y+Mnz3TeZYj68T/CwofQHLr8K5nI9i85LuAZCMzJa6pqa9kop3syZ/ybFzMZmWJIRPAOGR/kg1G
+ BMErPa294XyF8K0eh7zXrQQVGw3JJrp8jf26pfP+7nRjprFPbBul6EkrChVCQFZbHIPGvHJkQcQ
+ nfJ6exKH2gxydaeFmB1pBjjP9C7jSLfiaKzDSmtcXgx6YYeG5fhsoATyTzWeaQOTekb3thcF3K+
+ LDLB11nqHCbKuedW0trlA8VP4yBFIuy7gPYOpzBk0q068ofk3VCKFZxEni4/qYMTX0+O5n4TF2e
+ yWRjMulzTIZyIM2oz3SVGO26c8p416d4FXxs95+OsgVZ1mcPXna0oaEGWkU0y9Dp7r7yHrbqfgA
+ m7SqwWuP
+X-Authority-Analysis: v=2.4 cv=TOlFS0la c=1 sm=1 tr=0 ts=68d0e219 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VwQbUJbxAAAA:8 a=VFsITqSaSZWGP382EtEA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: qbWMU_OhsSGTpGz_k9vqD2vwKaiSsSIY
+X-Proofpoint-GUID: bebGJehym61NPifIBFNfN3BsfMCGXBJn
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-09-21_10,2025-09-19_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 priorityscore=1501 phishscore=0 impostorscore=0 adultscore=0
+ suspectscore=0 spamscore=0 bulkscore=0 malwarescore=0 classifier=typeunknown
+ authscore=0 authtc= authcc= route=outbound adjust=0 reason=mlx scancount=1
+ engine=8.19.0-2507300000 definitions=main-2509200033
 
-Add the check_extended_reg_test binary to .gitignore to avoid accidentally
-staging the build artifact.
+On Thu, 21 Aug 2025 08:30:18 +0200, Christophe Leroy wrote:
+> Commit 82ef440f9a38 ("powerpc/603: Copy kernel PGD entries into all
+> PGDIRs and preallocate execmem page tables") was supposed to extend
+> to powerpc 603 the copy of kernel PGD entries into all PGDIRs
+> implemented in a previous patch on the 8xx. But 603 is book3s/32 and
+> uses a duplicate of pgd_alloc() defined in another header.
+> 
+> So really do the copy at the correct place for the 603.
+> 
+> [...]
 
-Signed-off-by: Gopi Krishna Menon <krishnagopi487@gmail.com>
----
- tools/testing/selftests/powerpc/pmu/sampling_tests/.gitignore | 1 +
- 1 file changed, 1 insertion(+)
+Applied to powerpc/next.
 
-diff --git a/tools/testing/selftests/powerpc/pmu/sampling_tests/.gitignore b/tools/testing/selftests/powerpc/pmu/sampling_tests/.gitignore
-index f93b4c7c3a8a..ea29228334e8 100644
---- a/tools/testing/selftests/powerpc/pmu/sampling_tests/.gitignore
-+++ b/tools/testing/selftests/powerpc/pmu/sampling_tests/.gitignore
-@@ -1,5 +1,6 @@
- bhrb_filter_map_test
- bhrb_no_crash_wo_pmu_test
-+check_extended_reg_test
- intr_regs_no_crash_wo_pmu_test
- mmcr0_cc56run_test
- mmcr0_exceptionbits_test
--- 
-2.43.0
+[1/1] powerpc/603: Really copy kernel PGD entries into all PGDIRs
+      https://git.kernel.org/powerpc/c/f2863371f017eb03c230addc253783fa4c7e90f5
 
+Thanks
 
