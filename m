@@ -1,57 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-12539-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12540-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A9681CAC5AC
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Sep 2025 14:30:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9133DCAC5A7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Sep 2025 15:31:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cWMp30gc8z2yqg;
-	Wed, 24 Sep 2025 00:30:19 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:5300:60:3a9d::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758633256;
-	cv=none; b=nm5RHJgWjq26ULnetxqmX7xb86e7ZHIIuOxsuepcOFHvUtp3XAgQTWQTqYuBgBHUCZIX3YaLZb/JbIMau5TfZJWxEsedVIK8+CrRLO+sSCIZnvJE5ckiodjulejHjVqXfpcpqRrllHK7xBFRnq2ym5k3nUlKl9BmSQXkznheeGEdTj5yK2EvldWmo0is8+ZBJHaiMEBSgEuVeMQPKi0MvRFSQGKBSbXgfPf4vfMgMKUAH64uNex/drIlXGkBy1c/AiiMGwnqGkYtMqFAIVglQn9r4K3hCyf6id4KWMfd3+es2YJpb+PeXnhoLbU/O+/YJEQbx+2KbnBVdN0jwrEN1g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cWP8B0765z2yxN;
+	Wed, 24 Sep 2025 01:31:06 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758641465;
+	cv=none; b=DhjX6p/3aXumASEzczKdKGsZiM74w9j+5A93dRg8+7o6jaWq8AYzA0tQ50entkj7jqTNp1CnFLd1ITVKNSHvMnQKRuaxec23qHavNgXRNNQfyL4hcO1t0RJEBRuumIBAgUNjsJWTa+NgK+ybr0q+VH7TXwoJQn03CuiGFci010YZhW4R4o6cKqEnUMiBy6bqiXSykTn+JDm6KMvRirBOud/+CnwP7GR11L3j3bC8bali62cASdGzgK/ubBZeXIOTds/NbnzBkDX5Cn7V5JxMXNVT1jQMsFZGLbt/OLySexALiZmADOByzpjP105fMnEjMJXXGNiiIaup2+MRwOI+uA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758633256; c=relaxed/relaxed;
-	bh=2sItBj+QU9qdXvNcIECQjyDp7nGnsVveQgohkd3EYmM=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:MIME-Version:
-	 Content-Type; b=jxSv2orrRlEBmCI2aAxvQItOrtR3yEgpjvUkzJPE7s4YoI27q3L4QdCHiWXWwG+OWpLV80+2mACsNzHycN7jIi2Oi1PgWUzHDsHzGEvWVFuKgmve8BJERz8yq1e5U4nftNdVU6DuNP8/FCdeF5EHbKiWLedB6/y2lPJbAHUqReemcxOqcGQ+ZS95EQeTc3NzzVwntACsUzJ79mcRS2HaWZOvBHcmuYH8/QXfU7di+Ih/joJgzCXUs1fq/UgJ1tstArALawN0E0zmxbvEnVOCT9mEa8w3mcLkfIaZ22YBo+i8GmjXKo2aQuK2CfUfAHsjvD62ndbwsbGaop4OqkKiIg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=tethera.net; dkim=pass (2048-bit key; unprotected) header.d=tethera.net header.i=@tethera.net header.a=rsa-sha256 header.s=2024 header.b=fhY2a8K3; dkim-atps=neutral; spf=pass (client-ip=2607:5300:60:3a9d::1; helo=phubs.tethera.net; envelope-from=david@tethera.net; receiver=lists.ozlabs.org) smtp.mailfrom=tethera.net
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=tethera.net
+	t=1758641465; c=relaxed/relaxed;
+	bh=Gepj0GovVH3AS/Kf3XZjwnwXf+WGuvdxszVKLwmSkUk=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-type; b=aaPxQnFG7Yo1INVfoXnPKAf4IdRKvO4XRCnlPQYcrQlWHy5lPlurUbf5pEZ3UcVAWNyaptjxWPGPOKnH0gBwi5G4p80DPkHB931DIyKZ0KckqDTbM0pAUzYrKlN6Is5gWey66UOyIHXoi/mo+z1lUaCmWctOuo+HF0GU6YcgWZA1bfGB68SFuj2uymouN8iZX9sb07BWDU1N4ABJ10hpWEnCnG7Cz/IXol8dwi9LPovS2cJeJWQS8wfUYKVaWIlnCqmVJo5P2cHUJG76/IdoQ05uR24R0S+dSmGm0w5nj87zVv+Vc3uWxtNeKj3Q6xsAK00pX0u7ysYBFoTSKHkNXg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=J+RrWLyc; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=J+RrWLyc; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jstancek@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=tethera.net header.i=@tethera.net header.a=rsa-sha256 header.s=2024 header.b=fhY2a8K3;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=J+RrWLyc;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=J+RrWLyc;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=tethera.net (client-ip=2607:5300:60:3a9d::1; helo=phubs.tethera.net; envelope-from=david@tethera.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 471 seconds by postgrey-1.37 at boromir; Tue, 23 Sep 2025 23:14:14 AEST
-Received: from phubs.tethera.net (phubs.tethera.net [IPv6:2607:5300:60:3a9d::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=jstancek@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cWL6G0TRxz2yGM
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Sep 2025 23:14:13 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=tethera.net;
- i=@tethera.net; q=dns/txt; s=2024; t=1758632774; h=from : to : cc :
- subject : in-reply-to : date : message-id : mime-version :
- content-type : from; bh=2sItBj+QU9qdXvNcIECQjyDp7nGnsVveQgohkd3EYmM=;
- b=fhY2a8K3+6Pqc7obdcyMoOLs2tg8wCZkGhoAXWA9670cPb67vtaRWP6JtAARfUpFAZs84
- IBx29vHM9Jx0C1WoHSU3HOMtKhfHw5OnrBD+qJSNuOiojlAoGPpdI0n1yFXcRmoPpqvBWqB
- LSjVz2iXNeb1Rls66wn8GHXud1K2QVXMf8Y4NfvWZTcPd9lLXJU0CS5b6+ufgxB7chZsJF+
- 6SjHwRsZcTCiego5lqemkQ0b9qFxDqd0YGom6xqLJf6fADTwDxQ3SGawi7Cgsn5CMrpaTPN
- 0ljaoj5ya23LZ0i0WKjwBoVlytOr/Jv7PCE/+FUWnn2ho0ZGTF7eooo5zMjA==
-Received: from tethera.net (fctnnbsc51w-159-2-211-58.dhcp-dynamic.fibreop.nb.bellaliant.net [159.2.211.58])
-	by phubs.tethera.net (Postfix) with ESMTPS id C93D818006D;
-	Tue, 23 Sep 2025 10:06:13 -0300 (ADT)
-Received: (nullmailer pid 1548093 invoked by uid 1000);
-	Tue, 23 Sep 2025 13:06:13 -0000
-From: David Bremner <david@tethera.net>
-To: devnull+manivannan.sadhasivam.oss.qualcomm.com@kernel.org
-Cc: bhelgaas@google.com, cassel@kernel.org, heiko@sntech.de, krishna.chundru@oss.qualcomm.com, kwilczynski@kernel.org, linux-arm-kernel@lists.infradead.org, linux-arm-msm@vger.kernel.org, linux-kernel@vger.kernel.org, linux-pci@vger.kernel.org, linux-rockchip@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, lpieralisi@kernel.org, lukas@wunner.de, mahesh@linux.ibm.com, mani@kernel.org, manivannan.sadhasivam@oss.qualcomm.com, oohall@gmail.com, p.zabel@pengutronix.de, robh@kernel.org, wilfred.mallawa@wdc.com, will@kernel.org
-Subject: Re: [PATCH v6 0/4] PCI: Add support for resetting the Root Ports in
- a platform specific way
-In-Reply-To: <20250715-pci-port-reset-v6-0-6f9cce94e7bb@oss.qualcomm.com>
-Date: Tue, 23 Sep 2025 10:06:13 -0300
-Message-ID: <87ldm548u2.fsf@tethera.net>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cWP865cgXz2ymg
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Sep 2025 01:31:00 +1000 (AEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1758641457;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=Gepj0GovVH3AS/Kf3XZjwnwXf+WGuvdxszVKLwmSkUk=;
+	b=J+RrWLycaFYQMkz3umMzoZQAoTcb/Skp6huicv3zx/hDA6RF/ntGg4pdFXERqdANhrQFlE
+	xmb6H+PAaHkJR0/Uegnl9WzXmtap3HdmPh11k6KVHlwuYiyLJrjqbJZRRIYxQkcXjAmHRO
+	kWBsPL0M23QxEzynPY334qkzvH19V7M=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1758641457;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=Gepj0GovVH3AS/Kf3XZjwnwXf+WGuvdxszVKLwmSkUk=;
+	b=J+RrWLycaFYQMkz3umMzoZQAoTcb/Skp6huicv3zx/hDA6RF/ntGg4pdFXERqdANhrQFlE
+	xmb6H+PAaHkJR0/Uegnl9WzXmtap3HdmPh11k6KVHlwuYiyLJrjqbJZRRIYxQkcXjAmHRO
+	kWBsPL0M23QxEzynPY334qkzvH19V7M=
+Received: from mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-653-Is6LQT77NyiaptB_lKTIGQ-1; Tue,
+ 23 Sep 2025 11:30:53 -0400
+X-MC-Unique: Is6LQT77NyiaptB_lKTIGQ-1
+X-Mimecast-MFC-AGG-ID: Is6LQT77NyiaptB_lKTIGQ_1758641451
+Received: from mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.12])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-02.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 1821019560BB;
+	Tue, 23 Sep 2025 15:30:51 +0000 (UTC)
+Received: from t14ultra.redhat.com (unknown [10.45.224.118])
+	by mx-prod-int-03.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTP id 7C73B19560B8;
+	Tue, 23 Sep 2025 15:30:47 +0000 (UTC)
+From: Jan Stancek <jstancek@redhat.com>
+To: maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com,
+	christophe.leroy@csgroup.eu,
+	jstancek@redhat.com,
+	linux-kernel@vger.kernel.org,
+	joe.lawrence@redhat.com
+Subject: [PATCH RESEND] powerpc/tools: drop `-o pipefail` in gcc check scripts
+Date: Tue, 23 Sep 2025 17:32:16 +0200
+Message-ID: <cc6cdd116c3ad9d990df21f13c6d8e8a83815bbd.1758641374.git.jstancek@redhat.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,27 +88,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-type: text/plain
+Content-Transfer-Encoding: 8bit
+X-Scanned-By: MIMEDefang 3.0 on 10.30.177.12
 
+We've been observing rare non-deterministic kconfig failures during
+olddefconfig, where ARCH_USING_PATCHABLE_FUNCTION_ENTRY was getting
+disabled and with it number of other config options that depend on it.
 
-I have been testing this series on the 6.17 pre-releases, lightly
-patched by the collabora [1] and mnt-reform [2] teams. I have been testing
-on bare hardware, on MNT Research's pocket-reform product. I'm afraid I
-can only offer CI level feedback, but in case it helps
+The reason is that gcc-check-fpatchable-function-entry.sh can fail
+if `grep -q` (or scripts/dummy-tools/gcc) is fast enough to exit while
+there is still someone writing on other side of pipe. `pipefail`
+propagates that error up to kconfig.
 
-1) The series now applies cleanly onto collabora's rockchip-devel branch
-2) The resulting kernel boots and runs OK.
-3) the resulting kernel still fails the "platform" pm_test [3] with
- "rockchip-dw-pcie a40c00000.pcie: Phy link never came up"
+This can be seen for example with:
+  # (set -e; set -o pipefail; yes | grep -q y); echo $?
+  141
 
-Of course there could be other reasons for (3), I don't know that much
-about it.
+or by running the actual check script in loop extensively:
+  ----------------------------- 8< -------------------------------
+  function kconfig()
+  {
+    for i in `seq 1 100`; do
+      arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh \
+        ./scripts/dummy-tools/gcc -mlittle-endian \
+        || { echo "Oops"; exit 1; }
+    done
+  }
 
-I'm happy to test a newer version of the series if/when it exists.
+  for ((i=0; i<$(nproc); i++)); do kconfig & done
+  wait; echo "Done"
+  ----------------------------- >8 -------------------------------
 
-d
+Fixes: 0f71dcfb4aef ("powerpc/ftrace: Add support for -fpatchable-function-entry")
+Fixes: b71c9ffb1405 ("powerpc: Add arch/powerpc/tools directory")
+Reported-by: Joe Lawrence <joe.lawrence@redhat.com>
+Acked-by: Joe Lawrence <joe.lawrence@redhat.com>
+Signed-off-by: Jan Stancek <jstancek@redhat.com>
+---
+ arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh | 1 -
+ arch/powerpc/tools/gcc-check-mprofile-kernel.sh           | 1 -
+ 2 files changed, 2 deletions(-)
 
-[1]: https://gitlab.collabora.com/hardware-enablement/rockchip-3588/linux.git#rockchip-devel
-[2]: https://salsa.debian.org/bremner/collabora-rockchip-3588#reform-patches
-[3]: https://www.cs.unb.ca/~bremner/blog/posts/hibernate-pocket-12/
+diff --git a/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh b/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh
+index 06706903503b..baed467a016b 100755
+--- a/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh
++++ b/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh
+@@ -2,7 +2,6 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
+ set -e
+-set -o pipefail
+ 
+ # To debug, uncomment the following line
+ # set -x
+diff --git a/arch/powerpc/tools/gcc-check-mprofile-kernel.sh b/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
+index 73e331e7660e..6193b0ed0c77 100755
+--- a/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
++++ b/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
+@@ -2,7 +2,6 @@
+ # SPDX-License-Identifier: GPL-2.0
+ 
+ set -e
+-set -o pipefail
+ 
+ # To debug, uncomment the following line
+ # set -x
+-- 
+2.47.1
+
 
