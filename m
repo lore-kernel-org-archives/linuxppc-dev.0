@@ -1,50 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-12568-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12569-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 48F15CAC5AE
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Sep 2025 19:50:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5D7CECAC5A5
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 25 Sep 2025 05:01:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cX6sJ4Lckz2ysc;
-	Thu, 25 Sep 2025 05:50:44 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758743444;
-	cv=none; b=I6/MsQbP3VbcnLnpW2EFppczCbtwS+nm2hJndn29tde6SIoutF2EwnbYLiDo9/gJLAOfPNXhqO2MfxurKbg8Pnqvbq1+RFDHJrApOKM0B+jAVjggvSt7lYCc5KSovaqWKCnLPDgNiW+NK5XUaMaGz1d7Kp+G5Y8dXV7OUGKTwsWgnYkbLhSb+OEPcXbhEbBuKfkzXhcTRwmvG1z9JE3BmOM7uVJ28DrfnPK2H+7QWBrC/Mv2m6gIOF9fEavM/p9ttrdJ6+spMKKF1L1VYfsev+g/xWpeYHb07GGqVA7pBNGQB6MxzhK/s1zSXXwqSf0SHB32W3JS4s2XQt8lSgTNzg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cXM5H05Lnz2yrP;
+	Thu, 25 Sep 2025 15:01:55 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1758776514;
+	cv=none; b=JIQhQW/fFabFcWURPZVtVXqkaZ1LuInR65h67CrZJwOzV0rNE8sQFx/J3V+08Pk8frGoY3fWjn+kjsUhkNq10LT1alAboPMRkQsTLrwpiP3CngrDDlNeRpZXoQ5W+Nm1FqHg6gjkk8QHHkq854nDx/Xjzb5OKrWmRx10ychpAW42haXN/gSd0g5eULiSi4OXaXYzBRD35b2dZktgN9TThF+7k+x1Px88U4BLSSzUuI8kexGm9wxblLgxDu2gYGjIshr4R7e7PvcxajOefuFRekjAl3sUG1IEKGflf9rYzAn8/pCOpXF+tZY3wNZnbvZpLVxxfiQa/WUDwYGw4oqi1A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1758743444; c=relaxed/relaxed;
-	bh=2x7+Rm13mRhSwl91pdR3BNXkadzfUgRUZMh799UmRzk=;
+	t=1758776514; c=relaxed/relaxed;
+	bh=MN2tnAfnGlck7Rsei5B/P8+lpSp3GTi1Q+AmY1Zur1E=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UeAsFujpmVe2FwyL9UAPZ7iXuQgXhUZlvNE/loSAsTZ0axywSoIUnFRTxyqZ4RLMId3jbH2JFmUQBt+eMww2PBquL395LMdMYab3ApMtpuYOamJRnEz/eG+eQGzOnWma6UoXxmCGjIz+gI4PTibiMsayUqn+lkTbA6xPJwCk9zjW4q26mXEjmezKkX2h9r780bm5xxAEvBHdUpMdvyEeH2xSguAZ09A3o/4JG8Hy5KLHpSIWpqn/lIjx0gn9U8ySeUYCmajyBeKwEgyccE/FBhkNNHvqsE3hm+r31u2C5vVcoMZycf7aTosXo4DeEAIr/h6/sTJzysnOXvxGzHNCuA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cX6sH09SGz2xck
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2025 05:50:43 +1000 (AEST)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cX64v3MX8z9sRr;
-	Wed, 24 Sep 2025 21:15:43 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id MjkCrWp6j8_X; Wed, 24 Sep 2025 21:15:43 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cX64v2BmNz9sRk;
-	Wed, 24 Sep 2025 21:15:43 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 2A1358B770;
-	Wed, 24 Sep 2025 21:15:43 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id WzjUaTohc-zd; Wed, 24 Sep 2025 21:15:43 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 1F2AA8B763;
-	Wed, 24 Sep 2025 21:15:40 +0200 (CEST)
-Message-ID: <d168030f-388c-4f58-987f-648bba5b32f9@csgroup.eu>
-Date: Wed, 24 Sep 2025 21:15:40 +0200
+	 In-Reply-To:Content-Type; b=CnfgksKwkebxzprBWjUfeI8o42AWPoF/YjFa1cUymUnX37v2Dfo/W5bASLQp+VobPaT+eWNM65g2XsF8LlfKrscwbXIg0rS9uG0+aUzxWjDCd0LOIGj3h89amx6Gm3loSpWUhYbi+ZcKhv1UWhCS6Uy76acanlhtVotNevCIUQffnEI3mYHSCPZuoHVBkW6eDxGR5Wa6OhSc6CDwVQ/lTTHQ46tfVyVGybu3V3DbECInRXRwsT0MojdofxL6qOT78Jr2CNmBqw9qoife2rIyCxb1s+mbdGeFJhzHeBjwBr1FHl+9oQL0Q76bATrmytWxT93HYwR41Y8a+TWoIgJ+Mg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oOx8wv3z; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=donettom@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=oOx8wv3z;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=donettom@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cXM5F5hj5z2yqR
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 25 Sep 2025 15:01:53 +1000 (AEST)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 58ONb1Bu031091;
+	Thu, 25 Sep 2025 05:01:37 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=MN2tnA
+	fnGlck7Rsei5B/P8+lpSp3GTi1Q+AmY1Zur1E=; b=oOx8wv3zKcKXmg69XMEaxA
+	yQhPWmgvd6JT8uZ2fPXKeeNEVKEOdqiArhmxWNOQTD6Dwr0WZBOK7CRMf8LYeMsH
+	gvM4LoLTBd0ZaBInmzgqu4H1RUYoSETQb0WBMwV8+HChRJx9Bw7LwOulNwStt7my
+	XPMy7djUy4rGCsJGfcH+NK0eo3E35L7/RQ3HYq4cbXqYaBiJwpaNMc07QG/udV7G
+	SFqyL65TOthCTJCssQ/pbj2CHn0sGobJ1pD2IKE2iK1qEoAd2iLQfmSV1IklEF+f
+	L2OXsLSKpjR8DgR2hVm74loyuh9Wk0G5EapmEaqnl2xu/F4F9wuMW4Kzia1/wE6w
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 499jpkjuy3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 25 Sep 2025 05:01:36 +0000 (GMT)
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 58P51Zvn015387;
+	Thu, 25 Sep 2025 05:01:35 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 499jpkjuxu-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 25 Sep 2025 05:01:35 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 58P25AbO013638;
+	Thu, 25 Sep 2025 05:01:34 GMT
+Received: from smtprelay02.wdc07v.mail.ibm.com ([172.16.1.69])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 49a8tjkvwr-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 25 Sep 2025 05:01:34 +0000
+Received: from smtpav03.wdc07v.mail.ibm.com (smtpav03.wdc07v.mail.ibm.com [10.39.53.230])
+	by smtprelay02.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 58P51XBv30737112
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 25 Sep 2025 05:01:33 GMT
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1CBD058054;
+	Thu, 25 Sep 2025 05:01:33 +0000 (GMT)
+Received: from smtpav03.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3A57058062;
+	Thu, 25 Sep 2025 05:01:27 +0000 (GMT)
+Received: from [9.124.219.167] (unknown [9.124.219.167])
+	by smtpav03.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 25 Sep 2025 05:01:26 +0000 (GMT)
+Message-ID: <b68642ac-ca2a-4775-8a1f-02cf7681545e@linux.ibm.com>
+Date: Thu, 25 Sep 2025 10:31:25 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -61,240 +90,283 @@ MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
 Subject: Re: [PATCH 1/2] drivers/base/node: merge register_one_node() and
  register_node() to a single function.
-To: Donet Tom <donettom@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- David Hildenbrand <david@redhat.com>, Oscar Salvador <osalvador@suse.de>
+To: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        David Hildenbrand <david@redhat.com>,
+        Oscar Salvador <osalvador@suse.de>
 Cc: Ritesh Harjani <ritesh.list@gmail.com>,
- Aboorva Devarajan <aboorvad@linux.ibm.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>,
- linuxppc-dev@lists.ozlabs.org, Peter Zijlstra <peterz@infradead.org>,
- Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Danilo Krummrich <dakr@kernel.org>, Mike Rapoport <rppt@kernel.org>,
- Dave Jiang <dave.jiang@intel.com>
+        Aboorva Devarajan <aboorvad@linux.ibm.com>, linux-mm@kvack.org,
+        linux-kernel@vger.kernel.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        linuxppc-dev@lists.ozlabs.org, Peter Zijlstra <peterz@infradead.org>,
+        Ingo Molnar <mingo@redhat.com>, x86@kernel.org,
+        Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
+        Danilo Krummrich <dakr@kernel.org>, Mike Rapoport <rppt@kernel.org>,
+        Dave Jiang <dave.jiang@intel.com>
 References: <cover.1758736423.git.donettom@linux.ibm.com>
  <40257b5228dec05e5b252f02438608eb8d681a2d.1758736423.git.donettom@linux.ibm.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <40257b5228dec05e5b252f02438608eb8d681a2d.1758736423.git.donettom@linux.ibm.com>
+ <d168030f-388c-4f58-987f-648bba5b32f9@csgroup.eu>
+Content-Language: en-US
+From: Donet Tom <donettom@linux.ibm.com>
+In-Reply-To: <d168030f-388c-4f58-987f-648bba5b32f9@csgroup.eu>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=L50dQ/T8 c=1 sm=1 tr=0 ts=68d4ccb0 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=IkcTkHD0fZMA:10 a=yJojWOMRYYMA:10 a=VnNF1IyMAAAA:8 a=SjcnzaKMAlRwm5DwMEMA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUwOTIwMDAxMCBTYWx0ZWRfX45B6zbHKyZRX
+ RmaE9tMomAboEh11SIIQtwrc5aIE5LDKAA58dbFTElPBqHQKJ7NBfOGtlARUrHTlT26gb9Pw02F
+ mlB2l9wylmVOfZJDugijAYYuRNhweOtKJ3K56tapJAiiS2IArxlJ9z0LS+7lkksQOrg5vRLjocF
+ OGHxulma3QNMQoZq87RBMKAlDVb4kkZbLrelLQzB3PfPJa+6QVnbMaHjqajt32ZZv5zNfZbwp1V
+ GoZbLSzxm7isGvzSK6umsibzLZg4p2OUaO9Wre4fd8kmn8J0X7HyEJPedmA3ptY3WuMhuBlgkUq
+ sl7HrAnOq/9PB5OxWnSLfeV6EoQo5DNxRXahaEPJM13wQSPbCgpbEdEngiQtjqGSJ1PPiFfUMP/
+ OxlrP/5s
+X-Proofpoint-ORIG-GUID: nDz6CfkzRf8RD5ZsudI_nJg10Yi4ws5Z
+X-Proofpoint-GUID: T2oKshh1afhTQ4fDnfTuV6XWrE2-IoOP
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-09-24_07,2025-09-24_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 adultscore=0 phishscore=0 impostorscore=0 spamscore=0
+ priorityscore=1501 suspectscore=0 clxscore=1015 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2507300000 definitions=main-2509200010
 
 
+On 9/25/25 12:45 AM, Christophe Leroy wrote:
+>
+>
+> Le 24/09/2025 à 20:40, Donet Tom a écrit :
+>> register_one_node() and register_node() are small functions.
+>> This patch merges them into a single function named register_node()
+>> to improve code readability.
+>
+> This is unclear.
+>
+> What it really does is it folds register_node() into its only caller 
+> which is register_one_node() and then it renames register_one_node() 
+> into register_node().
 
-Le 24/09/2025 à 20:40, Donet Tom a écrit :
-> register_one_node() and register_node() are small functions.
-> This patch merges them into a single function named register_node()
-> to improve code readability.
+Yes, you are right. I will add proper explanations in the next version.
 
-This is unclear.
+>
+>>
+>> No functional changes are introduced.
+>>
+>> Signed-off-by: Donet Tom <donettom@linux.ibm.com>
+>> ---
+>>   arch/powerpc/platforms/pseries/pci_dlpar.c |  2 +-
+>>   arch/x86/mm/numa.c                         |  4 +-
+>>   drivers/base/node.c                        | 52 +++++++++-------------
+>>   include/linux/node.h                       |  4 +-
+>>   mm/memory_hotplug.c                        |  4 +-
+>>   mm/mm_init.c                               |  2 +-
+>>   6 files changed, 28 insertions(+), 40 deletions(-)
+>>
+>> diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c 
+>> b/arch/powerpc/platforms/pseries/pci_dlpar.c
+>> index aeb8633a3d00..8c77ec7980de 100644
+>> --- a/arch/powerpc/platforms/pseries/pci_dlpar.c
+>> +++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
+>> @@ -29,7 +29,7 @@ struct pci_controller *init_phb_dynamic(struct 
+>> device_node *dn)
+>>       nid = of_node_to_nid(dn);
+>>       if (likely((nid) >= 0)) {
+>>           if (!node_online(nid)) {
+>> -            if (register_one_node(nid)) {
+>> +            if (register_node(nid)) {
+>>                   pr_err("PCI: Failed to register node %d\n", nid);
+>>               } else {
+>>                   update_numa_distance(dn);
+>> diff --git a/arch/x86/mm/numa.c b/arch/x86/mm/numa.c
+>> index c24890c40138..7a97327140df 100644
+>> --- a/arch/x86/mm/numa.c
+>> +++ b/arch/x86/mm/numa.c
+>> @@ -262,7 +262,7 @@ void __init init_gi_nodes(void)
+>>        * bringup_nonboot_cpus
+>>        *  cpu_up
+>>        *   __try_online_node
+>> -     *    register_one_node
+>> +     *    register_node
+>>        * because node_subsys is not initialized yet.
+>>        * TODO remove dependency on node_online
+>>        */
+>> @@ -303,7 +303,7 @@ void __init init_cpu_to_node(void)
+>>            * bringup_nonboot_cpus
+>>            *  cpu_up
+>>            *   __try_online_node
+>> -         *    register_one_node
+>> +         *    register_node
+>>            * because node_subsys is not initialized yet.
+>>            * TODO remove dependency on node_online
+>>            */
+>> diff --git a/drivers/base/node.c b/drivers/base/node.c
+>> index 6b6e55a98b79..eab620e29c78 100644
+>> --- a/drivers/base/node.c
+>> +++ b/drivers/base/node.c
+>> @@ -638,33 +638,6 @@ static void node_device_release(struct device *dev)
+>>       kfree(to_node(dev));
+>>   }
+>>   -/*
+>> - * register_node - Setup a sysfs device for a node.
+>> - * @num - Node number to use when creating the device.
+>> - *
+>> - * Initialize and register the node device.
+>> - */
+>> -static int register_node(struct node *node, int num)
+>> -{
+>> -    int error;
+>> -
+>> -    node->dev.id = num;
+>> -    node->dev.bus = &node_subsys;
+>> -    node->dev.release = node_device_release;
+>> -    node->dev.groups = node_dev_groups;
+>> -    error = device_register(&node->dev);
+>> -
+>> -    if (error) {
+>> -        put_device(&node->dev);
+>> -    } else {
+>> -        hugetlb_register_node(node);
+>> -        compaction_register_node(node);
+>> -        reclaim_register_node(node);
+>> -    }
+>> -
+>> -    return error;
+>> -}
+>> -
+>>   /**
+>>    * unregister_node - unregister a node device
+>>    * @node: node going away
+>> @@ -869,7 +842,13 @@ void 
+>> register_memory_blocks_under_node_hotplug(int nid, unsigned long 
+>> start_pfn,
+>>   }
+>>   #endif /* CONFIG_MEMORY_HOTPLUG */
+>>   -int register_one_node(int nid)
+>> +/*
+>> + * register_node - Setup a sysfs device for a node.
+>> + * @nid - Node number to use when creating the device.
+>> + *
+>> + * Initialize and register the node device.
+>> + */
+>> +int register_node(int nid)
+>>   {
+>>       int error;
+>>       int cpu;
+>> @@ -880,14 +859,23 @@ int register_one_node(int nid)
+>>           return -ENOMEM;
+>>         INIT_LIST_HEAD(&node->access_list);
+>> -    node_devices[nid] = node;
+>>   -    error = register_node(node_devices[nid], nid);
+>> +    node->dev.id = nid;
+>> +    node->dev.bus = &node_subsys;
+>> +    node->dev.release = node_device_release;
+>> +    node->dev.groups = node_dev_groups;
+>> +
+>> +    error = device_register(&node->dev);
+>>       if (error) {
+>> -        node_devices[nid] = NULL;
+>> +        put_device(&node->dev);
+>>           return error;
+>>       }
+>>   +    node_devices[nid] = node;
+>> +    hugetlb_register_node(node);
+>> +    compaction_register_node(node);
+>> +    reclaim_register_node(node);
+>> +
+>>       /* link cpu under this node */
+>>       for_each_present_cpu(cpu) {
+>>           if (cpu_to_node(cpu) == nid)
+>> @@ -980,7 +968,7 @@ void __init node_dev_init(void)
+>>        * to already created cpu devices.
+>>        */
+>>       for_each_online_node(i) {
+>> -        ret =  register_one_node(i);
+>> +        ret =  register_node(i);
+>>           if (ret)
+>>               panic("%s() failed to add node: %d\n", __func__, ret);
+>>       }
+>> diff --git a/include/linux/node.h b/include/linux/node.h
+>> index 2c7529335b21..4dcf876cd0b4 100644
+>> --- a/include/linux/node.h
+>> +++ b/include/linux/node.h
+>> @@ -168,7 +168,7 @@ static inline int 
+>> hotplug_node_notifier(notifier_fn_t fn, int pri)
+>>   #ifdef CONFIG_NUMA
+>>   extern void node_dev_init(void);
+>>   /* Core of the node registration - only memory hotplug should use 
+>> this */
+>> -extern int register_one_node(int nid);
+>> +extern int register_node(int nid);
+>
+> extern keyword is pointless on functions prototypes.
+>
+> checkpatch.pl usually complains about that.
+>
+> I know previous prototype was extern and all surrounding also are, but 
+> it is not because mistakes were done in the past that you have to 
+> continue doing the same mistakes.
+>
 
-What it really does is it folds register_node() into its only caller 
-which is register_one_node() and then it renames register_one_node() 
-into register_node().
+Thank you for the comment. I will address it in the next version.
 
-> 
-> No functional changes are introduced.
-> 
-> Signed-off-by: Donet Tom <donettom@linux.ibm.com>
-> ---
->   arch/powerpc/platforms/pseries/pci_dlpar.c |  2 +-
->   arch/x86/mm/numa.c                         |  4 +-
->   drivers/base/node.c                        | 52 +++++++++-------------
->   include/linux/node.h                       |  4 +-
->   mm/memory_hotplug.c                        |  4 +-
->   mm/mm_init.c                               |  2 +-
->   6 files changed, 28 insertions(+), 40 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/pseries/pci_dlpar.c b/arch/powerpc/platforms/pseries/pci_dlpar.c
-> index aeb8633a3d00..8c77ec7980de 100644
-> --- a/arch/powerpc/platforms/pseries/pci_dlpar.c
-> +++ b/arch/powerpc/platforms/pseries/pci_dlpar.c
-> @@ -29,7 +29,7 @@ struct pci_controller *init_phb_dynamic(struct device_node *dn)
->   	nid = of_node_to_nid(dn);
->   	if (likely((nid) >= 0)) {
->   		if (!node_online(nid)) {
-> -			if (register_one_node(nid)) {
-> +			if (register_node(nid)) {
->   				pr_err("PCI: Failed to register node %d\n", nid);
->   			} else {
->   				update_numa_distance(dn);
-> diff --git a/arch/x86/mm/numa.c b/arch/x86/mm/numa.c
-> index c24890c40138..7a97327140df 100644
-> --- a/arch/x86/mm/numa.c
-> +++ b/arch/x86/mm/numa.c
-> @@ -262,7 +262,7 @@ void __init init_gi_nodes(void)
->   	 * bringup_nonboot_cpus
->   	 *  cpu_up
->   	 *   __try_online_node
-> -	 *    register_one_node
-> +	 *    register_node
->   	 * because node_subsys is not initialized yet.
->   	 * TODO remove dependency on node_online
->   	 */
-> @@ -303,7 +303,7 @@ void __init init_cpu_to_node(void)
->   		 * bringup_nonboot_cpus
->   		 *  cpu_up
->   		 *   __try_online_node
-> -		 *    register_one_node
-> +		 *    register_node
->   		 * because node_subsys is not initialized yet.
->   		 * TODO remove dependency on node_online
->   		 */
-> diff --git a/drivers/base/node.c b/drivers/base/node.c
-> index 6b6e55a98b79..eab620e29c78 100644
-> --- a/drivers/base/node.c
-> +++ b/drivers/base/node.c
-> @@ -638,33 +638,6 @@ static void node_device_release(struct device *dev)
->   	kfree(to_node(dev));
->   }
->   
-> -/*
-> - * register_node - Setup a sysfs device for a node.
-> - * @num - Node number to use when creating the device.
-> - *
-> - * Initialize and register the node device.
-> - */
-> -static int register_node(struct node *node, int num)
-> -{
-> -	int error;
-> -
-> -	node->dev.id = num;
-> -	node->dev.bus = &node_subsys;
-> -	node->dev.release = node_device_release;
-> -	node->dev.groups = node_dev_groups;
-> -	error = device_register(&node->dev);
-> -
-> -	if (error) {
-> -		put_device(&node->dev);
-> -	} else {
-> -		hugetlb_register_node(node);
-> -		compaction_register_node(node);
-> -		reclaim_register_node(node);
-> -	}
-> -
-> -	return error;
-> -}
-> -
->   /**
->    * unregister_node - unregister a node device
->    * @node: node going away
-> @@ -869,7 +842,13 @@ void register_memory_blocks_under_node_hotplug(int nid, unsigned long start_pfn,
->   }
->   #endif /* CONFIG_MEMORY_HOTPLUG */
->   
-> -int register_one_node(int nid)
-> +/*
-> + * register_node - Setup a sysfs device for a node.
-> + * @nid - Node number to use when creating the device.
-> + *
-> + * Initialize and register the node device.
-> + */
-> +int register_node(int nid)
->   {
->   	int error;
->   	int cpu;
-> @@ -880,14 +859,23 @@ int register_one_node(int nid)
->   		return -ENOMEM;
->   
->   	INIT_LIST_HEAD(&node->access_list);
-> -	node_devices[nid] = node;
->   
-> -	error = register_node(node_devices[nid], nid);
-> +	node->dev.id = nid;
-> +	node->dev.bus = &node_subsys;
-> +	node->dev.release = node_device_release;
-> +	node->dev.groups = node_dev_groups;
-> +
-> +	error = device_register(&node->dev);
->   	if (error) {
-> -		node_devices[nid] = NULL;
-> +		put_device(&node->dev);
->   		return error;
->   	}
->   
-> +	node_devices[nid] = node;
-> +	hugetlb_register_node(node);
-> +	compaction_register_node(node);
-> +	reclaim_register_node(node);
-> +
->   	/* link cpu under this node */
->   	for_each_present_cpu(cpu) {
->   		if (cpu_to_node(cpu) == nid)
-> @@ -980,7 +968,7 @@ void __init node_dev_init(void)
->   	 * to already created cpu devices.
->   	 */
->   	for_each_online_node(i) {
-> -		ret =  register_one_node(i);
-> +		ret =  register_node(i);
->   		if (ret)
->   			panic("%s() failed to add node: %d\n", __func__, ret);
->   	}
-> diff --git a/include/linux/node.h b/include/linux/node.h
-> index 2c7529335b21..4dcf876cd0b4 100644
-> --- a/include/linux/node.h
-> +++ b/include/linux/node.h
-> @@ -168,7 +168,7 @@ static inline int hotplug_node_notifier(notifier_fn_t fn, int pri)
->   #ifdef CONFIG_NUMA
->   extern void node_dev_init(void);
->   /* Core of the node registration - only memory hotplug should use this */
-> -extern int register_one_node(int nid);
-> +extern int register_node(int nid);
 
-extern keyword is pointless on functions prototypes.
-
-checkpatch.pl usually complains about that.
-
-I know previous prototype was extern and all surrounding also are, but 
-it is not because mistakes were done in the past that you have to 
-continue doing the same mistakes.
-
->   extern void unregister_one_node(int nid);
->   extern int register_cpu_under_node(unsigned int cpu, unsigned int nid);
->   extern int unregister_cpu_under_node(unsigned int cpu, unsigned int nid);
-> @@ -181,7 +181,7 @@ extern int register_memory_node_under_compute_node(unsigned int mem_nid,
->   static inline void node_dev_init(void)
->   {
->   }
-> -static inline int register_one_node(int nid)
-> +static inline int register_node(int nid)
->   {
->   	return 0;
->   }
-> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
-> index 0be83039c3b5..6c050d867031 100644
-> --- a/mm/memory_hotplug.c
-> +++ b/mm/memory_hotplug.c
-> @@ -1311,7 +1311,7 @@ static int __try_online_node(int nid, bool set_node_online)
->   
->   	if (set_node_online) {
->   		node_set_online(nid);
-> -		ret = register_one_node(nid);
-> +		ret = register_node(nid);
->   		BUG_ON(ret);
->   	}
->   out:
-> @@ -1542,7 +1542,7 @@ int add_memory_resource(int nid, struct resource *res, mhp_t mhp_flags)
->   		goto error_memblock_remove;
->   	if (ret) {
->   		node_set_online(nid);
-> -		ret = register_one_node(nid);
-> +		ret = register_node(nid);
->   		if (WARN_ON(ret)) {
->   			node_set_offline(nid);
->   			goto error_memblock_remove;
-> diff --git a/mm/mm_init.c b/mm/mm_init.c
-> index df614556741a..e1a19a3dadd7 100644
-> --- a/mm/mm_init.c
-> +++ b/mm/mm_init.c
-> @@ -1909,7 +1909,7 @@ void __init free_area_init(unsigned long *max_zone_pfn)
->   		free_area_init_node(nid);
->   
->   		/*
-> -		 * No sysfs hierarchy will be created via register_one_node()
-> +		 * No sysfs hierarchy will be created via register_node()
->   		 *for memory-less node because here it's not marked as N_MEMORY
->   		 *and won't be set online later. The benefit is userspace
->   		 *program won't be confused by sysfs files/directories of
-
+>
+>
+>>   extern void unregister_one_node(int nid);
+>>   extern int register_cpu_under_node(unsigned int cpu, unsigned int 
+>> nid);
+>>   extern int unregister_cpu_under_node(unsigned int cpu, unsigned int 
+>> nid);
+>> @@ -181,7 +181,7 @@ extern int 
+>> register_memory_node_under_compute_node(unsigned int mem_nid,
+>>   static inline void node_dev_init(void)
+>>   {
+>>   }
+>> -static inline int register_one_node(int nid)
+>> +static inline int register_node(int nid)
+>>   {
+>>       return 0;
+>>   }
+>> diff --git a/mm/memory_hotplug.c b/mm/memory_hotplug.c
+>> index 0be83039c3b5..6c050d867031 100644
+>> --- a/mm/memory_hotplug.c
+>> +++ b/mm/memory_hotplug.c
+>> @@ -1311,7 +1311,7 @@ static int __try_online_node(int nid, bool 
+>> set_node_online)
+>>         if (set_node_online) {
+>>           node_set_online(nid);
+>> -        ret = register_one_node(nid);
+>> +        ret = register_node(nid);
+>>           BUG_ON(ret);
+>>       }
+>>   out:
+>> @@ -1542,7 +1542,7 @@ int add_memory_resource(int nid, struct 
+>> resource *res, mhp_t mhp_flags)
+>>           goto error_memblock_remove;
+>>       if (ret) {
+>>           node_set_online(nid);
+>> -        ret = register_one_node(nid);
+>> +        ret = register_node(nid);
+>>           if (WARN_ON(ret)) {
+>>               node_set_offline(nid);
+>>               goto error_memblock_remove;
+>> diff --git a/mm/mm_init.c b/mm/mm_init.c
+>> index df614556741a..e1a19a3dadd7 100644
+>> --- a/mm/mm_init.c
+>> +++ b/mm/mm_init.c
+>> @@ -1909,7 +1909,7 @@ void __init free_area_init(unsigned long 
+>> *max_zone_pfn)
+>>           free_area_init_node(nid);
+>>             /*
+>> -         * No sysfs hierarchy will be created via register_one_node()
+>> +         * No sysfs hierarchy will be created via register_node()
+>>            *for memory-less node because here it's not marked as 
+>> N_MEMORY
+>>            *and won't be set online later. The benefit is userspace
+>>            *program won't be confused by sysfs files/directories of
+>
+>
 
