@@ -1,63 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-12608-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12609-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F00D6CAC5BB
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Sep 2025 15:21:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7964ECAC5BB
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Sep 2025 15:28:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cZSj14nvtz3d3M;
-	Mon, 29 Sep 2025 01:21:41 +1000 (AEST)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a02:2350:5:403::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759072901;
-	cv=none; b=gZ730z5dicxINROY04HMy8hc/dA+XrZ2aPCus/XHu/dcj7fjp0/eGFZGehLj7LDKOfKJZsYGmfDyRzvtDirWCP9agjQLDW9/5q44nmmY2W0OgcZNqsP9gjCAWirDgUM/QUVYQhZCn1NirHcBY5xjwf+blIWe6Sm99zxIxYEToD1HLHpflNRbzfgFvxJQmRJTrdX9OEmMtQDnSVPoi2yVPtkjT3NCdKE7gfKSHjZLkBq6/YwNGLJ0EGvxm1V34gywI3rFn3jiNSMMJBWMNLfJjxT9Rmma/jy+tUMGLbLDMgtBF4qO69HEcoQoU+Zcqy0enn1aU2xvpxCKkf4UD8IWmA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cZSs317Qtz3d8Y;
+	Mon, 29 Sep 2025 01:28:39 +1000 (AEST)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759073319;
+	cv=none; b=GAOFELLM0jeG02IzFs5/hzYyfqZrJhALX9lI5ipS17KG4vj8OQG4c4mqIItPeT+wGi1VFu/x5HKyMu/yMJohjYamTxcRBiSNdqFkaKaykoGUa0HvRQOPj52ZWzn7qWzKLP/TOvbzKuWPAQo7BaBKf9+zro4085neWslG1Xrj0XQkPllfdZ6XmwufeKQCr1FdV9FANJMMnDenvhTjugtdWuWuSHNs9RJW1OQRKaua0GwzERee36pYcx004FDKcT2VPVFdGjRHTkG2c4ZAxkpPDm3fxqF5qOZCO+1ujBzlaWUvzndfILuYPN/Fp2QpmKz/JtpPh2czOnO3rA4WnYT7+w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1759072901; c=relaxed/relaxed;
-	bh=Ghyryt2xK5vvnvf4Q2js9Uw55oy6LtaOfQDvQKr1uy0=;
+	t=1759073319; c=relaxed/relaxed;
+	bh=rxIWKtjcZOXpf2PWvpzrZKBVTXyvJFkhupky+t0gZZ0=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=DRnXnsBxF6Tz4YTjo8nJDQn9Z8SgV1VG81oMd1lLvF8GHn2/VsTtgQzWyvWy71xlb+mnrgNy1SBHFyl5//7HwzTJ31kvwpk7ab6KXOsE0nfAiz0YHJIEZtC8MKJqzVv/r6ANRCChxFHPO42F23m/RBR6Z9bXWeRrXQlbgWuNVxX7gw8E5y759v2iS7LRLWa767hM0FklJb4Wn0oVEs80AHlJEyQwPTjL6jjaK2O9Pg+k4HDze8rZc1kCxv2vRmxnOg9BIj5mwXoDqmwNunEICg5GPflYn+BjEvgHVRkwCQU+6E9OZ7ncAzA5p8PXHE+bPf9qOVyviWWIXX+JZRNYjw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ravnborg.org; dkim=pass (2048-bit key; secure) header.d=ravnborg.org header.i=@ravnborg.org header.a=rsa-sha256 header.s=rsa1 header.b=CtT4iU2T; dkim=pass header.d=ravnborg.org header.i=@ravnborg.org header.a=ed25519-sha256 header.s=ed1 header.b=J0+KaShs; dkim-atps=neutral; spf=pass (client-ip=2a02:2350:5:403::1; helo=mailrelay-egress4.pub.mailoutpod2-cph3.one.com; envelope-from=sam@ravnborg.org; receiver=lists.ozlabs.org) smtp.helo=mailrelay-egress4.pub.mailoutpod2-cph3.one.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ravnborg.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=nrhY/vLwhIPaL0x4K4Xo8LqmHa8X5wLHcFKF96SWAuh4GKjJPOJatgaeP0Z/GkpV4i9s8iMwAKgd86P290mY92wVN55tR8p1fMmp2AyyqrOEBV8FKyDuLK6Qmg/PDwbpNrnSjij9Y1//quBKgKwul48DlIxtKqANSOD/Ft63XFl4oEJpN/VoIhJ2it8xVFzvcK9UW2C/5kjVbB4Spn97UXXGjHnlK3B4s8nK6AuC2yCythFbMK9JeE324O9RryU6RF4es5iNq5ahY04yKXevm/FADRCDmP848JhQtzWqlTvW0aY81jrxmJvETZi3/w0rpvFFivoV5iqhj/ZrJA4dvA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f1YhjVPK; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=ravnborg.org header.i=@ravnborg.org header.a=rsa-sha256 header.s=rsa1 header.b=CtT4iU2T;
-	dkim=pass header.d=ravnborg.org header.i=@ravnborg.org header.a=ed25519-sha256 header.s=ed1 header.b=J0+KaShs;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f1YhjVPK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mailrelay-egress4.pub.mailoutpod2-cph3.one.com (client-ip=2a02:2350:5:403::1; helo=mailrelay-egress4.pub.mailoutpod2-cph3.one.com; envelope-from=sam@ravnborg.org; receiver=lists.ozlabs.org)
-X-Greylist: delayed 179 seconds by postgrey-1.37 at boromir; Mon, 29 Sep 2025 01:21:35 AEST
-Received: from mailrelay-egress4.pub.mailoutpod2-cph3.one.com (mailrelay-egress4.pub.mailoutpod2-cph3.one.com [IPv6:2a02:2350:5:403::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cZShv2X0Nz3d36
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2025 01:21:35 +1000 (AEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1759072832; x=1759677632;
-	d=ravnborg.org; s=rsa1;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=Ghyryt2xK5vvnvf4Q2js9Uw55oy6LtaOfQDvQKr1uy0=;
-	b=CtT4iU2T9YA3xTrD4cIA+BE+C15rUkNnZplc587YI58g+wt9Z/k8mKxjom62woRw7fEUsvfTw8Ego
-	 OORUvh9fiJQumZdtSymONvY5MMtJ3KJXP3zsnj3KxJxk4Oiw+38jzutzIsRmg9a15NqXsODmCWj0BM
-	 /EaEWRy/uNU7FXsutNnhv+ixhqzFL2HZhBJwBMscK6dVEUiiXxvphkGrAHhj1qC784KABlOh0D02mA
-	 4cLaxB8a5GgAT75FDK3kfCkRHDAAi479jPbM5IFPQLlR8lLKW/rv/Z+yeGIJUaeXNjpvPYpXFP9UyV
-	 lTS7L9y3fNmnKV3eKZ72pOl8CYKOBDg==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; t=1759072832; x=1759677632;
-	d=ravnborg.org; s=ed1;
-	h=in-reply-to:content-type:mime-version:references:message-id:subject:cc:to:
-	 from:date:from;
-	bh=Ghyryt2xK5vvnvf4Q2js9Uw55oy6LtaOfQDvQKr1uy0=;
-	b=J0+KaShsfwnmVbs3PB0EalU1KScQKZ0oCMj0q/S47VSr8rYDdT1FCDrtDwmZlUzToU5sipbu8KD09
-	 RgZbdwtBQ==
-X-HalOne-ID: ab2e7cf9-9c7e-11f0-845a-494313b7f784
-Received: from ravnborg.org (2-105-16-150-cable.dk.customer.tdc.net [2.105.16.150])
-	by mailrelay6.pub.mailoutpod2-cph3.one.com (Halon) with ESMTPSA
-	id ab2e7cf9-9c7e-11f0-845a-494313b7f784;
-	Sun, 28 Sep 2025 15:20:31 +0000 (UTC)
-Date: Sun, 28 Sep 2025 17:20:30 +0200
-From: Sam Ravnborg <sam@ravnborg.org>
-To: Leon Romanovsky <leon@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cZSs21p0zz3d8S
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Sep 2025 01:28:38 +1000 (AEST)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 756A46218E;
+	Sun, 28 Sep 2025 15:28:35 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 1D567C4CEF0;
+	Sun, 28 Sep 2025 15:28:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1759073315;
+	bh=j3dJ7dm9Jex7hj7zDSOs/rnehFATrVSGsSj9oi0KREM=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=f1YhjVPKUf7C/0/LxXAZBncp5RteetEhwJWXFm/vEFPUulFmvL8IxH077S1rMLJtr
+	 d2ZgZgVpCx6rd1totAk5q+h7xqPmOOTtzW5w30YaKisVYvwJq5gRqIDGRHY5T/f4gQ
+	 O0PYgjbB/cH7oJ1jFPBNLr3rGkOI2qMk/87YL11RjncJuK6Qjt9VPe0h+TqS18yZyA
+	 BZqpYFUKRf23DvC6/+sd1BLnzDDD/hXAh8aUEZqIXh4WqdIZHr4zt3c9wvIaaQFzw4
+	 UZD9hcw+AzQFsbXJe27so0nVBzGtUu2qhqiGBcZy6B5qFDuhtL/1hVaC8gTpWufr4a
+	 sdkGg8+AkSuEw==
+Date: Sun, 28 Sep 2025 18:28:30 +0300
+From: Leon Romanovsky <leon@kernel.org>
+To: Sam Ravnborg <sam@ravnborg.org>
 Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
-	Leon Romanovsky <leonro@nvidia.com>,
 	Jason Gunthorpe <jgg@nvidia.com>,
 	Andreas Larsson <andreas@gaisler.com>,
 	Borislav Petkov <bp@alien8.de>,
@@ -82,7 +72,7 @@ Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
 	virtualization@lists.linux.dev, x86@kernel.org,
 	xen-devel@lists.xenproject.org, Magnus Lindholm <linmag7@gmail.com>
 Subject: Re: [PATCH v1 9/9] dma-mapping: remove unused map_page callback
-Message-ID: <20250928152030.GA136019@ravnborg.org>
+Message-ID: <20250928152830.GA324804@unreal>
 References: <cover.1759071169.git.leon@kernel.org>
  <27727b8ef9b3ad55a3a28f9622a62561c9988335.1759071169.git.leon@kernel.org>
  <20250928151725.GA135708@ravnborg.org>
@@ -103,8 +93,6 @@ Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
 In-Reply-To: <20250928151725.GA135708@ravnborg.org>
 
-Hi Leon.
-
 On Sun, Sep 28, 2025 at 05:17:25PM +0200, Sam Ravnborg wrote:
 > Hi Leon.
 > 
@@ -123,11 +111,58 @@ On Sun, Sep 28, 2025 at 05:17:25PM +0200, Sam Ravnborg wrote:
 > >  3 files changed, 1 insertion(+), 26 deletions(-)
 > 
 > It looks like you missed a few sparc32 bits:
+> mm/iommu.c:
+> static const struct dma_map_ops sbus_iommu_dma_gflush_ops = {
+> #ifdef CONFIG_SBUS
+>         .alloc                  = sbus_iommu_alloc,
+>         .free                   = sbus_iommu_free,
+> #endif
+>         .map_page               = sbus_iommu_map_page_gflush,
+>         .unmap_page             = sbus_iommu_unmap_page,
+>         .map_sg                 = sbus_iommu_map_sg_gflush,
+> 
+> mm/io-unit.c:
+> static const struct dma_map_ops iounit_dma_ops = {
+> #ifdef CONFIG_SBUS
+>         .alloc                  = iounit_alloc,
+>         .free                   = iounit_free,
+> #endif
+>         .map_page               = iounit_map_page,
+>         .unmap_page             = iounit_unmap_page,
+>         .map_sg                 = iounit_map_sg,
+> 
+> I did not compile test, but from a quick look they need to be updated.
 
-They were included, but the patch is named sparc64,
-which is why I missed it.
+There were updated, see patch #5.
+https://lore.kernel.org/all/bac909dab3c82fc6a7a4f5a31f22bac9a69f7f07.1759071169.git.leon@kernel.org/T/#u
 
-If you could rename the patch that would be nice.
+arch/sparc/mm/iommu.c:
+  426 static const struct dma_map_ops sbus_iommu_dma_gflush_ops = {
+  427 #ifdef CONFIG_SBUS
+  428         .alloc                  = sbus_iommu_alloc,
+  429         .free                   = sbus_iommu_free,
+  430 #endif
+  431         .map_phys               = sbus_iommu_map_phys_gflush,
+  432         .unmap_phys             = sbus_iommu_unmap_phys,
+  433         .map_sg                 = sbus_iommu_map_sg_gflush,
+  434         .unmap_sg               = sbus_iommu_unmap_sg,
+  435 };
 
-	Sam
+arch/sparc/mm/io-unit.c:
+  276 static const struct dma_map_ops iounit_dma_ops = {
+  277 #ifdef CONFIG_SBUS
+  278         .alloc                  = iounit_alloc,
+  279         .free                   = iounit_free,
+  280 #endif
+  281         .map_phys               = iounit_map_phys,
+  282         .unmap_phys             = iounit_unmap_phys,
+  283         .map_sg                 = iounit_map_sg,
+  284         .unmap_sg               = iounit_unmap_sg,
+  285 };
+
+Thanks
+
+> 
+> 	Sam
+> 
 
