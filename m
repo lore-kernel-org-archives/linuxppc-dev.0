@@ -1,64 +1,67 @@
-Return-Path: <linuxppc-dev+bounces-12712-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12713-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70F3BCAC5BB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Oct 2025 11:13:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0067CAC5BB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Oct 2025 11:25:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4chVjt4vtgz2xQ4;
-	Wed,  8 Oct 2025 22:13:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759922002;
-	cv=none; b=bYsxUylAf9Eo7LiB4ayZp5GiHVZAx+5/tDpnYTRrwK9G5FwIk1d3Hw87WgEYM0eFVKCn6S6qzgeDNTHs6dEyVdC125WrwjigqLRHvhHcbsV+ouFsK7OYGmEvqfaD8ihzkiB+scT+I4KT0uEsMlzLJjiVpENJ3V+LIVbJSk4LV3og1aIf5LcOiEDqPu7WtYJlaOZYNFvz7cPQ3f79nN8t8MVA5PrBcpgRCKaX9Wwyko7NPo5UMhjTv8s9onk+JQqUItjDeJjB82WQka9Z14BdM6XRJr1wKoIJ8PIzuukMBFBHhTYVCNXb+pxheji/n1oOywWesIRan03Jfutsc02Jew==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4chW065GWgz3bvd;
+	Wed,  8 Oct 2025 22:25:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759922742;
+	cv=none; b=K7n6Jv+oGQC4TEvxe24n3+UiF37fsN4g5ZpnbFZcxJrfdPR9xWPYkdQhB/lYTd+RxqmVAR4zlRn4W5vWf57x6yJDyIPCtrTF4ympgh4bur+vtpv4tfIieP91WeDRpSfwk6ImbqLlgWuYWiHamC2rUM3zVqOo9O38/gngiJezOIIh48oC9fqFtI8ENQggyHrqls0kkRU0kJz/GMLiQJegNTGJyFcTwZo2VRl81d3Qa2cz2WMhDlG9lKUpjQG2czeNYBRSwTSOEokup4g1bFKwzs2bqehrxSq1JHi5+1rIBucMAVIckNrA+P0TtlXoINiP2jDIlMBJBalqyRyQwRkhhA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1759922002; c=relaxed/relaxed;
-	bh=tdDIVtOYGpm2++YgbsDVSjiZxnJfoMZtqbtSNzOB9kQ=;
+	t=1759922742; c=relaxed/relaxed;
+	bh=y7J7+xvmp4L2bVtL5j3Le5VszvydlDD4VO8qHR1eVwY=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=dASMvbGPZMTxpniC6DsYXD84mPFC9S/5OLBjUeSONl+cM696/PXO+fDUsR7NL0zXEjgau7vWfLWLljWZmguU5ElHCz0rXCuj3TQHW6JmWdbyWdNIcwFa73UE6204Szg3lVtWAZJmHa61wyk0DLqqj3Rx5p1tsV65D38RqLML2I49e+T4+aYg+Aym9W81NFbY5qKbIhm0n1kTXzetdDQuLMSuFbXTSKKDNjXNP4v5VJdCqYQgmporydaayoVE5lXi68qNlwZgnHf4ERbPzd883qYOCBVbbesV//JdgW92NkqBFr1chXXlR37YTi36T9W/mICO95TAlbkS45VZqjCHnA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=NswvwVkB; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=ANHGZeJP16sdjsi5fu5oqq8yt3mwYRvP8XbHgOMQfpZTxz28bwLZAcI84GWyCfAscqW47o6SALW8bLFcphEO1du7RrnkI1W/CJTY9y7yHKAX7OUz/PNyNsgiuLFd37EtX/TZwb9wA8i0XXpIlBjMTidGZvoF+HjDbsvb9KFJO+VWgDT8hlg+365fxMxq3ZoQAuvJkKiRd512AYpzjRlxE3Ci5oAJKjJKP6dQyFnUOZjLuAH8WL0yy/fn76rpRXeQKcvvpIFYza9qzz069wCSsLxnChQXML0itk2cxTqkH4Subwd14LPfrbhkap7AKDTwyZ0bESfIiZUCIrEJQ63vSA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IErWHqCA; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=NswvwVkB;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IErWHqCA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4chVjq5V4pz2xPw
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2025 22:13:19 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=tdDIVtOYGpm2++YgbsDVSjiZxnJfoMZtqbtSNzOB9kQ=; b=NswvwVkBptMaMcaLLNDJraO0Bh
-	mQhVDp1UW00x1dp/H+LqT/PuWhQSihQwnbOF9akqqXSn6FS8Hy4zqB3XFeoZHhyesdQNjrKtv0ozS
-	RCHU7guF9oZHXzSSkFfu1A1CDhtj4P/bEOGEpqjSF1/h6WlX38m/NfDhzPHh0qiqMOo4w9h2No42x
-	i2kwadyqVdN7irBtCUVptwSyGiv9zhhwhi7cbhwbsiGaCrq7WtgM2QSYiZZbRcYq9fVvx+6vkLcD8
-	Cufxj3v6VFXQrFaJrGaj499JktPsXWWkN/esrhZVMgmmRHRo7XhE8ovR+F13gYdiB3g0QG+LEtwkk
-	PIEzWccQ==;
-Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v6S6c-00000003eAk-3UjU;
-	Wed, 08 Oct 2025 11:13:16 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id EC92E300220; Wed, 08 Oct 2025 13:13:14 +0200 (CEST)
-Date: Wed, 8 Oct 2025 13:13:14 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
-	LKML <linux-kernel@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>, jstultz@google.com,
-	stultz@google.com
-Subject: Re: [bisected][mainline]Kernel warnings at
- kernel/sched/cpudeadline.c:219
-Message-ID: <20251008111314.GI3289052@noisy.programming.kicks-ass.net>
-References: <8218e149-7718-4432-9312-f97297c352b9@linux.ibm.com>
- <20251008095039.GG3245006@noisy.programming.kicks-ass.net>
- <5a248390-ddaa-4127-a58a-794d0d70461a@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4chW056tlJz30D3
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2025 22:25:41 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id E294B61F6D;
+	Wed,  8 Oct 2025 11:25:38 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9AE7C4CEF4;
+	Wed,  8 Oct 2025 11:25:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1759922738;
+	bh=88c3sFsoUsAiJupZku1KMo3Q2xahgwOIy0yqsCJN198=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=IErWHqCA6ccIxcCPwE8YbXw6DkiJYJbafos4nPLuNA+TS6FWePh2R4YkjF+ybV27D
+	 sTxAA4IxJQRbATvGd7wBycDlqgFnYXYxH3Y+bB8M7E7htDh0O1dkt1wl633ky7EQBh
+	 UBfuHWrgNkdFImsYk7pqZLnGRZsem9S6LKaFaoRlp4X+fh3QvrSevIxunNOdgQGDd6
+	 i/8BcSl6uhGVA8LtueRygAPAla+4klwvi1ionQ/qvM/HG9nl+FKfjyb2kiQMiZpY3w
+	 i74lJDrKXDrCyt5jl6h1bSCJLjF5kxL1CKBZJFOjf74oH0gDoDdj+V4z23+YTA7M9K
+	 iz+O2Hiyh3gAA==
+Date: Wed, 8 Oct 2025 13:43:25 +0530
+From: Naveen N Rao <naveen@kernel.org>
+To: Hari Bathini <hbathini@linux.ibm.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, bpf@vger.kernel.org, 
+	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
+	Andrii Nakryiko <andrii@kernel.org>, Song Liu <songliubraving@fb.com>, Jiri Olsa <jolsa@kernel.org>, 
+	Viktor Malik <vmalik@redhat.com>, live-patching@vger.kernel.org, 
+	Josh Poimboeuf <jpoimboe@kernel.org>, Joe Lawrence <joe.lawrence@redhat.com>, 
+	Jiri Kosina <jikos@kernel.org>, linux-trace-kernel@vger.kernel.org, 
+	Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, 
+	Mark Rutland <mark.rutland@arm.com>, Shung-Hsi Yu <shung-hsi.yu@suse.com>
+Subject: Re: [PATCH] powerpc64/bpf: support direct_call on livepatch function
+Message-ID: <unegysw3bihg32od7aham3npsdpm5govboo3uglorwsrjqfqfk@pbyzwwztmqtc>
+References: <20251002192755.86441-1-hbathini@linux.ibm.com>
+ <amwerofvasp7ssmq3zlrjakqj5aygyrgplcqzweno4ef42tiav@uex2ildqjvx2>
+ <17f49a63-eccb-4075-91dd-b1f37aa762c7@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,114 +77,30 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <5a248390-ddaa-4127-a58a-794d0d70461a@linux.ibm.com>
+In-Reply-To: <17f49a63-eccb-4075-91dd-b1f37aa762c7@linux.ibm.com>
 
-On Wed, Oct 08, 2025 at 03:47:16PM +0530, Shrikanth Hegde wrote:
+On Mon, Oct 06, 2025 at 06:50:20PM +0530, Hari Bathini wrote:
 > 
 > 
-> On 10/8/25 3:20 PM, Peter Zijlstra wrote:
-> > On Wed, Oct 08, 2025 at 07:41:10AM +0530, Venkat Rao Bagalkote wrote:
-> > > Greetings!!!
-> > > 
-> > > 
-> > > IBM CI has reported a kernel warnings while running CPU hot plug operation
-> > > on IBM Power9 system.
-> > > 
-> > > 
-> > > Command to reproduce the issue:
-> > > 
-> > > drmgr -c cpu -r -q 1
-> > > 
-> > > 
-> > > Git Bisect is pointing to below commit as the first bad commit.
+> On 06/10/25 1:22 pm, Naveen N Rao wrote:
+> > On Fri, Oct 03, 2025 at 12:57:54AM +0530, Hari Bathini wrote:
+> > > Today, livepatch takes precedence over direct_call. Instead, save the
+> > > state and make direct_call before handling livepatch.
 > > 
-> > Does something like this help?
-> > 
-> > (also, for future reference, please don't line wrap logs, it makes them
-> > very hard to read)
-> > 
-> > diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-> > index 198d2dd45f59..65f37bfcd661 100644
-> > --- a/kernel/sched/core.c
-> > +++ b/kernel/sched/core.c
-> > @@ -8328,6 +8328,7 @@ static inline void sched_set_rq_offline(struct rq *rq, int cpu)
-> >   		BUG_ON(!cpumask_test_cpu(cpu, rq->rd->span));
-> >   		set_rq_offline(rq);
-> >   	}
-> > +	dl_server_stop(&rq->fair_server);
-> >   	rq_unlock_irqrestore(rq, &rf);
-> >   }
+> > If we call into the BPF trampoline first and if we have
+> > BPF_TRAMP_F_CALL_ORIG set, does this result in the BPF trampoline
+> > calling the new copy of the live-patched function or the old one?
 > 
-> 
-> Hi Peter. Thanks for looking into it.
-> 
-> I was able to repro this issue on my system. This above diff didn't help. I still see the warning.
-> 
-> I have to understand this dl server stuff still.
-> So not sure if my understanding is completely correct.
-> 
-> Looks like the hrtimer is firing after the cpu was removed. The warn on hit only with
-> drmgr. Regular hotplug with chcpu doesn;t hit. That's because drmgr changes the cpu_present mask.
-> and warning is hit with it.
+> Naveen, calls the new copy of the live-patched function..
 
-I do not know what drmgr is. I am not familiar with PowerPC tools.
-AFAICT x86 never modifies cpu_present_mask after boot.
+Hmm... I'm probably missing something.
 
-> maybe during drmgr, the dl server gets started again? Maybe that's why above patch it didn't work.
-> Will see and understand this bit more.
-
-dl_server is per cpu and is started on enqueue of a fair task when:
-
-  - the runqueue was empty; and
-  - the dl_server wasn't already active
-
-Once the dl_server is active it has this timer (you already found this),
-this timer is set for the 0-laxity moment (the last possible moment in
-time where it can still run its budget and not be late), during this
-time any fair runtime is accounted against it budget (subtracted from).
-
-Once the timer fires and it still has budget left; it will enqueue the
-deadline entity. However the more common case is that its budget will be
-depleted, in which case the timer is reset to its period end for
-replenish (where it gets new runtime budget), after which its back to
-the 0-laxity.
-
-If the deadline entity gets scheduled, it will try and pick a fair task
-and run that. In the case where there is no fair task, it will
-deactivate itself.
-
-The patch I sent earlier would force stop the deadline timer on CPU
-offline.
+With ftrace OOL stubs, what I recall is that BPF trampoline derives the 
+original function address from the OOL stub (which would be associated 
+with the original function, not the livepatch one). This should mean 
+that the trampoline continues to invoke the original function.
 
 
-> Also, i tried this below diff which fixes it. Just ignore the hrtimer if the cpu is offline.
-> Does this makes sense?
-> ---
-> 
-> diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
-> index 615411a0a881..a342cf5e4624 100644
-> --- a/kernel/sched/deadline.c
-> +++ b/kernel/sched/deadline.c
-> @@ -1160,6 +1160,9 @@ static enum hrtimer_restart dl_server_timer(struct hrtimer *timer, struct sched_
->  	scoped_guard (rq_lock, rq) {
->  		struct rq_flags *rf = &scope.rf;
-> +		if (!cpu_online(rq->cpu))
-> +			return HRTIMER_NORESTART;
-> +
->  		if (!dl_se->dl_throttled || !dl_se->dl_runtime)
->  			return HRTIMER_NORESTART;
-
-This could leave the dl_server in inconsistent state. It would have to
-call dl_server_stop() or something along those lines.
-
-Also, this really should not happen; per my previous patch we should be
-stopping the timer when we go offline.
-
-Since you can readily reproduce this; perhaps you could stick something
-like this in dl_server_start():
-
-	WARN_ON_ONCE(!cpu_online(rq->cpu))
-
-See if anybody is (re)starting the thing ?
+- Naveen
 
 
