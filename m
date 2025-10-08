@@ -1,62 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-12709-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12710-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DD74ACCA470
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Oct 2025 09:50:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 792F2CCD185
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Oct 2025 10:17:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4chStk0Hzrz303F;
-	Wed,  8 Oct 2025 20:50:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759917053;
-	cv=none; b=dxuWZ4YbGRGQiLB+ipuyG8g5ZGHEEsAoP+tJGKTzNzZoM+aN5wctYxWeUSzZ1O6OUsahIc4hd+wZCjU1AqEWIX30nvB54I0qOO5pmPhJTjkVodXgsDUb3/TLAnnFd+FqSLrs5I/SKJJxEw2hVINtF605ePYLe9XIJsMUlfqTYpPSB96rxSnJpwaSeRpZAfMdxOONIuQhiWQ5m3NvHFHajwJh6R0K2y8f0JT5xVDvMvbdes2MvGy2F3DxG1T8TfKO0avOjnVRxu1vXh8CULvOc4FbjGX0zhPwdEim9gL2X4Rb9wIhLieH4dkm6y1+u5eyBb+vzcXj+0oSyedpGpNFMA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4chTTT5Gtpz3cZM;
+	Wed,  8 Oct 2025 21:17:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759918653;
+	cv=none; b=TMzHdc3tz6zEzRDDFrEsvapupg5CBpgmMq2TV24ld9t+MIGXPxbLTIpJHDHuHOoA2BgwBDhOuzdNjLHoyUG0Y50BGy2RtCYKfI7KOi9l26/rn3A6phYF1XlvWnkhYerWks+F7BetfQ4pYYbSSnoZxVAKN+ZSsjWsV/kqm66cBZLMW/niYPhSl36lby7jVuUAuABYkTZZki8tNno5eiszvo/oDB9RNvgCHRkUUTgagwwG2UJMpGiNvX/pN5G/Vcffd+k/hQnWUjtmR9xHWbtA9S7v1T7fM2WblrQ3qgvEk9Grg495d/hLQRV/OHdcIhYUMTGldjgzqfQLB/qVjeNpSg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1759917053; c=relaxed/relaxed;
-	bh=r11xdNoRZFdbSIutkJtNqLxC5mByf5evL0hzeiweqVI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZHh93m8moOtkKwU2GX6PB2g9I86xZTmd/j1oq2OQ7BLJh/bspHI35qjUAH8adUqtPqnmhzWkenHylTGVCZ83oUgF5PAC6qCi6HzeHeA5lUBwKFIjtXJJU0w/4bbzLefPBXRY7XIjUyde2IDzykfmihWbF/m8pvmlof7a/DXXxFxnwBIIhfbKBj0+B/nq2hP81Khi1J5JuDCSXvbWFyxk2usXowPKmfbz6PBtcWYFZ1I5pfUO5PRaNRmt9qea9RZK8o22t6UrNf5PKOxkGpqZlPXPdQ4PQJAgfe/fbXmsK6s8HqRWrD85SFofFI2N/NmAj+9ozqOcWsMdbkW73b1c3g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=mK3doMt2; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
+	t=1759918653; c=relaxed/relaxed;
+	bh=9M11XR2j1oLdHVKEIuGyfsDcvUxWmkKGtmwLgxcGaro=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=FL4i/8C6PXwySgaRQifBY4oAZic7+tkcuE8yA+BE9NcoeY/1M3QsjmwBqhmlNRNRy22bQFOBtS+Fv5IqY/fXel1tojJmuM7u7BEaKTDsOuSpvsylP0XOUn+p76sh7r4Y60rU0F3+KZndtk5+n89k/4dfg9kzeHn2CGKFSdofKG4/yq5IiNk3jDWsgURZnUiFwhbto8dny6zaZL2mWreYC/flWkerJUSS0jrzsoUwa4rjmlapQtxeNySYtKYV3eGBLRj9F9oUm+fvwfeaDQhNTx8YV21Llb5WBIQP2wOvADFPppddqbL90sCvbw1veVSrTLll044rluNorI4xdlxxLA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=N8Lu5ijX; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=mK3doMt2;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=N8Lu5ijX;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
-Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4chStb5gRXz302l
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2025 20:50:47 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
-	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
-	Content-Transfer-Encoding:Content-ID:Content-Description;
-	bh=r11xdNoRZFdbSIutkJtNqLxC5mByf5evL0hzeiweqVI=; b=mK3doMt25J0J6oXNI8JXX+ZTsw
-	EjDr2Cmz4B2QCPIg5cM1NEg11KCvH1jeoENL8gk7Rw8PzMkxg1BgCCWMJ5Yd3vUZWljpg4OtJsBqL
-	b6MiinzAMIs9HHl9kE4FpgQzk4tO2fNvoCrz79HDSzmGbqku1DMbq2yyqqronyKqq/C9qGedAcn58
-	AhRtrKz8DJWqxR57fTDX5RfHah1WX/aqOV9G1P8LrG0vHbGrZev7Tx640+S1gHK5+mkEEY7RSYTRP
-	FWXvL9XXXRosFV61UMjYs16I0aYXH4v+hvMJXuDTYSu46cTKCFqfQVVqO94T4uUe+uwqG2bQvZYeP
-	KGcgg6CA==;
-Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
-	by casper.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1v6Qoh-00000002Slw-2sck;
-	Wed, 08 Oct 2025 09:50:41 +0000
-Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
-	id D9C5A300220; Wed, 08 Oct 2025 11:50:39 +0200 (CEST)
-Date: Wed, 8 Oct 2025 11:50:39 +0200
-From: Peter Zijlstra <peterz@infradead.org>
-To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
-Cc: LKML <linux-kernel@vger.kernel.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Shrikanth Hegde <sshegde@linux.ibm.com>, jstultz@google.com,
-	stultz@google.com
-Subject: Re: [bisected][mainline]Kernel warnings at
- kernel/sched/cpudeadline.c:219
-Message-ID: <20251008095039.GG3245006@noisy.programming.kicks-ass.net>
-References: <8218e149-7718-4432-9312-f97297c352b9@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4chTTS6Nc2z2xK5
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2025 21:17:32 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5989BCUq031517;
+	Wed, 8 Oct 2025 10:17:24 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=9M11XR
+	2j1oLdHVKEIuGyfsDcvUxWmkKGtmwLgxcGaro=; b=N8Lu5ijXXOa/N1juqeNIQT
+	ZaEBUXfc6YvHVTZSqVdXlQL06x257WoDlhmg/bpI6ST7mVCc3yK8Ej+/CAlzl0Jl
+	I7mu6NsL/tNap5Bq3RHdToYEQ/1xTQlUA3sRMEkQCd2tF76/JOgfECUSDGJhwB70
+	1e++Qbj9ixgwIwz73VIwwJBvbw8OR5XPPLn7OZGuk5K9iuH+KWxtufYbUwhPRFB6
+	erMXsBFdICbM/WchCN4URsEJ21pyVyHBjSsd+bWKHuxKLf5J4eFPVyNTQTbH9/E6
+	Qs/f5UEflGJA/zPWGIxAYckkmRDVhB30nM/bLjcUgN6PdVpq3pqjAhlqrLeY187g
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 49ju8aumwq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 08 Oct 2025 10:17:24 +0000 (GMT)
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5989jNKm031698;
+	Wed, 8 Oct 2025 10:17:24 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 49ju8aumwc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 08 Oct 2025 10:17:24 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5988ZwlQ019616;
+	Wed, 8 Oct 2025 10:17:23 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 49kdwsg480-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 08 Oct 2025 10:17:23 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 598AHJfM48955668
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 8 Oct 2025 10:17:19 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 180AA20071;
+	Wed,  8 Oct 2025 10:17:19 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 53DD520072;
+	Wed,  8 Oct 2025 10:17:17 +0000 (GMT)
+Received: from [9.124.216.74] (unknown [9.124.216.74])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  8 Oct 2025 10:17:17 +0000 (GMT)
+Message-ID: <5a248390-ddaa-4127-a58a-794d0d70461a@linux.ibm.com>
+Date: Wed, 8 Oct 2025 15:47:16 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,40 +87,115 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <8218e149-7718-4432-9312-f97297c352b9@linux.ibm.com>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [bisected][mainline]Kernel warnings at
+ kernel/sched/cpudeadline.c:219
+To: Peter Zijlstra <peterz@infradead.org>,
+        Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Cc: LKML <linux-kernel@vger.kernel.org>,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>, jstultz@google.com,
+        stultz@google.com
+References: <8218e149-7718-4432-9312-f97297c352b9@linux.ibm.com>
+ <20251008095039.GG3245006@noisy.programming.kicks-ass.net>
+From: Shrikanth Hegde <sshegde@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <20251008095039.GG3245006@noisy.programming.kicks-ass.net>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: JKy9HI3OIwfwCqwGCsc9hy9eDGS1yCz2
+X-Authority-Analysis: v=2.4 cv=BpiQAIX5 c=1 sm=1 tr=0 ts=68e63a34 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=x6icFKpwvdMA:10 a=C-qSTpEYKFkgWNEV-BgA:9
+ a=QEXdDO2ut3YA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMDA0MDAyMiBTYWx0ZWRfX93Ilcyr4j9S6
+ HRKLYlHhMxO8bQvbiwyXMZRi3Z+l1ZBJhYkFbGyLzd3NJDaOTty1cTSAyhQ1dcU19mSv3QMrAb3
+ bnfnOvvyoxtWAaIwDo2Wb8nKwpaPOVCijQSlPkxpGZrn8UBbhcunuP2lfRH+/Belnmz0DZ4bGzm
+ ks4ypMF6A4pbUITwzRzN0i1DCtvl2okyfcPeValkx6yzaKZ4uzbuTsUrP9hLfiZ7kB2ep34HAZp
+ RMGElI50DHsTBLmjC+atRvvnPRRqUzOZY8fJ1u2ym459cicZAUpHijp3DCDi6pMOLHN0z8JKZO4
+ 8Txns1agTNljjynwtO3w8/XarKUtKW+0FWOzK2Taj41KLZJdhLgJKPZd2hdnvqWz4vOJ1x1gplL
+ 1J7Dc4xe53JBsjUYiQeqwd5VpcShqA==
+X-Proofpoint-ORIG-GUID: IugG6FWmo057Mko0fdAZ9dogxA0KNllW
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1117,Hydra:6.1.9,FMLib:17.12.80.40
+ definitions=2025-10-08_03,2025-10-06_01,2025-03-28_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 lowpriorityscore=0 priorityscore=1501 malwarescore=0
+ suspectscore=0 bulkscore=0 impostorscore=0 adultscore=0 clxscore=1015
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2509150000
+ definitions=main-2510040022
 
-On Wed, Oct 08, 2025 at 07:41:10AM +0530, Venkat Rao Bagalkote wrote:
-> Greetings!!!
-> 
-> 
-> IBM CI has reported a kernel warnings while running CPU hot plug operation
-> on IBM Power9 system.
-> 
-> 
-> Command to reproduce the issue:
-> 
-> drmgr -c cpu -r -q 1
-> 
-> 
-> Git Bisect is pointing to below commit as the first bad commit.
 
-Does something like this help?
 
-(also, for future reference, please don't line wrap logs, it makes them
-very hard to read)
+On 10/8/25 3:20 PM, Peter Zijlstra wrote:
+> On Wed, Oct 08, 2025 at 07:41:10AM +0530, Venkat Rao Bagalkote wrote:
+>> Greetings!!!
+>>
+>>
+>> IBM CI has reported a kernel warnings while running CPU hot plug operation
+>> on IBM Power9 system.
+>>
+>>
+>> Command to reproduce the issue:
+>>
+>> drmgr -c cpu -r -q 1
+>>
+>>
+>> Git Bisect is pointing to below commit as the first bad commit.
+> 
+> Does something like this help?
+> 
+> (also, for future reference, please don't line wrap logs, it makes them
+> very hard to read)
+> 
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 198d2dd45f59..65f37bfcd661 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -8328,6 +8328,7 @@ static inline void sched_set_rq_offline(struct rq *rq, int cpu)
+>   		BUG_ON(!cpumask_test_cpu(cpu, rq->rd->span));
+>   		set_rq_offline(rq);
+>   	}
+> +	dl_server_stop(&rq->fair_server);
+>   	rq_unlock_irqrestore(rq, &rf);
+>   }
+>  
 
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 198d2dd45f59..65f37bfcd661 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -8328,6 +8328,7 @@ static inline void sched_set_rq_offline(struct rq *rq, int cpu)
- 		BUG_ON(!cpumask_test_cpu(cpu, rq->rd->span));
- 		set_rq_offline(rq);
- 	}
-+	dl_server_stop(&rq->fair_server);
- 	rq_unlock_irqrestore(rq, &rf);
- }
- 
+
+Hi Peter. Thanks for looking into it.
+
+I was able to repro this issue on my system. This above diff didn't help. I still see the warning.
+
+I have to understand this dl server stuff still.
+So not sure if my understanding is completely correct.
+
+Looks like the hrtimer is firing after the cpu was removed. The warn on hit only with
+drmgr. Regular hotplug with chcpu doesn;t hit. That's because drmgr changes the cpu_present mask.
+and warning is hit with it.
+
+maybe during drmgr, the dl server gets started again? Maybe that's why above patch it didn't work.
+Will see and understand this bit more.
+
+Also, i tried this below diff which fixes it. Just ignore the hrtimer if the cpu is offline.
+Does this makes sense?
+---
+
+diff --git a/kernel/sched/deadline.c b/kernel/sched/deadline.c
+index 615411a0a881..a342cf5e4624 100644
+--- a/kernel/sched/deadline.c
++++ b/kernel/sched/deadline.c
+@@ -1160,6 +1160,9 @@ static enum hrtimer_restart dl_server_timer(struct hrtimer *timer, struct sched_
+  	scoped_guard (rq_lock, rq) {
+  		struct rq_flags *rf = &scope.rf;
+  
++		if (!cpu_online(rq->cpu))
++			return HRTIMER_NORESTART;
++
+  		if (!dl_se->dl_throttled || !dl_se->dl_runtime)
+  			return HRTIMER_NORESTART;
+
+
+
 
