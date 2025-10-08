@@ -1,67 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-12713-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12714-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E0067CAC5BB
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Oct 2025 11:25:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADC47CAC5BB
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  8 Oct 2025 12:42:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4chW065GWgz3bvd;
-	Wed,  8 Oct 2025 22:25:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759922742;
-	cv=none; b=K7n6Jv+oGQC4TEvxe24n3+UiF37fsN4g5ZpnbFZcxJrfdPR9xWPYkdQhB/lYTd+RxqmVAR4zlRn4W5vWf57x6yJDyIPCtrTF4ympgh4bur+vtpv4tfIieP91WeDRpSfwk6ImbqLlgWuYWiHamC2rUM3zVqOo9O38/gngiJezOIIh48oC9fqFtI8ENQggyHrqls0kkRU0kJz/GMLiQJegNTGJyFcTwZo2VRl81d3Qa2cz2WMhDlG9lKUpjQG2czeNYBRSwTSOEokup4g1bFKwzs2bqehrxSq1JHi5+1rIBucMAVIckNrA+P0TtlXoINiP2jDIlMBJBalqyRyQwRkhhA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4chXhj6zJDz2xQ4;
+	Wed,  8 Oct 2025 23:42:29 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1759927349;
+	cv=none; b=KiqyqPOmCOFuj2+5naq6oqj89p2o/8GpKlcOJop5pRziRNfxBM2xCPmeD6VPBb3BJRGnNdY+bR+GrI3C/GG4yJalPlyHkVflQ1VAbRzP7Uxd1mdeisFnhYFn8UGQW1+dg+c5xZKdAKXxqXQ4+uG2NWTyaySpfvsNs/eAI7w1fVyvykIzHTY3GqiUcXze8mH0n/R642O/oDsqGbGSpjN01V3Uh2XQB4D+JaisgKeD6nL0D8CV+1RlCMO5+41yoXKe5sk+C6XgQAjOFtQjMuMGj+JW/AcWHLwRa+kTMj3DkmFoxJszdY/uyZNNtceLmby2NpKUzdJnsXTZJMiD2o44TA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1759922742; c=relaxed/relaxed;
-	bh=y7J7+xvmp4L2bVtL5j3Le5VszvydlDD4VO8qHR1eVwY=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ANHGZeJP16sdjsi5fu5oqq8yt3mwYRvP8XbHgOMQfpZTxz28bwLZAcI84GWyCfAscqW47o6SALW8bLFcphEO1du7RrnkI1W/CJTY9y7yHKAX7OUz/PNyNsgiuLFd37EtX/TZwb9wA8i0XXpIlBjMTidGZvoF+HjDbsvb9KFJO+VWgDT8hlg+365fxMxq3ZoQAuvJkKiRd512AYpzjRlxE3Ci5oAJKjJKP6dQyFnUOZjLuAH8WL0yy/fn76rpRXeQKcvvpIFYza9qzz069wCSsLxnChQXML0itk2cxTqkH4Subwd14LPfrbhkap7AKDTwyZ0bESfIiZUCIrEJQ63vSA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IErWHqCA; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1759927349; c=relaxed/relaxed;
+	bh=SEB371UVD7p9y6tuscumDyLeJGmkjZ51qI7OiaqfHYQ=;
+	h=From:To:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=S5NLa+oLgdaalH0+yNlZI1MVH8+AMQGpRMbMZDtSBoK6L8K9oUo07LppQrLFgYWmr42SoSxfKMENq/ZiHJ/gZvc/iFsIAHUuoBqXgPQcD8T8j4XHskexph7JLji5gNr8rq/wYKyxlRNxJxDbPm7begcTOIOHp8eFtoElY9gkBX0f9aHSocEs5gTvMSHNeuawGsyEQJoDxZ/oYN/MStzaipmo1vfldhUyjxZfFyFLiK72OK/blA1pF7/3f57703o/aWpGMUYzPyllvV3rvFPO13iNi/+lNz3R+bstvR0L9p0BsAWHlN32YWQPwEIkv30i15YW3kA8/Tm9hjKoGimOAQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=O1FR00z6; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=1hKkeoZd; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=namcao@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IErWHqCA;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=O1FR00z6;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=1hKkeoZd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=namcao@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4chW056tlJz30D3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2025 22:25:41 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id E294B61F6D;
-	Wed,  8 Oct 2025 11:25:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D9AE7C4CEF4;
-	Wed,  8 Oct 2025 11:25:37 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1759922738;
-	bh=88c3sFsoUsAiJupZku1KMo3Q2xahgwOIy0yqsCJN198=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=IErWHqCA6ccIxcCPwE8YbXw6DkiJYJbafos4nPLuNA+TS6FWePh2R4YkjF+ybV27D
-	 sTxAA4IxJQRbATvGd7wBycDlqgFnYXYxH3Y+bB8M7E7htDh0O1dkt1wl633ky7EQBh
-	 UBfuHWrgNkdFImsYk7pqZLnGRZsem9S6LKaFaoRlp4X+fh3QvrSevIxunNOdgQGDd6
-	 i/8BcSl6uhGVA8LtueRygAPAla+4klwvi1ionQ/qvM/HG9nl+FKfjyb2kiQMiZpY3w
-	 i74lJDrKXDrCyt5jl6h1bSCJLjF5kxL1CKBZJFOjf74oH0gDoDdj+V4z23+YTA7M9K
-	 iz+O2Hiyh3gAA==
-Date: Wed, 8 Oct 2025 13:43:25 +0530
-From: Naveen N Rao <naveen@kernel.org>
-To: Hari Bathini <hbathini@linux.ibm.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>, 
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, bpf@vger.kernel.org, 
-	Alexei Starovoitov <ast@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, 
-	Andrii Nakryiko <andrii@kernel.org>, Song Liu <songliubraving@fb.com>, Jiri Olsa <jolsa@kernel.org>, 
-	Viktor Malik <vmalik@redhat.com>, live-patching@vger.kernel.org, 
-	Josh Poimboeuf <jpoimboe@kernel.org>, Joe Lawrence <joe.lawrence@redhat.com>, 
-	Jiri Kosina <jikos@kernel.org>, linux-trace-kernel@vger.kernel.org, 
-	Steven Rostedt <rostedt@goodmis.org>, Masami Hiramatsu <mhiramat@kernel.org>, 
-	Mark Rutland <mark.rutland@arm.com>, Shung-Hsi Yu <shung-hsi.yu@suse.com>
-Subject: Re: [PATCH] powerpc64/bpf: support direct_call on livepatch function
-Message-ID: <unegysw3bihg32od7aham3npsdpm5govboo3uglorwsrjqfqfk@pbyzwwztmqtc>
-References: <20251002192755.86441-1-hbathini@linux.ibm.com>
- <amwerofvasp7ssmq3zlrjakqj5aygyrgplcqzweno4ef42tiav@uex2ildqjvx2>
- <17f49a63-eccb-4075-91dd-b1f37aa762c7@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4chXhj177vz2xPw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  8 Oct 2025 23:42:29 +1100 (AEDT)
+From: Nam Cao <namcao@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1759927343;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=SEB371UVD7p9y6tuscumDyLeJGmkjZ51qI7OiaqfHYQ=;
+	b=O1FR00z6YIWDmCnUQnYJ/rkfBxjhVctVN1ldKAHZuqM7AZMiiiTiG3xt3bUMJG2QdsLDnL
+	+tYlj1dm5Bv83Fh28wjSU6yOWAXp5vmR4I4rjbevk5VdVgCmIATmCJ1bNYzq7wyK0tP1dI
+	a8Tn9S3gmAftbWlWn4Wsc4zs7GMXXaJ69ld862jc+04trtrQVYKVC4G7cgKF1RfwflfvOH
+	QZfapA14EaBcqDMo06wxXFwZARn65jZ3pQ9KAdN7GVYvlkJWVrfubNqZ8//+6DOtyacF6R
+	B/klHx/5snA7XPOwcyzDEyq5MNhUFGExt8qY6utqqdouYZ6RVFaJLxPaTzs2yg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1759927343;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=SEB371UVD7p9y6tuscumDyLeJGmkjZ51qI7OiaqfHYQ=;
+	b=1hKkeoZdxe2Wz/9/ZnYPPSi8pqPSIkKVb++Fz2slv1L8s3IDPVuroDvdRTH0cnMrehC9fN
+	IlBm9k7eXY5gX1Bg==
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>, LKML <linux-kernel@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>, Gautam Menghani <gautam@linux.ibm.com>
+Subject: Re: [bisected][mainline]Kernel OOPs at msi_desc_to_pci_dev
+In-Reply-To: <878d7651-433a-46fe-a28b-1b7e893fcbe0@linux.ibm.com>
+References: <878d7651-433a-46fe-a28b-1b7e893fcbe0@linux.ibm.com>
+Date: Wed, 08 Oct 2025 14:42:22 +0200
+Message-ID: <87wm55h8ep.fsf@yellow.woof>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -75,32 +71,28 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <17f49a63-eccb-4075-91dd-b1f37aa762c7@linux.ibm.com>
+Content-Type: text/plain
 
-On Mon, Oct 06, 2025 at 06:50:20PM +0530, Hari Bathini wrote:
-> 
-> 
-> On 06/10/25 1:22 pm, Naveen N Rao wrote:
-> > On Fri, Oct 03, 2025 at 12:57:54AM +0530, Hari Bathini wrote:
-> > > Today, livepatch takes precedence over direct_call. Instead, save the
-> > > state and make direct_call before handling livepatch.
-> > 
-> > If we call into the BPF trampoline first and if we have
-> > BPF_TRAMP_F_CALL_ORIG set, does this result in the BPF trampoline
-> > calling the new copy of the live-patched function or the old one?
-> 
-> Naveen, calls the new copy of the live-patched function..
+Venkat Rao Bagalkote <venkat88@linux.ibm.com> writes:
+> IBM CI has reported a kernel crash while running module load and unload 
+> testing on lpfc driver.
 
-Hmm... I'm probably missing something.
+Thanks for the report.
 
-With ftrace OOL stubs, what I recall is that BPF trampoline derives the 
-original function address from the OOL stub (which would be associated 
-with the original function, not the livepatch one). This should mean 
-that the trampoline continues to invoke the original function.
+I trust the below patch should fix the issue?
 
-
-- Naveen
-
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/pseries/msi.c
+index 825f9432e03d..a82aaa786e9e 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -443,8 +443,7 @@ static int pseries_msi_ops_prepare(struct irq_domain *domain, struct device *dev
+  */
+ static void pseries_msi_ops_teardown(struct irq_domain *domain, msi_alloc_info_t *arg)
+ {
+-	struct msi_desc *desc = arg->desc;
+-	struct pci_dev *pdev = msi_desc_to_pci_dev(desc);
++	struct pci_dev *pdev = to_pci_dev(domain->dev);
+ 
+ 	rtas_disable_msi(pdev);
+ }
 
