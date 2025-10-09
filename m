@@ -1,50 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-12752-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12753-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 69C4ACCD184
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Oct 2025 15:50:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A8FDCCD187
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Oct 2025 16:00:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cjDqP3K2mz3cZ2;
-	Fri, 10 Oct 2025 02:50:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760025041;
-	cv=none; b=Z2jw7rFSl8qEAGVTr4R9OU24FYWiKnM7EPamncrw5Ye3FJrUEPNf5nJMmaBHMBiEQGvz6sasTkRYdWIQcyhWOhpWros535yKAo+1gTYT/NbLRf/pnxXqsBut6bQhUTy9HwQl0HopsskTK0R5xCSjuKlR8kdeKsOpyizWSAH2pZyQadqJ2GJdhtIaHfdpMibX9O2dWIzkoHA4RJXdHWX0vDoIoAlofW0GARkGgivdUGbfFOURzccAiEOtRPONHKD+pNdm/MsiH8JwE7anyfNRjNm2xiNz1RK3ZKMNqqU4BImaFgKJEwMS7R22FK36XW/Kr6mrcbmtQi+jnDJZHqA7iQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cjF264JBzz2ySJ;
+	Fri, 10 Oct 2025 02:59:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::136"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760025598;
+	cv=none; b=D1hfschrecJVw4pd0KmW7XZG/X9dnJhoS2Y09zq7FkXz2gViBUCPFoiK/6R9ddB/HYfyo3AsUXmJfn5ilXfEQkxvfO/TQpNGcQyyvviRvCFWyPYrmyG+z2oSvzIEI542cdvrwcm70HmVKr785Pe2asfHHYLQAUYAAnvVvl1C9e1v+PjfqiCnh3AQqPiP+/kKIyH2HFr6ILGu8P0/DhvDurJBTnmNDgnHskmOuI74Tu16QIGZfW5VjlyKyulv2yD7usbDdx7bYMgUap3M11vnF3GVb1RaE1AmrrNOG+5qTr4iVQTzlvL8Yb1rLgp5JUBSsspvBLL868kbxtk0Mj3tfw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760025041; c=relaxed/relaxed;
-	bh=f6gkggpRXgJRJgdcozPg2OBj2mJWRGbZyz54v47te0g=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=I9ny7mkgo/0L/qYW1TBiGfMIQVYeWAzl1t3HhRMN5WVYkDGjncGMmVZvFfiKy887icK7dTP14Lzslr+R5SUebbTXA5GHXH1MO5BTkJ4N3O8HYAhqp9mO06zn7B6YRWeYL1cyQnCMi8RDgLAB+MjOE1kxjU7+AqY4tEQQdX98aYWRB4QM9Awz8IOt8yICIa6370Z8AceTUcBcLISymhQsHVcOwgdGQISQxu4Ei4/cwkgwQmGd7dQFOQr1aUiPr4mbVDHuP0xUvCPeCmfe5mypU83B4dRDr5p9CyGUk2V3bF9ZpWqVHO6CaeVUcreJ8hcxt/W78eECDbuoEUSx58WX8Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cjDqN6xMBz2xnt
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2025 02:50:40 +1100 (AEDT)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cjBBM5Gldz9sSj;
-	Thu,  9 Oct 2025 15:51:55 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id cibJcHzYGNup; Thu,  9 Oct 2025 15:51:55 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cjBBL4XM5z9sSY;
-	Thu,  9 Oct 2025 15:51:54 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 880138B76D;
-	Thu,  9 Oct 2025 15:51:54 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id b-ev3yzMf1dF; Thu,  9 Oct 2025 15:51:54 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3D3E58B768;
-	Thu,  9 Oct 2025 15:51:54 +0200 (CEST)
-Message-ID: <60593288-c747-42c5-b05d-27a81ab46021@csgroup.eu>
-Date: Thu, 9 Oct 2025 15:51:54 +0200
+	t=1760025598; c=relaxed/relaxed;
+	bh=WQBxmURKiGaN3QIqBhTff7pEbZ70mJ9TllMgftPCUcQ=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=JTqMWb5AVN6CAdWAkXYLiGqqTZCejtf6xKv5/Ofc7xvk1laL/p2PV3X5kbt4yoBJJZ08eBVyLQPu/IT58GgK0W641/xHv3bCFPYjob4Bhxz+ZSdHvEMo8PcqKUatCWLI59aEDgBn7TuDNZCkcT3/+eOPqaIBiDF4QUJIpODocnMk+9+5JAoEZ8UOammgKQZQQL5PZTcmLTFLjWtdi+4c1Ji8P0N8Nqi4ic0AQrPKdOavnKdTpXdXhX+t1XlDAIEap0fU4ivEZPwHvSCEyjeyUwOFAz8Mxv6Cck6JgxiBImu5E9TW8JSYOCTxVrw9aBwWvzywo7u9SUOUtxm/lHuS2A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gKQS6Co+; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::136; helo=mail-lf1-x136.google.com; envelope-from=snovitoll@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gKQS6Co+;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::136; helo=mail-lf1-x136.google.com; envelope-from=snovitoll@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lf1-x136.google.com (mail-lf1-x136.google.com [IPv6:2a00:1450:4864:20::136])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cjF246JX8z2xnt
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2025 02:59:56 +1100 (AEDT)
+Received: by mail-lf1-x136.google.com with SMTP id 2adb3069b0e04-57db15eeb11so1403596e87.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Oct 2025 08:59:56 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1760025590; x=1760630390; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=WQBxmURKiGaN3QIqBhTff7pEbZ70mJ9TllMgftPCUcQ=;
+        b=gKQS6Co+2pB/V7nDCUqzR2HDgatj6JVlgbBYIByaQ952xblX7TLIfkO0JabkEW9RDV
+         zFagkzuNkpyCKwBvKDyK4qdQqt9PCfS31uyfrrGGr5z81ZiZkiphs8gKzQOm50t8rjrl
+         S4JMXMdQ3Ljn3Hxs+6nYoArKT/efVOpRESl/ONP6AkxKknpJCbmJnuPDF6ETCW34nZlL
+         ApdhixjXual2vVtRQpHkdfGvcgwY4knVJ7HzcFDgsXaCVAr1dbTe36EmWDZf+9poYrWe
+         IgvSHnaeh/jo3ix9GX/z+ixDvnGOFMvSeq5ap6WMQ/XR4PUIoRklpNnQvPeF0cuMxbrd
+         kNHA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1760025590; x=1760630390;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=WQBxmURKiGaN3QIqBhTff7pEbZ70mJ9TllMgftPCUcQ=;
+        b=C/4W7CpfiAYSzakO6EjPeKPwwCpeyKVqOfwir1R/kSy6NbMzATCys7ydySRMKWHPeU
+         6GvXh04oG2eTg3kXE6E+dYYKPggJ2GOW19VaTxvSLqkhDkElqA02+aS0DBj0ZDEUiUPv
+         gBPgYryRUXWEYgG//yiQMELPKm+y9sPZxFlZpgySQO7yhmfHbEifksQA5SjIgAbeT7KN
+         1HCAq4f1R4fG+tXwpje8uxUoAqLujmOCk4dKNsav0IfO+PpFQhIVa9gHiGDkYAVYsVi7
+         HEs7A8BZrI2IBeR4eIVdrsLvw+dCGLfW0dDWcfijaxkJFJafBoufTE4D6rrY+UeMJyWG
+         PrMQ==
+X-Forwarded-Encrypted: i=1; AJvYcCVybm7nBWUFtfLgduZIbOFvNgrf6IxDD1xHXIk/cEJ/pD24Ws6yKtk3EpER7TiXMPwGDUiexeF2loqpVGo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzXZ2PF6jagsqvZMVc92eBwtF7iJIrdf3SaBSd7ctUuQswDLoPL
+	2HbRkE2QiPfLWjJrRj9U/1gyO1fyXXQFet7UGYl9myafKlU7ZPIJ2CDcREfKtzvcFLp5mn6ida8
+	VBEaJ2x4rUkU7bWi+MDMMME9pmLOyOk4=
+X-Gm-Gg: ASbGnctz5Px9wpAxRNPYh2LqzJcptEdVxCft67Mx/nBnKvev+y4nk1fRuyfc285BguO
+	zvy/9Elo4BwgzvIGJeSjY1V1qrS9rNexSPaWP4lfiphp0zdeWVIJnYF6WMRwLDY9RteJCNyO9hb
+	HUli/UusaLvTiov/1DsuzzIsu+SFwMKqSe86dyurPgvlOzCsCwfsy92BaaIygKZEEufvAtL0qXi
+	6Ved27tRIa+4kWLWkU9vL8eEzmYRpP31hocGJ7vLQ==
+X-Google-Smtp-Source: AGHT+IFiOw5ablsLgUKfCaNuQJri4wcztl+zI4ly3LRjrgaXjzgOnqWcpR8ZMzuTHWFg5QDe7h9JoAEutSyQKhvfT4w=
+X-Received: by 2002:a05:6512:1291:b0:57d:ffa4:56f4 with SMTP id
+ 2adb3069b0e04-5906dae5904mr2393608e87.41.1760025589415; Thu, 09 Oct 2025
+ 08:59:49 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,60 +80,94 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/addnote: Fix overflow on 32-bit builds
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>
-References: <2025042122-mustard-wrasse-694572@boujee-and-buff>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <2025042122-mustard-wrasse-694572@boujee-and-buff>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20250810125746.1105476-1-snovitoll@gmail.com> <20250810125746.1105476-2-snovitoll@gmail.com>
+ <87ldmv6p5n.ritesh.list@gmail.com>
+In-Reply-To: <87ldmv6p5n.ritesh.list@gmail.com>
+From: Sabyrzhan Tasbolatov <snovitoll@gmail.com>
+Date: Thu, 9 Oct 2025 20:59:32 +0500
+X-Gm-Features: AS18NWAnJdcYDP3fsUmpv8ZuZnvVnkv1zMHsU4QWH3X3orZoE8748Ur0FWZohd0
+Message-ID: <CACzwLxia6xMcQ=vsYG7SE+pUO8=4DiRWD_Omq3wzRyuhDjGcPQ@mail.gmail.com>
+Subject: Re: [PATCH v6 1/2] kasan: introduce ARCH_DEFER_KASAN and unify static
+ key across modes
+To: Ritesh Harjani <ritesh.list@gmail.com>
+Cc: ryabinin.a.a@gmail.com, christophe.leroy@csgroup.eu, bhe@redhat.com, 
+	hca@linux.ibm.com, andreyknvl@gmail.com, akpm@linux-foundation.org, 
+	zhangqing@loongson.cn, chenhuacai@loongson.cn, davidgow@google.com, 
+	glider@google.com, dvyukov@google.com, alexghiti@rivosinc.com, alex@ghiti.fr, 
+	agordeev@linux.ibm.com, vincenzo.frascino@arm.com, elver@google.com, 
+	kasan-dev@googlegroups.com, linux-arm-kernel@lists.infradead.org, 
+	linux-kernel@vger.kernel.org, loongarch@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
+	linux-s390@vger.kernel.org, linux-um@lists.infradead.org, linux-mm@kvack.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Thu, Sep 4, 2025 at 5:38=E2=80=AFAM Ritesh Harjani <ritesh.list@gmail.co=
+m> wrote:
+>
+>
+> Only book3s64 needs static keys here because of radix v/s hash mode
+> selection during runtime. The changes in above for powerpc looks good to
+> me. It's a nice cleanup too.
+>
 
+Hello,
+Thanks for the review and sorry for the late reply. This has already
+been merged.
+AFAIU, in arch/powerpc/Kconfig
 
-Le 22/04/2025 à 04:31, Ben Collins a écrit :
-> The PUT_64[LB]E() macros need to cast the value to unsigned long long
-> like the GET_64[LB]E() macros. Caused lots of warnings when compiled
-> on 32-bit, and clobbered addresses (36-bit P4080).
-> 
-> Signed-off-by: Ben Collins <bcollins@kernel.org>
-> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: linuxppc-dev@lists.ozlabs.org
+config PPC
+...
+        select ARCH_NEEDS_DEFER_KASAN if PPC_RADIX_MMU
 
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+and in arch/powerpc/platforms/Kconfig.cputype:
 
-> ---
->   arch/powerpc/boot/addnote.c | 7 ++++---
->   1 file changed, 4 insertions(+), 3 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/addnote.c b/arch/powerpc/boot/addnote.c
-> index 53b3b2621457d..78704927453aa 100644
-> --- a/arch/powerpc/boot/addnote.c
-> +++ b/arch/powerpc/boot/addnote.c
-> @@ -68,8 +68,8 @@ static int e_class = ELFCLASS32;
->   #define PUT_16BE(off, v)(buf[off] = ((v) >> 8) & 0xff, \
->   			 buf[(off) + 1] = (v) & 0xff)
->   #define PUT_32BE(off, v)(PUT_16BE((off), (v) >> 16L), PUT_16BE((off) + 2, (v)))
-> -#define PUT_64BE(off, v)((PUT_32BE((off), (v) >> 32L), \
-> -			  PUT_32BE((off) + 4, (v))))
-> +#define PUT_64BE(off, v)((PUT_32BE((off), (unsigned long long)(v) >> 32L), \
-> +			  PUT_32BE((off) + 4, (unsigned long long)(v))))
->   
->   #define GET_16LE(off)	((buf[off]) + (buf[(off)+1] << 8))
->   #define GET_32LE(off)	(GET_16LE(off) + (GET_16LE((off)+2U) << 16U))
-> @@ -78,7 +78,8 @@ static int e_class = ELFCLASS32;
->   #define PUT_16LE(off, v) (buf[off] = (v) & 0xff, \
->   			  buf[(off) + 1] = ((v) >> 8) & 0xff)
->   #define PUT_32LE(off, v) (PUT_16LE((off), (v)), PUT_16LE((off) + 2, (v) >> 16L))
-> -#define PUT_64LE(off, v) (PUT_32LE((off), (v)), PUT_32LE((off) + 4, (v) >> 32L))
-> +#define PUT_64LE(off, v) (PUT_32LE((off), (unsigned long long)(v)), \
-> +			  PUT_32LE((off) + 4, (unsigned long long)(v) >> 32L))
->   
->   #define GET_16(off)	(e_data == ELFDATA2MSB ? GET_16BE(off) : GET_16LE(off))
->   #define GET_32(off)	(e_data == ELFDATA2MSB ? GET_32BE(off) : GET_32LE(off))
+config PPC_RADIX_MMU
+        bool "Radix MMU Support"
+        depends on PPC_BOOK3S_64
+        select ARCH_HAS_GIGANTIC_PAGE
+        default y
 
+So the KASAN static key is enabled only for PPC_BOOK3S_64 by this
+Kconfig selection.
+In other git changes like:
+arch/powerpc/mm/kasan/init_32.c
+arch/powerpc/mm/kasan/init_book3e_64.c
+
+, where we call kasan_init_generic() -> kasan_enable() does nothing because
+CONFIG_ARCH_DEFER_KASAN is not selected.
+
+> So feel free to take:
+> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com> #powerpc
+>
+> However I have few comments below...
+>
+> > @@ -246,7 +255,7 @@ static inline void poison_slab_object(struct kmem_c=
+ache *cache, void *object,
+> >  bool __kasan_slab_pre_free(struct kmem_cache *cache, void *object,
+> >                               unsigned long ip)
+> >  {
+> > -     if (!kasan_arch_is_ready() || is_kfence_address(object))
+> > +     if (is_kfence_address(object))
+>
+> For changes in mm/kasan/common.c.. you have removed !kasan_enabled()
+> check at few places. This seems to be partial revert of commit [1]:
+>
+>   b3c34245756ada "kasan: catch invalid free before SLUB reinitializes the=
+ object"
+>
+> Can you please explain why this needs to be removed?
+
+kasan_arch_is_ready() was removed here because in
+commit 1e338f4d99e6("kasan: introduce ARCH_DEFER_KASAN and unify
+static key across modes")
+I've unified the check with kasan_enabled() which is already called in
+the __wrapper
+__kasan_slab_pre_free in include/linux/kasan.h
+
+> Also the explaination of the same should be added in the commit msg too.
+>
+> [1]: https://lore.kernel.org/all/20240809-kasan-tsbrcu-v8-1-aef4593f9532@=
+google.com/
+>
 
