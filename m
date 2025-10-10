@@ -1,50 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-12759-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12760-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A5628CCD184
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  9 Oct 2025 21:50:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA5BECCD184
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 10 Oct 2025 02:48:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cjNpn3PDxz3cZ5;
-	Fri, 10 Oct 2025 08:50:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760046641;
-	cv=none; b=T8XfnzZkyEWg+yN80hcTRpE7jKBLoNGfbtvwGgs2yaDzHfNfcyUSBxGA4aF5HVGbxU7xGXT1U8JnZ2A/4O6KUaIdPkGY5uFHDLiEKGVyJP0Th/sVmoTCeVJCrPIPDgz06VjS/Z2Ui/oCNZeKeW6ML3az38IAK46CJKajpvyW/tSr7riOdn3p3hWwWY77LLToQ0qH+3V6epowCJ5azpORSwMAZBqzO43HXvXFKaOsSGpHhge3U6oMy/yyFJcqPy2ruAeGNlcws3ndr0QwoANBKnjoiPEq6sRbv3H+CfsChtpKUgd8r5g/hrt3EqgtNRpTZOJBUuHBBAsrsrNmqRsDKg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cjWQp1wWSz3cQx;
+	Fri, 10 Oct 2025 13:48:50 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b12e"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760064530;
+	cv=none; b=h7V+KSyYyHMxjAOBnhf8qVmPnY89ZPf+OyrT8nrQbXIxuh3oHwJ15r0Xvju3Za92np3YZtV5tXQKN3SaLJbr+mbTNb1hZVXTusgfUuruqLwWvp+m7/C24Ao6nH1KyrurJD9qwQYP0zISLO3gtY4RehRnPW/MYYzKawroaa0go1S9evfmwXiC8hoGJSrzUTtUoHrK/IBELvaJzY4Wnt8svTiULgCbiLmwiczttev+aTiFu2prKp7XR+bwZIWzaTKUcqDYox6bKqtJjyQEuu7/ad1JsyMhr0YgmcY2kMdNdzJJrAefj9puha3dz130xJoth0bPndDDv4KOBjJXbJBNSw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760046641; c=relaxed/relaxed;
-	bh=c12d5W0PhL+mxLdkoTXOHPXUrijaCx5rhZLNRgACiSE=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kiV1N4xBZgubzJb22GUq5UjKoOhrgg1qtBgFQe7tlN3AL/e/lVHKEicHXc6rgG1fu3dRl7rVKfw8cjX0oJBgpQh8woX4gRctLXKSJ0ADmj3nMdgooXdBU1BrJO5bEcooUYxQX00LuVFJR0OYHobT5fgIMdrlloeu2latac5uh3YIfGfOelFcWBhOLrjEkGkUvbCQ6Lq6/3/4ycLB4XDDnobsd/tzvxykqcqr5Km0mytvuNu91+JzhSFlfQyPxWlkp6i/DKtZgQnLdMXsnJ6OZB9SID31Ro1YhbhoWghN2QvMdKawtli/gzMWwEPzBm1JZt+iDCh6U8y1wejMxjzxDA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cjNpn00cBz3cZ2
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2025 08:50:40 +1100 (AEDT)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4cjBYt4pblz9sVS;
-	Thu,  9 Oct 2025 16:08:50 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 7ADpqTBaSwlR; Thu,  9 Oct 2025 16:08:50 +0200 (CEST)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4cjBYd4WL4z9sVW;
-	Thu,  9 Oct 2025 16:08:37 +0200 (CEST)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 880008B774;
-	Thu,  9 Oct 2025 16:08:37 +0200 (CEST)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id NG8yT-cNEd_j; Thu,  9 Oct 2025 16:08:37 +0200 (CEST)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id DF97B8B76D;
-	Thu,  9 Oct 2025 16:08:36 +0200 (CEST)
-Message-ID: <93737f68-4714-40ba-8920-48a996534126@csgroup.eu>
-Date: Thu, 9 Oct 2025 16:08:36 +0200
+	t=1760064530; c=relaxed/relaxed;
+	bh=SUvjTYrAKggs3w1tKlxCJydt04WX0hyij5ZVnNtO2rY=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=NOHXCSTvvBGiODiDXxPwCh5iEiQUMK+qPEkTxxh+jgnyA4dKlAI3s/meOm3G3aypGe8x1uQg59gSUdqwQCnoR5btYaOvyl3CVMqH10EvOfa9MyWrVOJCNaWfhRe+fXsHKXoNH5hKHbW6s2tw86tyaVj1xyMMX5av3ikOC4G6tbQDlX+ZTP8F2jxe4RjwdDG+ovqsnQUkYMIP9Dol2SfaTKIxMNP9uzFehvromJOVNZLXcUPlWm2Mq9j7dVrdbTRojHxB8C6iqhE0vkrhdtsNidE69U1SAR4LsFBAhtjFWg7NkQFa5fOT7C3N4dXIs0PC/CxtGJut5TBBI/JKBGXWgw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KP+UNydO; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b12e; helo=mail-yx1-xb12e.google.com; envelope-from=safinaskar@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KP+UNydO;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b12e; helo=mail-yx1-xb12e.google.com; envelope-from=safinaskar@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yx1-xb12e.google.com (mail-yx1-xb12e.google.com [IPv6:2607:f8b0:4864:20::b12e])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cjWQm36jKz2yrT
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 10 Oct 2025 13:48:47 +1100 (AEDT)
+Received: by mail-yx1-xb12e.google.com with SMTP id 956f58d0204a3-633be3be1e6so2501662d50.1
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 09 Oct 2025 19:48:47 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1760064523; x=1760669323; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=SUvjTYrAKggs3w1tKlxCJydt04WX0hyij5ZVnNtO2rY=;
+        b=KP+UNydOV1yZvoF/980lzblYRmMsKXaKOouUxmT2+xAClSyskK9HZ3Dxb4x+SLB0xd
+         0FafgExlTadqxCrRf+MYSPiHVUbbKmXlt7c4qLVD69VXyPCyK3YnvN1K5wLhMLJJiBQ/
+         w5wHzPf8np+o5siWKK8fzUUH1Ux1zzAt6fnI8wuttGwBvPWL2Og44se2dea4d8QJ3kjL
+         Nq2UPI71TKMFnvjdT7KmbDAOakgT6hQrRwslZKMI6lDVxQ3mlmF3ZQWe++vur2Nm5tBY
+         LRtfMfA4zQfZGnn3zedDNhZkZC4MJz+72hwNTgS1fP2wFw6sAyjLeQGviVy1Mmc2y9Ha
+         tyIQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1760064523; x=1760669323;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=SUvjTYrAKggs3w1tKlxCJydt04WX0hyij5ZVnNtO2rY=;
+        b=uNkDKy1IEahfyayaWwItQvlz2EMBbX7u7IJf08R4LAdMTtQYTYdzrcfftvH0Nwfy6j
+         xJgTlh4iqOisZxPsHjdGZsj1k0Ho3wPOfG8P4K3bhUA54aOF1GIGcZ2zhpqkbHkIvSCq
+         Qugas8C0pWA6p4kiMcs5vIfnI5mBH+JDSFRPHyn8CaLxeByDibC1EQIjUBFsAqePbmr9
+         B0FsJPsx0ucqHwMezWaBx8vNAJhfqkwXqEA2JUrRD89Ih8ELZ9zQ5viRZEyn4COPwyq2
+         /bCojIOXh+QnEtM3Oqbr1BVwnZy7y8EyxyoA4ckXBIA2v2A8a50ubF0NspQbl9hj+lWS
+         WkCg==
+X-Forwarded-Encrypted: i=1; AJvYcCUiGK6ipfJrhxXBG6PiZuLzngwDVzjGfgjgcBSoWEj6ERK0Bibw1FZmDyFkDJlLJs5idP75Zes7bgaVA6o=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyAGzpghfq4IU/4veQOSahydbS22LFivBoX1evDGwvCRv9W/Csg
+	qPEeY4sw760xg86VGZcACxlLPdBKXkBaD5eo6unef+4T9VgVLTuiw+H9AFUKvWcbZMjq7k1S++5
+	D+z+p2shJjFH2A4D2M9OoYY48ggPjSrA=
+X-Gm-Gg: ASbGncsOZzPnCzY1G3kXLebXrXUTq5aUImQT+zeSMjdA9cRy+dGzOyFyFsOGhxvkK80
+	JfrXggGpDlTC87P/9CkVqCC+SyVQ1ZWsG0SFJK2zhxys2CpNUcSTNZEBp2N6Jwb9exrb89+QlvY
+	IaxfY6rEA43qaQcwPEeUxVpBsvi7XbbE3iTgnJexo8CeuW/14n0oMrGKHyb/yPe58UFX5nMuIeA
+	t3EzRl9CaCKvMofBpuRF7eY2hyp8b7YuveqBY9ZkA==
+X-Google-Smtp-Source: AGHT+IE/ruZR0Nl+gZjd7KSfaZ+4Yt5azf8Eoz6teA2EZ5XcCIQ6BBXF8AxOCZshaSTrV+l7WDzDAJYCcqNIJ+IMELc=
+X-Received: by 2002:a53:cd0e:0:b0:635:4ed0:571e with SMTP id
+ 956f58d0204a3-63ccc4fd4b5mr7697871d50.22.1760064522649; Thu, 09 Oct 2025
+ 19:48:42 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,192 +80,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/4] powerpc: 83xx: Rename wdt@ nodes to watchdog@
-To: j.ne@posteo.net, Rob Herring <robh@kernel.org>,
- Krzysztof Kozlowski <krzk+dt@kernel.org>, Conor Dooley
- <conor+dt@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Naveen N Rao <naveen@kernel.org>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org
-References: <20250418-watchdog-v1-0-987ff2046272@posteo.net>
- <20250418-watchdog-v1-2-987ff2046272@posteo.net>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20250418-watchdog-v1-2-987ff2046272@posteo.net>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+References: <20250913003842.41944-1-safinaskar@gmail.com> <20250913003842.41944-22-safinaskar@gmail.com>
+ <a079375f-38c2-4f38-b2be-57737084fde8@kernel.org>
+In-Reply-To: <a079375f-38c2-4f38-b2be-57737084fde8@kernel.org>
+From: Askar Safin <safinaskar@gmail.com>
+Date: Fri, 10 Oct 2025 05:48:06 +0300
+X-Gm-Features: AS18NWC-iakvkxLfUlO1LRxakg0fg4KV7Trw_hsIF2wxGpnmpWZvHTCQ7Z3GaoE
+Message-ID: <CAPnZJGDK08eDWaMTmvVQwkAAThUvgB0XgAapqqV4_ZmWeay-iw@mail.gmail.com>
+Subject: Re: [PATCH RESEND 21/62] init: remove all mentions of root=/dev/ram*
+To: Krzysztof Kozlowski <krzk@kernel.org>
+Cc: linux-fsdevel@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	Linus Torvalds <torvalds@linux-foundation.org>, 
+	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, Christian Brauner <brauner@kernel.org>, 
+	Al Viro <viro@zeniv.linux.org.uk>, Jan Kara <jack@suse.cz>, Christoph Hellwig <hch@lst.de>, 
+	Jens Axboe <axboe@kernel.dk>, Andy Shevchenko <andy.shevchenko@gmail.com>, 
+	Aleksa Sarai <cyphar@cyphar.com>, =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, 
+	Julian Stecklina <julian.stecklina@cyberus-technology.de>, 
+	Gao Xiang <hsiangkao@linux.alibaba.com>, Art Nikpal <email2tema@gmail.com>, 
+	Andrew Morton <akpm@linux-foundation.org>, Eric Curtin <ecurtin@redhat.com>, 
+	Alexander Graf <graf@amazon.com>, Rob Landley <rob@landley.net>, 
+	Lennart Poettering <mzxreary@0pointer.de>, linux-arch@vger.kernel.org, 
+	linux-alpha@vger.kernel.org, linux-snps-arc@lists.infradead.org, 
+	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org, 
+	linux-hexagon@vger.kernel.org, loongarch@lists.linux.dev, 
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
+	linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org, 
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
+	sparclinux@vger.kernel.org, linux-um@lists.infradead.org, x86@kernel.org, 
+	Ingo Molnar <mingo@redhat.com>, linux-block@vger.kernel.org, initramfs@vger.kernel.org, 
+	linux-api@vger.kernel.org, linux-doc@vger.kernel.org, 
+	linux-efi@vger.kernel.org, linux-ext4@vger.kernel.org, 
+	"Theodore Y . Ts'o" <tytso@mit.edu>, linux-acpi@vger.kernel.org, Michal Simek <monstr@monstr.eu>, 
+	devicetree@vger.kernel.org, Luis Chamberlain <mcgrof@kernel.org>, Kees Cook <kees@kernel.org>, 
+	Thorsten Blum <thorsten.blum@linux.dev>, Heiko Carstens <hca@linux.ibm.com>, patches@lists.linux.dev
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Sun, Sep 14, 2025 at 1:06=E2=80=AFPM Krzysztof Kozlowski <krzk@kernel.or=
+g> wrote:
+> Please wrap commit message according to Linux coding style / submission
+I will do this for v2
 
+> To me your patchset is way too big bomb, too difficult to review. You
+v2 will be small.
 
-Le 18/04/2025 à 21:28, J. Neuschäfer via B4 Relay a écrit :
-> From: "J. Neuschäfer" <j.ne@posteo.net>
-> 
-> The watchdog.yaml schema prescribes a node name of "timer" or "watchdog"
-> rather than the abbreviation "wdt".
-> 
-> Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
-
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-
-> ---
->   arch/powerpc/boot/dts/asp834x-redboot.dts | 2 +-
->   arch/powerpc/boot/dts/mpc8313erdb.dts     | 2 +-
->   arch/powerpc/boot/dts/mpc8315erdb.dts     | 2 +-
->   arch/powerpc/boot/dts/mpc832x_rdb.dts     | 2 +-
->   arch/powerpc/boot/dts/mpc8349emitx.dts    | 2 +-
->   arch/powerpc/boot/dts/mpc8349emitxgp.dts  | 2 +-
->   arch/powerpc/boot/dts/mpc836x_rdk.dts     | 2 +-
->   arch/powerpc/boot/dts/mpc8377_rdb.dts     | 2 +-
->   arch/powerpc/boot/dts/mpc8377_wlan.dts    | 2 +-
->   arch/powerpc/boot/dts/mpc8378_rdb.dts     | 2 +-
->   arch/powerpc/boot/dts/mpc8379_rdb.dts     | 2 +-
->   11 files changed, 11 insertions(+), 11 deletions(-)
-> 
-> diff --git a/arch/powerpc/boot/dts/asp834x-redboot.dts b/arch/powerpc/boot/dts/asp834x-redboot.dts
-> index 52a84561c4f076ac0c4fc7af3db12f2fda06521c..33ddb17d18760df24ac8f068dce38ac60c353f32 100644
-> --- a/arch/powerpc/boot/dts/asp834x-redboot.dts
-> +++ b/arch/powerpc/boot/dts/asp834x-redboot.dts
-> @@ -72,7 +72,7 @@ soc8349@ff000000 {
->   		reg = <0xff000000 0x00000200>;
->   		bus-frequency = <0>;
->   
-> -		wdt@200 {
-> +		watchdog@200 {
->   			device_type = "watchdog";
->   			compatible = "mpc83xx_wdt";
->   			reg = <0x200 0x100>;
-> diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
-> index a8315795b2c951c5914953be0b4a5162dd471505..09508b4c8c73095bf4699e383e7841100d6d7c8f 100644
-> --- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-> @@ -99,7 +99,7 @@ soc8313@e0000000 {
->   		reg = <0xe0000000 0x00000200>;
->   		bus-frequency = <0>;
->   
-> -		wdt@200 {
-> +		watchdog@200 {
->   			device_type = "watchdog";
->   			compatible = "mpc83xx_wdt";
->   			reg = <0x200 0x100>;
-> diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
-> index e09b37d7489d01bfd16a26e9786868f630fa0262..56cf6d12c730de52d85623dc34c5987bee635f0f 100644
-> --- a/arch/powerpc/boot/dts/mpc8315erdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
-> @@ -99,7 +99,7 @@ immr@e0000000 {
->   		reg = <0xe0000000 0x00000200>;
->   		bus-frequency = <0>;
->   
-> -		wdt@200 {
-> +		watchdog@200 {
->   			device_type = "watchdog";
->   			compatible = "mpc83xx_wdt";
->   			reg = <0x200 0x100>;
-> diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-> index ecebc27a289871a896121fbaf6bc878422d25101..ba7caaf98fd58f9a2b56c0aa566673c70eff2013 100644
-> --- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-> @@ -52,7 +52,7 @@ soc8323@e0000000 {
->   		reg = <0xe0000000 0x00000200>;
->   		bus-frequency = <0>;
->   
-> -		wdt@200 {
-> +		watchdog@200 {
->   			device_type = "watchdog";
->   			compatible = "mpc83xx_wdt";
->   			reg = <0x200 0x100>;
-> diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
-> index d4ebbb93de0b325a3bb0f5d17464f516a0e12133..13f17232ba83d50498f19e6758063cf905fbc326 100644
-> --- a/arch/powerpc/boot/dts/mpc8349emitx.dts
-> +++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-> @@ -53,7 +53,7 @@ soc8349@e0000000 {
->   		reg = <0xe0000000 0x00000200>;
->   		bus-frequency = <0>;                    // from bootloader
->   
-> -		wdt@200 {
-> +		watchdog@200 {
->   			device_type = "watchdog";
->   			compatible = "mpc83xx_wdt";
->   			reg = <0x200 0x100>;
-> diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-> index bcf68a0a7b557e49b48563f586b1fe8441ab3c6d..eae0afd5abbc39852b8e34b2247223168ab863ca 100644
-> --- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-> +++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-> @@ -51,7 +51,7 @@ soc8349@e0000000 {
->   		reg = <0xe0000000 0x00000200>;
->   		bus-frequency = <0>;                    // from bootloader
->   
-> -		wdt@200 {
-> +		watchdog@200 {
->   			device_type = "watchdog";
->   			compatible = "mpc83xx_wdt";
->   			reg = <0x200 0x100>;
-> diff --git a/arch/powerpc/boot/dts/mpc836x_rdk.dts b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-> index a0cc1953484d70410f9592bdb84ffaf779ee08b4..4ff38e1a2185f85618b603e703e54c973cb97cc0 100644
-> --- a/arch/powerpc/boot/dts/mpc836x_rdk.dts
-> +++ b/arch/powerpc/boot/dts/mpc836x_rdk.dts
-> @@ -62,7 +62,7 @@ soc@e0000000 {
->   		/* filled by u-boot */
->   		bus-frequency = <0>;
->   
-> -		wdt@200 {
-> +		watchdog@200 {
->   			compatible = "mpc83xx_wdt";
->   			reg = <0x200 0x100>;
->   		};
-> diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-> index 7df452efa9579a649195d2266d42bbc4b6b8de1c..f137ccb8cfdedfed98a3cf6899f5508f069834dc 100644
-> --- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-> @@ -99,7 +99,7 @@ immr@e0000000 {
->   		reg = <0xe0000000 0x00000200>;
->   		bus-frequency = <0>;
->   
-> -		wdt@200 {
-> +		watchdog@200 {
->   			device_type = "watchdog";
->   			compatible = "mpc83xx_wdt";
->   			reg = <0x200 0x100>;
-> diff --git a/arch/powerpc/boot/dts/mpc8377_wlan.dts b/arch/powerpc/boot/dts/mpc8377_wlan.dts
-> index d8e7d40aeae449e33ea1640a53ee4dfec7d746a4..ce254dd74dd06b19bc8e15e13f2fa9e959dd25f2 100644
-> --- a/arch/powerpc/boot/dts/mpc8377_wlan.dts
-> +++ b/arch/powerpc/boot/dts/mpc8377_wlan.dts
-> @@ -89,7 +89,7 @@ immr@e0000000 {
->   		reg = <0xe0000000 0x00000200>;
->   		bus-frequency = <0>;
->   
-> -		wdt@200 {
-> +		watchdog@200 {
->   			device_type = "watchdog";
->   			compatible = "mpc83xx_wdt";
->   			reg = <0x200 0x100>;
-> diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-> index bdcfe83a561e121ed82972406e0302d84d8d0ef6..19e5473d4161b5d6be6ab84ae0ba78875fc377f8 100644
-> --- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-> @@ -99,7 +99,7 @@ immr@e0000000 {
->   		reg = <0xe0000000 0x00000200>;
->   		bus-frequency = <0>;
->   
-> -		wdt@200 {
-> +		watchdog@200 {
->   			device_type = "watchdog";
->   			compatible = "mpc83xx_wdt";
->   			reg = <0x200 0x100>;
-> diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-> index a5f702304a353c61d6ab804765b817ec34a9582e..61519acca2280427d7237d8d9bbb8485f0c65369 100644
-> --- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-> +++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-> @@ -97,7 +97,7 @@ immr@e0000000 {
->   		reg = <0xe0000000 0x00000200>;
->   		bus-frequency = <0>;
->   
-> -		wdt@200 {
-> +		watchdog@200 {
->   			device_type = "watchdog";
->   			compatible = "mpc83xx_wdt";
->   			reg = <0x200 0x100>;
-> 
-
+--
+Askar Safin
 
