@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-12836-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12837-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF548CCD187
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 06:52:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF190CCD187
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 06:52:42 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cm4Zf3hxkz3dVK;
-	Tue, 14 Oct 2025 17:49:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760424570;
-	cv=none; b=Q0i1ENpwgeCHuACKmXB+4SSK3fGlsWX5zNwwyfrrL46UgPnNICag3AUcq9/IpRgGQ+r3Tp95/072DsENUzPs85mv+drTUaFtRkk1Sloh94ucL14MkMCrQej12Ct4YzyIttUORKBTAlUo90kWpcoqL9sOA5SX2JkaBgE2QAdNzyyzoEBBersngds0doYpDJfthhWgmxDX1vyFZwNdr/P5incQPcU0G2lUNmiqVykbJmlKEwX6wmYaNFcvmE0ZY1Ao7COadgxAmX2hL3fnUnbWBGMvXDFVWo5+9FhMTgT4c1534q4qzHs2sWL5oA6WsPMguJBXbWSPFy8/0WrVmaLfaA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cm4Zg6ZkMz3dTm;
+	Tue, 14 Oct 2025 17:49:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760424571;
+	cv=none; b=Ey7q5VULA2ygjxxLFKmnT0kj7n2jY6cZxQA65VF0qIky81QI1FwJHvsCg1UyUZiIPicCoG/k/WTZJMYR1ceExJWKFC7vvK9otydrDAD78Q++flYV/IA9ABZnN68/V07mIJHOvddduxxEjoJ99yRHqEz4yObXKMe2jKRKb42qSvVF6GgBHwfPWLjoFjyQvvUAkXgc8EUqzN0jzQvjkpPyjMBv6OJQH9YXG0GoCjO2n55I4ALuzeTH4n1xYSc2mMkEdnJrW+fimVu2cX+cSw1Z7IPZbbJ93O1IjycMRaZgy41t40dAhBCfhndImFlykLzxnFTQwtywr+Jia+LXA1mHVg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760424570; c=relaxed/relaxed;
-	bh=0B7YkbPIlqSoj0P/D9keGEmA0f3ObTbURi5IRJM/pXM=;
+	t=1760424571; c=relaxed/relaxed;
+	bh=9h2pb1V7ipgZNlCnvpCW+AmTuEcf1Qtqf7GVE2UhA9Q=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=KYed8QFnQSc+ZiAYjR5v1Uw6XVi5PN3vRNAPHpIBkF4cKUszJE6opArz2LicJtWZIzSSslNCDk5qtyfM4KdAo/fv+8yaHnuVYQB1hPO33GAsq0cq7dHGVZceyofJrsGXZ3DUY9a3URwXLMaR7mZuWvTGeAMtVRm31afxF1e4Xct/uo1VMuITKzgTBsd6ZmgcZBHRSOsvk2MpZrGbHnD89og9Fp5AhDHklsoZ+Xl0aMrbLgcTt6hIeg3CAVqJW0alFnNOhf4TkIyFZXvp2yUllxZ2X/Qal2IGvyH5VgAK5EAa0z/RzpusPV2MzUzNuhB8OuJzhToM8cDEeNB1Ky3UoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=g18P+WOA; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=ZmhdKmCp; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=FhTToWIcc2qL8nJfnU5KqHg2iT16M8FyoEaAbJw6pVEwZsok/KgYmYI7c+arUs2jSwX+EGOzkx4JmnfYlfp781RnNjHMAwmQdvUUO4gqhthT6i0WrDeOT7FEPgSxLBJUREb4DxxgNsC9q6huSyNahDMMYObRauZVuns+KsKwJwk8EtoY/P3q5PcvZAa88sOyA+rns54QRAQj55oIxrsTFgJfnCoYhSaFR7N1Q5icMQ8XARFWaVPui6LoRpJQPIfGik9jqJbFQFwMDpLp8B4hF8n/zS/NoCZupsAe4BR+m3pw/cz4IV+RmYQI4KYbe9Gqp2m+SZALjg9nC6jFGy2oEw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=nVVI+Fcw; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=NWkhAgWk; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=g18P+WOA;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=ZmhdKmCp;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=nVVI+Fcw;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=NWkhAgWk;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cm4Zf0GQ5z3dTm
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2025 17:49:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cm4Zg20Vpz3dW7
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2025 17:49:31 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1760424559;
+	s=2020; t=1760424565;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=0B7YkbPIlqSoj0P/D9keGEmA0f3ObTbURi5IRJM/pXM=;
-	b=g18P+WOA9isRa1q1ErK/+Ni0DSDbiUSz46aMlyVMqFRNyuDIjttQarw+NnCLDCsGXbGcv2
-	zBHvYbrRn7BYMGI6xIl2Hxwsb6WUrlTwyvlUXTlZp/SBuwMpZptodZR+Og66AWIjWQvr4B
-	5x64SQUzl48VgMhOuuL+cmcqJzqVVRoCHd6iwA7NRUJZjo7v+WZvjubCAykqdwiBC1BgTJ
-	NohLtu1i+xl3Qd6JUhiQ19uYYH4G1Cq2PHl+XfY39RhAp65uc8bpP4wp8z8Po1MVmse0Xg
-	cwnKHpNHEjcSi6+f70KM8n+Gti0rS7TI9dLX2chgKTNKg1v9NI2O8ANFLR/yfA==
+	bh=9h2pb1V7ipgZNlCnvpCW+AmTuEcf1Qtqf7GVE2UhA9Q=;
+	b=nVVI+Fcw61QCoRgpSXzUjzBuYllJG0Jus+a5SpB0oPPnrGK1WfTycMo/25Lf3tT+nvo/Ju
+	ywjJb2ERs00dkdOAKca/nro7vHcHiKVcd/jFsCAXIJlsaRCJ1eiZhknMcPGB70T18EepCP
+	Iwgij1VeGNizkPtAFkFwUS0USZC78Ju0YF2norukikIvqFD0nWZ4AuB+fyZSDba2EmmsOB
+	+k6aqtnf/X59X8SlhG1IpRmBlkd7YgtnwasCdUbLmvT2dABdQnwwHQbGskTh/+57qXHZAu
+	2IOvwk3S+2CWXZP0hujPeOEg5jEhh4YOd0HBnfHUnomfn/hIXXy5kuuYj9N9Vg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1760424559;
+	s=2020e; t=1760424565;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=0B7YkbPIlqSoj0P/D9keGEmA0f3ObTbURi5IRJM/pXM=;
-	b=ZmhdKmCplihRjev/0HTyNhVWyr48rcMK3goPwlJUcagSoKZIwh8A8aIdu05En5O/uZyrIv
-	Go9ZYU4cwyY3T4Dg==
-Date: Tue, 14 Oct 2025 08:49:05 +0200
-Subject: [PATCH v4 19/35] random: vDSO: only access vDSO datapage after
- random_init()
+	bh=9h2pb1V7ipgZNlCnvpCW+AmTuEcf1Qtqf7GVE2UhA9Q=;
+	b=NWkhAgWkGm2JxQaZJHQ3yFI/rXW36gAzG53IGdNpYq95erKSL3beRKb2iOVDfgwoTgyeQK
+	Y2UxxzPgm22v8DBw==
+Date: Tue, 14 Oct 2025 08:49:16 +0200
+Subject: [PATCH v4 30/35] sparc64: vdso: Introduce vdso/processor.h
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20251014-vdso-sparc64-generic-2-v4-19-e0607bf49dea@linutronix.de>
+Message-Id: <20251014-vdso-sparc64-generic-2-v4-30-e0607bf49dea@linutronix.de>
 References: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
 In-Reply-To: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
@@ -99,80 +98,140 @@ Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
  linux-mips@vger.kernel.org, linux-s390@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1760424546; l=2362;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1760424546; l=4770;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=nnfqDyJKV+11Uo9x3MwHeHQO2C8dr6iNLVlc2B+leBE=;
- b=9Zc+eDNvdU8Y1XXdl92hx+AHY0om4okx8W7VD3j9btvvcp//mfZoeahs/MWKI+i2U7MedlgvM
- gI3hUZcK2rtCeyuuQdxrnYmdkEzCsknL0QxeFHy4aDh8lo7PSj31/UZ
+ bh=69d1+4gsu5NkCOVxynY9ZDBF0HEBmIzlBhmM7Uhwm2U=;
+ b=Kvf195JEtD9XFTSvRb5923TNPr3XXxVbDKZU37ZMmNcfu5nTGJb7Al/iAJvean4p1RlLUDau2
+ dFGTlcBeOAIAOL6YXugXyW0QDTeODEZujGWYivO09jZ6f6FX4//5m6i
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-Upcoming changes to the generic vDSO library will mean that the vDSO
-datapage will not yet be usable during early boot.
+The generic vDSO library expects a vdso/processor.h with an definition of
+cpu_relax().
 
-Introduce a static key which prevents early accesses.
+Split out cpu_relax() into this dedicated header.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 Tested-by: Andreas Larsson <andreas@gaisler.com>
 Reviewed-by: Andreas Larsson <andreas@gaisler.com>
+Acked-by: Andreas Larsson <andreas@gaisler.com>
 ---
- drivers/char/random.c | 14 +++++++++++++-
- 1 file changed, 13 insertions(+), 1 deletion(-)
+ arch/sparc/include/asm/processor.h      |  3 +++
+ arch/sparc/include/asm/processor_32.h   |  2 --
+ arch/sparc/include/asm/processor_64.h   | 25 --------------------
+ arch/sparc/include/asm/vdso/processor.h | 41 +++++++++++++++++++++++++++++++++
+ 4 files changed, 44 insertions(+), 27 deletions(-)
 
-diff --git a/drivers/char/random.c b/drivers/char/random.c
-index 73c53a4fb949bfd2ed723fa3cec3fe0d066a7fa3..f39524fb076a0c77bab228d4f2d45fee37291eb0 100644
---- a/drivers/char/random.c
-+++ b/drivers/char/random.c
-@@ -88,6 +88,7 @@ static DEFINE_STATIC_KEY_FALSE(crng_is_ready);
- static DECLARE_WAIT_QUEUE_HEAD(crng_init_wait);
- static struct fasync_struct *fasync;
- static ATOMIC_NOTIFIER_HEAD(random_ready_notifier);
-+static DEFINE_STATIC_KEY_FALSE(random_vdso_is_ready);
- 
- /* Control how we warn userspace. */
- static struct ratelimit_state urandom_warning =
-@@ -252,6 +253,9 @@ static void random_vdso_update_generation(unsigned long next_gen)
- 	if (!IS_ENABLED(CONFIG_VDSO_GETRANDOM))
- 		return;
- 
-+	if (!static_branch_likely(&random_vdso_is_ready))
-+		return;
+diff --git a/arch/sparc/include/asm/processor.h b/arch/sparc/include/asm/processor.h
+index 18295ea625dd7271617c15caa003a173099dd4d0..e34de956519aaca0e9bf82a22000d9096f868968 100644
+--- a/arch/sparc/include/asm/processor.h
++++ b/arch/sparc/include/asm/processor.h
+@@ -1,6 +1,9 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ #ifndef ___ASM_SPARC_PROCESSOR_H
+ #define ___ASM_SPARC_PROCESSOR_H
 +
- 	/* base_crng.generation's invalid value is ULONG_MAX, while
- 	 * vdso_k_rng_data->generation's invalid value is 0, so add one to the
- 	 * former to arrive at the latter. Use smp_store_release so that this
-@@ -274,6 +278,9 @@ static void random_vdso_set_ready(void)
- 	if (!IS_ENABLED(CONFIG_VDSO_GETRANDOM))
- 		return;
- 
-+	if (!static_branch_likely(&random_vdso_is_ready))
-+		return;
++#include <asm/vdso/processor.h>
 +
- 	WRITE_ONCE(vdso_k_rng_data->is_ready, true);
- }
+ #if defined(__sparc__) && defined(__arch64__)
+ #include <asm/processor_64.h>
+ #else
+diff --git a/arch/sparc/include/asm/processor_32.h b/arch/sparc/include/asm/processor_32.h
+index ba8b70ffec085feb17de9050f37de98e0039f7c3..a074d313f4f80621c1bc42733529c6d9450b1275 100644
+--- a/arch/sparc/include/asm/processor_32.h
++++ b/arch/sparc/include/asm/processor_32.h
+@@ -91,8 +91,6 @@ unsigned long __get_wchan(struct task_struct *);
+ extern struct task_struct *last_task_used_math;
+ int do_mathemu(struct pt_regs *regs, struct task_struct *fpt);
  
-@@ -925,6 +932,9 @@ void __init random_init(void)
- 	_mix_pool_bytes(&entropy, sizeof(entropy));
- 	add_latent_entropy();
+-#define cpu_relax()	barrier()
+-
+ extern void (*sparc_idle)(void);
  
-+	if (IS_ENABLED(CONFIG_VDSO_GETRANDOM))
-+		static_branch_enable(&random_vdso_is_ready);
+ #endif
+diff --git a/arch/sparc/include/asm/processor_64.h b/arch/sparc/include/asm/processor_64.h
+index 321859454ca4c55817bfcd0c627dae4f51d12041..4850704952634133aad143327bcbaa618fe66fde 100644
+--- a/arch/sparc/include/asm/processor_64.h
++++ b/arch/sparc/include/asm/processor_64.h
+@@ -182,31 +182,6 @@ unsigned long __get_wchan(struct task_struct *task);
+ #define KSTK_EIP(tsk)  (task_pt_regs(tsk)->tpc)
+ #define KSTK_ESP(tsk)  (task_pt_regs(tsk)->u_regs[UREG_FP])
+ 
+-/* Please see the commentary in asm/backoff.h for a description of
+- * what these instructions are doing and how they have been chosen.
+- * To make a long story short, we are trying to yield the current cpu
+- * strand during busy loops.
+- */
+-#ifdef	BUILD_VDSO
+-#define	cpu_relax()	asm volatile("\n99:\n\t"			\
+-				     "rd	%%ccr, %%g0\n\t"	\
+-				     "rd	%%ccr, %%g0\n\t"	\
+-				     "rd	%%ccr, %%g0\n\t"	\
+-				     ::: "memory")
+-#else /* ! BUILD_VDSO */
+-#define cpu_relax()	asm volatile("\n99:\n\t"			\
+-				     "rd	%%ccr, %%g0\n\t"	\
+-				     "rd	%%ccr, %%g0\n\t"	\
+-				     "rd	%%ccr, %%g0\n\t"	\
+-				     ".section	.pause_3insn_patch,\"ax\"\n\t"\
+-				     ".word	99b\n\t"		\
+-				     "wr	%%g0, 128, %%asr27\n\t"	\
+-				     "nop\n\t"				\
+-				     "nop\n\t"				\
+-				     ".previous"			\
+-				     ::: "memory")
+-#endif
+-
+ /* Prefetch support.  This is tuned for UltraSPARC-III and later.
+  * UltraSPARC-I will treat these as nops, and UltraSPARC-II has
+  * a shallower prefetch queue than later chips.
+diff --git a/arch/sparc/include/asm/vdso/processor.h b/arch/sparc/include/asm/vdso/processor.h
+new file mode 100644
+index 0000000000000000000000000000000000000000..f7a9adc807f7c9a0444afa51aeb47649a9bdb079
+--- /dev/null
++++ b/arch/sparc/include/asm/vdso/processor.h
+@@ -0,0 +1,41 @@
++/* SPDX-License-Identifier: GPL-2.0 */
 +
- 	/*
- 	 * If we were initialized by the cpu or bootloader before jump labels
- 	 * or workqueues are initialized, then we should enable the static
-@@ -934,8 +944,10 @@ void __init random_init(void)
- 		crng_set_ready(NULL);
- 
- 	/* Reseed if already seeded by earlier phases. */
--	if (crng_ready())
-+	if (crng_ready()) {
- 		crng_reseed(NULL);
-+		random_vdso_set_ready();
-+	}
- 
- 	WARN_ON(register_pm_notifier(&pm_notifier));
- 
++#ifndef _ASM_SPARC_VDSO_PROCESSOR_H
++#define _ASM_SPARC_VDSO_PROCESSOR_H
++
++#include <linux/compiler.h>
++
++#if defined(__arch64__)
++
++/* Please see the commentary in asm/backoff.h for a description of
++ * what these instructions are doing and how they have been chosen.
++ * To make a long story short, we are trying to yield the current cpu
++ * strand during busy loops.
++ */
++#ifdef	BUILD_VDSO
++#define	cpu_relax()	asm volatile("\n99:\n\t"			\
++				     "rd	%%ccr, %%g0\n\t"	\
++				     "rd	%%ccr, %%g0\n\t"	\
++				     "rd	%%ccr, %%g0\n\t"	\
++				     ::: "memory")
++#else /* ! BUILD_VDSO */
++#define cpu_relax()	asm volatile("\n99:\n\t"			\
++				     "rd	%%ccr, %%g0\n\t"	\
++				     "rd	%%ccr, %%g0\n\t"	\
++				     "rd	%%ccr, %%g0\n\t"	\
++				     ".section	.pause_3insn_patch,\"ax\"\n\t"\
++				     ".word	99b\n\t"		\
++				     "wr	%%g0, 128, %%asr27\n\t"	\
++				     "nop\n\t"				\
++				     "nop\n\t"				\
++				     ".previous"			\
++				     ::: "memory")
++#endif /* BUILD_VDSO */
++
++#else /* ! __arch64__ */
++
++#define cpu_relax()	barrier()
++
++#endif /* __arch64__ */
++
++#endif /* _ASM_SPARC_VDSO_PROCESSOR_H */
 
 -- 
 2.51.0
