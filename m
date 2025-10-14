@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-12813-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12814-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7B0CCCCD184
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 06:49:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2D73DCCD187
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 06:49:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cm4ZK22dCz3ccS;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cm4ZK6GMsz3cdn;
 	Tue, 14 Oct 2025 17:49:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760424553;
-	cv=none; b=SlmncC5y/pOoo4G3iQqQrHq5EBA4LEAZXh0jHbj6U8UVzv4r4GnE6MZTXl7b+8Le9W+wX5WAN/9hkGYIGp0O2q4qreEIH6mcpWyb/pVO/IHWLSuYaqBIseQoto0yIK/gvggQrau+qlA3ulE7NqdQFhKDuEbdChXI1B5X/bpy/pg9ylqHIqK0im4rE2K5Ap11UIuGiqPALgQKU6Jei2LkhtKdgXiXZfsYHg+22P06ESQtl4/S906PajrH5Z/pIIIoN4UXdcIrT+Mu0Mpg4VHBBX+RtRjISvpo5EVs0Xt6k1fBSn2D2dFHpERhlXan6cSdgtPRfoZVg7iB7TiXD2FUjA==
+	cv=none; b=dzGZUPpi6M5wAa4IXJe9uJ28GDq+0DictfMmYq/cHxphJMTjMJAJfmnakbk8aeUcxhy6TwYsTYxF8AcYauHiUnTAdrhgt+B/nj6xsUIWC79g9K6yAMkIDLb1R9dV/P2cYGEDFMkLCQ5cpCalM43sMnJpmCNcF37GWXEj1RKBxsrC3Yu1BJGBjRKpAlpBb/g8UD+aF32JrX9XTn4eUGhdkQA0F6vy5WyDWaioxYBX5Iu19HkUDtLeOosSG6bbwVRLDB3zJTtbLjjtkaGtc2Zl9lkXibuOEaywF6dxOvOAs+T7b0iDDjxAkGYti+sHdRjgdsZBCWqen3fLoXi4+GSB+g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1760424553; c=relaxed/relaxed;
-	bh=vpEp5M7NzfQSiFH2jKL570Ai1wZvStN2XYEWzJ3d1nM=;
+	bh=AA1RaYevhVsm4UU0YhUEK/PYFHQA4HTGOnbLyC3tUCM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=AsjUoQuvAZjSpDgj1HDNOhwXXZAsjnzRBDzVcQTO99Hnbfhv8Jp8x9Lxa+yDj5xiCX6A4MDYbayFumYaF1Ihn2XcsqfiWPZlGu+Ad2/fDIO4Fyo0U4YJnCHLfrOIlldPQ+hS30yfMBgTewZoXjJEko+T/eVwGdIAt+l8Wzfukj44Foks1sz6K8RMPmxWPoIviTp1oD24NXjSWgjGqyaNL/+lcG8tNrDyUTsayBgApeeSJyJAOkEhKUzBQlSRw/V9rxjScH7Y+DdtqYSHkK2AHBBuL3EqGf/sfjS/xLlbdkR5PHfB1zpcuFvYhMEz1V9h35k8iicHxMivXOtlPoyaLA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=AbS1ivXK; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=J46V6TKs; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=PD/2dJZkeE/ki9BC3QdB47d3CGY2FJwI/dYNb9v9eu9XNm6la40Sc9D692p5rLL/tKsnqDi4TEmCEoMPTbr9f6r6y6T97GT13z9zfamGPbmRX5DFoCTLq8WcBIB2DETnRAdAgtV54gC3hlqtfVnNWNZFsnkN07bjde4jeHjNtcsNhMhzHg/pDauGrGQeEw5gjwPv8LxHWwaMLiClYIU8wg/OoiDQKcw5Kwn6r74hLWv0ZGWDIMq0s8yy/DRhi3IyNPlZ5r8ugVG1KdNt+EfHmN1MYkCpbcjkpOg4fveVLVdM2k44h6BDgM+bAVYmsaqlqaZCTPtDOj8go6xKPP//5Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=dw1K3Wwc; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=KZAbUXMJ; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=AbS1ivXK;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=J46V6TKs;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=dw1K3Wwc;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=KZAbUXMJ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cm4ZH1Fj8z3020
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cm4ZH6fdQz30M0
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2025 17:49:11 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1760424547;
+	s=2020; t=1760424549;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vpEp5M7NzfQSiFH2jKL570Ai1wZvStN2XYEWzJ3d1nM=;
-	b=AbS1ivXKSxxKvhGecPLcRSNUEWEuw9fn6U9T3JexzRDy4JP8ptlcSanCYF7zLa7B67+Fvx
-	vWnzFZpxNxM35GWpLIGZRc6nT8e15qKJ03J0cCqPobHZ10bRDU/JD56SGgEXedarEiedw0
-	UmgAgk0wbFazDmiJ/4I1Psqpi57GDcTb2aDqLWjaCwXFbhwedWiRm8Dv/sUI0ZAnVA0DJy
-	DKzMrqyjpZb62iR/9tN73/HrfsZyr3QuaxXpuQG1x9YgTtIOXEuBtSM+husw4mfA1Xxamw
-	XrpoFznq3OcrLyOV/jN2QbdxFGXTjcVXOHEVMFjepXBXGWwPZ/TOQ/hdp0hORw==
+	bh=AA1RaYevhVsm4UU0YhUEK/PYFHQA4HTGOnbLyC3tUCM=;
+	b=dw1K3Wwc3DlbfASokc9Ng+BP6e8KH4qpOqoMYtQfgv6od0ERv2O/5Q6yJzx3ZGna7O7MNa
+	ep7Kr9FJ+QgcJv6v1BJGtXA8Y+SJ8CfzPzznloO4wO1ZYb3j7ItKmBvwuCaFJpe84QIqgp
+	iDetZBu7DPjqeENLUT+RFkuGMuCT3O3Df8H3lLEjKwxOZRhDe6O0PUiu2XgbG9mOOG49RB
+	sJfO8Dq5GG8PfnEuFyRrBmHnbDiZW+izDeo4f4mAcp0AAsTrhUHctxmcGQINiPNNL/s+r+
+	mUhMWTG+LXjl17X/ubCIl1cE4R/fYhiBgHArsyDkOdJu53DsJnpxdKmreaklwA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1760424547;
+	s=2020e; t=1760424549;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=vpEp5M7NzfQSiFH2jKL570Ai1wZvStN2XYEWzJ3d1nM=;
-	b=J46V6TKs5EP3v7C7yqoHXUbYqQbF+JHtlmqZ3FKeLekr9GW27Um+kEL7iiE8relpRw5k4T
-	qT89+dQndZVSw0Aw==
-Date: Tue, 14 Oct 2025 08:48:47 +0200
-Subject: [PATCH v4 01/35] selftests: vDSO: vdso_test_correctness: Handle
- different tv_usec types
+	bh=AA1RaYevhVsm4UU0YhUEK/PYFHQA4HTGOnbLyC3tUCM=;
+	b=KZAbUXMJaZVSA1LGpkyoLlcVsBr5HGeTNun4s+qb4nRA04oeOCi/McwPA3up3+QoGhJhW0
+	4y5Z/yiTFXqd71Cg==
+Date: Tue, 14 Oct 2025 08:48:50 +0200
+Subject: [PATCH v4 04/35] arm64: vDSO: compat_gettimeofday: Add explicit
+ includes
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,7 +70,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20251014-vdso-sparc64-generic-2-v4-1-e0607bf49dea@linutronix.de>
+Message-Id: <20251014-vdso-sparc64-generic-2-v4-4-e0607bf49dea@linutronix.de>
 References: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
 In-Reply-To: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
@@ -99,47 +99,42 @@ Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
  linux-mips@vger.kernel.org, linux-s390@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1760424546; l=1636;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1760424546; l=1077;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=xwlcFnQEXqQ5ZW5NFBVaIG/RI+shPsghmy7vrrzmGh4=;
- b=qHfqnjpjjXV61eOxYf7edKHo0slWvZ5SYsA/BifGNprPJAD8Khq30C50W+CTRD32kGW8dw5tZ
- hV7nr3UKiEeCeSt/ajtTzQxWm4toVPCt96lvMzDcV9Vp8mhorWE8oeH
+ bh=V9tDNcYgJIt9GytAgrSszi/+I+38Gq3Tgc4R1PI5n6s=;
+ b=O6sdJZ6+xsZw+9772TYvJMS+FktucaD4NMhv75qVXAsnEqDi52ZmzGJHQa9JNzfFOirVVsZJL
+ A4w+O6aHQm2Bq5Yx8u4Xh+LTZn1INmM4znwFHui8E+jHpz6QaxYylAv
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-On SPARC the field tv_usec of 'struct timespec' is not a 'long int', but
-only a regular int. In this case the format string is incorrect and will
-trigger compiler warnings.
+The reference to VDSO_CLOCKMODE_ARCHTIMER requires vdso/clocksource.h and
+'struct old_timespec32' requires vdso/time32.h. Currently these headers
+are included transitively, but those transitive inclusions are about to go
+away.
 
-Avoid the warnings by casting to 'long long', similar to how it is done for
-the tv_sec and what the other similar selftests are doing.
+Explicitly include the headers.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 Tested-by: Andreas Larsson <andreas@gaisler.com>
 Reviewed-by: Andreas Larsson <andreas@gaisler.com>
 ---
- tools/testing/selftests/vDSO/vdso_test_correctness.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/arm64/include/asm/vdso/compat_gettimeofday.h | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/tools/testing/selftests/vDSO/vdso_test_correctness.c b/tools/testing/selftests/vDSO/vdso_test_correctness.c
-index da651cf53c6ca4242085de109c7fc57bd807297c..5229fcaae8194d51b2cdffdbae59f00cfaeb96dc 100644
---- a/tools/testing/selftests/vDSO/vdso_test_correctness.c
-+++ b/tools/testing/selftests/vDSO/vdso_test_correctness.c
-@@ -412,10 +412,10 @@ static void test_gettimeofday(void)
- 		return;
- 	}
+diff --git a/arch/arm64/include/asm/vdso/compat_gettimeofday.h b/arch/arm64/include/asm/vdso/compat_gettimeofday.h
+index 7d1a116549b1b98d6eb7a78d053958c6a71799ec..2eb116d91235fea8362a11f3644619dbeb8201de 100644
+--- a/arch/arm64/include/asm/vdso/compat_gettimeofday.h
++++ b/arch/arm64/include/asm/vdso/compat_gettimeofday.h
+@@ -7,6 +7,9 @@
  
--	printf("\t%llu.%06ld %llu.%06ld %llu.%06ld\n",
--	       (unsigned long long)start.tv_sec, start.tv_usec,
--	       (unsigned long long)vdso.tv_sec, vdso.tv_usec,
--	       (unsigned long long)end.tv_sec, end.tv_usec);
-+	printf("\t%llu.%06lld %llu.%06lld %llu.%06lld\n",
-+	       (unsigned long long)start.tv_sec, (long long)start.tv_usec,
-+	       (unsigned long long)vdso.tv_sec, (long long)vdso.tv_usec,
-+	       (unsigned long long)end.tv_sec, (long long)end.tv_usec);
+ #ifndef __ASSEMBLY__
  
- 	if (!tv_leq(&start, &vdso) || !tv_leq(&vdso, &end)) {
- 		printf("[FAIL]\tTimes are out of sequence\n");
++#include <vdso/clocksource.h>
++#include <vdso/time32.h>
++
+ #include <asm/barrier.h>
+ #include <asm/unistd_compat_32.h>
+ #include <asm/errno.h>
 
 -- 
 2.51.0
