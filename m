@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-12841-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12842-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8328FCCD184
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 06:53:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 57E59CCD187
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 06:53:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cm4Zm6ldDz3dXY;
-	Tue, 14 Oct 2025 17:49:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760424576;
-	cv=none; b=lYAoYLK6P8Fw5z5f6FOwNfzxDp6mZEXkHSCz6CFcccH73U9vVsJuEuDL9fPCZH5cqYTmQb/tGjJXd1jyZjWr/QRGLdDciUMMY9w9MkY4VwtBKb3Wd8LMNqSATsngX5M+pU4Ni3jnRY9Wu3QXP20r5J6N3EDBBNZDnJyV2AhBF7UTINLTev9yh0zJt+3SKLONT5HVxqGYjIrEQC5ZtbAIRjmW263Eh1pq1glzqylySfw3H4V2hYexqur2Yz4wrz+f7Bm0m3JOsX2l0XBp8yvH5NjWQi37KU7DN8Nror2ot9dDuRYywGUudAUbpOcMZax7rI5HFEvBjScug9Pm6q5otA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cm4Zn2TgJz3drk;
+	Tue, 14 Oct 2025 17:49:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760424577;
+	cv=none; b=g8t40g19DREuyQBcPpX2ZKysv0SPVsgofRGeWQ8uNTYMDtHg3sZWG6weEREIScn7t6AacBIfoNJs1tToSUm6DcWR5VdAIhbkcVOpepDrJWBG1CGo7A2XRfj1F8aUG12LRJcSd3HGZAQ2w+uPwzZQWG13G3bSB+vVUsGygizotG+weAb9x0Bekg8Um8FZZAnq35IFhjrgM1jEkREW/eDzRvoNkQLhOSB7ETcjOftbcAKNIF9uTErUCf0cFpT8qOJFbL63SHDn/j32aTon125uEQfmxL6qEfv4wWJkjYVedpqqErxvmo7BJJH0LRFYKwkXrWKmAW8tghZ/vOnbqYksBA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760424576; c=relaxed/relaxed;
-	bh=Ctw6z2zVCPFpRDjjK/Bor9mxmqzsDUqKVIr3JUMCPTE=;
+	t=1760424577; c=relaxed/relaxed;
+	bh=W2Ul6+VkoAGtk+fbsWo8FnOHy/g1Ec+KdWjD8933yrE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=WF4/53BTeKH06igZWL3figiuz+zx4zOFmMKWF2iBSFwDLdnKc4Oe3cZIcyCrzdw4RSYWnM30go9LOm1lnjdIKJ8pxNa17rYfNH0R5G4N0y04l3JM+IhHFf6rhkxVaaRPnEACPKMRjueeNR4v+G+yzATy0bvJbGUvfC9vebModuZWM2klSrKmb7TFsT18E2LeM5m41tnn2984wV3OSlo683fV2ntAk4pfsm+P594xaXg1xcvg68WbBrmrJ000M7yOpNHfi+y+A9fysqADjhpKoGweR+f5y+NBGPYx02PFL+H4Ghk/12WpQ4qbpYi1Rxro6IufH+XS91cZf02ZAoK4Mw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=SJgQY6rh; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=SIY964ib; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=ecf64aTv0B/MU53cAUpGzAUhRrgYIB3l+dKsbIPBnj9Hu4msTUrAtPRoo7PRki7c85+Hy/Rc7MxGRYq359zreLs2wN89Sw9hYNn3HSzciml3J2wxwSf3iMLzdU1b4RyKhKsA1yHHuz7S7J0Uf8H6lCVZ0BFZy/RclXXrOjgGlK3We+0NFMbOzGxbUuOeylAgHfuhxUolq+W0ziyydAMC2dC0p1BOTYPdq99DFwSxyL6BySL/unEDt7YX2X6/xw7KNO0CWUEI+4bEpXQNXNOKYubOO7cU3jMCN0PzeWfvZQx5CA+4X7wW5rLMJ03DQS3vOEUIef9qhwt7nH5dfegfuA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=R7Y2Epqc; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=yCvAqurT; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=SJgQY6rh;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=SIY964ib;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=R7Y2Epqc;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=yCvAqurT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cm4Zl46dqz3dfg
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2025 17:49:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cm4Zm47WPz3ccF
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2025 17:49:36 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1760424571;
+	s=2020; t=1760424567;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Ctw6z2zVCPFpRDjjK/Bor9mxmqzsDUqKVIr3JUMCPTE=;
-	b=SJgQY6rhi25HikAnpR7m/+GjLKzcNc+ulNm4jRwhYzAViDq+VP67/bKFvOBYac0wWIrn+b
-	LR8qvE1dqWDxfktw/5U7BfPdmvX3fw+leswF6u4EUUZt79ha6aaf1DiZ0w1bh1fouAFTuM
-	LMnxZcrPAy4dE2S29w935gxNTNOf6uFnG/AOzGFwHX04yd4PVRBz0mXxa5411vSov58+vz
-	9tTort9wcS77PhZ1BQtYbKyglH9HvCLPxCWo8h8G6fr7gz3Hw8TZw5Mb5xPpH2hYB2s8QS
-	qSc1ahRm2X3yVQoa04eqlEXSreVJUrQ6KKwI77QtKer6u2Y51WjgnEhmbUsIvw==
+	bh=W2Ul6+VkoAGtk+fbsWo8FnOHy/g1Ec+KdWjD8933yrE=;
+	b=R7Y2Epqcwh1XIGHsa4YhsLHE28rrG/0h8jCubj3C2UJzPNcamxn3KkemVTrIXQrY7hgc/u
+	eY5MA91zrK3skLGtJwI8P+0JskOtmOTWnzW5d6vH/Os3wzrGB6kwBMrsu4KC/5VgrpbGAV
+	bgm1XWMaPxoxDFvU2KmeFaGEOWEEXasLOlRL4mBstuGfRsckbCDNRmiy0djwH+4oeC35Kh
+	CUGU7lxgEB3gEzklhaR5w+pIGwNTCfLfp5d34h0KZAFGdfREITfRPUYl0Q6cEsJh0d0AI3
+	pZw8Anen8BR0Bx+kcxVo6GLS7bAPHgUJfM6AY6TuNESFRQhxE+Nwlx4n+JOKfw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1760424571;
+	s=2020e; t=1760424567;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=Ctw6z2zVCPFpRDjjK/Bor9mxmqzsDUqKVIr3JUMCPTE=;
-	b=SIY964ibeBMDBfSWXaREGK3RST6oxNsrRUMtMNHo2iwqdWDn6tl1cXZPULW50EDd444CJr
-	f6JBTw9BW/3/cxBA==
-Date: Tue, 14 Oct 2025 08:49:21 +0200
-Subject: [PATCH v4 35/35] clocksource: remove ARCH_CLOCKSOURCE_DATA
+	bh=W2Ul6+VkoAGtk+fbsWo8FnOHy/g1Ec+KdWjD8933yrE=;
+	b=yCvAqurTFkWATU5HMBrDFI5i0G4o0VQm6+fqujIoho/B89bXNotMVDIVWAXXcm0HNozTom
+	aAnP0t+bvqkqkTDw==
+Date: Tue, 14 Oct 2025 08:49:19 +0200
+Subject: [PATCH v4 33/35] sparc64: vdso2c: Remove symbol handling
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20251014-vdso-sparc64-generic-2-v4-35-e0607bf49dea@linutronix.de>
+Message-Id: <20251014-vdso-sparc64-generic-2-v4-33-e0607bf49dea@linutronix.de>
 References: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
 In-Reply-To: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
@@ -98,69 +98,120 @@ Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
  linux-mips@vger.kernel.org, linux-s390@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1760424546; l=1786;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1760424546; l=3583;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=dQYrfrH6p59kOQp8CklF/Vp09pCtZ6J6GVY/7odturY=;
- b=Wu1NQgBNvnEB5LIkZlAVc2nl5UHIvAcwoDQQL5xS07arY9KRRtvEqZcoP347fwi2GCQ3xtn0+
- zA44cRMjJacBd8KGBEIzRjLhJyEIekF9k/Hds3wcM4CPYv+/tJE/JoO
+ bh=rscVeDO1P+cKaXX/Ha1fTrfGby5/x6sbnmbmn2plnQg=;
+ b=MKQP0xW+gatRy36pcrODh3/t+7XqCnNDiuxCl4M8kN91U8oRPokjlz5Yoz/6IYPKFb3zhWWYF
+ /cv3C/CpJ8nBaXfEJdWKHFaJmBFqdbTFOa5KX+Nq99Xj9d5h3ieKu1l
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-From: Arnd Bergmann <arnd@arndb.de>
+There are no handled symbols left.
 
-After sparc64, there are no remaining users of ARCH_CLOCKSOURCE_DATA
-and it can just be removed.
-
-Signed-off-by: Arnd Bergmann <arnd@arndb.de>
-Acked-by: John Stultz <jstultz@google.com>
-[Thomas: drop sparc64 bits from the patch]
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 Tested-by: Andreas Larsson <andreas@gaisler.com>
 Reviewed-by: Andreas Larsson <andreas@gaisler.com>
+Acked-by: Andreas Larsson <andreas@gaisler.com>
 ---
- include/linux/clocksource.h | 6 +-----
- kernel/time/Kconfig         | 4 ----
- 2 files changed, 1 insertion(+), 9 deletions(-)
+ arch/sparc/vdso/vdso2c.c | 10 ----------
+ arch/sparc/vdso/vdso2c.h | 41 +----------------------------------------
+ 2 files changed, 1 insertion(+), 50 deletions(-)
 
-diff --git a/include/linux/clocksource.h b/include/linux/clocksource.h
-index 65b7c41471c390463770c2da13694e58e83b84ea..12d853b1883265cb47d93e33d8370e3957e7e695 100644
---- a/include/linux/clocksource.h
-+++ b/include/linux/clocksource.h
-@@ -25,8 +25,7 @@ struct clocksource_base;
- struct clocksource;
- struct module;
+diff --git a/arch/sparc/vdso/vdso2c.c b/arch/sparc/vdso/vdso2c.c
+index 70b14a436fe2297ab446f778ab0d43155c272421..e5c61214a0e285547ac57c9997542546464bde23 100644
+--- a/arch/sparc/vdso/vdso2c.c
++++ b/arch/sparc/vdso/vdso2c.c
+@@ -58,14 +58,6 @@
  
--#if defined(CONFIG_ARCH_CLOCKSOURCE_DATA) || \
--    defined(CONFIG_GENERIC_GETTIMEOFDAY)
-+#if defined(CONFIG_GENERIC_GETTIMEOFDAY)
- #include <asm/clocksource.h>
- #endif
+ const char *outfilename;
  
-@@ -106,9 +105,6 @@ struct clocksource {
- 	u64			max_idle_ns;
- 	u32			maxadj;
- 	u32			uncertainty_margin;
--#ifdef CONFIG_ARCH_CLOCKSOURCE_DATA
--	struct arch_clocksource_data archdata;
--#endif
- 	u64			max_cycles;
- 	u64			max_raw_delta;
- 	const char		*name;
-diff --git a/kernel/time/Kconfig b/kernel/time/Kconfig
-index 7c6a52f7836cef248e0949060b50baa293f446cf..fe33118770978682d0ff6c6e7990896f42703b50 100644
---- a/kernel/time/Kconfig
-+++ b/kernel/time/Kconfig
-@@ -9,10 +9,6 @@
- config CLOCKSOURCE_WATCHDOG
- 	bool
- 
--# Architecture has extra clocksource data
--config ARCH_CLOCKSOURCE_DATA
--	bool
+-struct vdso_sym {
+-	const char *name;
+-	int export;
+-};
 -
- # Architecture has extra clocksource init called from registration
- config ARCH_CLOCKSOURCE_INIT
- 	bool
+-struct vdso_sym required_syms[] = {
+-};
+-
+ __attribute__((format(printf, 1, 2))) __attribute__((noreturn))
+ static void fail(const char *format, ...)
+ {
+@@ -105,8 +97,6 @@ static void fail(const char *format, ...)
+ #define PUT_BE(x, val)					\
+ 	PBE(x, val, 64, PBE(x, val, 32, PBE(x, val, 16, LAST_PBE(x, val))))
+ 
+-#define NSYMS ARRAY_SIZE(required_syms)
+-
+ #define BITSFUNC3(name, bits, suffix) name##bits##suffix
+ #define BITSFUNC2(name, bits, suffix) BITSFUNC3(name, bits, suffix)
+ #define BITSFUNC(name) BITSFUNC2(name, ELF_BITS, )
+diff --git a/arch/sparc/vdso/vdso2c.h b/arch/sparc/vdso/vdso2c.h
+index ba0794659eb5af53b8c86b24f3221a5d0b3f74ab..bad6a0593f4ca293feca201a6343833268ad1cb8 100644
+--- a/arch/sparc/vdso/vdso2c.h
++++ b/arch/sparc/vdso/vdso2c.h
+@@ -17,11 +17,9 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
+ 	unsigned long mapping_size;
+ 	int i;
+ 	unsigned long j;
+-	ELF(Shdr) *symtab_hdr = NULL, *strtab_hdr;
++	ELF(Shdr) *symtab_hdr = NULL;
+ 	ELF(Ehdr) *hdr = (ELF(Ehdr) *)raw_addr;
+ 	ELF(Dyn) *dyn = 0, *dyn_end = 0;
+-	INT_BITS syms[NSYMS] = {};
+-
+ 	ELF(Phdr) *pt = (ELF(Phdr) *)(raw_addr + GET_BE(&hdr->e_phoff));
+ 
+ 	/* Walk the segment table. */
+@@ -72,38 +70,6 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
+ 	if (!symtab_hdr)
+ 		fail("no symbol table\n");
+ 
+-	strtab_hdr = raw_addr + GET_BE(&hdr->e_shoff) +
+-		GET_BE(&hdr->e_shentsize) * GET_BE(&symtab_hdr->sh_link);
+-
+-	/* Walk the symbol table */
+-	for (i = 0;
+-	     i < GET_BE(&symtab_hdr->sh_size) / GET_BE(&symtab_hdr->sh_entsize);
+-	     i++) {
+-		int k;
+-
+-		ELF(Sym) *sym = raw_addr + GET_BE(&symtab_hdr->sh_offset) +
+-			GET_BE(&symtab_hdr->sh_entsize) * i;
+-		const char *name = raw_addr + GET_BE(&strtab_hdr->sh_offset) +
+-			GET_BE(&sym->st_name);
+-
+-		for (k = 0; k < NSYMS; k++) {
+-			if (!strcmp(name, required_syms[k].name)) {
+-				if (syms[k]) {
+-					fail("duplicate symbol %s\n",
+-					     required_syms[k].name);
+-				}
+-
+-				/*
+-				 * Careful: we use negative addresses, but
+-				 * st_value is unsigned, so we rely
+-				 * on syms[k] being a signed type of the
+-				 * correct width.
+-				 */
+-				syms[k] = GET_BE(&sym->st_value);
+-			}
+-		}
+-	}
+-
+ 	if (!name) {
+ 		fwrite(stripped_addr, stripped_len, 1, outfile);
+ 		return;
+@@ -129,10 +95,5 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
+ 	fprintf(outfile, "const struct vdso_image %s_builtin = {\n", name);
+ 	fprintf(outfile, "\t.data = raw_data,\n");
+ 	fprintf(outfile, "\t.size = %lu,\n", mapping_size);
+-	for (i = 0; i < NSYMS; i++) {
+-		if (required_syms[i].export && syms[i])
+-			fprintf(outfile, "\t.sym_%s = %" PRIi64 ",\n",
+-				required_syms[i].name, (int64_t)syms[i]);
+-	}
+ 	fprintf(outfile, "};\n");
+ }
 
 -- 
 2.51.0
