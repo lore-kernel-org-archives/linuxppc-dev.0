@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-12854-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12855-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F170CCD196
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 13:06:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 70795CCD192
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 13:06:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cmDx25Z6Nz3ccw;
-	Wed, 15 Oct 2025 00:05:58 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cmDx31HsBz3cBW;
+	Wed, 15 Oct 2025 00:05:59 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760447158;
-	cv=none; b=fGnFzPdbyJOfS/QAkal5G7EbB8Q2jBdEaKuL07DuUcTJY0Q9F/wNPEQF2yzAli9zEQP/aJgjyWCxLqNcKxYWXLVzva+UcmikYXo+H2OokJJAsBexxI9dJVGbzswuYqbTeL7NNE6IvbG4lnnOuw+S8p0yK4MS9FO7T0m+6Xkw+Q81HXIgBdfMQf7RmMPHpaw6bY67ssKmate/9nu4EziI6ee2MaiU9faz7k3857YIZw2L9ccMsWo8ZjxAwKA6OaQx4X922482pwsR/GZcrUrgzsVdJ44W6n7jbYboSXWY/NRgUCPUNc4MkR010vkf66VMt69ah2vKHGTiSPjfg03TbQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760447159;
+	cv=none; b=SqlA6Z2T04wARosm9Ky2rPvT8E4UhygC6ujdgm9iQVKSQHHbRcRq6S9UwXq6pPIqgthSATSf47wKAxW2KmPV5ZaOLZMRm6eaAhhFjve+Ta0pFK2FmDe2/ZE1JmmiHKwe8zAQHiB4b4oLVOQUfxya+FrzxVX/8zR1b++0u2CiMf3HtwQ02JR6DvUtJSZBtjjEPV4HYWY+I+EGSsGup3pYt2oIn15zxZtsEpPl3zIzJRblmumfQGPcOWB/oJc7GaXwTzQ4MEKvrIa5b2VXoidi6BYp+++mWid9kpqFfXS4shEWf37ElRRmR3dNij51qJzs+gA3nOb/yzgwcRULsFLTEg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760447158; c=relaxed/relaxed;
-	bh=rmWsgXe/EUJlh3Oqic3jAEqEyRP4824MK4HzVDJVrYI=;
+	t=1760447159; c=relaxed/relaxed;
+	bh=PtEMzaRgOB8kquDpZ2oJC8rCzxEI2hYSKcXXX4oBQqw=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=LEgkSFlC8gwbBJ2z9nFc/WNpOETRFUIfmegrkVQ3rmb7oCd+hazKH220gVTDA9THfRZB1O9Kdbbq5fFzs8AMyfAGs6HrH+1pJPBnWRFfsNxuXCLsxxEptkGTyok0PN6hYwdZEzDPGtOSHQZQBa95Zh0A4D7SaeLfQJZzNPJnzgKQpb3XHT6QcDPKYFRttBu1pndhI6IMfS092lHcc0QXuU6oTjlx8b5pU3wG3tlcK04bfrXc8dqPeUqMwEA/shcAo51yiOCf9GtD5yzIHOAX5MzU+gz7mpHlxmHWpaJh5kwr91bk0T6ceWMrjQt5FGCHNXex5R06GX/5H45l+amOFQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=L6TpQNh7; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=C8AAY+K/; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=HZiOcyLamLSJrzHVMxKl1AFx7iZ92rGiB/V6nJM7tTRyai9Rfy9rKkOkSa0PWrk4YLaeLooqdQVhTnQ1gQ3C06S32DvMDZJwNe16R6KMH76MbspTwrmxkx4smtFUoc9OghopvE7GM3+OiPQiL/sD2Jx5wvaXI0ckpiH68NlTOxKOKZn7++lSA6gKiydG37vOOlRIvIlJjGccLQDDwn6xo85DUNu0xYJpYPr2FqaWCQHjxPJk4JuQMqU783r52teEfK4F0gRcF9FihQUsRnTQ4fqdpsT0nHOjOpvTAiABFjAPIkZcKLzI6W2iMhi8vDHaYxy6ocLmnt/kJMkDHgwq6Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=kDPkhNZF; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=zLHxkSgW; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=L6TpQNh7;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=C8AAY+K/;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=kDPkhNZF;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=zLHxkSgW;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cmDwz55Y6z3bW7
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cmDwz54Fwz30V1
 	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2025 00:05:55 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1760447150;
+	s=2020; t=1760447152;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rmWsgXe/EUJlh3Oqic3jAEqEyRP4824MK4HzVDJVrYI=;
-	b=L6TpQNh7Vb8hlDonYQwENXkD64j52H59yc/Kb8VjJ6hEGCsGrURA/TSoLYPqPKPy+v7+CF
-	i5QpAoY/QaDuIQtziFgIqe3wuE7blMwjVWQ3xuxQYy9vzsoiT1LWrkdUbSOTZ8sR1FjDtZ
-	fKLXrqO7/b4QvE/vyglIm6iTxIzdRvaA7+7nv32D75VtEcv9SS4GfR8Fw5lhnzsd8BRwuR
-	7F87BGld5J/KWnpMWzEXYt03tOWSrAxX1xUG9y/pDcBeAlVS9SaqFzm53ra9MB+ObiCjID
-	9AVH20CII2f5VWgO0tZAZwwbzbhuWa4CIEyVtaoyndKBAsU9wOXROlw3UyK1HA==
+	bh=PtEMzaRgOB8kquDpZ2oJC8rCzxEI2hYSKcXXX4oBQqw=;
+	b=kDPkhNZFnKiPIKn2BfUt5pn59Sg5Gn1PrDHdDcLkuN3BevIr2tumGBieAbhxD2f4hflub8
+	e8SRmhJs4vtIcfp9qgaSlijd6Ih1iAbrv0BJWxfaa2XZb15CS5jFUHKZ+yrK8Id2JM78x1
+	95G9tQO2AKOpfPjX/yMBkhWiLEe8Ehyul3lz9yUe15jV/Z/q+EI6Xgu6I5jGxMhWOi5JO+
+	GYy3ovjSpa7MZ++Prynre1P1J+cvYl12KJGCvDwZx2HN8axJYv6DZPE3VJqP8X0RusNIWY
+	fpQUWrS8hmvkUupggb1ITeEYpa/KHeYd5EqoYqt7zeSKYXCey/nDz2gPSKF7/g==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1760447150;
+	s=2020e; t=1760447152;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=rmWsgXe/EUJlh3Oqic3jAEqEyRP4824MK4HzVDJVrYI=;
-	b=C8AAY+K/Vpov18nnCiOgJypH4XE/Z4j8vzRNImlx/xoZGX4JCR77rgTkUawUW8aIh3iarf
-	XBuD81oOW8Hum1DA==
-Date: Tue, 14 Oct 2025 15:05:16 +0200
-Subject: [PATCH v2 01/10] kbuild: don't enable CC_CAN_LINK if the dummy
- program generates warnings
+	bh=PtEMzaRgOB8kquDpZ2oJC8rCzxEI2hYSKcXXX4oBQqw=;
+	b=zLHxkSgWSjdbKEzJflQ9dcKDaS7KCBMSUJheUled3tqTF+w6qHzcAxxo3/aGtH3oj+wwIC
+	hNdsXlaXlufgbEBw==
+Date: Tue, 14 Oct 2025 15:05:19 +0200
+Subject: [PATCH v2 04/10] riscv: Implement custom CC_CAN_LINK
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20251014-kbuild-userprogs-bits-v2-1-faeec46e887a@linutronix.de>
+Message-Id: <20251014-kbuild-userprogs-bits-v2-4-faeec46e887a@linutronix.de>
 References: <20251014-kbuild-userprogs-bits-v2-0-faeec46e887a@linutronix.de>
 In-Reply-To: <20251014-kbuild-userprogs-bits-v2-0-faeec46e887a@linutronix.de>
 To: Nathan Chancellor <nathan@kernel.org>, 
@@ -95,50 +94,53 @@ Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
  linux-mips@vger.kernel.org, sparclinux@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1760447149; l=1486;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1760447149; l=1258;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=IDhCA1BagrOzAKjk7RuNtb+m/Zg87sOWHgJNO4N/lzs=;
- b=2GBDxIG9QU3kONJteRcQFaut1ha2ZM7A46rDztSe+RBbZ/fhVoTctHwgcHlR3TApjkzsEu0sX
- faVc067JB5BDIb+TLHZhVg0TdYAJhlc1qUyldatX+RhG2bGSRhmA55P
+ bh=3lgCYGIMr6BqeDPz9pKFvSa3Tpv/XYmPh2f36Wz3/Vw=;
+ b=ljrpmNZOQUkLMN+En8m+6y2KVlfRnUR20ZZD26p+acX5QP7AVUU4yWipMMpv+SjAnIDnFb0Qx
+ WUXs2N/Eo+MCXvns+nHls5Gg7cVspWXWzbvjHF5Wo72H4v/yRtTle/C
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-It is possible that the kernel toolchain generates warnings when used
-together with the system toolchain. This happens for example when the
-older kernel toolchain does not handle new versions of sframe debug
-information. While these warnings where ignored during the evaluation
-of CC_CAN_LINK, together with CONFIG_WERROR the actual userprog build
-will later fail.
+The generic CC_CAN_LINK detection relies on -m32/-m64 compiler flags.
+These are not supported by riscv compilers.
 
-Example warning:
+Use architecture-specific logic using -mabi instead.
 
-.../x86_64-linux/13.2.0/../../../../x86_64-linux/bin/ld:
-error in /lib/../lib64/crt1.o(.sframe); no .sframe will be created
-collect2: error: ld returned 1 exit status
-
-Make sure that the very simple example program does not generate
-warnings already to avoid breaking the userprog compilations.
-
-Fixes: ec4a3992bc0b ("kbuild: respect CONFIG_WERROR for linker and assembler")
-Fixes: 3f0ff4cc6ffb ("kbuild: respect CONFIG_WERROR for userprogs")
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- scripts/cc-can-link.sh | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ arch/riscv/Kconfig | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/scripts/cc-can-link.sh b/scripts/cc-can-link.sh
-index 6efcead3198989d2ab2ab6772c72d8bb61c89c4e..e67fd8d7b6841e53341045b28dc5196cc1327cbe 100755
---- a/scripts/cc-can-link.sh
-+++ b/scripts/cc-can-link.sh
-@@ -1,7 +1,7 @@
- #!/bin/sh
- # SPDX-License-Identifier: GPL-2.0
+diff --git a/arch/riscv/Kconfig b/arch/riscv/Kconfig
+index 0c6038dc5dfd529e1fe623f6bc2729a388b33fde..1faf6e6ec87d1417b4e3213ad54053439c87e331 100644
+--- a/arch/riscv/Kconfig
++++ b/arch/riscv/Kconfig
+@@ -25,6 +25,7 @@ config RISCV
+ 	select ARCH_ENABLE_SPLIT_PMD_PTLOCK if PGTABLE_LEVELS > 2
+ 	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
+ 	select ARCH_HAS_BINFMT_FLAT
++	select ARCH_HAS_CC_CAN_LINK
+ 	select ARCH_HAS_CURRENT_STACK_POINTER
+ 	select ARCH_HAS_DEBUG_VIRTUAL if MMU
+ 	select ARCH_HAS_DEBUG_VM_PGTABLE
+@@ -1335,6 +1336,16 @@ config PORTABLE
+ config ARCH_PROC_KCORE_TEXT
+ 	def_bool y
  
--cat << "END" | $@ -x c - -o /dev/null >/dev/null 2>&1
-+cat << "END" | $@ -Werror -Wl,--fatal-warnings -x c - -o /dev/null >/dev/null 2>&1
- #include <stdio.h>
- int main(void)
- {
++config ARCH_CC_CAN_LINK
++	bool
++	default $(cc_can_link_user,-mabi=lp64d) if 64BIT
++	default $(cc_can_link_user,-mabi=ilp32d)
++
++config ARCH_USERFLAGS
++	string
++	default "-mabi=lp64d" if 64BIT
++	default "-mabi=ilp32d"
++
+ menu "Power management options"
+ 
+ source "kernel/power/Kconfig"
 
 -- 
 2.51.0
