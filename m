@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-12843-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12844-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CE089CCD187
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 06:53:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5FFECCD187
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 06:53:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cm4Zp1YlPz3f1N;
-	Tue, 14 Oct 2025 17:49:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cm4Zv0Jgnz3f57;
+	Tue, 14 Oct 2025 17:49:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760424578;
-	cv=none; b=gsCe963MqVA5j9igZUViwWv64Af5PohRFU7NoL15s/+1ulE62rEJI5IU/ENrlIB65M1zSUStqxUhGnurxqjovT9TzXX9izZHhbOoOSZyP7sPXwFoWuWE+QCVo16oiuny15cDsZ0DrrCGLuUA/RfFAXj6jGPBZ/cvt0f2T6gz+jo9RRD3OZj3B9qAo8U1SNXACwfDpoNiWCpXabR2xso2HSi3P+cPsT1FNOY7e1tz8bWATZDuhZ4u85KuJ0HGKMAz1gGTL4gnDMKO/te5MR1iiRMCLVh0OtyEUXOqykzmwtQIQnPqOS4m/UE7iLHsA36M5LhPYg7wbKUqX/6UHNS2mg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760424583;
+	cv=none; b=hnDepNq+6dlWie0pCv2T29I83kTJMDWtCnQ7F03S4OpKCVSWgqkn+HtpXlijzqL+d9iVNNa2BKriJUa3zRo5fr0b99EjeC3WQgZBC6hhJZ8jvaalHaa0HkoMZpQTOloMiP3q4E5iOkvp3qAkcORi8GRCRV6rwrF5WScCV2zg1G/HsHkBim2TUeWQtY3XdSAf/y3UajLckLvef12K9Um4cJ05a2PurcHHalU2P+0WFVSliUjhkYsRJmp1L3awn+mMrFIj5eFMAG1uVtwA5YGhqZrI91p8XDqW8r2lNCnSyfwSzurTcYHAQoPGFEKwEktPQTgMUCbXTzpapqnAX+vIdA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760424578; c=relaxed/relaxed;
-	bh=OR5Q4ZuRkIA741qF/DuLi5z3bNd2XCtlxY+P3oghy5c=;
+	t=1760424583; c=relaxed/relaxed;
+	bh=VjJXMHE/nZ0JgqIfSCrtFNclnrKwtH1lYk/BfThnBk0=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=DykohPqzp80Q5wccq6e1IqB5gTyTrbYSiW+FyzV8QkhboGLsahJ4Ry0nHLsXRTyO+yEZujvuTPkEux8Vf24AQ2IMcBHxhCArGK7AC8i9Uip3nWx3+zFS9kqD9EvoVNqYMzk9x3CpEBESZMlYIJTvmOR3NEVs6BpqaL8S6Ij89UWUt1lgHo+EIWz4ZWYsg2sOBgimSz3suwjQt/UzpuomYGmgv9A7m6bU8X0IJyUen6WzpKeHJjH7NaRe3XmkFNR1k0RKdNsPYvyhRZEWdw8rWxF+bBg0IrJfsghLwTTU9oWcowRUzU8gMcIpWBO6Ny0Xq6U93VpVhuezr/vDWQrskg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=vOoxNAOI; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=XzDMbTmh; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=AQqi0M02aG31mFWBYd4vex1/BrSCBglZCnTwxJzEOtxhy61sC1Edh/lmhHcLXs2P4j4b+ynWHCpM52RvtyHyDDFLCRJMgelKGY7F1KvR+PzmdDosoChZ64WoIHY/QiAYS45yMPQyfNlCXZm6Am0AXBhCV0wflrtsw75ZBc8WYeShwmRFZegFMY4gSAUYOAA5KxIiF3XCqghB1HvzHbisDparRM+hqlQ1iDZ8IrMxoTe8eX1D9EOXMO/G79q4jmYO2ZhRW5i1kePAqYyWpY5AdKl4OW7zKfFi5wcKPpGo4FeoFu7ED0H4lsHTBUZJVoCs+8iM9XT2Anf8uGE2L5uZfg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=cyjIQis5; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=L0DUBYri; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=vOoxNAOI;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=XzDMbTmh;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=cyjIQis5;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=L0DUBYri;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cm4Zn4H1Sz3dx0
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2025 17:49:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cm4Zt3Tbsz3dx0
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2025 17:49:42 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1760424565;
+	s=2020; t=1760424566;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=OR5Q4ZuRkIA741qF/DuLi5z3bNd2XCtlxY+P3oghy5c=;
-	b=vOoxNAOIOkPtLK2Gs2EYlcx/T6V88XBROauQuxOTsSOXMK+Y6kzwIhvy3/jWrpuW1S5lPL
-	KBWnjfyE/3pB1N3+E4p2688vm8zCGlXWQtVNJuwi6uhImcIWrYDEDnNPclgYn/zrMrtQD5
-	A5SVuO0oGy/cG1FCJG1PZFdcYkEeVa8F7dUdCjNXAUHkfmW9OfEyCWK2cmK9jBh+O+owMN
-	ZEK3i0NzNgFW1fqzXEyzFPnWYxtZgsrQeTAyOM8EFqvBlmR78Ix2og97ttYKm8IOe5Ko8r
-	56SV0Si0lDhUd3A/tjT/8NOXC4la0FxXrcXaPBDI8x/+F9N+japSZF3p+b6RlA==
+	bh=VjJXMHE/nZ0JgqIfSCrtFNclnrKwtH1lYk/BfThnBk0=;
+	b=cyjIQis5Lq49kZRSLFJObznqTl2NJHMwJRa1sfBbn2LJcuyAn/YguMqGwLvfeiLau0r8kY
+	yzJRJn4JM+a7CQnXQU32VW+q864qhgGPrJG3iKWXGRemZ1DImcOY2W28G9Ub/A90K+Hpcq
+	E1H8zuT/umsVYZw/BcexRNK3KRwIduKq5ygEY1C/alFYNP3JAPHCvKTbYtTa0hGKfj/wm/
+	7PC2GC73IlMFR9Jjq9qZ0aakqcONGqtYzxBlgtUCJ1IiK8Ga6ZgJ/S2k8S09hSePitzSsD
+	T/aQpccq8UbC+xFEIeuGKScYwsEI/MgifqSNTCFpbycVf0EO91UleuEkVs2s2Q==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1760424565;
+	s=2020e; t=1760424566;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=OR5Q4ZuRkIA741qF/DuLi5z3bNd2XCtlxY+P3oghy5c=;
-	b=XzDMbTmhdTy1yfzkEoPt+uhA82Qn3qiMel7AQ2xO4ZQVzR0alYnKUK/WSBjO4f7wYsr5fh
-	qGk1gFKLI1Lk2hBw==
-Date: Tue, 14 Oct 2025 08:49:15 +0200
-Subject: [PATCH v4 29/35] sparc64: vdso: Move syscall fallbacks into header
+	bh=VjJXMHE/nZ0JgqIfSCrtFNclnrKwtH1lYk/BfThnBk0=;
+	b=L0DUBYriuxVBe03Xsxo8OhUoaOQ5w/HeYc+gQ0AQcfr2exNerIBIWelXMXPHV88vLYPqVy
+	lnEW2pyZKTXb1ZAg==
+Date: Tue, 14 Oct 2025 08:49:18 +0200
+Subject: [PATCH v4 32/35] sparc64: vdso2c: Drop sym_vvar_start handling
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20251014-vdso-sparc64-generic-2-v4-29-e0607bf49dea@linutronix.de>
+Message-Id: <20251014-vdso-sparc64-generic-2-v4-32-e0607bf49dea@linutronix.de>
 References: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
 In-Reply-To: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
@@ -98,185 +98,79 @@ Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
  linux-mips@vger.kernel.org, linux-s390@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1760424546; l=5844;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1760424546; l=2109;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=54fVsevF6wJL94FjT3o2LBMAQrSAU/5OtqL2hTA5L+g=;
- b=ZffNKFwKaA+stbCVpIgoFsS3FlacbBDVNHcY87CY59NC3DdJDgUnlHzLWFA4unTTem27rYS0G
- laK7Y+RNIFCDAfCFvkTo8l5vng9UhFy1zbfTZv61v/2XhG2a6rBz7jc
+ bh=xwcj3q/CdIriTySoC7OX6peFSSoIsXzZXvpqY2dDPDE=;
+ b=hv2Xvu+2ElaFJ/9EkRp1sTFVapiThoAGkswOE/ZngtL2d5HFkcdasbSoaWSCkf+rpAlubc6Ab
+ MN20xLrKar/D7CKcyrF+ydnwRpw5/Y3b3/ON7vCFlpCi1rFJWABMC/9
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-The generic vDSO libraries expected the syscall fallbacks in
-asm/vdso/gettimeofday.h. To prepare the adoption of the generic library,
-move the existing functions there.
+After the adoption of the generic vDSO library this symbol does not exist.
 
-While at it, rename them so they match what the generic library expects.
+The alignment invariant is now guaranteed by the generic code.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 Tested-by: Andreas Larsson <andreas@gaisler.com>
 Reviewed-by: Andreas Larsson <andreas@gaisler.com>
 Acked-by: Andreas Larsson <andreas@gaisler.com>
 ---
- arch/sparc/include/asm/vdso/gettimeofday.h | 50 +++++++++++++++++++++++++++++
- arch/sparc/vdso/vclock_gettime.c           | 51 ++----------------------------
- 2 files changed, 52 insertions(+), 49 deletions(-)
+ arch/sparc/include/asm/vdso.h | 2 --
+ arch/sparc/vdso/vdso2c.c      | 6 ------
+ arch/sparc/vdso/vdso2c.h      | 4 ----
+ 3 files changed, 12 deletions(-)
 
-diff --git a/arch/sparc/include/asm/vdso/gettimeofday.h b/arch/sparc/include/asm/vdso/gettimeofday.h
-index 31f6505d3ab5dde9e02eca6da9182e5fb91031c4..429dc080568f59145cc0bc696060adeb60ac177a 100644
---- a/arch/sparc/include/asm/vdso/gettimeofday.h
-+++ b/arch/sparc/include/asm/vdso/gettimeofday.h
-@@ -6,6 +6,9 @@
- #ifndef _ASM_SPARC_VDSO_GETTIMEOFDAY_H
- #define _ASM_SPARC_VDSO_GETTIMEOFDAY_H
- 
-+#include <uapi/linux/time.h>
-+#include <uapi/linux/unistd.h>
-+
- #include <linux/types.h>
- #include <asm/vvar.h>
- 
-@@ -75,4 +78,51 @@ static __always_inline u64 __arch_get_hw_counter(struct vvar_data *vvar)
- 		return vread_tick();
- }
- 
-+#ifdef	CONFIG_SPARC64
-+#define SYSCALL_STRING							\
-+	"ta	0x6d;"							\
-+	"bcs,a	1f;"							\
-+	" sub	%%g0, %%o0, %%o0;"					\
-+	"1:"
-+#else
-+#define SYSCALL_STRING							\
-+	"ta	0x10;"							\
-+	"bcs,a	1f;"							\
-+	" sub	%%g0, %%o0, %%o0;"					\
-+	"1:"
-+#endif
-+
-+#define SYSCALL_CLOBBERS						\
-+	"f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7",			\
-+	"f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15",		\
-+	"f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23",		\
-+	"f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31",		\
-+	"f32", "f34", "f36", "f38", "f40", "f42", "f44", "f46",		\
-+	"f48", "f50", "f52", "f54", "f56", "f58", "f60", "f62",		\
-+	"cc", "memory"
-+
-+static __always_inline
-+long clock_gettime_fallback(clockid_t clock, struct __kernel_old_timespec *ts)
-+{
-+	register long num __asm__("g1") = __NR_clock_gettime;
-+	register long o0 __asm__("o0") = clock;
-+	register long o1 __asm__("o1") = (long) ts;
-+
-+	__asm__ __volatile__(SYSCALL_STRING : "=r" (o0) : "r" (num),
-+			     "0" (o0), "r" (o1) : SYSCALL_CLOBBERS);
-+	return o0;
-+}
-+
-+static __always_inline
-+long gettimeofday_fallback(struct __kernel_old_timeval *tv, struct timezone *tz)
-+{
-+	register long num __asm__("g1") = __NR_gettimeofday;
-+	register long o0 __asm__("o0") = (long) tv;
-+	register long o1 __asm__("o1") = (long) tz;
-+
-+	__asm__ __volatile__(SYSCALL_STRING : "=r" (o0) : "r" (num),
-+			     "0" (o0), "r" (o1) : SYSCALL_CLOBBERS);
-+	return o0;
-+}
-+
- #endif /* _ASM_SPARC_VDSO_GETTIMEOFDAY_H */
-diff --git a/arch/sparc/vdso/vclock_gettime.c b/arch/sparc/vdso/vclock_gettime.c
-index 16ac80982a00b9f965453b89a0cc111312baa9b2..e768c0b84b3420deab2f74335892d40a5b515ee7 100644
---- a/arch/sparc/vdso/vclock_gettime.c
-+++ b/arch/sparc/vdso/vclock_gettime.c
-@@ -13,38 +13,13 @@
-  */
- 
- #include <linux/kernel.h>
--#include <linux/time.h>
- #include <linux/string.h>
- #include <asm/io.h>
--#include <asm/unistd.h>
- #include <asm/timex.h>
- #include <asm/clocksource.h>
- #include <asm/vdso/gettimeofday.h>
- #include <asm/vvar.h>
- 
--#ifdef	CONFIG_SPARC64
--#define SYSCALL_STRING							\
--	"ta	0x6d;"							\
--	"bcs,a	1f;"							\
--	" sub	%%g0, %%o0, %%o0;"					\
--	"1:"
--#else
--#define SYSCALL_STRING							\
--	"ta	0x10;"							\
--	"bcs,a	1f;"							\
--	" sub	%%g0, %%o0, %%o0;"					\
--	"1:"
--#endif
+diff --git a/arch/sparc/include/asm/vdso.h b/arch/sparc/include/asm/vdso.h
+index 59e79d35cd7384e2dd752e92d20bc599e38cb8b0..f08562d10215bd3e9a2d4eaa0aadc8400b40e256 100644
+--- a/arch/sparc/include/asm/vdso.h
++++ b/arch/sparc/include/asm/vdso.h
+@@ -8,8 +8,6 @@
+ struct vdso_image {
+ 	void *data;
+ 	unsigned long size;   /* Always a multiple of PAGE_SIZE */
 -
--#define SYSCALL_CLOBBERS						\
--	"f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7",			\
--	"f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15",		\
--	"f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23",		\
--	"f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31",		\
--	"f32", "f34", "f36", "f38", "f40", "f42", "f44", "f46",		\
--	"f48", "f50", "f52", "f54", "f56", "f58", "f60", "f62",		\
--	"cc", "memory"
--
- /*
-  * Compute the vvar page's address in the process address space, and return it
-  * as a pointer to the vvar_data.
-@@ -64,28 +39,6 @@ notrace static __always_inline struct vvar_data *get_vvar_data(void)
- 	return (struct vvar_data *) ret;
- }
+-	long sym_vvar_start;  /* Negative offset to the vvar area */
+ };
  
--notrace static long vdso_fallback_gettime(long clock, struct __kernel_old_timespec *ts)
--{
--	register long num __asm__("g1") = __NR_clock_gettime;
--	register long o0 __asm__("o0") = clock;
--	register long o1 __asm__("o1") = (long) ts;
+ #ifdef CONFIG_SPARC64
+diff --git a/arch/sparc/vdso/vdso2c.c b/arch/sparc/vdso/vdso2c.c
+index b97af5ec9f35c01f2a976b6213b1768b677ad231..70b14a436fe2297ab446f778ab0d43155c272421 100644
+--- a/arch/sparc/vdso/vdso2c.c
++++ b/arch/sparc/vdso/vdso2c.c
+@@ -58,18 +58,12 @@
+ 
+ const char *outfilename;
+ 
+-/* Symbols that we need in vdso2c. */
+-enum {
+-	sym_vvar_start,
+-};
 -
--	__asm__ __volatile__(SYSCALL_STRING : "=r" (o0) : "r" (num),
--			     "0" (o0), "r" (o1) : SYSCALL_CLOBBERS);
--	return o0;
--}
--
--notrace static long vdso_fallback_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
--{
--	register long num __asm__("g1") = __NR_gettimeofday;
--	register long o0 __asm__("o0") = (long) tv;
--	register long o1 __asm__("o1") = (long) tz;
--
--	__asm__ __volatile__(SYSCALL_STRING : "=r" (o0) : "r" (num),
--			     "0" (o0), "r" (o1) : SYSCALL_CLOBBERS);
--	return o0;
--}
--
- notrace static __always_inline u64 vgetsns(struct vvar_data *vvar)
- {
- 	u64 v;
-@@ -184,7 +137,7 @@ __vdso_clock_gettime(clockid_t clock, struct __kernel_old_timespec *ts)
- 	/*
- 	 * Unknown clock ID ? Fall back to the syscall.
- 	 */
--	return vdso_fallback_gettime(clock, ts);
-+	return clock_gettime_fallback(clock, ts);
- }
- int
- clock_gettime(clockid_t, struct __kernel_old_timespec *)
-@@ -220,7 +173,7 @@ __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
+ struct vdso_sym {
+ 	const char *name;
+ 	int export;
+ };
+ 
+ struct vdso_sym required_syms[] = {
+-	[sym_vvar_start] = {"vvar_start", 1},
+ };
+ 
+ __attribute__((format(printf, 1, 2))) __attribute__((noreturn))
+diff --git a/arch/sparc/vdso/vdso2c.h b/arch/sparc/vdso/vdso2c.h
+index 60d69acc748f2401156a730027fe34abfb9fb6bc..ba0794659eb5af53b8c86b24f3221a5d0b3f74ab 100644
+--- a/arch/sparc/vdso/vdso2c.h
++++ b/arch/sparc/vdso/vdso2c.h
+@@ -104,10 +104,6 @@ static void BITSFUNC(go)(void *raw_addr, size_t raw_len,
  		}
- 		return 0;
  	}
--	return vdso_fallback_gettimeofday(tv, tz);
-+	return gettimeofday_fallback(tv, tz);
- }
- int
- gettimeofday(struct __kernel_old_timeval *, struct timezone *)
+ 
+-	/* Validate mapping addresses. */
+-	if (syms[sym_vvar_start] % 8192)
+-		fail("vvar_begin must be a multiple of 8192\n");
+-
+ 	if (!name) {
+ 		fwrite(stripped_addr, stripped_len, 1, outfile);
+ 		return;
 
 -- 
 2.51.0
