@@ -1,60 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-12856-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12857-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE722CCD184
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 13:06:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 890FDCCD184
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 13:06:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cmDx31rcsz3cft;
-	Wed, 15 Oct 2025 00:05:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cmDx472szz3cjf;
+	Wed, 15 Oct 2025 00:06:00 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760447159;
-	cv=none; b=MtPQUi/+CJm5+86tCi2lTFkQJhN5RrfIWg9ZjilUMFwo6HXDTm6YCGbcfjaubyb17cVuFUqaZmRL4kBGJdR9f5u5APWdW6629xDToMTrJMcEujG58AkaBLnPA2RDloB1jTcNfb6vqzDD2ImyabWgc3rW/qpI0LOz2+NMQShIPmKeINe4aj0CgvnIUVwbXU2mW/WW4gxhqx/x/OoM8LATaq/mfi/sm5VtJnaLiqiWV2qvOo5qOX1vy1nV8BsSyNnMm7cmM91XEj0Ppl/JSFEf8f864b3CodfGfxh01A/0vsgKQgzSRjzXsefWoGaeNgVKtlGqYj+AHYuOa/VtnWwWKw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760447160;
+	cv=none; b=fYkyQYHtFB5BW8duN7xEVh/9b/B1yBppeKfrfc69sMtwyER87rhMyq9wwd29FbOSrLjuk05s6Pgf4gAUK9f5KpyzTgyiyNAkvjFV0A5NamIRjqPa5aLCF09kqM9rale94VwdwRJReFCgMQvcV3dLjhWBx7reBXYq/l8UqKas6iDQlUS5mS9OxG8/aimjcu2tdgFDI5beE6/RwhTZBrC1WuhGeAnspkGT7OjGgdecKGshRGKIzia8JYTuEzHWEy7bm3QKSe6RuFrwpM6xbUWtA45TLG+ytb4Z3aoyvkfLr6ISehb4X6T0otqWffuiZ/HuzFK2jCyF5kzSOfj0iFzFWA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760447159; c=relaxed/relaxed;
-	bh=n5aEmOCiKWRV28QcYO8TDotRByeakPNFwzaXoHbD41M=;
+	t=1760447160; c=relaxed/relaxed;
+	bh=0CYU5O26JQub+yqWqbpQg+oK8k+3uTAokj7TeaLTkvI=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=ZZCR1pPFCzZCLKXxOtwx1BO/+xYjDAqKatd2z1HI/dafhPXty2yeMc0KNlNV4QX5IBoSKpnjJEhv/QgaXNEqosaryMvyFfTDoo+tBQQCRwOhTrh7QEJYKtwKxjxrc+Fc16SkEhOKLsNw49BUNkux+3SNkej9L+crsfS5OyUCfm3XMEKnkEzmNknc6pBQJfXt+LhZvzEJ1/THvBV6+TBEx2ueLlwxkXtuFWv9GQRDuIVjqDqrRS5cvdTdwGqR9BBZi7O+9OmgejQ3llOoiXg7frMt0yWD5O0L2eaNkEa8Ku7SLyWH5NczrPcGfhXvHLENrPHQpCMdXsG/HXcqFMEmNw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Zv1lZI9b; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=wlzUTHbK; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=G2IMCdV9Aw6h7YFcdu9t27AhpP52x06eMhTHtfChibnoU+rVM8LJ1yIiWAPs/jy4kewfR6CtPozpp3244w6T8xKxMNNraLR6uhZrza5PwzuB7n/aCpNTFZGxTlzL0R7iIWIHHR2XHqU+abHTWel8N+Jaad16lF6so6tQ6NZrIW5bcqfZLZDUwITUHWkwyymG4elUsJQa7bcrqlNWwomb69LteQ/UZ+8UNJen6MAGAFEJ71c22DWqXI9PP1pg0AJg9vN34Q2eXSRBoM+X3QmjmyWnYBWU2+T74isUoWPUsk1KicPLYCUKjgR8UYa2fnCBei93rxrFYYJV5HHtw8I8Xw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Cdzz+KJz; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=BwzlN2uX; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Zv1lZI9b;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=wlzUTHbK;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Cdzz+KJz;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=BwzlN2uX;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cmDwz52mpz3020
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2025 00:05:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cmDx41YYgz3cjT
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2025 00:06:00 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1760447151;
+	s=2020; t=1760447153;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=n5aEmOCiKWRV28QcYO8TDotRByeakPNFwzaXoHbD41M=;
-	b=Zv1lZI9bfmZPDvEM4JRusAAq2cBllhjidSUvA9XtE2Ueq5UmZZWoyNyW3QP9Qq2LayLz1t
-	EOWUw+ekjm1ZI3ivepNtxpPBhZK8KcSHVObBXN8SFRalX+yoW4vn8kBLzLxHl43jlA5/JR
-	1cLBjhlv73q773FIXCEdaE0azr9ONjKk13E8obTJ4zcG5LQqWtpuNTp0Zuas7VZs90NPPm
-	8+v68iVr3yOcA4456vKPsS22IsjrtUPvwZ0j24GKJzyN2MrGZim+zAMuiVw7AO6CNPzuqp
-	pgTkEA//CML0qSQlX0o6HpofqTPJvZXMG2eV2+DEd1WV7uGiKp7N6MaJZTr1mQ==
+	bh=0CYU5O26JQub+yqWqbpQg+oK8k+3uTAokj7TeaLTkvI=;
+	b=Cdzz+KJzTSoATXV5Ljvowdfgd+hQ49C2HiCspOUMSbLN4Y/KVwHbpcJlPKJDrYKwBpV1Cl
+	nl8yCfx9g0blauWEMvgfadUL1Xs67s2WkQmzFvJzw9Skl6Se6lLax4sHGzAsfb26klKK4r
+	1BR7dCS9II5sV9DxZS2LrinYR6AYT+BArKduD/fSTt/Rp2tk85LB4DGeGNLC0+s3ZjHIEu
+	COxW7QHALQxTwh7TIVAWN9EATLtrOBhFbB2fenbToNZVXr9gPZ2uc6XeCAsm5sSbnusf+D
+	IkBXOvaPA9/tEih0RaZgPFGhQsTs/IhEkpHFcxJdnU0UXlm4UHC30/jqEm0elg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1760447151;
+	s=2020e; t=1760447153;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=n5aEmOCiKWRV28QcYO8TDotRByeakPNFwzaXoHbD41M=;
-	b=wlzUTHbKokvyVpwrlS1pfBwevlVj/x9vf+ARON0OWsvmjFoXR1E5gzzyiFmLYG7aT3wHf2
-	LnIQbss7Iiy91mBw==
-Date: Tue, 14 Oct 2025 15:05:18 +0200
-Subject: [PATCH v2 03/10] kbuild: allow architectures to override
- CC_CAN_LINK
+	bh=0CYU5O26JQub+yqWqbpQg+oK8k+3uTAokj7TeaLTkvI=;
+	b=BwzlN2uXPCg/X47u0Uh4Y8N28ll/JnhCE8duJmS0jRH2zsnGwBT82W4JCx3IH8lzXaM7kD
+	xkxDEF1BudBfnOCA==
+Date: Tue, 14 Oct 2025 15:05:20 +0200
+Subject: [PATCH v2 05/10] s390: Implement custom CC_CAN_LINK
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20251014-kbuild-userprogs-bits-v2-3-faeec46e887a@linutronix.de>
+Message-Id: <20251014-kbuild-userprogs-bits-v2-5-faeec46e887a@linutronix.de>
 References: <20251014-kbuild-userprogs-bits-v2-0-faeec46e887a@linutronix.de>
 In-Reply-To: <20251014-kbuild-userprogs-bits-v2-0-faeec46e887a@linutronix.de>
 To: Nathan Chancellor <nathan@kernel.org>, 
@@ -95,71 +94,52 @@ Cc: linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
  linux-s390@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
  linux-mips@vger.kernel.org, sparclinux@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1760447149; l=2247;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1760447149; l=1192;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=6NbAT/c8dhOFpg7qjR2b49v4+fnBDinUJpp942RcUVs=;
- b=+axK+KClVFQLPqY2xQIV6Z1Guh/4xXDQBrACtf2w9ctXvFPO+pdPmvsWesaDbNln2fhCMBlvB
- WgGXUgtUQ07ACaBUqVkclPsSnd9imwvXGgtXlpBCgUj8Xxa/luTj8dE
+ bh=C5yzpCLqrEUvmfCc9tgMT4vkB0PmGsIVmeRJ/wm+ukg=;
+ b=6KMNxZohvV8U55EvTgd5gt+n+aQ06tzHiTyepjAkWCXf3bRHfASgeYcybxotqxOnkE219kD9n
+ 3f3fejzuvHFChDTTBo0UVdS4/IrKpsCny3q6UyLNz4mbPAvOrT8AK4d
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-The generic test for CC_CAN_LINK assumes that all architectures use -m32
-and -m64 to switch between 32-bit and 64-bit compilation. This is overly
-simplistic. Architectures may use other flags (-mabi, -m31, etc.) or may
-also require byte order handling (-mlittle-endian, -EL). Expressing all
-of the different possibilities will be very complicated and brittle.
-Instead allow architectures to supply their own logic which will be
-easy to understand and evolve.
+The generic CC_CAN_LINK detection relies on -m32/-m64 compiler flags.
+s390 uses -m31 instead of -m32.
 
-Both the boolean ARCH_HAS_CC_CAN_LINK and the string ARCH_USERFLAGS need
-to be implemented as kconfig does not allow the reuse of string options.
+Use architecture-specific logic using -m31/-m64 instead.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 ---
- Makefile     | 13 +++++++++++--
- init/Kconfig |  4 ++++
- 2 files changed, 15 insertions(+), 2 deletions(-)
+ arch/s390/Kconfig | 11 +++++++++++
+ 1 file changed, 11 insertions(+)
 
-diff --git a/Makefile b/Makefile
-index 17cfa11ca7163aa3297101ceb3c9e85f4878f12d..26e5bca534e27034c355939bca4c90db435ecdbd 100644
---- a/Makefile
-+++ b/Makefile
-@@ -1134,8 +1134,17 @@ ifneq ($(CONFIG_ARCH_VMLINUX_NEEDS_RELOCS),)
- LDFLAGS_vmlinux	+= --emit-relocs --discard-none
- endif
+diff --git a/arch/s390/Kconfig b/arch/s390/Kconfig
+index c4145672ca342a656eece10704706d4b12ff9fd6..77ea17537fa2f938aee1fce0053a48853b1ce638 100644
+--- a/arch/s390/Kconfig
++++ b/arch/s390/Kconfig
+@@ -82,6 +82,7 @@ config S390
+ 	select ARCH_ENABLE_MEMORY_HOTREMOVE
+ 	select ARCH_ENABLE_SPLIT_PMD_PTLOCK if PGTABLE_LEVELS > 2
+ 	select ARCH_ENABLE_THP_MIGRATION if TRANSPARENT_HUGEPAGE
++	select ARCH_HAS_CC_CAN_LINK
+ 	select ARCH_HAS_CPU_FINALIZE_INIT
+ 	select ARCH_HAS_CURRENT_STACK_POINTER
+ 	select ARCH_HAS_DEBUG_VIRTUAL
+@@ -290,6 +291,16 @@ config PGTABLE_LEVELS
  
--# Align the bit size of userspace programs with the kernel
--USERFLAGS_FROM_KERNEL := -m32 -m64 --target=%
-+# Align the architecture of userspace programs with the kernel
-+USERFLAGS_FROM_KERNEL := --target=%
-+
-+ifdef CONFIG_ARCH_USERPROGS_CFLAGS
-+KBUILD_USERCFLAGS += $(CONFIG_ARCH_USERFLAGS)
-+KBUILD_USERLDFLAGS += $(CONFIG_ARCH_USERFLAGS)
-+else
-+# If not overridden also inherit the bit size
-+USERFLAGS_FROM_KERNEL += -m32 -m64
-+endif
-+
- KBUILD_USERCFLAGS  += $(filter $(USERFLAGS_FROM_KERNEL), $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS))
- KBUILD_USERLDFLAGS += $(filter $(USERFLAGS_FROM_KERNEL), $(KBUILD_CPPFLAGS) $(KBUILD_CFLAGS))
+ source "kernel/livepatch/Kconfig"
  
-diff --git a/init/Kconfig b/init/Kconfig
-index 7b722e714d5c5a0580467914b226dc0700ec0797..4a2ae3cfbf26525a60936d9b29a74ef4319ba3a5 100644
---- a/init/Kconfig
-+++ b/init/Kconfig
-@@ -82,8 +82,12 @@ config RUSTC_LLVM_VERSION
- 	int
- 	default $(rustc-llvm-version)
- 
-+config ARCH_HAS_CC_CAN_LINK
++config ARCH_CC_CAN_LINK
 +	bool
++	default $(cc_can_link_user,-m64) if 64BIT
++	default $(cc_can_link_user,-m31)
 +
- config CC_CAN_LINK
- 	bool
-+	default ARCH_CC_CAN_LINK if ARCH_HAS_CC_CAN_LINK
- 	default $(cc_can_link_user,$(m64-flag)) if 64BIT
- 	default $(cc_can_link_user,$(m32-flag))
++config ARCH_USERFLAGS
++	string
++	default "-m64" if 64BIT
++	default "-m31"
++
+ config ARCH_SUPPORTS_KEXEC
+ 	def_bool y
  
 
 -- 
