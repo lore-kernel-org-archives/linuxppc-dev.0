@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-12835-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12836-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47A81CCD184
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 06:52:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF548CCD187
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 06:52:30 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cm4Zf1pDqz3dV5;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cm4Zf3hxkz3dVK;
 	Tue, 14 Oct 2025 17:49:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760424570;
-	cv=none; b=bqs7ECEfe0+kOPAsU6Wyc0XZFftUzqwIFA1PI8/M+hOxIfdZ+HHnVAcRLC6ewR+w4Z79WnsfXN34eekfDJXAhIQ4pKSZp26fkilKLxweGTmwDDyYFBbQd3x1RKfm/OQ0K/sfit7MQyyThyIID0x4FsAsErkQCnnRHzi9WAU/FMLWOSYl/riHdN7ow97ZxInGpNsReLfYUotOtXdf6G/1otSx2F+3TXmAG2f38uxDTp3t55EQLXo+AhAPku6yWyYSbRxVY9Sn82Pq4TqkT6OvUh7rp2Ag7W7TpsuXSUV5z3g6W0HrWRY+xTDgQjPMWXmokbSFIQ9GYd5raFMG/v3YXQ==
+	cv=none; b=Q0i1ENpwgeCHuACKmXB+4SSK3fGlsWX5zNwwyfrrL46UgPnNICag3AUcq9/IpRgGQ+r3Tp95/072DsENUzPs85mv+drTUaFtRkk1Sloh94ucL14MkMCrQej12Ct4YzyIttUORKBTAlUo90kWpcoqL9sOA5SX2JkaBgE2QAdNzyyzoEBBersngds0doYpDJfthhWgmxDX1vyFZwNdr/P5incQPcU0G2lUNmiqVykbJmlKEwX6wmYaNFcvmE0ZY1Ao7COadgxAmX2hL3fnUnbWBGMvXDFVWo5+9FhMTgT4c1534q4qzHs2sWL5oA6WsPMguJBXbWSPFy8/0WrVmaLfaA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1760424570; c=relaxed/relaxed;
-	bh=1o80+pTTZok9t083p85VuG7odpUuHMCDXyiNCCOOgcQ=;
+	bh=0B7YkbPIlqSoj0P/D9keGEmA0f3ObTbURi5IRJM/pXM=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=Kz3wVJEEOhggHDJrrgXlaLyqo2yBye0mhsnDa29I4hiLw1wr1BKLMSASKShhTy9FlRfuFlzOmQRId2raiLFpQkBnOSX7zrdBE0MsB9M0XyDzjozIPawXYJqi0Jdy0EaDOBFpzLRhAIVTh7GVtQdfV1qmqI6CvAUsxMJsikGtqqVOPfmr1dTGAn6+KJA1644DEzymEherp2MVV+8wH7tgbQJXN3lfPd9BAKTjWRRw0jy+CLEalaWpk/SaI99HmHeGARw4JliUGM5ZDEs3J4ZrmbKDUbbqV2YmrmtxrU6ZOv9m9k0xdHegfU/OtFztSJr6xyABmAGqcQLcl76dTIWJQg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=BqO+8kjW; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=bWqduEVL; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=KYed8QFnQSc+ZiAYjR5v1Uw6XVi5PN3vRNAPHpIBkF4cKUszJE6opArz2LicJtWZIzSSslNCDk5qtyfM4KdAo/fv+8yaHnuVYQB1hPO33GAsq0cq7dHGVZceyofJrsGXZ3DUY9a3URwXLMaR7mZuWvTGeAMtVRm31afxF1e4Xct/uo1VMuITKzgTBsd6ZmgcZBHRSOsvk2MpZrGbHnD89og9Fp5AhDHklsoZ+Xl0aMrbLgcTt6hIeg3CAVqJW0alFnNOhf4TkIyFZXvp2yUllxZ2X/Qal2IGvyH5VgAK5EAa0z/RzpusPV2MzUzNuhB8OuJzhToM8cDEeNB1Ky3UoA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=g18P+WOA; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=ZmhdKmCp; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=BqO+8kjW;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=bWqduEVL;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=g18P+WOA;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=ZmhdKmCp;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cm4Zd51W5z3dT8
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2025 17:49:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cm4Zf0GQ5z3dTm
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2025 17:49:30 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1760424564;
+	s=2020; t=1760424559;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=1o80+pTTZok9t083p85VuG7odpUuHMCDXyiNCCOOgcQ=;
-	b=BqO+8kjWHCR6zCWLnuLp8TBffuiNNk2o4z8XJBD1zsT+hKlLBuR4Ds23Akwb2k4rS6aQcZ
-	rWJF1S4SYT+MnYW2C4UFrd26YVfBJgEW50/eHnJENt0TNNlyGU0tXCuqRIAmbkm4x/LT2y
-	K6hYAvqYXlYGT2/YH2DHCefDQlRBgMCFLNm28CeuWWTE/515vZi92VYYbYgEf/l+TaHPyI
-	ab13YPCeOeRh1IUiaUeQMzL7cT3HW0PdvwLnm39eDxyC7/pNv0TmA0AahsScyzYIagqOE1
-	OILaW9h/fvQ5CY7cIlMVOSvnidTaQe56ZV29hVGo8LoL9Y9GKHYgM5w++uVIHQ==
+	bh=0B7YkbPIlqSoj0P/D9keGEmA0f3ObTbURi5IRJM/pXM=;
+	b=g18P+WOA9isRa1q1ErK/+Ni0DSDbiUSz46aMlyVMqFRNyuDIjttQarw+NnCLDCsGXbGcv2
+	zBHvYbrRn7BYMGI6xIl2Hxwsb6WUrlTwyvlUXTlZp/SBuwMpZptodZR+Og66AWIjWQvr4B
+	5x64SQUzl48VgMhOuuL+cmcqJzqVVRoCHd6iwA7NRUJZjo7v+WZvjubCAykqdwiBC1BgTJ
+	NohLtu1i+xl3Qd6JUhiQ19uYYH4G1Cq2PHl+XfY39RhAp65uc8bpP4wp8z8Po1MVmse0Xg
+	cwnKHpNHEjcSi6+f70KM8n+Gti0rS7TI9dLX2chgKTNKg1v9NI2O8ANFLR/yfA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1760424564;
+	s=2020e; t=1760424559;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=1o80+pTTZok9t083p85VuG7odpUuHMCDXyiNCCOOgcQ=;
-	b=bWqduEVLNczz4F48vryqgyDVHrVvRvoPOGZreD66cRvumYpLfzMCYoRmjsjZhyQ3kvJc14
-	SKcE6cic25YREsBg==
-Date: Tue, 14 Oct 2025 08:49:14 +0200
-Subject: [PATCH v4 28/35] sparc64: vdso: Move hardware counter read into
- header
+	bh=0B7YkbPIlqSoj0P/D9keGEmA0f3ObTbURi5IRJM/pXM=;
+	b=ZmhdKmCplihRjev/0HTyNhVWyr48rcMK3goPwlJUcagSoKZIwh8A8aIdu05En5O/uZyrIv
+	Go9ZYU4cwyY3T4Dg==
+Date: Tue, 14 Oct 2025 08:49:05 +0200
+Subject: [PATCH v4 19/35] random: vDSO: only access vDSO datapage after
+ random_init()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,7 +70,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20251014-vdso-sparc64-generic-2-v4-28-e0607bf49dea@linutronix.de>
+Message-Id: <20251014-vdso-sparc64-generic-2-v4-19-e0607bf49dea@linutronix.de>
 References: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
 In-Reply-To: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
@@ -99,221 +99,80 @@ Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
  linux-mips@vger.kernel.org, linux-s390@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1760424546; l=5859;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1760424546; l=2362;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=T690CgHOC0+pGW9MJ3oWsROYo+v+vkE9Ah57C6iq4Fo=;
- b=0yzvwTJA6GgpGp1SBU5hjMMbwI0rwFtzhk3rbqNm7Q3E5smIOQctJjpH5qPmYL0U5gSh0Otoq
- +k3EW+C3pjtCBeg+w19G/8t+DLF/1cFsPPwLBt0Or2jUp+S42F6oqj/
+ bh=nnfqDyJKV+11Uo9x3MwHeHQO2C8dr6iNLVlc2B+leBE=;
+ b=9Zc+eDNvdU8Y1XXdl92hx+AHY0om4okx8W7VD3j9btvvcp//mfZoeahs/MWKI+i2U7MedlgvM
+ gI3hUZcK2rtCeyuuQdxrnYmdkEzCsknL0QxeFHy4aDh8lo7PSj31/UZ
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-The generic vDSO libraries expected the architecture glue around hardware
-counter reading in asm/vdso/gettimeofday.h. To prepare the adoption of the
-generic library, move the existing functions there.
+Upcoming changes to the generic vDSO library will mean that the vDSO
+datapage will not yet be usable during early boot.
 
-While at it, perform some trivial alignment with the generic vDSO library:
-* Drop 'notrace', as the functions are __always_inline anyways
-* Use the same parameter types
-* Use the same function names
+Introduce a static key which prevents early accesses.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 Tested-by: Andreas Larsson <andreas@gaisler.com>
 Reviewed-by: Andreas Larsson <andreas@gaisler.com>
-Acked-by: Andreas Larsson <andreas@gaisler.com>
 ---
- arch/sparc/include/asm/vdso/gettimeofday.h | 78 ++++++++++++++++++++++++++++++
- arch/sparc/vdso/vclock_gettime.c           | 70 ++-------------------------
- 2 files changed, 82 insertions(+), 66 deletions(-)
+ drivers/char/random.c | 14 +++++++++++++-
+ 1 file changed, 13 insertions(+), 1 deletion(-)
 
-diff --git a/arch/sparc/include/asm/vdso/gettimeofday.h b/arch/sparc/include/asm/vdso/gettimeofday.h
-new file mode 100644
-index 0000000000000000000000000000000000000000..31f6505d3ab5dde9e02eca6da9182e5fb91031c4
---- /dev/null
-+++ b/arch/sparc/include/asm/vdso/gettimeofday.h
-@@ -0,0 +1,78 @@
-+/* SPDX-License-Identifier: GPL-2.0 */
-+/*
-+ * Copyright 2006 Andi Kleen, SUSE Labs.
-+ */
-+
-+#ifndef _ASM_SPARC_VDSO_GETTIMEOFDAY_H
-+#define _ASM_SPARC_VDSO_GETTIMEOFDAY_H
-+
-+#include <linux/types.h>
-+#include <asm/vvar.h>
-+
-+#ifdef	CONFIG_SPARC64
-+static __always_inline u64 vdso_shift_ns(u64 val, u32 amt)
-+{
-+	return val >> amt;
-+}
-+
-+static __always_inline u64 vread_tick(void)
-+{
-+	u64	ret;
-+
-+	__asm__ __volatile__("rd %%tick, %0" : "=r" (ret));
-+	return ret;
-+}
-+
-+static __always_inline u64 vread_tick_stick(void)
-+{
-+	u64	ret;
-+
-+	__asm__ __volatile__("rd %%asr24, %0" : "=r" (ret));
-+	return ret;
-+}
-+#else
-+static __always_inline u64 vdso_shift_ns(u64 val, u32 amt)
-+{
-+	u64 ret;
-+
-+	__asm__ __volatile__("sllx %H1, 32, %%g1\n\t"
-+			     "srl %L1, 0, %L1\n\t"
-+			     "or %%g1, %L1, %%g1\n\t"
-+			     "srlx %%g1, %2, %L0\n\t"
-+			     "srlx %L0, 32, %H0"
-+			     : "=r" (ret)
-+			     : "r" (val), "r" (amt)
-+			     : "g1");
-+	return ret;
-+}
-+
-+static __always_inline u64 vread_tick(void)
-+{
-+	register unsigned long long ret asm("o4");
-+
-+	__asm__ __volatile__("rd %%tick, %L0\n\t"
-+			     "srlx %L0, 32, %H0"
-+			     : "=r" (ret));
-+	return ret;
-+}
-+
-+static __always_inline u64 vread_tick_stick(void)
-+{
-+	register unsigned long long ret asm("o4");
-+
-+	__asm__ __volatile__("rd %%asr24, %L0\n\t"
-+			     "srlx %L0, 32, %H0"
-+			     : "=r" (ret));
-+	return ret;
-+}
-+#endif
-+
-+static __always_inline u64 __arch_get_hw_counter(struct vvar_data *vvar)
-+{
-+	if (likely(vvar->vclock_mode == VCLOCK_STICK))
-+		return vread_tick_stick();
-+	else
-+		return vread_tick();
-+}
-+
-+#endif /* _ASM_SPARC_VDSO_GETTIMEOFDAY_H */
-diff --git a/arch/sparc/vdso/vclock_gettime.c b/arch/sparc/vdso/vclock_gettime.c
-index 643608bffe13d904c5f77edd585b2e58277491fb..16ac80982a00b9f965453b89a0cc111312baa9b2 100644
---- a/arch/sparc/vdso/vclock_gettime.c
-+++ b/arch/sparc/vdso/vclock_gettime.c
-@@ -19,6 +19,7 @@
- #include <asm/unistd.h>
- #include <asm/timex.h>
- #include <asm/clocksource.h>
-+#include <asm/vdso/gettimeofday.h>
- #include <asm/vvar.h>
+diff --git a/drivers/char/random.c b/drivers/char/random.c
+index 73c53a4fb949bfd2ed723fa3cec3fe0d066a7fa3..f39524fb076a0c77bab228d4f2d45fee37291eb0 100644
+--- a/drivers/char/random.c
++++ b/drivers/char/random.c
+@@ -88,6 +88,7 @@ static DEFINE_STATIC_KEY_FALSE(crng_is_ready);
+ static DECLARE_WAIT_QUEUE_HEAD(crng_init_wait);
+ static struct fasync_struct *fasync;
+ static ATOMIC_NOTIFIER_HEAD(random_ready_notifier);
++static DEFINE_STATIC_KEY_FALSE(random_vdso_is_ready);
  
- #ifdef	CONFIG_SPARC64
-@@ -85,73 +86,10 @@ notrace static long vdso_fallback_gettimeofday(struct __kernel_old_timeval *tv,
- 	return o0;
+ /* Control how we warn userspace. */
+ static struct ratelimit_state urandom_warning =
+@@ -252,6 +253,9 @@ static void random_vdso_update_generation(unsigned long next_gen)
+ 	if (!IS_ENABLED(CONFIG_VDSO_GETRANDOM))
+ 		return;
+ 
++	if (!static_branch_likely(&random_vdso_is_ready))
++		return;
++
+ 	/* base_crng.generation's invalid value is ULONG_MAX, while
+ 	 * vdso_k_rng_data->generation's invalid value is 0, so add one to the
+ 	 * former to arrive at the latter. Use smp_store_release so that this
+@@ -274,6 +278,9 @@ static void random_vdso_set_ready(void)
+ 	if (!IS_ENABLED(CONFIG_VDSO_GETRANDOM))
+ 		return;
+ 
++	if (!static_branch_likely(&random_vdso_is_ready))
++		return;
++
+ 	WRITE_ONCE(vdso_k_rng_data->is_ready, true);
  }
  
--#ifdef	CONFIG_SPARC64
--notrace static __always_inline u64 __shr64(u64 val, int amt)
--{
--	return val >> amt;
--}
--
--notrace static __always_inline u64 vread_tick(void)
--{
--	u64	ret;
--
--	__asm__ __volatile__("rd %%tick, %0" : "=r" (ret));
--	return ret;
--}
--
--notrace static __always_inline u64 vread_tick_stick(void)
--{
--	u64	ret;
--
--	__asm__ __volatile__("rd %%asr24, %0" : "=r" (ret));
--	return ret;
--}
--#else
--notrace static __always_inline u64 __shr64(u64 val, int amt)
--{
--	u64 ret;
--
--	__asm__ __volatile__("sllx %H1, 32, %%g1\n\t"
--			     "srl %L1, 0, %L1\n\t"
--			     "or %%g1, %L1, %%g1\n\t"
--			     "srlx %%g1, %2, %L0\n\t"
--			     "srlx %L0, 32, %H0"
--			     : "=r" (ret)
--			     : "r" (val), "r" (amt)
--			     : "g1");
--	return ret;
--}
--
--notrace static __always_inline u64 vread_tick(void)
--{
--	register unsigned long long ret asm("o4");
--
--	__asm__ __volatile__("rd %%tick, %L0\n\t"
--			     "srlx %L0, 32, %H0"
--			     : "=r" (ret));
--	return ret;
--}
--
--notrace static __always_inline u64 vread_tick_stick(void)
--{
--	register unsigned long long ret asm("o4");
--
--	__asm__ __volatile__("rd %%asr24, %L0\n\t"
--			     "srlx %L0, 32, %H0"
--			     : "=r" (ret));
--	return ret;
--}
--#endif
--
- notrace static __always_inline u64 vgetsns(struct vvar_data *vvar)
- {
- 	u64 v;
--	u64 cycles;
--
--	if (likely(vvar->vclock_mode == VCLOCK_STICK))
--		cycles = vread_tick_stick();
--	else
--		cycles = vread_tick();
-+	u64 cycles = __arch_get_hw_counter(vvar);
+@@ -925,6 +932,9 @@ void __init random_init(void)
+ 	_mix_pool_bytes(&entropy, sizeof(entropy));
+ 	add_latent_entropy();
  
- 	v = (cycles - vvar->clock.cycle_last) & vvar->clock.mask;
- 	return v * vvar->clock.mult;
-@@ -168,7 +106,7 @@ notrace static __always_inline int do_realtime(struct vvar_data *vvar,
- 		ts->tv_sec = vvar->wall_time_sec;
- 		ns = vvar->wall_time_snsec;
- 		ns += vgetsns(vvar);
--		ns = __shr64(ns, vvar->clock.shift);
-+		ns = vdso_shift_ns(ns, vvar->clock.shift);
- 	} while (unlikely(vvar_read_retry(vvar, seq)));
++	if (IS_ENABLED(CONFIG_VDSO_GETRANDOM))
++		static_branch_enable(&random_vdso_is_ready);
++
+ 	/*
+ 	 * If we were initialized by the cpu or bootloader before jump labels
+ 	 * or workqueues are initialized, then we should enable the static
+@@ -934,8 +944,10 @@ void __init random_init(void)
+ 		crng_set_ready(NULL);
  
- 	ts->tv_sec += __iter_div_u64_rem(ns, NSEC_PER_SEC, &ns);
-@@ -188,7 +126,7 @@ notrace static __always_inline int do_monotonic(struct vvar_data *vvar,
- 		ts->tv_sec = vvar->monotonic_time_sec;
- 		ns = vvar->monotonic_time_snsec;
- 		ns += vgetsns(vvar);
--		ns = __shr64(ns, vvar->clock.shift);
-+		ns = vdso_shift_ns(ns, vvar->clock.shift);
- 	} while (unlikely(vvar_read_retry(vvar, seq)));
+ 	/* Reseed if already seeded by earlier phases. */
+-	if (crng_ready())
++	if (crng_ready()) {
+ 		crng_reseed(NULL);
++		random_vdso_set_ready();
++	}
  
- 	ts->tv_sec += __iter_div_u64_rem(ns, NSEC_PER_SEC, &ns);
+ 	WARN_ON(register_pm_notifier(&pm_notifier));
+ 
 
 -- 
 2.51.0
