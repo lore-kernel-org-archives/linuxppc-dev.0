@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-12839-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12840-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0DF58CCD187
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 06:52:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4386CCCD187
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 14 Oct 2025 06:53:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cm4Zj5k4Kz3dX4;
-	Tue, 14 Oct 2025 17:49:33 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760424573;
-	cv=none; b=fwvdMzHyypnN2hmtcmQmyfC52ASXrgyWk7NRTqbuLVak29cVa6zJH/Lii7nmzuKAHAZgDmuREYURIQhjAaLNPUTKoHtbUGe25FKk4IvG/zZPxRmrP360Uk+51VQwR4qbEnGohJGk3j1pkxT4xbpUDAFgGlvb+wTFd14T1zWsb7tVveWPw9Yz8/1cjbmZTaGDPZmDwObkDUOtQaPBwUkqvzh3f6uD5eboc8y6YKa+O4JzphjeGhhOJ6b38SvbWen6OS5GtmoU2McHbvnyhsKmhvxwCGh1HqrLFVc4AASt5vL+IOFos0lbi9HrLxfG8CzeBEukVY0ZB8rngMsSc4KEpQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cm4Zl0cwZz3cYL;
+	Tue, 14 Oct 2025 17:49:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760424575;
+	cv=none; b=M7vFygJWZdtf12yTbuhcbVpPFoFTkrkPFCAbJCGtF2kE5BUs51ItOH4rl2rbwfZD8rcDJYLpnkeJ8kSbrvBNMM2IU5IlNmKVUNnZhUVRPgl85sn9dXOIwIWYAu4AYu9cREhv8sJk9RpYK5vNUMc1Oqj2XVT0NYaiSP9TKmpW53ZgxlFAa+SV2Etf8tgQbo3EnQPVA0BcaLe5Mpkkks3R/zw76ZzgW3MLW4Cj1k2ztbYLa6zyBo98A8bAqC1XuPmNrlymAEQt28e3mcVy6Z/FNrJWBapz/fA3vGPsD6Sqa2FfyN6dQBvapftakH6NvIAC9e7LFSaDn7KP8GyKda6Uuw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760424573; c=relaxed/relaxed;
-	bh=iK+MuStgP9LYq96Rw1QlhWknm6Ic3/FbgcY09qE0/8Q=;
+	t=1760424575; c=relaxed/relaxed;
+	bh=v0BySyb43wBJ5y5cuP5lO0V/BYHsArDn7KOGMPsnnl4=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=or1cWXm2gTmQ8LY89C4Bn0hEKVpO4sY5Xc6pgRkcTozPrct5ap4DI4wJPbJ9Y/blbVR2HkNX2UUL682r6gjBAN3sUVEjnxOwV4QynGKe5tsMdAq0ddAaDPBK0+N7nTmsLIr6UMkpvI30xriQOa17QMEc3blIkacUiWYbPGIqxsop79L1Brf2jz4MFO0GJ97n+cz5cfWAvx3AwKEDfbAuEmP7Y8OPh/f/MF/e162TfNQ4SdWVv6umaXnJrUt+aG4y5XDrqpQUZJOHEV5cTHuzs2EyJeAALWsskjIajX6vzdIwJBGxdP7POWTWX/KScYWwSd5Mrdix/UIfvdoqCQE3Qw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=dva6KHun; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=CePrGsnF; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=n27ZTdZ0yiFXLruqplXCUdXhNQAHLanbzAOmuJcOnW1JIYYBwgFVkYDPELOgtzm0PW5ay8PcBqaUBkuA+8gOms36Ugamw894vaJP1tDccztDkb4jRYvzGq23By0LUQbctE/3KeUFh0Ur4Uqj7jrjtLqYSN5JQyvFiUH475htLEDR+TZD5WixogSmDspix8rTt/HmCa0uPFgepdvouVjxjBWI2enfjai4GKxbGoUKoD8ksbC6hLQIr2MTNvDRtM4VdLQgSr/JBOj/54i4vFmHeSnIgksOGu/KhWouh60DgmkEvK37PHJnlgrMgTnTkS/CP6jjtBOfJ2sXV0m0A3nfGg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=2dWVkuy5; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=OTTVOlcU; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=dva6KHun;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=CePrGsnF;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=2dWVkuy5;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=OTTVOlcU;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cm4Zj1vrMz3dW7
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2025 17:49:33 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cm4Zk3NMjz3dXY
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 14 Oct 2025 17:49:34 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1760424561;
+	s=2020; t=1760424568;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=iK+MuStgP9LYq96Rw1QlhWknm6Ic3/FbgcY09qE0/8Q=;
-	b=dva6KHun4SHZO3CF0DWTyYjZwdzjdid0XSRCDNGvJUWgCdmeGxbOsrxLhNX3UbIBShWuqi
-	wkV0v7v3WdjaVC3aO6ViYdnY+bPmRdZ2Kp6+30TTx2Xc0DA4jrZqvAEN/9WmEVLe1mpeRB
-	Rte2dFCf1AvS+QkU8CSjrMPiILunOoWeBxlYuaMFL+dHEkvNvtLoJmMxdqvapC0bdfHWed
-	arFPykJD8FkOqyoPJOeSzvxgOLxpymV61rc2KQ2e6tD04xR+3ie46qNUoo91lAigZnxL8M
-	LSSBXSvQ3BJZ6SpuPEQi6psL140j+xMxWwaBcTNkhu23yipVJ+F7XBDXriU2Qg==
+	bh=v0BySyb43wBJ5y5cuP5lO0V/BYHsArDn7KOGMPsnnl4=;
+	b=2dWVkuy5mbBzbczud3S31EbAnBQEKlkZRNrzW7RVMScCIwL5Yb3USIiYgh9lQ9AC5b/TkN
+	abVUFDx05Xxnqzuu90mH4IGFyrcG6sRnZ5f2HEenUEG4MXfUXhY0dXjxLG5ZF5Mc2lcSrY
+	RW2Ahz9GmsWMgcy7k10lxZW5Ha+mwBkXkXdpegdk+29xM8Ep1dHL4LxcTzFMJP6preXrMB
+	9WPj0s5sxq08hThUdkcgNkRLmBaGIvtKtvBIdoMwXXZaLU6D3EQgs0aX7siQ4cH3aWdajh
+	8o2o206P64l7UMDQ75f7y7okA4RoLK9rSm2PL+mphp7DTETnaMqH4JPw6wAQVg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1760424561;
+	s=2020e; t=1760424568;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=iK+MuStgP9LYq96Rw1QlhWknm6Ic3/FbgcY09qE0/8Q=;
-	b=CePrGsnF1VwArn9P+Buz8BoLT1mEbMIt82mCzQVb8ECz0JqgNWwt/DxTO1p3wduT/t2KdA
-	galRONxNndh6qKBA==
-Date: Tue, 14 Oct 2025 08:49:09 +0200
-Subject: [PATCH v4 23/35] vdso/datastore: Map pages through struct page
+	bh=v0BySyb43wBJ5y5cuP5lO0V/BYHsArDn7KOGMPsnnl4=;
+	b=OTTVOlcUpXwxcOeMGLPPGvCFzA536UqoKrwtPVJ+q3/CZXPUc3zG8c6LD17+Mynw4TPJ37
+	nB9JZtEc9lMunPBg==
+Date: Tue, 14 Oct 2025 08:49:20 +0200
+Subject: [PATCH v4 34/35] sparc64: vdso: Implement clock_gettime64()
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20251014-vdso-sparc64-generic-2-v4-23-e0607bf49dea@linutronix.de>
+Message-Id: <20251014-vdso-sparc64-generic-2-v4-34-e0607bf49dea@linutronix.de>
 References: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
 In-Reply-To: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
@@ -98,106 +98,104 @@ Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
  linux-mips@vger.kernel.org, linux-s390@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1760424546; l=3383;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1760424546; l=3381;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=GlpQP2ovZSCDOGxS8s5nj5uE5YbM4kkpY+anU8ERtBk=;
- b=9srfjekW0ACLWEnnbN460RbJBa5iFjAY5gkDai4i+4epl7bSlqGXV5PRxJsd46eKGlWW/VJSD
- 0c+mk+hSEp3Dt2g0aBiJd9xPp6FwZoqr3G3E388Uc7M0MdIDPabWt/m
+ bh=niJ5zV3fOozEUYGk5vpPy390WfaoIhw2fIWLZusJAMg=;
+ b=Gatq8X7mwCuaB3UN5QnkwkXD5o1LUo9aufoHXtSJaRS8hCZwIUL9yH0OhKAFUXEBnAe+3skOA
+ 1vriYaLy0gNB+hSp18W9TVtdiHB2f0QsbMoQFlsFS3o0aBiYI2Biaso
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-An upcoming change will allocate the datapages dynamically instead of as
-part of the kernel image. Such pages can only be mapped through
-'struct page' and not through PFNs.
+To be y2038-safe, 32-bit userspace needs to explicitly call the 64-bit safe
+time APIs.
 
-Prepare for the dynamic allocation by mapping through 'struct page'.
-
-VM_MIXEDMAP is necessary for the call to vmf_insert_page() in the timens
-prefault path to work.
+Implement clock_gettime64() in the 32-bit vDSO.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 Tested-by: Andreas Larsson <andreas@gaisler.com>
 Reviewed-by: Andreas Larsson <andreas@gaisler.com>
+Acked-by: Andreas Larsson <andreas@gaisler.com>
 ---
- lib/vdso/datastore.c | 24 +++++++++++++-----------
- 1 file changed, 13 insertions(+), 11 deletions(-)
+ arch/sparc/include/asm/vdso/gettimeofday.h | 20 ++++++++++++++++++--
+ arch/sparc/vdso/vclock_gettime.c           |  8 ++++++++
+ arch/sparc/vdso/vdso32/vdso32.lds.S        |  2 ++
+ 3 files changed, 28 insertions(+), 2 deletions(-)
 
-diff --git a/lib/vdso/datastore.c b/lib/vdso/datastore.c
-index 7377fcb6e1dfe31d02ffcae371fdf9da069ae4c1..6e5feb4a95b85f5a1cbdced7cdeddc593fcbad40 100644
---- a/lib/vdso/datastore.c
-+++ b/lib/vdso/datastore.c
-@@ -39,14 +39,15 @@ struct vdso_arch_data *vdso_k_arch_data = &vdso_arch_data_store.data;
- static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
- 			     struct vm_area_struct *vma, struct vm_fault *vmf)
- {
--	struct page *timens_page = find_timens_vvar_page(vma);
--	unsigned long pfn;
-+	struct page *page, *timens_page;
+diff --git a/arch/sparc/include/asm/vdso/gettimeofday.h b/arch/sparc/include/asm/vdso/gettimeofday.h
+index a35875fba45470ba961a7df3ae52bc17d2a4a4a0..b0c80c8a28bb71e16398ab38904ba826457ac71d 100644
+--- a/arch/sparc/include/asm/vdso/gettimeofday.h
++++ b/arch/sparc/include/asm/vdso/gettimeofday.h
+@@ -101,6 +101,8 @@ static __always_inline u64 __arch_get_hw_counter(s32 clock_mode, const struct vd
+ 	"f48", "f50", "f52", "f54", "f56", "f58", "f60", "f62",		\
+ 	"cc", "memory"
+ 
++#ifdef CONFIG_SPARC64
 +
-+	timens_page = find_timens_vvar_page(vma);
- 
- 	switch (vmf->pgoff) {
- 	case VDSO_TIME_PAGE_OFFSET:
- 		if (!IS_ENABLED(CONFIG_GENERIC_GETTIMEOFDAY))
- 			return VM_FAULT_SIGBUS;
--		pfn = __phys_to_pfn(__pa_symbol(vdso_k_time_data));
-+		page = virt_to_page(vdso_k_time_data);
- 		if (timens_page) {
- 			/*
- 			 * Fault in VVAR page too, since it will be accessed
-@@ -56,10 +57,10 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
- 			vm_fault_t err;
- 
- 			addr = vmf->address + VDSO_TIMENS_PAGE_OFFSET * PAGE_SIZE;
--			err = vmf_insert_pfn(vma, addr, pfn);
-+			err = vmf_insert_page(vma, addr, page);
- 			if (unlikely(err & VM_FAULT_ERROR))
- 				return err;
--			pfn = page_to_pfn(timens_page);
-+			page = timens_page;
- 		}
- 		break;
- 	case VDSO_TIMENS_PAGE_OFFSET:
-@@ -72,24 +73,25 @@ static vm_fault_t vvar_fault(const struct vm_special_mapping *sm,
- 		 */
- 		if (!IS_ENABLED(CONFIG_TIME_NS) || !timens_page)
- 			return VM_FAULT_SIGBUS;
--		pfn = __phys_to_pfn(__pa_symbol(vdso_k_time_data));
-+		page = virt_to_page(vdso_k_time_data);
- 		break;
- 	case VDSO_RNG_PAGE_OFFSET:
- 		if (!IS_ENABLED(CONFIG_VDSO_GETRANDOM))
- 			return VM_FAULT_SIGBUS;
--		pfn = __phys_to_pfn(__pa_symbol(vdso_k_rng_data));
-+		page = virt_to_page(vdso_k_rng_data);
- 		break;
- 	case VDSO_ARCH_PAGES_START ... VDSO_ARCH_PAGES_END:
- 		if (!IS_ENABLED(CONFIG_ARCH_HAS_VDSO_ARCH_DATA))
- 			return VM_FAULT_SIGBUS;
--		pfn = __phys_to_pfn(__pa_symbol(vdso_k_arch_data)) +
--			vmf->pgoff - VDSO_ARCH_PAGES_START;
-+		page = virt_to_page(vdso_k_arch_data) + vmf->pgoff - VDSO_ARCH_PAGES_START;
- 		break;
- 	default:
- 		return VM_FAULT_SIGBUS;
- 	}
- 
--	return vmf_insert_pfn(vma, vmf->address, pfn);
-+	get_page(page);
-+	vmf->page = page;
-+	return 0;
- }
- 
- const struct vm_special_mapping vdso_vvar_mapping = {
-@@ -101,7 +103,7 @@ struct vm_area_struct *vdso_install_vvar_mapping(struct mm_struct *mm, unsigned
+ static __always_inline
+ long clock_gettime_fallback(clockid_t clock, struct __kernel_timespec *ts)
  {
- 	return _install_special_mapping(mm, addr, VDSO_NR_PAGES * PAGE_SIZE,
- 					VM_READ | VM_MAYREAD | VM_IO | VM_DONTDUMP |
--					VM_PFNMAP | VM_SEALED_SYSMAP,
-+					VM_MIXEDMAP | VM_SEALED_SYSMAP,
- 					&vdso_vvar_mapping);
+@@ -113,7 +115,20 @@ long clock_gettime_fallback(clockid_t clock, struct __kernel_timespec *ts)
+ 	return o0;
  }
  
+-#ifndef CONFIG_SPARC64
++#else /* !CONFIG_SPARC64 */
++
++static __always_inline
++long clock_gettime_fallback(clockid_t clock, struct __kernel_timespec *ts)
++{
++	register long num __asm__("g1") = __NR_clock_gettime64;
++	register long o0 __asm__("o0") = clock;
++	register long o1 __asm__("o1") = (long) ts;
++
++	__asm__ __volatile__(SYSCALL_STRING : "=r" (o0) : "r" (num),
++			     "0" (o0), "r" (o1) : SYSCALL_CLOBBERS);
++	return o0;
++}
++
+ static __always_inline
+ long clock_gettime32_fallback(clockid_t clock, struct old_timespec32 *ts)
+ {
+@@ -125,7 +140,8 @@ long clock_gettime32_fallback(clockid_t clock, struct old_timespec32 *ts)
+ 			     "0" (o0), "r" (o1) : SYSCALL_CLOBBERS);
+ 	return o0;
+ }
+-#endif
++
++#endif /* CONFIG_SPARC64 */
+ 
+ static __always_inline
+ long gettimeofday_fallback(struct __kernel_old_timeval *tv, struct timezone *tz)
+diff --git a/arch/sparc/vdso/vclock_gettime.c b/arch/sparc/vdso/vclock_gettime.c
+index 093a7ff4dafce1cf0af5af4c303bef86e159858a..1d9859392e4cfd285349cf9155ca1fc25d3a7b41 100644
+--- a/arch/sparc/vdso/vclock_gettime.c
++++ b/arch/sparc/vdso/vclock_gettime.c
+@@ -48,4 +48,12 @@ int __vdso_clock_gettime(clockid_t clock, struct old_timespec32 *ts)
+ int clock_gettime(clockid_t, struct old_timespec32 *)
+ 	__weak __alias(__vdso_clock_gettime);
+ 
++int __vdso_clock_gettime64(clockid_t clock, struct __kernel_timespec *ts)
++{
++	return __cvdso_clock_gettime(clock, ts);
++}
++
++int clock_gettime64(clockid_t, struct __kernel_timespec *)
++	__weak __alias(__vdso_clock_gettime64);
++
+ #endif
+diff --git a/arch/sparc/vdso/vdso32/vdso32.lds.S b/arch/sparc/vdso/vdso32/vdso32.lds.S
+index 53575ee154c492f9503efdd8f995ac2a035203c7..a14e4f77e6f2222b855df27cc7a0d0a4f98bd4ac 100644
+--- a/arch/sparc/vdso/vdso32/vdso32.lds.S
++++ b/arch/sparc/vdso/vdso32/vdso32.lds.S
+@@ -17,6 +17,8 @@ VERSION {
+ 	global:
+ 		clock_gettime;
+ 		__vdso_clock_gettime;
++		clock_gettime64;
++		__vdso_clock_gettime64;
+ 		gettimeofday;
+ 		__vdso_gettimeofday;
+ 	local: *;
 
 -- 
 2.51.0
