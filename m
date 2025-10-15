@@ -1,62 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-12869-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12870-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0A1F0CCD18E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Oct 2025 00:22:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3703ECCD18E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Oct 2025 02:42:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cmWx62JCpz3cBW;
-	Wed, 15 Oct 2025 11:22:02 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760487722;
-	cv=none; b=BOjWm6b/XwJTd1rEEUSPR8perwvwnZJ1236jU8BxP8QOR5s8Kph5N/bivFD9wFMFkdY4VaJnxlNvxDlD439qThNuDVz96M2jK1P8kv8O0IBfgKuiuuuO1JryRYGNQ/VlHSwL23yD9bTVYFZDGdUhutVll+PaplKoADCb9TmSn+8fLBgtHOXwmSL28TDb6mI2KlDnAcB3HWTUOjPoWX9DPsW0jba0ysVNaAzgJLNJOHQJWKrvlRO6H4dUUo8XwzS2VXwtPONkKkwOb/oM0yUmFGA+obD0LJhf4yluK7RkRZZN4VpdE9YVJGvQ2mj50AR1u4R6t9mxzYutidT98HDVgg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cmb2r23NHz3cZn;
+	Wed, 15 Oct 2025 13:42:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.101
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760496132;
+	cv=none; b=EHoUMmpLauF/ijL+YlGehd4FuFrx2/1JCIjz0jZ97BwtWJCXR3MIa9sMVux6GihyO6TGUAzqyjhn89Qjhgm1XhLX8Tvfm+7Shbw0tkO12ALO+ZvRSnkv9EN/kqK2R8cVhuasKDNk/L9PpDdlz3UmOW03WLDUOpd6uNUN3qDThi6WISgG3kHHKh8qqHakQ+esJtBqSWf/ywPI6eBHK0/Jq0fQbR0OJLm374K/mlk/zL8feoGDwDJfOdwD0ZwSejq8KYKpoZavTPXNlZ708pmzMFCm6VlNi2dEChNcZxnAhXpYX0Gy5UAIfBRkKXIdJr+smZ9zn2CYnJjSh/h6XPw1Eg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760487722; c=relaxed/relaxed;
-	bh=2Ya1iHobdldggBQlQvx6CQfKC8LhONqqlkvfoWoP9+w=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=Db7mcug+z7KGSjJ9na6VAqED+4gPn/Fm0I8gzrIw6obDJ2S1V+VZ1oqB9EpWwnSyas2ZrkelDy/gLQmjK6QJkAUc4EagYroj3Kaqodwc4NixdRyWMkfFLNNRQ4602Q2F56OJHkSCG9WVdVEDK0MZafj4IE0+KyA6315ibkU9A26rjwmlWMga1jy27q9Ee5+OIQJWN6Ex7MgZsRNRwqzjh3D4b08GpO6J1savCKNmp51da8o/vRKEIlfyNm35xTz9oNdgT5ykl9pwxfoNEUISUfxFfZbMKWwJg6A6qxAGXmKadpvKQW6MZlfwkXgsqR307LmOzfrq68FVq70rgQRt1Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uoEDLvVM; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1760496132; c=relaxed/relaxed;
+	bh=OTaoE+RCjvZNMMdQYvDttHSU2kdG8bBh9rxYPnlggrs=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=RRWkYcprEWdWuG+5AnuDwQAX5buVXu8xZ/Z1tqJCztbxHrBMwsubsNSolTxi1zgwFI84uDsy4HTb3zdiqAnP+fNwO7TAhs85gUpNyOJpWhtdZjEi3xeAJHLmUJ2toIgg+4TQFwPPKY8Zd249B1nIiGr6pMez6nA58ZXDZuU8igw3FYmuZzuawAAwrC6k27fa6Nk2WyAQa8ycqDPRYCICsgUPNgmdTVng4t22je8n56mOaiOPOXIpx+pARt30efbxMocCsLk0cSFCK4T/HX9NJ6vnzQ5XJTwszaOlmCn6A/ssMjTkr4LR3oDMaWq4rn3DPf4RUlPzHFUAYLIOLPPW3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=chPjV8l4; dkim-atps=neutral; spf=pass (client-ip=115.124.30.101; helo=out30-101.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uoEDLvVM;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=chPjV8l4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.101; helo=out30-101.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-101.freemail.mail.aliyun.com (out30-101.freemail.mail.aliyun.com [115.124.30.101])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cmWx506RHz2xdg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2025 11:22:00 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5BDE344078;
-	Wed, 15 Oct 2025 00:21:58 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A30DC4CEE7;
-	Wed, 15 Oct 2025 00:21:56 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1760487718;
-	bh=oLFIibXnPFOJz0MzV3NAkJL/mBUsPSV9HGDX9rhCWkM=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=uoEDLvVMBYvbxbaqRExO4mBuOXW8xK+xBsM3YpN8BU1lvBX4p3ZAdfzt2L3+iF0GN
-	 WG1/B5BcjO6G5oQtvfsi/xChcW18K/a54r1fdPVQsmPwbbPFnAXEa4+7w5bzq4flhf
-	 6VHS/tdoIl0wngQjxhoS3nTFA8kCFfDp3DcveH/+FyeZcZo2KjS0k+8Ypk97Xtmuun
-	 8K2iC6fX/3DXfiRfPJuvJbT3N1ZJXjBgUU19rx60Zsxgh/AO9zi2sWjzPrju9lComF
-	 gSaIX68xorVOyC+xLeGk3YYnNWC6eRkJurprqsPEMD5vPVxi8cCVp0VHEmEfLgQjp+
-	 O1BtSRYMnbkCg==
-Date: Tue, 14 Oct 2025 17:21:54 -0700
-From: Nathan Chancellor <nathan@kernel.org>
-To: Vishal Chourasia <vishalc@linux.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>, maddy@linux.ibm.com,
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-	clang-built-linux@googlegroups.com,
-	"llvm@lists.linux.dev" <llvm@lists.linux.dev>
-Subject: Re: [PATCH] arch/powerpc: Remove .interp section in vmlinux
-Message-ID: <20251015002154.GA2300901@ax162>
-References: <eeaf8fd6628a75d19872ab31cf7e7179e2baef5e.1751366959.git.christophe.leroy@csgroup.eu>
- <20251013040148.560439-1-vishalc@linux.ibm.com>
- <2b4a3215-1620-40c9-a00c-ca833ebbb7b6@csgroup.eu>
- <aOypxKMzsLR5tAtv@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cmb2n4gG3z3cZd
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2025 13:42:09 +1100 (AEDT)
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1760496124; h=From:To:Subject:Date:Message-Id:MIME-Version;
+	bh=OTaoE+RCjvZNMMdQYvDttHSU2kdG8bBh9rxYPnlggrs=;
+	b=chPjV8l48jyfSdOb4lxxN9ElFBJ2tsCfUDRHbS6E48XhdsKQLGtsj0s7j7ZM4s4Zvx/6bJZczUP8X+i/WnXv6y5p2MVdu7tuRKeBeS6YfO8kymnFxJHlWGLtO3VrhG3IQkAeYN6H1SrBdr1l05LmLhLT4VZaetnGIEKnpqO8YbQ=
+Received: from localhost.localdomain(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0WqEYD5g_1760496122 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Wed, 15 Oct 2025 10:42:02 +0800
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+To: linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	bhelgaas@google.com,
+	kbusch@kernel.org,
+	sathyanarayanan.kuppuswamy@linux.intel.com
+Cc: mahesh@linux.ibm.com,
+	oohall@gmail.com,
+	xueshuai@linux.alibaba.com,
+	Jonathan.Cameron@huawei.com,
+	terry.bowman@amd.com,
+	tianruidong@linux.alibaba.com,
+	lukas@wunner.de
+Subject: [PATCH v6 2/5] PCI/DPC: Run recovery on device that detected the error
+Date: Wed, 15 Oct 2025 10:41:56 +0800
+Message-Id: <20251015024159.56414-3-xueshuai@linux.alibaba.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
+In-Reply-To: <20251015024159.56414-1-xueshuai@linux.alibaba.com>
+References: <20251015024159.56414-1-xueshuai@linux.alibaba.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,55 +70,153 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <aOypxKMzsLR5tAtv@linux.ibm.com>
 
-Hi Vishal,
+The current implementation of pcie_do_recovery() assumes that the
+recovery process is executed for the device that detected the error.
+However, the DPC driver currently passes the error port that experienced
+the DPC event to pcie_do_recovery().
 
-On Mon, Oct 13, 2025 at 12:57:00PM +0530, Vishal Chourasia wrote:
-> On Mon, Oct 13, 2025 at 08:46:48AM +0200, Christophe Leroy wrote:
-> > +CLANG ppl
-> > 
-> > Hi,
-> > 
-> > Le 13/10/2025 à 06:01, Vishal Chourasia a écrit :
-> > > While debugging a ppc64le QEMU guest on an x86_64 host, I observed GDB crashes
-> > > when attempting to attach to the remote target:
-> > > 
-> > > (gdb) target remote :1234
-> > > 
-> > > Investigation revealed that cross-compiling the Linux kernel for ppc64le on an
-> > > x86_64 host using Clang produces a vmlinux binary containing an empty .interp
-> > > section. This empty .interp section is responsible for the GDB crashes.
-> > 
-> > Which version of CLANG is it ?
-> (i) ❯ clang --version
-> clang version 21.0.0git (https://github.com/llvm/llvm-project.git a80bccc6847be104948f46d313f03ac6b9ccb292)
-> 
-> > 
-> > > 
-> > > This issue does not occur when:
-> > > - Building for ppc64le target using GCC on x86_64 host
-> > > - Building for ppc64le target using Clang on ppc64le host
-> > 
-> > Is it the same CLANG version ?
-> # clang --version
-> clang version 22.0.0git (https://github.com/llvm/llvm-project.git 2f755c543ab357bd83235592fcee37fa391cdd9d)
-> 
-> > 
-> > > - Building for ppc64le target using GCC on ppc64le host
-> > > 
-> > > For details refer [1]
-> > > 
-> > > [1] https://sourceware.org/bugzilla/show_bug.cgi?id=33481
+Use the SOURCE ID register to correctly identify the device that
+detected the error. When passing the error device, the
+pcie_do_recovery() will find the upstream bridge and walk bridges
+potentially AER affected. And subsequent commits will be able to
+accurately access AER status of the error device.
 
-In this bug report, you mention using LLVM=1. Does the issue happen if
-you use GNU ld (ld.bfd) via LD (i.e., LD=powerpc64le-linux-gnu-ld or
-equivalent) over ld.lld from LLVM=1? This sounds more likely to be a
-linker difference rather than a compiler difference.
+Should not observe any functional changes.
 
-Cheers,
-Nathan
+Signed-off-by: Shuai Xue <xueshuai@linux.alibaba.com>
+Reviewed-by: Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>
+---
+ drivers/pci/pci.h      |  2 +-
+ drivers/pci/pcie/dpc.c | 25 +++++++++++++++++++++----
+ drivers/pci/pcie/edr.c |  7 ++++---
+ 3 files changed, 26 insertions(+), 8 deletions(-)
+
+diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
+index fff30521ed83..6b0c55bed15b 100644
+--- a/drivers/pci/pci.h
++++ b/drivers/pci/pci.h
+@@ -764,7 +764,7 @@ struct rcec_ea {
+ void pci_save_dpc_state(struct pci_dev *dev);
+ void pci_restore_dpc_state(struct pci_dev *dev);
+ void pci_dpc_init(struct pci_dev *pdev);
+-void dpc_process_error(struct pci_dev *pdev);
++struct pci_dev *dpc_process_error(struct pci_dev *pdev);
+ pci_ers_result_t dpc_reset_link(struct pci_dev *pdev);
+ bool pci_dpc_recovered(struct pci_dev *pdev);
+ unsigned int dpc_tlp_log_len(struct pci_dev *dev);
+diff --git a/drivers/pci/pcie/dpc.c b/drivers/pci/pcie/dpc.c
+index bff29726c6a5..f6069f621683 100644
+--- a/drivers/pci/pcie/dpc.c
++++ b/drivers/pci/pcie/dpc.c
+@@ -260,10 +260,20 @@ static int dpc_get_aer_uncorrect_severity(struct pci_dev *dev,
+ 	return 1;
+ }
+ 
+-void dpc_process_error(struct pci_dev *pdev)
++/**
++ * dpc_process_error - handle the DPC error status
++ * @pdev: the port that experienced the containment event
++ *
++ * Return: the device that detected the error.
++ *
++ * NOTE: The device reference count is increased, the caller must decrement
++ * the reference count by calling pci_dev_put().
++ */
++struct pci_dev *dpc_process_error(struct pci_dev *pdev)
+ {
+ 	u16 cap = pdev->dpc_cap, status, source, reason, ext_reason;
+ 	struct aer_err_info info = {};
++	struct pci_dev *err_dev;
+ 
+ 	pci_read_config_word(pdev, cap + PCI_EXP_DPC_STATUS, &status);
+ 
+@@ -279,6 +289,7 @@ void dpc_process_error(struct pci_dev *pdev)
+ 			pci_aer_clear_nonfatal_status(pdev);
+ 			pci_aer_clear_fatal_status(pdev);
+ 		}
++		err_dev = pci_dev_get(pdev);
+ 		break;
+ 	case PCI_EXP_DPC_STATUS_TRIGGER_RSN_NFE:
+ 	case PCI_EXP_DPC_STATUS_TRIGGER_RSN_FE:
+@@ -290,6 +301,8 @@ void dpc_process_error(struct pci_dev *pdev)
+ 				"ERR_FATAL" : "ERR_NONFATAL",
+ 			 pci_domain_nr(pdev->bus), PCI_BUS_NUM(source),
+ 			 PCI_SLOT(source), PCI_FUNC(source));
++		err_dev = pci_get_domain_bus_and_slot(pci_domain_nr(pdev->bus),
++					    PCI_BUS_NUM(source), source & 0xff);
+ 		break;
+ 	case PCI_EXP_DPC_STATUS_TRIGGER_RSN_IN_EXT:
+ 		ext_reason = status & PCI_EXP_DPC_STATUS_TRIGGER_RSN_EXT;
+@@ -304,8 +317,11 @@ void dpc_process_error(struct pci_dev *pdev)
+ 		if (ext_reason == PCI_EXP_DPC_STATUS_TRIGGER_RSN_RP_PIO &&
+ 		    pdev->dpc_rp_extensions)
+ 			dpc_process_rp_pio_error(pdev);
++		err_dev = pci_dev_get(pdev);
+ 		break;
+ 	}
++
++	return err_dev;
+ }
+ 
+ static void pci_clear_surpdn_errors(struct pci_dev *pdev)
+@@ -361,7 +377,7 @@ static bool dpc_is_surprise_removal(struct pci_dev *pdev)
+ 
+ static irqreturn_t dpc_handler(int irq, void *context)
+ {
+-	struct pci_dev *err_port = context;
++	struct pci_dev *err_port = context, *err_dev;
+ 
+ 	/*
+ 	 * According to PCIe r6.0 sec 6.7.6, errors are an expected side effect
+@@ -372,10 +388,11 @@ static irqreturn_t dpc_handler(int irq, void *context)
+ 		return IRQ_HANDLED;
+ 	}
+ 
+-	dpc_process_error(err_port);
++	err_dev = dpc_process_error(err_port);
+ 
+ 	/* We configure DPC so it only triggers on ERR_FATAL */
+-	pcie_do_recovery(err_port, pci_channel_io_frozen, dpc_reset_link);
++	pcie_do_recovery(err_dev, pci_channel_io_frozen, dpc_reset_link);
++	pci_dev_put(err_dev);
+ 
+ 	return IRQ_HANDLED;
+ }
+diff --git a/drivers/pci/pcie/edr.c b/drivers/pci/pcie/edr.c
+index 521fca2f40cb..b6e9d652297e 100644
+--- a/drivers/pci/pcie/edr.c
++++ b/drivers/pci/pcie/edr.c
+@@ -150,7 +150,7 @@ static int acpi_send_edr_status(struct pci_dev *pdev, struct pci_dev *edev,
+ 
+ static void edr_handle_event(acpi_handle handle, u32 event, void *data)
+ {
+-	struct pci_dev *pdev = data, *err_port;
++	struct pci_dev *pdev = data, *err_port, *err_dev;
+ 	pci_ers_result_t estate = PCI_ERS_RESULT_DISCONNECT;
+ 	u16 status;
+ 
+@@ -190,7 +190,7 @@ static void edr_handle_event(acpi_handle handle, u32 event, void *data)
+ 		goto send_ost;
+ 	}
+ 
+-	dpc_process_error(err_port);
++	err_dev = dpc_process_error(err_port);
+ 	pci_aer_raw_clear_status(err_port);
+ 
+ 	/*
+@@ -198,7 +198,8 @@ static void edr_handle_event(acpi_handle handle, u32 event, void *data)
+ 	 * or ERR_NONFATAL, since the link is already down, use the FATAL
+ 	 * error recovery path for both cases.
+ 	 */
+-	estate = pcie_do_recovery(err_port, pci_channel_io_frozen, dpc_reset_link);
++	estate = pcie_do_recovery(err_dev, pci_channel_io_frozen, dpc_reset_link);
++	pci_dev_put(err_dev);
+ 
+ send_ost:
+ 
+-- 
+2.39.3
+
 
