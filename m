@@ -1,77 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-12895-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12896-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3330ACCD193
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Oct 2025 08:29:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 31831CCD18E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Oct 2025 09:13:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cmklM0Vf2z3dMW;
-	Wed, 15 Oct 2025 19:29:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760516959;
-	cv=none; b=bSYqxfqHuOSgNAMg0kAnWp4TFOoWz5fuIXf0vZfPCq87rqZjNhOHFtClW9jy8ui+aGZjX94tdouqTzT6ZqnrxKIqrAuKZh8XXWdYt64IIK8CacRDZZzGoqMLhXXPgIwj3JszY8mH+rNGSPvCW+qrYt0GzAjE4nMwFkF4yPQRdmiboc2qpkM9HYe1j278LuYws7KtF/ez3zT08YZwJEdUKVl8AHh9NKi/aDoikilEDWI5C9kwtUzQ6das6CnNKb/0O///gHn+q0kWxwsaNyhmiqZfFxU+VeyTQk9cZuIx2gDib/vgjOPVJoSx5SeQaQzlXxgIQYLEitDVurRx3q0y8w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cmljz5WvZz3cls;
+	Wed, 15 Oct 2025 20:13:11 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760519591;
+	cv=none; b=YcadMjgzE9wHAJH36vq7CL78/Xvno2tXn8RM1ZpL3sz/wnAJzX5kw5XQd/RwwAJx1Bd/2b1dUumhU6xla+FIKmOAwXA2ptMWl35V235Ry57yZLr/Y/CToKEcurJuEzUD69hGRsQICf3P8+ua1N2esNJejEYhDYFVEccU7pPZ5PXvXd9UnafN9sXGDDWqj3HEIfmYvUSW3dgAOSNI2FmKIqwTXMdcNsM2SiB0s7Tp+pRtx/LPca14gOOirZPQYJcd0nnZIIrzJ3RXui1qxSri1RveWUnW6z8Ks7Lvh8CoNy2brcO8URbLYNzzPRVuIiltaWcCK3NuuDwvZAATjs6nGg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760516959; c=relaxed/relaxed;
-	bh=gxy2WR9jIOFdN7YJmtvFh7KSjx/WBbD3EHjVYsBnWoI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=B0Oh7gLiPi3RDGUUHnt4SxgVHfqYW7fhuVaRiiUgczxU9mcGz4XHjeDLIy4gNKDt2bwFRSrOjjdrEVzfGE8c/VdCEbCxygqCfN1eAHlSLpdtE1ev/8S/mwJiePgsvBCh40KcOzHjSSphCJWJdicXNPjl912lq/VF+eGh9eWDzdVs758dkKnFZQUImSAGDaCgmKs3lHO+CyrYwPybgX1svxgdHoXYV771JWFLtLOvUwuma/TgbxxRhWpLNJfkxs1ePt2+CNV3rsLkTLVsHvucq3QOBA9ReU+6ppb6cybR70DX2H3o8MMrIXSuxysDErXa2jLjxhgE8sjj8dMsQOv7PQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cmklL2bqrz3dHV
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2025 19:29:18 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 78DF9236D;
-	Wed, 15 Oct 2025 01:28:39 -0700 (PDT)
-Received: from e123572-lin.arm.com (e123572-lin.cambridge.arm.com [10.1.194.54])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 754613F66E;
-	Wed, 15 Oct 2025 01:28:42 -0700 (PDT)
-From: Kevin Brodsky <kevin.brodsky@arm.com>
-To: linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org,
-	Kevin Brodsky <kevin.brodsky@arm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Boris Ostrovsky <boris.ostrovsky@oracle.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	David Hildenbrand <david@redhat.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Ingo Molnar <mingo@redhat.com>,
-	Jann Horn <jannh@google.com>,
+	t=1760519591; c=relaxed/relaxed;
+	bh=AK5JNO+tk0EUNoLAagtlVnkvBynllSeAX1mkYPchUeo=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=SVrymStOFThafmNRB3VzTHhzz7l/s/18zL8uh0VslkchaLgVTUBccvLiwtUYX/EOm7pKCDEuiE0byRhzTqXU5Do4QG2GmT0mDbGEPzm6aeinDxGhwKQdnXMe9wBZqioczVCNPB8p/tfIl99PYLyWK8Le+D0I22ytuecrDhuogffEjiRwaCwNk77XIp5VqvuKfKusAamm/dYqiPL1/JNRbfoq6w6ZgFwwJ7+zd2hypxiTdp2ClH+lw0dPc744WCcs8JttodIXsH5I+odaFwl4igIZuas8bQBTNs4AmYYEf+Prx+wp+vTXxX0lx81vLmClykQvgKrjY9OlC89g4SutKA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=T/fn/Q7E; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=T/fn/Q7E;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=leon@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cmljz09MLz3clq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 15 Oct 2025 20:13:11 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id D36264172E;
+	Wed, 15 Oct 2025 09:13:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0D5DDC4CEF8;
+	Wed, 15 Oct 2025 09:13:08 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1760519588;
+	bh=ywR7wdHo9iJDPAMnOLxx2KSfcpdMYgaVYoeQgeEMVE0=;
+	h=From:To:Cc:Subject:Date:From;
+	b=T/fn/Q7Et3W/XoUP2+BW/BncjyLdn9Q59dx4I+uKrVGVx83N3CoqpvJHFxWuqRsC+
+	 XdbXTMel6OirvBhxiFjPLifrL1qZ1WA1GV0CfnbnyJ0gLcqjgJlrUBUk085bytleC1
+	 Ps1/U8qadzNDPEXTFtbAw3rfhPCKp+JJvyNHVNWiVzxBuTqLX4e1h0uwpfnG6FXSGu
+	 ahv0t+DTPlJs6QFO33ojzLxd9DpyMUAoYg7u/ZEvqC360GdrnKWc4kvzqrKjjOzNyu
+	 sfpnfCdbcfzoWkUMqnORIpnF4VZ9xrYID8Bc3PCTstBRCa5sVe3z7x9f1ejmwsSTxY
+	 9ePteT4berpfg==
+From: Leon Romanovsky <leon@kernel.org>
+To: Marek Szyprowski <m.szyprowski@samsung.com>,
+	Robin Murphy <robin.murphy@arm.com>,
+	Russell King <linux@armlinux.org.uk>,
 	Juergen Gross <jgross@suse.com>,
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	Stefano Stabellini <sstabellini@kernel.org>,
+	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
+	Richard Henderson <richard.henderson@linaro.org>,
+	Matt Turner <mattst88@gmail.com>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	"James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
+	Helge Deller <deller@gmx.de>,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
 	Michael Ellerman <mpe@ellerman.id.au>,
-	Michal Hocko <mhocko@suse.com>,
-	Mike Rapoport <rppt@kernel.org>,
 	Nicholas Piggin <npiggin@gmail.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Ryan Roberts <ryan.roberts@arm.com>,
-	Suren Baghdasaryan <surenb@google.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Geoff Levand <geoff@infradead.org>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
 	Thomas Gleixner <tglx@linutronix.de>,
-	Vlastimil Babka <vbabka@suse.cz>,
-	Will Deacon <will@kernel.org>,
-	Yeoreum Yun <yeoreum.yun@arm.com>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>
+Cc: iommu@lists.linux.dev,
+	linux-kernel@vger.kernel.org,
 	linux-arm-kernel@lists.infradead.org,
+	xen-devel@lists.xenproject.org,
+	linux-alpha@vger.kernel.org,
+	linux-mips@vger.kernel.org,
+	linux-parisc@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	sparclinux@vger.kernel.org,
-	xen-devel@lists.xenproject.org,
-	x86@kernel.org
-Subject: [PATCH v3 12/13] mm: bail out of lazy_mmu_mode_* in interrupt context
-Date: Wed, 15 Oct 2025 09:27:26 +0100
-Message-ID: <20251015082727.2395128-13-kevin.brodsky@arm.com>
-X-Mailer: git-send-email 2.47.0
-In-Reply-To: <20251015082727.2395128-1-kevin.brodsky@arm.com>
-References: <20251015082727.2395128-1-kevin.brodsky@arm.com>
+	Magnus Lindholm <linmag7@gmail.com>,
+	Jason Gunthorpe <jgg@ziepe.ca>
+Subject: [PATCH v5 00/14] Remove DMA map_page/map_resource and their unmap callbacks
+Date: Wed, 15 Oct 2025 12:12:46 +0300
+Message-ID: <20251015-remove-map-page-v5-0-3bbfe3a25cdf@kernel.org>
+X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -85,148 +96,69 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset="utf-8"
+X-Change-ID: 20251015-remove-map-page-a28302e6cc7d
+X-Mailer: b4 0.15-dev
 Content-Transfer-Encoding: 8bit
 
-The lazy MMU mode cannot be used in interrupt context. This is
-documented in <linux/pgtable.h>, but isn't consistently handled
-across architectures.
+This series is a combination of previous two steps [1, 2] to reduce
+number of accesses to struct page in the code "below" DMA layer.
 
-arm64 ensures that calls to lazy_mmu_mode_* have no effect in
-interrupt context, because such calls do occur in certain
-configurations - see commit b81c688426a9 ("arm64/mm: Disable barrier
-batching in interrupt contexts"). Other architectures do not check
-this situation, most likely because it hasn't occurred so far.
+In this series, the DMA .map_page/.map_resource/.unmap_page/.unmap_resource
+callbacks are converted to newly introduced .map_phys/.unmap_phys interfaces.
 
-Both arm64 and x86/Xen also ensure that any lazy MMU optimisation is
-disabled while in interrupt mode (see queue_pte_barriers() and
-xen_get_lazy_mode() respectively).
+Thanks
 
-Let's handle this in the new generic lazy_mmu layer, in the same
-fashion as arm64: bail out of lazy_mmu_mode_* if in_interrupt(), and
-have in_lazy_mmu_mode() return false to disable any optimisation.
-Also remove the arm64 handling that is now redundant; x86/Xen has
-its own internal tracking so it is left unchanged.
+[1] https://lore.kernel.org/all/cover.1758203802.git.leon@kernel.org
+[2] https://lore.kernel.org/all/cover.1759071169.git.leon@kernel.org
 
-Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
 ---
- arch/arm64/include/asm/pgtable.h | 17 +----------------
- include/linux/pgtable.h          | 16 ++++++++++++++--
- include/linux/sched.h            |  3 +++
- 3 files changed, 18 insertions(+), 18 deletions(-)
+Leon Romanovsky (14):
+      dma-mapping: prepare dma_map_ops to conversion to physical address
+      dma-mapping: convert dummy ops to physical address mapping
+      ARM: dma-mapping: Reduce struct page exposure in arch_sync_dma*()
+      ARM: dma-mapping: Switch to physical address mapping callbacks
+      xen: swiotlb: Switch to physical address mapping callbacks
+      dma-mapping: remove unused mapping resource callbacks
+      alpha: Convert mapping routine to rely on physical address
+      MIPS/jazzdma: Provide physical address directly
+      parisc: Convert DMA map_page to map_phys interface
+      powerpc: Convert to physical address DMA mapping
+      sparc: Use physical address DMA mapping
+      x86: Use physical address for DMA mapping
+      xen: swiotlb: Convert mapping routine to rely on physical address
+      dma-mapping: remove unused map_page callback
 
-diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
-index 944e512767db..a37f417c30be 100644
---- a/arch/arm64/include/asm/pgtable.h
-+++ b/arch/arm64/include/asm/pgtable.h
-@@ -62,37 +62,22 @@ static inline void emit_pte_barriers(void)
- 
- static inline void queue_pte_barriers(void)
- {
--	if (in_interrupt()) {
--		emit_pte_barriers();
--		return;
--	}
--
- 	if (in_lazy_mmu_mode())
- 		test_and_set_thread_flag(TIF_LAZY_MMU_PENDING);
- 	else
- 		emit_pte_barriers();
- }
- 
--static inline void arch_enter_lazy_mmu_mode(void)
--{
--	if (in_interrupt())
--		return;
--}
-+static inline void arch_enter_lazy_mmu_mode(void) {}
- 
- static inline void arch_flush_lazy_mmu_mode(void)
- {
--	if (in_interrupt())
--		return;
--
- 	if (test_and_clear_thread_flag(TIF_LAZY_MMU_PENDING))
- 		emit_pte_barriers();
- }
- 
- static inline void arch_leave_lazy_mmu_mode(void)
- {
--	if (in_interrupt())
--		return;
--
- 	arch_flush_lazy_mmu_mode();
- }
- 
-diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-index 269225a733de..718c9c788114 100644
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -228,8 +228,8 @@ static inline int pmd_dirty(pmd_t pmd)
-  * of the lazy mode. So the implementation must assume preemption may be enabled
-  * and cpu migration is possible; it must take steps to be robust against this.
-  * (In practice, for user PTE updates, the appropriate page table lock(s) are
-- * held, but for kernel PTE updates, no lock is held). The mode cannot be used
-- * in interrupt context.
-+ * held, but for kernel PTE updates, no lock is held). The mode is disabled
-+ * in interrupt context and calls to the lazy_mmu API have no effect.
-  *
-  * The lazy MMU mode is enabled for a given block of code using:
-  *
-@@ -265,6 +265,9 @@ static inline void lazy_mmu_mode_enable(void)
- {
- 	struct lazy_mmu_state *state = &current->lazy_mmu_state;
- 
-+	if (in_interrupt())
-+		return;
-+
- 	VM_BUG_ON(state->count == U8_MAX);
- 	/* enable() must not be called while paused */
- 	VM_WARN_ON(state->count > 0 && !state->enabled);
-@@ -280,6 +283,9 @@ static inline void lazy_mmu_mode_disable(void)
- {
- 	struct lazy_mmu_state *state = &current->lazy_mmu_state;
- 
-+	if (in_interrupt())
-+		return;
-+
- 	VM_BUG_ON(state->count == 0);
- 	VM_WARN_ON(!state->enabled);
- 
-@@ -297,6 +303,9 @@ static inline void lazy_mmu_mode_pause(void)
- {
- 	struct lazy_mmu_state *state = &current->lazy_mmu_state;
- 
-+	if (in_interrupt())
-+		return;
-+
- 	VM_WARN_ON(state->count == 0 || !state->enabled);
- 
- 	state->enabled = false;
-@@ -307,6 +316,9 @@ static inline void lazy_mmu_mode_resume(void)
- {
- 	struct lazy_mmu_state *state = &current->lazy_mmu_state;
- 
-+	if (in_interrupt())
-+		return;
-+
- 	VM_WARN_ON(state->count == 0 || state->enabled);
- 
- 	arch_enter_lazy_mmu_mode();
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 2862d8bf2160..beb3e6cfddd9 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -1731,6 +1731,9 @@ static inline char task_state_to_char(struct task_struct *tsk)
- #ifdef CONFIG_ARCH_LAZY_MMU
- static inline bool in_lazy_mmu_mode(void)
- {
-+	if (in_interrupt())
-+		return false;
-+
- 	return current->lazy_mmu_state.enabled;
- }
- #else
--- 
-2.47.0
+ arch/alpha/kernel/pci_iommu.c            |  48 ++++-----
+ arch/arm/mm/dma-mapping.c                | 180 +++++++++----------------------
+ arch/mips/jazz/jazzdma.c                 |  20 ++--
+ arch/powerpc/include/asm/iommu.h         |   8 +-
+ arch/powerpc/kernel/dma-iommu.c          |  22 ++--
+ arch/powerpc/kernel/iommu.c              |  14 +--
+ arch/powerpc/platforms/ps3/system-bus.c  |  33 +++---
+ arch/powerpc/platforms/pseries/ibmebus.c |  15 +--
+ arch/powerpc/platforms/pseries/vio.c     |  21 ++--
+ arch/sparc/kernel/iommu.c                |  30 ++++--
+ arch/sparc/kernel/pci_sun4v.c            |  31 +++---
+ arch/sparc/mm/io-unit.c                  |  38 +++----
+ arch/sparc/mm/iommu.c                    |  46 ++++----
+ arch/x86/kernel/amd_gart_64.c            |  19 ++--
+ drivers/parisc/ccio-dma.c                |  54 +++++-----
+ drivers/parisc/iommu-helpers.h           |  10 +-
+ drivers/parisc/sba_iommu.c               |  54 +++++-----
+ drivers/xen/grant-dma-ops.c              |  20 ++--
+ drivers/xen/swiotlb-xen.c                |  63 +++++------
+ include/linux/dma-map-ops.h              |  14 +--
+ kernel/dma/dummy.c                       |  13 ++-
+ kernel/dma/mapping.c                     |  26 +----
+ kernel/dma/ops_helpers.c                 |  12 ++-
+ 23 files changed, 361 insertions(+), 430 deletions(-)
+---
+base-commit: 3a8660878839faadb4f1a6dd72c3179c1df56787
+change-id: 20251015-remove-map-page-a28302e6cc7d
+
+Best regards,
+--  
+Leon Romanovsky <leon@kernel.org>
 
 
