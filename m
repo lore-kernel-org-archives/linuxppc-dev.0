@@ -1,67 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-12932-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12933-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 359C7CCD185
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Oct 2025 19:48:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEEF9CCD193
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Oct 2025 23:41:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cn1ps4zKvz2xQ2;
-	Thu, 16 Oct 2025 06:48:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=203.205.221.239
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760539218;
-	cv=none; b=naUleIg7CFhHKelM5savwo5ES82oLXHj8R4nCe3Xt1fVZdYL53cW6yyDjb7mLXo7XHS3VuV+/kkh4ufTpu+xUfcLT/a4sXZEa1wkjSQmdm4cGTFKwwemdIzN1JSdlxMl1amyekW1rlLbESmIJ27adH/IQpsFbUAJbuUNJEf6eNoVtki2XcPGyu4lZv/P0R9B67aflyUP842yljAmt1rJ5RxWpjOQYUmEOCeiw04+E53wdYfiBQv1o6OwfCSAyxXrm5mus8rv5Tt3G/s9nUVm38MLp4m2qcBL3YVlwhxWa9H2qJd6tL8RzLThEU4/qvtIYb8I+62iajiG4kICOwJ9Yg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cn6zN20x5z305M;
+	Thu, 16 Oct 2025 10:41:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760571664;
+	cv=none; b=PJLUDnssJ+IchqH+X46FoOp8ZbKhzL3a35sbGLkijd6b1KEW0ZZ8Tw7+CzHLQ4pBXgUhlW6lUXDN12PXvZTaJIJl41tIcXuQEjgXebdx6mRAJhiHjZ7IvXum5NfW6dP998pQic87RYd95xeQJ1994J4Z/KUunhx31dbiN67yjzsz7b1jD0VlYjT2mqFY57H9/Q8aVnR6vHZRah/ks2E9dufIbg1pVqGY95IjC0+fhL6EWJu3ya52H4ot8EbXL7oSHJ56uX6sov2ZkioIomuGgB9/NAczcnRtdrQdD5Drt9xoxo82zAAGRRXT13a77YNl5XdWekkONOMz/uyp1i1kHQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760539218; c=relaxed/relaxed;
-	bh=ezgtSDOXHivCFuC5AUAl3AvdnYQYhmw66BozkVx5J4s=;
-	h=Message-ID:Date:From:To:Subject:MIME-Version:Content-Type:
-	 Content-Disposition; b=HNEMZbkd4ry9IJiRbA1hjMW92EjxtNZqYvJqktfokoJHpQWwkSmwcgsNiai+i3G8c6zVg43ZqZz19FUKzEwE8cf2VUGDsta5SbxIuUOBYx51yS2lqGbMxmiAPSw+J/gFsQg4UJIxSOoNCHzjyVir+i1i1eRQwTJlX75qCc/WjBnZ13KvZtrniIEQ6CcRp/fLeREFnHOdEcOC9TOg0w4Vk5lX5nRVnTkNc7Crbe4Hyzst94oO+XWKjOqggw7TTdB5jFnWp4UCUeWHp9JA0oxBgHNLT6fwC2+rdAbUF9oTHeANGxZJq35qaKVzXJhEdlM1sg9gsEEKC2z4zbDpIdxexA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com; dkim=pass (1024-bit key; unprotected) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=PnRGeToP; dkim-atps=neutral; spf=pass (client-ip=203.205.221.239; helo=out203-205-221-239.mail.qq.com; envelope-from=470658536@qq.com; receiver=lists.ozlabs.org) smtp.mailfrom=qq.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=qq.com
+	t=1760571664; c=relaxed/relaxed;
+	bh=QBMQUzwEv0XvQKRStRx+rFs+6EMUvsiRTeTXhEoZzRI=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=RZiaCSvZ8wKD98AmxBfFTOUx2j4ylLvUt03E9XtflHI3H8LBZM2xI2oGAS0QqWqcqXNGsBThxXiFa0mtoZO1HT5XvM+iXVjD2YnVpLdb7zAYfEy9xgflOPnsR5JRjHo5cU12QoSd7VAG4Mhm5l7J64Zs8etAOJIvqe63XLZy1c645tD3JtoVUFde5DfBMIeUkXGCaBxgIkrEZqQ4jS3eyzPcT819mC/rvjWueRoOrPxgoxSK5BqzNg4+F1lxmUxxWo5eNo90Zo4t9cSroBtOz0w3xGlb3DEj2XPzHzuG+yqLRRvB9716qfwWswToTP8YrH9nYUFbkghmHU0Fkr3sCQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h3+qsstL; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=qq.com header.i=@qq.com header.a=rsa-sha256 header.s=s201512 header.b=PnRGeToP;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=h3+qsstL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=qq.com (client-ip=203.205.221.239; helo=out203-205-221-239.mail.qq.com; envelope-from=470658536@qq.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 10821 seconds by postgrey-1.37 at boromir; Thu, 16 Oct 2025 01:40:14 AEDT
-Received: from out203-205-221-239.mail.qq.com (out203-205-221-239.mail.qq.com [203.205.221.239])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4cmtzL75c6z3dHf
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2025 01:40:11 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qq.com; s=s201512;
-	t=1760539206; bh=ezgtSDOXHivCFuC5AUAl3AvdnYQYhmw66BozkVx5J4s=;
-	h=Date:From:To:Subject;
-	b=PnRGeToPoY86AamWuNqGoc0nayufSeZzzKsR+SpLR74rXh1eVSImJpJmkOYTzsgxm
-	 ma2vJFA487CCvAPo7IyUb0+eo5T/ISV5grQwAWE7zsjaMpB/Y7h+zMDns+2Cqz2YF5
-	 j0m9IaVKnYBN0Il4tDpG4pIET3qyr15ecKLsD1UA=
-Received: from localhost.localdomain ([120.197.14.100])
-	by newxmesmtplogicsvrszb20-1.qq.com (NewEsmtp) with SMTP
-	id 688B002E; Wed, 15 Oct 2025 18:26:08 +0800
-X-QQ-mid: xmsmtpt1760523968t2v5hdscj
-Message-ID: <tencent_F844A82DB85660D110008F34E54330312A08@qq.com>
-X-QQ-XMAILINFO: M1rD3f8svNznAY66XNxY4lbviBs5aYbr52JEvjx3ndSIRX9HtLdU4CXGgX3AkN
-	 OGnH/ROHiy1IyslmPmeYWZhncWgRsX3vcOlq2shw0SUVaxUK0aKinR5EhooDzwHOMR86x2tIaRRY
-	 a5Ogi9lVC97/sX6GWWLvppJnRkij1rYz8JGjluGfOIuKU23UnTGan0q8OMGAasglQ8Zb7p5SXBFO
-	 jDlxROKmkmAPPNrbzoiY292lHv5hbPrdoYGubv7zHFIoJJkdcgRFcqXEcsXO0Lh0CMvhVRf+D/R0
-	 S+9egDapl0V4gSaO1svSJCuJevk/HUY9jos3/SJFdxGpGLnevSrG4Z2VHyeo+lBET+sTxAZOn1z1
-	 GBjdt7kzEW0H2d2KbVK3vvpu5c0c6Dhb06exTvcuneZ+lKf3wtZIPp9FMerWbxV/IZy0Q4yaEqcu
-	 MZmtmtAs6qJdX+WmF4YMjWYmm+0d38DbrfWPut9r5lq9i9D1ROMTFPG0gJUeMn41VDZypcrLbhZO
-	 Kcl7J+OusBrv5C5n7FFjrhnipbrTWzNYCR+W0GZlyxt4qiMB1iIrdQW6LrchePtWyf0sipYdAtEg
-	 te/YnNxKlHZOt1+FLWhFO71vPS7RfyuR1vj6KK3AQHE+CQ22iOQ5xggm6gmRAo8+nNQqqGBWrv2d
-	 KPW9H78pEyDHqNhAYndfUBs0vGW7OjDQoHzUtilYJezUSZl4z06Rgj63jsO51fCgLxlQBFh3q3Ny
-	 DBoOeRIdY4P0ZEgI4AOnu3ymIouASIIoYi/zuENs/9nbaSh4FvtH2Wmz+UDfCes3m9rnlKjBiWrb
-	 56QlMpZq24qVY9GLkz3r9j/9yAlyODlDI0TikX+7+ajDG4sCeDmcs+QUmRZS/kDeM1aEoYurhMzu
-	 QkK8NSUpQm5iqIZJmXIrs6zJ/2gUpIZGfDv/aN82PWzPR3H2tbNqduu6odehvJFyip8hJYtyRo6J
-	 cHuQgGb1NuQP0h6msNvGBVlZ63lSSidrxHANjWJU5LmP0PMbg5+B3MEoVFokH5fONuMS8ZbDk=
-X-QQ-XMRINFO: MPJ6Tf5t3I/ycC2BItcBVIA=
-Date: Wed, 1 Oct 2025 22:42:39 +0800
-From: Haoran lee <470658536@qq.com>
-To: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-	christophe.leroy@csgroup.eu, linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org
-Subject: PATCH: Fix typo recommand in comment
-X-OQ-MSGID: <aN0938CSHL6NoJa_@localhost.localdomain>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cn6zM1qb7z2yr1
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2025 10:41:03 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 3328543FB5;
+	Wed, 15 Oct 2025 23:41:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E89F1C4CEF8;
+	Wed, 15 Oct 2025 23:41:00 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1760571661;
+	bh=7ZVXV77W0d05bk/8gSWIHFEpHIZsQ9H36dwcXGXNqro=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=h3+qsstLdZgrMKrIYjUUZJ3SpvHx3e+0csZghHbFI8vZbxfVK/12Zf+LUjJPRCy6Y
+	 pohFdY1HaBTMKdKHwutLvPO+PtHZB0hLTuyDrsWj/t7xUmSLjNJjHNT0I2ZIhtDR+u
+	 SNCw6SfnHhStgY9NVmZSJANBBGWFHP/KPTU71RmsroxJA8pWIrmyakAMOGhd0gRKGH
+	 5GqgIy5P0cM1GHzA/SrSJOh3mhTWiqAJSqeKl1fAE45R/L4uXugJaIhti/x6XFG7Eu
+	 hCtg7UOPklPh/aO/TMXEk16iIYXrlwCfDfrjc+TAsQ/fv5Lsk8bp2yBVAQBsIKmwzi
+	 MA/Cqt6Jnyc+g==
+Date: Wed, 15 Oct 2025 18:40:59 -0500
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: Herve Codina <herve.codina@bootlin.com>
+Cc: Manivannan Sadhasivam <mani@kernel.org>, Lukas Wunner <lukas@wunner.de>,
+	Christian Zigotzky <chzigotzky@xenosoft.de>,
+	Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
+	Ilpo =?utf-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
+	"linux-pci@vger.kernel.org" <linux-pci@vger.kernel.org>,
+	mad skateman <madskateman@gmail.com>,
+	"R.T.Dickinson" <rtd2@xtra.co.nz>,
+	Christian Zigotzky <info@xenosoft.de>,
+	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, hypexed@yahoo.com.au,
+	Darren Stevens <darren@stevens-zone.net>,
+	"debian-powerpc@lists.debian.org" <debian-powerpc@lists.debian.org>,
+	Thomas Petazzoni <thomas.petazzoni@bootlin.com>
+Subject: Re: [PPC] Boot problems after the pci-v6.18-changes
+Message-ID: <20251015234059.GA961901@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,35 +76,51 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20251015101304.3ec03e6b@bootlin.com>
 
-From e949fa326c98953fda200fe92c108fa71e334715 Mon Sep 17 00:00:00 2001
-From: Haoran Lee <470658536@qq.com>
-Date: Wed, 15 Oct 2025 10:18:52 +0000
-Subject: [PATCH] powerpc/smu: Fix typo "recommand" in comment
+On Wed, Oct 15, 2025 at 10:13:04AM +0200, Herve Codina wrote:
+> ...
 
-The word "recommand" is incorrect. The correct spelling is "recommend".
+> I also observed issues with the commit f3ac2ff14834 ("PCI/ASPM: Enable all
+> ClockPM and ASPM states for devicetree platforms")
+> 
+> My system is an ARM board (Marvel Armada 3720 DDB)
+>   https://elixir.bootlin.com/linux/v6.17.1/source/arch/arm64/boot/dts/marvell/armada-3720-db.dts
+> 
+> I use an LAN966x PCI board
+>   https://elixir.bootlin.com/linux/v6.17.1/source/drivers/misc/lan966x_pci.c
+> 
+> Usually, when I did a ping using the PCI board, I have more or less the
+> following timings:
+>    # ping 192.168.32.100
+>    PING 192.168.32.100 (192.168.32.100): 56 data bytes
+>    64 bytes from 192.168.32.100: seq=0 ttl=64 time=3.328 ms
+>    64 bytes from 192.168.32.100: seq=1 ttl=64 time=2.636 ms
+>    64 bytes from 192.168.32.100: seq=2 ttl=64 time=2.928 ms
+>    64 bytes from 192.168.32.100: seq=3 ttl=64 time=2.649 ms
+> 
+> But with a vanilla v6.18-rc1 kernel, those timings become awful:
+>    # ping 192.168.32.100
+>    PING 192.168.32.100 (192.168.32.100): 56 data bytes
+>    64 bytes from 192.168.32.100: seq=0 ttl=64 time=656.634 ms
+>    64 bytes from 192.168.32.100: seq=1 ttl=64 time=551.812 ms
+>    64 bytes from 192.168.32.100: seq=2 ttl=64 time=702.966 ms
+>    64 bytes from 192.168.32.100: seq=3 ttl=64 time=725.904 ms
+> 
+> Reverting commit f3ac2ff14834 ("PCI/ASPM: Enable all ClockPM and
+> ASPM states for devicetree platforms") fixes my timing issues.
 
-Fix the typo in the comment in arch/powerpc/include/asm/smu.h.
+We expect *some* performance impact from enabling ASPM, but this seems
+excessive.  You should be able to control the ASPM settings for an
+individual device via sysfs:
 
-Signed-off-by: Haoran Lee <470658536@qq.com>
----
- arch/powerpc/include/asm/smu.h | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+  https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Documentation/ABI/testing/sysfs-bus-pci?id=v6.17-rc1#n431
 
-diff --git a/arch/powerpc/include/asm/smu.h b/arch/powerpc/include/asm/smu.h
-index 2ac6ab903023..23b4ed8b4399 100644
---- a/arch/powerpc/include/asm/smu.h
-+++ b/arch/powerpc/include/asm/smu.h
-@@ -667,7 +667,7 @@ extern struct smu_sdbp_header *smu_sat_get_sdb_partition(unsigned int sat_id,
-  * file is opened. poll() isn't implemented yet. The reply will consist
-  * of a header as well, followed by the reply data if any. You should
-  * always provide a buffer large enough for the maximum reply data, I
-- * recommand one page.
-+ * recommend one page.
-  *
-  * It is illegal to send SMU commands through a file descriptor configured
-  * for events reception
--- 
-2.48.1
+My guess is that L1.2 is enabled and the threshold values in the L1 PM
+Substates control registers are bogus.  I don't know how to fix those,
+especially on a devicetree system.  But it might be possible to fiddle
+with them using setpci (while ASPM is disabled).  Not for the faint of
+heart.
 
+Bjorn
 
