@@ -1,71 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-12920-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12921-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3CC84CCD192
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Oct 2025 13:08:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 954CACCD18E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 15 Oct 2025 13:14:48 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cmrxL5Tgtz3dGn;
-	Thu, 16 Oct 2025 00:08:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.246.85.4
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760533702;
-	cv=none; b=gbNvwCebIbJuHUmQhyExvTKVnWHqby7J1PUbWAiJ7NrvmTQYXwBtEdGeP7Li/jL5c9Y6w9ITdAY0fgi2n6lcMd7v/y3rPBvCHIJkCQro8OxA4DRkAjVF0s7STET7gwzwMTnYX8zkc6Oor9RsSsAAce7QK6iV4InlV7ux6Fde05nhNUNhvjmDoHqlJACM4xZqVu54v+gcK2ZuONgu9RqKEoiTVcaBoolNz9Bxi6FUzLSx+camf4kYmbI/ZhTOKn9R63uzxgKbfYjgqnm4mGXGA4AEJqTy6nC1qNJLnhXjXX04VbleihbVqq7a14TOR38e/TYudbxd6PcthbKeO3KtRQ==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760533702; c=relaxed/relaxed;
-	bh=m0D5lTBcRRjQJDnMrKYFTSajSsfESny/hir+6+IztSM=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ZhBB4aepEQnc+wY1X+Vzslac8yLzQOvjRVS8qrK3P3ye7HV1rlfxJ6a8a2rXa4gd045uodTeZsvKTW7qLpztAphBPpIXvIeeDgQq+4Dd/P24FY6kXrrKSCKWAGB5dS+hQ3ltDYds/Xm3Qba8+sZpXWXZmsrIJ+Zi/LMZ6kQNuS8LlvVALloH1G8k34Ee6C1VO7j0QX4MyzzbbJi2wGunKw9bWBW1+QjjVGXw4LgYrQGSGUnUyRMVYvconoI3hl5hFFXgcVpQlzrTUBnt8aKKBq47yiPi50h6ZmuvFbHtrH5DI2mev1aaNXTSisxCqjUsAfqT31HeumpDyPnlvp2hXA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=vXKGWoKL; dkim-atps=neutral; spf=pass (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cms4k6tCSz3dBy;
+	Thu, 16 Oct 2025 00:14:46 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=81.169.146.168 arc.chain=strato.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760534086;
+	cv=pass; b=GNmyvsH9MM03oTqF7gPinx59Afioo2Sy9yEfCNLThxO/S/iH5zfrLEI7ChPaZPIrQ5ikjobsRMALkm0WiNEigQ2EUr72e21h3O2NALQKc+/DuJ4b1t56rHnvAnnB24zipUM3kMED7zfCerkYSo5EfP/n72bgKDti04u5kHSrJRSXFTq6M5rbeHRJow9GbMf3AxMoyhmvYwqZYo1J0q1WEMsZtO8zUiFdMRcw5RY5KxQImpW8BXIGUxtZh4qFAteFAINd28wf2/Pba58b6PL9Nni7vJpDOzAC4yzUP6lR480IuNPt0Etl+d4mILTNvv/31dUSL7zk5n5XZ2UdJFLcrg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1760534086; c=relaxed/relaxed;
+	bh=4gZhHOekIBNe8Km4MXWFVpdrPZpkGqI4Kma6KtKws4c=;
+	h=Content-Type:From:Mime-Version:Subject:Date:Message-Id:References:
+	 Cc:In-Reply-To:To; b=GklSbs2bfQjdLVIEZwZB67sb1SMZS0G2M7yMpe3UMwRRDe14ao3nM6RMuQ7LBARsmc66nbrSazbPsbENRfJ+TTKL6AOofMB2OSMPKzLui5uaGwYEUFX/q78gMdZJQuMJ4E1kvnU7b4RwH0tbauLeX4LY/qhbhx231+rqEPE9kEz0OX0pM8IWhNT+8s5s3kRbuHcERumOKumCrUSb6PnJKXYpbyVSke6ObQJmeOCn1JFmau7yUZHtX3wVH1j18F0QYFJSkkQtjIbyoTkqxttv2J8tdKRUqPVkIE0zkVvGfYJLuS8SwaDpxjQAmGo2bRLLij579nXsFFADJvX15GPGeQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de; dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=GqsCcY/0; dkim-atps=neutral; spf=pass (client-ip=81.169.146.168; helo=mo4-p02-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org) smtp.helo=mo4-p02-ob.smtp.rzone.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=xenosoft.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=vXKGWoKL;
+	dkim=pass (2048-bit key; unprotected) header.d=xenosoft.de header.i=@xenosoft.de header.a=rsa-sha256 header.s=strato-dkim-0002 header.b=GqsCcY/0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 528 seconds by postgrey-1.37 at boromir; Thu, 16 Oct 2025 00:08:21 AEDT
-Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=mo4-p02-ob.smtp.rzone.de (client-ip=81.169.146.168; helo=mo4-p02-ob.smtp.rzone.de; envelope-from=chzigotzky@xenosoft.de; receiver=lists.ozlabs.org)
+Received: from mo4-p02-ob.smtp.rzone.de (mo4-p02-ob.smtp.rzone.de [81.169.146.168])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cmrxK335Jz3dBy
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2025 00:08:20 +1100 (AEDT)
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-03.galae.net (Postfix) with ESMTPS id 644D24E410D7;
-	Wed, 15 Oct 2025 12:59:27 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 31720606F9;
-	Wed, 15 Oct 2025 12:59:27 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 11EBB102F22C9;
-	Wed, 15 Oct 2025 14:59:03 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1760533166; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=m0D5lTBcRRjQJDnMrKYFTSajSsfESny/hir+6+IztSM=;
-	b=vXKGWoKLCXCUAGdXC3OwlCdAQymxkkrvdpzzd4URDlQaQTu1vQLPHJC017heFxnT1EW04e
-	IXG4AOCWtOqNWXGc8yQT8PddYEjb+3S444gkqLlF0OHI7T+FsP0R6bHh/+OLGchTkfw2Pg
-	+FpXk/t1MDhV6qtD/lMl/Kmi3sJWSQ5XGKAOpbCnxde/OsTK/JJAj5d6Fi2h1AebNU5xFw
-	2yHMqpM7O/y+L4TsCbezCoqI0TTnF2wcz5MScuEKSmHZ8blFB/BjH3mRler0fMd/vJ8UWJ
-	HGbxXETRHihUIul00MlMDpp17FxdMozgH6Q0h4CEhOf7fCPipPYNnT5JkL+dzA==
-Date: Wed, 15 Oct 2025 14:59:01 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: Manivannan Sadhasivam <mani@kernel.org>, Bjorn Helgaas
- <helgaas@kernel.org>, Lukas Wunner <lukas@wunner.de>, Manivannan Sadhasivam
- <manivannan.sadhasivam@oss.qualcomm.com>, Ilpo =?UTF-8?B?SsOkcnZpbmVu?=
- <ilpo.jarvinen@linux.intel.com>, linux-pci@vger.kernel.org, mad skateman
- <madskateman@gmail.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>, Christian
- Zigotzky <info@xenosoft.de>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- hypexed@yahoo.com.au, Darren Stevens <darren@stevens-zone.net>,
- debian-powerpc@lists.debian.org, Thomas Petazzoni
- <thomas.petazzoni@bootlin.com>
-Subject: Re: [PPC] Boot problems after the pci-v6.18-changes
-Message-ID: <20251015145901.3ca9d8a0@bootlin.com>
-In-Reply-To: <EF4D5B4B-9A61-4CF8-A5CC-5F6A49E824C1@xenosoft.de>
-References: <20251015135811.58b22331@bootlin.com>
-	<EF4D5B4B-9A61-4CF8-A5CC-5F6A49E824C1@xenosoft.de>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.43; x86_64-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cms4h4TPBz3d26
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 16 Oct 2025 00:14:43 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; t=1760534079; cv=none;
+    d=strato.com; s=strato-dkim-0002;
+    b=T8zQl3ru2obgWOk/Ch2hUErLiAdBQNcwpbsfZ2rncPiaAEmgyDQt2mScC2/3j8XsbY
+    BaI6k7nsZFJTpJEdV2HO0TC8BcbWOj8O0xhEIjsQKROKRY8utTaDbutWRo/oZ6Ouvw/I
+    rEF3bmtkDnQwq5SapYKkRMOEXNFe7jVIpbQPSryRSTYTl9IrgPbNxjoxLds7U6z+iaDF
+    UnlwQ8ffhxpkTajf/UBQhud0QWW8OTPayLsdeBuT4sY6P2M1izTOtrAtONEarmCfxwIz
+    WVqHJl6DyAD26SS5vIElhDRIEdDmWc8heKWHfs3PTcrTjuYCmQoejR3JsXVaWy8AT4xD
+    /svw==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; t=1760534079;
+    s=strato-dkim-0002; d=strato.com;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=4gZhHOekIBNe8Km4MXWFVpdrPZpkGqI4Kma6KtKws4c=;
+    b=rG8QbPf6go/RGby1XYbzEf0e3t2IzyQMOQ7i2/sXaiuqjhseVlhURX8fj2NNHwhlyu
+    R/kfG85yoCj3ff/sFQvcMSTji9coLNgkIOeB5l8NpntU8nUgP6/HxI/XKKqDoD4ZJg7A
+    zrFrhvmZXyJ2z5ChfD85EmiaijNdKAw0Jnxhb+MKp7eIz2F4o+R85TV2qmtevGUkIb9W
+    wafd1LI0YS1rmqnxQYao+fzQYgRBtkN41QXxqBZl6PXCkBFpCy5fBPF4wbIqN+RC60lz
+    MorC9UoPjLUTIbP9gQVzWHcqiyZlj2W8gM9D0Hp+PVSBv4/4ILu1l5vLDqfYtaHW1lYZ
+    gYIw==
+ARC-Authentication-Results: i=1; strato.com;
+    arc=none;
+    dkim=none
+X-RZG-CLASS-ID: mo02
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; t=1760534079;
+    s=strato-dkim-0002; d=xenosoft.de;
+    h=To:In-Reply-To:Cc:References:Message-Id:Date:Subject:From:Cc:Date:
+    From:Subject:Sender;
+    bh=4gZhHOekIBNe8Km4MXWFVpdrPZpkGqI4Kma6KtKws4c=;
+    b=GqsCcY/0onXFnGXRISu0w3EO62KrAe+MLi30T9m43fOrLel2DMeNFbKGRHBhLnEH+h
+    GUcvMLHE+EcjwHh2mwlr9oC/BRxYd0wnJFdzeQFYwb+I7XnUvUIdoOA1SXBus/twfm9v
+    Q+dq5DqnOKbvFxxEL94vZUj+bqrVAlQriv8cfFrHYeo0hKF+AKoycYQLegpag5bA4OuV
+    7XA485Ivv36E8alUUya7l9COOt1/H7BuPfzOVDfVQZTWAT0FzH9rTwWnM27HwOH5T4/H
+    4+icyZ4rWJMaay+DWmdPw36cQ+ei0+ULYZubFlWtvYSdJcY61iGVboU6PhnwZFzX1R4e
+    NuUg==
+X-RZG-AUTH: ":L2QefEenb+UdBJSdRCXu93KJ1bmSGnhMdmOod1DhGN0rBVhd9dFr6KxrfO5Oh7V7X5qwsy/HXXax+ofCi2ru+NWolPb67sCbW3uT"
+Received: from smtpclient.apple
+    by smtp.strato.de (RZmta 53.4.2 AUTH)
+    with ESMTPSA id e2886619FDEdXZP
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256 bits))
+	(Client did not present a certificate);
+    Wed, 15 Oct 2025 15:14:39 +0200 (CEST)
+Content-Type: multipart/alternative; boundary=Apple-Mail-CFCB9707-47FA-4DB9-AEBC-A6874E0AE5FA
+Content-Transfer-Encoding: 7bit
+From: Christian Zigotzky <chzigotzky@xenosoft.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,82 +85,74 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
+Mime-Version: 1.0 (1.0)
+Subject: Re: [PPC] Boot problems after the pci-v6.18-changes
+Date: Wed, 15 Oct 2025 15:14:28 +0200
+Message-Id: <76026544-3472-4953-910A-376DD42BC6D0@xenosoft.de>
+References: <20251015145901.3ca9d8a0@bootlin.com>
+Cc: Manivannan Sadhasivam <mani@kernel.org>,
+ Bjorn Helgaas <helgaas@kernel.org>, Lukas Wunner <lukas@wunner.de>,
+ Manivannan Sadhasivam <manivannan.sadhasivam@oss.qualcomm.com>,
+ =?utf-8?Q?Ilpo_J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
+ linux-pci@vger.kernel.org, mad skateman <madskateman@gmail.com>,
+ "R.T.Dickinson" <rtd2@xtra.co.nz>, Christian Zigotzky <info@xenosoft.de>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, hypexed@yahoo.com.au,
+ Darren Stevens <darren@stevens-zone.net>, debian-powerpc@lists.debian.org,
+ Thomas Petazzoni <thomas.petazzoni@bootlin.com>
+In-Reply-To: <20251015145901.3ca9d8a0@bootlin.com>
+To: Herve Codina <herve.codina@bootlin.com>
+X-Mailer: iPhone Mail (23A355)
 
-On Wed, 15 Oct 2025 14:27:00 +0200
-Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
 
-> > On 15 October 2025 at 01:58 pm, Herve Codina <herve.codina@bootlin.com> wrote:
-> > 
-> > ﻿Hi Christian,
-> >   
-> >> On Wed, 15 Oct 2025 13:30:44 +0200
-> >> Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
-> >> 
-> >> Hello Herve,
-> >>   
-> >>>> On 15 October 2025 at 10:39 am, Herve Codina <herve.codina@bootlin.com> wrote:  
-> >>> 
-> >>> ﻿Hi All,
-> >>> 
-> >>> I also observed issues with the commit f3ac2ff14834 ("PCI/ASPM: Enable all
-> >>> ClockPM and ASPM states for devicetree platforms")    
-> >> 
-> >> Thanks for reporting.
-> >>   
-> >>> 
-> >>> Also tried the quirk proposed in this discussion (quirk_disable_aspm_all)
-> >>> an the quirk also fixes the timing issue.    
-> >> 
-> >> Where have you added quirk_disable_aspm_all?  
-> > 
-> > --- 8< ---
-> > diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> > index 214ed060ca1b..a3808ab6e92e 100644
-> > --- a/drivers/pci/quirks.c
-> > +++ b/drivers/pci/quirks.c
-> > @@ -2525,6 +2525,17 @@ static void quirk_disable_aspm_l0s_l1(struct pci_dev *dev)
-> >  */
-> > DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ASMEDIA, 0x1080, quirk_disable_aspm_l0s_l1);
-> > 
-> > +static void quirk_disable_aspm_all(struct pci_dev *dev)
-> > +{
-> > +       pci_info(dev, "Disabling ASPM\n");
-> > +       pci_disable_link_state(dev, PCIE_LINK_STATE_ALL);
-> > +}
-> > +
-> > +/* LAN966x PCI board */
-> > +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_EFAR, 0x9660, quirk_disable_aspm_all);
-> > +
-> > /*
-> >  * Some Pericom PCIe-to-PCI bridges in reverse mode need the PCIe Retrain
-> >  * Link bit cleared after starting the link retrain process to allow this
-> > --- 8< ---
-> > 
-> > Best regards,
-> > Hervé  
-> 
-> It is the same patch, I use for my AMD Radeon cards.
-> 
-> In my point of view we have to add a lot of other devices.
+--Apple-Mail-CFCB9707-47FA-4DB9-AEBC-A6874E0AE5FA
+Content-Type: text/plain;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
-Yes, probably!
 
-> 
-> But if the computer does not boot, will the average user know that there is a problem with the power management and their graphics card?
-> I am unsure whether I can deliver the kernel to average users later on.
 
-Also when it boots, it is not easy to know about the problem root cause.
+> Am 15 October 2025 at 02:59 pm, Herve Codina <herve.codina@bootlin.com> wr=
+ote:
+>=20
+> Also when it boots, it is not easy to know about the problem root cause.
+>=20
+> In my case, it was not obvious to make the relationship on my side between=
 
-In my case, it was not obvious to make the relationship on my side between
-my ping timings behavior and ASPM.
+> my ping timings behavior and ASPM.
+>=20
+> Of course 'git bisect' helped a lot but can we rely on that for the averag=
+e
+> user?
+>=20
+> Best regards,
+> Herv=C3=A9
 
-Of course 'git bisect' helped a lot but can we rely on that for the average
-user?
+I think I will revert these modifications for the RC2.
 
-Best regards,
-Hervé
+Patch for reverting: https://raw.githubusercontent.com/chzigotzky/kernels/re=
+fs/heads/main/patches/e5500/pci.patch=
+
+--Apple-Mail-CFCB9707-47FA-4DB9-AEBC-A6874E0AE5FA
+Content-Type: text/html;
+	charset=utf-8
+Content-Transfer-Encoding: quoted-printable
+
+<html class=3D"apple-mail-supports-explicit-dark-mode"><head><meta http-equi=
+v=3D"content-type" content=3D"text/html; charset=3Dutf-8"></head><body dir=3D=
+"auto"><div dir=3D"ltr"><br></div><div dir=3D"ltr"><br><blockquote type=3D"c=
+ite">Am 15 October 2025 at 02:59 pm, Herve Codina &lt;herve.codina@bootlin.c=
+om&gt; wrote:<br></blockquote></div><blockquote type=3D"cite"><div dir=3D"lt=
+r"><span></span><br><span>Also when it boots, it is not easy to know about t=
+he problem root cause.</span><br><span></span><br><span>In my case, it was n=
+ot obvious to make the relationship on my side between</span><br><span>my pi=
+ng timings behavior and ASPM.</span><br><span></span><br><span>Of course 'gi=
+t bisect' helped a lot but can we rely on that for the average</span><br><sp=
+an>user?</span><br><span></span><br><span>Best regards,</span><br><span>Herv=
+=C3=A9</span><br></div></blockquote><br><div>I think I will revert these mod=
+ifications for the RC2.</div><div><br></div><div>Patch for reverting:&nbsp;<=
+a href=3D"https://raw.githubusercontent.com/chzigotzky/kernels/refs/heads/ma=
+in/patches/e5500/pci.patch">https://raw.githubusercontent.com/chzigotzky/ker=
+nels/refs/heads/main/patches/e5500/pci.patch</a></div></body></html>=
+
+--Apple-Mail-CFCB9707-47FA-4DB9-AEBC-A6874E0AE5FA--
 
