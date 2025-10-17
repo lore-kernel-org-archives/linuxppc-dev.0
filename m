@@ -1,57 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-12979-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12980-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 21286CCD195
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Oct 2025 07:25:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DB58DCCD195
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Oct 2025 08:50:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cnxDd3s8xz2xcB;
-	Fri, 17 Oct 2025 18:25:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760685921;
-	cv=none; b=dBsDRHdRy/fKwv/9xBhHxBJSOZ1cJfvBTx0Y7Q/aqrKObcRCMC2dvGf/Gajt90qdA4Sw6SAI3ALgE4WtvdxhBQKHeebBrjKLhv0gC7n/PV2Yz81IMXCH/fuMa7Do7Kx5lZZAY5Hh4gzXvKVVQlro4oYWTTX5niV6Y0LStLB1qW7jegm0uAyt1e7TysflnLrRcb5Yw8XYU6VHQONZG5KuSmfLwRv2yXqn3w6PuFzC9qxZkbq9VbHMgRlZ6C7Yd8bIfjilA+bSg/NJ/xGI5bcYd5lHw1sAATm20we/+TTFLn/ElDkm2dtaHPIO+oriaCHejiiQLngE+MKPbV3qULy9mw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cnz6Q4rN8z2yMh;
+	Fri, 17 Oct 2025 19:50:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760691006;
+	cv=none; b=Qef7+/T3piLFwFuSzAqbtCbNK3DLQW9ohVOT9UxICM0dqCl8h8K/EoZcQ+0pjKriMVYpK5ZPXMclHwVDQmGAo71HxYWJhkdTZtZzdEJXPXD+cfnha9FnjW96B/i+eTWZ5BkbB2JjQzq47NKWaM4+/cZWicZuBxsU1iVMBCBetoMklo+wstkS38690ASndLFy/unjo/Tp91l0LMCu5aIx8UZJWH1XhSC9uib0EVLITAj0Pz0h2H74DhzYuu7jzhtNu5Z/icAlCN1lEjPk/230trijFcTvOrpcrQkRD0zpvZt4jSEpHhqrkcSuMrM9vYfr+C8ELYpbrfuXwcNE0+tb5w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760685921; c=relaxed/relaxed;
-	bh=r1okF/r1G2Aq/NygvlPws9Vet4d9RoZqKUMQ4Fcy+LU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=RgaZPkgMwF0Ffm1qFP98RQuEvt3+b5fym323ldq59zarw34N/IPAGEAXjm7DfOJhnk60pm7Fjy20MG2B/9uuZSPDEgq8Aq7IsYLe6re6Rczd3rnbyoNSw5cQ86tzTAeLUT7GEvTYaFTxXsUgIVxojukrDsVqUZxHvt5bq9YlOIES4Ij8F50PbB1B6U1RimOL33gWdsfQUS5/TTbkPsvmTAMe7AE8kruWTAY3k9zVNe68aXCwAf6VeV1Zyj2WyuTksxosqlQh/fX/fen8jrB1Z0kBOQpkZz2LHM7hHuG9+0lCz08qcEFxxsDSE19ffqVvoEpRHAB8ZWZaRjBkEBo0zw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=bfkBtycp; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=bfkBtycp;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cnxDc55WMz2xQ5
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2025 18:25:20 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 152A560223;
-	Fri, 17 Oct 2025 07:25:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 65E14C4CEF9;
-	Fri, 17 Oct 2025 07:25:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1760685917;
-	bh=22K/HNC17+AdCshY6tozqt4gBMDZnC30mupe9USAYQc=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=bfkBtycp+//lFf0d7xJxk1eV3PBv7U1NJ1XUQEWjZ8b1xNauWJVt7AQHleAr2ugkZ
-	 k1eKJb8lGjyCAWPOz49IUgjDCzEwC73bksuXw8UUzOEhIYex6S0IataE/LY7GYT9T/
-	 Xl4pLm6vhT9IE2ost8ZneYBiqK1Ijrytq6Oviwc4=
-Date: Fri, 17 Oct 2025 09:25:15 +0200
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	debian-powerpc <debian-powerpc@lists.debian.org>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-	linux-stable <stable@vger.kernel.org>
-Subject: Re: Kernel failing to build on 32-bit powerpc
-Message-ID: <2025101758-appendage-postal-6d5e@gregkh>
-References: <eb8a89e43f01a920244bde9252cbe4f5c0e2d75a.camel@physik.fu-berlin.de>
- <bd6fbf70-bf31-4b95-86db-68c0626a3338@csgroup.eu>
+	t=1760691006; c=relaxed/relaxed;
+	bh=XRlA8wxYmT4T3lHIjrOHkanll5zbsjvfV/g54mtoCXw=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=mS3CLM5lO2KgPW/VrdmVrC2bZb63KYtAXpzG36x7iIPKiOryWUUEMdaHGkadCHuRFfNgYpph10Ru7hiUqoIxaksLKskRFFMCMymkCs5WlBFag6caLDBgQoC5uy9J7VwN+kM3dylbPs5+udCfpzUsiLWjQA3hLbi/J1TlKq65PIBb/ZkFItrSrbDtyPEajDDifFUR/VvF/EAI3u1imh0O9JMu8jJa0qhRyW7LAiH1eU6Qehj4yC1LXlTxW1UAo1hT+4tQxlRY8cuIDvKuEqJtTov46mK79EEisuXDi9Q4Ay7qFpIs/Z/rq8NnHH+21Qt3NoJE10inFSbZI6TOJ8m96Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cnz6Q07sTz2xQ5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2025 19:50:04 +1100 (AEDT)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4cnwvM5bNlz9sSC;
+	Fri, 17 Oct 2025 09:10:23 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id ROX6mZqwBn-5; Fri, 17 Oct 2025 09:10:23 +0200 (CEST)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4cnwvM4hkJz9sRy;
+	Fri, 17 Oct 2025 09:10:23 +0200 (CEST)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 930D88B773;
+	Fri, 17 Oct 2025 09:10:23 +0200 (CEST)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id 1cz_CSRRBRVp; Fri, 17 Oct 2025 09:10:23 +0200 (CEST)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 51AC08B763;
+	Fri, 17 Oct 2025 09:10:23 +0200 (CEST)
+Message-ID: <b41c65b7-db67-48e6-a7ac-609bbc653494@csgroup.eu>
+Date: Fri, 17 Oct 2025 09:10:23 +0200
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,33 +58,142 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PPC] t1024rdb: CONFIG_KERNEL_START=0x0 equivalent for ppc64
+ (Kernel 3.16.85)
+To: Alex Fetzner <alex@fetzner.me>,
+ "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>
+References: <yEcgGewmm_K00goV2VDaiSwPgzZCWcRkHeVowwzmBOkeZHAFjGt6BSjU7ZwRTfKd1cFF6GKshrfTDzQ4LZj65Wkc2S4aPBKKIW6FxvAZ46U=@fetzner.me>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <yEcgGewmm_K00goV2VDaiSwPgzZCWcRkHeVowwzmBOkeZHAFjGt6BSjU7ZwRTfKd1cFF6GKshrfTDzQ4LZj65Wkc2S4aPBKKIW6FxvAZ46U=@fetzner.me>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <bd6fbf70-bf31-4b95-86db-68c0626a3338@csgroup.eu>
 
-On Fri, Oct 17, 2025 at 08:49:06AM +0200, Christophe Leroy wrote:
-> Hi,
+Hi Alex,
+
+Le 12/10/2025 à 00:18, Alex Fetzner a écrit :
+> [Vous ne recevez pas souvent de courriers de alex@fetzner.me. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
 > 
-> Le 16/10/2025 à 21:03, John Paul Adrian Glaubitz a écrit :
-> > Hi,
-> > 
-> > could someone investigate the following build failure on powerpc [1], please?
-> > 
-> > In file included from /build/reproducible-path/linux-6.16.12/kernel/sched/build_policy.c:64:
-> > /build/reproducible-path/linux-6.16.12/kernel/sched/ext_idle.c: In function ‘is_bpf_migration_disabled’:
-> > /build/reproducible-path/linux-6.16.12/kernel/sched/ext_idle.c:893:14: error: ‘const struct task_struct’ has no member named ‘migration_disabled’
-> >    893 |         if (p->migration_disabled == 1)
-> >        |              ^~
-> > /build/reproducible-path/linux-6.16.12/kernel/sched/ext_idle.c:896:25: error: ‘const struct task_struct’ has no member named ‘migration_disabled’
-> >    896 |                 return p->migration_disabled;
-> >        |                         ^~
-> > 
+> Hello all,
 > 
-> I guess 6.16.12 is missing commit cac5cefbade9 ("sched/smp: Make SMP
-> unconditional")
+> I have a legacy product using linux 3.12.19 that I am updating to use linux 4 and eventually 5.
+> The product use an NXT (Freescale) t1024rdb (e5500 processor).
+> I am right now trying to compile a 3.16.85 kernel that works as a stand-in replacement for the existing kernel. The product uses a u-boot load address 0x1000000 (1MB) and flattened device tree address 0x2000000 (2MB). The deployment of this kernel is such that I cannot alter these address.
+> The original uImage header has load address and entry point 0x0.
+> The original vmlinux ELF from the uImage has entry point address 0x0.
+> 
+> How do I appropriately alter a ppc64 kernel to have entry point 0x0?
+> I can create a uImage header with load and entry point 0x0, but the kernel uses a virtual address 0xc000000000000000 as entry point.
+> I see that 32 bit kernels have the configurable option CONFIG_KERNEL_START, but this is not available for 64 bit.
 
-6.16 is now end-of-life, so not much we can do there, sorry.
+Even with the CONFIG_KERNEL_START you can't expect any kernel to have a 
+virtual start address of 0, because the KERNEL needs to be above user space.
 
-greg k-h
+But you shouldn't need that. It is the role of the loader to set the MMU 
+so that the kernel is running with the correct virtual address.
+
+I don't understand why you need the virtual starting address of vmlinux 
+to be 0x0.
+
+Here is what I get with ppc64e_defconfig with v6.18-rc1:
+
+CPU:   Unknown, Version: 0.0, (0x00000000)
+Core:  e5500, Version: 2.0, (0x80240020)
+Clock Configuration:
+        CPU0:400  MHz,
+        CCB:400  MHz,
+        DDR:200  MHz (400 MT/s data rate), LBC: unknown (LCRR[CLKDIV] = 
+0x00)
+L1:    D-cache 32 KiB enabled
+        I-cache 32 KiB enabled
+DRAM:  1 GiB
+L2:    disabled
+
+PCI: base address e0008000
+   00:01.0     - 1af4:1000 - Network controller
+PCI1: Bus 00 - 00
+
+In:    serial
+Out:   serial
+Err:   serial
+Net:   No ethernet found.
+Hit any key to stop autoboot:  0
+WARNING: adjusting available memory to 30000000
+## Booting kernel from Legacy Image at 02000000 ...
+    Image Name:   Linux-6.18.0-rc1-00010-g179dbcda
+    Image Type:   PowerPC Linux Kernel Image (gzip compressed)
+    Data Size:    7217834 Bytes = 6.9 MiB
+    Load Address: 00000000
+    Entry Point:  00000000
+    Verifying Checksum ... OK
+## Flattened Device Tree blob at e8000000
+    Booting using the fdt blob at 0xe8000000
+    Uncompressing Kernel Image ... OK
+    Loading Device Tree to 03efc000, end 03ffefff ... OK
+random: crng init done
+Activating Kernel Userspace Access Protection
+Activating Kernel Userspace Execution Prevention
+MMU: Supported page sizes
+          4 KB as direct
+       4096 KB as direct
+      16384 KB as direct
+      65536 KB as direct
+     262144 KB as direct
+    1048576 KB as direct
+MMU: Book3E HW tablewalk not supported
+Linux version 6.18.0-rc1-00010-g179dbcda9eb3 
+(chleroy@PO20335.IDSI0.si.c-s.fr) (powerpc64-linux-gcc (GCC) 15.1.0, GNU 
+ld (GNU Binutils) 2.44) #1697 SMP Wed Oct 15 13:47:20 CEST 2025
+OF: reserved mem: Reserved memory: No reserved-memory node in the DT
+Found initrd at 0xc000000004000000:0xc0000000041d1a3b
+Hardware name: QEMU ppce500 e5500 0x80240020 QEMU e500
+printk: legacy bootconsole [udbg0] enabled
+CPU maps initialized for 1 thread per core
+-----------------------------------------------------
+phys_mem_size     = 0x40000000
+dcache_bsize      = 0x40
+icache_bsize      = 0x40
+cpu_features      = 0x0000000300800194
+   possible        = 0x0000000300900394
+   always          = 0x0000000300800394
+cpu_user_features = 0xcc008000 0x08000000
+mmu_features      = 0x000a0010
+firmware_features = 0x0000000000000000
+-----------------------------------------------------
+qemu_e500_setup_arch()
+barrier-nospec: using isync; sync as speculation barrier
+Zone ranges:
+   DMA      [mem 0x0000000000000000-0x000000003fffffff]
+   Normal   empty
+Movable zone start for each node
+Early memory node ranges
+   node   0: [mem 0x0000000000000000-0x000000003fffffff]
+Initmem setup node 0 [mem 0x0000000000000000-0x000000003fffffff]
+MMU: Allocated 2112 bytes of context maps for 255 contexts
+percpu: Embedded 27 pages/cpu s70232 r0 d40360 u1048576
+Kernel command line: noreboot
+Unknown kernel command line parameters "noreboot", will be passed to 
+user space.
+printk: log buffer data + meta data: 131072 + 458752 = 589824 bytes
+Dentry cache hash table entries: 131072 (order: 8, 1048576 bytes, linear)
+Inode-cache hash table entries: 65536 (order: 7, 524288 bytes, linear)
+Built 1 zonelists, mobility grouping on.  Total pages: 262144
+mem auto-init: stack:all(zero), heap alloc:off, heap free:off
+SLUB: HWalign=64, Order=0-3, MinObjects=0, CPUs=1, Nodes=1
+rcu: Hierarchical RCU implementation.
+rcu: 	RCU event tracing is enabled.
+rcu: 	RCU restricting CPUs from NR_CPUS=32 to nr_cpu_ids=1.
+	Tracing variant of Tasks RCU enabled.
+rcu: RCU calculated value of scheduler-enlistment delay is 25 jiffies.
+rcu: Adjusting geometry for rcu_fanout_leaf=16, nr_cpu_ids=1
+RCU Tasks Trace: Setting shift to 0 and lim to 1 rcu_task_cb_adjust=1 
+rcu_task_cpu_ids=1.
+NR_IRQS: 512, nr_irqs: 512, preallocated irqs: 16
+mpic: Setting up MPIC " OpenPIC  " version 1.2 at fe0040000, max 1 CPUs
+mpic: ISU size: 256, shift: 8, mask: ff
+mpic: Initializing for 256 sources
+...
+
+Christophe
 
