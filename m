@@ -1,65 +1,64 @@
-Return-Path: <linuxppc-dev+bounces-12985-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-12986-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AE6C2CCD1A2
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Oct 2025 10:09:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14BF9CCD1A2
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 17 Oct 2025 10:09:22 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cp0sZ3WMdz3cZp;
-	Fri, 17 Oct 2025 21:09:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cp0sb3r93z3cdn;
+	Fri, 17 Oct 2025 21:09:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760695746;
-	cv=none; b=oITaK/RbHxmu9YB7urw13Kyt2N8Zv8wcP4xREOpw9QkFNDzx80Hx/8yW1q1HIhgwfCO7rbTmqLhY48mgja77JbDiYOur8a+BU3IV9Bc6QW71E9VlSaaRahgkLJTa9vm73iaNJmFzl95hl+ka6OYT/5M2a/NnxBcCcKPPaVRI0YLmv3B3sW49dc0U9U6uQZoar+bAm1Rcy9p67EAC6labE0sdNLdKw9Ww3UfMasEbo3hpQepZ57Wj8CzMyZ5yrTQEDhMxKVInZsvu+K4P+TxJIOzL60o0ksp01V28canEHmg0Qkgg8Ft3CuAUJUbRaaaRUn9se7n58OFhfqd+pK+jLg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1760695747;
+	cv=none; b=GsvAqjFMBG3yvb9L8hooZlfGgj1LLtTTHmBfO7GWuLqH2bZ4jWkv4JH63bUC+acrFSp7qcCHbiocsfQpqaYRm3ILxwtScJKwEAXtahsOJzd5pSAsoVoqJteVXyRu8LpE7CFbIBRLTk/ygibo0Ekbc6Ds9GhhJeevswosjKJkdLwKB87sJRuExwIzRI0srWbBvr1dqNkXCTgVn6aLSJNnRVTc5zI3Z9jPrPb6tR4ncO7wdY0aQ1t/XMPvzhGimXpQjQqVUjraAWSEl+jfa8dGTvT8y9267wMJVXcwsuxdk6XvwTTJDYcakB45kF7iUBxG/CqnjS4Celawt0MISJ/pfw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1760695746; c=relaxed/relaxed;
-	bh=DNQHcterXWXQuFWR5KPGbkzD3Sh/vJk9lLVEwO1xPSA=;
-	h=Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type:Date; b=cxoeoilAYDTqNEqyzVfAe4ZFJ26II38t7O3WfqxytLDO3zHnIX7i0W80II4umine2crP/EjMe0Th/ETG7XkFCl6hxtUB97ugjxTeKtBD5V/h8jdEjVd6rXX+KRA4ZH47Nw/zZB7/OX9DPWyAMjLbwvBGvqJYqo5XIkiN5oeujeZbh3Cx3bWXuAjrGvY0vSG2tEQc7PTImtW1iyJWGLNCZMEZ0Y+LFRyvlrdPDfA5JAqR77VEZx2na1LT84E6Va8kWqzmyFr7XwGvRxoAxEkXIxXOYn6ifwSIZ3Oabkq0WB7sz+x0+kIIlDnmVOzK/cLXVoPHbRAP/9Ax0a5+qkIKBQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=MnLnslQ4; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=rg0WPyLq; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	t=1760695747; c=relaxed/relaxed;
+	bh=sQjHTAU2ANvy0R8z2gg1idxWUOVjpB50pHnvfHruLTk=;
+	h=Message-ID:From:To:Subject:cc:Date; b=G6U2IH5ZNgkdXuQ5X3x5INYyDET3bW8O1C0j+0rQ2nvujDldJnDfHnawNv923zwETXdg+6v8Gn1NtbMaztEy+YYGY2GsiHjRbKifkf4MfnnoK26+bFLompMu0fqnQuCzYqnDSyuKHQn0oDkAKoLrbvhswsTnKNNTtD1ki6ikJ3IvGEuQEhfcRX5bXvXEyFo5FftVqRrDQOyJZtjeBvW2Em1mF19ePhm9bAGaakbvfQoCkg5ei9UjWRA9E1XppNI/N7uQBgb/HH4I6LtJL6+AwuwnF5Jbqt+9I7QGjs9bKcs38hPGLOacu9wyBc32rK9GtAc7Xd/P+qWnw40llSj4Ww==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Eko32jph; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=jvhhlE5Z; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=MnLnslQ4;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=rg0WPyLq;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Eko32jph;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=jvhhlE5Z;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cp0sY3QWtz3cYP
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cp0sY5l5mz3cZ0
 	for <linuxppc-dev@lists.ozlabs.org>; Fri, 17 Oct 2025 21:09:05 +1100 (AEDT)
-Message-ID: <20251017093030.064701062@linutronix.de>
+Message-ID: <20251017085938.150569636@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1760695743;
+	s=2020; t=1760695735;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=DNQHcterXWXQuFWR5KPGbkzD3Sh/vJk9lLVEwO1xPSA=;
-	b=MnLnslQ4RTsV85Q3CoH24lxHMQcF21HKHrtG7EOggVFlERWiVpTDR1OV7BLIIXpp85tyM9
-	I7IoqOHCLIqnPvnSVsWVb/Tu2jQui1WDunh2r7Qwge4EsFLfN8gkhQuolZ3E+cyqEV0YOw
-	6YqRd4+Xv0RBvQT1MNCkfK6e1IcQ8AumHt6pvIbojy2QtqkEaPYDHqHAea5RkXNWGyEpjl
-	7xQHleplT3cA3JY0wM9+v9hUdjev9y6y1EgIEzbKs5vYyU4M0DvNL1MGJvittYUZPuSAbA
-	0ZX2f3AXVPL23vcIPhkezJfXaQwQ3oOGHCYt8SH/2Beh0cStIp1WXsGlFtUGeg==
+	 to:to:cc:cc; bh=sQjHTAU2ANvy0R8z2gg1idxWUOVjpB50pHnvfHruLTk=;
+	b=Eko32jphl7W3Xb+zGpZ6phPdMdJwxHmnxeLrIJj9qdJitAWXAuSbzoODtPZR1exPSq4jMr
+	Xn7ZTH6KgwcOGALTdCL47R8+MFa4jiWK8UogHGnp9QeK4hbWrSPeVPSRc3y9z6FMLcfPGe
+	KbL4vt6K04JVr8neOXAHUbizdH9XNtossRpzFH+fjRoWAjYd4ZAa2/eiSueqkaHZBNR5/Y
+	WgMiXtDNsPUyxQGr8DumDuVWYTMwSZ2IlWZkWq/cFKVncN/jALJBcLTV8IeVbKMcArrHJ2
+	eizyzm/gJ8rGmf9GDpZ/1JOEQhlypSXGiWokxNij3wWrwzykELy0t6VKFNZubQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1760695743;
+	s=2020e; t=1760695735;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=DNQHcterXWXQuFWR5KPGbkzD3Sh/vJk9lLVEwO1xPSA=;
-	b=rg0WPyLqAanfBxT81ThSaB9BbJy7x27baok62rRyXXmPsoM3tIHAgK3ol6nAR0EDXBfInK
-	mTIojW6IJ53yd1Cw==
+	 to:to:cc:cc; bh=sQjHTAU2ANvy0R8z2gg1idxWUOVjpB50pHnvfHruLTk=;
+	b=jvhhlE5ZDsXkGj4CvFqtuuX6HrygY+mr5PHtByDjb6j+LIqTh5z4fS9wp9QqAIwAio4UlZ
+	gHuITp9EO2Np+kAA==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- linuxppc-dev@lists.ozlabs.org,
- kernel test robot <lkp@intel.com>,
+Subject: [patch V3 00/12] uaccess: Provide and use scopes for user masked
+ access
+cc: kernel test robot <lkp@intel.com>,
  Russell King <linux@armlinux.org.uk>,
  linux-arm-kernel@lists.infradead.org,
  Linus Torvalds <torvalds@linux-foundation.org>,
  x86@kernel.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ linuxppc-dev@lists.ozlabs.org,
  Paul Walmsley <pjw@kernel.org>,
  Palmer Dabbelt <palmer@dabbelt.com>,
  linux-riscv@lists.infradead.org,
@@ -79,8 +78,7 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
  Christian Brauner <brauner@kernel.org>,
  Jan Kara <jack@suse.cz>,
  linux-fsdevel@vger.kernel.org
-Subject: [patch V3 04/12] powerpc/uaccess: Use unsafe wrappers for ASM GOTO
-References: <20251017085938.150569636@linutronix.de>
+Date: Fri, 17 Oct 2025 12:08:54 +0200 (CEST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -93,71 +91,95 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Date: Fri, 17 Oct 2025 12:09:02 +0200 (CEST)
 
-ASM GOTO is miscompiled by GCC when it is used inside a auto cleanup scope:
+This is a follow up on the V2 feedback:
 
-bool foo(u32 __user *p, u32 val)
-{
-	scoped_guard(pagefault)
-		unsafe_put_user(val, p, efault);
-	return true;
+   https://lore.kernel.org/20250916163004.674341701@linutronix.de
+
+The main concern over the V2 implementation was the requirement to have
+the code within the macro itself.
+
+The main reason for that was the issue with ASM GOTO within a auto cleanup
+scope. Clang refuses to build when the ASM GOTO label is outside of the
+scope and GCC silently miscompiles the code and misses the cleanup.
+
+After some back and forth discussion Linus suggested to put the local label
+workaround into the user access functions themself.
+
+The second reason for having this construct was to make the potential
+modification of the pointer (when the architecture supports masking) scope
+local, as that preserves the original pointer for the failure path.
+
+Andrew thankfully pointed me to nested for() loops and after some head
+scratching I managed to get all of it hidden in that construct.
+
+So now the scoped access looks like this:
+
+	scoped_masked_user_read_access(ptr, efault) {
+	        // @ptr is aliased. An eventual mask modification is scope local
+		unsafe_get_user(val, ptr, efault);
+		...
+	}
+	return 0;
 efault:
-	return false;
-}
+        // @ptr is unmodified
+	do_stuff(ptr);
+	return -EFAULT;
 
-It ends up leaking the pagefault disable counter in the fault path. clang
-at least fails the build.
 
-Rename unsafe_*_user() to arch_unsafe_*_user() which makes the generic
-uaccess header wrap it with a local label that makes both compilers emit
-correct code. Same for the kernel_nofault() variants.
+Changes vs. V2:
 
-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linuxppc-dev@lists.ozlabs.org
+    - Fix the unsigned long long pointer issue in ARM get_user() -
+      Christophe, Russell
+
+    - Provide a generic workaround for the ASM GOTO issue and convert the
+      affected architecture code over - Linus
+
+    - Reimplement the scoped cleanup magic with nested for() loops - Andrew
+
+    - Provide variants with size provided by the caller - Mathieu
+
+    - Add get/put_user_masked() helpers for single read/write access
+
+    - Fixup the usage in futex, x86. select
+
+    - A clumsy attempt to implement a coccinelle checker which catches
+      access mismatches, e.g. unsafe_put_user() inside a
+      scoped_masked_user_read_access() region. That needs more thought and
+      more coccinelle foo and is just there for discussion.
+
+The series is based on v6.18-rc1 and also available from git:
+
+    git://git.kernel.org/pub/scm/linux/kernel/git/tglx/devel.git uaccess/masked
+
+Thanks,
+
+	tglx
 ---
- arch/powerpc/include/asm/uaccess.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+Thomas Gleixner (12):
+      ARM: uaccess: Implement missing __get_user_asm_dword()
+      uaccess: Provide ASM GOTO safe wrappers for unsafe_*_user()
+      x86/uaccess: Use unsafe wrappers for ASM GOTO
+      powerpc/uaccess: Use unsafe wrappers for ASM GOTO
+      riscv/uaccess: Use unsafe wrappers for ASM GOTO
+      s390/uaccess: Use unsafe wrappers for ASM GOTO
+      uaccess: Provide scoped masked user access regions
+      uaccess: Provide put/get_user_masked()
+      coccinelle: misc: Add scoped_masked_$MODE_access() checker script
+      futex: Convert to scoped masked user access
+      x86/futex: Convert to scoped masked user access
+      select: Convert to scoped masked user access
 
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -451,7 +451,7 @@ user_write_access_begin(const void __use
- #define user_write_access_begin	user_write_access_begin
- #define user_write_access_end		prevent_current_write_to_user
- 
--#define unsafe_get_user(x, p, e) do {					\
-+#define arch_unsafe_get_user(x, p, e) do {			\
- 	__long_type(*(p)) __gu_val;				\
- 	__typeof__(*(p)) __user *__gu_addr = (p);		\
- 								\
-@@ -459,7 +459,7 @@ user_write_access_begin(const void __use
- 	(x) = (__typeof__(*(p)))__gu_val;			\
- } while (0)
- 
--#define unsafe_put_user(x, p, e) \
-+#define arch_unsafe_put_user(x, p, e)				\
- 	__put_user_size_goto((__typeof__(*(p)))(x), (p), sizeof(*(p)), e)
- 
- #define unsafe_copy_from_user(d, s, l, e) \
-@@ -504,11 +504,11 @@ do {									\
- 		unsafe_put_user(*(u8*)(_src + _i), (u8 __user *)(_dst + _i), e); \
- } while (0)
- 
--#define __get_kernel_nofault(dst, src, type, err_label)			\
-+#define arch_get_kernel_nofault(dst, src, type, err_label)		\
- 	__get_user_size_goto(*((type *)(dst)),				\
- 		(__force type __user *)(src), sizeof(type), err_label)
- 
--#define __put_kernel_nofault(dst, src, type, err_label)			\
-+#define arch_put_kernel_nofault(dst, src, type, err_label)		\
- 	__put_user_size_goto(*((type *)(src)),				\
- 		(__force type __user *)(dst), sizeof(type), err_label)
- 
-
+---
+ arch/arm/include/asm/uaccess.h               |   26 ++
+ arch/powerpc/include/asm/uaccess.h           |    8 
+ arch/riscv/include/asm/uaccess.h             |    8 
+ arch/s390/include/asm/uaccess.h              |    4 
+ arch/x86/include/asm/futex.h                 |   75 ++----
+ arch/x86/include/asm/uaccess.h               |   12 -
+ fs/select.c                                  |   12 -
+ include/linux/uaccess.h                      |  313 ++++++++++++++++++++++++++-
+ kernel/futex/futex.h                         |   37 ---
+ scripts/coccinelle/misc/scoped_uaccess.cocci |  108 +++++++++
+ 10 files changed, 497 insertions(+), 106 deletions(-)
 
