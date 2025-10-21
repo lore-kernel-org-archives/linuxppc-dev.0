@@ -1,81 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-13119-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13120-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07432CCD1A7
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Oct 2025 15:51:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8625CCCD1A7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Oct 2025 16:21:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4crcHC49RSz304H;
-	Wed, 22 Oct 2025 02:51:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::62d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761061911;
-	cv=none; b=lYEA9or8X4ZQzXEoAjR1qWXFNuII2LXj4ug8BQnNxyVmnyA8J2t/P4HDO8swQlNgCcOq8k/hX/xWYeo4gaNbFVawx2cqUBhrpPd9KlPzM4H7fzn4Ct+H5UHx6Okg8xBqHfmkco/1wm5yXIrP1hVmxc7tCxkmEtUsxTS2Zy2pVY8uicyhAlq0l+i9LpoZvYHXIhm82XbEoZTixGCyV/t37ocQDQRDDHYzBp6ixPhehTBsWp7/1CyKWzJQ9JIvzQG3ODt7jSp6uD/m4l635kBdPJkNwRpg9fhsKmA8Um+hS1HcKIBw8SlgyxhsgazlISJkKOx5M/ke+JYvBVdKtFtFiQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4crcwq0m55z2yqf;
+	Wed, 22 Oct 2025 03:20:59 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761063659;
+	cv=none; b=ZqJ41zl5ov2+CmEwdktYmMX+QgwitT2rTGcStBpwEm0v5gqLvevu1M0KmERvYhZFGSZvRpvPAOb+SylsHrjXrSJhtBjpxEuHsGmLzWbtTqtXr6cJPz8LrR1FGAFyjGeHfcbwc7UCM9WYZA/THBV1P1IrmM5/HYM6wzg7IfDZM+WS7bIs9fVi8nAhwieVEwk1R3bxAuyjypIg0o8MM1MQ13aAG9jU8b/bwCnyzimMGTCmjsDsqLIbGQigzE/ZraO9/DEl6DZf5PsIDdoVv4VOoehR7rOtZNeaKQIA5rY/liu7bDN2EHU3Ib844i8YtZYo3JgJSwkbkLCyqPFM/WUrPA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761061911; c=relaxed/relaxed;
-	bh=+0cSMAwFRMJRxsYANvmyJeRZmZI2zdPSEESzl/tT500=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=NAOSCGKCNVdmUpCmS0pfIv0ai0uRiuP11TQj7H9h+lE43aT7tFUJhUmt16GZ3rdrMhFRfiv+ZwD/o5NkvcEb1m2PrL2thTA7RFePuYIt1/yarz10pXc30gbteer72+NHpClzsms8zv0HXCnyhThNC4qM0MeLNT9A8INQY0OGRC+ll9NQWnRnwEZ8fIyoqwhS3GC6lJpwYsTnaaO5F0c3D69SDjfUr/8HzPCRd5JdH80LgCRETS80k6JKEIQkt/iq9m3Ydc9dgX12NsRtNtKZFqCyBDQ9OO4W6uE+rbgLlEF6p951+FsGTTxGM6fX6yrAWNwmm7MT+Im7B0DyMjhs4w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=LmIf1sve; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::62d; helo=mail-ej1-x62d.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1761063659; c=relaxed/relaxed;
+	bh=LMfLZkWdtEpyKcyACnVEnBnVXrKTKM4ysSqUWRujmdU=;
+	h=From:Date:To:cc:Subject:In-Reply-To:Message-ID:References:
+	 MIME-Version:Content-Type; b=Z0gVOCYzOa0b1fyfK6eBJNK5/g8anjitgpDtnj62WS27vrl2Lq9oCTwLkAQc3DixFE9qbKVvhBnTQV2OJiozZlkp8EbFppeCKJCcbCNdVyGis1P1KcAAOdYquHCgifgQsK1JbwwpkVFrM0hMRj8wu5KUhSFW5fygV1wVgZeiZZMkTPW4iujD5gk1QGh8oYcGv8hWUmw1F0slnsezL80gAwL80gtkpYQlXzijQ6w/ozRD1dfgnqo0Uo5ytQAniy8caDi0k/grVGFcsIA1vpcyroeU/Fi64X6nJjLcpl+pUXknOokTSBYAssX2Zsf2LZwTlX5y80oRdMggh+y4qbTswQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GW5RMB/r; dkim-atps=neutral; spf=pass (client-ip=198.175.65.10; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=LmIf1sve;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=GW5RMB/r;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::62d; helo=mail-ej1-x62d.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x62d.google.com (mail-ej1-x62d.google.com [IPv6:2a00:1450:4864:20::62d])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.10; helo=mgamail.intel.com; envelope-from=ilpo.jarvinen@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4crcHB1syTz2ymg
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2025 02:51:49 +1100 (AEDT)
-Received: by mail-ej1-x62d.google.com with SMTP id a640c23a62f3a-b3b3a6f4dd4so1095408566b.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2025 08:51:49 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google; t=1761061906; x=1761666706; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=+0cSMAwFRMJRxsYANvmyJeRZmZI2zdPSEESzl/tT500=;
-        b=LmIf1sveNn1+D4vKjLLx8g0ndD/Jvzd0eTnud59U6JUaUxRa2TpfsX6wfCoYb36a8f
-         LNuf87oil/dpNm6BsCU/vfC3Tj3DEJd473dFGmj4MjlG7HyZZnk0Ul2Ce3UotMIctL+l
-         nZIC37dekUTdv+RILf3oqsaYxTz0XaqCMxik4=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761061906; x=1761666706;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=+0cSMAwFRMJRxsYANvmyJeRZmZI2zdPSEESzl/tT500=;
-        b=KqJ1UDQy60oEMKTOedoipZopaB6ZJBKgkYEPkI1tvkd+wLiQkOszpa4VlwEXTlczbm
-         hI2ysVLCzoqWZpBvgPW0PzN8Z787I3rFHH5mMTHeP1aPkNCWwbCInNTYZTwTV8iPZwXK
-         xw0/wmZQ/hS3Ip0amFAAiXzUnMXWgjUhjTSzjplAq3iyGyUUHch5am2MTkJdiXTLfceP
-         o1UygDUwCuaBnjrBnYq0r9oYOgrCML3ZFiekE4jYoY4qWDSSetK5cLtYDOu/mfPzdlct
-         qPCakLhGUfjyF/cgc05bSaRlDs0gzdcaNIE6JLE/2Xulm9WMp7CBBT7MC/YAPHEbs49P
-         m1Aw==
-X-Forwarded-Encrypted: i=1; AJvYcCVrtfoOu6Q/zTamRE6Fdo4DD9OP9FbyEF8IMMQ+ZJVFIY70NZ7SI8Ufv/T8N4lEGjHiy5Re3bPNLx1iUYo=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwIr77KE7BYaGQZiG+AKqag5RZsJ0kSIKgg/TgiA/A4VAJn+sWc
-	1xDGO5wN9QQiEQyCvvEGtRChT71etXc0vKO0AMshKSDYVVRbr+8JWCR+c1jFaq6LjFz6nDpWo42
-	UGq/ZrL5JZw==
-X-Gm-Gg: ASbGncscP6tU40jPcjrgUeHfGoqdkfo7Qwac5BZMt9Q5L18x+qkOEyhCXo9p5tNuK0O
-	aQLTXwcdGPCnP7BvSGyRqU4gmzMHpHxeddfBQKigmaDv9tqYSqAWINTGIml8PMZLY3cB6pK531B
-	1boav3fvAt8JznlWMZEEi67VZuDjhzUlsnGfXa6CZHqc2RyPNSH+9dngHpf2TRUSC0CPC5DXPYE
-	WvaNfAGZRQiPbStgjxPkdP1UuSEH55WPlxcekkK9mDTXKR+rcmq1lgybrOjlu5bM/RDggDHpet2
-	YGHAoSm2ig8wBRuXhoo6dlDAfRKP/RcYYj81b8wVUz3wK4QB8thMZ2bmxWkcGNtIStoIhuQvU3B
-	58VwPnJsq/xdCg1OBG148hcWwpU/JigRTBsd/UvSckRK3bGOLdNlZEr4Lzhl0ZFE0GSB3TaPLvA
-	x9pgMGEVELh3sn8HZqWRHgRpyKHDv/PGKpE9OAIvSIGArL85GOgaMkLx0twzE687cZC/ylt3I=
-X-Google-Smtp-Source: AGHT+IEh77ZfNpV1poIOVlhKOJApFVt3lSKb9YWk3qU3YtIVHw9UdFLSQTF0in+yClfB3/VMjJ2mEg==
-X-Received: by 2002:a17:907:3f12:b0:b3e:9818:30e0 with SMTP id a640c23a62f3a-b6474b35e37mr1925885166b.29.1761061905921;
-        Tue, 21 Oct 2025 08:51:45 -0700 (PDT)
-Received: from mail-ed1-f50.google.com (mail-ed1-f50.google.com. [209.85.208.50])
-        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b65e83958fbsm1116157766b.27.2025.10.21.08.51.44
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Tue, 21 Oct 2025 08:51:44 -0700 (PDT)
-Received: by mail-ed1-f50.google.com with SMTP id 4fb4d7f45d1cf-61feb87fe26so9311529a12.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 21 Oct 2025 08:51:44 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCXJsJhhMy0kxythOyX8urgI25SCvzHcTccVdoicAGKuFWbz/Fj+l29IPTp0qPIplFmBIcEwkMbVQ8udaz4=@lists.ozlabs.org
-X-Received: by 2002:a05:6402:518e:b0:63c:4da1:9a10 with SMTP id
- 4fb4d7f45d1cf-63c4da19c97mr11628470a12.31.1761061904052; Tue, 21 Oct 2025
- 08:51:44 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4crcwm3R90z2ymg
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2025 03:20:54 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1761063657; x=1792599657;
+  h=from:date:to:cc:subject:in-reply-to:message-id:
+   references:mime-version:content-id;
+  bh=UiYo337U/uvngXu64QBg7gPMlx6TfoMI6XWsfgsm50w=;
+  b=GW5RMB/rlgxP4IDVB6CljIsA74DFj6NwYdAaGbEyceCOasUaB6zMZ3Ej
+   dI9O1+48ngfd2SsJmFqPT4EqNjRXnIstnnXapfbW130BPTVhWO5LlU0eq
+   JB2WmwL4nrX9JBy7s6bLqC50h2xROLtZRyAQ6+kdQLCLTYmjVwFtULTMc
+   Zq+9PtgoZ3WP1tN3tTgHrYMtRPV25L+H0RD2v0e6k8ncpiXps1z4c5se9
+   mPSB4Ul4+JB6ErXHfv80jfCBIJxR1NQg3cav2xRhUBcLiXZQIUV1KBB/x
+   CPmOHvkTlIM6WvvQ5afB+6e9ISoTolvl9kWNyLuMQZ9wRtMYDd3HVX+Wk
+   g==;
+X-CSE-ConnectionGUID: A/bkjv1/QceyEIrZ3OCetA==
+X-CSE-MsgGUID: OAmwK3EeS+uuwoSDhrEqiw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="80634068"
+X-IronPort-AV: E=Sophos;i="6.19,245,1754982000"; 
+   d="scan'208";a="80634068"
+Received: from fmviesa007.fm.intel.com ([10.60.135.147])
+  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Oct 2025 09:20:52 -0700
+X-CSE-ConnectionGUID: T1o8CFj+T/OBd3RU55mKfw==
+X-CSE-MsgGUID: A81F09Z1TLG85mG5fYIOTA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.19,245,1754982000"; 
+   d="scan'208";a="183335077"
+Received: from ijarvine-mobl1.ger.corp.intel.com (HELO localhost) ([10.245.245.189])
+  by fmviesa007-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Oct 2025 09:20:49 -0700
+From: =?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>
+Date: Tue, 21 Oct 2025 19:20:44 +0300 (EEST)
+To: Simon Richter <Simon.Richter@hogyros.de>
+cc: Lucas De Marchi <lucas.demarchi@intel.com>, linuxppc-dev@lists.ozlabs.org, 
+    linux-pci@vger.kernel.org
+Subject: Re: BAR resizing broken in 6.18 (PPC only?)
+In-Reply-To: <67840a16-99b4-4d8c-9b5c-4721ab0970a2@hogyros.de>
+Message-ID: <922b1f68-a6a2-269b-880c-d594f9ca6bde@linux.intel.com>
+References: <f9a8c975-f5d3-4dd2-988e-4371a1433a60@hogyros.de> <a5e7a118-ba70-000e-bab4-8d56b3404325@linux.intel.com> <67840a16-99b4-4d8c-9b5c-4721ab0970a2@hogyros.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,47 +77,260 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20251017085938.150569636@linutronix.de> <20251017093030.253004391@linutronix.de>
- <20251020192859.640d7f0a@pumpkin> <877bwoz5sp.ffs@tglx> <CAHk-=wgE-dAHPzrZ7RxwZNdqw8u-5w1HGQUWAWQ0rMDCJORfCw@mail.gmail.com>
- <871pmwz2a3.ffs@tglx>
-In-Reply-To: <871pmwz2a3.ffs@tglx>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Tue, 21 Oct 2025 05:51:26 -1000
-X-Gmail-Original-Message-ID: <CAHk-=wj3VgQAwUjfM_6f5O5gFr4kXBma2q5m8PLarRCnA8R49w@mail.gmail.com>
-X-Gm-Features: AS18NWAG7YIQvZWdpCHOlvhJ3OJWyOrD174ntZFm1lwB34kJVwOkBypjHYnGjQo
-Message-ID: <CAHk-=wj3VgQAwUjfM_6f5O5gFr4kXBma2q5m8PLarRCnA8R49w@mail.gmail.com>
-Subject: Re: [patch V3 07/12] uaccess: Provide scoped masked user access regions
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: David Laight <david.laight.linux@gmail.com>, LKML <linux-kernel@vger.kernel.org>, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Andrew Cooper <andrew.cooper3@citrix.com>, 
-	kernel test robot <lkp@intel.com>, Russell King <linux@armlinux.org.uk>, 
-	linux-arm-kernel@lists.infradead.org, x86@kernel.org, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org, 
-	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, linux-riscv@lists.infradead.org, 
-	Heiko Carstens <hca@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org, 
-	Julia Lawall <Julia.Lawall@inria.fr>, Nicolas Palix <nicolas.palix@imag.fr>, 
-	Peter Zijlstra <peterz@infradead.org>, Darren Hart <dvhart@infradead.org>, 
-	Davidlohr Bueso <dave@stgolabs.net>, =?UTF-8?Q?Andr=C3=A9_Almeida?= <andrealmeid@igalia.com>, 
-	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
-	linux-fsdevel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+Content-Type: multipart/mixed; BOUNDARY="8323328-262779146-1760981164=:976"
+Content-ID: <2f941369-6da1-fb98-c063-3e6389d9eb95@linux.intel.com>
 
-On Tue, 21 Oct 2025 at 05:46, Thomas Gleixner <tglx@linutronix.de> wrote:
->
-> On Tue, Oct 21 2025 at 05:06, Linus Torvalds wrote:
-> >
-> > We could still change it since there aren't that many users, but I'm
-> > not sure what would be a better name...
->
-> I couldn't come up with something sensible for the architecture side.
->
-> But for the scope guards I think the simple scoped_user_$MODE_access()
-> is fine as for the usage site it's just a user access, no?
+  This message is in MIME format.  The first part should be readable text,
+  while the remaining parts are likely unreadable without MIME-aware tools.
 
-Ack.
+--8323328-262779146-1760981164=:976
+Content-Type: text/plain; CHARSET=ISO-8859-15
+Content-Transfer-Encoding: QUOTED-PRINTABLE
+Content-ID: <ae7f8f78-eb6d-16ad-7790-4784d91d3308@linux.intel.com>
 
-               Linus
+On Sun, 19 Oct 2025, Simon Richter wrote:
+> On 10/17/25 00:45, Ilpo J=E4rvinen wrote:
+>=20
+> > Is this stock 6.18-rc1?
+>=20
+> This is drm-tip, plus a few extras that actually allow me to load the GPU
+> driver, but no PCIe changes.
+
+Okay, it explains the BAR0 release then.
+
+> > Was this resize attempted automatically by the xe driver during boot, n=
+ot
+> > triggered manually through sysfs, right? (Inferring that's likely the c=
+ase
+> > given the proximity of the "enabling device" message.)
+>=20
+> Yes, that's the xe driver doing that.
+>=20
+> > I need to know PCI resource allocations of the parents too. Preferrably
+> > dmesg and /proc/iomem from both working and broken cases so it's easier
+> > to find the differences.
+>=20
+> I've attached those.
+>=20
+>  - dmesg.good/iomem.good: taken with 6.17 (drm-tip from last week)
+>  - dmesg.bad/iomem.bad: taken with 6.18rc1 (drm-tip after update)
+>  - dmesg.meh/iomem.meh: with the rebar patch 1/2 from Lucas. 2/2 is alrea=
+dy
+> merged. The GPU works at least, but has a 256MB aperture
+>  - dmesg.rev/iomem.rev: with 85796d20a690 and 3ab10f83e277 reverted
+
+Could you please test if the patch below helps.
+
+> > I'd very much want to do this too but I've higher priority items on my
+> > list, one of which attempts to resolve these resizable BARs using other
+> > way, that is, size the bridge windows considering the maximum size of t=
+he
+> > BAR right from the start. That would remove the need to try to enlarge
+> > BARs afterwards as there won't be more room for them anyway.
+>=20
+> The bridge windows are set up by firmware, but they should be large enoug=
+h on
+> POWER, given that each slot gets its own domain, and controllers are allo=
+cated
+> 256G each.
+>
+> I also dimly remember these are be configured so that the first 2G of add=
+ress
+> space are on the PCIe bus, and the first 2G of memory are addressed at a
+> higher address and only accessible to 64 bit capable cards, so 32 bit car=
+ds
+> can still access 2 GB of PCIe memory for P2PDMA and 2 GB of RAM (so the r=
+oot
+> complex performs address translation).
+>=20
+> The result of this seems to be that smaller BARs end up in the 2 GB windo=
+w, so
+> only the VRAM aperture is inside the larger 64-bit-only window, so the wi=
+ndow
+> containing the bridge's BAR0 does not need to be changed.
+
+There's indeed something messy and odd going on here with the resource and=
+=20
+window mappings, in the bad case there's also this line which doesn't make=
+=20
+much sense:
+
++pci 0030:01:00.0: bridge window [mem 0x6200000000000-0x6203fbff0ffff 64bit=
+ pref]: can't claim; address conflict with 0030:01:00.0 [mem 0x620002000000=
+0-0x62000207fffff 64bit pref]
+
+=2E..but that conflicting resource was not assigned in between releasing=20
+this bridge window and trying to claim it back so how did that=20
+conflicting resource get there is totally mysterious to me. It doesn't=20
+seem related directly to the the resize no longer working though.
+
+> > > Also, why do we change the BAR assignment while mem decoding is activ=
+e?
+>=20
+> > pci_resize_resource() does check for
+> > pci_resize_is_memory_decoding_enabled(), do you think that is not enoug=
+h?
+>=20
+> It's a bit weird that there is a log message that says "enabling device",=
+ then
+> the BARs are reconfigured. I'd want the decoding logic to be inactive whi=
+le
+> addresses are assigned.
+
+So no real issue here and only logging is not the way you'd want it?
+
+
+--
+From: =3D?UTF-8?q?Ilpo=3D20J=3DC3=3DA4rvinen?=3D <ilpo.jarvinen@linux.intel=
+=2Ecom>
+Date: Tue, 21 Oct 2025 19:13:31 +0300
+Subject: [PATCH 1/1] PCI: Remove old_size limit from bridge window sizing
+MIME-Version: 1.0
+Content-Type: text/plain; charset=3DUTF-8
+Content-Transfer-Encoding: 8bit
+
+calculate_memsize() applies lower bound to the resource size before
+aligning the resource size making it impossible to shrink bridge window
+resources. I've not found any justification for this lower bound and
+nothing indicated it was to work around some HW issue.
+
+Prior to the commit 3baeae36039a ("PCI: Use pci_release_resource()
+instead of release_resource()"), releasing a bridge window during BAR
+resize resulted in clearing start and end address of the resource.
+Clearing addresses destroys the resource size as a side-effect,
+therefore nullifying the effect of the old size lower bound.
+
+After the commit 3baeae36039a ("PCI: Use pci_release_resource() instead
+of release_resource()"), BAR resize uses the aligned old size, which
+results in exceeding what fits into the parent window in some cases:
+
+xe 0030:03:00.0: [drm] Attempting to resize bar from 256MiB -> 16384MiB
+xe 0030:03:00.0: BAR 0 [mem 0x620c000000000-0x620c000ffffff 64bit]: releasi=
+ng
+xe 0030:03:00.0: BAR 2 [mem 0x6200000000000-0x620000fffffff 64bit pref]: re=
+leasing
+pci 0030:02:01.0: bridge window [mem 0x6200000000000-0x620001fffffff 64bit =
+pref]: releasing
+pci 0030:01:00.0: bridge window [mem 0x6200000000000-0x6203fbff0ffff 64bit =
+pref]: releasing
+pci 0030:00:00.0: bridge window [mem 0x6200000000000-0x6203fbff0ffff 64bit =
+pref]: was not released (still contains assigned resources)
+pci 0030:00:00.0: Assigned bridge window [mem 0x6200000000000-0x6203fbff0ff=
+ff 64bit pref] to [bus 01-04] free space at [mem 0x6200400000000-0x62007fff=
+fffff 64bit pref]
+pci 0030:00:00.0: Assigned bridge window [mem 0x6200000000000-0x6203fbff0ff=
+ff 64bit pref] to [bus 01-04] cannot fit 0x4000000000 required for 0030:01:=
+00.0 bridging to [bus 02-04]
+
+The old size of 0x6200000000000-0x6203fbff0ffff resource was used as
+the lower bound which results in 0x4000000000 size request due to
+alignment. That exceed what can fit into the parent window.
+
+Since the lower bound never even was enforced fully because the
+resource addresses were cleared when the bridge window is released,
+remove the old_size lower bound entirely and trust the calculated
+bridge window size is enough.
+
+This same problem may occur on io window side but seems less likely to
+cause issues due to general difference in alignment. Removing the lower
+bound may have other unforeseen consequences in case of io window so
+it's better to do leave as -next material if no problem is reported
+related to io window sizing (BAR resize shouldn't touch io windows
+anyway).
+
+Reported-by: Simon Richter <Simon.Richter@hogyros.de>
+Fixes: 3baeae36039a ("PCI: Use pci_release_resource() instead of release_re=
+source()")
+Signed-off-by: Ilpo J=E4rvinen <ilpo.jarvinen@linux.intel.com>
+---
+ drivers/pci/setup-bus.c | 15 +++++----------
+ 1 file changed, 5 insertions(+), 10 deletions(-)
+
+diff --git a/drivers/pci/setup-bus.c b/drivers/pci/setup-bus.c
+index 362ad108794d..e842feb85be0 100644
+--- a/drivers/pci/setup-bus.c
++++ b/drivers/pci/setup-bus.c
+@@ -1066,16 +1066,13 @@ static resource_size_t calculate_memsize(resource_s=
+ize_t size,
+ =09=09=09=09=09 resource_size_t min_size,
+ =09=09=09=09=09 resource_size_t add_size,
+ =09=09=09=09=09 resource_size_t children_add_size,
+-=09=09=09=09=09 resource_size_t old_size,
+ =09=09=09=09=09 resource_size_t align)
+ {
+ =09if (size < min_size)
+ =09=09size =3D min_size;
+-=09if (old_size =3D=3D 1)
+-=09=09old_size =3D 0;
+=20
+ =09size =3D max(size, add_size) + children_add_size;
+-=09return ALIGN(max(size, old_size), align);
++=09return ALIGN(size, align);
+ }
+=20
+ resource_size_t __weak pcibios_window_alignment(struct pci_bus *bus,
+@@ -1317,7 +1314,6 @@ static void pbus_size_mem(struct pci_bus *bus, unsign=
+ed long type,
+ =09resource_size_t children_add_align =3D 0;
+ =09resource_size_t add_align =3D 0;
+ =09resource_size_t relaxed_align;
+-=09resource_size_t old_size;
+=20
+ =09if (!b_res)
+ =09=09return;
+@@ -1388,11 +1384,10 @@ static void pbus_size_mem(struct pci_bus *bus, unsi=
+gned long type,
+ =09=09}
+ =09}
+=20
+-=09old_size =3D resource_size(b_res);
+ =09win_align =3D window_alignment(bus, b_res->flags);
+ =09min_align =3D calculate_mem_align(aligns, max_order);
+ =09min_align =3D max(min_align, win_align);
+-=09size0 =3D calculate_memsize(size, min_size, 0, 0, old_size, min_align);
++=09size0 =3D calculate_memsize(size, min_size, 0, 0, min_align);
+=20
+ =09if (size0) {
+ =09=09resource_set_range(b_res, min_align, size0);
+@@ -1404,7 +1399,7 @@ static void pbus_size_mem(struct pci_bus *bus, unsign=
+ed long type,
+ =09=09relaxed_align =3D 1ULL << (max_order + __ffs(SZ_1M));
+ =09=09relaxed_align =3D max(relaxed_align, win_align);
+ =09=09min_align =3D min(min_align, relaxed_align);
+-=09=09size0 =3D calculate_memsize(size, min_size, 0, 0, old_size, win_alig=
+n);
++=09=09size0 =3D calculate_memsize(size, min_size, 0, 0, win_align);
+ =09=09resource_set_range(b_res, min_align, size0);
+ =09=09pci_info(bus->self, "bridge window %pR to %pR requires relaxed align=
+ment rules\n",
+ =09=09=09 b_res, &bus->busn_res);
+@@ -1413,7 +1408,7 @@ static void pbus_size_mem(struct pci_bus *bus, unsign=
+ed long type,
+ =09if (realloc_head && (add_size > 0 || children_add_size > 0)) {
+ =09=09add_align =3D max(min_align, add_align);
+ =09=09size1 =3D calculate_memsize(size, min_size, add_size, children_add_s=
+ize,
+-=09=09=09=09=09  old_size, add_align);
++=09=09=09=09=09  add_align);
+=20
+ =09=09if (bus->self && size1 &&
+ =09=09    !pbus_upstream_space_available(bus, b_res, size1, add_align)) {
+@@ -1421,7 +1416,7 @@ static void pbus_size_mem(struct pci_bus *bus, unsign=
+ed long type,
+ =09=09=09relaxed_align =3D max(relaxed_align, win_align);
+ =09=09=09min_align =3D min(min_align, relaxed_align);
+ =09=09=09size1 =3D calculate_memsize(size, min_size, add_size, children_ad=
+d_size,
+-=09=09=09=09=09=09  old_size, win_align);
++=09=09=09=09=09=09  win_align);
+ =09=09=09pci_info(bus->self,
+ =09=09=09=09 "bridge window %pR to %pR requires relaxed alignment rules\n"=
+,
+ =09=09=09=09 b_res, &bus->busn_res);
+
+base-commit: 2f2c7254931f41b5736e3ba12aaa9ac1bbeeeb92
+--=20
+2.39.5
+
+--8323328-262779146-1760981164=:976--
 
