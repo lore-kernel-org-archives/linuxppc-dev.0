@@ -1,47 +1,84 @@
-Return-Path: <linuxppc-dev+bounces-13123-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13124-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 67111CCD184
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Oct 2025 17:13:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D5AC8CCD1A7
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 21 Oct 2025 17:19:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4crf5r6Q4Nz2xQ2;
-	Wed, 22 Oct 2025 04:13:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:7c80:54:3::133"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761066832;
-	cv=none; b=Mntl94DB23vRKPRYZN5HRm8eKGyW8YP34hz88+xwOlESvB0dxQ929y8/P5T3qsm3+72nUZmJ8FXdDwRQgvBhwNDaqqgpdIm6xVpSZ8mM3kobZBtewZZ+wsh3ggb1EcAjxc2ADbW9XDu3REL3LEI2fvK7cIfJw39HTvNR5Mv301w/AY7paS0SHlg+1wCbh/SkzpKUzeHfI4M5dDjrkIY/OVbmkZPtmDMmpgpLYHdclO179bDDVG+n69K7lES2PB6+LSEZuxSasEiROKhVl6YZiZX7/llfZiQuhEK7Q7slBDQfdgZqnZ988uZelDqhGF1PSVeS+dSo/J57LvZECiQ0lQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4crfDr3GLBz3bcb;
+	Wed, 22 Oct 2025 04:19:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761067196;
+	cv=none; b=ERZ2cl+rmFXpJl6C9oeHHOSXfVvLhQFWG57ZP7qZChKJgC5WsdOeFMqUwGDMeQHVigLvSQ0tdyQ1IZG6WlJVpSt7FJn8H+n5p7co+MbO/UYxn5/plyGGnxdKImubZv4k3v6twp6k1zS/nz8agelaIf1Z69Bck5u6dPmCHRdwroeG2jpy2EWPe+61RCo+jRYpxH0Wt2L/yT8myBCYgdSVHqp9ejRCqCwsRg8TT4MwWz28KT2wITl3NjR32xTWlIVLHtzvPVFA6WTgHBpGLJygE5Cv/MP7ZLeW6+6FDH7qWJViB4C+u0j7waAmIkm3ar/fZaouaSwiXgj6TDTiDv/PhA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761066832; c=relaxed/relaxed;
-	bh=T7OF7YinQtdM6zEwx9mf3VJteIbSNxF5xxDOzyp6kaY=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=SmybLQHwqguD7mYry42rAIeFE1wjxLu8SxbTC/HLyGFWh9+PKKEFq7Hu8ITaupEZ9xR3B8Tc1+IVMfJKiL8VBh2ymK1QZrN7wMqEhPwz/9VXt7AL4UOtwsITydM2DhTuJvkwBU2T5ge9UlmIDzsUmrdxnCGyeJL22Gfga2Ke7LDgvyWJwdHKA0H5fM2Lut78bd91TdULZ+PR4n15WVAETfy2M8OT/EAp1rZgZSimBXG2Y8LS3UX0D7IWHIKbMICDv0a/xyQfOoskMvwZkZ8dcqGSmGHgB/l3NGFKYd+Bw7f2iNqHnzNHgxltzoNekYb7nUWY7fLB81vdi6BLD3cgqQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; spf=none (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+	t=1761067196; c=relaxed/relaxed;
+	bh=GiBz0AD+U5higfP54JTIWbURN7LMLdXTQYQaOgJ+Bl0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=aiftpxhcGA1z/atpAs4ZDzdDtd+RjVmvJQI9UrbFhBRbgTIUCrjtN0uA1lIa1NkvVNYHezD+lFoa8cwa1aSKJUl7icfhGViUZj1JYOPKBHV7P4Q2zj/YEdZ6AAG+nkfiZ3gShVrOFsE968e0HPL/rd53nf17gu3IpnHjZyEJrpUVYxXE0ijJH6jDVKTons1htiaXYIeuBeF7i3Z2a1Mh1u8mi9JNB0gD9mAEo6lQu39v5NPijlHuxycecOeG1PJSnhJQIoL/SIlXaym2eqiAq/31adp0arO/PIi/V/ubNoFbr9KUJU9PcZ+R733nnFoe1EqK1qdKyuadtYb3KnMlig==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=sH0HieRS; dkim-atps=neutral; spf=temperror (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.helo=casper.infradead.org
 Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=infradead.org
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2607:7c80:54:3::133; helo=bombadil.infradead.org; envelope-from=rdunlap@infradead.org; receiver=lists.ozlabs.org)
-Received: from bombadil.infradead.org (bombadil.infradead.org [IPv6:2607:7c80:54:3::133])
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=sH0HieRS;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=temperror (SPF Temporary Error: DNS Timeout) smtp.helo=casper.infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4crf5Z6G4Pz2xC3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2025 04:13:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4crfDf63x2z2xS9
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2025 04:19:26 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=infradead.org; s=bombadil.20210309; h=Content-Transfer-Encoding:
-	Content-Type:In-Reply-To:From:References:Cc:To:Subject:MIME-Version:Date:
-	Message-ID:Sender:Reply-To:Content-ID:Content-Description;
-	bh=T7OF7YinQtdM6zEwx9mf3VJteIbSNxF5xxDOzyp6kaY=; b=2Q1SsXK2pXUN8mCnQvRcx+QhQn
-	VHutmMR5Rm8NehoV2QJEip/SnFEKMiY64LR/hUPPumhePnybaugYxUzHfGHyOTx0cLGbotoYVCFO+
-	9lyaG/SBzt/6AdyC0IaqifMG/VBu1VMxQL4cnSdmGLEv5ebIL4NZuRX+insIu9cdUJH+b1dnBTRaV
-	g/ngxAKGwaWSaDIqSP52BljzzeAD3aihVqBuTjHlzHYldIZjI+8FkMKoKbeVVwYEWZ5Mboqi23dON
-	0PhF/1OuVgk3SXof8lmqPChWNgxxrLnkYAEP0sqPbIgJb3IRxOhYKRc9Dv4GF2LUgqx3m6edVBpYg
-	uGdt9VGQ==;
-Received: from [50.53.43.113] (helo=[192.168.254.34])
-	by bombadil.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vBFvS-00000000CZQ-0p2N;
-	Tue, 21 Oct 2025 17:13:34 +0000
-Message-ID: <3ba11b0c-818f-41d5-8885-038c7e0133f5@infradead.org>
-Date: Tue, 21 Oct 2025 10:13:33 -0700
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=GiBz0AD+U5higfP54JTIWbURN7LMLdXTQYQaOgJ+Bl0=; b=sH0HieRSdZyPzGqjC4vCbXfpKm
+	yJYGFutbqau5ccJh8yltYVSlMxcWDKcGbOGU4jJV41RHFabFrviYfBHkfbfgHkEhT65jW/+WtN/BL
+	/JZBkhTiW1CQiN61+JYIPfkeX6l7+16NHnxi9t5Stb5JTGZE+MLm2+Spsne7Sf5XZhUrTnDMLwfSB
+	ubssjtmD6B6nzIu2WKaMg7Ara+KYNFOyr8oi0Rk2NLElQQamfPbvsKOYiPJIpjTB+WhyawvIwepF1
+	MyB4q32gQfgNBHsGLOaN8szWOf/1dB+Wy+JdaoUCsRYypGjKRUX6jnpoN3m9m1Qod3sGovfmn720/
+	OZ4MifGg==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by casper.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vBG0e-0000000DsZ0-2xKs;
+	Tue, 21 Oct 2025 17:18:58 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id F40E13031AF; Tue, 21 Oct 2025 16:44:35 +0200 (CEST)
+Date: Tue, 21 Oct 2025 16:44:35 +0200
+From: Peter Zijlstra <peterz@infradead.org>
+To: Thomas Gleixner <tglx@linutronix.de>
+Cc: David Laight <david.laight.linux@gmail.com>,
+	LKML <linux-kernel@vger.kernel.org>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+	Andrew Cooper <andrew.cooper3@citrix.com>,
+	Linus Torvalds <torvalds@linux-foundation.org>,
+	kernel test robot <lkp@intel.com>,
+	Russell King <linux@armlinux.org.uk>,
+	linux-arm-kernel@lists.infradead.org, x86@kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>, linuxppc-dev@lists.ozlabs.org,
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>,
+	linux-riscv@lists.infradead.org, Heiko Carstens <hca@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
+	Julia Lawall <Julia.Lawall@inria.fr>,
+	Nicolas Palix <nicolas.palix@imag.fr>,
+	Darren Hart <dvhart@infradead.org>,
+	Davidlohr Bueso <dave@stgolabs.net>,
+	=?iso-8859-1?Q?Andr=E9?= Almeida <andrealmeid@igalia.com>,
+	Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+	linux-fsdevel@vger.kernel.org
+Subject: Re: [patch V3 07/12] uaccess: Provide scoped masked user access
+ regions
+Message-ID: <20251021144435.GG4067720@noisy.programming.kicks-ass.net>
+References: <20251017085938.150569636@linutronix.de>
+ <20251017093030.253004391@linutronix.de>
+ <20251020192859.640d7f0a@pumpkin>
+ <877bwoz5sp.ffs@tglx>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,92 +92,14 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1 20/23] mm/kconfig: make BALLOON_COMPACTION depend on
- MIGRATION
-To: David Hildenbrand <david@redhat.com>, linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org,
- Broadcom internal kernel review list
- <bcm-kernel-feedback-list@broadcom.com>, linux-doc@vger.kernel.org,
- virtualization@lists.linux.dev, Andrew Morton <akpm@linux-foundation.org>,
- Oscar Salvador <osalvador@suse.de>,
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- "Liam R . Howlett" <Liam.Howlett@oracle.com>,
- Vlastimil Babka <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Jonathan Corbet <corbet@lwn.net>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>, Arnd Bergmann
- <arnd@arndb.de>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>,
- Jerrin Shaji George <jerrin.shaji-george@broadcom.com>,
- "Michael S . Tsirkin" <mst@redhat.com>, Jason Wang <jasowang@redhat.com>,
- Xuan Zhuo <xuanzhuo@linux.alibaba.com>, =?UTF-8?Q?Eugenio_P=C3=A9rez?=
- <eperezma@redhat.com>, Zi Yan <ziy@nvidia.com>
-References: <20251021125929.377194-1-david@redhat.com>
- <20251021150040.498160-1-david@redhat.com>
- <20251021150040.498160-4-david@redhat.com>
-Content-Language: en-US
-From: Randy Dunlap <rdunlap@infradead.org>
-In-Reply-To: <20251021150040.498160-4-david@redhat.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <877bwoz5sp.ffs@tglx>
 
+On Tue, Oct 21, 2025 at 04:29:58PM +0200, Thomas Gleixner wrote:
 
+> So simply naming it scoped_user_$MODE_access() is probably the least
+> confusing of all.
 
-On 10/21/25 8:00 AM, David Hildenbrand wrote:
-> Migration support for balloon memory depends on MIGRATION not
-> COMPACTION. Compaction is simply another user of page migration.
-> 
-> The last dependency on compaction.c was effectively removed with
-> commit 3d388584d599 ("mm: convert "movable" flag in page->mapping to a
-> page flag"). Ever since, everything for handling movable_ops page
-> migration resides in core migration code.
-> 
-> So let's change the dependency and adjust the description +
-> help text.
-> 
-> We'll rename BALLOON_COMPACTION separately next.
-> 
-> Signed-off-by: David Hildenbrand <david@redhat.com>
-> ---
->  mm/Kconfig | 17 +++++++----------
->  1 file changed, 7 insertions(+), 10 deletions(-)
-> 
-> diff --git a/mm/Kconfig b/mm/Kconfig
-> index e47321051d765..3aff4d05a2d8c 100644
-> --- a/mm/Kconfig
-> +++ b/mm/Kconfig
-> @@ -599,17 +599,14 @@ config MEMORY_BALLOON
->  #
->  # support for memory balloon compaction
->  config BALLOON_COMPACTION
-> -	bool "Allow for balloon memory compaction/migration"
-> +	bool "Allow for balloon memory migration"
->  	default y
-> -	depends on COMPACTION && MEMORY_BALLOON
-> -	help
-> -	  Memory fragmentation introduced by ballooning might reduce
-> -	  significantly the number of 2MB contiguous memory blocks that can be
-> -	  used within a guest, thus imposing performance penalties associated
-> -	  with the reduced number of transparent huge pages that could be used
-> -	  by the guest workload. Allowing the compaction & migration for memory
-> -	  pages enlisted as being part of memory balloon devices avoids the
-> -	  scenario aforementioned and helps improving memory defragmentation.
-> +	depends on MIGRATION && MEMORY_BALLOON
-> +	help
-> +	  Allow for migration of pages inflated in a memory balloon such that
-> +	  they can be allocated from memory areas only available for movable
-> +	  allocations (e.g., ZONE_MOVABLE, CMA) and such that they can get
-
-nit:
-s/get/be/
-
-> +	  migrated for memory defragmentation purposes by memory compaction.
->  
->  #
->  # support for memory compaction
-
--- 
-~Randy
-
+Yeah, that makes sense.
 
