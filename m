@@ -1,68 +1,68 @@
-Return-Path: <linuxppc-dev+bounces-13154-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13155-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0E6BFCCD1BB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Oct 2025 12:49:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4589FCCF9E0
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Oct 2025 12:49:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cs8B03tmJz2yFJ;
-	Wed, 22 Oct 2025 23:49:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761137352;
-	cv=none; b=YdRnxipCazqK0+LTBWSpBinQidQXZA3jxHfI1QpS6eQt8o2hBBmJzGjAZc52YWGwcLvN5Txj2s6+vjx922nrTZ6Qbi7ttIIhXalQFN4GYu04pi2BD7NRRmCJ7eYbMg7KLPJiPCSOz9vBSjaSwIzMOcXlHVOFRE5kGkNWbwJPR0fCcG3IIr/6wAFwn7jVPA/gaj4RDQHnCWum5wD42ppCfFTDXux9ZNBkjWXKG92uISjCZtLg9Y7Y7rz5THX/VtFPRHYpiF/zY2OXczxcER/+l+GSWUmrNhDVX23m5pgZ2ngmg6QlXV5FnngOkuV2xfXvyMLUH0n3Vv4amPF26mHhXA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cs8B21k04z3cZT;
+	Wed, 22 Oct 2025 23:49:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761137354;
+	cv=none; b=nwqhlgcvfxNiB0kZXVW9ZeFU99kdE2CJG+XR4g8dy/8malvzcRQkpw/OgEOZO+l3aH0LA1XcGwZbN5K8Cd+CisIuaDkDvf2bJYl38dLUj0UuvkXcd4I3qhYdrPQBWKmSCyrsDjHjm8h/4vqVuBm97hDIX5p1uYopsy7VyX2tQyFMQXrbmhPcea5+49d0Y3PiZ4ixQEVlSYHkf+YniW6aRUuOAssMPltI5eik4mcKqTsfNAWnMGuxATzGLN9m8QndkJkTwHMczbQSbPAMVqW4+Do4LJcBbhW5HyTJYSMDcapNSpsheeCJ/oUi66Lr1Joajff8Bhut2KvXxfk99Lem6w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761137352; c=relaxed/relaxed;
-	bh=riOmJf9FiDkmu6m5dlKP9M/8U5xAklSgvZrcN3Urpuk=;
+	t=1761137354; c=relaxed/relaxed;
+	bh=Q6hUKo07m0tisXGEHl1vXx2So4mSCWEC1HB29LLd09o=;
 	h=Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type:Date; b=FGh29EAT9XbjJ4onKVUOBG8VdDdF4sCoMLf4lYXIRaEkkcZF0KYG89MExE0bDB+ju+j1sYN6IjLAsDQqRrYeVtlNIx5Nvn0VLq4wOIkvnhbmthi57sy2R+bNISSbrVf/l5uXaznVRxm4ZE0jOdln5xYIoe9Soi1DpPXEO8NTUw0AHxvPzfPdT9O+sm2YDN11VBQFZOlnYWa8s+qhUh2CiiJ1LDtgdyEOXfPY60etCMNdwIHLB+oTDhmtnkFeMIBzwmVwGL4iyqjRh7bAaYwktaCMfj2xEGjC8vpfbZJ8UC1tz2g/7Sd4U/ZXHPYEv7S6xnNi2ccuuNyRru2VASb0HQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=c9i65Wm4; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=N3NMFaOL; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 Content-Type:Date; b=at+cW4WQ/+AfLHyu3Qzc589vAcsYtbFgX9BDmHYfFYM+Bo4GuJtttynAe1hEkI6xp0kg8vS/dmV4FieP6Aq/aChnkBQtkPDvB4vmlMG8ErUpWPsLhjX2x8Ik4hJZJqpFIua9JtZBP6KDoORIHshO+B4rqctI1yPfgstan8XwXqHm5rMFsUWNopVRXeGbPXZys5fWReTpu3WLr+8Rm/cL/Qxr2v0ioCvD9iUhMaxQb1L4jcod1ShEw4CM4UNNOjKLNr/MH8UgmBYWrTa4DtOyF46IkyV/eOAeEaxe3ProCVGZg8ZWm5WG5kWQ5pFhh4yrOOnueFSL2tvZXzcnce5JlA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=KjuwfnEA; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=bpRRpTpB; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=c9i65Wm4;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=N3NMFaOL;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=KjuwfnEA;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=bpRRpTpB;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cs89z48Kyz3bv1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2025 23:49:11 +1100 (AEDT)
-Message-ID: <20251022103111.980905027@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cs8B14JQmz3bv1
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2025 23:49:13 +1100 (AEDT)
+Message-ID: <20251022103112.169574299@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1761137344;
+	s=2020; t=1761137348;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=riOmJf9FiDkmu6m5dlKP9M/8U5xAklSgvZrcN3Urpuk=;
-	b=c9i65Wm4Ndn7xeahqxPTBb1lBCVdU45gHjWmlQg4SLcOj8eWI5HtH7HvaRK1ZUB9k8rBDG
-	Gx+1L2LJJs+DE4BUuyz6Xim5IsBGOcpvPeb4SUNSDuQY6R55/sbXPqRaUMCAiy5IS094PX
-	lZWMlDtD1VoKF0yg7T1LtnVAYUCmsEfIZ/3UP6zfrlhJaBclsz/Z4EtMyGl7NQ86/R6hqZ
-	Z+GDCBGK5+8+cm7t+MbQHYi3nOuNsF10sT8L3BN0VAxIO9btUWTX6jDPdrNue1ezJbyxtY
-	LSaElDNUE/TA27K6IKH3FqpttCp8c5IAfDLS7IrI3OfC3bp70o/bRhLrRAomkg==
+	 references:references; bh=Q6hUKo07m0tisXGEHl1vXx2So4mSCWEC1HB29LLd09o=;
+	b=KjuwfnEAJn/9/qU6mLzphSJ1eBy5OCSYk+YEtqgaHjf0MCFVufLWwDGiTwac4UgAUJFU3z
+	wUSfymrJ01sBokZnAOSZdwCq07UfN0bC0cILvgANZIQNIOyDaDPk7aRdlwNqhD+jyQX3cD
+	KTwMlrwM8P5As3h0JhHZfBZhh8xzMxgaRYloNRUGdJCV7gxUj7sc20Stcj4Y7TNvptbG0S
+	v6wRFLD5bxKs4duKQju69i+yoKFuilH1+UOmpFQGIA9iJKFD5HXNRmiCVM5eD5ZUThwVow
+	pjHP2qxRmnTEmlXIcJfvTR5W0CA1dUWrW2GeVi6ZAFCqSGTELdcdUtAdpvvdSw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1761137344;
+	s=2020e; t=1761137348;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=riOmJf9FiDkmu6m5dlKP9M/8U5xAklSgvZrcN3Urpuk=;
-	b=N3NMFaOLtlMBqCJ+capZ3I/cpgRy5k1V+/BakEg2gVtf1MEHK6L4ptAYIger3BijJcCLQD
-	gGotCKbI0u8BU+Ag==
+	 references:references; bh=Q6hUKo07m0tisXGEHl1vXx2So4mSCWEC1HB29LLd09o=;
+	b=bpRRpTpBzrTJkfqCgHc7+QAPWrfUyBMcjhHTn6SmniaryBnZ61TU9nDtegzkLPt0zy89tZ
+	Q+kiWIrbSLfyiLCw==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
+Cc: Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>,
+ linux-riscv@lists.infradead.org,
  kernel test robot <lkp@intel.com>,
  Russell King <linux@armlinux.org.uk>,
  linux-arm-kernel@lists.infradead.org,
+ Linus Torvalds <torvalds@linux-foundation.org>,
  x86@kernel.org,
  Madhavan Srinivasan <maddy@linux.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>,
  Nicholas Piggin <npiggin@gmail.com>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
  linuxppc-dev@lists.ozlabs.org,
- Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>,
- linux-riscv@lists.infradead.org,
  Heiko Carstens <hca@linux.ibm.com>,
  Christian Borntraeger <borntraeger@linux.ibm.com>,
  Sven Schnelle <svens@linux.ibm.com>,
@@ -80,8 +80,7 @@ Cc: Linus Torvalds <torvalds@linux-foundation.org>,
  Christian Brauner <brauner@kernel.org>,
  Jan Kara <jack@suse.cz>,
  linux-fsdevel@vger.kernel.org
-Subject: [patch V4 02/12] uaccess: Provide ASM GOTO safe wrappers for
- unsafe_*_user()
+Subject: [patch V4 05/12] riscv/uaccess: Use unsafe wrappers for ASM GOTO
 References: <20251022102427.400699796@linutronix.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -97,7 +96,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Wed, 22 Oct 2025 14:49:04 +0200 (CEST)
+Date: Wed, 22 Oct 2025 14:49:08 +0200 (CEST)
 
 ASM GOTO is miscompiled by GCC when it is used inside a auto cleanup scope:
 
@@ -110,176 +109,48 @@ efault:
 	return false;
 }
 
- e80:	e8 00 00 00 00       	call   e85 <foo+0x5>
- e85:	65 48 8b 05 00 00 00 00 mov    %gs:0x0(%rip),%rax
- e8d:	83 80 04 14 00 00 01 	addl   $0x1,0x1404(%rax)   // pf_disable++
- e94:	89 37                	mov    %esi,(%rdi)
- e96:	83 a8 04 14 00 00 01 	subl   $0x1,0x1404(%rax)   // pf_disable--
- e9d:	b8 01 00 00 00       	mov    $0x1,%eax           // success
- ea2:	e9 00 00 00 00       	jmp    ea7 <foo+0x27>      // ret
- ea7:	31 c0                	xor    %eax,%eax           // fail
- ea9:	e9 00 00 00 00       	jmp    eae <foo+0x2e>      // ret
+It ends up leaking the pagefault disable counter in the fault path. clang
+at least fails the build.
 
-which is broken as it leaks the pagefault disable counter on failure.
+Rename unsafe_*_user() to arch_unsafe_*_user() which makes the generic
+uaccess header wrap it with a local label that makes both compilers emit
+correct code. Same for the kernel_nofault() variants.
 
-Clang at least fails the build.
-
-Linus suggested to add a local label into the macro scope and let that
-jump to the actual caller supplied error label.
-
-       	__label__ local_label;                                  \
-        arch_unsafe_get_user(x, ptr, local_label);              \
-	if (0) {                                                \
-	local_label:                                            \
-		goto label;                                     \
-
-That works for both GCC and clang.
-
-clang:
-
- c80:	0f 1f 44 00 00       	   nopl   0x0(%rax,%rax,1)	
- c85:	65 48 8b 0c 25 00 00 00 00 mov    %gs:0x0,%rcx
- c8e:	ff 81 04 14 00 00    	   incl   0x1404(%rcx)	   // pf_disable++
- c94:	31 c0                	   xor    %eax,%eax        // set retval to false
- c96:	89 37                      mov    %esi,(%rdi)      // write
- c98:	b0 01                	   mov    $0x1,%al         // set retval to true
- c9a:	ff 89 04 14 00 00    	   decl   0x1404(%rcx)     // pf_disable--
- ca0:	2e e9 00 00 00 00    	   cs jmp ca6 <foo+0x26>   // ret
-
-The exception table entry points correctly to c9a
-
-GCC:
-
- f70:   e8 00 00 00 00          call   f75 <baz+0x5>
- f75:   65 48 8b 05 00 00 00 00 mov    %gs:0x0(%rip),%rax
- f7d:   83 80 04 14 00 00 01    addl   $0x1,0x1404(%rax)  // pf_disable++
- f84:   8b 17                   mov    (%rdi),%edx
- f86:   89 16                   mov    %edx,(%rsi)
- f88:   83 a8 04 14 00 00 01    subl   $0x1,0x1404(%rax) // pf_disable--
- f8f:   b8 01 00 00 00          mov    $0x1,%eax         // success
- f94:   e9 00 00 00 00          jmp    f99 <baz+0x29>    // ret
- f99:   83 a8 04 14 00 00 01    subl   $0x1,0x1404(%rax) // pf_disable--
- fa0:   31 c0                   xor    %eax,%eax         // fail
- fa2:   e9 00 00 00 00          jmp    fa7 <baz+0x37>    // ret
-
-The exception table entry points correctly to f99
-
-So both compilers optimize out the extra goto and emit correct and
-efficient code.
-
-Provide a generic wrapper to do that to avoid modifying all the affected
-architecture specific implementation with that workaround.
-
-The only change required for architectures is to rename unsafe_*_user() to
-arch_unsafe_*_user(). That's done in subsequent changes.
-
-Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Paul Walmsley <pjw@kernel.org>
+Cc: Palmer Dabbelt <palmer@dabbelt.com>
+Cc: linux-riscv@lists.infradead.org
 ---
- include/linux/uaccess.h |   72 +++++++++++++++++++++++++++++++++++++++++++++---
- 1 file changed, 68 insertions(+), 4 deletions(-)
+ arch/riscv/include/asm/uaccess.h |    8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
---- a/include/linux/uaccess.h
-+++ b/include/linux/uaccess.h
-@@ -518,7 +518,34 @@ long strncpy_from_user_nofault(char *dst
- 		long count);
- long strnlen_user_nofault(const void __user *unsafe_addr, long count);
+--- a/arch/riscv/include/asm/uaccess.h
++++ b/arch/riscv/include/asm/uaccess.h
+@@ -437,10 +437,10 @@ unsigned long __must_check clear_user(vo
+ 		__clear_user(untagged_addr(to), n) : n;
+ }
  
--#ifndef __get_kernel_nofault
-+#ifdef arch_get_kernel_nofault
-+/*
-+ * Wrap the architecture implementation so that @label can be outside of a
-+ * cleanup() scope. A regular C goto works correctly, but ASM goto does
-+ * not. Clang rejects such an attempt, but GCC silently emits buggy code.
-+ */
-+#define __get_kernel_nofault(dst, src, type, label)		\
-+do {								\
-+	__label__ local_label;					\
-+	arch_get_kernel_nofault(dst, src, type, local_label);	\
-+	if (0) {						\
-+	local_label:						\
-+		goto label;					\
-+	}							\
-+} while (0)
-+
-+#define __put_kernel_nofault(dst, src, type, label)		\
-+do {								\
-+	__label__ local_label;					\
-+	arch_get_kernel_nofault(dst, src, type, local_label);	\
-+	if (0) {						\
-+	local_label:						\
-+		goto label;					\
-+	}							\
-+} while (0)
-+
-+#elif !defined(__get_kernel_nofault) /* arch_get_kernel_nofault */
-+
- #define __get_kernel_nofault(dst, src, type, label)	\
- do {							\
- 	type __user *p = (type __force __user *)(src);	\
-@@ -535,7 +562,8 @@ do {							\
- 	if (__put_user(data, p))			\
- 		goto label;				\
- } while (0)
--#endif
-+
-+#endif  /* !__get_kernel_nofault */
+-#define __get_kernel_nofault(dst, src, type, err_label)			\
++#define arch_get_kernel_nofault(dst, src, type, err_label)			\
+ 	__get_user_nocheck(*((type *)(dst)), (__force __user type *)(src), err_label)
  
- /**
-  * get_kernel_nofault(): safely attempt to read from a location
-@@ -549,7 +577,42 @@ do {							\
- 	copy_from_kernel_nofault(&(val), __gk_ptr, sizeof(val));\
- })
+-#define __put_kernel_nofault(dst, src, type, err_label)			\
++#define arch_put_kernel_nofault(dst, src, type, err_label)			\
+ 	__put_user_nocheck(*((type *)(src)), (__force __user type *)(dst), err_label)
  
--#ifndef user_access_begin
-+#ifdef user_access_begin
-+
-+#ifdef arch_unsafe_get_user
-+/*
-+ * Wrap the architecture implementation so that @label can be outside of a
-+ * cleanup() scope. A regular C goto works correctly, but ASM goto does
-+ * not. Clang rejects such an attempt, but GCC silently emits buggy code.
-+ *
-+ * Some architectures use internal local labels already, but this extra
-+ * indirection here is harmless because the compiler optimizes it out
-+ * completely in any case. This construct just ensures that the ASM GOTO
-+ * target is always in the local scope. The C goto 'label' works correct
-+ * when leaving a cleanup() scope.
-+ */
-+#define unsafe_get_user(x, ptr, label)			\
-+do {							\
-+	__label__ local_label;				\
-+	arch_unsafe_get_user(x, ptr, local_label);	\
-+	if (0) {					\
-+	local_label:					\
-+		goto label;				\
-+	}						\
-+} while (0)
-+
-+#define unsafe_put_user(x, ptr, label)			\
-+do {							\
-+	__label__ local_label;				\
-+	arch_unsafe_put_user(x, ptr, local_label);	\
-+	if (0) {					\
-+	local_label:					\
-+		goto label;				\
-+	}						\
-+} while (0)
-+#endif /* arch_unsafe_get_user */
-+
-+#else /* user_access_begin */
- #define user_access_begin(ptr,len) access_ok(ptr, len)
- #define user_access_end() do { } while (0)
- #define unsafe_op_wrap(op, err) do { if (unlikely(op)) goto err; } while (0)
-@@ -559,7 +622,8 @@ do {							\
- #define unsafe_copy_from_user(d,s,l,e) unsafe_op_wrap(__copy_from_user(d,s,l),e)
- static inline unsigned long user_access_save(void) { return 0UL; }
- static inline void user_access_restore(unsigned long flags) { }
--#endif
-+#endif /* !user_access_begin */
-+
- #ifndef user_write_access_begin
- #define user_write_access_begin user_access_begin
- #define user_write_access_end user_access_end
+ static __must_check __always_inline bool user_access_begin(const void __user *ptr, size_t len)
+@@ -460,10 +460,10 @@ static inline void user_access_restore(u
+  * We want the unsafe accessors to always be inlined and use
+  * the error labels - thus the macro games.
+  */
+-#define unsafe_put_user(x, ptr, label)					\
++#define arch_unsafe_put_user(x, ptr, label)				\
+ 	__put_user_nocheck(x, (ptr), label)
+ 
+-#define unsafe_get_user(x, ptr, label)	do {				\
++#define arch_unsafe_get_user(x, ptr, label)	do {			\
+ 	__inttype(*(ptr)) __gu_val;					\
+ 	__get_user_nocheck(__gu_val, (ptr), label);			\
+ 	(x) = (__force __typeof__(*(ptr)))__gu_val;			\
 
 
