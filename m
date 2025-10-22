@@ -1,62 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-13138-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13139-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B081CCD1AB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Oct 2025 05:56:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BA898CCD1BE
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Oct 2025 05:57:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4crz2338CTz2yjx;
-	Wed, 22 Oct 2025 16:56:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.8
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761112603;
-	cv=none; b=bAPRD7rUnSa1SbWxj3EEGUEKtULQOxyyW8GuPbpj2bG2fje+IeKDp2Mb6Qqc5V4Hws1w8JtBqKyOYngEZObah1UeQxarqAZlGNEGwRNkw+0T/9TZJbEGGPS9HdIiZOIaTZEO2qj6Z+oAf+JNA56fPrYEYH73Zfhn+cm0GMRr3HGpWaKwQH0utOTgtB47BzjCW4NSQcZmYET5dF5HawfBIi9Pp4QUGXOMe3n6r3Mdbuno1e6SmroUDYeDUUugql3abwicp+f07FWbBn8nQfzMWddlBZZ0hL6B+GSRklTMK8zoXYEIrCChDbcBvM7vn3we1E6pQT/WI5faJsfZYoZFvw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4crz2c6Mrkz2yjx;
+	Wed, 22 Oct 2025 16:57:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.19
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761112632;
+	cv=none; b=UU3LzEKsxhS+6a0IUlcSIsy6cqV1hA9OV9uoOcVnsBjWfRpJxe5m7W0NhsQz7H5uhW7Bu6ZwzinDEs/r3O4hEqpRVh/82vO+YIrESfVPQsnWtBkgqtU229L4Th937GJxwTJwKjrAvsHPuco9P0T8igqlYzaJE79t5PQlvFmo5Kx5gMVjYRYhoJ/8og6cUAf2FHLNlQzgZE6GO4P507dUq0PKWIFO0dFqsoJunNzjrGchrLlfLMNMrU8JNzqR4VpHHf/tJL5729zLJGggq3kQOZYcq6ZwdpOVqJxVObZVuoedfklEzG1OBiDS6h1gBnqrVNKDNlSvT5FeFNRdqnC3wA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761112603; c=relaxed/relaxed;
-	bh=e0BNSEe8+JWm79ZsctEdZVSTDEu6ZAcAN5FVm7Wus1E=;
+	t=1761112632; c=relaxed/relaxed;
+	bh=Oq4fzkS01zCv2I4qOypTEqukIE12MkuzMGCj+rV1CCw=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=CD4Xx/1l019mwtQ/f2eyvVN27S2vJ94cvtgx1/hg62PiRhUujr0y8z6UNVP/TflDJo47mE9nv9aec3TM5n9BFZ/SB7pAchcIZIFDmP0TES6OHg6nvGMxKJyti1apuk+a4aq5QsO4LqeXRkqUAKMyWNCSS3nq83jd3BgfEMGi702E1NeQCFqt+ytk2JvEV8T0dE9nug9am18fCTvA4WcoHkLjTg0Z0F8vfbj/FFe9XHWjvpBSG2qHfJSrAlfetz8HYUWcNhMv0npN563Zld0ICUtDO/w2ocC9HmNEAqEZemLFb5pRJeYEK2pVqIbot/+CUedltfTYsDLpye0s3q5eFA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TwbaLQB0; dkim-atps=neutral; spf=pass (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=binbin.wu@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 In-Reply-To:Content-Type; b=NVtn/aJiOXo4GDepBDBtWj1wZ9nhC4qRPlGA42LpC6mhAHcLJQ7yoKfHHlv0z8t6zGCZT4MdKDEgoJ17MIPcqpVlleS0pEtp3cwH/pGBfdBAbWH1N50bbS+7HdGl92KJtSkBx9lJsPZNpwFoMd43Z82RGA2708XbXuAjRxMq7MWVO9d11X1q3UsGP0fa576oyQcx5XjWxKiuCnTvbC9ouRLBMLx5mtE123qwI70ygUW/cnf7we+W6CmLAtNvmxYk7H8+FZKLcgmu+1b2Bg+rmDEH0exfu17xp4nL8H1YX7+SVYLWDg5K4p1gXVD4S2e0WFP9bbMds4tVQrXkwjn9+A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=A08TPlpA; dkim-atps=neutral; spf=pass (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=binbin.wu@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=TwbaLQB0;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=A08TPlpA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.8; helo=mgamail.intel.com; envelope-from=binbin.wu@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.8])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.19; helo=mgamail.intel.com; envelope-from=binbin.wu@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.19])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4crz204wpbz2yjr
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2025 16:56:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4crz2b6jnBz2yrb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2025 16:57:11 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1761112601; x=1792648601;
+  t=1761112632; x=1792648632;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=e0BNSEe8+JWm79ZsctEdZVSTDEu6ZAcAN5FVm7Wus1E=;
-  b=TwbaLQB0A1Tyk/ULTDfxRagZCqIt+SPTo0wWZ5S8Wa2D9Lrx9Ze2ah5H
-   4hk1LWGq6Nu4/nzjwKHTSXVrqtLjQuecsMT/18RCNO09r2Rt9DiSBRQbu
-   8AYB0FVQ8HgFAewPaNDE8WiSf1YcxXy8p83JtLAwDZaIPAM09khuPiQSO
-   WhKlWu/e1e5NUjtIVdx78RotFq5BRYLBxRuon/1nAMHz+tWBnKgbyKc/a
-   tDgnW+tdhYuLPrKowO/rDQTeq1fVlcumHBCHeU5b3VmzCUh0dOcthOhLk
-   Kly1b72BcPjYf7OJOz6nRXrPKRNb8nTIuvXiY3oNzNtHCuc2Rg8MKhUDl
+  bh=Oq4fzkS01zCv2I4qOypTEqukIE12MkuzMGCj+rV1CCw=;
+  b=A08TPlpAyIYFkFAFDsOdMjvX4/KmDEUPu+L69wWeWUbXYJZw+QTts6rL
+   dES1U6eBJ9U/Unl/WWhrNT8fww0AeZX489FxrEtSEQG5yXnI/10KU1BDR
+   LQJosN63IbnfkdPD5BLctzBFaJ2NMkyJjeucN+wI3hEAZM7d0DOazwwAA
+   31k3l1R4UJOcVY+Dz2FSEJLh4qEwok5Jy85B3cEzBFS146olB6ZYQ5UmA
+   JvZHU539BE97xuM+b+Fv8omC0Hllylv1LlHv7TTbYasbnSkT9EBq81J9m
+   WveLTV4+UjUhIjvGQ7zlqSmRgWXK4XCmHxomGv0B46qlmKrfk79W/NUVo
    Q==;
-X-CSE-ConnectionGUID: W2vJfEaWTaG1SHF6nczViQ==
-X-CSE-MsgGUID: 2aIOWpLgSD+mXgjgXdKwHQ==
-X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="80874570"
+X-CSE-ConnectionGUID: d7vnXTuHS/2/BGroommLcw==
+X-CSE-MsgGUID: 17ORGPXpQEa+SGjFnGMQQg==
+X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="62281250"
 X-IronPort-AV: E=Sophos;i="6.19,246,1754982000"; 
-   d="scan'208";a="80874570"
+   d="scan'208";a="62281250"
 Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by fmvoesa102.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Oct 2025 22:56:35 -0700
-X-CSE-ConnectionGUID: oEyBARVoRTqxmx9FX15Ezg==
-X-CSE-MsgGUID: iu37FNdWT/WUX/u/fUlTIQ==
+  by fmvoesa113.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Oct 2025 22:57:10 -0700
+X-CSE-ConnectionGUID: jQ221r4UTleoxdP+jV1Nkg==
+X-CSE-MsgGUID: d9hLZVuOTp+rHjN7swLSrg==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.19,246,1754982000"; 
-   d="scan'208";a="184184586"
+   d="scan'208";a="184184728"
 Received: from yinghaoj-desk.ccr.corp.intel.com (HELO [10.238.1.225]) ([10.238.1.225])
-  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Oct 2025 22:56:28 -0700
-Message-ID: <7aa86887-b499-4618-b174-96cb0cd17d24@linux.intel.com>
-Date: Wed, 22 Oct 2025 13:56:26 +0800
+  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Oct 2025 22:57:02 -0700
+Message-ID: <bfe00290-6ab3-4c09-b0bf-46bb7af09d60@linux.intel.com>
+Date: Wed, 22 Oct 2025 13:57:00 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,8 +71,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 05/25] Revert "KVM: x86/tdp_mmu: Add a helper function
- to walk down the TDP MMU"
+Subject: Re: [PATCH v3 06/25] KVM: x86/mmu: Rename kvm_tdp_map_page() to
+ kvm_tdp_page_prefault()
 To: Sean Christopherson <seanjc@google.com>
 Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
  Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
@@ -94,21 +94,20 @@ Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
  Rick Edgecombe <rick.p.edgecombe@intel.com>,
  Ackerley Tng <ackerleytng@google.com>
 References: <20251017003244.186495-1-seanjc@google.com>
- <20251017003244.186495-6-seanjc@google.com>
+ <20251017003244.186495-7-seanjc@google.com>
 Content-Language: en-US
 From: Binbin Wu <binbin.wu@linux.intel.com>
-In-Reply-To: <20251017003244.186495-6-seanjc@google.com>
+In-Reply-To: <20251017003244.186495-7-seanjc@google.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 7bit
 
 
 
 On 10/17/2025 8:32 AM, Sean Christopherson wrote:
-> Remove the helper and exports that were added to allow TDX code to reuse
-> kvm_tdp_map_page() for its gmem post-populate flow now that a dedicated
-> TDP MMU API is provided to install a mapping given a gfn+pfn pair.
+> Rename kvm_tdp_map_page() to kvm_tdp_page_prefault() now that it's used
+> only by kvm_arch_vcpu_pre_fault_memory().
 >
-> This reverts commit 2608f105760115e94a03efd9f12f8fbfd1f9af4b.
+> No functional change intended.
 >
 > Reviewed-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
