@@ -1,65 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-13156-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13157-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A440CCF9E0
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Oct 2025 12:49:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 477B8CCD1BB
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 22 Oct 2025 12:50:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cs8B31k0xz3cgy;
-	Wed, 22 Oct 2025 23:49:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cs8B41fm5z3dKG;
+	Wed, 22 Oct 2025 23:49:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761137355;
-	cv=none; b=MoLHTnYSGv8jbZrxwolQfhnDSi152uuzBwJkmMVj3a2vu++ZNjbvPCpaKG0Dgpdp0bWYm3bFC1B3nhxjVk0me74j/lxQdlmOPOyJ8GnAusulYi8HEcOuJHxeP0xKL1beFzkKfQDZQnZK1hJY6ntcnWBeyPANb2/TQZyx6lMiZHlQ3c1nT7sVLVRUhADrgMtaCEEZd2IXlO7t2ymfuNJyVQx58Q1wgvDANhiuK8fVbNJ6vIYEFbXY3oTlqNDLrgPYW4CLv71jXLVgnQQKCiN9tDAR6olOe2K0LZINQczzzt01OBC/4YF+lrXJYBxdA3ZK+SG/FgVMgXlwhqAat8yIiQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761137356;
+	cv=none; b=JPZdUE1TtV1iVi04R3f6dElATjxkzLL+3CFfOFW0Q/ofAZYWMwa5VBOrZDYPhBQuuIt2X+jmA2Cz/y1A7Aa8o6xb2B7zokulYUFZ1t7cI/Jztdpu0nbY+UUjeCkcdxcLo2/odkVpQCw9kt9f0JCWoLlUnMmpiUj8vjwVOUIBleTcGJWqYsnuIkIysb+RG6uNPMI2KE4mdmuAlwAhRQP9yqMk1trFPPu0nPcwsitDiTZLsyO/TNxFUGc2kkkZqCJY/RHk08A6zAW5Uz4pB7O6s1ks0wzSLd2JH+83i0xx9Q6Hq3Pdha9aHO8rMSETqlA6ei8eboP6ztagphHwBuKBCQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761137355; c=relaxed/relaxed;
-	bh=DNQHcterXWXQuFWR5KPGbkzD3Sh/vJk9lLVEwO1xPSA=;
-	h=Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type:Date; b=bM5T0NliL12Yind60+67ZhQs0aMvZCD1O2DV4ks35QU4taNsu1/z3Y9EmRDBq3AWaQFRL6Kql6jnx0JZ2RpFqdCy8P2Uv4DVrG3oBUs083xkKZ2FwtH8Caj0dabi6yqJNlA2wMYYo/CtzRp6PEzNu14x++iTRH4OV+w/GtKd2QrAmIa1XhYd0AjN7WGYnqZOBaaDaJ8AgzpNObobJ898jUm6EDbTfTbQb2VgE3rv1JPTbe0ChL9yUCAuo37TopIekIgITDgm2lY5l1Sw7N2kdRZ1TySLwBAvnn6MaoCtCKhy9NgmZCQsCZub0JXX+8QERd/TLUnniPrUXZNL5bkntQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=vAf/WnRL; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=fX8cSqvU; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	t=1761137356; c=relaxed/relaxed;
+	bh=QD4vFggFMuOeGOcQhDOiteuemKWf4EcukV9nF7jSRjE=;
+	h=Message-ID:From:To:Subject:References:MIME-Version:Content-Type:
+	 cc:Date; b=fwFpGHg7p5IMrLIPQ8AL5H65UEluEHbTaw7LM2/mKmUYCjYvDIPNdrkCkREu15iBbOGpjDkDokL+8uFE6VRv3OSsiZ6Uslq4peXVPtVSJlhVQsyo2c16WW7WKHTelo5P3gcDgXWKo7a1mKYejF2T1S5YAoz5ASZB96xlgG5LoBulE7Rv8tQUxCgFdFO9gwyzEWZIYUkwTh8Hdpam5Z1//HDZH4ZiKlcFHm4bHOzS5UPFffUB1yjsLJSJyn4hCDeGKaJ9CwXpxsGGCyDfDsW+BMHstGJcMHfPkfyjEuugfx5V1+UD6bn5i+SSYSehgIvZp3NfPlqvu7kgTN4mOrCi5w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=S//Em47h; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=jNKXbM8s; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=vAf/WnRL;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=fX8cSqvU;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=S//Em47h;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=jNKXbM8s;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cs8B24zjvz3cZf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2025 23:49:14 +1100 (AEDT)
-Message-ID: <20251022103112.105759469@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cs8B31mTGz3chF
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 22 Oct 2025 23:49:15 +1100 (AEDT)
+Message-ID: <20251022103112.358808928@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1761137347;
+	s=2020; t=1761137352;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=DNQHcterXWXQuFWR5KPGbkzD3Sh/vJk9lLVEwO1xPSA=;
-	b=vAf/WnRLaiKi9WWTSyH8iUQzQkrzGIljwJslh19+BsVaPrUUzz8NaG/EydNMY5AOh/DPNQ
-	FlAdck5UN2A659HwOPkIYdFRxOmypbXSalDO84wkV/SAikEYWifJGPpjoQHalxcV4Lf/74
-	OgkhQ3pkA+3fk2fPutZTvbNmP7gx1gUr3DclJycvX75iZF036Cnxq7tl5CMsOBm8DAkZG0
-	wFvXbnrq3D20XGC/xN2CIj8+NUzQHTWrFlkDIPqA/TDOqQK+sSj4nfwQQ6rYXxudQKYBUn
-	ciZsu5fNoy2U525hHELagiJeV93MjGckgbHPoy6DCobfk74daY6DlAlnC2eJ1Q==
+	 references:references; bh=QD4vFggFMuOeGOcQhDOiteuemKWf4EcukV9nF7jSRjE=;
+	b=S//Em47hao2SiEu4HhbNJvmg7y21pNf1gaVLrhJjCcmZbZo071nDxTNXRELCYqZoPooIxF
+	ySg3zehiSqSGF/Zy/PoAZ0h0eWVHnK7p5NECvAG631LkvrKKpA02NnT8HJhQZpUPjjGdto
+	DxLzSxnTExD3XmpQxp/1w9NAA1kCPWdDRNW5/s+Ed7BI6inW+w0EztY5DPaQKDxXkxI25m
+	W2VKIMRifCPS/nvbDcv4t+ALLahmQ72ecuN0xD3h7xqOz54s2emMHzywywwyatoR89R+VO
+	HWXCuuqWv5QLlnqsJgwt24DUtrnfgD83c17QYqwpHiorT55OZe+4eLnlakdUyQ==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1761137347;
+	s=2020e; t=1761137352;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=DNQHcterXWXQuFWR5KPGbkzD3Sh/vJk9lLVEwO1xPSA=;
-	b=fX8cSqvU/uRXynxs8KXcle/JVqevyF+HtGxR5AgUEogTAFIK4EpPFW7QD8ucjN5XqCzEmR
-	PFxjDjDc5cEYfhCQ==
+	 references:references; bh=QD4vFggFMuOeGOcQhDOiteuemKWf4EcukV9nF7jSRjE=;
+	b=jNKXbM8s9KXys2skLRaFhNaomPmHf3yWyLJ+u2hte0dUfgf8E6lPCUahh/LtI3X0E3G6xz
+	MQOaMMLQpwzewRAw==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- linuxppc-dev@lists.ozlabs.org,
- kernel test robot <lkp@intel.com>,
+Subject: [patch V4 08/12] uaccess: Provide put/get_user_scoped()
+References: <20251022102427.400699796@linutronix.de>
+X-Mailing-List: linuxppc-dev@lists.ozlabs.org
+List-Id: <linuxppc-dev.lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
+List-Owner: <mailto:linuxppc-dev+owner@lists.ozlabs.org>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Archive: <https://lore.kernel.org/linuxppc-dev/>,
+  <https://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
+  <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
+  <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
+List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
+Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+cc: kernel test robot <lkp@intel.com>,
  Russell King <linux@armlinux.org.uk>,
  linux-arm-kernel@lists.infradead.org,
  Linus Torvalds <torvalds@linux-foundation.org>,
  x86@kernel.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>,
+ Nicholas Piggin <npiggin@gmail.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ linuxppc-dev@lists.ozlabs.org,
  Paul Walmsley <pjw@kernel.org>,
  Palmer Dabbelt <palmer@dabbelt.com>,
  linux-riscv@lists.infradead.org,
@@ -80,85 +96,73 @@ Cc: Madhavan Srinivasan <maddy@linux.ibm.com>,
  Christian Brauner <brauner@kernel.org>,
  Jan Kara <jack@suse.cz>,
  linux-fsdevel@vger.kernel.org
-Subject: [patch V4 04/12] powerpc/uaccess: Use unsafe wrappers for ASM GOTO
-References: <20251022102427.400699796@linutronix.de>
-X-Mailing-List: linuxppc-dev@lists.ozlabs.org
-List-Id: <linuxppc-dev.lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
-List-Owner: <mailto:linuxppc-dev+owner@lists.ozlabs.org>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Archive: <https://lore.kernel.org/linuxppc-dev/>,
-  <https://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
-  <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
-  <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
-List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Date: Wed, 22 Oct 2025 14:49:06 +0200 (CEST)
+Date: Wed, 22 Oct 2025 14:49:11 +0200 (CEST)
 
-ASM GOTO is miscompiled by GCC when it is used inside a auto cleanup scope:
+Provide conveniance wrappers around scoped user access similiar to
+put/get_user(), which reduce the usage sites to:
 
-bool foo(u32 __user *p, u32 val)
-{
-	scoped_guard(pagefault)
-		unsafe_put_user(val, p, efault);
-	return true;
-efault:
-	return false;
-}
-
-It ends up leaking the pagefault disable counter in the fault path. clang
-at least fails the build.
-
-Rename unsafe_*_user() to arch_unsafe_*_user() which makes the generic
-uaccess header wrap it with a local label that makes both compilers emit
-correct code. Same for the kernel_nofault() variants.
+       if (!get_user_scoped(val, ptr))
+       		return -EFAULT;
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linuxppc-dev@lists.ozlabs.org
 ---
- arch/powerpc/include/asm/uaccess.h |    8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+V4: Rename to scoped
+---
+ include/linux/uaccess.h |   44 ++++++++++++++++++++++++++++++++++++++++++++
+ 1 file changed, 44 insertions(+)
 
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -451,7 +451,7 @@ user_write_access_begin(const void __use
- #define user_write_access_begin	user_write_access_begin
- #define user_write_access_end		prevent_current_write_to_user
+--- a/include/linux/uaccess.h
++++ b/include/linux/uaccess.h
+@@ -825,6 +825,50 @@ for (bool done = false; !done; done = tr
+ #define scoped_user_rw_access(uptr, elbl)				\
+ 	scoped_user_rw_access_size(uptr, sizeof(*(uptr)), elbl)
  
--#define unsafe_get_user(x, p, e) do {					\
-+#define arch_unsafe_get_user(x, p, e) do {			\
- 	__long_type(*(p)) __gu_val;				\
- 	__typeof__(*(p)) __user *__gu_addr = (p);		\
- 								\
-@@ -459,7 +459,7 @@ user_write_access_begin(const void __use
- 	(x) = (__typeof__(*(p)))__gu_val;			\
- } while (0)
- 
--#define unsafe_put_user(x, p, e) \
-+#define arch_unsafe_put_user(x, p, e)				\
- 	__put_user_size_goto((__typeof__(*(p)))(x), (p), sizeof(*(p)), e)
- 
- #define unsafe_copy_from_user(d, s, l, e) \
-@@ -504,11 +504,11 @@ do {									\
- 		unsafe_put_user(*(u8*)(_src + _i), (u8 __user *)(_dst + _i), e); \
- } while (0)
- 
--#define __get_kernel_nofault(dst, src, type, err_label)			\
-+#define arch_get_kernel_nofault(dst, src, type, err_label)		\
- 	__get_user_size_goto(*((type *)(dst)),				\
- 		(__force type __user *)(src), sizeof(type), err_label)
- 
--#define __put_kernel_nofault(dst, src, type, err_label)			\
-+#define arch_put_kernel_nofault(dst, src, type, err_label)		\
- 	__put_user_size_goto(*((type *)(src)),				\
- 		(__force type __user *)(dst), sizeof(type), err_label)
- 
++/**
++ * get_user_scoped - Read user data with scoped access
++ * @val:	The variable to store the value read from user memory
++ * @usrc:	Pointer to the user space memory to read from
++ *
++ * Return: true if successful, false when faulted
++ */
++#define get_user_scoped(val, usrc)				\
++({								\
++	__label__ efault;					\
++	typeof(usrc) _tmpsrc = usrc;				\
++	bool _ret = true;					\
++								\
++	scoped_user_read_access(_tmpsrc, efault)		\
++		unsafe_get_user(val, _tmpsrc, efault);		\
++	if (0) {						\
++	efault:							\
++		_ret = false;					\
++	}							\
++	_ret;							\
++})
++
++/**
++ * put_user_scoped - Write to user memory with scoped access
++ * @val:	The value to write
++ * @udst:	Pointer to the user space memory to write to
++ *
++ * Return: true if successful, false when faulted
++ */
++#define put_user_scoped(val, udst)				\
++({								\
++	__label__ efault;					\
++	typeof(udst) _tmpdst = udst;				\
++	bool _ret = true;					\
++								\
++	scoped_user_write_access(_tmpdst, efault)		\
++		unsafe_put_user(val, _tmpdst, efault);		\
++	if (0) {						\
++	efault:							\
++		_ret = false;					\
++	}							\
++	_ret;							\
++})
++
+ #ifdef CONFIG_HARDENED_USERCOPY
+ void __noreturn usercopy_abort(const char *name, const char *detail,
+ 			       bool to_user, unsigned long offset,
 
 
