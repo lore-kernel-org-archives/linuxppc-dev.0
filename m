@@ -1,73 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-13189-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13190-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20E85CCD1BC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Oct 2025 07:10:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84B15CCD1BC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Oct 2025 07:38:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4csccf4jRQz3bW7;
-	Thu, 23 Oct 2025 18:10:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::52d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761203426;
-	cv=none; b=SZ9Q6Zkna++Nq7vbTEPKlYgzNDziUXb7a6W9YZJ2599g8UvGNRHrMt8N9o2iPTt6hluHpRYf1Up3ugWBrI9b+PiNCMR0iZAVw9eYmusmC/ypbSiPXDeOHWBUet7iBgD+pWnl5kvpw+wtpmfyKLx2mx9thHyk1YKIUibUjC6jiNfifiuYX9Rk+DfLRKXgcrIoG5Azaw4UMXtJOfgqh/Fgaj4vxUekeNQUoBkbnnvzgT8Ak3RgVL0VONzcPqiiefOZodOFdI2WjJ41Vju+oXznFVfAaYjm7gZeWyBP64U5CPZWqipZGLU96LP3aQOJ8yXCx8VTQy+r95s7JjvCFk0w+g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4csdFR0cFqz3bW7;
+	Thu, 23 Oct 2025 18:38:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.246.85.4
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761205131;
+	cv=none; b=lYm/Hi3+DsqPvOFbI2FTDHQ+n/ZMPbWVlvdhVlycAHpKaNIB/5rPSEg9pf/uBOAcBPHO4oaIFMWCgMW/k1rib+iyUHJhr0CNKoCaPGZbcua6/h3AmbPNPUpS8/7fcRheJEAEG6Os01XTxyCXUW+/CiLFXSpAD40XPs56PcK0mUYI2WLNNpZ3MU4X5FjYQsV84kIkEDHoHd/HYCXiJl6FumOuzPzyGl1Exr9VcpOagka9NEkN0sSzOQJiTEotCOiP6o5aNkGCCoYKBPT3mlFR4++4f+yrieGlAqeLLeBVgx5T4JJDr0BcOz+y/fcUXM9byE3ACBru6I1YXYKrnb2CGw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761203426; c=relaxed/relaxed;
-	bh=Ojo0D0SUrVi8rANl2uoQB3ZeIV6seeVTI9tIuETGh2U=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=lIGHKz+8vH7EUdfgIZxjQZdHaziRiZYs9bPBlwuHSYh0HDdT88QVesSzxGkUdjs1NoswIp/kUTZgHqSFUllTX1Lf7P60eSlx/5DVo8wGo4sLX1sLZbUq4fnzJPCNr6P9ltq5MKEhL6yX6t9l1m5iMpDGJ9a5HaoXxC/v1jJwt1u8JJ8hVjct6JWfvThbLkLaqpP07L0Hy4OU7fnIfzD/31AZT1N7oNWsD7BCXHG/XVC4qJDJqiE2eIQd1p/VXTlB6n4TTOnBKhJwvuVUtIjuKHbXC3NrE4xdC/QmUftVMCWphwRYwj/0aJzyVf/2Vc/q8QI/t0u/zAOYzfyRBO3fhg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y4Hk86Ax; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=daniel.baluta@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1761205131; c=relaxed/relaxed;
+	bh=q5QOWxjIdlO0fc/UnPkoihwCDoCk4/HEVUl6x5L2E6o=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=JfHZGLyP2Xvian3hsJGWJpUjA1pB8b2d1ReHijijKcrhgNhyxXCbgtQPvCM8ex2ur57yoihuF+58aF4qqYf+NwDLVtDFJhrOibwlm5ltuhue5Uwp5zB2E7lMogNp9YfhpoHWotjTXyg9BUHBlKhnZ8eEFLg5DC6rqKN6mMvgdGiWFTSAvuxsXx5nqYrI0ndsSqSe+VHvXeOu+aCOydLcI1EA7SU3bBknoum8Nx2zk5+wVPF61W0SGI5mV7MTbU6tg26MczKIveb3TIujvnoi0c4iox2YyjFrps6j9j5gda7egT1JuzPVwWEkLatBpT41nM3am5KZBYm2V+ayaz/DmA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=B0TI/thY; dkim-atps=neutral; spf=pass (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Y4Hk86Ax;
+	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=B0TI/thY;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::52d; helo=mail-pg1-x52d.google.com; envelope-from=daniel.baluta@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pg1-x52d.google.com (mail-pg1-x52d.google.com [IPv6:2607:f8b0:4864:20::52d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.246.85.4; helo=smtpout-03.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
+Received: from smtpout-03.galae.net (smtpout-03.galae.net [185.246.85.4])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4csccd2Zn2z30RJ
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2025 18:10:24 +1100 (AEDT)
-Received: by mail-pg1-x52d.google.com with SMTP id 41be03b00d2f7-b6ceba7c97eso423129a12.0
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2025 00:10:24 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1761203421; x=1761808221; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Ojo0D0SUrVi8rANl2uoQB3ZeIV6seeVTI9tIuETGh2U=;
-        b=Y4Hk86AxFp5GjGoIuK27eQ7XGzZq/TfmxWvwleLrzEJqX3qgp+ueEN1TNLE6xGLK2s
-         c1Ldx3V1OlGXw9qfGtzB8TvDc0dJlLcFEi7oEEvcOBdvzDRqFkrIk3Na5FKJ79mxZSne
-         ctb4c+5D5YHXSHLoaOt9q9lt/0mwMffvGsknNzoQrKrbOqskSQ3rwS0rCFcxVHUI6eQy
-         jrZ/Jx2Vk/7zLXpf893KSc+LN6+gZa2qJutThjzQUv20G7tQ+vSWe/dZXpvUabF12hJY
-         kdVFXQuC8Xd/60YJLjRMBiJ1pMjYs5GlX4DGZ+yM2LRWrdctMM4ja5YrEtN2GK6LkzL+
-         fv2g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761203421; x=1761808221;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=Ojo0D0SUrVi8rANl2uoQB3ZeIV6seeVTI9tIuETGh2U=;
-        b=li8z380JYOzO7sVdtexlaKk8UKNlKBwLXK/sjh/OqWOT9fERlKep92E5D43riOqcTf
-         VhJCk9P8dvYTYK/TBNXMSDzS2cpmffML8bcPf+F1VKTXinCCkv7bKUuI8HNDRY6C45+0
-         gc1MaOZmmLDEXp1MPEBnsS7f+OGt+dkFdXjZGUchnIJ3IFbdJGdAaC2o0RAhAqCF0+As
-         FugnQ3Nv6mH+J31wCx5EFygV9914wo+P5QbZtKrfd4UGJQPO8S3rM9Vs4w2so1GYpQrf
-         sSh9irdJ7YFYeVhcDGXRIJkrmpKKgig5N6nAlk0GFEPHXFzaW7OQ7g2NcDhQo3+Ts/7q
-         9k+A==
-X-Forwarded-Encrypted: i=1; AJvYcCXR6T8a6NPbS/4QbP1BUDLm9mmEtrjhrkkanPe2WlqRiD53nlIyDufTKCHBUjMmf/ZW6/Q4ArOgDvvemIQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwHofbyP1zGegB+h4SsEEMUYPa+J8R8HaqScKMfOqzIvb4IA11Z
-	9u51o0SwWW+UUFqXfrz7mBIBO6ZOMhcP/YLvw1XQYYHKuUxbhD4/i1dw3a5sRtERQlY9Y/FNI6q
-	JRLq08vOg1mwlZJvlFfeUkFJhGiEUkIw=
-X-Gm-Gg: ASbGnctG3XhVOIoeW+1XBuVIXPMor8wjI6HbfHibI+QqkS1X//oaur9dmnR067XYoLj
-	9P33UvuaS5/HvZdlL/NELJ2LHYbY8msKkWfLiVhk6pnXSHDPt+//vpRvB6Fre9963nDzDKci6wo
-	FdUI+f/Zr1a5leOCz1Y/mlbt7ebCxiYkMzGs0yuBYtPcie2AdPCQ+1rnn1jy+422Ql/K38X7aSl
-	b5gpOvKEb4lQQyr5Mldfio2Mgnjc4N/91hqHp8SF4ITJFxoCJc72opyw2lRtnpiQxiut0nf9hdn
-	HMrBveDsrL/xzQ==
-X-Google-Smtp-Source: AGHT+IEtJBcARSautKMltyAqLGBQ/Gd8B1xihDkjxP19PBXKTkpvD+Eo/uq58hE6h11K8gLvUb2NUw09soHy4QEpmTY=
-X-Received: by 2002:a17:903:46c7:b0:274:aab9:4ed4 with SMTP id
- d9443c01a7336-290cb65f861mr305187765ad.57.1761203421516; Thu, 23 Oct 2025
- 00:10:21 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4csdFP5BLSz304l
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2025 18:38:48 +1100 (AEDT)
+Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
+	by smtpout-03.galae.net (Postfix) with ESMTPS id 731944E41295;
+	Thu, 23 Oct 2025 07:38:43 +0000 (UTC)
+Received: from mail.galae.net (mail.galae.net [212.83.136.155])
+	by smtpout-01.galae.net (Postfix) with ESMTPS id 48E6E6062C;
+	Thu, 23 Oct 2025 07:38:43 +0000 (UTC)
+Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 049A2102F245C;
+	Thu, 23 Oct 2025 09:38:15 +0200 (CEST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
+	t=1761205122; h=from:subject:date:message-id:to:cc:mime-version:content-type:
+	 content-transfer-encoding:in-reply-to:references;
+	bh=q5QOWxjIdlO0fc/UnPkoihwCDoCk4/HEVUl6x5L2E6o=;
+	b=B0TI/thYf1svatfjx455F/6ddcIQ9+ytTACWEHo+NDvVXAT5mGOX1W0kOWOidG9qbMdJyA
+	2QCY/luYvxsQUks8ZedL4LmScCFshZ17lG3rYYFBW7dIfN2L8AckafVYaZVGNWTvrnQd1N
+	nSLtPv5bV/oS/6WSJHt/ANnnJnKt9oDaRUvoblfsg20gvmCsQ/sl2MR0QNivNIKRhvZa1T
+	O3U60Syjul5/jbim5WtGpCcO2tV86+YnMOQO5FddGySaMmInWMLI9KpJ+a+6AbNreBxMU1
+	oNBqC4Bae66xB7508vq9Xnf5VjGWIf7bluKZrzWsN8NSXmep7EsxgRNcRz20hw==
+Date: Thu, 23 Oct 2025 09:38:13 +0200
+From: Herve Codina <herve.codina@bootlin.com>
+To: Manivannan Sadhasivam <mani@kernel.org>
+Cc: Christian Zigotzky <chzigotzky@xenosoft.de>, Bjorn Helgaas
+ <helgaas@kernel.org>, Lukas Wunner <lukas@wunner.de>, Manivannan Sadhasivam
+ <manivannan.sadhasivam@oss.qualcomm.com>, Ilpo =?UTF-8?B?SsOkcnZpbmVu?=
+ <ilpo.jarvinen@linux.intel.com>, linux-pci@vger.kernel.org, mad skateman
+ <madskateman@gmail.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>, Christian
+ Zigotzky <info@xenosoft.de>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+ hypexed@yahoo.com.au, Darren Stevens <darren@stevens-zone.net>,
+ debian-powerpc@lists.debian.org, Thomas Petazzoni
+ <thomas.petazzoni@bootlin.com>
+Subject: Re: [PPC] Boot problems after the pci-v6.18-changes
+Message-ID: <20251023093813.3fbcd0ce@bootlin.com>
+In-Reply-To: <4rtktpyqgvmpyvars3w3gvbny56y4bayw52vwjc3my3q2hw3ew@onz4v2p2uh5i>
+References: <20251015101304.3ec03e6b@bootlin.com>
+	<A11312DD-8A5A-4456-B0E3-BC8EF37B21A7@xenosoft.de>
+	<20251015135811.58b22331@bootlin.com>
+	<4rtktpyqgvmpyvars3w3gvbny56y4bayw52vwjc3my3q2hw3ew@onz4v2p2uh5i>
+Organization: Bootlin
+X-Mailer: Claws Mail 4.3.1 (GTK 3.24.43; x86_64-redhat-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,69 +80,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20251023064538.368850-1-shengjiu.wang@nxp.com> <20251023064538.368850-3-shengjiu.wang@nxp.com>
-In-Reply-To: <20251023064538.368850-3-shengjiu.wang@nxp.com>
-From: Daniel Baluta <daniel.baluta@gmail.com>
-Date: Thu, 23 Oct 2025 10:12:39 +0300
-X-Gm-Features: AS18NWCgBWlr59lTgB1C8kcLIypbCmmlbtXSZ7g6CCjdzuXK7TY5j-4JWGWmtC0
-Message-ID: <CAEnQRZB+rFudpHB7TKFOCumh4Ni9q-421X3jRL2y8UbV74e-xQ@mail.gmail.com>
-Subject: Re: [PATCH 2/2] ASoC: fsl_micfil: correct the endian format for DSD
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Cc: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
-	nicoleotsuka@gmail.com, lgirdwood@gmail.com, broonie@kernel.org, 
-	perex@perex.cz, tiwai@suse.com, linux-sound@vger.kernel.org, 
-	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-Last-TLS-Session-Version: TLSv1.3
 
-oldest - > most significant bit.
+Hi Manivannan,
 
-With that,
+On Wed, 15 Oct 2025 18:20:22 +0530
+Manivannan Sadhasivam <mani@kernel.org> wrote:
 
-Reviewed-by: Daniel Baluta <daniel.baluta@nxp.com>
+> Hi Herve,
+> 
+> On Wed, Oct 15, 2025 at 01:58:11PM +0200, Herve Codina wrote:
+> > Hi Christian,
+> > 
+> > On Wed, 15 Oct 2025 13:30:44 +0200
+> > Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
+> >   
+> > > Hello Herve,
+> > >   
+> > > > On 15 October 2025 at 10:39 am, Herve Codina <herve.codina@bootlin.com> wrote:
+> > > > 
+> > > > ﻿Hi All,
+> > > > 
+> > > > I also observed issues with the commit f3ac2ff14834 ("PCI/ASPM: Enable all
+> > > > ClockPM and ASPM states for devicetree platforms")    
+> > > 
+> > > Thanks for reporting.
+> > >   
+> > > > 
+> > > > Also tried the quirk proposed in this discussion (quirk_disable_aspm_all)
+> > > > an the quirk also fixes the timing issue.    
+> > > 
+> > > Where have you added quirk_disable_aspm_all?  
+> > 
+> > --- 8< ---
+> > diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
+> > index 214ed060ca1b..a3808ab6e92e 100644
+> > --- a/drivers/pci/quirks.c
+> > +++ b/drivers/pci/quirks.c
+> > @@ -2525,6 +2525,17 @@ static void quirk_disable_aspm_l0s_l1(struct pci_dev *dev)
+> >   */
+> >  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ASMEDIA, 0x1080, quirk_disable_aspm_l0s_l1);
+> >  
+> > +static void quirk_disable_aspm_all(struct pci_dev *dev)
+> > +{
+> > +       pci_info(dev, "Disabling ASPM\n");
+> > +       pci_disable_link_state(dev, PCIE_LINK_STATE_ALL);  
+> 
+> Could you please try disabling L1SS and L0s separately to see which one is
+> causing the issue? Like,
+> 
+> 	pci_disable_link_state(dev, PCIE_LINK_STATE_L1_1 | PCIE_LINK_STATE_L1_2);
+> 
+> 	pci_disable_link_state(dev, PCIE_LINK_STATE_L0S);
+> 
 
+I did tests and here are the results:
 
-On Thu, Oct 23, 2025 at 9:48=E2=80=AFAM Shengjiu Wang <shengjiu.wang@nxp.co=
-m> wrote:
->
-> The DSD format supported by micfil is that oldest bit is in bit 31, so
-> the format should be DSD little endian format.
->
-> Fixes: 21aa330fec31 ("ASoC: fsl_micfil: Add decimation filter bypass mode=
- support")
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> ---
->  sound/soc/fsl/fsl_micfil.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
->
-> diff --git a/sound/soc/fsl/fsl_micfil.c b/sound/soc/fsl/fsl_micfil.c
-> index aabd90a8b3ec..cac26ba0aa4b 100644
-> --- a/sound/soc/fsl/fsl_micfil.c
-> +++ b/sound/soc/fsl/fsl_micfil.c
-> @@ -131,7 +131,7 @@ static struct fsl_micfil_soc_data fsl_micfil_imx943 =
-=3D {
->         .fifos =3D 8,
->         .fifo_depth =3D 32,
->         .dataline =3D  0xf,
-> -       .formats =3D SNDRV_PCM_FMTBIT_S32_LE | SNDRV_PCM_FMTBIT_DSD_U32_B=
-E,
-> +       .formats =3D SNDRV_PCM_FMTBIT_S32_LE | SNDRV_PCM_FMTBIT_DSD_U32_L=
-E,
->         .use_edma =3D true,
->         .use_verid =3D true,
->         .volume_sx =3D false,
-> @@ -823,7 +823,7 @@ static int fsl_micfil_hw_params(struct snd_pcm_substr=
-eam *substream,
->                 break;
->         }
->
-> -       if (format =3D=3D SNDRV_PCM_FORMAT_DSD_U32_BE) {
-> +       if (format =3D=3D SNDRV_PCM_FORMAT_DSD_U32_LE) {
->                 micfil->dec_bypass =3D true;
->                 /*
->                  * According to equation 29 in RM:
-> --
-> 2.34.1
->
->
+  - quirk pci_disable_link_state(dev, PCIE_LINK_STATE_ALL)
+    Issue not present
+
+  - quirk pci_disable_link_state(dev, PCIE_LINK_STATE_L1_1 | PCIE_LINK_STATE_L1_2)
+    Issue present, timings similar to timings already reported
+    (hundreds of ms).
+
+  - quirk pci_disable_link_state(dev, PCIE_LINK_STATE_L0S);
+    Issue present, timings still incorrect but lower
+      64 bytes from 192.168.32.100: seq=10 ttl=64 time=16.738 ms
+      64 bytes from 192.168.32.100: seq=11 ttl=64 time=39.500 ms
+      64 bytes from 192.168.32.100: seq=12 ttl=64 time=62.178 ms
+      64 bytes from 192.168.32.100: seq=13 ttl=64 time=84.709 ms
+      64 bytes from 192.168.32.100: seq=14 ttl=64 time=107.484 ms
+
+  - quirk pci_disable_link_state(dev, PCIE_LINK_STATE_CLKPM)
+    Issue present, timings similar to timings already reported
+    (hundreds of ms).
+
+  - No quirk, echo performance > /sys/module/pcie_aspm/parameters/policy
+    Issue fixed
+
+  - No quirk, CONFIG_PCIEASPM = n
+    Issue fixed (obviously)
+
+Hope those results will help on the topic.
+
+Best regards,
+Hervé
 
