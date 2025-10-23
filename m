@@ -1,110 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-13211-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13212-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 55F0BCCD1BC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Oct 2025 12:27:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7076FCCD1BC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Oct 2025 15:00:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cslfy6lW4z3btw;
-	Thu, 23 Oct 2025 23:27:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.17
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761222474;
-	cv=none; b=apq2URmJwZgSf5oQuxRY1eDCtMyDFFFwvpoi6pdnOd7jcXNFOMXV54VGmKpKLJjq0c3TvjyaJxkBKltPzMi6ScUw/36B6sMLvKOBbNqTF0oLJDreL7vVUn1fhK6CqxeeTLGUQJto3wHLNea1Jo6YmsbPs3vYVd9WVMirziu9n9cQJKgFa2DKgL9DwKTvZo51ohaqCIMsIlw/QEV6KEoVqwwLjVrl/2yVv1/UljFnLuPWe0sK/gcpXmPw7ZzwSAaqpd+1WjKXiEoNG7FrNW/2RNV4vT5dlPpOhDMoYesRdQPzbItfb4OGXrWGWzvZMHI13pErfwFBBVrAWyG3vNANAg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4csq2X5TR4z2xQ4;
+	Fri, 24 Oct 2025 02:00:04 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1049"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761231604;
+	cv=none; b=d9W99bupcZKyT5HYjiG/EOvO6qhNEGYLQwyt7aJszXy4/q8/TUxEId7PQiljKlroexAoAHc54Ht4dwdaSAHcrxgnUhREYL2Sk8iFH6l9NPzgxHOTiWKmkDBAImRyXVdZILZcglPC+NZcoD7LSnUB/rexpS9iTk1nTJ4J7JDFF159/IHFDjWzv4XVcRJ++VcTrV1c6HdynqR0DOzRkWMGbzOlgnVIgwubT5IGGH2kQnfbSiof8hq2pOhDWcpsyaeheR7iVAGp6MPKxUoa8nN84tSPcYLnslQE8UrmdzAb/VeUfB7QAiw0Ny10o+Zq17IbfwsRwSkRAbqvQQt3xCmX9g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761222474; c=relaxed/relaxed;
-	bh=mhNJ5UVjbR9XwZg/RG4WVaadVBacBt963EXV7HuFDKw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=a2hlQoosISarIfHQWmmHDxxEiiZl6JtazitXqSDJFoILj2OiMvCA4AnTyA1EC2NuhZfz/TMX7/AOfOUChImPjeibK6eGIYpSRTl1Trq97HR3Q5SbwHDnwxAGGggrZPkP0cIUm0hkXPEd0S4lO1Zr48QbCMW1mYlL1pRGccxtO2f1E4Uwa1/kg+HJX/jsSEjC7+fyPPBJG9CEOukxJcZaWk/tf/9P6jijgOSOxv2SWsq3mfZENTmcuaYAQSszqVrdI0Py1IauPQIAPbjsciOQx+FRzt+ake6fTTc47mFPoY4YgzeYSxWpQ9fbLPfcA80Qe0xazxM/otZR1KPiz+zxYQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=drbVBHYG; dkim-atps=neutral; spf=pass (client-ip=192.198.163.17; helo=mgamail.intel.com; envelope-from=fabio.m.de.francesco@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
+	t=1761231604; c=relaxed/relaxed;
+	bh=DsY3zzD8XUrRiTLyLBawfwaQI9/sErmot+/rfYHcY0U=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=AcTLGLOguBAbiofO9m+m3UxXatiHfg63rKhF2GrK2dtNOE61TP/y2pOV2e7YEueniXMjhPyZOruU++yVTqwf3QJ6VFx7ArIG06cbUCxCV5dqYKrTd7rJeSlqR9/QHXP/M1kHR9zv+bnIfX2bor0bMDgsBD16OrVYupWnkZ0PZ3izmPCfy/gQjHfSmyx0Ry2YN8G1+/Dj7yq8a8yzN1qhu+rMN8ajGtBLiSYVTou22lypOutOehbQr7UB0rCP/5Aiec+fkLCgiSMGWRfnLy6EPUR62T/3HfXc99L3nHNL7Jc0kgo6pAdv5lslxFFYx4QPPxbTKnpU3Fy23XwyXPKVTA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=kQdtOX7X; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=370l6aaykdkweqmzvosaasxq.oayxuzgjbbo-pqhxuefe.alxmne.ads@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=drbVBHYG;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=kQdtOX7X;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.17; helo=mgamail.intel.com; envelope-from=fabio.m.de.francesco@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.17])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=370l6aaykdkweqmzvosaasxq.oayxuzgjbbo-pqhxuefe.alxmne.ads@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1049.google.com (mail-pj1-x1049.google.com [IPv6:2607:f8b0:4864:20::1049])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cslfy0ZLxz3btv
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2025 23:27:53 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1761222474; x=1792758474;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=zLJMDs9079RK5MwXvZr2M8uR5FmXfMibcm6mFiquR+k=;
-  b=drbVBHYG1B0XocQYbuJ3WkhioXLzmpj4/qMfM9bKirI6dtbiP+6Qbm2n
-   MGwe/AX9ojXnL6ss0pdt/yQOGitG9Sy82Zln55gl7lxVa1UptiQ3SIQqR
-   7NHWVgoQNVgZ9U3LWMrX+n8WwKlSHQgMKCaEX5XmJpiDzoUcUaQYAvoPf
-   yeRF0hoHEJ6sANeuBW5UBqyQIcU3TAV5F/OKcV6avoRBAm34TZI7uJuE5
-   3Ytu9HDeJ7PYY1Zk0R22Yll/7IdA1WO4Af/Q/fhfR3fJdQfI2kTV83XDX
-   031Rk7CuFSYkUfVhqfN2fsKRw/o5QGZfhsEwDebnmRGGAMUB4mNtpsxAq
-   w==;
-X-CSE-ConnectionGUID: HVy7TmhcTVCLzLQm6C97Bw==
-X-CSE-MsgGUID: VGCMauUTTaGYN9oSQZLO4A==
-X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="63296832"
-X-IronPort-AV: E=Sophos;i="6.19,249,1754982000"; 
-   d="scan'208";a="63296832"
-Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by fmvoesa111.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2025 05:26:49 -0700
-X-CSE-ConnectionGUID: vdRp44lcSV2X6qSpo0BJeQ==
-X-CSE-MsgGUID: 2NFambV/TLubggDm+0LoVg==
-X-ExtLoop1: 1
-Received: from unknown (HELO fdefranc-mobl3.igk.intel.com) ([10.237.142.160])
-  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2025 05:26:38 -0700
-From: "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>
-To: linux-cxl@vger.kernel.org
-Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>,
-	Tony Luck <tony.luck@intel.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Hanjun Guo <guohanjun@huawei.com>,
-	Mauro Carvalho Chehab <mchehab@kernel.org>,
-	Shuai Xue <xueshuai@linux.alibaba.com>,
-	Davidlohr Bueso <dave@stgolabs.net>,
-	Jonathan Cameron <jonathan.cameron@huawei.com>,
-	Dave Jiang <dave.jiang@intel.com>,
-	Alison Schofield <alison.schofield@intel.com>,
-	Vishal Verma <vishal.l.verma@intel.com>,
-	Ira Weiny <ira.weiny@intel.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Sunil V L <sunilvl@ventanamicro.com>,
-	Xiaofei Tan <tanxiaofei@huawei.com>,
-	Mario Limonciello <mario.limonciello@amd.com>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	Heinrich Schuchardt <heinrich.schuchardt@canonical.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	"Fabio M . De Francesco" <fabio.m.de.francesco@linux.intel.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Ingo Molnar <mingo@kernel.org>,
-	Guo Weikang <guoweikang.kernel@gmail.com>,
-	Xin Li <xin@zytor.com>,
-	Will Deacon <will@kernel.org>,
-	Huang Yiwei <quic_hyiwei@quicinc.com>,
-	Gavin Shan <gshan@redhat.com>,
-	Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
-	=?UTF-8?q?Uwe=20Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>,
-	Li Ming <ming.li@zohomail.com>,
-	=?UTF-8?q?Ilpo=20J=C3=A4rvinen?= <ilpo.jarvinen@linux.intel.com>,
-	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
-	Karolina Stolarek <karolina.stolarek@oracle.com>,
-	Jon Pan-Doh <pandoh@google.com>,
-	Lukas Wunner <lukas@wunner.de>,
-	Shiju Jose <shiju.jose@huawei.com>,
-	linux-kernel@vger.kernel.org,
-	linux-acpi@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-pci@vger.kernel.org
-Subject: [PATCH 2/6 v6] ACPI: extlog: Trace CPER PCI Express Error Section
-Date: Thu, 23 Oct 2025 14:25:37 +0200
-Message-ID: <20251023122612.1326748-3-fabio.m.de.francesco@linux.intel.com>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20251023122612.1326748-1-fabio.m.de.francesco@linux.intel.com>
-References: <20251023122612.1326748-1-fabio.m.de.francesco@linux.intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4csq2V73wcz30RJ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 24 Oct 2025 02:00:02 +1100 (AEDT)
+Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-336b9f3b5b0so982819a91.3
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2025 08:00:02 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1761231600; x=1761836400; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=DsY3zzD8XUrRiTLyLBawfwaQI9/sErmot+/rfYHcY0U=;
+        b=kQdtOX7XAgsU2V6XZCAVVbDcBDO85v5wk8nZYY4PP2erjZpjbIHhV2c+n7NYX7/LUN
+         zIMs7ib99p4EAmqAl8CbGKBYHgy7D+EW5vdlVYThrm9z8/JdO5MyROZk1dVUJrZugtJx
+         BAPH0ATC4ShrknOCkUIOv9Gj/BnkM23MyBByepTE9wQ9rgY1WmGSBvNlTYOmpg65+yhc
+         cUJ8uAcNPio+uu7JE6nabHLyZpyDmdlB15dq5EHvyhkcK3FIWWorR/PvoH0v+JNhsEEe
+         lfcoF2Ga/Mi6aOsO2UR0JOfp3XQcyxlPGsrEifeV0T04/yDKF6KfPDRKBi88eNigkTMR
+         kTDw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1761231600; x=1761836400;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=DsY3zzD8XUrRiTLyLBawfwaQI9/sErmot+/rfYHcY0U=;
+        b=sensN6blYqRJKhtmCIbwvVVj+bm/DRkiE0CgdllwZSqbmv27zCRQbeyqn8isd8x62V
+         yFIPJT/v/QSnWZyXNT/WcdtAdj3/dTY8eY/hyiMBGChnKZwJEiYicLHE69Br9yLFESKj
+         CN3nbX5ZyCJlRqQ/j2Qs0HqJcOrKDunvfZQoNKCyP81fH37KpofvwR34gyfPQrFXzI4N
+         y3BCyzxcyT6/T4dVO7lZuSVktq63Gv8iVDF7VsPtKmak12d1K3toeYmM8ZX9tphDJebp
+         tFp8t/aL2bKKLCpCSEAE9mOOh4UMheTLd8ZSnY+ZaJQfzuvKrhlO8Y/NdzcBmgsvmzQf
+         QX9w==
+X-Forwarded-Encrypted: i=1; AJvYcCWiPNGlsqWwoM8XT7PsTZWyvH+re38fUhxPm4D8diTeZRZQeJhP8Z5cl18Wlj2UraBbo3+/kx5gNYV6r04=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Ywsj+Re3u4JO2nsI07Jy4nqAxKMScNIS47D83dmDNh3FgJCkEOd
+	Ddm7e4wHFzjdibZdsmNm9pu+9BwNlIHGPWDnjjA5mFhyWIxFtHCyKDHpf1AhsHjsFXuGz8wj0DL
+	Yn0pXgg==
+X-Google-Smtp-Source: AGHT+IGIKST/5gTXkhLeNb6+zo5OEJ6E7Tz0ILKzp1TDg+5uVro2JJ+z5T3UkH4GmCDPjUQAuY2o81CumRA=
+X-Received: from pjbsp15.prod.google.com ([2002:a17:90b:52cf:b0:330:a006:a384])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:5291:b0:32e:859:c79
+ with SMTP id 98e67ed59e1d1-33bcec1ab25mr31136898a91.0.1761231599767; Thu, 23
+ Oct 2025 07:59:59 -0700 (PDT)
+Date: Thu, 23 Oct 2025 07:59:58 -0700
+In-Reply-To: <28136b62074550826efa3f57b1f7be07f571abdc.camel@intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -117,102 +76,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+References: <20251017003244.186495-1-seanjc@google.com> <20251017003244.186495-10-seanjc@google.com>
+ <28136b62074550826efa3f57b1f7be07f571abdc.camel@intel.com>
+Message-ID: <aPpC7mt3CwWuhv1p@google.com>
+Subject: Re: [PATCH v3 09/25] KVM: TDX: Fold tdx_sept_drop_private_spte() into tdx_sept_remove_private_spte()
+From: Sean Christopherson <seanjc@google.com>
+To: Kai Huang <kai.huang@intel.com>
+Cc: "chenhuacai@kernel.org" <chenhuacai@kernel.org>, "frankja@linux.ibm.com" <frankja@linux.ibm.com>, 
+	"maz@kernel.org" <maz@kernel.org>, "borntraeger@linux.ibm.com" <borntraeger@linux.ibm.com>, 
+	"pjw@kernel.org" <pjw@kernel.org>, "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>, 
+	"kas@kernel.org" <kas@kernel.org>, "maobibo@loongson.cn" <maobibo@loongson.cn>, 
+	"pbonzini@redhat.com" <pbonzini@redhat.com>, "maddy@linux.ibm.com" <maddy@linux.ibm.com>, 
+	"palmer@dabbelt.com" <palmer@dabbelt.com>, "imbrenda@linux.ibm.com" <imbrenda@linux.ibm.com>, 
+	"zhaotianrui@loongson.cn" <zhaotianrui@loongson.cn>, "anup@brainfault.org" <anup@brainfault.org>, 
+	"oliver.upton@linux.dev" <oliver.upton@linux.dev>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, 
+	"linux-coco@lists.linux.dev" <linux-coco@lists.linux.dev>, Yan Y Zhao <yan.y.zhao@intel.com>, 
+	"michael.roth@amd.com" <michael.roth@amd.com>, 
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ira Weiny <ira.weiny@intel.com>, 
+	"loongarch@lists.linux.dev" <loongarch@lists.linux.dev>, 
+	"binbin.wu@linux.intel.com" <binbin.wu@linux.intel.com>, 
+	"ackerleytng@google.com" <ackerleytng@google.com>, "kvmarm@lists.linux.dev" <kvmarm@lists.linux.dev>, 
+	"kvm-riscv@lists.infradead.org" <kvm-riscv@lists.infradead.org>, Vishal Annapurve <vannapurve@google.com>, 
+	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, 
+	Rick P Edgecombe <rick.p.edgecombe@intel.com>, 
+	"linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, 
+	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, 
+	"linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "x86@kernel.org" <x86@kernel.org>
+Content-Type: text/plain; charset="us-ascii"
 
-I/O Machine Check Architecture events may signal failing PCIe components
-or links. The AER event contains details on what was happening on the wire
-when the error was signaled.
+On Thu, Oct 23, 2025, Kai Huang wrote:
+> On Thu, 2025-10-16 at 17:32 -0700, Sean Christopherson wrote:
+> > Fold tdx_sept_drop_private_spte() into tdx_sept_remove_private_spte() to
+> > avoid having to differnatiate between "zap", "drop", and "remove", and to
+> 		  ^
+> 		  differentiate
+> 
+> Nit: it's a wee bit confusing that you mentioned "zap", because after this
+> patch tdx_sept_zap_private_spte() is still there.  But it may be only me
+> feeling that way.
 
-Trace the CPER PCIe Error section (UEFI v2.10, Appendix N.2.7) reported
-by the I/O MCA.
+Hmm, yeah, I agree that's a confusing/misleading.  How about this?
 
-Cc: Dan Williams <dan.j.williams@intel.com>
-Reviewed-by: Dave Jiang <dave.jiang@intel.com>
-Reviewed-by: Jonathan Cameron <jonathan.cameron@huawei.com>
-Signed-off-by: Fabio M. De Francesco <fabio.m.de.francesco@linux.intel.com>
----
- drivers/acpi/Kconfig       |  1 +
- drivers/acpi/acpi_extlog.c | 32 ++++++++++++++++++++++++++++++++
- drivers/pci/pcie/aer.c     |  2 +-
- 3 files changed, 34 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/acpi/Kconfig b/drivers/acpi/Kconfig
-index ca00a5dbcf75..f8a97db075fc 100644
---- a/drivers/acpi/Kconfig
-+++ b/drivers/acpi/Kconfig
-@@ -494,6 +494,7 @@ config ACPI_EXTLOG
- 	tristate "Extended Error Log support"
- 	depends on X86_MCE && X86_LOCAL_APIC && EDAC
- 	select UEFI_CPER
-+	select ACPI_APEI_PCIEAER
- 	help
- 	  Certain usages such as Predictive Failure Analysis (PFA) require
- 	  more information about the error than what can be described in
-diff --git a/drivers/acpi/acpi_extlog.c b/drivers/acpi/acpi_extlog.c
-index 47d11cb5c912..cefe8d2d8aff 100644
---- a/drivers/acpi/acpi_extlog.c
-+++ b/drivers/acpi/acpi_extlog.c
-@@ -132,6 +132,34 @@ static int print_extlog_rcd(const char *pfx,
- 	return 1;
- }
- 
-+static void extlog_print_pcie(struct cper_sec_pcie *pcie_err,
-+			      int severity)
-+{
-+	struct aer_capability_regs *aer;
-+	struct pci_dev *pdev;
-+	unsigned int devfn;
-+	unsigned int bus;
-+	int aer_severity;
-+	int domain;
-+
-+	if (!(pcie_err->validation_bits & CPER_PCIE_VALID_DEVICE_ID ||
-+	      pcie_err->validation_bits & CPER_PCIE_VALID_AER_INFO))
-+		return;
-+
-+	aer_severity = cper_severity_to_aer(severity);
-+	aer = (struct aer_capability_regs *)pcie_err->aer_info;
-+	domain = pcie_err->device_id.segment;
-+	bus = pcie_err->device_id.bus;
-+	devfn = PCI_DEVFN(pcie_err->device_id.device,
-+			  pcie_err->device_id.function);
-+	pdev = pci_get_domain_bus_and_slot(domain, bus, devfn);
-+	if (!pdev)
-+		return;
-+
-+	pci_print_aer(pdev, aer_severity, aer);
-+	pci_dev_put(pdev);
-+}
-+
- static int extlog_print(struct notifier_block *nb, unsigned long val,
- 			void *data)
- {
-@@ -183,6 +211,10 @@ static int extlog_print(struct notifier_block *nb, unsigned long val,
- 			if (gdata->error_data_length >= sizeof(*mem))
- 				trace_extlog_mem_event(mem, err_seq, fru_id, fru_text,
- 						       (u8)gdata->error_severity);
-+		} else if (guid_equal(sec_type, &CPER_SEC_PCIE)) {
-+			struct cper_sec_pcie *pcie_err = acpi_hest_get_payload(gdata);
-+
-+			extlog_print_pcie(pcie_err, gdata->error_severity);
- 		} else {
- 			void *err = acpi_hest_get_payload(gdata);
- 
-diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
-index 0b5ed4722ac3..1b903e0644d6 100644
---- a/drivers/pci/pcie/aer.c
-+++ b/drivers/pci/pcie/aer.c
-@@ -971,7 +971,7 @@ void pci_print_aer(struct pci_dev *dev, int aer_severity,
- 		pcie_print_tlp_log(dev, &aer->header_log, info.level,
- 				   dev_fmt("  "));
- }
--EXPORT_SYMBOL_NS_GPL(pci_print_aer, "CXL");
-+EXPORT_SYMBOL_GPL(pci_print_aer);
- 
- /**
-  * add_error_device - list device to be handled
--- 
-2.51.0
-
+  KVM: TDX: Fold tdx_sept_drop_private_spte() into tdx_sept_remove_private_spte()
+  
+  Fold tdx_sept_drop_private_spte() into tdx_sept_remove_private_spte() as a
+  step towards having "remove" be the only and only function that deals with
+  removing/zapping/dropping a SPTE, e.g. to avoid having to differentiate
+  between "zap", "drop", and "remove".  Eliminating the "drop" helper also
+  gets rid of what is effectively dead code due to redundant checks, e.g. on
+  an HKID being assigned.
+  
+  No functional change intended.
 
