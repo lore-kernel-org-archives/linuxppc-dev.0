@@ -1,75 +1,57 @@
-Return-Path: <linuxppc-dev+bounces-13197-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13198-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09C19CCD1BC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Oct 2025 09:26:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F2046CCD1BE
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Oct 2025 10:29:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4csgdb3DgFz30RJ;
-	Thu, 23 Oct 2025 20:26:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.171.202.116
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761211587;
-	cv=none; b=lN37OK0g3iAdvPdQB93n+nBrbp0DYSQHDKI6hEhfcGsjGersFQkppqqwDr3Qr1zaJz4dMdVt64EEMaUsh+9E9VXbE1mBTdDtKNqhPDLWUlrdsrKeSlHPXt0/uSB3zCAhhnr7VDU7BAyuJhyf9b5jgeajziJ7PJPgsIh64xXLn82EK7+xb61xzcUtujXKq2a54FhOUNkB/UXoHQDwquhLWm2O6ifc8uyd6zXxYLGBdbSG7idxwF756FyqHE+RSyTeql24/dnmbi27BISjWvBu8W6scoQimF+M6E1GBJzFKtSjpeT6FABa6fcnllllAVmC8en6KXXdXuqxjJ5Q4p/QIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4csj1x3YZmz3bW7;
+	Thu, 23 Oct 2025 21:29:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=83.223.78.240
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761215349;
+	cv=none; b=RTsQ3kTxwekOkgLAAVRSMW2llFFFcuVJdQle3JA4kKz1syguOusRs84HlYIhhUwblECdwfwhP0dAMNpaIReKUZtTdIZqXInPHjKlOb0ZmNQvLWR2ml6kfM1kYiHeOMgnoICQCs5kM9z3kn4WNQZeIE629FzR/ln0shhul4qhOxVBz32ULEODIClgrImQeNyB4gGYmIpptsGYy97hoLkOG2QcblCYssX4mOTCjb6IIJh/54EiZEdYeI+DxDapZIcEuxSdgspmL4olpPygtTe7t+UctZ/TPig/BP7oI1pTQRZwmfp/a2T3JHMz9iIF1ErrOLtK3Zuk9DFcgDJx0EgEfg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761211587; c=relaxed/relaxed;
-	bh=7iEQ8Hi8YDiUH5n8pt36cUx2rV4zMT41Lo5e4XDnYiY=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=JSti8MMUNWMPxa1ewV3pn5f6/DJlJ+U+gGaxtTE5auO0ybeoFAuVE0nNQdUypTHkOxfkghIagEKcwEXF3ssTWsVUt2Y59TkpCzH9Tt0fxV74fWhAkmHRNoR6/Yu1B5N9OiZ/ZcN9fc5YJzx2pycon+5rO3pN7TSa4Rgsjyk+8zQpAFI8zb2YwJ/wnGPb5N/TgMGhQ/2jNE1TeT33llFx/aLnLnPDB5MYDE+mAcBpDU2Ls8esW/EhJj4DFJOiXLXVsQI6w7IFrSzhcly1DWwIdbAmUmIL2T/pcH/NK2kMjBSE8ljcAYk209YIWdouv/u2Izi/kXeofWkztOJFzx9lbg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com; dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=Wo2xU9lB; dkim-atps=neutral; spf=pass (client-ip=185.171.202.116; helo=smtpout-04.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org) smtp.mailfrom=bootlin.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=bootlin.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=bootlin.com header.i=@bootlin.com header.a=rsa-sha256 header.s=dkim header.b=Wo2xU9lB;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=bootlin.com (client-ip=185.171.202.116; helo=smtpout-04.galae.net; envelope-from=herve.codina@bootlin.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 368 seconds by postgrey-1.37 at boromir; Thu, 23 Oct 2025 20:26:26 AEDT
-Received: from smtpout-04.galae.net (smtpout-04.galae.net [185.171.202.116])
+	t=1761215349; c=relaxed/relaxed;
+	bh=M655niNu1F60oMsz8OIWvZ23nx9ADbBehej1FpVvA8s=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=FjaIG3X7vgkCg/MnNIf+UdM4LBsscxHGCLIXtxauopsDVerHWy9JnytK4x5SkOPVYa0EOOj0zxwMI9ox7FHl+SrB1WrM2TOnLT078CxvpiVkGZUKPvNyn0oXKYR5u9TMGzZElQiZIeJPMYvqk0pYNfYVxzJzC6cLoJrUx8wd8pTuPXiVsvlA/xYkNt/cjV/iaEvUH7PoO+5W+C2ynyNLf0PgFHlkMrf7QMnutSA3t9CrNZYbinxZD0wDeEn+orYm9ZhUq1CKucgzp4u6EIyYpIpXyvI1WIwZw1yOO3+ZXLzT+AuGaVXZSX/gJaeo3rXsipnEn8I/fFkIaqBfjwEOTA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=83.223.78.240; helo=bmailout2.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org) smtp.helo=bmailout2.hostsharing.net
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=bmailout2.hostsharing.net (client-ip=83.223.78.240; helo=bmailout2.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org)
+Received: from bmailout2.hostsharing.net (bmailout2.hostsharing.net [83.223.78.240])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4csgdZ4zD7z3bW7
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2025 20:26:24 +1100 (AEDT)
-Received: from smtpout-01.galae.net (smtpout-01.galae.net [212.83.139.233])
-	by smtpout-04.galae.net (Postfix) with ESMTPS id 72319C0C40D;
-	Thu, 23 Oct 2025 09:19:52 +0000 (UTC)
-Received: from mail.galae.net (mail.galae.net [212.83.136.155])
-	by smtpout-01.galae.net (Postfix) with ESMTPS id 435186062C;
-	Thu, 23 Oct 2025 09:20:12 +0000 (UTC)
-Received: from [127.0.0.1] (localhost [127.0.0.1]) by localhost (Mailerdaemon) with ESMTPSA id 380AE102F2461;
-	Thu, 23 Oct 2025 11:19:48 +0200 (CEST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=bootlin.com; s=dkim;
-	t=1761211211; h=from:subject:date:message-id:to:cc:mime-version:content-type:
-	 content-transfer-encoding:in-reply-to:references;
-	bh=7iEQ8Hi8YDiUH5n8pt36cUx2rV4zMT41Lo5e4XDnYiY=;
-	b=Wo2xU9lBz8Jw4UJwCyntVY7xyccvqn7f1+wuWv5YaV2fAdkDhA47yH76qdNdTSuVHgCu03
-	XX3o75P1rdEfETnXTdyp8/U7e8uEiCDbseFwXrp5CvxLFxfxcoRIP2tj+F/W2uunnDM8bZ
-	R3yDEYbUNzTyNSBVO2fgk5IsBcu05e9g3q8CX4blVX81HCW6h6MrFaCD3ZRmckv4S4h+s6
-	jka7guD/tLqD/DQNNLdjQXmXOO1l13BgR/gUIOh5eRA6Vt5d/C/qcugJ/MfpK7SRqEtU9H
-	Rrpd+KGt2a+hK1rDiDuGm4mDfZUnSG/6ou7GbepX20xKHGr5jA3zrhyIfdUoYQ==
-Date: Thu, 23 Oct 2025 11:19:47 +0200
-From: Herve Codina <herve.codina@bootlin.com>
-To: Manivannan Sadhasivam <mani@kernel.org>
-Cc: Christian Zigotzky <chzigotzky@xenosoft.de>, Bjorn Helgaas
- <helgaas@kernel.org>, Lukas Wunner <lukas@wunner.de>, Manivannan Sadhasivam
- <manivannan.sadhasivam@oss.qualcomm.com>, Ilpo =?UTF-8?B?SsOkcnZpbmVu?=
- <ilpo.jarvinen@linux.intel.com>, linux-pci@vger.kernel.org, mad skateman
- <madskateman@gmail.com>, "R.T.Dickinson" <rtd2@xtra.co.nz>, Christian
- Zigotzky <info@xenosoft.de>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- hypexed@yahoo.com.au, Darren Stevens <darren@stevens-zone.net>,
- debian-powerpc@lists.debian.org, Thomas Petazzoni
- <thomas.petazzoni@bootlin.com>
-Subject: Re: [PPC] Boot problems after the pci-v6.18-changes
-Message-ID: <20251023111947.6e960216@bootlin.com>
-In-Reply-To: <vc7ehnmr6tjkkag3j543zwprwqdjyttovav2moo5ravpzzkmbi@qe4tds4e7nc6>
-References: <20251015101304.3ec03e6b@bootlin.com>
-	<A11312DD-8A5A-4456-B0E3-BC8EF37B21A7@xenosoft.de>
-	<20251015135811.58b22331@bootlin.com>
-	<4rtktpyqgvmpyvars3w3gvbny56y4bayw52vwjc3my3q2hw3ew@onz4v2p2uh5i>
-	<20251023093813.3fbcd0ce@bootlin.com>
-	<vc7ehnmr6tjkkag3j543zwprwqdjyttovav2moo5ravpzzkmbi@qe4tds4e7nc6>
-Organization: Bootlin
-X-Mailer: Claws Mail 4.3.1 (GTK 3.24.43; x86_64-redhat-linux-gnu)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4csj1w21qSz304l
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2025 21:29:06 +1100 (AEDT)
+Received: from h08.hostsharing.net (h08.hostsharing.net [83.223.95.28])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256
+	 client-signature RSA-PSS (4096 bits) client-digest SHA256)
+	(Client CN "*.hostsharing.net", Issuer "RapidSSL TLS RSA CA G1" (verified OK))
+	by bmailout2.hostsharing.net (Postfix) with ESMTPS id E9931200C2CB;
+	Thu, 23 Oct 2025 12:29:00 +0200 (CEST)
+Received: by h08.hostsharing.net (Postfix, from userid 100393)
+	id D4EA64A12; Thu, 23 Oct 2025 12:29:00 +0200 (CEST)
+Date: Thu, 23 Oct 2025 12:29:00 +0200
+From: Lukas Wunner <lukas@wunner.de>
+To: Shuai Xue <xueshuai@linux.alibaba.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org, bhelgaas@google.com,
+	kbusch@kernel.org, sathyanarayanan.kuppuswamy@linux.intel.com,
+	mahesh@linux.ibm.com, oohall@gmail.com, Jonathan.Cameron@huawei.com,
+	terry.bowman@amd.com, tianruidong@linux.alibaba.com
+Subject: Re: [PATCH v6 4/5] PCI/ERR: Use pcie_aer_is_native() to check for
+ native AER control
+Message-ID: <aPoDbKebJD30NjKG@wunner.de>
+References: <20251015024159.56414-1-xueshuai@linux.alibaba.com>
+ <20251015024159.56414-5-xueshuai@linux.alibaba.com>
+ <aPYMO2Eu5UyeEvNu@wunner.de>
+ <0fe95dbe-a7ba-4882-bfff-0197828ee6ba@linux.alibaba.com>
+ <aPZAAPEGBNk_ec36@wunner.de>
+ <645adbb6-096f-4af3-9609-ddc5a6f5239a@linux.alibaba.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -83,107 +65,41 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
-X-Last-TLS-Session-Version: TLSv1.3
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <645adbb6-096f-4af3-9609-ddc5a6f5239a@linux.alibaba.com>
 
-Hi Manivannan,
-
-On Thu, 23 Oct 2025 14:19:46 +0530
-Manivannan Sadhasivam <mani@kernel.org> wrote:
-
-> On Thu, Oct 23, 2025 at 09:38:13AM +0200, Herve Codina wrote:
-> > Hi Manivannan,
-> > 
-> > On Wed, 15 Oct 2025 18:20:22 +0530
-> > Manivannan Sadhasivam <mani@kernel.org> wrote:
-> >   
-> > > Hi Herve,
-> > > 
-> > > On Wed, Oct 15, 2025 at 01:58:11PM +0200, Herve Codina wrote:  
-> > > > Hi Christian,
-> > > > 
-> > > > On Wed, 15 Oct 2025 13:30:44 +0200
-> > > > Christian Zigotzky <chzigotzky@xenosoft.de> wrote:
-> > > >     
-> > > > > Hello Herve,
-> > > > >     
-> > > > > > On 15 October 2025 at 10:39 am, Herve Codina <herve.codina@bootlin.com> wrote:
-> > > > > > 
-> > > > > > ﻿Hi All,
-> > > > > > 
-> > > > > > I also observed issues with the commit f3ac2ff14834 ("PCI/ASPM: Enable all
-> > > > > > ClockPM and ASPM states for devicetree platforms")      
-> > > > > 
-> > > > > Thanks for reporting.
-> > > > >     
-> > > > > > 
-> > > > > > Also tried the quirk proposed in this discussion (quirk_disable_aspm_all)
-> > > > > > an the quirk also fixes the timing issue.      
-> > > > > 
-> > > > > Where have you added quirk_disable_aspm_all?    
-> > > > 
-> > > > --- 8< ---
-> > > > diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> > > > index 214ed060ca1b..a3808ab6e92e 100644
-> > > > --- a/drivers/pci/quirks.c
-> > > > +++ b/drivers/pci/quirks.c
-> > > > @@ -2525,6 +2525,17 @@ static void quirk_disable_aspm_l0s_l1(struct pci_dev *dev)
-> > > >   */
-> > > >  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ASMEDIA, 0x1080, quirk_disable_aspm_l0s_l1);
-> > > >  
-> > > > +static void quirk_disable_aspm_all(struct pci_dev *dev)
-> > > > +{
-> > > > +       pci_info(dev, "Disabling ASPM\n");
-> > > > +       pci_disable_link_state(dev, PCIE_LINK_STATE_ALL);    
-> > > 
-> > > Could you please try disabling L1SS and L0s separately to see which one is
-> > > causing the issue? Like,
-> > > 
-> > > 	pci_disable_link_state(dev, PCIE_LINK_STATE_L1_1 | PCIE_LINK_STATE_L1_2);
-> > > 
-> > > 	pci_disable_link_state(dev, PCIE_LINK_STATE_L0S);
-> > >   
-> > 
-> > I did tests and here are the results:
-> > 
-> >   - quirk pci_disable_link_state(dev, PCIE_LINK_STATE_ALL)
-> >     Issue not present
-> > 
-> >   - quirk pci_disable_link_state(dev, PCIE_LINK_STATE_L1_1 | PCIE_LINK_STATE_L1_2)
-> >     Issue present, timings similar to timings already reported
-> >     (hundreds of ms).
-> > 
-> >   - quirk pci_disable_link_state(dev, PCIE_LINK_STATE_L0S);
-> >     Issue present, timings still incorrect but lower
-> >       64 bytes from 192.168.32.100: seq=10 ttl=64 time=16.738 ms
-> >       64 bytes from 192.168.32.100: seq=11 ttl=64 time=39.500 ms
-> >       64 bytes from 192.168.32.100: seq=12 ttl=64 time=62.178 ms
-> >       64 bytes from 192.168.32.100: seq=13 ttl=64 time=84.709 ms
-> >       64 bytes from 192.168.32.100: seq=14 ttl=64 time=107.484 ms
-> >   
+On Mon, Oct 20, 2025 at 10:45:31PM +0800, Shuai Xue wrote:
+> 	if (host->native_aer || pcie_ports_native) {
+> 		pcie_clear_device_status(bridge);
+> 		pci_aer_clear_nonfatal_status(bridge);
+> 	}
 > 
-> This is weird. Looks like all ASPM states (L0s, L1ss) are contributing to the
-> increased latency, which is more than what should occur. This makes me ignore
-> inspecting the L0s/L1 exit latency fields :/
+> This code clears both the PCIe Device Status register and AER status
+> registers when in native AER mode.
 > 
-> Bjorn sent out a patch [1] that enables only L0s and L1 by default. But it
-> might not help you. I don't honestly know how you are seeing this much of the
-> latency. This could the due to an issue in the PCI component (host or endpoint),
-> or even the board routing. Identifying which one is causing the issue is going
-> to be tricky as it would require some experimentation.
-
-I've just tested the patch from Bjorn and I confirm that it doesn't fix my issue.
-
+> pcie_clear_device_status() is renamed from
+> pci_aer_clear_device_status(). Does it intends to clear only AER error
+> status?
 > 
-> If you are motivated, we can start to isolate this issue to the endpoint first.
-> Is it possible for you to connect a different PCI card to your host and check
-> whether you are seeing the increased latency? If the different PCI card is not
-> exhibiting the same behavior, then the current device is the culprit and we
-> should be able to quirk it.
+> - BIT 0: Correctable Error Detected
+> - BIT 1: Non-Fatal Error Detected
+> - BIT 2: Fatal Error Detected
+> - BIT 3: Unsupported Request Detected
+> 
+> From PCIe spec, BIT 0-2 are logged for functions supporting Advanced
+> Error Handling.
+> 
+> I am not sure if we should clear BIT 3, and also BIT 6 (Emergency Power
+> Reduction Detected) and in case a AER error.
 
-Will see what I can do.
+AFAIUI, bits 0 to 3 are what the PCIe r7.0 sec 6.2.1 calls
+"baseline capability" error reporting.  They're supported
+even if AER is not supported.
 
-Best regards,
-Hervé
+Bit 6 has nothing to do with this AFAICS.
+
+Thanks,
+
+Lukas
 
