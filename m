@@ -1,58 +1,58 @@
-Return-Path: <linuxppc-dev+bounces-13208-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13209-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 13585CCD1BC
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Oct 2025 12:27:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4517CCD1BC
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 23 Oct 2025 12:27:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cslfN33gXz3bfF;
-	Thu, 23 Oct 2025 23:27:24 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.12
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761222444;
-	cv=none; b=f3UjzMNRJaVYMAHBHuxnbFaYOEveCvw2I3cPlZQ6ND4ri1vQqQr/XeXI58t6O0VcDiD5WwDKr49eGeROOYKsyB7EVm1EaAZHP8kb2pKCafe/NcJhYdCOboGhlzSm2HsOXac51nuIHfTKPt03Vy8Ym6w6NNKZOosHtEE1B7ireVeXyQCuJlOg8/d486DJFsqaJDxmienvIrdL9xbx9Qy+bPMiOd4B0V09d9KseaOcEzzWp2mWe2HOcZCOFxxU7YjL0wbirMIsC0+NaSM5Q1YOPs2Ee6bi/fbL7PHK36SIYOXd71cqZxHrmYwRjqS+Taeya6x/MXsgQtEsPEs61yr2UA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cslfb3BZjz3bfZ;
+	Thu, 23 Oct 2025 23:27:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761222455;
+	cv=none; b=JgkHCT3U7daXccVM3GGcHEyLNFb2O7AmG2kx9DGdy9PYJKnZo+N1g9hgn3z/6+KOhlMC7gvbS6wa8yUKoy9HgS44H+2uy3yt0DvpSzpY6zJX05K+h053xHxHI+/4R9+hsnHpjWMWvCPm5Ax2uYhNXGH+08Cj2uRNTHzzGyYLpxWrPy44ZD1pgtPZWIapVUekrn/I5OzAjZhjd7iYJLnk4vywhMiZxWGoE92nXp51M1uCsD6oSRwCTNhvGQlUrLOpKIiFNPxCTItWMjk75OsUpK/7RkLbH3UML8xrABqioTZbAg/t6M8hNnoUjRaL4wt+Lo8mKHultv3+BcYzSCOMiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761222444; c=relaxed/relaxed;
-	bh=kHoEh07Rq7UXNqOAmS/YYzA4Gr5MMFu1YNenh67VbJI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=YZp3KRFUCK/7TdTz4v1bfDT8FWjaKZdd1rZvr4F0aLtUmGK2R8HGPDtscTvBP9/qT/M/ExAQzGUccZd/JFh7vt2kP+/7xLfT+C00piS9YODVqEa/Tna1cWkBDYLoONMONWtx+LtK9n0FTG0iRCPDxr5eiEBfDQ94Blb6ItpHge/hh2gDjn6LdzHkGfZs12y8+0ESZIgH973EzwXm0fqghguYwsX4ODkkI+ZEhBQ45FWZ3X6zjmEQ1LGoDYwfR+VcdQw3o6dQ2a04JUHlWNF5QzUbRTCNuTbwvOX1dpCTfmpqFJvHEtKB/FBU3ROnKEhrWdjzo3DEOqJ8Vz4ifmgNCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fcaD4Fbv; dkim-atps=neutral; spf=pass (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=fabio.m.de.francesco@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	t=1761222455; c=relaxed/relaxed;
+	bh=+RhTVrv+gILZPbKoHLSUtLHIVpCkmpeE+zfc6fDthvI=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Uvg6bRSu9h9EjBllSVkSau8IxDzGRr0IDWEAAPH6aAILobecq8qrznYtApb98mQIHZrU7IFoEW0gGLmWD4UMUzLkIpiw4BbWhuZ2xatIVufFJ3/adfyMU5bm+5LHIGPXBodkwqUa093E2+HrBU/i+zMngc7UB/YdhpZ095U48AYh8TLMU6aUEbSD8+esVqziIYInlkanJ3jSLieGzqzfWAaoAiL1ZP1L3MPcZMYi46QumOjJ6TWtzDW58XBWRYHahqDFLH7aw13dTu3PQyQSP5kfQ1nPzrCUSjGXG49GnNwlPNwefT9FKNH/sYfH6G0+ipvI1QUO2xapFJ9BZTzvxA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lbLEMXxL; dkim-atps=neutral; spf=pass (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=fabio.m.de.francesco@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=fcaD4Fbv;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=lbLEMXxL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=fabio.m.de.francesco@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.10; helo=mgamail.intel.com; envelope-from=fabio.m.de.francesco@linux.intel.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 63 seconds by postgrey-1.37 at boromir; Thu, 23 Oct 2025 23:27:34 AEDT
+Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.10])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cslfM3g1Fz304l
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2025 23:27:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cslfZ43plz3bf4
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 23 Oct 2025 23:27:34 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1761222443; x=1792758443;
-  h=from:to:cc:subject:date:message-id:in-reply-to:
-   references:mime-version:content-transfer-encoding;
-  bh=3PEBfRTe7JZt2iqS1pUdjJp09lBaWXbuiuUIHEzIPCE=;
-  b=fcaD4FbvrJx4cs/1WKML5KYsovIDgzjYTpb6ZATCMqT0NcbgE5/ysRIY
-   PQAn8Q3+YAWEeY1fV9D6BCghF2i1P210K7RI6FmvghuTZLbThxzV8kKYA
-   YMoB9OuAbkiy4aWpoU8Od6BXbTASMlGV0r4iBC01P9YRMVWi4eD5Hr9Dp
-   /X3xqsAanDjp8My+8bgWFEmwbJvHi1ghIztAmX3n/d4dmRcPqJakY5Ecr
-   C3p82xV1xDbCnoZLirvSeoAiNU5XJym4jIbD684Ar1QlwiKBsq2rNYjOK
-   oI2sAeDlwpgVev4+RIB6usEmRUC83rncZNvB/gYWIYbZ11YW7PzgcGgLW
+  t=1761222455; x=1792758455;
+  h=from:to:cc:subject:date:message-id:mime-version:
+   content-transfer-encoding;
+  bh=WkRBZU6DdRBPBvlJ2N3/YkvCzsXVTcOCM1yMrI1FnBQ=;
+  b=lbLEMXxL/WhpEmnNNq5BHP3Gvm09gU82b1n8SfHeDGZ2W9kyHQeH5r7f
+   7eIKCpmvvNZNRuKXl0/T3Y1Il8IsvOKMov8DCyxEDgUDQR19L8S4/QMrU
+   PONhI7HboDvIktkXjT5t0ZpaV15Mg8a1uJiMhPkSt2UPnhOBO4Ezht4b6
+   0RyrO2gfGaZ1HSkGMIZT+cKMDIP13CB+D1DvGJx4qa9cB0JUKr6uU9ggb
+   27ypK8J5A068arfAMpAaIFu0FMZO/5clKVugO8o9PwHNyeXhFUSStSOX0
+   6nH1oqVV5yP//pUl+gJP0AlYuaCmdi73r6aRxlJhtO2QziS2dk4M1q/Kk
    g==;
-X-CSE-ConnectionGUID: Zp0dVq6eQn2KLIR5BtjuFQ==
-X-CSE-MsgGUID: nbqZrKNyReCqPmXR6lecjw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="74826042"
+X-CSE-ConnectionGUID: HC/JtmeTSeeN/Qp3HB/4zA==
+X-CSE-MsgGUID: ngIQ2dIuTNuqBMb8SGwMVQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="74734857"
 X-IronPort-AV: E=Sophos;i="6.19,249,1754982000"; 
-   d="scan'208";a="74826042"
+   d="scan'208";a="74734857"
 Received: from fmviesa003.fm.intel.com ([10.60.135.143])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2025 05:27:21 -0700
-X-CSE-ConnectionGUID: xiVafP0KT26HI5G6NsDhQw==
-X-CSE-MsgGUID: h1ze7RpSS5+Tb8XdI3Q+8g==
+  by fmvoesa104.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2025 05:26:26 -0700
+X-CSE-ConnectionGUID: rbNur2/2SmyTNh2buCmzcQ==
+X-CSE-MsgGUID: Thbs1WH3RtSINmLU3Tnm6g==
 X-ExtLoop1: 1
 Received: from unknown (HELO fdefranc-mobl3.igk.intel.com) ([10.237.142.160])
-  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2025 05:27:11 -0700
+  by fmviesa003-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 23 Oct 2025 05:26:16 -0700
 From: "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>
 To: linux-cxl@vger.kernel.org
 Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
@@ -99,12 +99,10 @@ Cc: "Rafael J . Wysocki" <rafael@kernel.org>,
 	linux-acpi@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-pci@vger.kernel.org
-Subject: [PATCH 5/6 v6] acpi/ghes: Add helper to copy CXL protocol error info to work struct
-Date: Thu, 23 Oct 2025 14:25:40 +0200
-Message-ID: <20251023122612.1326748-6-fabio.m.de.francesco@linux.intel.com>
+Subject: [PATCH 0/6 v6] Make ELOG and GHES log and trace consistently
+Date: Thu, 23 Oct 2025 14:25:35 +0200
+Message-ID: <20251023122612.1326748-1-fabio.m.de.francesco@linux.intel.com>
 X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20251023122612.1326748-1-fabio.m.de.francesco@linux.intel.com>
-References: <20251023122612.1326748-1-fabio.m.de.francesco@linux.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -120,116 +118,87 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Make a helper out of cxl_cper_post_prot_err() that checks the CXL agent
-type and copy the CPER CXL protocol errors information to a work data
-structure.
+When Firmware First is enabled, BIOS handles errors first and then it
+makes them available to the kernel via the Common Platform Error Record
+(CPER) sections (UEFI 2.10 Appendix N). Linux parses the CPER sections
+via one of two similar paths, either ELOG or GHES.
 
-Signed-off-by: Fabio M. De Francesco <fabio.m.de.francesco@linux.intel.com>
----
- drivers/acpi/apei/ghes.c | 42 ++++++++++++++++++++++++++--------------
- include/cxl/event.h      | 10 ++++++++++
- 2 files changed, 37 insertions(+), 15 deletions(-)
+Currently, ELOG and GHES show some inconsistencies in how they print to
+the kernel log as well as in how they report to userspace via trace
+events.
 
-diff --git a/drivers/acpi/apei/ghes.c b/drivers/acpi/apei/ghes.c
-index e69ae864f43d..2f4632d9855a 100644
---- a/drivers/acpi/apei/ghes.c
-+++ b/drivers/acpi/apei/ghes.c
-@@ -734,20 +734,12 @@ int cxl_cper_sec_prot_err_valid(struct cxl_cper_sec_prot_err *prot_err)
- }
- EXPORT_SYMBOL_GPL(cxl_cper_sec_prot_err_valid);
- 
--static void cxl_cper_post_prot_err(struct cxl_cper_sec_prot_err *prot_err,
--				   int severity)
-+int cxl_cper_setup_prot_err_work_data(struct cxl_cper_prot_err_work_data *wd,
-+				      struct cxl_cper_sec_prot_err *prot_err,
-+				      int severity)
- {
--	struct cxl_cper_prot_err_work_data wd;
- 	u8 *dvsec_start, *cap_start;
- 
--	if (cxl_cper_sec_prot_err_valid(prot_err))
--		return;
--
--	guard(spinlock_irqsave)(&cxl_cper_prot_err_work_lock);
--
--	if (!cxl_cper_prot_err_work)
--		return;
--
- 	switch (prot_err->agent_type) {
- 	case RCD:
- 	case DEVICE:
-@@ -756,20 +748,40 @@ static void cxl_cper_post_prot_err(struct cxl_cper_sec_prot_err *prot_err,
- 	case RP:
- 	case DSP:
- 	case USP:
--		memcpy(&wd.prot_err, prot_err, sizeof(wd.prot_err));
-+		memcpy(&wd->prot_err, prot_err, sizeof(wd->prot_err));
- 
- 		dvsec_start = (u8 *)(prot_err + 1);
- 		cap_start = dvsec_start + prot_err->dvsec_len;
- 
--		memcpy(&wd.ras_cap, cap_start, sizeof(wd.ras_cap));
--		wd.severity = cper_severity_to_aer(severity);
-+		memcpy(&wd->ras_cap, cap_start, sizeof(wd->ras_cap));
-+		wd->severity = cper_severity_to_aer(severity);
- 		break;
- 	default:
- 		pr_err_ratelimited("CXL CPER invalid agent type: %d\n",
- 				   prot_err->agent_type);
--		return;
-+		return -EINVAL;
- 	}
- 
-+	return 0;
-+}
-+EXPORT_SYMBOL_GPL(cxl_cper_setup_prot_err_work_data);
-+
-+static void cxl_cper_post_prot_err(struct cxl_cper_sec_prot_err *prot_err,
-+				   int severity)
-+{
-+	struct cxl_cper_prot_err_work_data wd;
-+
-+	if (cxl_cper_sec_prot_err_valid(prot_err))
-+		return;
-+
-+	guard(spinlock_irqsave)(&cxl_cper_prot_err_work_lock);
-+
-+	if (!cxl_cper_prot_err_work)
-+		return;
-+
-+	if (cxl_cper_setup_prot_err_work_data(&wd, prot_err, severity))
-+		return;
-+
- 	if (!kfifo_put(&cxl_cper_prot_err_fifo, wd)) {
- 		pr_err_ratelimited("CXL CPER kfifo overflow\n");
- 		return;
-diff --git a/include/cxl/event.h b/include/cxl/event.h
-index 4d7d1036ea9c..94081aec597a 100644
---- a/include/cxl/event.h
-+++ b/include/cxl/event.h
-@@ -322,12 +322,22 @@ static inline int cxl_cper_prot_err_kfifo_get(struct cxl_cper_prot_err_work_data
- 
- #ifdef CONFIG_ACPI_APEI_PCIEAER
- int cxl_cper_sec_prot_err_valid(struct cxl_cper_sec_prot_err *prot_err);
-+int cxl_cper_setup_prot_err_work_data(struct cxl_cper_prot_err_work_data *wd,
-+				      struct cxl_cper_sec_prot_err *prot_err,
-+				      int severity);
- #else
- static inline int
- cxl_cper_sec_prot_err_valid(struct cxl_cper_sec_prot_err *prot_err)
- {
- 	return -EOPNOTSUPP;
- }
-+static inline int
-+cxl_cper_setup_prot_err_work_data(struct cxl_cper_prot_err_work_data *wd,
-+				  struct cxl_cper_sec_prot_err *prot_err,
-+				  int severity)
-+{
-+	return -EOPNOTSUPP;
-+}
- #endif
- 
- #endif /* _LINUX_CXL_EVENT_H */
+Make the two mentioned paths act similarly for what relates to logging
+and tracing.
+
+--- Changes for v6 ---
+
+	- Rename the helper that copies the CPER CXL protocol error
+	  information to work struct (Dave)
+	- Return -EOPNOTSUPP (instead of -EINVAL) from the two helpers if
+	  ACPI_APEI_PCIEAER is not defined (Dave)
+
+--- Changes for v5 ---
+
+	- Add 3/6 to select ACPI_APEI_PCIEAER for GHES
+	- Add 4,5/6 to move common code between ELOG and GHES out to new
+	  helpers use them in 6/6 (Jonathan).
+
+--- Changes for v4 ---
+
+	- Re-base on top of recent changes of the AER error logging and
+	  drop obsoleted 2/4 (Sathyanarayanan)
+	- Log with pr_warn_ratelimited() (Dave)
+	- Collect tags
+
+--- Changes for v3 ---
+
+    1/4, 2/4:
+	- collect tags; no functional changes
+    3/4:
+	- Invert logic of checks (Yazen)
+	- Select CONFIG_ACPI_APEI_PCIEAER (Yazen)
+    4/4:
+	- Check serial number only for CXL devices (Yazen)
+	- Replace "invalid" with "unknown" in the output of a pr_err()
+	  (Yazen)
+	
+--- Changes for v2 ---
+
+	- Add a patch to pass log levels to pci_print_aer() (Dan)
+	- Add a patch to trace CPER CXL Protocol Errors
+	- Rework commit messages (Dan)
+	- Use log_non_standard_event() (Bjorn)
+
+--- Changes for v1 ---
+
+	- Drop the RFC prefix and restart from PATCH v1
+	- Drop patch 3/3 because a discussion on it has not yet been
+	  settled
+	- Drop namespacing in export of pci_print_aer while() (Dan)
+	- Don't use '#ifdef' in *.c files (Dan)
+	- Drop a reference on pdev after operation is complete (Dan)
+	- Don't log an error message if pdev is NULL (Dan)
+
+Fabio M. De Francesco (6):
+  ACPI: extlog: Trace CPER Non-standard Section Body
+  ACPI: extlog: Trace CPER PCI Express Error Section
+  acpi/ghes: Make GHES select ACPI_APEI_PCIEAER
+  acpi/ghes: Add helper for CPER CXL protocol errors validity checks
+  acpi/ghes: Add helper to copy CPER CXL protocol error information to
+    work struct
+  ACPI: extlog: Trace CPER CXL Protocol Error Section
+
+ drivers/acpi/Kconfig       |  1 +
+ drivers/acpi/acpi_extlog.c | 60 ++++++++++++++++++++++++++++++++++++
+ drivers/acpi/apei/Kconfig  |  1 +
+ drivers/acpi/apei/ghes.c   | 62 +++++++++++++++++++++++++-------------
+ drivers/cxl/core/ras.c     |  6 ++++
+ drivers/pci/pcie/aer.c     |  2 +-
+ include/cxl/event.h        | 22 ++++++++++++++
+ 7 files changed, 132 insertions(+), 22 deletions(-)
+
+
+base-commit: 552c50713f273b494ac6c77052032a49bc9255e2
 -- 
 2.51.0
 
