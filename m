@@ -1,36 +1,112 @@
-Return-Path: <linuxppc-dev+bounces-13334-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13335-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A325FCCF9E5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Oct 2025 13:38:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CF313CCF9EA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Oct 2025 14:07:01 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwF2p71Cmz2yrl;
-	Tue, 28 Oct 2025 00:38:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761572322;
-	cv=none; b=RZomRZcOJFbDXjbdWndwZs1WS0FnM2bvfTEHE62EvkYP0elbKt0bV4ifXnMaxZkA3fC82OyGH67ioYUCEaRdBJgcPdXmo71z4hu5N5kWhfalgAZ12FI46Ssl3bqOEV3hhPvSpfjk/MeXQhr5pOIwyT5ED+axo0y2Es1pY+uZXGQsa3vV/WbmnJqw9D9nV3NGfOovX1MS5U4tCQToEjrDeUia7KEbG39CtQuNAUD0SfgR5Q2wWFP2dURr3KcOoWjPkcsc25ZAm9Rdci2cG/vFun3XFOpe3vpQkEqDPFnlSBjB/OMCDvz0827I43nV0KrDgvsQFB8zLS7AmZFWsfi7Rg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwFgS11L7z2xsq;
+	Tue, 28 Oct 2025 01:07:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761574020;
+	cv=none; b=ghsu+ZuME6bztcwngDTo5rTJDza2Vmjtdw+87MKMsEwmPBOw/uKOHC4bxCjYj4NPOR9G1I/ZFq2hCJL4DGO2qz/RBPht7L+uebxUIu71cWxwqLx51Ti3zp0tZ38x/o2tNrpaetpEMfPfx0BV0EeGHqHAxREkhHVZWtwK13Z/dQ3oBee7AMgAeUApHPZF6wkp9XzQutPWqlQyCFSgRVoDKKCX09GgIiIs5mLddvx+KvSKL/kOyI8Y6GYrZahGzMbKtRkwKVjVXRcd9MxpPdMxhLc4oJjGSren+3DMtVkQ9mFuYT0JjUSTFIuuywpz1jxTSNJPpaXGAnkNs/dUDadcMw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761572322; c=relaxed/relaxed;
-	bh=Yg4tHkrWB8iD6I0E177EhXaJTLbrmVH+67p7EVU8ik0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gibYF3a46x6igz1ppKbsl2qikJThR9vtbawJSzDxyViZ5FlqjFFTtz6obKFVQOpqOwisN2jaACnvd5hWlxBo7j02m5mkZvhP0qdJxLv+XpnjQhLRuQprnJGRmqKoeck04r7ukR7Ecud4DMRGTFXpuzPxNvnvoVZOlei73f5NKkTdt78jYUWtxsjBHycFyUPz/r2MhJeSyLcP6hfdCzVn8tA03yynQWUiJurez7GeJaDsBtMIZbaDo6BGeuP8oifkjvlT6VhiHSLfXtBqxsUPut7Gn/NARmSrK2UOAO4pxwLbJ0DYWHelvMd7nxPbwbi+1ijK/0gHeDeoS/Tfyi0sCg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwF2n5g40z2ypW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 00:38:41 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 593A4175D;
-	Mon, 27 Oct 2025 06:38:02 -0700 (PDT)
-Received: from [10.57.68.196] (unknown [10.57.68.196])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0FD233F673;
-	Mon, 27 Oct 2025 06:38:02 -0700 (PDT)
-Message-ID: <1db69026-199c-4cee-bb3b-1217f8a3afad@arm.com>
-Date: Mon, 27 Oct 2025 14:38:00 +0100
+	t=1761574020; c=relaxed/relaxed;
+	bh=kjdzQm5exJwMkoECe+jmGekr6J14A9CfzON8t7SsrV4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=eBjQuX2IrcTlyB+xAB8FyeSCTg/xOImDteAyBwWAqo92e3pRUHkY22GVdTIok1lDNla7APzpK96B1fa0Q3jGru5QYDqBKX9Dp46LD0YGvcC+M/10DLxZTj/SqERMzXs0A30qdrAihfdocFtXDP9qfLLfCJLzHAlK5rWAKuzLMuIwpchL26PonFwqJgkY0qLMGpWCSfAwD1nY2u7AvaThLHhAGRj2C5OE/p354pVLnIAEqpn9rixxbOQtgPPbZCGh16sZCqaQ0GcPv/DFMgtcKEvEA9Z4lDe6n+sa2f4RvG0jBeIGVV8hm6AoQxoqD9OQhGlyVPcSnh3klAgYWw3fog==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=PJN+i/fv; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=UYvCBPso; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=PJN+i/fv; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=UYvCBPso; dkim-atps=neutral; spf=pass (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=PJN+i/fv;
+	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=UYvCBPso;
+	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=PJN+i/fv;
+	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=UYvCBPso;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.131; helo=smtp-out2.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
+Received: from smtp-out2.suse.de (smtp-out2.suse.de [195.135.223.131])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwFgR0QbGz2xQ6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 01:06:59 +1100 (AEDT)
+Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by smtp-out2.suse.de (Postfix) with ESMTPS id 21CF41F45B;
+	Mon, 27 Oct 2025 14:06:51 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1761574011; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=kjdzQm5exJwMkoECe+jmGekr6J14A9CfzON8t7SsrV4=;
+	b=PJN+i/fvebPtfIVO990VczsvcpPFlX4L+lrKt5cueUHrSZuTOoDpS9XRAXbAFKABtSEWT9
+	xg1FnK0GjsoZiDn/cD2mfEpOQmbXhJQWhkTlGe2PIzhYbgZ4eZeLfIyScDDzEzsF2B/cX4
+	VAxxIeXRTnVq+WkGTv7KQ49wuvfviCc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1761574011;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=kjdzQm5exJwMkoECe+jmGekr6J14A9CfzON8t7SsrV4=;
+	b=UYvCBPsolpFjoDTCPVJ3UkWAbCXR9XrBURjvdympOicBORo2grSippHdTSCsP52qOalFaV
+	pZ1SvPykKPcPNOAw==
+Authentication-Results: smtp-out2.suse.de;
+	dkim=pass header.d=suse.de header.s=susede2_rsa header.b="PJN+i/fv";
+	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=UYvCBPso
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
+	t=1761574011; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=kjdzQm5exJwMkoECe+jmGekr6J14A9CfzON8t7SsrV4=;
+	b=PJN+i/fvebPtfIVO990VczsvcpPFlX4L+lrKt5cueUHrSZuTOoDpS9XRAXbAFKABtSEWT9
+	xg1FnK0GjsoZiDn/cD2mfEpOQmbXhJQWhkTlGe2PIzhYbgZ4eZeLfIyScDDzEzsF2B/cX4
+	VAxxIeXRTnVq+WkGTv7KQ49wuvfviCc=
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
+	s=susede2_ed25519; t=1761574011;
+	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
+	 mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=kjdzQm5exJwMkoECe+jmGekr6J14A9CfzON8t7SsrV4=;
+	b=UYvCBPsolpFjoDTCPVJ3UkWAbCXR9XrBURjvdympOicBORo2grSippHdTSCsP52qOalFaV
+	pZ1SvPykKPcPNOAw==
+Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(No client certificate requested)
+	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id BF5DF13A9A;
+	Mon, 27 Oct 2025 14:06:50 +0000 (UTC)
+Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
+	by imap1.dmz-prg2.suse.org with ESMTPSA
+	id gH6ILXp8/2jMdwAAD6G6ig
+	(envelope-from <tzimmermann@suse.de>); Mon, 27 Oct 2025 14:06:50 +0000
+From: Thomas Zimmermann <tzimmermann@suse.de>
+To: naresh.kamboju@linaro.org,
+	maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	christophe.leroy@csgroup.eu,
+	lee@kernel.org,
+	danielt@kernel.org,
+	jingoohan1@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	dri-devel@lists.freedesktop.org,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Simona Vetter <simona.vetter@ffwll.ch>
+Subject: [PATCH 1/2] powermac: backlight: Include <linux/of.h>
+Date: Mon, 27 Oct 2025 15:05:40 +0100
+Message-ID: <20251027140646.227025-2-tzimmermann@suse.de>
+X-Mailer: git-send-email 2.51.1
+In-Reply-To: <20251027140646.227025-1-tzimmermann@suse.de>
+References: <20251027140646.227025-1-tzimmermann@suse.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -44,82 +120,71 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 11/13] x86/xen: use lazy_mmu_state when
- context-switching
-To: David Woodhouse <dwmw2@infradead.org>,
- David Hildenbrand <david@redhat.com>, linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
- Andreas Larsson <andreas@gaisler.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
- <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- "David S. Miller" <davem@davemloft.net>, "H. Peter Anvin" <hpa@zytor.com>,
- Ingo Molnar <mingo@redhat.com>, Jann Horn <jannh@google.com>,
- Juergen Gross <jgross@suse.com>, "Liam R. Howlett"
- <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
- Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Peter Zijlstra <peterz@infradead.org>, Ryan Roberts <ryan.roberts@arm.com>,
- Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner
- <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
- Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org, x86@kernel.org
-References: <20251015082727.2395128-1-kevin.brodsky@arm.com>
- <20251015082727.2395128-12-kevin.brodsky@arm.com>
- <f0067f35-1048-4788-8401-f71d297f56f3@redhat.com>
- <348e5f1c5a90e4ab0f14b4d997baf7169745bf04.camel@infradead.org>
- <6ed9f404-9939-4e9f-b5aa-4253bef46df1@arm.com>
- <7324616a8d2631aa8132f725f9f6551e3e6b21dd.camel@infradead.org>
-Content-Language: en-GB
-From: Kevin Brodsky <kevin.brodsky@arm.com>
-In-Reply-To: <7324616a8d2631aa8132f725f9f6551e3e6b21dd.camel@infradead.org>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-Rspamd-Queue-Id: 21CF41F45B
+X-Rspamd-Action: no action
+X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
+X-Spamd-Result: default: False [-3.01 / 50.00];
+	BAYES_HAM(-3.00)[100.00%];
+	MID_CONTAINS_FROM(1.00)[];
+	NEURAL_HAM_LONG(-1.00)[-1.000];
+	R_MISSING_CHARSET(0.50)[];
+	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	NEURAL_HAM_SHORT(-0.20)[-1.000];
+	MIME_GOOD(-0.10)[text/plain];
+	MX_GOOD(-0.01)[];
+	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	FUZZY_RATELIMITED(0.00)[rspamd.com];
+	FREEMAIL_TO(0.00)[linaro.org,linux.ibm.com,ellerman.id.au,gmail.com,csgroup.eu,kernel.org];
+	MIME_TRACE(0.00)[0:+];
+	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
+	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
+	RCPT_COUNT_TWELVE(0.00)[13];
+	ARC_NA(0.00)[];
+	RCVD_COUNT_TWO(0.00)[2];
+	TO_MATCH_ENVRCPT_ALL(0.00)[];
+	RCVD_VIA_SMTP_AUTH(0.00)[];
+	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
+	DBL_BLOCKED_OPENRESOLVER(0.00)[linaro.org:email,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo,suse.de:dkim,suse.de:mid,suse.de:email];
+	FROM_EQ_ENVFROM(0.00)[];
+	DKIM_TRACE(0.00)[suse.de:+];
+	FROM_HAS_DN(0.00)[];
+	RCVD_TLS_ALL(0.00)[];
+	TO_DN_SOME(0.00)[];
+	FREEMAIL_ENVRCPT(0.00)[gmail.com]
 
-On 24/10/2025 17:17, David Woodhouse wrote:
-> On Fri, 2025-10-24 at 17:05 +0200, Kevin Brodsky wrote:
->> On 24/10/2025 16:47, David Woodhouse wrote:
->>> On Thu, 2025-10-23 at 22:06 +0200, David Hildenbrand wrote:
->>>> On 15.10.25 10:27, Kevin Brodsky wrote:
->>>>> We currently set a TIF flag when scheduling out a task that is in
->>>>> lazy MMU mode, in order to restore it when the task is scheduled
->>>>> again.
->>>>>
->>>>> The generic lazy_mmu layer now tracks whether a task is in lazy MMU
->>>>> mode in task_struct::lazy_mmu_state. We can therefore check that
->>>>> state when switching to the new task, instead of using a separate
->>>>> TIF flag.
->>>>>
->>>>> Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
->>>>> ---
->>>> Looks ok to me, but I hope we get some confirmation from x86 / xen
->>>> folks.
->>> I know tglx has shouted at me in the past for precisely this reminder,
->>> but you know you can test Xen guests under QEMU/KVM now and don't need
->>> to actually run Xen? Has this been boot tested?
->> I considered boot-testing a Xen guest (considering the Xen-specific
->> changes in this series), but having no idea how to go about it I quickly
->> gave up... Happy to follow instructions :)
-> https://qemu-project.gitlab.io/qemu/system/i386/xen.html covers booting
-> Xen HVM guests, and near the bottom PV guests too (for which you do
-> need a copy of Xen to run in QEMU with '--kernel xen', and your
-> distro's build should suffice for that).
->
-> Let me know if you have any trouble. Here's a sample command line which
-> works here...
->
-> qemu-system-x86_64 -display none --accel kvm,xen-version=0x40011,kernel-irqchip=split -drive file=/var/lib/libvirt/images/fedora28.qcow2,if=xen -kernel ~/git/linux-2.6/arch/x86/boot/bzImage -append "root=/dev/xvda1 console=ttyS0" -serial mon:stdio
+Include <linux/of.h> to avoid dependency on backlight header to include
+it. Declares of_find_node_by_name(), of_property_match_string() and
+of_node_put().
 
-Thanks this is helpful! Unfortunately lazy_mmu is only used in the PV
-case, so I'd need to run a PV guest. And the distro I'm using (Arch
-Linux) does not have a Xen package :/ It can be built from source from
-the AUR but that looks rather involved. Are there some prebuilt binaries
-I could grab and just point QEMU to?
+Signed-off-by: Thomas Zimmermann <tzimmermann@suse.de>
+Fixes: 243ce64b2b37 ("backlight: Do not include <linux/fb.h> in header file")
+Reported-by: Naresh Kamboju <naresh.kamboju@linaro.org>
+Closes: https://lore.kernel.org/linuxppc-dev/CA+G9fYs8fn5URQx2+s2oNxdUgZkSrdLC0P1tNBW_n-6BaBkK2Q@mail.gmail.com/
+Cc: Thomas Zimmermann <tzimmermann@suse.de>
+Cc: Daniel Thompson (RISCstar) <danielt@kernel.org>
+Cc: Simona Vetter <simona.vetter@ffwll.ch>
+Cc: Lee Jones <lee@kernel.org>
+Cc: Daniel Thompson <danielt@kernel.org>
+Cc: Jingoo Han <jingoohan1@gmail.com>
+Cc: dri-devel@lists.freedesktop.org
+---
+ arch/powerpc/platforms/powermac/backlight.c | 1 +
+ 1 file changed, 1 insertion(+)
 
-- Kevin
+diff --git a/arch/powerpc/platforms/powermac/backlight.c b/arch/powerpc/platforms/powermac/backlight.c
+index 79741370c40c..1796327955c6 100644
+--- a/arch/powerpc/platforms/powermac/backlight.c
++++ b/arch/powerpc/platforms/powermac/backlight.c
+@@ -11,6 +11,7 @@
+ #include <linux/kernel.h>
+ #include <linux/backlight.h>
+ #include <linux/adb.h>
++#include <linux/of.h>
+ #include <linux/pmu.h>
+ #include <linux/atomic.h>
+ #include <linux/export.h>
+-- 
+2.51.1
+
 
