@@ -1,62 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-13320-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13321-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 948B3CCF9E0
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Oct 2025 08:45:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7E3F7CCF9EA
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Oct 2025 08:45:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cw6Vs1nDLz3dX7;
-	Mon, 27 Oct 2025 19:44:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761554645;
-	cv=none; b=Kc70OoLW0icH2RjQZUOTTIeVekL3LMn1OPkW3fiMka0tHMlmBbPkFNwiyGdetQT1NUrm1R8h4LdPhPJ00M5+NVf5SxH3/Lh1kMrGdzeKGwJsDQX1bzjhP75LIKSFFPjj0EscyewnczWen4nWdqHtgE13tshJnsHGSB6f1MRoTm29psB9VgMYnQAi39yRoKm4FSeCxuKEImZpmQTDwL90Wg39wTPPmMMoIAwCqu/FUT7d48S5fFHSyZTmxts0Yp7OmKosk3253wz9A/mJftZfgZFRYKN1aimImn1+Njuxxe+CP+W7bnW4tc3LbyWf+nMGnyMHQoBXGwciyZrNAYTn5w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cw6Vx1Vj5z3bf8;
+	Mon, 27 Oct 2025 19:44:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761554649;
+	cv=none; b=mYa8zA3QT+VaJPBYOFYIEoyn/Wfqxt3MWoiIkWGfNXkKr1bU9SiY9Z4wk7fhkuwuVZVAYHZwO+ea57UXoUPl058ApiRpn7HGR8FXCJtGGx9N9GP6LnzPFC+KNS8FWrJ0MBKndKJvIUBzojdi+QHPwelaH9Uw0Xf1P7mf57WfkF4PIi1kvutjaPeUea29lYis8i/tVYAAoPahm50V7nFzZ42Yw5Ro0r2RLSpY2fCFUNPWM0AAhTBkh4k4TmEov9d8EoiJzZIciyEv4vdph2vGMTV0Z97vxmPR7qcVhwTb8k73FrCHa0gKxHsN4ISwd/Dw4o9MmjXHlrhpm0h/TpXzTQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761554645; c=relaxed/relaxed;
-	bh=uMwKIluQZ/G+KoDWjXfgtZpH34AaSudGJEkVAvBfiV4=;
+	t=1761554649; c=relaxed/relaxed;
+	bh=uuF1PbflRL7G3epzTRJvFK2AzVPBYAY82eKYUINaU84=;
 	h=Message-ID:From:To:Cc:Subject:References:MIME-Version:
-	 Content-Type:Date; b=cZdG7d17VZ2IB3wUHvTMe06aGDNHErPAhOSEczvqIdT0w9R7iC2N7zBBeafNziho2XxEeBvgABzk3pBRyoJOCZ2PUKJSkd+Iw2endX1ChUVfwUiXaZMG5zO7a8dSJ35zf/OlHCWRdotfHP0XPJzyIrRddWE5msTcxvE+NEANwyMetUTk+0BuJQlfKm6HG0j8kgzQ6zSVoWhzONHCFQELzxDdkwhWS1obWUYwiDE4Bldac8ULburQIWVCsxkdt3rCsiUAWCp8X6qPs7FFsk9cYGYuJLw8m/byCla2PFD/pUE2WZ/b3UAo7YeTt5JvkoOV6oVShKTYG0o+SL9iHLoWqQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=xItvuyS+; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=tYimNmTf; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 Content-Type:Date; b=EDtvcrxlOhgPDMKH2Evvf0KmUwCwrmKY6HjN0/MBvn+0kUjmpaOrh30iScDIaJ583ojOcR16R2CEUFLy4AG0Tf3I+QQmBFSdOMKZ9ZtGK7qC9ofgURhBzSoY0uZPXMSV/zfmlZ8b6EJLk8dFXwVds3CDyG996a/VmLTUqYf3AVhkwxiE4JW5112rJ6ymINhiM6Q2HSVhjFVGg9B+idTEjpl5azvqxfw4TeKqI/ASd1O7PfzO2V3kNEIrp+bmPdiPd9FeeiBdQII76rluPrFgAgqFPMmOXVZQMaPqCCfATbGZUI6A2UyLcnwD3Ht3OheF5LSkGH4S79BcRLK8kGz04g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=XJp1D9/T; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=7tqLdWfu; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=xItvuyS+;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=tYimNmTf;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=XJp1D9/T;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=7tqLdWfu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cw6Vr2Hvmz3dWv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2025 19:44:04 +1100 (AEDT)
-Message-ID: <20251027083745.673465359@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cw6Vw0Wqhz3bcf
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2025 19:44:08 +1100 (AEDT)
+Message-ID: <20251027083745.799714344@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1761554640;
+	s=2020; t=1761554643;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=uMwKIluQZ/G+KoDWjXfgtZpH34AaSudGJEkVAvBfiV4=;
-	b=xItvuyS+liJchgafJHpU9tYzPOno9TqkarDH1yZCK3/SY8LaeF0qT3opEQkDdO2pbpY6RP
-	Htv+fdHsKQ7EcNx1mU7B7kjkr2MwCU/4llsA9ZTs/iz+8JRvkjQPVcPUyemRxjlbtktGKw
-	GsJHGW2ZY09kGlWJaszbHS77TSX4HGu2viKiUm9yVfGlp4Wr7eYi0dBWXqDf+lbjgf3UOL
-	EK1SbwjiDt9mqIf2xFqEMIs2XBc6hrKI7n1ZGKPIsTdyVEWZ5039b7tBmAnJ6wMzAJxKjx
-	WAWU5PRgWHSrODttFM/9WH+13KTG9uP6NXR5SYwhtmgFY+wKA/oNAOAMka0zHA==
+	 references:references; bh=uuF1PbflRL7G3epzTRJvFK2AzVPBYAY82eKYUINaU84=;
+	b=XJp1D9/TPX0ZM7MIHCKed9tqeLgqSv/2F+apqKQDebqYn6NoPuN/KgyUGR7e9+Pb46cv7z
+	PidFEGWYLqR5eMMBoAM5oKne2DNQrQtqnhAYM8P3M+C0njz6W7tSAUwWakDK7lkuC7hKUn
+	4Y98eyJ1Wf91vEpfGdDB7ST9gnjTrgb4Dolb+fcAOSA9UaxhNkGcCUuLSu7NgE2YXw9Ggr
+	8qJdqGMTrUsPkhzNn4k/mS4PBpWTdV/3G4wRCxNvdHKfTDchiv/BOu1s9hjAjN/oy4chY8
+	8Zo/NMPt5F0WhtrkrKzONFyzP7XWX1fHqR0zHKeHhoHZXajxla+RO1Z1XiUNIA==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1761554640;
+	s=2020e; t=1761554643;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=uMwKIluQZ/G+KoDWjXfgtZpH34AaSudGJEkVAvBfiV4=;
-	b=tYimNmTfzHE55VQN/cxG6Mfbc65avtlgEq43Xb/8LXKZ65sSl0k4ojYbJ4I2f258Ii1cd0
-	MyXDnpD51wgg7VCQ==
+	 references:references; bh=uuF1PbflRL7G3epzTRJvFK2AzVPBYAY82eKYUINaU84=;
+	b=7tqLdWfui9Z7ALY3gMC74wCiJZ4FeyGAeXFp+T4tRe0iTRQU/C1aRO5OvfbOePqeBzYzHC
+	JnYYqYdj61kHXhBg==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Cc: Julia Lawall <Julia.Lawall@inria.fr>,
- Nicolas Palix <nicolas.palix@imag.fr>,
+Cc: x86@kernel.org,
  kernel test robot <lkp@intel.com>,
  Russell King <linux@armlinux.org.uk>,
  linux-arm-kernel@lists.infradead.org,
  Linus Torvalds <torvalds@linux-foundation.org>,
- x86@kernel.org,
  Madhavan Srinivasan <maddy@linux.ibm.com>,
  Michael Ellerman <mpe@ellerman.id.au>,
  Nicholas Piggin <npiggin@gmail.com>,
@@ -72,6 +70,8 @@ Cc: Julia Lawall <Julia.Lawall@inria.fr>,
  Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
  Andrew Cooper <andrew.cooper3@citrix.com>,
  David Laight <david.laight.linux@gmail.com>,
+ Julia Lawall <Julia.Lawall@inria.fr>,
+ Nicolas Palix <nicolas.palix@imag.fr>,
  Peter Zijlstra <peterz@infradead.org>,
  Darren Hart <dvhart@infradead.org>,
  Davidlohr Bueso <dave@stgolabs.net>,
@@ -80,8 +80,7 @@ Cc: Julia Lawall <Julia.Lawall@inria.fr>,
  Christian Brauner <brauner@kernel.org>,
  Jan Kara <jack@suse.cz>,
  linux-fsdevel@vger.kernel.org
-Subject: [patch V5 09/12] [RFC] coccinelle: misc: Add
- scoped_masked_$MODE_access() checker script
+Subject: [patch V5 11/12] x86/futex: Convert to scoped user access
 References: <20251027083700.573016505@linutronix.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -97,141 +96,120 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=UTF-8
-Date: Mon, 27 Oct 2025 09:43:58 +0100 (CET)
+Date: Mon, 27 Oct 2025 09:44:02 +0100 (CET)
 
-A common mistake in user access code is that the wrong access mode is
-selected for starting the user access section. As most architectures map
-Read and Write modes to ReadWrite this goes often unnoticed for quite some
-time.
+Replace the open coded implementation with the scoped user access
+guards
 
-Aside of that the scoped user access mechanism requires that the same
-pointer is used for the actual accessor macros that was handed in to start
-the scope because the pointer can be modified by the scope begin mechanism
-if the architecture supports masking.
+No functional change intended.
 
-Add a basic (and incomplete) coccinelle script to check for the common
-issues. The error output is:
-
-kernel/futex/futex.h:303:2-17: ERROR: Invalid pointer for unsafe_put_user(p) in scoped_masked_user_write_access(to)
-kernel/futex/futex.h:292:2-17: ERROR: Invalid access mode unsafe_get_user() in scoped_masked_user_write_access()
-
-Not-Yet-Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-Cc: Julia Lawall <Julia.Lawall@inria.fr>
-Cc: Nicolas Palix <nicolas.palix@imag.fr>
+Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: x86@kernel.org
 ---
- scripts/coccinelle/misc/scoped_uaccess.cocci |  108 +++++++++++++++++++++++++++
- 1 file changed, 108 insertions(+)
-
---- /dev/null
-+++ b/scripts/coccinelle/misc/scoped_uaccess.cocci
-@@ -0,0 +1,108 @@
-+// SPDX-License-Identifier: GPL-2.0-only
-+/// Validate scoped_masked_user*access() scopes
-+///
-+// Confidence: Zero
-+// Options: --no-includes --include-headers
-+
-+virtual context
-+virtual report
-+virtual org
-+
-+@initialize:python@
-+@@
-+
-+scopemap = {
-+  'scoped_user_read_access_size'  : 'scoped_user_read_access',
-+  'scoped_user_write_access_size' : 'scoped_user_write_access',
-+  'scoped_user_rw_access_size'    : 'scoped_user_rw_access',
-+}
-+
-+# Most common accessors. Incomplete list
-+noaccessmap = {
-+  'scoped_user_read_access'       : ('unsafe_put_user', 'unsafe_copy_to_user'),
-+  'scoped_user_write_access'      : ('unsafe_get_user', 'unsafe_copy_from_user'),
-+}
-+
-+# Most common accessors. Incomplete list
-+ptrmap = {
-+  'unsafe_put_user'			 : 1,
-+  'unsafe_get_user'			 : 1,
-+  'unsafe_copy_to_user'		 	 : 0,
-+  'unsafe_copy_from_user'		 : 0,
-+}
-+
-+print_mode = None
-+
-+def pr_err(pos, msg):
-+   if print_mode == 'R':
-+      coccilib.report.print_report(pos[0], msg)
-+   elif print_mode == 'O':
-+      cocci.print_main(msg, pos)
-+
-+@r0 depends on report || org@
-+iterator name scoped_user_read_access,
-+	      scoped_user_read_access_size,
-+	      scoped_user_write_access,
-+	      scoped_user_write_access_size,
-+	      scoped_user_rw_access,
-+	      scoped_user_rw_access_size;
-+iterator scope;
-+statement S;
-+@@
-+
-+(
-+(
-+scoped_user_read_access(...) S
-+|
-+scoped_user_read_access_size(...) S
-+|
-+scoped_user_write_access(...) S
-+|
-+scoped_user_write_access_size(...) S
-+|
-+scoped_user_rw_access(...) S
-+|
-+scoped_user_rw_access_size(...) S
-+)
-+&
-+scope(...) S
-+)
-+
-+@script:python depends on r0 && report@
-+@@
-+print_mode = 'R'
-+
-+@script:python depends on r0 && org@
-+@@
-+print_mode = 'O'
-+
-+@r1@
-+expression sp, a0, a1;
-+iterator r0.scope;
-+identifier ac;
-+position p;
-+@@
-+
-+  scope(sp,...) {
-+    <...
-+    ac@p(a0, a1, ...);
-+    ...>
-+  }
-+
-+@script:python@
-+pos << r1.p;
-+scope << r0.scope;
-+ac << r1.ac;
-+sp << r1.sp;
-+a0 << r1.a0;
-+a1 << r1.a1;
-+@@
-+
-+scope = scopemap.get(scope, scope)
-+if ac in noaccessmap.get(scope, []):
-+   pr_err(pos, 'ERROR: Invalid access mode %s() in %s()' %(ac, scope))
-+
-+if ac in ptrmap:
-+   ap = (a0, a1)[ptrmap[ac]]
-+   if sp != ap.lstrip('&').split('->')[0].strip():
-+      pr_err(pos, 'ERROR: Invalid pointer for %s(%s) in %s(%s)' %(ac, ap, scope, sp))
+V4: Rename once more
+    Use asm_inline - Andrew
+V3: Adapt to scope changes
+V2: Convert to scoped masked access
+    Use RW access functions - Christophe
+---
+ arch/x86/include/asm/futex.h |   75 ++++++++++++++++++-------------------------
+ 1 file changed, 33 insertions(+), 42 deletions(-)
+---
+--- a/arch/x86/include/asm/futex.h
++++ b/arch/x86/include/asm/futex.h
+@@ -46,38 +46,31 @@ do {								\
+ } while(0)
+ 
+ static __always_inline int arch_futex_atomic_op_inuser(int op, int oparg, int *oval,
+-		u32 __user *uaddr)
++						       u32 __user *uaddr)
+ {
+-	if (can_do_masked_user_access())
+-		uaddr = masked_user_access_begin(uaddr);
+-	else if (!user_access_begin(uaddr, sizeof(u32)))
+-		return -EFAULT;
+-
+-	switch (op) {
+-	case FUTEX_OP_SET:
+-		unsafe_atomic_op1("xchgl %0, %2", oval, uaddr, oparg, Efault);
+-		break;
+-	case FUTEX_OP_ADD:
+-		unsafe_atomic_op1(LOCK_PREFIX "xaddl %0, %2", oval,
+-				   uaddr, oparg, Efault);
+-		break;
+-	case FUTEX_OP_OR:
+-		unsafe_atomic_op2("orl %4, %3", oval, uaddr, oparg, Efault);
+-		break;
+-	case FUTEX_OP_ANDN:
+-		unsafe_atomic_op2("andl %4, %3", oval, uaddr, ~oparg, Efault);
+-		break;
+-	case FUTEX_OP_XOR:
+-		unsafe_atomic_op2("xorl %4, %3", oval, uaddr, oparg, Efault);
+-		break;
+-	default:
+-		user_access_end();
+-		return -ENOSYS;
++	scoped_user_rw_access(uaddr, Efault) {
++		switch (op) {
++		case FUTEX_OP_SET:
++			unsafe_atomic_op1("xchgl %0, %2", oval, uaddr, oparg, Efault);
++			break;
++		case FUTEX_OP_ADD:
++			unsafe_atomic_op1(LOCK_PREFIX "xaddl %0, %2", oval, uaddr, oparg, Efault);
++			break;
++		case FUTEX_OP_OR:
++			unsafe_atomic_op2("orl %4, %3", oval, uaddr, oparg, Efault);
++			break;
++		case FUTEX_OP_ANDN:
++			unsafe_atomic_op2("andl %4, %3", oval, uaddr, ~oparg, Efault);
++			break;
++		case FUTEX_OP_XOR:
++			unsafe_atomic_op2("xorl %4, %3", oval, uaddr, oparg, Efault);
++			break;
++		default:
++			return -ENOSYS;
++		}
+ 	}
+-	user_access_end();
+ 	return 0;
+ Efault:
+-	user_access_end();
+ 	return -EFAULT;
+ }
+ 
+@@ -86,21 +79,19 @@ static inline int futex_atomic_cmpxchg_i
+ {
+ 	int ret = 0;
+ 
+-	if (can_do_masked_user_access())
+-		uaddr = masked_user_access_begin(uaddr);
+-	else if (!user_access_begin(uaddr, sizeof(u32)))
+-		return -EFAULT;
+-	asm volatile("\n"
+-		"1:\t" LOCK_PREFIX "cmpxchgl %3, %2\n"
+-		"2:\n"
+-		_ASM_EXTABLE_TYPE_REG(1b, 2b, EX_TYPE_EFAULT_REG, %0) \
+-		: "+r" (ret), "=a" (oldval), "+m" (*uaddr)
+-		: "r" (newval), "1" (oldval)
+-		: "memory"
+-	);
+-	user_access_end();
+-	*uval = oldval;
++	scoped_user_rw_access(uaddr, Efault) {
++		asm_inline volatile("\n"
++				    "1:\t" LOCK_PREFIX "cmpxchgl %3, %2\n"
++				    "2:\n"
++				    _ASM_EXTABLE_TYPE_REG(1b, 2b, EX_TYPE_EFAULT_REG, %0)
++				    : "+r" (ret), "=a" (oldval), "+m" (*uaddr)
++				    : "r" (newval), "1" (oldval)
++				    : "memory");
++		*uval = oldval;
++	}
+ 	return ret;
++Efault:
++	return -EFAULT;
+ }
+ 
+ #endif
 
 
