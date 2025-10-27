@@ -1,72 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-13318-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13319-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BF257CCF9EA
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Oct 2025 08:44:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9DAE0CCF9EB
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Oct 2025 08:45:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cw6Vp51f8z3cfv;
-	Mon, 27 Oct 2025 19:44:02 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cw6Vr5mnwz3dWw;
+	Mon, 27 Oct 2025 19:44:04 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761554642;
-	cv=none; b=cWqiux6FZd0Q2k5GlUtIQp+T+Rr4kItqqbeVPTr1WJ2FUw0fiURc96ncg1hGCLWzfHwqRW1eLl2x+r4+qVETRh2vEFISEKHNn915b9jBs1maT+U8KgFZjj6E9A8MUfPmc8N1mWCPnst+E44HzfZVVWdelBS1XR5TRTKH5B9ykwZWNhJ0xvJPddPrPB4N5rlAMOqb9rkX/dNYFt8H4iXRVkWbf3YZ1u+rsAPaAX3lYlSaOqTkIo/h1Zps1J43Qqu3yinYIvFNoh+LT1678alBHY2wzP6KcSWOebx6aX0iipOXSbLx9RK+JpECjanpT30FDCh86m3ktjUN4RgxzQ8Jfw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761554644;
+	cv=none; b=af+BMk4RRNFBeAwH2Xlq0/7i3ji/R7vVSvsAQqkAsRwWuf33tfJ0AfQoZql/pyPq+r2pA5jwcUYfXoixe/apHQR7HCcXzyskVQHc66h1LungxWL2ierwTjzNZYXNxS4vxol8TBeh5989B06nBTR+mBSZQUkjtevhDANXdEsVERKS3c2UTWdfUI5qT0EEfEGlTYP5lUbTzW341SJibJ4wKwI3dC5PiuJzLNOwo4IwAPR69kBvF2oY0FIp99pmhrnScijpegWhs63yNzfjb2Ga0v/Mp5ICnNymf89EQMVK1ECAizDfsd+Dy+VLzlnElHVtrUJxj3fc8FOcabGNv3MRdw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761554642; c=relaxed/relaxed;
-	bh=as4pbOCxyeTzYGzifOoPeMiju/LrgMig7nFy3Mj05oM=;
-	h=Message-ID:From:To:Subject:References:MIME-Version:Content-Type:
-	 cc:Date; b=oVwXdH51vTlOqt30Hhhurr/Y1ZD9s86yITfifCllIuPkOdKspO1L7bfIdkrKlH7DpMsyv+MnfOG4+4wS5Z61vTTcS04GRVDJuwDk+q+w9KNpAh3p4v7n0bOJveI7etSDyiG7CWVXO9k+LfegsBxaYvhw7znHBZfUofaeOAVa/qWOih0fCAaNMgJarvti3emLbZhq4wwpXO/6JMeGYxvkreYBU5mRvOnayIjsyQIJc3k0JRKJT+IYkh5Fj39ysY3WnHn66VbNaB+1BbjFmx9fJvTEG/m5UTB4VtXX0UZj6q9rN18/z5h4myKG02RWE/yx7+Qs/frdaSH8ymdR0iArNg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ZVzA63Zc; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=wry6l0Yw; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	t=1761554644; c=relaxed/relaxed;
+	bh=435+37KhAU0mhng1XnAbeS2nHoeU+rxEjwbVMsKftxA=;
+	h=Message-ID:From:To:Cc:Subject:References:MIME-Version:
+	 Content-Type:Date; b=PUcOEokFe4/zChqR0ubmrdZFPPd8o5lz2PWkXDJ7UlRy7k86Y/g1ppkmZmPLyHM0VMCNZXLef6D7Mi6wJQJS8s1Tdv6RGqZKVupLtftklFh7sLj8AF5fL7/3OL/x83pTFxSUzZ7FXECByWDqWQ115GHI2A3lSOFjaMDpHsTm3Ae1V75F2LHi3RJUn543704oB/7rKS4ecaI015h8TMl/ok6q/wL21WqQbmQKZICb1MSxpYTjEhUyeiYGtEbocCib51ojp6wvd+MoEWv8IRKYrpY8f8jgO7QGJQE6PscC4NOh+fAOdGad5PfZbCn0Uyugh/6sdz3Kv2gvhwousXJdSg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=I4Kw5Ywe; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=5fUpbazZ; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ZVzA63Zc;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=wry6l0Yw;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=I4Kw5Ywe;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=5fUpbazZ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cw6Vp0ZwYz3dV4
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2025 19:44:02 +1100 (AEDT)
-Message-ID: <20251027083745.609031602@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cw6Vr1RlBz3dV4
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2025 19:44:04 +1100 (AEDT)
+Message-ID: <20251027083745.736737934@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1761554638;
+	s=2020; t=1761554641;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=as4pbOCxyeTzYGzifOoPeMiju/LrgMig7nFy3Mj05oM=;
-	b=ZVzA63ZcU5mloVrwo8+Jfcyohj0YpcWp8iDv0uosSTIGcM45Tl8yQXKTF3WdtzlsM1z+mJ
-	f8TA9NOrPnTyPyVmugWaX5MxqCnytrkuKrBuLV26iaNZqxMEtBr6xJ45WTbOR/vB+3gzzV
-	0jNCxcRcapxFnr3bWoJY97mTfcv5YEKGvo7Tq4oSQsHCMrQ6FBCAcYDG+ifbE9gMHosLHb
-	zkzf0SDgTCLBEJJbQ1BEUmbtn9GjOI9CG6cUmFHccokGfgEJjy/2JkinfGlDNP8ioNLaW0
-	dnn85SIAnHnJayOM5hUUKyanxcds+OjyyMzirFKdQw9EW1wOg2U3qD+4JnQUmg==
+	 references:references; bh=435+37KhAU0mhng1XnAbeS2nHoeU+rxEjwbVMsKftxA=;
+	b=I4Kw5Ywek/IX9WMSt/JXEa6snrzGFocVq/IjZtkNm1ANMjiG+drhyzT6KMpNFoZ81+hpq6
+	7eExgfokt10EBfmMcQQqV3fHS7o+tZ1wKnuLPw3dhoCmS+7DNc4GlQebCPGHmHeHNEXGGv
+	dHUpqGVUsaIl7lhAhzePlzvZ9TZmCnQJkRaIhw6kSszp+Oe3T28gR/NmuCpMOdRMmdbgWK
+	49R4Iz46M9aRnw8O5tqYDlJeRDC1t10xoiAaSTGN43wU0DwX72QRSrd7bLWPPaoJLnpDRt
+	WsrcrnhgR+2dkKcsStXQmlVjHMHAgmZ8OHZztJdfAQhnJWROQZ2fWyeT4rsVLg==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1761554638;
+	s=2020e; t=1761554641;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 references:references; bh=as4pbOCxyeTzYGzifOoPeMiju/LrgMig7nFy3Mj05oM=;
-	b=wry6l0YwTe1mHwd3wZkgxRkSddPV4gTf1dO6fAnvsK4rZdyFD/mI82Mc3upvCPaozRA33y
-	FSBO9vnYcONdE5Dw==
+	 references:references; bh=435+37KhAU0mhng1XnAbeS2nHoeU+rxEjwbVMsKftxA=;
+	b=5fUpbazZrmkMXN7jn9+9G33jFnKwKg6Vab+X7NXNyTTxhdWjb/TPTSoWsl2TtGRcijzTye
+	9yPo5IrGwO3RP/DA==
 From: Thomas Gleixner <tglx@linutronix.de>
 To: LKML <linux-kernel@vger.kernel.org>
-Subject: [patch V5 08/12] uaccess: Provide put/get_user_inline()
-References: <20251027083700.573016505@linutronix.de>
-X-Mailing-List: linuxppc-dev@lists.ozlabs.org
-List-Id: <linuxppc-dev.lists.ozlabs.org>
-List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
-List-Owner: <mailto:linuxppc-dev+owner@lists.ozlabs.org>
-List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
-List-Archive: <https://lore.kernel.org/linuxppc-dev/>,
-  <https://lists.ozlabs.org/pipermail/linuxppc-dev/>
-List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
-  <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
-  <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
-List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
-Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-cc: kernel test robot <lkp@intel.com>,
+Cc: Peter Zijlstra <peterz@infradead.org>,
+ Darren Hart <dvhart@infradead.org>,
+ Davidlohr Bueso <dave@stgolabs.net>,
+ =?UTF-8?q?Andr=C3=A9=20Almeida?= <andrealmeid@igalia.com>,
+ kernel test robot <lkp@intel.com>,
  Russell King <linux@armlinux.org.uk>,
  linux-arm-kernel@lists.infradead.org,
  Linus Torvalds <torvalds@linux-foundation.org>,
@@ -88,90 +76,139 @@ cc: kernel test robot <lkp@intel.com>,
  David Laight <david.laight.linux@gmail.com>,
  Julia Lawall <Julia.Lawall@inria.fr>,
  Nicolas Palix <nicolas.palix@imag.fr>,
- Peter Zijlstra <peterz@infradead.org>,
- Darren Hart <dvhart@infradead.org>,
- Davidlohr Bueso <dave@stgolabs.net>,
- =?UTF-8?q?Andr=C3=A9=20Almeida?= <andrealmeid@igalia.com>,
  Alexander Viro <viro@zeniv.linux.org.uk>,
  Christian Brauner <brauner@kernel.org>,
  Jan Kara <jack@suse.cz>,
  linux-fsdevel@vger.kernel.org
-Date: Mon, 27 Oct 2025 09:43:56 +0100 (CET)
+Subject: [patch V5 10/12] futex: Convert to get/put_user_inline()
+References: <20251027083700.573016505@linutronix.de>
+X-Mailing-List: linuxppc-dev@lists.ozlabs.org
+List-Id: <linuxppc-dev.lists.ozlabs.org>
+List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
+List-Owner: <mailto:linuxppc-dev+owner@lists.ozlabs.org>
+List-Post: <mailto:linuxppc-dev@lists.ozlabs.org>
+List-Archive: <https://lore.kernel.org/linuxppc-dev/>,
+  <https://lists.ozlabs.org/pipermail/linuxppc-dev/>
+List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
+  <mailto:linuxppc-dev+subscribe-digest@lists.ozlabs.org>,
+  <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
+List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
+Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=UTF-8
+Date: Mon, 27 Oct 2025 09:44:00 +0100 (CET)
 
-Provide conveniance wrappers around scoped user access similiar to
-put/get_user(), which reduce the usage sites to:
+From: Thomas Gleixner <tglx@linutronix.de>
 
-       if (!get_user_inline(val, ptr))
-       		return -EFAULT;
+Replace the open coded implementation with the new get/put_user_inline()
+helpers. This might be replaced by a regular get/put_user(), but that needs
+a proper performance evaluation.
 
-Should only be used if there is a demonstrable performance benefit.
+No functional change intended
 
 Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
+Cc: Peter Zijlstra <peterz@infradead.org>
+Cc: Darren Hart <dvhart@infradead.org>
+Cc: Davidlohr Bueso <dave@stgolabs.net>
+Cc: "André Almeida" <andrealmeid@igalia.com>
 ---
-V5: Rename to inline
-V4: Rename to scoped
+V5: Rename again and remove the helpers
+V4: Rename once moar
+V3: Adapt to scope changes
+V2: Convert to scoped variant
 ---
- include/linux/uaccess.h |   50 ++++++++++++++++++++++++++++++++++++++++++++++++
- 1 file changed, 50 insertions(+)
-
---- a/include/linux/uaccess.h
-+++ b/include/linux/uaccess.h
-@@ -825,6 +825,56 @@ for (bool done = false; !done; done = tr
- #define scoped_user_rw_access(uptr, elbl)				\
- 	scoped_user_rw_access_size(uptr, sizeof(*(uptr)), elbl)
+ kernel/futex/core.c  |    4 +--
+ kernel/futex/futex.h |   58 ++-------------------------------------------------
+ 2 files changed, 5 insertions(+), 57 deletions(-)
+---
+--- a/kernel/futex/core.c
++++ b/kernel/futex/core.c
+@@ -581,7 +581,7 @@ int get_futex_key(u32 __user *uaddr, uns
+ 	if (flags & FLAGS_NUMA) {
+ 		u32 __user *naddr = (void *)uaddr + size / 2;
  
-+/**
-+ * get_user_inline - Read user data inlined
-+ * @val:	The variable to store the value read from user memory
-+ * @usrc:	Pointer to the user space memory to read from
-+ *
-+ * Return: 0 if successful, -EFAULT when faulted
-+ *
-+ * Inlined variant of get_user(). Only use when there is a demonstrable
-+ * performance reason.
-+ */
-+#define get_user_inline(val, usrc)				\
-+({								\
-+	__label__ efault;					\
-+	typeof(usrc) _tmpsrc = usrc;				\
-+	int _ret = 0;						\
-+								\
-+	scoped_user_read_access(_tmpsrc, efault)		\
-+		unsafe_get_user(val, _tmpsrc, efault);		\
-+	if (0) {						\
-+	efault:							\
-+		_ret = -EFAULT;					\
-+	}							\
-+	_ret;							\
-+})
-+
-+/**
-+ * put_user_inline - Write to user memory inlined
-+ * @val:	The value to write
-+ * @udst:	Pointer to the user space memory to write to
-+ *
-+ * Return: 0 if successful, -EFAULT when faulted
-+ *
-+ * Inlined variant of put_user(). Only use when there is a demonstrable
-+ * performance reason.
-+ */
-+#define put_user_inline(val, udst)				\
-+({								\
-+	__label__ efault;					\
-+	typeof(udst) _tmpdst = udst;				\
-+	int _ret = 0;						\
-+								\
-+	scoped_user_write_access(_tmpdst, efault)		\
-+		unsafe_put_user(val, _tmpdst, efault);		\
-+	if (0) {						\
-+	efault:							\
-+		_ret = -EFAULT;					\
-+	}							\
-+	_ret;							\
-+})
-+
- #ifdef CONFIG_HARDENED_USERCOPY
- void __noreturn usercopy_abort(const char *name, const char *detail,
- 			       bool to_user, unsigned long offset,
+-		if (futex_get_value(&node, naddr))
++		if (get_user_inline(node, naddr))
+ 			return -EFAULT;
+ 
+ 		if ((node != FUTEX_NO_NODE) &&
+@@ -601,7 +601,7 @@ int get_futex_key(u32 __user *uaddr, uns
+ 			node = numa_node_id();
+ 			node_updated = true;
+ 		}
+-		if (node_updated && futex_put_value(node, naddr))
++		if (node_updated && put_user_inline(node, naddr))
+ 			return -EFAULT;
+ 	}
+ 
+--- a/kernel/futex/futex.h
++++ b/kernel/futex/futex.h
+@@ -281,63 +281,11 @@ static inline int futex_cmpxchg_value_lo
+ 	return ret;
+ }
+ 
+-/*
+- * This does a plain atomic user space read, and the user pointer has
+- * already been verified earlier by get_futex_key() to be both aligned
+- * and actually in user space, just like futex_atomic_cmpxchg_inatomic().
+- *
+- * We still want to avoid any speculation, and while __get_user() is
+- * the traditional model for this, it's actually slower than doing
+- * this manually these days.
+- *
+- * We could just have a per-architecture special function for it,
+- * the same way we do futex_atomic_cmpxchg_inatomic(), but rather
+- * than force everybody to do that, write it out long-hand using
+- * the low-level user-access infrastructure.
+- *
+- * This looks a bit overkill, but generally just results in a couple
+- * of instructions.
+- */
+-static __always_inline int futex_get_value(u32 *dest, u32 __user *from)
+-{
+-	u32 val;
+-
+-	if (can_do_masked_user_access())
+-		from = masked_user_access_begin(from);
+-	else if (!user_read_access_begin(from, sizeof(*from)))
+-		return -EFAULT;
+-	unsafe_get_user(val, from, Efault);
+-	user_read_access_end();
+-	*dest = val;
+-	return 0;
+-Efault:
+-	user_read_access_end();
+-	return -EFAULT;
+-}
+-
+-static __always_inline int futex_put_value(u32 val, u32 __user *to)
+-{
+-	if (can_do_masked_user_access())
+-		to = masked_user_access_begin(to);
+-	else if (!user_write_access_begin(to, sizeof(*to)))
+-		return -EFAULT;
+-	unsafe_put_user(val, to, Efault);
+-	user_write_access_end();
+-	return 0;
+-Efault:
+-	user_write_access_end();
+-	return -EFAULT;
+-}
+-
++/* Read from user memory with pagefaults disabled */
+ static inline int futex_get_value_locked(u32 *dest, u32 __user *from)
+ {
+-	int ret;
+-
+-	pagefault_disable();
+-	ret = futex_get_value(dest, from);
+-	pagefault_enable();
+-
+-	return ret;
++	guard(pagefault)();
++	return get_user_inline(*dest, from);
+ }
+ 
+ extern void __futex_unqueue(struct futex_q *q);
 
 
