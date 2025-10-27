@@ -1,101 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-13338-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13339-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 391B1CCF9E5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Oct 2025 14:12:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5875ECCF9E5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 27 Oct 2025 15:09:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwFnd4XYhz3046;
-	Tue, 28 Oct 2025 01:12:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=195.135.223.130
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761574341;
-	cv=none; b=dAm+EYNJrqd3TXan+fi85vNVu7m8f3Kxx8onq5FBbdWSYs+Kq3cP+HQetMJojxuFEges7lWWQtQ8VX0enrY6rhPOvySkni/XqjbtUgjgCkY5+CFHa6usUW8ri3ewDjoPX345doKRAqXDOic7ndfcz0pxuMTF/8HZT/Kq7yfGI7VIbSJGKgPVQ9WYRtyaANvnD1dyVTzaFV1+Te9q+PLjKpc+JCZkg1P+d0Nd8xS7Z/Ww60o0rlneQanuSDlZqST5LQHKqRZEWSNz6IGOTAJhqRwLfN7pkQYDZsrPaQvdqyESIHhf8MzS6wJLCu2Gvvy0M168oq+BvLzZyACby8Hn7A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwH3h54kbz2yTK;
+	Tue, 28 Oct 2025 02:09:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42b"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761577776;
+	cv=none; b=ZmmPzyoP8hIgrAXjCrD5HBBLPTOX4JF371hlsG/v5TPjXQpId3/ejVjkZ5Nv+RvRFmbWRLuK6Oqp2hZ/IxqZJpWIxVdCUGYeQ3KjDRvYG5MXw2AMWefAcjPamShFyEKGZU/843D5uDCMZeBGbmCSZewzLGGE8IucGAN8hGyTRcp2qqyrudmbd39Zet4IFty/B1usT4PJrlfXCSKGEywFxq74T54rf1YhHI8jwEOUBJhchJKVj2mhu4ATPtqpnwJdC5XRENdwEUPlGRfCqXiz8rQbQ0sp/tR0wmDW5mVJRedSq2TRlirZrzAnaquBEL1xa7brukpfTf7JeaZvJ8EvIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761574341; c=relaxed/relaxed;
-	bh=fO0TbvnWdk4B6flZBNryj4UTlawtK3PKy0XxEAgaHLQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=NH0PZQh4dmMCwjHlGc6ezx0bVJIDuQNi69petvc7jK1dS9Lujz55pF245TlbyS2X3W+AvWzjoxWgOcLeaTicJOKeTe5VkRbrtYDXivsp43SVXpaCY9STGCbQVCL1V2l9ilbB2B9s6s/u5S6QLkex6R5KaX9Bt591cxfM6VPfoZ73g9BR5z+WwlvF5C7Bc3nvfUW6IGSDpuo6RYOGNX8gJ0NO4FbqoMkzTVg819CzbcBL+w81/z/75JFp4jO7vcdu1Go59xwnzH7qzrpZPd3sPbIFr7ibakLugle44FXZ6SOkfAL5f8x25AsfE75eOxbCZDrKGaqEbOlnhxW+vL82LA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=aWUyu4iE; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6LpRkn2u; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=aWUyu4iE; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6LpRkn2u; dkim-atps=neutral; spf=pass (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1761577776; c=relaxed/relaxed;
+	bh=du5oJpRBhJlPxSiwoBeavUKOwQ5aDhNDZOqlYr8mmsc=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=PpocMWtHzWlfvIw83AhnPkeGMu//LeHxINk9AVRdH3n5XOFJH+Fpvrhew59KitJq9LcJPblaY2TEf/bM5EjHLqQP35oxQSyv5HHkW8WnXMcPdZ039OhidbRu938CcLgtBxZt8L2fh85QeCE0hcWfDnH8d7sQ2087v4FFOHuBTp+BQQNjtEjuy5T2NRg31nyy+x55fXQikJe/KqCr5XLRNuhAlMXx5pHuYMAPD6s9amQzrqRSYrH64FTnFRzp2D6eEhNDvGX5eMZwwynv3s97p1FftaISzRjYu1sphmrcLniyVZK4Ud/mSKpEkocMCl2i/YBd9DKrVDE5L1KxEGzRlg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=L6dbMj4C; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=linmq006@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=aWUyu4iE;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6LpRkn2u;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=aWUyu4iE;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=6LpRkn2u;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=L6dbMj4C;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=195.135.223.130; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 321 seconds by postgrey-1.37 at boromir; Tue, 28 Oct 2025 01:12:20 AEDT
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [195.135.223.130])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42b; helo=mail-pf1-x42b.google.com; envelope-from=linmq006@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42b.google.com (mail-pf1-x42b.google.com [IPv6:2607:f8b0:4864:20::42b])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwFnc3ZXbz2xQ6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 01:12:20 +1100 (AEDT)
-Received: from imap1.dmz-prg2.suse.org (imap1.dmz-prg2.suse.org [IPv6:2a07:de40:b281:104:10:150:64:97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id B8D9421A3A;
-	Mon, 27 Oct 2025 14:06:50 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1761574010; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=fO0TbvnWdk4B6flZBNryj4UTlawtK3PKy0XxEAgaHLQ=;
-	b=aWUyu4iEHcsIH/QUqscncDi/GtVg8fov4PogbF8kTQXGOq8tH9btyFyGXpFBRpreCDlLnN
-	OlSjQJ0tCRTF1BwdkCBbNYyxqM8ZcFCbv8yG2IKP80vFQl5GHglEk1GgpvSpKxQRbZ6mXe
-	KPZXkrObMQR9uKhhmeDlG+8zaJW7OAg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1761574010;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=fO0TbvnWdk4B6flZBNryj4UTlawtK3PKy0XxEAgaHLQ=;
-	b=6LpRkn2u5YixPleU4NEjy7by9nFIUmyTwN+t6xd8F9OeaorRMWoMgelFDskX1l+NLajY1M
-	M/6wYaa8nloLmSDg==
-Authentication-Results: smtp-out1.suse.de;
-	dkim=pass header.d=suse.de header.s=susede2_rsa header.b=aWUyu4iE;
-	dkim=pass header.d=suse.de header.s=susede2_ed25519 header.b=6LpRkn2u
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1761574010; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=fO0TbvnWdk4B6flZBNryj4UTlawtK3PKy0XxEAgaHLQ=;
-	b=aWUyu4iEHcsIH/QUqscncDi/GtVg8fov4PogbF8kTQXGOq8tH9btyFyGXpFBRpreCDlLnN
-	OlSjQJ0tCRTF1BwdkCBbNYyxqM8ZcFCbv8yG2IKP80vFQl5GHglEk1GgpvSpKxQRbZ6mXe
-	KPZXkrObMQR9uKhhmeDlG+8zaJW7OAg=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1761574010;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:  content-transfer-encoding:content-transfer-encoding;
-	bh=fO0TbvnWdk4B6flZBNryj4UTlawtK3PKy0XxEAgaHLQ=;
-	b=6LpRkn2u5YixPleU4NEjy7by9nFIUmyTwN+t6xd8F9OeaorRMWoMgelFDskX1l+NLajY1M
-	M/6wYaa8nloLmSDg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 570D113693;
-	Mon, 27 Oct 2025 14:06:50 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id LIXJE3p8/2jMdwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Mon, 27 Oct 2025 14:06:50 +0000
-From: Thomas Zimmermann <tzimmermann@suse.de>
-To: naresh.kamboju@linaro.org,
-	maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	christophe.leroy@csgroup.eu,
-	lee@kernel.org,
-	danielt@kernel.org,
-	jingoohan1@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	dri-devel@lists.freedesktop.org,
-	Thomas Zimmermann <tzimmermann@suse.de>
-Subject: [PATCH 0/2] powerpc: Fix backlight include fallout
-Date: Mon, 27 Oct 2025 15:05:39 +0100
-Message-ID: <20251027140646.227025-1-tzimmermann@suse.de>
-X-Mailer: git-send-email 2.51.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwH3g2YYwz2yFW
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 02:09:34 +1100 (AEDT)
+Received: by mail-pf1-x42b.google.com with SMTP id d2e1a72fcca58-7a28226dd13so3551623b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2025 08:09:33 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1761577771; x=1762182571; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=du5oJpRBhJlPxSiwoBeavUKOwQ5aDhNDZOqlYr8mmsc=;
+        b=L6dbMj4CPu4NYbuaIAa+npIuSZ0SkjMbtO0ehaWSrnem4s4rmPkM4O1Y+kQwqORYt2
+         bP+CZDaFThSEvOCq+bXVem7jo1klc652h/vWUmPRfBpx5J9ueNvP+4mCjZFnEAG8YPxP
+         /U9XUKCqnvivLN/p0XvHXit2PMpSwDky+kbeh5nE/US/CRDrQIDVkyX2Jyynrg6xbL6F
+         dVRxywLnn6McUp/oYp9SJx46oHTwEEfEPIVIvxQIYmadq3KOGFfJyjVm7pdmypktTQmx
+         Cx53xBVmGkfGiy3HMZJqil71tF5A/TTsHhlNe6CJALi/YpFS57Zj791FwIO2DRX2N1/3
+         7gaA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1761577771; x=1762182571;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=du5oJpRBhJlPxSiwoBeavUKOwQ5aDhNDZOqlYr8mmsc=;
+        b=tvYxnANgOVf1MWh9jcd5XdSitAsz8ZQjVasTojJTirvHnW4+kj4SoCYXCN6ADuxCtf
+         B/l5vl5hciE1YxYEX+d/RZl1CYwtuKn40YHkTgGkvoAXYwULNDwv3ksa+2FFL9Z9kx72
+         yz/Yu8pvlrM2QPu3gbSjPYS83Dp5yDPEozPT9dkJOyisl5kITq0WHj3Ozz/RGNryzbru
+         dX3+wBxVe4FtF2Yl5mb8uE+1fkXElJq6k5ev/WSF03X9y9EsxX93nIS8g5HtGEgcleXp
+         BA3nW4n6NU/LZ1AYZqKR6RR6L5bVdHIHTsIg6Nb2TWHIuf6T5G844pEuxPHO1zwOrF+7
+         +k4A==
+X-Forwarded-Encrypted: i=1; AJvYcCWX9IVhvoVPPFDjjDpKGtQ5fIO2uPLU+cbDHv0FEoGyjp6c0a8djBNSjMNEH2Vfu8d6Oh67q03surZcYTs=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyhddKpUapu23gSlBwuPVSszYk97Fy7t26UQGmXOHGDDh7TP19g
+	wOj40a1RkwjX3zYvFa6fO44rbZ65psiNIBRjzggGMFCWO1kyr7SDh+aU
+X-Gm-Gg: ASbGnct1Pudrp7lmPFTnF9MhjEKHWDRMecA9YGZ531+QJ624shAEHL4tc19KckhKbGF
+	jm90bA5lIg9Sum+Ftv/O2xoYe6m4ndkQv7nf6ojK1he4kppJuEdIEeoXb7IusjetnQW7mBIYZXD
+	eqpvIdfiKdoh3eHQDRaxm/NqyRysg71J/mpZhLZs2i+BPguVXOj8nJW46nJ6Yc+L3+gQAr1WZk5
+	vAw6JR/TPxyfw3eFaAhV6axMA21ga+ShzyeA04rx2UfVi3uvCnTj/nG3fvQOeeHV54x1jXFMeDJ
+	hLS7UYNla65TgXwar0ND9/DRRqGl6vhfRA6RpqW70tFgmVCStHgf4bGWDk/OHXWmtRvTBk/EWLg
+	uwFBJkqVmuTWSGTVyN0YfQA7W+JW2U239p58bPoWeeHai+Te8rf1ZUqVzYDQAL0N8axGc6xCmaZ
+	MUIG4UFOKggcqRDaC55be2TA==
+X-Google-Smtp-Source: AGHT+IFScmYX6R3rthmA7m7QRURybKZunKqeR6Hr6fFU6rVxiKPR6zlKhkOB5h4TP+qYA1pWCaz3NA==
+X-Received: by 2002:a05:6a00:390b:b0:7a3:455e:3fa5 with SMTP id d2e1a72fcca58-7a441a6b2d6mr397621b3a.0.1761577770926;
+        Mon, 27 Oct 2025 08:09:30 -0700 (PDT)
+Received: from localhost.localdomain ([124.77.218.104])
+        by smtp.googlemail.com with ESMTPSA id d2e1a72fcca58-7a41c70ea64sm6929565b3a.3.2025.10.27.08.09.26
+        (version=TLS1_3 cipher=TLS_CHACHA20_POLY1305_SHA256 bits=256/256);
+        Mon, 27 Oct 2025 08:09:29 -0700 (PDT)
+From: Miaoqian Lin <linmq006@gmail.com>
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	"Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Albert Herranz <albert_herranz@yahoo.es>,
+	Grant Likely <grant.likely@secretlab.ca>,
+	Segher Boessenkool <segher@kernel.crashing.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Cc: linmq006@gmail.com,
+	stable@vger.kernel.org
+Subject: [PATCH] powerpc/flipper-pic: Fix device node reference leak in flipper_pic_init
+Date: Mon, 27 Oct 2025 23:09:11 +0800
+Message-Id: <20251027150914.59811-1-linmq006@gmail.com>
+X-Mailer: git-send-email 2.39.5 (Apple Git-154)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,49 +102,56 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-X-Rspamd-Queue-Id: B8D9421A3A
-X-Rspamd-Action: no action
-X-Rspamd-Server: rspamd1.dmz-prg2.suse.org
-X-Spamd-Result: default: False [-3.01 / 50.00];
-	BAYES_HAM(-3.00)[99.99%];
-	MID_CONTAINS_FROM(1.00)[];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	R_MISSING_CHARSET(0.50)[];
-	R_DKIM_ALLOW(-0.20)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	MX_GOOD(-0.01)[];
-	FREEMAIL_TO(0.00)[linaro.org,linux.ibm.com,ellerman.id.au,gmail.com,csgroup.eu,kernel.org];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	RBL_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	MIME_TRACE(0.00)[0:+];
-	ARC_NA(0.00)[];
-	RCPT_COUNT_TWELVE(0.00)[12];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RECEIVED_SPAMHAUS_BLOCKED_OPENRESOLVER(0.00)[2a07:de40:b281:106:10:150:64:167:received];
-	FROM_EQ_ENVFROM(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:dkim,suse.de:mid,imap1.dmz-prg2.suse.org:rdns,imap1.dmz-prg2.suse.org:helo];
-	SPAMHAUS_XBL(0.00)[2a07:de40:b281:104:10:150:64:97:from];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_TRACE(0.00)[suse.de:+];
-	TO_DN_SOME(0.00)[];
-	FREEMAIL_ENVRCPT(0.00)[gmail.com]
 
-Fix the fallout from a recent cleanup of the backlight header.
+The flipper_pic_init() function calls of_get_parent() which increases
+the device node reference count, but fails to call of_node_put() to
+balance the reference count.
 
-Thomas Zimmermann (2):
-  powermac: backlight: Include <linux/of.h>
-  macintosh/via-pmu-backlight: Include <linux/fb.h> and <linux/of.h>
+Add calls to of_node_put() in all paths to fix the leak.
 
- arch/powerpc/platforms/powermac/backlight.c | 1 +
- drivers/macintosh/via-pmu-backlight.c       | 2 ++
- 2 files changed, 3 insertions(+)
+Found via static analysis.
 
+Fixes: 028ee972f032 ("powerpc: gamecube/wii: flipper interrupt controller support")
+Cc: stable@vger.kernel.org
+Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
+---
+ arch/powerpc/platforms/embedded6xx/flipper-pic.c | 7 +++++--
+ 1 file changed, 5 insertions(+), 2 deletions(-)
+
+diff --git a/arch/powerpc/platforms/embedded6xx/flipper-pic.c b/arch/powerpc/platforms/embedded6xx/flipper-pic.c
+index 91a8f0a7086e..cf6f795c8d76 100644
+--- a/arch/powerpc/platforms/embedded6xx/flipper-pic.c
++++ b/arch/powerpc/platforms/embedded6xx/flipper-pic.c
+@@ -135,13 +135,13 @@ static struct irq_domain * __init flipper_pic_init(struct device_node *np)
+ 	}
+ 	if (!of_device_is_compatible(pi, "nintendo,flipper-pi")) {
+ 		pr_err("unexpected parent compatible\n");
+-		goto out;
++		goto out_put_node;
+ 	}
+ 
+ 	retval = of_address_to_resource(pi, 0, &res);
+ 	if (retval) {
+ 		pr_err("no io memory range found\n");
+-		goto out;
++		goto out_put_node;
+ 	}
+ 	io_base = ioremap(res.start, resource_size(&res));
+ 
+@@ -154,9 +154,12 @@ static struct irq_domain * __init flipper_pic_init(struct device_node *np)
+ 					      &flipper_irq_domain_ops, io_base);
+ 	if (!irq_domain) {
+ 		pr_err("failed to allocate irq_domain\n");
++		of_node_put(pi);
+ 		return NULL;
+ 	}
+ 
++out_put_node:
++	of_node_put(pi);
+ out:
+ 	return irq_domain;
+ }
 -- 
-2.51.1
+2.39.5 (Apple Git-154)
 
 
