@@ -1,94 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-13447-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13448-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0C718CCD1BF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 14:43:21 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 424A1CCF9E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 14:54:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwtQv4bB4z3d44;
-	Wed, 29 Oct 2025 01:43:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c103::1" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761662599;
-	cv=pass; b=UcW0/UfYioE6MYLALKXJamziumAFxgcFb92fgKWbBi2uSzMOSUKtJjzeDKxSs782YRKAGhh3fg6AC4E8QoEn4pdBh9ls0yg1IJwT2Elrr3yah0yiqDKlL4TDs78gzNZtrsApHo08pkWr2DEwWCqttH3Ps+X7QzW8pUrWEI5H9hiRnr7CvQWObOv8HcYYjy9CSzO4vRzvZSw46Md0itE4QVMHhG8h8z9UuR1u1ACSPv1LeRBvoFSJSjSXaXhqn7InD0trUhaCxRiXgdzMHPKldOGT377yFRfHW5nOrX07orXAHCJSY4I5RdTdvW9dmwFLMw9iv4JGwVO+UNNRcKB7Fg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761662599; c=relaxed/relaxed;
-	bh=I1LvJuUb5FWOPKJ5OQj0Wj8mtYu4ihD59ySETqHtU/Q=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=lDWG+foCNxySKGQXniZGu5Vwuq953Ip2BPCnrnYea1dKHolYVbs5OSeS501Xx+EAis84yjkTSfA4iT8L8nlTSYjSwEaRh9V//+99DkhPrpiiFpAEB2l5FTNfM4EVfxcvY/4r+JnuCaUXwXuATr8xcLzT7K2WxOVrRuP6cdMUutXGBbyMCdE44Kkl3z1Vjf+5diN7aNSUETCela2df9aLNcyB7PH/gJekhcv/mkM+PgQMCRk8kDrJO7q3M5dJK5v2y0Xmq6kobObwwmWV/tGz33ChucbJ4RJ6yySWTFBWROp/vKGaoUZEys8Elz+wTo35+FhNca1Zsid1nXN0e4iC+A==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=efficios.com; dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=selector1 header.b=kRojUPzf; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c103::1; helo=yt3pr01cu008.outbound.protection.outlook.com; envelope-from=mathieu.desnoyers@efficios.com; receiver=lists.ozlabs.org) smtp.mailfrom=efficios.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=efficios.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=efficios.com header.i=@efficios.com header.a=rsa-sha256 header.s=selector1 header.b=kRojUPzf;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=efficios.com (client-ip=2a01:111:f403:c103::1; helo=yt3pr01cu008.outbound.protection.outlook.com; envelope-from=mathieu.desnoyers@efficios.com; receiver=lists.ozlabs.org)
-Received: from YT3PR01CU008.outbound.protection.outlook.com (mail-canadacentralazlp170100001.outbound.protection.outlook.com [IPv6:2a01:111:f403:c103::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwtgg5gqpz3d9K;
+	Wed, 29 Oct 2025 01:54:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=185.176.79.56
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761663263;
+	cv=none; b=GRvbzYEtnEaEjTIdRfWEX/uvd9FckIJoahdB4k7xx+q3B1N+fJg06Di8rrUY5gv2j9NM8Rn2BpI0d1tSRHEV6cLBiJwfWEqALcRWd+J7Zc6cfe8DzrCuyhKLFeCazpxdRF2BUr04TbLnz2rpE7khUt7easQqr+ujJOMF7w9+IpU5Pz7QDOhib4ys+Xs9/kO74WfzWPdd8/KqOj2Zyr3Kf07hCy/AcRtmwnvPIlJia0ycCBRA/s4Vbq6BwEmHHgnerdeTqGFditgJTp87TTxERy0/JBQCwoa1H8NWx2gLwU5fowv/apR770VVHI+PWZ2cvxlmV9fZ4FycoxNpBgAuaQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1761663263; c=relaxed/relaxed;
+	bh=8ZlGzCfWx6hQca2N67AU/T4OIDshHG9Jx91UXAF3QDk=;
+	h=Date:From:To:CC:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=TjO+pF8pf8zb7XdlngR9CTJXgUZ5u0ECsGUxVPK2Rwf7Nr49mmHijZYZXTMl2cAfvvHRCIYPyTFZYT4dN8Fo1wgdweSVdu4tUBd8FbvEg/bsW3zs0iHakOkG29yn++sK6cH09zcG7j41IwKEnJWgjSdNbDgb+M5tssiRjuxAN+f4UF3H5BSMPDLgZbW3Ql0Z7LAhsp9w3V+IQna9jlV8I1NyuqiT06Ak6ab5PfVKfhCKf5q1nsQAnuKOTrIJ46ZIcUCoGZhj317+PgUrjrpWT/wN74py0M4jQo+UllObrXO3lOyQ2VRxSbniLvflAGunYgmlJHZL5YjuSxoQ4poDIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; spf=pass (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=185.176.79.56; helo=frasgout.his.huawei.com; envelope-from=jonathan.cameron@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 355 seconds by postgrey-1.37 at boromir; Wed, 29 Oct 2025 01:54:22 AEDT
+Received: from frasgout.his.huawei.com (frasgout.his.huawei.com [185.176.79.56])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwtQs4PLwz3cnS
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2025 01:43:17 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=pD5SXaGTeZWZEB8kC59uAqWV7FtDqnuMJKa6P7ftcgQoCRNdPM/6nKWc451iAErA0bue4blZK9aL16RG1bvvXWgtukXELiVW6Wd67dbB+gRGcG7YTvs6Uovha1Xr5ObQVUl6H56uPe73Cx/Cv8vIHlkP8Xro4EDgo8J2uLn8HxD/9TkXEdIg+RJyszIQAzl/MmLUCnJChdwbPQsUHukaowTZmuzWd8rLS55cL3EoBczsVpqqjnn5H9sUoiZOV/Xxqo839b6/Qwk0sUUQAjm4RuzmIco1TYOmP2upRpcpIUSqa3R3LmJHf0SzXp3Nhy7IN1eS4uNjp1AHlmrYlvMf+g==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=I1LvJuUb5FWOPKJ5OQj0Wj8mtYu4ihD59ySETqHtU/Q=;
- b=SbTm0qTgYVtVmICd9CloACN40VB1CFg6lEq/EpGshHImguL3mvCtl/chuvLpZqzP8yGjHRUddZ2h6H5j66mC6EdwTK13cTaFMCzEEZ6RfvGz1ewvFiXohyoh7Fp1Ipn48CGs76Ecq6X/NldP/BI9AHZODNOXUgyHTDg414U11pBJERCLfipkjE79z+AGXnYFhCCUMWnGxW42NvJKwdGZz26a9KG2Kp1/0neTJpNdlfXy3RaUpOUHlMMeXorAYn1PWXB1CDRwJCN8U7KEtxnrE9y7KUjAMhBGDVLAx8SLXhKU+hcLDUsrFxPhUNdSqZZAw+NocOuXd3JTUoG7zccrsA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=efficios.com; dmarc=pass action=none header.from=efficios.com;
- dkim=pass header.d=efficios.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=efficios.com;
- s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=I1LvJuUb5FWOPKJ5OQj0Wj8mtYu4ihD59ySETqHtU/Q=;
- b=kRojUPzfoIrU57962wz0Askfe10spCEUjEEDCnoUlPDckmP41Kvnao5NsQMlUm6vBBNd6Ea5kFAs+VO9RS2L51XdyIIGUvw9xc3LHy9dJLvtuF9qOYTUAu9u9q8wjs5OTM1JG7RdHBkSc/p6FwWJbtIbHyix/zQEdJy6R62FYvZqInLbDXN2u5PzRqfneE7AwA586Nt9ziOijfLf5qY3/ICTj4/7d1NVhiz/gIa5gRJYTv563J41BBlBJqWITf9bSgTXOjQlqqPi5NQlExpmwpetGQc0qbZ6Jozv4YIQ3t2yS9oRWgsVnoKT1tqgH+3aGBp1bw6fxEWRLNA9v2/6zg==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=efficios.com;
-Received: from YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:b01:be::5)
- by YT4PR01MB11475.CANPRD01.PROD.OUTLOOK.COM (2603:10b6:b01:15a::11) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9253.19; Tue, 28 Oct
- 2025 14:42:54 +0000
-Received: from YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
- ([fe80::50f1:2e3f:a5dd:5b4]) by YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
- ([fe80::50f1:2e3f:a5dd:5b4%2]) with mapi id 15.20.9275.013; Tue, 28 Oct 2025
- 14:42:53 +0000
-Message-ID: <0fccf3c6-c11e-475c-9669-356928846aaa@efficios.com>
-Date: Tue, 28 Oct 2025 10:42:51 -0400
-User-Agent: Mozilla Thunderbird
-Subject: Re: [patch V5 12/12] select: Convert to scoped user access
-To: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- linux-fsdevel@vger.kernel.org, kernel test robot <lkp@intel.com>,
- Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
- Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- linuxppc-dev@lists.ozlabs.org, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, linux-riscv@lists.infradead.org,
- Heiko Carstens <hca@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- David Laight <david.laight.linux@gmail.com>,
- Julia Lawall <Julia.Lawall@inria.fr>, Nicolas Palix <nicolas.palix@imag.fr>,
- Peter Zijlstra <peterz@infradead.org>, Darren Hart <dvhart@infradead.org>,
- Davidlohr Bueso <dave@stgolabs.net>, =?UTF-8?Q?Andr=C3=A9_Almeida?=
- <andrealmeid@igalia.com>
-References: <20251027083700.573016505@linutronix.de>
- <20251027083745.862419776@linutronix.de>
-From: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
-Content-Language: en-US
-In-Reply-To: <20251027083745.862419776@linutronix.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: YT4P288CA0050.CANP288.PROD.OUTLOOK.COM
- (2603:10b6:b01:d2::8) To YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:b01:be::5)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwtgf2XSGz3cnS
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2025 01:54:22 +1100 (AEDT)
+Received: from mail.maildlp.com (unknown [172.18.186.216])
+	by frasgout.his.huawei.com (SkyGuard) with ESMTP id 4cwtbY1HTSz6HJcR;
+	Tue, 28 Oct 2025 22:50:49 +0800 (CST)
+Received: from dubpeml100005.china.huawei.com (unknown [7.214.146.113])
+	by mail.maildlp.com (Postfix) with ESMTPS id 303081402EF;
+	Tue, 28 Oct 2025 22:54:19 +0800 (CST)
+Received: from localhost (10.203.177.15) by dubpeml100005.china.huawei.com
+ (7.214.146.113) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.1544.11; Tue, 28 Oct
+ 2025 14:54:17 +0000
+Date: Tue, 28 Oct 2025 14:54:15 +0000
+From: Jonathan Cameron <jonathan.cameron@huawei.com>
+To: "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>
+CC: <linux-cxl@vger.kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>,
+	"Len Brown" <lenb@kernel.org>, Tony Luck <tony.luck@intel.com>, Borislav
+ Petkov <bp@alien8.de>, Hanjun Guo <guohanjun@huawei.com>, Mauro Carvalho
+ Chehab <mchehab@kernel.org>, Shuai Xue <xueshuai@linux.alibaba.com>,
+	"Davidlohr Bueso" <dave@stgolabs.net>, Dave Jiang <dave.jiang@intel.com>,
+	"Alison Schofield" <alison.schofield@intel.com>, Vishal Verma
+	<vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, Dan Williams
+	<dan.j.williams@intel.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
+	Sunil V L <sunilvl@ventanamicro.com>, Xiaofei Tan <tanxiaofei@huawei.com>,
+	Mario Limonciello <mario.limonciello@amd.com>, Huacai Chen
+	<chenhuacai@kernel.org>, Heinrich Schuchardt
+	<heinrich.schuchardt@canonical.com>, Arnd Bergmann <arnd@arndb.de>, "Peter
+ Zijlstra" <peterz@infradead.org>, Ingo Molnar <mingo@kernel.org>, "Guo
+ Weikang" <guoweikang.kernel@gmail.com>, Xin Li <xin@zytor.com>, Will Deacon
+	<will@kernel.org>, Huang Yiwei <quic_hyiwei@quicinc.com>, Gavin Shan
+	<gshan@redhat.com>, Smita Koralahalli
+	<Smita.KoralahalliChannabasappa@amd.com>, Uwe =?ISO-8859-1?Q?Kleine-K=F6n?=
+ =?ISO-8859-1?Q?ig?= <u.kleine-koenig@baylibre.com>, Li Ming
+	<ming.li@zohomail.com>, Ilpo =?ISO-8859-1?Q?J=E4rvinen?=
+	<ilpo.jarvinen@linux.intel.com>, Kuppuswamy Sathyanarayanan
+	<sathyanarayanan.kuppuswamy@linux.intel.com>, Karolina Stolarek
+	<karolina.stolarek@oracle.com>, Jon Pan-Doh <pandoh@google.com>, "Lukas
+ Wunner" <lukas@wunner.de>, Shiju Jose <shiju.jose@huawei.com>,
+	<linux-kernel@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
+	<linuxppc-dev@lists.ozlabs.org>, <linux-pci@vger.kernel.org>
+Subject: Re: [PATCH 4/6 v6] acpi/ghes: Add helper for CXL protocol errors
+ checks
+Message-ID: <20251028145415.000034bd@huawei.com>
+In-Reply-To: <20251023122612.1326748-5-fabio.m.de.francesco@linux.intel.com>
+References: <20251023122612.1326748-1-fabio.m.de.francesco@linux.intel.com>
+	<20251023122612.1326748-5-fabio.m.de.francesco@linux.intel.com>
+X-Mailer: Claws Mail 4.3.0 (GTK 3.24.42; x86_64-w64-mingw32)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,105 +85,104 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: YT2PR01MB9175:EE_|YT4PR01MB11475:EE_
-X-MS-Office365-Filtering-Correlation-Id: 7975e0fd-c85c-4e29-467e-08de16304657
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam: BCL:0;ARA:13230040|366016|7416014|1800799024|376014;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?KzRTenpJRFE3VVhKMGx0NG9TSENHS0JodkRrTS93KzVkOVYwMVhXRWZrRUVJ?=
- =?utf-8?B?QkNwYUpSOUhpdDlXQW9CbHIzOWdvMWdUSVIzVXh4VE4yVFlyVUFiaEUwQm90?=
- =?utf-8?B?SzgxdFpWUXFuQ3pFYnU4VWk5QXczS2hzc0EvZFFRRU9nTFExZGJCaXc1Z0ZI?=
- =?utf-8?B?UUkwbmVBYjFibG56T1d5UHJ5cHlNM083Y3V5WEdMUk5XUkFPRzNqOGVIK3ZS?=
- =?utf-8?B?UTFBQmJUbThsZjNpRkZ1Unp1NUoxWHQ2NG5zeFJ1WXEzZTltSTJPZHlISWtp?=
- =?utf-8?B?VnIxaTZiVGVRdEVscGRtaWJnUk5ySTExcW5CSlZQNW91VGtZZkkxMWJ0aVZK?=
- =?utf-8?B?bGtFN2djN21odExtbjRHblRsQlhwWll4WnpMdGVNRFc3Mkk5eHZRczljV0o5?=
- =?utf-8?B?UmNRVWFCK1FpVEMxNEZSa3g0MVR1Y095eXBsUDNMTUJTSVRJYThnWisrRzV6?=
- =?utf-8?B?UWcxR2s1dHRFL1hnK25sMTVhcjlrbXRoS00vZ0xVaGRDbE5GRHFPQUZwZDZ2?=
- =?utf-8?B?Zzc3bndsdnMvU0pkZlJhRmVFTURja0lyVEs4QU1xdWlQN2VIcW5VdU9OQ204?=
- =?utf-8?B?YjE5bTI1NDlJajhiSjhnNXJUbjBGZ3FCaXRBdFZJSzBTUUN0RmlWTzZoL0xT?=
- =?utf-8?B?dDlkR3VnOXhhYXJtSkd3bzZXREhPRGxyMDdhV0UxU0tBQkRrQWRzZkF3ZE8y?=
- =?utf-8?B?Rkd4WG9hOHhiZkdUcVBUYXlkeU5VYnY1WXRYdGMyL09jOXlYSWUvMVJKNDRz?=
- =?utf-8?B?L3RMRkVxc2ZVaWpGRE0wRktlc0RrRG93V3ROMm9jRmhLellEWUdDM1BqbDhl?=
- =?utf-8?B?Z2JuRHd5MlgxQzhLYUphMzU3bnpmdzdmY1lNZ3Z2WTFXSUpVbFhsZjNwS2Zv?=
- =?utf-8?B?MUZkNlhHRzQvbCtMcXZMbXF1eTNVZ1lBMXpkL0xINm8zcnhzZUlXMjZmZzFV?=
- =?utf-8?B?aUNnK01lSEdlRGxRM2FrVGEvbmYySmljd3R1QWtZVWMxRk1MN29YdEk2MWtD?=
- =?utf-8?B?TEx0b1dENDE2ejcvL1lpanMwRVJ0MlQ3OGxCSTNMRkFNWURoYndGc2V5WFZV?=
- =?utf-8?B?a0hXY0RseHNUbTNLaHEyOVA4S0Jxejd3SUpmTTI4NFkyT0tzZTR3dU8wd0ht?=
- =?utf-8?B?WUxXS0pHTjF4K1k5bWRkTUo5QUtnckJQN0tBTU45dnNQOG9WMFQ0USttMkRh?=
- =?utf-8?B?WUJjeXl1ZlVnbVVoT1ZIcklvcFJFTjNoeEpBQUhFQVZWczU5OEFrRjZXeWtE?=
- =?utf-8?B?aGsxblU3VGJ0eUo4M0hGR1ovMllGS0ZoNHRWNXdPSGJSb1Vha0NrZTFRN2Ix?=
- =?utf-8?B?dnNRQWhnb0FOYVRoUEZVTjN4a0JmWm01WmZNeXJoeXhoS2dpVHYxMlk5SVMr?=
- =?utf-8?B?aGlXWUhjbWVLNllNOEcrTUNXS0VKcDRLMFN3UDJ6WlFDWU05K0xTQkNFeWxF?=
- =?utf-8?B?ZTlQRmZENG1vcXdiU21PbU1mUHRIaGs1T041aENndytqT0R1b3dEUVBEOXpt?=
- =?utf-8?B?VFcvbityWTZqWlFPUklKZUwreXE2QjlQSFBwdy90OGFCTUVhbVpWVnNSZVk4?=
- =?utf-8?B?Sjg4MjZjTzhBL0xtbHQvKzZ4RUZ1ZzYya1hReUh2WmVzMUswZjB2WUEzZVpN?=
- =?utf-8?B?WDN4QUtKRVRkWGZ6bWtaWHE5SFJBTGpoWFVjVm9RTExlcnFuR1NNZytlUkZy?=
- =?utf-8?B?eE1OSjdraWd6VFUycDArdFJCdUs5dDl1ajRNTzdNN21lQjZUTHJkczNVNHdL?=
- =?utf-8?B?MGdmK0h3QVZKZW9UQVZLbFdzRk56VEtFRVd1b0JkNWhjUTdmdVlyb1g1cm1T?=
- =?utf-8?B?bVpaVGJ1RklDZ0UxS1ZCbEZ1NHVtU0dMNC9QZTdHUzE1WUo1N3c0djAzdjNJ?=
- =?utf-8?B?THBJSFFDdGl6cDVYNWRJZXF6OHJOSWd4eWdHVWhvazg4MXc9PQ==?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM;PTR:;CAT:NONE;SFS:(13230040)(366016)(7416014)(1800799024)(376014);DIR:OUT;SFP:1102;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?b0VTQlVTWTNLemZUcS9GdUJVUzNoWW80QUdxUjZnU3dTcXl5OERWMGs0c1Nl?=
- =?utf-8?B?L3BNUWhmUHpTYUJNUDJYN2FEK0ZmRVNnNVBkb3FBeGdFWWVNUTVIampmN3B3?=
- =?utf-8?B?TlJ1eGhOZFFsdGYrbzl1TEwrWFFLYk04LzR6WWwvT2ovc3oyYmk3b0NEbEpj?=
- =?utf-8?B?VFVIb0wzeTBBUk9TSEZBdUpnZWdDQ1pPcDR1d0lPTDZVc2U5Nm9XS0cwU3Rq?=
- =?utf-8?B?N2FiL1J2UWFqcHczNXk3WEV1Z0k0ck5QZnVQU2s4NkIwLzIzZVVTMVVmbVVV?=
- =?utf-8?B?dkYzekNkTkNhZHhJdm1MaDdqRkMzelB1eGJHT0Z1c0NUV2p5OHY1REI5M0Uz?=
- =?utf-8?B?RWFRd0R3Y0JpM3RzRm95bzdST3lDTlRscXFISjlWQ3BPRVZsZ0lxUEp3Kytk?=
- =?utf-8?B?ZmZtUEhITW5acnhlclVCM1ErMkkwMmp1dUk1N3N4c0Q5TW81UThaMHlFcmF1?=
- =?utf-8?B?TmFPRlp4dXJMb1JOWFdaVkxDNktXVmR5Y09pRkR1M0FZc2w4elVPSXdJR29P?=
- =?utf-8?B?QjBlWSsrZ0wza0EzaEZlMUFUU0tXS1hhbDdJNWVnamt1NG9tZG4vdGhxdjNv?=
- =?utf-8?B?REd6M3V1QzBFSUdaQ0ZqZjluYVk1NWtIaEhJZm5KNklpQVRiWE9kTGNFdWF2?=
- =?utf-8?B?REdBRzlDYzZiRUFaRzZZd3BlVmlLdDhLNTlTS05OVDRxdzFNWjNCUmJlcm1C?=
- =?utf-8?B?WmRtNWd2cGplaFNaMXVYQXBhSnF6UG5zb2pxOHpKd0t6VmdtU0ZsTGxvdFFR?=
- =?utf-8?B?YnBJWENBNWY0RTRsYlZsbldqKzI3dm1MbzVIa2Nxd0ZDWFU1OHc4R0R1MjM4?=
- =?utf-8?B?eVlsSGNtbGl2cnkrb0ljdVJvRGVCek5Balo3cDlWREh2VGRwdEx2dmwvd3Bh?=
- =?utf-8?B?UUtKNDhvV3I3L1NHMGNsbis0RGxmeS94bGdPR3JTWHBZQUVYOVBQd3ZQVnAv?=
- =?utf-8?B?bC9ZaEwrWkVWUWJuZlFWOE1oZ0RESGRxMGNnWldSdG5sV3RwRCs2aTlZNUhQ?=
- =?utf-8?B?Vyt6cG5JdHAxdXNBdENVdjhyMXFwWm9YMTczbkhoUldLUXhVUkxWcDVWMENM?=
- =?utf-8?B?RTRMZ0V6UkFtQXpMZWJYaUw4WjhHc3BDQzBsdlJjcncvS0dkVkc4bjlXMUpZ?=
- =?utf-8?B?a3MrQWhwcmNjT1o1bWtvNnBMSVloRHdQMStlUGZhSm1wNzlMSGY2Mm9XWWVs?=
- =?utf-8?B?dGphbVNTc0QxdkN1VEJJYVMwM3RaeHU3YXhpdTRMbXptYmxXOGFkRDFhMUpB?=
- =?utf-8?B?aDJrR3FsZXJEdEFvdGRabk4wV3pwcVlESExGK3QzTUVXYU1MWlo5Uk9mM2ZC?=
- =?utf-8?B?dXJQR1hZZHZtcXYvdXBTV21HckR5dnU2clk1cWkvOGUzeEdmUHdhdTFpcUo0?=
- =?utf-8?B?aFNKOW03dTA3clRkdWwxekRSUjVhWXhVY29veDlxTUxxSURvZGJNaldBVTVO?=
- =?utf-8?B?ZkZDZTlUamdOU09hN3ppYXZWR2s0L3hmWG5NazcvdEdjWEM4VjVHTlRGR3Q4?=
- =?utf-8?B?MjRuQUVvaG50STFHOW5ZNUZqbC9lSy9hNGtYZ3NCMkR6RE5HMWRSaUVyUk5C?=
- =?utf-8?B?Rzc2dEkvN3BnMGF0RWRGeFY1N1J2V3ByeFhScnZlZmVKWDVhNGdsRVlvWXhw?=
- =?utf-8?B?dmVhNnI5d3J0Yk5uSkFXc0FZZGovakpwUGhGV05IdTVKbFZER0NURnVkaytI?=
- =?utf-8?B?anRMWjI5TU9US0dxVDVZeGsrNGpvb25aYzFvUzZvT3hKWk0yUkpaaHhsZi85?=
- =?utf-8?B?Tk9KL0FIYzNHZ3hCbE9aSnZWVlk4Y3BiSHpJQW1hWG1ZNU5kaHZsR0hKelh5?=
- =?utf-8?B?dDRia0pnMFhORmxFQWcwcWlXQWczS01qTWVKbUNYQ2l2bFRiNEVXeGdGREpm?=
- =?utf-8?B?eVErbHhOeTZsOURqS1FnTE1lM002UUpCUHd5YjdxM1l3bDQ0eHM3VmFvd2Ur?=
- =?utf-8?B?WEpUQ01tZUJBUW9Md3Z4REFENjFFVHU1R28rby9BbkZBK1c2ZktOb3lLWW9T?=
- =?utf-8?B?MytuRGt1YXhrTXFMZlZob0RvMnQzN09LYmU4M0xEUy96SDhwM2FjdVl2bmFQ?=
- =?utf-8?B?RTBDOG1SblJYaHhJS0ZZSkw3V3hJV3lSTmJLM1lKc0gxTys4WExGVkE2dGpV?=
- =?utf-8?B?MWtSbWZoWmJrM2NyU3JXRHgyNlRXL2t3QUJEcGNjQTI0S090RmNlUWNiZ0Zu?=
- =?utf-8?Q?mB9cUw2u1/yc+quB+x0tVW8=3D?=
-X-OriginatorOrg: efficios.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: 7975e0fd-c85c-4e29-467e-08de16304657
-X-MS-Exchange-CrossTenant-AuthSource: YT2PR01MB9175.CANPRD01.PROD.OUTLOOK.COM
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 28 Oct 2025 14:42:53.5001
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 4f278736-4ab6-415c-957e-1f55336bd31e
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: esqtzi6thdvkmIUsuPgq17zq216FckkYMHDTWN1Lskvvz0KOG7sCpNA52dB/AzBLsX/XGRkntyQ22m4Df6OmEqV05VllszfwDxMDPGH7fLc=
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: YT4PR01MB11475
+Content-Type: text/plain; charset="US-ASCII"
+Content-Transfer-Encoding: 7bit
+X-Originating-IP: [10.203.177.15]
+X-ClientProxiedBy: lhrpeml100011.china.huawei.com (7.191.174.247) To
+ dubpeml100005.china.huawei.com (7.214.146.113)
 
-On 2025-10-27 04:44, Thomas Gleixner wrote:
+On Thu, 23 Oct 2025 14:25:39 +0200
+"Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com> wrote:
 
-> Replace the open coded implementation with the scoped user access guard.
-Reviewed-by: Mathieu Desnoyers <mathieu.desnoyers@efficios.com>
+> Move the CPER CXL protocol errors validity out of
 
--- 
-Mathieu Desnoyers
-EfficiOS Inc.
-https://www.efficios.com
+validity check
+
+> cxl_cper_post_prot_err() to cxl_cper_sec_prot_err_valid() and limit the
+
+to new cxl_cper_sec_prot_err_valid() 
+
+as otherwise it sounds like it already exists.
+
+> serial number check only to CXL agents that are CXL devices (UEFI v2.10,
+> Appendix N.2.13).
+
+Perhaps a little more here on why.  I assume because you are going to have
+a second user for it, but good to say that. Also serves to justify the
+export.
+
+> 
+> Signed-off-by: Fabio M. De Francesco <fabio.m.de.francesco@linux.intel.com>
+> ---
+>  drivers/acpi/apei/ghes.c | 32 ++++++++++++++++++++++----------
+>  include/cxl/event.h      | 10 ++++++++++
+>  2 files changed, 32 insertions(+), 10 deletions(-)
+> 
+> diff --git a/drivers/acpi/apei/ghes.c b/drivers/acpi/apei/ghes.c
+> index d6fe5f020e96..e69ae864f43d 100644
+> --- a/drivers/acpi/apei/ghes.c
+> +++ b/drivers/acpi/apei/ghes.c
+> @@ -706,30 +706,42 @@ static DEFINE_KFIFO(cxl_cper_prot_err_fifo, struct cxl_cper_prot_err_work_data,
+>  static DEFINE_SPINLOCK(cxl_cper_prot_err_work_lock);
+>  struct work_struct *cxl_cper_prot_err_work;
+>  
+> -static void cxl_cper_post_prot_err(struct cxl_cper_sec_prot_err *prot_err,
+> -				   int severity)
+> +int cxl_cper_sec_prot_err_valid(struct cxl_cper_sec_prot_err *prot_err)
+
+Useful to return an error number?  Or would a bool be better given it is either
+valid or not?
+
+Otherwise looks good to me,
+
+Jonathan
+
+>  {
+> -	struct cxl_cper_prot_err_work_data wd;
+> -	u8 *dvsec_start, *cap_start;
+> -
+>  	if (!(prot_err->valid_bits & PROT_ERR_VALID_AGENT_ADDRESS)) {
+>  		pr_err_ratelimited("CXL CPER invalid agent type\n");
+> -		return;
+> +		return -EINVAL;
+>  	}
+>  
+>  	if (!(prot_err->valid_bits & PROT_ERR_VALID_ERROR_LOG)) {
+>  		pr_err_ratelimited("CXL CPER invalid protocol error log\n");
+> -		return;
+> +		return -EINVAL;
+>  	}
+>  
+>  	if (prot_err->err_len != sizeof(struct cxl_ras_capability_regs)) {
+>  		pr_err_ratelimited("CXL CPER invalid RAS Cap size (%u)\n",
+>  				   prot_err->err_len);
+> -		return;
+> +		return -EINVAL;
+>  	}
+>  
+> -	if (!(prot_err->valid_bits & PROT_ERR_VALID_SERIAL_NUMBER))
+> -		pr_warn(FW_WARN "CXL CPER no device serial number\n");
+> +	if ((prot_err->agent_type == RCD || prot_err->agent_type == DEVICE ||
+> +	     prot_err->agent_type == LD || prot_err->agent_type == FMLD) &&
+> +	    !(prot_err->valid_bits & PROT_ERR_VALID_SERIAL_NUMBER))
+> +		pr_warn_ratelimited(FW_WARN
+> +				    "CXL CPER no device serial number\n");
+> +
+> +	return 0;
+> +}
+> +EXPORT_SYMBOL_GPL(cxl_cper_sec_prot_err_valid);
+> +
+> +static void cxl_cper_post_prot_err(struct cxl_cper_sec_prot_err *prot_err,
+> +				   int severity)
+> +{
+> +	struct cxl_cper_prot_err_work_data wd;
+> +	u8 *dvsec_start, *cap_start;
+> +
+> +	if (cxl_cper_sec_prot_err_valid(prot_err))
+> +		return;
+>  
+>  	guard(spinlock_irqsave)(&cxl_cper_prot_err_work_lock);
+>  
+
+
 
