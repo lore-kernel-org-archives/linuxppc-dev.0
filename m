@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-13372-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13374-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D85D9CCF9E5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:47:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1BFEBCCF9EB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:47:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWsY5QKFz3dXB;
-	Tue, 28 Oct 2025 11:46:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWsZ2w1Qz3dXh;
+	Tue, 28 Oct 2025 11:46:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761612401;
-	cv=none; b=cwIDhyQIf2Fau68vjMyP0rkBvFbvMAWOS0u76L9zQl2EK1V39MgxzPZ5P5O35ZLNUoDAxQG0EU55PdsIhgnMBQo9VL+YTkYsq5Jyol+p9wz+UkoGjnGpul38CrZ6oK5Ky/wrplBTMxlyJX0qzfPgzFo3vY2r93hxcYwwli0OuiUfKbz+7+WH5hovVr26NmgoS/Rw1UcRW7ot3DhuPBq6L1gZ7qk62Z41wWWCSo9huLdG/3QUYAjaYoUiEUoz4ZKoAbQ7mobdQNYi4H5mj4zIMCs3+NBUVdqbvhgWH3xWeyfsaWyylYEiiGS7zNrl1WJnrWAl7cSo786OWQIs3saa3g==
+	cv=none; b=Sd+q+NDNAecaKl7FK5UjhAKq3Nifg83eWI7MYva0RTlRFX/EkUsLEHEdACwgR0vSqyyQsiA5yXce4tKbe+rlSwVFL/uZJbC3/cXXP7ydiHXUgiL05TtvxsmnZohVIaHotHLjLZN/CFyqtyv9Xw8xUenCJuqW10NLw9YVI2zmritKx1g7OyRFHJC+Ko3gD5VU6X33mOczJ8b8EMmtu2PCqwCkScYFEaQMuM4JEuoxtoqVKLEfOZixHDdtb8EuQHc+0o3UMZjNHruh1ZSS4y6SvrZp0kZHvl+UU/tVVM9uBdXJQGktfS454kr8NW2nVw/ZbRYZMsLVSbIXclvN7eSQFA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1761612401; c=relaxed/relaxed;
-	bh=aIO5z+XlaxOUN+dxGxWKQXIfyt7HKUVO8xN2mehuHOs=;
+	bh=E7cNvRx/cApjSX66b8FSjJI2fyjXpW5PkYfHFIOF7HU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=EgrOV4C+07fewTJd9rAQF/MlL1+W79DzngLeWeqOkgDPlf4ug8VrKPgpRiYrK2ADs+kTVoZAFR18VKztzb+jFyVfQL9WvzxD1oQObD7CMR6Si+AWuWoEW8V4wFtSCFoynz4MKQ1DjhlKmQM1vYcdzLAAmtV8JISpWca/FF/Tdy84stKIBaEmjj5lFrBWtc/+Y/k+8WjUQH7BrQYMlGJzor4k7OyOH17IWxg++Tpmu68od/v4j1XIt6j3IWW9O6M2PPuATiQirt6DA7KEIh1dqYxLHMH6u1nsnC3mO0MyncyW07nygExkQ5R1X7tVEaENLFMhLdk2BGOHgILUaC+m/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=w10996o+; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=N9KARPAGvcS0hXxXzdUaJAtdGp5bHJid2p9uaCRKetLPg9ygwNesejX36m2ODjqHgr29Ta6hgkLNpcL8iTHGE2EnZRfh/iGY42wrIgu2c1elAp2Ar9iCD12eI5o75vuUsVWsRF0lFOKXlO/qhaOleo3ocUYADPwj0YJs6keF9CXzd7iqQBN3DSXpIaUFpugs7zoyuCMzGOtIL80g6D0S0bMi8rT+3yFAHfGL30lA++T9vCAbCxwE5UJpR2SDjq7KyxtAJv59W94PKV5Yj+DkuNKu4L7hJcg77rb2MaWZvGMxdS02YWudDgzADdIiD+AmHI09KMDiRimDovpHt3AzXQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=VsVuTNuT; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=w10996o+;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=VsVuTNuT;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWsQ4r7rz3bfV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:46:34 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWsR4ryWz3bfX
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:46:35 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=aIO5z+XlaxOUN+dxGxWKQXIfyt7HKUVO8xN2mehuHOs=; b=w10996o+4wBACa8wFc2VJLTe4l
-	AE6SJfEeRlDJBYm9lG/BAJ2sno1dzvFxIr+TtSNTtBOWzrsOCuWNgNAkAt0vBEbh1UMQG+wJlVBHQ
-	sr8OKStPsOoMhX34Qf9DmIY46eYtxaTPX5hENvuK30W7LXSkmdHMOhCs1ztH4929mgSkNcSTduvmQ
-	Ra/dafUsYAby60kk2NLpCI2h5RjB+QHXiUdARFd5c+bM2avsNoSpvSX4Qomh81V30TPn/scJZlW+K
-	oeoNBr+ZulzfdrkHMiokpoHrOb3j9iKluVu8L+IDFhPH2OH6bFaWMaGGhse1QPURBnFF6IceB3uY/
-	fm9paVBw==;
+	bh=E7cNvRx/cApjSX66b8FSjJI2fyjXpW5PkYfHFIOF7HU=; b=VsVuTNuTIHc4/BtKRQmf0nDY73
+	mWl3Dwzu6X5U8nei1TpyXq2X5yrpxoWybXmkIBZHiLZeQRHMsrlmBN092u9eokVSxIVHiGGfGqAeO
+	7qi0K0TSduNTt31COYmzintXgfZyhK7fAg5CVAmj7864qVd0dLe+XTrV9EyiCZDYDyRMnwRCbrTyL
+	+f2gJ0BAiNlXB4R7uaB8Kngk2oOAKX1h/Np8qMsm2LPbZpFwdi5xGpH1Kxg/h4/T9ngbozltJyjKI
+	W+ucGiqo0W/h+YgF0F4ZrGgk+et564BA8iBO9ZprjWBaJB9l37W++eesJdNfNGR9ET7XB5Py/n4g0
+	dXRdClJg==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vDXqu-00000001ejA-11In;
-	Tue, 28 Oct 2025 00:46:20 +0000
+	id 1vDXqo-00000001eVR-3bCF;
+	Tue, 28 Oct 2025 00:46:14 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -65,9 +65,9 @@ Cc: torvalds@linux-foundation.org,
 	selinux@vger.kernel.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org
-Subject: [PATCH v2 44/50] convert rpc_pipefs
-Date: Tue, 28 Oct 2025 00:46:03 +0000
-Message-ID: <20251028004614.393374-45-viro@zeniv.linux.org.uk>
+Subject: [PATCH v2 02/50] tracefs: fix a leak in eventfs_create_events_dir()
+Date: Tue, 28 Oct 2025 00:45:21 +0000
+Message-ID: <20251028004614.393374-3-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
 References: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
@@ -87,97 +87,36 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-Just use d_make_persistent() + dput() (and fold the latter into
-simple_finish_creating()) and that's it...
+If we have LOCKDOWN_TRACEFS, the function bails out - *after*
+having locked the parent directory and without bothering to
+undo that.  Just check it before tracefs_start_creating()...
 
-NOTE: pipe->dentry is a borrowed reference - it does not contribute
-to dentry refcount.
-
+Fixes: e24709454c45 "tracefs/eventfs: Add missing lockdown checks"
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- net/sunrpc/rpc_pipe.c | 27 ++++++++++++---------------
- 1 file changed, 12 insertions(+), 15 deletions(-)
+ fs/tracefs/event_inode.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/net/sunrpc/rpc_pipe.c b/net/sunrpc/rpc_pipe.c
-index 0bd1df2ebb47..379daefc4847 100644
---- a/net/sunrpc/rpc_pipe.c
-+++ b/net/sunrpc/rpc_pipe.c
-@@ -536,17 +536,16 @@ static int rpc_new_file(struct dentry *parent,
+diff --git a/fs/tracefs/event_inode.c b/fs/tracefs/event_inode.c
+index 8705c77a9e75..93c231601c8e 100644
+--- a/fs/tracefs/event_inode.c
++++ b/fs/tracefs/event_inode.c
+@@ -757,7 +757,7 @@ struct eventfs_inode *eventfs_create_events_dir(const char *name, struct dentry
+ 						const struct eventfs_entry *entries,
+ 						int size, void *data)
+ {
+-	struct dentry *dentry = tracefs_start_creating(name, parent);
++	struct dentry *dentry;
+ 	struct eventfs_root_inode *rei;
+ 	struct eventfs_inode *ei;
+ 	struct tracefs_inode *ti;
+@@ -768,6 +768,7 @@ struct eventfs_inode *eventfs_create_events_dir(const char *name, struct dentry
+ 	if (security_locked_down(LOCKDOWN_TRACEFS))
+ 		return NULL;
  
- 	inode = rpc_get_inode(dir->i_sb, S_IFREG | mode);
- 	if (unlikely(!inode)) {
--		dput(dentry);
--		inode_unlock(dir);
-+		simple_done_creating(dentry);
- 		return -ENOMEM;
- 	}
- 	inode->i_ino = iunique(dir->i_sb, 100);
- 	if (i_fop)
- 		inode->i_fop = i_fop;
- 	rpc_inode_setowner(inode, private);
--	d_instantiate(dentry, inode);
-+	d_make_persistent(dentry, inode);
- 	fsnotify_create(dir, dentry);
--	inode_unlock(dir);
-+	simple_done_creating(dentry);
- 	return 0;
- }
- 
-@@ -563,18 +562,17 @@ static struct dentry *rpc_new_dir(struct dentry *parent,
- 
- 	inode = rpc_get_inode(dir->i_sb, S_IFDIR | mode);
- 	if (unlikely(!inode)) {
--		dput(dentry);
--		inode_unlock(dir);
-+		simple_done_creating(dentry);
- 		return ERR_PTR(-ENOMEM);
- 	}
- 
- 	inode->i_ino = iunique(dir->i_sb, 100);
- 	inc_nlink(dir);
--	d_instantiate(dentry, inode);
-+	d_make_persistent(dentry, inode);
- 	fsnotify_mkdir(dir, dentry);
--	inode_unlock(dir);
-+	simple_done_creating(dentry);
- 
--	return dentry;
-+	return dentry; // borrowed
- }
- 
- static int rpc_populate(struct dentry *parent,
-@@ -657,8 +655,7 @@ int rpc_mkpipe_dentry(struct dentry *parent, const char *name,
- 
- 	inode = rpc_get_inode(dir->i_sb, umode);
- 	if (unlikely(!inode)) {
--		dput(dentry);
--		inode_unlock(dir);
-+		simple_done_creating(dentry);
- 		err = -ENOMEM;
- 		goto failed;
- 	}
-@@ -668,10 +665,10 @@ int rpc_mkpipe_dentry(struct dentry *parent, const char *name,
- 	rpci->private = private;
- 	rpci->pipe = pipe;
- 	rpc_inode_setowner(inode, private);
--	d_instantiate(dentry, inode);
--	pipe->dentry = dentry;
-+	pipe->dentry = dentry; // borrowed
-+	d_make_persistent(dentry, inode);
- 	fsnotify_create(dir, dentry);
--	inode_unlock(dir);
-+	simple_done_creating(dentry);
- 	return 0;
- 
- failed:
-@@ -1206,7 +1203,7 @@ static void rpc_kill_sb(struct super_block *sb)
- 					   sb);
- 	mutex_unlock(&sn->pipefs_sb_lock);
- out:
--	kill_litter_super(sb);
-+	kill_anon_super(sb);
- 	put_net(net);
- }
++	dentry = tracefs_start_creating(name, parent);
+ 	if (IS_ERR(dentry))
+ 		return ERR_CAST(dentry);
  
 -- 
 2.47.3
