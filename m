@@ -1,79 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-13419-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13420-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4A866CCD1BF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 04:44:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D74A7CCD1BF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 05:32:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwd7t4rwKz3fqC;
-	Tue, 28 Oct 2025 15:44:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761626666;
-	cv=none; b=Wg/w/o87EXUNfDd2+I4eWK09jUM89CwESuXBw68F65v7lT+0sT7RuMr7EH4MXSBXFdQRpduRLZBaeqtArHv9Z7tA9OSYzoQI48RMskTOx2QNcPz0Vvabuwj5e+CtiaYsubju06l6loPIi71biZ4+VrfqJ6i+9Bl3V9Ez8WYgEa7evUYZBOoTA8Uv8HJrvdtWjVnYlLCaOlMUWQH4EowQbCTHUGufvW8Y2tnyzFPYXTA0nRIa2ndw0ZPgnYNXuLH/ZIkQzhVdkqRd7OR0VFUZoJrHXxqxSvZrNKdAT3yiEHQL5oRL4dFJxoHH4FhdIfB3eQDyuGdWrA1pnHK3oISpIw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwfCq38j2z3fqb;
+	Tue, 28 Oct 2025 16:32:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::634"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761629575;
+	cv=none; b=gDFfcCuzGNawHCwcPMGaeDrRh0E6D61dsAkQR23fl/bdEddOAKh9FjygmiL1fE+sN8oCkZ0VPHYmnsIFK62Mt/R0T2b9W/+f12TehEMz4foJmEOSN153Yd08eGjx06P6RxqPN1K/XjF+da6/kqhpLjoYMIuBm35N5saIbsAbEMX1GniYfGZ7AWbE4i4vqhDDWVRKxM0ZGRWWyFjhbEw6eIsTLHfGQIi8jz3ga0gr/TOonN/eLUsJtjefJx6ITR/NWLWI2DI0FNzq7Gdt8pA+S1y1q1UZ1LA3vUs8AB5jn1PJ3IeYTlJL4I8TlwhcESxTZ9E14BCGLxtyDXjBS+7wKg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761626666; c=relaxed/relaxed;
-	bh=anze7Eq7+zdgnMdZzYJmUHn38ayPEjEKQqPB9NIDJls=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Y4PtV2KzntQGziScLILspVbNI/+EKRp6n0xF9+eCVWmHEOv041U+8F3+8Xi8SvXKCm8hTebjEAUl+FrQDEnNX0Rrd6zqQoZFgH4+Mn/hQ0CD7dOQzXEkqbnWvYO5HlJwPuS71xy8O/fu1gISbiKRw7EZB7215xkj94OK0UD/1MgfLKMOHP1Qdo0uQUXcJD44tzhbKn3yizS6WY1RoTkC1Ek1d5jjOqVUnsa3C6JQHBnoKFbC+Vg+/qV7hieImRhAiejhExCq7KQkhkXWSeWflM3ZhHXMja5BGuvKFBfR+XKcXGMYYQYY9KU1Hy2oSPYK/3A5Np66012hZWsc77AJYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=c2iR0ytx; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1761629575; c=relaxed/relaxed;
+	bh=3Wy1ynDaI6taIoYDlBwI1sYFOXKyWHxR4eO6K9jXR3Y=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=nzmgS4TdR7FywGDYWHzINcMpD0RtNPGtdLHzhTLJZPm86ljaTKCKq6dRtmOu6rXc6NXnu3bXadF2gBQuibIkVzuhButqDKTzudOtZpiGWhuCUyaClawUQNWWjCqh/3zNQpNWGh2DYqOBI7hIh0hmwwPK6Ds2ujOOtK66jAw2HeFiqpUF3qtiRy9uege2GdQoQZn5olMQETAUHcrs6C+5xdo+038IHudQTfOk7ZbFkZE4nCfhO83lmPYIetJeQR3k8TfW7rqHDkmlRPAk8qJj8YftFAtGDPFtlK9EnMyipoAo4u6QM2wvwlYvy3mL4hz95YiPNKX1b0WU1+vH9tFgHw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=DbyS/+vy; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::634; helo=mail-ej1-x634.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=c2iR0ytx;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=DbyS/+vy;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::634; helo=mail-ej1-x634.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from mail-ej1-x634.google.com (mail-ej1-x634.google.com [IPv6:2a00:1450:4864:20::634])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwd7s4LQxz3fqB
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 15:44:25 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 59RJ3aTD008697;
-	Tue, 28 Oct 2025 04:44:12 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=anze7E
-	q7+zdgnMdZzYJmUHn38ayPEjEKQqPB9NIDJls=; b=c2iR0ytxqFaF9TgaFLhQpe
-	f5HbwyKLHbqAagictMvVejSpCfA9ajleNWJrGbIOD+ETOp2rJg0HSgCW16hw+kSh
-	r2jehLsfkW7464qCdIf368HvoFcYUhHCpsyQUa/Ea+mlYjKeSzbqAG5mfevDWYMi
-	0g9jTFF/RmJ8HxVPkSwJRMCxJUa2RjTld8NA01qpOR9yhwLpqlqs/xE3U6ijE7im
-	lIY/VabjlsR87aEBT4rPYHEnZGtJk8SCIaC3aH1mSItfvsE8iLuid8978ghBUM/i
-	iTj1JZyFNT+Cmb0GBwkD2pLSClMHB5RkUEROuDo9BXUiApXbZOwqCAA0XItv7Y9A
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4a0p99217h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 28 Oct 2025 04:44:11 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 59S4fCfL009548;
-	Tue, 28 Oct 2025 04:44:11 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4a0p99217f-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 28 Oct 2025 04:44:11 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 59S3QLW4022923;
-	Tue, 28 Oct 2025 04:44:10 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4a198xh39t-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 28 Oct 2025 04:44:10 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 59S4i5Sa37159228
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 28 Oct 2025 04:44:06 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D8FF920043;
-	Tue, 28 Oct 2025 04:44:05 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id D632520040;
-	Tue, 28 Oct 2025 04:44:02 +0000 (GMT)
-Received: from [9.109.204.116] (unknown [9.109.204.116])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 28 Oct 2025 04:44:02 +0000 (GMT)
-Message-ID: <f1544738-bc22-4b6c-b643-7e7076217395@linux.ibm.com>
-Date: Tue, 28 Oct 2025 10:14:01 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwfCn5YBfz3fqZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 16:32:52 +1100 (AEDT)
+Received: by mail-ej1-x634.google.com with SMTP id a640c23a62f3a-b4f323cf89bso1309805566b.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2025 22:32:52 -0700 (PDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linux-foundation.org; s=google; t=1761629567; x=1762234367; darn=lists.ozlabs.org;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=3Wy1ynDaI6taIoYDlBwI1sYFOXKyWHxR4eO6K9jXR3Y=;
+        b=DbyS/+vyusD5K27VGwl4GJi8dN1nehFl6EYm++6S49HgOreL+adbwUlxbuj3NWj6/U
+         8X49nLlTsKKfU27hA/f/1GKVA2WmNbhQlciWucP68hruh7RgQb4oeDR3x+B6trPVCP1b
+         KSYJKvvfLlp7HGDIWDX1V9T3ndQj1aTeSoaf0=
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1761629567; x=1762234367;
+        h=cc:to:subject:message-id:date:from:in-reply-to:references
+         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=3Wy1ynDaI6taIoYDlBwI1sYFOXKyWHxR4eO6K9jXR3Y=;
+        b=Rq/yhxegOedH4wt2VrEr4m4IWtxw+iNfy0/AnwsbEGKH0foKsvJzwf7S4rJTQJa067
+         6tztgxzg3BRnRlDq3VA6z1xl/1+TMVdeqJlmRTBtLUCs9akmL72PNiW33z4VaVtCkUX/
+         8jZtAOiL6CUOpw07nmAFZLSprQyoYHalPyz89I20nSJT7av9ZJEF1DuvEY0ffyh0o9u6
+         MmV1LZsVMiKa0S9yv5laeRVkmASdFwzs4XesASzJ2X8HKMLN4L6JeIuPF8dAL5YykEWk
+         +e7yvSwOAnGBLIFlRutYMepIv7GYeZ+QmE5BToHLYK7paCBuof+u87SfUD63MH9drOf5
+         Zlxw==
+X-Forwarded-Encrypted: i=1; AJvYcCWSkySTUbLNR3hSxh28ej6M1GzhmucYv0O2HUZWek1fT64q7TG34JUGbLF6tc6MhmVX6KvudSq0Le4ckN0=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yzu5JAjrGeF3aIEAH/WfPB817y1/Dd5S9m2+fjoJuV+wzozcb5b
+	XD3CNW98RKPFbUxbcdB+RG9uuWaOldJ7JrwXhoaZB7AgIGCw2y21adfKbq136G2yee6E7CahFQY
+	xtAO58btzBQ==
+X-Gm-Gg: ASbGncuiSaHK5jSPVtMA9ozzHkodc4pXkoy9djD+uJ4BMldmc9JSstdQ9Qg7HR2z0JQ
+	lG3ZMUhYeveAEnU+SWgyvgoSJd5+kYnq1jHKa7215opodRVNbEUsBgoviGexktu8Cn3Z987QAQy
+	aWa4Hpm2qr+1iMm4wJykjNeypQ9YsHN+o13BdRxQLqXWLdnG6JuaZM0EhnT3gUJgXoqazLNNm7U
+	+EEPa6DGozLUf+F8lljR2SLDoUGZ+Qyk8RSoFA5p9O7P1nsaC87jDtoMusbk9N/p9MCOTkFEK1W
+	Jh4dYhxRthIIVhuP/b2sVDfACiAeElqTYLXl1b2z6yh5aEILgKyzxx1T2tFgUKCfZKFdxt4jGKu
+	SyJg3IVMF1aYn7hfVOejceSwDOKN0iQ++NpFMekkLdmfhAbRmJXx1JBqSa9ssAZG2A8wWHqMDMy
+	70sN30IwDHzxQahYUdmIQoLxdWO4a7RDh4bneCo5urwGsUN1tCmG8kfqeFAgzY
+X-Google-Smtp-Source: AGHT+IHzmrFBmO1kTKPuC8gSGBoUbjQ9DqrpEyWqSdedpm3Rn+mUejZaEexBBN/A1DAZv6Omt4qY8w==
+X-Received: by 2002:a17:907:9723:b0:b6d:801a:648 with SMTP id a640c23a62f3a-b6dba59a7e8mr270767266b.48.1761629567005;
+        Mon, 27 Oct 2025 22:32:47 -0700 (PDT)
+Received: from mail-ed1-f42.google.com (mail-ed1-f42.google.com. [209.85.208.42])
+        by smtp.gmail.com with ESMTPSA id a640c23a62f3a-b6db9b86c80sm227772566b.43.2025.10.27.22.32.45
+        for <linuxppc-dev@lists.ozlabs.org>
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 27 Oct 2025 22:32:45 -0700 (PDT)
+Received: by mail-ed1-f42.google.com with SMTP id 4fb4d7f45d1cf-63bf76fc9faso9824757a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2025 22:32:45 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCW0i1FnO5dA3fgA26CMLVmBctZE009Fn4oEyTt+NKm3DHyLKLZC7RvvsE1eu7gs6/J1WKqFGTix+kKr5+s=@lists.ozlabs.org
+X-Received: by 2002:a05:6402:5346:20b0:63c:1e15:b9fb with SMTP id
+ 4fb4d7f45d1cf-63ed84d11b8mr1725392a12.22.1761629565035; Mon, 27 Oct 2025
+ 22:32:45 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,110 +89,40 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/kexec: Enable SMT before waking offline CPUs
-To: "Nysal Jan K.A." <nysal@linux.ibm.com>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: Sachin P Bappalige <sachinpb@linux.ibm.com>, stable@vger.kernel.org,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Laurent Dufour <ldufour@linux.ibm.com>,
-        Thomas Gleixner
- <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-References: <20251025080512.85690-1-nysal@linux.ibm.com>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <20251025080512.85690-1-nysal@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=JqL8bc4C c=1 sm=1 tr=0 ts=69004a1b cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=x6icFKpwvdMA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=VwQbUJbxAAAA:8 a=QyXUC8HyAAAA:8 a=VnNF1IyMAAAA:8 a=FNYM6xYWznnmATNcaFQA:9
- a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=cPQSjfK2_nFv0Q5t_7PE:22
-X-Proofpoint-GUID: FxmdnNuzaqm78WhLlnDMk9_nePRBgCOm
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMDI1MDAxOSBTYWx0ZWRfX7QkWKQhFuOOO
- V9MA81mTt9sfU1UD8Rq3/20G1aeAxSbe8CFEPB7VnCN4pwya45IxorLcSrfBcX/F6suOnwW34CB
- Cn8L+SYmX9LxK5UTibbSis7CZckp43117R0xE1ZoGvcKAR26z2hgFrCxVqzDNkUDPwdVjnydw6F
- qJtIDFi5uh0mstIzJE2S80w7QpJ/nSfhGhz56vsYUOXVqyCGhYsfa+fhCe0+PUUj5Laj+HfKzak
- r7JBMdSnqeEcAuWlskJqzOpcPoS4z5X46mGRWD1vQVnPbWUJdjYwUiPaZU0UAV6tMyWZ/ScVEJF
- MYK+a9KsRBkULhLeZdBs7iit8B0uR6Ct4rQ7+JvafBgR5EkDr3KH9OPlUMa+qld4QCne36e25ZQ
- YvNeualAVKZNQLfjbKa7yFGgbnSQoA==
-X-Proofpoint-ORIG-GUID: lthnj5OCypztazoUVbkfPZXSBi221ky3
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.80.40
- definitions=2025-10-28_02,2025-10-22_01,2025-03-28_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- impostorscore=0 clxscore=1011 lowpriorityscore=0 malwarescore=0 bulkscore=0
- priorityscore=1501 spamscore=0 adultscore=0 phishscore=0 suspectscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2510020000 definitions=main-2510250019
+References: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
+ <20251028004614.393374-32-viro@zeniv.linux.org.uk> <20251028015553.GM2441659@ZenIV>
+In-Reply-To: <20251028015553.GM2441659@ZenIV>
+From: Linus Torvalds <torvalds@linux-foundation.org>
+Date: Mon, 27 Oct 2025 22:32:28 -0700
+X-Gmail-Original-Message-ID: <CAHk-=whCnWNXcmZAgxfV9p8rKJfjxcceNzaxia41f675+yEdfA@mail.gmail.com>
+X-Gm-Features: AWmQ_bkREqIMu_f1B9dwguEOjRWmmtrQM-BuU5ACiXPx-fVfEkz6aAECfx6yPOQ
+Message-ID: <CAHk-=whCnWNXcmZAgxfV9p8rKJfjxcceNzaxia41f675+yEdfA@mail.gmail.com>
+Subject: Re: [PATCH v2 31/50] convert autofs
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: linux-fsdevel@vger.kernel.org, brauner@kernel.org, jack@suse.cz, 
+	raven@themaw.net, miklos@szeredi.hu, neil@brown.name, a.hindborg@kernel.org, 
+	linux-mm@kvack.org, linux-efi@vger.kernel.org, ocfs2-devel@lists.linux.dev, 
+	kees@kernel.org, rostedt@goodmis.org, gregkh@linuxfoundation.org, 
+	linux-usb@vger.kernel.org, paul@paul-moore.com, casey@schaufler-ca.com, 
+	linuxppc-dev@lists.ozlabs.org, john.johansen@canonical.com, 
+	selinux@vger.kernel.org, borntraeger@linux.ibm.com, bpf@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
 
-Hello Nysal,
-
-On 25/10/25 13:35, Nysal Jan K.A. wrote:
-> If SMT is disabled or a partial SMT state is enabled, when a new kernel
-> image is loaded for kexec, on reboot the following warning is observed:
+On Mon, 27 Oct 2025 at 18:55, Al Viro <viro@zeniv.linux.org.uk> wrote:
 >
-> kexec: Waking offline cpu 228.
-> WARNING: CPU: 0 PID: 9062 at arch/powerpc/kexec/core_64.c:223 kexec_prepare_cpus+0x1b0/0x1bc
-> [snip]
->   NIP kexec_prepare_cpus+0x1b0/0x1bc
->   LR  kexec_prepare_cpus+0x1a0/0x1bc
->   Call Trace:
->    kexec_prepare_cpus+0x1a0/0x1bc (unreliable)
->    default_machine_kexec+0x160/0x19c
->    machine_kexec+0x80/0x88
->    kernel_kexec+0xd0/0x118
->    __do_sys_reboot+0x210/0x2c4
->    system_call_exception+0x124/0x320
->    system_call_vectored_common+0x15c/0x2ec
->
-> This occurs as add_cpu() fails due to cpu_bootable() returning false for
-> CPUs that fail the cpu_smt_thread_allowed() check or non primary
-> threads if SMT is disabled.
->
-> Fix the issue by enabling SMT and resetting the number of SMT threads to
-> the number of threads per core, before attempting to wake up all present
-> CPUs.
->
-> Fixes: 38253464bc82 ("cpu/SMT: Create topology_smt_thread_allowed()")
-> Reported-by: Sachin P Bappalige <sachinpb@linux.ibm.com>
-> Cc: stable@vger.kernel.org # v6.6+
-> Signed-off-by: Nysal Jan K.A. <nysal@linux.ibm.com>
-> ---
->   arch/powerpc/kexec/core_64.c | 5 +++++
->   1 file changed, 5 insertions(+)
->
-> diff --git a/arch/powerpc/kexec/core_64.c b/arch/powerpc/kexec/core_64.c
-> index 222aa326dace..ff6df43720c4 100644
-> --- a/arch/powerpc/kexec/core_64.c
-> +++ b/arch/powerpc/kexec/core_64.c
-> @@ -216,6 +216,11 @@ static void wake_offline_cpus(void)
->   {
->   	int cpu = 0;
->   
-> +	lock_device_hotplug();
-> +	cpu_smt_num_threads = threads_per_core;
-> +	cpu_smt_control = CPU_SMT_ENABLED;
+> BTW, is there any reason why autofs_dir_unlink() does not update
+> ctime of the parent directory?
 
+An autofs 'rmdir' is really just an expire, isn't it? It doesn't
+really change anything in the parent, and a lookup will just reinstate
+the directory.
 
-Above variables are  #define if CONFIG_SMP and CONFIG_HOTPLUG_SMT is not 
-there.
+So I'd go the other way, and say that the strange thing is that it
+changes mtime...
 
-I think the above code should go under #if defined(CONFIG_SMP) && 
-defined(CONFIG_HOTPLUG_SMT).
+That said, exactly *because* it changes mtime, I think the real answer
+is that none of this matters, and it's probably just an oversight, and
+it could easily go either way.
 
-Seems like the build failure reported below is also pointing the same issue:
-https://lore.kernel.org/all/202510280824.Fe2D1Sbw-lkp@intel.com/
-
-> +	unlock_device_hotplug();
-> +
->   	for_each_present_cpu(cpu) {
->   		if (!cpu_online(cpu)) {
->   			printk(KERN_INFO "kexec: Waking offline cpu %d.\n",
-
+               Linus
 
