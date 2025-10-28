@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-13396-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13395-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A106CCF9E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:50:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3B579CCF9E5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:51:00 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWt333G4z3fRc;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWt332s9z3btL;
 	Tue, 28 Oct 2025 11:47:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761612426;
-	cv=none; b=H1GOACn2nXxNAxnavsYJKn7w9H7eERKjmJOma6+MSFH9J+bdi8OK80Rb4BjJI1/oGpesnSbNH6rmFX6rh1DKzZrnHnRUdUUv7untq500/QSBI0foN4Z5qqiJWeLHTm2Tiklco3g1ZHGdwTQYYYIGkkNKLoQEjKF3UWwXXat7ysCSByDvJjakQ3R3POQmQJ/CusHuhSL1s8DxFQju9vsE8RMT+sB0my88jHSu/YSM/6PCDwNOO4ZAMK5ELJc0tJxmyvkZMZe6EG3MugCtJz04K7tdty9l7db0UUbMBWuLEuksd3ZdQsIqeztk7lDj2SOUNteUXcG04jlRsAdFq7YSyA==
+	cv=none; b=UTEHC2TvOO5uhjhdMNYpztbzL/Mib/AFIY1rRCSkEs5PcYw9yaC5btkWGHi5nZS9n2V+nkRqwb/Rl5c2hG7DSS/Xn0Hr4zMMvrOfG7KnSjpeyCJir7K4AbsgI/cBiaX+APSR3mi7GMlNYWqE2ISE/6LsxNQsPXI58H7sqsGur3+y6zvwj1ow7Y/MZa8I5i4pj+vPnpacdzfhzRYORO1rPEH7sHl7u+ArjWCjokmKRqJUB3/Gd1ASLtvF2lo2lurvPCkgK2K1ka5l7tKXiWfNE72vXzmgQQGqFfmThvlMae77BB4UpA5z6ZQx8OjnLPHRi8EjGox2GWzKfUe2tICCIg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1761612426; c=relaxed/relaxed;
-	bh=AxXF+ZX7o2qevQIhaj7GgHO9nhvHZfJFLXJ69dxgaxo=;
+	bh=AovK4oTG8i9mD8KDrbZrZDCi+2Kh5o4vX35c5oMMEjA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BIyOfeMLv5XvNViN8qBAB99HSO+Mkx576vqcHISLanMnARhfYmQlpDZckW8csNAWnN9aIYSpcRHxjiBP963PDrdIZeOjk5xR6p1q8+dxvekmmYeP93h24S9KeyovbY9+cUi0fyEWH0IqjLzUcgU7YUS91x5cyO2z+H8VhQqfWTDx7snGXak7lHV2wSZ3nrwLrZysQxo/HAKmv3GbzHoNcmrgvsOrlD+50zfH3hnfhtu/c3TVX4kjfKDUdJABUeHYCohskFXXcokm2Mf1g9PPaiY5syIWOW5GlFA+/7JiGHArqNlfvE8dqVaBLTMpgGYi6u9paqxlNjgkulsusMYnkA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=wJOqMQYn; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=CW6jBoK5ri1155TMpm6DG8Ml2m/3dpOvoLrgdZCTFCeFzHd/xZdyFw+qEUz5+fNllwCq6ITSZailjXMA8CZpMLfjQRsN2vq6cD4l6Iux2JHBlN2Rr+1hG6yyEbYgFz7uwmw0p7WucHo9r4JpjYOGOpJcp2nAYIKx65qfamYo9Gj7gQ1B7hAfQ8pTOqyByw38+tIlQ+qha2yYeAV9ToIUY+kYqb8B086g1ORjrT4ymVyRMbBCC/5BDRHopIIoyNTT+WtOlseSFXqxeiRw4HOEqlmkbpT5sP1kkN8JpFjyZ33thjnlpW4EOTSGXYp2GFAb295s/q3CcQjkNzs6Uu1r+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=mZm3qIcQ; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=wJOqMQYn;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=mZm3qIcQ;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWt152Z8z3fNJ
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWt158XDz3fNL
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:47:05 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=AxXF+ZX7o2qevQIhaj7GgHO9nhvHZfJFLXJ69dxgaxo=; b=wJOqMQYn/agdM5HgN30InThuM4
-	YKX3asL/ZDg1YZerfVxwnR4IjS5+rIKsb5lOPquQKQnSwBD/KyhzjMLiNBwCyBJ1Hi+CIdrD4bTbT
-	glwIkIKVjh6Fq4GLIkfs9mbfYjUWCB6Z4HYkPZ/6c32QmE9hMHwLVbXg1CG82vHQjgzoPkY9QDnB6
-	p5w+gUbz3/gwdNOUPxTUgj5isWLCB7q3uR+Q/aB3dZj8GdGTChUwLYH0g8lvzKudw9f5tjGazaCl6
-	pyd+GtjpJwkVpLOqbpTgpR5D7gU1+EEel79+MPwja27D5aFjvJAZVFiWQDk229jSbYl2karclhEWS
-	3qZbyJoA==;
+	bh=AovK4oTG8i9mD8KDrbZrZDCi+2Kh5o4vX35c5oMMEjA=; b=mZm3qIcQePpnJyEcsH2GF3lRaa
+	0e4996QFXgXq2c0ReB/hQGwGdpUNf/1df2YVHWrlLszIlcg3KAT0gTNHH5TFh64MBd3r1mXE5ppuY
+	G6H3+MfifD10Mry27hkYV66FvIo52d/U5q6hu4C6FaEsvaMNwcUDTTLOWTWaBW2jSy6LO3ThgDIZ9
+	r5BXIu9QVukWUjsthtNBRGpPUbvSvpKScRpHUAEXw1YS+thW/UYn0XpW1vhtcmjs+h7dzPgLkuAme
+	ScxYOf2U0QYqPj0W9MdXfysJ9q5OCPlKX/TSkaLBCqo10TlvmtqSSH/2kxBXwlDBIZyj1rX+9OTyW
+	HoO/U3pQ==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vDXqs-00000001ecD-3iKp;
-	Tue, 28 Oct 2025 00:46:18 +0000
+	id 1vDXqr-00000001eYj-1BZN;
+	Tue, 28 Oct 2025 00:46:17 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -65,9 +65,9 @@ Cc: torvalds@linux-foundation.org,
 	selinux@vger.kernel.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org
-Subject: [PATCH v2 40/50] hypfs: don't pin dentries twice
-Date: Tue, 28 Oct 2025 00:45:59 +0000
-Message-ID: <20251028004614.393374-41-viro@zeniv.linux.org.uk>
+Subject: [PATCH v2 25/50] ibmasmfs: get rid of ibmasmfs_dir_ops
+Date: Tue, 28 Oct 2025 00:45:44 +0000
+Message-ID: <20251028004614.393374-26-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
 References: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
@@ -87,108 +87,44 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-hypfs dentries end up with refcount 2 when they are not busy.
-Refcount 1 is enough to keep them pinned, and going that way
-allows to simplify things nicely:
-	* don't need to drop an extra reference before the
-call of kill_litter_super() in ->kill_sb(); all we need
-there is to reset the cleanup list - everything on it will
-be taken out automatically.
-	* we can make use of simple_recursive_removal() on
-tree rebuilds; just make sure that only children of root
-end up in the cleanup list and hypfs_delete_tree() becomes
-much simpler
+it is always equal (and always had been equal) to &simple_dir_operations
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- arch/s390/hypfs/inode.c | 41 ++++++++++-------------------------------
- 1 file changed, 10 insertions(+), 31 deletions(-)
+ drivers/misc/ibmasm/ibmasmfs.c | 6 ++----
+ 1 file changed, 2 insertions(+), 4 deletions(-)
 
-diff --git a/arch/s390/hypfs/inode.c b/arch/s390/hypfs/inode.c
-index 96409573c75d..a4dc8e13d999 100644
---- a/arch/s390/hypfs/inode.c
-+++ b/arch/s390/hypfs/inode.c
-@@ -61,33 +61,17 @@ static void hypfs_update_update(struct super_block *sb)
+diff --git a/drivers/misc/ibmasm/ibmasmfs.c b/drivers/misc/ibmasm/ibmasmfs.c
+index a6cde74efb68..824c5b664985 100644
+--- a/drivers/misc/ibmasm/ibmasmfs.c
++++ b/drivers/misc/ibmasm/ibmasmfs.c
+@@ -97,8 +97,6 @@ static const struct super_operations ibmasmfs_s_ops = {
+ 	.drop_inode	= inode_just_drop,
+ };
  
- static void hypfs_add_dentry(struct dentry *dentry)
- {
--	dentry->d_fsdata = hypfs_last_dentry;
--	hypfs_last_dentry = dentry;
--}
+-static const struct file_operations *ibmasmfs_dir_ops = &simple_dir_operations;
 -
--static void hypfs_remove(struct dentry *dentry)
--{
--	struct dentry *parent;
--
--	parent = dentry->d_parent;
--	inode_lock(d_inode(parent));
--	if (simple_positive(dentry)) {
--		if (d_is_dir(dentry))
--			simple_rmdir(d_inode(parent), dentry);
--		else
--			simple_unlink(d_inode(parent), dentry);
-+	if (IS_ROOT(dentry->d_parent)) {
-+		dentry->d_fsdata = hypfs_last_dentry;
-+		hypfs_last_dentry = dentry;
- 	}
--	d_drop(dentry);
--	dput(dentry);
--	inode_unlock(d_inode(parent));
- }
+ static struct file_system_type ibmasmfs_type = {
+ 	.owner          = THIS_MODULE,
+ 	.name           = "ibmasmfs",
+@@ -122,7 +120,7 @@ static int ibmasmfs_fill_super(struct super_block *sb, struct fs_context *fc)
+ 		return -ENOMEM;
  
--static void hypfs_delete_tree(struct dentry *root)
-+static void hypfs_delete_tree(void)
- {
- 	while (hypfs_last_dentry) {
--		struct dentry *next_dentry;
--		next_dentry = hypfs_last_dentry->d_fsdata;
--		hypfs_remove(hypfs_last_dentry);
-+		struct dentry *next_dentry = hypfs_last_dentry->d_fsdata;
-+		simple_recursive_removal(hypfs_last_dentry, NULL);
- 		hypfs_last_dentry = next_dentry;
- 	}
- }
-@@ -184,14 +168,14 @@ static ssize_t hypfs_write_iter(struct kiocb *iocb, struct iov_iter *from)
- 		rc = -EBUSY;
- 		goto out;
- 	}
--	hypfs_delete_tree(sb->s_root);
-+	hypfs_delete_tree();
- 	if (machine_is_vm())
- 		rc = hypfs_vm_create_files(sb->s_root);
- 	else
- 		rc = hypfs_diag_create_files(sb->s_root);
- 	if (rc) {
- 		pr_err("Updating the hypfs tree failed\n");
--		hypfs_delete_tree(sb->s_root);
-+		hypfs_delete_tree();
- 		goto out;
- 	}
- 	hypfs_update_update(sb);
-@@ -326,13 +310,9 @@ static void hypfs_kill_super(struct super_block *sb)
- {
- 	struct hypfs_sb_info *sb_info = sb->s_fs_info;
+ 	root->i_op = &simple_dir_inode_operations;
+-	root->i_fop = ibmasmfs_dir_ops;
++	root->i_fop = &simple_dir_operations;
  
--	if (sb->s_root)
--		hypfs_delete_tree(sb->s_root);
--	if (sb_info && sb_info->update_file)
--		hypfs_remove(sb_info->update_file);
--	kfree(sb->s_fs_info);
--	sb->s_fs_info = NULL;
-+	hypfs_last_dentry = NULL;
- 	kill_litter_super(sb);
-+	kfree(sb_info);
- }
+ 	sb->s_root = d_make_root(root);
+ 	if (!sb->s_root)
+@@ -188,7 +186,7 @@ static struct dentry *ibmasmfs_create_dir(struct dentry *parent,
+ 	}
  
- static struct dentry *hypfs_create_file(struct dentry *parent, const char *name,
-@@ -367,7 +347,6 @@ static struct dentry *hypfs_create_file(struct dentry *parent, const char *name,
- 		BUG();
- 	inode->i_private = data;
- 	d_instantiate(dentry, inode);
--	dget(dentry);
- fail:
- 	inode_unlock(d_inode(parent));
- 	return dentry;
+ 	inode->i_op = &simple_dir_inode_operations;
+-	inode->i_fop = ibmasmfs_dir_ops;
++	inode->i_fop = &simple_dir_operations;
+ 
+ 	d_make_persistent(dentry, inode);
+ 	dput(dentry);
 -- 
 2.47.3
 
