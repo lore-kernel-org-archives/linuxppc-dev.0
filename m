@@ -1,76 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-13409-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13410-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6C8ADCCF9E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:52:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BB1EBCCF9E5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:52:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWw05m5yz3dTZ;
-	Tue, 28 Oct 2025 11:48:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761612528;
-	cv=none; b=MX2yP6tp5mPTnSc6hn7Im+lzmE4+hLWUYt2DKz7KlVitXXMd0RqQDQcfTaKHy2CDTAjPIlGMtU7hSD6wNHa1hpLcnOUg1+bfr1qfMLIMw4zRBGY2kkr7ikMnTE/50cLMxD9kGC3n3AbIbNOB7JY4eicJ1iPj2uDYrteGAYX/hTc5H+AcYY3BeVXMF5Klr+PeYtSKnKNWIPo9LO0JDihxdlyPvE915CCwv6jwhVA/di/BBvE6KZPfl7gtjfrE+6IsiMe3h9MZfJSyAKnzxn61/9rl9UbIiK0TCZ9xB3hwrzvqx44uUL0eXDM5A34wGLYkGaf4hRjrrlEFId2Rk84b5Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwX0H0BKNz3fn5;
+	Tue, 28 Oct 2025 11:52:31 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.9
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761612750;
+	cv=none; b=OzTsc0qUxDI9O7Dy2cHI2SVy5lL/2VfqvPBb2OC41VTcAgQLpO74H/h6X6+WdTDmETrrNuXEsOULLW5bLTpFlqFDptnBSBAq7s28nc60Ui3tocO/q7fgUEtVnKfZs2Ke1G4Cjg8xbqvOpYv0FLWy90IEGNWdVgPLFzb2K5HV9UJNDxVgFSrrE1cRPxxMcgk4s96O7JpSB0rC784IFZLJj0T4VJcBmhjvfGr7A5+CfkPGww90aTwKRG5Ju8ApUrp407v5QJcs1JSJn5Qv9vgcwD99m/s0P/A+yq/SCpj+WGCHQHWdg6O/g9PH+J7XXUu00Aae/cZdYZ0TNKf+YQ99LQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761612528; c=relaxed/relaxed;
-	bh=bCMcASxW4GQs4KES7qr2omvwcK385DadzCf/GiIFZ/s=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=IAF6B+e2wiRcEDEU5aB66cz82aVX8OrCmjbXxsqmawziiz4AvfacJ0GyZ3TA674M1mntSMPHH0+SvU5D4gV0iEESaf5EwhSzLorhNb7fg5vVTBsKTMQ/SSWuKJgdgEA9UDj8XdT4cUVFzZROw5mIP5B2mZ+byaga4j9CS/kckh15h6FJEnM0l0laCXd+7p7/ZOhE4A5y5SXq0l4f9IZWJ87YRxQiXkiI9O01acRbZbhNbOxfwRo4Ll96o5Kqx/JhsJpzndJdCblpfx9iz0xG8JDHTZFzZfRaCgND6305Tqfo+F0gO/297WMQDBEb4ddOSqJHVn7gvUfEI+mIewVq2g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=Dt+Nd6iW; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
+	t=1761612750; c=relaxed/relaxed;
+	bh=xE7Ol8ZHHIYSX2HMcYRbiY4I4pOxPmZnHiEv7D3PDUY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=kK3w7q0RHM14YIDyLT9TFTfUNx5JBPcoo1EHXj2UZH8z/1DuCJGBDe6KaUdDJIZfCO1jZqR90UP+SAdFJGZsBsDvcP13ZzZB4mTBNCp1bebLFNKLG8AbGX1kJvHE9os33di7Gg7JSgjpGyAiHIXcuNGe87NKkwD930Wp1JiyvPR7NUefTjmkvfcNgK8Vd9BpurVbZVsLy+Ektxp8YT8txnNfnP2hORNCYimHVjVh62B0bPeNcTrVxFXunHGcyOvETF7hnX4ATbcicJBY2N9K93BPG4Aet20tS1u9hVpHlbelf4o0P4toYgyyzDa5/+5djJc+P4x89BJYfBFlKhtqow==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=G6Hvogw9; dkim-atps=neutral; spf=pass (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=Dt+Nd6iW;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=G6Hvogw9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
-Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.9; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.9])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWw02NjXz3dTV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:48:48 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
-	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
-	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=bCMcASxW4GQs4KES7qr2omvwcK385DadzCf/GiIFZ/s=; b=Dt+Nd6iW2PWT2BboUeHXj49Qkn
-	Fjms7qsOsZELH0oc4wtwugPD6a8MqzEDL/kpUQIX3zjfUxV9mYiIFlFUAYUbuWKdarDqDFrp6TJAx
-	uCoqjVXJBB1fuw2oijmLSN57dAE6UMl4qU8I/9eZyzeFLK4Q/4CEs7MFZMjXM+A8RC0wZUgZpOUb6
-	BAEZB2v5CZRIw6+UdzV3t1ZgVXXdA7h45mEIKfA1noSQxEBC9IVm8V0x5VYLmxuTvEUS70HMAcq0D
-	hhh+vZb6EzfsVHt1cVFbrbperlGVszCkTRm99S6pflACz5AVgvCPCKE4jG0HNCMo3+o+7dQVIga0R
-	R1uO1oRA==;
-Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vDXqr-00000001eZb-3pWj;
-	Tue, 28 Oct 2025 00:46:17 +0000
-From: Al Viro <viro@zeniv.linux.org.uk>
-To: linux-fsdevel@vger.kernel.org
-Cc: torvalds@linux-foundation.org,
-	brauner@kernel.org,
-	jack@suse.cz,
-	raven@themaw.net,
-	miklos@szeredi.hu,
-	neil@brown.name,
-	a.hindborg@kernel.org,
-	linux-mm@kvack.org,
-	linux-efi@vger.kernel.org,
-	ocfs2-devel@lists.linux.dev,
-	kees@kernel.org,
-	rostedt@goodmis.org,
-	gregkh@linuxfoundation.org,
-	linux-usb@vger.kernel.org,
-	paul@paul-moore.com,
-	casey@schaufler-ca.com,
-	linuxppc-dev@lists.ozlabs.org,
-	john.johansen@canonical.com,
-	selinux@vger.kernel.org,
-	borntraeger@linux.ibm.com,
-	bpf@vger.kernel.org
-Subject: [PATCH v2 32/50] convert binfmt_misc
-Date: Tue, 28 Oct 2025 00:45:51 +0000
-Message-ID: <20251028004614.393374-33-viro@zeniv.linux.org.uk>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
-References: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwX0D0p3lz3fn3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:52:26 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1761612748; x=1793148748;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=w7zS/Rxbd2Ot04z+qhtf2Kt5+S/gx85Bie+qXzvTKLc=;
+  b=G6Hvogw9yZJo7HQN3Rdqpp8ax/nDetFS1iAK8SJ7radwMNTDQWmlvNIv
+   ar+yMU5CbuM45vdzG+CA9t8wjzT0UPn6e2bjvg7QakynJGYLCethmXa5g
+   R9rKtfnWJE9MzeGVnVNOep8UBjws7bqHwWucDw1l8A25BRbIIwLLEO5u3
+   XZz5fYJwub0L/lv1sKSdsOZnSIFxWTWNiJeo+o2qJao6XLCbtlJvu7ia+
+   eOXX8REuaBcCkUiteslwFw1DJVij3dZbw3ktie76iSzM0e7KcdgnHf/Fp
+   d3M5lRNMmWGgLkkmkzsI+g/XxnYTfGtInNsolBzEVHFmCU88CpkLVWY++
+   Q==;
+X-CSE-ConnectionGUID: +LKai9G+TmWn/wKUElNpQw==
+X-CSE-MsgGUID: OlAbQ+n/R162Pim3Ds3cIQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11586"; a="86331337"
+X-IronPort-AV: E=Sophos;i="6.19,260,1754982000"; 
+   d="scan'208";a="86331337"
+Received: from orviesa007.jf.intel.com ([10.64.159.147])
+  by orvoesa101.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 27 Oct 2025 17:52:24 -0700
+X-CSE-ConnectionGUID: iliyoV3HSiWz4WHQBxJ1yQ==
+X-CSE-MsgGUID: hTZAPswWTDKoA9uQQVALaA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.19,260,1754982000"; 
+   d="scan'208";a="185103061"
+Received: from lkp-server02.sh.intel.com (HELO 66d7546c76b2) ([10.239.97.151])
+  by orviesa007.jf.intel.com with ESMTP; 27 Oct 2025 17:52:20 -0700
+Received: from kbuild by 66d7546c76b2 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1vDXwb-000Ibx-1L;
+	Tue, 28 Oct 2025 00:52:16 +0000
+Date: Tue, 28 Oct 2025 08:51:48 +0800
+From: kernel test robot <lkp@intel.com>
+To: "Nysal Jan K.A." <nysal@linux.ibm.com>,
+	Sourabh Jain <sourabhjain@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev,
+	"Nysal Jan K.A." <nysal@linux.ibm.com>,
+	Sachin P Bappalige <sachinpb@linux.ibm.com>, stable@vger.kernel.org,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Laurent Dufour <ldufour@linux.ibm.com>,
+	Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] powerpc/kexec: Enable SMT before waking offline CPUs
+Message-ID: <202510280824.Fe2D1Sbw-lkp@intel.com>
+References: <20251025080512.85690-1-nysal@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,119 +89,85 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-Sender: Al Viro <viro@ftp.linux.org.uk>
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251025080512.85690-1-nysal@linux.ibm.com>
 
-removals are done with locked_recursive_removal(); switch creations to
-simple_start_creating()/d_make_persistent()/simple_done_creating() and
-take them to a helper (add_entry()), while we are at it - simpler control
-flow that way.
+Hi Nysal,
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
----
- fs/binfmt_misc.c | 69 ++++++++++++++++++++++--------------------------
- 1 file changed, 32 insertions(+), 37 deletions(-)
+kernel test robot noticed the following build errors:
 
-diff --git a/fs/binfmt_misc.c b/fs/binfmt_misc.c
-index a839f960cd4a..2093f9dcd321 100644
---- a/fs/binfmt_misc.c
-+++ b/fs/binfmt_misc.c
-@@ -765,14 +765,41 @@ static const struct file_operations bm_entry_operations = {
- 
- /* /register */
- 
-+/* add to filesystem */
-+static int add_entry(Node *e, struct super_block *sb)
-+{
-+	struct dentry *dentry = simple_start_creating(sb->s_root, e->name);
-+	struct inode *inode;
-+	struct binfmt_misc *misc;
-+
-+	if (IS_ERR(dentry))
-+		return PTR_ERR(dentry);
-+
-+	inode = bm_get_inode(sb, S_IFREG | 0644);
-+	if (unlikely(!inode)) {
-+		simple_done_creating(dentry);
-+		return -ENOMEM;
-+	}
-+
-+	refcount_set(&e->users, 1);
-+	e->dentry = dentry;
-+	inode->i_private = e;
-+	inode->i_fop = &bm_entry_operations;
-+
-+	d_make_persistent(dentry, inode);
-+	misc = i_binfmt_misc(inode);
-+	write_lock(&misc->entries_lock);
-+	list_add(&e->list, &misc->entries);
-+	write_unlock(&misc->entries_lock);
-+	simple_done_creating(dentry);
-+	return 0;
-+}
-+
- static ssize_t bm_register_write(struct file *file, const char __user *buffer,
- 			       size_t count, loff_t *ppos)
- {
- 	Node *e;
--	struct inode *inode;
- 	struct super_block *sb = file_inode(file)->i_sb;
--	struct dentry *root = sb->s_root, *dentry;
--	struct binfmt_misc *misc;
- 	int err = 0;
- 	struct file *f = NULL;
- 
-@@ -803,39 +830,7 @@ static ssize_t bm_register_write(struct file *file, const char __user *buffer,
- 		e->interp_file = f;
- 	}
- 
--	inode_lock(d_inode(root));
--	dentry = lookup_noperm(&QSTR(e->name), root);
--	err = PTR_ERR(dentry);
--	if (IS_ERR(dentry))
--		goto out;
--
--	err = -EEXIST;
--	if (d_really_is_positive(dentry))
--		goto out2;
--
--	inode = bm_get_inode(sb, S_IFREG | 0644);
--
--	err = -ENOMEM;
--	if (!inode)
--		goto out2;
--
--	refcount_set(&e->users, 1);
--	e->dentry = dget(dentry);
--	inode->i_private = e;
--	inode->i_fop = &bm_entry_operations;
--
--	d_instantiate(dentry, inode);
--	misc = i_binfmt_misc(inode);
--	write_lock(&misc->entries_lock);
--	list_add(&e->list, &misc->entries);
--	write_unlock(&misc->entries_lock);
--
--	err = 0;
--out2:
--	dput(dentry);
--out:
--	inode_unlock(d_inode(root));
--
-+	err = add_entry(e, sb);
- 	if (err) {
- 		if (f)
- 			filp_close(f, NULL);
-@@ -1028,7 +1023,7 @@ static struct file_system_type bm_fs_type = {
- 	.name		= "binfmt_misc",
- 	.init_fs_context = bm_init_fs_context,
- 	.fs_flags	= FS_USERNS_MOUNT,
--	.kill_sb	= kill_litter_super,
-+	.kill_sb	= kill_anon_super,
- };
- MODULE_ALIAS_FS("binfmt_misc");
- 
+[auto build test ERROR on powerpc/next]
+[also build test ERROR on powerpc/fixes linus/master v6.18-rc3 next-20251027]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
+
+url:    https://github.com/intel-lab-lkp/linux/commits/Nysal-Jan-K-A/powerpc-kexec-Enable-SMT-before-waking-offline-CPUs/20251025-160821
+base:   https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git next
+patch link:    https://lore.kernel.org/r/20251025080512.85690-1-nysal%40linux.ibm.com
+patch subject: [PATCH] powerpc/kexec: Enable SMT before waking offline CPUs
+config: powerpc64-randconfig-001-20251028 (https://download.01.org/0day-ci/archive/20251028/202510280824.Fe2D1Sbw-lkp@intel.com/config)
+compiler: clang version 22.0.0git (https://github.com/llvm/llvm-project e1ae12640102fd2b05bc567243580f90acb1135f)
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251028/202510280824.Fe2D1Sbw-lkp@intel.com/reproduce)
+
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202510280824.Fe2D1Sbw-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   In file included from <built-in>:3:
+   In file included from include/linux/compiler_types.h:171:
+   include/linux/compiler-clang.h:37:9: warning: '__SANITIZE_THREAD__' macro redefined [-Wmacro-redefined]
+      37 | #define __SANITIZE_THREAD__
+         |         ^
+   <built-in>:353:9: note: previous definition is here
+     353 | #define __SANITIZE_THREAD__ 1
+         |         ^
+>> arch/powerpc/kexec/core_64.c:220:22: error: expression is not assignable
+     220 |         cpu_smt_num_threads = threads_per_core;
+         |         ~~~~~~~~~~~~~~~~~~~ ^
+   arch/powerpc/kexec/core_64.c:221:18: error: expression is not assignable
+     221 |         cpu_smt_control = CPU_SMT_ENABLED;
+         |         ~~~~~~~~~~~~~~~ ^
+   1 warning and 2 errors generated.
+
+
+vim +220 arch/powerpc/kexec/core_64.c
+
+   204	
+   205	/*
+   206	 * We need to make sure each present CPU is online.  The next kernel will scan
+   207	 * the device tree and assume primary threads are online and query secondary
+   208	 * threads via RTAS to online them if required.  If we don't online primary
+   209	 * threads, they will be stuck.  However, we also online secondary threads as we
+   210	 * may be using 'cede offline'.  In this case RTAS doesn't see the secondary
+   211	 * threads as offline -- and again, these CPUs will be stuck.
+   212	 *
+   213	 * So, we online all CPUs that should be running, including secondary threads.
+   214	 */
+   215	static void wake_offline_cpus(void)
+   216	{
+   217		int cpu = 0;
+   218	
+   219		lock_device_hotplug();
+ > 220		cpu_smt_num_threads = threads_per_core;
+   221		cpu_smt_control = CPU_SMT_ENABLED;
+   222		unlock_device_hotplug();
+   223	
+   224		for_each_present_cpu(cpu) {
+   225			if (!cpu_online(cpu)) {
+   226				printk(KERN_INFO "kexec: Waking offline cpu %d.\n",
+   227				       cpu);
+   228				WARN_ON(add_cpu(cpu));
+   229			}
+   230		}
+   231	}
+   232	
+
 -- 
-2.47.3
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
