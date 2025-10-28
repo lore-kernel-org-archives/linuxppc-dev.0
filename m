@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-13371-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13373-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D738ECCF9E5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:47:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 90130CCF9E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:47:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWsY3Fwbz3dX3;
-	Tue, 28 Oct 2025 11:46:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWsZ29GGz3dXZ;
+	Tue, 28 Oct 2025 11:46:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761612400;
-	cv=none; b=iuluamJj/Put20m0X8GL0yPRzSJdrGu/j/TydPoXBrFZ0nU3Twt58gIJz3NkUxHRo2RrcJWkom6xvy0Jt3wwziN6nm3bFQzm+6JxcKPO1JVMAKwSGO/6oJerVpUj/stPX/BBl97u8yXimM9hys2oXML5l5yWHhqazrk0n8R/+lm5VoRlRzmF6DCh1oX5e6793u8NlA8AB2XpQeKuAgkjcWOv46oMMDqoMCqO//B3kgsC08Pms57pVQzUhFfcz5oN+c7aaax8yiTuj0gCgmg1X0eexzkxF3kxb/PGinuxcHa4tpghcFQeTkwAaSyr1HL6qgpU8uA4ySjYP2yqtaUZoA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761612402;
+	cv=none; b=InQb0AJzViL3DCGLcIhLSYLeOxSiG7RVuRqHugJ+GF1hRpDgomvAaRG3sLjynuB58xanrdsw+oN/CBsGsLiu4NDomp/ilnz/rDtM0+6u4/oPgKVnd6ZFpQZa+I5WWvGsmeRG2PS3waKNKMjFDm/nKxEHrIiJSo4AgIZzci13hBDW/17eqQaU37z6rAurhILZ4MgwU5AW3hvkqxBT3B+/zynmp0XAxRKDLB/fj0u77ZfZ1qv1HATKlIAQR6ZjgpT832PDpCwygFSapOH3ZOiR3R6R7KdligMRr9hLLWrNRXf46y+iOf+4Nn0d2sNh+b8m3Dt7STLl68UPqDOR+M3BhA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761612400; c=relaxed/relaxed;
-	bh=eoHAGF5loUqH0LAFPRC8F4kXyPuIEz0vDtopK5rWb5o=;
+	t=1761612402; c=relaxed/relaxed;
+	bh=wF5oceMSXViySxysMkUNPeCJ07Zgu8R8pwpIbBxZfJs=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=BZZ/Fq6OTUEsLJe47fguRh9gd0461XbojNXtsrCfGJupqd5G1eNJxoRrOMvUOsNtlgyM6LczcArLQNVAv+Ht29MSQF4M1E8u3OQRESli8DhpIWvZ6tfgAp2oA0Cq1cNzL2hmUjDcYjVSaSgsuxXGzbpJRy+e9ujwlFkz0QPk1ANvmCI13m2pOQuh2l55Iofrmv1VHph0tBjJd1I2i7REz9+6Bo17y68i2KShMhW01qUl9BDl2Jw/IcMiv6YVoUqP0/0erTmTDURYqPiwLfTFWravvazG/BBc7p6X+/z4aw5p095o38ofB0stV7nnEjHbFRi36asFWMc09gEHZ1lV9Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=cWKXwiJR; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=bwt9EpAD19soFmul4uetz/fBmbWo64HbYXLIaq92UumVx6JIIhslXTdc5SwuSOwLgytZ6zsj5UwisIqhqmBJAuWEFIQT72EyOKfpB6WoSNFj85dW2fXA1pZEZCFdlKlsLpHLtIzGhoXzi/icprtU7l+V2Zw7AK7XDy3HknCDZn9Llp9/lK2l3WA83b/1ymXD1tKKkmL1sa5SwGEbrMmAglFAm9OqssEIcu7CC0nnX4nUjU3ZR4izw4GsHIwywL1QDLtLkRWxNlFCj+ELqZpX/qaZJPSahVh7/GYCivjNTxRd68K2kNN9bnhukRqUbjyLJkbY2lZz9ZxuoKLNQuFRaw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=Nox/vfUc; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=cWKXwiJR;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=Nox/vfUc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWsM5yJ5z304H
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:46:30 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWsS71Fhz3c55
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:46:36 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=eoHAGF5loUqH0LAFPRC8F4kXyPuIEz0vDtopK5rWb5o=; b=cWKXwiJRgmyUaWc4btZ5WzGz3e
-	P1d4pU2PnDGwHyXYYC3Sgwm/WPpNg6KTwV5sROPVde7FceyNHhhUc0N4X81SxgJMRZaYvSs5qCoF/
-	0usQSfZLUxv2nUlR2Jfp5JWmBh+5fu1PIOG0mXjNiaHsbpZuvnuCBQsXL9AKNKoUcXX02D2qMvWqk
-	qnAOvMK+sofvaE+oth2FQB23/OCTjk4qP5LStexB4zj8DV7NnUUQGzcMZAJfRFTfyrPeKSt6B6Q3u
-	q06p5RvGSDJEqongOiLQqYlkX46ecZiHjCeRWGwudoHTsnkOUbcR71MM5KOW07SuplgdFJG4EF3Ct
-	Kh0HmJcQ==;
+	bh=wF5oceMSXViySxysMkUNPeCJ07Zgu8R8pwpIbBxZfJs=; b=Nox/vfUcgx/TdeOwjzOvIBCDcH
+	n9sXl5MTg6aGwD3FdblklBCbekJf8k1VNaIfHkTysh8rHxqlTbDJ/t3Elsggu3Q8NZgpFPmz/N0WH
+	erYPHUrU44BhDD2BW+OYKt6Nh1+Wi/YQIld2OAuPrfyTCBSrmjVV1qJfZiJcoHM/lEtI5aheobi42
+	o8Eaw1L7+Wcws8iEzDES8PjbGLiRsPv3gyLEvaHn5OP/E/vRRUjW6sfKVf5yLIGi5nbrImW7RHxqW
+	rHwcCYmYY6i586c1OKYGUe9PNX+DoM/1FugO+0xqUcw2o5JBBKON8yxD4xOITf0ubS+ds+4pZE8Ec
+	5nJDTKTg==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vDXqr-00000001eZ5-2N4G;
-	Tue, 28 Oct 2025 00:46:17 +0000
+	id 1vDXqs-00000001ebX-377o;
+	Tue, 28 Oct 2025 00:46:18 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -65,9 +65,9 @@ Cc: torvalds@linux-foundation.org,
 	selinux@vger.kernel.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org
-Subject: [PATCH v2 28/50] binderfs_binder_ctl_create(): kill a bogus check
-Date: Tue, 28 Oct 2025 00:45:47 +0000
-Message-ID: <20251028004614.393374-29-viro@zeniv.linux.org.uk>
+Subject: [PATCH v2 39/50] convert gadgetfs
+Date: Tue, 28 Oct 2025 00:45:58 +0000
+Message-ID: <20251028004614.393374-40-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
 References: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
@@ -87,34 +87,54 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-It's called once, during binderfs mount, right after allocating
-root dentry.  Checking that it hadn't been already called is
-only obfuscating things.
-
-Looks like that bogosity had been copied from devpts...
+same as functionfs
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/android/binderfs.c | 6 ------
- 1 file changed, 6 deletions(-)
+ drivers/usb/gadget/legacy/inode.c | 19 +++++++++++--------
+ 1 file changed, 11 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/android/binderfs.c b/drivers/android/binderfs.c
-index a7b0a773d47f..8253e517ab6c 100644
---- a/drivers/android/binderfs.c
-+++ b/drivers/android/binderfs.c
-@@ -397,12 +397,6 @@ static int binderfs_binder_ctl_create(struct super_block *sb)
- 	if (!device)
- 		return -ENOMEM;
+diff --git a/drivers/usb/gadget/legacy/inode.c b/drivers/usb/gadget/legacy/inode.c
+index bcc25f13483f..62566a8e7451 100644
+--- a/drivers/usb/gadget/legacy/inode.c
++++ b/drivers/usb/gadget/legacy/inode.c
+@@ -1989,17 +1989,20 @@ static int gadgetfs_create_file (struct super_block *sb, char const *name,
+ 	struct dentry	*dentry;
+ 	struct inode	*inode;
  
--	/* If we have already created a binder-control node, return. */
--	if (info->control_dentry) {
--		ret = 0;
--		goto out;
--	}
+-	dentry = d_alloc_name(sb->s_root, name);
+-	if (!dentry)
+-		return -ENOMEM;
 -
- 	ret = -ENOMEM;
- 	inode = new_inode(sb);
- 	if (!inode)
+ 	inode = gadgetfs_make_inode (sb, data, fops,
+ 			S_IFREG | (default_perm & S_IRWXUGO));
+-	if (!inode) {
+-		dput(dentry);
++	if (!inode)
+ 		return -ENOMEM;
++
++	dentry = simple_start_creating(sb->s_root, name);
++	if (IS_ERR(dentry)) {
++		iput(inode);
++		return PTR_ERR(dentry);
+ 	}
+-	d_add (dentry, inode);
++
++	d_make_persistent(dentry, inode);
++
++	simple_done_creating(dentry);
+ 	return 0;
+ }
+ 
+@@ -2096,7 +2099,7 @@ static void
+ gadgetfs_kill_sb (struct super_block *sb)
+ {
+ 	mutex_lock(&sb_mutex);
+-	kill_litter_super (sb);
++	kill_anon_super (sb);
+ 	if (the_device) {
+ 		put_dev (the_device);
+ 		the_device = NULL;
 -- 
 2.47.3
 
