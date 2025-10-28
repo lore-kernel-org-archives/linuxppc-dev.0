@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-13379-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13380-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCC61CCF9E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:48:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2492DCCF9E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:49:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWsd20BNz3f29;
-	Tue, 28 Oct 2025 11:46:45 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWsh2vLbz3f6K;
+	Tue, 28 Oct 2025 11:46:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761612404;
-	cv=none; b=OV6JH0F4oLprYctxjp3iSSY1H4IBSnrFHvsmgcEBM3EAMroTZoOcNXjjxH2S5MjR/NgMSUxUrqIRe5EhjgW12u08suZri0RgFamP7SOr2CEoJk/Sf26lAOoCAd2HWyfTI0a1NwWnoTav95RghgiyHCF5ktbTOBR2arIamqdpEH6rmmNuZviYSXQlZ7l/zcpAli1zG/btP/6FrA10UzngdlGYZRDoSkk5dBOVJcZDKGCWLVpUMGNpsDjvaDU34EKj3ifrpZjfKCMiUFaYAw6y6E5O05xMaPHR/EnCorr4yw4xAdXYEhqey6drJ8LNL1T9s8zPFXz/x9IVEFwSNICagA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761612408;
+	cv=none; b=ZK99leXkOS7kZC30ZyuCZr9OXSnrkHCbun95Kpl+obs3dPAku6qVqxrTWf0joA8yjksZ93yIMVGcr3G5eaoJdhRt67bZugh29BLKX2ex4icYSQpqgA0K7N0A4phA4Lblpf5rnWGKZBFaa0Q0T2VX+gOCKNaVJijmVLwG5yfv7lUlViek1aXHf16P41r5sEfqKtYtIJqXCA2+0wIfdyav7dL2k7jiopuwVB9Hw33GFYxNnOBqKqSYK69XTAsGDjwoNLRvSPLLIgzSE7jb5bhDaHM4T4ND0cDAor5xsWHtUv0hCv/7n2tO3grx9zBjNQ5dtbs0+wMghdROrGCArP3SIA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761612404; c=relaxed/relaxed;
-	bh=VD4R3gUn11tbzuOSrLlHcr6CK6toCdQdVG0PoPu8WQM=;
+	t=1761612408; c=relaxed/relaxed;
+	bh=k5R7qQToxQWR7KjWdFkG8Y/hiI30yNcp9738fQOhLf8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KaV+EF5X12F6sY7XMiO4oqN2/g10+WLVaQuJLPM6pnD+RkWidyQ+CNT1sbmjW9RYbZrlxrvvM1RwxRpcHf11uPOdm/7vwVC1rjkR5hMS3sD7fxBCbHOuyrLCSAwseu02q2P8m4GGafMhMseA2v0BEzlLkRcS8N7bvg97XB1n1dOmH3ecdMwCBC7PGsAvgSvbMITRFDX6NvPqrCAikcKOxxIEJDusbUdSfh8IGlcZeuducT2BkThTggbFvcZYcofxqh0N+BgR/oRqVr05wUhy+YmJyaOxNsZgcU+pMrsP59ONQeZ3lnbiIAgalSAh0HUqKrLl2TX8bCHSFMesbHytjQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=a1Ou47jU; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=frXQWb+pI6dRxiuXeulhsEUqbCyUv112YTbvXDepqAaFyrOFNhDAZG4pg/BF+Ohk2irgqMHeSdqjM+tbdLqEG6mtN9daVUtCcoOIijfZs5RATQjid2oScvDdvG+bxSKTfQFuDUHN9avoLwPQzZw0p+8sZOLcWaYPr7dZkz8PAkPlM0oyBFMuB5f1w5M9Dixdljo5jupWKRASK3oUajB67n2YmsTRLteD27bKohA4ms3D2nZ2Dx43x9RIwVmohIOA5Iaj2aDb/FCsySqhQSDMlj90yoWi+3GrTTPF2Oxsf4hAPXatyawH2qh/bDqLbR5nQk9wPS5yrEz4Umq+RoSZCg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=CSwioWHM; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=a1Ou47jU;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=CSwioWHM;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWsY6Jsgz3dXH
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:46:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWsg5bBWz3dBZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:46:47 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=VD4R3gUn11tbzuOSrLlHcr6CK6toCdQdVG0PoPu8WQM=; b=a1Ou47jUeDFPDyFuwMzS1mCZUD
-	t4KSAdCbW8S0oXxyua9xCSIy5xSnMG+YugoYQEQs86rDE8nYyKYjvCHzS+nI5LqBcYi129ADzTFCk
-	8J97IQGe12RNPvNE65YFEV/sc7YmlTc8FgbW9sm4WHyGoIt4F5ohMiEVIHREZGxXXSgU656MOLje7
-	/GmObfB7I2zPX0ezu6D3E1HvYj5dLt+dIGNfqk6kH2v6u1i+uhNlkjCzwPTb80l7bGeHK3tVg30dp
-	yhiPLC8K4uwvPWJ/+4G67Un8B6U5D3oTqzwaV+HjVkQrNeq+zZIGY80OEG0AkUFFQLxU8HtTC/0Lh
-	/JT2lAUg==;
+	bh=k5R7qQToxQWR7KjWdFkG8Y/hiI30yNcp9738fQOhLf8=; b=CSwioWHMkAvW6SGjMY+tOVcC4C
+	ErTgqhXrVFIbKQzlGEbgvGLZMqg+6Cc0TRH3RWyH0JLRNn8rnL2cUCDwwFJhl6NI8n9ePA3QtG6es
+	0Lhr2WRa3V1d/b+pEoyq3hIqMn0bpRQGFN5gwnlGDHq+HGnnQ5wg9iOFz+RaTnbew65HX1egQ6KvE
+	n5hAAclm2q93wnuOsT2uQvfV8kX7Vq3oYzFBMNys9gr6d4tw4QXtfyIS124vaLKNWYoH1kYH5pYhg
+	xZEiraZ+NVWnVS0EnRiPjVc0uuS7MkBNwlypjYaWIhrO0eOc3vPZ0yHTbVjaFBexxmcU5XmtdG5/w
+	WsjvEL1w==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vDXqp-00000001eVu-0XWM;
-	Tue, 28 Oct 2025 00:46:15 +0000
+	id 1vDXqq-00000001eXx-2U0R;
+	Tue, 28 Oct 2025 00:46:16 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -65,9 +65,9 @@ Cc: torvalds@linux-foundation.org,
 	selinux@vger.kernel.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org
-Subject: [PATCH v2 05/50] introduce a flag for explicitly marking persistently pinned dentries
-Date: Tue, 28 Oct 2025 00:45:24 +0000
-Message-ID: <20251028004614.393374-6-viro@zeniv.linux.org.uk>
+Subject: [PATCH v2 18/50] convert pstore
+Date: Tue, 28 Oct 2025 00:45:37 +0000
+Message-ID: <20251028004614.393374-19-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
 References: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
@@ -87,141 +87,51 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-Some filesystems use a kinda-sorta controlled dentry refcount leak to pin
-dentries of created objects in dcache (and undo it when removing those).
-Reference is grabbed and not released, but it's not actually _stored_
-anywhere.  That works, but it's hard to follow and verify; among other
-things, we have no way to tell _which_ of the increments is intended
-to be an unpaired one.  Worse, on removal we need to decide whether
-the reference had already been dropped, which can be non-trivial if
-that removal is on umount and we need to figure out if this dentry is
-pinned due to e.g. unlink() not done.  Usually that is handled by using
-kill_litter_super() as ->kill_sb(), but there are open-coded special
-cases of the same (consider e.g. /proc/self).
+object creation by d_alloc_name()+d_add() in pstore_mkfile(), removal -
+via normal VFS codepaths (with ->unlink() using simple_unlink()) or
+in pstore_put_backend_records() via locked_recursive_removal()
 
-Things get simpler if we introduce a new dentry flag (DCACHE_PERSISTENT)
-marking those "leaked" dentries.  Having it set claims responsibility
-for +1 in refcount.
-
-The end result this series is aiming for:
-
-* get these unbalanced dget() and dput() replaced with new primitives that
-  would, in addition to adjusting refcount, set and clear persistency flag.
-* instead of having kill_litter_super() mess with removing the remaining
-  "leaked" references (e.g. for all tmpfs files that hadn't been removed
-  prior to umount), have the regular shrink_dcache_for_umount() strip
-  DCACHE_PERSISTENT of all dentries, dropping the corresponding
-  reference if it had been set.  After that kill_litter_super() becomes
-  an equivalent of kill_anon_super().
-
-Doing that in a single step is not feasible - it would affect too many places
-in too many filesystems.  It has to be split into a series.
-
-Here we
-	* introduce the new flag
-	* teach shrink_dcache_for_umount() to handle it (i.e. remove
-and drop refcount on anything that survives to umount with that flag
-still set)
-	* teach kill_litter_super() that anything with that flag does
-*not* need to be unpinned.
-
-Next commits will add primitives for maintaing that flag and convert the
-common helpers to those.  After that - a long series of per-filesystem
-patches converting to those primitives.
+Replace d_add() with d_make_persistent()+dput() - that's what really
+happens there.  The reference that goes into record->dentry is valid
+only until the unlink (and explicitly cleared by pstore_unlink()).
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/dcache.c            | 27 ++++++++++++++++++++++-----
- include/linux/dcache.h |  1 +
- 2 files changed, 23 insertions(+), 5 deletions(-)
+ fs/pstore/inode.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
-diff --git a/fs/dcache.c b/fs/dcache.c
-index 035cccbc9276..f2c9f4fef2a2 100644
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -1511,6 +1511,15 @@ static enum d_walk_ret select_collect(void *_data, struct dentry *dentry)
- 	return ret;
- }
+diff --git a/fs/pstore/inode.c b/fs/pstore/inode.c
+index b4e55c90f8dc..71deffcc3356 100644
+--- a/fs/pstore/inode.c
++++ b/fs/pstore/inode.c
+@@ -373,7 +373,7 @@ int pstore_mkfile(struct dentry *root, struct pstore_record *record)
+ 	if (!dentry)
+ 		return -ENOMEM;
  
-+static enum d_walk_ret select_collect_umount(void *_data, struct dentry *dentry)
-+{
-+	if (dentry->d_flags & DCACHE_PERSISTENT) {
-+		dentry->d_flags &= ~DCACHE_PERSISTENT;
-+		dentry->d_lockref.count--;
-+	}
-+	return select_collect(_data, dentry);
-+}
-+
- static enum d_walk_ret select_collect2(void *_data, struct dentry *dentry)
- {
- 	struct select_data *data = _data;
-@@ -1539,18 +1548,20 @@ static enum d_walk_ret select_collect2(void *_data, struct dentry *dentry)
- }
+-	private->dentry = dentry;
++	private->dentry = dentry; // borrowed
+ 	private->record = record;
+ 	inode->i_size = private->total_size = size;
+ 	inode->i_private = private;
+@@ -382,7 +382,8 @@ int pstore_mkfile(struct dentry *root, struct pstore_record *record)
+ 		inode_set_mtime_to_ts(inode,
+ 				      inode_set_ctime_to_ts(inode, record->time));
  
- /**
-- * shrink_dcache_parent - prune dcache
-+ * shrink_dcache_tree - prune dcache
-  * @parent: parent of entries to prune
-+ * @for_umount: true if we want to unpin the persistent ones
-  *
-  * Prune the dcache to remove unused children of the parent dentry.
-  */
--void shrink_dcache_parent(struct dentry *parent)
-+static void shrink_dcache_tree(struct dentry *parent, bool for_umount)
- {
- 	for (;;) {
- 		struct select_data data = {.start = parent};
+-	d_add(dentry, no_free_ptr(inode));
++	d_make_persistent(dentry, no_free_ptr(inode));
++	dput(dentry);
  
- 		INIT_LIST_HEAD(&data.dispose);
--		d_walk(parent, &data, select_collect);
-+		d_walk(parent, &data,
-+			for_umount ? select_collect_umount : select_collect);
+ 	list_add(&(no_free_ptr(private))->list, &records_list);
  
- 		if (!list_empty(&data.dispose)) {
- 			shrink_dentry_list(&data.dispose);
-@@ -1575,6 +1586,11 @@ void shrink_dcache_parent(struct dentry *parent)
- 			shrink_dentry_list(&data.dispose);
- 	}
- }
-+
-+void shrink_dcache_parent(struct dentry *parent)
-+{
-+	shrink_dcache_tree(parent, false);
-+}
- EXPORT_SYMBOL(shrink_dcache_parent);
+@@ -465,7 +466,7 @@ static void pstore_kill_sb(struct super_block *sb)
+ 	guard(mutex)(&pstore_sb_lock);
+ 	WARN_ON(pstore_sb && pstore_sb != sb);
  
- static enum d_walk_ret umount_check(void *_data, struct dentry *dentry)
-@@ -1601,7 +1617,7 @@ static enum d_walk_ret umount_check(void *_data, struct dentry *dentry)
+-	kill_litter_super(sb);
++	kill_anon_super(sb);
+ 	pstore_sb = NULL;
  
- static void do_one_tree(struct dentry *dentry)
- {
--	shrink_dcache_parent(dentry);
-+	shrink_dcache_tree(dentry, true);
- 	d_walk(dentry, dentry, umount_check);
- 	d_drop(dentry);
- 	dput(dentry);
-@@ -3111,7 +3127,8 @@ static enum d_walk_ret d_genocide_kill(void *data, struct dentry *dentry)
- {
- 	struct dentry *root = data;
- 	if (dentry != root) {
--		if (d_unhashed(dentry) || !dentry->d_inode)
-+		if (d_unhashed(dentry) || !dentry->d_inode ||
-+		    dentry->d_flags & DCACHE_PERSISTENT)
- 			return D_WALK_SKIP;
- 
- 		if (!(dentry->d_flags & DCACHE_GENOCIDE)) {
-diff --git a/include/linux/dcache.h b/include/linux/dcache.h
-index c83e02b94389..94b58655322a 100644
---- a/include/linux/dcache.h
-+++ b/include/linux/dcache.h
-@@ -225,6 +225,7 @@ enum dentry_flags {
- 	DCACHE_PAR_LOOKUP		= BIT(24),	/* being looked up (with parent locked shared) */
- 	DCACHE_DENTRY_CURSOR		= BIT(25),
- 	DCACHE_NORCU			= BIT(26),	/* No RCU delay for freeing */
-+	DCACHE_PERSISTENT		= BIT(27)
- };
- 
- #define DCACHE_MANAGED_DENTRY \
+ 	guard(mutex)(&records_list_lock);
 -- 
 2.47.3
 
