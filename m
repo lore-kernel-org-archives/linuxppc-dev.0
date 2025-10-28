@@ -1,73 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-13467-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13468-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E54B8CCF9E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 21:19:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2603ECCD1BF
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 21:35:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cx3DP1DLlz2yG3;
-	Wed, 29 Oct 2025 08:19:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::b12a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761660304;
-	cv=none; b=GbhupujucLg394Ge4kQ18jw35zjtjW26rTnQZcqk2hFDaBpJx5qu5DWv5/rRBdGfoK8pcZpSHfsM/iBvvFJAkuUveMS4Otp640PREMfZdMuMb78VAOlLeSyOqj3LlOAW+X8ddOVzNaMxoaZ/99TvgB4B2vk9Kl7HYqwCA2KKKZcuY7DXmXyTxaxUaBzhT2aZfnKfSVkF3FbFIMkgyCI/jIAqCQCNNFT9HQYFoxzLWzw3p8Il9GCED9SAOlZ4QQFC7MSYl/X3JF3o7ZlHLvQqMQSFS9is9FEU4YiQGW6gMy0um9Q7rJJL5XpUa4aw0/2943PSj682tSqhHCD6XOflRw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cx3Z44S6nz2yG3;
+	Wed, 29 Oct 2025 08:35:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761687308;
+	cv=none; b=kU81K1fMVyk3ZfAo+LxS1Ta2SXHmYm11lNn8KEONbHiwMgzSTSl9rfJCh301FHB6VaArPnSxsR5oHRrktvh6RlzZju3kZiGdsUutcL8KMZCa4locu8QE/BOcbfvId4YvppDDgfg7gkQqvzSRIQxQEfNg62R6G9HXTeL6BvLXRy1/DG/OksNTI1pGEY8sEVWCWpSB5590CJWM1PsRq0uUJqKoHc4bJ4gx6Vm2fPt066RzMUPmosGXEfZTbAmjQbuw/KBr3+Vya+PHKZvvxjymEsZ85sgIZEyHj27g7dF8qvYQxOXksjjwdmCTKP6/S5/1FiTPT/3vc/3bS3mlKqV64A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761660304; c=relaxed/relaxed;
-	bh=tV6lq40DHC8JcmNfWL6yF+Abxx6Ldftej9yA3XYbJaI=;
+	t=1761687308; c=relaxed/relaxed;
+	bh=LDsqZFSQoDFk6Jgv3OgSzqGmp9ygmJ1z30XLWqHxNxA=;
 	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=NTFjkdsMXYDmPLmhxtRMbZvX54cmM1U3343LAPRF7NpEgQqXVtkuMaa9So3xzJZFvjiFO9to2kZ56qD5nVgB3v++C4nK1sRIgJeRAAqH1yZIaqd1hbu2RZmr6HdqxB8jifgxeECYovb/+ojszfL4VoOs6GClm+pLyZLEXBQ6S7qm293ZlbKjbnt0GecaBJY7sM4UNWCfc3aSDXoO8FTWn5mIE6CVr0wgft0ylbg2ePBfGcTQFZiN8QTGcgPpcSq7nppgpFO6xvLIJdjIExIQvfRVNClKHAJJDfkMUhVi5Ci1aFkVdAGmqUyWJ2uTD24EUgAP4lyTVIe8YWrkjtspoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Us2xuhxR; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::b12a; helo=mail-yx1-xb12a.google.com; envelope-from=ylavic.dev@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 To:Cc:Content-Type; b=IDhxupCzf3J9cKvrBGVmFtYv0kLo/GyyEDiQ4iw4qKfe413SvSlvihChtoDD2el2KcZL4t5OMwqZvRcGbs/T2rEb5D/Ldppxez1yUE7SATp62wWGJK0L8rNLqzmTZLhDOUJBj0dGfNmMPM3P8+P8MdwGOFHB+XrdhA03CvBFnk4EEG/Oz2A+t4goRVaZsMmzbJ1m43QBhJdUvMuHRFD8LuZtfB5dWnEb8KNxb6Jlz9bU8TTBaJnipfSIpKJyFHkrralvSk34Jg+uk5XB2dKgr5K/5SwZAAEwe60kY+uIQclmTppl3JEU5/db6y8ed40NIpT6yNT4JWgdaTnxXjak8g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=r93s37by; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Us2xuhxR;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=r93s37by;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::b12a; helo=mail-yx1-xb12a.google.com; envelope-from=ylavic.dev@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-yx1-xb12a.google.com (mail-yx1-xb12a.google.com [IPv6:2607:f8b0:4864:20::b12a])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ardb@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwsZk5Zn7z2xQ4
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2025 01:05:02 +1100 (AEDT)
-Received: by mail-yx1-xb12a.google.com with SMTP id 956f58d0204a3-63cf0df1abbso6770380d50.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 07:05:01 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1761660298; x=1762265098; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=tV6lq40DHC8JcmNfWL6yF+Abxx6Ldftej9yA3XYbJaI=;
-        b=Us2xuhxRWwJYLhMS+XkXg84M58ZVTrhFhYBwKxe1cNBlUP+D2B1rqCfxf74sjpEBxp
-         JgVYZR8x2WyPB7xgKCoVfg46JpYwpG4D7r1rvUddGQeHU6C8pFhkeU8JDrR9IprzKfZ6
-         uOU135/sQYRxA37AjZ/JPXxgvsj3AhaUzZoTIhaRXQUPvdU/tebt27NyzdAMQ7Bw9Wc1
-         4reFMIkXGatvHVKlDaQq23wV/LWk4QwWQL86WNEYS0Nd6AQDXEFUyxVNrTRG+ZmBoZED
-         QjiKWCEXNy3rXe9pkQQPSqBJxhInXqhpbGUAvU66wNWVZ6IEXLvFEEK44PrpaZ0j6Wai
-         zLTw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761660298; x=1762265098;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=tV6lq40DHC8JcmNfWL6yF+Abxx6Ldftej9yA3XYbJaI=;
-        b=YZoAwQd5fWp7ljQxs1DVT6RIOTV480FX2LGYCYyMRbxacjP5GefHKkdKeL2l9Ltzh2
-         yx55WbkBpjF/C3l5cIVL67xE7RUmNvstY25shao+eDhyfTrkz+zu8nRvYoydvh1rTvd/
-         U8bATJVaDyPtko9ygDRPt2zXM60wtS4M77zsjf7loGe5CPMlyJg8A+vXIqxif3GdT+Oc
-         RC9teAqxLJ1t+o+4zEPritHDhdXoqSvd2zWk6w9bmA4LJYZsluHBpmqARidHMQrJ/d5u
-         FcmQdqZYDHt/TtuJZwxh6gSOGsDg0LwuI+3rY1RXQVpfgGHXX2hvFNqOMsMhBDWHjNuH
-         ff6A==
-X-Forwarded-Encrypted: i=1; AJvYcCXyMcifNsL9WinKMWd8/8jhDw7GVQ9eWxidEy152p9vgoLyBu+VOlAPljqktlch1j5zQyqVoi2joY7eznI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxyQpLNPOso5TRWciycsoPOmAI0IdaB63pPwH2w1nT1isdOH7Z9
-	ypxI/6GR6h0DZOloH0TbS58h9F4+pUsIEy6skyIWSYRR3Z5yaE+x7gb14L4EZWD5YyTRO6+5d8w
-	3cTo/aKlTiqzQFEfRfsAK8g/b/DhSx+M=
-X-Gm-Gg: ASbGncutSWhubXw9RDA0EYwLF/1Tv65g0mqMCvag+Kh4w0T8pa1JiTW7mPefOrJl6F6
-	mqZzNPPgqHKhsEb4RakD5AsOiyWS6ycqXtRYRI1CSssvhiWcDEiOyY84mbqrDG/7yVGflfofAfJ
-	6uqlwR/kLx4QtBPZliRkK2VLWqc0idFiSfrfMZQ8QV3W9SM/jrojcoV/JQrRDfR1urE/QTOipPG
-	jyCxGxmIRvVZsHzAY7mFulUrRQ5zzp/fr9BdCtVIeGT3zZe6d6nvIj42Ynn3poCJOrEP+/bOt4V
-	rEBa97r+0VDn3BTM9w==
-X-Google-Smtp-Source: AGHT+IGO59IsEPrMaZUmuz6Z8HqEjQzA2Ntsc7bvDVyVXUheTpOGkWA4zrFX+wmhIbJUO+iBKxLOdRdY9YaXu1dEED0=
-X-Received: by 2002:a05:690e:d83:b0:63c:e90c:a6d8 with SMTP id
- 956f58d0204a3-63f6ba849bamr2974242d50.44.1761660298140; Tue, 28 Oct 2025
- 07:04:58 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cx3Z33zbFz2yFw
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 29 Oct 2025 08:35:07 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 7339549164
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 21:35:05 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4AB8AC2BC87
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 21:35:05 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1761687305;
+	bh=R2i31H9vGUKt8c9pEDO8kNOSs2JZfSsFlvxECOPAMbQ=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=r93s37byBu5Kqu2QNWAApFRsKMEiKn+rnGBu28Yh213bmXlXtpGYHy6Md1GZVj5bM
+	 s5vnSo0yrYRMDPmHpEUorqNbrzfUbLmxqipY4eXZSatd2x/wYVLZWkfxLbVUyrJnqB
+	 qzzqP0cqOIMCM1+yieYa4Jpw8ExK8yVQ10CoTtDy/YpQpSoWeYoXUNtfhEmCx16Hlx
+	 hAutjjpMeCNc9SkrGfI4cOnOn4oU/nFvmIHsnMpTitKiMXtsQmuipZbmLKSEJQNkuU
+	 lggI9QCrsvI59YWcEgE4fHKT+JxK/C1s0+GH6Knmt4VFXcIEFUXIvCxgclL3uQke9v
+	 P+fvzMKknG1XA==
+Received: by mail-lj1-f176.google.com with SMTP id 38308e7fff4ca-378cffe5e1aso68880941fa.2
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 14:35:05 -0700 (PDT)
+X-Forwarded-Encrypted: i=1; AJvYcCXsLRsEU/n/kTt59EQ46LfZJ539r8O0gfRLj/L8WC0J2OEPlAF1f5h2EwjlRh6gX2HIl9eFyTNGnO1mjeM=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy5msB+pUVGbKl0HYZnIuVaAKCzuiMW834JWqBhI5bz1pdDplla
+	iG/Up7w7M7eKbPFBQzRlPCJRSoj0JQ7PPIAEUmXU933epsuakBWPj8SmgztC2tDgkPViKlADrkv
+	5solP1JJePYUoh3Uwz6CCpJcqUbz6BkY=
+X-Google-Smtp-Source: AGHT+IEUgTLUAIKN7pUG+BuUf5d2rQVkYmo1LrGvDv+SiZ+/7mc0PZPnIKuDcBIJFaSVmyoUk9OgmOBn+4n7FgjOtLw=
+X-Received: by 2002:a05:6512:3b0c:b0:592:fce6:9054 with SMTP id
+ 2adb3069b0e04-594128c4f37mr242551e87.52.1761687303564; Tue, 28 Oct 2025
+ 14:35:03 -0700 (PDT)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,50 +67,79 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20251027083700.573016505@linutronix.de> <20251027083745.231716098@linutronix.de>
-In-Reply-To: <20251027083745.231716098@linutronix.de>
-From: Yann Ylavic <ylavic.dev@gmail.com>
-Date: Tue, 28 Oct 2025 15:04:46 +0100
-X-Gm-Features: AWmQ_bnQq8Ze7k4D-80utHvwT6MTXau8I1_bRZ4nLy6wJZW1-jMkY-uZGE3OIrk
-Message-ID: <CAKQ1sVO9YmWqo2uzk7NbssgWuwnQ-o4Yf2+bCP8UmHAU3u8KmQ@mail.gmail.com>
-Subject: Re: [patch V5 02/12] uaccess: Provide ASM GOTO safe wrappers for unsafe_*_user()
-To: Thomas Gleixner <tglx@linutronix.de>
-Cc: LKML <linux-kernel@vger.kernel.org>, 
-	Linus Torvalds <torvalds@linux-foundation.org>, kernel test robot <lkp@intel.com>, 
-	Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org, 
-	x86@kernel.org, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	linuxppc-dev@lists.ozlabs.org, Paul Walmsley <pjw@kernel.org>, 
-	Palmer Dabbelt <palmer@dabbelt.com>, linux-riscv@lists.infradead.org, 
-	Heiko Carstens <hca@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>, 
-	Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org, 
-	Mathieu Desnoyers <mathieu.desnoyers@efficios.com>, Andrew Cooper <andrew.cooper3@citrix.com>, 
-	David Laight <david.laight.linux@gmail.com>, Julia Lawall <Julia.Lawall@inria.fr>, 
-	Nicolas Palix <nicolas.palix@imag.fr>, Peter Zijlstra <peterz@infradead.org>, 
-	Darren Hart <dvhart@infradead.org>, Davidlohr Bueso <dave@stgolabs.net>, 
-	=?UTF-8?Q?Andr=C3=A9_Almeida?= <andrealmeid@igalia.com>, 
-	Alexander Viro <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, 
-	linux-fsdevel@vger.kernel.org
+References: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
+ <20251028004614.393374-23-viro@zeniv.linux.org.uk> <66300d81c5e127e3bca8c6c4d997da386b142004.camel@HansenPartnership.com>
+ <20251028174540.GN2441659@ZenIV> <20251028210805.GP2441659@ZenIV>
+In-Reply-To: <20251028210805.GP2441659@ZenIV>
+From: Ard Biesheuvel <ardb@kernel.org>
+Date: Tue, 28 Oct 2025 22:34:51 +0100
+X-Gmail-Original-Message-ID: <CAMj1kXF6tvg6+CL_1x7h0HK1PoSGtxDjc0LQ1abGQBd5qrbffg@mail.gmail.com>
+X-Gm-Features: AWmQ_bkR_zy3h447gWqfy_yWS54Z8UsgWDqAQbawTspKnXeI6tlX292HDo0fyss
+Message-ID: <CAMj1kXF6tvg6+CL_1x7h0HK1PoSGtxDjc0LQ1abGQBd5qrbffg@mail.gmail.com>
+Subject: Re: [PATCH v2 22/50] convert efivarfs
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: James Bottomley <James.Bottomley@hansenpartnership.com>, linux-fsdevel@vger.kernel.org, 
+	torvalds@linux-foundation.org, brauner@kernel.org, jack@suse.cz, 
+	raven@themaw.net, miklos@szeredi.hu, neil@brown.name, a.hindborg@kernel.org, 
+	linux-mm@kvack.org, linux-efi@vger.kernel.org, ocfs2-devel@lists.linux.dev, 
+	kees@kernel.org, rostedt@goodmis.org, gregkh@linuxfoundation.org, 
+	linux-usb@vger.kernel.org, paul@paul-moore.com, casey@schaufler-ca.com, 
+	linuxppc-dev@lists.ozlabs.org, john.johansen@canonical.com, 
+	selinux@vger.kernel.org, borntraeger@linux.ibm.com, bpf@vger.kernel.org
 Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Oct 28, 2025 at 10:32=E2=80=AFAM Thomas Gleixner <tglx@linutronix.d=
-e> wrote:
-> +
-> +#define __put_kernel_nofault(dst, src, type, label)            \
-> +do {                                                           \
-> +       __label__ local_label;                                  \
-> +       arch_get_kernel_nofault(dst, src, type, local_label);   \
+On Tue, 28 Oct 2025 at 22:08, Al Viro <viro@zeniv.linux.org.uk> wrote:
+>
+> On Tue, Oct 28, 2025 at 05:45:40PM +0000, Al Viro wrote:
+>
+> > FWIW, having a special path for "we are in foofs_fill_super(), fuck
+> > the locking - nobody's going to access it anyway" is not a great
+> > idea, simply because the helpers tend to get reused on codepaths
+> > where we can't cut corners that way.
+>
+>         BTW, looking through efivarfs codebase now... *both* callers
+> of efivarfs_create_dentry() end up doing dcache lookups, with variously
+> convoluted call chains.  Look: efivarfs_check_missing() has an explicit
+> try_lookup_noperm() before the call of efivarfs_create_dentry().
+> efivarfs_callback() doesn't, but it's called via
+>         efivar_init(efivarfs_callback, sb, true)
+> and with the last argument being true efivar_init() will precede the call
+> of the callback with efivarfs_variable_is_present().  Guess what does that
+> thing (never used anywhere else) do?  Right, the call of try_lookup_noperm().
+>
+> Why do we bother with that?  What's wrong with having efivarfs_create_dentry()
+> returning -EEXIST in case of dentry already being there and turning the
+> chunk in efivar_init() into
+>                         err = func(variable_name, vendor_guid,
+>                                    variable_name_size, data);
+>                         if (err == -EEXIST) {
+>                                 if (duplicate_check)
+>                                         dup_variable_bug(variable_name,
+>                                                          &vendor_guid,
+>                                                          variable_name_size);
+>                                 else
+>                                         err = 0;
+>                         }
+>                         if (err)
+>                                 status = EFI_NOT_FOUND;
+> Note that both possible callbacks become almost identical and I wouldn't
+> be surprised if that "almost" is actually "completely"...  <checks> yep.
+>
 
-Probably arch_put_kernel_nofault() instead?
+I'll let James respond to the specifics of your suggestion, but I'll
+just note that this code has a rather convoluted history, as we used
+to have two separate pseudo-filesystem drivers, up until a few years
+ago: the sysfs based 'efivars' and this efivarfs driver. Given that
+modifications in one needed to be visible in the other, they shared a
+linked list that shadowed the state of the underlying variable store.
+'efivars' was removed years ago, but it was only recently that James
+replaced the linked list in this driver with the dentry cache as the
+shadow mechanism.
 
-> +       if (0) {                                                \
-> +       local_label:                                            \
-> +               goto label;                                     \
-> +       }                                                       \
-> +} while (0)
+Relying on the -EEXIST return value to detect duplicates, and
+combining the two callbacks seem like neat optimizations to me, so
 
+Acked-by: Ard Biesheuvel <ardb@kernel.org>
 
-Regards;
-Yann.
+but I have to confess I am slightly out of my depth when it comes to VFS stuff.
 
