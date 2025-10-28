@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-13361-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13362-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1E95ECCF9E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:46:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1055CCCF9EB
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:46:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWsT34zjz3cZc;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWsT5MPvz3cbF;
 	Tue, 28 Oct 2025 11:46:37 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761612397;
-	cv=none; b=LjYVwItJgsRXrbD08yyz+nRKgCRi8xI0p5pAoCSZloi6UgLwzqIW0mmFywkXWYzab5Df79I3I03S5tB0N8LDd7Fxz82XjIU6UOJol/b0cm6qGgze+0asInlQnElnSLk2PHba+V3W0oMWVM3cWlq6vo+IeC/iKjHMW312oTC7/fd7bgwDPro59fKksvHHYtoeTyjckIAsiizNjJPpCaJrTNzTo5qUpydd9yHfW5CP4SIoPkv3f3irDxBBAhqtC+ziEJxdR1l2RGeEOiEOiZbguqLotiwyR/pfIK+7zh0iqeraLdBoD+nn3dTZqCZ32XNsu70Wf7ADeXVAcFF9gOcnvw==
+	cv=none; b=onK5mPD02gcXHSmiMUt5b/MlSqF++LKIn3it9fhaXS+q4MaEkkB8fAO3PmDbwSuBeEtvXmiQ2y9RZzilZwK4LjJ85PAsZ9IHG/pjZEtkgM9RIcZ3HrXM7R9fCXjX0YHMhhX2twA/R9q/nYUb7kckYJSujiFKiS9JuvH0tOkNw+Mh0dlf5QsLrpAoUcqCgNboO3XK90GidYx1K+n+fHJbWF9Sc+pfIbvim84+VDsSjYRaAdkUgT6gCBFMHBxYO3SzBjvIeakuDWztWBjwAWewOp357Kjhc5qQKzAufyE5mQSDQuRqKLgSQH6k1HgB4OKWI1jetRTLH9Qoey2Kp0+NuQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1761612397; c=relaxed/relaxed;
-	bh=lB/gWST5s3/zNGGpGrNmQn0s9XjLn6XUo6NFB74HdeU=;
+	bh=TcFcmzxfGV+3rJDGgJ/eg0JcSdO3AKCKkQ7NxQ/vrvI=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZArRCxaSvaKn1FBkUH7ebUEDXzYh1akYB/b/o0qxLaQQzR8cvsPHgroMueZWr8hOvKpfhgTTLLCJYawAK1wSBwDT+icdErz62FyExuoUzJ8bcGbSnYoGsVpghEBJKNv6278ve1TlQSmWBRjyomwjj4gfYSYLYghONDS0kwfP2g90EJA6Zaxc29UrQ6w2eo57saCtfdf8S+o9R/lfHK/UKgyHi48+WYOOl2PSGh+w5vc0R8w1ZdNXoxMhDH71Z3iPezV3ViMWlSMiusSJhf4w+7engmq+P4n77HEsNLSLRHPrX8/Y08vtTJgJwGpNZa8FNL6RnpeMkESOyy+RuG3a7Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=aKgSFnQ7; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=JdkON4eFsmricyHrq+u+Dr/FNfxoaJDc2KDWJ6WLl95FQ1ihpzH97K4KGjHd97AGIp1870U7V+Pg50gxzsfQ/qR7vQOOLoemli0nadjCwoiHTzRA9zy7uO7gOlzxf3V7hoMznv8k0zF3+t2Y3iBN2VPaS5907l4cuHBrrK47BRIP/UWukTO63eC9t5f7Wf6CIXx+71yBu56X7OHgyqx1MawzonYX5u58o+nxdWkUXQsVPxK0Y0BZRa7EN59mxNmOc/IqB5atZMnZ03R/+MWkZwCkBjtkZGNMAkQYHTavlSa3q6whP9NVlOVqgZm2LwVz5MkV0AAIDtrW9ba3OfNkig==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=RcnVZKzg; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=aKgSFnQ7;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=RcnVZKzg;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWsM64C9z304x
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:46:31 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWsM68dzz305S
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:46:30 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=lB/gWST5s3/zNGGpGrNmQn0s9XjLn6XUo6NFB74HdeU=; b=aKgSFnQ7mHktGBue0g6K+6EkEx
-	yPg6jNB6IfrQN7c7y3GiGDy5JsQdbHtLLZ/ufzdbXOCN9tTFeVhTjTGOwj6jdMpJCS71rbdGsPtXF
-	J5nHuKHf+YgcMl4M66XhcKyzBYwOMtSzA1J11SZ6Lnqjmha93MLi8gO41C4Ter4l0KitdQddDJRBO
-	MGUC4OuBSMpxJrDWeMkiRHDL9WsOgze/x2VJpc02QZxCicwPS8vC5ffbzQSj2+SkGTWSzqgS+q3XT
-	SMuQd3Y9kNLfqB0SJxG6lTsh80Dzk6o88SdjtaIQJwj8ZK/euoyNbvzdy/JPPv6ssrRCYlJDP9vPj
-	S99jIZlQ==;
+	bh=TcFcmzxfGV+3rJDGgJ/eg0JcSdO3AKCKkQ7NxQ/vrvI=; b=RcnVZKzge2ZU1Twimv07i13nqf
+	QcTAS7+ds57DbCpe2rtYdEQxTk5PARrtpmJM2BrTn2SFSpRJvutptyWQDosOkBcbfgIkRnl3sKkz6
+	l3S0K68HzObgZhlSis7xLOjp8Ap3h3Vvgb9fCy7L7KKIHY6cASWQdyKrYHvQdgeTwnJ1y22zpC5Zx
+	J3xHZUgolAhB6fLGwxLd2TtLLgs634TGaQk8UUJGXW8ztkdIzO1tMc9E1WQfsHBGYZMSfrTu71afw
+	JqXESNeUsJKgUFYqFzRFwYSJsAf96HUdjMmSbH885RndZRJzjdVYGgQQx3uYbk/spCH9UHwPzJuZG
+	zGK7eyUQ==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vDXqo-00000001eVB-2uqQ;
-	Tue, 28 Oct 2025 00:46:14 +0000
+	id 1vDXqr-00000001eYZ-0dcu;
+	Tue, 28 Oct 2025 00:46:17 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -65,9 +65,9 @@ Cc: torvalds@linux-foundation.org,
 	selinux@vger.kernel.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org
-Subject: [PATCH v2 01/50] fuse_ctl_add_conn(): fix nlink breakage in case of early failure
-Date: Tue, 28 Oct 2025 00:45:20 +0000
-Message-ID: <20251028004614.393374-2-viro@zeniv.linux.org.uk>
+Subject: [PATCH v2 24/50] convert ibmasmfs
+Date: Tue, 28 Oct 2025 00:45:43 +0000
+Message-ID: <20251028004614.393374-25-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
 References: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
@@ -87,75 +87,86 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-fuse_ctl_remove_conn() used to decrement the link count of root
-manually; that got subsumed by simple_recursive_removal(), but
-in case when subdirectory creation has failed the latter won't
-get called.
+static contents for each "service processor", whatever the fuck it is.
+Congruent subdirectories of root, created at mount time, taken out
+by kill_litter_super().  All dentries created with d_alloc_name() and are
+left pinned.  The odd part is that the list of service providers is
+assumed to be unchanging - no locking, nothing to handle removals or
+extra elements added later on.
 
-Just move the modification of parent's link count into
-fuse_ctl_add_dentry() to keep the things simple.  Allows to
-get rid of the nlink argument as well...
+... and it's a PCI device.  If you ever tell it to remove an instance,
+you are fucked - it doesn't bother with removing its directory from filesystem,
+it has a strange check that presumably wanted to be a check for removed
+devices, but it had never been fleshed out.
 
-Fixes: fcaac5b42768 "fuse_ctl: use simple_recursive_removal()"
+Anyway, d_add() -> d_make_persistent()+dput() in ibmasmfs_create_dir() and
+ibmasmfs_create_file(), and make the latter return int - no need to even
+borrow that dentry, callers completely ignore it.
+
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/fuse/control.c | 19 ++++++++++---------
- 1 file changed, 10 insertions(+), 9 deletions(-)
+ drivers/misc/ibmasm/ibmasmfs.c | 18 ++++++++++--------
+ 1 file changed, 10 insertions(+), 8 deletions(-)
 
-diff --git a/fs/fuse/control.c b/fs/fuse/control.c
-index bb407705603c..5247df896c5d 100644
---- a/fs/fuse/control.c
-+++ b/fs/fuse/control.c
-@@ -205,8 +205,7 @@ static const struct file_operations fuse_conn_congestion_threshold_ops = {
+diff --git a/drivers/misc/ibmasm/ibmasmfs.c b/drivers/misc/ibmasm/ibmasmfs.c
+index b26c930e3edb..a6cde74efb68 100644
+--- a/drivers/misc/ibmasm/ibmasmfs.c
++++ b/drivers/misc/ibmasm/ibmasmfs.c
+@@ -103,7 +103,7 @@ static struct file_system_type ibmasmfs_type = {
+ 	.owner          = THIS_MODULE,
+ 	.name           = "ibmasmfs",
+ 	.init_fs_context = ibmasmfs_init_fs_context,
+-	.kill_sb        = kill_litter_super,
++	.kill_sb        = kill_anon_super,
+ };
+ MODULE_ALIAS_FS("ibmasmfs");
  
- static struct dentry *fuse_ctl_add_dentry(struct dentry *parent,
- 					  struct fuse_conn *fc,
--					  const char *name,
--					  int mode, int nlink,
-+					  const char *name, int mode,
- 					  const struct inode_operations *iop,
- 					  const struct file_operations *fop)
- {
-@@ -232,7 +231,10 @@ static struct dentry *fuse_ctl_add_dentry(struct dentry *parent,
- 	if (iop)
- 		inode->i_op = iop;
- 	inode->i_fop = fop;
--	set_nlink(inode, nlink);
-+	if (S_ISDIR(mode)) {
-+		inc_nlink(d_inode(parent));
-+		inc_nlink(inode);
-+	}
- 	inode->i_private = fc;
- 	d_add(dentry, inode);
+@@ -144,7 +144,7 @@ static struct inode *ibmasmfs_make_inode(struct super_block *sb, int mode)
+ 	return ret;
+ }
  
-@@ -252,22 +254,21 @@ int fuse_ctl_add_conn(struct fuse_conn *fc)
- 		return 0;
+-static struct dentry *ibmasmfs_create_file(struct dentry *parent,
++static int ibmasmfs_create_file(struct dentry *parent,
+ 			const char *name,
+ 			const struct file_operations *fops,
+ 			void *data,
+@@ -155,19 +155,20 @@ static struct dentry *ibmasmfs_create_file(struct dentry *parent,
  
- 	parent = fuse_control_sb->s_root;
--	inc_nlink(d_inode(parent));
- 	sprintf(name, "%u", fc->dev);
--	parent = fuse_ctl_add_dentry(parent, fc, name, S_IFDIR | 0500, 2,
-+	parent = fuse_ctl_add_dentry(parent, fc, name, S_IFDIR | 0500,
- 				     &simple_dir_inode_operations,
- 				     &simple_dir_operations);
- 	if (!parent)
- 		goto err;
+ 	dentry = d_alloc_name(parent, name);
+ 	if (!dentry)
+-		return NULL;
++		return -ENOMEM;
  
--	if (!fuse_ctl_add_dentry(parent, fc, "waiting", S_IFREG | 0400, 1,
-+	if (!fuse_ctl_add_dentry(parent, fc, "waiting", S_IFREG | 0400,
- 				 NULL, &fuse_ctl_waiting_ops) ||
--	    !fuse_ctl_add_dentry(parent, fc, "abort", S_IFREG | 0200, 1,
-+	    !fuse_ctl_add_dentry(parent, fc, "abort", S_IFREG | 0200,
- 				 NULL, &fuse_ctl_abort_ops) ||
- 	    !fuse_ctl_add_dentry(parent, fc, "max_background", S_IFREG | 0600,
--				 1, NULL, &fuse_conn_max_background_ops) ||
-+				 NULL, &fuse_conn_max_background_ops) ||
- 	    !fuse_ctl_add_dentry(parent, fc, "congestion_threshold",
--				 S_IFREG | 0600, 1, NULL,
-+				 S_IFREG | 0600, NULL,
- 				 &fuse_conn_congestion_threshold_ops))
- 		goto err;
+ 	inode = ibmasmfs_make_inode(parent->d_sb, S_IFREG | mode);
+ 	if (!inode) {
+ 		dput(dentry);
+-		return NULL;
++		return -ENOMEM;
+ 	}
  
+ 	inode->i_fop = fops;
+ 	inode->i_private = data;
+ 
+-	d_add(dentry, inode);
+-	return dentry;
++	d_make_persistent(dentry, inode);
++	dput(dentry);
++	return 0;
+ }
+ 
+ static struct dentry *ibmasmfs_create_dir(struct dentry *parent,
+@@ -189,8 +190,9 @@ static struct dentry *ibmasmfs_create_dir(struct dentry *parent,
+ 	inode->i_op = &simple_dir_inode_operations;
+ 	inode->i_fop = ibmasmfs_dir_ops;
+ 
+-	d_add(dentry, inode);
+-	return dentry;
++	d_make_persistent(dentry, inode);
++	dput(dentry);
++	return dentry; // borrowed
+ }
+ 
+ int ibmasmfs_register(void)
 -- 
 2.47.3
 
