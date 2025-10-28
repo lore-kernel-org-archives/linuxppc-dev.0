@@ -1,94 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-13430-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13431-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E9E6BCCF9E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 10:44:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50AF0CCF9E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 10:56:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwn733ZWGz3fDL;
-	Tue, 28 Oct 2025 21:44:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761648255;
-	cv=none; b=NFX+xa91/ZrFPTPi9maVEFqOpfDdzvW7qYjCN2232OBS4dVHims/vNXEI4LTEaOJKZBTuivkgWA3fEg1gz4CtYHx8kczavqAZJMfW4ocuiFO+7F9KkSaAe10DFsBOm8O5DB+JgwCxCLNiasFYHYoX+LOuqiLAdWAvdWuiBXURIh10xWpRoN/rL1uVFSfDJylWyGdfvHmsitigQ03JS2p8e/5fiBvN445ydRftC4F5xfCxK69SPf90AqHEFfrakDBIqXfuECuyioLQvNbJyQIuGecM6FkW69lK+Do0uotLrE5awjPyQvAwSVjuiKoGTslwJ7aef4Y46dt3YZ39Htisg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwnNn4Bvsz30RJ;
+	Tue, 28 Oct 2025 21:56:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761648969;
+	cv=none; b=hI00SW2iTyvD92/tGRC+5kRWv8+0UfSb6tExqG1r1M6UTd8nJg2zFhgd6l8HKWsXlCChAmi/EDPyOto98jBOUxuLqyLPgQEXshWvK/W9a8tRv8XL4MenbVHNNST5jv7XlMU1g9b8saTxiq3701mrV/peqc1kS8N9GnNO5CSIRzEi/Ps4aB9YufAxaQ7eyLgVeL9OTCvd2IChVuH2w+Nyh9eGToDcXpHdIEw4qLWad3mqYkS3sMlgs/2bhJiiSso59w4I8ZEo79zNwFtNFf85o1Xrr8iel9UFhCVZDyJKNIcZQxO9t3hBAm6r2Ls/hzdgk5Dzf2jKm2bni0rElJ9L8g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761648255; c=relaxed/relaxed;
-	bh=sBPQxt982BoAw3ngYLxS0d1nmtu+Czr+nCUJrS/YPkA=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=gcaTz9ovwxyot0RnnPmzrQGCnTxDKgzLjIDWclcTpA2ap6n8+TE1qY3WGHHdIei2H3m3jEH78YdUK+ACN6kC751Zgs0njaYLmI3+gt+qLXQXST7/6rtBY2YMg2+JwS3LeWmfkPlvRlFZa8WYoBA2XRBdRYcLtw9frBtoTghHnRHEc9Lw6m/f0VqUT0/ZuqBP2/+jb5YZSaJsr44BsCQYY5cBp4PwP+UoJ5YALYeLDjKX4671G053uZnHXQBrix5LIDD9UtsDatK2nhb/z9wuXt50EoRQcxP9Awps3pLutG4aAU8on6g0KjZ7gcs7abyNL/sHXI0Rcl27mTb+5SZ4EA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JbA2zlNt; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	t=1761648969; c=relaxed/relaxed;
+	bh=hiHeN2x4B81hmvIwxhk14paD4xhooOSCeWVobZBBx9Y=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=mOBsWziFl6KLnX7p5xwGW1OZ6GPv43mK9qmDJOX3nv9AfJNh+n3jIjFRHN3cK1fIdEMNv+iDdaih3uKQGaqyueaPbbtbajQ6YYQSW02geiQiKoT8FLCM6dRr8xFA34622z+LGzYAs2d4cRqjq4dL+J397hm/qnXyAmzW3nRgHr+Zr4LOaeaU7nZhGCG+4iFBlWNglufPk6LtXpeTDgXgnEhMxnOSwPRhd7v94ihve3PjcFQ+AnczBcuKwxUvIFrJCAPBsnCzXiAFrUpRAHXPp4n201ZDMwRMV5OuCEw5KGSvbSqh/K/0aoIKnVMqXhWQ3Kt7SM/f/XAb9DHZ96gM3Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Xoh03vzA; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nysal@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JbA2zlNt;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Xoh03vzA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nysal@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwn725Q4nz3f1l
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 21:44:14 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 59S3bJU4021515;
-	Tue, 28 Oct 2025 10:43:13 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwnNm4xjLz304h
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 21:56:08 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 59RNBix4000657;
+	Tue, 28 Oct 2025 10:55:56 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:message-id:mime-version
-	:subject:to; s=pp1; bh=sBPQxt982BoAw3ngYLxS0d1nmtu+Czr+nCUJrS/YP
-	kA=; b=JbA2zlNtb2AQWotokrxPExjSpMaFzWex+D9Qo6FI+rUzpJ9SQiQSxhcbM
-	KMCo5Gqu8gr94+PgcNDQf8dA4+B+uBjEkmF0g03W96aZo8wdILOGmCn58EUfT3ZR
-	Su+yT2oCzEzNb20oHw9SeS7FY3hLwrfeUUkU6bJR/zppzPjqbKdewc3mW5pxtEmx
-	/qLAa8N0SGyu13xGGN/gXx93MNikU1nOPx6l9+k2ESqmOmGEQ1GcBdLD4fqCfMwl
-	qLFTU2M90x2cT9M9WKjt4WH2X1xGl9xQuSF+CZn1ql2Ub6/STKCvHOQFuJTH8zuk
-	a55uVnBZqYB2GcUce4GyiGZW/sMWA==
+	:content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=hiHeN2x4B81hmvIwx
+	hk14paD4xhooOSCeWVobZBBx9Y=; b=Xoh03vzAY7tZZZa30s9q9zDkAHeU2/GJE
+	QytVs88MCBWGbQQGxuFFL/Ww9dck+Tp0T3uDpYIsszRvHv3bTa8BZrM9oIG97XEY
+	IcN6PtzXFxq/woSCTzeut7hnjrCCh+SlplpG2w+r79KeigLmqfcqLQZmTR5zep5d
+	zeVD/5yZ7YGQgv3Ti85ew0ilAG2zNlQg0iF7hMmUYdfq2SbfEd1KIex4halZeH1b
+	hnEVZ/LzOm5pUzX0M/P/aPMOyhftwadeT9oGGmTyCu7dp0NxpT34e6ZftMmw92dQ
+	m+AyOkHpH+Ys6H65yBwhZfxyW657s5JgoNWuBn+5cG0C5RpimM6RA==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4a0kytbbe2-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4a0p293fas-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 28 Oct 2025 10:43:12 +0000 (GMT)
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 59SAhCd6017566;
-	Tue, 28 Oct 2025 10:43:12 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4a0kytbbdy-1
+	Tue, 28 Oct 2025 10:55:56 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 59SAt1qa026510;
+	Tue, 28 Oct 2025 10:55:56 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4a0p293fap-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 28 Oct 2025 10:43:12 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 59S88B1k022935;
-	Tue, 28 Oct 2025 10:43:11 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4a198xjaer-1
+	Tue, 28 Oct 2025 10:55:56 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 59S9Dhan009428;
+	Tue, 28 Oct 2025 10:55:55 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4a1b3j23h2-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 28 Oct 2025 10:43:11 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 59SAh7Xi42795442
+	Tue, 28 Oct 2025 10:55:54 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 59SAtpYn61079834
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 28 Oct 2025 10:43:07 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 806A920040;
-	Tue, 28 Oct 2025 10:43:07 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id CBE7120043;
-	Tue, 28 Oct 2025 10:43:04 +0000 (GMT)
-Received: from sapthagiri.in.ibm.com (unknown [9.39.27.1])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 28 Oct 2025 10:43:04 +0000 (GMT)
-From: Srikar Dronamraju <srikar@linux.ibm.com>
-To: linux-kernel@vger.kernel.org
-Cc: Michael Ellerman <mpe@ellerman.id.au>,
+	Tue, 28 Oct 2025 10:55:51 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2ED8A2004D;
+	Tue, 28 Oct 2025 10:55:51 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1C5882004B;
+	Tue, 28 Oct 2025 10:55:48 +0000 (GMT)
+Received: from li-80eaad4c-2afd-11b2-a85c-af8123d033e3.ibm.com (unknown [9.124.209.152])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 28 Oct 2025 10:55:47 +0000 (GMT)
+From: "Nysal Jan K.A." <nysal@linux.ibm.com>
+To: Sourabh Jain <sourabhjain@linux.ibm.com>,
         Madhavan Srinivasan <maddy@linux.ibm.com>,
-        linuxppc-dev@lists.ozlabs.org, Ben Segall <bsegall@google.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Dietmar Eggemann <dietmar.eggemann@arm.com>,
-        Ingo Molnar <mingo@redhat.com>, Juri Lelli <juri.lelli@redhat.com>,
-        Mel Gorman <mgorman@suse.de>, Nicholas Piggin <npiggin@gmail.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Valentin Schneider <vschneid@redhat.com>,
-        Vincent Guittot <vincent.guittot@linaro.org>,
-        Srikar Dronamraju <srikar@linux.ibm.com>
-Subject: [PATCH 1/2] sched: Feature to decide if steal should update CPU capacity
-Date: Tue, 28 Oct 2025 16:12:54 +0530
-Message-ID: <20251028104255.1892485-1-srikar@linux.ibm.com>
+        Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: Srikar Dronamraju <srikar@linux.ibm.com>,
+        "Nysal Jan K.A." <nysal@linux.ibm.com>,
+        Sachin P Bappalige <sachinpb@linux.ibm.com>, stable@vger.kernel.org,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Laurent Dufour <ldufour@linux.ibm.com>,
+        Thomas Gleixner <tglx@linutronix.de>, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH v2] powerpc/kexec: Enable SMT before waking offline CPUs
+Date: Tue, 28 Oct 2025 16:25:12 +0530
+Message-ID: <20251028105516.26258-1-nysal@linux.ibm.com>
 X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20251025080512.85690-1-nysal@linux.ibm.com>
+References: <20251025080512.85690-1-nysal@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -104,104 +104,100 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: mK_pSkU2Uz8Pi3rGoGa9Cp3eTqt70t_x
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMDI1MDAwMSBTYWx0ZWRfX7A/NMiwAXTOa
- W4v+hBmkODfN/qT7aMePDh4oUifCbFZoMwXsFF0Tj6ZsyIF3feBTXqtOlsqqySQ2ePynvURdHne
- ZOVZgBgDlwZzHgaQ1Bp0jwLhSL6dOMvyYyc3I1xWfqvINyMDcYlO77cZycNRR1L23Po6a3Ahhb6
- DtMLa7rBDpypVQTVYR1r4GaP4Te1IQ0ymuhd0XcTiPJ3mmTtV5kPzZEMoVOKjy9EFWJGrOrGRnJ
- oEiJz3EnGqyyS3awdNYxPXWk53okTA0RK7n0X1hTQYQwx9kQ1iPMMexOv7xvACD2sIg9qjzXp+e
- 2Lmb7nKfKBI3Z9cL/PLPy4d32/0XgRDhcEvGeLkh/fhh3FcdiGQe8e+OW/ThMmmBfp+VEBm0mgv
- 4j1R/kURQCwc+I1Dd9C9yxEtmzFaYw==
-X-Proofpoint-GUID: X9P4O8fsl1BaG_mGyibqA6XZeJ4IKR1D
-X-Authority-Analysis: v=2.4 cv=FaE6BZ+6 c=1 sm=1 tr=0 ts=69009e40 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=x6icFKpwvdMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
- a=HZUKlmiOjlZxzIohUccA:9 a=cPQSjfK2_nFv0Q5t_7PE:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMDI1MDAxOSBTYWx0ZWRfX3HlIKYqMJBCw
+ GiGoZU+Qn6PVA60ZhQ/djUXs1yGbK1b8u0Jlj/DBebpNdojxsuoTGeIc0iP3SOlJv48ugyUmkIE
+ XV2WbYe0kUzwGpECADfsKDUNPEFhoReXqqA9XV+jQOuycYqMuZF50rgxHZDltIGeR4brKcYHGb3
+ E1XA7Psq9rqlJPe9zZa/Tf4rIUwLW69mAKR+zn7EWx1U1xF6czg2Ebh6c5kvOnUmgNWfvGOcuSa
+ fBA+J6CD3SR5Zzyi9pBioj4zUpPbYkODyHRQ6uNHGO5rJzjYruyfzZ7/1ilbDTKPYmrx4Di82PG
+ S91+LPBwY//omJhNrEg8G6tb35zuB0MoM2Z0Jhx7ZxA6UxCHOp39K1ckFp5k8ALulypLUZbSqrX
+ yABUgjTpxX1GpwWlBkbsIs3Fm+c5WA==
+X-Proofpoint-GUID: E9-2bkI_G8UU2zgmOr-_y4VMStsIEBkv
+X-Authority-Analysis: v=2.4 cv=V8ZwEOni c=1 sm=1 tr=0 ts=6900a13c cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
+ a=x6icFKpwvdMA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8 a=VwQbUJbxAAAA:8
+ a=nGyChcL-Hsos-sZBGsMA:9 a=cPQSjfK2_nFv0Q5t_7PE:22
+X-Proofpoint-ORIG-GUID: vaZVXXfJ7prvJcR8iUk7Xt9Hqwqy8q_z
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.80.40
  definitions=2025-10-28_04,2025-10-22_01,2025-03-28_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 malwarescore=0 suspectscore=0 lowpriorityscore=0 adultscore=0
- impostorscore=0 priorityscore=1501 clxscore=1011 bulkscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2510020000 definitions=main-2510250001
+ priorityscore=1501 phishscore=0 lowpriorityscore=0 malwarescore=0
+ adultscore=0 bulkscore=0 spamscore=0 clxscore=1015 suspectscore=0
+ impostorscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2510020000
+ definitions=main-2510250019
 
-At present, scheduler scales CPU capacity for fair tasks based on time
-spent on irq and steal time. If a CPU sees irq or steal time, its
-capacity for fair tasks decreases causing tasks to migrate to other CPU
-that are not affected by irq and steal time. All of this is gated by
-NONTASK_CAPACITY.
+If SMT is disabled or a partial SMT state is enabled, when a new kernel
+image is loaded for kexec, on reboot the following warning is observed:
 
-In virtualized setups, a CPU that reports steal time (time taken by the
-hypervisor) can cause tasks to migrate unnecessarily to sibling CPUs that
-appear to be less busy, only for the situation to reverse shortly.
+kexec: Waking offline cpu 228.
+WARNING: CPU: 0 PID: 9062 at arch/powerpc/kexec/core_64.c:223 kexec_prepare_cpus+0x1b0/0x1bc
+[snip]
+ NIP kexec_prepare_cpus+0x1b0/0x1bc
+ LR  kexec_prepare_cpus+0x1a0/0x1bc
+ Call Trace:
+  kexec_prepare_cpus+0x1a0/0x1bc (unreliable)
+  default_machine_kexec+0x160/0x19c
+  machine_kexec+0x80/0x88
+  kernel_kexec+0xd0/0x118
+  __do_sys_reboot+0x210/0x2c4
+  system_call_exception+0x124/0x320
+  system_call_vectored_common+0x15c/0x2ec
 
-To mitigate this ping-pong behaviour, this change introduces a new
-scheduler feature flag: ACCT_STEAL which will control whether steal time
-contributes to non-task capacity adjustments (used for fair scheduling).
+This occurs as add_cpu() fails due to cpu_bootable() returning false for
+CPUs that fail the cpu_smt_thread_allowed() check or non primary
+threads if SMT is disabled.
 
-Signed-off-by: Srikar Dronamraju <srikar@linux.ibm.com>
+Fix the issue by enabling SMT and resetting the number of SMT threads to
+the number of threads per core, before attempting to wake up all present
+CPUs.
+
+Fixes: 38253464bc82 ("cpu/SMT: Create topology_smt_thread_allowed()")
+Reported-by: Sachin P Bappalige <sachinpb@linux.ibm.com>
+Cc: stable@vger.kernel.org # v6.6+
+Reviewed-by: Srikar Dronamraju <srikar@linux.ibm.com>
+Signed-off-by: Nysal Jan K.A. <nysal@linux.ibm.com>
 ---
- include/linux/sched.h   | 1 +
- kernel/sched/core.c     | 7 +++++--
- kernel/sched/debug.c    | 8 ++++++++
- kernel/sched/features.h | 1 +
- 4 files changed, 15 insertions(+), 2 deletions(-)
+ arch/powerpc/kexec/core_64.c | 19 +++++++++++++++++++
+ 1 file changed, 19 insertions(+)
 
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index aa9c5be7a632..451931cce5bf 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -2272,5 +2272,6 @@ static __always_inline void alloc_tag_restore(struct alloc_tag *tag, struct allo
- #define alloc_tag_save(_tag)			NULL
- #define alloc_tag_restore(_tag, _old)		do {} while (0)
- #endif
-+extern void steal_updates_cpu_capacity(bool enable);
- 
- #endif
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 81c6df746df1..3a7c4e307371 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -792,8 +792,11 @@ static void update_rq_clock_task(struct rq *rq, s64 delta)
- 	rq->clock_task += delta;
- 
- #ifdef CONFIG_HAVE_SCHED_AVG_IRQ
--	if ((irq_delta + steal) && sched_feat(NONTASK_CAPACITY))
--		update_irq_load_avg(rq, irq_delta + steal);
-+	if ((irq_delta + steal) && sched_feat(NONTASK_CAPACITY)) {
-+		if (steal && sched_feat(ACCT_STEAL))
-+			irq_delta += steal;
-+		update_irq_load_avg(rq, irq_delta);
-+	}
- #endif
- 	update_rq_clock_pelt(rq, delta);
+diff --git a/arch/powerpc/kexec/core_64.c b/arch/powerpc/kexec/core_64.c
+index 222aa326dace..825ab8a88f18 100644
+--- a/arch/powerpc/kexec/core_64.c
++++ b/arch/powerpc/kexec/core_64.c
+@@ -202,6 +202,23 @@ static void kexec_prepare_cpus_wait(int wait_state)
+ 	mb();
  }
-diff --git a/kernel/sched/debug.c b/kernel/sched/debug.c
-index 557246880a7e..a0393dd43bb2 100644
---- a/kernel/sched/debug.c
-+++ b/kernel/sched/debug.c
-@@ -1307,3 +1307,11 @@ void resched_latency_warn(int cpu, u64 latency)
- 	       cpu, latency, cpu_rq(cpu)->ticks_without_resched);
- 	dump_stack();
- }
+ 
 +
-+void steal_updates_cpu_capacity(bool enable)
++/*
++ * The add_cpu() call in wake_offline_cpus() can fail as cpu_bootable()
++ * returns false for CPUs that fail the cpu_smt_thread_allowed() check
++ * or non primary threads if SMT is disabled. Re-enable SMT and set the
++ * number of SMT threads to threads per core.
++ */
++static void kexec_smt_reenable(void)
 +{
-+	if (enable)
-+		sched_feat_set("ACCT_STEAL");
-+	else
-+		sched_feat_set("NO_ACCT_STEAL");
++#if defined(CONFIG_SMP) && defined(CONFIG_HOTPLUG_SMT)
++	lock_device_hotplug();
++	cpu_smt_num_threads = threads_per_core;
++	cpu_smt_control = CPU_SMT_ENABLED;
++	unlock_device_hotplug();
++#endif
 +}
-diff --git a/kernel/sched/features.h b/kernel/sched/features.h
-index 3c12d9f93331..82d7806ea515 100644
---- a/kernel/sched/features.h
-+++ b/kernel/sched/features.h
-@@ -121,3 +121,4 @@ SCHED_FEAT(WA_BIAS, true)
- SCHED_FEAT(UTIL_EST, true)
++
+ /*
+  * We need to make sure each present CPU is online.  The next kernel will scan
+  * the device tree and assume primary threads are online and query secondary
+@@ -216,6 +233,8 @@ static void wake_offline_cpus(void)
+ {
+ 	int cpu = 0;
  
- SCHED_FEAT(LATENCY_WARN, false)
-+SCHED_FEAT(ACCT_STEAL, true)
++	kexec_smt_reenable();
++
+ 	for_each_present_cpu(cpu) {
+ 		if (!cpu_online(cpu)) {
+ 			printk(KERN_INFO "kexec: Waking offline cpu %d.\n",
 -- 
 2.47.3
 
