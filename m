@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-13375-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13378-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9F9ACCF9E0
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:48:30 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EC818CCF9E5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:48:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWsc0rkdz3f1G;
-	Tue, 28 Oct 2025 11:46:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWsd1XF1z3f25;
+	Tue, 28 Oct 2025 11:46:45 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761612403;
-	cv=none; b=ZSxsb5AhWs1IWq4AVG+ZVoiAlQegH8Dw9IBmwgkyr84yneS/35ndalRFbun1S/xxt9QbzD6a0KIN6Zs2FtogMZvclAQ4aW1Im++//kewyLMctZS7D9v5GTyvLKHwGzamI2rt9okA5NqFTn/kEc0jZeUdisqOnwXLjeh7xta6uMhyt8o1tTR3B3MRQZ2i03CSn8/d7z0XQz4+z+x7AsY8BArpkO7s/8+AZO8QJRugtHvQ2kKOpHSbauogyB2/UQUC1e30F8qrr0zQ0YgKIebsj2UXItFeTMtsE9F3qX+hNSKjeMISJO7mOiK9/epXdp1SMFskwyqtj70vXIuSzbQArQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761612404;
+	cv=none; b=FBwcVY2MQrJ29spcb4Uh5eo4vio/Tdg8P93VYML12yjICojUnTqwtyS7Ba2C/5voZc5CLPIiMLEiMOosKHYaOU+RzdrKuZ7q+MZwE2ljbXNDv2+t5qVXqSh1kn19GzTRcLvl3G7uPd0vWElMNfS5zKRmJG1yEXT8M89Tgb0E1DBtZTjDy3SMTRso6e6cvbzO9fg3sefKrlWz/W1vKI89+MShU2FKd8NzDEdaOCHdxudMQH661L1hVZL6LKbzdyaQOJsRpvkz7rqUbQ3vfPLUjGyFiGjTnPagQNE232YaPB4KFbRgRlNOaoqePE7Bf0czy1boqH4wOaaiWX3RYOvExA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761612403; c=relaxed/relaxed;
-	bh=5jWWnLfQnbfazoBZQwErKmRKFUtRFrqyMeJRRkrQTEk=;
+	t=1761612404; c=relaxed/relaxed;
+	bh=BBdNK0gxnR7qfZeEdC/f0rBsP+oFzkGGYr3Jch9A6Js=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Ylg5+UbXmryFu12H4/uCgZUQ4ryFiPE5ogal9WwoPn7ylpqHVxZYOTW7Ik5WW1VkSyuo8cK7OwgD1QxB6KX8Th5v2e59oT6atCLYyjx1V26sMNbupmO5TbuTXJ6iRaxz5JNC9Z6K+TMiEicRCL2YPS5+vA6dJzw3E5ka1hk04295zvKhsAsrHbo1LGgcYUWApqyNzVBXKWQBmZwljQj1ZezoKd6j23PJIj7o2Z1JCG3XqbUWazIkNFpPeWrD//3vo7PKSh6lTjHR0NxHCZ/6ZKjrBNByPFSvKlg9B1kJ5pGFCS4d2/nKYiZVZGz6Vn7whVJrOF9ju4eLAeZJquwogw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=Gkj7Zb5B; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=Qcbe4u0drMgl55xlI5c2Dr2zmNbE4E5xOLtSQo+6ar6ZtgiIP10qLPtGwleZTw3DAkhWuNxcvwvnVU3YB2bTlt7Bb8Uv6UoTZ1fI+w7CZTHBSpmK2KUg8Fnu9a/FCGrJO1+cazmg2jZtwdTmIsnTgZ8BMnzxoGyLVYv7VrTQk0jEtQMR88x4ququQxiyOKLtBcfFo0eYZd/yeubQ9oBXpNkpNgB76Do0JB1fel70jwDw/KKecn8zxE1+N/VqcmqJ3AeuwVRDZZz7b3CVSkNHdMgK68nTBWgoOtVMkyK6dJg9Yu/ozKkMVz0FVP7QPzZ4y4bYSSfkbmeRI+oiIYo+yg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=hJkvg9Si; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=Gkj7Zb5B;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=hJkvg9Si;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWsT3v6Jz3cZf
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:46:37 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWsV5YL8z3dBZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:46:38 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=5jWWnLfQnbfazoBZQwErKmRKFUtRFrqyMeJRRkrQTEk=; b=Gkj7Zb5BlBFjv4TohuOPBe2E2n
-	AKpodpvilfEOkreEX/7LWr03aoVtBDSQZWfnzMbVklJgGB9kpcJbw4BXo+UH1mAWvVCtispBubRMV
-	wQtSX1wyJFxeVjjtw8xNa08xl48UnT1xrqIaFFUP21QmbPQdfu7YK3IcWV3pDL/M55JLJaZUHaIkS
-	NrbTzq6XSAXX+4KcXv3/FAOf6RhoGu4hK1jH5ajjZCMqZNI8IgSBHmCpNAHIMcEfpyHaEmmK7HnQQ
-	zvERgdMHS3AFHHXmQD3uyX1NIhQtZt8vCBGE2wyW7qW014LseG9AmBq62E4L/AVm8vScqqSLqdrFz
-	1x5cT7YQ==;
+	bh=BBdNK0gxnR7qfZeEdC/f0rBsP+oFzkGGYr3Jch9A6Js=; b=hJkvg9SitMoNdfPHwecrFFEJGO
+	woGIgKvY9Ps8P4MffQZjkg2+bGuwKDOXqFqsQvBx+05CGehRJCcwZV+0hcfc11LC7VRQUSe25npna
+	WLJsTiIG24TBAx+pWZHlURyousvs8kmfSwd/4atIS6Jb9xxb6LS8ZFJyTSe5nOn7I9Z5FY3HtAjXu
+	iEUL2OxtWhPSe9USVVkw9OgUPB3n1J1EB4K21R8NPkVJpx+1hKTCjI+SmfzN3+q8PaL8gGfyzKVz+
+	KHeJNuwnG6Evciq+QRMJsEi+0oHrSWPK1vB5xlDqV1jTYtAUslF4G8q9tlgSSVee6WRYJBMnYQpsm
+	1IGJpALQ==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vDXqw-00000001eqL-0YG6;
-	Tue, 28 Oct 2025 00:46:22 +0000
+	id 1vDXqs-00000001eZz-0kWS;
+	Tue, 28 Oct 2025 00:46:18 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -65,9 +65,9 @@ Cc: torvalds@linux-foundation.org,
 	selinux@vger.kernel.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org
-Subject: [PATCH v2 50/50] d_make_discardable(): warn if given a non-persistent dentry
-Date: Tue, 28 Oct 2025 00:46:09 +0000
-Message-ID: <20251028004614.393374-51-viro@zeniv.linux.org.uk>
+Subject: [PATCH v2 34/50] selinuxfs: new helper for attaching files to tree
+Date: Tue, 28 Oct 2025 00:45:53 +0000
+Message-ID: <20251028004614.393374-35-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
 References: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
@@ -87,165 +87,357 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-At this point there are very few call chains that might lead to
-d_make_discardable() on a dentry that hadn't been made persistent:
-calls of simple_unlink() and simple_rmdir() in configfs and
-apparmorfs.
-
-Both filesystems do pin (part of) their contents in dcache, but
-they are currently playing very unusual games with that.  Converting
-them to more usual patterns might be possible, but it's definitely
-going to be a long series of changes in both cases.
-
-For now the easiest solution is to have both stop using simple_unlink()
-and simple_rmdir() - that allows to make d_make_discardable() warn
-when given a non-persistent dentry.
-
-Rather than giving them full-blown private copies (with calls of
-d_make_discardable() replaced with dput()), let's pull the parts of
-simple_unlink() and simple_rmdir() that deal with timestamps and link
-counts into separate helpers (__simple_unlink() and __simple_rmdir()
-resp.) and have those used by configfs and apparmorfs.
+allocating dentry after the inode has been set up reduces the amount
+of boilerplate - "attach this inode under that name and this parent
+or drop inode in case of failure" simplifies quite a few places.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/configfs/dir.c              | 10 ++++++++--
- fs/configfs/inode.c            |  3 ++-
- fs/dcache.c                    |  1 +
- fs/libfs.c                     | 21 +++++++++++++++++----
- include/linux/fs.h             |  2 ++
- security/apparmor/apparmorfs.c | 13 +++++++++----
- 6 files changed, 39 insertions(+), 11 deletions(-)
+ security/selinux/selinuxfs.c | 160 +++++++++++++++--------------------
+ 1 file changed, 66 insertions(+), 94 deletions(-)
 
-diff --git a/fs/configfs/dir.c b/fs/configfs/dir.c
-index 81f4f06bc87e..e8f2f44012e9 100644
---- a/fs/configfs/dir.c
-+++ b/fs/configfs/dir.c
-@@ -400,8 +400,14 @@ static void remove_dir(struct dentry * d)
+diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
+index b39e919c27b1..f088776dbbd3 100644
+--- a/security/selinux/selinuxfs.c
++++ b/security/selinux/selinuxfs.c
+@@ -1197,6 +1197,25 @@ static struct inode *sel_make_inode(struct super_block *sb, umode_t mode)
+ 	return ret;
+ }
  
- 	configfs_remove_dirent(d);
- 
--	if (d_really_is_positive(d))
--		simple_rmdir(d_inode(parent),d);
-+	if (d_really_is_positive(d)) {
-+		if (likely(simple_empty(d))) {
-+			__simple_rmdir(d_inode(parent),d);
-+			dput(d);
-+		} else {
-+			pr_warn("remove_dir (%pd): attributes remain", d);
-+		}
++static struct dentry *sel_attach(struct dentry *parent, const char *name,
++				 struct inode *inode)
++{
++	struct dentry *dentry = d_alloc_name(parent, name);
++	if (unlikely(!dentry)) {
++		iput(inode);
++		return ERR_PTR(-ENOMEM);
 +	}
- 
- 	pr_debug(" o %pd removing done (%d)\n", d, d_count(d));
- 
-diff --git a/fs/configfs/inode.c b/fs/configfs/inode.c
-index 1d2e3a5738d1..bcda3372e141 100644
---- a/fs/configfs/inode.c
-+++ b/fs/configfs/inode.c
-@@ -211,7 +211,8 @@ void configfs_drop_dentry(struct configfs_dirent * sd, struct dentry * parent)
- 			dget_dlock(dentry);
- 			__d_drop(dentry);
- 			spin_unlock(&dentry->d_lock);
--			simple_unlink(d_inode(parent), dentry);
-+			__simple_unlink(d_inode(parent), dentry);
-+			dput(dentry);
- 		} else
- 			spin_unlock(&dentry->d_lock);
- 	}
-diff --git a/fs/dcache.c b/fs/dcache.c
-index a7fab68fb4c9..824d620bb563 100644
---- a/fs/dcache.c
-+++ b/fs/dcache.c
-@@ -931,6 +931,7 @@ EXPORT_SYMBOL(dput);
- void d_make_discardable(struct dentry *dentry)
- {
- 	spin_lock(&dentry->d_lock);
-+	WARN_ON(!(dentry->d_flags & DCACHE_PERSISTENT));
- 	dentry->d_flags &= ~DCACHE_PERSISTENT;
- 	dentry->d_lockref.count--;
- 	rcu_read_lock();
-diff --git a/fs/libfs.c b/fs/libfs.c
-index 80f288a771e3..0aa630e7eb00 100644
---- a/fs/libfs.c
-+++ b/fs/libfs.c
-@@ -790,13 +790,27 @@ int simple_empty(struct dentry *dentry)
- }
- EXPORT_SYMBOL(simple_empty);
- 
--int simple_unlink(struct inode *dir, struct dentry *dentry)
-+void __simple_unlink(struct inode *dir, struct dentry *dentry)
- {
- 	struct inode *inode = d_inode(dentry);
- 
- 	inode_set_mtime_to_ts(dir,
- 			      inode_set_ctime_to_ts(dir, inode_set_ctime_current(inode)));
- 	drop_nlink(inode);
++	d_add(dentry, inode);
++	return dentry;
 +}
-+EXPORT_SYMBOL(__simple_unlink);
 +
-+void __simple_rmdir(struct inode *dir, struct dentry *dentry)
++static int sel_attach_file(struct dentry *parent, const char *name,
++			   struct inode *inode)
 +{
-+	drop_nlink(d_inode(dentry));
-+	__simple_unlink(dir, dentry);
-+	drop_nlink(dir);
++	struct dentry *dentry = sel_attach(parent, name, inode);
++	return PTR_ERR_OR_ZERO(dentry);
 +}
-+EXPORT_SYMBOL(__simple_rmdir);
 +
-+int simple_unlink(struct inode *dir, struct dentry *dentry)
-+{
-+	__simple_unlink(dir, dentry);
- 	d_make_discardable(dentry);
- 	return 0;
- }
-@@ -807,9 +821,8 @@ int simple_rmdir(struct inode *dir, struct dentry *dentry)
- 	if (!simple_empty(dentry))
- 		return -ENOTEMPTY;
+ static ssize_t sel_read_bool(struct file *filep, char __user *buf,
+ 			     size_t count, loff_t *ppos)
+ {
+@@ -1356,8 +1375,7 @@ static int sel_make_bools(struct selinux_policy *newpolicy, struct dentry *bool_
+ 	*bool_num = num;
+ 	*bool_pending_names = names;
  
--	drop_nlink(d_inode(dentry));
--	simple_unlink(dir, dentry);
--	drop_nlink(dir);
-+	__simple_rmdir(dir, dentry);
-+	d_make_discardable(dentry);
- 	return 0;
- }
- EXPORT_SYMBOL(simple_rmdir);
-diff --git a/include/linux/fs.h b/include/linux/fs.h
-index 95933ceaae51..ef842adbd418 100644
---- a/include/linux/fs.h
-+++ b/include/linux/fs.h
-@@ -3621,6 +3621,8 @@ extern int simple_open(struct inode *inode, struct file *file);
- extern int simple_link(struct dentry *, struct inode *, struct dentry *);
- extern int simple_unlink(struct inode *, struct dentry *);
- extern int simple_rmdir(struct inode *, struct dentry *);
-+extern void __simple_unlink(struct inode *, struct dentry *);
-+extern void __simple_rmdir(struct inode *, struct dentry *);
- void simple_rename_timestamp(struct inode *old_dir, struct dentry *old_dentry,
- 			     struct inode *new_dir, struct dentry *new_dentry);
- extern int simple_rename_exchange(struct inode *old_dir, struct dentry *old_dentry,
-diff --git a/security/apparmor/apparmorfs.c b/security/apparmor/apparmorfs.c
-index 391a586d0557..9b9090d38ea2 100644
---- a/security/apparmor/apparmorfs.c
-+++ b/security/apparmor/apparmorfs.c
-@@ -358,10 +358,15 @@ static void aafs_remove(struct dentry *dentry)
- 	dir = d_inode(dentry->d_parent);
- 	inode_lock(dir);
- 	if (simple_positive(dentry)) {
--		if (d_is_dir(dentry))
--			simple_rmdir(dir, dentry);
--		else
--			simple_unlink(dir, dentry);
-+		if (d_is_dir(dentry)) {
-+			if (!WARN_ON(!simple_empty(dentry))) {
-+				__simple_rmdir(dir, dentry);
-+				dput(dentry);
-+			}
-+		} else {
-+			__simple_unlink(dir, dentry);
-+			dput(dentry);
-+		}
- 		d_delete(dentry);
- 		dput(dentry);
+-	for (i = 0; i < num; i++) {
+-		struct dentry *dentry;
++	for (i = 0; !ret && i < num; i++) {
+ 		struct inode *inode;
+ 		struct inode_security_struct *isec;
+ 		ssize_t len;
+@@ -1368,15 +1386,9 @@ static int sel_make_bools(struct selinux_policy *newpolicy, struct dentry *bool_
+ 			ret = -ENAMETOOLONG;
+ 			break;
+ 		}
+-		dentry = d_alloc_name(bool_dir, names[i]);
+-		if (!dentry) {
+-			ret = -ENOMEM;
+-			break;
+-		}
+ 
+ 		inode = sel_make_inode(bool_dir->d_sb, S_IFREG | S_IRUGO | S_IWUSR);
+ 		if (!inode) {
+-			dput(dentry);
+ 			ret = -ENOMEM;
+ 			break;
+ 		}
+@@ -1394,7 +1406,8 @@ static int sel_make_bools(struct selinux_policy *newpolicy, struct dentry *bool_
+ 		isec->initialized = LABEL_INITIALIZED;
+ 		inode->i_fop = &sel_bool_ops;
+ 		inode->i_ino = i|SEL_BOOL_INO_OFFSET;
+-		d_add(dentry, inode);
++
++		ret = sel_attach_file(bool_dir, names[i], inode);
  	}
+ out:
+ 	free_page((unsigned long)page);
+@@ -1579,6 +1592,7 @@ static int sel_make_avc_files(struct dentry *dir)
+ 	struct super_block *sb = dir->d_sb;
+ 	struct selinux_fs_info *fsi = sb->s_fs_info;
+ 	unsigned int i;
++	int err = 0;
+ 	static const struct tree_descr files[] = {
+ 		{ "cache_threshold",
+ 		  &sel_avc_cache_threshold_ops, S_IRUGO|S_IWUSR },
+@@ -1588,26 +1602,20 @@ static int sel_make_avc_files(struct dentry *dir)
+ #endif
+ 	};
+ 
+-	for (i = 0; i < ARRAY_SIZE(files); i++) {
++	for (i = 0; !err && i < ARRAY_SIZE(files); i++) {
+ 		struct inode *inode;
+-		struct dentry *dentry;
+-
+-		dentry = d_alloc_name(dir, files[i].name);
+-		if (!dentry)
+-			return -ENOMEM;
+ 
+ 		inode = sel_make_inode(dir->d_sb, S_IFREG|files[i].mode);
+-		if (!inode) {
+-			dput(dentry);
++		if (!inode)
+ 			return -ENOMEM;
+-		}
+ 
+ 		inode->i_fop = files[i].ops;
+ 		inode->i_ino = ++fsi->last_ino;
+-		d_add(dentry, inode);
++
++		err = sel_attach_file(dir, files[i].name, inode);
+ 	}
+ 
+-	return 0;
++	return err;
+ }
+ 
+ static int sel_make_ss_files(struct dentry *dir)
+@@ -1615,30 +1623,25 @@ static int sel_make_ss_files(struct dentry *dir)
+ 	struct super_block *sb = dir->d_sb;
+ 	struct selinux_fs_info *fsi = sb->s_fs_info;
+ 	unsigned int i;
++	int err = 0;
+ 	static const struct tree_descr files[] = {
+ 		{ "sidtab_hash_stats", &sel_sidtab_hash_stats_ops, S_IRUGO },
+ 	};
+ 
+-	for (i = 0; i < ARRAY_SIZE(files); i++) {
++	for (i = 0; !err && i < ARRAY_SIZE(files); i++) {
+ 		struct inode *inode;
+-		struct dentry *dentry;
+-
+-		dentry = d_alloc_name(dir, files[i].name);
+-		if (!dentry)
+-			return -ENOMEM;
+ 
+ 		inode = sel_make_inode(dir->d_sb, S_IFREG|files[i].mode);
+-		if (!inode) {
+-			dput(dentry);
++		if (!inode)
+ 			return -ENOMEM;
+-		}
+ 
+ 		inode->i_fop = files[i].ops;
+ 		inode->i_ino = ++fsi->last_ino;
+-		d_add(dentry, inode);
++
++		err = sel_attach_file(dir, files[i].name, inode);
+ 	}
+ 
+-	return 0;
++	return err;
+ }
+ 
+ static ssize_t sel_read_initcon(struct file *file, char __user *buf,
+@@ -1666,30 +1669,25 @@ static const struct file_operations sel_initcon_ops = {
+ static int sel_make_initcon_files(struct dentry *dir)
+ {
+ 	unsigned int i;
++	int err = 0;
+ 
+-	for (i = 1; i <= SECINITSID_NUM; i++) {
+-		struct inode *inode;
+-		struct dentry *dentry;
++	for (i = 1; !err && i <= SECINITSID_NUM; i++) {
+ 		const char *s = security_get_initial_sid_context(i);
++		struct inode *inode;
+ 
+ 		if (!s)
+ 			continue;
+-		dentry = d_alloc_name(dir, s);
+-		if (!dentry)
+-			return -ENOMEM;
+ 
+ 		inode = sel_make_inode(dir->d_sb, S_IFREG|S_IRUGO);
+-		if (!inode) {
+-			dput(dentry);
++		if (!inode)
+ 			return -ENOMEM;
+-		}
+ 
+ 		inode->i_fop = &sel_initcon_ops;
+ 		inode->i_ino = i|SEL_INITCON_INO_OFFSET;
+-		d_add(dentry, inode);
++		err = sel_attach_file(dir, s, inode);
+ 	}
+ 
+-	return 0;
++	return err;
+ }
+ 
+ static inline unsigned long sel_class_to_ino(u16 class)
+@@ -1771,29 +1769,21 @@ static int sel_make_perm_files(struct selinux_policy *newpolicy,
+ 	if (rc)
+ 		return rc;
+ 
+-	for (i = 0; i < nperms; i++) {
++	for (i = 0; !rc && i < nperms; i++) {
+ 		struct inode *inode;
+-		struct dentry *dentry;
+ 
+-		rc = -ENOMEM;
+-		dentry = d_alloc_name(dir, perms[i]);
+-		if (!dentry)
+-			goto out;
+-
+-		rc = -ENOMEM;
+ 		inode = sel_make_inode(dir->d_sb, S_IFREG|S_IRUGO);
+ 		if (!inode) {
+-			dput(dentry);
+-			goto out;
++			rc = -ENOMEM;
++			break;
+ 		}
+ 
+ 		inode->i_fop = &sel_perm_ops;
+ 		/* i+1 since perm values are 1-indexed */
+ 		inode->i_ino = sel_perm_to_ino(classvalue, i + 1);
+-		d_add(dentry, inode);
++
++		rc = sel_attach_file(dir, perms[i], inode);
+ 	}
+-	rc = 0;
+-out:
+ 	for (i = 0; i < nperms; i++)
+ 		kfree(perms[i]);
+ 	kfree(perms);
+@@ -1808,20 +1798,18 @@ static int sel_make_class_dir_entries(struct selinux_policy *newpolicy,
+ 	struct selinux_fs_info *fsi = sb->s_fs_info;
+ 	struct dentry *dentry = NULL;
+ 	struct inode *inode = NULL;
+-
+-	dentry = d_alloc_name(dir, "index");
+-	if (!dentry)
+-		return -ENOMEM;
++	int err;
+ 
+ 	inode = sel_make_inode(dir->d_sb, S_IFREG|S_IRUGO);
+-	if (!inode) {
+-		dput(dentry);
++	if (!inode)
+ 		return -ENOMEM;
+-	}
+ 
+ 	inode->i_fop = &sel_class_ops;
+ 	inode->i_ino = sel_class_to_ino(index);
+-	d_add(dentry, inode);
++
++	err = sel_attach_file(dir, "index", inode);
++	if (err)
++		return err;
+ 
+ 	dentry = sel_make_dir(dir, "perms", &fsi->last_class_ino);
+ 	if (IS_ERR(dentry))
+@@ -1873,58 +1861,47 @@ static int sel_make_policycap(struct dentry *dir)
+ {
+ 	struct super_block *sb = dir->d_sb;
+ 	unsigned int iter;
+-	struct dentry *dentry = NULL;
+ 	struct inode *inode = NULL;
++	int err = 0;
++
++	for (iter = 0; !err && iter <= POLICYDB_CAP_MAX; iter++) {
++		const char *name;
+ 
+-	for (iter = 0; iter <= POLICYDB_CAP_MAX; iter++) {
+ 		if (iter < ARRAY_SIZE(selinux_policycap_names))
+-			dentry = d_alloc_name(dir,
+-					      selinux_policycap_names[iter]);
++			name = selinux_policycap_names[iter];
+ 		else
+-			dentry = d_alloc_name(dir, "unknown");
+-
+-		if (dentry == NULL)
+-			return -ENOMEM;
++			name = "unknown";
+ 
+ 		inode = sel_make_inode(sb, S_IFREG | 0444);
+-		if (inode == NULL) {
+-			dput(dentry);
++		if (!inode)
+ 			return -ENOMEM;
+-		}
+ 
+ 		inode->i_fop = &sel_policycap_ops;
+ 		inode->i_ino = iter | SEL_POLICYCAP_INO_OFFSET;
+-		d_add(dentry, inode);
++		err = sel_attach_file(dir, name, inode);
+ 	}
+ 
+-	return 0;
++	return err;
+ }
+ 
+ static struct dentry *sel_make_dir(struct dentry *dir, const char *name,
+ 			unsigned long *ino)
+ {
+-	struct dentry *dentry = d_alloc_name(dir, name);
+ 	struct inode *inode;
+ 
+-	if (!dentry)
+-		return ERR_PTR(-ENOMEM);
+-
+ 	inode = sel_make_inode(dir->d_sb, S_IFDIR | S_IRUGO | S_IXUGO);
+-	if (!inode) {
+-		dput(dentry);
++	if (!inode)
+ 		return ERR_PTR(-ENOMEM);
+-	}
+ 
+ 	inode->i_op = &simple_dir_inode_operations;
+ 	inode->i_fop = &simple_dir_operations;
+ 	inode->i_ino = ++(*ino);
+ 	/* directory inodes start off with i_nlink == 2 (for "." entry) */
+ 	inc_nlink(inode);
+-	d_add(dentry, inode);
+ 	/* bump link count on parent directory, too */
+ 	inc_nlink(d_inode(dir));
+ 
+-	return dentry;
++	return sel_attach(dir, name, inode);
+ }
+ 
+ static int reject_all(struct mnt_idmap *idmap, struct inode *inode, int mask)
+@@ -2012,17 +1989,10 @@ static int sel_fill_super(struct super_block *sb, struct fs_context *fc)
+ 		goto err;
+ 	}
+ 
+-	ret = -ENOMEM;
+-	dentry = d_alloc_name(sb->s_root, NULL_FILE_NAME);
+-	if (!dentry)
+-		goto err;
+-
+ 	ret = -ENOMEM;
+ 	inode = sel_make_inode(sb, S_IFCHR | S_IRUGO | S_IWUGO);
+-	if (!inode) {
+-		dput(dentry);
++	if (!inode)
+ 		goto err;
+-	}
+ 
+ 	inode->i_ino = ++fsi->last_ino;
+ 	isec = selinux_inode(inode);
+@@ -2031,7 +2001,9 @@ static int sel_fill_super(struct super_block *sb, struct fs_context *fc)
+ 	isec->initialized = LABEL_INITIALIZED;
+ 
+ 	init_special_inode(inode, S_IFCHR | S_IRUGO | S_IWUGO, MKDEV(MEM_MAJOR, 3));
+-	d_add(dentry, inode);
++	ret = sel_attach_file(sb->s_root, NULL_FILE_NAME, inode);
++	if (ret)
++		goto err;
+ 
+ 	dentry = sel_make_dir(sb->s_root, "avc", &fsi->last_ino);
+ 	if (IS_ERR(dentry)) {
 -- 
 2.47.3
 
