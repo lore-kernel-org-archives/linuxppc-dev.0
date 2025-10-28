@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-13366-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13367-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C2EC9CCF9E5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:47:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47E3FCCF9E0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:47:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWsW2sXVz3dTs;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWsW6RwXz3dVX;
 	Tue, 28 Oct 2025 11:46:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761612399;
-	cv=none; b=ViY8iidfjYZwzKB7wMC6ZuGg5gR1AZup288ZSOCj0IdEKXINIuonbrBTyrTBFy/p4QsPL2yeHs5gGxjUQcWJeemgLvJQOwhlx9ywBJBL72pCvm1JNS1wWPNIjAzoX7yNt61ur1pMRXidFYFKctOud9qKOQi1FHJ+s+JiiTGV5mX8ZhU6bbt/sjSyATCyztgOAAbXQ45SCsclj/yg7nvgsosp59G7ZDajyfrI3MCuhCoIlsSglaj5TwEqbPwq+lQBj5ERpLKFjkfGd18DYYwv5D46K928blaK9YRJ7EB0tPF5CNAZZpL4MmXN4yBjhgHsZ+YmJhwKDJP044wrJIsQAA==
+	cv=none; b=Cn7JF8JWjIMUAxBtyhhEfa5jnJfKxYxVOfvYfTzQsuWqTXB0fMdfdH1DeOeHr88hws6CKid++svjvE0UXt//hZy3VbWakUBeAn0W/uOIzWPCOdNDCs8HOox3J8pwAVnxucoB3Pg6TZ1Ykd/gNJNCCNkXjSXedOjZtofSr/RkHX54ut95Mw2N2sPgWnzXi5v+euenb45yMGaIEv2ICi950dfqOvgpnOJKlHpsLgBKAOgm508tPDDISiHVHo0heez01AoCz8otSvmSzHfUh5alrUwXF0rqD0vPtdRA4jyOQ3VR/Kw59RBMZt71yGFc3Ij0t376dJLqNGV1cgr1b1lU0A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1761612399; c=relaxed/relaxed;
-	bh=EGEc3asPoO0BSFThbWpOoQFbGckDO1h86OnlmAxWxbE=;
+	bh=X0Qrr7Pik3tDoVKCVmiI21jyafwT3CSaV2KUBw4Cb78=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KX5wMdTWP4+OzaIvSwq6WEr02eKEPcH32Me8jRPZi0KksNYFbe6cLjCpfgOZbDjM/1jmH4/oAZLtmPkmjbTVw5jF/wKp96zt4Piu9haiNdTlsGGM7zYik5oP9NQNNpSQ9n8Z5RYNlTLWMSyzR4J0E5ITEokGRe6Z9d8idceICHC7xFNZiNjj0raQUG9so4Fqa0zWcb53t0NHw5UERsHQ29SAsvRVB5ZDsUG+GGqmD52S01gUDKXjFhcCwwapkG3TuCK+K1Q7rJnRpvMwsQvLOm2vbc7AEEw9V5h/OOFn+tVeVfDDuxwtKIY9s05lj9pwWeufgE3d20vVnkL7Vmt0WQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=ZhrjS79t; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=flj7s23K1VcjsCpcWM4Hb05yf9gXIG6xIJ2PZmZqMnJTiDYeueOKn4xpHWichLIV/0xNQck25G9Lkc7DDdIgL+NpcRHJG/qWGbfDJH0Jp4VhNk6OMW3JeJjYvgBdZQlfNCwYDCOpYWpL0muYywMQgEQTR5F1JDrQxsX3LQ3/LSaDI1r+111loa1HvCrV70kznQL5CC51uF35GlIONWOL4un3ioQ4gF0kmN/vO2hCwS2zflbPhpVCQSjMyigWeM5CDBz5wZ1gf+S7Ntdr/EVqWtCk2ilYEOZSBftYPasvKO3HSfmrkdtCA6n8zwcLBM8JJewwcb8ilsygPBi0zw0fpw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=TfdF7U5F; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=ZhrjS79t;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=TfdF7U5F;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWsM6F4Wz30RJ
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWsM60x5z304h
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:46:30 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=EGEc3asPoO0BSFThbWpOoQFbGckDO1h86OnlmAxWxbE=; b=ZhrjS79tAsmvkn2E9bfTMdEW4w
-	CTmXEOAAykGydCUZFeFSz4dT7zOPnBkkbPDPlZ6BLPJ2OCpqZkLpagKrXDPgoweW+PhbnTu7t1RLR
-	xUOuclxX327AHiKz+NzZtsfrfSXR9o9ciddUrkpGUjNTh1/HLLX6M2ZzbZxdYbdTTDeWXIogt5LOD
-	NT+qppUvE1hwOdEagwNcqeLCcrUwQXaV8/InJbBDRAjI55yV7KW2N/FqmRfGoKFfVVP4tVxGmrQMI
-	g0M1v8++um1YR0f0/u2LHYWaVjNQ5KafrPccWoXHEiCbCBf85LpCCL/ymhhgT4K76vuOJKnM9acW5
-	7na4lLAQ==;
+	bh=X0Qrr7Pik3tDoVKCVmiI21jyafwT3CSaV2KUBw4Cb78=; b=TfdF7U5FZWDvRf8GETUZzVqWWu
+	wA194I96ofrhzs3/DXQNgszGrSIWpNBJmOFPnDq63XnTCdNJPlCWF83PhIn9G/VBfkftY6vAxNo2w
+	HHk2fUI58Sze6ljbIxIJizvPCVFYoBsKdbvnYFFOywc/5sjV9EnF+//kMe37DzwRse8nYx/aKmE06
+	wu+frj4dpmNZ1+zeRtANettaZeP2ym04EphAQIEozI9YGi/JlwxU2fUxXCqwhxaw61n54T8WuZrZc
+	/q+nmqdF0mDkzCTsfBjf37HdN/ilOzb6oFMCwn0v8v8pjDvHPHZO2hF6ffl4j1a/6vfeVr4RDnIH1
+	9D32fM2g==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vDXqr-00000001eZC-2fu7;
-	Tue, 28 Oct 2025 00:46:17 +0000
+	id 1vDXqs-00000001eZl-001h;
+	Tue, 28 Oct 2025 00:46:18 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -65,9 +65,9 @@ Cc: torvalds@linux-foundation.org,
 	selinux@vger.kernel.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org
-Subject: [PATCH v2 29/50] convert binderfs
-Date: Tue, 28 Oct 2025 00:45:48 +0000
-Message-ID: <20251028004614.393374-30-viro@zeniv.linux.org.uk>
+Subject: [PATCH v2 33/50] selinuxfs: don't stash the dentry of /policy_capabilities
+Date: Tue, 28 Oct 2025 00:45:52 +0000
+Message-ID: <20251028004614.393374-34-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
 References: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
@@ -87,110 +87,89 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-Objects are created either by d_alloc_name()+d_add() (in
-binderfs_ctl_create()) or by simple_start_creating()+d_instantiate().
-Removals are by simple_recurisive_removal().
+Don't bother to store the dentry of /policy_capabilities - it belongs
+to invariant part of tree and we only use it to populate that directory,
+so there's no reason to keep it around afterwards.
 
-Switch d_add()/d_instantiate() to d_make_persistent() + dput().
-Voila - kill_litter_super() is not needed anymore.
-
-Fold dput()+unlocking the parent into simple_done_creating(), while
-we are at it.
-
-NOTE: return value of binderfs_create_file() is borrowed; it may get
-stored in proc->binderfs_entry.  See binder_release()...
+Same situation as with /avc, /ss, etc.  There are two directories that
+get replaced on policy load - /class and /booleans.  These we need to
+stash (and update the pointers on policy reload); /policy_capabilities
+is not in the same boat.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/android/binderfs.c | 33 ++++++++++++++-------------------
- 1 file changed, 14 insertions(+), 19 deletions(-)
+ security/selinux/selinuxfs.c | 21 +++++++++------------
+ 1 file changed, 9 insertions(+), 12 deletions(-)
 
-diff --git a/drivers/android/binderfs.c b/drivers/android/binderfs.c
-index 8253e517ab6c..a28d0511960e 100644
---- a/drivers/android/binderfs.c
-+++ b/drivers/android/binderfs.c
-@@ -189,9 +189,9 @@ static int binderfs_binder_device_create(struct inode *ref_inode,
+diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
+index 232e087bce3e..b39e919c27b1 100644
+--- a/security/selinux/selinuxfs.c
++++ b/security/selinux/selinuxfs.c
+@@ -75,7 +75,6 @@ struct selinux_fs_info {
+ 	struct dentry *class_dir;
+ 	unsigned long last_class_ino;
+ 	bool policy_opened;
+-	struct dentry *policycap_dir;
+ 	unsigned long last_ino;
+ 	struct super_block *sb;
+ };
+@@ -117,7 +116,6 @@ static void selinux_fs_info_free(struct super_block *sb)
+ 
+ #define BOOL_DIR_NAME "booleans"
+ #define CLASS_DIR_NAME "class"
+-#define POLICYCAP_DIR_NAME "policy_capabilities"
+ 
+ #define TMPBUFLEN	12
+ static ssize_t sel_read_enforce(struct file *filp, char __user *buf,
+@@ -1871,23 +1869,24 @@ static int sel_make_classes(struct selinux_policy *newpolicy,
+ 	return rc;
+ }
+ 
+-static int sel_make_policycap(struct selinux_fs_info *fsi)
++static int sel_make_policycap(struct dentry *dir)
+ {
++	struct super_block *sb = dir->d_sb;
+ 	unsigned int iter;
+ 	struct dentry *dentry = NULL;
+ 	struct inode *inode = NULL;
+ 
+ 	for (iter = 0; iter <= POLICYDB_CAP_MAX; iter++) {
+ 		if (iter < ARRAY_SIZE(selinux_policycap_names))
+-			dentry = d_alloc_name(fsi->policycap_dir,
++			dentry = d_alloc_name(dir,
+ 					      selinux_policycap_names[iter]);
+ 		else
+-			dentry = d_alloc_name(fsi->policycap_dir, "unknown");
++			dentry = d_alloc_name(dir, "unknown");
+ 
+ 		if (dentry == NULL)
+ 			return -ENOMEM;
+ 
+-		inode = sel_make_inode(fsi->sb, S_IFREG | 0444);
++		inode = sel_make_inode(sb, S_IFREG | 0444);
+ 		if (inode == NULL) {
+ 			dput(dentry);
+ 			return -ENOMEM;
+@@ -2071,15 +2070,13 @@ static int sel_fill_super(struct super_block *sb, struct fs_context *fc)
  		goto err;
  	}
- 	inode->i_private = device;
--	d_instantiate(dentry, inode);
-+	d_make_persistent(dentry, inode);
- 	fsnotify_create(root->d_inode, dentry);
--	inode_unlock(d_inode(root));
-+	simple_done_creating(dentry);
  
- 	binder_add_device(device);
- 
-@@ -432,7 +432,8 @@ static int binderfs_binder_ctl_create(struct super_block *sb)
- 
- 	inode->i_private = device;
- 	info->control_dentry = dentry;
--	d_add(dentry, inode);
-+	d_make_persistent(dentry, inode);
-+	dput(dentry);
- 
- 	return 0;
- 
-@@ -479,19 +480,16 @@ struct dentry *binderfs_create_file(struct dentry *parent, const char *name,
- 	sb = parent_inode->i_sb;
- 	new_inode = binderfs_make_inode(sb, S_IFREG | 0444);
- 	if (!new_inode) {
--		dput(dentry);
--		dentry = ERR_PTR(-ENOMEM);
--		goto out;
-+		simple_done_creating(dentry);
-+		return ERR_PTR(-ENOMEM);
+-	fsi->policycap_dir = sel_make_dir(sb->s_root, POLICYCAP_DIR_NAME,
+-					  &fsi->last_ino);
+-	if (IS_ERR(fsi->policycap_dir)) {
+-		ret = PTR_ERR(fsi->policycap_dir);
+-		fsi->policycap_dir = NULL;
++	dentry = sel_make_dir(sb->s_root, "policy_capabilities", &fsi->last_ino);
++	if (IS_ERR(dentry)) {
++		ret = PTR_ERR(dentry);
+ 		goto err;
  	}
  
- 	new_inode->i_fop = fops;
- 	new_inode->i_private = data;
--	d_instantiate(dentry, new_inode);
-+	d_make_persistent(dentry, new_inode);
- 	fsnotify_create(parent_inode, dentry);
--
--out:
--	inode_unlock(parent_inode);
--	return dentry;
-+	simple_done_creating(dentry);
-+	return dentry; // borrowed
- }
- 
- static struct dentry *binderfs_create_dir(struct dentry *parent,
-@@ -510,21 +508,18 @@ static struct dentry *binderfs_create_dir(struct dentry *parent,
- 	sb = parent_inode->i_sb;
- 	new_inode = binderfs_make_inode(sb, S_IFDIR | 0755);
- 	if (!new_inode) {
--		dput(dentry);
--		dentry = ERR_PTR(-ENOMEM);
--		goto out;
-+		simple_done_creating(dentry);
-+		return ERR_PTR(-ENOMEM);
- 	}
- 
- 	new_inode->i_fop = &simple_dir_operations;
- 	new_inode->i_op = &simple_dir_inode_operations;
- 
- 	set_nlink(new_inode, 2);
--	d_instantiate(dentry, new_inode);
-+	d_make_persistent(dentry, new_inode);
- 	inc_nlink(parent_inode);
- 	fsnotify_mkdir(parent_inode, dentry);
--
--out:
--	inode_unlock(parent_inode);
-+	simple_done_creating(dentry);
- 	return dentry;
- }
- 
-@@ -740,7 +735,7 @@ static void binderfs_kill_super(struct super_block *sb)
- 	 * During inode eviction struct binderfs_info is needed.
- 	 * So first wipe the super_block then free struct binderfs_info.
- 	 */
--	kill_litter_super(sb);
-+	kill_anon_super(sb);
- 
- 	if (info && info->ipc_ns)
- 		put_ipc_ns(info->ipc_ns);
+-	ret = sel_make_policycap(fsi);
++	ret = sel_make_policycap(dentry);
+ 	if (ret) {
+ 		pr_err("SELinux: failed to load policy capabilities\n");
+ 		goto err;
 -- 
 2.47.3
 
