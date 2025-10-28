@@ -1,81 +1,81 @@
-Return-Path: <linuxppc-dev+bounces-13423-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13424-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7F65CCCD1BF
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 05:39:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB149CCF9EA
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 06:24:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwfMd0DKnz3fr8;
-	Tue, 28 Oct 2025 16:39:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::12d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761629981;
-	cv=none; b=dq0YWYXgaqtMeQvOQ3hBKg/zBjbJAn1WwD7Er+Wn4NkTA21/xc7U3ANuVMZWsyaPQk1N7M3Rhj2oEGvjCTuPdhlzGdAFwW898/PY+gaBkaG+VagfOfzNUm4e9fDYdznc2lIAv6T0VNSGInr8WzZLc68uf6vBaXF3c7UPde5DaE2wfJ2L77RzQI5I+sFlcRlH+U3jeK60/jS9KhqTUzrgR5bRtPwAfNYUdrs1K9crJgft2iRPE6HeZ+9psN8ou8VbeO5f+e+GYt8YBoFHskoZYHr+R9HCgGnDbdao9QpcVkIniy5kGeTEUAvh99MMqHxJ+1fsKnYXoDF3vwmesCdo6A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwgM108tcz3fq3;
+	Tue, 28 Oct 2025 17:24:13 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761632652;
+	cv=none; b=CoYe10r605Hqxky7woDV/g6MyTWIQ0+lJCMKJ415TcphINgipkV4dgWueZxBKo3lhwa9pWinRqJy0G4XhOnbNEBvy3qijVtJ31AhBQKK1XuXI3WSNqZxZwRXkuuKsWH8w0nDZ2Q6c9d0R96G08JDfY/fRUDNTcxoYFys4lFbXyIUOULqbFW3oa2zq+lsDb2e8snQhrUbs0YI+oBKv5GK/UdXOX/qDApmzUwnegJI1h2cMOp1+hTsW5VAnbPvsrLCvlJK9JaftrccgMLDZXEJka/8cbsOYPUoHCVEF/qd/wTu75YmAU/xBL5Zl2Ft3+6YkJdHVqBIn5oNe4ku+x/AnQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761629981; c=relaxed/relaxed;
-	bh=kLpGC29sIJuMD8EW6D6+ekLf15xOznYOaep7iLxbnWw=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=nUhZUblAakck6DuNFEuUUNGddYqPastLhx/6tNe2yyFXFUxEhLs7N3a8nlVbIxdaTXsZFdJvIxKjdzclIZcqo39uSbo311tJjY9IOHFH0ooFb5rnORrmvsAqMvwceHuRejjVXuQRmW9M/l/LctWlBqUl8NYr/uxeuwWAaOuVSAl3li61qdDooxz6e4632Wbs0bcTWd73O0IDki0RLMQW3LrBpF6MOfeQ2NbkwuGBq4pPWzcXmmQ1FjhGjHizdAyBgjJrWqiuSzR6sdgZX3BFMDEl3WfKiXhUl+QmVQ3ynF3G+fluK4fr/BgKgM2Oa4hOQSUsTScncisfnb/6WmsAbA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=eOQQfELD; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::12d; helo=mail-lf1-x12d.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
+	t=1761632652; c=relaxed/relaxed;
+	bh=zuGj1hW8mWz3shIq2GZWCMOifU7nzT6tSAo/1NZESWI=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 In-Reply-To:Content-Type:Content-Disposition; b=dHaxiXsae9VakmVJqPWwXKP2vUmC33Sb+ESS9vbPsiO7yEM4snQ15xLzyO0iVt5TVZDM/Iu2WcrWOMZKAUYXvzFNbVldF8nmdHzqla+pZ3r9ZN3otZHqcgHGRuK5V2QgBosNR4S4GuHAoUqZe6E3WRTC7Lviy/cFMheI10YMAbsVyDHwM7xtOfFFO/dmDjOzBlrAnt74X+kFI5bZepeLwBHTKM4vJ4Gmj+aRTMpeLjBmwvwkYqDkHeeMlK/3mrRCa2yQL5al60YW8ZcWM0KagK7TBEflwIVZc6WUAUDiMTNLDWLfsqa4e6u+mz4C+J/VfBdgIn/samKy9J9LLBxkSQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Hmb/wLCG; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Hmb/wLCG; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=google header.b=eOQQfELD;
+	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Hmb/wLCG;
+	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=Hmb/wLCG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=2a00:1450:4864:20::12d; helo=mail-lf1-x12d.google.com; envelope-from=torvalds@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=bhe@redhat.com; receiver=lists.ozlabs.org)
+Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwfMb5sTDz3fr7
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 16:39:39 +1100 (AEDT)
-Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-591eb980286so5783783e87.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2025 22:39:39 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=linux-foundation.org; s=google; t=1761629975; x=1762234775; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=kLpGC29sIJuMD8EW6D6+ekLf15xOznYOaep7iLxbnWw=;
-        b=eOQQfELD2Kvb+HKNfQcx0Isv6CYdHp0UXQqGLeuoulHg7EJ6efCst6BVN/CuurXdXh
-         FfOJW5tzKxA2B+LZ5raNLYpWeX9l1oBWB+u+gG4MFOwsB9B/LbpNySpl8N9HX5Lr2slF
-         xrRMKSz7SXAuzYRbZBO11m8gFdk4hve6sqIIw=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761629975; x=1762234775;
-        h=cc:to:subject:message-id:date:from:in-reply-to:references
-         :mime-version:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=kLpGC29sIJuMD8EW6D6+ekLf15xOznYOaep7iLxbnWw=;
-        b=eyzV94gEBd7RWj45yDMwcyJYLHdx7pK27L7ARKwejzMAejrU1CkYXc2xKGSAsc7tUJ
-         l6aPOpGmqs7ZJLpi+458qMwSoLLr2bK5TaycLwgHCXP504ZrWctvqHjSLPeimwceYqi9
-         zWxuX6i+SnUk5B2VyvmTy0Yjxt1uvfM86YloJBjhiLMlUNnCr/7QwkWsyxpdtQBnlbhU
-         UZiZDb6gog4Bwq06QUajr8286ATE8ruhxd1yNZ1qwVMnf6qQMYJSCm1RCZfspMCCJroU
-         lyM6azPjCjouRCPr2cSXtaN1NzJ2FvmSUE2MLUBIv+4795GmZ8hOg3QHI7JDpJ1eX7pm
-         PW1w==
-X-Forwarded-Encrypted: i=1; AJvYcCXsOg+nG6jA0o81TaBbgp9oEKexUyV0n48t4ytH7Cpo9wrmoZvt+XvxgvqsojIerPOJIk8mBpVSCsjczyM=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyJjuUcdrGAB9t2WmDoLV0IepcNg9hcZ0buGKkF5E/+tAy86sVy
-	iFeVfTOmem/yo0bCcX6BZkLARmD7NIi2DD/MqvMK6wx5iyWGh9Q2vRlUX2lLKmDJYTvuCXRiZSQ
-	4ovFuLpA3Kw==
-X-Gm-Gg: ASbGnct21ASXWPFOBHd2B92h8a8n38VkHrqqu7MItoD4fNhxlaq8TPfdgnf4SY9vZYs
-	yFYtMTb320GGmINOhDXFvr4EVSMHtUYMCtjO3fOAAF0rmp/nnfYq/alu6OtQpIruiV7qbKIwmn/
-	RwSY8veUck/Gq4iQi4Ezy3F4NYfebPRh4p9qTFAVGdqwAlMSbV2TF0sXlKTO9aWtBSLiO8eEGGM
-	FyfMNZQ0J6ksXNw0rwLNraLCiYenkrhsc/nhwnkpocVjnCMZeNbVmNI1Zr4T5vexnJ5KUorCvcO
-	bVpmG4Yo9Hofe7bxhjGGYWKynz1ogMwbj+E2uq1gyq5QTKEY8N25V94Spci0dufJSP2CfaMPwVN
-	HGunbHEP2/iaIdssdsq9L1kqKxrkGcsQXKiXmQT6SKNS3ViaoQD+exizECMnmwoFUKai4D0uJIm
-	7jxF6SrZRTjdzGwdcPuUXCapIh/vrG64HxEF4DGn/r2olwCRImEtyovvPyzthp
-X-Google-Smtp-Source: AGHT+IEzpd+Bdg64rT72ckoVTXVwJd4Baz5ppzbtT4KnhTA0mtA29n+amoELpqgFuTzgbpwmqb4Fqg==
-X-Received: by 2002:a05:6512:ea6:b0:591:ce58:1def with SMTP id 2adb3069b0e04-5930e98f7demr745834e87.2.1761629974912;
-        Mon, 27 Oct 2025 22:39:34 -0700 (PDT)
-Received: from mail-lf1-f46.google.com (mail-lf1-f46.google.com. [209.85.167.46])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-59301f41cddsm2757965e87.17.2025.10.27.22.39.32
-        for <linuxppc-dev@lists.ozlabs.org>
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 27 Oct 2025 22:39:33 -0700 (PDT)
-Received: by mail-lf1-f46.google.com with SMTP id 2adb3069b0e04-592f9400b04so4802716e87.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2025 22:39:32 -0700 (PDT)
-X-Forwarded-Encrypted: i=1; AJvYcCU48Ypr55l7KOfjR8u04o425HjiCB8TGoV+Xwvm7M6wyjnttfpAxNTsvvmpRpWzcAbv1SFlIIvwUWrwzqU=@lists.ozlabs.org
-X-Received: by 2002:a05:6402:2681:b0:63b:ef0e:dfa7 with SMTP id
- 4fb4d7f45d1cf-63ed848cba3mr2102592a12.6.1761629641674; Mon, 27 Oct 2025
- 22:34:01 -0700 (PDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwgLz5RbMz3fpM
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 17:24:09 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1761632646;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=zuGj1hW8mWz3shIq2GZWCMOifU7nzT6tSAo/1NZESWI=;
+	b=Hmb/wLCGq57lgunDVeVTlDfJXEeNIh7muITC63uOH9YbnA4/NKrTSt7/60hnRw/ijuNQmD
+	TC4v7QQumky67Z8IjR/3/BNEWesOUDkVAOQvYYVvWDLC1w/LxNRoLt7/7fkOKhGD0sicAz
+	iXASY/9adMTbvgxdxIMyB+ku7oRhfK0=
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
+	s=mimecast20190719; t=1761632646;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 in-reply-to:in-reply-to:references:references;
+	bh=zuGj1hW8mWz3shIq2GZWCMOifU7nzT6tSAo/1NZESWI=;
+	b=Hmb/wLCGq57lgunDVeVTlDfJXEeNIh7muITC63uOH9YbnA4/NKrTSt7/60hnRw/ijuNQmD
+	TC4v7QQumky67Z8IjR/3/BNEWesOUDkVAOQvYYVvWDLC1w/LxNRoLt7/7fkOKhGD0sicAz
+	iXASY/9adMTbvgxdxIMyB+ku7oRhfK0=
+Received: from mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com
+ (ec2-54-186-198-63.us-west-2.compute.amazonaws.com [54.186.198.63]) by
+ relay.mimecast.com with ESMTP with STARTTLS (version=TLSv1.3,
+ cipher=TLS_AES_256_GCM_SHA384) id us-mta-265-92njuEYVOgKUgJEjxNPoCA-1; Tue,
+ 28 Oct 2025 02:24:03 -0400
+X-MC-Unique: 92njuEYVOgKUgJEjxNPoCA-1
+X-Mimecast-MFC-AGG-ID: 92njuEYVOgKUgJEjxNPoCA_1761632641
+Received: from mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com [10.30.177.93])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by mx-prod-mc-05.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 9EEE81956080;
+	Tue, 28 Oct 2025 06:24:00 +0000 (UTC)
+Received: from localhost (unknown [10.72.112.212])
+	by mx-prod-int-06.mail-002.prod.us-west-2.aws.redhat.com (Postfix) with ESMTPS id 6C6FA1800353;
+	Tue, 28 Oct 2025 06:23:58 +0000 (UTC)
+Date: Tue, 28 Oct 2025 14:23:53 +0800
+From: Baoquan he <bhe@redhat.com>
+To: Sourabh Jain <sourabhjain@linux.ibm.com>, kexec@lists.infradead.org
+Cc: linuxppc-dev@lists.ozlabs.org, Hari Bathini <hbathini@linux.ibm.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+	Shivang Upadhyay <shivangu@linux.ibm.com>
+Subject: Re: [PATCH 0/4] powerpc/kdump: Support high crashkernel reservation
+Message-ID: <aQBheTeMycPuDHJ+@MiWiFi-R3L-srv>
+References: <20251027151338.819957-1-sourabhjain@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,35 +89,75 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
-In-Reply-To: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
-From: Linus Torvalds <torvalds@linux-foundation.org>
-Date: Mon, 27 Oct 2025 22:33:45 -0700
-X-Gmail-Original-Message-ID: <CAHk-=wg_FZnLha9Qr2sMQPXa1go4FPq2p5d7CnMoOnCimS2Wzg@mail.gmail.com>
-X-Gm-Features: AWmQ_bkfyF7pn4e6fUY7bNVBhf2DrgjCvQYqt5ZlzergSjGB0BKOD2LLrniXl7E
-Message-ID: <CAHk-=wg_FZnLha9Qr2sMQPXa1go4FPq2p5d7CnMoOnCimS2Wzg@mail.gmail.com>
-Subject: Re: [PATCH v2 00/50] tree-in-dcache stuff
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: linux-fsdevel@vger.kernel.org, brauner@kernel.org, jack@suse.cz, 
-	raven@themaw.net, miklos@szeredi.hu, neil@brown.name, a.hindborg@kernel.org, 
-	linux-mm@kvack.org, linux-efi@vger.kernel.org, ocfs2-devel@lists.linux.dev, 
-	kees@kernel.org, rostedt@goodmis.org, gregkh@linuxfoundation.org, 
-	linux-usb@vger.kernel.org, paul@paul-moore.com, casey@schaufler-ca.com, 
-	linuxppc-dev@lists.ozlabs.org, john.johansen@canonical.com, 
-	selinux@vger.kernel.org, borntraeger@linux.ibm.com, bpf@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+In-Reply-To: <20251027151338.819957-1-sourabhjain@linux.ibm.com>
+X-Scanned-By: MIMEDefang 3.4.1 on 10.30.177.93
+X-Mimecast-Spam-Score: 0
+X-Mimecast-MFC-PROC-ID: Rqmbx65AD74GefaacW59rF15vAtC8IN3GwHKUufRN4Q_1761632641
+X-Mimecast-Originator: redhat.com
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
 
-On Mon, 27 Oct 2025 at 17:48, Al Viro <viro@zeniv.linux.org.uk> wrote:
->
-> Things get simpler if we introduce a new dentry flag (DCACHE_PERSISTENT)
-> marking those "leaked" dentries.  Having it set claims responsibility
-> for +1 in refcount.
->
-> The end result this series is aiming for: [...]
+Cc kexec mailing list.
 
-The series looks sane to me. Nothing made me really react negatively.
-But that's just from reading the patches: I didn't apply them or -
-shudder - test any of them.
+On 10/27/25 at 08:43pm, Sourabh Jain wrote:
+> Add support for reserving crashkernel memory in higher address ranges
+> using the crashkernel=xxM,high command-line option.
+> 
+> With this feature, most of the crashkernel memory for kdump will be
+> reserved in high memory regions, while only a small portion (64 MB) will
+> be reserved in low memory for the kdump kernel. This helps free up low
+> memory for other components that require allocations in that region.
+> 
+> For example, if crashkernel=2G,high is specified, the kernel will reserve
+> 2 GB of crashkernel memory near the end of system RAM and an additional
+> 64 MB of low memory (below 1 GB) for RTAS to function properly.
+> 
+> Currently, this feature is supported only on PPC64 systems with 64-bit
+> RTAS instantiation and Radix MMU enabled.
+> 
+> Two critical changes were made to support this feature:
+> 
+>  - CPU feature discovery is now performed before crashkernel
+>    reservation. This ensures the MMU type is determined before reserving
+>    crashkernel memory. (Patch 01/04)
+> 
+>  - RTAS instantiation has been moved to 64-bit mode. (Patch 02/04)
+> 
+> Apply the following patch first, and then apply this patch series:
+> https://lore.kernel.org/all/20251024170118.297472-1-sourabhjain@linux.ibm.com/
+> 
+> Cc: Baoquan he <bhe@redhat.com>
+> Cc: Hari Bathini <hbathini@linux.ibm.com>
+> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+> Cc: Michael Ellerman <mpe@ellerman.id.au>
+> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
+> 
+> Sourabh Jain (4):
+>   powerpc/mmu: do MMU type discovery before crashkernel reservation
+>   powerpc: move to 64-bit RTAS
+>   powerpc/kdump: consider high crashkernel memory if enabled
+>   powerpc/kdump: add support for high crashkernel reservation
+> 
+>  arch/powerpc/include/asm/book3s/64/mmu.h |  1 +
+>  arch/powerpc/include/asm/crash_reserve.h |  8 +++++
+>  arch/powerpc/include/asm/kexec.h         |  1 +
+>  arch/powerpc/include/asm/mmu.h           |  1 +
+>  arch/powerpc/include/asm/rtas.h          | 11 ++++++
+>  arch/powerpc/kernel/prom.c               | 28 ++++++++-------
+>  arch/powerpc/kernel/prom_init.c          | 26 +++++++++++---
+>  arch/powerpc/kernel/rtas.c               |  5 +++
+>  arch/powerpc/kernel/rtas_entry.S         | 17 ++++++++-
+>  arch/powerpc/kexec/core.c                | 45 +++++++++++++++++-------
+>  arch/powerpc/kexec/elf_64.c              | 10 ++++--
+>  arch/powerpc/kexec/file_load_64.c        |  5 +--
+>  arch/powerpc/kexec/ranges.c              | 24 +++++++++++--
+>  arch/powerpc/mm/init_64.c                | 27 ++++++++------
+>  14 files changed, 161 insertions(+), 48 deletions(-)
+> 
+> -- 
+> 2.51.0
+> 
 
-            Linus
 
