@@ -1,71 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-13358-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13359-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C86D7CCF9E5
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:37:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51CCCCCF9E5
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 28 Oct 2025 00:46:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWfX2Zhtz2yx7;
-	Tue, 28 Oct 2025 11:37:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::104a"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761611828;
-	cv=none; b=jC5Jx7ox+8+SUUjJRRP91xVfStWmDba98OYsJ2QlfJd38VRmyh6nROgsPDQptxHuSLS8kEufgMmxpPTKlDXOP1kT49JCI8+p43HszoQvbATFEZ3JKBPzLrEXEePNiu/6akW3W7PATACRX8PH8sevKw+pEablkh5WMvD8fswj7ALjU/c7fLK8ZgIKPNYTgugqovLJRXEDWd3iDSCBBc7WnpBGcCetvRXAphGimCNrZM9Zycimq7B5b1JxKVJXYR6wJ/PV9ddM8YTnWSr5JUJHJMG4tHrlS4qdj/fZ3vREMIlkNJu7BUc3WKIPhx01NwwofZhsY3g3NNjz+yj7VOld0g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cwWsR6KMNz3bfY;
+	Tue, 28 Oct 2025 11:46:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761612395;
+	cv=none; b=JFXVveQIO7M52utoXlAWMfp3rjVJQ3bI9lQ8UVZtcvNeliWBaoNlLwD6heTH1iTq2slUa2DVs25tcydJslkRE6N0f83DzpuKNDNDgNZZDQ1zwEVdMxIPKP6ESOFm5RpFh+Qza/a8S5ojvPpGkJuMm5QvnMOcEON9nTuAOsFce4KLrRj6DWWXAc+QZzz7YgJN71iW1H66xuhlSMMw6SHXc1H+AMQeDluHt9iXaBqCBHcVyLYc6kzvcJsf4F2wUvKpOGw6R9NAJzEC3o8yj5dIBS2XbIhhSKT2yiEXeuFImvzATPqyLuXVlZfkjR2uXV6nHrDv5AcS4vS4AdRD37z4vg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761611828; c=relaxed/relaxed;
-	bh=J3mxOKer4OGfyDxlfqvGDsZ/A3KYgtdet3LczK0ONqE=;
-	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
-	 To:Cc:Content-Type; b=bggT8+M1uxumXUT+ie4MAP3B/81tk7GO/A9ygG8hkkldzGKFQdSwgMT1m6p4sxuu2VqvkceM3Yr/cpzWtvZA7ubDr5N6kCO9YCc6R7+OZF+9U/pdKZmsltaXNs+TnOG7Sf1iVKOtEXjrV5MGhM1GAFIAl+x9oVaWSED4hAgAk0n+mDT+zmX/4KQXL3ck3jRz6yzMCeU/E/ZivVPphOh2QiPfVZV9FfKrlqIeZNFg+fA4cB+gp7cBrZJUdfskRbO45ggIQsqfHI5CloRo6eAuOnsZoz5+3f3afsb0EZ9tW+8ornwlSfI4+lTr5bM5J4DkO1xZTENR2akcHwwnJmFQyA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=vW0XgWNJ; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::104a; helo=mail-pj1-x104a.google.com; envelope-from=3mraaaqykdkaseanjcgoogle.comlinuxppc-devlists.ozlabs.org@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+	t=1761612395; c=relaxed/relaxed;
+	bh=JiG9nHcsxcwZpHb/L0Tx41DaV7imD29tLb/ai1sU578=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=cm7xIPqkYqUgmskFlCHIu+E2wcLuke2RnJp/vp6wIFNVKw/fXBJihVz2yj7zVtFUYjfddXRM7WM8SmBDiH527ykUzjt6Gf/7ZjSPm4j6wG3y5SVzZbQcdvXS0/DVrgOTZqDZS68AITxl1JMiLyOC+WECOcUGDB/7GgzbgIlbmMIg+vZ6JBKswXRNe6I9ZHoiA3BrxuFm2brC8JuGoPeRaNpbV1Auz5s3i4fVSh2AVCFkZfOJTpy1Hnwfcahxm05/pW/ZBUi/izo/e/pa10zvup3SLqP3yIh9+RRtHK7UuLLVM5RfZVtRc0rfw31ya3Bz2qRSilZYQUoGJWEe5uE+vw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=uy6yCSmK; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=vW0XgWNJ;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=uy6yCSmK;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::104a; helo=mail-pj1-x104a.google.com; envelope-from=3mraaaqykdkaseanjcgoogle.comlinuxppc-devlists.ozlabs.org@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x104a.google.com (mail-pj1-x104a.google.com [IPv6:2607:f8b0:4864:20::104a])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
+Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWfW4F75z2yFx
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:37:06 +1100 (AEDT)
-Received: by mail-pj1-x104a.google.com with SMTP id 98e67ed59e1d1-339b704e2e3so4969844a91.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 27 Oct 2025 17:37:06 -0700 (PDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=google.com; s=20230601; t=1761611825; x=1762216625; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=J3mxOKer4OGfyDxlfqvGDsZ/A3KYgtdet3LczK0ONqE=;
-        b=vW0XgWNJWQt1C9XrL8OcNv9kwPwKS2he/ZSsz3zD3ZBqMfhBwKDe/vFknRoov7mHqL
-         8KzhB7XRlIX6JD2ACoAOiYX09hrEpz5C3V5JlESa0mrEwIn9GwkvJc2mKB2nb37etZnC
-         pap9sVNPW3FDAsIC5t1wJ8heFyMcp8KzcKCasHFmhMhC9fHH1U/PLWktY7hBLB4irOmw
-         XE8HdPCb5NCzL4V8UzpVPK26p5PpccNSGBX4cxnxBOr5ZWQ+ZCjBzyWmSlbzs0fCU3Vg
-         1Pmasb3weyaslS5ceSpaVKEYJtEszV2yvDjJvFSjdzm7KRWOjdPeYJZcpSVnp1rb7f1j
-         q9pA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761611825; x=1762216625;
-        h=content-transfer-encoding:cc:to:from:subject:message-id:references
-         :mime-version:in-reply-to:date:x-gm-message-state:from:to:cc:subject
-         :date:message-id:reply-to;
-        bh=J3mxOKer4OGfyDxlfqvGDsZ/A3KYgtdet3LczK0ONqE=;
-        b=rb2bPM6XHNb46wqm//m8AxGjcjSxPKby1noE73MiiAnm8bphLdijYHVvHpJiU/74hA
-         nTIovuN+frcKjFWQl9jLPPA68NvTXyYjXU7MeXa7eCAwzFoMEQR/m/eFLNKgLEHz7Hgc
-         +agWJd5eqp27/na+VjtJcRsS4PBT8kmWwrajWe1nLbucjoE6HRW5T8AO8LDpLTsiXpT2
-         P3Ch/Iminuw/urnQsGw9VZleIKVGuPpb3FaBGzHjhbeAsLJLoqj7r0NMz/1G5rYso+GE
-         glj0hC2uWNtyK7MsmK4wsHltDT2leAktHYexIVjJ6qdGe7VNWbGdA7PowGdDl8l5uH4k
-         oOGQ==
-X-Forwarded-Encrypted: i=1; AJvYcCXs/SdWiKjjr92NJhA/U14n1tmmHM8LQmojowo7OnxYcee4iF1rZgmcXEXDK+c+1wUAHl4AHi5AlcFOm8k=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yyh540UD396NlSiKC6dV0b7ghio+FK40JIugBUuqi/hZU1F97/4
-	g8M6lQHgayCznC6u6OI8GK0569B4+vMdQJpURW5D0ZYHirsA9uH5EtmXScBSAV7gYRPVuPbwqVv
-	8RwrGtA==
-X-Google-Smtp-Source: AGHT+IGoxyiEdJHjsguM4HhfYAa3a3WGl9IwGzua+OMwKu3+3dxnKcX9NeqRP2yYPcwFhiCcHGTefjSDvqI=
-X-Received: from pjcc13.prod.google.com ([2002:a17:90b:574d:b0:33d:813f:6829])
- (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:5241:b0:329:cb75:fef2
- with SMTP id 98e67ed59e1d1-340279e5c84mr1590788a91.3.1761611825209; Mon, 27
- Oct 2025 17:37:05 -0700 (PDT)
-Date: Mon, 27 Oct 2025 17:37:03 -0700
-In-Reply-To: <55461c549803e08db97528127c29e092c597adc5.camel@intel.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cwWsM678pz3054
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 28 Oct 2025 11:46:30 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
+	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
+	Reply-To:Content-Type:Content-ID:Content-Description;
+	bh=JiG9nHcsxcwZpHb/L0Tx41DaV7imD29tLb/ai1sU578=; b=uy6yCSmKcS+lDQ9yS3I0kkadjO
+	MomsFzmhLaBK2huX54Avbto6nY9SitzSncGkbtogsfBNo9tXrkJ1CmW/b2IUyPd7xtkVXzPANIs8x
+	1pp+RCIkBnPzLazOP4ZqLnfM3fqZ1RmT3ZtzuUtP9Fzcntv5GmnwcUhp5X0sJxMOicH36YKp/uwlK
+	5G/Oicf+u19OYeqF7PSBgKm5Xbz0464+HAh3HAbXyc8Dn58al/Y/KKVIQLMsfYdjFgYpyo/u9BtY0
+	Amywa21TljAAEjyMoyuxn7FKTOOk4hKq/q8BtCxwwuapWcESPiEqaLV9iKF3OwrZvWelyauABPOrD
+	EPdmjzzg==;
+Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vDXqq-00000001eXL-0Fbk;
+	Tue, 28 Oct 2025 00:46:16 +0000
+From: Al Viro <viro@zeniv.linux.org.uk>
+To: linux-fsdevel@vger.kernel.org
+Cc: torvalds@linux-foundation.org,
+	brauner@kernel.org,
+	jack@suse.cz,
+	raven@themaw.net,
+	miklos@szeredi.hu,
+	neil@brown.name,
+	a.hindborg@kernel.org,
+	linux-mm@kvack.org,
+	linux-efi@vger.kernel.org,
+	ocfs2-devel@lists.linux.dev,
+	kees@kernel.org,
+	rostedt@goodmis.org,
+	gregkh@linuxfoundation.org,
+	linux-usb@vger.kernel.org,
+	paul@paul-moore.com,
+	casey@schaufler-ca.com,
+	linuxppc-dev@lists.ozlabs.org,
+	john.johansen@canonical.com,
+	selinux@vger.kernel.org,
+	borntraeger@linux.ibm.com,
+	bpf@vger.kernel.org
+Subject: [PATCH v2 14/50] convert mqueue
+Date: Tue, 28 Oct 2025 00:45:33 +0000
+Message-ID: <20251028004614.393374-15-viro@zeniv.linux.org.uk>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
+References: <20251028004614.393374-1-viro@zeniv.linux.org.uk>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,108 +83,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-Mime-Version: 1.0
-References: <20251017003244.186495-1-seanjc@google.com> <20251017003244.186495-25-seanjc@google.com>
- <55461c549803e08db97528127c29e092c597adc5.camel@intel.com>
-Message-ID: <aQAQLzxyGFooGtNV@google.com>
-Subject: Re: [PATCH v3 24/25] KVM: TDX: Guard VM state transitions with "all"
- the locks
-From: Sean Christopherson <seanjc@google.com>
-To: Kai Huang <kai.huang@intel.com>
-Cc: "chenhuacai@kernel.org" <chenhuacai@kernel.org>, "frankja@linux.ibm.com" <frankja@linux.ibm.com>, 
-	"maz@kernel.org" <maz@kernel.org>, "borntraeger@linux.ibm.com" <borntraeger@linux.ibm.com>, 
-	"pjw@kernel.org" <pjw@kernel.org>, "aou@eecs.berkeley.edu" <aou@eecs.berkeley.edu>, 
-	"kas@kernel.org" <kas@kernel.org>, "maobibo@loongson.cn" <maobibo@loongson.cn>, 
-	"pbonzini@redhat.com" <pbonzini@redhat.com>, "maddy@linux.ibm.com" <maddy@linux.ibm.com>, 
-	"palmer@dabbelt.com" <palmer@dabbelt.com>, "imbrenda@linux.ibm.com" <imbrenda@linux.ibm.com>, 
-	"zhaotianrui@loongson.cn" <zhaotianrui@loongson.cn>, "anup@brainfault.org" <anup@brainfault.org>, 
-	"oliver.upton@linux.dev" <oliver.upton@linux.dev>, "kvm@vger.kernel.org" <kvm@vger.kernel.org>, 
-	"linux-coco@lists.linux.dev" <linux-coco@lists.linux.dev>, Yan Y Zhao <yan.y.zhao@intel.com>, 
-	"michael.roth@amd.com" <michael.roth@amd.com>, 
-	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>, Ira Weiny <ira.weiny@intel.com>, 
-	"loongarch@lists.linux.dev" <loongarch@lists.linux.dev>, 
-	"binbin.wu@linux.intel.com" <binbin.wu@linux.intel.com>, 
-	"ackerleytng@google.com" <ackerleytng@google.com>, "kvmarm@lists.linux.dev" <kvmarm@lists.linux.dev>, 
-	"kvm-riscv@lists.infradead.org" <kvm-riscv@lists.infradead.org>, Vishal Annapurve <vannapurve@google.com>, 
-	"linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>, 
-	Rick P Edgecombe <rick.p.edgecombe@intel.com>, 
-	"linux-mips@vger.kernel.org" <linux-mips@vger.kernel.org>, 
-	"linux-arm-kernel@lists.infradead.org" <linux-arm-kernel@lists.infradead.org>, 
-	"linux-riscv@lists.infradead.org" <linux-riscv@lists.infradead.org>, "x86@kernel.org" <x86@kernel.org>
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: quoted-printable
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Sender: Al Viro <viro@ftp.linux.org.uk>
 
-On Tue, Oct 28, 2025, Kai Huang wrote:
-> On Thu, 2025-10-16 at 17:32 -0700, Sean Christopherson wrote:
-> > @@ -2781,8 +2827,6 @@ int tdx_vm_ioctl(struct kvm *kvm, void __user *ar=
-gp)
-> > =C2=A0	if (r)
-> > =C2=A0		return r;
-> > =C2=A0
-> > -	guard(mutex)(&kvm->lock);
-> > -
-> > =C2=A0	switch (tdx_cmd.id) {
-> > =C2=A0	case KVM_TDX_CAPABILITIES:
-> > =C2=A0		r =3D tdx_get_capabilities(&tdx_cmd);
->=20
-> IIRC, this patch removes grabbing the kvm->lock in tdx_vm_ioctl() but onl=
-y
-> adds the "big hammer" to tdx_td_init() and tdx_td_finalize(), so the
-> tdx_get_capabilities() lost holding the kvm->lock.
+All modifications via normal VFS codepaths; just take care of making
+persistent in in mqueue_create_attr() and discardable in mqueue_unlink()
+and it doesn't need kill_litter_super() at all.
 
-Ooh, yeah, nice catch, that is indeed silly and unnecessary churn.
+mqueue_unlink() side is best handled by having it call simple_unlink()
+rather than duplicating its guts...
 
-> As replied earlier, I think we can just hold the "big hammer" in
-> tdx_vm_ioctl()?
-
-Actually, I think we can have our cake and eat it too.  With this slotted i=
-n as
-a prep patch, the big hammer can land directly in tdx_vm_ioctl(), without a=
-ny
-change in functionality for KVM_TDX_CAPABILITIES.
-
---
-From: Sean Christopherson <seanjc@google.com>
-Date: Mon, 27 Oct 2025 17:32:34 -0700
-Subject: [PATCH] KVM: TDX: Don't copy "cmd" back to userspace for
- KVM_TDX_CAPABILITIES
-
-Don't copy the kvm_tdx_cmd structure back to userspace when handling
-KVM_TDX_CAPABILITIES, as tdx_get_capabilities() doesn't modify hw_error or
-any other fields.
-
-Opportunistically hoist the call to tdx_get_capabilities() outside of the
-kvm->lock critical section, as getting the capabilities doesn't touch the
-VM in any way, e.g. doesn't even take @kvm.
-
-Suggested-by: Kai Huang <kai.huang@intel.com>
-Signed-off-by: Sean Christopherson <seanjc@google.com>
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- arch/x86/kvm/vmx/tdx.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ ipc/mqueue.c | 12 +++---------
+ 1 file changed, 3 insertions(+), 9 deletions(-)
 
-diff --git a/arch/x86/kvm/vmx/tdx.c b/arch/x86/kvm/vmx/tdx.c
-index 1642da9c1fa9..43c0c3f6a8c0 100644
---- a/arch/x86/kvm/vmx/tdx.c
-+++ b/arch/x86/kvm/vmx/tdx.c
-@@ -2807,12 +2807,12 @@ int tdx_vm_ioctl(struct kvm *kvm, void __user *argp=
-)
- 	if (r)
- 		return r;
-=20
-+	if (tdx_cmd.id =3D=3D KVM_TDX_CAPABILITIES)
-+		return tdx_get_capabilities(&tdx_cmd);
-+
- 	guard(mutex)(&kvm->lock);
-=20
- 	switch (tdx_cmd.id) {
--	case KVM_TDX_CAPABILITIES:
--		r =3D tdx_get_capabilities(&tdx_cmd);
--		break;
- 	case KVM_TDX_INIT_VM:
- 		r =3D tdx_td_init(kvm, &tdx_cmd);
- 		break;
+diff --git a/ipc/mqueue.c b/ipc/mqueue.c
+index 093551fe66a7..5737130137bf 100644
+--- a/ipc/mqueue.c
++++ b/ipc/mqueue.c
+@@ -599,8 +599,7 @@ static int mqueue_create_attr(struct dentry *dentry, umode_t mode, void *arg)
+ 	dir->i_size += DIRENT_SIZE;
+ 	simple_inode_init_ts(dir);
+ 
+-	d_instantiate(dentry, inode);
+-	dget(dentry);
++	d_make_persistent(dentry, inode);
+ 	return 0;
+ out_unlock:
+ 	spin_unlock(&mq_lock);
+@@ -617,13 +616,8 @@ static int mqueue_create(struct mnt_idmap *idmap, struct inode *dir,
+ 
+ static int mqueue_unlink(struct inode *dir, struct dentry *dentry)
+ {
+-	struct inode *inode = d_inode(dentry);
+-
+-	simple_inode_init_ts(dir);
+ 	dir->i_size -= DIRENT_SIZE;
+-	drop_nlink(inode);
+-	dput(dentry);
+-	return 0;
++	return simple_unlink(dir, dentry);
+ }
+ 
+ /*
+@@ -1638,7 +1632,7 @@ static const struct fs_context_operations mqueue_fs_context_ops = {
+ static struct file_system_type mqueue_fs_type = {
+ 	.name			= "mqueue",
+ 	.init_fs_context	= mqueue_init_fs_context,
+-	.kill_sb		= kill_litter_super,
++	.kill_sb		= kill_anon_super,
+ 	.fs_flags		= FS_USERNS_MOUNT,
+ };
+ 
+-- 
+2.47.3
 
-base-commit: 672537233b8da2c29dca7154bf3a3211af7f6128
---
 
