@@ -1,62 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-13636-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13637-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 18C30CCFA02
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Oct 2025 09:01:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6E75BCCFA02
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 31 Oct 2025 09:05:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4cyZhY4QZGz2yD5;
-	Fri, 31 Oct 2025 20:01:01 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761901261;
-	cv=none; b=kXl3jAA9X6RRI6mS1vygGWAIxx6qrjWOFkYfMof0VCFAINssrlnH77JltVriFK0Mm39i1/1Zdnd1aYwFUFs8ZglQD3gU7rnnd9fZaoGtCbfTC0hE6k5HA+ow6mfpjjAgPdP+84zz7OYL60vZaKOge9+TkqtMM/UgOZu9DY8mjhoXFvj1U6AETPvjUgsfsaR3tmYpO4Tuatz7nJkppa7eC7jDnH0Z7Owurdlz4gYIVN/hksiz9utQQwBJ/GWj78s+k5QDOMmIiswHgJWgsRcRaiIt070XEswkb6IVHc44jglR6SmKHwaC08TbuQz5almChjJYxQu+fn/WXIKlVsJKcw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cyZp00Q8Zz2yD5;
+	Fri, 31 Oct 2025 20:05:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.12
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761901543;
+	cv=none; b=IrboyfNm5PPKntE5OqpNjgahxFezSQ9uTpbVXFjENu4emLcbuYE1QrXYcG/w4FhLeGwcNJc/C3lqv6y+OvSko84N5AA53nZ3BGj20b9Rpvb6WIsdJ0iRI7vAJSFgB5fk3cnLPLrCCNIkIp21b6GaqJw91RU/adNd20abLKpZUYVjlJYnHZ1iPPNz8Now7TqTqUrto1kinfvDnyBuSRBr2S5o35aT/y8GzZ/3ICvjqG0kVNNSlvLJXDfITEIsBwg4rnj9m9KVzS6H+SzsCabJrxdMTIAiP41FMOmvNSYLNZRyFF4DnJ6wQmA2USzhjNsvK0gpCHvv5GkqlLSehP5S9w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761901261; c=relaxed/relaxed;
-	bh=4FqGoCQAd8WXHNGO1W4O+86RFAzg5M4qX32jto5ifBw=;
+	t=1761901543; c=relaxed/relaxed;
+	bh=/mZtn147ikWvuq3oArSaA/nKxRJMYxqffmhEF5+2L50=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=VuuVcYfLol3LEDK9UjKJg0vAKLl60aj8C50nrj8H/LFNR8Ik3gHFJOtm00pLoEHRX52jiyfCWzVv0xlhcYYixqRcEOGRWrVds+NwgbOsvQtO4Aqo3/bmRSyvhusp07IxEiZZjBN/hBJAxtucAIuPif894tW/mNh3J2daW/XDkU5VP2GZ530OVGe+KHjdDDWQc+XCZySBg6j6eIDM4y/s4A+peI2oiMaTLbpLVi5JeCdvtyQ+pWg6Smpxcb52b4Ti3tNnd6LXc3V2flz4ebpdZdxMbedp3PrfQ1dy7ph7L7jfKb/uyDDi4THrm/T0tidhLoaVhV18vuymThCXDewLqA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LjqhrfBV; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=binbin.wu@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+	 In-Reply-To:Content-Type; b=bapVDMGIY2cLRDppRAPZo9Wp5CnD57YfwK7MnWrRJXsFQlw4ROeyP7qtPtVnkez2gIHSh3ly8HwgyG6ivuhbh6CconaRqJE047uC4ZQr2IvMt07dSF3hb9iORyIvzpLwJrtW7+CrE7/L09LPo+J2/GyOBIwviqn3z6OhjqQYjsuRC7JO4Wne9a8eQiqdpT6ly+HLe1KtZdptx9zML43etnW+RYa/3LsZFJmvEZCPOVAotohlo6YOhZvlslDBPiW2Zr+u75CbjjejYFGW5YC4pto2FJM/5uKdNAe7NAe6PIIx8ay7SEpGRtKHN7/16Sic/rn7OELdJM5cjYZdU13cTg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Adq1c/fH; dkim-atps=neutral; spf=pass (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=binbin.wu@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=LjqhrfBV;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Adq1c/fH;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=binbin.wu@linux.intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=binbin.wu@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4cyZhX50ksz2xnh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2025 20:01:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cyZnz0sncz2xgQ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 31 Oct 2025 20:05:42 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
   d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1761901261; x=1793437261;
+  t=1761901543; x=1793437543;
   h=message-id:date:mime-version:subject:to:cc:references:
    from:in-reply-to:content-transfer-encoding;
-  bh=WrRAkZWX2mY1Sn4BYh8lP0+Uv8J4x4xta8TyjbzO6EM=;
-  b=LjqhrfBVUI1c1hU0zX/k2qyRqGEoSflVMy2bAVyyLqibsyTvcdEVhtdS
-   9XbyTBd6kKFxOcWg3mrHR6HM1nSHg1DknizLxVKj63cRqRtPN9kzfHDMy
-   SlhAhM3Ytc1EJZUxemVJHkd3faYiGch92r2lSURnH1RCxOxZ13LrlPVr0
-   kw1Ii6Sn8mL1RM0Sw30cQagcTsyG7QrTYo09KF6KBAx2QtPaoScPKMUsW
-   AhCeqe8qBNyUmOhKGOa14TIT5MyDsf2S9ZkZOpjBRe+uqYciT6fO1CwYq
-   Ew8/qPV7+RyXVpb0qL6A7R52ylExoTQ8fC5/PEV8z1It8z5t8Pi3fmYQC
+  bh=qFNmSQUeXMaY7XvP4sAPgKkJ8Ev3XCXyw2q+qbAZDIU=;
+  b=Adq1c/fH7KvHZgJQo5xZJIy836Te8QUK6IO+3gcXBE/m1werpG1TTbOZ
+   7DmRqzTpekQtG4ofo1elsNXBJ6GfTPgoH9rblthO1s9QOxHdv4ga1jdVX
+   ZHWZUl3ePBPF/Xl76vTWrFZ4geBiIJVfYK8q+H6j3Mvdm+WvGeC/OhIr4
+   4PGNTFI9O1YzF1Yy2bGnUDTslfxGyqnfkvfsyRMe8hEWgvOyo3B4aEcgN
+   eXVVlXiYv854V+ncmWKGeXjSdDqdyBkaJ0V6zCgHO/V6t25djnZJICCYQ
+   oNo0o0E+GWCk1rjtX9TOTKzF+h7vBrFbfbKRf0vXhuyVDtz3uFpYg26N/
    Q==;
-X-CSE-ConnectionGUID: 0i9SlzrkRrGuSALcDW4yoA==
-X-CSE-MsgGUID: yxRUA5xhQgm5ilEXczO+lg==
-X-IronPort-AV: E=McAfee;i="6800,10657,11598"; a="63263163"
+X-CSE-ConnectionGUID: SIZGZbDdTIysypkd1kkurQ==
+X-CSE-MsgGUID: 6oND9kNlSoSQZoEt7tZSHQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11598"; a="75508368"
 X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; 
-   d="scan'208";a="63263163"
+   d="scan'208";a="75508368"
 Received: from orviesa007.jf.intel.com ([10.64.159.147])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:00:58 -0700
-X-CSE-ConnectionGUID: Dd9eBStPTB2R+zNgqb0uKQ==
-X-CSE-MsgGUID: AT1MnrH1RWGItLZni9BlRw==
+  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:05:41 -0700
+X-CSE-ConnectionGUID: wf1Dt5UnRy6jaWYzdx9wDQ==
+X-CSE-MsgGUID: x9G1JpmbTtGdOFT3heo6QA==
 X-ExtLoop1: 1
 X-IronPort-AV: E=Sophos;i="6.19,269,1754982000"; 
-   d="scan'208";a="186120016"
+   d="scan'208";a="186121954"
 Received: from binbinwu-mobl.ccr.corp.intel.com (HELO [10.124.240.28]) ([10.124.240.28])
-  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:00:50 -0700
-Message-ID: <326290aa-def6-478c-9ef3-1649e027e5d5@linux.intel.com>
-Date: Fri, 31 Oct 2025 17:00:48 +0800
+  by orviesa007-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 31 Oct 2025 02:05:32 -0700
+Message-ID: <18ecf186-c3b9-4027-a54b-7f3e5ba9f484@linux.intel.com>
+Date: Fri, 31 Oct 2025 17:05:34 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,8 +71,8 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 19/28] KVM: TDX: Derive error argument names from the
- local variable names
+Subject: Re: [PATCH v4 20/28] KVM: TDX: Assert that mmu_lock is held for write
+ when removing S-EPT entries
 To: Sean Christopherson <seanjc@google.com>
 Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
  Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>,
@@ -94,55 +94,67 @@ Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>,
  Rick Edgecombe <rick.p.edgecombe@intel.com>,
  Ackerley Tng <ackerleytng@google.com>
 References: <20251030200951.3402865-1-seanjc@google.com>
- <20251030200951.3402865-20-seanjc@google.com>
+ <20251030200951.3402865-21-seanjc@google.com>
 Content-Language: en-US
 From: Binbin Wu <binbin.wu@linux.intel.com>
-In-Reply-To: <20251030200951.3402865-20-seanjc@google.com>
+In-Reply-To: <20251030200951.3402865-21-seanjc@google.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
 
 
 On 10/31/2025 4:09 AM, Sean Christopherson wrote:
-> When printing SEAMCALL errors, use the name of the variable holding an
-> error parameter instead of the register from whence it came, so that flows
-> which use descriptive variable names will similarly print descriptive
-> error messages.
+> Unconditionally assert that mmu_lock is held for write when removing S-EPT
+> entries, not just when removing S-EPT entries triggers certain conditions,
+> e.g. needs to do TDH_MEM_TRACK or kick vCPUs out of the guest.
+> Conditionally asserting implies that it's safe to hold mmu_lock for read
+> when those paths aren't hit, which is simply not true, as KVM doesn't
+> support removing S-EPT entries under read-lock.
 >
-> Suggested-by: Rick Edgecombe <rick.p.edgecombe@intel.com>
+> Only two paths lead to remove_external_spte(), and both paths asserts that
+                                                                 ^
+                                                               assert
+> mmu_lock is held for write (tdp_mmu_set_spte() via lockdep, and
+> handle_removed_pt() via KVM_BUG_ON()).
+>
+> Deliberately leave lockdep assertions in the "no vCPUs" helpers to document
+> that wait_for_sept_zap is guarded by holding mmu_lock for write, and keep
+> the conditional assert in tdx_track() as well, but with a comment to help
+> explain why holding mmu_lock for write matters (above and beyond why
+> tdx_sept_remove_private_spte()'s requirements).
+>
 > Signed-off-by: Sean Christopherson <seanjc@google.com>
 
 Reviewed-by: Binbin Wu <binbin.wu@linux.intel.com>
 
 > ---
->   arch/x86/kvm/vmx/tdx.c | 13 +++++++------
->   1 file changed, 7 insertions(+), 6 deletions(-)
+>   arch/x86/kvm/vmx/tdx.c | 7 +++++++
+>   1 file changed, 7 insertions(+)
 >
 > diff --git a/arch/x86/kvm/vmx/tdx.c b/arch/x86/kvm/vmx/tdx.c
-> index 5e6f2d8b6014..63d4609cc3bc 100644
+> index 63d4609cc3bc..999b519494e9 100644
 > --- a/arch/x86/kvm/vmx/tdx.c
 > +++ b/arch/x86/kvm/vmx/tdx.c
-> @@ -41,14 +41,15 @@
->   #define TDX_BUG_ON(__err, __fn, __kvm)				\
->   	__TDX_BUG_ON(__err, #__fn, __kvm, "%s", "")
+> @@ -1715,6 +1715,11 @@ static void tdx_track(struct kvm *kvm)
+>   	if (unlikely(kvm_tdx->state != TD_STATE_RUNNABLE))
+>   		return;
 >   
-> -#define TDX_BUG_ON_1(__err, __fn, __rcx, __kvm)			\
-> -	__TDX_BUG_ON(__err, #__fn, __kvm, ", rcx 0x%llx", __rcx)
-> +#define TDX_BUG_ON_1(__err, __fn, a1, __kvm)			\
-> +	__TDX_BUG_ON(__err, #__fn, __kvm, ", " #a1 " 0x%llx", a1)
+> +	/*
+> +	 * The full sequence of TDH.MEM.TRACK and forcing vCPUs out of guest
+> +	 * mode must be serialized, as TDH.MEM.TRACK will fail if the previous
+> +	 * tracking epoch hasn't completed.
+> +	 */
+>   	lockdep_assert_held_write(&kvm->mmu_lock);
 >   
-> -#define TDX_BUG_ON_2(__err, __fn, __rcx, __rdx, __kvm)		\
-> -	__TDX_BUG_ON(__err, #__fn, __kvm, ", rcx 0x%llx, rdx 0x%llx", __rcx, __rdx)
-> +#define TDX_BUG_ON_2(__err, __fn, a1, a2, __kvm)	\
-> +	__TDX_BUG_ON(__err, #__fn, __kvm, ", " #a1 " 0x%llx, " #a2 " 0x%llx", a1, a2)
+>   	err = tdh_mem_track(&kvm_tdx->td);
+> @@ -1762,6 +1767,8 @@ static void tdx_sept_remove_private_spte(struct kvm *kvm, gfn_t gfn,
+>   	gpa_t gpa = gfn_to_gpa(gfn);
+>   	u64 err, entry, level_state;
 >   
-> -#define TDX_BUG_ON_3(__err, __fn, __rcx, __rdx, __r8, __kvm)	\
-> -	__TDX_BUG_ON(__err, #__fn, __kvm, ", rcx 0x%llx, rdx 0x%llx, r8 0x%llx", __rcx, __rdx, __r8)
-> +#define TDX_BUG_ON_3(__err, __fn, a1, a2, a3, __kvm)	\
-> +	__TDX_BUG_ON(__err, #__fn, __kvm, ", " #a1 " 0x%llx, " #a2 ", 0x%llx, " #a3 " 0x%llx", \
-> +		     a1, a2, a3)
->   
->   
->   bool enable_tdx __ro_after_init;
+> +	lockdep_assert_held_write(&kvm->mmu_lock);
+> +
+>   	/*
+>   	 * HKID is released after all private pages have been removed, and set
+>   	 * before any might be populated. Warn if zapping is attempted when
 
 
