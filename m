@@ -1,98 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-13659-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13660-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DBFCDCCF9F8
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Nov 2025 12:22:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97E54CCFA00
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  1 Nov 2025 16:34:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4czH7128SFz3btf;
-	Sat,  1 Nov 2025 23:22:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1761999773;
-	cv=none; b=ALxJLsnA8oOF7BbtSK8J7Fe92T52At70rzv568+h0VUAX29qhdxPhAEmy5IM400YllzPo5zAysK41kkFfbp/dcT5+0UEzVHYCtC2H2dz5oF9jcn0syzN1bLIncVH+jOzVorxcYNIL1yXAEFInmtaywrM5+PsjuE+RlQ6H2GTzUEZyN7nGZoo2HuZAGS2VP4sfD9KAOW/tS9obbPFUATJe5pfSAuvvyh8XB6h6Wzd1hCvw2Vwollh0fkLgvHleyZpRVtiKm0wujcMIBy9DuFxSmv7VN8W/jnyNaTwoW1SfEa8JoG6taehJvqlirgvJtcENC6jUMQ+P+U/vaWGZhI/kg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4czNjb04RBz2yPS;
+	Sun,  2 Nov 2025 03:34:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=117.135.210.3
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762014882;
+	cv=none; b=OVn/RYwuTejN1kMXXUpT2JSZyEstZE3GO2bchSzWhB+UGtAt3KZzcHrQXC8bLRz3YQJ9wRmq3y43RL5KnK+iioTpxnjjgNe4tm/A5QCoNT/2dhMJVwVpzvqB1/tiQ+0TrA02BjjJTUeZkEymJz1Q1bQTqFBz1w9SB/cqcz083ehS7pM9eqGdHL1gjNqoyuXYfF796tzs0pRj19wxnSKZfi9slOhV56hQn3NjrDmPaoOuPB8DJgLy2wGGNVub/7+TVsXx/t+38dhmmhP3uRdjKXx2Xme9NktRRxpuGr0hPjeIGGyx6YdRmUlztIn506L+IpEnwCMEpgfMPSoxVLH31A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1761999773; c=relaxed/relaxed;
-	bh=iR1r/3xhU7MVcJwVYZUltUXo3c7eUSFIQ+pGKdoQg2M=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ERF5ZWWbwdkJSirgEy6IBICTq0k/z891fACfnPD8iS8YwQvHGXkmKcfVYhYWZTPki+ihYMXYSjnqLQr/KF42ct1XASyhBNdF+6kE27SHKKvQVxeRx9rEh9tnaJjXaKUphB5+3frGIQmL9nBaqU7dpOycqIv9f1u9PBWbnBriW1bHmf0h6BQi3ckzuxZs8EyVSKIouty+l9pdoKoGBDGdR+d/T4zRKU0U98M8XIxJ/T+J9/kKvAIEipMKmoxLcy9tBwi2FMesJDxKoleDdqupZZDVffkNDUriSyRKfbgZ3rkcMibEVqvhjNgea88tNnI6lw3a4KNdafcVgbOZQe30Fg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UQMSLWUr; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UQMSLWUr; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	t=1762014882; c=relaxed/relaxed;
+	bh=rTeDMOibmlghpQVXp52MOWLYZFEzyWAti7xjOoZt1/I=;
+	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
+	 MIME-Version; b=dC8UnKwQV5PV9oe+eT9d3iO6Khg6+1gkcK7aXSSd7q8dn+uzM4myP+advU4RhP+fpClCoNx6sZ2XM6wKEmHLl4F2jBzQ95AxSOZFeLeheIn16QXqWK9OBnWdRQwSIP9MLUIpfzpHwyfOJgm3Up9NnnoKUX7vNVyAi6Yi4VOgLtgY7d+u8K4xQyBtd3wBFDLnwfDnHCart5QSLAE4UpNJ+ZHlqJz6UElXV4BZJysuPbLmvFKeta3K+xJa9+cbvqegjwfWYr/iMEwsMy42x4Ddeo9f4fiQNMMUeTlxqG1M3eeX3Hjgbddos6YsgRI1WPgNIRvfnUPZVPXxf6F3qdSUug==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com; dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=LXJ0jJPg; dkim-atps=neutral; spf=pass (client-ip=117.135.210.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org) smtp.mailfrom=163.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=163.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UQMSLWUr;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UQMSLWUr;
+	dkim=pass (1024-bit key; unprotected) header.d=163.com header.i=@163.com header.a=rsa-sha256 header.s=s110527 header.b=LXJ0jJPg;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=david@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=163.com (client-ip=117.135.210.3; helo=m16.mail.163.com; envelope-from=18255117159@163.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 627 seconds by postgrey-1.37 at boromir; Sun, 02 Nov 2025 03:34:39 AEDT
+Received: from m16.mail.163.com (m16.mail.163.com [117.135.210.3])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4czH702xGbz3btM
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  1 Nov 2025 23:22:51 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1761999768;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=iR1r/3xhU7MVcJwVYZUltUXo3c7eUSFIQ+pGKdoQg2M=;
-	b=UQMSLWUrkXO0pRNmu8worlMcsAfloA1RfS0gSaJ8hYaZrQeHS8G6qzI1H6FBWx3ObyL3cS
-	FP3g4/q9KDVDqqaiOBnF9y7k1pshb9IlvbnKxyuZPllG2xIEbguTmAy9IVadJDjBlPxbpB
-	5O1lVBWdk5ES8R5IQRu8hDJhyI54HmI=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1761999768;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=iR1r/3xhU7MVcJwVYZUltUXo3c7eUSFIQ+pGKdoQg2M=;
-	b=UQMSLWUrkXO0pRNmu8worlMcsAfloA1RfS0gSaJ8hYaZrQeHS8G6qzI1H6FBWx3ObyL3cS
-	FP3g4/q9KDVDqqaiOBnF9y7k1pshb9IlvbnKxyuZPllG2xIEbguTmAy9IVadJDjBlPxbpB
-	5O1lVBWdk5ES8R5IQRu8hDJhyI54HmI=
-Received: from mail-wr1-f69.google.com (mail-wr1-f69.google.com
- [209.85.221.69]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-9-Ga8YfWZkODqe7p4FPy_y0w-1; Sat, 01 Nov 2025 08:22:47 -0400
-X-MC-Unique: Ga8YfWZkODqe7p4FPy_y0w-1
-X-Mimecast-MFC-AGG-ID: Ga8YfWZkODqe7p4FPy_y0w_1761999766
-Received: by mail-wr1-f69.google.com with SMTP id ffacd0b85a97d-426ce339084so2435519f8f.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 01 Nov 2025 05:22:46 -0700 (PDT)
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1761999766; x=1762604566;
-        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
-         :from:references:cc:to:subject:user-agent:mime-version:date
-         :message-id:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=iR1r/3xhU7MVcJwVYZUltUXo3c7eUSFIQ+pGKdoQg2M=;
-        b=dgg6vJ4HQpGjImlmJOBg8AXtFP3P8VHQQw8laf291D76+pnmzEoJWU8PZc9XBPu1h6
-         dl1kMHJxOLKTgZHlyujMgcgGk/ICDV1TGcRdRQ8lMtlBBX3rWUNf3ApN0ctIJ16o3KX/
-         P/3LR+hzU2MgPO1zmlyeS7GRfbUWoBbeNb199BYhgCtCojoUrZkeeGshV6YeQjL7gPN7
-         ab+eWhJ1ZaN+5uIujQYLYxwzsBtvJADHqzTR+RkA7+tTiivocBxoCbXcvzyG1blNvX5y
-         0tbTD/dqZ2QrnU5jdIdAlA4kErAjmHsaVTRBac/s5bsDXafsrpVr8SYelATUTWSs6Ykt
-         HQLg==
-X-Forwarded-Encrypted: i=1; AJvYcCXRX8GFpC+VYt2MYSWnpUydDsDP7EsH3lFyxgWEyNnqpSfcLywFnwg4pZQKNwDbgQSJfia2p1ADftzwzFc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwnZAGQQrLrZgtYGy1tu5XrCIpUKM2J0WhYWmlJmCHA9hZpKo1w
-	qPt7ipJj3k1d4H+VQdYayD3DHRw/vkymlWAV5QZx5dbe9WBCjCEZC65IMOHWlt3lwZhYx5xpKMX
-	I7xOBB+YqFSuwu/GAXiGrvexIB0CFaKncX9GjF7Lvd6pWAonKLF8onYoNrUkxogTHioM=
-X-Gm-Gg: ASbGnctJosKkjgUIyUpvzdB7LSY3MRsnWwZ8jkf3m6xfhpNuYzA3bh51Y94ltmuZOlo
-	GugWphzhkk4/TUAVXG9yjJerUmuhRZ0SuQhk0/hF8OcpuZnPrAGk5Nyaa31QhjPcdqAP7YglLQr
-	0qos3CP4x6cI6jqzxGdyQAcuULPT4ePkv4pZzdnlLjS1SIpQg+1w/1pD5xbFdJrjbJIkp9TF+4c
-	RBuvZGOY9di0et/eV7XwBS0XT69Rwb7UVgT14E2NHXtaIGwXJ5aeZDvg8qQotUO4rNfvmxI8jMY
-	nmVuRVZMKIZSrG0F9TE8BeD3VZ5eZQIKRe2aCZ9Tva1QPZXo01+CdyKSHHSVMNEf0USQOC+Wbd+
-	uGLCAEidNBCgHCJM7ubeht/kbdi5ICcSi4PUVGKKr5UN8M/jgYL+A/DdU28jFr2JyvfnuRSEyBB
-	zmUTvk0vbXO3OpKvdlKEMIj1cNIbw=
-X-Received: by 2002:a05:6000:2f86:b0:429:8daa:c6b4 with SMTP id ffacd0b85a97d-429bd6860d5mr4833002f8f.21.1761999765963;
-        Sat, 01 Nov 2025 05:22:45 -0700 (PDT)
-X-Google-Smtp-Source: AGHT+IFJ+TTH/VeYpEYhd62jH/WbFLaTQZ/6xytSCDTH7QTl8AfN9d4nyTXPMxG2nY+bN2wOvpiPqw==
-X-Received: by 2002:a05:6000:2f86:b0:429:8daa:c6b4 with SMTP id ffacd0b85a97d-429bd6860d5mr4832980f8f.21.1761999765533;
-        Sat, 01 Nov 2025 05:22:45 -0700 (PDT)
-Received: from ?IPV6:2003:d8:2f3f:4b00:ee13:8c22:5cc5:d169? (p200300d82f3f4b00ee138c225cc5d169.dip0.t-ipconnect.de. [2003:d8:2f3f:4b00:ee13:8c22:5cc5:d169])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-429c110037asm9461926f8f.3.2025.11.01.05.22.43
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Sat, 01 Nov 2025 05:22:45 -0700 (PDT)
-Message-ID: <ae1236da-2647-4d53-bf4d-ff8fc32eb734@redhat.com>
-Date: Sat, 1 Nov 2025 13:22:42 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4czNjW6XFBz2xWc
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Nov 2025 03:34:36 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=163.com;
+	s=s110527; h=From:To:Subject:Date:Message-Id:MIME-Version; bh=rT
+	eDMOibmlghpQVXp52MOWLYZFEzyWAti7xjOoZt1/I=; b=LXJ0jJPgsEbN8jsn3g
+	j7upqizSVegB/eDdNnZhbBIspuKLiGJThtOBLiXg7L6BWlV6VqKrjDLBc+PTLVAk
+	jVirPP6XtUUMTAi6phZ1nGhBIHfcseWp0vjw0Avu5deeySv8l1tDysOit+kQO+F0
+	OBlwNtc9NvBnoAojmi2mKMtrU=
+Received: from zhb.. (unknown [])
+	by gzga-smtp-mtada-g1-4 (Coremail) with SMTP id _____wCHBDkQNAZpNmGwAw--.59274S4;
+	Sun, 02 Nov 2025 00:23:47 +0800 (CST)
+From: Hans Zhang <18255117159@163.com>
+To: mahesh@linux.ibm.com,
+	bhelgaas@google.com
+Cc: oohall@gmail.com,
+	mani@kernel.org,
+	lukas@wunner.de,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Hans Zhang <18255117159@163.com>
+Subject: [RESEND PATCH v4 2/2] PCI/AER: Use pci_clear/set_config_dword to simplify code
+Date: Sun,  2 Nov 2025 00:22:19 +0800
+Message-Id: <20251101162219.12016-3-18255117159@163.com>
+X-Mailer: git-send-email 2.34.1
+In-Reply-To: <20251101162219.12016-1-18255117159@163.com>
+References: <20251101162219.12016-1-18255117159@163.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -106,112 +68,93 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 07/12] mm: enable lazy_mmu sections to nest
-To: Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
- Andreas Larsson <andreas@gaisler.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
- <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- "David S. Miller" <davem@davemloft.net>,
- David Woodhouse <dwmw2@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Ingo Molnar <mingo@redhat.com>, Jann Horn <jannh@google.com>,
- Juergen Gross <jgross@suse.com>, "Liam R. Howlett"
- <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
- Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Peter Zijlstra <peterz@infradead.org>, Ryan Roberts <ryan.roberts@arm.com>,
- Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner
- <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
- Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org, x86@kernel.org
-References: <20251029100909.3381140-1-kevin.brodsky@arm.com>
- <20251029100909.3381140-8-kevin.brodsky@arm.com>
-From: David Hildenbrand <david@redhat.com>
-Autocrypt: addr=david@redhat.com; keydata=
- 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
- qIws/H2t
-In-Reply-To: <20251029100909.3381140-8-kevin.brodsky@arm.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: jdrbpzaehpvRmKS4mACJipxMCI-X1ET5dgc_paFmXqY_1761999766
-X-Mimecast-Originator: redhat.com
-Content-Language: en-US
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:_____wCHBDkQNAZpNmGwAw--.59274S4
+X-Coremail-Antispam: 1Uf129KBjvJXoWxZFyDAFy7AF15tw1kJr4ruFg_yoW5Xw1UpF
+	W3AFWfAr4UJF15ZrWDWaykJwn5AF97t34fKr93Kwn5XF48uFZrJ3sav34UJ345KFZ5X34r
+	Jws5Ka1rZF4UJ3JanT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDUYxBIdaVFxhVjvjDU0xZFpf9x0zE2YLgUUUUU=
+X-Originating-IP: [240e:b8f:927e:1000:3c54:eb11:a795:c9c9]
+X-CM-SenderInfo: rpryjkyvrrlimvzbiqqrwthudrp/1tbiFQj4o2kGMU41FwABs1
 
+Replace manual read-modify-write sequences in multiple functions with
+pci_clear/set_config_dword helper to reduce code duplication.
 
->   static inline void lazy_mmu_mode_pause(void)
->   {
-> +	struct lazy_mmu_state *state = &current->lazy_mmu_state;
-> +
-> +	VM_WARN_ON(state->nesting_level == 0 || !state->active);
-> +
-> +	state->active = false;
->   	arch_leave_lazy_mmu_mode();
+Signed-off-by: Hans Zhang <18255117159@163.com>
+---
+ drivers/pci/pcie/aer.c | 29 ++++++++++-------------------
+ 1 file changed, 10 insertions(+), 19 deletions(-)
 
-Just one question:
-
-Don't we want to allow for pause/resume when not enabled? Would seem 
-valid to me, because pause/resume code should actually not worry about 
-that, right?
-
-if (!state->nesting_level) {
-	VM_WARN_ON(state->active);
-	return;
-}
-VM_WARN_ON(!state->active);
-state->active = false;
-arch_leave_lazy_mmu_mode();
-
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index e286c197d716..468d4a726a20 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -176,14 +176,12 @@ static int enable_ecrc_checking(struct pci_dev *dev)
+ static int disable_ecrc_checking(struct pci_dev *dev)
+ {
+ 	int aer = dev->aer_cap;
+-	u32 reg32;
+ 
+ 	if (!aer)
+ 		return -ENODEV;
+ 
+-	pci_read_config_dword(dev, aer + PCI_ERR_CAP, &reg32);
+-	reg32 &= ~(PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
+-	pci_write_config_dword(dev, aer + PCI_ERR_CAP, reg32);
++	pci_clear_config_dword(dev, aer + PCI_ERR_CAP,
++			       PCI_ERR_CAP_ECRC_GENE | PCI_ERR_CAP_ECRC_CHKE);
+ 
+ 	return 0;
+ }
+@@ -1102,15 +1100,12 @@ static bool find_source_device(struct pci_dev *parent,
+ static void pci_aer_unmask_internal_errors(struct pci_dev *dev)
+ {
+ 	int aer = dev->aer_cap;
+-	u32 mask;
+ 
+-	pci_read_config_dword(dev, aer + PCI_ERR_UNCOR_MASK, &mask);
+-	mask &= ~PCI_ERR_UNC_INTN;
+-	pci_write_config_dword(dev, aer + PCI_ERR_UNCOR_MASK, mask);
++	pci_clear_config_dword(dev, aer + PCI_ERR_UNCOR_MASK,
++			       PCI_ERR_UNC_INTN);
+ 
+-	pci_read_config_dword(dev, aer + PCI_ERR_COR_MASK, &mask);
+-	mask &= ~PCI_ERR_COR_INTERNAL;
+-	pci_write_config_dword(dev, aer + PCI_ERR_COR_MASK, mask);
++	pci_clear_config_dword(dev, aer + PCI_ERR_COR_MASK,
++			       PCI_ERR_COR_INTERNAL);
+ }
+ 
+ static bool is_cxl_mem_dev(struct pci_dev *dev)
+@@ -1556,23 +1551,19 @@ static irqreturn_t aer_irq(int irq, void *context)
+ static void aer_enable_irq(struct pci_dev *pdev)
+ {
+ 	int aer = pdev->aer_cap;
+-	u32 reg32;
+ 
+ 	/* Enable Root Port's interrupt in response to error messages */
+-	pci_read_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, &reg32);
+-	reg32 |= ROOT_PORT_INTR_ON_MESG_MASK;
+-	pci_write_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, reg32);
++	pci_set_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND,
++			     ROOT_PORT_INTR_ON_MESG_MASK);
+ }
+ 
+ static void aer_disable_irq(struct pci_dev *pdev)
+ {
+ 	int aer = pdev->aer_cap;
+-	u32 reg32;
+ 
+ 	/* Disable Root Port's interrupt in response to error messages */
+-	pci_read_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, &reg32);
+-	reg32 &= ~ROOT_PORT_INTR_ON_MESG_MASK;
+-	pci_write_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND, reg32);
++	pci_clear_config_dword(pdev, aer + PCI_ERR_ROOT_COMMAND,
++			       ROOT_PORT_INTR_ON_MESG_MASK);
+ }
+ 
+ /**
 -- 
-Cheers
-
-David / dhildenb
+2.25.1
 
 
