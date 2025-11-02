@@ -1,91 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-13667-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13668-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 750B3CCFA02
-	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Nov 2025 11:20:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 47956CCFA02
+	for <linuxppc-dev@archiver.kernel.org>; Sun,  2 Nov 2025 11:55:09 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4czshY5MH2z30RN;
-	Sun,  2 Nov 2025 22:20:29 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.155
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762082429;
-	cv=none; b=nyNIzdvuwKFVhmd5ko3+INNxOP31WaggRtiQpu/LkWZcadIg4cMg+r9HBG/jcYmVpoN7AdsthGtiq5C6NPZjiXW2ehqS3IOe3bSUb8MfWo1/dBAwxEb1459VvxgACc89K8sPz9spQzmjCXORDkqHCyDdvyUy4MvImguvCfuKloIwNuEXmdKJl7qxwLN7HJsGrhLCiTE4l7JF2V+/tsdtxPUknofndZ0X8meFJhgUKuST4VScY5NXtGEgHMbRVNvcuFYJ3pBCwe4SFNQy/BGdnVoRKsxNp7DHYEmgfiYJmIQY+2G6iz7v1LfupvLhSmFS/rpDGuaaQs89jxLfXgPyGg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4cztSW4Tsyz3bt1;
+	Sun,  2 Nov 2025 22:55:07 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762084507;
+	cv=none; b=OsyYYEThetZuFuLvtz2Nm97dRi6m2chwuGnA2BVY6iRyiXPUdby1iKuOQFh06ifoPXE8rRkdbAmpM2vL8gk6t8Aomnefk/qbHdS9Zv8maAFRJFovqzIvc4Wh6m0LnpXCKA7Hplw/L3a2N2EybFy17J0jPxk9QgoGCI+xM/Xk1BEkXSrDA+DvmvS7vlW0NfRMS4ehJaqakOKHxbMmxkPdnWSeMipJMeRgLbSm5s2QpLD3FZ7Y1DbpaHAjIlasp57SUEyW481ch9EFNgo1Luezffeo9seDRtozUrJak2k527AJUsBEDh/JLe3+BU5R2J+hIPCgB5pJ28CS/+ZFyVGOlw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762082429; c=relaxed/relaxed;
-	bh=6m3o1ByUcKnQCCidqvOiypzSMNc/FU4EBRXilWZnF/0=;
-	h=Date:From:To:cc:Subject:In-Reply-To:Message-ID:References:
-	 MIME-Version:Content-Type; b=XxTh7EDSoVMMAX8+DSYL40DjnQ/WOZqCMWoGfa4A2DuaP2gM8FGcREgd+jCbpspbfuIfkTNSEjNm8yKD3vvu590Zr3tI/petZWh3JZEF3Jfm+oBJibd7drPB0UrXo6yQy8V8+CQUKOXvzT3ofjhTNKyJo8aR6/qe5m7PTSXd60rlBVniZa2zRqyHYrk1rfMgIFYPu2gL8zxMUpxC5n+LPJlwMPgHZgCWmXPUpf0Z/+K/ZpjOC/CR34dqCTQpXqjtGOM9YQEn4Sbs9QheWA7BkDi397ov8e1ZK47XCrUXiMMo0z0zm007OZcYdZXBUUB4REd967o4OFN0HFPWe9T/Hg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=M4mtYi6G; dkim-atps=neutral; spf=pass (client-ip=202.12.124.155; helo=fhigh-b4-smtp.messagingengine.com; envelope-from=fthain@linux-m68k.org; receiver=lists.ozlabs.org) smtp.helo=fhigh-b4-smtp.messagingengine.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-m68k.org
+	t=1762084507; c=relaxed/relaxed;
+	bh=ut52stePIOg2XiXxgSjdwZtVxB268WidU50nRM53hLc=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=MaxdeU7WFCxS64TIEs6rk8UgyG+R7wbuQaMkVBA60uxiv9HSHdKcK///ZkruYeBIKoMI1cjEdhqQ/WA8M/qAzihkNLxHHi8kYHXbSXke2QhEWHAibol3fUq/x0a/f4rSrNLx9YM0W+dh0LFdiFmfnarFxwndCFgilAvlBVXSVS11FD6ii/VhDG1n8X9InKJPwawIBoACeKPxsSPRtZkREj5f+n+ibqYmtTzvRPS/81hKrAOrGPO//uH7cf95w6Mj0UUo72mxTZgj6xSbZmsDS78J++eqGdGXxbBYqCcL+bDJN9rZU5+6nhM9ZsIanLgAQyrtsALAiX/6cMzlGcIUYA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BjTKqD8t; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mkchauras@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm3 header.b=M4mtYi6G;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=BjTKqD8t;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=fhigh-b4-smtp.messagingengine.com (client-ip=202.12.124.155; helo=fhigh-b4-smtp.messagingengine.com; envelope-from=fthain@linux-m68k.org; receiver=lists.ozlabs.org)
-Received: from fhigh-b4-smtp.messagingengine.com (fhigh-b4-smtp.messagingengine.com [202.12.124.155])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mkchauras@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4czshW0SWkz2yql
-	for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Nov 2025 22:20:25 +1100 (AEDT)
-Received: from phl-compute-02.internal (phl-compute-02.internal [10.202.2.42])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id 95FBE7A012A;
-	Sun,  2 Nov 2025 06:20:20 -0500 (EST)
-Received: from phl-mailfrontend-02 ([10.202.2.163])
-  by phl-compute-02.internal (MEProxy); Sun, 02 Nov 2025 06:20:20 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-type:content-type:date:date
-	:feedback-id:feedback-id:from:from:in-reply-to:in-reply-to
-	:message-id:mime-version:references:reply-to:subject:subject:to
-	:to:x-me-proxy:x-me-sender:x-me-sender:x-sasl-enc; s=fm3; t=
-	1762082420; x=1762168820; bh=6m3o1ByUcKnQCCidqvOiypzSMNc/FU4EBRX
-	ilWZnF/0=; b=M4mtYi6GOiUwEVnU1+rp8S1+RWIJN7w9+1BjzGQdMoyziBKJGgD
-	2ptYd+fCMVtnc5kj5IVMIkfTzcnpce3FEGPicmp6MdCYamhMEYYAg6QGzqBifnNx
-	P2PJ+UT+B9pvCdK4oyZohHB52qbq6hlt3Q3rvWq26Qx/zzVuN15NIvoqDcDqqcYh
-	tdcnXZP9nzJf6vTa/KQSfjeQUSJonM9XzNLRJbk+hebpV0duTWj+ytPdPUysh6FY
-	xdiZabPXizWF1xdMGYxw+mnCZS4wpmILMf150HZmUWlGpzBylO6RvWIsPu36ZO0E
-	s031OQYw0LUezL4HgeJQ0DzO/6G6K0QgVIA==
-X-ME-Sender: <xms:cD4Had3xlIZ7JJVEZAgthSzOTzG5aRZwet_IKoQJTTkt0Lh8qux75Q>
-    <xme:cD4HaYfCxIQjW-rBRFcvcy4LiXxOhK6P4DVyJsHI4zsFdIfoZuGrKjtXjE8JQDmx-
-    eiBvm3HzbioIVc_GjGL8ZQyEXzyR9f7xZD97KPB4a8Q3ijnGfU_Zx2M>
-X-ME-Received: <xmr:cD4HabxarueTcmYJSXQp7nVaC2tYA678m8CmEtLIHfi6W26TjUpDKyLzkd4sOXFjBtrps4ojTFw-IwYwAV_3b0flP4Rchox1HHs>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdeggddujeehudduucetufdoteggodetrf
-    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
-    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
-    gurhepfffhvfevufgjkfhfgggtsehttdertddttddvnecuhfhrohhmpefhihhnnhcuvfhh
-    rghinhcuoehfthhhrghinheslhhinhhugidqmheikehkrdhorhhgqeenucggtffrrghtth
-    gvrhhnpeevtddtudfgvddtteeuvdffheegffefhffgjeefueevkeeutdeuleffheevffeh
-    ueenucffohhmrghinhepohiilhgrsghsrdhorhhgnecuvehluhhsthgvrhfuihiivgeptd
-    enucfrrghrrghmpehmrghilhhfrhhomhepfhhthhgrihhnsehlihhnuhigqdhmieekkhdr
-    ohhrghdpnhgspghrtghpthhtohepuddupdhmohguvgepshhmthhpohhuthdprhgtphhtth
-    hopehushgvrhhmheejseihrghhohhordgtohhmpdhrtghpthhtoheplhhinhhugiesthhr
-    vggslhhighdrohhrghdprhgtphhtthhopehmphgvsegvlhhlvghrmhgrnhdrihgurdgruh
-    dprhgtphhtthhopehnphhighhgihhnsehgmhgrihhlrdgtohhmpdhrtghpthhtoheptghh
-    rhhishhtohhphhgvrdhlvghrohihsegtshhgrhhouhhprdgvuhdprhgtphhtthhopehsrg
-    hmsehrrghvnhgsohhrghdrohhrghdprhgtphhtthhopegsvghnhheskhgvrhhnvghlrdgt
-    rhgrshhhihhnghdrohhrghdprhgtphhtthhopehlihhnuhigphhptgdquggvvheslhhish
-    htshdrohiilhgrsghsrdhorhhgpdhrtghpthhtoheplhhinhhugidqkhgvrhhnvghlsehv
-    ghgvrhdrkhgvrhhnvghlrdhorhhg
-X-ME-Proxy: <xmx:cD4HaYwgnD4En5T6PukYGLYuHvhmlS4V4xGeBrg1H-OefOcz2iYG1w>
-    <xmx:cD4HaUZ1xoEon8SCoRYTLcm3mYv8kkfOXWTN_VTplSyxSjRUt05uXQ>
-    <xmx:cD4HaZ3g_ShkIhJBpRCAUBfIGl9qdN6HefMepaqX3visPr7_BJofXA>
-    <xmx:cD4HaWcvDBVMPJGqSlnVhvfU3Sbw-T3YSM0zrT22ITL3TeNGF1lQ3Q>
-    <xmx:dD4HadRWn_csD9ONZJatBy_oC7DaG66d3enfO9Lm-3K-4kBm9nbh2o0F>
-Feedback-ID: i58a146ae:Fastmail
-Received: by mail.messagingengine.com (Postfix) with ESMTPA; Sun,
- 2 Nov 2025 06:20:14 -0500 (EST)
-Date: Sun, 2 Nov 2025 22:20:22 +1100 (AEDT)
-From: Finn Thain <fthain@linux-m68k.org>
-To: Stan Johnson <userm57@yahoo.com>
-cc: linux@treblig.org, mpe@ellerman.id.au, npiggin@gmail.com, 
-    christophe.leroy@csgroup.eu, sam@ravnborg.org, benh@kernel.crashing.org, 
-    linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-    rdunlap@infradead.org, Cedar Maxwell <cedarmaxwell@mac.com>
-Subject: Re: [PATCH v4] powerpc: Use shared font data
-In-Reply-To: <d81ddca8-c5ee-d583-d579-02b19ed95301@yahoo.com>
-Message-ID: <b657eaa6-e027-4ec4-d6c4-e053cdeb1631@linux-m68k.org>
-References: <20230825142754.1487900-1-linux@treblig.org> <d81ddca8-c5ee-d583-d579-02b19ed95301@yahoo.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4cztSV2vlWz3bs7
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  2 Nov 2025 22:55:06 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5A25v6Vt009805;
+	Sun, 2 Nov 2025 11:54:41 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=ut52stePIOg2XiXxg
+	SjdwZtVxB268WidU50nRM53hLc=; b=BjTKqD8twUOTcHaxa4LbpZUUUIfSr6q0m
+	aMaCf6QFYZbttJN9vwcNT2OxK33ruXSVd/49xcMotgLNaTwfgv0+TdjQNohVcrgS
+	i8Avqq47vrMW9LJOw8Q1xRueANY8FasEJYN6PxArQMS6CDuqB9VNjJ2S95oBhKCt
+	tFUqUlCIRLyO+X1P+PmMT8pKARjK5z6ABvovqovvYuThN/4ZYJlRhSTZZyzO7SiO
+	65iiKHPHGhBSVfAcldwQSZTyfRo0GBuQUJym+rRA7weHq6v0kSauqRCN8+JHHrmU
+	I5y5KtbJ+9yA4U1fIy67dipXO/0F+DO0aQAhhf9YoDg6Fw88jNB7g==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4a59vu3b4c-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 02 Nov 2025 11:54:40 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5A2Bse1L032040;
+	Sun, 2 Nov 2025 11:54:40 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4a59vu3b4a-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 02 Nov 2025 11:54:40 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5A26koB4025588;
+	Sun, 2 Nov 2025 11:54:39 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4a5vhs9jm8-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 02 Nov 2025 11:54:39 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5A2BsZQO57606452
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 2 Nov 2025 11:54:35 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 787F320043;
+	Sun,  2 Nov 2025 11:54:35 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id EBBF120040;
+	Sun,  2 Nov 2025 11:54:29 +0000 (GMT)
+Received: from li-ce33bfcc-25cf-11b2-a85c-dc105c39188e.ibm.com.com (unknown [9.124.213.75])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sun,  2 Nov 2025 11:54:29 +0000 (GMT)
+From: Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>
+To: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu, oleg@redhat.com, kees@kernel.org,
+        luto@amacapital.net, wad@chromium.org, mchauras@linux.ibm.com,
+        thuth@redhat.com, sshegde@linux.ibm.com, akpm@linux-foundation.org,
+        macro@orcam.me.uk, ldv@strace.io, deller@gmx.de, charlie@rivosinc.com,
+        bigeasy@linutronix.de, segher@kernel.crashing.org,
+        thomas.weissschuh@linutronix.de, menglong8.dong@gmail.com,
+        ankur.a.arora@oracle.com, peterz@infradead.org, namcao@linutronix.de,
+        tglx@linutronix.de, kan.liang@linux.intel.com, mingo@kernel.org,
+        atrajeev@linux.vnet.ibm.com, mark.barnett@arm.com,
+        coltonlewis@google.com, rppt@kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Subject: [PATCH 5/8] powerpc: add exit_flags field in pt_regs
+Date: Sun,  2 Nov 2025 17:23:55 +0530
+Message-ID: <20251102115358.1744304-6-mkchauras@linux.ibm.com>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <20251102115358.1744304-1-mkchauras@linux.ibm.com>
+References: <20251102115358.1744304-1-mkchauras@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,17 +103,144 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: mJM0JM27faqjWj0c1AJKLasSnLV7kjrV
+X-Proofpoint-GUID: 6b5O4sV8hysWuGLv9qK8bWJN9oeJZT-a
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTAxMDAyMSBTYWx0ZWRfXy1+23QNkzIDK
+ TlHfmIG90d5EvVbfjtaiGjz1QUuQuu2jh4hNen2fpx0E7YwDGVbMZXioVTxTtBLjMvGGNaHjKHJ
+ 0FMg/u0EllOW3jj7uI1FgvD9wHR2cbnnnFmkHtqG+zBS48byt7rTF5HCmIeXI4Jd+rrCQjC5/7J
+ CdlRwpVdrFH2xh4kgnU+IdwfVmTZYTj9X3mmTe3lLkzY0GtYtrqChzSeCeDEHp0No9Bb/u6qo+L
+ cyIuNt7yacyLsJn5kHAbQHU0vwY+f8YKdKKeKO49XlCP9oW/Z3onN7XjwA6wUWVD/X3kv1XrQKj
+ p7JTrjqaRs+CuwOZf6eN/q4TdvkSxMgv1nJX59vs62gBgzUrobt4vHarYHzOlTN4q00Y5vfRqmq
+ dcPM+pRrLFg0N+tNQt+TOLfCMzbNEQ==
+X-Authority-Analysis: v=2.4 cv=U6qfzOru c=1 sm=1 tr=0 ts=69074680 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
+ a=mnynasnECEr2HgeGZQUA:9 a=nl4s5V0KI7Kw-pW0DWrs:22 a=pHzHmUro8NiASowvMSCR:22
+ a=xoEH_sTeL_Rfw54TyV31:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-11-02_02,2025-10-29_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0 impostorscore=0 spamscore=0 phishscore=0
+ clxscore=1015 malwarescore=0 lowpriorityscore=0 suspectscore=0
+ priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2510240000
+ definitions=main-2511010021
 
+From: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
 
-On Sat, 1 Nov 2025, Stan Johnson wrote:
+Add a new field `exit_flags` in the pt_regs structure. This field will hold
+the flags set during interrupt or syscall execution that are required during
+exit to user mode.
 
-> 
-> The problem also occurs on a PowerBook 3400c.
-> 
+Specifically, the `TIF_RESTOREALL` flag, stored in this field, helps the
+exit routine determine if any NVGPRs were modified and need to be restored
+before returning to userspace.
 
-Not quite. On the 3400, it's not a regression, because CONFIG_BOOTX_TEXT=y 
-never worked, AFAIK, as far back as 2.6.8. So I think that's unrelated to 
-the regression at hand.
-https://lists.ozlabs.org/pipermail/linuxppc-dev/2008-August/061792.html
+This addition ensures a clean and architecture-specific mechanism to track
+per-syscall or per-interrupt state transitions related to register restore.
+
+Changes:
+ - Add `exit_flags` and `__pt_regs_pad` to maintain 16-byte stack alignment
+ - Update asm-offsets.c and ptrace.c for offset and validation
+ - Update PT_* constants in uapi header to reflect the new layout
+
+Signed-off-by: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+---
+ arch/powerpc/include/asm/ptrace.h      |  3 +++
+ arch/powerpc/include/uapi/asm/ptrace.h | 14 +++++++++-----
+ arch/powerpc/kernel/asm-offsets.c      |  1 +
+ arch/powerpc/kernel/ptrace/ptrace.c    |  1 +
+ 4 files changed, 14 insertions(+), 5 deletions(-)
+
+diff --git a/arch/powerpc/include/asm/ptrace.h b/arch/powerpc/include/asm/ptrace.h
+index 94aa1de2b06e..3af8a5898fe3 100644
+--- a/arch/powerpc/include/asm/ptrace.h
++++ b/arch/powerpc/include/asm/ptrace.h
+@@ -53,6 +53,9 @@ struct pt_regs
+ 				unsigned long esr;
+ 			};
+ 			unsigned long result;
++			unsigned long exit_flags;
++			/* Maintain 16 byte interrupt stack alignment */
++			unsigned long __pt_regs_pad[1];
+ 		};
+ 	};
+ #if defined(CONFIG_PPC64) || defined(CONFIG_PPC_KUAP)
+diff --git a/arch/powerpc/include/uapi/asm/ptrace.h b/arch/powerpc/include/uapi/asm/ptrace.h
+index 01e630149d48..de56b216c9c5 100644
+--- a/arch/powerpc/include/uapi/asm/ptrace.h
++++ b/arch/powerpc/include/uapi/asm/ptrace.h
+@@ -55,6 +55,8 @@ struct pt_regs
+ 	unsigned long dar;		/* Fault registers */
+ 	unsigned long dsisr;		/* on 4xx/Book-E used for ESR */
+ 	unsigned long result;		/* Result of a system call */
++	unsigned long exit_flags;	/* System call exit flags */
++	unsigned long __pt_regs_pad[1];	/* Maintain 16 byte interrupt stack alignment */
+ };
+ 
+ #endif /* __ASSEMBLER__ */
+@@ -114,10 +116,12 @@ struct pt_regs
+ #define PT_DAR	41
+ #define PT_DSISR 42
+ #define PT_RESULT 43
+-#define PT_DSCR 44
+-#define PT_REGS_COUNT 44
++#define PT_EXIT_FLAGS 44
++#define PT_PAD 45
++#define PT_DSCR 46
++#define PT_REGS_COUNT 46
+ 
+-#define PT_FPR0	48	/* each FP reg occupies 2 slots in this space */
++#define PT_FPR0	(PT_REGS_COUNT + 4)	/* each FP reg occupies 2 slots in this space */
+ 
+ #ifndef __powerpc64__
+ 
+@@ -129,7 +133,7 @@ struct pt_regs
+ #define PT_FPSCR (PT_FPR0 + 32)	/* each FP reg occupies 1 slot in 64-bit space */
+ 
+ 
+-#define PT_VR0 82	/* each Vector reg occupies 2 slots in 64-bit */
++#define PT_VR0	(PT_FPSCR + 2)	/* <82> each Vector reg occupies 2 slots in 64-bit */
+ #define PT_VSCR (PT_VR0 + 32*2 + 1)
+ #define PT_VRSAVE (PT_VR0 + 33*2)
+ 
+@@ -137,7 +141,7 @@ struct pt_regs
+ /*
+  * Only store first 32 VSRs here. The second 32 VSRs in VR0-31
+  */
+-#define PT_VSR0 150	/* each VSR reg occupies 2 slots in 64-bit */
++#define PT_VSR0	(PT_VRSAVE + 2)	/* each VSR reg occupies 2 slots in 64-bit */
+ #define PT_VSR31 (PT_VSR0 + 2*31)
+ #endif /* __powerpc64__ */
+ 
+diff --git a/arch/powerpc/kernel/asm-offsets.c b/arch/powerpc/kernel/asm-offsets.c
+index a4bc80b30410..c0bb09f1db78 100644
+--- a/arch/powerpc/kernel/asm-offsets.c
++++ b/arch/powerpc/kernel/asm-offsets.c
+@@ -292,6 +292,7 @@ int main(void)
+ 	STACK_PT_REGS_OFFSET(_ESR, esr);
+ 	STACK_PT_REGS_OFFSET(ORIG_GPR3, orig_gpr3);
+ 	STACK_PT_REGS_OFFSET(RESULT, result);
++	STACK_PT_REGS_OFFSET(EXIT_FLAGS, exit_flags);
+ 	STACK_PT_REGS_OFFSET(_TRAP, trap);
+ #ifdef CONFIG_PPC64
+ 	STACK_PT_REGS_OFFSET(SOFTE, softe);
+diff --git a/arch/powerpc/kernel/ptrace/ptrace.c b/arch/powerpc/kernel/ptrace/ptrace.c
+index c6997df63287..2134b6d155ff 100644
+--- a/arch/powerpc/kernel/ptrace/ptrace.c
++++ b/arch/powerpc/kernel/ptrace/ptrace.c
+@@ -432,6 +432,7 @@ void __init pt_regs_check(void)
+ 	CHECK_REG(PT_DAR, dar);
+ 	CHECK_REG(PT_DSISR, dsisr);
+ 	CHECK_REG(PT_RESULT, result);
++	CHECK_REG(PT_EXIT_FLAGS, exit_flags);
+ 	#undef CHECK_REG
+ 
+ 	BUILD_BUG_ON(PT_REGS_COUNT != sizeof(struct user_pt_regs) / sizeof(unsigned long));
+-- 
+2.51.0
+
 
