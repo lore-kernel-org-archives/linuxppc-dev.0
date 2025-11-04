@@ -1,50 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-13753-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13754-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD1F8CCFA04
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Nov 2025 17:50:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4DD9CCCFA04
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Nov 2025 17:57:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d1GFB0m4rz3bf8;
-	Wed,  5 Nov 2025 04:50:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762278606;
-	cv=none; b=TOp2mmoSipl6nSDh1wUcpHMWFmQeuYQbNrtzzF97odaO/gKmq6/8EE9Nvp766huM3T0WuQetNPe+fSePJGGwhCRsTPEIj6hLZTE8S2fKoKVXRgyfnwYvkii6RkIoiRq61Z68dLj7U74vwWQvceUDbKbpJBu0VQGb4Cd++9rDguz8ZVYH7CGbLdP2peuvBizeJ4oCxOozkbmMH2u+FtW9CLKHVDjolO13/Gm3GsN+oFKQp/LvXJjXqkkit6wr4MO1kxXz4NQwY2uLz7zWY9+qobJs2TaqA01Dw4vNX5wXiTPrmmvjxUGNplzyKTspPw1e0j5n4IKQ6ae60n238TKpAw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d1GPn1FSyz30V1;
+	Wed,  5 Nov 2025 04:57:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::64a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762279053;
+	cv=none; b=ULK/NoLI2cyz0cMTON7LV3XtgxWWqIx3S1hXiIJIQ0NNuB1MW8oIi3VcL3JskA7nQ2La7u70tSHkq7GAvlAfpuBwmyz2qdmChKKBpIHA2E0nOx1qKXGSI0x925Px+UacJvyuXEoFnyG0+RO9XEGG5WKjQc5tG2EPMudWARbFPudPs7Wx8Vl8KG5f4z1IbCqTJgLN2fNcpwPfx+Bnlfmztzxwfc2SVf8+uGrRom+9KBrD4dJQVRiK4yuohFdiuQcjbXnGhq+e6Wp1qZvv5/iVhQGd1x/d4FMrdwJZDNwkorq6tCpsT7Xzc97mF5uz0LW3mfG3Wb19GeqpPfm82uptKQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762278606; c=relaxed/relaxed;
-	bh=xAadiR6ntL7ayTwA4JxHMnkqmPDh9B854RBpL7w6q3Q=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=jgWHbqKMgBgKSdJL4W+2X27N394ljXovbJ0G+zUoQYuXQxCHVCS218yVTY0pVSgOkjoJtZoDIvnMcnw9SVz+527COfjVic531frAkhspDdwTYd1gnxoa1wz/2qWu0tlEgKSu1C5sY70YAcDMXNeaZVPmYy7QMpPlFJB08REdwrQZ0YC+66NNaCozMbr73/JAh+qiKjkkRiA62z6e6woqCRvCGTTsJ9Fa6HaXUx0DbSdeW2QBUbXsGIBKXHOaKKCJqlBQZraE4Srb9G6TJuKa+3suop9Aw2o6UKKaCa3od9EcpZaLU6ZvH9QZstpDkDsx87Hjt2ENGs2IJ+T2ObnVKA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d1GF93L6Yz2yvv
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 04:50:04 +1100 (AEDT)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4d1FkL5Pf0z9sS7;
-	Tue,  4 Nov 2025 18:26:50 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ZFw0wj0g-XqU; Tue,  4 Nov 2025 18:26:50 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4d1FkL4gnPz9sRy;
-	Tue,  4 Nov 2025 18:26:50 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 90CF78B76E;
-	Tue,  4 Nov 2025 18:26:50 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id sWXRh3sG0pVU; Tue,  4 Nov 2025 18:26:50 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 84DFE8B76D;
-	Tue,  4 Nov 2025 18:26:49 +0100 (CET)
-Message-ID: <a0921920-d381-4a67-8b4d-d91e5319a354@csgroup.eu>
-Date: Tue, 4 Nov 2025 18:26:48 +0100
+	t=1762279053; c=relaxed/relaxed;
+	bh=kxFvD6gKxB44i1bxk1sbjy38espILrC0yFM/UcBrpew=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=DOJblPhuC8goLjTvyXi0S3Ml9NJzBc/iAeDM9zr3++DuWq9KGMMhQABzJ77u9ly1pf9SS+ve4Tv+5bnBmaWLmO8wX5uT5CRO0fbubo2cU/wT53q69pkmmok0/ykhG4VGOqU0hu0xNZQl4rmseo15uJ8JYL7af6wqICxVSCJCOcevlyymhtUZ8W9TGovtIi1Bw02bHix3nqn60IlfYiDuDjSUf1WEfspsWPkqM4FBY2YVT0C58MNgLxF1n5lnySwppj1Nd3+GUfebKZiNujYoF/+McDO144b7l5p172Q7Zuv6hhLUCak0+5dsat8FQlIn7kuY3CRRHrgAt/+bKrAqFw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=4OAynR4R; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=3hz4kaqykdhwxjfsohlttlqj.htrqnsz2uuh-ij0qnxyx.t4qfgx.twl@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=4OAynR4R;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::64a; helo=mail-pl1-x64a.google.com; envelope-from=3hz4kaqykdhwxjfsohlttlqj.htrqnsz2uuh-ij0qnxyx.t4qfgx.twl@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-x64a.google.com (mail-pl1-x64a.google.com [IPv6:2607:f8b0:4864:20::64a])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1GPl3F35z2yvv
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 04:57:30 +1100 (AEDT)
+Received: by mail-pl1-x64a.google.com with SMTP id d9443c01a7336-29557f43d56so38463285ad.3
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Nov 2025 09:57:30 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1762279048; x=1762883848; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=kxFvD6gKxB44i1bxk1sbjy38espILrC0yFM/UcBrpew=;
+        b=4OAynR4RRAYpLGwkKy/FjBDeLu51HpPRaQCSce6xTmgDGj8Wm9iu/rzwasMDAV+YFA
+         +7j/2IJi9Hd2w+hXZrD/MQokOlKKJOt4poI3Us6Fpu/BvbleAR4RQeOQPHQGgaj8oYR6
+         QMtOkGtjvw4pRpHabOS+PK3qpW+wSS3AShEPmJV7bT6Mo4gWZDLTA06LFYGwXe26Q8So
+         ztyWqZxTYe6ZyjL7pNny3/E2Fjr56agQz9YgvnaC+B71wgOIFDu2wXXLazHD/vBiaXHD
+         ngySxvc8XYmgvhJFiYaBPfFjIF6+ZyRIY5CcqZcEevADGS/dV1+tr1U6e2Sa6WtKsULZ
+         0wdg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1762279048; x=1762883848;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=kxFvD6gKxB44i1bxk1sbjy38espILrC0yFM/UcBrpew=;
+        b=Kb8MxCHQ2DAPW73AZBIDFEczJSxXba5NBBm1W74aCzxDQYi0bFj6WNTW8UfafFS/RE
+         fk0geJS+IG8Ax9/X3C9uahNSAuaeCgAcsEY1rJXSEs6kh5Gm/dSz5iSkyd2oKovKilLo
+         lwQSFUbNp41qR97xoTqnrcHtZ6izRvsWpZjbMOSIrSeMaUTxafdrA5NoUzwJi/zeo2pF
+         oCWfQfjhjASDSAlDWBnEW/XxvbijP7ffa/OyQhWJxGepoemgX6dT6M0g9oQPgRDPrGA9
+         jwuOgtSsvlKT14jo52xNSsCf0PK6K+aRKKdm18XQJQlmkUht6kewyLz4RXU1PlpRzKt/
+         LppQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUYyQ2xr1LLffP2CbnbbSl1Zauc62iD7X9SIft+P9eI964zc439vr3C+zAfnbq/IxFzYY0QNntjRVnDjAE=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyStDzc61mbVvAEj4dlMcexhhCFKvfdryNJxDvJsRCBzAW1gxid
+	7ezJLt1Hs+HJ3vNjjZyqaUYE64XBb5HuZminFiQlja1858i5vgb+2br7sizFCVvYkH250UUAPw7
+	EL9WTGA==
+X-Google-Smtp-Source: AGHT+IFJG/V0EfaymcoM6cPfayQ+DGikxVc9kN5RoO6CmqYed2gXkivkS54tuPy9BQi+XScmFB78yDVh2jQ=
+X-Received: from plblv11.prod.google.com ([2002:a17:903:2a8b:b0:290:28e2:ce5d])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:902:ffcf:b0:295:2c8e:8e56
+ with SMTP id d9443c01a7336-2962ae715edmr5562415ad.44.1762279047867; Tue, 04
+ Nov 2025 09:57:27 -0800 (PST)
+Date: Tue, 4 Nov 2025 09:57:26 -0800
+In-Reply-To: <aQMi/n9DVyeaWsVH@yzhao56-desk.sh.intel.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -57,82 +76,42 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/flipper-pic: Fix device node reference leak in
- flipper_pic_init
-To: Miaoqian Lin <linmq006@gmail.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Jiri Slaby (SUSE)" <jirislaby@kernel.org>,
- Thomas Gleixner <tglx@linutronix.de>,
- Albert Herranz <albert_herranz@yahoo.es>,
- Grant Likely <grant.likely@secretlab.ca>,
- Segher Boessenkool <segher@kernel.crashing.org>,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Cc: stable@vger.kernel.org
-References: <20251027150914.59811-1-linmq006@gmail.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20251027150914.59811-1-linmq006@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Mime-Version: 1.0
+References: <20251017003244.186495-1-seanjc@google.com> <20251017003244.186495-5-seanjc@google.com>
+ <aPhjYcOFjL1Z8m2s@yzhao56-desk.sh.intel.com> <aQMi/n9DVyeaWsVH@yzhao56-desk.sh.intel.com>
+Message-ID: <aQo-hus99rE7WBgb@google.com>
+Subject: Re: [PATCH v3 04/25] KVM: x86/mmu: Add dedicated API to map
+ guest_memfd pfn into TDP MMU
+From: Sean Christopherson <seanjc@google.com>
+To: Yan Zhao <yan.y.zhao@intel.com>
+Cc: Marc Zyngier <maz@kernel.org>, Oliver Upton <oliver.upton@linux.dev>, 
+	Tianrui Zhao <zhaotianrui@loongson.cn>, Bibo Mao <maobibo@loongson.cn>, 
+	Huacai Chen <chenhuacai@kernel.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Anup Patel <anup@brainfault.org>, Paul Walmsley <pjw@kernel.org>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+	"Kirill A. Shutemov" <kas@kernel.org>, linux-arm-kernel@lists.infradead.org, 
+	kvmarm@lists.linux.dev, kvm@vger.kernel.org, loongarch@lists.linux.dev, 
+	linux-mips@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+	kvm-riscv@lists.infradead.org, linux-riscv@lists.infradead.org, 
+	x86@kernel.org, linux-coco@lists.linux.dev, linux-kernel@vger.kernel.org, 
+	Ira Weiny <ira.weiny@intel.com>, Kai Huang <kai.huang@intel.com>, 
+	Michael Roth <michael.roth@amd.com>, Vishal Annapurve <vannapurve@google.com>, 
+	Rick Edgecombe <rick.p.edgecombe@intel.com>, Ackerley Tng <ackerleytng@google.com>, 
+	Binbin Wu <binbin.wu@linux.intel.com>
+Content-Type: text/plain; charset="us-ascii"
 
+On Thu, Oct 30, 2025, Yan Zhao wrote:
+> On Wed, Oct 22, 2025 at 12:53:53PM +0800, Yan Zhao wrote:
+> > On Thu, Oct 16, 2025 at 05:32:22PM -0700, Sean Christopherson wrote:
+> > > Link: https://lore.kernel.org/all/20250709232103.zwmufocd3l7sqk7y@amd.com
+> > 
+> > Hi Sean,                                                                         
+> > 
+> > Will you post [1] to fix the AB-BA deadlock issue for huge page in-place
+> > conversion as well?
 
-
-Le 27/10/2025 à 16:09, Miaoqian Lin a écrit :
-> The flipper_pic_init() function calls of_get_parent() which increases
-> the device node reference count, but fails to call of_node_put() to
-> balance the reference count.
-> 
-> Add calls to of_node_put() in all paths to fix the leak.
-> 
-> Found via static analysis.
-> 
-> Fixes: 028ee972f032 ("powerpc: gamecube/wii: flipper interrupt controller support")
-> Cc: stable@vger.kernel.org
-> Signed-off-by: Miaoqian Lin <linmq006@gmail.com>
-> ---
->   arch/powerpc/platforms/embedded6xx/flipper-pic.c | 7 +++++--
->   1 file changed, 5 insertions(+), 2 deletions(-)
-> 
-> diff --git a/arch/powerpc/platforms/embedded6xx/flipper-pic.c b/arch/powerpc/platforms/embedded6xx/flipper-pic.c
-> index 91a8f0a7086e..cf6f795c8d76 100644
-> --- a/arch/powerpc/platforms/embedded6xx/flipper-pic.c
-> +++ b/arch/powerpc/platforms/embedded6xx/flipper-pic.c
-> @@ -135,13 +135,13 @@ static struct irq_domain * __init flipper_pic_init(struct device_node *np)
->   	}
->   	if (!of_device_is_compatible(pi, "nintendo,flipper-pi")) {
->   		pr_err("unexpected parent compatible\n");
-> -		goto out;
-> +		goto out_put_node;
->   	}
->   
->   	retval = of_address_to_resource(pi, 0, &res);
->   	if (retval) {
->   		pr_err("no io memory range found\n");
-> -		goto out;
-> +		goto out_put_node;
->   	}
->   	io_base = ioremap(res.start, resource_size(&res));
->   
-> @@ -154,9 +154,12 @@ static struct irq_domain * __init flipper_pic_init(struct device_node *np)
->   					      &flipper_irq_domain_ops, io_base);
->   	if (!irq_domain) {
->   		pr_err("failed to allocate irq_domain\n");
-> +		of_node_put(pi);
-
-irq_domain is NULL here so instead of adding this of_node_put() you 
-could just remove below 'return NULL' (and the {} of the if) and 
-fallthrough.
-
->   		return NULL;
->   	}
->   
-> +out_put_node:
-> +	of_node_put(pi);
->   out:
->   	return irq_domain;
->   }
-
+If you (or anyone) has the bandwidth, please pick it up.  I won't have cycles to
+look at that for many weeks (potentially not even this calendar year).
 
