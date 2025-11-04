@@ -1,50 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-13717-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13718-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3D2CDCCFA00
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Nov 2025 07:50:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 84F3ECCF9E3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Nov 2025 08:02:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d10wx46bRz3btL;
-	Tue,  4 Nov 2025 18:50:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762242609;
-	cv=none; b=Hv0PMNtK7B8HArgmuf+6iavqvEdmNMoIYEiOmHMOPS9+TqZ2qI52c7lecOa5691F/l5BMDswr3OZzj4fE5JbV+L+K4WRrgbEBXRy2CxIUDRCj7s4FNaRDLLanuy425oVFu057rFcVT87ncOh5byEUAtmCnvqfURDpZTmHcjp2dv/5HyuKY/qttmyVLTBuU/ZwbWWeKYZIEgSc6IJ7tLDUq7NnoqqtoqCu4uzcg9P28CiBRSr70NzAg0jclFc0CfznHZ7dYwWbpeFCyBGifRZNen7Su8UIuA40tDhtNSkqp02NF00voTQ0/2JB7bnERCv803A63dUHK92XbPPCX1isg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d11Bj6pxMz3bf3;
+	Tue,  4 Nov 2025 19:02:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762243325;
+	cv=none; b=UBnBaEmr4zwJoYYqTBM0tzWsv5UOcZjQC+FrZZ1iSrxq2gZ43rDV6O2MARxwlqOyuVpKKTYAbsJMNdAA424yIwXU4i5W3qZLFWIcQAw+nmkNx+7oHBJrI5cFYDltZuvUx6ZwoDi4ulHe0vv3RYUjQBXkvfzMf3qejiwIk/dOZdx0af7XoSag+9+4aC3tJxpEczmFw9A22t054MN3z/zEIppCyyjnyKkDQyMzaffjf5K4RlKwPJyCxIjuOFTubMpwtjkAUgM4j+DwMkHzOcjS/vmP5t1OpwWmvO/1MrWY2UGdgCoLfpD18CLVaEWZ6XLtC0+84c4D9+jVK3EIwgxd9A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762242609; c=relaxed/relaxed;
-	bh=r77a9FBSuLxmDUxGTny5h3cynbHJ+Txxd3jDIF3rGnU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=SdwN+fM4+M0BzAXVbsoPVY8ikPTQIQ3n9bQ2Kwnj52qUJ842jLoGxRI02ahPw+lujjx2VEVKv1tv0kKXnbQWxAlRvhFsH1ncACvkXCv7Etx83vfesjYkPUnZYo3muxgToWa0CDN+uL4O9JHzT3MCtlPWlzQqkOeLswWrvLUX7d0O9lcUkCATArCQwf3ehKxjD57ArSBM7pyCpZk9iEVtcMGTIqvfdujs1vKPu6e/vfcMEHEVvRk4KsxM2/BeCkMyTE/tvxmxO+HqTvxFLWLpSS+OvYaY2fb2ShgxL+Vnxb/gWp/bdBPMuDh52X7MEZrWkAvx4DBOCwsapLOuWhyMag==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d10wx0PW4z2xQD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Nov 2025 18:50:09 +1100 (AEDT)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4d0ylC5twsz9sS7;
-	Tue,  4 Nov 2025 07:11:35 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id 1V_DzEabRqdH; Tue,  4 Nov 2025 07:11:35 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4d0ylC4fs9z9sRy;
-	Tue,  4 Nov 2025 07:11:35 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7EE558B76C;
-	Tue,  4 Nov 2025 07:11:35 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id bDAKbX6wpuSV; Tue,  4 Nov 2025 07:11:35 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6D0C78B763;
-	Tue,  4 Nov 2025 07:11:33 +0100 (CET)
-Message-ID: <14010da0-9fba-4627-a499-e71034cd9bac@csgroup.eu>
-Date: Tue, 4 Nov 2025 07:11:30 +0100
+	t=1762243325; c=relaxed/relaxed;
+	bh=WxHg295CBRsqPu2lBIqw5Sn0fGrCLg/ElUlxqApeBLM=;
+	h=From:To:Cc:Subject:In-Reply-To:References:Date:Message-ID:
+	 MIME-Version:Content-Type; b=iLT8TFhW14+jWeibKOYBZmgAVECgKqbplJNA2JiqetVD0E+9pukBDFoa/LeZ4XZ4Kfde1mWsSEhD+7FishSTU9ASiiOQkYgoV3FRNG8zAW+Q1rNOr9tyAnqzBJHClXFpO50+Yj25q8ftvPp/jhovoYNcJWU2qLCI1yw6h2ciNBAjsupDcaalqCQD1qnfyAg7lbo3I9/OcF53GMS4kzpEe3CrJEW0woXTCDIbCeON2ZkcX11snWkKRS3Ur0BO3TDgVpZKWhRyO+Dn/YoYX7JfAz3JJR2rKEd071bR9xObICTCOkYSMWeujl4Pa+ur16uO3dL9lV8Pz0JcW4zSgcZOWA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Jgwl2Vop; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=t8JDRw+f; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=Jgwl2Vop;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=t8JDRw+f;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=tglx@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d11Bj0W1Pz2xQD
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Nov 2025 19:02:04 +1100 (AEDT)
+From: Thomas Gleixner <tglx@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1762243320;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WxHg295CBRsqPu2lBIqw5Sn0fGrCLg/ElUlxqApeBLM=;
+	b=Jgwl2VopvLhsHH+YYqRsae6+FKzyHIS0wgTmsM6zvXdnRYVO1Mp+3CjSgP12sRf79JdkIC
+	hx50TnrXAEfEN5ICnRweGj/sSAz5nUPqUFikzhoLJZNQyXaN5ymoCj4E2L3wBjx4OeG4vN
+	lcnERol2ohNQ5nXcU3OkM3UJOm2NJRST4BTxh1MoYrChOMqgAT9DLUj9eFzBzflyLWH87K
+	qqDczZQWcFWGe/iPVZhDUA34+WNIo7S9c1kgflcSpKmM0UaRdPJMv7RLP9TTDCTxs4B7XJ
+	XLq2JS1KXSF/YOo8ZUxjIZTH8AN+3Axixi4ToMHu6WXnTGvIMsd2QaBZquI9Fg==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1762243320;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WxHg295CBRsqPu2lBIqw5Sn0fGrCLg/ElUlxqApeBLM=;
+	b=t8JDRw+fUTFLMI+7oIYVrsnas628xW2/vuKmoPeHnnr/Dd9LlRlJTGnA4BulGKiXBQPkro
+	pOJgImdDLmiQK4AQ==
+To: Christophe Leroy <christophe.leroy@csgroup.eu>, Alexander Viro
+ <viro@zeniv.linux.org.uk>, Christian Brauner <brauner@kernel.org>, Jan
+ Kara <jack@suse.cz>, Ingo Molnar <mingo@redhat.com>, Peter Zijlstra
+ <peterz@infradead.org>, Darren Hart <dvhart@infradead.org>, Davidlohr
+ Bueso <dave@stgolabs.net>, Andre Almeida <andrealmeid@igalia.com>, Andrew
+ Morton <akpm@linux-foundation.org>, Eric Dumazet <edumazet@google.com>,
+ Kuniyuki Iwashima <kuniyu@google.com>, Paolo Abeni <pabeni@redhat.com>,
+ Willem de Bruijn <willemb@google.com>, "David S. Miller"
+ <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>, Simon Horman
+ <horms@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>, Dave Hansen
+ <dave.hansen@linux.intel.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+Subject: Re: [PATCH v3 03/10] uaccess: Add
+ masked_user_{read/write}_access_begin
+In-Reply-To: <01d89f24-8fca-4fc3-9f48-79e28b9663db@csgroup.eu>
+References: <cover.1760529207.git.christophe.leroy@csgroup.eu>
+ <a4ef0a8e1659805c60fafc8d3b073ecd08117241.1760529207.git.christophe.leroy@csgroup.eu>
+ <87bjlyyiii.ffs@tglx> <01d89f24-8fca-4fc3-9f48-79e28b9663db@csgroup.eu>
+Date: Tue, 04 Nov 2025 09:01:58 +0100
+Message-ID: <875xbqw7ih.ffs@tglx>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,237 +88,42 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [patch V5 02/12] uaccess: Provide ASM GOTO safe wrappers for
- unsafe_*_user()
-To: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>,
- kernel test robot <lkp@intel.com>, Russell King <linux@armlinux.org.uk>,
- linux-arm-kernel@lists.infradead.org, x86@kernel.org,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- linuxppc-dev@lists.ozlabs.org, Paul Walmsley <pjw@kernel.org>,
- Palmer Dabbelt <palmer@dabbelt.com>, linux-riscv@lists.infradead.org,
- Heiko Carstens <hca@linux.ibm.com>,
- Christian Borntraeger <borntraeger@linux.ibm.com>,
- Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
- Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
- Andrew Cooper <andrew.cooper3@citrix.com>,
- David Laight <david.laight.linux@gmail.com>,
- Julia Lawall <Julia.Lawall@inria.fr>, Nicolas Palix <nicolas.palix@imag.fr>,
- Peter Zijlstra <peterz@infradead.org>, Darren Hart <dvhart@infradead.org>,
- Davidlohr Bueso <dave@stgolabs.net>, =?UTF-8?Q?Andr=C3=A9_Almeida?=
- <andrealmeid@igalia.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
- Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
- linux-fsdevel@vger.kernel.org
-References: <20251027083700.573016505@linutronix.de>
- <20251027083745.231716098@linutronix.de>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20251027083745.231716098@linutronix.de>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Transfer-Encoding: quoted-printable
 
+On Tue, Nov 04 2025 at 07:39, Christophe Leroy wrote:
+> Le 22/10/2025 =C3=A0 19:05, Thomas Gleixner a =C3=A9crit=C2=A0:
+>> On Fri, Oct 17 2025 at 12:20, Christophe Leroy wrote:
+>>> Allthough masked_user_access_begin() is to only be used when reading
+>>> data from user at the moment, introduce masked_user_read_access_begin()
+>>> and masked_user_write_access_begin() in order to match
+>>> user_read_access_begin() and user_write_access_begin().
+>>>
+>>> That means masked_user_read_access_begin() is used when user memory is
+>>> exclusively read during the window, masked_user_write_access_begin()
+>>> is used when user memory is exclusively writen during the window,
+>>> masked_user_access_begin() remains and is used when both reads and
+>>> writes are performed during the open window. Each of them is expected
+>>> to be terminated by the matching user_read_access_end(),
+>>> user_write_access_end() and user_access_end().
+>>>
+>>> Have them default to masked_user_access_begin() when they are
+>>> not defined.
+>>>
+>>> Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+>>=20
+>> Can we please coordinate on that vs. the scoped_access() work as this
+>> nicely collides all over the place?
+>
+> Sure, I will rebase on top of your series.
+>
+> Once it is rebased, could you take the non powerpc patches in your tree ?
 
+Sure. The current lot is at:
 
-Le 27/10/2025 à 09:43, Thomas Gleixner a écrit :
-> ASM GOTO is miscompiled by GCC when it is used inside a auto cleanup scope:
-> 
-> bool foo(u32 __user *p, u32 val)
-> {
-> 	scoped_guard(pagefault)
-> 		unsafe_put_user(val, p, efault);
-> 	return true;
-> efault:
-> 	return false;
-> }
-> 
->   e80:	e8 00 00 00 00       	call   e85 <foo+0x5>
->   e85:	65 48 8b 05 00 00 00 00 mov    %gs:0x0(%rip),%rax
->   e8d:	83 80 04 14 00 00 01 	addl   $0x1,0x1404(%rax)   // pf_disable++
->   e94:	89 37                	mov    %esi,(%rdi)
->   e96:	83 a8 04 14 00 00 01 	subl   $0x1,0x1404(%rax)   // pf_disable--
->   e9d:	b8 01 00 00 00       	mov    $0x1,%eax           // success
->   ea2:	e9 00 00 00 00       	jmp    ea7 <foo+0x27>      // ret
->   ea7:	31 c0                	xor    %eax,%eax           // fail
->   ea9:	e9 00 00 00 00       	jmp    eae <foo+0x2e>      // ret
-> 
-> which is broken as it leaks the pagefault disable counter on failure.
+  git://git.kernel.org/pub/scm/linux/kernel/git/tip/tip.git scoped-uaccess
 
-Is there a GCC bug report for it ?
+Thanks,
 
-> 
-> Clang at least fails the build.
-
-Is it expected ? Is the error message meaningfull ?
-
-> 
-> Linus suggested to add a local label into the macro scope and let that
-> jump to the actual caller supplied error label.
-> 
->         	__label__ local_label;                                  \
->          arch_unsafe_get_user(x, ptr, local_label);              \
-> 	if (0) {                                                \
-> 	local_label:                                            \
-> 		goto label;                                     \
-
-That's in a while loop so it would have been cleaner (more readable) to 
-break instead of that ugly if(0), see __get_user_size_allowed() in 
-powerpc uaccess.h
-
-> 
-> That works for both GCC and clang.
-> 
-> clang:
-> 
->   c80:	0f 1f 44 00 00       	   nopl   0x0(%rax,%rax,1)	
->   c85:	65 48 8b 0c 25 00 00 00 00 mov    %gs:0x0,%rcx
->   c8e:	ff 81 04 14 00 00    	   incl   0x1404(%rcx)	   // pf_disable++
->   c94:	31 c0                	   xor    %eax,%eax        // set retval to false
->   c96:	89 37                      mov    %esi,(%rdi)      // write
->   c98:	b0 01                	   mov    $0x1,%al         // set retval to true
->   c9a:	ff 89 04 14 00 00    	   decl   0x1404(%rcx)     // pf_disable--
->   ca0:	2e e9 00 00 00 00    	   cs jmp ca6 <foo+0x26>   // ret
-> 
-> The exception table entry points correctly to c9a
-> 
-> GCC:
-> 
->   f70:   e8 00 00 00 00          call   f75 <baz+0x5>
->   f75:   65 48 8b 05 00 00 00 00 mov    %gs:0x0(%rip),%rax
->   f7d:   83 80 04 14 00 00 01    addl   $0x1,0x1404(%rax)  // pf_disable++
->   f84:   8b 17                   mov    (%rdi),%edx
->   f86:   89 16                   mov    %edx,(%rsi)
->   f88:   83 a8 04 14 00 00 01    subl   $0x1,0x1404(%rax) // pf_disable--
->   f8f:   b8 01 00 00 00          mov    $0x1,%eax         // success
->   f94:   e9 00 00 00 00          jmp    f99 <baz+0x29>    // ret
->   f99:   83 a8 04 14 00 00 01    subl   $0x1,0x1404(%rax) // pf_disable--
->   fa0:   31 c0                   xor    %eax,%eax         // fail
->   fa2:   e9 00 00 00 00          jmp    fa7 <baz+0x37>    // ret
-> 
-> The exception table entry points correctly to f99
-> 
-> So both compilers optimize out the extra goto and emit correct and
-> efficient code.
- > > Provide a generic wrapper to do that to avoid modifying all the 
-affected
-> architecture specific implementation with that workaround.
-> 
-> The only change required for architectures is to rename unsafe_*_user() to
-> arch_unsafe_*_user(). That's done in subsequent changes.
-> 
-> Suggested-by: Linus Torvalds <torvalds@linux-foundation.org>
-> Signed-off-by: Thomas Gleixner <tglx@linutronix.de>
-
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-
-
-> ---
->   include/linux/uaccess.h |   72 +++++++++++++++++++++++++++++++++++++++++++++---
->   1 file changed, 68 insertions(+), 4 deletions(-)
-> 
-> --- a/include/linux/uaccess.h
-> +++ b/include/linux/uaccess.h
-> @@ -518,7 +518,34 @@ long strncpy_from_user_nofault(char *dst
->   		long count);
->   long strnlen_user_nofault(const void __user *unsafe_addr, long count);
->   
-> -#ifndef __get_kernel_nofault
-> +#ifdef arch_get_kernel_nofault
-> +/*
-> + * Wrap the architecture implementation so that @label can be outside of a
-> + * cleanup() scope. A regular C goto works correctly, but ASM goto does
-> + * not. Clang rejects such an attempt, but GCC silently emits buggy code.
-> + */
-> +#define __get_kernel_nofault(dst, src, type, label)		\
-> +do {								\
-> +	__label__ local_label;					\
-> +	arch_get_kernel_nofault(dst, src, type, local_label);	\
-> +	if (0) {						\
-> +	local_label:						\
-> +		goto label;					\
-> +	}							\
-> +} while (0)
-> +
-> +#define __put_kernel_nofault(dst, src, type, label)		\
-> +do {								\
-> +	__label__ local_label;					\
-> +	arch_get_kernel_nofault(dst, src, type, local_label);	\
-> +	if (0) {						\
-> +	local_label:						\
-> +		goto label;					\
-> +	}							\
-> +} while (0)
-> +
-> +#elif !defined(__get_kernel_nofault) /* arch_get_kernel_nofault */
-> +
->   #define __get_kernel_nofault(dst, src, type, label)	\
->   do {							\
->   	type __user *p = (type __force __user *)(src);	\
-> @@ -535,7 +562,8 @@ do {							\
->   	if (__put_user(data, p))			\
->   		goto label;				\
->   } while (0)
-> -#endif
-> +
-> +#endif  /* !__get_kernel_nofault */
->   
->   /**
->    * get_kernel_nofault(): safely attempt to read from a location
-> @@ -549,7 +577,42 @@ do {							\
->   	copy_from_kernel_nofault(&(val), __gk_ptr, sizeof(val));\
->   })
->   
-> -#ifndef user_access_begin
-> +#ifdef user_access_begin
-> +
-> +#ifdef arch_unsafe_get_user
-> +/*
-> + * Wrap the architecture implementation so that @label can be outside of a
-> + * cleanup() scope. A regular C goto works correctly, but ASM goto does
-> + * not. Clang rejects such an attempt, but GCC silently emits buggy code.
-> + *
-> + * Some architectures use internal local labels already, but this extra
-> + * indirection here is harmless because the compiler optimizes it out
-> + * completely in any case. This construct just ensures that the ASM GOTO
-> + * target is always in the local scope. The C goto 'label' works correct
-> + * when leaving a cleanup() scope.
-> + */
-> +#define unsafe_get_user(x, ptr, label)			\
-> +do {							\
-> +	__label__ local_label;				\
-> +	arch_unsafe_get_user(x, ptr, local_label);	\
-> +	if (0) {					\
-> +	local_label:					\
-> +		goto label;				\
-> +	}						\
-> +} while (0)
-> +
-> +#define unsafe_put_user(x, ptr, label)			\
-> +do {							\
-> +	__label__ local_label;				\
-> +	arch_unsafe_put_user(x, ptr, local_label);	\
-> +	if (0) {					\
-> +	local_label:					\
-> +		goto label;				\
-> +	}						\
-> +} while (0)
-> +#endif /* arch_unsafe_get_user */
-> +
-> +#else /* user_access_begin */
->   #define user_access_begin(ptr,len) access_ok(ptr, len)
->   #define user_access_end() do { } while (0)
->   #define unsafe_op_wrap(op, err) do { if (unlikely(op)) goto err; } while (0)
-> @@ -559,7 +622,8 @@ do {							\
->   #define unsafe_copy_from_user(d,s,l,e) unsafe_op_wrap(__copy_from_user(d,s,l),e)
->   static inline unsigned long user_access_save(void) { return 0UL; }
->   static inline void user_access_restore(unsigned long flags) { }
-> -#endif
-> +#endif /* !user_access_begin */
-> +
->   #ifndef user_write_access_begin
->   #define user_write_access_begin user_access_begin
->   #define user_write_access_end user_access_end
-> 
-
+        tglx
 
