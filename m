@@ -1,92 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-13743-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13745-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D0E9CCFA04
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Nov 2025 13:29:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D38E3CCF9E3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Nov 2025 14:20:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d18Sn1VZ4z3bf3;
-	Wed,  5 Nov 2025 00:29:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762262985;
-	cv=none; b=WA+EAEE6yw3f6wOefO5F05CLdZtXXgj7I2bNjB7qYiQQI70sIeHorfbYpVDjAlVC6107gBvhROIVXZwGWfSkDc+tWQJvqJx1kwjWhb2NYw/sbCkcAWxvmreorAgJi42VO5md6S1cr4L2GW8QB0sytXEvemcC0fuN0hLQCtKXkPXV6b6B3yXg5Tkodq3FgOFB5zsqwvPaCJMbP1T12edz5UWUr84NNLFvPr8XpJbfrlI4dmlXCAjRAairj4bz2mPbO+3vp1bBWgkVKQSD5tsdw1yHhEr+6QD/04EVkGkhsrUWBWZUNh1k1p234N+0EC75h6DSkXNXvBVweezlRJb8Vw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d19Zw3g07z3bfV;
+	Wed,  5 Nov 2025 01:20:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762266008;
+	cv=none; b=jU3AihCBOKsiAwPwEGQZ5VlVGUBLeBhREbyn5g4rtFiCEU5BWozrhJlBdeq+mI2Uc++AWSOOhdzV9CW2lj/r16sbFvK0wW9i6SorJ4TswpbuI2N0cNMV/rT3Gs0r4MrhIOmgwa3Gy4O326izkX1n6DTo2DiCq/Nw+TGIzezA9pev8NZ8vpCKpf+FwRbjH96VNt7Lr5gCuIOxNU+TKS+MEqqizk7oYWUNQaidbyd5gC3T6Hfdm2+uM0QBGWxGuHJi/I4j0wYFsf3XxcAQ9AAiYHo7EzHUriILa+j/mQIIuf3D/wD6hd+FcAd5E8Ird6HTWz159e6snYxUBB73/cwv7A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762262985; c=relaxed/relaxed;
-	bh=azAivItrY49K4UEWYLYRHt/ABH+lv/uzEUAK+JesQvU=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=WFbb8JQCFaCNXY/zfXnbxG3EgDJO6yrbSEYTbXPWfRo99o6NLveVhXXBNSM/xMIPyZH1yUSOEXG2TzQc8QzS/YBa7U7rM4U5wfiqkhlVPT98cwlCvVMtWH5aGm64rg+O3dy8PEwG7eHdEBn0IlWLBuI0bBWBS+OcundOZXfd3plaBjtdIIFP9o/ceKrksyqpVgjoTc/N58jf879ZKY9IDRt9dU39rgOrvYQHmTcCIUlwGb6w8bp3599WbhIr5mpP8v4pkv9Mibl8/sVZCsQM6KfV+ba8KDqhcjDi7Jbz4QFvrfNJ1Fa6AoTvRjzJ1gslDYIynChoX164UXzb9pGfGg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=F7Hjr3XX; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=F7Hjr3XX;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d18Sm1qD7z304H
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 00:29:44 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 1D5D9601EE;
-	Tue,  4 Nov 2025 13:29:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3A062C116C6;
-	Tue,  4 Nov 2025 13:29:41 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762262981;
-	bh=azAivItrY49K4UEWYLYRHt/ABH+lv/uzEUAK+JesQvU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=F7Hjr3XXl0wQ6S3iFdZF1fsWAaniWWYVjMUMFOIJoxwxwG7Pdt5Q0uoBuKT25gqwg
-	 lEz+KP3L9DEWhfwLtWQyANZbT349w+tMTDOFwZKz33/HLWZtWtJ6dR2iveJMA4OzRX
-	 erIpsHPp7L5Mb1SU6CLwmjZR8Jcdzc4vfBaVHd5T5hzMrsk3QEdctGHJa6D8Mjc0c6
-	 5LLMlS9wnVeGjT7cisTQFuxpFn/c3zVixGIreOkBM+QBI8NyzYNm8+6L8x0GlqVCk4
-	 h09XYJA7Qt/yd9XY2mSb9HhEa2mV76Vaia8dMabqnpGlCecthwd/NVPosoImOzatBm
-	 3ebOICKClbf8w==
-Date: Tue, 4 Nov 2025 13:29:38 +0000
-From: Mark Brown <broonie@kernel.org>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Thomas =?iso-8859-1?Q?Wei=DFschuh?= <thomas.weissschuh@linutronix.de>,
-	Andy Lutomirski <luto@kernel.org>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Vincenzo Frascino <vincenzo.frascino@arm.com>,
-	Arnd Bergmann <arnd@arndb.de>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Nick Alcock <nick.alcock@oracle.com>,
-	John Stultz <jstultz@google.com>, Stephen Boyd <sboyd@kernel.org>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Shuah Khan <shuah@kernel.org>,
-	Catalin Marinas <catalin.marinas@arm.com>,
-	Will Deacon <will@kernel.org>, Theodore Ts'o <tytso@mit.edu>,
-	"Jason A. Donenfeld" <Jason@zx2c4.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Huacai Chen <chenhuacai@kernel.org>,
-	WANG Xuerui <kernel@xen0n.name>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	Nagarathnam Muthusamy <nagarathnam.muthusamy@oracle.com>,
-	Shannon Nelson <sln@onemain.com>, linux-kernel@vger.kernel.org,
-	sparclinux@vger.kernel.org, linux-kselftest@vger.kernel.org,
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
-	loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
-	linux-s390@vger.kernel.org, Aishwarya.TCV@arm.com
-Subject: Re: [PATCH v4 23/35] vdso/datastore: Map pages through struct page
-Message-ID: <aQn_wgG6bLhDL0xJ@finisterre.sirena.org.uk>
-References: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
- <20251014-vdso-sparc64-generic-2-v4-23-e0607bf49dea@linutronix.de>
- <aQjJNmwniQwwjeBR@finisterre.sirena.org.uk>
- <CGME20251104084442eucas1p2af1bd88393f4d6a532df1cd41f32a287@eucas1p2.samsung.com>
- <e7f05748-a11c-47eb-b1fa-cdc9dc6d05e0@samsung.com>
+	t=1762266008; c=relaxed/relaxed;
+	bh=Ivhia2P31L3ei0jVhnnZos8lhDkPjPtGSI3kUzzKNKg=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=AAkCyH5bQ4g082R4AqCNpLsSkO4IdrIYcK6Qxoq3MehtS6yPMsqRa7UfjZQ/lnWFtw2sg4Sya8bq/tb1VPw89C/a8Z7nP1o+sDY3JWncYN3Ay1qdHPvGfwDAH+vciLqX8sHIZ1Uko5nmhxvcARFLfOp8Nre8at904PQdI0Rx4y2jx4d8BNP/5SeYG/x5iIFVepDj3LBd5UJ06U2YnFfDu35zYGX1FVSj8zN9gYSXyBSgkfhL6KNgIfy2m3d5rpKN8a/Y3nJ8fnJvDR2O6Tf43NHk3NsGTHroLLpYDeRunRQjsmNWNsymFLZda3Y3k6D8+rCSc1/F8cHwVOLuMC4bsw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d19Zv3h4Nz3bf8
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 01:20:06 +1100 (AEDT)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4d0zGM0Zbtz9sSh;
+	Tue,  4 Nov 2025 07:35:07 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id I4w3aEv5EITr; Tue,  4 Nov 2025 07:35:06 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4d0zGL6PZFz9sSg;
+	Tue,  4 Nov 2025 07:35:06 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C4D928B76C;
+	Tue,  4 Nov 2025 07:35:06 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id fs4pJqTtKSTf; Tue,  4 Nov 2025 07:35:06 +0100 (CET)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C60B08B763;
+	Tue,  4 Nov 2025 07:35:04 +0100 (CET)
+Message-ID: <e0795f90-1030-4954-aefc-be137e9db49e@csgroup.eu>
+Date: Tue, 4 Nov 2025 07:35:04 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,51 +58,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="+bUc+8DkjVNeTm22"
-Content-Disposition: inline
-In-Reply-To: <e7f05748-a11c-47eb-b1fa-cdc9dc6d05e0@samsung.com>
-X-Cookie: If in doubt, mumble.
+User-Agent: Mozilla Thunderbird
+Subject: Re: [patch V5 00/12] uaccess: Provide and use scopes for user access
+To: Thomas Gleixner <tglx@linutronix.de>, LKML <linux-kernel@vger.kernel.org>
+Cc: kernel test robot <lkp@intel.com>, Russell King <linux@armlinux.org.uk>,
+ linux-arm-kernel@lists.infradead.org,
+ Linus Torvalds <torvalds@linux-foundation.org>, x86@kernel.org,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
+ linuxppc-dev@lists.ozlabs.org, Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, linux-riscv@lists.infradead.org,
+ Heiko Carstens <hca@linux.ibm.com>,
+ Christian Borntraeger <borntraeger@linux.ibm.com>,
+ Sven Schnelle <svens@linux.ibm.com>, linux-s390@vger.kernel.org,
+ Mathieu Desnoyers <mathieu.desnoyers@efficios.com>,
+ Andrew Cooper <andrew.cooper3@citrix.com>,
+ David Laight <david.laight.linux@gmail.com>,
+ Julia Lawall <Julia.Lawall@inria.fr>, Nicolas Palix <nicolas.palix@imag.fr>,
+ Peter Zijlstra <peterz@infradead.org>, Darren Hart <dvhart@infradead.org>,
+ Davidlohr Bueso <dave@stgolabs.net>, =?UTF-8?Q?Andr=C3=A9_Almeida?=
+ <andrealmeid@igalia.com>, Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+ linux-fsdevel@vger.kernel.org
+References: <20251027083700.573016505@linutronix.de>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <20251027083700.573016505@linutronix.de>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
 
---+bUc+8DkjVNeTm22
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
 
-On Tue, Nov 04, 2025 at 09:44:38AM +0100, Marek Szyprowski wrote:
+Le 27/10/2025 à 09:43, Thomas Gleixner a écrit :
+> This is a follow up on the V4 feedback:
+> 
+>     https://lore.kernel.org/20251022102427.400699796@linutronix.de
+> 
+> Changes vs. V4:
+> 
+>    - Rename get/put_user_masked() to get/put_user_inline()
+> 
+>    - Remove the futex helpers. Keep the inline get/put for now as it needs
+>      more testing whether they are really valuable.
+> 
+>    - Picked up tags
+> 
+> The series is based on v6.18-rc1 and also available from git:
+> 
+>      git://git.kernel.org/pub/scm/linux/kernel/git/tglx/devel.git uaccess/scoped
+> 
 
-> I got almost the same result while bisecting on ARM 32bit Exynos-based=20
-> boards, so the issue with this patchset is not fully ARM64 specific. For=
-=20
-> some reasons it also doesn't affect all systems though. It is even=20
-> worse, because it affected only a subset of boards, but different for=20
-> each tested commit. The observed failure looks exactly the same:
+move_addr_to_user() in net/socket.c and put_cmsg() in net/core/scm.c 
+should be converted as well
 
-I'm also seeing other architectures affected looking at -next, I see the
-Avenger96 (32 bit Arm) and VisionFive 2 (RISC-V) with bisects coming out
-on the merge of the branch or on
+Christophe
 
-# first bad commit: [10d91dac2ea5ddf04e647cf862430d1051adb839] vdso/datasto=
-re: Allocate data pages dynamically
+> Thanks,
+> 
+> 	tglx
+> ---
+> Thomas Gleixner (12):
+>        ARM: uaccess: Implement missing __get_user_asm_dword()
+>        uaccess: Provide ASM GOTO safe wrappers for unsafe_*_user()
+>        x86/uaccess: Use unsafe wrappers for ASM GOTO
+>        powerpc/uaccess: Use unsafe wrappers for ASM GOTO
+>        riscv/uaccess: Use unsafe wrappers for ASM GOTO
+>        s390/uaccess: Use unsafe wrappers for ASM GOTO
+>        uaccess: Provide scoped user access regions
+>        uaccess: Provide put/get_user_inline()
+>        coccinelle: misc: Add scoped_masked_$MODE_access() checker script
+>        futex: Convert to get/put_user_inline()
+>        x86/futex: Convert to scoped user access
+>        select: Convert to scoped user access
+> 
+>   arch/arm/include/asm/uaccess.h               |   26 ++
+>   arch/powerpc/include/asm/uaccess.h           |    8
+>   arch/riscv/include/asm/uaccess.h             |    8
+>   arch/s390/include/asm/uaccess.h              |    4
+>   arch/x86/include/asm/futex.h                 |   75 ++----
+>   arch/x86/include/asm/uaccess.h               |   12 -
+>   fs/select.c                                  |   12 -
+>   include/linux/uaccess.h                      |  314 ++++++++++++++++++++++++++-
+>   kernel/futex/core.c                          |    4
+>   kernel/futex/futex.h                         |   58 ----
+>   scripts/coccinelle/misc/scoped_uaccess.cocci |  108 +++++++++
+>   11 files changed, 501 insertions(+), 128 deletions(-)
+> 
 
-It looks like the uniprocessor boards I've got (at91sam9g20ek,
-BeagleBone Black) are running fine.
-
---+bUc+8DkjVNeTm22
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEreZoqmdXGLWf4p/qJNaLcl1Uh9AFAmkJ/8EACgkQJNaLcl1U
-h9CpkAf6A+69+z2QXStQyH9xpQ9GPBEq+tDAXKjipsigRts9dJxv2bGY1a5Dh8au
-FBJQ/jhD8D2X6RlQHTv40vs6tG60GIngt24OmI3FasOGwxXhtwBcLaS0aHHlYUUt
-qLVORv6xfBq3F6/wDzQ1aIDlPTIy400fD/eCJUwI083H1txPvzlYMm12cIWIiJ8u
-bT8xDPGVKJtPEbLohQkWfoI6tPvxoDxzOGziUwQMi4XK8U2/4cEhIPve/Aa9GbpF
-+ZCmks9cF4bslJWUjVPor98/kGlIRc722fvvOaukvYQv8rrS79j7XNfo78Bw/d3g
-b6y91B0A7gLZU52AavqrMnJTlHXHQQ==
-=LyBm
------END PGP SIGNATURE-----
-
---+bUc+8DkjVNeTm22--
 
