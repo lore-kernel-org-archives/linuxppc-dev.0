@@ -1,65 +1,100 @@
-Return-Path: <linuxppc-dev+bounces-13751-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13752-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E766BCCFA07
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Nov 2025 17:01:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5BA34CCFA05
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Nov 2025 17:41:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d1F8m0Xv5z3bfM;
-	Wed,  5 Nov 2025 04:01:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762275672;
-	cv=none; b=E7r16LnHVPxGjiu7tYVqqgq0X5J+hXJKDAugYJawhaW9eFNgutgzYj3VS9+9EwDSfUXo6c1jXX3X7UvLzPf0uRh9POnrgKS9YIldDXzIrU96JF/YnImkeTSPlAyw1XTs8uWjzEdaRvjROvHobuBvRbNPEI3UaCRI+gakJ5bxJ3239FJTx0uM4OmwI7/ywwyamIdBwLK3D6ntvTFP71vDkLT8KlVDzSr8yOhD3Pc+vSU8ieqVbC1tuIznUfU/C8/3/GwcWs2/ZtVGLHVUJZSbjd0rw02Vy2/SHPEp1PbTiDUvx+mLAysuWS3aAfTCT/pMxWeGTtMHZD23nHZvZ6IFAg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d1G3B6MCDz3bf3;
+	Wed,  5 Nov 2025 04:41:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.13
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762278086;
+	cv=none; b=IRKgZn0ck1uHo2m4hNNuH0xXLSdjXGqcz0Yh8PFx82YQmmF+qJ63eH68ee6rbW+/ItYplPkJmA/s+zyUvvasXxKjoM8QO4sbt/pt2PFmPDaZQgp8+F+phjPik57q122cDIPbZranDENzU904PeV2tJDOoCwmQlfVWSp5N9q/vwuADRAiRPM9pcHTRfzh/xcTXZt7HrWI+XUeERp7qAouKRZISQdooDYAVgY8z2J/QrgD5izmBBJI20cRPLu8nxmLiSymOcppxTdXd4Ysz2s32CRbedgB1BYKnE7DvyyCqcW9L14Aj6OLJW+vKHykTmRNwtQAY5T1+MN7OHwwnq98JA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762275672; c=relaxed/relaxed;
-	bh=msCviUOqQwqvVyFOk3rEYYAZXEGn9KpBa6b6nSF729k=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=oFO6Hl7RAZYDaIOwFy9kucGHSieMQsUPeD08ae4dqrQ4W4Lg66/uBHWj/Vh9ECcYDHP9eg/mGGA0YkFm5WVjS8/7H4Zww3d/2cejxTXy3Hp148spTxjywbp6Y4oxiby2lr3sC/nA7VIe3r2fletkua81JWAZC7F8jzV76KVdgnx9e9V2KLsb57zkuYyGAeQcA0n1oHicakNKVCPvC3O4JhM5Qq99WhS99obBm8yeG3d2JfllXoUva35hUjETciEEQu+EMWd5r1knqYEJlCR+urgAfR1DXD5f4mKIPwWDAFaFzWniDwVrijqqJAcd59Ot88UoKwvesciSXPt1/8kefQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HUOSlfUN; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1762278086; c=relaxed/relaxed;
+	bh=CexO/OVQDyeFXgh1oOwUbz1dx+z2EyieE0VkCVn42l4=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=lDy+Qs2+/Yr0o5o9YsJw/hWTAAndhuPmALnSuSENmoUKLrYO6Vnl3vAoAmRUXkB/GMzgh1X1W2X7eYcxoRM6dXuDJZyvC7PZrVXSmXaLY3qTIfH+y+Z+ifkyjKADz6aMyTffBGuJgT+CjMjXM2IQ7nVlVOjMjFpSHN9/LjRQxCzBmFOvEc89w5nYOue++zThCAsWdsCoUaExVJ41sJIy5zvCps710ftYXCkJyMNPY1e6CU6PS6Wt+eXT5sv8JEaIMlZxHqzWuHzcIRttkIbaJ9kMXULnl6Hh+sxd2cDjIIZ1s4x0MEJvxsUO3qT+h/skQpVwzF4sZZMF+Xz70keVWA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nSyHKeKx; dkim-atps=neutral; spf=pass (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=fabio.m.de.francesco@linux.intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HUOSlfUN;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=nSyHKeKx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.intel.com (client-ip=198.175.65.13; helo=mgamail.intel.com; envelope-from=fabio.m.de.francesco@linux.intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.13])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1F8l1PMYz3bf8
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 04:01:11 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 191F04053E;
-	Tue,  4 Nov 2025 17:01:09 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D304CC4CEF7;
-	Tue,  4 Nov 2025 17:01:06 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762275669;
-	bh=A5hVs65aVEjMq28wLqSGze1IxyHY/ziAOGAuCp034rU=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=HUOSlfUNGPF0XIHP239Y3KM2928OhCG/CMcUKqlFDLASvpETQEkQyq/5IIazW/w0S
-	 wInfDwWPBMyjRGsWLjHji+VtSUmxr28A4Syxr1a8f6JDcmbgHgYXhzvxBehospKbPY
-	 SycxH1UXRaCXTqPoV3f5LW00sD3+9313yA8FXb24FCOLAX7zrPwzO9DpiRLboBc+q8
-	 XvqilpF5OoYQu2ZINL4nfSnnxZw+7XzH/WHKCq/ul1vcOF+zJPWHp36JIkyRwa+XAl
-	 xJNKMGlLBKmIYLfr7tlTyGKkieEXhikFDwc0DjZu8FvZx7ckV+dqpodmIY69IEzor7
-	 J4gJgJaSqDntQ==
-Date: Tue, 4 Nov 2025 10:01:04 -0700
-From: Nathan Chancellor <nathan@kernel.org>
-To: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Lee Jones <lee@kernel.org>, Daniel Thompson <danielt@kernel.org>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Simona Vetter <simona.vetter@ffwll.ch>,
-	linuxppc-dev@lists.ozlabs.org, patches@lists.linux.dev
-Subject: Re: [PATCH 2/2] macintosh/via-pmu-backlight: Include linux/of.h and
- uapi/linux/fb.h
-Message-ID: <20251104170104.GA1416336@ax162>
-References: <20250925-ppc-fixes-for-backlight-fb-h-removal-v1-0-d256858d86a6@kernel.org>
- <20250925-ppc-fixes-for-backlight-fb-h-removal-v1-2-d256858d86a6@kernel.org>
- <c1aecfba-fa12-4572-885d-925e9afa1494@suse.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1G374rFSz2yvv
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 04:41:21 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1762278084; x=1793814084;
+  h=from:to:cc:subject:date:message-id:in-reply-to:
+   references:mime-version:content-transfer-encoding;
+  bh=umIjh2hxElKZEt0hMfWdEeuXiD8zOf8YcvUahdfvxcI=;
+  b=nSyHKeKx0Kt51Qi7hXm6O8zmexZVcPBSnx9TPcXWYY44/rVFUD6qYXi3
+   kzP4HGVzudyCvit27RCXNw6b+q/xAEAirw3+aBjFM0ZoZjyvThbTZyTWZ
+   cj6DQHDmjG1Ry6QkH7Da7PRKA9ofJL3oMk5T8WQN+7HcYwQixOad+Iwcx
+   NZ6Z/jkzox6I450UzT0lnfqo31ovgdUTweKymbBlACpzVoKDlrsX0dc5h
+   EdkThhMWFnwo5+XXrrM7bAWHNAep+NT/cSSJtC5eifmX73zoEwA7wyHX0
+   rhdq3TQnmlT8VhDYeTgzvpLO4X0DEbv6dPt5YNZUvyxIo/MEi5T6jujI5
+   Q==;
+X-CSE-ConnectionGUID: RFb9GFJjSUObU+qWataSdA==
+X-CSE-MsgGUID: XA9NHX5jQySfipfh1H7NaQ==
+X-IronPort-AV: E=McAfee;i="6800,10657,11603"; a="75492251"
+X-IronPort-AV: E=Sophos;i="6.19,279,1754982000"; 
+   d="scan'208";a="75492251"
+Received: from orviesa005.jf.intel.com ([10.64.159.145])
+  by orvoesa105.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Nov 2025 09:41:19 -0800
+X-CSE-ConnectionGUID: fxvhx8QBR6a2sC+c/6MBTA==
+X-CSE-MsgGUID: UD5GfdqfRcGrhfQvZcmZFA==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.19,279,1754982000"; 
+   d="scan'208";a="192384949"
+Received: from fdefranc-mobl3.ger.corp.intel.com (HELO fdefranc-mobl3.localnet) ([10.245.246.211])
+  by orviesa005-auth.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 04 Nov 2025 09:41:07 -0800
+From: "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>
+To: Jonathan Cameron <jonathan.cameron@huawei.com>
+Cc: linux-cxl@vger.kernel.org, "Rafael J . Wysocki" <rafael@kernel.org>,
+ Len Brown <lenb@kernel.org>, Tony Luck <tony.luck@intel.com>,
+ Borislav Petkov <bp@alien8.de>, Hanjun Guo <guohanjun@huawei.com>,
+ Mauro Carvalho Chehab <mchehab@kernel.org>,
+ Shuai Xue <xueshuai@linux.alibaba.com>, Davidlohr Bueso <dave@stgolabs.net>,
+ Dave Jiang <dave.jiang@intel.com>,
+ Alison Schofield <alison.schofield@intel.com>,
+ Vishal Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>,
+ Dan Williams <dan.j.williams@intel.com>,
+ Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+ Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
+ Sunil V L <sunilvl@ventanamicro.com>, Xiaofei Tan <tanxiaofei@huawei.com>,
+ Mario Limonciello <mario.limonciello@amd.com>,
+ Huacai Chen <chenhuacai@kernel.org>,
+ Heinrich Schuchardt <heinrich.schuchardt@canonical.com>,
+ Arnd Bergmann <arnd@arndb.de>, Peter Zijlstra <peterz@infradead.org>,
+ Ingo Molnar <mingo@kernel.org>, Guo Weikang <guoweikang.kernel@gmail.com>,
+ Xin Li <xin@zytor.com>, Will Deacon <will@kernel.org>,
+ Huang Yiwei <quic_hyiwei@quicinc.com>, Gavin Shan <gshan@redhat.com>,
+ Smita Koralahalli <Smita.KoralahalliChannabasappa@amd.com>,
+ Uwe =?UTF-8?B?S2xlaW5lLUvDtm5pZw==?= <u.kleine-koenig@baylibre.com>,
+ Li Ming <ming.li@zohomail.com>,
+ Ilpo =?UTF-8?B?SsOkcnZpbmVu?= <ilpo.jarvinen@linux.intel.com>,
+ Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
+ Karolina Stolarek <karolina.stolarek@oracle.com>,
+ Jon Pan-Doh <pandoh@google.com>, Lukas Wunner <lukas@wunner.de>,
+ Shiju Jose <shiju.jose@huawei.com>, linux-kernel@vger.kernel.org,
+ linux-acpi@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ linux-pci@vger.kernel.org
+Subject:
+ Re: [PATCH 4/6 v6] acpi/ghes: Add helper for CXL protocol errors checks
+Date: Tue, 04 Nov 2025 18:41:04 +0100
+Message-ID: <2925654.DJkKcVGEfx@fdefranc-mobl3>
+In-Reply-To: <20251028145415.000034bd@huawei.com>
+References:
+ <20251023122612.1326748-1-fabio.m.de.francesco@linux.intel.com>
+ <20251023122612.1326748-5-fabio.m.de.francesco@linux.intel.com>
+ <20251028145415.000034bd@huawei.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,72 +108,124 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <c1aecfba-fa12-4572-885d-925e9afa1494@suse.de>
+Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset="utf-8"
 
-On Tue, Nov 04, 2025 at 01:43:26PM +0100, Thomas Zimmermann wrote:
-> Hi
-> 
-> Am 26.09.25 um 01:46 schrieb Nathan Chancellor:
-> > After the recent removal of the fb.h include from backlight.h, which
-> > transitively included of.h, there are several errors from
-> > via-pmu-backlight.c (errors from bl_curve not being properly defined
-> > omitted):
-> > 
-> >    drivers/macintosh/via-pmu-backlight.c:22:20: error: 'FB_BACKLIGHT_LEVELS' undeclared here (not in a function)
-> >       22 | static u8 bl_curve[FB_BACKLIGHT_LEVELS];
-> >          |                    ^~~~~~~~~~~~~~~~~~~
-> >    drivers/macintosh/via-pmu-backlight.c: In function 'pmu_backlight_get_level_brightness':
-> >    drivers/macintosh/via-pmu-backlight.c:63:38: error: 'FB_BACKLIGHT_MAX' undeclared (first use in this function); did you mean 'BACKLIGHT_RAW'?
-> >       63 |         pmulevel = bl_curve[level] * FB_BACKLIGHT_MAX / MAX_PMU_LEVEL;
-> >          |                                      ^~~~~~~~~~~~~~~~
-> >          |                                      BACKLIGHT_RAW
-> >    drivers/macintosh/via-pmu-backlight.c: In function 'pmu_backlight_init':
-> >    drivers/macintosh/via-pmu-backlight.c:144:17: error: implicit declaration of function 'of_machine_is_compatible' [-Wimplicit-function-declaration]
-> >      144 |                 of_machine_is_compatible("AAPL,3400/2400") ||
-> >          |                 ^~~~~~~~~~~~~~~~~~~~~~~~
-> > 
-> > FB_BACKLIGHT_{LEVELS,MAX} are available from the userspace API fb.h so
-> > just include that avoid dragging in the full fb.h header unnecessarily.
-> > Include linux/of.h for of_machine_is_compatible().
-> > 
-> > Fixes: 9f218f9bb9d2 ("backlight: Do not include <linux/fb.h> in header file")
-> > Signed-off-by: Nathan Chancellor <nathan@kernel.org>
+On Tuesday, October 28, 2025 3:54:15=E2=80=AFPM Central European Standard T=
+ime Jonathan Cameron wrote:
+> On Thu, 23 Oct 2025 14:25:39 +0200
+> "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com> wrote:
+>=20
+> > Move the CPER CXL protocol errors validity out of
+>=20
+> validity check
+>=20
+> > cxl_cper_post_prot_err() to cxl_cper_sec_prot_err_valid() and limit the
+>=20
+> to new cxl_cper_sec_prot_err_valid()=20
+>=20
+> as otherwise it sounds like it already exists.
+>=20
+> > serial number check only to CXL agents that are CXL devices (UEFI v2.10,
+> > Appendix N.2.13).
+>=20
+> Perhaps a little more here on why.  I assume because you are going to have
+> a second user for it, but good to say that. Also serves to justify the
+> export.
+>=20
+Hi Jonathan,
+
+All the corrections you made will be applied to the next version.
+> >=20
+> > Signed-off-by: Fabio M. De Francesco <fabio.m.de.francesco@linux.intel.=
+com>
 > > ---
-> >   drivers/macintosh/via-pmu-backlight.c | 2 ++
-> >   1 file changed, 2 insertions(+)
-> > 
-> > diff --git a/drivers/macintosh/via-pmu-backlight.c b/drivers/macintosh/via-pmu-backlight.c
-> > index 26bd9ed5e664..f7b7853b3802 100644
-> > --- a/drivers/macintosh/via-pmu-backlight.c
-> > +++ b/drivers/macintosh/via-pmu-backlight.c
-> > @@ -11,7 +11,9 @@
-> >   #include <asm/ptrace.h>
-> >   #include <linux/adb.h>
-> >   #include <linux/backlight.h>
-> > +#include <linux/of.h>
-> >   #include <linux/pmu.h>
-> > +#include <uapi/linux/fb.h>
-> 
-> Should this not be <linux/fb.h> ?
+> >  drivers/acpi/apei/ghes.c | 32 ++++++++++++++++++++++----------
+> >  include/cxl/event.h      | 10 ++++++++++
+> >  2 files changed, 32 insertions(+), 10 deletions(-)
+> >=20
+> > diff --git a/drivers/acpi/apei/ghes.c b/drivers/acpi/apei/ghes.c
+> > index d6fe5f020e96..e69ae864f43d 100644
+> > --- a/drivers/acpi/apei/ghes.c
+> > +++ b/drivers/acpi/apei/ghes.c
+> > @@ -706,30 +706,42 @@ static DEFINE_KFIFO(cxl_cper_prot_err_fifo, struc=
+t cxl_cper_prot_err_work_data,
+> >  static DEFINE_SPINLOCK(cxl_cper_prot_err_work_lock);
+> >  struct work_struct *cxl_cper_prot_err_work;
+> > =20
+> > -static void cxl_cper_post_prot_err(struct cxl_cper_sec_prot_err *prot_=
+err,
+> > -				   int severity)
+> > +int cxl_cper_sec_prot_err_valid(struct cxl_cper_sec_prot_err *prot_err)
+>=20
+> Useful to return an error number?  Or would a bool be better given it is =
+either
+> valid or not?
+>=20
+I prefer to return more information when reasonable and leave the callers f=
+ree
+to use or ignore the specific error number.
 
-It could be but as I mention above, this file only needs the UAPI
-FB_BACKLIGHT_LEVELS and FB_BACKLIGHT_MAX constants so I did not really
-feel like it was worth it to drag in the whole fb.h header.
+=46abio
+>
+> Otherwise looks good to me,
+>=20
+> Jonathan
+>=20
+> >  {
+> > -	struct cxl_cper_prot_err_work_data wd;
+> > -	u8 *dvsec_start, *cap_start;
+> > -
+> >  	if (!(prot_err->valid_bits & PROT_ERR_VALID_AGENT_ADDRESS)) {
+> >  		pr_err_ratelimited("CXL CPER invalid agent type\n");
+> > -		return;
+> > +		return -EINVAL;
+> >  	}
+> > =20
+> >  	if (!(prot_err->valid_bits & PROT_ERR_VALID_ERROR_LOG)) {
+> >  		pr_err_ratelimited("CXL CPER invalid protocol error log\n");
+> > -		return;
+> > +		return -EINVAL;
+> >  	}
+> > =20
+> >  	if (prot_err->err_len !=3D sizeof(struct cxl_ras_capability_regs)) {
+> >  		pr_err_ratelimited("CXL CPER invalid RAS Cap size (%u)\n",
+> >  				   prot_err->err_len);
+> > -		return;
+> > +		return -EINVAL;
+> >  	}
+> > =20
+> > -	if (!(prot_err->valid_bits & PROT_ERR_VALID_SERIAL_NUMBER))
+> > -		pr_warn(FW_WARN "CXL CPER no device serial number\n");
+> > +	if ((prot_err->agent_type =3D=3D RCD || prot_err->agent_type =3D=3D D=
+EVICE ||
+> > +	     prot_err->agent_type =3D=3D LD || prot_err->agent_type =3D=3D FM=
+LD) &&
+> > +	    !(prot_err->valid_bits & PROT_ERR_VALID_SERIAL_NUMBER))
+> > +		pr_warn_ratelimited(FW_WARN
+> > +				    "CXL CPER no device serial number\n");
+> > +
+> > +	return 0;
+> > +}
+> > +EXPORT_SYMBOL_GPL(cxl_cper_sec_prot_err_valid);
+> > +
+> > +static void cxl_cper_post_prot_err(struct cxl_cper_sec_prot_err *prot_=
+err,
+> > +				   int severity)
+> > +{
+> > +	struct cxl_cper_prot_err_work_data wd;
+> > +	u8 *dvsec_start, *cap_start;
+> > +
+> > +	if (cxl_cper_sec_prot_err_valid(prot_err))
+> > +		return;
+> > =20
+> >  	guard(spinlock_irqsave)(&cxl_cper_prot_err_work_lock);
+> > =20
+>=20
+>=20
+>=20
 
-> >   #include <asm/backlight.h>
-> >   #define MAX_PMU_LEVEL 0xFF
-> > 
-> 
-> -- 
-> --
-> Thomas Zimmermann
-> Graphics Driver Developer
-> SUSE Software Solutions Germany GmbH
-> Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-> GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
-> 
-> 
+
+
+
 
