@@ -1,84 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-13721-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13722-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CEBC6CCF9E3
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Nov 2025 08:58:51 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EC81CCFA00
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Nov 2025 09:35:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d12SB1wWRz3bf8;
-	Tue,  4 Nov 2025 19:58:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a0a:51c0:0:12e:550::1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762246730;
-	cv=none; b=WZ4s0Q7wwilsh1aTQHhNt0uoXBnXC2ilKnDfoh6YXsRnUySkMsgNn1VM5cfAo2BO5PXp3QUT5pBUJzPW2OCuGhrciGdtP2DBup+u/gKNRq4CuthLARWFHt4ljbQa/NOI6Y2w8XvqSciAve1Mu7yptK7fCGH7+KRJyY9y0bWJrP5DTUGihXl1xrbebsOQUcBQX5y3d99W9NewDHPqhp0r7BftwJ2qtcX6tQKIXG5czAx5yrHz5qQjw68xgwhjnI/4sUyN6xPMpOc9TAAAfbZdcCMizq8tX9/+0eGs06d+KkCusU/xlwFkYto0ZHWRljN5xPEuxtxmK/5i0CHRNdw1xg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d13Fx56C9z3bf8;
+	Tue,  4 Nov 2025 20:35:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762248901;
+	cv=none; b=gbgefk/bsR2QNslKI1MKjkTT/arKSvjmvY5SzMxCabhpLH+PqAVEr52KXO3r/rljWwEP7r3a6n/vlY8hdg4CfS963QPEl2iFCTqBCPnIMHagHXFR8yRvh5eT/lAtc23lBL8AXNZARzoY0bPSF2j+J/MZEaJjey5/wQ0vYshMWf0PJWWiiOOpyfgxa0+edHyr4COP0irYhtxh05e0/3Yzc1DKHeIIpQH3d9QxYVqt/34lkJmcb1xIyGDaLakUmwkBp2oxTtJzADiBK6pRexKWEHb+gbb9KGKaOEqQl08Ynz8eVhVCcPgALJkWhr/oM2SQD/hE7ZA76OyYYanFd8Zjyw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762246730; c=relaxed/relaxed;
-	bh=C0LvKOhhmgkPbAnJv9RUevotOR4DI1Uoh5ENCeo7njA=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ZmF9K/w9vS+A00VZI518CvOvoN4lSPie5vz6Yv9gHT3ap5BYUGZ3ZW2tByxg8CljMPqREBWIBxTivX74dlTBmt96fY1sr7QP1Pc2sNRV8PsMkDmHSc75FbEiMAXH0IE/Cf3FCQVg4z2VCOAa34b6oZFHrczZ6WZ9YNQbLCB9TtLlbHIUH+rUvC41LkkFdyLoBvCbVdHS6Cs9tpcVeXV3N8W/iZXindk3LiddQujysQiAV71iO/hn18vbc5StB2KzHUA3MvRsTE80XEZ9HHVKEOpqRsoxjmgd8fOG9One8LdBYxlPFGCeuVriHZMgItWPLPcwHUBVhVy5sNRkQNkcew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=PCKNJxul; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=AYbRVmwT; dkim-atps=neutral; spf=pass (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
+	t=1762248901; c=relaxed/relaxed;
+	bh=cm8ohofdl8x8t8svbS9cTI+oNVT/LIoR61TMRnkuXOs=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=EH0kbhGc2jQ29n0SZaibVzWtJDbdE8nbiKZYicFCl1N6PW9G1uIPLY3HI3606kkd6I/gPHYm6ouhEwlP4e+BJV1DyeJDZHylWeZOAIRFlh061VAGTryOEewhhKk7lsKWDcau9xrIF2CEmiyAA6wKqoo2vVdC49Vn0QNdfJHWVpDTHmS9/kgThVH3oVsql2dcmKnCRUycDed1fb2N1wYGCBjbMG0de8sDgnuQpotjjXcoEefPV4dE6o3Zmuv172wE2XkIGnx56lA7W+e113JMh9CiyT8Pl5F/uo/rOMR2b2ak12lGqgYGQS1b78Egt84DNM9NWDEc7yPuGa+PbHTELA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JJlEH/4/; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=PCKNJxul;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=AYbRVmwT;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JJlEH/4/;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=2a0a:51c0:0:12e:550::1; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [IPv6:2a0a:51c0:0:12e:550::1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4d12S83CHkz2yjq
-	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Nov 2025 19:58:48 +1100 (AEDT)
-Date: Tue, 4 Nov 2025 09:58:37 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1762246719;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=C0LvKOhhmgkPbAnJv9RUevotOR4DI1Uoh5ENCeo7njA=;
-	b=PCKNJxulpg/PvsGYBz8V1FU4pIkAMexataoGH0wB1Wq12nZZHH8f2DwldZBJQaarAJVsP8
-	yusjtIDWmV+OdYsTjKunNaFJcWiiyhHX6oDRiKaBNw6mbt6vWYMefNn74zwVvtcQNanAb/
-	sFKjzpbAdgHOKh9I1DfB1uxqKlG9OH5OjQWRzQk9ok7MeccZ7XACWEaO4CMbje+8IR5FNE
-	ksy6MxBeFin8cOh8nSGbd7sgJ1u4+BFBLgtkTy0AC0nIyqKnVIQCZ0PrgpFKDWnHjNm1K5
-	thTLlUN+ZyklfklQSZjodwcMM1QHkniqB323QaFPf3lG/gDXH1KQ8B2yVTGLvw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1762246719;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=C0LvKOhhmgkPbAnJv9RUevotOR4DI1Uoh5ENCeo7njA=;
-	b=AYbRVmwTnBF9DHCl3zSORA5EBbeymIDmU5LN0MCGPkSaFq3DfisSLGnmVmNwMSYywgJ4+e
-	uTDyt4qZNgxw5dDg==
-From: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-To: Marek Szyprowski <m.szyprowski@samsung.com>
-Cc: Mark Brown <broonie@kernel.org>, Andy Lutomirski <luto@kernel.org>, 
-	Thomas Gleixner <tglx@linutronix.de>, Vincenzo Frascino <vincenzo.frascino@arm.com>, 
-	Arnd Bergmann <arnd@arndb.de>, "David S. Miller" <davem@davemloft.net>, 
-	Andreas Larsson <andreas@gaisler.com>, Nick Alcock <nick.alcock@oracle.com>, 
-	John Stultz <jstultz@google.com>, Stephen Boyd <sboyd@kernel.org>, 
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Shuah Khan <shuah@kernel.org>, 
-	Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>, Theodore Ts'o <tytso@mit.edu>, 
-	"Jason A. Donenfeld" <Jason@zx2c4.com>, Russell King <linux@armlinux.org.uk>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
-	Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
-	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Heiko Carstens <hca@linux.ibm.com>, 
-	Vasily Gorbik <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, 
-	Christian Borntraeger <borntraeger@linux.ibm.com>, Sven Schnelle <svens@linux.ibm.com>, 
-	Nagarathnam Muthusamy <nagarathnam.muthusamy@oracle.com>, Shannon Nelson <sln@onemain.com>, linux-kernel@vger.kernel.org, 
-	sparclinux@vger.kernel.org, linux-kselftest@vger.kernel.org, 
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
-	linux-mips@vger.kernel.org, linux-s390@vger.kernel.org, Aishwarya.TCV@arm.com
-Subject: Re: [PATCH v4 23/35] vdso/datastore: Map pages through struct page
-Message-ID: <20251104095555-ed009488-3aa8-43c5-b39f-066f04dee5a3@linutronix.de>
-References: <20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de>
- <20251014-vdso-sparc64-generic-2-v4-23-e0607bf49dea@linutronix.de>
- <aQjJNmwniQwwjeBR@finisterre.sirena.org.uk>
- <CGME20251104084442eucas1p2af1bd88393f4d6a532df1cd41f32a287@eucas1p2.samsung.com>
- <e7f05748-a11c-47eb-b1fa-cdc9dc6d05e0@samsung.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d13Fw0x7Tz3bf3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue,  4 Nov 2025 20:34:59 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5A43A6d6012681;
+	Tue, 4 Nov 2025 09:34:46 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=cm8oho
+	fdl8x8t8svbS9cTI+oNVT/LIoR61TMRnkuXOs=; b=JJlEH/4/gLX+8aC2XD6AC8
+	nImaFYBkS4gHnZ6R41m7zZt7mBmatGt4cMMruCPxRZ0dOM7oixoLYCp3iML//exm
+	hPK7Zn90CXK6llHt0AAPqCZ6+Ma8ZMozFfOVN9YeE2SqY4L9G6d47PN/YjEbVZJW
+	qrle9uNSZM1lxnyG6WaDRCJLbcB4zsk3ROwD4dTbnao+YvPtCvfptH3ICqv9ngPk
+	wxlCqTNV5W+WWogMb/zaYhSV1RJ/PCW0EscAb3XeYxM9XY8m9rCeiONXYNNtwUE3
+	kaaT452dS5GMJlvr6vmZWc3Y7rDAyM326NTFjj4AFJ10DJeE7hdC46JUpDncntCA
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4a59v1u0pg-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 04 Nov 2025 09:34:46 +0000 (GMT)
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5A49Yjpa002806;
+	Tue, 4 Nov 2025 09:34:46 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4a59v1u0pe-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 04 Nov 2025 09:34:45 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5A46e6E0009877;
+	Tue, 4 Nov 2025 09:34:45 GMT
+Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4a5x1kaa22-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 04 Nov 2025 09:34:45 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5A49YfN757606498
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 4 Nov 2025 09:34:41 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2D7B82004B;
+	Tue,  4 Nov 2025 09:34:41 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id B16AA20040;
+	Tue,  4 Nov 2025 09:34:38 +0000 (GMT)
+Received: from [9.109.204.116] (unknown [9.109.204.116])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  4 Nov 2025 09:34:38 +0000 (GMT)
+Message-ID: <ea44849c-9d0f-43cc-9476-42bc619728f6@linux.ibm.com>
+Date: Tue, 4 Nov 2025 15:04:37 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,67 +87,384 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v5] powerpc/kdump: Add support for crashkernel CMA
+ reservation
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        linuxppc-dev@lists.ozlabs.org
+Cc: Baoquan he <bhe@redhat.com>, Jiri Bohac <jbohac@suse.cz>,
+        Hari Bathini <hbathini@linux.ibm.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Shivang Upadhyay <shivangu@linux.ibm.com>, kexec@lists.infradead.org
+References: <20251103043747.1298065-1-sourabhjain@linux.ibm.com>
+ <87y0on4ebh.ritesh.list@gmail.com>
+ <7957bd55-5bda-406f-aab3-64e0620bd452@linux.ibm.com>
+Content-Language: en-US
+In-Reply-To: <7957bd55-5bda-406f-aab3-64e0620bd452@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <e7f05748-a11c-47eb-b1fa-cdc9dc6d05e0@samsung.com>
-
-Hi Marek,
-
-On Tue, Nov 04, 2025 at 09:44:38AM +0100, Marek Szyprowski wrote:
-> On 03.11.2025 16:24, Mark Brown wrote:
-> > On Tue, Oct 14, 2025 at 08:49:09AM +0200, Thomas Wei�schuh wrote:
-> >
-> >> An upcoming change will allocate the datapages dynamically instead of as
-> >> part of the kernel image. Such pages can only be mapped through
-> >> 'struct page' and not through PFNs.
-> > I'm seeing some boot failures on some arm64 platforms in -next which are
-> > bisecting to this patch in -next.  Unfortunately the diagnostics aren't
-> > super useful, we seem to just stop making progress in userspace with no
-> > obvious output.  One sample log from the FVP is:
-
-(...)
-
-> Then I've tested it on ARM64bit (RaspberrryPi3b+ board) and got the 
-> following panic on 6a011a228293 ("vdso/datastore: Map pages through 
-> struct page") commit:
-> 
-> VFS: Mounted root (ext4 filesystem) on device 179:3. Trying to move old 
-> root to /initrd ... okay devtmpfs: mounted Freeing unused kernel memory: 
-> 12672K Run /sbin/init as init process Unable to handle kernel paging 
-> request at virtual address ffffffffc20b5d48 Mem abort info: ESR = 
-> 0x0000000096000006 EC = 0x25: DABT (current EL), IL = 32 bits SET = 0, 
-> FnV = 0 EA = 0, S1PTW = 0 FSC = 0x06: level 2 translation fault Data 
-> abort info: ISV = 0, ISS = 0x00000006, ISS2 = 0x00000000 CM = 0, WnR = 
-> 0, TnD = 0, TagAccess = 0 GCS = 0, Overlay = 0, DirtyBit = 0, Xs = 0 
-> swapper pgtable: 4k pages, 48-bit VAs, pgdp=000000000230b000 
-> [ffffffffc20b5d48] pgd=0000000000000000, p4d=0000000003618403, 
-> pud=0000000003619403, pmd=0000000000000000 Internal error: Oops: 
-> 0000000096000006 [#1] SMP Modules linked in: CPU: 2 UID: 0 PID: 1 Comm: 
-> init Tainted: G W 6.18.0-rc1+ #16136 PREEMPT Tainted: [W]=WARN Hardware 
-> name: Raspberry Pi 3 Model B (DT) pstate: 80000005 (Nzcv daif -PAN -UAO 
-> -TCO -DIT -SSBS BTYPE=--) pc : vvar_fault+0x7c/0x17c lr : 
-> vvar_fault+0x24/0x17c ... Call trace: vvar_fault+0x7c/0x17c (P) 
-> special_mapping_fault+0x24/0xd0 __do_fault+0x3c/0x238 
-> __handle_mm_fault+0xaa0/0x19e0 handle_mm_fault+0xcc/0x384 
-> do_page_fault+0x1a0/0x720 do_translation_fault+0x60/0x6c 
-> do_mem_abort+0x44/0x94 el0_da+0x54/0x230 el0t_64_sync_handler+0xd0/0xe4 
-> el0t_64_sync+0x198/0x19c Code: f2d83fe0 8b010063 d34cfc63 8b031803 
-> (f9400461) ---[ end trace 0000000000000000 ]--- Kernel panic - not 
-> syncing: Attempted to kill init! exitcode=0x0000000b SMP: stopping 
-> secondary CPUs Kernel Offset: disabled CPU features: 
-> 0x000000,00180000,40004000,0400421b Memory Limit: none ---[ end Kernel 
-> panic - not syncing: Attempted to kill init! exitcode=0x0000000b ]---
-> 
-> Reverting "clocksource: Remove ARCH_CLOCKSOURCE_DATA", "vdso/datastore: 
-> Allocate data pages dynamically" and "vdso/datastore: Map pages through 
-> struct page" on top of linux-next fixes booting on all tested boards.
-
-Thanks for the report. I have a Raspberry Pi 3 Model B V1.2 here and will try
-to reproduce the issue with it.
-Can you send me your kernel configuration?
-Which line is vvar_fault+0x7c/0x17c?
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: znfR5Pxw2vfiWQeSSFjfjk4DyFZh13ST
+X-Proofpoint-ORIG-GUID: ZAldhUSWiLiHIC2XZw6kiAV0OnldeOJr
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTAxMDAyMSBTYWx0ZWRfX1tTxv6CRqIVZ
+ t1nf4gzlw3xmB3Qu9nbGP9yY/O4zB4ZRhxpGBeRAM+WO8DHf2mtCfstgoaxXBouCw9KrbE3AggA
+ 2BxwnWgZfY3VElKrdBBlH1eNE7BPf+QfxqWgzW/JQz6NZADZ91YunuxyJYgLRM97wB9S563LZBI
+ 4ZigFP6CWhuhsoBjChUZpIOUD/g8M7kyUHKWG7NGB0zfV8kiEswi7oN5Ey07RMyrTDUM1iuGgkl
+ +hYO3GakcwhAyYjIgFdMr+guD8oCFj2GcUtGnO6oAcmfKqCRzcDTTUCqiwtiaKQ9q2hxYr6JUeh
+ F1XlkKpp0mh5JwzrNXol/ZSRnL/poAdYW8kWF3BPyc3bd4LHNKMLDNv5tSWyV8TE0dFY69uZY8i
+ MRGRGkeeqq0LQK4ofES1ubFqlSg3pg==
+X-Authority-Analysis: v=2.4 cv=H8HWAuYi c=1 sm=1 tr=0 ts=6909c8b6 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=IkcTkHD0fZMA:10 a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VnNF1IyMAAAA:8 a=20KFwNOVAAAA:8 a=pGLkceISAAAA:8 a=JfrnYn6hAAAA:8
+ a=jZA0fL0DCMBm6u-czYMA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+ a=1CNFftbPRP8L7MoqJWF3:22 a=cPQSjfK2_nFv0Q5t_7PE:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-11-03_06,2025-11-03_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ spamscore=0 phishscore=0 lowpriorityscore=0 priorityscore=1501 adultscore=0
+ impostorscore=0 clxscore=1015 bulkscore=0 suspectscore=0 malwarescore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2511010021
 
 
-Thomas
+
+On 04/11/25 10:48, Sourabh Jain wrote:
+>
+>
+> On 03/11/25 15:40, Ritesh Harjani (IBM) wrote:
+>> Sourabh Jain <sourabhjain@linux.ibm.com> writes:
+>>
+>>> Commit 35c18f2933c5 ("Add a new optional ",cma" suffix to the
+>>> crashkernel= command line option") and commit ab475510e042 ("kdump:
+>>> implement reserve_crashkernel_cma") added CMA support for kdump
+>>> crashkernel reservation.
+>>>
+>>> Extend crashkernel CMA reservation support to powerpc.
+>>>
+>>> The following changes are made to enable CMA reservation on powerpc:
+>>>
+>>> - Parse and obtain the CMA reservation size along with other 
+>>> crashkernel
+>>>    parameters
+>>> - Call reserve_crashkernel_cma() to allocate the CMA region for kdump
+>>> - Include the CMA-reserved ranges in the usable memory ranges for the
+>>>    kdump kernel to use.
+>>> - Exclude the CMA-reserved ranges from the crash kernel memory to
+>>>    prevent them from being exported through /proc/vmcore.
+>>>
+>>> With the introduction of the CMA crashkernel regions,
+>>> crash_exclude_mem_range() needs to be called multiple times to exclude
+>>> both crashk_res and crashk_cma_ranges from the crash memory ranges. To
+>>> avoid repetitive logic for validating mem_ranges size and handling
+>>> reallocation when required, this functionality is moved to a new 
+>>> wrapper
+>>> function crash_exclude_mem_range_guarded().
+>>>
+>>> To ensure proper CMA reservation, reserve_crashkernel_cma() is called
+>>> after pageblock_order is initialized.
+>>>
+>>> Update kernel-parameters.txt to document CMA support for crashkernel on
+>>> powerpc architecture.
+>>>
+>>> Cc: Baoquan he <bhe@redhat.com>
+>>> Cc: Jiri Bohac <jbohac@suse.cz>
+>>> Cc: Hari Bathini <hbathini@linux.ibm.com>
+>>> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+>>> Cc: Mahesh Salgaonkar <mahesh@linux.ibm.com>
+>>> Cc: Michael Ellerman <mpe@ellerman.id.au>
+>>> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>>> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
+>>> Cc: kexec@lists.infradead.org
+>>> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
+>>> ---
+>>> Changlog:
+>>>
+>>> v3 -> v4
+>>>   - Removed repeated initialization to tmem in
+>>>     crash_exclude_mem_range_guarded()
+>>>   - Call crash_exclude_mem_range() with right crashk ranges
+>>>
+>>> v4 -> v5:
+>>>   - Document CMA-based crashkernel support for ppc64 in 
+>>> kernel-parameters.txt
+>>> ---
+>>>   .../admin-guide/kernel-parameters.txt         |  2 +-
+>>>   arch/powerpc/include/asm/kexec.h              |  2 +
+>>>   arch/powerpc/kernel/setup-common.c            |  4 +-
+>>>   arch/powerpc/kexec/core.c                     | 10 ++++-
+>>>   arch/powerpc/kexec/ranges.c                   | 43 
+>>> ++++++++++++++-----
+>>>   5 files changed, 47 insertions(+), 14 deletions(-)
+>>>
+>>> diff --git a/Documentation/admin-guide/kernel-parameters.txt 
+>>> b/Documentation/admin-guide/kernel-parameters.txt
+>>> index 6c42061ca20e..0f386b546cec 100644
+>>> --- a/Documentation/admin-guide/kernel-parameters.txt
+>>> +++ b/Documentation/admin-guide/kernel-parameters.txt
+>>> @@ -1013,7 +1013,7 @@
+>>>               It will be ignored when crashkernel=X,high is not used
+>>>               or memory reserved is below 4G.
+>>>       crashkernel=size[KMG],cma
+>>> -            [KNL, X86] Reserve additional crash kernel memory from
+>>> +            [KNL, X86, ppc64] Reserve additional crash kernel 
+>>> memory from
+>> Shouldn't this be PPC and not ppc64?
+>>
+>> If I see the crash_dump support...
+>>
+>> config ARCH_SUPPORTS_CRASH_DUMP
+>>     def_bool PPC64 || PPC_BOOK3S_32 || PPC_85xx || (44x && !SMP)
+>>
+>> The changes below aren't specific to ppc64 correct?
+>
+> The thing is this feature is only supported with KEXEC_FILE and which 
+> only supported on PPC64:
+>
+> config ARCH_SUPPORTS_KEXEC_FILE
+>     def_bool PPC64
+>
+> Hence I kept it as ppc64.
+>
+> I think I should update that in the commit message.
+>
+> Also do you think is it good to restrict this feature to KEXEC_FILE?
+
+Putting this under KEXEC_FILE may not help much because KEXEC_FILE is 
+enabled
+by default in most configurations. Once it is enabled, the CMA 
+reservation will
+happen regardless of which system call is used to load the kdump kernel
+(kexec_load or kexec_file_load).
+
+However, not restricting this feature to KEXEC_FILE will allow the kexec 
+tool to
+independently add support for this feature in the future for the kexec_load
+system call.
+
+With that logic, I think if we do not restrict this feature to 
+KEXEC_FILE, the support
+will be available for ppc and not limited to ppc64.
+
+
+
+>
+>>
+>>>               CMA. This reservation is usable by the first system's
+>>>               userspace memory and kernel movable allocations (memory
+>>>               balloon, zswap). Pages allocated from this memory range
+>>> diff --git a/arch/powerpc/include/asm/kexec.h 
+>>> b/arch/powerpc/include/asm/kexec.h
+>>> index 4bbf9f699aaa..bd4a6c42a5f3 100644
+>>> --- a/arch/powerpc/include/asm/kexec.h
+>>> +++ b/arch/powerpc/include/asm/kexec.h
+>>> @@ -115,9 +115,11 @@ int setup_new_fdt_ppc64(const struct kimage 
+>>> *image, void *fdt, struct crash_mem
+>>>   #ifdef CONFIG_CRASH_RESERVE
+>>>   int __init overlaps_crashkernel(unsigned long start, unsigned long 
+>>> size);
+>>>   extern void arch_reserve_crashkernel(void);
+>>> +extern void kdump_cma_reserve(void);
+>>>   #else
+>>>   static inline void arch_reserve_crashkernel(void) {}
+>>>   static inline int overlaps_crashkernel(unsigned long start, 
+>>> unsigned long size) { return 0; }
+>>> +static inline void kdump_cma_reserve(void) { }
+>>>   #endif
+>>>     #if defined(CONFIG_CRASH_DUMP)
+>>> diff --git a/arch/powerpc/kernel/setup-common.c 
+>>> b/arch/powerpc/kernel/setup-common.c
+>>> index 68d47c53876c..c8c42b419742 100644
+>>> --- a/arch/powerpc/kernel/setup-common.c
+>>> +++ b/arch/powerpc/kernel/setup-common.c
+>>> @@ -35,6 +35,7 @@
+>>>   #include <linux/of_irq.h>
+>>>   #include <linux/hugetlb.h>
+>>>   #include <linux/pgtable.h>
+>>> +#include <asm/kexec.h>
+>>>   #include <asm/io.h>
+>>>   #include <asm/paca.h>
+>>>   #include <asm/processor.h>
+>>> @@ -995,11 +996,12 @@ void __init setup_arch(char **cmdline_p)
+>>>       initmem_init();
+>>>         /*
+>>> -     * Reserve large chunks of memory for use by CMA for fadump, 
+>>> KVM and
+>>> +     * Reserve large chunks of memory for use by CMA for kdump, 
+>>> fadump, KVM and
+>>>        * hugetlb. These must be called after initmem_init(), so that
+>>>        * pageblock_order is initialised.
+>>>        */
+>>>       fadump_cma_init();
+>>> +    kdump_cma_reserve();
+>>>       kvm_cma_reserve();
+>>>       gigantic_hugetlb_cma_reserve();
+>>>   diff --git a/arch/powerpc/kexec/core.c b/arch/powerpc/kexec/core.c
+>>> index d1a2d755381c..25744737eff5 100644
+>>> --- a/arch/powerpc/kexec/core.c
+>>> +++ b/arch/powerpc/kexec/core.c
+>>> @@ -33,6 +33,8 @@ void machine_kexec_cleanup(struct kimage *image)
+>>>   {
+>>>   }
+>>>   +unsigned long long cma_size;
+>>> +
+>> nit:
+>> Since this is a gloabal powerpc variable you are defining, then can we
+>> keep it's name to crashk_cma_size?
+>
+> Yeah make sense. I will update the variable name.
+>
+>
+>>
+>>>   /*
+>>>    * Do not allocate memory (or fail in any way) in machine_kexec().
+>>>    * We are past the point of no return, committed to rebooting now.
+>>> @@ -110,7 +112,7 @@ void __init arch_reserve_crashkernel(void)
+>>>         /* use common parsing */
+>>>       ret = parse_crashkernel(boot_command_line, total_mem_sz, 
+>>> &crash_size,
+>>> -                &crash_base, NULL, NULL, NULL);
+>>> +                &crash_base, NULL, &cma_size, NULL);
+>>>         if (ret)
+>>>           return;
+>>> @@ -130,6 +132,12 @@ void __init arch_reserve_crashkernel(void)
+>>>       reserve_crashkernel_generic(crash_size, crash_base, 0, false);
+>>>   }
+>>>   +void __init kdump_cma_reserve(void)
+>>> +{
+>>> +    if (cma_size)
+>>> +        reserve_crashkernel_cma(cma_size);
+>>> +}
+>>> +
+>> nit:
+>> cma_size is already checked for null within reserve_crashkernel_cma(),
+>> so we don't really need kdump_cma_reserve() function call as such.
+>>
+>> Also kdump_cma_reserve() only make sense with #ifdef CRASHKERNEL_CMA..
+>> so instead do you think we can directly call 
+>> reserve_crashkernel_cma(cma_size)?
+>
+> I think the above kdump_cma_reserve() definition should come under 
+> CONFIG_CRASH_RESERVE
+> because the way it is declared in arch/powerpc/include/asm/kexec.h.
+>
+> I would like to keep kdump_cma_reserve() as is it because of two reasons:
+>
+> - It keeps setup_arch() free from kdump #ifdefs
+> - In case if we want to add some condition on this reservation it 
+> would straight forward.
+>
+> So lets keep kdump_cma_reserve as is, unless you have strong opinion 
+> on not to.
+>
+>>>   int __init overlaps_crashkernel(unsigned long start, unsigned long 
+>>> size)
+>>>   {
+>>>       return (start + size) > crashk_res.start && start <= 
+>>> crashk_res.end;
+>>> diff --git a/arch/powerpc/kexec/ranges.c b/arch/powerpc/kexec/ranges.c
+>>> index 3702b0bdab14..3bd27c38726b 100644
+>>> --- a/arch/powerpc/kexec/ranges.c
+>>> +++ b/arch/powerpc/kexec/ranges.c
+>>> @@ -515,7 +515,7 @@ int get_exclude_memory_ranges(struct crash_mem 
+>>> **mem_ranges)
+>>>    */
+>>>   int get_usable_memory_ranges(struct crash_mem **mem_ranges)
+>>>   {
+>>> -    int ret;
+>>> +    int ret, i;
+>>>         /*
+>>>        * Early boot failure observed on guests when low memory 
+>>> (first memory
+>>> @@ -528,6 +528,13 @@ int get_usable_memory_ranges(struct crash_mem 
+>>> **mem_ranges)
+>>>       if (ret)
+>>>           goto out;
+>>>   +    for (i = 0; i < crashk_cma_cnt; i++) {
+>>> +        ret = add_mem_range(mem_ranges, crashk_cma_ranges[i].start,
+>>> +                    crashk_cma_ranges[i].end - 
+>>> crashk_cma_ranges[i].start + 1);
+>>> +        if (ret)
+>>> +            goto out;
+>>> +    }
+>>> +
+>>>       ret = add_rtas_mem_range(mem_ranges);
+>>>       if (ret)
+>>>           goto out;
+>>> @@ -546,6 +553,22 @@ int get_usable_memory_ranges(struct crash_mem 
+>>> **mem_ranges)
+>>>   #endif /* CONFIG_KEXEC_FILE */
+>>>     #ifdef CONFIG_CRASH_DUMP
+>>> +static int crash_exclude_mem_range_guarded(struct crash_mem 
+>>> **mem_ranges,
+>>> +                       unsigned long long mstart,
+>>> +                       unsigned long long mend)
+>>> +{
+>>> +    struct crash_mem *tmem = *mem_ranges;
+>>> +
+>>> +    /* Reallocate memory ranges if there is no space to split 
+>>> ranges */
+>>> +    if (tmem && (tmem->nr_ranges == tmem->max_nr_ranges)) {
+>>> +        tmem = realloc_mem_ranges(mem_ranges);
+>>> +        if (!tmem)
+>>> +            return -ENOMEM;
+>>> +    }
+>>> +
+>>> +    return crash_exclude_mem_range(tmem, mstart, mend);
+>>> +}
+>>> +
+>>>   /**
+>>>    * get_crash_memory_ranges - Get crash memory ranges. This list 
+>>> includes
+>>>    *                           first/crashing kernel's memory 
+>>> regions that
+>>> @@ -557,7 +580,6 @@ int get_usable_memory_ranges(struct crash_mem 
+>>> **mem_ranges)
+>>>   int get_crash_memory_ranges(struct crash_mem **mem_ranges)
+>>>   {
+>>>       phys_addr_t base, end;
+>>> -    struct crash_mem *tmem;
+>>>       u64 i;
+>>>       int ret;
+>>>   @@ -582,19 +604,18 @@ int get_crash_memory_ranges(struct crash_mem 
+>>> **mem_ranges)
+>>>               sort_memory_ranges(*mem_ranges, true);
+>>>       }
+>>>   -    /* Reallocate memory ranges if there is no space to split 
+>>> ranges */
+>>> -    tmem = *mem_ranges;
+>>> -    if (tmem && (tmem->nr_ranges == tmem->max_nr_ranges)) {
+>>> -        tmem = realloc_mem_ranges(mem_ranges);
+>>> -        if (!tmem)
+>>> -            goto out;
+>>> -    }
+>>> -
+>>>       /* Exclude crashkernel region */
+>>> -    ret = crash_exclude_mem_range(tmem, crashk_res.start, 
+>>> crashk_res.end);
+>>> +    ret = crash_exclude_mem_range_guarded(mem_ranges, 
+>>> crashk_res.start, crashk_res.end);
+>>>       if (ret)
+>>>           goto out;
+>>>   +    for (i = 0; i < crashk_cma_cnt; ++i) {
+>>> +        ret = crash_exclude_mem_range_guarded(mem_ranges, 
+>>> crashk_cma_ranges[i].start,
+>>> +                          crashk_cma_ranges[i].end);
+>>> +        if (ret)
+>>> +            goto out;
+>>> +    }
+>>> +
+>>>       /*
+>>>        * FIXME: For now, stay in parity with kexec-tools but if 
+>>> RTAS/OPAL
+>>>        *        regions are exported to save their context at the 
+>>> time of
+>>> -- 
+>>> 2.51.0
+>
+
 
