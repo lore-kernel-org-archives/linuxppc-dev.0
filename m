@@ -1,50 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-13792-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13793-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 80A33CCFA05
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Nov 2025 11:50:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6B7EBCCFA0D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Nov 2025 12:51:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d1kCK5bf7z30Qk;
-	Wed,  5 Nov 2025 22:50:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762343405;
-	cv=none; b=BfB8PukQsL8rjDf/ElCbk2ONcoZgVS3QiEVwPqnjKt8DFJlEG2ae9HdhFcQkBjxGfMgwrpRV3Lxh2t00y25IFbxfDV0GWS+p6qO7t4xAmqJgiTWLl0zY63WQGB8/Jm5ebYVTan+PiEu0dW5blbnHD2XAcxTcDuIH2TGnPwO/QlsLlPGsXETZ1Bv0NLSehEdjf8bj+z9wu/UxuVaLAhyvXXqq83VVvTc9bFd5E5j8eLTtcRiix0XrH1MmAAkbI6Jlr266jWkwnUquqC8fXc0sr9oqosa4dnww3+iyeER8bXZEFBpd9i6G9e2848LvVukZKUxCvFbs4sYhVdBbI07OAw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d1lZD4Frxz30Qk;
+	Wed,  5 Nov 2025 23:51:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762347092;
+	cv=none; b=cXQzspyAwrlptrd6F4cdLuL0V0iGC2cffLPK6SHc/5fYOoL1dPAEm7TyM31YX5bNEDGYj9jRVk4Ng5u+kB2qFFUaSLEM3QpR1yn1fvzUk6vHQwsNlAEf1V70mftXeU/8M8Yj/kmD7AwZtFydiqxJxzoRZC1OEKn4Ua0SQTWIHvcyy+6RdkHm/ORtNFMTba7tVoWjMPCoD6Yh+lgNAucqXt4WZYG9tr1q6c2o7GcGnwoD8aHJNwNx81fcRjSnY7GZyx5K/oa7Pp2dEMGmXOrHK906S4T9mGmsEIIn8KG0vTK3xFK1/dfF8U34rIRX7qB7NKWg0lV/sPSbRxjIjjNCzg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762343405; c=relaxed/relaxed;
-	bh=3sreApMNjeNHXRlxFsML7Dnj7kOHNONsoKT8e5K3eYU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=gL7fe4r1NvN30vaKvrPAXOr817Lqs5kSkbmxsvd7vmL6nFYCzIjLSyK0mnge5MfQq2EHE26IWEOq+o6eNhTxCjtUXrTAJnA0QE1p3YLz2Q/8pL9wyHdwrgfwjKlEcJyLx+6VziFfzF1P30UUyDxqROl+rjUXtRuDSpxL4nLQuqQW1O7+oQe7W9CRGSNKZO+XUg1w00JRrd7dPv5gjPu0gnM8YZODAn5RPkPvzJKcdM4jHr+2T7hN/+B8XSoMy2p2HRZUfYcCgLpwZrgV1MFucbz0a2q16tiN+Bl/orB3UI5IFJbuvr3hSNeQElvzzZgSsHva6zc7KUMNRKhiWHALaQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d1kCK0mnHz2yrT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 22:50:03 +1100 (AEDT)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4d1jpk0KBdz9sRy;
-	Wed,  5 Nov 2025 12:32:14 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id zP_dHME8SHYy; Wed,  5 Nov 2025 12:32:13 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4d1jpj6S5hz9sRg;
-	Wed,  5 Nov 2025 12:32:13 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id CD46E8B76E;
-	Wed,  5 Nov 2025 12:32:13 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id G2h3JfiGh9US; Wed,  5 Nov 2025 12:32:13 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 722548B76D;
-	Wed,  5 Nov 2025 12:32:13 +0100 (CET)
-Message-ID: <82ef1da8-44c4-4a58-bd00-9839548cb72d@csgroup.eu>
-Date: Wed, 5 Nov 2025 12:32:13 +0100
+	t=1762347092; c=relaxed/relaxed;
+	bh=/HbUeaAEICYyZhHzsw6Tjow7GxlRxHImaPf6rqef4WY=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Gt0oJUKbLpWVkYG1L7odJYOnfaEmAIJF8NEfrc+0wLpthZJ3XwkoxeM5Hr88cPD1OiiTYOw9miV2WABrG2CUhPjA1xW6hwW0JJFQNejOiB8pcQqUTOkYQmNrjEuhYR0a2V8WofafK96LRyQ3DebxU9na9ngLSnF46E+r+j50wTSQ4EW8dui4CBJjKxu17t9kEaeYay0mGavIHApUDl+f77Lt9ki+c0AWHEAM2SL23zAB4Z42tbElfqXaAcrmX9hj0tMBlIv72qhy8CRdy0WVoc0WJdISgeS8uSq5864ZdKnPGa+Q15RNMONdGviFh+JXDUABTdPrR72saE6F1QHo0w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gBwrliEk; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=legion@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gBwrliEk;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=legion@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1lZC3dyyz2yjp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 23:51:31 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id B36356021F;
+	Wed,  5 Nov 2025 12:51:28 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D8C58C4CEFB;
+	Wed,  5 Nov 2025 12:51:25 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1762347088;
+	bh=NChEMqk4UnAegwpc13kkXhlg2bRI7YYn/F/CUppX0po=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=gBwrliEkoft7x27y00kAQyZYlZwNolOx9I+8LO6vlJTpvP7N0QHNW8gY7HgDSRRaK
+	 nBiCan+seJQsNbTb85l6Du0+jGYSjyU+PsJRp37fib7OLR8zNwqJVCTCxmRC1ed7ik
+	 IbGndcJW3oFPeK4Fn6Gqd4Eqqg72hK7mST0FfhOH4Lp6F1bZThRhsVlMV6XSXutFbt
+	 qg2GOl9NAuKOJodfCtM+2wuTFS165/xw157AGYMKGIn8Rzq6cHQj70zrB/o6nydG9v
+	 T6eXE49TVOyb0UTcnch9NBoiUzf0cB7UzWllSdEs37/aTSiKjJTx/zXT8qHkoX8b1X
+	 BHYTAjiCnLn2g==
+Date: Wed, 5 Nov 2025 13:51:22 +0100
+From: Alexey Gladkov <legion@kernel.org>
+To: Nathan Chancellor <nathan@kernel.org>
+Cc: Dimitri John Ledkov <dimitri.ledkov@surgut.co.uk>,
+	Omar Sandoval <osandov@osandov.com>, linux-kbuild@vger.kernel.org,
+	Samir M <samir@linux.ibm.com>, linux-kernel@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	linux-debuggers@vger.kernel.org, Nicolas Schier <nsc@kernel.org>
+Subject: Re: [mainline]Error while running make modules_install command
+Message-ID: <aQtISpMElVm7jQ4y@example.org>
+References: <7fef7507-ad64-4e51-9bb8-c9fb6532e51e@linux.ibm.com>
+ <56905387-ec43-4f89-9146-0db6889e46ab@linux.ibm.com>
+ <aQpCE_XTU-bZHFbk@telecaster>
+ <CANBHLUhJ5UVsN4-JN2PG=jq63yGttB9BD6Qm8MgvYirTvg_stw@mail.gmail.com>
+ <20251105011548.GB769905@ax162>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,159 +74,169 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: powerpc/e500: WARNING: at mm/hugetlb.c:4755 hugetlb_add_hstate
-To: David Hildenbrand <david@redhat.com>,
- Sourabh Jain <sourabhjain@linux.ibm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Donet Tom <donettom@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>
-References: <94377f5c-d4f0-4c0f-b0f6-5bf1cd7305b1@linux.ibm.com>
- <dd634b17-cc5e-497c-8228-2470f6533177@redhat.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <dd634b17-cc5e-497c-8228-2470f6533177@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251105011548.GB769905@ax162>
 
-Hi David,
-
-Le 29/10/2025 à 09:25, David Hildenbrand a écrit :
-> On 29.10.25 06:49, Sourabh Jain wrote:
->> Kernel is printing below warning while booting:
->>
->>
->> WARNING: CPU: 0 PID: 1 at mm/hugetlb.c:4753 hugetlb_add_hstate+0xc0/0x180
->> Modules linked in:
->> CPU: 0 UID: 0 PID: 1 Comm: swapper/0 Not tainted
->> 6.18.0-rc1-01400-ga297f72c4951 #6 NONE
->> Hardware name: QEMU ppce500 e5500 0x80240020 QEMU e500
->> NIP:  c000000001370800 LR: c000000001357740 CTR: 0000000000000005
->> REGS: c000000080183890 TRAP: 0700   Not tainted
->> (6.18.0-rc1-01400-ga297f72c4951)
->> MSR:  0000000080029002 <CE,EE,ME>  CR: 48000242  XER: 20000000
->> IRQMASK: 0
->> GPR00: c000000001357740 c000000080183b30 c000000001352000 
->> 000000000000000e
->> GPR04: c0000000011d1c4f 0000000000000002 000000000000001a 
->> 0000000000000000
->> GPR08: 0000000000000000 0000000000000002 0000000000000001 
->> 0000000000000005
->> GPR12: c0000000013576a4 c0000000015ad000 c00000000000210c 
->> 0000000000000000
->> GPR16: 0000000000000000 0000000000000000 0000000000000000 
->> 0000000000000000
->> GPR20: 0000000000000000 0000000000000000 0000000000000000 
->> 0000000000000000
->> GPR24: 0000000000000000 c0000000015876e8 0000000000000002 
->> c000000001587500
->> GPR28: c000000001587578 000000000000000e 0000000004000000 
->> 0000000000000170
->> NIP [c000000001370800] hugetlb_add_hstate+0xc0/0x180
->> LR [c000000001357740] hugetlbpage_init+0x9c/0xf0
->> Call Trace:
->> hugetlb_add_hstate+0x148/0x180 (unreliable)
->> hugetlbpage_init+0x9c/0xf0
->> do_one_initcall+0x84/0x308
->> kernel_init_freeable+0x2e4/0x380
->> kernel_init+0x30/0x15c
->> ret_from_kernel_user_thread+0x14/0x1c
->>
->> Kernel commit causing these warning:
->> commit 7b4f21f5e0386dfe02c68c009294d8f26e3c1bad (HEAD)
->> Author: David Hildenbrand <david@redhat.com>
->> Date:   Mon Sep 1 17:03:29 2025 +0200
->>
->>       mm/hugetlb: check for unreasonable folio sizes when registering 
->> hstate
->>
->>       Let's check that no hstate that corresponds to an unreasonable
->> folio size
->>       is registered by an architecture.  If we were to succeed
->> registering, we
->>       could later try allocating an unsupported gigantic folio size.
->>
->> ...
->>
->>           BUG_ON(order < order_base_2(__NR_USED_SUBPAGE));
->> +       WARN_ON(order > MAX_FOLIO_ORDER);
->>           h = &hstates[hugetlb_max_hstate++];
->>
->> snip...
->>
->>
->> Command to create kernel config:
->> make ARCH=powerpc corenet64_smp_defconfig
->>
->> Qemu command:
->> qemu-system-ppc64 -nographic -vga none -M ppce500 -smp 2 -m 4G -accel
->> tcg -kernel ./vmlinux -nic user -initrd ./ppc64-novsx-rootfs.cpio.gz
->> -cpu e5500 -append "noreboot"
->>
->>
->> Root cause:
->> The MAX_FOLIO_ORDER  for e500 platform is MAX_PAGE_ORDER which is
->> nothing but CONFIG_ARCH_FORCE_MAX_ORDER which dependent of page-size
->> which was 4k. So value of MAX_FOLIO_ODER is 12 for this case.
->>
->> As per arch/powerpc/mm/nohash/tlb.c the following page size are 
->> supported on
->> e500 platform:
->>
->> struct mmu_psize_def mmu_psize_defs[MMU_PAGE_COUNT] = {
->>       [MMU_PAGE_4K] = {
->>           .shift    = 12,
->>       },
->>       [MMU_PAGE_2M] = {
->>           .shift    = 21,
->>       },
->>       [MMU_PAGE_4M] = {
->>           .shift    = 22,
->>       },
->>       [MMU_PAGE_16M] = {
->>           .shift    = 24,
->>       },
->>       [MMU_PAGE_64M] = {
->>           .shift    = 26,
->>       },
->>       [MMU_PAGE_256M] = {
->>           .shift    = 28,
->>       },
->>       [MMU_PAGE_1G] = {
->>           .shift    = 30,
->>       },
->> };
->>
->> With the above MAX_FOLIO_ORDER and page sizes, hugetlbpage_init() in
->> arch/powerpc/mm/hugetlbpage.c tries to call hugetlb_add_hstate() with
->> an order higher than 12, causing the kernel to print the above warning.
->>
->> Things I tried:
->> I enabled CONFIG_ARCH_HAS_GIGANTIC_PAGE for the e500 platform. With that,
->> MAX_FOLIO_ORDER was set to 16, but that was not sufficient for 
->> MMU_PAGE_1G.
->>
->> This is because with CONFIG_ARCH_HAS_GIGANTIC_PAGE enabled,
->> MAX_FOLIO_ORDER was set to 16 = PUD_ORDER = (PMD_INDEX_SIZE (7) +
->> PTE_INDEX_SIZE (9)),
->> while the order for MMU_PAGE_1G was 18.
+On Tue, Nov 04, 2025 at 06:15:48PM -0700, Nathan Chancellor wrote:
+> On Tue, Nov 04, 2025 at 08:35:57PM +0000, Dimitri John Ledkov wrote:
+> > On Tue, 4 Nov 2025 at 18:12, Omar Sandoval <osandov@osandov.com> wrote:
+> > > drgn's CI hit this same failure. FWIW, the commit fixed by this bisected
+> > > commit, 3e86e4d74c04 ("kbuild: keep .modinfo section in
+> > > vmlinux.unstripped"), also results in ELF segments of size 0 in vmlinux
+> > > for some configurations, which confused drgn until I added a workaround
+> > > (https://github.com/osandov/drgn/commit/2a9053de8796af866fd720a3c8c23013595d391a).
+> > > So there's some funkiness in this area.
 > 
-> Yes, we discussed that in [1].
+> Omar, could you provide me with a configuration file that reproduces
+> this for you? Is there an easy way to check for this situation on the
+> command line?
 > 
-> We'll have to set ARCH_HAS_GIGANTIC_PAGE on ppc and increase 
-> MAX_FOLIO_ORDER, because apparently, there might be ppc configs that 
-> have even larger hugetlb sizes than PUDs.
+> > The expectation is that said section is removed from the final binary.
+> > But the fact that it is present with 0 length, indicates incorrect
+> > linking. It also now makes sense why on x86/arm it is tripping up
+> > section alignment.
 > 
-> @Cristophe, I was under the impression that you would send a fix. Do you 
-> want me to prepare something and send it out?
+> If I diff the output of 'llvm-readelf -e' for vmlinux.unstripped and
+> vmlinux when building 'ARCH=arm64 defconfig' using my suggested diff on
+> top of 6.18-rc4, I do see .modinfo get removed and I am not sure I see
+> an empty segment as a result?
+> 
+> diff --git a/tmp/.psub.Rg1zsq b/tmp/.psub.nGpcxI
+> index 2f079cb57f58..dcca71062760 100644
+> --- a/tmp/.psub.Rg1zsq
+> +++ b/tmp/.psub.nGpcxI
+> @@ -10,15 +10,15 @@ ELF Header:
+>    Version:                           0x1
+>    Entry point address:               0xffff800080000000
+>    Start of program headers:          64 (bytes into file)
+> -  Start of section headers:          157810560 (bytes into file)
+> +  Start of section headers:          156417384 (bytes into file)
+>    Flags:                             0x0
+>    Size of this header:               64 (bytes)
+>    Size of program headers:           56 (bytes)
+> -  Number of program headers:         5
+> +  Number of program headers:         4
+>    Size of section headers:           64 (bytes)
+> -  Number of section headers:         47
+> -  Section header string table index: 46
+> -There are 47 section headers, starting at offset 0x967ff80:
+> +  Number of section headers:         46
+> +  Section header string table index: 45
+> +There are 46 section headers, starting at offset 0x952bd68:
+>  
+>  Section Headers:
+>    [Nr] Name              Type            Address          Off    Size   ES Flg Lk Inf Al
+> @@ -56,19 +56,18 @@ Section Headers:
+>    [31] .mmuoff.data.read PROGBITS        ffff80008270b800 271b800 000008 00  WA  0   0  8
+>    [32] .pecoff_edata_padding PROGBITS    ffff80008270b808 271b808 0001f8 00   A  0   0  1
+>    [33] .bss              NOBITS          ffff80008270c000 271ba00 0ac970 00  WA  0   0 4096
+> -  [34] .debug_aranges    PROGBITS        0000000000000000 27d09d0 047550 00      0   0 16
+> -  [35] .debug_info       PROGBITS        0000000000000000 2817f20 38fdcf1 00      0   0  1
+> -  [36] .debug_abbrev     PROGBITS        0000000000000000 6115c11 4845e1 00      0   0  1
+> -  [37] .debug_line       PROGBITS        0000000000000000 659a1f2 1848e28 00      0   0  1
+> -  [38] .debug_frame      PROGBITS        0000000000000000 7de3020 3e2858 00      0   0  8
+> -  [39] .debug_str        PROGBITS        0000000000000000 81c5878 58f8cc 01  MS  0   0  1
+> -  [40] .debug_line_str   PROGBITS        0000000000000000 8755144 057ff7 01  MS  0   0  1
+> -  [41] .debug_rnglists   PROGBITS        0000000000000000 87ad13b 4d3fc6 00      0   0  1
+> -  [42] .modinfo          PROGBITS        ffff8000827d0000 2720000 0b09c8 00   A  0   0  1
+> -  [43] .comment          PROGBITS        0000000000000000 8c81101 000012 01  MS  0   0  1
+> -  [44] .symtab           SYMTAB          0000000000000000 8c81118 671a60 18     45 250028  8
+> -  [45] .strtab           STRTAB          0000000000000000 92f2b78 38d1f3 00      0   0  1
+> -  [46] .shstrtab         STRTAB          0000000000000000 967fd6b 000215 00      0   0  1
+> +  [34] .debug_aranges    PROGBITS        0000000000000000 271ba00 047550 00      0   0 16
+> +  [35] .debug_info       PROGBITS        0000000000000000 2762f50 38fdcf1 00      0   0  1
+> +  [36] .debug_abbrev     PROGBITS        0000000000000000 6060c41 4845e1 00      0   0  1
+> +  [37] .debug_line       PROGBITS        0000000000000000 64e5222 1848e28 00      0   0  1
+> +  [38] .debug_frame      PROGBITS        0000000000000000 7d2e050 3e2858 00      0   0  8
+> +  [39] .debug_str        PROGBITS        0000000000000000 81108a8 58f8cc 01  MS  0   0  1
+> +  [40] .debug_line_str   PROGBITS        0000000000000000 86a0174 057ff7 01  MS  0   0  1
+> +  [41] .debug_rnglists   PROGBITS        0000000000000000 86f816b 4d3fc6 00      0   0  1
+> +  [42] .comment          PROGBITS        0000000000000000 8bcc131 000012 01  MS  0   0  1
+> +  [43] .symtab           SYMTAB          0000000000000000 8bcc148 612990 18     44 233806  8
+> +  [44] .strtab           STRTAB          0000000000000000 91dead8 34d07e 00      0   0  1
+> +  [45] .shstrtab         STRTAB          0000000000000000 952bb56 00020c 00      0   0  1
+>  Key to Flags:
+>    W (write), A (alloc), X (execute), M (merge), S (strings), I (info),
+>    L (link order), O (extra OS processing required), G (group), T (TLS),
+> @@ -77,21 +76,19 @@ Key to Flags:
+>  
+>  Elf file type is DYN (Shared object file)
+>  Entry point 0xffff800080000000
+> -There are 5 program headers, starting at offset 64
+> +There are 4 program headers, starting at offset 64
+>  
+>  Program Headers:
+>    Type           Offset   VirtAddr           PhysAddr           FileSiz  MemSiz   Flg Align
+>    LOAD           0x010000 0xffff800080000000 0xffff800080000000 0x11cc000 0x11cc000 R E 0x10000
+>    LOAD           0x11e0000 0xffff8000811d0000 0xffff8000811d0000 0x153ba00 0x15e8970 RWE 0x10000
+> -  LOAD           0x2720000 0xffff8000827d0000 0xffff8000827d0000 0x0b09c8 0x0b09c8 R   0x10000
+>    NOTE           0x1e83cf4 0xffff800081e73cf4 0xffff800081e73cf4 0x000054 0x000054 R   0x4
+> -  GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0x10
+> +  GNU_STACK      0x000000 0x0000000000000000 0x0000000000000000 0x000000 0x000000 RW  0x8
+>  
+>   Section to Segment mapping:
+>    Segment Sections...
+>     00     .head.text .text 
+>     01     .rodata .pci_fixup __ksymtab __ksymtab_gpl __ksymtab_strings __param __modver __ex_table .notes .hyp.rodata .got .got.plt .rodata.text .init.text .exit.text .altinstructions .init.data runtime_shift_d_hash_shift runtime_ptr_dentry_hashtable .data..percpu .hyp.data..percpu .hyp.reloc .rela.dyn .relr.dyn .data __bug_table .hyp.data .mmuoff.data.write .mmuoff.data.read .pecoff_edata_padding .bss 
+> -   02     .modinfo 
+> -   03     .notes 
+> -   04     
+> +   02     .notes 
+> +   03     
+>     None   .debug_aranges .debug_info .debug_abbrev .debug_line .debug_frame .debug_str .debug_line_str .debug_rnglists .comment .symtab .strtab .shstrtab 
+> 
+> > As it is likely that it is the same underlying issue that such segment
+> > exists in the first place.
+> > 
+> > I wonder if the original implementation of moving sections about and
+> > when/where the builtin module info is kept is not as tidy as it was
+> > intended to be.
+> 
+> This is entirely possible. It would be helpful to know why exactly this
+> is happening to be certain.
+> 
+> > I wonder if we should:
+> > - rollback to the state of how things were before that feature was added
+> > - keep the production / stripped / installed kernel build as is
+> > - reshuffle of how modinfo is preserved in the unstripped kernel with
+> > a bespoke linker script
+> > 
+> > Such that hopefully we have correct alignment, without any zero length segments.
+> > 
+> > Or possibly even link / split the built-in module info somewhere else entirely.
+> > 
+> > As in revert both:
+> > - d50f21091358b (kbuild: align modinfo section for Secureboot
+> > Authenticode EDK2 compat, 2025-10-26)
+> > - 3e86e4d74c049 (kbuild: keep .modinfo section in vmlinux.unstripped,
+> > 2025-09-18)
+> > 
+> > And try implementing the keeping of .modinfo section again.
+> > 
+> > Better structure tests, after linking would be nice to catch such
+> > issues, because linker scripts are hard and trying to understand how a
+> > linker script change affects the result.
+> 
+> I think if we cannot figure out these issues by -rc6 timeframe, it may
+> be worth reverting the entire builtin .modinfo series and trying again
+> for 6.20 (it will probably be too late for 6.19 at that point) but I
+> would like to avoid doing that to Alexey if possible. I am not sure the
+> zero length segment issue is worth an entire back out at this point
+> alone, as I have proposed a fix for the original issue brought up by
+> this thread.
 
-Indeed I would have liked to better understand the implications of all 
-this, but I didn't have the time.
+Nathan, if you see that my changes are creating more problems than they
+are solving, feel free to revert them.
 
-By the way, you would describe the fix better than me so yes if you can 
-prepare and send a fix please do.
+My changes were based on Masahiro Yamada's patches. I didn't expect his
+changes to cause many problems. Before his changes, I tried to use a
+different approach. If you think it's worth it, we can return to
+discussing it.
 
-Christophe
+https://lore.kernel.org/all/cover.1748335606.git.legion@kernel.org/
+
+-- 
+Rgrds, legion
+
 
