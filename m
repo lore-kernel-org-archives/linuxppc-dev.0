@@ -1,97 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-13778-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13779-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B80D8CCF9F8
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Nov 2025 03:42:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68653CCFA04
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Nov 2025 03:45:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d1WN82CKSz30MY;
-	Wed,  5 Nov 2025 14:42:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::629"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762314120;
-	cv=none; b=X7YD/Rqs3z+77jAs9lrwwaLEDn7C+29VHuq0AlXWEDImVtH9ekgZErk1IJLWnPUTEdno6LEs3Ha0FHPQiBcSGPSVyv4dAeeySI8pRxWxaAqPMhr2R/yDf5wSUlKNs+prSCBctk7M4Jjak3kv6xjWe6+KUrv+0HZoMCPfrMyJcDd315iAQmJvgUL3M2p6FgevERCS+XV45rCWQlw6FMO3S6SEkTseKoOfxmGlvu+1Hlign4v2hUO+p9pe7X2lWLem+9Ejf1jPQ62acm/w5TivKSSbZ8h8KnFl5LR3PGg0+63glBbtumGKbn7lllfdzcWC9b+dS4L6IJIeSf4KJLITOg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d1WRr5Yrdz3bfM;
+	Wed,  5 Nov 2025 14:45:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=150.107.74.76
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762314312;
+	cv=none; b=Uu4nfPeJ8S7XK0F9jElaBzB/2g+2PYkXF//pxMPNDpmQCkExaNoFeWzgRSEs53agDrv65VxYzUUFwOgD1tK/FK6eiYRZ7i8Uy5Rbu9CmcluN/YnF/1Bo4JhwF9R/mCAcnDYus6i1wkRF0fZMhToo3iu505iaIFv/qePKxvb23P48iUZ+tWpO07E9SL4ex0rLakVFLy3lskrDlutxt+jVEmIXcvRyf5xabSzKFPazPyz8qxitof49E9HPLM6+IgriyBwO/uoDx/7wqTQB9Ot6EJrm7Y/Q/Rx9uFNCexTsffCRpW2NYieObTzp1+0maOn1qONbO4xCfwiawmTEccfEnA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762314120; c=relaxed/relaxed;
-	bh=9PpcYW9rXkka09Jy11m9xJQRt/n8jdZMdqOTeKYVeZk=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-Version:Content-Type; b=HRKDsbAqww97keqSpa1G4MUZXWBIDTwd/BOR4lKm3gW2pMBWPYGT2ZZyYy1CHSUTmhMaOo1qRY8VGUznbv8aGt9i/tUFsy1B51InPbLpIgNmNauE9t9cMXaDBzv5fZ8tU8PgUii6AJ8yavAfQY2en0FweCILA6Xpt1Y1VC+YrE4ZHUqVpPmS6B30w3w303yLoohZKHC66f5/ijY0ALP+IIKi7RueUPG/W22N8upUvK80aNR4JHJUZL1eE1lVHsNNuYOXpK3QViFE8j9uasphB7u5gO6EsMk8NAlgrnnxYcY3ZtRBQM6AOvEvyXEOXo/GW/ueaYsbYMT2BYCOwszAyA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=S8he94LA; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1762314312; c=relaxed/relaxed;
+	bh=u4a8kzakFPj8vNRJV1Rd0XvaxUsFNMpjZbVNQGFPFD8=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=L4bPb42vGqec/6stHgnotMcQYCqFuwfKwucikThag3ueZ3pUO/aUBKqOZyY+ks+k17iAmfUZQMPBTdcQ0jiXuHN6Ao1LQ0lBo0b7SZ2V9E/nPKlDBRde/j8yxr4uAcgK1RxAA1ZOICmSMGJk4Al+rDXNWRRjsP+O5IWKoHzYYV0vdC2tQgcB2fJlURBTBOK++/r6FcdPyrS+BMu5CCloGCMlTqN5zAREAg7Zl/+EtUY0ZyXlbHtR54DDy9dyg66qz/5FMLKbomGuwD7AsanzGM59Oo5olrx78LteBPsX4gPXSR7x5hvZdib9Fi399ZyAqhx1n13ALdyguQzE1Kr4Qw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=canb.auug.org.au; dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=202503 header.b=mfXp85mM; dkim-atps=neutral; spf=pass (client-ip=150.107.74.76; helo=mail.ozlabs.org; envelope-from=sfr@canb.auug.org.au; receiver=lists.ozlabs.org) smtp.mailfrom=canb.auug.org.au
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=canb.auug.org.au
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=S8he94LA;
+	dkim=pass (2048-bit key; secure) header.d=canb.auug.org.au header.i=@canb.auug.org.au header.a=rsa-sha256 header.s=202503 header.b=mfXp85mM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::629; helo=mail-pl1-x629.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pl1-x629.google.com (mail-pl1-x629.google.com [IPv6:2607:f8b0:4864:20::629])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=canb.auug.org.au (client-ip=150.107.74.76; helo=mail.ozlabs.org; envelope-from=sfr@canb.auug.org.au; receiver=lists.ozlabs.org)
+Received: from mail.ozlabs.org (gandalf.ozlabs.org [150.107.74.76])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1WN73X8pz306d
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 14:41:58 +1100 (AEDT)
-Received: by mail-pl1-x629.google.com with SMTP id d9443c01a7336-2952048eb88so68096605ad.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Nov 2025 19:41:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1762314117; x=1762918917; darn=lists.ozlabs.org;
-        h=mime-version:references:message-id:date:in-reply-to:subject:cc:to
-         :from:from:to:cc:subject:date:message-id:reply-to;
-        bh=9PpcYW9rXkka09Jy11m9xJQRt/n8jdZMdqOTeKYVeZk=;
-        b=S8he94LA2WM67XUFmlI9vIhC4Ojr9AjX5srOE+M5jA3XHD5uXS+ZeSzXnEHwhG8PMf
-         nQCJc1+WZhf4K9S4x8HDzMm7y3XSPea1Jx6YRSz7FfabwRhtHjnAUb2LGwnZxFKapi3s
-         gn30zwLf1kegMB+DZa8c5QKTZ3PLYYVrxtyTgm3IVmhhKceAGKLMGv02oP8ciId2ApFh
-         /xsTdb3J+vyj1ZI1j1Y+PX9qOJEeIEaUv+IWF1FBpBn57uSFYQNeWdDPEVDpho3PPAw2
-         HvwvYWyK9bzkP49RhoPrezFyooNkZbJOG/G8ejKPOXA0d6WtBkGsgUuLeAV3Q3zFHkLE
-         wM/g==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762314117; x=1762918917;
-        h=mime-version:references:message-id:date:in-reply-to:subject:cc:to
-         :from:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=9PpcYW9rXkka09Jy11m9xJQRt/n8jdZMdqOTeKYVeZk=;
-        b=ZHf88dwJt/G8FgmbLYgoqeV/lSQcfOEFYAbb+ZfnKINe/I6T1YACsOwUvFc+qXY94h
-         v1yXBZ863sE7zzVUW4xXYa65dCE4oFvWsS+9Cnl6KQh9aTvdHn9apVx+djUWVIfx1cyw
-         xXdcKPtNFWTRKtjQNyPREj4p9QjavqWCcEH6Bf5XZz0zXhVApUVyPCJI8RnFWMClW49i
-         tGSj9784sA38XNYPDOA5LSYSru56IUSITvXsCTRYwIlCrbfkBF1jEQY2gYx647k48IFk
-         Qz7N/SqY6otLcPCSdsUEFujihzXHOXxABwwCJPIse9Lrr+OS9kGdoUlTwtoQAySStdUD
-         ILLw==
-X-Forwarded-Encrypted: i=1; AJvYcCUarRmQ3MVp+X4+SHSNpynviSjJdOalUjEbvrFPzy4vZTeO7IszkB45O1CkwnOWhfMy1p9Ew0Eor26pKhU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzQbt2AJm9MTmmi5r5H6nELS9Dtd6Oy9M5N+qFiFSSEKd1Ezl5b
-	A6Gww/Gpyi6eP0ymkmkYf3JiasNx4pA68mzsr8O2Ww/o3Uxh8uJ439wm
-X-Gm-Gg: ASbGnctI4TaYAdY7mSVa3pB2LHbbgTk7mz1P4//Fdu7YmJKlcKOrSgw8yrraDmNK4rG
-	/xMg9l/jaoWR8YPaxVwC8+jHD20VDkWke8N/7aI5rlWKzKovyc5q0kYeKKs3CBdapzZlgwtQVwW
-	kWWqzsxHLXv3Pxa3xjSSsT72l4F85rayG91P1tIwfmlqi1QoYv4BcvMUwTekUwamMqfpS5wPGoc
-	ivbjZ5yVJH/1r8PYLw/xj5gIgL2lriTgMvLmBJ0iHRjZXLIg+gnirZgiMcnBLUG1SzDFWjFyCzn
-	7LECTGrfVl6+AnJPUdoBm/R7nABQIWwHJCxO/AyIAIoIjMPYzK93AeR+SjDcCooXdPowTDfKx1h
-	muboXp6W4zdEqePSnaYpH8ujM9eU3BcHLOnEt0jeSQLYstquZL7Z74s4dawIfmawvCZWLBA==
-X-Google-Smtp-Source: AGHT+IHU+u4c4m70sp/Km2qphWV2GETQaiqBJlBLQ9oH8KuDbSRxjLHzXNgoB+GOOUcEEs7QOw2HMQ==
-X-Received: by 2002:a17:903:944:b0:295:7f1d:b02d with SMTP id d9443c01a7336-2962ad3340fmr26429125ad.22.1762314116721;
-        Tue, 04 Nov 2025 19:41:56 -0800 (PST)
-Received: from dw-tp ([171.76.85.117])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-29601a61418sm43663725ad.96.2025.11.04.19.41.45
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 04 Nov 2025 19:41:56 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, Kevin Brodsky <kevin.brodsky@arm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Andreas Larsson <andreas@gaisler.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, 
-	Borislav Petkov <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, Dave Hansen <dave.hansen@linux.intel.com>, 
-	David Hildenbrand <david@redhat.com>, "David S. Miller" <davem@davemloft.net>, 
-	David Woodhouse <dwmw2@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, 
-	Jann Horn <jannh@google.com>, Juergen Gross <jgross@suse.com>, 
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>, 
-	Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Ryan Roberts <ryan.roberts@arm.com>, 
-	Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, 
-	Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>, 
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
-	sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org, x86@kernel.org
-Subject: Re: [PATCH v4 03/12] powerpc/mm: implement arch_flush_lazy_mmu_mode()
-In-Reply-To: <20251029100909.3381140-4-kevin.brodsky@arm.com>
-Date: Wed, 05 Nov 2025 08:45:06 +0530
-Message-ID: <87pl9x41c5.ritesh.list@gmail.com>
-References: <20251029100909.3381140-1-kevin.brodsky@arm.com> <20251029100909.3381140-4-kevin.brodsky@arm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1WRp1GRYz2yVP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 14:45:08 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=canb.auug.org.au;
+	s=202503; t=1762314307;
+	bh=u4a8kzakFPj8vNRJV1Rd0XvaxUsFNMpjZbVNQGFPFD8=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=mfXp85mMKWeIafO1zauT/CzEiNstAPwrVl2SSTLn6fPr8xpC249CiwGOkVIEul3Rc
+	 HE7tAM35WiQCCwda8nBKlZ7zOP7WRLu/+mVRzdPvg9hoVfGMsBAuVnUd29A7T1SV+z
+	 WzczxJLd04qrGsmXz/Uth3+r+J6XADoFcGhXyUgtgYqzMv3Zjy95b5hOtSiZxBkW4K
+	 mF7vcnnDPF6N0uetnjcJFx8nUk+TdNZE8n+kZKU3N7DGEpnoQGdjCPtwdQEM4j6SXQ
+	 V2rEKUNUdwy7HpthAs/RXgY7ai8/6QPGjFFJ53Rr0kZxTx5t06RkN3n4YUsqqRwctX
+	 DD+gP/nkBa6qw==
+Received: from authenticated.ozlabs.org (localhost [127.0.0.1])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (4096 bits) server-digest SHA256)
+	(Client did not present a certificate)
+	by mail.ozlabs.org (Postfix) with ESMTPSA id 4d1WRk6GDzz4w1h;
+	Wed, 05 Nov 2025 14:45:06 +1100 (AEDT)
+Date: Wed, 5 Nov 2025 14:45:06 +1100
+From: Stephen Rothwell <sfr@canb.auug.org.au>
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+Cc: Venkat Rao Bagalkote <venkat88@linux.ibm.com>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>, LKML <linux-kernel@vger.kernel.org>, Linux Next
+ Mailing List <linux-next@vger.kernel.org>, linuxppc-dev
+ <linuxppc-dev@lists.ozlabs.org>
+Subject: Re: [linux-next20251103] Boot Fail on IBM Power Server
+Message-ID: <20251105144506.01ba08c8@canb.auug.org.au>
+In-Reply-To: <87seet45z0.ritesh.list@gmail.com>
+References: <5fb6199f-7077-45a2-9a54-2ef731d8a606@linux.ibm.com>
+	<87seet45z0.ritesh.list@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -105,84 +70,46 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
+Content-Type: multipart/signed; boundary="Sig_/l+UQhk=DxnBs257YrwYF89e";
+ protocol="application/pgp-signature"; micalg=pgp-sha256
 
-Kevin Brodsky <kevin.brodsky@arm.com> writes:
+--Sig_/l+UQhk=DxnBs257YrwYF89e
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: quoted-printable
 
-> Upcoming changes to the lazy_mmu API will cause
-> arch_flush_lazy_mmu_mode() to be called when leaving a nested
-> lazy_mmu section.
+Hi all,
+
+On Wed, 05 Nov 2025 07:04:59 +0530 Ritesh Harjani (IBM) <ritesh.list@gmail.=
+com> wrote:
 >
-> Move the relevant logic from arch_leave_lazy_mmu_mode() to
-> arch_flush_lazy_mmu_mode() and have the former call the latter.
->
-> Note: the additional this_cpu_ptr() on the
-> arch_leave_lazy_mmu_mode() path will be removed in a subsequent
-> patch.
->
-> Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
-> ---
->  .../powerpc/include/asm/book3s/64/tlbflush-hash.h | 15 +++++++++++----
->  1 file changed, 11 insertions(+), 4 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-> index 146287d9580f..7704dbe8e88d 100644
-> --- a/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-> +++ b/arch/powerpc/include/asm/book3s/64/tlbflush-hash.h
-> @@ -41,6 +41,16 @@ static inline void arch_enter_lazy_mmu_mode(void)
->  	batch->active = 1;
->  }
->  
-> +static inline void arch_flush_lazy_mmu_mode(void)
-> +{
-> +	struct ppc64_tlb_batch *batch;
-> +
-> +	batch = this_cpu_ptr(&ppc64_tlb_batch);
-> +
-> +	if (batch->index)
-> +		__flush_tlb_pending(batch);
-> +}
-> +
+> Since you must have the previous linux-next tag which was working for
+> you - do you think you can git bisect to identify the problem patch
+> (which if reverted boots fine?)
 
-This looks a bit scary since arch_flush_lazy_mmu_mode() is getting
-called from several of the places in later patches(). 
+You are better off bisecting from Linus' tree (which was SHA
+6146a0f1dfae for next-20251103) to the linux-next tag - assuming that
+Linus' tree is OK.
 
-Although I think arch_flush_lazy_mmu_mode() will only always be called
-in nested lazy mmu case right?
+Also, please cut down on what you quote in replies.
+--=20
+Cheers,
+Stephen Rothwell
 
-Do you think we can add a VM_BUG_ON(radix_enabled()); in above to make
-sure the above never gets called in radix_enabled() case. 
+--Sig_/l+UQhk=DxnBs257YrwYF89e
+Content-Type: application/pgp-signature
+Content-Description: OpenPGP digital signature
 
-I am still going over the patch series, but while reviewing this I
-wanted to take your opinion.
+-----BEGIN PGP SIGNATURE-----
 
-Ohh wait.. There is no way of knowing the return value from
-arch_enter_lazy_mmu_mode().. I think you might need a similar check to
-return from arch_flush_lazy_mmu_mode() too, if radix_enabled() is true.
+iQEzBAEBCAAdFiEENIC96giZ81tWdLgKAVBC80lX0GwFAmkKyEIACgkQAVBC80lX
+0Gz04Qf/bIlXkSw/IRoCLGG/j6ZOLEYV6DYftSarKyl+Gq3+j8Azzyc5rqLEeV/C
+Oqf//MUhzlCfnLtCYclSFBfDYr/w3pf8dSkzi3hOMXF/wqGfAHR++FC6cXNYyIj3
+3y3KTISr9kd7QUfYmsa3BVD6o1ozmvjGFXMr+YsQ5EOUujg4iC6js6W/ZvZ8Pj4o
+80XcL/+UTQGO4mCY+OMth3KvIFlIdi8UZQQ8c+KEaAka5tJJVXAzMekchUH39pwT
+6LgUaDYJ1wrAxKzsaK9mUdJxjaqwPb+neL0BVBVQ+kBfgKWGzUNZJJyRXNHVFXHQ
+nQXcSoAYWUIzKEbIiwZI7KqSW1vghg==
+=1fvF
+-----END PGP SIGNATURE-----
 
-
--ritesh
-
-
->  static inline void arch_leave_lazy_mmu_mode(void)
->  {
->  	struct ppc64_tlb_batch *batch;
-> @@ -49,14 +59,11 @@ static inline void arch_leave_lazy_mmu_mode(void)
->  		return;
->  	batch = this_cpu_ptr(&ppc64_tlb_batch);
->  
-> -	if (batch->index)
-> -		__flush_tlb_pending(batch);
-> +	arch_flush_lazy_mmu_mode();
->  	batch->active = 0;
->  	preempt_enable();
->  }
->  
-> -#define arch_flush_lazy_mmu_mode()      do {} while (0)
-> -
->  extern void hash__tlbiel_all(unsigned int action);
->  
->  extern void flush_hash_page(unsigned long vpn, real_pte_t pte, int psize,
-> -- 
-> 2.47.0
+--Sig_/l+UQhk=DxnBs257YrwYF89e--
 
