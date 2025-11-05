@@ -1,100 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-13786-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13787-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE1C9CCF9F8
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Nov 2025 09:01:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F33B8CCF9F8
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Nov 2025 09:22:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d1fSj2zxZz2yrT;
-	Wed,  5 Nov 2025 20:01:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::102e"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762333285;
-	cv=none; b=OB2LaCC2hxnioGsxZFC7yJIcW7Cc7sLDvEkWBlWvqRRvWHJ+8Or+uY3yXZKw7qMKJDhaUB3f69LsiKzE3BGpqsKB2mqd74Ne5db9dAFZNPG0Byb/GIC2tLKZL4iFQlAjdBuEQIjJ1x4z3SOYeO9PGrNnHdINGy/JygnEZn2+Qxc+rP+4IAXcQM322kdL7WdCOA03rFaTacr+OdeVC+Mys/nSlA7wIDSv7DnHmdSpNDB9UkRI+6U+DyoiE84qXBxX+tXF7vOrE+mjIXbJgQh4Kunb8tPawh3a9aejpjXagk9RUhyNiehyFVYKF7ZEYCfTjG/m8xXGoXQpUFohh1s1og==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d1fx42gtRz2yrT;
+	Wed,  5 Nov 2025 20:22:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762334552;
+	cv=none; b=eh/GqRgB8dDi2NCZ1aln5WaEgrxcoliwDVjaffpaMRVbF9YY+7S6nC4GP08sWUxcb/TrjgdGNtAImMXbtT3AFhqjbax2lZKjFxcZ0GhC1zJiiAr1mjk7RXr3S7jDMuJPMDPeccKFndvQY/pP4GhVa0var/awSW/aA2du1mb4JddX1UEwSWGXvcrPKNXJMWopDu3Xrods4zM80tpnpJMYzVC82Rti+b3atunaFrePYYBqelXOIeZPXTUpcCGj28YECLDcldKRDKmSQrfxQQjQLPsfYgi9jMWmGe+g+bqE0Mx1x1AWZIzIaQO57nYklZ76n6ZV8+CTpD/LhDp56jTx3Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762333285; c=relaxed/relaxed;
-	bh=BqwAluvFQHR3rGs29bqhyFCcj3SAHqQXu+Y8BdSkuwM=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-Version:Content-Type; b=CcMdPA9gWF464nm4ZgpH8/lT2Argd4b5fItSXJ+fHgAWDdoiytTZ/TRY/HbtQLu4pI8u4LkwuX6LkEVjg5x5ZREc5ZpiqnELDsZh4Rg+KDkpfcI6Y1KQukSIULknRuTaKtdzl5HNE3PpS6k+vax8KNMpxfgQymyor98LySxFXshQ9xJLdS7/fWX5BIIW8lB+jSauaxKEEJPN9Fr3hyYInlTo44GFkiySTRjPn9qXNQAA8B4rmUWA4LkhKU05OiA3lZpl/GXGV1i4A257Gxy8TUDSxcwfIYliz+iKREVGkd/LSeeN5WNoOGYft1wQh5m68NqefHG+gt2BqZjVLhs+jg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=XNUnLxvN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1762334552; c=relaxed/relaxed;
+	bh=oCaa744/yx6Gsm/RozBFAn6s5R65rM23DqxrRNPJW44=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=TGT0R0YM47Wm+a9F/hIcs+7peyGfBczGbqIO5fT5bmkKV7YlKU7Q0BY0UDColGrdWswHT6On5GzlxSbAHAWjRRtBKM/2P6JVKFnjR5NfYhQScJYRfEBXM6Tv6lXPDBPHhUkfxsRJVZWe3ovgPqReRk/6caz4MSUK5qiyhDdSOhUmBAtVdVwRFL1Lr5UVGcVcKuNQJr9B+W3EhE8GIdNG0B+zJuXkRhKs/WwWqov2ekt6NnYX6BcJpgNc/e9ZQMBG/qFJvLdf5X7TAkydFfkgU1tIQ6nQozB6FrWHfeHzJ5N6UV3W83VAiI3GoQ++bd2Mw3RVyjmDs6JSCyIxSLtEAA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eRH98J6F; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=XNUnLxvN;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eRH98J6F;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::102e; helo=mail-pj1-x102e.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x102e.google.com (mail-pj1-x102e.google.com [IPv6:2607:f8b0:4864:20::102e])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=venkat88@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1fSh2BPpz2yjp
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 20:01:23 +1100 (AEDT)
-Received: by mail-pj1-x102e.google.com with SMTP id 98e67ed59e1d1-3407f385dd0so4241101a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Nov 2025 01:01:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1762333277; x=1762938077; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=BqwAluvFQHR3rGs29bqhyFCcj3SAHqQXu+Y8BdSkuwM=;
-        b=XNUnLxvNu9cYkx8CqAQjZm3e04j0HJzlUC+V6ykt+4N6Ahw7NSIolxU0FUcgfGXZHF
-         L1/Rn6FJmYOrb5R3OQ1qVfRVTPp7tGTUMrC6olI2HQedFDIssiXLqEjka3k0ZctDwIRS
-         ku7AyiGsIiNwgG+HLJIoKMRhexJqvu8NSkkFxAwSn77EX2APn9RhkCv7eEKoiupCsTIm
-         hW69/JEAHl/ZhnGdbVKf4nmKijHl0RaA+SwnfIi5VuvI4u4jy+VWuHCkNoboVqIeF2b/
-         u/hquZUOzXDrYnwbqBHinArLNgFTSIe+72XY1ONLBUZDNVf43Tx3UgRO+l0HSTbUUyat
-         XVhQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762333277; x=1762938077;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=BqwAluvFQHR3rGs29bqhyFCcj3SAHqQXu+Y8BdSkuwM=;
-        b=FoGknfGlcXXnVa6wlowV6ClgxZu+yFoa+FMl1z4WKvf2stB7m7emy0PJna1b7e/8F+
-         z7JaVJVSpiHosFuUA6esXsh0LO7UxylgrhSHlniAmp7jE0cIZAtcJA5IVAI1hRUcu8nu
-         XlptuTpnIfMhsvw2RLapulesYG5ZDtx8FoeGKXE16omO3/+Ge10XMaj00fPiFY2m/U49
-         GvhJvboZqwMoYx2jmJZ24FlcocNBCzqmt/n1S7HDzYV9gDphEvjrxY6qE7GtPh7OtVzb
-         M0ce1p8eE6fYT1n4SdSfhsPRe8sMobXyBIfwfAZNjTTzvI0XYzL3DAOC2h3rdjNlzfRf
-         v/dQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUHcoEFZ998zNXPUwNjmFdD3uHL91Srf0zpXv4Ofu7Aw0rN7+sJ/1ozryOJW0BA8Rv/Mythf1fbZ79aavk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzU6b6KHg2JcyjtNFSARqLI6LvlrKCYflkYs0amF0UDCJl2ctky
-	RnucKSDUAkhcP4cbZ9Z+HNwjK0BB86/f1BrNJdkeobib4FsFHkzWZzxz
-X-Gm-Gg: ASbGncu1BdNuKDZ2TtpMS986JaaRA2nAWD5+88IL7F0w6IzpwTtFFP8yA6dqbI9hNOt
-	Dt3rGonEUGYAq6pnypdEP4owi9TV9wz33P7W31QFOksAsAnY9HCG9aS3SKJ7UufMMSHeMMXdWmF
-	eMrrq1fJ26pIO82NZ6WZTv9H+pyNDIYzvsENHaMTp2zDUgDoZZnYmXiwyau5vSsA8d5FdMO+ro9
-	S5LB1kWM4NlcpZDD/+oE4Qmcw8UzyINTz+G4Q6EdVfAMss9mG8VWp0OP1A+x6aG6x/GLpzGX1o0
-	iUK1p//+yCyr/TZjkiEvyzOSxAXkFBoVSv89j/FYM/y6KYeq3v51t2iUc9kU9c9BoP1YBXyFvwv
-	y1LIqKiigVqobB/NoSmCWn8Hfbi7HrSROOlJxb7wvRigeWvTRoWhZj4B87SAEu1sRrzhO+9JQu7
-	t8pOIM
-X-Google-Smtp-Source: AGHT+IHHv+LyuTSVYYYzkbgRnz7hULJzgzWM0oNnTXqbUlny/y0AGDg1tLVk5Pgi5QjOwQ4eknTvSQ==
-X-Received: by 2002:a17:90b:51c8:b0:340:f05a:3ed1 with SMTP id 98e67ed59e1d1-341a6dc8735mr2732523a91.21.1762333276313;
-        Wed, 05 Nov 2025 01:01:16 -0800 (PST)
-Received: from dw-tp ([171.76.85.117])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-341a68c822dsm2153637a91.8.2025.11.05.01.01.05
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 05 Nov 2025 01:01:15 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org
-Cc: linux-kernel@vger.kernel.org, Kevin Brodsky <kevin.brodsky@arm.com>, 
-	Alexander Gordeev <agordeev@linux.ibm.com>, Andreas Larsson <andreas@gaisler.com>, 
-	Andrew Morton <akpm@linux-foundation.org>, Boris Ostrovsky <boris.ostrovsky@oracle.com>, 
-	Borislav Petkov <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>, 
-	Christophe Leroy <christophe.leroy@csgroup.eu>, Dave Hansen <dave.hansen@linux.intel.com>, 
-	David Hildenbrand <david@redhat.com>, "David S. Miller" <davem@davemloft.net>, 
-	David Woodhouse <dwmw2@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, 
-	Jann Horn <jannh@google.com>, Juergen Gross <jgross@suse.com>, 
-	"Liam R. Howlett" <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>, 
-	Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>, 
-	Peter Zijlstra <peterz@infradead.org>, Ryan Roberts <ryan.roberts@arm.com>, 
-	Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, 
-	Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>, 
-	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
-	sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org, x86@kernel.org
-Subject: Re: [PATCH v4 07/12] mm: enable lazy_mmu sections to nest
-In-Reply-To: <20251029100909.3381140-8-kevin.brodsky@arm.com>
-Date: Wed, 05 Nov 2025 14:19:03 +0530
-Message-ID: <87ms5050g0.ritesh.list@gmail.com>
-References: <20251029100909.3381140-1-kevin.brodsky@arm.com> <20251029100909.3381140-8-kevin.brodsky@arm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1fx31RWQz2yjp
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 20:22:30 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5A55udU4007542;
+	Wed, 5 Nov 2025 09:22:26 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=oCaa74
+	4/yx6Gsm/RozBFAn6s5R65rM23DqxrRNPJW44=; b=eRH98J6FH91A4UZTTLgcPV
+	WvAtl+xZp6NDo6wrxaVOB3jSxqwF7KroIzhlfuFQRovDNlp2WOVH5480nZlCUQ73
+	ilygzTTL3hSo1sFDIsIA3DSaG/QWqKf2PYq9aceO6aMfhbppKJnM7bYxlMjbLfB5
+	GKIsXV4gJrqEFKPcb094QeHi7Ro3FiwUJ0knt3AUnVpQG3/IWlrWAu8DxAgzokGQ
+	ieECzr7AwZOkxGynvqMWByzv7WeL+Ri5dUt+miqOPYLwqAfvSCB3Y2SeF6d7jF/D
+	h8FBg4B/PHsqt7W0Fb0MDn/Boq/Gv2IPAiU/4PNpoKMF5mxkAc/Ovcrd8EyDm/oQ
+	==
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4a59vugcmf-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Nov 2025 09:22:26 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5A599D0r012923;
+	Wed, 5 Nov 2025 09:22:25 GMT
+Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4a5y81y1md-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 05 Nov 2025 09:22:25 +0000
+Received: from smtpav06.dal12v.mail.ibm.com (smtpav06.dal12v.mail.ibm.com [10.241.53.105])
+	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5A59M9XO30016136
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 5 Nov 2025 09:22:10 GMT
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 0B9D658059;
+	Wed,  5 Nov 2025 09:22:23 +0000 (GMT)
+Received: from smtpav06.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 90A5D58055;
+	Wed,  5 Nov 2025 09:22:19 +0000 (GMT)
+Received: from [9.98.109.80] (unknown [9.98.109.80])
+	by smtpav06.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Wed,  5 Nov 2025 09:22:19 +0000 (GMT)
+Message-ID: <2ab4297c-b4b5-4eb2-8389-cd9fe29d7bc3@linux.ibm.com>
+Date: Wed, 5 Nov 2025 14:52:18 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -108,283 +80,136 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [mainline]Error while running make modules_install command
+Content-Language: en-GB
+To: Nathan Chancellor <nathan@kernel.org>, Omar Sandoval <osandov@osandov.com>
+Cc: Samir M <samir@linux.ibm.com>, linux-kernel@vger.kernel.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        linuxppc-dev@lists.ozlabs.org, dimitri.ledkov@surgut.co.uk,
+        stable@vger.kernel.org, Nicolas Schier <nsc@kernel.org>,
+        Alexey Gladkov <legion@kernel.org>, linux-debuggers@vger.kernel.org
+References: <7fef7507-ad64-4e51-9bb8-c9fb6532e51e@linux.ibm.com>
+ <56905387-ec43-4f89-9146-0db6889e46ab@linux.ibm.com>
+ <20251105005603.GA769905@ax162>
+From: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+In-Reply-To: <20251105005603.GA769905@ax162>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: ya8hwmud08LkMknuqq7GXmfR9YS6A8zH
+X-Proofpoint-GUID: ya8hwmud08LkMknuqq7GXmfR9YS6A8zH
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTAxMDAyMSBTYWx0ZWRfX6CR4MZ02sUer
+ 1aMpOY+rDbjWAsp6mrqRyT1PA8iB9yf0U0FnlwHJTI3D5/cuqU2sRjXHhKQzDTgEAhoPmIIOor9
+ 9jx5Yz2a9CJAcEBfklG5csj+5SfUA5PO/S3EPueuP44a1rA51YDtRprp9vBK9z1d3NE4tgPKtT9
+ 5E6JIIIPPQPvjIH94TvteBCNq27cW50JWBqCuW+RrGQ6wTM43CyxVZniu3Qfzx7xA3ZSaEmrFtT
+ dNdZnVymY7aXQbm/PFHEuJFS3Nuq/HzhUE7l3QcmQFqCWt/RlckYwvA56ymMu2mmJYc/s93eTzw
+ mnthn+kAwgjGF2fpi6w11/Os26xa6qUxoF94xYtdxwvverDCSY2ejYxeaX1+nTrs4kHuC3PAAVw
+ FUMK1/AM5A68U2gUtOxinxOiBTKW+w==
+X-Authority-Analysis: v=2.4 cv=U6qfzOru c=1 sm=1 tr=0 ts=690b1752 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=WG_6xDmpAAAA:8 a=s5HezVcRJVFevGRlhjIA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10 a=vnvZt3YqmSlbJLwVaSfU:22
+ a=cPQSjfK2_nFv0Q5t_7PE:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-11-05_03,2025-11-03_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ bulkscore=0 adultscore=0 impostorscore=0 spamscore=0 phishscore=0
+ clxscore=1011 malwarescore=0 lowpriorityscore=0 suspectscore=0
+ priorityscore=1501 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2510240000
+ definitions=main-2511010021
 
-Kevin Brodsky <kevin.brodsky@arm.com> writes:
 
-> Despite recent efforts to prevent lazy_mmu sections from nesting, it
-> remains difficult to ensure that it never occurs - and in fact it
-> does occur on arm64 in certain situations (CONFIG_DEBUG_PAGEALLOC).
-> Commit 1ef3095b1405 ("arm64/mm: Permit lazy_mmu_mode to be nested")
-> made nesting tolerable on arm64, but without truly supporting it:
-> the inner call to leave() disables the batching optimisation before
-> the outer section ends.
+On 05/11/25 6:26 am, Nathan Chancellor wrote:
+> + Nicolas and Alexey, just as an FYI.
 >
-> This patch actually enables lazy_mmu sections to nest by tracking
-> the nesting level in task_struct, in a similar fashion to e.g.
-> pagefault_{enable,disable}(). This is fully handled by the generic
-> lazy_mmu helpers that were recently introduced.
+> Top of thread is:
 >
-> lazy_mmu sections were not initially intended to nest, so we need to
-> clarify the semantics w.r.t. the arch_*_lazy_mmu_mode() callbacks.
-> This patch takes the following approach:
+> https://lore.kernel.org/7fef7507-ad64-4e51-9bb8-c9fb6532e51e@linux.ibm.com/
 >
-> * The outermost calls to lazy_mmu_mode_{enable,disable}() trigger
->   calls to arch_{enter,leave}_lazy_mmu_mode() - this is unchanged.
+> On Tue, Nov 04, 2025 at 04:54:38PM +0530, Venkat Rao Bagalkote wrote:
+>> IBM CI has also reported this error.
+>>
+>>
+>> Error:
+>>
+>>
+>> depmod: ERROR: kmod_builtin_iter_next: unexpected string without modname
+>> prefix
+>>    INSTALL /boot
+>> depmod: ERROR: kmod_builtin_iter_next: unexpected string without modname
+>> prefix
+>> depmod: ERROR: kmod_builtin_iter_next: unexpected string without modname
+>> prefix
+>>
+>>
+>> Git bisect is pointing to below commit as first bad commit.
+>>
+>>
+>> d50f21091358b2b29dc06c2061106cdb0f030d03 is the first bad commit
+>> commit d50f21091358b2b29dc06c2061106cdb0f030d03
+>> Author: Dimitri John Ledkov <dimitri.ledkov@surgut.co.uk>
+>> Date:   Sun Oct 26 20:21:00 2025 +0000
+>>
+>>      kbuild: align modinfo section for Secureboot Authenticode EDK2 compat
+> Thank you for the bisect. I can reproduce this with at least kmod 29.1,
+> which is the version I can see failing in drgn's CI from Ubuntu Jammy
+> (but I did not see it with kmod 34, which is the latest version in Arch
+> Linux at the moment).
 >
-> * Nested calls to lazy_mmu_mode_{enable,disable}() are not forwarded
->   to the arch via arch_{enter,leave} - lazy MMU remains enabled so
->   the assumption is that these callbacks are not relevant. However,
->   existing code may rely on a call to disable() to flush any batched
->   state, regardless of nesting. arch_flush_lazy_mmu_mode() is
->   therefore called in that situation.
+> Could you and Omar verify if the following diff resolves the error for
+> you? I think this would allow us to keep Dimitri's fix for the
+> Authenticode EDK2 calculation (i.e., the alignment) while keeping kmod
+> happy. builtin.modules.modinfo is the same after this diff as it was
+> before Dimitri's change for me.
 >
-> A separate interface was recently introduced to temporarily pause
-> the lazy MMU mode: lazy_mmu_mode_{pause,resume}(). pause() fully
-> exits the mode *regardless of the nesting level*, and resume()
-> restores the mode at the same nesting level.
+> Cheers,
+> Nathan
 >
-> Whether the mode is actually enabled or not at any point is tracked
-> by a separate "active" field in task_struct; this makes it possible
-> to check invariants in the generic API, and to expose a new
-> in_lazy_mmu_mode() helper to replace the various ways arch's
-> currently track whether the mode is enabled (this will be done in
-> later patches).
->
-> In summary (nesting/active represent the values *after* the call):
->
-> lazy_mmu_mode_enable()		-> arch_enter()	    nesting=3D1 active=3D1
->     lazy_mmu_mode_enable()	-> =C3=B8		    nesting=3D2 active=3D1
-> 	lazy_mmu_mode_pause()	-> arch_leave()     nesting=3D2 active=3D0
-> 	lazy_mmu_mode_resume()	-> arch_enter()     nesting=3D2 active=3D1
->     lazy_mmu_mode_disable()	-> arch_flush()     nesting=3D1 active=3D1
-> lazy_mmu_mode_disable()		-> arch_leave()     nesting=3D0 active=3D0
->
-> Note: in_lazy_mmu_mode() is added to <linux/sched.h> to allow arch
-> headers included by <linux/pgtable.h> to use it.
->
-> Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
-> ---
->  arch/arm64/include/asm/pgtable.h | 12 ------
->  include/linux/mm_types_task.h    |  5 +++
->  include/linux/pgtable.h          | 67 ++++++++++++++++++++++++++++++--
->  include/linux/sched.h            | 16 ++++++++
->  4 files changed, 84 insertions(+), 16 deletions(-)
->
-> diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pg=
-table.h
-> index 54f8d6bb6f22..535435248923 100644
-> --- a/arch/arm64/include/asm/pgtable.h
-> +++ b/arch/arm64/include/asm/pgtable.h
-> @@ -82,18 +82,6 @@ static inline void queue_pte_barriers(void)
->=20=20
->  static inline void arch_enter_lazy_mmu_mode(void)
->  {
-> -	/*
-> -	 * lazy_mmu_mode is not supposed to permit nesting. But in practice this
-> -	 * does happen with CONFIG_DEBUG_PAGEALLOC, where a page allocation
-> -	 * inside a lazy_mmu_mode section (such as zap_pte_range()) will change
-> -	 * permissions on the linear map with apply_to_page_range(), which
-> -	 * re-enters lazy_mmu_mode. So we tolerate nesting in our
-> -	 * implementation. The first call to arch_leave_lazy_mmu_mode() will
-> -	 * flush and clear the flag such that the remainder of the work in the
-> -	 * outer nest behaves as if outside of lazy mmu mode. This is safe and
-> -	 * keeps tracking simple.
-> -	 */
-> -
->  	if (in_interrupt())
->  		return;
->=20=20
-> diff --git a/include/linux/mm_types_task.h b/include/linux/mm_types_task.h
-> index a82aa80c0ba4..632d404f8191 100644
-> --- a/include/linux/mm_types_task.h
-> +++ b/include/linux/mm_types_task.h
-> @@ -88,4 +88,9 @@ struct tlbflush_unmap_batch {
->  #endif
->  };
->=20=20
-> +struct lazy_mmu_state {
-> +	u8 nesting_level;
-> +	bool active;
-> +};
+> diff --git a/scripts/Makefile.vmlinux b/scripts/Makefile.vmlinux
+> index ced4379550d7..c3f135350d7e 100644
+> --- a/scripts/Makefile.vmlinux
+> +++ b/scripts/Makefile.vmlinux
+> @@ -102,11 +102,23 @@ vmlinux: vmlinux.unstripped FORCE
+>   # modules.builtin.modinfo
+>   # ---------------------------------------------------------------------------
+>   
+> +# .modinfo in vmlinux is aligned to 8 bytes for compatibility with tools that
+> +# expect sufficiently aligned sections but the additional NULL bytes used for
+> +# padding to satisfy this requirement break certain versions of kmod with
+> +#
+> +#   depmod: ERROR: kmod_builtin_iter_next: unexpected string without modname prefix
+> +#
+> +# Strip the trailing padding bytes after extracting the .modinfo sections to
+> +# comply with what kmod expects to parse.
+> +quiet_cmd_modules_builtin_modinfo = GEN     $@
+> +      cmd_modules_builtin_modinfo = $(cmd_objcopy); \
+> +                                    sed -i 's/\x00\+$$/\x00/g' $@
 > +
->  #endif /* _LINUX_MM_TYPES_TASK_H */
-> diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-> index b5fdf32c437f..e6064e00b22d 100644
-> --- a/include/linux/pgtable.h
-> +++ b/include/linux/pgtable.h
-> @@ -228,27 +228,86 @@ static inline int pmd_dirty(pmd_t pmd)
->   * of the lazy mode. So the implementation must assume preemption may be=
- enabled
->   * and cpu migration is possible; it must take steps to be robust agains=
-t this.
->   * (In practice, for user PTE updates, the appropriate page table lock(s=
-) are
-> - * held, but for kernel PTE updates, no lock is held). Nesting is not pe=
-rmitted
-> - * and the mode cannot be used in interrupt context.
-> + * held, but for kernel PTE updates, no lock is held). The mode cannot b=
-e used
-> + * in interrupt context.
-> + *
-> + * The lazy MMU mode is enabled for a given block of code using:
-> + *
-> + *   lazy_mmu_mode_enable();
-> + *   <code>
-> + *   lazy_mmu_mode_disable();
-> + *
-> + * Nesting is permitted: <code> may itself use an enable()/disable() pai=
-r.
-> + * A nested call to enable() has no functional effect; however disable()=
- causes
-> + * any batched architectural state to be flushed regardless of nesting. =
-After a
-> + * call to disable(), the caller can therefore rely on all previous page=
- table
-> + * modifications to have taken effect, but the lazy MMU mode may still be
-> + * enabled.
-> + *
-> + * In certain cases, it may be desirable to temporarily pause the lazy M=
-MU mode.
-> + * This can be done using:
-> + *
-> + *   lazy_mmu_mode_pause();
-> + *   <code>
-> + *   lazy_mmu_mode_resume();
-> + *
-> + * This sequence must only be used if the lazy MMU mode is already enabl=
-ed.
-> + * pause() ensures that the mode is exited regardless of the nesting lev=
-el;
-> + * resume() re-enters the mode at the same nesting level. <code> must no=
-t modify
-> + * the lazy MMU state (i.e. it must not call any of the lazy_mmu_mode_*
-> + * helpers).
-> + *
-> + * in_lazy_mmu_mode() can be used to check whether the lazy MMU mode is
-> + * currently enabled.
->   */
->  #ifdef CONFIG_ARCH_HAS_LAZY_MMU_MODE
->  static inline void lazy_mmu_mode_enable(void)
->  {
-> -	arch_enter_lazy_mmu_mode();
-> +	struct lazy_mmu_state *state =3D &current->lazy_mmu_state;
-> +
-> +	VM_WARN_ON_ONCE(state->nesting_level =3D=3D U8_MAX);
-> +	/* enable() must not be called while paused */
-> +	VM_WARN_ON(state->nesting_level > 0 && !state->active);
-> +
-> +	if (state->nesting_level++ =3D=3D 0) {
-> +		state->active =3D true;
-> +		arch_enter_lazy_mmu_mode();
-> +	}
->  }
+>   OBJCOPYFLAGS_modules.builtin.modinfo := -j .modinfo -O binary
+>   
+>   targets += modules.builtin.modinfo
+>   modules.builtin.modinfo: vmlinux.unstripped FORCE
+> -	$(call if_changed,objcopy)
+> +	$(call if_changed,modules_builtin_modinfo)
+>   
+>   # modules.builtin
+>   # ---------------------------------------------------------------------------
+>
 
-Some architectures disables preemption in their
-arch_enter_lazy_mmu_mode(). So shouldn't the state->active =3D true should
-happen after arch_enter_lazy_mmu_mode() has disabled preemption()? i.e.
-
-  static inline void lazy_mmu_mode_enable(void)
-  {
- -	arch_enter_lazy_mmu_mode();
- +	struct lazy_mmu_state *state =3D &current->lazy_mmu_state;
- +
- +	VM_WARN_ON_ONCE(state->nesting_level =3D=3D U8_MAX);
- +	/* enable() must not be called while paused */
- +	VM_WARN_ON(state->nesting_level > 0 && !state->active);
- +
- +	if (state->nesting_level++ =3D=3D 0) {
- +		arch_enter_lazy_mmu_mode();
- +		state->active =3D true;
- +	}
-  }
-
-... I think it make more sense to enable the state after the arch_**
-call right.
-
->=20=20
->  static inline void lazy_mmu_mode_disable(void)
->  {
-> -	arch_leave_lazy_mmu_mode();
-> +	struct lazy_mmu_state *state =3D &current->lazy_mmu_state;
-> +
-> +	VM_WARN_ON_ONCE(state->nesting_level =3D=3D 0);
-> +	VM_WARN_ON(!state->active);
-> +
-> +	if (--state->nesting_level =3D=3D 0) {
-> +		state->active =3D false;
-> +		arch_leave_lazy_mmu_mode();
-> +	} else {
-> +		/* Exiting a nested section */
-> +		arch_flush_lazy_mmu_mode();
-> +	}
->  }
-
-This looks ok though.
-
->=20=20
->  static inline void lazy_mmu_mode_pause(void)
->  {
-> +	struct lazy_mmu_state *state =3D &current->lazy_mmu_state;
-> +
-> +	VM_WARN_ON(state->nesting_level =3D=3D 0 || !state->active);
-> +
-> +	state->active =3D false;
->  	arch_leave_lazy_mmu_mode();
->  }
->=20=20
->  static inline void lazy_mmu_mode_resume(void)
->  {
-> +	struct lazy_mmu_state *state =3D &current->lazy_mmu_state;
-> +
-> +	VM_WARN_ON(state->nesting_level =3D=3D 0 || state->active);
-> +
-> +	state->active =3D true;
->  	arch_enter_lazy_mmu_mode();
->  }
-
-Ditto.
-
--ritesh
+This change fixes the reported issue. You can add below tag as well, 
+while sending a patch.
 
 
->  #else
-> diff --git a/include/linux/sched.h b/include/linux/sched.h
-> index cbb7340c5866..11566d973f42 100644
-> --- a/include/linux/sched.h
-> +++ b/include/linux/sched.h
-> @@ -1441,6 +1441,10 @@ struct task_struct {
->=20=20
->  	struct page_frag		task_frag;
->=20=20
-> +#ifdef CONFIG_ARCH_HAS_LAZY_MMU_MODE
-> +	struct lazy_mmu_state		lazy_mmu_state;
-> +#endif
-> +
->  #ifdef CONFIG_TASK_DELAY_ACCT
->  	struct task_delay_info		*delays;
->  #endif
-> @@ -1724,6 +1728,18 @@ static inline char task_state_to_char(struct task_=
-struct *tsk)
->  	return task_index_to_char(task_state_index(tsk));
->  }
->=20=20
-> +#ifdef CONFIG_ARCH_HAS_LAZY_MMU_MODE
-> +static inline bool in_lazy_mmu_mode(void)
-> +{
-> +	return current->lazy_mmu_state.active;
-> +}
-> +#else
-> +static inline bool in_lazy_mmu_mode(void)
-> +{
-> +	return false;
-> +}
-> +#endif
-> +
->  extern struct pid *cad_pid;
->=20=20
->  /*
-> --=20
-> 2.47.0
+Tested-by: Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+
+
+Regards,
+
+Venkat.
+
+
 
