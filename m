@@ -1,91 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-13817-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13818-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 277A4CCF9F8
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Nov 2025 20:55:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75B6FCCFA0D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Nov 2025 21:53:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d1yJy2NDTz2yjp;
-	Thu,  6 Nov 2025 07:55:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::431"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762376146;
-	cv=none; b=Ut9TsO2/wskIwwpdLfcQZwcytoeqJCcLE2wREOvzWnnPfQYtkUxqooN4RLrI8OuOMxKUBmxxOdiVuoPwuLom08DHfpic1T+W6pIrm5WAQ2jOtNzlu1OiwJ2ubCB8bfM5MCYq3JJmE5CCDkrDizPy9xmePJaHkABvqj9qpHAzq5WZTNzFm9nIkKVW5+iLM3+0JRNVwk3iIIl10RcsxX7psXL1zAVGgRKBLLHCANuaP5+pZ//5dT4U5hTsX/RTWcO6lLtMNKGG4l1nJBG4mu/IRgoE74sd8KYlv2u3weeFZr/qDH8tDAWvJ/zHiXZpuELnh6wYMfyeEFRba6+ZYHcDzw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d1zbP1sY3z2xxS;
+	Thu,  6 Nov 2025 08:53:21 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1036"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762379601;
+	cv=none; b=oibthW1HwZ+Py8zcSLjxY1bdZXQ+ex2iyIreWyGyF/9GOToyrEwgXE/65epd6hoPAcOmBbMrOV63XLunB4WgRiFLzuT9znTGyzvfZOmcUoe+Da0gX75JaxJJH+T4/el/VPGIXxWSvklyq2CAd6/4Th5t7s2A0F2sZkF2icj3Wwv5cL8r8P/u6qNnZUV+PE8A1mFCxySaJ95GIQ5yp9caJwdwU4yPfUjRlRvPimNjS8jiBToV6SvldiRwTYPhtzE6Cmt97FMxA7TcXKaYDwBUE6NcmdceKcwKefqJPcCmS9t5ejBsGDVNaCwXy+i5MImBtt1N7jK0IquujYuJROU7SA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762376146; c=relaxed/relaxed;
-	bh=hhMs1hlDgsVZf1g+dek0j89GxNp2KKlLBpBDsBeutOs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=K3XbLKcfxSqwXKv8NfiOyLAcqsqfyCG4zTyqX4ELFEj9p7zRIJ1L1xk0/drjCKnT/Y6nEi+XgPtTecoxh+shlwBzBHJVIbUuwPSQ89CU4x4YVU6fqjk+9qaMzkV7mUpbcj0DLsHz61URxi6ITcBcv35Oxw9Fh4prowfDKcadNpJSklKAOdlgANK5Hwtg0t8I8jJ8GVSVrK5/N/YaVx03+n1PgsDFFVOIma5SmH5ZEonQsAoBncdDDxDz8gVePR/8CoHzLaLvw4quOBzfOp73S1K3YNgmhPNjg87i2ogSO3+Ft71EAEQhnVI2NhOQmE/q/vZa7Js/Fgpb4pnMpc2hrw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KqRWkeP0; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1762379601; c=relaxed/relaxed;
+	bh=LXYPCL23ES9Iyb1NQ2+5KG+FblnpsKPGwtWMhH2bakQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=A847t7+8Sbm9tD85ROfRpdPCRT07fIzoUs6qtK+qnY3yW0jJAteuZOXoy16CherXwfRSKocaczUcPGzZ7Y8iebbW83kzftUfEquJfMpcBLZHSr6l0BBRfLoUWd1zklj/fHan6kVdzJ99E29FelEm0KfdsMpiPV7ohX5WSkYmK1Sdg7i7fIROgTlf9kWGd4q8Mrw9ZMSRHFhM9XGPISKxC+Gi9E1QhMQdFf3wDSoQfVkiEO7Sd6mb+9Jw9c651Jxw8g7DbcfohD74+Wcm2AHzAvPlsVvFRPOII/CCAdGilSTf+QL/COhAdCTt7DT3VXywq+bWI0jjMqysCsUS0ucy0g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=osandov.com; dkim=pass (2048-bit key; unprotected) header.d=osandov-com.20230601.gappssmtp.com header.i=@osandov-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=UlPLS24G; dkim-atps=neutral; spf=none (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=osandov@osandov.com; receiver=lists.ozlabs.org) smtp.mailfrom=osandov.com
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=osandov.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KqRWkeP0;
+	dkim=pass (2048-bit key; unprotected) header.d=osandov-com.20230601.gappssmtp.com header.i=@osandov-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=UlPLS24G;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::431; helo=mail-pf1-x431.google.com; envelope-from=rosenp@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x431.google.com (mail-pf1-x431.google.com [IPv6:2607:f8b0:4864:20::431])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=osandov.com (client-ip=2607:f8b0:4864:20::1036; helo=mail-pj1-x1036.google.com; envelope-from=osandov@osandov.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1036.google.com (mail-pj1-x1036.google.com [IPv6:2607:f8b0:4864:20::1036])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1yJw6DJvz2xS2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Nov 2025 07:55:43 +1100 (AEDT)
-Received: by mail-pf1-x431.google.com with SMTP id d2e1a72fcca58-7ad1cd0db3bso278286b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Nov 2025 12:55:43 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1zbM5hKcz2xdg
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Nov 2025 08:53:18 +1100 (AEDT)
+Received: by mail-pj1-x1036.google.com with SMTP id 98e67ed59e1d1-340ef0e6c06so48822a91.2
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 05 Nov 2025 13:53:18 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1762376142; x=1762980942; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=hhMs1hlDgsVZf1g+dek0j89GxNp2KKlLBpBDsBeutOs=;
-        b=KqRWkeP0vAdLtrO8mNhyid6KMv4CqFCSrBrYLWIJyu681/iQFswtbShGRVhylrWusq
-         Jd4wKUHv7+mbHOAhannsUPXCmS4Smn1i9OQiRvuIzaf6K7FdofJR7Sgqe0439WGpXAU1
-         4P2QFNRRkTFHJQtbeRs+9jedKmMRSLfcw+uV8lnIgij3hoceZlksBJS6O6EeNPTU5N0e
-         FmJwe/2hF6t5+UD+l83OUiHEKcBV01yaMlgYL8mXxbG73x+LofF9CvHKw2aeoWsmKEBS
-         0co1zl0tBVTFYGL5RzOfhWZRwFEBqB8eeKmQek9rbrDA4XtzW1ZE472jVNmuYX26E7GB
-         xPvg==
+        d=osandov-com.20230601.gappssmtp.com; s=20230601; t=1762379595; x=1762984395; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=LXYPCL23ES9Iyb1NQ2+5KG+FblnpsKPGwtWMhH2bakQ=;
+        b=UlPLS24GvWUTm6NRr0JweoiP4zUVgg5Ar7/0ff4y6HRnkxXZXS8ur+RE1SlKYWmLo9
+         Tq3f+3edP5mqpQB3MGiWvDt4Im+CyK1g+rtSjjfEMCFBbxu4EBL0C9MLoEB9MiQpjiuG
+         vxnPVTAJxDTXip4X+qHXfD2E7TSz0MjEfMit+zGb/lQfTYPQXUDb4DSAwf0s9JyTu+E3
+         dXFf7RE0AnGtftW/mmxglkBNQPOzDpm3H7EYRWNsNeMhBzo40s9aC/YQPHjW29XVkOFn
+         MN/K7SlZfKJzkIFZm4rMEVlUVU1t6KsqJQzktNNHJceyde0q1yxinov9quAZ3emUjq+s
+         RI9g==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762376142; x=1762980942;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=hhMs1hlDgsVZf1g+dek0j89GxNp2KKlLBpBDsBeutOs=;
-        b=hDtI5iN6tDd7vdjzHh/AT629IO9Qske95c2BuyFozZQbEfm8DiDhddIggENmzzVzVU
-         kJrqFxyeJFyR1M3r8y3lO8uGjlJIrejBGeH4ff3LlBfOvMzQbOluJ2Y0TaiYA4gvsXv+
-         9BJw6WPg2BgIqoDI1SVebn4vmoimSzLiI/a+zuj31OFgSPXa3juzHISliiHg/eL5IjoE
-         GA8PE/pNbGmpIZry0XFjRHCTPZ9kN4FHGYlsZYA+zjc+CglCWc6lTwGtS3cG7M4g2oAv
-         G60glBx/z5eZzVf19WMt7huLqRtWGi4w6NJLwHQ3f0ICtjeUhnKMBBwnWJXSX8gwPunr
-         IJuQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVsqVtmtfbWU8QSnDZIj9EYAr79yr2wxBgvDdnInVEOMX6DPtSpjvUgGHOXZA7hDI1ok2Q/suD7P4/qVPI=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxxBR9NZo2i3pCHj/6Ebvw9os6sor1GmCS+6iSIoeGpuLirk15G
-	FB1gNhwUdN4+8WMSxFXPxR5mR1Owy8Jloa8tcdNHVTJV+n22cxfdh5Uj
-X-Gm-Gg: ASbGncteBJ9IBlbahSN5XG4AxgoDfdSoOA2U3YP+ACtLeWTysQHol/x1p7Jcqrm3IVA
-	egzNFG6wyOPDVOokmbkl+/8uBzNe/6imijeNVzBpm1vU8JW3Us1HQNck2IcyguiouYDk1BOJtF6
-	y8++8g0/ZOT9vRGMFmux+sTm5/bauytMhki2lV0hsqwvLwD/FpNygEpao0cE4ZLHrkkxLiTkzDw
-	LzVDCeftdg9h7Zdqba0o90l+Bz83AFDJmVcusn5n5xGgDCKU2LE7CRwpTLFWID4cnDfhCIdCHKA
-	61mAQ0eTxpjx1QAJ10F0e3Jid+y5Z44tFYU+4MYxPn2heSMdNsmEovVseNBJ7sfzmB5WyQ9Oocm
-	NO6TeNsQOOX/+B7qbrxkeiNga7QBka8xWVE9W/6dZ3LA+Rd0=
-X-Google-Smtp-Source: AGHT+IHPFm5cGv1tt4RmeePKjzvdzFbQmc/HUxeSszlk9l9aFCxxYkmCsNAadtWmj7V2HR6zSfhavA==
-X-Received: by 2002:a05:6a00:140f:b0:7aa:bd80:f4db with SMTP id d2e1a72fcca58-7ae1c767de8mr5566668b3a.5.1762376141566;
-        Wed, 05 Nov 2025 12:55:41 -0800 (PST)
-Received: from ryzen ([2601:644:8000:8e26::ea0])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7af7f661b71sm349766b3a.12.2025.11.05.12.55.40
+        d=1e100.net; s=20230601; t=1762379595; x=1762984395;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=LXYPCL23ES9Iyb1NQ2+5KG+FblnpsKPGwtWMhH2bakQ=;
+        b=xGm+YDMiH3ozNaYjx8H4YlEayjpXBx6rwZd4EGNo8bOskopw6zHejvLY8Ux8ydYnrs
+         Ft9VcNAtEpmyGlbMgWovXDnvo89ABHhTtM9s/xnILCf4Rl+zu+bVoZZPKdmFJbMh/Jd4
+         j5dKKpvZ+mPraWP24TJaqtvrtIfxRa5JLWa22IV1NYTReW990IBOfEaY2Qz84KZ/JUjh
+         WVWNtGe8swz5P5fpKsRCAKZgjeeogwIECad8nyOUCiqjXkN7LH50S+B8buF6u24nfmQ+
+         JyNPhRj5m/ptWCk5uVx2CDFF9xH1OtnI/uVuYrsI3t/rHYktICxun0XReFehwskFNT+G
+         PTGw==
+X-Forwarded-Encrypted: i=1; AJvYcCUCF/L6ekG/sE2FH8AGv1+rbZixmNHE69zJsOlcD2hq+rd+Pq9/rQl3mVj0vPNA24Bcp/+rWNfJYXnrg5U=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yw+b3RAXuB0hV4gp7gonG02XrIU4T3mBWqcgUGhV3ow+V5NPCvx
+	6IfnTv8mgcCkfMDnegKRm5rzPpMoveLPK7hhcxxdOioGQnikSZUZX7DFnAG1iQABY1c=
+X-Gm-Gg: ASbGncsvQxZun8AM655y9zJmMTk8LQVO5z5A5csyg0JRATEBJ9MEtvDc1vIFbeQMwrt
+	F9bLk9RhrH+BE8irR0RAf+ZvyMMTPHfCs3+q3VjoNP7kx/Bi3BiN2gVVn5ZL89kQx+575hlyXjd
+	nOwVRVyBajCoEjeLs3+YV63S5uCGhztZDNl20Oncc6aAuaCbs7LkQ8kADE8bdlo2AAhsnFI27zq
+	0ubl1rHto/hfVBCkj48py739EiIzTtt+YUG6Ph9poRe+ovJvP74H6sYWI2gx4NUJPlQDH37RMzP
+	twZP7sHuPMqWqS1NG3NoBcYXiB18DSIRtYcrEbj8gzR9nb5ZuoZghwf3wsGtVuKhI+YB0VyvjWs
+	4u7CuaUeGp4wtPAwtHiYicVDy23PMh3qI3W5GneFND0QEHacxNGSnIHfL/AN3M8Uu7UkQtw==
+X-Google-Smtp-Source: AGHT+IGY0r/CwQ4uYP5m9fphBTj5UtPwNG1Wco2SGrHkrgNEwj6b42fgxZjgQDbYi9yCWcOKFr/ugw==
+X-Received: by 2002:a17:90b:1811:b0:340:b501:3ae2 with SMTP id 98e67ed59e1d1-341a6b0d5a4mr3477066a91.0.1762379595410;
+        Wed, 05 Nov 2025 13:53:15 -0800 (PST)
+Received: from telecaster ([2620:10d:c090:500::7:5bbb])
+        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-341d048e1d9sm221963a91.6.2025.11.05.13.53.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 05 Nov 2025 12:55:41 -0800 (PST)
-From: Rosen Penev <rosenp@gmail.com>
-To: linuxppc-dev@vger.kernel.org
-Cc: Rob Herring <robh@kernel.org>,
-	leoyang.li@nxp.com,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>,
+        Wed, 05 Nov 2025 13:53:14 -0800 (PST)
+Date: Wed, 5 Nov 2025 13:53:13 -0800
+From: Omar Sandoval <osandov@osandov.com>
+To: Nathan Chancellor <nathan@kernel.org>
+Cc: Dimitri John Ledkov <dimitri.ledkov@surgut.co.uk>,
+	linux-kbuild@vger.kernel.org, Samir M <samir@linux.ibm.com>,
+	linux-kernel@vger.kernel.org,
 	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	devicetree@vger.kernel.org (open list:OPEN FIRMWARE AND FLATTENED DEVICE TREE BINDINGS),
-	linuxppc-dev@lists.ozlabs.org (open list:LINUX FOR POWERPC (32-BIT AND 64-BIT)),
-	linux-kernel@vger.kernel.org (open list)
-Subject: [PATCH] Revert "powerpc: dts: mpc85xx: remove "simple-bus" compatible from ifc node"
-Date: Wed,  5 Nov 2025 12:55:24 -0800
-Message-ID: <20251105205524.17362-1-rosenp@gmail.com>
-X-Mailer: git-send-email 2.51.2
+	linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org,
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	linux-debuggers@vger.kernel.org, Nicolas Schier <nsc@kernel.org>,
+	Alexey Gladkov <legion@kernel.org>
+Subject: Re: [mainline]Error while running make modules_install command
+Message-ID: <aQvHSVXbOdiN_J5D@telecaster>
+References: <7fef7507-ad64-4e51-9bb8-c9fb6532e51e@linux.ibm.com>
+ <56905387-ec43-4f89-9146-0db6889e46ab@linux.ibm.com>
+ <aQpCE_XTU-bZHFbk@telecaster>
+ <CANBHLUhJ5UVsN4-JN2PG=jq63yGttB9BD6Qm8MgvYirTvg_stw@mail.gmail.com>
+ <20251105011548.GB769905@ax162>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,146 +101,57 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251105011548.GB769905@ax162>
 
-This reverts commit 0bf51cc9e9e57a751b4c5dacbfa499ba5cd8bd72.
+On Tue, Nov 04, 2025 at 06:15:48PM -0700, Nathan Chancellor wrote:
+> On Tue, Nov 04, 2025 at 08:35:57PM +0000, Dimitri John Ledkov wrote:
+> > On Tue, 4 Nov 2025 at 18:12, Omar Sandoval <osandov@osandov.com> wrote:
+> > > drgn's CI hit this same failure. FWIW, the commit fixed by this bisected
+> > > commit, 3e86e4d74c04 ("kbuild: keep .modinfo section in
+> > > vmlinux.unstripped"), also results in ELF segments of size 0 in vmlinux
+> > > for some configurations, which confused drgn until I added a workaround
+> > > (https://github.com/osandov/drgn/commit/2a9053de8796af866fd720a3c8c23013595d391a).
+> > > So there's some funkiness in this area.
+> 
+> Omar, could you provide me with a configuration file that reproduces
+> this for you? Is there an easy way to check for this situation on the
+> command line?
 
-simple-bus is needed for legacy platforms such as P1010 so that nodes
-are populated properly.
+Here's a script that reproduces it:
 
-Fixes fsl,ifc-nand probing under at least P1010.
+```
+#!/bin/sh
 
-Signed-off-by: Rosen Penev <rosenp@gmail.com>
----
- arch/powerpc/boot/dts/fsl/b4si-post.dtsi      | 2 +-
- arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi | 2 +-
- arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi | 2 +-
- arch/powerpc/boot/dts/fsl/c293si-post.dtsi    | 2 +-
- arch/powerpc/boot/dts/fsl/p1010si-post.dtsi   | 2 +-
- arch/powerpc/boot/dts/fsl/t1023si-post.dtsi   | 2 +-
- arch/powerpc/boot/dts/fsl/t1040si-post.dtsi   | 2 +-
- arch/powerpc/boot/dts/fsl/t2081si-post.dtsi   | 2 +-
- arch/powerpc/boot/dts/fsl/t4240si-post.dtsi   | 2 +-
- 9 files changed, 9 insertions(+), 9 deletions(-)
+set -e
 
-diff --git a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-index fb3200b006ad..4f044b41a776 100644
---- a/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/b4si-post.dtsi
-@@ -50,7 +50,7 @@ &qman_pfdr {
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
--	compatible = "fsl,ifc";
-+	compatible = "fsl,ifc", "simple-bus";
- 	interrupts = <25 2 0 0>;
- };
- 
-diff --git a/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi b/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi
-index 5c53cee8755f..2a677fd323eb 100644
---- a/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/bsc9131si-post.dtsi
-@@ -35,7 +35,7 @@
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
--	compatible = "fsl,ifc";
-+	compatible = "fsl,ifc", "simple-bus";
- 	interrupts = <16 2 0 0 20 2 0 0>;
- };
- 
-diff --git a/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi b/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
-index 4da451e000d9..b8e0edd1ac69 100644
---- a/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/bsc9132si-post.dtsi
-@@ -35,7 +35,7 @@
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
--	compatible = "fsl,ifc";
-+	compatible = "fsl,ifc", "simple-bus";
- 	/* FIXME: Test whether interrupts are split */
- 	interrupts = <16 2 0 0 20 2 0 0>;
- };
-diff --git a/arch/powerpc/boot/dts/fsl/c293si-post.dtsi b/arch/powerpc/boot/dts/fsl/c293si-post.dtsi
-index 2d443d519274..f208fb8f64b3 100644
---- a/arch/powerpc/boot/dts/fsl/c293si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/c293si-post.dtsi
-@@ -35,7 +35,7 @@
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
--	compatible = "fsl,ifc";
-+	compatible = "fsl,ifc", "simple-bus";
- 	interrupts = <19 2 0 0>;
- };
- 
-diff --git a/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi b/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
-index 2d2550729dcc..b540e58ff79e 100644
---- a/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/p1010si-post.dtsi
-@@ -35,7 +35,7 @@
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
--	compatible = "fsl,ifc";
-+	compatible = "fsl,ifc", "simple-bus";
- 	interrupts = <16 2 0 0 19 2 0 0>;
- };
- 
-diff --git a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-index 8ef0c020206b..aa5152ca8120 100644
---- a/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1023si-post.dtsi
-@@ -52,7 +52,7 @@ &qman_pfdr {
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
--	compatible = "fsl,ifc";
-+	compatible = "fsl,ifc", "simple-bus";
- 	interrupts = <25 2 0 0>;
- };
- 
-diff --git a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-index c9542b73bd7f..776788623204 100644
---- a/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t1040si-post.dtsi
-@@ -52,7 +52,7 @@ &qman_pfdr {
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
--	compatible = "fsl,ifc";
-+	compatible = "fsl,ifc", "simple-bus";
- 	interrupts = <25 2 0 0>;
- };
- 
-diff --git a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-index 6bb95878d39d..27714dc2f04a 100644
---- a/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t2081si-post.dtsi
-@@ -50,7 +50,7 @@ &qman_pfdr {
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
--	compatible = "fsl,ifc";
-+	compatible = "fsl,ifc", "simple-bus";
- 	interrupts = <25 2 0 0>;
- };
- 
-diff --git a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-index 65f3e17c0d41..fcac73486d48 100644
---- a/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-+++ b/arch/powerpc/boot/dts/fsl/t4240si-post.dtsi
-@@ -50,7 +50,7 @@ &qman_pfdr {
- &ifc {
- 	#address-cells = <2>;
- 	#size-cells = <1>;
--	compatible = "fsl,ifc";
-+	compatible = "fsl,ifc", "simple-bus";
- 	interrupts = <25 2 0 0>;
- };
- 
--- 
-2.51.2
+host_arch=x86_64
+compiler_version="12.4.0"
 
+compiler_dir="/tmp/arm64-gcc-$compiler_version"
+if [ ! -e "$compiler_dir" ]; then
+	rm -rf "$compiler_dir.tmp"
+	mkdir "$compiler_dir.tmp"
+	curl -L "https://mirrors.kernel.org/pub/tools/crosstool/files/bin/$host_arch/$compiler_version/$host_arch-gcc-$compiler_version-nolibc-aarch64-linux.tar.xz" | tar -C "$compiler_dir.tmp" -Jx
+	mv "$compiler_dir.tmp" "$compiler_dir"
+fi
+
+export PATH="$compiler_dir/gcc-$compiler_version-nolibc/aarch64-linux/bin:$PATH"
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux- tinyconfig
+make ARCH=arm64 CROSS_COMPILE=aarch64-linux- -j$(nproc) vmlinux
+readelf -W -l vmlinux | awk '$1 == "LOAD" && $6 ~ /0x0+\>/'
+```
+
+It prints something like:
+
+  LOAD           0x1ef008 0x0000000000000000 0xffff800080220000 0x000000 0x000000 R   0x10000
+
+I.e., a segment with FileSiz and MemSiz 0.
+
+Using a newer crosstool version fixes it, so maybe this was a GCC or
+binutils bug.
+
+Thanks,
+Omar
 
