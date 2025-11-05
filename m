@@ -1,66 +1,72 @@
-Return-Path: <linuxppc-dev+bounces-13800-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13801-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7D338CCFA0D
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Nov 2025 13:45:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 827FFCCFA0D
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Nov 2025 13:46:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d1mml6bs5z2ySq;
-	Thu,  6 Nov 2025 00:45:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=63.228.1.57
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762350343;
-	cv=none; b=cZL19mbiG85SwACHXIatx/LeUMU6i18Yug8Ivjj02uHgdr7J68ZGwgORkdAngT9OLLBDfaohRQgNwLMubvOOs/YUb4ddHKOfggEADImy+N4L/LA+6GDX/CR8jkDMn1dopcRkkXNw+yQM0tN8/5TByF8/qqXy35t7UL/wd5bBHX/psHP5+mrYq1cehM60lTJHeWb6BPP4L8QrRtSuROgcsRXeBRwN3aMu5f6+tUTcpSlfOFZGxVWVrkQaPAi8VCcaWrqJZVbjeFKLCGM71n5du9xRb6So3xGucmu1KYDgjhzflLxjhoX6fUDdsoe4O8RmOpllsHwwX2i9j7I82beYpg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d1mnQ6z0mz2ySq;
+	Thu,  6 Nov 2025 00:46:18 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762350378;
+	cv=none; b=G7lVTfXNbN5Vy59YbMmAz5bjD3o2OaRNA74rn/UklQcA/N+bPXGiJTbmU7VTErg/YvVvHUhdE9hA1ND1ZTqdSkEEbrQBJ2KxQrBtR6AOcAgYjdBYNNkYVQ4rH5txhxoZiEYwn1FhN6Jn348AuZ8sTvJtpffnnq9tiMAkNiorpZ/D39AgAZPvbSPf81AWjHqMc+D5oMRugsx+A+LDsegRUmMur/ANcgJmityl2Z2aL/n6uuBpEqPn0fA+s+Qq7ddP7i3TN8E26NJo2+TCJpDeOmw2uxHNDhXJhINGch2rr3mhJ8WvDpcrNBnEUcuvxrQq9wlYLzTfr373qES/YGWZPw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762350343; c=relaxed/relaxed;
-	bh=v2rYgvZieTTaJf5j5KLaO2PaarklVK0OhDArVYYysPU=;
+	t=1762350378; c=relaxed/relaxed;
+	bh=QEmg21q/bTDjej8FQo7XnPxvi2Y0z8JlB/H39ewNpd4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=H4u2T6vtKMnL/SCx2fR2aXOt15GTUOz1wmLclIUh7UUlPzwb36wapZHw2v8IqCWRoQJNa0yx0RombEo1mIc6C4SBt55/ux3hbsPfMCQkavwQr9YPmq/PUZGDnQwet4tuckBLGIlln8Bylq/Y6P/86OZ9J5A7AePpoow34o4OoFI7iri9hDZZ2hQql3iT8qu2YqF3oEGoH5kBsYJqAonnhRShxRy0r89dQsWW+8a1fACT6n7WfGsxA7Sl5/3Z+r8GPmX3jSYMRmWCOwp6m3hXF+YV4HI8iVdztkUao9Rdv4CGTpTy5VKeyywmILrhybPZW7oMZ70TcIxs84+GHJqRCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org; spf=pass (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=kernel.crashing.org
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.crashing.org (client-ip=63.228.1.57; helo=gate.crashing.org; envelope-from=segher@kernel.crashing.org; receiver=lists.ozlabs.org)
-Received: from gate.crashing.org (gate.crashing.org [63.228.1.57])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d1mmk2mYQz2ySP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Nov 2025 00:45:41 +1100 (AEDT)
-Received: from gate.crashing.org (localhost [127.0.0.1])
-	by gate.crashing.org (8.18.1/8.18.1/Debian-2) with ESMTP id 5A5DiSRa1593373;
-	Wed, 5 Nov 2025 07:44:28 -0600
-Received: (from segher@localhost)
-	by gate.crashing.org (8.18.1/8.18.1/Submit) id 5A5DiQRd1593372;
-	Wed, 5 Nov 2025 07:44:26 -0600
-X-Authentication-Warning: gate.crashing.org: segher set sender to segher@kernel.crashing.org using -f
-Date: Wed, 5 Nov 2025 07:44:26 -0600
-From: Segher Boessenkool <segher@kernel.crashing.org>
-To: Nathan Chancellor <nathan@kernel.org>
-Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
-        Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>,
-        "James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-        Helge Deller <deller@gmx.de>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
-        Alexander Gordeev <agordeev@linux.ibm.com>,
-        Christian Borntraeger <borntraeger@linux.ibm.com>,
-        Sven Schnelle <svens@linux.ibm.com>,
-        Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
-        Borislav Petkov <bp@alien8.de>,
-        Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-        Ard Biesheuvel <ardb@kernel.org>,
-        Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
-        Bill Wendling <morbo@google.com>,
-        Justin Stitt <justinstitt@google.com>,
-        linux-arm-kernel@lists.infradead.org, linux-kernel@vger.kernel.org,
-        loongarch@lists.linux.dev, linux-parisc@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
-        linux-efi@vger.kernel.org, llvm@lists.linux.dev,
-        Christian Brauner <brauner@kernel.org>
-Subject: Re: [PATCH] kbuild: Add '-fms-extensions' to areas with dedicated
- CFLAGS
-Message-ID: <aQtUujos2ADVs-_O@gate>
-References: <20251101-kbuild-ms-extensions-dedicated-cflags-v1-1-38004aba524b@kernel.org>
+	 Content-Type:Content-Disposition:In-Reply-To; b=PI7y1ahEjFXBJj2d+G5gIc+vxS1E2gIgUDb57Us/AxVKmOtvWPfe7Xtlo6DyTz4f9IbibWK/vF3Fy2oEWr64DscuW1JOnNo5IUGUkIJ9lQPWXK7T90xlDf/BGpMtmpye6mL9viII1wq+mKhvK7es3JvfQ/kPSGdfXxcSFz+nBy+Dw+L0oQtwviThTA+0fQCeNFBv9s5o9u4ZrNGW/MfaA2jkOrnkaoLhMSQI3yjsUfUl7/ylBos/dD6rSA/d7U/HoqsajzpTyE5P6SYYnQZVdiBED8z1lS7pUD7TkCI/aWILUJqDVQTrOsP4wH/DK/xWeyDmqnD9clze6lqsP/N3lg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ShpmD5CE; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ShpmD5CE;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1mnQ19Cjz2ySP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Nov 2025 00:46:18 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id EC5C860206;
+	Wed,  5 Nov 2025 13:46:15 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88442C4CEF8;
+	Wed,  5 Nov 2025 13:46:10 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1762350375;
+	bh=PBw6f127nni3oALBZyW0JgdvwP5qSqzJy9SAmndAriA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ShpmD5CEr+JOX/hdyLmwbKn+7N/84QMIjLE9j2cZcrRvpVVQ75tjvns2y5AtNRjNB
+	 Yz/cddtecY9g6c5niROEmlZIGG5XZUkdnkP1ukuBnc6gReYjrQWthxBdx6AWzSPCto
+	 H5T2MJQ6JwDB5soUuJR37OivkZPbAKj+jm3MbBvvRUCLje5nBaF8qyof8/avmrOrQo
+	 AetMggcJiBTqXIIqRYQO2peEzYuk6WbKzeJQmuHBsuyC0xrt8ateYNVpRjsDJ2WscG
+	 uhaFUjmftREcVGApZjqCE58fnFSyfg3U6HCIwJGFbq7P1TvBbf4A89/uShbWcEdej8
+	 m/GMvmV69qEFQ==
+Date: Wed, 5 Nov 2025 14:46:08 +0100
+From: Christian Brauner <brauner@kernel.org>
+To: James Bottomley <James.Bottomley@hansenpartnership.com>
+Cc: Ard Biesheuvel <ardb@kernel.org>, Al Viro <viro@zeniv.linux.org.uk>, 
+	linux-fsdevel@vger.kernel.org, torvalds@linux-foundation.org, jack@suse.cz, raven@themaw.net, 
+	miklos@szeredi.hu, neil@brown.name, a.hindborg@kernel.org, linux-mm@kvack.org, 
+	linux-efi@vger.kernel.org, ocfs2-devel@lists.linux.dev, kees@kernel.org, 
+	rostedt@goodmis.org, gregkh@linuxfoundation.org, linux-usb@vger.kernel.org, 
+	paul@paul-moore.com, casey@schaufler-ca.com, linuxppc-dev@lists.ozlabs.org, 
+	john.johansen@canonical.com, selinux@vger.kernel.org, borntraeger@linux.ibm.com, 
+	bpf@vger.kernel.org
+Subject: Re: [PATCH v2 22/50] convert efivarfs
+Message-ID: <20251105-ausfiel-klopapier-599213591ad2@brauner>
+References: <20251028174540.GN2441659@ZenIV>
+ <20251028210805.GP2441659@ZenIV>
+ <CAMj1kXF6tvg6+CL_1x7h0HK1PoSGtxDjc0LQ1abGQBd5qrbffg@mail.gmail.com>
+ <9f079d0c8cffb150c0decb673a12bfe1b835efc9.camel@HansenPartnership.com>
+ <20251029193755.GU2441659@ZenIV>
+ <CAMj1kXHnEq97bzt-C=zKJdV3BK3EDJCPz3Pfyk52p2735-4wFA@mail.gmail.com>
+ <20251105-aufheben-ausmusterung-4588dab8c585@brauner>
+ <423f5cc5352c54fc21e0570daeeddc4a58e74974.camel@HansenPartnership.com>
+ <20251105-sohlen-fenster-e7c5af1204c4@brauner>
+ <305ff01c159993d8124ae3125f7dacf6b61fa933.camel@HansenPartnership.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,23 +80,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
+Content-Type: text/plain; charset=utf-8
 Content-Disposition: inline
-In-Reply-To: <20251101-kbuild-ms-extensions-dedicated-cflags-v1-1-38004aba524b@kernel.org>
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <305ff01c159993d8124ae3125f7dacf6b61fa933.camel@HansenPartnership.com>
 
-Hi!
+On Wed, Nov 05, 2025 at 08:33:10AM -0500, James Bottomley wrote:
+> On Wed, 2025-11-05 at 14:16 +0100, Christian Brauner wrote:
+> > On Wed, Nov 05, 2025 at 08:09:03AM -0500, James Bottomley wrote:
+> > > On Wed, 2025-11-05 at 12:47 +0100, Christian Brauner wrote:
+> [...]
+> > > > And suspend/resume works just fine with freeze/thaw. See commit
+> > > > eacfbf74196f ("power: freeze filesystems during suspend/resume")
+> > > > which implements exactly that.
+> > > > 
+> > > > The reason this didn't work for you is very likely:
+> > > > 
+> > > > cat /sys/power/freeze_filesystems
+> > > > 0
+> > > > 
+> > > > which you must set to 1.
+> > > 
+> > > Actually, no, that's not correct.  The efivarfs freeze/thaw logic
+> > > must run unconditionally regardless of this setting to fix the
+> > > systemd bug, so all the variable resyncing is done in the thaw
+> > > call, which isn't conditioned on the above (or at least it
+> > > shouldn't be).
+> > 
+> > It is conditioned on the above currently but we can certainly fix it
+> > easily to not be.
+> 
+> It still seems to be unconditional in upstream 6.18-rc4
+> kernel/power/hibernate.c with only freeze being conditioned on the
 
-On Sat, Nov 01, 2025 at 12:35:47PM -0400, Nathan Chancellor wrote:
-> There are many places within the kernel that use their own CFLAGS
-> instead of the main KBUILD_CFLAGS, meaning code written with the main
-> kernel's use of '-fms-extensions' in mind that may be tangentially
-> included in these areas will result in "error: declaration does not
-> declare anything" messages from the compiler.
+I'm honestly not sure how efivarfs would be frozen if
+filesystems_freeze() isn't called... Maybe I missed that memo though.
+In any case I just sent you...
 
-Please fix such non-standard code then, instead?  The only (documented)
-thing -fms-extensions does for C code is give meaning to something that
-otherwise is a syntax error (and it is for a good reason!)
+> setting of the filesystem_freeze variable but I haven't checked -next.
+> 
+> However, if there's anything in the works to change that we would need
+> an exception for efivarfs, please ... we can't have a bug fix
+> conditioned on a user setting.
 
+... a patch in another mail.
 
-Segher
+Sorry in case I misunderstood that you _always_ wanted that sync
+regardless of userspace enabling it.
 
