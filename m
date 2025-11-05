@@ -1,66 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-13820-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13821-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07A92CCF9F8
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Nov 2025 22:09:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82FCBCCF9F8
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Nov 2025 22:20:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d1zy23QwLz2yG0;
-	Thu,  6 Nov 2025 09:09:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762380570;
-	cv=none; b=G5+Dh8z/RzzH1iGtJvVEEwjP/AJcGVdx53Ab1s57c8JjmecgZJutwi0jGK5pGuxeniQv6FWM0rGfqsaawt3acqwTQ5cJr7hVUoyVbk80/OaCk7Pa8bId9txYkrJJ9Idt69GoygsTD5RAElJu8UI6zNO3eqKKNjYovNuzJaJB6CUc4SZVrNcM46kMAh50MsawM2+X0er6nKb6orxh8DA+rrWp1ub3sn6KxEmTr7rctPK9VfGmbPAIoLtdt1yBv6hcM4M8eNP0U9vBN4O5+PcGxqdraCq9vFcBuBmxkimXzOPsCYjYMCn087asZbP7QGUhuNadE60WioBOVHKdkARuXQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d20BG6nXXz2yG0;
+	Thu,  6 Nov 2025 09:20:06 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762381206;
+	cv=none; b=UmFGI9XLdU1gZDnelA2WuE3bD6WO2hkVDCHqZEifVsBtES+FlFR3ssAgIIG88BvbOhe+H0Zo4rcKqgyRsznqly+wubdXxjnYg1UEhQ3TVhHkRNPNUwQXCAPDMpiQBC4HO3uXPjKWbK1Zvo+GCpkSsajGyW+jo6zv5nF3b8/broCBfqM9eVh6GmwmsulVP9202V6MBtI2972zl8EWkHC81Hy5MYLlE0gFmbz+syMj1AZzaAqjwF2rxsT90lANxu8FAAAmK5dTey0MIKRyU4roC02a7iHasSYzrt7oElKlBriw5+DUk4wK5/2RUeauFxEis+IXjyooHVm3/UqKLvBYEw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762380570; c=relaxed/relaxed;
-	bh=l6by5v4CURXu4OgfqAm+N+MQQpHFHWHF+ngk9rCe9Pk=;
-	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
-	 Content-Disposition:In-Reply-To; b=muV7e2pyYagKn/9fR8F7ZPvDoINkxrV7W+51VDFNTWPKuD8Utlcst7Oa430aucu+D3xP9ijL4R+rJbmhE1PzhtC30XolcxUH15ENTDqlFXqeWuxE1i8LmAR2II0jOm/04+vNhJfC8zYl3aXZGaO73zEPlAD3vJlcE30FwY4A1WQ2vPBUar2Ptk0iaLWuGeXQp5g4b0Jl7fv+Xuit1+nIsKBKTGa1S6qGbsHGWUkGGMeClzBItZzAmbQzBx5N50FR3Yu6nTr9UJKnSMljy2JReOh/ecGXahxCoEK6Dcdf89qDr/Cg/taeKOfqs34jhFDSrPY0473TvGKv5oi5VgluUw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hwmyqx6m; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hwmyqx6m;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1zy12yQtz2xdg
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Nov 2025 09:09:29 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id DCD0843684;
-	Wed,  5 Nov 2025 22:09:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A001AC4CEF5;
-	Wed,  5 Nov 2025 22:09:26 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762380566;
-	bh=Kdf3RStyU+2pisw35rSsTNL9OxNIVbABNhD8/Es6/rE=;
-	h=Date:From:To:Cc:Subject:In-Reply-To:From;
-	b=Hwmyqx6m2A0p60xFJl3/+xrDi1Fztj/nvdOhoGCSlQ2kNgmuRG+hnotQCZAIt2PHk
-	 oJGgfv2Y0IVzB0ZeuKS2s+K64kEEsg+dM4pdkNj3TclQEoqslefWMMTab1jorgQd90
-	 ibI//FLxMeWaLwBhadwJxtJNrgoiuPB3ELC9aO+mUDqEtLVWTYRi6W6fGt/bprizFV
-	 fFlGALu2rK8QHimGRVcx/J5kR8sTQMg2pnDXAXioHNS03gqzodngmpjvw/ks1Z7m5n
-	 xP7h/MjTJYGbgBnOSeK9e6+MdrgYgpILimykfD1zfxXvmqkAOpA2bzGhwa5kkhB54v
-	 WYoHWhadu7siQ==
-Date: Wed, 5 Nov 2025 16:09:25 -0600
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: Christian Zigotzky <chzigotzky@xenosoft.de>
-Cc: Manivannan Sadhasivam <mani@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>, linux-pci@vger.kernel.org,
-	mad skateman <madskateman@gmail.com>,
-	"R.T.Dickinson" <rtd2@xtra.co.nz>,
-	Christian Zigotzky <info@xenosoft.de>,
-	linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, hypexed@yahoo.com.au,
-	Darren Stevens <darren@stevens-zone.net>,
-	debian-powerpc@lists.debian.org,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Lukas Wunner <lukas@wunner.de>, regressions@lists.linux.dev,
-	luigi burdo <intermediadc@hotmail.com>, Al <al@datazap.net>,
-	Roland <rol7and@gmx.com>
-Subject: Re: [PPC] Boot problems after the pci-v6.18-changes
-Message-ID: <20251105220925.GA1926619@bhelgaas>
+	t=1762381206; c=relaxed/relaxed;
+	bh=NCbeKvO+ZjJAQ/elEkMe+bQoL8LQws9xVj3nTV1P/oc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=hdI81EVDBUJ9CyWjFDqXVYmuZTr/eqR3jGrTulO2ST1S9DF5WfE7vjjURFpV8phVuF1OhD6V11k8qM4J9MwtGyobMrUurMK4xNQvoWXuFy/1O7Xmd8ixutYfu0CAwEl4WJ2HD5rwksLllTtBM7MRa71Q6Bt/m/UGANMOY8Sgv6FrEnhtZL4UFXsSYCBNwjPtzbDK5EHq/2YEhszyVuQM8YPUcvFZx5SAuKI7i6vG+IL6PFdf1xIra2gSeJHsVLJXS888/rFzlN3NUJh0cDBUks8vVzBbbhUFUmdoZHoHm8glafQ/Q59i6UgV2kw0Fxi6KCTp9VUvgxQkeOjDWC/KxA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d20BG16VNz2xQ2
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Nov 2025 09:20:05 +1100 (AEDT)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4d1zPN02rRz9sS7;
+	Wed,  5 Nov 2025 22:44:40 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id l1GfbrSwd72T; Wed,  5 Nov 2025 22:44:39 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4d1zPM5zM6z9sRg;
+	Wed,  5 Nov 2025 22:44:39 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id B8C168B77B;
+	Wed,  5 Nov 2025 22:44:39 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id 37srmVnLvJ83; Wed,  5 Nov 2025 22:44:39 +0100 (CET)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id A23768B773;
+	Wed,  5 Nov 2025 22:44:38 +0100 (CET)
+Message-ID: <3cc3d311-35b0-42f1-b20f-ed59391bb8e0@csgroup.eu>
+Date: Wed, 5 Nov 2025 22:44:38 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -74,325 +58,115 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4] powerpc: Use shared font data
+To: "Dr. David Alan Gilbert" <linux@treblig.org>,
+ Finn Thain <fthain@linux-m68k.org>
+Cc: Stan Johnson <userm57@yahoo.com>, mpe@ellerman.id.au, npiggin@gmail.com,
+ sam@ravnborg.org, benh@kernel.crashing.org, linuxppc-dev@lists.ozlabs.org,
+ linux-kernel@vger.kernel.org, rdunlap@infradead.org,
+ Cedar Maxwell <cedarmaxwell@mac.com>
+References: <20230825142754.1487900-1-linux@treblig.org>
+ <d81ddca8-c5ee-d583-d579-02b19ed95301@yahoo.com> <aQeQYNANzlTqJZdR@gallifrey>
+ <20108eef-b7cf-3f23-264a-5d97021f9ffa@linux-m68k.org>
+ <aQgJ95Y3pA-8GdbP@gallifrey>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <aQgJ95Y3pA-8GdbP@gallifrey>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <d93eac4d-b382-97dd-d829-98aef6695204@xenosoft.de>
-
-[+cc luigi, Al, Roland; we broke X5000 in v6.18-rc1 by enabling ASPM
-too aggressively; Christian's original report is at:
-https://lore.kernel.org/r/db5c95a1-cf3e-46f9-8045-a1b04908051a@xenosoft.de
-I grubbed around in lore for other X5000 users who might possibly be
-able to help test our attempts to fix it]
-
-On Mon, Nov 03, 2025 at 07:28:19PM +0100, Christian Zigotzky wrote:
-> On 11/01/2025 06:06 PM, Manivannan Sadhasivam wrote:
-> ...
-
-> > diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-> > index d97335a40193..74d8596b3f62 100644
-> > --- a/drivers/pci/quirks.c
-> > +++ b/drivers/pci/quirks.c
-> > @@ -2524,6 +2524,7 @@ static void quirk_disable_aspm_l0s_l1(struct pci_dev
-> *dev)
-> >   * disable both L0s and L1 for now to be safe.
-> >   */
-> >  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ASMEDIA, 0x1080,
-> quirk_disable_aspm_l0s_l1);
-> > +DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_FREESCALE, 0x0451,
-> quirk_disable_aspm_l0s_l1);
-> >
-> >  /*
-> >   * Some Pericom PCIe-to-PCI bridges in reverse mode need the PCIe Retrain
-
-> I tested your patch with the RC4 of kernel 6.18 today. Unfortunately it
-> doesn't solve the boot issue.
-
-Thanks for testing that.  I see now why that approach doesn't work:
-quirk_disable_aspm_l0s_l1() calls pci_disable_link_state(), which
-updates the permissible ASPM link states, but pci_disable_link_state()
-only works for devices at the downstream end of a link.  It doesn't
-work at all for Root Ports, which are at the upstream end of a link.
-
-Christian, you originally reported that both X5000 and X1000 were
-broken.  I suspect X1000 may have been fixed in v6.18-rc3 by
-df5192d9bb0e ("PCI/ASPM: Enable only L0s and L1 for devicetree
-platforms"), but I would love to have confirmation of that.
-
-The patches below read the PCIe Link Capabilities that tell us what
-ASPM link states the hardware supports, cache it, and use a quirk to
-remove the states we think are broken.
-
-Since these are just for testing, I didn't want to start a new thread.
-If anybody is able to test this, you should be able to just apply this
-whole email as a patch on top of v6.18-rc4.
-
-Would appreciate the complete dmesg log of the boot if possible.  This
-patch adds a quirk for the [1957:0451] Root Ports in Christian's
-X5000.  If ASPM is still broken for other Root Ports, we will need the
-Vendor and Device IDs to add quirks for them.
-
-commit 9d089f88fd66 ("PCI/ASPM: Cache Link Capabilities to enable quirks to override")
-Author: Bjorn Helgaas <bhelgaas@google.com>
-Date:   Wed Nov 5 12:23:38 2025 -0600
-
-    PCI/ASPM: Cache Link Capabilities to enable quirks to override
-    
-    Cache the PCIe Link Capabilities register in struct pci_dev so quirks can
-    remove features to avoid hardware defects.  The idea is:
-    
-      - set_pcie_port_type() reads PCIe Link Capabilities and caches it in
-        dev->lnkcap
-    
-      - EARLY or HEADER quirks can update the cached dev->lnkcap to remove
-        advertised features that don't work correctly
-    
-      - pcie_aspm_cap_init() relies on dev->lnkcap and ignores any features not
-        advertised there
-    
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
 
 
-diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
-index 79b965158473..c2ecfa4e92e5 100644
---- a/drivers/pci/pcie/aspm.c
-+++ b/drivers/pci/pcie/aspm.c
-@@ -378,15 +378,13 @@ static void pcie_set_clkpm(struct pcie_link_state *link, int enable)
- static void pcie_clkpm_cap_init(struct pcie_link_state *link, int blacklist)
- {
- 	int capable = 1, enabled = 1;
--	u32 reg32;
- 	u16 reg16;
- 	struct pci_dev *child;
- 	struct pci_bus *linkbus = link->pdev->subordinate;
- 
- 	/* All functions should have the same cap and state, take the worst */
- 	list_for_each_entry(child, &linkbus->devices, bus_list) {
--		pcie_capability_read_dword(child, PCI_EXP_LNKCAP, &reg32);
--		if (!(reg32 & PCI_EXP_LNKCAP_CLKPM)) {
-+		if (!(child->lnkcap & PCI_EXP_LNKCAP_CLKPM)) {
- 			capable = 0;
- 			enabled = 0;
- 			break;
-@@ -567,7 +565,7 @@ static void encode_l12_threshold(u32 threshold_us, u32 *scale, u32 *value)
- 
- static void pcie_aspm_check_latency(struct pci_dev *endpoint)
- {
--	u32 latency, encoding, lnkcap_up, lnkcap_dw;
-+	u32 latency, encoding;
- 	u32 l1_switch_latency = 0, latency_up_l0s;
- 	u32 latency_up_l1, latency_dw_l0s, latency_dw_l1;
- 	u32 acceptable_l0s, acceptable_l1;
-@@ -592,14 +590,10 @@ static void pcie_aspm_check_latency(struct pci_dev *endpoint)
- 		struct pci_dev *dev = pci_function_0(link->pdev->subordinate);
- 
- 		/* Read direction exit latencies */
--		pcie_capability_read_dword(link->pdev, PCI_EXP_LNKCAP,
--					   &lnkcap_up);
--		pcie_capability_read_dword(dev, PCI_EXP_LNKCAP,
--					   &lnkcap_dw);
--		latency_up_l0s = calc_l0s_latency(lnkcap_up);
--		latency_up_l1 = calc_l1_latency(lnkcap_up);
--		latency_dw_l0s = calc_l0s_latency(lnkcap_dw);
--		latency_dw_l1 = calc_l1_latency(lnkcap_dw);
-+		latency_up_l0s = calc_l0s_latency(link->pdev->lnkcap);
-+		latency_up_l1 = calc_l1_latency(link->pdev->lnkcap);
-+		latency_dw_l0s = calc_l0s_latency(dev->lnkcap);
-+		latency_dw_l1 = calc_l1_latency(dev->lnkcap);
- 
- 		/* Check upstream direction L0s latency */
- 		if ((link->aspm_capable & PCIE_LINK_STATE_L0S_UP) &&
-@@ -814,7 +808,7 @@ static void pcie_aspm_override_default_link_state(struct pcie_link_state *link)
- static void pcie_aspm_cap_init(struct pcie_link_state *link, int blacklist)
- {
- 	struct pci_dev *child = link->downstream, *parent = link->pdev;
--	u32 parent_lnkcap, child_lnkcap;
-+	u32 lnkcap;
- 	u16 parent_lnkctl, child_lnkctl;
- 	struct pci_bus *linkbus = parent->subordinate;
- 
-@@ -829,9 +823,7 @@ static void pcie_aspm_cap_init(struct pcie_link_state *link, int blacklist)
- 	 * If ASPM not supported, don't mess with the clocks and link,
- 	 * bail out now.
- 	 */
--	pcie_capability_read_dword(parent, PCI_EXP_LNKCAP, &parent_lnkcap);
--	pcie_capability_read_dword(child, PCI_EXP_LNKCAP, &child_lnkcap);
--	if (!(parent_lnkcap & child_lnkcap & PCI_EXP_LNKCAP_ASPMS))
-+	if (!(parent->lnkcap & child->lnkcap & PCI_EXP_LNKCAP_ASPMS))
- 		return;
- 
- 	/* Configure common clock before checking latencies */
-@@ -841,10 +833,18 @@ static void pcie_aspm_cap_init(struct pcie_link_state *link, int blacklist)
- 	 * Re-read upstream/downstream components' register state after
- 	 * clock configuration.  L0s & L1 exit latencies in the otherwise
- 	 * read-only Link Capabilities may change depending on common clock
--	 * configuration (PCIe r5.0, sec 7.5.3.6).
-+	 * configuration (PCIe r5.0, sec 7.5.3.6).  Update only the exit
-+	 * latencies in the cached dev->lnkcap because quirks may have
-+	 * removed broken features advertised by the device.
- 	 */
--	pcie_capability_read_dword(parent, PCI_EXP_LNKCAP, &parent_lnkcap);
--	pcie_capability_read_dword(child, PCI_EXP_LNKCAP, &child_lnkcap);
-+	pcie_capability_read_dword(parent, PCI_EXP_LNKCAP, &lnkcap);
-+	parent->lnkcap &= ~(PCI_EXP_LNKCAP_L0SEL | PCI_EXP_LNKCAP_L1EL);
-+	parent->lnkcap |= lnkcap & (PCI_EXP_LNKCAP_L0SEL | PCI_EXP_LNKCAP_L1EL);
+
+Le 03/11/2025 à 02:48, Dr. David Alan Gilbert a écrit :
+> * Finn Thain (fthain@linux-m68k.org) wrote:
+>>
+>> On Sun, 2 Nov 2025, Dr. David Alan Gilbert wrote:
+>>
+>>>
+>>> So I'm not a PPC person specifically; so lets see if the PPC people have
+>>> any suggestions, but:
+>>>
+>>>     a) Do you know if there's any way to recreate the same hang/works
+>>> combination in qemu; I know it has a g3beige model but I don't know how
+>>> to get something similar to your failing combo.
+>>>
+>>
+>> I guess we could probably reproduce this in QEMU if the BootX bootloader
+>> could be made to work there. In theory, 'qemu-system-ppc -M g3beige' might
+>> work.
+>>
+>>>     b) Can you get any diagnostics out of the prom on the mac?  Like a PC
+>>> or anything to have some idea where it hung?
+>>>
+>>
+>> Well, that's the problem: if you enable the CONFIG_BOOTX_TEXT diagnostics,
+>> the system hangs instead of printing stuff. If you disable the
+>> CONFIG_BOOTX_TEXT diagnostics (in favour of serial diagnostics) the hang
+>> goes away.
+> 
+> Ah, a bug that doesn't like to be seen :-)
+> 
+>> Anyway, I imagine that the problem with your patch was that it relies on
+>> font data from a different (read only) section, which is unavailable for
+>> some reason (MMU not fully configured yet?)
+>>
+>> So I've asked Stan to test a patch that simply removes the relevant
+>> 'const' keywords. It's not a solution, but might narrow-down the search.
+> 
+> I wonder if this is a compiler-flag-ism; I see arch/powerpc/kernel/Makefile
+> has a pile of special flags, and for btext.o it has a -fPIC
+> (as well as turning off some other flags).
+> I wonder if bodging those in lib/fonts/Makefile for lib/fonts/font_sun8x16.c
+> fixes it?
+> But... this is data - there's no code is there - are any of those flags
+> relevant for data only?
+
+I think -fPIC is relevant for data-only here because font_sun_8x16 
+contains a pointer to fontdata_sun8x16 in font_sun_8x16.data
+
+I see two things to try:
+
+1/ Either build font_sun8x16.o with -fPIC
+
+diff --git a/lib/fonts/Makefile b/lib/fonts/Makefile
+index e16f68492174a..844306d7b15e9 100644
+--- a/lib/fonts/Makefile
++++ b/lib/fonts/Makefile
+@@ -20,3 +20,5 @@ font-objs-$(CONFIG_FONT_6x8)       += font_6x8.o
+  font-objs += $(font-objs-y)
+
+  obj-$(CONFIG_FONT_SUPPORT)         += font.o
 +
-+	pcie_capability_read_dword(child, PCI_EXP_LNKCAP, &lnkcap);
-+	child->lnkcap &= ~(PCI_EXP_LNKCAP_L0SEL | PCI_EXP_LNKCAP_L1EL);
-+	child->lnkcap |= lnkcap & (PCI_EXP_LNKCAP_L0SEL | PCI_EXP_LNKCAP_L1EL);
-+
- 	pcie_capability_read_word(parent, PCI_EXP_LNKCTL, &parent_lnkctl);
- 	pcie_capability_read_word(child, PCI_EXP_LNKCTL, &child_lnkctl);
- 
-@@ -864,7 +864,7 @@ static void pcie_aspm_cap_init(struct pcie_link_state *link, int blacklist)
- 	 * given link unless components on both sides of the link each
- 	 * support L0s.
- 	 */
--	if (parent_lnkcap & child_lnkcap & PCI_EXP_LNKCAP_ASPM_L0S)
-+	if (parent->lnkcap & child->lnkcap & PCI_EXP_LNKCAP_ASPM_L0S)
- 		link->aspm_support |= PCIE_LINK_STATE_L0S;
- 
- 	if (child_lnkctl & PCI_EXP_LNKCTL_ASPM_L0S)
-@@ -873,7 +873,7 @@ static void pcie_aspm_cap_init(struct pcie_link_state *link, int blacklist)
- 		link->aspm_enabled |= PCIE_LINK_STATE_L0S_DW;
- 
- 	/* Setup L1 state */
--	if (parent_lnkcap & child_lnkcap & PCI_EXP_LNKCAP_ASPM_L1)
-+	if (parent->lnkcap & child->lnkcap & PCI_EXP_LNKCAP_ASPM_L1)
- 		link->aspm_support |= PCIE_LINK_STATE_L1;
- 
- 	if (parent_lnkctl & child_lnkctl & PCI_EXP_LNKCTL_ASPM_L1)
-diff --git a/drivers/pci/probe.c b/drivers/pci/probe.c
-index 0ce98e18b5a8..7dab61347244 100644
---- a/drivers/pci/probe.c
-+++ b/drivers/pci/probe.c
-@@ -1633,7 +1633,6 @@ void set_pcie_port_type(struct pci_dev *pdev)
- {
- 	int pos;
- 	u16 reg16;
--	u32 reg32;
- 	int type;
- 	struct pci_dev *parent;
- 
-@@ -1652,8 +1651,8 @@ void set_pcie_port_type(struct pci_dev *pdev)
- 	pci_read_config_dword(pdev, pos + PCI_EXP_DEVCAP, &pdev->devcap);
- 	pdev->pcie_mpss = FIELD_GET(PCI_EXP_DEVCAP_PAYLOAD, pdev->devcap);
- 
--	pcie_capability_read_dword(pdev, PCI_EXP_LNKCAP, &reg32);
--	if (reg32 & PCI_EXP_LNKCAP_DLLLARC)
-+	pcie_capability_read_dword(pdev, PCI_EXP_LNKCAP, &pdev->lnkcap);
-+	if (pdev->lnkcap & PCI_EXP_LNKCAP_DLLLARC)
- 		pdev->link_active_reporting = 1;
- 
- 	parent = pci_upstream_bridge(pdev);
-diff --git a/include/linux/pci.h b/include/linux/pci.h
-index d1fdf81fbe1e..ec4133ae9cae 100644
---- a/include/linux/pci.h
-+++ b/include/linux/pci.h
-@@ -361,6 +361,7 @@ struct pci_dev {
- 	struct pci_dev  *rcec;          /* Associated RCEC device */
- #endif
- 	u32		devcap;		/* PCIe Device Capabilities */
-+	u32		lnkcap;		/* PCIe Link Capabilities */
- 	u16		rebar_cap;	/* Resizable BAR capability offset */
- 	u8		pcie_cap;	/* PCIe capability offset */
- 	u8		msi_cap;	/* MSI capability offset */
-commit ad3106e7d1bf ("PCI/ASPM: Add pcie_aspm_disable_cap() to remove advertised features")
-Author: Bjorn Helgaas <bhelgaas@google.com>
-Date:   Wed Nov 5 09:11:21 2025 -0600
++CFLAGS_font_sun8x16.o             += -fPIC
 
-    PCI/ASPM: Add pcie_aspm_disable_cap() to remove advertised features
-    
-    Add pcie_aspm_disable_cap(), which can be used by quirks to remove
-    advertised features that don't work correctly.
-    
-    Removing advertised features prevents aspm.c from enabling them, even if
-    users try to enable them via sysfs or by building the kernel with
-    CONFIG_PCIEASPM_POWERSAVE or CONFIG_PCIEASPM_POWER_SUPERSAVE.
-    
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+2/ Or add a PTRRELOC:
+
+diff --git a/arch/powerpc/kernel/btext.c b/arch/powerpc/kernel/btext.c
+index 7f63f1cdc6c39..fc461cfaf4a34 100644
+--- a/arch/powerpc/kernel/btext.c
++++ b/arch/powerpc/kernel/btext.c
+@@ -20,6 +20,7 @@
+  #include <asm/io.h>
+  #include <asm/processor.h>
+  #include <asm/udbg.h>
++#include <asm/setup.h>
+
+  #define NO_SCROLL
+
+@@ -463,7 +464,7 @@ static noinline void draw_byte(unsigned char c, long 
+locX, long locY)
+  {
+  	unsigned char *base	= calc_base(locX << 3, locY << 4);
+  	unsigned int font_index = c * 16;
+-	const unsigned char *font	= font_sun_8x16.data + font_index;
++	const unsigned char *font	= PTRRELOC(font_sun_8x16.data) + font_index;
+  	int rb			= dispDeviceRowBytes;
+
+  	rmci_maybe_on();
 
 
-diff --git a/drivers/pci/pci.h b/drivers/pci/pci.h
-index 4492b809094b..858d2d6c9304 100644
---- a/drivers/pci/pci.h
-+++ b/drivers/pci/pci.h
-@@ -958,6 +958,7 @@ void pci_save_aspm_l1ss_state(struct pci_dev *dev);
- void pci_restore_aspm_l1ss_state(struct pci_dev *dev);
- 
- #ifdef CONFIG_PCIEASPM
-+void pcie_aspm_disable_cap(struct pci_dev *pdev, int state);
- void pcie_aspm_init_link_state(struct pci_dev *pdev);
- void pcie_aspm_exit_link_state(struct pci_dev *pdev);
- void pcie_aspm_pm_state_change(struct pci_dev *pdev, bool locked);
-@@ -965,6 +966,7 @@ void pcie_aspm_powersave_config_link(struct pci_dev *pdev);
- void pci_configure_ltr(struct pci_dev *pdev);
- void pci_bridge_reconfigure_ltr(struct pci_dev *pdev);
- #else
-+static inline void pcie_aspm_disable_cap(struct pci_dev *pdev, int state) { }
- static inline void pcie_aspm_init_link_state(struct pci_dev *pdev) { }
- static inline void pcie_aspm_exit_link_state(struct pci_dev *pdev) { }
- static inline void pcie_aspm_pm_state_change(struct pci_dev *pdev, bool locked) { }
-diff --git a/drivers/pci/pcie/aspm.c b/drivers/pci/pcie/aspm.c
-index c2ecfa4e92e5..4e9e3503c569 100644
---- a/drivers/pci/pcie/aspm.c
-+++ b/drivers/pci/pcie/aspm.c
-@@ -1530,6 +1530,18 @@ int pci_enable_link_state_locked(struct pci_dev *pdev, int state)
- }
- EXPORT_SYMBOL(pci_enable_link_state_locked);
- 
-+void pcie_aspm_disable_cap(struct pci_dev *pdev, int state)
-+{
-+	if (state & PCIE_LINK_STATE_L0S)
-+		pdev->lnkcap &= ~PCI_EXP_LNKCAP_ASPM_L0S;
-+	if (state & PCIE_LINK_STATE_L1)
-+		pdev->lnkcap &= ~PCI_EXP_LNKCAP_ASPM_L1;
-+	if (state & (PCIE_LINK_STATE_L0S | PCIE_LINK_STATE_L1))
-+		pci_info(pdev, "ASPM:%s%s removed from Link Capabilities to work around device defect\n",
-+			 state & PCIE_LINK_STATE_L0S ? " L0s" : "",
-+			 state & PCIE_LINK_STATE_L1 ? " L1" : "");
-+}
-+
- static int pcie_aspm_set_policy(const char *val,
- 				const struct kernel_param *kp)
- {
-commit 69184484d69e ("PCI/ASPM: Prevent use of ASPM on Freescale Root Ports")
-Author: Bjorn Helgaas <bhelgaas@google.com>
-Date:   Wed Nov 5 12:18:07 2025 -0600
-
-    PCI/ASPM: Prevent use of ASPM on Freescale Root Ports
-    
-    Christian reported that f3ac2ff14834 ("PCI/ASPM: Enable all ClockPM and
-    ASPM states for devicetree platforms") broke booting on the A-EON X5000 and
-    AmigaOne X1000.
-    
-    Fixes: f3ac2ff14834 ("PCI/ASPM: Enable all ClockPM and ASPM states for devicetree platforms")
-    Fixes: df5192d9bb0e ("PCI/ASPM: Enable only L0s and L1 for devicetree platforms"
-    )
-    Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-    Link: https://lore.kernel.org/r/db5c95a1-cf3e-46f9-8045-a1b04908051a@xenosoft.de
-    Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Christophe
 
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 214ed060ca1b..8cf182c28d2b 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -2525,6 +2525,16 @@ static void quirk_disable_aspm_l0s_l1(struct pci_dev *dev)
-  */
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ASMEDIA, 0x1080, quirk_disable_aspm_l0s_l1);
- 
-+/*
-+ * Remove ASPM L0s and L1 support from cached copy of Link Capabilities so
-+ * aspm.c won't try to enable them.
-+ */
-+static void quirk_disable_aspm_l0s_l1_cap(struct pci_dev *dev)
-+{
-+	pcie_aspm_disable_cap(dev, PCIE_LINK_STATE_L0S | PCIE_LINK_STATE_L1);
-+}
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, 0x0451, quirk_disable_aspm_l0s_l1_cap);
-+
- /*
-  * Some Pericom PCIe-to-PCI bridges in reverse mode need the PCIe Retrain
-  * Link bit cleared after starting the link retrain process to allow this
 
