@@ -1,70 +1,62 @@
-Return-Path: <linuxppc-dev+bounces-13770-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13771-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B0DECCFA04
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  4 Nov 2025 22:04:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6CE4CCCFA04
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  5 Nov 2025 00:56:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d1MtF53wtz2xgQ;
-	Wed,  5 Nov 2025 09:04:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::629"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762288575;
-	cv=none; b=fCADZ+oQbgUd7xUZ+q8X//W5ZMVs24km/E26MShkSX5pVHzEJyLBdYqoBLb157qJ9ZYvaSMZn2kZHcX2jV9BE/CycNjcT6xMPhK4wavgrU+zjU9Q9qpAlkyfoGfPiDQNJsOVufD292eJZkHwy1DjPHTNuC0D3CemJmNZ0inplPPZdhcYrlrg3pgEZ+q9Og00CV25K2pJVCuw5MDUdiTU0gCWkgRUlkKMcV8rPS8DwC+VvSMKIAxuFxdD9lySYwhxw/TsuHm91pZ8YK8P/Jgjk057ty5kK2647/rE0GWE5EDGjl+0ZVydofyC2xkdeRpQLT5NftwrY/TsuBJUAWtFyw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d1Rht6xJGz2yqP;
+	Wed,  5 Nov 2025 11:56:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762304174;
+	cv=none; b=M3JNqIc0XPfcL0/1KSWT31uUVCbezU0EyR65TTDxbazm1pz8NT7jrpu6L4FO6CruQCUxBuSvMY7cM53BczArq8NCrtEcino5n39FLCtXYFAo7G4RzCbZMMwZIlB6kgrpy3nRuJ+E5HB2pGE5n7kjmXFkcSOPs7BBlspAquCA3E2y7tBJA829Ky6etsE3BQQfqbH4NusvI3qTxVHRRK/Ok70ZWAesr8RN6RE17fX0GKmcd1UFgVeL5scEeIc/jLzYam6A66RdyPN6h7MFiib2u4oQXQfgagLx/ZCjggu32v4QHx4fB69y8y5UX70qtKeo2GMJrIhZ+tcpTHaiBiu4Jg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762288575; c=relaxed/relaxed;
-	bh=hNwxBRLVn+yjNsddWZjaRch63cYGP209xDEv1WXxmfA=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=e4UwEe4x08JhNa99i/svxMXS0sNLYo9avCHUiLmjkkjZC9OcIDHpOKlduhTubSfx/dnSSpslIftFK4d3d+MKAwa5IN+yqEWzge2r+/TOWEgGPx+qa3J5nDyuFk+11GMWxCXoA4M9HQyHzL1A5yI6X/0F3EWOfDIyC0ZJ9jjQtYpstJROU5Y1xZ6M4QS+Pmb/uHCF//cGziN+h2VAqRP7+tDDJndzNHMCpWyDHRNnbH5MztDZ9f52voT8o4eljP2ovxACxVxGHQVTbniW9G0lvUvNYsURQijFJ1w+PRR9TtDnQkPZiaDcxp7esS/ZcYunKDIeUWrDnbjc2w3KZ05zvg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=surgut.co.uk; dkim=pass (1024-bit key; secure) header.d=surgut.co.uk header.i=@surgut.co.uk header.a=rsa-sha256 header.s=google header.b=gyaNPSY+; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::629; helo=mail-ej1-x629.google.com; envelope-from=dimitri.ledkov@surgut.co.uk; receiver=lists.ozlabs.org) smtp.mailfrom=surgut.co.uk
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=surgut.co.uk
+	t=1762304174; c=relaxed/relaxed;
+	bh=CMps5D/U5zs/rOw7MoP/fF/eizTbKMw9tNqh4wbRSps=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=A7n7yGjEabiujTe0gw9VXbiHSX6ly/ErTK7HjF5FMRuZvkmWukXz6uTnnqTlP+NpgUjdUM0tUuMaS7j6tELQqWDEIjaaL+fCKHXijPyj0YE+3kF3z+iIsZoZrXOYONrm5rGJNVeQw+mIsSiAo4+ATGDpFqSTqiIP2/7UFbUm3HGbPUOoo71tArYVmYfh0dOhx7fKYu/7GEhV5MPIlR6NtVx3OMAIzLW+3A1IiA46PFXMGj+66oJWQcUS+e1v/JOYs8oJFDz0bdNjJxBwoTZfD07z8b2e4jodBnwWedTMLnnBkfcUEDKxOloNq1FrutnxhW1Q64lNlyAGRddaAUOg1g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HitUVvu9; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; secure) header.d=surgut.co.uk header.i=@surgut.co.uk header.a=rsa-sha256 header.s=google header.b=gyaNPSY+;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HitUVvu9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=surgut.co.uk (client-ip=2a00:1450:4864:20::629; helo=mail-ej1-x629.google.com; envelope-from=dimitri.ledkov@surgut.co.uk; receiver=lists.ozlabs.org)
-Received: from mail-ej1-x629.google.com (mail-ej1-x629.google.com [IPv6:2a00:1450:4864:20::629])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=nathan@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1Kwr67MHz2yrm
-	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 07:36:11 +1100 (AEDT)
-Received: by mail-ej1-x629.google.com with SMTP id a640c23a62f3a-b6d402422c2so300959666b.2
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 04 Nov 2025 12:36:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=surgut.co.uk; s=google; t=1762288568; x=1762893368; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=hNwxBRLVn+yjNsddWZjaRch63cYGP209xDEv1WXxmfA=;
-        b=gyaNPSY+V5wl9vXcNsbjupsa4EyR4KZzt69PKE1PyZwGTt2uzXt/K4Urex7ECEdY/e
-         1OBIZHxtXtUeacSunx4NMcnW3KIG7H1LZ+zK0RekuR8+sYG9CcrfLQXDJMqgrh8mBw/U
-         M7wPCedPCDGOKbJIFIlL0jhkvZzx2Sy697rwI=
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762288568; x=1762893368;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=hNwxBRLVn+yjNsddWZjaRch63cYGP209xDEv1WXxmfA=;
-        b=YAlwrGs9i78M2f/2cTKDRcplBZUW6UAw8KPJVo61rQ3uaUbaj4xGrmY5bLlnKEm2hi
-         Vr1amPUf+GwYEKOrta/k3SRGxFOCVhE+9Nl/abFIfnAjDOFmT/q4B8xWHeuKwwgGq+3J
-         lkJlhi24NhPXBmvzXArHjlalJnTrM4KL2qG9+BE4SVQdzswvItNzLdUVokeRwt59ERC8
-         IFpk3ZCEB37SgkJZKiuBDl/D3tmzzkmXg+1GoXss66qB5PVExpk4sSfGM1kaCpu0siUt
-         KHvqxjeuFngd/7c1hKPuxSdCopx8Qy/elUcaSFaXPPYZo/VmVQurPVCIkzI64Lcu1Hwh
-         Mjrw==
-X-Forwarded-Encrypted: i=1; AJvYcCXu6zpEZFa+BquTIi7dDIsyAx9jEP6NOAng9A5JKl2KqPhQyGxMbXuwO++HM+ylAahCwUSYap6TrNEjchs=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwQJqXlPAwjzBCnuwZpCkL7yser1DLTR8elnk7lC0Jt6R0u7QXn
-	4iexPQR7YEAMoJ83lcjEmfIYlCaHtOP5IXs47Z1tdbCQMSdqAqxhw0S2xwfFa+zPAIDAbVbq9Bo
-	dnM+mc18D1fIHFWaPQ6SoFXbw3R032IJvz01R72UrYw==
-X-Gm-Gg: ASbGncttrQbX1fOUD+pPLAPlRozNQvBQinA5MR/HYoiZAg2E1XvffpomPRSEcuDpe2o
-	VEINgBXIBpRkDC4FNFG1mo/DM6w+VSetK5R9oyxW3QX8ciYX/uSz2cf27KPyuTsmGkZb5J1gUOt
-	RXar2DxVEeZrfr08pk/ZerOAC7oLXoodTPaow7qaQijekbbOGNqEpRmLmcB/g1MjMl044ATgqYh
-	ZO9fCwQIyscO9y8207h1F8WjMtnjJH9+YVttm0oZxpq5o0Dvnz07H+5Mzp8GveTR1V04F9Q3S9t
-	D918I0lvd9z2VdEwMnsvAYjwflj5
-X-Google-Smtp-Source: AGHT+IHv6MdLvjnzllIsscePyeEHR6x4pXQN16s0CZlQrgp3UqARDV08ZSSUX0hcwSQAb/R4xgOEgL2WxyZLFHbFBvI=
-X-Received: by 2002:a17:906:6a08:b0:b71:edef:b1d5 with SMTP id
- a640c23a62f3a-b726515d4b4mr53315666b.11.1762288568344; Tue, 04 Nov 2025
- 12:36:08 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d1Rhs0qW2z2yjq
+	for <linuxppc-dev@lists.ozlabs.org>; Wed,  5 Nov 2025 11:56:13 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 9047A6020D;
+	Wed,  5 Nov 2025 00:56:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id B4AFDC116B1;
+	Wed,  5 Nov 2025 00:56:06 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1762304169;
+	bh=Bvm2Nhl2+r7royt5yqzJsom1ydwfu9ptstfPqK7iPMw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=HitUVvu9wiVErxtr0ah4QUG+vMFNYwwqaDx1QJqR4bhbUWDJ9S1hTYO9+AylLAzeF
+	 5PkDCpNRx+cagT0xUtJYIjCra1JnthcghCtelhFwJwUnx1qMnO1dSVaQ08ClWuzdyG
+	 6lvhGTf1DhHYXM1c/ZKmQqTl4nNlXNBYyuP72OQJLgEZithy1tEv3tJNN9VDtjOE8F
+	 iLMP9evJPksFuF9IjeJvOzwlLmQ79aOtU12ZPqNC3MeUGKn64G59xeS+dDX8Lflu2p
+	 f8GzQhWdxc0UIDOFC8p0DiPGWlQq2HCzK4fbLvphwox5M8SqqZ+SLPSSDmR60K7OoH
+	 Yj2ElC/Ug3g1g==
+Date: Tue, 4 Nov 2025 17:56:03 -0700
+From: Nathan Chancellor <nathan@kernel.org>
+To: Venkat Rao Bagalkote <venkat88@linux.ibm.com>,
+	Omar Sandoval <osandov@osandov.com>
+Cc: Samir M <samir@linux.ibm.com>, linux-kernel@vger.kernel.org,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	linuxppc-dev@lists.ozlabs.org, dimitri.ledkov@surgut.co.uk,
+	stable@vger.kernel.org, Nicolas Schier <nsc@kernel.org>,
+	Alexey Gladkov <legion@kernel.org>, linux-debuggers@vger.kernel.org
+Subject: Re: [mainline]Error while running make modules_install command
+Message-ID: <20251105005603.GA769905@ax162>
+References: <7fef7507-ad64-4e51-9bb8-c9fb6532e51e@linux.ibm.com>
+ <56905387-ec43-4f89-9146-0db6889e46ab@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,165 +70,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <7fef7507-ad64-4e51-9bb8-c9fb6532e51e@linux.ibm.com>
- <56905387-ec43-4f89-9146-0db6889e46ab@linux.ibm.com> <aQpCE_XTU-bZHFbk@telecaster>
-In-Reply-To: <aQpCE_XTU-bZHFbk@telecaster>
-From: Dimitri John Ledkov <dimitri.ledkov@surgut.co.uk>
-Date: Tue, 4 Nov 2025 20:35:57 +0000
-X-Gm-Features: AWmQ_bnvWh1e0XqPfSnGn_fuTx1oqRO8eoa0E4M9C5uYfyqYXVvrzikkIncqudc
-Message-ID: <CANBHLUhJ5UVsN4-JN2PG=jq63yGttB9BD6Qm8MgvYirTvg_stw@mail.gmail.com>
-Subject: Re: [mainline]Error while running make modules_install command
-To: Omar Sandoval <osandov@osandov.com>
-Cc: linux-kbuild@vger.kernel.org, nathan@kernel.org, 
-	Samir M <samir@linux.ibm.com>, linux-kernel@vger.kernel.org, 
-	Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org, stable@vger.kernel.org, 
-	Venkat Rao Bagalkote <venkat88@linux.ibm.com>, linux-debuggers@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <56905387-ec43-4f89-9146-0db6889e46ab@linux.ibm.com>
 
-On Tue, 4 Nov 2025 at 18:12, Omar Sandoval <osandov@osandov.com> wrote:
->
-> On Tue, Nov 04, 2025 at 04:54:38PM +0530, Venkat Rao Bagalkote wrote:
-> >
-> > On 04/11/25 4:47 pm, Samir M wrote:
-> > > Hello,
-> > >
-> > >
-> > > I am observing below error while running the make modules_install
-> > > command on latest mainline kernel on IBM Power11 server.
-> > >
-> > >
-> > > Error:
-> > > DEPMOD  /lib/modules/6.18.0-rc4=E2=80=A8depmod: ERROR: kmod_builtin_i=
-ter_next:
-> > > unexpected string without modname prefix
-> > >
-> >
-> > IBM CI has also reported this error.
-> >
-> >
-> > Error:
-> >
-> >
-> > depmod: ERROR: kmod_builtin_iter_next: unexpected string without modnam=
-e
-> > prefix
-> >   INSTALL /boot
-> > depmod: ERROR: kmod_builtin_iter_next: unexpected string without modnam=
-e
-> > prefix
-> > depmod: ERROR: kmod_builtin_iter_next: unexpected string without modnam=
-e
-> > prefix
-> >
-> >
-> > Git bisect is pointing to below commit as first bad commit.
-> >
-> >
-> > d50f21091358b2b29dc06c2061106cdb0f030d03 is the first bad commit
-> > commit d50f21091358b2b29dc06c2061106cdb0f030d03
-> > Author: Dimitri John Ledkov <dimitri.ledkov@surgut.co.uk>
-> > Date:   Sun Oct 26 20:21:00 2025 +0000
-> >
-> >     kbuild: align modinfo section for Secureboot Authenticode EDK2 comp=
-at
-> >
-> >     Previously linker scripts would always generate vmlinuz that has
-> > sections
-> >     aligned. And thus padded (correct Authenticode calculation) and unp=
-added
-> >     calculation would be same. As in https://github.com/rhboot/pesign
-> > userspace
-> >     tool would produce the same authenticode digest for both of the
-> > following
-> >     commands:
-> >
-> >         pesign --padding --hash --in ./arch/x86_64/boot/bzImage
-> >         pesign --nopadding --hash --in ./arch/x86_64/boot/bzImage
-> >
-> >     The commit 3e86e4d74c04 ("kbuild: keep .modinfo section in
-> >     vmlinux.unstripped") added .modinfo section of variable length.
-> > Depending
-> >     on kernel configuration it may or may not be aligned.
-> >
-> >     All userspace signing tooling correctly pads such section to calcul=
-ation
-> >     spec compliant authenticode digest.
-> >
-> >     However, if bzImage is not further processed and is attempted to be
-> > loaded
-> >     directly by EDK2 firmware, it calculates unpadded Authenticode dige=
-st
-> > and
-> >     fails to correct accept/reject such kernel builds even when propoer
-> >     Authenticode values are enrolled in db/dbx. One can say EDK2 requir=
-es
-> >     aligned/padded kernels in Secureboot.
-> >
-> >     Thus add ALIGN(8) to the .modinfo section, to esure kernels irrespe=
-ctive
-> > of
-> >     modinfo contents can be loaded by all existing EDK2 firmware builds=
-.
-> >
-> >     Fixes: 3e86e4d74c04 ("kbuild: keep .modinfo section in
-> > vmlinux.unstripped")
-> >     Cc: stable@vger.kernel.org
-> >     Signed-off-by: Dimitri John Ledkov <dimitri.ledkov@surgut.co.uk>
-> >     Link:
-> > https://patch.msgid.link/20251026202100.679989-1-dimitri.ledkov@surgut.=
-co.uk
-> >     Signed-off-by: Nathan Chancellor <nathan@kernel.org>
-> >
-> >  include/asm-generic/vmlinux.lds.h | 2 +-
-> >  1 file changed, 1 insertion(+), 1 deletion(-)
->
-> drgn's CI hit this same failure. FWIW, the commit fixed by this bisected
-> commit, 3e86e4d74c04 ("kbuild: keep .modinfo section in
-> vmlinux.unstripped"), also results in ELF segments of size 0 in vmlinux
-> for some configurations, which confused drgn until I added a workaround
-> (https://github.com/osandov/drgn/commit/2a9053de8796af866fd720a3c8c230135=
-95d391a).
-> So there's some funkiness in this area.
++ Nicolas and Alexey, just as an FYI.
 
-The expectation is that said section is removed from the final binary.
-But the fact that it is present with 0 length, indicates incorrect
-linking. It also now makes sense why on x86/arm it is tripping up
-section alignment.
+Top of thread is:
 
-As it is likely that it is the same underlying issue that such segment
-exists in the first place.
+https://lore.kernel.org/7fef7507-ad64-4e51-9bb8-c9fb6532e51e@linux.ibm.com/
 
-I wonder if the original implementation of moving sections about and
-when/where the builtin module info is kept is not as tidy as it was
-intended to be.
+On Tue, Nov 04, 2025 at 04:54:38PM +0530, Venkat Rao Bagalkote wrote:
+> IBM CI has also reported this error.
+> 
+> 
+> Error:
+> 
+> 
+> depmod: ERROR: kmod_builtin_iter_next: unexpected string without modname
+> prefix
+>   INSTALL /boot
+> depmod: ERROR: kmod_builtin_iter_next: unexpected string without modname
+> prefix
+> depmod: ERROR: kmod_builtin_iter_next: unexpected string without modname
+> prefix
+> 
+> 
+> Git bisect is pointing to below commit as first bad commit.
+> 
+> 
+> d50f21091358b2b29dc06c2061106cdb0f030d03 is the first bad commit
+> commit d50f21091358b2b29dc06c2061106cdb0f030d03
+> Author: Dimitri John Ledkov <dimitri.ledkov@surgut.co.uk>
+> Date:   Sun Oct 26 20:21:00 2025 +0000
+> 
+>     kbuild: align modinfo section for Secureboot Authenticode EDK2 compat
 
-I wonder if we should:
-- rollback to the state of how things were before that feature was added
-- keep the production / stripped / installed kernel build as is
-- reshuffle of how modinfo is preserved in the unstripped kernel with
-a bespoke linker script
+Thank you for the bisect. I can reproduce this with at least kmod 29.1,
+which is the version I can see failing in drgn's CI from Ubuntu Jammy
+(but I did not see it with kmod 34, which is the latest version in Arch
+Linux at the moment).
 
-Such that hopefully we have correct alignment, without any zero length segm=
-ents.
+Could you and Omar verify if the following diff resolves the error for
+you? I think this would allow us to keep Dimitri's fix for the
+Authenticode EDK2 calculation (i.e., the alignment) while keeping kmod
+happy. builtin.modules.modinfo is the same after this diff as it was
+before Dimitri's change for me.
 
-Or possibly even link / split the built-in module info somewhere else entir=
-ely.
+Cheers,
+Nathan
 
-As in revert both:
-- d50f21091358b (kbuild: align modinfo section for Secureboot
-Authenticode EDK2 compat, 2025-10-26)
-- 3e86e4d74c049 (kbuild: keep .modinfo section in vmlinux.unstripped,
-2025-09-18)
-
-And try implementing the keeping of .modinfo section again.
-
-Better structure tests, after linking would be nice to catch such
-issues, because linker scripts are hard and trying to understand how a
-linker script change affects the result.
-
---=20
-Regards,
-
-Dimitri.
+diff --git a/scripts/Makefile.vmlinux b/scripts/Makefile.vmlinux
+index ced4379550d7..c3f135350d7e 100644
+--- a/scripts/Makefile.vmlinux
++++ b/scripts/Makefile.vmlinux
+@@ -102,11 +102,23 @@ vmlinux: vmlinux.unstripped FORCE
+ # modules.builtin.modinfo
+ # ---------------------------------------------------------------------------
+ 
++# .modinfo in vmlinux is aligned to 8 bytes for compatibility with tools that
++# expect sufficiently aligned sections but the additional NULL bytes used for
++# padding to satisfy this requirement break certain versions of kmod with
++#
++#   depmod: ERROR: kmod_builtin_iter_next: unexpected string without modname prefix
++#
++# Strip the trailing padding bytes after extracting the .modinfo sections to
++# comply with what kmod expects to parse.
++quiet_cmd_modules_builtin_modinfo = GEN     $@
++      cmd_modules_builtin_modinfo = $(cmd_objcopy); \
++                                    sed -i 's/\x00\+$$/\x00/g' $@
++
+ OBJCOPYFLAGS_modules.builtin.modinfo := -j .modinfo -O binary
+ 
+ targets += modules.builtin.modinfo
+ modules.builtin.modinfo: vmlinux.unstripped FORCE
+-	$(call if_changed,objcopy)
++	$(call if_changed,modules_builtin_modinfo)
+ 
+ # modules.builtin
+ # ---------------------------------------------------------------------------
 
