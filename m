@@ -1,82 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-13903-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13904-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0F9C1CCFA13
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Nov 2025 21:50:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 375EACCFA13
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Nov 2025 23:45:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2bV729bWz2xR4;
-	Fri,  7 Nov 2025 08:50:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c112::7" arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762433797;
-	cv=pass; b=g4stYBXAdbSog/7XoJy3llRZiFnoTEA1o4QXo5bwOHUqvLAQOb6pWya0CPf7FY6dKnhv2483LsR2ThGLtrKORhZZWo8F8I/VqN3Jb/tCfutmjPHmn9SKPeOJhpUn1j0Qk9UV4OjSxmDmBtnnpVqw0PQgm/mHB4uaFWk4oUC1rGz4/MNl1k54ZOVwkVJZ2DTYOG3L+CLd2M8/pCHrHRg18ZJi87gse0UVg9IsT2ISz3GOUABqKkz+Ufyypi6A/4cfMVQRseZwiVWECMPW4b7v6aLVLRVKaNRdl95HqO0iNG+I+UepR2m9PhvbM1dsjJp2x4t8kfNzckm2gYAU3baO3g==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762433797; c=relaxed/relaxed;
-	bh=BaH4jL/kGe8N/E21Aq+Ilky+SDexErt27SV2D0lZmWs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
-	 In-Reply-To:Content-Type; b=KBWOMLGzfsDwfoIKYQdEqwVbi09KUCpejPjhH6zfs4PpYMXPUAsZ9RLDpOrI7JA29H+JSr1tnFzq31Dw+Z0nlGEgTi8gCXJkkQlp24yRXX49/Vc9uxpjXqwgfrfzixz6DRfx3VAXHTk5EHGQu6bv1aRZuCvjCM7NIOJT/nrvtTjcOAV4KAbVweNK13kXliS/ogOOyZFwM42M3xWFFeolXFNERA7zmiMrd9wEzX7yp/zJE6tp0xCmqkuguQyxW1daZPLHTa4z3bdUIeDC/G7UVnhE7Enu5yzUg6e779e7CCBd5qwltr8yssbAFXVfELOuvEt18EoUyfhtC2Dac0bkMA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=1s1a115T; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c112::7; helo=cy3pr05cu001.outbound.protection.outlook.com; envelope-from=srikanth.aithal@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2f2r5D35z2yrQ;
+	Fri,  7 Nov 2025 10:45:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762472756;
+	cv=none; b=BZbfxFP5T4KjNImqBBfAe0IlxL86KwcCsHCi9oB0zIF4/uwJFjt+OIMqq+g01si215lMj47lF5Rd567JN75NfdXwgmRc3/IaPA32RVlmpHGB0gVQJ+6huVHzPl5NnoaoH3bhXZtGB6vlEfEOPxRh85KfDGuPlfDopLhw8bIqTCu2/7kbmG769E1gOj3RIWE0kbe+U70huG7R7JCFqwmKi/GwmYs2GoTEyTylyZWKChrOaN182mXNUt2MG98U4zQc2LILLQuhU465xnEhw9dbWqdxvbKpTeuHH/HxuOHwxn8XgP9m/IaN3YLIpyyJ66t8CHwummm79Er63Tvj2LZGhQ==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1762472756; c=relaxed/relaxed;
+	bh=+gnFJJxqbLSg1TYkXQbbrbi6aZzsNHqAku1owFbVMNc=;
+	h=Date:From:To:Cc:Subject:Message-ID:MIME-Version:Content-Type:
+	 Content-Disposition:In-Reply-To; b=HsVODfxRogot77aMEteNphpsTLaREzYxsIaSeXZOxgc3wxEvtcwi/I6+QIUOpyz/4YvV8LH6oTtscEEKvTTMYS9Hm0A4qUsetlFEyoxX7BD3fYtSX9iwAlkjxb0GrltPPhcuDrfl+rJoRv+kERych1yx8TyweaDuVIBncoFmLRFs9Jdu2jBV/l7DFVFkACGhaDizO5qQ08TxCT4RXM3GAVsN6xn5wj1Oyk22NAdGnMPRYAnPVREwcmRxgxdjnp2hkqNxOzVsuzVSnKN4ewenrA78tRERmWPCpR4go/HgQu2AcgA44EXn+9PQL/z6TG8ZuOhHMFapW1gRVYElsloDPQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nDaJ/5/t; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=1s1a115T;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=nDaJ/5/t;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c112::7; helo=cy3pr05cu001.outbound.protection.outlook.com; envelope-from=srikanth.aithal@amd.com; receiver=lists.ozlabs.org)
-Received: from CY3PR05CU001.outbound.protection.outlook.com (mail-westcentralusazlp170130007.outbound.protection.outlook.com [IPv6:2a01:111:f403:c112::7])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange ECDHE (prime256v1) server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2Mdb1T4gz2xR2
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Nov 2025 23:56:34 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=j2GHcblU6n5NlAmubrpUQkMUALr8qZZ/CXHFINW07sB90eTLQpMsslSeLhdlmOu30P8ThDCGO9soc+XrWZxfMqvj9PVLMgKL/8vHiRiwPCu7YE0De6JxFjkmiTXWDyDn507hni7ngLfobz7IEk16QYvY8w130NS1oq1cu/v4Jq0JIDhMPO/sSwlUjQTTLIxDW/SXZBzTO6dqbM5fKrDor5gPVDZMe0S0TYPGa/8rLzSSf074JNUMmaqoN8T965Ter42Yz75KvNK9lUwglVPC81CasxU5f7OFOCyyJTgzC0mvIohyNBYPTR8u9Uc+asxTDPeFB7AE5logbFxewneisw==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=BaH4jL/kGe8N/E21Aq+Ilky+SDexErt27SV2D0lZmWs=;
- b=EDU5/Rki3JVMceB1izlQO5xJfhe+NbiyGwlsrtDFXn41cd9V15tPBZmt0kqQQ4iOEEnkzTo43FUOBM862Zn83uH79UxXYmNLHxjWUU9/Sa9wYW5/p6ro1SzHS3jQ4Lng7cL/VA3uTTick+J++46W6lvC6YoRHtLgsm4QgbIH/IWZresoCFpWW2QpXuhKsf7347BCdqrLDtjbCHxZIKcOisHuxSwNuFdPVDNwP5vsmab3EnrACDxv+5SOMpjfixaLPqb0LZ75MxdBnfxCBipZdMqoOoKXHjqILy+pBL0nbn1jlIdJ7jrHOH7+zmX2dQTYykDeKvmrUoyxEg119oPzUA==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
- 165.204.84.17) smtp.rcpttodomain=linutronix.de smtp.mailfrom=amd.com;
- dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
- header.from=amd.com; dkim=none (message not signed); arc=none (0)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=BaH4jL/kGe8N/E21Aq+Ilky+SDexErt27SV2D0lZmWs=;
- b=1s1a115TFEP1DrlJDqN4/IPRyVEJP//LsBSuVUSugCvldJ34+1Mo9w0+qCPEtJIsbklt7reTDvpov7CH7v7v6gp11enDxWblrtK9yJvbxFimeFeGA0AG8DEDcgwc7zrDXNdmgFwRh62AX+cg1QBcyWTQp/cM3uQftXpMSkF6Z+g=
-Received: from CY5PR15CA0256.namprd15.prod.outlook.com (2603:10b6:930:66::27)
- by DS0PR12MB8342.namprd12.prod.outlook.com (2603:10b6:8:f9::15) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9298.9; Thu, 6 Nov
- 2025 12:56:06 +0000
-Received: from CY4PEPF0000EDD0.namprd03.prod.outlook.com
- (2603:10b6:930:66:cafe::4e) by CY5PR15CA0256.outlook.office365.com
- (2603:10b6:930:66::27) with Microsoft SMTP Server (version=TLS1_3,
- cipher=TLS_AES_256_GCM_SHA384) id 15.20.9298.12 via Frontend Transport; Thu,
- 6 Nov 2025 12:56:05 +0000
-X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
- smtp.mailfrom=amd.com; dkim=none (message not signed)
- header.d=none;dmarc=pass action=none header.from=amd.com;
-Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
- 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
- client-ip=165.204.84.17; helo=satlexmb07.amd.com; pr=C
-Received: from satlexmb07.amd.com (165.204.84.17) by
- CY4PEPF0000EDD0.mail.protection.outlook.com (10.167.241.196) with Microsoft
- SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.20.9298.6 via Frontend Transport; Thu, 6 Nov 2025 12:56:05 +0000
-Received: from SATLEXMB04.amd.com (10.181.40.145) by satlexmb07.amd.com
- (10.181.42.216) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.2.2562.17; Thu, 6 Nov
- 2025 04:56:02 -0800
-Received: from satlexmb08.amd.com (10.181.42.217) by SATLEXMB04.amd.com
- (10.181.40.145) with Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_128_GCM_SHA256) id 15.1.2507.39; Thu, 6 Nov
- 2025 06:56:02 -0600
-Received: from [172.31.39.154] (10.180.168.240) by satlexmb08.amd.com
- (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.17 via Frontend
- Transport; Thu, 6 Nov 2025 04:55:50 -0800
-Message-ID: <c1b74f44-27eb-4e7c-a2dc-ee48ccfe34a3@amd.com>
-Date: Thu, 6 Nov 2025 18:25:49 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2f2q6n75z2xQ4
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2025 10:45:55 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 3AF8F40605;
+	Thu,  6 Nov 2025 23:45:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F2545C4CEF7;
+	Thu,  6 Nov 2025 23:45:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1762472753;
+	bh=23mhRYspHUO/+Jn5j6UsbhA1co9CDPUsRj1RdkMabQU=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:From;
+	b=nDaJ/5/t364D5zfSObhgA0ft1VArPTqWeLPFQA2zIvyUNQrfV2m8D9AA6X3c5wRfH
+	 Q21Bodv0vO+P2iAZM+d8B129L6ihVGsJdLbnQgXgMWbxJxAKxB9W/Vzpt9ERYKmJRt
+	 aPh4IG8/t4b7ih5DeFQIRITz4ez1HnuyE4TWHMhy1rLMvRcLng9ku7ZrAH+AJOoAxT
+	 +SnElhanks/y9iRPZtvGOTsNrJWW8mOlltH/yeUnl3icmXwDxMakvBdKh4Ty7d1tei
+	 a8n09H4P4KN7mwJUyC1cfXnAir4KE2faeS5B4uxozC0VPQXKcCBLQQM2poCCsk8o7Z
+	 9Wg2vPA8Kn0XA==
+Date: Thu, 6 Nov 2025 17:45:51 -0600
+From: Bjorn Helgaas <helgaas@kernel.org>
+To: linux-pci@vger.kernel.org
+Cc: Christian Zigotzky <chzigotzky@xenosoft.de>,
+	Manivannan Sadhasivam <mani@kernel.org>,
+	mad skateman <madskateman@gmail.com>,
+	"R . T . Dickinson" <rtd2@xtra.co.nz>,
+	Darren Stevens <darren@stevens-zone.net>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Lukas Wunner <lukas@wunner.de>,
+	luigi burdo <intermediadc@hotmail.com>, Al <al@datazap.net>,
+	Roland <rol7and@gmx.com>, Hongxing Zhu <hongxing.zhu@nxp.com>,
+	hypexed@yahoo.com.au, linuxppc-dev@lists.ozlabs.org,
+	debian-powerpc@lists.debian.org, linux-kernel@vger.kernel.org,
+	Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH 0/2] PCI/ASPM: Allow quirks to avoid L0s and L1
+Message-ID: <20251106234551.GA1976429@bhelgaas>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -90,256 +74,40 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 00/34] sparc64: vdso: Switch to the generic vDSO
- library
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>, "Andy
- Lutomirski" <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
-	"Vincenzo Frascino" <vincenzo.frascino@arm.com>, Arnd Bergmann
-	<arnd@arndb.de>, "David S. Miller" <davem@davemloft.net>, Andreas Larsson
-	<andreas@gaisler.com>, "Nick Alcock" <nick.alcock@oracle.com>, John Stultz
-	<jstultz@google.com>, "Stephen Boyd" <sboyd@kernel.org>, John Paul Adrian
- Glaubitz <glaubitz@physik.fu-berlin.de>, Shuah Khan <shuah@kernel.org>,
-	"Catalin Marinas" <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
-	"Theodore Ts'o" <tytso@mit.edu>, "Jason A. Donenfeld" <Jason@zx2c4.com>,
-	Russell King <linux@armlinux.org.uk>, Madhavan Srinivasan
-	<maddy@linux.ibm.com>, "Michael Ellerman" <mpe@ellerman.id.au>, Nicholas
- Piggin <npiggin@gmail.com>, Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, Thomas
- Bogendoerfer <tsbogend@alpha.franken.de>, Heiko Carstens <hca@linux.ibm.com>,
-	"Vasily Gorbik" <gor@linux.ibm.com>, Alexander Gordeev
-	<agordeev@linux.ibm.com>, Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>, Shannon Nelson <sln@onemain.com>
-CC: <linux-kernel@vger.kernel.org>, <sparclinux@vger.kernel.org>,
-	<linux-kselftest@vger.kernel.org>, <linux-arm-kernel@lists.infradead.org>,
-	<linuxppc-dev@lists.ozlabs.org>, <loongarch@lists.linux.dev>,
-	<linux-mips@vger.kernel.org>, <linux-s390@vger.kernel.org>, Arnd Bergmann
-	<arnd@kernel.org>
-References: <20251106-vdso-sparc64-generic-2-v5-0-97ff2b6542f7@linutronix.de>
-Content-Language: en-US
-From: "Aithal, Srikanth" <sraithal@amd.com>
-In-Reply-To: <20251106-vdso-sparc64-generic-2-v5-0-97ff2b6542f7@linutronix.de>
-Content-Type: text/plain; charset="UTF-8"; format=flowed
-Content-Transfer-Encoding: 8bit
-Received-SPF: None (SATLEXMB04.amd.com: sraithal@amd.com does not designate
- permitted sender hosts)
-X-EOPAttributedMessage: 0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: CY4PEPF0000EDD0:EE_|DS0PR12MB8342:EE_
-X-MS-Office365-Filtering-Correlation-Id: 8a55891a-6f69-4c80-2198-08de1d33d95e
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|7416014|376014|36860700013|1800799024|82310400026|921020|7053199007|13003099007;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?azRLNUtMRXJ1bHRwcjMycEZIa1k5TCtTemZreW5HUzQvckNLY1krN1RQVW9s?=
- =?utf-8?B?U2VJQStFbXlHU2hLOWUwMWQ4SXhrVmxkaHhKSkJyRU84WUh1dytzM21GSUVu?=
- =?utf-8?B?SFRtTlRSUll0UmxVMW9NWUw2Q0RmaVlGVHdOb25uYU1XZXlBamZ1bG9zMGp5?=
- =?utf-8?B?eC82QVhjeDVYRDZLanpXS3lNeDdPam9UUGxZOVdBWEZaTjR2ZlpEWUtkSDRX?=
- =?utf-8?B?VVcrbFpBTUxvTmJkT2lpTnVEeUpBOThMcVJuWGRIVWRhUTZrejI3MzFMeVcx?=
- =?utf-8?B?WHRNR1BaazNGVWd1UGgxNVp2OFBVYmZYamlEYXpQQmtoRTZ5Rk9mRTRDMjls?=
- =?utf-8?B?Vmlzb0UyY0tHa3p2bW9JbEorMnJabytjcEszbVdESk1lNDRBL0IvMnRuemgw?=
- =?utf-8?B?Z0ptQzBPV1lSZmNJUXAxU2UxeWlZU1ZFbmxGempoRTMvT1I5SzV6VzVNbVlK?=
- =?utf-8?B?OEhCU0psa2dLaXJYWWJGaUptbEFKcHhOcEFqUDdjMGJuZFdDNUVyNFVaNzhM?=
- =?utf-8?B?TFNoQi9NeWVReW95V1NLQVVuTnRsZzFnUnhTZFpjSFBVMjNhdnlvZVV5aFFw?=
- =?utf-8?B?Y0RmL2s0b2xyOHEyaElISVVoY1RXZmJzU3dXN09GVVc1c0VoQjYrVXJ6dkhN?=
- =?utf-8?B?NldadHVOU0N5QUg3VE5Ca1diTWM1QWhNMWowejNZT1lDZCtVZnM1VnlRd3Iw?=
- =?utf-8?B?WGZ6YWtkSlZnM1JDU2ZhbmVxRDY3RUkrYnhDQWhsRk92ZldBNTU3OSsyRFpy?=
- =?utf-8?B?UmhFenNGQnRmb2JWT3N1YkhMbzEvTVBYaitmdjNLRzZsYkl3R2NmQU5Qb3Uv?=
- =?utf-8?B?YkN5cU5PT045OVljc1Z2TUgvd3BHbThKaDRGRFZlYjZWbVdqSDR1eCtKT2hz?=
- =?utf-8?B?UTlFeFBJc3J6TWR3UEpaRHNYYXU2OFI1bWJKV2RLem4yeWp1bmVoa3dMNUJP?=
- =?utf-8?B?QUk0bVVMcTN5bnlqOWdpRm5XQkZkM3hxVWpzNkxyRFRyelVIR3NpQzFYNUhY?=
- =?utf-8?B?WDBuNTlpVFFNS3hIaUpPNXlRMXBkNnJqOFZWclRtSFo0TE9xVk9XUGc3c2xu?=
- =?utf-8?B?czl0anF2TFRLV2dXeWhRTXJNRXNWL0pFWUdDSkhYWlVuYVQ2MTN2bDBnSzdU?=
- =?utf-8?B?ZmV2RlVDeTRGSUFHcngycXdZeUo4WG5qbndCTVdWZHQ5ZDc1SDJmWnVEZXR1?=
- =?utf-8?B?OCsyVVVGaWp5TDh1b2o5ZGs3aEQ4bkRMb3ZVeXkzQTFBSW8zQ1FVMVRicVJZ?=
- =?utf-8?B?TTduWGlrRnpid281Yk5xQXQyNHJGNndUdE12bjlBa05ZbHBFbVFiQU9lUGdY?=
- =?utf-8?B?a0xCSDF3aWhmY3haZ3BjVnVUbzg3U0tOUHRyTlVlRWxGYWJjVFVKSlRPTmlZ?=
- =?utf-8?B?YzFkMjJwb3dhRVVJK00vbC9na0dkbE5WTEhVU09PT29JcDg0MUw4Ri9UMzNo?=
- =?utf-8?B?eW5yUGFncFpyQS9UVE5iM0NDT0NXMTJ3UkNWQlFUMFhJVVhEWktsd3BsU0J5?=
- =?utf-8?B?M3pDUUxtNjl2UWZCVWR1ek42bnBPUDZVblg0TnQvWHE3V080NDBlaHI5NGMx?=
- =?utf-8?B?NGhNNnVxRUVpRFJHZi9mOThNK21mTlZLU08zdlhodkszVTFuTGNXMWpvTHVm?=
- =?utf-8?B?M0k4eGhPeG45TVczeTg2cUFRd0RUSjVXZE1WSHpsb2R5WDRCdmJTd1ZZS0Uw?=
- =?utf-8?B?MnFSUG5kVDZ3VTVGV2FVQWo1VEM1bjl3UEdoc3k3a0gvRXVuMkVkOURJdDZX?=
- =?utf-8?B?UCszMm12b2dMc293aVBwc25RYm1NUVBDWVE4dzhhbUIzL1kyL2NLV05CSTVI?=
- =?utf-8?B?eWJKUUJZa2dqb0lacDVWbEJZM3Z4Wnk5ZzB4OEV5Q2pqNXNjRngvNmRDN2lV?=
- =?utf-8?B?dHRlOG5HSWlsSmJWSjBzbzJIcWdtL05tN0tiVzVuUHVTcFIvZUJ2TitOQUI0?=
- =?utf-8?B?NWFmbGVDaXNiaUdnSkxEN2lTbFVNMkpMTUp0VlhhaFNNMFoyWHBCaUR2a28z?=
- =?utf-8?B?WTdJdEpjV1FrOXptL1NqaFhsblBFYWU2VHBzeDkyY013MUxuVDRRODl4WnlM?=
- =?utf-8?B?L0V2MG1KSHA0VnhGdTRKMnYxYUNvOEsrT3JLa3I1UG02cC9vaFR5Zmc4eldW?=
- =?utf-8?Q?aa8f76PjUIX6n7lAN6xooVZBM?=
-X-Forefront-Antispam-Report:
-	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:CAL;SFV:NSPM;H:satlexmb07.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(7416014)(376014)(36860700013)(1800799024)(82310400026)(921020)(7053199007)(13003099007);DIR:OUT;SFP:1101;
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 06 Nov 2025 12:56:05.9668
- (UTC)
-X-MS-Exchange-CrossTenant-Network-Message-Id: 8a55891a-6f69-4c80-2198-08de1d33d95e
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb07.amd.com]
-X-MS-Exchange-CrossTenant-AuthSource:
-	CY4PEPF0000EDD0.namprd03.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Anonymous
-X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DS0PR12MB8342
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251106183643.1963801-1-helgaas@kernel.org>
 
-On 11/6/2025 3:31 PM, Thomas WeiÃschuh wrote:
-> The generic vDSO provides a lot common functionality shared between
-> different architectures. SPARC is the last architecture not using it,
-> preventing some necessary code cleanup.
+On Thu, Nov 06, 2025 at 12:36:37PM -0600, Bjorn Helgaas wrote:
+> From: Bjorn Helgaas <bhelgaas@google.com>
 > 
-> Make use of the generic infrastructure.
+> We enabled ASPM too aggressively in v6.18-rc1.  f3ac2ff14834 ("PCI/ASPM:
+> Enable all ClockPM and ASPM states for devicetree platforms") enabled ASPM
+> L0s, L1, and (if advertised) L1 PM Substates.
 > 
-> Follow-up to and replacement for Arnd's SPARC vDSO removal patches:
-> https://lore.kernel.org/lkml/20250707144726.4008707-1-arnd@kernel.org/
+> L1 PM Substates and Clock PM in particular are a problem because they
+> depend on CLKREQ# and sometimes device-specific configuration, and none of
+> this is discoverable in a generic way.
 > 
-> SPARC64 can not map .bss into userspace, so the vDSO datapages are
-> switched over to be allocated dynamically. This requires changes to the
-> s390 and random subsystem vDSO initialization as preparation.
-> The random subsystem changes in turn require some cleanup of the vDSO
-> headers to not end up as ugly #ifdef mess.
+> df5192d9bb0e ("PCI/ASPM: Enable only L0s and L1 for devicetree platforms")
+> (v6.18-rc3) backed off and omitted Clock PM and L1 Substates.
 > 
-> Tested on a Niagara T4 and QEMU.
+> L0s and L1 are generically discoverable, but some devices advertise them
+> even though they don't work correctly.  This series is a way to avoid L0s
+> and L1 in that case.
 > 
-> This has a semantic conflict with my series "vdso: Reject absolute
-> relocations during build" [0]. The last patch of this series expects all
-> users of the generic vDSO library to use the vdsocheck tool.
-> This is not the case (yet) for SPARC64. I do have the patches for the
-> integration, the specifics will depend on which series is applied first.
+> Bjorn Helgaas (2):
+>   PCI/ASPM: Cache Link Capabilities so quirks can override them
+>   PCI/ASPM: Avoid L0s and L1 on Freescale Root Ports
 > 
-> Based on v6.18-rc1.
-> 
-> [0] https://lore.kernel.org/lkml/20250812-vdso-absolute-reloc-v4-0-61a8b615e5ec@linutronix.de/
-> 
-> Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
-> ---
-> Changes in v5:
-> - Merge the patches for 'struct page' mapping and dynamic allocation
-> - Zero out newly-allocated data pages
-> - Pick up review tags
-> - Link to v4: https://lore.kernel.org/r/20251014-vdso-sparc64-generic-2-v4-0-e0607bf49dea@linutronix.de
-> 
-> Changes in v4:
-> - Rebase on v6.18-rc1.
-> - Keep inclusion of asm/clocksource.h from linux/clocksource.h
-> - Reword description of "s390/time: Set up vDSO datapage later"
-> - Link to v3: https://lore.kernel.org/r/20250917-vdso-sparc64-generic-2-v3-0-3679b1bc8ee8@linutronix.de
-> 
-> Changes in v3:
-> - Allocate vDSO data pages dynamically (and lots of preparations for that)
-> - Drop clock_getres()
-> - Fix 32bit clock_gettime() syscall fallback
-> - Link to v2: https://lore.kernel.org/r/20250815-vdso-sparc64-generic-2-v2-0-b5ff80672347@linutronix.de
-> 
-> Changes in v2:
-> - Rebase on v6.17-rc1
-> - Drop RFC state
-> - Fix typo in commit message
-> - Drop duplicate 'select GENERIC_TIME_VSYSCALL'
-> - Merge "sparc64: time: Remove architecture-specific clocksource data" into the
->    main conversion patch. It violated the check in __clocksource_register_scale()
-> - Link to v1: https://lore.kernel.org/r/20250724-vdso-sparc64-generic-2-v1-0-e376a3bd24d1@linutronix.de
-> 
-> ---
-> Arnd Bergmann (1):
->        clocksource: remove ARCH_CLOCKSOURCE_DATA
-> 
-> Thomas Weißschuh (33):
->        selftests: vDSO: vdso_test_correctness: Handle different tv_usec types
->        arm64: vDSO: getrandom: Explicitly include asm/alternative.h
->        arm64: vDSO: gettimeofday: Explicitly include vdso/clocksource.h
->        arm64: vDSO: compat_gettimeofday: Add explicit includes
->        ARM: vdso: gettimeofday: Add explicit includes
->        powerpc/vdso/gettimeofday: Explicitly include vdso/time32.h
->        powerpc/vdso: Explicitly include asm/cputable.h and asm/feature-fixups.h
->        LoongArch: vDSO: Explicitly include asm/vdso/vdso.h
->        MIPS: vdso: Add include guard to asm/vdso/vdso.h
->        MIPS: vdso: Explicitly include asm/vdso/vdso.h
->        random: vDSO: Add explicit includes
->        vdso/gettimeofday: Add explicit includes
->        vdso/helpers: Explicitly include vdso/processor.h
->        vdso/datapage: Remove inclusion of gettimeofday.h
->        vdso/datapage: Trim down unnecessary includes
->        random: vDSO: trim vDSO includes
->        random: vDSO: remove ifdeffery
->        random: vDSO: split out datapage update into helper functions
->        random: vDSO: only access vDSO datapage after random_init()
->        s390/time: Set up vDSO datapage later
->        vdso/datastore: Reduce scope of some variables in vvar_fault()
->        vdso/datastore: Drop inclusion of linux/mmap_lock.h
->        vdso/datastore: Allocate data pages dynamically
->        sparc64: vdso: Link with -z noexecstack
->        sparc64: vdso: Remove obsolete "fake section table" reservation
->        sparc64: vdso: Replace code patching with runtime conditional
->        sparc64: vdso: Move hardware counter read into header
->        sparc64: vdso: Move syscall fallbacks into header
->        sparc64: vdso: Introduce vdso/processor.h
->        sparc64: vdso: Switch to the generic vDSO library
->        sparc64: vdso2c: Drop sym_vvar_start handling
->        sparc64: vdso2c: Remove symbol handling
->        sparc64: vdso: Implement clock_gettime64()
-> 
->   arch/arm/include/asm/vdso/gettimeofday.h           |   2 +
->   arch/arm64/include/asm/vdso/compat_gettimeofday.h  |   3 +
->   arch/arm64/include/asm/vdso/gettimeofday.h         |   2 +
->   arch/arm64/kernel/vdso/vgetrandom.c                |   2 +
->   arch/loongarch/kernel/process.c                    |   1 +
->   arch/loongarch/kernel/vdso.c                       |   1 +
->   arch/mips/include/asm/vdso/vdso.h                  |   5 +
->   arch/mips/kernel/vdso.c                            |   1 +
->   arch/powerpc/include/asm/vdso/gettimeofday.h       |   1 +
->   arch/powerpc/include/asm/vdso/processor.h          |   3 +
->   arch/s390/kernel/time.c                            |   4 +-
->   arch/sparc/Kconfig                                 |   3 +-
->   arch/sparc/include/asm/clocksource.h               |   9 -
->   arch/sparc/include/asm/processor.h                 |   3 +
->   arch/sparc/include/asm/processor_32.h              |   2 -
->   arch/sparc/include/asm/processor_64.h              |  25 --
->   arch/sparc/include/asm/vdso.h                      |   2 -
->   arch/sparc/include/asm/vdso/clocksource.h          |  10 +
->   arch/sparc/include/asm/vdso/gettimeofday.h         | 184 ++++++++++
->   arch/sparc/include/asm/vdso/processor.h            |  41 +++
->   arch/sparc/include/asm/vdso/vsyscall.h             |  10 +
->   arch/sparc/include/asm/vvar.h                      |  75 ----
->   arch/sparc/kernel/Makefile                         |   1 -
->   arch/sparc/kernel/time_64.c                        |   6 +-
->   arch/sparc/kernel/vdso.c                           |  69 ----
->   arch/sparc/vdso/Makefile                           |   8 +-
->   arch/sparc/vdso/vclock_gettime.c                   | 380 ++-------------------
->   arch/sparc/vdso/vdso-layout.lds.S                  |  26 +-
->   arch/sparc/vdso/vdso.lds.S                         |   2 -
->   arch/sparc/vdso/vdso2c.c                           |  24 --
->   arch/sparc/vdso/vdso2c.h                           |  45 +--
->   arch/sparc/vdso/vdso32/vdso32.lds.S                |   4 +-
->   arch/sparc/vdso/vma.c                              | 274 +--------------
->   drivers/char/random.c                              |  71 ++--
->   include/linux/clocksource.h                        |   6 +-
->   include/linux/vdso_datastore.h                     |   6 +
->   include/vdso/datapage.h                            |  23 +-
->   include/vdso/helpers.h                             |   1 +
->   init/main.c                                        |   2 +
->   kernel/time/Kconfig                                |   4 -
->   lib/vdso/datastore.c                               |  74 ++--
->   lib/vdso/getrandom.c                               |   3 +
->   lib/vdso/gettimeofday.c                            |  17 +
->   .../testing/selftests/vDSO/vdso_test_correctness.c |   8 +-
->   44 files changed, 449 insertions(+), 994 deletions(-)
-> ---
-> base-commit: 28b1ac5ccd8d4900a8f53f0e6e84d517a7ccc71f
-> change-id: 20250722-vdso-sparc64-generic-2-25f2e058e92c
-> 
-> Best regards,
+>  drivers/pci/pcie/aspm.c | 42 ++++++++++++++++++++---------------------
+>  drivers/pci/probe.c     |  5 ++---
+>  drivers/pci/quirks.c    | 12 ++++++++++++
+>  include/linux/pci.h     |  1 +
+>  4 files changed, 36 insertions(+), 24 deletions(-)
 
-The regression [1] v4 series patchset [2] had caused as part of [3]
-has been fixed by this series.
-
-Tested-by: Srikanth Aithal <sraithal@amd.com>
-
-[1] 
-https://lore.kernel.org/all/977b68ad-6796-4c3d-9c34-d023597f8ab2@amd.com/T/#u
-[2] 
-https://lore.kernel.org/all/977b68ad-6796-4c3d-9c34-d023597f8ab2@amd.com/T/#m5a310ed22ed9203672b0d0d85ecda0a8fec481c4 
-specifically "[PATCH v4 24/35] vdso/datastore: Allocate data pages 
-dynamically"
-[3] next-20251103, 
-https://git.kernel.org/pub/scm/linux/kernel/git/next/linux-next.git
+I put these on for-linus, hopefully for v6.18.  I would like to have
+some review and testing before asking Linus to pull them, especially
+since the first one is not completely trivial and is a change (but
+shouldn't be a functional change) for all platforms.
 
