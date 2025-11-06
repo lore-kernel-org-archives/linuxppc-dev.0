@@ -1,59 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-13870-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13871-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 30C3DCCFA03
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Nov 2025 10:07:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4C93CCF9F8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Nov 2025 10:07:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2Hmx6Vxnz3fRc;
-	Thu,  6 Nov 2025 21:02:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2Hn56Mzvz3fBn;
+	Thu,  6 Nov 2025 21:02:49 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762423361;
-	cv=none; b=e+O0mlhW+kGVA9Bv3vdbbmr7DqF4/dJTb2aKCl0Vdlnua8DCgu7mFoyUCRfPBpYKcE5Q4zcoxnQMa1a9BIP809+x0ItInS9KLRwLZer+KoZra8Z5pdk0HdQHcEy7EaQ2DR/t9HOpdhr8omEPwO1+gp/ntbOq/Dfq6nvHPCZaUIQfEWQ43xtdbnAjzkqbkdsZZRvjyWPCDa/FFacdVomPnkwubiyN26OMcGPkWiuVugYAXBUZmECQPOSVHR1oGTmDA43rpkA/9mhdZT9XJTKrLq0ApwcvVAS9hpA2JxcDL+u6wbXDJ0CKjPrBPsN6Gtd6MyKkuj7umpHsoMXUcAJyAg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762423369;
+	cv=none; b=nGs5PljrVutQaHQ2MJv9yg6IFa7yTAQSzGGOITN0AcMHsGF05IiP8J9IQ9ONU8X6uCQfu5tMj+/N47vFEikT83NlF50xZpfxcYAqB7YzC6xnbT4aQbW3iAY8n5Mb03Uj0VLkphM0+mNQGqpMgigx5pck0I6n0wFKBXoY3FhroyqS9sVnNjhIPrlAwryuz+weNRxjd/ihjBxDSQQ6vfhEIczwtHlZ71WPYwBhPmujQ46ATdj7bv/dzr0AHdqbDSybB3tXjTfAq0mbuw0o4w/xdLTrePy2RdCru2sD0bWfB8lmsHf2JVzd/HJ2mXds1D2D7/u8elWyW4nMdFIZ9OYkkQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762423361; c=relaxed/relaxed;
-	bh=OR5Q4ZuRkIA741qF/DuLi5z3bNd2XCtlxY+P3oghy5c=;
+	t=1762423369; c=relaxed/relaxed;
+	bh=p12DOEBsm2e1glAtpDY9DYaMx7+CHoNdHdo/bDc6SLA=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=UlpfKjRqA2TNTZYDzk1xOnjCrUJkpLO3hcf0vyuHgPJIYGDyTdL2M37tauI4lMQaO91F3jwkHiT7Sp0Q/e5gS3r3sE0J38pU5wKmXUi7nDwfe+8XSnYLej8RI5UoVEh0btVJwFLbWnKTkzdVa2NJoBFQ4K0YEJmSDtM5dh6JtB8ECOR+FPLgOo52AieWWxqMTXBDZSWn6tHfqp03nc8igPpEWgH5/v+HNmjB3yddwQA7Eu5zQGpu/V+7EBFmTq+DZpCEyNb/WzbvlhM1jo48DBJ8EDJJ8190VknNTSW7z1ESusynhvrrRXskDbI8Qgrou3bUxB238OwRtyvbWdAf0g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ewORpPSI; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Ehu4Nnp2; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+	 In-Reply-To:To:Cc; b=eDg5sX4E1Y92S6dffR8gUVaSq4kM6nwXzZ5Cxdm3RiGeLwc0azaCC80CD7NL/R46tE65+c6uhnXkIadONhWBiXBWFgJCe+iHwPnVAeatH6VsWvszgFUvKXIFkjuaB9JceRatQvBcEdvJSKSO/6refGtj+cA5bWucUr3SmE+uGRDbE48czSWtzASktuTralxw7pFP0gEqX9dywmLhks4QUaRlSpIoMcARUJAgwLXdCibjGzJJKTEfmrYPP24ns7/8uh7fR9M74L6ovmT1avMMy3j/K3QHCSK1yBm1NAAiNhckW6TkSOYmIRuw+n2CjmpMcNVTU0P952E6z1w1FVDEEQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=lHjDesxw; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=OozrfdVp; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=ewORpPSI;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=Ehu4Nnp2;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=lHjDesxw;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=OozrfdVp;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
 Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4d2Hmx2bKSz3fRR
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Nov 2025 21:02:41 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4d2Hn46xrPz3c8W
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Nov 2025 21:02:48 +1100 (AEDT)
 From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1762423348;
+	s=2020; t=1762423336;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=OR5Q4ZuRkIA741qF/DuLi5z3bNd2XCtlxY+P3oghy5c=;
-	b=ewORpPSINxIarWqzqFOPKYxCR5amHys/rNImmWUbHAfd1+8IDKDOripwkY28a87y5Xs328
-	NjocchTp9rSgtLXsCNZHZufHLHc+cIc5ws2zTCj1P2xwI2iferEnfCeg1sntZjX1N/xPti
-	6PkdKshrMEXlAi4/QJvrK1E/wFKYrf6F2l14ozqLalJFBOnhpnU7KFiBohyeT9mi04z8at
-	Toy1Grq8wT93zeAKhI/19J334TPF5WWXSMbwCga+fDt9swwN+CnZs3/7P1LzzexThZaxi2
-	Cx5PkQUSiCkeklJ9/6ZV6tLzHogY7rY3KsBzGnTMhlL49EY231g8ohVvr4dRrA==
+	bh=p12DOEBsm2e1glAtpDY9DYaMx7+CHoNdHdo/bDc6SLA=;
+	b=lHjDesxwezGMqrX0JmxEEV6Wl5mCtM0E+aKDVP2fSnlmlmeP/qWYuHrWNYPCfRvEzmltTY
+	Xkt8XR17/NaZdJzpuiGhIrgQam+Wf6xqOvuTXfttbSdXCdHmpx8GcEGofn8/8x3Eymb/n+
+	M3EvuoxQjpB/SW2XNA91oaoHTuZgPhc/SYdcw9jQbVJIe974cNuMQWg3Moks5pA78QJRHs
+	GZmO/XeOFWC/1NXwPvSF1EUZfipJrPNqNuSDHywahsqj0d/ELByBTR0srhb06mh91veaQV
+	vzIzgH3fFBmo5V+gQNFzPW+A45f4AjCE5gCXE27afHSPWO/zok3fSvjzRMplPw==
 DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1762423348;
+	s=2020e; t=1762423336;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=OR5Q4ZuRkIA741qF/DuLi5z3bNd2XCtlxY+P3oghy5c=;
-	b=Ehu4Nnp2Jx/jJ89XmjS0TU0ZyMLmT/lUH5Zx/GFj9Q675+Ldwma6OKZWEBP+c/4wrxokqL
-	SSllEL7irDXyC2Bw==
-Date: Thu, 06 Nov 2025 11:02:21 +0100
-Subject: [PATCH v5 28/34] sparc64: vdso: Move syscall fallbacks into header
+	bh=p12DOEBsm2e1glAtpDY9DYaMx7+CHoNdHdo/bDc6SLA=;
+	b=OozrfdVpYKNWbjyfEfLh45UVZTd4dZ+V78mBGPpV+wIJfYGFCwNX6PFC1EnxSdfmzZyGDR
+	2Vp0voJTDxMvO5Bg==
+Date: Thu, 06 Nov 2025 11:02:05 +0100
+Subject: [PATCH v5 12/34] vdso/gettimeofday: Add explicit includes
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -69,7 +69,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20251106-vdso-sparc64-generic-2-v5-28-97ff2b6542f7@linutronix.de>
+Message-Id: <20251106-vdso-sparc64-generic-2-v5-12-97ff2b6542f7@linutronix.de>
 References: <20251106-vdso-sparc64-generic-2-v5-0-97ff2b6542f7@linutronix.de>
 In-Reply-To: <20251106-vdso-sparc64-generic-2-v5-0-97ff2b6542f7@linutronix.de>
 To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
@@ -96,185 +96,45 @@ Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org,
  linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
  linux-mips@vger.kernel.org, linux-s390@vger.kernel.org, 
  =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1762423327; l=5844;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1762423327; l=1063;
  i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=54fVsevF6wJL94FjT3o2LBMAQrSAU/5OtqL2hTA5L+g=;
- b=GE+z1lzIrwo6b9gotEsWAVqlfFV/4lWk7aBHYKZHquK3Dlqf241AfhwoKqK4g7J0bxE2Ol25i
- Y121f7OC6ohCFV3kG7ZDMAXTJEs9e9vt6q6U8tk2NEC9a8HdHgDN53J
+ bh=8uLSosIzbxHtrLr9GBprNPDpJ3bKD05UahB9SGNPIJE=;
+ b=UpYeRRD5i1K4tW3yL6iiwC27RDLs0kYe53cKq9z3nXOAP4u1QgYtR0o6LY/9ctc9gj32hcxUx
+ In+uqtNh48/AVVfkKdtrXRym8u75jMT3Gmwy9sYNUyFwJocANXLp6Qw
 X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
  pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
 
-The generic vDSO libraries expected the syscall fallbacks in
-asm/vdso/gettimeofday.h. To prepare the adoption of the generic library,
-move the existing functions there.
+Various used symbols are only visible through transitive includes.
+These transitive includes are about to go away.
 
-While at it, rename them so they match what the generic library expects.
+Explicitly include the necessary headers.
 
 Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
 Tested-by: Andreas Larsson <andreas@gaisler.com>
 Reviewed-by: Andreas Larsson <andreas@gaisler.com>
-Acked-by: Andreas Larsson <andreas@gaisler.com>
 ---
- arch/sparc/include/asm/vdso/gettimeofday.h | 50 +++++++++++++++++++++++++++++
- arch/sparc/vdso/vclock_gettime.c           | 51 ++----------------------------
- 2 files changed, 52 insertions(+), 49 deletions(-)
+ lib/vdso/gettimeofday.c | 6 ++++++
+ 1 file changed, 6 insertions(+)
 
-diff --git a/arch/sparc/include/asm/vdso/gettimeofday.h b/arch/sparc/include/asm/vdso/gettimeofday.h
-index 31f6505d3ab5dde9e02eca6da9182e5fb91031c4..429dc080568f59145cc0bc696060adeb60ac177a 100644
---- a/arch/sparc/include/asm/vdso/gettimeofday.h
-+++ b/arch/sparc/include/asm/vdso/gettimeofday.h
-@@ -6,6 +6,9 @@
- #ifndef _ASM_SPARC_VDSO_GETTIMEOFDAY_H
- #define _ASM_SPARC_VDSO_GETTIMEOFDAY_H
- 
-+#include <uapi/linux/time.h>
-+#include <uapi/linux/unistd.h>
-+
- #include <linux/types.h>
- #include <asm/vvar.h>
- 
-@@ -75,4 +78,51 @@ static __always_inline u64 __arch_get_hw_counter(struct vvar_data *vvar)
- 		return vread_tick();
- }
- 
-+#ifdef	CONFIG_SPARC64
-+#define SYSCALL_STRING							\
-+	"ta	0x6d;"							\
-+	"bcs,a	1f;"							\
-+	" sub	%%g0, %%o0, %%o0;"					\
-+	"1:"
-+#else
-+#define SYSCALL_STRING							\
-+	"ta	0x10;"							\
-+	"bcs,a	1f;"							\
-+	" sub	%%g0, %%o0, %%o0;"					\
-+	"1:"
-+#endif
-+
-+#define SYSCALL_CLOBBERS						\
-+	"f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7",			\
-+	"f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15",		\
-+	"f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23",		\
-+	"f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31",		\
-+	"f32", "f34", "f36", "f38", "f40", "f42", "f44", "f46",		\
-+	"f48", "f50", "f52", "f54", "f56", "f58", "f60", "f62",		\
-+	"cc", "memory"
-+
-+static __always_inline
-+long clock_gettime_fallback(clockid_t clock, struct __kernel_old_timespec *ts)
-+{
-+	register long num __asm__("g1") = __NR_clock_gettime;
-+	register long o0 __asm__("o0") = clock;
-+	register long o1 __asm__("o1") = (long) ts;
-+
-+	__asm__ __volatile__(SYSCALL_STRING : "=r" (o0) : "r" (num),
-+			     "0" (o0), "r" (o1) : SYSCALL_CLOBBERS);
-+	return o0;
-+}
-+
-+static __always_inline
-+long gettimeofday_fallback(struct __kernel_old_timeval *tv, struct timezone *tz)
-+{
-+	register long num __asm__("g1") = __NR_gettimeofday;
-+	register long o0 __asm__("o0") = (long) tv;
-+	register long o1 __asm__("o1") = (long) tz;
-+
-+	__asm__ __volatile__(SYSCALL_STRING : "=r" (o0) : "r" (num),
-+			     "0" (o0), "r" (o1) : SYSCALL_CLOBBERS);
-+	return o0;
-+}
-+
- #endif /* _ASM_SPARC_VDSO_GETTIMEOFDAY_H */
-diff --git a/arch/sparc/vdso/vclock_gettime.c b/arch/sparc/vdso/vclock_gettime.c
-index 16ac80982a00b9f965453b89a0cc111312baa9b2..e768c0b84b3420deab2f74335892d40a5b515ee7 100644
---- a/arch/sparc/vdso/vclock_gettime.c
-+++ b/arch/sparc/vdso/vclock_gettime.c
-@@ -13,38 +13,13 @@
+diff --git a/lib/vdso/gettimeofday.c b/lib/vdso/gettimeofday.c
+index 95df0153f05ab41c871755e005762f3442ff3ecd..7b3fbae85544c2f2f6b9abd5437f130706fb6ec6 100644
+--- a/lib/vdso/gettimeofday.c
++++ b/lib/vdso/gettimeofday.c
+@@ -3,8 +3,14 @@
+  * Generic userspace implementations of gettimeofday() and similar.
   */
+ #include <vdso/auxclock.h>
++#include <vdso/clocksource.h>
+ #include <vdso/datapage.h>
+ #include <vdso/helpers.h>
++#include <vdso/ktime.h>
++#include <vdso/limits.h>
++#include <vdso/math64.h>
++#include <vdso/time32.h>
++#include <vdso/time64.h>
  
- #include <linux/kernel.h>
--#include <linux/time.h>
- #include <linux/string.h>
- #include <asm/io.h>
--#include <asm/unistd.h>
- #include <asm/timex.h>
- #include <asm/clocksource.h>
- #include <asm/vdso/gettimeofday.h>
- #include <asm/vvar.h>
- 
--#ifdef	CONFIG_SPARC64
--#define SYSCALL_STRING							\
--	"ta	0x6d;"							\
--	"bcs,a	1f;"							\
--	" sub	%%g0, %%o0, %%o0;"					\
--	"1:"
--#else
--#define SYSCALL_STRING							\
--	"ta	0x10;"							\
--	"bcs,a	1f;"							\
--	" sub	%%g0, %%o0, %%o0;"					\
--	"1:"
--#endif
--
--#define SYSCALL_CLOBBERS						\
--	"f0", "f1", "f2", "f3", "f4", "f5", "f6", "f7",			\
--	"f8", "f9", "f10", "f11", "f12", "f13", "f14", "f15",		\
--	"f16", "f17", "f18", "f19", "f20", "f21", "f22", "f23",		\
--	"f24", "f25", "f26", "f27", "f28", "f29", "f30", "f31",		\
--	"f32", "f34", "f36", "f38", "f40", "f42", "f44", "f46",		\
--	"f48", "f50", "f52", "f54", "f56", "f58", "f60", "f62",		\
--	"cc", "memory"
--
- /*
-  * Compute the vvar page's address in the process address space, and return it
-  * as a pointer to the vvar_data.
-@@ -64,28 +39,6 @@ notrace static __always_inline struct vvar_data *get_vvar_data(void)
- 	return (struct vvar_data *) ret;
- }
- 
--notrace static long vdso_fallback_gettime(long clock, struct __kernel_old_timespec *ts)
--{
--	register long num __asm__("g1") = __NR_clock_gettime;
--	register long o0 __asm__("o0") = clock;
--	register long o1 __asm__("o1") = (long) ts;
--
--	__asm__ __volatile__(SYSCALL_STRING : "=r" (o0) : "r" (num),
--			     "0" (o0), "r" (o1) : SYSCALL_CLOBBERS);
--	return o0;
--}
--
--notrace static long vdso_fallback_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
--{
--	register long num __asm__("g1") = __NR_gettimeofday;
--	register long o0 __asm__("o0") = (long) tv;
--	register long o1 __asm__("o1") = (long) tz;
--
--	__asm__ __volatile__(SYSCALL_STRING : "=r" (o0) : "r" (num),
--			     "0" (o0), "r" (o1) : SYSCALL_CLOBBERS);
--	return o0;
--}
--
- notrace static __always_inline u64 vgetsns(struct vvar_data *vvar)
- {
- 	u64 v;
-@@ -184,7 +137,7 @@ __vdso_clock_gettime(clockid_t clock, struct __kernel_old_timespec *ts)
- 	/*
- 	 * Unknown clock ID ? Fall back to the syscall.
- 	 */
--	return vdso_fallback_gettime(clock, ts);
-+	return clock_gettime_fallback(clock, ts);
- }
- int
- clock_gettime(clockid_t, struct __kernel_old_timespec *)
-@@ -220,7 +173,7 @@ __vdso_gettimeofday(struct __kernel_old_timeval *tv, struct timezone *tz)
- 		}
- 		return 0;
- 	}
--	return vdso_fallback_gettimeofday(tv, tz);
-+	return gettimeofday_fallback(tv, tz);
- }
- int
- gettimeofday(struct __kernel_old_timeval *, struct timezone *)
+ /* Bring in default accessors */
+ #include <vdso/vsyscall.h>
 
 -- 
 2.51.0
