@@ -1,73 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-13899-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13900-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 86970CCFA13
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Nov 2025 18:37:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAB93CCFA05
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Nov 2025 19:20:39 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2WBJ2wdxz3c5y;
-	Fri,  7 Nov 2025 05:36:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762454216;
-	cv=none; b=eFGioSJ15J5s8fa49OKyltty/iuQ6GSjvrNTSAnkFRWqz5sgJMvnXQRY4VwEiHTViXw0JJ2ItMPJMJNgIUNRZnYsrbRtf3zueZr+BjZnK9fbxDhQ+TTP0ByLMnOgwlveuBKUj4fkqaK2tFIWC/SAndnsSVz34hfctBhPbKLVaX9535R1bQrIT+dXTbTlZZJz2Xngbgx8oE8ADHTlaP4NQUcHDSSYgaLUWhGwodeBTxVALXTSZIe7ICDs1IO3x3OswReKhviwqwrS/dAHrM92c48IBAuxvNLxJ1Kv3OdOsC5UWu4PSCBO3ve4+HOOTTZfMlSwFhGUb0aXb9IFccedVQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2X8k1n67z2xdg;
+	Fri,  7 Nov 2025 06:20:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762456838;
+	cv=none; b=YHB9emWoEgkJszFWC+jG31jzGDjVXFnP8euZHQASjaESR2Y5RYUD64d2cCCJuUnR3jpCH8m+9z3ANfhgCmLXv/SnhSAsgyyYd3Sx5OxV2nzwytESRk7t149aUiPotpSTrKCBO382lMxUbGt25drLe4ZzAUd3SagjYru3Ji6JPyum5brj0Zz+sPLa8Q5fgO6U2aSGaUvpfoyghuMLPmdOFYRifTl+9WJQAVFMAuKhOkR2PFx1clE+Ltbexdliom9OSUe4vI/7MTfBHQ4mZ3E6J34JOVZhAxEKNQ1KuU0IGdRTKlNUv9eog1WsOXu0JOsqwDLQ6pKqt3YLuthxzZ5B/w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762454216; c=relaxed/relaxed;
-	bh=xTkOlpA3q7ykHOJbjoRZAPSBFGBd1i7KSj9RcROqJNw=;
+	t=1762456838; c=relaxed/relaxed;
+	bh=mGHTD+ARHXjBF/23D/2tveySnh9Sjo+QI4qiE2meVbA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=R5W43fmS0NDrEWpOc66F9Yxv7HOFgLXqZQWohc7QecF4dYzQgGEURMSiuz6wygtzSDPoMZbzkvyuiADupb1vC8V0Ejq/e3tyEQJh7+pQX5vFuwcVeG9Rlf4IEA985YL9TymACX0dlKXBFEr66Cfe8e9jxLFXVHQzuDivSCQroCR2QkHCVJs9l8AyjYO+y9BIBNDeDDTs8FhNJcQjqnbTIsGsV+ObZh/1GtjCa/nGjz9+sU2wV1ZUzBx/8XrQd1/io2gGhXyMb3rC3if8sus3su+hAaYM1vnttAmYkRr1jzdv5guUmN+0KGr9agJxiaAjyKftMrG0VrUBtJ95ZxY3ww==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rO3Eqy1A; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rO3Eqy1A;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=helgaas@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2WBH3hJKz3bt7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2025 05:36:55 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 94AD6618E4;
-	Thu,  6 Nov 2025 18:36:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4714FC4CEF7;
-	Thu,  6 Nov 2025 18:36:53 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762454213;
-	bh=WZNwtxVV2uegNUg0XelyPK7YX+WuqMbWLKaUnuqlRTU=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=rO3Eqy1A5ms4ZtKiqqFF/KKhlZiVemD/ehVK4HQrTdhA0IzDdc+cAYp88fW/XmBLB
-	 qp4PB5+MEOdUSp12T5bQ9tMiGbTJ6gp5IZI9NuTWF0Zy0dd7B6BaGmCXSI3a6jIbwd
-	 MsqSlwEVnS3uFqKEU1qkScx9kRyWwILAgpKKBePTiqd2SKU89MfPLlaN+d/Bt1pYqy
-	 M/ItazlaE/y7tEar6lx6WawE6Eimz9CfmE+9Bd0kTKG8zVhYyZxi2q2i6ZSlHxl8uF
-	 4qAPsRBP/5GZiRTVxABF05VhdqDFtMtP1n6Pnm9igpi06GEeAevhoMWtaQi0UCsC1V
-	 qsKWM/V5adPJg==
-From: Bjorn Helgaas <helgaas@kernel.org>
-To: linux-pci@vger.kernel.org
-Cc: Christian Zigotzky <chzigotzky@xenosoft.de>,
-	Manivannan Sadhasivam <mani@kernel.org>,
-	mad skateman <madskateman@gmail.com>,
-	"R . T . Dickinson" <rtd2@xtra.co.nz>,
-	Darren Stevens <darren@stevens-zone.net>,
-	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
-	Lukas Wunner <lukas@wunner.de>,
-	luigi burdo <intermediadc@hotmail.com>,
-	Al <al@datazap.net>,
-	Roland <rol7and@gmx.com>,
-	Hongxing Zhu <hongxing.zhu@nxp.com>,
-	hypexed@yahoo.com.au,
-	linuxppc-dev@lists.ozlabs.org,
-	debian-powerpc@lists.debian.org,
+	 MIME-Version; b=XVw/nvp41D1hTWps0u1Sa91ofkNbr628lWlRENE0RF52Nw80oJDNvMm+1pZ+5qNDDLwJQaAu3EsvO3vwm+rIwwPLyC1Uyj4eN6Axk0PK/4xr/MlPRo1j3eXlWv6N8yRXxi3jc8XECwPFlpCcluRUksS6ZRaX0k3o9lew/3URTiw7jHZ3+5X9n5513p/Lh7Aan9Fx1c8XQhHP598ZrdxxkZkIl9GHMuUSzHYn0Urxd6Y8PuDzEWaA/okX2Idj7TtJD0dWjaIaHA2besr1m1MrXhABnKZgJbZasjSGAY2cXO5PB1qxZXdTPbMAhjppanHoYVQbhCrZc7hisIeIlWVRuQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2X8j35XTz2xQ5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2025 06:20:36 +1100 (AEDT)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4d2KmQ28qdz9sSf;
+	Thu,  6 Nov 2025 12:32:22 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id YVf_i7GoCn0I; Thu,  6 Nov 2025 12:32:22 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4d2KmJ4Mjpz9sSh;
+	Thu,  6 Nov 2025 12:32:16 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7C8418B792;
+	Thu,  6 Nov 2025 12:32:16 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id JO5LBR2iyzW5; Thu,  6 Nov 2025 12:32:16 +0100 (CET)
+Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 97B858B77B;
+	Thu,  6 Nov 2025 12:32:15 +0100 (CET)
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+To: Alexander Viro <viro@zeniv.linux.org.uk>,
+	Christian Brauner <brauner@kernel.org>,
+	Jan Kara <jack@suse.cz>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>,
+	Peter Zijlstra <peterz@infradead.org>,
+	Darren Hart <dvhart@infradead.org>,
+	Davidlohr Bueso <dave@stgolabs.net>,
+	"Andre Almeida" <andrealmeid@igalia.com>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Eric Dumazet <edumazet@google.com>,
+	Kuniyuki Iwashima <kuniyu@google.com>,
+	Paolo Abeni <pabeni@redhat.com>,
+	Willem de Bruijn <willemb@google.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Jakub Kicinski <kuba@kernel.org>,
+	Simon Horman <horms@kernel.org>,
+	Daniel Borkmann <daniel@iogearbox.net>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+	linux-block@vger.kernel.org,
+	linux-fsdevel@vger.kernel.org,
 	linux-kernel@vger.kernel.org,
-	Bjorn Helgaas <bhelgaas@google.com>
-Subject: [PATCH 2/2] PCI/ASPM: Avoid L0s and L1 on Freescale Root Ports
-Date: Thu,  6 Nov 2025 12:36:39 -0600
-Message-ID: <20251106183643.1963801-3-helgaas@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20251106183643.1963801-1-helgaas@kernel.org>
-References: <20251106183643.1963801-1-helgaas@kernel.org>
+	netdev@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v4 05/10] powerpc/uaccess: Remove unused size and from parameters from allow_access_user()
+Date: Thu,  6 Nov 2025 12:31:23 +0100
+Message-ID: <e0c60bc6ae9912b400203c1f16f869211026adc9.1762427933.git.christophe.leroy@csgroup.eu>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <cover.1762427933.git.christophe.leroy@csgroup.eu>
+References: <cover.1762427933.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,47 +91,131 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=5364; i=christophe.leroy@csgroup.eu; h=from:subject:message-id; bh=KnzlfUS7b6A05GpPdjrBHv7ZFNA1ZFx8E2W+mgIICCo=; b=kA0DAAoW3ZBwJryrz1MByyZiAGkMhyqi7HXpCsd+qcBnUJl2gCnVLOzgpgcKPJ7chMABwclmX 4h1BAAWCgAdFiEEx/8LupiK9GVvlbov3ZBwJryrz1MFAmkMhyoACgkQ3ZBwJryrz1MeKwEAy0ha N7ps/87sD4oYwH26bIktbycULo/IbbKxgPhsgTsBANqE9t7CuwL1fTq/tdbdBaVJdXFbCT9dMNp HA5cqzQAK
+X-Developer-Key: i=christophe.leroy@csgroup.eu; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
 
-From: Bjorn Helgaas <bhelgaas@google.com>
+Since commit 16132529cee5 ("powerpc/32s: Rework Kernel Userspace
+Access Protection") the size parameter is unused on all platforms.
 
-Christian reported that f3ac2ff14834 ("PCI/ASPM: Enable all ClockPM and
-ASPM states for devicetree platforms") broke booting on the A-EON X5000.
+And the 'from' parameter has never been used.
 
-Fixes: f3ac2ff14834 ("PCI/ASPM: Enable all ClockPM and ASPM states for devicetree platforms")
-Fixes: df5192d9bb0e ("PCI/ASPM: Enable only L0s and L1 for devicetree platforms"
-)
-Reported-by: Christian Zigotzky <chzigotzky@xenosoft.de>
-Link: https://lore.kernel.org/r/db5c95a1-cf3e-46f9-8045-a1b04908051a@xenosoft.de
-Signed-off-by: Bjorn Helgaas <bhelgaas@google.com>
+Remove them.
+
+Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 ---
- drivers/pci/quirks.c | 12 ++++++++++++
- 1 file changed, 12 insertions(+)
+v2: Also remove 'from' param.
+---
+ arch/powerpc/include/asm/book3s/32/kup.h     | 3 +--
+ arch/powerpc/include/asm/book3s/64/kup.h     | 6 ++----
+ arch/powerpc/include/asm/kup.h               | 9 ++++-----
+ arch/powerpc/include/asm/nohash/32/kup-8xx.h | 3 +--
+ arch/powerpc/include/asm/nohash/kup-booke.h  | 3 +--
+ 5 files changed, 9 insertions(+), 15 deletions(-)
 
-diff --git a/drivers/pci/quirks.c b/drivers/pci/quirks.c
-index 214ed060ca1b..44e780718953 100644
---- a/drivers/pci/quirks.c
-+++ b/drivers/pci/quirks.c
-@@ -2525,6 +2525,18 @@ static void quirk_disable_aspm_l0s_l1(struct pci_dev *dev)
-  */
- DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_ASMEDIA, 0x1080, quirk_disable_aspm_l0s_l1);
+diff --git a/arch/powerpc/include/asm/book3s/32/kup.h b/arch/powerpc/include/asm/book3s/32/kup.h
+index 873c5146e3261..a3558419c41b1 100644
+--- a/arch/powerpc/include/asm/book3s/32/kup.h
++++ b/arch/powerpc/include/asm/book3s/32/kup.h
+@@ -97,8 +97,7 @@ static __always_inline unsigned long __kuap_get_and_assert_locked(void)
+ }
+ #define __kuap_get_and_assert_locked __kuap_get_and_assert_locked
  
-+/*
-+ * Remove ASPM L0s and L1 support from cached copy of Link Capabilities so
-+ * aspm.c won't try to enable them.
-+ */
-+static void quirk_disable_aspm_l0s_l1_cap(struct pci_dev *dev)
-+{
-+	dev->lnkcap &= ~PCI_EXP_LNKCAP_ASPM_L0S;
-+	dev->lnkcap &= ~PCI_EXP_LNKCAP_ASPM_L1;
-+	pci_info(dev, "ASPM: L0s L1 removed from Link Capabilities to work around device defect\n");
-+}
-+DECLARE_PCI_FIXUP_HEADER(PCI_VENDOR_ID_FREESCALE, 0x0451, quirk_disable_aspm_l0s_l1_cap);
-+
- /*
-  * Some Pericom PCIe-to-PCI bridges in reverse mode need the PCIe Retrain
-  * Link bit cleared after starting the link retrain process to allow this
+-static __always_inline void allow_user_access(void __user *to, const void __user *from,
+-					      u32 size, unsigned long dir)
++static __always_inline void allow_user_access(void __user *to, unsigned long dir)
+ {
+ 	BUILD_BUG_ON(!__builtin_constant_p(dir));
+ 
+diff --git a/arch/powerpc/include/asm/book3s/64/kup.h b/arch/powerpc/include/asm/book3s/64/kup.h
+index 03aec3c6c851c..9ccf8a5e0926f 100644
+--- a/arch/powerpc/include/asm/book3s/64/kup.h
++++ b/arch/powerpc/include/asm/book3s/64/kup.h
+@@ -353,8 +353,7 @@ __bad_kuap_fault(struct pt_regs *regs, unsigned long address, bool is_write)
+ 	return (regs->amr & AMR_KUAP_BLOCK_READ) == AMR_KUAP_BLOCK_READ;
+ }
+ 
+-static __always_inline void allow_user_access(void __user *to, const void __user *from,
+-					      unsigned long size, unsigned long dir)
++static __always_inline void allow_user_access(void __user *to, unsigned long dir)
+ {
+ 	unsigned long thread_amr = 0;
+ 
+@@ -383,8 +382,7 @@ static __always_inline unsigned long get_kuap(void)
+ 
+ static __always_inline void set_kuap(unsigned long value) { }
+ 
+-static __always_inline void allow_user_access(void __user *to, const void __user *from,
+-					      unsigned long size, unsigned long dir)
++static __always_inline void allow_user_access(void __user *to, unsigned long dir)
+ { }
+ 
+ #endif /* !CONFIG_PPC_KUAP */
+diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
+index f2009d7c8cfa7..3963584ac1cf1 100644
+--- a/arch/powerpc/include/asm/kup.h
++++ b/arch/powerpc/include/asm/kup.h
+@@ -72,8 +72,7 @@ static __always_inline void __kuap_kernel_restore(struct pt_regs *regs, unsigned
+  * platforms.
+  */
+ #ifndef CONFIG_PPC_BOOK3S_64
+-static __always_inline void allow_user_access(void __user *to, const void __user *from,
+-					      unsigned long size, unsigned long dir) { }
++static __always_inline void allow_user_access(void __user *to, unsigned long dir) { }
+ static __always_inline void prevent_user_access(unsigned long dir) { }
+ static __always_inline unsigned long prevent_user_access_return(void) { return 0UL; }
+ static __always_inline void restore_user_access(unsigned long flags) { }
+@@ -134,18 +133,18 @@ static __always_inline void kuap_assert_locked(void)
+ 
+ static __always_inline void allow_read_from_user(const void __user *from, unsigned long size)
+ {
+-	allow_user_access(NULL, from, size, KUAP_READ);
++	allow_user_access(NULL, KUAP_READ);
+ }
+ 
+ static __always_inline void allow_write_to_user(void __user *to, unsigned long size)
+ {
+-	allow_user_access(to, NULL, size, KUAP_WRITE);
++	allow_user_access(to, KUAP_WRITE);
+ }
+ 
+ static __always_inline void allow_read_write_user(void __user *to, const void __user *from,
+ 						  unsigned long size)
+ {
+-	allow_user_access(to, from, size, KUAP_READ_WRITE);
++	allow_user_access(to, KUAP_READ_WRITE);
+ }
+ 
+ static __always_inline void prevent_read_from_user(const void __user *from, unsigned long size)
+diff --git a/arch/powerpc/include/asm/nohash/32/kup-8xx.h b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+index 08486b15b2075..efffb5006d190 100644
+--- a/arch/powerpc/include/asm/nohash/32/kup-8xx.h
++++ b/arch/powerpc/include/asm/nohash/32/kup-8xx.h
+@@ -49,8 +49,7 @@ static __always_inline void uaccess_end_8xx(void)
+ 	    "i"(SPRN_MD_AP), "r"(MD_APG_KUAP), "i"(MMU_FTR_KUAP) : "memory");
+ }
+ 
+-static __always_inline void allow_user_access(void __user *to, const void __user *from,
+-					      unsigned long size, unsigned long dir)
++static __always_inline void allow_user_access(void __user *to, unsigned long dir)
+ {
+ 	uaccess_begin_8xx(MD_APG_INIT);
+ }
+diff --git a/arch/powerpc/include/asm/nohash/kup-booke.h b/arch/powerpc/include/asm/nohash/kup-booke.h
+index d6bbb6d78bbe4..cb2d5a96c3df7 100644
+--- a/arch/powerpc/include/asm/nohash/kup-booke.h
++++ b/arch/powerpc/include/asm/nohash/kup-booke.h
+@@ -73,8 +73,7 @@ static __always_inline void uaccess_end_booke(void)
+ 	    "i"(SPRN_PID), "r"(0), "i"(MMU_FTR_KUAP) : "memory");
+ }
+ 
+-static __always_inline void allow_user_access(void __user *to, const void __user *from,
+-					      unsigned long size, unsigned long dir)
++static __always_inline void allow_user_access(void __user *to, unsigned long dir)
+ {
+ 	uaccess_begin_booke(current->thread.pid);
+ }
 -- 
-2.43.0
+2.49.0
 
 
