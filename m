@@ -1,59 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-13871-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13872-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4C93CCF9F8
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Nov 2025 10:07:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E53FCCF9F8
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  6 Nov 2025 10:30:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2Hn56Mzvz3fBn;
-	Thu,  6 Nov 2025 21:02:49 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762423369;
-	cv=none; b=nGs5PljrVutQaHQ2MJv9yg6IFa7yTAQSzGGOITN0AcMHsGF05IiP8J9IQ9ONU8X6uCQfu5tMj+/N47vFEikT83NlF50xZpfxcYAqB7YzC6xnbT4aQbW3iAY8n5Mb03Uj0VLkphM0+mNQGqpMgigx5pck0I6n0wFKBXoY3FhroyqS9sVnNjhIPrlAwryuz+weNRxjd/ihjBxDSQQ6vfhEIczwtHlZ71WPYwBhPmujQ46ATdj7bv/dzr0AHdqbDSybB3tXjTfAq0mbuw0o4w/xdLTrePy2RdCru2sD0bWfB8lmsHf2JVzd/HJ2mXds1D2D7/u8elWyW4nMdFIZ9OYkkQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2JP7537bz3bfQ;
+	Thu,  6 Nov 2025 21:30:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762425035;
+	cv=none; b=RzREIgSRMdxAeAgJiz5MciFW5Bb+0HE6y1eI+yOT84bje7FZdSsyG9Iio0B7TfjSihLKiW39vGyhCGNzq2qSsylwPWRA7A+pKp268CF4Z+jbSHE+GppybuhU6y5uiao0yw2OmexcFFVge/XxRl9AbN2yPm+TfNMSFgWLr5fpbvCjmk8lmu8YjG6bJjookYrBKbmDXkX0GU355uD/OKgqFW/MyyMVUjHEGDq0RRWb2LDbcLM1Z/c4Q6Y2cFEize/kqSml9ZycfcHSdQlG2h7tGR+rM8dGZhtkqclq+1WkTTt3pzHDs8jFDR4nPfueCx7EOcgrykDxsPuT2iHHzbiCiA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762423369; c=relaxed/relaxed;
-	bh=p12DOEBsm2e1glAtpDY9DYaMx7+CHoNdHdo/bDc6SLA=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=eDg5sX4E1Y92S6dffR8gUVaSq4kM6nwXzZ5Cxdm3RiGeLwc0azaCC80CD7NL/R46tE65+c6uhnXkIadONhWBiXBWFgJCe+iHwPnVAeatH6VsWvszgFUvKXIFkjuaB9JceRatQvBcEdvJSKSO/6refGtj+cA5bWucUr3SmE+uGRDbE48czSWtzASktuTralxw7pFP0gEqX9dywmLhks4QUaRlSpIoMcARUJAgwLXdCibjGzJJKTEfmrYPP24ns7/8uh7fR9M74L6ovmT1avMMy3j/K3QHCSK1yBm1NAAiNhckW6TkSOYmIRuw+n2CjmpMcNVTU0P952E6z1w1FVDEEQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=lHjDesxw; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=OozrfdVp; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=lHjDesxw;
-	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=OozrfdVp;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=t-8ch@linutronix.de; receiver=lists.ozlabs.org)
-Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with UTF8SMTPS id 4d2Hn46xrPz3c8W
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Nov 2025 21:02:48 +1100 (AEDT)
-From: =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020; t=1762423336;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=p12DOEBsm2e1glAtpDY9DYaMx7+CHoNdHdo/bDc6SLA=;
-	b=lHjDesxwezGMqrX0JmxEEV6Wl5mCtM0E+aKDVP2fSnlmlmeP/qWYuHrWNYPCfRvEzmltTY
-	Xkt8XR17/NaZdJzpuiGhIrgQam+Wf6xqOvuTXfttbSdXCdHmpx8GcEGofn8/8x3Eymb/n+
-	M3EvuoxQjpB/SW2XNA91oaoHTuZgPhc/SYdcw9jQbVJIe974cNuMQWg3Moks5pA78QJRHs
-	GZmO/XeOFWC/1NXwPvSF1EUZfipJrPNqNuSDHywahsqj0d/ELByBTR0srhb06mh91veaQV
-	vzIzgH3fFBmo5V+gQNFzPW+A45f4AjCE5gCXE27afHSPWO/zok3fSvjzRMplPw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
-	s=2020e; t=1762423336;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references;
-	bh=p12DOEBsm2e1glAtpDY9DYaMx7+CHoNdHdo/bDc6SLA=;
-	b=OozrfdVpYKNWbjyfEfLh45UVZTd4dZ+V78mBGPpV+wIJfYGFCwNX6PFC1EnxSdfmzZyGDR
-	2Vp0voJTDxMvO5Bg==
-Date: Thu, 06 Nov 2025 11:02:05 +0100
-Subject: [PATCH v5 12/34] vdso/gettimeofday: Add explicit includes
+	t=1762425035; c=relaxed/relaxed;
+	bh=kXPFrNUNPhhkMe5rhwtRP1Qi03luuYdSthxJanNeerc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=S64lpULFAXpCKQLPIYwaeoqMqcSwZ0Fp2wEsjM2vrJaK308e3j6KD3V/ZGSyl+SkBd6OjouEJNN4oy3LvOLhHiALwRu/MOfql+WehztM43lFv8/P4J4jDriOG446Q7zIO/+coyteTxGssSoVfVoeJh2H5Y0WAKF8HlmyMFBX0Dt4FoHIFd5P9gJyTlhLLDBFzwtz9ESdfQNQhPA69OBlAhGP7hOPUz7uf7iFHOnTlkxoHEisdRrqNBIpJnopwob+iQpebTPOO4QybsWVPjwijOxkywSUYmHjLDzH91vwILv3FqvUiQXGJ0HjLIHKHMLy9kIczO+O8PlKpB9hZ/Iykw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2JP6544Yz2ySP
+	for <linuxppc-dev@lists.ozlabs.org>; Thu,  6 Nov 2025 21:30:32 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B85731596;
+	Thu,  6 Nov 2025 02:29:52 -0800 (PST)
+Received: from [10.1.34.75] (unknown [10.1.34.75])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CB9A53F66E;
+	Thu,  6 Nov 2025 02:29:53 -0800 (PST)
+Message-ID: <b3e4a92f-5b51-4eee-bfb8-c454add0f0d2@arm.com>
+Date: Thu, 6 Nov 2025 10:29:50 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,76 +44,78 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20251106-vdso-sparc64-generic-2-v5-12-97ff2b6542f7@linutronix.de>
-References: <20251106-vdso-sparc64-generic-2-v5-0-97ff2b6542f7@linutronix.de>
-In-Reply-To: <20251106-vdso-sparc64-generic-2-v5-0-97ff2b6542f7@linutronix.de>
-To: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>, 
- Vincenzo Frascino <vincenzo.frascino@arm.com>, 
- Arnd Bergmann <arnd@arndb.de>, "David S. Miller" <davem@davemloft.net>, 
- Andreas Larsson <andreas@gaisler.com>, Nick Alcock <nick.alcock@oracle.com>, 
- John Stultz <jstultz@google.com>, Stephen Boyd <sboyd@kernel.org>, 
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, 
- Shuah Khan <shuah@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
- Will Deacon <will@kernel.org>, Theodore Ts'o <tytso@mit.edu>, 
- "Jason A. Donenfeld" <Jason@zx2c4.com>, 
- Russell King <linux@armlinux.org.uk>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Huacai Chen <chenhuacai@kernel.org>, WANG Xuerui <kernel@xen0n.name>, 
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>, 
- Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>, 
- Alexander Gordeev <agordeev@linux.ibm.com>, 
- Christian Borntraeger <borntraeger@linux.ibm.com>, 
- Sven Schnelle <svens@linux.ibm.com>, Shannon Nelson <sln@onemain.com>
-Cc: linux-kernel@vger.kernel.org, sparclinux@vger.kernel.org, 
- linux-kselftest@vger.kernel.org, linux-arm-kernel@lists.infradead.org, 
- linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev, 
- linux-mips@vger.kernel.org, linux-s390@vger.kernel.org, 
- =?utf-8?q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1762423327; l=1063;
- i=thomas.weissschuh@linutronix.de; s=20240209; h=from:subject:message-id;
- bh=8uLSosIzbxHtrLr9GBprNPDpJ3bKD05UahB9SGNPIJE=;
- b=UpYeRRD5i1K4tW3yL6iiwC27RDLs0kYe53cKq9z3nXOAP4u1QgYtR0o6LY/9ctc9gj32hcxUx
- In+uqtNh48/AVVfkKdtrXRym8u75jMT3Gmwy9sYNUyFwJocANXLp6Qw
-X-Developer-Key: i=thomas.weissschuh@linutronix.de; a=ed25519;
- pk=pfvxvpFUDJV2h2nY0FidLUml22uGLSjByFbM6aqQQws=
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 01/12] powerpc/64s: Do not re-activate batched TLB
+ flush
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
+ <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ David Hildenbrand <david@redhat.com>, "David S. Miller"
+ <davem@davemloft.net>, David Woodhouse <dwmw2@infradead.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+ Jann Horn <jannh@google.com>, Juergen Gross <jgross@suse.com>,
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
+ Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ryan Roberts <ryan.roberts@arm.com>,
+ Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
+ Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org, x86@kernel.org,
+ Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+References: <20251029100909.3381140-1-kevin.brodsky@arm.com>
+ <20251029100909.3381140-2-kevin.brodsky@arm.com>
+ <87qzud42n1.ritesh.list@gmail.com>
+Content-Language: en-GB
+From: Kevin Brodsky <kevin.brodsky@arm.com>
+In-Reply-To: <87qzud42n1.ritesh.list@gmail.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Various used symbols are only visible through transitive includes.
-These transitive includes are about to go away.
+On 05/11/2025 02:46, Ritesh Harjani (IBM) wrote:
+> Kevin Brodsky <kevin.brodsky@arm.com> writes:
+>
+>> From: Alexander Gordeev <agordeev@linux.ibm.com>
+>>
+>> Since commit b9ef323ea168 ("powerpc/64s: Disable preemption in hash
+>> lazy mmu mode") a task can not be preempted while in lazy MMU mode.
+>> Therefore, the batch re-activation code is never called, so remove it.
+>>
+>> Signed-off-by: Alexander Gordeev <agordeev@linux.ibm.com>
+>> Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
+>> ---
+>>  arch/powerpc/include/asm/thread_info.h |  2 --
+>>  arch/powerpc/kernel/process.c          | 25 -------------------------
+>>  2 files changed, 27 deletions(-)
+>>
+> Since the commit referenced in above disables the preemption in
+> arch_enter_lazy_mmu(), so the expectation is that we will never be
+> context switched while in lazy_mmu, hence the code changes in
+> switch_to() around __flush_tlb_pending() should ideally never be called.
 
-Explicitly include the necessary headers.
+Correct, that's the idea.
 
-Signed-off-by: Thomas Weißschuh <thomas.weissschuh@linutronix.de>
-Tested-by: Andreas Larsson <andreas@gaisler.com>
-Reviewed-by: Andreas Larsson <andreas@gaisler.com>
----
- lib/vdso/gettimeofday.c | 6 ++++++
- 1 file changed, 6 insertions(+)
+> With this analysis - the patch looks good to me. I will give this entire
+> patch series a try on Power HW with Hash mmu too (which uses lazy mmu and
+> let you know the results of that)!
 
-diff --git a/lib/vdso/gettimeofday.c b/lib/vdso/gettimeofday.c
-index 95df0153f05ab41c871755e005762f3442ff3ecd..7b3fbae85544c2f2f6b9abd5437f130706fb6ec6 100644
---- a/lib/vdso/gettimeofday.c
-+++ b/lib/vdso/gettimeofday.c
-@@ -3,8 +3,14 @@
-  * Generic userspace implementations of gettimeofday() and similar.
-  */
- #include <vdso/auxclock.h>
-+#include <vdso/clocksource.h>
- #include <vdso/datapage.h>
- #include <vdso/helpers.h>
-+#include <vdso/ktime.h>
-+#include <vdso/limits.h>
-+#include <vdso/math64.h>
-+#include <vdso/time32.h>
-+#include <vdso/time64.h>
- 
- /* Bring in default accessors */
- #include <vdso/vsyscall.h>
+That'd be very appreciated, thanks a lot!
 
--- 
-2.51.0
+> For this patch please feel free to add:
+> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>
+>
+> CC: Venkat who also runs CI on linux Power HW for upstream testing :)
 
+Ack, will Cc you both in the next version.
+
+- Kevin
 
