@@ -1,84 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-13956-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13957-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DEE79CCF9E3
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Nov 2025 00:17:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DC962CCF9E3
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Nov 2025 00:58:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d3Gj11nCzz2ynf;
-	Sat,  8 Nov 2025 11:17:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762561061;
-	cv=none; b=kk0tUVRXpJC0b4UtxmMFa1XTsVrKyLTgs7rXUMZiJuIdgQOpdqO8srkZGuUwt4SVGw2jPoSvMYzYTGFC2wpZ7pZR/TnDdmb/QeP9xFGwtq4hCZyPShcss0JMuJBOmepwXeYIo+eVZfrZbBOGxBMucWbP7kkt4klkJlQ1YAQW5sWdjiyZFDWtuk1QZs4N9I0dC/F6xzaZYxnNIKyzTi31JhweioFQd2+LOxT1eHDNhpj1L7JfMiIr7k4Xxw86MjpHVjG09b+OXNjI2dpNNJ8nbQM6OcrxGNX57nCGK1Fp8MRYNmbAEgHK2ehhvJscU9WEA7a5+Z4Atu6q2y2K71Pi4w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d3Hc10rKNz2yjm;
+	Sat,  8 Nov 2025 11:58:25 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::42a"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762526031;
+	cv=none; b=gkSNCPs/JCfw7vzPSQdZkXapchiLboOGD7CaDPy6t3T+/qG1NlwFB5UXIAs6+ascXUXoV92xiBm3bBheJCCx3XtlCRrLFX+Y9xqK7j89iag58ZEAHuM0yFymZYQ5yV0ZAMtg+OFmnOAcXj/lmt29Tz5J8JnQnE4VFrE5zpod5iU+FzfUm4ujYx3Omo+LYgegOrRGukZg5bAoS75MCIUx4H9P3FY0RLXquIjAWr+n9CBTI51LcfLy7rvZoAm20WTETs02HdjknjUIp07pZj/T10ogAdMFYur5IloD6JJH3tlYmPKxMrZzwmDLrgxzsPUvBskOpFRqhDQqVaLbBpgQMQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762561061; c=relaxed/relaxed;
-	bh=nqrig/ICHvWgtJzEoNeYVDwQd4i37MdMTA/ueCaWo50=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=aP7B4931c3Jwbc/9lZqtDCm9aaZCt2DZmPVBtduaucwZtw7zBGnqHwGLC6ZtADjDOXNbR+b4uOx7k7uYTrLfLCU9MxrMg5MZ5ia/5fc8KSFFUUhc1f+3Y3zmlQpcOf9TH84huR9T8p+cRzoLl/tcrguYR+RuNSpehSqFUcyvxeWwojzm6rrwOLOktYRYHIKv682WpjJ7zW8CDUR3jylX8acqjqiKAa3pA+4rgZaETKrdEQRAB5mnfU3br9i7UwcsyLqkYObjJgxezrHYuwF+sm/7TCrmkU6OyqAR0UQX+uxge7Qn5zt06Q2at7Av6+sLWC00744x8W69JhTXxXNgGg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZPZ3Vy4+; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=luto@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1762526031; c=relaxed/relaxed;
+	bh=zZwooRdHB1TiRGXyDl2NtjlO6yhOj/8qnno438SS5o4=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=YVPF98ijfxXL/d4QLUFSik6LOTCI65htJF2poj+kkRhCY9PhvMM4gKBNL2Bl6yu7PGcTFyNz6xkVLa6tS/CMlGAyQlqfThwffgjpdEGlsckGYWT8w3iYoBl4pQnNnOD366pVj/VBqEAl+N4xVgw+v92i8umM9xdfL5+6Ki7m/sHNGhrIHJYW6atjutLG5rdATGN3oLfhOrCjXXAiFxU5nEO/uuy0AG4XzxcIvj1YWwVhB8qLNSOhFMVBgrHK4Ygpqft3J/4QWqUCttzU01Hg8UyO0PuHj0opeeTxmta/kMj773U41dDBoRnO4BcE5WKys2qb3HLPhU4eCuEsPyOOOg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=SL7CIsF3; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::42a; helo=mail-wr1-x42a.google.com; envelope-from=marco.crivellari@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZPZ3Vy4+;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=SL7CIsF3;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=luto@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::42a; helo=mail-wr1-x42a.google.com; envelope-from=marco.crivellari@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-x42a.google.com (mail-wr1-x42a.google.com [IPv6:2a00:1450:4864:20::42a])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d3Gj0194bz2xWc
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Nov 2025 11:17:40 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 8967643C74;
-	Sat,  8 Nov 2025 00:17:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 57049C4CEF8;
-	Sat,  8 Nov 2025 00:17:36 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762561057;
-	bh=XUsG99xBjGBf0mGGPX30fWGrjmuEuoRvSI6cNRaW3uk=;
-	h=Date:From:To:Cc:In-Reply-To:References:Subject:From;
-	b=ZPZ3Vy4+Mwtd9u64BlwFmY6DmILtaZrSzmob9fOqpBDxe0Vricl0BZr8nconsigNL
-	 SYTDEJnaAeh2wKWKSpK71sYHmGNBfLi/udKjbzUvREvUi9BIO85f4fGuhHjLV8Ul+z
-	 8qEZnZe1tF/KaqDUNx9F1cVDDWxSyrWlYSD7e41mB7erF4YEJpMPeMGKvUaCSr8Kmu
-	 t9Q4lJ8QnwFq9H/ubkLYOjrZFTc+Xp0zqdPZHWEynJx9onXQCbbC3x7TWNl/JspQ9H
-	 GaMIKkq4WYKrixfV9Zg5Hw2UA54Qy7FuO7SwVRkjS8gm9KrB/c3pWQxLda/3j9cQAR
-	 fRFaQ1dnyywMA==
-Received: from phl-compute-01.internal (phl-compute-01.internal [10.202.2.41])
-	by mailfauth.phl.internal (Postfix) with ESMTP id 5F54BF40068;
-	Fri,  7 Nov 2025 19:17:35 -0500 (EST)
-Received: from phl-imap-02 ([10.202.2.81])
-  by phl-compute-01.internal (MEProxy); Fri, 07 Nov 2025 19:17:35 -0500
-X-ME-Sender: <xms:H4wOafrNzNh3F20iEtzGYLwdnG5HUk8owEhFzBq4bC4yrZFPBzDpnw>
-    <xme:H4wOaUcjSdohJ-lHpvtmDCy99XFBkf7MtPoTsUirPUpTjN2r6oDNLQ-LiaoJ013Zx
-    OSsZ3wJ9MR_FlQDZoIpMISCvYFbT_IdXYQn-RQ8McO3in1UX_e7ymo>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeeffedrtdeggdduledutdejucetufdoteggodetrf
-    dotffvucfrrhhofhhilhgvmecuhfgrshhtofgrihhlpdfurfetoffkrfgpnffqhgenuceu
-    rghilhhouhhtmecufedttdenucesvcftvggtihhpihgvnhhtshculddquddttddmnecujf
-    gurhepofggfffhvfevkfgjfhfutgfgsehtqhertdertdejnecuhfhrohhmpedftehnugih
-    ucfnuhhtohhmihhrshhkihdfuceolhhuthhosehkvghrnhgvlhdrohhrgheqnecuggftrf
-    grthhtvghrnhephffgieeuueevvddvffehiedtteduveejtefhuedtteehfffgieehhfeg
-    ffehvddvnecuffhomhgrihhnpehkvghrnhgvlhdrohhrghenucevlhhushhtvghrufhiii
-    gvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrnhguhidomhgvshhmthhprghuthhh
-    phgvrhhsohhnrghlihhthidqudduiedukeehieefvddqvdeifeduieeitdekqdhluhhtoh
-    eppehkvghrnhgvlhdrohhrgheslhhinhhugidrlhhuthhordhushdpnhgspghrtghpthht
-    ohepfeekpdhmohguvgepshhmthhpohhuthdprhgtphhtthhopehtshgsohhgvghnugesrg
-    hlphhhrgdrfhhrrghnkhgvnhdruggvpdhrtghpthhtoheptggrthgrlhhinhdrmhgrrhhi
-    nhgrshesrghrmhdrtghomhdprhgtphhtthhopehvihhntggvnhiiohdrfhhrrghstghinh
-    hosegrrhhmrdgtohhmpdhrtghpthhtoheplhhinhhugiesrghrmhhlihhnuhigrdhorhhg
-    rdhukhdprhgtphhtthhopegrrhhnugesrghrnhgusgdruggvpdhrtghpthhtoheptghhrh
-    hishhtohhphhgvrdhlvghrohihsegtshhgrhhouhhprdgvuhdprhgtphhtthhopegurghv
-    vghmsegurghvvghmlhhofhhtrdhnvghtpdhrtghpthhtohepmhhpvgesvghllhgvrhhmrg
-    hnrdhiugdrrghupdhrtghpthhtoheprghnughrvggrshesghgrihhslhgvrhdrtghomh
-X-ME-Proxy: <xmx:H4wOaYj7xvXA29_Bib9C5PIR7PR0nsrqVdk5HtTm2H3d-R4y6hN7cA>
-    <xmx:H4wOaWyOOyhtvDHw5EQUulR9nlXXe4Ffhpq_shBAWohS0jRLkL-01g>
-    <xmx:H4wOaW5NDwwwriLNNzBHji6Fxg-C2vRU0eXN25y76ZiKUVW1dC5How>
-    <xmx:H4wOaQdjDWMtCC-ZhzLIVmqqVcgCiXSqauLHNTpK8yyJ4JDQQasaWw>
-    <xmx:H4wOaWqC_OPjl_9AhrIU-MZOmt6l20JMDdKC6pSM7VJpUei1L8Bhd8QE>
-Feedback-ID: ieff94742:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id 1E114700054; Fri,  7 Nov 2025 19:17:35 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d31lK71Xfz3bs7
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Nov 2025 01:33:48 +1100 (AEDT)
+Received: by mail-wr1-x42a.google.com with SMTP id ffacd0b85a97d-429c82bf86bso427780f8f.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Nov 2025 06:33:48 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=suse.com; s=google; t=1762526024; x=1763130824; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=zZwooRdHB1TiRGXyDl2NtjlO6yhOj/8qnno438SS5o4=;
+        b=SL7CIsF3coCzDE41UfSSVUdwVc0wTGhXP5cARbrhViDRtAYv630r78ApMXAwcnmNE7
+         pVAxn3GkJrSkPK6YdftHsHP6O5WOcpX3SopGywWoIEkcc8ju+Pwf3ZqatMmU339q7+He
+         umbXyxqebg/h1dWmiygC9IIl49l2Gdlr1wmwcYTDrfUlwtCwV8BwbVkVBXKuZpWg5zWg
+         LkAVg8gFz1/5kW91EA3IbrgW09AOCu6O0QGB1jvqd9rUa4W+UCqJyf6hxlYERX9sol69
+         2Um4H/UNKpjoA0deVrvYQ1GBPfOKl4rgZenftk6aH3IhVVxNlPsm5QAr0QYuYkVQU0z/
+         Llhw==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1762526024; x=1763130824;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=zZwooRdHB1TiRGXyDl2NtjlO6yhOj/8qnno438SS5o4=;
+        b=iKtb/CHDqAar5ehJwUZ2ux4nnND86Tz7kbKZzbagwHs/5B024FJmpGTJlIcn5srWpN
+         mLs90wRKpUC4iiwut/jMeXM2Db9skQY3kPnbzYKNocYfSiOFgXz4dUeZOoWXwaGZk211
+         LnCod+row7Q/8Z1kouOVdOk8F+Dsb1IcsCIF1a6qT2kdRLzRxlH1U1OvqnfR/S0OLXt0
+         ksKDmfBu2upZJaMxu6rcy7bQ658E2DLp5MlPv7FuVPDIBomIHMpeuBWoE7eWNghZJ6/q
+         CeI4Fr2qzBAtCFXfqajqwz2X67FV8G4Z3tvwSrJozebdR4rhs3SbkoCdmo6JfNl30RJK
+         x/Yg==
+X-Forwarded-Encrypted: i=1; AJvYcCWtoq8K40nUK7fmZTgCNOr15uQWHBzCCC7AOgPpwKLJhH+ZYeSqEwGadx4V93V74cLPNzqLdyvgVFJp19g=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxFNpQulT38mf9w4CYSK9qCWXjDijJwnBHKQXIVHwDnZ6dGPjD9
+	Y5HZkjWCxSFG9np9+UghZd7yVC2l7RJLH9zZ2tuDABzeHUW6wc9s9c9PtW6K7MPHlh0=
+X-Gm-Gg: ASbGncst4AX8RZBptiMf+84xx9WvtbItoigjPWqzNlzQxaUJjDKkoXG7MeJ579/iGFu
+	h+N3q273xxrGkaBkcUYoYgRYk6XKsXyOfYxWdlaMSbvQqsVShGer84YMibffld5eDNK3W15ZAuL
+	usG8vcWUu/b3VI0F3HiwRnfR7t/iVGRhQaaa7D0HY1lWfgtTIK89KUQjbrmtZK8C7Dhs2vGX3MT
+	3D4LZ0VN1xdWHSv1O7GwkMIKHinpJueDbzQ8YN4IC+Bh8oj7aCTjCs84hKtDSX0ikgqWeR0PPQF
+	0Dj8VmMyDSinvwjS6AC+9x9Pq1oXj0qhHpPOpXkme+O0MFpUJxdyIPwRrYLz3ibTIFqUVBiq6PT
+	AkBvUNZqlweo3VpA+osXOOHS0K7rJc15+ikNsguWvzGY8unLEtCaIxmjMTX3r2Jt/bhjeFzu3We
+	3ziMgbHnfDbziZJSwtSJpFKDjv
+X-Google-Smtp-Source: AGHT+IHKuyvTGNSoJsQ3fSAGflXQvX+4fyFLXoLOYbtCrxRpdLm0CfiflATW1SeGn2vQFdIECJYLiw==
+X-Received: by 2002:a05:6000:1a8d:b0:429:cc01:c6a1 with SMTP id ffacd0b85a97d-42ae5888a25mr2897316f8f.28.1762526023562;
+        Fri, 07 Nov 2025 06:33:43 -0800 (PST)
+Received: from localhost.localdomain ([2a00:6d43:105:c401:e307:1a37:2e76:ce91])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-42abe63e126sm5647624f8f.16.2025.11.07.06.33.42
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 07 Nov 2025 06:33:43 -0800 (PST)
+From: Marco Crivellari <marco.crivellari@suse.com>
+To: linux-kernel@vger.kernel.org,
+	linux-pci@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Cc: Tejun Heo <tj@kernel.org>,
+	Lai Jiangshan <jiangshanlai@gmail.com>,
+	Frederic Weisbecker <frederic@kernel.org>,
+	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+	Marco Crivellari <marco.crivellari@suse.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Bjorn Helgaas <bhelgaas@google.com>
+Subject: [PATCH] PCI: pnv_php: add WQ_PERCPU to alloc_workqueue users
+Date: Fri,  7 Nov 2025 15:33:35 +0100
+Message-ID: <20251107143335.242342-1-marco.crivellari@suse.com>
+X-Mailer: git-send-email 2.51.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,114 +102,59 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: AdW-VwKItdLc
-Date: Fri, 07 Nov 2025 16:17:14 -0800
-From: "Andy Lutomirski" <luto@kernel.org>
-To: =?UTF-8?Q?Thomas_Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>,
- "Thomas Gleixner" <tglx@linutronix.de>,
- "Vincenzo Frascino" <vincenzo.frascino@arm.com>,
- "Arnd Bergmann" <arnd@arndb.de>, "David S. Miller" <davem@davemloft.net>,
- "Andreas Larsson" <andreas@gaisler.com>,
- "Nick Alcock" <nick.alcock@oracle.com>,
- "John Stultz" <jstultz@google.com>, "Stephen Boyd" <sboyd@kernel.org>,
- "John Paul Adrian Glaubitz" <glaubitz@physik.fu-berlin.de>,
- "Shuah Khan" <shuah@kernel.org>,
- "Catalin Marinas" <catalin.marinas@arm.com>,
- "Will Deacon" <will@kernel.org>, "Theodore Ts'o" <tytso@mit.edu>,
- "Jason A. Donenfeld" <Jason@zx2c4.com>,
- "Russell King (Oracle)" <linux@armlinux.org.uk>,
- "Madhavan Srinivasan" <maddy@linux.ibm.com>,
- "Michael Ellerman" <mpe@ellerman.id.au>,
- "Nicholas Piggin" <npiggin@gmail.com>,
- "Christophe Leroy" <christophe.leroy@csgroup.eu>,
- "Huacai Chen" <chenhuacai@kernel.org>, "WANG Xuerui" <kernel@xen0n.name>,
- "Thomas Bogendoerfer" <tsbogend@alpha.franken.de>,
- "Heiko Carstens" <hca@linux.ibm.com>,
- "Vasily Gorbik" <gor@linux.ibm.com>,
- "Alexander Gordeev" <agordeev@linux.ibm.com>,
- "Christian Borntraeger" <borntraeger@linux.ibm.com>,
- "Sven Schnelle" <svens@linux.ibm.com>,
- "Shannon Nelson" <sln@onemain.com>
-Cc: "Linux Kernel Mailing List" <linux-kernel@vger.kernel.org>,
- sparclinux@vger.kernel.org, linux-kselftest@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
- loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
- linux-s390@vger.kernel.org, "Arnd Bergmann" <arnd@kernel.org>
-Message-Id: <b870aa47-5ed4-4dcf-a407-eca83d1733d8@app.fastmail.com>
-In-Reply-To: 
- <20251106-vdso-sparc64-generic-2-v5-0-97ff2b6542f7@linutronix.de>
-References: <20251106-vdso-sparc64-generic-2-v5-0-97ff2b6542f7@linutronix.de>
-Subject: Re: [PATCH v5 00/34] sparc64: vdso: Switch to the generic vDSO library
-Content-Type: text/plain; charset=utf-8
-Content-Transfer-Encoding: quoted-printable
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
+Currently if a user enqueues a work item using schedule_delayed_work() the
+used wq is "system_wq" (per-cpu wq) while queue_delayed_work() use
+WORK_CPU_UNBOUND (used when a cpu is not specified). The same applies to
+schedule_work() that is using system_wq and queue_work(), that makes use
+again of WORK_CPU_UNBOUND.
+This lack of consistency cannot be addressed without refactoring the API.
 
-On Thu, Nov 6, 2025, at 2:01 AM, Thomas Wei=C3=9Fschuh wrote:
-> The generic vDSO provides a lot common functionality shared between
-> different architectures. SPARC is the last architecture not using it,
-> preventing some necessary code cleanup.
->
-> Make use of the generic infrastructure.
->
-> Follow-up to and replacement for Arnd's SPARC vDSO removal patches:
-> https://lore.kernel.org/lkml/20250707144726.4008707-1-arnd@kernel.org/
->
-> SPARC64 can not map .bss into userspace, so the vDSO datapages are
-> switched over to be allocated dynamically. This requires changes to the
-> s390 and random subsystem vDSO initialization as preparation.
-> The random subsystem changes in turn require some cleanup of the vDSO
-> headers to not end up as ugly #ifdef mess.
->
+alloc_workqueue() treats all queues as per-CPU by default, while unbound
+workqueues must opt-in via WQ_UNBOUND.
 
-I hate to say it, but this patch series seems like a step backwards.  Yo=
-u're adding a whole lot of complexity and opportunity for screwups (boot=
- failure? corruption?) to support SPARC, where other architectures have =
-no problem with the existing code.  And this complexity appears to infec=
-t basically every kernel subsystem that supplies data to the vDSO.
+This default is suboptimal: most workloads benefit from unbound queues,
+allowing the scheduler to place worker threads where they’re needed and
+reducing noise when CPUs are isolated.
 
-Can you at least explain what the problem is and maybe give some discuss=
-ion of why SPARC has no workaround available?  The closest I found was t=
-his bit from "[PATCH v4 24/35] vdso/datastore: Allocate data pages dynam=
-ically":
+This continues the effort to refactor workqueue APIs, which began with
+the introduction of new workqueues and a new alloc_workqueue flag in:
 
-> Allocating the datapages as part of the kernel image does not work on
-SPARC. It is also problematic with regards to dcache aliasing as there is
-no guarantee that the virtual addresses used by the kernel are compatible
-with those used by userspace.
+commit 128ea9f6ccfb ("workqueue: Add system_percpu_wq and system_dfl_wq")
+commit 930c2ea566af ("workqueue: Add new WQ_PERCPU flag")
 
-Now I'm not an expert on any architecture that has these aliasing (color=
-ing?) issues, but from my limited understanding, it ought to be possible=
- to choose a correctly colored address to map the vdso data given where =
-it's being mapped from.  If there's an issue with gathering a bunch of b=
-asically arbitrarily relatively positioned physical pages into their nec=
-essary arrangement in usermode, you could presumably fix it either with =
-some linker script magic or by rearranging the C code to stick everythin=
-g into a multipage structure.
+This change adds a new WQ_PERCPU flag to explicitly request
+alloc_workqueue() to be per-cpu when WQ_UNBOUND has not been specified.
 
-Or maybe you could arrange to allocate all these pages during early boot=
- and to fudge up some relocation to get all the existing generic code to=
- find them.  Or create some pointers that all the generic code will use =
-that, on non-sparc architectures, will be statically populated with the =
-right addresses by the linker.  IOW, conceptually,
+With the introduction of the WQ_PERCPU flag (equivalent to !WQ_UNBOUND),
+any alloc_workqueue() caller that doesn’t explicitly specify WQ_UNBOUND
+must now use WQ_PERCPU.
 
-struct the_type some_vdso_thing;
+Once migration is complete, WQ_UNBOUND can be removed and unbound will
+become the implicit default.
 
-could change to:
+Suggested-by: Tejun Heo <tj@kernel.org>
+Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
+---
+ drivers/pci/hotplug/pnv_php.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-const struct the_type some_vdso_thing =3D &the_actual_data;
+diff --git a/drivers/pci/hotplug/pnv_php.c b/drivers/pci/hotplug/pnv_php.c
+index c5345bff9a55..35f1758126c6 100644
+--- a/drivers/pci/hotplug/pnv_php.c
++++ b/drivers/pci/hotplug/pnv_php.c
+@@ -802,7 +802,7 @@ static struct pnv_php_slot *pnv_php_alloc_slot(struct device_node *dn)
+ 	}
+ 
+ 	/* Allocate workqueue for this slot's interrupt handling */
+-	php_slot->wq = alloc_workqueue("pciehp-%s", 0, 0, php_slot->name);
++	php_slot->wq = alloc_workqueue("pciehp-%s", WQ_PERCPU, 0, php_slot->name);
+ 	if (!php_slot->wq) {
+ 		SLOT_WARN(php_slot, "Cannot alloc workqueue\n");
+ 		kfree(php_slot->name);
+-- 
+2.51.1
 
-and SPARC could fix up the initialization of the pointer.  And generic c=
-ode would use the pointer instead of the_actual_data.
-
-If you really really really need to have non-arch-specific kernel C code=
- running before the vdso data is allocated, can you give a very clear ex=
-planation of what, exactly, is wrong on sparc?  And maybe put that expla=
-nation into an appropriate comment somewhere so that future kernel progr=
-ammers don't look at the headers and the code and think "wow, what I mes=
-s -- I bet I can clean this up by using statically allocated data".
-
-(Can SPARC really not map things that existed during early boot into use=
-rspace?)
-
---Andy
 
