@@ -1,85 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-13939-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13940-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D81CCCFA05
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Nov 2025 15:39:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66CAFCCFA05
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Nov 2025 15:43:14 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d33CL43vKz3bs7;
-	Sat,  8 Nov 2025 02:39:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::429"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762529982;
-	cv=none; b=LHqneQPDXkbpq2JrLNpz1uoEy30irRXx7tV5akgGpGYEK41/kjq8a3OayBrs8HHfrjFwJaj64KPJg6M9WvkFtl9XE8JZqHE6FqZ1qQ7sQxlf69uWbajCfVsEm/9dvcicNqPjESJXS2KDyoJ+wK93WNn4OQXmZCwnxo0rvdIrTKuDCyB7Xk0BJhGm+zJSgceLps0zsuxJ3mNknbt/HrWl19KXxtGAXb1PUjeM5CQXsbU94lJ8BqQKLV5ZG/fCi7Vu9qlf9HcWeuQGwaov+BMnIWkVujqJIUyPu22kRhMkN47Tm6HtMOa9yYkJ2S7CT8w0Jkd+Qs8Kq9z8tNIS8NqGPw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d33HN5nnYz2yrF;
+	Sat,  8 Nov 2025 02:43:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762530192;
+	cv=none; b=MF4j3/08FQD3g6DiV+7a9RkbdcAg6yXVvPpZndvldNAmrgjwqP6+wnQgMUpkzYQOzNgqbPnzQz/Gnz0rDo+iCIpT4cnzyyPqc/fVjUyMyLOMvL5U16bbWp6AI3fPFOTriO3U3CoUqMPChm3oJKCXIW2THgqOf2VdDfWEzL0rcIMYBFCnqSY69DFxZl2tCkQTakms2y7FHg+9syuTyQDTZ+CAYaQMvkWaz8reCzLnP06TItoyZy3f5cqKo4TDbA3IZOlrTQlpew1LFgvpxgSbv504HD5yxpQtjdjdRuG8TWV2c1BVJLOwxhGEf7UN2Xa9/pdfp+IxbBaKq36l1rZVGw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762529982; c=relaxed/relaxed;
-	bh=rqga9mTz9tAuB6uG3BcapRUEnOv8wIK46KoDgIDUwSo=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=CXhSTJdiZMCndcc9KZFs0KWQy7ViaWonbcUn7fSmpWAA1AUCgzJYE/0hZbtPbLbxziamqqQPaJLaBod6yzS2Us2YumYlG7ehNnETXvZJrwcrEpwJfG+AFL62N531uIbyz3evvJXay/1/eJFiYvQu71fvhtpIqAd8XkVRrI2cqpJIf1ANJroyObRcwNucJf1N0NHi3eepTngSKbsX4pDwNRxQdmPbKbZnvOSeIahY9tlVa0myXezTYhDJ6V0zjMgY6kFizhlOqsaIzDnkR3zQwx+refL1tUMSdPCn3bFIrZGKIpSRcj3x7pHHP2lH5jzDFm7tZ95jgzJhf00m25svig==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Wz+R21iv; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Wz+R21iv;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d33CK1Hxrz2yrF
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Nov 2025 02:39:40 +1100 (AEDT)
-Received: by mail-pf1-x429.google.com with SMTP id d2e1a72fcca58-76e2ea933b7so837412b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Nov 2025 07:39:40 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1762529978; x=1763134778; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=rqga9mTz9tAuB6uG3BcapRUEnOv8wIK46KoDgIDUwSo=;
-        b=Wz+R21ivRgZdHDdF194cnG7bdg8A+LyfE6J123FSnOQLN6OogRXPUI+LzEroNv+aFg
-         qnJRlShiWtz5j8k/WCMf/90oEHkBWpugsIhk1GPrGLXe/cQPdiPrc0TcF6sOSXBDS7W4
-         uwHYT+bJX9+7IGnJeY+TJf3hof9awDTxRpYvOudSFfXo+mawAmYUBqejr5kSOxNTQZbh
-         mueemMVe1kgzsX9KWfPW781ojhn3zzNBxU927UyvCzsIuF1+/W9b384KZhJrHeI9X1V+
-         IfxKcP7fXdxzrZ0lnWdMo1T14uvYSuqzyDtQ1fYO0LE9Fg7vv2ZAMxmOIS5N3ErUv+ZL
-         VLkg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762529978; x=1763134778;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=rqga9mTz9tAuB6uG3BcapRUEnOv8wIK46KoDgIDUwSo=;
-        b=TBpvLzhldN3spwzILDBcNqXWp8fxFx9xP8JaYjyhY5/lAo9lyzZYerPQciVa+86iqX
-         F6bXYdXakUfSuka8q5MF4C34ZGrbIb6GihvCb/oC7xeiQDa+x80cCO0u+syHKX+aSeQQ
-         a1WeWUFbZ7vgg4b3WCW6msvuneVA8ZSo1nNboAST065vr62fIYtHqFaRdCOmT1PRwO57
-         RLLl27R/owOA88jMfWr/N0nML4/zYCpjg17Ot//0F3AssVc+TvOthpwb0aAtdotE1Be/
-         lHpA9VHecBTGg1sJ82CS4EvINE4mQLfVOmlytWryjoNNoS/lRwNEDDfkxxPGJJ01vgcC
-         39SA==
-X-Forwarded-Encrypted: i=1; AJvYcCVYxs2l11HB6u4JrJYHtRlAyOcC2TNiBeA2ek42dmHimnpFcX6RrsNQkL0aZngptXRCb9Ay+Xjuj+VcoCk=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyYwYq0kzmSky8q8ilWNglmqSGdAf0VTgPpH7Ki5fRshmetBJKZ
-	Ou1eKNpBvfhKcGzvfGDzDXIEdZj+Fjhvx32MVY7vzChHqZNACYVNrYeq
-X-Gm-Gg: ASbGncsLGIxoYruZiFCv6sADv17ilWfz1SxqvazX53YuVY6LkSAkx0HynATdv2MH0rL
-	9y+strkyyIOnviiFkpBU+3a+FwmDVS6az3jB9Lfgz+Zq0YBZ8+mBySrT66yG7+Mu6g64gTfUjNk
-	+zs0krLaVexV0rPnn11zCrw/u5VlVzwCKc4FguQ8lgPmfUS1fcmxFpO4DBRAwvD9CXpekECwufj
-	tn4XdIkLT/T33zUMBuvVL+7+t1hMKDiovWTkQiFKB0gyLBVuZMBaPGYDk5y0bbW9rUu2o7ol0tg
-	ErmNm4zGQkj2obPAGipzNWBpPfME/BmAPHEyEGzYxRmxm+6DB2YkkUUXq9/EUZJaoXvZNnMOF8v
-	W/SZZbxWc3eL+Ob3Uc0JOiSBqot46q6RRpAc4kinBg4SmkDZflTuba9mxWnUTKDauqQJIfdYWl8
-	T3Snh7
-X-Google-Smtp-Source: AGHT+IFd7FDqMbhzpvfwf3UUPVU5ECZ+YWWylnAUydZ2xe0dKAfvbdULKgbHSWRqZULtFHQr1EsJzw==
-X-Received: by 2002:a05:6a21:e083:b0:341:cae2:c43b with SMTP id adf61e73a8af0-352b5c00f53mr3194717637.4.1762529977771;
-        Fri, 07 Nov 2025 07:39:37 -0800 (PST)
-Received: from dw-tp ([171.76.85.117])
-        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-ba8f9ce9645sm5689749a12.10.2025.11.07.07.39.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Nov 2025 07:39:37 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, "David Hildenbrand (Red Hat)" <david@kernel.org>, Sourabh Jain <sourabhjain@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Donet Tom <donettom@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: powerpc/e500: WARNING: at mm/hugetlb.c:4755 hugetlb_add_hstate
-In-Reply-To: <d62eea1f-3aff-4b51-976a-4cb8abf502bf@csgroup.eu>
-Date: Fri, 07 Nov 2025 20:07:01 +0530
-Message-ID: <87ecq952pe.ritesh.list@gmail.com>
-References: <94377f5c-d4f0-4c0f-b0f6-5bf1cd7305b1@linux.ibm.com> <dd634b17-cc5e-497c-8228-2470f6533177@redhat.com> <82ef1da8-44c4-4a58-bd00-9839548cb72d@csgroup.eu> <ba3a2131-c8d4-481d-aebb-d25be7ae0d19@kernel.org> <d62eea1f-3aff-4b51-976a-4cb8abf502bf@csgroup.eu>
+	t=1762530192; c=relaxed/relaxed;
+	bh=ghfktYDx18TuQuyOns9ayrK6wncJqISxd3WyfDEr83M=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=MnbLPxEGEVEQpy1VB4rHQ4xm3Zvl515ROrk8p7PHY6Y1+xbNVOUpvBwoqegGbN2mHNbk5VD20cFV2nNxlXhbeldGayxNZXFyEdfC53e6+b787IDbS1tJBvdm7nMEky2Q16hmuUoJTZYr4lUq+OgZDC3ILA1pW7MWjjuwPh1IpqaAqDJ+AFsG/OkD9esw4UzWAHP5GSH6SlLNPL/GLCNOeBw04Mbr5UqiezB/7zSgnj3uDcb8CO78WYGcmY2xHAet+TOxAcR3ffNEYl1na+ofubVYkzricsq0PHOjwu7YSxqXzrdZCzu+HtoFHMhjvsjGt5dhOuweJ5vcGIj1Ba2i1Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d33HM5V34z2yFJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Nov 2025 02:43:11 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 4B6271515;
+	Fri,  7 Nov 2025 07:42:32 -0800 (PST)
+Received: from [10.57.86.134] (unknown [10.57.86.134])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 6F2A33F694;
+	Fri,  7 Nov 2025 07:42:35 -0800 (PST)
+Message-ID: <8a38db66-4d1a-4296-a2dc-e0276c6cdde8@arm.com>
+Date: Fri, 7 Nov 2025 15:42:34 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,250 +43,190 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 12/12] mm: bail out of lazy_mmu_mode_* in interrupt
+ context
+Content-Language: en-GB
+To: Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
+ <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ David Hildenbrand <david@redhat.com>, "David S. Miller"
+ <davem@davemloft.net>, David Woodhouse <dwmw2@infradead.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+ Jann Horn <jannh@google.com>, Juergen Gross <jgross@suse.com>,
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
+ Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, Suren Baghdasaryan
+ <surenb@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>,
+ Yeoreum Yun <yeoreum.yun@arm.com>, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ xen-devel@lists.xenproject.org, x86@kernel.org
+References: <20251029100909.3381140-1-kevin.brodsky@arm.com>
+ <20251029100909.3381140-13-kevin.brodsky@arm.com>
+From: Ryan Roberts <ryan.roberts@arm.com>
+In-Reply-To: <20251029100909.3381140-13-kevin.brodsky@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
+On 29/10/2025 10:09, Kevin Brodsky wrote:
+> The lazy MMU mode cannot be used in interrupt context. This is
+> documented in <linux/pgtable.h>, but isn't consistently handled
+> across architectures.
+> 
+> arm64 ensures that calls to lazy_mmu_mode_* have no effect in
+> interrupt context, because such calls do occur in certain
+> configurations - see commit b81c688426a9 ("arm64/mm: Disable barrier
+> batching in interrupt contexts"). Other architectures do not check
+> this situation, most likely because it hasn't occurred so far.
+> 
+> Both arm64 and x86/Xen also ensure that any lazy MMU optimisation is
+> disabled while in interrupt mode (see queue_pte_barriers() and
+> xen_get_lazy_mode() respectively).
+> 
+> Let's handle this in the new generic lazy_mmu layer, in the same
+> fashion as arm64: bail out of lazy_mmu_mode_* if in_interrupt(), and
+> have in_lazy_mmu_mode() return false to disable any optimisation.
+> Also remove the arm64 handling that is now redundant; x86/Xen has
+> its own internal tracking so it is left unchanged.
+> 
+> Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
+> ---
+>  arch/arm64/include/asm/pgtable.h | 17 +----------------
+>  include/linux/pgtable.h          | 16 ++++++++++++++--
+>  include/linux/sched.h            |  3 +++
+>  3 files changed, 18 insertions(+), 18 deletions(-)
+> 
+> diff --git a/arch/arm64/include/asm/pgtable.h b/arch/arm64/include/asm/pgtable.h
+> index 61ca88f94551..96987a49e83b 100644
+> --- a/arch/arm64/include/asm/pgtable.h
+> +++ b/arch/arm64/include/asm/pgtable.h
+> @@ -62,37 +62,22 @@ static inline void emit_pte_barriers(void)
+>  
+>  static inline void queue_pte_barriers(void)
+>  {
+> -	if (in_interrupt()) {
+> -		emit_pte_barriers();
+> -		return;
+> -	}
+> -
+>  	if (in_lazy_mmu_mode())
+>  		test_and_set_thread_flag(TIF_LAZY_MMU_PENDING);
+>  	else
+>  		emit_pte_barriers();
+>  }
+>  
+> -static inline void arch_enter_lazy_mmu_mode(void)
+> -{
+> -	if (in_interrupt())
+> -		return;
+> -}
+> +static inline void arch_enter_lazy_mmu_mode(void) {}
+>  
+>  static inline void arch_flush_lazy_mmu_mode(void)
+>  {
+> -	if (in_interrupt())
+> -		return;
+> -
+>  	if (test_and_clear_thread_flag(TIF_LAZY_MMU_PENDING))
+>  		emit_pte_barriers();
+>  }
+>  
+>  static inline void arch_leave_lazy_mmu_mode(void)
+>  {
+> -	if (in_interrupt())
+> -		return;
+> -
+>  	arch_flush_lazy_mmu_mode();
+>  }
 
-> Le 06/11/2025 à 16:02, David Hildenbrand (Red Hat) a écrit :
->>>> Yes, we discussed that in [1].
->>>>
->>>> We'll have to set ARCH_HAS_GIGANTIC_PAGE on ppc and increase
->>>> MAX_FOLIO_ORDER, because apparently, there might be ppc configs that
->>>> have even larger hugetlb sizes than PUDs.
->>>>
->>>> @Cristophe, I was under the impression that you would send a fix. Do you
->>>> want me to prepare something and send it out?
->>>
->>> Indeed I would have liked to better understand the implications of all
->>> this, but I didn't have the time.
->> 
->> Indeed, too me longer than it should to understand and make up my mind 
->> as well.
->> 
->>>
->>> By the way, you would describe the fix better than me so yes if you can
->>> prepare and send a fix please do.
->> 
->> I just crafted the following. I yet have to test it more, some early
->> feedback+testing would be appreciated!
->> 
->>  From 274928854644c49c92515f8675c090dba15a0db6 Mon Sep 17 00:00:00 2001
->> From: "David Hildenbrand (Red Hat)" <david@kernel.org>
->> Date: Thu, 6 Nov 2025 11:31:45 +0100
->> Subject: [PATCH] mm: fix MAX_FOLIO_ORDER on some ppc64 configs with hugetlb
->> 
->> In the past, CONFIG_ARCH_HAS_GIGANTIC_PAGE indicated that we support
->> runtime allocation of gigantic hugetlb folios. In the meantime it evolved
->> into a generic way for the architecture to state that it supports
->> gigantic hugetlb folios.
->> 
->> In commit fae7d834c43c ("mm: add __dump_folio()") we started using
->> CONFIG_ARCH_HAS_GIGANTIC_PAGE to decide MAX_FOLIO_ORDER: whether we could
->> have folios larger than what the buddy can handle. In the context of
->> that commit, we started using MAX_FOLIO_ORDER to detect page corruptions
->> when dumping tail pages of folios. Before that commit, we assumed that
->> we cannot have folios larger than the highest buddy order, which was
->> obviously wrong.
->> 
->> In commit 7b4f21f5e038 ("mm/hugetlb: check for unreasonable folio sizes
->> when registering hstate"), we used MAX_FOLIO_ORDER to detect
->> inconsistencies, and in fact, we found some now.
->> 
->> Powerpc allows for configs that can allocate gigantic folio during boot
->> (not at runtime), that do not set CONFIG_ARCH_HAS_GIGANTIC_PAGE and can
->> exceed PUD_ORDER.
->> 
->> To fix it, let's make powerpc select CONFIG_ARCH_HAS_GIGANTIC_PAGE for
->> all 64bit configs, and increase the maximum folio size to P4D_ORDER.
->> 
->> Ideally, we'd have a better way to obtain a maximum value. But this should
->> be good enough for now fix the issue and now mostly states "no real folio
->> size limit".
->> 
->> While at it, handle gigantic DAX folios more clearly: DAX can only
->> end up creating gigantic folios with HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD.
->> 
->> Add a new Kconfig option HAVE_GIGANTIC_FOLIOS to make both cases
->> clearer. In particular, worry about ARCH_HAS_GIGANTIC_PAGE only with
->> HUGETLB_PAGE.
->> 
->> Note: with enabling CONFIG_ARCH_HAS_GIGANTIC_PAGE on PPC64, we will now
->> also allow for runtime allocations of folios in some more powerpc configs.
->> I don't think this is a problem, but if it is we could handle it through
->> __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED.
->> 
->> While __dump_page()/__dump_folio was also problematic (not handling dumping
->> of tail pages of such gigantic folios correctly), it doesn't relevant
->> critical enough to mark it as a fix.
->> 
->> Fixes: 7b4f21f5e038 ("mm/hugetlb: check for unreasonable folio sizes 
->> when registering hstate")
->> Signed-off-by: David Hildenbrand (Red Hat) <david@kernel.org>
->> ---
->>   arch/powerpc/Kconfig                   | 1 +
->>   arch/powerpc/platforms/Kconfig.cputype | 1 -
->>   include/linux/mm.h                     | 4 ++--
->>   include/linux/pgtable.h                | 1 +
->>   mm/Kconfig                             | 7 +++++++
->>   5 files changed, 11 insertions(+), 3 deletions(-)
->> 
->> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->> index e24f4d88885ae..55c3626c86273 100644
->> --- a/arch/powerpc/Kconfig
->> +++ b/arch/powerpc/Kconfig
->> @@ -137,6 +137,7 @@ config PPC
->>       select ARCH_HAS_DMA_OPS            if PPC64
->>       select ARCH_HAS_FORTIFY_SOURCE
->>       select ARCH_HAS_GCOV_PROFILE_ALL
->> +    select ARCH_HAS_GIGANTIC_PAGE        if PPC64
+Ahh ok, by the time you get to the final state, I think a most of my
+comments/concerns are solved. Certainly this now looks safe for the interrupt
+case, whereas I think the intermediate state when you initially introduce
+nesting is broken. So perhaps you want to look at how to rework it to prevent that.
 
-
-The patch looks good from PPC64 perspective, it also fixes the problem
-reported on corenet64_smp_defconfig...
-
->
-> Problem is not only on PPC64, it is on PPC32 as well, for instance 
-> corenet32_smp_defconfig has the problem as well.
->
-
-However on looking deeper into it - I agree with Christophe that this
-problem might still exist on PPC32. 
-
-I did try the patch on corenet32_smp_defconfig and I can see the WARN_ON
-still triggering. You can check the logs here.. 
-
-https://github.com/riteshharjani/linux-ci/actions/runs/19169468405/job/54799498288
+Thanks,
+Ryan
 
 
->
-> So I think what you want instead is:
->
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype 
-> b/arch/powerpc/platforms/Kconfig.cputype
-> index 7b527d18aa5ee..1f5a1e587740c 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -276,6 +276,7 @@ config PPC_E500
->          select FSL_EMB_PERFMON
->          bool
->          select ARCH_SUPPORTS_HUGETLBFS if PHYS_64BIT || PPC64
-> +       select ARCH_HAS_GIGANTIC_PAGE if ARCH_SUPPORTS_HUGETLBFS
->          select PPC_SMP_MUXED_IPI
->          select PPC_DOORBELL
->          select PPC_KUEP
->
->
->
+>  
+> diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+> index e6064e00b22d..e6069ce4ec83 100644
+> --- a/include/linux/pgtable.h
+> +++ b/include/linux/pgtable.h
+> @@ -228,8 +228,8 @@ static inline int pmd_dirty(pmd_t pmd)
+>   * of the lazy mode. So the implementation must assume preemption may be enabled
+>   * and cpu migration is possible; it must take steps to be robust against this.
+>   * (In practice, for user PTE updates, the appropriate page table lock(s) are
+> - * held, but for kernel PTE updates, no lock is held). The mode cannot be used
+> - * in interrupt context.
+> + * held, but for kernel PTE updates, no lock is held). The mode is disabled
+> + * in interrupt context and calls to the lazy_mmu API have no effect.
+>   *
+>   * The lazy MMU mode is enabled for a given block of code using:
+>   *
+> @@ -265,6 +265,9 @@ static inline void lazy_mmu_mode_enable(void)
+>  {
+>  	struct lazy_mmu_state *state = &current->lazy_mmu_state;
+>  
+> +	if (in_interrupt())
+> +		return;
+> +
+>  	VM_WARN_ON_ONCE(state->nesting_level == U8_MAX);
+>  	/* enable() must not be called while paused */
+>  	VM_WARN_ON(state->nesting_level > 0 && !state->active);
+> @@ -279,6 +282,9 @@ static inline void lazy_mmu_mode_disable(void)
+>  {
+>  	struct lazy_mmu_state *state = &current->lazy_mmu_state;
+>  
+> +	if (in_interrupt())
+> +		return;
+> +
+>  	VM_WARN_ON_ONCE(state->nesting_level == 0);
+>  	VM_WARN_ON(!state->active);
+>  
+> @@ -295,6 +301,9 @@ static inline void lazy_mmu_mode_pause(void)
+>  {
+>  	struct lazy_mmu_state *state = &current->lazy_mmu_state;
+>  
+> +	if (in_interrupt())
+> +		return;
+> +
+>  	VM_WARN_ON(state->nesting_level == 0 || !state->active);
+>  
+>  	state->active = false;
+> @@ -305,6 +314,9 @@ static inline void lazy_mmu_mode_resume(void)
+>  {
+>  	struct lazy_mmu_state *state = &current->lazy_mmu_state;
+>  
+> +	if (in_interrupt())
+> +		return;
+> +
+>  	VM_WARN_ON(state->nesting_level == 0 || state->active);
+>  
+>  	state->active = true;
+> diff --git a/include/linux/sched.h b/include/linux/sched.h
+> index 11566d973f42..bb873016ffcf 100644
+> --- a/include/linux/sched.h
+> +++ b/include/linux/sched.h
+> @@ -1731,6 +1731,9 @@ static inline char task_state_to_char(struct task_struct *tsk)
+>  #ifdef CONFIG_ARCH_HAS_LAZY_MMU_MODE
+>  static inline bool in_lazy_mmu_mode(void)
+>  {
+> +	if (in_interrupt())
+> +		return false;
+> +
+>  	return current->lazy_mmu_state.active;
+>  }
+>  #else
 
-@Christophe, 
-
-I don't think even the above diff will fix the warning on PPC32. 
-The patch defines MAX_FOLIO_ORDER as P4D_ORDER...
-
-+#define MAX_FOLIO_ORDER        P4D_ORDER
-+#define P4D_ORDER              (P4D_SHIFT - PAGE_SHIFT)
-
-and for ppc32 in.. 
-include/asm-generic/pgtable-nop4d.h
-    #define P4D_SHIFT		PGDIR_SHIFT
-
-Then in.. 
-arch/powerpc/include/asm/nohash/32/pgtable.h
-    #define PGDIR_SHIFT	(PAGE_SHIFT + PTE_INDEX_SIZE)
-    #define PTE_INDEX_SIZE	PTE_SHIFT
-
-in...
-arch/powerpc/include/asm/page_32.h
-    #define PTE_SHIFT	(PAGE_SHIFT - PTE_T_LOG2)	/* full page */
-
-    #define PTE_T_LOG2	(__builtin_ffs(sizeof(pte_t)) - 1)
-
-
-So if you see from above P4D_ORDER is coming down to PTE_INDEX_SIZE 
-
-IIUC, that will cause MAX_FOLIO_ORDER to be 9 in case of e500mc machine type right?
-
-Can you please confirm if the above analysis looks correct to you?
-
--ritesh
-
-
-
->>       select ARCH_HAS_KCOV
->>       select ARCH_HAS_KERNEL_FPU_SUPPORT    if PPC64 && PPC_FPU
->>       select ARCH_HAS_MEMBARRIER_CALLBACKS
->> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/ 
->> platforms/Kconfig.cputype
->> index 7b527d18aa5ee..4c321a8ea8965 100644
->> --- a/arch/powerpc/platforms/Kconfig.cputype
->> +++ b/arch/powerpc/platforms/Kconfig.cputype
->> @@ -423,7 +423,6 @@ config PPC_64S_HASH_MMU
->>   config PPC_RADIX_MMU
->>       bool "Radix MMU Support"
->>       depends on PPC_BOOK3S_64
->> -    select ARCH_HAS_GIGANTIC_PAGE
->
-> Should remain I think.
->
->>       default y
->>       help
->>         Enable support for the Power ISA 3.0 Radix style MMU. Currently 
->> this
->> diff --git a/include/linux/mm.h b/include/linux/mm.h
->> index d16b33bacc32b..4842edc875185 100644
->> --- a/include/linux/mm.h
->> +++ b/include/linux/mm.h
->> @@ -2074,7 +2074,7 @@ static inline unsigned long folio_nr_pages(const 
->> struct folio *folio)
->>       return folio_large_nr_pages(folio);
->>   }
->> 
->> -#if !defined(CONFIG_ARCH_HAS_GIGANTIC_PAGE)
->> +#if !defined(CONFIG_HAVE_GIGANTIC_FOLIOS)
->>   /*
->>    * We don't expect any folios that exceed buddy sizes (and consequently
->>    * memory sections).
->> @@ -2092,7 +2092,7 @@ static inline unsigned long folio_nr_pages(const 
->> struct folio *folio)
->>    * There is no real limit on the folio size. We limit them to the 
->> maximum we
->>    * currently expect (e.g., hugetlb, dax).
->>    */
->> -#define MAX_FOLIO_ORDER        PUD_ORDER
->> +#define MAX_FOLIO_ORDER        P4D_ORDER
->>   #endif
->> 
->>   #define MAX_FOLIO_NR_PAGES    (1UL << MAX_FOLIO_ORDER)
->> diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
->> index 32e8457ad5352..09fc3c2ba39e2 100644
->> --- a/include/linux/pgtable.h
->> +++ b/include/linux/pgtable.h
->> @@ -7,6 +7,7 @@
->> 
->>   #define PMD_ORDER    (PMD_SHIFT - PAGE_SHIFT)
->>   #define PUD_ORDER    (PUD_SHIFT - PAGE_SHIFT)
->> +#define P4D_ORDER    (P4D_SHIFT - PAGE_SHIFT)
->> 
->>   #ifndef __ASSEMBLY__
->>   #ifdef CONFIG_MMU
->> diff --git a/mm/Kconfig b/mm/Kconfig
->> index 0e26f4fc8717b..ca3f146bc7053 100644
->> --- a/mm/Kconfig
->> +++ b/mm/Kconfig
->> @@ -908,6 +908,13 @@ config PAGE_MAPCOUNT
->>   config PGTABLE_HAS_HUGE_LEAVES
->>       def_bool TRANSPARENT_HUGEPAGE || HUGETLB_PAGE
->> 
->> +#
->> +# We can end up creating gigantic folio.
->> +#
->> +config HAVE_GIGANTIC_FOLIOS
->> +    def_bool (HUGETLB_PAGE && ARCH_HAS_GIGANTIC_PAGE) || \
->> +         (ZONE_DEVICE && HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD)
->> +
->>   # TODO: Allow to be enabled without THP
->>   config ARCH_SUPPORTS_HUGE_PFNMAP
->>       def_bool n
 
