@@ -1,83 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-13923-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13924-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DAD30CCF9F8
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Nov 2025 08:50:39 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5B50BCCF9E3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  7 Nov 2025 09:03:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2t7L2zKjz3bs7;
-	Fri,  7 Nov 2025 19:50:38 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762505438;
-	cv=none; b=D5RBpnkeVQ4JCAKnmmg81aCfZbOpy5Xj+m4dFBc0DkXdcmnNlS1hL8pUsRpD14kGS+moeBKh/T50h4Bb596URFTp7mftfptwl/pfraCRdf+kjeT1gbs3Ys3fC1xaYMxEBYmXBZOiZZavddMWfwKB4q45sX9YSgcPSeO38rJ502hp81W8EBntr2u4cOTMks+2oOml0uLTNOAZI2i08YF37uq/kUMnzrgGffnQYz3UwLqYxrbpbLtbkmEvBzXYGjRNe7gkNE+ifccHrw3hhD3v1nwn9i/irDIHcbJKLRDSnQ+qBT25kCL5GyjyZwWDJcc///boUjginG1LyGFv//0PHw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d2tPd54RPz2yrF;
+	Fri,  7 Nov 2025 20:03:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762506181;
+	cv=none; b=hq6UeHVcgKFWTLhEV1sfvCdTdvbbaAxrxZdwQHgGYvg7+GveNiG2cUmEyUoSCzQaPNIC7kXQ04GsS2GHLoPNJ0ufQaKUgbUsZPhq+/msGZZeK8NIq8TbMU8FOXRgUMEgSIyXIUnv53dIzFkDWgephiMXQLaHm6sy1TJmYU8Ed1YbTzfGSPvSjcj2pj567FCV/IXZxiZn/FiflbBhzM8iCrQkw0rf4LBlz7EYpiAOLyg8d0mN6puHLUkT0VVzxhTSUbsUJvZ2LzqU8qblP9rMCnTb9MTq9uhxDTN6EPJCLcehXztMvSRXG0ncUeyg/JrRGNyaQ3DqzN5poNZwRRcRBw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762505438; c=relaxed/relaxed;
-	bh=Vyf/CUdzl7ab/MOR89p3DZAadWjnoBDPZ+FIndJ4FFw=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=VaWuPwwajfS/rttdvImhwdv1/iGCA+GgPSKNzk8Pkv+kGgpsXAngj2DRAcJPkcIOzpnvT0nJD5fdHdlG/KpXxHd5IySx/C8Mb9WBmCftY8rDqUhnL9shMdwZd3P912BYcMcYv/hZRriYfJ+ihh6k2sh1AZNko9J0HSoAdASKQlwoHJ/So6LIaxM6TbTan9hvo7LYeaKoZosZo9HDZ29TyEI+nd0a2UeJGkA28DY4kFVxa59Yukf7pyes4o2rcOKZ2GnJIC3R5t3dvq+t4kUQKfqNlXu6iQqlkqfDdNul/RImdzKdKY2aw3Uj1QTIyeFuTjCawkvY2xzxTxQ72bCskw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d2t7J6yHxz2xQ2
-	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2025 19:50:35 +1100 (AEDT)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4d2KmJ0fPhz9sSW;
-	Thu,  6 Nov 2025 12:32:16 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id MizX5N8sg6KO; Thu,  6 Nov 2025 12:32:16 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4d2KmH5KMCz9sSV;
-	Thu,  6 Nov 2025 12:32:15 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id A112E8B77E;
-	Thu,  6 Nov 2025 12:32:15 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id wngg6LqnutZq; Thu,  6 Nov 2025 12:32:15 +0100 (CET)
-Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 944FF8B773;
-	Thu,  6 Nov 2025 12:32:14 +0100 (CET)
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-To: Alexander Viro <viro@zeniv.linux.org.uk>,
-	Christian Brauner <brauner@kernel.org>,
-	Jan Kara <jack@suse.cz>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>,
-	Peter Zijlstra <peterz@infradead.org>,
-	Darren Hart <dvhart@infradead.org>,
-	Davidlohr Bueso <dave@stgolabs.net>,
-	"Andre Almeida" <andrealmeid@igalia.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Eric Dumazet <edumazet@google.com>,
-	Kuniyuki Iwashima <kuniyu@google.com>,
-	Paolo Abeni <pabeni@redhat.com>,
-	Willem de Bruijn <willemb@google.com>,
-	"David S. Miller" <davem@davemloft.net>,
-	Jakub Kicinski <kuba@kernel.org>,
-	Simon Horman <horms@kernel.org>,
-	Daniel Borkmann <daniel@iogearbox.net>,
-	Dave Hansen <dave.hansen@linux.intel.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-	linux-block@vger.kernel.org,
-	linux-fsdevel@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	netdev@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v4 04/10] powerpc/uaccess: Move barrier_nospec() out of allow_read_{from/write}_user()
-Date: Thu,  6 Nov 2025 12:31:22 +0100
-Message-ID: <ce19ff6745310f4d9b8c43c9d2b38f8854312958.1762427933.git.christophe.leroy@csgroup.eu>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1762427933.git.christophe.leroy@csgroup.eu>
-References: <cover.1762427933.git.christophe.leroy@csgroup.eu>
+	t=1762506181; c=relaxed/relaxed;
+	bh=k3mM0v00SRPnYPwwyEBFuZ9lvntjK88oQ7vPAMELXnk=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=oW4pBWeCqjcYDrM/yV6vriTbSdJtBpEXpYQHknOpy5O71VXRQReYhJ3UcZKOxm8jaI9kUwc40rK3VfpTYHtO49xyunUKHme1iEBoB+PeoD1tdySZx68QquHOv+D6cGxQnhJqPQvxTkUNNP7sgsx8e/OkkykEsi7BN8ddpLXs9uVnlPnFmNMmB3W+a5SfUhSLCbpmlEr3tVPjTfIKer4bpJyqtol7eCRbExStpT0P8bHxpDKy459TYh0LOUagzLwiwIXy2fZu53LOMDoiLe9uyX1Xoj87uOP+UchwqRcSV/VJbV/ZRfqC72MvxZPPcVb9lw6ttUsaIjQA88ue7GE9Bw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RoPPQ6GA; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=RoPPQ6GA;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange X25519 server-signature RSA-PSS (2048 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d2tPc6XL0z2yjm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri,  7 Nov 2025 20:03:00 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 0F7D943C5B;
+	Fri,  7 Nov 2025 09:02:59 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 25AB7C116B1;
+	Fri,  7 Nov 2025 09:02:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1762506178;
+	bh=wM34FC/EiEvJ5KnNWvWcoNezTYk0Bs0Hbc/YeTldTWw=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=RoPPQ6GAH+2zWlnVzObdKDVwGBs7uUqRCOLyl3gxNI/kocSX6+xo0DUG1Br1VNshe
+	 n//2VOQPykAKg9gRPaDUUYTtiKZrwdtUf5W6wUgWQNSn3WdA22NG9Z+P/9CgJrpzRL
+	 LxM/hfmhvDYeSYftVUffT37dsy5+gLppS6rLBoxRuw6wifvUYrRrxB/f5dvQy4GxpO
+	 W1YGj75qzbeYxjb1g8TcZiwasgbNJwRogkCKy01YyKduawftq6bwLfHNoaLw1dwfDg
+	 BWlomYTdU/jTWNuq4C7N8WTbDttTa6L1Pp+i20teuSOCN+tkKYF+jSL/JTqw1xLc02
+	 rwOGwXNwVsE9Q==
+Message-ID: <b875435f-6a69-4989-bc21-4093c2ce6331@kernel.org>
+Date: Fri, 7 Nov 2025 10:02:55 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,93 +59,71 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=3132; i=christophe.leroy@csgroup.eu; h=from:subject:message-id; bh=SP89nN/bAz8F7I59QHbXctObg5wVHeAlY6VivanYito=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWTytGsdExYuey/S0PBzf+81ZX++TZL/N+2J5UkuP2965 +up0NWKHaUsDGJcDLJiiizH/3PvmtH1JTV/6i59mDmsTCBDGLg4BWAic44wMnwR32Pz0XlH+raH HPv++6WV7fKr5ur/YDhv8WVGDp5072aG32yS3VuzbkVZ/M1Z+fFvS2N+dcPKlKp7SWLrFu2yFTh qxwgA
-X-Developer-Key: i=christophe.leroy@csgroup.eu; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
-Content-Transfer-Encoding: 8bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: powerpc/e500: WARNING: at mm/hugetlb.c:4755 hugetlb_add_hstate
+To: Sourabh Jain <sourabhjain@linux.ibm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Donet Tom <donettom@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+References: <94377f5c-d4f0-4c0f-b0f6-5bf1cd7305b1@linux.ibm.com>
+ <dd634b17-cc5e-497c-8228-2470f6533177@redhat.com>
+ <82ef1da8-44c4-4a58-bd00-9839548cb72d@csgroup.eu>
+ <ba3a2131-c8d4-481d-aebb-d25be7ae0d19@kernel.org>
+ <e93e3a1b-5cf1-4d2a-9b2c-5049e211f593@linux.ibm.com>
+From: "David Hildenbrand (Red Hat)" <david@kernel.org>
+Content-Language: en-US
+In-Reply-To: <e93e3a1b-5cf1-4d2a-9b2c-5049e211f593@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Commit 74e19ef0ff80 ("uaccess: Add speculation barrier to
-copy_from_user()") added a redundant barrier_nospec() in
-copy_from_user(), because powerpc is already calling
-barrier_nospec() in allow_read_from_user() and
-allow_read_write_user(). But on other architectures that
-call to barrier_nospec() was missing. So change powerpc
-instead of reverting the above commit and having to fix
-other architectures one by one. This is now possible
-because barrier_nospec() has also been added in
-copy_from_user_iter().
+On 07.11.25 09:00, Sourabh Jain wrote:
+> 
+> 
+> On 06/11/25 20:32, David Hildenbrand (Red Hat) wrote:
+>>>> Yes, we discussed that in [1].
+>>>>
+>>>> We'll have to set ARCH_HAS_GIGANTIC_PAGE on ppc and increase
+>>>> MAX_FOLIO_ORDER, because apparently, there might be ppc configs that
+>>>> have even larger hugetlb sizes than PUDs.
+>>>>
+>>>> @Cristophe, I was under the impression that you would send a fix. Do
+>>>> you
+>>>> want me to prepare something and send it out?
+>>>
+>>> Indeed I would have liked to better understand the implications of all
+>>> this, but I didn't have the time.
+>>
+>> Indeed, too me longer than it should to understand and make up my mind
+>> as well.
+>>
+>>>
+>>> By the way, you would describe the fix better than me so yes if you can
+>>> prepare and send a fix please do.
+>>
+>> I just crafted the following. I yet have to test it more, some early
+>> feedback+testing would be appreciated!
+>>
+>>  From 274928854644c49c92515f8675c090dba15a0db6 Mon Sep 17 00:00:00 2001
+>> From: "David Hildenbrand (Red Hat)" <david@kernel.org>
+>> Date: Thu, 6 Nov 2025 11:31:45 +0100
+>> Subject: [PATCH] mm: fix MAX_FOLIO_ORDER on some ppc64 configs with
+>> hugetlb
+> 
+> b4 did not detect this patch, and manually copying the patch text from this
+> reply also did not apply cleanly on upstream master and linuxppc
+> master/next.
 
-Move barrier_nospec() out of allow_read_from_user() and
-allow_read_write_user(). This will also allow reuse of those
-functions when implementing masked user access which doesn't
-require barrier_nospec().
+I have it on a branch here:
 
-Don't add it back in raw_copy_from_user() as it is already called
-by copy_from_user() and copy_from_user_iter().
+https://github.com/davidhildenbrand/linux/commit/274928854644c49c92515f8675c090dba15a0db6
 
-Fixes: 74e19ef0ff80 ("uaccess: Add speculation barrier to copy_from_user()")
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- arch/powerpc/include/asm/kup.h     | 2 --
- arch/powerpc/include/asm/uaccess.h | 4 ++++
- 2 files changed, 4 insertions(+), 2 deletions(-)
+https://github.com/davidhildenbrand/linux.git max_folio_order
 
-diff --git a/arch/powerpc/include/asm/kup.h b/arch/powerpc/include/asm/kup.h
-index dab63b82a8d4f..f2009d7c8cfa7 100644
---- a/arch/powerpc/include/asm/kup.h
-+++ b/arch/powerpc/include/asm/kup.h
-@@ -134,7 +134,6 @@ static __always_inline void kuap_assert_locked(void)
- 
- static __always_inline void allow_read_from_user(const void __user *from, unsigned long size)
- {
--	barrier_nospec();
- 	allow_user_access(NULL, from, size, KUAP_READ);
- }
- 
-@@ -146,7 +145,6 @@ static __always_inline void allow_write_to_user(void __user *to, unsigned long s
- static __always_inline void allow_read_write_user(void __user *to, const void __user *from,
- 						  unsigned long size)
- {
--	barrier_nospec();
- 	allow_user_access(to, from, size, KUAP_READ_WRITE);
- }
- 
-diff --git a/arch/powerpc/include/asm/uaccess.h b/arch/powerpc/include/asm/uaccess.h
-index 784a00e681fa3..3e622e647d622 100644
---- a/arch/powerpc/include/asm/uaccess.h
-+++ b/arch/powerpc/include/asm/uaccess.h
-@@ -301,6 +301,7 @@ do {								\
- 	__typeof__(sizeof(*(ptr))) __gu_size = sizeof(*(ptr));	\
- 								\
- 	might_fault();					\
-+	barrier_nospec();					\
- 	allow_read_from_user(__gu_addr, __gu_size);		\
- 	__get_user_size_allowed(__gu_val, __gu_addr, __gu_size, __gu_err);	\
- 	prevent_read_from_user(__gu_addr, __gu_size);		\
-@@ -329,6 +330,7 @@ raw_copy_in_user(void __user *to, const void __user *from, unsigned long n)
- {
- 	unsigned long ret;
- 
-+	barrier_nospec();
- 	allow_read_write_user(to, from, n);
- 	ret = __copy_tofrom_user(to, from, n);
- 	prevent_read_write_user(to, from, n);
-@@ -415,6 +417,7 @@ static __must_check __always_inline bool user_access_begin(const void __user *pt
- 
- 	might_fault();
- 
-+	barrier_nospec();
- 	allow_read_write_user((void __user *)ptr, ptr, len);
- 	return true;
- }
-@@ -431,6 +434,7 @@ user_read_access_begin(const void __user *ptr, size_t len)
- 
- 	might_fault();
- 
-+	barrier_nospec();
- 	allow_read_from_user(ptr, len);
- 	return true;
- }
 -- 
-2.49.0
+Cheers
 
+David
 
