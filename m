@@ -1,79 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-13965-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13966-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF1C5CCFA13
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Nov 2025 12:05:14 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9E61DCCFA13
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Nov 2025 19:50:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d3ZPN51Jyz30Vl;
-	Sat,  8 Nov 2025 23:05:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762603512;
-	cv=none; b=jQ5LcTfETwQ9Fa1NLukfBaxXJRirB0tCsbUPEmvDXQ5kX+LPKC8SCbqJjqkxoshCTgrj5LQRY1SwvTe7Q9QJTLiPQahE8BFXKmrM/Ayq0/ncmfoSyIlp0rOKQv7hIMem3gf7u1+0quuciA1GHrE5svpSvhMLJAy0cVk1V62GW00gzbKB2Jh58Osvm0f2KvqzourctbOnqoQibP88jkzQzAfFZT256rV4irsSKDCnfFsnIUIOMkTxmZMWTOYW3yBujFPYqeY8rj4pr1htVRxBacuQXgDesLkvqNCJrstst7rTIK1UiafFxLZaZxiiLnAuCeFahgzkURaJuhPgbeHJTw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d3mkQ3V0Dz3c1J;
+	Sun,  9 Nov 2025 06:50:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762631438;
+	cv=none; b=M+/qJz3W/Mpho1MhbtYx43kI2aqQV8lWRL71KhbBPf9dJ/F6RnneuOj3QW/xbbQwmMBXcjkc9eBCamoP3EqwiVC5HIGK0ZnXYmjSUqJyEGK2vX5JNRd5OLHpNf2RBrjZCU9kcJyyZtwY261FhMeAo3PB9JLK15CNw56bZ6MJO9otCW8z7qP6BUKX8cqA5W7zzH828wNatXgnq8/dPFmrKsOBkJ/PSVuFAIR2JD1u+AaG4YH09PFwudmyZxrud7spAtqFwTYMnBjLPrtDRoxJOTD91iA2Pi/hjAwFn5dbVEFNqL48Xtar5u2NOsGhA73Db/pK0dwuLPdsyeba/K5llA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762603512; c=relaxed/relaxed;
-	bh=BPuTDK3wudd7tV1PHDj+w7MkGceOWgYTtNwyx5UVOTs=;
+	t=1762631438; c=relaxed/relaxed;
+	bh=oiSGBMudxYMBpAR2aKoGThpZLnm9dt+ALy7MlWvzbiE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=duRDY1nYjw1K/cOHt/gTdy3L9MfDeVE9OtBhDA9n8IJNUAnjrEqEWW2KwxYs1q8tgejujWh4RxULEYaAdbWHm4EnrZeNw+CkGZsJbvlKVyGUgPAMqeJbJ2gp1wTQ/7iudS5d9QhM4cgUWxSlLo353oJ6l1NXt0fOD1bnUKTK6RO8xdKxvZfhZVHr7X8iu4IXDDoZcdkAxu5dUesdoYH4CxrOmKnWRJmZE4+t9l0VZAyhdsaJksLpuRyCMai6qB/BkqQJGdaNiQuob+qHEFW7oZUXT6JT+M2E4OLJXJlj0GTyIw6C1jO/iPlntvnaxOwalZKO69Juu+WpUa8PPa0QNQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pLXV1ojM; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=pLXV1ojM;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d3ZPM3KcWz2ySP
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Nov 2025 23:05:11 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5A8Aq568027585;
-	Sat, 8 Nov 2025 12:04:55 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=BPuTDK
-	3wudd7tV1PHDj+w7MkGceOWgYTtNwyx5UVOTs=; b=pLXV1ojMjPhB50eHL75Mjr
-	ecbzevYj41eDIWKlRQA7tjWKbrcaZEyr1SpNOVhJYv8u8WbXZZu/Ty1QVeXKJQLO
-	52B4JUSFVNPk7os3ZjeXKdikP41I77lEhcHjHlZYfr5vblPovl8uLEv7C+26EMSY
-	sX2+OFAtAkdBCI/zwZwNEgW8VnzrPVXzv2ul96AP6gnC0R0IkvcLO4ogjvpKD88W
-	c1eIMOndFAMtEe8Cqay77KQO3KeZl3+Im4d+VsUho6ec0IPfmT9QYjfULl3Ay/El
-	nJfm7OccMR8+Drt2GQ7Mq/R2cHP7AnboPuTDO7886jge80LzAnwg421JEPi3evUw
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aa3m7r921-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 08 Nov 2025 12:04:55 +0000 (GMT)
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5A8C4S4A026050;
-	Sat, 8 Nov 2025 12:04:55 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aa3m7r91x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 08 Nov 2025 12:04:54 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5A891kgX025582;
-	Sat, 8 Nov 2025 12:04:53 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4a5vht79nc-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 08 Nov 2025 12:04:53 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5A8C4oHo41550204
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 8 Nov 2025 12:04:50 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 29EBE2004E;
-	Sat,  8 Nov 2025 12:04:50 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 5C90E2004B;
-	Sat,  8 Nov 2025 12:04:46 +0000 (GMT)
-Received: from [9.39.18.210] (unknown [9.39.18.210])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat,  8 Nov 2025 12:04:46 +0000 (GMT)
-Message-ID: <44d1a4a3-da2d-4cee-b947-a83023a4ceaa@linux.ibm.com>
-Date: Sat, 8 Nov 2025 17:34:45 +0530
+	 In-Reply-To:Content-Type; b=Ndp8RKXeBbCM2sKekivdeFaEq56hInagICcsfGL/5Svhfju3n/swYO6+5XLTGdPm4CFz5XPFFOAEr+RPug1cbNP4Nl780zHawJT4AESnekgt5e94h+a6AmiGhJonkHFBOMr6VLOW/dXP2gVYjETgQHxGNeEFvWDhMLQUmgqx6yIRH4dVUlvrsyql4E53R5jrL61i0tZnTIAAT/RZXAMftNjI+A9rzWJiOhU0yZeVk4KszooV16zSmpQfrwXjHIjLaeBg0PtAjwStdxdng56g17jN6eE0eEfqREBZtQvjYxdxh32POAeB699+SyCC5lsdjdFPi/D6aZD/1DU7HeCanQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
+Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d3mkP4PFjz3btS
+	for <linuxppc-dev@lists.ozlabs.org>; Sun,  9 Nov 2025 06:50:36 +1100 (AEDT)
+Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
+	by localhost (Postfix) with ESMTP id 4d3mZx13jyz9sSV;
+	Sat,  8 Nov 2025 20:44:09 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from pegase2.c-s.fr ([172.26.127.65])
+	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
+	with ESMTP id MLmBdmBkcqXZ; Sat,  8 Nov 2025 20:44:09 +0100 (CET)
+Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4d3mZw6qjrz9sSS;
+	Sat,  8 Nov 2025 20:44:08 +0100 (CET)
+Received: from localhost (localhost [127.0.0.1])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C245E8B765;
+	Sat,  8 Nov 2025 20:44:08 +0100 (CET)
+X-Virus-Scanned: amavisd-new at c-s.fr
+Received: from messagerie.si.c-s.fr ([127.0.0.1])
+	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
+	with ESMTP id txhM0SZEkJy5; Sat,  8 Nov 2025 20:44:08 +0100 (CET)
+Received: from [192.168.235.99] (unknown [192.168.235.99])
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 4D5DF8B764;
+	Sat,  8 Nov 2025 20:44:08 +0100 (CET)
+Message-ID: <64df8b4e-6cd4-49e4-a0f9-c8f9c017b06c@csgroup.eu>
+Date: Sat, 8 Nov 2025 20:44:08 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,116 +59,81 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [RFC PATCH v3 05/10] sched/fair: Don't consider paravirt CPUs for
- wakeup and load balance
-To: K Prateek Nayak <kprateek.nayak@amd.com>
-Cc: vschneid@redhat.com, iii@linux.ibm.com, huschle@linux.ibm.com,
-        rostedt@goodmis.org, dietmar.eggemann@arm.com, vineeth@bitbyteword.org,
-        jgross@suse.com, pbonzini@redhat.com, seanjc@google.com,
-        mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
-        vincent.guittot@linaro.org, tglx@linutronix.de, yury.norov@gmail.com,
-        maddy@linux.ibm.com, linux-kernel@vger.kernel.org,
-        linuxppc-dev@lists.ozlabs.org, gregkh@linuxfoundation.org
-References: <20250910174210.1969750-1-sshegde@linux.ibm.com>
- <20250910174210.1969750-6-sshegde@linux.ibm.com>
- <d0aa1a34-2097-405c-b431-907fd973ad96@amd.com>
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-In-Reply-To: <d0aa1a34-2097-405c-b431-907fd973ad96@amd.com>
+Subject: Re: [PATCH] soc: fsl: qbman: add WQ_PERCPU to alloc_workqueue users
+To: Marco Crivellari <marco.crivellari@suse.com>,
+ linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+ Tejun Heo <tj@kernel.org>
+Cc: Lai Jiangshan <jiangshanlai@gmail.com>,
+ Frederic Weisbecker <frederic@kernel.org>,
+ Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
+ Michal Hocko <mhocko@suse.com>, Kees Cook <kees@kernel.org>
+References: <20251107152950.293899-1-marco.crivellari@suse.com>
+From: Christophe Leroy <christophe.leroy@csgroup.eu>
+Content-Language: fr-FR
+In-Reply-To: <20251107152950.293899-1-marco.crivellari@suse.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=MtZfKmae c=1 sm=1 tr=0 ts=690f31e7 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=Hl_OmnuzmpaPTutlhbAA:9 a=QEXdDO2ut3YA:10 a=cPQSjfK2_nFv0Q5t_7PE:22
-X-Proofpoint-GUID: hYfeG4CVYqghkJ34NGed4q1hNWUxDFvs
-X-Proofpoint-ORIG-GUID: XTdIfH8OmLfG722bMF6XWJxspuONoxGp
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTA4MDA3OSBTYWx0ZWRfX0q6P98QYlhAa
- vicp2b+NWIWzDosCnt3qcTdZS2QD0FB//Q/mrgo+cmHXUuhgbeLYcPM1BGDdORRPHnl/xgOfbnG
- mO+7IUNOEytcPRnYzDMyJKizowkTlp3tDCAPoqoFt8EdejLajBHWUjcjc7+6kqfnuNbDKIoaYxX
- dnbevZDNO0dtIztOMvpvQkIoC9RJrFM8LKxRU0Y0zH1lFzGjcZL9H4RqfRXnjJMrLqsP6FVBfiQ
- nRcnLv7h4cNsng2A4BcKuPHHAlkwU3qbYJkj8oN98p5RX8XyEV7SeydukfqvJDWFlI6WphI/X/U
- NOYJfyfDEeFhER0U/ihtWC7vJpR4Dk00jZ2kytMroTMYCsmFef82ua8yhd76VO5YIZrQqurTht0
- OhGP1zQnY2QLUevh7IbDNrcCX3YyWQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2025-11-08_03,2025-11-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0 priorityscore=1501 bulkscore=0 impostorscore=0
- suspectscore=0 lowpriorityscore=0 clxscore=1015 phishscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2511080079
+Content-Transfer-Encoding: 8bit
 
 
 
-On 9/11/25 10:53 AM, K Prateek Nayak wrote:
-> Hello Shrikanth,
+Le 07/11/2025 à 16:29, Marco Crivellari a écrit :
+> Currently if a user enqueues a work item using schedule_delayed_work() the
+> used wq is "system_wq" (per-cpu wq) while queue_delayed_work() use
+> WORK_CPU_UNBOUND (used when a cpu is not specified). The same applies to
+> schedule_work() that is using system_wq and queue_work(), that makes use
+> again of WORK_CPU_UNBOUND.
+> This lack of consistency cannot be addressed without refactoring the API.
 > 
-> On 9/10/2025 11:12 PM, Shrikanth Hegde wrote:
->> @@ -8563,7 +8563,7 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int wake_flags)
->>   		if (!is_rd_overutilized(this_rq()->rd)) {
->>   			new_cpu = find_energy_efficient_cpu(p, prev_cpu);
->>   			if (new_cpu >= 0)
->> -				return new_cpu;
->> +				goto check_new_cpu;
+> alloc_workqueue() treats all queues as per-CPU by default, while unbound
+> workqueues must opt-in via WQ_UNBOUND.
 > 
-> Should this fallback to the overutilized path if the most energy
-> efficient CPU is found to be paravirtualized or should
-> find_energy_efficient_cpu() be made aware of it?
-
-
-While thinking about this, are there any such system which has vCPUs and
-overcommits and still has energy model backing it?
-
-Highly unlikely. So, I am planning to put a warning there and see if any
-such usage exists there.
-
+> This default is suboptimal: most workloads benefit from unbound queues,
+> allowing the scheduler to place worker threads where they’re needed and
+> reducing noise when CPUs are isolated.
 > 
->>   			new_cpu = prev_cpu;
->>   		}
->>   
->> @@ -8605,7 +8605,12 @@ select_task_rq_fair(struct task_struct *p, int prev_cpu, int wake_flags)
->>   	}
->>   	rcu_read_unlock();
->>   
->> -	return new_cpu;
->> +	/* If newly found or prev_cpu is a paravirt cpu, use current cpu */
->> +check_new_cpu:
->> +	if (is_cpu_paravirt(new_cpu))
->> +		return cpu;
->> +	else
+> This continues the effort to refactor workqueue APIs, which began with
+> the introduction of new workqueues and a new alloc_workqueue flag in:
 > 
-> nit. redundant else.
+> commit 128ea9f6ccfb ("workqueue: Add system_percpu_wq and system_dfl_wq")
+> commit 930c2ea566af ("workqueue: Add new WQ_PERCPU flag")
 > 
->> +		return new_cpu;
->>   }
->>   
->>   /*
->> @@ -11734,6 +11739,12 @@ static int sched_balance_rq(int this_cpu, struct rq *this_rq,
->>   
->>   	cpumask_and(cpus, sched_domain_span(sd), cpu_active_mask);
->>   
->> +#ifdef CONFIG_PARAVIRT
->> +	/* Don't spread load to paravirt CPUs */
->> +	if (static_branch_unlikely(&cpu_paravirt_push_tasks))
->> +		cpumask_andnot(cpus, cpus, cpu_paravirt_mask);
->> +#endif
+> This change adds a new WQ_PERCPU flag to explicitly request
+> alloc_workqueue() to be per-cpu when WQ_UNBOUND has not been specified.
 > 
-> Can something similar be also be done in select_idle_sibling() and
-> sched_balance_find_dst_cpu() for wakeup path?
+> With the introduction of the WQ_PERCPU flag (equivalent to !WQ_UNBOUND),
+> any alloc_workqueue() caller that doesn’t explicitly specify WQ_UNBOUND
+> must now use WQ_PERCPU.
 > 
+> Once migration is complete, WQ_UNBOUND can be removed and unbound will
+> become the implicit default.
+> 
+> Suggested-by: Tejun Heo <tj@kernel.org>
+> Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
 
-We have this pattern in select_task_rq_fair
+IIUC this patch is part of a wide work on workqueues. I assume the will 
+go via the workqueue tree. Let me know if you want me to take it via soc 
+fsl.
 
-cpu = smp_processor_id();
-new_cpu = prev_cpu;
+Acked-by: Christophe Leroy <christophe.leroy@csgroup.eu>
 
-task is waking up after a while, so likely prev_cpu is marked as paravirt
-and in such cases we should return current cpu. if current cpu is paravirt(unlikely),
-and prev_cpu is also paravirt, then should return current cpu.
-In next sched tick it will be pushed out.
 
-select_idle_sibling(p, prev_cpu, new_cpu); - (new_cpu will remain prev_cpu if wake_affine doesn't change it)
-Will have to change the prototype to send current cpu as well.
+
+> ---
+>   drivers/soc/fsl/qbman/qman.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
+> index 9be240999f87..6b392b3ad4b1 100644
+> --- a/drivers/soc/fsl/qbman/qman.c
+> +++ b/drivers/soc/fsl/qbman/qman.c
+> @@ -1073,7 +1073,7 @@ EXPORT_SYMBOL(qman_portal_set_iperiod);
+>   
+>   int qman_wq_alloc(void)
+>   {
+> -	qm_portal_wq = alloc_workqueue("qman_portal_wq", 0, 1);
+> +	qm_portal_wq = alloc_workqueue("qman_portal_wq", WQ_PERCPU, 1);
+>   	if (!qm_portal_wq)
+>   		return -ENOMEM;
+>   	return 0;
+
 
