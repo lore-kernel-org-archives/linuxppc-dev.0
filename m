@@ -1,90 +1,100 @@
-Return-Path: <linuxppc-dev+bounces-13959-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13960-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 23D7DCCF9E3
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Nov 2025 00:59:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 82C51CCF9E3
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  8 Nov 2025 02:33:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d3HdR34t2z2yqh;
-	Sat,  8 Nov 2025 11:59:39 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::32b"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762529404;
-	cv=none; b=CgKHRz1vrmhcRFUsVVV4dkV1Ak2FDy4l/tuPow5y7tPQ5GLl6oYgr6ERjoA3q5hB7VkKh/QfxJAPSDFgipWVfTVsDkBL+fHK8w5KZauvpjt/fCoyl7nlWaQ+fVGpR2SJbmO2KtStDQ9yIWyd/Ao1bLwaeI4KHVHGA9419aR+YnYgJ9U9ND5Prhenb8L8TqjX1LnVfXkTmQuCzeBq/F3/MtTBfvirTB5cwsb1aZrY1REDaJtNJz0u+NmN6mSeBkSa5WjPmY2RaIYWyQZLoLavmNMO1+qiRtYLHW7076nEv3zvJo1ybaDY7huFEybPQDOoLuWcclCiv74LyFS7j6KIxQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d3Kjz4TSzz2yqP;
+	Sat,  8 Nov 2025 13:33:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::42f"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762569223;
+	cv=none; b=CA5pWcXqjBtWulP9AUocZv07Wv+QXhL51qM0lTsSZhKK3NuIWBhtug2mhNriIBShYOthpU6qVWkugHGaRdye+TXPWx7u2iu+BP/dbdGE2l2z30HErMVqho89uK9JDsL33b4bhOY+pDFX/sJXKTWpMUUG5A00GbwtAPhh4PCQWR6grfJERslg26Wkim6V16dK0qC63MWO7qqUb8VLcSwPmz+WuPBTHePYI8oGNquCtiFrL46Id6uE7g/e11bGyMyuA61TeaEsMFTCi45OfJ4R8Nw+iGAhRPKGfZ5/ufrhHNkI/e9z0rwPG5ZfIQx1+faKBrMrP8hWOVmLYXPnJlVYlw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762529404; c=relaxed/relaxed;
-	bh=3GoZhodGB9FYGEwkYt87VVVUhKMfEv1z2Z+2hgowflQ=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=cIcIA5/+ASwFJiQPFw9uEJme6BV3TAvgF9g1MLlvBiD2Z+BMNEwGhfKKwQy0mwQBtusc0n0JwxFstYcDp+ncZKUtoWTIG+Je7XT1BE1ATmzKsyAo0XE3fbTRbU/KPo9qs69DvVc6kwONuSCuIMRJ+NwcTdop7LP/7qjrB978ytMtG5kqW4AD9/g7KyA0JazeKrEHEz9u4wraq6B5CB6FPpA7ULyeUuN9O7wJJaBCTRsoTjLwrowfCEAGgJG+xDEXtf/yuRM2cIlHGfQ1O+UH+LVlhldRQEifPhg32F7NUoUn2d2MXZ2M+TJIrtiCDRtP71WTIzrX/1xjxTCgrXZXJA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=MZp0atrX; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=marco.crivellari@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	t=1762569223; c=relaxed/relaxed;
+	bh=8bKq5Kbap+TGIzkU08hwTVasn8Atv2TAiFfbpOuCLu4=;
+	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
+	 MIME-Version:Content-Type; b=lz6LrIbMJnd2Rn7vMkpddN6JqO1cImATOiPE44NAg3CIZkMr7XPtmfeNlld/Z9lnhd/KYEK3TwaEmY8D53I3pJ3FbprzXOH/qOJFyVRELKLn+terDIytT0guW2D55Whbo66nK/vbNHBkKHPK/xmFO3fHgTlSLhNMiIcXzKd4v7D4Qtpv9E/Fq3wPimEO8psFTI4JFAnvgnEA1V7N1DMl0p7F0Ro9wRmIsy5q+xJq2JDjUarHodzEpwRzPNun+Uw19gB1TZH7/tJrEfb13np3IeV/Hz5SbqJH1TSDL8JLFxg+xMZGNPnXqPdQpIGDOfgKxG86K+IxBMskckSkrMQ7yA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CPby9Ysd; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=MZp0atrX;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CPby9Ysd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::32b; helo=mail-wm1-x32b.google.com; envelope-from=marco.crivellari@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x32b.google.com (mail-wm1-x32b.google.com [IPv6:2a00:1450:4864:20::32b])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::42f; helo=mail-pf1-x42f.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pf1-x42f.google.com (mail-pf1-x42f.google.com [IPv6:2607:f8b0:4864:20::42f])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange X25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d330C0tn6z303X
-	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Nov 2025 02:30:02 +1100 (AEDT)
-Received: by mail-wm1-x32b.google.com with SMTP id 5b1f17b1804b1-4775ae77516so10143155e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Nov 2025 07:30:02 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d3Kjy28Tbz2yG5
+	for <linuxppc-dev@lists.ozlabs.org>; Sat,  8 Nov 2025 13:33:41 +1100 (AEDT)
+Received: by mail-pf1-x42f.google.com with SMTP id d2e1a72fcca58-79af647cef2so1137133b3a.3
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 07 Nov 2025 18:33:41 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1762529399; x=1763134199; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=3GoZhodGB9FYGEwkYt87VVVUhKMfEv1z2Z+2hgowflQ=;
-        b=MZp0atrXwq8Sz5kXXs13rnAWs99JmC3HfEQ55zffd8nH5OenLb5FBkicvCYprUmxS6
-         jZjiZF8+gQ3csoAgm65OV5CObgR+AoBDhRo5wNDna6Np/z0/uHpJTkXDhEEXeTAf6sc2
-         qlVIKgWfIePQRlaM/XuNz0BiSH8nBqH79uZuEjvPlHzVSzWGWyH0ucCJAIou+/kAfYQQ
-         wpa+8IjSAW+q1fxxWRvduI3cqZHmYg1BhYVy+HaIEDwIxsmdW6Fen8lECzn7NgZ1SkWq
-         k2y6upk7va2IZ/BgHY0ky3f+ji9OSJBuN+ZEEcTOUO7PxW9Ag7YcYmuxdngIYG2ML34c
-         EQgg==
+        d=gmail.com; s=20230601; t=1762569218; x=1763174018; darn=lists.ozlabs.org;
+        h=mime-version:references:message-id:date:in-reply-to:subject:cc:to
+         :from:from:to:cc:subject:date:message-id:reply-to;
+        bh=8bKq5Kbap+TGIzkU08hwTVasn8Atv2TAiFfbpOuCLu4=;
+        b=CPby9YsdZMibOYa6xKJjsZpaGPxd7Aa8gTpd/qghmTVqrpLOrK2+Q/SzfGvLAQAomA
+         eIlGSfRCTaWA284eCk2D3Kk+gpZwOh/CFM2rNbqg6muw7CNodRNt4pr3VvwCx/2y8a8T
+         J2vz3ue3kTKAF5cbg/9eU5CZ9Yx5z0KBQxw433Xx/QX7rOhI89D3Xgfc+CVbT0PXAIOZ
+         6ejfvs2CU/s7wi6ffGXjh2t8YbpcNMH/ZYHGChPKjc58xN5cAjjHxWLPzFM31plV4GrS
+         jX3nrDv4pniG2DePLfZZzZdKmpFW0vK6mr0qJX4Tr51YB5r28O2WmtilDYgNrP+qhSvw
+         PFHg==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762529399; x=1763134199;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=3GoZhodGB9FYGEwkYt87VVVUhKMfEv1z2Z+2hgowflQ=;
-        b=OlYdHeYyraAUBBscBWNO8AONnbBNlIt+K1B4/ZBlncDMafcrQBFRzh8V9JZWAkWkw8
-         eKQrzDmIVrAF594ybT0bv2ndRAZhglcC7ponXRibEg+aLq+OJcbo4AQkzE94o1HfSt+w
-         Nuj9VtoV9uxoOjSbMIE7Vk/J/YCeU1QsOj4mzA9/kAjw3pLs0eMcF8BgfSkQmzE7gLBS
-         Tw0yKn6TByDiDPU81rEI+b5Nvv0025DCiptK8GdMy0tDQPmr8eWHVfE68Vc8issrGevg
-         GMus0XrFRAmgrB7nfrWD/D7KYPujLxK3yGeHYWEIojAKbd7/6PmpJHgPfpIc0YxCwyU7
-         ouhg==
-X-Forwarded-Encrypted: i=1; AJvYcCWiJZyR1Q3AOJJ6snBm/PaxLqdb/0ndtOUrFKermWTMYnUHo4034VX593s4YSA0WgI/yLUsCswqKK4lUa4=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwbxvjWssbG0jTZlrGtbsOuXR8LswYk1wWF3t+TkubjiSv5oh0b
-	Ok4JFjZuR3QlZbP2MNsy9PQaBJUK1C2TUR1ATyTV98gHJuu9l62uW+h1wRYHjT41L6s=
-X-Gm-Gg: ASbGncuIpiOx/7VpEZY3BaL5XeFbm1HyCWShLxT4RNRV9rgKIC/xmh8KJdaKn/ozygZ
-	DNxYz630EJpfD8/FVIAvueo2gDqXuRn5x4jUJby4sCDcoajCzMEoVsC0sQNib/II0P2DiBCCRH6
-	zGSFTWxYLmy2+l+8LoazoSio0cDI+YScxmr2GnEt9y9w69Qw6f0e18Mu1TazQ0lQv58O15DnCef
-	HoLi8q4Wj6/Exaz+NokqMLqK9QHhNH02J0wk4yvoH1NyAF3LpvHsh2+zORYQCflb8ib9cyGlP1X
-	A0/8u/kpo3lLqnGJVlUS3Ppt/72R+mouVKbyNENxsVNfAhEhhakM80x3DOVdl8sQkeGD4Cx7Okr
-	VrTlXlgq13WUfewEFT/h3DXwO99xq2OEal8mPeZ29u95EjUGd+E7S7/PE6N9iN2oPcJ6UeQIz8b
-	HcWbQ8h4yiN9MoKIjuIfVnPlZA
-X-Google-Smtp-Source: AGHT+IHmqZI9ktfvveouBP0DEC1fDTXy9L6bIOlkgXwbbIAASBfmpWtQSdTXKWT13I4wfNLTkOz9ug==
-X-Received: by 2002:a05:6000:2889:b0:427:151:3db6 with SMTP id ffacd0b85a97d-42ae58d1316mr2821957f8f.24.1762529399362;
-        Fri, 07 Nov 2025 07:29:59 -0800 (PST)
-Received: from localhost.localdomain ([2a00:6d43:105:c401:e307:1a37:2e76:ce91])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-42abe62bf26sm5755029f8f.3.2025.11.07.07.29.58
+        d=1e100.net; s=20230601; t=1762569218; x=1763174018;
+        h=mime-version:references:message-id:date:in-reply-to:subject:cc:to
+         :from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
+         :reply-to;
+        bh=8bKq5Kbap+TGIzkU08hwTVasn8Atv2TAiFfbpOuCLu4=;
+        b=u2X5Aoh8ZwTFZWSovV0Vo+rGeJnBBFnyOH+DGMM8TAsdtdD3hrL2qlSgPbgfK0UfGu
+         eUxxG6ytJ9I8Ne8aQ7QsEJa+1ucPRbLQ1WutqH1E/caOAiU1g0ef95fwqEweswu0ntNJ
+         BiPh6JnJb8Si42brRcKxGDzpTe7xppv1/YtGjG9l44+yfxm8sOvWVSTTjMbB2+UD+xca
+         Yo3l3ZA962bKPLJ9LB8x98ajeSi6EbNZ+WXGwyllx3fQy8y9UcYpcNOoQYLaSuyz2ZdM
+         9YfYP1ZZXHIuZGKYco1+4kEhf1kjtcch7AB2KTibWjMv+jY9xgOyFJwRTbiNLcRjxASU
+         wKOA==
+X-Forwarded-Encrypted: i=1; AJvYcCWyiUgNH5bOZAMKj9FpAGM+MHmzq7UkdAFdp91rjjV2R2kIIkJ2F1l3wa7yON9HzY2HF6AVfpBiQHdzmU4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyhiL9sO02WHJurVPMjyD4SDwhT90701GeEocEf009QVvcYXrHP
+	JjJhvC4D3CvNSGHIKhmjoY+SHWVRUTytCVYY2HtWFCnEzcWuf3c1r8M1
+X-Gm-Gg: ASbGnctbdMb/ryJmo3JDoNdQ3JxkPFiUmkyCl20rYmaBeLCEsqe1NPIPtujlpHyZEOc
+	pOY3n7E10yLC0o8S84g6bo42PAxSt+WKrjUweIMQLZYyrSKx9gkqp7hE1/uQnGAiA+VqO5MKI1r
+	A4dus3rLJ4nzUTm8bX6qUonrZeZRcVFuDfmgl6D8MbaiqJ/gfRdJLkLat1pFxyqV/BmY2tTBhVx
+	afn7HUn08BTLNcDc5mTCn5tK3+6zEZEfc1guAH6cYD7oxmhF6Go0TXNW/aa+B4BFa40OuLxT2M+
+	cYPOHlc10l9v3f6quKw4by1nIDDAnPCB9qT8H3LApHbtXPtW7n3CVpJTTjA7jv8V1n3mZjM7H3k
+	qc2BI8OTNaajFvMasIWNxxwNDeHYcle/Se/hsBGLcB9UWLnPEyXgLKR96BJLU7WxhNWQAZrqI+P
+	O+YlVb
+X-Google-Smtp-Source: AGHT+IH/Pe7wf3Ci181tpT0LHXQVq+Kf1iV5vunI2sKT5fx4KiiLBfIeJu3hgL/jAYkDOG6ZWRYxGw==
+X-Received: by 2002:a05:6a20:12c5:b0:33f:9581:5d2f with SMTP id adf61e73a8af0-3539f99e63emr1740681637.3.1762569218334;
+        Fri, 07 Nov 2025 18:33:38 -0800 (PST)
+Received: from dw-tp ([171.76.85.117])
+        by smtp.gmail.com with ESMTPSA id 41be03b00d2f7-ba8f8d7eedcsm6587378a12.2.2025.11.07.18.33.28
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Fri, 07 Nov 2025 07:29:58 -0800 (PST)
-From: Marco Crivellari <marco.crivellari@suse.com>
-To: linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org
-Cc: Tejun Heo <tj@kernel.org>,
-	Lai Jiangshan <jiangshanlai@gmail.com>,
-	Frederic Weisbecker <frederic@kernel.org>,
-	Sebastian Andrzej Siewior <bigeasy@linutronix.de>,
-	Marco Crivellari <marco.crivellari@suse.com>,
-	Michal Hocko <mhocko@suse.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Kees Cook <kees@kernel.org>
-Subject: [PATCH] soc: fsl: qbman: add WQ_PERCPU to alloc_workqueue users
-Date: Fri,  7 Nov 2025 16:29:50 +0100
-Message-ID: <20251107152950.293899-1-marco.crivellari@suse.com>
-X-Mailer: git-send-email 2.51.1
+        Fri, 07 Nov 2025 18:33:37 -0800 (PST)
+From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+To: Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>, 
+	Andreas Larsson <andreas@gaisler.com>, Andrew Morton <akpm@linux-foundation.org>, 
+	Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov <bp@alien8.de>, 
+	Catalin Marinas <catalin.marinas@arm.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Dave Hansen <dave.hansen@linux.intel.com>, David Hildenbrand <david@redhat.com>, 
+	"David S. Miller" <davem@davemloft.net>, David Woodhouse <dwmw2@infradead.org>, 
+	"H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>, Jann Horn <jannh@google.com>, 
+	Juergen Gross <jgross@suse.com>, "Liam R. Howlett" <Liam.Howlett@oracle.com>, 
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+	Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>, Mike Rapoport <rppt@kernel.org>, 
+	Nicholas Piggin <npiggin@gmail.com>, Peter Zijlstra <peterz@infradead.org>, 
+	Ryan Roberts <ryan.roberts@arm.com>, Suren Baghdasaryan <surenb@google.com>, 
+	Thomas Gleixner <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>, 
+	Yeoreum Yun <yeoreum.yun@arm.com>, linux-arm-kernel@lists.infradead.org, 
+	linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org, 
+	xen-devel@lists.xenproject.org, x86@kernel.org, 
+	Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+Subject: Re: [PATCH v4 01/12] powerpc/64s: Do not re-activate batched TLB flush
+In-Reply-To: <b3e4a92f-5b51-4eee-bfb8-c454add0f0d2@arm.com>
+Date: Sat, 08 Nov 2025 06:05:17 +0530
+Message-ID: <87cy5t4b0a.ritesh.list@gmail.com>
+References: <20251029100909.3381140-1-kevin.brodsky@arm.com> <20251029100909.3381140-2-kevin.brodsky@arm.com> <87qzud42n1.ritesh.list@gmail.com> <b3e4a92f-5b51-4eee-bfb8-c454add0f0d2@arm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -98,59 +108,70 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
 
-Currently if a user enqueues a work item using schedule_delayed_work() the
-used wq is "system_wq" (per-cpu wq) while queue_delayed_work() use
-WORK_CPU_UNBOUND (used when a cpu is not specified). The same applies to
-schedule_work() that is using system_wq and queue_work(), that makes use
-again of WORK_CPU_UNBOUND.
-This lack of consistency cannot be addressed without refactoring the API.
+Kevin Brodsky <kevin.brodsky@arm.com> writes:
 
-alloc_workqueue() treats all queues as per-CPU by default, while unbound
-workqueues must opt-in via WQ_UNBOUND.
+> On 05/11/2025 02:46, Ritesh Harjani (IBM) wrote:
+>> Kevin Brodsky <kevin.brodsky@arm.com> writes:
+>>
+>>> From: Alexander Gordeev <agordeev@linux.ibm.com>
+>>>
+>>> Since commit b9ef323ea168 ("powerpc/64s: Disable preemption in hash
+>>> lazy mmu mode") a task can not be preempted while in lazy MMU mode.
+>>> Therefore, the batch re-activation code is never called, so remove it.
+>>>
+>>> Signed-off-by: Alexander Gordeev <agordeev@linux.ibm.com>
+>>> Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
+>>> ---
+>>>  arch/powerpc/include/asm/thread_info.h |  2 --
+>>>  arch/powerpc/kernel/process.c          | 25 -------------------------
+>>>  2 files changed, 27 deletions(-)
+>>>
+>> Since the commit referenced in above disables the preemption in
+>> arch_enter_lazy_mmu(), so the expectation is that we will never be
+>> context switched while in lazy_mmu, hence the code changes in
+>> switch_to() around __flush_tlb_pending() should ideally never be called.
+>
+> Correct, that's the idea.
+>
+>> With this analysis - the patch looks good to me. I will give this entire
+>> patch series a try on Power HW with Hash mmu too (which uses lazy mmu and
+>> let you know the results of that)!
+>
+> That'd be very appreciated, thanks a lot!
+>
 
-This default is suboptimal: most workloads benefit from unbound queues,
-allowing the scheduler to place worker threads where they’re needed and
-reducing noise when CPUs are isolated.
+I did give this patch series a run on Power10 with Hash MMU. I ran the
+following stress-ng tests and didn't observe any issues (kernel warnings) so far.
 
-This continues the effort to refactor workqueue APIs, which began with
-the introduction of new workqueues and a new alloc_workqueue flag in:
+stress-ng --all 0 -t 60s --perf -v --verify \
+--tlb-shootdown 0 \
+--fault 0 \
+--userfaultfd 0 \
+--fork 0 \
+--exec 0 \
+--memfd 0 \
+--numa 0 \
+--pkey 0 \
+--remap 0 \
+--vm 0 \
+--rmap 0 \
+-x swap,pagemove
+(Note not all options shown here will work with --verify)
 
-commit 128ea9f6ccfb ("workqueue: Add system_percpu_wq and system_dfl_wq")
-commit 930c2ea566af ("workqueue: Add new WQ_PERCPU flag")
+Let me know what else I can run for validation?
+Do you know of any specific tests for validation of lazy mmu feature?
 
-This change adds a new WQ_PERCPU flag to explicitly request
-alloc_workqueue() to be per-cpu when WQ_UNBOUND has not been specified.
+>> For this patch please feel free to add:
+>> Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+>>
+>>
+>> CC: Venkat who also runs CI on linux Power HW for upstream testing :)
+>
+> Ack, will Cc you both in the next version.
 
-With the introduction of the WQ_PERCPU flag (equivalent to !WQ_UNBOUND),
-any alloc_workqueue() caller that doesn’t explicitly specify WQ_UNBOUND
-must now use WQ_PERCPU.
+Sure. Thanks!
 
-Once migration is complete, WQ_UNBOUND can be removed and unbound will
-become the implicit default.
-
-Suggested-by: Tejun Heo <tj@kernel.org>
-Signed-off-by: Marco Crivellari <marco.crivellari@suse.com>
----
- drivers/soc/fsl/qbman/qman.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
-
-diff --git a/drivers/soc/fsl/qbman/qman.c b/drivers/soc/fsl/qbman/qman.c
-index 9be240999f87..6b392b3ad4b1 100644
---- a/drivers/soc/fsl/qbman/qman.c
-+++ b/drivers/soc/fsl/qbman/qman.c
-@@ -1073,7 +1073,7 @@ EXPORT_SYMBOL(qman_portal_set_iperiod);
- 
- int qman_wq_alloc(void)
- {
--	qm_portal_wq = alloc_workqueue("qman_portal_wq", 0, 1);
-+	qm_portal_wq = alloc_workqueue("qman_portal_wq", WQ_PERCPU, 1);
- 	if (!qm_portal_wq)
- 		return -ENOMEM;
- 	return 0;
--- 
-2.51.1
-
+-ritesh
 
