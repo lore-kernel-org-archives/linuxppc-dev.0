@@ -1,51 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-13995-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13996-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D67F1CCFA13
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 10:10:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 04608CCF9E3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 10:37:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4llv1f4Vz2xqM;
-	Mon, 10 Nov 2025 21:10:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762769419;
-	cv=none; b=C6hk/KXOdBgmFygMenG0vlIGIeHdt7grZPdp5vTs06PqI4TM4XnP28hDjWYulBJTn/u/Mp7xmYXp/shK5muxNzt6CsERgvj8sExbcDP8ISr/AZ8e7WVtmBOwoBRzdvmJG0r7BX8pSHzQvQBQITTXVUCkA8c8VQSKJsEOUk2fcF9hm48BskSMkbyrE3Hqb4n5SGw3w/vxHhoV1yApm6vwxSjr4ytggYfV2fEPyIupTZmaZavr9zwGCWqL23ZPesKjwjy4WXDbZAmyxh8Nx25IS+iuhFCinBsIqopwPSG4g5hJE/R2QN/Y9tLfNsRtRwjHEqQUI1zXNXhOx2Wygso6lQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4mM751nwz2xqM;
+	Mon, 10 Nov 2025 21:37:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762771043;
+	cv=none; b=YrLdXWTaGzByiYcuZ9Ycr8SMhnttrm2bLIBdC53ge/82GfJcNVpaDOTNFmge85xz5i2ChERTDmrargX/mrq2RAR5sSuTgaIxYSlolEwDDxmWeHEicCSENn6kQb7bG1vd6slZpTeDItEwdDkQtP6FJawJXn2bxNmxAkhyhIk3jOnsAfsERDORArdBdf/72FxNSw4DdXv+9Zn7V95bXMngrZ9zkhZrFAp4ov9Ndtszh423JNM7VAD9OIX8yEWqevxfQzW+tUv9i63sCzvp/oHTRB4wOlqfOvSm5OOkiy/p/+fOktqSEn6EuBE0/seg1zILAPFRMileOWupMTlC2MHuug==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762769419; c=relaxed/relaxed;
-	bh=YVcgaD8+N95koJB2rPQamWDWG0IPq2Sth6UISeHKGec=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=OEYauL5QbqrWmGYzpZ9zW5xDGM9LkJzR+vHAvVWpShzouCDJnrXhoPoTuKooa7XwV1HdiY7vvRlRQDXn4FqktIoPA4dRnYFb0Hyp73NOFuU4fB4V0hoybbGYv8/AKtN2EgOszi7j/iPv/BEBHjeLLKyw6EkPJ6U3xN1ljWesXNwGKzWqcFT9+bflE6+j4d5/74Dp6TXI/cV5he4o2tcjHuLRHO8cWCzmzX+OQetN5NebXvvmUDSp4xBYX57ggMsy/i31YIDK61dwuboH2BSQ3zzZJy8L9Ta1SkYYxqrdVMxn4URytjQn+G2Bq11ShlNSP3RJirwNtTrhNL0pHNwJrw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ksrztFmB; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1762771043; c=relaxed/relaxed;
+	bh=1WrguxH4pokigxxkQ8JIMem650725yeeLwdoGz6ziPQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=PEx/DehCgodTTNn02L8sy/gwu4HtMlxNtBiYK6f/BAI0V+NhuPw130ZOP4f+JO6jOPRJzuQYb98jwmMINk78Jp6Zf5cF3XjRJD18w49bFAN12eJXCB5F7P1Fk0uOF3YEH+wv9hh4ePRnCBw9lgmvUMj26+FfEdd8qW453S8o2UORtKyhxAVIHje+7S31y+BCfmeafWOk7Cov4R3nZkyXBXmsnOEw8ZfJ0S1xg1/GDjNofvDBYHm514TZbefbrUWBsIxjdlZwR8pdg4Zpxy6F6mbUIkO50v/tdwuj6xM8Pbw9P3RxUqfujAWqYb9ekMdXbxeWW3t0SZU1pb4J/azSzA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=WTAHFhLQ; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=6s+/=5s=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ksrztFmB;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=WTAHFhLQ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=srs0=6s+/=5s=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4llt14kPz2xqL
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2025 21:10:18 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4mM467kCz2xFT
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2025 21:37:20 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id C896443A3B;
-	Mon, 10 Nov 2025 10:10:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB1A4C116D0;
-	Mon, 10 Nov 2025 10:10:12 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762769414;
-	bh=YyV99R1iIefxYCXPH1pILjVHpoAR5fuQ7nVMgufduF4=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=ksrztFmBAW+PRORYpLmsYppHDzOxwrx0fXgAbi68vY0YiWVjqv0G2dtwIBFBG3rQC
-	 Ef5SaKZQSGaa1q/qVNdMoAfT/X32ID4KE4o7a70yY2cI+/SdgsLqeSmx0ZsJ9LHf/c
-	 573P9UdGFIi3/Qgq2exvMjK1hhhgDli4d0ggsD36arN5koe8hnbeXc98gT2aB7P6L3
-	 1dFGuO1a3pKjUqc8Vkr/kKdecZSMzGLFQtfwKq87upyAY3Ojg/ayZ2t+KbbUyglyPW
-	 tRIpTfKqrC0cbfoQST9O+ead7h7XfkVkP8vGl+FV3leug3Q/uSgbOrWyYKhjchiyGH
-	 ybIPbVKO5ut+A==
-Message-ID: <944be49c-aea4-4160-a010-1d4ce7bcf542@kernel.org>
-Date: Mon, 10 Nov 2025 11:10:10 +0100
+	by tor.source.kernel.org (Postfix) with ESMTP id 10DD5601A5;
+	Mon, 10 Nov 2025 10:37:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 22E76C4CEF5;
+	Mon, 10 Nov 2025 10:37:14 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="WTAHFhLQ"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+	t=1762771032;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=1WrguxH4pokigxxkQ8JIMem650725yeeLwdoGz6ziPQ=;
+	b=WTAHFhLQBM9L4uVZANImYYYEpEwrJCJmpUsPeVS7opyWT3kewXLiJpB+S7cWvpyOqmRlk0
+	jOvTCsms0UYDa7uYKl2FQdhRurOUoi+bCEX1pnKZador3BykkqFb6xAp1lo4cuCgYvgUtd
+	mk8NOd2uY8oXx8TZ6HnEj3LlqXVn94g=
+Received: 
+	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 190dbf96 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Mon, 10 Nov 2025 10:37:11 +0000 (UTC)
+Date: Mon, 10 Nov 2025 11:37:07 +0100
+From: "Jason A. Donenfeld" <Jason@zx2c4.com>
+To: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+Cc: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+	Vincenzo Frascino <vincenzo.frascino@arm.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Nick Alcock <nick.alcock@oracle.com>,
+	John Stultz <jstultz@google.com>, Stephen Boyd <sboyd@kernel.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Shuah Khan <shuah@kernel.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Theodore Ts'o <tytso@mit.edu>,
+	Russell King <linux@armlinux.org.uk>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Shannon Nelson <sln@onemain.com>, linux-kernel@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-kselftest@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+	loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+	linux-s390@vger.kernel.org
+Subject: Re: [PATCH v5 19/34] random: vDSO: only access vDSO datapage after
+ random_init()
+Message-ID: <aRHAU7bVAIyaOrpA@zx2c4.com>
+References: <20251106-vdso-sparc64-generic-2-v5-0-97ff2b6542f7@linutronix.de>
+ <20251106-vdso-sparc64-generic-2-v5-19-97ff2b6542f7@linutronix.de>
+ <aQ6EvdukQytvqK-u@zx2c4.com>
+ <20251110094555-353883a9-1950-4cc6-a774-bb0ef5db11c5@linutronix.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,139 +101,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: powerpc/e500: WARNING: at mm/hugetlb.c:4755 hugetlb_add_hstate
-To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Sourabh Jain <sourabhjain@linux.ibm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Donet Tom <donettom@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>
-References: <94377f5c-d4f0-4c0f-b0f6-5bf1cd7305b1@linux.ibm.com>
- <dd634b17-cc5e-497c-8228-2470f6533177@redhat.com>
- <82ef1da8-44c4-4a58-bd00-9839548cb72d@csgroup.eu>
- <ba3a2131-c8d4-481d-aebb-d25be7ae0d19@kernel.org>
- <d62eea1f-3aff-4b51-976a-4cb8abf502bf@csgroup.eu>
- <87ecq952pe.ritesh.list@gmail.com>
-From: "David Hildenbrand (Red Hat)" <david@kernel.org>
-Content-Language: en-US
-In-Reply-To: <87ecq952pe.ritesh.list@gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20251110094555-353883a9-1950-4cc6-a774-bb0ef5db11c5@linutronix.de>
 
-[fighting with mail transitioning, for some reason I did not receive
-the mails from Christophe, so replying here]
+On Mon, Nov 10, 2025 at 10:04:17AM +0100, Thomas Weißschuh wrote:
+> On Sat, Nov 08, 2025 at 12:46:05AM +0100, Jason A. Donenfeld wrote:
+> > I'm not a huge fan of this change:
+> > 
+> > On Thu, Nov 06, 2025 at 11:02:12AM +0100, Thomas Weißschuh wrote:
+> > > +static DEFINE_STATIC_KEY_FALSE(random_vdso_is_ready);
+> > >  
+> > >  /* Control how we warn userspace. */
+> > >  static struct ratelimit_state urandom_warning =
+> > > @@ -252,6 +253,9 @@ static void random_vdso_update_generation(unsigned long next_gen)
+> > >  	if (!IS_ENABLED(CONFIG_VDSO_GETRANDOM))
+> > >  		return;
+> > >  
+> > > +	if (!static_branch_likely(&random_vdso_is_ready))
+> > > +		return;
+> > > +
+> > >  	/* base_crng.generation's invalid value is ULONG_MAX, while
+> > >  	 * vdso_k_rng_data->generation's invalid value is 0, so add one to the
+> > >  	 * former to arrive at the latter. Use smp_store_release so that this
+> > > @@ -274,6 +278,9 @@ static void random_vdso_set_ready(void)
+> > >  	if (!IS_ENABLED(CONFIG_VDSO_GETRANDOM))
+> > >  		return;
+> > >  
+> > > +	if (!static_branch_likely(&random_vdso_is_ready))
+> > > +		return;
+> > > +
+> > >  	WRITE_ONCE(vdso_k_rng_data->is_ready, true);
+> > >  }
+> > >  
+> > > @@ -925,6 +932,9 @@ void __init random_init(void)
+> > >  	_mix_pool_bytes(&entropy, sizeof(entropy));
+> > >  	add_latent_entropy();
+> > >  
+> > > +	if (IS_ENABLED(CONFIG_VDSO_GETRANDOM))
+> > > +		static_branch_enable(&random_vdso_is_ready);
+> > > +
+> > >  	/*
+> > >  	 * If we were initialized by the cpu or bootloader before jump labels
+> > >  	 * or workqueues are initialized, then we should enable the static
+> > > @@ -934,8 +944,10 @@ void __init random_init(void)
+> > >  		crng_set_ready(NULL);
+> > >  
+> > >  	/* Reseed if already seeded by earlier phases. */
+> > > -	if (crng_ready())
+> > > +	if (crng_ready()) {
+> > >  		crng_reseed(NULL);
+> > > +		random_vdso_set_ready();
+> > > +	}
+> > 
+> > The fact that the vdso datapage is set up by the time random_init() is
+> > called seems incredibly contingent on init details. Why not, instead,
+> > make this a necessary part of the structure of vdso setup code, which
+> > can actually know about what happens when?
+> 
+> The whole early init is "carefully" ordered in any case. I would have been
+> happy to allocate the data pages before the random initialization, but the
+> allocator is not yet usable by then.
+> We could also make the ordering more visible by having the vDSO datastore call
+> into a dedicated function to allow the random core to touch the data pages:
+> random_vdso_enable_datapages().
+> 
+> > For example, one clean way of
+> > doing that would be to make vdso_k_rng_data always valid by having it
+> > initially point to __initdata memory, and then when it's time to
+> > initialize the real datapage, memcpy() the __initdata memory to the new
+> > specially allocated memory. Then we don't need the complex state
+> > tracking that this commit and the prior one introduce.
+> 
+> Wouldn't that require synchronization between the update path and the memcpy()
+> path? Also if the pointer is going to change at some point we'll probably need
+> to use READ_ONCE()/WRITE_ONCE(). In general I would be happy about a cleaner
+> solution for this but didn't find a great one.
 
->>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
->>> index e24f4d88885ae..55c3626c86273 100644
->>> --- a/arch/powerpc/Kconfig
->>> +++ b/arch/powerpc/Kconfig
->>> @@ -137,6 +137,7 @@ config PPC
->>>        select ARCH_HAS_DMA_OPS            if PPC64
->>>        select ARCH_HAS_FORTIFY_SOURCE
->>>        select ARCH_HAS_GCOV_PROFILE_ALL
->>> +    select ARCH_HAS_GIGANTIC_PAGE        if PPC64
-> 
-> 
-> The patch looks good from PPC64 perspective, it also fixes the problem
-> reported on corenet64_smp_defconfig...
-> 
->>
->> Problem is not only on PPC64, it is on PPC32 as well, for instance
->> corenet32_smp_defconfig has the problem as well.
->>
-> 
-> However on looking deeper into it - I agree with Christophe that this
-> problem might still exist on PPC32.
+This is still before userspace has started, and interrupts are disabled,
+so I don't think so? Also, you only care about being after
+mm_core_init(), right? So move your thing before sched_init() and then
+you'll really have nothing to worry about.
 
-Ah, I missed that. I thought it would be a ppc64 thing. :(
+But I think globally I agree with Andy/Arnd -- this is kind of ugly and
+not worth it. Disable vDSO for these old CPUs with cache aliasing
+issues.
 
-> 
-> I did try the patch on corenet32_smp_defconfig and I can see the WARN_ON
-> still triggering. You can check the logs here..
-> 
-> https://github.com/riteshharjani/linux-ci/actions/runs/19169468405/job/54799498288
-> 
-> 
->>
->> So I think what you want instead is:
->>
->> diff --git a/arch/powerpc/platforms/Kconfig.cputype
->> b/arch/powerpc/platforms/Kconfig.cputype
->> index 7b527d18aa5ee..1f5a1e587740c 100644
->> --- a/arch/powerpc/platforms/Kconfig.cputype
->> +++ b/arch/powerpc/platforms/Kconfig.cputype
->> @@ -276,6 +276,7 @@ config PPC_E500
->>           select FSL_EMB_PERFMON
->>           bool
->>           select ARCH_SUPPORTS_HUGETLBFS if PHYS_64BIT || PPC64
->> +       select ARCH_HAS_GIGANTIC_PAGE if ARCH_SUPPORTS_HUGETLBFS
->>           select PPC_SMP_MUXED_IPI
->>           select PPC_DOORBELL
->>           select PPC_KUEP
->>
->>
->>
-> 
-> @Christophe,
-> 
-> I don't think even the above diff will fix the warning on PPC32.
-> The patch defines MAX_FOLIO_ORDER as P4D_ORDER...
-> 
-> +#define MAX_FOLIO_ORDER        P4D_ORDER
-> +#define P4D_ORDER              (P4D_SHIFT - PAGE_SHIFT)
-> 
-> and for ppc32 in..
-> include/asm-generic/pgtable-nop4d.h
->      #define P4D_SHIFT		PGDIR_SHIFT
-> 
-> Then in..
-> arch/powerpc/include/asm/nohash/32/pgtable.h
->      #define PGDIR_SHIFT	(PAGE_SHIFT + PTE_INDEX_SIZE)
->      #define PTE_INDEX_SIZE	PTE_SHIFT
-> 
-> in...
-> arch/powerpc/include/asm/page_32.h
->      #define PTE_SHIFT	(PAGE_SHIFT - PTE_T_LOG2)	/* full page */
-> 
->      #define PTE_T_LOG2	(__builtin_ffs(sizeof(pte_t)) - 1)
-> 
-> 
-> So if you see from above P4D_ORDER is coming down to PTE_INDEX_SIZE
-> 
-> IIUC, that will cause MAX_FOLIO_ORDER to be 9 in case of e500mc machine type right?
-> 
-> Can you please confirm if the above analysis looks correct to you?
-
-Cristophe wrote
-
-"
-Ah you are right, that's not enough. I was thinking that PGDIR_ORDER was
-the highest possible value ever but in fact not. PGDIR_SIZE is 4Mbytes
-so any page larger than that still triggers the warning. Here are the
-warnings I get on QEMU with corenet32_smp_defconfig
-"
-
-And then we get
-
-HugeTLB: registered 1.00 GiB page size, pre-allocated 0 pages
-HugeTLB: 0 KiB vmemmap can be freed for a 1.00 GiB page
-HugeTLB: registered 64.0 MiB page size, pre-allocated 1 pages
-HugeTLB: 0 KiB vmemmap can be freed for a 64.0 MiB page
-HugeTLB: registered 256 MiB page size, pre-allocated 1 pages
-HugeTLB: 0 KiB vmemmap can be freed for a 256 MiB page
-HugeTLB: registered 4.00 MiB page size, pre-allocated 0 pages
-HugeTLB: 0 KiB vmemmap can be freed for a 4.00 MiB page
-HugeTLB: registered 16.0 MiB page size, pre-allocated 0 pages
-HugeTLB: 0 KiB vmemmap can be freed for a 16.0 MiB page
-
-
-How could any of these larger sizes possibly ever get mapped into a page 
-table on 32bit? I'm probably missing something important :)
-
--- 
-Cheers
-
-David
+Jason
 
