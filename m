@@ -1,36 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-13997-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13998-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 26B9BCCF9E3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 10:37:57 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66F17CCF9E3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 10:38:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4mMl4s66z2xqM;
-	Mon, 10 Nov 2025 21:37:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4mNG6wkKz2xqm;
+	Mon, 10 Nov 2025 21:38:22 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762771075;
-	cv=none; b=CWsZVZaSuZzn72LAjA2IIMwOJVg6yLA/j3/REW6snFJdwKjH4hnZibD6CQUOuRrEc0uDpNK2tlTM6x96+2pGSQ3yasK8/qN/SKk/J0HEWQbziP1adcHVPlIF+gSV7Y3jRgg6Umjcy1m1TIzh1NQL01/w1ebrIG6PCEvOkQlSCvPVJQW7/cy5XZcrLIQItQYH+W5nWWlJ9NSTeMropFXqYtUrcEHnGleF35i1MA/GgUFzrf88BNT0OUl/h6p0kC+GpXb919g/TjOcH5aaRvlwX0HvUSZRTXt5CBd+JwfUCFPJ5rxG6371V905mR0PqvqHBc/UrjvbwicRMlzzWUY14Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762771102;
+	cv=none; b=fzy0V3rLVG/QPi74bLweZ5nKDldjg/B5j1R9OBSiUIKwFQFALNwVTQgvuCP85E829uPD1JEc7HGWOWRinTF6WRgJOQNbZr+PYqNiDmJ+A3YAmOQPfBjkJkwYVYL/opFDmh9W03j+EmLemHCX7ifCk89VpC3oK/aHnzM4zN8eYqkL/3qsbqI+8pSjLup6J2CfkqSnVCFmg19QltziuBB+ti/hUYD/AzgtGZvk2QkDpgyuS2Te3fCzNix4DOVxi62JlR55dIKqGNMN37EnZk19qak9nGQ38GhnnwhFbKJMh7oD2T1UqTSYuy1J9BCE0vvMNFMIXWGTvJftBiyZ7Xvj9A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762771075; c=relaxed/relaxed;
-	bh=wwdS1VB3vgYSOM1P254K506c5LfSj/vi1RAI9w6ktio=;
+	t=1762771102; c=relaxed/relaxed;
+	bh=hPCgPoE70BetgCqXoAumCGOuKiFkJIVELItuY0uabRE=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=kIFyndLB80Sghf62qHxtwyFBBC+NKQAqCmIZcel6P+rsJDnkUApkWwHON5kbQjC0xxWJwYI4XVsisKCZLRdGtQo1lYkPVndDh+62VeuH4/Oq4cviPBniaZcLDSlebNVKBYW/nXjybS4kv9VYa/715afQFyVb7KqI+Fvhd4UhNLFjsG7Rz/Fp6MrQul4Q904GrlumMO0od7I6KO1uQtmCzRRR0BpWWCbEkAHZCKmLF2lghKLluf9Y48P+sWxpTIroQlzvjP2DTO0jVJcRNnOvC87ik0euZb+EVDlcuZws/D121htMBhWsLIOJrMH+gad1OmB7Web1VSGCwBbY1O6d8w==
+	 In-Reply-To:Content-Type; b=Z6EmggGDnX+it7/FmvHqEzyYQiJePvYt+copeTMTa5Ecgu/RYuo21F4srqnwjdwtqka16skMcjjG0PHdUkFu/FpLWr7+z3SZ7/z27L1HT8Ruj2n52LS+BALXnK47pqsXFWAkdOiC9DLTLC5ppvPhc0Kwm+mgKw9g3lExQiZRMBL9UISeAl3Cif23A88dsssuoOCdq1dFI6eL4b6Z4/SOOl2qKR8UKqhJP1BmNH8hDlkKaCIdyG8KC5d7K2u9M5yj0+0KVgtEWRVhnqhEp48ZS6mXqMSJhDAsX2K6DKLSfnXv7BYHPdk8y2qD/86l/yw0c/ZmA0cJhO0iao3aaB6OMw==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4mMk604Sz2xFT
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2025 21:37:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4mNG2xVlz2xql
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2025 21:38:22 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id CEEFE497;
-	Mon, 10 Nov 2025 02:37:12 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id B4A3CFEC;
+	Mon, 10 Nov 2025 02:37:43 -0800 (PST)
 Received: from [10.57.39.147] (unknown [10.57.39.147])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0E4913F66E;
-	Mon, 10 Nov 2025 02:37:12 -0800 (PST)
-Message-ID: <b21fb5b9-2e7f-4cbc-ae62-015b1317a9bd@arm.com>
-Date: Mon, 10 Nov 2025 11:36:52 +0100
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 0EB953F66E;
+	Mon, 10 Nov 2025 02:37:43 -0800 (PST)
+Message-ID: <0d00dd6e-9e39-4ac6-8ea4-9407e75947eb@arm.com>
+Date: Mon, 10 Nov 2025 11:37:41 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -45,7 +45,7 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 02/12] x86/xen: simplify flush_lazy_mmu()
+Subject: Re: [PATCH v4 05/12] mm: introduce CONFIG_ARCH_HAS_LAZY_MMU_MODE
 To: Ryan Roberts <ryan.roberts@arm.com>, linux-mm@kvack.org
 Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
  Andreas Larsson <andreas@gaisler.com>,
@@ -70,46 +70,30 @@ Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
  linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
  xen-devel@lists.xenproject.org, x86@kernel.org
 References: <20251029100909.3381140-1-kevin.brodsky@arm.com>
- <20251029100909.3381140-3-kevin.brodsky@arm.com>
- <b165098a-8164-4664-aaaf-1e8c4391d797@arm.com>
+ <20251029100909.3381140-6-kevin.brodsky@arm.com>
+ <6a9c846f-22b6-4d5f-81dc-6cdcd4905952@arm.com>
 Content-Language: en-GB
 From: Kevin Brodsky <kevin.brodsky@arm.com>
-In-Reply-To: <b165098a-8164-4664-aaaf-1e8c4391d797@arm.com>
+In-Reply-To: <6a9c846f-22b6-4d5f-81dc-6cdcd4905952@arm.com>
 Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 7bit
 
-On 07/11/2025 12:31, Ryan Roberts wrote:
-> On 29/10/2025 10:08, Kevin Brodsky wrote:
->> arch_flush_lazy_mmu_mode() is called when outstanding batched
->> pgtable operations must be completed immediately. There should
->> however be no need to leave and re-enter lazy MMU completely. The
->> only part of that sequence that we really need is xen_mc_flush();
->> call it directly.
->>
->> Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
-> This looks functionally equivalent to me, so:
->
-> Reviewed-by: Ryan Roberts <ryan.roberts@arm.com>
->
-> But I don't think this tidy up is strictly necessary for your series to work?
-> (perhaps I'll change my mind on that as I go through it).
+On 07/11/2025 13:56, Ryan Roberts wrote:
+>> diff --git a/arch/arm64/Kconfig b/arch/arm64/Kconfig
+>> index 6663ffd23f25..e6bf5c7311b5 100644
+>> --- a/arch/arm64/Kconfig
+>> +++ b/arch/arm64/Kconfig
+>> @@ -122,6 +122,7 @@ config ARM64
+>>  	select ARCH_WANTS_NO_INSTR
+>>  	select ARCH_WANTS_THP_SWAP if ARM64_4K_PAGES
+>>  	select ARCH_HAS_UBSAN
+>> +	select ARCH_HAS_LAZY_MMU_MODE
+> nit: This list is mostly in alphabetical order. Further up the list there are a
+> lot of ARCH_HAS_* entries. Perhaps move it to the correct position in that lot?
+> Then ARCH_HAS_UBSAN stays out of order on its own.
 
-I initially thought it might be, but in the end I think you're right -
-it should still work fine without this patch.
-
-Still, I'd rather avoid unnecessary calls to arch_enter() and
-arch_leave() as it makes it harder to reason about what is called where.
-Namely, keeping them here means that a nested call to
-lazy_mmu_mode_disable() would cause arch_leave() then arch_enter() to be
-called - rather unexpected.
-
-The only calls to arch_enter() and arch_leave() that are left after this
-series are the ones in <linux/pgtable.h> and the Xen context-switching
-logic (the one case where calling arch hooks directly is justified, see
-discussion on v3 [1]).
+That's fair, it does look like it's mostly in order apart from
+ARCH_HAS_UBSAN. Will move it further up.
 
 - Kevin
-
-[1]
-https://lore.kernel.org/all/390e41ae-4b66-40c1-935f-7a1794ba0b71@arm.com/
 
