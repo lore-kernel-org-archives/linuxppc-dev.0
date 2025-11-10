@@ -1,70 +1,69 @@
-Return-Path: <linuxppc-dev+bounces-14010-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14011-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 953A6CCFA13
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 13:34:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B21ECD1297
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 15:43:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4rJ057Wrz2xqM;
-	Tue, 11 Nov 2025 00:34:56 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.18
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762781696;
-	cv=none; b=IeypCvZT8/3CVhlKC7M5jtIzxQgXJRWXbj/dD+17MkiVqKYAlq5E5f178OyPxK82UhLy/W8XTCtDIGKXie9g26V+XjHOEPoC2YqxWSDdYyzpS3ExewUxu20GI5EuQd13MAn0TvKXKyPeqFTpaoJvfnwEYtOwKwNI99eCyJvmkSMs5mIdpboI4mU4dshnl96U2Zt9w+Ny7cDKcg8r0rsiRRpIdTFRAAHFl/zlst01F7jvrDNzpnISdfv+pd5sEmyzfCQO8Yvb7gh5fNbbODcdfP446m+5CGWLBBDEqUAFLlkLIz7U+CP6K5lv/8F8/TXA7fVhTOqtFmRWFCP6t13cbQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4v852nLdz2xqh;
+	Tue, 11 Nov 2025 02:43:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1049"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762789397;
+	cv=none; b=MtwrQWjP9Xgio80XsTNniBml++59pbCKzFr+TI+Ii802e9n8zc3qQvCUjHj9pyIl0VxUlrPHrvb//CrtEP4lPU2q/WGf1uZTaW8BU+TY9HX5dKBjP1t52mKXK7t25wCJVfC+3TlbaQO4OTXMktQ48guYESMwNnjIIhATwYA763d1qJAhSjyVuAiK2qyXcaovmbRwsM7kEakKbdL0ecoz/j/3yL0vB+xX0uZyh6qFN1LDAQX+fLbLD5R3p5iZL+NGLficGFjRxoEautat3t5jVXK4fSwl+hfka1apUv2s3hepXwD3T7npVjI7zOY238qeCSyFKB93vgJtJQp44I8jlw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762781696; c=relaxed/relaxed;
-	bh=shC1Nztt1uP9RkUsjuMyV1/zqopJXCF8SQBqEZp6MqY=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=RmTMGUjQJ4C9kUpADJX5qUSLKemW0Lq6nmDLOHptoT8/04zqEQfDM2AuFVjD8PUwFiETGGKw+Xn9CccEL7YRwOHlVWEkU50Spud7zF6TpxOV0YdjAZATcixsUQLXdunwJOSnPrPA4qjFWo3jL7H8AgJ3LFSXqMM88dTmfoEeh9R+9KuHubKYJZA3+ksP8QTeI65LaIZzYoAFz3YB2NURZHM4GQ/m5wvZTQjnv+IDHb1lRde6Wz9vxfc1dyNDkJzWv5gjTiZ37krkS1Jaz3aMzOFzUI+wcdJ+NlrlIaL/5O3TlEa1acCmquJovPwZh8bpy9lbS+vGt8hpWQ4nvmyJLA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Gde5P61S; dkim-atps=neutral; spf=pass (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1762789397; c=relaxed/relaxed;
+	bh=87FfliXTeIYU4Ti4q0mlK1AlR2N3oXTPIRkcYWMY8TY=;
+	h=Date:In-Reply-To:Mime-Version:References:Message-ID:Subject:From:
+	 To:Cc:Content-Type; b=IrpLp7vzDam16ZoTE7X8gq2xJMKsapErAKPFQO9xqN/0DghFIQXTEyaZD7n43yuU545mfwkt1x9iJJaeDr/LFoKqka21J32u3o0f59ld08NDzNtDIW1HIQDyM53IbyFh1+U1KjM0BpvTNW6uPdn9ej/AC6/1UAWsrf0kzY0N4crWofExNcuUSM5JiQNoySS7ogTnUJl1JyAOj5EVB+f3TBMllOdceyha9gu0accfO453XAsBDfMv4GhnU37kdmkMj21O6LZvYd/bj8zJu4hwwvWbobVGsrfOyPUnWU13nU7PkK5+yG1Dmi1pxisbQ3vw8IA7nxrYAMLGoiMYIhVNdg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com; dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=so2de+zN; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=3eagsaqykdlcpbxkgzdlldib.zljifkrummz-absifpqp.lwixyp.lod@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org) smtp.mailfrom=flex--seanjc.bounces.google.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=google.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Gde5P61S;
+	dkim=pass (2048-bit key; unprotected) header.d=google.com header.i=@google.com header.a=rsa-sha256 header.s=20230601 header.b=so2de+zN;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.18])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=flex--seanjc.bounces.google.com (client-ip=2607:f8b0:4864:20::1049; helo=mail-pj1-x1049.google.com; envelope-from=3eagsaqykdlcpbxkgzdlldib.zljifkrummz-absifpqp.lwixyp.lod@flex--seanjc.bounces.google.com; receiver=lists.ozlabs.org)
+Received: from mail-pj1-x1049.google.com (mail-pj1-x1049.google.com [IPv6:2607:f8b0:4864:20::1049])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4rHx6HWRz2xC3
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2025 00:34:51 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1762781694; x=1794317694;
-  h=date:from:to:cc:subject:message-id;
-  bh=dFMVwLA+GNo5nONQrHMph/WOiR/PUlH/z6BxNBqdCvs=;
-  b=Gde5P61SDts31AbZNfRwLEsf+bGqmKVWyEYnYjnkRWT0REnr6GqRNKRc
-   AiKkHv+KyxreKUUFwbNpkFf6fBH0Q/Cu7TDNbyMXxrAdOh9BqwOnZtdtM
-   O1e+SbFHBqvVspzc9UNYuq9sMuQmnznixqZ6HG36zkOB0PlV2MuGsUOmz
-   omPtRjj5qLeqb3aYYTrLrmPUgkVFlQuiX5iHaG5j4oTVJStte2tijk+VQ
-   Qd3mef8HBu/5dqBcsxIsM5GsuQ8HCidbNNlzhvjlPk7yyFVruoKfw2d/7
-   x3OAvg1ykSZ/fzrVu41b8CbsyAapKuAv24pzbeWJ7609AvsTzgyKEy3ZU
-   g==;
-X-CSE-ConnectionGUID: OsXxo3dhQzCSkBrbmBFV4Q==
-X-CSE-MsgGUID: WtGK6GS0Tp2/Bf64RzNdAw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11609"; a="64037153"
-X-IronPort-AV: E=Sophos;i="6.19,293,1754982000"; 
-   d="scan'208";a="64037153"
-Received: from orviesa002.jf.intel.com ([10.64.159.142])
-  by fmvoesa112.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 10 Nov 2025 05:34:49 -0800
-X-CSE-ConnectionGUID: q37GyQLoT32xALWNKkNIbg==
-X-CSE-MsgGUID: iNqESZ5YQG2GHbMbhyJmqw==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,293,1754982000"; 
-   d="scan'208";a="219331617"
-Received: from lkp-server01.sh.intel.com (HELO 7b01c990427b) ([10.239.97.150])
-  by orviesa002.jf.intel.com with ESMTP; 10 Nov 2025 05:34:48 -0800
-Received: from kbuild by 7b01c990427b with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1vIS2f-0000TJ-1y;
-	Mon, 10 Nov 2025 13:34:45 +0000
-Date: Mon, 10 Nov 2025 21:33:59 +0800
-From: kernel test robot <lkp@intel.com>
-To: Michael Ellerman <mpe@ellerman.id.au>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:merge] BUILD SUCCESS
- e651f06871db048f84f90710508e2fe671c23f5f
-Message-ID: <202511102154.Uzl42whC-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4v835sK6z2xqZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2025 02:43:14 +1100 (AEDT)
+Received: by mail-pj1-x1049.google.com with SMTP id 98e67ed59e1d1-33da21394adso3372633a91.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2025 07:43:14 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=google.com; s=20230601; t=1762789392; x=1763394192; darn=lists.ozlabs.org;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:from:to:cc:subject:date:message-id:reply-to;
+        bh=87FfliXTeIYU4Ti4q0mlK1AlR2N3oXTPIRkcYWMY8TY=;
+        b=so2de+zNZ3RhnSmfYYIThYJ6NmuNnuLNxYoIYT0PdK0Iqwvt+Z2DlYin05nF6qfySZ
+         JSwBY25vQuj2B3JP/XTPh0J8DlnZX8R6okscpmuKcZ/BpXj1gfwdC7yAbN9zDGXogVIr
+         mVBzJhHetN2QcaTeVGOEhSUeh2q9tjyurOYo/1yCoDTqBn2Ruu6sEp98ux4LRCjZo5DV
+         73xohYPQGKAoTF6angOuZlM5q3jyn36M/aA8df6VGijKeMZRS4AGM/wjV5YFg12JTHYY
+         D/LclsLw49TCqDrL0mj3ViCnIwxqNsIV8kGeuf/4r0CeuTiAWGF/4YdlmJhSQyMsTTE4
+         aehA==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1762789392; x=1763394192;
+        h=cc:to:from:subject:message-id:references:mime-version:in-reply-to
+         :date:x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=87FfliXTeIYU4Ti4q0mlK1AlR2N3oXTPIRkcYWMY8TY=;
+        b=gBxOjTUvId52fvsguHVJfOrkkWIfSaReuseESgtIYVYT/2v8+QUhKrRkXFavPxoS0v
+         ZBT6JR8ueKX0FjJm8+q1DLiwE6zjQYxfy2RCtr+092/LMAwc/wb9boQ+SCeR5t7KsRMO
+         NQR4uOIfP3u7kijqU64MayNeltNyM06871F8+fUKgcFw4GWMfzOhpBCqlfGOD7HxcyrD
+         5wJmJU/FbtNFJozTrGk7CzY5BQhaLXcqh0VSllntkl8OH7T2cyBFEJuEN3l3f9PnrDlM
+         yBLnm4GEWFtcllAEX/iVxgj4rRNGG3F4TtiCc/Q+9sEPCxPFK19B2yJx+MqURES9OYrh
+         fNsw==
+X-Forwarded-Encrypted: i=1; AJvYcCUmGjRXPc6ei2bjDdjKJ+zTzk/jadphyJsecFlJC+ojIJ4VmlMbmEGwE97zdwPTFSyo8h0PBG4pDp+ZBos=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yy8VcWivDfVZykzFjfMAR2ho8byibpz3osh/8yr0uQMUyUuzzbC
+	dDC55voW4Iru38YsygA/A66X9XLHCI+hQeVgCud1GPGg77z9s/VhggNcS71W6Z7vgYWEq1NP1BK
+	jhJt5fw==
+X-Google-Smtp-Source: AGHT+IGU2QqcHJOpKVyUh8wnC6DXg/rmfR5MmGRMoX3raYINDU0h+4Ytj4+FRCcbgxWr/CiKwQo1uRnxIsY=
+X-Received: from pjbdw16.prod.google.com ([2002:a17:90b:950:b0:343:6849:31ae])
+ (user=seanjc job=prod-delivery.src-stubby-dispatcher) by 2002:a17:90b:4a10:b0:341:124f:474f
+ with SMTP id 98e67ed59e1d1-3436cd0c3e9mr10428985a91.32.1762789392114; Mon, 10
+ Nov 2025 07:43:12 -0800 (PST)
+Date: Mon, 10 Nov 2025 07:37:29 -0800
+In-Reply-To: <20251030200951.3402865-1-seanjc@google.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,81 +76,108 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+Mime-Version: 1.0
+References: <20251030200951.3402865-1-seanjc@google.com>
+X-Mailer: git-send-email 2.51.2.1041.gc1ab5b90ca-goog
+Message-ID: <176278827443.918905.17609380057567446021.b4-ty@google.com>
+Subject: Re: [PATCH v4 00/28] KVM: x86/mmu: TDX post-populate cleanups
+From: Sean Christopherson <seanjc@google.com>
+To: Sean Christopherson <seanjc@google.com>, Marc Zyngier <maz@kernel.org>, 
+	Oliver Upton <oliver.upton@linux.dev>, Tianrui Zhao <zhaotianrui@loongson.cn>, 
+	Bibo Mao <maobibo@loongson.cn>, Huacai Chen <chenhuacai@kernel.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Anup Patel <anup@brainfault.org>, 
+	Paul Walmsley <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>, 
+	Christian Borntraeger <borntraeger@linux.ibm.com>, Janosch Frank <frankja@linux.ibm.com>, 
+	Claudio Imbrenda <imbrenda@linux.ibm.com>, Paolo Bonzini <pbonzini@redhat.com>, 
+	"Kirill A. Shutemov" <kas@kernel.org>
+Cc: linux-arm-kernel@lists.infradead.org, kvmarm@lists.linux.dev, 
+	kvm@vger.kernel.org, loongarch@lists.linux.dev, linux-mips@vger.kernel.org, 
+	linuxppc-dev@lists.ozlabs.org, kvm-riscv@lists.infradead.org, 
+	linux-riscv@lists.infradead.org, x86@kernel.org, linux-coco@lists.linux.dev, 
+	linux-kernel@vger.kernel.org, Ira Weiny <ira.weiny@intel.com>, 
+	Kai Huang <kai.huang@intel.com>, Binbin Wu <binbin.wu@linux.intel.com>, 
+	Michael Roth <michael.roth@amd.com>, Yan Zhao <yan.y.zhao@intel.com>, 
+	Vishal Annapurve <vannapurve@google.com>, Rick Edgecombe <rick.p.edgecombe@intel.com>, 
+	Ackerley Tng <ackerleytng@google.com>
+Content-Type: text/plain; charset="utf-8"
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: e651f06871db048f84f90710508e2fe671c23f5f  powerpc/ci: Add ppce500 machine to kernel+qemu workflows
+On Thu, 30 Oct 2025 13:09:23 -0700, Sean Christopherson wrote:
+> Non-x86 folks, as with v3, patches 1 and 2 are likely the only thing of
+> interest here.  They make kvm_arch_vcpu_async_ioctl() mandatory and then
+> rename it to kvm_arch_vcpu_unlocked_ioctl().
+> 
+> As for the x86 side...
+> 
+> Clean up the TDX post-populate paths (and many tangentially related paths) to
+> address locking issues between gmem and TDX's post-populate hook[*], and
+> within KVM itself (KVM doesn't ensure full mutual exclusivity between paths
+> that for all intents and purposes the TDX-Module requires to be serialized).
+> 
+> [...]
 
-elapsed time: 2901m
+Applied to kvm-x86 tdx, with fixups for the various typos.  Thanks for all the
+reviews and testing!
 
-configs tested: 60
-configs skipped: 1
+Other KVM arch maintainers, please holler if you want a stable tag for the
+kvm_arch_vcpu_async_ioctl() changes (they're based directly on v6.18-rc4).
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
-
-tested configs:
-alpha                   allnoconfig    gcc-15.1.0
-alpha                  allyesconfig    gcc-15.1.0
-arc                     allnoconfig    gcc-15.1.0
-arc         randconfig-001-20251109    gcc-12.5.0
-arc         randconfig-002-20251109    gcc-8.5.0
-arm                     allnoconfig    clang-22
-arm         randconfig-001-20251109    clang-16
-arm         randconfig-002-20251109    clang-22
-arm         randconfig-003-20251109    clang-22
-arm         randconfig-004-20251109    gcc-8.5.0
-arm64                   allnoconfig    gcc-15.1.0
-csky                    allnoconfig    gcc-15.1.0
-hexagon                allmodconfig    clang-17
-hexagon                 allnoconfig    clang-22
-hexagon                allyesconfig    clang-22
-hexagon     randconfig-001-20251108    clang-22
-hexagon     randconfig-002-20251108    clang-22
-i386                    allnoconfig    gcc-14
-loongarch              allmodconfig    clang-19
-loongarch               allnoconfig    clang-22
-loongarch   randconfig-001-20251108    gcc-12.5.0
-loongarch   randconfig-002-20251108    gcc-12.5.0
-m68k                   allmodconfig    gcc-15.1.0
-m68k                    allnoconfig    gcc-15.1.0
-m68k                   allyesconfig    gcc-15.1.0
-microblaze             allmodconfig    gcc-15.1.0
-microblaze              allnoconfig    gcc-15.1.0
-microblaze             allyesconfig    gcc-15.1.0
-mips                    allnoconfig    gcc-15.1.0
-nios2                   allnoconfig    gcc-11.5.0
-nios2       randconfig-001-20251108    gcc-8.5.0
-nios2       randconfig-002-20251108    gcc-9.5.0
-openrisc                allnoconfig    gcc-15.1.0
-parisc                  allnoconfig    gcc-15.1.0
-parisc      randconfig-001-20251109    gcc-9.5.0
-parisc      randconfig-002-20251109    gcc-13.4.0
-powerpc                 allnoconfig    gcc-15.1.0
-powerpc     randconfig-001-20251109    clang-22
-powerpc     randconfig-002-20251109    clang-22
-powerpc64   randconfig-001-20251109    gcc-8.5.0
-powerpc64   randconfig-002-20251109    gcc-8.5.0
-riscv                   allnoconfig    gcc-15.1.0
-riscv       randconfig-001-20251108    clang-19
-riscv       randconfig-002-20251108    gcc-12.5.0
-s390                    allnoconfig    clang-22
-s390        randconfig-001-20251108    clang-22
-sh                      allnoconfig    gcc-15.1.0
-sparc                   allnoconfig    gcc-15.1.0
-um                     allmodconfig    clang-19
-um                      allnoconfig    clang-22
-um                     allyesconfig    gcc-14
-x86_64                  allnoconfig    clang-20
-x86_64                        kexec    clang-20
-x86_64                     rhel-9.4    clang-20
-x86_64                 rhel-9.4-bpf    gcc-14
-x86_64                rhel-9.4-func    clang-20
-x86_64          rhel-9.4-kselftests    clang-20
-x86_64               rhel-9.4-kunit    gcc-14
-x86_64                 rhel-9.4-ltp    gcc-14
-xtensa                  allnoconfig    gcc-15.1.0
+[01/28] KVM: Make support for kvm_arch_vcpu_async_ioctl() mandatory
+        https://github.com/kvm-x86/linux/commit/0a0da3f92118
+[02/28] KVM: Rename kvm_arch_vcpu_async_ioctl() to kvm_arch_vcpu_unlocked_ioctl()
+        https://github.com/kvm-x86/linux/commit/50efc2340a59
+[03/28] KVM: TDX: Drop PROVE_MMU=y sanity check on to-be-populated mappings
+        https://github.com/kvm-x86/linux/commit/5294a4b93e07
+[04/28] KVM: x86/mmu: Add dedicated API to map guest_memfd pfn into TDP MMU
+        https://github.com/kvm-x86/linux/commit/3ab3283dbb2c
+[05/28] KVM: x86/mmu: WARN if KVM attempts to map into an invalid TDP MMU root
+        https://github.com/kvm-x86/linux/commit/c1f173fb3389
+[06/28] Revert "KVM: x86/tdp_mmu: Add a helper function to walk down the TDP MMU"
+        https://github.com/kvm-x86/linux/commit/fe7413e39810
+[07/28] KVM: x86/mmu: Rename kvm_tdp_map_page() to kvm_tdp_page_prefault()
+        https://github.com/kvm-x86/linux/commit/6de2fb089bb2
+[08/28] KVM: TDX: Drop superfluous page pinning in S-EPT management
+        https://github.com/kvm-x86/linux/commit/ce7b5695397b
+[09/28] KVM: TDX: Return -EIO, not -EINVAL, on a KVM_BUG_ON() condition
+        https://github.com/kvm-x86/linux/commit/e6348c90dda9
+[10/28] KVM: TDX: Fold tdx_sept_drop_private_spte() into tdx_sept_remove_private_spte()
+        https://github.com/kvm-x86/linux/commit/b836503300dc
+[11/28] KVM: x86/mmu: Drop the return code from kvm_x86_ops.remove_external_spte()
+        https://github.com/kvm-x86/linux/commit/7139c8606505
+[12/28] KVM: TDX: WARN if mirror SPTE doesn't have full RWX when creating S-EPT mapping
+        https://github.com/kvm-x86/linux/commit/b9d5cf6de0b6
+[13/28] KVM: TDX: Avoid a double-KVM_BUG_ON() in tdx_sept_zap_private_spte()
+        https://github.com/kvm-x86/linux/commit/24adff397052
+[14/28] KVM: TDX: Use atomic64_dec_return() instead of a poor equivalent
+        https://github.com/kvm-x86/linux/commit/af96d5452e5e
+[15/28] KVM: TDX: Fold tdx_mem_page_record_premap_cnt() into its sole caller
+        https://github.com/kvm-x86/linux/commit/b4b2b6eda5af
+[16/28] KVM: TDX: ADD pages to the TD image while populating mirror EPT entries
+        https://github.com/kvm-x86/linux/commit/6b5b71ffabf9
+[17/28] KVM: TDX: Fold tdx_sept_zap_private_spte() into tdx_sept_remove_private_spte()
+        https://github.com/kvm-x86/linux/commit/14c9938619be
+[18/28] KVM: TDX: Combine KVM_BUG_ON + pr_tdx_error() into TDX_BUG_ON()
+        https://github.com/kvm-x86/linux/commit/597d7068702f
+[19/28] KVM: TDX: Derive error argument names from the local variable names
+        https://github.com/kvm-x86/linux/commit/55560b6be5bc
+[20/28] KVM: TDX: Assert that mmu_lock is held for write when removing S-EPT entries
+        https://github.com/kvm-x86/linux/commit/2ff14116982c
+[21/28] KVM: TDX: Add macro to retry SEAMCALLs when forcing vCPUs out of guest
+        https://github.com/kvm-x86/linux/commit/3d626ce5a8cc
+[22/28] KVM: TDX: Add tdx_get_cmd() helper to get and validate sub-ioctl command
+        https://github.com/kvm-x86/linux/commit/59d5c1ed6df2
+[23/28] KVM: TDX: Convert INIT_MEM_REGION and INIT_VCPU to "unlocked" vCPU ioctl
+        https://github.com/kvm-x86/linux/commit/94428e3ba325
+[24/28] KVM: TDX: Use guard() to acquire kvm->lock in tdx_vm_ioctl()
+        https://github.com/kvm-x86/linux/commit/0b76e827b29d
+[25/28] KVM: TDX: Don't copy "cmd" back to userspace for KVM_TDX_CAPABILITIES
+        https://github.com/kvm-x86/linux/commit/f26061fe2c25
+[26/28] KVM: TDX: Guard VM state transitions with "all" the locks
+        https://github.com/kvm-x86/linux/commit/15945e9ec195
+[27/28] KVM: TDX: Bug the VM if extending the initial measurement fails
+        https://github.com/kvm-x86/linux/commit/ad44aa4c5d3f
+[28/28] KVM: TDX: Fix list_add corruption during vcpu_load()
+        https://github.com/kvm-x86/linux/commit/1e3a825c9ec9
 
 --
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+https://github.com/kvm-x86/linux/tree/next
 
