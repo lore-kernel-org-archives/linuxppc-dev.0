@@ -1,73 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-13999-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14000-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id A1322CCF9E3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 10:42:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 15BF4CCF9E3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 10:45:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4mSl1kgzz2xqm;
-	Mon, 10 Nov 2025 21:42:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::12d"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762768715;
-	cv=none; b=PEMX+P8gakTxc/v2il5U7tA/WhuCP3hn5lcj/DHt244+mw8PFW+7J4ueK82YdsOgP8Arv+jaDOXH9fISwFQGgOXwRYIY/ZEaLDyt7er4EBDcaDXK51txw7BkyPJ/w14t9lnDjTVVTXsfxhvJIeyJo1DLXcwcM9uJklpxXVyUnN9L8IpUGgyK1kQbQ4cHm29JWEJvqcXYrTAHBVC0KMNbuHWJY9ATOr1iryXBeR8B70ZlJbGTGpRV7JKlFeAqSYr0tIDrCFmrK1JCTk+4xOh/H3zCZUc8q/159SGOdl4fMEWqxNuX95A+Nj3fHAiaFIgrnPuciJOKJR/7k6K2FGP9Dw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4mXl3SQPz2xqm;
+	Mon, 10 Nov 2025 21:45:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762771543;
+	cv=none; b=hN2ODMbUPMmn/erEd/0sUjVs5rLKtDfOKdpz97zHrwd44K6SETdAgJXo/RBJ+CdTl1syo54ApzFfaiL0CFquM3XsunqmnQRkX7AbJJ43S5QGVLSiuJWa6ApgTPmJK9lIzwhYgbF/YW+g2Me8Eah3Rd5aeI8N1eMCTlDLiYbpZuMuuuY3iWL7uC2zatzEhUlAEpq5+RjgNlHWkWp67Ti2qOnngSWyyaqsszWEHh9Hl+qtEzxwTRzVpscAjeYuUA9lZox1CFIcJPnu5WK7wvAETYNXdWVbUPmHfF9WKWWT6ZbdE3nCPTbY5BIq1jV/oTRv4IGAz4ULFhbmyapDwRq2Ng==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762768715; c=relaxed/relaxed;
-	bh=Pr1wJd/7uGgpha5iPQ4Q3WZe4ih/H/T0063vCmTBsVQ=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=Qym37MlZMeyaEnErsVCZzmte6NL9r1p57L2FalUwFdmW7ANxIHjhbGG0WJHyAEndZu4ZpQRhIKgDeS57s+KEo5WuBO4zdhcs+L2K2ybgM36rnSIYienlQHvYZIATtqv3pdAxTIj+Vfa3ismewNmiSv+fk1S3im/lRxrTYvDqOfpjbT4Cr2ydDhjiPrwoDOg6ICmWwUDS5AcDKgaXNwtjlWbZ7rlprSqMzcYGhjms+WCSMoMzd7lsB3s8QUTz+Uw8PgCrKqmJNLqEiOKIeBQbTnrpBtIYJFn+bl9nWIVlxkMsQ4aZu0F7KYlLfJ5CcXctEZT35FnDfFOxCnzrxkPwQA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=eIpcuwQ7; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::12d; helo=mail-lf1-x12d.google.com; envelope-from=marco.crivellari@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=eIpcuwQ7;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=2a00:1450:4864:20::12d; helo=mail-lf1-x12d.google.com; envelope-from=marco.crivellari@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-x12d.google.com (mail-lf1-x12d.google.com [IPv6:2a00:1450:4864:20::12d])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4lVJ6xWhz2xqL
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2025 20:58:31 +1100 (AEDT)
-Received: by mail-lf1-x12d.google.com with SMTP id 2adb3069b0e04-5942bac322dso2386618e87.0
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2025 01:58:31 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1762768703; x=1763373503; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=Pr1wJd/7uGgpha5iPQ4Q3WZe4ih/H/T0063vCmTBsVQ=;
-        b=eIpcuwQ7UFehQOIUL2raqcbtQZ+NDm1sP4yzhjcimKrd7lgTQO2lcGrhbdX1JCW0+R
-         DMsZPg36Seze7so8XC0lLdgJPXwnFkQwZKyOxHPBjLPO7reNAi2FWfFtOxQQrdk2sg1S
-         zWsynYtOkTqELWojpyfy9/VC5b4b2EXRymyWR9zmIrx/aoCdCLRKzxGzXAcYJikT8auZ
-         bJDTPPGt/azZ/8qCwd31VWgbp2nRnimq9hfY5mBegvCosgaPg6loxHTfiI/OtpASGw5W
-         KasqeqjbBoVSfMjd2Rirjh2R0F365oqU5jsNTzt5XPbK9+s0J+/B2i7cnypQOLvzwQOj
-         S9sw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762768703; x=1763373503;
-        h=content-transfer-encoding:cc:to:subject:message-id:date:from
-         :in-reply-to:references:mime-version:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=Pr1wJd/7uGgpha5iPQ4Q3WZe4ih/H/T0063vCmTBsVQ=;
-        b=OQ9rknbBnZIRC4yFd570Wa2Vicm5Ku8kaq8wIIR3p4E+jUCNnGBfyL9zH9mc7PQO2R
-         WiclkZ18T4/HcwxqtsD5hf45lzzK+AzOGO3PKcDoduV83KZTZCds1+kGQoz6SGyAr0dz
-         zzm/SnQNytq0er3i6kNcpMNlHWBxtq7r2uM95U7gdDHHOx5ASYhYkscmYedH+vYPYdz+
-         KlDXuTuTsHwzVIBUNpxrZydP19T4tbWRVqiABjiO2gmhKHpxJO6Kynl62jtdkaR3zj5M
-         UbSjAntso9kdJt0VODHanz7CXtr/amT6RgAv8PHUeDICLurrEYqmaQB5qgUw+wJ8sRsA
-         bqSQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVAFZq9KEpSHS9OYXY4lL+zKj0kCpEpDE/r+pOzcxE9yEldXcBbnA88wRoYdf3v8sH2J17/AWXC3AZtvyc=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwUHyxB5dtOVXjg7Ev/4i+AbCewuEbDe+LCSTWF59yTy/NnrGT6
-	mlxyu50drxYfl6FExaTM9s297m7rMxIJf98zVMPw6CdB7B+ijtIOFwZyD7PvjrA8pvPycqLK047
-	V0umT9L3gf5nqb4qNetgQ8yQFo8WcJzVTNgi+RagpGw==
-X-Gm-Gg: ASbGncviWzESkrtofZAJmOWckUeM1q2QJiQMjVKnGKY1OEA/yAIBJ8MkBYphVggxAsJ
-	nO1t3aEcsJdq1sYIBwtfuf3CTVzui6F/KovZfsdiae5qK1pUmwlqHz15N8t2LKnSLJJUciFXiD1
-	aV4ZMu7or/9cXraxfO2CRaxJlCnS8wumbsEP55betQQVm09uPRIYJNT4ro4DlSE7nNcIfIt7WsB
-	z+34eca8DDauOiDr09nwW9ywfq3mzl/ZzMiNY5t4VCQ3V/AmP6FYARcYFmiz3dcBw7LJeNk9kXR
-	C185v8XUojw3AdkDE74rMujq2W64
-X-Google-Smtp-Source: AGHT+IH8nzVycdeOgzQi/3FgjBc86W9BwlRBJUJ1/mzPe889ufxIQJ9HVlvKbWPBD1jcEM/roczq0ZhI9VyTgtrOyjM=
-X-Received: by 2002:a05:6512:3d04:b0:594:2df2:84ab with SMTP id
- 2adb3069b0e04-5945f186cb5mr2251235e87.8.1762768702626; Mon, 10 Nov 2025
- 01:58:22 -0800 (PST)
+	t=1762771543; c=relaxed/relaxed;
+	bh=KSjXvKwlFd2+q4RbPzcQXr22CHbUvlx0Q6gRToGfNoM=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jGAhumjGx/pBVZy6PfG2hiawnrvo/aW0wTx6hpbiM6h1GJHDMfj8LiPVBA2Vcf2BjVX/NwOaHw6S2LPWFQ5/DfgbEtpFAz9eRCkIvvbBkZPSbBGEJH/iaPN5m3FLRrKFQz+T0HB1/dRN7nwJvEcAO8EwUcZ04+5rzdJg9iMyJDSKguPbEEnj6+R7qUckC2oQG4cfMMYyIbrlccDIEU+1BewEBsYjP1mmAk2oWbj4WiXFtzoJLnxWODVmJRoTzjZGnQ+t2Sm7VhxvlwlUOUx+xnWN8ubll8Iys8z5URrGMJCHCaGJAyTq6YqQpE+647yNksC9ECMlp5e9FootX1sbdw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4mXk3f9Vz2xFT
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2025 21:45:42 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 3DC26497;
+	Mon, 10 Nov 2025 02:45:03 -0800 (PST)
+Received: from [10.57.39.147] (unknown [10.57.39.147])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 78B2F3F66E;
+	Mon, 10 Nov 2025 02:45:03 -0800 (PST)
+Message-ID: <b44825dd-aef9-4d3e-91fd-a44122264c23@arm.com>
+Date: Mon, 10 Nov 2025 11:45:00 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -81,40 +44,157 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20251107152950.293899-1-marco.crivellari@suse.com> <64df8b4e-6cd4-49e4-a0f9-c8f9c017b06c@csgroup.eu>
-In-Reply-To: <64df8b4e-6cd4-49e4-a0f9-c8f9c017b06c@csgroup.eu>
-From: Marco Crivellari <marco.crivellari@suse.com>
-Date: Mon, 10 Nov 2025 10:58:11 +0100
-X-Gm-Features: AWmQ_blCrzzwtNXT5OJKtaKmerZRqaCu4AKrtikaapFNCbK_j5LVXjJ3X5YXl6U
-Message-ID: <CAAofZF4QD_vAon4CpHPQCPpgQpp991QOJ-Zd=Qn0siaWz+jtDg@mail.gmail.com>
-Subject: Re: [PATCH] soc: fsl: qbman: add WQ_PERCPU to alloc_workqueue users
-To: Christophe Leroy <christophe.leroy@csgroup.eu>
-Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
-	Tejun Heo <tj@kernel.org>, Lai Jiangshan <jiangshanlai@gmail.com>, 
-	Frederic Weisbecker <frederic@kernel.org>, Sebastian Andrzej Siewior <bigeasy@linutronix.de>, 
-	Michal Hocko <mhocko@suse.com>, Kees Cook <kees@kernel.org>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: quoted-printable
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 06/12] mm: introduce generic lazy_mmu helpers
+To: Ryan Roberts <ryan.roberts@arm.com>, linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
+ <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ David Hildenbrand <david@redhat.com>, "David S. Miller"
+ <davem@davemloft.net>, David Woodhouse <dwmw2@infradead.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+ Jann Horn <jannh@google.com>, Juergen Gross <jgross@suse.com>,
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
+ Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, Suren Baghdasaryan
+ <surenb@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>,
+ Yeoreum Yun <yeoreum.yun@arm.com>, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ xen-devel@lists.xenproject.org, x86@kernel.org
+References: <20251029100909.3381140-1-kevin.brodsky@arm.com>
+ <20251029100909.3381140-7-kevin.brodsky@arm.com>
+ <71418b31-aedb-4600-9558-842515dd6c44@arm.com>
+Content-Language: en-GB
+From: Kevin Brodsky <kevin.brodsky@arm.com>
+In-Reply-To: <71418b31-aedb-4600-9558-842515dd6c44@arm.com>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On Sat, Nov 8, 2025 at 8:44=E2=80=AFPM Christophe Leroy
-<christophe.leroy@csgroup.eu> wrote:
-> IIUC this patch is part of a wide work on workqueues. I assume the will
-> go via the workqueue tree. Let me know if you want me to take it via soc
-> fsl.
+On 07/11/2025 14:26, Ryan Roberts wrote:
+> On 29/10/2025 10:09, Kevin Brodsky wrote:
+>> [...]
+>>
+>> diff --git a/arch/arm64/mm/mmu.c b/arch/arm64/mm/mmu.c
+>> index b8d37eb037fc..d9c8e94f140f 100644
+>> --- a/arch/arm64/mm/mmu.c
+>> +++ b/arch/arm64/mm/mmu.c
+>> @@ -731,7 +731,7 @@ int split_kernel_leaf_mapping(unsigned long start, unsigned long end)
+>>  		return -EINVAL;
+>>  
+>>  	mutex_lock(&pgtable_split_lock);
+>> -	arch_enter_lazy_mmu_mode();
+>> +	lazy_mmu_mode_enable();
+>>  
+>>  	/*
+>>  	 * The split_kernel_leaf_mapping_locked() may sleep, it is not a
+> This is a bit unfortunate, IMHO. The rest of this comment explains that although
+> you're not supposed to sleep inside lazy mmu mode, it's fine for arm64's
+> implementation. But we are no longer calling arm64's implementation; we are
+> calling a generic function, which does who knows what.
 >
-> Acked-by: Christophe Leroy <christophe.leroy@csgroup.eu>
+> I think it all still works, but we are no longer containing our assumptions in
+> arm64 code. We are relying on implementation details of generic code.
 
-Hi,
+I see your point. The change itself is still correct (and required
+considering patch 8), but maybe the documentation of the generic
+interface should be clarified to guarantee that the generic layer can
+itself cope with sleeping - without any guarantee regarding the
+behaviour of arch_*_lazy_mmu_mode.
 
-Every maintainer is using its own tree, so I think it is fine if you
-use soc fsl.
-The change here is indeed under soc fsl, adding explicitly WQ_PERCPU.
+>> [...]
+>>
+>> diff --git a/arch/x86/include/asm/pgtable.h b/arch/x86/include/asm/pgtable.h
+>> index e33df3da6980..14fd672bc9b2 100644
+>> --- a/arch/x86/include/asm/pgtable.h
+>> +++ b/arch/x86/include/asm/pgtable.h
+>> @@ -117,7 +117,8 @@ extern pmdval_t early_pmd_flags;
+>>  #define pte_val(x)	native_pte_val(x)
+>>  #define __pte(x)	native_make_pte(x)
+>>  
+>> -#define arch_end_context_switch(prev)	do {} while(0)
+>> +#define arch_end_context_switch(prev)	do {} while (0)
+>> +#define arch_flush_lazy_mmu_mode()	do {} while (0)
+> Andrew converted over the default version of this (which you have removed with
+> this commit) to be static inline instead of the do/while guff. Perhaps you
+> should try to preserve that improvement here?
+>
+> See Commit d02ac836e4d6 ("include/linux/pgtable.h: convert
+> arch_enter_lazy_mmu_mode() and friends to static inlines")
 
-Many thanks!
+Good point, I suppose I could also convert arch_end_context_switch()
+while at it.
 
---=20
+>>  #endif	/* CONFIG_PARAVIRT_XXL */
+>>  
+>>  static inline pmd_t pmd_set_flags(pmd_t pmd, pmdval_t set)
+>> diff --git a/fs/proc/task_mmu.c b/fs/proc/task_mmu.c
+>> index fc35a0543f01..d16ba1d32169 100644
+>> --- a/fs/proc/task_mmu.c
+>> +++ b/fs/proc/task_mmu.c
+>> @@ -2703,7 +2703,7 @@ static int pagemap_scan_pmd_entry(pmd_t *pmd, unsigned long start,
+>>  		return 0;
+>>  	}
+>>  
+>> -	arch_enter_lazy_mmu_mode();
+>> +	lazy_mmu_mode_enable();
+>>  
+>>  	if ((p->arg.flags & PM_SCAN_WP_MATCHING) && !p->vec_out) {
+>>  		/* Fast path for performing exclusive WP */
+>> @@ -2773,7 +2773,7 @@ static int pagemap_scan_pmd_entry(pmd_t *pmd, unsigned long start,
+>>  	if (flush_end)
+>>  		flush_tlb_range(vma, start, addr);
+>>  
+>> -	arch_leave_lazy_mmu_mode();
+>> +	lazy_mmu_mode_disable();
+>>  	pte_unmap_unlock(start_pte, ptl);
+>>  
+>>  	cond_resched();
+>> diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
+>> index 9894366e768b..b5fdf32c437f 100644
+>> --- a/include/linux/pgtable.h
+>> +++ b/include/linux/pgtable.h
+>> @@ -231,10 +231,31 @@ static inline int pmd_dirty(pmd_t pmd)
+>>   * held, but for kernel PTE updates, no lock is held). Nesting is not permitted
+>>   * and the mode cannot be used in interrupt context.
+>>   */
+>> -#ifndef CONFIG_ARCH_HAS_LAZY_MMU_MODE
+>> -static inline void arch_enter_lazy_mmu_mode(void) {}
+>> -static inline void arch_leave_lazy_mmu_mode(void) {}
+>> -static inline void arch_flush_lazy_mmu_mode(void) {}
+>> +#ifdef CONFIG_ARCH_HAS_LAZY_MMU_MODE
+>> +static inline void lazy_mmu_mode_enable(void)
+>> +{
+>> +	arch_enter_lazy_mmu_mode();
+>> +}
+>> +
+>> +static inline void lazy_mmu_mode_disable(void)
+>> +{
+>> +	arch_leave_lazy_mmu_mode();
+>> +}
+>> +
+>> +static inline void lazy_mmu_mode_pause(void)
+>> +{
+>> +	arch_leave_lazy_mmu_mode();
+>> +}
+>> +
+>> +static inline void lazy_mmu_mode_resume(void)
+>> +{
+>> +	arch_enter_lazy_mmu_mode();
+>> +}
+> It would be good to add documentation blocks for each of these.
 
-Marco Crivellari
+I considered it, but then realised that these functions are much better
+explained together (see comment added above in patch 7). Maybe a short
+description for each that refers to the big comment above? That wouldn't
+work well for the generated kernel-doc though...
 
-L3 Support Engineer, Technology & Product
+- Kevin 
 
