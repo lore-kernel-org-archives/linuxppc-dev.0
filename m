@@ -1,51 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-14006-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14007-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1FD6CCF9E3
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 11:27:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5DCEFCCFA13
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 11:40:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4nSp3GTSz2xFT;
-	Mon, 10 Nov 2025 22:27:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4nlz5H5Hz2xFT;
+	Mon, 10 Nov 2025 22:40:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762774042;
-	cv=none; b=mjtMq1l9Xh37X03IMtqW8aNZuJFoDdyak7v6yFuXQ+O7xwkeQxb9PLTCVu3RCSMqxIVseIcbVBLj4Cthas2bP0JJytwhfSK67EMtxMt60U4H8D4O/zJSA5lUlYaId2O7WY2WgTLlIAn4SbCB8e7nz+iLnoxB1o0uShD3nBq7CC5H6+ffpfYMqCS0sIMN/zdCWyHgfgGZ9vdTlNWxGHgy7fg34id3g4Z3iUQ46/LNUf29TqU8gZapRew+rUMWBnacomWdf3Ez3htxy3ukDoMLMXI+n3jif0KnO3rqJgq/Vp4T1UXLcR0xDXgsDENhzDxZCXnYkIUtbbzxWxxwk6Cpwg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762774831;
+	cv=none; b=WvC+tEIZEcRcCmsEd8t6TMO40VjD3jUXELQxaZrwdpJfU8WO3ujsH6dIEsNkWEmAZucCdfFxwA6JLBSyAbsGxafIS6Y03zeRXvdxGwJDF7k5ktkMpZ8mG8pBsTEIkGUEh7vaR6l/ccD1y1zfKN3UJjLahk/GOXzupasCqxNvuiKuMdFO9gvnpfvWdT3KjrXkKZ9/zsDG2bC7ca3S+WjKj2T+PybNvUwbrsL3JTawdehUTZICC/XTAJuZ439hau1EKjBjT3CmZOWW+AC0JT1Nld7kZ43Mo4NN+rplCq8v2SKMhabmznghS2qPVA5iU3J5nVRp2o2Qlc4CUy/u2HBhjQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762774042; c=relaxed/relaxed;
-	bh=GSNL8R/Rp4rPOwE/chfZPtHWTIC9bs/JwQXU3FZ9tzw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=SxJCGS1AsaFHVPRaDEbGNEf6BBIokMawo9/uPJaII8iXmQHlxJmId3UezJ3Mv2pAIcS/Ksur0lFrf/ZdtTjRQv4yRfxYDBeEV3xV6XP1+n7FmhtnywnyBn4627DhY2el3KUKrneRGgr/azC/Sv8OeAIzCyhbytwy6VWOF8gbkaHuCTXkK/tuhMTEPVsAk3rWaaEPZl7xQ6iQcUnd0IwqtVjuSdRXb2oVorHRBmVeFnhIU7p+TeMfoDQFCd7vIrwNaIBAdGPjXMJ1lW4IZq+5UVurecLMCPBNJ9ndHPUpHWe7bmED5aVbImabQ7p+6NEHq6rbAx600t75ZO6QJO83cg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d9K9eBBt; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1762774831; c=relaxed/relaxed;
+	bh=WUP/wtp+QdGXlvt3yNjaBtNTKb3hr2sjUsHqlx5bmiE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=c+tQe+bW1caI00m/cRdjdc8sBqVlEaMNAesOon/BgLO3Fjuzxi0zdl/q+sAu9ahJNkOeW4MrkaP3H9unP0nj58Jv4NTwZlQDnCk07M7NpZL/H82wxwrG1rpHLezkPE00WwmLu8PvofVviBeWRe3E+yDey5bVHTW1+aKdhp9oh+xUEdYJrrzWzm8Xu0s8Rqgx7Z7oK6CRs2FABteN+IIPesLcp+lLV9IVFj9eaOxTxgW/Q1ff8t6sIYVPefgoiAhzW670htIeJkd7TIN5lbQRY/JIw8adaua0cv5e9NFZ+EquBsvhQlsA3ttf7FhIoWguyYhhyZ32HgxSVfAFtoNfWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com; dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=MkcLnaBT; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=6s+/=5s=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=zx2c4.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=d9K9eBBt;
+	dkim=pass (1024-bit key; unprotected) header.d=zx2c4.com header.i=@zx2c4.com header.a=rsa-sha256 header.s=20210105 header.b=MkcLnaBT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=srs0=6s+/=5s=zx2c4.com=jason@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4nSn4tt8z2xC3
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2025 22:27:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4nlx0HX6z2xC3
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2025 22:40:28 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 92B8841A8E;
-	Mon, 10 Nov 2025 11:27:19 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D48BDC4CEF5;
-	Mon, 10 Nov 2025 11:27:17 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762774039;
-	bh=Jac0LD3KXWWf3Vbx0ZbUSjZpPlnaV+M2uPxJVWQYQ7w=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=d9K9eBBtXiPjSMfSz4PKDmstvz0ViHtu0W6ZdPlUt++Yd4erGgSkgpupDk20YRyDN
-	 7Au8CdOyDgQ1SzKoPZwAKxZnhVxS2O8S8gUh8HaIHpJKWyg9yamJtjLQwgiCNhsjDe
-	 3y78YuI4/grbiZkBc1mVhZol5iSIWeBnzSTOjoiKDhRdG6LXnX5BFJ6Fr1TMuCewOL
-	 eUwfDlHAi0SczJQDuqdSl/K0TQA5Ps23TP36UIQ+ujhsQiylSPGXSuKqcThzTrAIWs
-	 7lOz/hnU7h1hepIoO0F1YX77ghSH8weiaUzZVYYyqNHSbEW+sqYdN0rhK4qDY1ZB1R
-	 zTxwJSMT7s9DA==
-Message-ID: <cdd23dd6-5444-4000-ac68-a72b22bf6a57@kernel.org>
-Date: Mon, 10 Nov 2025 12:27:16 +0100
+	by sea.source.kernel.org (Postfix) with ESMTP id A194D429C1;
+	Mon, 10 Nov 2025 11:40:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 175A8C19421;
+	Mon, 10 Nov 2025 11:40:23 +0000 (UTC)
+Authentication-Results: smtp.kernel.org;
+	dkim=pass (1024-bit key) header.d=zx2c4.com header.i=@zx2c4.com header.b="MkcLnaBT"
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=zx2c4.com; s=20210105;
+	t=1762774821;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
+	 content-transfer-encoding:content-transfer-encoding:
+	 in-reply-to:in-reply-to:references:references;
+	bh=WUP/wtp+QdGXlvt3yNjaBtNTKb3hr2sjUsHqlx5bmiE=;
+	b=MkcLnaBThnMlfY6qf22oV4PqRJxxV9sAEsGKWW9vBI8C6fduJC1phQC/KL5eRD3v2F09zD
+	SMKKUag6VL9wsRLpIcAWX8HR444SZKLYuhbVw7XsNVIJ5uIDVyRfrdP33rS+EubmBkHMzC
+	XsknOx/WV33HVZ0CEH07YX7KePjg4M4=
+Received: 
+	by mail.zx2c4.com (ZX2C4 Mail Server) with ESMTPSA id 9d386279 (TLSv1.3:TLS_AES_256_GCM_SHA384:256:NO);
+	Mon, 10 Nov 2025 11:40:20 +0000 (UTC)
+Date: Mon, 10 Nov 2025 12:40:17 +0100
+From: "Jason A. Donenfeld" <Jason@zx2c4.com>
+To: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <thomas.weissschuh@linutronix.de>
+Cc: Andy Lutomirski <luto@kernel.org>, Thomas Gleixner <tglx@linutronix.de>,
+	Vincenzo Frascino <vincenzo.frascino@arm.com>,
+	Arnd Bergmann <arnd@arndb.de>,
+	"David S. Miller" <davem@davemloft.net>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Nick Alcock <nick.alcock@oracle.com>,
+	John Stultz <jstultz@google.com>, Stephen Boyd <sboyd@kernel.org>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Shuah Khan <shuah@kernel.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	Will Deacon <will@kernel.org>, Theodore Ts'o <tytso@mit.edu>,
+	Russell King <linux@armlinux.org.uk>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Huacai Chen <chenhuacai@kernel.org>,
+	WANG Xuerui <kernel@xen0n.name>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Heiko Carstens <hca@linux.ibm.com>,
+	Vasily Gorbik <gor@linux.ibm.com>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Christian Borntraeger <borntraeger@linux.ibm.com>,
+	Sven Schnelle <svens@linux.ibm.com>,
+	Shannon Nelson <sln@onemain.com>, linux-kernel@vger.kernel.org,
+	sparclinux@vger.kernel.org, linux-kselftest@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+	loongarch@lists.linux.dev, linux-mips@vger.kernel.org,
+	linux-s390@vger.kernel.org
+Subject: Re: [PATCH v5 19/34] random: vDSO: only access vDSO datapage after
+ random_init()
+Message-ID: <aRHPIXATFJAEv-CF@zx2c4.com>
+References: <20251106-vdso-sparc64-generic-2-v5-0-97ff2b6542f7@linutronix.de>
+ <20251106-vdso-sparc64-generic-2-v5-19-97ff2b6542f7@linutronix.de>
+ <aQ6EvdukQytvqK-u@zx2c4.com>
+ <20251110094555-353883a9-1950-4cc6-a774-bb0ef5db11c5@linutronix.de>
+ <aRHAU7bVAIyaOrpA@zx2c4.com>
+ <20251110114550-a3f2afa8-4f86-4048-be5b-2dc4f4ef340d@linutronix.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,78 +103,63 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: powerpc/e500: WARNING: at mm/hugetlb.c:4755 hugetlb_add_hstate
-To: Christophe Leroy <christophe.leroy@csgroup.eu>,
- Sourabh Jain <sourabhjain@linux.ibm.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Donet Tom <donettom@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>
-References: <94377f5c-d4f0-4c0f-b0f6-5bf1cd7305b1@linux.ibm.com>
- <dd634b17-cc5e-497c-8228-2470f6533177@redhat.com>
- <82ef1da8-44c4-4a58-bd00-9839548cb72d@csgroup.eu>
- <ba3a2131-c8d4-481d-aebb-d25be7ae0d19@kernel.org>
- <d62eea1f-3aff-4b51-976a-4cb8abf502bf@csgroup.eu>
-From: "David Hildenbrand (Red Hat)" <david@kernel.org>
-Content-Language: en-US
-In-Reply-To: <d62eea1f-3aff-4b51-976a-4cb8abf502bf@csgroup.eu>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <20251110114550-a3f2afa8-4f86-4048-be5b-2dc4f4ef340d@linutronix.de>
 
-Thanks for the review!
+On Mon, Nov 10, 2025 at 12:24:13PM +0100, Thomas Weißschuh wrote:
+> > > > For example, one clean way of
+> > > > doing that would be to make vdso_k_rng_data always valid by having it
+> > > > initially point to __initdata memory, and then when it's time to
+> > > > initialize the real datapage, memcpy() the __initdata memory to the new
+> > > > specially allocated memory. Then we don't need the complex state
+> > > > tracking that this commit and the prior one introduce.
+> > > 
+> > > Wouldn't that require synchronization between the update path and the memcpy()
+> > > path? Also if the pointer is going to change at some point we'll probably need
+> > > to use READ_ONCE()/WRITE_ONCE(). In general I would be happy about a cleaner
+> > > solution for this but didn't find a great one.
+> > 
+> > This is still before userspace has started, and interrupts are disabled,
+> > so I don't think so?
+> 
+> Interrupts being disabled is a good point. But we are still leaking
+> implementation details from the random code into the vdso datastore.
+
+It wouldn't. You do this generically with memcpy().
 
 > 
-> So I think what you want instead is:
+> > Also, you only care about being after
+> > mm_core_init(), right? So move your thing before sched_init() and then
+> > you'll really have nothing to worry about.
 > 
-> diff --git a/arch/powerpc/platforms/Kconfig.cputype
-> b/arch/powerpc/platforms/Kconfig.cputype
-> index 7b527d18aa5ee..1f5a1e587740c 100644
-> --- a/arch/powerpc/platforms/Kconfig.cputype
-> +++ b/arch/powerpc/platforms/Kconfig.cputype
-> @@ -276,6 +276,7 @@ config PPC_E500
->           select FSL_EMB_PERFMON
->           bool
->           select ARCH_SUPPORTS_HUGETLBFS if PHYS_64BIT || PPC64
-> +       select ARCH_HAS_GIGANTIC_PAGE if ARCH_SUPPORTS_HUGETLBFS
->           select PPC_SMP_MUXED_IPI
->           select PPC_DOORBELL
->           select PPC_KUEP
-> 
-> 
-> 
->>        select ARCH_HAS_KCOV
->>        select ARCH_HAS_KERNEL_FPU_SUPPORT    if PPC64 && PPC_FPU
->>        select ARCH_HAS_MEMBARRIER_CALLBACKS
->> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/
->> platforms/Kconfig.cputype
->> index 7b527d18aa5ee..4c321a8ea8965 100644
->> --- a/arch/powerpc/platforms/Kconfig.cputype
->> +++ b/arch/powerpc/platforms/Kconfig.cputype
->> @@ -423,7 +423,6 @@ config PPC_64S_HASH_MMU
->>    config PPC_RADIX_MMU
->>        bool "Radix MMU Support"
->>        depends on PPC_BOOK3S_64
->> -    select ARCH_HAS_GIGANTIC_PAGE
-> 
-> Should remain I think.
-> 
->>        default y
->>        help
->>          Enable support for the Power ISA 3.0 Radix style MMU. Currently
+> The callchains random_init_early() -> crng_reseed()/_credit_init_bits() could
+> still touch the datapage before it is allocated.
+> Adding conditionals to prevent those is essentially what my patch does.
 
+I think I wasn't very clear in my proposal, because this isn't an issue
+in it.
 
-We also have PPC_8xx do a
+Global scope:
 
-	select ARCH_SUPPORTS_HUGETLBFS
+static struct vdso_rng_data placeholder_vdso_k_rng_data __initdata;
+struct vdso_rng_data *vdso_k_rng_data = &placeholder_vdso_k_rng_data;
 
-And of course !PPC_RADIX_MMU (e.g., PPC_64S_HASH_MMU) through PPC_BOOK3S_64.
+Then,
 
-Are we sure they cannot end up with gigantic folios through hugetlb?
+void __init vdso_setup_data_pages(void)
+{
+    ...
+    vdso_k_rng_data = blabla();
+    ...
+    memcpy(vdso_k_rng_data, &placeholder_vdso_k_rng_data, sizeof(*vdso_k_rng_data);
+    ...
+}
 
--- 
-Cheers
+If vdso_setup_data_pages() is called early enough in init, this is safe
+to do, and then you don't need to muck up the random code with awful
+state machine ordering stuff.
 
-David
+Jason
 
