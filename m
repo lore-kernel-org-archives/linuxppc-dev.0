@@ -1,36 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-13994-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-13995-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B4C92CCFA13
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 09:20:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D67F1CCFA13
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 10:10:20 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4kfK59B4z2xqL;
-	Mon, 10 Nov 2025 20:20:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762766425;
-	cv=none; b=JMKAFQI5ydWe9/nVkOsVNorZEp2SF/xWG3LyN3qwX9EMd5KS+9Qx2ao7Z+4T1FdrjjDTsUqSCfwbWWON+AMvpAxXPokC8biAtEJcTzEEmwEHDtLvQl34/UGOFqTRr/RRKeLh0Zo1zMEhFgz2vFVx5bgJV+NUYmHMxTsCn7xoyLp8ByFx1Hhrvr4COUmVwD86dg2/U+B49c3AAuAxvJM1x0b4D9TCt/vzQe4i3nzVW61zm4P+0qtYUS9dnsanJSP6o9EiYi8Bay3ZAd94OxR3/aYToCF2SSDz7IUDAWQ4yJkuMJobKQkQO7qJ1bLzkNmIq5xrwHD3IvZzx+XCU66Ddg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4llv1f4Vz2xqM;
+	Mon, 10 Nov 2025 21:10:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762769419;
+	cv=none; b=C6hk/KXOdBgmFygMenG0vlIGIeHdt7grZPdp5vTs06PqI4TM4XnP28hDjWYulBJTn/u/Mp7xmYXp/shK5muxNzt6CsERgvj8sExbcDP8ISr/AZ8e7WVtmBOwoBRzdvmJG0r7BX8pSHzQvQBQITTXVUCkA8c8VQSKJsEOUk2fcF9hm48BskSMkbyrE3Hqb4n5SGw3w/vxHhoV1yApm6vwxSjr4ytggYfV2fEPyIupTZmaZavr9zwGCWqL23ZPesKjwjy4WXDbZAmyxh8Nx25IS+iuhFCinBsIqopwPSG4g5hJE/R2QN/Y9tLfNsRtRwjHEqQUI1zXNXhOx2Wygso6lQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762766425; c=relaxed/relaxed;
-	bh=BE9g58aO+50xrZTAkMSZ+nucJ9JIlqY0y6onurX6UkE=;
+	t=1762769419; c=relaxed/relaxed;
+	bh=YVcgaD8+N95koJB2rPQamWDWG0IPq2Sth6UISeHKGec=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=JUpSc5LlwgT4kStKrRWATBYNy5tCyN2pKbTTg2R46Wskr3s0/IU+1BQNLtCBGvoN4pnVFVumGdNOIAlNA5KrN4x+Rxqum158OLPfEzIQrJB6UmThRN0jVpOtBbc6jUd4mmPgYEamKba/OcvXMVZ6jkubdz82drtJy3fmQ72rgM1InY63OUzobvGgjvE5vPVLEfMsfPsvuvlZdqKa4VWWCZPLaV91y+TRcQApA9ltuQkUbqtQQxn5Zyon7WHxbyavgovSw0mvsDnWkJ++TJGXsJXaidH5bVSZeHdiVn6Qha5EWeYpe0UV31ZKMg5LYIuXTy2lyM7FRTdpYHv61OMcYQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4kfJ3V4pz2xFT
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2025 20:20:22 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 91A6F2B;
-	Mon, 10 Nov 2025 01:19:41 -0800 (PST)
-Received: from [10.57.85.123] (unknown [10.57.85.123])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id CED693F63F;
-	Mon, 10 Nov 2025 01:19:42 -0800 (PST)
-Message-ID: <e428b1d5-65a8-49bc-92dc-ec4a4d933dec@arm.com>
-Date: Mon, 10 Nov 2025 09:19:40 +0000
+	 In-Reply-To:Content-Type; b=OEYauL5QbqrWmGYzpZ9zW5xDGM9LkJzR+vHAvVWpShzouCDJnrXhoPoTuKooa7XwV1HdiY7vvRlRQDXn4FqktIoPA4dRnYFb0Hyp73NOFuU4fB4V0hoybbGYv8/AKtN2EgOszi7j/iPv/BEBHjeLLKyw6EkPJ6U3xN1ljWesXNwGKzWqcFT9+bflE6+j4d5/74Dp6TXI/cV5he4o2tcjHuLRHO8cWCzmzX+OQetN5NebXvvmUDSp4xBYX57ggMsy/i31YIDK61dwuboH2BSQ3zzZJy8L9Ta1SkYYxqrdVMxn4URytjQn+G2Bq11ShlNSP3RJirwNtTrhNL0pHNwJrw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ksrztFmB; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ksrztFmB;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d4llt14kPz2xqL
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2025 21:10:18 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id C896443A3B;
+	Mon, 10 Nov 2025 10:10:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EB1A4C116D0;
+	Mon, 10 Nov 2025 10:10:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1762769414;
+	bh=YyV99R1iIefxYCXPH1pILjVHpoAR5fuQ7nVMgufduF4=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=ksrztFmBAW+PRORYpLmsYppHDzOxwrx0fXgAbi68vY0YiWVjqv0G2dtwIBFBG3rQC
+	 Ef5SaKZQSGaa1q/qVNdMoAfT/X32ID4KE4o7a70yY2cI+/SdgsLqeSmx0ZsJ9LHf/c
+	 573P9UdGFIi3/Qgq2exvMjK1hhhgDli4d0ggsD36arN5koe8hnbeXc98gT2aB7P6L3
+	 1dFGuO1a3pKjUqc8Vkr/kKdecZSMzGLFQtfwKq87upyAY3Ojg/ayZ2t+KbbUyglyPW
+	 tRIpTfKqrC0cbfoQST9O+ead7h7XfkVkP8vGl+FV3leug3Q/uSgbOrWyYKhjchiyGH
+	 ybIPbVKO5ut+A==
+Message-ID: <944be49c-aea4-4160-a010-1d4ce7bcf542@kernel.org>
+Date: Mon, 10 Nov 2025 11:10:10 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -45,151 +60,138 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 06/12] mm: introduce generic lazy_mmu helpers
-Content-Language: en-GB
-To: Alexander Gordeev <agordeev@linux.ibm.com>
-Cc: "David Hildenbrand (Red Hat)" <davidhildenbrandkernel@gmail.com>,
- Kevin Brodsky <kevin.brodsky@arm.com>, linux-mm@kvack.org,
- linux-kernel@vger.kernel.org, Andreas Larsson <andreas@gaisler.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
- <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
+Subject: Re: powerpc/e500: WARNING: at mm/hugetlb.c:4755 hugetlb_add_hstate
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
  Christophe Leroy <christophe.leroy@csgroup.eu>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- "David S. Miller" <davem@davemloft.net>,
- David Woodhouse <dwmw2@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Ingo Molnar <mingo@redhat.com>, Jann Horn <jannh@google.com>,
- Juergen Gross <jgross@suse.com>, "Liam R. Howlett"
- <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Sourabh Jain <sourabhjain@linux.ibm.com>,
  Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
- Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Peter Zijlstra <peterz@infradead.org>, Suren Baghdasaryan
- <surenb@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>,
- Yeoreum Yun <yeoreum.yun@arm.com>, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- xen-devel@lists.xenproject.org, x86@kernel.org
-References: <20251029100909.3381140-1-kevin.brodsky@arm.com>
- <20251029100909.3381140-7-kevin.brodsky@arm.com>
- <71418b31-aedb-4600-9558-842515dd6c44@arm.com>
- <c764489e-0626-4a50-87b5-39e15d9db733@gmail.com>
- <645178fd-df4e-42fe-b55e-97d9506499be@arm.com>
- <413b2c49-f124-4cda-8fea-a6cc165f6326-agordeev@linux.ibm.com>
-From: Ryan Roberts <ryan.roberts@arm.com>
-In-Reply-To: <413b2c49-f124-4cda-8fea-a6cc165f6326-agordeev@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8
+ linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
+Cc: Donet Tom <donettom@linux.ibm.com>,
+ Andrew Morton <akpm@linux-foundation.org>
+References: <94377f5c-d4f0-4c0f-b0f6-5bf1cd7305b1@linux.ibm.com>
+ <dd634b17-cc5e-497c-8228-2470f6533177@redhat.com>
+ <82ef1da8-44c4-4a58-bd00-9839548cb72d@csgroup.eu>
+ <ba3a2131-c8d4-481d-aebb-d25be7ae0d19@kernel.org>
+ <d62eea1f-3aff-4b51-976a-4cb8abf502bf@csgroup.eu>
+ <87ecq952pe.ritesh.list@gmail.com>
+From: "David Hildenbrand (Red Hat)" <david@kernel.org>
+Content-Language: en-US
+In-Reply-To: <87ecq952pe.ritesh.list@gmail.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
-On 10/11/2025 08:11, Alexander Gordeev wrote:
-> On Fri, Nov 07, 2025 at 03:22:54PM +0000, Ryan Roberts wrote:
-> 
-> Hi Ryan,
-> 
->> On 07/11/2025 14:34, David Hildenbrand (Red Hat) wrote:
->>>>>   #ifndef pte_batch_hint
->>>>> diff --git a/mm/kasan/shadow.c b/mm/kasan/shadow.c
->>>>> index 5d2a876035d6..c49b029d3593 100644
->>>>> --- a/mm/kasan/shadow.c
->>>>> +++ b/mm/kasan/shadow.c
->>>>> @@ -305,7 +305,7 @@ static int kasan_populate_vmalloc_pte(pte_t *ptep,
->>>>> unsigned long addr,
->>>>>       pte_t pte;
->>>>>       int index;
->>>>>   -    arch_leave_lazy_mmu_mode();
->>>>> +    lazy_mmu_mode_pause();
->>>>
->>>> I wonder if there really are use cases that *require* pause/resume? I think
->>>> these kasan cases could be correctly implemented using a new nest level instead?
->>>> Are there cases where the effects really need to be immediate or do the effects
->>>> just need to be visible when you get to where the resume is?
->>>>
->>>> If the latter, that could just be turned into a nested disable (e.g. a flush).
->>>> In this case, there is only 1 PTE write so no benefit, but I wonder if other
->>>> cases may have more PTE writes that could then still be batched. It would be
->>>> nice to simplify the API by removing pause/resume if we can?
->>>
->>> It has clear semantics, clearer than some nest-disable IMHO.
->>>
->>> Maybe you can elaborate how you would change ("simplify") the API in that
->>> regard? What would the API look like?
->>
->> By simplify, I just meant can we remove lazy_mmu_mode_pause() and
->> lazy_mmu_mode_resume() ?
->>
->>
->> We currently have:
->>
->> apply_to_page_range
->>   lazy_mmu_mode_enable()
->>     kasan_populate_vmalloc_pte()
->>       lazy_mmu_mode_pause()
->>       <code>
->>       lazy_mmu_mode_resume()
->>   lazy_mmu_mode_disable()
->>
->> Where <code> is setting ptes. But if <code> doesn't need the effects to be
->> visible until lazy_mmu_mode_resume(), then you could replace the block with:
->>
->> apply_to_page_range
->>   lazy_mmu_mode_enable()
->>     kasan_populate_vmalloc_pte()
->>       lazy_mmu_mode_enable()
->>       <code>
->>       lazy_mmu_mode_disable()
->>   lazy_mmu_mode_disable()
->>
->> However, looking at this more closely, I'm not really clear on why we need *any*
->> special attention to lazy mmu inside of kasan_populate_vmalloc_pte() and
->> kasan_depopulate_vmalloc_pte().
->>
->> I *think* that the original concern was that we were doing ptep_get(ptep) inside
->> of a lazy_mmu block? So we need to flush so that the getter returns the most
->> recent value? But given we have never written to that particular ptep while in
->> the lazy mmu block, there is surely no hazard in the first place?
-> 
-> There is, please see:
-> https://lore.kernel.org/linux-mm/cover.1755528662.git.agordeev@linux.ibm.com/
+[fighting with mail transitioning, for some reason I did not receive
+the mails from Christophe, so replying here]
 
-I've stared at this for a while, but I'm afraid I still don't see the problem.
-This all looks safe to me. Could you explain exactly what this issue is?
+>>> diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+>>> index e24f4d88885ae..55c3626c86273 100644
+>>> --- a/arch/powerpc/Kconfig
+>>> +++ b/arch/powerpc/Kconfig
+>>> @@ -137,6 +137,7 @@ config PPC
+>>>        select ARCH_HAS_DMA_OPS            if PPC64
+>>>        select ARCH_HAS_FORTIFY_SOURCE
+>>>        select ARCH_HAS_GCOV_PROFILE_ALL
+>>> +    select ARCH_HAS_GIGANTIC_PAGE        if PPC64
+> 
+> 
+> The patch looks good from PPC64 perspective, it also fixes the problem
+> reported on corenet64_smp_defconfig...
+> 
+>>
+>> Problem is not only on PPC64, it is on PPC32 as well, for instance
+>> corenet32_smp_defconfig has the problem as well.
+>>
+> 
+> However on looking deeper into it - I agree with Christophe that this
+> problem might still exist on PPC32.
 
-If I've understood correctly, kasan_populate_vmalloc() is called during virtual
-range allocation by vmalloc. This is not in a nested lazy mmu block (but it
-wouldn't matter if it was once we have Kevin's nested changes to ensure flush
-when exiting the nested scope). kasan_populate_vmalloc() calls
-apply_to_page_range(), which will walk the set of ptes, calling
-kasan_populate_vmalloc_pte() for each one. kasan_populate_vmalloc_pte() does a
-ptep_get() then, if none, calls set_pte_at().
-
-That's not a hazard since you're calling get before the set and you only visit
-each pte once for the apply_to_page_range() lazy mmu block.
+Ah, I missed that. I thought it would be a ppc64 thing. :(
 
 > 
->> apply_to_existing_page_range() will only call kasan_depopulate_vmalloc_pte()
->> once per pte, right? So given we read the ptep before writing it, there should
->> be no hazard? If so we can remove pause/resume.
+> I did try the patch on corenet32_smp_defconfig and I can see the WARN_ON
+> still triggering. You can check the logs here..
 > 
-> Unfortunately, we rather not, please see:
-> https://lore.kernel.org/linux-mm/d407a381-099b-4ec6-a20e-aeff4f3d750f@arm.com/
-
-Sorry but I don't see anything relavent to my point in this mail. Perhaps there
-is some s390-specific detail that I'm failing to understand?
-
-Thanks,
-Ryan
-
+> https://github.com/riteshharjani/linux-ci/actions/runs/19169468405/job/54799498288
 > 
-> The problem is kasan code invokes apply_to_page_range(), which enters lazy_mmu
-> mode unconditionally. I would claim that is rather an obstacle for the kasan
-> code, not a benefit. But it needs to be tackled.
-> > Should apply_to_page_range() had an option not to enter the lazy_mmu mode
-> (e.g. an extra "bool skip_lazy" parameter) - the pause/resume could have
-> been avoided.
 > 
->> Thanks,
->> Ryan
+>>
+>> So I think what you want instead is:
+>>
+>> diff --git a/arch/powerpc/platforms/Kconfig.cputype
+>> b/arch/powerpc/platforms/Kconfig.cputype
+>> index 7b527d18aa5ee..1f5a1e587740c 100644
+>> --- a/arch/powerpc/platforms/Kconfig.cputype
+>> +++ b/arch/powerpc/platforms/Kconfig.cputype
+>> @@ -276,6 +276,7 @@ config PPC_E500
+>>           select FSL_EMB_PERFMON
+>>           bool
+>>           select ARCH_SUPPORTS_HUGETLBFS if PHYS_64BIT || PPC64
+>> +       select ARCH_HAS_GIGANTIC_PAGE if ARCH_SUPPORTS_HUGETLBFS
+>>           select PPC_SMP_MUXED_IPI
+>>           select PPC_DOORBELL
+>>           select PPC_KUEP
+>>
+>>
+>>
 > 
-> Thanks!
+> @Christophe,
+> 
+> I don't think even the above diff will fix the warning on PPC32.
+> The patch defines MAX_FOLIO_ORDER as P4D_ORDER...
+> 
+> +#define MAX_FOLIO_ORDER        P4D_ORDER
+> +#define P4D_ORDER              (P4D_SHIFT - PAGE_SHIFT)
+> 
+> and for ppc32 in..
+> include/asm-generic/pgtable-nop4d.h
+>      #define P4D_SHIFT		PGDIR_SHIFT
+> 
+> Then in..
+> arch/powerpc/include/asm/nohash/32/pgtable.h
+>      #define PGDIR_SHIFT	(PAGE_SHIFT + PTE_INDEX_SIZE)
+>      #define PTE_INDEX_SIZE	PTE_SHIFT
+> 
+> in...
+> arch/powerpc/include/asm/page_32.h
+>      #define PTE_SHIFT	(PAGE_SHIFT - PTE_T_LOG2)	/* full page */
+> 
+>      #define PTE_T_LOG2	(__builtin_ffs(sizeof(pte_t)) - 1)
+> 
+> 
+> So if you see from above P4D_ORDER is coming down to PTE_INDEX_SIZE
+> 
+> IIUC, that will cause MAX_FOLIO_ORDER to be 9 in case of e500mc machine type right?
+> 
+> Can you please confirm if the above analysis looks correct to you?
 
+Cristophe wrote
+
+"
+Ah you are right, that's not enough. I was thinking that PGDIR_ORDER was
+the highest possible value ever but in fact not. PGDIR_SIZE is 4Mbytes
+so any page larger than that still triggers the warning. Here are the
+warnings I get on QEMU with corenet32_smp_defconfig
+"
+
+And then we get
+
+HugeTLB: registered 1.00 GiB page size, pre-allocated 0 pages
+HugeTLB: 0 KiB vmemmap can be freed for a 1.00 GiB page
+HugeTLB: registered 64.0 MiB page size, pre-allocated 1 pages
+HugeTLB: 0 KiB vmemmap can be freed for a 64.0 MiB page
+HugeTLB: registered 256 MiB page size, pre-allocated 1 pages
+HugeTLB: 0 KiB vmemmap can be freed for a 256 MiB page
+HugeTLB: registered 4.00 MiB page size, pre-allocated 0 pages
+HugeTLB: 0 KiB vmemmap can be freed for a 4.00 MiB page
+HugeTLB: registered 16.0 MiB page size, pre-allocated 0 pages
+HugeTLB: 0 KiB vmemmap can be freed for a 16.0 MiB page
+
+
+How could any of these larger sizes possibly ever get mapped into a page 
+table on 32bit? I'm probably missing something important :)
+
+-- 
+Cheers
+
+David
 
