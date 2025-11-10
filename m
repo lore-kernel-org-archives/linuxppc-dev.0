@@ -1,50 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-14008-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14009-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 933AACCFA13
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 11:50:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2FB03CCF9E3
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 10 Nov 2025 13:19:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4nzc71nNz2xqL;
-	Mon, 10 Nov 2025 22:50:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762775436;
-	cv=none; b=Ue1lvgjBN5yh7rfwmOdoi61ho6tvkmfhrXogGKqY1ecJLEVnl4b45060IN7CXYOSnwJp1EIHXKC7x6kyBBoGZNp0JhEAygWX+GUZiAyj+odz3emTGO4VVgUU9sFfe/6pe5LfPk8q9FpxQucig71ffm+wpNlibKYfHKr00MYVETuJxV/I+GLNGtFCCu881njNFbKE1sYrosa7SNsSKeCFtuxzWjwBNyGt13khg3XfaykQwvCp1JIOBxR6chPUQRHbP9+uCUM+wPrTlPhfbM8rI3yx4e2RKNhmEDZDa4m16hM2DQ3gpqpXWD3GQS3AzEbGS2Fc082WWieLVlUn9CZ4WA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4qxj4h3Gz2xqM;
+	Tue, 11 Nov 2025 00:19:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762780745;
+	cv=none; b=AtAnNS31scZ0234URAqXsDrF2UquSi4F/aORYbUgq3SqvLWv3UByPAMnCuV0itjtQzMi1wzKQzVQWqblfRuDiRQXwg2+PIhAiviALvrEzgoDHyUa1U0KNBj+aGVTvAAh/IsI4Bj+tuUwggww5KxEdspoRE84AOzVwflUvN4p8mLtsrVUynawyGh3pB5dmnPZDGxnV4dVcdlrO5WGd7nNMWuBqnCqyW85/M/+P4XOyRGdPOvx1l4JtO9fIcU08qE68DedQZdkZYUzBzmBgJd56ElmS0xO2ZBJA4mD0OTcC04dkNI3UJAK7fo6OJuw0YlDv3LynQD+dWSRvOWHB1ECjA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762775436; c=relaxed/relaxed;
-	bh=nNFahur7RfWuwFZozuYxzup7bFaGQ4eo/xpPhbKkX9k=;
+	t=1762780745; c=relaxed/relaxed;
+	bh=e61PmBuBpKPW0kEFbYkXrje4f08ptI1Bgty+XwFb8EM=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=CNbNWa1MzXfOw1sbvetGm6udfPYnoSfH5eK/GvXiPpifSIVEuhGiyoGFSjTOsM+HcFr+O2qPv6DxUBxnaY3OjDGlHl/VbJ1Zme2DJinH1f9vSBqY6AMIYYAYjdTaGIuAmYjJas9ckSAXrF7Dm2Mm/rsWFxpjcXJYpKMQas+GcX/HCW5cvPcr7qMePEfSUafCC2TxCJcHsOUCiA7GzMuIEaZqYUfRJ0aIH7S+XegqI20+A3G49ZSw7yHkdKGhWTUCy/DNhxeABcmhOQLAVlRjV5nHqP7jn5ZkWAcgXek1W4Aeq/RAZ5YhIubN4HlPyYNsPKRbptpQBUGCMtzrNA/bBQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d4nzb5ZGhz2xFT
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 10 Nov 2025 22:50:34 +1100 (AEDT)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4d4nbl2pTqz9sSS;
-	Mon, 10 Nov 2025 12:33:23 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id ju2cuXQ6JEfZ; Mon, 10 Nov 2025 12:33:23 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4d4nbl0zrcz9sSR;
-	Mon, 10 Nov 2025 12:33:23 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id DFE738B764;
-	Mon, 10 Nov 2025 12:33:22 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id ioscGiQ2gGqe; Mon, 10 Nov 2025 12:33:22 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 6A62D8B763;
-	Mon, 10 Nov 2025 12:33:22 +0100 (CET)
-Message-ID: <d2e51443-49dd-445a-88aa-f29d7b777bce@csgroup.eu>
-Date: Mon, 10 Nov 2025 12:33:22 +0100
+	 In-Reply-To:Content-Type; b=XOCydyY5xM1MnVsW2m3vED6OvAZpmu8Nb6q5U1vjTu5QHJWpoXNNnhWUZ+2V2vY5iMI+mvSTBK8I8bEiMDdxFs9xoXXvwDJidO1yLQv3tEc/hc/5sxK0YSfLh73Js8wpYlwl2P9E6e5Q3ji6J2SqNLGC2xwdBTe63KYkoFL32oWLMaBQpnfpZvXlZm/1WNqlnvFFGzEGY6cQ9k6h9Kef3W3DVUBGsXylGI25AzET7TzTSlmR9ahQoXDWljLhsGqOAbzQWVXXKcluZxccXDmcixFE7OA0ikyIVamYrXLFA0/6S4i6I8ngN9rjeP+GVy/scLCfi/d34eQ3mJ170iXz0Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d4qxh564gz2xC3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2025 00:19:02 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E7B25497;
+	Mon, 10 Nov 2025 05:18:22 -0800 (PST)
+Received: from [10.57.39.147] (unknown [10.57.39.147])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id D493F3F63F;
+	Mon, 10 Nov 2025 05:18:22 -0800 (PST)
+Message-ID: <d0ce35ad-bfcd-496b-996d-17e59a1d5a73@arm.com>
+Date: Mon, 10 Nov 2025 14:18:20 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,114 +45,85 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RESEND] powerpc/tools: drop `-o pipefail` in gcc check
- scripts
-To: Jan Stancek <jstancek@redhat.com>,
- Justin Forbes <jforbes@fedoraproject.org>
-Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org,
- npiggin@gmail.com, linux-kernel@vger.kernel.org, joe.lawrence@redhat.com
-References: <cc6cdd116c3ad9d990df21f13c6d8e8a83815bbd.1758641374.git.jstancek@redhat.com>
- <CAFxkdApQVEqCjQMAUqy8cuKnMy8GY9j+brgPZBkxCpeGi5xHxA@mail.gmail.com>
- <CAASaF6zvFa-mPaPfKnBcerfVBkDt5B3TEn7P9jjAfentqSNmxQ@mail.gmail.com>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <CAASaF6zvFa-mPaPfKnBcerfVBkDt5B3TEn7P9jjAfentqSNmxQ@mail.gmail.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Subject: Re: [PATCH v4 01/12] powerpc/64s: Do not re-activate batched TLB
+ flush
+To: "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>, linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
+ <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ David Hildenbrand <david@redhat.com>, "David S. Miller"
+ <davem@davemloft.net>, David Woodhouse <dwmw2@infradead.org>,
+ "H. Peter Anvin" <hpa@zytor.com>, Ingo Molnar <mingo@redhat.com>,
+ Jann Horn <jannh@google.com>, Juergen Gross <jgross@suse.com>,
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>,
+ Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
+ Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, Ryan Roberts <ryan.roberts@arm.com>,
+ Suren Baghdasaryan <surenb@google.com>, Thomas Gleixner
+ <tglx@linutronix.de>, Vlastimil Babka <vbabka@suse.cz>,
+ Will Deacon <will@kernel.org>, Yeoreum Yun <yeoreum.yun@arm.com>,
+ linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ sparclinux@vger.kernel.org, xen-devel@lists.xenproject.org, x86@kernel.org,
+ Venkat Rao Bagalkote <venkat88@linux.ibm.com>
+References: <20251029100909.3381140-1-kevin.brodsky@arm.com>
+ <20251029100909.3381140-2-kevin.brodsky@arm.com>
+ <87qzud42n1.ritesh.list@gmail.com>
+ <b3e4a92f-5b51-4eee-bfb8-c454add0f0d2@arm.com>
+ <87cy5t4b0a.ritesh.list@gmail.com>
+Content-Language: en-GB
+From: Kevin Brodsky <kevin.brodsky@arm.com>
+In-Reply-To: <87cy5t4b0a.ritesh.list@gmail.com>
+Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
-
-
-Le 30/10/2025 à 19:09, Jan Stancek a écrit :
-> On Mon, Oct 6, 2025 at 10:19 PM Justin Forbes <jforbes@fedoraproject.org> wrote:
+On 08/11/2025 00:35, Ritesh Harjani (IBM) wrote:
+> Kevin Brodsky <kevin.brodsky@arm.com> writes:
+>
+>> [...]
 >>
->> On Tue, Sep 23, 2025 at 9:31 AM Jan Stancek <jstancek@redhat.com> wrote:
->>>
->>> We've been observing rare non-deterministic kconfig failures during
->>> olddefconfig, where ARCH_USING_PATCHABLE_FUNCTION_ENTRY was getting
->>> disabled and with it number of other config options that depend on it.
->>>
->>> The reason is that gcc-check-fpatchable-function-entry.sh can fail
->>> if `grep -q` (or scripts/dummy-tools/gcc) is fast enough to exit while
->>> there is still someone writing on other side of pipe. `pipefail`
->>> propagates that error up to kconfig.
->>>
->>> This can be seen for example with:
->>>    # (set -e; set -o pipefail; yes | grep -q y); echo $?
->>>    141
->>>
->>> or by running the actual check script in loop extensively:
->>>    ----------------------------- 8< -------------------------------
->>>    function kconfig()
->>>    {
->>>      for i in `seq 1 100`; do
->>>        arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh \
->>>          ./scripts/dummy-tools/gcc -mlittle-endian \
->>>          || { echo "Oops"; exit 1; }
->>>      done
->>>    }
->>>
->>>    for ((i=0; i<$(nproc); i++)); do kconfig & done
->>>    wait; echo "Done"
->>>    ----------------------------- >8 -------------------------------
->>>
->>> Fixes: 0f71dcfb4aef ("powerpc/ftrace: Add support for -fpatchable-function-entry")
->>> Fixes: b71c9ffb1405 ("powerpc: Add arch/powerpc/tools directory")
->>> Reported-by: Joe Lawrence <joe.lawrence@redhat.com>
->>> Acked-by: Joe Lawrence <joe.lawrence@redhat.com>
->>> Signed-off-by: Jan Stancek <jstancek@redhat.com>
->>> ---
->>>   arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh | 1 -
->>>   arch/powerpc/tools/gcc-check-mprofile-kernel.sh           | 1 -
->>>   2 files changed, 2 deletions(-)
->>>
->>> diff --git a/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh b/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh
->>> index 06706903503b..baed467a016b 100755
->>> --- a/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh
->>> +++ b/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh
->>> @@ -2,7 +2,6 @@
->>>   # SPDX-License-Identifier: GPL-2.0
->>>
->>>   set -e
->>> -set -o pipefail
->>>
->>>   # To debug, uncomment the following line
->>>   # set -x
->>> diff --git a/arch/powerpc/tools/gcc-check-mprofile-kernel.sh b/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
->>> index 73e331e7660e..6193b0ed0c77 100755
->>> --- a/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
->>> +++ b/arch/powerpc/tools/gcc-check-mprofile-kernel.sh
->>> @@ -2,7 +2,6 @@
->>>   # SPDX-License-Identifier: GPL-2.0
->>>
->>>   set -e
->>> -set -o pipefail
->>>
->>>   # To debug, uncomment the following line
->>>   # set -x
->>> --
->>> 2.47.1
+>>> With this analysis - the patch looks good to me. I will give this entire
+>>> patch series a try on Power HW with Hash mmu too (which uses lazy mmu and
+>>> let you know the results of that)!
+>> That'd be very appreciated, thanks a lot!
 >>
->> Would love to see this picked up, it fixes a problem we have run into
->> with our CI.
->>
->> Tested-by: Justin M. Forbes <jforbes@fedoraproject.org>
-> 
-> Thanks Justin.
-> 
-> Would any maintainers also care to review? Ty.
-> 
+> I did give this patch series a run on Power10 with Hash MMU. I ran the
+> following stress-ng tests and didn't observe any issues (kernel warnings) so far.
+>
+> stress-ng --all 0 -t 60s --perf -v --verify \
+> --tlb-shootdown 0 \
+> --fault 0 \
+> --userfaultfd 0 \
+> --fork 0 \
+> --exec 0 \
+> --memfd 0 \
+> --numa 0 \
+> --pkey 0 \
+> --remap 0 \
+> --vm 0 \
+> --rmap 0 \
+> -x swap,pagemove
+> (Note not all options shown here will work with --verify)
 
-Is the problem only with those scripts ? I see other scripts using 
-pipefail in the kernel:
+That's great, many thanks!
 
-arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh:set -o pipefail
-arch/powerpc/tools/gcc-check-mprofile-kernel.sh:set -o pipefail
-drivers/gpu/drm/ci/dt-binding-check.sh:set -euxo pipefail
-drivers/gpu/drm/ci/dtbs-check.sh:set -euxo pipefail
-drivers/gpu/drm/ci/kunit.sh:set -euxo pipefail
-drivers/gpu/drm/ci/setup-llvm-links.sh:set -euo pipefail
-scripts/check-uapi.sh:set -o pipefail
+> Let me know what else I can run for validation?
+> Do you know of any specific tests for validation of lazy mmu feature?
 
-Christophe
+I don't think there is - lazy MMU is not supposed to have any observable
+effect, all we can do is exercise the paths that use it and check that
+nothing explodes.
 
+That said it wouldn't hurt to run the mm kselftests:
+
+    make -C tools/testing/selftests/ TARGETS=mm
+
+Thanks!
+
+- Kevin
 
