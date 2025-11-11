@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14031-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14032-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E4BD6CCFA1A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Nov 2025 06:56:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E7E8DCCFA18
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Nov 2025 06:56:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d5HNv3MZQz308q;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d5HNv5PqPz2yvN;
 	Tue, 11 Nov 2025 17:55:43 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762844143;
-	cv=none; b=buEtgGPrp2uHOmSuu51l0QGLZvmBCpuoN2SPaBDtKt+A2U9edWakTwWD7jEJbjv92hYN1iOfutc7Shbt3b46lJUVPE0eYUshmri2DxIj34d3lcT53apT+Cs6fP5GWdrEWyiimW1BGd5zwdH54K5pUK5QyMLD6uY+W9AE8AvCaY9MLuC9UkCEmToe1u+g4xwyNkxFKbEu9TuHtKrSCBHL2bdfnb1YjRJzjyGuwAlEvXDrmlbMJhP8FADs5z1cuS9S7m8l6/Lcsv3zVc3gtvtbp4xGKeEkBV6iAxusaugRHKkuaTwlwtB06G1L9qAvjWj0It8cqxjpvPuga4NK8MePtg==
+	cv=none; b=K1YLJNK/8gBTxEjalEO7Z2kShCVr90BwPdH8jHi0/FS2P0UJFJY9iT205BRO3LNFZ5H/uUBjhGVKkqi4C2L6DryuGPMYTsdRl3d9/g1WNM0XLttlWqF9YaBIdehHdx5dPIW6hCUjvVW1Gx5cTJSmutLHUMIl05ybfE1at1NoUK+T5+bP+C0qQBmkrhfNVkaHQk7uzAGfcY9Pg1kICAx+5i48U94TUXuso8yzo526Nri8i9smF8kViYupa4mcCn/zm0MvjYBn7QJqrjrgdrAuI0W+Dwei4E41bDdit1AMoLxPXER4hVi0ticy33hdSQ734k5p+1zuZCVwYdam4qFYoQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1762844143; c=relaxed/relaxed;
-	bh=fTvrbo3mOzTGCel3agLEDWiwlpX39p3niSGJ7gA+srw=;
+	bh=LZ6yrPf10XyjUbpb0uoz9zDvZV76d0sxqTJxoq2o+VY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=NzD2cZvFCxKBZAh4R14pfCdR6OZflfef4PdLUXPdHsXXSxUW88u4KOYmElvV/oog9hHJ9ZZ4NdfG++fz57P5CNEoeSk25LKFJQsRMuWds013GlqMhPrG44A6TqmS4VKAZYaSzHzstO7thcp09gmx6rH/dw4tBj2yNr5un99L89wCS/UrF2CVG4cAOJnyJB+Iwx/HsIsf6AiZuW2mvOzlHuCSmCuf6obHji9wV3MlDGD4bc3uzSTX92EVHP5RtVrslBly6G2yeLHZQmyP1gctu8Sx5+wq29iJp6Thdkb7t7zpk3qwHE27uKphwYNhkcQy7HZacICtYyTEa12ovRjVmw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=qH7TBk+e; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=Nd5wuotlO0c/9uT5IA/Hc7Q8nEfCBkysQNZbu8UywpBpYBr+SE1QRMwnQNvJ3gmGutx8HDGZ4q5EF5LTTYWl6n0IkTNRL2yM+8LKl6Gq+U0Ei0COhbZdCMslh4iILw4o2Z+PgdaqY2X3tF76Y4isfwr2QuX41WNJPNhgZfqRRVDde+iRi1TXJi/KN/V1KVW/n2TMIamS31llfNKJyTVIey1BNgRCqyYjQE1ao6hpsB7cC4IaZedMHMigMo5pzEcu49HsPUGF9zyWyCft+plXkN2hiVc3MEhjW8NON74IktrAwq2qovCfVHDogMDMzPfjmMGcg9rxJkmoma1Kh46GgA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=WF+XWuZj; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=qH7TBk+e;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=WF+XWuZj;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d5HNp68pNz2yvW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2025 17:55:38 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d5HNn2jgDz2yvL
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2025 17:55:35 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=fTvrbo3mOzTGCel3agLEDWiwlpX39p3niSGJ7gA+srw=; b=qH7TBk+eHDvm5siQkKlw8FrzJW
-	5Jui0fzA1zXpfadChbrGfDRhwWzG9A5d3XeSOOD9mgbukwwt8ilhKYsGWlBDSIwpBddE6btAAtNO1
-	Q+UfbQyrVcMNQ6/tVYxuZ11sG1+GQLxgGfZ6/dzMsBqwd7J4360gzf1wxR/Ha9FhGqS7Q7RPS/Z19
-	7nm0ndxcMPWJn1kWEBx+YxLOZz5dZlD+HOAVoPRbQBr+KLbYHRTaXR/j7mT3o1NzDnCTzvSyaGs4t
-	ot+pnKsJnuiV+NRDNWD4nZHhKUnDl7BjtUBnp6m+dEeVUEtt52QIfrLLCGG074PcsdayQbP7DUbrZ
-	ze0yilYA==;
+	bh=LZ6yrPf10XyjUbpb0uoz9zDvZV76d0sxqTJxoq2o+VY=; b=WF+XWuZjccDaSV23t3ZCfvZAqt
+	Hohm1giogHgJTgIjz+BM3jhjjTLoMdwPuodAY78QeOg3GUBHZu1BGBA/33p1gpzOLqgCHsjuNsjeO
+	sQETYjkIyeMGltUwxf2aDzIQ7PxRO17kuJJhunXpDKie7s9abJc1ZOCPUQ4749pSp/uNXUiW0pz9g
+	5StKOHjXdngU9MjIt4G/vCYSMTp+hyY6F4EcS2NOjjVRYMEIOouxZxb3c/rhJhZKAuyInpomcfpJH
+	67Y7Q5I6dHBaVWqSe0Uuoe3F6FPAUvCjSQfpY1qedvsKXQE0I+R1n4CVwDF5AEHhuS7B8QobBm68r
+	RCaB/VuQ==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vIiHj-0000000BwyB-1e67;
-	Tue, 11 Nov 2025 06:55:23 +0000
+	id 1vIiHk-0000000Bwyw-24hu;
+	Tue, 11 Nov 2025 06:55:24 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -65,9 +65,9 @@ Cc: torvalds@linux-foundation.org,
 	selinux@vger.kernel.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org
-Subject: [PATCH v3 13/50] convert hugetlbfs
-Date: Tue, 11 Nov 2025 06:54:42 +0000
-Message-ID: <20251111065520.2847791-14-viro@zeniv.linux.org.uk>
+Subject: [PATCH v3 21/50] debugfs: remove duplicate checks in callers of start_creating()
+Date: Tue, 11 Nov 2025 06:54:50 +0000
+Message-ID: <20251111065520.2847791-22-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251111065520.2847791-1-viro@zeniv.linux.org.uk>
 References: <20251111065520.2847791-1-viro@zeniv.linux.org.uk>
@@ -87,53 +87,55 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-Very much ramfs-like; dget()+d_instantiate() -> d_make_persistent()
-(in two places) is all it takes.
+we'd already verified that DEBUGFS_ALLOW_API was there in
+start_creating() - it would've failed otherwise
 
-NB: might make sense to turn its ->put_super() into ->kill_sb().
-
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/hugetlbfs/inode.c | 12 +++++-------
- 1 file changed, 5 insertions(+), 7 deletions(-)
+ fs/debugfs/inode.c | 15 ---------------
+ 1 file changed, 15 deletions(-)
 
-diff --git a/fs/hugetlbfs/inode.c b/fs/hugetlbfs/inode.c
-index f42548ee9083..83273677183d 100644
---- a/fs/hugetlbfs/inode.c
-+++ b/fs/hugetlbfs/inode.c
-@@ -975,8 +975,7 @@ static int hugetlbfs_mknod(struct mnt_idmap *idmap, struct inode *dir,
- 	if (!inode)
- 		return -ENOSPC;
- 	inode_set_mtime_to_ts(dir, inode_set_ctime_current(dir));
--	d_instantiate(dentry, inode);
--	dget(dentry);/* Extra count - pin the dentry in core */
-+	d_make_persistent(dentry, inode);
- 	return 0;
- }
+diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
+index 682120fdbb17..25a554331ac4 100644
+--- a/fs/debugfs/inode.c
++++ b/fs/debugfs/inode.c
+@@ -433,11 +433,6 @@ static struct dentry *__debugfs_create_file(const char *name, umode_t mode,
+ 	if (IS_ERR(dentry))
+ 		return dentry;
  
-@@ -1023,10 +1022,9 @@ static int hugetlbfs_symlink(struct mnt_idmap *idmap,
- 	if (inode) {
- 		int l = strlen(symname)+1;
- 		error = page_symlink(inode, symname, l);
--		if (!error) {
--			d_instantiate(dentry, inode);
--			dget(dentry);
--		} else
-+		if (!error)
-+			d_make_persistent(dentry, inode);
-+		else
- 			iput(inode);
- 	}
- 	inode_set_mtime_to_ts(dir, inode_set_ctime_current(dir));
-@@ -1483,7 +1481,7 @@ static struct file_system_type hugetlbfs_fs_type = {
- 	.name			= "hugetlbfs",
- 	.init_fs_context	= hugetlbfs_init_fs_context,
- 	.parameters		= hugetlb_fs_parameters,
--	.kill_sb		= kill_litter_super,
-+	.kill_sb		= kill_anon_super,
- 	.fs_flags               = FS_ALLOW_IDMAP,
- };
+-	if (!(debugfs_allow & DEBUGFS_ALLOW_API)) {
+-		failed_creating(dentry);
+-		return ERR_PTR(-EPERM);
+-	}
+-
+ 	inode = debugfs_get_inode(dentry->d_sb);
+ 	if (unlikely(!inode)) {
+ 		pr_err("out of free dentries, can not create file '%s'\n",
+@@ -583,11 +578,6 @@ struct dentry *debugfs_create_dir(const char *name, struct dentry *parent)
+ 	if (IS_ERR(dentry))
+ 		return dentry;
  
+-	if (!(debugfs_allow & DEBUGFS_ALLOW_API)) {
+-		failed_creating(dentry);
+-		return ERR_PTR(-EPERM);
+-	}
+-
+ 	inode = debugfs_get_inode(dentry->d_sb);
+ 	if (unlikely(!inode)) {
+ 		pr_err("out of free dentries, can not create directory '%s'\n",
+@@ -630,11 +620,6 @@ struct dentry *debugfs_create_automount(const char *name,
+ 	if (IS_ERR(dentry))
+ 		return dentry;
+ 
+-	if (!(debugfs_allow & DEBUGFS_ALLOW_API)) {
+-		failed_creating(dentry);
+-		return ERR_PTR(-EPERM);
+-	}
+-
+ 	inode = debugfs_get_inode(dentry->d_sb);
+ 	if (unlikely(!inode)) {
+ 		pr_err("out of free dentries, can not create automount '%s'\n",
 -- 
 2.47.3
 
