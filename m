@@ -1,79 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-14026-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14027-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74F56CCF9E3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Nov 2025 05:53:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 52CA3CCFA1A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Nov 2025 06:55:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d5G0k4fQdz2yvL;
-	Tue, 11 Nov 2025 16:53:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762840390;
-	cv=none; b=nvTDWnsQ+apglIA9OgNY3Q9BR9fRwgtMdxm9gV8craQ1fbDi6qMRmU8RouBe+xOPxMLecYqVGamPFig/0pqW2eR3tzxIMmtfRUr1g3bFj1x8Xr0HhQ7TkisvmUgeDDp5gBrJQl9X62+gEkdESV7Dq0SpnekdLBuYqYq90nudRb/jflh7aIBEXuD0pbK+vTsO0vbNF+TCF6LHXq9ybfOLohqc+YInNIYsWopYuf4XzuCOgb5CVAbD3vdFZPjmaEGMAcSXAPylv5ieCtqiChixupOc9H5C6FPf87cOYLNvfIIQ6XGVaLH4ytf+uno6zJ7mlpKrNmz7YsI74OnSQ5nj2A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d5HNr5R0Xz2yvY;
+	Tue, 11 Nov 2025 17:55:40 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762844140;
+	cv=none; b=TxdNs3LlmFIql9hHrOWtFy7sgFFDEzfW+0IKB4eF+t2Pa6qqd2dW6jqSnfaCCT4rXKP+Zvy0HGyMHIAFlbmqhfGV/REN8y/i5yObWwzS1S8Vd6oBhjfbPi6TyeXNJJfDHkNRUKaZH3206cR8XF3RQ/zT/+uB2vHSIqf2wsjMnTE2CORnAA7ax6n6e5SAx0Vc+sVhwfAbltobgp4H1xEHvILhqIOdPaQrTt0r5QbUoNL5OVCTFtUGwWGUjKqrRozGg+g4Eg/rcHJ8PbWtZ8WRFiPfxbu7iTkaMxNabgF+CeDd9S08FIL7mB9YyCFAMKmRgzWE8Oynu0IpaOH3OsGQFw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762840390; c=relaxed/relaxed;
-	bh=jR9xBvmP62HE1b+hpq22XRoqsFbon38apNqfhG0YOxs=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Ha56UIi1yJ9yNwtNjuJCvG1Wc0/z6Um1mP16ksPALUZlDQ4Ud8XAtwQIZCZuDf3rTEB9LpmIgoSq5GD4uFq7Rc43SqLDoKRO+LY0HGxhqBuTRLKGvEqsmSmkYpMBBP7XdFdAtjw7EfDKnOS30T/bv8qF0HODCXLq+KFtI3Ly0+mel8NgepVJPqlFdIam5TdfoRm0ucWTWkr9+ckV1klfj0vkywNUQBtdD/H4nVeORtB4atkRPTN44Ou904imve67wDCpuEWPKAFqtsnQBIl/BI7Oe73j06y8fXIhbuhPp2x6X+8AJ4bAwjjswvhA1aSJUSqaaH9W4D53lK12RqytMg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eGJ7w+Zt; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1762844140; c=relaxed/relaxed;
+	bh=o92Omq0psZ3ukvz3ytEXVDnarOtbezsCR+bO9JM0kAQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=iaAg/Ijb29sp0wH1J8W/6PTWQSNCq34pZBxE2IqW2sQPmQLfxUEZ1DJ9KDlgFkvgiMudInlc+Fwn668hqxYfOSlGDjwtv9dsJP7cqgmsKYJLEBD8zfX0y9U2XjwYw3Tk1ghAVNzBqKCQvTBJblgeTsIMjrjIK3vMAB5IPJecI+4AKK8XGLK41uuINaRlb96hqLkIo0XRs3QVV2QneyPOwNZmSUcy3s8PpuA/TuHQRmKj5K7IA5GfkqADqaNZedvZsuIeslU2/jqSTLFCeREBiyIVkMmIPUtU4S6M8ISgQwKe7ZliRDJqkRa2LHCbusY8QyRWm3OnqU0A7fVrSNpBWQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=XROLldmC; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=eGJ7w+Zt;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=XROLldmC;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
+Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d5G0j4SdFz2ySq
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2025 16:53:09 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5AB28NCG020676;
-	Tue, 11 Nov 2025 05:53:03 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=jR9xBv
-	mP62HE1b+hpq22XRoqsFbon38apNqfhG0YOxs=; b=eGJ7w+Zt94YGKkfBOkp8LX
-	uhYTeuU+TJHmRadTajBDk59vxDK3Yia/lUo/qehN8NQh0KtOHcvlmjNnk5UD1UmX
-	jXNUbkO2IHK8QWk4ZwPZOp+z+x+1NJHxtUpuKbdLdc7MqX7YbN1K1dF2V4YqZ7uI
-	UPS+8JArTMD4ALRgQf3rZLVb7S5XPVuLlNDy2c5t2qsoxYpPcoZgM+TVlTAMjaTs
-	sRLlsaNMmSK/39ZNdwkaccrb50UdvTcDEYS8jFztDUnjiE6G711O2OZutOiMUzbR
-	MnaL3xNynXmfsCr9EHnOPa8iMP71QkQfacaANgoEG3yldZ0M4JTWbGmMZdo33Rrw
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4a9wk83jf9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Nov 2025 05:53:03 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5AB5r3xY020166;
-	Tue, 11 Nov 2025 05:53:03 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4a9wk83jf8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Nov 2025 05:53:03 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5AB5X6q2011562;
-	Tue, 11 Nov 2025 05:53:02 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4aajw18yyb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Tue, 11 Nov 2025 05:53:01 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5AB5qwNb16318788
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Tue, 11 Nov 2025 05:52:58 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 101C720043;
-	Tue, 11 Nov 2025 05:52:58 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id B146020040;
-	Tue, 11 Nov 2025 05:52:54 +0000 (GMT)
-Received: from [9.39.20.64] (unknown [9.39.20.64])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Tue, 11 Nov 2025 05:52:54 +0000 (GMT)
-Message-ID: <56abcc3f-ddd4-49c3-a985-a16d616e4210@linux.ibm.com>
-Date: Tue, 11 Nov 2025 11:22:13 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d5HNn2p79z2yvM
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2025 17:55:36 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
+	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
+	Reply-To:Content-Type:Content-ID:Content-Description;
+	bh=o92Omq0psZ3ukvz3ytEXVDnarOtbezsCR+bO9JM0kAQ=; b=XROLldmCt6vbuYYnp0vPCUnJ5r
+	4MIOfqGi3QUqBs/hPJsIwMOEeht/upSkaIWOnW2RidmjawMf5e6wCTzF33KPnTafLW1GSw2Si61YT
+	heqXkOg8l0moj1QBWrtiM9s79RsazBTl7Awrry1FBsjrAvW/GRHjFGLCNSWHPimn+tVy8fVHPGQnb
+	psoxEEp/YzziTl9UE5ntlhzLe7Ehqk4xBfnw9YvLvC+S2Wkt0YpkfZDjXgujxxk0wFO5OG772DyGu
+	Y2k7crP+0mFlSAG6DRFWOmavK9Ut4mE2/AvyVdyQICVc3J3mhlf+B3B3qxi5YYSbQHia+dtZiqOul
+	VPcxn56A==;
+Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vIiHl-0000000BwzL-1HAm;
+	Tue, 11 Nov 2025 06:55:25 +0000
+From: Al Viro <viro@zeniv.linux.org.uk>
+To: linux-fsdevel@vger.kernel.org
+Cc: torvalds@linux-foundation.org,
+	brauner@kernel.org,
+	jack@suse.cz,
+	raven@themaw.net,
+	miklos@szeredi.hu,
+	neil@brown.name,
+	a.hindborg@kernel.org,
+	linux-mm@kvack.org,
+	linux-efi@vger.kernel.org,
+	ocfs2-devel@lists.linux.dev,
+	kees@kernel.org,
+	rostedt@goodmis.org,
+	gregkh@linuxfoundation.org,
+	linux-usb@vger.kernel.org,
+	paul@paul-moore.com,
+	casey@schaufler-ca.com,
+	linuxppc-dev@lists.ozlabs.org,
+	john.johansen@canonical.com,
+	selinux@vger.kernel.org,
+	borntraeger@linux.ibm.com,
+	bpf@vger.kernel.org
+Subject: [PATCH v3 23/50] convert spufs
+Date: Tue, 11 Nov 2025 06:54:52 +0000
+Message-ID: <20251111065520.2847791-24-viro@zeniv.linux.org.uk>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20251111065520.2847791-1-viro@zeniv.linux.org.uk>
+References: <20251111065520.2847791-1-viro@zeniv.linux.org.uk>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,174 +84,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v3 5/5] crash: export crashkernel CMA reservation to
- userspace
-To: Baoquan he <bhe@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Aditya Gupta <adityag@linux.ibm.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Dave Young <dyoung@redhat.com>, Hari Bathini <hbathini@linux.ibm.com>,
-        Jiri Bohac <jbohac@suse.cz>, Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-        Pingfan Liu <piliu@redhat.com>,
-        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-        Shivang Upadhyay <shivangu@linux.ibm.com>,
-        Vivek Goyal <vgoyal@redhat.com>, linuxppc-dev@lists.ozlabs.org,
-        kexec@lists.infradead.org
-References: <20251110043143.484408-1-sourabhjain@linux.ibm.com>
- <20251110043143.484408-6-sourabhjain@linux.ibm.com>
- <aRGPee9izxWPRHj5@MiWiFi-R3L-srv>
- <09c4c181-eb4b-43ea-a439-04b83f4c20ba@linux.ibm.com>
- <aRKOK7ZQ5mOUBzvK@MiWiFi-R3L-srv>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <aRKOK7ZQ5mOUBzvK@MiWiFi-R3L-srv>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTA4MDAyMiBTYWx0ZWRfX8i49R0Z12Rdx
- Yz5xjsGu8ywLiD6Lm5XSYF9qwzfmzce+8AhhmQQmCRfwY+HrGaDm3W0t9zk5lg1aOmqk9AasOvU
- Dvl5hQg95U9XSS8xgV4Q7Zv3IPDTTIJ+GkInNjJTdGY4K8NmCmHdWAUg5c8ZHHbExINMdxo9c2P
- fKgHmiblDCnhiMQpYxYySVD8DF69m5qKPXFvx+YIReM1DvQfX8I9ODSnwNePnTdNYflen8jftmp
- 24N1JkGV2GeWGjduQ3wxCRKjYNtjzygbk04BdpOKgLszh/5SC78joTXA2wCU8qpIvnL8qoMTsZk
- ljv/mL1lzDDDBDuKIAYid0kLlh4oavpePMgvb6Wv3MTqo284c5oFmLaTtwVCaT2SXSubCL4rXRA
- 4EZZD97hBsq8EdSlyWdjQfd06uzstg==
-X-Authority-Analysis: v=2.4 cv=ZK3aWH7b c=1 sm=1 tr=0 ts=6912cf3f cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
- a=IkcTkHD0fZMA:10 a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=Z4Rwk6OoAAAA:8 a=20KFwNOVAAAA:8
- a=pGLkceISAAAA:8 a=voM4FWlXAAAA:8 a=JfrnYn6hAAAA:8 a=bLF1B-K238BkpyBZBwwA:9
- a=QEXdDO2ut3YA:10 a=HkZW87K1Qel5hWWM3VKY:22 a=IC2XNlieTeVoXbcui8wp:22
- a=1CNFftbPRP8L7MoqJWF3:22 a=cPQSjfK2_nFv0Q5t_7PE:22
-X-Proofpoint-ORIG-GUID: yL03va81FbIa21mHmbrKh4zId853n8kF
-X-Proofpoint-GUID: jfvOgROHoePxzclwIbTyIQfbKiNzvFHM
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2025-11-11_01,2025-11-10_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 lowpriorityscore=0 priorityscore=1501 suspectscore=0
- phishscore=0 impostorscore=0 spamscore=0 bulkscore=0 adultscore=0
- clxscore=1015 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2510240000
- definitions=main-2511080022
+Content-Transfer-Encoding: 8bit
+Sender: Al Viro <viro@ftp.linux.org.uk>
 
+have spufs_new_file() use d_make_persistent() instead of d_add() and
+do an uncondition dput() in the caller; the rest is completely
+straightforward.
 
+[a braino in spufs_mkgang() fixed]
 
-On 11/11/25 06:45, Baoquan he wrote:
-> On 11/10/25 at 02:09pm, Sourabh Jain wrote:
->>
->> On 10/11/25 12:38, Baoquan he wrote:
->>> On 11/10/25 at 10:01am, Sourabh Jain wrote:
->>>> Add a sysfs entry /sys/kernel/kexec/crash_cma_ranges to expose all
->>>> CMA crashkernel ranges.
->>> I am not against this way. While wondering if it's more appropriate to
->>> export them into iomem_resource just like crashk_res and crashk_low_res
->>> doing.
->> Handling conflict is challenging. Hence we don't export crashk_res and
->> crashk_low_res to iomem on powerpc. Checkout [1]
->>
->> And I think conflicts can occur regardless of the order in which System RAM
->> and
->> Crash CMA ranges are added to iomem.
->>
->> [1] https://lore.kernel.org/all/20251016142831.144515-1-sourabhjain@linux.ibm.com/
-> Then I would suggest you add this reason and the link into patch log
-> to keep a record. One day people may post patch to 'optimize' this.
+Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+---
+ arch/powerpc/platforms/cell/spufs/inode.c | 17 +++++++----------
+ 1 file changed, 7 insertions(+), 10 deletions(-)
 
-
-Yeah, I will include it in v3. Thanks for the review.
-
-- Sourabh Jain
-
-
->
->>>> This allows userspace tools configuring kdump to determine how much
->>>> memory is reserved for crashkernel. If CMA is used, tools can warn
->>>> users when attempting to capture user pages with CMA reservation.
->>>>
->>>> The new sysfs hold the CMA ranges in below format:
->>>>
->>>> cat /sys/kernel/kexec/crash_cma_ranges
->>>> 100000000-10c7fffff
->>>>
->>>> Cc: Aditya Gupta <adityag@linux.ibm.com>
->>>> Cc: Andrew Morton <akpm@linux-foundation.org>
->>>> Cc: Baoquan he <bhe@redhat.com>
->>>> Cc: Dave Young <dyoung@redhat.com>
->>>> Cc: Hari Bathini <hbathini@linux.ibm.com>
->>>> Cc: Jiri Bohac <jbohac@suse.cz>
->>>> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
->>>> Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
->>>> Cc: Pingfan Liu <piliu@redhat.com>
->>>> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
->>>> Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
->>>> Cc: Vivek Goyal <vgoyal@redhat.com>
->>>> Cc: linuxppc-dev@lists.ozlabs.org
->>>> Cc: kexec@lists.infradead.org
->>>> Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
->>>> ---
->>>> Changelog:
->>>>    - Add the missing hunk to export crash_cma_ranges sysfs
->>>>
->>>> ---
->>>>    .../ABI/testing/sysfs-kernel-kexec-kdump        | 10 ++++++++++
->>>>    kernel/kexec_core.c                             | 17 +++++++++++++++++
->>>>    2 files changed, 27 insertions(+)
->>>>
->>>> diff --git a/Documentation/ABI/testing/sysfs-kernel-kexec-kdump b/Documentation/ABI/testing/sysfs-kernel-kexec-kdump
->>>> index 00c00f380fea..f59051b5d96d 100644
->>>> --- a/Documentation/ABI/testing/sysfs-kernel-kexec-kdump
->>>> +++ b/Documentation/ABI/testing/sysfs-kernel-kexec-kdump
->>>> @@ -49,3 +49,13 @@ Description:	read only
->>>>    		is used by the user space utility kexec to support updating the
->>>>    		in-kernel kdump image during hotplug operations.
->>>>    User:		Kexec tools
->>>> +
->>>> +What:		/sys/kernel/kexec/crash_cma_ranges
->>>> +Date:		Nov 2025
->>>> +Contact:	kexec@lists.infradead.org
->>>> +Description:	read only
->>>> +		Provides information about the memory ranges reserved from
->>>> +		the Contiguous Memory Allocator (CMA) area that are allocated
->>>> +		to the crash (kdump) kernel. It lists the start and end physical
->>>> +		addresses of CMA regions assigned for crashkernel use.
->>>> +User:		kdump service
->>>> diff --git a/kernel/kexec_core.c b/kernel/kexec_core.c
->>>> index 7476a46de5d6..da6ff72b4669 100644
->>>> --- a/kernel/kexec_core.c
->>>> +++ b/kernel/kexec_core.c
->>>> @@ -1271,6 +1271,22 @@ static ssize_t crash_size_store(struct kobject *kobj,
->>>>    }
->>>>    static struct kobj_attribute crash_size_attr = __ATTR_RW(crash_size);
->>>> +static ssize_t crash_cma_ranges_show(struct kobject *kobj,
->>>> +				     struct kobj_attribute *attr, char *buf)
->>>> +{
->>>> +
->>>> +	ssize_t len = 0;
->>>> +	int i;
->>>> +
->>>> +	for (i = 0; i < crashk_cma_cnt; ++i) {
->>>> +		len += sysfs_emit_at(buf, len, "%08llx-%08llx\n",
->>>> +				     crashk_cma_ranges[i].start,
->>>> +				     crashk_cma_ranges[i].end);
->>>> +	}
->>>> +	return len;
->>>> +}
->>>> +static struct kobj_attribute crash_cma_ranges_attr = __ATTR_RO(crash_cma_ranges);
->>>> +
->>>>    #ifdef CONFIG_CRASH_HOTPLUG
->>>>    static ssize_t crash_elfcorehdr_size_show(struct kobject *kobj,
->>>>    			       struct kobj_attribute *attr, char *buf)
->>>> @@ -1289,6 +1305,7 @@ static struct attribute *kexec_attrs[] = {
->>>>    #ifdef CONFIG_CRASH_DUMP
->>>>    	&crash_loaded_attr.attr,
->>>>    	&crash_size_attr.attr,
->>>> +	&crash_cma_ranges_attr.attr,
->>>>    #ifdef CONFIG_CRASH_HOTPLUG
->>>>    	&crash_elfcorehdr_size_attr.attr,
->>>>    #endif
->>>> -- 
->>>> 2.51.1
->>>>
+diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
+index 7ec60290abe6..fc8ccf4dc159 100644
+--- a/arch/powerpc/platforms/cell/spufs/inode.c
++++ b/arch/powerpc/platforms/cell/spufs/inode.c
+@@ -127,7 +127,7 @@ spufs_new_file(struct super_block *sb, struct dentry *dentry,
+ 	inode->i_fop = fops;
+ 	inode->i_size = size;
+ 	inode->i_private = SPUFS_I(inode)->i_ctx = get_spu_context(ctx);
+-	d_add(dentry, inode);
++	d_make_persistent(dentry, inode);
+ out:
+ 	return ret;
+ }
+@@ -163,10 +163,9 @@ static int spufs_fill_dir(struct dentry *dir,
+ 			return -ENOMEM;
+ 		ret = spufs_new_file(dir->d_sb, dentry, files->ops,
+ 					files->mode & mode, files->size, ctx);
+-		if (ret) {
+-			dput(dentry);
++		dput(dentry);
++		if (ret)
+ 			return ret;
+-		}
+ 		files++;
+ 	}
+ 	return 0;
+@@ -241,11 +240,10 @@ spufs_mkdir(struct inode *dir, struct dentry *dentry, unsigned int flags,
+ 
+ 	inode_lock(inode);
+ 
+-	dget(dentry);
+ 	inc_nlink(dir);
+ 	inc_nlink(inode);
+ 
+-	d_instantiate(dentry, inode);
++	d_make_persistent(dentry, inode);
+ 
+ 	if (flags & SPU_CREATE_NOSCHED)
+ 		ret = spufs_fill_dir(dentry, spufs_dir_nosched_contents,
+@@ -479,10 +477,9 @@ spufs_mkgang(struct inode *dir, struct dentry *dentry, umode_t mode)
+ 	inode->i_op = &simple_dir_inode_operations;
+ 	inode->i_fop = &simple_dir_operations;
+ 
+-	d_instantiate(dentry, inode);
+-	dget(dentry);
+ 	inc_nlink(dir);
+-	inc_nlink(d_inode(dentry));
++	inc_nlink(inode);
++	d_make_persistent(dentry, inode);
+ 	return ret;
+ 
+ out_iput:
+@@ -780,7 +777,7 @@ static struct file_system_type spufs_type = {
+ 	.name = "spufs",
+ 	.init_fs_context = spufs_init_fs_context,
+ 	.parameters	= spufs_fs_parameters,
+-	.kill_sb = kill_litter_super,
++	.kill_sb = kill_anon_super,
+ };
+ MODULE_ALIAS_FS("spufs");
+ 
+-- 
+2.47.3
 
 
