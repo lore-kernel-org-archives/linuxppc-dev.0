@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14074-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14075-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5A9CFCCF9E3
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Nov 2025 07:01:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B3269CCFA18
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 11 Nov 2025 07:01:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d5HRM4Qzmz3fSt;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d5HRM65q3z3fT3;
 	Tue, 11 Nov 2025 17:57:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762844271;
-	cv=none; b=nkAFSYwCR8vtbg+pyLAQiqxOq8OiApZb4InvS7EdprtY6MT5sj7/153OTgqUKsuM2826eT28ry4UR+XzLX3mY1tfyeHbJsevO5pOvYgwzdIKXN9RroimffTANe3qhTqMP7QYgklP0evnQBIidnCc2N8KLa2A3vcRF4DkPVfhH28oAluv3XR3I4ccXrnZBLzrGy+gikv+BR3AjEIHKmwNlbNX/hktpgwpck8fs4nFFvjprg11gDg6CFbE5i3/XwwdLpNVG22tTq95P0O2CqHwjVtxeNet7zIKPAvjpSxaZgzo+5Lr01efwS9zMWeC/q6gLirm6dcM3KKJfLqUyB+JFQ==
+	cv=none; b=AKosQt4xH7F94ahzSR1t4dLoGb1OPh+/4kC3F2aEbFo9bjXSjHLIfV9Y4p8uFNXre2umCQLSS0+3JHQXT1RFA40pnBEwMbnaoWtoSiDWofwBAskjUGO4KJ9A5l5z+7eXeJwyQL6sf79oSmuBtgVFbXDJ/FytsMtaltMgn1VrS2GCfwjgMBUeWsg5xscknoXBNIMAfnrEttRpawD+B4mQqt0nRm15PXPOgh3nD24uW2UCzCAqDRday72O5ouNq/VuwjMMSswqoYIG4PO9nt0gfDv7LelDy6GKHaPJdsibZAOkayrqeVhVrmFk9UIEucB3iR9DY/4E/XDIbazz1fTz/g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1762844271; c=relaxed/relaxed;
-	bh=+re8cgG256R+nyhDcVzLSPRAvzZcH6z0w0ygW9fyGms=;
+	bh=EGEc3asPoO0BSFThbWpOoQFbGckDO1h86OnlmAxWxbE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=d4tL5i155gPyt6ZOVF+Evw2htBBCfhr1Ueid6rXp80Ez1PBsTBA9nSwxTUrjwvfXwrZIa45xEeaM19W2YEYoBhnvG82Fx6Esn7UNg62AvOJW9nLnZhF7BgSLaxyDGZDfmv86NAz8kmgVeOiDFsNARvDKwZmR5SZq9Oq3AmuriDCyWDLMn1A+/uk2urqzQAGSiCZVGyFUezNiL5KliXvaMIcNbXVyLKtC+rJIOlA58KM2mDQ1WOgTVbbuCTq2ahLnq6tsELh+HsaA/29b0TYmtvWdvknz2ywkZkpWFUVEDisfoXQS2AcppYZtZC3IQEQ1wayn87RnV8XimRpbTADCEw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=o6m+fY4R; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=BUsyXVEDb7ACW3hH6TquD7aCbtfGMEAoDyN+x84PkYFnHMKS/y/ULzozpI/gpRzck9kzSYvzZ8AfcXwhvrSsYokOIdScTua57l5TcukVMoaQ8XL1ggjVg1JS7LP0d/zfREAWXAyS1qH8ANs84AI1FD21duBjlU1nXsIfTiJYvs2FOwwNPHgNOyndntNGw+obhDdUKS9hRpKXq/giupXKtFIPV9/6kNZSLrVo/g6OtfwUoMjMHOLRoiLFbdjJxQqJVouT4raCJk/w1QhmWLLz/wnTskX5wkIxBiY8ibnPVv0A9eYB/7y12eqHfVfimr2p41BBuhD8PcL2T6GpgmKvcQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=UvWqpmzS; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=o6m+fY4R;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=UvWqpmzS;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d5HRK1yNxz308L
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d5HRK21mzz308T
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 11 Nov 2025 17:57:49 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=+re8cgG256R+nyhDcVzLSPRAvzZcH6z0w0ygW9fyGms=; b=o6m+fY4RoDqM5DvPVGc21EmGSo
-	q2cwATyLW4MqdbkO6RZ7ftV0mjw0ZeOBE4FRUA1bI4i3cEn78fZwBAcMA7EuKgujl9pmgN1eaLUYy
-	9wCIu9gMJF+JbSy1etZCld8jKsUj0EMcXE7Hapo5yC5NF8hbVoeiYav5RAOL2yqXJp+IOBTpR3MAR
-	LYuxVtbgRCW189Evth0KJivbYHwXQucpADFe60jOwcFknmBdMvHuB8kPeN/72pMbv5WT3M7o5XKkC
-	yu5lJRSNtz39RqQrPRPRJBGSn3QvxsUD69wRn9x0r6edupfjwU9jaK3UP0Ulg6cqK2Js1cjv0vJf6
-	D86Fp2HQ==;
+	bh=EGEc3asPoO0BSFThbWpOoQFbGckDO1h86OnlmAxWxbE=; b=UvWqpmzSbMDpTAbM4vJHUhEZxc
+	cL9rerpjlNBRA664QnK8BRyF/s6z6V9pVifcGs8AsISFkqDNVnXZGYK0CxxQk/Dew7CK7WXgXWZfB
+	2zZA/IaJ+UDVV885oFb6N9ChQtoydd9IPjN/YYOmv2L03XeLsnNVbQYmHXcnmeYEX/fiqcliZsGeG
+	Nj6ug66ZIjjwdghKtnv+Ujxi7cU2hvlrMipw8tHMOBynAz0izZyEgkn32BHuKkicTTcaYRYC90jlv
+	zH3Q11tvvcPdfp42u6L7cdZ0o6z3TcA4Qz9c2j7xPFaMnV6fvuoUNl8m2+MlKsrtt17cXn01NIab9
+	L0biClnA==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vIiHl-0000000Bwzf-2uAe;
-	Tue, 11 Nov 2025 06:55:25 +0000
+	id 1vIiHm-0000000Bwzu-0CNF;
+	Tue, 11 Nov 2025 06:55:26 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -65,9 +65,9 @@ Cc: torvalds@linux-foundation.org,
 	selinux@vger.kernel.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org
-Subject: [PATCH v3 26/50] convert devpts
-Date: Tue, 11 Nov 2025 06:54:55 +0000
-Message-ID: <20251111065520.2847791-27-viro@zeniv.linux.org.uk>
+Subject: [PATCH v3 29/50] convert binderfs
+Date: Tue, 11 Nov 2025 06:54:58 +0000
+Message-ID: <20251111065520.2847791-30-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251111065520.2847791-1-viro@zeniv.linux.org.uk>
 References: <20251111065520.2847791-1-viro@zeniv.linux.org.uk>
@@ -87,154 +87,110 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-Two kinds of objects there - ptmx and everything else (pty).  The former is
-created on mount and kept until the fs shutdown; the latter get created
-and removed by tty layer (the references are borrowed into tty->driver_data).
-The reference to ptmx dentry is also kept, but we only ever use it to
-find ptmx inode on remount.
+Objects are created either by d_alloc_name()+d_add() (in
+binderfs_ctl_create()) or by simple_start_creating()+d_instantiate().
+Removals are by simple_recurisive_removal().
 
-* turn d_add() into d_make_persistent() + dput()  both in mknod_ptmx() and
-in devpts_pty_new().
+Switch d_add()/d_instantiate() to d_make_persistent() + dput().
+Voila - kill_litter_super() is not needed anymore.
 
-* turn dput() to d_make_discardable() in devpts_pty_kill().
+Fold dput()+unlocking the parent into simple_done_creating(), while
+we are at it.
 
-* switch mknod_ptmx() to simple_{start,done}_creating().
-
-* instead of storing in pts_fs_info a reference to ptmx dentry, store a reference
-to its inode, seeing that this is what we use it for.
+NOTE: return value of binderfs_create_file() is borrowed; it may get
+stored in proc->binderfs_entry.  See binder_release()...
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/devpts/inode.c | 57 +++++++++++++++++------------------------------
- 1 file changed, 21 insertions(+), 36 deletions(-)
+ drivers/android/binderfs.c | 33 ++++++++++++++-------------------
+ 1 file changed, 14 insertions(+), 19 deletions(-)
 
-diff --git a/fs/devpts/inode.c b/fs/devpts/inode.c
-index fdf22264a8e9..9f3de528c358 100644
---- a/fs/devpts/inode.c
-+++ b/fs/devpts/inode.c
-@@ -102,7 +102,7 @@ struct pts_fs_info {
- 	struct ida allocated_ptys;
- 	struct pts_mount_opts mount_opts;
- 	struct super_block *sb;
--	struct dentry *ptmx_dentry;
-+	struct inode *ptmx_inode; // borrowed
- };
- 
- static inline struct pts_fs_info *DEVPTS_SB(struct super_block *sb)
-@@ -259,7 +259,6 @@ static int devpts_parse_param(struct fs_context *fc, struct fs_parameter *param)
- static int mknod_ptmx(struct super_block *sb, struct fs_context *fc)
- {
- 	int mode;
--	int rc = -ENOMEM;
- 	struct dentry *dentry;
- 	struct inode *inode;
- 	struct dentry *root = sb->s_root;
-@@ -268,18 +267,10 @@ static int mknod_ptmx(struct super_block *sb, struct fs_context *fc)
- 	kuid_t ptmx_uid = current_fsuid();
- 	kgid_t ptmx_gid = current_fsgid();
- 
--	inode_lock(d_inode(root));
--
--	/* If we have already created ptmx node, return */
--	if (fsi->ptmx_dentry) {
--		rc = 0;
--		goto out;
--	}
--
--	dentry = d_alloc_name(root, "ptmx");
--	if (!dentry) {
-+	dentry = simple_start_creating(root, "ptmx");
-+	if (IS_ERR(dentry)) {
- 		pr_err("Unable to alloc dentry for ptmx node\n");
--		goto out;
-+		return PTR_ERR(dentry);
+diff --git a/drivers/android/binderfs.c b/drivers/android/binderfs.c
+index 8253e517ab6c..a28d0511960e 100644
+--- a/drivers/android/binderfs.c
++++ b/drivers/android/binderfs.c
+@@ -189,9 +189,9 @@ static int binderfs_binder_device_create(struct inode *ref_inode,
+ 		goto err;
  	}
+ 	inode->i_private = device;
+-	d_instantiate(dentry, inode);
++	d_make_persistent(dentry, inode);
+ 	fsnotify_create(root->d_inode, dentry);
+-	inode_unlock(d_inode(root));
++	simple_done_creating(dentry);
  
- 	/*
-@@ -287,9 +278,9 @@ static int mknod_ptmx(struct super_block *sb, struct fs_context *fc)
- 	 */
- 	inode = new_inode(sb);
- 	if (!inode) {
-+		simple_done_creating(dentry);
- 		pr_err("Unable to alloc inode for ptmx node\n");
--		dput(dentry);
--		goto out;
-+		return -ENOMEM;
- 	}
+ 	binder_add_device(device);
  
- 	inode->i_ino = 2;
-@@ -299,23 +290,18 @@ static int mknod_ptmx(struct super_block *sb, struct fs_context *fc)
- 	init_special_inode(inode, mode, MKDEV(TTYAUX_MAJOR, 2));
- 	inode->i_uid = ptmx_uid;
- 	inode->i_gid = ptmx_gid;
-+	fsi->ptmx_inode = inode;
+@@ -432,7 +432,8 @@ static int binderfs_binder_ctl_create(struct super_block *sb)
  
+ 	inode->i_private = device;
+ 	info->control_dentry = dentry;
 -	d_add(dentry, inode);
 +	d_make_persistent(dentry, inode);
++	dput(dentry);
  
--	fsi->ptmx_dentry = dentry;
--	rc = 0;
--out:
--	inode_unlock(d_inode(root));
--	return rc;
-+	simple_done_creating(dentry);
-+
-+	return 0;
- }
+ 	return 0;
  
- static void update_ptmx_mode(struct pts_fs_info *fsi)
- {
--	struct inode *inode;
--	if (fsi->ptmx_dentry) {
--		inode = d_inode(fsi->ptmx_dentry);
--		inode->i_mode = S_IFCHR|fsi->mount_opts.ptmxmode;
--	}
-+	fsi->ptmx_inode->i_mode = S_IFCHR|fsi->mount_opts.ptmxmode;
- }
- 
- static int devpts_reconfigure(struct fs_context *fc)
-@@ -461,7 +447,7 @@ static void devpts_kill_sb(struct super_block *sb)
- 	if (fsi)
- 		ida_destroy(&fsi->allocated_ptys);
- 	kfree(fsi);
--	kill_litter_super(sb);
-+	kill_anon_super(sb);
- }
- 
- static struct file_system_type devpts_fs_type = {
-@@ -534,16 +520,15 @@ struct dentry *devpts_pty_new(struct pts_fs_info *fsi, int index, void *priv)
- 	sprintf(s, "%d", index);
- 
- 	dentry = d_alloc_name(root, s);
--	if (dentry) {
--		dentry->d_fsdata = priv;
--		d_add(dentry, inode);
--		fsnotify_create(d_inode(root), dentry);
--	} else {
-+	if (!dentry) {
- 		iput(inode);
+@@ -479,19 +480,16 @@ struct dentry *binderfs_create_file(struct dentry *parent, const char *name,
+ 	sb = parent_inode->i_sb;
+ 	new_inode = binderfs_make_inode(sb, S_IFREG | 0444);
+ 	if (!new_inode) {
+-		dput(dentry);
 -		dentry = ERR_PTR(-ENOMEM);
+-		goto out;
++		simple_done_creating(dentry);
 +		return ERR_PTR(-ENOMEM);
  	}
+ 
+ 	new_inode->i_fop = fops;
+ 	new_inode->i_private = data;
+-	d_instantiate(dentry, new_inode);
++	d_make_persistent(dentry, new_inode);
+ 	fsnotify_create(parent_inode, dentry);
 -
+-out:
+-	inode_unlock(parent_inode);
 -	return dentry;
-+	dentry->d_fsdata = priv;
-+	d_make_persistent(dentry, inode);
-+	fsnotify_create(d_inode(root), dentry);
-+	dput(dentry);
++	simple_done_creating(dentry);
 +	return dentry; // borrowed
  }
  
- /**
-@@ -573,7 +558,7 @@ void devpts_pty_kill(struct dentry *dentry)
- 	drop_nlink(dentry->d_inode);
- 	d_drop(dentry);
- 	fsnotify_unlink(d_inode(dentry->d_parent), dentry);
--	dput(dentry);	/* d_alloc_name() in devpts_pty_new() */
-+	d_make_discardable(dentry);
+ static struct dentry *binderfs_create_dir(struct dentry *parent,
+@@ -510,21 +508,18 @@ static struct dentry *binderfs_create_dir(struct dentry *parent,
+ 	sb = parent_inode->i_sb;
+ 	new_inode = binderfs_make_inode(sb, S_IFDIR | 0755);
+ 	if (!new_inode) {
+-		dput(dentry);
+-		dentry = ERR_PTR(-ENOMEM);
+-		goto out;
++		simple_done_creating(dentry);
++		return ERR_PTR(-ENOMEM);
+ 	}
+ 
+ 	new_inode->i_fop = &simple_dir_operations;
+ 	new_inode->i_op = &simple_dir_inode_operations;
+ 
+ 	set_nlink(new_inode, 2);
+-	d_instantiate(dentry, new_inode);
++	d_make_persistent(dentry, new_inode);
+ 	inc_nlink(parent_inode);
+ 	fsnotify_mkdir(parent_inode, dentry);
+-
+-out:
+-	inode_unlock(parent_inode);
++	simple_done_creating(dentry);
+ 	return dentry;
  }
  
- static int __init init_devpts_fs(void)
+@@ -740,7 +735,7 @@ static void binderfs_kill_super(struct super_block *sb)
+ 	 * During inode eviction struct binderfs_info is needed.
+ 	 * So first wipe the super_block then free struct binderfs_info.
+ 	 */
+-	kill_litter_super(sb);
++	kill_anon_super(sb);
+ 
+ 	if (info && info->ipc_ns)
+ 		put_ipc_ns(info->ipc_ns);
 -- 
 2.47.3
 
