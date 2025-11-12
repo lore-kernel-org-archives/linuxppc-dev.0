@@ -1,84 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-14124-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14125-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1CD89CCF9F8
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Nov 2025 12:54:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 97C6BCCF9F8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Nov 2025 13:57:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d63Hy1KV3z2yv7;
-	Wed, 12 Nov 2025 23:54:06 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::434"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762952046;
-	cv=none; b=aaNEIALiVX9FAUdqqFigOIAOH/pDqGklPYRiU7Py8CudHzN3FPYdcbktdvu4fLzit+GW4UykoJWnmAplLpNUp3Bdq1H5WophT1PlIoAnAPh5GoBup+TezVyUR8JeQ+dhoYUHzSzyUthnjf7OhF9k4uZD97BKyBO54gDJ/RayNERjV9FvFIcD80LIO5B1rdW1++EFL2x1HdyE/2ocvHwhss+iOfP3aSZzctPLLj4w66/bUbOaqHGAAWPG9uEpXkRopgpr6+NdF86/5/SVyx++5Ra4uCxGCT77OLqdSKyzy7wbAtP1BdMC4E+i/PHCAe+PAzS++VuGSfqfjDiDrA0JBw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d64jZ6JJKz2yv7;
+	Thu, 13 Nov 2025 00:57:54 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762955874;
+	cv=none; b=F8jcXVbADHQuOt+7BCyS+YgkC2xcoE1T4LB5z0AMr1U9iMGNFvrkUl7bbxGNV6med6PmWiAllHORbhMV1CrFEIP6nPaRRs7JRb+5PDf242CtXizJp2laJrZQbZKwByLHUAjE8KYeIT4Gpk5sFsPJseXkMlqlf/RkgWDdNRgzYZX2wxKVXFz1TyDTCWDvev+Ae1ppDA+Yjxz54/qxZFbnTCG9blYYz/Xpd1xD4OW7gSUsAELwKK4QFNcml0daiQ19u834hXey+q+arOFRsuRGV650KiIkH9hLn1TBweb0PW0vkwxKEt5jCIxYzRJQyd53jshzJi5fi3zHKVnJTMTA3A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762952046; c=relaxed/relaxed;
-	bh=m7QU3Nro3+J8938RktDaaa2WfecjloM5MbKrrkuSdG8=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References:
-	 MIME-version:Content-type; b=A3nDbrgyzwIQeBpiSZKmEtjjrcnoj909oNdCnx+RhypvAPErJmFzTRxeHNoZCT9QZngH460ULfHnMmYklXHuXC3TR2p+8NelSO2l/XpL8OvUEasSs4P0NpvTSMa4mz00ow/sx6iNwGNanaFd6aeVDipAU9W1+sYzvY1HUrRkd2Ujm4VBprg6EnKLiCkxnf5lKnfQ0rG78wrIsG0ZwbKAmOBkgisno6SKsPxXVY6jaEtlx1ONCLy8hWGD6+FxSu42p3D/58ghcAq1u69thC9fsQjLZqE4fn8uKqtgnneBLmwztz3K5qiqTyMsk4j5K2w/tm7ZN9SYwdTvYjT8gS474w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CaLVIbfU; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1762955874; c=relaxed/relaxed;
+	bh=/iYFkq8EoSIFdFM4yiltEoa/A9Iy/iMJWrMfuUMJqAY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=XLH8iZnOhmhv8aDMQfkyh57bnZhTiGyHNkEDmStMylDujMtt3HPjsHvjsXrKwUh/PQgrShbFe9AZXVnO36jWLcU5CllSz/6dABw8tTxpVHgy6j9Ybwmq6COD3xEHRGdg7R5kPt22qzOt0J1anqDLd1Fz6oKIQNgw7A/f5Xzb3SH82dV3k5fwAIS9FFQ5LKawwDC+LPoaBEdQN0oNs/5o/vCOeFAyvbaE3E9JTIOc85XHx+EI9gPT6jdeeEn1izBxuBaucK6OsWy5vX5WZhhzpcBLm+XHLlD3mpxGe9JN33Ch/IxNFtoQDgzHacLUNhLjczrPt/4WCkPXB7vLpgsGaw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uDdn5b0T; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=CaLVIbfU;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=uDdn5b0T;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::434; helo=mail-pf1-x434.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x434.google.com (mail-pf1-x434.google.com [IPv6:2607:f8b0:4864:20::434])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=david@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d63Hw1zfXz2yhD
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2025 23:54:03 +1100 (AEDT)
-Received: by mail-pf1-x434.google.com with SMTP id d2e1a72fcca58-7aa9be9f03aso763904b3a.2
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2025 04:54:03 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1762952039; x=1763556839; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=m7QU3Nro3+J8938RktDaaa2WfecjloM5MbKrrkuSdG8=;
-        b=CaLVIbfUPz+BYgyTaBo4111rydyHv1OUD8WKY8YYncJLQUCm1rOB1+neXrJN1KE3ba
-         YxG05TV+lsOV91yJb/rClfRi2+rgSeimQhi4bisYFmk+qD8sueuQNnsli9RJljk6X43F
-         U0qSyl5GEsEzx1SqkuKDAFMEsW/Qj5Duuz9VcDzwdlMAyFcJXer05TYF5KpGaL6uM2jt
-         iLdW4uUAGkGyyREBvXO1znf5kkl4Oh5JxZD1q1Se0yq+ma6qJadWBenI+WvDmB+mT589
-         SSOXVKsUjr5Q27haZl3JCGYa5UvMKOBski1QDXCUwA4gZNpsSj7b48keBdCjLb4ZklGU
-         Recw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1762952039; x=1763556839;
-        h=content-transfer-encoding:mime-version:references:message-id:date
-         :in-reply-to:subject:cc:to:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=m7QU3Nro3+J8938RktDaaa2WfecjloM5MbKrrkuSdG8=;
-        b=G+8AufAML3XYZDfmz0StIbpEmkPo5JSIVHDs474831QhR6y92ktxJnP2fkE59ZW+GZ
-         VJ4ohoNjzPPzqQVCGhzR4lR8deyYfVw7Txv2Ff7dvRyc0EKv/WhDudOMJyWPPyctjqvb
-         nYmpOLwUZN4huGuvReGywwSp2QLIMj/JI/ZYiut4TWgoXzyHvPo9yRufbhgQStInu0Ol
-         KPV4eXTMqYO4QirkA8jyOPjMDcNmJlmxrwQucMGBSCkS6bHTnxHJd21/ect1D29mxSNW
-         pA+VMyPZ9A9qJCZSB+tK/xVSF+Ztgz9X5UpXipM5keAytH5CxTvGFgH3kJXMjPgp7O7i
-         fmAQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWYHjcxi6Ohc/pr64ITY1zycFIgNTR2KkaBl+H41Q+7qJZxaanXUeKbaBXtJGoeWoXZRr3kFbSLPOXs5ig=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyOJrG8CeMK/Fh9mLyo0b778RlqvIT28p+VP/PDr5kzeD6RUHL2
-	ffmkzAnejq+qkwqAzjYVFZAqc0ZHdAfpBzHVf3BxBWGLOFnwregVcHNf
-X-Gm-Gg: ASbGncvEJNYeQICveBElHG+5HoZGDICpUjk1iIAkK+w92+CehEwfGsiw3SJuM3f9l2X
-	Sy+cH5jt4LKhro1+gwUT7hXb3MJ2Xo2yrnwOhvae6qEYpw9Zq1/ktpqrH+zKovlnS3v3lhIfA3W
-	wJQnQItgvgNRf4Ead/N5L7VO6lLn0RFSsoZS4iiPVi61ullVCnwopAfZ4JUXxlY1qwRrm1oaECK
-	5rdJq3M6h4tAfFh1KRiNocGlXmw7MIO5GzTcFqs+igKaJfBkyfEaCpWkKcQmqdT4bC03KYlimEC
-	8INi2nRbNveTVS662Cgc9KbF6337KfIgZdCIALPqQxOEgnyxD3tar2Szln4gloHeKwPJdvRZs6I
-	7WcxICh0TDCxz1xJJOoRF7TH+7DtnOOfwcWgh5LC6z5/nO5g+PJEHZ12IuM6R0i5Xprp2QkQ=
-X-Google-Smtp-Source: AGHT+IGCciHDPJxyBnrFQhMGfLPzaKU10p5tf5+ZXP6+R3DaA1R9jzgi4EfK2vJMOK8Dq1+oSNUsEg==
-X-Received: by 2002:a17:903:41c3:b0:295:5132:1a99 with SMTP id d9443c01a7336-2984edca38amr33144395ad.44.1762952039142;
-        Wed, 12 Nov 2025 04:53:59 -0800 (PST)
-Received: from dw-tp ([49.207.219.162])
-        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2984dcd0916sm30055925ad.93.2025.11.12.04.53.56
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 12 Nov 2025 04:53:58 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Christophe Leroy <christophe.leroy@csgroup.eu>, "David Hildenbrand (Red Hat)" <david@kernel.org>, Sourabh Jain <sourabhjain@linux.ibm.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Cc: Donet Tom <donettom@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>
-Subject: Re: powerpc/e500: WARNING: at mm/hugetlb.c:4755 hugetlb_add_hstate
-In-Reply-To: <1463bcd5-c47b-4c7f-bb13-2664e2e8226e@csgroup.eu>
-Date: Wed, 12 Nov 2025 16:11:57 +0530
-Message-ID: <87h5uz8rd6.ritesh.list@gmail.com>
-References: <94377f5c-d4f0-4c0f-b0f6-5bf1cd7305b1@linux.ibm.com> <dd634b17-cc5e-497c-8228-2470f6533177@redhat.com> <82ef1da8-44c4-4a58-bd00-9839548cb72d@csgroup.eu> <ba3a2131-c8d4-481d-aebb-d25be7ae0d19@kernel.org> <d62eea1f-3aff-4b51-976a-4cb8abf502bf@csgroup.eu> <cdd23dd6-5444-4000-ac68-a72b22bf6a57@kernel.org> <1463bcd5-c47b-4c7f-bb13-2664e2e8226e@csgroup.eu>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d64jY6zYPz2yFT
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2025 00:57:53 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 6148D60213;
+	Wed, 12 Nov 2025 13:57:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 29847C2BCB4;
+	Wed, 12 Nov 2025 13:57:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1762955871;
+	bh=wyYh5JA+N7mRZY7BRonX9hRu7lWf6kG2xADXz4mWKHk=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=uDdn5b0TMd79Lh5gGh2J4WjGYOU7mL3bVuBbQ/VXgzY4nMQRUASwOOOn1wPdm3Cym
+	 W4XE28wEzp5MfEzdP2hqphehcMkmvAS/b8w6wcpUiLZxYE0rCMGLEp+rVCdW9qI4ba
+	 ocobM87q4/c0/j7wdbVyzm/yrXe8KetWir7vwxyUiRXtVNS/+8DnZ7OaB4HqMTf7u6
+	 36VSYtBbbyHuGEXAGGvXe/GFkuJFAWR+xBF55ycy4xXYzkSJweCr6O/7vY6qeuk4iJ
+	 2JAYXvNk5KDLXblAvdwOWYLaBc3JfMXId6w7fnEaMQeOyF/yR5GPTl+Yi8z7SCHe3i
+	 /nZPR2FUDupLg==
+Message-ID: <ba3cf0c1-174e-4e86-b464-7c5c15a803d8@kernel.org>
+Date: Wed, 12 Nov 2025 14:57:32 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,160 +58,67 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-version: 1.0
-Content-type: text/plain; charset=utf-8
-Content-Transfer-Encoding: 8bit
+MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 07/12] mm: enable lazy_mmu sections to nest
+To: Kevin Brodsky <kevin.brodsky@arm.com>, Ryan Roberts
+ <ryan.roberts@arm.com>, linux-mm@kvack.org
+Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
+ Andreas Larsson <andreas@gaisler.com>,
+ Andrew Morton <akpm@linux-foundation.org>,
+ Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
+ <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
+ Christophe Leroy <christophe.leroy@csgroup.eu>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ "David S. Miller" <davem@davemloft.net>,
+ David Woodhouse <dwmw2@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
+ Ingo Molnar <mingo@redhat.com>, Jann Horn <jannh@google.com>,
+ Juergen Gross <jgross@suse.com>, "Liam R. Howlett"
+ <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
+ Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
+ Peter Zijlstra <peterz@infradead.org>, Suren Baghdasaryan
+ <surenb@google.com>, Thomas Gleixner <tglx@linutronix.de>,
+ Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>,
+ Yeoreum Yun <yeoreum.yun@arm.com>, linux-arm-kernel@lists.infradead.org,
+ linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
+ xen-devel@lists.xenproject.org, x86@kernel.org
+References: <20251029100909.3381140-1-kevin.brodsky@arm.com>
+ <20251029100909.3381140-8-kevin.brodsky@arm.com>
+ <999feffa-5d1d-42e3-bd3a-d949f2a9de9d@arm.com>
+ <cc9dc398-b9c5-4bb8-94ad-7e7f3ddd5b4f@arm.com>
+ <824bf705-e9d6-4eeb-9532-9059fa56427f@arm.com>
+ <58fd1a6e-f2c4-421c-9b95-dea4b244a515@arm.com>
+ <8f70692c-25a9-4bd0-94ab-43ab435e4b1b@arm.com>
+ <cdb4b97a-415b-4dba-877b-0cd570381a6d@arm.com>
+From: "David Hildenbrand (Red Hat)" <david@kernel.org>
+Content-Language: en-US
+In-Reply-To: <cdb4b97a-415b-4dba-877b-0cd570381a6d@arm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 7bit
 
-Christophe Leroy <christophe.leroy@csgroup.eu> writes:
 
-> Le 10/11/2025 à 12:27, David Hildenbrand (Red Hat) a écrit :
->> Thanks for the review!
->> 
 >>>
->>> So I think what you want instead is:
->>>
->>> diff --git a/arch/powerpc/platforms/Kconfig.cputype
->>> b/arch/powerpc/platforms/Kconfig.cputype
->>> index 7b527d18aa5ee..1f5a1e587740c 100644
->>> --- a/arch/powerpc/platforms/Kconfig.cputype
->>> +++ b/arch/powerpc/platforms/Kconfig.cputype
->>> @@ -276,6 +276,7 @@ config PPC_E500
->>>           select FSL_EMB_PERFMON
->>>           bool
->>>           select ARCH_SUPPORTS_HUGETLBFS if PHYS_64BIT || PPC64
->>> +       select ARCH_HAS_GIGANTIC_PAGE if ARCH_SUPPORTS_HUGETLBFS
->>>           select PPC_SMP_MUXED_IPI
->>>           select PPC_DOORBELL
->>>           select PPC_KUEP
->>>
->>>
->>>
->>>>        select ARCH_HAS_KCOV
->>>>        select ARCH_HAS_KERNEL_FPU_SUPPORT    if PPC64 && PPC_FPU
->>>>        select ARCH_HAS_MEMBARRIER_CALLBACKS
->>>> diff --git a/arch/powerpc/platforms/Kconfig.cputype b/arch/powerpc/
->>>> platforms/Kconfig.cputype
->>>> index 7b527d18aa5ee..4c321a8ea8965 100644
->>>> --- a/arch/powerpc/platforms/Kconfig.cputype
->>>> +++ b/arch/powerpc/platforms/Kconfig.cputype
->>>> @@ -423,7 +423,6 @@ config PPC_64S_HASH_MMU
->>>>    config PPC_RADIX_MMU
->>>>        bool "Radix MMU Support"
->>>>        depends on PPC_BOOK3S_64
->>>> -    select ARCH_HAS_GIGANTIC_PAGE
->>>
->>> Should remain I think.
->>>
->>>>        default y
->>>>        help
->>>>          Enable support for the Power ISA 3.0 Radix style MMU. Currently
->> 
->> 
->> We also have PPC_8xx do a
->> 
->>      select ARCH_SUPPORTS_HUGETLBFS
->> 
->> And of course !PPC_RADIX_MMU (e.g., PPC_64S_HASH_MMU) through 
->> PPC_BOOK3S_64.
->> 
->> Are we sure they cannot end up with gigantic folios through hugetlb?
->> 
->
-> Yes indeed. My PPC_8xx is OK because I set CONFIG_ARCH_FORCE_MAX_ORDER=9 
-> (largest hugepage is 8M) but I do get the warning with the default value 
-> which is 8 (with 16k pages).
->
-> For PPC_64S_HASH_MMU, max page size is 16M, we get no warning with 
-> CONFIG_ARCH_FORCE_MAX_ORDER=8 which is the default value but get the 
-> warning with CONFIG_ARCH_FORCE_MAX_ORDER=7
->
+>>> I don't really mind either way, but I don't see an immediate use for [C]
+>>> and [D] - the idea is that the paused section is short and controlled,
+>>> not made up of arbitrary calls.
+>> If my thinking above is correct, then I've already demonstrated that this is not
+>> the case. So I'd be inclined to go with [D] on the basis that it is the most robust.
+>>
+>> Keeping 2 nesting counts (enable and pause) feels pretty elegant to me and gives
+>> the fewest opportunities for surprises.
+> 
+> Agreed, if we're going to allow enable() within a paused section, then
+> we might as well allow paused sections to nest too. The use-case is
+> clear, so I'm happy to go ahead and make those changes.
+> 
+> David, any thoughts?
 
-This made me thinking.. Currently we can also get warning even on
-book3s64 when CONFIG_PPC_RADIX_MMU=n is selected because max page size
-in case of HASH can be 16G. I guess this was not getting tested in
-regular CI because it requires us to disable RADIX config during build.
+I don't mind allowing nesting of pause(), so works for me.
 
-We will end up in this path on Hash where MAX_PAGE_ORDER is
-CONFIG_ARCH_FORCE_MAX_ORDER which is 8, this is because we HAVE
-ARCH_HAS_GIGANTIC_PAGE=n in case of only HASH.
+-- 
+Cheers
 
-From below, MAX_FOLIO_ORDER on !PPC_RADIX_MMU (HASH) becomes 8 i.e... 
-
-    #if !defined(CONFIG_ARCH_HAS_GIGANTIC_PAGE)
-    /*
-    * We don't expect any folios that exceed buddy sizes (and consequently
-    * memory sections).
-    */
-    #define MAX_FOLIO_ORDER		MAX_PAGE_ORDER
-
-...And thus 
-we get similar warning because (order=18 for 16G) > MAX_FOLIO_ORDER(8) in hugetlb_add_hstate().
-
-[    0.000000] Kernel command line: console=hvc0 console=hvc1 systemd.unit=emergency.target root=/dev/vda1 noreboot disable_radix=1 hugepagesz=16M hugepages=1 hugepagesz=16G hugepages=1 default_hugepagesz=16G
-<...>
-[    0.000000] ------------[ cut here ]------------
-[    0.000000] WARNING: CPU: 0 PID: 0 at mm/hugetlb.c:4753 hugetlb_add_hstate+0xf4/0x228
-[    0.000000] Modules linked in:
-[    0.000000] CPU: 0 UID: 0 PID: 0 Comm: swapper Not tainted 6.18.0-rc3-00138-g1e87cdb8702c #26 NONE
-[    0.000000] Hardware name: IBM PowerNV (emulated by qemu) POWER10 0x801200 opal:v7.1-106-g785a5e307 PowerNV
-[    0.000000] NIP:  c00000000204ef4c LR: c00000000204f1b0 CTR: c00000000204ee68
-[    0.000000] REGS: c000000002857ad0 TRAP: 0700   Not tainted  (6.18.0-rc3-00138-g1e87cdb8702c)
-[    0.000000] MSR:  9000000002021033 <SF,HV,VEC,ME,IR,DR,RI,LE>  CR: 28000448  XER: 00000000
-[    0.000000] CFAR: c00000000204eed8 IRQMASK: 3
-<...>
-[    0.000000] NIP [c00000000204ef4c] hugetlb_add_hstate+0xf4/0x228
-[    0.000000] LR [c00000000204f1b0] hugepagesz_setup+0x130/0x16c
-[    0.000000] Call Trace:
-[    0.000000] [c000000002857d70] [c0000000020ee564] hstate_cmdline_buf+0x4/0x800 (unreliable)
-[    0.000000] [c000000002857e10] [c00000000204f1b0] hugepagesz_setup+0x130/0x16c
-[    0.000000] [c000000002857e80] [c0000000020505a8] hugetlb_bootmem_alloc+0xd8/0x1d0
-[    0.000000] [c000000002857ec0] [c000000002046828] mm_core_init+0x2c/0x254
-[    0.000000] [c000000002857f30] [c0000000020012ac] start_kernel+0x404/0xae0
-[    0.000000] [c000000002857fe0] [c00000000000e934] start_here_common+0x1c/0x20
-<...>
-[    2.557050] HugeTLB: allocation took 7ms with hugepage_allocation_threads=1
-[    2.562263] ------------[ cut here ]------------
-[    2.564482] WARNING: CPU: 0 PID: 1 at mm/internal.h:758 gather_bootmem_prealloc_parallel+0x454/0x4d8
-[    2.568266] Modules linked in:
-[    2.570204] CPU: 0 UID: 0 PID: 1 Comm: swapper/0 Tainted: G        W           6.18.0-rc3-00138-g1e87cdb8702c #26 NONE
-[    2.574570] Tainted: [W]=WARN
-[    2.576009] Hardware name: IBM PowerNV (emulated by qemu) POWER10 0x801200 opal:v7.1-106-g785a5e307 PowerNV
-[    2.579979] NIP:  c00000000204f9b0 LR: c00000000204f870 CTR: c00000000204f55c
-[    2.582763] REGS: c000000004a0f5a0 TRAP: 0700   Tainted: G        W            (6.18.0-rc3-00138-g1e87cdb8702c)
-[    2.586670] MSR:  9000000002029033 <SF,HV,VEC,EE,ME,IR,DR,RI,LE>  CR: 44002288  XER: 20040000
-[    2.590234] CFAR: c00000000204f880 IRQMASK: 0
-<...>
-[    2.616926] NIP [c00000000204f9b0] gather_bootmem_prealloc_parallel+0x454/0x4d8
-[    2.619928] LR [c00000000204f870] gather_bootmem_prealloc_parallel+0x314/0x4d8
-[    2.622799] Call Trace:
-[    2.624068] [c000000004a0f840] [c00000000204f85c] gather_bootmem_prealloc_parallel+0x300/0x4d8 (unreliable)
-[    2.627847] [c000000004a0f930] [c000000002041018] padata_do_multithreaded+0x470/0x518
-[    2.631141] [c000000004a0fad0] [c00000000204fce8] hugetlb_init+0x2b4/0x904
-[    2.633914] [c000000004a0fc10] [c000000000010d74] do_one_initcall+0xac/0x438
-[    2.636761] [c000000004a0fcf0] [c000000002001dfc] kernel_init_freeable+0x3cc/0x720
-[    2.639764] [c000000004a0fde0] [c000000000011344] kernel_init+0x34/0x260
-[    2.642688] [c000000004a0fe50] [c00000000000debc] ret_from_kernel_user_thread+0x14/0x1c
-[    2.646020] ---- interrupt: 0 at 0x0
-[    2.647943] Code: eba100d8 ebc100e0 ebe100e8 e9410058 e92d0c70 7d4a4a79 39200000 40820044 382100f0 eaa1ffa8 4e800020 60420000 <0fe00000> 4bfffed0 3ba00000 7ee4bb78
-[    2.654240] irq event stamp: 50400
-[    2.655991] hardirqs last  enabled at (50399): [<c00000000002ed84>] interrupt_exit_kernel_prepare+0xd8/0x224
-[    2.659759] hardirqs last disabled at (50400): [<c00000000002bdb8>] program_check_exception+0x60/0x78
-[    2.663293] softirqs last  enabled at (50320): [<c00000000017aa0c>] handle_softirqs+0x5a8/0x5c0
-[    2.666819] softirqs last disabled at (50315): [<c0000000000165e4>] do_softirq_own_stack+0x40/0x54
-[    2.670569] ---[ end trace 0000000000000000 ]---
-[    2.697258] HugeTLB: registered 16.0 MiB page size, pre-allocated 1 pages
-[    2.700831] HugeTLB: 0 KiB vmemmap can be freed for a 16.0 MiB page
-[    2.703917] HugeTLB: registered 16.0 GiB page size, pre-allocated 1 pages
-[    2.707073] HugeTLB: 0 KiB vmemmap can be freed for a 16.0 GiB page
-
-
-So I guess making PPC select ARCH_HAS_GIGANTIC_PAGE if ARCH_SUPPORTS_HUGETLBFS is true,
-should help us resolve this warning w.r.t order. 
-And I guess the runtime allocation of gigantic pages is anyway being controlled
-via, __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED
-
-Feel free to correct me here if I missed anything. There seems to be a
-lot of history related to hugetlb / gigantic pages.
-
--ritesh
+David
 
