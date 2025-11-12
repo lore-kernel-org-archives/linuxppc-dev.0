@@ -1,36 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-14119-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14120-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66B80CCFA1A
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Nov 2025 10:43:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B91D4CCF9F8
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Nov 2025 11:11:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d60PV5Lwmz2yv7;
-	Wed, 12 Nov 2025 21:43:42 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762944222;
-	cv=none; b=la0O/X2U/DZz4rUy7sJwCi/uv9E/DEaSvZKZQtF7iPvUP/BtY4XGTBocp3SjNapb/wJ0gZqJqzpJn2VGEaXEqwsPTwaLrNbQPpOezR78kVtm88ZbqCYVrP0d8c6hnEqx4OEI02EBrUMDcavoIX34gioLaVdorKCLcta346mGNl+hIUCqOWtc2OKpWUBjIh1hDpvGwWS5m+K66As4gG/c/2xtro26vgL4F6cUKtFMS5Zr+wIxzY2Gqo9ye1J44dsuhNL9RFqiM75f/M8FIgdElARLAEMRK/4Re1/VQ2rSvA4QR0m53gk7VDLgHwQJVB2Y9rbOmFhZkQOVUJx9aLPI9g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d611X26Qfz2yvJ;
+	Wed, 12 Nov 2025 22:11:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762945888;
+	cv=none; b=X1V0jBSZo9l2Z9A0DaccWAzb5G0DwuzBQTkeYLqGmhPUqTLO6axb+xmtee/7C0zqJJkT3wharFs2aeLdScFCH0FLr1g56wCbyxWY7dY4xCqtS85svs/lE+Koyr11NELLVqSRt9/cFJRy7qlxrxh3dQmeJXojqKT9eUEUjyYHLOszcmKAIzMMV23HHzy+baIsEDRUQpVbrIMU1m+h8+bUHF2bW3zIQRPqgOgioIS3GFTCEiCXX0EPDheTtIAXg23U5pGuTeuOSVdXhVA7di/7dSIqh1hUXFuZXRdw5ZJuY4LK/z1fcJTol98ZelwR2JRkDqduLKaW3Rr2TM4EBUFQ9g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762944222; c=relaxed/relaxed;
-	bh=9CszuyZCpIAkXuMjAUxx68LzymHvfkndaeApzQvLhEA=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=eCAez7NcFvL/kw7RQOILs2k/czcyFYc60FdaMLR/dQ9ynM8y52hcsnCMVmRMLrVgBpwFy5fsyUGaQyjgQpkYB1aEQ+K7XSH5kIykQaOx3C61wx3/Z9ZMngNxr9SwwlPOq9a24xnesMKoQNE1Vup2bHFlEVAcXC78GNrkUwrb7WDpkU3Jix5E1QbD8Beo3pXjlUFwlJ2YnNFIGJrFzlYz2+1rmdfUPvA6/4qJy0/hcpPWYWuZkiJUQcGJ6dXHqc3FL836DMKBLNLaiePoAqNMYkyc6kUlDlTZRcjE0CecKMk1QrKSvZP9dIFawZKwHGMiI6pBFxZQxMAaueM264xhdQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
-Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d60PT3f3Sz2xnk
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2025 21:43:39 +1100 (AEDT)
-Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7755A1515;
-	Wed, 12 Nov 2025 02:42:59 -0800 (PST)
-Received: from [10.57.41.24] (unknown [10.57.41.24])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id A008F3F5A1;
-	Wed, 12 Nov 2025 02:43:00 -0800 (PST)
-Message-ID: <cdb4b97a-415b-4dba-877b-0cd570381a6d@arm.com>
-Date: Wed, 12 Nov 2025 11:42:58 +0100
+	t=1762945888; c=relaxed/relaxed;
+	bh=BTqpXblR2MmWwuxnWmnvD7lHq17zUp97beScJJW/TJ8=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=OnsrCQTo0fM8cETa09tiowNXrCVAvyn+naUg/1l0zMhMor0HVMCTSepLojMh3XukvV9sH+Bk4TILB7NElXvM2CaQkuyVL95ng0TZYjULhiroKFh4e9M2uuXb/0EJkrwE/uEC4z31S5v9Otai+BXB5h/nJTyKVvu1k9hu1XtNYmnZJ1RDZZjDrQrJYTy856tXnbGeW9KSqoiizD+bI2euzDfBMnXvSXnVTJJrT3kHrmOVBLkrL3kAZIh1LGpG3Z9ondmKtwNtyUbre8lALNmHF22qFx4npQkqWoxCfc+SY+byjPaJjXO7DOTKZTP6ZmcmnFxNFXCgRoCVvmu6+dMZOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TFwuHogb; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=TFwuHogb;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d611W25dSz2yv7
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 12 Nov 2025 22:11:26 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5AC3IjJV001126;
+	Wed, 12 Nov 2025 11:11:14 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=BTqpXblR2MmWwuxnWmnvD7lHq17zUp97beScJJW/T
+	J8=; b=TFwuHogbpRKQAmI++jBNelUUgtu4ezVnYY3bebc4hJZQpu8yLT0wmSZh8
+	1wbjzlkps5MDi3hubU/rhQQeQ1ibPI4lyUpNnMuRn34OOV8LoBnQEjZvL+5wFdvM
+	CC5lG0L8WqV3OjVs1+PBiWWgxiZQpvkKHwzZxVgrSNFVKtdQdtnGiWZWzq+BZnsK
+	OlBJ7PN7jbEhLJdJI6PWfoypv5jHbZgLvJH9TQFyFt/zpa8UL8MQMD+WoeJfKJJw
+	RyXMCZXe3fwGXkGawPCleS3NZky8xuExjMAUULlFX5k5fheUx/NdKTfkSl2xhNYP
+	6v+EvtpOZFjJ9cICQ5idPs7PDpxHQ==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aa5tjyn5b-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 12 Nov 2025 11:11:14 +0000 (GMT)
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5ACAx5pm010146;
+	Wed, 12 Nov 2025 11:11:14 GMT
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aa5tjyn58-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 12 Nov 2025 11:11:14 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5ACA0q7M014773;
+	Wed, 12 Nov 2025 11:11:13 GMT
+Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4aahpk7qwh-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 12 Nov 2025 11:11:13 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5ACBB99T14221592
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 12 Nov 2025 11:11:09 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 6E59520040;
+	Wed, 12 Nov 2025 11:11:09 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id CCE4420043;
+	Wed, 12 Nov 2025 11:11:04 +0000 (GMT)
+Received: from sapthagiri.in.ibm.com (unknown [9.124.211.234])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 12 Nov 2025 11:11:04 +0000 (GMT)
+From: Srikar Dronamraju <srikar@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
+        linux-kernel@vger.kernel.org,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        Srikar Dronamraju <srikar@linux.ibm.com>
+Subject: [PATCH 1/2] pseries/dtl: Use counter in !native case too
+Date: Wed, 12 Nov 2025 16:40:50 +0530
+Message-ID: <20251112111051.826922-1-srikar@linux.ibm.com>
+X-Mailer: git-send-email 2.51.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -44,230 +95,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v4 07/12] mm: enable lazy_mmu sections to nest
-To: Ryan Roberts <ryan.roberts@arm.com>, linux-mm@kvack.org,
- David Hildenbrand <david@redhat.com>
-Cc: linux-kernel@vger.kernel.org, Alexander Gordeev <agordeev@linux.ibm.com>,
- Andreas Larsson <andreas@gaisler.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- Boris Ostrovsky <boris.ostrovsky@oracle.com>, Borislav Petkov
- <bp@alien8.de>, Catalin Marinas <catalin.marinas@arm.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- "David S. Miller" <davem@davemloft.net>,
- David Woodhouse <dwmw2@infradead.org>, "H. Peter Anvin" <hpa@zytor.com>,
- Ingo Molnar <mingo@redhat.com>, Jann Horn <jannh@google.com>,
- Juergen Gross <jgross@suse.com>, "Liam R. Howlett"
- <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>,
- Mike Rapoport <rppt@kernel.org>, Nicholas Piggin <npiggin@gmail.com>,
- Peter Zijlstra <peterz@infradead.org>, Suren Baghdasaryan
- <surenb@google.com>, Thomas Gleixner <tglx@linutronix.de>,
- Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>,
- Yeoreum Yun <yeoreum.yun@arm.com>, linux-arm-kernel@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
- xen-devel@lists.xenproject.org, x86@kernel.org
-References: <20251029100909.3381140-1-kevin.brodsky@arm.com>
- <20251029100909.3381140-8-kevin.brodsky@arm.com>
- <999feffa-5d1d-42e3-bd3a-d949f2a9de9d@arm.com>
- <cc9dc398-b9c5-4bb8-94ad-7e7f3ddd5b4f@arm.com>
- <824bf705-e9d6-4eeb-9532-9059fa56427f@arm.com>
- <58fd1a6e-f2c4-421c-9b95-dea4b244a515@arm.com>
- <8f70692c-25a9-4bd0-94ab-43ab435e4b1b@arm.com>
-From: Kevin Brodsky <kevin.brodsky@arm.com>
-Content-Language: en-GB
-In-Reply-To: <8f70692c-25a9-4bd0-94ab-43ab435e4b1b@arm.com>
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: ib7pZsNNWkwU5Trv04yv-P-Sp-MgXuZb
+X-Proofpoint-ORIG-GUID: x8VQZjiPMy92tBnSydqtSQPTAEySXqdY
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTA4MDA5OSBTYWx0ZWRfX+tYSsd+t7z9+
+ dmSClN27O/TpPM3m+eluMGgCWhL4rlWc7ffpmUHStbn7iE+GLSHEyQe/QEem3RQSpA3ntFpH+U5
+ 8oM+SE2qfU1/MxIgd91qngWeFW3VyLqrAdMiyvpNJlcB3XgCIvRuAinjmycLlWQiUSEKaL+d3aQ
+ p3juOqXJc+TDVMWTZa/aoJgaYQh9dz3hD6rtxTS7bnXzlogjHNTEM00mV/G4rXS1lZVU87twFdF
+ LdAP8Ok/ceOs7Gs8SPOzZG7beAF8+3onB4rc4rNmdvYc4Uz3bu+UmE21K5FwizgioH0NM1R2qec
+ TM4IAjNF0gMF0ZDdov7GyedRXyiZjE8BesiWMzLO/z4EDQnZ8QTKH3FBRISTanXIBhZx7/cnHzL
+ suzHrZeTsP3BQboOXpQWVtDEfpfIvw==
+X-Authority-Analysis: v=2.4 cv=V6xwEOni c=1 sm=1 tr=0 ts=69146b52 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+ a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
+ a=8Y62QmFTzL-Gdt_Yfd0A:9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-11-12_03,2025-11-11_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 lowpriorityscore=0 adultscore=0 malwarescore=0 impostorscore=0
+ suspectscore=0 priorityscore=1501 phishscore=0 bulkscore=0 spamscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2511080099
 
-On 11/11/2025 17:03, Ryan Roberts wrote:
-> On 11/11/2025 15:56, Kevin Brodsky wrote:
->> On 11/11/2025 10:24, Ryan Roberts wrote:
->>> [...]
->>>
->>>>>> +		state->active = true;
->>>>>> +		arch_enter_lazy_mmu_mode();
->>>>>> +	}
->>>>>>  }
->>>>>>  
->>>>>>  static inline void lazy_mmu_mode_disable(void)
->>>>>>  {
->>>>>> -	arch_leave_lazy_mmu_mode();
->>>>>> +	struct lazy_mmu_state *state = &current->lazy_mmu_state;
->>>>>> +
->>>>>> +	VM_WARN_ON_ONCE(state->nesting_level == 0);
->>>>>> +	VM_WARN_ON(!state->active);
->>>>>> +
->>>>>> +	if (--state->nesting_level == 0) {
->>>>>> +		state->active = false;
->>>>>> +		arch_leave_lazy_mmu_mode();
->>>>>> +	} else {
->>>>>> +		/* Exiting a nested section */
->>>>>> +		arch_flush_lazy_mmu_mode();
->>>>>> +	}
->>>>>>  }
->>>>>>  
->>>>>>  static inline void lazy_mmu_mode_pause(void)
->>>>>>  {
->>>>>> +	struct lazy_mmu_state *state = &current->lazy_mmu_state;
->>>>>> +
->>>>>> +	VM_WARN_ON(state->nesting_level == 0 || !state->active);
->>>>> nit: do you need the first condition? I think when nesting_level==0, we expect
->>>>> to be !active?
->>>> I suppose this should never happen indeed - I was just being extra
->>>> defensive.
->>>>
->>>> Either way David suggested allowing pause()/resume() to be called
->>>> outside of any section so the next version will bail out on
->>>> nesting_level == 0.
->>> Ignoring my current opinion that we don't need pause/resume at all for now; Are
->>> you suggesting that pause/resume will be completely independent of
->>> enable/disable? I think that would be best. So enable/disable increment and
->>> decrement the nesting_level counter regardless of whether we are paused.
->>> nesting_level 0 => 1 enables if not paused. nesting_level 1 => 0 disables if not
->>> paused. pause disables nesting_level >= 1, resume enables if nesting_level >= 1.
->> This is something else. Currently the rules are:
->>
->> [A]
->>
->> // pausing forbidden
->> enable()
->>     pause()
->>     // pausing/enabling forbidden
->>     resume()
->> disable()
->>
->> David suggested allowing:
->>
->> [B]
->>
->> pause()
->> // pausing/enabling forbidden
->> resume()
->>
->> Your suggestion is also allowing:
->>
->> [C]
->>
->> pause()
->>     // pausing forbidden
->>     enable()
->>     disable()
->> resume()
-> I think the current kasan kasan_depopulate_vmalloc_pte() path will require [C]
-> if CONFIG_DEBUG_PAGEALLOC is enabled on arm64. It calls __free_page() while
-> paused. I guess CONFIG_DEBUG_PAGEALLOC will cause __free_page() ->
-> debug_pagealloc_unmap_pages() ->->-> update_range_prot() -> lazy_mmu_enable().
+Currently dtl_count is only under CONFIG_VIRT_CPU_ACCOUNTING_NATIVE.
+Its used to track and clear dtl_consumer callback.
 
-Well, I really should have tried booting with KASAN enabled before...
-lazy_mmu_mode_enable() complains exactly as you predicted:
+Going forward will be using this counter to track if dtl is in-use across
+configs. Hence adding its use in !CONFIG_VIRT_CPU_ACCOUNTING_NATIVE case
+too.
 
-> [    1.047587] WARNING: CPU: 0 PID: 1 at include/linux/pgtable.h:273
-> update_range_prot+0x2dc/0x50c
-> [    1.048025] Modules linked in:
-> [    1.048296] CPU: 0 UID: 0 PID: 1 Comm: swapper/0 Not tainted
-> 6.18.0-rc3-00012-ga901e7f479f1 #142 PREEMPT
-> [    1.048706] Hardware name: FVP Base RevC (DT)
-> [    1.048941] pstate: 11400009 (nzcV daif +PAN -UAO -TCO +DIT -SSBS
-> BTYPE=--)
-> [    1.049309] pc : update_range_prot+0x2dc/0x50c
-> [    1.049631] lr : update_range_prot+0x80/0x50c
-> [    1.049950] sp : ffff8000800e6f20
-> [    1.050162] x29: ffff8000800e6fb0 x28: ffff700010014000 x27:
-> ffff700010016000
-> [    1.050747] x26: 0000000000000000 x25: 0000000000000001 x24:
-> 00000000008800f7
-> [    1.051308] x23: 0000000000000000 x22: fff00008000f7000 x21:
-> fff00008003009f8
-> [    1.051884] x20: fff00008000f8000 x19: 1ffff0001001cdea x18:
-> ffff800080769000
-> [    1.052469] x17: ffff95c63264ec00 x16: ffff8000800e7504 x15:
-> 0000000000000003
-> [    1.053045] x14: ffff95c63482f000 x13: 0000000000000000 x12:
-> ffff783ffc0007bf
-> [    1.053620] x11: 1ffff83ffc0007be x10: ffff783ffc0007be x9 :
-> dfff800000000000
-> [    1.054203] x8 : fffd80010001f000 x7 : ffffffffffffffff x6 :
-> 0000000000000001
-> [    1.054776] x5 : 0000000000000000 x4 : fff00008003009f9 x3 :
-> 1ffe00010006013f
-> [    1.055348] x2 : fff0000800300000 x1 : 0000000000000001 x0 :
-> 0000000000000000
-> [    1.055912] Call trace:
-> [    1.056100]  update_range_prot+0x2dc/0x50c (P)
-> [    1.056478]  set_memory_valid+0x44/0x70
-> [    1.056850]  __kernel_map_pages+0x68/0xe4
-> [    1.057226]  __free_frozen_pages+0x528/0x1180
-> [    1.057601]  ___free_pages+0x11c/0x160
-> [    1.057961]  __free_pages+0x14/0x20
-> [    1.058307]  kasan_depopulate_vmalloc_pte+0xd4/0x184
-> [    1.058748]  __apply_to_page_range+0x678/0xda8
-> [    1.059149]  apply_to_existing_page_range+0x14/0x20
-> [    1.059553]  kasan_release_vmalloc+0x138/0x200
-> [    1.059982]  purge_vmap_node+0x1b4/0x8a0
-> [    1.060371]  __purge_vmap_area_lazy+0x4f8/0x870
-> [    1.060779]  _vm_unmap_aliases+0x488/0x6ec
-> [    1.061176]  vm_unmap_aliases+0x1c/0x34
-> [    1.061567]  change_memory_common+0x17c/0x380
-> [    1.061949]  set_memory_ro+0x18/0x24
-> [...]
+Signed-off-by: Srikar Dronamraju <srikar@linux.ibm.com>
+---
+ arch/powerpc/platforms/pseries/dtl.c | 7 ++++---
+ 1 file changed, 4 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/platforms/pseries/dtl.c b/arch/powerpc/platforms/pseries/dtl.c
+index f293588b8c7b..6c95781cafb7 100644
+--- a/arch/powerpc/platforms/pseries/dtl.c
++++ b/arch/powerpc/platforms/pseries/dtl.c
+@@ -36,6 +36,8 @@ static u8 dtl_event_mask = DTL_LOG_ALL;
+  * not cross a 4k boundary.
+  */
+ static int dtl_buf_entries = N_DISPATCH_LOG;
++static atomic_t dtl_count;
++
+ 
+ #ifdef CONFIG_VIRT_CPU_ACCOUNTING_NATIVE
+ 
+@@ -56,8 +58,6 @@ struct dtl_ring {
+ 
+ static DEFINE_PER_CPU(struct dtl_ring, dtl_rings);
+ 
+-static atomic_t dtl_count;
+-
+ /*
+  * The cpu accounting code controls the DTL ring buffer, and we get
+  * given entries as they are processed.
+@@ -158,7 +158,7 @@ static int dtl_start(struct dtl *dtl)
+ 
+ 	/* enable event logging */
+ 	lppaca_of(dtl->cpu).dtl_enable_mask = dtl_event_mask;
+-
++	atomic_inc(&dtl_count);
+ 	return 0;
+ }
+ 
+@@ -169,6 +169,7 @@ static void dtl_stop(struct dtl *dtl)
+ 	lppaca_of(dtl->cpu).dtl_enable_mask = 0x0;
+ 
+ 	unregister_dtl(hwcpu);
++	atomic_dec(&dtl_count);
+ }
+ 
+ static u64 dtl_current_index(struct dtl *dtl)
+-- 
+2.43.7
 
-> Arguably you could move the resume() to before the __free_page(). But it just
-> illustrates that it's all a bit brittle at the moment...
-
-Difficult to disagree. With things like DEBUG_PAGEALLOC it becomes very
-hard to know what is guaranteed not to use lazy MMU.
-
->>> Perhaps we also need nested pause/resume? Then you just end up with 2 counters;
->>> enable_count and pause_count. Sorry if this has already been discussed.
->> And finally:
->>
->> [D]
->>
->> pause()
->>     pause()
->>         enable()
->>         disable()
->>     resume()
->> resume()
->>
->> I don't really mind either way, but I don't see an immediate use for [C]
->> and [D] - the idea is that the paused section is short and controlled,
->> not made up of arbitrary calls. 
-> If my thinking above is correct, then I've already demonstrated that this is not
-> the case. So I'd be inclined to go with [D] on the basis that it is the most robust.
->
-> Keeping 2 nesting counts (enable and pause) feels pretty elegant to me and gives
-> the fewest opportunities for surprises.
-
-Agreed, if we're going to allow enable() within a paused section, then
-we might as well allow paused sections to nest too. The use-case is
-clear, so I'm happy to go ahead and make those changes.
-
-David, any thoughts?
-
-- Kevin
-
->
-> Thanks,
-> Ryan
->
->> A potential downside of allowing [C] and
->> [D] is that it makes it harder to detect unintended nesting (fewer
->> VM_WARN assertions). Happy to implement it if this proves useful though.
->>
->> OTOH the idea behind [B] is that it allows the caller of
->> pause()/resume() not to care about whether lazy MMU is actually enabled
->> or not - i.e. the kasan helpers would keep working even if
->> apply_to_page_range() didn't use lazy MMU any more.
->>
->>>>>> +
->>>>>> +	state->active = false;
->>>>>>  	arch_leave_lazy_mmu_mode();
->>>>>>  }
->>>>>>  
->>>>>> [...]
 
