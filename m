@@ -1,50 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-14133-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14134-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C4EECCD37BB
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Nov 2025 20:03:44 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 60FC4CD37BF
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 12 Nov 2025 20:03:51 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d6Dqg0pn9z2yvN;
-	Thu, 13 Nov 2025 07:03:43 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762977823;
-	cv=none; b=TbhRQdQqfqZroPhVYiW3wdoxafF53Z5z8TKzwQUd7dB+8C5r8h/WAaucXW9XqsU/4Q5k7u6jrvriyCzOBYPtM9+vsiQDzl7VFSg+vU2zQpgFYp4uxI2aTRQ3zQR8sr8Guv53bQEYux6vXYDHKHgt37ur4yOAxaptqLvi4kfi6sYhbdjRaTolP7AgPq2OVFxx5SmIch11xJoM1O9H/w9o3ndquEvf+ns6TFQcbTd950EaCyAlGMIFMn3zAFG9drzvd7DMlJIOQyDncC4DO9SWNIte9n8+mmZHWMcIc/WlPPL3YV8NplkMykusr09X0q8fzShugaE6AQURzz4UyMK6Eg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d6Dqh25jfz301X;
+	Thu, 13 Nov 2025 07:03:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1762977824;
+	cv=none; b=M0elsiGYy5doISAUMCl64o5rKfBC4dhZiL7dfuBGC8X9jx49DGz7Q9oicAsL40Ppx2/LwtqrMYThpu51mR2Nqs0BRuRgKG9Y7dF2dYNEe9m11CZn8HNu9MFklHwlZfXgvw5+e2yMiGflgIS3g6RaZfuqIYgngxZ9BicIeJbmeEmO0FcvMP9AtGbhD8UoN9u1zT8dL2/uy1xwYroesysU6gLLEaRZHMAqSwhgPagAUr3lGlaqWW/AQUJox+JKhmKJiO5VZOoz9dhL+rUeii7TwAZGXHJgMBdYw0pH4qCEifTyIOfUwVrTD0JYQQZLh8sSgo5Rumh+CHly7oien2KdHA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1762977823; c=relaxed/relaxed;
-	bh=H57JN/9iHGXxmrsKYOTMMOs+sS4zb60ocLeJI0CgIwA=;
+	t=1762977824; c=relaxed/relaxed;
+	bh=QL+GJWwmj4P45QdsQO6njChXM81ChPT6DFU8SBey9E4=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ftzTOlg3JirGBWNkYNb7fzKrJm2TPNRzD89UZmRglRPkWkdq8i9dUimWMBXQd7nboR2aPZ0FRAdcl0RgOO4vsx7Lqq2ImDYvnau1+g7fcpizDEJLkIFb7Yu2K3gog8QmCRa+Iobn0HBiZOQF2Ek1EQkVWCrHk4JqnrVZix4tTBsGkVkey6sIYZFqVo9mvNO3181hkZdNorA6LcqY7ffmh6amzhw0HhQLNI38eTR41owvgNN87W5d0q2Ha3YDMcrp7HDPOuzVcPpUlrr8f2+Ivxe8qo1bm456gb+K+8VFMmH5g8H07du1NqVgGbe7fZ2aS2WQ6Vrvs6l6uWnErsrdJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BJlDjxq7; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 Content-Type:Content-Disposition:In-Reply-To; b=FBX2ARQEsOeqD1CHvhp7owi/4LjQkQtFceLVBEWICSXjHmyUhKGdFH83hDZwVFn/Es4QJSUQhYbs33IsLyoh5Yw3bIWNCSNB4HgWcFCqJ8NSE7ud+rCFEgxdyRQ14PLogb8VPxWobhPANpy/6Rzo+QMzW+vQ7iYVS36uvRSZEF0L/31+P/WY63Tlc0LXmC6lWwZlh+Wy8wdBprn5na1HJ4pLXpaf+e8fmwGHSr2JicHP2u6zHosmt8JxJaKKkGYfVn8/u8Z0U5GGb6OMgFhDJflTtbVo4yZJIniPQJNp79v/q5LbnT43+/Bm+BtR/AWzKltrlusGPLIZdT4PBsgj2w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ccIrzsBu; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BJlDjxq7;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ccIrzsBu;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=nsc@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d6Dqf17t1z2xSX
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2025 07:03:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d6Dqg54RNz2yvk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 13 Nov 2025 07:03:43 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8C8BA601AF;
-	Wed, 12 Nov 2025 20:03:38 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 88134C116B1;
-	Wed, 12 Nov 2025 20:03:37 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 9E7F2445B7;
+	Wed, 12 Nov 2025 20:03:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CB406C16AAE;
+	Wed, 12 Nov 2025 20:03:40 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1762977818;
-	bh=zAvG1Qo2HuWOnUmKk3EcMjBeNxBNM8ZFtr9UpT/34Vw=;
+	s=k20201202; t=1762977821;
+	bh=Krdas9AzGSECOCFA2WfUlzdX75hmmwim4vrl3G2LHP0=;
 	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=BJlDjxq7IfTUQQ7KUoqeZvLJ7e7liS62fkRaIr+cTAEO3z6jy+mhhshvOmd3bh8vc
-	 LKQO04khJh2oTe+f9rb+O0G37uBzgRuvleSSc1k+8vfLQQV7cKjeurjC9gI6nKycv6
-	 PtFT/rC0/q2cqD1G9etafq9EthszRCQfMIRlsYu7HBTVjs9du5ebCl4+i2pradypdg
-	 uuGbRqvggNZ1Vq8SYiqLM6ZaYk0XhBHTie0iiVMSMc61PWlcq5ZLMdJpdkHbN/3sxg
-	 o1Sg+B3yFgDuYTpbiL1bDCgFQIu50KZMRUyF2kc3V/3zdo4GQF+AkhnVV8Fo5aIP9W
-	 TUrrjnu0wLLlw==
-Date: Wed, 12 Nov 2025 20:55:55 +0100
+	b=ccIrzsBu2sfaHL8EwE2+XzXAm+mSMhbBgAeiXJyPaOGTProGPgOQ81EjsiD/vkuJ4
+	 QzAsAniJY1RexfM/F66rsQeFRzK77ivQC547WLrUhU8Q9ShngnZe61HJpkojC3tPRa
+	 frNdTBKI3g29VGiHlHHpmGxYVkdiDL5WEO8y7NyaWL1P3XoB2S0lAlUQPcJ8z+K2b5
+	 16pXiKl/FScrxzrW3onwGDarm71eUAIrMkkdyfOQItHCaDiHooPRUBdvhi+DVScKO0
+	 ZuMkWCnzSMioRC9My5WYdAJlMCScrRC+w9btXbUu1NxxmHhehoQjfNJ34KdLNchkTv
+	 Gqbh3kbJ/tMzQ==
+Date: Wed, 12 Nov 2025 20:56:04 +0100
 From: Nicolas Schier <nsc@kernel.org>
 To: Thomas =?iso-8859-1?Q?Wei=DFschuh?= <thomas.weissschuh@linutronix.de>
 Cc: Nathan Chancellor <nathan@kernel.org>, Paul Walmsley <pjw@kernel.org>,
@@ -71,11 +71,10 @@ Cc: Nathan Chancellor <nathan@kernel.org>, Paul Walmsley <pjw@kernel.org>,
 	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
 	sparclinux@vger.kernel.org
-Subject: Re: [PATCH v2 01/10] kbuild: don't enable CC_CAN_LINK if the dummy
- program generates warnings
-Message-ID: <aRTmSzzOmdhBy_lO@derry.ads.avm.de>
+Subject: Re: [PATCH v2 02/10] init: deduplicate cc-can-link.sh invocations
+Message-ID: <aRTmVAcGpqcyjU26@derry.ads.avm.de>
 References: <20251014-kbuild-userprogs-bits-v2-0-faeec46e887a@linutronix.de>
- <20251014-kbuild-userprogs-bits-v2-1-faeec46e887a@linutronix.de>
+ <20251014-kbuild-userprogs-bits-v2-2-faeec46e887a@linutronix.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -92,31 +91,19 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset=iso-8859-1
 Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <20251014-kbuild-userprogs-bits-v2-1-faeec46e887a@linutronix.de>
+In-Reply-To: <20251014-kbuild-userprogs-bits-v2-2-faeec46e887a@linutronix.de>
 
-On Tue, Oct 14, 2025 at 03:05:16PM +0200, Thomas Weiﬂschuh wrote:
-> It is possible that the kernel toolchain generates warnings when used
-> together with the system toolchain. This happens for example when the
-> older kernel toolchain does not handle new versions of sframe debug
-> information. While these warnings where ignored during the evaluation
-> of CC_CAN_LINK, together with CONFIG_WERROR the actual userprog build
-> will later fail.
+On Tue, Oct 14, 2025 at 03:05:17PM +0200, Thomas Weiﬂschuh wrote:
+> The command to invoke scripts/cc-can-link.sh is very long and new usages
+> are about to be added.
 > 
-> Example warning:
+> Add a helper variable to make the code easier to read and maintain.
 > 
-> .../x86_64-linux/13.2.0/../../../../x86_64-linux/bin/ld:
-> error in /lib/../lib64/crt1.o(.sframe); no .sframe will be created
-> collect2: error: ld returned 1 exit status
-> 
-> Make sure that the very simple example program does not generate
-> warnings already to avoid breaking the userprog compilations.
-> 
-> Fixes: ec4a3992bc0b ("kbuild: respect CONFIG_WERROR for linker and assembler")
-> Fixes: 3f0ff4cc6ffb ("kbuild: respect CONFIG_WERROR for userprogs")
 > Signed-off-by: Thomas Weiﬂschuh <thomas.weissschuh@linutronix.de>
 > ---
->  scripts/cc-can-link.sh | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
+>  init/Kconfig            | 4 ++--
+>  scripts/Kconfig.include | 3 +++
+>  2 files changed, 5 insertions(+), 2 deletions(-)
 > 
 
 Reviewed-by: Nicolas Schier <nsc@kernel.org>
