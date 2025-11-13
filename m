@@ -1,51 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-14160-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14161-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 66E48CD98E7
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Nov 2025 21:41:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA0A1CD98E3
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 13 Nov 2025 21:42:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d6txk0KtBz2xqk;
-	Fri, 14 Nov 2025 08:41:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d6tyk3CzNz2xqk;
+	Fri, 14 Nov 2025 08:42:06 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763059483;
-	cv=none; b=b8MfJZaS5O/hj85A/Ecv6gpFpuFAWCEe4gzEGoUczbpizScPCFIFSIXQ+bC8++tIV247vfdUnsMe1Ml3U4xt32KLM3rOhVgc4UEm7PQoG9rZnjW/8+2wqcfkFzLInBhzsP3xfzduMk2HHyN7Nrmth2rIPUSzHBso2m2WTlgthHcqHHyGM1KtSyZNCj4YeweTZ4VDZsVKWJdLcpc3VSMC6KTmBtr/DIDTNUz70T2KklZf/mL0sYZUZ6SNP8yfocZKQjO/FLDurdpHFZLNgW7xofOIJ9RD5uAd55Y2lZJGpHOej9ERqH6rFXvCLOqfSBseP6BuUf/YL8m0mooySX2SBQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763063478;
+	cv=none; b=emZh9iIoglzk4Hy3PleKhsZ66I90TNAS0sMYJUgvoLma7URMGdSr5YGs9h8nfTDQTERqB5WYl7C3L5lDcmQxJLgoiV6qADDH6QE6K/8LTYb/e3u/Q5CE0ycbEbu5N6erE6j++fo+rxwK+dxCLkR6nbQkc/penW0G9i5Uaqp6xN+/vmq+MAQ+lPwn4fJ4JzHmrYusa2EsmAch5eLxIEHbuWqNXUkJvNImDfI59B3wN6oGWz3ijmIFXdg0jrKF0dxrpx6TGfUItSZ2UZZYUBIZMOpyBp2oQjmR+WDaFUcvMEPXWT1MVJj86UUsx82ISUJ4LAZ4O9JU73F6fesmpkfs0Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763059483; c=relaxed/relaxed;
-	bh=ZIbcxtUs2WANG22zdr2IA7CVjhetoWXTZzjAD8xbfKU=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=UpvkMYJEZ8afzGEfN06D33rEd6kd3PXgp9WbvxPA/8atDGoYOtOmZtxxdHJAbSjNMFMq0HFt2pNhWHkbe8a0tcTQgwsIOF84p1bHkJAOg1fOWE+NYXGZWhMG8NBO+4cMfU3Nq9R9kCCeUwWmoKqiu8ISj0ZQCpZrse6I/6Gg2ZOcjZ2M1vrHsM9GCWZaDKWfBgCeR3PFOmP9MZInNeoDZuoV/9KPts9buCL0raOANmAuWzu3/YQ78ufPMeecIMT6TiuugfeW4ZKTq1nXXWQHT17l04JamhNMYG+Eow4TjhWz/u7JLojqc92CU86B5tueKtVGCPL+bt+keIXsDNyhxg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pC0cZpHv; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1763063478; c=relaxed/relaxed;
+	bh=bidH1YVB3FU0vIER8TzeT7GVeBt38ZPUPPj/RvF6vfc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:Cc:
+	 In-Reply-To:Content-Type; b=kTmN1JPb09ajtBQ4qkg7xqU2Bxs3WEuOmLer77/xFXfJzk5CRkkNblJosn3+zKbFx5j4iWV9nF1Fb9syI8QVWCBEFIIF3rmoLowv8yuEIBVmSHTH95siZq9yebMbRdPY/NOjRkNZeM7tEss8PuOLyi5qR1u0PFq+BX2be5R+9GO4JIKMR+rhGSz5HUavXvWEvfuGQSeGpBUPVFNVM+rdcnI70c5ouhcO16ZIdi/xhuQ8vzptSmNDYJ+avoqtLuP6Xz/ZdHUKT18Ba68/yZ9AfkDc9d7ubVgu+IOM8AJLJlVsu+Q+LPAsBl2e5DiLjiyxa/DKH53iOExe6fZQUK3R1Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=e0frgItY; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=pC0cZpHv;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=e0frgItY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d6q22182Mz2ynC
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2025 05:44:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d6rVt098Vz2yvJ
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2025 06:51:17 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 94237439BA;
-	Thu, 13 Nov 2025 18:44:39 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E9161C19421;
-	Thu, 13 Nov 2025 18:44:34 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 6870C405F5;
+	Thu, 13 Nov 2025 19:51:16 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3F780C113D0;
+	Thu, 13 Nov 2025 19:51:14 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1763059479;
-	bh=RE5P0X9RyxwuZjuBP8m4q0k+WYSIyGbR3hJ44uf4r7s=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=pC0cZpHvF6d0hLbVgoHS87+c6/lwBz35mdlUvl+etMUkoQnyYhzYKdq2Y6LU9nGsL
-	 TyIbKCToQbXil/j7Hqc2snvjgEbSuvrBmloVgxHooOPwgNH+R0THEcYG4brJgOo6M8
-	 bqZp04im0C6eLsy+xT+Mro2rnnIa+sLi32Njq6GAliFD2kKvOJkNmUSsSp6CSqWxjD
-	 gXUyK8iE4eLp8CE7dWr+FSbvrhhoxms/LwucBVOTfQjAdZGyUEuJe5ycL/jzDB7B5G
-	 c+urL7KgfK111uclHjIboI/TfOcSAS6d252bJxTcdqfHzq3R+2MwtEVtqZJeohqgxr
-	 eCxQROZG94TZg==
-Message-ID: <027b6ac9-836d-4f89-a819-e24d487f9c8e@kernel.org>
-Date: Thu, 13 Nov 2025 19:44:31 +0100
+	s=k20201202; t=1763063476;
+	bh=i62EScYWtVQ1Z7R9P0R38h7LgEJm8IOPqaLrXKZ1WCs=;
+	h=Date:Subject:To:References:From:Cc:In-Reply-To:From;
+	b=e0frgItYAI5XtdF0L99OMBM4gdkWJi1LEh5nXpp0qd9+PpQ/5vvIY2gZMvQnA4sGN
+	 HIc5gZqiRqySn0sE7ukTXkgtzk0QWzhrzPlqxlhgmMUqQE+rgwa+xHiWlWahJv7KpL
+	 zc+6wasnAxQnxpQbTS9xZPSGRh6x8jEYwRTKpnFkG2Xhn80wrU91y1woRPIf4P+ENJ
+	 xb0dPTXpUQAwEqXK5XqLb/jwwKjUVx18H8BoquMZIzjexWfZIYcJK1RxhWuaVxpUKI
+	 6E8TURg8qb9fdl8Sl7gC0D4+VuA2bgYyZ1cX7SGbepGdYHv1r44s6mcPPhij5VUkeG
+	 WlZ6rLHZtCiqA==
+Message-ID: <4bbfc2ae-2776-485e-8d6f-8f3dbd3f0591@kernel.org>
+Date: Thu, 13 Nov 2025 20:51:11 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,99 +60,63 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v1] mm: fix MAX_FOLIO_ORDER on powerpc configs with
- hugetlb
-To: "David Hildenbrand (Red Hat)" <david@kernel.org>,
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-Cc: linux-kernel@vger.kernel.org, linux-mm@kvack.org,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
- Sourabh Jain <sourabhjain@linux.ibm.com>,
- Andrew Morton <akpm@linux-foundation.org>,
- "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
- Madhavan Srinivasan <maddy@linux.ibm.com>, Donet Tom
- <donettom@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- "Liam R. Howlett" <Liam.Howlett@oracle.com>, Vlastimil Babka
- <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>
-References: <20251112145632.508687-1-david@kernel.org>
- <eaf2e733-f967-43bb-88e6-7876a28a370c@lucifer.local>
- <3fa6d496-b9de-4b66-a7db-247eebec92ca@kernel.org>
+Subject: Re: PATCH: Fix typo recommand in comment
+To: Haoran lee <470658536@qq.com>
+References: <tencent_F844A82DB85660D110008F34E54330312A08@qq.com>
 From: Christophe Leroy <chleroy@kernel.org>
 Content-Language: fr-FR
-In-Reply-To: <3fa6d496-b9de-4b66-a7db-247eebec92ca@kernel.org>
+Cc: maddy@linux.ibm.com, npiggin@gmail.com, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au
+In-Reply-To: <tencent_F844A82DB85660D110008F34E54330312A08@qq.com>
 Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
 
 
 
-Le 13/11/2025 à 16:21, David Hildenbrand (Red Hat) a écrit :
-> On 13.11.25 14:01, Lorenzo Stoakes wrote:
+Le 01/10/2025 à 16:42, Haoran lee a écrit :
+> [Vous ne recevez pas souvent de courriers de 470658536@qq.com. D?couvrez pourquoi ceci est important ? https://aka.ms/LearnAboutSenderIdentification ]
 > 
-> [...]
+>  From e949fa326c98953fda200fe92c108fa71e334715 Mon Sep 17 00:00:00 2001
+> From: Haoran Lee <470658536@qq.com>
+> Date: Wed, 15 Oct 2025 10:18:52 +0000
+> Subject: [PATCH] powerpc/smu: Fix typo "recommand" in comment
 > 
->>> @@ -137,6 +137,7 @@ config PPC
->>>       select ARCH_HAS_DMA_OPS            if PPC64
->>>       select ARCH_HAS_FORTIFY_SOURCE
->>>       select ARCH_HAS_GCOV_PROFILE_ALL
->>> +    select ARCH_HAS_GIGANTIC_PAGE        if ARCH_SUPPORTS_HUGETLBFS
->>
->> Given we know the architecture can support it (presumably all powerpc
->> arches or all that can support hugetlbfs anyway?), this seems reasonable.
+> The word "recommand" is incorrect. The correct spelling is "recommend".
 > 
-> powerpc allows for quite some different configs, so I assume there are 
-> some configs that don't allow ARCH_SUPPORTS_HUGETLBFS.
+> Fix the typo in the comment in arch/powerpc/include/asm/smu.h.
 
-Yes indeed. For instance the powerpc 603 and 604 have no huge pages.
+Why is it important to correct that as a standalone change ?
 
-> 
-> [...]
-> 
->>>   /*
->>>    * There is no real limit on the folio size. We limit them to the 
->>> maximum we
->>> - * currently expect (e.g., hugetlb, dax).
->>> + * currently expect: with hugetlb, we expect no folios larger than 
->>> 16 GiB.
->>
->> Maybe worth saying 'see CONFIG_HAVE_GIGANTIC_FOLIOS definition' or 
->> something?
-> 
-> To me that's implied from the initial ifdef. But not strong opinion 
-> about spelling that out.
-> 
->>
->>> + */
->>> +#define MAX_FOLIO_ORDER        get_order(SZ_16G)
->>
->> Hmm, is the base page size somehow runtime adjustable on powerpc? Why 
->> isn't
->> PUD_ORDER good enough here?
-> 
-> We tried P4D_ORDER but even that doesn't work. I think we effectively 
-> end up with cont-pmd/cont-PUD mappings (or even cont-p4d, I am not 100% 
-> sure because the folding code complicates that).
-> 
-> See powerpcs variant of huge_pte_alloc() where we have stuff like
-> 
-> p4d = p4d_offset(pgd_offset(mm, addr), addr);
-> if (!mm_pud_folded(mm) && sz >= P4D_SIZE)
->      return (pte_t *)p4d;
-> 
-> As soon as we go to things like P4D_ORDER we're suddenly in the range of 
-> 512 GiB on x86 etc, so that's also not what we want as an easy fix. (and 
-> it didn't work)
-> 
+If someone reads the text, do you think he/she won't understand the word 
+because of letter 'a' instead of 'e', allthought the prononciation is 
+likely the same ?
 
-On 32 bits there are only PGDIR et Page Table,
-
-PGDIR_SHIFT = P4D_SHIFT = PUD_SHIFT = PMD_SHIFT
-
-For instance on powerpc 8xx,
-PGDIR_SIZE is 4M
-Largest hugepage is 8M.
-
-So even PGDIR_ORDER isn't enough.
+Do you think it is worst the cost of handling a patch like this ?
 
 Christophe
+
+> 
+> Signed-off-by: Haoran Lee <470658536@qq.com>
+> ---
+>   arch/powerpc/include/asm/smu.h | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/arch/powerpc/include/asm/smu.h b/arch/powerpc/include/asm/smu.h
+> index 2ac6ab903023..23b4ed8b4399 100644
+> --- a/arch/powerpc/include/asm/smu.h
+> +++ b/arch/powerpc/include/asm/smu.h
+> @@ -667,7 +667,7 @@ extern struct smu_sdbp_header *smu_sat_get_sdb_partition(unsigned int sat_id,
+>    * file is opened. poll() isn't implemented yet. The reply will consist
+>    * of a header as well, followed by the reply data if any. You should
+>    * always provide a buffer large enough for the maximum reply data, I
+> - * recommand one page.
+> + * recommend one page.
+>    *
+>    * It is illegal to send SMU commands through a file descriptor configured
+>    * for events reception
+> --
+> 2.48.1
+> 
+> 
+
 
