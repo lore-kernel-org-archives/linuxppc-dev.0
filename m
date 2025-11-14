@@ -1,50 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-14178-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14179-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C587ECE7A8E
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Nov 2025 09:20:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 12F29CDE022
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 14 Nov 2025 11:42:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d7BSj2HmZz2yxl;
-	Fri, 14 Nov 2025 20:20:37 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763112037;
-	cv=none; b=F91Wbcz84aYDyPDOkWXWG1njY6F3ufXCM/qPvH6UpvNQmxDWZc5luT5AEs5QveT/LRXuZGmz/8aFtHff0lZwkj3G3AoFoIzubZrb+IkElKle1MkfKZIwKPGay2b5u5qWPUn/v3o1IhCBmQS8AsPBXpLpn8VXQGlXDMNevBNMdvC7oLFt5nqYV4IaTGnPLnoYrmBISZm+eXn8K+l39EZvUajLAl16T1ILKGmx1vukZLLSYb1rBdOCHiMwy3qSTjlFIWMRqDOJ8Iv7i9lBwDxcmY3yq6O/O85F6N1X5c19oX/zYIcWVq58SUjtuaa3ySoXnNIQ1qV6USi23+pkAfJSUA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d7Fcs2wQQz2yvv;
+	Fri, 14 Nov 2025 22:42:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763120573;
+	cv=none; b=ddFf7XHWFVS7KF86HfKR49WCm7lM8OsSnor+BwjcWzbbQT+J7QiNUthMpvXabff2CVMNNxCVaPxHL1lbvJk3/maEL2l/ujl4j9NgyosajMfnzFE3hr1LmAgEUSsncaK27+CmSLLo27n1qlcxbTnaBsrfh259a+HJAL8RQryDps7xkYOVupSQeduIfRI3emG8A7RstEE3V9NEpgHSdaJ6MeUiQj1QwFli/MQ6qQMcHvSWqI51gtPvp6V6os5LrmFSnZXPYK94YLK52k2/dq0p4GV+MSCr59gTr2S96UUKDjg4axtB/qdt6Q+1FXGcHGjHrz2g5sMaQI0LhUoGDF0gIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763112037; c=relaxed/relaxed;
-	bh=gvVwQtNmEG4qHvjk2UdZPy13MIVA2z73/Z45yxgoHa0=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=QNa4l49HnHYB3nLBjj8x/1YnF8vqDJOWX6ywXq41YYbzd+hFCkGRWKzLm8Z3dbu31F3IxU0whVcDthFoQSRuyq3qgJee1MwDbEyzbsbXgUtsaFh7sah9cnFko++6mo6zK2/vB2UX21GHiuVp31kGaXt36UQxWyuDlLx13AOtbLeaT3D59w6ZGgK2vdrkcfi6izxuHYLQGEAe3a4NeOfjEPxSFAXheTVW+9n4s379wZiB+9kOF0Y80xnWeP3Jh57tuU3yOnbjoQPyp+bt/uln0mPAJQ4pnSv/cc2b9hu5UCm/UItrc8KBMEFQD7G59Vh/sFXE3R9K/E9uTgZdZ3VHPQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
-Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d7BSh2Cmyz2yx8
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2025 20:20:35 +1100 (AEDT)
-Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4d7B3S6g5lz9sSm;
-	Fri, 14 Nov 2025 10:02:12 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from pegase2.c-s.fr ([172.26.127.65])
-	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id Jh3Mqk4UdkM3; Fri, 14 Nov 2025 10:02:12 +0100 (CET)
-Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4d7B3P5h7Hz9sSt;
-	Fri, 14 Nov 2025 10:02:09 +0100 (CET)
-Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 940058B770;
-	Fri, 14 Nov 2025 10:02:09 +0100 (CET)
-X-Virus-Scanned: amavisd-new at c-s.fr
-Received: from messagerie.si.c-s.fr ([127.0.0.1])
-	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id WOt_dcMEhEst; Fri, 14 Nov 2025 10:02:09 +0100 (CET)
-Received: from [192.168.235.99] (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id DCFEA8B76E;
-	Fri, 14 Nov 2025 10:02:07 +0100 (CET)
-Message-ID: <83cdd7e8-51a7-4989-b270-93cec301cde7@csgroup.eu>
-Date: Fri, 14 Nov 2025 10:02:07 +0100
+	t=1763120573; c=relaxed/relaxed;
+	bh=pSa4YzVp8h2bYoRAUikxeeiupwQSNFXdKAeGXPBV9Nw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=L6laQpOx9jORQWsmlqg/PsNp9d0DE0xDfXG4za7d8zyvyAV9TWACGdzrPjB8rK5mJ1n9pLlfeEowF6dQitkBVJ9mcrC8rtvX1yf4FrObvvrpsWwr2EsucmZJ9qVBghK80UgTM8flneE5Xuyb1M55XYV0bJoB0LCj5LK0xF48a822a5RopTGdFP2pRma8gpb17yg/FMHbwDKy8jnNj5pGdT8RfqzjnnBR1BHzLzAm83TwunsQJBLcOiaM42ZI39nM+6HBKE+J8F5QiblET5uHA2XvJY7cam6YDrI+VhdfDVkgEzxfVQJhOoAO/nnl2UdDGOIe+tiQrP3PgPWHA4q88Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=q8fkkteN; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=q8fkkteN;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=brauner@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	(No client certificate requested)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d7Fcr2w7pz2yvN
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 14 Nov 2025 22:42:52 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 198CC60175;
+	Fri, 14 Nov 2025 11:42:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 05698C4CEF8;
+	Fri, 14 Nov 2025 11:42:41 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1763120568;
+	bh=JCJJ+smwYrR2g3QGo7fPrR+zmXOiaWETE6PY6T/Dud0=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=q8fkkteNmYzK0uACVLTWx5CVyhemcbPv8ndiusq5y7wxdrRHX+D2H9fcpkAKGbyPx
+	 t5aZYId2snhO2ynpmREc1bqI3cU4DdNz17nRX/z5TP+NFY1vcDyPrCXh9/NqUwnFif
+	 Z6wTsOzsxOik8RgVJyp7gpXSEh75s+2HrrOGP3ASjN7IzFCA4pRUKqXxnv5YH2pe3M
+	 L+vwqRdrmBiLxbWOkkw54+LuM8bcNU97McPS4KwqMsEThRjBXbgOcNftN9EmWedDtj
+	 inyCQJSGs2hC3h21FdXNPEG8NpnkR4rLZbURImoTgCWZzgbov37oGW2cpm0piGUfPF
+	 04fJ+m4146kng==
+Date: Fri, 14 Nov 2025 12:42:39 +0100
+From: Christian Brauner <brauner@kernel.org>
+To: Al Viro <viro@zeniv.linux.org.uk>
+Cc: Greg Kroah-Hartman <gregkh@linuxfoundation.org>, bot+bpf-ci@kernel.org, 
+	linux-fsdevel@vger.kernel.org, torvalds@linux-foundation.org, jack@suse.cz, raven@themaw.net, 
+	miklos@szeredi.hu, neil@brown.name, a.hindborg@kernel.org, linux-mm@kvack.org, 
+	linux-efi@vger.kernel.org, ocfs2-devel@lists.linux.dev, kees@kernel.org, 
+	rostedt@goodmis.org, linux-usb@vger.kernel.org, paul@paul-moore.com, 
+	casey@schaufler-ca.com, linuxppc-dev@lists.ozlabs.org, john.johansen@canonical.com, 
+	selinux@vger.kernel.org, borntraeger@linux.ibm.com, bpf@vger.kernel.org, ast@kernel.org, 
+	andrii@kernel.org, daniel@iogearbox.net, martin.lau@kernel.org, eddyz87@gmail.com, 
+	yonghong.song@linux.dev, ihor.solodrai@linux.dev, Chris Mason <clm@meta.com>
+Subject: Re: [functionfs] mainline UAF (was Re: [PATCH v3 36/50] functionfs:
+ switch to simple_remove_by_name())
+Message-ID: <20251114-abkehr-rasur-b2eae31c4d57@brauner>
+References: <20251111065520.2847791-37-viro@zeniv.linux.org.uk>
+ <20754dba9be498daeda5fe856e7276c9c91c271999320ae32331adb25a47cd4f@mail.kernel.org>
+ <20251111092244.GS2441659@ZenIV>
+ <e6b90909-fdd7-4c4d-b96e-df27ea9f39c4@meta.com>
+ <20251113092636.GX2441659@ZenIV>
+ <2025111316-cornfield-sphinx-ba89@gregkh>
+ <20251114074614.GY2441659@ZenIV>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,402 +79,228 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v5 10/14] powerpc: Convert to physical address DMA mapping
-To: Leon Romanovsky <leon@kernel.org>,
- Marek Szyprowski <m.szyprowski@samsung.com>,
- Robin Murphy <robin.murphy@arm.com>, Russell King <linux@armlinux.org.uk>,
- Juergen Gross <jgross@suse.com>, Stefano Stabellini
- <sstabellini@kernel.org>,
- Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
- Richard Henderson <richard.henderson@linaro.org>,
- Matt Turner <mattst88@gmail.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- "James E.J. Bottomley" <James.Bottomley@HansenPartnership.com>,
- Helge Deller <deller@gmx.de>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Geoff Levand <geoff@infradead.org>, "David S. Miller" <davem@davemloft.net>,
- Andreas Larsson <andreas@gaisler.com>, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
- "H. Peter Anvin" <hpa@zytor.com>
-Cc: iommu@lists.linux.dev, linux-kernel@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, xen-devel@lists.xenproject.org,
- linux-alpha@vger.kernel.org, linux-mips@vger.kernel.org,
- linux-parisc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- sparclinux@vger.kernel.org
-References: <20251015-remove-map-page-v5-0-3bbfe3a25cdf@kernel.org>
- <20251015-remove-map-page-v5-10-3bbfe3a25cdf@kernel.org>
-From: Christophe Leroy <christophe.leroy@csgroup.eu>
-Content-Language: fr-FR
-In-Reply-To: <20251015-remove-map-page-v5-10-3bbfe3a25cdf@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <20251114074614.GY2441659@ZenIV>
 
-
-
-Le 15/10/2025 à 11:12, Leon Romanovsky a écrit :
-> From: Leon Romanovsky <leonro@nvidia.com>
+On Fri, Nov 14, 2025 at 07:46:14AM +0000, Al Viro wrote:
+> On Thu, Nov 13, 2025 at 04:20:08PM -0500, Greg Kroah-Hartman wrote:
 > 
-> Adapt PowerPC DMA to use physical addresses in order to prepare code
-> to removal .map_page and .unmap_page.
+> > Sorry for the delay.  Yes, we should be grabing the mutex in there, good
+> > catch.  There's been more issues pointed out with the gadget code in the
+> > past year or so as more people are starting to actually use it and
+> > stress it more.  So if you have a patch for this, I'll gladly take it :)
 > 
-> Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
-
-Reviewed-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-
-Non fatal comments below.
-
-> ---
->   arch/powerpc/include/asm/iommu.h         |  8 ++++----
->   arch/powerpc/kernel/dma-iommu.c          | 22 ++++++++++-----------
->   arch/powerpc/kernel/iommu.c              | 14 +++++++-------
->   arch/powerpc/platforms/ps3/system-bus.c  | 33 ++++++++++++++++++--------------
->   arch/powerpc/platforms/pseries/ibmebus.c | 15 ++++++++-------
->   arch/powerpc/platforms/pseries/vio.c     | 21 +++++++++++---------
->   6 files changed, 60 insertions(+), 53 deletions(-)
+> How about the following?
 > 
-> diff --git a/arch/powerpc/include/asm/iommu.h b/arch/powerpc/include/asm/iommu.h
-> index b410021ad4c6..eafdd63cd6c4 100644
-> --- a/arch/powerpc/include/asm/iommu.h
-> +++ b/arch/powerpc/include/asm/iommu.h
-> @@ -274,12 +274,12 @@ extern void *iommu_alloc_coherent(struct device *dev, struct iommu_table *tbl,
->   				  unsigned long mask, gfp_t flag, int node);
->   extern void iommu_free_coherent(struct iommu_table *tbl, size_t size,
->   				void *vaddr, dma_addr_t dma_handle);
-> -extern dma_addr_t iommu_map_page(struct device *dev, struct iommu_table *tbl,
-> -				 struct page *page, unsigned long offset,
-> -				 size_t size, unsigned long mask,
-> +extern dma_addr_t iommu_map_phys(struct device *dev, struct iommu_table *tbl,
-> +				 phys_addr_t phys, size_t size,
-> +				 unsigned long mask,
->   				 enum dma_data_direction direction,
->   				 unsigned long attrs);
+> commit 330837c8101578438f64cfaec3fb85521d668e56
+> Author: Al Viro <viro@zeniv.linux.org.uk>
+> Date:   Fri Nov 14 02:18:22 2025 -0500
+> 
+>     functionfs: fix the open/removal races
+>     
+>     ffs_epfile_open() can race with removal, ending up with file->private_data
 
-'extern' is pointless for function prototypes.
+Very apt prefix though.
+(Like Paul would say: "Sorry, couldn't resist.")
 
-Report from checkpatch:
-
-CHECK: extern prototypes should be avoided in .h files
-#31: FILE: arch/powerpc/include/asm/iommu.h:277:
-+extern dma_addr_t iommu_map_phys(struct device *dev, struct iommu_table 
-*tbl,
-
-
-> -extern void iommu_unmap_page(struct iommu_table *tbl, dma_addr_t dma_handle,
-> +extern void iommu_unmap_phys(struct iommu_table *tbl, dma_addr_t dma_handle,
->   			     size_t size, enum dma_data_direction direction,
->   			     unsigned long attrs);
-
-Same:
-
-CHECK: extern prototypes should be avoided in .h files
-#37: FILE: arch/powerpc/include/asm/iommu.h:282:
-+extern void iommu_unmap_phys(struct iommu_table *tbl, dma_addr_t 
-dma_handle,
-
-
-
->   
-> diff --git a/arch/powerpc/kernel/dma-iommu.c b/arch/powerpc/kernel/dma-iommu.c
-> index 0359ab72cd3b..aa3689d61917 100644
-> --- a/arch/powerpc/kernel/dma-iommu.c
-> +++ b/arch/powerpc/kernel/dma-iommu.c
-> @@ -93,28 +93,26 @@ static void dma_iommu_free_coherent(struct device *dev, size_t size,
->   
->   /* Creates TCEs for a user provided buffer.  The user buffer must be
->    * contiguous real kernel storage (not vmalloc).  The address passed here
-> - * comprises a page address and offset into that page. The dma_addr_t
-> - * returned will point to the same byte within the page as was passed in.
-> + * is a physical address to that page. The dma_addr_t returned will point
-> + * to the same byte within the page as was passed in.
->    */
-> -static dma_addr_t dma_iommu_map_page(struct device *dev, struct page *page,
-> -				     unsigned long offset, size_t size,
-> +static dma_addr_t dma_iommu_map_phys(struct device *dev, phys_addr_t phys,
-> +				     size_t size,
->   				     enum dma_data_direction direction,
->   				     unsigned long attrs)
->   {
-> -	return iommu_map_page(dev, get_iommu_table_base(dev), page, offset,
-> -			      size, dma_get_mask(dev), direction, attrs);
-> +	return iommu_map_phys(dev, get_iommu_table_base(dev), phys, size,
-> +			      dma_get_mask(dev), direction, attrs);
->   }
->   
-> -
-> -static void dma_iommu_unmap_page(struct device *dev, dma_addr_t dma_handle,
-> +static void dma_iommu_unmap_phys(struct device *dev, dma_addr_t dma_handle,
->   				 size_t size, enum dma_data_direction direction,
->   				 unsigned long attrs)
->   {
-> -	iommu_unmap_page(get_iommu_table_base(dev), dma_handle, size, direction,
-> +	iommu_unmap_phys(get_iommu_table_base(dev), dma_handle, size, direction,
->   			 attrs);
->   }
->   
-> -
->   static int dma_iommu_map_sg(struct device *dev, struct scatterlist *sglist,
->   			    int nelems, enum dma_data_direction direction,
->   			    unsigned long attrs)
-> @@ -211,8 +209,8 @@ const struct dma_map_ops dma_iommu_ops = {
->   	.map_sg			= dma_iommu_map_sg,
->   	.unmap_sg		= dma_iommu_unmap_sg,
->   	.dma_supported		= dma_iommu_dma_supported,
-> -	.map_page		= dma_iommu_map_page,
-> -	.unmap_page		= dma_iommu_unmap_page,
-> +	.map_phys		= dma_iommu_map_phys,
-> +	.unmap_phys		= dma_iommu_unmap_phys,
->   	.get_required_mask	= dma_iommu_get_required_mask,
->   	.mmap			= dma_common_mmap,
->   	.get_sgtable		= dma_common_get_sgtable,
-> diff --git a/arch/powerpc/kernel/iommu.c b/arch/powerpc/kernel/iommu.c
-> index 244eb4857e7f..6b5f4b72ce97 100644
-> --- a/arch/powerpc/kernel/iommu.c
-> +++ b/arch/powerpc/kernel/iommu.c
-> @@ -848,12 +848,12 @@ EXPORT_SYMBOL_GPL(iommu_tce_table_put);
->   
->   /* Creates TCEs for a user provided buffer.  The user buffer must be
->    * contiguous real kernel storage (not vmalloc).  The address passed here
-> - * comprises a page address and offset into that page. The dma_addr_t
-> - * returned will point to the same byte within the page as was passed in.
-> + * is physical address into that page. The dma_addr_t returned will point
-> + * to the same byte within the page as was passed in.
->    */
-> -dma_addr_t iommu_map_page(struct device *dev, struct iommu_table *tbl,
-> -			  struct page *page, unsigned long offset, size_t size,
-> -			  unsigned long mask, enum dma_data_direction direction,
-> +dma_addr_t iommu_map_phys(struct device *dev, struct iommu_table *tbl,
-> +			  phys_addr_t phys, size_t size, unsigned long mask,
-> +			  enum dma_data_direction direction,
->   			  unsigned long attrs)
->   {
->   	dma_addr_t dma_handle = DMA_MAPPING_ERROR;
-> @@ -863,7 +863,7 @@ dma_addr_t iommu_map_page(struct device *dev, struct iommu_table *tbl,
->   
->   	BUG_ON(direction == DMA_NONE);
->   
-> -	vaddr = page_address(page) + offset;
-> +	vaddr = phys_to_virt(phys);
->   	uaddr = (unsigned long)vaddr;
->   
->   	if (tbl) {
-> @@ -890,7 +890,7 @@ dma_addr_t iommu_map_page(struct device *dev, struct iommu_table *tbl,
->   	return dma_handle;
->   }
->   
-> -void iommu_unmap_page(struct iommu_table *tbl, dma_addr_t dma_handle,
-> +void iommu_unmap_phys(struct iommu_table *tbl, dma_addr_t dma_handle,
->   		      size_t size, enum dma_data_direction direction,
->   		      unsigned long attrs)
->   {
-> diff --git a/arch/powerpc/platforms/ps3/system-bus.c b/arch/powerpc/platforms/ps3/system-bus.c
-> index afbaabf182d0..f4f3477d3a23 100644
-> --- a/arch/powerpc/platforms/ps3/system-bus.c
-> +++ b/arch/powerpc/platforms/ps3/system-bus.c
-> @@ -551,18 +551,20 @@ static void ps3_free_coherent(struct device *_dev, size_t size, void *vaddr,
->   
->   /* Creates TCEs for a user provided buffer.  The user buffer must be
->    * contiguous real kernel storage (not vmalloc).  The address passed here
-> - * comprises a page address and offset into that page. The dma_addr_t
-> - * returned will point to the same byte within the page as was passed in.
-> + * is physical address to that hat page. The dma_addr_t returned will point
-> + * to the same byte within the page as was passed in.
->    */
->   
-> -static dma_addr_t ps3_sb_map_page(struct device *_dev, struct page *page,
-> -	unsigned long offset, size_t size, enum dma_data_direction direction,
-> -	unsigned long attrs)
-> +static dma_addr_t ps3_sb_map_phys(struct device *_dev, phys_addr_t phys,
-> +	size_t size, enum dma_data_direction direction, unsigned long attrs)
-
-CHECK: Alignment should match open parenthesis
-#151: FILE: arch/powerpc/platforms/ps3/system-bus.c:559:
-+static dma_addr_t ps3_sb_map_phys(struct device *_dev, phys_addr_t phys,
-+	size_t size, enum dma_data_direction direction, unsigned long attrs)
-
-
-
->   {
->   	struct ps3_system_bus_device *dev = ps3_dev_to_system_bus_dev(_dev);
->   	int result;
->   	dma_addr_t bus_addr;
-> -	void *ptr = page_address(page) + offset;
-> +	void *ptr = phys_to_virt(phys);
-> +
-> +	if (unlikely(attrs & DMA_ATTR_MMIO))
-> +		return DMA_MAPPING_ERROR;
->   
->   	result = ps3_dma_map(dev->d_region, (unsigned long)ptr, size,
->   			     &bus_addr,
-> @@ -577,8 +579,8 @@ static dma_addr_t ps3_sb_map_page(struct device *_dev, struct page *page,
->   	return bus_addr;
->   }
->   
-> -static dma_addr_t ps3_ioc0_map_page(struct device *_dev, struct page *page,
-> -				    unsigned long offset, size_t size,
-> +static dma_addr_t ps3_ioc0_map_phys(struct device *_dev, phys_addr_t phys,
-> +				    size_t size,
->   				    enum dma_data_direction direction,
->   				    unsigned long attrs)
->   {
-> @@ -586,7 +588,10 @@ static dma_addr_t ps3_ioc0_map_page(struct device *_dev, struct page *page,
->   	int result;
->   	dma_addr_t bus_addr;
->   	u64 iopte_flag;
-> -	void *ptr = page_address(page) + offset;
-> +	void *ptr = phys_to_virt(phys);
-> +
-> +	if (unlikely(attrs & DMA_ATTR_MMIO))
-> +		return DMA_MAPPING_ERROR;
->   
->   	iopte_flag = CBE_IOPTE_M;
->   	switch (direction) {
-> @@ -613,7 +618,7 @@ static dma_addr_t ps3_ioc0_map_page(struct device *_dev, struct page *page,
->   	return bus_addr;
->   }
->   
-> -static void ps3_unmap_page(struct device *_dev, dma_addr_t dma_addr,
-> +static void ps3_unmap_phys(struct device *_dev, dma_addr_t dma_addr,
->   	size_t size, enum dma_data_direction direction, unsigned long attrs)
-
-CHECK: Alignment should match open parenthesis
-#193: FILE: arch/powerpc/platforms/ps3/system-bus.c:622:
-+static void ps3_unmap_phys(struct device *_dev, dma_addr_t dma_addr,
-  	size_t size, enum dma_data_direction direction, unsigned long attrs)
-
-
-
->   {
->   	struct ps3_system_bus_device *dev = ps3_dev_to_system_bus_dev(_dev);
-> @@ -690,8 +695,8 @@ static const struct dma_map_ops ps3_sb_dma_ops = {
->   	.map_sg = ps3_sb_map_sg,
->   	.unmap_sg = ps3_sb_unmap_sg,
->   	.dma_supported = ps3_dma_supported,
-> -	.map_page = ps3_sb_map_page,
-> -	.unmap_page = ps3_unmap_page,
-> +	.map_phys = ps3_sb_map_phys,
-> +	.unmap_phys = ps3_unmap_phys,
->   	.mmap = dma_common_mmap,
->   	.get_sgtable = dma_common_get_sgtable,
->   	.alloc_pages_op = dma_common_alloc_pages,
-> @@ -704,8 +709,8 @@ static const struct dma_map_ops ps3_ioc0_dma_ops = {
->   	.map_sg = ps3_ioc0_map_sg,
->   	.unmap_sg = ps3_ioc0_unmap_sg,
->   	.dma_supported = ps3_dma_supported,
-> -	.map_page = ps3_ioc0_map_page,
-> -	.unmap_page = ps3_unmap_page,
-> +	.map_phys = ps3_ioc0_map_phys,
-> +	.unmap_phys = ps3_unmap_phys,
->   	.mmap = dma_common_mmap,
->   	.get_sgtable = dma_common_get_sgtable,
->   	.alloc_pages_op = dma_common_alloc_pages,
-> diff --git a/arch/powerpc/platforms/pseries/ibmebus.c b/arch/powerpc/platforms/pseries/ibmebus.c
-> index 3436b0af795e..cad2deb7e70d 100644
-> --- a/arch/powerpc/platforms/pseries/ibmebus.c
-> +++ b/arch/powerpc/platforms/pseries/ibmebus.c
-> @@ -86,17 +86,18 @@ static void ibmebus_free_coherent(struct device *dev,
->   	kfree(vaddr);
->   }
->   
-> -static dma_addr_t ibmebus_map_page(struct device *dev,
-> -				   struct page *page,
-> -				   unsigned long offset,
-> +static dma_addr_t ibmebus_map_phys(struct device *dev, phys_addr_t phys,
->   				   size_t size,
->   				   enum dma_data_direction direction,
->   				   unsigned long attrs)
->   {
-> -	return (dma_addr_t)(page_address(page) + offset);
-> +	if (attrs & DMA_ATTR_MMIO)
-> +		return DMA_MAPPING_ERROR;
-> +
-> +	return (dma_addr_t)(phys_to_virt(phys));
->   }
->   
-> -static void ibmebus_unmap_page(struct device *dev,
-> +static void ibmebus_unmap_phys(struct device *dev,
->   			       dma_addr_t dma_addr,
->   			       size_t size,
->   			       enum dma_data_direction direction,
-> @@ -146,8 +147,8 @@ static const struct dma_map_ops ibmebus_dma_ops = {
->   	.unmap_sg           = ibmebus_unmap_sg,
->   	.dma_supported      = ibmebus_dma_supported,
->   	.get_required_mask  = ibmebus_dma_get_required_mask,
-> -	.map_page           = ibmebus_map_page,
-> -	.unmap_page         = ibmebus_unmap_page,
-> +	.map_phys           = ibmebus_map_phys,
-> +	.unmap_phys         = ibmebus_unmap_phys,
->   };
->   
->   static int ibmebus_match_path(struct device *dev, const void *data)
-> diff --git a/arch/powerpc/platforms/pseries/vio.c b/arch/powerpc/platforms/pseries/vio.c
-> index ac1d2d2c9a88..18cffac5468f 100644
-> --- a/arch/powerpc/platforms/pseries/vio.c
-> +++ b/arch/powerpc/platforms/pseries/vio.c
-> @@ -512,18 +512,21 @@ static void vio_dma_iommu_free_coherent(struct device *dev, size_t size,
->   	vio_cmo_dealloc(viodev, roundup(size, PAGE_SIZE));
->   }
->   
-> -static dma_addr_t vio_dma_iommu_map_page(struct device *dev, struct page *page,
-> -                                         unsigned long offset, size_t size,
-> -                                         enum dma_data_direction direction,
-> -                                         unsigned long attrs)
-> +static dma_addr_t vio_dma_iommu_map_phys(struct device *dev, phys_addr_t phys,
-> +					 size_t size,
-> +					 enum dma_data_direction direction,
-> +					 unsigned long attrs)
->   {
->   	struct vio_dev *viodev = to_vio_dev(dev);
->   	struct iommu_table *tbl = get_iommu_table_base(dev);
->   	dma_addr_t ret = DMA_MAPPING_ERROR;
->   
-> +	if (unlikely(attrs & DMA_ATTR_MMIO))
+>     pointing to freed object.
+>     
+>     There is a total count of opened files on functionfs (both ep0 and
+>     dynamic ones) and when it hits zero, dynamic files get removed.
+>     Unfortunately, that removal can happen while another thread is
+>     in ffs_epfile_open(), but has not incremented the count yet.
+>     In that case open will succeed, leaving us with UAF on any subsequent
+>     read() or write().
+>     
+>     The root cause is that ffs->opened is misused; atomic_dec_and_test() vs.
+>     atomic_add_return() is not a good idea, when object remains visible all
+>     along.
+>     
+>     To untangle that
+>             * serialize openers on ffs->mutex (both for ep0 and for dynamic files)
+>             * have dynamic ones use atomic_inc_not_zero() and fail if we had
+>     zero ->opened; in that case the file we are opening is doomed.
+>             * have the inodes of dynamic files marked on removal (from the
+>     callback of simple_recursive_removal()) - clear ->i_private there.
+>             * have open of dynamic ones verify they hadn't been already removed,
+>     along with checking that state is FFS_ACTIVE.
+>     
+>     Fix another abuse of ->opened, while we are at it - it starts equal to 0,
+>     is incremented on opens and decremented on ->release()... *and* decremented
+>     (always from 0 to -1) in ->kill_sb().  Handling that case has no business
+>     in ffs_data_closed() (or to ->opened); just have ffs_kill_sb() do what
+>     ffs_data_closed() would in case of decrement to negative rather than
+>     calling ffs_data_closed() there.
+>     
+>     And don't bother with bumping ffs->ref when opening a file - superblock
+>     already holds the reference and it won't go away while there are any opened
+>     files on the filesystem.
+>     
+>     Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+> 
+> diff --git a/drivers/usb/gadget/function/f_fs.c b/drivers/usb/gadget/function/f_fs.c
+> index 47cfbe41fdff..ed7fa869ea77 100644
+> --- a/drivers/usb/gadget/function/f_fs.c
+> +++ b/drivers/usb/gadget/function/f_fs.c
+> @@ -640,13 +640,22 @@ static ssize_t ffs_ep0_read(struct file *file, char __user *buf,
+>  
+>  static int ffs_ep0_open(struct inode *inode, struct file *file)
+>  {
+> -	struct ffs_data *ffs = inode->i_private;
+> +	struct ffs_data *ffs = inode->i_sb->s_fs_info;
+> +	int ret;
+>  
+> -	if (ffs->state == FFS_CLOSING)
+> -		return -EBUSY;
+> +	/* Acquire mutex */
+> +	ret = ffs_mutex_lock(&ffs->mutex, file->f_flags & O_NONBLOCK);
+> +	if (ret < 0)
+> +		return ret;
+>  
+> -	file->private_data = ffs;
+>  	ffs_data_opened(ffs);
+> +	if (ffs->state == FFS_CLOSING) {
+> +		ffs_data_closed(ffs);
+> +		mutex_unlock(&ffs->mutex);
+> +		return -EBUSY;
+> +	}
+> +	mutex_unlock(&ffs->mutex);
+> +	file->private_data = ffs;
+>  
+>  	return stream_open(inode, file);
+>  }
+> @@ -1193,14 +1202,33 @@ static ssize_t ffs_epfile_io(struct file *file, struct ffs_io_data *io_data)
+>  static int
+>  ffs_epfile_open(struct inode *inode, struct file *file)
+>  {
+> -	struct ffs_epfile *epfile = inode->i_private;
+> +	struct ffs_data *ffs = inode->i_sb->s_fs_info;
+> +	struct ffs_epfile *epfile;
+> +	int ret;
+>  
+> -	if (WARN_ON(epfile->ffs->state != FFS_ACTIVE))
+> +	/* Acquire mutex */
+> +	ret = ffs_mutex_lock(&ffs->mutex, file->f_flags & O_NONBLOCK);
+> +	if (ret < 0)
 > +		return ret;
 > +
->   	if (vio_cmo_alloc(viodev, roundup(size, IOMMU_PAGE_SIZE(tbl))))
->   		goto out_fail;
-> -	ret = iommu_map_page(dev, tbl, page, offset, size, dma_get_mask(dev),
-> +	ret = iommu_map_phys(dev, tbl, phys, size, dma_get_mask(dev),
->   			direction, attrs);
-
-CHECK: Alignment should match open parenthesis
-#285: FILE: arch/powerpc/platforms/pseries/vio.c:530:
-+	ret = iommu_map_phys(dev, tbl, phys, size, dma_get_mask(dev),
-  			direction, attrs);
-
-
->   	if (unlikely(ret == DMA_MAPPING_ERROR))
->   		goto out_deallocate;
-> @@ -536,7 +539,7 @@ static dma_addr_t vio_dma_iommu_map_page(struct device *dev, struct page *page,
->   	return DMA_MAPPING_ERROR;
->   }
->   
-> -static void vio_dma_iommu_unmap_page(struct device *dev, dma_addr_t dma_handle,
-> +static void vio_dma_iommu_unmap_phys(struct device *dev, dma_addr_t dma_handle,
->   				     size_t size,
->   				     enum dma_data_direction direction,
->   				     unsigned long attrs)
-> @@ -544,7 +547,7 @@ static void vio_dma_iommu_unmap_page(struct device *dev, dma_addr_t dma_handle,
->   	struct vio_dev *viodev = to_vio_dev(dev);
->   	struct iommu_table *tbl = get_iommu_table_base(dev);
->   
-> -	iommu_unmap_page(tbl, dma_handle, size, direction, attrs);
-> +	iommu_unmap_phys(tbl, dma_handle, size, direction, attrs);
->   	vio_cmo_dealloc(viodev, roundup(size, IOMMU_PAGE_SIZE(tbl)));
->   }
->   
-> @@ -605,8 +608,8 @@ static const struct dma_map_ops vio_dma_mapping_ops = {
->   	.free              = vio_dma_iommu_free_coherent,
->   	.map_sg            = vio_dma_iommu_map_sg,
->   	.unmap_sg          = vio_dma_iommu_unmap_sg,
-> -	.map_page          = vio_dma_iommu_map_page,
-> -	.unmap_page        = vio_dma_iommu_unmap_page,
-> +	.map_phys          = vio_dma_iommu_map_phys,
-> +	.unmap_phys        = vio_dma_iommu_unmap_phys,
->   	.dma_supported     = dma_iommu_dma_supported,
->   	.get_required_mask = dma_iommu_get_required_mask,
->   	.mmap		   = dma_common_mmap,
-> 
-
+> +	if (!atomic_inc_not_zero(&ffs->opened)) {
+> +		mutex_unlock(&ffs->mutex);
+>  		return -ENODEV;
+> +	}
+> +	/*
+> +	 * we want the state to be FFS_ACTIVE; FFS_ACTIVE alone is
+> +	 * not enough, though - we might have been through FFS_CLOSING
+> +	 * and back to FFS_ACTIVE, with our file already removed.
+> +	 */
+> +	epfile = smp_load_acquire(&inode->i_private);
+> +	if (unlikely(ffs->state != FFS_ACTIVE || !epfile)) {
+> +		mutex_unlock(&ffs->mutex);
+> +		ffs_data_closed(ffs);
+> +		return -ENODEV;
+> +	}
+> +	mutex_unlock(&ffs->mutex);
+>  
+>  	file->private_data = epfile;
+> -	ffs_data_opened(epfile->ffs);
+> -
+>  	return stream_open(inode, file);
+>  }
+>  
+> @@ -1332,7 +1360,7 @@ static void ffs_dmabuf_put(struct dma_buf_attachment *attach)
+>  static int
+>  ffs_epfile_release(struct inode *inode, struct file *file)
+>  {
+> -	struct ffs_epfile *epfile = inode->i_private;
+> +	struct ffs_epfile *epfile = file->private_data;
+>  	struct ffs_dmabuf_priv *priv, *tmp;
+>  	struct ffs_data *ffs = epfile->ffs;
+>  
+> @@ -2071,12 +2099,18 @@ static int ffs_fs_init_fs_context(struct fs_context *fc)
+>  	return 0;
+>  }
+>  
+> +static void ffs_data_reset(struct ffs_data *ffs);
+> +
+>  static void
+>  ffs_fs_kill_sb(struct super_block *sb)
+>  {
+>  	kill_litter_super(sb);
+> -	if (sb->s_fs_info)
+> -		ffs_data_closed(sb->s_fs_info);
+> +	if (sb->s_fs_info) {
+> +		struct ffs_data *ffs = sb->s_fs_info;
+> +		ffs->state = FFS_CLOSING;
+> +		ffs_data_reset(ffs);
+> +		ffs_data_put(ffs);
+> +	}
+>  }
+>  
+>  static struct file_system_type ffs_fs_type = {
+> @@ -2114,7 +2148,6 @@ static void functionfs_cleanup(void)
+>  /* ffs_data and ffs_function construction and destruction code **************/
+>  
+>  static void ffs_data_clear(struct ffs_data *ffs);
+> -static void ffs_data_reset(struct ffs_data *ffs);
+>  
+>  static void ffs_data_get(struct ffs_data *ffs)
+>  {
+> @@ -2123,7 +2156,6 @@ static void ffs_data_get(struct ffs_data *ffs)
+>  
+>  static void ffs_data_opened(struct ffs_data *ffs)
+>  {
+> -	refcount_inc(&ffs->ref);
+>  	if (atomic_add_return(1, &ffs->opened) == 1 &&
+>  			ffs->state == FFS_DEACTIVATED) {
+>  		ffs->state = FFS_CLOSING;
+> @@ -2148,11 +2180,11 @@ static void ffs_data_put(struct ffs_data *ffs)
+>  
+>  static void ffs_data_closed(struct ffs_data *ffs)
+>  {
+> -	struct ffs_epfile *epfiles;
+> -	unsigned long flags;
+> -
+>  	if (atomic_dec_and_test(&ffs->opened)) {
+>  		if (ffs->no_disconnect) {
+> +			struct ffs_epfile *epfiles;
+> +			unsigned long flags;
+> +
+>  			ffs->state = FFS_DEACTIVATED;
+>  			spin_lock_irqsave(&ffs->eps_lock, flags);
+>  			epfiles = ffs->epfiles;
+> @@ -2171,12 +2203,6 @@ static void ffs_data_closed(struct ffs_data *ffs)
+>  			ffs_data_reset(ffs);
+>  		}
+>  	}
+> -	if (atomic_read(&ffs->opened) < 0) {
+> -		ffs->state = FFS_CLOSING;
+> -		ffs_data_reset(ffs);
+> -	}
+> -
+> -	ffs_data_put(ffs);
+>  }
+>  
+>  static struct ffs_data *ffs_data_new(const char *dev_name)
+> @@ -2352,6 +2378,11 @@ static int ffs_epfiles_create(struct ffs_data *ffs)
+>  	return 0;
+>  }
+>  
+> +static void clear_one(struct dentry *dentry)
+> +{
+> +	smp_store_release(&dentry->d_inode->i_private, NULL);
+> +}
+> +
+>  static void ffs_epfiles_destroy(struct ffs_epfile *epfiles, unsigned count)
+>  {
+>  	struct ffs_epfile *epfile = epfiles;
+> @@ -2359,7 +2390,7 @@ static void ffs_epfiles_destroy(struct ffs_epfile *epfiles, unsigned count)
+>  	for (; count; --count, ++epfile) {
+>  		BUG_ON(mutex_is_locked(&epfile->mutex));
+>  		if (epfile->dentry) {
+> -			simple_recursive_removal(epfile->dentry, NULL);
+> +			simple_recursive_removal(epfile->dentry, clear_one);
+>  			epfile->dentry = NULL;
+>  		}
+>  	}
 
