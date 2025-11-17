@@ -1,93 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-14212-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14213-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 247B1CEACEF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Nov 2025 06:54:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id CFD1FCE8D6B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Nov 2025 07:06:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d8z4X58v3z30VL;
-	Mon, 17 Nov 2025 17:54:20 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763362460;
-	cv=none; b=FV9jyGX8HmO3DBmSZEHwFx6yLYUFcfbFLLC9QaA7LGAMHL1H8QmbwkABasaMaABNSJqPMRDfd9dkocxo8OAE4y2Ewu9fuy/BbCew2WvlkqR6+UqsxYGzEVHDklP0R5gD/eHA6VcTMIprCHuwed0GISEOV9+r2mLxzIZgrb+raL8WoyRvL+AAxvUZQ3+OyOOe4ZBgUaz+J8d0h+fBNlmxTUe9ZAZhNGrNVqXohfgne/RuX5MH5OhmkG88lUBnW9niRKkyjvg9Hrov3S0D79TlyX6l6J9ZZ27TjxNmvekUwMMiXoQ7JVIx8n2eEvGYPYQ0VEVjLmG3N/5CCoLVlzSjmw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d8zLj2PjJz2yFy;
+	Mon, 17 Nov 2025 18:06:37 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763363197;
+	cv=none; b=mSmps7RalZ8fFZeO7HadQVFUYI1Q9jBu+5213P/4/c3MzudvjsABTiYuWs69ySVSWnPCKCya8bDYIimgmqAMAHRxgkPMynbKcDcDwQhHZod3Yq/7UrT+m07VrhyQK5YWE0LNMeZX1FLhrQA9/Xi+QcZMzCIOzYN1SpXAsnJnzFZLmyzBlbqME+j+tosGChFXWh/1PAYt7yqe29vOUuFcEKI2GlcmM34wpn53Ri22s3aAUwfEs9DKBDr76y37YxzT1ue+NgvZDUjSakvr7BPlCQvfLAA8xRRYlddxo2LR/OMxqQd4x73PEBNw+5CVl5CBqDaLFsZU/tdGfUKsh7wrGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763362460; c=relaxed/relaxed;
-	bh=+alo3UbEupCj7LbLwMD2TuLDGJIyyt28uqSQUJb9iEA=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=dctiHNFl/2yG52mNZDxAiA1zMZRb10aO8fIEpMkzATA8RCblRAn7sJ/7eIG8ZLHOUIQh2vfeX0Enw0/S1X7yjKux8at8I31MpaxzLZxZ86jfDFIG+Fq5L8hGoDtyDo0Y0HtXyKcl++drwhPeAYHarc+FIgdfZR61bREqKQz0CMtFGZDb3cuX8S3iNnOw93wlNLSVTuGEm8PTz7+tf41lrs0ojN5pfiLZY1jB89bs3ZMyqSisGUsCBgGy0qG7Chp9s7ClwyujkQDfJNIeYKc4tgGKDGP5j0Qr01CitB7mPS1W/cJkV97ctpCK1X05KTcztPkvtyjspkFmI7PYAU6BUA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZUj0FO1v; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1763363197; c=relaxed/relaxed;
+	bh=CgAlBxTnQiZUHlfmmlaAo9CminAmrOucM55BFkwx+JY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IuTlIsRqdlQAfQhG8X54ICtADyB8m0d2+V3hKDA0fJydfie8IIvru3O/VW+nN5ScDOYCXkw6+YVlPJJPBaj0i8rKvP/wzk+4mFsbcPS8+JyY2VBhachrrxUKxvPRXvHI4diYQVZ+Fzk2NvVZep0LhMDNu4wzt5FFFkt7524y6qUSxFs8G+ApTauw4yAkuV4MxHpUspssYs/DCrIzIhKiRLjpuE2AzhGzKbwyerqkTEMIwedeehyGH9J+l9ncS5AW0LyKeRaeYKh77wIYTHRnYEFYn7EcvwJT2FO7kcK/JXhJSVZFoSoy2fFiUnsOWR8SSI05N5R2weli/7MgLcS8yQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ajEn9Lum; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ZUj0FO1v;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ajEn9Lum;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d8z4X0TGlz2ynC
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2025 17:54:19 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5AGH77er011537;
-	Mon, 17 Nov 2025 06:52:50 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=+alo3U
-	bEupCj7LbLwMD2TuLDGJIyyt28uqSQUJb9iEA=; b=ZUj0FO1vF0bpo788xJ5nvA
-	ZI9sFh+riLN+alcFWnBRLSr3CKWwJGpyjWXLEl0OsnuzIlQ1EWXfDTldYjm5qs6O
-	FrlwMKVx9P2fhD5Vnz4GN0P40Ru0HCaI8T6hg9WPJhKuEI3OCQM2QChP9DUm4cgb
-	eYp09mfdPwlCuxR2vB1jX+nJOgFaYZEiR2fxcOTWzVa2c9ILSWTmhmKcFGWtO6UD
-	jsNMcgubzKvkyYFbaL6hADrEIKVZyCuQx47ae+ESlFLe29AVZTmaq6sZaTn7CSCf
-	CDfhsKoEpKVI7Bmyh2QfceEYmB9zi8+iyr9ozZJmh1GXWK7c9rRoA7nxzwNaIohA
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejk14ud9-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 17 Nov 2025 06:52:50 +0000 (GMT)
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5AH6dU1F009668;
-	Mon, 17 Nov 2025 06:52:49 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejk14ud7-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 17 Nov 2025 06:52:49 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5AH6PWjg010419;
-	Mon, 17 Nov 2025 06:52:48 GMT
-Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4af3urvk33-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 17 Nov 2025 06:52:48 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5AH6qjrJ39715256
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 17 Nov 2025 06:52:45 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id F02FB20040;
-	Mon, 17 Nov 2025 06:52:44 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1B1FA2004B;
-	Mon, 17 Nov 2025 06:52:41 +0000 (GMT)
-Received: from li-621bac4c-27c7-11b2-a85c-c2bf7c4b3c07.in.ibm.com (unknown [9.109.219.153])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 17 Nov 2025 06:52:40 +0000 (GMT)
-From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
-To: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org
-Cc: hbathini@linux.ibm.com, sachinpb@linux.ibm.com, venkat88@linux.ibm.com,
-        andrii@kernel.org, eddyz87@gmail.com, ast@kernel.org,
-        daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
-        yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
-        sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org,
-        christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com
-Subject: [PATCH bpf-next v2 1/2] powerpc64/bpf: Support internal-only MOV instruction to resolve per-CPU addrs
-Date: Mon, 17 Nov 2025 12:22:34 +0530
-Message-ID: <e58dc8bfd5be16f95684d35fd68919ea83c7e322.1762422548.git.skb99@linux.ibm.com>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <cover.1762422548.git.skb99@linux.ibm.com>
-References: <cover.1762422548.git.skb99@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d8zLh1tJpz2xS2
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 17 Nov 2025 18:06:36 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 79B81601A3;
+	Mon, 17 Nov 2025 07:06:33 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 61424C4CEFB;
+	Mon, 17 Nov 2025 07:06:28 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1763363193;
+	bh=KDZd9YTazDXwxaHEWm8apDVEeSXEzTkuHWdA30q5ZJI=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=ajEn9LumigFa0k/MwaUalDCto9I/GU9myHvWejQEoX/l4a5N70RlXaG4RM8zdYQ5V
+	 q5AlLAiLHNyw8Auc2iXYWyjirLMUunXwVIJRBBTSm0CsBXfuSu+xp1aeJvKRvQOeP5
+	 IKKHSlAPe9WWC46RAq6JRoE5JZyQo7+xG0bXflZgM0Vh+hwzedx+BQgFK7ZKX1Y8mW
+	 MqbF7TvBfY0nFt0925Qvz0X/J+9PSYlxmYZlqngxcu/xVebBja/rs6K5Vnqat89cNL
+	 a0nVh6f8/YD5O81vU7tSUxSptEbbzIYEPaX4S8SbDgBkl70ZW1Da/53BDrTYOLa7hN
+	 kFR5h3B1TFZxg==
+Message-ID: <af101dba-b02f-4863-a893-789fa08124d0@kernel.org>
+Date: Mon, 17 Nov 2025 08:06:26 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,108 +59,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v4 02/10] uaccess: Add speculation barrier to
+ copy_from_user_iter()
+To: Thomas Gleixner <tglx@linutronix.de>,
+ Alexander Viro <viro@zeniv.linux.org.uk>,
+ Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>,
+ Ingo Molnar <mingo@redhat.com>, Peter Zijlstra <peterz@infradead.org>,
+ Darren Hart <dvhart@infradead.org>, Davidlohr Bueso <dave@stgolabs.net>,
+ Andre Almeida <andrealmeid@igalia.com>,
+ Andrew Morton <akpm@linux-foundation.org>, Eric Dumazet
+ <edumazet@google.com>, Kuniyuki Iwashima <kuniyu@google.com>,
+ Paolo Abeni <pabeni@redhat.com>, Willem de Bruijn <willemb@google.com>,
+ "David S. Miller" <davem@davemloft.net>, Jakub Kicinski <kuba@kernel.org>,
+ Simon Horman <horms@kernel.org>, Daniel Borkmann <daniel@iogearbox.net>,
+ Dave Hansen <dave.hansen@linux.intel.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>
+Cc: linux-block@vger.kernel.org, linux-fsdevel@vger.kernel.org,
+ linux-kernel@vger.kernel.org, netdev@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org
+References: <cover.1762427933.git.christophe.leroy@csgroup.eu>
+ <598e9ec31716ce351f1456c81eee140477d4ecc4.1762427933.git.christophe.leroy@csgroup.eu>
+ <87jyzr9tuo.ffs@tglx>
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Content-Language: fr-FR
+In-Reply-To: <87jyzr9tuo.ffs@tglx>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=C/nkCAP+ c=1 sm=1 tr=0 ts=691ac642 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=IkcTkHD0fZMA:10 a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=NEAV23lmAAAA:8 a=VnNF1IyMAAAA:8 a=9ieA5zyVNCi_1SjJAlMA:9 a=3ZKOabzyN94A:10
- a=QEXdDO2ut3YA:10 a=cPQSjfK2_nFv0Q5t_7PE:22
-X-Proofpoint-GUID: tCJP1Y9VwZFQNgXULkF-3Z_VQtLbbkcV
-X-Proofpoint-ORIG-GUID: 8Pwe9b7X5a-OSzI9xeEndQmbr_ki4epO
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTE1MDAzMiBTYWx0ZWRfX4sNlqtGEEzo0
- HCD0L4pkM2CtYgmrPNKBUCaLkUTjlDmSvn8DtKPzBjBKoctzukLS7PALtCjLwqK6gwox4xwPiDJ
- /BfpiZK+RtmE/8g3RuxVQhyFgS3y8UCYKzvY+1x3D/+tVWE3z1AwgHfqVT3Bpw2D1aCuLnGuC8k
- Y4OPTYoapUGAnTALVnVI0oQtXDD4jwOQJKaXSDu+W8tLZ3FMk7cgpOK0YkCGusBL0IAYCoLirc/
- HX/ybD0p77OJTIjCjsrmI4W+JteGYNBMNJ5o+IjlkMXRZGTlGEEMqw5kp0u3zyD6BNxF44C6Q8V
- 3qWs34AjhK7G9+69suavhKvbS7+HwUitG6qk92OrGF74GAqjI96+Esw/SczUYucGTXgA3KTzZFL
- +Yy+ODNG2yZqF5Rimy9M+aN5v34K7Q==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2025-11-17_02,2025-11-13_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 priorityscore=1501 spamscore=0 impostorscore=0 bulkscore=0
- malwarescore=0 suspectscore=0 clxscore=1015 lowpriorityscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2511150032
 
-With the introduction of commit 7bdbf7446305 ("bpf: add special
-internal-only MOV instruction to resolve per-CPU addrs"),
-a new BPF instruction BPF_MOV64_PERCPU_REG has been added to
-resolve absolute addresses of per-CPU data from their per-CPU
-offsets. This update requires enabling support for this
-instruction in the powerpc JIT compiler.
 
-As of commit 7a0268fa1a36 ("[PATCH] powerpc/64: per cpu data
-optimisations"), the per-CPU data offset for the CPU is stored in
-the paca.
 
-To support this BPF instruction in the powerpc JIT, the following
-powerpc instructions are emitted:
+Le 15/11/2025 à 16:51, Thomas Gleixner a écrit :
+> On Thu, Nov 06 2025 at 12:31, Christophe Leroy wrote:
+>> The results of "access_ok()" can be mis-speculated.  The result is that
+>> you can end speculatively:
+>>
+>> 	if (access_ok(from, size))
+>> 		// Right here
+> 
+> This is actually the wrong patch ordering as the barrier is missing in
+> the current code. So please add the missing barrier first.
 
-ld tmp1_reg, 48(13)		//Load per-CPU data offset from paca(r13) in tmp1_reg.
-add dst_reg, src_reg, tmp1_reg	//Add the per cpu offset to the dst.
-mr dst_reg, src_reg		//Move src_reg to dst_reg, if src_reg != dst_reg
+Patch 1 is there because Linus was worried with the performance 
+degradation brought by the barrier on x86, see [1]
 
-To evaluate the performance improvements introduced by this change,
-the benchmark described in [1] was employed.
+[1] 
+https://lore.kernel.org/all/CAHk-=wj4P6p1kBVW7aJbWAOGJZkB7fXFmwaXLieBRhjmvnWgvQ@mail.gmail.com/
 
-Before Change:
-glob-arr-inc   :   41.580 ± 0.034M/s
-arr-inc        :   39.592 ± 0.055M/s
-hash-inc       :   25.873 ± 0.012M/s
+If we change the order, it means we first degrade performance on x86 
+with patch 1 then we fix that degradation with patch 2. It seems more 
+natural to first ensure that the barrier won't degrade x86 then add the 
+barrier.
 
-After Change:
-glob-arr-inc   :   42.024 ± 0.049M/s
-arr-inc        :   55.447 ± 0.031M/s
-hash-inc       :   26.565 ± 0.014M/s
+An alternative is to squash both patches together, after all they touch 
+the exact same part of the code.
 
-[1] https://github.com/anakryiko/linux/commit/8dec900975ef
+Let me know what you prefer:
+1/ Leave in that order to avoid intermediaite performance degradation on x86
+2/ Change order
+3/ Squash both patches together.
 
-Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
----
- arch/powerpc/net/bpf_jit_comp.c   | 5 +++++
- arch/powerpc/net/bpf_jit_comp64.c | 9 +++++++++
- 2 files changed, 14 insertions(+)
+> 
+> As a bonus the subject of the first patch makes actually sense
+> then. Right now it does not because there is nothing to avoid :)
+> 
+> Also please use the same prefix for these two patches which touch the
+> iter code.
 
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 88ad5ba7b87f..2f2230ae2145 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -466,6 +466,11 @@ bool bpf_jit_supports_insn(struct bpf_insn *insn, bool in_arena)
- 	return true;
- }
- 
-+bool bpf_jit_supports_percpu_insn(void)
-+{
-+	return IS_ENABLED(CONFIG_PPC64);
-+}
-+
- void *arch_alloc_bpf_trampoline(unsigned int size)
- {
- 	return bpf_prog_pack_alloc(size, bpf_jit_fill_ill_insns);
-diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-index 1fe37128c876..21486706b5ea 100644
---- a/arch/powerpc/net/bpf_jit_comp64.c
-+++ b/arch/powerpc/net/bpf_jit_comp64.c
-@@ -918,6 +918,15 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
- 		case BPF_ALU | BPF_MOV | BPF_X: /* (u32) dst = src */
- 		case BPF_ALU64 | BPF_MOV | BPF_X: /* dst = src */
- 
-+			if (insn_is_mov_percpu_addr(&insn[i])) {
-+				if (IS_ENABLED(CONFIG_SMP)) {
-+					EMIT(PPC_RAW_LD(tmp1_reg, _R13, offsetof(struct paca_struct, data_offset)));
-+					EMIT(PPC_RAW_ADD(dst_reg, src_reg, tmp1_reg));
-+				} else {
-+					EMIT(PPC_RAW_MR(dst_reg, src_reg));
-+				}
-+			}
-+
- 			if (insn_is_cast_user(&insn[i])) {
- 				EMIT(PPC_RAW_RLDICL_DOT(tmp1_reg, src_reg, 0, 32));
- 				PPC_LI64(dst_reg, (ctx->user_vm_start & 0xffffffff00000000UL));
--- 
-2.51.0
+Sure I'll do that.
 
+> 
+>> For the same reason as done in copy_from_user() by
+>> commit 74e19ef0ff80 ("uaccess: Add speculation barrier to
+>> copy_from_user()"), add a speculation barrier to copy_from_user_iter().
+>>
+>> See commit 74e19ef0ff80 ("uaccess: Add speculation barrier to
+>> copy_from_user()") for more details.
+> 
+> No need to repeat that. Anyone with more than two braincells can look at
+> that commit, which you mentioned already two lines above already.
+
+Ok
+
+Thanks
+Christophe
 
