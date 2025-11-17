@@ -1,48 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14219-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14220-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 77806CEACEF
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Nov 2025 16:50:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1D22BCE8D6B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 17 Nov 2025 16:50:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9DJf6VbXz30VL;
-	Tue, 18 Nov 2025 03:50:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9DJm09CPz30V3;
+	Tue, 18 Nov 2025 03:50:48 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=93.17.235.10
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763398242;
-	cv=none; b=kiQvoCbHdI+PLw896Z3rCMjvnsQX7ZHzKyjMNW+c05JmhHF+4Gr0Wjq8TUKB6Gk7LpIfzqTPwxPgkUxCaAb0glI57/t9l796+/pgQFQe+rnLNRhkCJ+L0KWNK+LLA5Hj5+0bOD6s/gPf1D4zlUmjTe6xsFbYgh7F5botIwBJ3nG6k1A67hpSOpWJ4wO2x/7u573l86PAOgzNbd9l+qoq4istE7cgRo8vDmYSkv2SlHupf5t4QZxoamuDLrbMfCQM6SsVaYBqf2aHuXuV+PfF9k2VdeBeUMdw6SKLAqUFKLKnofeeGp0NupkWupyMIx9s9JwHGhqWcsjTIhRIZiJCIw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763398247;
+	cv=none; b=MroFgDrl+UpGiGnOwFM9EiY9WEXKb76Jt6HUbSXCiEzk45TvzhbakenOHvFSWiGAxffiYV50pt9QTNVk72mO0emC5w0KU7AATUFH0iEwP1xAbmubEmi5iQ6nPLjKgh7xXZFg7YXRMMuuUpbCTLCALuq+SKUUzN5yIFLE2/gUd0ai2G70Fpzd9jLxqJsTOaDpXOtne2Cw3Z8RNZ1v96dpp9cje+FLMjWAGhlsDT6vvg0rgI8NqO3Vejji67hCuUPCbO62R4twDrL+8fU6UStaApnHkX5Fv7p5d9aTDfXCecREriVJfx5fqumR/iUxXIthuc8n0O5zwq+JAFG2G9kOHQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763398242; c=relaxed/relaxed;
-	bh=YnfKQDV29XVif7N/irnwGJLyCtzkGfriZitKjIWTi4E=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=j+0CMa9vhpmAIM+8VagMSQY+dYyZwGsAUhnVOyr0pUeHcJN0ZGreCUnnr1spsvr8tzTpVATyF77GTF4IeVULLBT5xxzMXb76/h/6lO9Y/1DCwNoFwNcxTTPMLw1wxrKSJY/irLMsbIh3p1tMTgyNaakadfcK4pI7wEqCvnqJqywiCEEXkF+o3l2aITVtiQoBxt/VBklwVttQsR1e1RwEBIQ18YU+tQTmy5PyZbjw3DyL72S46DrP3NltpvTG7q6d/OpNVfwSLKy2vQP4PLEnCHMePapYvGVT5SCatM3bJJrwzN4NCUW+vRVJiaUnr3+Lmaw+ULrnCIF6Yf1PTv3rkw==
+	t=1763398247; c=relaxed/relaxed;
+	bh=nLV3NkOOmHkUOe90AKSsOXWOaezG1qkJDx/FKsmIshM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=YZLUjR5/V4sBq4nI78JbF25h7pHMt6zWrgabR95lQSbF144Dbm1XcnBbb3QxDw/GJdiA3+oLXCgns5kHyfogVJXUJriiOD+GI2vLOqocPDCJQM1ZL8yi92jb6D00QrPEYiMZrAG9UBrqpGqT4zD0cP8jLhYi16aY0i0La5fddKPn0R3fFFhtxG5QTYbIWxG5IaBTx7Fa3JwouEPse+A+aO0Omb2feJyUxRFJzCVsGDbqt8ZqZgBR8TTCKeiNyg17677ZCaQlpNJ+6xN1tHWg4ELaOutEAWF1J55AzX669F+9VWX8v1KXRc/gJ13qfy5hnYj+aCuHq4US7r5gPvHgVA==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu; spf=pass (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org) smtp.mailfrom=csgroup.eu
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=csgroup.eu
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=csgroup.eu (client-ip=93.17.235.10; helo=pegase2.c-s.fr; envelope-from=christophe.leroy@csgroup.eu; receiver=lists.ozlabs.org)
 Received: from pegase2.c-s.fr (pegase2.c-s.fr [93.17.235.10])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9DJf30SVz2ypw
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 03:50:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9DJl1gZ2z2ypw
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 03:50:47 +1100 (AEDT)
 Received: from localhost (mailhub4.si.c-s.fr [172.26.127.67])
-	by localhost (Postfix) with ESMTP id 4d9D974sv3z9sTX;
-	Mon, 17 Nov 2025 17:44:11 +0100 (CET)
+	by localhost (Postfix) with ESMTP id 4d9D953HZVz9sSK;
+	Mon, 17 Nov 2025 17:44:09 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from pegase2.c-s.fr ([172.26.127.65])
 	by localhost (pegase2.c-s.fr [127.0.0.1]) (amavisd-new, port 10024)
-	with ESMTP id B6EAP4w0AuZ2; Mon, 17 Nov 2025 17:44:11 +0100 (CET)
+	with ESMTP id iWUAGZWJZEEK; Mon, 17 Nov 2025 17:44:09 +0100 (CET)
 Received: from messagerie.si.c-s.fr (messagerie.si.c-s.fr [192.168.25.192])
-	by pegase2.c-s.fr (Postfix) with ESMTP id 4d9D9746V2z9sTW;
-	Mon, 17 Nov 2025 17:44:11 +0100 (CET)
+	by pegase2.c-s.fr (Postfix) with ESMTP id 4d9D952NXHz9sS8;
+	Mon, 17 Nov 2025 17:44:09 +0100 (CET)
 Received: from localhost (localhost [127.0.0.1])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 7A3DB8B763;
-	Mon, 17 Nov 2025 17:44:11 +0100 (CET)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id 3CC7E8B769;
+	Mon, 17 Nov 2025 17:44:09 +0100 (CET)
 X-Virus-Scanned: amavisd-new at c-s.fr
 Received: from messagerie.si.c-s.fr ([127.0.0.1])
 	by localhost (messagerie.si.c-s.fr [127.0.0.1]) (amavisd-new, port 10023)
-	with ESMTP id Zrq7Eiq6nOLm; Mon, 17 Nov 2025 17:44:11 +0100 (CET)
+	with ESMTP id TzQbKMy7QXZa; Mon, 17 Nov 2025 17:44:09 +0100 (CET)
 Received: from PO20335.idsi0.si.c-s.fr (unknown [192.168.235.99])
-	by messagerie.si.c-s.fr (Postfix) with ESMTP id 5B6B38B769;
-	Mon, 17 Nov 2025 17:44:10 +0100 (CET)
+	by messagerie.si.c-s.fr (Postfix) with ESMTP id C93EF8B763;
+	Mon, 17 Nov 2025 17:44:07 +0100 (CET)
 From: Christophe Leroy <christophe.leroy@csgroup.eu>
 To: Thomas Gleixner <tglx@linutronix.de>,
 	Peter Zijlstra <peterz@infradead.org>
@@ -72,12 +71,10 @@ Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
 	linux-kernel@vger.kernel.org,
 	netdev@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org
-Subject: [PATCH v5 2/4] iov_iter: Add missing speculation barrier to copy_from_user_iter()
-Date: Mon, 17 Nov 2025 17:43:42 +0100
-Message-ID: <6b73e69cc7168c89df4eab0a216e3ed4cca36b0a.1763396724.git.christophe.leroy@csgroup.eu>
+Subject: [PATCH v5 0/4] uaccess: Prepare for masked user access on powerpc
+Date: Mon, 17 Nov 2025 17:43:40 +0100
+Message-ID: <cover.1763396724.git.christophe.leroy@csgroup.eu>
 X-Mailer: git-send-email 2.49.0
-In-Reply-To: <cover.1763396724.git.christophe.leroy@csgroup.eu>
-References: <cover.1763396724.git.christophe.leroy@csgroup.eu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,52 +88,84 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-Developer-Signature: v=1; a=openpgp-sha256; l=1316; i=christophe.leroy@csgroup.eu; h=from:subject:message-id; bh=MaSZLcG93ruseoCd/jNUTCbVIjzk2wIX1qL4RQMUeN0=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWRKBxxX3PAkbObONVNX3ny3/Sr7tYkJtiXP+/xeFZ6wT ci7otS9oKOUhUGMi0FWTJHl+H/uXTO6vqTmT92lDzOHlQlkCAMXpwBMZJIJI8OtiC+XXkppPlyz unjhqRuqTEJbclpcf0v4Mk9jVDn16CcPw39fsW351z703dcMY7zu8bBnxoQrN5ktpzYci38SzXv 9qTk/AA==
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3522; i=christophe.leroy@csgroup.eu; h=from:subject:message-id; bh=WGqKFA3mz9XHJ6cj5G5VuhtGqL7z2AHwH/JWwrDAKcU=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWRKB+x//GA1v1ClgdYODW2ZTXLbzU/ZRjV/eKQu6mewe ZpfUUFuRykLgxgXg6yYIsvx/9y7ZnR9Sc2fuksfZg4rE8gQBi5OAZjIrP2MDE+3/HiwSHXz054e sW9T6m8y2UyYrVbctHBZQWh6hr3ILzlGhs8i3SbnnRO3ckQYW04rkjo930th+7PFh0R8ehe170m JYAEA
 X-Developer-Key: i=christophe.leroy@csgroup.eu; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
 
-The results of "access_ok()" can be mis-speculated.  The result is that
-you can end speculatively:
+This is v5 of the series "powerpc: Implement masked user access". This
+version only includes the preparatory patches to enable merging of
+powerpc architecture patches that depend on them on next cycle.
 
-	if (access_ok(from, size))
-		// Right here
+It applies on top of commit 6ec821f050e2 (tag: core-scoped-uaccess)
+from tip tree.
 
-For the same reason as done in copy_from_user() by
-commit 74e19ef0ff80 ("uaccess: Add speculation barrier to
-copy_from_user()"), add a speculation barrier to copy_from_user_iter().
+Thomas, Peter, could you please take those preparatory patches
+in tip tree for v6.19, then Maddy will take powerpc patches
+into powerpc-next for v6.20.
 
-Signed-off-by: Christophe Leroy <christophe.leroy@csgroup.eu>
----
- lib/iov_iter.c | 14 +++++++++++---
- 1 file changed, 11 insertions(+), 3 deletions(-)
+Masked user access avoids the address/size verification by access_ok().
+Allthough its main purpose is to skip the speculation in the
+verification of user address and size hence avoid the need of spec
+mitigation, it also has the advantage to reduce the amount of
+instructions needed so it also benefits to platforms that don't
+need speculation mitigation, especially when the size of the copy is
+not know at build time.
 
-diff --git a/lib/iov_iter.c b/lib/iov_iter.c
-index a589935bf302..896760bad455 100644
---- a/lib/iov_iter.c
-+++ b/lib/iov_iter.c
-@@ -49,11 +49,19 @@ size_t copy_from_user_iter(void __user *iter_from, size_t progress,
- 
- 	if (should_fail_usercopy())
- 		return len;
--	if (can_do_masked_user_access())
-+	if (can_do_masked_user_access()) {
- 		iter_from = mask_user_address(iter_from);
--	else if (!access_ok(iter_from, len))
--		return res;
-+	} else {
-+		if (!access_ok(iter_from, len))
-+			return res;
- 
-+		/*
-+		 * Ensure that bad access_ok() speculation will not
-+		 * lead to nasty side effects *after* the copy is
-+		 * finished:
-+		 */
-+		barrier_nospec();
-+	}
- 	to += progress;
- 	instrument_copy_from_user_before(to, iter_from, len);
- 	res = raw_copy_from_user(to, iter_from, len);
+Patches 1 and 2 are preparing to clean-up some redundant barrier_nospec()
+introduced by commit 74e19ef0ff80 ("uaccess: Add speculation barrier
+to copy_from_user()"). To do that, a speculation barrier is added to
+copy_from_user_iter() so that the barrier in powerpc raw_copy_from_user()
+which is redundant with the one in copy_from_user() can be removed. To
+avoid impacting x86, copy_from_user_iter() is first converted to using
+masked user access.
+
+Patch 3 convert put_cmsg() to scoped user access.
+
+Patch 4 replaces remaining wrong calls to masked_user_access_begin()
+with calls to masked_user_read_access_begin() and
+masked_user_write_access_begin() to match with user_read_access_end()
+and user_write_access_end().
+
+Entire series is availiable at https://git.kernel.org/pub/scm/linux/kernel/git/chleroy/linux branch masked-uaccess
+
+Changes in v5:
+- Taken comments from tglx
+- Only include core preparatory patches, powerpc patches are kept for following kernel development cycle
+- Reworded patch 1 to make it more explicit it needs to come before patch 2
+- Added patch 3 to convert put_cmsg() to scoped user access instead of just fixing the direction of the uacess
+- Renamed patch 4 as it now only handles fonctions from lib/strn*.c
+
+Changes in v4:
+- Rebased on top of commit 6ec821f050e2 (tag: core-scoped-uaccess) from tip tree
+- Patch 3: Simplified as masked_user_read_access_begin() and masked_user_write_access_begin() are already there.
+- Patch 10: Simplified mask_user_address_simple() as suggested by Gabriel.
+
+Changes in v3:
+- Rebased on top of v6.18-rc1
+- Patch 3: Impact on recently modified net/core/scm.c
+- Patch 10: Rewrite mask_user_address_simple() for a smaller result on powerpc64, suggested by Gabriel
+
+Changes in v2:
+- Converted copy_from_user_iter() to using masked user access.
+- Cleaned up powerpc uaccess function to minimise code duplication
+when adding masked user access
+- Automated TASK_SIZE calculation to minimise use of BUILD_BUG_ON()
+- Tried to make some commit messages more clean based on feedback from
+version 1 of the series.
+
+Christophe Leroy (4):
+  iov_iter: Convert copy_from_user_iter() to masked user access
+  iov_iter: Add missing speculation barrier to copy_from_user_iter()
+  scm: Convert put_cmsg() to scoped user access
+  lib/strn*,uaccess: Use masked_user_{read/write}_access_begin when
+    required
+
+ lib/iov_iter.c          | 22 +++++++++++++++++-----
+ lib/strncpy_from_user.c |  2 +-
+ lib/strnlen_user.c      |  2 +-
+ net/core/scm.c          | 20 +++++++-------------
+ 4 files changed, 26 insertions(+), 20 deletions(-)
+
 -- 
 2.49.0
 
