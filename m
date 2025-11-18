@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14245-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14246-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF1B2CCD19A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:17:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 74619CED240
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:18:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xs93GJgz3cZQ;
-	Tue, 18 Nov 2025 16:16:29 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9XsC1kFSz3brL;
+	Tue, 18 Nov 2025 16:16:31 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763442988;
-	cv=none; b=RwYNko61/ZYQNC1CNvHau3M5ucRBiyQ7+CxDCrDOzEUSpuDk+0/AP4PbqzhdM/IjTSagoizFwbVGRyElWLGB3Vn2lHIx1PG1Irf8ID93Xoo+a+HiMy/9nTNxt3pWcb0I8mNvkSKKwcGLfl8opCK8NPZ7G9quctDO3B9yp6wd3b7KG3LpvDe7umDN2TvxwZwu14oKwgh2nz/YgZKKKRn3MyXKRwzybcE5PXx8XWxOn9/uH13MBn96J3Qa/tVImE9DGcLABB+zFQXJOKAm+BdmF2j/x0QdIbnqtFmLBoxS4rKG4tauIXhI36mkPxTtlYTzytZ3RSx0SLuZ9kviVBeMXA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763442989;
+	cv=none; b=HMNBhXfr/FZKqPyuouLFV/XBH9Gzr1O0MjYIxUzBVOHh3ioA0BEe4wJgHz4sYaXHwO7m4KEAGjwNGhV547uy/fZZc/pN2433Eotpwtc3kBHrVGjdmNRd844qanvj9ee3+zcMgmCpJkPgDYR/vzlVoXs+Ra0In+PzSya7j9Adblf/FSo4TzbLnkFcs8Vuie1eW9+UjTUOlGuI147t83gRkPOXGJ2bsUf/ej56ZXQ+7vWxLgWa1ucAchPCxYUfPUtZD091m3Jh6Nlg20uuwYXWDc3l2YobZv3by7MafTjaVfwpfB4130tFwSGZMd4/0k37MxkufYU1rmYNvLuM6Mr5Ag==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763442988; c=relaxed/relaxed;
-	bh=nXGw1nJCnekakkZR178NLSh8+iviODtKUClSm5rridQ=;
+	t=1763442989; c=relaxed/relaxed;
+	bh=OHt/Ew+g7B0pNZwOTBE8VBfCIPUfQxC19aVy8itf040=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=HCb1A90CFnM8H7k8L+dkpp7n6/uW9YRMQV9AgfUTbqTVIre36uzIssfTrQWJ5V0INUrDwJdeTcwhtOj65d5g0NFTevb8creA/b8cTLJe42rGnOmoWhy+eqtq5jmZ4fY8yCNyXqSuKU4GXOFX9ZFOeBigm3EY7xwPzGqiL6INmm6bSnIV+tKaGdAfjoi6C3WwxDmTzZV8mSsDwC43Uhm7LYGDopsTI6NNVM+R6Vh3Yr2oOkzjy07Q9uipAZ5lpeM9NVzMKK458FGiHUltiwARXkLTgOvq8oy0VwfLV8MzrsfhQ7eTylZh8xkwk6Un0JZCd0KEzPoIo7zVI89oxVvbxg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=Vl/3NOTL; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=H7a/N18GwNLXyneVXY5yQttARYZzm/OCm8QHEE1XB6NVV5m0qwjGSmpIC+T+ovnkWuTGMFowL2WhMl2Zffel1N0pP0ugt3+SqvQTQFIyEgC30JRNBp74RCdVA60GLygysFFs9x5h825+ohmaXs1hZcoRJ2kLao4HtsTjOSnW4PpTfujzsuG0Qtxiz2grnP0/TXrDbVpXxZn12Iqzef2FyGv4n3YmfiZrgWi149Y0iAUsNaiugdPmxuGnsPN+ReUA//u9CD/69MPtUCHsaTRlf87Nky0hUGdZDWcm1+TUoDvK+8+8y0L6qPwYGHcCcrUNU879w0B4s1Ed3jsnmeGL/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=lKIPhYfq; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=Vl/3NOTL;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=lKIPhYfq;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xry6Vh4z30Vm
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xry3fshz30Vj
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:18 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=nXGw1nJCnekakkZR178NLSh8+iviODtKUClSm5rridQ=; b=Vl/3NOTLarYBwB87GqxphHKkQI
-	7nr+xrUdOHGzbQvNgPwTh/+ZuDIklH3LjYUAJTNerzga8Stv121nDnS3dDUlEWMDcLUPP0vdvR7CY
-	bwy1nf84MahGcCd/mXVTinqlKGe/gh3FEFU4G0XTQY2caZj4q/ktudPogUMWC6fe4UAt6FUnBzwDI
-	wlEBeCbvC+oK7xQDjQ7Gp/b5U1/DIQzgr2komhocDqrOpYndVRm6Prd84cwdTe/IF2ZycbvfTJfwh
-	/cdvCBu8/rsMTkT9oC8Hh15d+60epPGvbHco9HjSlcLntpJEtmjdXQst25vMXn5ZTu5l4vga99Rih
-	xpFUYzEg==;
+	bh=OHt/Ew+g7B0pNZwOTBE8VBfCIPUfQxC19aVy8itf040=; b=lKIPhYfqZU62n4f7/il6tbcs6D
+	SG3aHWciVbkZNnlSfntQ6QZOwc/2cv1MRqgiAswxuOFG8M8xvlWwLBsRHeLbZ7P5Vrk5IFzZUKFjb
+	95phEwxsqkzym/KzsRkm+riysXcvPQiKf6lJ9WaKb6VeYW1GFb+fokWgQWs0c2S7mDW2XRgcG9YzT
+	m0TOnycmRvGWWQXrdAF2gXvUpNMJwHjlQJRmahYeJWW70Vwc2PC2lsRNqaFDOW4yyrsiJMBLHdhX8
+	3XyyyKM5ZAZ0h5KYPg3h3fuFOu6BO8EhVWOIk3tYftHoPNZPxUfF7eu+rzziKMa5uPsKkotiePJ4P
+	kwOdsB+w==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLE4U-0000000GEQg-1EYJ;
-	Tue, 18 Nov 2025 05:16:06 +0000
+	id 1vLE4V-0000000GERd-12pt;
+	Tue, 18 Nov 2025 05:16:07 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -66,9 +66,9 @@ Cc: torvalds@linux-foundation.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org,
 	clm@meta.com
-Subject: [PATCH v4 11/54] convert xenfs
-Date: Tue, 18 Nov 2025 05:15:20 +0000
-Message-ID: <20251118051604.3868588-12-viro@zeniv.linux.org.uk>
+Subject: [PATCH v4 20/54] convert debugfs
+Date: Tue, 18 Nov 2025 05:15:29 +0000
+Message-ID: <20251118051604.3868588-21-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
 References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
@@ -88,27 +88,84 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-entirely static tree, populated by simple_fill_super().  Can switch
-to kill_anon_super() without any other changes.
+similar to tracefs - simulation of normal codepath for creation,
+simple_recursive_removal() for removal.
 
+Acked-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/xen/xenfs/super.c | 2 +-
- 1 file changed, 1 insertion(+), 1 deletion(-)
+ fs/debugfs/inode.c | 17 ++++++++---------
+ 1 file changed, 8 insertions(+), 9 deletions(-)
 
-diff --git a/drivers/xen/xenfs/super.c b/drivers/xen/xenfs/super.c
-index d7d64235010d..37ea7c5c0346 100644
---- a/drivers/xen/xenfs/super.c
-+++ b/drivers/xen/xenfs/super.c
-@@ -88,7 +88,7 @@ static struct file_system_type xenfs_type = {
- 	.owner =	THIS_MODULE,
- 	.name =		"xenfs",
- 	.init_fs_context = xenfs_init_fs_context,
+diff --git a/fs/debugfs/inode.c b/fs/debugfs/inode.c
+index 661a99a7dfbe..682120fdbb17 100644
+--- a/fs/debugfs/inode.c
++++ b/fs/debugfs/inode.c
+@@ -329,7 +329,7 @@ static struct file_system_type debug_fs_type = {
+ 	.name =		"debugfs",
+ 	.init_fs_context = debugfs_init_fs_context,
+ 	.parameters =	debugfs_param_specs,
 -	.kill_sb =	kill_litter_super,
 +	.kill_sb =	kill_anon_super,
  };
- MODULE_ALIAS_FS("xenfs");
+ MODULE_ALIAS_FS("debugfs");
  
+@@ -405,16 +405,15 @@ static struct dentry *debugfs_start_creating(const char *name,
+ 
+ static struct dentry *failed_creating(struct dentry *dentry)
+ {
+-	inode_unlock(d_inode(dentry->d_parent));
+-	dput(dentry);
++	simple_done_creating(dentry);
+ 	simple_release_fs(&debugfs_mount, &debugfs_mount_count);
+ 	return ERR_PTR(-ENOMEM);
+ }
+ 
+ static struct dentry *end_creating(struct dentry *dentry)
+ {
+-	inode_unlock(d_inode(dentry->d_parent));
+-	return dentry;
++	simple_done_creating(dentry);
++	return dentry; // borrowed
+ }
+ 
+ static struct dentry *__debugfs_create_file(const char *name, umode_t mode,
+@@ -456,7 +455,7 @@ static struct dentry *__debugfs_create_file(const char *name, umode_t mode,
+ 	DEBUGFS_I(inode)->raw = real_fops;
+ 	DEBUGFS_I(inode)->aux = (void *)aux;
+ 
+-	d_instantiate(dentry, inode);
++	d_make_persistent(dentry, inode);
+ 	fsnotify_create(d_inode(dentry->d_parent), dentry);
+ 	return end_creating(dentry);
+ }
+@@ -602,7 +601,7 @@ struct dentry *debugfs_create_dir(const char *name, struct dentry *parent)
+ 
+ 	/* directory inodes start off with i_nlink == 2 (for "." entry) */
+ 	inc_nlink(inode);
+-	d_instantiate(dentry, inode);
++	d_make_persistent(dentry, inode);
+ 	inc_nlink(d_inode(dentry->d_parent));
+ 	fsnotify_mkdir(d_inode(dentry->d_parent), dentry);
+ 	return end_creating(dentry);
+@@ -649,7 +648,7 @@ struct dentry *debugfs_create_automount(const char *name,
+ 	DEBUGFS_I(inode)->automount = f;
+ 	/* directory inodes start off with i_nlink == 2 (for "." entry) */
+ 	inc_nlink(inode);
+-	d_instantiate(dentry, inode);
++	d_make_persistent(dentry, inode);
+ 	inc_nlink(d_inode(dentry->d_parent));
+ 	fsnotify_mkdir(d_inode(dentry->d_parent), dentry);
+ 	return end_creating(dentry);
+@@ -704,7 +703,7 @@ struct dentry *debugfs_create_symlink(const char *name, struct dentry *parent,
+ 	inode->i_mode = S_IFLNK | S_IRWXUGO;
+ 	inode->i_op = &debugfs_symlink_inode_operations;
+ 	inode->i_link = link;
+-	d_instantiate(dentry, inode);
++	d_make_persistent(dentry, inode);
+ 	return end_creating(dentry);
+ }
+ EXPORT_SYMBOL_GPL(debugfs_create_symlink);
 -- 
 2.47.3
 
