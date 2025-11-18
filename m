@@ -1,77 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-14279-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14287-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8EA68CCD19A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:22:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 64067CEBF93
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 07:10:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xsg18Xnz3fRw;
-	Tue, 18 Nov 2025 16:16:55 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763443002;
-	cv=none; b=TG/ukfAoTKJupgrryBAd0MtvCJTwi+qYpu9L4wWg8fVWJJQlrdxJ2cHMeOgTjtiTaIOPjEz1GLGrMyC8K/zNv2EajeAKDg4bGakS8Vn1SDaBz9DDUE/ywEtRlrhoK0lzJ9IOEKlRb/7EnmGYyZGW9IL5Ll4AA8776p5raBJCS2mSWXxQ3stAAUT/zp7MvarrHDdKyBJvWTTXZCiSBWMpq7kxNM4sWZNQHhYkEDAHEjxQbDuYZv6iw1VrbpT/zmFFwWWUSOtIgTLXXPQW5kiMaKPQtTHgXbeJ0+kuFE/i1lWwr6kSK1QlZEIILoVgOsn47nXf8/mzcUdJ/a1Stw6yvA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9bP751kDz3bSK;
+	Tue, 18 Nov 2025 18:10:51 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763449851;
+	cv=none; b=X/1DnmIAkzKfuOPhcasJi5u71Q2H9rxp8HyKQoXHNkvoSJ+vWlv0tmP30Ud1NIPyE8ZSEm6MUrbMcS6YhMwNrXN/GAOdua5NFcEZbkKX87DKyoUQINZslpE4JyILM1F+oSwsBO+JSxbfvYXm8dYYeSZicdT+xmENqehO+W8tXVvHCLt3KIda59TV6rGbqDRUI1vzV8mF0Gi+xWnx6bYNZL8Hhvky2lG1SYIJ9JLrqR70Ev0DUaZgxI0d8zy4FEswj377sQ593Ed5HgRmApjQwwkzKuIBvHzveKpEZNYI6WOIppa2+aRAkCBG4BuqAGD1bmDteYYw9Fz5TOPldEnHeA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763443002; c=relaxed/relaxed;
-	bh=Swq0voO+aKDUTzOh35qGY7dyE9PZZpqvfSqrFdp+4zM=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=YAT1o72TaPXngJtwZ2ft4/K8L7SW0TCUNl8vYQD7+h8kr0uahNAo6XWwJTs6DqSU745vSQ8QQg+iLyhiOk3gctcm1/dLjSKzHrEF49LGYkCh/WTI6eoKkJXSi4gw5BfkbCtGpbJmo0R5THsolBt/omxxjdZTzZHcQeOknAU11KFl0GsRhfswuIfjqoR+tHGKxgJwh2VxXyUTHa6qi8jZkidvMJGUWroCrGfBoWhBWtCxMp14pW3k7V2BObt8lThEIyxd4e46eL5irFMI4tdBhAnaz30SI0HkXJ+5QD0GtCYm6/KTPQj+XoF0HQ3+X25Ehh9ketKQwqOY0HF+IVtbYg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=HqD9Ty/Z; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
+	t=1763449851; c=relaxed/relaxed;
+	bh=WLUl9zRKhU7pC7QdNOo0kmQUuFwVlZceAJXY26NlICU=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Lg7YfCiArnhm1qaHq5n4jG2W31A4cP2ODsB+F8BXWgvP4qMcnUOVahBi2v33IFOqi00VxgdGS/aqqBUZYygYFEiZ6Ty/wjtxg5/GlBQeOFtNM84RPcu8D287mGvr0U8PslBmXhwMQnBU3AKCz4/NjB+lDYXjw4hx1LXolVo2HuRFG6ILqj67zz2xA15PfsZz2mXapEPYnXbDPL53SlqywSWE9i2rRzuLO6Ziht91iZV6+fBQfoMe9bsHQPxH2qnTBNWMvD6Hdx+aN2KX4To/y3V4KB6U4T22SE8tK/AaHTgNwZN1REPteydlH03KFdATflmwR46Gs9y+jDnTj642Ww==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DV+rNZnt; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=HqD9Ty/Z;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=DV+rNZnt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
-Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xs12zX4z3bV6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:20 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
-	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
-	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
-	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=Swq0voO+aKDUTzOh35qGY7dyE9PZZpqvfSqrFdp+4zM=; b=HqD9Ty/ZlWqi/Ys/cstWjq3DzG
-	PBDI34Gd0hBllGfu/crh9+czFgPMh5k5MJ+JDF7jbY/deZw2x3bwKo8FKG8in6G+HL38+jAplsYYK
-	wwLTk1f5qtCWFQC+y+bWPw5/ccTvL2hwdGRt++0wEB2ab5fICkCAkftK4snjFUKBzptK9wpgKebU7
-	ao9flFP3ocDBRA0ogxjRpEAa7gx9LWtBCOxLQA2zYDV7L3a2QEm6DAUmG31uGxYfCVsGS5w671MVr
-	XpZqUDreTmcWd1WZKtzGxhk970fSJ8lbd7BB6oXCVLo9wJpxSiW+DWGW4mFKigad+qiqyMef7yoAW
-	eM5icGaw==;
-Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLE4T-0000000GEQH-3Rhu;
-	Tue, 18 Nov 2025 05:16:05 +0000
-From: Al Viro <viro@zeniv.linux.org.uk>
-To: linux-fsdevel@vger.kernel.org
-Cc: torvalds@linux-foundation.org,
-	brauner@kernel.org,
-	jack@suse.cz,
-	raven@themaw.net,
-	miklos@szeredi.hu,
-	neil@brown.name,
-	a.hindborg@kernel.org,
-	linux-mm@kvack.org,
-	linux-efi@vger.kernel.org,
-	ocfs2-devel@lists.linux.dev,
-	kees@kernel.org,
-	rostedt@goodmis.org,
-	gregkh@linuxfoundation.org,
-	linux-usb@vger.kernel.org,
-	paul@paul-moore.com,
-	casey@schaufler-ca.com,
-	linuxppc-dev@lists.ozlabs.org,
-	john.johansen@canonical.com,
-	selinux@vger.kernel.org,
-	borntraeger@linux.ibm.com,
-	bpf@vger.kernel.org,
-	clm@meta.com
-Subject: [PATCH v4 08/54] convert ramfs and tmpfs
-Date: Tue, 18 Nov 2025 05:15:17 +0000
-Message-ID: <20251118051604.3868588-9-viro@zeniv.linux.org.uk>
-X-Mailer: git-send-email 2.49.0
-In-Reply-To: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
-References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9bP63QLQz30YZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 18:10:49 +1100 (AEDT)
+Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5AI6whct012148;
+	Tue, 18 Nov 2025 07:10:42 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=WLUl9zRKhU7pC7QdNOo0kmQUuFwVlZceAJXY26NlI
+	CU=; b=DV+rNZntjQT/M6KEI1Fp5zoPQ0TgQCuzOU8WgYaeKt4nEDDm2wqaKFwwZ
+	bAsBFFoj6wpZUqPtbNp+0+0KGstzznYhQy2VzqGU6AwFk63WxvQBTAeWSxKs9Ybr
+	Xf//LwUeXoEGR+hMEazE3dFOznb0fUKapW7YPtHDcWNd23igQIyoc3wlIJlbRHvD
+	OG1PCJBjG/8jCmXp4acLUyVjSHg0VcRL6E74QfkStc+3DCTQLSck+36u8bU/99Oq
+	+K0X6GKC4yxdjvQR+3YTXJNC7KOO6DZwBx/umEtSPekGj8aUXUo558ZUvA7Ae8k0
+	6EGZWI1/6dIxhP8K53GVLKQVJw/ng==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejk19h06-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 18 Nov 2025 07:10:42 +0000 (GMT)
+Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5AI75pJf030836;
+	Tue, 18 Nov 2025 07:10:42 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejk19h05-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 18 Nov 2025 07:10:42 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5AI4nv7x017335;
+	Tue, 18 Nov 2025 07:10:40 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4af6j1hjvs-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 18 Nov 2025 07:10:40 +0000
+Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5AI7AaVM40763788
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 18 Nov 2025 07:10:36 GMT
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C753D20049;
+	Tue, 18 Nov 2025 07:10:36 +0000 (GMT)
+Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 1DC1820040;
+	Tue, 18 Nov 2025 07:10:33 +0000 (GMT)
+Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.com (unknown [9.39.25.190])
+	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Tue, 18 Nov 2025 07:10:32 +0000 (GMT)
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
+        Aditya Gupta <adityag@linux.ibm.com>,
+        Andrew Morton <akpm@linux-foundation.org>, Baoquan he <bhe@redhat.com>,
+        Dave Young <dyoung@redhat.com>, Hari Bathini <hbathini@linux.ibm.com>,
+        Jiri Bohac <jbohac@suse.cz>, Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+        Pingfan Liu <piliu@redhat.com>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Shivang Upadhyay <shivangu@linux.ibm.com>,
+        Vivek Goyal <vgoyal@redhat.com>, linuxppc-dev@lists.ozlabs.org,
+        kexec@lists.infradead.org
+Subject: [PATCH v6] crash: export crashkernel CMA reservation to userspace
+Date: Tue, 18 Nov 2025 12:40:23 +0530
+Message-ID: <20251118071023.1673329-1-sourabhjain@linux.ibm.com>
+X-Mailer: git-send-email 2.51.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -86,195 +101,147 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
-Sender: Al Viro <viro@ftp.linux.org.uk>
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=C/nkCAP+ c=1 sm=1 tr=0 ts=691c1bf2 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=Z4Rwk6OoAAAA:8 a=20KFwNOVAAAA:8 a=pGLkceISAAAA:8 a=voM4FWlXAAAA:8
+ a=JfrnYn6hAAAA:8 a=Tu7GEDxD-VmU2YT8bLkA:9 a=HkZW87K1Qel5hWWM3VKY:22
+ a=IC2XNlieTeVoXbcui8wp:22 a=1CNFftbPRP8L7MoqJWF3:22 a=cPQSjfK2_nFv0Q5t_7PE:22
+X-Proofpoint-GUID: sYITH5KJ-U216nk8FColBhsEWlXhHMHh
+X-Proofpoint-ORIG-GUID: Y1r_gFcXJclaYZfCBLsHr3_2XnSybMX1
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTE1MDAzMiBTYWx0ZWRfX0jbPT1ciTtlA
+ p+fYzvL5FbOvmV5WJ6oVRTBMS54BIu2LZWxEXo0t8z0e7tI4lrMPT0gfLhF5gU1Z8k44EjPohnA
+ fyTTufOnNVRRTobNYnZPYFSw1KTQxw1NEHrW1h/RM9TZ5GWKlmZJUHo5TO89+J8OmROoiButTip
+ gaenIkmTQgosUO0L9R3sXd5Y/x9jgvC1bwujK2j5aVPfnE94Zo1UZieV/x+KjOgA+972uqTesQP
+ 6cPekz6zxo5/MlE60mCh7Il+kEkH2NpBGgbta5rZ9/YnBaK5kE+HXEH83TFv6EU20PvZGqZX5IG
+ rRtcdh3Q3pY1NaEm//1T2Kt9sbWvFv0FSTqEwW2PQEXALSY/FupbpOs/S/yp9I2ngHXAaruztSN
+ 5x82ubzo3hD4qKDqC5HVRISeidAyGQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-11-17_04,2025-11-13_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ phishscore=0 priorityscore=1501 spamscore=0 impostorscore=0 bulkscore=0
+ malwarescore=0 suspectscore=0 clxscore=1015 lowpriorityscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2511150032
 
-Quite a bit is already done by infrastructure changes (simple_link(),
-simple_unlink()) - all that is left is replacing d_instantiate() +
-pinning dget() (in ->symlink() and ->mknod()) with d_make_persistent(),
-and, in case of shmem, using simple_unlink() and simple_link() in
-->unlink() and ->link() resp., instead of open-coding those there.
-Since d_make_persistent() accepts (and hashes) unhashed ones, shmem
-situation gets simpler - we no longer care whether ->lookup() has hashed
-the sucker.
+Add a sysfs entry /sys/kernel/kexec_crash_cma_ranges to expose all
+CMA crashkernel ranges.
 
-With that done, we don't need kill_litter_super() for these filesystems
-anymore - by the umount time all remaining dentries will be marked
-persistent and kill_litter_super() will boil down to call of
-kill_anon_super().
+This allows userspace tools configuring kdump to determine how much
+memory is reserved for crashkernel. If CMA is used, tools can warn
+users when attempting to capture user pages with CMA reservation.
 
-The same goes for devtmpfs and rootfs - they are handled by
-ramfs or by shmem, depending upon config.
+The new sysfs hold the CMA ranges in below format:
 
-NB: strictly speaking, both devtmpfs and rootfs ought to use
-ramfs_kill_sb() if they end up using ramfs; that's a separate
-story and the only impact of "just use kill_{litter,anon}_super()"
-is that we fail to free their sb->s_fs_info... on reboot.
-That's orthogonal to the changes in this series - kill_litter_super()
-is identical to kill_anon_super() for those at this point.
+cat /sys/kernel/kexec_crash_cma_ranges
+100000000-10c7fffff
 
-Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
+The reason for not including Crash CMA Ranges in /proc/iomem is to avoid
+conflicts. It has been observed that contiguous memory ranges are sometimes
+shown as two separate System RAM entries in /proc/iomem. If a CMA range
+overlaps two System RAM ranges, adding crashk_res to /proc/iomem can create
+a conflict. Reference [1] describes one such instance on the PowerPC
+architecture.
+
+Link: https://lore.kernel.org/all/20251016142831.144515-1-sourabhjain@linux.ibm.com/ [1]
+
+Cc: Aditya Gupta <adityag@linux.ibm.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Baoquan he <bhe@redhat.com>
+Cc: Dave Young <dyoung@redhat.com>
+Cc: Hari Bathini <hbathini@linux.ibm.com>
+Cc: Jiri Bohac <jbohac@suse.cz>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>
+Cc: Pingfan Liu <piliu@redhat.com>
+Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Cc: Shivang Upadhyay <shivangu@linux.ibm.com>
+Cc: Vivek Goyal <vgoyal@redhat.com>
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: kexec@lists.infradead.org
+Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 ---
- drivers/base/devtmpfs.c |  2 +-
- fs/ramfs/inode.c        |  8 +++-----
- init/do_mounts.c        |  2 +-
- mm/shmem.c              | 38 ++++++++------------------------------
- 4 files changed, 13 insertions(+), 37 deletions(-)
 
-diff --git a/drivers/base/devtmpfs.c b/drivers/base/devtmpfs.c
-index 9d4e46ad8352..a63b0ff0c432 100644
---- a/drivers/base/devtmpfs.c
-+++ b/drivers/base/devtmpfs.c
-@@ -70,7 +70,7 @@ static struct file_system_type internal_fs_type = {
- #else
- 	.init_fs_context = ramfs_init_fs_context,
- #endif
--	.kill_sb = kill_litter_super,
-+	.kill_sb = kill_anon_super,
- };
- 
- /* Simply take a ref on the existing mount */
-diff --git a/fs/ramfs/inode.c b/fs/ramfs/inode.c
-index 41f9995da7ca..505d10a0cb36 100644
---- a/fs/ramfs/inode.c
-+++ b/fs/ramfs/inode.c
-@@ -110,8 +110,7 @@ ramfs_mknod(struct mnt_idmap *idmap, struct inode *dir,
- 			goto out;
- 		}
- 
--		d_instantiate(dentry, inode);
--		dget(dentry);	/* Extra count - pin the dentry in core */
-+		d_make_persistent(dentry, inode);
- 		error = 0;
- 		inode_set_mtime_to_ts(dir, inode_set_ctime_current(dir));
- 	}
-@@ -154,8 +153,7 @@ static int ramfs_symlink(struct mnt_idmap *idmap, struct inode *dir,
- 
- 		error = page_symlink(inode, symname, l);
- 		if (!error) {
--			d_instantiate(dentry, inode);
--			dget(dentry);
-+			d_make_persistent(dentry, inode);
- 			inode_set_mtime_to_ts(dir,
- 					      inode_set_ctime_current(dir));
- 		} else
-@@ -313,7 +311,7 @@ int ramfs_init_fs_context(struct fs_context *fc)
- void ramfs_kill_sb(struct super_block *sb)
- {
- 	kfree(sb->s_fs_info);
--	kill_litter_super(sb);
-+	kill_anon_super(sb);
+Changelog:
+
+v4 -> v5:
+ https://lore.kernel.org/all/20251114152550.ac2dd5e23542f09c62defec7@linux-foundation.org/
+ - Splitted patch from the above patch series.
+ - Code to create kexec node under /sys/kernel is added, eariler it was
+   done in [02/05] of the above patch series.
+
+v5 -> v6:
+ - Add Crash CMA Range sysfs interface under /sys/kernel
+
+Note:
+This patch is dependent on the below patch:
+https://lore.kernel.org/all/20251117035153.1199665-1-sourabhjain@linux.ibm.com/
+
+---
+ .../ABI/testing/sysfs-kernel-kexec-kdump      | 10 +++++++++
+ kernel/ksysfs.c                               | 21 +++++++++++++++++++
+ 2 files changed, 31 insertions(+)
+
+diff --git a/Documentation/ABI/testing/sysfs-kernel-kexec-kdump b/Documentation/ABI/testing/sysfs-kernel-kexec-kdump
+index 96b24565b68e..f6089e38de5f 100644
+--- a/Documentation/ABI/testing/sysfs-kernel-kexec-kdump
++++ b/Documentation/ABI/testing/sysfs-kernel-kexec-kdump
+@@ -41,3 +41,13 @@ Description:	read only
+ 		is used by the user space utility kexec to support updating the
+ 		in-kernel kdump image during hotplug operations.
+ User:		Kexec tools
++
++What:		/sys/kernel/kexec_crash_cma_ranges
++Date:		Nov 2025
++Contact:	kexec@lists.infradead.org
++Description:	read only
++		Provides information about the memory ranges reserved from
++		the Contiguous Memory Allocator (CMA) area that are allocated
++		to the crash (kdump) kernel. It lists the start and end physical
++		addresses of CMA regions assigned for crashkernel use.
++User:		kdump service
+diff --git a/kernel/ksysfs.c b/kernel/ksysfs.c
+index eefb67d9883c..0ff2179bc603 100644
+--- a/kernel/ksysfs.c
++++ b/kernel/ksysfs.c
+@@ -135,6 +135,24 @@ static ssize_t kexec_crash_loaded_show(struct kobject *kobj,
  }
+ KERNEL_ATTR_RO(kexec_crash_loaded);
  
- static struct file_system_type ramfs_fs_type = {
-diff --git a/init/do_mounts.c b/init/do_mounts.c
-index 6af29da8889e..810878fb55b6 100644
---- a/init/do_mounts.c
-+++ b/init/do_mounts.c
-@@ -507,7 +507,7 @@ static int rootfs_init_fs_context(struct fs_context *fc)
- struct file_system_type rootfs_fs_type = {
- 	.name		= "rootfs",
- 	.init_fs_context = rootfs_init_fs_context,
--	.kill_sb	= kill_litter_super,
-+	.kill_sb	= kill_anon_super,
- };
- 
- void __init init_rootfs(void)
-diff --git a/mm/shmem.c b/mm/shmem.c
-index b9081b817d28..a38f71519813 100644
---- a/mm/shmem.c
-+++ b/mm/shmem.c
-@@ -3858,12 +3858,7 @@ shmem_mknod(struct mnt_idmap *idmap, struct inode *dir,
- 	inode_set_mtime_to_ts(dir, inode_set_ctime_current(dir));
- 	inode_inc_iversion(dir);
- 
--	if (IS_ENABLED(CONFIG_UNICODE) && IS_CASEFOLDED(dir))
--		d_add(dentry, inode);
--	else
--		d_instantiate(dentry, inode);
--
--	dget(dentry); /* Extra count - pin the dentry in core */
-+	d_make_persistent(dentry, inode);
- 	return error;
- 
- out_iput:
-@@ -3924,7 +3919,7 @@ static int shmem_link(struct dentry *old_dentry, struct inode *dir,
- 		      struct dentry *dentry)
++#ifdef CONFIG_CRASH_RESERVE
++static ssize_t kexec_crash_cma_ranges_show(struct kobject *kobj,
++				    struct kobj_attribute *attr, char *buf)
++{
++
++	ssize_t len = 0;
++	int i;
++
++	for (i = 0; i < crashk_cma_cnt; ++i) {
++		len += sysfs_emit_at(buf, len, "%08llx-%08llx\n",
++				     crashk_cma_ranges[i].start,
++				     crashk_cma_ranges[i].end);
++	}
++	return len;
++}
++KERNEL_ATTR_RO(kexec_crash_cma_ranges);
++#endif /* CONFIG_CRASH_RESERVE */
++
+ static ssize_t kexec_crash_size_show(struct kobject *kobj,
+ 				       struct kobj_attribute *attr, char *buf)
  {
- 	struct inode *inode = d_inode(old_dentry);
--	int ret = 0;
-+	int ret;
- 
- 	/*
- 	 * No ordinary (disk based) filesystem counts links as inodes;
-@@ -3936,29 +3931,19 @@ static int shmem_link(struct dentry *old_dentry, struct inode *dir,
- 	if (inode->i_nlink) {
- 		ret = shmem_reserve_inode(inode->i_sb, NULL);
- 		if (ret)
--			goto out;
-+			return ret;
- 	}
- 
- 	ret = simple_offset_add(shmem_get_offset_ctx(dir), dentry);
- 	if (ret) {
- 		if (inode->i_nlink)
- 			shmem_free_inode(inode->i_sb, 0);
--		goto out;
-+		return ret;
- 	}
- 
- 	dir->i_size += BOGO_DIRENT_SIZE;
--	inode_set_mtime_to_ts(dir,
--			      inode_set_ctime_to_ts(dir, inode_set_ctime_current(inode)));
- 	inode_inc_iversion(dir);
--	inc_nlink(inode);
--	ihold(inode);	/* New dentry reference */
--	dget(dentry);	/* Extra pinning count for the created dentry */
--	if (IS_ENABLED(CONFIG_UNICODE) && IS_CASEFOLDED(dir))
--		d_add(dentry, inode);
--	else
--		d_instantiate(dentry, inode);
--out:
--	return ret;
-+	return simple_link(old_dentry, dir, dentry);
- }
- 
- static int shmem_unlink(struct inode *dir, struct dentry *dentry)
-@@ -3971,11 +3956,8 @@ static int shmem_unlink(struct inode *dir, struct dentry *dentry)
- 	simple_offset_remove(shmem_get_offset_ctx(dir), dentry);
- 
- 	dir->i_size -= BOGO_DIRENT_SIZE;
--	inode_set_mtime_to_ts(dir,
--			      inode_set_ctime_to_ts(dir, inode_set_ctime_current(inode)));
- 	inode_inc_iversion(dir);
--	drop_nlink(inode);
--	dput(dentry);	/* Undo the count from "create" - does all the work */
-+	simple_unlink(dir, dentry);
- 
- 	/*
- 	 * For now, VFS can't deal with case-insensitive negative dentries, so
-@@ -4130,11 +4112,7 @@ static int shmem_symlink(struct mnt_idmap *idmap, struct inode *dir,
- 	dir->i_size += BOGO_DIRENT_SIZE;
- 	inode_set_mtime_to_ts(dir, inode_set_ctime_current(dir));
- 	inode_inc_iversion(dir);
--	if (IS_ENABLED(CONFIG_UNICODE) && IS_CASEFOLDED(dir))
--		d_add(dentry, inode);
--	else
--		d_instantiate(dentry, inode);
--	dget(dentry);
-+	d_make_persistent(dentry, inode);
- 	return 0;
- 
- out_remove_offset:
-@@ -5334,7 +5312,7 @@ static struct file_system_type shmem_fs_type = {
- #ifdef CONFIG_TMPFS
- 	.parameters	= shmem_fs_parameters,
+@@ -260,6 +278,9 @@ static struct attribute * kernel_attrs[] = {
+ #ifdef CONFIG_CRASH_DUMP
+ 	&kexec_crash_loaded_attr.attr,
+ 	&kexec_crash_size_attr.attr,
++#ifdef CONFIG_CRASH_RESERVE
++	&kexec_crash_cma_ranges_attr.attr,
++#endif
  #endif
--	.kill_sb	= kill_litter_super,
-+	.kill_sb	= kill_anon_super,
- 	.fs_flags	= FS_USERNS_MOUNT | FS_ALLOW_IDMAP | FS_MGTIME,
- };
- 
+ #endif
+ #ifdef CONFIG_VMCORE_INFO
 -- 
-2.47.3
+2.51.1
 
 
