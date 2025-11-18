@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14265-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14263-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0020CCED243
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:20:34 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2992ACCD19A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:20:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9XsS2CJRz3fL6;
-	Tue, 18 Nov 2025 16:16:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9XsQ6QYXz3fKl;
+	Tue, 18 Nov 2025 16:16:42 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763443000;
-	cv=none; b=YfAN101w1lHTWi363ed9XAWoByHvlixVgzYMZ+NbmXG5+u0AdBHU7c/JxwjR7m7TInftXllQjXgfEtO65nbkI3m1YBd+zTio6fO0xX+HMm9LchSDJ4xliMoLJs4Oz9PS4nooFoFN2G2EgaM80NgbOg6u2RGKmHeqyvvrnwbYkEBLAUkJiNE2BCGCrMNp1XK7uII5Be418sS9UjmHFA7GYh+poeqFODvZlfmS8vMafL2nOVGEp9XvoAm27nck6uuzTQI5gspgLOOuYqrWRqu5L+VGoCaxCmbjoVTZtUyMZZ6m19LI/Pd8JZ/eBuRDDHKynx0m4uOgZ7iyS7pIXuF1UA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763442997;
+	cv=none; b=fTsEL2flh1jh0+1as1bjGH9hgh+YxHMdQ91oKVK0I+/aZfQrPiJeLA18hl9Kuz0CkiTxC9GSIOQyVoUnDIxtiFcMbPFrFZnLVp3b91NvR42rUYofWcshIcT1EHgQxXG7tkiak/DjWq+3tbQXdmgkq/5bX6Hi7za+1UH0OmEXbjPWno837dI/VNrov5kkySAoLTZL3OqXzPo0JRonfcvWxDqSSMn35SBJQXg/kzqqPiGEbqKKMUUryfiC9wl4V4P5oiBRcbAftfD2Qw9n1CMfMa0skl0xZ96GMsH1Zu3tQdwUTVTKQBln5eoz/+5F+s9MoC7NYnF9ZnXrwAVPrH0gLg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763443000; c=relaxed/relaxed;
-	bh=bkByHERsS9JuCtqGS9wCvZ7R+EhcIoCC8ci4VG063fc=;
+	t=1763442997; c=relaxed/relaxed;
+	bh=BK+HD9eFsxlpB9DT0f/M/+bf/xKzOtOP84IbBFRjnBU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=XLuO3NwlS5epP9ovV4eB9bnmp7TOg7fPtAw3SyqRGVkOXkYsFvelmKXYWsC3vpf7ZvFrPOB7s0BLpv/XxhpKlAtkVpgEZRqBCVWEjp6FWZ4sYxjEUJjEh0a60+8rGewNEIfdKksaxZLm2pJzym4BV2fAiXGmzQMq0B8saxgvgvtySZevxVQOYhCRbw1kwgqHVHbERAlYrF9xkBHcrP3t4p2tuXn23YcmbZLxaQXpjyfACuH57CC1yR6C44QTPoJVQPC4EEoBjNEwaaa9c61X0bkXLAM03conacLliKf1iAbslFHLNvKJLSitt5UZ1JzHubA466oVgKpwN0+UXMQtow==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=qLj/7H6N; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=QBthT7Ktsb8/29FBfIOIYOqHQ2o7IyQjm7d+HafDX+PhL5VZDpPyOWohWHA6gpwH1SgDg/PzmVTYtcYv8A4oU6RZzalyXiZGJB3AWK3qLZ5dPh9r0B7WS+kcnpKDKXvffw25ZAVIhCrr72NzTA1A2XswKhZIkJhYvPeE5+aPfE2Tl4P0OmTjbXLenPZn8osE5LptMCNe+E/aqb5XkZConvKL3rQxrraGUWqYeyt/gqQSHeLGQc5a+2Rn4lcZrND52bKMx/4j0X6Lzg16P7mEI524R89+wzzd00kQRxb5d1I/wkFVHMB0eGveUqETAwLgcT5dzU8XfzgUDhZFqpRDIA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=gGHivrs5; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=qLj/7H6N;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=gGHivrs5;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xs11GMrz30gY
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xs03mbxz30YZ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:18 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=bkByHERsS9JuCtqGS9wCvZ7R+EhcIoCC8ci4VG063fc=; b=qLj/7H6NiPG0n94Gna+yDrzg5z
-	O8TnSsAYvukbv72G1ptRDOAlg1yKJwNl3/3uOgeYhGYWuSY1Sjr+sp74hJ7lcJG4LR5Y9ZJAscTgd
-	wk0/nHfysG3kQYtOETjk9T2+bxfWxaxebX/saqsiuZLJxJc4D4xRL9WbvCxN7x+sxmsowfAmPEg3W
-	ouJPGUpb0fSN5LBKZCWhMM8N+NdW+eXlflafssE0DC225nLx710DR3qBiIYGK3BBgdb3Zfkml8xcZ
-	eb3nmdV33jV8XJfc527j1AXGZ2F6mA8HtYJFlf3AQyWJ2YRMBV+u9Vv2p4hqit1DT/fuAV9u6PjVc
-	asCtLblw==;
+	bh=BK+HD9eFsxlpB9DT0f/M/+bf/xKzOtOP84IbBFRjnBU=; b=gGHivrs5VQYbp4P2WHM7xvl1vI
+	ax4AH360oXnMEt1pRtc4JNx9Mxj27G7Ntlw1mm2vR1YKwsbAJ7BIDIj7eFRTT5DnvK8JCUY03Da8N
+	fSZOXX/fBbd9LVbSGFm1KbrbLVwJmrOCLc3+6IQCZPiNgcegz18/qFCXOQsbpNt3DjC7U07vYtsPs
+	9Rhmie54jINi8XG2EuV19IWK3Ct6nuMbf1bu4GhYd7sCTgGxsorbv2ahk2JRFthbRoeXfeiF8W2c5
+	DoQk1Kfd0U8wa560MOaJXOVqC5lEJpoM0utWOPXCu1ozCSlbpkmyZddLcoFla63XBFJB319IxTbwC
+	cWQnABmg==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLE4V-0000000GERY-0jfj;
-	Tue, 18 Nov 2025 05:16:07 +0000
+	id 1vLE4T-0000000GEPd-0X8R;
+	Tue, 18 Nov 2025 05:16:05 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -66,9 +66,9 @@ Cc: torvalds@linux-foundation.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org,
 	clm@meta.com
-Subject: [PATCH v4 19/54] convert tracefs
-Date: Tue, 18 Nov 2025 05:15:28 +0000
-Message-ID: <20251118051604.3868588-20-viro@zeniv.linux.org.uk>
+Subject: [PATCH v4 01/54] fuse_ctl_add_conn(): fix nlink breakage in case of early failure
+Date: Tue, 18 Nov 2025 05:15:10 +0000
+Message-ID: <20251118051604.3868588-2-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
 References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
@@ -88,96 +88,76 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-A mix of persistent and non-persistent dentries in there.  Strictly
-speaking, no need for kill_litter_super() anyway - it pins an internal
-mount whenever a persistent dentry is created, so at fs shutdown time
-there won't be any to deal with.
+fuse_ctl_remove_conn() used to decrement the link count of root
+manually; that got subsumed by simple_recursive_removal(), but
+in case when subdirectory creation has failed the latter won't
+get called.
 
-However, let's make it explicit - replace d_instantiate() with
-d_make_persistent() + dput() (the latter in tracefs_end_creating(),
-where it folds with inode_unlock() into simple_done_creating())
-for dentries we want persistent and have d_make_discardable() done
-either by simple_recursive_removal() (used by tracefs_remove())
-or explicitly in eventfs_remove_events_dir().
+Just move the modification of parent's link count into
+fuse_ctl_add_dentry() to keep the things simple.  Allows to
+get rid of the nlink argument as well...
 
-Acked-by: Steven Rostedt (Google) <rostedt@goodmis.org>
+Fixes: fcaac5b42768 "fuse_ctl: use simple_recursive_removal()"
+Acked-by: Miklos Szeredi <mszeredi@redhat.com>
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/tracefs/event_inode.c |  4 ++--
- fs/tracefs/inode.c       | 13 ++++++-------
- 2 files changed, 8 insertions(+), 9 deletions(-)
+ fs/fuse/control.c | 19 ++++++++++---------
+ 1 file changed, 10 insertions(+), 9 deletions(-)
 
-diff --git a/fs/tracefs/event_inode.c b/fs/tracefs/event_inode.c
-index 93c231601c8e..61cbdafa2411 100644
---- a/fs/tracefs/event_inode.c
-+++ b/fs/tracefs/event_inode.c
-@@ -823,7 +823,7 @@ struct eventfs_inode *eventfs_create_events_dir(const char *name, struct dentry
- 	 * something not worth much. Keeping directory links at 1
- 	 * tells userspace not to trust the link number.
- 	 */
--	d_instantiate(dentry, inode);
-+	d_make_persistent(dentry, inode);
- 	/* The dentry of the "events" parent does keep track though */
- 	inc_nlink(dentry->d_parent->d_inode);
- 	fsnotify_mkdir(dentry->d_parent->d_inode, dentry);
-@@ -910,5 +910,5 @@ void eventfs_remove_events_dir(struct eventfs_inode *ei)
- 	 * and destroyed dynamically.
- 	 */
- 	d_invalidate(dentry);
--	dput(dentry);
-+	d_make_discardable(dentry);
- }
-diff --git a/fs/tracefs/inode.c b/fs/tracefs/inode.c
-index 0c023941a316..d9d8932a7b9c 100644
---- a/fs/tracefs/inode.c
-+++ b/fs/tracefs/inode.c
-@@ -538,7 +538,7 @@ static struct file_system_type trace_fs_type = {
- 	.name =		"tracefs",
- 	.init_fs_context = tracefs_init_fs_context,
- 	.parameters	= tracefs_param_specs,
--	.kill_sb =	kill_litter_super,
-+	.kill_sb =	kill_anon_super,
- };
- MODULE_ALIAS_FS("tracefs");
+diff --git a/fs/fuse/control.c b/fs/fuse/control.c
+index bb407705603c..5247df896c5d 100644
+--- a/fs/fuse/control.c
++++ b/fs/fuse/control.c
+@@ -205,8 +205,7 @@ static const struct file_operations fuse_conn_congestion_threshold_ops = {
  
-@@ -571,16 +571,15 @@ struct dentry *tracefs_start_creating(const char *name, struct dentry *parent)
- 
- struct dentry *tracefs_failed_creating(struct dentry *dentry)
+ static struct dentry *fuse_ctl_add_dentry(struct dentry *parent,
+ 					  struct fuse_conn *fc,
+-					  const char *name,
+-					  int mode, int nlink,
++					  const char *name, int mode,
+ 					  const struct inode_operations *iop,
+ 					  const struct file_operations *fop)
  {
--	inode_unlock(d_inode(dentry->d_parent));
--	dput(dentry);
-+	simple_done_creating(dentry);
- 	simple_release_fs(&tracefs_mount, &tracefs_mount_count);
- 	return NULL;
- }
+@@ -232,7 +231,10 @@ static struct dentry *fuse_ctl_add_dentry(struct dentry *parent,
+ 	if (iop)
+ 		inode->i_op = iop;
+ 	inode->i_fop = fop;
+-	set_nlink(inode, nlink);
++	if (S_ISDIR(mode)) {
++		inc_nlink(d_inode(parent));
++		inc_nlink(inode);
++	}
+ 	inode->i_private = fc;
+ 	d_add(dentry, inode);
  
- struct dentry *tracefs_end_creating(struct dentry *dentry)
- {
--	inode_unlock(d_inode(dentry->d_parent));
--	return dentry;
-+	simple_done_creating(dentry);
-+	return dentry;	// borrowed
- }
+@@ -252,22 +254,21 @@ int fuse_ctl_add_conn(struct fuse_conn *fc)
+ 		return 0;
  
- /* Find the inode that this will use for default */
-@@ -661,7 +660,7 @@ struct dentry *tracefs_create_file(const char *name, umode_t mode,
- 	inode->i_private = data;
- 	inode->i_uid = d_inode(dentry->d_parent)->i_uid;
- 	inode->i_gid = d_inode(dentry->d_parent)->i_gid;
--	d_instantiate(dentry, inode);
-+	d_make_persistent(dentry, inode);
- 	fsnotify_create(d_inode(dentry->d_parent), dentry);
- 	return tracefs_end_creating(dentry);
- }
-@@ -692,7 +691,7 @@ static struct dentry *__create_dir(const char *name, struct dentry *parent,
+ 	parent = fuse_control_sb->s_root;
+-	inc_nlink(d_inode(parent));
+ 	sprintf(name, "%u", fc->dev);
+-	parent = fuse_ctl_add_dentry(parent, fc, name, S_IFDIR | 0500, 2,
++	parent = fuse_ctl_add_dentry(parent, fc, name, S_IFDIR | 0500,
+ 				     &simple_dir_inode_operations,
+ 				     &simple_dir_operations);
+ 	if (!parent)
+ 		goto err;
  
- 	/* directory inodes start off with i_nlink == 2 (for "." entry) */
- 	inc_nlink(inode);
--	d_instantiate(dentry, inode);
-+	d_make_persistent(dentry, inode);
- 	inc_nlink(d_inode(dentry->d_parent));
- 	fsnotify_mkdir(d_inode(dentry->d_parent), dentry);
- 	return tracefs_end_creating(dentry);
+-	if (!fuse_ctl_add_dentry(parent, fc, "waiting", S_IFREG | 0400, 1,
++	if (!fuse_ctl_add_dentry(parent, fc, "waiting", S_IFREG | 0400,
+ 				 NULL, &fuse_ctl_waiting_ops) ||
+-	    !fuse_ctl_add_dentry(parent, fc, "abort", S_IFREG | 0200, 1,
++	    !fuse_ctl_add_dentry(parent, fc, "abort", S_IFREG | 0200,
+ 				 NULL, &fuse_ctl_abort_ops) ||
+ 	    !fuse_ctl_add_dentry(parent, fc, "max_background", S_IFREG | 0600,
+-				 1, NULL, &fuse_conn_max_background_ops) ||
++				 NULL, &fuse_conn_max_background_ops) ||
+ 	    !fuse_ctl_add_dentry(parent, fc, "congestion_threshold",
+-				 S_IFREG | 0600, 1, NULL,
++				 S_IFREG | 0600, NULL,
+ 				 &fuse_conn_congestion_threshold_ops))
+ 		goto err;
+ 
 -- 
 2.47.3
 
