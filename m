@@ -1,46 +1,46 @@
-Return-Path: <linuxppc-dev+bounces-14272-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14269-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 353A4CCD19A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:20:59 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2827FCCD19A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:21:05 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xsd6nFYz3fRF;
-	Tue, 18 Nov 2025 16:16:53 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xsc0h9fz2xQr;
+	Tue, 18 Nov 2025 16:16:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763443004;
-	cv=none; b=iLwKI1z6Gz3CKjMUEfJkd/eNMeXryiqFFVeRKBVJwUv3phN0OWUqlA/8I5dcwndbJYZ6Kj1NJjnxZ6Y7RcB8F1sctF4geK4EgZMyRL98uJjQBEWdXgIRei4qwMhFxKf52E4sM8wQSoGNgYyZtUSynQzoTbtjvNMQf5zj6/YuKcemBnuQ8WZB6ovAYhS4ZPQNcze6JB/N0/23+w3V7oFYmNxfidQWcImhljHZMBeGPcrrYbcY7uEI+yzoqgb2v82MZ2ECbJbD7x1GmeD/7MSwj9MS0MnH9EmSi+SKHurYR8vaVa1K5XeMBeGijreu3q56G9J6kOXQtj/PS9n62pXQag==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763443003;
+	cv=none; b=KVZtgMEq8IW9pdv/VY9cjQyO41+QfnsUuElvlH0nGQqatZpcS2VrpRws2jRVB/jZi6DeeFqXR41oiyzRg7lsUbhXbS74BlVQNuKYMz0O5s4IpIwH922iZTFPPfzTnads1li48ip/9msFXd8qsUwQ+8Mrh8O8cftaIVQQT8IEN9iKZAdT02ZDFlaw4qq6Y+YsfaMGGB0xIklFWfuQpJJIKC3sh20cD7A/SLvbklzwel+51Od0PcDbFMVgbrWm7FCHwD9+VwZoqM+DNyUdgFAntLz3TluEjk8KVLfWPRYkHBSjLElO2RVorrWU/9DHbijxCIo+mxptD9hzkqQjR5p7OA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763443004; c=relaxed/relaxed;
-	bh=r4mzzCxtvz6lOZcAfbeBdr43fAoSEoEaxjM5CE5ypAE=;
+	t=1763443003; c=relaxed/relaxed;
+	bh=h9ER29fbTJgjBa1gGf0LtXabL8srR/KWhHIa5FKJzwk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Fnuk7KIei9H1ddbi3Lu4sGuMiZ99+R5FMu95SOglajQljnl6xkJoG6lMUaDTuTh/k6oUPVtHiV+hTnjljIgNUMVGw0xKo1F+FQQSVn1B7h+4FJrFAoF5TKpgwVE1Bomfub3cEnbmgCivgo0C22CMpXz1frj8I7lyUyapUOxzfwt88ZejLXe+O0v6GKDHmeYGCmqeiTvpNZTMAU77lTkn2Yr/sZHhVYVd8Xeea32ENhIVZSbRUUdW3zYtTZ8VAY59R0bQOVlbATQSTHo0QR6FYww51+pPJMBjTWNOD4NM9bXtnn5RQhDZcX92DY3dlLfdv4ItXVtncOQmHf0vdivD+w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=u6pxq8xi; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=luSvbssfJR1EH715hrLrl0D3wx/LCOKM9PNNkDzJMYmnRKOvnCLCCldy1HN+il5O+cj/9HMLn63EWqvEQlGMxGNzQThw1SRmeAoEsmqwYO76aXD1lUqVOLloUulKPadOL1yCaIqKoUSvnTISPn8uKxIu5+nnR3Ftvd/6OxMTNh5BgIh38EMYeRnldZAeY4MUKuyKHSFYG+UeSg8ALbXRs4IWQCqPK1XjyDCLnuUSoF5HzvRHcoGR4cJTC0gHYIt9aoDhHwihgy4G2Qo/DhXBLp6Fq8ajOlwUiSRK0pmEEyJpjajZvfTN958jM3juP5tNgZQwyhGfxZ8O774ODeen5A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=rzQCg5lh; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=u6pxq8xi;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=rzQCg5lh;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xs12qbhz3bTj
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xs11tnQz3bNw
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:19 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=r4mzzCxtvz6lOZcAfbeBdr43fAoSEoEaxjM5CE5ypAE=; b=u6pxq8xiULKAfZWNT1+VCaox5A
-	F/P/9pBHh9io8iz5pfLolp+0w10e7lZEMrCWNoB7+gf1mpLxZHNaZcPNvNBob5A4MR1MksfM72TG4
-	DSoAfIBkcBd5ue+gAF1tfl2Sg+iijrBFbIuanhlxYitxwb9V2L3Y8Q/uvi1ZtvRUVCIx+6fxT6Uy3
-	aOMXQTaEM6NpLuVv6nzbKGoqhYG9MIMSUsmu1MyprXrGtp/Pe2I6IwhplHh0y73uMskQNonKCZmI+
-	WaHJCyUZOZkrT1iEOX63Q/Umkzw4crJYpDBU5Wa2diFoeOwt0svaGUzr+rd0K3MyRPVT147oXihOn
-	Iq88yr/w==;
+	bh=h9ER29fbTJgjBa1gGf0LtXabL8srR/KWhHIa5FKJzwk=; b=rzQCg5lhFgfrMZlOVGl6dExZ/a
+	d0AgChO0Od/vBClGgnOu5Fjd5tl4dza+2pw+6RbcoI/f4TzFLHPjRU5qnY9douyr6yZfFvzXeiNCc
+	eOk1A/AfCZ2Fq9xW+wz6Iqe+G9K+8nuPPSVS6n3g9BfJxSh5M7HlQ7wGAr5JQXKfUHF8uLZ9hy5G+
+	xDwykHVpmx3evybIAKrC1sf5vcsJi02w5hG99QhujDNzHfiDW0+GKIhRq2eSwYG8ZwA8dbSKiOQnk
+	GnJYztrt9p6X2SHG0V2njXC+vTfxmOCaE3Nz/WzhcwmKIAz1BWSlmOecW8XBg5ia5hN5eImMb/kkB
+	7GelKqYg==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLE4X-0000000GETW-10DT;
+	id 1vLE4X-0000000GETr-25uP;
 	Tue, 18 Nov 2025 05:16:09 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
@@ -66,9 +66,9 @@ Cc: torvalds@linux-foundation.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org,
 	clm@meta.com
-Subject: [PATCH v4 39/54] functionfs: fix the open/removal races
-Date: Tue, 18 Nov 2025 05:15:48 +0000
-Message-ID: <20251118051604.3868588-40-viro@zeniv.linux.org.uk>
+Subject: [PATCH v4 42/54] gadgetfs: switch to simple_remove_by_name()
+Date: Tue, 18 Nov 2025 05:15:51 +0000
+Message-ID: <20251118051604.3868588-43-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
 References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
@@ -88,133 +88,134 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-ffs_epfile_open() can race with removal, ending up with file->private_data
-pointing to freed object.
+No need to return dentry from gadgetfs_create_file() or keep it around
+afterwards.
 
-There is a total count of opened files on functionfs (both ep0 and
-dynamic ones) and when it hits zero, dynamic files get removed.
-Unfortunately, that removal can happen while another thread is
-in ffs_epfile_open(), but has not incremented the count yet.
-In that case open will succeed, leaving us with UAF on any subsequent
-read() or write().
-
-The root cause is that ffs->opened is misused; atomic_dec_and_test() vs.
-atomic_add_return() is not a good idea, when object remains visible all
-along.
-
-To untangle that
-	* serialize openers on ffs->mutex (both for ep0 and for dynamic files)
-	* have dynamic ones use atomic_inc_not_zero() and fail if we had
-zero ->opened; in that case the file we are opening is doomed.
-	* have the inodes of dynamic files marked on removal (from the
-callback of simple_recursive_removal()) - clear ->i_private there.
-	* have open of dynamic ones verify they hadn't been already removed,
-along with checking that state is FFS_ACTIVE.
-
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/usb/gadget/function/f_fs.c | 53 ++++++++++++++++++++++++------
- 1 file changed, 43 insertions(+), 10 deletions(-)
+ drivers/usb/gadget/legacy/inode.c | 32 +++++++++++++------------------
+ 1 file changed, 13 insertions(+), 19 deletions(-)
 
-diff --git a/drivers/usb/gadget/function/f_fs.c b/drivers/usb/gadget/function/f_fs.c
-index 27860fc0fd7d..c7cb23a15fd0 100644
---- a/drivers/usb/gadget/function/f_fs.c
-+++ b/drivers/usb/gadget/function/f_fs.c
-@@ -640,13 +640,22 @@ static ssize_t ffs_ep0_read(struct file *file, char __user *buf,
+diff --git a/drivers/usb/gadget/legacy/inode.c b/drivers/usb/gadget/legacy/inode.c
+index 13c3da49348c..bcc25f13483f 100644
+--- a/drivers/usb/gadget/legacy/inode.c
++++ b/drivers/usb/gadget/legacy/inode.c
+@@ -150,7 +150,6 @@ struct dev_data {
+ 	void				*buf;
+ 	wait_queue_head_t		wait;
+ 	struct super_block		*sb;
+-	struct dentry			*dentry;
  
- static int ffs_ep0_open(struct inode *inode, struct file *file)
- {
--	struct ffs_data *ffs = inode->i_private;
-+	struct ffs_data *ffs = inode->i_sb->s_fs_info;
-+	int ret;
+ 	/* except this scratch i/o buffer for ep0 */
+ 	u8				rbuf[RBUF_SIZE];
+@@ -208,7 +207,6 @@ struct ep_data {
+ 	struct usb_endpoint_descriptor	desc, hs_desc;
+ 	struct list_head		epfiles;
+ 	wait_queue_head_t		wait;
+-	struct dentry			*dentry;
+ };
  
--	if (ffs->state == FFS_CLOSING)
--		return -EBUSY;
-+	/* Acquire mutex */
-+	ret = ffs_mutex_lock(&ffs->mutex, file->f_flags & O_NONBLOCK);
-+	if (ret < 0)
-+		return ret;
+ static inline void get_ep (struct ep_data *data)
+@@ -1561,16 +1559,12 @@ static void destroy_ep_files (struct dev_data *dev)
+ 	spin_lock_irq (&dev->lock);
+ 	while (!list_empty(&dev->epfiles)) {
+ 		struct ep_data	*ep;
+-		struct dentry	*dentry;
  
--	file->private_data = ffs;
- 	ffs_data_opened(ffs);
-+	if (ffs->state == FFS_CLOSING) {
-+		ffs_data_closed(ffs);
-+		mutex_unlock(&ffs->mutex);
-+		return -EBUSY;
-+	}
-+	mutex_unlock(&ffs->mutex);
-+	file->private_data = ffs;
+ 		/* break link to FS */
+ 		ep = list_first_entry (&dev->epfiles, struct ep_data, epfiles);
+ 		list_del_init (&ep->epfiles);
+ 		spin_unlock_irq (&dev->lock);
  
- 	return stream_open(inode, file);
- }
-@@ -1193,14 +1202,33 @@ static ssize_t ffs_epfile_io(struct file *file, struct ffs_io_data *io_data)
- static int
- ffs_epfile_open(struct inode *inode, struct file *file)
- {
--	struct ffs_epfile *epfile = inode->i_private;
-+	struct ffs_data *ffs = inode->i_sb->s_fs_info;
-+	struct ffs_epfile *epfile;
-+	int ret;
- 
--	if (WARN_ON(epfile->ffs->state != FFS_ACTIVE))
-+	/* Acquire mutex */
-+	ret = ffs_mutex_lock(&ffs->mutex, file->f_flags & O_NONBLOCK);
-+	if (ret < 0)
-+		return ret;
-+
-+	if (!atomic_inc_not_zero(&ffs->opened)) {
-+		mutex_unlock(&ffs->mutex);
-+		return -ENODEV;
-+	}
-+	/*
-+	 * we want the state to be FFS_ACTIVE; FFS_ACTIVE alone is
-+	 * not enough, though - we might have been through FFS_CLOSING
-+	 * and back to FFS_ACTIVE, with our file already removed.
-+	 */
-+	epfile = smp_load_acquire(&inode->i_private);
-+	if (unlikely(ffs->state != FFS_ACTIVE || !epfile)) {
-+		mutex_unlock(&ffs->mutex);
-+		ffs_data_closed(ffs);
- 		return -ENODEV;
-+	}
-+	mutex_unlock(&ffs->mutex);
- 
- 	file->private_data = epfile;
--	ffs_data_opened(epfile->ffs);
+-		dentry = ep->dentry;
+-		ep->dentry = NULL;
 -
- 	return stream_open(inode, file);
- }
+ 		/* break link to controller */
+ 		mutex_lock(&ep->lock);
+ 		if (ep->state == STATE_EP_ENABLED)
+@@ -1581,10 +1575,11 @@ static void destroy_ep_files (struct dev_data *dev)
+ 		mutex_unlock(&ep->lock);
  
-@@ -1332,7 +1360,7 @@ static void ffs_dmabuf_put(struct dma_buf_attachment *attach)
- static int
- ffs_epfile_release(struct inode *inode, struct file *file)
- {
--	struct ffs_epfile *epfile = inode->i_private;
-+	struct ffs_epfile *epfile = file->private_data;
- 	struct ffs_dmabuf_priv *priv, *tmp;
- 	struct ffs_data *ffs = epfile->ffs;
+ 		wake_up (&ep->wait);
+-		put_ep (ep);
  
-@@ -2353,6 +2381,11 @@ static int ffs_epfiles_create(struct ffs_data *ffs)
- 	return 0;
- }
- 
-+static void clear_one(struct dentry *dentry)
-+{
-+	smp_store_release(&dentry->d_inode->i_private, NULL);
-+}
+ 		/* break link to dcache */
+-		simple_recursive_removal(dentry, NULL);
++		simple_remove_by_name(dev->sb->s_root, ep->name, NULL);
 +
- static void ffs_epfiles_destroy(struct ffs_epfile *epfiles, unsigned count)
++		put_ep (ep);
+ 
+ 		spin_lock_irq (&dev->lock);
+ 	}
+@@ -1592,14 +1587,14 @@ static void destroy_ep_files (struct dev_data *dev)
+ }
+ 
+ 
+-static struct dentry *
+-gadgetfs_create_file (struct super_block *sb, char const *name,
++static int gadgetfs_create_file (struct super_block *sb, char const *name,
+ 		void *data, const struct file_operations *fops);
+ 
+ static int activate_ep_files (struct dev_data *dev)
  {
- 	struct ffs_epfile *epfile = epfiles;
-@@ -2360,7 +2393,7 @@ static void ffs_epfiles_destroy(struct ffs_epfile *epfiles, unsigned count)
- 	for (; count; --count, ++epfile) {
- 		BUG_ON(mutex_is_locked(&epfile->mutex));
- 		if (epfile->dentry) {
--			simple_recursive_removal(epfile->dentry, NULL);
-+			simple_recursive_removal(epfile->dentry, clear_one);
- 			epfile->dentry = NULL;
- 		}
+ 	struct usb_ep	*ep;
+ 	struct ep_data	*data;
++	int err;
+ 
+ 	gadget_for_each_ep (ep, dev->gadget) {
+ 
+@@ -1622,9 +1617,9 @@ static int activate_ep_files (struct dev_data *dev)
+ 		if (!data->req)
+ 			goto enomem1;
+ 
+-		data->dentry = gadgetfs_create_file (dev->sb, data->name,
++		err = gadgetfs_create_file (dev->sb, data->name,
+ 				data, &ep_io_operations);
+-		if (!data->dentry)
++		if (err)
+ 			goto enomem2;
+ 		list_add_tail (&data->epfiles, &dev->epfiles);
+ 	}
+@@ -1988,8 +1983,7 @@ gadgetfs_make_inode (struct super_block *sb,
+ /* creates in fs root directory, so non-renamable and non-linkable.
+  * so inode and dentry are paired, until device reconfig.
+  */
+-static struct dentry *
+-gadgetfs_create_file (struct super_block *sb, char const *name,
++static int gadgetfs_create_file (struct super_block *sb, char const *name,
+ 		void *data, const struct file_operations *fops)
+ {
+ 	struct dentry	*dentry;
+@@ -1997,16 +1991,16 @@ gadgetfs_create_file (struct super_block *sb, char const *name,
+ 
+ 	dentry = d_alloc_name(sb->s_root, name);
+ 	if (!dentry)
+-		return NULL;
++		return -ENOMEM;
+ 
+ 	inode = gadgetfs_make_inode (sb, data, fops,
+ 			S_IFREG | (default_perm & S_IRWXUGO));
+ 	if (!inode) {
+ 		dput(dentry);
+-		return NULL;
++		return -ENOMEM;
+ 	}
+ 	d_add (dentry, inode);
+-	return dentry;
++	return 0;
+ }
+ 
+ static const struct super_operations gadget_fs_operations = {
+@@ -2059,8 +2053,8 @@ gadgetfs_fill_super (struct super_block *sb, struct fs_context *fc)
+ 		goto Enomem;
+ 
+ 	dev->sb = sb;
+-	dev->dentry = gadgetfs_create_file(sb, CHIP, dev, &ep0_operations);
+-	if (!dev->dentry) {
++	rc = gadgetfs_create_file(sb, CHIP, dev, &ep0_operations);
++	if (rc) {
+ 		put_dev(dev);
+ 		goto Enomem;
  	}
 -- 
 2.47.3
