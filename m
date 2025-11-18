@@ -1,82 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-14301-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14302-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 05239CED620
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 14:12:26 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9D6E3CED63B
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 14:16:13 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9mlY3fk7z2yv9;
-	Wed, 19 Nov 2025 01:12:25 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1031"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763475145;
-	cv=none; b=EFKxD4tpwWK89PqSnRvXAfWi4Cw6kaZERgHt0171hVyQhwWdfyaUt6Gh4MY3K/lKgeaalqvIbtCCupLwEaLsZkcYgPP0B4P+kmPmTenBoFyBLEwuFwz86mrzAusl5T1jWYGt1u/lyhQTR7v3Zq9dRAQwGBEPqJ0Nx1HRCvjxhBcxSzuSGsgz06m6X61Vx31UEdYOiR1KSJtcUL3t5t20lm7Eeb3BbbCy38+inrXaWnodheQhyvmCAZX8kYZcSuoky1Pox2qJOiz0cwTXLVNm8NbVMbtR+6njLf6uhbRSlG10A8a+hKzzALCu+Q8x5PGfkCPNMI2CiXFaJ3nvFjvLKA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9mqw0JFsz2yv9;
+	Wed, 19 Nov 2025 01:16:12 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=65.109.113.108
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763475371;
+	cv=none; b=RixceaFr/ghFhX+GmXobv0DvrgOrd1RI9NQIEQSARZAFkJm9EAieZpuf7FhWehHUlxm0mW+zWkmPN/aqeNRzI4r7GyZiXEQnr3V/CiRoTUGqgi0NnPrOR47is2Ig7yx3T6b5K1FLjC+rW04o+fih201sOztuyEhXy9y7rCESxqmscIxJKmEAZb0RAVxd+ZPx9QDdO3LLwcPDUUpKIDdiq4RAC6PoQ3mCaS0FyKpFF7Lggg35KjaVkagvVsZqdzGVm9KdmD6R53Bb1QfDafAwxZ1GIS8rLX228Ph/A1LKbabUe6GkPIYP+d1t2ZO1HhIob4tYpDs7gNijuCK3j9Y94g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763475145; c=relaxed/relaxed;
-	bh=YJCbMXrFxc4lBmLKP9PfJMMIBxBx2LBYdV5jtGktq70=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=Z1gT2ekHTM+OvXDiZj2LUL91sP3mne9aLUrx8uLVFlT1lTHUzoHXOdx5GheWM7nXI7Vq0d1VOaOAy5/Oc15F/FZS3rq3NxwCrPUNGmjjW9V6aws44MYwjbgr5NwDUk1M3MxRgpKsvDToP6mMtDAAitMRcqTvtzQiYenYvLWIP31zepS4WK+PhV2nI7fQp3zefx33XDl9LQXpFdJ2y1ME98a9ew1GVt2gZN+vo4WTvSJhW3Su2b2GlBJ4cjKZP0FgqphwKu48lxMV+HuYVwWf3n/BOov6mTB/kIRoWWL72bEvyt5dQ/KtWoeY2X51pypRbkVWYynbrFWPs4yNkcwLEg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KWfEcLk1; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1763475371; c=relaxed/relaxed;
+	bh=9GD8fqgyRaRKCE/AY0roMXTzEL0vi/2D0Y4+wcNO0K8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=AbF5OHvrXIfxBgdlGQkwBXlEike2QqUdnEgHKP8Q6D1EJAzNQXrFikr1ftA4eF/+RJLvl7XhW/cX0s2VDKk7xWzT6D7BHH0GzBsmyJmSwYmH8At9jJIZbw/nNxap7W5OoH3yRxiRYWXXyT24K6qESsIxrMayV6X2Z7g0h3ybeWAGplr4gprzmTCIGWOWyR4xeeiHiC8rPwAmtmGtdIjnCMBaTbMqL3TKsLUwcqqWrMStVFA9RkDURNRjfK1IbCi8wkLEsxExVmGE1XQ9M8x9XB3Q22y2HY0oYGLRK7g/zv9ndGPbIZ8ijlUjEIhMbE4PYrVPQZEiw9Xo3HdgCUq4tQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de; dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=gzDSz+t8; dkim-atps=neutral; spf=pass (client-ip=65.109.113.108; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org) smtp.mailfrom=alien8.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=alien8.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KWfEcLk1;
+	dkim=pass (4096-bit key; unprotected) header.d=alien8.de header.i=@alien8.de header.a=rsa-sha256 header.s=alien8 header.b=gzDSz+t8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1031; helo=mail-pj1-x1031.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pj1-x1031.google.com (mail-pj1-x1031.google.com [IPv6:2607:f8b0:4864:20::1031])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=alien8.de (client-ip=65.109.113.108; helo=mail.alien8.de; envelope-from=bp@alien8.de; receiver=lists.ozlabs.org)
+X-Greylist: delayed 312 seconds by postgrey-1.37 at boromir; Wed, 19 Nov 2025 01:16:09 AEDT
+Received: from mail.alien8.de (mail.alien8.de [65.109.113.108])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9mlX07TCz2yqP
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2025 01:12:23 +1100 (AEDT)
-Received: by mail-pj1-x1031.google.com with SMTP id 98e67ed59e1d1-3438d4ae152so6742344a91.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 06:12:23 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1763475140; x=1764079940; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=YJCbMXrFxc4lBmLKP9PfJMMIBxBx2LBYdV5jtGktq70=;
-        b=KWfEcLk1mBlaZRm9BhEwCK6qz7KsYyC20gn2F872ydophhPkge+NsiRDr2id4+dY05
-         9aN2znZDe3WniYNvyP44mq7BFCSmZeMmBWP/BHrka2C9GVBolAVDWD3Gey0pjCX7iyZ4
-         9y7tA6ycDqr4l3ri1982D9DS2kCHbSgr5NNzT1Ve/OfpxlNw0ZLmUR2G05Lq2tScEm/q
-         TBiSM/yalVSPWlSJL0EWdo7eKcbzmM1/zy7m6VnTthWA988iZA/XHNVe0WrNtMfZL2Gc
-         rwdkt3/oo8aR/phgvI8+wVsvue42+ivw1nxvYnEvS/Ie4T2Z6X7N4rNb2x/wqdJv4J20
-         dk4w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1763475140; x=1764079940;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=YJCbMXrFxc4lBmLKP9PfJMMIBxBx2LBYdV5jtGktq70=;
-        b=S0rP7kQR+W8/ULApXXxL1X6wAThYr0eZ2vTLarR94xzXd6aJb2CqXzg9YWJFvWDmPf
-         DmI+e0rUOFS11BfVZVp360S1GPgimzxcrrEzt8zezeX7gjaG5RLtL7vesxfyHjdfmmjX
-         dhEEiBZvKE8CQ/adcKAU+BiUigrMj08DsAMMJc3XMk4xSozcHMRAzceP7IJ5nhHRj/SZ
-         YpJVqQAWqoOmtEPh1nClRmiLG3rwrshtJuWrVjPWtLs/uqQi+9EhkAwDQP89Prv5n2Yj
-         H8bWTIIODmx3RwwuxjDAJraYgEiEw79pVFe8O0mjdgwVZm/f0srTNK6ZxAVDqikgcwUq
-         4XGg==
-X-Forwarded-Encrypted: i=1; AJvYcCWW8XX9qYyddPxluIe83HsPrWqt6krr9sAXCnvcYHlTnbHayXZKDLfX4LcBUoPR3GYkSIMOr9IkuweKs+c=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyV57rNb8VZSalSPyLGrzC7M2lwwzKORex391ysZ8HDiUe8/7y+
-	lQd63QH1L5xFJN1pqukoVjsokUoumDe+cvI6jAKCccBS/Bgw+17R1Q2h
-X-Gm-Gg: ASbGncv3TMXdoTZXm41Rms5uG13KCMv+v1LMrTnrmj1datbHACic9bHsz3ymZE0Q052
-	jdKh1cf0sz1lkJ9Fqgt2E5F5yBzx5XYwRESm5GkqXnJCyhw157yNuSXpl44hEtr1ovw4DMRO4W0
-	weE/6w5BFfKrS42W39taDZw+DodyjMPI96Gqn7tEe2VqvWLJ2mQI90FT9VZWsC5VpnffoAkrdIU
-	7GlH8exbyyLsu5Mui0M8wkm0aWzlBGVXnDLwuztTBtCpCymzB2OwgXCqtt9Rwfiv9hg9YdxKTy8
-	sa62wT6t+QKdV/XfcaxAChfg6kD1X2tLn3voiVaz9f41GxuKPg+iKgn2RGiacyk2XGDUsLzvPxw
-	VfwPb6nT5Df8KAmiEH/pw1kw8/WZeSNGFbsuzBGVTBaFpNfk/UgVt707TMKffSYlfh8qZ4p2Hkj
-	i7iK+FwQ==
-X-Google-Smtp-Source: AGHT+IF1qIVKiE8DwAos/+cPYxxS2D1JpAkt4IZSDQhzjgwOLH+AWMhFOTG9x0eI/Lnzwx1Y2YGH7Q==
-X-Received: by 2002:a17:90b:4e8f:b0:32e:3c57:8a9e with SMTP id 98e67ed59e1d1-343fa76c377mr19701586a91.35.1763475139949;
-        Tue, 18 Nov 2025 06:12:19 -0800 (PST)
-Received: from dw-tp ([49.207.232.208])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7b92772e713sm16374708b3a.54.2025.11.18.06.12.14
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 18 Nov 2025 06:12:19 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: "David Hildenbrand (Red Hat)" <david@kernel.org>, linux-kernel@vger.kernel.org
-Cc: linux-mm@kvack.org, linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, "David Hildenbrand (Red Hat)" <david@kernel.org>, Christophe Leroy <christophe.leroy@csgroup.eu>, Sourabh Jain <sourabhjain@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, Donet Tom <donettom@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, "Liam R. Howlett" <Liam.Howlett@oracle.com>, Vlastimil Babka <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>, Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>, Nathan Chancellor <nathan@kernel.org>
-Subject: Re: [PATCH v2] mm: fix MAX_FOLIO_ORDER on powerpc configs with hugetlb
-In-Reply-To: <20251114214920.2550676-1-david@kernel.org>
-Date: Tue, 18 Nov 2025 19:19:01 +0530
-Message-ID: <87a50j30z6.ritesh.list@gmail.com>
-References: <20251114214920.2550676-1-david@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9mqs5c38z2yqP
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2025 01:16:09 +1100 (AEDT)
+Received: from localhost (localhost.localdomain [127.0.0.1])
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with ESMTP id 8C2FF40E016E;
+	Tue, 18 Nov 2025 14:10:40 +0000 (UTC)
+X-Virus-Scanned: Debian amavisd-new at mail.alien8.de
+Authentication-Results: mail.alien8.de (amavisd-new); dkim=pass (4096-bit key)
+	header.d=alien8.de
+Received: from mail.alien8.de ([127.0.0.1])
+	by localhost (mail.alien8.de [127.0.0.1]) (amavisd-new, port 10026)
+	with ESMTP id kqE8OtHje236; Tue, 18 Nov 2025 14:10:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=alien8.de; s=alien8;
+	t=1763475036; bh=9GD8fqgyRaRKCE/AY0roMXTzEL0vi/2D0Y4+wcNO0K8=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=gzDSz+t8y2W5ztKUxB2zKC8hvXpqWlIHWrKM18Ov/M9poPe8ZwILXR5W4V078i0Hu
+	 l4fmG0sRIkNQPQCqUlkbpQ2RjFB7rV9NkkMZrVIMhJJYeNyhbinqJsA/xixzgr7IKI
+	 QXfvIexTR17HxrYdZhGNzG93BEJgwLPzUpEzLSm0jWgfJ8JP665GEPVVKuAI5vGqvT
+	 7GyF4Hm5Ez28zvH6SDR6ltfmuWLFLAXxb6v20g5vA8qZagWUJrql3QLi7G0MipLw5/
+	 FT2qwDh4Ppd874MfgFEG0u4EGA6VUFIl9fICW8s/REdigd6f0t1OwASPOYdsCtm8rL
+	 27XQsNZV3tfqueCpE0JSzzW/OGl2OLxQO7Cc6Qj5+qLQJ7oPcgJ7NG2rFqnb+d90JY
+	 fKQkPBZactJdMwq6fpj9mh+8Q/DdSgRUQB4g4notdOEV2pRqsIfZa+Rebhwm0Xo+G9
+	 vZZzZYrzIqrIsPTx3GmmgconK0RAqYSUJZ4EjGEw0W/ZdxAOujIerrllTGeDYUmQYg
+	 sNRkw/GC8OPfjVfBjygiG3NqN2BRgM8JErLCmf9msXk3TKh5Ytm8BpVUM2jsgbBkzM
+	 fgR1Ooth9wlGU+wGUdaWKFPZH7/4U8p7VH6uY/Ih7++wGDSLbQxTbv+DbWXuQ42pWV
+	 YR8PsAW4U6JF9zUXCnPZyn+k=
+Received: from zn.tnic (pd9530da1.dip0.t-ipconnect.de [217.83.13.161])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange ECDHE (P-256) server-signature ECDSA (P-256) server-digest SHA256)
+	(No client certificate requested)
+	by mail.alien8.de (SuperMail on ZX Spectrum 128k) with UTF8SMTPSA id 2BDBD40E0216;
+	Tue, 18 Nov 2025 14:10:09 +0000 (UTC)
+Date: Tue, 18 Nov 2025 15:10:02 +0100
+From: Borislav Petkov <bp@alien8.de>
+To: Breno Leitao <leitao@debian.org>
+Cc: tony.luck@intel.com, akpm@linux-foundation.org,
+	linux-acpi@vger.kernel.org, linux-kernel@vger.kernel.org,
+	acpica-devel@lists.linux.dev, osandov@osandov.com,
+	xueshuai@linux.alibaba.com, konrad.wilk@oracle.com,
+	linux-edac@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	linux-pci@vger.kernel.org, kernel-team@meta.com,
+	"Rafael J. Wysocki" <rafael@kernel.org>,
+	Len Brown <lenb@kernel.org>, James Morse <james.morse@arm.com>,
+	Robert Moore <robert.moore@intel.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>,
+	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>, Hanjun Guo <guohanjun@huawei.com>,
+	Mauro Carvalho Chehab <mchehab@kernel.org>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	Oliver O'Halloran <oohall@gmail.com>,
+	Bjorn Helgaas <bhelgaas@google.com>
+Subject: Re: [PATCH RESEND v5] vmcoreinfo: Track and log recoverable hardware
+ errors
+Message-ID: <20251118141002.GEaRx-Oge8ZxtR4Vzi@fat_crate.local>
+References: <20251010-vmcore_hw_error-v5-1-636ede3efe44@debian.org>
+ <vpilvvscosdl4o4cvbmtsrrp4btfwr5iidywmuiawfrgtlcwrr@ubtdbxfqyqpu>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,107 +96,21 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <vpilvvscosdl4o4cvbmtsrrp4btfwr5iidywmuiawfrgtlcwrr@ubtdbxfqyqpu>
 
-"David Hildenbrand (Red Hat)" <david@kernel.org> writes:
+On Tue, Nov 18, 2025 at 05:01:47AM -0800, Breno Leitao wrote:
+> Do you know what is the right tree for this patch?
+> 
+> I am wondering if it should go through Kdump, x86 or RAS/MCE tree?
 
-> In the past, CONFIG_ARCH_HAS_GIGANTIC_PAGE indicated that we support
-> runtime allocation of gigantic hugetlb folios. In the meantime it evolved
-> into a generic way for the architecture to state that it supports
-> gigantic hugetlb folios.
->
-> In commit fae7d834c43c ("mm: add __dump_folio()") we started using
-> CONFIG_ARCH_HAS_GIGANTIC_PAGE to decide MAX_FOLIO_ORDER: whether we could
-> have folios larger than what the buddy can handle. In the context of
-> that commit, we started using MAX_FOLIO_ORDER to detect page corruptions
-> when dumping tail pages of folios. Before that commit, we assumed that
-> we cannot have folios larger than the highest buddy order, which was
-> obviously wrong.
->
-> In commit 7b4f21f5e038 ("mm/hugetlb: check for unreasonable folio sizes
-> when registering hstate"), we used MAX_FOLIO_ORDER to detect
-> inconsistencies, and in fact, we found some now.
->
-> Powerpc allows for configs that can allocate gigantic folio during boot
-> (not at runtime), that do not set CONFIG_ARCH_HAS_GIGANTIC_PAGE and can
-> exceed PUD_ORDER.
->
-> To fix it, let's make powerpc select CONFIG_ARCH_HAS_GIGANTIC_PAGE with
-> hugetlb on powerpc, and increase the maximum folio size with hugetlb to 16
-> GiB on 64bit (possible on arm64 and powerpc) and 1 GiB on 32 bit (powerpc).
-> Note that on some powerpc configurations, whether we actually have gigantic
-> pages depends on the setting of CONFIG_ARCH_FORCE_MAX_ORDER, but there is
-> nothing really problematic about setting it unconditionally: we just try to
-> keep the value small so we can better detect problems in __dump_folio()
-> and inconsistencies around the expected largest folio in the system.
->
-> Ideally, we'd have a better way to obtain the maximum hugetlb folio size
-> and detect ourselves whether we really end up with gigantic folios. Let's
-> defer bigger changes and fix the warnings first.
->
-> While at it, handle gigantic DAX folios more clearly: DAX can only
-> end up creating gigantic folios with HAVE_ARCH_TRANSPARENT_HUGEPAGE_PUD.
->
-> Add a new Kconfig option HAVE_GIGANTIC_FOLIOS to make both cases
-> clearer. In particular, worry about ARCH_HAS_GIGANTIC_PAGE only with
-> HUGETLB_PAGE.
->
-> Note: with enabling CONFIG_ARCH_HAS_GIGANTIC_PAGE on powerpc, we will now
-> also allow for runtime allocations of folios in some more powerpc configs.
+I can take it if akpm wants me to...
 
-So, book3s64 anyways always default to Radix which by default always select
-CONFIG_ARCH_HAS_GIGANTIC_PAGE. So even if during runtime Hash mmu gets
-selected, we anyways by default had this config enabled on book3s64.
+-- 
+Regards/Gruss,
+    Boris.
 
-> I don't think this is a problem, but if it is we could handle it through
-> __HAVE_ARCH_GIGANTIC_PAGE_RUNTIME_SUPPORTED.
-
-Exactly, I see we already have the above config knob at most places where
-this could be needed to prevent runtime gigantic pages.
-
->
-> While __dump_page()/__dump_folio was also problematic (not handling dumping
-> of tail pages of such gigantic folios correctly), it doesn't seem
-> critical enough to mark it as a fix.
->
-> Fixes: 7b4f21f5e038 ("mm/hugetlb: check for unreasonable folio sizes when registering hstate")
-> Reported-by: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Closes: https://lore.kernel.org/r/3e043453-3f27-48ad-b987-cc39f523060a@csgroup.eu/
-> Reported-by: Sourabh Jain <sourabhjain@linux.ibm.com>
-> Closes: https://lore.kernel.org/r/94377f5c-d4f0-4c0f-b0f6-5bf1cd7305b1@linux.ibm.com/
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-> Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-> Cc: Donet Tom <donettom@linux.ibm.com>
-> Cc: Michael Ellerman <mpe@ellerman.id.au>
-> Cc: Nicholas Piggin <npiggin@gmail.com>
-> Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
-> Cc: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-> Cc: "Liam R. Howlett" <Liam.Howlett@oracle.com>
-> Cc: Vlastimil Babka <vbabka@suse.cz>
-> Cc: Mike Rapoport <rppt@kernel.org>
-> Cc: Suren Baghdasaryan <surenb@google.com>
-> Cc: Michal Hocko <mhocko@suse.com>
-> Cc: Nathan Chancellor <nathan@kernel.org>
-> Signed-off-by: David Hildenbrand (Red Hat) <david@kernel.org>
-> ---
->
-> v1 -> v2:
-
-Sorry, this got delayed a bit as I wanted to run mm selftests and then
-update.
-
-As I had updated in previous version, this patch also fixes the warning
-during boot when RADIX MMU config is kept disabled at build time (that
-means only Hash is selected) on book3s64.
-
-No new tests failures were reported on running mm selftests with Hash
-mmu on book3s64. Also verified boot tests on few other ppc configs.
-
-So even though I know this patch is already taken in rc6, but still -
-
-Reviewed-and-tested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-
-Thanks again for providing a quick fix!
-
--ritesh
+https://people.kernel.org/tglx/notes-about-netiquette
 
