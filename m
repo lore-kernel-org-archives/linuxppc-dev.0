@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14237-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14240-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8AEA4CCD19A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:17:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27820CCD19A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:17:25 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xs45F66z2xnh;
-	Tue, 18 Nov 2025 16:16:24 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xs666sNz3c18;
+	Tue, 18 Nov 2025 16:16:26 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763442983;
-	cv=none; b=gh7QA/ejWlXm9livN9w8/DkBjb9mRky8iw0Et8scMUi2k87gsALFZJPKVK+85yZVKzwevPBn8Wjxqck0GO0VfLYwd6MiA4XeUtfwVgUABp5SKpg5Xs82Cd+JguN7cljX2vdtrfuJL//1kDmiwUBNWDgqeEBImaM7ovPkrTRa2w0DDXtZbTVxoZo2NTR/JHddZ7ZbyPWCuLuz1PLhUi4WDRJRCfp+8EqpwJTWGJyRMmcJLV4tLahttjV5Glzz0V9YgLgC+42T07Tw6uSBSFsWr/QfpoNOsvD9nTkweoxduGOJalA+yS08FGVfNyvk4MN/yFgN8FX9W4Tcyc/b+U5Lqw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763442986;
+	cv=none; b=aeGP9a+CHOKHys1gL5aj8qPwbBFyMP9Ak5bf6XcBUBRked6ZFRm1IcMjiaMxMYxGZxYi7bIlRTKzf2k51Y5RKm0cBsXDWhCu67oxb1HINrgMK6yR5dkNp79sTOvUeofSSkzlg0MEdw26HGnHA7eGdYh5uCPRzBWHcv2bZbEKEK8BWlfVQ+k047ZZXFr0H7w37TmffAV6LLIJQnGPCA34AXviHyzkFL2DLwyc2wVeP8DFmMl6EtOQdgfzNvz+LvfJ6QKEQfwgmnvizoX6MQWtuk4FPAQ/TrKJG47Egwe3Fj46mkrNFHHlobmof0LeQTjTQ/wWWyUhI8yyQzhJDNaMlQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763442983; c=relaxed/relaxed;
-	bh=vEaGjhrzoRqqbrs71dNJ6HrGl1f3Qp25lPEbTwESe/A=;
+	t=1763442986; c=relaxed/relaxed;
+	bh=PCYFuUAfEyL0H++y1+uBZz/Bn18lJwb1nrzO1KgbXu4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=lNE4hnplKbwu3jhf6yHzlFyZxYRbX93YrM45DxcWUDeNmAMfWA6ltsAXYtpEz7COkxHGPjVO5vHE7gRd3GnS5tdu2bKrE0nuuuF3dpC8z0smZR4jfIiAPk0P4sXUZ+p+dW70Y8RHH1OmHYA1qZXTtQnWeK81uDdL1B8UFWfPU4tvj6xqXDRM83MoCbXaXb9TQG/p9UPk7Y8wmwTNf/n1FtEJYFYMGAPH3rgEhgvPIIwiHyNMCocXqVu5LCUrgOtnwaJhXGMWQevehQERevmBh/c3i7utKEeYj3xzSL9ecJza/EYJu1I8pTulc7NI3nrAY4cymK7trA4hmxPuiHgGpg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=jVHHtkle; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=kKoztmP3gr9OrTB6vDbj7wOL86bFTWdTY8mQ/4swb1ySrzeXs9AcyqefDOtr+HDMV/qTZnFJ7cV6fgvGEqy6OOsG1KHz9QU8KkjbzrRPYWxnocAH4e7U5t1Qamox02x9YiUcDn0mXSruRevpZhZA1OCdHCIC9R6icon4RErmhP9vx2lSAA7ny0uqiJdMUOz8Z+K5M9A9CqnmYPE25fUoDjgSbhm/OaYJ/rCu73ZA/K7d0ER71Dz4Qgp85JyZffv4p61FZXe/aZuI/SmzgD0jkZhmAgl1BajOU+mCIecJlGIYwz7J55XkmGuZXzkA1JSuWRQwRY4SYvRlLOgptiVLNA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=DRouGeZq; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=jVHHtkle;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=DRouGeZq;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xry2DVtz30Tc
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xry2r4Vz30VQ
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:17 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=vEaGjhrzoRqqbrs71dNJ6HrGl1f3Qp25lPEbTwESe/A=; b=jVHHtklen2k+/O6FtBxrGXYHsu
-	B+ny9v20XP6xtEfoYk0NPqCupcKyoARuorYPrezPT4o+4zEzbFkfpT4nuTWhhWAxVHnG9QAuo55kF
-	FGvWizwnkqSk1YOyW03kY0taLGCy8rxi9f5/y7JT7RaSZy8Vd/fqVMhJzcMVWCJC8wMIwYSipy3uE
-	+KH5tzbWzTOiC7VspSMCoCeIhxPO5ZOT6LeNmNP6hB2MI2Nxv0BmgZJOP16bOkgp0KmUbdnw2EmvE
-	tYUmLb5X3k+3lhxcYmGgfmfVbjSjjNjko/4uQfQK5hHmFbbVYMYBe1U+xQuGcB/ZBnJe8m0F/pPFP
-	uTRaK5Jg==;
+	bh=PCYFuUAfEyL0H++y1+uBZz/Bn18lJwb1nrzO1KgbXu4=; b=DRouGeZqIAmgV0s9JobcdlI7wk
+	IIomwQcf2p8fEhF8o31xjQnwmbI6os9qPBvWDAuq5AjIlASElFxqvEXeHSw+sIkWo/iouyNaKQAYq
+	+1c+sEXO8xXhqzXTqOajw/SBx9/XPOqDw2fjgeCkzATAMn7dee40QMPQ/KYmzrFPOTaETpiSnu8ob
+	W92bxUpcOwsMSh7b5IEzVqz4HG3XsDhZYvJcVvhGCY+MYt9tW8uSub4mqfvoxWRN4x6PgW3Kn1c6e
+	r8No7lL1TP6iRyhhDcu0pY2ZK1FZTt3qfdMMfZT6+1zlNLhHFR74AnmnHRtYeHOvVjJFfgLVWLELu
+	39wfoa4g==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLE4W-0000000GETE-464y;
-	Tue, 18 Nov 2025 05:16:09 +0000
+	id 1vLE4V-0000000GERo-1unG;
+	Tue, 18 Nov 2025 05:16:07 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -66,9 +66,9 @@ Cc: torvalds@linux-foundation.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org,
 	clm@meta.com
-Subject: [PATCH v4 36/54] functionfs: don't abuse ffs_data_closed() on fs shutdown
-Date: Tue, 18 Nov 2025 05:15:45 +0000
-Message-ID: <20251118051604.3868588-37-viro@zeniv.linux.org.uk>
+Subject: [PATCH v4 22/54] convert efivarfs
+Date: Tue, 18 Nov 2025 05:15:31 +0000
+Message-ID: <20251118051604.3868588-23-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
 References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
@@ -88,77 +88,66 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-ffs_data_closed() has a seriously confusing logics in it: in addition
-to the normal "decrement a counter and do some work if it hits zero"
-there's "... and if it has somehow become negative, do that" bit.
+Initially filesystem is populated with d_alloc_name() + d_add().
+That becomes d_alloc_name() + d_make_persistent() + dput().
+Dynamic creation is switched to d_make_persistent();
+removal - to simple_unlink() (no point open-coding it in
+efivarfs_unlink(), better call it there)
 
-It's not a race, despite smelling rather fishy.  What really happens
-is that in addition to "call that on close of files there, to match
-the increments of counter on opens" there's one call in ->kill_sb().
-Counter starts at 0 and never goes negative over the lifetime of
-filesystem (or we have much worse problems everywhere - ->release()
-call of some file somehow unpaired with successful ->open() of the
-same).  At the filesystem shutdown it will be 0 or, again, we have
-much worse problems - filesystem instance destroyed with files on it
-still open.  In other words, at that call and at that call alone
-the decrement would go from 0 to -1, hitting that chunk (and not
-hitting the "if it hits 0" part).
-
-So that check is a weirdly spelled "called from ffs_kill_sb()".
-Just expand the call in the latter and kill the misplaced chunk
-in ffs_data_closed().
-
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/usb/gadget/function/f_fs.c | 16 ++++++++--------
- 1 file changed, 8 insertions(+), 8 deletions(-)
+ fs/efivarfs/inode.c | 7 ++-----
+ fs/efivarfs/super.c | 5 +++--
+ 2 files changed, 5 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/usb/gadget/function/f_fs.c b/drivers/usb/gadget/function/f_fs.c
-index 47cfbe41fdff..43926aca8a40 100644
---- a/drivers/usb/gadget/function/f_fs.c
-+++ b/drivers/usb/gadget/function/f_fs.c
-@@ -2071,12 +2071,18 @@ static int ffs_fs_init_fs_context(struct fs_context *fc)
+diff --git a/fs/efivarfs/inode.c b/fs/efivarfs/inode.c
+index 2891614abf8d..95dcad83da11 100644
+--- a/fs/efivarfs/inode.c
++++ b/fs/efivarfs/inode.c
+@@ -113,8 +113,7 @@ static int efivarfs_create(struct mnt_idmap *idmap, struct inode *dir,
+ 
+ 	inode->i_private = var;
+ 
+-	d_instantiate(dentry, inode);
+-	dget(dentry);
++	d_make_persistent(dentry, inode);
+ 
  	return 0;
  }
+@@ -126,9 +125,7 @@ static int efivarfs_unlink(struct inode *dir, struct dentry *dentry)
+ 	if (efivar_entry_delete(var))
+ 		return -EINVAL;
  
-+static void ffs_data_reset(struct ffs_data *ffs);
-+
- static void
- ffs_fs_kill_sb(struct super_block *sb)
- {
- 	kill_litter_super(sb);
--	if (sb->s_fs_info)
--		ffs_data_closed(sb->s_fs_info);
-+	if (sb->s_fs_info) {
-+		struct ffs_data *ffs = sb->s_fs_info;
-+		ffs->state = FFS_CLOSING;
-+		ffs_data_reset(ffs);
-+		ffs_data_put(ffs);
-+	}
+-	drop_nlink(d_inode(dentry));
+-	dput(dentry);
+-	return 0;
++	return simple_unlink(dir, dentry);
+ };
+ 
+ const struct inode_operations efivarfs_dir_inode_operations = {
+diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
+index 1f4d8ce56667..298ab3c929eb 100644
+--- a/fs/efivarfs/super.c
++++ b/fs/efivarfs/super.c
+@@ -278,7 +278,8 @@ static int efivarfs_create_dentry(struct super_block *sb, efi_char16_t *name16,
+ 	inode->i_private = entry;
+ 	i_size_write(inode, size + sizeof(__u32)); /* attributes + data */
+ 	inode_unlock(inode);
+-	d_add(dentry, inode);
++	d_make_persistent(dentry, inode);
++	dput(dentry);
+ 
+ 	return 0;
+ 
+@@ -522,7 +523,7 @@ static void efivarfs_kill_sb(struct super_block *sb)
+ 	struct efivarfs_fs_info *sfi = sb->s_fs_info;
+ 
+ 	blocking_notifier_chain_unregister(&efivar_ops_nh, &sfi->nb);
+-	kill_litter_super(sb);
++	kill_anon_super(sb);
+ 
+ 	kfree(sfi);
  }
- 
- static struct file_system_type ffs_fs_type = {
-@@ -2114,7 +2120,6 @@ static void functionfs_cleanup(void)
- /* ffs_data and ffs_function construction and destruction code **************/
- 
- static void ffs_data_clear(struct ffs_data *ffs);
--static void ffs_data_reset(struct ffs_data *ffs);
- 
- static void ffs_data_get(struct ffs_data *ffs)
- {
-@@ -2171,11 +2176,6 @@ static void ffs_data_closed(struct ffs_data *ffs)
- 			ffs_data_reset(ffs);
- 		}
- 	}
--	if (atomic_read(&ffs->opened) < 0) {
--		ffs->state = FFS_CLOSING;
--		ffs_data_reset(ffs);
--	}
--
- 	ffs_data_put(ffs);
- }
- 
 -- 
 2.47.3
 
