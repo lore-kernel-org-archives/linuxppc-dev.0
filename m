@@ -1,70 +1,71 @@
-Return-Path: <linuxppc-dev+bounces-14290-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14291-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C430BCED25D
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 09:38:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8A966CED26E
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 10:28:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9fgH3HfFz2yG5;
-	Tue, 18 Nov 2025 20:38:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.20
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763458699;
-	cv=none; b=miFJRsLNkBf84X4uNDBamqUnZ/BIIvLRUTOSP0PDSbPmHNYRmnBBf+SIm6x+AZ8RD0J4FhSAXfAEvPEarWEwSFMQXEGeljAS8iEgFBj2Vi9AIDVJ3vcz7bvjBECsXK9e/mcRVQrANcItCVQptobGGBN+GdriKV/hhT8gwevCyppOQrjy+KLXQeW2E/CYs+elbGcEhaPnkDmUl6MzVZDDU7n8+y7qgBXI5JwR3SvJlzy5yq0Mbc7agTzmcu7fsdg3rDu1VDOV80HVwGdHOT0M2u8Kxj51r98lafNhcl1EN/Agbk0K+1QrCoI0MPY0B63AZJGkT0jZyooruR105ZTA8A==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9gmc6nSrz2yG5;
+	Tue, 18 Nov 2025 21:28:00 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::931"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763455928;
+	cv=none; b=FWkPPIwJsWZLZSV6dJ5jFWciCUYyZbiSwCCIak7YFEvDtQI7rddZ9tOg49dLHXVYHYlQd0amxw03QAxyH09x6UdLFWPTorpyQH7F0l/RsmpDZMsarQIFDTRnvOxYnXgnJ82twhlktebBqfGBZQ0CvexHlSs49LqLHGnPmNy6btJR+nwnV298YURUT7b7J43pjEE0ugesmy6TSMhO0QGJHoMNR2EpAMWrCtXK6g61x9c7hO9SvldwmbgtiiyF9oeKh5G/1A1tFz1MjURlAAaZodmXl1uNo+dx/Vv0R+oqWJx4D4qm2g0QSMXqjJqxel9djccLEiUSfASuny5KnK446Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763458699; c=relaxed/relaxed;
-	bh=MdcVOO6GlYZcWI6mM2dvVdAvdQA98DeiJnNrj20kPmQ=;
-	h=Date:From:To:Cc:Subject:Message-ID; b=VY4U8vBK2lxgRhO4QYN/WY62DIxOVavgp8nGveye8rWcl+ZuVYGgtSFnMN3aCGGByxye5/VvTEhnEd1U8Ep6gE2alMzjMntXK3Z/haHB48MmOKSO1HqYp+KujCY7HXO2TueIKEL73TLCr0hNJS/GZA5rEC3LYcTJKjwVn73nQa63t3UDUafg7S4Bq6K/XunChL6Bk1MrwsJzlyPuc9Mf5rNyFUG3jEotwaWbKRtTYwgWJ1/tJGCL6FdoyqRl6Lovk4DtuL5o30ie+FWsx7kRPRGXHX5leLHbla2vLmVhC0o2ZgdWQih/65lhNa6PYZpjBoeZOE23dm/eQG2GT1NPkQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Qvg8bhZn; dkim-atps=neutral; spf=pass (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1763455928; c=relaxed/relaxed;
+	bh=E8xfy4n2OHuLtLbNyfrX7NiByvghxx45N0MvELa+eWg=;
+	h=MIME-Version:From:Date:Message-ID:Subject:To:Cc:Content-Type; b=As0aDTQ9yDSESGjmUk64XI62rs0vD4txADGmFdb1dIvoVtqscqmCmNVQ+8Wc26Aapkd/EWW8ryrmn3wDnMqtSyyl/bnZy155TPhcvmA2QMKK6/xGlokZ4NXZYfWW5wUqchT1TcehNxHcvdUcOgJkG8Wat5WqL7xiaMlFJ86VtA9UrK+RUIxejunrwBznR3fz3GVrGqlhFaHiCU7vbBCqDU3zct2WWoY2Wsdy+TAlp8WLcgSNRgJuInN3npV8ChcyMvV7upNwienxfckLcWQSEFIoI4sNTinet27Aaz0JupVNDGDLJhQYyZVSXy93ppnnkKIF4RX6Ku5JV5618Ixm/A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=M1bmCinh; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::931; helo=mail-ua1-x931.google.com; envelope-from=wangxianying546@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=Qvg8bhZn;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=M1bmCinh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.20; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.20])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::931; helo=mail-ua1-x931.google.com; envelope-from=wangxianying546@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ua1-x931.google.com (mail-ua1-x931.google.com [IPv6:2607:f8b0:4864:20::931])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9fgB1r0Gz2xnk
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 20:38:10 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1763458696; x=1794994696;
-  h=date:from:to:cc:subject:message-id;
-  bh=a9+0PcEq+BSLmDfLU55EaV1ZBgB5BFTW4mLGsD7op2Y=;
-  b=Qvg8bhZnUjarQXeoUFm3S40sdMiJw18fr4z4Iph4XUdGmvrlxw/7qmi4
-   qFYiLIZwZnJut9Yxxk6ovKL6c944cO3TxWaWFYuAIuDwrOKrEpnF7IZ6l
-   4U3mkFaD7N9iY1oz03xk59GW8RylP14ZI4yvgVjo4Vnt4HwS8GGAh/VWI
-   cS9aO2XVtRKH+n5+SfiadAxjZuM+A8u9rJ4+Qw1jIWhAHzVOKk6NCkM2v
-   d22KWDfmZBD+eX3aGcMbpkEfeyk15t3ahWOh3gYTIWs7adW88qqITAHkt
-   vwJK41go8imADGESo+fNxE4jhHqwvEiCgKHoBUS7xTneBNEZ8rLtXGB13
-   w==;
-X-CSE-ConnectionGUID: DQgfui6kQpCNffnKwM/URA==
-X-CSE-MsgGUID: +nyQTHX9QySvyFo+lKF21g==
-X-IronPort-AV: E=McAfee;i="6800,10657,11616"; a="65179536"
-X-IronPort-AV: E=Sophos;i="6.19,314,1754982000"; 
-   d="scan'208";a="65179536"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa112.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 18 Nov 2025 01:38:09 -0800
-X-CSE-ConnectionGUID: QWFSt8GDT36XGtb9KGFjoA==
-X-CSE-MsgGUID: WcxPqJgaQlm+yhHRm3444A==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.19,314,1754982000"; 
-   d="scan'208";a="195025565"
-Received: from lkp-server01.sh.intel.com (HELO adf6d29aa8d9) ([10.239.97.150])
-  by fmviesa005.fm.intel.com with ESMTP; 18 Nov 2025 01:38:07 -0800
-Received: from kbuild by adf6d29aa8d9 with local (Exim 4.96)
-	(envelope-from <lkp@intel.com>)
-	id 1vLIA0-0001YV-2Y;
-	Tue, 18 Nov 2025 09:38:04 +0000
-Date: Tue, 18 Nov 2025 17:37:40 +0800
-From: kernel test robot <lkp@intel.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: linuxppc-dev@lists.ozlabs.org
-Subject: [powerpc:merge] BUILD SUCCESS
- 834cf7f6551839ef298916bf36df2b4824c4c7bd
-Message-ID: <202511181735.TWRVePIl-lkp@intel.com>
-User-Agent: s-nail v14.9.25
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9ddy2Jbmz2xnk
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 19:52:05 +1100 (AEDT)
+Received: by mail-ua1-x931.google.com with SMTP id a1e0cc1a2514c-93754419e10so2907417241.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 00:52:05 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1763455921; x=1764060721; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :mime-version:from:to:cc:subject:date:message-id:reply-to;
+        bh=E8xfy4n2OHuLtLbNyfrX7NiByvghxx45N0MvELa+eWg=;
+        b=M1bmCinhO4w8AUaibm5541cm7UT41FSI39t5GIK9a1hlMv3E+KmDPF39HSkBCgM4+W
+         /j/ht5HxrVj8A3c/o/RNh5f105m8VJPck1uvk2xy9elwhAvGmWUm9XDib12KutIRN0NI
+         4fZLGYXBnzkFWUC0oKv8R1JZBS8yfmCHvhLMf5sYHQQRZQ3lkHxSze5Q9bIxMn3qyurq
+         uCd8cvEYjlXb5nNrFHkEpoprRaH24M2Pidiwv9Z95AYxJvRJDTiczN/eZS/9OwxKvTB8
+         vhHVlfOA7Pk/HRMlcSyGss1b5KspcFq1yC/Vx8wwmW/fFG0fuzD4l/qt5WQlsH+hIpXJ
+         ncFg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1763455921; x=1764060721;
+        h=content-transfer-encoding:cc:to:subject:message-id:date:from
+         :mime-version:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=E8xfy4n2OHuLtLbNyfrX7NiByvghxx45N0MvELa+eWg=;
+        b=ZHyniXN2fHmh2hgN2uDzxoSX/DT+s233KqG1/o2MZzfFLH9ntV+LJrHjWegmhGKwze
+         1EB+j4wiYlSQeDx22M93zYXh0HCmChdE11nKrWqvRtLLXTTyWI75XE/fUNcutNPav7ev
+         9IGqBRlJzinJU3h7qu0UlY2k5ZDuFWZDhFNXNJbbbl2PhRuXkZ1QOgFU+B8UkuvvlOO3
+         roqGNlmRiNJc5WtJCu8utrWEYDHQm0u6W/CaCXZqlZD7wtI/yW0E6aO6vpNnJsRiazwI
+         E++hMXW/BXDnGWejfat/2lutuzVZYAouaaeh40VBOGjGjA1JACMLURlijY8FLi//2W+o
+         UzMw==
+X-Forwarded-Encrypted: i=1; AJvYcCU/LFn54N5nhazinnei2gL+GicSAoqfhwgPAScugEV627q+zSshwx6GF5uo6q2C2SfW7y3FA66ciPsj8to=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyZDZK0b4J7H62IEPCLHtLBsuEQTAV+tgIWSg3uvHsfuCjOycAk
+	sd2mP4RC3VrS4ihw7QT74tQhGd3a33w+77VATyeqXICARF2FKtMU7Z6fRjyU8z5+6D1Wy6x/W/p
+	HEpLemhzSi9VDMmRwHVwJOuP8NZAUbCk=
+X-Gm-Gg: ASbGnctE+7p5NThkmA/k5jaGA/UOm9P2C/Z2zvjPzc0B9MBfuE0PxbT3UYICNx09Jzc
+	OJuHluLqsNvwXLGkxi0Vyn7sSMxFq86c8Mi4vrIbBMrYauNPYYyzMHP7bQQcSpOTA1WnqweQKL2
+	eZGpKbVBJKTdaLpSf7TvSjyTD7fB7v6oRFlcCNfm3bpKitbUeSyjrcn7HQ55NARTR+FoyJ4jc8d
+	Ru5k3GU/34cgp906G54ZOxbYPHnQ+M+pi9fhFkeaE2zPdemB4AWhBndLqYaDIlSpLtnOTcr3cGu
+	MzFpIr1gEnVQKiLaZq/exw==
+X-Google-Smtp-Source: AGHT+IHLJD9ITP2kOO/IrA1/G8RrkFLrlSCEY3Ci3bTdfgBGCLvmgDoVdfs1LYZreBLmxlRTsZgp2dDxrkoA+xU3ss0=
+X-Received: by 2002:a05:6102:5805:b0:5df:c10a:6683 with SMTP id
+ ada2fe7eead31-5dfc5a6e650mr5258102137.35.1763455921544; Tue, 18 Nov 2025
+ 00:52:01 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -77,133 +78,64 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+From: Xianying Wang <wangxianying546@gmail.com>
+Date: Tue, 18 Nov 2025 16:51:49 +0800
+X-Gm-Features: AWmQ_bkva_QhRUL6XKIl3aGFId7vGWxwdgkbZsaTnIkhamQ3k48tVAXh7UZ7buQ
+Message-ID: <CAOU40uCCXozxrKH4cXyNbb255SJ6fRS=doRysPiZ-XDpSF__rw@mail.gmail.com>
+Subject: [BUG] general protection fault in input_unregister_device
+To: luis.hernandez093@gmail.com
+Cc: maddy@linux.ibm.com, rbm@suse.com, linuxppc-dev@lists.ozlabs.org, 
+	linux-kernel@vger.kernel.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-tree/branch: https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git merge
-branch HEAD: 834cf7f6551839ef298916bf36df2b4824c4c7bd  Automatic merge of 'next' into merge (2025-11-17 13:18)
+Hi,
 
-elapsed time: 1502m
+I am running syzkaller on a KASAN-enabled x86_64 kernel based on Linux
+6.17.0/6.18-rc2, and I hit a reproducible general protection fault in
+input_unregister_device() which seems to be triggered by concurrent
+writes to the dev.mac_hid.mouse_button_emulation sysctl.
 
-configs tested: 112
-configs skipped: 2
+From the stack trace, the faulting instruction in
+input_unregister_device() is reached from the mac_hid emulated mouse
+teardown path in drivers/macintosh/mac_hid.c.
 
-The following configs have been built successfully.
-More configs may be tested in the coming days.
+The mac_hid driver keeps a global struct input_dev * for the emulated
+mouse, and the sysctl handler for dev.mac_hid.mouse_button_emulation
+toggles that device between =E2=80=9Ccreated=E2=80=9D and =E2=80=9Cdestroye=
+d=E2=80=9D states. The
+teardown helper calls input_unregister_device() on the global pointer
+and then sets the pointer to NULL.
 
-tested configs:
-alpha                             allnoconfig    gcc-15.1.0
-arc                               allnoconfig    gcc-15.1.0
-arc                   randconfig-001-20251117    gcc-14.3.0
-arc                   randconfig-002-20251117    gcc-9.5.0
-arm                               allnoconfig    clang-22
-arm                   randconfig-001-20251117    clang-22
-arm                   randconfig-002-20251117    gcc-14.3.0
-arm                   randconfig-003-20251117    gcc-12.5.0
-arm                   randconfig-004-20251117    gcc-10.5.0
-arm64                             allnoconfig    gcc-15.1.0
-arm64                 randconfig-001-20251117    clang-22
-arm64                 randconfig-002-20251117    gcc-15.1.0
-arm64                 randconfig-003-20251117    gcc-8.5.0
-arm64                 randconfig-004-20251117    gcc-9.5.0
-csky                              allnoconfig    gcc-15.1.0
-csky                  randconfig-001-20251117    gcc-12.5.0
-csky                  randconfig-002-20251117    gcc-9.5.0
-hexagon                           allnoconfig    clang-22
-hexagon               randconfig-001-20251118    clang-16
-hexagon               randconfig-002-20251118    clang-22
-i386                              allnoconfig    gcc-14
-i386        buildonly-randconfig-001-20251118    clang-20
-i386        buildonly-randconfig-002-20251118    clang-20
-i386        buildonly-randconfig-003-20251118    clang-20
-i386        buildonly-randconfig-004-20251118    clang-20
-i386        buildonly-randconfig-005-20251118    gcc-13
-i386        buildonly-randconfig-006-20251118    clang-20
-i386                  randconfig-001-20251118    clang-20
-i386                  randconfig-002-20251118    clang-20
-i386                  randconfig-003-20251118    gcc-14
-i386                  randconfig-004-20251118    gcc-14
-i386                  randconfig-005-20251118    clang-20
-i386                  randconfig-006-20251118    gcc-14
-i386                  randconfig-007-20251118    gcc-14
-i386                  randconfig-011-20251118    gcc-14
-i386                  randconfig-012-20251118    gcc-12
-i386                  randconfig-013-20251118    clang-20
-i386                  randconfig-014-20251118    gcc-14
-i386                  randconfig-015-20251118    gcc-14
-i386                  randconfig-016-20251118    gcc-14
-i386                  randconfig-017-20251118    clang-20
-loongarch                         allnoconfig    clang-22
-loongarch                           defconfig    clang-19
-m68k                              allnoconfig    gcc-15.1.0
-m68k                                defconfig    gcc-15.1.0
-m68k                        m5272c3_defconfig    gcc-15.1.0
-microblaze                        allnoconfig    gcc-15.1.0
-microblaze                          defconfig    gcc-15.1.0
-microblaze                      mmu_defconfig    gcc-15.1.0
-mips                              allnoconfig    gcc-15.1.0
-mips                      bmips_stb_defconfig    clang-22
-mips                   sb1250_swarm_defconfig    gcc-15.1.0
-nios2                             allnoconfig    gcc-11.5.0
-nios2                               defconfig    gcc-11.5.0
-openrisc                          allnoconfig    gcc-15.1.0
-openrisc                            defconfig    gcc-15.1.0
-parisc                            allnoconfig    gcc-15.1.0
-parisc                              defconfig    gcc-15.1.0
-parisc64                            defconfig    gcc-15.1.0
-powerpc                           allnoconfig    gcc-15.1.0
-powerpc                     tqm8560_defconfig    gcc-15.1.0
-riscv                             allnoconfig    gcc-15.1.0
-riscv                               defconfig    clang-22
-riscv                 randconfig-001-20251117    gcc-12.5.0
-riscv                 randconfig-002-20251117    gcc-15.1.0
-s390                              allnoconfig    clang-22
-s390                                defconfig    clang-22
-s390                  randconfig-001-20251117    gcc-14.3.0
-s390                  randconfig-002-20251117    clang-22
-sh                                allnoconfig    gcc-15.1.0
-sh                        apsh4ad0a_defconfig    gcc-15.1.0
-sh                                  defconfig    gcc-15.1.0
-sh                        edosk7760_defconfig    gcc-15.1.0
-sh                             espt_defconfig    gcc-15.1.0
-sh                    randconfig-001-20251117    gcc-15.1.0
-sh                    randconfig-002-20251117    gcc-15.1.0
-sparc                             allnoconfig    gcc-15.1.0
-sparc                               defconfig    gcc-15.1.0
-sparc                 randconfig-001-20251118    gcc-8.5.0
-sparc                 randconfig-002-20251118    gcc-8.5.0
-sparc64                             defconfig    clang-20
-sparc64               randconfig-001-20251118    clang-22
-sparc64               randconfig-002-20251118    clang-22
-um                                allnoconfig    clang-22
-um                                  defconfig    clang-22
-um                             i386_defconfig    gcc-14
-um                    randconfig-001-20251118    clang-22
-um                    randconfig-002-20251118    clang-22
-um                           x86_64_defconfig    clang-22
-x86_64                            allnoconfig    clang-20
-x86_64      buildonly-randconfig-001-20251118    clang-20
-x86_64      buildonly-randconfig-002-20251118    gcc-14
-x86_64      buildonly-randconfig-003-20251118    clang-20
-x86_64      buildonly-randconfig-004-20251118    clang-20
-x86_64      buildonly-randconfig-005-20251118    clang-20
-x86_64      buildonly-randconfig-006-20251118    clang-20
-x86_64                              defconfig    gcc-14
-x86_64                randconfig-001-20251118    clang-20
-x86_64                randconfig-002-20251118    gcc-12
-x86_64                randconfig-003-20251118    gcc-14
-x86_64                randconfig-004-20251118    gcc-14
-x86_64                randconfig-005-20251118    clang-20
-x86_64                randconfig-006-20251118    clang-20
-x86_64                randconfig-071-20251118    gcc-13
-x86_64                randconfig-072-20251118    clang-20
-x86_64                randconfig-073-20251118    gcc-14
-x86_64                randconfig-074-20251118    gcc-13
-x86_64                randconfig-075-20251118    gcc-14
-x86_64                randconfig-076-20251118    clang-20
-xtensa                            allnoconfig    gcc-15.1.0
-xtensa                randconfig-001-20251118    gcc-9.5.0
-xtensa                randconfig-002-20251118    gcc-15.1.0
+However, there may has no proper synchronization around this global
+pointer in the sysctl handler.
 
---
-0-DAY CI Kernel Test Service
-https://github.com/intel/lkp-tests/wiki
+The sysctl handler can end up calling input_unregister_device()
+multiple times on the same device (or on a stale pointer) under
+concurrent updates.
+
+This issue can be reproduced on both v6.18-rc2 and v6.17.0.
+
+This can be reproduced on:
+
+HEAD commit:
+
+e5f0a698b34ed76002dc5cff3804a61c80233a7a
+
+6fab32bb6508abbb8b7b1c5498e44f0c32320ed5
+
+report: https://pastebin.com/raw/Fxc8KiiH
+
+console output : https://pastebin.com/raw/trZpGBDe
+
+kernel config : https://pastebin.com/raw/1grwrT16
+
+C reproducer :https://pastebin.com/raw/sdxjzABJ
+
+Let me know if you need more details or testing.
+
+Best regards,
+
+Xianying
 
