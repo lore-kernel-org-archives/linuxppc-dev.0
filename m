@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14233-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14234-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 168CDCCD19A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:16:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BE871CED240
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:16:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xs13KPYz3bWX;
-	Tue, 18 Nov 2025 16:16:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xs31Pljz3bl1;
+	Tue, 18 Nov 2025 16:16:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763442980;
-	cv=none; b=CwhKZafQK6Kw+evkJdbx/VEwAj+LPuLXhRfTCEi29D5Uq5X/RPcq5BWC1hlqj7ybMpm8oxPHSo8FcWUyHD0jvxmS1qPt6ladST1ozyvgAei365RmLEENVHDqe58n7lqGeZTqbCdAO2p0/gBAuiigiM5Lcm3sBWMsp2hEnMwJQBLMK7y83B/RbfryUvy414wmMKtxISfhILEhYCekdqQ+g4vrxS1FXFH9qFHoskzzskfC3oPBC9izLGFOdyyuVvNMEIOobxh6ayH/B6laMBlIbWjS+JYRnzZNp4SG+vyHCaqoVGpiK19unPIO6AXEN37OZxiEFPI/HxM8QCpdnywXUg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763442983;
+	cv=none; b=neTAOvwG8PkV6otKnRoBrFEdPetBJWV3WIFBBjU2Y7PIWbRM6NLS8K/7Ok7SyauKvWrwmhhZOjuV5jT8rNbC0uaSbM9g1c7EJtQnfu8MR9bZfQFX/pSEMqFi+2zQYjlHtTPTCtWGCi5U2tEQv2TnejfBbUtAfvro+NaQPuj2TVNE2AUJaSXlVBjVdu8GaK14mMYwO5QLocxeIDQzSUyraRBSQmlX1MfYYf6qc3M7SpDadD9oFrD1GSvcQZDVxRLBKBku2w/eG2IxhZrsd5sYn3xlJDXApY9PGLXn3WbvsVeOvWgcg/I67c1HpEkV2hITSegF9mxe8GNqK1nSr4y3Ww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763442980; c=relaxed/relaxed;
-	bh=ndxAHMuLfdVjp4xlYpconlsf87kf7dRAnlN4D1FUhRg=;
+	t=1763442983; c=relaxed/relaxed;
+	bh=iatHkZ5szHUbSV6QRCjJzQR1r0SBUitYfnCBfKmo74w=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Q0dSUm0tGsLJHyviWUINn0MO9kgTZFWQxb156UzK6V493Qt2cQtyOCXuUufm2LJGRNb9Ju480atS8/NM3ZQaVTHHuZa30GzC7Ttu72ttguYfDeBy1C0812Vch/5xzULZoWy3vJuNNGookRZlcqmMqTnas2eDVSXnpB9GYauZhQT/YJZcVHJZ5KKIja6i/G2n1Tq49bjy5SQj3g19rH4XFNHDtiY1S5DKTqZRUfuW7b2Ki2P3jzJCS8ceEAZVBXI1CCsmutgpWnocbwB6l17LWdgIvKfsTCpewziOez8wAnYesknmhmwYU+jP/9vBKxckgSiDR+pGPAr1H5G0CktGbg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=Y5rYDPAz; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=OJ4g840hL3x49apGXPNndF7Kp3hB+wy5NVUoUHcUcRjpS5IpAEbOVOIobQmprGV8WER+shV1SAATxS+UzjKwXpB4rxSLO7aBpxbAA8V1aEVn6xerXhjoCBGZOBgqwR6p6u8I7EBwqFup4tJe9xDZWjbAKr+rOYyL5AdKbfsf1V+yq9ps7HsTXS67ToNZnGkXGOexQlRw7/L1QHwTH2Wf09FTl2pPGOlOYloEarDSp1SInmSUrKZC1gK2uimJCkt2IOyuOxwRGURWOar1pSVineW1qTKaIEkxEne1q03l5eP1VOqT1ic7Mv1aTWmBy12vvUORdrM0JHnPy8xkiHUwBw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=HKkg+A6i; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=Y5rYDPAz;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=HKkg+A6i;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xry1Pb9z304h
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xry2wCzz30VR
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:17 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=ndxAHMuLfdVjp4xlYpconlsf87kf7dRAnlN4D1FUhRg=; b=Y5rYDPAzyYI0YVXbV5vkI7GHZF
-	AIbLx3QG1ZLdGqtHieKR5jEtX5ZyQhQXBE58iMFzJ12RsGLj+sWxbtQ4CgNsv+n0HoS3YII2AGZNb
-	Gs073ubbEou14VFboUOZBDX4dKUw0RHCay7zKCJ8OzTZ1J1dvraWF9GMqMihTHMQTibJpWz7aYbOJ
-	xgOqJaSUP/Me9LrBnjyBU3YdO0jfMPzMbsjg/OJPMQTS1T9TsmXLCqY0Zl8VbMIhPXwhxFQ5GRmVk
-	hc9wh8Qo1VieZ9DPLGkilh19f8P5NKoHD1Rha2hWd/umK7mwDdtN/KfqpyydXOxq5eyfa6gH9BM1q
-	L165gbIw==;
+	bh=iatHkZ5szHUbSV6QRCjJzQR1r0SBUitYfnCBfKmo74w=; b=HKkg+A6iw446C1m+bFq5Rf4+zr
+	WtzxBAxyNorJmfhyRzyCutjKbpfkUzb6VIIyZ8TGu3Pv492wCgVw6ATyFzN71gfh3aqxSmOywa+XX
+	hXtWrNHEkFK2PL9+dRu7Z8frLeV186SMrTIwduMMNxQZA9WWgu1Xbuyqc4rH/zZ81ikczrbh/IxW2
+	l/WWnVRxQ8RLKxM4KmzKbRVt4W4vhEj97gnK9cNxyXq1SbFlL+YtfCYjF6ajQqNa5BbTGC4R+ah0y
+	xsxXQFz05BzncgXE23HUlDxD4flK2OxwCSKMJomxPUGuCy8x6RtOchSX9D93+FkOLWlu2GhngN0ZD
+	53y4+dEQ==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLE4V-0000000GESM-3y6c;
-	Tue, 18 Nov 2025 05:16:07 +0000
+	id 1vLE4X-0000000GETl-1pH7;
+	Tue, 18 Nov 2025 05:16:09 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -66,9 +66,9 @@ Cc: torvalds@linux-foundation.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org,
 	clm@meta.com
-Subject: [PATCH v4 27/54] binderfs: use simple_start_creating()
-Date: Tue, 18 Nov 2025 05:15:36 +0000
-Message-ID: <20251118051604.3868588-28-viro@zeniv.linux.org.uk>
+Subject: [PATCH v4 41/54] convert functionfs
+Date: Tue, 18 Nov 2025 05:15:50 +0000
+Message-ID: <20251118051604.3868588-42-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
 References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
@@ -88,97 +88,61 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-binderfs_binder_device_create() gets simpler, binderfs_create_dentry() simply
-goes away...
+All files are regular; ep0 is there all along, other ep* may appear
+and go away during the filesystem lifetime; all of those are guaranteed
+to be gone by the time we umount it.
+
+Object creation is in ffs_sb_create_file(), removals - at ->kill_sb()
+time (for ep0) or by simple_remove_by_name() from ffs_epfiles_destroy()
+(for the rest of them).
+
+Switch ffs_sb_create_file() to simple_start_creating()/d_make_persistent()/
+simple_done_creating() and that's it.
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/android/binderfs.c | 43 +++++---------------------------------
- 1 file changed, 5 insertions(+), 38 deletions(-)
+ drivers/usb/gadget/function/f_fs.c | 17 +++++++++--------
+ 1 file changed, 9 insertions(+), 8 deletions(-)
 
-diff --git a/drivers/android/binderfs.c b/drivers/android/binderfs.c
-index be8e64eb39ec..a7b0a773d47f 100644
---- a/drivers/android/binderfs.c
-+++ b/drivers/android/binderfs.c
-@@ -183,24 +183,11 @@ static int binderfs_binder_device_create(struct inode *ref_inode,
+diff --git a/drivers/usb/gadget/function/f_fs.c b/drivers/usb/gadget/function/f_fs.c
+index 40868ceb765c..4bf61017b42d 100644
+--- a/drivers/usb/gadget/function/f_fs.c
++++ b/drivers/usb/gadget/function/f_fs.c
+@@ -1899,17 +1899,18 @@ static int ffs_sb_create_file(struct super_block *sb, const char *name,
+ 	struct dentry	*dentry;
+ 	struct inode	*inode;
+ 
+-	dentry = d_alloc_name(sb->s_root, name);
+-	if (!dentry)
+-		return -ENOMEM;
+-
+ 	inode = ffs_sb_make_inode(sb, data, fops, NULL, &ffs->file_perms);
+-	if (!inode) {
+-		dput(dentry);
++	if (!inode)
+ 		return -ENOMEM;
++	dentry = simple_start_creating(sb->s_root, name);
++	if (IS_ERR(dentry)) {
++		iput(inode);
++		return PTR_ERR(dentry);
  	}
  
- 	root = sb->s_root;
--	inode_lock(d_inode(root));
--
--	/* look it up */
--	dentry = lookup_noperm(&QSTR(name), root);
-+	dentry = simple_start_creating(root, name);
- 	if (IS_ERR(dentry)) {
--		inode_unlock(d_inode(root));
- 		ret = PTR_ERR(dentry);
- 		goto err;
- 	}
--
--	if (d_really_is_positive(dentry)) {
--		/* already exists */
--		dput(dentry);
--		inode_unlock(d_inode(root));
--		ret = -EEXIST;
--		goto err;
--	}
--
- 	inode->i_private = device;
- 	d_instantiate(dentry, inode);
- 	fsnotify_create(root->d_inode, dentry);
-@@ -481,24 +468,6 @@ static struct inode *binderfs_make_inode(struct super_block *sb, int mode)
- 	return ret;
+-	d_add(dentry, inode);
++	d_make_persistent(dentry, inode);
++
++	simple_done_creating(dentry);
+ 	return 0;
  }
  
--static struct dentry *binderfs_create_dentry(struct dentry *parent,
--					     const char *name)
--{
--	struct dentry *dentry;
--
--	dentry = lookup_noperm(&QSTR(name), parent);
--	if (IS_ERR(dentry))
--		return dentry;
--
--	/* Return error if the file/dir already exists. */
--	if (d_really_is_positive(dentry)) {
--		dput(dentry);
--		return ERR_PTR(-EEXIST);
--	}
--
--	return dentry;
--}
--
- struct dentry *binderfs_create_file(struct dentry *parent, const char *name,
- 				    const struct file_operations *fops,
- 				    void *data)
-@@ -508,11 +477,10 @@ struct dentry *binderfs_create_file(struct dentry *parent, const char *name,
- 	struct super_block *sb;
- 
- 	parent_inode = d_inode(parent);
--	inode_lock(parent_inode);
- 
--	dentry = binderfs_create_dentry(parent, name);
-+	dentry = simple_start_creating(parent, name);
- 	if (IS_ERR(dentry))
--		goto out;
-+		return dentry;
- 
- 	sb = parent_inode->i_sb;
- 	new_inode = binderfs_make_inode(sb, S_IFREG | 0444);
-@@ -540,11 +508,10 @@ static struct dentry *binderfs_create_dir(struct dentry *parent,
- 	struct super_block *sb;
- 
- 	parent_inode = d_inode(parent);
--	inode_lock(parent_inode);
- 
--	dentry = binderfs_create_dentry(parent, name);
-+	dentry = simple_start_creating(parent, name);
- 	if (IS_ERR(dentry))
--		goto out;
-+		return dentry;
- 
- 	sb = parent_inode->i_sb;
- 	new_inode = binderfs_make_inode(sb, S_IFDIR | 0755);
+@@ -2098,7 +2099,7 @@ static void ffs_data_reset(struct ffs_data *ffs);
+ static void
+ ffs_fs_kill_sb(struct super_block *sb)
+ {
+-	kill_litter_super(sb);
++	kill_anon_super(sb);
+ 	if (sb->s_fs_info) {
+ 		struct ffs_data *ffs = sb->s_fs_info;
+ 		ffs->state = FFS_CLOSING;
 -- 
 2.47.3
 
