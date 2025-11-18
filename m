@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14253-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14249-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DFF1BCED240
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:18:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE008CCD19A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:18:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9XsH5VbVz3f1r;
-	Tue, 18 Nov 2025 16:16:35 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9XsF0mS4z3dKm;
+	Tue, 18 Nov 2025 16:16:33 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763442994;
-	cv=none; b=Heww/6pNJYJBQhrWUFrrk3kyxe77Kw7MA661C/eymV6vo+qOOjbTQQtSGdU/SLfhxhG1mQN9bds3jTLaGSMJOu4ry+2ThjpXaJjiRihQQJrGkaWYYTfESeco4ys1hMGNjarIxEl52p4R8rWBSDq8dFpmbXtc7zqeLXBH3MgXmItzvY75/9MG8m95F7U/UjwOz/5HIcNGtPP4eHDhV7K3CubqMQWBvoEyxUnIQ3E6wcr8Krdb5xl3lCUxREyqvSzKTmPQUr2Im5ztYgKpMEwzFUvKaDYEk6nbSU7MMEND8gk5sl7JSflF1Cr4f0Mm6m6rNjafr6Ptw/kAYa+UEkKwfQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763442991;
+	cv=none; b=IAlEbOTrZQnI4UTKZr3CN+ZAELx51Xndo3IOe9edo+3/mjmlx0mP/XPgYOCbiKOrVvBFXJLeWeqbijysal6zuDRaVuPQ8mBcGmwE3aTl3CUL+POKhF6Th8kWkKjDSABtIpgiYS0sTJS0UyaBQxMGD6ZlY9mN2Kc+U8qFCdo9TohWXuyST63Nevru2bLuQZ2WDgg4ZaPsXVQkELD51jZ5yt0mp/wJ9gQSqH0PslLfRrr1TrM2xpIZTE5e9EDZJvWDhwI70F+pwY8t0w0L3NDdOsWf061TVDruhTStTh3zaX+exID1IXaQB52mq09IDlnlRSe4/I9Lhmv+YZ2V0YKcJQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763442994; c=relaxed/relaxed;
-	bh=FZUuqKrs+nqWkpfLt5q4RrHggbnk1CWWQm+NX1Cw0DM=;
+	t=1763442991; c=relaxed/relaxed;
+	bh=3maaNWdAFQG6lKGkg4q4mAf3fnGzZVX1VVI0dDX3CYE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZXu3lL5caleb2CH7fKoFrMK+uWzcnzfRFFSUDtzVh021QDdRcaG7hsr9qbXfr2q7tDgL0dvW6GNrvR1stqdK1ngyOiMBVKDBuhLDpafHE4XIFoirhYkNWfB+5IoJ7yeJYnWUC+1gFauG2QPG4FXRleG9EnEfBQdRuOUworLjI9LcR7LQ6JVl6yLUSe0uAPnUndKyUgIHgCQzgS8i9rWsBdvvRrb9uI7EBcQ1SnpKLH0NValj0cDN7LyhSe7qaJZBG8c9QF8aTTXUWp+8c0GBwwOTjV7vbgNpEvKenPMDnFKe1uiSv9psHfTMSUSYwZnPDklt5hOBJTEWELc2MJSogQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=YJuOa56O; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=H5fD4sLQ/mWHGo2s67n2Xj62TX8SrmTCbGzha5O+1SWd27OCVkiBedPlHRNxaeRZ57driT5BxEGHyrE5jQWMbKYgx297zbrAy2wK7ALtEJ3mWSBkJfAguV6J1eDF4GkFGH5lChEY0/DY/ABRsGWmN+9hpORMJ3LBSQvrFnpJSt//IJlnfwbMH9J9DdKL5MfhrpCahvE3/cbuU05PhMxo2isBBVtN0SlypHiXHYjPC2dLsex6ue88z2S6lEi4CisBHIxL38ySIIs4xlwQzV48U3laA9qPl0I527gjayYdMAz8OjpWVH6+IFZzpf+BH+E/KxF1ImlRyadbNW0AfSlvGw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=cFv8SfpD; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=YJuOa56O;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=cFv8SfpD;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xrz5lgSz30W9
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xrz1wJvz30Vq
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:18 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=FZUuqKrs+nqWkpfLt5q4RrHggbnk1CWWQm+NX1Cw0DM=; b=YJuOa56O1MjxYGTgaENOoy61GE
-	pW9BzUrfOK+4o3p4qm+AJO0GBRfVwfQIkuRSUxdY+22Q3QUMcnZIT7TV5oOi/iLqJgLHtYRjjp0Cz
-	icaAAzCWMnLekniPfnn9IyaYt1f9ZUuMsv1I+L50s53kJJCvGsOd5aHDpW1EkZAH+UEd0J0GlZPjs
-	pjfdjwxDOhzoiPPnLnBcovS5mXBMc2w/Pwa8nhiquqr7IPOWftRwjnGCeHNTQ76lgTpBvLJwnm24o
-	GlJGTEgxKAwsZtFGDSsdzA5CdC9Wz+bO6RgwK3mR7wGYbekp/XVbxHmh7icarI9y/w9mr+YZhhyQL
-	2EEZJN9g==;
+	bh=3maaNWdAFQG6lKGkg4q4mAf3fnGzZVX1VVI0dDX3CYE=; b=cFv8SfpD4XhexPHCWH7/OaafAx
+	zoyhLBt2gZ6Bo0exSZh/EUEd34RcxVWLSD7Ta/Iy1vivHDdk94UUme2dABOwuDIMDn8cYDrXVqgaH
+	uVbNZBm4ZOairE9ghYr7dZqkJrX1l7sxHzbHrzYBzs8Y1cGdvKHYtTBLzOUya4Wwib7EWJ2/oP/0q
+	uUJhsljVSMSwY+deCdkmeZoJzN2eBCKHQyuctBq+A0XuPcZagkssyT7uMiUGxws7ZVIgTTy/hTyp6
+	XksFCJZEgumPee6QRATnW84VXYxOcx12OMZffSrYlgKBFeel+lcJq7TmOMdm4m+EEU3l077HnR4iF
+	/JI7nb7w==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLE4W-0000000GET9-3lku;
-	Tue, 18 Nov 2025 05:16:08 +0000
+	id 1vLE4T-0000000GEPy-2GRn;
+	Tue, 18 Nov 2025 05:16:05 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -66,9 +66,9 @@ Cc: torvalds@linux-foundation.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org,
 	clm@meta.com
-Subject: [PATCH v4 35/54] convert selinuxfs
-Date: Tue, 18 Nov 2025 05:15:44 +0000
-Message-ID: <20251118051604.3868588-36-viro@zeniv.linux.org.uk>
+Subject: [PATCH v4 04/54] new helper: simple_done_creating()
+Date: Tue, 18 Nov 2025 05:15:13 +0000
+Message-ID: <20251118051604.3868588-5-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
 References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
@@ -88,61 +88,43 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-Tree has invariant part + two subtrees that get replaced upon each
-policy load.  Invariant parts stay for the lifetime of filesystem,
-these two subdirs - from policy load to policy load (serialized
-on lock_rename(root, ...)).
+should be paired with simple_start_creating() - unlocks parent and
+drops dentry reference.
 
-All object creations are via d_alloc_name()+d_add() inside selinuxfs,
-all removals are via simple_recursive_removal().
-
-Turn those d_add() into d_make_persistent()+dput() and that's mostly it.
-
-Acked-by: Paul Moore <paul@paul-moore.com>
-Reviewed-by: Stephen Smalley <stephen.smalley.work@gmail.com>
-Tested-by: Stephen Smalley <stephen.smalley.work@gmail.com>
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- security/selinux/selinuxfs.c | 10 ++++++----
- 1 file changed, 6 insertions(+), 4 deletions(-)
+ fs/libfs.c         | 8 ++++++++
+ include/linux/fs.h | 1 +
+ 2 files changed, 9 insertions(+)
 
-diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
-index f088776dbbd3..eae565358db4 100644
---- a/security/selinux/selinuxfs.c
-+++ b/security/selinux/selinuxfs.c
-@@ -1205,7 +1205,8 @@ static struct dentry *sel_attach(struct dentry *parent, const char *name,
- 		iput(inode);
- 		return ERR_PTR(-ENOMEM);
- 	}
--	d_add(dentry, inode);
-+	d_make_persistent(dentry, inode);
-+	dput(dentry);
+diff --git a/fs/libfs.c b/fs/libfs.c
+index d029aff41f66..a033f35493d0 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -2326,3 +2326,11 @@ struct dentry *simple_start_creating(struct dentry *parent, const char *name)
  	return dentry;
  }
+ EXPORT_SYMBOL(simple_start_creating);
++
++/* parent must have been held exclusive since simple_start_creating() */
++void simple_done_creating(struct dentry *child)
++{
++	inode_unlock(child->d_parent->d_inode);
++	dput(child);
++}
++EXPORT_SYMBOL(simple_done_creating);
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index 28bd4e8d3892..f5037c556f61 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -3662,6 +3662,7 @@ extern int simple_fill_super(struct super_block *, unsigned long,
+ extern int simple_pin_fs(struct file_system_type *, struct vfsmount **mount, int *count);
+ extern void simple_release_fs(struct vfsmount **mount, int *count);
+ struct dentry *simple_start_creating(struct dentry *, const char *);
++void simple_done_creating(struct dentry *);
  
-@@ -1934,10 +1935,11 @@ static struct dentry *sel_make_swapover_dir(struct super_block *sb,
- 	/* directory inodes start off with i_nlink == 2 (for "." entry) */
- 	inc_nlink(inode);
- 	inode_lock(sb->s_root->d_inode);
--	d_add(dentry, inode);
-+	d_make_persistent(dentry, inode);
- 	inc_nlink(sb->s_root->d_inode);
- 	inode_unlock(sb->s_root->d_inode);
--	return dentry;
-+	dput(dentry);
-+	return dentry;	// borrowed
- }
- 
- #define NULL_FILE_NAME "null"
-@@ -2080,7 +2082,7 @@ static int sel_init_fs_context(struct fs_context *fc)
- static void sel_kill_sb(struct super_block *sb)
- {
- 	selinux_fs_info_free(sb);
--	kill_litter_super(sb);
-+	kill_anon_super(sb);
- }
- 
- static struct file_system_type sel_fs_type = {
+ extern ssize_t simple_read_from_buffer(void __user *to, size_t count,
+ 			loff_t *ppos, const void *from, size_t available);
 -- 
 2.47.3
 
