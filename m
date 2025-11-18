@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14269-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14270-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2827FCCD19A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:21:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0300ECCD19A
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:21:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xsc0h9fz2xQr;
-	Tue, 18 Nov 2025 16:16:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xsc3sbfz3fQn;
+	Tue, 18 Nov 2025 16:16:52 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763443003;
-	cv=none; b=KVZtgMEq8IW9pdv/VY9cjQyO41+QfnsUuElvlH0nGQqatZpcS2VrpRws2jRVB/jZi6DeeFqXR41oiyzRg7lsUbhXbS74BlVQNuKYMz0O5s4IpIwH922iZTFPPfzTnads1li48ip/9msFXd8qsUwQ+8Mrh8O8cftaIVQQT8IEN9iKZAdT02ZDFlaw4qq6Y+YsfaMGGB0xIklFWfuQpJJIKC3sh20cD7A/SLvbklzwel+51Od0PcDbFMVgbrWm7FCHwD9+VwZoqM+DNyUdgFAntLz3TluEjk8KVLfWPRYkHBSjLElO2RVorrWU/9DHbijxCIo+mxptD9hzkqQjR5p7OA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763443010;
+	cv=none; b=fxDNKxVvJm8zdM/52LI4WMjL94AZSBisaRxwXjwXFKUjluYVZcsne3gTjLYTBlMUKMPEVFajKB6m3Z21IMQRUjOJCpsyQ+s1PDpa3IlRdbwZxvxwpTWXm1niQiU+BUcqsDSJIEGi/rRGV3V8LTpTtGQzgU06aoZTx+kfpu2t+69W+jEvP7rVizmlk0ammEHYxwsBcKMfD4er7wXm3PH7C2gqKk+F+z/2hSDtEn+pmRAhmz+OMF4JHOVydoFL8djf6Uq2mXnV5jdQjfpbbPO0Q+dF7wKJzk8WzBPUf1HxzwA8bfAWkivNYpXSRBbtM+sq1+GGzmhh9ZJjf/i4wdK6Kw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763443003; c=relaxed/relaxed;
-	bh=h9ER29fbTJgjBa1gGf0LtXabL8srR/KWhHIa5FKJzwk=;
+	t=1763443010; c=relaxed/relaxed;
+	bh=W4Rux38+4wafzrtHIPx/pAtSqJiq0rCT3/CghgJ+qB0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=luSvbssfJR1EH715hrLrl0D3wx/LCOKM9PNNkDzJMYmnRKOvnCLCCldy1HN+il5O+cj/9HMLn63EWqvEQlGMxGNzQThw1SRmeAoEsmqwYO76aXD1lUqVOLloUulKPadOL1yCaIqKoUSvnTISPn8uKxIu5+nnR3Ftvd/6OxMTNh5BgIh38EMYeRnldZAeY4MUKuyKHSFYG+UeSg8ALbXRs4IWQCqPK1XjyDCLnuUSoF5HzvRHcoGR4cJTC0gHYIt9aoDhHwihgy4G2Qo/DhXBLp6Fq8ajOlwUiSRK0pmEEyJpjajZvfTN958jM3juP5tNgZQwyhGfxZ8O774ODeen5A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=rzQCg5lh; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=L195HErxHStiERgHsCyKsqZjQ7xSfaU8PazNUCN2ZOF2zLFA/6GPE8pTJPx2CZqlD5XJeuIIhgXAUAhV2DnXnNaJrn3Enb/fgMmGvUn//XD3gUex1efDRFCMTwcyfF4OYvXNLA/wypaL/3D5EJqkS2ngphGUp6c/MVxjdMXPbSpgKq7bi5OVJpAGx2oxNsIUQct0B8JsRh7BuXKmXcT6UYownWBRinlJ1A/apdI+RngEzydLihDJ0Dthc1jWihI38mk0NT27ihSflx04gnQ+iETkQvc9yXvvpTp1br+2Qvk2ikQwyxg4WS6eKiEyQn1Lw0vlasIn9AONTTZhyCWDYA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=IjzD6SZN; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=rzQCg5lh;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=IjzD6SZN;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xs11tnQz3bNw
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:19 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xs15W6Rz3bb6
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:21 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=h9ER29fbTJgjBa1gGf0LtXabL8srR/KWhHIa5FKJzwk=; b=rzQCg5lhFgfrMZlOVGl6dExZ/a
-	d0AgChO0Od/vBClGgnOu5Fjd5tl4dza+2pw+6RbcoI/f4TzFLHPjRU5qnY9douyr6yZfFvzXeiNCc
-	eOk1A/AfCZ2Fq9xW+wz6Iqe+G9K+8nuPPSVS6n3g9BfJxSh5M7HlQ7wGAr5JQXKfUHF8uLZ9hy5G+
-	xDwykHVpmx3evybIAKrC1sf5vcsJi02w5hG99QhujDNzHfiDW0+GKIhRq2eSwYG8ZwA8dbSKiOQnk
-	GnJYztrt9p6X2SHG0V2njXC+vTfxmOCaE3Nz/WzhcwmKIAz1BWSlmOecW8XBg5ia5hN5eImMb/kkB
-	7GelKqYg==;
+	bh=W4Rux38+4wafzrtHIPx/pAtSqJiq0rCT3/CghgJ+qB0=; b=IjzD6SZNXZ75C/fjOmEaQfJprG
+	st1rZe+yTGOATslq/EHEeNfCyI3fQTgrrCV/xwDy09PJSc20HZ9/ok0I0a6gCKmEXdF6E8xreFNhp
+	OgidLo1jv4DB8vfCPjI7+oGZVX3/oxkW1jyzqdo2J6X/UdDJYlW2D3R3PLUowglk9et6/yxJjtxYZ
+	KNTgNk9hRf7Szz3u6z00J01G2unFzLttC/ER2KnYlhR10MLCFBlSJTocJz2mk767MUGk7sNN/rxqv
+	o/P8JiVlYvDsCT5f0UsCsVRKt74WvBpr3DKdGHm8BMKE9Iiy6gn6+QnxHbtC7Bfhkk0QlZ5G0yBJ+
+	3ninlNHA==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLE4X-0000000GETr-25uP;
-	Tue, 18 Nov 2025 05:16:09 +0000
+	id 1vLE4T-0000000GEPt-1rsH;
+	Tue, 18 Nov 2025 05:16:05 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -66,9 +66,9 @@ Cc: torvalds@linux-foundation.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org,
 	clm@meta.com
-Subject: [PATCH v4 42/54] gadgetfs: switch to simple_remove_by_name()
-Date: Tue, 18 Nov 2025 05:15:51 +0000
-Message-ID: <20251118051604.3868588-43-viro@zeniv.linux.org.uk>
+Subject: [PATCH v4 03/54] new helper: simple_remove_by_name()
+Date: Tue, 18 Nov 2025 05:15:12 +0000
+Message-ID: <20251118051604.3868588-4-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
 References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
@@ -88,135 +88,82 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-No need to return dentry from gadgetfs_create_file() or keep it around
-afterwards.
+simple_recursive_removal(), but instead of victim dentry it takes
+parent + name.
 
+Used to be open-coded in fs/fuse/control.c, but there's no need to expose
+the guts of that thing there and there are other potential users, so
+let's lift it into libfs...
+
+Acked-by: Miklos Szeredi <mszeredi@redhat.com>
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/usb/gadget/legacy/inode.c | 32 +++++++++++++------------------
- 1 file changed, 13 insertions(+), 19 deletions(-)
+ fs/fuse/control.c  |  7 +------
+ fs/libfs.c         | 13 +++++++++++++
+ include/linux/fs.h |  2 ++
+ 3 files changed, 16 insertions(+), 6 deletions(-)
 
-diff --git a/drivers/usb/gadget/legacy/inode.c b/drivers/usb/gadget/legacy/inode.c
-index 13c3da49348c..bcc25f13483f 100644
---- a/drivers/usb/gadget/legacy/inode.c
-+++ b/drivers/usb/gadget/legacy/inode.c
-@@ -150,7 +150,6 @@ struct dev_data {
- 	void				*buf;
- 	wait_queue_head_t		wait;
- 	struct super_block		*sb;
--	struct dentry			*dentry;
- 
- 	/* except this scratch i/o buffer for ep0 */
- 	u8				rbuf[RBUF_SIZE];
-@@ -208,7 +207,6 @@ struct ep_data {
- 	struct usb_endpoint_descriptor	desc, hs_desc;
- 	struct list_head		epfiles;
- 	wait_queue_head_t		wait;
--	struct dentry			*dentry;
- };
- 
- static inline void get_ep (struct ep_data *data)
-@@ -1561,16 +1559,12 @@ static void destroy_ep_files (struct dev_data *dev)
- 	spin_lock_irq (&dev->lock);
- 	while (!list_empty(&dev->epfiles)) {
- 		struct ep_data	*ep;
--		struct dentry	*dentry;
- 
- 		/* break link to FS */
- 		ep = list_first_entry (&dev->epfiles, struct ep_data, epfiles);
- 		list_del_init (&ep->epfiles);
- 		spin_unlock_irq (&dev->lock);
- 
--		dentry = ep->dentry;
--		ep->dentry = NULL;
--
- 		/* break link to controller */
- 		mutex_lock(&ep->lock);
- 		if (ep->state == STATE_EP_ENABLED)
-@@ -1581,10 +1575,11 @@ static void destroy_ep_files (struct dev_data *dev)
- 		mutex_unlock(&ep->lock);
- 
- 		wake_up (&ep->wait);
--		put_ep (ep);
- 
- 		/* break link to dcache */
--		simple_recursive_removal(dentry, NULL);
-+		simple_remove_by_name(dev->sb->s_root, ep->name, NULL);
-+
-+		put_ep (ep);
- 
- 		spin_lock_irq (&dev->lock);
- 	}
-@@ -1592,14 +1587,14 @@ static void destroy_ep_files (struct dev_data *dev)
- }
- 
- 
--static struct dentry *
--gadgetfs_create_file (struct super_block *sb, char const *name,
-+static int gadgetfs_create_file (struct super_block *sb, char const *name,
- 		void *data, const struct file_operations *fops);
- 
- static int activate_ep_files (struct dev_data *dev)
- {
- 	struct usb_ep	*ep;
- 	struct ep_data	*data;
-+	int err;
- 
- 	gadget_for_each_ep (ep, dev->gadget) {
- 
-@@ -1622,9 +1617,9 @@ static int activate_ep_files (struct dev_data *dev)
- 		if (!data->req)
- 			goto enomem1;
- 
--		data->dentry = gadgetfs_create_file (dev->sb, data->name,
-+		err = gadgetfs_create_file (dev->sb, data->name,
- 				data, &ep_io_operations);
--		if (!data->dentry)
-+		if (err)
- 			goto enomem2;
- 		list_add_tail (&data->epfiles, &dev->epfiles);
- 	}
-@@ -1988,8 +1983,7 @@ gadgetfs_make_inode (struct super_block *sb,
- /* creates in fs root directory, so non-renamable and non-linkable.
-  * so inode and dentry are paired, until device reconfig.
+diff --git a/fs/fuse/control.c b/fs/fuse/control.c
+index 5247df896c5d..3dca752127ff 100644
+--- a/fs/fuse/control.c
++++ b/fs/fuse/control.c
+@@ -290,18 +290,13 @@ static void remove_one(struct dentry *dentry)
   */
--static struct dentry *
--gadgetfs_create_file (struct super_block *sb, char const *name,
-+static int gadgetfs_create_file (struct super_block *sb, char const *name,
- 		void *data, const struct file_operations *fops)
+ void fuse_ctl_remove_conn(struct fuse_conn *fc)
  {
- 	struct dentry	*dentry;
-@@ -1997,16 +1991,16 @@ gadgetfs_create_file (struct super_block *sb, char const *name,
+-	struct dentry *dentry;
+ 	char name[32];
  
- 	dentry = d_alloc_name(sb->s_root, name);
- 	if (!dentry)
--		return NULL;
-+		return -ENOMEM;
+ 	if (!fuse_control_sb || fc->no_control)
+ 		return;
  
- 	inode = gadgetfs_make_inode (sb, data, fops,
- 			S_IFREG | (default_perm & S_IRWXUGO));
- 	if (!inode) {
- 		dput(dentry);
--		return NULL;
-+		return -ENOMEM;
- 	}
- 	d_add (dentry, inode);
--	return dentry;
-+	return 0;
+ 	sprintf(name, "%u", fc->dev);
+-	dentry = lookup_noperm_positive_unlocked(&QSTR(name), fuse_control_sb->s_root);
+-	if (!IS_ERR(dentry)) {
+-		simple_recursive_removal(dentry, remove_one);
+-		dput(dentry);	// paired with lookup_noperm_positive_unlocked()
+-	}
++	simple_remove_by_name(fuse_control_sb->s_root, name, remove_one);
  }
  
- static const struct super_operations gadget_fs_operations = {
-@@ -2059,8 +2053,8 @@ gadgetfs_fill_super (struct super_block *sb, struct fs_context *fc)
- 		goto Enomem;
+ static int fuse_ctl_fill_super(struct super_block *sb, struct fs_context *fsc)
+diff --git a/fs/libfs.c b/fs/libfs.c
+index ce8c496a6940..d029aff41f66 100644
+--- a/fs/libfs.c
++++ b/fs/libfs.c
+@@ -655,6 +655,19 @@ void simple_recursive_removal(struct dentry *dentry,
+ }
+ EXPORT_SYMBOL(simple_recursive_removal);
  
- 	dev->sb = sb;
--	dev->dentry = gadgetfs_create_file(sb, CHIP, dev, &ep0_operations);
--	if (!dev->dentry) {
-+	rc = gadgetfs_create_file(sb, CHIP, dev, &ep0_operations);
-+	if (rc) {
- 		put_dev(dev);
- 		goto Enomem;
- 	}
++void simple_remove_by_name(struct dentry *parent, const char *name,
++                           void (*callback)(struct dentry *))
++{
++	struct dentry *dentry;
++
++	dentry = lookup_noperm_positive_unlocked(&QSTR(name), parent);
++	if (!IS_ERR(dentry)) {
++		simple_recursive_removal(dentry, callback);
++		dput(dentry);	// paired with lookup_noperm_positive_unlocked()
++	}
++}
++EXPORT_SYMBOL(simple_remove_by_name);
++
+ /* caller holds parent directory with I_MUTEX_PARENT */
+ void locked_recursive_removal(struct dentry *dentry,
+                               void (*callback)(struct dentry *))
+diff --git a/include/linux/fs.h b/include/linux/fs.h
+index c895146c1444..28bd4e8d3892 100644
+--- a/include/linux/fs.h
++++ b/include/linux/fs.h
+@@ -3631,6 +3631,8 @@ extern int simple_rename(struct mnt_idmap *, struct inode *,
+ 			 unsigned int);
+ extern void simple_recursive_removal(struct dentry *,
+                               void (*callback)(struct dentry *));
++extern void simple_remove_by_name(struct dentry *, const char *,
++                              void (*callback)(struct dentry *));
+ extern void locked_recursive_removal(struct dentry *,
+                               void (*callback)(struct dentry *));
+ extern int noop_fsync(struct file *, loff_t, loff_t, int);
 -- 
 2.47.3
 
