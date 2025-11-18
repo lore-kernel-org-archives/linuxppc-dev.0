@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14275-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14276-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AF46DCCD19A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:19:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4D3B5CED240
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:19:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xsf6TMLz3fRg;
-	Tue, 18 Nov 2025 16:16:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xsg0BJBz3fRm;
+	Tue, 18 Nov 2025 16:16:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763443011;
-	cv=none; b=B8Vsb5hOJGTh5l1lGj3uKTuGnwsqrjirEw7kKsIYGJcnLD1QVehiDMYs0DUoeaq54siiUD1rafMAiRjyth6p4HXZlJY++vLLM4TiX/WpK8TY8elxgPn3HUziUdo1LRoPU8eE2KRhLk+FQGbTsYpFEORMbdu3NQnoLypHBtGRSS/tzkvWLQ1Xc8BA86oPNfhL42Nkp64J11TICSfywTHWmJo0XgSzj6yx+dk3X9lN4H9Gay9IBzjXwt2Wb9dTJ8xnZ4tcPaJDBkjMvGOEUKVClyWHahbZ3YGuZ6KrZS1yoGDbRSPilF4EUPoTu9rWiCkR9yGCFTQ1ouonUZk/mC2npw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763443002;
+	cv=none; b=la6bHAsuAQykgccnflqdGCMLLpW+r/uhel6SOtVSP7wmv8AAe0nvH+n8Xgs8JkEgrN5y7RdswG2PLlhPGYlRQrchR30CxganE/ZBeMtihJ2N5DAScE+Vvb8UYUeSQeBWnCmW3Aqdwtznl04Kftou4kCx2SkN+MriaorePHCbts8c2p7sH6V/rodq/1y6SQqBizbVpf2mCF3Xx/TylEU0lavZrrYzbF0Y/wfzkevABl9Y6x1LdSVvSRa0bE8w3HDK+Jqhy0ciZp+jEwbfLBUs614cFlzD3hZZUD5mqHqAq2RPh1Bbj+b1EbAmV6RYYU8D7ZuS34nJ5KkYRhLHAivQIw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763443011; c=relaxed/relaxed;
-	bh=wcN8NR1+0HBkSxpdczEOcHVMqeHaVs643Azz1G5uvoU=;
+	t=1763443002; c=relaxed/relaxed;
+	bh=AteBZg1Rl8HXmlwF9pQEJDfnqUw3H67agXJaoVo2v7U=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=gn8nEq+hvfoKa3kTyHAE97c+SCcY8w3zN7mt/j8E8L7pGMhfFWg22RtoIejWHWsBuucyDQn0WSFzCnGf5zFO68rC2iVI2ODUW5Ifk724Mh/P+80ZfHSwJRPOuLpxQlafIWSYzyWehHyMVDO9tRAt3z7ra8FHXtfS3wFOgK9zPwhayPtz3h/tjm4jGkcWNTU3b0e1BViOTIn+6Kgqn4WOXNhVrL3T9GUUmbAETiDD4aUJ+2Y7pANmjf4B14vAlAXzaxut3I95UVZWf/Wd5ilpXOVDJ5/72Xxb5jpEFUgF9mmihqcMYzWhwPstlsVbxLNelcTWq2i0TOTwCr8J+lCiXQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=PWlONFNy; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=oE/DYRgNKnrgjDi1huzh/U0IN/+rq8duRe25t7cYQDayUl0naLJ8B495dIK8PWzQDuMOxk3gYqRu1ANm6f7tKmULQdQz99tG9bIkkiZebNOin6uVlPCtKpSJ2SO3n6k+nKwX0flIioGLCoBPbx+LyZDdoNHBSbrghzocJJ3YvyP0OPpVZC/h4q0tzB5QI6wffHEZMSr7MV/t+TxL+I+nm7v5PIiNMcQAbpvAKQNzNRkCqVzQNYnNk58yuWyQmPw+3q+Lbu1qG3KQ7w+VvOCCm8bHDuYE61veTOSCenWbsc2gEA0pKiwvTUw1UPjOPbtjcfqDKJ3Nu642gDzl3Wxaaw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=uebdJF5p; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=PWlONFNy;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=uebdJF5p;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xs16HGtz3bc6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:21 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xs12c6vz3bTR
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:19 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=wcN8NR1+0HBkSxpdczEOcHVMqeHaVs643Azz1G5uvoU=; b=PWlONFNyoKBcmxnExIHuQJvYp8
-	TEMw4UKqXhsSfIVdQw7lDrpMzeDHAJNWkUJxTq2dniWflhvrAve3vDzIR89pzgL+HEKwVlt2nMRaZ
-	Aaf2PCjJ9VZGYnbPrtD8oBYxGGmbj/FvYjG+vacHCV2/DLKn1Kaw9YziQhUbDiXgPp4dbWdj0MUPz
-	SVUlpKuPvWL08gT6Qsnpquhdois8gnPqPbF+zpT6LDG104DvxlN5f8Vrz1oWdbyqK5BNUl7a6R0Q/
-	xDcMD9HwmtejhbrnYEk1Oe/FlRX09ocCwKUQs4o02cFQdyQaWQccDj/m0nMHApj8YEbGyCVK8knGm
-	Oz0vkyhw==;
+	bh=AteBZg1Rl8HXmlwF9pQEJDfnqUw3H67agXJaoVo2v7U=; b=uebdJF5pf07uYuFSwWcvMcjJA4
+	aMBIgBZ07P6Z7Z5i2y6WJB9aj7c4VP5/O9k2aF7DzcSYPG1dwqEOTubJtzYsWoiPZo0kA2/jDUEF2
+	b7r0UsEwbChuPZROhUWdb3uUGI7EdA5kZNpkgsHvboUEniW8t2gp12fPx3iHxPaq0vSuAJbv2p1HI
+	kHCzgWGRfgOsZmsmtrjipM9tulW2sRBO40L3kgNJMHpw6+JqgEQ+1w2YyYwLjGPaQ73xX5QhOeyew
+	yKSk130DpWM8QXtbXxc9lfE7z25d/IUY835TAk/kl1TCuVJN7Mr7fefmvVmRISgxVpvMmFWtqSBgp
+	DZssowdQ==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLE4X-0000000GETL-0M8a;
-	Tue, 18 Nov 2025 05:16:09 +0000
+	id 1vLE4T-0000000GEPl-14AR;
+	Tue, 18 Nov 2025 05:16:05 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -66,9 +66,9 @@ Cc: torvalds@linux-foundation.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org,
 	clm@meta.com
-Subject: [PATCH v4 37/54] functionfs: don't bother with ffs->ref in ffs_data_{opened,closed}()
-Date: Tue, 18 Nov 2025 05:15:46 +0000
-Message-ID: <20251118051604.3868588-38-viro@zeniv.linux.org.uk>
+Subject: [PATCH v4 02/54] tracefs: fix a leak in eventfs_create_events_dir()
+Date: Tue, 18 Nov 2025 05:15:11 +0000
+Message-ID: <20251118051604.3868588-3-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
 References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
@@ -88,51 +88,38 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-A reference is held by the superblock (it's dropped in ffs_kill_sb())
-and filesystem will not get to ->kill_sb() while there are any opened
-files, TYVM...
+If we have LOCKDOWN_TRACEFS, the function bails out - *after*
+having locked the parent directory and without bothering to
+undo that.  Just check it before tracefs_start_creating()...
 
-Reviewed-by: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
+Fixes: e24709454c45 "tracefs/eventfs: Add missing lockdown checks"
+Acked-by: Steven Rostedt (Google) <rostedt@goodmis.org>
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- drivers/usb/gadget/function/f_fs.c | 8 +++-----
- 1 file changed, 3 insertions(+), 5 deletions(-)
+ fs/tracefs/event_inode.c | 3 ++-
+ 1 file changed, 2 insertions(+), 1 deletion(-)
 
-diff --git a/drivers/usb/gadget/function/f_fs.c b/drivers/usb/gadget/function/f_fs.c
-index 43926aca8a40..0bcff49e1f11 100644
---- a/drivers/usb/gadget/function/f_fs.c
-+++ b/drivers/usb/gadget/function/f_fs.c
-@@ -2128,7 +2128,6 @@ static void ffs_data_get(struct ffs_data *ffs)
- 
- static void ffs_data_opened(struct ffs_data *ffs)
+diff --git a/fs/tracefs/event_inode.c b/fs/tracefs/event_inode.c
+index 8705c77a9e75..93c231601c8e 100644
+--- a/fs/tracefs/event_inode.c
++++ b/fs/tracefs/event_inode.c
+@@ -757,7 +757,7 @@ struct eventfs_inode *eventfs_create_events_dir(const char *name, struct dentry
+ 						const struct eventfs_entry *entries,
+ 						int size, void *data)
  {
--	refcount_inc(&ffs->ref);
- 	if (atomic_add_return(1, &ffs->opened) == 1 &&
- 			ffs->state == FFS_DEACTIVATED) {
- 		ffs->state = FFS_CLOSING;
-@@ -2153,11 +2152,11 @@ static void ffs_data_put(struct ffs_data *ffs)
+-	struct dentry *dentry = tracefs_start_creating(name, parent);
++	struct dentry *dentry;
+ 	struct eventfs_root_inode *rei;
+ 	struct eventfs_inode *ei;
+ 	struct tracefs_inode *ti;
+@@ -768,6 +768,7 @@ struct eventfs_inode *eventfs_create_events_dir(const char *name, struct dentry
+ 	if (security_locked_down(LOCKDOWN_TRACEFS))
+ 		return NULL;
  
- static void ffs_data_closed(struct ffs_data *ffs)
- {
--	struct ffs_epfile *epfiles;
--	unsigned long flags;
--
- 	if (atomic_dec_and_test(&ffs->opened)) {
- 		if (ffs->no_disconnect) {
-+			struct ffs_epfile *epfiles;
-+			unsigned long flags;
-+
- 			ffs->state = FFS_DEACTIVATED;
- 			spin_lock_irqsave(&ffs->eps_lock, flags);
- 			epfiles = ffs->epfiles;
-@@ -2176,7 +2175,6 @@ static void ffs_data_closed(struct ffs_data *ffs)
- 			ffs_data_reset(ffs);
- 		}
- 	}
--	ffs_data_put(ffs);
- }
++	dentry = tracefs_start_creating(name, parent);
+ 	if (IS_ERR(dentry))
+ 		return ERR_CAST(dentry);
  
- static struct ffs_data *ffs_data_new(const char *dev_name)
 -- 
 2.47.3
 
