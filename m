@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14282-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14281-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id ABB5FCED240
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:22:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38E35CED243
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:22:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xsg5bFmz3fSk;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xsh59Rfz3fTq;
 	Tue, 18 Nov 2025 16:16:55 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763443004;
-	cv=none; b=XD+9TrVWsn+qccqQWR1vk3OVDAzs0KA7dVIlcZh8OsE2TISwWhgznWCvibICjXoQxRwpyiA5V1GSE7xwseY0UNuEfmBe5H5MsB4p3OuyCJHGgfk0exVl7TmSsSte/zLzfr5EpUf1MAtFj68sfr1T5CcWJ6XFOC94Q71M/OqAYOogrOKfuY2w4l/ik7v6GIul91B/ghlm1BgyPOyibPFSERWhL5Zb52c5+c07YvO274SlQ1uDB61jh2MNJklBQh9Y4uW/mB2IFSUnkITvdiXhm4PwrNzjkaeIpXezZcEvH0VgnRtqe64zyb8WLesY2SYpCQxdCsnAD1UumXia8AcVkQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763443012;
+	cv=none; b=WJ1KIt8Q0DAP546uL5EYnZjJ7yG0KiiOVvEzqX1QIpMxpdyCBlH/1PlSZmz24C0iv83qdT7TAUeP46oDh4RtItrXPQAPi6NMJ8cQfOKZTC6Er+qjkPnLS2XUqwqHbtjuIUJZ4Evw8V2xJtSAI3bigizUakrzEF+mWnbVzoJ+ZLPpm85hf3zQU0/0+UfX/eQ5ejVXbDdNtoBem3G0Giar1AgK8SGaKmXhlkKm03pLbwXJJORW6Wj7YbGsVhGDH956LoqsGorLoA534W3ZvDIJEVyKJbfaMjo+umRRRQpgeVk9fPI31Lf7PviY472GbEOx51N+TT3WsmkxTsE2YW72qQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763443004; c=relaxed/relaxed;
-	bh=8X770T8ZfjCDu3xB4E5AEqp0VoQs0dPMEWp6Hxra23A=;
+	t=1763443012; c=relaxed/relaxed;
+	bh=VD4R3gUn11tbzuOSrLlHcr6CK6toCdQdVG0PoPu8WQM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=oxf9CQFswHYV1pXgHibaEFF2iEAylUMfNshnem/X1kmp0LzW8/NAMGFRiLheTQzwUhnIr/MvVHvptwxrqTH3wFFOjcW86Jc8cN3vJXRQpVO27AVRTU4rYnlM8EYOlYCSU3N78xWRGCAD3Dhpy4dyLOXxQt4uxeFaZVzVDW2BZ7pIYjAA6ribPahfLkl78CtoPXeClHjZnRdG6guH0mlGfgC5EsUwDRfCwjJhDk3qY7swL2D/Wh7U4siIvNvd2z5xYVOVak1Nb7knbDQuc5AQKFkpCJMKkryaPREPev+glLGXzILag5jybfMdr5w2aM2KzXNMGt2+QxF4SKukvwNYRQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=iOMbmWEw; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=JmyzBBkIyTBr+DtD1/DDJGZXmFCEiQJEvMoh8EfVrCQWse3MQmWL++egqI+KUP0bCM7kY+fiMrubRRvZovAb+NjmeveGlWWlvn1hGqhNdtzpVGZ6rJkaX4JFuYUO+9s6au9AaA8mxdHSNK33NzV6AESdZ3G37Gm6Bzogk+dADaMpOq40kSQFA+4OXuxRcByw43KKQ+Lv+sFXFgh68KXnk4xxcMNAkM5Fkihn89ANskxTlKRl+e4Bk8/b02k51QoNxRUUcPcX08jEVPdn8oywsyxQZqDQUAFap/cnudQ0HI7n8YqXwc4ldFaIidhm2BbP7ICXMuDrJjSVaN+XRRlsOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=G7+xIgWY; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=iOMbmWEw;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=G7+xIgWY;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xs13DJkz3bVW
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:20 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xs20qQDz3bcj
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:22 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=8X770T8ZfjCDu3xB4E5AEqp0VoQs0dPMEWp6Hxra23A=; b=iOMbmWEw8MhF43OLV4OGzbGV4l
-	2UzCrFrcBQreA9Boshu7TrRR2/OKw5XV+h4v12MQMfaLEHMkDdSeVQL5T2SrldYFpStxa7KU10n+o
-	DoX/8FTfqXIHhwOF/aqO4ujkpGArqpcLLV+DoPw+x3bqIsAUWP0cjUrFoNd7/5yM5F9PFKL/1guqT
-	pDBRRPt74aPobPXeVxgi8PlJoBfvINts6a2OEMmeklrW56loMVL2nZCfQT5LWL4h9wloH8FHtfQO4
-	HhE6beCAYlEU2JiI4v5PtJ84dsHf/D50xDHHsXMDPzW4o18eWIU/UT00daQf4tthetYfpFuDaujxe
-	nta2w1rA==;
+	bh=VD4R3gUn11tbzuOSrLlHcr6CK6toCdQdVG0PoPu8WQM=; b=G7+xIgWY9mW59c0/eZZxJQc4Mx
+	lTCk0HOYiXNDgnVhmCcy8+wWHf+UNH3w+rypga4y1NhonS1cUjnRHI9BU2yzFyqi2vZkSL0IfF0Xx
+	2TJ/+oa1kZWmBGf6CNo8PwPlxzWkCNNBdJQHkeltKcMq1icgSBYByUTcNE+hxrPm3CPrC1ACgt+oR
+	jK6CrK03Fzw51gm81zn1IcBer8Q2/6ned6SlrrSgddA+RgTB4g8VJyZDat3ix86u7vN7mGGzZfDrT
+	5vHwcVjhgWFH3BoFNR11KpqoRpD+5KTGrqtLE8/9bgIvLe5Vqs1z6rktf4KgeYAA0i7RiManuouSx
+	a00n9GLQ==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLE4W-0000000GESv-2Wwd;
-	Tue, 18 Nov 2025 05:16:08 +0000
+	id 1vLE4T-0000000GEQ5-2b7c;
+	Tue, 18 Nov 2025 05:16:05 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -66,9 +66,9 @@ Cc: torvalds@linux-foundation.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org,
 	clm@meta.com
-Subject: [PATCH v4 33/54] selinuxfs: don't stash the dentry of /policy_capabilities
-Date: Tue, 18 Nov 2025 05:15:42 +0000
-Message-ID: <20251118051604.3868588-34-viro@zeniv.linux.org.uk>
+Subject: [PATCH v4 05/54] introduce a flag for explicitly marking persistently pinned dentries
+Date: Tue, 18 Nov 2025 05:15:14 +0000
+Message-ID: <20251118051604.3868588-6-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
 References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
@@ -88,92 +88,141 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-Don't bother to store the dentry of /policy_capabilities - it belongs
-to invariant part of tree and we only use it to populate that directory,
-so there's no reason to keep it around afterwards.
+Some filesystems use a kinda-sorta controlled dentry refcount leak to pin
+dentries of created objects in dcache (and undo it when removing those).
+Reference is grabbed and not released, but it's not actually _stored_
+anywhere.  That works, but it's hard to follow and verify; among other
+things, we have no way to tell _which_ of the increments is intended
+to be an unpaired one.  Worse, on removal we need to decide whether
+the reference had already been dropped, which can be non-trivial if
+that removal is on umount and we need to figure out if this dentry is
+pinned due to e.g. unlink() not done.  Usually that is handled by using
+kill_litter_super() as ->kill_sb(), but there are open-coded special
+cases of the same (consider e.g. /proc/self).
 
-Same situation as with /avc, /ss, etc.  There are two directories that
-get replaced on policy load - /class and /booleans.  These we need to
-stash (and update the pointers on policy reload); /policy_capabilities
-is not in the same boat.
+Things get simpler if we introduce a new dentry flag (DCACHE_PERSISTENT)
+marking those "leaked" dentries.  Having it set claims responsibility
+for +1 in refcount.
 
-Acked-by: Paul Moore <paul@paul-moore.com>
-Reviewed-by: Stephen Smalley <stephen.smalley.work@gmail.com>
-Tested-by: Stephen Smalley <stephen.smalley.work@gmail.com>
+The end result this series is aiming for:
+
+* get these unbalanced dget() and dput() replaced with new primitives that
+  would, in addition to adjusting refcount, set and clear persistency flag.
+* instead of having kill_litter_super() mess with removing the remaining
+  "leaked" references (e.g. for all tmpfs files that hadn't been removed
+  prior to umount), have the regular shrink_dcache_for_umount() strip
+  DCACHE_PERSISTENT of all dentries, dropping the corresponding
+  reference if it had been set.  After that kill_litter_super() becomes
+  an equivalent of kill_anon_super().
+
+Doing that in a single step is not feasible - it would affect too many places
+in too many filesystems.  It has to be split into a series.
+
+Here we
+	* introduce the new flag
+	* teach shrink_dcache_for_umount() to handle it (i.e. remove
+and drop refcount on anything that survives to umount with that flag
+still set)
+	* teach kill_litter_super() that anything with that flag does
+*not* need to be unpinned.
+
+Next commits will add primitives for maintaing that flag and convert the
+common helpers to those.  After that - a long series of per-filesystem
+patches converting to those primitives.
+
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- security/selinux/selinuxfs.c | 21 +++++++++------------
- 1 file changed, 9 insertions(+), 12 deletions(-)
+ fs/dcache.c            | 27 ++++++++++++++++++++++-----
+ include/linux/dcache.h |  1 +
+ 2 files changed, 23 insertions(+), 5 deletions(-)
 
-diff --git a/security/selinux/selinuxfs.c b/security/selinux/selinuxfs.c
-index 232e087bce3e..b39e919c27b1 100644
---- a/security/selinux/selinuxfs.c
-+++ b/security/selinux/selinuxfs.c
-@@ -75,7 +75,6 @@ struct selinux_fs_info {
- 	struct dentry *class_dir;
- 	unsigned long last_class_ino;
- 	bool policy_opened;
--	struct dentry *policycap_dir;
- 	unsigned long last_ino;
- 	struct super_block *sb;
- };
-@@ -117,7 +116,6 @@ static void selinux_fs_info_free(struct super_block *sb)
- 
- #define BOOL_DIR_NAME "booleans"
- #define CLASS_DIR_NAME "class"
--#define POLICYCAP_DIR_NAME "policy_capabilities"
- 
- #define TMPBUFLEN	12
- static ssize_t sel_read_enforce(struct file *filp, char __user *buf,
-@@ -1871,23 +1869,24 @@ static int sel_make_classes(struct selinux_policy *newpolicy,
- 	return rc;
+diff --git a/fs/dcache.c b/fs/dcache.c
+index 035cccbc9276..f2c9f4fef2a2 100644
+--- a/fs/dcache.c
++++ b/fs/dcache.c
+@@ -1511,6 +1511,15 @@ static enum d_walk_ret select_collect(void *_data, struct dentry *dentry)
+ 	return ret;
  }
  
--static int sel_make_policycap(struct selinux_fs_info *fsi)
-+static int sel_make_policycap(struct dentry *dir)
++static enum d_walk_ret select_collect_umount(void *_data, struct dentry *dentry)
++{
++	if (dentry->d_flags & DCACHE_PERSISTENT) {
++		dentry->d_flags &= ~DCACHE_PERSISTENT;
++		dentry->d_lockref.count--;
++	}
++	return select_collect(_data, dentry);
++}
++
+ static enum d_walk_ret select_collect2(void *_data, struct dentry *dentry)
  {
-+	struct super_block *sb = dir->d_sb;
- 	unsigned int iter;
- 	struct dentry *dentry = NULL;
- 	struct inode *inode = NULL;
+ 	struct select_data *data = _data;
+@@ -1539,18 +1548,20 @@ static enum d_walk_ret select_collect2(void *_data, struct dentry *dentry)
+ }
  
- 	for (iter = 0; iter <= POLICYDB_CAP_MAX; iter++) {
- 		if (iter < ARRAY_SIZE(selinux_policycap_names))
--			dentry = d_alloc_name(fsi->policycap_dir,
-+			dentry = d_alloc_name(dir,
- 					      selinux_policycap_names[iter]);
- 		else
--			dentry = d_alloc_name(fsi->policycap_dir, "unknown");
-+			dentry = d_alloc_name(dir, "unknown");
+ /**
+- * shrink_dcache_parent - prune dcache
++ * shrink_dcache_tree - prune dcache
+  * @parent: parent of entries to prune
++ * @for_umount: true if we want to unpin the persistent ones
+  *
+  * Prune the dcache to remove unused children of the parent dentry.
+  */
+-void shrink_dcache_parent(struct dentry *parent)
++static void shrink_dcache_tree(struct dentry *parent, bool for_umount)
+ {
+ 	for (;;) {
+ 		struct select_data data = {.start = parent};
  
- 		if (dentry == NULL)
- 			return -ENOMEM;
+ 		INIT_LIST_HEAD(&data.dispose);
+-		d_walk(parent, &data, select_collect);
++		d_walk(parent, &data,
++			for_umount ? select_collect_umount : select_collect);
  
--		inode = sel_make_inode(fsi->sb, S_IFREG | 0444);
-+		inode = sel_make_inode(sb, S_IFREG | 0444);
- 		if (inode == NULL) {
- 			dput(dentry);
- 			return -ENOMEM;
-@@ -2071,15 +2070,13 @@ static int sel_fill_super(struct super_block *sb, struct fs_context *fc)
- 		goto err;
+ 		if (!list_empty(&data.dispose)) {
+ 			shrink_dentry_list(&data.dispose);
+@@ -1575,6 +1586,11 @@ void shrink_dcache_parent(struct dentry *parent)
+ 			shrink_dentry_list(&data.dispose);
  	}
+ }
++
++void shrink_dcache_parent(struct dentry *parent)
++{
++	shrink_dcache_tree(parent, false);
++}
+ EXPORT_SYMBOL(shrink_dcache_parent);
  
--	fsi->policycap_dir = sel_make_dir(sb->s_root, POLICYCAP_DIR_NAME,
--					  &fsi->last_ino);
--	if (IS_ERR(fsi->policycap_dir)) {
--		ret = PTR_ERR(fsi->policycap_dir);
--		fsi->policycap_dir = NULL;
-+	dentry = sel_make_dir(sb->s_root, "policy_capabilities", &fsi->last_ino);
-+	if (IS_ERR(dentry)) {
-+		ret = PTR_ERR(dentry);
- 		goto err;
- 	}
+ static enum d_walk_ret umount_check(void *_data, struct dentry *dentry)
+@@ -1601,7 +1617,7 @@ static enum d_walk_ret umount_check(void *_data, struct dentry *dentry)
  
--	ret = sel_make_policycap(fsi);
-+	ret = sel_make_policycap(dentry);
- 	if (ret) {
- 		pr_err("SELinux: failed to load policy capabilities\n");
- 		goto err;
+ static void do_one_tree(struct dentry *dentry)
+ {
+-	shrink_dcache_parent(dentry);
++	shrink_dcache_tree(dentry, true);
+ 	d_walk(dentry, dentry, umount_check);
+ 	d_drop(dentry);
+ 	dput(dentry);
+@@ -3111,7 +3127,8 @@ static enum d_walk_ret d_genocide_kill(void *data, struct dentry *dentry)
+ {
+ 	struct dentry *root = data;
+ 	if (dentry != root) {
+-		if (d_unhashed(dentry) || !dentry->d_inode)
++		if (d_unhashed(dentry) || !dentry->d_inode ||
++		    dentry->d_flags & DCACHE_PERSISTENT)
+ 			return D_WALK_SKIP;
+ 
+ 		if (!(dentry->d_flags & DCACHE_GENOCIDE)) {
+diff --git a/include/linux/dcache.h b/include/linux/dcache.h
+index c83e02b94389..94b58655322a 100644
+--- a/include/linux/dcache.h
++++ b/include/linux/dcache.h
+@@ -225,6 +225,7 @@ enum dentry_flags {
+ 	DCACHE_PAR_LOOKUP		= BIT(24),	/* being looked up (with parent locked shared) */
+ 	DCACHE_DENTRY_CURSOR		= BIT(25),
+ 	DCACHE_NORCU			= BIT(26),	/* No RCU delay for freeing */
++	DCACHE_PERSISTENT		= BIT(27)
+ };
+ 
+ #define DCACHE_MANAGED_DENTRY \
 -- 
 2.47.3
 
