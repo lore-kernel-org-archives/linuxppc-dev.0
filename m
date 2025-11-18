@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14240-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14241-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 27820CCD19A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:17:25 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1E47CED240
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:17:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xs666sNz3c18;
-	Tue, 18 Nov 2025 16:16:26 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9Xs81QD6z3c4f;
+	Tue, 18 Nov 2025 16:16:28 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763442986;
-	cv=none; b=aeGP9a+CHOKHys1gL5aj8qPwbBFyMP9Ak5bf6XcBUBRked6ZFRm1IcMjiaMxMYxGZxYi7bIlRTKzf2k51Y5RKm0cBsXDWhCu67oxb1HINrgMK6yR5dkNp79sTOvUeofSSkzlg0MEdw26HGnHA7eGdYh5uCPRzBWHcv2bZbEKEK8BWlfVQ+k047ZZXFr0H7w37TmffAV6LLIJQnGPCA34AXviHyzkFL2DLwyc2wVeP8DFmMl6EtOQdgfzNvz+LvfJ6QKEQfwgmnvizoX6MQWtuk4FPAQ/TrKJG47Egwe3Fj46mkrNFHHlobmof0LeQTjTQ/wWWyUhI8yyQzhJDNaMlQ==
+	cv=none; b=nYYhdmdk08wdFxQ9daxXEtWbY4MAXjhelv6J8M5OzDT1SHrzkuAD0Sze5CuOLV9HjNBaQbyp+N9TEZx77sKKKMb10XSDyXPKZ/0apBFRAkWJqXQrx4LYjF5WRS2JQKQmyRfCpxXnFLK+oVVkN0TQNsI1VUWqUBpgOe/VbesJA89ZCcdbR1E0zUavZvyhO40jOqLo92loggGv8ExPYwcN+Ia+pQ34XEIx5o4LCAyFR0WN/xeMWTuLkPHI+V2TJ6SlfAS/gD49Mjp1UOltAsGCP+OvHwnOEhSGhfOMzji0oMgCOdJBOeXvOpGyg6GeBzG5lpZ2n15TLUirY9esbsAprQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1763442986; c=relaxed/relaxed;
-	bh=PCYFuUAfEyL0H++y1+uBZz/Bn18lJwb1nrzO1KgbXu4=;
+	bh=cNupE5WP11QDcgvbWMAmFaE1TAZeWcI3mGTR58jAFHY=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=kKoztmP3gr9OrTB6vDbj7wOL86bFTWdTY8mQ/4swb1ySrzeXs9AcyqefDOtr+HDMV/qTZnFJ7cV6fgvGEqy6OOsG1KHz9QU8KkjbzrRPYWxnocAH4e7U5t1Qamox02x9YiUcDn0mXSruRevpZhZA1OCdHCIC9R6icon4RErmhP9vx2lSAA7ny0uqiJdMUOz8Z+K5M9A9CqnmYPE25fUoDjgSbhm/OaYJ/rCu73ZA/K7d0ER71Dz4Qgp85JyZffv4p61FZXe/aZuI/SmzgD0jkZhmAgl1BajOU+mCIecJlGIYwz7J55XkmGuZXzkA1JSuWRQwRY4SYvRlLOgptiVLNA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=DRouGeZq; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=lOzAhwd+OXObm/qKNDjt0ns3AL+cs4MJSBc5eObYosL8hPbs/4iSutL/+jaZnLyqIGoVwVzZHpmqJYhsjWzwUfa25+kNaNweo+yQBTrvHAJ0Gy50ap3tjxj534KK5JL+MKOK9NvpYY9ddUXv+eSrFQkAXPwbd8/xCKuJVx3Yv5sNhy2v8nVuCEctYbbfO1QJV2psU35OfdhMQiiQDNnrurcr4oDzLksISBMPLNgu1euOyKZmmEJ9vt7eOUf5uiHVljaWEDoeuEJhNIiAiIeUcjfIVTMKt0VwB6yWWz9SytIdos4oWV2wpltJFOqL++nQmjDyx+oXyWoqlZ/Rxkh/wQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=RvpCBH5V; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=DRouGeZq;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=RvpCBH5V;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xry2r4Vz30VQ
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xry2KRTz30V0
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:17 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=PCYFuUAfEyL0H++y1+uBZz/Bn18lJwb1nrzO1KgbXu4=; b=DRouGeZqIAmgV0s9JobcdlI7wk
-	IIomwQcf2p8fEhF8o31xjQnwmbI6os9qPBvWDAuq5AjIlASElFxqvEXeHSw+sIkWo/iouyNaKQAYq
-	+1c+sEXO8xXhqzXTqOajw/SBx9/XPOqDw2fjgeCkzATAMn7dee40QMPQ/KYmzrFPOTaETpiSnu8ob
-	W92bxUpcOwsMSh7b5IEzVqz4HG3XsDhZYvJcVvhGCY+MYt9tW8uSub4mqfvoxWRN4x6PgW3Kn1c6e
-	r8No7lL1TP6iRyhhDcu0pY2ZK1FZTt3qfdMMfZT6+1zlNLhHFR74AnmnHRtYeHOvVjJFfgLVWLELu
-	39wfoa4g==;
+	bh=cNupE5WP11QDcgvbWMAmFaE1TAZeWcI3mGTR58jAFHY=; b=RvpCBH5V8xAtvybZWVGuR1nmVo
+	MjRxIRyzua4TPQCJjSZVgGMaEW6AwdPEurVjVteGpPWVh1hNGGyLPlT2P+Lll3CBKEX8DagW8UDsl
+	k2gcSs3nFAUQ9DuhYjRrsZ8QbqS/P8H65JmcaQH2lmbFSTlt5ZSGl1vBv0mWxeBA0Wga4qge4cdUZ
+	w2Bi2HsyUPG/J5vTvjAnNDfTiD/8AmWyW50Z64g4bTj2qPKA0KZ7d3DDdQnAC+RTIcU0dqLzPefS4
+	x/KshpPVS1b8B0elsqHv0AQf/7gj6sW9jsquD3KpvvOLIyWYAvJ3hp2ScabcEO2jn5Pa7nuL2MCp7
+	4QZFNFbw==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLE4V-0000000GERo-1unG;
-	Tue, 18 Nov 2025 05:16:07 +0000
+	id 1vLE4Z-0000000GEZo-00JA;
+	Tue, 18 Nov 2025 05:16:11 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -66,9 +66,9 @@ Cc: torvalds@linux-foundation.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org,
 	clm@meta.com
-Subject: [PATCH v4 22/54] convert efivarfs
-Date: Tue, 18 Nov 2025 05:15:31 +0000
-Message-ID: <20251118051604.3868588-23-viro@zeniv.linux.org.uk>
+Subject: [PATCH v4 46/54] hypfs: swich hypfs_create_u64() to returning int
+Date: Tue, 18 Nov 2025 05:15:55 +0000
+Message-ID: <20251118051604.3868588-47-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
 References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
@@ -88,66 +88,162 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-Initially filesystem is populated with d_alloc_name() + d_add().
-That becomes d_alloc_name() + d_make_persistent() + dput().
-Dynamic creation is switched to d_make_persistent();
-removal - to simple_unlink() (no point open-coding it in
-efivarfs_unlink(), better call it there)
+same story as for hypfs_create_str()
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- fs/efivarfs/inode.c | 7 ++-----
- fs/efivarfs/super.c | 5 +++--
- 2 files changed, 5 insertions(+), 7 deletions(-)
+ arch/s390/hypfs/hypfs.h         |  3 +--
+ arch/s390/hypfs/hypfs_diag_fs.c | 20 ++++++++++----------
+ arch/s390/hypfs/hypfs_vm_fs.c   | 15 ++++++---------
+ arch/s390/hypfs/inode.c         |  9 ++++-----
+ 4 files changed, 21 insertions(+), 26 deletions(-)
 
-diff --git a/fs/efivarfs/inode.c b/fs/efivarfs/inode.c
-index 2891614abf8d..95dcad83da11 100644
---- a/fs/efivarfs/inode.c
-+++ b/fs/efivarfs/inode.c
-@@ -113,8 +113,7 @@ static int efivarfs_create(struct mnt_idmap *idmap, struct inode *dir,
+diff --git a/arch/s390/hypfs/hypfs.h b/arch/s390/hypfs/hypfs.h
+index 0d109d956015..2bb7104124ca 100644
+--- a/arch/s390/hypfs/hypfs.h
++++ b/arch/s390/hypfs/hypfs.h
+@@ -22,8 +22,7 @@
  
- 	inode->i_private = var;
+ extern struct dentry *hypfs_mkdir(struct dentry *parent, const char *name);
  
--	d_instantiate(dentry, inode);
--	dget(dentry);
-+	d_make_persistent(dentry, inode);
+-extern struct dentry *hypfs_create_u64(struct dentry *dir, const char *name,
+-				       __u64 value);
++extern int hypfs_create_u64(struct dentry *dir, const char *name, __u64 value);
  
- 	return 0;
+ extern int hypfs_create_str(struct dentry *dir, const char *name, char *string);
+ 
+diff --git a/arch/s390/hypfs/hypfs_diag_fs.c b/arch/s390/hypfs/hypfs_diag_fs.c
+index 2178e6060a5d..83c9426df08e 100644
+--- a/arch/s390/hypfs/hypfs_diag_fs.c
++++ b/arch/s390/hypfs/hypfs_diag_fs.c
+@@ -204,7 +204,7 @@ static int hypfs_create_cpu_files(struct dentry *cpus_dir, void *cpu_info)
+ {
+ 	struct dentry *cpu_dir;
+ 	char buffer[TMP_SIZE];
+-	void *rc;
++	int rc;
+ 
+ 	snprintf(buffer, TMP_SIZE, "%d", cpu_info__cpu_addr(diag204_get_info_type(),
+ 							    cpu_info));
+@@ -214,18 +214,18 @@ static int hypfs_create_cpu_files(struct dentry *cpus_dir, void *cpu_info)
+ 	rc = hypfs_create_u64(cpu_dir, "mgmtime",
+ 			      cpu_info__acc_time(diag204_get_info_type(), cpu_info) -
+ 			      cpu_info__lp_time(diag204_get_info_type(), cpu_info));
+-	if (IS_ERR(rc))
+-		return PTR_ERR(rc);
++	if (rc)
++		return rc;
+ 	rc = hypfs_create_u64(cpu_dir, "cputime",
+ 			      cpu_info__lp_time(diag204_get_info_type(), cpu_info));
+-	if (IS_ERR(rc))
+-		return PTR_ERR(rc);
++	if (rc)
++		return rc;
+ 	if (diag204_get_info_type() == DIAG204_INFO_EXT) {
+ 		rc = hypfs_create_u64(cpu_dir, "onlinetime",
+ 				      cpu_info__online_time(diag204_get_info_type(),
+ 							    cpu_info));
+-		if (IS_ERR(rc))
+-			return PTR_ERR(rc);
++		if (rc)
++			return rc;
+ 	}
+ 	diag224_idx2name(cpu_info__ctidx(diag204_get_info_type(), cpu_info), buffer);
+ 	return hypfs_create_str(cpu_dir, "type", buffer);
+@@ -263,7 +263,7 @@ static int hypfs_create_phys_cpu_files(struct dentry *cpus_dir, void *cpu_info)
+ {
+ 	struct dentry *cpu_dir;
+ 	char buffer[TMP_SIZE];
+-	void *rc;
++	int rc;
+ 
+ 	snprintf(buffer, TMP_SIZE, "%i", phys_cpu__cpu_addr(diag204_get_info_type(),
+ 							    cpu_info));
+@@ -272,8 +272,8 @@ static int hypfs_create_phys_cpu_files(struct dentry *cpus_dir, void *cpu_info)
+ 		return PTR_ERR(cpu_dir);
+ 	rc = hypfs_create_u64(cpu_dir, "mgmtime",
+ 			      phys_cpu__mgm_time(diag204_get_info_type(), cpu_info));
+-	if (IS_ERR(rc))
+-		return PTR_ERR(rc);
++	if (rc)
++		return rc;
+ 	diag224_idx2name(phys_cpu__ctidx(diag204_get_info_type(), cpu_info), buffer);
+ 	return hypfs_create_str(cpu_dir, "type", buffer);
  }
-@@ -126,9 +125,7 @@ static int efivarfs_unlink(struct inode *dir, struct dentry *dentry)
- 	if (efivar_entry_delete(var))
- 		return -EINVAL;
+diff --git a/arch/s390/hypfs/hypfs_vm_fs.c b/arch/s390/hypfs/hypfs_vm_fs.c
+index e8a32d66062b..a149a9f92e40 100644
+--- a/arch/s390/hypfs/hypfs_vm_fs.c
++++ b/arch/s390/hypfs/hypfs_vm_fs.c
+@@ -19,10 +19,9 @@
  
--	drop_nlink(d_inode(dentry));
--	dput(dentry);
--	return 0;
-+	return simple_unlink(dir, dentry);
- };
+ #define ATTRIBUTE(dir, name, member) \
+ do { \
+-	void *rc; \
+-	rc = hypfs_create_u64(dir, name, member); \
+-	if (IS_ERR(rc)) \
+-		return PTR_ERR(rc); \
++	int rc = hypfs_create_u64(dir, name, member); \
++	if (rc) \
++		return rc; \
+ } while (0)
  
- const struct inode_operations efivarfs_dir_inode_operations = {
-diff --git a/fs/efivarfs/super.c b/fs/efivarfs/super.c
-index 1f4d8ce56667..298ab3c929eb 100644
---- a/fs/efivarfs/super.c
-+++ b/fs/efivarfs/super.c
-@@ -278,7 +278,8 @@ static int efivarfs_create_dentry(struct super_block *sb, efi_char16_t *name16,
- 	inode->i_private = entry;
- 	i_size_write(inode, size + sizeof(__u32)); /* attributes + data */
- 	inode_unlock(inode);
--	d_add(dentry, inode);
-+	d_make_persistent(dentry, inode);
-+	dput(dentry);
+ static int hypfs_vm_create_guest(struct dentry *systems_dir,
+@@ -85,7 +84,7 @@ static int hypfs_vm_create_guest(struct dentry *systems_dir,
  
- 	return 0;
+ int hypfs_vm_create_files(struct dentry *root)
+ {
+-	struct dentry *dir, *file;
++	struct dentry *dir;
+ 	struct diag2fc_data *data;
+ 	unsigned int count = 0;
+ 	int rc, i;
+@@ -110,11 +109,9 @@ int hypfs_vm_create_files(struct dentry *root)
+ 		rc = PTR_ERR(dir);
+ 		goto failed;
+ 	}
+-	file = hypfs_create_u64(dir, "count", data->lcpus);
+-	if (IS_ERR(file)) {
+-		rc = PTR_ERR(file);
++	rc = hypfs_create_u64(dir, "count", data->lcpus);
++	if (rc)
+ 		goto failed;
+-	}
  
-@@ -522,7 +523,7 @@ static void efivarfs_kill_sb(struct super_block *sb)
- 	struct efivarfs_fs_info *sfi = sb->s_fs_info;
- 
- 	blocking_notifier_chain_unregister(&efivar_ops_nh, &sfi->nb);
--	kill_litter_super(sb);
-+	kill_anon_super(sb);
- 
- 	kfree(sfi);
+ 	/* guests */
+ 	dir = hypfs_mkdir(root, "systems");
+diff --git a/arch/s390/hypfs/inode.c b/arch/s390/hypfs/inode.c
+index c5e2d8932b88..6a80ab2692be 100644
+--- a/arch/s390/hypfs/inode.c
++++ b/arch/s390/hypfs/inode.c
+@@ -377,8 +377,7 @@ static struct dentry *hypfs_create_update_file(struct dentry *dir)
+ 	return dentry;
  }
+ 
+-struct dentry *hypfs_create_u64(struct dentry *dir,
+-				const char *name, __u64 value)
++int hypfs_create_u64(struct dentry *dir, const char *name, __u64 value)
+ {
+ 	char *buffer;
+ 	char tmp[TMP_SIZE];
+@@ -387,15 +386,15 @@ struct dentry *hypfs_create_u64(struct dentry *dir,
+ 	snprintf(tmp, TMP_SIZE, "%llu\n", (unsigned long long int)value);
+ 	buffer = kstrdup(tmp, GFP_KERNEL);
+ 	if (!buffer)
+-		return ERR_PTR(-ENOMEM);
++		return -ENOMEM;
+ 	dentry =
+ 	    hypfs_create_file(dir, name, buffer, S_IFREG | REG_FILE_MODE);
+ 	if (IS_ERR(dentry)) {
+ 		kfree(buffer);
+-		return ERR_PTR(-ENOMEM);
++		return -ENOMEM;
+ 	}
+ 	hypfs_add_dentry(dentry);
+-	return dentry;
++	return 0;
+ }
+ 
+ int hypfs_create_str(struct dentry *dir, const char *name, char *string)
 -- 
 2.47.3
 
