@@ -1,47 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14255-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14256-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0D98FCCD19A
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:19:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BD251CED240
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 18 Nov 2025 05:19:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4d9XsM60yLz3fDt;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4d9XsM60Rgz3fDq;
 	Tue, 18 Nov 2025 16:16:39 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a03:a000:7:0:5054:ff:fe1c:15ff"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763442997;
-	cv=none; b=Oarg1Z8hOivBM+Ap95vieA7VKZx2rmwJ7gt3vOG5TN9mh2p+hiita2PJhZC31aSpuRYEPHNRtyc2r08Zgx1b5WT290TqQ+6y6Zu+8pwgk34Vz8Aqol/vI9cBSCIGYc0VqGTjtShq2M9jQv1ZbUv8ZCG4WR6TsG7+z3+Muy06kBeFa0bWwnOu+IPfvb/k/Qahyno+0d+4Y15lwbxS/Sn2KQAtrI4Htnr47ZM2TYciqlaSdHSDq2ncS7P1pwp6TfXbrCllvKqarzRtnXBOZtqdozlWmrK4QfUC0ltsIZyABh48nKkwOZvKUhHbuGaoyC+XGiiMHIWNw/8Autap6Ijruw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763442993;
+	cv=none; b=FkmqXryMCtVs0qxCyWNAqrZPNnpv7rT23p038WhRHThf2KTlflylJDg73oCt19HUcLO+UAkmjahbpoJPa8Z7bSO+up3fZjmak7ZX+J9QjfLSNaonxQm7Th88asfn8WHYAebVpyN2/Qnr4aIsze548OmeOTQhSLI14MgtXIlR+M9LEe8usQ/3l+DuFNB/KNLRlH49VR8DU3cY2stjOJXRkuEJnfjvkrNQ9WJV/gCEeg1NOWNCzNJZKGUIPA13exZ8cHCVL9W334OqAG8L0d9TSw8vNyjoijrBDmnnpSLxfsHZ7pfAAv64/FICEIqgN+CKQWum2wnZyBhGqZxnisFHxg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763442997; c=relaxed/relaxed;
-	bh=o92Omq0psZ3ukvz3ytEXVDnarOtbezsCR+bO9JM0kAQ=;
+	t=1763442993; c=relaxed/relaxed;
+	bh=sU0Rwyb1f70hxWqGLaDrX9gfHmhzhxjXEuqfS3xyBnk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=Ts0jixn9fDF/qSa5MxKwUtwesWf2adKmsJi1/b7rS40BOVdenND53RDXG9KARHNDlRz+GClE8xMASMzlL3x65POw9I8a5TxWHCy/CR2NjuShIwe+E5cVARifV7yH9+nrj+q0VL5W6V3bk0ISrE0I1B66ewaHXfQSc3mobnZKuW/CXKYTSRl7xYeo5XKEbt8WsBqeiY03x/x0bpJK9CUqJ/croaCos1lDzJG8E1FPB9b5rIttWEpVFSJH7SB1m4xA8qG1zlFAAMufjNGEYC5WJKfhpYRnVyidXejQS8jlRPCEj5mH5lEVhTZ4iEjjLNZWCu+7x0zoPRF4zWvqH4mNcg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=gJiPdzY0; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
+	 MIME-Version; b=RG8EG5iiIrqHDQ7kBK3qCv3KyAWPm0RqDi5XC6xM82z3O+ix+kzfBCmFQqoQzKg9kV2fodzJd5JjaHwd/0CSSqKTPKlXF5jKod4DtLZQNF60omRvI8HT9JqzTY0d4W3IOUx7+6QK1OjohL8g1dcQ12UphaK2esxgNZqCHf78D6S4SDmfXcB2R399XZCrFHmWS02vqaQT362RBy4xq0YhCPenDaUOpbtMBNHq+nr9pTRWKPP5MDf/ZnaLx4D6v1If3ahw1XMU7v2Zm8K5dqSxZa1MQZCR5KSOUAO0Wi1f0YsXn8qEpRNt/CMp51wc2vE0HahLHhDxiTuFJ2Lx9PuGKw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk; dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=tvP+Rm/V; dkim-atps=neutral; spf=none (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org) smtp.mailfrom=ftp.linux.org.uk
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=zeniv.linux.org.uk
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=gJiPdzY0;
+	dkim=pass (2048-bit key; unprotected) header.d=linux.org.uk header.i=@linux.org.uk header.a=rsa-sha256 header.s=zeniv-20220401 header.b=tvP+Rm/V;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=ftp.linux.org.uk (client-ip=2a03:a000:7:0:5054:ff:fe1c:15ff; helo=zeniv.linux.org.uk; envelope-from=viro@ftp.linux.org.uk; receiver=lists.ozlabs.org)
 Received: from zeniv.linux.org.uk (zeniv.linux.org.uk [IPv6:2a03:a000:7:0:5054:ff:fe1c:15ff])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xrz5V5bz30Vy
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4d9Xrz3XlPz30Vv
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 18 Nov 2025 16:16:18 +1100 (AEDT)
 DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
 	d=linux.org.uk; s=zeniv-20220401; h=Sender:Content-Transfer-Encoding:
 	MIME-Version:References:In-Reply-To:Message-ID:Date:Subject:Cc:To:From:
 	Reply-To:Content-Type:Content-ID:Content-Description;
-	bh=o92Omq0psZ3ukvz3ytEXVDnarOtbezsCR+bO9JM0kAQ=; b=gJiPdzY0TRltDme/VDbpmSj937
-	voGiIUGCZf3gef7x1o6bLNE3mWjRZt2mYVc7BPhPcTWRNNQFndEeftSQ/3vYeJLVJT1roZB2tWHmQ
-	URVsY+tmfEYDP9HhZM5fLamP1J8SAp+WeegXyDlN0Z4bVN9uWRFUKgH9GU20hX5GPpD6jfRpmRQC2
-	9QQn+Wp/FsAQcqK8JpkX9h+sEJyr9YtkruhstFYaXO7s79ohZh+nRXaFvYWutUTMwwU6ZHwahXc28
-	I9t7nAb6ObHn41+9ek5a/PWQ21NefE2VCFPt4dTgxTtjkPZp9cgxIOUGFu5a+s2M0zqiGp41lP0qU
-	j3bGGQgQ==;
+	bh=sU0Rwyb1f70hxWqGLaDrX9gfHmhzhxjXEuqfS3xyBnk=; b=tvP+Rm/VUpFEtjTr5flW9AZmbU
+	EzRtigGLTzsKq+yofPuIueTOmYfV6zi1I2TwuPtT4PHJPyuXP1Nc9lVhj59h2gYy4cFJq4LhZprop
+	8ROzJjA86BGtttEVo7zzpWV8snzvasJlqumptzAGTNUTgNkToBAF6Mo6SjcDieMNQ7YYjtXCzisGi
+	xYIVaaWwZiJNaqIArUEL4pOtTYOpcwX81Jc4rYYhr0q/ERBWw7VHcz3FQjVCL3Z1fPKPvorH8ODG4
+	+Lr1JnaIN5qc2SyQI2UEBN9yNgcAtpy83rsAK2ffeQM7yd8Lt/4NmPt35xVbfRI9BzvSluCk2t3ZX
+	lNMovGhw==;
 Received: from viro by zeniv.linux.org.uk with local (Exim 4.98.2 #2 (Red Hat Linux))
-	id 1vLE4V-0000000GERs-2LuP;
-	Tue, 18 Nov 2025 05:16:07 +0000
+	id 1vLE4Z-0000000GEZu-0Uh8;
+	Tue, 18 Nov 2025 05:16:11 +0000
 From: Al Viro <viro@zeniv.linux.org.uk>
 To: linux-fsdevel@vger.kernel.org
 Cc: torvalds@linux-foundation.org,
@@ -66,9 +66,9 @@ Cc: torvalds@linux-foundation.org,
 	borntraeger@linux.ibm.com,
 	bpf@vger.kernel.org,
 	clm@meta.com
-Subject: [PATCH v4 23/54] convert spufs
-Date: Tue, 18 Nov 2025 05:15:32 +0000
-Message-ID: <20251118051604.3868588-24-viro@zeniv.linux.org.uk>
+Subject: [PATCH v4 47/54] convert hypfs
+Date: Tue, 18 Nov 2025 05:15:56 +0000
+Message-ID: <20251118051604.3868588-48-viro@zeniv.linux.org.uk>
 X-Mailer: git-send-email 2.49.0
 In-Reply-To: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
 References: <20251118051604.3868588-1-viro@zeniv.linux.org.uk>
@@ -88,78 +88,64 @@ MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 Sender: Al Viro <viro@ftp.linux.org.uk>
 
-have spufs_new_file() use d_make_persistent() instead of d_add() and
-do an uncondition dput() in the caller; the rest is completely
-straightforward.
-
-[a braino in spufs_mkgang() fixed]
+just have hypfs_create_file() do the usual simple_start_creating()/
+d_make_persistent()/simple_done_creating() and that's it
 
 Signed-off-by: Al Viro <viro@zeniv.linux.org.uk>
 ---
- arch/powerpc/platforms/cell/spufs/inode.c | 17 +++++++----------
- 1 file changed, 7 insertions(+), 10 deletions(-)
+ arch/s390/hypfs/inode.c | 23 +++++++++--------------
+ 1 file changed, 9 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/platforms/cell/spufs/inode.c b/arch/powerpc/platforms/cell/spufs/inode.c
-index 7ec60290abe6..fc8ccf4dc159 100644
---- a/arch/powerpc/platforms/cell/spufs/inode.c
-+++ b/arch/powerpc/platforms/cell/spufs/inode.c
-@@ -127,7 +127,7 @@ spufs_new_file(struct super_block *sb, struct dentry *dentry,
- 	inode->i_fop = fops;
- 	inode->i_size = size;
- 	inode->i_private = SPUFS_I(inode)->i_ctx = get_spu_context(ctx);
--	d_add(dentry, inode);
-+	d_make_persistent(dentry, inode);
- out:
- 	return ret;
+diff --git a/arch/s390/hypfs/inode.c b/arch/s390/hypfs/inode.c
+index 6a80ab2692be..98952543d593 100644
+--- a/arch/s390/hypfs/inode.c
++++ b/arch/s390/hypfs/inode.c
+@@ -311,7 +311,7 @@ static void hypfs_kill_super(struct super_block *sb)
+ 	struct hypfs_sb_info *sb_info = sb->s_fs_info;
+ 
+ 	hypfs_last_dentry = NULL;
+-	kill_litter_super(sb);
++	kill_anon_super(sb);
+ 	kfree(sb_info);
  }
-@@ -163,10 +163,9 @@ static int spufs_fill_dir(struct dentry *dir,
- 			return -ENOMEM;
- 		ret = spufs_new_file(dir->d_sb, dentry, files->ops,
- 					files->mode & mode, files->size, ctx);
--		if (ret) {
--			dput(dentry);
-+		dput(dentry);
-+		if (ret)
- 			return ret;
--		}
- 		files++;
+ 
+@@ -321,17 +321,13 @@ static struct dentry *hypfs_create_file(struct dentry *parent, const char *name,
+ 	struct dentry *dentry;
+ 	struct inode *inode;
+ 
+-	inode_lock(d_inode(parent));
+-	dentry = lookup_noperm(&QSTR(name), parent);
+-	if (IS_ERR(dentry)) {
+-		dentry = ERR_PTR(-ENOMEM);
+-		goto fail;
+-	}
++	dentry = simple_start_creating(parent, name);
++	if (IS_ERR(dentry))
++		return ERR_PTR(-ENOMEM);
+ 	inode = hypfs_make_inode(parent->d_sb, mode);
+ 	if (!inode) {
+-		dput(dentry);
+-		dentry = ERR_PTR(-ENOMEM);
+-		goto fail;
++		simple_done_creating(dentry);
++		return ERR_PTR(-ENOMEM);
  	}
- 	return 0;
-@@ -241,11 +240,10 @@ spufs_mkdir(struct inode *dir, struct dentry *dentry, unsigned int flags,
- 
- 	inode_lock(inode);
- 
--	dget(dentry);
- 	inc_nlink(dir);
- 	inc_nlink(inode);
- 
+ 	if (S_ISREG(mode)) {
+ 		inode->i_fop = &hypfs_file_ops;
+@@ -346,10 +342,9 @@ static struct dentry *hypfs_create_file(struct dentry *parent, const char *name,
+ 	} else
+ 		BUG();
+ 	inode->i_private = data;
 -	d_instantiate(dentry, inode);
+-fail:
+-	inode_unlock(d_inode(parent));
+-	return dentry;
 +	d_make_persistent(dentry, inode);
++	simple_done_creating(dentry);
++	return dentry;	 // borrowed
+ }
  
- 	if (flags & SPU_CREATE_NOSCHED)
- 		ret = spufs_fill_dir(dentry, spufs_dir_nosched_contents,
-@@ -479,10 +477,9 @@ spufs_mkgang(struct inode *dir, struct dentry *dentry, umode_t mode)
- 	inode->i_op = &simple_dir_inode_operations;
- 	inode->i_fop = &simple_dir_operations;
- 
--	d_instantiate(dentry, inode);
--	dget(dentry);
- 	inc_nlink(dir);
--	inc_nlink(d_inode(dentry));
-+	inc_nlink(inode);
-+	d_make_persistent(dentry, inode);
- 	return ret;
- 
- out_iput:
-@@ -780,7 +777,7 @@ static struct file_system_type spufs_type = {
- 	.name = "spufs",
- 	.init_fs_context = spufs_init_fs_context,
- 	.parameters	= spufs_fs_parameters,
--	.kill_sb = kill_litter_super,
-+	.kill_sb = kill_anon_super,
- };
- MODULE_ALIAS_FS("spufs");
- 
+ struct dentry *hypfs_mkdir(struct dentry *parent, const char *name)
 -- 
 2.47.3
 
