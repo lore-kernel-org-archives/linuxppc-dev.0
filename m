@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-14313-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14314-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0FF8FCF2588
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Nov 2025 06:22:08 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA57ECF258F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Nov 2025 06:22:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dBBGK5V2jz30TM;
-	Wed, 19 Nov 2025 17:22:01 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dBBGR6mwNz30Vw;
+	Wed, 19 Nov 2025 17:22:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763533321;
-	cv=none; b=LjwixxOGxQAkTQFG8qok0a84KNoCC2I2tbLzQRY4d7OWRhkTeZ66S7Q9MUE1B9J8cxeaU777O9TmlV6LhQCpNFrwingoqIfqVN+y47KGtiqpCTJscdpI6ABPZ4HpBqWU86LCMBLC2ZpCEgYkicZM9onQ/y/iinvCaoes5OXpTl/XhLoGMvs+pNLmM0A33fhyYgIv58TnFwe3jzGG+itW5axuRZQS7WeEKzmrbuEIqHPCnuX1V/yjcCu+nb8HFJKjS+1j9BBm1UHImf8U04MrRPx55n2G+P25zzgiYu2YZaj/WcIyWGGhPOIMhGeKRsRc4ZKrh28mcu98m9pCFxmcXA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763533327;
+	cv=none; b=ihMtzUSYmVGBuTtdWTQ0besSUeAnfD3n6tNm5qojxW/4lD4Arczrfmy69y7oovqUET7ORxuhDYZWMQQXx6wVpKqgWaotjInRvvrwjTFkxJEKWiEQaOsZP1gXGdik04swWrBRlMC41s1dz/O4yayNdkPCUwIlxzIGNrmwOGyFoNerVdBPLYCB8dx2JTfLF67cxblqRpiWBEnNbQCGSavLAmldW+MktFU80asY6s1VjDmZlSriuYn0Tf7FGmC9Qa9rmnjFMmstf7i6SP4Desa6TDzjahVsdzJd+yCgYxAewQigfWDOGRkbNbnI0FmBHxEu9IJTzhFSgO/dub5ck1hxwQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763533321; c=relaxed/relaxed;
-	bh=EMglGUXjxWB1AjAp9b8xSMYJfDhPqEOirHFXTgrKt0g=;
+	t=1763533327; c=relaxed/relaxed;
+	bh=TdgnQQqw3dse0Fr7rtbUgEkaeZgAUCl9B4/S5gvCyY4=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=ZMlIsRI8QSZT6OGBPE+HOehmEN6uZyNDwr/BKK5zJHOpwB6UKaQZ9O9vXvr6vsnBqeo2//LM+JhtmScn9am0nY33jO6F3lojtDukDSYlZ9PiTLwknCbd4GpdRcYLHIjo+FzXy+IGhTS9nCb20zy+OPTkB/SzM0bbGBl2eTKNVVD0NCdvRpgko8zVUDkzI8ycAdEUtVwhpdNBDmXdVkWOs4KbM/kxWDB3p+d+khzOBX3jqQKG9kufykYsI6wC/zyAXzCEihLUaeQzitrRlK49h2ixuqdKwegCD8q5pVvVEDWGKZbUcO2dQ7yO8Ai7uldY4hA+SvhjSUWtdkUk8VAg9A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YqKgJ/Ss; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=i3TyDKEi7bdYXn0a+jeQhKVK9opkomRhILmDiiGowD3exzuvz08JhTb8/7KJFoglbdvm1IMzY+atafqP5vxOBlYYy3fnrt6aSUC7HRsML4V6LVXkS3sDH9+J4sslxSZoRpOvVYBkMsrPHlKeHCtEk42wiBVFNXfk9QA9rd9unSNAqxTaPbzreZMgUbzhUv5yVzvVxi2Ro0tP7cPTp/SO6hIEHcefC7TLzdhdjgIUog3mkgu6se/SktaEWg0ksVnZb1tpSYWtJ1lj8Udk1XPglRpkt2sUH0Z3iauQ0U0bccEBOOzEyGnBm8961DTXqaXFwogU8JnQUuvhv6iaY4BE+A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=j/ECiUIX; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=YqKgJ/Ss;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=j/ECiUIX;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dBBGJ6lCWz2ynT
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2025 17:22:00 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5AJ5e8m1011801;
-	Wed, 19 Nov 2025 06:21:40 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dBBGR1Phvz30V2
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2025 17:22:06 +1100 (AEDT)
+Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5AIGptgK025875;
+	Wed, 19 Nov 2025 06:21:49 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=EMglGUXjxWB1AjAp9
-	b8xSMYJfDhPqEOirHFXTgrKt0g=; b=YqKgJ/Ss1cFMuhUVz4GpS0oFPF0vP+fcH
-	Da3UOvw9qSyq6hJ7gHQ0H//i+oDjzxT0uePHvb5M9Kqiz6Frefg4QuH65S/mFUTL
-	CuXwZbg7O4zO4/OY5Zb/BiwtP6dhU0QKtcg18EifSVASkYlbT6b57CftTGCzcpPf
-	jF8yvzNhHu59/JaZjMU9zDVVfdZPg7G4BRSTc5I0fZvMnELWi+Gp99hrKzQ7yiQK
-	UuR8sBfrLOODTbtf2lmtKZ0v1/OEbEFfArF/+szEcoVuJT0FJzpZ8PEqUvA80i+X
-	syh3TjN7agH1k1+UT85fgLxRiVt/0PYiAKsd6dvlnqdr4N1pkMQgg==
+	:mime-version:references:subject:to; s=pp1; bh=TdgnQQqw3dse0Fr7r
+	tbUgEkaeZgAUCl9B4/S5gvCyY4=; b=j/ECiUIXMh5fpZM/U9L9Uk4/d5jK2mJ1l
+	v3G+kdw+ufFmNgvrIDstrqws9VpWDQZSZhfg4aNJNsmbUI2Xe9GmZ222s0Zsa0Qb
+	1c1PShgHu+WU5TzkYy9MDCIYO7ceTLsX2cqAT9VqoyZk9SZaJaGVAWaT5dcPqtMQ
+	LFEERRwLRcOrCSmR4oYVFkPb2IhQisryveEODmcHrfVOOdEbRHFJGLWZV2IGn7q0
+	BA4tiprwRuQXpNMgvvbFAZRyPxvW9ZaxoGPu9xpZgD4O/UU+jxYUZ102CjQLoImR
+	BXCpKsLd2Rnz2GsgXTCDw7CYQ+rw1H+6xTmKZ7/EeIQ47WfjeOjPQ==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejmsp732-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejjtx545-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 19 Nov 2025 06:21:40 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5AJ6Ldh9032328;
-	Wed, 19 Nov 2025 06:21:39 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejmsp72y-1
+	Wed, 19 Nov 2025 06:21:48 +0000 (GMT)
+Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5AJ6LAki031375;
+	Wed, 19 Nov 2025 06:21:48 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejjtx542-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 19 Nov 2025 06:21:39 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5AJ36M0L005231;
-	Wed, 19 Nov 2025 06:21:39 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4af5bk74vf-1
+	Wed, 19 Nov 2025 06:21:48 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5AJ3wTUu022340;
+	Wed, 19 Nov 2025 06:21:47 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4af4umy559-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 19 Nov 2025 06:21:39 +0000
+	Wed, 19 Nov 2025 06:21:47 +0000
 Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5AJ6LZ4v55706020
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5AJ6LhWV40173884
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 19 Nov 2025 06:21:35 GMT
+	Wed, 19 Nov 2025 06:21:43 GMT
 Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E09E020043;
-	Wed, 19 Nov 2025 06:21:34 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 654D020043;
+	Wed, 19 Nov 2025 06:21:43 +0000 (GMT)
 Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 57B3220040;
-	Wed, 19 Nov 2025 06:21:30 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 8D70320040;
+	Wed, 19 Nov 2025 06:21:39 +0000 (GMT)
 Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.39.25.220])
 	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 19 Nov 2025 06:21:30 +0000 (GMT)
+	Wed, 19 Nov 2025 06:21:39 +0000 (GMT)
 From: Shrikanth Hegde <sshegde@linux.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
 Cc: sshegde@linux.ibm.com, mingo@redhat.com, peterz@infradead.org,
@@ -80,9 +80,9 @@ Cc: sshegde@linux.ibm.com, mingo@redhat.com, peterz@infradead.org,
         kprateek.nayak@amd.com, vschneid@redhat.com, iii@linux.ibm.com,
         huschle@linux.ibm.com, rostedt@goodmis.org, dietmar.eggemann@arm.com,
         christophe.leroy@csgroup.eu
-Subject: [RFC PATCH v4 01/17] sched/docs: Document cpu_paravirt_mask and Paravirt CPU concept
-Date: Wed, 19 Nov 2025 11:50:44 +0530
-Message-ID: <20251119062100.1112520-2-sshegde@linux.ibm.com>
+Subject: [RFC PATCH v4 03/17] sched/core: Dont allow to use CPU marked as paravirt
+Date: Wed, 19 Nov 2025 11:50:46 +0530
+Message-ID: <20251119062100.1112520-4-sshegde@linux.ibm.com>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20251119062100.1112520-1-sshegde@linux.ibm.com>
 References: <20251119062100.1112520-1-sshegde@linux.ibm.com>
@@ -101,84 +101,70 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: KsX5MyU5zQNZANX17DMtODP_2oCE1ovC
-X-Authority-Analysis: v=2.4 cv=Rv3I7SmK c=1 sm=1 tr=0 ts=691d61f4 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
- a=UMqL1o26Aa61VnK-UhoA:9
-X-Proofpoint-GUID: Io9c6uisaBv8jhoFg_ffMc57ikrxILBa
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTE1MDAzMiBTYWx0ZWRfXwyV765gTiDty
- lK6zSZ2HEFsm14grpKfCyELfUgor2hdID5nOcA+D9MfzdwVu5fvGnQaxG4Yc6OqqGI6C86yxZj4
- HeX8D20fm5ccQnAatZotHIKU9NPozR26ySPG4DsjOEFoaqvHTjt9XQp/GvgpA15AqEqLmj/rSOX
- cey5i38vOjjhZ0FoSeGvKHH7pZ4YunDXDeiLfpvo1PXqwMcYwZhc4mUaCYNIXxn4lgpMVRZo5sK
- PXL0vK6spCElxUZMSgcc3I+12484T4DMsUGBtB6y2iSR1hzJ9rZv8jvfF7BmKwxY+SN+Gz01sgv
- GCAkD2cP4XG3IBvkrfLp0W/Gx+ycpg7II3HPsaCKhENOac8YIY7wd8batHh8tT0lX54C+Bbx+M2
- MvDlU43zhSG4Nk2knQcuT6Km0DLDVw==
+X-Proofpoint-GUID: RmD7JrXzjaEmULP8Wb7yKpvJTEVFNXuP
+X-Proofpoint-ORIG-GUID: Yi_8-_bdtM2cdPdRlxASLrxMuM8z5HHX
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTE1MDAzMiBTYWx0ZWRfX7sLczRLJaOz7
+ eG75Ua8tzMMTeWsg4lhNEBo6CYOBm3E3p1vQ8P6AbSSRBf+JX9xDozJGzrpl7ynBUaOl8zgGp8h
+ xSwzaFPp/KlBLKBd4VYSRyJHd49hjfd+3XLDt8aN7m9proYeIGhkmPHBP+I5w+r1rmk5ufVJaw8
+ kZI8v/cFTT/cN3royXzhQH4W6fFB60XzCreKeadRfEUNbNe/do3DAvkVNSydtSFz+YOls37xQ6b
+ m3nvX8DtOjqma62cCMQWrGBX2wWE9lI6LJfFiPu8Dt5uG3sCtd9Tew6+1gjPfl8PS+qv+Ft94fv
+ K39JG4GPkYTEohQ9Hcv7kahjIutlr0gbDFw8C4O/L6R3k2dqN1B8SwqAXTV7V8EyiVg7wIX5OqZ
+ QvkFWU0y+5gf6Y3oYMUJ5RyKibgUAw==
+X-Authority-Analysis: v=2.4 cv=SvOdKfO0 c=1 sm=1 tr=0 ts=691d61fc cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=uXBPIk7YWzXHA4pK:21 a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VnNF1IyMAAAA:8 a=P8M16rivtmrVeddd8boA:9
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
  definitions=2025-11-19_01,2025-11-18_02,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 suspectscore=0 clxscore=1015 phishscore=0 priorityscore=1501
- spamscore=0 lowpriorityscore=0 impostorscore=0 adultscore=0 bulkscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2511150032
+ priorityscore=1501 lowpriorityscore=0 spamscore=0 clxscore=1015
+ suspectscore=0 phishscore=0 adultscore=0 bulkscore=0 impostorscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2510240000
+ definitions=main-2511150032
 
-Add documentation for new cpumask called cpu_paravirt_mask. This could
-help users in understanding what this mask and the concept behind it.
+Don't allow a paravirt CPU to be used while looking for a CPU to use.
+
+Push task mechanism uses stopper thread which going to call
+select_fallback_rq and use this mechanism to avoid picking a paravirt CPU.
 
 Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
 ---
- Documentation/scheduler/sched-arch.rst | 37 ++++++++++++++++++++++++++
- 1 file changed, 37 insertions(+)
+ kernel/sched/core.c | 13 +++++++++++--
+ 1 file changed, 11 insertions(+), 2 deletions(-)
 
-diff --git a/Documentation/scheduler/sched-arch.rst b/Documentation/scheduler/sched-arch.rst
-index ed07efea7d02..6972c295013d 100644
---- a/Documentation/scheduler/sched-arch.rst
-+++ b/Documentation/scheduler/sched-arch.rst
-@@ -62,6 +62,43 @@ Your cpu_idle routines need to obey the following rules:
- arch/x86/kernel/process.c has examples of both polling and
- sleeping idle functions.
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index 40db5e659994..90fc04d84b74 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -2397,8 +2397,13 @@ static inline bool is_cpu_allowed(struct task_struct *p, int cpu)
+ 		return cpu_online(cpu);
  
-+Paravirt CPUs
-+=============
-+
-+Under virtualised environments it is possible to overcommit CPU resources.
-+i.e sum of virtual CPU(vCPU) of all VM's is greater than number of physical
-+CPUs(pCPU). Under such conditions when all or many VM's have high utilization,
-+hypervisor won't be able to satisfy the CPU requirement and has to context
-+switch within or across VM. i.e hypervisor need to preempt one vCPU to run
-+another. This is called vCPU preemption. This is more expensive compared to
-+task context switch within a vCPU.
-+
-+In such cases it is better that VM's co-ordinate among themselves and ask for
-+less CPU by not using some of the vCPUs. Such vCPUs where workload can be
-+avoided at the moment for less vCPU preemption are called as "Paravirt CPUs".
-+Note that when the pCPU contention goes away, these vCPUs can be used again
-+by the workload.
-+
-+Arch need to set/unset the specific vCPU in cpu_paravirt_mask. When set, avoid
-+that vCPU and when unset, use it as usual.
-+
-+Scheduler will try to avoid paravirt vCPUs as much as it can.
-+This is achieved by
-+1. Not selecting paravirt CPU at wakeup.
-+2. Push the task away from paravirt CPU at tick.
-+3. Not selecting paravirt CPU at load balance.
-+
-+This works only for SCHED_RT and SCHED_NORMAL. SCHED_EXT and userspace can make
-+choices accordingly using cpu_paravirt_mask.
-+
-+/sys/devices/system/cpu/paravirt prints the current cpu_paravirt_mask in
-+cpulist format.
-+
-+Notes:
-+1. A task pinned only on paravirt CPUs will continue to run there.
-+2. This feature is available under CONFIG_PARAVIRT
-+3. Refer to PowerPC for architecure implementation side.
-+4. Doesn't push out any task running on isolated CPUs.
+ 	/* Non kernel threads are not allowed during either online or offline. */
+-	if (!(p->flags & PF_KTHREAD))
+-		return cpu_active(cpu);
++	if (!(p->flags & PF_KTHREAD)) {
++		/* A user thread shouldn't be allowed on a paravirt cpu */
++		if (cpu_paravirt(cpu))
++			return false;
++		else
++			return cpu_active(cpu);
++	}
  
- Possible arch/ problems
- =======================
+ 	/* KTHREAD_IS_PER_CPU is always allowed. */
+ 	if (kthread_is_per_cpu(p))
+@@ -2408,6 +2413,10 @@ static inline bool is_cpu_allowed(struct task_struct *p, int cpu)
+ 	if (cpu_dying(cpu))
+ 		return false;
+ 
++	/* Non percpu kthreads should stay away from paravirt cpu*/
++	if (cpu_paravirt(cpu))
++		return false;
++
+ 	/* But are allowed during online. */
+ 	return cpu_online(cpu);
+ }
 -- 
 2.47.3
 
