@@ -1,91 +1,61 @@
-Return-Path: <linuxppc-dev+bounces-14329-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14330-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E472BCF2588
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Nov 2025 06:24:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EB95BCF2592
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 19 Nov 2025 07:42:15 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dBBHh4Gqfz3dJg;
-	Wed, 19 Nov 2025 17:23:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763533392;
-	cv=none; b=R2mcsZsXO6dBD+KNSoHcvG8SGCZCeeODH7ZgbBM1eOFcjk192p8Ho8P2/mAIc82oFhvk4nVDnap6a9scQz3UUBszKhQKgtBnLARC7JZMgvVXCmxW1YacWM42FLtkb62U6nqezXANxZG8BHEK5wQX6EthC3X/cY+2kPssASTFZRcTeF+hpsbRtpqqv2zJbSkf8U428HEJW7dfZ2zu34LiYgwvkyr8NgVqcQywCgQqUqRgGyhufrySnaA033Ic2NOvwejJd4jvfQgND74ZrjHgoQXSQka0h6dDSuUK2xsIxdjJ5tZFgDtwhcdfceV8oe1YwV8ZuNfHcS8skxGV3idnkQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dBD2t1y5Lz30Wh;
+	Wed, 19 Nov 2025 18:42:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763538134;
+	cv=none; b=Qv31ziHLLjMVwFwrNYDVkXMSAgIJoLLftgb46N9bkWHijB/sNOkBF2Hf+wSEiEEflAgUepwUwYoJk6jhAimLWx6rS3DRlowQp2RtIrS8O2sz+p3yc4jkk1JCy5yar1j6wVHlXhotWwbPkqD9zgOcRVIcS99VQw/LAI8QD51E8fDxVUpnC7/tD2hje8ULrG3vmQIw694RLOx9ZkwnVci3xLepPBPZvVtdVVOJT5MVQg0FqrB1086irKvUBYqODEmzLCB5gczEQEK+seNLIIXstYBVe4pZIvgaPHkI2zDTdTKmRoTKe5cP1skITYLggnib3wiJIr9g4sXp7hF6LGljfA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763533392; c=relaxed/relaxed;
-	bh=wEtafgfGnQUfODf3t7EqYsR0pG+SaVAgu1cfS/eyVSY=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=nlYQtQul6rfTAqQXAdKb7G1zvDxaiHSF9JWft+FVIEHqUWAlwE7kYYVeH7mFOz6PJmzITE4Ugv2o5rnIMV8fVLZBMTrqvo8d/46plIF+jR34OYkEEV25mqfKSn124zb2Z9998uKpYlLcGZ7u/wAEBfqFyldojpuG9p6WtIkgv0zd6xJChG8F85C5Syeqt6HA2s86KyACroWLgYeiU8GCyZUAJJInkXp++yx1es+WXLzUASMDfhelZS8hBzbk536XUMemqc+K+0WEJk30rSkWwwC4mUczjhM3e5CiZTrqtAQ7OpyuGpJYXjPRx9b/zP+2zDe67RiI159uHK5rLt5+JQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cgfo5m0R; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1763538134; c=relaxed/relaxed;
+	bh=zhf0j34nun2AJvPASs/K8u4weTYuPDamoRVsXODvBCE=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=CogGYflPdG2qbuGoX/6bQS+1ouD7PjHsFvRrPJDR/V28i7oUBpRs5HwW+1YVHWjG85S41o/JsI2TfZCaVmlHsYVSbhy5vedZJQ3KqZqbVMDc6p7jMWawcs/Jp6698XVS7iBEzzupa+BldJmAkr8MjuyhnKsCFDomvpEzlQnpZ/WNW3O3w19imE7lbsfktKv1cbbi81NwfA3YMW5l/x3LbCJ5jU8iQpXxXz78akm1qeYsbXRQGxU12fFxl90qsGOWw6AKMYO0bLVxspZzq2PNChGKK1qzIigUkPe4NBuFnDRi+K7U2o6oCAtI6AlsQiUsuaNrzqOrgN+FxNmsG/4Hbg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Pzrj82C7; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cgfo5m0R;
+	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=Pzrj82C7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dBBHg5tX6z3dJq
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2025 17:23:11 +1100 (AEDT)
-Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5AJ4tfiu022500;
-	Wed, 19 Nov 2025 06:22:49 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=wEtafgfGnQUfODf3t
-	7EqYsR0pG+SaVAgu1cfS/eyVSY=; b=cgfo5m0R2xFCn1goFFORLA63dHYb+4Ki+
-	Zo5Y9aLVyLGNXMNGZaENoKZhuLtkiNO3OA1TeIE3z+DFynGi2PvpzyPtnEvYE+iN
-	d+i4yD9fODg3K8IKMN3pRlvl3jJYeRbWbQHEhwiJFfYZTkTVZBPdU1hHziCQDks5
-	zC/8aFES9odWBCserHZ+lMYsJSWzV74cNw3OR2NvOLrbTU9wJ5DIcMMibAaN6MBZ
-	KuuNyiY/jzMd1jImANojo8qWextx8rDemYXKEYzXu7G4eqvNM9wHSzzdh/U8IIQH
-	TvT7UPoctROoF+W2zTQEvWs+EqNQcHUk1EG7UxPzb9SeXIFqdXdKA==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejgwx5gu-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 19 Nov 2025 06:22:49 +0000 (GMT)
-Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5AJ6Mn58000355;
-	Wed, 19 Nov 2025 06:22:49 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejgwx5gq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 19 Nov 2025 06:22:49 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5AJ3N13C005122;
-	Wed, 19 Nov 2025 06:22:48 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4af5bk751g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 19 Nov 2025 06:22:48 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5AJ6Mi2i58720690
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 19 Nov 2025 06:22:44 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 606A820043;
-	Wed, 19 Nov 2025 06:22:44 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 6C7BD20040;
-	Wed, 19 Nov 2025 06:22:40 +0000 (GMT)
-Received: from li-7bb28a4c-2dab-11b2-a85c-887b5c60d769.ibm.com.com (unknown [9.39.25.220])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed, 19 Nov 2025 06:22:40 +0000 (GMT)
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org
-Cc: sshegde@linux.ibm.com, mingo@redhat.com, peterz@infradead.org,
-        juri.lelli@redhat.com, vincent.guittot@linaro.org, tglx@linutronix.de,
-        yury.norov@gmail.com, maddy@linux.ibm.com, srikar@linux.ibm.com,
-        gregkh@linuxfoundation.org, pbonzini@redhat.com, seanjc@google.com,
-        kprateek.nayak@amd.com, vschneid@redhat.com, iii@linux.ibm.com,
-        huschle@linux.ibm.com, rostedt@goodmis.org, dietmar.eggemann@arm.com,
-        christophe.leroy@csgroup.eu
-Subject: [HELPER PATCH 2] helper: disable arch handling if paravirt file being written
-Date: Wed, 19 Nov 2025 11:51:00 +0530
-Message-ID: <20251119062100.1112520-18-sshegde@linux.ibm.com>
-X-Mailer: git-send-email 2.51.0
-In-Reply-To: <20251119062100.1112520-1-sshegde@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dBD2r6ycgz30Vb
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 19 Nov 2025 18:42:12 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 391F343DC5;
+	Wed, 19 Nov 2025 07:42:08 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 15290C2BCB0;
+	Wed, 19 Nov 2025 07:42:07 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
+	s=korg; t=1763538128;
+	bh=7cB8uFRCrG5HUsJDbdxDpfhsh/1Z3AaZOu4oAcvYFQQ=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=Pzrj82C7wkiz1kqBbHUw+6bAKHKJXK62Hiw+cael3AHr3NVwXYle8HDQpHVIlpyXr
+	 R3ATLL+WV8Dv7S1SCLfebQcXSWEHB3wkR/lzYg2tv/0nC7u6dDhgqOU5kdso6DhEjc
+	 0/Upt80G+eSNiAUOer21/O2i2vnGf9cGVUjz4/g4=
+Date: Wed, 19 Nov 2025 02:42:03 -0500
+From: Greg KH <gregkh@linuxfoundation.org>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	mingo@redhat.com, peterz@infradead.org, juri.lelli@redhat.com,
+	vincent.guittot@linaro.org, tglx@linutronix.de,
+	yury.norov@gmail.com, maddy@linux.ibm.com, srikar@linux.ibm.com,
+	pbonzini@redhat.com, seanjc@google.com, kprateek.nayak@amd.com,
+	vschneid@redhat.com, iii@linux.ibm.com, huschle@linux.ibm.com,
+	rostedt@goodmis.org, dietmar.eggemann@arm.com,
+	christophe.leroy@csgroup.eu
+Subject: Re: [HELPER PATCH 1] sysfs: Provide write method for paravirt
+Message-ID: <2025111922-rearrange-manned-8a47@gregkh>
 References: <20251119062100.1112520-1-sshegde@linux.ibm.com>
+ <20251119062100.1112520-17-sshegde@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,97 +69,108 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: 566E-NdEMCyT0aZn6GFRw8QpsmanZnEV
-X-Authority-Analysis: v=2.4 cv=YqwChoYX c=1 sm=1 tr=0 ts=691d6239 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
- a=HHdVa3RH26sSkSPV0WkA:9
-X-Proofpoint-ORIG-GUID: UG-YUdVlBcyyIrC5I96OYqAM-4YEvxoS
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTE1MDAzMiBTYWx0ZWRfX01yexI9B0IqU
- YuSzdU0/YODhWmfAyQflLkG4GSN65CcDbH66ttQpUWu1uhOhTDOabk9cqMNRjLqRPwEpBUR6G32
- MtfY2OdYy5ZtgRF/wcNqafp+4uPHts6Xpgd1fYC+GpwYBC2n5SC3GvATP/JBAtDgLfsV3b0lupd
- TuKZEQIFuHXaAIvkmjXoNbugwUL4ji4pqxm1cNag6DcCL7g8LMNyzd3Vw326DqpRkvgdh8G3/4/
- xVtPP1j2wfRdh3wJByV72MP/9Had8uWUQdy865JMxvxiulzYnPtFm5kuSc5Xq5Vk0ELkLUGFUQz
- UUslSNlfSUY864r87auo5/r4JJXR1FAdvvzYWchQpe/iumXYaV4+Mpp046+1MnD7HYJpmlKuCOx
- nk/lY0vk4iYoWO/Ci6qHWxtzXde3jQ==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2025-11-19_01,2025-11-18_02,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- priorityscore=1501 impostorscore=0 lowpriorityscore=0 malwarescore=0
- clxscore=1015 adultscore=0 bulkscore=0 phishscore=0 spamscore=0
- suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2510240000
- definitions=main-2511150032
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251119062100.1112520-17-sshegde@linux.ibm.com>
 
-Arch specific code can update the mask based on the steal time. For
-debugging it is desired to overwrite the arch logic. Do that with this
-helper script.
+On Wed, Nov 19, 2025 at 11:50:59AM +0530, Shrikanth Hegde wrote:
+> This is helper patch which could be used to set the range of CPUs as
+> paravirt. One could make use of this for quick testing of this infra
+> instead of writing arch specific code.
+> 
+> This is currently not meant be merged, since paravirt sysfs file is meant
+> to be Read-Only.
+> 
+> echo 100-200,600-700 >  /sys/devices/system/cpu/paravirt
+> cat /sys/devices/system/cpu/paravirt
+> 100-200,600-700
+> 
+> echo > /sys/devices/system/cpu/paravirt
+> cat /sys/devices/system/cpu/paravirt
+> 
+> Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
+> ---
+>  drivers/base/cpu.c | 48 ++++++++++++++++++++++++++++++++++++++++++++--
+>  1 file changed, 46 insertions(+), 2 deletions(-)
+> 
+> diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
+> index 59ceae217b22..043e4f4ce1a9 100644
+> --- a/drivers/base/cpu.c
+> +++ b/drivers/base/cpu.c
+> @@ -375,12 +375,57 @@ static int cpu_uevent(const struct device *dev, struct kobj_uevent_env *env)
+>  #endif
+>  
+>  #ifdef CONFIG_PARAVIRT
+> +static ssize_t store_paravirt_cpus(struct device *dev,
+> +				   struct device_attribute *attr,
+> +				   const char *buf, size_t count)
+> +{
+> +	cpumask_var_t temp_mask;
+> +	int retval = 0;
+> +
+> +	if (!alloc_cpumask_var(&temp_mask, GFP_KERNEL))
+> +		return -ENOMEM;
+> +
+> +	retval = cpulist_parse(buf, temp_mask);
+> +	if (retval)
+> +		goto free_mask;
+> +
+> +	/* ALL cpus can't be marked as paravirt */
+> +	if (cpumask_equal(temp_mask, cpu_online_mask)) {
+> +		retval = -EINVAL;
+> +		goto free_mask;
+> +	}
+> +	if (cpumask_weight(temp_mask) > num_online_cpus()) {
+> +		retval = -EINVAL;
+> +		goto free_mask;
+> +	}
+> +
+> +	/* No more paravirt cpus */
+> +	if (cpumask_empty(temp_mask)) {
+> +		cpumask_copy((struct cpumask *)&__cpu_paravirt_mask, temp_mask);
+> +	} else {
+> +		cpumask_copy((struct cpumask *)&__cpu_paravirt_mask, temp_mask);
+> +
+> +		/* Enable tick on nohz_full cpu */
+> +		int cpu;
+> +		for_each_cpu(cpu, temp_mask) {
+> +			if (tick_nohz_full_cpu(cpu))
+> +				tick_nohz_dep_set_cpu(cpu, TICK_DEP_BIT_SCHED);
+> +		}
+> +	}
+> +
+> +	retval = count;
+> +
+> +free_mask:
+> +	free_cpumask_var(temp_mask);
+> +	return retval;
+> +}
+> +
+>  static ssize_t print_paravirt_cpus(struct device *dev,
+>  				   struct device_attribute *attr, char *buf)
+>  {
+>  	return sysfs_emit(buf, "%*pbl\n", cpumask_pr_args(cpu_paravirt_mask));
+>  }
+> -static DEVICE_ATTR(paravirt, 0444, print_paravirt_cpus, NULL);
+> +static DEVICE_ATTR(paravirt, 0644, print_paravirt_cpus, store_paravirt_cpus);
 
-Signed-off-by: Shrikanth Hegde <sshegde@linux.ibm.com>
----
- arch/powerpc/platforms/pseries/lpar.c | 3 +++
- drivers/base/cpu.c                    | 2 ++
- include/linux/sched.h                 | 4 ++++
- kernel/sched/core.c                   | 1 +
- 4 files changed, 10 insertions(+)
+DEVICE_ATTR_RW()?
 
-diff --git a/arch/powerpc/platforms/pseries/lpar.c b/arch/powerpc/platforms/pseries/lpar.c
-index 090e5c48243b..04bc75e22e7b 100644
---- a/arch/powerpc/platforms/pseries/lpar.c
-+++ b/arch/powerpc/platforms/pseries/lpar.c
-@@ -681,6 +681,9 @@ static void process_steal(int cpu)
- 	unsigned long steal = 0;
- 	unsigned int i;
- 
-+	if (static_branch_unlikely(&disable_arch_paravirt_handling))
-+		return;
-+
- 	if (!should_cpu_process_steal(cpu))
- 		return;
- 
-diff --git a/drivers/base/cpu.c b/drivers/base/cpu.c
-index 043e4f4ce1a9..fbaddbfe0b01 100644
---- a/drivers/base/cpu.c
-+++ b/drivers/base/cpu.c
-@@ -402,7 +402,9 @@ static ssize_t store_paravirt_cpus(struct device *dev,
- 	/* No more paravirt cpus */
- 	if (cpumask_empty(temp_mask)) {
- 		cpumask_copy((struct cpumask *)&__cpu_paravirt_mask, temp_mask);
-+		static_branch_disable(&disable_arch_paravirt_handling);
- 	} else {
-+		static_branch_enable(&disable_arch_paravirt_handling);
- 		cpumask_copy((struct cpumask *)&__cpu_paravirt_mask, temp_mask);
- 
- 		/* Enable tick on nohz_full cpu */
-diff --git a/include/linux/sched.h b/include/linux/sched.h
-index 3628edd1468b..1afa5dd5b0ae 100644
---- a/include/linux/sched.h
-+++ b/include/linux/sched.h
-@@ -2427,4 +2427,8 @@ extern void migrate_enable(void);
- 
- DEFINE_LOCK_GUARD_0(migrate, migrate_disable(), migrate_enable())
- 
-+#ifdef CONFIG_PARAVIRT
-+DECLARE_STATIC_KEY_FALSE(disable_arch_paravirt_handling);
-+#endif
-+
- #endif
-diff --git a/kernel/sched/core.c b/kernel/sched/core.c
-index 65c247c24191..b65a9898c694 100644
---- a/kernel/sched/core.c
-+++ b/kernel/sched/core.c
-@@ -10873,6 +10873,7 @@ void sched_change_end(struct sched_change_ctx *ctx)
- #ifdef CONFIG_PARAVIRT
- struct cpumask __cpu_paravirt_mask __read_mostly;
- EXPORT_SYMBOL(__cpu_paravirt_mask);
-+DEFINE_STATIC_KEY_FALSE(disable_arch_paravirt_handling);
- 
- static DEFINE_PER_CPU(struct cpu_stop_work, pv_push_task_work);
- 
--- 
-2.47.3
+And where is the documentation update for this sysfs file change?
 
+>  #endif
+>  
+>  const struct bus_type cpu_subsys = {
+> @@ -675,7 +720,6 @@ static void __init cpu_register_vulnerabilities(void)
+>  		put_device(dev);
+>  	}
+>  }
+> -
+>  #else
+
+Why is this change needed?
+
+thanks,
+
+greg k-h
 
