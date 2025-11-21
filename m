@@ -1,91 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-14390-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14391-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B00FCFA466
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Nov 2025 02:56:11 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9A170CFA466
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Nov 2025 03:10:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dCKbs5r6hz2ySq;
-	Fri, 21 Nov 2025 13:56:09 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763693769;
-	cv=none; b=ZSg4zUmyJ6nUE4ZVvzpvaDj5Knlg3Fidlyp5Uhu7yBF3P0isp7FVnr8H0otjZ5UjIf8uigKw7DphGSWBbK/qrTNbpO2/5ln4qQkQiOEq8RBkL3gxKGL6Enqty+7b4lm2KObrLuAhjp75DpxDbrp7sXQlB9ooghfK6WFTI+tynjjDwW3hxd4xcYvmF4LmuYsH+jcuEUC2pzr0HDwHhT5iwiqFUfaOR5mbxwBph66eBJZ38SUtKqegnCGJThVZZRwWUqX+M6CJgeaufW9phNaXp2h2S08LTQZwhuR62aoDVEWMIdn19RJ1pslBeGA55nT0usM39yE3MrnsziuHuGsILg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dCKwm0ChWz2yG5;
+	Fri, 21 Nov 2025 14:10:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763694647;
+	cv=none; b=jEWPpwaIX91cHZsazYWT3h25tR4VFR9tbzs+QZBuIK5P09OMBAyFqK9sY5wSdCDDqOV6pNfo5Fq1bvONAhz7+ZvyDDnEvsu6crGz7+M/ZQshBqjappi9zKXSWrbtbgOSQSCXjBSITzQQWkdWM4EVNSQv+FNiPYofokhtUqxsyl/iXkmidYdWWhKhJRiHm9kEkGb+te2iLTOHPP4H5hTD9ZtoarYGPBHihlqwFMLKQ9JFtoRzYSh51BTc30AEdwFJjUvHfW+zSRjnRyKinX20Z1e/arKTkS89DE+ec05zE61reZOeJw+XXdRqn351ksBOir/ZkyIprQQRAjeigIFDSw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763693769; c=relaxed/relaxed;
-	bh=6qhaxlpEx1AGx5D/2mT+t9VMFsHNi4DaDwx2CARsuvA=;
+	t=1763694647; c=relaxed/relaxed;
+	bh=L8LBsVASEK6d3B8DWHYD8zZqd6pFY43vZXmZj9neDbc=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=BxfA5jpJvPFSNyv5gFTdmBSUc4ddUkqvWlA8aoRn1eFdiU4nFeAsubCd1lJfrBj60uF+Q+psSdxnxBl+M3DaBRR5diXxoyjPtEJYs4KN8CfyWGhnQ7Wu1XyUbwT0A0nVGuC2DkCYddKJLx3vwZRQf5PPQItRvjxcxcxccPGw3aOecLDh+Y8uNEZ9E09t+MGdGBaMLPE0NdHvQKeZgWFMJGIlOtDqaL+NI72DCYWR+qB7np82FTOhxO5y0qKFUxdd/134eZbPYw5sqr6sYHKKdDUjyZhjBcfUXs0bsKLE/W2/uVzWjAAy4LT4ZNnSTlXAFdbZezUJiPXuFFONfT3L+A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mB5SDe/D; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version:Content-Type; b=J5TU+oqYAFMA4XnjhXVJ3gTf5DlkRWAZ7F4A5iEGmHKOh0qix005aaM7kPaBR875RqnWFtf4HyAkj8i8XoLjXDWRR5RiCYZSH7SwiR/LeSWnoc4K3RvJiz6VEOnIqMbggGVTdFPPnG9dqd5GGoiKXfSvxicGLucbyxF/Q0cFJ+w0Q7cFqXqZjiFXgpGOQdvnftGNZs7CDBhWcFvhC/JE7stu4uw1CTBoJFyCzcBbID2HqegM1sufu0nzGth4PQgnkKG3VZjqkryJXlfNDBkIEDeku6ewKPPUpRPk92EDLgvrKydRk/AitcgGPmtIOIijzcWAmPmZU+UvM3+TxMbiOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lzTZWDV0; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=mB5SDe/D;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lzTZWDV0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dCKbs18lWz2xqh
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2025 13:56:09 +1100 (AEDT)
-Received: from pps.filterd (m0360083.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5AKM3Bfb029088;
-	Fri, 21 Nov 2025 02:55:49 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dCKwj4snYz2yD5
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2025 14:10:44 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5AKMbE3S012683;
+	Fri, 21 Nov 2025 03:10:33 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=6qhaxl
-	pEx1AGx5D/2mT+t9VMFsHNi4DaDwx2CARsuvA=; b=mB5SDe/DZuJn3wC6qPcQbu
-	otai1BbvuYNhpKc0Sda4cTsiSQVsWi2T9gkbuns0Hw7BvrYMCl29qK5fVZuu26C2
-	i3cHomulZIhEXX+/IjYAXZf31UxEvHQnTjqTB+EPk/3CQwwBB+5FwofzKcSy/08M
-	4YarW+fABhrlrdfQL0L4vYIBn4GZesYEnmUNytdhbIFgQHtFHiqspNIDlw+Phq8i
-	2U06jZ000xIsWKLUiri4C1eXRmWqXmjgW0jSrvdU8s7aSn1okXgzcNQ8OsX3j4D7
-	qPSMVw/ytcTjv4529L6AIL++GOaO2ekUJkxe6D09PMylqQ2xLSjroV5Y9rJZfsNQ
+	:message-id:mime-version:references:subject:to; s=pp1; bh=L8LBsV
+	ASEK6d3B8DWHYD8zZqd6pFY43vZXmZj9neDbc=; b=lzTZWDV0hB+zEbASOkeU9Q
+	zpy7gTOVxsgwWUnETPYYZuHAbPauqKzlFsy7OWvr21ZK6oTqdJsS7Ft6kJcG6AZR
+	9c2d85fINSdD/q9vwj6gbks8XJh1yozMhwRPfqhxmMVDRhzmqTgkBIb0PSBBJajA
+	Blg9AHkevlBMPjnqGXIJMtGT+hMfMHjq2/baDEzSyrVxLr0dKqkgRyBp1JkDKN7c
+	6CJtkpg/nTcPgcyxnf4XHsYXp38F9AUy5I37sA4JTL7LHBOJRoJYl1jYFy1eSZ5/
+	uWWqH58xViPgdZ5du8wvD//wnRlRQGebTqF8oxlR3CbVxv7n0rJC1sJ2bIBtuwiQ
 	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejk1srw9-1
+Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejgx8a9v-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 21 Nov 2025 02:55:48 +0000 (GMT)
-Received: from m0360083.ppops.net (m0360083.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5AL2tmug000933;
-	Fri, 21 Nov 2025 02:55:48 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejk1srw5-1
+	Fri, 21 Nov 2025 03:10:33 +0000 (GMT)
+Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5AL07BcV005133;
+	Fri, 21 Nov 2025 03:10:32 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4af5bkj20y-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 21 Nov 2025 02:55:48 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5AKNc6ok022347;
-	Fri, 21 Nov 2025 02:55:47 GMT
-Received: from smtprelay04.fra02v.mail.ibm.com ([9.218.2.228])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4af4una0fv-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 21 Nov 2025 02:55:47 +0000
-Received: from smtpav07.fra02v.mail.ibm.com (smtpav07.fra02v.mail.ibm.com [10.20.54.106])
-	by smtprelay04.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5AL2thf427787986
+	Fri, 21 Nov 2025 03:10:32 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5AL3AUnD35324260
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 21 Nov 2025 02:55:43 GMT
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 083D42019B;
-	Fri, 21 Nov 2025 02:55:43 +0000 (GMT)
-Received: from smtpav07.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1CDD020199;
-	Fri, 21 Nov 2025 02:55:00 +0000 (GMT)
+	Fri, 21 Nov 2025 03:10:30 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 58043201F2;
+	Fri, 21 Nov 2025 02:53:34 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 38D09201EE;
+	Fri, 21 Nov 2025 02:53:33 +0000 (GMT)
 Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.in.ibm.com (unknown [9.98.111.108])
-	by smtpav07.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri, 21 Nov 2025 02:54:39 +0000 (GMT)
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 21 Nov 2025 02:53:33 +0000 (GMT)
 From: Madhavan Srinivasan <maddy@linux.ibm.com>
-To: linuxppc-dev@lists.ozlabs.org, Srikar Dronamraju <srikar@linux.ibm.com>
-Cc: Christophe Leroy <christophe.leroy@csgroup.eu>,
-        linux-kernel@vger.kernel.org, Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        Peter Zijlstra <peterz@infradead.org>,
-        Thomas Gleixner <tglx@linutronix.de>,
-        Shrikanth Hegde <sshegde@linux.ibm.com>
-Subject: Re: [PATCH v2] powerpc/smp: Expose die_id and die_cpumask
-Date: Fri, 21 Nov 2025 08:24:09 +0530
-Message-ID: <176369324788.72695.18054078744608030993.b4-ty@linux.ibm.com>
+To: linuxppc-dev@lists.ozlabs.org, Ben Collins <bcollins@kernel.org>
+Cc: Michael Ellerman <mpe@ellerman.id.au>, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] kexec: Include kernel-end even without crashkernel
+Date: Fri, 21 Nov 2025 08:22:57 +0530
+Message-ID: <176369324786.72695.17995365104870702748.b4-ty@linux.ibm.com>
 X-Mailer: git-send-email 2.51.1
-In-Reply-To: <20251112074859.814087-1-srikar@linux.ibm.com>
-References: <20251112074859.814087-1-srikar@linux.ibm.com>
+In-Reply-To: <2025042122-inescapable-mandrill-8a5ff2@boujee-and-buff>
+References: <2025042122-inescapable-mandrill-8a5ff2@boujee-and-buff>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,42 +90,39 @@ MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=C/nkCAP+ c=1 sm=1 tr=0 ts=691fd4b4 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+X-Proofpoint-GUID: p1uunhp21FmS_PbYKjMqZjIuMh-uKCqk
+X-Authority-Analysis: v=2.4 cv=YqwChoYX c=1 sm=1 tr=0 ts=691fd829 cx=c_pps
+ a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
  a=IkcTkHD0fZMA:10 a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=VwQbUJbxAAAA:8 a=pMH8iXYfuX0DPzzJjpoA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-GUID: qShj5Im0oPX7-aEgSeCH4hmHremRHEHr
-X-Proofpoint-ORIG-GUID: RHhbU348MaMfK5XTrs4So9ky7v83G-Rw
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTE1MDAzMiBTYWx0ZWRfXwzfQpiHt0iel
- L7r/ELOIF2wFYkrRpKfJ4tpfIMpcJYaEMmaD2GKoCVKhECDJ3NLa49CROPfpxfGc8Oqg5/AneH4
- ThG6r4sEdU4Uhm9/bKPAi990tUNP7RM7xbHNYvocNa1PK2teNZrIKCpPrT5UvqdFQuocGAocT61
- 74ka+f1/P7BxX8C/SBaFrhwbUKCIxBdPIC7SVAJq1ceNegGKiTorv39JLAdRFyAdcEmStJuEy+m
- 3OgmPsE35hBuM5BlefQ9y2IiBcqUTbpA/F2llXO4LahN8+Dbm5pfZVHw5NcfxFzvxrdb0D9sUbQ
- +DvE4W+3Oi9hBs8siaj8SqMmamjdYkvBHWcVIhQOiNbyoyRUkEAxt9tf7oRc9E+ZBTCLANRAhEj
- GSQpkFFMnm71ICZhdvny2R6zgmOr2w==
+ a=VwQbUJbxAAAA:8 a=ahfaYFja6yGLwH_dXd4A:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-ORIG-GUID: p1uunhp21FmS_PbYKjMqZjIuMh-uKCqk
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTE1MDAzMiBTYWx0ZWRfX+V37sisvyIwW
+ xqXa17u8OJIG65z8i7HiAEJQASYlmvANE6rM/NClifXd+kmEdPkn6/K/+XvxmQVif9dCtJD/SnO
+ BACQoSmQebGRr6onYvlHmFXNq8pNXebrpakDSjcqsfYFoWke+3yNdbRVnmNG2HA6XeFZD+oCpM1
+ kxW/pZpfV+6bk1I2Y4b7yCnCoAk7jpSBkZ1sfijISfc9ze+zkKltF5zZOzvywsNpocVjsE0KKG6
+ haleAs0tW0X5BXJXuZykWADxPy3u3b1mc0h87iTDSI8K0EeLzbJ9WyGDaliX0qPm3Oes3BUh9Z4
+ 4slF2938TUDWImS11K0BolLkan5SHV4E6/DSQapeD9IMuO8HMK1c46f9aF2NBIkDpOz/nnHBJnW
+ lfAMX/Q35WRdbwvaEYqiCSlcj26abw==
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
  definitions=2025-11-21_01,2025-11-20_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- phishscore=0 priorityscore=1501 spamscore=0 impostorscore=0 bulkscore=0
- malwarescore=0 suspectscore=0 clxscore=1015 lowpriorityscore=0 adultscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2511150032
+ priorityscore=1501 impostorscore=0 lowpriorityscore=0 malwarescore=0
+ clxscore=1015 adultscore=0 bulkscore=0 phishscore=0 spamscore=0
+ suspectscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2510240000
+ definitions=main-2511150032
 
-On Wed, 12 Nov 2025 13:18:59 +0530, Srikar Dronamraju wrote:
-> >From Power10 processors onwards, each chip has 2 hemispheres. For LPARs
-> running on PowerVM Hypervisor, hypervisor determines the allocation of
-> CPU groups to each LPAR, resulting in two LPARs with the same number of
-> CPUs potentially having different numbers of CPUs from each hemisphere.
-> Additionally, it is not feasible to ascertain the hemisphere based
-> solely on the CPU number.
+On Mon, 21 Apr 2025 22:36:46 -0400, Ben Collins wrote:
+> Certain versions of kexec don't even work without kernel-end being
+> added to the device-tree. Add it even if crash-kernel is disabled.
 > 
-> [...]
+> 
 
 Applied to powerpc/next.
 
-[1/1] powerpc/smp: Expose die_id and die_cpumask
-      https://git.kernel.org/powerpc/c/fb2ff9fa72e20a75cab0ffc9dc8735de68ed4d0d
+[1/1] kexec: Include kernel-end even without crashkernel
+      https://git.kernel.org/powerpc/c/38c64dfe0af12778953846df5f259e913275cfe5
 
 Thanks
 
