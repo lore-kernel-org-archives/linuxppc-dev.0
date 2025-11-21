@@ -1,71 +1,83 @@
-Return-Path: <linuxppc-dev+bounces-14384-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14385-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1AF93CFA469
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Nov 2025 02:22:43 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DCFBECFA46B
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Nov 2025 02:31:27 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dCJsF5fDKz2yG5;
-	Fri, 21 Nov 2025 13:22:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.224
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763691761;
-	cv=none; b=Px+iCeyTbqshjaYzNVrvPtbngCBpkN+0eQ6Oc+griWaICUmNsYydcvyhcmZ1eTsmbSS4XJLC/XOJQL7+UoZSBOJCZVtVnXAsmNSKWeY7COceOVK8t9sVZeMBy48f0mf+EIY245CVGHtY5EoF+rzT/u/COMO3mhBD7TjsgPzYx3BE2lMRvg6WQNERVwituRj8SvHYXvPHi7Im/xKt+Mw/WnvuiXHmXKUYnGEzxadxeRxjBOzlyUNEwHXw8BZckDmooLSNDZ+2uqR3T2rsRYtLm0qqLS9wAPGvWvAOaqJ/erBqAHPO9rEDLNNllIBM3nbTDNfMn03tPqfeNB9lkdBeaA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dCK3L33v5z2yD5;
+	Fri, 21 Nov 2025 13:31:26 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763692286;
+	cv=none; b=ZvpNugog3igOR3TyzSwwbsQlEN7P4JNIKxEahIz6DrdWGYwRv4ym8m+TLspfU8ISGhHViR84BHOsNoIYQB+cSISiVUo3JBw1p01a/tNMMAGQW/0IAp1PtE5tTxtuIJktTMey8sbxrskg4Knj/YbgEA1SqSKsCd4kBoUEUpuck1+0jnLWo8Jjx8O7JzLa7e//AlrlWdtEDwPKu22C2mhAZHkr4iQJq6cA8cdN4TA5r8IN8knh7aYWV1ksKUMSFERmWr+YmqwwRp0mR92gLf6GUJ5VvldNs9aWw1aaMYIQt51hXiUlAJxd9H+j4On3E31t2YtDC8QAdfVXrZcdkfyWOQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763691761; c=relaxed/relaxed;
-	bh=OWpop7EczyzMtxVk1H5X074PcZRbXBU8JW4kSewAWro=;
+	t=1763692286; c=relaxed/relaxed;
+	bh=AQS3TZ1si/Ig2wkymXClxgNNI6FTrzeWsHMvwkBCMDg=;
 	h=Subject:To:CC:References:From:Message-ID:Date:MIME-Version:
-	 In-Reply-To:Content-Type; b=LhfLzxAD7J8+o2sMlATpOHHbEWr1Ctg5+rAirvnmSEPbhgOCiCQSPBRwv/kZIJoubpuzfFStT9odkLfcOm/vWcePRC7nampoONuaeaX41R1Vu3ND14938WgQeTtS0AtvAS6kxOWgogRrjniKImkRqjutRwX53VKsReVHeQjS4qpJrbwFWoWRhyLz7/o3ibpYS+qBPnPyvY8mokKatk3kbGbif+C7QH4Rs/7mm7++MO7lPN8fLbh+cPBqJ0TOExtjxllPPuhwKW9YZfXtftusKp6zAiRx98SMXVdX7Vzh1xzQB5Mqut1qYPiz1Ls7MWH0jyV2US89maw59wu4xIENXw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=R1hj1NNz; dkim-atps=neutral; spf=pass (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=guohanjun@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
+	 In-Reply-To:Content-Type; b=htBDlVuVpbf823nTrVJufB9TSFrpYZAWpCJnUR4hYuWk5l1wyQrIuwgPM9BlrY5qmGSlZK5TRa0zxBcCEIcuK5kQRyXqAqGXhzcw6+h2EB2I/xgPrV1BJKXksGeUEMP7GvfuKFqL1m4uGfSMPo8pTlbyXOdDNT1nJQCBIzEi97wihFWk+DaDTy9Mmo3ufg2yrGrJuM+O/Z9uO4LP8dFWysVXTZqoJTBPJaMuslltOWdicm/JYYLXtqSbypz0V/QYLICOverTMSWYaQq7Oe3a98uN/VmZ7XcRsvIPhqVP4izsnzMqO16Wsq/771YcChsKTQQIkzNF27GjqDvTBO/xXA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=u40LWVUi; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=u40LWVUi; dkim-atps=neutral; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=guohanjun@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=R1hj1NNz;
+	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=u40LWVUi;
+	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=u40LWVUi;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.224; helo=canpmsgout09.his.huawei.com; envelope-from=guohanjun@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout09.his.huawei.com (canpmsgout09.his.huawei.com [113.46.200.224])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=guohanjun@huawei.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 1140 seconds by postgrey-1.37 at boromir; Fri, 21 Nov 2025 13:31:23 AEDT
+Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dCJsD4636z2yD5
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2025 13:22:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dCK3H2jCCz2xQs
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2025 13:31:21 +1100 (AEDT)
 dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
 	c=relaxed/relaxed; q=dns/txt;
 	h=From;
-	bh=OWpop7EczyzMtxVk1H5X074PcZRbXBU8JW4kSewAWro=;
-	b=R1hj1NNznJn+tfgB0ayfX5o8vmLAqmDbDTi1fp3nnhDkgAf6rMG/ePZi+uUhRMkQV4/vAbCoN
-	Poc/xtx15swDW+oJSzVQMLYtuQYTppIcU7FHk/aGDH+GjZutx7oVhiNgAd+CjL9/xHjmo4B6B9Q
-	jJ8vGiLRCyw+nWn0bw39sao=
-Received: from mail.maildlp.com (unknown [172.19.163.44])
-	by canpmsgout09.his.huawei.com (SkyGuard) with ESMTPS id 4dCJq63xSKz1cyQG;
-	Fri, 21 Nov 2025 10:20:50 +0800 (CST)
+	bh=AQS3TZ1si/Ig2wkymXClxgNNI6FTrzeWsHMvwkBCMDg=;
+	b=u40LWVUiaHDsbCA01CQYv9znHEwW+kbk7n9CJMnawfy/JqQjuFN1zeEfE52OVPOa1JJU3VvGc
+	Af+Zmtn2UuTu37GoOwE5H7E42FZK4NDiMyUtsrwLKtr/EaNCO2dnV7B16f6EPBKaPAC+txl34X2
+	rkqy9fpgxCj50OJgmLhLopc=
+Received: from canpmsgout12.his.huawei.com (unknown [172.19.92.144])
+	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4dCJcY0tv0z1BFNT
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2025 10:11:41 +0800 (CST)
+dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
+	c=relaxed/relaxed; q=dns/txt;
+	h=From;
+	bh=AQS3TZ1si/Ig2wkymXClxgNNI6FTrzeWsHMvwkBCMDg=;
+	b=u40LWVUiaHDsbCA01CQYv9znHEwW+kbk7n9CJMnawfy/JqQjuFN1zeEfE52OVPOa1JJU3VvGc
+	Af+Zmtn2UuTu37GoOwE5H7E42FZK4NDiMyUtsrwLKtr/EaNCO2dnV7B16f6EPBKaPAC+txl34X2
+	rkqy9fpgxCj50OJgmLhLopc=
+Received: from mail.maildlp.com (unknown [172.19.88.234])
+	by canpmsgout12.his.huawei.com (SkyGuard) with ESMTPS id 4dCJbV65TDznTWW;
+	Fri, 21 Nov 2025 10:10:46 +0800 (CST)
 Received: from dggpemf500002.china.huawei.com (unknown [7.185.36.57])
-	by mail.maildlp.com (Postfix) with ESMTPS id AB8A8140295;
-	Fri, 21 Nov 2025 10:22:35 +0800 (CST)
+	by mail.maildlp.com (Postfix) with ESMTPS id 6C164140119;
+	Fri, 21 Nov 2025 10:12:13 +0800 (CST)
 Received: from [10.174.178.247] (10.174.178.247) by
  dggpemf500002.china.huawei.com (7.185.36.57) with Microsoft SMTP Server
  (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Fri, 21 Nov 2025 10:22:34 +0800
-Subject: Re: [PATCH 5/6 v7] acpi/ghes: Add helper to copy CXL protocol error
- info to work struct
-To: "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com>,
-	<linux-cxl@vger.kernel.org>
-CC: "Rafael J . Wysocki" <rafael@kernel.org>, Len Brown <lenb@kernel.org>,
-	Tony Luck <tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>, Mauro
- Carvalho Chehab <mchehab@kernel.org>, Shuai Xue <xueshuai@linux.alibaba.com>,
-	Davidlohr Bueso <dave@stgolabs.net>, Jonathan Cameron
-	<jonathan.cameron@huawei.com>, Dave Jiang <dave.jiang@intel.com>, Alison
- Schofield <alison.schofield@intel.com>, Vishal Verma
-	<vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, Dan Williams
-	<dan.j.williams@intel.com>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>,
-	<linux-kernel@vger.kernel.org>, <linux-acpi@vger.kernel.org>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-pci@vger.kernel.org>
+ 15.2.1544.11; Fri, 21 Nov 2025 10:12:11 +0800
+Subject: Re: [PATCH 3/6 v7] acpi/ghes: Make GHES select ACPI_APEI_PCIEAER
+To: Jonathan Cameron <jonathan.cameron@huawei.com>, "Fabio M. De Francesco"
+	<fabio.m.de.francesco@linux.intel.com>
+CC: <linux-cxl@vger.kernel.org>, "Rafael J . Wysocki" <rafael@kernel.org>, Len
+ Brown <lenb@kernel.org>, Tony Luck <tony.luck@intel.com>, Borislav Petkov
+	<bp@alien8.de>, Mauro Carvalho Chehab <mchehab@kernel.org>, Shuai Xue
+	<xueshuai@linux.alibaba.com>, Davidlohr Bueso <dave@stgolabs.net>, Dave Jiang
+	<dave.jiang@intel.com>, Alison Schofield <alison.schofield@intel.com>, Vishal
+ Verma <vishal.l.verma@intel.com>, Ira Weiny <ira.weiny@intel.com>, Dan
+ Williams <dan.j.williams@intel.com>, Mahesh J Salgaonkar
+	<mahesh@linux.ibm.com>, Oliver O'Halloran <oohall@gmail.com>, Bjorn Helgaas
+	<bhelgaas@google.com>, <linux-kernel@vger.kernel.org>,
+	<linux-acpi@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
+	<linux-pci@vger.kernel.org>
 References: <20251104182446.863422-1-fabio.m.de.francesco@linux.intel.com>
- <20251104182446.863422-6-fabio.m.de.francesco@linux.intel.com>
+ <20251104182446.863422-4-fabio.m.de.francesco@linux.intel.com>
+ <20251111154220.00004767@huawei.com>
 From: Hanjun Guo <guohanjun@huawei.com>
-Message-ID: <db92285d-43ec-c057-ad35-bbbdff7b8608@huawei.com>
-Date: Fri, 21 Nov 2025 10:22:33 +0800
+Message-ID: <19155ced-8702-71f9-6eba-4dbfdc7c88ad@huawei.com>
+Date: Fri, 21 Nov 2025 10:12:11 +0800
 User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101
  Thunderbird/68.6.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
@@ -81,7 +93,7 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <20251104182446.863422-6-fabio.m.de.francesco@linux.intel.com>
+In-Reply-To: <20251111154220.00004767@huawei.com>
 Content-Type: text/plain; charset="utf-8"; format=flowed
 Content-Language: en-GB
 Content-Transfer-Encoding: 7bit
@@ -89,122 +101,26 @@ X-Originating-IP: [10.174.178.247]
 X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
  dggpemf500002.china.huawei.com (7.185.36.57)
 
-On 2025/11/5 2:22, Fabio M. De Francesco wrote:
-> Make a helper out of cxl_cper_post_prot_err() that checks the CXL agent
-> type and copy the CPER CXL protocol errors information to a work data
-> structure.
+On 2025/11/11 23:42, Jonathan Cameron wrote:
+> On Tue,  4 Nov 2025 19:22:34 +0100
+> "Fabio M. De Francesco" <fabio.m.de.francesco@linux.intel.com> wrote:
 > 
-> Export the new symbol for reuse by ELOG.
+>> GHES handles the PCI Express Error Section and also the Compute Express
+>> Link (CXL) Protocol Error Section. Two of its functions depend on the
+>> APEI PCIe AER logging/recovering support (ACPI_APEI_PCIEAER).
+>>
+>> Make GHES select ACPI_APEI_PCIEAER and remove the conditional
+>> compilation from the body of two static functions that handle the CPER
+>> Error Sections mentioned above.
 > 
-> Reviewed-by: Jonathan Cameron <jonathan.cameron@huawei.com>
-> Signed-off-by: Fabio M. De Francesco <fabio.m.de.francesco@linux.intel.com>
-> ---
->   drivers/acpi/apei/ghes.c | 42 ++++++++++++++++++++++++++--------------
->   include/cxl/event.h      | 10 ++++++++++
->   2 files changed, 37 insertions(+), 15 deletions(-)
+> Hi Fabio,
 > 
-> diff --git a/drivers/acpi/apei/ghes.c b/drivers/acpi/apei/ghes.c
-> index e69ae864f43d..2f4632d9855a 100644
-> --- a/drivers/acpi/apei/ghes.c
-> +++ b/drivers/acpi/apei/ghes.c
-> @@ -734,20 +734,12 @@ int cxl_cper_sec_prot_err_valid(struct cxl_cper_sec_prot_err *prot_err)
->   }
->   EXPORT_SYMBOL_GPL(cxl_cper_sec_prot_err_valid);
->   
-> -static void cxl_cper_post_prot_err(struct cxl_cper_sec_prot_err *prot_err,
-> -				   int severity)
-> +int cxl_cper_setup_prot_err_work_data(struct cxl_cper_prot_err_work_data *wd,
-> +				      struct cxl_cper_sec_prot_err *prot_err,
-> +				      int severity)
->   {
-> -	struct cxl_cper_prot_err_work_data wd;
->   	u8 *dvsec_start, *cap_start;
->   
-> -	if (cxl_cper_sec_prot_err_valid(prot_err))
-> -		return;
-> -
-> -	guard(spinlock_irqsave)(&cxl_cper_prot_err_work_lock);
-> -
-> -	if (!cxl_cper_prot_err_work)
-> -		return;
-> -
->   	switch (prot_err->agent_type) {
->   	case RCD:
->   	case DEVICE:
-> @@ -756,20 +748,40 @@ static void cxl_cper_post_prot_err(struct cxl_cper_sec_prot_err *prot_err,
->   	case RP:
->   	case DSP:
->   	case USP:
-> -		memcpy(&wd.prot_err, prot_err, sizeof(wd.prot_err));
-> +		memcpy(&wd->prot_err, prot_err, sizeof(wd->prot_err));
->   
->   		dvsec_start = (u8 *)(prot_err + 1);
->   		cap_start = dvsec_start + prot_err->dvsec_len;
->   
-> -		memcpy(&wd.ras_cap, cap_start, sizeof(wd.ras_cap));
-> -		wd.severity = cper_severity_to_aer(severity);
-> +		memcpy(&wd->ras_cap, cap_start, sizeof(wd->ras_cap));
-> +		wd->severity = cper_severity_to_aer(severity);
->   		break;
->   	default:
->   		pr_err_ratelimited("CXL CPER invalid agent type: %d\n",
->   				   prot_err->agent_type);
-> -		return;
-> +		return -EINVAL;
->   	}
->   
-> +	return 0;
-> +}
-> +EXPORT_SYMBOL_GPL(cxl_cper_setup_prot_err_work_data);
-> +
-> +static void cxl_cper_post_prot_err(struct cxl_cper_sec_prot_err *prot_err,
-> +				   int severity)
-> +{
-> +	struct cxl_cper_prot_err_work_data wd;
-> +
-> +	if (cxl_cper_sec_prot_err_valid(prot_err))
-> +		return;
-> +
-> +	guard(spinlock_irqsave)(&cxl_cper_prot_err_work_lock);
-> +
-> +	if (!cxl_cper_prot_err_work)
-> +		return;
-> +
-> +	if (cxl_cper_setup_prot_err_work_data(&wd, prot_err, severity))
-> +		return;
-> +
->   	if (!kfifo_put(&cxl_cper_prot_err_fifo, wd)) {
->   		pr_err_ratelimited("CXL CPER kfifo overflow\n");
->   		return;
-> diff --git a/include/cxl/event.h b/include/cxl/event.h
-> index 4d7d1036ea9c..94081aec597a 100644
-> --- a/include/cxl/event.h
-> +++ b/include/cxl/event.h
-> @@ -322,12 +322,22 @@ static inline int cxl_cper_prot_err_kfifo_get(struct cxl_cper_prot_err_work_data
->   
->   #ifdef CONFIG_ACPI_APEI_PCIEAER
->   int cxl_cper_sec_prot_err_valid(struct cxl_cper_sec_prot_err *prot_err);
-> +int cxl_cper_setup_prot_err_work_data(struct cxl_cper_prot_err_work_data *wd,
-> +				      struct cxl_cper_sec_prot_err *prot_err,
-> +				      int severity);
->   #else
->   static inline int
->   cxl_cper_sec_prot_err_valid(struct cxl_cper_sec_prot_err *prot_err)
->   {
->   	return -EOPNOTSUPP;
->   }
-> +static inline int
-> +cxl_cper_setup_prot_err_work_data(struct cxl_cper_prot_err_work_data *wd,
-> +				  struct cxl_cper_sec_prot_err *prot_err,
-> +				  int severity)
-> +{
-> +	return -EOPNOTSUPP;
-> +}
->   #endif
->   
->   #endif /* _LINUX_CXL_EVENT_H */
+> I'm not seeing a justification here for the change and there may be
+> APEI platforms without PCI support.  So is this just to simplify things or
+> is there a functional reason that it is necessary?
 
-Reviewed-by: Hanjun Guo <guohanjun@huawei.com>
+I have the same worry, embedded system with ACPI support may don't have
+PCI. And for APEI, AER is one of the error type and optional.
 
 Thanks
 Hanjun
