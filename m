@@ -1,72 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-14386-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14387-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24A78CFA469
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Nov 2025 02:47:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3371CFA466
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Nov 2025 02:54:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dCKQC3XbYz2yG5;
-	Fri, 21 Nov 2025 13:47:47 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=113.46.200.219
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763693267;
-	cv=none; b=LqJiglkAQnr9pR0Y5AQ0AEkOwI78GMBFe8ro9799FubEhqr89aoJukgpQs8OywF0h03BPoAAiIPVQXJU8YtOSYXlCgvgM+zsWyRdCSoY+svuUD/WO5jgsm/VAhMlq8Ze/EReeRlXkzy74VrQGOVBF18MO5ggUs7NJJpIDCvLxgoYL7OX0+UB/JqbGMToqNexEp9QdhuE/zFxeqkbBymTHv2A/Xhbn7e/pHJR2dp+91r7E8OSm8n1qez51f9Kn3PTCjaODexaXuyFKb5uzm9tx4jdAJ9IBJraXih4r+R0ynkLwGg6MaT9GkkSaBBHDYExBqsChSIiJqT1xLJ3l8Untg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dCKZF2k99z2xQD;
+	Fri, 21 Nov 2025 13:54:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763693685;
+	cv=none; b=XdADeqWlwbMOy3jfvDEpZhnhpMhxA1m4AB4odvxbVVKVyWzteFgOmwjjnVDXGDK4SBM6tpFKDqsjAR8vN7NnarpIvjeOCFpH7aGyvbGRplx+IKHZjvX+K8GEoHlw1WYomip35F8tyG4Vm2Ci6qVap0QlsuEFsPo69gop6qRSTJxs0unFQb/KTjjeAkkqaGH4iMjpAusYX9Jg1XY8dB1pKiItsVBHhzWivBoOm/n32W5yIWH7exQCczJ3Nf+N+UnMQbwTwmWB9ooLWO+NmhU8upyb+Bkant1ythz2MIemtHLDptkV7wIJ5HKZ+nhU+2JuUYuN+KgBZp2TDLdZopdBbg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763693267; c=relaxed/relaxed;
-	bh=7/+xC9VzlzEvb/9+gGLwhYCZZ6+xeKT68zJkKrNRvNo=;
-	h=Subject:To:CC:References:From:Message-ID:Date:MIME-Version:
-	 In-Reply-To:Content-Type; b=aYSmNtALxsan9GZFbokxqprrCNWJllk8fbgpycSAgSYJ/DgZwdVz8BBv8P2PhW0BYu5RhceS9GKEdxbSdOYSFvda+ypeSFn3gwM+UUsRORZOiholSFGiXsO9nBvmF4SDRr1xix4dn0fh+q7y5xzAL35uKzgvDiPQXoAEy1cmwkv9uVbfFaPINiXpDDEGhcRZeHvHaqmbVLk9o9GKbjPL09tfjPnGER4SU+jYT5duvjqoecIkAijB4UwswzPGD7Jr4/bJm31GGUkH8hfJvT1NEoz3GSm/HRLXUBumyDjLPpAMC4j9HhUz9h6+AdInohayh91HSe5FY9vSJioEx5zkoA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=umciH1Kb; dkim-atps=neutral; spf=pass (client-ip=113.46.200.219; helo=canpmsgout04.his.huawei.com; envelope-from=guohanjun@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1763693685; c=relaxed/relaxed;
+	bh=rL+6gQrD2hIPuY1jkJ6ZZlav1c8neJ0Gcd5SaeNzB3Q=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=MtFyUbwKTjQpZXOKBGb3Mlkeguytgbsu8TI9R+XQ9H2MV7s88T4dxT3FYh6wvzTfW60VpL059hB+xnTHOm1tK9sWFT7jo6lHUMJaHn3yGCOzkgvtE0pZPrwBFQ9ODsaP7A8Hhk0vii1s+9wMqdWLnqezHHj931NYJJaI+7lLe1pxCsJd13wCQitVIMtwiizv8sq0pnaJ/I37DBg2R+qlsQz6qzzUSmJbIi7vRs21JisRVpf0e+aO3GDFUzA1SuIzoty69QzbXrovyvrA3O1i0ucoK0x/Tu7gLYko7jJvejGio+EP8gqpR7zLIhfOnaWEdFXepE4CySlz6eqw/aodFg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dZ9HPD16; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=umciH1Kb;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=dZ9HPD16;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=113.46.200.219; helo=canpmsgout04.his.huawei.com; envelope-from=guohanjun@huawei.com; receiver=lists.ozlabs.org)
-Received: from canpmsgout04.his.huawei.com (canpmsgout04.his.huawei.com [113.46.200.219])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dCKQ75kwPz2yD5
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2025 13:47:40 +1100 (AEDT)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=7/+xC9VzlzEvb/9+gGLwhYCZZ6+xeKT68zJkKrNRvNo=;
-	b=umciH1KbToXmWnysWFcNx4N/28wNz0FN+EKeR71aSehD+o98NCvFpUht/EtqQYi3rjhCrLqTR
-	xZWOX/pqi5WYvldwqLxNWtnxyvByw/QgBSrE2U/DUzmcqJSsN8KVn3UF364j5bCMoAEZ0h88/IF
-	AVQ0DIPiG0E1xO56eb13KLQ=
-Received: from mail.maildlp.com (unknown [172.19.163.174])
-	by canpmsgout04.his.huawei.com (SkyGuard) with ESMTPS id 4dCKMx5vtWz1prL2;
-	Fri, 21 Nov 2025 10:45:49 +0800 (CST)
-Received: from dggpemf500002.china.huawei.com (unknown [7.185.36.57])
-	by mail.maildlp.com (Postfix) with ESMTPS id 77BB314022D;
-	Fri, 21 Nov 2025 10:47:35 +0800 (CST)
-Received: from [10.174.178.247] (10.174.178.247) by
- dggpemf500002.china.huawei.com (7.185.36.57) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Fri, 21 Nov 2025 10:47:33 +0800
-Subject: Re: [PATCH RESEND v5] vmcoreinfo: Track and log recoverable hardware
- errors
-To: Breno Leitao <leitao@debian.org>, "Rafael J. Wysocki" <rafael@kernel.org>,
-	Len Brown <lenb@kernel.org>, James Morse <james.morse@arm.com>, Tony Luck
-	<tony.luck@intel.com>, Borislav Petkov <bp@alien8.de>, Robert Moore
-	<robert.moore@intel.com>, Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar
-	<mingo@redhat.com>, Dave Hansen <dave.hansen@linux.intel.com>,
-	<x86@kernel.org>, "H. Peter Anvin" <hpa@zytor.com>, Mauro Carvalho Chehab
-	<mchehab@kernel.org>, Mahesh J Salgaonkar <mahesh@linux.ibm.com>, Oliver
- O'Halloran <oohall@gmail.com>, Bjorn Helgaas <bhelgaas@google.com>
-CC: <linux-acpi@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<acpica-devel@lists.linux.dev>, <osandov@osandov.com>,
-	<xueshuai@linux.alibaba.com>, <konrad.wilk@oracle.com>,
-	<linux-edac@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
-	<linux-pci@vger.kernel.org>, <kernel-team@meta.com>
-References: <20251010-vmcore_hw_error-v5-1-636ede3efe44@debian.org>
-From: Hanjun Guo <guohanjun@huawei.com>
-Message-ID: <a4a34583-8f26-bb08-001f-a53715070c00@huawei.com>
-Date: Fri, 21 Nov 2025 10:47:32 +0800
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:68.0) Gecko/20100101
- Thunderbird/68.6.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dCKZB5p3mz2xQ6
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2025 13:54:41 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5AKNbqNc021553;
+	Fri, 21 Nov 2025 02:54:30 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=rL+6gQ
+	rD2hIPuY1jkJ6ZZlav1c8neJ0Gcd5SaeNzB3Q=; b=dZ9HPD160AacbJ2bsYAizX
+	EyXwcsFxR3CZ4TWVcBUHWbt4Jfko2id+VOm7ySPuxZ/wZtT7LUjoUOp7CUDlT8gA
+	CWomUK1/GunAeHfVovAAyxL+p8J4hhZcSGesa3LOqZtAWRZllQ73mOMR0FRBc4QL
+	kTshuhyauycHixY0PlKjxCSPd/ZxIO2Z+ho7u362bzERim1AmF6yxboq9J3dMltI
+	TpO6MViCGPUbzYnEhKfugp4jNcoOC0ZcSQ+ad30jOA+Mq9/FCt5p5nFgrPcnn+Cv
+	SxuQcBMzSUdmxyKjx8mWwvmiOhVXF0UQkwdD60S/v6exD1WjVEtsWXvfPUFhbE3Q
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejjwhq16-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 21 Nov 2025 02:54:30 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5AL2sFpf024581;
+	Fri, 21 Nov 2025 02:54:29 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aejjwhq13-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 21 Nov 2025 02:54:29 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5AKNY8dv010392;
+	Fri, 21 Nov 2025 02:54:28 GMT
+Received: from smtprelay07.fra02v.mail.ibm.com ([9.218.2.229])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4af3usj5dk-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 21 Nov 2025 02:54:28 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay07.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5AL2sPII44433694
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 21 Nov 2025 02:54:26 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D439F20215;
+	Fri, 21 Nov 2025 02:54:25 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 3728E20214;
+	Fri, 21 Nov 2025 02:54:24 +0000 (GMT)
+Received: from li-c439904c-24ed-11b2-a85c-b284a6847472.in.ibm.com (unknown [9.98.111.108])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Fri, 21 Nov 2025 02:54:23 +0000 (GMT)
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        leo.lilong@huaweicloud.com
+Cc: leo.lilong@huawei.com, yi.zhang@huawei.com, yangerkun@huawei.com,
+        lonuxli.64@gmail.com
+Subject: Re: [PATCH] macintosh/mac_hid: fix race condition in mac_hid_toggle_emumouse
+Date: Fri, 21 Nov 2025 08:23:52 +0530
+Message-ID: <176369324783.72695.10204424891065348642.b4-ty@linux.ibm.com>
+X-Mailer: git-send-email 2.51.1
+In-Reply-To: <20250819091035.2263329-1-leo.lilong@huaweicloud.com>
+References: <20250819091035.2263329-1-leo.lilong@huaweicloud.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,91 +96,73 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <20251010-vmcore_hw_error-v5-1-636ede3efe44@debian.org>
-Content-Type: text/plain; charset="utf-8"; format=flowed
-Content-Language: en-GB
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-X-Originating-IP: [10.174.178.247]
-X-ClientProxiedBy: kwepems500002.china.huawei.com (7.221.188.17) To
- dggpemf500002.china.huawei.com (7.185.36.57)
+X-TM-AS-GCONF: 00
+X-Authority-Analysis: v=2.4 cv=BanVE7t2 c=1 sm=1 tr=0 ts=691fd466 cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=IkcTkHD0fZMA:10 a=6UeiqGixMTsA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VwQbUJbxAAAA:8 a=AiHppB-aAAAA:8 a=ID6ng7r3AAAA:8 a=2q4paKsRDt6h5Fse_6gA:9
+ a=QEXdDO2ut3YA:10 a=AkheI1RvQwOzcTXhi5f4:22
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTE1MDAzMiBTYWx0ZWRfX3/wBF8XZMVw+
+ IbUEbpCrNACI7Ix8ZByzezGSsuOvYMgsiSgNVtTxeXZTGjz3qGILJA19NoAeOhiqeQYec75lUDZ
+ 9YJY1h7FtKaq099Y9GRnrwdOV11WvYhZmXxXqHP8V/WAcEWSro8Tb7sEucJDX214nRLzplM8Mye
+ hMSF2HnvDDZ3WyaVwuHqgqujj6S8DLqdv42eafpmuu4iYsGfsla2/qn/0W/MQwl60TPsaTSSXUh
+ YTlhvFP0WWhqXqTXEpJ7bVZTOz3g5o5ag7GjuBInGBXUlkUIsKN5ohxJJuRP6YbwEi4XcXLEJY2
+ BXQXNkPECa7Mv8WEymdEGhs3658R972z6KZAulrlQCXl75NU/eTYr7grwcS5duJEeU0ExHpm1ca
+ iXajhHAHdunzCR841+oorxSY/r6zxg==
+X-Proofpoint-GUID: xDKYSfzk0Hb4jTlRwC3CD5AP4K7xbrfT
+X-Proofpoint-ORIG-GUID: txwizknX6t3T8f44PJXxb_ACtf8Llrjb
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-11-21_01,2025-11-20_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ malwarescore=0 lowpriorityscore=0 suspectscore=0 spamscore=0 impostorscore=0
+ priorityscore=1501 clxscore=1011 phishscore=0 bulkscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2511150032
 
-On 2025/10/10 18:36, Breno Leitao wrote:
-> Introduce a generic infrastructure for tracking recoverable hardware
-> errors (HW errors that are visible to the OS but does not cause a panic)
-> and record them for vmcore consumption. This aids post-mortem crash
-> analysis tools by preserving a count and timestamp for the last
-> occurrence of such errors. On the other side, correctable errors, which
-> the OS typically remains unaware of because the underlying hardware
-> handles them transparently, are less relevant for crash dump
-> and therefore are NOT tracked in this infrastructure.
+On Tue, 19 Aug 2025 17:10:35 +0800, leo.lilong@huaweicloud.com wrote:
+> The following warning appears when running syzkaller, and this issue also
+> exists in the mainline code.
 > 
-> Add centralized logging for sources of recoverable hardware
-> errors based on the subsystem it has been notified.
+>  ------------[ cut here ]------------
+>  list_add double add: new=ffffffffa57eee28, prev=ffffffffa57eee28, next=ffffffffa5e63100.
+>  WARNING: CPU: 0 PID: 1491 at lib/list_debug.c:35 __list_add_valid_or_report+0xf7/0x130
+>  Modules linked in:
+>  CPU: 0 PID: 1491 Comm: syz.1.28 Not tainted 6.6.0+ #3
+>  Hardware name: QEMU Standard PC (i440FX + PIIX, 1996), BIOS rel-1.16.0-0-gd239552ce722-prebuilt.qemu.org 04/01/2014
+>  RIP: 0010:__list_add_valid_or_report+0xf7/0x130
+>  RSP: 0018:ff1100010dfb7b78 EFLAGS: 00010282
+>  RAX: 0000000000000000 RBX: ffffffffa57eee18 RCX: ffffffff97fc9817
+>  RDX: 0000000000040000 RSI: ffa0000002383000 RDI: 0000000000000001
+>  RBP: ffffffffa57eee28 R08: 0000000000000001 R09: ffe21c0021bf6f2c
+>  R10: 0000000000000001 R11: 6464615f7473696c R12: ffffffffa5e63100
+>  R13: ffffffffa57eee28 R14: ffffffffa57eee28 R15: ff1100010dfb7d48
+>  FS:  00007fb14398b640(0000) GS:ff11000119600000(0000) knlGS:0000000000000000
+>  CS:  0010 DS: 0000 ES: 0000 CR0: 0000000080050033
+>  CR2: 0000000000000000 CR3: 000000010d096005 CR4: 0000000000773ef0
+>  DR0: 0000000000000000 DR1: 0000000000000000 DR2: 0000000000000000
+>  DR3: 0000000000000000 DR6: 00000000fffe0ff0 DR7: 0000000000000400
+>  PKRU: 80000000
+>  Call Trace:
+>   <TASK>
+>   input_register_handler+0xb3/0x210
+>   mac_hid_start_emulation+0x1c5/0x290
+>   mac_hid_toggle_emumouse+0x20a/0x240
+>   proc_sys_call_handler+0x4c2/0x6e0
+>   new_sync_write+0x1b1/0x2d0
+>   vfs_write+0x709/0x950
+>   ksys_write+0x12a/0x250
+>   do_syscall_64+0x5a/0x110
+>   entry_SYSCALL_64_after_hwframe+0x78/0xe2
 > 
-> hwerror_data is write-only at kernel runtime, and it is meant to be read
-> from vmcore using tools like crash/drgn. For example, this is how it
-> looks like when opening the crashdump from drgn.
-> 
-> 	>>> prog['hwerror_data']
-> 	(struct hwerror_info[1]){
-> 		{
-> 			.count = (int)844,
-> 			.timestamp = (time64_t)1752852018,
-> 		},
-> 		...
-> 
-> This helps fleet operators quickly triage whether a crash may be
-> influenced by hardware recoverable errors (which executes a uncommon
-> code path in the kernel), especially when recoverable errors occurred
-> shortly before a panic, such as the bug fixed by
-> commit ee62ce7a1d90 ("page_pool: Track DMA-mapped pages and unmap them
-> when destroying the pool")
-> 
-> This is not intended to replace full hardware diagnostics but provides
-> a fast way to correlate hardware events with kernel panics quickly.
-> 
-> Rare machine check exceptions—like those indicated by mce_flags.p5 or
-> mce_flags.winchip—are not accounted for in this method, as they fall
-> outside the intended usage scope for this feature’s user base.
-> 
-> Suggested-by: Tony Luck <tony.luck@intel.com>
-> Suggested-by: Shuai Xue <xueshuai@linux.alibaba.com>
-> Signed-off-by: Breno Leitao <leitao@debian.org>
-> Reviewed-by: Shuai Xue <xueshuai@linux.alibaba.com>
-> ---
-> Changes in v5:
-> - Move the headers to uapi file (Dave Hansen)
-> - Use atomic operations in the tracking struct (Dave Hansen)
-> - Drop the MCE enum type, and track MCE errors as "others"
-> - Document this feature better
-> - Link to v4: https://lore.kernel.org/r/20250801-vmcore_hw_error-v4-1-fa1fe65edb83@debian.org
-> 
-> Changes in v4:
-> - Split the error by hardware subsystem instead of kernel
->    subsystem/driver (Shuai)
-> - Do not count the corrected errors, only focusing on recoverable errors (Shuai)
-> - Link to v3: https://lore.kernel.org/r/20250722-vmcore_hw_error-v3-1-ff0683fc1f17@debian.org
-> 
-> Changes in v3:
-> - Add more information about this feature in the commit message
->    (Borislav Petkov)
-> - Renamed the function to hwerr_log_error_type() and use hwerr as
->    suffix (Borislav Petkov)
-> - Make the empty function static inline (kernel test robot)
-> - Link to v2: https://lore.kernel.org/r/20250721-vmcore_hw_error-v2-1-ab65a6b43c5a@debian.org
-> 
-> Changes in v2:
-> - Split the counter by recoverable error (Tony Luck)
-> - Link to v1: https://lore.kernel.org/r/20250714-vmcore_hw_error-v1-1-8cf45edb6334@debian.org
-> ---
->   Documentation/driver-api/hw-recoverable-errors.rst | 60 ++++++++++++++++++++++
->   arch/x86/kernel/cpu/mce/core.c                     |  4 ++
->   drivers/acpi/apei/ghes.c                           | 36 +++++++++++++
+> [...]
 
-For the APEI part,
+Applied to powerpc/next.
 
-Reviewed-by: Hanjun Guo <guohanjun@huawei.com>
+[1/1] macintosh/mac_hid: fix race condition in mac_hid_toggle_emumouse
+      https://git.kernel.org/powerpc/c/1e4b207ffe54cf33a4b7a2912c4110f89c73bf3f
 
 Thanks
-Hanjun
 
