@@ -1,93 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-14410-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14411-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E00B4CFA748
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Nov 2025 08:13:13 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 73B51CFA468
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 21 Nov 2025 08:29:47 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dCSdh2TGbz2y5T;
-	Fri, 21 Nov 2025 19:13:12 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a07:de40:b251:101:10:150:64:1"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763712792;
-	cv=none; b=D+b+EiastFbR+du5ydz9uD7fsfmKFZid8E+OJM5eb7ulWdse9bif4mYcJHhyN5IS5vs9fRyOcCib4mB9tRkW+UjzRQfMNMQmyV8R1/7TaJ4YlFGF1t7oAGWFErYCx8B45/FBiER2lajCDCY/rGOZE2NPuycbepw6+dEftasJbtc33SI7j8mR0BigX+3vk5b1hsJwQ//2Y8ylLl2sNpHV6r1E+BcRq90X7af1oTllyJbHVb6vJdnaxcMJ+0d+ccbLces7kk9qKkhY1Hcwy9bdV8+5hXzJ63Zv2CKbrd2jT68iIKASPBjOAOq/OfCg6g9oeZpVOBm+MnVsVhJ0AANaWA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dCT0n5dblz2yD5;
+	Fri, 21 Nov 2025 19:29:45 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.10
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763713785;
+	cv=none; b=RgJ8iaiswRSQEh4xu1K3qCSuYrm/7DOX0l1UtRldi634ztzvWN2DlYO9ZF44kSsw6ie0GjG6mzEb2nekn/iqyVxTeiF52ZHE2lSNGMBZothbb+ObcoyzUVdB9hQMLpmAj1hhAU2EcStB6Ji79LeWNWzc6eV/rrlVKFGrDS4KcrEAMhbKEHrsAquQqjuMM8t4XwiNkpmJ1JtEKaGD39YMOUzbNOuvsBqyycxTb8yeEMgRf25z2/OhuH4MAs9Q35RkxCHIHQjGTTP+Bl8l9x2cTvf+0/c64tUT3CFi9ZsLAuXR0PS7PzF4IQNU9zMFDGq142NunF9TPQhUBm6MupmY5Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763712792; c=relaxed/relaxed;
-	bh=47f3t2quGh0AzMkGBd1vq9EFL0ZXErTFAI2lHjxXT9Y=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=XAB/tfXzIo2xKDLONRvzf4nXYDr3Ob3BEyStiIFP0+7vvrTXdK4KG9EqAIWieR6nFAlNZDLkX9e2M6dkrEcj+08tGp4TO4QlZIboBrWjZjO7wNioFcduujv2To7m3LTTxxsoQ9dhyv6+RswWtnHXcme/pwUgk2Trxu4+HWFg1636+7c9VWOFGtA8Fpa9Q9w48VnAOoPNLLykAPzOQRLoyuxcQU8YuZAs0fnUBR4r3kUjPbmRYDBXeIfk2nUfG1Xk3FAOGosYigWslmGcSLO75WJ2eOjiwuQNxXXxXYqKvWmvv8YCanWCEzM/26ZwruetfTmsnQ0e/YX+dtclqUlfYA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de; dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=j76ldxl3; dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=UL7ECpFF; dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=j76ldxl3; dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=UL7ECpFF; dkim-atps=neutral; spf=pass (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org) smtp.mailfrom=suse.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=suse.de
+	t=1763713785; c=relaxed/relaxed;
+	bh=Zg80lzeJdeQcn7i0xSP07fimY5POxQfUDNdhJ4rwiL0=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=OZOc0uSiP2VY+qvSFU0VgFp88mUWrKigWap9p0FB7wwayzFmOzCf/BX5P7uElnaycTLEih4SGZQO81YxCH9VvoDBthTuof/3OLyOV6l11iv3kD2FHnzAkoGDMGyJGSAd1ZT5tpZk37kANmyT72JCKs/WGn73hx38fhrI6zl0IHc1UBx2TsPoQlx3BTrJvC7i9yhkwb539HQ0Dl1/mkQv0F4UUKNrz4B8g13VJzt/jg190JaQudl81oN40T6w/723CSpnudU3waeUI6GvAd/eextO4uXqwrswOMY6VKyifsTnunMy/hyKb49MpSKvGZUGO0e4tfKgw7yYxvOVg5p5Zg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IcBglDGS; dkim-atps=neutral; spf=pass (client-ip=198.175.65.10; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=j76ldxl3;
-	dkim=pass header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=UL7ECpFF;
-	dkim=pass (1024-bit key) header.d=suse.de header.i=@suse.de header.a=rsa-sha256 header.s=susede2_rsa header.b=j76ldxl3;
-	dkim=neutral header.d=suse.de header.i=@suse.de header.a=ed25519-sha256 header.s=susede2_ed25519 header.b=UL7ECpFF;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=IcBglDGS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.de (client-ip=2a07:de40:b251:101:10:150:64:1; helo=smtp-out1.suse.de; envelope-from=tzimmermann@suse.de; receiver=lists.ozlabs.org)
-Received: from smtp-out1.suse.de (smtp-out1.suse.de [IPv6:2a07:de40:b251:101:10:150:64:1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.10; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.10])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dCSdf6Qhrz2xqm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2025 19:13:10 +1100 (AEDT)
-Received: from imap1.dmz-prg2.suse.org (unknown [10.150.64.97])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by smtp-out1.suse.de (Postfix) with ESMTPS id AC25121900;
-	Fri, 21 Nov 2025 08:13:02 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1763712782; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=47f3t2quGh0AzMkGBd1vq9EFL0ZXErTFAI2lHjxXT9Y=;
-	b=j76ldxl3RJ2z6jfuSLhlmbehzI8pOG5XXfb9WeHkvsRza7uzJe2qGY7nciPuRdSHx4M1uz
-	7thdIdr8+0H+EnYi47ArlBMtxLuIGBleLBTfZl62NPaqrUaLhyNtTmAUEsz0b60eMf9ndq
-	7QNzWwo53jiMeSLxCjktDUrmvikBTSk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1763712782;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=47f3t2quGh0AzMkGBd1vq9EFL0ZXErTFAI2lHjxXT9Y=;
-	b=UL7ECpFFa9/WhLy8Xa7NY065ENt/7AGP+3lDf9QVuhwpzMKTUfFzK0ox2Nwvy++KWwBhnV
-	f7W8JY+BUMuAOZCg==
-Authentication-Results: smtp-out1.suse.de;
-	none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=suse.de; s=susede2_rsa;
-	t=1763712782; h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=47f3t2quGh0AzMkGBd1vq9EFL0ZXErTFAI2lHjxXT9Y=;
-	b=j76ldxl3RJ2z6jfuSLhlmbehzI8pOG5XXfb9WeHkvsRza7uzJe2qGY7nciPuRdSHx4M1uz
-	7thdIdr8+0H+EnYi47ArlBMtxLuIGBleLBTfZl62NPaqrUaLhyNtTmAUEsz0b60eMf9ndq
-	7QNzWwo53jiMeSLxCjktDUrmvikBTSk=
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=suse.de;
-	s=susede2_ed25519; t=1763712782;
-	h=from:from:reply-to:date:date:message-id:message-id:to:to:cc:cc:
-	 mime-version:mime-version:content-type:content-type:
-	 content-transfer-encoding:content-transfer-encoding:
-	 in-reply-to:in-reply-to:references:references:autocrypt:autocrypt;
-	bh=47f3t2quGh0AzMkGBd1vq9EFL0ZXErTFAI2lHjxXT9Y=;
-	b=UL7ECpFFa9/WhLy8Xa7NY065ENt/7AGP+3lDf9QVuhwpzMKTUfFzK0ox2Nwvy++KWwBhnV
-	f7W8JY+BUMuAOZCg==
-Received: from imap1.dmz-prg2.suse.org (localhost [127.0.0.1])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature RSA-PSS (4096 bits) server-digest SHA256)
-	(No client certificate requested)
-	by imap1.dmz-prg2.suse.org (Postfix) with ESMTPS id 898313EA61;
-	Fri, 21 Nov 2025 08:13:02 +0000 (UTC)
-Received: from dovecot-director2.suse.de ([2a07:de40:b281:106:10:150:64:167])
-	by imap1.dmz-prg2.suse.org with ESMTPSA
-	id GWmnHw4fIGmWKwAAD6G6ig
-	(envelope-from <tzimmermann@suse.de>); Fri, 21 Nov 2025 08:13:02 +0000
-Message-ID: <2766a9d5-1a8f-451e-b018-993563715629@suse.de>
-Date: Fri, 21 Nov 2025 09:13:02 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dCT0l1Rh3z2xSY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 21 Nov 2025 19:29:40 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1763713784; x=1795249784;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=BB4/6hGUoiLibs4Na2AJzu1fx/ZenLoo01mFy4fD8p4=;
+  b=IcBglDGSAjvsvWQSgtH4vo4PjsADhHmyXYgQt96b33AvAd++FQ24uxTc
+   bsv4q+Je6nkJGJ4iCXYr0lvraPTYfJfxEBbEaPvPGOOZ8KF7G8593kJDy
+   ky+5AejslESk0MFqI6H/9RRgYf+mEZwaNRJBxM6qw9IkIQhzzdPcf5IKP
+   /YEG7u/7VWOxuu6P4OrK9wI3KyvUcSsBE6nRVg7FofMnZOcP5DV0cn7Sh
+   FSFX1jd3rdt8R4l6svjDKkvHplzSkkjCeuw4UVwCArfpHy3KBNQrB4qHx
+   uNEVqfXt6NcWM46pnqfnjF2Pvuxb31NPEFkO56hH+41Ns9oi76Mr097tN
+   g==;
+X-CSE-ConnectionGUID: cp+hPEz3TSC+1+ShzftM0w==
+X-CSE-MsgGUID: Yy7NpTRfSSWpZ+icXLAntw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11619"; a="83193113"
+X-IronPort-AV: E=Sophos;i="6.20,215,1758610800"; 
+   d="scan'208";a="83193113"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by orvoesa102.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 21 Nov 2025 00:29:37 -0800
+X-CSE-ConnectionGUID: IFcT6buWSgylRLtiFzTJOw==
+X-CSE-MsgGUID: HnY3eJyGTEa8YGbHZclxEQ==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.20,215,1758610800"; 
+   d="scan'208";a="191428265"
+Received: from lkp-server01.sh.intel.com (HELO adf6d29aa8d9) ([10.239.97.150])
+  by orviesa009.jf.intel.com with ESMTP; 21 Nov 2025 00:29:31 -0800
+Received: from kbuild by adf6d29aa8d9 with local (Exim 4.96)
+	(envelope-from <lkp@intel.com>)
+	id 1vMMWH-00056t-07;
+	Fri, 21 Nov 2025 08:29:29 +0000
+Date: Fri, 21 Nov 2025 16:29:28 +0800
+From: kernel test robot <lkp@intel.com>
+To: Shrikanth Hegde <sshegde@linux.ibm.com>, linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org
+Cc: oe-kbuild-all@lists.linux.dev, sshegde@linux.ibm.com, mingo@redhat.com,
+	peterz@infradead.org, juri.lelli@redhat.com,
+	vincent.guittot@linaro.org, tglx@linutronix.de,
+	yury.norov@gmail.com, maddy@linux.ibm.com, srikar@linux.ibm.com,
+	gregkh@linuxfoundation.org, pbonzini@redhat.com, seanjc@google.com,
+	kprateek.nayak@amd.com, vschneid@redhat.com, iii@linux.ibm.com,
+	huschle@linux.ibm.com, rostedt@goodmis.org,
+	dietmar.eggemann@arm.com, christophe.leroy@csgroup.eu
+Subject: Re: [PATCH 12/17] powerpc: method to initialize ec and vp cores
+Message-ID: <202511211643.QVn7aDHd-lkp@intel.com>
+References: <20251119124449.1149616-13-sshegde@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -101,216 +87,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 2/2] drm/ast: Fix framebuffer color swapping on ppc64
- systems
-To: Timothy Pearson <tpearson@raptorengineering.com>,
- Dave Airlie <airlied@redhat.com>
-Cc: dri-devel <dri-devel@lists.freedesktop.org>,
- linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-References: <407388289.1798972.1760725035958.JavaMail.zimbra@raptorengineeringinc.com>
- <705534604.1798975.1760725076596.JavaMail.zimbra@raptorengineeringinc.com>
- <109693647.1798978.1760725111876.JavaMail.zimbra@raptorengineeringinc.com>
-Content-Language: en-US
-From: Thomas Zimmermann <tzimmermann@suse.de>
-Autocrypt: addr=tzimmermann@suse.de; keydata=
- xsBNBFs50uABCADEHPidWt974CaxBVbrIBwqcq/WURinJ3+2WlIrKWspiP83vfZKaXhFYsdg
- XH47fDVbPPj+d6tQrw5lPQCyqjwrCPYnq3WlIBnGPJ4/jreTL6V+qfKRDlGLWFjZcsrPJGE0
- BeB5BbqP5erN1qylK9i3gPoQjXGhpBpQYwRrEyQyjuvk+Ev0K1Jc5tVDeJAuau3TGNgah4Yc
- hdHm3bkPjz9EErV85RwvImQ1dptvx6s7xzwXTgGAsaYZsL8WCwDaTuqFa1d1jjlaxg6+tZsB
- 9GluwvIhSezPgnEmimZDkGnZRRSFiGP8yjqTjjWuf0bSj5rUnTGiyLyRZRNGcXmu6hjlABEB
- AAHNJ1Rob21hcyBaaW1tZXJtYW5uIDx0emltbWVybWFubkBzdXNlLmRlPsLAjgQTAQgAOAIb
- AwULCQgHAgYVCgkICwIEFgIDAQIeAQIXgBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftODH
- AAoJEGgNwR1TC3ojx1wH/0hKGWugiqDgLNXLRD/4TfHBEKmxIrmfu9Z5t7vwUKfwhFL6hqvo
- lXPJJKQpQ2z8+X2vZm/slsLn7J1yjrOsoJhKABDi+3QWWSGkaGwRJAdPVVyJMfJRNNNIKwVb
- U6B1BkX2XDKDGffF4TxlOpSQzdtNI/9gleOoUA8+jy8knnDYzjBNOZqLG2FuTdicBXblz0Mf
- vg41gd9kCwYXDnD91rJU8tzylXv03E75NCaTxTM+FBXPmsAVYQ4GYhhgFt8S2UWMoaaABLDe
- 7l5FdnLdDEcbmd8uLU2CaG4W2cLrUaI4jz2XbkcPQkqTQ3EB67hYkjiEE6Zy3ggOitiQGcqp
- j//OwE0EWznS4AEIAMYmP4M/V+T5RY5at/g7rUdNsLhWv1APYrh9RQefODYHrNRHUE9eosYb
- T6XMryR9hT8XlGOYRwKWwiQBoWSDiTMo/Xi29jUnn4BXfI2px2DTXwc22LKtLAgTRjP+qbU6
- 3Y0xnQN29UGDbYgyyK51DW3H0If2a3JNsheAAK+Xc9baj0LGIc8T9uiEWHBnCH+RdhgATnWW
- GKdDegUR5BkDfDg5O/FISymJBHx2Dyoklv5g4BzkgqTqwmaYzsl8UxZKvbaxq0zbehDda8lv
- hFXodNFMAgTLJlLuDYOGLK2AwbrS3Sp0AEbkpdJBb44qVlGm5bApZouHeJ/+n+7r12+lqdsA
- EQEAAcLAdgQYAQgAIAIbDBYhBHIX+6yM6c9jRKFo5WgNwR1TC3ojBQJftOH6AAoJEGgNwR1T
- C3ojVSkIALpAPkIJPQoURPb1VWjh34l0HlglmYHvZszJWTXYwavHR8+k6Baa6H7ufXNQtThR
- yIxJrQLW6rV5lm7TjhffEhxVCn37+cg0zZ3j7zIsSS0rx/aMwi6VhFJA5hfn3T0TtrijKP4A
- SAQO9xD1Zk9/61JWk8OysuIh7MXkl0fxbRKWE93XeQBhIJHQfnc+YBLprdnxR446Sh8Wn/2D
- Ya8cavuWf2zrB6cZurs048xe0UbSW5AOSo4V9M0jzYI4nZqTmPxYyXbm30Kvmz0rYVRaitYJ
- 4kyYYMhuULvrJDMjZRvaNe52tkKAvMevcGdt38H4KSVXAylqyQOW5zvPc4/sq9c=
-In-Reply-To: <109693647.1798978.1760725111876.JavaMail.zimbra@raptorengineeringinc.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-Spamd-Result: default: False [-4.30 / 50.00];
-	BAYES_HAM(-3.00)[100.00%];
-	NEURAL_HAM_LONG(-1.00)[-1.000];
-	NEURAL_HAM_SHORT(-0.20)[-1.000];
-	MIME_GOOD(-0.10)[text/plain];
-	RCVD_VIA_SMTP_AUTH(0.00)[];
-	FUZZY_RATELIMITED(0.00)[rspamd.com];
-	ARC_NA(0.00)[];
-	MIME_TRACE(0.00)[0:+];
-	MID_RHS_MATCH_FROM(0.00)[];
-	RCVD_TLS_ALL(0.00)[];
-	DKIM_SIGNED(0.00)[suse.de:s=susede2_rsa,suse.de:s=susede2_ed25519];
-	URIBL_BLOCKED(0.00)[suse.de:mid,imap1.dmz-prg2.suse.org:helo,suse.com:url,raptorengineering.com:email];
-	FROM_EQ_ENVFROM(0.00)[];
-	FROM_HAS_DN(0.00)[];
-	RCPT_COUNT_THREE(0.00)[4];
-	RCVD_COUNT_TWO(0.00)[2];
-	TO_DN_ALL(0.00)[];
-	TO_MATCH_ENVRCPT_ALL(0.00)[];
-	DBL_BLOCKED_OPENRESOLVER(0.00)[suse.de:mid,imap1.dmz-prg2.suse.org:helo,suse.com:url,raptorengineering.com:email]
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251119124449.1149616-13-sshegde@linux.ibm.com>
 
-Hi
+Hi Shrikanth,
 
-Am 17.10.25 um 20:18 schrieb Timothy Pearson:
-> On certain big endian systems, such as the POWER9 operating in big endian
-> mode, PCI MMIO BAR accesses are transparently endian-swapped by hardware.
-> On the AST2xx0 series devices, this results in the little endian framebuffer
-> appearing to the host as a big endian device, resulting in unwanted color
-> swapping.
->
-> Furthermore, per ASpeed technical support, the big endian mode on these devices
-> is not supported and, per Raptor's internal testing, does not function at a
-> hardware level.
->
-> Detect transparent PCI swapping via CONFIG_PCI_ARCH_ENDIAN_AUTOSWAP, and
-> expose the framebuffer as a big endian device with software swapping.
->
-> Tested on a POWER9 Blackbird system with Debian sid/ppc64.
->
-> Signed-off-by: Timothy Pearson <tpearson@raptorengineering.com>
-> ---
->   drivers/gpu/drm/ast/ast_mode.c | 33 +++++++++++++++++++++++++++++++--
->   1 file changed, 31 insertions(+), 2 deletions(-)
->
-> diff --git a/drivers/gpu/drm/ast/ast_mode.c b/drivers/gpu/drm/ast/ast_mode.c
-> index 30b011ed0a05..07f04668ef92 100644
-> --- a/drivers/gpu/drm/ast/ast_mode.c
-> +++ b/drivers/gpu/drm/ast/ast_mode.c
-> @@ -105,9 +105,11 @@ static void ast_crtc_fill_gamma(struct ast_device *ast,
->   		drm_crtc_fill_palette_8(crtc, ast_set_gamma_lut);
->   		break;
->   	case DRM_FORMAT_RGB565:
-> +	case DRM_FORMAT_HOST_RGB565:
->   		/* also uses 8-bit gamma ramp on low-color modes */
->   		fallthrough;
->   	case DRM_FORMAT_XRGB8888:
-> +	case DRM_FORMAT_HOST_XRGB8888:
->   		drm_crtc_fill_gamma_888(crtc, ast_set_gamma_lut);
->   		break;
->   	default:
-> @@ -129,9 +131,11 @@ static void ast_crtc_load_gamma(struct ast_device *ast,
->   		drm_crtc_load_palette_8(crtc, lut, ast_set_gamma_lut);
->   		break;
->   	case DRM_FORMAT_RGB565:
-> +	case DRM_FORMAT_HOST_RGB565:
->   		/* also uses 8-bit gamma ramp on low-color modes */
->   		fallthrough;
->   	case DRM_FORMAT_XRGB8888:
-> +	case DRM_FORMAT_HOST_XRGB8888:
->   		drm_crtc_load_gamma_888(crtc, lut, ast_set_gamma_lut);
->   		break;
->   	default:
-> @@ -502,8 +506,13 @@ void __iomem *ast_plane_vaddr(struct ast_plane *ast_plane)
->    */
->   
->   static const uint32_t ast_primary_plane_formats[] = {
-> +#if defined(__BIG_ENDIAN) && defined(CONFIG_PCI_ARCH_ENDIAN_AUTOSWAP)
-> +	DRM_FORMAT_HOST_XRGB8888,
-> +	DRM_FORMAT_HOST_RGB565,
-> +#else
->   	DRM_FORMAT_XRGB8888,
->   	DRM_FORMAT_RGB565,
-> +#endif
->   	DRM_FORMAT_C8,
->   };
->   
-> @@ -541,12 +550,24 @@ static int ast_primary_plane_helper_atomic_check(struct drm_plane *plane,
->   
->   static void ast_handle_damage(struct ast_plane *ast_plane, struct iosys_map *src,
->   			      struct drm_framebuffer *fb,
-> -			      const struct drm_rect *clip)
-> +			      const struct drm_rect *clip,
-> +			      struct drm_format_conv_state *fmtcnv_state)
->   {
->   	struct iosys_map dst = IOSYS_MAP_INIT_VADDR_IOMEM(ast_plane_vaddr(ast_plane));
->   
->   	iosys_map_incr(&dst, drm_fb_clip_offset(fb->pitches[0], fb->format, clip));
-> +#if defined(__BIG_ENDIAN) && defined(CONFIG_PCI_ARCH_ENDIAN_AUTOSWAP)
-> +	switch (fb->format->format) {
-> +		case DRM_FORMAT_HOST_XRGB8888:
-> +		case DRM_FORMAT_HOST_RGB565:
-> +			drm_fb_swab(&dst, fb->pitches, src, fb, clip, false, fmtcnv_state);
+kernel test robot noticed the following build errors:
 
-DRM formats are always little endian. I'm not sure if most user space 
-even supports anything else.  Can we just drop the whole _FORMAT_HOST_ 
-formats and do a swap here if we're on BE PPC64?
+[auto build test ERROR on tip/sched/core]
+[also build test ERROR on next-20251121]
+[cannot apply to powerpc/next powerpc/fixes driver-core/driver-core-testing driver-core/driver-core-next driver-core/driver-core-linus linus/master v6.18-rc6]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Best regards
-Thomas
+url:    https://github.com/intel-lab-lkp/linux/commits/Shrikanth-Hegde/sched-docs-Document-cpu_paravirt_mask-and-Paravirt-CPU-concept/20251119-204931
+base:   tip/sched/core
+patch link:    https://lore.kernel.org/r/20251119124449.1149616-13-sshegde%40linux.ibm.com
+patch subject: [PATCH 12/17] powerpc: method to initialize ec and vp cores
+config: powerpc-randconfig-002-20251121 (https://download.01.org/0day-ci/archive/20251121/202511211643.QVn7aDHd-lkp@intel.com/config)
+compiler: powerpc-linux-gcc (GCC) 11.5.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251121/202511211643.QVn7aDHd-lkp@intel.com/reproduce)
 
-> +			break;
-> +		default:
-> +			drm_fb_memcpy(&dst, fb->pitches, src, fb, clip);
-> +	}
-> +#else
->   	drm_fb_memcpy(&dst, fb->pitches, src, fb, clip);
-> +#endif
->   }
->   
->   static void ast_primary_plane_helper_atomic_update(struct drm_plane *plane,
-> @@ -574,7 +595,7 @@ static void ast_primary_plane_helper_atomic_update(struct drm_plane *plane,
->   
->   	drm_atomic_helper_damage_iter_init(&iter, old_plane_state, plane_state);
->   	drm_atomic_for_each_plane_damage(&iter, &damage) {
-> -		ast_handle_damage(ast_plane, shadow_plane_state->data, fb, &damage);
-> +		ast_handle_damage(ast_plane, shadow_plane_state->data, fb, &damage, &shadow_plane_state->fmtcnv_state);
->   	}
->   
->   	/*
-> @@ -766,10 +787,13 @@ static int ast_crtc_helper_atomic_check(struct drm_crtc *crtc,
->   		ast_state->std_table = &vbios_stdtable[VGAModeIndex];
->   		break;
->   	case DRM_FORMAT_RGB565:
-> +	case DRM_FORMAT_HOST_RGB565:
->   		ast_state->std_table = &vbios_stdtable[HiCModeIndex];
->   		break;
->   	case DRM_FORMAT_RGB888:
-> +	case DRM_FORMAT_BGR888:
->   	case DRM_FORMAT_XRGB8888:
-> +	case DRM_FORMAT_HOST_XRGB8888:
->   		ast_state->std_table = &vbios_stdtable[TrueCModeIndex];
->   		break;
->   	default:
-> @@ -978,7 +1002,11 @@ static const struct drm_mode_config_helper_funcs ast_mode_config_helper_funcs =
->   static enum drm_mode_status ast_mode_config_mode_valid(struct drm_device *dev,
->   						       const struct drm_display_mode *mode)
->   {
-> +#if defined(__BIG_ENDIAN) && defined(CONFIG_PCI_ARCH_ENDIAN_AUTOSWAP)
-> +	const struct drm_format_info *info = drm_format_info(DRM_FORMAT_HOST_XRGB8888);
-> +#else
->   	const struct drm_format_info *info = drm_format_info(DRM_FORMAT_XRGB8888);
-> +#endif
->   	struct ast_device *ast = to_ast_device(dev);
->   	unsigned long max_fb_size = ast_fb_vram_size(ast);
->   	u64 pitch;
-> @@ -1021,6 +1049,7 @@ int ast_mode_config_init(struct ast_device *ast)
->   	dev->mode_config.min_width = 0;
->   	dev->mode_config.min_height = 0;
->   	dev->mode_config.preferred_depth = 24;
-> +	dev->mode_config.quirk_addfb_prefer_host_byte_order = true;
->   
->   	if (ast->support_fullhd) {
->   		dev->mode_config.max_width = 1920;
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202511211643.QVn7aDHd-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   powerpc-linux-ld: arch/powerpc/kernel/smp.o: in function `smp_cpus_done':
+>> arch/powerpc/kernel/smp.c:1735:(.init.text+0xd5c): undefined reference to `pseries_init_ec_vp_cores'
+
+
+vim +1735 arch/powerpc/kernel/smp.c
+
+  1721	
+  1722	void __init smp_cpus_done(unsigned int max_cpus)
+  1723	{
+  1724		/*
+  1725		 * We are running pinned to the boot CPU, see rest_init().
+  1726		 */
+  1727		if (smp_ops && smp_ops->setup_cpu)
+  1728			smp_ops->setup_cpu(boot_cpuid);
+  1729	
+  1730		if (smp_ops && smp_ops->bringup_done)
+  1731			smp_ops->bringup_done();
+  1732	
+  1733		dump_numa_cpu_topology();
+  1734		build_sched_topology();
+> 1735		pseries_init_ec_vp_cores();
+  1736	}
+  1737	
 
 -- 
---
-Thomas Zimmermann
-Graphics Driver Developer
-SUSE Software Solutions Germany GmbH
-Frankenstr. 146, 90461 Nürnberg, Germany, www.suse.com
-GF: Jochen Jaser, Andrew McDonald, Werner Knoblich, (HRB 36809, AG Nürnberg)
-
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
