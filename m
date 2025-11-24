@@ -1,91 +1,78 @@
-Return-Path: <linuxppc-dev+bounces-14434-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14435-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1B348CFA46B
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 23 Nov 2025 17:13:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id BAC28CFD313
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 24 Nov 2025 04:36:46 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dDwXc5XtRz2yvM;
-	Mon, 24 Nov 2025 04:13:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.216.245.30
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763918032;
-	cv=none; b=kWxZ/ucdWxhTign2VJRkdSTfbIElohtIHL8DWV1z7bU5L+9jSWlex1mLPefjWiFbC/KSMLYoWQUZrNY2H9T1C6i6VVI9jg03KS96iJdtPz44RiIe7qN28p65ffYSXmBFL3Q27K9g1IK9nA6dLsElTgn66ET4+cvcXRkbwaPBXIvPPHB5Dg06bqQNGA6wRTUHjjOZTiWB2qR7Lr40jVECCvM5V1VpQ+5mbgpVfNaSm7rKjqSIJdCD6VfptkWPErSYlsZjT21T69kDoOj9xS5orAfeTUzCSYhzucvBY5GSOTgKBquY5rEIZpo7C8JMqtq3acwVS+k93zbC7nVvY7PyFw==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1763918032; c=relaxed/relaxed;
-	bh=QJ6buai6EBWSD8LmmfmrQPMqAmWKgltB1mTsvfume4I=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=U4fHcXP9KzjmqGworRdj9aj0hp3lx7YdRsx8NKQEEHtAqPbZBgfv+2Oc7ZCVKn0uNcY3AN2Kz+50fl+l44iWgq4P7oRhkl1C2pS0G1uHCRMDrdaDG65+thOST34Q9ERnKT0Z09rlJsY6/+5bv0oB4pLW2j8SI+8HwIe42yZ21O+M2z0hmvq46kCrINicYHbFj7a0P6ue03rLjAaIsx6eFPevT2WzA+70f/zSu/5HbtYGgofdNW+C9KhmsO3GCEQbJIo3Woj6zqiYNDcxyXM4yRVPSlHCMgAjokuzffdS6aqCin8O64hV3vmVFowG3Yw4FU9aoY5csTdXD0yyqyH+ew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=breakpoint.cc; dkim=pass (2048-bit key; secure) header.d=breakpoint.cc header.i=@breakpoint.cc header.a=rsa-sha256 header.s=2025 header.b=bHRX0y9G; dkim=pass header.d=breakpoint.cc header.i=@breakpoint.cc header.a=ed25519-sha256 header.s=2025e header.b=eLiJDv2b; dkim-atps=neutral; spf=pass (client-ip=91.216.245.30; helo=chamillionaire.breakpoint.cc; envelope-from=sebastian@breakpoint.cc; receiver=lists.ozlabs.org) smtp.mailfrom=breakpoint.cc
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=breakpoint.cc
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dFChX6xYmz2yvN;
+	Mon, 24 Nov 2025 15:36:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip="2a01:111:f403:c105::5" arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1763959004;
+	cv=pass; b=I1Q5siaHdTMOdyrpwj5YxitwwznB2AnXzGAmGbaIQG+faLmJtCU+N3hDglxo2jbIhnkWu0xwJB7+aG/HzUB6g4LjaPb3OBm/XTBY6Ec/iGLGKQPOOmyWab1RcCAcHzlhplg4602LmaCa0lxwCB0vP8OZo6HvveJtQdImo4eQLpkVLAI/nUI6kNo3B8I1BREVDRdAMKkWodch7C0P6yswAOix+2nF5S7W9esDAVDeFqzZHnMDueOagIu82avwtdjrxam1JO9Y8IOkl3BEWdVro7W9hf8pLw5Ph6zt92B4q0TfJ6PgIT641D+3rQ2ZcHEI1rZB6knl7JeJ5EsDQqRMFQ==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1763959004; c=relaxed/relaxed;
+	bh=6j9yfmsDzuyuE6mMPQUXGe+WUbUJggmEkZGHrhmwxsc=;
+	h=Message-ID:Date:MIME-Version:Subject:To:CC:References:From:
+	 In-Reply-To:Content-Type; b=WRWmgKHBHFJFJYTbLGa8HeHgsEX2JibsO2XVzCInNpUUzwAn3wf9SDGRWNf/nUOv5bah3bFamRgrSdQLMpqv9GR6d5N3/JYBH0lr+uZ/pKQVhNjSBrSYpqkoDZalStarAGOaKMc1/DqBjJh9yLgWcBF9sArarARb9TV4V6ZIEzAbNbzDhbBQycUvqEgThN/1W0LFHEUnJbyBjCyBiaTL3Bn3wbUDCVJOZaQVWUF0H88MZs1N4yJIkm9p5EKTW5MP8tZhGG6mQCdPQq+HsLL0oQU53iBvLmj9kESqjmYQJCxEyo+2741FUChFL/fBMYEAE8vA9gXJOk0A3eshovj9mw==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=QP+vitkW; dkim-atps=neutral; spf=pass (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=kprateek.nayak@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=breakpoint.cc header.i=@breakpoint.cc header.a=rsa-sha256 header.s=2025 header.b=bHRX0y9G;
-	dkim=pass header.d=breakpoint.cc header.i=@breakpoint.cc header.a=ed25519-sha256 header.s=2025e header.b=eLiJDv2b;
+	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=QP+vitkW;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=breakpoint.cc (client-ip=91.216.245.30; helo=chamillionaire.breakpoint.cc; envelope-from=sebastian@breakpoint.cc; receiver=lists.ozlabs.org)
-X-Greylist: delayed 513 seconds by postgrey-1.37 at boromir; Mon, 24 Nov 2025 04:13:51 AEDT
-Received: from Chamillionaire.breakpoint.cc (Chamillionaire.breakpoint.cc [91.216.245.30])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=2a01:111:f403:c105::5; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=kprateek.nayak@amd.com; receiver=lists.ozlabs.org)
+Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazlp170120005.outbound.protection.outlook.com [IPv6:2a01:111:f403:c105::5])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bit raw public key) server-digest SHA256)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dDwXb43q8z2xnh
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Nov 2025 04:13:51 +1100 (AEDT)
-Date: Sun, 23 Nov 2025 18:05:02 +0100
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=breakpoint.cc;
-	s=2025; t=1763917504;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QJ6buai6EBWSD8LmmfmrQPMqAmWKgltB1mTsvfume4I=;
-	b=bHRX0y9GC2dSySARiyWGiMmrp/Xe96irqn0m9ozILmBYs6yV2zb/fA9R+6p0XjUSLcFsMx
-	vAEQ3ThKgIriI3d1xBfZz10HDnnJ1Qu4IplfQEC5/BG0U7pFjkinz5RNiB5OOnOodqurLL
-	rBtfdrfmkTW1g57sLR/uwRP+vD7BIkHFSzCEjA2gLhe6M4QdIqNr7thtmgyRbXHLEMzz6z
-	ZFC5X00QxbjVqmP6ZyjhxGlkMJLTrC1EEYg4LMJFljJfoi4MCyUJ2hELJNaZmy2KJscnrz
-	IJm9CAbGvkzsztKGABF71wt3hAlYfraokWs/aUk60LSaeG1zpjfQduS7/tkvGw==
-DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=breakpoint.cc;
-	s=2025e; t=1763917504;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=QJ6buai6EBWSD8LmmfmrQPMqAmWKgltB1mTsvfume4I=;
-	b=eLiJDv2bkfc0QH49mP1xeveb0IgqR2Kb5m/smULeZHuXH+L/8GJdHV6BxAx7MFEPi8mVsP
-	r6Dhlwj0lu1R2DBQ==
-From: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-To: Thomas =?utf-8?Q?Wei=C3=9Fschuh?= <linux@weissschuh.net>
-Cc: James Bottomley <James.Bottomley@hansenpartnership.com>,
-	Masahiro Yamada <masahiroy@kernel.org>,
-	Nathan Chancellor <nathan@kernel.org>,
-	Arnd Bergmann <arnd@arndb.de>, Luis Chamberlain <mcgrof@kernel.org>,
-	Petr Pavlu <petr.pavlu@suse.com>,
-	Sami Tolvanen <samitolvanen@google.com>,
-	Daniel Gomez <da.gomez@samsung.com>,
-	Paul Moore <paul@paul-moore.com>, James Morris <jmorris@namei.org>,
-	"Serge E. Hallyn" <serge@hallyn.com>,
-	Jonathan Corbet <corbet@lwn.net>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Naveen N Rao <naveen@kernel.org>, Mimi Zohar <zohar@linux.ibm.com>,
-	Roberto Sassu <roberto.sassu@huawei.com>,
-	Dmitry Kasatkin <dmitry.kasatkin@gmail.com>,
-	Eric Snowberg <eric.snowberg@oracle.com>,
-	Nicolas Schier <nicolas.schier@linux.dev>,
-	Fabian =?utf-8?Q?Gr=C3=BCnbichler?= <f.gruenbichler@proxmox.com>,
-	Arnout Engelen <arnout@bzzt.net>,
-	Mattia Rizzolo <mattia@mapreri.org>, kpcyrd <kpcyrd@archlinux.org>,
-	Christian Heusel <christian@heusel.eu>,
-	=?utf-8?B?Q8OianU=?= Mihai-Drosi <mcaju95@gmail.com>,
-	linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-arch@vger.kernel.org, linux-modules@vger.kernel.org,
-	linux-security-module@vger.kernel.org, linux-doc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, linux-integrity@vger.kernel.org
-Subject: Re: [PATCH v3 0/9] module: Introduce hash-based integrity checking
-Message-ID: <20251123170502.Ai5Ig66Z@breakpoint.cc>
-References: <20250429-module-hashes-v3-0-00e9258def9e@weissschuh.net>
- <f1dca9daa01d0d2432c12ecabede3fa1389b1d29.camel@HansenPartnership.com>
- <20251119154834.A-tQsLzh@linutronix.de>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dFChV6gPQz2yvB
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 24 Nov 2025 15:36:41 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=ti45sReRCRt+20mFNCLN8u+vcYFwnGxFfUbMiuV9dPEN8YL/co76taRv7uNBVilNnaWC9lcMo95BKZyxUNymF6QmNqkLjBvGR74ZSO6wWw3n8o/nzjZur1a5rFeS4tFFpQGxBaTf9oVA+VURsfgugVtcIfiX0aiAwjFMb57OmfaEycCaF7iEtxwo2qd4exEvUxrFR/TeWrspoVZiCkax0Pg+cAuNn23UXRGDlsNH8ELIF/W0bNg9d8k7Mqqm191XsFn6iK7Wl7skFVplc4aF0zToLU9LoN09iun8/+w7KbnV/a/NwgonzmPo3uwotnxK68p6a+3fYYBL4RlbiknUZA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=6j9yfmsDzuyuE6mMPQUXGe+WUbUJggmEkZGHrhmwxsc=;
+ b=bAt4AgXHn9ymB4p+lUjYh32UzN92O/Dnw7xjbmukM8R0azNRn2oiCgEiUbTB3jDdGLqKrHww1t2WtHfucZyKGe7dZyi/gGD9EZRRJKNWAiSWv8uHNmh8lafm33Koeq1mwKquNfmaA5PbeffWikncxLH3clreWhCgjeOLVPOQqRRZkcWUN0mqMBMkL2OQX5iGeyBlMrkYxIfPq8NdZ+Ulfjknh2OR7US7DIQCkfgWt9YfTOJTWxE+ViA5y7wzPR7mbVJ/p1HviI4t8YFLOIyeiOMNXz270dOLNTcYsIllqVv7Cxks1SjP2RD+t0CV+M+wjkqll88s/Y8hUd71PzU2cw==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass (sender ip is
+ 165.204.84.17) smtp.rcpttodomain=linux.ibm.com smtp.mailfrom=amd.com;
+ dmarc=pass (p=quarantine sp=quarantine pct=100) action=none
+ header.from=amd.com; dkim=none (message not signed); arc=none (0)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=6j9yfmsDzuyuE6mMPQUXGe+WUbUJggmEkZGHrhmwxsc=;
+ b=QP+vitkWWJ4dtuxM79XD8ZFl7vXLebGoN+r78+JOdHsxULNWAaW/SBwYzOZosnVqjrkIMAcKI59VtPHg63TbuMnVT3x+OZBRQ3u2zS06WNs6CX1cd41cF4rjem3eusfe8sCCsNNsC1NVZovczIOBNNdeAMu92rWhqHwQJR+LV9A=
+Received: from SJ0PR05CA0121.namprd05.prod.outlook.com (2603:10b6:a03:33d::6)
+ by IA0PR12MB7531.namprd12.prod.outlook.com (2603:10b6:208:43f::12) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9343.17; Mon, 24 Nov
+ 2025 04:36:13 +0000
+Received: from SJ1PEPF0000231C.namprd03.prod.outlook.com
+ (2603:10b6:a03:33d:cafe::63) by SJ0PR05CA0121.outlook.office365.com
+ (2603:10b6:a03:33d::6) with Microsoft SMTP Server (version=TLS1_3,
+ cipher=TLS_AES_256_GCM_SHA384) id 15.20.9366.9 via Frontend Transport; Mon,
+ 24 Nov 2025 04:36:13 +0000
+X-MS-Exchange-Authentication-Results: spf=pass (sender IP is 165.204.84.17)
+ smtp.mailfrom=amd.com; dkim=none (message not signed)
+ header.d=none;dmarc=pass action=none header.from=amd.com;
+Received-SPF: Pass (protection.outlook.com: domain of amd.com designates
+ 165.204.84.17 as permitted sender) receiver=protection.outlook.com;
+ client-ip=165.204.84.17; helo=satlexmb08.amd.com; pr=C
+Received: from satlexmb08.amd.com (165.204.84.17) by
+ SJ1PEPF0000231C.mail.protection.outlook.com (10.167.242.233) with Microsoft
+ SMTP Server (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
+ 15.20.9366.7 via Frontend Transport; Mon, 24 Nov 2025 04:36:13 +0000
+Received: from satlexmb08.amd.com (10.181.42.217) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.2.2562.17; Sun, 23 Nov
+ 2025 22:36:12 -0600
+Received: from [10.136.36.40] (10.180.168.240) by satlexmb08.amd.com
+ (10.181.42.217) with Microsoft SMTP Server id 15.2.2562.17 via Frontend
+ Transport; Sun, 23 Nov 2025 20:36:07 -0800
+Message-ID: <ce4a239b-271c-415f-81d1-ef8360f3fd09@amd.com>
+Date: Mon, 24 Nov 2025 10:06:06 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,800 +86,103 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=utf-8
-Content-Disposition: inline
-In-Reply-To: <20251119154834.A-tQsLzh@linutronix.de>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 09/17] sched/core: Add support for nohz_full CPUs
+To: Shrikanth Hegde <sshegde@linux.ibm.com>, <linux-kernel@vger.kernel.org>,
+	<linuxppc-dev@lists.ozlabs.org>
+CC: <mingo@redhat.com>, <peterz@infradead.org>, <juri.lelli@redhat.com>,
+	<vincent.guittot@linaro.org>, <tglx@linutronix.de>, <yury.norov@gmail.com>,
+	<maddy@linux.ibm.com>, <srikar@linux.ibm.com>, <gregkh@linuxfoundation.org>,
+	<pbonzini@redhat.com>, <seanjc@google.com>, <vschneid@redhat.com>,
+	<iii@linux.ibm.com>, <huschle@linux.ibm.com>, <rostedt@goodmis.org>,
+	<dietmar.eggemann@arm.com>, <christophe.leroy@csgroup.eu>
+References: <20251119124449.1149616-1-sshegde@linux.ibm.com>
+ <20251119124449.1149616-10-sshegde@linux.ibm.com>
+ <0f9ed7ce-3839-4d2b-98b3-25cc4045aa22@amd.com>
+ <08ff261e-7ac8-4a1d-bceb-b1bf792171ae@linux.ibm.com>
+Content-Language: en-US
+From: K Prateek Nayak <kprateek.nayak@amd.com>
+In-Reply-To: <08ff261e-7ac8-4a1d-bceb-b1bf792171ae@linux.ibm.com>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: 7bit
+X-EOPAttributedMessage: 0
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: SJ1PEPF0000231C:EE_|IA0PR12MB7531:EE_
+X-MS-Office365-Filtering-Correlation-Id: 641e0f2d-c4e1-4848-c0e1-08de2b12ffb7
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|1800799024|82310400026|36860700013|376014|7416014;
+X-Microsoft-Antispam-Message-Info:
+	=?utf-8?B?Z1B1OS9rMlB3V3ZwbDRVdm1vR01pLzlyeVpJK3Yzb1dSZ2tYM3dzSEZLNEZ1?=
+ =?utf-8?B?ZjNKNTFCVG1uQUZ6Y1d2SkJNdnk1ZEVQR0ovREhBNy9HTWdpNVNXOTJtTnVq?=
+ =?utf-8?B?bVZkcXpXT3U1VXBQT1l0RXg1TWhsS3RLMi82YWRTNUo2N3FKU29ubm5TVWlY?=
+ =?utf-8?B?aGh6TG9VWnJ0Z2RWQTQ5R25xZGd2RjhjT0hSRmhkV0pYL04venZQdVFQbWFR?=
+ =?utf-8?B?OUZUK2VteHc2ZDM2ZHpxT2QzRWM1dGgyN2N4aGk3Q0p2TnY2QjQ1MXpYeWRt?=
+ =?utf-8?B?b2pGRmNCcmtGcUNsY1VzamRzOFpWMWhPQlJrQXZObVNRV2NLUEhPWFhQTUZu?=
+ =?utf-8?B?M2RRV3U5azN6SFo5M0dKVSswSUNtZVJ2SVF1TXpmd0g1SklvZ1pLT1hYTU41?=
+ =?utf-8?B?NTFsZTUvVzFacnQzdURZdmpRWWJJS1h1ZGtnTDdLN1ZTV09SZ2hFbXpHeGh2?=
+ =?utf-8?B?MVJKR2g3aUtpaTQ4K1g2Vlh1eThrR1B0Z1dhakNKTDdHU1hzU0sxSkwwN2pN?=
+ =?utf-8?B?SExMV1RPS1dlMzBON1F5ODRoNkF5OG9uT0JyWW1BRW9FazBBbWRZaU9GRFBN?=
+ =?utf-8?B?aG92eExXN0NQY0RKUVJxVlJWaklmNVNCUW5zRG84RUdwREltbTJwVzVEOWZI?=
+ =?utf-8?B?ZUhLV2hCdTRtK2VlMUFkQ3h3clV2SHJuZkViOUNjWVVRT2hPcy9iYWRKNHMx?=
+ =?utf-8?B?QU50NVBCWWEvMWkyeVVtMy9XZ1MxbHI5Z0NWQndzcE03THpaSUhjSE9ncnZs?=
+ =?utf-8?B?SExVaGtCMzdXUHZnU00zSmNlQjN1TU9yVmx5dXhBd0FkdTdZMi9WNS82S1lm?=
+ =?utf-8?B?N2lRZksvdDM5U3dHWnZQdnZwY1o1cXdrb0svOXNxdlA2VGltNExpMGNIOTVi?=
+ =?utf-8?B?Z2E1SGZDdTZyU3hiRnZMOGZVTGdKdEUvbDI4SVRPZEQrTUlDT2ZPbEJZQVA0?=
+ =?utf-8?B?R3JTQUU0dEJXVVNlMklJb3Z5eURSbERjNWJsLzlnSXZYSVRPSmllc3FwbThh?=
+ =?utf-8?B?MDR4cUNROFFla25IbFNEUjRJbUw2aWZwcktwS2RyTmIyM0Mzb051eHZFY2tz?=
+ =?utf-8?B?d1VwWEpIdVp2RFlkalNlQ0xFK25Tdmp3MkFGdHdpMktPTDQ1WHBZNGNsWlVL?=
+ =?utf-8?B?MndOUHB4cVFYemhwN1NaTnRvRHhVdHM3UlQ1Ri9Ra3NubzQ3R2krV2FkQU5q?=
+ =?utf-8?B?NGpjVWxFSU9RdWlNUkluUTc2Vk96NmpMTVlHYmxPWFlCRHVKSklzYW82NWNR?=
+ =?utf-8?B?YWk4UmJQN2VHcG5jeXlOcWtkc01WMWx3ME9IQ2xtTFp2UnJkWFhHRzMxbWhW?=
+ =?utf-8?B?cjliM0l4Wm9keG0vZjg0dDJLc0R3U0JUbUoyYkUwQjBURlBWSW5KbE1LL0RE?=
+ =?utf-8?B?RXFKakNXbE1IUzZMZWNtekdBWXVqSFUzRUlUNXUyM3k3ZHU0cmluUW9pUXBk?=
+ =?utf-8?B?bGt5VTJQeVIyeDNQNkRxb1NycG9DNVhzTHh5RFRaY0hQMGk3N1NiMmdUZVJs?=
+ =?utf-8?B?L0FXaEEvOXVUNHd5UDBhQzhoYkJVNy9UVjhVQkc1dXF0Vmp4N2dXMHZSV3FC?=
+ =?utf-8?B?ZmEyczZrb3JzT0RSTENQTDhaMU9sd0xXTzVsR3dUSGhrekcvN3dHbUcyc0Nl?=
+ =?utf-8?B?ZFNWaWdDNThMT2w2TjNGTUlBVmoyazNiYWw2T3RPT2FWZzJCNUpVaWJZUVRK?=
+ =?utf-8?B?ZTBFQ1FuWG9PZzlpRHNJaGJRaVNHK1F1Y3pMMkZwUUxxcEhjRDZKMnNvZHFa?=
+ =?utf-8?B?Zjl6enpHWGVsSUUvUlNXRnJRdTJlUTNsb2hNbzB2bjMwck9NaDk1QlJWcnpJ?=
+ =?utf-8?B?a0xZbmFtMVU4dHQ2RGJFKzdvQUhucWkwOXBsOVhmTkVjNkgxVzJoYURFTklS?=
+ =?utf-8?B?SjlPTWJzYUR5MXc1eGJCTTVIZERjRjVXSjVYWFFUZFl4M1JqNlliVEZZaUJY?=
+ =?utf-8?B?RTJZOXN5Ti9JeFJBNTY2TEYzUmIyY0daeTVDVWM0ZmphL0ZJWlVpQ09temw3?=
+ =?utf-8?B?Sml6QXl6b21SUUx0YjFPcGxFSDZLWS96YnFYVndicm5NdTR3Rnp0UlpjdzY2?=
+ =?utf-8?B?eEhlWGFCRE5ySFVQWFdxY09TQjFpMTI3SjlxRll4L2RiTGc5SFBYOWpUUjVt?=
+ =?utf-8?Q?Uaac=3D?=
+X-Forefront-Antispam-Report:
+	CIP:165.204.84.17;CTRY:US;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:satlexmb08.amd.com;PTR:InfoDomainNonexistent;CAT:NONE;SFS:(13230040)(1800799024)(82310400026)(36860700013)(376014)(7416014);DIR:OUT;SFP:1101;
+X-OriginatorOrg: amd.com
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 24 Nov 2025 04:36:13.1494
+ (UTC)
+X-MS-Exchange-CrossTenant-Network-Message-Id: 641e0f2d-c4e1-4848-c0e1-08de2b12ffb7
+X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
+X-MS-Exchange-CrossTenant-OriginalAttributedTenantConnectingIp: TenantId=3dd8961f-e488-4e60-8e11-a82d994e183d;Ip=[165.204.84.17];Helo=[satlexmb08.amd.com]
+X-MS-Exchange-CrossTenant-AuthSource:
+	SJ1PEPF0000231C.namprd03.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Anonymous
+X-MS-Exchange-CrossTenant-FromEntityHeader: HybridOnPrem
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: IA0PR12MB7531
 
-On 2025-11-19 16:48:34 [+0100], Sebastian Andrzej Siewior wrote:
-> I fully agree with this approach. I don't like the big hash array but I
-> have an idea how to optimize that part. So I don't see a problem in the
-> long term.
+Hello Shrikanth,
 
-The following PoC creates a merkle tree from a set files ending with .ko
-within the specified directory. It will write a .hash files containing
-the required hash for each file for its validation. The root hash is
-saved as "hash_root" and "hash_root.h" in the directory.
+On 11/21/2025 10:10 AM, Shrikanth Hegde wrote:
+>> Wouldn't the task be pinned if it is running on a nohz CPU?
+>> We don't push out pinned tasks so this seems unnecessary.
+>> Am I missing something?
+>>
+> 
+> No. Task will not be pinned if it running on nohz_full unless
+> user has done a taskset. They are still part of sched domains.
+> 
+> Pinning is usually true for isolcpus. You need to explicity set taskset
+> for isolcpus since by default you won't go to those CPUs.
 
-The Debian kernel shipps 4256 modules:
+TIL! I was under the impression that nohz_full is a superset of isolcpus
+but I was clearly mistaken. Thank you for clarifying.
 
-| $ time ./compute_hashes mods_deb
-| Files 4256 levels: 13 root hash: 97f8f439d63938ed74f48ec46dbd75c2b5e5b49f012a414e89b6f0e0f06efe84
-| 
-| real    0m0,732s
-| user    0m0,304s
-| sys     0m0,427s
-
-This computes the hashes for all the modules it found in the mods_deb
-folder.
-The kernel needs the root hash (for sha256 32 bytes) and the depth of
-the tree (4 bytes). That are 36 bytes regardless of the number of
-modules that are built.
-In this case, the attached hash for each module is 420 bytes. This is 4
-bytes (position in the tree) + 13 (depth) * 32.
-The verification process requires 13 hash operation to hash through the
-tree and verify against the root hash.
-
-For convience, the following PoC can also be found at
-	https://git.kernel.org/pub/scm/linux/kernel/git/bigeasy/mtree-hashed-mods.git/
-
-which also includes a small testsuite.
-
-diff --git a/Makefile b/Makefile
-new file mode 100644
-index 0000000000000..e4a35c15f0a94
---- /dev/null
-+++ b/Makefile
-@@ -0,0 +1,7 @@
-+CC := gcc
-+CFLAGS := -O2 -g -Wall
-+LDLIBS := -lcrypto
-+
-+all: compute_hashes mk-files verify_hash
-+test: compute_hashes mk-files verify_hash
-+	./verify_test.sh
-diff --git a/compute_hashes.c b/compute_hashes.c
-new file mode 100644
-index 0000000000000..da61b214137b8
---- /dev/null
-+++ b/compute_hashes.c
-@@ -0,0 +1,407 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * Compute hashes for individual files and build a merkle tree.
-+ *
-+ * Author: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-+ *
-+ */
-+#define _GNU_SOURCE 1
-+#include <ftw.h>
-+#include <unistd.h>
-+#include <fcntl.h>
-+#include <stdio.h>
-+#include <string.h>
-+#include <stdlib.h>
-+
-+#include <sys/stat.h>
-+#include <sys/mman.h>
-+
-+#include <openssl/evp.h>
-+
-+#include "helpers.h"
-+
-+struct file_entry {
-+	char *name;
-+	size_t fsize;
-+	unsigned int pos;
-+	unsigned char hash[EVP_MAX_MD_SIZE];
-+};
-+
-+static struct file_entry *fh_list;
-+static size_t num_files;
-+
-+struct leaf_hash {
-+	unsigned char hash[EVP_MAX_MD_SIZE];
-+};
-+
-+struct mtree {
-+	struct leaf_hash **l;
-+	unsigned int *entries;
-+	unsigned int levels;
-+};
-+
-+static unsigned int get_pow2(unsigned int val)
-+{
-+	return 31 - __builtin_clz(val);
-+}
-+
-+static unsigned int roundup_pow2(unsigned int val)
-+{
-+	return 1 << (get_pow2(val - 1) + 1);
-+}
-+
-+static unsigned int log2_roundup(unsigned int val)
-+{
-+	return get_pow2(roundup_pow2(val));
-+}
-+
-+static int str_endswith(const char *s, const char *suffix)
-+{
-+	size_t ls, lf;
-+
-+	ls = strlen(s);
-+	lf = strlen(suffix);
-+
-+	if (ls <= lf)
-+		return -1;
-+	return strcmp(s + ls - lf, suffix);
-+}
-+
-+static void __print_hash(unsigned char *h)
-+{
-+	int i;
-+
-+	for (i = 0; i < hash_size; i++)
-+		printf("%02x", h[i]);
-+}
-+
-+static void print_hash(unsigned char *h)
-+{
-+	__print_hash(h);
-+	printf("\n");
-+}
-+
-+static int hash_file(struct file_entry *fe)
-+{
-+	void *mem;
-+	int fd;
-+
-+	fd = open(fe->name, O_RDONLY);
-+	if (fd < 0) {
-+		printf("Failed to open %s: %m\n", fe->name);
-+		exit(1);
-+	}
-+
-+	mem = mmap(NULL, fe->fsize, PROT_READ, MAP_SHARED, fd, 0);
-+	close(fd);
-+
-+	if (mem == MAP_FAILED) {
-+		printf("Failed to mmap %s: %m\n", fe->name);
-+		exit(1);
-+	}
-+
-+	hash_data(mem, fe->pos, fe->fsize, fe->hash);
-+
-+	munmap(mem, fe->fsize);
-+	return 0;
-+}
-+
-+static int add_files_cb(const char *fpath, const struct stat *sb, int tflag,
-+			struct FTW *ftwbuf)
-+{
-+	if (tflag != FTW_F)
-+		return 0;
-+
-+	if (str_endswith(fpath, ".ko"))
-+		return 0;
-+
-+	fh_list = xrealloc(fh_list, (num_files + 1) * sizeof (struct file_entry));
-+
-+	fh_list[num_files].name = strdup(fpath);
-+	if (!fh_list[num_files].name) {
-+		printf("Failed to allocate memory\n");
-+		exit(1);
-+	}
-+
-+	fh_list[num_files].fsize = sb->st_size;
-+
-+	num_files++;
-+	return 0;
-+}
-+
-+static int cmp_file_entry(const void *p1, const void *p2)
-+{
-+	const struct file_entry *f1, *f2;
-+
-+	f1 = p1;
-+	f2 = p2;
-+
-+	return strcmp(f1->name, f2->name);
-+}
-+
-+static struct mtree *build_merkle(struct file_entry *fh, size_t num)
-+{
-+	unsigned int i, le;
-+	struct mtree *mt;
-+
-+	mt = xmalloc(sizeof(struct mtree));
-+	mt->levels = log2_roundup(num);
-+	mt->l = xcalloc(sizeof(struct leaf_hash *), mt->levels);
-+
-+	mt->entries = xcalloc(sizeof(unsigned int), mt->levels);
-+	le = num / 2;
-+	if (num & 1)
-+		le++;
-+	mt->entries[0] = le;
-+	mt->l[0] = xcalloc(sizeof(struct leaf_hash), le);
-+
-+	/* First level of pairs */
-+	for (i = 0; i < num; i+= 2) {
-+		if (i == num - 1) {
-+			/* Odd number of files, no pair. Hash with itself */
-+			hash_entry(fh[i].hash, fh[i].hash, mt->l[0][i/2].hash);
-+		} else {
-+			hash_entry(fh[i].hash, fh[i + 1].hash, mt->l[0][i/2].hash);
-+		}
-+	}
-+	for (i = 1; i < mt->levels; i++) {
-+		int n;
-+		int odd = 0;
-+
-+		if (le & 1) {
-+			le++;
-+			odd++;
-+		}
-+
-+		mt->entries[i] = le / 2;
-+		mt->l[i] = xcalloc(sizeof(struct leaf_hash), le);
-+
-+		for (n = 0; n < le; n += 2) {
-+			if (n == le - 2 && odd) {
-+				/* Odd number of pairs, no pair. Hash with itself */
-+				hash_entry(mt->l[i - 1][n].hash, mt->l[i - 1][n].hash,
-+					   mt->l[i][n/2].hash);
-+			} else {
-+				hash_entry(mt->l[i - 1][n].hash, mt->l[i - 1][n +1].hash,
-+					   mt->l[i][n/2].hash);
-+			}
-+		}
-+		le =  mt->entries[i];
-+	}
-+	return mt;
-+}
-+
-+static void free_mtree(struct mtree *mt)
-+{
-+	int i;
-+
-+	for (i = 0; i < mt->levels; i++)
-+		free(mt->l[i]);
-+
-+	free(mt->l);
-+	free(mt->entries);
-+	free(mt);
-+}
-+
-+static void write_be_int(int fd, unsigned int v)
-+{
-+	unsigned int be_val = host_to_be32(v);
-+
-+	if (write(fd, &be_val, sizeof(be_val)) != sizeof(be_val)) {
-+		printf("Failed writting to file: %m\n");
-+		exit(1);
-+	}
-+}
-+
-+static void write_hash(int fd, const void *h)
-+{
-+	ssize_t wr;
-+
-+	wr = write(fd, h, hash_size);
-+	if (wr != hash_size) {
-+		printf("Failed writting to file: %m\n");
-+		exit(1);
-+	}
-+}
-+
-+static void build_proof(struct mtree *mt, unsigned int n, int fd)
-+{
-+	unsigned char cur[EVP_MAX_MD_SIZE];
-+	unsigned char tmp[EVP_MAX_MD_SIZE];
-+	struct file_entry *fe, *fe_sib;
-+	unsigned int i;
-+
-+	fe = &fh_list[n];
-+
-+	if ((n & 1) == 0) {
-+		/* No pair, hash with itself */
-+		if (n + 1 == num_files)
-+			fe_sib = fe;
-+		else
-+			fe_sib = &fh_list[n + 1];
-+	} else {
-+		fe_sib = &fh_list[n - 1];
-+	}
-+	/* First comes the node position into the file */
-+	write_be_int(fd, n);
-+
-+	if ((n & 1) == 0)
-+		hash_entry(fe->hash, fe_sib->hash, cur);
-+	else
-+		hash_entry(fe_sib->hash, fe->hash, cur);
-+
-+	/* Next is the sibling hash, followed by hashes in the tree */
-+	write_hash(fd, fe_sib->hash);
-+
-+	for (i = 0; i < mt->levels - 1; i++) {
-+		n >>= 1;
-+		if ((n & 1) == 0) {
-+			void *h;
-+
-+			/* No pair, hash with itself */
-+			if (n + 1 == mt->entries[i])
-+				h = cur;
-+			else
-+				h = mt->l[i][n + 1].hash;
-+
-+			hash_entry(cur, h, tmp);
-+			write_hash(fd, h);
-+		} else {
-+			hash_entry(mt->l[i][n - 1].hash, cur, tmp);
-+			write_hash(fd, mt->l[i][n - 1].hash);
-+		}
-+		memcpy(cur, tmp, hash_size);
-+	}
-+
-+	 /* After all that, the end hash should match the root hash */
-+	if (memcmp(cur, mt->l[mt->levels - 1][0].hash, hash_size))
-+		printf("MISS-MATCH\n");
-+}
-+
-+static void write_merkle_root(struct mtree *mt, const char *fp)
-+{
-+	char buf[1024];
-+	int fd;
-+
-+	if (snprintf(buf, sizeof(buf), "%s/hash_root", fp) >= sizeof(buf)) {
-+		printf("Root dir too long\n");
-+		exit(1);
-+	}
-+	fd = open(buf, O_WRONLY | O_CREAT | O_TRUNC, DEF_F_PERM);
-+	if (fd < 0) {
-+		printf("Failed to create %s: %m\n", buf);
-+		exit(1);
-+	}
-+
-+	write_be_int(fd, mt->levels);
-+	write_hash(fd, mt->l[mt->levels - 1][0].hash);
-+	close(fd);
-+	printf("Files %ld levels: %d root hash: ", num_files, mt->levels);
-+	print_hash(mt->l[mt->levels - 1][0].hash);
-+}
-+
-+static void write_merkle_root_h(struct mtree *mt, const char *fp)
-+{
-+	char buf[1024];
-+	unsigned int i;
-+	unsigned char *h;
-+	FILE *f;
-+
-+	if (snprintf(buf, sizeof(buf), "%s/hash_root.h", fp) >= sizeof(buf)) {
-+		printf("Root dir too long\n");
-+		exit(1);
-+	}
-+	f = fopen(buf, "w");
-+	if (!f) {
-+		printf("Failed to create %s: %m\n", buf);
-+		exit(1);
-+	}
-+	h = mt->l[mt->levels - 1][0].hash;
-+
-+	fprintf(f, "#ifndef __HASH_ROOT_TREE_H__\n");
-+	fprintf(f, "#define __HASH_ROOT_TREE_H__\n\n");
-+	fprintf(f, "unsigned int hashed_mods_levels = %u;\n", mt->levels);
-+	fprintf(f, "unsigned char hashed_mods_root[%d] = {", hash_size);
-+	for (i = 0; i < hash_size; i++) {
-+		char *space = "";
-+
-+		if (!(i % 8))
-+			fprintf(f, "\n\t");
-+
-+		if ((i + 1) % 8)
-+			space = " ";
-+
-+		fprintf(f, "0x%02x,%s", h[i], space);
-+	}
-+	fprintf(f, "\n};\n#endif\n");
-+	fclose(f);
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	const EVP_MD *hash_evp;
-+	char *fp;
-+	struct mtree *mt;
-+	int i;
-+
-+	ctx = EVP_MD_CTX_new();
-+	if (!ctx)
-+		goto err_ossl;
-+
-+	if (argc != 2) {
-+		printf("%s: folder\n", argv[0]);
-+		return 1;
-+	}
-+	fp = argv[1];
-+
-+	hash_evp = EVP_sha256();
-+	hash_size = EVP_MD_get_size(hash_evp);
-+	if (hash_size <= 0)
-+		goto err_ossl;
-+
-+	if (EVP_DigestInit_ex(ctx, hash_evp, NULL) != 1)
-+		goto err_ossl;
-+
-+	nftw(fp, add_files_cb, 64, 0);
-+
-+	qsort(fh_list, num_files, sizeof(struct file_entry), cmp_file_entry);
-+
-+	for (i = 0; i < num_files; i++) {
-+		fh_list[i].pos = i;
-+		hash_file(&fh_list[i]);
-+	}
-+
-+	mt = build_merkle(fh_list, num_files);
-+	write_merkle_root(mt, fp);
-+	write_merkle_root_h(mt, fp);
-+	for (i = 0; i < num_files; i++) {
-+		char signame[1024];
-+		int fd;
-+		int ret;
-+
-+		ret = snprintf(signame, sizeof(signame), "%s.hash", fh_list[i].name);
-+		if (ret >= sizeof(signame)) {
-+			printf("path + name too long\n");
-+			return 1;
-+		}
-+		fd = open(signame, O_WRONLY | O_CREAT | O_TRUNC, DEF_F_PERM);
-+		if (fd < 0) {
-+			printf("Can't create %s: %m\n", signame);
-+			return 1;
-+		}
-+		build_proof(mt, i, fd);
-+		close(fd);
-+	}
-+
-+	free_mtree(mt);
-+	for (i = 0; i < num_files; i++)
-+		free(fh_list[i].name);
-+	free(fh_list);
-+
-+	EVP_MD_CTX_free(ctx);
-+	return 0;
-+
-+err_ossl:
-+	printf("libssl operation failed\n");
-+	return 1;
-+}
-diff --git a/helpers.h b/helpers.h
-new file mode 100644
-index 0000000000000..f52ad3543f890
---- /dev/null
-+++ b/helpers.h
-@@ -0,0 +1,109 @@
-+#ifndef __HELPERS_H__
-+#define __HELPERS_H__
-+
-+static EVP_MD_CTX *ctx;
-+static int hash_size;
-+
-+#define DEF_F_PERM (S_IRUSR|S_IWUSR|S_IRGRP|S_IROTH) /* 0644*/
-+#define DEF_D_PERM (S_IRUSR|S_IWUSR|S_IXUSR|S_IRGRP|S_IXGRP|S_IROTH|S_IXOTH) /* 0755*/
-+
-+static unsigned int host_to_be32(unsigned int v)
-+{
-+#if __BYTE_ORDER__ == __LITTLE_ENDIAN
-+	return __builtin_bswap32(v);
-+#elif __BYTE_ORDER__ == __BIG_ENDIAN
-+	return  v;
-+#else
-+#error Missing endian define
-+#endif
-+}
-+
-+static inline void *xcalloc(size_t n, size_t size)
-+{
-+	void *p;
-+
-+	p = calloc(n, size);
-+	if (p)
-+		return p;
-+	printf("Memory allocation failed\n");
-+	exit(1);
-+}
-+
-+static void *xmalloc(size_t size)
-+{
-+	void *p;
-+
-+	p = malloc(size);
-+	if (p)
-+		return p;
-+	printf("Memory allocation failed\n");
-+	exit(1);
-+}
-+
-+static inline void *xrealloc(void *oldp, size_t size)
-+{
-+	void *p;
-+
-+	p = realloc(oldp, size);
-+	if (p)
-+		return p;
-+	printf("Memory allocation failed\n");
-+	exit(1);
-+}
-+
-+static void hash_data(void *p, unsigned int pos, size_t size, void *ret_hash)
-+{
-+	unsigned char magic = 0x01;
-+	unsigned int pos_be;
-+
-+	pos_be = host_to_be32(pos);
-+	if (EVP_DigestInit_ex(ctx, NULL, NULL) != 1)
-+		goto err;
-+
-+	if (EVP_DigestUpdate(ctx, &magic, sizeof(magic)) != 1)
-+		goto err;
-+
-+	if (EVP_DigestUpdate(ctx, &pos_be, sizeof(pos_be)) != 1)
-+		goto err;
-+
-+	if (EVP_DigestUpdate(ctx, p, size) != 1)
-+		goto err;
-+
-+	if (EVP_DigestFinal_ex(ctx, ret_hash, NULL) != 1)
-+		goto err;
-+
-+	return;
-+
-+err:
-+	printf("libssl operation failed\n");
-+	exit(1);
-+}
-+static void hash_entry(void *left, void *right, void *ret_hash)
-+{
-+	unsigned char magic = 0x02;
-+
-+	if (EVP_DigestInit_ex(ctx, NULL, NULL) != 1)
-+		goto err;
-+
-+	if (EVP_DigestUpdate(ctx, &magic, sizeof(magic)) != 1)
-+		goto err;
-+
-+	if (EVP_DigestUpdate(ctx, left, hash_size) != 1)
-+		goto err;
-+
-+	if (EVP_DigestUpdate(ctx, right, hash_size) != 1)
-+		goto err;
-+
-+	if (EVP_DigestFinal_ex(ctx, ret_hash, NULL) != 1)
-+		goto err;
-+
-+	return;
-+
-+err:
-+	printf("libssl operation failed\n");
-+	exit(1);
-+}
-+
-+
-+
-+#endif
-diff --git a/verify_hash.c b/verify_hash.c
-new file mode 100644
-index 0000000000000..0a842f27f1ebc
---- /dev/null
-+++ b/verify_hash.c
-@@ -0,0 +1,206 @@
-+// SPDX-License-Identifier: GPL-2.0-or-later
-+/*
-+ * Verify a file against and its hash against a merkle tree hash.
-+ *
-+ * Author: Sebastian Andrzej Siewior <sebastian@breakpoint.cc>
-+ *
-+ */
-+#define _GNU_SOURCE 1
-+#include <unistd.h>
-+#include <fcntl.h>
-+#include <string.h>
-+#include <stdlib.h>
-+
-+#include <sys/stat.h>
-+#include <sys/mman.h>
-+
-+#include <openssl/evp.h>
-+
-+#include "helpers.h"
-+
-+struct hash_root {
-+	unsigned int level;
-+	unsigned char hash[EVP_MAX_MD_SIZE];
-+};
-+
-+struct verify_sig {
-+	unsigned int pos;
-+	char hash_sigs[];
-+};
-+
-+static int hash_file(const char *f, unsigned char *hash, unsigned int pos)
-+{
-+	struct stat sb;
-+	int fd, ret;
-+	void *mem;
-+
-+	fd = open(f, O_RDONLY);
-+	if (fd < 0) {
-+		printf("Failed to open %s: %m\n", f);
-+		exit(1);
-+	}
-+
-+	ret = fstat(fd, &sb);
-+	if (ret) {
-+		printf("stat failed %m\n");
-+		exit(1);
-+	}
-+
-+	mem = mmap(NULL, sb.st_size, PROT_READ, MAP_SHARED, fd, 0);
-+	close(fd);
-+
-+	if (mem == MAP_FAILED) {
-+		printf("Failed to mmap file: %m\n");
-+		exit(1);
-+	}
-+
-+	hash_data(mem, pos, sb.st_size, hash);
-+
-+	munmap(mem, sb.st_size);
-+	return 0;
-+}
-+
-+static void verify_hash(struct hash_root *hr, struct verify_sig *vs, unsigned char *cur,
-+			const char *fn)
-+{
-+	unsigned char tmp[EVP_MAX_MD_SIZE];
-+	unsigned sig_ofs = 0;
-+	unsigned int i, n;
-+
-+	n = vs->pos;
-+	if ((n & 1) == 0)
-+		hash_entry(cur, &vs->hash_sigs[sig_ofs], tmp);
-+	else
-+		hash_entry(&vs->hash_sigs[sig_ofs], cur, tmp);
-+
-+	memcpy(cur, tmp, hash_size);
-+	sig_ofs += hash_size;
-+	for (i = 0; i < hr->level - 1; i++) {
-+		n >>= 1;
-+		if ((n & 1) == 0) {
-+			hash_entry(cur, &vs->hash_sigs[sig_ofs], tmp);
-+		} else {
-+			hash_entry(&vs->hash_sigs[sig_ofs], cur, tmp);
-+		}
-+		memcpy(cur, tmp, hash_size);
-+		sig_ofs += hash_size;
-+	}
-+
-+	if (!memcmp(cur, hr->hash, hash_size)) {
-+		exit(0);
-+	} else {
-+		printf("MISS-MATCH on %s\n", fn);
-+		exit(1);
-+	}
-+}
-+
-+static void read_be_int(int fd, unsigned int *val)
-+{
-+	unsigned int val_be;
-+
-+	if (read(fd, &val_be, sizeof(val_be)) != sizeof(val_be)) {
-+		printf("Can't read from file\n");
-+		exit(1);
-+	}
-+	*val = host_to_be32(val_be);
-+}
-+
-+struct hash_root *read_root_hash(const char *f)
-+{
-+	int fd;
-+	struct hash_root *hr;
-+
-+	hr = xmalloc(sizeof(*hr));
-+	fd = open(f, O_RDONLY);
-+	if (fd < 0) {
-+		printf("Can't open %s: %m\n", f);
-+		exit(1);
-+	}
-+	read_be_int(fd, &hr->level);
-+	if (read(fd, hr->hash, hash_size) != hash_size) {
-+		printf("Can't read complete hash (%u): %m\n",
-+		       hash_size);
-+		exit(1);
-+	}
-+	close(fd);
-+	return hr;
-+}
-+
-+static void load_hash_sig(const char *f, struct verify_sig *verify_sig,
-+			  unsigned int sig_num)
-+{
-+	ssize_t total_hash_size;
-+	struct stat sb;
-+	char buf[1024];
-+	int fd;
-+	int ret;
-+
-+	total_hash_size = sig_num * hash_size;
-+
-+	ret = snprintf(buf, sizeof(buf), "%s.hash", f);
-+	if (ret >= sizeof(buf)) {
-+		printf("Too long\n");
-+		exit(1);
-+	}
-+	fd = open(buf, O_RDONLY);
-+	if (fd < 0) {
-+		printf("Failed to open %s\n", buf);
-+		exit(1);
-+	}
-+	read_be_int(fd, &verify_sig->pos);
-+
-+	ret = fstat(fd, &sb);
-+	if (ret < 0) {
-+		printf("Failed to stat %s: %m\n", f);
-+		exit(1);
-+	}
-+
-+	if (sb.st_size != total_hash_size + 4) {
-+		printf("Unexpected signature size: Expected %ld vs found %ld\n",
-+		       total_hash_size + 4, sb.st_size);
-+		exit(1);
-+	}
-+	if (read(fd, verify_sig->hash_sigs, total_hash_size) != total_hash_size) {
-+		printf("Failed to read the signature: %m\n");
-+		exit(1);
-+	}
-+	close(fd);
-+}
-+
-+int main(int argc, char *argv[])
-+{
-+	struct hash_root *hash_root;
-+	struct verify_sig *vsig;
-+	unsigned char fhash[EVP_MAX_MD_SIZE];
-+	const EVP_MD *hash_evp;
-+
-+	ctx = EVP_MD_CTX_new();
-+	if (!ctx)
-+		goto err;
-+
-+	if (argc != 3) {
-+		printf("%s: hash_root module\n", argv[0]);
-+		return 1;
-+	}
-+
-+	hash_evp = EVP_sha256();
-+	hash_size = EVP_MD_get_size(hash_evp);
-+	if (hash_size <= 0)
-+		goto err;
-+
-+	if (EVP_DigestInit_ex(ctx, hash_evp, NULL) != 1)
-+		goto err;
-+
-+	hash_root = read_root_hash(argv[1]);
-+	vsig = xmalloc(sizeof(struct verify_sig) + hash_root->level * hash_size);
-+
-+	load_hash_sig(argv[2], vsig, hash_root->level);
-+	hash_file(argv[2], fhash, vsig->pos);
-+	verify_hash(hash_root, vsig, fhash, argv[2]);
-+
-+	EVP_MD_CTX_free(ctx);
-+	return 0;
-+err:
-+	printf("libssl operation failed\n");
-+	return 1;
-+}
 -- 
-2.51.0
+Thanks and Regards,
+Prateek
 
-
-Sebastian
 
