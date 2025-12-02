@@ -1,86 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-14570-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14571-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C7F69D12663
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Dec 2025 18:22:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78130D1171E
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  2 Dec 2025 18:25:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dLTd92Yjdz3c3y;
-	Wed, 03 Dec 2025 05:22:05 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::429"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764697504;
-	cv=none; b=JNQG6IvBW8C8O3Gvb6g+s7WZNvUS3sgog8XKsPzdW6A83YniznYDAB7+puxK9iCec7pEAtRN84XcDnTDudIPglfh+v1EZ34cTYJbHhsWGYNz7rQt/qpH/G1PTRAPssrqw6KDaomN5Vn2gVZ8nu5qfUTRddBvIn3H9nqmkvtfpM6HJPTi4HqqU3c6aMZVVgkDqpLplfWWhcVz8G8qkWb6aJ7RcUf/6b/Ik4nMSjamxX2PJBPZYHBCMiDbSYm1LF35ern+XFt5J6L3FsALQyplujuciPHDq6FO+JqTa+h8mAKweCLUQa1boxxfYMqc3FlVAnYF60Ju9cNbrqMetfiWdQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dLTjc0QgQz3c4Y;
+	Wed, 03 Dec 2025 05:25:56 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764699955;
+	cv=none; b=brrhxiOmhqn8fjZwdVCemJvi8Ub8f7oiwfCuZahjMOLz/rtFkzw7J6qsM2FuuGBpTgqiyRVJdR04yY3HZsLkAgRemJE6KskqgHOC4TGHSD6o65hkdbAETb7T5x+o2okWuii7sNHiNvVKpw6qXlGou5fmp8csEdJtBi4ahf0sTh1v8TzdxEvkNOFAV7XcQXLCzqBgbi+KkgUQbE+v/ex7yIHeAkttKJRrRWXL+j6QpGO3fTvQCMlRekI94eAOm3BBrJ+zwC7SrdSGhl61cxrZbnGKYSCSpKCs1eMCsMleHBj5OqjsGNmzlq4frb3ASJIKJMUeFIkyEUOV5G8caYzQYw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764697504; c=relaxed/relaxed;
-	bh=ED9tSGVJh0x09FYQjOL2o8g73Yk/StYFmkwh8LhI7Qs=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=hUNzei70dTvCm6ihdXGf4vcjS047Y88t6P58H2uadtobHqSHd/Ml9v9fRr3cWAqQ2rnphQE7CPlVZPh5poi3dOnAAM6wfJxsKwVTCubWgSEklSE7S4wZ1N4Tg6eAM6s4NKQaDyyj8s6B0oO9oQhFOgDoyoWkqpJPjQ+Lqh/QvG8antfhCO/Xztw7mBmGoZgNmksLf9Tpb8aSNQWQYWhkRHJyGvt0DPrFB+5t48/LgextbtwODnhYrfsfp8aSgUs0StfEg0seE0t1rVgZOWEHfxLx/u27AKBpczOrJ7WCagjP7MMolq5tqcEGTfSgQsKs7Y+zHbRK5bwkjjV9h61p1Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KRcJtbqa; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=hanguidong02@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1764699955; c=relaxed/relaxed;
+	bh=1WhmLuNrSLKLImHsXxsAmHbQmK8L1LoXgHaCKxGCmek=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Bl6ukP+AUmUckrKQiy7JPqQy21LL95GhXaMWvN5gGN98t77TjLq9Q0VUYL/js9KdsPXHup2RViFuqbyYxRKgdcbfbcRX1jO31Uud6AMSlwUCyR4gRTzPBO6SdK8W56dW76L6cQIvm/ZfAiPHlpEI39mUHyAJw1GxZAH+216Wa3vitmwn5hZx/y+Q3Kr7diO+Y9ZGHKutGUesZ4tgheBrKRB32p/JXc+iZHQjVPv2e22hRFs87UlqQvmOWbuxe/TRsyuJkzATqIrcWxbyPyEPn4Wl+h/VPkCpzzGeIOR7HgPgPKkgnDkgksuzamIRPWhdA8//HAbq20OdH0AF/t8E4w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZmRJE8jR; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=KRcJtbqa;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ZmRJE8jR;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::429; helo=mail-pf1-x429.google.com; envelope-from=hanguidong02@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-x429.google.com (mail-pf1-x429.google.com [IPv6:2607:f8b0:4864:20::429])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=jpoimboe@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dLSpQ3ShNz3bxC
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Dec 2025 04:45:01 +1100 (AEDT)
-Received: by mail-pf1-x429.google.com with SMTP id d2e1a72fcca58-7c66822dd6dso43910b3a.0
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 02 Dec 2025 09:45:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1764697499; x=1765302299; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:from:to:cc:subject:date:message-id:reply-to;
-        bh=ED9tSGVJh0x09FYQjOL2o8g73Yk/StYFmkwh8LhI7Qs=;
-        b=KRcJtbqaTFkyieGGB6p1iiWprMRLO1ft2B6sVtmrup8gkEUbj9w3Bel51WA4ynYMQg
-         BEX7SZplnT9XqxRg7paOiJP0ODYQ0oeHA3N9su9zkeSUguy75g9g7ITmSut/guOoGsiN
-         i6ehi/KzDO9pLzo3GGj4eeJbALxpffSdQ0yrx7RNnE3ds8qgB5Bp4ppk/jb9WEPt6c2z
-         yyKXiiygGapkGlMmxXmjSKKT5hFKQKoOu/7NXyzyRevfkDZSGUD86bRHP2SjFvi7ohW6
-         2ZcWPfkLzXgwllDBkwWRnHgPNzCEMVYV1RnhvqH0rLLjAbXCON151JV530FDGuS7TwEj
-         sPiQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1764697499; x=1765302299;
-        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
-         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=ED9tSGVJh0x09FYQjOL2o8g73Yk/StYFmkwh8LhI7Qs=;
-        b=mq8+4dMFWHpE1zQdQQ/A5Fg24FcTAN7V7Wv1zo7HyeqLEd2FsfDfnaJkffUQ7JjzZL
-         +0hZedSegFDqeIJn3zL+683Ue3Q+y9FggQJhmuBmwKStsoGQpHH5bWZsywaN3dY4OBGI
-         AelM5kO4bLhleWfT5UF4cQrE55bnVkC06q+qR9KAFpNLMxr8WwRwWklk0yDPZl6ceNWm
-         pUwuleNGfeAp2TqIkLob5Q0+Hs+zT25n4dZd+VFj4RrCRt46yUpwe4GPodwbT3BowgzU
-         cPvfZ3BcsIuU0WVebEme/yvAHi6F5ZiIqCdUGGn8lqgint4VtF7BAupn/JzY1/aAid8T
-         buqg==
-X-Gm-Message-State: AOJu0YyboSqqelJCQapbwdch2G2CM+aT1sTQcug3yXFVkspN4ujkkMqr
-	Yj246CovjcYP1yYCKzOPe8fOtEBpxV4xdiyjqQBaaFrOh++UL2hrsHlh
-X-Gm-Gg: ASbGncsrJauljGKRabLn8JF/5WgwW7Yqz4CsQ0GAL3o+8/NFjF2CdHyrku5jgWvyCRJ
-	ZGGIDcn2lh/D1YQ+sZTe13YM4uEuZjWVT4lAIrp1mS5vsUIEMKFW8qaM1Nf487zD5AWwtDzi1lM
-	6wY55HV9EeKHXLexG4tfWqlDFzH1dk4ZvQ/ceFoOcDqec2UL2RKTKrR+ZlPSkmQERcx+6Ky0qYr
-	24qA5JKGw+2fiOOJEg7odMRImdCA7SL9T3igYLzJLxW5c3n3vv9XBOKGfzRDc6IMuqsum6e2wPH
-	GR36A4RziPuZFAvF+KC4o3qk3Eackwin/JlHVmCAaFqrUaWKEAVB/lyX1h68VrfRHTK4e2TLFRG
-	NPGCbiBVIrY/5m8bEoqWL8LLB/4XTQaENMDIqyO+VLN5KDS7pCQfBAwmV4Y7yXhgqDWPhr5s1Du
-	eJ+cSvJKCZFLNlSWoDE8AWBkLkFPRTzGnHhFybEYL4Lfd9YeluQsr/eezNeecvPPBLq62Ne5Elr
-	ZkFJfyWQuJV9ULsf/9BdTCHUsTgewU5StFuTsJjFV2RG8nVrbnvjZ6wfw1X
-X-Google-Smtp-Source: AGHT+IEJA6ge4wFCANfbRxKoKiXJwQLoc+/E8FFao7Y7q4CuOUiy2Rbn+7WQlpnH2DFciZOyBF+QWg==
-X-Received: by 2002:a17:90b:4b8f:b0:343:6a63:85d5 with SMTP id 98e67ed59e1d1-34907fa9e16mr3588267a91.16.1764697498834;
-        Tue, 02 Dec 2025 09:44:58 -0800 (PST)
-Received: from 2045D.localdomain (191.sub-75-229-198.myvzw.com. [75.229.198.191])
-        by smtp.gmail.com with ESMTPSA id 98e67ed59e1d1-349106cf36dsm56865a91.10.2025.12.02.09.44.54
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 02 Dec 2025 09:44:58 -0800 (PST)
-From: Gui-Dong Han <hanguidong02@gmail.com>
-To: ioana.ciornei@nxp.com
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	baijiaju1990@gmail.com,
-	Gui-Dong Han <hanguidong02@gmail.com>,
-	stable@vger.kernel.org
-Subject: [PATCH] bus: fsl-mc: fix use-after-free in driver_override_show()
-Date: Wed,  3 Dec 2025 01:44:38 +0800
-Message-ID: <20251202174438.12658-1-hanguidong02@gmail.com>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dLTjb2rNPz3c3y
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 03 Dec 2025 05:25:55 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 45E9460153;
+	Tue,  2 Dec 2025 18:25:53 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 4F05AC4CEF1;
+	Tue,  2 Dec 2025 18:25:52 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1764699953;
+	bh=tErWca9Q7isjXmTy262NuXlQP0VexxOyxDjhcnR+lwA=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=ZmRJE8jRwY19cCut5hG+d27xk+lx6yTa6JO8QOWGDG4XEpiV3ghB6ljvt/1dXp1UU
+	 34AG0kD/P7Mav55YGAxaJpT7giJeoeh5ZPeASISpCCFJPQ/VRtUcyXRvG7RZnku4AX
+	 4vyjOYZXNa75lLoWXd8vw4cjN37kDNeuTMlNmZwS8FLjVD3MMmH25YGJxK1XcAtOEp
+	 OvAsfLCY1EYkxhlGHhtzyQL45xGMM2W43eZd7fXrs5gEgzbOOdfM1hL7079jfFS812
+	 qHtau5kFptjfb4/5xfFwGDwTvS5YqETw5I1mpSuWQg3hRL7XaEqr1E43yV02++OCcO
+	 9oI2lDqBA9kyA==
+Date: Tue, 2 Dec 2025 10:25:50 -0800
+From: Josh Poimboeuf <jpoimboe@kernel.org>
+To: maddy@linux.ibm.com, mpe@ellerman.id.au, linuxppc-dev@lists.ozlabs.org
+Cc: npiggin@gmail.com, christophe.leroy@csgroup.eu, 
+	linux-kernel@vger.kernel.org, joe.lawrence@redhat.com, Jan Stancek <jstancek@redhat.com>
+Subject: Re: [PATCH RESEND] powerpc/tools: drop `-o pipefail` in gcc check
+ scripts
+Message-ID: <4f5kcqpijenbsqognglpgkafuk3ok4gpj7wlrilzfrgwulntlk@iwnjypms6zvl>
+References: <cc6cdd116c3ad9d990df21f13c6d8e8a83815bbd.1758641374.git.jstancek@redhat.com>
+ <z4go2m2c7ufulwjk7vkcpv2oyfo2jwpxzieiuuetegnv7sjrsj@gbjwkp2dpdyd>
+ <qtnjbiz2wq35mmisa2dljpvslnmc3wmygxsq5usmiml223ry3r@eze7qwlrgx5p>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,52 +68,30 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
+In-Reply-To: <qtnjbiz2wq35mmisa2dljpvslnmc3wmygxsq5usmiml223ry3r@eze7qwlrgx5p>
 
-The driver_override_show() function reads the driver_override string
-without holding the device_lock. However, driver_override_store() uses
-driver_set_override(), which modifies and frees the string while holding
-the device_lock.
+On Thu, Nov 20, 2025 at 12:15:58PM -0800, Josh Poimboeuf wrote:
+> On Wed, Nov 12, 2025 at 02:56:05PM -0800, Josh Poimboeuf wrote:
+> > On Tue, Sep 23, 2025 at 05:32:16PM +0200, Jan Stancek wrote:
+> > > We've been observing rare non-deterministic kconfig failures during
+> > > olddefconfig, where ARCH_USING_PATCHABLE_FUNCTION_ENTRY was getting
+> > > disabled and with it number of other config options that depend on it.
+> > > 
+> > > The reason is that gcc-check-fpatchable-function-entry.sh can fail
+> > > if `grep -q` (or scripts/dummy-tools/gcc) is fast enough to exit while
+> > > there is still someone writing on other side of pipe. `pipefail`
+> > > propagates that error up to kconfig.
+> > 
+> > Ping?  This fixes a nasty build bug, any objections to merging?
+> 
+> Ping?
 
-This can result in a concurrent use-after-free if the string is freed
-by the store function while being read by the show function.
+Madhavan, Michael,
 
-Fix this by holding the device_lock around the read operation.
+Ping?
 
-Fixes: 1f86a00c1159 ("bus/fsl-mc: add support for 'driver_override' in the mc-bus")
-Cc: stable@vger.kernel.org
-Signed-off-by: Gui-Dong Han <hanguidong02@gmail.com>
----
-I verified this with a stress test that continuously writes/reads the
-attribute. It triggered KASAN and leaked bytes like a0 f4 81 9f a3 ff ff
-(likely kernel pointers). Since driver_override is world-readable (0644),
-this allows unprivileged users to leak kernel pointers and bypass KASLR.
-Similar races were fixed in other buses (e.g., commits 9561475db680 and
-91d44c1afc61). Currently, 9 of 11 buses handle this correctly; this patch
-fixes one of the remaining two.
----
- drivers/bus/fsl-mc/fsl-mc-bus.c | 6 +++++-
- 1 file changed, 5 insertions(+), 1 deletion(-)
-
-diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
-index 25845c04e562..a97baf2cbcdd 100644
---- a/drivers/bus/fsl-mc/fsl-mc-bus.c
-+++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
-@@ -202,8 +202,12 @@ static ssize_t driver_override_show(struct device *dev,
- 				    struct device_attribute *attr, char *buf)
- {
- 	struct fsl_mc_device *mc_dev = to_fsl_mc_device(dev);
-+	ssize_t len;
- 
--	return sysfs_emit(buf, "%s\n", mc_dev->driver_override);
-+	device_lock(dev);
-+	len = sysfs_emit(buf, "%s\n", mc_dev->driver_override);
-+	device_unlock(dev);
-+	return len;
- }
- static DEVICE_ATTR_RW(driver_override);
- 
 -- 
-2.43.0
-
+Josh
 
