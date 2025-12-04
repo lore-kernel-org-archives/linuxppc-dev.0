@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-14613-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14614-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9133AD24456
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Dec 2025 17:56:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B0F1AD24457
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  4 Dec 2025 17:56:52 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dMhyL69t2z2xJ8;
-	Fri, 05 Dec 2025 04:56:10 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dMhyQ1dssz2yDl;
+	Fri, 05 Dec 2025 04:56:14 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764870970;
-	cv=none; b=AVFm2DuNFn2MLfYxE8TkR8zwiWxoNnjZcHpyE+7hpBENB0EHgGd0IBxN3hw9QUbr2KMnJZ6nLrKTI6dsp30tzC3lO5A4h8CXbtCldhRbNFAdZ/kq/KEbyTB66cTrQiX9H0VTLMop8FObOlQQYPM6K6prQkZhmU0vPxmtEuQqr7/jazYQeCxTpP2mR0QIwHwPP1nouvpwtRvuQ7bUf/L5RpuZJ7+Ne2MjXDpHXiAF6W4kHJnpuFwdMO7jJgc6mxy25BIUSlpElUdd9bXHZsJksTiEb5RMaQt0Drs238MfvdgfJ3RiBq7heMZTgi83X+oDMUYORDrcQZBd+kHPnrujig==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764870974;
+	cv=none; b=AgqNHr26Du8Kr8kYtOEp/hGCgu7Vyp/Chqdgnn5M9V6JqSGNfAdKygvq8Ld2G76M4awKqCQd2sxdL3S4q4sOp9HBqAZo+RF55wxQ30Cv5HF1QGDNBC34UqDbx0Sy1LvpnreBYij6xnbP6hE3kkAWsorXTlEtjA14FvNXGQbBeO5x9hvkQPCLQhrOoZksiNsbJz2DgRRT3bHKlWB0nuzNh7MgZF1LxTp96M8wJW/A5meTFk1RHJnoL90d3lQg62ZA/gjE2L1R3N2pLnL/ppLdOCPE5DEIR9ZJJ9yQnU580iZkjwzqQPD55pBk+SP5erCV1d7myEUwC079kgIFw86uCA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764870970; c=relaxed/relaxed;
-	bh=ofdrv2HTyNhn9a94lvQbSf69S36F3l+q9KEMumrBl+U=;
+	t=1764870974; c=relaxed/relaxed;
+	bh=zfrg1rG5jDOEik4rUJgJKPizaKP9IuPevyT0ezbS4NA=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=IBCcRqwOYEKYioa+/E7gxmWDOFAyyCx9hCptrzeOmHX7KognqiL4xPTOl9Iy57rKjXxKhH40axVbwgsACS8/lE2BcCssrtbL4uLVRgtQDGNMMY3GIYFJFSvWyVM/4WzbLPttLUD1qN46XF3QzWgkYLIISwUsdisYD6HO07LaTETwAuYcsePElySlt6/eS5X0RIait63BBDb5Ytx7FhB+KY6mtxyHdjBgIoEcpiTcACJSFCUfJr2Hms8Xni2gKZQiYxrQf34l7KIECgGW1lFFO6cJLkTgmPJPkbhbYLefA+wGaA8D/lWRTtYhb7/KBZ3hTaVcoLODLhDFvQZ48gXoVA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M71ttVib; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=GJj1NdIg1fMvkPeg0cwwKZvnfWj51cdBgc8tf6x2UOcvaa5ergjnHvVmmt+HMbczNJ11tzp5FWvNgIsfShjKieB+Q0B/VuO4cJbmtnouY4LZWKx3ZLFifq0R8tkU2tq2YHsIY+uPBo/xfR/l4aRrMSG/QAtinJinoBa0oCmIqMSNXr/L7EznRo5tpc11yW7LIIO99IbhGrBE6+EJ7HSL4HW5t0SwiOwF1dA2f13/NQ5nJk09DNnEEiZlOs0MMcgp/jqAIoig6Hr9MnrIdvdFBmpidtOO/oJbcXm32OvTyuWXneQ1vwehmbQsrutvUqzP1v06Z3b7MgYCkufnqcr5cA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k7Rup/Oc; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=M71ttVib;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=k7Rup/Oc;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=srikar@linux.ibm.com; receiver=lists.ozlabs.org)
 Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dMhyL0BsJz2xs7
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Dec 2025 04:56:09 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5B4A5oDf018043;
-	Thu, 4 Dec 2025 17:55:38 GMT
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dMhyP4Bd6z2yDk
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Dec 2025 04:56:13 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5B4FbwZK018535;
+	Thu, 4 Dec 2025 17:55:45 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=ofdrv2HTyNhn9a94l
-	vQbSf69S36F3l+q9KEMumrBl+U=; b=M71ttVibtm2D1LHW2cs88jdP6AJzzpsXr
-	IT6cfto/fDmHDX4sW4jybmlbM7Ikf1nNbkugI3PaBtf77QDhOhJZnT10l7rc7YCo
-	9B9/ue6hAEaO62o5xA9ZcXymkb/lxqPpA032YK0uqOI46jq8Inuf450z49wFg6Hc
-	h0a/7QEa4kMpohg8ER8gAlajJuI+b5gM2xCCtgs8vFkyoUj2a9OU7azM87iqz3PU
-	C5MB5rn6baScSreWfdRZF/PoKZCXocP960QcDvv/6gjhgFMYhdBriaaZ12ps9MEF
-	ePNR3RBzhBehmLbFWtUyp/tiAylZ2nujICb5WFrtaGzgaTEh4EzzQ==
+	:mime-version:references:subject:to; s=pp1; bh=zfrg1rG5jDOEik4rU
+	JgJKPizaKP9IuPevyT0ezbS4NA=; b=k7Rup/Oc37X8e4ZDBHMl3e6oAvsJDDPop
+	C6Yl8IGPHsCaytOEEPvMpOw1OpgtWVeuGd/RuUNhaXT5H9LL3vqJlntlSVN4CwNs
+	w+PAVotty/fa+wgBCc7TM4g022bbNsVk/UWAfaC7QdBLMRIxyNXJe6hdAIGNj1rk
+	uiWkvF29y5CBip1nPAZevgd4Gno0yOerJxDY5BTrpbRR9ZLlE+0gs7Tv0uHCsWX7
+	y9HSlkg30kmmbDwAp5AeDHTwd0Qb/dBkgKPvKvH+Jzun4rQbQN74QfjWc0xxgOgq
+	qLM8A4KGx/b3j7lDdmOb/i41rRJykOPIObhvyulqNVDDPqQXK5Vxw==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aqrg5s6ct-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aqp8q9e4k-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 04 Dec 2025 17:55:38 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5B4HqoSZ013939;
-	Thu, 4 Dec 2025 17:55:37 GMT
-Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aqrg5s6cr-1
+	Thu, 04 Dec 2025 17:55:45 +0000 (GMT)
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5B4Hk24A031925;
+	Thu, 4 Dec 2025 17:55:44 GMT
+Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aqp8q9e4g-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 04 Dec 2025 17:55:37 +0000 (GMT)
-Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5B4GAjZ7029361;
-	Thu, 4 Dec 2025 17:55:36 GMT
-Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
-	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ardv1rva5-1
+	Thu, 04 Dec 2025 17:55:44 +0000 (GMT)
+Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5B4GDWRn003891;
+	Thu, 4 Dec 2025 17:55:43 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4ardck0x4x-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 04 Dec 2025 17:55:36 +0000
+	Thu, 04 Dec 2025 17:55:43 +0000
 Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
-	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5B4HtWHt32440644
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5B4Htemk48890148
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 4 Dec 2025 17:55:32 GMT
+	Thu, 4 Dec 2025 17:55:40 GMT
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 826952004B;
-	Thu,  4 Dec 2025 17:55:32 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 1068120043;
+	Thu,  4 Dec 2025 17:55:40 +0000 (GMT)
 Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 00E7220040;
-	Thu,  4 Dec 2025 17:55:29 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id 8F80B20040;
+	Thu,  4 Dec 2025 17:55:36 +0000 (GMT)
 Received: from sapthagiri.in.ibm.com (unknown [9.39.29.188])
 	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  4 Dec 2025 17:55:28 +0000 (GMT)
+	Thu,  4 Dec 2025 17:55:36 +0000 (GMT)
 From: Srikar Dronamraju <srikar@linux.ibm.com>
 To: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
         Peter Zijlstra <peterz@infradead.org>
@@ -91,9 +91,9 @@ Cc: Ben Segall <bsegall@google.com>,
         Vincent Guittot <vincent.guittot@linaro.org>,
         virtualization@lists.linux.dev, Yicong Yang <yangyicong@hisilicon.com>,
         Ilya Leoshkevich <iii@linux.ibm.com>
-Subject: [PATCH 05/17] pseries/smp: Query and set entitlements
-Date: Thu,  4 Dec 2025 23:23:53 +0530
-Message-ID: <20251204175405.1511340-6-srikar@linux.ibm.com>
+Subject: [PATCH 07/17] sched/core: Set balance_callback only if CPU is dying
+Date: Thu,  4 Dec 2025 23:23:55 +0530
+Message-ID: <20251204175405.1511340-8-srikar@linux.ibm.com>
 X-Mailer: git-send-email 2.51.1
 In-Reply-To: <20251204175405.1511340-1-srikar@linux.ibm.com>
 References: <20251204175405.1511340-1-srikar@linux.ibm.com>
@@ -112,105 +112,69 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: 1Vrq_csNHCzp9xa2osFLtxs9Iw4Y1YK5
-X-Authority-Analysis: v=2.4 cv=Ir0Tsb/g c=1 sm=1 tr=0 ts=6931cb1a cx=c_pps
- a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTI5MDAwMCBTYWx0ZWRfX7hJNWLOXP0fe
+ fK/CL+ZvpnG8hHCZ5yh4SryhATLuFhfljDRhCO96hf7tJFtpoH7Xn070n/Hzi6aRMU5V4QJJFwr
+ vuo86ULF+n4OOQXC1lqSr56/fIfrE24iAEbYTjpyd/Q1vRmgwRC3GniYXgkCyAq9nl+0Ozxg7il
+ MJuZZI9KqeFXCLCenD/f7C+ryC0hbAgFX4+2lLBiiTKwOdY2ZSxVR32JrC1MpvsJ1AGJKx4UkEN
+ q0zwIMtNsHGnR984jlLGPp8iTz7l13wxfalvKeEzAxwrOowsVuEnk24LK3uc08lOA9DMTxzU+jx
+ T9hTgZmpZgicw1BYCTKycaoPGxirHPAlhvAYEceDpW2Sf7AoUcc/jVv2miv1iUcbh4dhz7ei0r/
+ ZzLdiELEhuJRR+lbYqmvnjLj0DLT3g==
+X-Authority-Analysis: v=2.4 cv=dIerWeZb c=1 sm=1 tr=0 ts=6931cb21 cx=c_pps
+ a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
  a=wP3pNCr1ah4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
- a=zmVj4zYWMFl_L39sl28A:9
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTI5MDAyMCBTYWx0ZWRfX/rruhK4Cb7Ab
- VBYl60SFPuyS+jUyoUVb3pdstkli+caa3mouV9eVY+jsy39Yr5e7FzF0eBCnYHhwGalTHeuVlR8
- ejOpvHWr7c7kOYGVaVgRbN2fGoUAYraO77TapdqJffWSj1oyD33N/Wr0aoBvcPgxjzx04d2Uyfe
- NSfrzXVmm8OY+3o402Ae3fswkJ8JoEPcInnAqbd5Pgm23KxNShgrscGHiEYhy1ZXP7A2Nj2BBl1
- zgB/Kj4E7XDEcMb/yb2jC2KH39Rnb9AtgDceAlKcA+Sxd22V2h6rYRg62Qveb0lWIjHSUquf7MQ
- r8dTG0guRn7RfI0CfOKhfvRAluKt8KX9S0gUH56sLW26RPfW9LYuVReVIHZ+juxB14ixqBzHW0G
- hq/FelLaZTNeQnTR93got1ItaNs2eA==
-X-Proofpoint-GUID: JidS4L2skuTXWOaUvwLPfOO1ck_2dd-t
+ a=JESwPpsbOM5vm_rGWyIA:9
+X-Proofpoint-ORIG-GUID: 8uU_t1RZRCpbzH0RSd3zI_3XEKNDkQ3R
+X-Proofpoint-GUID: g6N-ECgPD2VXnbLJPqWWFyz2k-qRoxJ7
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
  definitions=2025-12-04_04,2025-12-04_03,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 adultscore=0 impostorscore=0 clxscore=1015 priorityscore=1501
- bulkscore=0 spamscore=0 lowpriorityscore=0 suspectscore=0 phishscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2511290020
+ priorityscore=1501 lowpriorityscore=0 clxscore=1015 spamscore=0
+ malwarescore=0 suspectscore=0 adultscore=0 bulkscore=0 impostorscore=0
+ phishscore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2510240000
+ definitions=main-2511290000
 
-This defines num_available_cores callback for pseries.  On pseries system,
-query the hypervisor for hard entitlement using H_GET_PPP hcall. At boot,
-soft entitlement(available_cores) is set to the maximum number of virtual
-cores in the shared LPAR. In subsequent changes, soft entitlement will be
-updated based on steal time. If the number of virtual processors attached to
-this LPAR changes, then update entitlements as required. Soft entitilement
-will oscillate between hard entitilement and maximum virtual processors
-available on the shared LPAR.
+Scheduler is suppose to set balance_callback to push tasks out of a
+dying CPU. However the current code, unilaterally sets the balance_cpu
+and then checks if the CPU is indeed dying.
+
+Remove this anomaly by setting balance_callback only after checking if
+the CPU is about to die.
 
 Signed-off-by: Srikar Dronamraju <srikar@linux.ibm.com>
 ---
- arch/powerpc/platforms/pseries/smp.c | 38 ++++++++++++++++++++++++++++
- 1 file changed, 38 insertions(+)
+ kernel/sched/core.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/arch/powerpc/platforms/pseries/smp.c b/arch/powerpc/platforms/pseries/smp.c
-index db99725e752b..a36153c959d0 100644
---- a/arch/powerpc/platforms/pseries/smp.c
-+++ b/arch/powerpc/platforms/pseries/smp.c
-@@ -42,6 +42,7 @@
- #include <asm/text-patching.h>
- #include <asm/svm.h>
- #include <asm/kvm_guest.h>
-+#include <asm/hvcall.h>
+diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+index f754a60de848..89efff1e1ead 100644
+--- a/kernel/sched/core.c
++++ b/kernel/sched/core.c
+@@ -8173,11 +8173,6 @@ static void balance_push(struct rq *rq)
  
- #include "pseries.h"
+ 	lockdep_assert_rq_held(rq);
  
-@@ -239,6 +240,40 @@ static __init void pSeries_smp_probe(void)
- 	smp_ops->cause_ipi = dbell_or_ic_cause_ipi;
- }
+-	/*
+-	 * Ensure the thing is persistent until balance_push_set(.on = false);
+-	 */
+-	rq->balance_callback = &balance_push_callback;
+-
+ 	/*
+ 	 * Only active while going offline and when invoked on the outgoing
+ 	 * CPU.
+@@ -8185,6 +8180,11 @@ static void balance_push(struct rq *rq)
+ 	if (!cpu_dying(rq->cpu) || rq != this_rq())
+ 		return;
  
-+#ifdef CONFIG_PPC_SPLPAR
-+static unsigned int max_virtual_cores __read_mostly;
-+static unsigned int entitled_cores __read_mostly;
-+static unsigned int available_cores;
++	/*
++	 * Ensure the thing is persistent until balance_push_set(.on = false);
++	 */
++	rq->balance_callback = &balance_push_callback;
 +
-+/* Get pseries soft entitlement limit */
-+static unsigned int pseries_num_available_cores(void)
-+{
-+	unsigned int present_cores = num_present_cpus() / threads_per_core;
-+	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE];
-+
-+	if (!is_shared_processor() || is_kvm_guest())
-+		return present_cores;
-+
-+	if (entitled_cores && max_virtual_cores == present_cores)
-+		return available_cores;
-+
-+	if (plpar_hcall9(H_GET_PPP, retbuf))
-+		return num_present_cpus() / threads_per_core;
-+
-+	entitled_cores = retbuf[0] / 100;
-+	max_virtual_cores = present_cores;
-+
-+	if (!available_cores)
-+		available_cores = max_virtual_cores;
-+	else if (available_cores < entitled_cores)
-+		available_cores = entitled_cores;
-+	else if (available_cores > max_virtual_cores)
-+		available_cores = max_virtual_cores;
-+
-+	return available_cores;
-+}
-+#endif
-+
- static struct smp_ops_t pseries_smp_ops = {
- 	.message_pass	= NULL,	/* Use smp_muxed_ipi_message_pass */
- 	.cause_ipi	= NULL,	/* Filled at runtime by pSeries_smp_probe() */
-@@ -248,6 +283,9 @@ static struct smp_ops_t pseries_smp_ops = {
- 	.kick_cpu	= smp_pSeries_kick_cpu,
- 	.setup_cpu	= smp_setup_cpu,
- 	.cpu_bootable	= smp_generic_cpu_bootable,
-+#ifdef CONFIG_PPC_SPLPAR
-+	.num_available_cores = pseries_num_available_cores,
-+#endif
- };
- 
- /* This is called very early */
+ 	/*
+ 	 * Both the cpu-hotplug and stop task are in this case and are
+ 	 * required to complete the hotplug process.
 -- 
 2.43.7
 
