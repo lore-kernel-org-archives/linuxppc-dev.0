@@ -1,81 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-14661-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14662-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E62A9D374A6
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Dec 2025 21:16:58 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09326D374A3
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Dec 2025 21:22:41 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dNPMV2QC9z2xHt;
-	Sat, 06 Dec 2025 08:16:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2a00:1450:4864:20::330"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764969414;
-	cv=none; b=DU4gcEi8M51QoA1WQEwZly/hFIaRvrvpKRLKaWpts4xSaHDIW7so5EhYYTpFuHNWtWz5jdvr9XYoheugTmxPQVb076Cdclfpt8wXXvr1zlCv2Ne4UN3Ruu0haKob1dZNk+vaRJ7YFXmV0CuzWhe6epROKq63BrOqDA7w6sHBbGYcHpzYdHcxN+H1OJ6QNPsnieSakr9/nJ3sk2DeUbDVFY9SQ8D0gZeZQXSwG36FYW3FNoMUYRi7k75gkMovGs/3lT2AIoOR/LL6SgMjqGWg7f2I029qIvHSVZmUh70rEmfJbHEHzR212wzAFaZPix6BxfKX13VsQjnhhetqJfTu/g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dNPV10jfsz2xHt;
+	Sat, 06 Dec 2025 08:22:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c04:e001:324:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764943363;
+	cv=none; b=fkl24mQwEMzGLo+D0cAqr/nv5MW5HlbgMJ8ArNMUwuJrQVeD74jZH/yGbk2/Lox1JDKa1qodB6HX3iHaUd7dhZl35dVVPdaZbK/FRRpbLX9biB2lD6WOWpE6FRgdSaiUci6pd2k6DyrSu5eLk2cGPlXjIH5gHkDbga7f/x5dej2LIAygt+0M6NY6mAxrjxizWMKdVajBrcCVrPsuCuxyIQ2pCvn3nPuRJ79Q1Ni6awIyttD9zMR/zodAvWehZI2Dtix7q/bRKXbXEgESg2qKQAknc5BcKjgiQyrqnn2yGACjFxw+f1JGHEMEJBuvC5LnMpb74zj66QMg72+PRBgkTQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764969414; c=relaxed/relaxed;
-	bh=6Nxf+UbxVML8lqm9dUwCL46TJXN3lpM/MynhhK+ht9M=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=AQPc2OWhH6XYopJYHmDYJuaRl/GEhOW0AZfV5f5Cl3JcTR+IFUyFq6Ruhmw2HnU3bMg/qowPHmOAMjI9EjWPxFOacPfzBAPrh8/dE4kmoFjsP41/brMUbRdGDfI1/WpifBE2NTa8V5Bqj6f7/gvlo/8Qbd06apzbtre7zbtYZX5iX91h0a/xM1fDpupGDRYgqHjAtGOC9AQ4/yDWww+AD8JMOhC1IJLZlMO5tjFVQ5mvMie5erjq2v5rGvIk9pvpEsfjvLQxuxq1xnUB2OZwB3Rd9i/3ehwh9Me+AyfZMGkrUIA4bQCKE7ZNcwRHfIbbhHgZ5xDJfZFcVfCRFFnMgw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=EFQ3+zc2; dkim-atps=neutral; spf=pass (client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com; envelope-from=hkallweit1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1764943363; c=relaxed/relaxed;
+	bh=p2H2VHNSrBbxX195Ji6nHe5n+GM0W17tCpeJzOTt7Ig=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:To:Cc; b=S/o6e8HPL8YQDrH/JGOE48CxOAhhboo92i2pKqf8xrbxwhj9mA7yf6GMnlTo8/zXDkswXwethIbJ1sAWvz01B3rrqmOHS6p+hmmZ/J3S+rS8ZJzzG+dLQAz0HI7P82gSOfKiKKvkKmcFbbC9VYM+wM8YtfC9Dlms0ostcevep5tbfmL7Y/nFsG//zVehpEKZ0/DcZPOvlTANi+ju9HX8UPo4UfJ3mfwBR6CfKFSaziHf8elqgRqBrMicHo1AfnZlt6X75HRkgyDJR7JlgS30gWfYb1x3PNuo5dcoXRMJQld87Ml+EOliuW+RlizzSbq+GYp+DapV3ER+yTf3aP8oOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XUnv2TaF; dkim-atps=neutral; spf=pass (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=EFQ3+zc2;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=XUnv2TaF;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2a00:1450:4864:20::330; helo=mail-wm1-x330.google.com; envelope-from=hkallweit1@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-x330.google.com (mail-wm1-x330.google.com [IPv6:2a00:1450:4864:20::330])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c04:e001:324:0:1991:8:25; helo=tor.source.kernel.org; envelope-from=linusw@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [IPv6:2600:3c04:e001:324:0:1991:8:25])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dNPMS0l8zz2xHG
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Dec 2025 08:16:50 +1100 (AEDT)
-Received: by mail-wm1-x330.google.com with SMTP id 5b1f17b1804b1-477563e28a3so19255635e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Dec 2025 13:16:50 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1764969405; x=1765574205; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=6Nxf+UbxVML8lqm9dUwCL46TJXN3lpM/MynhhK+ht9M=;
-        b=EFQ3+zc2BIBh/hjEUIE6Jaev0ZY9xKg9O5Jk4cUQj4BjmcOyD3tOsoNCN8WrXpLU9q
-         8rk8BLYBWSelgd7MiDpvobnCv/hzL7rqhBpOYqvWGpE0W/RPR06Op+8M/DvvUBppGQQR
-         l+3KM7K914BGWiVTlb7xHJjyDfhaVRSeHanRwmveLFMcr/dADXKicywauI/kIxlBpBwZ
-         cPvHV4ZnDPzTgHhC2twfbeQUxY/ROAGphRhDxqxwt6e4/LW6NjhkwbS16NBNQ4pxU6C1
-         U/mHW9lLo72cOfaypmFdVKh3WJpNr0sTcSmk+FeB7l18Goy6yy9oz9doV7vJCMB48CbW
-         t2hQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1764969405; x=1765574205;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=6Nxf+UbxVML8lqm9dUwCL46TJXN3lpM/MynhhK+ht9M=;
-        b=HJZ8A2Z0e99tcHbsk5lubrnPxblaIw/YJHbtRIuXzScHopHdG97/V5rjQM88kGl4bo
-         fBqvnk3ksPddNb7teulW624ns4VWPUXWz+CQ8jCVz7N/1CRh9SXFPqS6AxUAoh9pw5Vd
-         kKMRcKpKWDi1kb47uQ5B+26WV+o2YA9aRj6OLqxZEyB7FpxXzQap7cwqb2c07/L6UqmP
-         jP7eIQvmoBhURpz98XIMtWuPeB8krEyQVnpnhdoE3VyxTCmnCw+Jy9XI15VLaB22/1Uq
-         m1dlS5PpIU79rpPMEMH3L75nzyNP8G8hjcixzQnuXSdEtEj//KLLAGQyJorCJm6U8ugO
-         dMBQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUpnXP51ID1evD9dOnYpy/gkp1A+myF90OIEwnCJ5XdaGkrkYX1s1iB0isBnK55eO12GAqhfhYWkXICacY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxOwbHKRXhA19o1gMIw/3ChSMMB61Ugs5ZkO2zXd3yCRsNRoEe3
-	di0Kra6h8rsSElSiMy3dhpN3ypsDFmkie9ZXm5pVyufE85wTRZGx3/D8
-X-Gm-Gg: ASbGnct74dixGl3enwcHbdt4Fd9oKv4KtCrbc922+vhxGE4X8jXQh5QScfMLosbJAsq
-	yqydasm8ZyA0EKzBHMGiRTtvn7u+jPSCDYBrpTflXsQsIbjzmRS8zd1APsrai+4hISgNz2as4Db
-	8mr8xQ5mYmPxqgNKzxRy119Hvg57EX2LGBLFK6gtPf1Agj5lFOz+OpStHeh9TDBZe67eCgP5S5A
-	8iBgs6U/BZTo9ILXN+vdzWuJUuBCigiR0GoHOb/bvLVBlxUVIZQpsTkIWuC30dNImWRKmWnbFLa
-	hEy9Pv8wGIg9FIoM5T+fKe8QbuWpzHf36HcmZyFaDa6JkUMfT4KKXHf3xikKVmb7BfeWFPZegxN
-	DBbj4obx/qgcYpL55L9zBCYFeqm+HoLRoizjHiXY2PC0lQnH0r6yyWnO+McbLiU92hL7v+y2vPT
-	D6QjM1IwKeuq+3kthcz+er/erHwLlfvrwQKWIwlg0JevUmpZmAql9agpw3P95gE1IL3oqtWGa4r
-	B6wZMyegAc8XArxI6TPti2uR+sk61K/9A1XVT8oz8ewocJDX6m2Ow==
-X-Google-Smtp-Source: AGHT+IFZChau8OMeC1OLCqeCPNebVKaNk3vumCCd23Bu0iJLrPIjbfoD1uBKQKJb6ckkVpzXZJNNzw==
-X-Received: by 2002:a05:600c:5306:b0:46e:59bd:f7e2 with SMTP id 5b1f17b1804b1-47939e22a9emr7139775e9.11.1764969405296;
-        Fri, 05 Dec 2025 13:16:45 -0800 (PST)
-Received: from ?IPV6:2003:ea:8f47:b600:41b3:37ed:a502:9002? (p200300ea8f47b60041b337eda5029002.dip0.t-ipconnect.de. [2003:ea:8f47:b600:41b3:37ed:a502:9002])
-        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-42f7d222506sm11795875f8f.28.2025.12.05.13.16.44
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Fri, 05 Dec 2025 13:16:44 -0800 (PST)
-Message-ID: <10441fbd-8022-402e-8551-e0f8ec0449f0@gmail.com>
-Date: Fri, 5 Dec 2025 22:16:42 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dNCkW2GVsz2xc2
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Dec 2025 01:02:43 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 32425601EF;
+	Fri,  5 Dec 2025 14:02:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 58B38C4CEF1;
+	Fri,  5 Dec 2025 14:02:39 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1764943360;
+	bh=SKw64R/PJq7cCRC8RMbyoOVOZqDH8JcOsKxQ411mFQI=;
+	h=From:Date:Subject:To:Cc:From;
+	b=XUnv2TaFcfDkR2/znGkxkegOpXX7MfUc4E5Z+s+YdfbjGVxedvobI8Sg8XTL3uFkZ
+	 WIHxgJ14UZCPCiTGC7mKkEeBcWEhyzgIBWBMSRfjVDQ92CZEhk0TD2oZ5dvNgxJPwn
+	 IWIHI4uOG8Qbs5HgX9QhWTe5hcfYEp6Kg7x+ZvGABtnihv9AUjbwJogYedLh6X0dZE
+	 QvEuO2oKybtTgz1zgX+6oTbl4ABo8ohhay/OEKG36mP3rkGlhFp5zvboXJFkLf0wnp
+	 YYH7J5QJhblSGAqQdtrDooe4dIAjrjc0gzeNKlNBD9+0nI8UNo/ETlbf59nhanPLEY
+	 7OMowbMdFf8Uw==
+From: Linus Walleij <linusw@kernel.org>
+Date: Fri, 05 Dec 2025 15:02:34 +0100
+Subject: [PATCH] powerpc/g5: Enable all windfarms by default
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,43 +59,51 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH RFC] powerpc: switch two fixed phy links to full duplex
-To: Andrew Lunn <andrew@lunn.ch>
-Cc: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>,
- Conor Dooley <conor+dt@kernel.org>, Madhavan Srinivasan
- <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Nicholas Piggin <npiggin@gmail.com>,
- Christophe Leroy <christophe.leroy@csgroup.eu>,
- Pantelis Antoniou <pantelis.antoniou@gmail.com>,
- "devicetree@vger.kernel.org" <devicetree@vger.kernel.org>,
- "linuxppc-dev@lists.ozlabs.org" <linuxppc-dev@lists.ozlabs.org>,
- "netdev@vger.kernel.org" <netdev@vger.kernel.org>
-References: <64533952-1299-4ae2-860d-b34b97a24d98@gmail.com>
- <5d302153-c7f6-48dc-95cc-0dc4f25045c6@lunn.ch>
-Content-Language: en-US
-From: Heiner Kallweit <hkallweit1@gmail.com>
-In-Reply-To: <5d302153-c7f6-48dc-95cc-0dc4f25045c6@lunn.ch>
-Content-Type: text/plain; charset=UTF-8
+Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
+Message-Id: <20251205-powermac-g5-config-v1-1-8609aa97c1c0@kernel.org>
+X-B4-Tracking: v=1; b=H4sIAAAAAAAC/x3MQQqAIBBA0avIrBtIy6iuEi3EJptFKgoVSHdPW
+ r7F/wUyJaYMsyiQ6OLMwVfIRoA9jHeEvFWDapWWqtUYw03pNBadRhv8zg6HSaqRpm7TYw81jIl
+ 2fv7psr7vBxTTdShkAAAA
+X-Change-ID: 20251205-powermac-g5-config-69128e93d584
+To: Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
+ Linus Walleij <linusw@kernel.org>
+X-Mailer: b4 0.14.3
 
-On 12/5/2025 6:50 PM, Andrew Lunn wrote:
-> On Fri, Dec 05, 2025 at 06:21:50PM +0100, Heiner Kallweit wrote:
->> These two fixed links are the only ones in-kernel specifying half duplex.
->> If these could be switched to full duplex, then half duplex handling
->> could be removed from phylib fixed phy, phylink, swphy.
->>
->> The SoC MAC's are capable of full duplex, fs_enet MAC driver is as well.
->> Anything that would keep us from switching to full duplex?
-> 
-> What do we know about the device on the other end of the link? Maybe
-> that is what is limiting it to 10Half?
-> 
-I found no hint that anything is connected to this ethernet port on
-the two boards. Hard to find any information because the boards are
->15yrs old. Seems this are dummy entries, just to let fs_enet load.
+The G5 defconfig is clearly intended for the G5 Powermac
+series, and that should enable all the available
+windfarm drivers, or the machine will overheat a short
+while after booting and shut itself down, which is
+annoying.
 
-> 	Andrew
+Signed-off-by: Linus Walleij <linusw@kernel.org>
+---
+ arch/powerpc/configs/g5_defconfig | 2 ++
+ 1 file changed, 2 insertions(+)
 
-Heiner
+diff --git a/arch/powerpc/configs/g5_defconfig b/arch/powerpc/configs/g5_defconfig
+index 428f17b45513..2fe8ca266b5f 100644
+--- a/arch/powerpc/configs/g5_defconfig
++++ b/arch/powerpc/configs/g5_defconfig
+@@ -85,6 +85,8 @@ CONFIG_PMAC_SMU=y
+ CONFIG_MAC_EMUMOUSEBTN=y
+ CONFIG_WINDFARM=y
+ CONFIG_WINDFARM_PM81=y
++CONFIG_WINDFARM_PM72=y
++CONFIG_WINDFARM_RM31=y
+ CONFIG_WINDFARM_PM91=y
+ CONFIG_WINDFARM_PM112=y
+ CONFIG_WINDFARM_PM121=y
+
+---
+base-commit: 559e608c46553c107dbba19dae0854af7b219400
+change-id: 20251205-powermac-g5-config-69128e93d584
+
+Best regards,
+-- 
+Linus Walleij <linusw@kernel.org>
+
 
