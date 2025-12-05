@@ -1,50 +1,75 @@
-Return-Path: <linuxppc-dev+bounces-14651-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14652-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0C8CD2F7EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Dec 2025 14:01:35 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D3637D33981
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Dec 2025 16:04:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dNCjB17k6z2xc2;
-	Sat, 06 Dec 2025 01:01:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764943294;
-	cv=none; b=FAb5HOMuo/tnnWMmtAJkCcJQbCnyFqdazUbkj4M2vInFXFq5gBWeIuAPY81FMqIUY0NUIquzCKbh2Wge9RtbbKInI3abD4KHSLr2Oea+c+fNPiRo3uOoLqim9ShYt4X8iFeXetniYZ1Hjxk6Fq2DGzOJjT/F+0dvMaye84eQ0n9umOYQrBUsxaisuyOuoYzbJzxJRiuBq3K3Q7+TzEc1PFzhPpuFyF04rFO5t3o8ibTmtsxluYku2Es5Lx3NkInem+0ec6QwX3mJ8OJP32nkw7THXz3zfPrZslhIw4G2axcWHpjbJZV29L+GlUyld3nf43KuiF/YsAAZ+vmg2H899g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dNGQf1KzKz2y6G;
+	Sat, 06 Dec 2025 03:04:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2001:8b0:10b:1236::1"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764950650;
+	cv=none; b=W0JAHTJZu6dmLnwvmpcwjcjbJqGqf5mRD6BdCaIggzqlAMimyGJ+n9zCSWrcYyrWfuuvDisMzcA6BE8NlaA/jUM8wx+Ofye60tR451os7buPtHupeJfYW8kP5kFXxr0wxlVhIQvJ+DW1c8GzF0WHSXv6r5Ad5KZUTMk2E96fFcpLhwVODXaLq5tuA8vb7q/KzufpDitCC3lPfsXp8+izZd0qM86Bssf2Fa+y1yPJJ3XFAZSmz6yp5TGlCnplkqMXaEBi30endaWinWp9Laxn/HN2RedCqU6ejokuQIpLhUNcIish339gHMWMWRZglPaldditRYd6GKHso7GTSHdgKw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764943294; c=relaxed/relaxed;
-	bh=2Ofd1u2v8csF5qiWqr2Ez4YDbmnVD+zIlcrT0RswdoE=;
-	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
-	 Subject:From:To:Cc:Date; b=h7/JJkeQ4dKt7W4FjeWr8DD73+celJ/6UKDihye1u+R6TWyUC9JkNb98M8dAG9jlWsvDAqSrCkw8fDINbaAqcnBNooiKuu9D5hSJa1PxSnRY5zoeVXvFARJ1kioFbEX/fOuwX/pswTS/NPiiW4aHT8sbKnqOaHJZEM1SukhVXUQk4kn/SmO1lxDNaWmhoYCfmz2eJjla2Cz+PKP+Ib2VLFXXYs0jz4cXyF5yJEaQ1G+0KAg8KB0+zeBf3Nqr/JxYjEEoMwiCGyF9zmg9JEL+iGQeNPWTpT3gdOSOCKTrucgx2c5f8FODQfN4/wp4pRD6KVDRJQ1vPR85selNSNfPvg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VyDLLfHv; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1764950650; c=relaxed/relaxed;
+	bh=O2XwwJOH6ID2KTGfUPig7IAOjY7ik8syIuFJLCrFZsM=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=btyu5e8IHqV5CZEZJ+x93B4Qa3QyNmnl9uh2++MY9oG9G1PQZfGNvjixBX/oAruJmySEedJLr5CcMjZcjiti7pSVYU3hevmpKUmmF4hJYVDO3sw9pl2srToHxNpJU42g0gNn4vKrl9zkONO8TAuhKRWUed1QhZm6SsMHXBOQhbY9XUa6+NezgVC3wmPw/fk671W/gSFcMjPbAgnEZIzzbRfyAoo+yN3B9xSJ46YtN63SH7x7JAhbD3LHLl0MJoxgAq0zuuKZGskTQ4WwNUNBNwhMansTN8ieSpBFAuWhlHwKpE8Rv/nr1jWq68XJYcP9mcOwsNUmt1AEORnnaTne2A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org; dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=XZT8TMJL; dkim-atps=neutral; spf=none (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org) smtp.mailfrom=infradead.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=infradead.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VyDLLfHv;
+	dkim=pass (2048-bit key; secure) header.d=infradead.org header.i=@infradead.org header.a=rsa-sha256 header.s=casper.20170209 header.b=XZT8TMJL;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=none (no SPF record) smtp.mailfrom=infradead.org (client-ip=2001:8b0:10b:1236::1; helo=casper.infradead.org; envelope-from=peterz@infradead.org; receiver=lists.ozlabs.org)
+Received: from casper.infradead.org (casper.infradead.org [IPv6:2001:8b0:10b:1236::1])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dNCj91HYBz2xPT
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Dec 2025 01:01:33 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 78A864417E;
-	Fri,  5 Dec 2025 14:01:29 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C877C4CEF1;
-	Fri,  5 Dec 2025 14:01:27 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764943289;
-	bh=TrAgTSCpSKLsxNjx4lejjyOcT5oTXu93a4+3+YTmZ3w=;
-	h=In-Reply-To:References:Subject:From:To:Cc:Date:From;
-	b=VyDLLfHvRoVuPjT70NTIft3b3xSkl+nI6nikeo3MyRxk6zRaNPXlNBKx6Wz6WBAHc
-	 Zkk5yZZCTPhHBbMq6CG/aPlmM14FHSik+eIpZLtil7LtvDc4tNtYkmiR/WsK8xylI6
-	 eUQQO6/l5pZQArBOMRHQTaUktho4y8UCpIJdih7wkXBc8Fo5W+/jE2GutZJDp3+6mu
-	 kudUyP63pxf42kOpdfCd1o6oiIxP2r9dNiAzxbTV5AoJPYiTBI2OmnZPOMNbAwRZY8
-	 e1JgXAEyT/SJ7nAPf5X2oqQFhplzBWf8D8KozHFyV93+IlDFJ1t7CJnhoP/IA3PrDG
-	 gypy4Cv4CLZJQ==
-Content-Type: multipart/mixed; boundary="===============8834443675323528757=="
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dNGQW1Nqnz2xrk
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Dec 2025 03:03:55 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; q=dns/txt; c=relaxed/relaxed;
+	d=infradead.org; s=casper.20170209; h=In-Reply-To:Content-Type:MIME-Version:
+	References:Message-ID:Subject:Cc:To:From:Date:Sender:Reply-To:
+	Content-Transfer-Encoding:Content-ID:Content-Description;
+	bh=O2XwwJOH6ID2KTGfUPig7IAOjY7ik8syIuFJLCrFZsM=; b=XZT8TMJLJlodKVHuJqbR8fDWBb
+	wmDBIUFBCQLzqfbfdnqTkJIuhgpGH2enuLja4p45aH+xSleZBwjjTePR3hejPKpQacwaZS37DzG3P
+	VLyWXI6bgG2FY2KRybG6Z4IWQslyQX0CSGLlqdY3c9mXk6raOpsEuAL1v59tglQ2OKAt4ABe7iSlO
+	oc5k1e5mjcY1lcYct/OOu9/oI3M8cuTqciEC1E3tXfK2dC65okBPjd8TU7u885fj6l4+I0z+6l/KM
+	iv1UiZJyKvzLtm5RSGBkg2Jh3HJAneUjCuTaPMharkDFNrCNcvycNr3mIhO7ngMlkAbSEnjbR2xSd
+	GiDVtexg==;
+Received: from 77-249-17-252.cable.dynamic.v4.ziggo.nl ([77.249.17.252] helo=noisy.programming.kicks-ass.net)
+	by casper.infradead.org with esmtpsa (Exim 4.98.2 #2 (Red Hat Linux))
+	id 1vRYHH-00000005uqU-34rg;
+	Fri, 05 Dec 2025 16:03:27 +0000
+Received: by noisy.programming.kicks-ass.net (Postfix, from userid 1000)
+	id 9CE533003C4; Fri, 05 Dec 2025 17:03:26 +0100 (CET)
+Date: Fri, 5 Dec 2025 17:03:26 +0100
+From: Peter Zijlstra <peterz@infradead.org>
+To: Srikar Dronamraju <srikar@linux.ibm.com>
+Cc: linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+	Ben Segall <bsegall@google.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Dietmar Eggemann <dietmar.eggemann@arm.com>,
+	Ingo Molnar <mingo@kernel.org>, Juri Lelli <juri.lelli@redhat.com>,
+	K Prateek Nayak <kprateek.nayak@amd.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Mel Gorman <mgorman@suse.de>, Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Shrikanth Hegde <sshegde@linux.ibm.com>,
+	Steven Rostedt <rostedt@goodmis.org>,
+	Swapnil Sapkal <swapnil.sapkal@amd.com>,
+	Thomas Huth <thuth@redhat.com>,
+	Valentin Schneider <vschneid@redhat.com>,
+	Vincent Guittot <vincent.guittot@linaro.org>,
+	virtualization@lists.linux.dev,
+	Yicong Yang <yangyicong@hisilicon.com>,
+	Ilya Leoshkevich <iii@linux.ibm.com>
+Subject: Re: [PATCH 08/17] sched/core: Implement CPU soft offline/online
+Message-ID: <20251205160326.GF2528459@noisy.programming.kicks-ass.net>
+References: <20251204175405.1511340-1-srikar@linux.ibm.com>
+ <20251204175405.1511340-9-srikar@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,89 +83,106 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Message-Id: <cc13dfdbbcdde12aeebc6970e354b8dbbb81454f063a7861e54fbde1b510dc06@mail.kernel.org>
-In-Reply-To: <1957532cd4b87b450a2efc0e9d732f448bcf9706.1764930425.git.skb99@linux.ibm.com>
-References: <1957532cd4b87b450a2efc0e9d732f448bcf9706.1764930425.git.skb99@linux.ibm.com>
-Subject: Re: [PATCH bpf-next v3 1/2] powerpc64/bpf: Support internal-only MOV instruction to resolve per-CPU addrs
-From: bot+bpf-ci@kernel.org
-To: skb99@linux.ibm.com,bpf@vger.kernel.org,linuxppc-dev@lists.ozlabs.org,linux-kernel@vger.kernel.org
-Cc: hbathini@linux.ibm.com,sachinpb@linux.ibm.com,venkat88@linux.ibm.com,andrii@kernel.org,eddyz87@gmail.com,ast@kernel.org,daniel@iogearbox.net,martin.lau@linux.dev,song@kernel.org,yonghong.song@linux.dev,john.fastabend@gmail.com,kpsingh@kernel.org,sdf@fomichev.me,haoluo@google.com,jolsa@kernel.org,christophe.leroy@csgroup.eu,naveen@kernel.org,maddy@linux.ibm.com,mpe@ellerman.id.au,npiggin@gmail.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
-Date: Fri,  5 Dec 2025 14:01:27 +0000 (UTC)
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251204175405.1511340-9-srikar@linux.ibm.com>
 
---===============8834443675323528757==
-Content-Type: text/plain; charset="us-ascii"
-MIME-Version: 1.0
-Content-Transfer-Encoding: 7bit
+On Thu, Dec 04, 2025 at 11:23:56PM +0530, Srikar Dronamraju wrote:
 
-> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-> index 5e976730b2f5..d53e9cd7563f 100644
-> --- a/arch/powerpc/net/bpf_jit_comp.c
-> +++ b/arch/powerpc/net/bpf_jit_comp.c
-
-[ ... ]
-
-> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
-> index 1fe37128c876..816f9d7d9e5d 100644
-> --- a/arch/powerpc/net/bpf_jit_comp64.c
-> +++ b/arch/powerpc/net/bpf_jit_comp64.c
-> @@ -918,6 +918,15 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
->  	case BPF_ALU | BPF_MOV | BPF_X: /* (u32) dst = src */
->  	case BPF_ALU64 | BPF_MOV | BPF_X: /* dst = src */
->
-> +		if (insn_is_mov_percpu_addr(&insn[i])) {
-> +			if (IS_ENABLED(CONFIG_SMP)) {
-> +				EMIT(PPC_RAW_LD(tmp1_reg, _R13, offsetof(struct paca_struct, data_offset)));
-> +				EMIT(PPC_RAW_ADD(dst_reg, src_reg, tmp1_reg));
-> +			} else if (src_reg != dst_reg) {
-> +				EMIT(PPC_RAW_MR(dst_reg, src_reg));
-> +			}
-> +		}
+> diff --git a/kernel/sched/core.c b/kernel/sched/core.c
+> index 89efff1e1ead..f66fd1e925b0 100644
+> --- a/kernel/sched/core.c
+> +++ b/kernel/sched/core.c
+> @@ -8177,13 +8177,16 @@ static void balance_push(struct rq *rq)
+>  	 * Only active while going offline and when invoked on the outgoing
+>  	 * CPU.
+>  	 */
+> -	if (!cpu_dying(rq->cpu) || rq != this_rq())
+> +	if (cpu_active(rq->cpu) || rq != this_rq())
+>  		return;
+>  
+>  	/*
+> -	 * Ensure the thing is persistent until balance_push_set(.on = false);
+> +	 * Unless soft-offline, Ensure the thing is persistent until
+> +	 * balance_push_set(.on = false); In case of soft-offline, just
+> +	 * enough to push current non-pinned tasks out.
+>  	 */
+> -	rq->balance_callback = &balance_push_callback;
+> +	if (cpu_dying(rq->cpu) || rq->nr_running)
+> +		rq->balance_callback = &balance_push_callback;
+>  
+>  	/*
+>  	 * Both the cpu-hotplug and stop task are in this case and are
+> @@ -8392,6 +8395,8 @@ static inline void sched_smt_present_dec(int cpu)
+>  #endif
+>  }
+>  
+> +static struct cpumask cpu_softoffline_mask;
 > +
+>  int sched_cpu_activate(unsigned int cpu)
+>  {
+>  	struct rq *rq = cpu_rq(cpu);
+> @@ -8411,7 +8416,10 @@ int sched_cpu_activate(unsigned int cpu)
+>  	if (sched_smp_initialized) {
+>  		sched_update_numa(cpu, true);
+>  		sched_domains_numa_masks_set(cpu);
+> -		cpuset_cpu_active();
+> +
+> +		/* For CPU soft-offline, dont need to rebuild sched-domains */
+> +		if (!cpumask_test_cpu(cpu, &cpu_softoffline_mask))
+> +			cpuset_cpu_active();
+>  	}
+>  
+>  	scx_rq_activate(rq);
+> @@ -8485,7 +8493,11 @@ int sched_cpu_deactivate(unsigned int cpu)
+>  		return 0;
+>  
+>  	sched_update_numa(cpu, false);
+> -	cpuset_cpu_inactive(cpu);
+> +
+> +	/* For CPU soft-offline, dont need to rebuild sched-domains */
+> +	if (!cpumask_test_cpu(cpu, &cpu_softoffline_mask))
+> +		cpuset_cpu_inactive(cpu);
+> +
+>  	sched_domains_numa_masks_clear(cpu);
+>  	return 0;
+>  }
+> @@ -10928,3 +10940,25 @@ void sched_enq_and_set_task(struct sched_enq_and_set_ctx *ctx)
+>  		set_next_task(rq, ctx->p);
+>  }
+>  #endif /* CONFIG_SCHED_CLASS_EXT */
+> +
+> +void set_cpu_softoffline(int cpu, bool soft_offline)
+> +{
+> +	struct sched_domain *sd;
+> +
+> +	if (!cpu_online(cpu))
+> +		return;
+> +
+> +	cpumask_set_cpu(cpu, &cpu_softoffline_mask);
+> +
+> +	rcu_read_lock();
+> +	for_each_domain(cpu, sd)
+> +		update_group_capacity(sd, cpu);
+> +	rcu_read_unlock();
+> +
+> +	if (soft_offline)
+> +		sched_cpu_deactivate(cpu);
+> +	else
+> +		sched_cpu_activate(cpu);
+> +
+> +	cpumask_clear_cpu(cpu, &cpu_softoffline_mask);
+> +}
 
-Does this code need a break statement here? After handling the per-CPU
-MOV instruction, execution falls through to the subsequent MOV handling
-code. In the common case where dst_reg != src_reg with CONFIG_SMP
-enabled, the code first emits ADD to compute the per-CPU address in
-dst_reg, but then continues to the final else-if in this case statement
-which emits MR dst_reg, src_reg, overwriting the computed address.
+What happens if you then offline one of these softoffline CPUs? Doesn't
+that do sched_cpu_deactivate() again?
 
-Other architectures (x86 and arm64) use break after their per-CPU
-instruction handling in bpf_jit_build_body()->BPF_MOV case.
+Also, the way this seems to use softoffline_mask is as a hidden argument
+to sched_cpu_{de,}activate() instead of as an actual mask.
 
->  		if (insn_is_cast_user(&insn[i])) {
->  			EMIT(PPC_RAW_RLDICL_DOT(tmp1_reg, src_reg, 0, 32));
->  			PPC_LI64(dst_reg, (ctx->user_vm_start & 0xffffffff00000000UL));
->  			PPC_BCC_SHORT(COND_EQ, (ctx->idx + 2) * 4);
->  			EMIT(PPC_RAW_OR(tmp1_reg, dst_reg, tmp1_reg));
->  			EMIT(PPC_RAW_MR(dst_reg, tmp1_reg));
->  			break;
->  		}
->
->  		if (imm == 1) {
->  			/* special mov32 for zext */
->  			EMIT(PPC_RAW_RLWINM(dst_reg, dst_reg, 0, 0, 31));
->  			break;
->  		} else if (off == 8) {
->  			EMIT(PPC_RAW_EXTSB(dst_reg, src_reg));
->  		} else if (off == 16) {
->  			EMIT(PPC_RAW_EXTSH(dst_reg, src_reg));
->  		} else if (off == 32) {
->  			EMIT(PPC_RAW_EXTSW(dst_reg, src_reg));
->  		} else if (dst_reg != src_reg)
-                        ^^^^
-			This condition can be true for per-CPU instructions
-			(which have off == -1), causing the computed per-CPU
-			address to be overwritten with src_reg.
+Moreover, there does not seem to be any sort of serialization vs
+concurrent set_cpu_softoffline() callers. At the very least
+update_group_capacity() would end up with indeterminate results.
 
->  			EMIT(PPC_RAW_MR(dst_reg, src_reg));
->  		goto bpf_alu32_trunc;
-
-
----
-AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
-See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
-
-CI run summary: https://github.com/kernel-patches/bpf/actions/runs/19964922727
-
---===============8834443675323528757==--
+This all doesn't look 'robust'.
 
