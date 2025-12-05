@@ -1,66 +1,88 @@
-Return-Path: <linuxppc-dev+bounces-14665-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14666-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5AD66D3ABC2
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Dec 2025 00:19:36 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 220A5D3ABC7
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  6 Dec 2025 00:22:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dNTQG5wdCz2xPL;
-	Sat, 06 Dec 2025 11:19:34 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764980374;
-	cv=none; b=mqBOV7NqEaIEoGclLe8FyOeOt/Ee9ZBYuUKQxQYp/xVg1nBW4s2SlsafoxqlXuTfzu1KLKkmHeh1c1GoSAZIIngNpDDfPMAvE2sTOHsDc5NTPKQVwXYoAeCMWpaQUobSfF68N6ZZ4INkt2Us2FPjijaaAMri4/xPqDzmc6W4TFah6Ahy4Vs/a5ERAyl5MzznHFC2GNm3sx8KCZEwktDrwWEQtbtPBYiV7ZQSTw2vrv5cp9W7Xk2DdcznHs6SzFJy8prCRg4N/lY8P62nzkt9jI1ye/XdHfKRYka8LxzyaUT5iqT4jWJOtMdIwCkPY2hYTN7lTm2I3InOOdkjDwIy5g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dNTV55dWqz2xjN;
+	Sat, 06 Dec 2025 11:22:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::1131"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764977545;
+	cv=none; b=ojuW8ffnzDcchBOOqKjpFVk21XQnijwuDBvph4E2/IrbXRFBRdsC7LyLpoILllkqXB9xCdcAX4rGkxLtnQo0V171PDCAIIPTYXU+/t65vWAwx2gtosIHQDrhiB4M6ep3OSuOkuY4G48d8VMkAePW2W4gvq91LFURoETpqsKSNF8b7s9g05XOZupubYlv0KSmNbib8za0pkpR7FKmwY+17RVHjkLDjHkroO6Le02zHTwv1qrKF6wZ5KkV98CdbqJP7x+cXFcYZnrF9lffIIwrChTFjus62P4Ua9LCgScL2iplQK0170Wu0m7bcOs8kcupJNm5Ftwgbqd/gNvJV3Dnwg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764980374; c=relaxed/relaxed;
-	bh=rnIyhcRr+cBFBAiT/TGxMhODEzhhl+fqbabM0n+rAoo=;
-	h=Subject:From:In-Reply-To:References:Message-Id:Date:To:Cc; b=BxMt3p6bwQ+La768sUPqqoZ8Gnd05dy6x5RGTg176BFRctVtLMU7U9HLULFBz6//44z1KFVA3go1sIrTAYXl1vdcCe5SO0jRY003Zf9P0TprabK+3Nx57ApJHPJ7ILOOSkJ+ajQE8Fk+omtfN8a++DqP3hRETZlo7uA18UgWPiBiW/asnmgz7NZ5reivOrAaSCyvAZWWIofg0oCSTc1qqHMh1poiwKjnt1kxg1uzBtKIt6sREOlzte8EpIxqQSRsuv1j+S12YHFCXlo+/sF5p/NwW+rUI8VJNqjDF4YgbWAJeANf9vIKtMaEjvjA3rqXKDl9qEWCA2MPVRSBFAgivQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QFGGa8Nf; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1764977545; c=relaxed/relaxed;
+	bh=DjASHCs44SnDjJeYh3qYw2ycI6GE9TKZGAruEoGfPyQ=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Iv4k7y72GgmEBrvX8uIqecw1IziwpL//blXm0rEuwOwX2ixC9XptTqWK90pIiK6EuiINzzlmfodJGOpdJuwCZB5BiqgmWQkbVlX+yHN6UU/6sU2rGv1wtJqSXEFvRX5jjiKbnSD4Lq7jvVfwQY/YyWmYwmMZhEiXKYsXY4hRexChQx5E/XIRHFQ3bCAVVIOy00A9t9b10P+LYVe4EMFQH8/EyAYRfjymaPLcPHrEfM3F25iaFwYGezq4LNRocEL0IpFSr9WWxyVgBlkm7bdy03KAJsIyMtCpcdw3xdsRyrgFANnRWKQFWcW+aKwnXJ2dusdP8SwpSiylUNcWWPnzKQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=SBOvCAA2; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::1131; helo=mail-yw1-x1131.google.com; envelope-from=joshua.hahnjy@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QFGGa8Nf;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=SBOvCAA2;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=pr-tracker-bot@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::1131; helo=mail-yw1-x1131.google.com; envelope-from=joshua.hahnjy@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-yw1-x1131.google.com (mail-yw1-x1131.google.com [IPv6:2607:f8b0:4864:20::1131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dNTQG0zFCz2xHG
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Dec 2025 11:19:34 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id B2BC560010;
-	Sat,  6 Dec 2025 00:19:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5FB73C116B1;
-	Sat,  6 Dec 2025 00:19:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1764980371;
-	bh=3etdHXSgtNYaEFUmgruCO24HTvt5AYTu0uxT7IBnUcQ=;
-	h=Subject:From:In-Reply-To:References:Date:To:Cc:From;
-	b=QFGGa8NfLjC1InBOhTibkDHpgzIfL1CyCFJJuoSLwER+CI30Z6Ed8kqDqBCysV0Ow
-	 ehy3mpRaC13ofFn0ZG4feletaqBePnlDkOnJWCNnh68c4loysX12Xypo/W1ZEMXAxw
-	 q0wpFI9fIj4hzKR/voXXAvOwhvfpo0I/avm4Gw+o2fIoRnoa39VjKSCD7EQ0C3fLbc
-	 0Vt2S4hBsziFNDwEXtNS51+jaxWEqfTHFU05dehe1ccAHGdACJzgj51W0gDFkKX39B
-	 bMkN4dJbRr1eR2j8m8Is4dCPR9GWlezVuBUMxUNC7IdnINovjJWwLfT4wfgrbyhARn
-	 KUSUcgcnJgNKA==
-Received: from [10.30.226.235] (localhost [IPv6:::1])
-	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id 0E6203808200;
-	Sat,  6 Dec 2025 00:16:30 +0000 (UTC)
-Subject: Re: [git pull][vfs] tree-in-dcache stuff
-From: pr-tracker-bot@kernel.org
-In-Reply-To: <20251204064706.GJ1712166@ZenIV>
-References: <20251204064706.GJ1712166@ZenIV>
-X-PR-Tracked-List-Id: <linux-mm.kvack.org>
-X-PR-Tracked-Message-Id: <20251204064706.GJ1712166@ZenIV>
-X-PR-Tracked-Remote: git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs.git tags/pull-persistency
-X-PR-Tracked-Commit-Id: eb028c33451af08bb34f45c6be6967ef1c98cbd1
-X-PR-Merge-Tree: torvalds/linux.git
-X-PR-Merge-Refname: refs/heads/master
-X-PR-Merge-Commit-Id: 7cd122b55283d3ceef71a5b723ccaa03a72284b4
-Message-Id: <176498018885.1869773.11235050751770031700.pr-tracker-bot@kernel.org>
-Date: Sat, 06 Dec 2025 00:16:28 +0000
-To: Al Viro <viro@zeniv.linux.org.uk>
-Cc: Linus Torvalds <torvalds@linux-foundation.org>, Christian Brauner <brauner@kernel.org>, Jan Kara <jack@suse.cz>, Ian Kent <raven@themaw.net>, Miklos Szeredi <miklos@szeredi.hu>, NeilBrown <neil@brown.name>, Andreas Hindborg <a.hindborg@kernel.org>, linux-mm@kvack.org, linux-efi@vger.kernel.org, ocfs2-devel@lists.linux.dev, Kees Cook <kees@kernel.org>, Steven Rostedt <rostedt@goodmis.org>, Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linux-usb@vger.kernel.org, Paul Moore <paul@paul-moore.com>, Casey Schaufler <casey@schaufler-ca.com>, linuxppc-dev@lists.ozlabs.org, John Johansen <john.johansen@canonical.com>, selinux@vger.kernel.org, Christian Borntraeger <borntraeger@linux.ibm.com>, bpf@vger.kernel.org, Chris Mason <clm@meta.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dNSMp3ydQz2xPL
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Dec 2025 10:32:21 +1100 (AEDT)
+Received: by mail-yw1-x1131.google.com with SMTP id 00721157ae682-786d1658793so24229427b3.1
+        for <linuxppc-dev@lists.ozlabs.org>; Fri, 05 Dec 2025 15:32:21 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1764977539; x=1765582339; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=DjASHCs44SnDjJeYh3qYw2ycI6GE9TKZGAruEoGfPyQ=;
+        b=SBOvCAA2bDSxhp05NAQd4n7q5k/T7UGU9NImLNbu0+s6gOCmTpT6S6DF/pAGU/k8tL
+         RxhxHCYL9g1CjgUDmKgiYlS5EDuo8PiPanAfMmCmUPVXB54ogrA8Ogqau/ew16oF2wyi
+         KAxb6Kg8H01+xpVFeotr6kpmflViw4NEtTtcJPYKJrr44wPP+NqV+ASxZ1fIlgtEk5Oe
+         a4Tg8AfAvPhezdBJ2I6lFXAMoxl5QHDRjJ5mbmh8YiXYZoBqBel3zWbSEYzKI5gjAxAG
+         fVfjEs9CXhLTreZw9Hexs4Qk97z/kqMxGy4Er5F4EtNSMJ3wKjRGPG8hjRdiOCnCzYr1
+         PAGQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1764977539; x=1765582339;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=DjASHCs44SnDjJeYh3qYw2ycI6GE9TKZGAruEoGfPyQ=;
+        b=GlX/kg+oCGllxOPS4sMIEbEVkI/cfT9RB8uTgV5P0M9HmslgjNOnDxwPxK9FAWSJEs
+         kLWoGE27baCp3oyXTSJ7GCKYxQiybDAkWVYyAk49C/Strcx149fnKDEa7ENU3ehuZUxo
+         RXp+TjP5KKNlyhBEStTd3NRfzWhyvRX+Pbd52Qhq2gJEdP7k5GR6fUBEFRYzwl4xXLV2
+         vue4uw4Ecz7t2IhWr2S1PooncTyqZKGJfoPZJOcLaecIsn5PfWYxG/zrXIQfmLrHGUxA
+         zBH1EKvGkoCtQGF8e9oJBZnBcH7WDInpCO8aYiz7r63G9jOCCJllaE5I8Ej++6xyAX6F
+         NiCA==
+X-Forwarded-Encrypted: i=1; AJvYcCVIn94klI0LoEGmDAxjf95282qNre8kR6y6335PzJAYWqUCHI7Lmlm/oJcU++CCgsjj5bI2BGbC1vdRiA4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yyb8AbHFAWSZ9TCv0quJS8rF1dl7xF7KielgkFa7ykqMr044fee
+	WswV7e37oHn5HBeb7OglhU7Fv9Pqq203RlNW1VC72zTbmPCzNAig3+OP
+X-Gm-Gg: ASbGnctaALiiBLGtyheFtdTfKpu3QB0vubSyhEwTgXlKwYTvSGUd4H45Cv1kAz0pSqX
+	7Dhb9p58Kjsma3talhAJ+jgbT4g7WLUe5w7SMHapKczo5RWX5Ifl+vPiAujObtSUZhBT7ibCs6a
+	v6wEpTjDQdsjPq0Zks74JSWaO7TgvyguWfymGj2gbwwQedYrpQJJkaYy2xOyMhxioUE/Ka0hfZx
+	OlCagmdlVWsv3isDABxGNrbxftSeURR6GqVX01YuD3rbx7SrrGdd2ExMWjcyqUCqYbNt9dUsG67
+	YlBxcljWkRAXmQB72oYc3SoHoZfz1LJ1g/ha+hD7eTgIqXa/30vrTqnJQ24tLjQStkkeFjLG74q
+	xHtYfzeHBebPLKvO4R/Cco/daxjp/strzaJ6rMOg4hEeQoWC0yk0aAhOlH4Ecq57hzw0bVxObnM
+	jVQgaknK42+DQiP/8dlf5l3w==
+X-Google-Smtp-Source: AGHT+IHM12t6gDjzVKLcRmx1gB6wbrzIhaFWpatYaAHdWKPgKCT1195aVWoslNVYKST9kzwC9iOyBA==
+X-Received: by 2002:a05:690c:7002:b0:786:4f8a:39b5 with SMTP id 00721157ae682-78c33c9797amr14147897b3.59.1764977538563;
+        Fri, 05 Dec 2025 15:32:18 -0800 (PST)
+Received: from localhost ([2a03:2880:25ff:4a::])
+        by smtp.gmail.com with ESMTPSA id 00721157ae682-78c1b4d66fesm22045327b3.23.2025.12.05.15.32.17
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Fri, 05 Dec 2025 15:32:18 -0800 (PST)
+From: Joshua Hahn <joshua.hahnjy@gmail.com>
+To: willy@infradead.org,
+	david@kernel.org
+Cc: linux-doc@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linux-mm@kvack.org,
+	linux-trace-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	kernel-team@meta.com
+Subject: [RFC LPC2025 PATCH 0/4] Deprecate zone_reclaim_mode
+Date: Fri,  5 Dec 2025 15:32:11 -0800
+Message-ID: <20251205233217.3344186-1-joshua.hahnjy@gmail.com>
+X-Mailer: git-send-email 2.47.3
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,17 +95,174 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
 
-The pull request you sent on Thu, 4 Dec 2025 06:47:06 +0000:
+Hello folks, 
+This is a code RFC for my upcoming discussion at LPC 2025 in Tokyo [1].
 
-> git://git.kernel.org/pub/scm/linux/kernel/git/viro/vfs.git tags/pull-persistency
+<preface>
+You might notice that the RFC that I'm sending out is different from the
+proposed abstract. Initially when I submitted my proposal, I was interested
+in addressing how fallback allocations work under pressure for
+NUMA-restricted allocations. Soon after, Johannes proposed a patch [2] which
+addressed the problem I was investigating, so I wanted to explore a different
+direction in the same area of fallback allocations.
 
-has been merged into torvalds/linux.git:
-https://git.kernel.org/torvalds/c/7cd122b55283d3ceef71a5b723ccaa03a72284b4
+At the same time, I was also thinking about zone_reclaim_mode [3]. I thought
+that LPC would be a good opportunity to discuss deprecating zone_reclaim_mode,
+so I hope to discuss this topic at LPC during my presentation slot.
 
-Thank you!
+Sorry for the patch submission so close to the conference as well. I thought
+it would still be better to send this RFC out late, instead of just presenting
+the topic at the conference without giving folks some time to think about it.
+</preface>
 
+zone_reclaim_mode was introduced in 2005 to prevent the kernel from facing
+the high remote access latency associated with NUMA systems. With it enabled,
+when the kernel sees that the local node is full, it will stall allocations and
+trigger direct reclaim locally, instead of making a remote allocation, even
+when there may still be free memory. Thsi is the preferred way to consume memory
+if remote memory access is more expensive than performing direct reclaim.
+The choice is made on a system-wide basis, but can be toggled at runtime.
+
+This series deprecates the zone_reclaim_mode sysctl in favor of other NUMA
+aware mechanisms, such as NUMA balancing, memory.reclaim, membind, and
+tiering / promotion / demotion. Let's break down what differences there are
+in these mechanisms, based on workload characteristics.
+
+Scenario 1) Workload fits in a single NUMA node
+In this case, if the rest of the NUMA node is unused, the zone_reclaim_mode
+does nothing. On the other hand, if there are several workloads competing
+for memory in the same NUMA node, with sum(workload_mem) > mem_capacity(node),
+then zone_reclaim_mode is actively harmful. Direct reclaim is aggressively
+triggered whenever one workload makes an allocation that goes over the limit,
+and there is no fairness mechanism to prevent one workload from completely
+blocking the other workload from making progress.
+
+Scenario 2) Workload does not fit in a single NUMA node
+Again, in this case, zone_reclaim_mode is actively harmful. Direct reclaim
+will constantly be triggered whenever memory goes above the limit, leading
+to memory thrashing. Moreover, even if the user really wants avoid remote
+allocations, membind is a better alternative in this case; zone_reclaim_mode
+forces the user to make the decision for all workloads on the system, whereas
+membind gives per-process granularity.
+
+Scenario 3) Workload size is approximately the same as the NUMA capacity
+This is probably the case for most workloads. When it is uncertain whether
+memory consumption will exceed the capacity, it doesn't really make a lot
+of sense to make a system-wide bet on whether direct reclaim is better or
+worse than remote allocations. In other words, it might make more sense to
+allow memory to spill over to remote nodes, and let the kernel handle the
+NUMA balancing depending on how cold or hot the newly allocated memory is.
+
+These examples might make it seem like zone_reclaim_mode is harmful for
+all scenarios. But that is not the case:
+
+Scenario 4) Newly allocated memory is going to be hot
+This is probably the scenario that makes zone_reclaim_mode shine the most.
+If the newly allocated memory is going to be hot, then it makes much more
+sense to try and reclaim locally, which would kick out cold(er) memory and
+prevent eating any remote memory access latency frequently.
+
+Scenario 5) Tiered NUMA system makes remote access latency higher
+In some tiered memory scenarios, remote access latency can be higher for
+lower memory tiers. In these scenarios, the cost of direct reclaim may be
+cheaper, relative to placing hot memory on a remote node with high access
+latency.
+
+Now, let me try and present a case for deprecating zone_reclaim_mode, despite
+these two scenarios where it performs as intended.
+In scenario 4, the catch is that the system is not an oracle that can predict
+that newly allocated memory is going to be hot. In fact, a lot of the kernel
+assumes that newly allocated memory is cold, and it has to "prove" that it
+is hot through accesses. In a perfect world, the kernel would be able to
+selectively trigger direct reclaim or allocate remotely, based on whehter the
+current allocation will be cold or hot in the future.
+
+But without these insights, it is difficult to make a system-wide bet and
+always trigger direct reclaim locally, when we might be reclaiming or
+evicting relatively hotter memory from the local node in order to make room.
+
+In scenario 5, remote access latency is higher, which means the cost of
+placing hot memory in remote nodes is higher. But today, we have many
+strategies that can help us overcome the higher cost of placing hot memory in
+remote nodes. If the system has tiered memory with different memory
+access characteristics per-node, then the user is probably already enabling
+promotion and demotion mechanisms that can quickly correct the placement of
+hot pages in lower tiers. In these systems, it might make more sense to allow
+the kernel to naturally consume all of the memory it can (whether it is local
+or on a lower tier remote node), then allow the kernel to then take corrective
+action based on what it finds as hot or cold memory.
+
+Of course, demonstrating that there are alternatives is not enough to warrant
+a deprecation. I think that the real benefit of this patch comes in reduced
+sysctl maintenance and what I think is much easier code to read.
+
+This series which has 466 deletions and 9 insertions:
+- Deprecates the zone_reclaim_mode sysctl (patch 4)
+- Deprecates the min_slab_ratio sysctl (patch 3)
+- Deprecates the min_unmapped_ratio sysctl (patch 3)
+- Removes the node_reclaim() function and simplifies the get_page_from_freelist
+  watermark checks (which is already a very large function) (patch 2)
+- Simplifies hpage_collapse_scan_{pmd, file} (patch 1).
+- There are also more opportunities for future cleanup, like removing
+  __node_reclaim and converting its last caller to use try_to_free_pages
+  (suggested by Johannes Weiner)
+
+Here are some discussion points that I hope to discuss at LPC:
+- For workloads that are assumed to fit in a NUMA node, is membind really
+  enough to achieve the same effect?
+- Is NUMA balancing good enough to correct action when memory spills over to
+  remote nodes, and end up being accessed frequently?
+- How widely is zone_reclaim_mode currently being used?
+- Are there usecases for zone_reclaim_mode that cannot be replaced by any
+  of the mentioned alternatives?
+- Now that node_reclaim() is deprecated in patch 2, patch 3 deprecates
+  min_slab_ratio and min_unmapped_ratio. Does this change make sense?
+  IOW, should proactive reclaim via memory.reclaim still care about
+  these thresholds before making a decision to reclaim?
+- If we agree that there are better alternatives to zone_reclaim_mode, how
+  should we make the transition to deprecate it, along with the other
+  sysctls that are deprecated in this series (min_{slab, unmapped}_ratio)?
+
+Please also note that I've excluded all individual email addresses for the
+Cc list. It was ~30 addresses, as I just wanted to avoid spamming
+maintainers and reviewers, so I've just left the mailing list targets.
+The individuals are Cc-ed in the relevant patches, though.
+
+Thank you everyone. I'm looking forward to discussing this idea with you all!
+Joshua
+
+[1] https://lpc.events/event/19/contributions/2142/
+[2] https://lore.kernel.org/linux-mm/20250919162134.1098208-1-hannes@cmpxchg.org/
+[3] https://lore.kernel.org/all/20250805205048.1518453-1-joshua.hahnjy@gmail.com/
+
+Joshua Hahn (4):
+  mm/khugepaged: Remove hpage_collapse_scan_abort
+  mm/vmscan/page_alloc: Remove node_reclaim
+  mm/vmscan/page_alloc: Deprecate min_{slab, unmapped}_ratio
+  mm/vmscan: Deprecate zone_reclaim_mode
+
+ Documentation/admin-guide/sysctl/vm.rst       |  78 ---------
+ Documentation/mm/physical_memory.rst          |   9 -
+ .../translations/zh_CN/mm/physical_memory.rst |   8 -
+ arch/powerpc/include/asm/topology.h           |   4 -
+ include/linux/mmzone.h                        |   8 -
+ include/linux/swap.h                          |   5 -
+ include/linux/topology.h                      |   6 -
+ include/linux/vm_event_item.h                 |   4 -
+ include/trace/events/huge_memory.h            |   1 -
+ include/uapi/linux/mempolicy.h                |  14 --
+ mm/internal.h                                 |  22 ---
+ mm/khugepaged.c                               |  34 ----
+ mm/page_alloc.c                               | 120 +------------
+ mm/vmscan.c                                   | 158 +-----------------
+ mm/vmstat.c                                   |   4 -
+ 15 files changed, 9 insertions(+), 466 deletions(-)
+
+
+base-commit: e4c4d9892021888be6d874ec1be307e80382f431
 -- 
-Deet-doot-dot, I am a bot.
-https://korg.docs.kernel.org/prtracker.html
+2.47.3
 
