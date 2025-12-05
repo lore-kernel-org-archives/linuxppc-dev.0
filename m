@@ -1,89 +1,50 @@
-Return-Path: <linuxppc-dev+bounces-14650-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14651-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1DC5ED2F7EF
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Dec 2025 13:46:27 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D0C8CD2F7EF
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  5 Dec 2025 14:01:35 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dNCMN4Srqz2yFl;
-	Sat, 06 Dec 2025 00:46:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764942368;
-	cv=none; b=Bj+xvDg0bLeP9Gm7H6dgRFj2AvLgaBQCT4li2LVpdzXY7v2eiLi88pfYQQEw5s2a2gtPhy1q86Cr+nExV591V44VIip7qnyFa8QaI/twdKNnGAb2rj/ibF/+He56atKZ+eESC+OsgNPYxT3SHOKgabt63DLPUqT6I1A+AiiT960gsls8d95GAZx0Z36Rk6EOhSEaQ2ty25fWoeSynn3+MUkzocrhdPgRx14hlNKrr85+KwWbDkcU0kXZNddRtyGGxgh+N91l/w77qms7X93JeRz9rEw0rFFK+tMyjGQ9MOFl8Wih9zkB+wFB2B4iXutleYWFVjGImjOco3afUl8fsQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dNCjB17k6z2xc2;
+	Sat, 06 Dec 2025 01:01:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1764943294;
+	cv=none; b=FAb5HOMuo/tnnWMmtAJkCcJQbCnyFqdazUbkj4M2vInFXFq5gBWeIuAPY81FMqIUY0NUIquzCKbh2Wge9RtbbKInI3abD4KHSLr2Oea+c+fNPiRo3uOoLqim9ShYt4X8iFeXetniYZ1Hjxk6Fq2DGzOJjT/F+0dvMaye84eQ0n9umOYQrBUsxaisuyOuoYzbJzxJRiuBq3K3Q7+TzEc1PFzhPpuFyF04rFO5t3o8ibTmtsxluYku2Es5Lx3NkInem+0ec6QwX3mJ8OJP32nkw7THXz3zfPrZslhIw4G2axcWHpjbJZV29L+GlUyld3nf43KuiF/YsAAZ+vmg2H899g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1764942368; c=relaxed/relaxed;
-	bh=2Wsjd5AJnhoSdRNqe0Du1Qr+oQCkFLWon4cEEHpofr8=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=hJkG7QOo815m62ZM8JvQectd2Noot6n03uq209lb2+EGqPlIo9nid9YN5b7hnjmxcdPHqFoMEgrduUPrcZsW9Yqe5f50FvZjleDwNqdq3Eotgx9K13ZQzSFIzjztODr9Oz/l+XYcr7ABedCLvNh91GLWhWeMTH31SoyvF64L13shlf1S/e3bGTsGqRQRyJbEPr+7iqqjaMXSfcKQtJ6nUtb1eeLtGMRvBmUNV5afN1S9i0qyrczE+4kfC2j9pU9zihd1zhuo8ioWUp7ucP0lTLu4ktB8SROm5Fj24gHwr1iC5aF3AM3rrMZSbaQqy++ZoA1q5ALI/zleMdlur7m7yQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VCMQs9VX; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1764943294; c=relaxed/relaxed;
+	bh=2Ofd1u2v8csF5qiWqr2Ez4YDbmnVD+zIlcrT0RswdoE=;
+	h=Content-Type:MIME-Version:Message-Id:In-Reply-To:References:
+	 Subject:From:To:Cc:Date; b=h7/JJkeQ4dKt7W4FjeWr8DD73+celJ/6UKDihye1u+R6TWyUC9JkNb98M8dAG9jlWsvDAqSrCkw8fDINbaAqcnBNooiKuu9D5hSJa1PxSnRY5zoeVXvFARJ1kioFbEX/fOuwX/pswTS/NPiiW4aHT8sbKnqOaHJZEM1SukhVXUQk4kn/SmO1lxDNaWmhoYCfmz2eJjla2Cz+PKP+Ib2VLFXXYs0jz4cXyF5yJEaQ1G+0KAg8KB0+zeBf3Nqr/JxYjEEoMwiCGyF9zmg9JEL+iGQeNPWTpT3gdOSOCKTrucgx2c5f8FODQfN4/wp4pRD6KVDRJQ1vPR85selNSNfPvg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VyDLLfHv; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=VCMQs9VX;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VyDLLfHv;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=nnmlinux@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=bot+bpf-ci@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dNCMN0YqHz2xPT
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Dec 2025 00:46:07 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5B5CTooZ026295;
-	Fri, 5 Dec 2025 13:45:58 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=2Wsjd5AJnhoSdRNqe
-	0Du1Qr+oQCkFLWon4cEEHpofr8=; b=VCMQs9VXofgIhS2ZdEbNQo7vFKFsRM/Yu
-	U7eIDweOwVz+/Pm0du5mk2Dl9qwQ7bfVF1TzMInSMTpc9cnQg24EvqX9f+LgYK0I
-	5uIVlCpKN2ZbcV7jo1yu7VywYlWHItJO5C4NklFyc6JoHWMY/VBcuVUQ+kHPvnDL
-	a0zAnetA00yCdjIDxa+UtEbBcUSIzDDWjKhThAVu1L1a36S9blJyjd0dtzLA//Op
-	mCD2D7ogKS7GmyVvs7TuF2Uhet/z435ozAfhLqo6u4hcabYg/WM6t48XWcAJVunq
-	ymakv+gppTwZjylNk9imPyzlHDIOuN9VbTaFyHHRt7fkkm4PxIzAQ==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aqrh7dyrf-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 05 Dec 2025 13:45:58 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5B5Debq3031580;
-	Fri, 5 Dec 2025 13:45:57 GMT
-Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4aqrh7dyrb-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 05 Dec 2025 13:45:57 +0000 (GMT)
-Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5B5ADXqj024111;
-	Fri, 5 Dec 2025 13:45:55 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4arb5swmy8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Fri, 05 Dec 2025 13:45:55 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5B5DjpnP14024980
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Fri, 5 Dec 2025 13:45:51 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 79A992004B;
-	Fri,  5 Dec 2025 13:45:51 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 142B520040;
-	Fri,  5 Dec 2025 13:45:49 +0000 (GMT)
-Received: from ltcd48-lp3.ltc.tadn.ibm.com (unknown [9.5.7.39])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Fri,  5 Dec 2025 13:45:48 +0000 (GMT)
-From: Narayana Murty N <nnmlinux@linux.ibm.com>
-To: mahesh@linux.ibm.com, maddy@linux.ibm.com, mpe@ellerman.id.au,
-        christophe.leroy@csgroup.eu, gregkh@linuxfoundation.org,
-        oohall@gmail.com, npiggin@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
-        tyreld@linux.ibm.com, vaibhav@linux.ibm.com, sbhat@linux.ibm.com,
-        ganeshgr@linux.ibm.com, sourabhjain@linux.ibm.com
-Subject: [PATCH 4/4] powerpc/pseries: Implement RTAS error injection via pseries_eeh_err_inject
-Date: Fri,  5 Dec 2025 03:45:10 -0600
-Message-ID: <20251205094510.4671-5-nnmlinux@linux.ibm.com>
-X-Mailer: git-send-email 2.51.1
-In-Reply-To: <20251205094510.4671-1-nnmlinux@linux.ibm.com>
-References: <20251205094510.4671-1-nnmlinux@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dNCj91HYBz2xPT
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 06 Dec 2025 01:01:33 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 78A864417E;
+	Fri,  5 Dec 2025 14:01:29 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3C877C4CEF1;
+	Fri,  5 Dec 2025 14:01:27 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1764943289;
+	bh=TrAgTSCpSKLsxNjx4lejjyOcT5oTXu93a4+3+YTmZ3w=;
+	h=In-Reply-To:References:Subject:From:To:Cc:Date:From;
+	b=VyDLLfHvRoVuPjT70NTIft3b3xSkl+nI6nikeo3MyRxk6zRaNPXlNBKx6Wz6WBAHc
+	 Zkk5yZZCTPhHBbMq6CG/aPlmM14FHSik+eIpZLtil7LtvDc4tNtYkmiR/WsK8xylI6
+	 eUQQO6/l5pZQArBOMRHQTaUktho4y8UCpIJdih7wkXBc8Fo5W+/jE2GutZJDp3+6mu
+	 kudUyP63pxf42kOpdfCd1o6oiIxP2r9dNiAzxbTV5AoJPYiTBI2OmnZPOMNbAwRZY8
+	 e1JgXAEyT/SJ7nAPf5X2oqQFhplzBWf8D8KozHFyV93+IlDFJ1t7CJnhoP/IA3PrDG
+	 gypy4Cv4CLZJQ==
+Content-Type: multipart/mixed; boundary="===============8834443675323528757=="
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,240 +58,89 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=dK+rWeZb c=1 sm=1 tr=0 ts=6932e216 cx=c_pps
- a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
- a=wP3pNCr1ah4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
- a=deTHFr3idxbnG05LXr8A:9
-X-Proofpoint-GUID: _xAYc_x4bKY5roffsl_TdXnvvF7Qz0fL
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMTI5MDAyMCBTYWx0ZWRfX5YpbkRgUyHTi
- oKnQ2zA7LC7yza3NPE/5fnQofB4Kp31oib6G/RrrmVNupNew+fZQmJ4izkPTPDoRyii4X72rKVO
- CcJg412EhgUdN/ki9QtiBJTFcmcq1bqPVIwPs53jXA7CQk6bPDwIt0I/aH65lsdcXAXNlDcyUbN
- a5SsBcaMRPaDWX5fMvn5y3y1+W9kO0cgLGjHPxxullk6ecwBPUdEmJ7askP1cfiKzImJ1AbZyBg
- KkEEvx4fX121HdfKJ8WQ8jxZAmJarxDS2/+ub5sQi80BhRW09DuCCeZIl4mCs3PY1IYNhpV/NID
- Uc8TgnoYUSxYPEp7irHeWW+lhnyG2PEZ6zyBHzuq8G8ijgXGMl9m5dRSso1WtvDQsgQFrp6tceN
- C5TD3DscrSdp/OmLDD77bRRLZEm5Kw==
-X-Proofpoint-ORIG-GUID: nosvOfS3DPLu6Nav2U41FcrIKoWYqBTd
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2025-12-05_04,2025-12-04_04,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- suspectscore=0 lowpriorityscore=0 clxscore=1015 priorityscore=1501
- bulkscore=0 adultscore=0 phishscore=0 impostorscore=0 spamscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2510240000
- definitions=main-2511290020
+Message-Id: <cc13dfdbbcdde12aeebc6970e354b8dbbb81454f063a7861e54fbde1b510dc06@mail.kernel.org>
+In-Reply-To: <1957532cd4b87b450a2efc0e9d732f448bcf9706.1764930425.git.skb99@linux.ibm.com>
+References: <1957532cd4b87b450a2efc0e9d732f448bcf9706.1764930425.git.skb99@linux.ibm.com>
+Subject: Re: [PATCH bpf-next v3 1/2] powerpc64/bpf: Support internal-only MOV instruction to resolve per-CPU addrs
+From: bot+bpf-ci@kernel.org
+To: skb99@linux.ibm.com,bpf@vger.kernel.org,linuxppc-dev@lists.ozlabs.org,linux-kernel@vger.kernel.org
+Cc: hbathini@linux.ibm.com,sachinpb@linux.ibm.com,venkat88@linux.ibm.com,andrii@kernel.org,eddyz87@gmail.com,ast@kernel.org,daniel@iogearbox.net,martin.lau@linux.dev,song@kernel.org,yonghong.song@linux.dev,john.fastabend@gmail.com,kpsingh@kernel.org,sdf@fomichev.me,haoluo@google.com,jolsa@kernel.org,christophe.leroy@csgroup.eu,naveen@kernel.org,maddy@linux.ibm.com,mpe@ellerman.id.au,npiggin@gmail.com,ast@kernel.org,andrii@kernel.org,daniel@iogearbox.net,martin.lau@kernel.org,eddyz87@gmail.com,yonghong.song@linux.dev,clm@meta.com,ihor.solodrai@linux.dev
+Date: Fri,  5 Dec 2025 14:01:27 +0000 (UTC)
 
-Replace legacy MMIO error injection with full PAPR-compliant RTAS error
-injection supporting 14+ error types via
- - ibm,open-errinjct
- - ibm,errinjct
- - ibm,close-errinjct.
+--===============8834443675323528757==
+Content-Type: text/plain; charset="us-ascii"
+MIME-Version: 1.0
+Content-Transfer-Encoding: 7bit
 
-Key features:
-- Complete open-session-inject-close cycle management
-- Special handling for ibm,open-errinjct output format (token,status)
-- Comprehensive buffer preparation per PAPR layouts
-- All pr_* logging uses pr_fmt("EEH: ") prefix
+> diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+> index 5e976730b2f5..d53e9cd7563f 100644
+> --- a/arch/powerpc/net/bpf_jit_comp.c
+> +++ b/arch/powerpc/net/bpf_jit_comp.c
 
-Tested with corresponding QEMU patches:
-https://lore.kernel.org/all/20251029150618.186803-1-nnmlinux@linux.ibm.com/
+[ ... ]
 
-Signed-off-by: Narayana Murty N <nnmlinux@linux.ibm.com>
+> diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+> index 1fe37128c876..816f9d7d9e5d 100644
+> --- a/arch/powerpc/net/bpf_jit_comp64.c
+> +++ b/arch/powerpc/net/bpf_jit_comp64.c
+> @@ -918,6 +918,15 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+>  	case BPF_ALU | BPF_MOV | BPF_X: /* (u32) dst = src */
+>  	case BPF_ALU64 | BPF_MOV | BPF_X: /* dst = src */
+>
+> +		if (insn_is_mov_percpu_addr(&insn[i])) {
+> +			if (IS_ENABLED(CONFIG_SMP)) {
+> +				EMIT(PPC_RAW_LD(tmp1_reg, _R13, offsetof(struct paca_struct, data_offset)));
+> +				EMIT(PPC_RAW_ADD(dst_reg, src_reg, tmp1_reg));
+> +			} else if (src_reg != dst_reg) {
+> +				EMIT(PPC_RAW_MR(dst_reg, src_reg));
+> +			}
+> +		}
+> +
+
+Does this code need a break statement here? After handling the per-CPU
+MOV instruction, execution falls through to the subsequent MOV handling
+code. In the common case where dst_reg != src_reg with CONFIG_SMP
+enabled, the code first emits ADD to compute the per-CPU address in
+dst_reg, but then continues to the final else-if in this case statement
+which emits MR dst_reg, src_reg, overwriting the computed address.
+
+Other architectures (x86 and arm64) use break after their per-CPU
+instruction handling in bpf_jit_build_body()->BPF_MOV case.
+
+>  		if (insn_is_cast_user(&insn[i])) {
+>  			EMIT(PPC_RAW_RLDICL_DOT(tmp1_reg, src_reg, 0, 32));
+>  			PPC_LI64(dst_reg, (ctx->user_vm_start & 0xffffffff00000000UL));
+>  			PPC_BCC_SHORT(COND_EQ, (ctx->idx + 2) * 4);
+>  			EMIT(PPC_RAW_OR(tmp1_reg, dst_reg, tmp1_reg));
+>  			EMIT(PPC_RAW_MR(dst_reg, tmp1_reg));
+>  			break;
+>  		}
+>
+>  		if (imm == 1) {
+>  			/* special mov32 for zext */
+>  			EMIT(PPC_RAW_RLWINM(dst_reg, dst_reg, 0, 0, 31));
+>  			break;
+>  		} else if (off == 8) {
+>  			EMIT(PPC_RAW_EXTSB(dst_reg, src_reg));
+>  		} else if (off == 16) {
+>  			EMIT(PPC_RAW_EXTSH(dst_reg, src_reg));
+>  		} else if (off == 32) {
+>  			EMIT(PPC_RAW_EXTSW(dst_reg, src_reg));
+>  		} else if (dst_reg != src_reg)
+                        ^^^^
+			This condition can be true for per-CPU instructions
+			(which have off == -1), causing the computed per-CPU
+			address to be overwritten with src_reg.
+
+>  			EMIT(PPC_RAW_MR(dst_reg, src_reg));
+>  		goto bpf_alu32_trunc;
+
+
 ---
- arch/powerpc/platforms/pseries/eeh_pseries.c | 164 +++++++++++++++++--
- 1 file changed, 146 insertions(+), 18 deletions(-)
+AI reviewed your patch. Please fix the bug or email reply why it's not a bug.
+See: https://github.com/kernel-patches/vmtest/blob/master/ci/claude/README.md
 
-diff --git a/arch/powerpc/platforms/pseries/eeh_pseries.c b/arch/powerpc/platforms/pseries/eeh_pseries.c
-index 110e8cf10985..d0010f2fc656 100644
---- a/arch/powerpc/platforms/pseries/eeh_pseries.c
-+++ b/arch/powerpc/platforms/pseries/eeh_pseries.c
-@@ -1047,6 +1047,98 @@ static int prepare_errinjct_buffer(struct eeh_pe *pe, int type, int func,
- 	return 0;
- }
- 
-+/**
-+ * rtas_open_errinjct_session - Open an RTAS error injection session
-+ *
-+ * Opens a session with the RTAS ibm,open-errinjct service.
-+ *
-+ * Return: Positive session token on success, negative error code on failure.
-+ */
-+static int rtas_open_errinjct_session(void)
-+{
-+	int open_token, args[2] = {0};
-+	int rc, status, session_token = -1;
-+
-+	open_token = rtas_function_token(RTAS_FN_IBM_OPEN_ERRINJCT);
-+	if (open_token == RTAS_UNKNOWN_SERVICE) {
-+		pr_err("RTAS: ibm,open-errinjct not available\n");
-+		return RTAS_UNKNOWN_SERVICE;
-+	}
-+
-+	/* Call open; original code treated rtas_call return as session token */
-+	rc = rtas_call(open_token, 0, 2, args);
-+	status = args[1];
-+	if (status != 0) {
-+		pr_err("RTAS: open-errinjct failed: status=%d args[1]=%d rc=%d\n",
-+		       status, args[1], rc);
-+		return status ? status : -EIO;
-+	}
-+
-+	session_token = args[0];
-+	pr_info("Opened injection session: token=%d\n", session_token);
-+	return session_token;
-+}
-+
-+/**
-+ * rtas_close_errinjct_session - Close an RTAS error injection session
-+ * @session_token: Session token returned from open
-+ *
-+ * Attempts to close a previously opened error injection session. Best-effort;
-+ * logs warnings if close fails or if service is unavailable.
-+ */
-+
-+static void rtas_close_errinjct_session(int session_token)
-+{
-+	int close_token, args[2] = {0};
-+
-+	if (session_token <= 0)
-+		return;
-+
-+	close_token = rtas_function_token(RTAS_FN_IBM_CLOSE_ERRINJCT);
-+	if (close_token == RTAS_UNKNOWN_SERVICE) {
-+		pr_warn("close-errinjct not available\n");
-+		return;
-+	}
-+
-+	args[0] = 0;
-+	rtas_call(close_token, 1, 1, &session_token, args);
-+	if (args[0]) {
-+		pr_warn("close-errinjct  args[0]=%d\n", args[0]);
-+	}
-+}
-+
-+/**
-+ * do_errinjct_call - Invoke the RTAS error injection service
-+ * @errinjct_token: RTAS token for ibm,errinjct
-+ * @type:           RTAS error type
-+ * @session_token:  RTAS error injection session token
-+ *
-+ * Issues the RTAS ibm,errinjct call with the prepared work buffer. Logs errors
-+ * on failure.
-+ *
-+ * Return: 0 on success, negative error code otherwise.
-+ */
-+
-+static int do_errinjct_call(int errinjct_token, int type, int session_token)
-+{
-+	int rc, status;
-+
-+	if (errinjct_token == RTAS_UNKNOWN_SERVICE)
-+		return -ENODEV;
-+
-+	/* errinjct takes: type, session_token, workbuf pointer (3 in), returns status */
-+	rc = rtas_call(errinjct_token, 3, 1, &status, type, session_token,
-+		       rtas_errinjct_buf);
-+
-+	if (rc || status != 0) {
-+		pr_err("RTAS: errinjct failed: rc=%d, status=%d\n", rc, status);
-+		return status ? status : -EIO;
-+	}
-+
-+	pr_info("RTAS: errinjct ok: rc=%d, status=%d\n", rc, status);
-+	return 0;
-+}
-+
- /**
-  * pseries_eeh_err_inject - Inject specified error to the indicated PE
-  * @pe: the indicated PE
-@@ -1060,30 +1152,66 @@ static int prepare_errinjct_buffer(struct eeh_pe *pe, int type, int func,
- static int pseries_eeh_err_inject(struct eeh_pe *pe, int type, int func,
- 				  unsigned long addr, unsigned long mask)
- {
--	struct	eeh_dev	*pdev;
-+	int rc = 0;
-+	int session_token = -1;
-+	int errinjct_token;
- 
--	/* Check on PCI error type */
--	if (type != EEH_ERR_TYPE_32 && type != EEH_ERR_TYPE_64)
--		return -EINVAL;
-+	/* Validate type */
-+	if (!validate_err_type(type)) {
-+		pr_err("RTAS: invalid error type 0x%x\n", type);
-+		return RTAS_INVALID_PARAMETER;
-+	}
-+	pr_debug("RTAS: error type 0x%x\n", type);
- 
--	switch (func) {
--	case EEH_ERR_FUNC_LD_MEM_ADDR:
--	case EEH_ERR_FUNC_LD_MEM_DATA:
--	case EEH_ERR_FUNC_ST_MEM_ADDR:
--	case EEH_ERR_FUNC_ST_MEM_DATA:
--		/* injects a MMIO error for all pdev's belonging to PE */
--		pci_lock_rescan_remove();
--		list_for_each_entry(pdev, &pe->edevs, entry)
--			eeh_pe_inject_mmio_error(pdev->pdev);
--		pci_unlock_rescan_remove();
--		break;
--	default:
--		return -ERANGE;
-+	/* For IOA bus errors we must validate err_func and addr/mask in PE.
-+	 * For other types: if addr/mask present we'll still validate BAR range;
-+	 * otherwise skip function checks.
-+	 */
-+	if (type == RTAS_ERR_TYPE_IOA_BUS_ERROR ||
-+	    type == RTAS_ERR_TYPE_IOA_BUS_ERROR_64) {
-+		/* Validate that addr/mask fall in the PE's BAR ranges */
-+		rc = validate_addr_mask_in_pe(pe, addr, mask);
-+		if (rc)
-+			return rc;
-+	} else if (addr || mask) {
-+		/* If caller provided addr/mask for a non-IOA type, do a BAR check too */
-+		rc = validate_addr_mask_in_pe(pe, addr, mask);
-+		if (rc)
-+			return rc;
- 	}
- 
--	return 0;
-+	/* Open RTAS session */
-+	session_token = rtas_open_errinjct_session();
-+	if (session_token < 0)
-+		return session_token;
-+
-+	/* get errinjct token */
-+	errinjct_token = rtas_function_token(RTAS_FN_IBM_ERRINJCT);
-+	if (errinjct_token == RTAS_UNKNOWN_SERVICE) {
-+		pr_err("RTAS: ibm,errinjct not available\n");
-+		rc = -ENODEV;
-+		goto out_close;
-+	}
-+
-+	/* prepare shared buffer while holding lock */
-+	spin_lock(&rtas_errinjct_buf_lock);
-+	rc = prepare_errinjct_buffer(pe, type, func, addr, mask);
-+	if (rc) {
-+		spin_unlock(&rtas_errinjct_buf_lock);
-+		goto out_close;
-+	}
-+
-+	/* perform the errinjct RTAS call */
-+	rc = do_errinjct_call(errinjct_token, type, session_token);
-+	spin_unlock(&rtas_errinjct_buf_lock);
-+
-+out_close:
-+	/* always attempt close if we opened a session */
-+	rtas_close_errinjct_session(session_token);
-+	return rc;
- }
- 
-+
- static struct eeh_ops pseries_eeh_ops = {
- 	.name			= "pseries",
- 	.probe			= pseries_eeh_probe,
--- 
-2.51.1
+CI run summary: https://github.com/kernel-patches/bpf/actions/runs/19964922727
 
+--===============8834443675323528757==--
 
