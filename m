@@ -1,72 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-14690-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14691-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 323BDD3B7EA
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Dec 2025 16:09:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 5F100D3B7EA
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Dec 2025 16:30:03 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dQ6P5686wz2xFS;
-	Tue, 09 Dec 2025 03:09:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765210153;
-	cv=none; b=kEvFwyRbJ1TLw8Ou75lGVh56tDWGvfMEDyffEbnX2jmvaxofSPVePBxaWci8nNKzSVBOUMUay1SkzBcxDhwP4ocs7PrZ3hmrmguYLgtgETkHp/bKrWzBahDAM9KcfLDnT0lVwbmrU2hzWCVz/7OWI6kFiwy07qeB9FXTAONikgqT+WD15b2o1/UbaDsiUlXmaCXUwTVgHJWVTdS4f+oNvbD6LrdOzwUmaHjD9xRm0S1HCUToQZfY8TooHwDBFVwgNZk358x6wqbVY1LuwbXSJwT6KMDmP6WFwkKWz7Ttg2zNTWZAo8lyGxj7TsCFJsH+0OIBC8RewOLm56PZkSPS1w==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dQ6s55zkqz2xFS;
+	Tue, 09 Dec 2025 03:30:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2600:3c0a:e001:78e:0:1991:8:25"
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765211401;
+	cv=none; b=F5UD7a0XQF90tUMNX/lOTk0W0Et4BvtzmmqTyypo0A7Tyn/dMMmHi8SaPJ9WuD6aUXU4ovZPNv1sInUKlo80V/M4gvPWO6LrUd+077WyV4HCtuPvgsJgzT+ts7zdpUlK/klvnShCC6XjFPr/BX5tG83i9Mx4nLnPeD1aMwaX6OJ8Xf3NtFN/fINf/xHeIu+rC713wpwpd4PTHKbi8Pm04aK3VrMFJM/y1ahYkPSnDGf2Q+kEL5BJ0nMXmLGRaYDG8DBa+c5Pi6jvtrk9LXsBmdwoEWprJEj8fxNy+fkBoDjLuzZZ3b40pk4MEpnXVaeU8rWv0xbASG0H1spUcikXYg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765210153; c=relaxed/relaxed;
-	bh=iilKg18ysnmI4ONROC9vF2l+9+u4XZIiuBwCGpbDEgg=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Vcxyd2C76l1LxBfACdLnTpCaoqtYp+yP77hVKGE0PSuH9tqVdxpqmtGVgvBt8tZe8zf35RF202a4xDD8G+vo6LAHXvz2XJPu//a4hieP4gwIaTAHAoO5ELmv/jEocHVTLXJYAba+b29vv0+ZjyecRDqufRuBwD7W7tD1+eyZB1Dp5q+z9lAb+VrIxUttuatz7Pr2RTb2Fbj6HTiZvA/NLZcIu415KOEQK8FdqMXbftNpbm4N0uy6erPVC7Dy9KVswmzGYGabAj0HQd4C/0dSN0BTWFBwITDLFdNq/Pq8sMtiZcLOgOjheQZW+j9Uy+t4Szo9Ptx9kQbWYOF8MLwQuw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=giBTBVFx; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1765211401; c=relaxed/relaxed;
+	bh=3FBWiNX5t2ldbzXF8cf7t4lyzD9gioyhQz+48mVIq98=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=kBCU1jKl+OHPt2RjpD9ZJ50Kg1E9+gIPzFvTnlMsz3jVAqIYRaDl+Ct+3/6mDdOWc/9UOR1GPYcUbzNzMD7ZxD/pXtgq0Qu96/1jkMcLYUMKDanZUh8XNEQZHvok/9IYvSFuF4mvlyIshE7o7T257hzXOdEJq6uSBK12VL4MdCyqehWHbI29RNi+EdDwEY7ZSHItX37AFrzz98VQ8iXmgndRg9ielNbcdhf9k/TCM6YpaXSz0qZm7N370S7kdkTtc+DfBfNBkyO4L3K3F5JKuefxLyAlG32dMfbknG+pFusR6KfNWeeD5lJsAIS911HFz5RmdqeCmAhd42ABCtv+4w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LNGpnCbf; dkim-atps=neutral; spf=pass (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=giBTBVFx;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=LNGpnCbf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=hbathini@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=2600:3c0a:e001:78e:0:1991:8:25; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [IPv6:2600:3c0a:e001:78e:0:1991:8:25])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dQ6P45gBqz2xDD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Dec 2025 03:09:12 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5B86DSJx014598;
-	Mon, 8 Dec 2025 16:08:53 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=iilKg1
-	8ysnmI4ONROC9vF2l+9+u4XZIiuBwCGpbDEgg=; b=giBTBVFxTzhTFiCP2XdhJ1
-	CR1fit3AmQJqI1y/nNr9hb/jKW8odZM3EIt4kn8IZzIhiIEkSxG0B+FtE9/VbFG+
-	SKzws/a+lV/js3DYIyJFKhnYTRa2INkCaqC9ROuPmj8lMQLcBy2DJFzhHxVibtCz
-	nz1aodxs3vMaK/+IvpPNcaw6BFgjBYFMi+m3yHpzU/WaqsJVKhSHpp/QZhcW0IqZ
-	KB2TGtD1VgXPx/jfIYcJvwKcQYGAPfxLCF/gGABxFhEQRBf89K440C52bGRJ2TGn
-	L9WRBVUM5OSCoAtTU2gfGPE5BZukphlVXUe0S4e3UU3J5CO1KrnY8SKffhdpQeSw
-	==
-Received: from ppma13.dal12v.mail.ibm.com (dd.9e.1632.ip4.static.sl-reverse.com [50.22.158.221])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4avc5383fe-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 08 Dec 2025 16:08:53 +0000 (GMT)
-Received: from pps.filterd (ppma13.dal12v.mail.ibm.com [127.0.0.1])
-	by ppma13.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5B8FdFEG001998;
-	Mon, 8 Dec 2025 16:08:52 GMT
-Received: from smtprelay03.fra02v.mail.ibm.com ([9.218.2.224])
-	by ppma13.dal12v.mail.ibm.com (PPS) with ESMTPS id 4aw11j6a7h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 08 Dec 2025 16:08:52 +0000
-Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay03.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5B8G8nEX55836948
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 8 Dec 2025 16:08:49 GMT
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 2C60E20043;
-	Mon,  8 Dec 2025 16:08:49 +0000 (GMT)
-Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3C4D220040;
-	Mon,  8 Dec 2025 16:08:47 +0000 (GMT)
-Received: from [9.43.1.23] (unknown [9.43.1.23])
-	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  8 Dec 2025 16:08:47 +0000 (GMT)
-Message-ID: <874f8ec4-4f3f-402d-a9f2-4267d37a5bc9@linux.ibm.com>
-Date: Mon, 8 Dec 2025 21:38:46 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dQ6s45GmPz2xDD
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Dec 2025 03:30:00 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 1D39A44277
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2025 16:29:57 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id F3A70C19421
+	for <linuxppc-dev@lists.ozlabs.org>; Mon,  8 Dec 2025 16:29:56 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1765211397;
+	bh=GZIu95dg6lXheJlB6RXRgB1q2hSHNOvi0dTvvsErbbY=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=LNGpnCbf9DLJs66BfLS/udAOB+EymFpbSdX3lzRFoW3T7fT2oBLwx3vXY6ZbopB+n
+	 BdOwNO/xjFC8IZoaspUURnjgcDvdlM2cOcPE7VZUEGEu8eZPqEYdJ2/IrKziUNTeBA
+	 9GKk7fSSgkIQQCD/0jS85GSPBW7Q57wsAP/uQ1tA6JV49jWpmt/0nGDOwYeZNIoKZ4
+	 ofTDVj5J+BcqLBiEVwv0dAiPpD/DvAiH3wj+Dof65kNe73DvD7VLcAEP9qu9bLiDyI
+	 0dgQxeZflfqZt+WRPpjCXwA15zZMzvx/6gUct2t59udNk9af4Yucpzr5yA9WXaYkGA
+	 xy+OuEJITJX+A==
+Received: by mail-ed1-f48.google.com with SMTP id 4fb4d7f45d1cf-640860f97b5so6081796a12.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Dec 2025 08:29:56 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCUCy7dBl1+F2f29n1/VTInH+L+lax3LY2FqZvBLkLmFsn7ofchtSFpluSXwwFxuZdnu21JV/UwhwK4GYI8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyLuJcq8MuJSEfqZEcXFh8Jgb97cSNd8Hca1WryreW9M3uHje0A
+	rxIUwLux4z356NBrPnUiTcYKY/xmOI9Sb85HJSpxPxQVEbdboPTUtbxE4FYYUD5dd77kcm9vS/o
+	mONWmU4XUOk8U+CRHxV+MXJvSP3XXjg==
+X-Google-Smtp-Source: AGHT+IEu9W9eCUlW/nWIpEYXNihaoQ2Pak4GrAp9PYUXegDYNh/QU1yKQnbWQ5E8ILdZ26N9ZinzTHq87VzihFP+Cjw=
+X-Received: by 2002:a05:6402:2551:b0:641:966d:82ba with SMTP id
+ 4fb4d7f45d1cf-6491a3cd830mr5915613a12.1.1765211395484; Mon, 08 Dec 2025
+ 08:29:55 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -80,67 +67,100 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/3] powerpc64/ftrace: workaround clang recording GEP in
- __patchable_function_entries
-To: Naveen N Rao <naveen@kernel.org>
-Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Christophe Leroy <christophe.leroy@csgroup.eu>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        linux-trace-kernel@vger.kernel.org,
-        Mark Rutland <mark.rutland@arm.com>,
-        Steven Rostedt <rostedt@goodmis.org>,
-        Masami Hiramatsu <mhiramat@kernel.org>, llvm@lists.linux.dev,
-        Maryam Moghadas <maryammo@ca.ibm.com>
-References: <20251108210405.2375472-1-hbathini@linux.ibm.com>
- <20251108210405.2375472-4-hbathini@linux.ibm.com>
- <sjheprnafkraauotmi2fwjz6l6fha5te7jdp74t4zfh3jvs2if@vjpey276fsti>
-Content-Language: en-US
-From: Hari Bathini <hbathini@linux.ibm.com>
-In-Reply-To: <sjheprnafkraauotmi2fwjz6l6fha5te7jdp74t4zfh3jvs2if@vjpey276fsti>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjA2MDAyMCBTYWx0ZWRfX9VNsTMEkm0V3
- acsg7v1LTpLHtW9U1nkuRwh/sSfQ49XoY6HPI2267UdlTK7KkOM1vN7aRVq9IzbGlxSDf7iFNgr
- VYgv/k7Mstt68u3/Xa2UlCWSyYER6IDKDxjItOVdT7MBzN0kfY7j7DGbWUEbSHuKUZw8cqMN4RM
- VPRqb+diMMxpw2/3aXXfQvA7+IFN+HAdnCVOETLOz3iMTZ32DCpoUc/yJHsFV831aE9WN0tBgA/
- 3CL06XiUmzNVWu92c+MAzm1zgZuWnyY+RbPodBqI0NJUqHc2xHExyZJ2KRN0ahJN/eX8KIaO4h9
- LJWQL3o4+7mOQM7tuy46q+MvJ883LTsrtzmr0A2W6W2+Ugw0a74+N5aqwKlId8ywLIS3hlaiZO0
- VVD6jffw16hRmjvkomzbisHCbFlmRA==
-X-Authority-Analysis: v=2.4 cv=S/DUAYsP c=1 sm=1 tr=0 ts=6936f815 cx=c_pps
- a=AfN7/Ok6k8XGzOShvHwTGQ==:117 a=AfN7/Ok6k8XGzOShvHwTGQ==:17
- a=IkcTkHD0fZMA:10 a=wP3pNCr1ah4A:10 a=VkNPw1HP01LnGYTKEx00:22
- a=cFmaXs7E2_rN6eu18uoA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: nQw_vPY9gvYZw9Fvk4z581Q2D8Yku0B-
-X-Proofpoint-GUID: nQw_vPY9gvYZw9Fvk4z581Q2D8Yku0B-
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2025-12-06_02,2025-12-04_04,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- malwarescore=0 phishscore=0 clxscore=1015 impostorscore=0 suspectscore=0
- lowpriorityscore=0 adultscore=0 spamscore=0 bulkscore=0 priorityscore=1501
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2512060020
+References: <70d76dcf-c7d4-43c5-c169-07054a37195c@yahoo.com>
+ <78e43ec2-a60a-9876-9f03-c0ad92b7da1d@yahoo.com> <CAL_JsqJ8amo2ggUVfL=YzRrA9UnqKfKCipn-_yOkahJKZVs5=A@mail.gmail.com>
+ <aQHCU1pb7zT167rO@gate> <3a9bb788-d527-af08-894e-8011490fcab5@yahoo.com>
+ <a9467bf5-4756-1297-9ef8-c00a326f786b@yahoo.com> <8995fec0-133a-4b8c-9e6e-980772d155d4@gmail.com>
+In-Reply-To: <8995fec0-133a-4b8c-9e6e-980772d155d4@gmail.com>
+From: Rob Herring <robh@kernel.org>
+Date: Mon, 8 Dec 2025 10:29:42 -0600
+X-Gmail-Original-Message-ID: <CAL_JsqJGsvV27gRejTpXa10B_zNMVxPG3KGuPk92NqzrOW6JAg@mail.gmail.com>
+X-Gm-Features: AQt7F2rpyAmfAskXebm95RXuvbQ67u2Y-l0Bwb6S_3NCXXl1OmELAVgdgNxabg4
+Message-ID: <CAL_JsqJGsvV27gRejTpXa10B_zNMVxPG3KGuPk92NqzrOW6JAg@mail.gmail.com>
+Subject: Re: Excluded List for "#size-cells" warning
+To: "Stanley J. Johnson" <stanley.j.johnson.001@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Segher Boessenkool <segher@kernel.crashing.org>, linuxppc-dev@lists.ozlabs.org, 
+	Finn Thain <fthain@linux-m68k.org>
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
+On Mon, Dec 8, 2025 at 10:25=E2=80=AFAM Stanley J. Johnson
+<stanley.j.johnson.001@gmail.com> wrote:
+>
+> Hello,
+>
+> Please let me know if you have any information regarding this issue.
 
+The fix[1] which I CC-ed you on is waiting on the PPC maintainers to pick u=
+p.
 
-On 24/11/25 11:25 am, Naveen N Rao wrote:
-> On Sun, Nov 09, 2025 at 02:34:05AM +0530, Hari Bathini wrote:
->> Support for -fpatchable-function-entry on ppc64le was added in Clang
->> with [1]. However, when no prefix NOPs are specified - as is the case
->> with CONFIG_PPC_FTRACE_OUT_OF_LINE - the first NOP is emitted at LEP,
->> but Clang records the Global Entry Point (GEP) unlike GCC which does
->> record the Local Entry Point (LEP). Issue [2] has been raised to align
->> Clang's behavior with GCC. As a temporary workaround to ensure ftrace
-> 
-> Any reason to put in a "temporary" workaround rather than waiting for
-> this to be fixed?
+Rob
 
-Pushing for this temporary workaround as the fix ETA for clang is not
-available at the moment and the temporary workaround is likely
-harmless even on a clang version with the fix included..
+[1] https://lore.kernel.org/all/20251029174047.1620073-1-robh@kernel.org/
 
-- Hari
+>
+> thanks
+>
+> -Stan Johnson
+>
+> On 10/30/25 4:14 PM, Stan Johnson wrote:
+> > Attached are the dtc output files for a PB Lombard and a PB 3400c. If
+> > you need any other information, please let me know.
+> >
+> > Thanks for looking into this.
+> >
+> > -Stan Johnson
+> >
+> > -----
+> >
+> > On 10/29/25 11:00=E2=80=AFAM, Stan Johnson wrote:
+> >> On 10/29/25 1:29=E2=80=AFAM, Segher Boessenkool wrote:
+> >>> On Tue, Oct 28, 2025 at 08:17:27PM -0500, Rob Herring wrote:
+> >>>> On Tue, Oct 28, 2025 at 7:05=E2=80=AFPM Stan Johnson <userm57@yahoo.=
+com> wrote:
+> >>>>>
+> >>>>> -------- Forwarded Message --------
+> >>>>> Subject: Excluded List for "#size-cells" warning
+> >>>>> Date: Tue, 28 Oct 2025 10:00:25 -0600
+> >>>>> From: Stan Johnson <userm57@yahoo.com>
+> >>>>> To: debian-powerpc@lists.debian.org
+> >>>>> CC: Finn Thain <fthain@linux-m68k.org>, Christophe Leroy
+> >>>>> <christophe.leroy@csgroup.eu>
+> >>>>>
+> >>>>> Hello,
+> >>>>>
+> >>>>> On a PowerBook G3 Pismo running the latest Debian SID, dmesg
+> >>>>> reports the
+> >>>>> warning shown below. I've also seen the warning on PowerBook
+> >>>>> Lombard and
+> >>>>> Wallstreet systems. I haven't checked PowerBook 3400c or Kanga.
+> >>>>
+> >>>> Can you send me a dump of the device tree on these systems:
+> >>>>
+> >>>> dtc -O dts /proc/device-tree
+> >>
+> >> Please see the attached compressed files containing dtc output for a
+> >> Wallstreet (dtc_wallstreet.txt) and a Pismo (dtc_pismo.txt).
+> >>
+> >>>>
+> >>>> We've been fixing up these cases such as in commit 7e67ef889c9a
+> >>>> ("powerpc/prom_init: Fixup missing #size-cells on PowerBook6,7")
+> >>>
+> >>> And of course it is perfectly fine for an actual Open Firmware to *no=
+t*
+> >>> repeat the defaults.  As the documentation (the main IEEE 1275 thing)
+> >>> says: "A missing =E2=80=9C#size-cells=E2=80=9D property signifies the=
+ default value of
+> >>> one."  There are many other places in OF geared towards this default
+> >>> btw, take for example the "reg" word, that silently assumes your node=
+'s
+> >>> #size-cells is 1, and does completely the wrong thing if not.
+> >>>
+> >>> Flattened device trees are a fine thing, but the gratuitous ways it
+> >>> differs from OF, are not.
+> >>>
+> >>>
+> >>> Segher
+>
 
