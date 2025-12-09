@@ -1,79 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-14694-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14695-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9563DD3B7E2
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  8 Dec 2025 21:19:52 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2B17DD3B7EA
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Dec 2025 04:01:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dQFHV5Yrrz2xGF;
-	Tue, 09 Dec 2025 08:19:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip="2607:f8b0:4864:20::c36"
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765211113;
-	cv=none; b=ZINrw1SIsLeFFS9SkabIM9QVfYYQpzWvWlrC+WfVUI4jl+bOKQDDC9VMEYB+py+bu7MvYxZiBXY6DMx/cFX13IWH3tHypkcCe0ElsbLaBeyKIu3e/OQFOegrr+UuP4P/yAB4esMQvZfqKLl2SrBikbuYdn7qPAhJvfo1GRpH8Sv/tfo2rT2aEFaIrEVXe9ZBuDAtvpCseEZT2MJa1vcmr23n0Bcgljf/bxlU2NZ89WgAf/5Z8BB6fNXsmJVHYZ/EXE65pWj8ZbKuT4PmoMq0K0KJ1dgnvmnjLJWYuvqTZRj6CUTiyJmFM/Dr2LdAclZ/d+1tpF49zPEdc59iFX53ww==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dQQC24XhCz2xPf;
+	Tue, 09 Dec 2025 15:01:34 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765252894;
+	cv=none; b=i1IftT/pqwZECmB/4rDWDxnNxtgxsXjofQjMKd7wcvzwyy2exXPI04rr1AK5dAin+ht6dLpgabYXVg1brekJIsfSx9VYcYjVrQ5J3RHlOjDTqGpdEBemW7mLgaqnEI2Ii5ka6qHZnPlh+T6B6qjmMA2q5iSKyCwR2kEXVsS4qePQo5UjqT6KpMD1BcVB9OOD+jAzDuZ9O+XiYDjl/dFtnhfVoUvyHGpQq1QcUZ5fB57CpuLB+ZoZ11rqo+c3e3ByIbzx0xiArIPhaUzp68GzUgUkVOUJtKfAO+H+U6dH3HNbKycUkTk7iCwEUf5ieChEqXANobfOWH2kv8tUZevpuQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765211113; c=relaxed/relaxed;
-	bh=u/wdM7l3xLykxuO7vutzg6S4GMlYxKv4J0Fu0clmfsI=;
+	t=1765252894; c=relaxed/relaxed;
+	bh=YiGpflFKn35RiIwqyIeCZ2xGXgEtsdgTtU4fLngLVT8=;
 	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=NkFMZC+/8zod2vIAzVl14sCVQSDbI+azOCAMN5uUAtu/F4nC10ITxRYQeqws6TH9tIpXu8Qz41wnLKBvdyaUaqwohzbA6dOUJBRhaw1+n97m+HZ2hA8i6JFAV7biyfYZ9ttncLREsILOv0AveeS1di4fIjCKQ7YC6Pp0p8bB/NRjD09rZiuLTtVAKcU+/o2N4MGlALpyltJ4PR3/4+18GRa95YfeB3KQPBsooejP5wAGiXRZw+NlrLCvnGuN4ZqR7Jpeo0ILAkTpFcsO/KqDB+jairDcNLH3/w+SUlnjX1Jpx6H9fZuLPhdJcQPupP0ffvil0y10R7MK/G34xL4b7A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=U6zLnmeT; dkim-atps=neutral; spf=pass (client-ip=2607:f8b0:4864:20::c36; helo=mail-oo1-xc36.google.com; envelope-from=stanley.j.johnson.001@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	 In-Reply-To:Content-Type; b=dJxxH2hDnJMdMpedkFKO4CFIfj5bR5vSFNdMhZSEtt5CLaisLGT5IPqACLIPJOmoK1//XfiXR1Q7Qzkj4kDWW8n+Qom1FgNSNdCBY9mtzIB9VFTfFh+jaNqb3y1mTFGa/Ua0QMGFro4kaFBiVpb1sDco3G9GFPOyvY1Us8tX79FwiYUKITUzJkP6542hJ0LV2CzwHYodEP+6cgypFrjWvGN/6+wMQhERvi5toIQDUi0tL0DIdvMPp+RiG0a18kCy89PZNHNIKUZSb4hKMY1hlaV5Dzv8DfD/GwGL5HuxJkuKiUoJXmcO4F/p3L8gblBc7jYTFnZdU5ZgbMqY71kMiQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fbAL3Bd0; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=U6zLnmeT;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=fbAL3Bd0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=2607:f8b0:4864:20::c36; helo=mail-oo1-xc36.google.com; envelope-from=stanley.j.johnson.001@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oo1-xc36.google.com (mail-oo1-xc36.google.com [IPv6:2607:f8b0:4864:20::c36])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dQ6lX2KGvz2xDD
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Dec 2025 03:25:11 +1100 (AEDT)
-Received: by mail-oo1-xc36.google.com with SMTP id 006d021491bc7-656b8ca52e8so2624751eaf.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 08 Dec 2025 08:25:11 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1765211109; x=1765815909; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=u/wdM7l3xLykxuO7vutzg6S4GMlYxKv4J0Fu0clmfsI=;
-        b=U6zLnmeTNrkjPnxSqgiuOVDnpm4aPofbnQAZPkIFryOsSCa8GITNS89/tsGKbMKGLc
-         V9NZHvEzGZIsUm6e9l67Xw5LOZtm/r+8KUBJoWQPaZSU70zSoku0W+Cl0fMy3zYvz/0h
-         rwQMY+wLMWeyNv+GoTXh0tnvsoiBGgaPurNUSZC21hHOfqHhUtM7nHbAf9A+mLjanCKz
-         crMajgrgVJsMTOkMvC//dqLmj2PJplKP6VUC4HF90Q5LqPs2iRwCqBGMal9rAaxelrKu
-         TEi5a8mPec6H9we5gdrdzHJENqFUuB9StPOeI939uxX1nZeJ4u035z9oXMury6WNRytu
-         Wt9Q==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1765211109; x=1765815909;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=u/wdM7l3xLykxuO7vutzg6S4GMlYxKv4J0Fu0clmfsI=;
-        b=VpkKyNDrcEgcfPFTDlItGf/ioR6/SMDTZ466LSHikmcZBqOd/SQZ9isG/kOwNwZxIW
-         oRfQOuwFovXp/YdZllFwxo/ryGd48AxWye0tnFFS9j9dglmZGuwyDo2qqQkv/dSxStAQ
-         24Wu4fGMMbceoz7Pk+qO28bLzuY/LCzceE/ujJQGNfuO6k2n5TEJO1oKPfzVwH6bxeqJ
-         YlFAVid01P5WJCHCxgVPVNXN8KfhSLFwNcCWsNlODmg46ZMCoV5J+j74WJOKwwlsNnmR
-         D86lQcEPJr62Hj4YZHfj837HtOBDsK7WBnbEP6BKpC5lDGTjAu4ko8PU+2eVzzHWjQ9l
-         3kWw==
-X-Gm-Message-State: AOJu0YwaH4iNmDw5j60JdCJRIFbctFiRJDYf8Hdr+kJL53ytgHYoF32h
-	Ypy/iNdA52ZcgWYozix7ulz76BJhCfn7AwFzJiZ6PmJ86OcrCxonwkBy
-X-Gm-Gg: ASbGncvuqppiE23iyuwrrj+1Gxkerlx6UcBsr0lSJmOLyjxOwQnIgHzAKhIjXqK0Tq/
-	5lw4z1sPekIFZF0Ie91Ffb2zZyBGEPuEEDR4vHjg5MM4jq4YcgkKKPSRmObGPoWouzqOFGMhIKm
-	8Ef09O4jrqN3CpL+/oB6s6wGHy+Aa2qFJ/4ENPLHMALvHuAyhC8JHVEcUzKTn/0Y+Lmau0ag6HO
-	UQu7UB+q6FGpUywAB/QqLH0EDPXBOZpxWjVeDtf2xc4sLxxU6R36mpNqexJOfruMIRdOmOk6nRz
-	ZRx7+X8txFJk3T+u4GEdB6N7yik1YWYydsAJ17V7ifMWMOLf1wJeq9HDl5+78by5e3SHc/09rsx
-	2/NNNJtAeHPooQPo7M9C3cfhL5mBK3PBkeHMjct0ZUsapxailZ2VJ9SnrVEIZA0vnsp0bJQWh1P
-	09SF+AbzRDhiJj/SzlvABoVcmVHc7BY4uSpKwHyWGZgBVIZg==
-X-Google-Smtp-Source: AGHT+IFiBhn5yYfteNuwXNQYegX2Ich+VBUptcLz6sdrXAdCnEEA4iU3Kx4BFh/WSD6RRUWuSqPrVA==
-X-Received: by 2002:a05:6820:1886:b0:654:f691:9da8 with SMTP id 006d021491bc7-6599a89f18cmr3358963eaf.7.1765211108987;
-        Mon, 08 Dec 2025 08:25:08 -0800 (PST)
-Received: from [192.168.1.35] ([143.109.162.29])
-        by smtp.googlemail.com with ESMTPSA id 006d021491bc7-6597ef0d5a6sm6305802eaf.10.2025.12.08.08.25.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Mon, 08 Dec 2025 08:25:08 -0800 (PST)
-Message-ID: <8995fec0-133a-4b8c-9e6e-980772d155d4@gmail.com>
-Date: Mon, 8 Dec 2025 09:25:07 -0700
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dQQC06BH0z2xC3
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Dec 2025 15:01:31 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5B8K95n2031236;
+	Tue, 9 Dec 2025 04:01:18 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=YiGpfl
+	FKn35RiIwqyIeCZ2xGXgEtsdgTtU4fLngLVT8=; b=fbAL3Bd0MJaK10viZJCKc1
+	KharEngfqZ56/rWx7vzXmncPgsU/RLcgeI+Oac1hFmWi94XTGMo6rdsAL6Upi54r
+	9bx/Nhk67awAwDVkE1rpSnX2uvLqFjn5pLiQhQ0A6U0o/VsRY8L9MTkeSw9M9iFQ
+	4ppYACDiowJJ4r1YpWya38O6qYubVpv6RwaGfpGbvU7KJUunTzD/fWC8CVzbALPy
+	yKNoqmMf6wJ4vR4GjjN7zVPw9r6NSbQ/yIxtxfsgE79i0/vVsry1KJus5KMWaVDO
+	9jQ0zBnUhdoMTl+3C9IGfoiSnhY6s7c8reIBfwcbLSM9Um8/6W7J8UCE0Ro5+kEg
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4avc61awpt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 09 Dec 2025 04:01:18 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5B940iHs015998;
+	Tue, 9 Dec 2025 04:01:18 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4avc61awpq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 09 Dec 2025 04:01:17 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5B8NY2Jo026813;
+	Tue, 9 Dec 2025 04:01:17 GMT
+Received: from smtprelay05.wdc07v.mail.ibm.com ([172.16.1.72])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4aw1h10pdd-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Tue, 09 Dec 2025 04:01:17 +0000
+Received: from smtpav04.dal12v.mail.ibm.com (smtpav04.dal12v.mail.ibm.com [10.241.53.103])
+	by smtprelay05.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5B941Gdq20644448
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Tue, 9 Dec 2025 04:01:16 GMT
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 104AC58056;
+	Tue,  9 Dec 2025 04:01:16 +0000 (GMT)
+Received: from smtpav04.dal12v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 2458458062;
+	Tue,  9 Dec 2025 04:01:13 +0000 (GMT)
+Received: from [9.109.209.83] (unknown [9.109.209.83])
+	by smtpav04.dal12v.mail.ibm.com (Postfix) with ESMTP;
+	Tue,  9 Dec 2025 04:01:12 +0000 (GMT)
+Message-ID: <d3e78669-409f-4041-b194-864019bdd7fc@linux.ibm.com>
+Date: Tue, 9 Dec 2025 09:31:11 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,82 +88,100 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 User-Agent: Mozilla Thunderbird
-Subject: Re: Excluded List for "#size-cells" warning
-To: Segher Boessenkool <segher@kernel.crashing.org>,
- Rob Herring <robh@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org, Finn Thain <fthain@linux-m68k.org>
-References: <70d76dcf-c7d4-43c5-c169-07054a37195c@yahoo.com>
- <78e43ec2-a60a-9876-9f03-c0ad92b7da1d@yahoo.com>
- <CAL_JsqJ8amo2ggUVfL=YzRrA9UnqKfKCipn-_yOkahJKZVs5=A@mail.gmail.com>
- <aQHCU1pb7zT167rO@gate> <3a9bb788-d527-af08-894e-8011490fcab5@yahoo.com>
- <a9467bf5-4756-1297-9ef8-c00a326f786b@yahoo.com>
+Subject: Re: [PATCH RESEND] powerpc/tools: drop `-o pipefail` in gcc check
+ scripts
+To: Naveen N Rao <naveen@kernel.org>, Jan Stancek <jstancek@redhat.com>,
+        Michael Ellerman <mpe@ellerman.id.au>
+Cc: linuxppc-dev@lists.ozlabs.org, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu, linux-kernel@vger.kernel.org,
+        joe.lawrence@redhat.com
+References: <cc6cdd116c3ad9d990df21f13c6d8e8a83815bbd.1758641374.git.jstancek@redhat.com>
+ <caut6db7r6loimb2bk4zoqkqmfd3mhvzmv6ntsltf3tr4k4c2n@fbyhls233oys>
 Content-Language: en-US
-From: "Stanley J. Johnson" <stanley.j.johnson.001@gmail.com>
-In-Reply-To: <a9467bf5-4756-1297-9ef8-c00a326f786b@yahoo.com>
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+In-Reply-To: <caut6db7r6loimb2bk4zoqkqmfd3mhvzmv6ntsltf3tr4k4c2n@fbyhls233oys>
 Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Transfer-Encoding: 7bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjA2MDAyMCBTYWx0ZWRfX9cuERRgAmfU0
+ zISGX4pqNDQ9F7ySILBTB8QgpecL6XYEfB3ZWYLTBfQXUgcJM9By8xWXQmJje1j6/sEsbBGsP3i
+ PFNMPvRsEZeEDQO4ETqvUgel7J/C3Yhj1Q6OnM1Aggu8djnhC090tcBS3ucRYluToRzLoOqGAdU
+ IAcZTtnUWU1BIwGmyAb05NoQ7q2is+/gvLC+BPTplKYwC3rubwn3q8G9htHj6VLWldBuyjXzAmY
+ nBVI6VVwms2/C7ketxTad8xxMKbnSnSDo0uPOE2N/sME5PFF6bmxzx3yPQByBRbwhhDUvNF+WMx
+ Lh4t+mz8quJkdma4CYkWznbNelrm995EoL3tQL87+ijvGAatbLEIy7QCSI17PnLjPqQWkGAaiBx
+ v595zuOtvN6zfMTwiWG52mZ+Zs/Tlg==
+X-Proofpoint-GUID: Rnnv41Y2FQgSpEk93nUjnHUatOXp-nn-
+X-Proofpoint-ORIG-GUID: 2QvLqTOLhgEq01cQl9ORv01mHttqBl8n
+X-Authority-Analysis: v=2.4 cv=O/U0fR9W c=1 sm=1 tr=0 ts=69379f0e cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=wP3pNCr1ah4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=20KFwNOVAAAA:8 a=VwQbUJbxAAAA:8 a=T1pRgM3dOS14jIq25YUA:9 a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-12-08_07,2025-12-04_04,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ impostorscore=0 lowpriorityscore=0 bulkscore=0 clxscore=1011 phishscore=0
+ suspectscore=0 adultscore=0 spamscore=0 malwarescore=0 priorityscore=1501
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2512060020
 
-Hello,
 
-Please let me know if you have any information regarding this issue.
-
-thanks
-
--Stan Johnson
-
-On 10/30/25 4:14 PM, Stan Johnson wrote:
-> Attached are the dtc output files for a PB Lombard and a PB 3400c. If 
-> you need any other information, please let me know.
-> 
-> Thanks for looking into this.
-> 
-> -Stan Johnson
-> 
-> -----
-> 
-> On 10/29/25 11:00 AM, Stan Johnson wrote:
->> On 10/29/25 1:29 AM, Segher Boessenkool wrote:
->>> On Tue, Oct 28, 2025 at 08:17:27PM -0500, Rob Herring wrote:
->>>> On Tue, Oct 28, 2025 at 7:05 PM Stan Johnson <userm57@yahoo.com> wrote:
->>>>>
->>>>> -------- Forwarded Message --------
->>>>> Subject: Excluded List for "#size-cells" warning
->>>>> Date: Tue, 28 Oct 2025 10:00:25 -0600
->>>>> From: Stan Johnson <userm57@yahoo.com>
->>>>> To: debian-powerpc@lists.debian.org
->>>>> CC: Finn Thain <fthain@linux-m68k.org>, Christophe Leroy
->>>>> <christophe.leroy@csgroup.eu>
->>>>>
->>>>> Hello,
->>>>>
->>>>> On a PowerBook G3 Pismo running the latest Debian SID, dmesg 
->>>>> reports the
->>>>> warning shown below. I've also seen the warning on PowerBook 
->>>>> Lombard and
->>>>> Wallstreet systems. I haven't checked PowerBook 3400c or Kanga.
->>>>
->>>> Can you send me a dump of the device tree on these systems:
->>>>
->>>> dtc -O dts /proc/device-tree
+On 12/3/25 9:29 AM, Naveen N Rao wrote:
+> On Tue, Sep 23, 2025 at 05:32:16PM +0200, Jan Stancek wrote:
+>> We've been observing rare non-deterministic kconfig failures during
+>> olddefconfig, where ARCH_USING_PATCHABLE_FUNCTION_ENTRY was getting
+>> disabled and with it number of other config options that depend on it.
 >>
->> Please see the attached compressed files containing dtc output for a 
->> Wallstreet (dtc_wallstreet.txt) and a Pismo (dtc_pismo.txt).
+>> The reason is that gcc-check-fpatchable-function-entry.sh can fail
+>> if `grep -q` (or scripts/dummy-tools/gcc) is fast enough to exit while
+>> there is still someone writing on other side of pipe. `pipefail`
+>> propagates that error up to kconfig.
 >>
->>>>
->>>> We've been fixing up these cases such as in commit 7e67ef889c9a
->>>> ("powerpc/prom_init: Fixup missing #size-cells on PowerBook6,7")
->>>
->>> And of course it is perfectly fine for an actual Open Firmware to *not*
->>> repeat the defaults.  As the documentation (the main IEEE 1275 thing)
->>> says: "A missing “#size-cells” property signifies the default value of
->>> one."  There are many other places in OF geared towards this default
->>> btw, take for example the "reg" word, that silently assumes your node's
->>> #size-cells is 1, and does completely the wrong thing if not.
->>>
->>> Flattened device trees are a fine thing, but the gratuitous ways it
->>> differs from OF, are not.
->>>
->>>
->>> Segher
+>> This can be seen for example with:
+>>    # (set -e; set -o pipefail; yes | grep -q y); echo $?
+>>    141
+>>
+>> or by running the actual check script in loop extensively:
+>>    ----------------------------- 8< -------------------------------
+>>    function kconfig()
+>>    {
+>>      for i in `seq 1 100`; do
+>>        arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh \
+>>          ./scripts/dummy-tools/gcc -mlittle-endian \
+>>          || { echo "Oops"; exit 1; }
+>>      done
+>>    }
+>>
+>>    for ((i=0; i<$(nproc); i++)); do kconfig & done
+>>    wait; echo "Done"
+>>    ----------------------------- >8 -------------------------------
+>>
+>> Fixes: 0f71dcfb4aef ("powerpc/ftrace: Add support for -fpatchable-function-entry")
+>> Fixes: b71c9ffb1405 ("powerpc: Add arch/powerpc/tools directory")
+> The latter fixes tag should probably tag one of the below commits which
+> actually introduced pipefail, or introduced it in Kconfig:
+> Fixes: 8c50b72a3b4f ("powerpc/ftrace: Add Kconfig & Make glue for mprofile-kernel")
+>    or:
+> Fixes: abba759796f9 ("powerpc/kbuild: move -mprofile-kernel check to Kconfig")
+>
+>> Reported-by: Joe Lawrence <joe.lawrence@redhat.com>
+>> Acked-by: Joe Lawrence <joe.lawrence@redhat.com>
+>> Signed-off-by: Jan Stancek <jstancek@redhat.com>
+>> ---
+>>   arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh | 1 -
+>>   arch/powerpc/tools/gcc-check-mprofile-kernel.sh           | 1 -
+>>   2 files changed, 2 deletions(-)
+> Other than that, thanks for fixing this. This LGTM.
+> Reviewed-by: Naveen N Rao (AMD) <naveen@kernel.org>
+>
+> Maddy/Michael,
+> Can you please pick this up?
+Thanks naveen. Will put it in one of the -rc
 
+Maddy
+>
+>
+> Thanks,
+> Naveen
+>
 
