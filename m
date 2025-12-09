@@ -1,86 +1,45 @@
-Return-Path: <linuxppc-dev+bounces-14702-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14703-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 34F7CD3B7EA
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Dec 2025 14:45:46 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4C7B9D3B7F3
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  9 Dec 2025 21:01:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dQhVJ1lZTz2yF1;
-	Wed, 10 Dec 2025 01:45:44 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.218.50
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765291544;
-	cv=none; b=Yz8XPfeXiruj4U/eCqLzBSPpi9PfDdJp/Vr6l0WUKXaj9IocUGE3gaKHXfHvkOS64tl+pTrLzUP+j9HZY4T0TpXKa7q8tbNwn7uUnfabve95hGKLN1VieZTrs85srIx6T3FcvglWrXlFlYsqV11LKPdWMvwanY1JvoOzo1zCbxf27uj9oJMiWQmxscKpQN3F5ynJW+j4KBtZZr5xIM50elvpC5hOnpwhFoodoJpAaWGCejWgWhL1vQ2keBzENp8GHjRsCX1/JEfVjrYvx5IJJOpriOeNs1sdfxQl+x0JCAYvSPhaJ6rTn+r4SywfzrGJ6pPd3h/7arQyDMYwN2TLVg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dQrqV5xqJz2xJF;
+	Wed, 10 Dec 2025 08:01:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.81
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765282853;
+	cv=none; b=GMNj7nLExkn9XHh3Ex2ZjpAf9iD3WlzfQ8m5rLv2mYw4KV7VyUtVidl4phlg1NmBCEQhFnaniB7JIOrUyObz9m/DlnBdDymfg6CYBS64cyzeE4oWANxnK0HA7aR5EohavjiFpa/RReRx4/lRXYnSgxz1XROLVriosDdr7Q9Z7O9KU2dYSipEZxqb4bOGw1fSeXRjs/0M1sbsmwkGmbFiBcAujOCctrduhwZSSFyq7bSZnyKkObmUkPIo4fjIcwv+a6x57EZ+ne6pl46YD5icYnUA28EJUmvDqDmU27tL2bdYl/7jvxlqUoZNGb9dZUDMt+6jlWxi4qnrswGipgbvyg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765291544; c=relaxed/relaxed;
-	bh=kVOhHzVscYty/G+BBWATwCjtSn+LiTKUykdCwHdrR88=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=ODz/TprsGYeB4qX6uJLRco/j5nOEtoPgKtLSGVfPQyORiwA4d/1Ldte59eR15Zp2o78+Wzbl8DUPzuMSSKodLQYS+kKty33wU6RsbEZ+ae8jLQmyNmwuVJgqlcrH4KX4YvEEoU6VMcaS+AsTa1kxVDLm85gn2rsRABwzr+pbhQDCpz/p0EfiYxskgTZ7zFsCOon2sHbaohoByi2Js26V6AjYp5j7bH6NOXUuNGk4Ug6qQPwy0zhX1GIJ6DG3zvGCKjiEWic8jkZJ1OUNWFbiEcMqhI0aCaRPolW2bcXTggpBSGdaIteuK1WKBb+6dcyig+3HufCsUG8/pcpycjt8gw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com; dkim=pass (2048-bit key; unprotected) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=jWgJPiAw; dkim-atps=neutral; spf=pass (client-ip=209.85.218.50; helo=mail-ej1-f50.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org) smtp.mailfrom=baylibre.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=baylibre.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=baylibre-com.20230601.gappssmtp.com header.i=@baylibre-com.20230601.gappssmtp.com header.a=rsa-sha256 header.s=20230601 header.b=jWgJPiAw;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baylibre.com (client-ip=209.85.218.50; helo=mail-ej1-f50.google.com; envelope-from=ukleinek@baylibre.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-f50.google.com (mail-ej1-f50.google.com [209.85.218.50])
+	t=1765282853; c=relaxed/relaxed;
+	bh=nEfD8Lyw/dRBKV5CViuSFHaeX06khrUdVpmd4j5/q54=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=On5gc9QoqK3HVxV8+OxBJrXFfILYM2H09GK6CWwd1pRlNN7I8lXqVFpKDBUM5GCGSW2DqP77TeufqrG3fBDFhk5o+3We9tMjMLZu7ZVR5vAVWZaqXVU3ybzL8/qt4lhrmYuTNc2hQHGG3dfaWkAeRf+nwr3dLXnInik3yx8SERfimU2IzSYNjFqn898isBGvG7mg6Q+z5of0NSoAajd69ivs8kkERVIqglwfhXQAAos0OHZFpQ+Pjj1GuyYlAD3EYpbeP17NtE3uqo8GK3mgipTtkdny00/OQnrpSg1cYRRGfvOhnF/Xf1+9v1JmXmNMpNX0Q0b9n8ike42GRCiNzA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=isrc.iscas.ac.cn; spf=pass (client-ip=159.226.251.81; helo=cstnet.cn; envelope-from=lihaoxiang@isrc.iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=isrc.iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=isrc.iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=isrc.iscas.ac.cn (client-ip=159.226.251.81; helo=cstnet.cn; envelope-from=lihaoxiang@isrc.iscas.ac.cn; receiver=lists.ozlabs.org)
+X-Greylist: delayed 337 seconds by postgrey-1.37 at boromir; Tue, 09 Dec 2025 23:20:51 AEDT
+Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dQhVF5bghz2xs1
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2025 01:45:39 +1100 (AEDT)
-Received: by mail-ej1-f50.google.com with SMTP id a640c23a62f3a-b73545723ebso965327666b.1
-        for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Dec 2025 06:45:39 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=baylibre-com.20230601.gappssmtp.com; s=20230601; t=1765291476; x=1765896276; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
-        bh=kVOhHzVscYty/G+BBWATwCjtSn+LiTKUykdCwHdrR88=;
-        b=jWgJPiAwB5tKFYVLG1LXrKaSd8qNZ1goR0YWzDaU9I+L5sxfi8fOhQHXxtg+C0pZ7d
-         utA+ysmi+3yPCQgMuDOWYoT4phfwmpW64nfYa0i9/lAErIHz0TIZPoWzPZ1XCrLd/PRY
-         HTuyNOzD0b3kjij892ie9Bszx8sIhiAYxIGRBhW2USQF3aNe1XLiwTL6sXM6UkOBNX6r
-         BSiv95WC8ZJFaoPdIpBWo/mUL22kqI9bIkLYrvJfC6mvJzLdf97WnJftcPs2I81F2z77
-         sgGWAEVUw6AoLMEUFdWc5cAxgdfk6Zb3hO3qiCLLap3nNvA8QNFLQJEewefHeIBaZJvY
-         4+5w==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1765291476; x=1765896276;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
-         :subject:date:message-id:reply-to;
-        bh=kVOhHzVscYty/G+BBWATwCjtSn+LiTKUykdCwHdrR88=;
-        b=UCQfwjX8XujJL7RAuDZADQA1TcJSKtmtrs+xVwcHBmS8hykmTfbUxyzuMjnq3nulcW
-         7dpk5au+V4cjmnboGDETd7CMLd5mtINsoCTKSOOPFbiau3H66mvjiNsvrTh1/STqZS2t
-         grfSUPVAwlwATRQ+21lLYzqzOVy4YQYilfeeIR49PJAa3atdmekHADuh9Qt2iJXG6V9k
-         Lx3T4gbHtL6S+U3okUgKCFsZHND97q+kwbzqiWBPil6FAFmHkN8LQ+7LTsh8I5hd8cuJ
-         xc4elEjJE5ZgtTMBbsM35YghwQcxgDLFcQm6eXm5qDo4XEpBwSp453E6r7vb2ioi3XLc
-         qTWQ==
-X-Forwarded-Encrypted: i=1; AJvYcCVUqONDT2zyjN+h69aLXW1QXL6Kp8shX8s4J8YfICYoGML66fQSdXGnc//GUfGzC5Vbdku3RvpvgLD+YaA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyxqNXYTU24+S6ix+weaA5SwiYwvrMdTjxmIEWWStUaCfPuhDCg
-	5mNACTBN9Kq9s0LAJB2BBz8s48/eLsNUDLU/ymi+NZdx7iL4ov4CP0Wmzw2YKPacyts=
-X-Gm-Gg: ASbGncvrJX2NTyf3rZxRxGPIexNqYlWawcmA8dPqNTYWqhyK6Gw+XGGlpz4I+x2+p0S
-	26Pqw2Cc6w7HEHHw/JAZpKH9ek7IJzVjXtAxYbzvlKpJpHn/GiDIXpJVLRy0rz+7m/oSgZQSsCC
-	YV7hNxKixtpcjxrY/vn+yPwjnAKXMkLazXeLwvjzRWyW4owSxFVW1IhKnnPn/kK7VJ2jlSITuAM
-	BSDmbpNulGWjj1crCyrgrcN5CEzceVMjoHx5E53mbb7EiwKYKVMPjfOAH9FXBGvuuNC1QNAdsnZ
-	r7Ggx0QmZ/GF9IhMcOrEXi75FgLv/5WHPfdHlp/66/9kn/BbbQLApYCQenW6MGQyYkscwAJSgAM
-	YY+3a+Ca7fxnl66PMkScbAgFDv97Pdad51Qmab2oOZ26rAg5rEKtKCrYkeh17wpgztcih57TTb5
-	jGgcieaTVii1xIJMxG5Vq4fmDELS5m4tX89dOVMf1mnkMsBjr8kW3zDdwJZJWfAwqot8ORsRDjr
-	Co=
-X-Google-Smtp-Source: AGHT+IGniSPCVWdbAdR6lXWT2hrO2Vb2FI+DEc4Pfx5sd8xCIn9sZrCMfwA/MnGMuGUmxfgYWSBPlg==
-X-Received: by 2002:a17:907:8e96:b0:b79:fc29:ebd2 with SMTP id a640c23a62f3a-b7a242bebe8mr1161488266b.3.1765291476544;
-        Tue, 09 Dec 2025 06:44:36 -0800 (PST)
-Received: from localhost (p200300f65f00660846b2ba6e435ad603.dip0.t-ipconnect.de. [2003:f6:5f00:6608:46b2:ba6e:435a:d603])
-        by smtp.gmail.com with UTF8SMTPSA id a640c23a62f3a-b79f44597e6sm1410280966b.12.2025.12.09.06.44.35
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Tue, 09 Dec 2025 06:44:35 -0800 (PST)
-Date: Tue, 9 Dec 2025 15:44:34 +0100
-From: Uwe =?utf-8?Q?Kleine-K=C3=B6nig?= <u.kleine-koenig@baylibre.com>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Ioana Ciornei <ioana.ciornei@nxp.com>, 
-	Greg Kroah-Hartman <gregkh@linuxfoundation.org>, linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bus: fsl-mc: Cope for unbound devices in fsl_mc_shutdown
-Message-ID: <jibl526ybakduh3rw6u4e4apij2yny3isdhmgcirbk6vj2kilv@ans2qvz2tcvd>
-References: <20251209115950.3382308-2-u.kleine-koenig@baylibre.com>
- <c51882f6-500d-481f-adf3-c257fb7ea47a@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dQdH75P9pz2xs1
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 09 Dec 2025 23:20:51 +1100 (AEDT)
+Received: from localhost.localdomain (unknown [36.112.3.239])
+	by APP-03 (Coremail) with SMTP id rQCowAA3WeDGEjhpSrAbAA--.8366S2;
+	Tue, 09 Dec 2025 20:15:03 +0800 (CST)
+From: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
+To: lihaoxiang@isrc.iscas.ac.cn,
+	paulus@ozlabs.org,
+	benh@kernel.crashing.org
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	stable@vger.kernel.org
+Subject: [PATCH] macintosh: smu_sensors: Drop the reference in smu_cpu_power_create()
+Date: Tue,  9 Dec 2025 20:15:01 +0800
+Message-Id: <20251209121501.35012-1-lihaoxiang@isrc.iscas.ac.cn>
+X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,66 +53,50 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: multipart/signed; micalg=pgp-sha512;
-	protocol="application/pgp-signature"; boundary="wkc5pao2ioxlxdwa"
-Content-Disposition: inline
-In-Reply-To: <c51882f6-500d-481f-adf3-c257fb7ea47a@kernel.org>
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:rQCowAA3WeDGEjhpSrAbAA--.8366S2
+X-Coremail-Antispam: 1UD129KBjvdXoW7GFykKw4xuw17WF1kGrWfKrg_yoW3KwcEvw
+	12qwn7Xr4UKw40vr1DtFn3Zryqka4Duw1kWF4Fg393uFy8Xw1UJayDJrZ3ZF1xXF40yFyD
+	Gw15AryUuw129jkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
+	9fnUUIcSsGvfJTRUUUbckFF20E14v26r1j6r4UM7CY07I20VC2zVCF04k26cxKx2IYs7xG
+	6r1F6r1fM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
+	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Jr0_JF4l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Jr0_
+	Gr1l84ACjcxK6I8E87Iv67AKxVWUJVW8JwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Jr0_Gr
+	1le2I262IYc4CY6c8Ij28IcVAaY2xG8wAqx4xG64xvF2IEw4CE5I8CrVC2j2WlYx0E2Ix0
+	cI8IcVAFwI0_Jr0_Jr4lYx0Ex4A2jsIE14v26r1j6r4UMcvjeVCFs4IE7xkEbVWUJVW8Jw
+	ACjcxG0xvY0x0EwIxGrwACjI8F5VA0II8E6IAqYI8I648v4I1lc7CjxVAaw2AFwI0_JF0_
+	Jw1l42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr1lx2IqxVAqx4xG67AKxV
+	WUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE14v26r126r1DMIIYrxkI
+	7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7IYx2IY6xkF7I0E14v26r
+	1j6r4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E87Iv67AKxVWUJVW8JwCI
+	42IY6I8E87Iv6xkF7I0E14v26r1j6r4UYxBIdaVFxhVjvjDU0xZFpf9x0JUSNtxUUUUU=
+X-Originating-IP: [36.112.3.239]
+X-CM-SenderInfo: 5olkt0x0ld0ww6lv2u4olvutnvoduhdfq/1tbiBwsLE2k35veKUQAAsA
 
+In 'fail' error path, call wf_put_sensor() to drop the reference
+obtained by wf_get_sensor().
 
---wkc5pao2ioxlxdwa
-Content-Type: text/plain; protected-headers=v1; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: quoted-printable
-Subject: Re: [PATCH] bus: fsl-mc: Cope for unbound devices in fsl_mc_shutdown
-MIME-Version: 1.0
+Fixes: 75722d3992f5 ("[PATCH] ppc64: Thermal control for SMU based machines")
+Cc: stable@vger.kernel.org
+Signed-off-by: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
+---
+ drivers/macintosh/windfarm_smu_sensors.c | 2 ++
+ 1 file changed, 2 insertions(+)
 
-On Tue, Dec 09, 2025 at 01:05:50PM +0100, Christophe Leroy (CS GROUP) wrote:
->=20
->=20
-> Le 09/12/2025 =E0 12:59, Uwe Kleine-K=F6nig a =E9crit=A0:
-> > Other than a driver's shutdown callback the bus shutdown callback is
-> > also called for unbound drivers. So check for the device being bound
-> > before following the pointer to its driver.
-> >=20
-> > Fixes: ef980bda574d ("bus: fsl-mc: Convert to bus callbacks")
-> > Signed-off-by: Uwe Kleine-K=F6nig <u.kleine-koenig@baylibre.com>
-> > ---
-> > Hello,
-> >=20
-> > I pointed out this issue a few days ago in the thread that resulted in
-> > commit ef980bda574d, but didn't receive a reaction so far. Given that
-> > ef980bda574d is contained in next, I guess it's time for a proper patch
-> > to fix the issue. Here it is.
->=20
-> Thanks for the fixup.
->=20
-> Nobody reacted against what you pointed out a few days ago so I guess this
-> fix is OK.
+diff --git a/drivers/macintosh/windfarm_smu_sensors.c b/drivers/macintosh/windfarm_smu_sensors.c
+index 2bdb73b34d29..5441a55732f1 100644
+--- a/drivers/macintosh/windfarm_smu_sensors.c
++++ b/drivers/macintosh/windfarm_smu_sensors.c
+@@ -374,6 +374,8 @@ smu_cpu_power_create(struct wf_sensor *volts, struct wf_sensor *amps)
+ 		goto fail;
+ 	return pow;
+  fail:
++	wf_put_sensor(amps);
++	wf_put_sensor(volts);
+ 	kfree(pow);
+ 	return NULL;
+ }
+-- 
+2.25.1
 
-Always the optimist, I think it means nobody bothered :-)
-
-> Unless you mind I will squash it into previous patch to avoid having to
-> manage the Fixes: tag update when I rebase to 6.19rc1
-
-No objection from my side.
-
-Best regards
-Uwe
-
---wkc5pao2ioxlxdwa
-Content-Type: application/pgp-signature; name="signature.asc"
-
------BEGIN PGP SIGNATURE-----
-
-iQEzBAABCgAdFiEEP4GsaTp6HlmJrf7Tj4D7WH0S/k4FAmk4NcUACgkQj4D7WH0S
-/k64Ggf/cTuXXm1dYWrAq71Z5O1Fg8gsTcQZ3naAwNkkb57K9oKd486/861nzcGi
-/BtQjQkWl/mDaCCFIPmqaYiguPw16EVpz5GgUV8uSO2+CgT9IEztz6/eh+i/IbaA
-SfnPNufUr6jsHgGNS8uWl4XqgK0ny7tYXYRQrT5rL4u7A9Ol10sUhos8OKV5yPvx
-aA6bMcP5LaEUoS22exe6alLuq/I0NuHOsMhtmiSJ6VclQWc+sITwTpHjhn9B6R7g
-IbkDGgyUdwEaoC7h6qTjc0tWOzdnaedJXA2Z3iqr6YHzsZgGxNSwhhZVu7a78ORY
-OP8nOKTruSrYWhlje6lG1wqsMJcTRA==
-=5b1I
------END PGP SIGNATURE-----
-
---wkc5pao2ioxlxdwa--
 
