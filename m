@@ -1,80 +1,93 @@
-Return-Path: <linuxppc-dev+bounces-14708-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14709-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C1AE5D2CE17
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Dec 2025 06:22:15 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 104C6D3B9A9
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 10 Dec 2025 06:51:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dR5Gs5zCGz2xqk;
-	Wed, 10 Dec 2025 17:22:13 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=40.107.162.11 arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765347733;
-	cv=pass; b=ULAYnetaQzynM0gKQrqyhjjpmhYEOH39Qm2a47h3syKE/e0Wu85RiFcg1+/KsgkGyCMwrBO6BGjmvtq56wQDDvuFuoYraTYBlzhH/AhwC3/YgcnU1A8+6/vKOz0STjlR4Um7H43HhVtJTsbO2oPohsq+sjZ1p93E1q30hfrb6RLnLTqvyyNRu74hHZcJtziD3W067SxyTjCqMOeMKFJW/M2r9IMXKTuwkamU3KJHv/S0YbReP6wC3z4Si0+dvMTRbTHAmjeRbBeLtgHtYZ57j3PaQSDwSqBvydsTVE/ziq98MxfdhWGUIlNThXId9pDcVcAHCaJTb+gRaN34MtZYEQ==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765347733; c=relaxed/relaxed;
-	bh=JZaES7KES/ESomOOw09G9UGdfeOLbFtKCm7WuuTLAEQ=;
-	h=From:To:Subject:Date:Message-ID:Content-Type:MIME-Version; b=iFO1PoKRZBTLhqmAyop1zz43yZijAaiMzi5HwStLFKcCqAz9O/cqIrSTICjFPJ5XBxYxhQ5/F1+RdzvVHHZlAKIAEIwzGnoGuLiev/fVyHhBw3zJANS5/4QO4fxFI8iXqwSFCg3omR2rQj69f8kEyjpGDw8TJcjp6J3sKr1ZMrr1Kt4TWOtX91uIeWeaV7UR1Q9o3b5iboDC4b5zaRN90IuUOA0LJXpu7QSUNTcpywh4gOxFtIm37IE7/rSF63ep5K78aeZU0mEe3Iy1JBzDoxo/uAWpORDeyD7dMAMVm8Dq1i+NdWMEhEHdlMO4KcjNoGuWs0unljlwL1QUsPToVQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=d0aM2SAo; dkim-atps=neutral; spf=pass (client-ip=40.107.162.11; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=chancel.liu@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dR5wl3f3Xz2xqk;
+	Wed, 10 Dec 2025 17:51:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765349495;
+	cv=none; b=ICkB1QQrz8ft+7E5Q3pmmrSL+4w8GbJqBKtV2NK9xAkT4OxSFsXP9P9C5piLNI5PDcHoNtYDggg7lL/rZNEU/4AL1tOU0eFpuhkLWkDm7bWC0Prb88rNP9kh5HT8Kt/FicsZdO4WlP2cjcdazg+cBbRnaOg3DAR4ja9WjmUlaqpQsK4GjPa9zzuGAkmdpES3GSO4V6lETGP3zPb8j83mVCCY54UTMkjPMQ4IxhwgOteUPN3xiChShlz2MDuy5mZaUiFxHzHAODBr9FkQMZiPYnoBOlGDJf0Wge4HmmmRAuU5ZXIh2K173DIli3j59xOOEd9E5dUW8EEEW3Fbe4FjLg==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1765349495; c=relaxed/relaxed;
+	bh=0rK2IOiUGAkM/mNsYabEdDO/wutkuOM7n3/9Wiu70Zg=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=oCZrP4QBw6lZDqnI0QNclMceaMDF9tov208e8A5cy2rL19/b0uQhICVD1MjBUCLghHCZZKv1Bu2gP4nl+a+Zzxi5TFrwRIBSqgd/Nvy/aywf2v4pjxKhoLxeTXDm1GG1MrZipKqLU54VN6/+tgiMV2ipvfC4lfROtRgvuCIhDq1pdJdLvxYGwmKK6a8IsDnhdXikAoR/W5INHqlKRDNEX/AbTkiPBm6IRH0tntKaC1rf1dB7hRdQkpA+yzqjc8TrfWEintCLfKcAH3m2ZkxFNtq4tbz+IDshPoyiqKICAznHepUEZy1A/6OjIUPOcC9lzf7ddzaiaZ1+VzlkfgWhSg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SlyqUnp4; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=d0aM2SAo;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=SlyqUnp4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=40.107.162.11; helo=pa4pr04cu001.outbound.protection.outlook.com; envelope-from=chancel.liu@nxp.com; receiver=lists.ozlabs.org)
-Received: from PA4PR04CU001.outbound.protection.outlook.com (mail-francecentralazon11013011.outbound.protection.outlook.com [40.107.162.11])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=skb99@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dR5Gq65QLz2xC3
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2025 17:22:11 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=G+YY5sGzMHsdD9jnJki67nmMVQa8VSLE7VzrmShJJaPRJBLuAs8IeuBcFZWyA77M2tfLNniSJnLLD3iYGVZfnSe0hjyCkoFTvjNCfX+ZoCrn0BipeO67GFK+lh2TQ7qEOZV+y5GmGO1HbTVUGJi4vSDO01WmeXaF/n1IJ/I+EzYX9Y1TomVx0w5w2zGZ/eEeElYb+8KfxFZHOOEc5AD4VY+x+5wBHMfXTrRWEhtCSjaIiVJ72fRdMGKxWIL4ork4VC18LrFdkAwasUV32S0U4KLqPn23KEUTZ7mrJo9P1jgvVTmNeHw5HTZGn1rYNMmqhckdeDbktQxXx+1hzM6RSg==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=JZaES7KES/ESomOOw09G9UGdfeOLbFtKCm7WuuTLAEQ=;
- b=ORynWutxHGkr17Q0aOFMPJIsNYs4s2Ii6ViI4Pq+ir2/8ru64UoVr4e/pl0s2JIbjYx7HvT/MptXGedYIcTQDQe5/8fxd2DKevyssqCatf+5NcimH1X6NFPVGOElZa2Kf64xMh9lAtia4Z8JPvNZ3fVrBpcGtR2HJE1EBGCOTSN9GQZhVfgM+UiqG7cNa9Yv3+ab8wzKP3ef7Icj9Aj5jF7kdlOCblOw4PpmJGEYkN2ECso8gEZIUrTwc7lYQ6/1zKDrjfE/y7O7y2kR+cIZ0SqsR+/S/axJeqslLCAoAjz1pKzOleznY2aoV/1MjkUA/kDDS+iX0Of6fMjUgAg5ag==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
- header.d=nxp.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=JZaES7KES/ESomOOw09G9UGdfeOLbFtKCm7WuuTLAEQ=;
- b=d0aM2SAopiN9xAsmMGlUmEdz7DD/mswJRoE0SJeRvvq/6wj7mSUUM4HgKSEdEWIHGHrC/xh1/UzEc6S4wt28SPmzWv7Uif+PexublYP0vkSk0LxeNFoVCwdr9KWANT9gT42xmXz17Bd7aWf/B5dGJOrWhyOkqzxmD5BmTp2tffIp9eyGQzg2cfWAVaLhG2x1fEotGY/D/lPJvonasNud7OSgYQrKRH3wHM7zWZ2U/8y6mNvKUpROqOTYeSgb/5CeG+oUG4Ty1RgCixFldEnGed66X4753nLZpeN58ZDHXOYWN+Nh+/lK4dL/zAS16KnH56FAKCn5yCcHgYKvmvTjdQ==
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=nxp.com;
-Received: from AM9PR04MB8353.eurprd04.prod.outlook.com (2603:10a6:20b:3ef::22)
- by VE1PR04MB7405.eurprd04.prod.outlook.com (2603:10a6:800:1a4::24) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9412.6; Wed, 10 Dec
- 2025 06:21:31 +0000
-Received: from AM9PR04MB8353.eurprd04.prod.outlook.com
- ([fe80::46ae:f774:f04c:a1bc]) by AM9PR04MB8353.eurprd04.prod.outlook.com
- ([fe80::46ae:f774:f04c:a1bc%2]) with mapi id 15.20.9412.005; Wed, 10 Dec 2025
- 06:21:31 +0000
-From: Chancel Liu <chancel.liu@nxp.com>
-To: shengjiu.wang@gmail.com,
-	Xiubo.Lee@gmail.com,
-	festevam@gmail.com,
-	nicoleotsuka@gmail.com,
-	lgirdwood@gmail.com,
-	broonie@kernel.org,
-	perex@perex.cz,
-	tiwai@suse.com,
-	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-sound@vger.kernel.org,
-	imx@lists.linux.dev
-Subject: [PATCH] ASoC: fsl_sai: Constrain sample rates from audio PLLs only in master mode
-Date: Wed, 10 Dec 2025 15:21:09 +0900
-Message-ID: <20251210062109.2577735-1-chancel.liu@nxp.com>
-X-Mailer: git-send-email 2.50.1
-Content-Transfer-Encoding: 8bit
-Content-Type: text/plain
-X-ClientProxiedBy: SE2P216CA0083.KORP216.PROD.OUTLOOK.COM
- (2603:1096:101:2c6::16) To AM9PR04MB8353.eurprd04.prod.outlook.com
- (2603:10a6:20b:3ef::22)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dR5wk1FC7z2xdY
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 10 Dec 2025 17:51:33 +1100 (AEDT)
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5B9Ihnxq021763;
+	Wed, 10 Dec 2025 06:50:49 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=0rK2IO
+	iUGAkM/mNsYabEdDO/wutkuOM7n3/9Wiu70Zg=; b=SlyqUnp4axuNabQbnVfc+r
+	dkFiL17uTKO5cRM4O1V7gkEQNlwDSnIF70jptWAQKSPtWs5huQLhPmayVe14k/YB
+	jr7fo5kXMP8IJIgiVKip8ZbWLRWK1m8x/PXfNdztaU1ToOnEANLlxwRoMPEnW6vX
+	35xqP82Ne0HiVM36vQPYxbjV5Ym1XSnNYyx9jRX/oAkbY87zY4V1sGjgPBAoEl0C
+	/ATJRvQ4VFdboYgZtoT7h/KKXhchDsMP5j7YyPkMcpxvA0F8Iea3+jnDxDkM0gSd
+	lybpRQdvpFuxqKmYvrkln7ubdFoZQ1h+ZYtpjb3f/eoyQAyzJFuuSXx+oS+8VPXw
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4avc7c0ykj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Dec 2025 06:50:49 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5BA6ehoB026297;
+	Wed, 10 Dec 2025 06:50:48 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4avc7c0ykc-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Dec 2025 06:50:48 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5BA3JKYn026782;
+	Wed, 10 Dec 2025 06:50:47 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4aw1h16x8e-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Wed, 10 Dec 2025 06:50:47 +0000
+Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5BA6ohHo27853260
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Wed, 10 Dec 2025 06:50:43 GMT
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id C180820043;
+	Wed, 10 Dec 2025 06:50:43 +0000 (GMT)
+Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9CC2A20040;
+	Wed, 10 Dec 2025 06:50:38 +0000 (GMT)
+Received: from li-621bac4c-27c7-11b2-a85c-c2bf7c4b3c07.ibm.com.com (unknown [9.43.106.237])
+	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Wed, 10 Dec 2025 06:50:38 +0000 (GMT)
+From: Saket Kumar Bhaskar <skb99@linux.ibm.com>
+To: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-kernel@vger.kernel.org
+Cc: hbathini@linux.ibm.com, sachinpb@linux.ibm.com, venkat88@linux.ibm.com,
+        andrii@kernel.org, eddyz87@gmail.com, ast@kernel.org,
+        daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
+        yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
+        sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org,
+        christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com,
+        mpe@ellerman.id.au, npiggin@gmail.com
+Subject: [PATCH bpf-next v4 1/2] powerpc64/bpf: Support internal-only MOV instruction to resolve per-CPU addrs
+Date: Wed, 10 Dec 2025 12:20:32 +0530
+Message-ID: <667fdaa19c1564141f6cd82e75b2be86a42c0f96.1765343385.git.skb99@linux.ibm.com>
+X-Mailer: git-send-email 2.51.0
+In-Reply-To: <cover.1765343385.git.skb99@linux.ibm.com>
+References: <cover.1765343385.git.skb99@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,117 +101,111 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: AM9PR04MB8353:EE_|VE1PR04MB7405:EE_
-X-MS-Office365-Filtering-Correlation-Id: a5e19279-cf37-4872-20d9-08de37b45bcc
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|366016|19092799006|52116014|7416014|376014|1800799024|38350700014|921020;
-X-Microsoft-Antispam-Message-Info:
-	=?us-ascii?Q?NkiVMUjgj6R2S/F54iyP01Fmr7zTMRJVQdK4vMb8hsCkYwBNEgpRnI64XqJH?=
- =?us-ascii?Q?W3pUgNz15/t2knFX7TAakQxjfJZYgVAKom/MDMPXEcKFyElu7y1JIKdb1LiQ?=
- =?us-ascii?Q?b69o2Vkef7/OrrQp1P9JwCPXDe1yRoloFvYmbFSP3PrHKoN8QUKO4xWvkbKY?=
- =?us-ascii?Q?rEOEHGekYMEjfPyNo8j3duPhnRv6hCXdqOYLyQIyvkcusB0/k9/AuOB2Z681?=
- =?us-ascii?Q?345W+Mx0WWBomoBV6QZ+67bNlNjTarlcIVxb0KE3400Mjt32bxyczpWktG5F?=
- =?us-ascii?Q?3LGnOON3AVGd/zM+1ZqETmt8jhHC/VWMMkXoPM8wnINAbv2vifghDCayBBsC?=
- =?us-ascii?Q?7BsMSOzTLYhzWqQ59V5fttjwDDDGOV2MYrJEGI1oyUPxr/b7E5UlQgQEBGao?=
- =?us-ascii?Q?8bhvj4MZwThPDZ6qC9QaNSKmB01TeyWuphXNkIpXo9ltl7Bye7lN+Ny7emlG?=
- =?us-ascii?Q?bMz11U1Z5Q2ElLLVA7IIPAWxRWQ4jORW2PXg9NVQi2EzmXBSD4zDNndfZGwQ?=
- =?us-ascii?Q?eDGFN5BBO6Dpbhd8qkbIaSsySdIIlED2a2C3dR2t17TTzntty6Ry9JjDIUt5?=
- =?us-ascii?Q?D8lTQBa56cjMFzrIsf983lUr2Eh5BPgQiATvGFlEPta7Uthv0YnjElLeCajg?=
- =?us-ascii?Q?IWj+Xmxj4yh950SJfgLCdW4tc22/Xxt3Zy0YCAWOL2O0QVnQxnO4kG9RORLw?=
- =?us-ascii?Q?oiPPvAbcKxcmqDP8PYMMei10tb5ii3OSY2RSr9v35qAcwqy/38SHlCx8Gv0X?=
- =?us-ascii?Q?FMvSCv8/iVcRT+wfDcZLGDWeFHnjw8eEmbgGr5oMIte8HV4x3m4tG5rXblqZ?=
- =?us-ascii?Q?zcZXGfyJ405fFpKqsvpGBBv/eaG7/5ul4BgibhEStv0ilBquYQNxhg1Q/H/W?=
- =?us-ascii?Q?u8Mt+A1UJiMmRIFQVHaeEGkm5084PQX6Dm3/Oe512nuYdfccdB/Cky5cpykN?=
- =?us-ascii?Q?LHIDpFpWgbUp4lA0hHU80+N+gTCOd7iPGVaaozwLpt0TxIkJJ+kj9gwPGYCH?=
- =?us-ascii?Q?csjmNxbBcfUE0R1wadBbvdIkIiRX4KSfHLpOODFSsNxEOJ8Gd4yoapTLDYEM?=
- =?us-ascii?Q?J9UMYPtwhb1tJuqKyYvVWGQdAxkS7sml0uMcVi7l3L5wPqBZzXmwKXJEX2fi?=
- =?us-ascii?Q?gV/K257NPo5Y94HpBwGMWDL0bp+QOsmah+x1QrNMMs/FWnatAOVcco9u34c1?=
- =?us-ascii?Q?6yVnApDElJJwfQOxUbPAiLWuwwvq/AamaEMoQpwsCyCzYRMlUqblpPzKLwIt?=
- =?us-ascii?Q?GYLQpevAov3TcFjPA+w+Z3J3OD7EQS+Rjh/kUGQMMG67cI4jkAp/QMYgZ3T7?=
- =?us-ascii?Q?fuwR6vOn59vWrxMJa1auqd/EIs/tra7zsV1/f1KBokN61ZlJbEnZ2GGDSF2M?=
- =?us-ascii?Q?erGN0JnW+UM+QvGsO9ZS35vDWeI7nNqvI96bL/y8Pb2smqd9w6pVGZ8UEkv7?=
- =?us-ascii?Q?hQdvPZaqPMxWXDa/eQs+loqEoBdXidSbV6aOJwREqDrFysB98y2JYkB6PjC3?=
- =?us-ascii?Q?7x/WXG+IrNuucDNnkhPLm6j+7zEEg9FUAaoahJDg09Mgl+npYEmrBeVdpQ?=
- =?us-ascii?Q?=3D=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM9PR04MB8353.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(366016)(19092799006)(52116014)(7416014)(376014)(1800799024)(38350700014)(921020);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?us-ascii?Q?6NEOr26hahu+9/FlR/cwGtiazWpFaoJIYWdRn4Hm4vUgLzCzrM0+MZaboZsj?=
- =?us-ascii?Q?RdKUh3bHKye6Nus89yrXHFAgZZBtTh9rQBLS51wL9JpsF4LCM8KwQRafhTHJ?=
- =?us-ascii?Q?CLki6HA3myKMowrwoU56rf+ktXFA1QtSH2E6IYgXdqxxDkYO8mNFn2LTF2fL?=
- =?us-ascii?Q?QpHyvYm6f/cAuVB8p23hvGOEEM2hGjJx8nRKO1iPKNAR9ViZ6ne3isZye3ir?=
- =?us-ascii?Q?2jvTQ1hCMB0piNu62cxr3pxRXu/j3r7/hlT3yq/vVIYeQvQmEkRBL/x066Ei?=
- =?us-ascii?Q?ugwgOg4Xej2k0eAyBCfhND3sP02sr+HBbrC0/F32q3T4CdnOuNqvTA9ufMUT?=
- =?us-ascii?Q?/fP3xMXqghgXRaiOOXahkmH4QS7lt3xSiAtiHD/ZcFKyz5FBZo52udjF0x3e?=
- =?us-ascii?Q?LFihbgkZkgiEoDqRrLGYc3T5GrLrHZy/uvl47Zs6CFJ/JH6AA/mmNy29Oc61?=
- =?us-ascii?Q?4UaYDreNocFNvq0ay0vqiv08MUPsbxPniNKzGappr+7XZALPfREL2rC3a2TG?=
- =?us-ascii?Q?2h69BpdTH63IL9d96UBRKuOHU1xPj0pnyJ+CI7NG0MJjm3l/tw0fiedBVzPa?=
- =?us-ascii?Q?HZXBKzOg418lW3laupYWIPk34oLwmKtOdtJE1KqUhssPCu9mvvykwldRp0md?=
- =?us-ascii?Q?nTBywVkFOFKkW4fSeck/LpAMROGxtYbuG5VjQ1iI2FptuxSYHB0qxKOheSoP?=
- =?us-ascii?Q?dSF45aThCihtHog+1wvk2J1mqpyzOfCZcNN+MS5N3EYDDGqlIBrNuX0oh07q?=
- =?us-ascii?Q?73iBH95bMOu62d6HK2WixC2TNqzK3DHH+n/I0FesCWIj5lTs6FCM1u7k2FUc?=
- =?us-ascii?Q?vj7R+x4aoxkuIkg3JbmFEXb+UpLjIPHWOeAgmNH6Say/bypaMCZAW7zVnrL3?=
- =?us-ascii?Q?8/Z8dTVT0lmDEUSc0+k/AECyCgUXQE3A8KNEjzV2Jk0UWTQm51rQgf3CtF2S?=
- =?us-ascii?Q?74NY0rlz/7hBno0YUWl7MbBIN7P3XslxJ61j8hzt9WfOMedPRqGSqpvh0cvu?=
- =?us-ascii?Q?8SgPHq/QZ6Wg2OUSDGH8B8yuAW6CgPtvidMOckn3G3UBv6mmGN0FM45m+yWR?=
- =?us-ascii?Q?jKo9taQp03r0zxGyN8c2INBIRv/50vUq5A7htBfX4h/RfbyHezJoxCUOwn/u?=
- =?us-ascii?Q?FFnx4NlI8j7oTmlIxlHT+D5wtoH/2BEbOpCSrdFf6GRYj+FJoyr59tEbsz3r?=
- =?us-ascii?Q?5TmzhL/gt1MDKyulErSG5X+jYt8vQnFiUeiKHZyXsnFVzFsacPNbtO/rl+s5?=
- =?us-ascii?Q?nxTjkSZ9MLIMphKn7M9AVejkFp/pzjNSNwx2BgXt9+ddH4TmY7jPYCegro0O?=
- =?us-ascii?Q?we7lXVKMsmNW/9Cl0pqrL9CMDwWpZwWcvVpmdyGWtu/+Q9YJz4Deh7v64uvj?=
- =?us-ascii?Q?nwjXXsCmFPfG56KUao3qawSQan7ToB4xaDuCxIk92Miy0wYcBehaw3QLsY+M?=
- =?us-ascii?Q?Gxs+6R+qEgIo4MElRHysMKTsod4I9A7GlBEUguGPQDvjy5nZVeDxinqjtUJb?=
- =?us-ascii?Q?RKbT88On84rkielhU8rsc+8CyFxRjhexx8XnbScHmHtYRf6BDm0bfn1KZKIG?=
- =?us-ascii?Q?lWxAVtyi2OGb8uXaKSOH+6qo8KvUaHzIXIXogrrp?=
-X-OriginatorOrg: nxp.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: a5e19279-cf37-4872-20d9-08de37b45bcc
-X-MS-Exchange-CrossTenant-AuthSource: AM9PR04MB8353.eurprd04.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 10 Dec 2025 06:21:31.0111
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: m1+iML6cvpPTrSIlv8+J6GjOV9j71HSuyfA/9kvV8aC/XnWLXQsSwuhn7FzkQpGferclE1Zfkx6iEckxZZKnIA==
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: VE1PR04MB7405
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: K7dWoI8ciPH-qciuCKJoWnC9DAa1k4n0
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjA2MDAyMCBTYWx0ZWRfX42YocgbV0lCZ
+ cWjGmzn3gijyYDx3Y/jmCvlE0Ligwhak6h9BpAHBq5/nIUhkFu5T/jCDqut5sKZdd9p0PfVld6X
+ FCutBI6dqDONsTODaDPbS7En9xtU+E6iMlfhnpT/Tyb22Chyp2pMsT+NnGcDNDpQcYP+y6x+r3j
+ BsBnSshMzPUyN9Lzn85Etq19xJDOxiG5EIaA6jkwayNmfA69/tlDCfpXyJL5oaviyGxmLw7Qmt6
+ ZDpqRepebSnuWhc8GS89uYklg7IEcUDjhZW+qErePHY2NaOW1JxiqVa8UdxubC/6vXeD8IldwSS
+ dAegwkVtYEI1gY51eVkEtblZEkSczTmDkstfzZvC9L3YIlYNpq+kzEcl9Q2l+mIYqEb7Cxuj24d
+ RPT4JjJLgx9XwZ2X+oQDuNxtfqgUCA==
+X-Proofpoint-GUID: 2k6K-rztswRo28XySV0__gw8pdpia8B_
+X-Authority-Analysis: v=2.4 cv=FpwIPmrq c=1 sm=1 tr=0 ts=69391849 cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=IkcTkHD0fZMA:10 a=wP3pNCr1ah4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=NEAV23lmAAAA:8 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=mFN1cuOBngCmvTvEACsA:9
+ a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-12-09_05,2025-12-09_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ priorityscore=1501 bulkscore=0 spamscore=0 lowpriorityscore=0 suspectscore=0
+ malwarescore=0 phishscore=0 clxscore=1015 adultscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2512060020
 
-If SAI works in master mode it will generate clocks for external codec
-from audio PLLs. Thus sample rates should be constrained according to
-audio PLL clocks. While SAI works in slave mode which means clocks are
-generated externally then constraints are independent of audio PLLs.
+With the introduction of commit 7bdbf7446305 ("bpf: add special
+internal-only MOV instruction to resolve per-CPU addrs"),
+a new BPF instruction BPF_MOV64_PERCPU_REG has been added to
+resolve absolute addresses of per-CPU data from their per-CPU
+offsets. This update requires enabling support for this
+instruction in the powerpc JIT compiler.
 
-Fixes: 4edc98598be4 ("ASoC: fsl_sai: Add sample rate constraint")
-Signed-off-by: Chancel Liu <chancel.liu@nxp.com>
+As of commit 7a0268fa1a36 ("[PATCH] powerpc/64: per cpu data
+optimisations"), the per-CPU data offset for the CPU is stored in
+the paca.
+
+To support this BPF instruction in the powerpc JIT, the following
+powerpc instructions are emitted:
+if (IS_ENABLED(CONFIG_SMP))
+ld tmp1_reg, 48(13)		//Load per-CPU data offset from paca(r13) in tmp1_reg.
+add dst_reg, src_reg, tmp1_reg	//Add the per cpu offset to the dst.
+else if (src_reg != dst_reg)
+mr dst_reg, src_reg		//Move src_reg to dst_reg, if src_reg != dst_reg
+
+To evaluate the performance improvements introduced by this change,
+the benchmark described in [1] was employed.
+
+Before Change:
+glob-arr-inc   :   41.580 ± 0.034M/s
+arr-inc        :   39.592 ± 0.055M/s
+hash-inc       :   25.873 ± 0.012M/s
+
+After Change:
+glob-arr-inc   :   42.024 ± 0.049M/s
+arr-inc        :   55.447 ± 0.031M/s
+hash-inc       :   26.565 ± 0.014M/s
+
+[1] https://github.com/anakryiko/linux/commit/8dec900975ef
+
+Reviewed-by: Puranjay Mohan <puranjay@kernel.org>
+Signed-off-by: Saket Kumar Bhaskar <skb99@linux.ibm.com>
 ---
- sound/soc/fsl/fsl_sai.c | 10 ++++++++--
- 1 file changed, 8 insertions(+), 2 deletions(-)
+ arch/powerpc/net/bpf_jit_comp.c   |  5 +++++
+ arch/powerpc/net/bpf_jit_comp64.c | 10 ++++++++++
+ 2 files changed, 15 insertions(+)
 
-diff --git a/sound/soc/fsl/fsl_sai.c b/sound/soc/fsl/fsl_sai.c
-index 72bfc91e21b9..86730c214914 100644
---- a/sound/soc/fsl/fsl_sai.c
-+++ b/sound/soc/fsl/fsl_sai.c
-@@ -917,8 +917,14 @@ static int fsl_sai_startup(struct snd_pcm_substream *substream,
- 					   tx ? sai->dma_params_tx.maxburst :
- 					   sai->dma_params_rx.maxburst);
- 
--	ret = snd_pcm_hw_constraint_list(substream->runtime, 0,
--					 SNDRV_PCM_HW_PARAM_RATE, &sai->constraint_rates);
-+	if (sai->is_consumer_mode[tx])
-+		ret = snd_pcm_hw_constraint_list(substream->runtime, 0,
-+						 SNDRV_PCM_HW_PARAM_RATE,
-+						 &fsl_sai_rate_constraints);
-+	else
-+		ret = snd_pcm_hw_constraint_list(substream->runtime, 0,
-+						 SNDRV_PCM_HW_PARAM_RATE,
-+						 &sai->constraint_rates);
- 
- 	return ret;
+diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
+index 5e976730b2f5..d53e9cd7563f 100644
+--- a/arch/powerpc/net/bpf_jit_comp.c
++++ b/arch/powerpc/net/bpf_jit_comp.c
+@@ -466,6 +466,11 @@ bool bpf_jit_supports_insn(struct bpf_insn *insn, bool in_arena)
+ 	return true;
  }
+ 
++bool bpf_jit_supports_percpu_insn(void)
++{
++	return IS_ENABLED(CONFIG_PPC64);
++}
++
+ void *arch_alloc_bpf_trampoline(unsigned int size)
+ {
+ 	return bpf_prog_pack_alloc(size, bpf_jit_fill_ill_insns);
+diff --git a/arch/powerpc/net/bpf_jit_comp64.c b/arch/powerpc/net/bpf_jit_comp64.c
+index 1fe37128c876..37723ee9344e 100644
+--- a/arch/powerpc/net/bpf_jit_comp64.c
++++ b/arch/powerpc/net/bpf_jit_comp64.c
+@@ -918,6 +918,16 @@ int bpf_jit_build_body(struct bpf_prog *fp, u32 *image, u32 *fimage, struct code
+ 		case BPF_ALU | BPF_MOV | BPF_X: /* (u32) dst = src */
+ 		case BPF_ALU64 | BPF_MOV | BPF_X: /* dst = src */
+ 
++			if (insn_is_mov_percpu_addr(&insn[i])) {
++				if (IS_ENABLED(CONFIG_SMP)) {
++					EMIT(PPC_RAW_LD(tmp1_reg, _R13, offsetof(struct paca_struct, data_offset)));
++					EMIT(PPC_RAW_ADD(dst_reg, src_reg, tmp1_reg));
++				} else if (src_reg != dst_reg) {
++					EMIT(PPC_RAW_MR(dst_reg, src_reg));
++				}
++				break;
++			}
++
+ 			if (insn_is_cast_user(&insn[i])) {
+ 				EMIT(PPC_RAW_RLDICL_DOT(tmp1_reg, src_reg, 0, 32));
+ 				PPC_LI64(dst_reg, (ctx->user_vm_start & 0xffffffff00000000UL));
 -- 
-2.50.1
+2.51.0
 
 
