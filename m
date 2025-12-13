@@ -1,76 +1,76 @@
-Return-Path: <linuxppc-dev+bounces-14735-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14734-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C87C9D59F6E
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 75527D59F6C
 	for <linuxppc-dev@archiver.kernel.org>; Sat, 13 Dec 2025 05:26:59 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dSvvc6lM1z2yFm;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dSvvc6XW8z2yFl;
 	Sat, 13 Dec 2025 16:26:52 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765603612;
-	cv=none; b=CSFLi4XoCnGZ2iiQrlyFOpHySwryl7vI/06HSL6XGPJH1eqe6frvDQUE7d6lidjtV9qu8MRaWfOex+2GkvbUc8yLeANhkfSYQ3ooZKD3xiWoawpTfLDaDYCRTg7wuaDdIPvK1RfNFieZlDuNw1s/gj7r5NZzomqdsg4mBMiIpde+YzPKmncrzQFkeUNp8Gx1cygRBsNj7j21QMwIB6FoBGh+PA7gPW1D3Iqe+OD19VzEarxcUZ1MZqDjPbymGN6Xz5xwdyL71OvCP+YfBfepIuOMo1BjoEYp8s5ZvujLxJNRhkd/WuE3KX3iOn0uw/SKA7wpUKsGpVZrJ+HuF1uFYw==
+	cv=none; b=PK6+yqldTc7Bq1C136ZaD4wI6nrqzHiwDVnN4/JkthZvm2//qPZ7Db3bRK6aOvOm4wVSnzL/A3gGONkCDQoxFmoSYGnoj0DcBUW/rbT5UuCQra1LRcXdpK+dRyK/VeYhIRr5zi4tPyI8u2F4ryyxFgBuYzkxsff+Hg9uTx8N5ONxueibCreY6emcqKFdp8c7LwDkbKswnb17fhjd6c4b7wEyV5wqIuZDWu9Rn3RjU95oGkMfBOYfqGyTNI5Q7Pf6BW3m0CW6Roo2WqLMSyQ8SZCi95uNTq1qbGKe6PA2zcKX3SSpwDlq8SQVGFoLmdlVl18Vwq6+N42V6Dyf4p1Nog==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1765603612; c=relaxed/relaxed;
-	bh=dcro2zmv4ElHTk4YaCMsyTiAWgxeQRRmptAV+m6V66w=;
+	bh=zRuVMP8fy62QWWdddDjnySGr6oOB4PJyRbIstZEBTFU=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=OBJcGHH5puXOMGzHIvc61VtXgqRuk4lr49+0EWhfqndYsRneH9Fe7hEt4QYZdIBS9Vxc6904O5iV25DQx6o/0n5/i/nxh3pLL8HZwGRRqlp2W7F8wXSwEq2UAJ9v7zacQq++cHzicL2jb61UbrQUCssNvo/M0B4Kno1kGDAE+7mS1z3YBeO3XA/5lRnJrQ49kaNijswkW8BH4WW2RSNsZKmtqXf+sQRouG3rH1BsRfzCAva3Wu2/jU1vXc4JW2SXXMrB764pXLQorTRB0HJvIGAYbfi5HCim9ADWyvnR8NCGDxZXe91F/5pJrjLhHuhvCjXTilUFk3WIKXutMzjtZg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XU1pl73R; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+	 MIME-Version; b=TaGU1biLkiLFFPnAK7x8b6gxARHmIMzGd6EE+ito8Vmtilo8rM2D5dYL8gM6+HgfR82N7QKRxjpnk5JtbixZsCn1OCAPkWiWYs0mqmqjKh9kXd6MTZIMV2GDsVKa3ID2kjaBH+ZtpBNLQkDHLnwom++VQ8sQNPHgutXyEREAeNRLITKIKALGyJx2lALdWqzwZBxZ/yYkR4XAN1GSmbbA7zYi6/TOhsGGRsHuLrIjwy0WUFaLHXbANMPknD8eNgXWXcqNxk+y3btVQ3ZAQufNZf1d347g9HADUVpM+kbxQHgfzhDw/oM2CfC2NN3fihA0UYPJiqidBS8QuAQILOjFFg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g3QUKmj7; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=XU1pl73R;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g3QUKmj7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=ssrish@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dSvvb6Y3kz2yFj
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dSvvb5dWzz2xKh
 	for <linuxppc-dev@lists.ozlabs.org>; Sat, 13 Dec 2025 16:26:51 +1100 (AEDT)
-Received: from pps.filterd (m0353725.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5BD1WHrd030989;
-	Sat, 13 Dec 2025 05:26:39 GMT
+Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5BD31uCV020053;
+	Sat, 13 Dec 2025 05:26:32 GMT
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
 	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=dcro2zmv4ElHTk4Ya
-	CMsyTiAWgxeQRRmptAV+m6V66w=; b=XU1pl73Rq8MVF+TL+32FM3dNio06Rb1ZA
-	94BGgw8moK5//a8lLQYnAVDDzqEHdYCzQa3B9U+ZRYQ7yYZIIOYeRdES0XfxuI26
-	w2ByLveNVTb9COZYQzvfjNzXExE2P/RFf+AaFCq+ebwsVub1yWKrsDbE9kKy01mx
-	doRlbniPRMQmLsM08gsMxy73NNmRYx+zKMuVpDVUK6X33yKjv60RUv8rB4jCcI3L
-	Dr/H0pO+EisdDPn9VbOAAdn6G0h5V4jfZGelx9QGZ3ygxpP+ijX37ZirQzTfbIqV
-	vRJcuiMCChEGk/OGIKqwsgu+PxsOYmKirplElV0JXpLZM8Z5aJM7g==
+	:mime-version:references:subject:to; s=pp1; bh=zRuVMP8fy62QWWddd
+	DjnySGr6oOB4PJyRbIstZEBTFU=; b=g3QUKmj7yOv/jpTzby1kCh1R4APpnV1me
+	A/VtJq12CTCZtWCrQRyt4388ejLli7EO/ILdrcVyyLwugagzDUDWwdNk+WFfBbHj
+	J4cC/1AK8aU3zGsAGMBqpc8eCjbNrGVZMobxdKJu1BGPwGr6mMf/Ac/Mhh11Dpi/
+	TNflKs0l6DVuOav/grZQj95mY0QQi1wvEoKe/79whmoqBnMw5YVC2OXqPYheAGaK
+	cjdyX+luOT5wjcis3rsIVWHzxEPIfTFttMPowI7GbV0RDfHVcQYYDqBBwG02WDw/
+	JGWCia1CmgPT53dTxTWrameb14lhBfLOyDILGyamsBPkEweDaC9MA==
 Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4b0xjkgg66-1
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4b0yvaraek-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 13 Dec 2025 05:26:39 +0000 (GMT)
-Received: from m0353725.ppops.net (m0353725.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5BD5QcCE016550;
-	Sat, 13 Dec 2025 05:26:38 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4b0xjkgg64-1
+	Sat, 13 Dec 2025 05:26:31 +0000 (GMT)
+Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5BD5QVPs010373;
+	Sat, 13 Dec 2025 05:26:31 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4b0yvaraeh-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 13 Dec 2025 05:26:38 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5BD1Fmxm012807;
-	Sat, 13 Dec 2025 05:26:38 GMT
-Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4aw0akfmb8-1
+	Sat, 13 Dec 2025 05:26:31 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5BD545kf008405;
+	Sat, 13 Dec 2025 05:26:30 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4avytnfnqg-1
 	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Sat, 13 Dec 2025 05:26:37 +0000
+	Sat, 13 Dec 2025 05:26:29 +0000
 Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
-	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5BD5QY6j44499234
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5BD5QPEI61473086
 	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Sat, 13 Dec 2025 05:26:34 GMT
+	Sat, 13 Dec 2025 05:26:26 GMT
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id EDF6120040;
-	Sat, 13 Dec 2025 05:26:33 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id C85D020043;
+	Sat, 13 Dec 2025 05:26:25 +0000 (GMT)
 Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 13E272004B;
-	Sat, 13 Dec 2025 05:26:30 +0000 (GMT)
+	by IMSVA (Postfix) with ESMTP id ACA8D20040;
+	Sat, 13 Dec 2025 05:26:22 +0000 (GMT)
 Received: from li-fc74f8cc-3279-11b2-a85c-ef5828687581.ibm.com.com (unknown [9.124.210.103])
 	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Sat, 13 Dec 2025 05:26:29 +0000 (GMT)
+	Sat, 13 Dec 2025 05:26:22 +0000 (GMT)
 From: Srish Srinivasan <ssrish@linux.ibm.com>
 To: linux-integrity@vger.kernel.org, keyrings@vger.kernel.org,
         linuxppc-dev@lists.ozlabs.org
@@ -79,9 +79,9 @@ Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
         jarkko@kernel.org, zohar@linux.ibm.com, nayna@linux.ibm.com,
         rnsastry@linux.ibm.com, linux-kernel@vger.kernel.org,
         linux-security-module@vger.kernel.org, ssrish@linux.ibm.com
-Subject: [PATCH 3/6] pseries/plpks: expose PowerVM wrapping features via the sysfs
-Date: Sat, 13 Dec 2025 10:56:15 +0530
-Message-ID: <20251213052618.190691-4-ssrish@linux.ibm.com>
+Subject: [PATCH 1/6] pseries/plpks: fix kernel-doc comment inconsistencies
+Date: Sat, 13 Dec 2025 10:56:13 +0530
+Message-ID: <20251213052618.190691-2-ssrish@linux.ibm.com>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20251213052618.190691-1-ssrish@linux.ibm.com>
 References: <20251213052618.190691-1-ssrish@linux.ibm.com>
@@ -100,169 +100,613 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: AfmIliAaGTJ1kZwbtTFMIM9OFaGhE807
-X-Authority-Analysis: v=2.4 cv=CLgnnBrD c=1 sm=1 tr=0 ts=693cf90f cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
+X-Authority-Analysis: v=2.4 cv=V/JwEOni c=1 sm=1 tr=0 ts=693cf907 cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
  a=wP3pNCr1ah4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
- a=j9TXtqAz_DeUw5ZPHg4A:9
-X-Proofpoint-GUID: NINNeMLodoVySRPQFeUfU_doUOq6Q5G4
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjEzMDAwOSBTYWx0ZWRfX3MN19pQbCc0D
- ayW4HWFOoxp2xCSv+5KEIp4ivEHKLhufff94ZD0QrzFT/+rw+X3aEq62VIE8az7YMGOdNDhsMpj
- XeuMcrT7WFgaxD/D/vQSjySJMIVY7PHEC8oZ07gt62Xln7INtXTGUpfVaS5ZrFFNdumcrlneOOb
- gzX8spco/Y9bvIEO3SQwyye7N3Cy/fDjo/vR9739wK9/Y9CkOUsps95pzJk6L6xdcVvn6CU2L3T
- UQvR+iXMqEmDZ2Q5IUe+GT0ey9e15+K+lOvHqvpM0XRcgAO0Fa7tMUTWLoMVgrgzaVVuH4/Nz7A
- AnOL7/7fpSb5KzE+YwdJNH+saNPi/wKmrtUJ36AURHVQg8VwPaHK0AREHR6kN6criNePFU2Tcwv
- 6WDO8GJRrNJgYLtzOJ4oiL3lyXm12w==
+ a=_jD9v-G-JNOk7KggL9IA:9 a=tQW_-zY1P7yUjf7c:21
+X-Proofpoint-GUID: R0qe9WdrgcKQgn6ZAw1jrOCkBkTKwZVE
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjEzMDAyMyBTYWx0ZWRfX85z+Xokd0HfX
+ +5BWTVeQjAW39m7YGnCnQH2hIVwTM16k08w13afOmt+UqYB4LCUxLz4Vo7iORtXUYQOINJUR8kx
+ PmVJCcBg+vGhFo+YpixuJeWaG8mM1ODr8a+XI4KmEBhwW+vaZb1odL2cqohqjlC4j6Cs0m+JmDa
+ JEUAWgUvCX0cHtaeNqcjVi07lK9vvKmpTtJvn86ZZvuSAeoLqGF2wbyAqCpwyucBx2Yt+bg5TE5
+ Q7mIYAmWtcWSLMh0+cQNEAWLWEA7h3In+ukQScpuudiCRGJRIgrJASaMm5/Jn8zESEVPm0/4+x7
+ ndJ3oemP8sjKv5sGFCecVJcqYNmqHia9W2vEijnKcYdwzY0oXZTwFDM/Sx0FAp/4T5C6A0JxgVa
+ OwtAeg+2MxBdGXlsXN/chIPfKXOvsg==
+X-Proofpoint-ORIG-GUID: 8e48MyXXDi2vZslSpLdMX4UOGJWXuluj
 X-Proofpoint-Virus-Version: vendor=baseguard
  engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
  definitions=2025-12-12_07,2025-12-11_01,2025-10-01_01
 X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 clxscore=1011 lowpriorityscore=0 malwarescore=0 suspectscore=0
- phishscore=0 priorityscore=1501 bulkscore=0 impostorscore=0 adultscore=0
+ impostorscore=0 adultscore=0 suspectscore=0 priorityscore=1501 malwarescore=0
+ clxscore=1011 bulkscore=0 spamscore=0 lowpriorityscore=0 phishscore=0
  classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2512130009
+ reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2512130023
 
-Starting with Power11, PowerVM supports a new feature called "Key Wrapping"
-that protects user secrets by wrapping them using a hypervisor generated
-wrapping key. The status of this feature can be read by the
-H_PKS_GET_CONFIG HCALL.
-
-Expose the Power LPAR Platform KeyStore (PLPKS) wrapping features config
-via the sysfs file /sys/firmware/plpks/config/wrapping_features.
+Fix issues with comments for all the applicable functions to be
+consistent with kernel-doc format. Move them before the function
+definition as opposed to the function prototype.
 
 Signed-off-by: Srish Srinivasan <ssrish@linux.ibm.com>
 ---
- .../ABI/testing/sysfs-firmware-plpks          |  8 ++++++++
- arch/powerpc/include/asm/hvcall.h             |  4 +++-
- arch/powerpc/include/asm/plpks.h              |  3 +++
- arch/powerpc/platforms/pseries/plpks-sysfs.c  |  2 ++
- arch/powerpc/platforms/pseries/plpks.c        | 20 +++++++++++++++++++
- 5 files changed, 36 insertions(+), 1 deletion(-)
+ arch/powerpc/include/asm/plpks.h       |  77 ------
+ arch/powerpc/platforms/pseries/plpks.c | 328 ++++++++++++++++++++++++-
+ 2 files changed, 318 insertions(+), 87 deletions(-)
 
-diff --git a/Documentation/ABI/testing/sysfs-firmware-plpks b/Documentation/ABI/testing/sysfs-firmware-plpks
-index af0353f34115..cba061e4eee2 100644
---- a/Documentation/ABI/testing/sysfs-firmware-plpks
-+++ b/Documentation/ABI/testing/sysfs-firmware-plpks
-@@ -48,3 +48,11 @@ Description:	Bitmask of flags indicating which algorithms the hypervisor
- 		supports for signed update of objects, represented as a 16 byte
- 		hexadecimal ASCII string. Consult the hypervisor documentation
- 		for what these flags mean.
-+
-+What:		/sys/firmware/plpks/config/wrapping_features
-+Date:		November 2025
-+Contact:	Srish Srinivasan <ssrish@linux.ibm.com>
-+Description:	Bitmask of the wrapping features indicating the wrapping
-+		algorithms that are supported for the H_PKS_WRAP_OBJECT requests
-+		, represented as a 8 byte hexadecimal ASCII string. Consult the
-+		hypervisor documentation for what these flags mean.
-diff --git a/arch/powerpc/include/asm/hvcall.h b/arch/powerpc/include/asm/hvcall.h
-index 9aef16149d92..dff90a7d7f70 100644
---- a/arch/powerpc/include/asm/hvcall.h
-+++ b/arch/powerpc/include/asm/hvcall.h
-@@ -360,7 +360,9 @@
- #define H_GUEST_RUN_VCPU	0x480
- #define H_GUEST_COPY_MEMORY	0x484
- #define H_GUEST_DELETE		0x488
--#define MAX_HCALL_OPCODE	H_GUEST_DELETE
-+#define H_PKS_WRAP_OBJECT	0x490
-+#define H_PKS_UNWRAP_OBJECT	0x494
-+#define MAX_HCALL_OPCODE	H_PKS_UNWRAP_OBJECT
- 
- /* Scope args for H_SCM_UNBIND_ALL */
- #define H_UNBIND_SCOPE_ALL (0x1)
 diff --git a/arch/powerpc/include/asm/plpks.h b/arch/powerpc/include/asm/plpks.h
-index 53e5839b0cbe..8c20fd5a8fd4 100644
+index 7a84069759b0..f303922bf622 100644
 --- a/arch/powerpc/include/asm/plpks.h
 +++ b/arch/powerpc/include/asm/plpks.h
-@@ -23,6 +23,7 @@
- #define PLPKS_IMMUTABLE		PPC_BIT32(5) // Once written, object cannot be removed
- #define PLPKS_TRANSIENT		PPC_BIT32(6) // Object does not persist through reboot
- #define PLPKS_SIGNEDUPDATE	PPC_BIT32(7) // Object can only be modified by signed updates
-+#define PLPKS_WRAPPINGKEY	PPC_BIT32(8) // Object contains a wrapping key
- #define PLPKS_HVPROVISIONED	PPC_BIT32(28) // Hypervisor has provisioned this object
- 
- // Signature algorithm flags from signed_update_algorithms
-@@ -103,6 +104,8 @@ u32 plpks_get_maxlargeobjectsize(void);
- 
- u64 plpks_get_signedupdatealgorithms(void);
- 
-+u64 plpks_get_wrappingfeatures(void);
-+
- u16 plpks_get_passwordlen(void);
- 
- void plpks_early_init_devtree(void);
-diff --git a/arch/powerpc/platforms/pseries/plpks-sysfs.c b/arch/powerpc/platforms/pseries/plpks-sysfs.c
-index 01d526185783..c2ebcbb41ae3 100644
---- a/arch/powerpc/platforms/pseries/plpks-sysfs.c
-+++ b/arch/powerpc/platforms/pseries/plpks-sysfs.c
-@@ -30,6 +30,7 @@ PLPKS_CONFIG_ATTR(used_space, "%u\n", plpks_get_usedspace);
- PLPKS_CONFIG_ATTR(supported_policies, "%08x\n", plpks_get_supportedpolicies);
- PLPKS_CONFIG_ATTR(signed_update_algorithms, "%016llx\n",
- 		  plpks_get_signedupdatealgorithms);
-+PLPKS_CONFIG_ATTR(wrapping_features, "%016llx\n", plpks_get_wrappingfeatures);
- 
- static const struct attribute *config_attrs[] = {
- 	&attr_version.attr,
-@@ -38,6 +39,7 @@ static const struct attribute *config_attrs[] = {
- 	&attr_used_space.attr,
- 	&attr_supported_policies.attr,
- 	&attr_signed_update_algorithms.attr,
-+	&attr_wrapping_features.attr,
- 	NULL,
+@@ -67,122 +67,45 @@ struct plpks_var_name_list {
+ 	struct plpks_var_name varlist[];
  };
  
+-/**
+- * Updates the authenticated variable. It expects NULL as the component.
+- */
+ int plpks_signed_update_var(struct plpks_var *var, u64 flags);
+ 
+-/**
+- * Writes the specified var and its data to PKS.
+- * Any caller of PKS driver should present a valid component type for
+- * their variable.
+- */
+ int plpks_write_var(struct plpks_var var);
+ 
+-/**
+- * Removes the specified var and its data from PKS.
+- */
+ int plpks_remove_var(char *component, u8 varos,
+ 		     struct plpks_var_name vname);
+ 
+-/**
+- * Returns the data for the specified os variable.
+- *
+- * Caller must allocate a buffer in var->data with length in var->datalen.
+- * If no buffer is provided, var->datalen will be populated with the object's
+- * size.
+- */
+ int plpks_read_os_var(struct plpks_var *var);
+ 
+-/**
+- * Returns the data for the specified firmware variable.
+- *
+- * Caller must allocate a buffer in var->data with length in var->datalen.
+- * If no buffer is provided, var->datalen will be populated with the object's
+- * size.
+- */
+ int plpks_read_fw_var(struct plpks_var *var);
+ 
+-/**
+- * Returns the data for the specified bootloader variable.
+- *
+- * Caller must allocate a buffer in var->data with length in var->datalen.
+- * If no buffer is provided, var->datalen will be populated with the object's
+- * size.
+- */
+ int plpks_read_bootloader_var(struct plpks_var *var);
+ 
+-/**
+- * Returns if PKS is available on this LPAR.
+- */
+ bool plpks_is_available(void);
+ 
+-/**
+- * Returns version of the Platform KeyStore.
+- */
+ u8 plpks_get_version(void);
+ 
+-/**
+- * Returns hypervisor storage overhead per object, not including the size of
+- * the object or label. Only valid for config version >= 2
+- */
+ u16 plpks_get_objoverhead(void);
+ 
+-/**
+- * Returns maximum password size. Must be >= 32 bytes
+- */
+ u16 plpks_get_maxpwsize(void);
+ 
+-/**
+- * Returns maximum object size supported by Platform KeyStore.
+- */
+ u16 plpks_get_maxobjectsize(void);
+ 
+-/**
+- * Returns maximum object label size supported by Platform KeyStore.
+- */
+ u16 plpks_get_maxobjectlabelsize(void);
+ 
+-/**
+- * Returns total size of the configured Platform KeyStore.
+- */
+ u32 plpks_get_totalsize(void);
+ 
+-/**
+- * Returns used space from the total size of the Platform KeyStore.
+- */
+ u32 plpks_get_usedspace(void);
+ 
+-/**
+- * Returns bitmask of policies supported by the hypervisor.
+- */
+ u32 plpks_get_supportedpolicies(void);
+ 
+-/**
+- * Returns maximum byte size of a single object supported by the hypervisor.
+- * Only valid for config version >= 3
+- */
+ u32 plpks_get_maxlargeobjectsize(void);
+ 
+-/**
+- * Returns bitmask of signature algorithms supported for signed updates.
+- * Only valid for config version >= 3
+- */
+ u64 plpks_get_signedupdatealgorithms(void);
+ 
+-/**
+- * Returns the length of the PLPKS password in bytes.
+- */
+ u16 plpks_get_passwordlen(void);
+ 
+-/**
+- * Called in early init to retrieve and clear the PLPKS password from the DT.
+- */
+ void plpks_early_init_devtree(void);
+ 
+-/**
+- * Populates the FDT with the PLPKS password to prepare for kexec.
+- */
+ int plpks_populate_fdt(void *fdt);
+ #else // CONFIG_PSERIES_PLPKS
+ static inline bool plpks_is_available(void) { return false; }
 diff --git a/arch/powerpc/platforms/pseries/plpks.c b/arch/powerpc/platforms/pseries/plpks.c
-index 03722fabf9c3..4a08f51537c8 100644
+index b1667ed05f98..03722fabf9c3 100644
 --- a/arch/powerpc/platforms/pseries/plpks.c
 +++ b/arch/powerpc/platforms/pseries/plpks.c
-@@ -38,6 +38,7 @@ static u32 usedspace;
- static u32 supportedpolicies;
- static u32 maxlargeobjectsize;
- static u64 signedupdatealgorithms;
-+static u64 wrappingfeatures;
+@@ -312,40 +312,107 @@ static int _plpks_get_config(void)
+ 	return rc;
+ }
  
- struct plpks_auth {
- 	u8 version;
-@@ -248,6 +249,7 @@ static int _plpks_get_config(void)
- 		__be32 supportedpolicies;
- 		__be32 maxlargeobjectsize;
- 		__be64 signedupdatealgorithms;
-+		__be64 wrappingfeatures;
- 		u8 rsvd1[476];
- 	} __packed * config;
- 	size_t size;
-@@ -280,6 +282,7 @@ static int _plpks_get_config(void)
- 	supportedpolicies = be32_to_cpu(config->supportedpolicies);
- 	maxlargeobjectsize = be32_to_cpu(config->maxlargeobjectsize);
- 	signedupdatealgorithms = be64_to_cpu(config->signedupdatealgorithms);
-+	wrappingfeatures = be64_to_cpu(config->wrappingfeatures);
++/**
++ * plpks_get_version() - Get the version of the PLPKS config structure.
++ *
++ * Successful execution of the H_PKS_GET_CONFIG HCALL during initialization
++ * reads the PLPKS config structure version and saves it in a file local static
++ * version variable.
++ *
++ * Returns: On success the saved PLPKS config structure version is returned, 0
++ * if not.
++ */
+ u8 plpks_get_version(void)
+ {
+ 	return version;
+ }
  
- 	// Validate that the numbers we get back match the requirements of the spec
- 	if (maxpwsize < 32) {
-@@ -472,6 +475,23 @@ u64 plpks_get_signedupdatealgorithms(void)
++/**
++ * plpks_get_objoverhead() - Get the hypervisor storage overhead per object.
++ *
++ * Successful execution of the H_PKS_GET_CONFIG HCALL during initialization
++ * reads the per object hypervisor storage overhead in bytes into the local
++ * static objoverhead variable, excluding the size of the object or the label.
++ * This value can be treated as valid only when the PLPKS config structure
++ * version >= 2.
++ *
++ * Returns: If PLPKS config structure version >= 2 then the storage overhead is
++ * returned, 0 otherwise.
++ */
+ u16 plpks_get_objoverhead(void)
+ {
+ 	return objoverhead;
+ }
+ 
++/**
++ * plpks_get_maxpwsize() - Get the maximum password size.
++ *
++ * Successful execution of the H_PKS_GET_CONFIG HCALL during initialization
++ * reads the maximum password size and checks if it is 32 bytes at the least
++ * before storing it in the local static maxpwsize variable.
++ *
++ * Returns: On success the maximum password size is returned, 0 if not.
++ */
+ u16 plpks_get_maxpwsize(void)
+ {
+ 	return maxpwsize;
+ }
+ 
++/**
++ * plpks_get_maxobjectsize() - Get the maximum object size supported by the
++ * PLPKS.
++ *
++ * Successful execution of the H_PKS_GET_CONFIG HCALL during initialization
++ * reads the maximum object size into the file local static maxobjsize variable.
++ *
++ * Returns: On success the maximum object size is returned, 0 if not.
++ */
+ u16 plpks_get_maxobjectsize(void)
+ {
+ 	return maxobjsize;
+ }
+ 
++/**
++ * plpks_get_maxobjectlabelsize() - Get the maximum object label size supported
++ * by the PLPKS.
++ *
++ * Successful execution of the H_PKS_GET_CONFIG HCALL during initialization
++ * reads the maximum object label size into the local static maxobjlabelsize
++ * variable.
++ *
++ * Returns: On success the maximum object label size is returned, 0 if not.
++ */
+ u16 plpks_get_maxobjectlabelsize(void)
+ {
+ 	return maxobjlabelsize;
+ }
+ 
++/**
++ * plpks_get_totalsize() - Get the total size of the PLPKS that is configured.
++ *
++ * Successful execution of the H_PKS_GET_CONFIG HCALL during initialization
++ * reads the total size of the PLPKS that is configured for the LPAR into the
++ * file local static totalsize variable.
++ *
++ * Returns: On success the total size of the PLPKS configured is returned, 0 if
++ * not.
++ */
+ u32 plpks_get_totalsize(void)
+ {
+ 	return totalsize;
+ }
+ 
++/**
++ * plpks_get_usedspace() - Get the used space from the total size of the PLPKS.
++ *
++ * Invoke the H_PKS_GET_CONFIG HCALL to refresh the latest value for the used
++ * space as this keeps changing with the creation and removal of objects in the
++ * PLPKS.
++ *
++ * Returns: On success the used space is returned, 0 if not.
++ */
+ u32 plpks_get_usedspace(void)
+ {
+-	// Unlike other config values, usedspace regularly changes as objects
+-	// are updated, so we need to refresh.
+ 	int rc = _plpks_get_config();
+ 	if (rc) {
+ 		pr_err("Couldn't get config, rc: %d\n", rc);
+@@ -354,26 +421,84 @@ u32 plpks_get_usedspace(void)
+ 	return usedspace;
+ }
+ 
++/**
++ * plpks_get_supportedpolicies() - Get a bitmask of the policies supported by
++ * the hypervisor.
++ *
++ * Successful execution of the H_PKS_GET_CONFIG HCALL during initialization
++ * reads a bitmask of the policies supported by the hypervisor into the file
++ * local static supportedpolicies variable.
++ *
++ * Returns: On success the bitmask of the policies supported by the hypervisor
++ * are returned, 0 if not.
++ */
+ u32 plpks_get_supportedpolicies(void)
+ {
+ 	return supportedpolicies;
+ }
+ 
++/**
++ * plpks_get_maxlargeobjectsize() - Get the maximum object size supported for
++ * PLPKS config structure version >= 3
++ *
++ * Successful execution of the H_PKS_GET_CONFIG HCALL during initialization
++ * reads the maximum object size into the local static maxlargeobjectsize
++ * variable for PLPKS config structure version >= 3. This was introduced
++ * starting with PLPKS config structure version 3 to allow for objects of
++ * size >= 64K.
++ *
++ * Returns: If PLPKS config structure version >= 3 then the new maximum object
++ * size is returned, 0 if not.
++ */
+ u32 plpks_get_maxlargeobjectsize(void)
+ {
+ 	return maxlargeobjectsize;
+ }
+ 
++/**
++ * plpks_get_signedupdatealgorithms() - Get a bitmask of the signature
++ * algorithms supported for signed updates.
++ *
++ * Successful execution of the H_PKS_GET_CONFIG HCALL during initialization
++ * reads a bitmask of the signature algorithms supported for signed updates into
++ * the file local static signedupdatealgorithms variable. This is valid only
++ * when the PLPKS config structure version >= 3.
++ *
++ * Returns: On success the bitmask of the signature algorithms supported for
++ * signed updates is returned, 0 if not.
++ */
+ u64 plpks_get_signedupdatealgorithms(void)
+ {
  	return signedupdatealgorithms;
  }
  
 +/**
-+ * plpks_get_wrappingfeatures() - Returns a bitmask of the wrapping features
-+ * supported by the hypervisor.
++ * plpks_get_passwordlen() - Get the length of the PLPKS password in bytes.
 + *
-+ * Successful execution of the H_PKS_GET_CONFIG HCALL during initialization
-+ * reads a bitmask of the wrapping features supported by the hypervisor into the
-+ * file local static wrappingfeatures variable. This is valid only when the
-+ * PLPKS config structure version >= 3.
++ * The H_PKS_GEN_PASSWORD HCALL makes the hypervisor generate a random password
++ * for the specified consumer, apply that password to the PLPKS and return it to
++ * the caller. In this process, the password length for the OS consumer is
++ * stored in the local static ospasswordlength variable.
 + *
-+ * Return:
-+ *	bitmask of the wrapping features supported by the hypervisor
++ * Returns: On success the password length for the OS consumer in bytes is
++ * returned, 0 if not.
 + */
-+u64 plpks_get_wrappingfeatures(void)
-+{
-+	return wrappingfeatures;
-+}
-+
- /**
-  * plpks_get_passwordlen() - Get the length of the PLPKS password in bytes.
-  *
+ u16 plpks_get_passwordlen(void)
+ {
+ 	return ospasswordlength;
+ }
+ 
++/**
++ * plpks_is_available() - Get the PLPKS availability status for the LPAR.
++ *
++ * The availability of PLPKS is inferred based upon the successful execution of
++ * the H_PKS_GET_CONFIG HCALL provided the firmware supports this feature. The
++ * H_PKS_GET_CONFIG HCALL reads the configuration and status information related
++ * to the PLPKS. The configuration structure provides a version number to inform
++ * the caller of the supported features.
++ *
++ * Returns: true is returned if PLPKS is available, false if not.
++ */
+ bool plpks_is_available(void)
+ {
+ 	int rc;
+@@ -425,6 +550,35 @@ static int plpks_confirm_object_flushed(struct label *label,
+ 	return pseries_status_to_err(rc);
+ }
+ 
++/**
++ * plpks_signed_update_var() - Update the specified authenticated variable.
++ * @var: authenticated variable to be updated
++ * @flags: signed update request operation flags
++ *
++ * The H_PKS_SIGNED_UPDATE HCALL performs a signed update to an object in the
++ * PLPKS. The object must have the signed update policy flag set.
++ *
++ * Possible reasons for the returned errno values:
++ *
++ * -ENXIO	if PLPKS is not supported
++ * -EIO		if PLPKS access is blocked due to the LPAR's state
++ *		if PLPKS modification is blocked due to the LPAR's state
++ *		if an error occurred while processing the request
++ * -EINVAL	if invalid authorization parameter
++ *		if invalid object label parameter
++ *		if invalid object label len parameter
++ *		if invalid or unsupported policy declaration
++ *		if invalid signed update flags
++ *		if invalid input data parameter
++ *		if invalid input data len parameter
++ *		if invalid continue token parameter
++ * -EPERM	if access is denied
++ * -ENOMEM	if there is inadequate memory to perform the operation
++ * -EBUSY	if unable to handle the request or long running operation
++ *		initiated, retry later
++ *
++ * Returns: On success 0 is returned, a negative errno if not.
++ */
+ int plpks_signed_update_var(struct plpks_var *var, u64 flags)
+ {
+ 	unsigned long retbuf[PLPAR_HCALL9_BUFSIZE] = {0};
+@@ -481,6 +635,33 @@ int plpks_signed_update_var(struct plpks_var *var, u64 flags)
+ 	return rc;
+ }
+ 
++/**
++ * plpks_write_var() - Write the specified variable and its data to PLPKS.
++ * @var: variable to be written into the PLPKS
++ *
++ * The H_PKS_WRITE_OBJECT HCALL writes an object into the PLPKS. The caller must
++ * provide a valid component type for the variable, and the signed update policy
++ * flag must not be set.
++ *
++ * Possible reasons for the returned errno values:
++ *
++ * -ENXIO	if PLPKS is not supported
++ * -EIO		if PLPKS access is blocked due to the LPAR's state
++ *		if PLPKS modification is blocked due to the LPAR's state
++ *		if an error occurred while processing the request
++ * -EINVAL	if invalid authorization parameter
++ *		if invalid object label parameter
++ *		if invalid object label len parameter
++ *		if invalid or unsupported policy declaration
++ *		if invalid input data parameter
++ *		if invalid input data len parameter
++ * -EPERM	if access is denied
++ * -ENOMEM	if unable to store the requested object in the space available
++ * -EBUSY	if unable to handle the request
++ * -EEXIST	if the object label already exists
++ *
++ * Returns: On success 0 is returned, a negative errno if not.
++ */
+ int plpks_write_var(struct plpks_var var)
+ {
+ 	unsigned long retbuf[PLPAR_HCALL_BUFSIZE] = { 0 };
+@@ -520,6 +701,30 @@ int plpks_write_var(struct plpks_var var)
+ 	return rc;
+ }
+ 
++/**
++ * plpks_remove_var() - Remove the specified variable and its data from PLPKS.
++ * @component: metadata prefix in the object label metadata structure
++ * @varos: metadata OS flags in the object label metadata structure
++ * @vname: object label for the object that needs to be removed
++ *
++ * The H_PKS_REMOVE_OBJECT HCALL removes an object from the PLPKS. The removal
++ * is independent of the policy bits that are set.
++ *
++ * Possible reasons for the returned errno values:
++ *
++ * -ENXIO	if PLPKS is not supported
++ * -EIO		if PLPKS access is blocked due to the LPAR's state
++ *		if PLPKS modification is blocked due to the LPAR's state
++ *		if an error occurred while processing the request
++ * -EINVAL	if invalid authorization parameter
++ *		if invalid object label parameter
++ *		if invalid object label len parameter
++ * -EPERM	if access is denied
++ * -ENOENT	if the requested object was not found
++ * -EBUSY	if unable to handle the request
++ *
++ * Returns: On success 0 is returned, a negative errno if not.
++ */
+ int plpks_remove_var(char *component, u8 varos, struct plpks_var_name vname)
+ {
+ 	unsigned long retbuf[PLPAR_HCALL_BUFSIZE] = { 0 };
+@@ -619,21 +824,119 @@ static int plpks_read_var(u8 consumer, struct plpks_var *var)
+ 	return rc;
+ }
+ 
++/**
++ * plpks_read_os_var() - Fetch the data for the specified variable that is
++ * owned by the OS consumer.
++ * @var: variable to be read from the PLPKS
++ *
++ * The consumer or the owner of the object is the os kernel. The
++ * H_PKS_READ_OBJECT HCALL reads an object from the PLPKS. The caller must
++ * allocate the buffer var->data and specify the length for this buffer in
++ * var->datalen. If no buffer is provided, var->datalen will be populated with
++ * the requested object's size.
++ *
++ * Possible reasons for the returned errno values:
++ *
++ * -ENXIO	if PLPKS is not supported
++ * -EIO		if PLPKS access is blocked due to the LPAR's state
++ *		if an error occurred while processing the request
++ * -EINVAL	if invalid authorization parameter
++ *		if invalid object label parameter
++ *		if invalid object label len parameter
++ *		if invalid output data parameter
++ *		if invalid output data len parameter
++ * -EPERM	if access is denied
++ * -ENOENT	if the requested object was not found
++ * -EFBIG	if the requested object couldn't be
++ *		stored in the buffer provided
++ * -EBUSY	if unable to handle the request
++ *
++ * Returns: On success 0 is returned, a negative errno if not.
++ */
+ int plpks_read_os_var(struct plpks_var *var)
+ {
+ 	return plpks_read_var(PLPKS_OS_OWNER, var);
+ }
+ 
++/**
++ * plpks_read_fw_var() - Fetch the data for the specified variable that is
++ * owned by the firmware consumer.
++ * @var: variable to be read from the PLPKS
++ *
++ * The consumer or the owner of the object is the firmware. The
++ * H_PKS_READ_OBJECT HCALL reads an object from the PLPKS. The caller must
++ * allocate the buffer var->data and specify the length for this buffer in
++ * var->datalen. If no buffer is provided, var->datalen will be populated with
++ * the requested object's size.
++ *
++ * Possible reasons for the returned errno values:
++ *
++ * -ENXIO	if PLPKS is not supported
++ * -EIO		if PLPKS access is blocked due to the LPAR's state
++ *		if an error occurred while processing the request
++ * -EINVAL	if invalid authorization parameter
++ *		if invalid object label parameter
++ *		if invalid object label len parameter
++ *		if invalid output data parameter
++ *		if invalid output data len parameter
++ * -EPERM	if access is denied
++ * -ENOENT	if the requested object was not found
++ * -EFBIG	if the requested object couldn't be
++ *		stored in the buffer provided
++ * -EBUSY	if unable to handle the request
++ *
++ * Returns: On success 0 is returned, a negative errno if not.
++ */
+ int plpks_read_fw_var(struct plpks_var *var)
+ {
+ 	return plpks_read_var(PLPKS_FW_OWNER, var);
+ }
+ 
++/**
++ * plpks_read_bootloader_var() - Fetch the data for the specified variable
++ * owned by the bootloader consumer.
++ * @var: variable to be read from the PLPKS
++ *
++ * The consumer or the owner of the object is the bootloader. The
++ * H_PKS_READ_OBJECT HCALL reads an object from the PLPKS. The caller must
++ * allocate the buffer var->data and specify the length for this buffer in
++ * var->datalen. If no buffer is provided, var->datalen will be populated with
++ * the requested object's size.
++ *
++ * Possible reasons for the returned errno values:
++ *
++ * -ENXIO	if PLPKS is not supported
++ * -EIO		if PLPKS access is blocked due to the LPAR's state
++ *		if an error occurred while processing the request
++ * -EINVAL	if invalid authorization parameter
++ *		if invalid object label parameter
++ *		if invalid object label len parameter
++ *		if invalid output data parameter
++ *		if invalid output data len parameter
++ * -EPERM	if access is denied
++ * -ENOENT	if the requested object was not found
++ * -EFBIG	if the requested object couldn't be
++ *		stored in the buffer provided
++ * -EBUSY	if unable to handle the request
++ *
++ * Returns: On success 0 is returned, a negative errno if not.
++ */
+ int plpks_read_bootloader_var(struct plpks_var *var)
+ {
+ 	return plpks_read_var(PLPKS_BOOTLOADER_OWNER, var);
+ }
+ 
++/**
++ * plpks_populate_fdt(): Populates the FDT with the PLPKS password to prepare
++ * for kexec.
++ * @fdt: pointer to the device tree blob
++ *
++ * Upon confirming the existence of the chosen node, invoke fdt_setprop to
++ * populate the device tree with the PLPKS password in order to prepare for
++ * kexec.
++ *
++ * Returns: On success 0 is returned, a negative value if not.
++ */
+ int plpks_populate_fdt(void *fdt)
+ {
+ 	int chosen_offset = fdt_path_offset(fdt, "/chosen");
+@@ -647,14 +950,19 @@ int plpks_populate_fdt(void *fdt)
+ 	return fdt_setprop(fdt, chosen_offset, "ibm,plpks-pw", ospassword, ospasswordlength);
+ }
+ 
+-// Once a password is registered with the hypervisor it cannot be cleared without
+-// rebooting the LPAR, so to keep using the PLPKS across kexec boots we need to
+-// recover the previous password from the FDT.
+-//
+-// There are a few challenges here.  We don't want the password to be visible to
+-// users, so we need to clear it from the FDT.  This has to be done in early boot.
+-// Clearing it from the FDT would make the FDT's checksum invalid, so we have to
+-// manually cause the checksum to be recalculated.
++/**
++ * plpks_early_init_devtree() - Retrieves and clears the PLPKS password from the
++ * DT in early init.
++ *
++ * Once a password is registered with the hypervisor it cannot be cleared
++ * without rebooting the LPAR, so to keep using the PLPKS across kexec boots we
++ * need to recover the previous password from the FDT.
++ *
++ * There are a few challenges here.  We don't want the password to be visible to
++ * users, so we need to clear it from the FDT.  This has to be done in early
++ * boot. Clearing it from the FDT would make the FDT's checksum invalid, so we
++ * have to manually cause the checksum to be recalculated.
++ */
+ void __init plpks_early_init_devtree(void)
+ {
+ 	void *fdt = initial_boot_params;
 -- 
 2.47.3
 
