@@ -1,101 +1,94 @@
-Return-Path: <linuxppc-dev+bounces-14743-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14744-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 08A93D3E787
-	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Dec 2025 06:57:00 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6BBED59D99
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 14 Dec 2025 13:04:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dTYs7331Nz2yD4;
-	Sun, 14 Dec 2025 17:56:59 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765695419;
-	cv=none; b=LeKU3U4K32ra/yLwfJvpNUdptIqxHBOl2nACAareoN0wfgbhM/sUEx+SJ6cd7bnC4VwwiXDr/bke7+0Stpce0UMzWZrQyohjbAaJ/B+KOjeRTzI906BdIpT1EXQgL50MyOuFZP15PtQdisKVXEYd6UEHjMOiMEgaGGuwD0O37pTO/UGAfrqW3LQOUuONc46VfriDHM9hiQUslvPPBOcdC6NQY6XO18h69SRgrCLkft1catswpWFgKRXMdcdwKbGYq33Nxgb5AlXsQXVdmQy4YPE0S8MDcG3P9h+LpLr2ArC5k6i2S7h8PgnbnCX6lZrjjxNgLgnBvfi6suLkEe7k9Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dTk1J6bv2z2xpl;
+	Mon, 15 Dec 2025 00:04:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765717476;
+	cv=none; b=jOSwPR33mDxZWEu4a4ciejRSnnP97GcKLcQA3gfl3aFnB4Z3AowAsFZqysCAcrnjUdYhHMvO0u4Raflk7tGzEwCwNrH5EgmKK4i0AWBb3yk8bC0rF9oQYp2qRSsOY85yMpFx2aL6ioFHOBxNDvakRqOhfPdY7gzmM9VOFpygYlpd5vKvjCa6Q2o5Pym1mVMJsYSI/fWhwt6PAb/2xukUECAiOm6+sAeNCZlhSmsT6cJ9j8Ejtl1tVUzSqHT9WSYhwWwTYDTqO/k4VH1Xzj3EI/CL8aOPiESDIVeeqOunaRtgEySk1J3ilI9i0lWMFrSANuFR5d41e63STdScj/3z1w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765695419; c=relaxed/relaxed;
-	bh=apGqneViZBsG0Sxhjrh0GEOqlCJn9cs/szQcSZ3tuEE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=cWJxIq1vd+JGnvpHi5ogNXxXdAmWA9r1f1I0rnhECzcCwar76bw4uybaqIAxQOf4dx6cETVWEPSV3d+nyTdl2wkmK4+C/s0iRPYYdH2Tubd7LZc7sXDG0DxYpIvzSWNFfLPl8rEyKaL6vmeL6VnypL5Ob3cFu1R17QFNaOiJIrVHpYZwEuX/Ak/99xq/Rj02lfNsAA3i5JYO3zDue2LrWw677Fjg4SLy2Y/efU0U+Pvfs4winltsgnBsDYAgbcU1g9QDMdtbtRgQaevax/n/+/ceBfW5aABEXENHk4cdB2bUZuQVAPNlsKTFADXg13EaF/bZub1wFvFlVSOJXLDIXA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c/af4ehC; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=alexs@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1765717476; c=relaxed/relaxed;
+	bh=p7RMWUX6Srv88655zmYNbDS/aFYQswREgmTiEmnXrt4=;
+	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=awojkwiASiBzunxn9YI+/fS75OSLzoiQXvCDJ2dqvykjRWKtZLULVPlcbK/6wWNzb32M4wp27TuFlIuZ8hacSITo3O/CZK+ifAuaaTmLhhSvi6YfR4iX1qL304w8bvUuSsVWLoroYxTAY59CnTODaPDNbeLssbcG1g8c3+FstPG54yKK6NgIipHg7aBz1g7Yh10eMcmJ12YEC8dW7L+GPeMHtH1XuyYU0seph5raPX+NCqHYTXMRWBq6uhASQds4mlE8i5g7/DdsaO0wDhEpQjHLCrc1cJ8rKQAF8O535HBQEVjFpNgXc1uhqE/zDXPbXCg2pK5nIwvsCH4ZNo55bg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Yx9cGR5p; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mkchauras@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c/af4ehC;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=Yx9cGR5p;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=alexs@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mkchauras@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dTYs64h7Lz2xqf
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 14 Dec 2025 17:56:58 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id CF1C0401ED;
-	Sun, 14 Dec 2025 06:56:25 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3F724C4CEF1;
-	Sun, 14 Dec 2025 06:56:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1765695385;
-	bh=rNokNUbqhtDAZzRvGy68XrNneuZAbKP4ZIJlFMKF+7U=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=c/af4ehCIryGWDPXN8wqNy/88J0nXqpVQGHfqT2+toiUwTP+C5J5RtU9Geyw2VF0p
-	 QklRyp0qRhxs2uNnXKsuFbrGQWuVRKkwOznqKwNyMQ08nPkeKu8AT+vSKcJWGZRbJO
-	 SWUiE+ata5yHDPcug0nZnZ9bCIjH71HjJJpZNSNn2ivRvv+Io94l2TRfBiZK2mBtHo
-	 hkL5VrDGRW4/PzdFMq9L3tNB1EnsVC8laoIofiC/y2FO28Zz5QyMKGgbNBL7ThA2xf
-	 2G5seFkvmZm6EfVw5Y8/g6FTtlsCMWO9JubLhTHribjDG3T2/qZGR26d+3tpea+B2I
-	 7q/v9Rx2Ou0Fg==
-From: alexs@kernel.org
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <chleroy@kernel.org>,
-	Alexander Gordeev <agordeev@linux.ibm.com>,
-	Gerald Schaefer <gerald.schaefer@linux.ibm.com>,
-	Heiko Carstens <hca@linux.ibm.com>,
-	Vasily Gorbik <gor@linux.ibm.com>,
-	Christian Borntraeger <borntraeger@linux.ibm.com>,
-	Sven Schnelle <svens@linux.ibm.com>,
-	"David S . Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	David Hildenbrand <david@kernel.org>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
-	Vlastimil Babka <vbabka@suse.cz>,
-	Mike Rapoport <rppt@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>,
-	Zi Yan <ziy@nvidia.com>,
-	Baolin Wang <baolin.wang@linux.alibaba.com>,
-	Nico Pache <npache@redhat.com>,
-	Ryan Roberts <ryan.roberts@arm.com>,
-	Dev Jain <dev.jain@arm.com>,
-	Barry Song <baohua@kernel.org>,
-	Lance Yang <lance.yang@linux.dev>,
-	Matthew Brost <matthew.brost@intel.com>,
-	Joshua Hahn <joshua.hahnjy@gmail.com>,
-	Rakie Kim <rakie.kim@sk.com>,
-	Byungchul Park <byungchul@sk.com>,
-	Gregory Price <gourry@gourry.net>,
-	Ying Huang <ying.huang@linux.alibaba.com>,
-	Alistair Popple <apopple@nvidia.com>,
-	Thomas Huth <thuth@redhat.com>,
-	Will Deacon <will@kernel.org>,
-	Matthew Wilcox <willy@infradead.org>,
-	Magnus Lindholm <linmag7@gmail.com>,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-s390@vger.kernel.org,
-	sparclinux@vger.kernel.org,
-	linux-mm@kvack.org
-Cc: Alex Shi <alexs@kernel.org>,
-	Juergen Gross <jgross@suse.com>,
-	Jason Gunthorpe <jgg@ziepe.ca>
-Subject: [RFC PATCH 2/2] mm/pgtable: convert pgtable_trans_huge_withdraw to ptdesc
-Date: Sun, 14 Dec 2025 14:55:46 +0800
-Message-ID: <20251214065546.156209-2-alexs@kernel.org>
-X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20251214065546.156209-1-alexs@kernel.org>
-References: <20251214065546.156209-1-alexs@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dTk1H1Xl4z2x99
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Dec 2025 00:04:34 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5BE6usPe002648;
+	Sun, 14 Dec 2025 13:04:11 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
+	content-transfer-encoding:date:from:in-reply-to:message-id
+	:mime-version:references:subject:to; s=pp1; bh=p7RMWUX6Srv88655z
+	mYNbDS/aFYQswREgmTiEmnXrt4=; b=Yx9cGR5pRFChubwvNoYUE+EgyL1lEa4Qm
+	WmtqXOGQ6rF5OEd4kV7PzmDYda/eZf7GglVsazQb23EoDBzcNK5Rnw0cBO5WOLQg
+	50fzJyyYzWUUL3n58p9zlG0j86LxoiK3vDDdpkWqOwr4ohNczHly4TYaPn+SPZF7
+	AdMK/CQoKeomt1KeGJLR9256sy5QBS8nyvhf+UwpdGqlOkzBr8V1tUbPqlNFF/3/
+	bqsIZfiWDQe/hx9WNRMi9Y/7cAJOQCjhdSbw9Ldv3x7sA72ehZclhJa13f3bXbl5
+	O8nkMMxA6GHDnSqrlvgQ3H8EULWnHJPhgT0AVMd2hhPZEKgjuND1g==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4b0wjpnns5-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 14 Dec 2025 13:04:10 +0000 (GMT)
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5BED4A57023642;
+	Sun, 14 Dec 2025 13:04:10 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4b0wjpnns3-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 14 Dec 2025 13:04:10 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5BEAdu0K012835;
+	Sun, 14 Dec 2025 13:04:09 GMT
+Received: from smtprelay02.fra02v.mail.ibm.com ([9.218.2.226])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4b1juxt3rt-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 14 Dec 2025 13:04:09 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay02.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5BED45AH36831716
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 14 Dec 2025 13:04:05 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 4D18720043;
+	Sun, 14 Dec 2025 13:04:05 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E512720040;
+	Sun, 14 Dec 2025 13:03:58 +0000 (GMT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com (unknown [9.124.210.21])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Sun, 14 Dec 2025 13:03:58 +0000 (GMT)
+From: Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>
+To: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        christophe.leroy@csgroup.eu, oleg@redhat.com, kees@kernel.org,
+        luto@amacapital.net, wad@chromium.org, mchauras@linux.ibm.com,
+        thuth@redhat.com, sshegde@linux.ibm.com, charlie@rivosinc.com,
+        macro@orcam.me.uk, akpm@linux-foundation.org, ldv@strace.io,
+        deller@gmx.de, ankur.a.arora@oracle.com, segher@kernel.crashing.org,
+        tglx@linutronix.de, thomas.weissschuh@linutronix.de,
+        peterz@infradead.org, menglong8.dong@gmail.com, bigeasy@linutronix.de,
+        namcao@linutronix.de, kan.liang@linux.intel.com, mingo@kernel.org,
+        atrajeev@linux.vnet.ibm.com, mark.barnett@arm.com,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: [PATCH v2 4/8] powerpc: Introduce syscall exit arch functions
+Date: Sun, 14 Dec 2025 18:32:40 +0530
+Message-ID: <20251214130245.43664-5-mkchauras@linux.ibm.com>
+X-Mailer: git-send-email 2.52.0
+In-Reply-To: <20251214130245.43664-1-mkchauras@linux.ibm.com>
+References: <20251214130245.43664-1-mkchauras@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -110,254 +103,350 @@ List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjEzMDAwMSBTYWx0ZWRfXzRBQESpRwMRy
+ sm0D2roqmEbCpZq2EQsZ69K19smMR2VZajuJ8LVwUx4x3NeQXtX7LVfdwwzzaZs3en6lNS0GdWv
+ FOm/jTXd/aGCY60eEA0jUU5ODnV84DW8iE2WH91wUQi4c8UdC7YkPhF2cjDJWu9o5K6Eux5VZhS
+ 0kx6BpAGfesVP90eHIm4uokrZRXOVEacCYbZpew4pk8ZyGNBvC1KpF/LLIyE1yYU1NfJlyZ89CK
+ srinjpVALouhr5MCxxeqQixXPQgbkTgBUMEvXI+CXpiMv4cb94XY0ARexSuNnBqkxm1oGvNNqyA
+ M2ldaZL5qK7sKeAXVlnIDqOpN/fkt9YiimWVr/cEsNBn1rT6UPiIyKHZPWK4hLdGhYZGZiQhOfk
+ EjZtw3K6zK30LXkTqNglMvVrDzkgEA==
+X-Proofpoint-GUID: Skk0TDzN03hjddwt9vfbVTHbN97kpPlT
+X-Proofpoint-ORIG-GUID: agosFuUJhXXg2hcbVYE-1gbfCL-T4_ty
+X-Authority-Analysis: v=2.4 cv=Kq5AGGWN c=1 sm=1 tr=0 ts=693eb5cb cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=wP3pNCr1ah4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
+ a=1zgF-uAQnxabbVpijEgA:9
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-12-14_03,2025-12-11_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 malwarescore=0 impostorscore=0 clxscore=1015 spamscore=0
+ priorityscore=1501 lowpriorityscore=0 bulkscore=0 phishscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2512130001
 
-From: Alex Shi <alexs@kernel.org>
+From: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
 
-Following the last function change in pgtable_trans_huge_deposit().
-this time we convert the return value for pgtable_trans_huge_withdraw()
+Add PowerPC-specific implementations of the generic syscall exit hooks
+used by the generic entry/exit framework:
 
-In future, we could do further to convert more pgtable_t to ptdesc
-struct and then replace the pgtable_t to ptdesc* except s390/powerpc/sparc
-archs.
+ - arch_exit_to_user_mode_work_prepare()
+ - arch_exit_to_user_mode_work()
 
-Signed-off-by: Alex Shi <alexs@kernel.org>
-Cc: linux-mm@kvack.org
-Cc: sparclinux@vger.kernel.org
-Cc: linux-s390@vger.kernel.org
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Juergen Gross <jgross@suse.com>
-Cc: Matthew Wilcox  <willy@infradead.org>
-Cc: Magnus Lindholm <linmag7@gmail.com>
-Cc: Thomas Huth <thuth@redhat.com>
-Cc: Alistair Popple <apopple@nvidia.com>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: Lance Yang <lance.yang@linux.dev>
-Cc: Barry Song <baohua@kernel.org>
-Cc: Dev Jain <dev.jain@arm.com>
-Cc: Ryan Roberts <ryan.roberts@arm.com>
-Cc: Nico Pache <npache@redhat.com>
-Cc: Baolin Wang <baolin.wang@linux.alibaba.com>
-Cc: Zi Yan <ziy@nvidia.com>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Suren Baghdasaryan <surenb@google.com>
-Cc: Mike Rapoport <rppt@kernel.org>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Liam R. Howlett <Liam.Howlett@oracle.com>
-Cc: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-Cc: David Hildenbrand <david@kernel.org>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Andreas Larsson <andreas@gaisler.com>
-Cc: David S. Miller <davem@davemloft.net>
-Cc: Sven Schnelle <svens@linux.ibm.com>
-Cc: Christian Borntraeger <borntraeger@linux.ibm.com>
-Cc: Vasily Gorbik <gor@linux.ibm.com>
-Cc: Heiko Carstens <hca@linux.ibm.com>
-Cc: Gerald Schaefer <gerald.schaefer@linux.ibm.com>
-Cc: Alexander Gordeev <agordeev@linux.ibm.com>
-Cc: Christophe Leroy  <chleroy@kernel.org>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+These helpers handle user state restoration when returning from the
+kernel to userspace, including FPU/VMX/VSX state, transactional memory,
+KUAP restore, and per-CPU accounting.
+
+Additionally, move check_return_regs_valid() from interrupt.c to
+interrupt.h so it can be shared by the new entry/exit logic, and add
+arch_do_signal_or_restart() for use with the generic entry flow.
+
+No functional change is intended with this patch.
+
+Signed-off-by: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
 ---
- arch/powerpc/include/asm/book3s/64/pgtable.h |  8 ++++----
- arch/s390/include/asm/pgtable.h              |  2 +-
- arch/s390/mm/pgtable.c                       |  4 ++--
- arch/sparc/include/asm/pgtable_64.h          |  2 +-
- arch/sparc/mm/tlb.c                          |  4 ++--
- include/linux/pgtable.h                      |  3 ++-
- mm/huge_memory.c                             | 15 +++++++--------
- mm/pgtable-generic.c                         |  4 ++--
- 8 files changed, 21 insertions(+), 21 deletions(-)
+ arch/powerpc/include/asm/entry-common.h | 49 +++++++++++++++
+ arch/powerpc/include/asm/interrupt.h    | 82 +++++++++++++++++++++++++
+ arch/powerpc/kernel/interrupt.c         | 81 ------------------------
+ arch/powerpc/kernel/signal.c            | 14 +++++
+ 4 files changed, 145 insertions(+), 81 deletions(-)
 
-diff --git a/arch/powerpc/include/asm/book3s/64/pgtable.h b/arch/powerpc/include/asm/book3s/64/pgtable.h
-index f10736af296d..3485de5178b5 100644
---- a/arch/powerpc/include/asm/book3s/64/pgtable.h
-+++ b/arch/powerpc/include/asm/book3s/64/pgtable.h
-@@ -1328,12 +1328,12 @@ static inline void pgtable_trans_huge_deposit(struct mm_struct *mm,
- }
+diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
+index 093ece06ef79..e8ebd42a4e6d 100644
+--- a/arch/powerpc/include/asm/entry-common.h
++++ b/arch/powerpc/include/asm/entry-common.h
+@@ -8,6 +8,7 @@
+ #include <asm/cputime.h>
+ #include <asm/interrupt.h>
+ #include <asm/stacktrace.h>
++#include <asm/switch_to.h>
+ #include <asm/tm.h>
  
- #define __HAVE_ARCH_PGTABLE_WITHDRAW
--static inline pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm,
--						    pmd_t *pmdp)
-+static inline struct ptdesc *pgtable_trans_huge_withdraw(struct mm_struct *mm,
-+							 pmd_t *pmdp)
- {
- 	if (radix_enabled())
--		return radix__pgtable_trans_huge_withdraw(mm, pmdp);
--	return hash__pgtable_trans_huge_withdraw(mm, pmdp);
-+		return page_ptdesc(radix__pgtable_trans_huge_withdraw(mm, pmdp));
-+	return page_ptdesc(hash__pgtable_trans_huge_withdraw(mm, pmdp));
- }
+ static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs)
+@@ -104,5 +105,53 @@ static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs)
  
- #define __HAVE_ARCH_PMDP_INVALIDATE
-diff --git a/arch/s390/include/asm/pgtable.h b/arch/s390/include/asm/pgtable.h
-index e45cb52a923a..5f7fab7b121b 100644
---- a/arch/s390/include/asm/pgtable.h
-+++ b/arch/s390/include/asm/pgtable.h
-@@ -1754,7 +1754,7 @@ void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
- 				struct ptdesc *pgtable);
+ #define arch_enter_from_user_mode arch_enter_from_user_mode
  
- #define __HAVE_ARCH_PGTABLE_WITHDRAW
--pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
-+struct ptdesc *pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
++static inline void arch_exit_to_user_mode_prepare(struct pt_regs *regs,
++						  unsigned long ti_work)
++{
++	unsigned long mathflags;
++
++	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) && IS_ENABLED(CONFIG_PPC_FPU)) {
++		if (IS_ENABLED(CONFIG_PPC_TRANSACTIONAL_MEM) &&
++		    unlikely((ti_work & _TIF_RESTORE_TM))) {
++			restore_tm_state(regs);
++		} else {
++			mathflags = MSR_FP;
++
++			if (cpu_has_feature(CPU_FTR_VSX))
++				mathflags |= MSR_VEC | MSR_VSX;
++			else if (cpu_has_feature(CPU_FTR_ALTIVEC))
++				mathflags |= MSR_VEC;
++
++			/*
++			 * If userspace MSR has all available FP bits set,
++			 * then they are live and no need to restore. If not,
++			 * it means the regs were given up and restore_math
++			 * may decide to restore them (to avoid taking an FP
++			 * fault).
++			 */
++			if ((regs->msr & mathflags) != mathflags)
++				restore_math(regs);
++		}
++	}
++
++	check_return_regs_valid(regs);
++#ifdef CONFIG_PPC_TRANSACTIONAL_MEM
++	local_paca->tm_scratch = regs->msr;
++#endif
++	/* Restore user access locks last */
++	kuap_user_restore(regs);
++}
++
++#define arch_exit_to_user_mode_prepare arch_exit_to_user_mode_prepare
++
++static __always_inline void arch_exit_to_user_mode(void)
++{
++	booke_load_dbcr0();
++
++	account_cpu_user_exit();
++}
++
++#define arch_exit_to_user_mode arch_exit_to_user_mode
++
+ #endif /* CONFIG_GENERIC_IRQ_ENTRY */
+ #endif /* _ASM_PPC_ENTRY_COMMON_H */
+diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
+index ca8a2cda9400..77ff8e33f8cd 100644
+--- a/arch/powerpc/include/asm/interrupt.h
++++ b/arch/powerpc/include/asm/interrupt.h
+@@ -68,6 +68,8 @@
  
- #define  __HAVE_ARCH_PMDP_SET_ACCESS_FLAGS
- static inline int pmdp_set_access_flags(struct vm_area_struct *vma,
-diff --git a/arch/s390/mm/pgtable.c b/arch/s390/mm/pgtable.c
-index c301af71b3ec..6e53a30dd3ae 100644
---- a/arch/s390/mm/pgtable.c
-+++ b/arch/s390/mm/pgtable.c
-@@ -534,7 +534,7 @@ void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
- 	pmd_huge_pte(mm, pmdp) = pgtable;
- }
- 
--pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
-+struct ptdesc *pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
- {
- 	struct list_head *lh;
- 	pgtable_t pgtable;
-@@ -555,7 +555,7 @@ pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
- 	set_pte(ptep, __pte(_PAGE_INVALID));
- 	ptep++;
- 	set_pte(ptep, __pte(_PAGE_INVALID));
--	return pgtable;
-+	return page_ptdesc(pgtable);
- }
- #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
- 
-diff --git a/arch/sparc/include/asm/pgtable_64.h b/arch/sparc/include/asm/pgtable_64.h
-index 4b7f7113a1b3..29fc86175300 100644
---- a/arch/sparc/include/asm/pgtable_64.h
-+++ b/arch/sparc/include/asm/pgtable_64.h
-@@ -995,7 +995,7 @@ void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
- 				struct ptdesc *pgtable);
- 
- #define __HAVE_ARCH_PGTABLE_WITHDRAW
--pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
-+struct ptdesc *pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
+ #include <linux/context_tracking.h>
+ #include <linux/hardirq.h>
++#include <linux/sched/debug.h> /* for show_regs */
++
+ #include <asm/cputime.h>
+ #include <asm/firmware.h>
+ #include <asm/ftrace.h>
+@@ -172,6 +174,86 @@ static inline void booke_restore_dbcr0(void)
  #endif
- 
- /*
-diff --git a/arch/sparc/mm/tlb.c b/arch/sparc/mm/tlb.c
-index 5dfee57d2440..8b00b62c06bd 100644
---- a/arch/sparc/mm/tlb.c
-+++ b/arch/sparc/mm/tlb.c
-@@ -284,7 +284,7 @@ void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
- 	pmd_huge_pte(mm, pmdp) = pgtable;
  }
  
--pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
-+struct ptdesc *pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
++static inline void check_return_regs_valid(struct pt_regs *regs)
++{
++#ifdef CONFIG_PPC_BOOK3S_64
++	unsigned long trap, srr0, srr1;
++	static bool warned;
++	u8 *validp;
++	char *h;
++
++	if (trap_is_scv(regs))
++		return;
++
++	trap = TRAP(regs);
++	// EE in HV mode sets HSRRs like 0xea0
++	if (cpu_has_feature(CPU_FTR_HVMODE) && trap == INTERRUPT_EXTERNAL)
++		trap = 0xea0;
++
++	switch (trap) {
++	case 0x980:
++	case INTERRUPT_H_DATA_STORAGE:
++	case 0xe20:
++	case 0xe40:
++	case INTERRUPT_HMI:
++	case 0xe80:
++	case 0xea0:
++	case INTERRUPT_H_FAC_UNAVAIL:
++	case 0x1200:
++	case 0x1500:
++	case 0x1600:
++	case 0x1800:
++		validp = &local_paca->hsrr_valid;
++		if (!READ_ONCE(*validp))
++			return;
++
++		srr0 = mfspr(SPRN_HSRR0);
++		srr1 = mfspr(SPRN_HSRR1);
++		h = "H";
++
++		break;
++	default:
++		validp = &local_paca->srr_valid;
++		if (!READ_ONCE(*validp))
++			return;
++
++		srr0 = mfspr(SPRN_SRR0);
++		srr1 = mfspr(SPRN_SRR1);
++		h = "";
++		break;
++	}
++
++	if (srr0 == regs->nip && srr1 == regs->msr)
++		return;
++
++	/*
++	 * A NMI / soft-NMI interrupt may have come in after we found
++	 * srr_valid and before the SRRs are loaded. The interrupt then
++	 * comes in and clobbers SRRs and clears srr_valid. Then we load
++	 * the SRRs here and test them above and find they don't match.
++	 *
++	 * Test validity again after that, to catch such false positives.
++	 *
++	 * This test in general will have some window for false negatives
++	 * and may not catch and fix all such cases if an NMI comes in
++	 * later and clobbers SRRs without clearing srr_valid, but hopefully
++	 * such things will get caught most of the time, statistically
++	 * enough to be able to get a warning out.
++	 */
++	if (!READ_ONCE(*validp))
++		return;
++
++	if (!data_race(warned)) {
++		data_race(warned = true);
++		pr_warn("%sSRR0 was: %lx should be: %lx\n", h, srr0, regs->nip);
++		pr_warn("%sSRR1 was: %lx should be: %lx\n", h, srr1, regs->msr);
++		show_regs(regs);
++	}
++
++	WRITE_ONCE(*validp, 0); /* fixup */
++#endif
++}
++
+ static inline void interrupt_enter_prepare(struct pt_regs *regs)
  {
- 	struct list_head *lh;
- 	pgtable_t pgtable;
-@@ -303,6 +303,6 @@ pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
- 	pte_val(pgtable[0]) = 0;
- 	pte_val(pgtable[1]) = 0;
+ #ifdef CONFIG_PPC64
+diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
+index 2a09ac5dabd6..f53d432f6087 100644
+--- a/arch/powerpc/kernel/interrupt.c
++++ b/arch/powerpc/kernel/interrupt.c
+@@ -4,7 +4,6 @@
+ #include <linux/err.h>
+ #include <linux/compat.h>
+ #include <linux/rseq.h>
+-#include <linux/sched/debug.h> /* for show_regs */
  
--	return pgtable;
-+	return page_ptdesc(pgtable);
+ #include <asm/kup.h>
+ #include <asm/cputime.h>
+@@ -78,86 +77,6 @@ static notrace __always_inline bool prep_irq_for_enabled_exit(bool restartable)
+ 	return true;
  }
- #endif /* CONFIG_TRANSPARENT_HUGEPAGE */
-diff --git a/include/linux/pgtable.h b/include/linux/pgtable.h
-index a5b1e3f7452a..4b20b3d7aaec 100644
---- a/include/linux/pgtable.h
-+++ b/include/linux/pgtable.h
-@@ -1021,7 +1021,8 @@ extern void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
- #endif
  
- #ifndef __HAVE_ARCH_PGTABLE_WITHDRAW
--extern pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp);
-+extern struct ptdesc *pgtable_trans_huge_withdraw(struct mm_struct *mm,
-+						  pmd_t *pmdp);
- #endif
- 
- #ifndef arch_needs_pgtable_deposit
-diff --git a/mm/huge_memory.c b/mm/huge_memory.c
-index ff74bd70690d..6f6cdb3ae888 100644
---- a/mm/huge_memory.c
-+++ b/mm/huge_memory.c
-@@ -2334,7 +2334,7 @@ static inline void zap_deposited_table(struct mm_struct *mm, pmd_t *pmd)
+-static notrace void check_return_regs_valid(struct pt_regs *regs)
+-{
+-#ifdef CONFIG_PPC_BOOK3S_64
+-	unsigned long trap, srr0, srr1;
+-	static bool warned;
+-	u8 *validp;
+-	char *h;
+-
+-	if (trap_is_scv(regs))
+-		return;
+-
+-	trap = TRAP(regs);
+-	// EE in HV mode sets HSRRs like 0xea0
+-	if (cpu_has_feature(CPU_FTR_HVMODE) && trap == INTERRUPT_EXTERNAL)
+-		trap = 0xea0;
+-
+-	switch (trap) {
+-	case 0x980:
+-	case INTERRUPT_H_DATA_STORAGE:
+-	case 0xe20:
+-	case 0xe40:
+-	case INTERRUPT_HMI:
+-	case 0xe80:
+-	case 0xea0:
+-	case INTERRUPT_H_FAC_UNAVAIL:
+-	case 0x1200:
+-	case 0x1500:
+-	case 0x1600:
+-	case 0x1800:
+-		validp = &local_paca->hsrr_valid;
+-		if (!READ_ONCE(*validp))
+-			return;
+-
+-		srr0 = mfspr(SPRN_HSRR0);
+-		srr1 = mfspr(SPRN_HSRR1);
+-		h = "H";
+-
+-		break;
+-	default:
+-		validp = &local_paca->srr_valid;
+-		if (!READ_ONCE(*validp))
+-			return;
+-
+-		srr0 = mfspr(SPRN_SRR0);
+-		srr1 = mfspr(SPRN_SRR1);
+-		h = "";
+-		break;
+-	}
+-
+-	if (srr0 == regs->nip && srr1 == regs->msr)
+-		return;
+-
+-	/*
+-	 * A NMI / soft-NMI interrupt may have come in after we found
+-	 * srr_valid and before the SRRs are loaded. The interrupt then
+-	 * comes in and clobbers SRRs and clears srr_valid. Then we load
+-	 * the SRRs here and test them above and find they don't match.
+-	 *
+-	 * Test validity again after that, to catch such false positives.
+-	 *
+-	 * This test in general will have some window for false negatives
+-	 * and may not catch and fix all such cases if an NMI comes in
+-	 * later and clobbers SRRs without clearing srr_valid, but hopefully
+-	 * such things will get caught most of the time, statistically
+-	 * enough to be able to get a warning out.
+-	 */
+-	if (!READ_ONCE(*validp))
+-		return;
+-
+-	if (!data_race(warned)) {
+-		data_race(warned = true);
+-		printk("%sSRR0 was: %lx should be: %lx\n", h, srr0, regs->nip);
+-		printk("%sSRR1 was: %lx should be: %lx\n", h, srr1, regs->msr);
+-		show_regs(regs);
+-	}
+-
+-	WRITE_ONCE(*validp, 0); /* fixup */
+-#endif
+-}
+-
+ static notrace unsigned long
+ interrupt_exit_user_prepare_main(unsigned long ret, struct pt_regs *regs)
  {
- 	pgtable_t pgtable;
+diff --git a/arch/powerpc/kernel/signal.c b/arch/powerpc/kernel/signal.c
+index aa17e62f3754..719930cf4ae1 100644
+--- a/arch/powerpc/kernel/signal.c
++++ b/arch/powerpc/kernel/signal.c
+@@ -22,6 +22,11 @@
  
--	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
-+	pgtable = ptdesc_page(pgtable_trans_huge_withdraw(mm, pmd));
- 	pte_free(mm, pgtable);
- 	mm_dec_nr_ptes(mm);
+ #include "signal.h"
+ 
++/* This will be removed */
++#ifdef CONFIG_GENERIC_ENTRY
++#include <linux/entry-common.h>
++#endif /* CONFIG_GENERIC_ENTRY */
++
+ #ifdef CONFIG_VSX
+ unsigned long copy_fpr_to_user(void __user *to,
+ 			       struct task_struct *task)
+@@ -368,3 +373,12 @@ void signal_fault(struct task_struct *tsk, struct pt_regs *regs,
+ 		printk_ratelimited(regs->msr & MSR_64BIT ? fm64 : fm32, tsk->comm,
+ 				   task_pid_nr(tsk), where, ptr, regs->nip, regs->link);
  }
-@@ -2492,10 +2492,9 @@ bool move_huge_pmd(struct vm_area_struct *vma, unsigned long old_addr,
- 		VM_BUG_ON(!pmd_none(*new_pmd));
- 
- 		if (pmd_move_must_withdraw(new_ptl, old_ptl, vma)) {
--			pgtable_t pgtable;
-+			struct ptdesc *pgtable;
- 			pgtable = pgtable_trans_huge_withdraw(mm, old_pmd);
--			pgtable_trans_huge_deposit(mm, new_pmd,
--							page_ptdesc(pgtable));
-+			pgtable_trans_huge_deposit(mm, new_pmd,	pgtable);
- 		}
- 		pmd = move_soft_dirty_pmd(pmd);
- 		if (vma_has_uffd_without_event_remap(vma))
-@@ -2710,7 +2709,7 @@ int move_pages_huge_pmd(struct mm_struct *mm, pmd_t *dst_pmd, pmd_t *src_pmd, pm
- 	struct page *src_page;
- 	struct folio *src_folio;
- 	spinlock_t *src_ptl, *dst_ptl;
--	pgtable_t src_pgtable;
-+	struct ptdesc *src_pgtable;
- 	struct mmu_notifier_range range;
- 	int err = 0;
- 
-@@ -2801,7 +2800,7 @@ int move_pages_huge_pmd(struct mm_struct *mm, pmd_t *dst_pmd, pmd_t *src_pmd, pm
- 	set_pmd_at(mm, dst_addr, dst_pmd, _dst_pmd);
- 
- 	src_pgtable = pgtable_trans_huge_withdraw(mm, src_pmd);
--	pgtable_trans_huge_deposit(mm, dst_pmd, page_ptdesc(src_pgtable));
-+	pgtable_trans_huge_deposit(mm, dst_pmd, src_pgtable);
- unlock_ptls:
- 	double_pt_unlock(src_ptl, dst_ptl);
- 	/* unblock rmap walks */
-@@ -2962,7 +2961,7 @@ static void __split_huge_zero_page_pmd(struct vm_area_struct *vma,
- 	 */
- 	old_pmd = pmdp_huge_clear_flush(vma, haddr, pmd);
- 
--	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
-+	pgtable = ptdesc_page(pgtable_trans_huge_withdraw(mm, pmd));
- 	pmd_populate(mm, &_pmd, pgtable);
- 
- 	pte = pte_offset_map(&_pmd, haddr);
-@@ -3169,7 +3168,7 @@ static void __split_huge_pmd_locked(struct vm_area_struct *vma, pmd_t *pmd,
- 	 * Withdraw the table only after we mark the pmd entry invalid.
- 	 * This's critical for some architectures (Power).
- 	 */
--	pgtable = pgtable_trans_huge_withdraw(mm, pmd);
-+	pgtable = ptdesc_page(pgtable_trans_huge_withdraw(mm, pmd));
- 	pmd_populate(mm, &_pmd, pgtable);
- 
- 	pte = pte_offset_map(&_pmd, haddr);
-diff --git a/mm/pgtable-generic.c b/mm/pgtable-generic.c
-index 220844a81e38..a95d9309215e 100644
---- a/mm/pgtable-generic.c
-+++ b/mm/pgtable-generic.c
-@@ -179,7 +179,7 @@ void pgtable_trans_huge_deposit(struct mm_struct *mm, pmd_t *pmdp,
- 
- #ifndef __HAVE_ARCH_PGTABLE_WITHDRAW
- /* no "address" argument so destroys page coloring of some arch */
--pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
-+struct ptdesc *pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
- {
- 	struct ptdesc *pgtable;
- 
-@@ -191,7 +191,7 @@ pgtable_t pgtable_trans_huge_withdraw(struct mm_struct *mm, pmd_t *pmdp)
- 							  struct ptdesc, pt_list);
- 	if (pmd_huge_pte(mm, pmdp))
- 		list_del(&pgtable->pt_list);
--	return ptdesc_page(pgtable);
-+	return pgtable;
- }
- #endif
- 
++
++#ifdef CONFIG_GENERIC_ENTRY
++void arch_do_signal_or_restart(struct pt_regs *regs)
++{
++	BUG_ON(regs != current->thread.regs);
++	local_paca->generic_fw_flags |= GFW_RESTORE_ALL;
++	do_signal(current);
++}
++#endif /* CONFIG_GENERIC_ENTRY */
 -- 
-2.43.0
+2.52.0
 
 
