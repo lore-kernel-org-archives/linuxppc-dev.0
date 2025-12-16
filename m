@@ -1,60 +1,60 @@
-Return-Path: <linuxppc-dev+bounces-14797-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14798-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6443CD5CC99
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Dec 2025 09:41:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id F11DAD5CC97
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Dec 2025 09:43:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dVsPq0Z9Xz2xqj;
-	Tue, 16 Dec 2025 20:41:19 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=94.100.134.238 arc.chain=hornetsecurity.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765878079;
-	cv=pass; b=WODV55/c8pLi/DM92pK8E4AJ7mSfxxFE8gl21KluzoCZS2J6MO+or51A9/HsXocRXdXpxEW2trxz+93E+n2Lvc0YAl3Oq7YlBOKIvHEq1r5XEZ1bAaP0F7kV7qds917ze2unp8dC6MPMxM0FXYOUqnC1gSrUKuW50sm+ty9IW7aWVr/UwEYZv40OGCJSEHe0vhuBW22ofLRuX89Zrp50HXkIxA52AChqfJAP4q3F0gkGVYNb8CuYIWCsXEXoi1+3VqrlGO/x2FKNewaurXOnIsEowVof7xeZZvGexxao2Kcyj7kF69p7gZ7unpnoTZ4VvwX2BLjBOAQys0FkAZOkWQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dVsRs3jbjz2yDY;
+	Tue, 16 Dec 2025 20:43:05 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=94.100.132.254 arc.chain=hornetsecurity.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765878185;
+	cv=pass; b=XVVSmIT94bVfFH7zaPBDk8EEi9o3wX0iBA1PePk4ZrEokpAPJiWysR+kAT1+gJYzhUDdnuPg8kaQ8+8COz39F4m/lId+zHJpsDFmGNlupojFAQ7NS/rbeFJDrUyZYwLPUddTXKYAy6f7Aj1fBr/APXv4C+qTDH6zLP2aYZ6cbbXstHowTK2NH59k8qUJN/0C0oD9QEPoxoYkQpY0lYyIMXqtaDpPY61zuXE6/u85N34CmOKUwwgxi8i9Ur1EC8GjoV3FQJndbbUR2NW+i3iVIL2hYvu4xiOU4thrVI6UujVLsUAgW4pdylCI1YTV8TApluAj1CcALRMPHRsbCe6x2Q==
 ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765878079; c=relaxed/relaxed;
-	bh=H0wusYeRkkyb8iOZIgXhqUDB7JtUhc0EfBn0PFTaFSI=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=IS/pv/nFguOlESuR0nZvqlFrgwhaAxbw+R7qOOu+uVj/3ClIB0dAlVOp7g3A9U8Dz3zDRcKPoeZGELq4KrTLJIL2PYamE5I6A34LKn/AlAjmsiNNzXRBNAEfOp62YgGFX770E3W8MbPKZZh6OQTNIkLLGJFAu4ZZrp+LNXt+WWz+TdJRezwFFYSS4WOq2zNwWs9WImfUiyeoi4owx/AuQC9KaXT9qCNr1GhG9KBScI0mkCF2/STMMmlWGp6wz+EQpNz1gPj7jF+jXyLO5yH5RPTwq8DPy4jhTHP6lPF21qa5dsehFswLfVsYMZaqTdPmcrwq+9JUHpoU3A26/P66xQ==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ew.tq-group.com; dkim=pass (2048-bit key; unprotected) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=hse1 header.b=T0brtq4y; dkim-atps=neutral; spf=pass (client-ip=94.100.134.238; helo=mx-relay49-hz3.antispameurope.com; envelope-from=prvs=04384a72e4=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org) smtp.mailfrom=ew.tq-group.com
+	t=1765878185; c=relaxed/relaxed;
+	bh=Pkc/gLz9kLB8qCYf/I6OZ0Fsfo/vuRi3II2eQE+5I88=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=ZZ3BsA2EX8ofesPmseSf6EI/ZXBrOFseeOGokYpkiCNFbtCrJwvwGo5AJf27P5oDOYEFcs+TMeQOnAWurXk06m4fPN/g9HZB7WvJ97kOnIOfSm5p2hODj/vQkS3YxbsGtDSkq+yz5HB5o8Yc7uLVsBxJRVieb5af67lWSzR0q6aLcElD2t19pYN/wLgbcecTHdzAUIIjdCgObnNtSQbtvoJ+Y51ZElikR7moX5CJcPZvjKJHvFGxGq8CAQEIZndkVz5mI1km4uR8jrtEginyuXAymCve+g/DhFn0Bfz2PnmfHysok+29Z9WO6l3WVPQEfOFdctcx25o+AasoAHblyQ==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ew.tq-group.com; dkim=pass (2048-bit key; unprotected) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=hse1 header.b=NhVwV0pG; dkim-atps=neutral; spf=pass (client-ip=94.100.132.254; helo=mx-relay87-hz1.antispameurope.com; envelope-from=prvs=04384a72e4=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org) smtp.mailfrom=ew.tq-group.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=ew.tq-group.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=hse1 header.b=T0brtq4y;
+	dkim=pass (2048-bit key; unprotected) header.d=ew.tq-group.com header.i=@ew.tq-group.com header.a=rsa-sha256 header.s=hse1 header.b=NhVwV0pG;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ew.tq-group.com (client-ip=94.100.134.238; helo=mx-relay49-hz3.antispameurope.com; envelope-from=prvs=04384a72e4=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org)
-Received: from mx-relay49-hz3.antispameurope.com (mx-relay49-hz3.antispameurope.com [94.100.134.238])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ew.tq-group.com (client-ip=94.100.132.254; helo=mx-relay87-hz1.antispameurope.com; envelope-from=prvs=04384a72e4=alexander.stein@ew.tq-group.com; receiver=lists.ozlabs.org)
+X-Greylist: delayed 109 seconds by postgrey-1.37 at boromir; Tue, 16 Dec 2025 20:43:04 AEDT
+Received: from mx-relay87-hz1.antispameurope.com (mx-relay87-hz1.antispameurope.com [94.100.132.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dVsPm17Fpz2x99
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Dec 2025 20:41:15 +1100 (AEDT)
-ARC-Authentication-Results: i=1; mx-gate49-hz3.hornetsecurity.com 1; spf=pass
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dVsRr2smtz2x99
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Dec 2025 20:43:04 +1100 (AEDT)
+ARC-Authentication-Results: i=1; mx-gate87-hz1.hornetsecurity.com 1; spf=pass
  reason=mailfrom (ip=94.100.132.6, headerfrom=ew.tq-group.com)
  smtp.mailfrom=ew.tq-group.com smtp.helo=smtp-out02-hz1.hornetsecurity.com;
  dmarc=pass header.from=ew.tq-group.com orig.disposition=pass
 ARC-Message-Signature: a=rsa-sha256;
- bh=H0wusYeRkkyb8iOZIgXhqUDB7JtUhc0EfBn0PFTaFSI=; c=relaxed/relaxed;
+ bh=Pkc/gLz9kLB8qCYf/I6OZ0Fsfo/vuRi3II2eQE+5I88=; c=relaxed/relaxed;
  d=hornetsecurity.com; h=from:to:date:subject:mime-version:; i=1; s=hse1;
- t=1765878063;
- b=nXKNteHX4MVCNawdVTbNj1Lmn92bgeNX8IylsuFGlQsEKOeSJ5c76vfqlxaiY1jmoLgVpUUo
- h5xy6/ozX5mDrrv9MwX20p91//fkt38u0mLJQGntAuA3zCzMJgXgCD/MM6eiCq1yd9joDBCEmYn
- TIMRznYBE2kotJf0hbZm1Yr4jpWaaGycgPnMnb7sbYw8z33sQbulb0FXROX4KXgbDzl/de61A4v
- YxupcI4DGMQ42kWrh6FZyFxFA4gvDa/ZPURdnrj/wOwYdqqFxEcvgNvT9kzju7yVwPklOSgybVE
- s+VFlME1hgvLQC/yjGxgQvayrIapPSYW0nwxfvFZELPYg==
+ t=1765878060;
+ b=UkCshZXV4RTiZlDGRylV+HYlqeR25JAtuFdwJmGKn57x7F1RVYdLpG+kViNKt0ErTCK2KKDP
+ snKVQ9BDEvShbCIC0Cuzb+BNBcFy1tVlgVHbSYsBmG3vAZLeRGqKiAW4R+UE/4geb7ORG2DMUCB
+ 4zjmr8/uk2Lbeey/a/KAnVxhe/sUFARlOk9ObWrflF7rm8wHZtOvTI12luKPF8J80Ai6mkCIqHk
+ hWfSCeQ7rMdKrpJUhuFBMrOOW+PcggqAa0dGodXkXYiCXv6lWyT7P3bNFxjAGXxm7xEueP7RaLQ
+ PF8CM+1m+FxYl1KyTMpwCDuLfDQatzEUV8CYxvyLsVZeQ==
 ARC-Seal: a=rsa-sha256; cv=none; d=hornetsecurity.com; i=1; s=hse1;
- t=1765878063;
- b=muwC7YbQikwiauYA5G/SyBjz20PUrFXY+CjNdyDfAO5NmT0BYgUGHHj9TDMUCF3WBnXZpY2a
- LUjd1xoAhRnH8GgTpDebvmfpYrt54bq+7h+28jjsmG2C5ji2dkztxFGVq8Ma/+GN8jzoQQ7yqAs
- ScoQtGlyo3Ui7iWmbEChQRbyhGMTH9HhJfrfrrHQu26C5cdy8lR33BhtFCUHZpbey4LwQw0qtGF
- go7Nzu7a7MKDcgJhz1zl+ozXoWb/BVd0JVOHdf+mab/NcqdumrkzVYULQNCpZF6uT8Om+9rn6Ny
- QTJo0/HLi3tiknbw0dWCIFIUIwUW/qVl10LJ2gKK/q6bA==
-Received: from he-nlb01-hz1.hornetsecurity.com ([94.100.132.6]) by mx-relay49-hz3.antispameurope.com;
- Tue, 16 Dec 2025 10:41:02 +0100
+ t=1765878060;
+ b=e2byDDgCjyb5iRHtcF1G7mnqkoyYfYG3RUofDVsn51RBlMjs1/sQW1ybY1GwETvEZWu9HlVT
+ /qlHoxeXnHPYUPjf/CsLyzzyNKQzkQysts+bLJoampwHfW95y5kWg00dDiloP8TjzVUqqtMsa3i
+ 3ZyjSE8uslw/HNCr9dzLIIfECBwo7DkVnXq9daN3KfHVsXjfYFbCwGFt0rQ/gPs1aIbm+bvwAqT
+ B0YC/NavaEkcUSVeCyTOUbc1KJiXFT0jZb8BvtjRdXkF1unOC94qZzyY/ie0WEhWU1iMGc/2T+c
+ 2tkoZAfCq6pJaGyIjh13HeeyrRzY96nfaU3sR6310iMdw==
+Received: from he-nlb01-hz1.hornetsecurity.com ([94.100.132.6]) by mx-relay87-hz1.antispameurope.com;
+ Tue, 16 Dec 2025 10:41:00 +0100
 Received: from steina-w.tq-net.de (host-82-135-125-110.customer.m-online.net [82.135.125.110])
 	(Authenticated sender: alexander.stein@ew.tq-group.com)
-	by smtp-out02-hz1.hornetsecurity.com (Postfix) with ESMTPSA id 15C625A0FA5;
-	Tue, 16 Dec 2025 10:40:50 +0100 (CET)
+	by smtp-out02-hz1.hornetsecurity.com (Postfix) with ESMTPSA id 6A8BA5A0DF1;
+	Tue, 16 Dec 2025 10:40:47 +0100 (CET)
 From: Alexander Stein <alexander.stein@ew.tq-group.com>
 To: Shengjiu Wang <shengjiu.wang@gmail.com>,
 	Xiubo Li <Xiubo.Lee@gmail.com>,
@@ -68,12 +68,10 @@ Cc: Alexander Stein <alexander.stein@ew.tq-group.com>,
 	linux-sound@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
 	linux-kernel@vger.kernel.org
-Subject: [PATCH 2/2] ASoC: fsl_asrc_dma: fix duplicate debugfs directory error
-Date: Tue, 16 Dec 2025 10:40:43 +0100
-Message-ID: <20251216094045.623184-3-alexander.stein@ew.tq-group.com>
+Subject: [PATCH 0/2] ASoC: fsl_easrc: Fix duplicate debufs entries
+Date: Tue, 16 Dec 2025 10:40:41 +0100
+Message-ID: <20251216094045.623184-1-alexander.stein@ew.tq-group.com>
 X-Mailer: git-send-email 2.43.0
-In-Reply-To: <20251216094045.623184-1-alexander.stein@ew.tq-group.com>
-References: <20251216094045.623184-1-alexander.stein@ew.tq-group.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -94,46 +92,52 @@ X-cloud-security-crypt: load encryption module
 X-cloud-security-Mailarchiv: E-Mail archived for: alexander.stein@ew.tq-group.com
 X-cloud-security-Mailarchivtype:outbound
 X-cloud-security-Virusscan:CLEAN
-X-cloud-security-disclaimer: This E-Mail was scanned by E-Mailservice on mx-relay49-hz3.antispameurope.com with 4dVsPG5yK7z3yc65
+X-cloud-security-disclaimer: This E-Mail was scanned by E-Mailservice on mx-relay87-hz1.antispameurope.com with 4dVsPD0WvRz29h7p
 X-cloud-security-connect: he-nlb01-hz1.hornetsecurity.com[94.100.132.6], TLS=1, IP=94.100.132.6
-X-cloud-security-Digest:56692679a5c017f375512da0d9446da1
-X-cloud-security:scantime:1.918
+X-cloud-security:scantime:1.833
 DKIM-Signature: a=rsa-sha256;
- bh=H0wusYeRkkyb8iOZIgXhqUDB7JtUhc0EfBn0PFTaFSI=; c=relaxed/relaxed;
+ bh=Pkc/gLz9kLB8qCYf/I6OZ0Fsfo/vuRi3II2eQE+5I88=; c=relaxed/relaxed;
  d=ew.tq-group.com;
  h=content-type:mime-version:subject:from:to:message-id:date; s=hse1;
- t=1765878062; v=1;
- b=T0brtq4yrg1PTHrPDFVvu8AeHgqp1I/pFH3ioSgSVYbGMQ7yd/XdB/aHXnwWmGk54pWarw+h
- zB9LIHE1jQa+ZphGK5rb78v5d4GVF4v6bEYdlSiec9pVs8wYKdnJscVz0dFZSh3opoS1VSPARkb
- D8LSQo6gtu+sGpu7ADcYumU7D2TrzFpYCcTxHVNcxOgt8gxORfZRRnXkqcpQ1HavSRX31cgxkAm
- 85fU6HAYnWnjLPaVoenC1VewXF3jozdbbxt7xGwph8ZOy2bm6BlXLnPVXyWCp3tS4uTYSniY3U7
- zTZ2TM6hmO0VWfnsRNnFr9R1lUeG52tg7s+Ex8CmVJuCA==
+ t=1765878059; v=1;
+ b=NhVwV0pGvx79usB0D5HHkzht3GqGx1RnB44xiR8SRJMRBhE07igz+xtW6FqMNawwJ4Y5KQsD
+ VvLrDOuMEdwb13O9EEKhnOKFBg7MEqWzSXsS/R82kzJyEVJg2uWsBL/UkUPV0/HCritM807VICF
+ IoD1/Ic1X2bxlkw6KHj2YimzUSxjy7SAIdf9QCryuAmz4S/9zhZPXgfAtVKDVECr8wb82sB802w
+ dVRw2X62vLb9+dMHUn7TqcEZyZ5JshzvQsy2VYp7IcEZT70t7Qqvo6bHsWuUpUIuuwdXbBt7aE4
+ R1ITPBF7LSHJZ1MYN8vjgzs25fWKZxQ12qEhqHlVZcoEA==
 
-This driver registers a component for asrc. This is also used together
-with easrc, both attached using the device name as component name.
-Eventually debugfs directories with identical name are created in
-soc_init_component_debugfs(), leading to error message:
+Hi,
+
+this series fixes the error regarding duplicate debugfs directory creation on
+TQMa8MPxL (imx8mp) when easrc is enabled:
   debugfs: '30c90000.easrc' already exists in 'tqm-tlv320aic32'
-Fix this by adding the debugfs_prefix.
 
-Signed-off-by: Alexander Stein <alexander.stein@ew.tq-group.com>
----
+This is caused because fsl_easrc adds two components which use the device name
+as component name. Debugfs directories for each component is created, resulting
+on name conflict. Fix this by adding the debugfs_prefix for both component
+drivers.
+
+Before:
+$ ls /sys/kernel/debug/asoc/tqm-tlv320aic32/
+30c30000.sai  30c90000.easrc  HiFi-ASRC-FE  dapm  dapm_pop_time
+dma:30c30000.sai  tlv320aic32x4.1-0018
+
+After:
+$ ls /sys/kernel/debug/asoc/tqm-tlv320aic32/
+30c30000.sai  HiFi-ASRC-FE  asrc:30c90000.easrc  dapm  dapm_pop_time
+dma:30c30000.sai  easrc:30c90000.easrc  tlv320aic32x4.1-0018
+
+Best regards,
+Alexander
+
+Alexander Stein (2):
+  ASoC: fsl_easrc: fix duplicate debugfs directory error
+  ASoC: fsl_asrc_dma: fix duplicate debugfs directory error
+
  sound/soc/fsl/fsl_asrc_dma.c | 3 +++
- 1 file changed, 3 insertions(+)
+ sound/soc/fsl/fsl_easrc.c    | 3 +++
+ 2 files changed, 6 insertions(+)
 
-diff --git a/sound/soc/fsl/fsl_asrc_dma.c b/sound/soc/fsl/fsl_asrc_dma.c
-index 1bba48318e2dd..7dacc06b2f02e 100644
---- a/sound/soc/fsl/fsl_asrc_dma.c
-+++ b/sound/soc/fsl/fsl_asrc_dma.c
-@@ -473,5 +473,8 @@ struct snd_soc_component_driver fsl_asrc_component = {
- 	.pointer	= fsl_asrc_dma_pcm_pointer,
- 	.pcm_construct	= fsl_asrc_dma_pcm_new,
- 	.legacy_dai_naming = 1,
-+#ifdef CONFIG_DEBUG_FS
-+	.debugfs_prefix	= "asrc",
-+#endif
- };
- EXPORT_SYMBOL_GPL(fsl_asrc_component);
 -- 
 2.43.0
 
