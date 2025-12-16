@@ -1,71 +1,44 @@
-Return-Path: <linuxppc-dev+bounces-14789-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14790-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id AC0CBD5B161
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Dec 2025 07:33:02 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68442D5C0D0
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 16 Dec 2025 08:07:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dVpYm5GRRz2xqf;
-	Tue, 16 Dec 2025 18:33:00 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.167.177
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765870380;
-	cv=none; b=Po6KH3+mV4phgSF0ZgnU+bwtaRcVRwkwd69Aj5Mc+E03uy9ywed/iZ/9YzVld68309OgiX3kcxylsJ1Tkt33LgyvxJzAdUyGrOnNNgDe6RLR87cSZ7SUBttB2/1zTLDnVN1VPO4YV+Uo1Z00n5AhcR+Kc7b3Q9LxVPzWlzU1AWIV7ZeomzivXR0k461DMaxqQC/+yRIiQfkLuCSVJ/jeL6GkN3bpDsclOu6tcLjnOpwTBpbJrdUV8t2vdiMoSW5UOsRdXkxa6Q5ix9YbRxqrLIn69KBIYRjfDHdr0i7006SSfpPBzC1Qrvh5PMNYxzTGiESw27dU3UlzyAwM15ykow==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dVqKc37HBz2xqj;
+	Tue, 16 Dec 2025 19:07:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=115.124.30.112
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765872452;
+	cv=none; b=Rv4FQqNhVXqkBcwA4EI4vPrl4hNnoM/RX1TdqMsJF9Bzp0FzGqr6EnlRSAxjoDNGxRzOPRDksEOpYkeLONijNMEtXwgbObcyJRtgtpZXBnSymmFLEWFVBNjtrnAbwinGVnvRLggirS9yPRFU0xaR9Enot1FJYMPb799H9W8dnHibs0n2sgStWi9z9NbVLM+fcy+fT7LHlZeaAVZrYCq87AHb5uwLQqq2tVD9W2NElFS6pGjb6sUpQ0oIPcGsueTjyhYop0eH6BHEquR1VY+kjNpjDpPSqr5+TvCYYD1z/JLqdaFN8kP0WyteWukvBHBBDFW13TL445jrJEEXAAnU1A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765870380; c=relaxed/relaxed;
-	bh=56pDNBRnCd8IeTo2aYkwkfbBEAXuU0fbTgxbB6X8B5o=;
-	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
-	 To:Cc:Content-Type; b=VLMiB65dTLd6mLDlZM2AxZjuiH5mjsBl5DEw4vOTvtGHYPSPIGRBmbPm39VNQwmDU5SVRoW2bxL39c8j+3lhRdKQmobS9CuQOflAakSINIOLa649qIO4ktFYCmWbWflx67fiHAjE2/1lKXCX1eafKeEz41LjwzbGpms5/7HB6QjbEW9B/FZgJtfdpGt8fnXB0B53YH8K2UABmDu1suvo3YlH2uQcqZ0/kFtb32oW0iTmzLiopC/370FfgBN27j4JO5UJ2DNw7fPPAbRSWGJXQiUPulS1NMl0tWLJK9VMxT/dlBb1ytBm6OL3D7495IjPQpZ1ofZdpG6eidT5siXpAA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NgAOMTtE; dkim-atps=neutral; spf=pass (client-ip=209.85.167.177; helo=mail-oi1-f177.google.com; envelope-from=hanguidong02@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1765872452; c=relaxed/relaxed;
+	bh=VK8v6s5J2+yoFDoXd7lb+JbjMFecehdYTMKnXz9FpIA=;
+	h=Message-ID:Date:MIME-Version:Subject:From:To:Cc:References:
+	 In-Reply-To:Content-Type; b=a1xYRkEz2uz+8ZTYeLyKAcvRnvL+0UjMjdmf501mOJ/FqD3reWGBODxq42kPz2BYfcQZxpdcgM7BOLk6YpemlpjTHl3XFcLEXRn2YRwQQChQPbyJGYv8Wkih0ntuxPPGb/ZOrJl505ck3zm4nEBJuTJ7wHOawCQu+X2OlXplpMo3OUOA9tM/dmPA58yB2flVkKu4sBrsSQf1vHgpO5w6TNpljD6XDYA2b/eInx8Ee/itCvV8qv/Yh5FZsTkkLa+FsbuQhoc3llIAx2ygf5Sfc0tcsbz4Fv5D2GuRDrk+DrPPuAXZxnQwn+mIwMBPNnULyeGAxAyogzMweMs5hl3d8Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com; dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=CmIQTym1; dkim-atps=neutral; spf=pass (client-ip=115.124.30.112; helo=out30-112.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.alibaba.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.alibaba.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=NgAOMTtE;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.alibaba.com header.i=@linux.alibaba.com header.a=rsa-sha256 header.s=default header.b=CmIQTym1;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.177; helo=mail-oi1-f177.google.com; envelope-from=hanguidong02@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-oi1-f177.google.com (mail-oi1-f177.google.com [209.85.167.177])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.alibaba.com (client-ip=115.124.30.112; helo=out30-112.freemail.mail.aliyun.com; envelope-from=xueshuai@linux.alibaba.com; receiver=lists.ozlabs.org)
+Received: from out30-112.freemail.mail.aliyun.com (out30-112.freemail.mail.aliyun.com [115.124.30.112])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dVpYl1b9hz2xJ6
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Dec 2025 18:32:58 +1100 (AEDT)
-Received: by mail-oi1-f177.google.com with SMTP id 5614622812f47-450b5338459so2665026b6e.2
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 15 Dec 2025 23:32:58 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1765870315; x=1766475115; darn=lists.ozlabs.org;
-        h=cc:to:subject:message-id:date:from:sender:in-reply-to:references
-         :mime-version:from:to:cc:subject:date:message-id:reply-to;
-        bh=56pDNBRnCd8IeTo2aYkwkfbBEAXuU0fbTgxbB6X8B5o=;
-        b=NgAOMTtEgYIdp6yuMOhZ6DSI9dvzgj+hwozle6jIDAet5cmr4hAYONKSeUrv9t/lCf
-         qSASr4xoxNPJC4MCu01eXROaCFhK6CjzU3ErUODoyLPx9XW2FNGNqlBfBsJVYUCzDOJM
-         waM/gchqq5EYV++ZY1fdwWpU3JBbN7c9lz0nmapeW2t4yABTaSExTy+31Nh9POyTntk2
-         fiMDLnHClBkT/c05abyyFxzXTIe4WEL/SEgq7aqn5WVZc28zI+O5GIF10OiGSyA4UGpW
-         fsYF5JNzzGzwUDNOEFwNPaRaanCcbVxKcSvMotjH8y0GR3BrlV8rX147XDwAqpTMhfuh
-         4DaA==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1765870315; x=1766475115;
-        h=cc:to:subject:message-id:date:from:x-google-sender-delegation
-         :sender:in-reply-to:references:mime-version:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=56pDNBRnCd8IeTo2aYkwkfbBEAXuU0fbTgxbB6X8B5o=;
-        b=qBISSCtJExMKLOUhCYxgZdY/eNUCl4CIylY6xAwMD4HvVFjC1554tLc0tpaFXdz8xN
-         Y3oSZzj6AU4TpVNg764JJ/34M15JY8e+Uh9ha5JkmANzSROuEkdsV6tux2yOjpMsLXJT
-         uwoPVcFFXh7GFPnGmZ1BkDRj+6BmWS6x8mdTFDDEK1YU1pi7pO+jKACF5eJ7fgCFAZB9
-         PLd8QPzDeAPWM8WVLibr/JXYkPfaMgnPlo8IPDo4Ct0iim3jgqdiFFAiZ4fO3v8suebG
-         sROtNW7yeiV1gvgxnpFYCSL4kVl1gzQMbha3TipHhNZeU/N56kfNhNfmtk4+CRbQ76L8
-         V4jg==
-X-Gm-Message-State: AOJu0Yz35r+daSbF9LeSJJCCesVCjeCxPT2wWXoqwFV8EQsXawdW7p44
-	MJt3R/C+VGY4LTsxrNE+kk/tKNf4BwSDWl9ab8DWLmVJyaAiBDXYq+XTs7Kpf+qbWSGXKIpXAj0
-	Lrhwl/35Pz/NLCSQoPLv2Qf+gl03PD9M=
-X-Gm-Gg: AY/fxX6Z1Z3oqq7Q578rBt1k9FzYK7qqQF8+AH04erdKBsbu3Q2Fc9YVOMqHmUgq/BQ
-	EgyoNuKwFPBo3IlZylScriPKbuI+ACPDKuiwWJT/q5obHNgfMJ+1NOwoWMg0vutCTBA57xBz7gB
-	vdnGQfpy+dIhag20RYKxSTqewRbpHz+YW252sBEGKNgbJqZPrkYsQpUDI1gDO7z2CYfpMmqaqyp
-	PLvwQnOIL34QDcIL5WZpWGNgTkGrLvxJZOQbV+0AQfAKVgt8nZ3VCd4WsXcmBy5eyQAfXwxPggp
-	XjFWpsAvBQKcBa6SiBanC49ydRJdnzj+kBYE40vW6GS4V95LHWXj+nxLPxbMqIo=
-X-Google-Smtp-Source: AGHT+IFzI7ofXoz6tqiamTePNQYiATxWPq14YAerOxCZ4uyzeaSK/NErrG3N1vsrCRC/MO9C5GFQdlL9RJQrRJeeA8s=
-X-Received: by 2002:a05:6808:c2b4:b0:450:1e0f:58b5 with SMTP id
- 5614622812f47-455ac837a12mr6166224b6e.7.1765870315162; Mon, 15 Dec 2025
- 23:31:55 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dVqKZ3PSkz2xqf
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 16 Dec 2025 19:07:28 +1100 (AEDT)
+DKIM-Signature:v=1; a=rsa-sha256; c=relaxed/relaxed;
+	d=linux.alibaba.com; s=default;
+	t=1765872444; h=Message-ID:Date:MIME-Version:Subject:From:To:Content-Type;
+	bh=VK8v6s5J2+yoFDoXd7lb+JbjMFecehdYTMKnXz9FpIA=;
+	b=CmIQTym19/ZHb18sEEO/WfoAC05DXN2NVM1RCLUq9NPK5RFyam6nH6ASer7pHcyeXeSmWNqrexwoQFkNkGEgKfKJqY2CtiN2Zg6WVJ5VvEyf52ASXOFehUhUCv3KvDXIzfovoiwMHlSCAWPo+WhEEIZcsK//ZefzJ5OvtG9cgQE=
+Received: from 30.246.178.18(mailfrom:xueshuai@linux.alibaba.com fp:SMTPD_---0WuyWDB0_1765872441 cluster:ay36)
+          by smtp.aliyun-inc.com;
+          Tue, 16 Dec 2025 16:07:22 +0800
+Message-ID: <789970ab-c675-498b-899e-d0d37ddfbc17@linux.alibaba.com>
+Date: Tue, 16 Dec 2025 16:07:21 +0800
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -79,39 +52,127 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-References: <20251202174438.12658-1-hanguidong02@gmail.com>
-In-Reply-To: <20251202174438.12658-1-hanguidong02@gmail.com>
-Sender: 2045gemini@gmail.com
-X-Google-Sender-Delegation: 2045gemini@gmail.com
-From: Gui-Dong Han <hanguidong02@gmail.com>
-Date: Tue, 16 Dec 2025 15:31:43 +0800
-X-Google-Sender-Auth: XvPtkd-Gxef3gjczpCiP680NwtM
-X-Gm-Features: AQt7F2rig2jn6EnuFacoVlXo38M5SBoWgs_YMwg_E1yYr_ObaXqwPpcO1npb5GQ
-Message-ID: <CALbr=LZvZJn=Qoyfsr=m-_eCJYwRafmdXV+TAUQSib4H0j27rA@mail.gmail.com>
-Subject: Re: [PATCH] bus: fsl-mc: fix use-after-free in driver_override_show()
-To: ioana.ciornei@nxp.com
-Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org, 
-	baijiaju1990@gmail.com, stable@vger.kernel.org
-Content-Type: text/plain; charset="UTF-8"
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v6 3/5] PCI/AER: Report fatal errors of RCiEP and EP if
+ link recoverd
+From: Shuai Xue <xueshuai@linux.alibaba.com>
+To: Lukas Wunner <lukas@wunner.de>, Bjorn Helgaas <bhelgaas@google.com>
+Cc: linux-pci@vger.kernel.org, linux-kernel@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, kbusch@kernel.org,
+ sathyanarayanan.kuppuswamy@linux.intel.com, mahesh@linux.ibm.com,
+ oohall@gmail.com, Jonathan.Cameron@huawei.com, terry.bowman@amd.com,
+ tianruidong@linux.alibaba.com
+References: <20251015024159.56414-1-xueshuai@linux.alibaba.com>
+ <20251015024159.56414-4-xueshuai@linux.alibaba.com>
+ <aPYKe1UKKkR7qrt1@wunner.de>
+ <6d7143a3-196f-49f8-8e71-a5abc81ae84b@linux.alibaba.com>
+ <aPY--DJnNam9ejpT@wunner.de>
+ <43390d36-147f-482c-b31a-d02c2624061f@linux.alibaba.com>
+ <aPZGNP79kJO74W4J@wunner.de>
+ <30fe11dd-3f21-4a61-adb0-74e39087c84c@linux.alibaba.com>
+ <aPoIDW_Yt90VgHL8@wunner.de>
+ <239a003e-24dc-4e75-b677-a2c596b31c32@linux.alibaba.com>
+In-Reply-To: <239a003e-24dc-4e75-b677-a2c596b31c32@linux.alibaba.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-Hi Ioana,
 
-This is a gentle ping regarding the patch above.
 
-I understand you are likely very busy, but I wanted to check if this
-might have been missed.
+在 2025/10/24 14:43, Shuai Xue 写道:
+> 
+> 
+> 在 2025/10/23 18:48, Lukas Wunner 写道:
+>> On Mon, Oct 20, 2025 at 11:20:58PM +0800, Shuai Xue wrote:
+>>> 2025/10/20 22:24, Lukas Wunner:
+>>>> On Mon, Oct 20, 2025 at 10:17:10PM +0800, Shuai Xue wrote:
+>>>>>>>      .slot_reset()
+>>>>>>>        => pci_restore_state()
+>>>>>>>          => pci_aer_clear_status()
+>>>>>>
+>>>>>> This was added in 2015 by b07461a8e45b.  The commit claims that
+>>>>>> the errors are stale and can be ignored.  It turns out they cannot.
+>>>>>>
+>>>>>> So maybe pci_restore_state() should print information about the
+>>>>>> errors before clearing them?
+>>>>>
+>>>>> While that could work, we would lose the error severity information at
+>>>>
+>>>> Wait, we've got that saved in pci_cap_saved_state, so we could restore
+>>>> the severity register, report leftover errors, then clear those errors?
+>>>
+>>> You're right that the severity register is also sticky, so we could
+>>> retrieve error severity directly from AER registers.
+>>>
+>>> However, I have concerns about implementing this approach:
+>> [...]
+>>> 3. Architectural consistency: As you noted earlier, "pci_restore_state()
+>>> is only supposed to restore state, as the name implies, and not clear
+>>> errors." Adding error reporting to this function would further violate
+>>> this principle - we'd be making it do even more than just restore state.
+>>>
+>>> Would you prefer I implement this broader change, or shall we proceed
+>>> with the targeted helper function approach for now? The helper function
+>>> solves the immediate problem while keeping the changes focused on the
+>>> AER recovery path.
+>>
+>> My opinion is that b07461a8e45b was wrong and that reported errors
+>> should not be silently ignored. 
+> 
+> Thanks for your input and for discussing the history of commit
+> b07461a8e45b. I understand its intention to ignore errors specifically
+> during enumeration. As far as I know, AdvNonFatalErr events can occur in
+> this phase and typically should be ignored to simplify handling.
+> 
+>> What I'd prefer is that if
+>> pci_restore_state() discovers unreported errors, it asks the AER driver
+>> to report them.
+>>
+>> We've already got a helper to do that:  aer_recover_queue()
+>> It queues up an entry in AER's kfifo and asks AER to report it.
+>>
+>> So far the function is only used by GHES.  GHES allocates the
+>> aer_regs argument from ghes_estatus_pool using gen_pool_alloc().
+>> Consequently aer_recover_work_func() uses ghes_estatus_pool_region_free()
+>> to free the allocation.  That prevents using aer_recover_queue()
+>> for anything else than GHES.  It would first be necessary to
+>> refactor aer_recover_queue() + aer_recover_work_func() such that
+>> it can cope with arbitrary allocations (e.g. kmalloc()).
+> 
+> I agree that aer_recover_queue() and aer_recover_work_func() offer a
+> generalized way to report errors.
+> 
+> However, I’d like to highlight some concerns regarding error discovery
+> during pci_restore_state():
+> 
+> - Errors During Enumeration via Hotplug: Errors such as AdvNonFatalErr
+>    seen during enumeration or hotplug are generally intended to be
+>    ignored, as handling them adds unnecessary complexity without
+>    practical benefits.
+> 
+> - Errors During Downstream Port Containment (DPC): When an error is
+>    detected and not masked, it is expected to propagate through the usual
+>    AER path, either reported directly to the OS or to the firmware.
+>    Finally, these errors should be cleared and reported in a single
+>    cohesive step.
+> 
+> For missed fatal errors during DPC, queuing additional work to report
+> these errors using aer_recover_queue() could introduce significant
+> overhead. Specifically: It may result in the bus being reset and the
+> device reset again, which could unnecessarily disrupt system operation.
+> 
+> Do we really need the heavy way?
+> 
+> I would appreciate more feedback from the community on whether queuing
+> another recovery task for errors detected during pci_restore_state()
+> 
 
-For additional context, I have audited the kernel subsystems that
-implement the driver_override attribute. Out of the 11 buses that use
-this feature, 10 already hold the device lock during the show
-operation to prevent the use-after-free race.
+Hi, ALL,
 
-It appears that fsl-mc is currently the only remaining subsystem that
-does not have this protection. It would be great to align it with the
-rest of the kernel to close this gap.
+Gentle ping.
 
-Please let me know if there are any concerns or if any changes are needed.
+Any feedback is welcomed.
 
-Thanks,
-Gui-Dong Han
+Thanks.
+Shuai
+
 
