@@ -1,34 +1,34 @@
-Return-Path: <linuxppc-dev+bounces-14841-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14842-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F9C4D65C7E
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Dec 2025 16:38:55 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 11517D65C7B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Dec 2025 16:38:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dWfd94Vywz2yxl;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dWfd94fHzz302K;
 	Thu, 18 Dec 2025 03:38:53 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765989533;
-	cv=none; b=iR6GMw38FW39O33GJ1s1Ou++NRyfrsjT5PNngS5iI3sGCRZov3nCQP4C4zTG0RsCOJWEUGb1e8TgJ5IquUpWAkNNnlq0LzSkxTrgkIbaHQ9ZQ04aWboTe4MViR2bqbugsovjwkLcqVOeEsiUeGYgzm4zg9+/g4JQfYCZIf8wPH+T3cYjpBEO1bnq/mJcHXIIANv9HH4d03QgjK7foT0b0ZUPAlFJSFl0amp8Ahn/ioVlZSlYV/lwd8se0Zq9Gi6UzKsnfHhiK9t5DMvhRlKRIeWlcn/MXkmGUTStvi+geIsF/InkvJWpSgMCOUsHGFwRADF44TVf4iO96l8fvAPhPg==
+	cv=none; b=MohbLKzTnCkGP9BSDPtNYrdUxnyp3IHOMEvuFAvTjYp5qzJaa+BQyYnDf3DO3n83j1w8omT9NdjOlVkypk0UGB+OmSMWnuyDheIKsktjwjM1SrOSWzki4RnmJjAHSq/XrM1VwJXj8hhDVCzY/RQ4mt8z9RYRx4SoZESy1e+KmFKy3ZT+TWsxLsaazkw8Y0BsT1YBvr3p9QOrjXQbEER+Cu4Pn48Va4Zfrtxl4QwjEHuU4SvnYT63GkH+M5YOJpv7i0Q5ic8m+/bGibX+a26XVUnIUPZVGcIefdZWiH4W3OiS/YamVgERiO80V8oH4t4Z4mZQpKLZR87ZNt8Rllk1og==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1765989533; c=relaxed/relaxed;
-	bh=N6Z/uKu8uJebQEVGTnY1Mg7FtwLddEoZVb/3GgOmPIs=;
+	bh=68xIy8TR2vZ7SGUApCF+7LoXIIR/VjU2Kv8yZ1lFSig=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=e7puCpu8Po/bFwgdrLkxeCPR2953wl5DPfIWYyWJEMANXktOaI4TNu9wG4Apat0WBF/oy9ty1XBTgey6IZD3hkzV9flG9rGvrUF/4OS8zpgtWur6yNUnv1DuxZAfFmUg4lMUM41EaT+YQD62JyrWVN/JIpdyLDAX7RNKXMY4F5zIfSmMwSnJaq83IMlD0yduhQJc5U/OnF18FKW0petICOwhPkadKWjcMFsPuaS1GNTLdPZTKFwNEv2iewhaJ1pQT0SzR7jmybzwKEyLqiIHJE2WLYs3gDyPqobp70kWJvclaCtbb44S+NfQZ5JqMELb5cCgIx6x096HNB55cwZPqg==
+	 MIME-Version; b=iZUn5E78fka0LORbeJyEyqd9QcoW8qRKmLJgjDm1nEdldM07C7pMn1k8JDo283zRpZX5ZKRyDlqtwhKPZI+hEoF6zVcKeWe85KmH4G3m9XfALcDsveSA3Mm64DszviKlWfCkGmb+aX13CxUUkLEAupRA6BRGQB1ExR0fCvU89aM8Oi/mkAjMTcQUJAmxEWZcwHRPVls4gPFTOc4VfRqt0sXye6/Wid4N9Sc/2qcei6+75Vffv8CJzfYp8SuPMGC7uX9LH9CYPAh6Jp+8p3jHiy69F2m+g335Kgv5QZ1V9FNVQWiSy8z7pc1LW94Bwls3agKXD+RkiOGSoach1U32ew==
 ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=kevin.brodsky@arm.com; receiver=lists.ozlabs.org)
 Received: from foss.arm.com (foss.arm.com [217.140.110.172])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dWfd826SLz2yvM
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2025 03:38:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dWfd82mvZz2yxk
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2025 03:38:51 +1100 (AEDT)
 Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
-	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 99F1EFEC;
-	Wed, 17 Dec 2025 08:38:11 -0800 (PST)
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id 7612A106F;
+	Wed, 17 Dec 2025 08:38:13 -0800 (PST)
 Received: from e123572-lin.arm.com (e123572-lin.cambridge.arm.com [10.1.194.54])
-	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 806BA3F5CA;
-	Wed, 17 Dec 2025 08:38:17 -0800 (PST)
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 100133F5CA;
+	Wed, 17 Dec 2025 08:38:18 -0800 (PST)
 From: Kevin Brodsky <kevin.brodsky@arm.com>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: linux-kernel@vger.kernel.org,
@@ -37,9 +37,9 @@ Cc: linux-kernel@vger.kernel.org,
 	linux-mm@kvack.org,
 	linuxppc-dev@lists.ozlabs.org,
 	Kevin Brodsky <kevin.brodsky@arm.com>
-Subject: [PATCH] powerpc/mm: export symbols for lazy_mmu_mode KUnit tests
-Date: Wed, 17 Dec 2025 16:38:11 +0000
-Message-ID: <20251217163812.2633648-1-kevin.brodsky@arm.com>
+Subject: [PATCH] mm: Add basic tests for lazy_mmu - fix for powerpc
+Date: Wed, 17 Dec 2025 16:38:12 +0000
+Message-ID: <20251217163812.2633648-2-kevin.brodsky@arm.com>
 X-Mailer: git-send-email 2.51.2
 In-Reply-To: <20251216201403.4647a4f9861d3122ee9e90d7@linux-foundation.org>
 References: <20251216201403.4647a4f9861d3122ee9e90d7@linux-foundation.org>
@@ -58,42 +58,31 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Upcoming KUnit tests will call lazy_mmu_mode_{enable,disable}.
-These tests may be built as a module, and because of inlining this
-means that symbols referenced by arch_{enter,leave}_lazy_mmu_mode
-need to be exported.
+Add MODULE_IMPORT_NS() for symbols referenced on powerpc.
 
-Suggested-by: Ryan Roberts <ryan.roberts@arm.com>
-Suggested-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 Signed-off-by: Kevin Brodsky <kevin.brodsky@arm.com>
 ---
 
-Andrew, please add this patch just before the last patch in the series
+Andrew, please squash this into the last patch in the series
 ("mm: Add basic tests for lazy_mmu"). Thanks!
 ---
- arch/powerpc/mm/book3s64/hash_tlb.c | 2 ++
- 1 file changed, 2 insertions(+)
+ mm/tests/lazy_mmu_mode_kunit.c | 3 +++
+ 1 file changed, 3 insertions(+)
 
-diff --git a/arch/powerpc/mm/book3s64/hash_tlb.c b/arch/powerpc/mm/book3s64/hash_tlb.c
-index fbdeb8981ae7..9e622519a423 100644
---- a/arch/powerpc/mm/book3s64/hash_tlb.c
-+++ b/arch/powerpc/mm/book3s64/hash_tlb.c
-@@ -30,6 +30,7 @@
- #include <trace/events/thp.h>
+diff --git a/mm/tests/lazy_mmu_mode_kunit.c b/mm/tests/lazy_mmu_mode_kunit.c
+index 2720eb995714..1c23456b467e 100644
+--- a/mm/tests/lazy_mmu_mode_kunit.c
++++ b/mm/tests/lazy_mmu_mode_kunit.c
+@@ -2,6 +2,9 @@
+ #include <kunit/test.h>
+ #include <linux/pgtable.h>
  
- DEFINE_PER_CPU(struct ppc64_tlb_batch, ppc64_tlb_batch);
-+EXPORT_SYMBOL_IF_KUNIT(ppc64_tlb_batch); /* For lazy_mmu_mode KUnit tests */
- 
- /*
-  * A linux PTE was changed and the corresponding hash table entry
-@@ -154,6 +155,7 @@ void __flush_tlb_pending(struct ppc64_tlb_batch *batch)
- 		flush_hash_range(i, local);
- 	batch->index = 0;
- }
-+EXPORT_SYMBOL_IF_KUNIT(__flush_tlb_pending); /* For lazy_mmu_mode KUnit tests */
- 
- void hash__tlb_flush(struct mmu_gather *tlb)
++/* For some symbols referenced by arch_{enter,leave}_lazy_mmu_mode on powerpc */
++MODULE_IMPORT_NS("EXPORTED_FOR_KUNIT_TESTING");
++
+ static void expect_not_active(struct kunit *test)
  {
+ 	KUNIT_EXPECT_FALSE(test, is_lazy_mmu_mode_active());
 
 base-commit: 8f0b4cce4481fb22653697cced8d0d04027cb1e8
 -- 
