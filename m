@@ -1,113 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-14836-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14837-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 56F9BD65559
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Dec 2025 12:18:48 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 19DDED6555F
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 17 Dec 2025 12:28:55 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dWXs25hlVz2yv9;
-	Wed, 17 Dec 2025 23:18:46 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=74.125.82.47
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765973926;
-	cv=none; b=HwvGfTFekCfDimY40mC7AuuisKd0gEroTPRBGF2Mcjm/FpbKp6SKQraIRv1WyNcKsLzwy7aFLX/G2K34D6nGeN2/A5vnF4bot3HeaLtxayBVXIzzd+lGuaj7V6ednOuVPBpqNl3BZnOV8cPSc7NR16R5qEKP47GlKHuB3jg3YVw3KF2Cs6hwd2sVMi9u0OLv8TFdhrEdz+8E6ciLxVhwdmFcFcmIUAFaF/tvb+8y39de99PKFhJWa4kVBlVOXmxfeFjxLv7aMqJcLJRaWKCbj+NXw9KXY1pefLnFKMM4RUADVRxcTPKL6/tp2gs2kMc+060JPxkuQnmDLm6Snh6SHA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dWY4j4LxTz2yvF;
+	Wed, 17 Dec 2025 23:28:53 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=220.181.50.185
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1765957502;
+	cv=none; b=OKHwTOC1Ocyw4YKGEI+U4nh8OhQ3BewiX8tydYaePiuCMjV5zpW2zeaAbKTn/XdsU9dWWI5BUmicw/YnrHTFjKaIMDN3DoQ9ckdrs5PmBhzhhG9a8aI/e8lkJKuA17V6nlX8UXLoT+gTk7kz2yTWDRF+6p/8ivMjrptvvZSUW76QWvAtzAHtVTLLGINKRXBgzSdWcJCNZa1cdeU9jMWd4CaP+WW4vsREoH7f1pEINMItna7f5q0aMVMJwygjyQEHvQ5042VMYxzDasO/C8YxTy1AEuDgbIoPLTn9/Mnw9WmOlFHi69MoI9euQTcBRLmGAdAHToXsL2cKdgL6A563hg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1765973926; c=relaxed/relaxed;
-	bh=TA4hyyTWjoyEecRU+tFTEv8TY8OLq5jN3IBQEP1dw+M=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=YOAPPGPmppR4Zee6zrWlsS6y+BDCJvg9+f8ji4eT41N0pqEsab/vor9ZjeJCiyVXcQXAiDJ64Yg6S0dXMpdZsdbxZDkzu0uqwWhUEgQlSe3JI1cLXI/y+HD2O2ZdYI811GCtNHmr0uu0sFNJuRvdJPElaBY8FefHHRB7CHBFcjxKOduHgR2L5i0z8xRpN+SNGNSZSaS7vWpHK6411N8502z6zbVYtvh1Xn4Kub7WjsgRjev+F7dFHPMlZl1pijuaapMqmlKGbtNJWdeY6qW5XbeqNt1yeYJwRzgo8+RX8MWHtyfG1wV3l1OneW9E1CVTkxPuVODc7ZQ4O23suJsjTw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AtN8UvsG; dkim-atps=neutral; spf=pass (client-ip=74.125.82.47; helo=mail-dl1-f47.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=roeck-us.net
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=AtN8UvsG;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=74.125.82.47; helo=mail-dl1-f47.google.com; envelope-from=groeck7@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-dl1-f47.google.com (mail-dl1-f47.google.com [74.125.82.47])
+	t=1765957502; c=relaxed/relaxed;
+	bh=Z+Jzz041A/hSxFfjiERCGO9Bw7pgIwdNbbfMviJ0dxM=;
+	h=From:To:CC:Subject:Date:Message-ID:References:In-Reply-To:
+	 Content-Type:MIME-Version; b=HhGtaJFgvRBPOIPEC0Ts/ZaYvnufgIqIQYBjWXe5bsU1EF9ONLS0HeMTmtUqNt+uIeoEGwA9Ioux7Kdt9yPH6AMIPD1io2a3OenCUW/ufXQZyWh3GD1jJKohW4PDgP1xMNjhJhT2dS70m0olSPDNfpF1BAf7SSq+aSCMIcmqUX5vTscd5QiuRq5C0A6gtsnAg7qjJ/CiawBJX/wXgA7g3C6JL8E3x5P2basCDkg5mR6GcTQSciJdfSMh1wPksEs1bcFy5WnU2H5NEbrS9IeZn31rH2foFsgXe9g4GkcrMpf6harHDUgUOA9R95BDD+w6mfzq5L2D5VQwdPFq+I3vJQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com; spf=pass (client-ip=220.181.50.185; helo=baidu.com; envelope-from=lirongqing@baidu.com; receiver=lists.ozlabs.org) smtp.mailfrom=baidu.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baidu.com (client-ip=220.181.50.185; helo=baidu.com; envelope-from=lirongqing@baidu.com; receiver=lists.ozlabs.org)
+Received: from baidu.com (mx22.baidu.com [220.181.50.185])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dWXs040drz2yth
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2025 23:18:43 +1100 (AEDT)
-Received: by mail-dl1-f47.google.com with SMTP id a92af1059eb24-11beb0a7bd6so689813c88.1
-        for <linuxppc-dev@lists.ozlabs.org>; Wed, 17 Dec 2025 04:18:43 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1765973861; x=1766578661; darn=lists.ozlabs.org;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=TA4hyyTWjoyEecRU+tFTEv8TY8OLq5jN3IBQEP1dw+M=;
-        b=AtN8UvsGWPjXLcXeaLXXqTSAlphsYRp6DU7G9ABnUhXxpEa9hvh3xuPI1DJyKDckne
-         AMft00R0lnoFgJdhB2kTT7rajwJYEWBTprCdAnEWSCRd78auybJpKOpy0l3QfaADpnZk
-         XFORxrJjqQn0oAdX/R/hC3rUYyrV/K+31H/WAhf7qTZUet4m7GnaeQr+7jhZxw0uSAA+
-         9MnWg56IK5P2M4Ov6+aQrvVuEy6gBg6gH4B+P2wUorZW3GCFajWF6jNs9CJtldYYJM48
-         8nmETw9hwyairkEoUrbe0z3Qq5zUVz+81zUoFRvpmrY4N5pLS+WoqWieJ4gSg0gX5VLS
-         I3Xg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1765973861; x=1766578661;
-        h=in-reply-to:content-disposition:mime-version:references:message-id
-         :subject:cc:to:from:date:sender:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=TA4hyyTWjoyEecRU+tFTEv8TY8OLq5jN3IBQEP1dw+M=;
-        b=bB/E3hzQRzBQMeuMApEA/qNcxO7qiPKkfFhtHPbdhbozjmg6El2E3PtjJPD6n3xk6K
-         VEjWWarv1ue58qbxGXAj4eUVh4W3I87t1WyDOHdycnw/41bgDb+lpLHZVA31sRYaqaG8
-         rgtpiXrgmh9/ZE0YNIl6sHIBVjrlRSL9Sedtc2N9FCmZFDBnnRoxIa9sZGlDnf44ZcPr
-         8SZU284g/46cCbcx2Q5ZtCE6mBZ8tlyrJeLSSK84V9APDuitPAQxb4eSaBuX0sgng0fE
-         QRXqTAue6WL9XzpE3G9AZ3lKL4/1WkU3ejsBvowuTt9Pk8OrH01nTqY4c91nSmbVnIbA
-         rMaw==
-X-Forwarded-Encrypted: i=1; AJvYcCUYRlbSEBKNkOcqH+nGZgKoPOunXC+pI7ZfVc84UrUCN1RzPWyncXJCCiBOo957C/Bi3lnAVnSwZwWN7ww=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YwUXiFEry62NtEKiOfg146ER4wqMVWTYdCHrZeDrT+hWaE7np5I
-	pOFqWIsuOy3qqhApixRtpXe3EoVCEtSoRUTjOGAp/ojKpSncWKBu/zYR
-X-Gm-Gg: AY/fxX4TEb7IVCCMgMXACwMSBMJ8sMOhNhNYHl7RamQ67z8tbvvrG1m5uKxojKImSPY
-	FdTQV8MGgHQ1UeO5jcN3yyL+qjUZAgg/mTwE/33CsS829chxmNufhWrEhRNTCoUILBdtNLWp8S2
-	8ZpLOENR5cuvAd3A41yndj7B0XIfIBTUVLW9Q4hnEIIiL2/4e4Os22qG5ch1t2MFYuNF5cqAXM4
-	DjLfvp1tBQFq3/HZAvZon09l4mR9/rqcLx0EvRGHtfhSOFwLGTPzyU9GuuEa32TIIPVStDwvxjj
-	LjM6PuG+GUCxeMtuHi6HkzMl5zSKSp8C8C80ihmvBCBNzD2KQJ0s7Aa3mi3x/jaAZXAGcLUy/fe
-	Kww7WcMBfRLQ2/Rjsv/YtG3dSK926wEfouHUCUk+Ai9GBssjps98orq2IbzWU5vArvEv9WYXSMI
-	qMxOniH4Vpx8T5pCg3zOe9ULnm
-X-Google-Smtp-Source: AGHT+IHtTckxV0BrLKUtwEMMlG/KT0X6JCzQ/eEGNn1nvrPgi11fSB7RRA3IhgmdXndE9lBsM2aS9w==
-X-Received: by 2002:a05:7022:e806:b0:119:e569:f86a with SMTP id a92af1059eb24-11f34c29cefmr11289687c88.7.1765973860378;
-        Wed, 17 Dec 2025 04:17:40 -0800 (PST)
-Received: from server.roeck-us.net ([2600:1700:e321:62f0:da43:aeff:fecc:bfd5])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-11f2e30b799sm60713771c88.17.2025.12.17.04.17.39
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Wed, 17 Dec 2025 04:17:39 -0800 (PST)
-Sender: Guenter Roeck <groeck7@gmail.com>
-Date: Wed, 17 Dec 2025 04:17:38 -0800
-From: Guenter Roeck <linux@roeck-us.net>
-To: Leon Romanovsky <leon@kernel.org>
-Cc: Marek Szyprowski <m.szyprowski@samsung.com>,
-	Robin Murphy <robin.murphy@arm.com>,
-	Russell King <linux@armlinux.org.uk>,
-	Juergen Gross <jgross@suse.com>,
-	Stefano Stabellini <sstabellini@kernel.org>,
-	Oleksandr Tyshchenko <oleksandr_tyshchenko@epam.com>,
-	Richard Henderson <richard.henderson@linaro.org>,
-	Matt Turner <mattst88@gmail.com>,
-	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
-	"James E.J. Bottomley" <James.Bottomley@hansenpartnership.com>,
-	Helge Deller <deller@gmx.de>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Geoff Levand <geoff@infradead.org>,
-	"David S. Miller" <davem@davemloft.net>,
-	Andreas Larsson <andreas@gaisler.com>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
-	Dave Hansen <dave.hansen@linux.intel.com>, x86@kernel.org,
-	"H. Peter Anvin" <hpa@zytor.com>, iommu@lists.linux.dev,
-	linux-kernel@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
-	xen-devel@lists.xenproject.org, linux-alpha@vger.kernel.org,
-	linux-mips@vger.kernel.org, linux-parisc@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
-	Jason Gunthorpe <jgg@ziepe.ca>, Jason Gunthorpe <jgg@nvidia.com>
-Subject: Re: [PATCH v5 09/14] parisc: Convert DMA map_page to map_phys
- interface [qemu test failure]
-Message-ID: <b184f1bf-96dc-4546-8512-9cba5ecb58f7@roeck-us.net>
-References: <20251015-remove-map-page-v5-0-3bbfe3a25cdf@kernel.org>
- <20251015-remove-map-page-v5-9-3bbfe3a25cdf@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dWQn85CH7z2yjp;
+	Wed, 17 Dec 2025 18:44:57 +1100 (AEDT)
+From: "Li,Rongqing" <lirongqing@baidu.com>
+To: Lance Yang <lance.yang@linux.dev>
+CC: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
+	<chleroy@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, "Eduard
+ Zingerman" <eddyz87@gmail.com>, Song Liu <song@kernel.org>, Yonghong Song
+	<yonghong.song@linux.dev>, John Fastabend <john.fastabend@gmail.com>, "KP
+ Singh" <kpsingh@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>, Hao Luo
+	<haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>,
+	"linux-doc@vger.kernel.org" <linux-doc@vger.kernel.org>,
+	"linux-kernel@vger.kernel.org" <linux-kernel@vger.kernel.org>,
+	"linux-arm-kernel@lists.infradead.org"
+	<linux-arm-kernel@lists.infradead.org>, "linux-aspeed@lists.ozlabs.org"
+	<linux-aspeed@lists.ozlabs.org>, "linux-openrisc@vger.kernel.org"
+	<linux-openrisc@vger.kernel.org>, "linuxppc-dev@lists.ozlabs.org"
+	<linuxppc-dev@lists.ozlabs.org>, "dri-devel@lists.freedesktop.org"
+	<dri-devel@lists.freedesktop.org>, "bpf@vger.kernel.org"
+	<bpf@vger.kernel.org>, "linux-kselftest@vger.kernel.org"
+	<linux-kselftest@vger.kernel.org>, "wireguard@lists.zx2c4.com"
+	<wireguard@lists.zx2c4.com>, "netdev@vger.kernel.org"
+	<netdev@vger.kernel.org>, Andrew Morton <akpm@linux-foundation.org>
+Subject: =?utf-8?B?562U5aSNOiBb5aSW6YOo6YKu5Lu2XSBSZTogW1BBVENIXSB3YXRjaGRvZzog?=
+ =?utf-8?B?c29mdGxvY2t1cDogcGFuaWMgd2hlbiBsb2NrdXAgZHVyYXRpb24gZXhjZWVk?=
+ =?utf-8?Q?s_N_thresholds?=
+Thread-Topic: =?utf-8?B?W+WklumDqOmCruS7tl0gUmU6IFtQQVRDSF0gd2F0Y2hkb2c6IHNvZnRsb2Nr?=
+ =?utf-8?B?dXA6IHBhbmljIHdoZW4gbG9ja3VwIGR1cmF0aW9uIGV4Y2VlZHMgTiB0aHJl?=
+ =?utf-8?Q?sholds?=
+Thread-Index: AQHcbl/9zLj0PrwWtkKQBC8uxPlgN7Uk2YoAgACa3iA=
+Date: Wed, 17 Dec 2025 07:43:48 +0000
+Message-ID: <e7296a3d65a6445fa6ad4f81a3f7cd55@baidu.com>
+References: <20251216074521.2796-1-lirongqing@baidu.com>
+ <e216e4ae-b882-454d-be8f-24f21a3549d9@linux.dev>
+In-Reply-To: <e216e4ae-b882-454d-be8f-24f21a3549d9@linux.dev>
+Accept-Language: zh-CN, en-US
+Content-Language: zh-CN
+X-MS-Has-Attach:
+X-MS-TNEF-Correlator:
+x-originating-ip: [10.127.72.29]
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: base64
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -121,55 +78,116 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <20251015-remove-map-page-v5-9-3bbfe3a25cdf@kernel.org>
+X-FEAS-Client-IP: 172.31.50.47
+X-FE-Policy-ID: 52:10:53:SYSTEM
 
-Hi,
-
-On Wed, Oct 15, 2025 at 12:12:55PM +0300, Leon Romanovsky wrote:
-> From: Leon Romanovsky <leonro@nvidia.com>
-> 
-> Perform mechanical conversion from .map_page to .map_phys callback.
-> 
-> Reviewed-by: Jason Gunthorpe <jgg@nvidia.com>
-> Signed-off-by: Leon Romanovsky <leonro@nvidia.com>
-
-This patch causes all my 32-bit parisc qemu tests with C3700 machine
-to fail. Network interface tests fail, and all boot attempts from
-any kind of hard drive (scsi, usb) fail with this patch in the tree.
-
-Guenter
-
----
-# bad: [8f0b4cce4481fb22653697cced8d0d04027cb1e8] Linux 6.19-rc1
-# good: [7d0a66e4bb9081d75c82ec4957c50034cb0ea449] Linux 6.18
-git bisect start 'HEAD' 'v6.18'
-# good: [6dfafbd0299a60bfb5d5e277fdf100037c7ded07] Merge tag 'drm-next-2025-12-03' of https://gitlab.freedesktop.org/drm/kernel
-git bisect good 6dfafbd0299a60bfb5d5e277fdf100037c7ded07
-# good: [09cab48db950b6fb8c114314a20c0fd5a80cf990] Merge tag 'soc-arm-6.19' of git://git.kernel.org/pub/scm/linux/kernel/git/soc/soc
-git bisect good 09cab48db950b6fb8c114314a20c0fd5a80cf990
-# bad: [701d7d782d98242a64cdeed90750f88ff733bc39] Merge tag 'spdx-6.19-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/gregkh/spdx
-git bisect bad 701d7d782d98242a64cdeed90750f88ff733bc39
-# good: [66a1025f7f0bc00404ec6357af68815c70dadae2] Merge tag 'soc-newsoc-6.19' of git://git.kernel.org/pub/scm/linux/kernel/git/soc/soc
-git bisect good 66a1025f7f0bc00404ec6357af68815c70dadae2
-# good: [c84d574698bad2c02aad506dfe712f83cbe3b771] Merge tag 'modules-6.19-rc1' of git://git.kernel.org/pub/scm/linux/kernel/git/modules/linux
-git bisect good c84d574698bad2c02aad506dfe712f83cbe3b771
-# bad: [b0319c4642638bad4b36974055b1c0894b2c7aa9] Merge tag 'nfsd-6.19' of git://git.kernel.org/pub/scm/linux/kernel/git/cel/linux
-git bisect bad b0319c4642638bad4b36974055b1c0894b2c7aa9
-# bad: [e637b37a520513a04d00f4add07ec25f357e6c6d] Merge tag 'rproc-v6.19' of git://git.kernel.org/pub/scm/linux/kernel/git/remoteproc/linux
-git bisect bad e637b37a520513a04d00f4add07ec25f357e6c6d
-# bad: [56a1a04dc9bf252641c622aad525894dadc61a07] Merge tag 'libnvdimm-for-6.19' of git://git.kernel.org/pub/scm/linux/kernel/git/nvdimm/nvdimm
-git bisect bad 56a1a04dc9bf252641c622aad525894dadc61a07
-# good: [d0cf6512bbcf77afb6102f886fcd7fd48b7ae043] rust: bitmap: add BitmapVec::new_inline()
-git bisect good d0cf6512bbcf77afb6102f886fcd7fd48b7ae043
-# bad: [936a9f0cb16b0646143f8e05afab458adc51d0a0] xen: swiotlb: Convert mapping routine to rely on physical address
-git bisect bad 936a9f0cb16b0646143f8e05afab458adc51d0a0
-# good: [14cb413af00c5d3950d1a339dd2b6f01ce313fce] dma-mapping: remove unused mapping resource callbacks
-git bisect good 14cb413af00c5d3950d1a339dd2b6f01ce313fce
-# bad: [96ddf2ef58ec070afa8275f371b619462cd8fb2c] parisc: Convert DMA map_page to map_phys interface
-git bisect bad 96ddf2ef58ec070afa8275f371b619462cd8fb2c
-# good: [e4e3fff66a57a7aee048e0737a16874aeaffe9f4] MIPS/jazzdma: Provide physical address directly
-git bisect good e4e3fff66a57a7aee048e0737a16874aeaffe9f4
-# first bad commit: [96ddf2ef58ec070afa8275f371b619462cd8fb2c] parisc: Convert DMA map_page to map_phys interface
+PiA+IGRpZmYgLS1naXQgYS9Eb2N1bWVudGF0aW9uL2FkbWluLWd1aWRlL2tlcm5lbC1wYXJhbWV0
+ZXJzLnR4dA0KPiA+IGIvRG9jdW1lbnRhdGlvbi9hZG1pbi1ndWlkZS9rZXJuZWwtcGFyYW1ldGVy
+cy50eHQNCj4gPiBpbmRleCBhOGQwYWZkLi4yN2M1Zjk2IDEwMDY0NA0KPiA+IC0tLSBhL0RvY3Vt
+ZW50YXRpb24vYWRtaW4tZ3VpZGUva2VybmVsLXBhcmFtZXRlcnMudHh0DQo+ID4gKysrIGIvRG9j
+dW1lbnRhdGlvbi9hZG1pbi1ndWlkZS9rZXJuZWwtcGFyYW1ldGVycy50eHQNCj4gPiBAQCAtNjkz
+NCwxMiArNjkzNCwxMiBAQCBLZXJuZWwgcGFyYW1ldGVycw0KPiA+DQo+ID4gICAJc29mdGxvY2t1
+cF9wYW5pYz0NCj4gPiAgIAkJCVtLTkxdIFNob3VsZCB0aGUgc29mdC1sb2NrdXAgZGV0ZWN0b3Ig
+Z2VuZXJhdGUgcGFuaWNzLg0KPiA+IC0JCQlGb3JtYXQ6IDAgfCAxDQo+ID4gKwkJCUZvcm1hdDog
+PGludD4NCj4gPg0KPiA+IC0JCQlBIHZhbHVlIG9mIDEgaW5zdHJ1Y3RzIHRoZSBzb2Z0LWxvY2t1
+cCBkZXRlY3Rvcg0KPiA+IC0JCQl0byBwYW5pYyB0aGUgbWFjaGluZSB3aGVuIGEgc29mdC1sb2Nr
+dXAgb2NjdXJzLiBJdCBpcw0KPiA+IC0JCQlhbHNvIGNvbnRyb2xsZWQgYnkgdGhlIGtlcm5lbC5z
+b2Z0bG9ja3VwX3BhbmljIHN5c2N0bA0KPiA+IC0JCQlhbmQgQ09ORklHX0JPT1RQQVJBTV9TT0ZU
+TE9DS1VQX1BBTklDLCB3aGljaCBpcyB0aGUNCj4gPiArCQkJQSB2YWx1ZSBvZiBub24temVybyBp
+bnN0cnVjdHMgdGhlIHNvZnQtbG9ja3VwIGRldGVjdG9yDQo+ID4gKwkJCXRvIHBhbmljIHRoZSBt
+YWNoaW5lIHdoZW4gYSBzb2Z0LWxvY2t1cCBkdXJhdGlvbiBleGNlZWRzDQo+ID4gKwkJCU4gdGhy
+ZXNob2xkcy4gSXQgaXMgYWxzbyBjb250cm9sbGVkIGJ5IHRoZSBrZXJuZWwuc29mdGxvY2t1cF9w
+YW5pYw0KPiA+ICsJCQlzeXNjdGwgYW5kIENPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9QQU5J
+Qywgd2hpY2ggaXMNCj4gdGhlDQo+ID4gICAJCQlyZXNwZWN0aXZlIGJ1aWxkLXRpbWUgc3dpdGNo
+IHRvIHRoYXQgZnVuY3Rpb25hbGl0eS4NCj4gDQo+IFNlZW1zIGxpa2Uga2VybmVsL2NvbmZpZ3Mv
+ZGVidWcuY29uZmlnIHN0aWxsIGhhcyB0aGUgb2xkIGZvcm1hdCAiIw0KPiBDT05GSUdfQk9PVFBB
+UkFNX1NPRlRMT0NLVVBfUEFOSUMgaXMgbm90IHNldCIgLi4uDQo+IA0KPiBTaG91bGQgYmUgdXBk
+YXRlZCB0byAiQ09ORklHX0JPT1RQQVJBTV9TT0ZUTE9DS1VQX1BBTklDPTAiLCByaWdodD8NCj4g
+DQoNCldpbGwgZml4IA0KDQoNCj4gPg0KPiA+ICAgCXNvZnRsb2NrdXBfYWxsX2NwdV9iYWNrdHJh
+Y2U9DQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2NvbmZpZ3MvYXNwZWVkX2c1X2RlZmNvbmZp
+Zw0KPiA+IGIvYXJjaC9hcm0vY29uZmlncy9hc3BlZWRfZzVfZGVmY29uZmlnDQo+ID4gaW5kZXgg
+MmU2ZWExMy4uZWM1NThlNSAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL2FybS9jb25maWdzL2FzcGVl
+ZF9nNV9kZWZjb25maWcNCj4gPiArKysgYi9hcmNoL2FybS9jb25maWdzL2FzcGVlZF9nNV9kZWZj
+b25maWcNCj4gPiBAQCAtMzA2LDcgKzMwNiw3IEBAIENPTkZJR19TQ0hFRF9TVEFDS19FTkRfQ0hF
+Q0s9eQ0KPiA+ICAgQ09ORklHX1BBTklDX09OX09PUFM9eQ0KPiA+ICAgQ09ORklHX1BBTklDX1RJ
+TUVPVVQ9LTENCj4gPiAgIENPTkZJR19TT0ZUTE9DS1VQX0RFVEVDVE9SPXkNCj4gPiAtQ09ORklH
+X0JPT1RQQVJBTV9TT0ZUTE9DS1VQX1BBTklDPXkNCj4gPiArQ09ORklHX0JPT1RQQVJBTV9TT0ZU
+TE9DS1VQX1BBTklDPTENCj4gPiAgIENPTkZJR19CT09UUEFSQU1fSFVOR19UQVNLX1BBTklDPTEN
+Cj4gPiAgIENPTkZJR19XUV9XQVRDSERPRz15DQo+ID4gICAjIENPTkZJR19TQ0hFRF9ERUJVRyBp
+cyBub3Qgc2V0DQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvYXJtL2NvbmZpZ3MvcHhhM3h4X2RlZmNv
+bmZpZw0KPiA+IGIvYXJjaC9hcm0vY29uZmlncy9weGEzeHhfZGVmY29uZmlnDQo+ID4gaW5kZXgg
+MDdkNDIyZi4uZmIyNzJlMyAxMDA2NDQNCj4gPiAtLS0gYS9hcmNoL2FybS9jb25maWdzL3B4YTN4
+eF9kZWZjb25maWcNCj4gPiArKysgYi9hcmNoL2FybS9jb25maWdzL3B4YTN4eF9kZWZjb25maWcN
+Cj4gPiBAQCAtMTAwLDcgKzEwMCw3IEBAIENPTkZJR19QUklOVEtfVElNRT15DQo+ID4gICBDT05G
+SUdfREVCVUdfS0VSTkVMPXkNCj4gPiAgIENPTkZJR19NQUdJQ19TWVNSUT15DQo+ID4gICBDT05G
+SUdfREVCVUdfU0hJUlE9eQ0KPiA+IC1DT05GSUdfQk9PVFBBUkFNX1NPRlRMT0NLVVBfUEFOSUM9
+eQ0KPiA+ICtDT05GSUdfQk9PVFBBUkFNX1NPRlRMT0NLVVBfUEFOSUM9MQ0KPiA+ICAgIyBDT05G
+SUdfU0NIRURfREVCVUcgaXMgbm90IHNldA0KPiA+ICAgQ09ORklHX0RFQlVHX1NQSU5MT0NLPXkN
+Cj4gPiAgIENPTkZJR19ERUJVR19TUElOTE9DS19TTEVFUD15DQo+ID4gZGlmZiAtLWdpdCBhL2Fy
+Y2gvb3BlbnJpc2MvY29uZmlncy9vcjFrbGl0ZXhfZGVmY29uZmlnDQo+ID4gYi9hcmNoL29wZW5y
+aXNjL2NvbmZpZ3Mvb3Ixa2xpdGV4X2RlZmNvbmZpZw0KPiA+IGluZGV4IGZiMWViOWEuLjk4NGIw
+ZTMgMTAwNjQ0DQo+ID4gLS0tIGEvYXJjaC9vcGVucmlzYy9jb25maWdzL29yMWtsaXRleF9kZWZj
+b25maWcNCj4gPiArKysgYi9hcmNoL29wZW5yaXNjL2NvbmZpZ3Mvb3Ixa2xpdGV4X2RlZmNvbmZp
+Zw0KPiA+IEBAIC01Miw1ICs1Miw1IEBADQo+IENPTkZJR19MU009ImxvY2tkb3duLHlhbWEsbG9h
+ZHBpbixzYWZlc2V0aWQsaW50ZWdyaXR5LGJwZiINCj4gPiAgIENPTkZJR19QUklOVEtfVElNRT15
+DQo+ID4gICBDT05GSUdfUEFOSUNfT05fT09QUz15DQo+ID4gICBDT05GSUdfU09GVExPQ0tVUF9E
+RVRFQ1RPUj15DQo+ID4gLUNPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9QQU5JQz15DQo+ID4g
+K0NPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9QQU5JQz0xDQo+ID4gICBDT05GSUdfQlVHX09O
+X0RBVEFfQ09SUlVQVElPTj15DQo+ID4gZGlmZiAtLWdpdCBhL2FyY2gvcG93ZXJwYy9jb25maWdz
+L3NraXJvb3RfZGVmY29uZmlnDQo+ID4gYi9hcmNoL3Bvd2VycGMvY29uZmlncy9za2lyb290X2Rl
+ZmNvbmZpZw0KPiA+IGluZGV4IDJiNzFhNmQuLmE0MTE0ZmMgMTAwNjQ0DQo+ID4gLS0tIGEvYXJj
+aC9wb3dlcnBjL2NvbmZpZ3Mvc2tpcm9vdF9kZWZjb25maWcNCj4gPiArKysgYi9hcmNoL3Bvd2Vy
+cGMvY29uZmlncy9za2lyb290X2RlZmNvbmZpZw0KPiA+IEBAIC0yODksNyArMjg5LDcgQEAgQ09O
+RklHX1NDSEVEX1NUQUNLX0VORF9DSEVDSz15DQo+ID4gICBDT05GSUdfREVCVUdfU1RBQ0tPVkVS
+RkxPVz15DQo+ID4gICBDT05GSUdfUEFOSUNfT05fT09QUz15DQo+ID4gICBDT05GSUdfU09GVExP
+Q0tVUF9ERVRFQ1RPUj15DQo+ID4gLUNPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9QQU5JQz15
+DQo+ID4gK0NPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9QQU5JQz0xDQo+ID4gICBDT05GSUdf
+SEFSRExPQ0tVUF9ERVRFQ1RPUj15DQo+ID4gICBDT05GSUdfQk9PVFBBUkFNX0hBUkRMT0NLVVBf
+UEFOSUM9eQ0KPiA+ICAgQ09ORklHX1dRX1dBVENIRE9HPXkNCj4gPiBkaWZmIC0tZ2l0IGEvZHJp
+dmVycy9ncHUvZHJtL2NpL2FybS5jb25maWcNCj4gPiBiL2RyaXZlcnMvZ3B1L2RybS9jaS9hcm0u
+Y29uZmlnIGluZGV4IDQxMWU4MTQuLmQ3YzUxNjcgMTAwNjQ0DQo+ID4gLS0tIGEvZHJpdmVycy9n
+cHUvZHJtL2NpL2FybS5jb25maWcNCj4gPiArKysgYi9kcml2ZXJzL2dwdS9kcm0vY2kvYXJtLmNv
+bmZpZw0KPiA+IEBAIC01Miw3ICs1Miw3IEBAIENPTkZJR19UTVBGUz15DQo+ID4gICBDT05GSUdf
+UFJPVkVfTE9DS0lORz1uDQo+ID4gICBDT05GSUdfREVCVUdfTE9DS0RFUD1uDQo+ID4gICBDT05G
+SUdfU09GVExPQ0tVUF9ERVRFQ1RPUj1uDQo+ID4gLUNPTkZJR19CT09UUEFSQU1fU09GVExPQ0tV
+UF9QQU5JQz1uDQo+ID4gK0NPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9QQU5JQz0wDQo+ID4N
+Cj4gPiAgIENPTkZJR19GV19MT0FERVJfQ09NUFJFU1M9eQ0KPiA+DQo+ID4gZGlmZiAtLWdpdCBh
+L2RyaXZlcnMvZ3B1L2RybS9jaS9hcm02NC5jb25maWcNCj4gPiBiL2RyaXZlcnMvZ3B1L2RybS9j
+aS9hcm02NC5jb25maWcgaW5kZXggZmRkZmJkNC4uZWEwZTMwNyAxMDA2NDQNCj4gPiAtLS0gYS9k
+cml2ZXJzL2dwdS9kcm0vY2kvYXJtNjQuY29uZmlnDQo+ID4gKysrIGIvZHJpdmVycy9ncHUvZHJt
+L2NpL2FybTY0LmNvbmZpZw0KPiA+IEBAIC0xNjEsNyArMTYxLDcgQEAgQ09ORklHX1RNUEZTPXkN
+Cj4gPiAgIENPTkZJR19QUk9WRV9MT0NLSU5HPW4NCj4gPiAgIENPTkZJR19ERUJVR19MT0NLREVQ
+PW4NCj4gPiAgIENPTkZJR19TT0ZUTE9DS1VQX0RFVEVDVE9SPXkNCj4gPiAtQ09ORklHX0JPT1RQ
+QVJBTV9TT0ZUTE9DS1VQX1BBTklDPXkNCj4gPiArQ09ORklHX0JPT1RQQVJBTV9TT0ZUTE9DS1VQ
+X1BBTklDPTENCj4gPg0KPiA+ICAgQ09ORklHX0RFVEVDVF9IVU5HX1RBU0s9eQ0KPiA+DQo+ID4g
+ZGlmZiAtLWdpdCBhL2RyaXZlcnMvZ3B1L2RybS9jaS94ODZfNjQuY29uZmlnDQo+ID4gYi9kcml2
+ZXJzL2dwdS9kcm0vY2kveDg2XzY0LmNvbmZpZw0KPiA+IGluZGV4IDhlYWJhMzg4Li43YWM5OGE3
+IDEwMDY0NA0KPiA+IC0tLSBhL2RyaXZlcnMvZ3B1L2RybS9jaS94ODZfNjQuY29uZmlnDQo+ID4g
+KysrIGIvZHJpdmVycy9ncHUvZHJtL2NpL3g4Nl82NC5jb25maWcNCj4gPiBAQCAtNDcsNyArNDcs
+NyBAQCBDT05GSUdfVE1QRlM9eQ0KPiA+ICAgQ09ORklHX1BST1ZFX0xPQ0tJTkc9bg0KPiA+ICAg
+Q09ORklHX0RFQlVHX0xPQ0tERVA9bg0KPiA+ICAgQ09ORklHX1NPRlRMT0NLVVBfREVURUNUT1I9
+eQ0KPiA+IC1DT05GSUdfQk9PVFBBUkFNX1NPRlRMT0NLVVBfUEFOSUM9eQ0KPiA+ICtDT05GSUdf
+Qk9PVFBBUkFNX1NPRlRMT0NLVVBfUEFOSUM9MQ0KPiA+DQo+ID4gICBDT05GSUdfREVURUNUX0hV
+TkdfVEFTSz15DQo+ID4NCj4gPiBkaWZmIC0tZ2l0IGEva2VybmVsL3dhdGNoZG9nLmMgYi9rZXJu
+ZWwvd2F0Y2hkb2cuYyBpbmRleA0KPiA+IDA2ODVlM2EuLmE1ZmExMTYgMTAwNjQ0DQo+ID4gLS0t
+IGEva2VybmVsL3dhdGNoZG9nLmMNCj4gPiArKysgYi9rZXJuZWwvd2F0Y2hkb2cuYw0KPiA+IEBA
+IC0zNjMsNyArMzYzLDcgQEAgc3RhdGljIHN0cnVjdCBjcHVtYXNrIHdhdGNoZG9nX2FsbG93ZWRf
+bWFzaw0KPiA+IF9fcmVhZF9tb3N0bHk7DQo+ID4NCj4gPiAgIC8qIEdsb2JhbCB2YXJpYWJsZXMs
+IGV4cG9ydGVkIGZvciBzeXNjdGwgKi8NCj4gPiAgIHVuc2lnbmVkIGludCBfX3JlYWRfbW9zdGx5
+IHNvZnRsb2NrdXBfcGFuaWMgPQ0KPiA+IC0JCQlJU19FTkFCTEVEKENPTkZJR19CT09UUEFSQU1f
+U09GVExPQ0tVUF9QQU5JQyk7DQo+ID4gKwkJCUNPTkZJR19CT09UUEFSQU1fU09GVExPQ0tVUF9Q
+QU5JQzsNCj4gPg0KPiA+ICAgc3RhdGljIGJvb2wgc29mdGxvY2t1cF9pbml0aWFsaXplZCBfX3Jl
+YWRfbW9zdGx5Ow0KPiA+ICAgc3RhdGljIHU2NCBfX3JlYWRfbW9zdGx5IHNhbXBsZV9wZXJpb2Q7
+IEBAIC04NzksNyArODc5LDkgQEAgc3RhdGljDQo+ID4gZW51bSBocnRpbWVyX3Jlc3RhcnQgd2F0
+Y2hkb2dfdGltZXJfZm4oc3RydWN0IGhydGltZXIgKmhydGltZXIpDQo+ID4NCj4gPiAgIAkJYWRk
+X3RhaW50KFRBSU5UX1NPRlRMT0NLVVAsIExPQ0tERVBfU1RJTExfT0spOw0KPiA+ICAgCQlzeXNf
+aW5mbyhzb2Z0bG9ja3VwX3NpX21hc2sgJiB+U1lTX0lORk9fQUxMX0JUKTsNCj4gPiAtCQlpZiAo
+c29mdGxvY2t1cF9wYW5pYykNCj4gPiArCQlkdXJhdGlvbiA9IGR1cmF0aW9uIC8gZ2V0X3NvZnRs
+b2NrdXBfdGhyZXNoKCk7DQo+IA0KPiBOaXQ6IHJldXNpbmcgImR1cmF0aW9uIiBoZXJlIG1ha2Vz
+IHRoaW5ncyBhIGJpdCBjb25mdXNpbmcsIG1heWJlIGp1c3QgdXNlIGEgdGVtcA0KPiB2YXJpYWJs
+ZT8NCj4gDQo+IAl0aHJlc2hfY291bnQgPSBkdXJhdGlvbiAvIGdldF9zb2Z0bG9ja3VwX3RocmVz
+aCgpOw0KPiANCj4gCWlmIChzb2Z0bG9ja3VwX3BhbmljICYmIHRocmVzaF9jb3VudCA+PSBzb2Z0
+bG9ja3VwX3BhbmljKQ0KPiAJCXBhbmljKCJzb2Z0bG9ja3VwOiBodW5nIHRhc2tzIik7DQo+IA0K
+DQpXaWxsIGNoYW5nZSBpbiBuZXh0IHZlcnNpb24sIHRoYW5rcw0KDQpbTGksUm9uZ3FpbmddIA0K
+DQoNCg==
 
