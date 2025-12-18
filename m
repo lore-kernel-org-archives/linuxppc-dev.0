@@ -1,63 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-14886-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14887-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2430D6E2D2
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Dec 2025 18:18:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDD19D6E2CA
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Dec 2025 18:30:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dXJnW2wQKz2y7b;
-	Fri, 19 Dec 2025 05:18:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dXK3D34MKz2xqr;
+	Fri, 19 Dec 2025 05:30:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766081903;
-	cv=none; b=b8gPLRyD0rb3WCisEj1uLnZX81UW31BH61VUugGzhUKmNkM+nHxDsMO8afT2iV0n/GSiDLfdfw9zYZSaNSa8JBfU+7TErO/rkPYGOuSnKGnYOOoN+1vo2yTSau/jVpjrkJLn2owQfwaZ4d2468pC4SQtdcqsvCYAtS065KXc8qMpo5v4Cd4DOzNm2RLdLHpESo/CU9vOqT1RUgujPXMhtr5ucr05zu4qvXtrOJDZdfyCENHHwwDHCsfpDvfVJ7+HRXEFloWawyqDIXAuLUyjLrdLmGxZh50e5b3/X0l1scmIvxIMraZMb0pMGLbjQDvQTVwWSq0dykBVkJQ9qslttQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766082616;
+	cv=none; b=nXL+vq8Nfgf5AOyD4xIVCl2ZZWA5fpyzJKrQ6g4uj9dh5mIm88y0idir4QjDqOYOxqYVYr04Kx84WZz3B7kNcDNr/JVTl2LnllyW5Gp6uhUB9ZgseliVXuQRBJVIukgmLfn1ana9THbush4lkAZxWe/W5pfPEasX64c1OdaCNOzq4MQgwt6yl/22Ol04uZb08XcSCA3S2JuNZqFeF5X+kh+Vkdl5+9dXQ3ONcmMrCKi/aeFQN28fBNT+usSakOA/y5wyqlsmpSJA9kCUUAge+9dOxz42I05b0hKsKFcTgk0zqVMmmosptwXknpQuwLpUOlHY+Q1/91faE3/bgv71pA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766081903; c=relaxed/relaxed;
-	bh=5yAEe+2Csw5olb3QOfrQvZogMI1JOb80TlsJvRocuaM=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=OYJ50a4F9MjDVN9/pjtpCsbBYtzRg6wq6OH7eHTRAQMH6Zbgtf3zYAuWSBCHfXKH8IxLm9q441v+6lV685ILoC3NJC79/o7Vqm/af2HJOyFfuvAZKoNQ2Hs0KK8m8R8/7e+HEyM9GHhOu0xU7ZLSJm48P2nlq8pIQzrLtlvV2qvlww2PVhSAdtptCE7+aWrf42c/4zSu/YZpli3Pf2H/bXu7AKbubyD6iGhjevli2gJbjjviSoRCCVkOMbNhwCFxrYh17C01HtYPmxQs8wZ+253R9/QJVqPbIaMPZ4nR12SHCMC67namHy7AU/vOGAg0o2rOj7RUGX1p/1W6FnLepQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BR6+Y+QM; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1766082616; c=relaxed/relaxed;
+	bh=M6TPqQs1Ewkm5e3A0oEahNyrrkVyyYEQ0io6xTIMF0c=;
+	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
+	 In-Reply-To:Content-Type; b=oaF7lBORDU/NxdEm96RQhB4QxeVYJh4YBHFFMzGyHckftM939j1pYUQhSb/8cI9U8ATlvZ0w9/N18pxLkUYjCpU6UkQkdDk/UEa0THsNBgAyfgpfRYKZOSiUEUgK+1ukIZqe2u0N+TH5aJZpIex0SE1ls/MIy19RC+tQKT4BlErUnXYnRgSd/jDj4uDpAA1IwiU11A01Nd64i4x7pLKo6yS+J5ETjjqnJats++owHUpxLgsnG8qw9a1Te6xFWzjY4sWT/XkTxoa5GC3+sCcf5APlkXv34pr58hvvwMtD0Bqfv0Tf/vHmzFwcrqilrqDsufD8aPCTc9TTpN3gOrmT1Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=D95qJ/uS; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BR6+Y+QM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=D95qJ/uS;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXJnV34Dcz2y6G
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Dec 2025 05:18:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXK3C5FFHz2xpm
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Dec 2025 05:30:15 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 80DBB60008;
-	Thu, 18 Dec 2025 18:17:49 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35C7EC4CEFB;
-	Thu, 18 Dec 2025 18:17:47 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 6A8F660055;
+	Thu, 18 Dec 2025 18:29:43 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63623C4CEFB;
+	Thu, 18 Dec 2025 18:29:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1766081869;
-	bh=6ySNi6XK++fEIBHrYyI+0sg8GNMuv8hF9Un7iQAeT5g=;
-	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
-	b=BR6+Y+QMLl75VmQjA/M1LYhujuNhRvNzy20+WTY7Pzz6rl24GmjPOlI6/rLQd/dJA
-	 j5aXGvllMT+awUXA71zEV+2Rs5yuhhaCv4XXK34j6fTnc+iMOjwOteNdV91KjZAeH/
-	 25MicZ1IOl+xmF0VxqWUzhfolPz3VEyOrclh8LOXbOgcPeQCx0kuWGbftCZVysV48a
-	 24fwC9q6eil+ISnAr22o6uGFlYOlbjmAfR39FpU8EX29emN8aHqzVTONgClSuQ8z+J
-	 qX6OLMMgl/FjYSOSMGfTqujVI2xmXfWIDJDUWoQAwKEjSCQeCWIk3TQ4ZPmH1QrZvb
-	 5Yov4DRVc4Hlg==
-From: Mark Brown <broonie@kernel.org>
-To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
- Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
- Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
- Takashi Iwai <tiwai@suse.com>, 
- Alexander Stein <alexander.stein@ew.tq-group.com>
-Cc: linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org
-In-Reply-To: <20251216102246.676181-1-alexander.stein@ew.tq-group.com>
-References: <20251216102246.676181-1-alexander.stein@ew.tq-group.com>
-Subject: Re: [PATCH 1/1] ASoC: fsl_sai: Add missing registers to cache
- default
-Message-Id: <176608186693.237766.7370584798182861413.b4-ty@kernel.org>
-Date: Thu, 18 Dec 2025 18:17:46 +0000
+	s=k20201202; t=1766082583;
+	bh=TjBcGwW4a9QOJ3BdOoSuXFyGMXz0Im1VV4W7/QtXkIk=;
+	h=Date:Subject:To:References:From:In-Reply-To:From;
+	b=D95qJ/uSD8if8jZbBlp8YhG/CuxaSReXnHgs1jHXsNQ/ljXjoFRi1XYxX2j+pSjEs
+	 yex82vI/6qZ3Yiakv4L+Zl0kcxCpIMZs3dLlcCl7fXVmsHV9vIR0KCb0H1garXem8b
+	 Mfkgz5p5H/qYoBEawEDZrCPlzNDqpCb9Mc/3iBfIKqMLcQ+5L9PZ8kTrro0CzrEwK2
+	 Xg2NSj5eJrzbwscEqQfySuR1zzaKAjZtmrwCpUdlZNhSprPywFEdTQeqPGnfvdrEe3
+	 2Ii+x59UF3g/W/F640VvTzb6DyjUxTQ9lQGdMSedIapMiRNOYKFC89/2sBUo4qI+wC
+	 nbQ9q+PDk4TLA==
+Message-ID: <2462a770-7da3-4b42-99ed-6ffd4d44b4f4@kernel.org>
+Date: Thu, 18 Dec 2025 19:29:39 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -71,47 +59,61 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-X-Mailer: b4 0.15-dev-47773
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/mm: Use pte_advance_pfn() in set_huge_pte_at()
+To: Andrew Donnellan <ajd@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
+References: <20251219-set_huge_pte_at_pte_advance_pfn-v1-1-e3378845af7d@linux.ibm.com>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20251219-set_huge_pte_at_pte_advance_pfn-v1-1-e3378845af7d@linux.ibm.com>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Tue, 16 Dec 2025 11:22:45 +0100, Alexander Stein wrote:
-> Drivers does cache sync during runtime resume, setting all writable
-> registers. Not all writable registers are set in cache default, resulting
-> in the erorr message:
->   fsl-sai 30c30000.sai: using zero-initialized flat cache, this may cause
->   unexpected behavior
+Hi Andrew,
+
+Le 18/12/2025 à 17:21, Andrew Donnellan a écrit :
+> In set_huge_pte_at(), replace the existing open coded pte value
+> calculation with the new helper pte_advance_pfn().
 > 
-> Fix this by adding missing writable register defaults.
+> Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
+> ---
+>   arch/powerpc/mm/pgtable.c | 2 +-
+>   1 file changed, 1 insertion(+), 1 deletion(-)
 > 
-> [...]
+> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
+> index 56d7e8960e77d877390d6bcbf0d8a305cc222101..9073e373e1e8a88f904cae592e1e8c34707545e6 100644
+> --- a/arch/powerpc/mm/pgtable.c
+> +++ b/arch/powerpc/mm/pgtable.c
+> @@ -365,7 +365,7 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
+>   
+>   	for (i = 0; i < sz / pdsize; i++, ptep++, addr += pdsize) {
+>   		__set_pte_at(mm, addr, ptep, pte, 0);
+> -		pte = __pte(pte_val(pte) + ((unsigned long long)pdsize / PAGE_SIZE << PFN_PTE_SHIFT));
+> +		pte = pte_advance_pfn(pte, pdsize / PAGE_SIZE);
 
-Applied to
+How can this work ?
 
-   https://git.kernel.org/pub/scm/linux/kernel/git/broonie/sound.git for-next
+pdsize is 4M, PAGE_SIZE is 4k so pdsize/PAGE_SIZE is 0x400.
 
-Thanks!
+PFN_PTE_SHIFT is 24.
 
-[1/1] ASoC: fsl_sai: Add missing registers to cache default
-      commit: 90ed688792a6b7012b3e8a2f858bc3fe7454d0eb
+0x400 << 24 is more than what an unsigned long can contain in 
+pte_advance_pfn()
 
-All being well this means that it will be integrated into the linux-next
-tree (usually sometime in the next 24 hours) and sent to Linus during
-the next merge window (or sooner if it is a bug fix), however if
-problems are discovered then the patch may be dropped or reverted.
+Christophe
 
-You may get further e-mails resulting from automated or manual testing
-and review of the tree, please engage with people reporting problems and
-send followup patches addressing any issues that are reported if needed.
-
-If any updates are required or you are submitting further changes they
-should be sent as incremental updates against current git, existing
-patches will not be replaced.
-
-Please add any relevant lists and maintainers to the CCs when replying
-to this mail.
-
-Thanks,
-Mark
+>   	}
+>   }
+>   #endif
+> 
+> ---
+> base-commit: ea1013c1539270e372fc99854bc6e4d94eaeff66
+> change-id: 20251219-set_huge_pte_at_pte_advance_pfn-0ae18078fcca
+> 
+> 
+> --
+> Andrew Donnellan    OzLabs, ADL Canberra
+> ajd@linux.ibm.com   IBM Australia Limited
+> 
 
 
