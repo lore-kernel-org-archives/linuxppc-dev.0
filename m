@@ -1,50 +1,97 @@
-Return-Path: <linuxppc-dev+bounces-14861-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14862-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DF37AD68BDA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Dec 2025 10:03:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07300D6ACE9
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Dec 2025 11:43:36 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dX5pL3KfLz2xqr;
-	Thu, 18 Dec 2025 21:03:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=111.206.215.185
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766043910;
-	cv=none; b=YeYmY40bU7iBpKbM7t87xD/XfPCKvNkP+VyoExE10dr4ZuWdeOwdolclHyESIOK8w6KvWGp84j+Et59iHNhWPEY7jaRDL9dzgZOsISb9ez0n3BJosXZBxIbPTWmWGS7X8Q5hpYypgYNlPO/Gnur+1DJusdl5yxyXH+es5LQdGZ4K3/hLBOFo/xqNuP+i5EVLaavtIvw+HCE+NOKkep++ViUbURoIO2lzqnChWuX0rhtByW3o+mySkXyUESyg8M4M1i25D7cEKUqxD3n3efVbdV3BDB62zXB4y3t9gKy49ERNFEIDZuNSJnIk1sX4vswsfiE9SV53WVLFzD7v/7/0QQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dX81z3Cz8z2xqr;
+	Thu, 18 Dec 2025 22:43:35 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766058215;
+	cv=none; b=A6r6CS7N0jCKo7K8MwCG2gNRVEP36c+EXIcpryFeOQbKk/db+1OHDVNYmLCO/+Ow+8hMHbKfqxYsM37zSJrOI5HtptEUHl3L7urIVlqfakemp5rkIYNBJfVv7OpBvLmplRRxRVKot75dA8TMn6aq6Ymi9C8OjiUJnYD9scDO5yLE6g31COJW46E2oCCh0UmP1Qu8AAIYlBzWEis/ijy8EBL2d8kTfU92dBmz2rPj3GRH3Zuj17OH3xQHUyvNAbcIpIpQpmcngqaQkAAFAJxH/KNxxIO4QijFWuAJlEa3jxSSdZXm392LT+hZlRwLD38+5QLC1DmphwxMCtFfk4QotA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766043910; c=relaxed/relaxed;
-	bh=ubFQKP7gXeN+eys77YmcHRPo28IrnoTQeky3gPptJ6U=;
-	h=From:To:CC:Subject:Date:Message-ID:MIME-Version:Content-Type; b=aiN6mg65xCtZbik5ZvJS51lVpdLVH5UShDM2jF67/lnHr25bsRAySxhy9fyQZp1E/DlHyMfmBHVBzgXcIn4NilyFWhh4tZnvQF+QLZZJ8q/1nFIFZ1PCoD8nEBMBhmkmIm5Na9rRMkLLf11iz0fgfey0pyd+byZ/jlbs/Kr2JspS6cEyVwZYcVksfuI42QsIdv2LI8AlWM8isZZdbB6drKY8c6Q5JSF3MGx1udnQDYDXAyHVXaLNrh0MjRtk4HlTV2kQY4YFYMyFB9zlDW8wf8SOxhnN1GNPoMT+4+9dixWQ83Ysfa0pVYlANUKs5Eda19B91UgmIPoOx5449WTvIA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com; spf=pass (client-ip=111.206.215.185; helo=baidu.com; envelope-from=lirongqing@baidu.com; receiver=lists.ozlabs.org) smtp.mailfrom=baidu.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=baidu.com
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=baidu.com (client-ip=111.206.215.185; helo=baidu.com; envelope-from=lirongqing@baidu.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 171724 seconds by postgrey-1.37 at boromir; Thu, 18 Dec 2025 18:45:08 AEDT
-Received: from baidu.com (mx24.baidu.com [111.206.215.185])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	t=1766058215; c=relaxed/relaxed;
+	bh=ueBZn+45O9kIeB4OEnwiBfwaPe0oC7Tc2RNIDRGPvmM=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=e+QWsYHnOlNCQ4AvchXXfQwMgzEX03ZnZLX9AJeclPAwQMbzS4TuaeWpK7V9XtNU/B/kubfsvarKJQX5lQS/qdr6AJaO21XAPHf7IuP2zPEob5cUF5cfQYqidVUAE1vg+1mWcJon09XSl9v0afBh3JhR0nCtYxX6AAcAE/CvIpgV5AQGfgbpwP+1MaVFIuDzcOBs8Tg8nngY+LgQXsceO59n17VIJaJDsz4qbF9EmKHxb+DLEAMTEBHCIManvtryx0WBsgHPkzM4eBicxXZ+cEhw9+0bhINNjw/iaelkJdMD+rmV6FtCj+wzCMEv4MuOtQh6pQ7ZO7vZqBukF/Q1Ew==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sktPT0k2; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=sktPT0k2;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dX2kr5Xdsz2xqm;
-	Thu, 18 Dec 2025 18:45:05 +1100 (AEDT)
-From: lirongqing <lirongqing@baidu.com>
-To: Andrew Morton <akpm@linux-foundation.org>, Lance Yang
-	<lance.yang@linux.dev>
-CC: Nicholas Piggin <npiggin@gmail.com>, Christophe Leroy
-	<chleroy@kernel.org>, Martin KaFai Lau <martin.lau@linux.dev>, Eduard
- Zingerman <eddyz87@gmail.com>, Song Liu <song@kernel.org>, Yonghong Song
-	<yonghong.song@linux.dev>, John Fastabend <john.fastabend@gmail.com>, KP
- Singh <kpsingh@kernel.org>, Stanislav Fomichev <sdf@fomichev.me>, Hao Luo
-	<haoluo@google.com>, Jiri Olsa <jolsa@kernel.org>,
-	<linux-doc@vger.kernel.org>, <linux-kernel@vger.kernel.org>,
-	<linux-arm-kernel@lists.infradead.org>, <linux-aspeed@lists.ozlabs.org>,
-	<linux-openrisc@vger.kernel.org>, <linuxppc-dev@lists.ozlabs.org>,
-	<dri-devel@lists.freedesktop.org>, <bpf@vger.kernel.org>,
-	<linux-kselftest@vger.kernel.org>, <wireguard@lists.zx2c4.com>,
-	<netdev@vger.kernel.org>, Li RongQing <lirongqing@baidu.com>
-Subject: [PATCH][v2] watchdog: softlockup: panic when lockup duration exceeds N thresholds
-Date: Thu, 18 Dec 2025 02:43:00 -0500
-Message-ID: <20251218074300.4080-1-lirongqing@baidu.com>
-X-Mailer: git-send-email 2.17.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dX81y2gB1z2xqm
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2025 22:43:33 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5BI9iiAE031618;
+	Thu, 18 Dec 2025 11:42:36 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:date:from:message-id:mime-version
+	:subject:to; s=pp1; bh=ueBZn+45O9kIeB4OEnwiBfwaPe0oC7Tc2RNIDRGPv
+	mM=; b=sktPT0k23Oe0OXh0ci50UBmNSNS/m8VR2vCW3mCRaSU71tS88+onrlb+Y
+	UkNdC4MyzFUXshvaN+0gDbHAZuEHcbZ/Hveuem6pqYbM+Il9+OdPdIETab8xA/pl
+	zpcCOL/NoGMbmW9qJEH5xKMjW0kYenwfdBJbTLy4ZcqqZvHvA3hYUHnh0Xgc0Ho9
+	G3iIM/oZGWlipExwJAgXfJfLQs4jYhWf1I2h7MSX6Bhx9qZsLRvyqsmlVxg3WBwR
+	97PAfJuPDEg/Qb5kN7dFYxQtacB1WZm7VQt7TrlpCnE7R/qpqV23TD8abVlcdr3G
+	NjiLQGgaCvWpxr20tq2t8xMH6Ioow==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4b0wjq9pjq-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 18 Dec 2025 11:42:36 +0000 (GMT)
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5BIBcEub005538;
+	Thu, 18 Dec 2025 11:42:35 GMT
+Received: from ppma12.dal12v.mail.ibm.com (dc.9e.1632.ip4.static.sl-reverse.com [50.22.158.220])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4b0wjq9pjm-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 18 Dec 2025 11:42:35 +0000 (GMT)
+Received: from pps.filterd (ppma12.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma12.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5BI992IM026786;
+	Thu, 18 Dec 2025 11:42:34 GMT
+Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
+	by ppma12.dal12v.mail.ibm.com (PPS) with ESMTPS id 4b1jfsrc49-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 18 Dec 2025 11:42:34 +0000
+Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
+	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5BIBgVRd58393012
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 18 Dec 2025 11:42:31 GMT
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id F1FF72004B;
+	Thu, 18 Dec 2025 11:42:30 +0000 (GMT)
+Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 9A55820040;
+	Thu, 18 Dec 2025 11:42:26 +0000 (GMT)
+Received: from li-4f5ba44c-27d4-11b2-a85c-a08f5b49eada.ibm.com.com (unknown [9.39.19.14])
+	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
+	Thu, 18 Dec 2025 11:42:26 +0000 (GMT)
+From: Sourabh Jain <sourabhjain@linux.ibm.com>
+To: linux-kernel@vger.kernel.org
+Cc: Sourabh Jain <sourabhjain@linux.ibm.com>,
+        Andrew Morton <akpm@linux-foundation.org>,
+        Borislav Petkov <bp@alien8.de>,
+        Christophe Leroy <christophe.leroy@csgroup.eu>,
+        David Hildenbrand <david@kernel.org>,
+        Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Muchun Song <muchun.song@linux.dev>,
+        Oscar Salvador <osalvador@suse.de>,
+        "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
+        Thomas Gleixner <tglx@linutronix.de>,
+        Vasily Gorbik <gor@linux.ibm.com>, linux-mm@kvack.org,
+        linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
+        x86@kernel.org, linux-arm64@lists.infradead.org,
+        linux-riscv@lists.infradead.org
+Subject: [PATCH v5] mm/hugetlb: ignore hugepage kernel args if hugepages are unsupported
+Date: Thu, 18 Dec 2025 17:11:54 +0530
+Message-ID: <20251218114154.228484-1-sourabhjain@linux.ibm.com>
+X-Mailer: git-send-email 2.51.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -58,294 +105,177 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain
-X-Originating-IP: [10.127.73.8]
-X-ClientProxiedBy: bjkjy-exc13.internal.baidu.com (172.31.51.13) To
- bjkjy-exc3.internal.baidu.com (172.31.50.47)
-X-FEAS-Client-IP: 172.31.50.47
-X-FE-Policy-ID: 52:10:53:SYSTEM
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjEzMDAwMSBTYWx0ZWRfX2ylNDjE6qF8M
+ Wvb71AqPND/tyTSz/4Ytx1TX4ByRQ7QD1mz2iDcyWbhOUHqzd4l3OdtAH4F+ro4vS7LrVHz8eHF
+ rZgRlq0mXGrzkikrlT9k5OkiZP/cyjBRDJSmHzwctlb2AXK/3Fsm16RycFVS60CROYA1Q54Vpty
+ B1cx033Z3dVKBwBINWYKYurwB8cnJctF8armXqmLaL0jy+V7hiZgT0+I3Zr7mXABvarhVW2KkHX
+ IoysNWvoY49vxA/fAMv2W/Z9HskNwvdPlQ9iLQhaqgdZxNIbtQGB3MpDmM/wBfOYjFhIqRa6pb4
+ h1Eanrfvb5T8B+x3xEU/1DyIt9IfxNfZDaBdzW9Pv9m725wiy82/fzYIqjwvkpn7QSegbvANnhS
+ e+fdzjYGsmf2hjDbJRujqbnmvDQ7lg==
+X-Proofpoint-GUID: O0qyFaF33IY24Q_lUnei8zetuKTMIwbv
+X-Proofpoint-ORIG-GUID: QflVMWAlGoroFrRjbVQrZbjsNP3JgSGl
+X-Authority-Analysis: v=2.4 cv=Kq5AGGWN c=1 sm=1 tr=0 ts=6943e8ac cx=c_pps
+ a=bLidbwmWQ0KltjZqbj+ezA==:117 a=bLidbwmWQ0KltjZqbj+ezA==:17
+ a=wP3pNCr1ah4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8
+ a=Z4Rwk6OoAAAA:8 a=1UX6Do5GAAAA:8 a=20KFwNOVAAAA:8 a=pGLkceISAAAA:8
+ a=37rDS-QxAAAA:8 a=voM4FWlXAAAA:8 a=JfrnYn6hAAAA:8 a=v1Mu38Z0himUwxGqKPgA:9
+ a=HkZW87K1Qel5hWWM3VKY:22 a=Et2XPkok5AAZYJIKzHr1:22 a=k1Nq6YrhK2t884LQW06G:22
+ a=IC2XNlieTeVoXbcui8wp:22 a=1CNFftbPRP8L7MoqJWF3:22
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-12-18_01,2025-12-17_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ suspectscore=0 malwarescore=0 impostorscore=0 clxscore=1011 spamscore=0
+ priorityscore=1501 lowpriorityscore=0 bulkscore=0 phishscore=0 adultscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2510240000 definitions=main-2512130001
 
-From: Li RongQing <lirongqing@baidu.com>
+Skip processing hugepage kernel arguments (hugepagesz, hugepages, and
+default_hugepagesz) when hugepages are not supported by the
+architecture.
 
-The softlockup_panic sysctl is currently a binary option: panic immediately
-or never panic on soft lockups.
+Some architectures may need to disable hugepages based on conditions
+discovered during kernel boot. The hugepages_supported() helper allows
+architecture code to advertise whether hugepages are supported.
 
-Panicking on any soft lockup, regardless of duration, can be overly
-aggressive for brief stalls that may be caused by legitimate operations.
-Conversely, never panicking may allow severe system hangs to persist
-undetected.
+Currently, normal hugepage allocation is guarded by
+hugepages_supported(), but gigantic hugepages are allocated regardless
+of this check. This causes problems on powerpc for fadump (firmware-
+assisted dump).
 
-Extend softlockup_panic to accept an integer threshold, allowing the kernel
-to panic only when the normalized lockup duration exceeds N watchdog
-threshold periods. This provides finer-grained control to distinguish
-between transient delays and persistent system failures.
+In the fadump (firmware-assisted dump) scenario, a production kernel
+crash causes the system to boot into a special kernel whose sole
+purpose is to collect the memory dump and reboot. Features such as
+hugepages are not required in this environment and should be
+disabled.
 
-The accepted values are:
-- 0: Don't panic (unchanged)
-- 1: Panic when duration >= 1 * threshold (20s default, original behavior)
-- N > 1: Panic when duration >= N * threshold (e.g., 2 = 40s, 3 = 60s.)
+For example, fadump kernel booting with the kernel arguments
+default_hugepagesz=1GB hugepagesz=1GB hugepages=200 prints the
+following logs:
 
-The original behavior is preserved for values 0 and 1, maintaining full
-backward compatibility while allowing systems to tolerate brief lockups
-while still catching severe, persistent hangs.
+HugeTLB: allocating 200 of page size 1.00 GiB failed.  Only allocated 58 hugepages.
+HugeTLB support is disabled!
+HugeTLB: huge pages not supported, ignoring associated command-line parameters
+hugetlbfs: disabling because there are no supported hugepage sizes
 
-Signed-off-by: Li RongQing <lirongqing@baidu.com>
-Cc: Eduard Zingerman <eddyz87@gmail.com>
-Cc: Hao Luo <haoluo@google.com>
-Cc: Jiri Olsa <jolsa@kernel.org>
-Cc: John Fastabend <john.fastabend@gmail.com>
-Cc: KP Singh <kpsingh@kernel.org>
-Cc: Lance Yang <lance.yang@linux.dev>
-Cc: Martin KaFai Lau <martin.lau@linux.dev>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Song Liu <song@kernel.org>
-Cc: Stanislav Fomichev <sdf@fomichev.me>
-Cc: Yonghong Song <yonghong.song@linux.dev>
+Even though the logs say that hugetlb support is disabled, gigantic
+hugepages are still getting allocated, which causes the fadump kernel
+to run out of memory during boot.
+
+To fix this, the gigantic hugepage allocation should come under
+hugepages_supported().
+
+To bring gigantic hugepage allocation under hugepages_supported(), two
+approaches were previously proposed:
+[1] Check hugepages_supported() in the generic code before allocating
+gigantic hugepages.
+[2] Make arch_hugetlb_valid_size() return false for all hugetlb sizes.
+
+Approach [2] has two minor issues:
+1. It prints misleading logs about invalid hugepage sizes
+2. The kernel still processes hugepage kernel arguments unnecessarily
+
+To control gigantic hugepage allocation, it is proposed to skip
+processing the hugepage kernel arguments (hugepagesz, hugepages, and
+default_hugepagesz) when hugepages_support() returns false.
+
+Link: https://lore.kernel.org/all/20250121150419.1342794-1-sourabhjain@linux.ibm.com/ [1]
+Link: https://lore.kernel.org/all/20250128043358.163372-1-sourabhjain@linux.ibm.com/ [2]
 Cc: Andrew Morton <akpm@linux-foundation.org>
+Cc: Borislav Petkov <bp@alien8.de>
+Cc: Christophe Leroy <christophe.leroy@csgroup.eu>
+Cc: David Hildenbrand <david@kernel.org>
+Cc: Heiko Carstens <hca@linux.ibm.com>
+Cc: Ingo Molnar <mingo@redhat.com>
+Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: Michael Ellerman <mpe@ellerman.id.au>
+Cc: Muchun Song <muchun.song@linux.dev>
+Cc: Oscar Salvador <osalvador@suse.de>
+Cc: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
+Cc: Thomas Gleixner <tglx@linutronix.de>
+Cc: Vasily Gorbik <gor@linux.ibm.com>
+Cc: linux-mm@kvack.org
+Cc: linuxppc-dev@lists.ozlabs.org
+Cc: linux-s390@vger.kernel.org
+Cc: x86@kernel.org
+Cc: linux-arm64@lists.infradead.org
+Cc: linux-riscv@lists.infradead.org
+Signed-off-by: Sourabh Jain <sourabhjain@linux.ibm.com>
 ---
-Diff with v1: add a temp variable thresh_count
-              chang config to 0 in kernel/configs/debug.config 
- Documentation/admin-guide/kernel-parameters.txt      | 10 +++++-----
- arch/arm/configs/aspeed_g5_defconfig                 |  2 +-
- arch/arm/configs/pxa3xx_defconfig                    |  2 +-
- arch/openrisc/configs/or1klitex_defconfig            |  2 +-
- arch/powerpc/configs/skiroot_defconfig               |  2 +-
- drivers/gpu/drm/ci/arm.config                        |  2 +-
- drivers/gpu/drm/ci/arm64.config                      |  2 +-
- drivers/gpu/drm/ci/x86_64.config                     |  2 +-
- kernel/configs/debug.config                          |  2 +-
- kernel/watchdog.c                                    | 10 ++++++----
- lib/Kconfig.debug                                    | 13 +++++++------
- tools/testing/selftests/bpf/config                   |  2 +-
- tools/testing/selftests/wireguard/qemu/kernel.config |  2 +-
- 13 files changed, 28 insertions(+), 25 deletions(-)
 
-diff --git a/Documentation/admin-guide/kernel-parameters.txt b/Documentation/admin-guide/kernel-parameters.txt
-index a8d0afd..27c5f96 100644
---- a/Documentation/admin-guide/kernel-parameters.txt
-+++ b/Documentation/admin-guide/kernel-parameters.txt
-@@ -6934,12 +6934,12 @@ Kernel parameters
+Changelog:
+
+v1:
+https://lore.kernel.org/all/20250121150419.1342794-1-sourabhjain@linux.ibm.com/
+
+v2:
+https://lore.kernel.org/all/20250124103220.111303-1-sourabhjain@linux.ibm.com/
+ - disable gigantic hugepage in arch code, arch_hugetlb_valid_size()
+
+v3:
+https://lore.kernel.org/all/20250125104928.88881-1-sourabhjain@linux.ibm.com/
+ - Do not modify the initialization of the shift variable
+
+v4:
+https://lore.kernel.org/all/20250128043358.163372-1-sourabhjain@linux.ibm.com/
+ - Update commit message to include how hugepages_supported() detects
+   hugepages support when fadump is active
+ - Add Reviewed-by tag
+ - NO functional change
+
+v5:
+ - Significant change in approach: disable processing of hugepage kernel
+   arguments if hugepages_supported() returns false
+ - Drop a Reviewed-by tag
+
+---
+ mm/hugetlb.c | 16 ++++++++++++++++
+ 1 file changed, 16 insertions(+)
+
+diff --git a/mm/hugetlb.c b/mm/hugetlb.c
+index 51273baec9e5..e0ab14020513 100644
+--- a/mm/hugetlb.c
++++ b/mm/hugetlb.c
+@@ -4286,6 +4286,11 @@ static int __init hugepages_setup(char *s)
+ 	unsigned long tmp;
+ 	char *p = s;
  
- 	softlockup_panic=
- 			[KNL] Should the soft-lockup detector generate panics.
--			Format: 0 | 1
-+			Format: <int>
- 
--			A value of 1 instructs the soft-lockup detector
--			to panic the machine when a soft-lockup occurs. It is
--			also controlled by the kernel.softlockup_panic sysctl
--			and CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC, which is the
-+			A value of non-zero instructs the soft-lockup detector
-+			to panic the machine when a soft-lockup duration exceeds
-+			N thresholds. It is also controlled by the kernel.softlockup_panic
-+			sysctl and CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC, which is the
- 			respective build-time switch to that functionality.
- 
- 	softlockup_all_cpu_backtrace=
-diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-index 2e6ea13..ec558e5 100644
---- a/arch/arm/configs/aspeed_g5_defconfig
-+++ b/arch/arm/configs/aspeed_g5_defconfig
-@@ -306,7 +306,7 @@ CONFIG_SCHED_STACK_END_CHECK=y
- CONFIG_PANIC_ON_OOPS=y
- CONFIG_PANIC_TIMEOUT=-1
- CONFIG_SOFTLOCKUP_DETECTOR=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- CONFIG_BOOTPARAM_HUNG_TASK_PANIC=1
- CONFIG_WQ_WATCHDOG=y
- # CONFIG_SCHED_DEBUG is not set
-diff --git a/arch/arm/configs/pxa3xx_defconfig b/arch/arm/configs/pxa3xx_defconfig
-index 07d422f..fb272e3 100644
---- a/arch/arm/configs/pxa3xx_defconfig
-+++ b/arch/arm/configs/pxa3xx_defconfig
-@@ -100,7 +100,7 @@ CONFIG_PRINTK_TIME=y
- CONFIG_DEBUG_KERNEL=y
- CONFIG_MAGIC_SYSRQ=y
- CONFIG_DEBUG_SHIRQ=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- # CONFIG_SCHED_DEBUG is not set
- CONFIG_DEBUG_SPINLOCK=y
- CONFIG_DEBUG_SPINLOCK_SLEEP=y
-diff --git a/arch/openrisc/configs/or1klitex_defconfig b/arch/openrisc/configs/or1klitex_defconfig
-index fb1eb9a..984b0e3 100644
---- a/arch/openrisc/configs/or1klitex_defconfig
-+++ b/arch/openrisc/configs/or1klitex_defconfig
-@@ -52,5 +52,5 @@ CONFIG_LSM="lockdown,yama,loadpin,safesetid,integrity,bpf"
- CONFIG_PRINTK_TIME=y
- CONFIG_PANIC_ON_OOPS=y
- CONFIG_SOFTLOCKUP_DETECTOR=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- CONFIG_BUG_ON_DATA_CORRUPTION=y
-diff --git a/arch/powerpc/configs/skiroot_defconfig b/arch/powerpc/configs/skiroot_defconfig
-index 2b71a6d..a4114fc 100644
---- a/arch/powerpc/configs/skiroot_defconfig
-+++ b/arch/powerpc/configs/skiroot_defconfig
-@@ -289,7 +289,7 @@ CONFIG_SCHED_STACK_END_CHECK=y
- CONFIG_DEBUG_STACKOVERFLOW=y
- CONFIG_PANIC_ON_OOPS=y
- CONFIG_SOFTLOCKUP_DETECTOR=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- CONFIG_HARDLOCKUP_DETECTOR=y
- CONFIG_BOOTPARAM_HARDLOCKUP_PANIC=y
- CONFIG_WQ_WATCHDOG=y
-diff --git a/drivers/gpu/drm/ci/arm.config b/drivers/gpu/drm/ci/arm.config
-index 411e814..d7c5167 100644
---- a/drivers/gpu/drm/ci/arm.config
-+++ b/drivers/gpu/drm/ci/arm.config
-@@ -52,7 +52,7 @@ CONFIG_TMPFS=y
- CONFIG_PROVE_LOCKING=n
- CONFIG_DEBUG_LOCKDEP=n
- CONFIG_SOFTLOCKUP_DETECTOR=n
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=n
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=0
- 
- CONFIG_FW_LOADER_COMPRESS=y
- 
-diff --git a/drivers/gpu/drm/ci/arm64.config b/drivers/gpu/drm/ci/arm64.config
-index fddfbd4..ea0e307 100644
---- a/drivers/gpu/drm/ci/arm64.config
-+++ b/drivers/gpu/drm/ci/arm64.config
-@@ -161,7 +161,7 @@ CONFIG_TMPFS=y
- CONFIG_PROVE_LOCKING=n
- CONFIG_DEBUG_LOCKDEP=n
- CONFIG_SOFTLOCKUP_DETECTOR=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- 
- CONFIG_DETECT_HUNG_TASK=y
- 
-diff --git a/drivers/gpu/drm/ci/x86_64.config b/drivers/gpu/drm/ci/x86_64.config
-index 8eaba388..7ac98a7 100644
---- a/drivers/gpu/drm/ci/x86_64.config
-+++ b/drivers/gpu/drm/ci/x86_64.config
-@@ -47,7 +47,7 @@ CONFIG_TMPFS=y
- CONFIG_PROVE_LOCKING=n
- CONFIG_DEBUG_LOCKDEP=n
- CONFIG_SOFTLOCKUP_DETECTOR=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- 
- CONFIG_DETECT_HUNG_TASK=y
- 
-diff --git a/kernel/configs/debug.config b/kernel/configs/debug.config
-index 9f6ab7d..774702591 100644
---- a/kernel/configs/debug.config
-+++ b/kernel/configs/debug.config
-@@ -84,7 +84,7 @@ CONFIG_SLUB_DEBUG_ON=y
- # Debug Oops, Lockups and Hangs
- #
- CONFIG_BOOTPARAM_HUNG_TASK_PANIC=0
--# CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC is not set
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=0
- CONFIG_DEBUG_ATOMIC_SLEEP=y
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_PANIC_ON_OOPS=y
-diff --git a/kernel/watchdog.c b/kernel/watchdog.c
-index 0685e3a..8168e0d 100644
---- a/kernel/watchdog.c
-+++ b/kernel/watchdog.c
-@@ -363,7 +363,7 @@ static struct cpumask watchdog_allowed_mask __read_mostly;
- 
- /* Global variables, exported for sysctl */
- unsigned int __read_mostly softlockup_panic =
--			IS_ENABLED(CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC);
-+			CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC;
- 
- static bool softlockup_initialized __read_mostly;
- static u64 __read_mostly sample_period;
-@@ -774,8 +774,8 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- {
- 	unsigned long touch_ts, period_ts, now;
- 	struct pt_regs *regs = get_irq_regs();
--	int duration;
- 	int softlockup_all_cpu_backtrace;
-+	int duration, thresh_count;
- 	unsigned long flags;
- 
- 	if (!watchdog_enabled)
-@@ -879,7 +879,9 @@ static enum hrtimer_restart watchdog_timer_fn(struct hrtimer *hrtimer)
- 
- 		add_taint(TAINT_SOFTLOCKUP, LOCKDEP_STILL_OK);
- 		sys_info(softlockup_si_mask & ~SYS_INFO_ALL_BT);
--		if (softlockup_panic)
-+		thresh_count = duration / get_softlockup_thresh();
++	if (!hugepages_supported()) {
++		pr_warn("HugeTLB: hugepages unsupported, ignoring hugepages=%s cmdline\n", s);
++		return 0;
++	}
 +
-+		if (softlockup_panic && thresh_count >= softlockup_panic)
- 			panic("softlockup: hung tasks");
- 	}
+ 	if (!parsed_valid_hugepagesz) {
+ 		pr_warn("HugeTLB: hugepages=%s does not follow a valid hugepagesz, ignoring\n", s);
+ 		parsed_valid_hugepagesz = true;
+@@ -4366,6 +4371,11 @@ static int __init hugepagesz_setup(char *s)
+ 	unsigned long size;
+ 	struct hstate *h;
  
-@@ -1228,7 +1230,7 @@ static const struct ctl_table watchdog_sysctls[] = {
- 		.mode		= 0644,
- 		.proc_handler	= proc_dointvec_minmax,
- 		.extra1		= SYSCTL_ZERO,
--		.extra2		= SYSCTL_ONE,
-+		.extra2		= SYSCTL_INT_MAX,
- 	},
- 	{
- 		.procname	= "softlockup_sys_info",
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index ba36939..17a7a77 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -1110,13 +1110,14 @@ config SOFTLOCKUP_DETECTOR_INTR_STORM
- 	  the CPU stats and the interrupt counts during the "soft lockups".
++	if (!hugepages_supported()) {
++		pr_warn("HugeTLB: hugepages unsupported, ignoring hugepagesz=%s cmdline\n", s);
++		return 0;
++	}
++
+ 	parsed_valid_hugepagesz = false;
+ 	size = (unsigned long)memparse(s, NULL);
  
- config BOOTPARAM_SOFTLOCKUP_PANIC
--	bool "Panic (Reboot) On Soft Lockups"
-+	int "Panic (Reboot) On Soft Lockups"
- 	depends on SOFTLOCKUP_DETECTOR
-+	default 0
- 	help
--	  Say Y here to enable the kernel to panic on "soft lockups",
--	  which are bugs that cause the kernel to loop in kernel
--	  mode for more than 20 seconds (configurable using the watchdog_thresh
--	  sysctl), without giving other tasks a chance to run.
-+	  Set to a non-zero value N to enable the kernel to panic on "soft
-+	  lockups", which are bugs that cause the kernel to loop in kernel
-+	  mode for more than (N * 20 seconds) (configurable using the
-+	  watchdog_thresh sysctl), without giving other tasks a chance to run.
+@@ -4414,6 +4424,12 @@ static int __init default_hugepagesz_setup(char *s)
+ 	unsigned long size;
+ 	int i;
  
- 	  The panic can be used in combination with panic_timeout,
- 	  to cause the system to reboot automatically after a
-@@ -1124,7 +1125,7 @@ config BOOTPARAM_SOFTLOCKUP_PANIC
- 	  high-availability systems that have uptime guarantees and
- 	  where a lockup must be resolved ASAP.
- 
--	  Say N if unsure.
-+	  Say 0 if unsure.
- 
- config HAVE_HARDLOCKUP_DETECTOR_BUDDY
- 	bool
-diff --git a/tools/testing/selftests/bpf/config b/tools/testing/selftests/bpf/config
-index 558839e..2485538 100644
---- a/tools/testing/selftests/bpf/config
-+++ b/tools/testing/selftests/bpf/config
-@@ -1,6 +1,6 @@
- CONFIG_BLK_DEV_LOOP=y
- CONFIG_BOOTPARAM_HARDLOCKUP_PANIC=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- CONFIG_BPF=y
- CONFIG_BPF_EVENTS=y
- CONFIG_BPF_JIT=y
-diff --git a/tools/testing/selftests/wireguard/qemu/kernel.config b/tools/testing/selftests/wireguard/qemu/kernel.config
-index 0504c11..bb89d2d 100644
---- a/tools/testing/selftests/wireguard/qemu/kernel.config
-+++ b/tools/testing/selftests/wireguard/qemu/kernel.config
-@@ -80,7 +80,7 @@ CONFIG_HARDLOCKUP_DETECTOR=y
- CONFIG_WQ_WATCHDOG=y
- CONFIG_DETECT_HUNG_TASK=y
- CONFIG_BOOTPARAM_HARDLOCKUP_PANIC=y
--CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=y
-+CONFIG_BOOTPARAM_SOFTLOCKUP_PANIC=1
- CONFIG_BOOTPARAM_HUNG_TASK_PANIC=1
- CONFIG_PANIC_TIMEOUT=-1
- CONFIG_STACKTRACE=y
++	if (!hugepages_supported()) {
++		pr_warn("HugeTLB: hugepages unsupported, ignoring default_hugepagesz=%s cmdline\n",
++			s);
++		return 0;
++	}
++
+ 	parsed_valid_hugepagesz = false;
+ 	if (parsed_default_hugepagesz) {
+ 		pr_err("HugeTLB: default_hugepagesz previously specified, ignoring %s\n", s);
 -- 
-2.9.4
+2.51.1
 
 
