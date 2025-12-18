@@ -1,61 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-14885-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14886-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38396D6E2D1
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Dec 2025 18:18:05 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2430D6E2D2
+	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Dec 2025 18:18:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dXJn42rrgz2yFd;
-	Fri, 19 Dec 2025 05:18:00 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dXJnW2wQKz2y7b;
+	Fri, 19 Dec 2025 05:18:23 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766081880;
-	cv=none; b=VPMeR3bAVJoTsDP3rkJmxWtym+jCzhN51QvHIUFRdDXwF8S3uImiLa0NpepDZY3y6GlK6JW4B6YF+NYGgOJua0t5maGmc4C9yKaplSr8HrR7szbIj7S82NJFXFM+fMjcp883d2D11dxxqKEz9sC7SOdhs0MVZF4UjnrUkjAw3O4SSJO/7pBGEu5M/OD4sobaDUtmZxf7CIDz6EVKkgMZK+SST+S822r7KpbNm4WfLC0srmvRfEgxrnLbg6I5dBwlSWSnI5Vvdpl7xApHwS3A8DCJMY7Ee2qxuz1x0IGM9amPKi+rLu6eeRHVwoPGOoFur1fyljA+ChigEZFHYBaThg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766081903;
+	cv=none; b=b8gPLRyD0rb3WCisEj1uLnZX81UW31BH61VUugGzhUKmNkM+nHxDsMO8afT2iV0n/GSiDLfdfw9zYZSaNSa8JBfU+7TErO/rkPYGOuSnKGnYOOoN+1vo2yTSau/jVpjrkJLn2owQfwaZ4d2468pC4SQtdcqsvCYAtS065KXc8qMpo5v4Cd4DOzNm2RLdLHpESo/CU9vOqT1RUgujPXMhtr5ucr05zu4qvXtrOJDZdfyCENHHwwDHCsfpDvfVJ7+HRXEFloWawyqDIXAuLUyjLrdLmGxZh50e5b3/X0l1scmIvxIMraZMb0pMGLbjQDvQTVwWSq0dykBVkJQ9qslttQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766081880; c=relaxed/relaxed;
-	bh=JZbEZLltgSx+3+la4R8/eGRr+cuu6iTQmCVeHjfkkO8=;
-	h=From:To:In-Reply-To:References:Subject:Message-Id:Date:
-	 MIME-Version:Content-Type; b=EI1i7TnmMpr8hqPa9SvCKbl7rvjTEFDpwfZJBzAltscJe12Sbhc9AMXFlvDWupJ9oB6J8W3t4fpHEn5oGc/5FGZIU4vakudgg1CR+3kvkhFDZMgwE2ABV3imBJmGi6w2Tp/SD+mGBJCekUlCR+Qr2WA3bk6pG2z31CvDG6HpheRFkrKHzwUKRNDRtXh659yjBhME6ip7h0wQ1eawZPzyAKJhAP+iSyE9V2Zh1WXEslCXCBdG9vnIcj4RGko/+DCzIyZw3MGViVbPlfMi+vl2jhXmWxn5KJCnnXN53np/jA/eImfxa0C6rPkJKAywIfDUDJZl3oh9MXvPVzg1SGT+hQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=V9MG8j3m; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1766081903; c=relaxed/relaxed;
+	bh=5yAEe+2Csw5olb3QOfrQvZogMI1JOb80TlsJvRocuaM=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Message-Id:Date:
+	 MIME-Version:Content-Type; b=OYJ50a4F9MjDVN9/pjtpCsbBYtzRg6wq6OH7eHTRAQMH6Zbgtf3zYAuWSBCHfXKH8IxLm9q441v+6lV685ILoC3NJC79/o7Vqm/af2HJOyFfuvAZKoNQ2Hs0KK8m8R8/7e+HEyM9GHhOu0xU7ZLSJm48P2nlq8pIQzrLtlvV2qvlww2PVhSAdtptCE7+aWrf42c/4zSu/YZpli3Pf2H/bXu7AKbubyD6iGhjevli2gJbjjviSoRCCVkOMbNhwCFxrYh17C01HtYPmxQs8wZ+253R9/QJVqPbIaMPZ4nR12SHCMC67namHy7AU/vOGAg0o2rOj7RUGX1p/1W6FnLepQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BR6+Y+QM; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=V9MG8j3m;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BR6+Y+QM;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=broonie@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXJn36jbnz2xpm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Dec 2025 05:17:59 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXJnV34Dcz2y6G
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Dec 2025 05:18:22 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6953B60149;
-	Thu, 18 Dec 2025 18:17:57 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E7A97C4CEFB;
-	Thu, 18 Dec 2025 18:17:54 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 80DBB60008;
+	Thu, 18 Dec 2025 18:17:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 35C7EC4CEFB;
+	Thu, 18 Dec 2025 18:17:47 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1766081877;
-	bh=pWxzxV2ERpNbrD9L8kun4z2fQ/h+mC0aWXfZj1yYrPQ=;
-	h=From:To:In-Reply-To:References:Subject:Date:From;
-	b=V9MG8j3mb6EY3/o7CNWxaul3cOszPImUcKNbIxbU5vAHTZga4UXlQZsCUcNeFyO56
-	 bg/26ZU7OBbsnAgL64+yHdBriENsXHAJeLWO8wmIVwqAgOgBc8KgLN/bMTithUftfR
-	 lQGJgXzO7i7RFsr8tV2+fhH1v9yWEfIw6Ln4vgD6U2bsrralKt2ZuyDDAqz6Sn6/hs
-	 tNDurw4NV9FWQGuKsmeHWclM5iangoulyqSv7dBNmArVKctQRyAw/Fw8NAOGEYjAbs
-	 n/KNExArBNizQ8D3LAYoyJ9cyTe2KdCMBDEk8KPU+KtwrbANUF+Bq7fhLwAPkGlMlZ
-	 GItvzLME36mQw==
+	s=k20201202; t=1766081869;
+	bh=6ySNi6XK++fEIBHrYyI+0sg8GNMuv8hF9Un7iQAeT5g=;
+	h=From:To:Cc:In-Reply-To:References:Subject:Date:From;
+	b=BR6+Y+QMLl75VmQjA/M1LYhujuNhRvNzy20+WTY7Pzz6rl24GmjPOlI6/rLQd/dJA
+	 j5aXGvllMT+awUXA71zEV+2Rs5yuhhaCv4XXK34j6fTnc+iMOjwOteNdV91KjZAeH/
+	 25MicZ1IOl+xmF0VxqWUzhfolPz3VEyOrclh8LOXbOgcPeQCx0kuWGbftCZVysV48a
+	 24fwC9q6eil+ISnAr22o6uGFlYOlbjmAfR39FpU8EX29emN8aHqzVTONgClSuQ8z+J
+	 qX6OLMMgl/FjYSOSMGfTqujVI2xmXfWIDJDUWoQAwKEjSCQeCWIk3TQ4ZPmH1QrZvb
+	 5Yov4DRVc4Hlg==
 From: Mark Brown <broonie@kernel.org>
-To: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com, 
- nicoleotsuka@gmail.com, lgirdwood@gmail.com, perex@perex.cz, tiwai@suse.com, 
- linux-kernel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-sound@vger.kernel.org, imx@lists.linux.dev, 
- Chancel Liu <chancel.liu@nxp.com>
-In-Reply-To: <20251216071656.648412-1-chancel.liu@nxp.com>
-References: <20251216071656.648412-1-chancel.liu@nxp.com>
-Subject: Re: [PATCH] ASoC: fsl-asoc-card: Use of_property_present() for
- non-boolean properties
-Message-Id: <176608187468.237766.15246617240590815373.b4-ty@kernel.org>
-Date: Thu, 18 Dec 2025 18:17:54 +0000
+To: Shengjiu Wang <shengjiu.wang@gmail.com>, Xiubo Li <Xiubo.Lee@gmail.com>, 
+ Fabio Estevam <festevam@gmail.com>, Nicolin Chen <nicoleotsuka@gmail.com>, 
+ Liam Girdwood <lgirdwood@gmail.com>, Jaroslav Kysela <perex@perex.cz>, 
+ Takashi Iwai <tiwai@suse.com>, 
+ Alexander Stein <alexander.stein@ew.tq-group.com>
+Cc: linux-sound@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
+ linux-kernel@vger.kernel.org
+In-Reply-To: <20251216102246.676181-1-alexander.stein@ew.tq-group.com>
+References: <20251216102246.676181-1-alexander.stein@ew.tq-group.com>
+Subject: Re: [PATCH 1/1] ASoC: fsl_sai: Add missing registers to cache
+ default
+Message-Id: <176608186693.237766.7370584798182861413.b4-ty@kernel.org>
+Date: Thu, 18 Dec 2025 18:17:46 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,13 +75,14 @@ Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
 X-Mailer: b4 0.15-dev-47773
 
-On Tue, 16 Dec 2025 16:16:56 +0900, Chancel Liu wrote:
-> The use of of_property_read_bool() for non-boolean properties is
-> deprecated in favor of of_property_present() when testing for property
-> presence.
-> Otherwise there'll be kernel warning:
-> [   29.018081] OF: /sound-wm8962: Read of boolean property 'hp-det-gpios' with a value.
+On Tue, 16 Dec 2025 11:22:45 +0100, Alexander Stein wrote:
+> Drivers does cache sync during runtime resume, setting all writable
+> registers. Not all writable registers are set in cache default, resulting
+> in the erorr message:
+>   fsl-sai 30c30000.sai: using zero-initialized flat cache, this may cause
+>   unexpected behavior
 > 
+> Fix this by adding missing writable register defaults.
 > 
 > [...]
 
@@ -89,8 +92,8 @@ Applied to
 
 Thanks!
 
-[1/1] ASoC: fsl-asoc-card: Use of_property_present() for non-boolean properties
-      commit: fa43ab13c59f4c047c479673792ed033ab567c65
+[1/1] ASoC: fsl_sai: Add missing registers to cache default
+      commit: 90ed688792a6b7012b3e8a2f858bc3fe7454d0eb
 
 All being well this means that it will be integrated into the linux-next
 tree (usually sometime in the next 24 hours) and sent to Linus during
