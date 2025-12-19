@@ -1,82 +1,53 @@
-Return-Path: <linuxppc-dev+bounces-14890-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14891-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1F4B8D711D6
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Dec 2025 08:00:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 51AC6D711D6
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Dec 2025 08:13:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dXg1r50w3z2yFW;
-	Fri, 19 Dec 2025 19:00:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.210.179
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766123020;
-	cv=none; b=m2v9CK9iWbZWNk+7gYiOoQx2awXldl9LbgoRGVzT+cRTI8olxI2fQq40C+kepU/OGszCmi+pQsZN4KJiNtyYJatx2ExNmBkFYQIJmPgPUScPwql5K+QhF7KZTjEXlogVzcEWsbwG+7LpGGrvsuOGYv5YuCP6ZEktjoj8fwUID0rqwdyz+1wcqfrdRDs2k2GXTJDyVcJoVxxkMqL2sW+D3xNxNVW+XN0TcBKWo5yvyFNicTfJKu8xBwpJJvw2H9NwaRLZt1v8iiHidmHp7zYBzI1FCOdQYaY2uWX/ufUF/bjH+eEId2wHgTVFaoIsyT/IUc2bN4ScyJX0T51imrPYOw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dXgJp6LPnz2xqm;
+	Fri, 19 Dec 2025 19:13:14 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766131994;
+	cv=none; b=GTVK91n/ArOtC3+WDVcm3/txT9j16eB4w+o5FAj08HrWtB9XqUBSQZKozDmH6p9gnqwi7Dbm/JjxOevrDh8Jm78mW8j/Hi4FkBH+dvDMrIeOuKT+rAP5esZnSOssJt8Ow4Ca+o/2Zx5mMevTsduNft/cnG+jdZ/UAxSYyFbIwcA8JrWO0kr6LHSwOEyqwEzkRdm0/54scJIqxECH2FJaFD4morokjMvEJuSfPtd1CElnWlOwLsViNBYcHbMkQQQbkJDAT1nok+SfvC/H6CUYvm3XlSQjPnhVmDhP7yzE/g3PislN/pgmbWb73ipm/uwm4VovIWg4Fx6R8He/RB6ioQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766123020; c=relaxed/relaxed;
-	bh=3YZTuXKJS0jJ/FjWVkX1S0/dpihzlaBm67evQ8OxNp4=;
-	h=From:To:Cc:Subject:In-Reply-To:Date:Message-ID:References; b=HjnFoFBj4YThmRe+by4J6ziCOAAxqJnxLH52kjvO7Ko4QF5PRUDrIq1yWk8L5vfrRve65ZUjkpkanGaZfTMkaAH5d1hNQ5CVsBEjx0hkJvCtculh95lZ8G4rkKILCg298aZFNED75MCyej8Bc2vyLnTH1acBRDdsjjHOve5qtJ1kOu2pYgssOJqR9Y3TEttOQ4Csp46V1bAYee3SlCUWqtFa7C13Tphx5nQJNrpQeBTEbIQ20dYxAUHVziQW1G7ghdZKMK7LcxOUgPTzY/iyJrULZrH6GfAmJr4RBfqNN9a8njkJSkfn2WM/GQfCTI9aq/D3YiAAhudX5p7EdBPlgQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gDokuD6y; dkim-atps=neutral; spf=pass (client-ip=209.85.210.179; helo=mail-pf1-f179.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1766131994; c=relaxed/relaxed;
+	bh=OvpuZ8PIxat/8+yvXFluaI02bnxexB1erWkSZhJRxVk=;
+	h=Content-Type:MIME-Version:Subject:From:Message-Id:Date:References:
+	 In-Reply-To:To:Cc; b=K+whUtWRTz1hgoXT1Nz/+kprn74bPfGacPUPGl/PgEV5sE6pb8Rynr8IbMUeNMBDyE5CRpbB7QrEpZ8t0WHYOUUfT0Iz7qKoBvqpal9u8mEGFcpH+gl6b7+v4EiEMZjhLxovBuGseqbvOwd1qRyumgMFtek6Y2dWilm/AixcSKoCDQKYarBxJU2VD+IHAZZa9gUglT0ZJRpPfbU4OtoeA7De0uJey27+JVBq6ybZvh0olAyZJz6rAomYR0eBahZKsrdgqskvyhl05Fewx6PZW5wfdfUiXmvjGtMuIsfAkafoy96cDVePAxwRQwJ25uxSfU3kD/L69r1ueBUnku92sw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IaLW4S1t; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=gDokuD6y;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=IaLW4S1t;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.210.179; helo=mail-pf1-f179.google.com; envelope-from=ritesh.list@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-pf1-f179.google.com (mail-pf1-f179.google.com [209.85.210.179])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=patchwork-bot+linux-riscv@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXc0C1sN5z2xqG
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Dec 2025 16:43:37 +1100 (AEDT)
-Received: by mail-pf1-f179.google.com with SMTP id d2e1a72fcca58-7aae5f2633dso1413560b3a.3
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 18 Dec 2025 21:43:37 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1766122955; x=1766727755; darn=lists.ozlabs.org;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=3YZTuXKJS0jJ/FjWVkX1S0/dpihzlaBm67evQ8OxNp4=;
-        b=gDokuD6y2VyIRX+zCmdHbN6hf8aKfUN8DfeCs/Whx/wWd7ANaNaH5Z7VrePB/rOFTp
-         IBED53/1ofun6cTlEMMhhEGfnyvr4fpszXQmHtCPsWB+p6lXpQCAmk1dlbkd6z0Ne4Zh
-         cTMVhXx26Z2leNyf+KKKpZbmw8EvX/wWeiD4hFLkShf3SF+cxsocIkE4O6QkXQjGTXZk
-         +cvBB+nOV0QmgVSwC0Kq2DRK1jJRtPW12vEoVtdCHvs65dZWZHgIPkxLdm/Z+YS49kbL
-         zxgt3Rc7EKPLCIV5jyrnhtc6CGrTXa0XQb0o6Sk2DkKy5RCeYJSyCPSx2QrBLewL2f4G
-         uXCg==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1766122955; x=1766727755;
-        h=references:message-id:date:in-reply-to:subject:cc:to:from:x-gm-gg
-         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
-        bh=3YZTuXKJS0jJ/FjWVkX1S0/dpihzlaBm67evQ8OxNp4=;
-        b=XI6pH3vMmbnHyHcfwAc6N5//HYh6vcKS0LNDX7u1vrswZZxY2Tnz/ZDAF3XHyoziWu
-         nGL4d1gzSFj/3pYsWfBKCtc2q7NJ8izgB0GKzBkt6+BmA52hhEk0WblD6L3JvvMkHA53
-         PmVATPD8svcjotaz1e/nTXEedxL3Mccg98/PXY/FVQnpByfjmD8paSvx9Nl5IcA2zdPH
-         wJLFNO9UsekXZelfXvKOGahM0KgfiSSJ1Eedi623EE3XbW0qHC4c3KK17TbZBSCjH87O
-         3B0034+7ntOiEKNB3X0i2M2gblpfxMpIrJj1V6+6ROHpdg1c2GdW9VY4HQ4iH94YEyhn
-         NNdQ==
-X-Forwarded-Encrypted: i=1; AJvYcCUOiobwExyPnGAwrVdvVfbLHZPrFfNPefNgbYt1fAb28W0C3ag3zqUnxhbaCH6zUocFQuedF6Wu/xrVObg=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz3TdC9kqZQkEOwfz6HG8QfG/2v5HBNS86TzE/kEXFMLlgWjPoS
-	wz5HbkuiyatJFbvlrnImxmlB/5VgIR0bV9DX9DvP4AgsGcY7M3/c1GJz
-X-Gm-Gg: AY/fxX6yEJrdQYJgoIHGDFc0vs8rQjIBijxPOJmUNKyXAIh4g0pqPp5lRfKRmB2nyD1
-	XKSIbnwUX66v2YFxTBBD6qza09iYTiXtdNRx4APQ/IUN6a5JIMA81YF1vVdvoIYUfd65+1wo9c5
-	Hr+JJPi5xEX30acBtIFkLQBYywfn347Tz8eQhyXRfLjnkWwq8M1gL7YT8M/sh8s9FAnXTz61q/m
-	1a+49tb/DNuKbFxOn8S3Hm6mRu3KZSSynHZtuLf16paFzHBtONvrfM/Ku2VwrmF9XTeHdUk7s03
-	XbKTsM+3eztZZKMiIQ17mUbwq+i5YypdTE16E8nDY2F8iqHho/ArIgadxBhz9Qb0Nrq8D9ct7hI
-	yQt+00yDNFKA+g9zcVLPuSOlavnkiornipiMOciBTEUDreLr5fRJXpPFv6oqusGDJ9s8K7Rtbc4
-	draAIC3w==
-X-Google-Smtp-Source: AGHT+IGI8fuFuucCjImuX4l87nELJyNl9OPjlv6P1lULzof6E2V8PchTbygl/w/ZX4miaVw5gIXTMA==
-X-Received: by 2002:a05:6a00:414b:b0:7e8:450c:61b6 with SMTP id d2e1a72fcca58-7ff6607cf9emr1880110b3a.38.1766122955457;
-        Thu, 18 Dec 2025 21:42:35 -0800 (PST)
-Received: from dw-tp ([203.81.243.211])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-7ff7e0a19besm1067558b3a.40.2025.12.18.21.42.27
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Thu, 18 Dec 2025 21:42:34 -0800 (PST)
-From: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
-To: Sourabh Jain <sourabhjain@linux.ibm.com>, linux-kernel@vger.kernel.org
-Cc: Sourabh Jain <sourabhjain@linux.ibm.com>, Andrew Morton <akpm@linux-foundation.org>, Borislav Petkov <bp@alien8.de>, Christophe Leroy <christophe.leroy@csgroup.eu>, David Hildenbrand <david@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, Thomas Gleixner <tglx@linutronix.de>, Vasily Gorbik <gor@linux.ibm.com>, linux-mm@kvack.org, linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, x86@kernel.org, linux-arm64@lists.infradead.org, linux-riscv@lists.infradead.org
-Subject: Re: [PATCH v5] mm/hugetlb: ignore hugepage kernel args if hugepages are unsupported
-In-Reply-To: <20251218114154.228484-1-sourabhjain@linux.ibm.com>
-Date: Fri, 19 Dec 2025 09:45:06 +0530
-Message-ID: <875xa3ksz9.ritesh.list@gmail.com>
-References: <20251218114154.228484-1-sourabhjain@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXgJp10XGz2xfK
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Dec 2025 19:13:14 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id A7A70441F0;
+	Fri, 19 Dec 2025 08:13:11 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 830A6C4CEF1;
+	Fri, 19 Dec 2025 08:13:11 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1766131991;
+	bh=VHoS82AXfCFO1ejAKfSVVHRYub84nw1PWg6S5l2Exag=;
+	h=Subject:From:Date:References:In-Reply-To:To:Cc:From;
+	b=IaLW4S1tN6Y5d0CEwtYrP7pEFFatg4+zyVk42le/G1ucAiucsqwdqRrXSmIZwetfz
+	 2zs60fMbWBsq8viNHscFfmAKLsGTsX8ViZtlMfKG9WYxS113c6NsRFI8XmO0QqXa/c
+	 G0kwrN1ENE+XMTcx1FH3lNlIq0qG47mawO0dWLcFaANMO7XG7pRpYaBN+N0AlY0L56
+	 ULFhlpqrcbAvM1rLyzbhF9iEwedS5paG2uV9+u0arVl40hVQMgM6e0mGyCZneg8EU8
+	 smrcfl6UIkPgQ9go9rjfopU/D3bUCirJ/35nYbjYY0piCkggs9AMgBsGaHp6htqpnM
+	 PkespiJB9S78Q==
+Received: from [10.30.226.235] (localhost [IPv6:::1])
+	by aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org (Postfix) with ESMTP id B5C24380AA50;
+	Fri, 19 Dec 2025 08:10:01 +0000 (UTC)
+Content-Type: text/plain; charset="utf-8"
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -89,76 +60,71 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
+MIME-Version: 1.0
+Content-Transfer-Encoding: 8bit
+Subject: Re: [PATCH v2 00/10] kbuild: userprogs: introduce
+ architecture-specific CC_CAN_LINK and userprog flags
+From: patchwork-bot+linux-riscv@kernel.org
+Message-Id: 
+ <176613180027.3684357.16322390150390680475.git-patchwork-notify@kernel.org>
+Date: Fri, 19 Dec 2025 08:10:00 +0000
+References: <20251014-kbuild-userprogs-bits-v2-0-faeec46e887a@linutronix.de>
+In-Reply-To: <20251014-kbuild-userprogs-bits-v2-0-faeec46e887a@linutronix.de>
+To: =?utf-8?q?Thomas_Wei=C3=9Fschuh_=3Cthomas=2Eweissschuh=40linutronix=2Ede=3E?=@aws-us-west-2-korg-oddjob-rhel9-1.codeaurora.org
+Cc: linux-riscv@lists.infradead.org, nathan@kernel.org,
+ nicolas.schier@linux.dev, nsc@kernel.org, pjw@kernel.org, palmer@dabbelt.com,
+ aou@eecs.berkeley.edu, alex@ghiti.fr, hca@linux.ibm.com, gor@linux.ibm.com,
+ agordeev@linux.ibm.com, borntraeger@linux.ibm.com, svens@linux.ibm.com,
+ maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+ christophe.leroy@csgroup.eu, tsbogend@alpha.franken.de, tglx@linutronix.de,
+ mingo@redhat.com, bp@alien8.de, dave.hansen@linux.intel.com, x86@kernel.org,
+ hpa@zytor.com, davem@davemloft.net, andreas@gaisler.com,
+ linux-kbuild@vger.kernel.org, linux-kernel@vger.kernel.org,
+ masahiroy@kernel.org, linux-s390@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-mips@vger.kernel.org,
+ sparclinux@vger.kernel.org
 
-Sourabh Jain <sourabhjain@linux.ibm.com> writes:
+Hello:
 
-> Skip processing hugepage kernel arguments (hugepagesz, hugepages, and
-> default_hugepagesz) when hugepages are not supported by the
-> architecture.
->
-> Some architectures may need to disable hugepages based on conditions
-> discovered during kernel boot. The hugepages_supported() helper allows
-> architecture code to advertise whether hugepages are supported.
->
-> Currently, normal hugepage allocation is guarded by
-> hugepages_supported(), but gigantic hugepages are allocated regardless
-> of this check. This causes problems on powerpc for fadump (firmware-
-> assisted dump).
->
-> In the fadump (firmware-assisted dump) scenario, a production kernel
-> crash causes the system to boot into a special kernel whose sole
-> purpose is to collect the memory dump and reboot. Features such as
-> hugepages are not required in this environment and should be
-> disabled.
->
-> For example, fadump kernel booting with the kernel arguments
-> default_hugepagesz=1GB hugepagesz=1GB hugepages=200 prints the
-> following logs:
->
-> HugeTLB: allocating 200 of page size 1.00 GiB failed.  Only allocated 58 hugepages.
-> HugeTLB support is disabled!
-> HugeTLB: huge pages not supported, ignoring associated command-line parameters
-> hugetlbfs: disabling because there are no supported hugepage sizes
->
-> Even though the logs say that hugetlb support is disabled, gigantic
-> hugepages are still getting allocated, which causes the fadump kernel
-> to run out of memory during boot.
->
-> To fix this, the gigantic hugepage allocation should come under
-> hugepages_supported().
->
-> To bring gigantic hugepage allocation under hugepages_supported(), two
-> approaches were previously proposed:
-> [1] Check hugepages_supported() in the generic code before allocating
-> gigantic hugepages.
-> [2] Make arch_hugetlb_valid_size() return false for all hugetlb sizes.
->
-> Approach [2] has two minor issues:
-> 1. It prints misleading logs about invalid hugepage sizes
-> 2. The kernel still processes hugepage kernel arguments unnecessarily
->
+This series was applied to riscv/linux.git (fixes)
+by Nicolas Schier <nsc@kernel.org>:
 
-And that every other architecture will have to duplicate this in their
-arch_hugetlb_valid_size() whenever they face the same problem.
+On Tue, 14 Oct 2025 15:05:15 +0200 you wrote:
+> The current logic to inherit -m32/-m64 from the kernel build only works
+> for a few architectures. It does not handle byte order differences,
+> architectures using different compiler flags or different kinds of ABIs.
+> 
+> Introduce a per-architecture override mechanism to set CC_CAN_LINK and
+> the flags used for userprogs.
+> 
+> [...]
 
-Instead like at other places, hugepages_supported() should also be
-checked in the following cmdlines setup functions.
+Here is the summary with links:
+  - [v2,01/10] kbuild: don't enable CC_CAN_LINK if the dummy program generates warnings
+    https://git.kernel.org/riscv/c/d81d9d389b9b
+  - [v2,02/10] init: deduplicate cc-can-link.sh invocations
+    https://git.kernel.org/riscv/c/80623f2c83d7
+  - [v2,03/10] kbuild: allow architectures to override CC_CAN_LINK
+    (no matching commit)
+  - [v2,04/10] riscv: Implement custom CC_CAN_LINK
+    (no matching commit)
+  - [v2,05/10] s390: Implement custom CC_CAN_LINK
+    (no matching commit)
+  - [v2,06/10] powerpc: Implement custom CC_CAN_LINK
+    (no matching commit)
+  - [v2,07/10] MIPS: Implement custom CC_CAN_LINK
+    (no matching commit)
+  - [v2,08/10] x86/Kconfig: Implement custom CC_CAN_LINK
+    (no matching commit)
+  - [v2,09/10] sparc: Implement custom CC_CAN_LINK
+    (no matching commit)
+  - [v2,10/10] kbuild: simplify CC_CAN_LINK
+    (no matching commit)
 
-> To control gigantic hugepage allocation, it is proposed to skip
-> processing the hugepage kernel arguments (hugepagesz, hugepages, and
-> default_hugepagesz) when hugepages_support() returns false.
->
+You are awesome, thank you!
+-- 
+Deet-doot-dot, I am a bot.
+https://korg.docs.kernel.org/patchwork/pwbot.html
 
-Right. Thanks for taking care of it. I guess after this patch [1] moves
-hugetlbpage_init_defaultsize() to mmu_early_init_devtree(), it's good to
-bring back these checks in the respective cmdline setup functions which
-was removed as part of commit [2]
 
-[1]:
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=2354ad252b66695be02f4acd18e37bf6264f0464
-
-[2]: https://web.git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/commit/?id=c2833a5bf75b3657c4dd20b3709c8c702754cb1f
-
-LGTM. Please feel free to add:
-Reviewed-by: Ritesh Harjani (IBM) <ritesh.list@gmail.com>
 
