@@ -1,62 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-14915-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14916-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 01EE7E6688C
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Dec 2025 20:52:32 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 199C7E668A5
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Dec 2025 22:57:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dY08v1xFgz2xqL;
-	Sat, 20 Dec 2025 07:52:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=192.198.163.9
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766177551;
-	cv=none; b=NgObv5nns0hd+8SF90auxI5UmEKAGBUflo0mWk0YFqM3U/YITnsIixdI4f7rCDEw5pFFZqNsU4AAHTEOSyPqk46+PLIPjQWXcXAGtKsP2jfl668V77ry/ut7L6QZt4OiJc66zM9Tjs7F56CDKcLQTobESM2nFQzBeDdkC8WdcfRSIwvWjG4s1ocpFsSdvf6wQcR3bKC7tz2FaYqpd+aJ7MIKi0mlEvStB83FvSAcnd6RmPvweB/3G2BeRk1wxq7vCGdUcd5ci1TZGKX5Uj5kwoGse1ZIAT5i9v1k3RfnKr4f9SP5oSA828g6RCwE1m0NazogFyHyLNZxCUP6Zt3ixg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dY2wk3cPyz2xrM;
+	Sat, 20 Dec 2025 09:57:10 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.84
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766153455;
+	cv=none; b=BP8PLC/Wm7sFoRrqaihKCq7ssvsh4wm3sVwa4IcqwuycPrrUJ4tabYLzxGJ8hl28Uhn6rNuvxFhodEyJEomaESYhvVAptbhu7+RQusBRS0AzMGImsFuoPftd1+w1XsQeLgFK3i4ynDf2qRKdFrxKADf4AqhZmwhEFrxbM817JIhj7JX5wg2l6/vsl0BYdUE/kxAgbU/f2LHMQly5loCC3RBSCMNSIXEGwqa5hZbgY3Cr7w6dvzrszBf3DIlZ0wT6MlaiVfjdJnV1wDH5UC3cuK4S/QZIsfZqVo1UN56i+MS9ja2ErMXz9PaUqkI1C6C5uJkmP7j8Vn20bKZUD/gpPA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766177551; c=relaxed/relaxed;
-	bh=i1/SJXZ90FI5UUfT5V9hfmtsaDq+2j5bDl9O0wW8jvQ=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Zsjjtz5FMZZGh0EM1gtJr1ii8/5QNHmVUgEsLlNTd+KQsSX8MBrr30uHdiLZ1n5ByWNUozydx8DLZgT/FS/CRSiAV+I+wtgWt4PYOIqk5GjbtOXThNT4KZWcM19mkuT+tMxawMVTg9rDb+aPcfU9U5V899FEM1DEWcm2ogoBLPPzsqqxDAq50rPpRf64xDtT/29LtnfndcX0MCg1TwKcdilNYt22lTt4bTbG5oQ2qg7gXoB7NCbaRHGeTBl8Q4Q8xA5bDlhMOwoQLDXSaw7mlG5Xjw7MjkzZSLQ5nUp6Qc185sP5+FIymgXW1wJfBE/yScTPU1v2t9DrBObrqzQl4w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ESWL6Ve0; dkim-atps=neutral; spf=pass (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=ESWL6Ve0;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=192.198.163.9; helo=mgamail.intel.com; envelope-from=dave.hansen@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [192.198.163.9])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+	t=1766153455; c=relaxed/relaxed;
+	bh=Ja5pwKVXFbX6smam+cJccw9/HDc005YJI6VlCvR+q+I=;
+	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=UBXs/OZcMKXXcI1v3VFqOqqMH6opfDTz5blCsyRIsSvPHbMFjSF//t+o5PMwOiLuo2YUF1sPN6MftgLYTApuVB2wOUey81cv6B3fuD1ROfLKH0i1ngrCjIcGK0rrfyLioc88N3eGjeLyuyvQz/9rDXg/IroIfp1EQe23ae7Baz1hiGniWBtrFeoCaq8PW3zFrsilqUvt9x+XV5H29YJ6+VIiI1upnYxXRul4xzmT4VvQUfwKfTKHMOmGphU1P/fo2s8ZJ3msJeDXR7uLA0jBLHTnkhDl3ZX253ZE0JxT9aFQ24MihyHvAHDfjVObzViOu5FET4ABMlYyvTiHyM0y5A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=isrc.iscas.ac.cn; spf=pass (client-ip=159.226.251.84; helo=cstnet.cn; envelope-from=lihaoxiang@isrc.iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=isrc.iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=isrc.iscas.ac.cn
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=isrc.iscas.ac.cn (client-ip=159.226.251.84; helo=cstnet.cn; envelope-from=lihaoxiang@isrc.iscas.ac.cn; receiver=lists.ozlabs.org)
+Received: from cstnet.cn (smtp84.cstnet.cn [159.226.251.84])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dY08r4NLZz2xqG
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Dec 2025 07:52:26 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1766177549; x=1797713549;
-  h=message-id:date:mime-version:subject:to:cc:references:
-   from:in-reply-to:content-transfer-encoding;
-  bh=1UnP1phlC1N1TzoJ+erXdvhZj4LIIeRmGQfpPPyOIYU=;
-  b=ESWL6Ve0gEqNc6+vYNS/lwsE2b+5TXrOX0ebpKZmm2gQ1Xp7fJl3DYWl
-   XHk4AkWuytYMWWDdXjSHadgsFK0idWgYeRxEq3TkCd6Wc1QH1bCMdlBto
-   PbDJ9hApB1Y3i4ufWd4irMH/vH4jvRrj0IOjjxxzvXYEHcsi4Pe6c03KX
-   MXjkuK+3/9vBThYXtVHPmjHeZSyzBWAbZR0voJPofGP2qeEce2khH6fjp
-   JrJGBXUyFGDulVvsnzCx51tHTsLFDOV4YPKvCbeoDWNKeh4sLGaWUhpTc
-   TEfyz7Eap8Jvu17m+FXreLQBEw8x99nEHbM2i8z/+PkB5NESzQENsDCpD
-   Q==;
-X-CSE-ConnectionGUID: jOmxUPu+Sti8HtlXkQcnKg==
-X-CSE-MsgGUID: 9dvz+KTlS9+5wg95UYdsTA==
-X-IronPort-AV: E=McAfee;i="6800,10657,11647"; a="78856582"
-X-IronPort-AV: E=Sophos;i="6.21,162,1763452800"; 
-   d="scan'208";a="78856582"
-Received: from fmviesa008.fm.intel.com ([10.60.135.148])
-  by fmvoesa103.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Dec 2025 12:52:24 -0800
-X-CSE-ConnectionGUID: 98Uh3zVhTE+23i7eXdgOKA==
-X-CSE-MsgGUID: bx3AzxBJRcaevFLfuS8vuQ==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,162,1763452800"; 
-   d="scan'208";a="199196097"
-Received: from schen9-mobl4.amr.corp.intel.com (HELO [10.125.111.100]) ([10.125.111.100])
-  by fmviesa008-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 19 Dec 2025 12:52:22 -0800
-Message-ID: <a2ce2849-e572-404c-9713-9283a43c09fe@intel.com>
-Date: Fri, 19 Dec 2025 12:52:21 -0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXqFV3Mxsz2yFW
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Dec 2025 01:10:52 +1100 (AEDT)
+Received: from localhost.localdomain (unknown [36.112.3.209])
+	by APP-05 (Coremail) with SMTP id zQCowACnOQ3dXEVpn+ovAQ--.16674S2;
+	Fri, 19 Dec 2025 22:10:37 +0800 (CST)
+From: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
+To: maddy@linux.ibm.com,
+	mpe@ellerman.id.au,
+	npiggin@gmail.com,
+	chleroy@kernel.org,
+	mporter@kernel.crashing.org,
+	alex.bou9@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
+Subject: [PATCH] powerpc/fsl_rio: fix a improper release in fsl_rio_setup()
+Date: Fri, 19 Dec 2025 22:10:33 +0800
+Message-Id: <20251219141033.632153-1-lihaoxiang@isrc.iscas.ac.cn>
+X-Mailer: git-send-email 2.25.1
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,114 +55,80 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 1/4] arch/*: increase lowmem size to avoid highmem use
-To: Arnd Bergmann <arnd@arndb.de>, Arnd Bergmann <arnd@kernel.org>,
- linux-mm@kvack.org
-Cc: Andrew Morton <akpm@linux-foundation.org>,
- Andreas Larsson <andreas@gaisler.com>, Christophe Leroy
- <chleroy@kernel.org>, Dave Hansen <dave.hansen@linux.intel.com>,
- Jason Gunthorpe <jgg@nvidia.com>, Linus Walleij <linus.walleij@linaro.org>,
- Matthew Wilcox <willy@infradead.org>, Richard Weinberger <richard@nod.at>,
- Russell King <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
- x86@kernel.org, Thomas Gleixner <tglx@linutronix.de>,
- Ingo Molnar <mingo@redhat.com>, Borislav Petkov <bp@alien8.de>,
- "H. Peter Anvin" <hpa@zytor.com>, Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- Michal Simek <monstr@monstr.eu>,
- "David Hildenbrand (Red Hat)" <david@kernel.org>,
- Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- "Liam R. Howlett" <Liam.Howlett@oracle.com>, Vlastimil Babka
- <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>,
- Suren Baghdasaryan <surenb@google.com>, Michal Hocko <mhocko@suse.com>,
- Nishanth Menon <nm@ti.com>, Lucas Stach <l.stach@pengutronix.de>
-References: <20251219161559.556737-1-arnd@kernel.org>
- <20251219161559.556737-2-arnd@kernel.org>
- <a3f22579-13ee-4479-a5fd-81c29145c3f3@intel.com>
- <bad18ad8-93e8-4150-a85e-a2852e243363@app.fastmail.com>
-From: Dave Hansen <dave.hansen@intel.com>
-Content-Language: en-US
-Autocrypt: addr=dave.hansen@intel.com; keydata=
- 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
-In-Reply-To: <bad18ad8-93e8-4150-a85e-a2852e243363@app.fastmail.com>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
+X-CM-TRANSID:zQCowACnOQ3dXEVpn+ovAQ--.16674S2
+X-Coremail-Antispam: 1UD129KBjvJXoW7AF4kZF45Aw1UtrWDuF1rJFb_yoW8CF1rpa
+	1DKFyFkry0gr4IgFyjvFy0qF1vqa92y3yFkry8C3sakrs8Zry0vr1xAF97XFyUXFykAFyY
+	qr9xJrWUWa18JF7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
+	9KBjDU0xBIdaVrnRJUUUkG14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
+	rVWUuVWrJwAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
+	1l84ACjcxK6xIIjxv20xvE14v26r1j6r1xM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r1j
+	6r4UM28EF7xvwVC2z280aVAFwI0_Gr0_Cr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r4j6r
+	4UJwAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
+	I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r
+	4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwCY1x0262kKe7AKxVWU
+	tVW8ZwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14
+	v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkG
+	c2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI
+	0_Jr0_Gr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4U
+	MIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUd-B_UUU
+	UU=
+X-Originating-IP: [36.112.3.209]
+X-CM-SenderInfo: 5olkt0x0ld0ww6lv2u4olvutnvoduhdfq/1tbiCQ4BE2lFN99AuwACso
 
-On 12/19/25 12:20, Arnd Bergmann wrote:
->> For simplicity, I think this can just be:
->>
->> -	default VMSPLIT_3G
->> +	default VMSPLIT_2G
->>
->> I doubt the 2G vs. 2G_OPT matters in very many cases. If it does, folks
->> can just set it in their config manually.
->>
->> But, in the end, I don't this this matters all that much. If you think
->> having x86 be consistent with ARM, for example, is more important and
->> ARM really wants this complexity, I can live with it.
-> Yes, I think we do want the default of VMSPLIT_3G_OPT for
-> configs that have neither highmem nor lpae, otherwise the most
-> common embedded configs go from 3072 MiB to 1792 MiB of virtual
-> addressing, and that is much more likely to cause regressions
-> than the 2816 MiB default.
-> 
-> It would be nice to not need the VMSPLIT_2G default for PAE/LPAE,
-> but that seems like a larger change.
+If rio_register_mport() fails, put_device() is the correct way
+to drop the device reference.
+To prevent a double free, remove put_device() in rio_register_mport()
+Also, add a put_device() in tsi721_setup_mport() to prevent reference
+leak.
 
-The only thing we'd "regress" would be someone who is repeatedly
-starting from scratch with a defconfig and expecting defconfig to be the
-same all the time. I honestly think that's highly unlikely.
+Found by code review.
 
-If folks are upgrading and _actually_ exposed to regressions, they've
-got an existing config and won't be hit by these defaults at *all*. They
-won't actually regress.
+Signed-off-by: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
+---
+ arch/powerpc/sysdev/fsl_rio.c    | 2 +-
+ drivers/rapidio/devices/tsi721.c | 1 +
+ drivers/rapidio/rio.c            | 1 -
+ 3 files changed, 2 insertions(+), 2 deletions(-)
 
-In other words, I think we can be a lot more aggressive about defaults
-than with the feature set we support. I'd much rather add complexity in
-here for solving a real problem, like if we have armies of 32-bit x86
-users constantly starting new projects from scratch and using defconfigs.
+diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
+index f9b214b299e7..f6226b2619ed 100644
+--- a/arch/powerpc/sysdev/fsl_rio.c
++++ b/arch/powerpc/sysdev/fsl_rio.c
+@@ -697,7 +697,7 @@ static int fsl_rio_setup(struct platform_device *dev)
+ 		if (rio_register_mport(port)) {
+ 			release_resource(&port->iores);
+ 			kfree(priv);
+-			kfree(port);
++			put_device(&port->dev);
+ 			continue;
+ 		}
+ 		active_ports++;
+diff --git a/drivers/rapidio/devices/tsi721.c b/drivers/rapidio/devices/tsi721.c
+index 4b84270a8906..17c2bcf29c5c 100644
+--- a/drivers/rapidio/devices/tsi721.c
++++ b/drivers/rapidio/devices/tsi721.c
+@@ -2758,6 +2758,7 @@ static int tsi721_setup_mport(struct tsi721_device *priv)
+ 	err = rio_register_mport(mport);
+ 	if (err) {
+ 		tsi721_unregister_dma(priv);
++		put_device(&mport->dev);
+ 		goto err_exit;
+ 	}
+ 
+diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
+index 46daf32ea13b..026b2328afd7 100644
+--- a/drivers/rapidio/rio.c
++++ b/drivers/rapidio/rio.c
+@@ -2089,7 +2089,6 @@ int rio_register_mport(struct rio_mport *port)
+ 		mutex_lock(&rio_mport_list_lock);
+ 		list_del(&port->node);
+ 		mutex_unlock(&rio_mport_list_lock);
+-		put_device(&port->dev);
+ 	} else {
+ 		dev_dbg(&port->dev, "RIO: registered mport%d\n", port->id);
+ 	}
+-- 
+2.25.1
 
-I'd _really_ like to keep the defaults as simple as possible.
 
