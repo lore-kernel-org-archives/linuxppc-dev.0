@@ -1,51 +1,99 @@
-Return-Path: <linuxppc-dev+bounces-14887-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14888-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id DDD19D6E2CA
-	for <linuxppc-dev@archiver.kernel.org>; Thu, 18 Dec 2025 18:30:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 78AF3D7494F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Dec 2025 04:57:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dXK3D34MKz2xqr;
-	Fri, 19 Dec 2025 05:30:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766082616;
-	cv=none; b=nXL+vq8Nfgf5AOyD4xIVCl2ZZWA5fpyzJKrQ6g4uj9dh5mIm88y0idir4QjDqOYOxqYVYr04Kx84WZz3B7kNcDNr/JVTl2LnllyW5Gp6uhUB9ZgseliVXuQRBJVIukgmLfn1ana9THbush4lkAZxWe/W5pfPEasX64c1OdaCNOzq4MQgwt6yl/22Ol04uZb08XcSCA3S2JuNZqFeF5X+kh+Vkdl5+9dXQ3ONcmMrCKi/aeFQN28fBNT+usSakOA/y5wyqlsmpSJA9kCUUAge+9dOxz42I05b0hKsKFcTgk0zqVMmmosptwXknpQuwLpUOlHY+Q1/91faE3/bgv71pA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dXZyj4pgFz2yFW;
+	Fri, 19 Dec 2025 15:57:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766120237;
+	cv=none; b=CFJ6p6o51ACSwi7hU7QiZgDCUona5gSvnJlHUHKwYbOGsQhApr7R5HyR0h5M10HNjlEhR/1i+4o7JmQVUhpt6AMTgvY+3r0ZBKWw1t/HS0gQEfn3aY8o4vjnv+rZiiYtRNPWevEOc+zGnV3PQccEL47gVJY910io+W5C2odpyAHIlP8MzmjcBIxtlVmDGQoKvMUFuIfrbIgOW0dIxM89agrToYAGQGGCK69g7STMMjTfOhvXfFtG+y5Kuifee/YXgyIYnRcZ9ZI0j25ar8U+1xH9sSFdtlR7gBnA2TYPVgE0Vnfh7WYdjFS5pQoUiJmZJR1jli9dap2xsKOAeqto/g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766082616; c=relaxed/relaxed;
-	bh=M6TPqQs1Ewkm5e3A0oEahNyrrkVyyYEQ0io6xTIMF0c=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=oaF7lBORDU/NxdEm96RQhB4QxeVYJh4YBHFFMzGyHckftM939j1pYUQhSb/8cI9U8ATlvZ0w9/N18pxLkUYjCpU6UkQkdDk/UEa0THsNBgAyfgpfRYKZOSiUEUgK+1ukIZqe2u0N+TH5aJZpIex0SE1ls/MIy19RC+tQKT4BlErUnXYnRgSd/jDj4uDpAA1IwiU11A01Nd64i4x7pLKo6yS+J5ETjjqnJats++owHUpxLgsnG8qw9a1Te6xFWzjY4sWT/XkTxoa5GC3+sCcf5APlkXv34pr58hvvwMtD0Bqfv0Tf/vHmzFwcrqilrqDsufD8aPCTc9TTpN3gOrmT1Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=D95qJ/uS; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1766120237; c=relaxed/relaxed;
+	bh=xwGEev6nVoeQE62jvV1/TITwwqxcUCUjuccVvb6yjTQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=liSnq8RmbLsZsMlBsFhzBZbjSI3uzgi2p+oG1ebvy1KplWrakL6Xmu1LIpTtEAMMe45Ko3uKBYcABMCXMwIbUjJ84YUCEkTh8422m7BJQfcIR2oMkJKhz+7KP9Ma3iw+up6ausF5OVeWAtytRp+FrCvfJt1cIWMEdaPIY8YkHL0Zc2Wy7fiykfpauUeunBIt0bIXIEbJNcXVTQNZcgI5cPBe2dpK7/O7aWAK3uEPcCq7QSpaaRVr1+GmOgiraEaNMI9plpEG63T9vOIBXXwLn3tCcZw3ct4sExwatFUiLIoioaq1eauH64G6/AVX0gJu7gwfGrEhOhpqpPX252PnRA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JfWr8yAf; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mkchauras@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=D95qJ/uS;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=JfWr8yAf;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=mkchauras@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXK3C5FFHz2xpm
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Dec 2025 05:30:15 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 6A8F660055;
-	Thu, 18 Dec 2025 18:29:43 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 63623C4CEFB;
-	Thu, 18 Dec 2025 18:29:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1766082583;
-	bh=TjBcGwW4a9QOJ3BdOoSuXFyGMXz0Im1VV4W7/QtXkIk=;
-	h=Date:Subject:To:References:From:In-Reply-To:From;
-	b=D95qJ/uSD8if8jZbBlp8YhG/CuxaSReXnHgs1jHXsNQ/ljXjoFRi1XYxX2j+pSjEs
-	 yex82vI/6qZ3Yiakv4L+Zl0kcxCpIMZs3dLlcCl7fXVmsHV9vIR0KCb0H1garXem8b
-	 Mfkgz5p5H/qYoBEawEDZrCPlzNDqpCb9Mc/3iBfIKqMLcQ+5L9PZ8kTrro0CzrEwK2
-	 Xg2NSj5eJrzbwscEqQfySuR1zzaKAjZtmrwCpUdlZNhSprPywFEdTQeqPGnfvdrEe3
-	 2Ii+x59UF3g/W/F640VvTzb6DyjUxTQ9lQGdMSedIapMiRNOYKFC89/2sBUo4qI+wC
-	 nbQ9q+PDk4TLA==
-Message-ID: <2462a770-7da3-4b42-99ed-6ffd4d44b4f4@kernel.org>
-Date: Thu, 18 Dec 2025 19:29:39 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXZyh3tcDz2xqG
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 19 Dec 2025 15:57:15 +1100 (AEDT)
+Received: from pps.filterd (m0356516.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5BIJmHP5031778;
+	Fri, 19 Dec 2025 04:56:36 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=xwGEev
+	6nVoeQE62jvV1/TITwwqxcUCUjuccVvb6yjTQ=; b=JfWr8yAfnDtMfMZwJqoeZL
+	h+/S/kHMBwlLVMtvw4s6G4GtRKJYxkbi8DjuXyol7q5/r4CQJFbWn3yt3JDDvE61
+	E/Znj2eCYdZJiPGVvyy+BSUe6JIgnlDdfe7DGidHULM5wnrxwEvTrq6aoZ7ing1/
+	r5rEeEvCNaqGQTC4uqFS2/yI6XHA06pgus9YNCj53NFT2jPhUQ/zdSwLO6gWFZTI
+	6/TIBWmux76kmEibCR/L5tCyoDxEXPR+2fn831FYc4gdVUltmEs+O7JDiX/LFfIM
+	ohVkPV9bnXghDM+8XbzvGHb0uNaOj+oWdgDJocFiGKppCM/EqtB0WnL2Mx3hLnPQ
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4b4r3dhq0t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 19 Dec 2025 04:56:35 +0000 (GMT)
+Received: from m0356516.ppops.net (m0356516.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5BJ4tGXB019619;
+	Fri, 19 Dec 2025 04:56:35 GMT
+Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4b4r3dhq0r-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 19 Dec 2025 04:56:35 +0000 (GMT)
+Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5BJ3eU6x006405;
+	Fri, 19 Dec 2025 04:56:34 GMT
+Received: from smtprelay05.fra02v.mail.ibm.com ([9.218.2.225])
+	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4b4qvqj0jj-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Fri, 19 Dec 2025 04:56:34 +0000
+Received: from smtpav05.fra02v.mail.ibm.com (smtpav05.fra02v.mail.ibm.com [10.20.54.104])
+	by smtprelay05.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5BJ4uU9C44106150
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Fri, 19 Dec 2025 04:56:30 GMT
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id E89E820040;
+	Fri, 19 Dec 2025 04:56:29 +0000 (GMT)
+Received: from smtpav05.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id ED19F20043;
+	Fri, 19 Dec 2025 04:56:23 +0000 (GMT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com (unknown [9.39.20.206])
+	by smtpav05.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Fri, 19 Dec 2025 04:56:23 +0000 (GMT)
+Date: Fri, 19 Dec 2025 10:26:20 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
+        oleg@redhat.com, kees@kernel.org, luto@amacapital.net,
+        wad@chromium.org, mchauras@linux.ibm.com, thuth@redhat.com,
+        sshegde@linux.ibm.com, charlie@rivosinc.com, macro@orcam.me.uk,
+        akpm@linux-foundation.org, ldv@strace.io, deller@gmx.de,
+        ankur.a.arora@oracle.com, segher@kernel.crashing.org,
+        tglx@linutronix.de, thomas.weissschuh@linutronix.de,
+        peterz@infradead.org, menglong8.dong@gmail.com, bigeasy@linutronix.de,
+        namcao@linutronix.de, kan.liang@linux.intel.com, mingo@kernel.org,
+        atrajeev@linux.vnet.ibm.com, mark.barnett@arm.com,
+        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH v2 6/8] powerpc: Prepare for IRQ entry exit
+Message-ID: <3ddsrov3wv5dtfntiotyesikhmbsi3vnld2pynooj3lqi6obhg@rx7ytg6fy4rq>
+References: <20251214130245.43664-1-mkchauras@linux.ibm.com>
+ <20251214130245.43664-7-mkchauras@linux.ibm.com>
+ <91d280af-fb41-4c05-8b96-113717ecd64a@kernel.org>
+ <vk6k6fbjpq6pajvce5idrfq2m7smygpazpqemxkiyov7ywhbt7@6sckgpjdxarq>
+ <49b2a51b-a324-4a8b-b6e8-434fcc411b19@kernel.org>
+ <33v3ncxlwtc5qfdc257hky7pnly5j445qaqzc45vnbiswnge4t@wx5nujnzrazh>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,61 +107,91 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/mm: Use pte_advance_pfn() in set_huge_pte_at()
-To: Andrew Donnellan <ajd@linux.ibm.com>, linuxppc-dev@lists.ozlabs.org
-References: <20251219-set_huge_pte_at_pte_advance_pfn-v1-1-e3378845af7d@linux.ibm.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <20251219-set_huge_pte_at_pte_advance_pfn-v1-1-e3378845af7d@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <33v3ncxlwtc5qfdc257hky7pnly5j445qaqzc45vnbiswnge4t@wx5nujnzrazh>
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: uiRLs7V5jfM4gAmAzyh59l_QgwkbhqP0
+X-Proofpoint-GUID: tjCHiNQzideDh781Wrvut9htx-Jzj0nS
+X-Authority-Analysis: v=2.4 cv=KrZAGGWN c=1 sm=1 tr=0 ts=6944db03 cx=c_pps
+ a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
+ a=8nJEP1OIZ-IA:10 a=wP3pNCr1ah4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VnNF1IyMAAAA:8 a=VJ81eyxrqXbgAbdtzYcA:9 a=3ZKOabzyN94A:10 a=wPNLvfGTeEIA:10
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjE5MDAzNyBTYWx0ZWRfX3i8myeq1r0lM
+ NQQdjRmrLF5uzWKk6QyGDil5Y/MdqdxLnL0ytY5A3I1qmaoXYN88DSXbWCKz71dLrWO51TaIput
+ ML6msRkcXqpB1QYV0I5pVTkOFfcyj/0J2IzRumGuHRlwiy5MoJLE9dpDdJiYBxoI0FcNLJUUPUR
+ jH+ieseFm4N1xRNn0fgjVPwhkDC/4KqX7S8adqOEC32MXxehQHC5TwTQICWSb76H7yD6mzfNchT
+ bo1yFUr5b/5+C/qk5lrDaKZjfyqr3eRsMyTrW0wz+tQ0HssO0XuQESqufUt5INTGjhGNWI1o7XP
+ r3P5eb5qy936YPcChGmw+XB39YUY8ap3+l22FOXu7vl58GllWv8eWUGkHEwglJ20MhVedqXOqlW
+ km5mmwrpZ8WhrqPoeOpU3Gh6VkrLY8ky8ce2RlytFmRjEVXHu1mEO8Y7/nFfWRLlOpoZR9aCZx1
+ KxIfol+6+Lj1+N/TqzQ==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-12-19_01,2025-12-17_02,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ adultscore=0 suspectscore=0 priorityscore=1501 malwarescore=0 impostorscore=0
+ lowpriorityscore=0 clxscore=1015 phishscore=0 spamscore=0 bulkscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2512120000 definitions=main-2512190037
 
-Hi Andrew,
-
-Le 18/12/2025 Ã  17:21, Andrew Donnellan a Ã©critÂ :
-> In set_huge_pte_at(), replace the existing open coded pte value
-> calculation with the new helper pte_advance_pfn().
+On Wed, Dec 17, 2025 at 10:13:19AM +0530, Mukesh Kumar Chaurasiya wrote:
+> On Tue, Dec 16, 2025 at 11:40:51PM +0100, Christophe Leroy (CS GROUP) wrote:
+> > 
+> > 
+> > Le 16/12/2025 à 16:00, Mukesh Kumar Chaurasiya a écrit :
+> > > On Tue, Dec 16, 2025 at 10:58:16AM +0100, Christophe Leroy (CS GROUP) wrote:
+> > > > 
+> > > > 
+> > > > Le 14/12/2025 à 14:02, Mukesh Kumar Chaurasiya a écrit :
+> > > > > From: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+> > > > > 
+> > > > > Move interrupt entry and exit helper routines from interrupt.h into the
+> > > > > PowerPC-specific entry-common.h header as a preparatory step for enabling
+> > > > > the generic entry/exit framework.
+> > > > > 
+> > > > > This consolidation places all PowerPC interrupt entry/exit handling in a
+> > > > > single common header, aligning with the generic entry infrastructure.
+> > > > > The helpers provide architecture-specific handling for interrupt and NMI
+> > > > > entry/exit sequences, including:
+> > > > > 
+> > > > >    - arch_interrupt_enter/exit_prepare()
+> > > > >    - arch_interrupt_async_enter/exit_prepare()
+> > > > >    - arch_interrupt_nmi_enter/exit_prepare()
+> > > > >    - Supporting helpers such as nap_adjust_return(), check_return_regs_valid(),
+> > > > >      debug register maintenance, and soft mask handling.
+> > > > > 
+> > > > > The functions are copied verbatim from interrupt.h to avoid functional
+> > > > > changes at this stage. Subsequent patches will integrate these routines
+> > > > > into the generic entry/exit flow.
+> > > > 
+> > > > Can we move them instead of duplicating them ?
+> > > > 
+> > > Till we enable the Generic framework i didn't want to touch the already
+> > > used code path. Once we enable the code all the unused code should be
+> > > removed. This helps us in bisecting future issues caused due to this.
+> > 
+> > I can't see who it can help bisecting. What did I miss ?
+> > 
+> > If you copy the code, you don't know whether what you have copied is correct
+> > or not until you use it. So when you start using it you don't know if the
+> > problem is in the copied code or the code using it.
+> > 
+> > If instead of copying the code you move it and continue to use the moved
+> > code from the only implementation, they when you start using it with the new
+> > code you are sure it works and then if you have a problem you know it is not
+> > the moved code but the new code using it.
+> > 
+> Sure makes sense. Will move this instead of duplicating.
 > 
-> Signed-off-by: Andrew Donnellan <ajd@linux.ibm.com>
-> ---
->   arch/powerpc/mm/pgtable.c | 2 +-
->   1 file changed, 1 insertion(+), 1 deletion(-)
+> Regards,
+> Mukesh
+> > Christophe
 > 
-> diff --git a/arch/powerpc/mm/pgtable.c b/arch/powerpc/mm/pgtable.c
-> index 56d7e8960e77d877390d6bcbf0d8a305cc222101..9073e373e1e8a88f904cae592e1e8c34707545e6 100644
-> --- a/arch/powerpc/mm/pgtable.c
-> +++ b/arch/powerpc/mm/pgtable.c
-> @@ -365,7 +365,7 @@ void set_huge_pte_at(struct mm_struct *mm, unsigned long addr, pte_t *ptep,
->   
->   	for (i = 0; i < sz / pdsize; i++, ptep++, addr += pdsize) {
->   		__set_pte_at(mm, addr, ptep, pte, 0);
-> -		pte = __pte(pte_val(pte) + ((unsigned long long)pdsize / PAGE_SIZE << PFN_PTE_SHIFT));
-> +		pte = pte_advance_pfn(pte, pdsize / PAGE_SIZE);
+Ah one more reason we can't move them is because this file is not
+directly included by the arch code. It's included by the generic
+framework and then we include it the generic header.
 
-How can this work ?
-
-pdsize is 4M, PAGE_SIZE is 4k so pdsize/PAGE_SIZE is 0x400.
-
-PFN_PTE_SHIFT is 24.
-
-0x400 << 24 is more than what an unsigned long can contain in 
-pte_advance_pfn()
-
-Christophe
-
->   	}
->   }
->   #endif
-> 
-> ---
-> base-commit: ea1013c1539270e372fc99854bc6e4d94eaeff66
-> change-id: 20251219-set_huge_pte_at_pte_advance_pfn-0ae18078fcca
-> 
-> 
-> --
-> Andrew Donnellan    OzLabs, ADL Canberra
-> ajd@linux.ibm.com   IBM Australia Limited
-> 
-
+Regards,
+Mukesh
 
