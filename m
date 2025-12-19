@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-14906-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14907-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 14618D78770
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Dec 2025 16:16:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00807D7879F
+	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Dec 2025 16:16:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dXt2m25JFz2yFW;
-	Sat, 20 Dec 2025 03:16:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766161008;
-	cv=none; b=KoJfU3fWtQ1HyCinkeJo7Q2/KLs3Vnh6J6Ki1NKQtcowJc5lA3FHWhNnIczxsyTvUKk8nJ///WPc6hpzvx7GOzkEBeSgu3asuqlQbeZ+Wq32GdEJF1Ip/Zg9yZ+Sl7JrOTZXDPBT7sHxEtI03tLF5TxqkQhS3RutK87e1e9x4epp0imlp8QQBe5IdeN5wKE0P9ptNLfnRSZffehXbvX9T5FKsMO+F96xIyly6TnqEpXG3jrKdDRHq4ZsH42AzTYh4TpuNjNhuJTCKGZAcHTgQTeL/4eo8nm4Vt/B9UA3bTvYGf2SITILXYvNu5OEydpxwAait3yHFojy9Y208/LktA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dXt2v08xxz2yG0;
+	Sat, 20 Dec 2025 03:16:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766161014;
+	cv=none; b=e+24Yp3nbxogpnDM3mDPq8VVBBfSwFUbmlfr9C0Y5edm7rU3lTTqb0BcjTq88rh+dlaGl3uRnZ8U2lheoBzYd/L7V+qJUabpR/bp8by+tpam1ez3xSbKsrRcskM1n5SVPu9U9pu2bvOJ7AthJh2faOuEspZDasbfVjvjG17J5GI/Rq2m3yIbBv7AakK0xy4wtwt9LNTTGTQZtO8CSFe5ZGgdRbbVw/joXRxCd6cizPvY99yQRj9EIehO3uV2XHGKCjp+orah6n72UsJlh/J/eeSxPZmi8YDbAgxencj6bgS5LoS5IOo4BeLJ2wHzig1tuQdiRKtsJqeNnHHSF6eErw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766161008; c=relaxed/relaxed;
-	bh=MU2GkItNProYBRDJlKA+M328m+1JhXZ/rYC6un2NVm4=;
+	t=1766161014; c=relaxed/relaxed;
+	bh=KgJjJXiTV17BhBdBs5ApeNOoNrgTIbF5yg2BLm3kDUk=;
 	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=JYaQEgxr3gX9h15QKjRS3amWoyf+rkqYFZ+U8T90HhCmqeyQCt6frA8BSva4PwVbUY0z8bwQNU7/W4BBoF59qG13EVpe46LJ9A6lTupyBalTvjWG7urnBmy6SFXY54ICWQtTdcYVmkBaHt2+R9A2GMyoy6Xvmge3TXF0NwMiwDj/upO1tr9KxgCIG5MCzD557vi+KnjBbHjlMC/cUkFpolqD7f3r7yZvFZCVi4xlaDwCyyxBL5AEM88sAMmVBq3kQsCQyLtdvkdVJCfp70eM6dxEn0DM0tb1bt97IRhrso8doaC6GtHshhnE+jkfsrfKHB+Mm+70KwU46jXMD4UQpQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=A7OuTvnR; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=HzXRZQsES+Ena65aUqBrSZlt5MF4sRiWfDtfxta9OVoDOK5zOxknJNKfXvwaZLhnU9M2CH3TGF5CGJ8LQSu+2qD5nn4YSVqpdj1zgVZadXT0Wt9Aa9Olb25XFAPwipEWmAfRBTiVJYkRCF27XxPb+vb7Vxg8k84Qvx90+fMaow8WGCu1q/v3ylFKsQllw1M9GszqbDhibJP/aENz7Rt5K+A0HsmBOaVoO4WVwij16Ps/crLNvCgvpdb1B2JNeC+cObeGDlNGeyTusMcHqooSuD6ckw3HwTq00Lx5zOYKryOg4cj1IXFtC+fGX/1zghkwrDCP8upisSdYlU7EOZzMYQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tWFoP8Zs; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=A7OuTvnR;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tWFoP8Zs;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=arnd@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXt2k6JXvz2xfK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Dec 2025 03:16:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXt2t14N7z2xfK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Dec 2025 03:16:54 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7C9B84026B;
-	Fri, 19 Dec 2025 16:16:44 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3D04DC116C6;
-	Fri, 19 Dec 2025 16:16:38 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id A8F1E60165;
+	Fri, 19 Dec 2025 16:16:51 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5340DC116D0;
+	Fri, 19 Dec 2025 16:16:48 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1766161004;
-	bh=y2TDenBgzz1JkKgbnUspPJnIA+uv4gCj0emzILOiwVI=;
+	s=k20201202; t=1766161011;
+	bh=n8EL94QbXkjpZrKNco8jY54zTJbVUAiuP3D8k2SB3mU=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=A7OuTvnReFS3MrkYNOIEGgcs+Z7OvkKsMu+2esQMRsv5WMHjDb/+jWEumFggTQn/d
-	 B0pvYTi1xGaHAXqrORU8GPSt7G0P9gXQEx22QhpdaCI+L0odetlWwgex5eThtMzOBm
-	 m+575wBeBX44bLofNLR5SKMGWOUw/kNt7bdJzsQvyYsLsjDlbOh9XD+C9jsmsdLv8J
-	 ptzbgKHGftEuZ558Q8PVqSJumz+sKt1yDXVl1mvy/LdLVUpswhbb9EjCTQe7hbrNrR
-	 LSWSiuClawxuVXmfiTbHnpW3geR2gowerapXT2cS5IT8zMeJY65QrQeSNpWoM6bx1R
-	 wvkfS3AQV7a7Q==
+	b=tWFoP8ZsYkLEYCvizSOtfAaPNjhLJqzsaF7tHY3aqA7oUXtgJO3ERCYDqUD2Js3e+
+	 5R5GQI33x+FNwMdA3E8CZJRT4GQ969i4oVXw80U8LK3ks+idDCR+70rd4jVj2rwHCu
+	 kssBP+UXAx1ooEXkfFjs0SmM6fYabVLEw6M6l6N0xvkWoXGdt/rIfFA2d216ZHS3cB
+	 FIZAc5TXF6+EHaLenImHZnM9YLo5PcMNwpzayFQHJhxsfFSftTUlPHdETPa3CUsJPF
+	 iGSBq0GmTIUzJkVMbAliGgGFOFRDBxBcKxHux2RePNHcYTYv3akMLZY0VVzM6zGNv8
+	 fCH3UMvStvSpg==
 From: Arnd Bergmann <arnd@kernel.org>
 To: linux-mm@kvack.org
 Cc: Arnd Bergmann <arnd@arndb.de>,
@@ -59,27 +59,10 @@ Cc: Arnd Bergmann <arnd@arndb.de>,
 	linux-arm-kernel@lists.infradead.org,
 	linux-fsdevel@vger.kernel.org,
 	linuxppc-dev@lists.ozlabs.org,
-	x86@kernel.org,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Ingo Molnar <mingo@redhat.com>,
-	Borislav Petkov <bp@alien8.de>,
-	"H. Peter Anvin" <hpa@zytor.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Michal Simek <monstr@monstr.eu>,
-	David Hildenbrand <david@kernel.org>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
-	Vlastimil Babka <vbabka@suse.cz>,
-	Mike Rapoport <rppt@kernel.org>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>,
-	Nishanth Menon <nm@ti.com>,
-	Lucas Stach <l.stach@pengutronix.de>
-Subject: [PATCH 1/4] arch/*: increase lowmem size to avoid highmem use
-Date: Fri, 19 Dec 2025 17:15:56 +0100
-Message-Id: <20251219161559.556737-2-arnd@kernel.org>
+	x86@kernel.org
+Subject: [PATCH 3/4] ARM: remove support for highmem on VIVT
+Date: Fri, 19 Dec 2025 17:15:58 +0100
+Message-Id: <20251219161559.556737-4-arnd@kernel.org>
 X-Mailer: git-send-email 2.39.5
 In-Reply-To: <20251219161559.556737-1-arnd@kernel.org>
 References: <20251219161559.556737-1-arnd@kernel.org>
@@ -100,396 +83,413 @@ Content-Transfer-Encoding: 8bit
 
 From: Arnd Bergmann <arnd@arndb.de>
 
-Most of the common 32-bit architectures (x86, arm, powerpc) all use the
-default virtual memory layout that was already in place for i386 systems
-in the 1990s, using exactly 3GiB of user TASK_SIZE, with the upper 1GiB
-of addresses split between (at most 896MiB) lowmem and vmalloc.
+As Jason Gunthorpe noticed, supporting VIVT caches adds some complications
+to highmem that can be avoided these days:
 
-Linux-2.3 introduced CONFIG_HIGHMEM for large x86 server machines that
-had 4GiB of RAM or more, with the VMSPLIT_3G/2G/1G options added in
-v2.6.16 for machines that had one or two gigabytes of memory but wanted
-to avoid the overhead from managing highmem. Over time, similar options
-appeared on other 32-bit architectures.
+While all ARMv4 and ARMv5 CPUs use virtually indexed caches, they no
+longer really need highmem because we have practically discontinued
+support for large-memory configurations already.  The only machines I
+could find anywhere for memory on ARMv5 are:
 
-Twenty years later, it makes sense to reconsider the default settings,
-as the tradeoffs have changed a bit:
+ - The Intel IOP platform was used on relatively large memory
+   configurations but we dropped kernel support in 2019 and 2022,
+   respectively.
 
- - Configurations with more than 2GiB have become extremely rare,
-   as any users with large memory have moved on to 64-bit systems.
-   There were only ever a few Laptop models in this category: Apple
-   Powerbook G4 (2005), Macbook (2006), IBM Thinkpad X60 (2006), Arm
-   Chromebooks based on Exynos 5800 (2014), Tegra K1 (2014) and RK3288
-   (2015), and manufacturer support for all of these has ended in 2020
-   or (much) earlier.
-   Embedded systems with more than 2GiB use additional SoCs of a
-   similar vintage: Intel Atom Z5xx (2008), Freescale QorIQ (2008),
-   Marvell Armada XP (2010), Freescale i.MX6Q (2011), LSI Axxia (2013),
-   TI Keystone2 (2014), Renesas RZ/G1M (2015). Most boards based on
-   these have stopped receiving kernel upgrades. Newer 32-bit chips
-   only support smaller memory configurations, though in particular the
-   i.MX6Q and Keystone2 families have expected support cycles past 2035.
-   While 32-bit server installations used to support even larger memory,
-   none of those seem to still be used in production on any architecture.
+ - The Marvell mv78xx0 platform was the initial user of Arm highmem,
+   with the DB-78x00-BP supporting 2GB of memory. While the platform
+   is still around, the only remaining board file is for
+   Buffalo WLX (Terastation Duo), which has only 512MB.
 
- - While general-purpose distributes for 32-bit targets were common,
-   it was rather risky to change the CONFIG_VMSPLIT setting because
-   there is always a possibility of running into device driver bugs or
-   applications that need a large virtual memory size. Presumably
-   a lot of these issues have been resolved now, so most setups should
-   be fine using a custom vmsplit instead of highmem now.
+ - The Kirkwood platform supports 2GB, and there are actually boards
+   with that configuration that can still work. However, there are
+   no known users of the OpenBlocks A7, and the Freebox V6 is already
+   using CONFIG_VMSPLIT_2G to avoid enabling highmem.
 
- - As fewer users test highmem, the expectation is that it will
-   increasingly break in the future, so getting users to change the
-   vmsplit means that even if there is a bug to fix initially,
-   it improves the situation in the long run.
+Remove the Arm specific portions here, making CONFIG_HIGHMEM conditional
+on modern caches.
 
- - Highmem will ultimately need to be removed, at least for the page
-   cache and most other code using it today. In a previous discussion, I
-   had suggested doing this as early as 2029, but based on the discussions
-   since ELC, the plan is now to leave highmem-enabled page cache as an
-   option until at least 2029, at which point remaining users will have
-   the choice between no longer updating kernels or using a combination of
-   a custom vmsplit and zram/zswap. Changing the defaults now should both
-   speed up the highmem deprecation and make it less painful for users.
-
- - The most VM space intensive applications tend to be web browsers,
-   specifcally Chrome/ChromeOS and Firefox. Both have now stopped
-   providing binary updates, but Firefox can still be built from source.
-   Testing various combinations on Debian/armhf, I found that Firefox 140
-   can still show complex websites with VMSPLIT_2G_OPT with and without
-   HIGHMEM, though it failed for me both with the small address space
-   of VMSPLIT_1G and the small lowmem of VMSPLIT_3G_OPT when HIGHMEM
-   is disabled.
-   This is likely to get worse with future versions, so embedded users
-   may still be forced to migrate to specialized browsers like WPE Webkit
-   when HIGHMEM pagecache is finally removed.
-
-Based on the above observations and the discussion at the kernel summit,
-change the defaults to the most appropriate values: use 1GiB of lowmem on
-non-highmem configurations, and either 2GiB or 1.75GiB of lowmem on highmem
-builds, depending on what is available on the architecture.  As ARM_LPAE
-and X86_PAE builds both require a gigabyte-aligned vmsplit, those get
-to use VMSPLIT_2G. The result is that the majority of previous highmem
-users now only need lowmem. For platform specific defconfig files that
-are known to only support up to 1GiB of RAM, drop the CONFIG_HIGHMEM line
-as well as a simplification.
-
-On PowerPC and Microblaze, the options have somewhat different names but
-should have the same effect. MIPS and Xtensa cannot support a larger
-than 512MB of lowmem but are limited to small DDR2 memory in most
-implementations, with MT7621 being a notable exception. ARC and C-Sky
-could support a configurable vmsplit in theory, but it's not clear
-if anyone still cares.
-SPARC is currently limited to 192MB of lowmem and should get patched
-to behave either like arm/x86 or powerpc/microblaze to support 2GiB
-of lowmem.
-
-There are likely going to be regressions from the changed defaults,
-in particular when hitting previously hidden device driver bugs
-that fail to set the correct DMA mask, or from applications that
-need a large virtual address space.
-Ideally the in-kernel problems should all be fixable, but the previous
-behavior is still selectable as a fallback with CONFIG_EXPERT=y
-
-Cc: Russell King <linux@armlinux.org.uk>
-Cc: linux-arm-kernel@lists.infradead.org
-Cc: Thomas Gleixner <tglx@linutronix.de>
-Cc: Ingo Molnar <mingo@redhat.com>
-Cc: Borislav Petkov <bp@alien8.de>
-Cc: Dave Hansen <dave.hansen@linux.intel.com>
-Cc: x86@kernel.org
-Cc: "H. Peter Anvin" <hpa@zytor.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: Michal Simek <monstr@monstr.eu>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: David Hildenbrand <david@kernel.org>
-Cc: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-Cc: Liam R. Howlett <Liam.Howlett@oracle.com>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Mike Rapoport <rppt@kernel.org>
-Cc: Suren Baghdasaryan <surenb@google.com>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: linux-mm@kvack.org
-Cc: Richard Weinberger <richard@nod.at>
-Cc: Linus Walleij <linus.walleij@linaro.org>
-Cc: Nishanth Menon <nm@ti.com>
-Cc: Andreas Larsson <andreas@gaisler.com>
-Cc: Lucas Stach <l.stach@pengutronix.de>
+Suggested-by: Jason Gunthorpe <jgg@nvidia.com>
 Signed-off-by: Arnd Bergmann <arnd@arndb.de>
 ---
- arch/arm/Kconfig                            |  5 ++++-
- arch/arm/configs/aspeed_g5_defconfig        |  1 -
- arch/arm/configs/dove_defconfig             |  2 --
- arch/arm/configs/mv78xx0_defconfig          |  2 --
- arch/arm/configs/u8500_defconfig            |  1 -
- arch/arm/configs/vt8500_v6_v7_defconfig     |  3 ---
- arch/arm/mach-omap2/Kconfig                 |  1 -
- arch/microblaze/Kconfig                     |  9 ++++++---
- arch/microblaze/configs/mmu_defconfig       |  1 -
- arch/powerpc/Kconfig                        | 17 +++++++++++------
- arch/powerpc/configs/44x/akebono_defconfig  |  1 -
- arch/powerpc/configs/85xx/ksi8560_defconfig |  1 -
- arch/powerpc/configs/85xx/stx_gp3_defconfig |  1 -
- arch/x86/Kconfig                            |  4 +++-
- 14 files changed, 24 insertions(+), 25 deletions(-)
+ arch/arm/Kconfig                    |  1 +
+ arch/arm/configs/gemini_defconfig   |  1 -
+ arch/arm/configs/multi_v5_defconfig |  1 -
+ arch/arm/configs/mvebu_v5_defconfig |  1 -
+ arch/arm/include/asm/highmem.h      | 56 ++---------------------------
+ arch/arm/mm/cache-feroceon-l2.c     | 31 ++--------------
+ arch/arm/mm/cache-xsc3l2.c          | 47 +++---------------------
+ arch/arm/mm/dma-mapping.c           | 12 ++-----
+ arch/arm/mm/flush.c                 | 19 +++-------
+ 9 files changed, 16 insertions(+), 153 deletions(-)
 
 diff --git a/arch/arm/Kconfig b/arch/arm/Kconfig
-index fa83c040ee2d..7c0ac017e086 100644
+index 921ea61aa96e..790897a457d4 100644
 --- a/arch/arm/Kconfig
 +++ b/arch/arm/Kconfig
-@@ -1009,7 +1009,8 @@ config BL_SWITCHER_DUMMY_IF
- choice
- 	prompt "Memory split"
- 	depends on MMU
--	default VMSPLIT_3G
-+	default VMSPLIT_2G if HIGHMEM || ARM_LPAE
-+	default VMSPLIT_3G_OPT
- 	help
- 	  Select the desired split between kernel and user memory.
- 
-@@ -1018,8 +1019,10 @@ choice
- 
- 	config VMSPLIT_3G
- 		bool "3G/1G user/kernel split"
-+		depends on !HIGHMEM || EXPERT
- 	config VMSPLIT_3G_OPT
- 		depends on !ARM_LPAE
-+		depends on !HIGHMEM || EXPERT
- 		bool "3G/1G user/kernel split (for full 1G low memory)"
- 	config VMSPLIT_2G
- 		bool "2G/2G user/kernel split"
-diff --git a/arch/arm/configs/aspeed_g5_defconfig b/arch/arm/configs/aspeed_g5_defconfig
-index 2e6ea13c1e9b..be5ea1775b3f 100644
---- a/arch/arm/configs/aspeed_g5_defconfig
-+++ b/arch/arm/configs/aspeed_g5_defconfig
-@@ -27,7 +27,6 @@ CONFIG_SMP=y
- # CONFIG_ARM_CPU_TOPOLOGY is not set
- CONFIG_VMSPLIT_2G=y
- CONFIG_NR_CPUS=2
--CONFIG_HIGHMEM=y
- CONFIG_UACCESS_WITH_MEMCPY=y
- # CONFIG_ATAGS is not set
- CONFIG_VFP=y
-diff --git a/arch/arm/configs/dove_defconfig b/arch/arm/configs/dove_defconfig
-index e98c35df675e..75c67678c4ba 100644
---- a/arch/arm/configs/dove_defconfig
-+++ b/arch/arm/configs/dove_defconfig
-@@ -7,8 +7,6 @@ CONFIG_EXPERT=y
- CONFIG_ARCH_MULTI_V7=y
- CONFIG_ARCH_DOVE=y
- CONFIG_MACH_CM_A510=y
--CONFIG_AEABI=y
--CONFIG_HIGHMEM=y
- CONFIG_ARM_APPENDED_DTB=y
- CONFIG_ARM_ATAG_DTB_COMPAT=y
- CONFIG_VFP=y
-diff --git a/arch/arm/configs/mv78xx0_defconfig b/arch/arm/configs/mv78xx0_defconfig
-index d3a26efe766c..cbd47155eca9 100644
---- a/arch/arm/configs/mv78xx0_defconfig
-+++ b/arch/arm/configs/mv78xx0_defconfig
-@@ -11,7 +11,6 @@ CONFIG_ARCH_MULTI_V5=y
- CONFIG_ARCH_MV78XX0=y
- CONFIG_MACH_TERASTATION_WXL=y
- CONFIG_AEABI=y
--CONFIG_HIGHMEM=y
- CONFIG_FPE_NWFPE=y
- CONFIG_VFP=y
- CONFIG_KPROBES=y
-diff --git a/arch/arm/configs/u8500_defconfig b/arch/arm/configs/u8500_defconfig
-index e88533b78327..a53269cbe475 100644
---- a/arch/arm/configs/u8500_defconfig
-+++ b/arch/arm/configs/u8500_defconfig
-@@ -6,7 +6,6 @@ CONFIG_KALLSYMS_ALL=y
- CONFIG_ARCH_U8500=y
- CONFIG_SMP=y
- CONFIG_NR_CPUS=2
--CONFIG_HIGHMEM=y
- CONFIG_ARM_APPENDED_DTB=y
- CONFIG_ARM_ATAG_DTB_COMPAT=y
- CONFIG_CMDLINE="root=/dev/ram0 console=ttyAMA2,115200n8"
-diff --git a/arch/arm/configs/vt8500_v6_v7_defconfig b/arch/arm/configs/vt8500_v6_v7_defconfig
-index 41607a84abc8..1f6dca21d569 100644
---- a/arch/arm/configs/vt8500_v6_v7_defconfig
-+++ b/arch/arm/configs/vt8500_v6_v7_defconfig
-@@ -8,8 +8,6 @@ CONFIG_ARM_ERRATA_720789=y
- CONFIG_ARM_ERRATA_775420=y
- CONFIG_HAVE_ARM_ARCH_TIMER=y
- CONFIG_AEABI=y
--CONFIG_HIGHMEM=y
--CONFIG_HIGHPTE=y
- CONFIG_ARM_APPENDED_DTB=y
- CONFIG_ARM_ATAG_DTB_COMPAT=y
- CONFIG_VFP=y
-diff --git a/arch/arm/mach-omap2/Kconfig b/arch/arm/mach-omap2/Kconfig
-index 821727eefd5a..4a2591985ff3 100644
---- a/arch/arm/mach-omap2/Kconfig
-+++ b/arch/arm/mach-omap2/Kconfig
-@@ -135,7 +135,6 @@ config ARCH_OMAP2PLUS_TYPICAL
- 	bool "Typical OMAP configuration"
- 	default y
- 	select AEABI
--	select HIGHMEM
- 	select I2C
- 	select I2C_OMAP
- 	select MENELAUS if ARCH_OMAP2
-diff --git a/arch/microblaze/Kconfig b/arch/microblaze/Kconfig
-index 484ebb3baedf..c25b8185bbbd 100644
---- a/arch/microblaze/Kconfig
-+++ b/arch/microblaze/Kconfig
-@@ -163,7 +163,8 @@ config LOWMEM_SIZE_BOOL
- 
- config LOWMEM_SIZE
- 	hex "Maximum low memory size (in bytes)" if LOWMEM_SIZE_BOOL
--	default "0x30000000"
-+	default "0x80000000" if HIGHMEM
-+	default "0x40000000"
- 
- config MANUAL_RESET_VECTOR
- 	hex "Microblaze reset vector address setup"
-@@ -189,7 +190,8 @@ config KERNEL_START_BOOL
- 
- config KERNEL_START
- 	hex "Virtual address of kernel base" if KERNEL_START_BOOL
--	default "0xc0000000"
-+	default "0x70000000" if HIGHMEM
-+	default "0xb0000000"
- 
- config TASK_SIZE_BOOL
- 	bool "Set custom user task size"
-@@ -203,7 +205,8 @@ config TASK_SIZE_BOOL
- 
- config TASK_SIZE
- 	hex "Size of user task space" if TASK_SIZE_BOOL
--	default "0x80000000"
-+	default "0x70000000" if HIGHMEM
-+	default "0xb0000000"
- 
- config MB_MANAGER
- 	bool "Support for Microblaze Manager"
-diff --git a/arch/microblaze/configs/mmu_defconfig b/arch/microblaze/configs/mmu_defconfig
-index fbbdcb394ca2..255fa7b69117 100644
---- a/arch/microblaze/configs/mmu_defconfig
-+++ b/arch/microblaze/configs/mmu_defconfig
-@@ -15,7 +15,6 @@ CONFIG_XILINX_MICROBLAZE0_USE_FPU=2
- CONFIG_HZ_100=y
- CONFIG_CMDLINE_BOOL=y
- CONFIG_CMDLINE_FORCE=y
--CONFIG_HIGHMEM=y
- CONFIG_MODULES=y
- CONFIG_MODULE_UNLOAD=y
- CONFIG_PARTITION_ADVANCED=y
-diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
-index 9537a61ebae0..1fa92ed8f28c 100644
---- a/arch/powerpc/Kconfig
-+++ b/arch/powerpc/Kconfig
-@@ -490,6 +490,7 @@ menu "Kernel options"
+@@ -1204,6 +1204,7 @@ config ARCH_SPARSEMEM_ENABLE
  config HIGHMEM
- 	bool "High memory support"
- 	depends on PPC32
-+	depends on PPC_BOOK3S_32 || PPC_85xx || 44x
+ 	bool "High Memory Support"
+ 	depends on MMU
++	depends on !CPU_CACHE_VIVT
  	select KMAP_LOCAL
- 
- source "kernel/Kconfig.hz"
-@@ -1190,7 +1191,8 @@ config LOWMEM_SIZE_BOOL
- 
- config LOWMEM_SIZE
- 	hex "Maximum low memory size (in bytes)" if LOWMEM_SIZE_BOOL
--	default "0x30000000"
-+	default "0x80000000" if HIGHMEM
-+	default "0x40000000"
- 
- config LOWMEM_CAM_NUM_BOOL
- 	bool "Set number of CAMs to use to map low memory"
-@@ -1242,7 +1244,8 @@ config PAGE_OFFSET_BOOL
- 
- config PAGE_OFFSET
- 	hex "Virtual address of memory base" if PAGE_OFFSET_BOOL
--	default "0xc0000000"
-+	default "0x70000000" if HIGHMEM
-+	default "0xb0000000"
- 
- config KERNEL_START_BOOL
- 	bool "Set custom kernel base address"
-@@ -1258,8 +1261,9 @@ config KERNEL_START_BOOL
- config KERNEL_START
- 	hex "Virtual address of kernel base" if KERNEL_START_BOOL
- 	default PAGE_OFFSET if PAGE_OFFSET_BOOL
--	default "0xc2000000" if CRASH_DUMP && !NONSTATIC_KERNEL
--	default "0xc0000000"
-+	default "0x72000000" if HIGHMEM && CRASH_DUMP && !NONSTATIC_KERNEL
-+	default "0xb2000000" if CRASH_DUMP && !NONSTATIC_KERNEL
-+	default PAGE_OFFSET
- 
- config PHYSICAL_START_BOOL
- 	bool "Set physical address where the kernel is loaded"
-@@ -1295,8 +1299,9 @@ config TASK_SIZE_BOOL
- config TASK_SIZE
- 	hex "Size of user task space" if TASK_SIZE_BOOL
- 	default "0x80000000" if PPC_8xx
--	default "0xb0000000" if PPC_BOOK3S_32 && EXECMEM
--	default "0xc0000000"
-+	default "0x60000000" if PPC_BOOK3S_32 && EXECMEM && HIGHMEM
-+	default "0xa0000000" if PPC_BOOK3S_32 && EXECMEM
-+	default PAGE_OFFSET
- 
- config MODULES_SIZE_BOOL
- 	bool "Set custom size for modules/execmem area"
-diff --git a/arch/powerpc/configs/44x/akebono_defconfig b/arch/powerpc/configs/44x/akebono_defconfig
-index 02e88648a2e6..992db368848f 100644
---- a/arch/powerpc/configs/44x/akebono_defconfig
-+++ b/arch/powerpc/configs/44x/akebono_defconfig
-@@ -14,7 +14,6 @@ CONFIG_MODULE_UNLOAD=y
- CONFIG_PPC_47x=y
- # CONFIG_EBONY is not set
- CONFIG_AKEBONO=y
--CONFIG_HIGHMEM=y
- CONFIG_HZ_100=y
- CONFIG_IRQ_ALL_CPUS=y
- # CONFIG_COMPACTION is not set
-diff --git a/arch/powerpc/configs/85xx/ksi8560_defconfig b/arch/powerpc/configs/85xx/ksi8560_defconfig
-index 9cb211fb6d1e..f2ac1fc41303 100644
---- a/arch/powerpc/configs/85xx/ksi8560_defconfig
-+++ b/arch/powerpc/configs/85xx/ksi8560_defconfig
-@@ -9,7 +9,6 @@ CONFIG_PARTITION_ADVANCED=y
- CONFIG_KSI8560=y
- CONFIG_CPM2=y
- CONFIG_GEN_RTC=y
--CONFIG_HIGHMEM=y
- CONFIG_BINFMT_MISC=y
- CONFIG_MATH_EMULATION=y
- # CONFIG_SECCOMP is not set
-diff --git a/arch/powerpc/configs/85xx/stx_gp3_defconfig b/arch/powerpc/configs/85xx/stx_gp3_defconfig
-index 0a42072fa23c..1033977711d6 100644
---- a/arch/powerpc/configs/85xx/stx_gp3_defconfig
-+++ b/arch/powerpc/configs/85xx/stx_gp3_defconfig
-@@ -7,7 +7,6 @@ CONFIG_MODULES=y
- CONFIG_MODVERSIONS=y
- # CONFIG_BLK_DEV_BSG is not set
- CONFIG_STX_GP3=y
--CONFIG_HIGHMEM=y
- CONFIG_BINFMT_MISC=m
- CONFIG_MATH_EMULATION=y
- CONFIG_PCI=y
-diff --git a/arch/x86/Kconfig b/arch/x86/Kconfig
-index 80527299f859..b40c8fd6cac1 100644
---- a/arch/x86/Kconfig
-+++ b/arch/x86/Kconfig
-@@ -1416,7 +1416,9 @@ config HIGHMEM4G
- 
- choice
- 	prompt "Memory split" if EXPERT
--	default VMSPLIT_3G
-+	default VMSPLIT_2G_OPT if HIGHMEM && !X86_PAE
-+	default VMSPLIT_2G if X86_PAE
-+	default VMSPLIT_3G_OPT
- 	depends on X86_32
+ 	select KMAP_LOCAL_NON_LINEAR_PTE_ARRAY
  	help
- 	  Select the desired split between kernel and user memory.
+diff --git a/arch/arm/configs/gemini_defconfig b/arch/arm/configs/gemini_defconfig
+index 7b1daec630cb..1bb4f47ea3c8 100644
+--- a/arch/arm/configs/gemini_defconfig
++++ b/arch/arm/configs/gemini_defconfig
+@@ -12,7 +12,6 @@ CONFIG_ARCH_MULTI_V4=y
+ # CONFIG_ARCH_MULTI_V7 is not set
+ CONFIG_ARCH_GEMINI=y
+ CONFIG_AEABI=y
+-CONFIG_HIGHMEM=y
+ CONFIG_CMDLINE="console=ttyS0,115200n8"
+ CONFIG_PM=y
+ CONFIG_PARTITION_ADVANCED=y
+diff --git a/arch/arm/configs/multi_v5_defconfig b/arch/arm/configs/multi_v5_defconfig
+index 59b020e66a0b..5106fc2d2a00 100644
+--- a/arch/arm/configs/multi_v5_defconfig
++++ b/arch/arm/configs/multi_v5_defconfig
+@@ -37,7 +37,6 @@ CONFIG_MACH_MSS2_DT=y
+ CONFIG_ARCH_SUNXI=y
+ CONFIG_ARCH_VERSATILE=y
+ CONFIG_AEABI=y
+-CONFIG_HIGHMEM=y
+ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_ARM_ATAG_DTB_COMPAT=y
+ CONFIG_CPU_FREQ=y
+diff --git a/arch/arm/configs/mvebu_v5_defconfig b/arch/arm/configs/mvebu_v5_defconfig
+index d1742a7cae6a..ba17bd3237fb 100644
+--- a/arch/arm/configs/mvebu_v5_defconfig
++++ b/arch/arm/configs/mvebu_v5_defconfig
+@@ -24,7 +24,6 @@ CONFIG_MACH_D2NET_DT=y
+ CONFIG_MACH_NET2BIG=y
+ CONFIG_MACH_MSS2_DT=y
+ CONFIG_AEABI=y
+-CONFIG_HIGHMEM=y
+ CONFIG_ARM_APPENDED_DTB=y
+ CONFIG_ARM_ATAG_DTB_COMPAT=y
+ CONFIG_CPU_FREQ=y
+diff --git a/arch/arm/include/asm/highmem.h b/arch/arm/include/asm/highmem.h
+index bdb209e002a4..67ed46d1922b 100644
+--- a/arch/arm/include/asm/highmem.h
++++ b/arch/arm/include/asm/highmem.h
+@@ -11,66 +11,14 @@
+ #define PKMAP_NR(virt)		(((virt) - PKMAP_BASE) >> PAGE_SHIFT)
+ #define PKMAP_ADDR(nr)		(PKMAP_BASE + ((nr) << PAGE_SHIFT))
+ 
+-#define flush_cache_kmaps() \
+-	do { \
+-		if (cache_is_vivt()) \
+-			flush_cache_all(); \
+-	} while (0)
++#define flush_cache_kmaps() do { } while (0)
+ 
+ extern pte_t *pkmap_page_table;
+ 
+-/*
+- * The reason for kmap_high_get() is to ensure that the currently kmap'd
+- * page usage count does not decrease to zero while we're using its
+- * existing virtual mapping in an atomic context.  With a VIVT cache this
+- * is essential to do, but with a VIPT cache this is only an optimization
+- * so not to pay the price of establishing a second mapping if an existing
+- * one can be used.  However, on platforms without hardware TLB maintenance
+- * broadcast, we simply cannot use ARCH_NEEDS_KMAP_HIGH_GET at all since
+- * the locking involved must also disable IRQs which is incompatible with
+- * the IPI mechanism used by global TLB operations.
+- */
+-#define ARCH_NEEDS_KMAP_HIGH_GET
+-#if defined(CONFIG_SMP) && defined(CONFIG_CPU_TLB_V6)
+-#undef ARCH_NEEDS_KMAP_HIGH_GET
+-#if defined(CONFIG_HIGHMEM) && defined(CONFIG_CPU_CACHE_VIVT)
+-#error "The sum of features in your kernel config cannot be supported together"
+-#endif
+-#endif
+-
+-/*
+- * Needed to be able to broadcast the TLB invalidation for kmap.
+- */
+-#ifdef CONFIG_ARM_ERRATA_798181
+-#undef ARCH_NEEDS_KMAP_HIGH_GET
+-#endif
+-
+-#ifdef ARCH_NEEDS_KMAP_HIGH_GET
+-extern void *kmap_high_get(const struct page *page);
+-
+-static inline void *arch_kmap_local_high_get(const struct page *page)
+-{
+-	if (IS_ENABLED(CONFIG_DEBUG_HIGHMEM) && !cache_is_vivt())
+-		return NULL;
+-	return kmap_high_get(page);
+-}
+-#define arch_kmap_local_high_get arch_kmap_local_high_get
+-
+-#else /* ARCH_NEEDS_KMAP_HIGH_GET */
+-static inline void *kmap_high_get(const struct page *page)
+-{
+-	return NULL;
+-}
+-#endif /* !ARCH_NEEDS_KMAP_HIGH_GET */
+-
+ #define arch_kmap_local_post_map(vaddr, pteval)				\
+ 	local_flush_tlb_kernel_page(vaddr)
+ 
+-#define arch_kmap_local_pre_unmap(vaddr)				\
+-do {									\
+-	if (cache_is_vivt())						\
+-		__cpuc_flush_dcache_area((void *)vaddr, PAGE_SIZE);	\
+-} while (0)
++#define arch_kmap_local_pre_unmap(vaddr) do { } while (0)
+ 
+ #define arch_kmap_local_post_unmap(vaddr)				\
+ 	local_flush_tlb_kernel_page(vaddr)
+diff --git a/arch/arm/mm/cache-feroceon-l2.c b/arch/arm/mm/cache-feroceon-l2.c
+index 2bfefb252ffd..1316b6ab295a 100644
+--- a/arch/arm/mm/cache-feroceon-l2.c
++++ b/arch/arm/mm/cache-feroceon-l2.c
+@@ -12,7 +12,6 @@
+ #include <linux/init.h>
+ #include <linux/of.h>
+ #include <linux/of_address.h>
+-#include <linux/highmem.h>
+ #include <linux/io.h>
+ #include <asm/cacheflush.h>
+ #include <asm/cp15.h>
+@@ -38,30 +37,6 @@
+  * between which we don't want to be preempted.
+  */
+ 
+-static inline unsigned long l2_get_va(unsigned long paddr)
+-{
+-#ifdef CONFIG_HIGHMEM
+-	/*
+-	 * Because range ops can't be done on physical addresses,
+-	 * we simply install a virtual mapping for it only for the
+-	 * TLB lookup to occur, hence no need to flush the untouched
+-	 * memory mapping afterwards (note: a cache flush may happen
+-	 * in some circumstances depending on the path taken in kunmap_atomic).
+-	 */
+-	void *vaddr = kmap_atomic_pfn(paddr >> PAGE_SHIFT);
+-	return (unsigned long)vaddr + (paddr & ~PAGE_MASK);
+-#else
+-	return __phys_to_virt(paddr);
+-#endif
+-}
+-
+-static inline void l2_put_va(unsigned long vaddr)
+-{
+-#ifdef CONFIG_HIGHMEM
+-	kunmap_atomic((void *)vaddr);
+-#endif
+-}
+-
+ static inline void l2_clean_pa(unsigned long addr)
+ {
+ 	__asm__("mcr p15, 1, %0, c15, c9, 3" : : "r" (addr));
+@@ -78,14 +53,13 @@ static inline void l2_clean_pa_range(unsigned long start, unsigned long end)
+ 	 */
+ 	BUG_ON((start ^ end) >> PAGE_SHIFT);
+ 
+-	va_start = l2_get_va(start);
++	va_start = __phys_to_virt(start);
+ 	va_end = va_start + (end - start);
+ 	raw_local_irq_save(flags);
+ 	__asm__("mcr p15, 1, %0, c15, c9, 4\n\t"
+ 		"mcr p15, 1, %1, c15, c9, 5"
+ 		: : "r" (va_start), "r" (va_end));
+ 	raw_local_irq_restore(flags);
+-	l2_put_va(va_start);
+ }
+ 
+ static inline void l2_clean_inv_pa(unsigned long addr)
+@@ -109,14 +83,13 @@ static inline void l2_inv_pa_range(unsigned long start, unsigned long end)
+ 	 */
+ 	BUG_ON((start ^ end) >> PAGE_SHIFT);
+ 
+-	va_start = l2_get_va(start);
++	va_start = __phys_to_virt(start);
+ 	va_end = va_start + (end - start);
+ 	raw_local_irq_save(flags);
+ 	__asm__("mcr p15, 1, %0, c15, c11, 4\n\t"
+ 		"mcr p15, 1, %1, c15, c11, 5"
+ 		: : "r" (va_start), "r" (va_end));
+ 	raw_local_irq_restore(flags);
+-	l2_put_va(va_start);
+ }
+ 
+ static inline void l2_inv_all(void)
+diff --git a/arch/arm/mm/cache-xsc3l2.c b/arch/arm/mm/cache-xsc3l2.c
+index d20d7af02d10..477077387039 100644
+--- a/arch/arm/mm/cache-xsc3l2.c
++++ b/arch/arm/mm/cache-xsc3l2.c
+@@ -5,7 +5,6 @@
+  * Copyright (C) 2007 ARM Limited
+  */
+ #include <linux/init.h>
+-#include <linux/highmem.h>
+ #include <asm/cp15.h>
+ #include <asm/cputype.h>
+ #include <asm/cacheflush.h>
+@@ -55,34 +54,6 @@ static inline void xsc3_l2_inv_all(void)
+ 	dsb();
+ }
+ 
+-static inline void l2_unmap_va(unsigned long va)
+-{
+-#ifdef CONFIG_HIGHMEM
+-	if (va != -1)
+-		kunmap_atomic((void *)va);
+-#endif
+-}
+-
+-static inline unsigned long l2_map_va(unsigned long pa, unsigned long prev_va)
+-{
+-#ifdef CONFIG_HIGHMEM
+-	unsigned long va = prev_va & PAGE_MASK;
+-	unsigned long pa_offset = pa << (32 - PAGE_SHIFT);
+-	if (unlikely(pa_offset < (prev_va << (32 - PAGE_SHIFT)))) {
+-		/*
+-		 * Switching to a new page.  Because cache ops are
+-		 * using virtual addresses only, we must put a mapping
+-		 * in place for it.
+-		 */
+-		l2_unmap_va(prev_va);
+-		va = (unsigned long)kmap_atomic_pfn(pa >> PAGE_SHIFT);
+-	}
+-	return va + (pa_offset >> (32 - PAGE_SHIFT));
+-#else
+-	return __phys_to_virt(pa);
+-#endif
+-}
+-
+ static void xsc3_l2_inv_range(unsigned long start, unsigned long end)
+ {
+ 	unsigned long vaddr;
+@@ -92,13 +63,11 @@ static void xsc3_l2_inv_range(unsigned long start, unsigned long end)
+ 		return;
+ 	}
+ 
+-	vaddr = -1;  /* to force the first mapping */
+-
+ 	/*
+ 	 * Clean and invalidate partial first cache line.
+ 	 */
+ 	if (start & (CACHE_LINE_SIZE - 1)) {
+-		vaddr = l2_map_va(start & ~(CACHE_LINE_SIZE - 1), vaddr);
++		vaddr = __phys_to_virt(start & ~(CACHE_LINE_SIZE - 1));
+ 		xsc3_l2_clean_mva(vaddr);
+ 		xsc3_l2_inv_mva(vaddr);
+ 		start = (start | (CACHE_LINE_SIZE - 1)) + 1;
+@@ -108,7 +77,7 @@ static void xsc3_l2_inv_range(unsigned long start, unsigned long end)
+ 	 * Invalidate all full cache lines between 'start' and 'end'.
+ 	 */
+ 	while (start < (end & ~(CACHE_LINE_SIZE - 1))) {
+-		vaddr = l2_map_va(start, vaddr);
++		vaddr = __phys_to_virt(start);
+ 		xsc3_l2_inv_mva(vaddr);
+ 		start += CACHE_LINE_SIZE;
+ 	}
+@@ -117,13 +86,11 @@ static void xsc3_l2_inv_range(unsigned long start, unsigned long end)
+ 	 * Clean and invalidate partial last cache line.
+ 	 */
+ 	if (start < end) {
+-		vaddr = l2_map_va(start, vaddr);
++		vaddr = __phys_to_virt(start);
+ 		xsc3_l2_clean_mva(vaddr);
+ 		xsc3_l2_inv_mva(vaddr);
+ 	}
+ 
+-	l2_unmap_va(vaddr);
+-
+ 	dsb();
+ }
+ 
+@@ -135,13 +102,11 @@ static void xsc3_l2_clean_range(unsigned long start, unsigned long end)
+ 
+ 	start &= ~(CACHE_LINE_SIZE - 1);
+ 	while (start < end) {
+-		vaddr = l2_map_va(start, vaddr);
++		vaddr = __phys_to_virt(start);
+ 		xsc3_l2_clean_mva(vaddr);
+ 		start += CACHE_LINE_SIZE;
+ 	}
+ 
+-	l2_unmap_va(vaddr);
+-
+ 	dsb();
+ }
+ 
+@@ -178,14 +143,12 @@ static void xsc3_l2_flush_range(unsigned long start, unsigned long end)
+ 
+ 	start &= ~(CACHE_LINE_SIZE - 1);
+ 	while (start < end) {
+-		vaddr = l2_map_va(start, vaddr);
++		vaddr = __phys_to_virt(start);
+ 		xsc3_l2_clean_mva(vaddr);
+ 		xsc3_l2_inv_mva(vaddr);
+ 		start += CACHE_LINE_SIZE;
+ 	}
+ 
+-	l2_unmap_va(vaddr);
+-
+ 	dsb();
+ }
+ 
+diff --git a/arch/arm/mm/dma-mapping.c b/arch/arm/mm/dma-mapping.c
+index a4c765d24692..696f6f1f259e 100644
+--- a/arch/arm/mm/dma-mapping.c
++++ b/arch/arm/mm/dma-mapping.c
+@@ -647,18 +647,10 @@ static void dma_cache_maint_page(phys_addr_t phys, size_t size,
+ 			if (len + offset > PAGE_SIZE)
+ 				len = PAGE_SIZE - offset;
+ 
+-			if (cache_is_vipt_nonaliasing()) {
+-				vaddr = kmap_atomic_pfn(pfn);
++			vaddr = kmap_atomic(phys_to_page(phys));
++			if (vaddr) {
+ 				op(vaddr + offset, len, dir);
+ 				kunmap_atomic(vaddr);
+-			} else {
+-				struct page *page = phys_to_page(phys);
+-
+-				vaddr = kmap_high_get(page);
+-				if (vaddr) {
+-					op(vaddr + offset, len, dir);
+-					kunmap_high(page);
+-				}
+ 			}
+ 		} else {
+ 			phys += offset;
+diff --git a/arch/arm/mm/flush.c b/arch/arm/mm/flush.c
+index 19470d938b23..998b75f77364 100644
+--- a/arch/arm/mm/flush.c
++++ b/arch/arm/mm/flush.c
+@@ -208,21 +208,10 @@ void __flush_dcache_folio(struct address_space *mapping, struct folio *folio)
+ 					folio_size(folio));
+ 	} else {
+ 		unsigned long i;
+-		if (cache_is_vipt_nonaliasing()) {
+-			for (i = 0; i < folio_nr_pages(folio); i++) {
+-				void *addr = kmap_local_folio(folio,
+-								i * PAGE_SIZE);
+-				__cpuc_flush_dcache_area(addr, PAGE_SIZE);
+-				kunmap_local(addr);
+-			}
+-		} else {
+-			for (i = 0; i < folio_nr_pages(folio); i++) {
+-				void *addr = kmap_high_get(folio_page(folio, i));
+-				if (addr) {
+-					__cpuc_flush_dcache_area(addr, PAGE_SIZE);
+-					kunmap_high(folio_page(folio, i));
+-				}
+-			}
++		for (i = 0; i < folio_nr_pages(folio); i++) {
++			void *addr = kmap_local_folio(folio, i * PAGE_SIZE);
++			__cpuc_flush_dcache_area(addr, PAGE_SIZE);
++			kunmap_local(addr);
+ 		}
+ 	}
+ 
 -- 
 2.39.5
 
