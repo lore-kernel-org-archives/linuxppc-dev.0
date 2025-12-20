@@ -1,47 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-14916-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14917-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 199C7E668A5
-	for <linuxppc-dev@archiver.kernel.org>; Fri, 19 Dec 2025 22:57:12 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46B8AE668AE
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 20 Dec 2025 10:45:21 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dY2wk3cPyz2xrM;
-	Sat, 20 Dec 2025 09:57:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.84
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766153455;
-	cv=none; b=BP8PLC/Wm7sFoRrqaihKCq7ssvsh4wm3sVwa4IcqwuycPrrUJ4tabYLzxGJ8hl28Uhn6rNuvxFhodEyJEomaESYhvVAptbhu7+RQusBRS0AzMGImsFuoPftd1+w1XsQeLgFK3i4ynDf2qRKdFrxKADf4AqhZmwhEFrxbM817JIhj7JX5wg2l6/vsl0BYdUE/kxAgbU/f2LHMQly5loCC3RBSCMNSIXEGwqa5hZbgY3Cr7w6dvzrszBf3DIlZ0wT6MlaiVfjdJnV1wDH5UC3cuK4S/QZIsfZqVo1UN56i+MS9ja2ErMXz9PaUqkI1C6C5uJkmP7j8Vn20bKZUD/gpPA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dYLdq33tFz2y6G;
+	Sat, 20 Dec 2025 21:45:19 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766227519;
+	cv=none; b=ZvNQHiK3gI690hfQGZB3tyYCqW0drv4H3ucveJh2B21nLGW6XSelhR+Z5fAmG9hcYp8PUlYXNh0vZtUbFEWrPQHeX0ech4acSJd1rKmQRwJMOI15waXNjHEqScPWQ+M6ZMn0ysCsyfP9zHH/qb+GdA59QPPG4j+VW3KoCpTv3zrH7T/BsEZ2tYMzKrwLNDX1NXLx/3sVqo28dbElgcjtW/BQH9D9lF3PiAOqTVBc8SzmyIKiUl8jGN6ljtoeT7mWrvPXbq0BUZ5pb5btYATP1GFA3Zt9pl8uKLbm/bMr32viwUC0dW0TB6tbNqbpVGD7iRyYDGr81WAphWC2VTLzVA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766153455; c=relaxed/relaxed;
-	bh=Ja5pwKVXFbX6smam+cJccw9/HDc005YJI6VlCvR+q+I=;
-	h=From:To:Cc:Subject:Date:Message-Id:MIME-Version; b=UBXs/OZcMKXXcI1v3VFqOqqMH6opfDTz5blCsyRIsSvPHbMFjSF//t+o5PMwOiLuo2YUF1sPN6MftgLYTApuVB2wOUey81cv6B3fuD1ROfLKH0i1ngrCjIcGK0rrfyLioc88N3eGjeLyuyvQz/9rDXg/IroIfp1EQe23ae7Baz1hiGniWBtrFeoCaq8PW3zFrsilqUvt9x+XV5H29YJ6+VIiI1upnYxXRul4xzmT4VvQUfwKfTKHMOmGphU1P/fo2s8ZJ3msJeDXR7uLA0jBLHTnkhDl3ZX253ZE0JxT9aFQ24MihyHvAHDfjVObzViOu5FET4ABMlYyvTiHyM0y5A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=isrc.iscas.ac.cn; spf=pass (client-ip=159.226.251.84; helo=cstnet.cn; envelope-from=lihaoxiang@isrc.iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=isrc.iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=isrc.iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=isrc.iscas.ac.cn (client-ip=159.226.251.84; helo=cstnet.cn; envelope-from=lihaoxiang@isrc.iscas.ac.cn; receiver=lists.ozlabs.org)
-Received: from cstnet.cn (smtp84.cstnet.cn [159.226.251.84])
+	t=1766227519; c=relaxed/relaxed;
+	bh=dDVJ1lNXe5miYeb7Pa/YktQaMCfraxS4pds/E6jFn8M=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=jfhHeP+uoJ8SliCUEBOc1p+4A5wVhtCnHI/gDWMLJmJbdXzUTPTLa3kVn13k5eSw6c++FLhnhacw8Oofru6TJr/R2b4KVsWcPmKw7DHmqWExeBwg8UNEO27BBAGDE8h4nPKea9zY/WtpE2wqKDKQMO5MaeLsbBJ+YKpfNI/TVv5/h9Zf7LA7I949Z288TQeLwnp23Hef1adX5CmxQ1UKs/sMAReTVi21/myCgTdSmQTca9OOr3q4BH3x1ppmy6ug/Zdo/1kuAQ8yGzKUg/TLFWP05eV2OZ9yQTP5IteJb3/LmosWFlnpL4z48OPEtpCE1E5Ve7Ca7FsGAm/4AFa5mQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bRB0hHm4; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=bRB0hHm4;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dXqFV3Mxsz2yFW
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Dec 2025 01:10:52 +1100 (AEDT)
-Received: from localhost.localdomain (unknown [36.112.3.209])
-	by APP-05 (Coremail) with SMTP id zQCowACnOQ3dXEVpn+ovAQ--.16674S2;
-	Fri, 19 Dec 2025 22:10:37 +0800 (CST)
-From: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
-To: maddy@linux.ibm.com,
-	mpe@ellerman.id.au,
-	npiggin@gmail.com,
-	chleroy@kernel.org,
-	mporter@kernel.crashing.org,
-	alex.bou9@gmail.com
-Cc: linuxppc-dev@lists.ozlabs.org,
-	linux-kernel@vger.kernel.org,
-	Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
-Subject: [PATCH] powerpc/fsl_rio: fix a improper release in fsl_rio_setup()
-Date: Fri, 19 Dec 2025 22:10:33 +0800
-Message-Id: <20251219141033.632153-1-lihaoxiang@isrc.iscas.ac.cn>
-X-Mailer: git-send-email 2.25.1
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dYLdp1mxlz2xlF
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 20 Dec 2025 21:45:18 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 456854067B;
+	Sat, 20 Dec 2025 10:45:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5D0BDC4CEF5;
+	Sat, 20 Dec 2025 10:45:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1766227514;
+	bh=V5P5vXWLkKnry4xZROdXvmrEOjVqCHKY6ocQB130z6o=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=bRB0hHm4nUD2k0rwJVhjtIgZd3iS4PLr4Rw8rW4AJNs1BKldZkf1PKdePJEY+10Sc
+	 38oKr67givnzWArEIxU29dHrHuwhOzMwa+UxE3AIPTnidDfP44t/Yp3msEWXb/xzOu
+	 G6Fpn28pjGMsvuO6yOSWSMtxWr4I59kJStCPyqNJxjgvAuuBxIHv0jCnWakKWt1Ybi
+	 912GbWJKweARZSrRNXHCrmjydzrIIqeYtTJchNfYF4boarfyUwbZJLSCwP3hQBPOTK
+	 bsmsWCWyJj08XFDM2yt/hHwPWhqXVufXvayHjEm6hkGdxLN5GspkhqCYGJ9I1gfHDX
+	 +TJI5mvws5yvA==
+Message-ID: <b371cc50-4b3d-4b0c-8948-6af78baac041@kernel.org>
+Date: Sat, 20 Dec 2025 11:45:10 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -55,80 +59,92 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH] powerpc/fsl_rio: fix a improper release in
+ fsl_rio_setup()
+To: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>, maddy@linux.ibm.com,
+ mpe@ellerman.id.au, npiggin@gmail.com, mporter@kernel.crashing.org,
+ alex.bou9@gmail.com
+Cc: linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+References: <20251219141033.632153-1-lihaoxiang@isrc.iscas.ac.cn>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20251219141033.632153-1-lihaoxiang@isrc.iscas.ac.cn>
+Content-Type: text/plain; charset=UTF-8; format=flowed
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:zQCowACnOQ3dXEVpn+ovAQ--.16674S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7AF4kZF45Aw1UtrWDuF1rJFb_yoW8CF1rpa
-	1DKFyFkry0gr4IgFyjvFy0qF1vqa92y3yFkry8C3sakrs8Zry0vr1xAF97XFyUXFykAFyY
-	qr9xJrWUWa18JF7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUkG14x267AKxVW8JVW5JwAFc2x0x2IEx4CE42xK8VAvwI8IcIk0
-	rVWUuVWrJwAFIxvE14AKwVWUJVWUGwA2ocxC64kIII0Yj41l84x0c7CEw4AK67xGY2AK02
-	1l84ACjcxK6xIIjxv20xvE14v26r1j6r1xM28EF7xvwVC0I7IYx2IY6xkF7I0E14v26r1j
-	6r4UM28EF7xvwVC2z280aVAFwI0_Gr0_Cr1l84ACjcxK6I8E87Iv6xkF7I0E14v26r4j6r
-	4UJwAS0I0E0xvYzxvE52x082IY62kv0487Mc02F40EFcxC0VAKzVAqx4xG6I80ewAv7VC0
-	I7IYx2IY67AKxVWUJVWUGwAv7VC2z280aVAFwI0_Jr0_Gr1lOx8S6xCaFVCjc4AY6r1j6r
-	4UM4x0Y48IcxkI7VAKI48JM4x0x7Aq67IIx4CEVc8vx2IErcIFxwCY1x0262kKe7AKxVWU
-	tVW8ZwCF04k20xvY0x0EwIxGrwCFx2IqxVCFs4IE7xkEbVWUJVW8JwC20s026c02F40E14
-	v26r1j6r18MI8I3I0E7480Y4vE14v26r106r1rMI8E67AF67kF1VAFwI0_Jw0_GFylIxkG
-	c2Ij64vIr41lIxAIcVC0I7IYx2IY67AKxVWUJVWUCwCI42IY6xIIjxv20xvEc7CjxVAFwI
-	0_Jr0_Gr1lIxAIcVCF04k26cxKx2IYs7xG6r1j6r1xMIIF0xvEx4A2jsIE14v26r1j6r4U
-	MIIF0xvEx4A2jsIEc7CjxVAFwI0_Gr0_Gr1UYxBIdaVFxhVjvjDU0xZFpf9x0JUd-B_UUU
-	UU=
-X-Originating-IP: [36.112.3.209]
-X-CM-SenderInfo: 5olkt0x0ld0ww6lv2u4olvutnvoduhdfq/1tbiCQ4BE2lFN99AuwACso
 
-If rio_register_mport() fails, put_device() is the correct way
-to drop the device reference.
-To prevent a double free, remove put_device() in rio_register_mport()
-Also, add a put_device() in tsi721_setup_mport() to prevent reference
-leak.
 
-Found by code review.
 
-Signed-off-by: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
----
- arch/powerpc/sysdev/fsl_rio.c    | 2 +-
- drivers/rapidio/devices/tsi721.c | 1 +
- drivers/rapidio/rio.c            | 1 -
- 3 files changed, 2 insertions(+), 2 deletions(-)
+Le 19/12/2025 à 15:10, Haoxiang Li a écrit :
+> [Vous ne recevez pas souvent de courriers de lihaoxiang@isrc.iscas.ac.cn. Découvrez pourquoi ceci est important à https://aka.ms/LearnAboutSenderIdentification ]
+> 
+> If rio_register_mport() fails, put_device() is the correct way
+> to drop the device reference.
+> To prevent a double free, remove put_device() in rio_register_mport()
+> Also, add a put_device() in tsi721_setup_mport() to prevent reference
+> leak.
 
-diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
-index f9b214b299e7..f6226b2619ed 100644
---- a/arch/powerpc/sysdev/fsl_rio.c
-+++ b/arch/powerpc/sysdev/fsl_rio.c
-@@ -697,7 +697,7 @@ static int fsl_rio_setup(struct platform_device *dev)
- 		if (rio_register_mport(port)) {
- 			release_resource(&port->iores);
- 			kfree(priv);
--			kfree(port);
-+			put_device(&port->dev);
- 			continue;
- 		}
- 		active_ports++;
-diff --git a/drivers/rapidio/devices/tsi721.c b/drivers/rapidio/devices/tsi721.c
-index 4b84270a8906..17c2bcf29c5c 100644
---- a/drivers/rapidio/devices/tsi721.c
-+++ b/drivers/rapidio/devices/tsi721.c
-@@ -2758,6 +2758,7 @@ static int tsi721_setup_mport(struct tsi721_device *priv)
- 	err = rio_register_mport(mport);
- 	if (err) {
- 		tsi721_unregister_dma(priv);
-+		put_device(&mport->dev);
- 		goto err_exit;
- 	}
- 
-diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
-index 46daf32ea13b..026b2328afd7 100644
---- a/drivers/rapidio/rio.c
-+++ b/drivers/rapidio/rio.c
-@@ -2089,7 +2089,6 @@ int rio_register_mport(struct rio_mport *port)
- 		mutex_lock(&rio_mport_list_lock);
- 		list_del(&port->node);
- 		mutex_unlock(&rio_mport_list_lock);
--		put_device(&port->dev);
- 	} else {
- 		dev_dbg(&port->dev, "RIO: registered mport%d\n", port->id);
- 	}
--- 
-2.25.1
+Your explanation is unclear. It is correct that put_device() is the 
+correct way to drop the device reference, and it is already what 
+rio_register_mport() does. Why do you need to move it out of 
+rio_register_mport() ? This is what you have to explain.
+
+> 
+> Found by code review.
+
+AI code review or human code review ?
+
+> 
+> Signed-off-by: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
+> ---
+>   arch/powerpc/sysdev/fsl_rio.c    | 2 +-
+>   drivers/rapidio/devices/tsi721.c | 1 +
+>   drivers/rapidio/rio.c            | 1 -
+>   3 files changed, 2 insertions(+), 2 deletions(-)
+> 
+> diff --git a/arch/powerpc/sysdev/fsl_rio.c b/arch/powerpc/sysdev/fsl_rio.c
+> index f9b214b299e7..f6226b2619ed 100644
+> --- a/arch/powerpc/sysdev/fsl_rio.c
+> +++ b/arch/powerpc/sysdev/fsl_rio.c
+> @@ -697,7 +697,7 @@ static int fsl_rio_setup(struct platform_device *dev)
+>                  if (rio_register_mport(port)) {
+>                          release_resource(&port->iores);
+>                          kfree(priv);
+> -                       kfree(port);
+
+Why do you remove this kfree() ? By doing this you will leak the port 
+pointer allocated earlier in the loop by kzalloc()
+
+> +                       put_device(&port->dev);
+>                          continue;
+>                  }
+>                  active_ports++;
+> diff --git a/drivers/rapidio/devices/tsi721.c b/drivers/rapidio/devices/tsi721.c
+> index 4b84270a8906..17c2bcf29c5c 100644
+> --- a/drivers/rapidio/devices/tsi721.c
+> +++ b/drivers/rapidio/devices/tsi721.c
+> @@ -2758,6 +2758,7 @@ static int tsi721_setup_mport(struct tsi721_device *priv)
+>          err = rio_register_mport(mport);
+>          if (err) {
+>                  tsi721_unregister_dma(priv);
+> +               put_device(&mport->dev);
+>                  goto err_exit;
+>          }
+> 
+> diff --git a/drivers/rapidio/rio.c b/drivers/rapidio/rio.c
+> index 46daf32ea13b..026b2328afd7 100644
+> --- a/drivers/rapidio/rio.c
+> +++ b/drivers/rapidio/rio.c
+> @@ -2089,7 +2089,6 @@ int rio_register_mport(struct rio_mport *port)
+>                  mutex_lock(&rio_mport_list_lock);
+>                  list_del(&port->node);
+>                  mutex_unlock(&rio_mport_list_lock);
+> -               put_device(&port->dev);
+>          } else {
+>                  dev_dbg(&port->dev, "RIO: registered mport%d\n", port->id);
+>          }
+> --
+> 2.25.1
+> 
 
 
