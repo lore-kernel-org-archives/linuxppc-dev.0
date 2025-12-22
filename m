@@ -1,52 +1,74 @@
-Return-Path: <linuxppc-dev+bounces-14944-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14945-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49F71E6B25B
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Dec 2025 21:45:38 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5506E6781B
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 22 Dec 2025 23:14:17 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dZsBh6v2rz2yNv;
-	Tue, 23 Dec 2025 08:45:32 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766410848;
-	cv=none; b=WW7QnOYTng8fPNtIb5wYAdGLN072h7O0TqREmeLKKSZ5vscMdjD4lo6tlLsICkABf+/o0FT7QvoTEO7woD2yvljpEBgIJ5CgSnmSFTjtCK3Jl7+rCSBtW1nKlrlW4U/Zf+YGVH0Cb9Jol9fauy6Wnd3BVHGcV8nbgIKF+XSXdyzjvSkK/ZtxbPLmEYTYPbVeJOGGT/TKkBFPY/s0SLoLCX3kss1d0PBtqp9fJHZnE26HJUR+d93DKbPjiiWu6Q4f5T1soKhLQdbR6w6OVdBxzFWLWaflMFybWYKHMVLAhblqHldxwTdyPghnK+uesfu7lFkgXsT5og1I39k4mSFNNQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dZv936lCZz2xpm;
+	Tue, 23 Dec 2025 10:14:15 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.18
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766445255;
+	cv=none; b=Exor1kvxRlx4H9HL+OE0ZSxB7ZgWO52Ad1uLtYjP8fur82yTv/afQwxWboYtOeEbUbjTF28M9kdTshu8N49UAfur5uhhWZgtp8ihnF1Q6YOuNOspusXVjNll03XdWWv5kfqyyB47BNl4HFye2cNN0QPPztNchQuDH/3EEe0h2PhjhG4X0DWmcaWgDuF32qj7BlEJM8ofO3BN1sD6LLm9Ip6Mwn3afveEoyDcrq6E7kXWeQaU3TCo5Nk3NwNW6yvKt8fYzBBWwPX8Uw19pv22dLfRomAvqDP7GP2M+BEjXyokVIMClpqshly2eAtwR3FV/cE22HD/ISjGlFHSXOEDmg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766410848; c=relaxed/relaxed;
-	bh=NJ/ZFzWFkuZoFnGeHnU0VIpDOmF05pU5wZX9TQRDdrE=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=hsK5plEX+alMfEgUMtt01mNW5if4VOT9tPK364y3OSMqTpiFjYTlX0OTVIESkeNE/+Emmwa3Sj2SBYEFGNWAAcPB6qA4K/aCz/LlIfR8UPv9MtQ/oac/9zXuft8As3FVZTMwXMki/LPbnMee0A99C5aJMWzSWl8T2rn6qSpegZeBAiKiopXD/pReFe8k6F6gyIbVGDUQca04Rcb5XaEJ/Ezg1Yrotk9hK+/s5134uxPQliQgy/Etk/nBuE2KWNuiwWn6Ot7fxG84eor0jfJaryNvCXGHhuwMEPtuJ8CHvihh8Wi+V/MLJHOIb/zpg22zznKjs9df33wMrM5v3+68BQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=las0/PUW; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=tamird@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1766445255; c=relaxed/relaxed;
+	bh=Y0ZZoSXVtX1HrexqarCXm1FjtdkS4Qqx4v8kdPwf6EQ=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=NUhV6A4XmfscOm5XHKy0qo23QTD335Ho55a7YdL6ROeBl8PkgEMhJmKm39jQKK1O3NsSnSGTYCxHJJkk/qR3jKVHbHspMBlI9cqTrQEz+ilMq69/ihgb0K4fioWIksfL293tkH1769N9PFIQATWSo6BAnl7YJ4AgE7U10aMBa3KPj3j1nnhvKj6FuG8ZVSjKCCFGdUzpVz0XR855vnOElgRwEEIRFbQHHaxBp2NBORAg+D4UxE0I7VQkzC/WXmAozvkLKLJpEHYdNoFKW2WeaO6TvDzf55ovUm38FSF9wtBV2KHdq+p5QvvLcItf/sjFoFWa2bAQmISQWQAFGfHlGQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kUzQHZJ+; dkim-atps=neutral; spf=pass (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=las0/PUW;
+	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=kUzQHZJ+;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=tamird@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.18; helo=mgamail.intel.com; envelope-from=lkp@intel.com; receiver=lists.ozlabs.org)
+Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.18])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dZfRM0FZdz2xQK
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2025 00:40:47 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 7200044391;
-	Mon, 22 Dec 2025 13:40:15 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D30D2C113D0;
-	Mon, 22 Dec 2025 13:40:10 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1766410815;
-	bh=Fck6QCm4lRn9feW0cqwawqwexF+LaJCPXTdCc4YpUI0=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:From;
-	b=las0/PUW9UIBRukwGgnSSdvhTqJHj7RWS/aSToUKJKjqKnkkW02wLPJJdOPZFWomf
-	 hrJ0pj6kwodAGaYvoLkOJrfBMEIhtJ+EsDci0MfCGOVVu0uUz37J6/V1BpSdbwIiSt
-	 XvAfpy0rNwlsMOIk2J9qYEnMSCOMDRxPWDwxLgvzyTFTAsK7AgkFxEgSeoTcCJLG7y
-	 ufiUwxJI3m2Ra7IUjjS7GNkDHhh3ySfocb2VNVp3vB59MO5fZeStqpAbYSWsM/BQeu
-	 Zt1TUzxx7dkLnX8KIqujwE0rDevax8zz7Ii8QkPVg8RgVbSsqAh/UIZYKrm466vQRW
-	 ryTSsICOjWphQ==
-From: Tamir Duberstein <tamird@kernel.org>
-Date: Mon, 22 Dec 2025 14:39:55 +0100
-Subject: [PATCH v2 2/3] bitmap: convert self-test to KUnit
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dZv910Zlxz2x99
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2025 10:14:10 +1100 (AEDT)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
+  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
+  t=1766445254; x=1797981254;
+  h=date:from:to:cc:subject:message-id:references:
+   mime-version:in-reply-to;
+  bh=CofqaZWpWt13T0GU5qVJ52+r9Y4zfBJTIBkhxK+Tvx8=;
+  b=kUzQHZJ+i/URETnJiGGBKmI2dSysYNS5aM9bbS/Hd1RKxVAoNxEJ07Xt
+   W+FvwYN6g19KrwpCbQEcIyj0sXwwspLLRfZ1uEmvf7MYc3FS5iGxK77Zs
+   nlyoq3KbCOF9g5Vmqhr85Ppp0ugZteXRrQdK1Tm5NoFJnQ0n1ruaUQOl4
+   n3xIUmb8he0btVTi/UF1/Db3Hd12rniVeYtqmWHIeiuNggzrTe9SudkYC
+   Kzr7g2IbCUWCc4GMxrhXTJdNi9OnltGQQU/7iP63qmjtdVSPL/sLqaaKz
+   mZo66np+AY4Nq6vqVW1lj68dplxRnKc2rGOREsS1XNMA2P/Ver50H/0ql
+   Q==;
+X-CSE-ConnectionGUID: 12e2Xi+4RT2JhgSPPG8QPw==
+X-CSE-MsgGUID: OGYf5JyATYmUSnGBQ7xPIw==
+X-IronPort-AV: E=McAfee;i="6800,10657,11650"; a="68344673"
+X-IronPort-AV: E=Sophos;i="6.21,169,1763452800"; 
+   d="scan'208";a="68344673"
+Received: from orviesa009.jf.intel.com ([10.64.159.149])
+  by orvoesa110.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 22 Dec 2025 15:14:08 -0800
+X-CSE-ConnectionGUID: 36XJ39oGS0WN/EcZsFa2sA==
+X-CSE-MsgGUID: oBqDUO0gShKaVn6QWwowDg==
+X-ExtLoop1: 1
+X-IronPort-AV: E=Sophos;i="6.21,169,1763452800"; 
+   d="scan'208";a="199404456"
+Received: from lkp-server02.sh.intel.com (HELO dd3453e2b682) ([10.239.97.151])
+  by orviesa009.jf.intel.com with ESMTP; 22 Dec 2025 15:14:03 -0800
+Received: from kbuild by dd3453e2b682 with local (Exim 4.98.2)
+	(envelope-from <lkp@intel.com>)
+	id 1vXp67-000000001Cj-2Ac3;
+	Mon, 22 Dec 2025 23:13:54 +0000
+Date: Tue, 23 Dec 2025 07:13:19 +0800
+From: kernel test robot <lkp@intel.com>
+To: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>, ioana.ciornei@nxp.com
+Cc: oe-kbuild-all@lists.linux.dev, linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>,
+	Dan Carpenter <error27@gmail.com>, Su Hui <suhui@nfschina.com>
+Subject: Re: [PATCH] bus: fsl-mc: fix an error handling in fsl_mc_device_add()
+Message-ID: <202512230653.PaZGjmCW-lkp@intel.com>
+References: <20251222074958.992911-1-lihaoxiang@isrc.iscas.ac.cn>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -60,871 +82,189 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20251222-bitmap-kunit-convert-v2-2-6a61a5330eff@gmail.com>
-References: <20251222-bitmap-kunit-convert-v2-0-6a61a5330eff@gmail.com>
-In-Reply-To: <20251222-bitmap-kunit-convert-v2-0-6a61a5330eff@gmail.com>
-To: David Gow <davidgow@google.com>, John Hubbard <jhubbard@nvidia.com>, 
- Andrew Morton <akpm@linux-foundation.org>, 
- Geert Uytterhoeven <geert@linux-m68k.org>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Naveen N Rao <naveen@kernel.org>, Yury Norov <yury.norov@gmail.com>, 
- Rasmus Villemoes <linux@rasmusvillemoes.dk>, Shuah Khan <shuah@kernel.org>, 
- Kees Cook <kees@kernel.org>, Christophe Leroy <chleroy@kernel.org>
-Cc: Muhammad Usama Anjum <usama.anjum@collabora.com>, 
- linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
- linuxppc-dev@lists.ozlabs.org, linux-kselftest@vger.kernel.org, 
- Tamir Duberstein <tamird@gmail.com>
-X-Mailer: b4 0.15-dev
-X-Developer-Signature: v=1; a=openssh-sha256; t=1766410800; l=27676;
- i=tamird@gmail.com; h=from:subject:message-id;
- bh=sJ3OdEWi9YJ1bnERcUkXCxxz/tWC7+1ieKlbUbqTtoE=;
- b=U1NIU0lHAAAAAQAAADMAAAALc3NoLWVkMjU1MTkAAAAgtYz36g7iDMSkY5K7Ab51ksGX7hJgs
- MRt+XVZTrIzMVIAAAAGcGF0YXR0AAAAAAAAAAZzaGE1MTIAAABTAAAAC3NzaC1lZDI1NTE5AAAA
- QIIQqAEwSsrFZBMmgW1EM52h/ifW76lgDCD9t+xAVW4osFUabtBMB9f4UpCCfDqwCn54V1ppLzV
- 9sWtHErvZAAI=
-X-Developer-Key: i=tamird@gmail.com; a=openssh;
- fpr=SHA256:264rPmnnrb+ERkS7DDS3tuwqcJss/zevJRzoylqMsbc
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20251222074958.992911-1-lihaoxiang@isrc.iscas.ac.cn>
 
-From: Tamir Duberstein <tamird@gmail.com>
+Hi Haoxiang,
 
-Convert the bitmap() self-test to a KUnit test.
+kernel test robot noticed the following build errors:
 
-In the interest of keeping the patch reasonably-sized this doesn't
-refactor the tests into proper parameterized tests - it's all one big
-test case.
+[auto build test ERROR on linus/master]
+[also build test ERROR on v6.19-rc2 next-20251219]
+[If your patch is applied to the wrong git tree, kindly drop us a note.
+And when submitting patch, we suggest to use '--base' as documented in
+https://git-scm.com/docs/git-format-patch#_base_tree_information]
 
-Reviewed-by: David Gow <davidgow@google.com>
-Signed-off-by: Tamir Duberstein <tamird@gmail.com>
----
- MAINTAINERS                           |   2 +-
- lib/Kconfig.debug                     |  16 +-
- lib/Makefile                          |   4 +-
- lib/{test_bitmap.c => bitmap_kunit.c} | 314 +++++++++++++---------------------
- tools/testing/selftests/lib/Makefile  |   2 +-
- tools/testing/selftests/lib/bitmap.sh |   3 -
- tools/testing/selftests/lib/config    |   1 -
- 7 files changed, 135 insertions(+), 207 deletions(-)
+url:    https://github.com/intel-lab-lkp/linux/commits/Haoxiang-Li/bus-fsl-mc-fix-an-error-handling-in-fsl_mc_device_add/20251222-155324
+base:   linus/master
+patch link:    https://lore.kernel.org/r/20251222074958.992911-1-lihaoxiang%40isrc.iscas.ac.cn
+patch subject: [PATCH] bus: fsl-mc: fix an error handling in fsl_mc_device_add()
+config: arm-randconfig-004-20251223 (https://download.01.org/0day-ci/archive/20251223/202512230653.PaZGjmCW-lkp@intel.com/config)
+compiler: arm-linux-gnueabi-gcc (GCC) 8.5.0
+reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251223/202512230653.PaZGjmCW-lkp@intel.com/reproduce)
 
-diff --git a/MAINTAINERS b/MAINTAINERS
-index 4ddaef15b408..bb5269ff2bcd 100644
---- a/MAINTAINERS
-+++ b/MAINTAINERS
-@@ -4430,7 +4430,7 @@ F:	lib/bitmap_benchmark.c
- F:	lib/cpumask.c
- F:	lib/find_bit.c
- F:	lib/find_bit_benchmark.c
--F:	lib/test_bitmap.c
-+F:	lib/tests/bitmap_kunit.c
- F:	lib/tests/cpumask_kunit.c
- F:	tools/include/linux/bitfield.h
- F:	tools/include/linux/bitmap.h
-diff --git a/lib/Kconfig.debug b/lib/Kconfig.debug
-index 60434b31a940..e7a4991e5395 100644
---- a/lib/Kconfig.debug
-+++ b/lib/Kconfig.debug
-@@ -2438,6 +2438,15 @@ config ASYNC_RAID6_TEST
- config TEST_HEXDUMP
- 	tristate "Test functions located in the hexdump module at runtime"
- 
-+config BITMAP_KUNIT_TEST
-+	tristate "KUnit test bitmap_*() family of functions at runtime" if !KUNIT_ALL_TESTS
-+	depends on KUNIT
-+	default KUNIT_ALL_TESTS
-+	help
-+	  Enable this option to test the bitmap functions at runtime.
-+
-+	  If unsure, say N.
-+
- config PRINTF_KUNIT_TEST
- 	tristate "KUnit test printf() family of functions at runtime" if !KUNIT_ALL_TESTS
- 	depends on KUNIT
-@@ -2500,13 +2509,6 @@ config BITMAP_BENCHMARK
- 
- 	  If unsure, say N.
- 
--config TEST_BITMAP
--	tristate "Test bitmap_*() family of functions at runtime"
--	help
--	  Enable this option to test the bitmap functions at boot.
--
--	  If unsure, say N.
--
- config TEST_UUID
- 	tristate "Test functions located in the uuid module at runtime"
- 
-diff --git a/lib/Makefile b/lib/Makefile
-index 892cb3152b65..683084afb793 100644
---- a/lib/Makefile
-+++ b/lib/Makefile
-@@ -84,10 +84,10 @@ obj-$(CONFIG_TEST_STATIC_KEYS) += test_static_keys.o
- obj-$(CONFIG_TEST_STATIC_KEYS) += test_static_key_base.o
- obj-$(CONFIG_TEST_DYNAMIC_DEBUG) += test_dynamic_debug.o
- 
--obj-$(CONFIG_TEST_BITMAP) += test_bitmap.o
-+obj-$(CONFIG_BITMAP_KUNIT_TEST) += bitmap_kunit.o
- ifeq ($(CONFIG_CC_IS_CLANG)$(CONFIG_KASAN),yy)
- # FIXME: Clang breaks test_bitmap_const_eval when KASAN and GCOV are enabled
--GCOV_PROFILE_test_bitmap.o := n
-+GCOV_PROFILE_bitmap_kunit.o := n
- endif
- 
- obj-$(CONFIG_TEST_UUID) += test_uuid.o
-diff --git a/lib/test_bitmap.c b/lib/bitmap_kunit.c
-similarity index 83%
-rename from lib/test_bitmap.c
-rename to lib/bitmap_kunit.c
-index f728b6485c88..3a71e2039c1f 100644
---- a/lib/test_bitmap.c
-+++ b/lib/bitmap_kunit.c
-@@ -3,10 +3,8 @@
-  * Test cases for bitmap API.
-  */
- 
--#define pr_fmt(fmt) KBUILD_MODNAME ": " fmt
--
-+#include <kunit/test.h>
- #include <linux/bitmap.h>
--#include <linux/init.h>
- #include <linux/kernel.h>
- #include <linux/module.h>
- #include <linux/printk.h>
-@@ -14,16 +12,17 @@
- #include <linux/string.h>
- #include <linux/uaccess.h>
- 
--#include "../tools/testing/selftests/kselftest_module.h"
--
- #define EXP1_IN_BITS	(sizeof(exp1) * 8)
- 
--KSTM_MODULE_GLOBALS();
-+static char pbl_buffer[PAGE_SIZE];
-+static char print_buf[PAGE_SIZE * 2];
-+
-+static struct kunit *kunittest;
- 
--static char pbl_buffer[PAGE_SIZE] __initdata;
--static char print_buf[PAGE_SIZE * 2] __initdata;
-+#define tc_err(fmt, ...) \
-+	KUNIT_FAIL(kunittest, fmt, ##__VA_ARGS__)
- 
--static const unsigned long exp1[] __initconst = {
-+static const unsigned long exp1[] = {
- 	BITMAP_FROM_U64(1),
- 	BITMAP_FROM_U64(2),
- 	BITMAP_FROM_U64(0x0000ffff),
-@@ -41,130 +40,63 @@ static const unsigned long exp1[] __initconst = {
- 	BITMAP_FROM_U64(0x80000000),
- };
- 
--static const unsigned long exp2[] __initconst = {
-+static const unsigned long exp2[] = {
- 	BITMAP_FROM_U64(0x3333333311111111ULL),
- 	BITMAP_FROM_U64(0xffffffff77777777ULL),
- };
- 
- /* Fibonacci sequence */
--static const unsigned long exp2_to_exp3_mask[] __initconst = {
-+static const unsigned long exp2_to_exp3_mask[] = {
- 	BITMAP_FROM_U64(0x008000020020212eULL),
- };
- /* exp3_0_1 = (exp2[0] & ~exp2_to_exp3_mask) | (exp2[1] & exp2_to_exp3_mask) */
--static const unsigned long exp3_0_1[] __initconst = {
-+static const unsigned long exp3_0_1[] = {
- 	BITMAP_FROM_U64(0x33b3333311313137ULL),
- };
- /* exp3_1_0 = (exp2[1] & ~exp2_to_exp3_mask) | (exp2[0] & exp2_to_exp3_mask) */
--static const unsigned long exp3_1_0[] __initconst = {
-+static const unsigned long exp3_1_0[] = {
- 	BITMAP_FROM_U64(0xff7fffff77575751ULL),
- };
- 
--static bool __init
--__check_eq_ulong(const char *srcfile, unsigned int line,
--		 const unsigned long exp_ulong, unsigned long x)
--{
--	if (exp_ulong != x) {
--		pr_err("[%s:%u] expected %lu, got %lu\n",
--			srcfile, line, exp_ulong, x);
--		return false;
--	}
--	return true;
--}
--
--static bool __init
--__check_eq_bitmap(const char *srcfile, unsigned int line,
--		  const unsigned long *exp_bmap, const unsigned long *bmap,
--		  unsigned int nbits)
--{
--	if (!bitmap_equal(exp_bmap, bmap, nbits)) {
--		pr_warn("[%s:%u] bitmaps contents differ: expected \"%*pbl\", got \"%*pbl\"\n",
--			srcfile, line,
--			nbits, exp_bmap, nbits, bmap);
--		return false;
--	}
--	return true;
--}
--
--static bool __init
--__check_eq_pbl(const char *srcfile, unsigned int line,
--	       const char *expected_pbl,
--	       const unsigned long *bitmap, unsigned int nbits)
--{
--	snprintf(pbl_buffer, sizeof(pbl_buffer), "%*pbl", nbits, bitmap);
--	if (strcmp(expected_pbl, pbl_buffer)) {
--		pr_warn("[%s:%u] expected \"%s\", got \"%s\"\n",
--			srcfile, line,
--			expected_pbl, pbl_buffer);
--		return false;
--	}
--	return true;
--}
--
--static bool __init __check_eq_clump8(const char *srcfile, unsigned int line,
--				    const unsigned int offset,
--				    const unsigned int size,
--				    const unsigned char *const clump_exp,
--				    const unsigned long *const clump)
--{
--	unsigned long exp;
--
--	if (offset >= size) {
--		pr_warn("[%s:%u] bit offset for clump out-of-bounds: expected less than %u, got %u\n",
--			srcfile, line, size, offset);
--		return false;
--	}
--
--	exp = clump_exp[offset / 8];
--	if (!exp) {
--		pr_warn("[%s:%u] bit offset for zero clump: expected nonzero clump, got bit offset %u with clump value 0",
--			srcfile, line, offset);
--		return false;
--	}
--
--	if (*clump != exp) {
--		pr_warn("[%s:%u] expected clump value of 0x%lX, got clump value of 0x%lX",
--			srcfile, line, exp, *clump);
--		return false;
--	}
--
--	return true;
--}
--
--static bool __init
--__check_eq_str(const char *srcfile, unsigned int line,
--		const char *exp_str, const char *str,
--		unsigned int len)
--{
--	bool eq;
--
--	eq = strncmp(exp_str, str, len) == 0;
--	if (!eq)
--		pr_err("[%s:%u] expected %s, got %s\n", srcfile, line, exp_str, str);
--
--	return eq;
--}
--
--#define __expect_eq(suffix, ...)					\
--	({								\
--		int result = 0;						\
--		total_tests++;						\
--		if (!__check_eq_ ## suffix(__FILE__, __LINE__,		\
--					   ##__VA_ARGS__)) {		\
--			failed_tests++;					\
--			result = 1;					\
-+#define expect_eq_ulong(exp_ulong, x)	KUNIT_EXPECT_EQ(kunittest, exp_ulong, x)
-+
-+#define expect_eq_bitmap(exp_bmap, bmap, nbits)							\
-+	KUNIT_EXPECT_TRUE_MSG(kunittest, bitmap_equal(exp_bmap, bmap, nbits),			\
-+			      "bitmaps contents differ: expected \"%*pbl\", got \"%*pbl\"",	\
-+					nbits, exp_bmap, nbits, bmap)
-+
-+#define expect_eq_pbl(expected_pbl, bitmap, nbits) do {						\
-+		{										\
-+			snprintf(pbl_buffer, sizeof(pbl_buffer), "%*pbl", nbits, bitmap);	\
-+			KUNIT_EXPECT_STREQ(kunittest, expected_pbl, pbl_buffer);		\
-+		}										\
-+	} while (0)
-+
-+#define expect_eq_clump8(offset, size, clump_exp, clump) do {				\
-+		{									\
-+			unsigned long exp;						\
-+											\
-+			KUNIT_EXPECT_LT_MSG(kunittest, offset, size,			\
-+					    "bit offset for clump out-of-bounds");	\
-+											\
-+			exp = clump_exp[offset / 8];					\
-+			KUNIT_EXPECT_NE_MSG(kunittest, exp, 0,				\
-+					    "bit offset %u for zero clump", offset);	\
-+											\
-+			KUNIT_EXPECT_EQ(kunittest, *clump, exp);			\
-+		}									\
-+	} while (0)
-+
-+#define expect_eq_str(exp_str, str, len)				\
-+	{								\
-+		if (strncmp(exp_str, str, len) != 0) {			\
-+			tc_err("expected %s, got %s", exp_str, str);	\
- 		}							\
--		result;							\
--	})
-+	}
- 
--#define expect_eq_ulong(...)		__expect_eq(ulong, ##__VA_ARGS__)
- #define expect_eq_uint(x, y)		expect_eq_ulong((unsigned int)(x), (unsigned int)(y))
--#define expect_eq_bitmap(...)		__expect_eq(bitmap, ##__VA_ARGS__)
--#define expect_eq_pbl(...)		__expect_eq(pbl, ##__VA_ARGS__)
--#define expect_eq_u32_array(...)	__expect_eq(u32_array, ##__VA_ARGS__)
--#define expect_eq_clump8(...)		__expect_eq(clump8, ##__VA_ARGS__)
--#define expect_eq_str(...)		__expect_eq(str, ##__VA_ARGS__)
- 
--static void __init test_zero_clear(void)
-+static void test_zero_clear(void)
- {
- 	DECLARE_BITMAP(bmap, 1024);
- 
-@@ -193,7 +125,7 @@ static void __init test_zero_clear(void)
- 	expect_eq_pbl("", bmap, 1024);
- }
- 
--static void __init test_find_nth_bit(void)
-+static void test_find_nth_bit(void)
- {
- 	unsigned long b, bit, cnt = 0;
- 	DECLARE_BITMAP(bmap, 64 * 3);
-@@ -234,7 +166,7 @@ static void __init test_find_nth_bit(void)
- 	}
- }
- 
--static void __init test_fill_set(void)
-+static void test_fill_set(void)
- {
- 	DECLARE_BITMAP(bmap, 1024);
- 
-@@ -263,7 +195,7 @@ static void __init test_fill_set(void)
- 	expect_eq_pbl("0-1023", bmap, 1024);
- }
- 
--static void __init test_copy(void)
-+static void test_copy(void)
- {
- 	DECLARE_BITMAP(bmap1, 1024);
- 	DECLARE_BITMAP(bmap2, 1024);
-@@ -302,7 +234,7 @@ static void __init test_copy(void)
- 	expect_eq_pbl("0-108,128-1023", bmap2, 1024);
- }
- 
--static void __init test_bitmap_region(void)
-+static void test_bitmap_region(void)
- {
- 	int pos, order;
- 
-@@ -327,7 +259,7 @@ static void __init test_bitmap_region(void)
- 
- #define EXP2_IN_BITS	(sizeof(exp2) * 8)
- 
--static void __init test_replace(void)
-+static void test_replace(void)
- {
- 	unsigned int nbits = 64;
- 	unsigned int nlongs = DIV_ROUND_UP(nbits, BITS_PER_LONG);
-@@ -352,23 +284,23 @@ static void __init test_replace(void)
- 	expect_eq_bitmap(bmap, exp3_1_0, nbits);
- }
- 
--static const unsigned long sg_mask[] __initconst = {
-+static const unsigned long sg_mask[] = {
- 	BITMAP_FROM_U64(0x000000000000035aULL),
- };
- 
--static const unsigned long sg_src[] __initconst = {
-+static const unsigned long sg_src[] = {
- 	BITMAP_FROM_U64(0x0000000000000667ULL),
- };
- 
--static const unsigned long sg_gather_exp[] __initconst = {
-+static const unsigned long sg_gather_exp[] = {
- 	BITMAP_FROM_U64(0x0000000000000029ULL),
- };
- 
--static const unsigned long sg_scatter_exp[] __initconst = {
-+static const unsigned long sg_scatter_exp[] = {
- 	BITMAP_FROM_U64(0x000000000000021aULL),
- };
- 
--static void __init test_bitmap_sg(void)
-+static void test_bitmap_sg(void)
- {
- 	unsigned int nbits = 64;
- 	DECLARE_BITMAP(bmap_gather, 100);
-@@ -404,7 +336,7 @@ struct test_bitmap_parselist{
- 	const int flags;
- };
- 
--static const struct test_bitmap_parselist parselist_tests[] __initconst = {
-+static const struct test_bitmap_parselist parselist_tests[] = {
- #define step (sizeof(u64) / sizeof(unsigned long))
- 
- 	{0, "0",			&exp1[0], 8, 0},
-@@ -489,7 +421,7 @@ static const struct test_bitmap_parselist parselist_tests[] __initconst = {
- 
- };
- 
--static void __init test_bitmap_parselist(void)
-+static void test_bitmap_parselist(void)
- {
- 	int i;
- 	int err;
-@@ -504,30 +436,28 @@ static void __init test_bitmap_parselist(void)
- 		time = ktime_get() - time;
- 
- 		if (err != ptest.errno) {
--			pr_err("parselist: %d: input is %s, errno is %d, expected %d\n",
-+			tc_err("parselist: %d: input is %s, errno is %d, expected %d",
- 					i, ptest.in, err, ptest.errno);
--			failed_tests++;
- 			continue;
- 		}
- 
- 		if (!err && ptest.expected
- 			 && !__bitmap_equal(bmap, ptest.expected, ptest.nbits)) {
--			pr_err("parselist: %d: input is %s, result is 0x%lx, expected 0x%lx\n",
-+			tc_err("parselist: %d: input is %s, result is 0x%lx, expected 0x%lx",
- 					i, ptest.in, bmap[0],
- 					*ptest.expected);
--			failed_tests++;
- 			continue;
- 		}
- 
- 		if (ptest.flags & PARSE_TIME)
--			pr_info("parselist: %d: input is '%s' OK, Time: %llu\n",
-+			kunit_info(kunittest, "parselist: %d: input is '%s' OK, Time: %llu",
- 					i, ptest.in, time);
- 
- #undef ptest
- 	}
- }
- 
--static void __init test_bitmap_printlist(void)
-+static void test_bitmap_printlist(void)
- {
- 	unsigned long *bmap = kmalloc(PAGE_SIZE, GFP_KERNEL);
- 	char *buf = kmalloc(PAGE_SIZE, GFP_KERNEL);
-@@ -548,37 +478,35 @@ static void __init test_bitmap_printlist(void)
- 	time = ktime_get() - time;
- 
- 	if (ret != slen + 1) {
--		pr_err("bitmap_print_to_pagebuf: result is %d, expected %d\n", ret, slen);
--		failed_tests++;
-+		tc_err("bitmap_print_to_pagebuf: result is %d, expected %d", ret, slen);
- 		goto out;
- 	}
- 
- 	if (strncmp(buf, expected, slen)) {
--		pr_err("bitmap_print_to_pagebuf: result is %s, expected %s\n", buf, expected);
--		failed_tests++;
-+		tc_err("bitmap_print_to_pagebuf: result is %s, expected %s", buf, expected);
- 		goto out;
- 	}
- 
--	pr_info("bitmap_print_to_pagebuf: input is '%s', Time: %llu\n", buf, time);
-+	kunit_info(kunittest, "bitmap_print_to_pagebuf: input is '%s', Time: %llu", buf, time);
- out:
- 	kfree(buf);
- 	kfree(bmap);
- }
- 
--static const unsigned long parse_test[] __initconst = {
-+static const unsigned long parse_test[] = {
- 	BITMAP_FROM_U64(0),
- 	BITMAP_FROM_U64(1),
- 	BITMAP_FROM_U64(0xdeadbeef),
- 	BITMAP_FROM_U64(0x100000000ULL),
- };
- 
--static const unsigned long parse_test2[] __initconst = {
-+static const unsigned long parse_test2[] = {
- 	BITMAP_FROM_U64(0x100000000ULL), BITMAP_FROM_U64(0xdeadbeef),
- 	BITMAP_FROM_U64(0x100000000ULL), BITMAP_FROM_U64(0xbaadf00ddeadbeef),
- 	BITMAP_FROM_U64(0x100000000ULL), BITMAP_FROM_U64(0x0badf00ddeadbeef),
- };
- 
--static const struct test_bitmap_parselist parse_tests[] __initconst = {
-+static const struct test_bitmap_parselist parse_tests[] = {
- 	{0, "",				&parse_test[0 * step], 32, 0},
- 	{0, " ",			&parse_test[0 * step], 32, 0},
- 	{0, "0",			&parse_test[0 * step], 32, 0},
-@@ -605,7 +533,7 @@ static const struct test_bitmap_parselist parse_tests[] __initconst = {
- #undef step
- };
- 
--static void __init test_bitmap_parse(void)
-+static void test_bitmap_parse(void)
- {
- 	int i;
- 	int err;
-@@ -621,28 +549,26 @@ static void __init test_bitmap_parse(void)
- 		time = ktime_get() - time;
- 
- 		if (err != test.errno) {
--			pr_err("parse: %d: input is %s, errno is %d, expected %d\n",
-+			tc_err("parse: %d: input is %s, errno is %d, expected %d",
- 					i, test.in, err, test.errno);
--			failed_tests++;
- 			continue;
- 		}
- 
- 		if (!err && test.expected
- 			 && !__bitmap_equal(bmap, test.expected, test.nbits)) {
--			pr_err("parse: %d: input is %s, result is 0x%lx, expected 0x%lx\n",
-+			tc_err("parse: %d: input is %s, result is 0x%lx, expected 0x%lx",
- 					i, test.in, bmap[0],
- 					*test.expected);
--			failed_tests++;
- 			continue;
- 		}
- 
- 		if (test.flags & PARSE_TIME)
--			pr_info("parse: %d: input is '%s' OK, Time: %llu\n",
-+			kunit_info(kunittest, "parse: %d: input is '%s' OK, Time: %llu",
- 					i, test.in, time);
- 	}
- }
- 
--static void __init test_bitmap_arr32(void)
-+static void test_bitmap_arr32(void)
- {
- 	unsigned int nbits, next_bit;
- 	u32 arr[EXP1_IN_BITS / 32];
-@@ -658,10 +584,8 @@ static void __init test_bitmap_arr32(void)
- 		next_bit = find_next_bit(bmap2,
- 				round_up(nbits, BITS_PER_LONG), nbits);
- 		if (next_bit < round_up(nbits, BITS_PER_LONG)) {
--			pr_err("bitmap_copy_arr32(nbits == %d:"
--				" tail is not safely cleared: %d\n",
-+			tc_err("bitmap_copy_arr32(nbits == %d: tail is not safely cleared: %d",
- 				nbits, next_bit);
--			failed_tests++;
- 		}
- 
- 		if (nbits < EXP1_IN_BITS - 32)
-@@ -670,7 +594,7 @@ static void __init test_bitmap_arr32(void)
- 	}
- }
- 
--static void __init test_bitmap_arr64(void)
-+static void test_bitmap_arr64(void)
- {
- 	unsigned int nbits, next_bit;
- 	u64 arr[EXP1_IN_BITS / 64];
-@@ -686,17 +610,15 @@ static void __init test_bitmap_arr64(void)
- 
- 		next_bit = find_next_bit(bmap2, round_up(nbits, BITS_PER_LONG), nbits);
- 		if (next_bit < round_up(nbits, BITS_PER_LONG)) {
--			pr_err("bitmap_copy_arr64(nbits == %d:"
--				" tail is not safely cleared: %d\n", nbits, next_bit);
--			failed_tests++;
-+			tc_err("bitmap_copy_arr64(nbits == %d: tail is not safely cleared: %d",
-+				nbits, next_bit);
- 		}
- 
- 		if ((nbits % 64) &&
- 		    (arr[(nbits - 1) / 64] & ~GENMASK_ULL((nbits - 1) % 64, 0))) {
--			pr_err("bitmap_to_arr64(nbits == %d): tail is not safely cleared: 0x%016llx (must be 0x%016llx)\n",
-+			tc_err("bitmap_to_arr64(nbits == %d): tail is not safely cleared: 0x%016llx (must be 0x%016llx)",
- 			       nbits, arr[(nbits - 1) / 64],
- 			       GENMASK_ULL((nbits - 1) % 64, 0));
--			failed_tests++;
- 		}
- 
- 		if (nbits < EXP1_IN_BITS - 64)
-@@ -704,7 +626,7 @@ static void __init test_bitmap_arr64(void)
- 	}
- }
- 
--static void noinline __init test_mem_optimisations(void)
-+static noinline void test_mem_optimisations(void)
- {
- 	DECLARE_BITMAP(bmap1, 1024);
- 	DECLARE_BITMAP(bmap2, 1024);
-@@ -718,30 +640,25 @@ static void noinline __init test_mem_optimisations(void)
- 			bitmap_set(bmap1, start, nbits);
- 			__bitmap_set(bmap2, start, nbits);
- 			if (!bitmap_equal(bmap1, bmap2, 1024)) {
--				printk("set not equal %d %d\n", start, nbits);
--				failed_tests++;
-+				tc_err("set not equal %d %d", start, nbits);
- 			}
- 			if (!__bitmap_equal(bmap1, bmap2, 1024)) {
--				printk("set not __equal %d %d\n", start, nbits);
--				failed_tests++;
-+				tc_err("set not __equal %d %d", start, nbits);
- 			}
- 
- 			bitmap_clear(bmap1, start, nbits);
- 			__bitmap_clear(bmap2, start, nbits);
- 			if (!bitmap_equal(bmap1, bmap2, 1024)) {
--				printk("clear not equal %d %d\n", start, nbits);
--				failed_tests++;
-+				tc_err("clear not equal %d %d", start, nbits);
- 			}
- 			if (!__bitmap_equal(bmap1, bmap2, 1024)) {
--				printk("clear not __equal %d %d\n", start,
--									nbits);
--				failed_tests++;
-+				tc_err("clear not __equal %d %d", start, nbits);
- 			}
- 		}
- 	}
- }
- 
--static const unsigned char clump_exp[] __initconst = {
-+static const unsigned char clump_exp[] = {
- 	0x01,	/* 1 bit set */
- 	0x02,	/* non-edge 1 bit set */
- 	0x00,	/* zero bits set */
-@@ -752,7 +669,7 @@ static const unsigned char clump_exp[] __initconst = {
- 	0x05,	/* non-adjacent 2 bits set */
- };
- 
--static void __init test_for_each_set_clump8(void)
-+static void test_for_each_set_clump8(void)
- {
- #define CLUMP_EXP_NUMBITS 64
- 	DECLARE_BITMAP(bits, CLUMP_EXP_NUMBITS);
-@@ -774,7 +691,7 @@ static void __init test_for_each_set_clump8(void)
- 		expect_eq_clump8(start, CLUMP_EXP_NUMBITS, clump_exp, &clump);
- }
- 
--static void __init test_for_each_set_bit_wrap(void)
-+static void test_for_each_set_bit_wrap(void)
- {
- 	DECLARE_BITMAP(orig, 500);
- 	DECLARE_BITMAP(copy, 500);
-@@ -799,7 +716,7 @@ static void __init test_for_each_set_bit_wrap(void)
- 	}
- }
- 
--static void __init test_for_each_set_bit(void)
-+static void test_for_each_set_bit(void)
- {
- 	DECLARE_BITMAP(orig, 500);
- 	DECLARE_BITMAP(copy, 500);
-@@ -821,7 +738,7 @@ static void __init test_for_each_set_bit(void)
- 	expect_eq_bitmap(orig, copy, 500);
- }
- 
--static void __init test_for_each_set_bit_from(void)
-+static void test_for_each_set_bit_from(void)
- {
- 	DECLARE_BITMAP(orig, 500);
- 	DECLARE_BITMAP(copy, 500);
-@@ -851,7 +768,7 @@ static void __init test_for_each_set_bit_from(void)
- 	}
- }
- 
--static void __init test_for_each_clear_bit(void)
-+static void test_for_each_clear_bit(void)
- {
- 	DECLARE_BITMAP(orig, 500);
- 	DECLARE_BITMAP(copy, 500);
-@@ -873,7 +790,7 @@ static void __init test_for_each_clear_bit(void)
- 	expect_eq_bitmap(orig, copy, 500);
- }
- 
--static void __init test_for_each_clear_bit_from(void)
-+static void test_for_each_clear_bit_from(void)
- {
- 	DECLARE_BITMAP(orig, 500);
- 	DECLARE_BITMAP(copy, 500);
-@@ -903,7 +820,7 @@ static void __init test_for_each_clear_bit_from(void)
- 	}
- }
- 
--static void __init test_for_each_set_bitrange(void)
-+static void test_for_each_set_bitrange(void)
- {
- 	DECLARE_BITMAP(orig, 500);
- 	DECLARE_BITMAP(copy, 500);
-@@ -925,7 +842,7 @@ static void __init test_for_each_set_bitrange(void)
- 	expect_eq_bitmap(orig, copy, 500);
- }
- 
--static void __init test_for_each_clear_bitrange(void)
-+static void test_for_each_clear_bitrange(void)
- {
- 	DECLARE_BITMAP(orig, 500);
- 	DECLARE_BITMAP(copy, 500);
-@@ -947,7 +864,7 @@ static void __init test_for_each_clear_bitrange(void)
- 	expect_eq_bitmap(orig, copy, 500);
- }
- 
--static void __init test_for_each_set_bitrange_from(void)
-+static void test_for_each_set_bitrange_from(void)
- {
- 	DECLARE_BITMAP(orig, 500);
- 	DECLARE_BITMAP(copy, 500);
-@@ -977,7 +894,7 @@ static void __init test_for_each_set_bitrange_from(void)
- 	}
- }
- 
--static void __init test_for_each_clear_bitrange_from(void)
-+static void test_for_each_clear_bitrange_from(void)
- {
- 	DECLARE_BITMAP(orig, 500);
- 	DECLARE_BITMAP(copy, 500);
-@@ -1048,7 +965,7 @@ static struct test_bitmap_cut test_cut[] = {
- 	},
- };
- 
--static void __init test_bitmap_cut(void)
-+static void test_bitmap_cut(void)
- {
- 	unsigned long b[5], *in = &b[1], *out = &b[0];	/* Partial overlap */
- 	int i;
-@@ -1071,14 +988,14 @@ struct test_bitmap_print {
- 	const char *list;
- };
- 
--static const unsigned long small_bitmap[] __initconst = {
-+static const unsigned long small_bitmap[] = {
- 	BITMAP_FROM_U64(0x3333333311111111ULL),
- };
- 
--static const char small_mask[] __initconst = "33333333,11111111\n";
--static const char small_list[] __initconst = "0,4,8,12,16,20,24,28,32-33,36-37,40-41,44-45,48-49,52-53,56-57,60-61\n";
-+static const char small_mask[] = "33333333,11111111\n";
-+static const char small_list[] = "0,4,8,12,16,20,24,28,32-33,36-37,40-41,44-45,48-49,52-53,56-57,60-61\n";
- 
--static const unsigned long large_bitmap[] __initconst = {
-+static const unsigned long large_bitmap[] = {
- 	BITMAP_FROM_U64(0x3333333311111111ULL), BITMAP_FROM_U64(0x3333333311111111ULL),
- 	BITMAP_FROM_U64(0x3333333311111111ULL), BITMAP_FROM_U64(0x3333333311111111ULL),
- 	BITMAP_FROM_U64(0x3333333311111111ULL), BITMAP_FROM_U64(0x3333333311111111ULL),
-@@ -1101,7 +1018,7 @@ static const unsigned long large_bitmap[] __initconst = {
- 	BITMAP_FROM_U64(0x3333333311111111ULL), BITMAP_FROM_U64(0x3333333311111111ULL),
- };
- 
--static const char large_mask[] __initconst = "33333333,11111111,33333333,11111111,"
-+static const char large_mask[] = "33333333,11111111,33333333,11111111,"
- 					"33333333,11111111,33333333,11111111,"
- 					"33333333,11111111,33333333,11111111,"
- 					"33333333,11111111,33333333,11111111,"
-@@ -1122,7 +1039,7 @@ static const char large_mask[] __initconst = "33333333,11111111,33333333,1111111
- 					"33333333,11111111,33333333,11111111,"
- 					"33333333,11111111,33333333,11111111\n";
- 
--static const char large_list[] __initconst = /* more than 4KB */
-+static const char large_list[] = /* more than 4KB */
- 	"0,4,8,12,16,20,24,28,32-33,36-37,40-41,44-45,48-49,52-53,56-57,60-61,64,68,72,76,80,84,88,92,96-97,100-101,104-1"
- 	"05,108-109,112-113,116-117,120-121,124-125,128,132,136,140,144,148,152,156,160-161,164-165,168-169,172-173,176-1"
- 	"77,180-181,184-185,188-189,192,196,200,204,208,212,216,220,224-225,228-229,232-233,236-237,240-241,244-245,248-2"
-@@ -1164,12 +1081,12 @@ static const char large_list[] __initconst = /* more than 4KB */
- 	"2489,2492-2493,2496,2500,2504,2508,2512,2516,2520,2524,2528-2529,2532-2533,2536-2537,2540-2541,2544-2545,2548-25"
- 	"49,2552-2553,2556-2557\n";
- 
--static const struct test_bitmap_print test_print[] __initconst = {
-+static const struct test_bitmap_print test_print[] = {
- 	{ small_bitmap, sizeof(small_bitmap) * BITS_PER_BYTE, small_mask, small_list },
- 	{ large_bitmap, sizeof(large_bitmap) * BITS_PER_BYTE, large_mask, large_list },
- };
- 
--static void __init test_bitmap_print_buf(void)
-+static void test_bitmap_print_buf(void)
- {
- 	int i;
- 
-@@ -1201,7 +1118,7 @@ static void __init test_bitmap_print_buf(void)
-  * FIXME: Clang breaks compile-time evaluations when KASAN and GCOV are enabled.
-  * To workaround it, GCOV is force-disabled in Makefile for this configuration.
-  */
--static void __init test_bitmap_const_eval(void)
-+static void test_bitmap_const_eval(void)
- {
- 	DECLARE_BITMAP(bitmap, BITS_PER_LONG);
- 	unsigned long initvar = BIT(2);
-@@ -1269,7 +1186,7 @@ static void __init test_bitmap_const_eval(void)
- /*
-  * Helper function to test bitmap_write() overwriting the chosen byte pattern.
-  */
--static void __init test_bitmap_write_helper(const char *pattern)
-+static void test_bitmap_write_helper(const char *pattern)
- {
- 	DECLARE_BITMAP(bitmap, TEST_BIT_LEN);
- 	DECLARE_BITMAP(exp_bitmap, TEST_BIT_LEN);
-@@ -1323,7 +1240,7 @@ static void __init test_bitmap_write_helper(const char *pattern)
- 	}
- }
- 
--static void __init test_bitmap_read_write(void)
-+static void test_bitmap_read_write(void)
- {
- 	unsigned char *pattern[3] = {"", "all:1/2", "all"};
- 	DECLARE_BITMAP(bitmap, TEST_BIT_LEN);
-@@ -1374,8 +1291,10 @@ static void __init test_bitmap_read_write(void)
- 
- #undef TEST_BIT_LEN
- 
--static void __init selftest(void)
-+static void bitmap_test(struct kunit *test)
- {
-+	kunittest = test;
-+
- 	test_zero_clear();
- 	test_fill_set();
- 	test_copy();
-@@ -1406,7 +1325,18 @@ static void __init selftest(void)
- 	test_for_each_set_bit_wrap();
- }
- 
--KSTM_MODULE_LOADERS(test_bitmap);
-+static struct kunit_case bitmap_test_cases[] = {
-+	KUNIT_CASE(bitmap_test),
-+	{}
-+};
-+
-+static struct kunit_suite bitmap_test_suite = {
-+	.name = "bitmap",
-+	.test_cases = bitmap_test_cases,
-+};
-+
-+kunit_test_suite(bitmap_test_suite);
-+
- MODULE_AUTHOR("david decotigny <david.decotigny@googlers.com>");
- MODULE_DESCRIPTION("Test cases for bitmap API");
- MODULE_LICENSE("GPL");
-diff --git a/tools/testing/selftests/lib/Makefile b/tools/testing/selftests/lib/Makefile
-index f876bf4744e1..e4617f153542 100644
---- a/tools/testing/selftests/lib/Makefile
-+++ b/tools/testing/selftests/lib/Makefile
-@@ -4,5 +4,5 @@
- # No binaries, but make sure arg-less "make" doesn't trigger "run_tests"
- all:
- 
--TEST_PROGS := bitmap.sh
-+TEST_PROGS :=
- include ../lib.mk
-diff --git a/tools/testing/selftests/lib/bitmap.sh b/tools/testing/selftests/lib/bitmap.sh
-deleted file mode 100755
-index 00a416fbc0ef..000000000000
---- a/tools/testing/selftests/lib/bitmap.sh
-+++ /dev/null
-@@ -1,3 +0,0 @@
--#!/bin/sh
--# SPDX-License-Identifier: GPL-2.0
--$(dirname $0)/../kselftest/module.sh "bitmap" test_bitmap
-diff --git a/tools/testing/selftests/lib/config b/tools/testing/selftests/lib/config
-index 377b3699ff31..3792212895e5 100644
---- a/tools/testing/selftests/lib/config
-+++ b/tools/testing/selftests/lib/config
-@@ -1,3 +1,2 @@
--CONFIG_TEST_BITMAP=m
- CONFIG_PRIME_NUMBERS=m
- CONFIG_TEST_BITOPS=m
+If you fix the issue in a separate patch/commit (i.e. not just a new version of
+the same patch/commit), kindly add following tags
+| Reported-by: kernel test robot <lkp@intel.com>
+| Closes: https://lore.kernel.org/oe-kbuild-all/202512230653.PaZGjmCW-lkp@intel.com/
+
+All errors (new ones prefixed by >>):
+
+   drivers/bus/fsl-mc/fsl-mc-bus.c: In function 'fsl_mc_device_add':
+>> drivers/bus/fsl-mc/fsl-mc-bus.c:899:27: error: expected ';' before 'return'
+      put_device(&mc_dev->dev)
+                              ^
+                              ;
+      return error;
+      ~~~~~~                   
+
+
+vim +899 drivers/bus/fsl-mc/fsl-mc-bus.c
+
+   778	
+   779	/*
+   780	 * Add a newly discovered fsl-mc device to be visible in Linux
+   781	 */
+   782	int fsl_mc_device_add(struct fsl_mc_obj_desc *obj_desc,
+   783			      struct fsl_mc_io *mc_io,
+   784			      struct device *parent_dev,
+   785			      struct fsl_mc_device **new_mc_dev)
+   786	{
+   787		int error;
+   788		struct fsl_mc_device *mc_dev = NULL;
+   789		struct fsl_mc_bus *mc_bus = NULL;
+   790		struct fsl_mc_device *parent_mc_dev;
+   791	
+   792		if (dev_is_fsl_mc(parent_dev))
+   793			parent_mc_dev = to_fsl_mc_device(parent_dev);
+   794		else
+   795			parent_mc_dev = NULL;
+   796	
+   797		if (strcmp(obj_desc->type, "dprc") == 0) {
+   798			/*
+   799			 * Allocate an MC bus device object:
+   800			 */
+   801			mc_bus = kzalloc(sizeof(*mc_bus), GFP_KERNEL);
+   802			if (!mc_bus)
+   803				return -ENOMEM;
+   804	
+   805			mutex_init(&mc_bus->scan_mutex);
+   806			mc_dev = &mc_bus->mc_dev;
+   807		} else {
+   808			/*
+   809			 * Allocate a regular fsl_mc_device object:
+   810			 */
+   811			mc_dev = kzalloc(sizeof(*mc_dev), GFP_KERNEL);
+   812			if (!mc_dev)
+   813				return -ENOMEM;
+   814		}
+   815	
+   816		mc_dev->obj_desc = *obj_desc;
+   817		mc_dev->mc_io = mc_io;
+   818		device_initialize(&mc_dev->dev);
+   819		mc_dev->dev.parent = parent_dev;
+   820		mc_dev->dev.bus = &fsl_mc_bus_type;
+   821		mc_dev->dev.release = fsl_mc_device_release;
+   822		mc_dev->dev.type = fsl_mc_get_device_type(obj_desc->type);
+   823		if (!mc_dev->dev.type) {
+   824			error = -ENODEV;
+   825			dev_err(parent_dev, "unknown device type %s\n", obj_desc->type);
+   826			goto error_cleanup_dev;
+   827		}
+   828		dev_set_name(&mc_dev->dev, "%s.%d", obj_desc->type, obj_desc->id);
+   829	
+   830		if (strcmp(obj_desc->type, "dprc") == 0) {
+   831			struct fsl_mc_io *mc_io2;
+   832	
+   833			mc_dev->flags |= FSL_MC_IS_DPRC;
+   834	
+   835			/*
+   836			 * To get the DPRC's ICID, we need to open the DPRC
+   837			 * in get_dprc_icid(). For child DPRCs, we do so using the
+   838			 * parent DPRC's MC portal instead of the child DPRC's MC
+   839			 * portal, in case the child DPRC is already opened with
+   840			 * its own portal (e.g., the DPRC used by AIOP).
+   841			 *
+   842			 * NOTE: There cannot be more than one active open for a
+   843			 * given MC object, using the same MC portal.
+   844			 */
+   845			if (parent_mc_dev) {
+   846				/*
+   847				 * device being added is a child DPRC device
+   848				 */
+   849				mc_io2 = parent_mc_dev->mc_io;
+   850			} else {
+   851				/*
+   852				 * device being added is the root DPRC device
+   853				 */
+   854				if (!mc_io) {
+   855					error = -EINVAL;
+   856					goto error_cleanup_dev;
+   857				}
+   858	
+   859				mc_io2 = mc_io;
+   860			}
+   861	
+   862			error = get_dprc_icid(mc_io2, obj_desc->id, &mc_dev->icid);
+   863			if (error < 0)
+   864				goto error_cleanup_dev;
+   865		} else {
+   866			/*
+   867			 * A non-DPRC object has to be a child of a DPRC, use the
+   868			 * parent's ICID and interrupt domain.
+   869			 */
+   870			mc_dev->icid = parent_mc_dev->icid;
+   871			mc_dev->dma_mask = FSL_MC_DEFAULT_DMA_MASK;
+   872			mc_dev->dev.dma_mask = &mc_dev->dma_mask;
+   873			mc_dev->dev.coherent_dma_mask = mc_dev->dma_mask;
+   874			dev_set_msi_domain(&mc_dev->dev,
+   875					   dev_get_msi_domain(&parent_mc_dev->dev));
+   876		}
+   877	
+   878		/*
+   879		 * Get MMIO regions for the device from the MC:
+   880		 *
+   881		 * NOTE: the root DPRC is a special case as its MMIO region is
+   882		 * obtained from the device tree
+   883		 */
+   884		if (parent_mc_dev && obj_desc->region_count != 0) {
+   885			error = fsl_mc_device_get_mmio_regions(mc_dev,
+   886							       parent_mc_dev);
+   887			if (error < 0)
+   888				goto error_cleanup_dev;
+   889		}
+   890	
+   891		/*
+   892		 * The device-specific probe callback will get invoked by device_add()
+   893		 */
+   894		error = device_add(&mc_dev->dev);
+   895		if (error < 0) {
+   896			dev_err(parent_dev,
+   897				"device_add() failed for device %s: %d\n",
+   898				dev_name(&mc_dev->dev), error);
+ > 899			put_device(&mc_dev->dev)
+   900			return error;
+   901		}
+   902	
+   903		dev_dbg(parent_dev, "added %s\n", dev_name(&mc_dev->dev));
+   904	
+   905		*new_mc_dev = mc_dev;
+   906		return 0;
+   907	
+   908	error_cleanup_dev:
+   909		kfree(mc_dev->regions);
+   910		if (mc_bus)
+   911			kfree(mc_bus);
+   912		else
+   913			kfree(mc_dev);
+   914	
+   915		return error;
+   916	}
+   917	EXPORT_SYMBOL_GPL(fsl_mc_device_add);
+   918	
 
 -- 
-2.52.0
-
+0-DAY CI Kernel Test Service
+https://github.com/intel/lkp-tests/wiki
 
