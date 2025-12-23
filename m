@@ -1,76 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-14958-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14959-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D59F6E6FE24
-	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Dec 2025 17:11:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A77E7E74900
+	for <linuxppc-dev@archiver.kernel.org>; Tue, 23 Dec 2025 23:10:23 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dbM4W2QD5z2xdY;
-	Wed, 24 Dec 2025 04:11:55 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dbW256LYlz2xpl;
+	Wed, 24 Dec 2025 10:10:21 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766509915;
-	cv=none; b=geiu1kDemb4kb1Zq3F+8Hz9yDJ+IS4NsMOUDse4W1SkXL+BZRPvu8PlungU/wEF0a202EGd3yjP2OSAo6RrRwbLtMiNangopFtS7eUVv7ojNrzfbc4OiTbrqKcSIp/QV3kHzF/fcykGj1Fbf8oBVE/Hm8UicK9Ux7j3LdUYCGLW2qPGz0KVxUhxY/JkPi6Mqcqh9oP6Csa2LvbTS7EQt82l4aHvqcIbOvHkMa3RhVAoJBwy8EGwccEPPNHblJTwLwKUF4h2mxjiRZa8gK0rkMN/Q4aQMvBw0cXR4EiPa5j9gjcdZJRI1tstSP1C9jyXKnzw/us0t2oMMSAbwSfi2rw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766502684;
+	cv=none; b=Vl/aqX5A6ynuDze3hWzJjBF5ORZl6PQZP7JZerytItgXFBGiIdd7BpAZ5BHFixyzQimNYzThnDbCPJt8SCupYaACd4ICrTs5lJ7eVmieQCAyKPxLuem2qIVRztnS5ZtySNTzb1jNed/uAt9/rPcZiYdtddR8+hzU1eevcMj3dCaWFyKFiD4hrwLZcLmAfQUdzml76YWOqBWS8ATrjJSaqqALC4+FCmE8nGYNrfIrC7fU0HlOlXpdjKNXcDYKhHcKof+iU+6+veCrsOU/Z2/zdtLSkdTVPhG81ayJQfwC8tzmqo16ZA/RyMwfhZFefzrdkjZTdsBupt+DzN83BFhuCw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766509915; c=relaxed/relaxed;
-	bh=NlmwdZqhPExcGZgM/pVZiC2lUJhmTkXwAn+qNuohbBI=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=eHdD2FUqEHDsHg1NKz2B+jWRruJx7tecQLIXj8Vg1eU/sthyYbZEEaFitZsCt4MA5S6TPtcUxFvwglubrtNk6UnR+CKhrn0rBJbOhGqLexVDllU4RtFxB6t76/2LEmnaH+xxZXr8gKEx8nmFJW3cX2KMV6l7bDbynniJACvovCM3MFG97jgZeFYln8fxwTEVmWD8Cf82XHfyL8qPU7JNFfD9kP56IeABC2qu0FfFikq4I+afyuhMNmpR1xRdC+CMvMNMTdcetCl7wnOoLt7u9vXeQ7J0ccNtGvyL06BGRze9lccih5aYFwgX3pkYr6gdFVe9FZ3rXo4UV+zXm59VCA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fa+0Ubgf; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1766502684; c=relaxed/relaxed;
+	bh=hBd99sFsDzr3RqRdPe5qJoyoWGaL7p/NWTHuLq0D7w8=;
+	h=MIME-Version:References:In-Reply-To:From:Date:Message-ID:Subject:
+	 To:Cc:Content-Type; b=oZYG4lQm/SEix1igraCFsOElsD3rHu865kgtwiXyYomptrE4U6ToQT/4CdZsMeR1LXxhXsonO7SFDWQ4GkkZvKQ4DW+LGixFWn9v3Dbg7ge1j4BiX6wVQQSdDMELUirCb0EPHikAd6UV/ldPux+TJCTJewPOojA76SVigsF4mVfzN/uFtEjQTRSoPFujr4Gyax91n3/bDwXQlYJ8niJ66b1zIWola57LRmdzpYWUrZk8kgy5dL3OXX4wBAkCVO63hgBll28mM3AK4DKA6BcpX2pZS5EHKdk/SnJ6P6K2zOtaxIA0F6CL6tnwLDmQeljPJDO9l1EM0AtSaZ0QFQHMXg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QeaF69Me; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fa+0Ubgf;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=QeaF69Me;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=sashal@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=brgl@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dbM4V2vQJz2xLR
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2025 04:11:54 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dbJPS06sXz2xLR
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2025 02:11:23 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id B5E6C41E5B;
-	Tue, 23 Dec 2025 17:11:52 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 59005C113D0;
-	Tue, 23 Dec 2025 17:11:52 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 1DDC944449
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2025 15:11:22 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DC062C2BCB2
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2025 15:11:21 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1766509912;
-	bh=3um8NkjnKfQWblw0ttBXC1gQUUqnZlPZFVjmKn1p7PE=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=fa+0UbgfGH0MW7oBnwI79BEfDFeL2kz26p3mGx0sCirQiG+ODvVSzIvze2Y4eZ39e
-	 WIzrCovlU7u1ZaXeiidmAy+OfcAiEQyWBxBq8TEgBFblUeLzUl71pnP8IwQYxRxZtl
-	 JU7DoafiH8mxnn2LoNc4c4dJAdE2oBfmG5UhDjQJJJ432y4bbFEKAVbwNtMFpz/VKJ
-	 6AlMqdnjsTFz7IjJg58q5KShlRT8jwNW+ZHfTHRSECk5n7n3KNXCVAxif2wK9xXXXT
-	 E+/IjLB2oCGTQ1JX1lHXV5bbVjgxm5fyavrfeDQFfoQJYkrnbzjVcvXusb6YT55ENG
-	 LaGk5PAMnNqlg==
-Date: Tue, 23 Dec 2025 12:11:51 -0500
-From: Sasha Levin <sashal@kernel.org>
-To: Andrew Morton <akpm@linux-foundation.org>
-Cc: SeongJae Park <sj@kernel.org>,
-	"David Hildenbrand (Red Hat)" <david@kernel.org>,
-	"Ritesh Harjani (IBM)" <ritesh.list@gmail.com>,
-	Sourabh Jain <sourabhjain@linux.ibm.com>,
-	Borislav Petkov <bp@alien8.de>,
-	Christophe Leroy <christophe.leroy@csgroup.eu>,
-	Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	Muchun Song <muchun.song@linux.dev>,
-	Oscar Salvador <osalvador@suse.de>,
-	Thomas Gleixner <tglx@linutronix.de>,
-	Vasily Gorbik <gor@linux.ibm.com>, linux-mm@kvack.org,
-	linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org,
-	x86@kernel.org, linux-riscv@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v6] mm/hugetlb: ignore hugepage kernel args if hugepages
- are unsupported
-Message-ID: <aUrNVyuSaQrQLGZP@laps>
-References: <20251221104907.032abf56c67f3e50c9c94e31@linux-foundation.org>
- <20251223013045.4579-1-sj@kernel.org>
- <20251222183055.88c3cc1f0705c1dc29c7f011@linux-foundation.org>
- <aUqAcf2405H0pRW1@laps>
- <20251223085434.a6d6ae08c3aedf420908f404@linux-foundation.org>
+	s=k20201202; t=1766502681;
+	bh=hBd99sFsDzr3RqRdPe5qJoyoWGaL7p/NWTHuLq0D7w8=;
+	h=References:In-Reply-To:From:Date:Subject:To:Cc:From;
+	b=QeaF69MeT5yBf4q0xDAsch9mn85tB7U/A6+7P7ESpX1u88b1VTvqb1KdAgCgpxDYX
+	 GsUem+oUjjLn3eGCPsHWpGk6bwDY9lfpkkYR6b2fi0dIdNDrxAn+DtFzP0SFVa28Tm
+	 cPkCe8pweTq6PLlZCfkBWBg1+KFHCqtnmiBY8Nu0p7KyXMOk7/eIWS35wKNaXYX1Md
+	 kwu7AUdGhIcfVqTYeP2qjs3lJnlhlxBz9o8FyBiDCli5kOqz90fcuUhd26ttQ3T+sf
+	 vKSWfgmHbrQnmBK/qysDXHGPtCR3KhoTSGcBjW/P70dCjgjVbjdrA3l0qvhzrsx1Lm
+	 e7N6pa0uTsFTw==
+Received: by mail-lj1-f178.google.com with SMTP id 38308e7fff4ca-37a2dced861so60098301fa.1
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2025 07:11:21 -0800 (PST)
+X-Forwarded-Encrypted: i=1; AJvYcCWj80Pe7Kecpib/5MIf9msYRAaCRNE9xHxs8X79X6Tmyjc0urOV0Tx+poIxuLgIVtlNpLuxmh5IiCt2raw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YxLjNPXPy8tqg1webtK35odTAsuRUCam95IP42ojN9wbvDYZ9Jz
+	wsVksBpI3ARH5CviGq8l3awVoVjk+bKFivucKuKRre1EymUyYGyNWOFnElUMO5ozQelaCV2q8HQ
+	0KvsybqNYBNTJvAHuZhxFnlBGpc+TZCIYzDWpnUQHLA==
+X-Google-Smtp-Source: AGHT+IFdufR6j9R1oFKNSbl+pKd9Z0pO11ahHM/zkyZYbJzkzxH5yHhlEwogbQjTtBxGrsqfRKfJTkaYfWLXkoOjLuo=
+X-Received: by 2002:a2e:b88f:0:b0:37e:6b29:111b with SMTP id
+ 38308e7fff4ca-38113162f37mr64888811fa.2.1766502680316; Tue, 23 Dec 2025
+ 07:11:20 -0800 (PST)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -84,61 +67,79 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii; format=flowed
-Content-Disposition: inline
-In-Reply-To: <20251223085434.a6d6ae08c3aedf420908f404@linux-foundation.org>
+References: <20251223-i2c-printk-helpers-v1-0-46a08306afdb@oss.qualcomm.com> <aUql_tZisfH8E1bq@hovoldconsulting.com>
+In-Reply-To: <aUql_tZisfH8E1bq@hovoldconsulting.com>
+From: Bartosz Golaszewski <brgl@kernel.org>
+Date: Tue, 23 Dec 2025 16:11:08 +0100
+X-Gmail-Original-Message-ID: <CAMRc=MeHL5=s=ciUjHGw_poKpeVMWVi_2LBDFY_ugvXBaaE0vA@mail.gmail.com>
+X-Gm-Features: AQt7F2oePEehO-JdLKixmyMZf7bMW4cvrFzOuWvK19hmXZhvMoz_mkpRCfNkPVc
+Message-ID: <CAMRc=MeHL5=s=ciUjHGw_poKpeVMWVi_2LBDFY_ugvXBaaE0vA@mail.gmail.com>
+Subject: Re: [PATCH 00/12] i2c: add and start using i2c_adapter-specific
+ printk helpers
+To: Johan Hovold <johan@kernel.org>
+Cc: Bartosz Golaszewski <bartosz.golaszewski@oss.qualcomm.com>, 
+	Wolfram Sang <wsa+renesas@sang-engineering.com>, Andi Shyti <andi.shyti@kernel.org>, 
+	Chen-Yu Tsai <wens@kernel.org>, Jernej Skrabec <jernej.skrabec@gmail.com>, 
+	Samuel Holland <samuel@sholland.org>, Khalil Blaiech <kblaiech@nvidia.com>, 
+	Asmaa Mnebhi <asmaa@nvidia.com>, Jean Delvare <jdelvare@suse.com>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Nicholas Piggin <npiggin@gmail.com>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, 
+	=?UTF-8?Q?Andreas_F=C3=A4rber?= <afaerber@suse.de>, 
+	Manivannan Sadhasivam <mani@kernel.org>, linux-i2c@vger.kernel.org, linux-kernel@vger.kernel.org, 
+	linux-arm-kernel@lists.infradead.org, linux-sunxi@lists.linux.dev, 
+	linuxppc-dev@lists.ozlabs.org, linux-actions@lists.infradead.org
+Content-Type: text/plain; charset="UTF-8"
+Content-Transfer-Encoding: quoted-printable
 
-On Tue, Dec 23, 2025 at 08:54:34AM -0800, Andrew Morton wrote:
->On Tue, 23 Dec 2025 06:43:45 -0500 Sasha Levin <sashal@kernel.org> wrote:
+On Tue, Dec 23, 2025 at 3:24=E2=80=AFPM Johan Hovold <johan@kernel.org> wro=
+te:
 >
->> >> > Yes, -stable maintainers have been asked to only backport patches where
->> >> > the MM developers asked for that, with cc:stable.  There may be
->> >> > slipups, but as far as I know this is working.
->> >> >
->> >> > I don't actually know how they determine which patches need this
->> >> > special treatment.  Pathname?  Signed-off-by:akpm?
->> >>
->> >> I guess it is pathname, based on ignore_list file [1] of stable-queue repo.
->> >>
->> >> [1] https://git.kernel.org/pub/scm/linux/kernel/git/stable/stable-queue.git/tree/ignore_list#n16
->> >>
->> >
->> >Oh, that's a bit sad.
->> >
->> >- other trees sometimes mess with mm/ and they probably aren't aware
->> >  that they need an explicit cc:stable.
->> >
->> >- misses drivers/block/zram and probably various other things that
->> >  the MM team maintains.
->> >
->> >Oh well, I guess simple mm/* coverage is good enough.  But I do worry a
->> >little that useful fixes coming into mm/ via other trees without
->> >cc:stable will get missed.
->>
->> How should we improve the filter? mm/ AND signed off by akpm?
+> On Tue, Dec 23, 2025 at 11:02:22AM +0100, Bartosz Golaszewski wrote:
+> > It's been another year of discussing the object life-time problems at
+> > conferences. I2C is one of the offenders and its problems are more
+> > complex than those of some other subsystems. It seems the revocable[1]
+> > API may make its way into the kernel this year but even with it in
+> > place, I2C won't be able to use it as there's currently nothing to
+> > *revoke*. The struct device is embedded within the i2c_adapter struct
+> > whose lifetime is tied to the provider device being bound to its driver=
+.
+> >
+> > Fixing this won't be fast and easy but nothing's going to happen if we
+> > don't start chipping away at it. The ultimate goal in order to be able
+> > to use an SRCU-based solution (revocable or otherwise) is to convert th=
+e
+> > embedded struct device in struct i2c_adapter into an __rcu pointer that
+> > can be *revoked*. To that end we need to hide all dereferences of
+> > adap->dev in drivers.
 >
->I think just signed-off-by:akpm please.  That way, mm fixes which come
->in via other trees without cc:stable get backported.
+> No, this is not the way to do it. You start with designing and showing
+> what the end result will look like *before* you start rewriting world
+> like you are doing here.
+>
 
-Ack
+The paragraph you're commenting under explains exactly what I propose
+to do: move struct device out of struct i2c_adapter and protect the
+pointer storing its address with SRCU. This is a well-known design
+that's being generalized to a common "revocable" API which will
+possibly be available upstream by the time we're ready to use it.
 
->Obviously we'd prefer that such patches get appropriate consideration
->by the MM developers but sometimes other-tree people aren't that
->cooperative.  In this case it's better to backport the thing rather
->than missing a fix?
+You know I can't possibly *show* the end result in a single series
+because - as the paragraph before explains - we need to first hide all
+direct dereferences of struct device in struct i2c_adapter behind
+dedicated interfaces so that we when do the conversion, it'll affect
+only a limited number of places. It can't realistically be done at
+once.
 
-I tend to err on the side of taking one extra thing rather than missing
-something :)
+> We should not be making driver code less readable just to address some
+> really niche corner cases like hot pluggable i2c controllers.
+>
+> But in any case, don't get ahead of things by posting changes that we
+> most likely don't want in the end anyway.
+>
 
-Would you be interested in trying out AUTOSEL for mm/ again? In the current
-workflow I give about 2-3 weeks for review, and all it takes to have a patch
-dropped is to just reply with a "no".
+The changes I sent are the result of another discussion with Wolfram
+at LPC so I'll definitely wait for his take on it before dropping
+anything.
 
-I can generate a series with mm/ patches from v6.18..v6.19-rc2 that don't have
-a Fixes/stable tag but the LLM thinks that it should be backported as a way for
-you and other mm/ folk to gauge the current state of AUTOSEL, if that helps?
-
--- 
-Thanks,
-Sasha
+Bartosz
 
