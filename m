@@ -1,48 +1,59 @@
-Return-Path: <linuxppc-dev+bounces-14994-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14995-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 556A4E75448
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Dec 2025 11:15:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4E84CE74916
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Dec 2025 11:21:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dbq6M6Jf0z2yFy;
-	Wed, 24 Dec 2025 22:15:07 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.81
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766573565;
-	cv=none; b=L05Y2P2fPOwq9YqnLQKPa8ELpb7ssWbRwWIgMfUh7wU+8hnqTzZCXPG8KvTW6O2kFBchm+VV3JmZZ3Hybtf1tutc7iz+cjSPO4tmV1LsylkI47UlKVcZvKNLsKg4I9Bpt9Ifg7VqQvJZuSqfOOUCaUFpW7LpYSpPm1+UfcUPyIaQOPznsMa8MO3jceLhISUiEiWl4OoP2FaoLjpcc5IDWdGoI+g3QDuNWlBhUSqBvxxk1hRwiatApYmFZw2JKu6EHHtg1PX+FrmyD6zU6Y0YcY+CHBCnrLTmyc6RYXX6dI7KE8kfgwd8IxhyKB59mykjpMndG2ToDBeFeGr/iGN6mg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dbqFT6z66z2yFq;
+	Wed, 24 Dec 2025 22:21:17 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766575277;
+	cv=none; b=QcBzy7lbJ9+rwzQMwFJsHsnFslFoJXPiJiW+T+Rn4/IXkPwX5CZGRR8FerszW1/BI/8XvCKO5EkbuaP537wKAiU6f2TKuO6+IPtZWZWVggtTGM3meAmM3dBFlxh+oAdB/LSM/zPOS4XoPR88ACigCB2EDlrSk2VZYqgUIe6Y+GvDiCnejELtI8pnMGBKTObUEfEklMd/0kcgC6KJgnwJb418dLJo8bBUqW7g8uCtYvefH1GCOQf3imj65ielqSJd6cZsb3kmFH4qeFhJXqeBEw14WRZeZsAKnp6SpVJdbIL6sZGXefcpIIoNVQ7qoy9a/LrUtSBANZftMfKbR7c13w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766573565; c=relaxed/relaxed;
-	bh=ZuUZyq4ig0iykSS9GXoLrIqJhRmiTT4fa/0JWLRZ2Uw=;
-	h=From:To:Cc:Subject:Date:Message-Id:In-Reply-To:References:
-	 MIME-Version; b=mFkeDVf0rlwW065NkUgX1T8zXXFUxBIfZQ9HbVthgZBZeAMKESli1UORlnpJ+CTBBHQprQh7vcSS75ngN3e8fht41kRxjxT6bZ/LfPy+PpYQRBvUSiZMx6DKsle7J2T8Kvx4Y0TUrDXJL+iPYF2MYm00XwOJ4+jX6y9503VjikDmN4Zpda0WmJ+vk+PQYUuHF0ABS+kx/CgD5RSmNmBjRH2oAPkDwFyqeXcyEBppqD3i6D3BZYiDKINp4wUkkuLpNdX/EqZ72c11DXfCbltKqOqofzMs22yqIvThKd/VB6ZZI+/UxDphVDVmkFqFKAUIZc36oTRqrrThnmXp74qnNQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=isrc.iscas.ac.cn; spf=pass (client-ip=159.226.251.81; helo=cstnet.cn; envelope-from=lihaoxiang@isrc.iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=isrc.iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=isrc.iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=isrc.iscas.ac.cn (client-ip=159.226.251.81; helo=cstnet.cn; envelope-from=lihaoxiang@isrc.iscas.ac.cn; receiver=lists.ozlabs.org)
-Received: from cstnet.cn (smtp81.cstnet.cn [159.226.251.81])
+	t=1766575277; c=relaxed/relaxed;
+	bh=1fJgGxesbP1yQnFYKS+UIjTlY0El9OKpyVjFyyoZRdY=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=VwFkpnVhAz+58JcC7y/411U8EMC09LMeiiZa8bD6w48dGw/Z5SmVrgVDjBkYubgqp+eq2fBnPZ9Tm1USwUXs98Iw4a7cGaBpdX+TGn+IrAPmZONW6wiSjzvjCs5SzhfRq/wl5DzxWuEMeo1LWFmxNYgyMziFC1XmhrjFqwcZnnbu1N++MSghNkg4U2YvaUbcVQoPm9OUH6I5R7MqkOIBKQ9AZPo1wWaX8gbn4XJTryhb1PTc0PRXwtfmWchuVl71sLp9CZF+ZvQr+NJviDLR0o+jKpEXm/BzOL4bM039LSp4a+EZdwKqACw4xVhkoRrcn4FJX1bg1TxxCH2eWKD4+Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JR7Yf017; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JR7Yf017;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dbpcX2YN8z2yFY
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2025 21:52:43 +1100 (AEDT)
-Received: from localhost.localdomain (unknown [36.112.3.209])
-	by APP-03 (Coremail) with SMTP id rQCowAAnRNv4xUtpt8rTAQ--.9977S2;
-	Wed, 24 Dec 2025 18:52:41 +0800 (CST)
-From: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
-To: chleroy@kernel.org
-Cc: dan.carpenter@linaro.org,
-	ioana.ciornei@nxp.com,
-	lihaoxiang@isrc.iscas.ac.cn,
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dbqFT0BPNz2yFd
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2025 22:21:16 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id ADEC44078B;
+	Wed, 24 Dec 2025 11:21:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id A0960C4CEFB;
+	Wed, 24 Dec 2025 11:21:12 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1766575274;
+	bh=czYnyqW5vOx92dzdp8DFFDYKApgOA3ZWQWWsjqbuAHc=;
+	h=From:To:Cc:Subject:Date:From;
+	b=JR7Yf017PjZkkdOL5RBOdatu0ZXq7AsiIZbL2tc9d5Hs0to9KtrInRT2mgMNhWOh2
+	 ipDwnySd/+YQCSluSa/97iT3She+Vsr6Odl8UDkyk7U6zO5cuoN7bdQBoY5MLrDsHr
+	 2lJ14gJ3iYdfg64UqgNgpkZKJ0VLrPk6FajEx5WAN43mc3UkB/LVOVEo+iw3hHZUY5
+	 4pTF2f0+4am20+spqz1aSQSYeMGTQel0/l8iNp2l9UYdEdlcd8wKKD13d37jIB/uMR
+	 kExPzQFpvydO7i2bF/sGWllOyOBbSth9eqU9M3B8VrT4tNUyMy4207vqQnSHCHIbzN
+	 1VNihUbLVkXfA==
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+To: Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
 	linux-kernel@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org,
-	suhui@nfschina.com
-Subject: Re: [PATCH] bus: fsl-mc: fix an error handling in fsl_mc_device_add()
-Date: Wed, 24 Dec 2025 18:52:40 +0800
-Message-Id: <20251224105240.1588158-1-lihaoxiang@isrc.iscas.ac.cn>
-X-Mailer: git-send-email 2.25.1
-In-Reply-To: <ad465fd1-4b5a-4fa1-b4fc-1ca7bd6fe5b4@kernel.org>
-References: <ad465fd1-4b5a-4fa1-b4fc-1ca7bd6fe5b4@kernel.org>
+	linuxppc-dev@lists.ozlabs.org
+Subject: [PATCH v5 0/7] powerpc: Implement masked user access
+Date: Wed, 24 Dec 2025 12:20:48 +0100
+Message-ID: <cover.1766574657.git.chleroy@kernel.org>
+X-Mailer: git-send-email 2.49.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -56,44 +67,90 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+X-Developer-Signature: v=1; a=openpgp-sha256; l=3527; i=chleroy@kernel.org; h=from:subject:message-id; bh=czYnyqW5vOx92dzdp8DFFDYKApgOA3ZWQWWsjqbuAHc=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWR6n5l2ab3fpOPNzvO+2xcdnhyppmj170qlH+dEre21V 00XhNdod5SyMIhxMciKKbIc/8+9a0bXl9T8qbv0YeawMoEMYeDiFICJZAsyMhyxsbkXaVYqf2TR 8fnpL2/rlHKUHvr19OMlqfToiMN/rWMY/selafKv/Cpt/d2OfQpr1/VT79KnfTwh6W1ad9+e6/w jNjYA
+X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
-X-CM-TRANSID:rQCowAAnRNv4xUtpt8rTAQ--.9977S2
-X-Coremail-Antispam: 1UD129KBjvdXoWrKrWDGF1rKw4kAr45ZryrWFg_yoW3Grb_ur
-	yjqryavws3tw4kJayYqrsxZ3s3KFs2qrWFgrWxt3Z7tay5Z39agrWDWryayw1fKayDCFn8
-	Jayqqr4xK34UWjkaLaAFLSUrUUUUjb8apTn2vfkv8UJUUUU8Yxn0WfASr-VFAUDa7-sFnT
-	9fnUUIcSsGvfJTRUUUb48FF20E14v26r4j6ryUM7CY07I20VC2zVCF04k26cxKx2IYs7xG
-	6r1S6rWUM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rwA2F7IY1VAKz4vEj48ve4kI8w
-	A2z4x0Y4vE2Ix0cI8IcVAFwI0_Jr0_JF4l84ACjcxK6xIIjxv20xvEc7CjxVAFwI0_Gr0_
-	Cr1l84ACjcxK6I8E87Iv67AKxVW8JVWxJwA2z4x0Y4vEx4A2jsIEc7CjxVAFwI0_Gr0_Gr
-	1UM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI64kE6c02F40Ex7xfMcIj6xII
-	jxv20xvE14v26r106r15McIj6I8E87Iv67AKxVWUJVW8JwAm72CE4IkC6x0Yz7v_Jr0_Gr
-	1lF7xvr2IYc2Ij64vIr41lF7I21c0EjII2zVCS5cI20VAGYxC7MxkF7I0En4kS14v26r12
-	6r1DMxAIw28IcxkI7VAKI48JMxC20s026xCaFVCjc4AY6r1j6r4UMI8I3I0E5I8CrVAFwI
-	0_Jr0_Jr4lx2IqxVCjr7xvwVAFwI0_JrI_JrWlx4CE17CEb7AF67AKxVWUAVWUtwCIc40Y
-	0x0EwIxGrwCI42IY6xIIjxv20xvE14v26r1j6r1xMIIF0xvE2Ix0cI8IcVCY1x0267AKxV
-	W8JVWxJwCI42IY6xAIw20EY4v20xvaj40_Jr0_JF4lIxAIcVC2z280aVAFwI0_Jr0_Gr1l
-	IxAIcVC2z280aVCY1x0267AKxVW8JVW8JrUvcSsGvfC2KfnxnUUI43ZEXa7VU18sqtUUUU
-	U==
-X-Originating-IP: [36.112.3.209]
-X-CM-SenderInfo: 5olkt0x0ld0ww6lv2u4olvutnvoduhdfq/1tbiDAcGE2lLmjqLQwAAsU
 
-On Wed, 24 Dec 2025 10:57:52 +0100, Christophe Leroy wrote:
-> Ok, then this needs to be said in the commit message.
+This is a rebase on top of v6.19-rc2
 
-I will add it in the patch v2.
+Masked user access avoids the address/size verification by access_ok().
+Allthough its main purpose is to skip the speculation in the
+verification of user address and size hence avoid the need of spec
+mitigation, it also has the advantage to reduce the amount of
+instructions needed so it also benefits to platforms that don't
+need speculation mitigation, especially when the size of the copy is
+not know at build time.
 
-> By the way I'm a bit puzzled by the device_add() doc versus the 
-> put_device(), because it looks like device_add() already calls 
-> put_device() in its error path, see 
-> https://elixir.bootlin.com/linux/v6.19-rc2/source/drivers/base/core.c#L3716
+Patch 1 removes some redundant barrier_nospec()
+introduced by commit 74e19ef0ff80 ("uaccess: Add speculation barrier
+to copy_from_user()") by removing the barrier in raw_copy_from_user()
+which is redundant with the one in copy_from_user().
 
-I think this is because device_add() increment the reference in the
-beginning, see
-https://elixir.bootlin.com/linux/v6.19-rc2/source/drivers/base/core.c#L3580
-and if device_add() fails, another put_device() should be called to decrement
-the reference which is obtained by device_initialize().
+Patches 2,3,4 are cleaning up powerpc uaccess functions.
 
-Thanks,
-Haoxiang Li
+Patches 5 and 6 prepare powerpc/32 for the necessary gap at the top
+of userspace.
+
+Last patch implements masked user access.
+
+Changes in v5:
+- Remove first 3 patches as they were merged in v6.19-rc1
+- Rebase on top of v6.19-rc2
+
+Changes in v4:
+- Rebased on top of commit 6ec821f050e2 (tag: core-scoped-uaccess) from tip tree
+- Patch 3: Simplified as masked_user_read_access_begin() and masked_user_write_access_begin() are already there.
+- Patch 10: Simplified mask_user_address_simple() as suggested by Gabriel.
+
+Changes in v3:
+- Rebased on top of v6.18-rc1
+- Patch 3: Impact on recently modified net/core/scm.c
+- Patch 10: Rewrite mask_user_address_simple() for a smaller result on powerpc64, suggested by Gabriel
+
+Changes in v2:
+- Converted copy_from_user_iter() to using masked user access.
+- Cleaned up powerpc uaccess function to minimise code duplication
+when adding masked user access
+- Automated TASK_SIZE calculation to minimise use of BUILD_BUG_ON()
+- Tried to make some commit messages more clean based on feedback from
+version 1 of the series.
+
+
+
+Christophe Leroy (7):
+  powerpc/uaccess: Move barrier_nospec() out of
+    allow_read_{from/write}_user()
+  powerpc/uaccess: Remove unused size and from parameters from
+    allow_access_user()
+  powerpc/uaccess: Remove
+    {allow/prevent}_{read/write/read_write}_{from/to/}_user()
+  powerpc/uaccess: Refactor user_{read/write/}_access_begin()
+  powerpc/32s: Fix segments setup when TASK_SIZE is not a multiple of
+    256M
+  powerpc/32: Automatically adapt TASK_SIZE based on constraints
+  powerpc/uaccess: Implement masked user access
+
+ arch/powerpc/Kconfig                          |   3 +-
+ arch/powerpc/include/asm/barrier.h            |   2 +-
+ arch/powerpc/include/asm/book3s/32/kup.h      |   3 +-
+ arch/powerpc/include/asm/book3s/32/mmu-hash.h |   5 +-
+ arch/powerpc/include/asm/book3s/32/pgtable.h  |   4 -
+ arch/powerpc/include/asm/book3s/64/kup.h      |   6 +-
+ arch/powerpc/include/asm/kup.h                |  52 +------
+ arch/powerpc/include/asm/nohash/32/kup-8xx.h  |   3 +-
+ arch/powerpc/include/asm/nohash/32/mmu-8xx.h  |   4 -
+ arch/powerpc/include/asm/nohash/kup-booke.h   |   3 +-
+ arch/powerpc/include/asm/task_size_32.h       |  28 +++-
+ arch/powerpc/include/asm/uaccess.h            | 132 +++++++++++++-----
+ arch/powerpc/kernel/asm-offsets.c             |   2 +-
+ arch/powerpc/kernel/head_book3s_32.S          |   6 +-
+ arch/powerpc/mm/book3s32/mmu.c                |   4 +-
+ arch/powerpc/mm/mem.c                         |   2 -
+ arch/powerpc/mm/nohash/8xx.c                  |   2 -
+ arch/powerpc/mm/ptdump/segment_regs.c         |   2 +-
+ 18 files changed, 141 insertions(+), 122 deletions(-)
+
+-- 
+2.49.0
 
 
