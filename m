@@ -1,36 +1,87 @@
-Return-Path: <linuxppc-dev+bounces-14985-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14986-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 68A30E74913
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Dec 2025 05:07:56 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49D21E7491E
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Dec 2025 07:55:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dbfyf6Y53z2yK7;
-	Wed, 24 Dec 2025 16:07:54 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=159.226.251.84
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766551926;
-	cv=none; b=l88mIc//df/pyro5N7HzEgCtKXUFqFMDVsWZWBkvkJEuRot9cl+O8T85MRpv9T2wukwCvv7Lp5CM6yEQckbcczwwCoVEt1m3NnRlxJweZRDPh6owTNyqSl8ODsBki98HjkvLgb7xb3mgEIFmzGN+O/WHNhEH+fdezxKCbgw3d8hzSr1YX1omVbQ8j9BcMfFSP2bryy+wCtmxw4ndGUnIEIGUfva4O6uv1hEqqMamniaOp7xkC9au2hi19v/rlDQ3Rcy50fhhZmTjE0Q7bPC+n5c2BcW9vIwY4ZbrOjN9AM130CTeJwZvZRWoDiGhHEzbbFmgXHf7oWzp2LpmsOIUAQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dbkhN5ShLz2xqG;
+	Wed, 24 Dec 2025 18:55:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.221.48
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766562948;
+	cv=none; b=UqSkEJiBPU97B1U2z2G7+/M9/AfHkRx+cbL0AlOxR69pj+u2/qnp5hlJNyEM5FaQniW8tDB3v6yufDg+hCDi1PST9Z7T+SpC+fCAiRdiojgeS7BAkou5vybxgYRcG98sdWcM+zb8pDqZkW3CQBTCEiWBvWj/Jjo+N9r90/3Kx4erZwybyuThEjK4Mke4TQNXm4TP1sfeDei93AgBHwC5jGSXjfQDMx8bJgH/ULxKf6xhxMt2CqbtT7wbcVbMAJr4n0xotMcJFbCDrfqvE53U42kgChg6mESjbpfbGLAW8BgYgEILpG5xSbDszSzG53ajykx5CtoOYnr8uCgJnIQJRA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766551926; c=relaxed/relaxed;
-	bh=x6/MMeD5/AUdp0FVFwFdO42dOdeFpKNO7VU0ajUp0cw=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=WoTV3BNioYRJ3w6WFP33mBUqGnwAuv3aeAKaBx900++bKlpiAhqiB+iO0oQ0y/q5oN2wxjGErKAnJq59tIzUiiDNvWyI1SA6WbWzcdOlS1ZoEb977vmmIL+lKdmzZiK31InPflGP3e12YwFgE1R1nmsm9lj0XgRqdIyoNRX3unjplkCGCdxK6q7qRV5eRv8vkB/ewGUYjbn+KJUs8lY4TTV+Tn49AJnhA3kRJoEc0qfTrs1LXmlPahqfgOz6B1H2ld8jCK7OFe26dRj7+hjSRTEtQQGHZTyX0h5yyEUzy2ibqzDdGMf30BFvh4OOPjP1/EwoponQh6yXhXxQGyqOJg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn; spf=pass (client-ip=159.226.251.84; helo=cstnet.cn; envelope-from=wangruikang@iscas.ac.cn; receiver=lists.ozlabs.org) smtp.mailfrom=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=iscas.ac.cn
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=iscas.ac.cn (client-ip=159.226.251.84; helo=cstnet.cn; envelope-from=wangruikang@iscas.ac.cn; receiver=lists.ozlabs.org)
-Received: from cstnet.cn (smtp84.cstnet.cn [159.226.251.84])
+	t=1766562948; c=relaxed/relaxed;
+	bh=WZrIGbDjUMc3J6sIbF34jJNhsrhnGJpTC/Mf9dBpW/Q=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=IXv9q1K6Jvi3gnjISlk0pbcySUxRDm6waudSkwBU6HT0+gpz/ZT1gLHC56R7zo8J0EYmxDLDs1NhUikMoVtKNnoj+sbcK2kYNgqPyeGNhpumuOMWOLexkZwMrLU+l6kcrWjZCt8FXVh4++YSfrlbQQbVKLAGmZ5Fzp44AM+ig27WVlfhPXtJAJCdJWQtcZRT1ClclQguj/5XKrenihwWkgWTJVh2DCl+MT9BVK+djPzxwHKv0Pd5bWRD7ngRkgTxugL/OBDsOwstivr4xgXpwau5tXED4hBX0Cjo/zXa21M0UFrF12F+DtHsoqOlctRuWsTUv7SPMwo4TjAloS7UGw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=H+O+xDuF; dkim-atps=neutral; spf=pass (client-ip=209.85.221.48; helo=mail-wr1-f48.google.com; envelope-from=dan.carpenter@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=H+O+xDuF;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=209.85.221.48; helo=mail-wr1-f48.google.com; envelope-from=dan.carpenter@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-wr1-f48.google.com (mail-wr1-f48.google.com [209.85.221.48])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dbfcP1Hb3z2x99
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2025 15:52:04 +1100 (AEDT)
-Received: from [192.168.0.109] (unknown [114.241.82.59])
-	by APP-05 (Coremail) with SMTP id zQCowADHWAxmcUtp2LW8AQ--.30082S2;
-	Wed, 24 Dec 2025 12:51:51 +0800 (CST)
-Message-ID: <2eb2ad42-67e7-4f5b-bade-4a3627eb270c@iscas.ac.cn>
-Date: Wed, 24 Dec 2025 12:51:51 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dbkhM1qCXz2xlM
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2025 18:55:45 +1100 (AEDT)
+Received: by mail-wr1-f48.google.com with SMTP id ffacd0b85a97d-42fbad1fa90so4849372f8f.0
+        for <linuxppc-dev@lists.ozlabs.org>; Tue, 23 Dec 2025 23:55:45 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1766562883; x=1767167683; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=WZrIGbDjUMc3J6sIbF34jJNhsrhnGJpTC/Mf9dBpW/Q=;
+        b=H+O+xDuFpaARn0DW0DMKokpU1w5jzM65e8RsrvjL/+wmiDh1e2EtlWvqSUDFISi8Ye
+         tCWzUXXEBg7/+gE/rHHeT1qk/sH1drE9Fgzw0jwXNX8p0lSoYxo+WnylWGcpthAoRZY4
+         bfc8m/fV+YIdBhqXc6lU7VOamKiiI75rvy/MWwSNr0zoEPDkZB+9rUaa23y2fTnJVJvJ
+         e6lnvdK/4fuv12nPYWrXXlvNobxumM6fjPsabyiBDbBtvbz96wSvon/7a4WS7W+LWV4H
+         tdzsWUWbvt6iPIM/kIsz2FqCM/JZCoEv9aeu/D4lkp+dx5TUbJDZ7V3pYpTMbLmbiGN2
+         ElfQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1766562883; x=1767167683;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=WZrIGbDjUMc3J6sIbF34jJNhsrhnGJpTC/Mf9dBpW/Q=;
+        b=mtrf72G0k/AhF3P6C9ezjxVha1lOLuFidtOPgCNAKxp8NeSPpRTPCHLa3afM1J6AL6
+         nc8o4p50Sx0S/i27fsfCpnmwK4OPD0ZhOrUO9W+VUNKFzVdRoLNY7uwCwDMb6YOoiF4N
+         H6o2hHjdwH5no1m0aw0g4Sd5kimXdYueLQpkr1Gs67+k6CyNAKGjWr7qWMaHVni1nVh3
+         WR1op71JuHN4RW3TDMv9hZKVFi6DRECC72tT64GgdSil95dEkYRgTCUfpNV3Pv5GowMt
+         uffKLp7RnYOW6p4jTNzh79sxZZP+nYRX/Boc9sNLVC04Pv2/70tzcg3VTvlCDPGrZmh7
+         qjSA==
+X-Forwarded-Encrypted: i=1; AJvYcCX/3lqBMXPSCVEBAqvg1tS/+6CZ1N2qy4pFz9t91UHXwEnaErqJ5jH16eQg7ZEA1YhWQddqu3ilbdJpay4=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz0oCqMEE/y45ctj20q7giKcjUGGT5INDivPp7e94mQrP2FjWcw
+	WdGHu5kmKQY2D9+xIjfLDa0jEbzsivTf/2SulUvPJQnDW6E1MSAtJaVQWDjlrRKVarg=
+X-Gm-Gg: AY/fxX7dsthk8QljxDouarc/m8fV20p4s2vYCLjV9LZeFt+sjbmOG/AbW+PwchQLMkx
+	choKD71IuDL6v9cFNhep7+66PQF+CFbDvP/nHsx85xhwmlflJNshS0oQt4UQnLePCWr1QOsS8Zt
+	oeIZRRLxxAYM2XDN2QGV/eBo5sOMNliXOw3U3fIjl3CnxKucCXVF2MYgLvicv7FEcLRXlNeWwe3
+	7OERMgv+8pBln8HMH5wVKt2LEB66jLPqvBNB+s+0o54AWH/RkcC4HlI5ayfPnFChE0KcNsqwIRL
+	gRR/arOXOSniH4kGVFgUZKiRB5EOna2oFWwe1X3ECyP1moKfNr3/yNbAGjs8I3IxFbiGP/hrg3u
+	jvgdFTVzDM2H6SaVAYO6X+7zkJ2IPjYGKg6ukM5GydDahMp36+57NWxDASo0kOZmPIvCSIFDPla
+	8W3kD1zuel8yTRi2Tn
+X-Google-Smtp-Source: AGHT+IECNLFLhXkd5CDpgr63GCQOyj7vf3ddOYc1QU6NGh9n1MI1zpPSZMz6dgba6MyyIQX9ZAgPJg==
+X-Received: by 2002:a05:6000:25ca:b0:431:5d2:4526 with SMTP id ffacd0b85a97d-4324e4c9df3mr19740323f8f.19.1766562882584;
+        Tue, 23 Dec 2025 23:54:42 -0800 (PST)
+Received: from localhost ([196.207.164.177])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-4324ea1aef7sm32714761f8f.7.2025.12.23.23.54.41
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Tue, 23 Dec 2025 23:54:42 -0800 (PST)
+Date: Wed, 24 Dec 2025 10:54:38 +0300
+From: Dan Carpenter <dan.carpenter@linaro.org>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>, ioana.ciornei@nxp.com,
+	linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org,
+	Su Hui <suhui@nfschina.com>
+Subject: Re: [PATCH] bus: fsl-mc: fix an error handling in fsl_mc_device_add()
+Message-ID: <aUucPsDoPQJE5Ucj@stanley.mountain>
+References: <20251222074958.992911-1-lihaoxiang@isrc.iscas.ac.cn>
+ <cce0a0ca-9ea1-437a-a857-17a2bfa28791@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -44,83 +95,53 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/5] PCI/MSI: Generalize no_64bit_msi into msi_addr_mask
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Alex Deucher <alexander.deucher@amd.com>,
- =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>,
- David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
- Brett Creeley <brett.creeley@amd.com>, Andrew Lunn <andrew+netdev@lunn.ch>,
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>
-Cc: Han Gao <gaohan@iscas.ac.cn>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org,
- dri-devel@lists.freedesktop.org, netdev@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-sound@vger.kernel.org,
- linux-riscv@lists.infradead.org
-References: <20251224-pci-msi-addr-mask-v1-0-05a6fcb4b4c0@iscas.ac.cn>
-Content-Language: en-US
-From: Vivian Wang <wangruikang@iscas.ac.cn>
-In-Reply-To: <20251224-pci-msi-addr-mask-v1-0-05a6fcb4b4c0@iscas.ac.cn>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-CM-TRANSID:zQCowADHWAxmcUtp2LW8AQ--.30082S2
-X-Coremail-Antispam: 1UD129KBjvJXoW7Zw1rGFyUZF4fuFW7AFW8Zwb_yoW8Jw4rpF
-	4UGFW3uFWFy3yftFWay3Wj9F15Z3Z3K343W3y3Kwn3ZFnIqr17XrnrGF13JwnFqrWxJr40
-	qFy7Gwn0gFnxWr7anT9S1TB71UUUUU7qnTZGkaVYY2UrUUUUjbIjqfuFe4nvWSU5nxnvy2
-	9KBjDU0xBIdaVrnRJUUUvmb7Iv0xC_KF4lb4IE77IF4wAFF20E14v26ryj6rWUM7CY07I2
-	0VC2zVCF04k26cxKx2IYs7xG6rWj6s0DM7CIcVAFz4kK6r1j6r18M28lY4IEw2IIxxk0rw
-	A2F7IY1VAKz4vEj48ve4kI8wA2z4x0Y4vE2Ix0cI8IcVAFwI0_JFI_Gr1l84ACjcxK6xII
-	jxv20xvEc7CjxVAFwI0_Gr0_Cr1l84ACjcxK6I8E87Iv67AKxVWxJr0_GcWl84ACjcxK6I
-	8E87Iv6xkF7I0E14v26rxl6s0DM2AIxVAIcxkEcVAq07x20xvEncxIr21l5I8CrVACY4xI
-	64kE6c02F40Ex7xfMcIj6xIIjxv20xvE14v26r1j6r18McIj6I8E87Iv67AKxVWUJVW8Jw
-	Am72CE4IkC6x0Yz7v_Jr0_Gr1lF7xvr2IY64vIr41lFIxGxcIEc7CjxVA2Y2ka0xkIwI1l
-	c7CjxVAaw2AFwI0_GFv_Wryl42xK82IYc2Ij64vIr41l4I8I3I0E4IkC6x0Yz7v_Jr0_Gr
-	1lx2IqxVAqx4xG67AKxVWUJVWUGwC20s026x8GjcxK67AKxVWUGVWUWwC2zVAF1VAY17CE
-	14v26r4a6rW5MIIYrxkI7VAKI48JMIIF0xvE2Ix0cI8IcVAFwI0_Jr0_JF4lIxAIcVC0I7
-	IYx2IY6xkF7I0E14v26r4j6F4UMIIF0xvE42xK8VAvwI8IcIk0rVWUJVWUCwCI42IY6I8E
-	87Iv67AKxVWUJVW8JwCI42IY6I8E87Iv6xkF7I0E14v26r4UJVWxJrUvcSsGvfC2KfnxnU
-	UI43ZEXa7IUn1v3UUUUUU==
-X-Originating-IP: [114.241.82.59]
-X-CM-SenderInfo: pzdqw2pxlnt03j6l2u1dvotugofq/
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <cce0a0ca-9ea1-437a-a857-17a2bfa28791@kernel.org>
 
-On 12/24/25 11:10, Vivian Wang wrote:
-> The Sophgo SG2042 is a cursed machine in more ways than one.
->
-[...]
+On Tue, Dec 23, 2025 at 04:34:44PM +0100, Christophe Leroy (CS GROUP) wrote:
+> 
+> 
+> Le 22/12/2025 à 08:49, Haoxiang Li a écrit :
+> > If device_add() fails, call put_device() to drop the device
+> > reference and do the cleanp.
+> > 
+> > Reported-by: Dan Carpenter <dan.carpenter@linaro.org>
+> > Closes: https://lore.kernel.org/all/b767348e-d89c-416e-acea-1ebbff3bea20@stanley.mountain/
+> > Signed-off-by: Su Hui <suhui@nfschina.com>
+> > Signed-off-by: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>
+> > ---
+> >   drivers/bus/fsl-mc/fsl-mc-bus.c | 3 ++-
+> >   1 file changed, 2 insertions(+), 1 deletion(-)
+> > 
+> > diff --git a/drivers/bus/fsl-mc/fsl-mc-bus.c b/drivers/bus/fsl-mc/fsl-mc-bus.c
+> > index 25845c04e562..90a2107a9905 100644
+> > --- a/drivers/bus/fsl-mc/fsl-mc-bus.c
+> > +++ b/drivers/bus/fsl-mc/fsl-mc-bus.c
+> > @@ -896,7 +896,8 @@ int fsl_mc_device_add(struct fsl_mc_obj_desc *obj_desc,
+> >   		dev_err(parent_dev,
+> >   			"device_add() failed for device %s: %d\n",
+> >   			dev_name(&mc_dev->dev), error);
+> > -		goto error_cleanup_dev;
+> > +		put_device(&mc_dev->dev)
+> 
+> This change has obviously not been tested, not even built.
+> 
 
-> ---
-> Vivian Wang (5):
->       PCI/MSI: Conservatively generalize no_64bit_msi into msi_addr_mask
->       PCI/MSI: Check msi_addr_mask in msi_verify_entries()
->       drm/radeon: Raise msi_addr_mask to 40 bits for pre-Bonaire
->       ALSA: hda/intel: Raise msi_addr_mask to dma_bits
->       [RFC net-next] net: ionic: Set msi_addr_mask to IONIC_ADDR_LEN-bit everywhere
->
->  arch/powerpc/platforms/powernv/pci-ioda.c           |  2 +-
->  arch/powerpc/platforms/pseries/msi.c                |  4 ++--
->  drivers/gpu/drm/radeon/radeon_irq_kms.c             |  4 ++--
->  drivers/net/ethernet/pensando/ionic/ionic_bus_pci.c |  4 +---
->  drivers/pci/msi/msi.c                               | 11 +++++++----
->  drivers/pci/msi/pcidev_msi.c                        |  2 +-
->  drivers/pci/probe.c                                 |  7 +++++++
->  include/linux/pci.h                                 |  8 +++++++-
->  sound/hda/controllers/intel.c                       | 10 +++++-----
->  9 files changed, 33 insertions(+), 19 deletions(-)
-> ---
-> base-commit: 8f0b4cce4481fb22653697cced8d0d04027cb1e8
-> change-id: 20251223-pci-msi-addr-mask-2d765a7eb390
->
-> Best regards,
+Yeah, it doesn't build.
 
-+cc linux-riscv and sophgo lists. Please see:
+> And by droping the goto, the kfree() are not done anymore, leaking
+> mc_bus/mc_dev p kzalloced areas.
+> 
 
-    https://lore.kernel.org/r/20251224-pci-msi-addr-mask-v1-0-05a6fcb4b4c0@iscas.ac.cn/
+Calling put_device() triggers fsl_mc_device_release() which does the
+free.
 
-This is what happens when I rely on get_maintainers.pl too much...
+regards,
+dan carpenter
 
+> > +		return error;
+> >   	}
+> >   	dev_dbg(parent_dev, "added %s\n", dev_name(&mc_dev->dev));
 
