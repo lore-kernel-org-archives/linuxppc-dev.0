@@ -1,91 +1,92 @@
-Return-Path: <linuxppc-dev+bounces-14990-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-14991-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F00F4E75448
-	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Dec 2025 10:40:17 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7A020E7544B
+	for <linuxppc-dev@archiver.kernel.org>; Wed, 24 Dec 2025 10:46:11 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dbpL83YSbz2yFY;
-	Wed, 24 Dec 2025 21:40:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=202.12.124.152
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766572816;
-	cv=none; b=Lv0C8T94MxypNnUYbqwe3Mc9tsBb3P9oW1Nqch16dwYwNMkxlgdl9qwKf+BtNk/yAXGbWW3haK7uqI4386Tcfmz2a6+DO+KPE/pcvKvovddPpHkSPSE7Z2nKxCpUdEe/CosVqteG8B+m2ze4mV3NMU7Kf8eveTHGt5JeYxOgOUMjiTPipY58C7f5CQzEAQUrCY8eOTjsG2GkUd7M2lVPXtWnP0NALJ1MWBnYaHzQWbtlBYRuLrQmTxefv2XsZbUImFM4CDNHsPAXYvOrPSPj9glGzTfaAOCeYZa8/whcgUmlzHQVcCvdKieUWs0tGE+D/n6nTSha7/s8O+6MzfdP7Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dbpSx6sYSz2yFY;
+	Wed, 24 Dec 2025 21:46:09 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.167.43
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766565176;
+	cv=none; b=bBS8g8sT7GqQMBDZiR3ZAjKr5kxE+DeeQebnrarZ3CnZlZ+UDYlNEXIt1AShqmsl2sfXlNRRXJoYAhOy1J0ytIfcUkK+jmHF7CmJQtY3BDWMytNGEhcf5MeQyBP4OFTuQXqc03khz7cSWwNUHolIcMTyfhMF9y6Z9WZCD1qJP4l73JHONLWyBbVjLele4iSe7hrP5nkebpJ8lDyvk2fdZHdyBn3o9jU5vtdZOo3PYCulkdQJb/Qtfuc+eQx+fgm3+iN5EnaeTG/E4XH6o2UiG/ySNHHOgg3SPQBeG+4kmy8QGEDy23HTKo7JRPIbqgdEOSy25Hv/44ICrcZTZHcMDQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766572816; c=relaxed/relaxed;
-	bh=YX0Iu63byjNVx+YuTlIdUvEoIm6dN1b2nrc/xx3b1B4=;
-	h=MIME-Version:Date:From:To:Cc:Message-Id:In-Reply-To:References:
-	 Subject:Content-Type; b=ojpp2xm8SIu9pdu/zdRx5uNk1oDg/V9Pz3FEaIVlhlX9oa/D0f6hAHZwZf+XjiNiXv7r53aq+KNEcVUILO8uvG7fATuGMemi5tU3BpjyMNbiKS7Di8NL4JVVJIt8qz2o4NAjHra63AisvxAHsZkQ8LP2CgppFJf9HE3IfayYbJR8l2LQ3Qyc5eDYkX5NncM1C2gq8bt9NLcTnPRPgvZgbH8xcV7U0GO04TUkd7XC4yZBI0NOVhBjgFEAl6XwFFnlx/anf/YRJGeWwYOVrbgRRhclpucMtYGaRUD0msQIyCRG+cg50Cwlt6Vn0lLf/H7R0OOg4rgrT7VVKos3QompMg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de; dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=QeJJgFZh; dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=LyacBheg; dkim-atps=neutral; spf=pass (client-ip=202.12.124.152; helo=fhigh-b1-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org) smtp.mailfrom=arndb.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arndb.de
+	t=1766565176; c=relaxed/relaxed;
+	bh=+/LcCQ8zwUe0fNhrJKNtlDY5MwEEJ1f2PC3vtSyv8ek=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=QIkcWfsNQKqXvj27OgHao4m1HelgJ9JgQAHS1G9A4km1sB6/EK70unylnXG/TVsVM5hjcyYdAyNYtZvvVlBnqlyhksWBJ/ehtaWoTUh75mnS5Br8nvWZS7iTjBY4m9hQRbT8v7DI1OZUBzOtMO35QrNwLQPp7leNqTvaCLHLmVO8g5ZIxSTCR9KXn1fdRtWb8plUIcJcNSlrfpAe3AWnFLQKjd1PJB55MsLPTZxXqai8CEuMm9tbOCyNmr7C7RwY8fRc4a9XlN6HjsQQ5lh3VqSK0myuy7SR0Cr3MzH7LubSljrPfRUa0ZBklzIZOn7kkgVbAomNnohMKMXj3VH1sw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OLhtW+z0; dkim-atps=neutral; spf=pass (client-ip=209.85.167.43; helo=mail-lf1-f43.google.com; envelope-from=alperyasinak1@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=arndb.de header.i=@arndb.de header.a=rsa-sha256 header.s=fm1 header.b=QeJJgFZh;
-	dkim=pass (2048-bit key; unprotected) header.d=messagingengine.com header.i=@messagingengine.com header.a=rsa-sha256 header.s=fm1 header.b=LyacBheg;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=OLhtW+z0;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arndb.de (client-ip=202.12.124.152; helo=fhigh-b1-smtp.messagingengine.com; envelope-from=arnd@arndb.de; receiver=lists.ozlabs.org)
-Received: from fhigh-b1-smtp.messagingengine.com (fhigh-b1-smtp.messagingengine.com [202.12.124.152])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.43; helo=mail-lf1-f43.google.com; envelope-from=alperyasinak1@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lf1-f43.google.com (mail-lf1-f43.google.com [209.85.167.43])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dbpL43LLlz2xqf
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2025 21:40:11 +1100 (AEDT)
-Received: from phl-compute-04.internal (phl-compute-04.internal [10.202.2.44])
-	by mailfhigh.stl.internal (Postfix) with ESMTP id 16CC97A0111;
-	Wed, 24 Dec 2025 05:40:07 -0500 (EST)
-Received: from phl-imap-02 ([10.202.2.81])
-  by phl-compute-04.internal (MEProxy); Wed, 24 Dec 2025 05:40:07 -0500
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=arndb.de; h=cc
-	:cc:content-transfer-encoding:content-type:content-type:date
-	:date:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to; s=fm1; t=1766572806;
-	 x=1766659206; bh=YX0Iu63byjNVx+YuTlIdUvEoIm6dN1b2nrc/xx3b1B4=; b=
-	QeJJgFZhNvvg0LviLTt+Pq5z3YtzD9j7TUGykYJZMwfAX0UFf6qeDVyVIERLmj5p
-	U7j/beLiLT4zFfDYY/bX9GbjBd2MkzDcWJM5CapFk/lYhsWlrLjvRsHhPArOucK+
-	oM5O4fAp1pWVB50sMYoixNnD8B8mWIkErPF7ZfAchJJE8jEe9oHngj4CWWcTzurL
-	UtR+OffS0D49o+dM8YZ9iDIoYxUkTRr3trBcSI+qd6I7+MRdqma44EA6FE/24IrX
-	3IiZXXefHN2GRZ7XkOIhYgzFpUarW7nIQRqisVOBOoYkhoSoJDRQezI3JQUok0MD
-	9Kh4HKMAAVKu6Pxb7e9xjg==
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=
-	messagingengine.com; h=cc:cc:content-transfer-encoding
-	:content-type:content-type:date:date:feedback-id:feedback-id
-	:from:from:in-reply-to:in-reply-to:message-id:mime-version
-	:references:reply-to:subject:subject:to:to:x-me-proxy
-	:x-me-sender:x-me-sender:x-sasl-enc; s=fm1; t=1766572806; x=
-	1766659206; bh=YX0Iu63byjNVx+YuTlIdUvEoIm6dN1b2nrc/xx3b1B4=; b=L
-	yacBhegZDB19uOBTAp/wSlLXl8g6HBw0+822kqJcnJiIdEm6W+a8lHW2tr66/HJF
-	oxpnd+iRDmx4rCaC9u/H8yFh09nkx538PDqIQ86KzhtVmuBR/VllurMBodF5p6iq
-	vlKcjySvJq+ECORrqOCTpFi5do4v4hP3x+B8FG4uiIGoV3VJ11w41ifHkyMxpVkX
-	PItiB//BWRFNF6Cz0U0TPgDDV5jRYxZfWpRzmR2q90i/hBnqbh2gYMGeVoN2OZiM
-	rFWjIge4/DHxL2S3RVSBxZ5tVMR2YUdnrN9PhqjhfadJZ/cHELc8gkooejWNHcFj
-	WgatZY5d/aQpBvTMtWZTA==
-X-ME-Sender: <xms:BcNLaQ8_rLHVTGubTg2P5ApbiePHfRLPueQURHHYIn4yM1yRNivjNw>
-    <xme:BcNLaTgnYWbussBHtYvReijMeyGzF5RDOnjwZpljyD3i3rzrX4cvRjTLXaI3xtGjs
-    xFX0CfAf-Krn4xifppTrCf97cnrPk_15Du-2hfEAbYIdTHkwk1xb4E>
-X-ME-Proxy-Cause: gggruggvucftvghtrhhoucdtuddrgeefgedrtddtgdeivdeglecutefuodetggdotefrod
-    ftvfcurfhrohhfihhlvgemucfhrghsthforghilhdpuffrtefokffrpgfnqfghnecuuegr
-    ihhlohhuthemuceftddtnecusecvtfgvtghiphhivghnthhsucdlqddutddtmdenucfjug
-    hrpefoggffhffvvefkjghfufgtgfesthejredtredttdenucfhrhhomhepfdetrhhnugcu
-    uegvrhhgmhgrnhhnfdcuoegrrhhnugesrghrnhgusgdruggvqeenucggtffrrghtthgvrh
-    hnpefhtdfhvddtfeehudekteeggffghfejgeegteefgffgvedugeduveelvdekhfdvieen
-    ucevlhhushhtvghrufhiiigvpedtnecurfgrrhgrmhepmhgrihhlfhhrohhmpegrrhhnug
-    esrghrnhgusgdruggvpdhnsggprhgtphhtthhopeduhedpmhhouggvpehsmhhtphhouhht
-    pdhrtghpthhtoheplhhinhhugiesrghrmhhlihhnuhigrdhorhhgrdhukhdprhgtphhtth
-    hopegrnhgurhgvrghssehgrghishhlvghrrdgtohhmpdhrtghpthhtohepfihilhhlhies
-    ihhnfhhrrgguvggrugdrohhrghdprhgtphhtthhopegrrhhnugeskhgvrhhnvghlrdhorh
-    hgpdhrtghpthhtoheptghhlhgvrhhohieskhgvrhhnvghlrdhorhhgpdhrtghpthhtohep
-    giekieeskhgvrhhnvghlrdhorhhgpdhrtghpthhtoheplhhinhhugidqmhhmsehkvhgrtg
-    hkrdhorhhgpdhrtghpthhtoheplhhinhhushdrfigrlhhlvghijheslhhinhgrrhhordho
-    rhhgpdhrtghpthhtoheprghkphhmsehlihhnuhigqdhfohhunhgurghtihhonhdrohhrgh
-X-ME-Proxy: <xmx:BsNLabj5Yb1efwgwyTd1LSIMoi70vcnjBOt3SFtI-jp0Z29wK1e9LA>
-    <xmx:BsNLadkCZiJD4h480VwjNs-pq8OK3G1CzOk3qfrOsmNA6HAkAqeqMQ>
-    <xmx:BsNLaUq0Wy6zYySKPnxsEUBzUKAr8PGSq2bXJWTVEibcouFQDC-kzA>
-    <xmx:BsNLaZJ9xGBNNGmTeO_GCEZiyEqQkgoYgAA_A9A2X_-wwwkI0r4IJQ>
-    <xmx:BsNLaQOG8zh3VdLD6QUVIu4Ol1HBvAQigwbEglcR8MAqbb0gtF6h8g8h>
-Feedback-ID: i56a14606:Fastmail
-Received: by mailuser.phl.internal (Postfix, from userid 501)
-	id E4F4570006D; Wed, 24 Dec 2025 05:40:05 -0500 (EST)
-X-Mailer: MessagingEngine.com Webmail Interface
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dblWB3DGtz2xnl
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2025 19:32:53 +1100 (AEDT)
+Received: by mail-lf1-f43.google.com with SMTP id 2adb3069b0e04-597d57d8bb3so4711816e87.3
+        for <linuxppc-dev@lists.ozlabs.org>; Wed, 24 Dec 2025 00:32:53 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1766565109; x=1767169909; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=+/LcCQ8zwUe0fNhrJKNtlDY5MwEEJ1f2PC3vtSyv8ek=;
+        b=OLhtW+z01QXzqlwW+dc0/7Jiy6XtmBye4swTSfBhuew+b7FO7Bo+jdEdjOgJ2tB1BE
+         GEkBv9S3L++LoH6fvsOBDA2ZZv9VTx4zD/gyNXsIOGHdarZPdMey2Env5/70mHEWd80C
+         Jm5SHwHaXBzDBFVYt58yLS/96d5TOUN9P/uGtCVUcvBU9Fg38E+NQRAX8rCywvb7Hx7w
+         FLd3Pro8rm3vnwXY4z0Tyd/rb9q8A13HjkuRsyCzp4GREd3leWZ+ojWdE6zDBs4dUzTx
+         WWT6uVC8lS0EpjNsF8gi+uvKxdWm7D6mSyaN+qCgKDLqq/5W9SAtWPrh9t1dYFAm5zpC
+         EXyg==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1766565109; x=1767169909;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=+/LcCQ8zwUe0fNhrJKNtlDY5MwEEJ1f2PC3vtSyv8ek=;
+        b=pdSL7az49CsiokWjyCmsPd6gzENhbtXItbfKZXxAxP97lsH3vm21Y9VX9IdAHJ1Sgh
+         JQHnYeK/C1XiABi3LJcC6Dfml5Ubo276bN4GvIPNoV0i/C7janq251jRONe1bDUK9Pus
+         pT25BfdsBUvXCEvjFyIK9/7o760M8ivg7IiHERnBoISKnkYikoXoro86/EDR3qRsn0Ei
+         wzdOOVk0u/PkvVNZJxPe5mZc36BCuarVNPT8XD+XwWjcwcZ+bR+aKLuebLz8YEi2QRXN
+         HsnTWmc8SukrUGoD1dlwxdENGW6cYDr7rrR9f7LxpSUYM4fJg7C+mP/INiXC80DJ6X53
+         /WIA==
+X-Gm-Message-State: AOJu0Ywb9bjVdddChsE8LN5eSaZHsCsVfMFkVd3rXUrD+jN4MhEQ5WNJ
+	KGmRn47tUZrHXmS/i3EN+Yb8ZrCNgYjVj5gH3ZM10wCORgDG2QKBBsiPV2jTdA==
+X-Gm-Gg: AY/fxX7pmHhhTCr585eoBa7rYn2HEX6Won3JJaxiDiQ18eQHflxseEGp2wrRai7fvUD
+	OyMQ0NXF2D7PyeqtJ7ZHQe8+tGUmrLFO0+rEmJWTZkkXSFVtdLSs8BkTS8LcZ48sjXkEZgOvmFV
+	2voWItEEMbjSw3VnYR/Xrc4ZrjHf4rwrK9NkwxLXAtuwQ5ZSRa0WC73a56ugbs/myDgYLTCsfwA
+	4QHQbB3Td9sNljBq+xS1PJLyNg0jeY0q+Wr17P/dfXKtwK0RupA9Z2EeUUE/NpGYZP6ExGa9QXS
+	/YbIfmzTm4Y5x7caIVg9lGCBIT9lDF9/oKBhEQ0IaJmsNigo2S/7LVfWsVOr4QjHZUXcYdmTBZr
+	j6mtDtcSnWqXCLHtTVz3QYS1pSTKpAKAnamoTjRTCWjDIn0RLX65XDz0M/974J8QBaoH70K+5/O
+	HNq9JpQiepoBNDfGVsgr/zTvqlysvPFXwZrnyO
+X-Google-Smtp-Source: AGHT+IFCz7bMbVaeEuQih1+/noaVnIb7zWc7m1Mkp0VhdGZcHzCbI7zekNH/mtwDeTp7rjb0PQcouQ==
+X-Received: by 2002:a05:6512:158b:b0:598:f369:68fb with SMTP id 2adb3069b0e04-59a17cff37bmr5090223e87.10.1766565108668;
+        Wed, 24 Dec 2025 00:31:48 -0800 (PST)
+Received: from localhost.localdomain ([176.33.67.19])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-59a185d6002sm4689077e87.9.2025.12.24.00.31.44
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Wed, 24 Dec 2025 00:31:46 -0800 (PST)
+From: Alper Ak <alperyasinak1@gmail.com>
+To: linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Cc: Alper Ak <alperyasinak1@gmail.com>,
+	kernel test robot <lkp@intel.com>,
+	Dan Carpenter <error27@gmail.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Tyrel Datwyler <tyreld@linux.ibm.com>,
+	Mahesh Salgaonkar <mahesh@linux.ibm.com>,
+	Haren Myneni <haren@linux.ibm.com>,
+	Christian Brauner <brauner@kernel.org>
+Subject: [PATCH] powerpc/pseries: papr-hvpipe: Return -EFAULT on copy_to_user() failure
+Date: Wed, 24 Dec 2025 11:31:10 +0300
+Message-ID: <20251224083116.23904-1-alperyasinak1@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -99,70 +100,49 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-ThreadId: AQxZfb8dcq5J
-Date: Wed, 24 Dec 2025 11:39:26 +0100
-From: "Arnd Bergmann" <arnd@arndb.de>
-To: "Jason Gunthorpe" <jgg@nvidia.com>
-Cc: "Arnd Bergmann" <arnd@kernel.org>, linux-mm@kvack.org,
- "Andrew Morton" <akpm@linux-foundation.org>,
- "Andreas Larsson" <andreas@gaisler.com>,
- "Christophe Leroy" <chleroy@kernel.org>,
- "Dave Hansen" <dave.hansen@linux.intel.com>,
- "Linus Walleij" <linus.walleij@linaro.org>,
- "Matthew Wilcox" <willy@infradead.org>,
- "Richard Weinberger" <richard@nod.at>,
- "Russell King" <linux@armlinux.org.uk>, linux-arm-kernel@lists.infradead.org,
- linux-fsdevel@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, x86@kernel.org
-Message-Id: <f6c49549-57af-4640-a09e-896c47bb8657@app.fastmail.com>
-In-Reply-To: <aUtPRFdbpSQ20eOx@nvidia.com>
-References: <20251219161559.556737-1-arnd@kernel.org>
- <20251219161559.556737-4-arnd@kernel.org>
- <20251219171412.GG254720@nvidia.com>
- <513078d3-976a-4e6d-b311-dcfcfea99238@app.fastmail.com>
- <aUtPRFdbpSQ20eOx@nvidia.com>
-Subject: Re: [PATCH 3/4] ARM: remove support for highmem on VIVT
-Content-Type: text/plain
-Content-Transfer-Encoding: 7bit
+Content-Transfer-Encoding: 8bit
 
-On Wed, Dec 24, 2025, at 03:26, Jason Gunthorpe wrote:
-> On Fri, Dec 19, 2025 at 09:34:33PM +0100, Arnd Bergmann wrote:
->> On Fri, Dec 19, 2025, at 18:14, Jason Gunthorpe wrote:
->> >
->> > This looks great, but do you think there should be a boot time crash
->> > if a VIVT and HIGHMEM are enabled, just incase?
->> 
->> Do you mean in the common code or just for Arm?
->> 
->> We could use the Arm specific cache_is_vivt() macro, but it feels like
->> the 'dpends on !CPU_CACHE_VIVT' Kconfig check I added is both
->> safer and simpler.
->
-> Okay, so maybe I'm asking if !CPU_CACHE_VIVT then the kernel fails to
-> boot on vivt systems, maybe it already does?
->
+copy_to_user() returns the number of bytes that could not be copied,
+not an error code. Currently, hvpipe_rtas_recv_msg() and
+papr_hvpipe_handle_read() return this positive value directly on
+failure, which userspace interprets as a successful read of that
+many bytes.
 
-Yes, in two separate ways:
+Return -EFAULT when copy_to_user() fails.
 
-- you can build a kernel for any combination of armv4/v4t/v5 CPUs
-  (all VIVT), or any combination of armv6/v6k/v7/v7ve/v8 CPUs
-  (all VIPT or PIPT), but we already enforce that you cannot mix
-  the two in any way. The two sets are sufficiently different in
-  terms of instruction set, MMU cache and FPU that trying to boot
-  the wrong one probably doesn't even get to the point of printing
-  any output.
+Reported-by: kernel test robot <lkp@intel.com>
+Reported-by: Dan Carpenter <error27@gmail.com>
+Closes: https://lore.kernel.org/r/202512240028.EKDG3Wu6-lkp@intel.com/
+Signed-off-by: Alper Ak <alperyasinak1@gmail.com>
+---
+ arch/powerpc/platforms/pseries/papr-hvpipe.c | 6 ++++--
+ 1 file changed, 4 insertions(+), 2 deletions(-)
 
-- If something changed about the assumption above, any Arm kernel
-  still needs to enable support for each individual CPU model that
-  you may want to boot on. Enabling a SoC family will select the
-  CPUs used in that SoC, and enabling a CPU type selects
-  the cache features like CPU_CACHE_VIVT. Attempting to boot
-  on a CPU model that is not enabled in the kernel build makes
-  it fail in setup_arch() with:
+diff --git a/arch/powerpc/platforms/pseries/papr-hvpipe.c b/arch/powerpc/platforms/pseries/papr-hvpipe.c
+index dd7b668799d9..0dee94c7c887 100644
+--- a/arch/powerpc/platforms/pseries/papr-hvpipe.c
++++ b/arch/powerpc/platforms/pseries/papr-hvpipe.c
+@@ -209,7 +209,9 @@ static int hvpipe_rtas_recv_msg(char __user *buf, int size)
+ 			ret = copy_to_user(buf,
+ 					rtas_work_area_raw_buf(work_area),
+ 					bytes_written);
+-			if (!ret)
++			if (ret)
++				ret = -EFAULT;
++			else
+ 				ret = bytes_written;
+ 		}
+ 	} else {
+@@ -376,7 +378,7 @@ static ssize_t papr_hvpipe_handle_read(struct file *file,
+ 
+ 	ret = copy_to_user(buf, &hdr, HVPIPE_HDR_LEN);
+ 	if (ret)
+-		return ret;
++		return -EFAULT;
+ 
+ 	/*
+ 	 * Message event has payload, so get the payload with
+-- 
+2.43.0
 
-                pr_err("CPU%u: configuration botched (ID %08x), CPU halted\n",
-                       smp_processor_id(), midr);
-                while (1)
-                        ;
-
-     Arnd
 
