@@ -1,80 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-15036-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15037-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 607DAE9270E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Dec 2025 22:40:01 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3164BE9270E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Dec 2025 22:40:07 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ddy8s3T7Wz2yFk;
-	Sun, 28 Dec 2025 09:39:41 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.128.49
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766838019;
-	cv=none; b=SrWDD5OWmCMnu56ZpBn8OMvBSvP0alqNH2Z5/GD3ANeBpqPLHCPaorHYEtOMBNsyP3HuSHboQzElKaU4h3n0F06hBSrYJQcAICooOy53jAgEDn1tUAzSRjRi5RQ/pbfsdM2nJeFoNjZ0fCCOjA93YZy5CVhHkm2hq0wrBxStgw4wQNNOYyqTx9xjoX7jwu8JVb6e50q4OYIMmsM6V5+ocq9j+XVNSiJDq3+WiU02YU3o/hXJOfulNKB9GhtwUJo87Av4UhfcY2QvrwhjeIvVgXl3P7KnnU/dYllffLYEdMkDDcMFxl2taNZqfV7Cf6cpjKn40+Hoi+KGm+/6RfP3+g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ddy8t16Ftz2yvb;
+	Sun, 28 Dec 2025 09:39:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.128.42
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766837982;
+	cv=none; b=K3pc0vMnAG4tD7BlJ7RE6QIWDdqVi6jZYH+u9ul7l8oDPJpP24BBYpdlD/XpeQyVHfkKP6qQX9Dr7AcyigBz9oFumj2qoxy+iyuSRooaPy8palsDwfJhXYPg1djgSqXVZDNrLdGEoDOf8wW7jeDJRnwCZySlDS0w7nSZwRr41SJ8XWjXaaXYawVZPzVchRdmi66FzYE+0z5gt3pDsN8Hcv9rYdpI+/1yaUPvMXACLDwWLiCyPfoUgOKGW1luGYvUrqTAKn4b+8AKZ+qtpD+hvBnKJVFNetUpYvnpNWJdfqF/xEE7YC+NbKc87jQPauWs2MwJPpdgOxgDrcQFx9MMYQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766838019; c=relaxed/relaxed;
-	bh=ejU77izjbpiitWXY1CFRfcJAx1qt+ylV9tDV0w1mOdk=;
+	t=1766837982; c=relaxed/relaxed;
+	bh=zBuTaAePekdaKhl7Nr4xkMCH+YbgmQZc5bDJsdsSluc=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=CHfKB7+Fn9Jui0J/DnTSwxlKzp4o5xaob1+n82RvH6N71LfRb/YsQ3LIGXP+8P31L0pmi8a6XWKjlbjI2ua4vRCOqyVeldHUiqyARsD35hj3auprxJ1z6OZYMourNCfzMjbWVMo1QlpMXh8tPcV/WBNwBNr0AteFETt4AFMgL32rFfWbLkEdMcFz8+Q5VmFU92YzKpNEelm3iPek605JfgpLmKQL7uuvwErAaI9wjpXpbMEjYWMHoX7LG3Rjmgv+3xooULT+RQIMF7g/b5P2Et5A9JtyVz+NMZ3aHxzutp9IVZHfkTsqRIRnO2no4jgE94rA2JsL47efykc4o6YjTg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=SqpxOS9X; dkim-atps=neutral; spf=pass (client-ip=209.85.128.49; helo=mail-wm1-f49.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+	 In-Reply-To:To:Cc; b=SCyph18JhVCoNYjECuFOvjE3KdQXeZ2Kf6+tV7BQ0pSaA6KuHA0bwpFolXMkYRBqWn9pIo7TIgITqIuZQdZO1nW52ANP0DLo43AWRLgEmiXC0Eq76k2P5lFybWda+vZkrXXMNXi2PtCyzWlkYQcbGjtBwlwBI0P/PbJ24OirRXl3Tqkm1oJ6CqHCQZrZP8NivC9HP4rAthYn9VcDfv30gWDyBBUAjlF5DTr5xBJ7x+fD6YZMgiyXNRbjJZswwvz1jVZRt8qbH/1+g4jjrHdKWpiF4Soo1ppfNNisgiRhosryVqiDOUKDUCeeC2PlXABeKWFY+OrZDiJNNtPiVJRLqw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=VP+sOdbM; dkim-atps=neutral; spf=pass (client-ip=209.85.128.42; helo=mail-wm1-f42.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=SqpxOS9X;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=VP+sOdbM;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=209.85.128.49; helo=mail-wm1-f49.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=209.85.128.42; helo=mail-wm1-f42.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-f42.google.com (mail-wm1-f42.google.com [209.85.128.42])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ddhQB3Dhrz2xQK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 23:20:18 +1100 (AEDT)
-Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-4775e891b5eso31865765e9.2
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 04:20:18 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ddhPT3xZVz2xQK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 23:19:41 +1100 (AEDT)
+Received: by mail-wm1-f42.google.com with SMTP id 5b1f17b1804b1-47774d3536dso61937295e9.0
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 04:19:41 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1766837956; x=1767442756; darn=lists.ozlabs.org;
+        d=suse.com; s=google; t=1766837919; x=1767442719; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=ejU77izjbpiitWXY1CFRfcJAx1qt+ylV9tDV0w1mOdk=;
-        b=SqpxOS9XSNOs6syBWSU2h5kTaLS953qG57WRNP5yEvUlh9FnYhTt11Nx7odFj++pmf
-         hhi9L2dINtfme8MimjqQQ26vI0X/FZYap//qyfkZbDOujA8n/8EK4JbzWmOKFv6+7yk+
-         /T2yrTQxQ/c3WMzfKwGKFv8jDs15FxXuQ52mcv2lOLID3pvGbjjv0L/V6V0omQoYYw5p
-         EtgQnBvKMGnuDeTnWuSQkuvwz8OtNLcAefosUlSPtn7cj6u4oUdSjBBgXWjSA2AM6dVr
-         qgDI90gXJRViA2clVyOSnqYnGrSjXyH4BKK1QoDleZMkVylC2u7W6fZZg7XnXwMp5QXD
-         oB1g==
+        bh=zBuTaAePekdaKhl7Nr4xkMCH+YbgmQZc5bDJsdsSluc=;
+        b=VP+sOdbMKwxQTk7gmbndtYRbV2zUj69H4M03hQEmWpMA0Cz9xOlD5ANe/dWj8b4g9t
+         X+mFrGoDkFnwYAQ9OopXTdob4feJZA1ekU1f8uiW7kxP4wQMm8Z69Vn3fe7GgtS/LnjA
+         mL561J1rxGmmiXnQeekxRpRsecGHTYMGc9/b9nPzZVMcfouri9NsbKtNYnZpChqh4RQf
+         EbW1uNvdX+BsmbhNpjLH+ECptAy2HbtZ4e+mcrC++VDofeTdyhcWeuQiMV/bBS3OQC6W
+         qJhVKzmCamu5+f6JsiUTq9VhlwlsDPuMHfszWzN5M+JP5GBxbZ3gCObgKzJoMWA+49RO
+         AdDw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1766837956; x=1767442756;
+        d=1e100.net; s=20230601; t=1766837919; x=1767442719;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=ejU77izjbpiitWXY1CFRfcJAx1qt+ylV9tDV0w1mOdk=;
-        b=wG96t47QjOO8z8n41SdOw9/uM//itfp2JQrIm4tDFrx6dSRxXMArnOV1EV7VzyNJMY
-         +IRB+lgI7hU1n7eFTd0SQXPDizrsNd0dVwm+5XDKLfcNjsMDECgVg4eGwczWgPVT+wzK
-         OHt1wbXu5g9Es+xkj4D1ydGI0t2mdGhVQbBPZ/R0sEIl+/PP4Hap+/iMMMEtxBeAncHd
-         sN9qHVUYnvdzhd5SM6Cold04HkbTodqGGXH28dcsb2nFi+V1Zh2SJt/P7nr8QYhAUhqd
-         uJW9SFaVmnVNWqkaCq7xyfLJ191Dv3k87mVB7IY+nW6HLY8nVrfbYc3cE0sjAY/wcV9q
-         3x3A==
-X-Forwarded-Encrypted: i=1; AJvYcCXaiL2yH1iS4A6LhS2v4DJzpJnz32YXI6OLacfiWhqyLt96OqtzTgKicGq96ggLbKFSp1XX47ESK07m5No=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyHwYZ+R0/D68BgMRLwuTnYnljTxReB6wm0yQJ2V/JKQwIiqJFy
-	Jrv/SIRy8S9riTk6Y/NYHpFc29RRewKf/YVsHGey8x2CLQfPY1AjJBlH39mEmD13aY8=
-X-Gm-Gg: AY/fxX71Sj+L2KS3RjFRCuBmOK4viWLMdme+/yXyhKsBaRb8EzZt/ROEbK1h4r0c3zt
-	Z/ZXJUyhshe93hNJnHp2LgH7gELw1/vi31K282DMnGOLNqf6fn794J7nGltllF6akfwXSzXqI6H
-	eUCr7yEP9EpFVhXTIFOiXOcfdNVooCpRBV1CarxMIxtafP+qHMUYYhrKNvBdZv2kqNXEVuxpNu4
-	DkwYAlEwYp7wnuyOR7eeunMfj3cwjRlvBZpwKQmYf8U16ZjKi1v452TqONKhkin1LVighQGCBml
-	lMPS9MB2tUgDzOE/xSoMwl1XGAM9VS1EVo0AeKn48pxc6LkhogkSwaevLYzgtspWTwB51KvGUKV
-	B2fQ4RpZxfFPzJ6Gx+Ut6XV5igorpddIJ0RWa3aRMnR1zdDoBZ6yqVt7dRjCNtB8bNYpUWRl9RX
-	FSP2D5uNBJ
-X-Google-Smtp-Source: AGHT+IGcVRETU5SGb8qIhgBdGnot/sm969/AEg3tWF/SLDrOBPXwM9NZtaV8oGtTOpkC0w9sxSvHbQ==
-X-Received: by 2002:a05:600c:3148:b0:479:3a86:dc1e with SMTP id 5b1f17b1804b1-47d1958e459mr275597435e9.36.1766837955551;
-        Sat, 27 Dec 2025 04:19:15 -0800 (PST)
+        bh=zBuTaAePekdaKhl7Nr4xkMCH+YbgmQZc5bDJsdsSluc=;
+        b=lx4U1Cb6Dl88b3LyadrioN/affvGnphD80pPtO1RUM+HVmiHt+xiUjTGCVLIsGAVUe
+         J6+kQCiTDR1OABFjZWmdFEgUApeDIRHckmfujvg3jh3MVg5H0dXWaeqA5vqJsfBFZLDS
+         7IBYN/ZufThnElIalNhoFU7kMn1WcWUUIk7kSys6CCryztT3TaoaVi/bIEu4zJFmfY0o
+         kYatMlK6x4sU3fc1mnd966PkDAWtILMwrhRU1VUpsdMFJNpTCDEuijK3dWANFJkcbAB7
+         ePIfIsj9ZoTol9TGcq3HWN1XKau7GMh6ITMoMWKY/J4jvH1+SIr7gCsy7x69XG5N1s1d
+         02iw==
+X-Forwarded-Encrypted: i=1; AJvYcCXGSRYBMJrlyKCAbZf710VxZhhg+WpQrFOFwE7An6dzZocF1fZ0b8aBXES8mKAgsVoW6UvIPfpZ4NK1u7k=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwQqFxBKNBoGoYGtW29nvzL8a1JNucPtyhA1T+iAKupbkvFBv03
+	orPuhYezqpIN1v2DUyC4xTDQYXvwieKNU3+QMdtoLsaMUe5yjzN745uZTaSTtuBFaUg=
+X-Gm-Gg: AY/fxX5fxi8OJPpTxTcUaRE6kiEvui0XYrSocSFOo15M4zIWeDTPB0atUyn/9Kbswlp
+	jxxI74KYNP2MuY1Hh3UMHNDrCAbs+R2i6tnOL8Gx6Jm6XzprFoRmFmYmKSRccXdSaGWdnMnu2i7
+	Gjgbx528BFI/bj7gNSVbeWcM75nfXfpSaDzRkMPbaGLe8QbDC2xdmEkWum179/aqQ9VyssQ0REb
+	kv76yUuJQYmRQax0HhkU64kzX5w5EJjxcGhog5gOhjOORm5YRMi3c+FLIN3/+m71wbgIPN2cyDz
+	YMH5RSCQ8jrT1A/pxAlFK0cEAxE2dtXCB9hYPRNZ5NxcfftBwGmCwyPZZVzDwroMdvNbIF38Jpi
+	p4/Opfx5Kj3tfHotqJRI/u8qPDrneLu6qH3Y3316aHeaf++8G6l/lW0GtQoWCM5ke8QfIaDTuxF
+	ENHXOXJb57
+X-Google-Smtp-Source: AGHT+IEaiNWrbXUQR9Xr4SWeWCswjY7G2xsTNDPKS34qx+Z9cd/RVKqDItuoVsaN7WK8NMfB3mQH/w==
+X-Received: by 2002:a05:600c:3799:b0:477:a71c:d200 with SMTP id 5b1f17b1804b1-47be29e87c1mr231953365e9.11.1766837918587;
+        Sat, 27 Dec 2025 04:18:38 -0800 (PST)
 Received: from [127.0.0.1] ([2804:5078:811:d400:58f2:fc97:371f:2])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-121724cfdd0sm97940127c88.4.2025.12.27.04.19.06
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-121724cfdd0sm97940127c88.4.2025.12.27.04.18.29
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 27 Dec 2025 04:19:15 -0800 (PST)
+        Sat, 27 Dec 2025 04:18:38 -0800 (PST)
 From: Marcos Paulo de Souza <mpdesouza@suse.com>
-Date: Sat, 27 Dec 2025 09:16:23 -0300
-Subject: [PATCH 16/19] drivers: tty: serial: ma35d1_serial: Migrate to
+Date: Sat, 27 Dec 2025 09:16:19 -0300
+Subject: [PATCH 12/19] sparc: kernel: btext: Migrate to
  register_console_force helper
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -91,7 +91,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251227-printk-cleanup-part3-v1-16-21a291bcf197@suse.com>
+Message-Id: <20251227-printk-cleanup-part3-v1-12-21a291bcf197@suse.com>
 References: <20251227-printk-cleanup-part3-v1-0-21a291bcf197@suse.com>
 In-Reply-To: <20251227-printk-cleanup-part3-v1-0-21a291bcf197@suse.com>
 To: Richard Weinberger <richard@nod.at>, 
@@ -128,11 +128,11 @@ Cc: linux-um@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-fsdevel@vger.kernel.org, 
  Marcos Paulo de Souza <mpdesouza@suse.com>
 X-Mailer: b4 0.15-dev
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1766837798; l=1239;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1766837798; l=1119;
  i=mpdesouza@suse.com; s=20231031; h=from:subject:message-id;
- bh=jiVyzdGaYwwOjViBefbG/4tnbA+IZ6VTt4S6NyPkSWY=;
- b=Y3ytKQigesyzk6xu3oPXbBS5mHTUJ1mX1rT6WRhai16pDTDKrILE6MzhKcIyuYvYQYYU9QQLY
- +jUI84bHhmDDBPQbqZ6BL7ROSTnYW/5U7XoL9eZmy1wASQ14fgiWD4j
+ bh=rI7fN9M4UYBhm41SNkDmrXmROIuX+aCv9rIYYOtlo+M=;
+ b=bcNrmzf90N/BodrKZ64tr7qsRPh416urxDwc2BxCBqWgNmTslPpP/9rT1ZURe+mv3PmWaFnbq
+ xnM5PWTrVU8APb7FwkkZf2fGZ3Hw2PsJVWl1KwMiIyJjzl33goH6hX9
 X-Developer-Key: i=mpdesouza@suse.com; a=ed25519;
  pk=/Ni/TsKkr69EOmdZXkp1Q/BlzDonbOBRsfPa18ySIwU=
 
@@ -144,31 +144,31 @@ No functional changes.
 
 Signed-off-by: Marcos Paulo de Souza <mpdesouza@suse.com>
 ---
- drivers/tty/serial/ma35d1_serial.c | 4 ++--
+ arch/sparc/kernel/btext.c | 4 ++--
  1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/drivers/tty/serial/ma35d1_serial.c b/drivers/tty/serial/ma35d1_serial.c
-index 285b0fe41a86..d1e03dee5579 100644
---- a/drivers/tty/serial/ma35d1_serial.c
-+++ b/drivers/tty/serial/ma35d1_serial.c
-@@ -633,7 +633,7 @@ static struct console ma35d1serial_console = {
- 	.write   = ma35d1serial_console_write,
- 	.device  = uart_console_device,
- 	.setup   = ma35d1serial_console_setup,
--	.flags   = CON_PRINTBUFFER | CON_ENABLED,
-+	.flags   = CON_PRINTBUFFER,
- 	.index   = -1,
- 	.data    = &ma35d1serial_reg,
+diff --git a/arch/sparc/kernel/btext.c b/arch/sparc/kernel/btext.c
+index 2bf558a0c568..951de7733632 100644
+--- a/arch/sparc/kernel/btext.c
++++ b/arch/sparc/kernel/btext.c
+@@ -301,7 +301,7 @@ static void btext_console_write(struct console *con, const char *s,
+ static struct console btext_console = {
+ 	.name	= "btext",
+ 	.write	= btext_console_write,
+-	.flags	= CON_PRINTBUFFER | CON_ENABLED | CON_BOOT | CON_ANYTIME,
++	.flags	= CON_PRINTBUFFER | CON_BOOT | CON_ANYTIME,
+ 	.index	= 0,
  };
-@@ -657,7 +657,7 @@ static void ma35d1serial_console_init_port(void)
- static int __init ma35d1serial_console_init(void)
- {
- 	ma35d1serial_console_init_port();
--	register_console(&ma35d1serial_console);
-+	register_console_force(&ma35d1serial_console);
- 	return 0;
+ 
+@@ -320,7 +320,7 @@ int __init btext_find_display(void)
+ 	ret = btext_initialize(node);
+ 	if (!ret) {
+ 		btext_clearscreen();
+-		register_console(&btext_console);
++		register_console_force(&btext_console);
+ 	}
+ 	return ret;
  }
- console_initcall(ma35d1serial_console_init);
 
 -- 
 2.52.0
