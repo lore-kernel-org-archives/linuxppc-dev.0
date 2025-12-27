@@ -1,80 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-15033-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15034-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 49B86E9270E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Dec 2025 22:39:37 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DA578E9270E
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Dec 2025 22:39:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ddy8g4XXPz2yFd;
-	Sun, 28 Dec 2025 09:39:31 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.128.66
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766837964;
-	cv=none; b=hWCr6+XiF7GnHiDZI011nKGjpCOiSsYzlulbbDgGDca/Fq7qIEbBrzEdm32joHVx9o56C6GWYnMsRUiqgUzgR4s4CrACH6oAIXKz6XBq2gKQ7ovCdT4sJEim+yYFVsD79FZY3iibTsYbk2ANUBGEfW2a2KoJPNCbtQ7ROqhLPQDdqB4KY5BVROe5rkB+TG/RWJZGrc3Sz6xYN1fnY6vlFX4z5nGhLvQSys0FzaP1U6nXlUzHLf3XKBb5qq8P3lBEDIJ1SddFR8blfqr0hHBmnDmtO/EUFBo+j4S60nq/dhW8buzni9Rub0jROEAlZUhwD9bBp3JM9y90ZbKUbshNqQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ddy8j4PbRz2yFh;
+	Sun, 28 Dec 2025 09:39:33 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.128.54
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766838010;
+	cv=none; b=PJz+2HZDfUxmpX+1QlVaRheA+0BvLTOq/A3qO67JTMbQRnNBhFPv+tH2cAZo/7lZyC0QlYYWhjU06+189gujbhWYtoHfBKW+Fl+ANY6iLjQiq2w0Cqe3bZyS5uM1501a08DbTQGauLbzotKJi3t2xsUxh0kdifGgG3B1HTTpeVsz0NJb/OGWHC2y6ednAG2eJ2g+cV9l1uvf8LdquOXAbWOTTvQUcoqM9qvYn/yuPOqjPuDk/jLJWRg5a2PtY51ccqb1D49Br55yM0y2Q0omNOobovKvaHCAgWA3KRTO0Q6nZm/MzII30Rek17e60SlbZVuciGO6cGc2NvOuUeYRsA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766837964; c=relaxed/relaxed;
-	bh=oUj1yTYG2OsJA5NR0t10qcegAjlFezEaj2Q6zpglNnU=;
+	t=1766838010; c=relaxed/relaxed;
+	bh=Svns8VRTDcd692NVX/iQ+u99f8RURxgaz6jdCSTwtGo=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=IuIjk7gsFz6Vfw52Gs2m0tmrQrRnDpSVLyHQA88/MVT3BmHyk0koVXyVAgZzu+lmw6vmXvj/e7HPJokzBCY6CPAlRqN2AlgGfg39kv1Y7kNOuiveDPVRwl7aIB9ujqbMNyQEHzJXDCWI8a17QX388iSsoVlQVPpWrcZyQbXtQ1c83t1fUsQoEWbJyvxwH1uVCQD4wdAZCfsbD65iN9Ks0u7X3qQuQoiGlXtlVtUmpcl9H0TH+L+aGShlIuAa/C6hGcrzMvCTsB+qD62OxP9vZpBTEffqvPd4V+IZX4g4hSPO2WRezt53b8FOreIt+p7FQSyOwMacIBPCxSlj6BXaJw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=grUHxSjD; dkim-atps=neutral; spf=pass (client-ip=209.85.128.66; helo=mail-wm1-f66.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+	 In-Reply-To:To:Cc; b=BFdBLj06vAGQYtSUnV9UsD/golYLTCyh6HDhLgvPEI+qNba00pHVCyS41ebbY6icVOi/LZCY9mQqN6gENY9CZoqjea551E0MvNUvobO40MumNNp9G/d7PG7jEL544yPb3ZQJkDXFVSr//JBmGZRxZWI1SFxL23OStwgPiYcJtOm3AKCwfdZkYdYSGlI9mKOsoqb1/nSnrnuOVceQCqgWgwyyKmOxvayoZCdDG4TdAPwnHNGazC3NjRMrQ0/roE3RmABzSKUpA59fGt1hZEDgIM4lR5BdUtY99gjHhA7WwXD1GwTo9lVDc5Ng3CZTeyYSQUjLwgKdmHhjtWRqcoBbHg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=EuFF7qrd; dkim-atps=neutral; spf=pass (client-ip=209.85.128.54; helo=mail-wm1-f54.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=grUHxSjD;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=EuFF7qrd;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=209.85.128.66; helo=mail-wm1-f66.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-f66.google.com (mail-wm1-f66.google.com [209.85.128.66])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=209.85.128.54; helo=mail-wm1-f54.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-f54.google.com (mail-wm1-f54.google.com [209.85.128.54])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ddhP71nfqz2xQK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 23:19:23 +1100 (AEDT)
-Received: by mail-wm1-f66.google.com with SMTP id 5b1f17b1804b1-4779a4fc95aso42194345e9.1
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 04:19:23 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ddhQ11d99z2xQK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 23:20:09 +1100 (AEDT)
+Received: by mail-wm1-f54.google.com with SMTP id 5b1f17b1804b1-477a2ab455fso75774575e9.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 04:20:09 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1766837900; x=1767442700; darn=lists.ozlabs.org;
+        d=suse.com; s=google; t=1766837946; x=1767442746; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=oUj1yTYG2OsJA5NR0t10qcegAjlFezEaj2Q6zpglNnU=;
-        b=grUHxSjDbhoi1PRxc+VfiTbN3bN8cyzpVNUQSigRbsbOwja4fjrqvOd1zZMM+3BXln
-         Nis/FOV+XuKr8gf2BNWD/ZmmmoSxouUX4jNHoGnhkBRSktnV+X50RB/iTO5LhfVPURbL
-         JGQzUWR6Io+EjDRyVbkicL/RZswbUjrc53dQe3z4iRjwdZRd6JLqwCrmoujaCaAU6AbG
-         pNZd6CYac3XdKoxmgGnCr4L0DSuC5JHn+dVU2GDnzGXuW6J54Bqqbg/YoXe5vEcwjT4b
-         ax+PMN+LY56nSlweqaBXMQIqZkH5uJMXc3Sor+pxDIKa/D2FL/WajgS+vjRBdggkIkTJ
-         dsbw==
+        bh=Svns8VRTDcd692NVX/iQ+u99f8RURxgaz6jdCSTwtGo=;
+        b=EuFF7qrdifpXBrCKogzJ/JN1qoGuN+fQpROsGkN94UV+4XtbHlgJ3jtasrEQvQflid
+         DrVfHpXuMQCPpcFBUHYYw8jf0LGLrhu0RiddGtIJaIlJaMPd88P15w3EADB/zfNapPAO
+         e82YOQbospXKOhusbZKRga/CQZWSXysAyBwZ1Lx4XO3w0jj9qJZZ6iB7J286Cxb0s/CU
+         nvLncjcsRxxuDS5YKyIfydywlgKWoi9+JYzgYS99ozcycCDiEeFMCjwzzF5CaiuBXTuP
+         xwLB9wRRrB0HHSTjYuw6UF2RizF5ejTJf/gMT9Xk8qch8PPcWXcq1gs1rdNgBDy/SDpz
+         o7HA==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1766837900; x=1767442700;
+        d=1e100.net; s=20230601; t=1766837946; x=1767442746;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=oUj1yTYG2OsJA5NR0t10qcegAjlFezEaj2Q6zpglNnU=;
-        b=HtvHFn5vMyrzjs6FlSaoEFKMRldboEBMepdz26X80plvjgYlLR95WSG8xAEuTGoKil
-         qybBMp7iMO8WtJkf6XJV5dFMVqU+FAxRBZXCsNf3AawFbnWpBQRxdEum92U/Hiu8SwOI
-         A9koFz8y3aGcG1ub1o1YUqQa1++tOjzU3V+WaGpjtHBYXYnH1FL1+HByTymlCOeOVOxg
-         kJhRuhEj3NsJ4ah7eMv7zNoupnV3mlOrW+eMya9i35vvKxMVxZi8aBgqwx6hunoU+P/G
-         ql3e4nJmhR2tTmXHROn2Eika9rojLw5eAOkzXl3jqDxBPZVtJkCHj6dHpVRNcvKJH6gU
-         vQBQ==
-X-Forwarded-Encrypted: i=1; AJvYcCU5PvwaAw16nBBqxCIKk+G008v/zKOh62A8MyPwnXL08UlGCQzLZ3sGdloKXojCwL6vYyg59HoJFQNg1jY=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzOHx6bMFsuX44u8FFDluOgHDpzrDnOmSkxf+mDh1+TxaWkKo7d
-	pbqhUHtbjpdLAR/NEC+tNOZJl6cWt5SekB3I3Ekz0LkWhHDNIfFHyJEXPSpG8svcG2Q=
-X-Gm-Gg: AY/fxX5UDa8V/AUGFaEIubKCqe9hXlKq0/MDptfFTuIQXZPaqnHRJ2HriT/jEe/MN6l
-	xXG7cv/KWz+6tI4k2LnO/2hAfxGgzkV3kWQZcRPWS2dzlQxpffn5qmKbRNBIkTxldOJasX18Luw
-	AVbYrVQZzZYkGfRWh4xlJ7jjqfoaA80QBiiSIJ8EZz48OxPatUzUhy+SvnpaRLj7GKSAW8a6RVi
-	RkJJEkkrz87lKk7QdQYxRwn1ujZZG9UCnujQ96+eoE+7DpLctkZdUwsNdm8j5BZPqWyRu8X4eIc
-	iecYzRCcbA9E90jsQQEjMy2TlHUCjYiDqEdWwRwVk/qqjZE9PIS3KHwTj0CVi+KbfoGA5q7srm4
-	srf+sTwGhCf0hxhEK/1swM9Mv2bQJrjWLqcS0jLk+3LuEa7EoFdPLazzbeQm0EQCDowUKNNtAhJ
-	eRFtVp0VyF
-X-Google-Smtp-Source: AGHT+IFXI+q7UVcETj2xrgWEDOplaD2DQfL+z5FfnKK5mI2lAjBc9EF1caRTkYKVAlNOUIoqedA3Qg==
-X-Received: by 2002:a05:600c:4d98:b0:475:d7fd:5c59 with SMTP id 5b1f17b1804b1-47be29f362amr221645875e9.16.1766837900191;
-        Sat, 27 Dec 2025 04:18:20 -0800 (PST)
+        bh=Svns8VRTDcd692NVX/iQ+u99f8RURxgaz6jdCSTwtGo=;
+        b=XQEPoaRo3Pd9rxZnUeebH6X22hynFynqSONE3EmiVWZxw0HG1VgfindDllsez2K36k
+         gDaa6jiBm4zCgfkbJjjUabAIv/BhaywBhrk1R07Dked034NrDLqkRhFExzedpoeufcss
+         uwHLRbSdIQlbpV5VOPLN2JWYhGF+qdI+AVIA7QkngqXbiW53OmuNGloJ4l23f8kQRf4p
+         nZh5mj6p+sd0wJDnSXeJzfIX3NXPoXJR48YjSoqFMTXlAnoieV/NKHDmzO+gwtcfHID3
+         R6bBKu3LbRrqAX2t6jPt9H2ub3nbl4O6/ThLognV0O/7rM1QXHOoQEWHwmUAuX2VCdzd
+         DdOg==
+X-Forwarded-Encrypted: i=1; AJvYcCWARq3DdUy93JO10u/TM5Sh7h3BFAx+Z7YFhq0Ad0N8rm804ma+SxuzNp/a8PPyQh0s91rl9njO70+aboo=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwnMRuW38XVqiX1fvM05ELCDKIvlk36FgR9JeJ7GOj4J8lh95ef
+	6i9aFjgjj02bKrHfQT8l0aUJDZk9SYBzyL1+qdBG4gmzvm+1ynhW+5AQhTYnJpFmT9I=
+X-Gm-Gg: AY/fxX4gGkwqFn4wMO+n6gtW//kJpIr7TO/Rl9hwXfhJKJaSYSx6/lV7wZ+McrIKV5G
+	D9DHZEsmSmO5q1+0GiEecTq5dBcFAqAQkTnQe7TnOkM3wwSS6zsmnLPY0zTOHNvZEIQ7Yi4+GV+
+	UQeokeWM7pWCiaT+YIIWJGRYlKw09Tz4m4jM20Iywqzt4anzl3KYJthJVKko/XGxvPaWYWaGFQf
+	YhvFZf/wHGDEIXIk4mhfYtZdVLjnyDTeX9BSQ5CU1HLwGEjVD/9bNINRfvra/XVFNjqAiHvKxns
+	p5Cewq4F1jMiQl2kGdxmG9Vy9Jl/RrSc06YSZu0KKBaGa5KjXT6SMFZ/os3GUkD88bf9Le9N3JY
+	CWGygdc9Es0FcTTUAiKSSJNiyYJzm/B8j3zJ3UQEDQZEriWCuz2L7e7tq2HOHywWbqkUF6+QWqd
+	00LPtIWPOd
+X-Google-Smtp-Source: AGHT+IFQPHp9+ZXnfJ9gaFXvmbmtROboeRiL3XR0blYfmQMI8wXzbSWqjXdBS1sjkb/JteTKHl2ZOA==
+X-Received: by 2002:a05:600c:5303:b0:479:3a86:dc1a with SMTP id 5b1f17b1804b1-47d195c2d7fmr223567305e9.36.1766837946357;
+        Sat, 27 Dec 2025 04:19:06 -0800 (PST)
 Received: from [127.0.0.1] ([2804:5078:811:d400:58f2:fc97:371f:2])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-121724cfdd0sm97940127c88.4.2025.12.27.04.18.11
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-121724cfdd0sm97940127c88.4.2025.12.27.04.18.57
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 27 Dec 2025 04:18:19 -0800 (PST)
+        Sat, 27 Dec 2025 04:19:05 -0800 (PST)
 From: Marcos Paulo de Souza <mpdesouza@suse.com>
-Date: Sat, 27 Dec 2025 09:16:17 -0300
-Subject: [PATCH 10/19] fs: pstore: platform: Migrate to
+Date: Sat, 27 Dec 2025 09:16:22 -0300
+Subject: [PATCH 15/19] drivers: tty: serial: mux.c: Migrate to
  register_console_force helper
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
@@ -91,7 +91,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251227-printk-cleanup-part3-v1-10-21a291bcf197@suse.com>
+Message-Id: <20251227-printk-cleanup-part3-v1-15-21a291bcf197@suse.com>
 References: <20251227-printk-cleanup-part3-v1-0-21a291bcf197@suse.com>
 In-Reply-To: <20251227-printk-cleanup-part3-v1-0-21a291bcf197@suse.com>
 To: Richard Weinberger <richard@nod.at>, 
@@ -128,11 +128,11 @@ Cc: linux-um@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-fsdevel@vger.kernel.org, 
  Marcos Paulo de Souza <mpdesouza@suse.com>
 X-Mailer: b4 0.15-dev
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1766837798; l=1079;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1766837798; l=1068;
  i=mpdesouza@suse.com; s=20231031; h=from:subject:message-id;
- bh=3dvgtN1V/Te+qiB9DfrS6Ouyxfyny3L7qK8ewpooDVE=;
- b=vEVEr1V/PLyTXU5DKxPct4kmpsEX80YaTpb8m+k5Ll/RykRPcPf3SC/5piYXBTRWgZnh2jkWP
- FQP0jQiJpLBB9Qo/wJGJV1aoieFgYcnUso9xzkOCnscVwaYm3IY9A0b
+ bh=8apb8xIF3Rmf3METSNa3/bIFoDSqesuSeq+cEdBJRMg=;
+ b=SOQn5veC0enOSDBgUA8xgjFU36YeIU5ltm01mWbteI/FsjC7wSIvDCGkCl9Jt9bptuqtwUiUT
+ XJt5OJVOiy0DmhgN+BFidqaWmVu/I5CuRGxAmhAzWOivaZFVrPO2ZNN
 X-Developer-Key: i=mpdesouza@suse.com; a=ed25519;
  pk=/Ni/TsKkr69EOmdZXkp1Q/BlzDonbOBRsfPa18ySIwU=
 
@@ -144,27 +144,31 @@ No functional changes.
 
 Signed-off-by: Marcos Paulo de Souza <mpdesouza@suse.com>
 ---
- fs/pstore/platform.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/tty/serial/mux.c | 4 ++--
+ 1 file changed, 2 insertions(+), 2 deletions(-)
 
-diff --git a/fs/pstore/platform.c b/fs/pstore/platform.c
-index f8b9c9c73997..9d42c0f2de9e 100644
---- a/fs/pstore/platform.c
-+++ b/fs/pstore/platform.c
-@@ -418,10 +418,10 @@ static void pstore_register_console(void)
- 		sizeof(pstore_console.name));
- 	/*
- 	 * Always initialize flags here since prior unregister_console()
--	 * calls may have changed settings (specifically CON_ENABLED).
-+	 * calls may have changed settings.
- 	 */
--	pstore_console.flags = CON_PRINTBUFFER | CON_ENABLED | CON_ANYTIME;
--	register_console(&pstore_console);
-+	pstore_console.flags = CON_PRINTBUFFER | CON_ANYTIME;
-+	register_console_force(&pstore_console);
- }
+diff --git a/drivers/tty/serial/mux.c b/drivers/tty/serial/mux.c
+index b417faead20f..5a2d706b9cbc 100644
+--- a/drivers/tty/serial/mux.c
++++ b/drivers/tty/serial/mux.c
+@@ -390,7 +390,7 @@ static struct console mux_console = {
+ 	.write =	mux_console_write,
+ 	.device =	uart_console_device,
+ 	.setup =	mux_console_setup,
+-	.flags =	CON_ENABLED | CON_PRINTBUFFER,
++	.flags =	CON_PRINTBUFFER,
+ 	.index =	0,
+ 	.data =		&mux_driver,
+ };
+@@ -547,7 +547,7 @@ static int __init mux_init(void)
+ 		mod_timer(&mux_timer, jiffies + MUX_POLL_DELAY);
  
- static void pstore_unregister_console(void)
+ #ifdef CONFIG_SERIAL_MUX_CONSOLE
+-	        register_console(&mux_console);
++		register_console_force(&mux_console);
+ #endif
+ 	}
+ 
 
 -- 
 2.52.0
