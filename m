@@ -1,81 +1,80 @@
-Return-Path: <linuxppc-dev+bounces-15028-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15029-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8B103E92720
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Dec 2025 22:38:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7714E92720
+	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Dec 2025 22:39:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ddy7t2jmhz2yGl;
-	Sun, 28 Dec 2025 09:38:50 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.128.51
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766837945;
-	cv=none; b=awK5nYz4jlKUWWa4WhymiIvzhdCjOnBwKLDk57JdYj4xeFYea7Prx69BH+lCd0YTT86V1csdgQeqFVHBwotCV+a3pxJ7DEwLonDgMXsqvhoECCOnlcjniY0lDA/cwfrmSNtWynUQXw9z5jn8g8O5Y95VI61oIdv4K0/XMyHDTxaef9Tzjppeq/wfbqSQbb8TH8u1AxGd2RbG6wlOV4zqaYKfMGp0H0COhxXI1c1JV2qVtYBX1IganLg5T9/MaBUiyMPllyAqWO8TANUn8Pzsd8XtScdcb+MwoSEWZcIJ4Hdspsv0tpM3m9fLsKscd7PR8+QuKa6Y/PJyuZiwcn0K6Q==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4ddy823X49z2yFp;
+	Sun, 28 Dec 2025 09:38:58 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.128.49
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766837917;
+	cv=none; b=hHr0I0hBjSM4/l0gr6L4PT0Z9WWQX18pN3PpNfprmy6IU99Y9+kvFqz2HHXPZE36DoSHTG70abt81J/66rHuZeUFP6JdrYDbnOuYcOASsgHgMUKRDaBdIu4g8vFkiPy9/WaAJqOiQGmnnU3lKVIgjlUPBSUYaq1G9v5e8dGbISjbf/ERaJBw0t4ei0GfV5sxJiga97GzBmrBWNLTOW4hT6/zlAuybaTgIt66dBLMoOx/CiJddX9PzfZTdVbmGoiPYOmQlcOfLJBYtRVLnvK4pOL4xfKnXqpoqDkbPGnO8uo0oqUyDLe9MfvKXpD4Wg/GrPQCj/5cBPnMuEyRHhZ7Iw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766837945; c=relaxed/relaxed;
-	bh=YPj481dav1h3nWeyVMYXYXTPRZgLS1US6KZdyNyRyzc=;
+	t=1766837917; c=relaxed/relaxed;
+	bh=GvSE1c/4a8QCKCTV5gdf1mCLxf9YZVQyxdWd8z10SmE=;
 	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=SZloltyElUsnfh5K5S6oYKRxnw0Ogj0Pf6+gUfd3XAVp4N1E2p4GbKBef9ClQTEO/rLaZuuavDBRshcer36WAE8B/375qvfVVFjx/MnjqMj0DTJb0iK9Slw/dCCHlGyu8/nq1wHvKlOcJdhnNuPjD9kBNJ6jEUICKT6hQ9i1yENUFFzYe+y2/UPE+HRJSlfEpcAyyrNLRF0iCuBswQNnVxhSBrpCtnn1/yE7hfqqNPSQlMWUdbu7xJsUtMB/QijfhJxW2xVyID65qpod35uSirxNfb88nWxFYKk2J9cHxRMN52SI6/VXtay0N6Pz+pjOrGeLRfVvC4y0SivYD3w9jQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Q5TEPpCZ; dkim-atps=neutral; spf=pass (client-ip=209.85.128.51; helo=mail-wm1-f51.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
+	 In-Reply-To:To:Cc; b=K020uy/+sewBJQBodq9vREEBG95AMyGsC6YjIrv8rhwdWDrtx39/f9UxQFBQuh3ddEJy7HQa7agoANb1f3dDLVZ25hgLldZ71lYtnASBVqFvv15RSbQt4Ohe9WE9Llqqy1y57Vt5BnCs0pp64abfOHqsfE25yUUlt2Z+bf1izGl8JBtDziLmxG6dpq0AP+hOA5vqPrE7Hkw9G5/3hUdr59Z9lpeJRi67RBgfXeuyi/V5knoroo1i0NR7eQxfpQrNEXFmOgo4tGS3h5Kk5QdKIWIlS4l1ptVxNnfbVToL+FQOGBGk4SVGKUtL++mKQ35a4lmJGoAqZ9Q0koeHa3oG2A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=PHxPUCOt; dkim-atps=neutral; spf=pass (client-ip=209.85.128.49; helo=mail-wm1-f49.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=Q5TEPpCZ;
+	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=PHxPUCOt;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=209.85.128.51; helo=mail-wm1-f51.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-f51.google.com (mail-wm1-f51.google.com [209.85.128.51])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=209.85.128.49; helo=mail-wm1-f49.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org)
+Received: from mail-wm1-f49.google.com (mail-wm1-f49.google.com [209.85.128.49])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ddhNm5qT6z2xQK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 23:19:04 +1100 (AEDT)
-Received: by mail-wm1-f51.google.com with SMTP id 5b1f17b1804b1-477bf34f5f5so57868795e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 04:19:04 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4ddhND1hYCz2xQK
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 23:18:36 +1100 (AEDT)
+Received: by mail-wm1-f49.google.com with SMTP id 5b1f17b1804b1-477a2ab455fso75769015e9.3
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 04:18:36 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1766837882; x=1767442682; darn=lists.ozlabs.org;
+        d=suse.com; s=google; t=1766837853; x=1767442653; darn=lists.ozlabs.org;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:from:to:cc:subject:date:message-id
          :reply-to;
-        bh=YPj481dav1h3nWeyVMYXYXTPRZgLS1US6KZdyNyRyzc=;
-        b=Q5TEPpCZtf9/x819/1w6SnibeQd7bNzxVBPqIvPf3R+yAMMjbEK1IrCbFwbiolvIjQ
-         58CSNih82hc3KqFq+XCRuONwFt2as6bsbNxLrH88avhg3AB8T3MJncA2awit7VtD9ulT
-         opwFgvqDbWcN91IaUNlKopRljd7zqz0pVHrINTGgOzA90Yz6VNtPu9ARgnA7BxUexILn
-         Gik8I8FavJ6QHOYhgdyaXwuEqUfT66qHWYaxZFClZWv0IqKH8pghXH423gmFInNPlcIV
-         Zsv49jDMmVN6TetOoPMnu9KP0uUURK6Ah/eztEcW7io/hPC33QxZs5IJWE5qK8/n/uBs
-         3qiQ==
+        bh=GvSE1c/4a8QCKCTV5gdf1mCLxf9YZVQyxdWd8z10SmE=;
+        b=PHxPUCOt8AapTS1UwyN/zUJQF7QgySfJapas8OejnSHDWrJVH+/2mAbUT1uOetjWS7
+         QV8rNFwluEVzSpeTxwBN49UMxPKdToxftQ+HGBUKacV6rx/zCcZDvfnNSUQmfS+FcPVJ
+         Ie8UQTxWAizNn2AXa/gQW9eUSFX2Y4pfU+3hIR7NNFfiEslAedyIigGbjD5hewMG1zeO
+         GhN048ZGZ6h/pCXcpbp/4f/df7AsQN3Q6JKt0u5x0fUvd9HngMlP57OPL1oAf11q3Vpj
+         zlTF+hM8aCF8YHIFrsPsG5R2tfi9Znfgv3kRbGdNRhFTHQpzH1tf2sEbB+qEfv5HJOLd
+         NU7Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1766837882; x=1767442682;
+        d=1e100.net; s=20230601; t=1766837853; x=1767442653;
         h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
          :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
          :cc:subject:date:message-id:reply-to;
-        bh=YPj481dav1h3nWeyVMYXYXTPRZgLS1US6KZdyNyRyzc=;
-        b=feDBixdoeGWYnGjSGTIWmsesla4oB8O5Tv4jZLWNX8c/4XpdhrAZOWwBzBn7AFZIur
-         PFc5HRSvuwiTChVBh+psH40GFC+b5TztZcBggCx/qhxTwsUqZ0qzKmJyOdReRgiwAmLZ
-         tGLK7W5L3G3dtQ88sEGDtpfNXy8cIZOFaSej5vypwXv0WrWTPxo6oX21gasApVOkX1N1
-         +dcM/wcDf/GUns3bD6Ku9FiMwAAmMvGRtZLiEEY3YC0X7Y7cmZIyWOIqorxR0qpzrpNS
-         oucWPtZul2Nls288JHo0WDJg0ca51xsF5oPH6hI5IiVVufVbxx+stwOZE8ngdNSvbEA5
-         q8mw==
-X-Forwarded-Encrypted: i=1; AJvYcCVQjsF0Fb7KlP6FRkkOFK52Dy1MH2DxmIGYJhXXP0A/D/lHXLqcu1gzc/b3ZxRvj+mn/eNdccCIzUB7icA=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YyydUgR9bDUgTpTiiBhopFZM4urNygUTji6F9PGv5hMqtwawkj/
-	YKpuOIY1VroJwjtnOoZY5lXOrEULn3EWwR5i0VvBTNYBuLw9ml2eARcC9fztOioMvLY=
-X-Gm-Gg: AY/fxX5gyJoc4C6eS1ZssP0haGX8uZCR+zEazjAkkYPKq3UYCwf0LHrTWr8Z270deCo
-	mefj0hZNdL+Pt1A30qr8IlQcv1awI8axzckDiqHxULt2dOSaUgWiO2SACfBeI9xwNNQiwFniwbx
-	+oMBa+4ld/uwEbq1O5HY9AGKyWe9yzZWGCbDrRV1QFo+nzxqwkLkoQSWu0BOgc4xRj46kF8zi4d
-	Quz/i8z1qF6cRz/bZpXh+A07Swcuxhps+1yj2O1QfOnnTKNjE/scW3C07PwQRbvoAJwCG2kQUxY
-	bbnO1Zv4Rxrm4YsMfcqAAIoEG2TVqC1oahfvZahyw6C4z9uLDlXcKypvQ3GecULuVLsYQfmM9xI
-	CKJqILWEZm5sG8SVsKX6YFSfHuW+Sd53XUqFMJMyXanw4/Rm6KStM0JS4EhRamrvV76thd2TCPW
-	LGZSPYcuJA
-X-Google-Smtp-Source: AGHT+IG0mR7FQaw+l23lNeDI3HZ2oGPwNQnJRaTrq28MQwyhH5VRn+b1LrDgTvBXBb163N6NepB/tA==
-X-Received: by 2002:a05:600c:198b:b0:477:9fcf:3fe3 with SMTP id 5b1f17b1804b1-47d1df12f84mr272520785e9.0.1766837881680;
-        Sat, 27 Dec 2025 04:18:01 -0800 (PST)
+        bh=GvSE1c/4a8QCKCTV5gdf1mCLxf9YZVQyxdWd8z10SmE=;
+        b=FTTQXiyWMm/2tTL4nbtKd5rDE+MjZpzKsl+r+g2ruRCsJgVduSWbUPTz9WBP22sN7f
+         lbq6Qu/BHvpOgTHNMUbAS5wQTgxfk2nwxbBnmYZ4ILh/VLwRqgafuiuLA3vQAafmXLwv
+         vkvzfomkvRuKU9tvf/T1opqfiuHjQyROTGGHYpFR/BWnsLfdPOhJR64sQ2YHs4/L2Lwo
+         eDUJQBsl2fsUFTzbYokkuSMoUDNwCqGywOzrgPc01rAQlgHJc9wKEWAlr+h2h6QAYvSS
+         Fl64L//xAICWZC2NnF2IokJwD/dlcY1xNGeMacWDDop2XVFYHb4l27caY+HagRsCq+WV
+         GBQQ==
+X-Forwarded-Encrypted: i=1; AJvYcCW03n0YY/Jgx0gaa9o9Umdv5tfPW4cPV88IPmjC+6ohHbKcnViYmG/30HX4GUXE8Q3XfCthRuA8Rulcl2g=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YyLqmln72xqTBySUgKeMn5/Rjz263DM0Lvnk7MumszUF3qdHazj
+	Z2Q9iYn9IA67ed0bzOTjwBLNdw2W0Y3O2ui6PTfhGQUKSUGZiHVRlfeiqakIwK266OU=
+X-Gm-Gg: AY/fxX676OFmObMXWFv7TU66nVESCEJwwWlFTXe2CIcT4ugcbjLDohAJzbIsRAy3hkP
+	n+Xx2vxDIaPC6X531sq+p7r/bva1W/Lb7bJx9AKvNQKBO/otmv3uDIjkf1/Nga8gdPHdVWeWU8R
+	K3gQ2+phDnoIZwHEXeDpG6JG4VmTYSR5e9AQKI4iWVkren55gjSXpRbc8fbZLupwczKnwLFEyNq
+	SqF7L1J409qvbeuqk3vjd++VrbjZTorOuydQ/J4OLLERrij2CPM5udrcc572CI94mmKvQ9SpyAL
+	H+oVTDMBQArZEZL4a6yecQz+SfqodSsU4uCQi6agxPCm33NW3mGTVwklb0EfkkyE667l800pyhN
+	KA0gzBJ/5lPWJlLQcHN9xy6WYXwEwcZksZEM5pQDsDw2LyCGkASrwbBIwqkWUIyZdkg2wn8ZOZa
+	sOzX9EABm0u8mrI0mGKKY=
+X-Google-Smtp-Source: AGHT+IFc0PxKRmRSwma+5BK2z0BfbuhbWCK5ZAQiNCh/fQVQ/f+EcwX2yper4KDcLK2LLWDZAwXkgQ==
+X-Received: by 2002:a05:600c:620c:b0:475:dde5:d91b with SMTP id 5b1f17b1804b1-47d3639489cmr187665015e9.17.1766837853435;
+        Sat, 27 Dec 2025 04:17:33 -0800 (PST)
 Received: from [127.0.0.1] ([2804:5078:811:d400:58f2:fc97:371f:2])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-121724cfdd0sm97940127c88.4.2025.12.27.04.17.52
+        by smtp.gmail.com with ESMTPSA id a92af1059eb24-121724cfdd0sm97940127c88.4.2025.12.27.04.17.24
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 27 Dec 2025 04:18:00 -0800 (PST)
+        Sat, 27 Dec 2025 04:17:32 -0800 (PST)
 From: Marcos Paulo de Souza <mpdesouza@suse.com>
-Date: Sat, 27 Dec 2025 09:16:15 -0300
-Subject: [PATCH 08/19] debug: debug_core: Migrate to register_console_force
- helper
+Date: Sat, 27 Dec 2025 09:16:12 -0300
+Subject: [PATCH 05/19] printk: Add more context to suspend/resume functions
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -91,7 +90,7 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 7bit
-Message-Id: <20251227-printk-cleanup-part3-v1-8-21a291bcf197@suse.com>
+Message-Id: <20251227-printk-cleanup-part3-v1-5-21a291bcf197@suse.com>
 References: <20251227-printk-cleanup-part3-v1-0-21a291bcf197@suse.com>
 In-Reply-To: <20251227-printk-cleanup-part3-v1-0-21a291bcf197@suse.com>
 To: Richard Weinberger <richard@nod.at>, 
@@ -128,56 +127,66 @@ Cc: linux-um@lists.infradead.org, linux-kernel@vger.kernel.org,
  linux-arm-kernel@lists.infradead.org, linux-fsdevel@vger.kernel.org, 
  Marcos Paulo de Souza <mpdesouza@suse.com>
 X-Mailer: b4 0.15-dev
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1766837798; l=1369;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1766837798; l=1815;
  i=mpdesouza@suse.com; s=20231031; h=from:subject:message-id;
- bh=i+edMET6/ej5N2K5avM5O831EcMojt2VSHcuUrQdfTw=;
- b=frjUdDlkDnmz9ghHbQI85g3SWQC6r698VmLv/vY5BaR0ZhD0fZI/A4RKNedga5QpYNhkZRCmF
- 1wOfSuqi/z5ASQwxAphrFcarhmThsZ8zA4jjeiyha2OJh22t8WzJ4PJ
+ bh=ZR0iR9pvZGcVZSHwNZDrCThadrViJMyV5/bfGtiN4gw=;
+ b=tA7/rFTFgz8i0hdAJ53eXVaQiZ32fF9Si88T8AKGgxMwsJDyXHg4gS+HXEQzjoX95zhxiaqSG
+ v/P+ZTpJjf2DQdqlDkpPXA8mgBEajKQf1Xila0zWamPBwICGf70zjAA
 X-Developer-Key: i=mpdesouza@suse.com; a=ed25519;
  pk=/Ni/TsKkr69EOmdZXkp1Q/BlzDonbOBRsfPa18ySIwU=
 
-The register_console_force function was introduced to register consoles
-even on the presence of default consoles, replacing the CON_ENABLE flag
-that was forcing the same behavior.
-
-No functional changes.
+The new comments clarifies from where the functions are supposed to be
+called.
 
 Signed-off-by: Marcos Paulo de Souza <mpdesouza@suse.com>
 ---
- kernel/debug/debug_core.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ kernel/printk/printk.c | 12 ++++++++++--
+ 1 file changed, 10 insertions(+), 2 deletions(-)
 
-diff --git a/kernel/debug/debug_core.c b/kernel/debug/debug_core.c
-index 0b9495187fba..4bf736e5a059 100644
---- a/kernel/debug/debug_core.c
-+++ b/kernel/debug/debug_core.c
-@@ -941,7 +941,7 @@ static void kgdb_console_write(struct console *co, const char *s,
- static struct console kgdbcons = {
- 	.name		= "kgdb",
- 	.write		= kgdb_console_write,
--	.flags		= CON_PRINTBUFFER | CON_ENABLED,
-+	.flags		= CON_PRINTBUFFER,
- 	.index		= -1,
- };
+diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
+index 173c14e08afe..85a8b6521d9e 100644
+--- a/kernel/printk/printk.c
++++ b/kernel/printk/printk.c
+@@ -2734,7 +2734,8 @@ MODULE_PARM_DESC(console_no_auto_verbose, "Disable console loglevel raise to hig
+ /**
+  * console_suspend_all - suspend the console subsystem
+  *
+- * This disables printk() while we go into suspend states
++ * This disables printk() while we go into suspend states. Called by the power
++ * management subsystem.
+  */
+ void console_suspend_all(void)
+ {
+@@ -2766,6 +2767,12 @@ void console_suspend_all(void)
+ 	synchronize_srcu(&console_srcu);
+ }
  
-@@ -950,7 +950,7 @@ static int __init opt_kgdb_con(char *str)
- 	kgdb_use_con = 1;
++/**
++ * console_resume_all - resume the console subsystem
++ *
++ * This resumes printk() when the system is being restored. Called by the power
++ * management subsystem.
++ */
+ void console_resume_all(void)
+ {
+ 	struct console_flush_type ft;
+@@ -3553,7 +3560,7 @@ struct tty_driver *console_device(int *index)
+ /*
+  * Prevent further output on the passed console device so that (for example)
+  * serial drivers can suspend console output before suspending a port, and can
+- * re-enable output afterwards.
++ * re-enable output afterwards. Called by console drivers.
+  */
+ void console_suspend(struct console *console)
+ {
+@@ -3572,6 +3579,7 @@ void console_suspend(struct console *console)
+ }
+ EXPORT_SYMBOL(console_suspend);
  
- 	if (kgdb_io_module_registered && !kgdb_con_registered) {
--		register_console(&kgdbcons);
-+		register_console_force(&kgdbcons);
- 		kgdb_con_registered = 1;
- 	}
- 
-@@ -1071,7 +1071,7 @@ static void kgdb_register_callbacks(void)
- 		register_sysrq_key('g', &sysrq_dbg_op);
- #endif
- 		if (kgdb_use_con && !kgdb_con_registered) {
--			register_console(&kgdbcons);
-+			register_console_force(&kgdbcons);
- 			kgdb_con_registered = 1;
- 		}
- 	}
++/* Resumes printing on the passed console device. Called by console drivers. */
+ void console_resume(struct console *console)
+ {
+ 	struct console_flush_type ft;
 
 -- 
 2.52.0
