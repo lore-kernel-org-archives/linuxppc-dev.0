@@ -1,80 +1,77 @@
-Return-Path: <linuxppc-dev+bounces-15041-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15042-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4CFACE9270E
-	for <linuxppc-dev@archiver.kernel.org>; Sat, 27 Dec 2025 22:40:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 107A3E92722
+	for <linuxppc-dev@archiver.kernel.org>; Sun, 28 Dec 2025 03:13:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4ddy9w3hzbz2yGL;
-	Sun, 28 Dec 2025 09:40:36 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.128.41
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766838047;
-	cv=none; b=L86p1qkRN+X95m/ggT3WQv+kh89KpXgmICmKg3SbNcJk6XGthosJhZvkfj18ylhiygJ94mzvyN5YBNBaIVCuOzLmAoRGR1nB3lGaszUuoW6dWo5fA6IFVR/pGLNonCPUySI+HJMeDzgmskqtjiAiJi/XbbO+UEYKecns61S4AmXZzpHcXcLRabkYdV3Ghl26xoI3SpN3Fs5MqAQraRsx++9R6FdWtbiCH6lBm5oS6PZBJ6O0QcJkxwKGsmKKmiFIYSqlAA5XXwPkidzu5BTHX8iigVVMkzdmfHHjjK6j2C2NN/Z3s/a1KXnI3DaPkXZ3rEBEoByAkcYUb0U4Nx+qnQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4df4F31bR7z2yDk;
+	Sun, 28 Dec 2025 14:13:43 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766891623;
+	cv=none; b=EOm5Lz6zr3bT3M22WURr4vlXS3CET4D8jfRw3H9/ewP/BECf1ubbvX2M4ibkDs6vPCn6GCMo9n0JVfLhpE/CzpLAAuVgP5MCbkY9BbQ9NygpPL+7ghSqkSYqnV8fyfqqlbucmJkueprhEriXyV0KkRBU1KF3ZW3APeF48EMBq+pryk3R6bABToDo0+fBUdWU4hqjHM6fpWXL9DjzEYPbvbTOSEdhzJqMCwAuFl6XixiDySZuRedb+oBmUBzsOGGpKmfZYMssUDxoxAn4ozvrruMmLom61fGBfTgMM9jTUSbTkTnyZQqo+el2PIHOcUTVkdFygOyR6F4cY75vfQU9Xw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766838047; c=relaxed/relaxed;
-	bh=xV/54pzRS8Etay7a+DmZn75b0ho6rdI/NPswC/OMCoI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=M0Zl5PpQ5HghTIDUNAjbE8Rm473lV/SvBytAm+FVcj79cQrhgmrCzrzerkIgeLEjSA1dlPNHKzVpn2Zz9e0gAN7ftXK5Xq0bOIMPmUXF0RIgdcduaY5gbEp1b+EhwXAv6VkoqO6XHjRCldW+fhSjMi5nZVZaXTo6c3YGxUIPN3Q1NUZ6j/1/fpq56kBlSCsJ584XiZOyBqGlYv8iVX+ytjFsFIixckJH7chfdWDcHuMJDxAPx7rF9bZ51dR7EBSxADbzbiafNqxtJm2W/oO6CePqIsGJXnZJ4qq14KRwelssKMmbSxZyVBOZM8y7PUU9b7cfd2qc9RnSmsJeiSm9YQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com; dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=MXXxZXLb; dkim-atps=neutral; spf=pass (client-ip=209.85.128.41; helo=mail-wm1-f41.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org) smtp.mailfrom=suse.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=suse.com
+	t=1766891623; c=relaxed/relaxed;
+	bh=bTCkb7KATtlowPKZP21aQrEHLXo95miDY2Ls6w/uqzY=;
+	h=Message-ID:Date:MIME-Version:To:Cc:From:Subject:Content-Type; b=I+qjGbQenQ6Pzr0LRtx3Nsa4J/q4p/BjUKjQf66xjUIBwlsXqaQ/E+gDifb+0n+jiJsVucddNurWRZWwNdD+y8UPqd7Lr3gGQr24pYIVJ9vzmT/GRxCmUjAtFsrff6Z7iJ2GHpctQuZ6WjZwXXX4awAAsl5t2PlyPLFrmxzoj2EqRXIW4xvfqb9LcntvoGh0wxyxzXX/DxOp2BW76oXsjhg3b12/aZzSaDL/Nhs9RK+NTOPvKjJHqsZ8IZYUMgNEK9IzjgFyY5zAt4km0fSapFVbIvHqnJL0HXoAA2+kVB3wrO/qPOnco2wgnAAOEbfnyUmZ5QNKa5DxhX7bPGKNXg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lnI4WHMm; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=suse.com header.i=@suse.com header.a=rsa-sha256 header.s=google header.b=MXXxZXLb;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=lnI4WHMm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=suse.com (client-ip=209.85.128.41; helo=mail-wm1-f41.google.com; envelope-from=mpdesouza@suse.com; receiver=lists.ozlabs.org)
-Received: from mail-wm1-f41.google.com (mail-wm1-f41.google.com [209.85.128.41])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4ddhQk1flZz2xQK
-	for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 23:20:46 +1100 (AEDT)
-Received: by mail-wm1-f41.google.com with SMTP id 5b1f17b1804b1-47775fb6cb4so46309405e9.0
-        for <linuxppc-dev@lists.ozlabs.org>; Sat, 27 Dec 2025 04:20:45 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=suse.com; s=google; t=1766837983; x=1767442783; darn=lists.ozlabs.org;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=xV/54pzRS8Etay7a+DmZn75b0ho6rdI/NPswC/OMCoI=;
-        b=MXXxZXLbvyCxe4TRBWJoqImMM92D+3QSd69z5j+wbutkZea4b5BoUfPv2ZyAZclMOL
-         UYOZgNSbBRfGFQ/WbMICUrS0Ek72dYix+Wm1N3flQR0eq1XXD0O/C6gXzhelgACzkKkS
-         WHRffo9RmsqVxlmtsD+toB8b+FpW39Ag4b2zu700Pm+HPOu4ESbWmENgHeAipqaglCpT
-         F6VSlvAPgPwxMqSXkZU5xzOquLrSb3kdoLm3a4y09N/Rr3siL13k6jVJbXjnAiSnL9oF
-         16uxrsbJnpFhfwbHaSzWU9czSaRoyzJBXEPwHqGSu4g/DTK6c7fMcRSoBHdgloS7xFun
-         rMDw==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1766837983; x=1767442783;
-        h=cc:to:in-reply-to:references:message-id:content-transfer-encoding
-         :mime-version:subject:date:from:x-gm-gg:x-gm-message-state:from:to
-         :cc:subject:date:message-id:reply-to;
-        bh=xV/54pzRS8Etay7a+DmZn75b0ho6rdI/NPswC/OMCoI=;
-        b=JkxiIdWR7YCTysu6pgTLXC/hkXBY3nXtOkCM0fHsyd2Y2XwtAR28sWhG4Su3MTdILo
-         L4eib47jkJ7RHbZnxs78sltN1d5/4q39nasJ4UkYej62Bhz816y1IzMNtGNfYaG30R6N
-         FV6Z282ykNMikEQlcq+oGaqJCKPFiVW4uEtXqgowR6ZQJF31B0z/clG/TwI1LFl81Bbf
-         akCacq2zALgWWAz0+2hZMFDb68YUjZsEVwVYNLbj9kRkxt5rrK31PrAIP8j1utIC5Nze
-         5vv4S+YXk58vh3hvyPZPw/XM32CLyXXkOIqmWhax9HY81lTmdelxfc7Wf8pr2Af3nq+A
-         nU9w==
-X-Forwarded-Encrypted: i=1; AJvYcCXgPN63JEfg0XMpJ+5a2d4LoO2EJNJFRS1E3CQ2do3RZ7cIvYKZR+2D/51lGbdznqqR5AdeUTJraQE3E9A=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YxfKMej78dAO1ikxhCeDFaXoza5CLN2MSETaCjp52vzpRMnE5ZP
-	zNukbnCuJPyY/GYScH2mgh5KMoYyY2FlMqdQGVCuqGYn50QcIZ3CJoMKn2PvnK96uJ0=
-X-Gm-Gg: AY/fxX7uS5c+DMta3ZmwnvqwuY5MKhQ5P43hqxYonVVVKChO3eWsAv2rXQvVTqTqiEk
-	igFDOq9LOW3amaiCS9zTVpxspJHsU2oPwdsxHZxRRT9eWOB70LFo+Cs0yUGqYLjgUko6wmziXzj
-	zjg61zTQi1uZOH4EUW1jk4YApXEFDSi/mL3O33c3lNFOREcsMZMEkgLuoEEgFjzYhraLrGHGHZF
-	YOeXASzwmye9dlLY/1Hu35oFQUvzY/5sGYfznTpCkJpMXnvvfjX9NrEeJQ9ubCEqv6hbUusD210
-	QUHnNh7jcrbp+Wz8MtKDyLKpTZU9Euu017BWNVPmyfvMelzJzmZ4Watdcp/2J1p8bblGfzO7RF+
-	S/fHwvYe9L8pggepbTdn2znc1fh+cXkRWDGnz/GT+5PBH/SVuPv0CNHU5e/M5l7n6PLtT1XUCV5
-	LDof0joz3voyc+5nc0cVE=
-X-Google-Smtp-Source: AGHT+IH8iMWTGKOo0ODMODi1rEzmJGgWpFcndwFU+BLf6Q6Oiy3SLl7fhkZeY72om2wNWMGGrFeTWQ==
-X-Received: by 2002:a05:600d:8:b0:477:5897:a0c4 with SMTP id 5b1f17b1804b1-47d1c13fcfdmr225764485e9.4.1766837983269;
-        Sat, 27 Dec 2025 04:19:43 -0800 (PST)
-Received: from [127.0.0.1] ([2804:5078:811:d400:58f2:fc97:371f:2])
-        by smtp.gmail.com with ESMTPSA id a92af1059eb24-121724cfdd0sm97940127c88.4.2025.12.27.04.19.34
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Sat, 27 Dec 2025 04:19:42 -0800 (PST)
-From: Marcos Paulo de Souza <mpdesouza@suse.com>
-Date: Sat, 27 Dec 2025 09:16:26 -0300
-Subject: [PATCH 19/19] printk: Remove CON_ENABLED flag
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4df4F163R6z2yD4
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 28 Dec 2025 14:13:41 +1100 (AEDT)
+Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5BS0rkE6008354;
+	Sun, 28 Dec 2025 03:13:17 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:message-id
+	:mime-version:subject:to; s=pp1; bh=bTCkb7KATtlowPKZP21aQrEHLXo9
+	5miDY2Ls6w/uqzY=; b=lnI4WHMmfTRGzY/CwJXArCooFdPui+e2uLlvYQx0LW8Y
+	kx/oNQ+THymKfede7xMvBpel08xE7VKfadv1qS1/KCrUiHMxsEAAq6scjCxW7u/K
+	cNtjznoNa3dB2STHeomaS8SM7SwQnbrMCAnZKAJV4+7RlGTI338goOzfv+pmURoi
+	41Y8xTso66I/uG6yOomdAdV9uuKcdJO0Ycy0+E1uY22nuFcY4OVCGLH8XtcW6pxR
+	O2PJV+jQY4ld8HkNowuDlNbWJf2HXRFEa0zxOvUVCvmK6lG3PlSUREAodShcTEcv
+	THqjKYi7A2xP2IpTnXyN6jT4kxm7ytMGVkfs4aQnuQ==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ba73vje44-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 28 Dec 2025 03:13:17 +0000 (GMT)
+Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5BS3DGCm016214;
+	Sun, 28 Dec 2025 03:13:16 GMT
+Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ba73vje42-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 28 Dec 2025 03:13:16 +0000 (GMT)
+Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
+	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5BS1JOiv026066;
+	Sun, 28 Dec 2025 03:13:15 GMT
+Received: from smtprelay02.dal12v.mail.ibm.com ([172.16.1.4])
+	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4batsn08ef-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Sun, 28 Dec 2025 03:13:15 +0000
+Received: from smtpav02.wdc07v.mail.ibm.com (smtpav02.wdc07v.mail.ibm.com [10.39.53.229])
+	by smtprelay02.dal12v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5BS3DEbZ23397092
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Sun, 28 Dec 2025 03:13:14 GMT
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 331AC58059;
+	Sun, 28 Dec 2025 03:13:14 +0000 (GMT)
+Received: from smtpav02.wdc07v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id D31BD58058;
+	Sun, 28 Dec 2025 03:13:08 +0000 (GMT)
+Received: from [9.124.211.103] (unknown [9.124.211.103])
+	by smtpav02.wdc07v.mail.ibm.com (Postfix) with ESMTP;
+	Sun, 28 Dec 2025 03:13:08 +0000 (GMT)
+Message-ID: <4c4d93f6-efcf-4195-8f6a-1954b227d81d@linux.ibm.com>
+Date: Sun, 28 Dec 2025 08:43:06 +0530
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,206 +85,127 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 7bit
-Message-Id: <20251227-printk-cleanup-part3-v1-19-21a291bcf197@suse.com>
-References: <20251227-printk-cleanup-part3-v1-0-21a291bcf197@suse.com>
-In-Reply-To: <20251227-printk-cleanup-part3-v1-0-21a291bcf197@suse.com>
-To: Richard Weinberger <richard@nod.at>, 
- Anton Ivanov <anton.ivanov@cambridgegreys.com>, 
- Johannes Berg <johannes@sipsolutions.net>, 
- Greg Kroah-Hartman <gregkh@linuxfoundation.org>, 
- Jason Wessel <jason.wessel@windriver.com>, 
- Daniel Thompson <danielt@kernel.org>, 
- Douglas Anderson <dianders@chromium.org>, Petr Mladek <pmladek@suse.com>, 
- Steven Rostedt <rostedt@goodmis.org>, 
- John Ogness <john.ogness@linutronix.de>, 
- Sergey Senozhatsky <senozhatsky@chromium.org>, 
- Jiri Slaby <jirislaby@kernel.org>, Breno Leitao <leitao@debian.org>, 
- Andrew Lunn <andrew+netdev@lunn.ch>, 
- "David S. Miller" <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>, 
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>, 
- Geert Uytterhoeven <geert@linux-m68k.org>, Kees Cook <kees@kernel.org>, 
- Tony Luck <tony.luck@intel.com>, 
- "Guilherme G. Piccoli" <gpiccoli@igalia.com>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- Christophe Leroy <christophe.leroy@csgroup.eu>, 
- Andreas Larsson <andreas@gaisler.com>, 
- Alexander Shishkin <alexander.shishkin@linux.intel.com>, 
- Maxime Coquelin <mcoquelin.stm32@gmail.com>, 
- Alexandre Torgue <alexandre.torgue@foss.st.com>, 
- Jacky Huang <ychuang3@nuvoton.com>, Shan-Chun Hung <schung@nuvoton.com>, 
- Laurentiu Tudor <laurentiu.tudor@nxp.com>
-Cc: linux-um@lists.infradead.org, linux-kernel@vger.kernel.org, 
- kgdb-bugreport@lists.sourceforge.net, linux-serial@vger.kernel.org, 
- netdev@vger.kernel.org, linux-m68k@lists.linux-m68k.org, 
- linux-hardening@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- sparclinux@vger.kernel.org, linux-stm32@st-md-mailman.stormreply.com, 
- linux-arm-kernel@lists.infradead.org, linux-fsdevel@vger.kernel.org, 
- Marcos Paulo de Souza <mpdesouza@suse.com>
-X-Mailer: b4 0.15-dev
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1766837798; l=5342;
- i=mpdesouza@suse.com; s=20231031; h=from:subject:message-id;
- bh=jfxXivsE45EkgkvCbI8I2BEVFtLSwL83e0mmBVPuH+w=;
- b=L4bmhgBbhK4MabaljXOFYoWoPA/F2Ms1Hw5KRZJ0wiLbS51oCxDTE2j2nmUG21whYB1lNSvfW
- KXB3PChlBf2AMEmTwaAmskLdw1SadRBF3zXvV826sJWL27JOeadfagz
-X-Developer-Key: i=mpdesouza@suse.com; a=ed25519;
- pk=/Ni/TsKkr69EOmdZXkp1Q/BlzDonbOBRsfPa18ySIwU=
+User-Agent: Mozilla Thunderbird
+Content-Language: en-US
+To: Linus Torvalds <torvalds@linux-foundation.org>
+Cc: aboorvad@linux.ibm.com, chleroy@kernel.org, christophe.leroy@csgroup.eu,
+        fthain@linux-m68k.org, joe.lawrence@redhat.com, jstancek@redhat.com,
+        krishnagopi487@gmail.com, linux-kernel@vger.kernel.org,
+        linuxppc-dev@lists.ozlabs.org, mpe@ellerman.id.au, naveen@kernel.org,
+        npiggin@gmail.com, nysal@linux.ibm.com
+From: Madhavan Srinivasan <maddy@linux.ibm.com>
+Subject: [GIT PULL] Please pull powerpc/linux.git powerpc-6.19-2 tag
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
+X-TM-AS-GCONF: 00
+X-Proofpoint-ORIG-GUID: IZSUJs0MiIQ9nRgdBiSvsmDeO2Xhx-Pu
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjI4MDAyNSBTYWx0ZWRfX+tIQ5sekfsUG
+ IFDVGtPcvHeWs73QzjScrsMgCdtgrjAzTewqXgje5A6qqzGFv6e1m6BfWSqSblUh+GHzFxTSdXW
+ IwU7DzoNXw3BNaJ5hQANMi8TmStU+tb7rpTraE8Cm7GMv6ZVvaX2ssHNS8oFAHYuz174LH2lQWd
+ WeiqZ6P0mTkRnDdRYNEUSYp+YhjZz7JuQ+fU2CAevSZqIp+Hyepyc4DhZalKY9sB3iool/JraXG
+ 6Dssaexf38nUpSE1PECdr5w9idrz3IqjrPWFannrYn8HCZul+6eeqgnmrqKvNjHeEQmtBnNmfNn
+ LvTGZf5uqCTaD5wGHo8rXJLgn9ZNlHyN1KKDfkazkUHKGACGYVDTD3dULC4/HajQnz9n5e2LCjv
+ 1xAiMmSIty5+HXiZCtfc6XbfWpaNJcRXya8upoI/v1Ny8wXniXwlQWKKpn6wsjiGW0YFC/5qBbH
+ 1BnpfFERg/BQX9Ylyiw==
+X-Authority-Analysis: v=2.4 cv=fobRpV4f c=1 sm=1 tr=0 ts=6950a04d cx=c_pps
+ a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
+ a=IkcTkHD0fZMA:10 a=wP3pNCr1ah4A:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VwQbUJbxAAAA:8 a=-7xwBA7kt0Eq77gYiToA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
+X-Proofpoint-GUID: 1u4qXVhLyjFBsEglGWaX9WhDqBPgu7R_
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2025-12-28_01,2025-12-26_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ lowpriorityscore=0 suspectscore=0 phishscore=0 adultscore=0 malwarescore=0
+ spamscore=0 bulkscore=0 impostorscore=0 priorityscore=1501 clxscore=1015
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.19.0-2512120000 definitions=main-2512280025
 
-All remaining usages of CON_ENABLED were removed from console drivers
-that were being registered without being specified on boot using console=
-argument.
+-----BEGIN PGP SIGNED MESSAGE-----
+Hash: SHA512
 
-The usefulness of the flag was questionable since at first it meant that
-the console was ready to print records. Later on, console drivers started
-to set the flag when registering the console to make sure that the
-console would be registered even without being specified by a kernel
-argument.
+Hi Linus,
 
-With the inclusion a global state for system wide suspend/resume
-in place, with console_{suspend,resume} handling CON_SUSPEND, and with
-console_is_usable helper being more used, the CON_ENABLED flag can be
-safely removed.
+Please pull powerpc fixes for 6.19:
 
-Signed-off-by: Marcos Paulo de Souza <mpdesouza@suse.com>
----
- fs/proc/consoles.c      |  1 -
- include/linux/console.h | 27 ++++++++++-----------------
- kernel/printk/printk.c  | 15 ++-------------
- 3 files changed, 12 insertions(+), 31 deletions(-)
+The following changes since commit 9448598b22c50c8a5bb77a9103e2d49f134c9578:
 
-diff --git a/fs/proc/consoles.c b/fs/proc/consoles.c
-index b7cab1ad990d..b6916ed7957b 100644
---- a/fs/proc/consoles.c
-+++ b/fs/proc/consoles.c
-@@ -18,7 +18,6 @@ static int show_console_dev(struct seq_file *m, void *v)
- 		short flag;
- 		char name;
- 	} con_flags[] = {
--		{ CON_ENABLED,		'E' },
- 		{ CON_CONSDEV,		'C' },
- 		{ CON_BOOT,		'B' },
- 		{ CON_NBCON,		'N' },
-diff --git a/include/linux/console.h b/include/linux/console.h
-index 7d374a29a625..0ab02f7ba307 100644
---- a/include/linux/console.h
-+++ b/include/linux/console.h
-@@ -164,9 +164,6 @@ static inline void con_debug_leave(void) { }
-  *			consoles or read by userspace via syslog() syscall.
-  * @CON_CONSDEV:	Indicates that the console driver is backing
-  *			/dev/console.
-- * @CON_ENABLED:	Indicates if a console is allowed to print records. If
-- *			false, the console also will not advance to later
-- *			records.
-  * @CON_BOOT:		Marks the console driver as early console driver which
-  *			is used during boot before the real driver becomes
-  *			available. It will be automatically unregistered
-@@ -192,14 +189,13 @@ static inline void con_debug_leave(void) { }
- enum cons_flags {
- 	CON_PRINTBUFFER		= BIT(0),
- 	CON_CONSDEV		= BIT(1),
--	CON_ENABLED		= BIT(2),
--	CON_BOOT		= BIT(3),
--	CON_ANYTIME		= BIT(4),
--	CON_BRL			= BIT(5),
--	CON_EXTENDED		= BIT(6),
--	CON_SUSPENDED		= BIT(7),
--	CON_NBCON		= BIT(8),
--	CON_NBCON_ATOMIC_UNSAFE	= BIT(9),
-+	CON_BOOT		= BIT(2),
-+	CON_ANYTIME		= BIT(3),
-+	CON_BRL			= BIT(4),
-+	CON_EXTENDED		= BIT(5),
-+	CON_SUSPENDED		= BIT(6),
-+	CON_NBCON		= BIT(7),
-+	CON_NBCON_ATOMIC_UNSAFE	= BIT(8),
- };
- 
- /**
-@@ -522,9 +518,9 @@ extern bool consoles_suspended;
-  *
-  * Requires console_srcu_read_lock to be held, which implies that @con might
-  * be a registered console. The purpose of holding console_srcu_read_lock is
-- * to guarantee that the console state is valid (CON_SUSPENDED/CON_ENABLED)
-- * and that no exit/cleanup routines will run if the console is currently
-- * undergoing unregistration.
-+ * to guarantee that the console state is valid (CON_SUSPENDED) and that no
-+ * exit/cleanup routines will run if the console is currently undergoing
-+ * unregistration.
-  *
-  * If the caller is holding the console_list_lock or it is _certain_ that
-  * @con is not and will not become registered, the caller may read
-@@ -706,9 +702,6 @@ static inline bool __console_is_usable(struct console *con, short flags,
- 	if (all_suspended)
- 		return false;
- 
--	if (!(flags & CON_ENABLED))
--		return false;
--
- 	if ((flags & CON_SUSPENDED))
- 		return false;
- 
-diff --git a/kernel/printk/printk.c b/kernel/printk/printk.c
-index c5c05e4d0a67..9cb0911997e5 100644
---- a/kernel/printk/printk.c
-+++ b/kernel/printk/printk.c
-@@ -3890,21 +3890,17 @@ static int try_enable_preferred_console(struct console *newcon,
- 			if (err)
- 				return err;
- 		}
--		newcon->flags |= CON_ENABLED;
- 		if (i == preferred_console)
- 			newcon->flags |= CON_CONSDEV;
- 		return 0;
- 	}
- 
--	if (force)
--		newcon->flags |= CON_ENABLED;
--
- 	/*
- 	 * Some consoles, such as pstore and netconsole, can be enabled even
- 	 * without matching. Accept the pre-enabled consoles only when match()
- 	 * and setup() had a chance to be called.
- 	 */
--	if (newcon->flags & CON_ENABLED && c->user_specified == user_specified)
-+	if (force && c->user_specified == user_specified)
- 		return 0;
- 
- 	return -ENOENT;
-@@ -3919,8 +3915,6 @@ static void try_enable_default_console(struct console *newcon)
- 	if (console_call_setup(newcon, NULL) != 0)
- 		return;
- 
--	newcon->flags |= CON_ENABLED;
--
- 	if (newcon->device)
- 		newcon->flags |= CON_CONSDEV;
- }
-@@ -3977,10 +3971,8 @@ static u64 get_init_console_seq(struct console *newcon, bool bootcon_registered)
- 				for_each_console(con) {
- 					u64 seq;
- 
--					if (!(con->flags & CON_BOOT) ||
--					    !(con->flags & CON_ENABLED)) {
-+					if (!(con->flags & CON_BOOT))
- 						continue;
--					}
- 
- 					if (con->flags & CON_NBCON)
- 						seq = nbcon_seq_read(con);
-@@ -4233,9 +4225,6 @@ static int unregister_console_locked(struct console *console)
- 				     consoles_suspended, NBCON_USE_ATOMIC))
- 		__pr_flush(console, 1000, true);
- 
--	/* Disable it unconditionally */
--	console_srcu_write_flags(console, console->flags & ~CON_ENABLED);
--
- 	if (res < 0)
- 		return res;
- 
+   Linux 6.19-rc2 (2025-12-21 15:52:04 -0800)
 
--- 
-2.52.0
+are available in the git repository at:
+
+https://git.kernel.org/pub/scm/linux/kernel/git/powerpc/linux.git 
+tags/powerpc-6.19-2
+
+for you to fetch changes up to 608328ba5b0619cbc28b409296b5e3840bcb97b6:
+
+   powerpc/32: Restore disabling of interrupts at interrupt/syscall exit 
+(2025-12-22 18:25:07 +0530)
+
+- ------------------------------------------------------------------
+powerpc fixes for 6.19 #2
+
+  - Fix for kexec warning due to SMT disable or partial SMT enabled
+  - Handle font bitmap pointer with reloc_offset to fix boot crash
+  - Fix to enable cpuidle state for Power11
+  - Couple of misc fixes
+
+Thanks to: Aboorva Devarajan, Aditya Bodkhe, Cedar Maxwell, Christian 
+Zigotzky, Christophe Leroy, Christophe Leroy (CS GROUP), Finn Thain, 
+Gopi Krishna Menon, Guenter Roeck, Jan Stancek, Joe Lawrence, Josh 
+Poimboeuf, Justin M. Forbes, Madadi Vineeth Reddy, Naveen N Rao (AMD), 
+Nysal Jan K.A., Sachin P Bappalige, Samir M, Sourabh Jain, Srikar 
+Dronamraju, Stan Johnson
+
+- ------------------------------------------------------------------
+Aboorva Devarajan (1):
+       powerpc/powernv: Enable cpuidle state detection for POWER11
+
+Christophe Leroy (CS GROUP) (1):
+       powerpc/32: Restore disabling of interrupts at interrupt/syscall exit
+
+Finn Thain (1):
+       powerpc: Add reloc_offset() to font bitmap pointer used for 
+bootx_printf()
+
+Gopi Krishna Menon (1):
+       selftests/powerpc/pmu/: Add check_extended_reg_test to .gitignore
+
+Jan Stancek (1):
+       powerpc/tools: drop `-o pipefail` in gcc check scripts
+
+Nysal Jan K.A. (1):
+       powerpc/kexec: Enable SMT before waking offline CPUs
+
+
+  arch/powerpc/include/asm/hw_irq.h  |  2 +-
+  arch/powerpc/include/asm/reg.h |  1 +
+  arch/powerpc/kernel/btext.c  |  3 ++-
+  arch/powerpc/kernel/entry_32.S                                | 15 
+---------------
+  arch/powerpc/kernel/interrupt.c  |  5 ++++-
+  arch/powerpc/kexec/core_64.c                                  | 19 
++++++++++++++++++++
+  arch/powerpc/platforms/powernv/idle.c  |  9 +++++----
+  arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh  |  1 -
+  arch/powerpc/tools/gcc-check-mprofile-kernel.sh  |  1 -
+  tools/testing/selftests/powerpc/pmu/sampling_tests/.gitignore |  1 +
+  10 files changed, 33 insertions(+), 24 deletions(-)
+-----BEGIN PGP SIGNATURE-----
+
+iQIzBAEBCgAdFiEEqX2DNAOgU8sBX3pRpnEsdPSHZJQFAmlQn60ACgkQpnEsdPSH
+ZJR/Sw/8DiY43o+/FAU3RWwi9Nh2wrvMaNbN/9hWu2UnHMGNnKTgDd19NHW4LWmh
+C7kBPCNqyePEjPbqT99JiRCkTQkrGasi/jpWjUSNDURcm3dS+MasL0En21KQV3X6
+GVpwjLPpEzDTajliKiAh+UFkMECSeh1kxmm3k77nU8sxg/fshB6sjymnW0R9M+Wf
+vB3C+w6xZYHqIHiGXeo2IDAi/cAH+KKmyXyWmnrm5FAJyOYMDC73xqxYz+wvkSvu
+M4mabXl80cPMqinhghwHpC545ok41SccgVAPoFDYt+d4r9JJXfy3PsCI4Od8vw9W
+FqBsKIosYTikULilqBavPRU51gSux3adeC2l9v+vEzUpLmb7WNMkLw+WLCbJjkPR
+n+q4psJLTKt5FKBStZA9ZWDQc43cgSzH/JSmPFhdzH2ChT6HRSfO/NimDrNcMKHu
+NicwVHpm9jkEvkv36WZkFbbk5jHgn6vcivDZf5HA4ipvZ2gIIhtuI7vnBhbxBIvZ
+2cteL41s1Xl+3CDPkL3kL4qzaBUXmU04+8t/eHMaumWEK7mP7uT7N0BrM2Y2J+9j
+wVwGx5x43XgyEitokybblatPl59TTL3c4TfzvhFJfwUFu0BOHXpci5h6aqlgs+3D
+MSmZ275FPB2kuo9dsBDYutFvWq3ZmTvoykGpXcUK8NbFarInk7A=
+=d8CF
+-----END PGP SIGNATURE-----
 
 
