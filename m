@@ -1,89 +1,51 @@
-Return-Path: <linuxppc-dev+bounces-15091-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15092-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1241E92724
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Dec 2025 14:41:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D50E4E92FD0
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Dec 2025 18:35:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dfzRm6mVqz2xgv;
-	Tue, 30 Dec 2025 01:41:08 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.218.47
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767019268;
-	cv=none; b=NtlZGiwGnFUWjph5qlL3OqSm3FbRHEJQycbSMylkApkq+XLe/GXG+YW8rwt5HEYtnF+muAV57123G3SqqqWATjETLNeOQGcOC1XHP7w/Sauxs/8pHG+pNH2iNlJBLAu/KkKytgS2lJSNSZZePLEINGhxzO+s9pn3+lWm3R6rlAQV58+YCSSbIUWdm9zi0jQCvr54L8WG99dzbjI9HCkgH2xTBmnbB+A2BP/3UdHLEdEvXOactyqq1CSm7BN2dNZ23Sac1KXd0Uo91kap4GUWay1fpPbZRm/vzKYL0MogO3mDLBxU1xlDIhhxOc70Sp0j82EUD0XEkZKlRNYW7xgH8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dg4fB13cKz2xgv;
+	Tue, 30 Dec 2025 05:35:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767033330;
+	cv=none; b=CefgUyV08xc0QL1KxQ+MkpvZyELp7pRGqELTuKoFTYR7aits3Fw2IYDVRSbmh5XByKGh3JUJB/Ru9bPGO9NvVg1+m4zvzaeNAwUPDeSkYCebK9MieHgkonj/ezIB3lwm8gzXExEhVHfuWI6N9qVD9bDqZgJWL4+Uce2xepOuStq88nVYsGEW2wnMFCHUhFJ3RXmaibDiDbsssIA/WCvnbhFvzX1peXNANXA1yGZ9CMjlR9i8eaNO3gtKyUvLybETCa5JcBj/8lenqSncvtbjyb6e/D2iSz2MTsgtu7ZSOj96jqQCMgVcb6XkvQB0LDJez7L+RE9LF2goZDg+onVQHA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767019268; c=relaxed/relaxed;
-	bh=3tId5XV5kYSQY/kLmA9NWqwvSnJZ5ff10lBlcCOD+Ow=;
-	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=ZareZx4fygEvislGGxiEbfupcJV1klGjCjnzTeprCcNWjFncafHCfBZiN6AqJVm2jvwzjF8U2u2vaN5KofyxYg1tYkhoUkX3WuD89naV66isi7GYuReAYm6P6upZ8i3l/3C60kSQ+udF/gtJ1w1lQiYuYmy4brAw7goT6kMR+1vR/kXp3IuIcK7f88/ung+4ho2i2W5t7G24NDj72vzVD7SYRXINhy9sVoiCx49BucyrRmsw9naPb1hu+MDH9+BkL8HGjf5QHNvsJ5QDcp42ciRbnBR79Hf5LDqELVLehBoQxLNGVZZ133Rod2iGxxiAM2wsDGitJgzJPKsr2zvgVw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=beFiUDyn; dkim-atps=neutral; spf=pass (client-ip=209.85.218.47; helo=mail-ej1-f47.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
+	t=1767033330; c=relaxed/relaxed;
+	bh=vtFPbWhdjZCTP8lIFtEwD2ZcNGsbPDoPMVEGnz9CGZs=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=IBCXvTZhfltiR1QQ93M0FULtVgpOAujFOazDiYNAmbyjwp/4t0Ym967icK5DXDR1CyAzrgop0hJdKgbWlIWjHuk/Y2I//Ba+ULKJhq4uZsoC97wa6AoPziEgfwU2vinbr3n+Hvo6Dh/XtOL7ufORKNismGuzTDIS+oVtv+nHsUGR3cjumaL2GBLoP69wlA0b6Li6EEYjJ6p2edX5B6N8FCrA/ohA6aKOigiVJkv417brBxjl1t64W9If/GBV2uOe6Xo+/8fY/930iVINXypSVkmcirj/CaPMHSFuVv64D6lhuwcgMjdJnsOt+RcmS8D3lMgw/vBjzYh1UWK6erlsfg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tJiTqQdx; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=beFiUDyn;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tJiTqQdx;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.218.47; helo=mail-ej1-f47.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dfzRg01C4z2xdV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Dec 2025 01:41:02 +1100 (AEDT)
-Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-b7355f6ef12so1754372966b.3
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2025 06:41:01 -0800 (PST)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1767019197; x=1767623997; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
-         :message-id:reply-to;
-        bh=3tId5XV5kYSQY/kLmA9NWqwvSnJZ5ff10lBlcCOD+Ow=;
-        b=beFiUDyn3IpocmKmCXEaPhEKyxZM5lPq0oLO/keeDb0IXCYeLvjjAdghzk3M7cmXeG
-         fsQXo1ng4sB2WX8BB70dlxYKe1NTAkUUWwsj8PvkZSCW+Zqvjq8UP/lgOLU7kpUak4uM
-         0AAVjrnGIxTVBm6UgdBRXqfdKB97YoSwa4EDG0Ochn7RM7Z2dW641m4MVfg8lHayzCBN
-         4VKMeECeDYWcDTkyOqcwgq1DUqeejF+jJzEEWjfCfyPjY8tAXax9QjUYx+aNMLSVD99c
-         tmZxk+smYNu98o6L1Ue7Xanbt3uBPFR2WUpnIrk7t7O+KSupL6HVQfEhyRVH1SzZiu5f
-         XyzQ==
-X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767019197; x=1767623997;
-        h=content-transfer-encoding:mime-version:references:in-reply-to
-         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
-         :to:cc:subject:date:message-id:reply-to;
-        bh=3tId5XV5kYSQY/kLmA9NWqwvSnJZ5ff10lBlcCOD+Ow=;
-        b=YaVkdmW9HQe4fOdYPML42nC+O/cDr6sh4gWSjW4CDICgp4/wDuOqwmoXTtOPfsqhd6
-         Q7Q6FV4cbwha/5MVXWY18eMuKyijnbB4vWhpQ6GIvuJ+DHeJ+fk7oFo6HuDzI3i8fXk/
-         jmnG395mOAEtTHrkbZIy0GjFfpA9KrfoTHmxOPVERtSj24v/1YAyCgHc34QOR0RnO7PP
-         qtiZIh8L8uTCIXO1+tV5Cw4rJMZoJ4G6/NDpAx3PAUzsHqQC+osZCl437FeQ/Lb3cKfv
-         FARpc9Quk8WFigrcrdWVBbXv34xH/7x6EBPgy2CE//qks/zSY9tQAJKQdFwc+tfLsi8d
-         hv7Q==
-X-Forwarded-Encrypted: i=1; AJvYcCVBCu4svh3MfOjCQ2RV73CLDHsyYP4YoQJ8GIuk3W7NVZnVizQFWta+owdf7THqUaF93r30Sr18Hy8BoFU=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0Yz2grGK9OAmXBz3w3liTzwGKIJKLTccUGImWJ1G+F7Vk6ypEqJx
-	6cz5bPU9FGGXVttDm0U2ucn2j0sZpJJCZzMbQx2YVACyzF+IhNYWwB5NwlMEyg==
-X-Gm-Gg: AY/fxX4EqFuCC+IJRqrZNAeNSRti5n2errBK/igi3fwnM0ydvAsnzEFFmwckCb0538V
-	NRXCVAFu+2LRQTSCQoz0f3MokAgJG89GACQZ3ltxUAcokyPIPXL9mYkti0kjjqy5HG8Te/OLZWC
-	ZZKeqmnGvI1MEr3CR2N1i/+Bw1+Nn+WQa6EeWQYDlDxXNzPEldMI74HqSMfcm97i+qyKU2HywHl
-	TVxgB6l1PPJ3XHEsmJsYwDfaS50uODFr3mE1Maz28Vuo5CEffleYBEspCscdDSZIxFFyrc4kKNj
-	+Z9kWFsBh9XGqBTF3muc6RuD7A8JmYQwT+p0zr4qlLT/a8FN762BftPqrb8f03iLAs1+/n1GF7h
-	uiWPJdW30b7IuxTar4LlhYQ1HUyegP9XWvzaDOYmqGT+7BLiYbvTRb2hRexjI2UPvosPUuz4yZa
-	OWBRH/LNKYCj5QddZtB6VE6cT6K6rprxMFsz4pSXqsIrscCDCDd43F
-X-Google-Smtp-Source: AGHT+IFZx2XByZDcGoz6k0dVTKejmOPtpNe6KoB1/QAoZpQAFG17i3uYtYslAObNd+vt7plTaXSkLA==
-X-Received: by 2002:a05:600c:c0c7:b0:47d:264e:b37d with SMTP id 5b1f17b1804b1-47d264eb725mr245790195e9.22.1767013332883;
-        Mon, 29 Dec 2025 05:02:12 -0800 (PST)
-Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
-        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-47be3ad0c60sm245250335e9.5.2025.12.29.05.02.12
-        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 29 Dec 2025 05:02:12 -0800 (PST)
-Date: Mon, 29 Dec 2025 13:02:11 +0000
-From: David Laight <david.laight.linux@gmail.com>
-To: Shengjiu Wang <shengjiu.wang@nxp.com>
-Cc: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
- nicoleotsuka@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
- perex@perex.cz, tiwai@suse.com, linux-sound@vger.kernel.org,
- linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] ASoC: fsl_easrc: force cast 'val1' to u32 for do_div()
-Message-ID: <20251229130211.49b169a0@pumpkin>
-In-Reply-To: <20251229085919.3952347-1-shengjiu.wang@nxp.com>
-References: <20251229085919.3952347-1-shengjiu.wang@nxp.com>
-X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dg4f84vqZz2x9M
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Dec 2025 05:35:28 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 69473432E9;
+	Mon, 29 Dec 2025 18:35:26 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 23EF6C4CEF7;
+	Mon, 29 Dec 2025 18:35:20 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767033326;
+	bh=eG2cXpjbEn5KgR3sqGbsjKORgaU2dlYeuXkzKF8Mu+Y=;
+	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
+	b=tJiTqQdxcxiahCt/5Na42Sqqnb6QMNXBFsKWCsh/jwM7SZm5uZJ6HLYmiAziNGUIM
+	 bStVvsBKeMwq3158DF+MVo9QN/3PmTb3lyOHtcBb4uKosJIhW1HwdKEgIRXdhJLqIv
+	 Aze3DO85ITf1QVHZwt8J08+vxDRRz+G7IJLe4q9AeAEu/dotyEun9ursQ2VT4iGuwF
+	 /uUam40Exa8qQD64T3RwaQSpZhRY3Q8GKi1W2craqo9vuRBjDKQdEdaMErKFYMrgrL
+	 I+Qs35NIYKKJSezvh7BHgJsqWQugepNS5WIMPfLeYt/RvPpPpf/xHw5lAuaNu5cPsR
+	 klwqXccc4oIpw==
+Message-ID: <398ca47d-19d4-4b26-98db-2bf283b6b0cb@kernel.org>
+Date: Mon, 29 Dec 2025 19:35:18 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,60 +59,76 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=US-ASCII
-Content-Transfer-Encoding: 7bit
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v7] mm/hugetlb: ignore hugepage kernel args if hugepages
+ are unsupported
+To: Andrew Morton <akpm@linux-foundation.org>,
+ Sourabh Jain <sourabhjain@linux.ibm.com>, Sasha Levin <sashal@kernel.org>
+Cc: linux-kernel@vger.kernel.org, Borislav Petkov <bp@alien8.de>,
+ Heiko Carstens <hca@linux.ibm.com>, Ingo Molnar <mingo@redhat.com>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Muchun Song <muchun.song@linux.dev>,
+ Oscar Salvador <osalvador@suse.de>, Thomas Gleixner <tglx@linutronix.de>,
+ Vasily Gorbik <gor@linux.ibm.com>, linux-mm@kvack.org,
+ linuxppc-dev@lists.ozlabs.org, linux-s390@vger.kernel.org, x86@kernel.org,
+ linux-riscv@lists.infradead.org,
+ "David Hildenbrand (Red Hat)" <david@kernel.org>,
+ "Ritesh Harjani (IBM)" <ritesh.list@gmail.com>
+References: <20251224115524.1272010-1-sourabhjain@linux.ibm.com>
+ <20251228143533.33e2be2d6282d036f55e12cb@linux-foundation.org>
+Content-Language: fr-FR
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+In-Reply-To: <20251228143533.33e2be2d6282d036f55e12cb@linux-foundation.org>
+Content-Type: text/plain; charset=UTF-8; format=flowed
+Content-Transfer-Encoding: 8bit
 
-On Mon, 29 Dec 2025 16:59:19 +0800
-Shengjiu Wang <shengjiu.wang@nxp.com> wrote:
 
-> Fix below cocci warnings, the real width of val1 is 32bit, so use force
-> cast to avoid warning.
 
-I just looked at the uses of 'frac_bits' in that file.
-Some of the related code looks very dubious.
-
-The 200 has:
-	val = (u64)in_rate << frac_bits;
-	do_div(val, out_rate);
-	r = (uint32_t *)&val;
-followed by uses of r[0] and r[1] - that probably isn't going to DTRT big endian
-and will generate worse code LE than using val and val >> 32.
-
-Line 2063 has:
-	val <<= (frac_bits - 31);
-	regmap_write(easrc->regmap, REG_EASRC_RUC(pair->index), EASRC_RSUC_RS_RM(val));
-where EASRC_RSUC_RS_RM(v) is (v) << 32
-That is a lot of shift lefts on an 'int'.
-
-The code in question can shift 'val1' right and convert to 32 bits
-before ctx_priv->ratio_mod is added in.
-
-	David
-
+Le 28/12/2025 à 23:35, Andrew Morton a écrit :
+> On Wed, 24 Dec 2025 17:25:24 +0530 Sourabh Jain <sourabhjain@linux.ibm.com> wrote:
 > 
-> cocci warnings: (new ones prefixed by >>)
-> >> sound/soc/fsl/fsl_easrc.c:1999:2-8: WARNING: do_div() does a 64-by-32 division, please consider using div64_u64 instead.  
+>> Note for backporting: This fix is a partial retrieval of the commit
+>> mentioned in the Fixes tag. It is only valid once the change referenced
+>> by the Depends-on tag is present. When backporting this patch, the
+>> commit mentioned in the Depends-on tag must be included first.
+>>
+>> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fall%2F20250121150419.1342794-1-sourabhjain%40linux.ibm.com%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C93a8f925fc024ff9c3fe08de46616c3b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639025581404027066%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=3iVUdaMBWhExKkDiV%2BBfYufPTKva1dVikhyQShOq7mc%3D&reserved=0 [1]
+>> Link: https://eur01.safelinks.protection.outlook.com/?url=https%3A%2F%2Flore.kernel.org%2Fall%2F20250128043358.163372-1-sourabhjain%40linux.ibm.com%2F&data=05%7C02%7Cchristophe.leroy%40csgroup.eu%7C93a8f925fc024ff9c3fe08de46616c3b%7C8b87af7d86474dc78df45f69a2011bb5%7C0%7C0%7C639025581404053206%7CUnknown%7CTWFpbGZsb3d8eyJFbXB0eU1hcGkiOnRydWUsIlYiOiIwLjAuMDAwMCIsIlAiOiJXaW4zMiIsIkFOIjoiTWFpbCIsIldUIjoyfQ%3D%3D%7C0%7C%7C%7C&sdata=GamDe2R87SdpFurnj9Cmt9wOQtkGLgIO1z7nl5QPxgY%3D&reserved=0 [2]
+>> Fixes: c2833a5bf75b ("hugetlbfs: fix changes to command line processing")
+>> Depends-on: 2354ad252b66 ("powerpc/mm: Update default hugetlb size early")
 > 
-> Fixes: 27147695aaf7 ("ASoC: fsl_easrc: define functions for memory to memory usage")
-> Reported-by: kernel test robot <lkp@intel.com>
-> Closes: https://lore.kernel.org/oe-kbuild-all/202512281902.bPsKjjkC-lkp@intel.com/
-> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
-> ---
->  sound/soc/fsl/fsl_easrc.c | 2 +-
->  1 file changed, 1 insertion(+), 1 deletion(-)
-> 
-> diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
-> index f404a39009e1..16a45a7146e8 100644
-> --- a/sound/soc/fsl/fsl_easrc.c
-> +++ b/sound/soc/fsl/fsl_easrc.c
-> @@ -1996,7 +1996,7 @@ static int fsl_easrc_m2m_calc_out_len(struct fsl_asrc_pair *pair, int input_buff
->  		/* right shift 12 bit to make ratio in 32bit space */
->  		val2 = (u64)in_samples << (frac_bits - 12);
->  		val1 = val1 >> 12;
-> -		do_div(val2, val1);
-> +		do_div(val2, (u32)val1);
->  		out_samples = val2;
->  
->  		out_length = out_samples * out_width * channels;
+> This will be the first "Depends-on:" in history.  Which is a hint that
+> we're doing something wrong.  This innovation will surely fool any
+> downstream automation.  Let's use existing tools if possible.
 
+What do you mean by "first in history" ? Do you mean it's never been 
+used before ? As far as I can see it has been used several times 
+already. First one was in 2014 with commit a0855054e59b ("iwlwifi: dvm: 
+drop non VO frames when flushing")
+
+Sasha, do tools use it ?
+
+$ git log | grep "Depends-on: " | wc -l
+137
+
+$ git log | grep "Depends-on: " | head -10
+     Depends-on: e2daec488c57 ("nbd: Fix hungtask when nbd_config_put")
+     Depends-on: arm64: dts: nuvoton: Combine NPCM845 reset and clk nodes
+     Depends-on: 058518c20920 ("landlock: Align partial refer access 
+checks with final ones")
+     Depends-on: d617f0d72d80 ("landlock: Optimize file path walks and 
+prepare for audit support")
+     Depends-on: 7ccbe076d987 ("lsm: Only build lsm_audit.c if 
+CONFIG_SECURITY and CONFIG_AUDIT are set")
+     Depends-on: 26f204380a3c ("fs: Fix file_set_fowner LSM hook 
+inconsistencies")
+     Depends-on: commit 045b14ca5c36 ("of: WARN on deprecated 
+#address-cells/#size-cells handling")
+     Depends-on: v6.12+ with PREEMPT_RT enabled
+     Depends-on: 045b14ca5c36 ("of: WARN on deprecated 
+#address-cells/#size-cells handling")
+     Depends-on: commit aec89dc5d421 ("block: keep q_usage_counter in 
+atomic mode after del_gendisk")
+
+Christophe
 
