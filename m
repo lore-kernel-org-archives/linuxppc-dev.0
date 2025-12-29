@@ -1,46 +1,47 @@
-Return-Path: <linuxppc-dev+bounces-15076-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15077-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 79DF9D3B7E5
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D6C81E784BE
 	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Dec 2025 03:21:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dfhN1102yz2xdV;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dfhN11GHhz2xqj;
 	Mon, 29 Dec 2025 14:21:53 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.170
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=91.218.175.174
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766978513;
-	cv=none; b=cirBBBJdhLJzbHeW12a0Jxnl0kK5y/UzdYibvjx1gRbVtZyMEbEhHkUfmdvJR6Dq//dZtE8dajn6nMliEpNWXQ8/LtkEHxOUmg+J+k7mUEj1kIu/56dabL9/qM9AgNA15/DbB+Q/1DQ6yS7A0DMYSB91AjkQnzzNgZN2SiRnj16jbgEgrq4pa3R9BJlf12R0T6ctMnS6VLDS45GuMAme1Tj+m23V68Lig9Uk9vWjOuhineHUCLxH4hP+SuMbZJPZ4tZlc/XSz+W6h9ZT1obofhNlYiMKF/XkNV4rb5DT/orgOWgFocAocJYle5zSIwpzs+5v3BDGDDgf8vSnIYpviQ==
+	cv=none; b=UOomJ1XwlXp01ujQ5MBQ5QLXkCx9UtrPaethGacMfvawQ//oDFA8TOyr5Cts98lamB4Q7OThmLlCRPzz7Tum6oOMnXk1qGJ/IY3D8gG1gyKewVYhecmu3STnTPuAosnH3PFEN1ULyuYldlopkWVMf/B7QFdk219f+RuWBE76KtEUQEG/FpIq2qlvRlwfK1T+bHtwffPN7GH9mwhAFgoK06+4F+ji6V40XO6+mxp0QC3p0eb+rePxau+A+OzKdBg5XL1ALWHtEf/+ZMr3KJzy/seAwU6Kxz75Wnl4gCxUuT9b+/qxvDxJZRoRN0hdq39PZn5tuFIJ87M+NRd7c5b3yg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1766978513; c=relaxed/relaxed;
-	bh=F1afDEBzhkrjAza00g4g2aJTxEIGJdJZw63+C1Fb5ZI=;
+	bh=23WFVh4QD8EwOyb+DiEjMorTSabGcCdF0HCkzTj5UcI=;
 	h=Content-Type:Mime-Version:Subject:From:In-Reply-To:Date:Cc:
-	 Message-Id:References:To; b=HohfEkP5dJj2HQFlDRig5XKO8VddnW3IoFb2x1z8zDPGLjZNieincOzekp9vsb0UYcVJOIoya+FT7E2xRNrtTxWYEGwk//7PGphTG2sLRq4o4JtZMMJP6AxCkRFL6srzYqDH+xZMiI8OMO0gSr3wreVLqzOOmjqeMbnUST0ACIfuuLnM4nTb9oGyZTS6w6JFsl+i77/Fbaeni3HIur2rC5XhW6OMa4zV2LKhRO5PMR/BCLUJ6KGvJC5W7XRbFT6PtG6Y9FfsV5J2KAvsOBexwyvyiror6VlBoNz66EaaflaTYxmK1YJjeAq+b7XLCJ3cLR7GKTKU4gHGzNd8rDAVDQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=V7SNNNpB; dkim-atps=neutral; spf=pass (client-ip=91.218.175.170; helo=out-170.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
+	 Message-Id:References:To; b=Fk0jU+GAiljIxyrmnO8UsFmR9J8WEMZG7h2EPBBb25c8QNSpGxoy6cJKYf4Ed8jtaKPODZgGcKFREnOfmD970yi8ckhBc/Igls5m3MJNBDCpmgT2j8EY1ZbOjXCqklYug01XKhmCPVfhtd3kM2O/xuCMPDVnNlUYAs5yHLyrpZCw9s3vNdw000v5CgT7aRHunVHzd81wKBKhmW2AlzQoB+0TgqG7QYhHUyD5F8O5/T7MX0LrpPNGdbBebcJw7pGqysB1WYfH6BF+I0L6VsWMyi5Pptb8P6leYX8aBhBuuKUjEBXyWEFKgi+Jr6Wwme+SkGyEUJ692qYT+J6NpgsYYw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev; dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=CsTctdZ8; dkim-atps=neutral; spf=pass (client-ip=91.218.175.174; helo=out-174.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org) smtp.mailfrom=linux.dev
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.dev
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=V7SNNNpB;
+	dkim=pass (1024-bit key; unprotected) header.d=linux.dev header.i=@linux.dev header.a=rsa-sha256 header.s=key1 header.b=CsTctdZ8;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.170; helo=out-170.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
-Received: from out-170.mta0.migadu.com (out-170.mta0.migadu.com [91.218.175.170])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.dev (client-ip=91.218.175.174; helo=out-174.mta0.migadu.com; envelope-from=muchun.song@linux.dev; receiver=lists.ozlabs.org)
+X-Greylist: delayed 442 seconds by postgrey-1.37 at boromir; Mon, 29 Dec 2025 14:21:49 AEDT
+Received: from out-174.mta0.migadu.com (out-174.mta0.migadu.com [91.218.175.174])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dfhMz49mCz2xP9
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2025 14:21:51 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dfhMx3pz6z2x9M
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2025 14:21:49 +1100 (AEDT)
 Content-Type: text/plain;
 	charset=us-ascii
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linux.dev; s=key1;
-	t=1766978038;
+	t=1766978065;
 	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
 	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
 	 content-transfer-encoding:content-transfer-encoding:
 	 in-reply-to:in-reply-to:references:references;
-	bh=F1afDEBzhkrjAza00g4g2aJTxEIGJdJZw63+C1Fb5ZI=;
-	b=V7SNNNpBsYGA2qklZzdBaZNfC7/nBKX/4NyOPO1tnNJx5hQM9QLpkQX9kzLFRSuM3ibIwq
-	7jR2aveNyt5Zfsuz/R/iMbQL/x1sWvs2mbkhedncCx0OsNKVL/RASXUSpXQaMsdDanbQM/
-	J0REW/LMX1QgauBNDsImcrNeSpymDUQ=
+	bh=23WFVh4QD8EwOyb+DiEjMorTSabGcCdF0HCkzTj5UcI=;
+	b=CsTctdZ8U9pUZlVucTzftHHmp2gnI1r0CzZFlnpRDH9PaP1qXa4UPAYSva2HLine9CfV90
+	9W72CV4/QFwNiVWLYQ5mHLAgZrQcKb5qzwdX5woVQVU6YQn8JsHteRlat/Z+Spad7CIWaS
+	h++GDN5U6j2LdFzXpT0UvZYdzjPHOv4=
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -54,11 +55,12 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 Mime-Version: 1.0 (Mac OS X Mail 16.0 \(3864.200.81.1.6\))
-Subject: Re: [PATCH 27/28] mm/hugetlb: drop hugetlb_cma_check()
+Subject: Re: [PATCH 28/28] Revert "mm/hugetlb: deal with multiple calls to
+ hugetlb_bootmem_alloc"
 X-Report-Abuse: Please report any abuse attempt to abuse@migadu.com and include these headers.
 From: Muchun Song <muchun.song@linux.dev>
-In-Reply-To: <20251228124001.3624742-28-rppt@kernel.org>
-Date: Mon, 29 Dec 2025 11:13:03 +0800
+In-Reply-To: <20251228124001.3624742-29-rppt@kernel.org>
+Date: Mon, 29 Dec 2025 11:13:26 +0800
 Cc: Andrew Morton <akpm@linux-foundation.org>,
  Alex Shi <alexs@kernel.org>,
  Alexander Gordeev <agordeev@linux.ibm.com>,
@@ -123,9 +125,9 @@ Cc: Andrew Morton <akpm@linux-foundation.org>,
  loongarch@lists.linux.dev,
  sparclinux@vger.kernel.org
 Content-Transfer-Encoding: 7bit
-Message-Id: <2F5422EB-495E-4BC7-8174-13BED1147382@linux.dev>
+Message-Id: <C8C5C80F-BA99-445D-9711-2665B1262C66@linux.dev>
 References: <20251228124001.3624742-1-rppt@kernel.org>
- <20251228124001.3624742-28-rppt@kernel.org>
+ <20251228124001.3624742-29-rppt@kernel.org>
 To: Mike Rapoport <rppt@kernel.org>
 X-Migadu-Flow: FLOW_OUT
 
@@ -135,13 +137,15 @@ X-Migadu-Flow: FLOW_OUT
 > 
 > From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 > 
-> hugetlb_cma_check() was required when the ordering of hugetlb_cma_reserve()
-> and hugetlb_bootmem_alloc() was architecture depended.
+> hugetlb_bootmem_alloc() is called only once, no need to check if it was
+> called aready at its entry.
 > 
-> Since hugetlb_cma_reserve() is always called before hugetlb_bootmem_alloc()
-> there is no need to check whether hugetlb_cma_reserve() was already called.
+> Other checks performed during HVO initialization are also no longer
+> necessary because sparse_init() that calls hugetlb_vmemmap_init_early()
+> and hugetlb_vmemmap_init_late() is alaways called after
+> hugetlb_bootmem_alloc().
 > 
-> Drop unneeded hugetlb_cma_check() function.
+> This reverts commit d58b2498200724e4f8c12d71a5953da03c8c8bdf.
 > 
 > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 
