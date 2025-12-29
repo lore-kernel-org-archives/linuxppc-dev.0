@@ -1,54 +1,89 @@
-Return-Path: <linuxppc-dev+bounces-15090-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15091-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 3642FE92724
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Dec 2025 14:34:24 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id E1241E92724
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Dec 2025 14:41:10 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dfzHy44JJz2xgv;
-	Tue, 30 Dec 2025 01:34:22 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=212.227.15.14
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767018862;
-	cv=none; b=b7vDYEXmqO6/4nmmG2xHgrMv7YiSNMq3uaNzzL31wwjLk23fiHBX97bRqaGLVHdwt48jl24Hl4rz94dTLOG0la8+Zi5IwhE90m4boie/wkEUdLc6WwKUwY5Qcg7pyjrfMEnEnrNbcQjP2dNWWtCPVbet+BVLwoaeFtLQ087czbF9kqSQtjWrfShlSt2kez97rjD5iQ7WpQHIdFkK/AAl/G1l/crupWaJyc1uMbLmdm+AKPAF1lHuVZckaKc/kUyy30lGi0roej5S9QxKF3WMVOzwsasIstVmJOEcVYwtTzml+UozvlpGVHGOxsKhi9lFtJsKbDnVVlTasvCXn5nl8g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dfzRm6mVqz2xgv;
+	Tue, 30 Dec 2025 01:41:08 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.218.47
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767019268;
+	cv=none; b=NtlZGiwGnFUWjph5qlL3OqSm3FbRHEJQycbSMylkApkq+XLe/GXG+YW8rwt5HEYtnF+muAV57123G3SqqqWATjETLNeOQGcOC1XHP7w/Sauxs/8pHG+pNH2iNlJBLAu/KkKytgS2lJSNSZZePLEINGhxzO+s9pn3+lWm3R6rlAQV58+YCSSbIUWdm9zi0jQCvr54L8WG99dzbjI9HCkgH2xTBmnbB+A2BP/3UdHLEdEvXOactyqq1CSm7BN2dNZ23Sac1KXd0Uo91kap4GUWay1fpPbZRm/vzKYL0MogO3mDLBxU1xlDIhhxOc70Sp0j82EUD0XEkZKlRNYW7xgH8g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767018862; c=relaxed/relaxed;
-	bh=VSHKgqobROpoF/3iLsp6Y7ek9yEeFOEONKlgI9POyCo=;
-	h=Message-ID:Date:MIME-Version:To:Cc:References:Subject:From:
-	 In-Reply-To:Content-Type; b=mDppnZw7VpDB9SPOgKSGadD8UeJGG+FInUvpAOfGmIcnE0Q5pjDxFwGY7HLpbijaskQZjE+jAF5ng87wX8VWWyg2YtZm7UMajnszSpspKQvZ+u6i8tpMAHMR+sfSJKz6eiZBuNvb9ao4OXgVLqhpt6q0sTyNykD9tbAQA1KCU5DeiI7t9br6J1miwiEnG8n4dJpBkC9bEIo7MRzWIOxCgDLgEFSGxrkKtN9lPHqz2/c9lrwqa6wojpNquaG3JZLByMvQ8n0MyaEihp6HC9JydIsCbEIuLsnWSa3YQi8oPsn4UdjWe+uqI6e+PHt6phOcJ8D/qw9ovYDVNG6uX8JMxw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de; dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=AKyJx/pR; dkim-atps=neutral; spf=pass (client-ip=212.227.15.14; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org) smtp.mailfrom=web.de
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=web.de
+	t=1767019268; c=relaxed/relaxed;
+	bh=3tId5XV5kYSQY/kLmA9NWqwvSnJZ5ff10lBlcCOD+Ow=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=ZareZx4fygEvislGGxiEbfupcJV1klGjCjnzTeprCcNWjFncafHCfBZiN6AqJVm2jvwzjF8U2u2vaN5KofyxYg1tYkhoUkX3WuD89naV66isi7GYuReAYm6P6upZ8i3l/3C60kSQ+udF/gtJ1w1lQiYuYmy4brAw7goT6kMR+1vR/kXp3IuIcK7f88/ung+4ho2i2W5t7G24NDj72vzVD7SYRXINhy9sVoiCx49BucyrRmsw9naPb1hu+MDH9+BkL8HGjf5QHNvsJ5QDcp42ciRbnBR79Hf5LDqELVLehBoQxLNGVZZ133Rod2iGxxiAM2wsDGitJgzJPKsr2zvgVw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=beFiUDyn; dkim-atps=neutral; spf=pass (client-ip=209.85.218.47; helo=mail-ej1-f47.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; secure) header.d=web.de header.i=markus.elfring@web.de header.a=rsa-sha256 header.s=s29768273 header.b=AKyJx/pR;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=beFiUDyn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=web.de (client-ip=212.227.15.14; helo=mout.web.de; envelope-from=markus.elfring@web.de; receiver=lists.ozlabs.org)
-X-Greylist: delayed 324 seconds by postgrey-1.37 at boromir; Tue, 30 Dec 2025 01:34:18 AEDT
-Received: from mout.web.de (mout.web.de [212.227.15.14])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.218.47; helo=mail-ej1-f47.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-ej1-f47.google.com (mail-ej1-f47.google.com [209.85.218.47])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dfzHt6RHGz2xdV
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Dec 2025 01:34:18 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=web.de;
-	s=s29768273; t=1767018853; x=1767623653; i=markus.elfring@web.de;
-	bh=VSHKgqobROpoF/3iLsp6Y7ek9yEeFOEONKlgI9POyCo=;
-	h=X-UI-Sender-Class:Message-ID:Date:MIME-Version:To:Cc:References:
-	 Subject:From:In-Reply-To:Content-Type:Content-Transfer-Encoding:
-	 cc:content-transfer-encoding:content-type:date:from:message-id:
-	 mime-version:reply-to:subject:to;
-	b=AKyJx/pRBA13IJafKdGQHaIeIBDEJYJFH9GCXCPZWCXytXLZ8uzJZwy151Mi0osP
-	 pZF9sf60iPOgvY9t4k/RRbJhWiUQ+U7Qe5e2t9i2hRpPoIVidu8sZK8YV6XRzt1Zb
-	 LB7hB1ZezUIMJSzwMnuHilRxlJCRRI2VAJ03dl3S7vGOjdc4Mio3UwmackSJgEUtp
-	 VyXtmZw1ZAameOD1101WVDT02U88EHFphZyKlEQYVaujnJ1CnShaSjcFCf4GmSbFE
-	 ASupLrvtZVYIa3bFsAofqtWCM5caoHuC4eQ/fl3yt+jOmOtQAoPRbrBghNAUQ2y2x
-	 swaF8w6MCPlVleQu7w==
-X-UI-Sender-Class: 814a7b36-bfc1-4dae-8640-3722d8ec6cd6
-Received: from [192.168.178.29] ([94.31.69.231]) by smtp.web.de (mrweb005
- [213.165.67.108]) with ESMTPSA (Nemesis) id 1M6091-1vXkSj3MOB-008Qml; Mon, 29
- Dec 2025 15:28:30 +0100
-Message-ID: <231f6f66-6a3d-4166-9e1a-ae0d5bd7583d@web.de>
-Date: Mon, 29 Dec 2025 15:28:27 +0100
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dfzRg01C4z2xdV
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 30 Dec 2025 01:41:02 +1100 (AEDT)
+Received: by mail-ej1-f47.google.com with SMTP id a640c23a62f3a-b7355f6ef12so1754372966b.3
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2025 06:41:01 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1767019197; x=1767623997; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=3tId5XV5kYSQY/kLmA9NWqwvSnJZ5ff10lBlcCOD+Ow=;
+        b=beFiUDyn3IpocmKmCXEaPhEKyxZM5lPq0oLO/keeDb0IXCYeLvjjAdghzk3M7cmXeG
+         fsQXo1ng4sB2WX8BB70dlxYKe1NTAkUUWwsj8PvkZSCW+Zqvjq8UP/lgOLU7kpUak4uM
+         0AAVjrnGIxTVBm6UgdBRXqfdKB97YoSwa4EDG0Ochn7RM7Z2dW641m4MVfg8lHayzCBN
+         4VKMeECeDYWcDTkyOqcwgq1DUqeejF+jJzEEWjfCfyPjY8tAXax9QjUYx+aNMLSVD99c
+         tmZxk+smYNu98o6L1Ue7Xanbt3uBPFR2WUpnIrk7t7O+KSupL6HVQfEhyRVH1SzZiu5f
+         XyzQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1767019197; x=1767623997;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=3tId5XV5kYSQY/kLmA9NWqwvSnJZ5ff10lBlcCOD+Ow=;
+        b=YaVkdmW9HQe4fOdYPML42nC+O/cDr6sh4gWSjW4CDICgp4/wDuOqwmoXTtOPfsqhd6
+         Q7Q6FV4cbwha/5MVXWY18eMuKyijnbB4vWhpQ6GIvuJ+DHeJ+fk7oFo6HuDzI3i8fXk/
+         jmnG395mOAEtTHrkbZIy0GjFfpA9KrfoTHmxOPVERtSj24v/1YAyCgHc34QOR0RnO7PP
+         qtiZIh8L8uTCIXO1+tV5Cw4rJMZoJ4G6/NDpAx3PAUzsHqQC+osZCl437FeQ/Lb3cKfv
+         FARpc9Quk8WFigrcrdWVBbXv34xH/7x6EBPgy2CE//qks/zSY9tQAJKQdFwc+tfLsi8d
+         hv7Q==
+X-Forwarded-Encrypted: i=1; AJvYcCVBCu4svh3MfOjCQ2RV73CLDHsyYP4YoQJ8GIuk3W7NVZnVizQFWta+owdf7THqUaF93r30Sr18Hy8BoFU=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yz2grGK9OAmXBz3w3liTzwGKIJKLTccUGImWJ1G+F7Vk6ypEqJx
+	6cz5bPU9FGGXVttDm0U2ucn2j0sZpJJCZzMbQx2YVACyzF+IhNYWwB5NwlMEyg==
+X-Gm-Gg: AY/fxX4EqFuCC+IJRqrZNAeNSRti5n2errBK/igi3fwnM0ydvAsnzEFFmwckCb0538V
+	NRXCVAFu+2LRQTSCQoz0f3MokAgJG89GACQZ3ltxUAcokyPIPXL9mYkti0kjjqy5HG8Te/OLZWC
+	ZZKeqmnGvI1MEr3CR2N1i/+Bw1+Nn+WQa6EeWQYDlDxXNzPEldMI74HqSMfcm97i+qyKU2HywHl
+	TVxgB6l1PPJ3XHEsmJsYwDfaS50uODFr3mE1Maz28Vuo5CEffleYBEspCscdDSZIxFFyrc4kKNj
+	+Z9kWFsBh9XGqBTF3muc6RuD7A8JmYQwT+p0zr4qlLT/a8FN762BftPqrb8f03iLAs1+/n1GF7h
+	uiWPJdW30b7IuxTar4LlhYQ1HUyegP9XWvzaDOYmqGT+7BLiYbvTRb2hRexjI2UPvosPUuz4yZa
+	OWBRH/LNKYCj5QddZtB6VE6cT6K6rprxMFsz4pSXqsIrscCDCDd43F
+X-Google-Smtp-Source: AGHT+IFZx2XByZDcGoz6k0dVTKejmOPtpNe6KoB1/QAoZpQAFG17i3uYtYslAObNd+vt7plTaXSkLA==
+X-Received: by 2002:a05:600c:c0c7:b0:47d:264e:b37d with SMTP id 5b1f17b1804b1-47d264eb725mr245790195e9.22.1767013332883;
+        Mon, 29 Dec 2025 05:02:12 -0800 (PST)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id 5b1f17b1804b1-47be3ad0c60sm245250335e9.5.2025.12.29.05.02.12
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 29 Dec 2025 05:02:12 -0800 (PST)
+Date: Mon, 29 Dec 2025 13:02:11 +0000
+From: David Laight <david.laight.linux@gmail.com>
+To: Shengjiu Wang <shengjiu.wang@nxp.com>
+Cc: shengjiu.wang@gmail.com, Xiubo.Lee@gmail.com, festevam@gmail.com,
+ nicoleotsuka@gmail.com, lgirdwood@gmail.com, broonie@kernel.org,
+ perex@perex.cz, tiwai@suse.com, linux-sound@vger.kernel.org,
+ linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
+Subject: Re: [PATCH] ASoC: fsl_easrc: force cast 'val1' to u32 for do_div()
+Message-ID: <20251229130211.49b169a0@pumpkin>
+In-Reply-To: <20251229085919.3952347-1-shengjiu.wang@nxp.com>
+References: <20251229085919.3952347-1-shengjiu.wang@nxp.com>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -62,114 +97,60 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-To: Haoxiang Li <lihaoxiang@isrc.iscas.ac.cn>, Su Hui <suhui@nfschina.com>,
- linuxppc-dev@lists.ozlabs.org, Christophe Leroy <chleroy@kernel.org>,
- Dan Carpenter <dan.carpenter@linaro.org>,
- Ioana Ciornei <ioana.ciornei@nxp.com>
-Cc: LKML <linux-kernel@vger.kernel.org>
-References: <20251224104433.1585576-1-lihaoxiang@isrc.iscas.ac.cn>
-Subject: Re: [PATCH v2] bus: fsl-mc: fix an error handling in
- fsl_mc_device_add()
-Content-Language: en-GB, de-DE
-From: Markus Elfring <Markus.Elfring@web.de>
-In-Reply-To: <20251224104433.1585576-1-lihaoxiang@isrc.iscas.ac.cn>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: quoted-printable
-X-Provags-ID: V03:K1:ZPCZNywyUWYoGUyLH+tdxaseQOGqT8/KnfouOXI6m3nMmA/gtV3
- qs0W0mUT1WOPuzKwd9ktep87yagWFkLuDCL8/Tco8dj9pH/tBULR4EM4MWxEbnseIYSzPdg
- YXOudrGjyUd9hkmWCgRaMtLgL4TLn/H6EVsPkiOqCxMAbnsvqlVosUta8kY9sYnCjwPWUBK
- v8EWxIf9GHhCRwIPWKvdw==
-UI-OutboundReport: notjunk:1;M01:P0:5UOf5DwPfBs=;6t0DyzVopUS86PDQaRymOR2wiqv
- 3S7BpXP+D8HuR8hfd45sLKbre6nZ88yOt8y+FoMV2Ys8nGuqgAxt3zBecifxPgdrUu9tTtYjy
- L7MFa1glcGn6uXgQg+0X1BjBeHVCiuDtI1wAc72tWQruQgxbUbkClBAn1cIlgB8oI7bj4+OV2
- hYlX3NXSOfrVKrOlenzWweSOOuVNJK3jGynfStmT+92qp6c42XZXw7Ls8OwYu5QbRpvntk/8r
- T6nf9sOQgV1TOejiTTMcyvK5/CaS5Wmesqf5BNPHUd7sUdFS5pq7IC9pPMvLx7lt0CHxCV9TB
- zWoJKh5G1JwCCsJ1wnThutuUp4zJSjDBD4WYS36mminynxrRaT1I+BESjVWDtvbgPhZ5QfXQB
- c/OchXkZ/CmiEO1xlO5IiISRoLiPQb7LX2XNjhQ5euDYFSqFveTpua4+e7GoLqMUQ/xQqM9uS
- 8H/tyWxi91j0DI/MVucz2jtxP47DHirpwDKTKEfejfiunHXfWqE8g5xY3fD8R9wXfbXENOt9P
- PiXCu+60HXBDBw0S8tN2ea7rEKNDikU81P5qh/SeZgpttTUU8qYKFbhp90dLtc64aG8DaZZdU
- X6SAuOwUFY303o65TlkZO+FqoeXPp0glboK/X1tOYS7+bJSSvx9Ec/MMNBV60BC7l4Gq5+6W1
- xgGGy4D59wclSB1QkBMcmUGqUC7in1vWvlPaTZ4bJgOggkY2S4xAVmAGOWuupacFykKgXPwZn
- dUlBvFVr8H+wR3ZynfOEjBK0KajGewzKMuGNsWzRbth6FZLVOz+xveWiYBVDcgKM8zncz55ZI
- wfeU52ihfbq2BYS7ezcBbpNYz4SrALSCSzYgKQAeA1VMkB/v5IVgMwi+R3Q1wggUF34GgzdmT
- BM1l4KHp0mA1oq2JL/NRMvpdrgDuW44D/YHgbUuaFW/MOxlmrkDNhfukLFX1VndnBFG3Rvz/Y
- IImWzPm/93EwfTVL+/Ehuuk35FshP3GKj4dcPxHz1yo8HZAepAPCNf2J39/uORNTFfU75HbYa
- zphoHCLp9Gwf/MkkWqgFbgW9bEsjk7CQSGSOfEVW3eTpOVnd8AXzV1lUisOgUFyGbZCX2tUpw
- DyGaKUacM3q8gwLs1bp8CnVBOLoRt08jo0+RG4EcwsiNs64ArL2rFFu2JdZBMKmwekpPQCXb3
- oOEc+XH4YbEr99rhuaSMmgqweDQYGMSzsobn+dyci0oQTPjAW3cvXe8KtKQSFxFxTh6SVK4jf
- oJI2fF/GyrvWXOfYDsISloOYKVt1Q1sSHfPKqL/vKiFXQkONfGB47GNDor+EuFXav5OTawUJo
- /2KHMr9aSA69MeDRyQWIOn092dPkVpSb7dWQBRPR+OJGZ8H+K6504xx6kenBwYvXTLkDOlRR7
- yNaG5I/SVjCy2FHEOOsD7rNU765OtdD0QiJodHEdWugkUIlKTxfJ2MrenrPA9SXErdLPvACFH
- igwjNrLD1Iz9AqZaV+Fn0qIEwN2f+mTJPdUeBj3BJMTpxJHISAAKU5yyyiLTfSz1EZM9SHcmt
- E4zFDEciwNfs4KN90/QH59bO5vK+agHqKMwAYMhejI1/SDx9KtaAJS6Jy3AqmWhyJnHOwbNV7
- yeFuNhwHnHMEmjFcfyS4kprRT0+PFatIQvoyY9CmyydKXIzT3rT1Fh1BawtsyyMvLKb+9HMvD
- K5+BOpGruVkyiqH6u8NAUr1Ovx0ijh9YM7a5T6HUoHq4mWS+AQ/PM7Qe150l5+EXo5mNw03Ik
- CN6DCVBhgCKSWueF+H2uOsRV1dmYVF1W2105SrcnCOEL5caTsWuOt8ZYe6MbbTQsJrKGagNeY
- tchgfF16QprD/YCZkJU6+ofJZ635QyGper9b/TyDejtEwG2RWPZsmvWPQnvK3qVNP2ggxkmIg
- kj31tYNrifz+94GUG9ZpzntVkwoqvMofXn1qStOqMlA+4TPmU2Tm6D3aE4e+EU3j0KFPm44tI
- NbgqCby4djQG691ie4xr0gCsw3msRA7CrnsdhWVnHR+c6riUNzW+O6/Y6nC3Za0aXLmLAh1Yi
- qpKGNnQmaU0yU7G2PWiv46iNTVjysKKtDTNOUgERjdCCgva/bGV6fnhfANsLUXPJJqUEh0jqX
- QVeXt7XpAFWYJqtcYBw7W9dt4Z9M4xGcOKS/ytsJ9OIwbfwhcZVUSmLxpUOhM9x2cEilleI6f
- 4MaX0DXPBLuVcM6t0TBujbjjHLSSTVr/wkfUPJnaou9vUA1TDCeBri9s5ZlbEEOL8Y1Xy4io1
- I//eMyHLaB/lcULdQPkB9gQKkQlLKthG+BPjrW4d0cS3PHO8LWq6R5fVV/fy283C+dn4BMUoU
- Is00TKo+6MISOkBcNGraufX421XLYBHwtkKewe8W7YC60P4C5rCwkYrzjB4zSuMmt35eAUp1N
- F5fVjCLbCF+dNXcAerE9bXVASO2GRJBd5MpMmgELAXFV+2ed/Jxphjd15fODmY7KsXoTNzdS8
- 8YYpeba0ozZ3Px9a37bmdwuWqBIbgHpO1/aJqkmXUgyyHH9P246P9JaFJfPl/ltZT1sdWaHhH
- Hs/nVh6wJA4dl5/YGgMdqq10eaQGua2AvkfzE9rWeZ1hjRbJmIGDf6XvuFtdFKjjAQ0I+BlVo
- Sdq+sLP4/uqaVQsGyLG7PZ3blEAyabe5pCvVEWiIEsa/uidPIauVViTGZQKbnnjvMa3crpLve
- WLOBl7WtkPsjcsR2Yh6NnDDMaRIgrnOWG7eUvL89Dh/unMlVCmmjEMNL98RvZItqKtrFuppK4
- darCzapsrmwIEgXken1jRbcGJD2auaSEdy90ihxh9ca26pbArRKupItdhdWaBOEkO0/roQTMY
- hxFa/arZ0JHCNiTdwNzxDVhZmaRliInFI5J1eKD/3D03FIFzfHPA1sKbulVQoO/P8OWzwlxtt
- E7dIOl0mH0lkXm8BFC3pLBbzu23iohLI2oB7+6Epq6gatjnVvZCFFPIjcUtlDvCcFN7Jinhx1
- y5XfBxFVvo0wFYJtrompZNYbSF5W+uYMMgguWIgFkAn3HcQX6vwWiPNqYJxk1DeM+mPL1a5b+
- jolHqn1Z3G+rrKSODatWKL0beyY5V9QLNgJwHSCbdzo9EAxR6OlD446tQ0QIY30tRg/sWdjX1
- nG0KAQAEQsWcwA+yQemtShdkeb4O9HcsPhLgmnWLcd507eX3BBKWPzk6XUA5lvareaR2DijWC
- o11xg0UU/RqxwH5ObGEqvLeMVRYDzA+1CR3CapoDr2EB4iTW7pBHPUw3cM1aqeyNUzZYG12fT
- /d3pV3o0aEIAwFx9j8Ii3Mi1Gc9H7Oc9+dxJT/oxssSjldmB4IF1Q3jDU+uQMxQ4kxDqRvbqY
- 99nvE7mtXXJR/g4b8tA4Kw0JOmPrsD+Rso6VE3fUNGDJZXJbUz75D08zcEUyZwegwwWms/mDV
- jOs7KehhdUD7ITr8uo8YXIq4aDhr6mML3mjrqtqyd48P6gppedcwEr98lsKyQkGXBjKs8fV4E
- o/iXTMWVid0c6MGKPkoTvjvq5vjuRWZ8R8KAUsyAZ1AJsSd6JFH3ldOYHbww3Bhw2v03n5LFE
- 7Hqc3NVTjAlBfKfrHS0TEaGpNQ4XmGO3vEFXp/WdQ8ZIVF4w6R6viQBwCMB9bnGv2JQQWPPbP
- CPfd/rZZwS5uH3dms4y+/ELfZDUKPwT0brSA4Kiz+631nGcaY2ykIJr8EBjVZQ2/nwBLjVQs9
- gCRe2pVNUVbJVtpwnLbp0klhOXERWvDjonwGNoe4/6SOdbVg+LFm4fWZ3w0sE5NkeUtm0+Z6D
- lvNj5fsNdQ3lTXjdc03zGNvCbc4Q7FsFLe92L3Hz4QFBn3yf4p8/M8LsevgGnAtZF4g+HIoFf
- OL8erRBdjkW6lCscXWX57FLCzfyOnbzqajLdgbWByyA5jbKopJzZuB5U8sEsdIQVTGOhVe/3V
- NbOeDn10A4EatThwpNNbQJTAmJ9hD3LZqfeb6acpmo760fDl4LS7C/+GwsWoyIbOf/vpbf81p
- 4qkXkeMlrQKf5V0tYnh8BZ2bMczWdmtd8hYMFu4eYUt2XmTaOJxE2fMYE5WVZnugJ67eBz8fN
- JRWHGjidFndv8G13WGAdi4dIPOUAoQdKmWLAvXYZECfUizPAAh+NI4qYi3aGP7jtGCuQEtLCm
- 4wpCZOZipDC8XlZLBbNHO4AGmaCDLyYYm1VD3t06c57bmz9L3kjHkGPR2nzRbMDuBoulBPTDj
- bGjoVa50g6Rtz4KsKEr6ddUa5Xb6/oFUFEppwN5T4mfVANCDlj3SboC+H1CGNIhzuMC5x7Nuy
- ruftguQjduidaFXhjK6+zkyYTjmHe/spJPujOjhIOpHFSMBdCRxnz03VN52zOWtLcFzMXTDJB
- JNncEwlNxslAwKyegeV4WGuotzx/BBlcQZII/yov3ZYw+gBISxu556Ndjh/aXvYP+kESqwNfc
- AWox10WrIa4Itfx54AOJoxI0g3RVrjZ5C42btvuJuZIOx/YamaPJLm5CAin3PlWBYpuVc9iWq
- S6+gB6tDpJFZfNHlTRTYnHKdKuLLrLkOR1ra6XX4Vmk35zb5StufetQZLzpp13OmaweN7Rp/c
- kz7Vdx6BGDPm37Gx5odHinfNKtyxVmp2P6Bvwk8Vg7uFX79ECwtadCY+5W/+IRaRKEeMkw4ep
- WsGSC3WutODP+zBidJr6T40dCWW8H0lj30ViDzR+X2cNsPnBDebwfH8IX2cSXSzCKXqhrKms4
- mX8Bw9edpsD0UnZtCzdfLAZldmoe7DIxZXzIELSGUjhRrpkVpJm2klKKY/lKdnGKYil84owAj
- YdQUnBq6VMOCEj5txSX/j6bQtWAm9c8LBDnW430O3lIfGj9kpp5F+FjRuuXzLWgjJfTFgECGj
- CezUOQUiDkGc0KQBdO2RMzFqCOBtFpr5cYHJBQRKBWGPkBiJzOlUmys/YtVht1Rl0vQaMjeNX
- vlevo+56f6vsoBLvU8NU31l5+dGiG2zWI8d0D+D4ROwYFdTNPYjjEOuWL7rvsPCmOijNaL0wb
- MM2ewvvz22SYT0HZW8ArlelD0vcde61PKZb4BwpmL1tLuip916Pjgvady8hrS4wiw6cm95pJ3
- 3bq4v1F//nNInG+ZpwHRhfp0CnTRmJBeJjxEgZZ610hIxwYAfdUwVavbxZ07aCEnayel1cl2v
- LK1ZYaNigEdSKcP1w=
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-> If device_add() fails, call put_device() to drop the device
-> reference.
+On Mon, 29 Dec 2025 16:59:19 +0800
+Shengjiu Wang <shengjiu.wang@nxp.com> wrote:
 
-Can the word wrapping become nicer?
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Do=
-cumentation/process/submitting-patches.rst?h=3Dv6.19-rc3#n659
+> Fix below cocci warnings, the real width of val1 is 32bit, so use force
+> cast to avoid warning.
 
+I just looked at the uses of 'frac_bits' in that file.
+Some of the related code looks very dubious.
 
->            And put_device() triggers fsl_mc_device_release()
-> which does the free. Thus just return after call put_device().
+The 200 has:
+	val = (u64)in_rate << frac_bits;
+	do_div(val, out_rate);
+	r = (uint32_t *)&val;
+followed by uses of r[0] and r[1] - that probably isn't going to DTRT big endian
+and will generate worse code LE than using val and val >> 32.
 
-How do you think about to add any tags (like =E2=80=9CFixes=E2=80=9D and =
-=E2=80=9CCc=E2=80=9D) accordingly?
-https://git.kernel.org/pub/scm/linux/kernel/git/torvalds/linux.git/tree/Do=
-cumentation/process/submitting-patches.rst?h=3Dv6.19-rc3#n145
+Line 2063 has:
+	val <<= (frac_bits - 31);
+	regmap_write(easrc->regmap, REG_EASRC_RUC(pair->index), EASRC_RSUC_RS_RM(val));
+where EASRC_RSUC_RS_RM(v) is (v) << 32
+That is a lot of shift lefts on an 'int'.
 
-Regards,
-Markus
+The code in question can shift 'val1' right and convert to 32 bits
+before ctx_priv->ratio_mod is added in.
+
+	David
+
+> 
+> cocci warnings: (new ones prefixed by >>)
+> >> sound/soc/fsl/fsl_easrc.c:1999:2-8: WARNING: do_div() does a 64-by-32 division, please consider using div64_u64 instead.  
+> 
+> Fixes: 27147695aaf7 ("ASoC: fsl_easrc: define functions for memory to memory usage")
+> Reported-by: kernel test robot <lkp@intel.com>
+> Closes: https://lore.kernel.org/oe-kbuild-all/202512281902.bPsKjjkC-lkp@intel.com/
+> Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
+> ---
+>  sound/soc/fsl/fsl_easrc.c | 2 +-
+>  1 file changed, 1 insertion(+), 1 deletion(-)
+> 
+> diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
+> index f404a39009e1..16a45a7146e8 100644
+> --- a/sound/soc/fsl/fsl_easrc.c
+> +++ b/sound/soc/fsl/fsl_easrc.c
+> @@ -1996,7 +1996,7 @@ static int fsl_easrc_m2m_calc_out_len(struct fsl_asrc_pair *pair, int input_buff
+>  		/* right shift 12 bit to make ratio in 32bit space */
+>  		val2 = (u64)in_samples << (frac_bits - 12);
+>  		val1 = val1 >> 12;
+> -		do_div(val2, val1);
+> +		do_div(val2, (u32)val1);
+>  		out_samples = val2;
+>  
+>  		out_length = out_samples * out_width * channels;
+
 
