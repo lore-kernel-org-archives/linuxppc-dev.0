@@ -1,92 +1,79 @@
-Return-Path: <linuxppc-dev+bounces-15087-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15088-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 28725D3B7E5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Dec 2025 04:57:03 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id EA9C7E8FDB1
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 29 Dec 2025 09:01:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dfkSp22r6z2yP8;
-	Mon, 29 Dec 2025 15:56:10 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766984170;
-	cv=none; b=KuKQipSYZd0ZyS31PsOXwcGzEAunkLtJjCORGpBel41e+uwWnlFmLkCxCH+H6z0P1MWHmRgHboLPN9o9eS/JAAoSjSEyk5yiesI8Tyft9ngNcnJNcprwrvF9+K38Y2RwIOXMzZWNwUgfRWML5vI/NQmx70E1FX0/lVFY03qEhO9w5Hj28cx/knvU95KA/RbPdyPAK9Beae25WOtmyMF002LyUZYVCwffn3OAgBytaaEq8uFVYw6DqeLjNvAEXxsA4Yx4S6dH+wpHnpoHaQ2lmbHzjXwuoYQd+QbCFwRYivbIYg21zwchcrj0OG6ggUOhVw/6c3GB0Yc6PrmVny2LAg==
-ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1766984170; c=relaxed/relaxed;
-	bh=g+YCVBojIfFcTwi0KCeKQqdw/keAiTiBtWbfV1tcZ8A=;
-	h=From:To:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=FD+zCk30AWCaHfHRO1CdVL0u6iumsPfTsp50CIpKGUQunT6XxYCnEdAZ9HWTX9AF9Zk2aeb9KSlg+6E9OcQX2zzHFC71DAVMunLVF4DNt3JFBgVQwhHfsq5prDSOCF4CXBZl8jPrDnt7Njr/UxNLstrRJMzlkqgbdNSVXBQPdw+c0KFHch/N9ojCEpzX21bxF/AxcZyJ4M8v6eN8Fqmg2E3OqLgp2b5CGnBHKqraaVaHd2OkdW0yuDSTCVrJEED1Km2aZFYFfxv/yE6Qz1OC+Ttv7PUthM7zIDmLchoiuoUplxenm6WfRJ+jEWHuxU317oH6jJtSUkIl/XGPmMfHHw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g2NCsSyr; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mkchauras@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dfqvl2Cj3z2xdV;
+	Mon, 29 Dec 2025 20:01:23 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=40.107.130.21 arc.chain=microsoft.com
+ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1766998883;
+	cv=pass; b=Wtjukte2znOyECTHaaLdyFEEHGZx5miRr9WNXjUprnxiQdkn+nERh2EcKcGtCHl9ddrKtO8dwqNSYZF3OZl5hdSoO+5DBSe0aEmkJZrCatqUbWKbL9IgUtsV3unJ6AeiuiMOo4YOHKFeDA9U6mpw0mO10ZWg+MpAue5LeaPEBd3q1b7UJjFw1M77BuPCGRBpmCmW516hqGLrtjex0NkqoudlmPYqGibzoJilg4VYLUFxKDAYeMllUJH0Jm4VyMroLbDkHOjrXJSu2q+Yx+x8OcTs2bRDL73BLj3Sq/BpYyY3Orc4kwjegpGROhEWYAzKWIJUBu3IKFBiFdoFmxzGCg==
+ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1766998883; c=relaxed/relaxed;
+	bh=LjAHruMCX4Pr0sK+SyUXmoycalDXDWRMIsKbhqSOIgc=;
+	h=From:To:Subject:Date:Message-Id:Content-Type:MIME-Version; b=JDSWzETggcy43SNM6wDCwxTGBdueTn01bCR68ntfGZ11A7t/Trr1D7S2Ofh4rD5v8vhg9boW1wN70LdDteowM9XXx3haE7+JRXE3GTWnvzuDnWovpwkiiwDt0GJd8pEo+hasIhoWlqIIB9ezWibwmnu2CYEkpZQSu89ARu1mWUJG3hlgwby4Q6kYptV4Hm+8fzdeX4REv4z1/9XUIddBzScah7fkBuEK7nLP+u/fIXGOBeK8a57bn+YmaPsz2R9qGYFJuB950F0HWsXZC4yhS8FsHJCJRwcyg8Pzg20QbpaYtUZOtdV/0jPcu/+RvjTNKutk41PJtdvzBv67bCyeIA==
+ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com; dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=ce0WLqbn; dkim-atps=neutral; spf=pass (client-ip=40.107.130.21; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org) smtp.mailfrom=nxp.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=nxp.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g2NCsSyr;
+	dkim=pass (2048-bit key; unprotected) header.d=nxp.com header.i=@nxp.com header.a=rsa-sha256 header.s=selector1 header.b=ce0WLqbn;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mkchauras@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=nxp.com (client-ip=40.107.130.21; helo=mrwpr03cu001.outbound.protection.outlook.com; envelope-from=shengjiu.wang@nxp.com; receiver=lists.ozlabs.org)
+Received: from MRWPR03CU001.outbound.protection.outlook.com (mail-francesouthazon11011021.outbound.protection.outlook.com [40.107.130.21])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dfkSn3z0hz2ynT
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2025 15:56:09 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 5BS9bAh0024314;
-	Mon, 29 Dec 2025 04:55:37 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=
-	content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=g+YCVBojIfFcTwi0K
-	CeKQqdw/keAiTiBtWbfV1tcZ8A=; b=g2NCsSyrizWo7tM3VgtjS047Tabg4zpIS
-	gkt4W+0E2bID1ovlsuRxdFjESQqaJWSGdhjPAT2oxStOy0Jx/bsLOssin14MpdoB
-	z1hfcgCC6wtvtj0JDRp2a9oCZS+HNuW6dzIR2h6Tona1rDJ0Fq0bOCF0sMt5bh4Z
-	0Wr7uN+SFBrv6TgSz2tJoYJE3XwrPgXn2G8Pmkcw8OrVVaCIa69uDSGdTETFrR6P
-	Iqf+pSUkkeYv11Q+9TnYEm8REjaeVfGh8yAfUaskuF4dy5qWBu+jia03D7gRVVTO
-	jAzFnP4IxhUn6DdnhTKDRXxCCdp1Zm7NbCklhrtyxXlE/cU+u7kxA==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ba74twtaq-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 29 Dec 2025 04:55:37 +0000 (GMT)
-Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 5BT4tagf030938;
-	Mon, 29 Dec 2025 04:55:36 GMT
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ba74twtam-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 29 Dec 2025 04:55:36 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 5BT1PG0X023899;
-	Mon, 29 Dec 2025 04:55:35 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4bat5y43mr-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 29 Dec 2025 04:55:35 +0000
-Received: from smtpav04.fra02v.mail.ibm.com (smtpav04.fra02v.mail.ibm.com [10.20.54.103])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 5BT4tVVr52363556
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 29 Dec 2025 04:55:31 GMT
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 1BCE420043;
-	Mon, 29 Dec 2025 04:55:31 +0000 (GMT)
-Received: from smtpav04.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 74BA820040;
-	Mon, 29 Dec 2025 04:55:25 +0000 (GMT)
-Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com.com (unknown [9.39.24.235])
-	by smtpav04.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon, 29 Dec 2025 04:55:25 +0000 (GMT)
-From: Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>
-To: maddy@linux.ibm.com, mpe@ellerman.id.au, npiggin@gmail.com,
-        chleroy@kernel.org, oleg@redhat.com, kees@kernel.org,
-        luto@amacapital.net, wad@chromium.org, mchauras@linux.ibm.com,
-        thuth@redhat.com, sshegde@linux.ibm.com, akpm@linux-foundation.org,
-        macro@orcam.me.uk, deller@gmx.de, ldv@strace.io, charlie@rivosinc.com,
-        segher@kernel.crashing.org, bigeasy@linutronix.de,
-        peterz@infradead.org, namcao@linutronix.de, tglx@linutronix.de,
-        kan.liang@linux.intel.com, mark.barnett@arm.com,
-        linuxppc-dev@lists.ozlabs.org, linux-kernel@vger.kernel.org
-Subject: [PATCH v3 6/8] powerpc: Prepare for IRQ entry exit
-Date: Mon, 29 Dec 2025 10:24:14 +0530
-Message-ID: <20251229045416.3193779-7-mkchauras@linux.ibm.com>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20251229045416.3193779-1-mkchauras@linux.ibm.com>
-References: <20251229045416.3193779-1-mkchauras@linux.ibm.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dfqvj2mQVz2xFn
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 29 Dec 2025 20:01:20 +1100 (AEDT)
+ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
+ b=y9l6znVuBcluoT3WZZbfxhJBPl+Cp90gcDrGJ8H48SPpcJJR414dOBj2zyEbd5vAkxO0HjQ2MC80l++hafkyMiReSZrWeEJUmNSxX0oeXhK7v1u+5Gz70FJA4RwUOKcToN582XlFqzkgvLq9Czp9Rlv1/AplYxSyxFXzvTr8IZkYaUtKQtGFAQM2m3E61G3FjgmNdahW3QXfp+LcOwwa3YF4ETDYrLl3J0/1mFGMnP4aM9ZVBLk/Wi3Z0MpbSk7AIVud56hfKxorJxXObQc4TGYBu9RLch2SiRhT5tPY9elH8/uq8bsmZwC2a1NQ0LQOFsNpiFPTWSNKpWRd2w8TFA==
+ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
+ s=arcselector10001;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
+ bh=LjAHruMCX4Pr0sK+SyUXmoycalDXDWRMIsKbhqSOIgc=;
+ b=QfMuImpVgzNUtRdmVwSrJXCW/8f1dVKwt7xdMrn4ZMrEMVHvEMDoMIs6Q0tB5MfLpEi8GRG35atNp7hxffL2cbkfmqmg8SntEzWlNfn0jpVXKskNt/EPmLCu3+1HKN/Yn1gkoBcWzzzeSbcW9pJHrBcteshI2YAG6uSLPIeLjSkHBcKSfbo+N4wxK6zJR76if7JGVFNSgIf0d2u3/iEELISoeX618IP0LnhuoWRIdHKC8mQ+mVcl70J19CJr0a3xDAbFwf9L0LNpL4mqIAT4UAO2mzxKFgVgaIWO7FN8N9uaiZbFtJsWXYwUn0GXUIF/2ryrmngh8RXzcMKqG1NyOA==
+ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
+ smtp.mailfrom=nxp.com; dmarc=pass action=none header.from=nxp.com; dkim=pass
+ header.d=nxp.com; arc=none
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=nxp.com; s=selector1;
+ h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
+ bh=LjAHruMCX4Pr0sK+SyUXmoycalDXDWRMIsKbhqSOIgc=;
+ b=ce0WLqbn5MytZKzaD7AmY7BtFHHTXl6IQPXlrRAAPWZKifP45ga/Ojx/GgVLh+DI79ZZ8n5OihrOLMRTfhWna9yWUsQYnvHpOB5lOwpTaJ2QhuuSbwYzrXO85FcHkaOOoUSbHKPIlD1W7jeDMlDUAMnD06KCK59LD2CNBCrzzECLyRHXYkVmUCXpGZhvpPf6k4JVQwzn/H/Z2sfvZWmjkg2hhtqUYPt5ZIKRAyaFh/Bkf80fL81oLkAP7D+T/j4kulLh1Slh9+UyBW3/hdxoPu+uCC+WEobHq0o8nKTwHzIflLJ3dYMua/44B4VtACN4ZL7ugZqCjpqDzXeagTKKrw==
+Authentication-Results: dkim=none (message not signed)
+ header.d=none;dmarc=none action=none header.from=nxp.com;
+Received: from AM0PR04MB7044.eurprd04.prod.outlook.com (2603:10a6:208:191::20)
+ by PAXPR04MB8270.eurprd04.prod.outlook.com (2603:10a6:102:1c7::24) with
+ Microsoft SMTP Server (version=TLS1_2,
+ cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9456.14; Mon, 29 Dec
+ 2025 09:00:39 +0000
+Received: from AM0PR04MB7044.eurprd04.prod.outlook.com
+ ([fe80::bab2:d15c:fcf8:ef2b]) by AM0PR04MB7044.eurprd04.prod.outlook.com
+ ([fe80::bab2:d15c:fcf8:ef2b%7]) with mapi id 15.20.9456.013; Mon, 29 Dec 2025
+ 09:00:39 +0000
+From: Shengjiu Wang <shengjiu.wang@nxp.com>
+To: shengjiu.wang@gmail.com,
+	Xiubo.Lee@gmail.com,
+	festevam@gmail.com,
+	nicoleotsuka@gmail.com,
+	lgirdwood@gmail.com,
+	broonie@kernel.org,
+	perex@perex.cz,
+	tiwai@suse.com,
+	linux-sound@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Subject: [PATCH] ASoC: fsl_easrc: force cast 'val1' to u32 for do_div()
+Date: Mon, 29 Dec 2025 16:59:19 +0800
+Message-Id: <20251229085919.3952347-1-shengjiu.wang@nxp.com>
+X-Mailer: git-send-email 2.37.1
+Content-Transfer-Encoding: 8bit
+Content-Type: text/plain
+X-ClientProxiedBy: SI2PR02CA0008.apcprd02.prod.outlook.com
+ (2603:1096:4:194::12) To AM0PR04MB7044.eurprd04.prod.outlook.com
+ (2603:10a6:208:191::20)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -100,493 +87,115 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: E7QOoR0eiPTrgOW7tXptStO5561XZ-ZU
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjUxMjI5MDA0MSBTYWx0ZWRfX1uXuwn1y2Sbm
- pX+DvuKqrcSiGqJfzfBZOe9CUWnJ873NA+GtCADnZsb8DskrHnUbBjcpyUzrS6OJeN+wpF28gb+
- 3T+e+cBTT5v3EloMH2XLLF2+bowjjICRl6gYkfMVeEM+TgkiHPP+3r0vmXhdC+cQu8lo/mJIqPU
- jmxXAc5bxgRQwHWqjDeuI3rqxrtZF2cg8c3ctJqWV81Ety0L6YJJHelqIlunt0izHUQ31gWL+nP
- AzxlC7M9oKsu8x1Ux7Zof0HANEp1SgD9977+jAMUbQEXzC1NfKQe+HaVgRBnD4t69z7KWre5GyN
- Bsi13TAS9Ncmspz1FlQl/g6aF4IVPEdvwiyecELjGD8xhDxxTCtaYnU5Z0D8Kg/qARkOiR6dKG/
- 5pr8REgQ8O0BhkFCgvatjSMNU86hwoDG1FJvpGue0Kzw+bT5LnAPyQpNS2obRSj3FJ3H4g3W9il
- hRaZPF7yB5YuSW5tjJg==
-X-Authority-Analysis: v=2.4 cv=AN8t5o3d c=1 sm=1 tr=0 ts=695209c9 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=wP3pNCr1ah4A:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
- a=Ed76zSDasvk_NLogn_cA:9
-X-Proofpoint-GUID: EKyy5ijb5wZblp7FZbBdyi5_dk6r3mH2
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2025-12-29_01,2025-12-26_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 impostorscore=0 adultscore=0 suspectscore=0 malwarescore=0
- bulkscore=0 priorityscore=1501 lowpriorityscore=0 phishscore=0 spamscore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2512120000 definitions=main-2512290041
+X-MS-PublicTrafficType: Email
+X-MS-TrafficTypeDiagnostic: AM0PR04MB7044:EE_|PAXPR04MB8270:EE_
+X-MS-Office365-Filtering-Correlation-Id: addc720c-c894-47e4-c253-08de46b8bcd2
+X-MS-Exchange-SenderADCheck: 1
+X-MS-Exchange-AntiSpam-Relay: 0
+X-Microsoft-Antispam:
+	BCL:0;ARA:13230040|376014|19092799006|52116014|366016|7416014|1800799024|38350700014|921020;
+X-Microsoft-Antispam-Message-Info:
+	=?us-ascii?Q?GeFcP1nLKUN88Lju3oxX5TiQVhOV2RkKUpt3kYZaAg+8DoAOjdDwJMVi9WeQ?=
+ =?us-ascii?Q?M9a4gFL5WhT30wP+vAniaaSyw3W3N8FEposyUSHLZNZB7Z1uAqfRfjrXl0En?=
+ =?us-ascii?Q?w5vC41ZwStAE3cUV098oBe7SAphhdZdBX41EqHeIGQupVozdoPRaE6GBoGQg?=
+ =?us-ascii?Q?osy9bUhR+qjabMvytXKr4Ojt+lIXOqXQrqeWSEehbOh/U3IPTYl10R/JFCng?=
+ =?us-ascii?Q?hN0BJGU8Rhcx3kWPI5R9hgQSUYc3PMnNn2SWuJilobPqy7Jm6dyj0cuFmMpr?=
+ =?us-ascii?Q?if3LwPVSalOTdDJ3P+hBczDp9bDSNeQ6sWO58OqDgEs1X9eLH3Wwov/B0dL0?=
+ =?us-ascii?Q?GEvWGMd9XjegwXvx+HsV+c91wJxvfncbtPpFLABKYbYMRRjGNjDiKvf6TWNQ?=
+ =?us-ascii?Q?zyQd6C882pemlmgYX3RDZ78gtE6Rs+mYipaQyzcmz2e/VVAd0G9agUUBQ763?=
+ =?us-ascii?Q?msBnQiQawcPaG+AHQL7DNDQU1UFOMtEU3BTtnrof6CIMU3b/XcK54a6W7+9I?=
+ =?us-ascii?Q?9+UmaAZ69grQ/Q4PeFwZKPUYW4/dUvm3I1eoW/MLvncG/RqxzDOl5uHSDT1x?=
+ =?us-ascii?Q?PSXxZq/UHtReF2A30/T2KqanuDKQ4UaPSiEa326hApDkDmbqQtw86IdNVWGn?=
+ =?us-ascii?Q?1nWG1ad9RpHsDmj0MIHb9nB+YOQ50k9zuD6eTVdizNVxjukRxoeuJWcKTk3f?=
+ =?us-ascii?Q?JwOVEgnzsmufpPXumJn1ECsyuxXvFfHiLM+PMJbJJllrPs/MqBAeyUC/Etbn?=
+ =?us-ascii?Q?wQAIDY9FGxwDihrY1AMw4ZPu3pp0Se/cIAvbBkPbeiqDmoJuRPZ6hS64EEWV?=
+ =?us-ascii?Q?1Z8o5i1h9yqK6OetCWv/lKICQA91VCWCISYF2AEFZIItX6TLy2RuQlIWkpKT?=
+ =?us-ascii?Q?6kTaiNsxSk5T3XoE3zemXaSNih6cXjuneGpZDrzv7s0NmtHGaDkuJ4RDC8P/?=
+ =?us-ascii?Q?hchHR5ZdpY95qLSqWfTfj7gMNsQB/Z3yt+tRvL1Yu9v4ZHSPkt/jglERkbqQ?=
+ =?us-ascii?Q?B1enFOhA88/i7PLMobkuLHYqO8zz7kLnlnVL+J07gYCzUitzSygT4f3uARSl?=
+ =?us-ascii?Q?UGPSU9TWXROtu7BU2qw1QMYaebowkPfwKWpiF+JnbMPs9C/3UbWc+Nk93lU4?=
+ =?us-ascii?Q?cEJhBhFvwYMOgiIgEPeXyx79wOe1Ozsp0f5gt1WJ9YeXReS/m4mFmk0Mx77p?=
+ =?us-ascii?Q?iSVDf5THerk13US6spb1Z09d+7EVK3cW4vubmsbsQVBegwZYlkas01HsD5hc?=
+ =?us-ascii?Q?fuoY7rN3H4IGEtN30D0VYaLI5I4YR7T0Z+LJ5NLHeaIT8ToGOIO0B6rJ1Xpe?=
+ =?us-ascii?Q?haKgAPuUr79856MHKsaZivL3ZAFis3EtGXMaq9Cl6Ex3iWE3413KSDWKgb8i?=
+ =?us-ascii?Q?0meb/vwXRBEyEExyDN8b0BHVaPsbXOIPUKlu8mesYER09iUAaUgp+q/SW4zX?=
+ =?us-ascii?Q?PrhID3Aec1A5RyIJ2xbVSHLfVR6sbTwNgrwVVMN46cHVn+VAOXSUSKE10BVu?=
+ =?us-ascii?Q?FyHeIRwb0cJoOOOdW1kqe2COIPs+YD/IPqTlPCzBIZ67vKD9uLX8nuOkQQ?=
+ =?us-ascii?Q?=3D=3D?=
+X-Forefront-Antispam-Report:
+	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:AM0PR04MB7044.eurprd04.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(376014)(19092799006)(52116014)(366016)(7416014)(1800799024)(38350700014)(921020);DIR:OUT;SFP:1101;
+X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
+X-MS-Exchange-AntiSpam-MessageData-0:
+	=?us-ascii?Q?Wf9Kd8cSS9jAsOjPQcqOeVetRQ0WTKOUd0wokzo16+7vTsXgjo5iqSFshkDk?=
+ =?us-ascii?Q?CL7oSpeNyrfCOgIBKPHReP9GkUbTz3Y1C6RuwF/7R530m5C7kWfjRbP1TXtl?=
+ =?us-ascii?Q?rqN9IShjl8wESDzFeKAnO5oijVf5UBmqGgHdJtCcLzN/c8ZG0ycA69Dg6MQr?=
+ =?us-ascii?Q?b7gEHH5XzGghSZ51Qh2/P7EHc7iAZR5ynWgbgWOcuzK6LzLV4oKW0oqVpULe?=
+ =?us-ascii?Q?/ERcmlae1o2EeXrh340APn0oUc9TMRByfeGLlisFBNOMdgEx5STZ9Yq4Km3/?=
+ =?us-ascii?Q?ixekCuEn2vfmTYsxKKzzDAGTOs5a1pAejKTk0MZqZ8jXALaUcXXc0xSAXg31?=
+ =?us-ascii?Q?QxNW7hEZmxM0J5a7gZhqJ9ejK6h29WQEb+0nMfERM+EnqR4uGnUcTXEatnoL?=
+ =?us-ascii?Q?eegjvS0DKtr01q0JV/xqjVZvTzdWnZoglR08dcr2YfIGDtqHChwXy6y53olr?=
+ =?us-ascii?Q?4bfBuFa5QPuAe4Ffzsk8alkO/ewRqzo3x+yS2EuY+Ri/JgqGlM9ppsNfmVfo?=
+ =?us-ascii?Q?3bpG9gNnkFaN9UfMJbZzNGPrjIZS9XyNvVpYJ/zPrJZ3y26upxoSpaaqCFW3?=
+ =?us-ascii?Q?qyofucPg2bK+GjvYwmmT56i7Y6G0DpMEbIyvfBP1Flyp8Vy0OM7HHIvN73J2?=
+ =?us-ascii?Q?Y6VcPZXp4Nv53D3SD29En60tb4w8v0d3injqatZQ2CHgCu6pI0cXIwIzaYox?=
+ =?us-ascii?Q?BmZYAD6BX3/tu8WrUiZRsoA6V2C3VzAT6pNWfKAEu1EnvBUxyD7HaU3qlz1f?=
+ =?us-ascii?Q?sgq4IJ9aKAFGsprslBgV86lYs1u+ctpeZWxE7lYxXe7GFXCwKcl3vbK6VIF3?=
+ =?us-ascii?Q?452BoTOsYlB0mRtEc9+bTx0HGdS3X21H5etaRogipBzRcPooHgnrFwjQUaKc?=
+ =?us-ascii?Q?5rV/cu0kt+jfrQV4Oqh6IRR4BXw95VVrvnKDpjFINGOeldPJoIoy0JK0I2LX?=
+ =?us-ascii?Q?VGJU+787ih4pIobZVde0gqP+Dr12WT6I/LWVmDiMmtuwRHAC0plAGuGA2gf6?=
+ =?us-ascii?Q?lPmwqln3QwvlEXyqarXSpJdB7hljiicOrTRz2ENzCv3lC3lY2dJteHV6sEn1?=
+ =?us-ascii?Q?2gL8fucjuONmmKJFmEepxnqXn0id8ad+x09AMEVcol6Y9YAgjYyQMgYLZb/i?=
+ =?us-ascii?Q?NxZkubQuVPW0QGo06dg51P4puOsg+Jn3Tcrxn9dfsScHXTcMvjK3q0XXG6hN?=
+ =?us-ascii?Q?cfscifikIoqqJZnLL58KEaRO8cZmA/BZjYLY3W7Km98mngdFzuw3VI/qLDM8?=
+ =?us-ascii?Q?+PF9I9/bhcAr/PI93yqPX6xX5rj5ASDc0VHuSH9rXPC2O1AxjIM52hQW7WUk?=
+ =?us-ascii?Q?a1RSrT+P6o61VL0XU3fCrL0NC/lcQJwCCn4mLCg/R21YaCh7GvtJKE7bPBNE?=
+ =?us-ascii?Q?INhDa73VdK167dgEbHqCVazwK2D8+JNCipmk0GHWAVv96rJDohPH2k++mkyB?=
+ =?us-ascii?Q?pm/d3vXHBmzcOpg7XbhVFlUOTd4b1vsLjKMclc/vO6jUgdepaXNiNnG4NW7V?=
+ =?us-ascii?Q?pLMNe/3OatFCGUYIp+K/xwc1YuultZO3QdGk1ZNWQvvUKb4ialEF6cW30f+r?=
+ =?us-ascii?Q?WB0uPQVkl6/HgCrQ0K79W4USClA+i1GfbOzZb4EMHFwpJ3TjAZYaN/DE5Rsz?=
+ =?us-ascii?Q?lbxtaJnCVa2ixEfqSYjcFzpvg9ueovs3WQr7iPcdLuucU9YG2Oejipn/GWX8?=
+ =?us-ascii?Q?J9gaNw4QC26EL5MKj9mUThs8EmRi2uG6aSzATkHuwHQnOD5+/UeQk90u3wLj?=
+ =?us-ascii?Q?6OipXD1SKA=3D=3D?=
+X-OriginatorOrg: nxp.com
+X-MS-Exchange-CrossTenant-Network-Message-Id: addc720c-c894-47e4-c253-08de46b8bcd2
+X-MS-Exchange-CrossTenant-AuthSource: AM0PR04MB7044.eurprd04.prod.outlook.com
+X-MS-Exchange-CrossTenant-AuthAs: Internal
+X-MS-Exchange-CrossTenant-OriginalArrivalTime: 29 Dec 2025 09:00:39.2145
+ (UTC)
+X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
+X-MS-Exchange-CrossTenant-Id: 686ea1d3-bc2b-4c6f-a92c-d99c5c301635
+X-MS-Exchange-CrossTenant-MailboxType: HOSTED
+X-MS-Exchange-CrossTenant-UserPrincipalName: jQVj1zlB8YTggyukkbWsEMx3SGyVzJ24oTO5zXu6SD7BA0o4TUYyByxde81dlKLlQs64RqL4eyEg0RK3NBHXTA==
+X-MS-Exchange-Transport-CrossTenantHeadersStamped: PAXPR04MB8270
 
-From: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+Fix below cocci warnings, the real width of val1 is 32bit, so use force
+cast to avoid warning.
 
-Move interrupt entry and exit helper routines from interrupt.h into the
-PowerPC-specific entry-common.h header as a preparatory step for enabling
-the generic entry/exit framework.
+cocci warnings: (new ones prefixed by >>)
+>> sound/soc/fsl/fsl_easrc.c:1999:2-8: WARNING: do_div() does a 64-by-32 division, please consider using div64_u64 instead.
 
-This consolidation places all PowerPC interrupt entry/exit handling in a
-single common header, aligning with the generic entry infrastructure.
-The helpers provide architecture-specific handling for interrupt and NMI
-entry/exit sequences, including:
-
- - arch_interrupt_enter/exit_prepare()
- - arch_interrupt_async_enter/exit_prepare()
- - arch_interrupt_nmi_enter/exit_prepare()
- - Supporting helpers such as nap_adjust_return(), check_return_regs_valid(),
-   debug register maintenance, and soft mask handling.
-
-The functions are copied verbatim from interrupt.h.Subsequent patches will
-integrate these routines into the generic entry/exit flow.
-
-No functional change intended.
-
-Signed-off-by: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+Fixes: 27147695aaf7 ("ASoC: fsl_easrc: define functions for memory to memory usage")
+Reported-by: kernel test robot <lkp@intel.com>
+Closes: https://lore.kernel.org/oe-kbuild-all/202512281902.bPsKjjkC-lkp@intel.com/
+Signed-off-by: Shengjiu Wang <shengjiu.wang@nxp.com>
 ---
- arch/powerpc/include/asm/entry-common.h | 419 ++++++++++++++++++++++++
- 1 file changed, 419 insertions(+)
+ sound/soc/fsl/fsl_easrc.c | 2 +-
+ 1 file changed, 1 insertion(+), 1 deletion(-)
 
-diff --git a/arch/powerpc/include/asm/entry-common.h b/arch/powerpc/include/asm/entry-common.h
-index 2684bc91e79b..295e1db56d2e 100644
---- a/arch/powerpc/include/asm/entry-common.h
-+++ b/arch/powerpc/include/asm/entry-common.h
-@@ -5,10 +5,429 @@
+diff --git a/sound/soc/fsl/fsl_easrc.c b/sound/soc/fsl/fsl_easrc.c
+index f404a39009e1..16a45a7146e8 100644
+--- a/sound/soc/fsl/fsl_easrc.c
++++ b/sound/soc/fsl/fsl_easrc.c
+@@ -1996,7 +1996,7 @@ static int fsl_easrc_m2m_calc_out_len(struct fsl_asrc_pair *pair, int input_buff
+ 		/* right shift 12 bit to make ratio in 32bit space */
+ 		val2 = (u64)in_samples << (frac_bits - 12);
+ 		val1 = val1 >> 12;
+-		do_div(val2, val1);
++		do_div(val2, (u32)val1);
+ 		out_samples = val2;
  
- #include <asm/cputime.h>
- #include <asm/interrupt.h>
-+#include <asm/runlatch.h>
- #include <asm/stacktrace.h>
- #include <asm/switch_to.h>
- #include <asm/tm.h>
- 
-+#ifdef CONFIG_PPC_IRQ_SOFT_MASK_DEBUG
-+/*
-+ * WARN/BUG is handled with a program interrupt so minimise checks here to
-+ * avoid recursion and maximise the chance of getting the first oops handled.
-+ */
-+#define INT_SOFT_MASK_BUG_ON(regs, cond)				\
-+do {									\
-+	if ((user_mode(regs) || (TRAP(regs) != INTERRUPT_PROGRAM)))	\
-+		BUG_ON(cond);						\
-+} while (0)
-+#else
-+#define INT_SOFT_MASK_BUG_ON(regs, cond)
-+#endif
-+
-+#ifdef CONFIG_PPC_BOOK3S_64
-+extern char __end_soft_masked[];
-+bool search_kernel_soft_mask_table(unsigned long addr);
-+unsigned long search_kernel_restart_table(unsigned long addr);
-+
-+DECLARE_STATIC_KEY_FALSE(interrupt_exit_not_reentrant);
-+
-+static inline bool is_implicit_soft_masked(struct pt_regs *regs)
-+{
-+	if (user_mode(regs))
-+		return false;
-+
-+	if (regs->nip >= (unsigned long)__end_soft_masked)
-+		return false;
-+
-+	return search_kernel_soft_mask_table(regs->nip);
-+}
-+
-+static inline void srr_regs_clobbered(void)
-+{
-+	local_paca->srr_valid = 0;
-+	local_paca->hsrr_valid = 0;
-+}
-+#else
-+static inline unsigned long search_kernel_restart_table(unsigned long addr)
-+{
-+	return 0;
-+}
-+
-+static inline bool is_implicit_soft_masked(struct pt_regs *regs)
-+{
-+	return false;
-+}
-+
-+static inline void srr_regs_clobbered(void)
-+{
-+}
-+#endif
-+
-+static inline void nap_adjust_return(struct pt_regs *regs)
-+{
-+#ifdef CONFIG_PPC_970_NAP
-+	if (unlikely(test_thread_local_flags(_TLF_NAPPING))) {
-+		/* Can avoid a test-and-clear because NMIs do not call this */
-+		clear_thread_local_flags(_TLF_NAPPING);
-+		regs_set_return_ip(regs, (unsigned long)power4_idle_nap_return);
-+	}
-+#endif
-+}
-+
-+static inline void booke_load_dbcr0(void)
-+{
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
-+	unsigned long dbcr0 = current->thread.debug.dbcr0;
-+
-+	if (likely(!(dbcr0 & DBCR0_IDM)))
-+		return;
-+
-+	/*
-+	 * Check to see if the dbcr0 register is set up to debug.
-+	 * Use the internal debug mode bit to do this.
-+	 */
-+	mtmsr(mfmsr() & ~MSR_DE);
-+	if (IS_ENABLED(CONFIG_PPC32)) {
-+		isync();
-+		global_dbcr0[smp_processor_id()] = mfspr(SPRN_DBCR0);
-+	}
-+	mtspr(SPRN_DBCR0, dbcr0);
-+	mtspr(SPRN_DBSR, -1);
-+#endif
-+}
-+
-+static inline void booke_restore_dbcr0(void)
-+{
-+#ifdef CONFIG_PPC_ADV_DEBUG_REGS
-+	unsigned long dbcr0 = current->thread.debug.dbcr0;
-+
-+	if (IS_ENABLED(CONFIG_PPC32) && unlikely(dbcr0 & DBCR0_IDM)) {
-+		mtspr(SPRN_DBSR, -1);
-+		mtspr(SPRN_DBCR0, global_dbcr0[smp_processor_id()]);
-+	}
-+#endif
-+}
-+
-+static inline void check_return_regs_valid(struct pt_regs *regs)
-+{
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	unsigned long trap, srr0, srr1;
-+	static bool warned;
-+	u8 *validp;
-+	char *h;
-+
-+	if (trap_is_scv(regs))
-+		return;
-+
-+	trap = TRAP(regs);
-+	// EE in HV mode sets HSRRs like 0xea0
-+	if (cpu_has_feature(CPU_FTR_HVMODE) && trap == INTERRUPT_EXTERNAL)
-+		trap = 0xea0;
-+
-+	switch (trap) {
-+	case 0x980:
-+	case INTERRUPT_H_DATA_STORAGE:
-+	case 0xe20:
-+	case 0xe40:
-+	case INTERRUPT_HMI:
-+	case 0xe80:
-+	case 0xea0:
-+	case INTERRUPT_H_FAC_UNAVAIL:
-+	case 0x1200:
-+	case 0x1500:
-+	case 0x1600:
-+	case 0x1800:
-+		validp = &local_paca->hsrr_valid;
-+		if (!READ_ONCE(*validp))
-+			return;
-+
-+		srr0 = mfspr(SPRN_HSRR0);
-+		srr1 = mfspr(SPRN_HSRR1);
-+		h = "H";
-+
-+		break;
-+	default:
-+		validp = &local_paca->srr_valid;
-+		if (!READ_ONCE(*validp))
-+			return;
-+
-+		srr0 = mfspr(SPRN_SRR0);
-+		srr1 = mfspr(SPRN_SRR1);
-+		h = "";
-+		break;
-+	}
-+
-+	if (srr0 == regs->nip && srr1 == regs->msr)
-+		return;
-+
-+	/*
-+	 * A NMI / soft-NMI interrupt may have come in after we found
-+	 * srr_valid and before the SRRs are loaded. The interrupt then
-+	 * comes in and clobbers SRRs and clears srr_valid. Then we load
-+	 * the SRRs here and test them above and find they don't match.
-+	 *
-+	 * Test validity again after that, to catch such false positives.
-+	 *
-+	 * This test in general will have some window for false negatives
-+	 * and may not catch and fix all such cases if an NMI comes in
-+	 * later and clobbers SRRs without clearing srr_valid, but hopefully
-+	 * such things will get caught most of the time, statistically
-+	 * enough to be able to get a warning out.
-+	 */
-+	if (!READ_ONCE(*validp))
-+		return;
-+
-+	if (!data_race(warned)) {
-+		data_race(warned = true);
-+		pr_warn("%sSRR0 was: %lx should be: %lx\n", h, srr0, regs->nip);
-+		pr_warn("%sSRR1 was: %lx should be: %lx\n", h, srr1, regs->msr);
-+		show_regs(regs);
-+	}
-+
-+	WRITE_ONCE(*validp, 0); /* fixup */
-+#endif
-+}
-+
-+static inline void arch_interrupt_enter_prepare(struct pt_regs *regs)
-+{
-+#ifdef CONFIG_PPC64
-+	irq_soft_mask_set(IRQS_ALL_DISABLED);
-+
-+	/*
-+	 * If the interrupt was taken with HARD_DIS clear, then enable MSR[EE].
-+	 * Asynchronous interrupts get here with HARD_DIS set (see below), so
-+	 * this enables MSR[EE] for synchronous interrupts. IRQs remain
-+	 * soft-masked. The interrupt handler may later call
-+	 * interrupt_cond_local_irq_enable() to achieve a regular process
-+	 * context.
-+	 */
-+	if (!(local_paca->irq_happened & PACA_IRQ_HARD_DIS)) {
-+		INT_SOFT_MASK_BUG_ON(regs, !(regs->msr & MSR_EE));
-+		__hard_irq_enable();
-+	} else {
-+		__hard_RI_enable();
-+	}
-+	/* Enable MSR[RI] early, to support kernel SLB and hash faults */
-+#endif
-+
-+	if (!regs_irqs_disabled(regs))
-+		trace_hardirqs_off();
-+
-+	if (user_mode(regs)) {
-+		kuap_lock();
-+		account_cpu_user_entry();
-+		account_stolen_time();
-+	} else {
-+		kuap_save_and_lock(regs);
-+		/*
-+		 * CT_WARN_ON comes here via program_check_exception,
-+		 * so avoid recursion.
-+		 */
-+		if (TRAP(regs) != INTERRUPT_PROGRAM)
-+			CT_WARN_ON(ct_state() != CT_STATE_KERNEL &&
-+				   ct_state() != CT_STATE_IDLE);
-+		INT_SOFT_MASK_BUG_ON(regs, is_implicit_soft_masked(regs));
-+		INT_SOFT_MASK_BUG_ON(regs, regs_irqs_disabled(regs) &&
-+				     search_kernel_restart_table(regs->nip));
-+	}
-+	INT_SOFT_MASK_BUG_ON(regs, !regs_irqs_disabled(regs) &&
-+			     !(regs->msr & MSR_EE));
-+
-+	booke_restore_dbcr0();
-+}
-+
-+/*
-+ * Care should be taken to note that arch_interrupt_exit_prepare and
-+ * arch_interrupt_async_exit_prepare do not necessarily return immediately to
-+ * regs context (e.g., if regs is usermode, we don't necessarily return to
-+ * user mode). Other interrupts might be taken between here and return,
-+ * context switch / preemption may occur in the exit path after this, or a
-+ * signal may be delivered, etc.
-+ *
-+ * The real interrupt exit code is platform specific, e.g.,
-+ * interrupt_exit_user_prepare / interrupt_exit_kernel_prepare for 64s.
-+ *
-+ * However arch_interrupt_nmi_exit_prepare does return directly to regs, because
-+ * NMIs do not do "exit work" or replay soft-masked interrupts.
-+ */
-+static inline void arch_interrupt_exit_prepare(struct pt_regs *regs)
-+{
-+}
-+
-+static inline void arch_interrupt_async_enter_prepare(struct pt_regs *regs)
-+{
-+#ifdef CONFIG_PPC64
-+	/* Ensure arch_interrupt_enter_prepare does not enable MSR[EE] */
-+	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
-+#endif
-+	arch_interrupt_enter_prepare(regs);
-+#ifdef CONFIG_PPC_BOOK3S_64
-+	/*
-+	 * RI=1 is set by arch_interrupt_enter_prepare, so this thread flags access
-+	 * has to come afterward (it can cause SLB faults).
-+	 */
-+	if (cpu_has_feature(CPU_FTR_CTRL) &&
-+	    !test_thread_local_flags(_TLF_RUNLATCH))
-+		__ppc64_runlatch_on();
-+#endif
-+	irq_enter();
-+}
-+
-+static inline void arch_interrupt_async_exit_prepare(struct pt_regs *regs)
-+{
-+	/*
-+	 * Adjust at exit so the main handler sees the true NIA. This must
-+	 * come before irq_exit() because irq_exit can enable interrupts, and
-+	 * if another interrupt is taken before nap_adjust_return has run
-+	 * here, then that interrupt would return directly to idle nap return.
-+	 */
-+	nap_adjust_return(regs);
-+
-+	irq_exit();
-+	arch_interrupt_exit_prepare(regs);
-+}
-+
-+struct interrupt_nmi_state {
-+#ifdef CONFIG_PPC64
-+	u8 irq_soft_mask;
-+	u8 irq_happened;
-+	u8 ftrace_enabled;
-+	u64 softe;
-+#endif
-+};
-+
-+static inline bool nmi_disables_ftrace(struct pt_regs *regs)
-+{
-+	/* Allow DEC and PMI to be traced when they are soft-NMI */
-+	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64)) {
-+		if (TRAP(regs) == INTERRUPT_DECREMENTER)
-+			return false;
-+		if (TRAP(regs) == INTERRUPT_PERFMON)
-+			return false;
-+	}
-+	if (IS_ENABLED(CONFIG_PPC_BOOK3E_64)) {
-+		if (TRAP(regs) == INTERRUPT_PERFMON)
-+			return false;
-+	}
-+
-+	return true;
-+}
-+
-+static inline void arch_interrupt_nmi_enter_prepare(struct pt_regs *regs,
-+						    struct interrupt_nmi_state *state)
-+{
-+#ifdef CONFIG_PPC64
-+	state->irq_soft_mask = local_paca->irq_soft_mask;
-+	state->irq_happened = local_paca->irq_happened;
-+	state->softe = regs->softe;
-+
-+	/*
-+	 * Set IRQS_ALL_DISABLED unconditionally so irqs_disabled() does
-+	 * the right thing, and set IRQ_HARD_DIS. We do not want to reconcile
-+	 * because that goes through irq tracing which we don't want in NMI.
-+	 */
-+	local_paca->irq_soft_mask = IRQS_ALL_DISABLED;
-+	local_paca->irq_happened |= PACA_IRQ_HARD_DIS;
-+
-+	if (!(regs->msr & MSR_EE) || is_implicit_soft_masked(regs)) {
-+		/*
-+		 * Adjust regs->softe to be soft-masked if it had not been
-+		 * reconcied (e.g., interrupt entry with MSR[EE]=0 but softe
-+		 * not yet set disabled), or if it was in an implicit soft
-+		 * masked state. This makes regs_irqs_disabled(regs)
-+		 * behave as expected.
-+		 */
-+		regs->softe = IRQS_ALL_DISABLED;
-+	}
-+
-+	__hard_RI_enable();
-+
-+	/* Don't do any per-CPU operations until interrupt state is fixed */
-+
-+	if (nmi_disables_ftrace(regs)) {
-+		state->ftrace_enabled = this_cpu_get_ftrace_enabled();
-+		this_cpu_set_ftrace_enabled(0);
-+	}
-+#endif
-+
-+	/* If data relocations are enabled, it's safe to use nmi_enter() */
-+	if (mfmsr() & MSR_DR) {
-+		nmi_enter();
-+		return;
-+	}
-+
-+	/*
-+	 * But do not use nmi_enter() for pseries hash guest taking a real-mode
-+	 * NMI because not everything it touches is within the RMA limit.
-+	 */
-+	if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&
-+	    firmware_has_feature(FW_FEATURE_LPAR) &&
-+	    !radix_enabled())
-+		return;
-+
-+	/*
-+	 * Likewise, don't use it if we have some form of instrumentation (like
-+	 * KASAN shadow) that is not safe to access in real mode (even on radix)
-+	 */
-+	if (IS_ENABLED(CONFIG_KASAN))
-+		return;
-+
-+	/*
-+	 * Likewise, do not use it in real mode if percpu first chunk is not
-+	 * embedded. With CONFIG_NEED_PER_CPU_PAGE_FIRST_CHUNK enabled there
-+	 * are chances where percpu allocation can come from vmalloc area.
-+	 */
-+	if (percpu_first_chunk_is_paged)
-+		return;
-+
-+	/* Otherwise, it should be safe to call it */
-+	nmi_enter();
-+}
-+
-+static inline void arch_interrupt_nmi_exit_prepare(struct pt_regs *regs,
-+						   struct interrupt_nmi_state *state)
-+{
-+	if (mfmsr() & MSR_DR) {
-+		// nmi_exit if relocations are on
-+		nmi_exit();
-+	} else if (IS_ENABLED(CONFIG_PPC_BOOK3S_64) &&
-+		   firmware_has_feature(FW_FEATURE_LPAR) &&
-+		   !radix_enabled()) {
-+		// no nmi_exit for a pseries hash guest taking a real mode exception
-+	} else if (IS_ENABLED(CONFIG_KASAN)) {
-+		// no nmi_exit for KASAN in real mode
-+	} else if (percpu_first_chunk_is_paged) {
-+		// no nmi_exit if percpu first chunk is not embedded
-+	} else {
-+		nmi_exit();
-+	}
-+
-+	/*
-+	 * nmi does not call nap_adjust_return because nmi should not create
-+	 * new work to do (must use irq_work for that).
-+	 */
-+
-+#ifdef CONFIG_PPC64
-+#ifdef CONFIG_PPC_BOOK3S
-+	if (regs_irqs_disabled(regs)) {
-+		unsigned long rst = search_kernel_restart_table(regs->nip);
-+
-+		if (rst)
-+			regs_set_return_ip(regs, rst);
-+	}
-+#endif
-+
-+	if (nmi_disables_ftrace(regs))
-+		this_cpu_set_ftrace_enabled(state->ftrace_enabled);
-+
-+	/* Check we didn't change the pending interrupt mask. */
-+	WARN_ON_ONCE((state->irq_happened | PACA_IRQ_HARD_DIS) != local_paca->irq_happened);
-+	regs->softe = state->softe;
-+	local_paca->irq_happened = state->irq_happened;
-+	local_paca->irq_soft_mask = state->irq_soft_mask;
-+#endif
-+}
-+
- static __always_inline void arch_enter_from_user_mode(struct pt_regs *regs)
- {
- 	kuap_lock();
+ 		out_length = out_samples * out_width * channels;
 -- 
-2.52.0
+2.34.1
 
 
