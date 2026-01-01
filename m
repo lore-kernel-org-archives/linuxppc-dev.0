@@ -1,79 +1,56 @@
-Return-Path: <linuxppc-dev+bounces-15111-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15112-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 421CCEED603
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jan 2026 15:06:47 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7786FEEB579
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  1 Jan 2026 16:58:40 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dhqsx0NB7z2xpk;
-	Fri, 02 Jan 2026 02:06:45 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.158.5
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767280004;
-	cv=none; b=AyYT3Yh1fK4eV+4RkNlEbTpuixG63XD0dKMRbNG3KNPanKNyBGZsChuWE4Ltzm3zihaCgM1EVREa8q48O6jqYNuB4XK+7e7DvrVfUFuUOfLcSBBkTRMt6GMrfb2ffzogQSH0CIyLCYhTxrZKq7F0NDop6tKDyOjOxuFuW7g1fQLquR3Lc1XrIM2qF2GYLOeLc39CC8/CB2LwHgWdi0dHOdbWppk1T2vE3e4khn/bQhFMLHJwN/dFbQRa61iSB1eVQ/NXy5JCopmE08FoqIXN8as8+/J1qxlU5+DYoVlXs1FGAzM5V/4o7K6l0eyqJ+0K+y9g54s4VY14fdjaKSbgxA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dhtM24n5Tz2xqr;
+	Fri, 02 Jan 2026 03:58:38 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767286718;
+	cv=none; b=oqi8NEZMB9TydNDNJKnXILfxzk4KOGhPDNM7COpw2i+ddChRiAOM6IcdgafyUdwjl27HSuoOHfQtdVHudJNbrpfDPCAd6uJ7uBq1fSg53hYd6fGipDK3IZ8efwcFDNtoeoxiypLxcmxyy5bot0K8LVHJpKi+d37Vk8FrGHi6/nnwds0J2E2Ji6rlJkFCCUdGfy571gEsJ8IMh9NleYqjnBEQPaVeIO+/pIcyVVjF3sbxVsy/VLp+e3kx6+4mVjxQPn1VoxNGY/R/SnDcIoWQCNo8kcyy0O0A8bGPxo6gFTY5YL+bJlJ1uYM8p3HZBTl6tPjPbjjuHRgvAi24mrB4/Q==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767280004; c=relaxed/relaxed;
-	bh=d8fcVgmWcefeU0P9LyRd0h37t+Vi86TuMkESe/9Atms=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=Eoj1mMcPA28SELeGggyLuHulu2BirllgX7lcU2d3NlsMT3GQfZIn4u3bqzEz/d4iMq6FJ7UIOZmAgv+ljn/urMVjc4sPXpcPaNN6tM1O4udkXRMsFhOXkasp8PMM9zR91RuDLg+ndkUaqx6j31Ghq3v6GeGJQz4k1a3WEpUUtclAuu44dYBETbY9eL9oqluvNZ1BxENbZlpNQ8zHcBdivOmaJbGc53ydOyNuhx5stKLpRh+4Dnx34Pl4+mZjbmdBSyhinUdxvDIbY1d27CLLVcM1pa3ZVPvNVRacoK5KFXS4JO/LwiAP5SxyuALUIktKRnuSbhjOalmbJXRRwc7pqg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g4nQrIOU; dkim-atps=neutral; spf=pass (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1767286718; c=relaxed/relaxed;
+	bh=1cvxKAnCO+PXwoUIjH78p+fwTIs0pr414Z/W//Om8wI=;
+	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
+	 In-Reply-To:To:Cc; b=T+0JP1c3eRPyENFciGn93KnZVDDZCVLES5U17SLw3tHI1M/DR1Td/u6BlVbxwKuuijBAsroH9g6NX5Pme2jBo0Kne+9hfBclVgpW1ZP+fg1c1fBORDnGYoPZGL0pMHZKSIoO1tEhEZLy5e3PD7fXsUziuRZLzTmClqH1vKbj1Mugwxrd/7PeDaDb1c930fwNjKvuaH8WT2S97ieNdhYJdBX4ZJmRvuZhIEY2IZr5DjqwP4Puh5BZk03v+vJRS0Hqkcy8AGEGfK4JltQJ+J9IXhS8Uv1/HPsZuuS/z0oG6ui5tJnk1KJIzhzVOX5/X+bQMdjBjidSmk8SFmmlj9oHBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YdzdoozZ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=g4nQrIOU;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=YdzdoozZ;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.158.5; helo=mx0b-001b2d01.pphosted.com; envelope-from=sourabhjain@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0b-001b2d01.pphosted.com (mx0b-001b2d01.pphosted.com [148.163.158.5])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dhqst4Gq6z2xP9
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jan 2026 02:06:41 +1100 (AEDT)
-Received: from pps.filterd (m0360072.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 6012Ebau004564;
-	Thu, 1 Jan 2026 15:06:20 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=d8fcVg
-	mWcefeU0P9LyRd0h37t+Vi86TuMkESe/9Atms=; b=g4nQrIOUWruThZPTKuBOHt
-	1TBbPozQQdu8ekoG5n9wxShcp4toV5cCPsSEguNiwITZQUj7Dn5vJmWfIZV+X8vv
-	pM4yUFae8eeH5WyTcCTqIe13PAdZNsZfIfv7IiaTp4GyniFOS8y4OJu4/0BsNlPz
-	pbqszUkSbNYPpgBosJnCcYorPb6J80P7sJIHQPaZnMqkr0bVY/x8Rac6t0F2v0FB
-	q2jtJpIhECWvaWlz9dTMB7Jucug0ZNJJ00cYGB/jW7HWfgp/wLMPj7b+P4xjJZ0P
-	cgM+lZb+cX55iFhm6BwxlyIt5zdTeBvQ/rfz4XqHJhkBnezBEBucfrl1x/IiaKVw
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ba73w1t40-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 Jan 2026 15:06:19 +0000 (GMT)
-Received: from m0360072.ppops.net (m0360072.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 601F6JK9030222;
-	Thu, 1 Jan 2026 15:06:19 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4ba73w1t3x-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 Jan 2026 15:06:19 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 601BA6EK026897;
-	Thu, 1 Jan 2026 15:06:18 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4batsnk1gs-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Thu, 01 Jan 2026 15:06:18 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 601F6EFH62063034
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Thu, 1 Jan 2026 15:06:14 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 374B720043;
-	Thu,  1 Jan 2026 15:06:14 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 3D86420040;
-	Thu,  1 Jan 2026 15:06:11 +0000 (GMT)
-Received: from [9.124.212.98] (unknown [9.124.212.98])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Thu,  1 Jan 2026 15:06:11 +0000 (GMT)
-Message-ID: <e32554c8-774e-416d-92e4-306aec42b953@linux.ibm.com>
-Date: Thu, 1 Jan 2026 20:36:09 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dhtM06Jdzz2xP9
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jan 2026 03:58:36 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by sea.source.kernel.org (Postfix) with ESMTP id 7FD22444AB;
+	Thu,  1 Jan 2026 16:58:34 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 39D17C16AAE;
+	Thu,  1 Jan 2026 16:58:34 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767286714;
+	bh=Q9LLHnvTxiDMFvAfLdjpxxShPJnvDv5Otm4KvImTOx0=;
+	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
+	b=YdzdoozZ7gZDIqBuUmTQ4wt1jPil4F/I1uQcfpGwWA99opcezPzb5IyTjiiuuECxj
+	 3e2nS82OyrRmyllMdqyeYfl7g1nglwwWeJZiZWC5Wo38HlDGchh69UUjEVAJoWzq3r
+	 EgO5IfWlAS0KOpS6cFA8tATnnfDaa8kiFk+c7DFZCItk3DW0wfEeNV//rFnux4d/lR
+	 0cIiRR7kf57YQ74SyQewQDFm7fiFqffBvDQ/VVZVCr8bIjtkWJCS5UUgJqn1buQb/N
+	 9nTznv6wqUN29L1Dzsv3MqF952AnDnsB0BNkCpUbOJFQb9iyv2AaIgKi7Ome19CuAv
+	 ezyE0cIG8AZiw==
+Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 25668EED628;
+	Thu,  1 Jan 2026 16:58:34 +0000 (UTC)
+From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
+Date: Thu, 01 Jan 2026 17:58:15 +0100
+Subject: [PATCH RESEND v5 2/4] dt-bindings: memory-controllers: Add
+ fsl,elbc-gpcm-uio
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,209 +64,133 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH] powerpc/kdump: pass dm-crypt keys to kdump kernel
-To: Coiby Xu <coxu@redhat.com>, kexec@lists.infradead.org,
-        linuxppc-dev@lists.ozlabs.org
-Cc: Thomas Staudt <tstaudt@de.ibm.com>,
-        Arnaud Lefebvre <arnaud.lefebvre@clever-cloud.com>,
-        Baoquan he <bhe@redhat.com>, Dave Young <dyoung@redhat.com>,
-        Kairui Song <ryncsn@gmail.com>, Pingfan Liu <kernelfans@gmail.com>,
-        Andrew Morton <akpm@linux-foundation.org>,
-        Madhavan Srinivasan <maddy@linux.ibm.com>,
-        Michael Ellerman <mpe@ellerman.id.au>,
-        Nicholas Piggin <npiggin@gmail.com>,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-        open list <linux-kernel@vger.kernel.org>
-References: <20251226140636.1378505-1-coxu@redhat.com>
-Content-Language: en-US
-From: Sourabh Jain <sourabhjain@linux.ibm.com>
-In-Reply-To: <20251226140636.1378505-1-coxu@redhat.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-ORIG-GUID: AqNKOzqNRkU4VMUSvfbYuc_8_4dJmaxA
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTAxMDEzMyBTYWx0ZWRfX+6xO0L6FIz73
- +yY54B+bJYx3KwCfKTS62ljwirEOrxDt4tPQsE+EsCrteBGlX2EAaY9N5wkecIGuEBibBgZQdF0
- B37BoYztVxwxDs8snrKfA407hHaNgT08DnrGOi2VYR+NBqw5wLFbriJ9ttPDBPa4syalfVdMdPu
- CbPGWcsciiURYNNoA97b0JrZZBIRfBmsVTBRMAlzQqsIFLWrZgl8F5st4/neGcxyGvjTryHg5ib
- XuNrYOkj0r2qYSWU/R8CcZHiLNhkTNVCAhYHYqFdKtFYTgMHC3xj9xQST9AHoihiMElnluvogbJ
- VblKAxo79gmRPFJfpovd2BelH0UPxSvQjJdnKJUrN+H3rjjgQsEjmYGqK9kAhi3JW0oiS+gP/qJ
- aVen6ssDRE3a3lKtvob3S/HGKeI6uIq9SWQSFrLhsoxkgPjanbAFaSssFH4EywujCFpz7Qdxx1Z
- pAtuVo5CHshKXITyv7w==
-X-Authority-Analysis: v=2.4 cv=fobRpV4f c=1 sm=1 tr=0 ts=69568d6b cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=VwQbUJbxAAAA:8 a=20KFwNOVAAAA:8 a=VnNF1IyMAAAA:8 a=b2T7Ds_qAAAA:8
- a=pGLkceISAAAA:8 a=Z4Rwk6OoAAAA:8 a=llR5IeLaMymARZ-qTl0A:9 a=QEXdDO2ut3YA:10
- a=thWvoDmNLqknv6kuXhLH:22 a=HkZW87K1Qel5hWWM3VKY:22
-X-Proofpoint-GUID: 2aPxOHtFQDWOjuA52_GD-Nwi5EMnNm78
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2026-01-01_05,2025-12-31_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- lowpriorityscore=0 suspectscore=0 phishscore=0 adultscore=0 malwarescore=0
- spamscore=0 bulkscore=0 impostorscore=0 priorityscore=1501 clxscore=1011
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2512120000 definitions=main-2601010133
+Content-Type: text/plain; charset="utf-8"
+Content-Transfer-Encoding: 8bit
+Message-Id: <20260101-ppcyaml-elbc-v5-2-251c7f14a06c@posteo.net>
+References: <20260101-ppcyaml-elbc-v5-0-251c7f14a06c@posteo.net>
+In-Reply-To: <20260101-ppcyaml-elbc-v5-0-251c7f14a06c@posteo.net>
+To: Krzysztof Kozlowski <krzk@kernel.org>, Rob Herring <robh@kernel.org>, 
+ Conor Dooley <conor+dt@kernel.org>, 
+ Miquel Raynal <miquel.raynal@bootlin.com>, 
+ Richard Weinberger <richard@nod.at>, Vignesh Raghavendra <vigneshr@ti.com>, 
+ Krzysztof Kozlowski <krzk+dt@kernel.org>, Crystal Wood <oss@buserror.net>, 
+ Madhavan Srinivasan <maddy@linux.ibm.com>, 
+ Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
+ Naveen N Rao <naveen@kernel.org>, David Airlie <airlied@gmail.com>, 
+ Simona Vetter <simona@ffwll.ch>, 
+ Maarten Lankhorst <maarten.lankhorst@linux.intel.com>, 
+ Maxime Ripard <mripard@kernel.org>, Thomas Zimmermann <tzimmermann@suse.de>, 
+ Christophe Leroy <chleroy@kernel.org>
+Cc: Frank Li <Frank.Li@nxp.com>, linux-kernel@vger.kernel.org, 
+ devicetree@vger.kernel.org, linux-mtd@lists.infradead.org, 
+ linuxppc-dev@lists.ozlabs.org, dri-devel@lists.freedesktop.org, 
+ =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+X-Mailer: b4 0.14.3
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1767286712; l=2396;
+ i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
+ bh=bUAGbzS6p74FR6LkzbFgL5RNEAyIuDnK2zSEZn2z+XU=;
+ b=2ApK1JqrIreJZ2Rl3uI4oev0BN99TTYjK1Vd/Ao9Xn5xZp5RnvxYNhV6Mpu/MblJzAYcs/61d
+ ORSF2ZcDNHQD2nkrLDlFoK+inZAJcRp8ureEo9DLeANwi0lI531kXNM
+X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
+ pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
+X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
+ auth_id=156
+X-Original-From: =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
+Reply-To: j.ne@posteo.net
 
+From: "J. Neuschäfer" <j.ne@posteo.net>
 
+Formalize the binding already supported by the uio_fsl_elbc_gpcm.c
+driver.
 
-On 26/12/25 19:36, Coiby Xu wrote:
-> Based on the CONFIG_CRASH_DM_CRYPT feature, this patch adds
-> LUKS-encrypted device dump target support to PowerPC by addressing two
-> challenges [1],
->   - Kdump kernel may not be able to decrypt the LUKS partition. For some
->     machines, a system administrator may not have a chance to enter the
->     password to decrypt the device in kdump initramfs after the 1st kernel
->     crashes
->
->   - LUKS2 by default use the memory-hard Argon2 key derivation function
->     which is quite memory-consuming compared to the limited memory reserved
->     for kdump.
->
-> 1st kernel will build up the kernel command parameter dmcryptkeys as
-> similar to elfcorehdr to pass the memory address of the stored info of
-> dm-crypt keys to the kdump kernel.
->
-> [1] https://lore.kernel.org/all/20250502011246.99238-1-coxu@redhat.com/
->
-> Cc: Thomas Staudt <tstaudt@de.ibm.com>
-> Cc: Arnaud Lefebvre <arnaud.lefebvre@clever-cloud.com>
-> Cc: Baoquan he <bhe@redhat.com>
-> Cc: Dave Young <dyoung@redhat.com>
-> Cc: Kairui Song <ryncsn@gmail.com>
-> Cc: Pingfan Liu <kernelfans@gmail.com>
-> Cc: Andrew Morton <akpm@linux-foundation.org>
-> Signed-off-by: Coiby Xu <coxu@redhat.com>
-> ---
->   arch/powerpc/include/asm/kexec.h |  3 ++-
->   arch/powerpc/kexec/elf_64.c      | 26 +++++++++++++++++++++++++-
->   arch/powerpc/kexec/file_load.c   | 19 +++++++++++--------
->   3 files changed, 38 insertions(+), 10 deletions(-)
->
-> diff --git a/arch/powerpc/include/asm/kexec.h b/arch/powerpc/include/asm/kexec.h
-> index bd4a6c42a5f3..f3d098d543b4 100644
-> --- a/arch/powerpc/include/asm/kexec.h
-> +++ b/arch/powerpc/include/asm/kexec.h
-> @@ -80,7 +80,8 @@ struct kimage_arch {
->   };
->   
->   char *setup_kdump_cmdline(struct kimage *image, char *cmdline,
-> -			  unsigned long cmdline_len);
-> +			  unsigned long cmdline_len,
-> +			  char *name, unsigned long addr);
->   int setup_purgatory(struct kimage *image, const void *slave_code,
->   		    const void *fdt, unsigned long kernel_load_addr,
->   		    unsigned long fdt_load_addr);
-> diff --git a/arch/powerpc/kexec/elf_64.c b/arch/powerpc/kexec/elf_64.c
-> index 5d6d616404cf..57cb3361d91b 100644
-> --- a/arch/powerpc/kexec/elf_64.c
-> +++ b/arch/powerpc/kexec/elf_64.c
-> @@ -81,13 +81,37 @@ static void *elf64_load(struct kimage *image, char *kernel_buf,
->   
->   		/* Setup cmdline for kdump kernel case */
->   		modified_cmdline = setup_kdump_cmdline(image, cmdline,
-> -						       cmdline_len);
-> +						       cmdline_len,
-> +						       "elfcorehdr",
-> +						       image->elf_load_addr);
->   		if (!modified_cmdline) {
->   			pr_err("Setting up cmdline for kdump kernel failed\n");
->   			ret = -EINVAL;
->   			goto out;
->   		}
->   		cmdline = modified_cmdline;
-> +		cmdline_len = strlen(cmdline) + 1;
-> +
-> +		ret = crash_load_dm_crypt_keys(image);
-> +		if (ret == -ENOENT) {
-> +			kexec_dprintk("No dm crypt key to load\n");
-> +		} else if (ret) {
-> +			pr_err("Failed to load dm crypt keys\n");
-> +			return ERR_PTR(ret);
-> +		}
-> +
-> +		if (image->dm_crypt_keys_addr != 0) {
-> +			modified_cmdline = setup_kdump_cmdline(image, cmdline,
-> +							       cmdline_len,
-> +							       "dmcryptkeys",
-> +							       image->dm_crypt_keys_addr);
-> +			if (!modified_cmdline) {
-> +				pr_err("Setting up cmdline for kdump kernel failed\n");
-> +				ret = -EINVAL;
-> +				goto out;
-> +			}
-> +			cmdline = modified_cmdline;
-> +		}
->   	}
->   
->   	if (initrd != NULL) {
-> diff --git a/arch/powerpc/kexec/file_load.c b/arch/powerpc/kexec/file_load.c
-> index 4284f76cbef5..e1c08050286d 100644
-> --- a/arch/powerpc/kexec/file_load.c
-> +++ b/arch/powerpc/kexec/file_load.c
-> @@ -23,38 +23,41 @@
->   #define SLAVE_CODE_SIZE		256	/* First 0x100 bytes */
->   
->   /**
-> - * setup_kdump_cmdline - Prepend "elfcorehdr=<addr> " to command line
-> + * setup_kdump_cmdline - Prepend "<name>=<addr> " to command line
->    *                       of kdump kernel for exporting the core.
->    * @image:               Kexec image
->    * @cmdline:             Command line parameters to update.
->    * @cmdline_len:         Length of the cmdline parameters.
-> + * @name:                Name e.g elfcorehdr.
-> + * @addr:                Memory address.
->    *
->    * kdump segment must be setup before calling this function.
->    *
->    * Returns new cmdline buffer for kdump kernel on success, NULL otherwise.
->    */
->   char *setup_kdump_cmdline(struct kimage *image, char *cmdline,
-> -			  unsigned long cmdline_len)
-> +			  unsigned long cmdline_len,
-> +			  char *name, unsigned long addr)
->   {
-> -	int elfcorehdr_strlen;
-> +	unsigned long parameter_len;
->   	char *cmdline_ptr;
->   
->   	cmdline_ptr = kzalloc(COMMAND_LINE_SIZE, GFP_KERNEL);
->   	if (!cmdline_ptr)
->   		return NULL;
->   
-> -	elfcorehdr_strlen = sprintf(cmdline_ptr, "elfcorehdr=0x%lx ",
-> -				    image->elf_load_addr);
-> +	parameter_len = sprintf(cmdline_ptr, "%s=0x%lx ", name, addr);
->   
-> -	if (elfcorehdr_strlen + cmdline_len > COMMAND_LINE_SIZE) {
-> -		pr_err("Appending elfcorehdr=<addr> exceeds cmdline size\n");
-> +	if (parameter_len + cmdline_len > COMMAND_LINE_SIZE) {
-> +		pr_err("Appending %s=<addr> exceeds cmdline size\n", name);
->   		kfree(cmdline_ptr);
->   		return NULL;
->   	}
->   
-> -	memcpy(cmdline_ptr + elfcorehdr_strlen, cmdline, cmdline_len);
-> +	memcpy(cmdline_ptr + parameter_len, cmdline, cmdline_len);
->   	// Ensure it's nul terminated
->   	cmdline_ptr[COMMAND_LINE_SIZE - 1] = '\0';
-> +	kfree(cmdline);
+Reviewed-by: Frank Li <Frank.Li@nxp.com>
+Reviewed-by: Rob Herring (Arm) <robh@kernel.org>
+Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
+---
 
-When setup_kdump_cmdline() is called for elfcorehdr, cmdline holds the
-same pointer as image->cmdline_buf. Freeing it here may therefore
-cause issues, right?
+V4,V5:
+- no changes
 
-Currently, image->cmdline_buf is not used after calling the
-architecture-specific load function (elf64_load on powerpc).
-However, kimage_file_post_load_cleanup() later calls kfree() on
-the same address.
+V3:
+- add review tags
 
->   	return cmdline_ptr;
->   }
->   
->
-> base-commit: ccd1cdca5cd433c8a5dff78b69a79b31d9b77ee1
+V2:
+- split out from fsl,elbc patch
+- add description
+- remove "device_type" property
+- move to bindings/memory-controllers
+---
+ .../memory-controllers/fsl,elbc-gpcm-uio.yaml      | 59 ++++++++++++++++++++++
+ 1 file changed, 59 insertions(+)
+
+diff --git a/Documentation/devicetree/bindings/memory-controllers/fsl,elbc-gpcm-uio.yaml b/Documentation/devicetree/bindings/memory-controllers/fsl,elbc-gpcm-uio.yaml
+new file mode 100644
+index 00000000000000..381584b400a0ad
+--- /dev/null
++++ b/Documentation/devicetree/bindings/memory-controllers/fsl,elbc-gpcm-uio.yaml
+@@ -0,0 +1,59 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/memory-controllers/fsl,elbc-gpcm-uio.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Userspace I/O interface for Freescale eLBC devices
++
++description:
++  The Freescale Enhanced Local Bus controller (eLBC) supports flexible access
++  to memory devices, through the General-Purpose Chip-select Machine (GPCM).
++  The purpose of this binding is to designate devices attached to eLBC/GPMC for
++  use by userspace.
++
++maintainers:
++  - J. Neuschäfer <j.ne@posteo.net>
++
++properties:
++  compatible:
++    const: fsl,elbc-gpcm-uio
++
++  reg:
++    maxItems: 1
++
++  elbc-gpcm-br:
++    description: Base Register (BR) value to set
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++  elbc-gpcm-or:
++    description: Option Register (OR) value to set
++    $ref: /schemas/types.yaml#/definitions/uint32
++
++  interrupts:
++    maxItems: 1
++
++  uio_name:
++    $ref: /schemas/types.yaml#/definitions/string
++
++required:
++  - compatible
++  - reg
++  - elbc-gpcm-br
++  - elbc-gpcm-or
++
++additionalProperties: false
++
++examples:
++  - |
++    localbus {
++        #address-cells = <2>;
++        #size-cells = <1>;
++
++        simple-periph@2,0 {
++            compatible = "fsl,elbc-gpcm-uio";
++            reg = <0x2 0x0 0x10000>;
++            elbc-gpcm-br = <0xfd810800>;
++            elbc-gpcm-or = <0xffff09f7>;
++        };
++    };
+
+-- 
+2.51.0
+
 
 
