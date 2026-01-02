@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-15148-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15149-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C63A8E9410B
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jan 2026 07:06:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 36F15FA372D
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  2 Jan 2026 07:06:43 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4djF9J6sKLz30Gm;
-	Fri, 02 Jan 2026 18:06:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4djF9Y6dpcz2yFd;
+	Fri, 02 Jan 2026 18:06:41 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767337588;
-	cv=none; b=l+cqJBIdLg9eKiTwsi1K9gDpoXg+pq8nV3TKw+0xwC/DJmz0zOdaq6XU8XIWV6padVH+UsRdHOuE+ehCqq4GqukDm3eP89uywvKUlREGhBrqh9KNhyn/zz0plU3BH3CeKMal2sKZOdx3ZX7OibeGCX+A6mdc5SIneUHiqqg9pKXnrlQHC3Fs0dXRpJ11q+RRo1NTYb9tXEPLr5SB61fWBqbsIiNlQB2fWYDUWZ1FRRII53zHP37RUqVP/v9JESckK212TXbtsmF3yvjuIhHZ0keggxJ8bfr1ALzQJ0CTXPhxYDWbBQEMoOgrvWFThJ7RnVNTwAu+tY6U1uzHiCfifw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767337601;
+	cv=none; b=VIOVDVbFzJez7ZazfaV1D4AOmSOWyQIKxucUCmkNvla1MItG73VElN7dhatQ4hBg4zSlsTmH6zflXMR49tdHCfHv6UNOz/nSIqiCz/2qrC8mq75jl98C1dMIXSjtYvSjYX1Nof+Xi6QO6aXo2gTTw9LWJBmnF3Fx2og+sQDlvyBg4OLSqsjlSh/U1x3Je8AtWliJ9VHRaRrd3NbvjKL9vFQ6EEU7WAGBV26xadCKf9CDYug8CHCFpeZryBDsA2SVFsmW/837L6yutZ+ye7lD3MWHaLblaMr+6nIlpyGi/JXrHcVtg2P9rm5Gt+AfRiz1wHMwSnOMD7y0ro5X6VtcEA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767337588; c=relaxed/relaxed;
-	bh=deOMpuGYGlz90LEQ2vf7mheiMo+4nubl/NdZiJQKJW4=;
+	t=1767337601; c=relaxed/relaxed;
+	bh=Y0ERQMj6rwTQI7688wTOMPcElrmEKVTJBxErbX+9pio=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version:Content-Type; b=QGSsWIefrWsRBDVgZXhDcrBT4QYhowcnzHkKIWKQGABMwRKTKrEkYPtZyDtWl6QaUV4pTKeJAIxvXr4wKJLepZLSQC/XUaxi6nlDENXsHiF14Pm0jYLKz0nzVGt4uRGu6u4bLd2QGZbipQPladLQYpMOjYMT1P+0yZw70v5siMh2q0BLIey1C+hidYkNLh41SWCbO40FIuNpPHslqvOdUZqz+dq2Rt4LfA3YsyTuDUAYo6R0KhrEOc4bio0n6dG7a8BNES2uG5tenLyVg5vgXCfQQTI/erXEObSn5K8XsmY8GXpJYp95M9N+uAJICGbzg9xDXyttlxCdkT3CCW9vhg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BRazAYvp; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=a/Yrf8zE/YFZSdVvuildX17v1akfxfpvcUz5euOol7c3jen49PpHXRJBcwPsDwGKIsZrlxBWTqr58y3UWEPrlof0olqDf0PphQjT4DL6X8DQ4nbXLggZ+iEgfXK82jYRKb+b+nFW5bf2ZZThxpbYHZjlcSbipteWAIyQ3EEGYVitojN8avs/n29cmluKySCKY5gVIAKC9oKg3BuZZeEDbykNb4sY9nrrh3GC/dYpatXvK3e3BACHJ+aLEqZJuUue5/GIahu3Eq0jzJuzm8t6TA4fpEmznh53sgjGc7sXI7Zk+QjQhqDgt0f/uAUhWnFgbb5aIHPN6pDiDqIUnlhbNw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eA6e8lpV; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=BRazAYvp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=eA6e8lpV;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4djF9J0jmFz2yFd
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jan 2026 18:06:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4djF9Y11KSz2xrC
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 02 Jan 2026 18:06:41 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id D444860017;
-	Fri,  2 Jan 2026 07:05:55 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A58FDC19422;
-	Fri,  2 Jan 2026 07:05:41 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 0B0F860017;
+	Fri,  2 Jan 2026 07:06:39 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D3AE7C116B1;
+	Fri,  2 Jan 2026 07:06:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767337555;
-	bh=PCpWC6AbTzuppWM+VmkMKjEgcPECM1FjjXTtxFhKA/s=;
+	s=k20201202; t=1767337598;
+	bh=lDFvaekhrX06KnCNy1QGia/PQK3dVcgIHt/+LyovC/0=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=BRazAYvpE65O4ga8K2yr6JMC0JTgjxdrfQPg7QECGdx57udLajfCNmxiYN1rL21hc
-	 a2Ax5uezK3vyFKPJ2EarK8rSiCmvDAKovnnk2jzw77WcdEpAypTdd10J/L4NFYuHw1
-	 DXvoNmbVoqO1e+RG6RPNorO8yJhKCN+QxPR9+p7pA90YcAGCfjmrO6Wox8DChjIccy
-	 epXYiWwQskLpByFfzzD++t5S/BwbIZSbEucQ9MhEgPplxwQQQVGKYI5tHo75ATiOwY
-	 kD+dIcP59kSET90TOz/PrEVZt3AswtUls/gR3l14jboA9EJKRGk2bdw9hDr4Oa7ryb
-	 nfI4Mx3TtU/Pg==
+	b=eA6e8lpVUH/OL9iIZEC8tx+qcBxF/RBBbB/tMwiMr4FsFsf6uNly7J0AUd/Fk+k8g
+	 QCgh8X3qAvdt8xIBOfQohAo61cNr9qquLkJovs1lDOZTJGQ2ZxLODy4sZDAc3FUEjL
+	 CXDG8okdkCY2CDBBSISCz953PuqYJ4LoId6WfSaNBeYT7CQl3FcjEK6Wm1O1TtL78i
+	 bVaFFuV0IkmZsXlPJ2dctZ3KTh/7Qzfv5mARYxLH7L667DL5VPltoNgn0qMfMQ2COb
+	 ojFlv3cmH75T976ETZgtrEVUbsbAlylEuyXBvTjeStp6IIs2A0LxH51by0JmRveROD
+	 5Di0Toq9v8qSA==
 From: Mike Rapoport <rppt@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Alex Shi <alexs@kernel.org>,
@@ -110,9 +110,9 @@ Cc: Alex Shi <alexs@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org,
 	loongarch@lists.linux.dev,
 	sparclinux@vger.kernel.org
-Subject: [PATCH v2 23/28] arch, mm: consolidate initialization of SPARSE memory model
-Date: Fri,  2 Jan 2026 08:59:59 +0200
-Message-ID: <20260102070005.65328-24-rppt@kernel.org>
+Subject: [PATCH v2 26/28] mm, arch: consolidate hugetlb CMA reservation
+Date: Fri,  2 Jan 2026 09:00:02 +0200
+Message-ID: <20260102070005.65328-27-rppt@kernel.org>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20260102070005.65328-1-rppt@kernel.org>
 References: <20260102070005.65328-1-rppt@kernel.org>
@@ -129,358 +129,344 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
 Content-Transfer-Encoding: 8bit
 
 From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 
-Every architecture calls sparse_init() during setup_arch() although the
-data structures created by sparse_init() are not used until the
-initialization of the core MM.
+Every architecture that supports hugetlb_cma command line parameter
+reserves CMA areas for hugetlb during setup_arch().
 
-Beside the code duplication, calling sparse_init() from architecture
-specific code causes ordering differences of vmemmap and HVO initialization
-on different architectures.
+This obfuscates the ordering of hugetlb CMA initialization with respect to
+the rest initialization of the core MM.
 
-Move the call to sparse_init() from architecture specific code to
-free_area_init() to ensure that vmemmap and HVO initialization order is
-always the same.
+Introduce arch_hugetlb_cma_order() callback to allow architectures report
+the desired order-per-bit of CMA areas and provide a week implementation of
+arch_hugetlb_cma_order() for architectures that don't support hugetlb with
+CMA.
+
+Use this callback in hugetlb_cma_reserve() instead if passing the order as
+parameter and call hugetlb_cma_reserve() from mm_core_init_early() rather
+than have it spread over architecture specific code.
 
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
 ---
- Documentation/mm/memory-model.rst                    |  3 ---
- Documentation/translations/zh_CN/mm/memory-model.rst |  2 --
- arch/alpha/kernel/setup.c                            |  1 -
- arch/arm/mm/init.c                                   |  6 ------
- arch/arm64/mm/init.c                                 |  6 ------
- arch/csky/kernel/setup.c                             |  2 --
- arch/loongarch/kernel/setup.c                        |  8 --------
- arch/mips/kernel/setup.c                             | 11 -----------
- arch/parisc/mm/init.c                                |  2 --
- arch/powerpc/include/asm/setup.h                     |  4 ++++
- arch/powerpc/mm/mem.c                                |  5 -----
- arch/powerpc/mm/numa.c                               |  2 --
- arch/riscv/mm/init.c                                 |  1 -
- arch/s390/mm/init.c                                  |  1 -
- arch/sh/mm/init.c                                    |  2 --
- arch/sparc/mm/init_64.c                              |  2 --
- arch/x86/mm/init_32.c                                |  1 -
- arch/x86/mm/init_64.c                                |  2 --
- include/linux/mmzone.h                               |  2 --
- mm/internal.h                                        |  6 ++++++
- mm/mm_init.c                                         |  1 +
- 21 files changed, 11 insertions(+), 59 deletions(-)
+ .../driver-api/cxl/linux/early-boot.rst       |  2 +-
+ arch/arm64/include/asm/hugetlb.h              |  2 --
+ arch/arm64/mm/hugetlbpage.c                   | 10 +++-------
+ arch/arm64/mm/init.c                          |  9 ---------
+ arch/powerpc/include/asm/hugetlb.h            |  5 -----
+ arch/powerpc/kernel/setup-common.c            |  1 -
+ arch/powerpc/mm/hugetlbpage.c                 | 11 ++++-------
+ arch/riscv/mm/hugetlbpage.c                   |  8 ++++++++
+ arch/riscv/mm/init.c                          |  2 --
+ arch/s390/kernel/setup.c                      |  2 --
+ arch/s390/mm/hugetlbpage.c                    |  8 ++++++++
+ arch/x86/kernel/setup.c                       |  4 ----
+ arch/x86/mm/hugetlbpage.c                     |  8 ++++++++
+ include/linux/hugetlb.h                       |  6 ++++--
+ mm/hugetlb_cma.c                              | 19 ++++++++++++++-----
+ mm/mm_init.c                                  |  1 +
+ 16 files changed, 51 insertions(+), 47 deletions(-)
 
-diff --git a/Documentation/mm/memory-model.rst b/Documentation/mm/memory-model.rst
-index 7957122039e8..199b11328f4f 100644
---- a/Documentation/mm/memory-model.rst
-+++ b/Documentation/mm/memory-model.rst
-@@ -97,9 +97,6 @@ sections:
-   `mem_section` objects and the number of rows is calculated to fit
-   all the memory sections.
+diff --git a/Documentation/driver-api/cxl/linux/early-boot.rst b/Documentation/driver-api/cxl/linux/early-boot.rst
+index a7fc6fc85fbe..414481f33819 100644
+--- a/Documentation/driver-api/cxl/linux/early-boot.rst
++++ b/Documentation/driver-api/cxl/linux/early-boot.rst
+@@ -125,7 +125,7 @@ The contiguous memory allocator (CMA) enables reservation of contiguous memory
+ regions on NUMA nodes during early boot.  However, CMA cannot reserve memory
+ on NUMA nodes that are not online during early boot. ::
  
--The architecture setup code should call sparse_init() to
--initialize the memory sections and the memory maps.
+-  void __init hugetlb_cma_reserve(int order) {
++  void __init hugetlb_cma_reserve(void) {
+     if (!node_online(nid))
+       /* do not allow reservations */
+   }
+diff --git a/arch/arm64/include/asm/hugetlb.h b/arch/arm64/include/asm/hugetlb.h
+index 44c1f757bfcf..e6f8ff3cc630 100644
+--- a/arch/arm64/include/asm/hugetlb.h
++++ b/arch/arm64/include/asm/hugetlb.h
+@@ -56,8 +56,6 @@ extern void huge_pte_clear(struct mm_struct *mm, unsigned long addr,
+ #define __HAVE_ARCH_HUGE_PTEP_GET
+ extern pte_t huge_ptep_get(struct mm_struct *mm, unsigned long addr, pte_t *ptep);
+ 
+-void __init arm64_hugetlb_cma_reserve(void);
 -
- With SPARSEMEM there are two possible ways to convert a PFN to the
- corresponding `struct page` - a "classic sparse" and "sparse
- vmemmap". The selection is made at build time and it is determined by
-diff --git a/Documentation/translations/zh_CN/mm/memory-model.rst b/Documentation/translations/zh_CN/mm/memory-model.rst
-index 77ec149a970c..c0c5d8ecd880 100644
---- a/Documentation/translations/zh_CN/mm/memory-model.rst
-+++ b/Documentation/translations/zh_CN/mm/memory-model.rst
-@@ -83,8 +83,6 @@ SPARSEMEM模型将物理内存显示为一个部分的集合。一个区段用me
-   每一行包含价值 `PAGE_SIZE` 的 `mem_section` 对象，行数的计算是为了适应所有的
-   内存区。
- 
--架构设置代码应该调用sparse_init()来初始化内存区和内存映射。
+ #define huge_ptep_modify_prot_start huge_ptep_modify_prot_start
+ extern pte_t huge_ptep_modify_prot_start(struct vm_area_struct *vma,
+ 					 unsigned long addr, pte_t *ptep);
+diff --git a/arch/arm64/mm/hugetlbpage.c b/arch/arm64/mm/hugetlbpage.c
+index 1d90a7e75333..f8dd58ab67a8 100644
+--- a/arch/arm64/mm/hugetlbpage.c
++++ b/arch/arm64/mm/hugetlbpage.c
+@@ -36,16 +36,12 @@
+  * huge pages could still be served from those areas.
+  */
+ #ifdef CONFIG_CMA
+-void __init arm64_hugetlb_cma_reserve(void)
++unsigned int arch_hugetlb_cma_order(void)
+ {
+-	int order;
 -
- 通过SPARSEMEM，有两种可能的方式将PFN转换为相应的 `struct page` --"classic sparse"和
-  "sparse vmemmap"。选择是在构建时进行的，它由 `CONFIG_SPARSEMEM_VMEMMAP` 的
-  值决定。
-diff --git a/arch/alpha/kernel/setup.c b/arch/alpha/kernel/setup.c
-index bebdffafaee8..f0af444a69a4 100644
---- a/arch/alpha/kernel/setup.c
-+++ b/arch/alpha/kernel/setup.c
-@@ -607,7 +607,6 @@ setup_arch(char **cmdline_p)
- 	/* Find our memory.  */
- 	setup_memory(kernel_end);
- 	memblock_set_bottom_up(true);
--	sparse_init();
+ 	if (pud_sect_supported())
+-		order = PUD_SHIFT - PAGE_SHIFT;
+-	else
+-		order = CONT_PMD_SHIFT - PAGE_SHIFT;
++		return PUD_SHIFT - PAGE_SHIFT;
  
- 	/* First guess at cpu cache sizes.  Do this before init_arch.  */
- 	determine_cpu_caches(cpu->type);
-diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
-index a8f7b4084715..0cc1bf04686d 100644
---- a/arch/arm/mm/init.c
-+++ b/arch/arm/mm/init.c
-@@ -207,12 +207,6 @@ void __init bootmem_init(void)
- 
- 	early_memtest((phys_addr_t)min_low_pfn << PAGE_SHIFT,
- 		      (phys_addr_t)max_low_pfn << PAGE_SHIFT);
--
--	/*
--	 * sparse_init() tries to allocate memory from memblock, so must be
--	 * done after the fixed reservations
--	 */
--	sparse_init();
+-	hugetlb_cma_reserve(order);
++	return CONT_PMD_SHIFT - PAGE_SHIFT;
  }
+ #endif /* CONFIG_CMA */
  
- /*
 diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
-index 3641e88ea871..9d271aff7652 100644
+index 9d271aff7652..96711b8578fd 100644
 --- a/arch/arm64/mm/init.c
 +++ b/arch/arm64/mm/init.c
-@@ -321,12 +321,6 @@ void __init bootmem_init(void)
- #endif
+@@ -311,15 +311,6 @@ void __init bootmem_init(void)
  
- 	kvm_hyp_reserve();
--
+ 	arch_numa_init();
+ 
 -	/*
--	 * sparse_init() tries to allocate memory from memblock, so must be
--	 * done after the fixed reservations
+-	 * must be done after arch_numa_init() which calls numa_init() to
+-	 * initialize node_online_map that gets used in hugetlb_cma_reserve()
+-	 * while allocating required CMA size across online nodes.
 -	 */
--	sparse_init();
+-#if defined(CONFIG_HUGETLB_PAGE) && defined(CONFIG_CMA)
+-	arm64_hugetlb_cma_reserve();
+-#endif
+-
+ 	kvm_hyp_reserve();
  	dma_limits_init();
  
- 	/*
-diff --git a/arch/csky/kernel/setup.c b/arch/csky/kernel/setup.c
-index 4bf3c01ead3a..45c98dcf7f50 100644
---- a/arch/csky/kernel/setup.c
-+++ b/arch/csky/kernel/setup.c
-@@ -123,8 +123,6 @@ void __init setup_arch(char **cmdline_p)
- 	setup_smp();
- #endif
+diff --git a/arch/powerpc/include/asm/hugetlb.h b/arch/powerpc/include/asm/hugetlb.h
+index 86326587e58d..6d32a4299445 100644
+--- a/arch/powerpc/include/asm/hugetlb.h
++++ b/arch/powerpc/include/asm/hugetlb.h
+@@ -68,7 +68,6 @@ int huge_ptep_set_access_flags(struct vm_area_struct *vma,
+ 			       unsigned long addr, pte_t *ptep,
+ 			       pte_t pte, int dirty);
  
--	sparse_init();
--
- 	fixaddr_init();
+-void gigantic_hugetlb_cma_reserve(void) __init;
+ #include <asm-generic/hugetlb.h>
  
- #ifdef CONFIG_HIGHMEM
-diff --git a/arch/loongarch/kernel/setup.c b/arch/loongarch/kernel/setup.c
-index 708ac025db71..d6a1ff0e16f1 100644
---- a/arch/loongarch/kernel/setup.c
-+++ b/arch/loongarch/kernel/setup.c
-@@ -402,14 +402,6 @@ static void __init arch_mem_init(char **cmdline_p)
- 
- 	check_kernel_sections_mem();
- 
--	/*
--	 * In order to reduce the possibility of kernel panic when failed to
--	 * get IO TLB memory under CONFIG_SWIOTLB, it is better to allocate
--	 * low memory as small as possible before swiotlb_init(), so make
--	 * sparse_init() using top-down allocation.
--	 */
--	memblock_set_bottom_up(false);
--	sparse_init();
- 	memblock_set_bottom_up(true);
- 
- 	swiotlb_init(true, SWIOTLB_VERBOSE);
-diff --git a/arch/mips/kernel/setup.c b/arch/mips/kernel/setup.c
-index 11b9b6b63e19..d36d89d01fa4 100644
---- a/arch/mips/kernel/setup.c
-+++ b/arch/mips/kernel/setup.c
-@@ -614,7 +614,6 @@ static void __init bootcmdline_init(void)
-  * kernel but generic memory management system is still entirely uninitialized.
-  *
-  *  o bootmem_init()
-- *  o sparse_init()
-  *  o paging_init()
-  *  o dma_contiguous_reserve()
-  *
-@@ -665,16 +664,6 @@ static void __init arch_mem_init(char **cmdline_p)
- 	mips_parse_crashkernel();
- 	device_tree_init();
- 
--	/*
--	 * In order to reduce the possibility of kernel panic when failed to
--	 * get IO TLB memory under CONFIG_SWIOTLB, it is better to allocate
--	 * low memory as small as possible before plat_swiotlb_setup(), so
--	 * make sparse_init() using top-down allocation.
--	 */
--	memblock_set_bottom_up(false);
--	sparse_init();
--	memblock_set_bottom_up(true);
--
- 	plat_swiotlb_setup();
- 
- 	dma_contiguous_reserve(PFN_PHYS(max_low_pfn));
-diff --git a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
-index ce6f09ab7a90..6a39e031e5ff 100644
---- a/arch/parisc/mm/init.c
-+++ b/arch/parisc/mm/init.c
-@@ -706,8 +706,6 @@ void __init paging_init(void)
- 	fixmap_init();
- 	flush_cache_all_local(); /* start with known state */
- 	flush_tlb_all_local(NULL);
--
--	sparse_init();
+ #else /* ! CONFIG_HUGETLB_PAGE */
+@@ -77,10 +76,6 @@ static inline void flush_hugetlb_page(struct vm_area_struct *vma,
+ {
  }
  
- static void alloc_btlb(unsigned long start, unsigned long end, int *slot,
-diff --git a/arch/powerpc/include/asm/setup.h b/arch/powerpc/include/asm/setup.h
-index 50a92b24628d..6d60ea4868ab 100644
---- a/arch/powerpc/include/asm/setup.h
-+++ b/arch/powerpc/include/asm/setup.h
-@@ -20,7 +20,11 @@ extern void reloc_got2(unsigned long);
- 
- void check_for_initrd(void);
- void mem_topology_setup(void);
-+#ifdef CONFIG_NUMA
- void initmem_init(void);
-+#else
-+static inline void initmem_init(void) {}
-+#endif
- void setup_panic(void);
- #define ARCH_PANIC_TIMEOUT 180
- 
-diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-index 72d4993192a6..30f56d601e56 100644
---- a/arch/powerpc/mm/mem.c
-+++ b/arch/powerpc/mm/mem.c
-@@ -182,11 +182,6 @@ void __init mem_topology_setup(void)
- 	memblock_set_node(0, PHYS_ADDR_MAX, &memblock.memory, 0);
- }
- 
--void __init initmem_init(void)
+-static inline void __init gigantic_hugetlb_cma_reserve(void)
 -{
--	sparse_init();
 -}
 -
- /* mark pages that don't exist as nosave */
- static int __init mark_nonram_nosave(void)
+ static inline void __init hugetlbpage_init_defaultsize(void)
  {
-diff --git a/arch/powerpc/mm/numa.c b/arch/powerpc/mm/numa.c
-index 603a0f652ba6..f4cf3ae036de 100644
---- a/arch/powerpc/mm/numa.c
-+++ b/arch/powerpc/mm/numa.c
-@@ -1213,8 +1213,6 @@ void __init initmem_init(void)
- 		setup_node_data(nid, start_pfn, end_pfn);
- 	}
+ }
+diff --git a/arch/powerpc/kernel/setup-common.c b/arch/powerpc/kernel/setup-common.c
+index c8c42b419742..cb5b73adc250 100644
+--- a/arch/powerpc/kernel/setup-common.c
++++ b/arch/powerpc/kernel/setup-common.c
+@@ -1003,7 +1003,6 @@ void __init setup_arch(char **cmdline_p)
+ 	fadump_cma_init();
+ 	kdump_cma_reserve();
+ 	kvm_cma_reserve();
+-	gigantic_hugetlb_cma_reserve();
  
--	sparse_init();
+ 	early_memtest(min_low_pfn << PAGE_SHIFT, max_low_pfn << PAGE_SHIFT);
+ 
+diff --git a/arch/powerpc/mm/hugetlbpage.c b/arch/powerpc/mm/hugetlbpage.c
+index d3c1b749dcfc..558fafb82b8a 100644
+--- a/arch/powerpc/mm/hugetlbpage.c
++++ b/arch/powerpc/mm/hugetlbpage.c
+@@ -200,18 +200,15 @@ static int __init hugetlbpage_init(void)
+ 
+ arch_initcall(hugetlbpage_init);
+ 
+-void __init gigantic_hugetlb_cma_reserve(void)
++unsigned int __init arch_hugetlb_cma_order(void)
+ {
+-	unsigned long order = 0;
 -
- 	/*
- 	 * We need the numa_cpu_lookup_table to be accurate for all CPUs,
- 	 * even before we online them, so that we can use cpu_to_{node,mem}
+ 	if (radix_enabled())
+-		order = PUD_SHIFT - PAGE_SHIFT;
++		return PUD_SHIFT - PAGE_SHIFT;
+ 	else if (!firmware_has_feature(FW_FEATURE_LPAR) && mmu_psize_defs[MMU_PAGE_16G].shift)
+ 		/*
+ 		 * For pseries we do use ibm,expected#pages for reserving 16G pages.
+ 		 */
+-		order = mmu_psize_to_shift(MMU_PAGE_16G) - PAGE_SHIFT;
++		return mmu_psize_to_shift(MMU_PAGE_16G) - PAGE_SHIFT;
+ 
+-	if (order)
+-		hugetlb_cma_reserve(order);
++	return 0;
+ }
+diff --git a/arch/riscv/mm/hugetlbpage.c b/arch/riscv/mm/hugetlbpage.c
+index 375dd96bb4a0..a6d217112cf4 100644
+--- a/arch/riscv/mm/hugetlbpage.c
++++ b/arch/riscv/mm/hugetlbpage.c
+@@ -447,3 +447,11 @@ static __init int gigantic_pages_init(void)
+ }
+ arch_initcall(gigantic_pages_init);
+ #endif
++
++unsigned int __init arch_hugetlb_cma_order(void)
++{
++	if (IS_ENABLED(CONFIG_64BIT))
++		return PUD_SHIFT - PAGE_SHIFT;
++
++	return 0;
++}
 diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
-index 79b4792578c4..11ac4041afc0 100644
+index 11ac4041afc0..848efeb9e163 100644
 --- a/arch/riscv/mm/init.c
 +++ b/arch/riscv/mm/init.c
-@@ -1430,7 +1430,6 @@ void __init misc_mem_init(void)
- {
- 	early_memtest(min_low_pfn << PAGE_SHIFT, max_low_pfn << PAGE_SHIFT);
- 	arch_numa_init();
--	sparse_init();
- #ifdef CONFIG_SPARSEMEM_VMEMMAP
- 	/* The entire VMEMMAP region has been populated. Flush TLB for this region */
- 	local_flush_tlb_kernel_range(VMEMMAP_START, VMEMMAP_END);
-diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-index 9ec608b5cbb1..3c20475cbee2 100644
---- a/arch/s390/mm/init.c
-+++ b/arch/s390/mm/init.c
-@@ -98,7 +98,6 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
- void __init paging_init(void)
- {
- 	vmem_map_init();
--	sparse_init();
- 	zone_dma_limit = DMA_BIT_MASK(31);
+@@ -311,8 +311,6 @@ static void __init setup_bootmem(void)
+ 		memblock_reserve(dtb_early_pa, fdt_totalsize(dtb_early_va));
+ 
+ 	dma_contiguous_reserve(dma32_phys_limit);
+-	if (IS_ENABLED(CONFIG_64BIT))
+-		hugetlb_cma_reserve(PUD_SHIFT - PAGE_SHIFT);
  }
  
-diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
-index 3edee854b755..464a3a63e2fa 100644
---- a/arch/sh/mm/init.c
-+++ b/arch/sh/mm/init.c
-@@ -227,8 +227,6 @@ static void __init do_init_bootmem(void)
- 	node_set_online(0);
+ #ifdef CONFIG_RELOCATABLE
+diff --git a/arch/s390/kernel/setup.c b/arch/s390/kernel/setup.c
+index c1fe0b53c5ac..b60284328fe3 100644
+--- a/arch/s390/kernel/setup.c
++++ b/arch/s390/kernel/setup.c
+@@ -963,8 +963,6 @@ void __init setup_arch(char **cmdline_p)
+ 	setup_uv();
+ 	dma_contiguous_reserve(ident_map_size);
+ 	vmcp_cma_reserve();
+-	if (cpu_has_edat2())
+-		hugetlb_cma_reserve(PUD_SHIFT - PAGE_SHIFT);
  
- 	plat_mem_setup();
--
--	sparse_init();
+ 	reserve_crashkernel();
+ #ifdef CONFIG_CRASH_DUMP
+diff --git a/arch/s390/mm/hugetlbpage.c b/arch/s390/mm/hugetlbpage.c
+index d42e61c7594e..d93417d1e53c 100644
+--- a/arch/s390/mm/hugetlbpage.c
++++ b/arch/s390/mm/hugetlbpage.c
+@@ -255,3 +255,11 @@ bool __init arch_hugetlb_valid_size(unsigned long size)
+ 	else
+ 		return false;
  }
++
++unsigned int __init arch_hugetlb_cma_order(void)
++{
++	if (cpu_has_edat2())
++		return PUD_SHIFT - PAGE_SHIFT;
++
++	return 0;
++}
+diff --git a/arch/x86/kernel/setup.c b/arch/x86/kernel/setup.c
+index e2318fa9b1bb..e1efe3975aa0 100644
+--- a/arch/x86/kernel/setup.c
++++ b/arch/x86/kernel/setup.c
+@@ -1189,10 +1189,6 @@ void __init setup_arch(char **cmdline_p)
+ 	initmem_init();
+ 	dma_contiguous_reserve(max_pfn_mapped << PAGE_SHIFT);
  
- static void __init early_reserve_mem(void)
-diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
-index 931f872ce84a..4f7bdb18774b 100644
---- a/arch/sparc/mm/init_64.c
-+++ b/arch/sparc/mm/init_64.c
-@@ -1615,8 +1615,6 @@ static unsigned long __init bootmem_init(unsigned long phys_base)
- 
- 	/* XXX cpu notifier XXX */
- 
--	sparse_init();
--
- 	return end_pfn;
- }
- 
-diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-index b55172118c91..0908c44d51e6 100644
---- a/arch/x86/mm/init_32.c
-+++ b/arch/x86/mm/init_32.c
-@@ -654,7 +654,6 @@ void __init paging_init(void)
- 	 * NOTE: at this point the bootmem allocator is fully available.
- 	 */
- 	olpc_dt_build_devicetree();
--	sparse_init();
- }
- 
- /*
-diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-index 4daa40071c9f..df2261fa4f98 100644
---- a/arch/x86/mm/init_64.c
-+++ b/arch/x86/mm/init_64.c
-@@ -833,8 +833,6 @@ void __init initmem_init(void)
- 
- void __init paging_init(void)
- {
--	sparse_init();
+-	if (boot_cpu_has(X86_FEATURE_GBPAGES)) {
+-		hugetlb_cma_reserve(PUD_SHIFT - PAGE_SHIFT);
+-	}
 -
  	/*
- 	 * clear the default setting with node 0
- 	 * note: don't use nodes_clear here, that is really clearing when
-diff --git a/include/linux/mmzone.h b/include/linux/mmzone.h
-index 75ef7c9f9307..6a7db0fee54a 100644
---- a/include/linux/mmzone.h
-+++ b/include/linux/mmzone.h
-@@ -2285,9 +2285,7 @@ static inline unsigned long next_present_section_nr(unsigned long section_nr)
- #define pfn_to_nid(pfn)		(0)
+ 	 * Reserve memory for crash kernel after SRAT is parsed so that it
+ 	 * won't consume hotpluggable memory.
+diff --git a/arch/x86/mm/hugetlbpage.c b/arch/x86/mm/hugetlbpage.c
+index 58f7f2bd535d..3b26621c9128 100644
+--- a/arch/x86/mm/hugetlbpage.c
++++ b/arch/x86/mm/hugetlbpage.c
+@@ -42,3 +42,11 @@ static __init int gigantic_pages_init(void)
+ arch_initcall(gigantic_pages_init);
  #endif
- 
--void sparse_init(void);
- #else
--#define sparse_init()	do {} while (0)
- #define sparse_index_init(_sec, _nid)  do {} while (0)
- #define sparse_vmemmap_init_nid_early(_nid) do {} while (0)
- #define sparse_vmemmap_init_nid_late(_nid) do {} while (0)
-diff --git a/mm/internal.h b/mm/internal.h
-index e430da900430..dc5316c68664 100644
---- a/mm/internal.h
-+++ b/mm/internal.h
-@@ -860,6 +860,12 @@ void memmap_init_range(unsigned long, int, unsigned long, unsigned long,
- 		unsigned long, enum meminit_context, struct vmem_altmap *, int,
- 		bool);
- 
-+#ifdef CONFIG_SPARSEMEM
-+void sparse_init(void);
-+#else
-+static inline void sparse_init(void) {}
-+#endif /* CONFIG_SPARSEMEM */
+ #endif
 +
- #if defined CONFIG_COMPACTION || defined CONFIG_CMA
++unsigned int __init arch_hugetlb_cma_order(void)
++{
++	if (boot_cpu_has(X86_FEATURE_GBPAGES))
++		return PUD_SHIFT - PAGE_SHIFT;
++
++	return 0;
++}
+diff --git a/include/linux/hugetlb.h b/include/linux/hugetlb.h
+index 019a1c5281e4..08fc332e88a7 100644
+--- a/include/linux/hugetlb.h
++++ b/include/linux/hugetlb.h
+@@ -279,6 +279,8 @@ void fixup_hugetlb_reservations(struct vm_area_struct *vma);
+ void hugetlb_split(struct vm_area_struct *vma, unsigned long addr);
+ int hugetlb_vma_lock_alloc(struct vm_area_struct *vma);
  
- /*
++unsigned int arch_hugetlb_cma_order(void);
++
+ #else /* !CONFIG_HUGETLB_PAGE */
+ 
+ static inline void hugetlb_dup_vma_private(struct vm_area_struct *vma)
+@@ -1316,9 +1318,9 @@ static inline spinlock_t *huge_pte_lock(struct hstate *h,
+ }
+ 
+ #if defined(CONFIG_HUGETLB_PAGE) && defined(CONFIG_CMA)
+-extern void __init hugetlb_cma_reserve(int order);
++extern void __init hugetlb_cma_reserve(void);
+ #else
+-static inline __init void hugetlb_cma_reserve(int order)
++static inline __init void hugetlb_cma_reserve(void)
+ {
+ }
+ #endif
+diff --git a/mm/hugetlb_cma.c b/mm/hugetlb_cma.c
+index e8e4dc7182d5..b1eb5998282c 100644
+--- a/mm/hugetlb_cma.c
++++ b/mm/hugetlb_cma.c
+@@ -134,12 +134,24 @@ static int __init cmdline_parse_hugetlb_cma_only(char *p)
+ 
+ early_param("hugetlb_cma_only", cmdline_parse_hugetlb_cma_only);
+ 
+-void __init hugetlb_cma_reserve(int order)
++unsigned int __weak arch_hugetlb_cma_order(void)
+ {
+-	unsigned long size, reserved, per_node;
++	return 0;
++}
++
++void __init hugetlb_cma_reserve(void)
++{
++	unsigned long size, reserved, per_node, order;
+ 	bool node_specific_cma_alloc = false;
+ 	int nid;
+ 
++	if (!hugetlb_cma_size)
++		return;
++
++	order = arch_hugetlb_cma_order();
++	if (!order)
++		return;
++
+ 	/*
+ 	 * HugeTLB CMA reservation is required for gigantic
+ 	 * huge pages which could not be allocated via the
+@@ -149,9 +161,6 @@ void __init hugetlb_cma_reserve(int order)
+ 	VM_WARN_ON(order <= MAX_PAGE_ORDER);
+ 	cma_reserve_called = true;
+ 
+-	if (!hugetlb_cma_size)
+-		return;
+-
+ 	hugetlb_bootmem_set_nodes();
+ 
+ 	for (nid = 0; nid < MAX_NUMNODES; nid++) {
 diff --git a/mm/mm_init.c b/mm/mm_init.c
-index ffc4a0f1fee9..4cfe722da062 100644
+index 4cfe722da062..5099a973be5b 100644
 --- a/mm/mm_init.c
 +++ b/mm/mm_init.c
-@@ -1828,6 +1828,7 @@ static void __init free_area_init(void)
- 	bool descending;
+@@ -2680,6 +2680,7 @@ void __init __weak mem_init(void)
  
- 	arch_zone_limits_init(max_zone_pfn);
-+	sparse_init();
+ void __init mm_core_init_early(void)
+ {
++	hugetlb_cma_reserve();
+ 	hugetlb_bootmem_alloc();
  
- 	start_pfn = PHYS_PFN(memblock_start_of_DRAM());
- 	descending = arch_has_descending_max_zone_pfns();
+ 	free_area_init();
 -- 
 2.51.0
 
