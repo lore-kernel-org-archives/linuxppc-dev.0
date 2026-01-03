@@ -1,56 +1,55 @@
-Return-Path: <linuxppc-dev+bounces-15190-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15191-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7C5E7FC6160
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Jan 2026 18:58:06 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C8103FC6160
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Jan 2026 18:58:16 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dk8vb3n7Gz2yZ3;
-	Sun, 04 Jan 2026 05:57:47 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dk8w71Z6Jz2yNX;
+	Sun, 04 Jan 2026 05:58:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767466667;
-	cv=none; b=HWAr+J1KSti4NHrZ6whF0zM9uvu6oxLaGqkdQ1a7e8Ub9nUuQG5NkGIF1rBSPJrpyRfsTZtGH9N0YZeSYnXT3CRQtiTk2zGqTxJuBrsTY7C4DJg8keWv/jk/lhhvmkWw/v19y/uk6x9esaZU7cdIPIK+6A4r04lZZbz1vpcxhZYYWb23HT398l2+lcYYFkI7X7LKBTkbhM3HTJF+pzTPuWxk1MzflZCUcj8sUm5iTSZsOqQ3dfSuKA3+iaTVRpNJWwMXP2RhR9vTGigvbqHLd2zrElnuiKHU0A1y3zwSWs8AiweVge/bFlDpOkR19Kqvh9ijtXp8fgJlKAL8u2ubDA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767466695;
+	cv=none; b=LiL2UspTiYyy5snh3hfvLseuXUQswf512hcEthIUGiFFLCBWPvKZWRsKYHznIPf0caLQfCuYYG76L8SCweSOviBXrM4DjRVdicBzOawTNS8P3ydnct2mHuF3JEyRWYwC69WRB5reHfXMV7qNdxBv3WHE3Dy/CgwDq1hHDcnZgTSLVwem3z+nEjp9LdY0mtvvRRUDRZNIoUbJQ1/IIBbCVXzaShJvogX1WA+TQdQOB+9bDtnrDKOKoozrU2XCZeZ3tZ1ynWqHnIhMvEOIkJ8qR32/kJfZeU+uO4tFCKuNyLpJ2Z2ElBDZ0KlnkyIbOvvaQ+Wme1jwydurakRqGn1Q0w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767466667; c=relaxed/relaxed;
-	bh=mSecvzXgXhb3FzfToJUcHowd+qYFOFssxKdrzOYbfGc=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=aHk0Fp4pNp79pAbhljuTox4D3KOkX2I/U4QE4cT7Trld1Xi+yoxoa2SBvGsZDZKFdB4OG+E4GOZsEpke0z65tCK2qd4630oKJnGd9oCtT1ItShTthSquy+xZSnwbyFgEgMmMvV2PrSFHviXfFs2N0ZRD2b7jdZlLO+UIjjuVFXNt8kjasb7sbTh2kMtYDCQcAW+IlWaz5E9TGYnbYKkLAPvetx7ZILmUBUrLiLvmCLY1bu1gZvgwpvWS6FMXwlt4WMeyCXFYIo1mCBqo0ouzBfQOPfweNiqwzUDBJb6wIVRmaCXP7AQ08vPNJjcmaLf0rltCBxdNiSgxMYoucDvXrA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FaERaJ0A; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1767466695; c=relaxed/relaxed;
+	bh=nhYbY9JpemZA/SSNPnIlbeSZ1rFMmu1MfW/XoDAMS/Q=;
+	h=From:Subject:Date:Message-Id:MIME-Version:Content-Type:To:Cc; b=oXeSKfjcoHFIUh6R+4wGSkOk6Rs60pwMYKXtpxDmyoO4hIN9dFX/TDWAeeS2krIEPCBm5kVgWrCvawAkicUcmwwxnwMs3JmIkyrwdvfl2ipqnkcVnIuCQwG2Fab79OUZeak+EQSe8Zax1jRokHuXK9KXa4kV6W7dgp9suJHo+77pAXqT6bJfVcLg0OaXwX9iufZ8TClGvzanGHB3ri4fkheexDOc0aO0lm0v/Yx8vG17Cy3oufVk8aswRoP+83HLrOpGshAnMXfl3kdxLrl2fhcnNNYlILhN1wNiIiMVgxkS88DO+R0iXgnRO92/VaYWXdYWPU22KpkvADbOWZM7Bw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qFblRkXw; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=FaERaJ0A;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qFblRkXw;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dk8vZ6Zj0z2yKn
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Jan 2026 05:57:46 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dk8w62m0rz2yKp
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Jan 2026 05:58:14 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id BED094435C;
+	by sea.source.kernel.org (Postfix) with ESMTP id 85F084334D;
 	Sat,  3 Jan 2026 18:57:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 841B4C2BCB5;
+Received: by smtp.kernel.org (Postfix) with ESMTPS id 4BDD9C113D0;
 	Sat,  3 Jan 2026 18:57:42 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
 	s=k20201202; t=1767466662;
-	bh=53CsSpZsyc7xs+AdaMCHhS93fwYu+PSSE3vaZp2mGiU=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=FaERaJ0AIu5BeWmwL7Mkm9o8Osg7MQpO6s4C0RpmPQ0F+7gODO+GewYdc3m8ocajN
-	 WkLSEKg4gO7MTeMA77D85x3RzPTihJzpV5zSwu/cJewguWVVh5dqmxHoIEBZTZeb37
-	 CpgLw5mVdLKgR6mCX21P/cWlZmLZLk2BWpPXtUHu+8gCA3eU6oAji7sJjglGj3+N4H
-	 ssVzC36mHe2fmFbUyv8gQHXECDPfA8MErGnzP6Hp1wf6oLpHjvC9kHFwVBB9gMdqn2
-	 xWi16pzOhSyfPdvn+AWJGAtw6DrGKgySnmTyBHp5mxG/w6n0CBW3JlDu/ZGdwchWzc
-	 wPXHynU1xt5tg==
+	bh=79m/nJ/QDMP8KLr5bX+4nacC2eKgzRySRWsaV7zH+GM=;
+	h=From:Subject:Date:To:Cc:Reply-To:From;
+	b=qFblRkXwKvNrauVIYruUzKIkXE5Z9rjuvRYR+oXJ0tDHFoYyOtyhWubXF+gS+2Ri5
+	 tuJReFhQOAv4ypBR9IshOyJpWmU23qiwaGSmWW0wtwRzM7Bvwylo6TudYT146NAx2J
+	 PwAAQvjE3w32AuyZMUYkNf4q3NFQI9AhC4r2TM5mLaTc2kPzvjyRgbfah7aI3to5+U
+	 Ubx4RRfmHm1PIt+eoQBQ4fw51lYZm+KKJBqbYdi0FhSYYjwFwG0sMFL1y+plfzV9Qd
+	 WCeTPvSXb6YoViikdNafFNGo09Bq/FKWbiC44HyfNRH/W/teCJsI3zZWzNmxwHbRpE
+	 23WyW+4lgKfZQ==
 Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 7A545FC6182;
+	by smtp.lore.kernel.org (Postfix) with ESMTP id 32024FC6182;
 	Sat,  3 Jan 2026 18:57:42 +0000 (UTC)
 From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Sat, 03 Jan 2026 19:54:09 +0100
-Subject: [PATCH v2 5/5] powerpc: dts: mpc83xx: Add unit addresses to
- /memory
+Subject: [PATCH v2 0/5] PowerPC: A few cleanups in MPC83xx devicetrees
+Date: Sat, 03 Jan 2026 19:54:04 +0100
+Message-Id: <20260103-mpc83xx-cleanup-v2-0-b2a13c0a0d63@posteo.net>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -66,9 +65,10 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset="utf-8"
 Content-Transfer-Encoding: 8bit
-Message-Id: <20260103-mpc83xx-cleanup-v2-5-b2a13c0a0d63@posteo.net>
-References: <20260103-mpc83xx-cleanup-v2-0-b2a13c0a0d63@posteo.net>
-In-Reply-To: <20260103-mpc83xx-cleanup-v2-0-b2a13c0a0d63@posteo.net>
+X-B4-Tracking: v=1; b=H4sIAMxlWWkC/6tWKk4tykwtVrJSqFYqSi3LLM7MzwNyjHQUlJIzE
+ vPSU3UzU4B8JSMDIzMDQwND3dyCZAvjigrd5JzUxLzSAl2TlFSLlDQjS4Nkc1MloK6CotS0zAq
+ widGxtbUAsAtLrmEAAAA=
+X-Change-ID: 20260101-mpc83xx-cleanup-4de8df290c75
 To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
  Conor Dooley <conor+dt@kernel.org>, 
  Madhavan Srinivasan <maddy@linux.ibm.com>, 
@@ -78,11 +78,11 @@ Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
  linux-kernel@vger.kernel.org, 
  =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1767466660; l=5576;
+X-Developer-Signature: v=1; a=ed25519-sha256; t=1767466660; l=1655;
  i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=t9Y71lb+NmFSZt3uA171w86/UdO38JD0i35P7z+18Q0=;
- b=u0ya6NMRWPK/wrUQ53gvmrKN3VhXv2Bwj+XdEikWeYHrvnEwjL4nMP1QIV9lbUb5aM3VczOYR
- LXp8ZqjIhPfAdv2wMBGtvqIJ6Vnb5mdk54wscvWdIIqGcw+GKpZbfWZ
+ bh=79m/nJ/QDMP8KLr5bX+4nacC2eKgzRySRWsaV7zH+GM=;
+ b=4uOPvJj2DCAbQMXQnEmxLy/rrOrQ91EW1qu20Q340P7+2tkitZyITztORk1/v/mZ+jrLVcWvS
+ SOvnF2zbdoCBJr1qVEjChBmg7Hr+jxKp/4KWsbdUA6G6ZbvepQAeBYe
 X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
  pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
 X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
@@ -90,188 +90,43 @@ X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
 X-Original-From: =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
 Reply-To: j.ne@posteo.net
 
-From: "J. Neuschäfer" <j.ne@posteo.net>
+This series contains a few cleanups for mpc8315erdb.dts and other
+PowerPC devicetrees, which are hopefully uncontroversial.
 
-This fixes dtschema warnings such as the following:
-
-  arch/powerpc/boot/dts/mpc8315erdb.dtb: /: memory: False schema
-  does not allow {'device_type': ['memory'], 'reg': [[0, 134217728]]}
+Some of the patches were previously part of another, larger series,
+titled "powerpc: MPC83xx cleanup and LANCOM NWAPP2 board", but that
+series became too unwieldy to carry on. For this reason, this series
+starts at version 2.
 
 Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
 ---
- arch/powerpc/boot/dts/asp834x-redboot.dts | 2 +-
- arch/powerpc/boot/dts/mpc8308_p1m.dts     | 2 +-
- arch/powerpc/boot/dts/mpc8308rdb.dts      | 2 +-
- arch/powerpc/boot/dts/mpc8313erdb.dts     | 2 +-
- arch/powerpc/boot/dts/mpc8315erdb.dts     | 2 +-
- arch/powerpc/boot/dts/mpc832x_rdb.dts     | 2 +-
- arch/powerpc/boot/dts/mpc8349emitx.dts    | 2 +-
- arch/powerpc/boot/dts/mpc8349emitxgp.dts  | 2 +-
- arch/powerpc/boot/dts/mpc8377_rdb.dts     | 2 +-
- arch/powerpc/boot/dts/mpc8377_wlan.dts    | 2 +-
- arch/powerpc/boot/dts/mpc8378_rdb.dts     | 2 +-
- arch/powerpc/boot/dts/mpc8379_rdb.dts     | 2 +-
- 12 files changed, 12 insertions(+), 12 deletions(-)
+J. Neuschäfer (5):
+      powerpc: dts: mpc8313erdb: Use IRQ_TYPE_* macros
+      powerpc: dts: mpc8315erdb: Use IRQ_TYPE_* macros
+      powerpc: dts: mpc8315erdb: Rename LED nodes to comply with schema
+      powerpc: dts: mpc8315erdb: Add missing #cells properties to SPI bus
+      powerpc: dts: mpc83xx: Add unit addresses to /memory
 
-diff --git a/arch/powerpc/boot/dts/asp834x-redboot.dts b/arch/powerpc/boot/dts/asp834x-redboot.dts
-index 33ddb17d18760d..c541bd3679831f 100644
---- a/arch/powerpc/boot/dts/asp834x-redboot.dts
-+++ b/arch/powerpc/boot/dts/asp834x-redboot.dts
-@@ -37,7 +37,7 @@ PowerPC,8347@0 {
- 		};
- 	};
- 
--	memory {
-+	memory@0 {
- 		device_type = "memory";
- 		reg = <0x00000000 0x8000000>;	// 128MB at 0
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc8308_p1m.dts b/arch/powerpc/boot/dts/mpc8308_p1m.dts
-index 2638555afcc454..41f917f97dab8d 100644
---- a/arch/powerpc/boot/dts/mpc8308_p1m.dts
-+++ b/arch/powerpc/boot/dts/mpc8308_p1m.dts
-@@ -37,7 +37,7 @@ PowerPC,8308@0 {
- 		};
- 	};
- 
--	memory {
-+	memory@0 {
- 		device_type = "memory";
- 		reg = <0x00000000 0x08000000>;	// 128MB at 0
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc8308rdb.dts b/arch/powerpc/boot/dts/mpc8308rdb.dts
-index af2ed8380a867c..39ed26fba41093 100644
---- a/arch/powerpc/boot/dts/mpc8308rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8308rdb.dts
-@@ -38,7 +38,7 @@ PowerPC,8308@0 {
- 		};
- 	};
- 
--	memory {
-+	memory@0 {
- 		device_type = "memory";
- 		reg = <0x00000000 0x08000000>;	// 128MB at 0
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc8313erdb.dts b/arch/powerpc/boot/dts/mpc8313erdb.dts
-index 137217d377e91b..c9fe4dabc80a78 100644
---- a/arch/powerpc/boot/dts/mpc8313erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8313erdb.dts
-@@ -39,7 +39,7 @@ PowerPC,8313@0 {
- 		};
- 	};
- 
--	memory {
-+	memory@0 {
- 		device_type = "memory";
- 		reg = <0x00000000 0x08000000>;	// 128MB at 0
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
-index 0b087180e1815f..7ba1159f880311 100644
---- a/arch/powerpc/boot/dts/mpc8315erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
-@@ -40,7 +40,7 @@ PowerPC,8315@0 {
- 		};
- 	};
- 
--	memory {
-+	memory@0 {
- 		device_type = "memory";
- 		reg = <0x00000000 0x08000000>;	// 128MB at 0
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc832x_rdb.dts b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-index ba7caaf98fd58f..06f134490d9574 100644
---- a/arch/powerpc/boot/dts/mpc832x_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc832x_rdb.dts
-@@ -38,7 +38,7 @@ PowerPC,8323@0 {
- 		};
- 	};
- 
--	memory {
-+	memory@0 {
- 		device_type = "memory";
- 		reg = <0x00000000 0x04000000>;
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc8349emitx.dts b/arch/powerpc/boot/dts/mpc8349emitx.dts
-index 13f17232ba83d5..12d33cb55b72a9 100644
---- a/arch/powerpc/boot/dts/mpc8349emitx.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitx.dts
-@@ -39,7 +39,7 @@ PowerPC,8349@0 {
- 		};
- 	};
- 
--	memory {
-+	memory@0 {
- 		device_type = "memory";
- 		reg = <0x00000000 0x10000000>;
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc8349emitxgp.dts b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-index eae0afd5abbc39..2998a233a790be 100644
---- a/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-+++ b/arch/powerpc/boot/dts/mpc8349emitxgp.dts
-@@ -37,7 +37,7 @@ PowerPC,8349@0 {
- 		};
- 	};
- 
--	memory {
-+	memory@0 {
- 		device_type = "memory";
- 		reg = <0x00000000 0x10000000>;
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc8377_rdb.dts b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-index f137ccb8cfdedf..fb311a7eb9f2cb 100644
---- a/arch/powerpc/boot/dts/mpc8377_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_rdb.dts
-@@ -39,7 +39,7 @@ PowerPC,8377@0 {
- 		};
- 	};
- 
--	memory {
-+	memory@0 {
- 		device_type = "memory";
- 		reg = <0x00000000 0x10000000>;	// 256MB at 0
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc8377_wlan.dts b/arch/powerpc/boot/dts/mpc8377_wlan.dts
-index ce254dd74dd06b..f736a15cceffad 100644
---- a/arch/powerpc/boot/dts/mpc8377_wlan.dts
-+++ b/arch/powerpc/boot/dts/mpc8377_wlan.dts
-@@ -40,7 +40,7 @@ PowerPC,8377@0 {
- 		};
- 	};
- 
--	memory {
-+	memory@0 {
- 		device_type = "memory";
- 		reg = <0x00000000 0x20000000>;	// 512MB at 0
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc8378_rdb.dts b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-index 19e5473d4161b5..32c49622b40402 100644
---- a/arch/powerpc/boot/dts/mpc8378_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8378_rdb.dts
-@@ -39,7 +39,7 @@ PowerPC,8378@0 {
- 		};
- 	};
- 
--	memory {
-+	memory@0 {
- 		device_type = "memory";
- 		reg = <0x00000000 0x10000000>;	// 256MB at 0
- 	};
-diff --git a/arch/powerpc/boot/dts/mpc8379_rdb.dts b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-index 61519acca22804..07deb89c5a9bdc 100644
---- a/arch/powerpc/boot/dts/mpc8379_rdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8379_rdb.dts
-@@ -37,7 +37,7 @@ PowerPC,8379@0 {
- 		};
- 	};
- 
--	memory {
-+	memory@0 {
- 		device_type = "memory";
- 		reg = <0x00000000 0x10000000>;	// 256MB at 0
- 	};
+ arch/powerpc/boot/dts/asp834x-redboot.dts |   2 +-
+ arch/powerpc/boot/dts/mpc8308_p1m.dts     |   2 +-
+ arch/powerpc/boot/dts/mpc8308rdb.dts      |   2 +-
+ arch/powerpc/boot/dts/mpc8313erdb.dts     |  61 ++++++++-------
+ arch/powerpc/boot/dts/mpc8315erdb.dts     | 119 ++++++++++++++++--------------
+ arch/powerpc/boot/dts/mpc832x_rdb.dts     |   2 +-
+ arch/powerpc/boot/dts/mpc8349emitx.dts    |   2 +-
+ arch/powerpc/boot/dts/mpc8349emitxgp.dts  |   2 +-
+ arch/powerpc/boot/dts/mpc8377_rdb.dts     |   2 +-
+ arch/powerpc/boot/dts/mpc8377_wlan.dts    |   2 +-
+ arch/powerpc/boot/dts/mpc8378_rdb.dts     |   2 +-
+ arch/powerpc/boot/dts/mpc8379_rdb.dts     |   2 +-
+ 12 files changed, 109 insertions(+), 91 deletions(-)
+---
+base-commit: d3f2d8e7de622d2a2d4283cb545e51745d87f0c5
+change-id: 20260101-mpc83xx-cleanup-4de8df290c75
 
+Best regards,
 -- 
-2.51.0
+J. Neuschäfer <j.ne@posteo.net>
 
 
 
