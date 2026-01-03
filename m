@@ -1,55 +1,114 @@
-Return-Path: <linuxppc-dev+bounces-15192-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15193-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id C817AFC6188
-	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Jan 2026 18:58:16 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 263B7FC6182
+	for <linuxppc-dev@archiver.kernel.org>; Sat,  3 Jan 2026 20:33:38 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dk8w72DwSz2yYK;
-	Sun, 04 Jan 2026 05:58:15 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767466695;
-	cv=none; b=EABUGU3mceGnqOsvsstb8252a27XMj3T/V6ylB9nYvX1VckhvJ6SlsocDMnk6e1OS6/VhTxIOoBgf8ovt4OK4bkj5QLva9EirDGMxDS+F6beIGpWw6Sq5alCl0PtXtdWWWRxum5MtPQuJ4ybqrleGrxDiw/tZaIBNS0t47YFUrwk8fbJUKTxwFvZgc22StmedWl3R+r9rrvDC1W10Xe8t+wKULJti/K0F0PrB2QC5A/CpU8vgdDJw4fSlvf5yfIOtS8eQcqgwF8mx2RtFik/eDIMBsIntqvvtAwHyMMbInASq+2DetUwhG0Mk579y9FiJug+53KfwNjMqPchuFeJlQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dkC2831Jhz2yMh;
+	Sun, 04 Jan 2026 07:33:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.167.47
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767472416;
+	cv=none; b=V42PI0D3ScOjVIueV6ei7a8+iZqwDvyKGJ0sWSbVDf2iIl/mhS6yi+dvY5+Gb17kGLvwDdtJKpng8dpa/O4jN4H8TQlTF1YF4CHXd06FkA02mgLezRaBBMgLPBSqXsc5TnqOUTmHedgfEraGiQj1zWC2nmpGUWkKF9NmlsjtecdaTq+YWWxAxoBfHz/yDx/KUWCvY7RBgXQ+Vp7g2FRhtsjG3ENeLJpF14ZDETXjfT29z14Yx5HGvIVWNsmI7qHcATiITMKt5H/pPYFdARhrkD4Depo6qQiSv3rKF92aSXxVOJeqd07MvKJRGiIdCF1hIZIwUhSkka4szoUvkU0zNA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767466695; c=relaxed/relaxed;
-	bh=6CsIgBvTZ/aO5Cm0DQ3UQhW5Oip36QGKb+p3AazB1PI=;
-	h=From:Date:Subject:MIME-Version:Content-Type:Message-Id:References:
-	 In-Reply-To:To:Cc; b=fNoztctw4EQJeXxz6qI7rWjxjpRzb0x8qaF0EHItrRwDhUiCM532UJPivMazHZqSKYfJzW9B4wXU+vkpVQB4HJXQ3RfNoQkz3ca2U/a6z+u4b/fAKiLz9kZ9EVO4jkBuS+Rg7wGvJMQ1326gh8hMJlKruPTYNwnvjsLUhDGemqEGJtAfFPR/WkI6pORUV7x0l76SQXyA0D9mEib7IjyTOeB4QgLgJGBp6oM2Kl8+y6gjv5VR1GJbaLRY00xUm8tCOriP2mBf7ENMy1dhGiAm8MEg1wiokuPYxux8v4WEd9GqQdnWd6VJEywKCwT1E7mw9+LdtUrQJc3rp9JTC5WoWw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KxtVbTeD; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1767472416; c=relaxed/relaxed;
+	bh=7o+8V3bXuMIGcHyQUku83CYs/vu8fbyRY+Gob8yvlG8=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=Ji6awz5EOvpsHOxXlxVGk/LaCr72E96JnIOsBIyZ4G33ghBiEG1EKt2uGEhkqqMKEiWIrbaj1kD9tXht6pRgLfjUrwBMDbDkeC7vYKEkHnxXmBmYNyaObtUya0wAxuOAeEUjxQFAdinNbWJBa9/1P1lWBij1ZnjPd14K+xO96HC3WwnrIZkQGS8I1oWxW2QRsuH1nUYlbr1fYD6Fm9Vg5siEFoVPOrOiPsNvwbAP4OkcnXZSm4p/g/Y8yaOg6K9dIsul4x9l1S43vFXTkihfYK61gEBfOnoNfgRPomXKwdQr8Lmih+qEeuIDY6oNsT7iZcWclFWB7LQ6nJ3DMSOrkA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=VRCFC6Xz; dkim-atps=neutral; spf=pass (client-ip=209.85.167.47; helo=mail-lf1-f47.google.com; envelope-from=klarasmodin@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=KxtVbTeD;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=VRCFC6Xz;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=devnull+j.ne.posteo.net@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.47; helo=mail-lf1-f47.google.com; envelope-from=klarasmodin@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-lf1-f47.google.com (mail-lf1-f47.google.com [209.85.167.47])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dk8w63Kt8z2yNJ
-	for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Jan 2026 05:58:14 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 9C92943EB8;
-	Sat,  3 Jan 2026 18:57:42 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPS id 5F30CC19423;
-	Sat,  3 Jan 2026 18:57:42 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767466662;
-	bh=My/NfxgmIvxjaFeC8OnhapcSLL8g7lHuerKBbzvT1eM=;
-	h=From:Date:Subject:References:In-Reply-To:To:Cc:Reply-To:From;
-	b=KxtVbTeDOUVxTQJ6A9VRShzJZIXbJgMgmrlO1oKJ+7yIh9+wjZKNSi2JDxItwd/TE
-	 HwaEY8SunFbqs9x1sKKjGMZpMSIJKWDVctbCUSalNXNqMutqhZlr7e/gDi8dcq2U6h
-	 DDzugJu8jaeV/UDOgBXzElBDK2uu0S2Q/2MJIV0oGKuCLDdxhaL07hRiptQJXeYKc5
-	 ReiSL/mvdqSBSrb+lysEZ+XqdLqL5hzvzsjZkBaV71HJlEKtb9erMkJWfM7KspQDBe
-	 mTDqNckWuITrZ0krMjphS8Lt/IvR9R8jEW69wn9VvVU/sokEAfcfZxDdSPVbDH/b8U
-	 3tk/0Mp2e8MkQ==
-Received: from aws-us-west-2-korg-lkml-1.web.codeaurora.org (localhost.localdomain [127.0.0.1])
-	by smtp.lore.kernel.org (Postfix) with ESMTP id 517B0FC6188;
-	Sat,  3 Jan 2026 18:57:42 +0000 (UTC)
-From: =?utf-8?q?J=2E_Neusch=C3=A4fer_via_B4_Relay?= <devnull+j.ne.posteo.net@kernel.org>
-Date: Sat, 03 Jan 2026 19:54:06 +0100
-Subject: [PATCH v2 2/5] powerpc: dts: mpc8315erdb: Use IRQ_TYPE_* macros
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dkC26660qz2yMJ
+	for <linuxppc-dev@lists.ozlabs.org>; Sun, 04 Jan 2026 07:33:33 +1100 (AEDT)
+Received: by mail-lf1-f47.google.com with SMTP id 2adb3069b0e04-59b30275e69so8148723e87.1
+        for <linuxppc-dev@lists.ozlabs.org>; Sat, 03 Jan 2026 12:33:33 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1767472349; x=1768077149; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=7o+8V3bXuMIGcHyQUku83CYs/vu8fbyRY+Gob8yvlG8=;
+        b=VRCFC6XzeWlc/Z5bN8gcGybz9VfGuNjGxkSGVVnO4Q7aMXt84vpytK50+cOz4ulGOr
+         kGtrvl1dth4wGMxo+oTqRRBzJT2zTeCxU3VcAdg5P+q2FzusVjca/Z5euvQqSWJYNdEf
+         DxEUbgB1yTs4HcR9DIvdjeBfwQpNSSTDWpNuixx0qoa/nzn1N+TXChJAD79ouDBOkWPn
+         L3CIQ5btJboKbtHZdeMD1PIVOjCBC2Sia7SHPP2+uQxCr4s6jPjj7KqPhysxWnpYWxXN
+         ictHl8sSx4XcwWPPlBuD2pgv2Cv52HCVunL0BM59+H/jG3g9KSlYmO8vp7HCjW9z4j9d
+         SMdQ==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1767472349; x=1768077149;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
+         :subject:date:message-id:reply-to;
+        bh=7o+8V3bXuMIGcHyQUku83CYs/vu8fbyRY+Gob8yvlG8=;
+        b=Pi+zhgia3IUEqS+dKgpnHynhu88qg6W2zYS9fA53wRPP9+sct/6OAHfPaTwuMHmpW8
+         F75ND1Mfe38ryRqKEie0nZcjfp3CzWSAMsVr+5zkyyQq3+9zAFW7yQFD33SnXN1LFq6W
+         70ZL4HJEubJQIio6UWcTczgHKdnS+mBr/+gJr+n6psRqz5t9T8oM5oaOYtrW1KSR9HI9
+         MkG1rT2pIlGzGWSThy4Z5ZDwjVOZo/PX8l2qhytx8/6Hf/YyjdqKLVIUuXZUy79NkFiT
+         LDGE1i67V3TUoFkGgWfeLqHXan3PvY5RrWynMFGsJNkH5h3+UDmD2U6IKBZn4ZJge4Uk
+         S3YA==
+X-Forwarded-Encrypted: i=1; AJvYcCXXZ0WJYdpLV80zjXIchZkfNQHjp034wvKagItO9/kQ1uyEDVzfAlDk6j9GF6F/pkiI72ga94o47gOEPk8=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwyxUkmv6L5G1S5Be30H6F7x8hylC7wfFM+gs1XlGsTGgQI/KEt
+	AtO04532rFhhTf+qAne/XfRmTEVgsFaVtEDAVnQuib16bXNqLhCqOI9c
+X-Gm-Gg: AY/fxX4iF2qVhl6gBRQhZSHV0Mr8M8R6pZlLiguCzUnRE8dkqpAgKPpHoLuupJUdwgb
+	VL0SNuppbGLASLvHmFW0Ta2pbu6NMAvMFMCLuSa86tJbiuNnBy+XMfmcn0X5rI4bpZG8FH3FoMp
+	LU3BZLWnZGo+sYjsww8YEt2lknuhA/MaR+lphVS/8Ly44bMAjAAviZZk6hDlfyUQp6Sr+PAsYOu
+	wCRxFmcr+wleW0zWaBes83jVqagX4WPk3+VuYJYC9aqZofM4THh6Am01GxLeWXtQi8/XuKF5yWW
+	jmsucEdEJUcbYOkvRbyOsXy3NLrYixY5AJkdZinRMpgpb7YuLzf/lm7MT7bV85dmp1LSNL2Ra9B
+	aYMBWoOQbDqrYfVd1LaCfQNnxbh3hcsRJy02MaZKijh9bct2q5lA/eSGeZgu8moq4L74tG4gahd
+	RzSiAJrZ8ne4Ubi7O1hKtl22qkkt3BO48dfAzhAAGrcw==
+X-Google-Smtp-Source: AGHT+IEnoPR3bLjgiHz8V/D0bqIfe+KGL8qN+8iViiiSSYeZJp9K5TsXzLfWqe+YE0ZXBkQi72/slw==
+X-Received: by 2002:a05:6512:401b:b0:598:fabf:afc2 with SMTP id 2adb3069b0e04-59a17d77697mr15522207e87.14.1767472348240;
+        Sat, 03 Jan 2026 12:32:28 -0800 (PST)
+Received: from localhost (parmesan.int.kasm.eu. [2001:678:a5c:1204:126f:f00a:513f:807b])
+        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-59a185ddc12sm13314957e87.37.2026.01.03.12.32.27
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Sat, 03 Jan 2026 12:32:27 -0800 (PST)
+Date: Sat, 3 Jan 2026 21:32:26 +0100
+From: Klara Modin <klarasmodin@gmail.com>
+To: Mike Rapoport <rppt@kernel.org>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Alex Shi <alexs@kernel.org>, 
+	Alexander Gordeev <agordeev@linux.ibm.com>, Andreas Larsson <andreas@gaisler.com>, 
+	Borislav Petkov <bp@alien8.de>, Brian Cain <bcain@kernel.org>, 
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Catalin Marinas <catalin.marinas@arm.com>, 
+	"David S. Miller" <davem@davemloft.net>, Dave Hansen <dave.hansen@linux.intel.com>, 
+	David Hildenbrand <david@kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, 
+	Geert Uytterhoeven <geert@linux-m68k.org>, Guo Ren <guoren@kernel.org>, Heiko Carstens <hca@linux.ibm.com>, 
+	Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>, 
+	Ingo Molnar <mingo@redhat.com>, Johannes Berg <johannes@sipsolutions.net>, 
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>, Jonathan Corbet <corbet@lwn.net>, 
+	"Liam R. Howlett" <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>, 
+	Magnus Lindholm <linmag7@gmail.com>, Matt Turner <mattst88@gmail.com>, 
+	Max Filippov <jcmvbkbc@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>, 
+	Michal Hocko <mhocko@suse.com>, Michal Simek <monstr@monstr.eu>, 
+	Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>, 
+	Palmer Dabbelt <palmer@dabbelt.com>, Pratyush Yadav <pratyush@kernel.org>, 
+	Richard Weinberger <richard@nod.at>, Russell King <linux@armlinux.org.uk>, 
+	Stafford Horne <shorne@gmail.com>, Suren Baghdasaryan <surenb@google.com>, 
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>, Thomas Gleixner <tglx@linutronix.de>, 
+	Vasily Gorbik <gor@linux.ibm.com>, Vineet Gupta <vgupta@kernel.org>, 
+	Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>, x86@kernel.org, 
+	linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org, 
+	linux-cxl@vger.kernel.org, linux-doc@vger.kernel.org, linux-hexagon@vger.kernel.org, 
+	linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org, 
+	linux-mm@kvack.org, linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org, 
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org, linux-sh@vger.kernel.org, 
+	linux-snps-arc@lists.infradead.org, linux-um@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
+	loongarch@lists.linux.dev, sparclinux@vger.kernel.org
+Subject: Re: [PATCH v2 22/28] arch, mm: consolidate initialization of nodes,
+ zones and memory map
+Message-ID: <aVlwOyicOLPB9SOa@parmesan.int.kasm.eu>
+References: <20260102070005.65328-1-rppt@kernel.org>
+ <20260102070005.65328-23-rppt@kernel.org>
+ <aVhN2NgQEKe0yzva@soda.int.kasm.eu>
+ <aVll339wim7dCIaQ@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -63,327 +122,299 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset="utf-8"
-Content-Transfer-Encoding: 8bit
-Message-Id: <20260103-mpc83xx-cleanup-v2-2-b2a13c0a0d63@posteo.net>
-References: <20260103-mpc83xx-cleanup-v2-0-b2a13c0a0d63@posteo.net>
-In-Reply-To: <20260103-mpc83xx-cleanup-v2-0-b2a13c0a0d63@posteo.net>
-To: Rob Herring <robh@kernel.org>, Krzysztof Kozlowski <krzk+dt@kernel.org>, 
- Conor Dooley <conor+dt@kernel.org>, 
- Madhavan Srinivasan <maddy@linux.ibm.com>, 
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: devicetree@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, 
- linux-kernel@vger.kernel.org, 
- =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
-X-Mailer: b4 0.14.3
-X-Developer-Signature: v=1; a=ed25519-sha256; t=1767466660; l=9600;
- i=j.ne@posteo.net; s=20240329; h=from:subject:message-id;
- bh=qJSNJfVmiDZG+g6KBxDQ/n/7zXxMj4agDbro7jKlVcE=;
- b=ezJaCNs8FJEtTao+ZSRrR2B8jYoBByxnxkLgCDCha2WEzaXyVShfdnTTmuRWn099peT3JP6dI
- tejbOFZNYp4ANmzOosDWgwYQJe3RuJIcfAcFzJSTjDf0S3Ky1aNcQhD
-X-Developer-Key: i=j.ne@posteo.net; a=ed25519;
- pk=NIe0bK42wNaX/C4bi6ezm7NJK0IQE+8MKBm7igFMIS4=
-X-Endpoint-Received: by B4 Relay for j.ne@posteo.net/20240329 with
- auth_id=156
-X-Original-From: =?utf-8?q?J=2E_Neusch=C3=A4fer?= <j.ne@posteo.net>
-Reply-To: j.ne@posteo.net
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <aVll339wim7dCIaQ@kernel.org>
 
-From: "J. Neuschäfer" <j.ne@posteo.net>
+Hi,
 
-This increases readability, because "0x8" isn't very descriptive.
+On 2026-01-03 20:54:23 +0200, Mike Rapoport wrote:
+> Hi,
+> 
+> On Sat, Jan 03, 2026 at 12:33:29AM +0100, Klara Modin wrote:
+> > On 2026-01-02 08:59:58 +0200, Mike Rapoport wrote:
+> > > From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+> > > 
+> > > To initialize node, zone and memory map data structures every architecture
+> > > calls free_area_init() during setup_arch() and passes it an array of zone
+> > > limits.
+> > > 
+> > > Beside code duplication it creates "interesting" ordering cases between
+> > > allocation and initialization of hugetlb and the memory map. Some
+> > > architectures allocate hugetlb pages very early in setup_arch() in certain
+> > > cases, some only create hugetlb CMA areas in setup_arch() and sometimes
+> > > hugetlb allocations happen mm_core_init().
+> > > 
+> > > With arch_zone_limits_init() helper available now on all architectures it
+> > > is no longer necessary to call free_area_init() from architecture setup
+> > > code. Rather core MM initialization can call arch_zone_limits_init() in a
+> > > single place.
+> > > 
+> > > This allows to unify ordering of hugetlb vs memory map allocation and
+> > > initialization.
+> > > 
+> > > Remove the call to free_area_init() from architecture specific code and
+> > > place it in a new mm_core_init_early() function that is called immediately
+> > > after setup_arch().
+> > > 
+> > > After this refactoring it is possible to consolidate hugetlb allocations
+> > > and eliminate differences in ordering of hugetlb and memory map
+> > > initialization among different architectures.
+> > > 
+> > > As the first step of this consolidation move hugetlb_bootmem_alloc() to
+> > > mm_core_early_init().
+> > > 
+> > > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> > 
+> > This breaks boot on my Raspberry Pi 1. The reason seems to be the use of
+> > page_folio() when initializing the dynamically allocated zero page in
+> > arm, which doesn't work when free_area_init() hasn't been called yet.
+> 
+> I believe the reason is rather the use of virt_to_phys() that now happens
+> before the memory map is ready.
+> 
 
-mpc8315erdb.dtb remains identical after this patch.
+Right, that makes sense, the fault just becomes apparent when
+page_folio() is called on some bogus address then?
 
-Signed-off-by: J. Neuschäfer <j.ne@posteo.net>
----
- arch/powerpc/boot/dts/mpc8315erdb.dts | 111 ++++++++++++++++++----------------
- 1 file changed, 59 insertions(+), 52 deletions(-)
+> > The following oopses are generated:
+> > 
+> >  8<--- cut here ---
+> >  Unable to handle kernel paging request at virtual address 003dfb44 when read
+> >  [003dfb44] *pgd=00000000
+> >  Internal error: Oops: 5 [#1] ARM
+> >  CPU: 0 UID: 0 PID: 0 Comm: swapper Not tainted 6.19.0-rc3-03898-g7975b0084358 #451 NONE
+> >  Hardware name: BCM2835
+> >  PC is at paging_init (include/linux/page-flags.h:284 (discriminator 2) arch/arm/mm/mmu.c:1790 (discriminator 2))
+> >  LR is at paging_init (arch/arm/mm/mmu.c:1789 (discriminator 1))
+> 
+> ...
+> 
+> >  8<--- cut here ---
+> > 
+> > and the second one repeats for some time afterwards.
+> > 
+> > I experimented a little by allocating the zero page statically as many
+> > other arches do which fixes the issue as it does not need to be
+> > initialized at this point anymore, though I have no idea if that's
+> > appropriate.
+> 
+> Do you mean putting the zero in the BSS like, e.g. arm64? I don't see a
+> reason why this shouldn't work.
+> 
 
-diff --git a/arch/powerpc/boot/dts/mpc8315erdb.dts b/arch/powerpc/boot/dts/mpc8315erdb.dts
-index a8f68d6e50b0dd..1957b6687b2987 100644
---- a/arch/powerpc/boot/dts/mpc8315erdb.dts
-+++ b/arch/powerpc/boot/dts/mpc8315erdb.dts
-@@ -50,7 +50,7 @@ localbus@e0005000 {
- 		#size-cells = <1>;
- 		compatible = "fsl,mpc8315-elbc", "fsl,elbc", "simple-bus";
- 		reg = <0xe0005000 0x1000>;
--		interrupts = <77 0x8>;
-+		interrupts = <77 IRQ_TYPE_LEVEL_LOW>;
- 		interrupt-parent = <&ipic>;
- 
- 		// CS0 and CS1 are swapped when
-@@ -112,7 +112,7 @@ i2c@3000 {
- 			cell-index = <0>;
- 			compatible = "fsl-i2c";
- 			reg = <0x3000 0x100>;
--			interrupts = <14 0x8>;
-+			interrupts = <14 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 			dfsrr;
- 			rtc@68 {
-@@ -133,7 +133,7 @@ spi@7000 {
- 			cell-index = <0>;
- 			compatible = "fsl,spi";
- 			reg = <0x7000 0x1000>;
--			interrupts = <16 0x8>;
-+			interrupts = <16 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 			mode = "cpu";
- 		};
-@@ -145,35 +145,35 @@ dma@82a8 {
- 			reg = <0x82a8 4>;
- 			ranges = <0 0x8100 0x1a8>;
- 			interrupt-parent = <&ipic>;
--			interrupts = <71 8>;
-+			interrupts = <71 IRQ_TYPE_LEVEL_LOW>;
- 			cell-index = <0>;
- 			dma-channel@0 {
- 				compatible = "fsl,mpc8315-dma-channel", "fsl,elo-dma-channel";
- 				reg = <0 0x80>;
- 				cell-index = <0>;
- 				interrupt-parent = <&ipic>;
--				interrupts = <71 8>;
-+				interrupts = <71 IRQ_TYPE_LEVEL_LOW>;
- 			};
- 			dma-channel@80 {
- 				compatible = "fsl,mpc8315-dma-channel", "fsl,elo-dma-channel";
- 				reg = <0x80 0x80>;
- 				cell-index = <1>;
- 				interrupt-parent = <&ipic>;
--				interrupts = <71 8>;
-+				interrupts = <71 IRQ_TYPE_LEVEL_LOW>;
- 			};
- 			dma-channel@100 {
- 				compatible = "fsl,mpc8315-dma-channel", "fsl,elo-dma-channel";
- 				reg = <0x100 0x80>;
- 				cell-index = <2>;
- 				interrupt-parent = <&ipic>;
--				interrupts = <71 8>;
-+				interrupts = <71 IRQ_TYPE_LEVEL_LOW>;
- 			};
- 			dma-channel@180 {
- 				compatible = "fsl,mpc8315-dma-channel", "fsl,elo-dma-channel";
- 				reg = <0x180 0x28>;
- 				cell-index = <3>;
- 				interrupt-parent = <&ipic>;
--				interrupts = <71 8>;
-+				interrupts = <71 IRQ_TYPE_LEVEL_LOW>;
- 			};
- 		};
- 
-@@ -183,7 +183,7 @@ usb@23000 {
- 			#address-cells = <1>;
- 			#size-cells = <0>;
- 			interrupt-parent = <&ipic>;
--			interrupts = <38 0x8>;
-+			interrupts = <38 IRQ_TYPE_LEVEL_LOW>;
- 			phy_type = "utmi";
- 		};
- 
-@@ -197,7 +197,9 @@ enet0: ethernet@24000 {
- 			reg = <0x24000 0x1000>;
- 			ranges = <0x0 0x24000 0x1000>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
--			interrupts = <32 0x8 33 0x8 34 0x8>;
-+			interrupts = <32 IRQ_TYPE_LEVEL_LOW>,
-+				     <33 IRQ_TYPE_LEVEL_LOW>,
-+				     <34 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 			tbi-handle = <&tbi0>;
- 			phy-handle = < &phy0 >;
-@@ -238,7 +240,9 @@ enet1: ethernet@25000 {
- 			reg = <0x25000 0x1000>;
- 			ranges = <0x0 0x25000 0x1000>;
- 			local-mac-address = [ 00 00 00 00 00 00 ];
--			interrupts = <35 0x8 36 0x8 37 0x8>;
-+			interrupts = <35 IRQ_TYPE_LEVEL_LOW>,
-+				     <36 IRQ_TYPE_LEVEL_LOW>,
-+				     <37 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 			tbi-handle = <&tbi1>;
- 			phy-handle = < &phy1 >;
-@@ -263,7 +267,7 @@ serial0: serial@4500 {
- 			compatible = "fsl,ns16550", "ns16550";
- 			reg = <0x4500 0x100>;
- 			clock-frequency = <133333333>;
--			interrupts = <9 0x8>;
-+			interrupts = <9 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 		};
- 
-@@ -273,7 +277,7 @@ serial1: serial@4600 {
- 			compatible = "fsl,ns16550", "ns16550";
- 			reg = <0x4600 0x100>;
- 			clock-frequency = <133333333>;
--			interrupts = <10 0x8>;
-+			interrupts = <10 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 		};
- 
-@@ -282,7 +286,7 @@ crypto@30000 {
- 				     "fsl,sec2.4", "fsl,sec2.2", "fsl,sec2.1",
- 				     "fsl,sec2.0";
- 			reg = <0x30000 0x10000>;
--			interrupts = <11 0x8>;
-+			interrupts = <11 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 			fsl,num-channels = <4>;
- 			fsl,channel-fifo-len = <24>;
-@@ -294,7 +298,7 @@ sata@18000 {
- 			compatible = "fsl,mpc8315-sata", "fsl,pq-sata";
- 			reg = <0x18000 0x1000>;
- 			cell-index = <1>;
--			interrupts = <44 0x8>;
-+			interrupts = <44 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 		};
- 
-@@ -302,14 +306,17 @@ sata@19000 {
- 			compatible = "fsl,mpc8315-sata", "fsl,pq-sata";
- 			reg = <0x19000 0x1000>;
- 			cell-index = <2>;
--			interrupts = <45 0x8>;
-+			interrupts = <45 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 		};
- 
- 		gtm1: timer@500 {
- 			compatible = "fsl,mpc8315-gtm", "fsl,gtm";
- 			reg = <0x500 0x100>;
--			interrupts = <90 8 78 8 84 8 72 8>;
-+			interrupts = <90 IRQ_TYPE_LEVEL_LOW>,
-+				     <78 IRQ_TYPE_LEVEL_LOW>,
-+				     <84 IRQ_TYPE_LEVEL_LOW>,
-+				     <72 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 			clock-frequency = <133333333>;
- 		};
-@@ -317,16 +324,16 @@ gtm1: timer@500 {
- 		timer@600 {
- 			compatible = "fsl,mpc8315-gtm", "fsl,gtm";
- 			reg = <0x600 0x100>;
--			interrupts = <91 8 79 8 85 8 73 8>;
-+			interrupts = <91 IRQ_TYPE_LEVEL_LOW>,
-+				     <79 IRQ_TYPE_LEVEL_LOW>,
-+				     <85 IRQ_TYPE_LEVEL_LOW>,
-+				     <73 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 			clock-frequency = <133333333>;
- 		};
- 
- 		/* IPIC
--		 * interrupts cell = <intr #, sense>
--		 * sense values match linux IORESOURCE_IRQ_* defines:
--		 * sense == 8: Level, low assertion
--		 * sense == 2: Edge, high-to-low change
-+		 * interrupts cell = <intr #, type>
- 		 */
- 		ipic: interrupt-controller@700 {
- 			interrupt-controller;
-@@ -340,14 +347,14 @@ ipic-msi@7c0 {
- 			compatible = "fsl,ipic-msi";
- 			reg = <0x7c0 0x40>;
- 			msi-available-ranges = <0 0x100>;
--			interrupts = <0x43 0x8
--				      0x4  0x8
--				      0x51 0x8
--				      0x52 0x8
--				      0x56 0x8
--				      0x57 0x8
--				      0x58 0x8
--				      0x59 0x8>;
-+			interrupts = <0x43 IRQ_TYPE_LEVEL_LOW
-+				      0x4  IRQ_TYPE_LEVEL_LOW
-+				      0x51 IRQ_TYPE_LEVEL_LOW
-+				      0x52 IRQ_TYPE_LEVEL_LOW
-+				      0x56 IRQ_TYPE_LEVEL_LOW
-+				      0x57 IRQ_TYPE_LEVEL_LOW
-+				      0x58 IRQ_TYPE_LEVEL_LOW
-+				      0x59 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = < &ipic >;
- 		};
- 
-@@ -355,7 +362,7 @@ pmc: power@b00 {
- 			compatible = "fsl,mpc8315-pmc", "fsl,mpc8313-pmc",
- 				     "fsl,mpc8349-pmc";
- 			reg = <0xb00 0x100 0xa00 0x100>;
--			interrupts = <80 8>;
-+			interrupts = <80 IRQ_TYPE_LEVEL_LOW>;
- 			interrupt-parent = <&ipic>;
- 			fsl,mpc8313-wakeup-timer = <&gtm1>;
- 		};
-@@ -374,24 +381,24 @@ pci0: pci@e0008500 {
- 		interrupt-map-mask = <0xf800 0x0 0x0 0x7>;
- 		interrupt-map = <
- 				/* IDSEL 0x0E -mini PCI */
--				 0x7000 0x0 0x0 0x1 &ipic 18 0x8
--				 0x7000 0x0 0x0 0x2 &ipic 18 0x8
--				 0x7000 0x0 0x0 0x3 &ipic 18 0x8
--				 0x7000 0x0 0x0 0x4 &ipic 18 0x8
-+				 0x7000 0x0 0x0 0x1 &ipic 18 IRQ_TYPE_LEVEL_LOW
-+				 0x7000 0x0 0x0 0x2 &ipic 18 IRQ_TYPE_LEVEL_LOW
-+				 0x7000 0x0 0x0 0x3 &ipic 18 IRQ_TYPE_LEVEL_LOW
-+				 0x7000 0x0 0x0 0x4 &ipic 18 IRQ_TYPE_LEVEL_LOW
- 
- 				/* IDSEL 0x0F -mini PCI */
--				 0x7800 0x0 0x0 0x1 &ipic 17 0x8
--				 0x7800 0x0 0x0 0x2 &ipic 17 0x8
--				 0x7800 0x0 0x0 0x3 &ipic 17 0x8
--				 0x7800 0x0 0x0 0x4 &ipic 17 0x8
-+				 0x7800 0x0 0x0 0x1 &ipic 17 IRQ_TYPE_LEVEL_LOW
-+				 0x7800 0x0 0x0 0x2 &ipic 17 IRQ_TYPE_LEVEL_LOW
-+				 0x7800 0x0 0x0 0x3 &ipic 17 IRQ_TYPE_LEVEL_LOW
-+				 0x7800 0x0 0x0 0x4 &ipic 17 IRQ_TYPE_LEVEL_LOW
- 
- 				/* IDSEL 0x10 - PCI slot */
--				 0x8000 0x0 0x0 0x1 &ipic 48 0x8
--				 0x8000 0x0 0x0 0x2 &ipic 17 0x8
--				 0x8000 0x0 0x0 0x3 &ipic 48 0x8
--				 0x8000 0x0 0x0 0x4 &ipic 17 0x8>;
-+				 0x8000 0x0 0x0 0x1 &ipic 48 IRQ_TYPE_LEVEL_LOW
-+				 0x8000 0x0 0x0 0x2 &ipic 17 IRQ_TYPE_LEVEL_LOW
-+				 0x8000 0x0 0x0 0x3 &ipic 48 IRQ_TYPE_LEVEL_LOW
-+				 0x8000 0x0 0x0 0x4 &ipic 17 IRQ_TYPE_LEVEL_LOW>;
- 		interrupt-parent = <&ipic>;
--		interrupts = <66 0x8>;
-+		interrupts = <66 IRQ_TYPE_LEVEL_LOW>;
- 		bus-range = <0x0 0x0>;
- 		ranges = <0x02000000 0 0x90000000 0x90000000 0 0x10000000
- 			  0x42000000 0 0x80000000 0x80000000 0 0x10000000
-@@ -417,10 +424,10 @@ pci1: pcie@e0009000 {
- 		          0x01000000 0 0x00000000 0xb1000000 0 0x00800000>;
- 		bus-range = <0 255>;
- 		interrupt-map-mask = <0xf800 0 0 7>;
--		interrupt-map = <0 0 0 1 &ipic 1 8
--				 0 0 0 2 &ipic 1 8
--				 0 0 0 3 &ipic 1 8
--				 0 0 0 4 &ipic 1 8>;
-+		interrupt-map = <0 0 0 1 &ipic 1 IRQ_TYPE_LEVEL_LOW
-+				 0 0 0 2 &ipic 1 IRQ_TYPE_LEVEL_LOW
-+				 0 0 0 3 &ipic 1 IRQ_TYPE_LEVEL_LOW
-+				 0 0 0 4 &ipic 1 IRQ_TYPE_LEVEL_LOW>;
- 		clock-frequency = <0>;
- 
- 		pcie@0 {
-@@ -448,10 +455,10 @@ pci2: pcie@e000a000 {
- 			  0x01000000 0 0x00000000 0xd1000000 0 0x00800000>;
- 		bus-range = <0 255>;
- 		interrupt-map-mask = <0xf800 0 0 7>;
--		interrupt-map = <0 0 0 1 &ipic 2 8
--				 0 0 0 2 &ipic 2 8
--				 0 0 0 3 &ipic 2 8
--				 0 0 0 4 &ipic 2 8>;
-+		interrupt-map = <0 0 0 1 &ipic 2 IRQ_TYPE_LEVEL_LOW
-+				 0 0 0 2 &ipic 2 IRQ_TYPE_LEVEL_LOW
-+				 0 0 0 3 &ipic 2 IRQ_TYPE_LEVEL_LOW
-+				 0 0 0 4 &ipic 2 IRQ_TYPE_LEVEL_LOW>;
- 		clock-frequency = <0>;
- 
- 		pcie@0 {
+Yes, exactly that. The diff I had was:
 
--- 
-2.51.0
+diff --git a/arch/arm/include/asm/pgtable.h b/arch/arm/include/asm/pgtable.h
+index 86378eec7757..6fa9acd6a7f5 100644
+--- a/arch/arm/include/asm/pgtable.h
++++ b/arch/arm/include/asm/pgtable.h
+@@ -15,8 +15,8 @@
+  * ZERO_PAGE is a global shared page that is always zero: used
+  * for zero-mapped memory areas etc..
+  */
+-extern struct page *empty_zero_page;
+-#define ZERO_PAGE(vaddr)	(empty_zero_page)
++extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)];
++#define ZERO_PAGE(vaddr)	(virt_to_page(empty_zero_page))
+ #endif
+ 
+ #include <asm-generic/pgtable-nopud.h>
+diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
+index 8bac96e205ac..518def8314e7 100644
+--- a/arch/arm/mm/mmu.c
++++ b/arch/arm/mm/mmu.c
+@@ -45,7 +45,7 @@ extern unsigned long __atags_pointer;
+  * empty_zero_page is a special page that is used for
+  * zero-initialized data and COW.
+  */
+-struct page *empty_zero_page;
++unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)] __page_aligned_bss;
+ EXPORT_SYMBOL(empty_zero_page);
+ 
+ /*
+@@ -1754,8 +1754,6 @@ static void __init early_fixmap_shutdown(void)
+  */
+ void __init paging_init(const struct machine_desc *mdesc)
+ {
+-	void *zero_page;
+-
+ #ifdef CONFIG_XIP_KERNEL
+ 	/* Store the kernel RW RAM region start/end in these variables */
+ 	kernel_sec_start = CONFIG_PHYS_OFFSET & SECTION_MASK;
+@@ -1781,13 +1779,7 @@ void __init paging_init(const struct machine_desc *mdesc)
+ 
+ 	top_pmd = pmd_off_k(0xffff0000);
+ 
+-	/* allocate the zero page. */
+-	zero_page = early_alloc(PAGE_SIZE);
+-
+ 	bootmem_init();
+-
+-	empty_zero_page = virt_to_page(zero_page);
+-	__flush_dcache_folio(NULL, page_folio(empty_zero_page));
+ }
+ 
+ void __init early_mm_init(const struct machine_desc *mdesc)
+diff --git a/arch/arm/mm/nommu.c b/arch/arm/mm/nommu.c
+index d638cc87807e..7e42d8accec6 100644
+--- a/arch/arm/mm/nommu.c
++++ b/arch/arm/mm/nommu.c
+@@ -31,7 +31,7 @@ unsigned long vectors_base;
+  * empty_zero_page is a special page that is used for
+  * zero-initialized data and COW.
+  */
+-struct page *empty_zero_page;
++unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)] __page_aligned_bss;
+ EXPORT_SYMBOL(empty_zero_page);
+ 
+ #ifdef CONFIG_ARM_MPU
+@@ -156,18 +156,10 @@ void __init adjust_lowmem_bounds(void)
+  */
+ void __init paging_init(const struct machine_desc *mdesc)
+ {
+-	void *zero_page;
+-
+ 	early_trap_init((void *)vectors_base);
+ 	mpu_setup();
+ 
+-	/* allocate the zero page. */
+-	zero_page = (void *)memblock_alloc_or_panic(PAGE_SIZE, PAGE_SIZE);
+-
+ 	bootmem_init();
+-
+-	empty_zero_page = virt_to_page(zero_page);
+-	flush_dcache_page(empty_zero_page);
+ }
+ 
+ /*
 
+> I also have a patch with some minor changes that still keeps
+> empty_zero_page allocated, but avoids virt_to_page() and folio_page()
+> dance. Can you please test it in your setup?
+> 
+> From 8a213c13211106d592fbe96b68ee29879ed739f8 Mon Sep 17 00:00:00 2001
+> From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+> Date: Sat, 3 Jan 2026 20:40:09 +0200
+> Subject: [PATCH] arm: make initialization of zero page independent of the
+>  memory map
+> 
+> Unlike most architectures, arm keeps a struct page pointer to the
+> empty_zero_page and to initialize it requires conversion of a virtual
+> address to page which makes it necessary to have memory map initialized
+> before creating the empty_zero_page.
+> 
+> Make empty_zero_page a void * to decouple it's initialization from the
+> initialization of the memory map.
+> 
+> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> ---
+>  arch/arm/include/asm/pgtable.h |  4 ++--
+>  arch/arm/mm/mmu.c              | 10 +++-------
+>  arch/arm/mm/nommu.c            | 10 +++-------
+>  3 files changed, 8 insertions(+), 16 deletions(-)
+> 
+> diff --git a/arch/arm/include/asm/pgtable.h b/arch/arm/include/asm/pgtable.h
+> index 86378eec7757..08bbd2aed6c9 100644
+> --- a/arch/arm/include/asm/pgtable.h
+> +++ b/arch/arm/include/asm/pgtable.h
+> @@ -15,8 +15,8 @@
+>   * ZERO_PAGE is a global shared page that is always zero: used
+>   * for zero-mapped memory areas etc..
+>   */
+> -extern struct page *empty_zero_page;
+> -#define ZERO_PAGE(vaddr)	(empty_zero_page)
+> +extern void *empty_zero_page;
+> +#define ZERO_PAGE(vaddr)	(virt_to_page(empty_zero_page))
+>  #endif
+>  
+>  #include <asm-generic/pgtable-nopud.h>
+> diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
+> index 8bac96e205ac..867258f1ae09 100644
+> --- a/arch/arm/mm/mmu.c
+> +++ b/arch/arm/mm/mmu.c
+> @@ -45,7 +45,7 @@ extern unsigned long __atags_pointer;
+>   * empty_zero_page is a special page that is used for
+>   * zero-initialized data and COW.
+>   */
+> -struct page *empty_zero_page;
+> +void *empty_zero_page;
+>  EXPORT_SYMBOL(empty_zero_page);
+>  
+>  /*
+> @@ -1754,8 +1754,6 @@ static void __init early_fixmap_shutdown(void)
+>   */
+>  void __init paging_init(const struct machine_desc *mdesc)
+>  {
+> -	void *zero_page;
+> -
+>  #ifdef CONFIG_XIP_KERNEL
+>  	/* Store the kernel RW RAM region start/end in these variables */
+>  	kernel_sec_start = CONFIG_PHYS_OFFSET & SECTION_MASK;
+> @@ -1782,12 +1780,10 @@ void __init paging_init(const struct machine_desc *mdesc)
+>  	top_pmd = pmd_off_k(0xffff0000);
+>  
+>  	/* allocate the zero page. */
+> -	zero_page = early_alloc(PAGE_SIZE);
+> +	empty_zero_page = early_alloc(PAGE_SIZE);
+> +	__cpuc_flush_dcache_area(empty_zero_page, PAGE_SIZE);
+>  
+>  	bootmem_init();
+> -
+> -	empty_zero_page = virt_to_page(zero_page);
+> -	__flush_dcache_folio(NULL, page_folio(empty_zero_page));
+>  }
+>  
+>  void __init early_mm_init(const struct machine_desc *mdesc)
+> diff --git a/arch/arm/mm/nommu.c b/arch/arm/mm/nommu.c
+> index d638cc87807e..f80ff5a69fbb 100644
+> --- a/arch/arm/mm/nommu.c
+> +++ b/arch/arm/mm/nommu.c
+> @@ -31,7 +31,7 @@ unsigned long vectors_base;
+>   * empty_zero_page is a special page that is used for
+>   * zero-initialized data and COW.
+>   */
+> -struct page *empty_zero_page;
+> +void *empty_zero_page;
+>  EXPORT_SYMBOL(empty_zero_page);
+>  
+>  #ifdef CONFIG_ARM_MPU
+> @@ -156,18 +156,14 @@ void __init adjust_lowmem_bounds(void)
+>   */
+>  void __init paging_init(const struct machine_desc *mdesc)
+>  {
+> -	void *zero_page;
+> -
+>  	early_trap_init((void *)vectors_base);
+>  	mpu_setup();
+>  
+>  	/* allocate the zero page. */
+> -	zero_page = (void *)memblock_alloc_or_panic(PAGE_SIZE, PAGE_SIZE);
+> +	empty_zero_page = memblock_alloc_or_panic(PAGE_SIZE, PAGE_SIZE);
+> +	__cpuc_flush_dcache_area(empty_zero_page, PAGE_SIZE);
+>  
+>  	bootmem_init();
+> -
+> -	empty_zero_page = virt_to_page(zero_page);
+> -	flush_dcache_page(empty_zero_page);
+>  }
+>  
+>  /*
+> -- 
+> 2.51.0
+> 
 
+This also works for me.
+
+Thanks,
+Tested-by: Klara Modin <klarasmodin@gmail.com>
+
+>  
+> > Regards,
+> > Klara Modin
+> > 
+> 
+> -- 
+> Sincerely yours,
+> Mike.
 
