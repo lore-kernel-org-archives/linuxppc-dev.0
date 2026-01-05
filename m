@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-15216-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15218-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22302C2A072
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 05:16:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6EFE5C2A062
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 05:16:34 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dl2YW6zpjz2ywS;
-	Mon, 05 Jan 2026 16:15:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dl2YY0bfcz30B4;
+	Mon, 05 Jan 2026 16:15:13 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767590111;
-	cv=none; b=ID63y2/GT6LAAa4CWnWEGo44el4TTs3ciU8sFYTjK9AzuS13lJ/8wLpTnzIFS4FxhdpdRO+MbFB6ix5FBKNcdoqWwyAZFkx8jTcuzGBhvzhKDN2i2274Zoj5DXIrgX45pyXGYDvE92Cjn1nSQwsJXBlJJeKnswrA/j1pu/tr7dYwPvWti73cr2LHUQgLuNrBD8g65IgL7/2Iw1xHLyv6poA6maaVZ1ZNZ1nPwOw+OiT/pWhCwKj8mCwlipGR2w23zHPaGIbwzo41KVDdj9vzZe5TJD8Kd+6FMSTqW7BoI2ODU6oey/WyUHyibhZUuxWMtD+KI0NcP8xUJGudP1HYJg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767590112;
+	cv=none; b=Jh3qb0dBp5iUaK5R0itTywCLr61cWcUYvjeB3NDNP49KIaFIZDMSBHYiAUfOYQV195pq2FwgtmUb/TCymkMw85qLnu8xx2/i2urfJW6qtJxgoUChL42dShIlASqCiiFFPyyhQXgv8lloT7YC01PYfZTxCUNHpkwfuLfUk3gTeDSCwNY+PoNRI9ofDdfIl5VGAQ6qn1SCb0i8qiff7w1/DHCMIvCF0UeCMjXfFMhXf9SO1QS/yiWAWXbL9AhiWDvvhkbje/kP+zMjDhyMe1JExtIUfQsEwhRO7DOBasYUMv0v9r4d9B5eTPULcA/s0AJ9kconm52/YybAGZ+SvBognA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767590111; c=relaxed/relaxed;
-	bh=k4CPf2ZJynm0JU5P5TMioqoG4hO+NATA51L2XquL3Tw=;
+	t=1767590112; c=relaxed/relaxed;
+	bh=jmjc1MaLSWOSF1kwSPYfC14KTGlU8vXlbOtmTxaGyfE=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=mFCJPh06C7jrcKtOmrwQ0UOl9cGRf8VU80YoMbT16TpHA49xKAkLrHLLGIeWoXjlWEJ8dAAPaNNRmA6cRSXAhBcavRdRBwfKT7sr4vFNntWD4hMKARsYAoFPxDZy/6MF8tQnBP7d2ncZFKLztlf3zZpU6FbwFPF0O/tW/lyV+kdrV+6M2BXoBS4wKEoBa4XtaT1HYIJGmXURMAIPT0RyfHGW2NNnAA/5KVEEstNVZ498DxXKWq0ok5rTqJmml/i8I/0QNl0SmSerXh8cqDJeO7jjoh+Ki0bDAgBYh5/M9f7IX7aThRaWmuc2aM7K6cFYfGIIRNI4OB1OjvZz14rz6A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G3G0Bk0G; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=DpzCgpjvYiWhth9n2x3a5Y2GWmgQySc2lNvQxhxqRytGfqAhsJf8g3CCHtH0hxWA/YM+k7AEjy0wYJFRITOiZHBUWywpJR+eJ+cMX52BiVR8m99CySZnhXLPItnMfy7s0NnNSENzrQRsbx9i6SsFN39cXjtBfmhnnu90EAgZeM9bg50x0+s29avwkhYiRcuRDtHvYzPAFwYk+bbbBgIGbkGCJxuLAZIA8Vyzsd59F/J9P4r0Leh65h2QXSYZ3PBK/5VTwIMZLqZEM+WZHQ2Dp8kVo48+k5NXK/aM6J3FoLcZl1rIa6hg/jTi8rdUBUdhvl2cQippQ2m/m584dYdJ+g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Rv8rRXOB; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G3G0Bk0G;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Rv8rRXOB;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dl2YS5W1Hz2ytx
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 16:15:08 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dl2YN5b4kz2ypY
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 16:15:04 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id E3E4E44345;
-	Mon,  5 Jan 2026 05:15:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 56DBAC19425;
-	Mon,  5 Jan 2026 05:15:04 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 012FA44306;
+	Mon,  5 Jan 2026 05:15:01 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 20B00C116D0;
+	Mon,  5 Jan 2026 05:15:00 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767590104;
-	bh=QrYuLwUNu/mVSc/Yo9MLheYVuGpn5hYaMt0fTaKLTGY=;
+	s=k20201202; t=1767590100;
+	bh=SJEBhf+VjHzX+vLySR4GZ2b5ZJzy0Ro+c+aJ+QxQj+g=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=G3G0Bk0G56Ktu3wG+6a9uAZH1lAOba80s4ElWn2pJFGgFmNV/Cvh+Z4L4klecwAfJ
-	 4A4jYZkIX5u/TAbMBp2/t6kvMz1vfkfl6kK8wTbdYEMZzD48byZukOJjTQls80D1Xy
-	 4WkndmU3Qn4EkS0p+n03CEKYzEJ0P2Wu+x5eAaKoh0QJtMhWu243+nRHSrwnSBLnET
-	 /USJVwZLIvP7OD84paOmDdk+WrENSjRQUTX3tIVS55nIybRN4WLxj52YLt7MKHOYg9
-	 LR99hxKJTTahowUoQL9JPYKxznndT0rryjV8qUaCJhK4rY0IHuWnAW46qVo1Gxtx6a
-	 1WQW7lG89tSYQ==
+	b=Rv8rRXOBmh71Yvqvzzyso9dqt8HO2hw++/BDEHc6pmmMBl3HxzBT3AMjXtdbxR6BW
+	 npG7kEELIerhtJu+WqotkRkkAAG9HBq2j1PJajZmxbmzYb9NuJiwgLC+E/ViDDV2wi
+	 U17h2B8aPSt5D/c9e+z9d2NFiW8HM+9FkVybDsHzbhaLqPUW9c/jLwoa5O2SzMa6L+
+	 eFhFBVyttl0camsSgqoiSPX/BYIlWoz4INgWEwLOGEmi6Qnwy+GG8t3CKLpO/vgQIy
+	 T8Pebda4haEUsMogAU7Q8e0uFp+lTTuCyiE9df2dxzb8pHLYoYCzlsxLjt+ZTZ16v9
+	 zzkH2oDpCMBuQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -59,9 +59,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Holger Dengler <dengler@linux.ibm.com>,
 	Harald Freudenberger <freude@linux.ibm.com>,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 21/36] net: phy: mscc: macsec: Use new AES library API
-Date: Sun,  4 Jan 2026 21:12:54 -0800
-Message-ID: <20260105051311.1607207-22-ebiggers@kernel.org>
+Subject: [PATCH 16/36] lib/crypto: sparc/aes: Migrate optimized code into library
+Date: Sun,  4 Jan 2026 21:12:49 -0800
+Message-ID: <20260105051311.1607207-17-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260105051311.1607207-1-ebiggers@kernel.org>
 References: <20260105051311.1607207-1-ebiggers@kernel.org>
@@ -80,48 +80,566 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Switch from the old AES library functions (which use struct
-crypto_aes_ctx) to the new ones (which use struct aes_enckey).  This
-eliminates the unnecessary computation and caching of the decryption
-round keys.  The new AES en/decryption functions are also much faster
-and use AES instructions when supported by the CPU.
+Move the SPARC64 AES assembly code into lib/crypto/, wire the key
+expansion and single-block en/decryption functions up to the AES library
+API, and remove the "aes-sparc64" crypto_cipher algorithm.
 
-Note: aes_encrypt_new() will be renamed to aes_encrypt() once all
-callers of the old aes_encrypt() have been updated.
+The result is that both the AES library and crypto_cipher APIs use the
+SPARC64 AES opcodes, whereas previously only crypto_cipher did (and it
+wasn't enabled by default, which this commit fixes as well).
+
+Note that some of the functions in the SPARC64 AES assembly code are
+still used by the AES mode implementations in
+arch/sparc/crypto/aes_glue.c.  For now, just export these functions.
+These exports will go away once the AES mode implementations are
+migrated to the library as well.  (Trying to split up the assembly file
+seemed like much more trouble than it would be worth.)
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- drivers/net/phy/mscc/mscc_macsec.c | 8 ++++----
- 1 file changed, 4 insertions(+), 4 deletions(-)
+ arch/sparc/crypto/Kconfig                     |   2 +-
+ arch/sparc/crypto/Makefile                    |   2 +-
+ arch/sparc/crypto/aes_glue.c                  | 140 +---------------
+ include/crypto/aes.h                          |  42 +++++
+ lib/crypto/Kconfig                            |   1 +
+ lib/crypto/Makefile                           |   1 +
+ lib/crypto/sparc/aes.h                        | 149 ++++++++++++++++++
+ .../crypto => lib/crypto/sparc}/aes_asm.S     |   0
+ 8 files changed, 200 insertions(+), 137 deletions(-)
+ create mode 100644 lib/crypto/sparc/aes.h
+ rename {arch/sparc/crypto => lib/crypto/sparc}/aes_asm.S (100%)
 
-diff --git a/drivers/net/phy/mscc/mscc_macsec.c b/drivers/net/phy/mscc/mscc_macsec.c
-index 4f39ba63a9a9..bcb7f5a4a8fd 100644
---- a/drivers/net/phy/mscc/mscc_macsec.c
-+++ b/drivers/net/phy/mscc/mscc_macsec.c
-@@ -502,19 +502,19 @@ static u32 vsc8584_macsec_flow_context_id(struct macsec_flow *flow)
+diff --git a/arch/sparc/crypto/Kconfig b/arch/sparc/crypto/Kconfig
+index f755da979534..c1932ce46c7f 100644
+--- a/arch/sparc/crypto/Kconfig
++++ b/arch/sparc/crypto/Kconfig
+@@ -17,13 +17,13 @@ config CRYPTO_DES_SPARC64
+ 	  Architecture: sparc64
  
- /* Derive the AES key to get a key for the hash autentication */
- static int vsc8584_macsec_derive_key(const u8 *key, u16 key_len, u8 hkey[16])
+ config CRYPTO_AES_SPARC64
+ 	tristate "Ciphers: AES, modes: ECB, CBC, CTR"
+ 	depends on SPARC64
++	select CRYPTO_LIB_AES
+ 	select CRYPTO_SKCIPHER
+ 	help
+-	  Block ciphers: AES cipher algorithms (FIPS-197)
+ 	  Length-preseving ciphers: AES with ECB, CBC, and CTR modes
+ 
+ 	  Architecture: sparc64 using crypto instructions
+ 
+ config CRYPTO_CAMELLIA_SPARC64
+diff --git a/arch/sparc/crypto/Makefile b/arch/sparc/crypto/Makefile
+index 7b4796842ddd..cdf9f4b3efbb 100644
+--- a/arch/sparc/crypto/Makefile
++++ b/arch/sparc/crypto/Makefile
+@@ -5,8 +5,8 @@
+ 
+ obj-$(CONFIG_CRYPTO_AES_SPARC64) += aes-sparc64.o
+ obj-$(CONFIG_CRYPTO_DES_SPARC64) += des-sparc64.o
+ obj-$(CONFIG_CRYPTO_CAMELLIA_SPARC64) += camellia-sparc64.o
+ 
+-aes-sparc64-y := aes_asm.o aes_glue.o
++aes-sparc64-y := aes_glue.o
+ des-sparc64-y := des_asm.o des_glue.o
+ camellia-sparc64-y := camellia_asm.o camellia_glue.o
+diff --git a/arch/sparc/crypto/aes_glue.c b/arch/sparc/crypto/aes_glue.c
+index 359f22643b05..661561837415 100644
+--- a/arch/sparc/crypto/aes_glue.c
++++ b/arch/sparc/crypto/aes_glue.c
+@@ -30,12 +30,10 @@
+ #include <asm/opcodes.h>
+ #include <asm/pstate.h>
+ #include <asm/elf.h>
+ 
+ struct aes_ops {
+-	void (*encrypt)(const u64 *key, const u32 *input, u32 *output);
+-	void (*decrypt)(const u64 *key, const u32 *input, u32 *output);
+ 	void (*load_encrypt_keys)(const u64 *key);
+ 	void (*load_decrypt_keys)(const u64 *key);
+ 	void (*ecb_encrypt)(const u64 *key, const u64 *input, u64 *output,
+ 			    unsigned int len);
+ 	void (*ecb_decrypt)(const u64 *key, const u64 *input, u64 *output,
+@@ -53,123 +51,44 @@ struct crypto_sparc64_aes_ctx {
+ 	u64 key[AES_MAX_KEYLENGTH / sizeof(u64)];
+ 	u32 key_length;
+ 	u32 expanded_key_length;
+ };
+ 
+-extern void aes_sparc64_encrypt_128(const u64 *key, const u32 *input,
+-				    u32 *output);
+-extern void aes_sparc64_encrypt_192(const u64 *key, const u32 *input,
+-				    u32 *output);
+-extern void aes_sparc64_encrypt_256(const u64 *key, const u32 *input,
+-				    u32 *output);
+-
+-extern void aes_sparc64_decrypt_128(const u64 *key, const u32 *input,
+-				    u32 *output);
+-extern void aes_sparc64_decrypt_192(const u64 *key, const u32 *input,
+-				    u32 *output);
+-extern void aes_sparc64_decrypt_256(const u64 *key, const u32 *input,
+-				    u32 *output);
+-
+-extern void aes_sparc64_load_encrypt_keys_128(const u64 *key);
+-extern void aes_sparc64_load_encrypt_keys_192(const u64 *key);
+-extern void aes_sparc64_load_encrypt_keys_256(const u64 *key);
+-
+-extern void aes_sparc64_load_decrypt_keys_128(const u64 *key);
+-extern void aes_sparc64_load_decrypt_keys_192(const u64 *key);
+-extern void aes_sparc64_load_decrypt_keys_256(const u64 *key);
+-
+-extern void aes_sparc64_ecb_encrypt_128(const u64 *key, const u64 *input,
+-					u64 *output, unsigned int len);
+-extern void aes_sparc64_ecb_encrypt_192(const u64 *key, const u64 *input,
+-					u64 *output, unsigned int len);
+-extern void aes_sparc64_ecb_encrypt_256(const u64 *key, const u64 *input,
+-					u64 *output, unsigned int len);
+-
+-extern void aes_sparc64_ecb_decrypt_128(const u64 *key, const u64 *input,
+-					u64 *output, unsigned int len);
+-extern void aes_sparc64_ecb_decrypt_192(const u64 *key, const u64 *input,
+-					u64 *output, unsigned int len);
+-extern void aes_sparc64_ecb_decrypt_256(const u64 *key, const u64 *input,
+-					u64 *output, unsigned int len);
+-
+-extern void aes_sparc64_cbc_encrypt_128(const u64 *key, const u64 *input,
+-					u64 *output, unsigned int len,
+-					u64 *iv);
+-
+-extern void aes_sparc64_cbc_encrypt_192(const u64 *key, const u64 *input,
+-					u64 *output, unsigned int len,
+-					u64 *iv);
+-
+-extern void aes_sparc64_cbc_encrypt_256(const u64 *key, const u64 *input,
+-					u64 *output, unsigned int len,
+-					u64 *iv);
+-
+-extern void aes_sparc64_cbc_decrypt_128(const u64 *key, const u64 *input,
+-					u64 *output, unsigned int len,
+-					u64 *iv);
+-
+-extern void aes_sparc64_cbc_decrypt_192(const u64 *key, const u64 *input,
+-					u64 *output, unsigned int len,
+-					u64 *iv);
+-
+-extern void aes_sparc64_cbc_decrypt_256(const u64 *key, const u64 *input,
+-					u64 *output, unsigned int len,
+-					u64 *iv);
+-
+-extern void aes_sparc64_ctr_crypt_128(const u64 *key, const u64 *input,
+-				      u64 *output, unsigned int len,
+-				      u64 *iv);
+-extern void aes_sparc64_ctr_crypt_192(const u64 *key, const u64 *input,
+-				      u64 *output, unsigned int len,
+-				      u64 *iv);
+-extern void aes_sparc64_ctr_crypt_256(const u64 *key, const u64 *input,
+-				      u64 *output, unsigned int len,
+-				      u64 *iv);
+-
+ static struct aes_ops aes128_ops = {
+-	.encrypt		= aes_sparc64_encrypt_128,
+-	.decrypt		= aes_sparc64_decrypt_128,
+ 	.load_encrypt_keys	= aes_sparc64_load_encrypt_keys_128,
+ 	.load_decrypt_keys	= aes_sparc64_load_decrypt_keys_128,
+ 	.ecb_encrypt		= aes_sparc64_ecb_encrypt_128,
+ 	.ecb_decrypt		= aes_sparc64_ecb_decrypt_128,
+ 	.cbc_encrypt		= aes_sparc64_cbc_encrypt_128,
+ 	.cbc_decrypt		= aes_sparc64_cbc_decrypt_128,
+ 	.ctr_crypt		= aes_sparc64_ctr_crypt_128,
+ };
+ 
+ static struct aes_ops aes192_ops = {
+-	.encrypt		= aes_sparc64_encrypt_192,
+-	.decrypt		= aes_sparc64_decrypt_192,
+ 	.load_encrypt_keys	= aes_sparc64_load_encrypt_keys_192,
+ 	.load_decrypt_keys	= aes_sparc64_load_decrypt_keys_192,
+ 	.ecb_encrypt		= aes_sparc64_ecb_encrypt_192,
+ 	.ecb_decrypt		= aes_sparc64_ecb_decrypt_192,
+ 	.cbc_encrypt		= aes_sparc64_cbc_encrypt_192,
+ 	.cbc_decrypt		= aes_sparc64_cbc_decrypt_192,
+ 	.ctr_crypt		= aes_sparc64_ctr_crypt_192,
+ };
+ 
+ static struct aes_ops aes256_ops = {
+-	.encrypt		= aes_sparc64_encrypt_256,
+-	.decrypt		= aes_sparc64_decrypt_256,
+ 	.load_encrypt_keys	= aes_sparc64_load_encrypt_keys_256,
+ 	.load_decrypt_keys	= aes_sparc64_load_decrypt_keys_256,
+ 	.ecb_encrypt		= aes_sparc64_ecb_encrypt_256,
+ 	.ecb_decrypt		= aes_sparc64_ecb_decrypt_256,
+ 	.cbc_encrypt		= aes_sparc64_cbc_encrypt_256,
+ 	.cbc_decrypt		= aes_sparc64_cbc_decrypt_256,
+ 	.ctr_crypt		= aes_sparc64_ctr_crypt_256,
+ };
+ 
+-extern void aes_sparc64_key_expand(const u32 *in_key, u64 *output_key,
+-				   unsigned int key_len);
+-
+-static int aes_set_key(struct crypto_tfm *tfm, const u8 *in_key,
+-		       unsigned int key_len)
++static int aes_set_key_skcipher(struct crypto_skcipher *tfm, const u8 *in_key,
++				unsigned int key_len)
  {
- 	const u8 input[AES_BLOCK_SIZE] = {0};
--	struct crypto_aes_ctx ctx;
-+	struct aes_enckey aes;
- 	int ret;
+-	struct crypto_sparc64_aes_ctx *ctx = crypto_tfm_ctx(tfm);
++	struct crypto_sparc64_aes_ctx *ctx = crypto_skcipher_ctx(tfm);
  
--	ret = aes_expandkey(&ctx, key, key_len);
-+	ret = aes_prepareenckey(&aes, key, key_len);
- 	if (ret)
- 		return ret;
+ 	switch (key_len) {
+ 	case AES_KEYSIZE_128:
+ 		ctx->expanded_key_length = 0xb0;
+ 		ctx->ops = &aes128_ops;
+@@ -193,30 +112,10 @@ static int aes_set_key(struct crypto_tfm *tfm, const u8 *in_key,
+ 	ctx->key_length = key_len;
  
--	aes_encrypt(&ctx, hkey, input);
--	memzero_explicit(&ctx, sizeof(ctx));
-+	aes_encrypt_new(&aes, hkey, input);
-+	memzero_explicit(&aes, sizeof(aes));
  	return 0;
  }
  
- static int vsc8584_macsec_transformation(struct phy_device *phydev,
- 					 struct macsec_flow *flow,
+-static int aes_set_key_skcipher(struct crypto_skcipher *tfm, const u8 *in_key,
+-				unsigned int key_len)
+-{
+-	return aes_set_key(crypto_skcipher_tfm(tfm), in_key, key_len);
+-}
+-
+-static void crypto_aes_encrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
+-{
+-	struct crypto_sparc64_aes_ctx *ctx = crypto_tfm_ctx(tfm);
+-
+-	ctx->ops->encrypt(&ctx->key[0], (const u32 *) src, (u32 *) dst);
+-}
+-
+-static void crypto_aes_decrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
+-{
+-	struct crypto_sparc64_aes_ctx *ctx = crypto_tfm_ctx(tfm);
+-
+-	ctx->ops->decrypt(&ctx->key[0], (const u32 *) src, (u32 *) dst);
+-}
+-
+ static int ecb_encrypt(struct skcipher_request *req)
+ {
+ 	struct crypto_skcipher *tfm = crypto_skcipher_reqtfm(req);
+ 	const struct crypto_sparc64_aes_ctx *ctx = crypto_skcipher_ctx(tfm);
+ 	struct skcipher_walk walk;
+@@ -356,30 +255,10 @@ static int ctr_crypt(struct skcipher_request *req)
+ 	}
+ 	fprs_write(0);
+ 	return err;
+ }
+ 
+-static struct crypto_alg cipher_alg = {
+-	.cra_name		= "aes",
+-	.cra_driver_name	= "aes-sparc64",
+-	.cra_priority		= SPARC_CR_OPCODE_PRIORITY,
+-	.cra_flags		= CRYPTO_ALG_TYPE_CIPHER,
+-	.cra_blocksize		= AES_BLOCK_SIZE,
+-	.cra_ctxsize		= sizeof(struct crypto_sparc64_aes_ctx),
+-	.cra_alignmask		= 3,
+-	.cra_module		= THIS_MODULE,
+-	.cra_u	= {
+-		.cipher	= {
+-			.cia_min_keysize	= AES_MIN_KEY_SIZE,
+-			.cia_max_keysize	= AES_MAX_KEY_SIZE,
+-			.cia_setkey		= aes_set_key,
+-			.cia_encrypt		= crypto_aes_encrypt,
+-			.cia_decrypt		= crypto_aes_decrypt
+-		}
+-	}
+-};
+-
+ static struct skcipher_alg skcipher_algs[] = {
+ 	{
+ 		.base.cra_name		= "ecb(aes)",
+ 		.base.cra_driver_name	= "ecb-aes-sparc64",
+ 		.base.cra_priority	= SPARC_CR_OPCODE_PRIORITY,
+@@ -438,30 +317,21 @@ static bool __init sparc64_has_aes_opcode(void)
+ 	return true;
+ }
+ 
+ static int __init aes_sparc64_mod_init(void)
+ {
+-	int err;
+-
+ 	if (!sparc64_has_aes_opcode()) {
+ 		pr_info("sparc64 aes opcodes not available.\n");
+ 		return -ENODEV;
+ 	}
+ 	pr_info("Using sparc64 aes opcodes optimized AES implementation\n");
+-	err = crypto_register_alg(&cipher_alg);
+-	if (err)
+-		return err;
+-	err = crypto_register_skciphers(skcipher_algs,
+-					ARRAY_SIZE(skcipher_algs));
+-	if (err)
+-		crypto_unregister_alg(&cipher_alg);
+-	return err;
++	return crypto_register_skciphers(skcipher_algs,
++					 ARRAY_SIZE(skcipher_algs));
+ }
+ 
+ static void __exit aes_sparc64_mod_fini(void)
+ {
+-	crypto_unregister_alg(&cipher_alg);
+ 	crypto_unregister_skciphers(skcipher_algs, ARRAY_SIZE(skcipher_algs));
+ }
+ 
+ module_init(aes_sparc64_mod_init);
+ module_exit(aes_sparc64_mod_fini);
+diff --git a/include/crypto/aes.h b/include/crypto/aes.h
+index b91eb49cbffc..e4b5f60e7a0b 100644
+--- a/include/crypto/aes.h
++++ b/include/crypto/aes.h
+@@ -47,10 +47,13 @@ union aes_enckey_arch {
+ 	 */
+ 	struct p8_aes_key p8;
+ #elif defined(CONFIG_S390)
+ 	/* Used when the CPU supports CPACF AES for this key's length */
+ 	u8 raw_key[AES_MAX_KEY_SIZE];
++#elif defined(CONFIG_SPARC64)
++	/* Used when the CPU supports the SPARC64 AES opcodes */
++	u64 sparc_rndkeys[AES_MAX_KEYLENGTH / sizeof(u64)];
+ #endif
+ #endif /* CONFIG_CRYPTO_LIB_AES_ARCH */
+ };
+ 
+ union aes_invkey_arch {
+@@ -197,10 +200,49 @@ void aes_p8_xts_encrypt(const u8 *in, u8 *out, size_t len,
+ 			const struct p8_aes_key *key1,
+ 			const struct p8_aes_key *key2, u8 *iv);
+ void aes_p8_xts_decrypt(const u8 *in, u8 *out, size_t len,
+ 			const struct p8_aes_key *key1,
+ 			const struct p8_aes_key *key2, u8 *iv);
++#elif defined(CONFIG_SPARC64)
++void aes_sparc64_key_expand(const u32 *in_key, u64 *output_key,
++			    unsigned int key_len);
++void aes_sparc64_load_encrypt_keys_128(const u64 *key);
++void aes_sparc64_load_encrypt_keys_192(const u64 *key);
++void aes_sparc64_load_encrypt_keys_256(const u64 *key);
++void aes_sparc64_load_decrypt_keys_128(const u64 *key);
++void aes_sparc64_load_decrypt_keys_192(const u64 *key);
++void aes_sparc64_load_decrypt_keys_256(const u64 *key);
++void aes_sparc64_ecb_encrypt_128(const u64 *key, const u64 *input, u64 *output,
++				 unsigned int len);
++void aes_sparc64_ecb_encrypt_192(const u64 *key, const u64 *input, u64 *output,
++				 unsigned int len);
++void aes_sparc64_ecb_encrypt_256(const u64 *key, const u64 *input, u64 *output,
++				 unsigned int len);
++void aes_sparc64_ecb_decrypt_128(const u64 *key, const u64 *input, u64 *output,
++				 unsigned int len);
++void aes_sparc64_ecb_decrypt_192(const u64 *key, const u64 *input, u64 *output,
++				 unsigned int len);
++void aes_sparc64_ecb_decrypt_256(const u64 *key, const u64 *input, u64 *output,
++				 unsigned int len);
++void aes_sparc64_cbc_encrypt_128(const u64 *key, const u64 *input, u64 *output,
++				 unsigned int len, u64 *iv);
++void aes_sparc64_cbc_encrypt_192(const u64 *key, const u64 *input, u64 *output,
++				 unsigned int len, u64 *iv);
++void aes_sparc64_cbc_encrypt_256(const u64 *key, const u64 *input, u64 *output,
++				 unsigned int len, u64 *iv);
++void aes_sparc64_cbc_decrypt_128(const u64 *key, const u64 *input, u64 *output,
++				 unsigned int len, u64 *iv);
++void aes_sparc64_cbc_decrypt_192(const u64 *key, const u64 *input, u64 *output,
++				 unsigned int len, u64 *iv);
++void aes_sparc64_cbc_decrypt_256(const u64 *key, const u64 *input, u64 *output,
++				 unsigned int len, u64 *iv);
++void aes_sparc64_ctr_crypt_128(const u64 *key, const u64 *input, u64 *output,
++			       unsigned int len, u64 *iv);
++void aes_sparc64_ctr_crypt_192(const u64 *key, const u64 *input, u64 *output,
++			       unsigned int len, u64 *iv);
++void aes_sparc64_ctr_crypt_256(const u64 *key, const u64 *input, u64 *output,
++			       unsigned int len, u64 *iv);
+ #endif
+ 
+ /**
+  * aes_preparekey() - Prepare an AES key for encryption and decryption
+  * @key: (output) The key structure to initialize
+diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
+index b672f0145793..222887c04240 100644
+--- a/lib/crypto/Kconfig
++++ b/lib/crypto/Kconfig
+@@ -18,10 +18,11 @@ config CRYPTO_LIB_AES_ARCH
+ 	default y if ARM64
+ 	default y if PPC && (SPE || (PPC64 && VSX))
+ 	default y if RISCV && 64BIT && TOOLCHAIN_HAS_VECTOR_CRYPTO && \
+ 		     RISCV_EFFICIENT_VECTOR_UNALIGNED_ACCESS
+ 	default y if S390
++	default y if SPARC64
+ 
+ config CRYPTO_LIB_AESCFB
+ 	tristate
+ 	select CRYPTO_LIB_AES
+ 	select CRYPTO_LIB_UTILS
+diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
+index 811b60787dd5..761d52d91f92 100644
+--- a/lib/crypto/Makefile
++++ b/lib/crypto/Makefile
+@@ -49,10 +49,11 @@ targets += powerpc/aesp8-ppc.S
+ OBJECT_FILES_NON_STANDARD_powerpc/aesp8-ppc.o := y
+ endif # !CONFIG_SPE
+ endif # CONFIG_PPC
+ 
+ libaes-$(CONFIG_RISCV) += riscv/aes-riscv64-zvkned.o
++libaes-$(CONFIG_SPARC) += sparc/aes_asm.o
+ endif # CONFIG_CRYPTO_LIB_AES_ARCH
+ 
+ ################################################################################
+ 
+ obj-$(CONFIG_CRYPTO_LIB_AESCFB)			+= libaescfb.o
+diff --git a/lib/crypto/sparc/aes.h b/lib/crypto/sparc/aes.h
+new file mode 100644
+index 000000000000..e354aa507ee0
+--- /dev/null
++++ b/lib/crypto/sparc/aes.h
+@@ -0,0 +1,149 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * AES accelerated using the sparc64 aes opcodes
++ *
++ * Copyright (C) 2008, Intel Corp.
++ * Copyright (c) 2010, Intel Corporation.
++ * Copyright 2026 Google LLC
++ */
++
++#include <asm/fpumacro.h>
++#include <asm/opcodes.h>
++#include <asm/pstate.h>
++#include <asm/elf.h>
++
++static __ro_after_init DEFINE_STATIC_KEY_FALSE(have_aes_opcodes);
++
++EXPORT_SYMBOL_GPL(aes_sparc64_key_expand);
++EXPORT_SYMBOL_GPL(aes_sparc64_load_encrypt_keys_128);
++EXPORT_SYMBOL_GPL(aes_sparc64_load_encrypt_keys_192);
++EXPORT_SYMBOL_GPL(aes_sparc64_load_encrypt_keys_256);
++EXPORT_SYMBOL_GPL(aes_sparc64_load_decrypt_keys_128);
++EXPORT_SYMBOL_GPL(aes_sparc64_load_decrypt_keys_192);
++EXPORT_SYMBOL_GPL(aes_sparc64_load_decrypt_keys_256);
++EXPORT_SYMBOL_GPL(aes_sparc64_ecb_encrypt_128);
++EXPORT_SYMBOL_GPL(aes_sparc64_ecb_encrypt_192);
++EXPORT_SYMBOL_GPL(aes_sparc64_ecb_encrypt_256);
++EXPORT_SYMBOL_GPL(aes_sparc64_ecb_decrypt_128);
++EXPORT_SYMBOL_GPL(aes_sparc64_ecb_decrypt_192);
++EXPORT_SYMBOL_GPL(aes_sparc64_ecb_decrypt_256);
++EXPORT_SYMBOL_GPL(aes_sparc64_cbc_encrypt_128);
++EXPORT_SYMBOL_GPL(aes_sparc64_cbc_encrypt_192);
++EXPORT_SYMBOL_GPL(aes_sparc64_cbc_encrypt_256);
++EXPORT_SYMBOL_GPL(aes_sparc64_cbc_decrypt_128);
++EXPORT_SYMBOL_GPL(aes_sparc64_cbc_decrypt_192);
++EXPORT_SYMBOL_GPL(aes_sparc64_cbc_decrypt_256);
++EXPORT_SYMBOL_GPL(aes_sparc64_ctr_crypt_128);
++EXPORT_SYMBOL_GPL(aes_sparc64_ctr_crypt_192);
++EXPORT_SYMBOL_GPL(aes_sparc64_ctr_crypt_256);
++
++void aes_sparc64_encrypt_128(const u64 *key, const u32 *input, u32 *output);
++void aes_sparc64_encrypt_192(const u64 *key, const u32 *input, u32 *output);
++void aes_sparc64_encrypt_256(const u64 *key, const u32 *input, u32 *output);
++void aes_sparc64_decrypt_128(const u64 *key, const u32 *input, u32 *output);
++void aes_sparc64_decrypt_192(const u64 *key, const u32 *input, u32 *output);
++void aes_sparc64_decrypt_256(const u64 *key, const u32 *input, u32 *output);
++
++static void aes_preparekey_arch(union aes_enckey_arch *k,
++				union aes_invkey_arch *inv_k,
++				const u8 *in_key, int key_len, int nrounds)
++{
++	if (static_branch_likely(&have_aes_opcodes)) {
++		u32 aligned_key[AES_MAX_KEY_SIZE / 4];
++
++		if (IS_ALIGNED((uintptr_t)in_key, 4)) {
++			aes_sparc64_key_expand((const u32 *)in_key,
++					       k->sparc_rndkeys, key_len);
++		} else {
++			memcpy(aligned_key, in_key, key_len);
++			aes_sparc64_key_expand(aligned_key,
++					       k->sparc_rndkeys, key_len);
++			memzero_explicit(aligned_key, key_len);
++		}
++		/*
++		 * Note that nothing needs to be written to inv_k (if it's
++		 * non-NULL) here, since the SPARC64 assembly code uses
++		 * k->sparc_rndkeys for both encryption and decryption.
++		 */
++	} else {
++		aes_expandkey_generic(k->rndkeys,
++				      inv_k ? inv_k->inv_rndkeys : NULL,
++				      in_key, key_len);
++	}
++}
++
++static void aes_sparc64_encrypt(const struct aes_enckey *key,
++				const u32 *input, u32 *output)
++{
++	if (key->len == AES_KEYSIZE_128)
++		aes_sparc64_encrypt_128(key->k.sparc_rndkeys, input, output);
++	else if (key->len == AES_KEYSIZE_192)
++		aes_sparc64_encrypt_192(key->k.sparc_rndkeys, input, output);
++	else
++		aes_sparc64_encrypt_256(key->k.sparc_rndkeys, input, output);
++}
++
++static void aes_encrypt_arch(const struct aes_enckey *key,
++			     u8 out[AES_BLOCK_SIZE],
++			     const u8 in[AES_BLOCK_SIZE])
++{
++	u32 bounce_buf[AES_BLOCK_SIZE / 4];
++
++	if (static_branch_likely(&have_aes_opcodes)) {
++		if (IS_ALIGNED((uintptr_t)in | (uintptr_t)out, 4)) {
++			aes_sparc64_encrypt(key, (const u32 *)in, (u32 *)out);
++		} else {
++			memcpy(bounce_buf, in, AES_BLOCK_SIZE);
++			aes_sparc64_encrypt(key, bounce_buf, bounce_buf);
++			memcpy(out, bounce_buf, AES_BLOCK_SIZE);
++		}
++	} else {
++		aes_encrypt_generic(key->k.rndkeys, key->nrounds, out, in);
++	}
++}
++
++static void aes_sparc64_decrypt(const struct aes_key *key,
++				const u32 *input, u32 *output)
++{
++	if (key->len == AES_KEYSIZE_128)
++		aes_sparc64_decrypt_128(key->k.sparc_rndkeys, input, output);
++	else if (key->len == AES_KEYSIZE_192)
++		aes_sparc64_decrypt_192(key->k.sparc_rndkeys, input, output);
++	else
++		aes_sparc64_decrypt_256(key->k.sparc_rndkeys, input, output);
++}
++
++static void aes_decrypt_arch(const struct aes_key *key,
++			     u8 out[AES_BLOCK_SIZE],
++			     const u8 in[AES_BLOCK_SIZE])
++{
++	u32 bounce_buf[AES_BLOCK_SIZE / 4];
++
++	if (static_branch_likely(&have_aes_opcodes)) {
++		if (IS_ALIGNED((uintptr_t)in | (uintptr_t)out, 4)) {
++			aes_sparc64_decrypt(key, (const u32 *)in, (u32 *)out);
++		} else {
++			memcpy(bounce_buf, in, AES_BLOCK_SIZE);
++			aes_sparc64_decrypt(key, bounce_buf, bounce_buf);
++			memcpy(out, bounce_buf, AES_BLOCK_SIZE);
++		}
++	} else {
++		aes_decrypt_generic(key->inv_k.inv_rndkeys, key->nrounds,
++				    out, in);
++	}
++}
++
++#define aes_mod_init_arch aes_mod_init_arch
++static void aes_mod_init_arch(void)
++{
++	unsigned long cfr;
++
++	if (!(sparc64_elf_hwcap & HWCAP_SPARC_CRYPTO))
++		return;
++
++	__asm__ __volatile__("rd %%asr26, %0" : "=r" (cfr));
++	if (!(cfr & CFR_AES))
++		return;
++
++	static_branch_enable(&have_aes_opcodes);
++}
+diff --git a/arch/sparc/crypto/aes_asm.S b/lib/crypto/sparc/aes_asm.S
+similarity index 100%
+rename from arch/sparc/crypto/aes_asm.S
+rename to lib/crypto/sparc/aes_asm.S
 -- 
 2.52.0
 
