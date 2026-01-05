@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-15232-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15233-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 07B4DC2A062
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 05:18:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 91CA8C2A062
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 05:18:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dl2Yp1BRzz3c13;
-	Mon, 05 Jan 2026 16:15:26 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767590126;
-	cv=none; b=gFNzkSi9zcV+bK95/SVVIyr7m8CJhRlm/5Hnml9bg9YZWtg9Z06+o/bO+Qe3n8O1MV5iZlSYpcOZJmKCqLyp7uf6W1ddL26RiH4PDFg5nL7QXa88zWIj6PhN1m6qq23Z2XmedTvCq9yllzwFQ7ldsKv2IUlu+mA/Y+FIFuUs8WoH6fd7jXVpBzJ/ZFdYVWdjBe4blzK8pEe7477ZsKhHqXScY9v9pkfxVs7nLULgrlYgL2o2nepuvlSZnWCJjbEXmANnUyXwdz3u5AAlU/jvupsINQXrTwQ0QXOSjLDOfOcyFY8hK5d5vTjR9ITCsz3v5jhoQ6o0g9EppgEWNg+uQg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dl2Yr5N45z3c44;
+	Mon, 05 Jan 2026 16:15:28 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767590128;
+	cv=none; b=UhBbIOAi63s5C4xebWkdGsjEpsJk+QGquQhCayUee5LcCvuHkxLZYUj7NY/nvwSTtUZysyMsjWH1JdQZlZ+WlXh0oUL9IFnhmUtNBuiKwyO3ztOMVl7sH1LC4nfAnMF4nnLQaBKvfk/KBNxd4ZxchfK24jPVo+ptCNcIV7YRAdgv8U4OdE6b6zwoBur4dA9WIBNzxXKxX2KVu8kqXixALtBWKuIQ/r+HLZDkzPDhAyt8hHMINNaZMDoBo83Nox9Wur29yuf5XWYNea0vVJS2JGLTxA8rYtCiy8XZcRXMFpsCgMWbz/6sqnBdway7e9NTJptPW92whgFK6GIwXNiGHw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767590126; c=relaxed/relaxed;
-	bh=9cDhHRjKqVrxZoCLD2fsmkzUuSDzhUz6dl353L9y5/0=;
+	t=1767590128; c=relaxed/relaxed;
+	bh=/ekMXZK6b3CeivOwIkYIYm+WRk45HCYs42b6YFilKU0=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=c8164y+csmM/FiCPT8q6vvFl1gZ3PRIQBaykN3yTqayGKCGWmtAggcfu8yadnXbRH1wK/BtoUn02lr9VYR9CD2lkMkzdkqRvnmLIqbJ6lTn2ZWzwRYqD6NgVxe7jDsRyBZFny5YDBpu3XuMgtyDfXK9eJnQ5xvd8Dx81TJoBPB4Wdwy/776EaSnjwxngwJwPCql/Ff4qFGSOVDQYTQYuuxKPKjRVLKtC+tA4nZ/2Nrr2osWwaNo2KGKV3rURLQykkpj3usRF13FF/2PI334n6bVQb8a7Qaj21zyaSEUF4JI29QK9fZ9n2uIy9qUXN64d+LEjPVAnq9RXEuQR1nHsNQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mcaDwAKv; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=Abltm/QASNn2h3s2OiiDqcI92c7jOKtXxgCjgOiUCEZiNz5JipqUcba2pPxm7jw4++j9ZkjqVf3IWn8gTfdSLlbXAj71S3tdxRgDgU60KVW4eN3bzcdj3kNmPe1vlZCZYvbGp/UWXY5Lcn+Anu08Sd5L70d4dyjS9sn3lvqWLOd+hcqXQfAs40NvmLdKMjuZe57RKe3zRFY9JHvo7zafZnGScd0RkKtoSsk2L9n8Bt+AxMfgNk9vC1DMauA/dQjO4+yS5otwujx9/y7HOcCCZuVdn/j0lNMNB+YLwCtP8Q3X8GVqxP7e+nn2gjhJN8Dnq3PXogZTqLoK5+JEkU4hEQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qL5CJOoh; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=mcaDwAKv;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qL5CJOoh;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dl2Yn4GP1z3bxM
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 16:15:25 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dl2Yr0XMcz3bxM
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 16:15:28 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id B90B160141;
-	Mon,  5 Jan 2026 05:14:53 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 0776FC16AAE;
-	Mon,  5 Jan 2026 05:14:53 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 747B744340;
+	Mon,  5 Jan 2026 05:14:56 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DF6A3C19424;
+	Mon,  5 Jan 2026 05:14:55 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767590093;
-	bh=GVpfgLYStBAX0V1nv+zpcwWE8NNlDpzM24qOLk0l6H0=;
+	s=k20201202; t=1767590096;
+	bh=YBPFR0l4fKO3S8z5C8+41BmwAjMQPA6CAhP9id8M5U4=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=mcaDwAKvV9yG8G8Pz4lAe99jwm46Fe9LLX8+KbH5dMJSycqIAUz83Pyr5V6Cd1b04
-	 YoMgKpCPcIYuZMn4nHnOWiMAoLtfwubSrFn7sUIu8xppL3qu0xo6ojvfww4gONJB8V
-	 rq7To3cHCghDjntKqSetWW5zMDKnbMruaVIHEDQ7PPwotlLt//+yJcjrzB/XygRUXR
-	 IgzDKNgYpYIrxCD+tJf/ynFCWwPV4C88wsk+otewUC3xwsxr4ezuJsjKuRaoi2otT4
-	 5L4MHdL6JsCiBx8xOZs9AaNExwgKNNXW1ADOHPLOADwT+cGkHm5IJyFSx+sEZiR77g
-	 QVn77rj2ogf/g==
+	b=qL5CJOohtLd//piH32Gi9H1sRJeOjtLgv9M+0mmPmDN5+VBwks7Af2+Zm8Aar8zkE
+	 L+zLTRhCmCbA/68S3hM9fs4BPoguApblFUphie+yKSz+vsRldaF26LP9p0cTuIN6Rd
+	 D00iYCQAxeyA5CDNQL7jZaVbB6mD2I6aYtLTdxHzXutIQPsZBOrv111G0zI3tM1u2H
+	 M3gTjFfHcQwCKaGy9j55TDRu3fVkMi0Vtp29S1YQPKruYaPDwFU/P16Ny1jZYtCHYm
+	 PWh2sRoGuDMtqHil05mygfApgPo9nmpGEGhsMvv7HwmCXFCDc99WpZscFZmKRAO+1H
+	 WA2ys7bYE50qw==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -59,9 +59,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Holger Dengler <dengler@linux.ibm.com>,
 	Harald Freudenberger <freude@linux.ibm.com>,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 05/36] crypto: arm64/aes - Switch to aes_enc_tab[] and aes_dec_tab[]
-Date: Sun,  4 Jan 2026 21:12:38 -0800
-Message-ID: <20260105051311.1607207-6-ebiggers@kernel.org>
+Subject: [PATCH 10/36] lib/crypto: arm/aes: Migrate optimized code into library
+Date: Sun,  4 Jan 2026 21:12:43 -0800
+Message-ID: <20260105051311.1607207-11-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260105051311.1607207-1-ebiggers@kernel.org>
 References: <20260105051311.1607207-1-ebiggers@kernel.org>
@@ -80,36 +80,356 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Instead of crypto_ft_tab and crypto_it_tab from aes_generic.c, use
-aes_enc_tab and aes_dec_tab from lib/crypto/aes.c.  These contain the
-same data in the first 1024 bytes (which is the part that this code
-uses), so the result is the same.  This will allow aes_generic.c to
-eventually be removed.
+Move the ARM optimized single-block AES en/decryption code into
+lib/crypto/, wire it up to the AES library API, and remove the
+superseded "aes-arm" crypto_cipher algorithm.
+
+The result is that both the AES library and crypto_cipher APIs are now
+optimized for ARM, whereas previously only crypto_cipher was (and the
+optimizations weren't enabled by default, which this fixes as well).
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/arm64/crypto/aes-cipher-core.S | 4 ++--
- 1 file changed, 2 insertions(+), 2 deletions(-)
+ arch/arm/configs/milbeaut_m10v_defconfig      |  1 -
+ arch/arm/configs/multi_v7_defconfig           |  2 +-
+ arch/arm/configs/omap2plus_defconfig          |  2 +-
+ arch/arm/configs/pxa_defconfig                |  2 +-
+ arch/arm/crypto/Kconfig                       | 18 -----
+ arch/arm/crypto/Makefile                      |  2 -
+ arch/arm/crypto/aes-cipher-glue.c             | 77 -------------------
+ arch/arm/crypto/aes-cipher.h                  | 13 ----
+ lib/crypto/Kconfig                            |  1 +
+ lib/crypto/Makefile                           |  3 +
+ .../crypto/arm}/aes-cipher-core.S             |  0
+ lib/crypto/arm/aes.h                          | 56 ++++++++++++++
+ 12 files changed, 63 insertions(+), 114 deletions(-)
+ delete mode 100644 arch/arm/crypto/aes-cipher-glue.c
+ delete mode 100644 arch/arm/crypto/aes-cipher.h
+ rename {arch/arm/crypto => lib/crypto/arm}/aes-cipher-core.S (100%)
+ create mode 100644 lib/crypto/arm/aes.h
 
-diff --git a/arch/arm64/crypto/aes-cipher-core.S b/arch/arm64/crypto/aes-cipher-core.S
-index c9d6955f8404..651f701c56a8 100644
---- a/arch/arm64/crypto/aes-cipher-core.S
-+++ b/arch/arm64/crypto/aes-cipher-core.S
-@@ -121,12 +121,12 @@ CPU_BE(	rev		w7, w7		)
- 	stp		w6, w7, [out, #8]
- 	ret
- 	.endm
+diff --git a/arch/arm/configs/milbeaut_m10v_defconfig b/arch/arm/configs/milbeaut_m10v_defconfig
+index a2995eb390c6..77b69d672d40 100644
+--- a/arch/arm/configs/milbeaut_m10v_defconfig
++++ b/arch/arm/configs/milbeaut_m10v_defconfig
+@@ -96,11 +96,10 @@ CONFIG_KEYS=y
+ CONFIG_CRYPTO_SELFTESTS=y
+ # CONFIG_CRYPTO_ECHAINIV is not set
+ CONFIG_CRYPTO_AES=y
+ CONFIG_CRYPTO_SEQIV=m
+ CONFIG_CRYPTO_GHASH_ARM_CE=m
+-CONFIG_CRYPTO_AES_ARM=m
+ CONFIG_CRYPTO_AES_ARM_BS=m
+ CONFIG_CRYPTO_AES_ARM_CE=m
+ # CONFIG_CRYPTO_HW is not set
+ CONFIG_DMA_CMA=y
+ CONFIG_CMA_SIZE_MBYTES=64
+diff --git a/arch/arm/configs/multi_v7_defconfig b/arch/arm/configs/multi_v7_defconfig
+index 7f1fa9dd88c9..b6d3e20926bb 100644
+--- a/arch/arm/configs/multi_v7_defconfig
++++ b/arch/arm/configs/multi_v7_defconfig
+@@ -1284,11 +1284,11 @@ CONFIG_CRYPTO_USER=m
+ CONFIG_CRYPTO_USER_API_HASH=m
+ CONFIG_CRYPTO_USER_API_SKCIPHER=m
+ CONFIG_CRYPTO_USER_API_RNG=m
+ CONFIG_CRYPTO_USER_API_AEAD=m
+ CONFIG_CRYPTO_GHASH_ARM_CE=m
+-CONFIG_CRYPTO_AES_ARM=m
++CONFIG_CRYPTO_AES=m
+ CONFIG_CRYPTO_AES_ARM_BS=m
+ CONFIG_CRYPTO_AES_ARM_CE=m
+ CONFIG_CRYPTO_DEV_SUN4I_SS=m
+ CONFIG_CRYPTO_DEV_FSL_CAAM=m
+ CONFIG_CRYPTO_DEV_EXYNOS_RNG=m
+diff --git a/arch/arm/configs/omap2plus_defconfig b/arch/arm/configs/omap2plus_defconfig
+index 4e53c331cd84..0464f6552169 100644
+--- a/arch/arm/configs/omap2plus_defconfig
++++ b/arch/arm/configs/omap2plus_defconfig
+@@ -704,11 +704,11 @@ CONFIG_ROOT_NFS=y
+ CONFIG_NLS_CODEPAGE_437=y
+ CONFIG_NLS_ISO8859_1=y
+ CONFIG_SECURITY=y
+ CONFIG_CRYPTO_MICHAEL_MIC=y
+ CONFIG_CRYPTO_GHASH_ARM_CE=m
+-CONFIG_CRYPTO_AES_ARM=m
++CONFIG_CRYPTO_AES=m
+ CONFIG_CRYPTO_AES_ARM_BS=m
+ CONFIG_CRYPTO_DEV_OMAP=m
+ CONFIG_CRYPTO_DEV_OMAP_SHAM=m
+ CONFIG_CRYPTO_DEV_OMAP_AES=m
+ CONFIG_CRYPTO_DEV_OMAP_DES=m
+diff --git a/arch/arm/configs/pxa_defconfig b/arch/arm/configs/pxa_defconfig
+index 3ea189f1f42f..eacd08fd87ad 100644
+--- a/arch/arm/configs/pxa_defconfig
++++ b/arch/arm/configs/pxa_defconfig
+@@ -655,11 +655,11 @@ CONFIG_CRYPTO_TGR192=m
+ CONFIG_CRYPTO_WP512=m
+ CONFIG_CRYPTO_ANUBIS=m
+ CONFIG_CRYPTO_XCBC=m
+ CONFIG_CRYPTO_DEFLATE=y
+ CONFIG_CRYPTO_LZO=y
+-CONFIG_CRYPTO_AES_ARM=m
++CONFIG_CRYPTO_AES=m
+ CONFIG_FONTS=y
+ CONFIG_FONT_8x8=y
+ CONFIG_FONT_8x16=y
+ CONFIG_FONT_6x11=y
+ CONFIG_FONT_MINI_4x6=y
+diff --git a/arch/arm/crypto/Kconfig b/arch/arm/crypto/Kconfig
+index 167a648a9def..b9c28c818b7c 100644
+--- a/arch/arm/crypto/Kconfig
++++ b/arch/arm/crypto/Kconfig
+@@ -21,28 +21,10 @@ config CRYPTO_GHASH_ARM_CE
+ 	  Use an implementation of GHASH (used by the GCM AEAD chaining mode)
+ 	  that uses the 64x64 to 128 bit polynomial multiplication (vmull.p64)
+ 	  that is part of the ARMv8 Crypto Extensions, or a slower variant that
+ 	  uses the vmull.p8 instruction that is part of the basic NEON ISA.
  
- SYM_FUNC_START(__aes_arm64_encrypt)
--	do_crypt	fround, crypto_ft_tab, crypto_ft_tab + 1, 2
-+	do_crypt	fround, aes_enc_tab, aes_enc_tab + 1, 2
- SYM_FUNC_END(__aes_arm64_encrypt)
+-config CRYPTO_AES_ARM
+-	tristate "Ciphers: AES"
+-	select CRYPTO_ALGAPI
+-	select CRYPTO_AES
+-	help
+-	  Block ciphers: AES cipher algorithms (FIPS-197)
+-
+-	  Architecture: arm
+-
+-	  On ARM processors without the Crypto Extensions, this is the
+-	  fastest AES implementation for single blocks.  For multiple
+-	  blocks, the NEON bit-sliced implementation is usually faster.
+-
+-	  This implementation may be vulnerable to cache timing attacks,
+-	  since it uses lookup tables.  However, as countermeasures it
+-	  disables IRQs and preloads the tables; it is hoped this makes
+-	  such attacks very difficult.
+-
+ config CRYPTO_AES_ARM_BS
+ 	tristate "Ciphers: AES, modes: ECB/CBC/CTR/XTS (bit-sliced NEON)"
+ 	depends on KERNEL_MODE_NEON
+ 	select CRYPTO_SKCIPHER
+ 	select CRYPTO_LIB_AES
+diff --git a/arch/arm/crypto/Makefile b/arch/arm/crypto/Makefile
+index d6683e9d4992..e73099e120b3 100644
+--- a/arch/arm/crypto/Makefile
++++ b/arch/arm/crypto/Makefile
+@@ -1,15 +1,13 @@
+ # SPDX-License-Identifier: GPL-2.0
+ #
+ # Arch-specific CryptoAPI modules.
+ #
  
- 	.align		5
- SYM_FUNC_START(__aes_arm64_decrypt)
--	do_crypt	iround, crypto_it_tab, crypto_aes_inv_sbox, 0
-+	do_crypt	iround, aes_dec_tab, crypto_aes_inv_sbox, 0
- SYM_FUNC_END(__aes_arm64_decrypt)
+-obj-$(CONFIG_CRYPTO_AES_ARM) += aes-arm.o
+ obj-$(CONFIG_CRYPTO_AES_ARM_BS) += aes-arm-bs.o
+ 
+ obj-$(CONFIG_CRYPTO_AES_ARM_CE) += aes-arm-ce.o
+ obj-$(CONFIG_CRYPTO_GHASH_ARM_CE) += ghash-arm-ce.o
+ 
+-aes-arm-y	:= aes-cipher-core.o aes-cipher-glue.o
+ aes-arm-bs-y	:= aes-neonbs-core.o aes-neonbs-glue.o
+ aes-arm-ce-y	:= aes-ce-core.o aes-ce-glue.o
+ ghash-arm-ce-y	:= ghash-ce-core.o ghash-ce-glue.o
+diff --git a/arch/arm/crypto/aes-cipher-glue.c b/arch/arm/crypto/aes-cipher-glue.c
+deleted file mode 100644
+index f302db808cd3..000000000000
+--- a/arch/arm/crypto/aes-cipher-glue.c
++++ /dev/null
+@@ -1,77 +0,0 @@
+-// SPDX-License-Identifier: GPL-2.0-only
+-/*
+- * Scalar AES core transform
+- *
+- * Copyright (C) 2017 Linaro Ltd.
+- * Author: Ard Biesheuvel <ard.biesheuvel@linaro.org>
+- */
+-
+-#include <crypto/aes.h>
+-#include <crypto/algapi.h>
+-#include <linux/module.h>
+-#include "aes-cipher.h"
+-
+-EXPORT_SYMBOL_GPL(__aes_arm_encrypt);
+-EXPORT_SYMBOL_GPL(__aes_arm_decrypt);
+-
+-static int aes_arm_setkey(struct crypto_tfm *tfm, const u8 *in_key,
+-			  unsigned int key_len)
+-{
+-	struct crypto_aes_ctx *ctx = crypto_tfm_ctx(tfm);
+-
+-	return aes_expandkey(ctx, in_key, key_len);
+-}
+-
+-static void aes_arm_encrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
+-{
+-	struct crypto_aes_ctx *ctx = crypto_tfm_ctx(tfm);
+-	int rounds = 6 + ctx->key_length / 4;
+-
+-	__aes_arm_encrypt(ctx->key_enc, rounds, in, out);
+-}
+-
+-static void aes_arm_decrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
+-{
+-	struct crypto_aes_ctx *ctx = crypto_tfm_ctx(tfm);
+-	int rounds = 6 + ctx->key_length / 4;
+-
+-	__aes_arm_decrypt(ctx->key_dec, rounds, in, out);
+-}
+-
+-static struct crypto_alg aes_alg = {
+-	.cra_name			= "aes",
+-	.cra_driver_name		= "aes-arm",
+-	.cra_priority			= 200,
+-	.cra_flags			= CRYPTO_ALG_TYPE_CIPHER,
+-	.cra_blocksize			= AES_BLOCK_SIZE,
+-	.cra_ctxsize			= sizeof(struct crypto_aes_ctx),
+-	.cra_module			= THIS_MODULE,
+-
+-	.cra_cipher.cia_min_keysize	= AES_MIN_KEY_SIZE,
+-	.cra_cipher.cia_max_keysize	= AES_MAX_KEY_SIZE,
+-	.cra_cipher.cia_setkey		= aes_arm_setkey,
+-	.cra_cipher.cia_encrypt		= aes_arm_encrypt,
+-	.cra_cipher.cia_decrypt		= aes_arm_decrypt,
+-
+-#ifndef CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS
+-	.cra_alignmask			= 3,
+-#endif
+-};
+-
+-static int __init aes_init(void)
+-{
+-	return crypto_register_alg(&aes_alg);
+-}
+-
+-static void __exit aes_fini(void)
+-{
+-	crypto_unregister_alg(&aes_alg);
+-}
+-
+-module_init(aes_init);
+-module_exit(aes_fini);
+-
+-MODULE_DESCRIPTION("Scalar AES cipher for ARM");
+-MODULE_AUTHOR("Ard Biesheuvel <ard.biesheuvel@linaro.org>");
+-MODULE_LICENSE("GPL v2");
+-MODULE_ALIAS_CRYPTO("aes");
+diff --git a/arch/arm/crypto/aes-cipher.h b/arch/arm/crypto/aes-cipher.h
+deleted file mode 100644
+index d5db2b87eb69..000000000000
+--- a/arch/arm/crypto/aes-cipher.h
++++ /dev/null
+@@ -1,13 +0,0 @@
+-/* SPDX-License-Identifier: GPL-2.0-only */
+-#ifndef ARM_CRYPTO_AES_CIPHER_H
+-#define ARM_CRYPTO_AES_CIPHER_H
+-
+-#include <linux/linkage.h>
+-#include <linux/types.h>
+-
+-asmlinkage void __aes_arm_encrypt(const u32 rk[], int rounds,
+-				  const u8 *in, u8 *out);
+-asmlinkage void __aes_arm_decrypt(const u32 rk[], int rounds,
+-				  const u8 *in, u8 *out);
+-
+-#endif /* ARM_CRYPTO_AES_CIPHER_H */
+diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
+index 21fee7c2dfce..67dbf3c0562b 100644
+--- a/lib/crypto/Kconfig
++++ b/lib/crypto/Kconfig
+@@ -12,10 +12,11 @@ config CRYPTO_LIB_AES
+ 	tristate
+ 
+ config CRYPTO_LIB_AES_ARCH
+ 	bool
+ 	depends on CRYPTO_LIB_AES && !UML && !KMSAN
++	default y if ARM
+ 
+ config CRYPTO_LIB_AESCFB
+ 	tristate
+ 	select CRYPTO_LIB_AES
+ 	select CRYPTO_LIB_UTILS
+diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
+index 01193b3f47ba..2f6b0f59eb1b 100644
+--- a/lib/crypto/Makefile
++++ b/lib/crypto/Makefile
+@@ -19,10 +19,13 @@ libcryptoutils-y				:= memneq.o utils.o
+ 
+ obj-$(CONFIG_CRYPTO_LIB_AES) += libaes.o
+ libaes-y := aes.o
+ ifeq ($(CONFIG_CRYPTO_LIB_AES_ARCH),y)
+ CFLAGS_aes.o += -I$(src)/$(SRCARCH)
++
++libaes-$(CONFIG_ARM) += arm/aes-cipher-core.o
++
+ endif # CONFIG_CRYPTO_LIB_AES_ARCH
+ 
+ ################################################################################
+ 
+ obj-$(CONFIG_CRYPTO_LIB_AESCFB)			+= libaescfb.o
+diff --git a/arch/arm/crypto/aes-cipher-core.S b/lib/crypto/arm/aes-cipher-core.S
+similarity index 100%
+rename from arch/arm/crypto/aes-cipher-core.S
+rename to lib/crypto/arm/aes-cipher-core.S
+diff --git a/lib/crypto/arm/aes.h b/lib/crypto/arm/aes.h
+new file mode 100644
+index 000000000000..1dd7dfa657bb
+--- /dev/null
++++ b/lib/crypto/arm/aes.h
+@@ -0,0 +1,56 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * AES block cipher, optimized for ARM
++ *
++ * Copyright (C) 2017 Linaro Ltd.
++ * Copyright 2026 Google LLC
++ */
++
++asmlinkage void __aes_arm_encrypt(const u32 rk[], int rounds,
++				  const u8 in[AES_BLOCK_SIZE],
++				  u8 out[AES_BLOCK_SIZE]);
++asmlinkage void __aes_arm_decrypt(const u32 inv_rk[], int rounds,
++				  const u8 in[AES_BLOCK_SIZE],
++				  u8 out[AES_BLOCK_SIZE]);
++
++static void aes_preparekey_arch(union aes_enckey_arch *k,
++				union aes_invkey_arch *inv_k,
++				const u8 *in_key, int key_len, int nrounds)
++{
++	aes_expandkey_generic(k->rndkeys, inv_k ? inv_k->inv_rndkeys : NULL,
++			      in_key, key_len);
++}
++
++static void aes_encrypt_arch(const struct aes_enckey *key,
++			     u8 out[AES_BLOCK_SIZE],
++			     const u8 in[AES_BLOCK_SIZE])
++{
++	if (!IS_ENABLED(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) &&
++	    !IS_ALIGNED((uintptr_t)out | (uintptr_t)in, 4)) {
++		u8 bounce_buf[AES_BLOCK_SIZE] __aligned(4);
++
++		memcpy(bounce_buf, in, AES_BLOCK_SIZE);
++		__aes_arm_encrypt(key->k.rndkeys, key->nrounds, bounce_buf,
++				  bounce_buf);
++		memcpy(out, bounce_buf, AES_BLOCK_SIZE);
++		return;
++	}
++	__aes_arm_encrypt(key->k.rndkeys, key->nrounds, in, out);
++}
++
++static void aes_decrypt_arch(const struct aes_key *key,
++			     u8 out[AES_BLOCK_SIZE],
++			     const u8 in[AES_BLOCK_SIZE])
++{
++	if (!IS_ENABLED(CONFIG_HAVE_EFFICIENT_UNALIGNED_ACCESS) &&
++	    !IS_ALIGNED((uintptr_t)out | (uintptr_t)in, 4)) {
++		u8 bounce_buf[AES_BLOCK_SIZE] __aligned(4);
++
++		memcpy(bounce_buf, in, AES_BLOCK_SIZE);
++		__aes_arm_decrypt(key->inv_k.inv_rndkeys, key->nrounds,
++				  bounce_buf, bounce_buf);
++		memcpy(out, bounce_buf, AES_BLOCK_SIZE);
++		return;
++	}
++	__aes_arm_decrypt(key->inv_k.inv_rndkeys, key->nrounds, in, out);
++}
 -- 
 2.52.0
 
