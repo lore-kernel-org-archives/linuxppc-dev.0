@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-15222-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15223-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 598A7C2A077
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 05:16:54 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 9EC84C2A072
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 05:17:06 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dl2Yb2CH1z2yKn;
-	Mon, 05 Jan 2026 16:15:15 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dl2Yc3gtFz30Wd;
+	Mon, 05 Jan 2026 16:15:16 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767590115;
-	cv=none; b=St4R08JY1+p/aoEtGHahLePTcK6wg7U7iKc4Q6NBf2MA+fB3ZExncelMn97W75dKUfgh+x1FfHwogQ1Z1YIk0iyiY8o2vG6BKWFXSs/VqO+FpzpuD3uOa2lzVM/HtD/hQYvLFCqiMJRw1ZFXaSwyijZpm1qKkvlmfsz9CIVUvxMBbteFTy04T0NUb9mvsOMqnMakb83Nz3uOyCq26yiZuKJy102A3E0y5Ui1h7JdPLbLPb7EG+cV6S2RcKSa9B8HNzspYYwX/yFZVvJiqtuA+1qzRZnwIh5R6XB9V9s+NeKRcBuVqpLSwRRN99pFtdf+fQyXh2rv/HFHW2r/HYV23Q==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767590116;
+	cv=none; b=EygHwq61jNxd7o91zTY32Hh+IwNMLQn13csC4wL3TVzgdPjLrWN4iRDaj92Rdu0cibPvylyWNOY5+m/XyTzCQi9v4V8ruHOKW4EhUbfndf2AtoBIFvL5Nc+gg2xePJlWhqmJmbFhxKNFk+rRU2+79xcHfGYYpuHLsIZjx7kbLD5Z+3+F6yk78O06VdGgkEmBFLKOgivjaXJB7i3/CQJMsZ+hDkfgR7QMWOnesFIf1v1PgPN79IQncLBh+LRyskGYBFPYzaUwho72ypRBKvmlI5V3bALYpaM206jZIhSsXsU4gGNouzp3/okwAy35hOgiuMmkn4qXnFbGUeO1v1ZtGQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767590115; c=relaxed/relaxed;
-	bh=yqDPj7Ofqs6+uuplXahNC64oSZnKslaRYOqdnLLZlQ4=;
+	t=1767590116; c=relaxed/relaxed;
+	bh=6FnNbpGrvlniCMOLch6NApfeJnytZoAyLzv1qsCY88o=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=UY+qf/XB/oHO5g6kiolj9KzUpWAkApziNxqow9PP9pNwc6p0j4veHS4dVAmLH5szZY9LPrEFTp1ftjrZrQb/36QHZWnwtljy/8Ija3W6RW8GGSeOCyBVS9czATmf0psS5oTCUeUZUqChNTnMOHVNESRhjis/XtGZ2h++95Twl1wLszOCQ/QguEUEM3Qmqn07bf8J0tkBBPvofqo0zuuvsghNPmw/74rJxoyCzPyCLREGQFYw7vU4+ZrwphMyiPvkAygJbf3KpZTLFBgA63XwFTQU/VkkL78lqCtp+pLfP1A3cBhvN9lpci853nLaFkkSrnNtR4gMtUBcuyPhrprihQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Rmly392a; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=IK8zG9KZsKmk8MvfItmKNEldmLBJxTCpnqaOwQkvH8XUQ7X+skjzg57oNEwCPPgEYp0hkrZdZ7FKTRSMzs6V7PSVrdOwdewafPcQSkJB1CZFjGkF6m8NAJrXczh2ZlfCB+5G0b/hLt3J2QD8sJT8+JsnhN2nua/7VCFbJnWmaSLODCUjZxYz1HA4/pErWufXh1iifgX+nm0KOZUMzDueMZVXUIyaF0uZd/ElzY5Bpce/MvCWjEpy7S1HqlNt9KsyA5s27/g3XFhFEQqaVRAvQt7DxL7AaDokL7yiu0TmiFqIRfhpjtykKQayJKqTkUG7XDr7jbJJvBEaelqOOGzpBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hn+T5ja7; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Rmly392a;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=Hn+T5ja7;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dl2YV0CPpz2yvF
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 16:15:09 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dl2YX6DNWz307V
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 16:15:12 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id CDD2B4430E;
-	Mon,  5 Jan 2026 05:15:06 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 3F442C4AF09;
-	Mon,  5 Jan 2026 05:15:06 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 876B344315;
+	Mon,  5 Jan 2026 05:15:12 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id EAC91C2BCB0;
+	Mon,  5 Jan 2026 05:15:11 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767590106;
-	bh=X2y6JmsAPpKxGvYBZWX3/Sy84iagH93kp9gxdC5t9Go=;
+	s=k20201202; t=1767590112;
+	bh=6GiGUP+X4gmyZFn4wILAzmE5Daf6tx/zz/5Ty9L/V2o=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=Rmly392a977vLVI0kfIty/rm8OhHHS/k5IDBLd9WUUdJDGUZk77qfzuOUZOwqSYu0
-	 +ILUM5sQMAanzj4L78EzSjqCPf2HbWVRLYRZqzVH7Cbp9jqwmY6YFz5sK0ZEtElr9u
-	 lS8cI0RrtadOm8Rz0A/pLiOBP71fBx2HYzL6NRrvOjx09dXoh5lV+UA3n9zI9RJgC5
-	 E+d33a+vjyQ0RncbIGufV5ni6Frma+umzTnzXfF9wggbwtWr2tyzfNce83TUAEC1sJ
-	 HWFMoH7PJKLC4UJAJZrbQppx0tXeDO2LY9c/RAgt/1mvYY0OIen/I21GHPWpt/BLRK
-	 Hh9X0ljtBlWDA==
+	b=Hn+T5ja72OrFlu0ck1rY36j7hbDeSAIJtr1r2XfD5CZBBnXK82U0S2S5vVueu6vnL
+	 Ghn7LwihQM4Z1AZgO8m2aTE58Q+/Bjc/ZK+eWiEUcVhHFW0NBhChppDwY4rzIw+g+C
+	 9p8jFujFM0C3hdvjFzSGjopv0y2xHajarIJvzOiV6qYl0h0iSEtW22Hz9i75CDqSyT
+	 1QIjgA+t/pE1tWp7u+IpsDLawczDOM+9cHXE3mm2OstI914Q9UN3LNYriQKKxBDTTM
+	 ALoc6OJvSK74qp7/vu/2Sm30b3bE6cpISIQX3QSUh3SiADUd6TRP9CGyKcBloveSWy
+	 OJK/pBYjbcdtw==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -59,9 +59,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Holger Dengler <dengler@linux.ibm.com>,
 	Harald Freudenberger <freude@linux.ibm.com>,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 24/36] crypto: arm64/ghash - Use new AES library API
-Date: Sun,  4 Jan 2026 21:12:57 -0800
-Message-ID: <20260105051311.1607207-25-ebiggers@kernel.org>
+Subject: [PATCH 33/36] lib/crypto: aesgcm: Use new AES library API
+Date: Sun,  4 Jan 2026 21:13:06 -0800
+Message-ID: <20260105051311.1607207-34-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260105051311.1607207-1-ebiggers@kernel.org>
 References: <20260105051311.1607207-1-ebiggers@kernel.org>
@@ -91,119 +91,102 @@ callers of the old aes_encrypt() have been updated.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/arm64/crypto/ghash-ce-glue.c | 29 ++++++++---------------------
- 1 file changed, 8 insertions(+), 21 deletions(-)
+ include/crypto/gcm.h |  2 +-
+ lib/crypto/aesgcm.c  | 12 ++++++------
+ 2 files changed, 7 insertions(+), 7 deletions(-)
 
-diff --git a/arch/arm64/crypto/ghash-ce-glue.c b/arch/arm64/crypto/ghash-ce-glue.c
-index ef249d06c92c..bfd38e485e77 100644
---- a/arch/arm64/crypto/ghash-ce-glue.c
-+++ b/arch/arm64/crypto/ghash-ce-glue.c
-@@ -38,11 +38,11 @@ struct ghash_key {
- struct arm_ghash_desc_ctx {
- 	u64 digest[GHASH_DIGEST_SIZE/sizeof(u64)];
- };
+diff --git a/include/crypto/gcm.h b/include/crypto/gcm.h
+index fd9df607a836..b524e47bd4d0 100644
+--- a/include/crypto/gcm.h
++++ b/include/crypto/gcm.h
+@@ -64,11 +64,11 @@ static inline int crypto_ipsec_check_assoclen(unsigned int assoclen)
+ 	return 0;
+ }
  
- struct gcm_aes_ctx {
--	struct crypto_aes_ctx	aes_key;
+ struct aesgcm_ctx {
+ 	be128			ghash_key;
+-	struct crypto_aes_ctx	aes_ctx;
 +	struct aes_enckey	aes_key;
- 	u8			nonce[RFC4106_NONCE_SIZE];
- 	struct ghash_key	ghash_key;
+ 	unsigned int		authsize;
  };
  
- asmlinkage void pmull_ghash_update_p64(int blocks, u64 dg[], const char *src,
-@@ -184,35 +184,23 @@ static struct shash_alg ghash_alg = {
- 	.import			= ghash_import,
- 	.descsize		= sizeof(struct arm_ghash_desc_ctx),
- 	.statesize		= sizeof(struct ghash_desc_ctx),
- };
+ int aesgcm_expandkey(struct aesgcm_ctx *ctx, const u8 *key,
+ 		     unsigned int keysize, unsigned int authsize);
+diff --git a/lib/crypto/aesgcm.c b/lib/crypto/aesgcm.c
+index ac0b2fcfd606..19106fe008fd 100644
+--- a/lib/crypto/aesgcm.c
++++ b/lib/crypto/aesgcm.c
+@@ -10,11 +10,11 @@
+ #include <crypto/ghash.h>
+ #include <linux/export.h>
+ #include <linux/module.h>
+ #include <asm/irqflags.h>
  
--static int num_rounds(struct crypto_aes_ctx *ctx)
--{
--	/*
--	 * # of rounds specified by AES:
--	 * 128 bit key		10 rounds
--	 * 192 bit key		12 rounds
--	 * 256 bit key		14 rounds
--	 * => n byte key	=> 6 + (n/4) rounds
--	 */
--	return 6 + ctx->key_length / 4;
--}
--
- static int gcm_aes_setkey(struct crypto_aead *tfm, const u8 *inkey,
- 			  unsigned int keylen)
+-static void aesgcm_encrypt_block(const struct crypto_aes_ctx *ctx, void *dst,
++static void aesgcm_encrypt_block(const struct aes_enckey *key, void *dst,
+ 				 const void *src)
  {
- 	struct gcm_aes_ctx *ctx = crypto_aead_ctx(tfm);
- 	u8 key[GHASH_BLOCK_SIZE];
- 	be128 h;
+ 	unsigned long flags;
+ 
+ 	/*
+@@ -24,11 +24,11 @@ static void aesgcm_encrypt_block(const struct crypto_aes_ctx *ctx, void *dst,
+ 	 * mitigates this risk to some extent by pulling the entire S-box into
+ 	 * the caches before doing any substitutions, but this strategy is more
+ 	 * effective when running with interrupts disabled.
+ 	 */
+ 	local_irq_save(flags);
+-	aes_encrypt(ctx, dst, src);
++	aes_encrypt_new(key, dst, src);
+ 	local_irq_restore(flags);
+ }
+ 
+ /**
+  * aesgcm_expandkey - Expands the AES and GHASH keys for the AES-GCM key
+@@ -47,16 +47,16 @@ int aesgcm_expandkey(struct aesgcm_ctx *ctx, const u8 *key,
+ {
+ 	u8 kin[AES_BLOCK_SIZE] = {};
  	int ret;
  
--	ret = aes_expandkey(&ctx->aes_key, inkey, keylen);
-+	ret = aes_prepareenckey(&ctx->aes_key, inkey, keylen);
+ 	ret = crypto_gcm_check_authsize(authsize) ?:
+-	      aes_expandkey(&ctx->aes_ctx, key, keysize);
++	      aes_prepareenckey(&ctx->aes_key, key, keysize);
  	if (ret)
- 		return -EINVAL;
+ 		return ret;
  
--	aes_encrypt(&ctx->aes_key, key, (u8[AES_BLOCK_SIZE]){});
-+	aes_encrypt_new(&ctx->aes_key, key, (u8[AES_BLOCK_SIZE]){});
+ 	ctx->authsize = authsize;
+-	aesgcm_encrypt_block(&ctx->aes_ctx, &ctx->ghash_key, kin);
++	aesgcm_encrypt_block(&ctx->aes_key, &ctx->ghash_key, kin);
  
- 	/* needed for the fallback */
- 	memcpy(&ctx->ghash_key.k, key, GHASH_BLOCK_SIZE);
+ 	return 0;
+ }
+ EXPORT_SYMBOL(aesgcm_expandkey);
  
- 	ghash_reflect(ctx->ghash_key.h[0], &ctx->ghash_key.k);
-@@ -294,11 +282,10 @@ static void gcm_calculate_auth_mac(struct aead_request *req, u64 dg[], u32 len)
+@@ -95,11 +95,11 @@ static void aesgcm_mac(const struct aesgcm_ctx *ctx, const u8 *src, int src_len,
+ 	aesgcm_ghash(&ghash, &ctx->ghash_key, assoc, assoc_len);
+ 	aesgcm_ghash(&ghash, &ctx->ghash_key, src, src_len);
+ 	aesgcm_ghash(&ghash, &ctx->ghash_key, &tail, sizeof(tail));
  
- static int gcm_encrypt(struct aead_request *req, char *iv, int assoclen)
- {
- 	struct crypto_aead *aead = crypto_aead_reqtfm(req);
- 	struct gcm_aes_ctx *ctx = crypto_aead_ctx(aead);
--	int nrounds = num_rounds(&ctx->aes_key);
- 	struct skcipher_walk walk;
- 	u8 buf[AES_BLOCK_SIZE];
- 	u64 dg[2] = {};
- 	be128 lengths;
- 	u8 *tag;
-@@ -329,12 +316,12 @@ static int gcm_encrypt(struct aead_request *req, char *iv, int assoclen)
- 			tag = NULL;
- 		}
+ 	ctr[3] = cpu_to_be32(1);
+-	aesgcm_encrypt_block(&ctx->aes_ctx, buf, ctr);
++	aesgcm_encrypt_block(&ctx->aes_key, buf, ctr);
+ 	crypto_xor_cpy(authtag, buf, (u8 *)&ghash, ctx->authsize);
  
- 		scoped_ksimd()
- 			pmull_gcm_encrypt(nbytes, dst, src, ctx->ghash_key.h,
--					  dg, iv, ctx->aes_key.key_enc, nrounds,
--					  tag);
-+					  dg, iv, ctx->aes_key.k.rndkeys,
-+					  ctx->aes_key.nrounds, tag);
+ 	memzero_explicit(&ghash, sizeof(ghash));
+ 	memzero_explicit(buf, sizeof(buf));
+ }
+@@ -117,11 +117,11 @@ static void aesgcm_crypt(const struct aesgcm_ctx *ctx, u8 *dst, const u8 *src,
+ 		 * inadvertent IV reuse, which must be avoided at all cost for
+ 		 * stream ciphers such as AES-CTR. Given the range of 'int
+ 		 * len', this cannot happen, so no explicit test is necessary.
+ 		 */
+ 		ctr[3] = cpu_to_be32(n++);
+-		aesgcm_encrypt_block(&ctx->aes_ctx, buf, ctr);
++		aesgcm_encrypt_block(&ctx->aes_key, buf, ctr);
+ 		crypto_xor_cpy(dst, src, buf, min(len, AES_BLOCK_SIZE));
  
- 		if (unlikely(!nbytes))
- 			break;
- 
- 		if (unlikely(nbytes > 0 && nbytes < AES_BLOCK_SIZE))
-@@ -357,11 +344,10 @@ static int gcm_encrypt(struct aead_request *req, char *iv, int assoclen)
- static int gcm_decrypt(struct aead_request *req, char *iv, int assoclen)
- {
- 	struct crypto_aead *aead = crypto_aead_reqtfm(req);
- 	struct gcm_aes_ctx *ctx = crypto_aead_ctx(aead);
- 	unsigned int authsize = crypto_aead_authsize(aead);
--	int nrounds = num_rounds(&ctx->aes_key);
- 	struct skcipher_walk walk;
- 	u8 otag[AES_BLOCK_SIZE];
- 	u8 buf[AES_BLOCK_SIZE];
- 	u64 dg[2] = {};
- 	be128 lengths;
-@@ -399,12 +385,13 @@ static int gcm_decrypt(struct aead_request *req, char *iv, int assoclen)
- 		}
- 
- 		scoped_ksimd()
- 			ret = pmull_gcm_decrypt(nbytes, dst, src,
- 						ctx->ghash_key.h,
--						dg, iv, ctx->aes_key.key_enc,
--						nrounds, tag, otag, authsize);
-+						dg, iv, ctx->aes_key.k.rndkeys,
-+						ctx->aes_key.nrounds, tag, otag,
-+						authsize);
- 
- 		if (unlikely(!nbytes))
- 			break;
- 
- 		if (unlikely(nbytes > 0 && nbytes < AES_BLOCK_SIZE))
+ 		dst += AES_BLOCK_SIZE;
+ 		src += AES_BLOCK_SIZE;
+ 		len -= AES_BLOCK_SIZE;
 -- 
 2.52.0
 
