@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-15240-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15241-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 787D7C2A072
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 05:19:42 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 1338BC2A072
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 05:19:50 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dl2Z82fBVz2yLg;
-	Mon, 05 Jan 2026 16:15:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dl2ZH0CKsz3bnD;
+	Mon, 05 Jan 2026 16:15:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767590144;
-	cv=none; b=gv356Thze8B354BT0W5kQ4JJceICa6PW8wdd1+9YxriXzHIrIx/8ux/JCHBEbUHOvzdNtoFKa2M36e/qPhn6QD92yIBhhUesRLc8p6gDL8yO8hZzn0I76kffyBN5UbFBlfONihCwpkNgITWwBtPZLNs+UAw2iBcXkSyP5auxhx1khZu7Ep9+RBGcES52B2gRtEHqys36vQDl6wocu8rdkRBbzIHRnorzBdFCzMPYVRfIPIej66l86nDuI8B+C1kZSzCkhp84bHCoYjrF7nmQh2NbyU/ige5n7Kzt5wjoblNbBstzrSIo0hJN4qAm6zPvGybL0NZbhdaIC1hfOgAL4g==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767590150;
+	cv=none; b=LudXhDbF1b5AW3zBeSut6U8OftiS5yNr2eOf+5TBduS7z1VD6BgQ52BbuXJURk5BkKXYRvbDxJsTaG+jyGplSU00+8NCmymXl4GKhWV6CA1AEnjCuhOy+DZ2Kx13X8Zs5/M2C+fgh0wI9ImSf0MB8lDreh65uzYQSMRxSaKhr0+FcrBeSSQ/BRiq4EXvwwg9WH4zWUqG0Y2yn1UM6HKU6NDeaj4JKk/h3olnnuxoMmME09A0bHzH+e9iEfDC9dyuvm3KDTF3ZTs0dKGzaZXrfeBWpbyNQHlQLgln8fqtD5RJdHKLOwveBdgwZjA68MlRM0qHbUgsm/NTC3oD6p5Vww==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767590144; c=relaxed/relaxed;
-	bh=d/uPgvJ6KwAIHPS7FbZVdjSHDTK5bGScU5mgixk77vE=;
+	t=1767590150; c=relaxed/relaxed;
+	bh=5EgHCXMOz5gRh7eMughW4cZ4zBOrTNxJx4cu/aaTqL8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MkeAZ6icSKRTaHIbhaG4ShDwiyHqgDqBosjnjuKiBSnBvIW7F+hvhZNs55EQNLw8jzPkTUlUpoHaYhdwu3KK0Bw6sOgA+fAwuJBai5bJOKbAXaENwN5Y8Vz0NKWoh0itoWlNmLax8mFc7bh1U/KoK5YwZimH8uAcuBXAbNMZ+jdHvxeYd88L3gBHAuS/U70FyaOcXClM0fnw+TUIgvXSovUriNq0HMKT4oQSSFe6HD4DtLYTST6UB1QDyBTwvMlRS4vPZ3r6zOZdstkBMIKY3a2gTn34NEwsL4GJ0KTfvFjp9YxL8WC0RBnKLTsAa+7Ryzaxs0L8Gvmq6ADQuOMK3A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ugWHcdh9; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=Kaou8VYWo7o8iP73l6Yq0u/V6908L6McCBrFbKxAnp0hgcodpDF7gKyMl9Q/x3/FaYP99tuiLXpczbTbVSmDnQcomUGnkmE22z9qF5/eR+stPjlrPXrbNaC02KKg4V2PWEF+P6219yD6DLJTbibtZiSSHm/bSjeLM0vn+hdzZ623ZLQFeBapW1TNKCB4A0lGLw/hdUcV0KlJ9DZ7nM3kkxhze9Z1f6VGB8N3v13rKFoWT7Li27BatXASV8XsIBcEJguOlu1liqQKplU1/rWBEqTis5jXv4r2XOcW2X3KXzIqTa8L4DzBjVS6TXEpaTBFQ8Aa3tETjidj1J/G3aftgg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rOAhnKYR; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=ugWHcdh9;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=rOAhnKYR;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dl2Z66rqgz3ccv
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 16:15:42 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dl2ZG15pSz3bmN
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 16:15:50 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id E37FE6014C;
-	Mon,  5 Jan 2026 05:15:10 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 32E8FC16AAE;
-	Mon,  5 Jan 2026 05:15:10 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 7EF5760150;
+	Mon,  5 Jan 2026 05:15:14 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF948C19421;
+	Mon,  5 Jan 2026 05:15:13 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767590110;
-	bh=wJDXqC34yYbvhYsjXLh3aBT4XgX45/Dw2oMXNDtWJxs=;
+	s=k20201202; t=1767590114;
+	bh=0EBUEmVTe0e4bzKdqvPELWwoIgTHdjzdDZHfkwljOsg=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=ugWHcdh9H6hslbELP/jQ/VQWg2OOEnEpq/0dOSFZZZEme57Vm3GP3y/p2XJG0opYU
-	 n1fhH4gacjYDS+yJC/HYO2wpAbLsrEqTfS6Lku2oj2LNYuKriMPCaGuv76SbJI1hXP
-	 EgzM01ml3xAxLOBfVDnB+N3ALk3bOZaZS8q9E50zodYv6ZzmXuETAgi0QsyWt1noMF
-	 gqhTG8KhKYOIFzVmbjF0XCmfP4MTjihuoEnxAZXSotq6Bm0jxoMw/wtpNKyD3isWjo
-	 ASrD95sschq8Acya4r1tH0D2sej5xmER57xSb61zGzWVPy/WuaR3bROzCQU2MtI4dF
-	 KtK7n14G/QxeA==
+	b=rOAhnKYROQMEoMD81Em7mWQ61HyLgE3WDv40a+uauy0zXQQ0mHHhwqwczGz06JzjM
+	 BdNHtV7nIaURBKsF+oSa2rFdIAEXQ7LByXqGJRKmIrdfOf6QiEc5WT1lC9vh/BhW9a
+	 IQ9OEsk+eGFsSOCFKi5iDvmfEmKDGx5jd+GTG1pUfu7myy1vVeHI3pUsbThA4X2oyu
+	 lJCDZSbKqwRYYUw6a5frOfQp/Jv2FxRovn8kxjvrIGakLOdH6Z1+7/6yA/2TAaFePp
+	 BbafT19y5VWI6JSqqbcyOypU34Iu6dDnPvbkNn++RQT2plgft3r939P/tX35BnbGzF
+	 L9/mowQabouBA==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -59,9 +59,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Holger Dengler <dengler@linux.ibm.com>,
 	Harald Freudenberger <freude@linux.ibm.com>,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 30/36] crypto: inside-secure - Use new AES library API
-Date: Sun,  4 Jan 2026 21:13:03 -0800
-Message-ID: <20260105051311.1607207-31-ebiggers@kernel.org>
+Subject: [PATCH 36/36] lib/crypto: aes: Drop 'volatile' from aes_sbox and aes_inv_sbox
+Date: Sun,  4 Jan 2026 21:13:09 -0800
+Message-ID: <20260105051311.1607207-37-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260105051311.1607207-1-ebiggers@kernel.org>
 References: <20260105051311.1607207-1-ebiggers@kernel.org>
@@ -80,167 +80,63 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Switch from the old AES library functions (which use struct
-crypto_aes_ctx) to the new ones (which use struct aes_enckey).  This
-eliminates the unnecessary computation and caching of the decryption
-round keys.  The new AES en/decryption functions are also much faster
-and use AES instructions when supported by the CPU.
-
-Note that this driver used crypto_aes_ctx::key_enc, but only to access
-the copy of the raw key that is stored at the beginning of the expanded
-key.  To eliminate the dependency on this field, instead just access the
-raw key directly, which is already available in the relevant functions.
-
-Note: aes_encrypt_new() will be renamed to aes_encrypt() once all
-callers of the old aes_encrypt() have been updated.
+The volatile keyword is no longer necessary or useful on aes_sbox and
+aes_inv_sbox, since the table prefetching is now done using a helper
+function that casts to volatile itself and also includes an optimization
+barrier.  Since it prevents some compiler optimizations, remove it.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- .../crypto/inside-secure/safexcel_cipher.c    | 14 ++++-----
- drivers/crypto/inside-secure/safexcel_hash.c  | 30 +++++++++----------
- 2 files changed, 21 insertions(+), 23 deletions(-)
+ lib/crypto/aes.c | 10 +++-------
+ 1 file changed, 3 insertions(+), 7 deletions(-)
 
-diff --git a/drivers/crypto/inside-secure/safexcel_cipher.c b/drivers/crypto/inside-secure/safexcel_cipher.c
-index 919e5a2cab95..eb4e0dc38b7f 100644
---- a/drivers/crypto/inside-secure/safexcel_cipher.c
-+++ b/drivers/crypto/inside-secure/safexcel_cipher.c
-@@ -2505,37 +2505,35 @@ static int safexcel_aead_gcm_setkey(struct crypto_aead *ctfm, const u8 *key,
- 				    unsigned int len)
- {
- 	struct crypto_tfm *tfm = crypto_aead_tfm(ctfm);
- 	struct safexcel_cipher_ctx *ctx = crypto_tfm_ctx(tfm);
- 	struct safexcel_crypto_priv *priv = ctx->base.priv;
--	struct crypto_aes_ctx aes;
-+	struct aes_enckey aes;
- 	u32 hashkey[AES_BLOCK_SIZE >> 2];
- 	int ret, i;
+diff --git a/lib/crypto/aes.c b/lib/crypto/aes.c
+index 98ade1758735..e85c905296f1 100644
+--- a/lib/crypto/aes.c
++++ b/lib/crypto/aes.c
+@@ -9,15 +9,11 @@
+ #include <linux/crypto.h>
+ #include <linux/export.h>
+ #include <linux/module.h>
+ #include <linux/unaligned.h>
  
--	ret = aes_expandkey(&aes, key, len);
--	if (ret) {
--		memzero_explicit(&aes, sizeof(aes));
-+	ret = aes_prepareenckey(&aes, key, len);
-+	if (ret)
- 		return ret;
--	}
- 
- 	if (priv->flags & EIP197_TRC_CACHE && ctx->base.ctxr_dma) {
- 		for (i = 0; i < len / sizeof(u32); i++) {
--			if (le32_to_cpu(ctx->key[i]) != aes.key_enc[i]) {
-+			if (ctx->key[i] != get_unaligned((__le32 *)key + i)) {
- 				ctx->base.needs_inv = true;
- 				break;
- 			}
- 		}
- 	}
- 
- 	for (i = 0; i < len / sizeof(u32); i++)
--		ctx->key[i] = cpu_to_le32(aes.key_enc[i]);
-+		ctx->key[i] = get_unaligned((__le32 *)key + i);
- 
- 	ctx->key_len = len;
- 
- 	/* Compute hash key by encrypting zeroes with cipher key */
- 	memset(hashkey, 0, AES_BLOCK_SIZE);
--	aes_encrypt(&aes, (u8 *)hashkey, (u8 *)hashkey);
-+	aes_encrypt_new(&aes, (u8 *)hashkey, (u8 *)hashkey);
- 
- 	if (priv->flags & EIP197_TRC_CACHE && ctx->base.ctxr_dma) {
- 		for (i = 0; i < AES_BLOCK_SIZE / sizeof(u32); i++) {
- 			if (be32_to_cpu(ctx->base.ipad.be[i]) != hashkey[i]) {
- 				ctx->base.needs_inv = true;
-diff --git a/drivers/crypto/inside-secure/safexcel_hash.c b/drivers/crypto/inside-secure/safexcel_hash.c
-index ef0ba4832928..dae10d0066d7 100644
---- a/drivers/crypto/inside-secure/safexcel_hash.c
-+++ b/drivers/crypto/inside-secure/safexcel_hash.c
-@@ -28,11 +28,11 @@ struct safexcel_ahash_ctx {
- 	bool cbcmac;
- 	bool do_fallback;
- 	bool fb_init_done;
- 	bool fb_do_setkey;
- 
--	struct crypto_aes_ctx *aes;
-+	struct aes_enckey *aes;
- 	struct crypto_ahash *fback;
- 	struct crypto_shash *shpre;
- 	struct shash_desc *shdesc;
+-/*
+- * Emit the sbox as volatile const to prevent the compiler from doing
+- * constant folding on sbox references involving fixed indexes.
+- */
+-static volatile const u8 __cacheline_aligned aes_sbox[] = {
++static const u8 __cacheline_aligned aes_sbox[] = {
+ 	0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5,
+ 	0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
+ 	0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0,
+ 	0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
+ 	0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc,
+@@ -48,11 +44,11 @@ static volatile const u8 __cacheline_aligned aes_sbox[] = {
+ 	0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
+ 	0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68,
+ 	0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16,
  };
  
-@@ -820,11 +820,11 @@ static int safexcel_ahash_final(struct ahash_request *areq)
+-static volatile const u8 __cacheline_aligned aes_inv_sbox[] = {
++static const u8 __cacheline_aligned aes_inv_sbox[] = {
+ 	0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38,
+ 	0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb,
+ 	0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87,
+ 	0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb,
+ 	0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d,
+@@ -428,11 +424,11 @@ static void __maybe_unused aes_decrypt_generic(const u32 inv_rndkeys[],
+ 		w[1] = w1;
+ 		w[2] = w2;
+ 		w[3] = w3;
+ 	} while (--n);
  
- 			/* K3 */
- 			result[i] = swab32(ctx->base.ipad.word[i + 4]);
- 		}
- 		areq->result[0] ^= 0x80;			// 10- padding
--		aes_encrypt(ctx->aes, areq->result, areq->result);
-+		aes_encrypt_new(ctx->aes, areq->result, areq->result);
- 		return 0;
- 	} else if (unlikely(req->hmac &&
- 			    (req->len == req->block_sz) &&
- 			    !areq->nbytes)) {
- 		/*
-@@ -1974,27 +1974,27 @@ static int safexcel_xcbcmac_setkey(struct crypto_ahash *tfm, const u8 *key,
- {
- 	struct safexcel_ahash_ctx *ctx = crypto_tfm_ctx(crypto_ahash_tfm(tfm));
- 	u32 key_tmp[3 * AES_BLOCK_SIZE / sizeof(u32)];
- 	int ret, i;
- 
--	ret = aes_expandkey(ctx->aes, key, len);
-+	ret = aes_prepareenckey(ctx->aes, key, len);
- 	if (ret)
- 		return ret;
- 
- 	/* precompute the XCBC key material */
--	aes_encrypt(ctx->aes, (u8 *)key_tmp + 2 * AES_BLOCK_SIZE,
--		    "\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1");
--	aes_encrypt(ctx->aes, (u8 *)key_tmp,
--		    "\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2");
--	aes_encrypt(ctx->aes, (u8 *)key_tmp + AES_BLOCK_SIZE,
--		    "\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3");
-+	aes_encrypt_new(ctx->aes, (u8 *)key_tmp + 2 * AES_BLOCK_SIZE,
-+			"\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1\x1");
-+	aes_encrypt_new(ctx->aes, (u8 *)key_tmp,
-+			"\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2\x2");
-+	aes_encrypt_new(ctx->aes, (u8 *)key_tmp + AES_BLOCK_SIZE,
-+			"\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3\x3");
- 	for (i = 0; i < 3 * AES_BLOCK_SIZE / sizeof(u32); i++)
- 		ctx->base.ipad.word[i] = swab32(key_tmp[i]);
- 
--	ret = aes_expandkey(ctx->aes,
--			    (u8 *)key_tmp + 2 * AES_BLOCK_SIZE,
--			    AES_MIN_KEY_SIZE);
-+	ret = aes_prepareenckey(ctx->aes,
-+				(u8 *)key_tmp + 2 * AES_BLOCK_SIZE,
-+				AES_MIN_KEY_SIZE);
- 	if (ret)
- 		return ret;
- 
- 	ctx->alg    = CONTEXT_CONTROL_CRYPTO_ALG_XCBC128;
- 	ctx->key_sz = AES_MIN_KEY_SIZE + 2 * AES_BLOCK_SIZE;
-@@ -2060,21 +2060,21 @@ static int safexcel_cmac_setkey(struct crypto_ahash *tfm, const u8 *key,
- 	u64 _const[2];
- 	u8 msb_mask, gfmask;
- 	int ret, i;
- 
- 	/* precompute the CMAC key material */
--	ret = aes_expandkey(ctx->aes, key, len);
-+	ret = aes_prepareenckey(ctx->aes, key, len);
- 	if (ret)
- 		return ret;
- 
- 	for (i = 0; i < len / sizeof(u32); i++)
--		ctx->base.ipad.word[i + 8] = swab32(ctx->aes->key_enc[i]);
-+		ctx->base.ipad.word[i + 8] = get_unaligned_be32(&key[4 * i]);
- 
- 	/* code below borrowed from crypto/cmac.c */
- 	/* encrypt the zero block */
- 	memset(consts, 0, AES_BLOCK_SIZE);
--	aes_encrypt(ctx->aes, (u8 *)consts, (u8 *)consts);
-+	aes_encrypt_new(ctx->aes, (u8 *)consts, (u8 *)consts);
- 
- 	gfmask = 0x87;
- 	_const[0] = be64_to_cpu(consts[1]);
- 	_const[1] = be64_to_cpu(consts[0]);
- 
+-	aes_prefetch((const void *)aes_inv_sbox, sizeof(aes_inv_sbox));
++	aes_prefetch(aes_inv_sbox, sizeof(aes_inv_sbox));
+ 	put_unaligned_le32(declast_quarterround(w, 0, *rkp++), &out[0]);
+ 	put_unaligned_le32(declast_quarterround(w, 1, *rkp++), &out[4]);
+ 	put_unaligned_le32(declast_quarterround(w, 2, *rkp++), &out[8]);
+ 	put_unaligned_le32(declast_quarterround(w, 3, *rkp++), &out[12]);
+ }
 -- 
 2.52.0
 
