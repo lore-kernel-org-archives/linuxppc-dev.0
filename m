@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-15217-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15216-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 792CFC2A077
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 05:16:20 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 22302C2A072
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 05:16:19 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dl2YX10ghz2yxN;
-	Mon, 05 Jan 2026 16:15:12 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dl2YW6zpjz2ywS;
+	Mon, 05 Jan 2026 16:15:11 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767590112;
-	cv=none; b=Bo1iwZnEE66jIJ4b9OxJkajiuRLICadEdHGATGuA+TlKfHA/fqaXQFzpi9s0+P1pk/bSoDYi4KFVbErtORscQc40kzaRblcTWOaLFSNsvmc7/hr+4BFj3ZHe7lpWVDA0QjzOInrJ7kSzAZuFgYuoJOlHx6i8tTnMCUmuJfTl26vJPqKXDi4se1PxcO4zzq8xu6TnHaB/NTgRAKp0cLUT1+iTKASg5fQZiUKVgfxj4en7ZpUb5Z0bCcb3ieCa3RKHDNn63WSONZrx6tZ5OTRP8NM55VQQ8Kpt+K90lJRrXG66Y5xLS+9wXohkiGDGVGGW7J4kyTsniN66onUYZQnSzQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767590111;
+	cv=none; b=ID63y2/GT6LAAa4CWnWEGo44el4TTs3ciU8sFYTjK9AzuS13lJ/8wLpTnzIFS4FxhdpdRO+MbFB6ix5FBKNcdoqWwyAZFkx8jTcuzGBhvzhKDN2i2274Zoj5DXIrgX45pyXGYDvE92Cjn1nSQwsJXBlJJeKnswrA/j1pu/tr7dYwPvWti73cr2LHUQgLuNrBD8g65IgL7/2Iw1xHLyv6poA6maaVZ1ZNZ1nPwOw+OiT/pWhCwKj8mCwlipGR2w23zHPaGIbwzo41KVDdj9vzZe5TJD8Kd+6FMSTqW7BoI2ODU6oey/WyUHyibhZUuxWMtD+KI0NcP8xUJGudP1HYJg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767590112; c=relaxed/relaxed;
-	bh=gA9Ebb2llqnpWdu46MPsF7FWY5KxVMVavXiY4Pn302Y=;
+	t=1767590111; c=relaxed/relaxed;
+	bh=k4CPf2ZJynm0JU5P5TMioqoG4hO+NATA51L2XquL3Tw=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=MvWGrjQxOvZNb3wGhVddjXR1Tm8JBYkv6oYP5VZfymeraOdG5misIuOzEQJXt7bEkHVhT1UT1GClIjJQN18vidFAwYYNIs4LRanKt8PwMv7fO9VKnUwzq2TYMmpPv6vMcdjuwK9AtDJ0lUNVvV+CAKI34XXEVX/rhIZfOE182Ymq0P4rfpDYzFhfeg6zq3N82JG945i54Ss4s1k+i2fGMKqTXqNhbkfgHHCTZYI3UqHwd2hYW2F+dHxoWCxRbM4ly5vrlQsA16UNRMLcfOt9AojvAd1P0bEOQVOgJzfK0w1v7xbxS6E6KXk5ojgKdVXydb7EoSBhk681sOQzvsBC8A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CdFQXBRR; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=mFCJPh06C7jrcKtOmrwQ0UOl9cGRf8VU80YoMbT16TpHA49xKAkLrHLLGIeWoXjlWEJ8dAAPaNNRmA6cRSXAhBcavRdRBwfKT7sr4vFNntWD4hMKARsYAoFPxDZy/6MF8tQnBP7d2ncZFKLztlf3zZpU6FbwFPF0O/tW/lyV+kdrV+6M2BXoBS4wKEoBa4XtaT1HYIJGmXURMAIPT0RyfHGW2NNnAA/5KVEEstNVZ498DxXKWq0ok5rTqJmml/i8I/0QNl0SmSerXh8cqDJeO7jjoh+Ki0bDAgBYh5/M9f7IX7aThRaWmuc2aM7K6cFYfGIIRNI4OB1OjvZz14rz6A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G3G0Bk0G; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=CdFQXBRR;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=G3G0Bk0G;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dl2YR6Fq8z2yrZ
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 16:15:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dl2YS5W1Hz2ytx
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 16:15:08 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id D2DEA44315;
-	Mon,  5 Jan 2026 05:15:02 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id D35ECC2BCB1;
-	Mon,  5 Jan 2026 05:15:01 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id E3E4E44345;
+	Mon,  5 Jan 2026 05:15:04 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 56DBAC19425;
+	Mon,  5 Jan 2026 05:15:04 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767590102;
-	bh=hJC9DSn5UYENY36JqLwojxw3h+UBaQgfoLRRAZMtsK4=;
+	s=k20201202; t=1767590104;
+	bh=QrYuLwUNu/mVSc/Yo9MLheYVuGpn5hYaMt0fTaKLTGY=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=CdFQXBRRFdl+EMlqiCVNkNbaGKA/Qkt5IHNn8GMj5jkLVVMlSr34WOdhrJk37bWOm
-	 JoSzZqeqQIdKOlIIXojh2hhZD7I+3OEPs4Kkd0jTyHrXhJ5H3uwbaREhqZtGPZTnuh
-	 QLUgEORHsIG4u7+Gx5wu1Y/2wAeBG0aVFjqJmK7qjCAj322AxOG6xQDtqcFp8rhrVF
-	 Y1RG6/QNOb3tT6ao+LVdrDNmGFoKzRN46JWUWezG3hsUx22aTi1zoHyKtrVCLKQ5CA
-	 5wph2RCuDkwBu4Z9lOcuu6Sjr/aXV+jKQ1j3NeHgtenzPdesv0/P85zeX1s1e420DZ
-	 z2yyazlPAXgNw==
+	b=G3G0Bk0G56Ktu3wG+6a9uAZH1lAOba80s4ElWn2pJFGgFmNV/Cvh+Z4L4klecwAfJ
+	 4A4jYZkIX5u/TAbMBp2/t6kvMz1vfkfl6kK8wTbdYEMZzD48byZukOJjTQls80D1Xy
+	 4WkndmU3Qn4EkS0p+n03CEKYzEJ0P2Wu+x5eAaKoh0QJtMhWu243+nRHSrwnSBLnET
+	 /USJVwZLIvP7OD84paOmDdk+WrENSjRQUTX3tIVS55nIybRN4WLxj52YLt7MKHOYg9
+	 LR99hxKJTTahowUoQL9JPYKxznndT0rryjV8qUaCJhK4rY0IHuWnAW46qVo1Gxtx6a
+	 1WQW7lG89tSYQ==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -59,9 +59,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Holger Dengler <dengler@linux.ibm.com>,
 	Harald Freudenberger <freude@linux.ibm.com>,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 18/36] crypto: x86/aes - Remove the superseded AES-NI crypto_cipher
-Date: Sun,  4 Jan 2026 21:12:51 -0800
-Message-ID: <20260105051311.1607207-19-ebiggers@kernel.org>
+Subject: [PATCH 21/36] net: phy: mscc: macsec: Use new AES library API
+Date: Sun,  4 Jan 2026 21:12:54 -0800
+Message-ID: <20260105051311.1607207-22-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260105051311.1607207-1-ebiggers@kernel.org>
 References: <20260105051311.1607207-1-ebiggers@kernel.org>
@@ -80,210 +80,48 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Remove the "aes-aesni" crypto_cipher algorithm and the code specific to
-its implementation.  It is no longer necessary because the AES library
-is now optimized with x86 AES-NI, and crypto/aes.c exposes the AES
-library via the crypto_cipher API.
+Switch from the old AES library functions (which use struct
+crypto_aes_ctx) to the new ones (which use struct aes_enckey).  This
+eliminates the unnecessary computation and caching of the decryption
+round keys.  The new AES en/decryption functions are also much faster
+and use AES instructions when supported by the CPU.
+
+Note: aes_encrypt_new() will be renamed to aes_encrypt() once all
+callers of the old aes_encrypt() have been updated.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/x86/crypto/Kconfig            |  2 -
- arch/x86/crypto/aesni-intel_asm.S  | 25 ------------
- arch/x86/crypto/aesni-intel_glue.c | 62 +-----------------------------
- 3 files changed, 1 insertion(+), 88 deletions(-)
+ drivers/net/phy/mscc/mscc_macsec.c | 8 ++++----
+ 1 file changed, 4 insertions(+), 4 deletions(-)
 
-diff --git a/arch/x86/crypto/Kconfig b/arch/x86/crypto/Kconfig
-index ebb0838eaf30..7fb2319a0916 100644
---- a/arch/x86/crypto/Kconfig
-+++ b/arch/x86/crypto/Kconfig
-@@ -5,14 +5,12 @@ menu "Accelerated Cryptographic Algorithms for CPU (x86)"
- config CRYPTO_AES_NI_INTEL
- 	tristate "Ciphers: AES, modes: ECB, CBC, CTS, CTR, XCTR, XTS, GCM (AES-NI/VAES)"
- 	select CRYPTO_AEAD
- 	select CRYPTO_LIB_AES
- 	select CRYPTO_LIB_GF128MUL
--	select CRYPTO_ALGAPI
- 	select CRYPTO_SKCIPHER
- 	help
--	  Block cipher: AES cipher algorithms
- 	  AEAD cipher: AES with GCM
- 	  Length-preserving ciphers: AES with ECB, CBC, CTS, CTR, XCTR, XTS
+diff --git a/drivers/net/phy/mscc/mscc_macsec.c b/drivers/net/phy/mscc/mscc_macsec.c
+index 4f39ba63a9a9..bcb7f5a4a8fd 100644
+--- a/drivers/net/phy/mscc/mscc_macsec.c
++++ b/drivers/net/phy/mscc/mscc_macsec.c
+@@ -502,19 +502,19 @@ static u32 vsc8584_macsec_flow_context_id(struct macsec_flow *flow)
  
- 	  Architecture: x86 (32-bit and 64-bit) using:
- 	  - AES-NI (AES new instructions)
-diff --git a/arch/x86/crypto/aesni-intel_asm.S b/arch/x86/crypto/aesni-intel_asm.S
-index b37881bb9f15..6abe5e38a6d7 100644
---- a/arch/x86/crypto/aesni-intel_asm.S
-+++ b/arch/x86/crypto/aesni-intel_asm.S
-@@ -434,35 +434,10 @@ SYM_FUNC_START_LOCAL(_aesni_enc4)
- 	aesenclast KEY, STATE3
- 	aesenclast KEY, STATE4
- 	RET
- SYM_FUNC_END(_aesni_enc4)
+ /* Derive the AES key to get a key for the hash autentication */
+ static int vsc8584_macsec_derive_key(const u8 *key, u16 key_len, u8 hkey[16])
+ {
+ 	const u8 input[AES_BLOCK_SIZE] = {0};
+-	struct crypto_aes_ctx ctx;
++	struct aes_enckey aes;
+ 	int ret;
  
--/*
-- * void aesni_dec (const void *ctx, u8 *dst, const u8 *src)
-- */
--SYM_FUNC_START(aesni_dec)
--	FRAME_BEGIN
--#ifndef __x86_64__
--	pushl KEYP
--	pushl KLEN
--	movl (FRAME_OFFSET+12)(%esp), KEYP	# ctx
--	movl (FRAME_OFFSET+16)(%esp), OUTP	# dst
--	movl (FRAME_OFFSET+20)(%esp), INP	# src
--#endif
--	mov 480(KEYP), KLEN		# key length
--	add $240, KEYP
--	movups (INP), STATE		# input
--	call _aesni_dec1
--	movups STATE, (OUTP)		#output
--#ifndef __x86_64__
--	popl KLEN
--	popl KEYP
--#endif
--	FRAME_END
--	RET
--SYM_FUNC_END(aesni_dec)
--
- /*
-  * _aesni_dec1:		internal ABI
-  * input:
-  *	KEYP:		key struct pointer
-  *	KLEN:		key length
-diff --git a/arch/x86/crypto/aesni-intel_glue.c b/arch/x86/crypto/aesni-intel_glue.c
-index 48405e02d6e4..453e0e890041 100644
---- a/arch/x86/crypto/aesni-intel_glue.c
-+++ b/arch/x86/crypto/aesni-intel_glue.c
-@@ -58,11 +58,10 @@ static inline void *aes_align_addr(void *addr)
- }
+-	ret = aes_expandkey(&ctx, key, key_len);
++	ret = aes_prepareenckey(&aes, key, key_len);
+ 	if (ret)
+ 		return ret;
  
- asmlinkage void aesni_set_key(struct crypto_aes_ctx *ctx, const u8 *in_key,
- 			      unsigned int key_len);
- asmlinkage void aesni_enc(const void *ctx, u8 *out, const u8 *in);
--asmlinkage void aesni_dec(const void *ctx, u8 *out, const u8 *in);
- asmlinkage void aesni_ecb_enc(struct crypto_aes_ctx *ctx, u8 *out,
- 			      const u8 *in, unsigned int len);
- asmlinkage void aesni_ecb_dec(struct crypto_aes_ctx *ctx, u8 *out,
- 			      const u8 *in, unsigned int len);
- asmlinkage void aesni_cbc_enc(struct crypto_aes_ctx *ctx, u8 *out,
-@@ -111,43 +110,10 @@ static int aes_set_key_common(struct crypto_aes_ctx *ctx,
- 	aesni_set_key(ctx, in_key, key_len);
- 	kernel_fpu_end();
+-	aes_encrypt(&ctx, hkey, input);
+-	memzero_explicit(&ctx, sizeof(ctx));
++	aes_encrypt_new(&aes, hkey, input);
++	memzero_explicit(&aes, sizeof(aes));
  	return 0;
  }
  
--static int aes_set_key(struct crypto_tfm *tfm, const u8 *in_key,
--		       unsigned int key_len)
--{
--	return aes_set_key_common(aes_ctx(crypto_tfm_ctx(tfm)), in_key,
--				  key_len);
--}
--
--static void aesni_encrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
--{
--	struct crypto_aes_ctx *ctx = aes_ctx(crypto_tfm_ctx(tfm));
--
--	if (!crypto_simd_usable()) {
--		aes_encrypt(ctx, dst, src);
--	} else {
--		kernel_fpu_begin();
--		aesni_enc(ctx, dst, src);
--		kernel_fpu_end();
--	}
--}
--
--static void aesni_decrypt(struct crypto_tfm *tfm, u8 *dst, const u8 *src)
--{
--	struct crypto_aes_ctx *ctx = aes_ctx(crypto_tfm_ctx(tfm));
--
--	if (!crypto_simd_usable()) {
--		aes_decrypt(ctx, dst, src);
--	} else {
--		kernel_fpu_begin();
--		aesni_dec(ctx, dst, src);
--		kernel_fpu_end();
--	}
--}
--
- static int aesni_skcipher_setkey(struct crypto_skcipher *tfm, const u8 *key,
- 			         unsigned int len)
- {
- 	return aes_set_key_common(aes_ctx(crypto_skcipher_ctx(tfm)), key, len);
- }
-@@ -542,29 +508,10 @@ static int xts_encrypt_aesni(struct skcipher_request *req)
- static int xts_decrypt_aesni(struct skcipher_request *req)
- {
- 	return xts_crypt(req, aesni_xts_encrypt_iv, aesni_xts_decrypt);
- }
- 
--static struct crypto_alg aesni_cipher_alg = {
--	.cra_name		= "aes",
--	.cra_driver_name	= "aes-aesni",
--	.cra_priority		= 300,
--	.cra_flags		= CRYPTO_ALG_TYPE_CIPHER,
--	.cra_blocksize		= AES_BLOCK_SIZE,
--	.cra_ctxsize		= CRYPTO_AES_CTX_SIZE,
--	.cra_module		= THIS_MODULE,
--	.cra_u	= {
--		.cipher	= {
--			.cia_min_keysize	= AES_MIN_KEY_SIZE,
--			.cia_max_keysize	= AES_MAX_KEY_SIZE,
--			.cia_setkey		= aes_set_key,
--			.cia_encrypt		= aesni_encrypt,
--			.cia_decrypt		= aesni_decrypt
--		}
--	}
--};
--
- static struct skcipher_alg aesni_skciphers[] = {
- 	{
- 		.base = {
- 			.cra_name		= "ecb(aes)",
- 			.cra_driver_name	= "ecb-aes-aesni",
-@@ -1687,18 +1634,14 @@ static int __init aesni_init(void)
- 	int err;
- 
- 	if (!x86_match_cpu(aesni_cpu_id))
- 		return -ENODEV;
- 
--	err = crypto_register_alg(&aesni_cipher_alg);
--	if (err)
--		return err;
--
- 	err = crypto_register_skciphers(aesni_skciphers,
- 					ARRAY_SIZE(aesni_skciphers));
- 	if (err)
--		goto unregister_cipher;
-+		return err;
- 
- 	err = crypto_register_aeads(aes_gcm_algs_aesni,
- 				    ARRAY_SIZE(aes_gcm_algs_aesni));
- 	if (err)
- 		goto unregister_skciphers;
-@@ -1714,22 +1657,19 @@ static int __init aesni_init(void)
- 	crypto_unregister_aeads(aes_gcm_algs_aesni,
- 				ARRAY_SIZE(aes_gcm_algs_aesni));
- unregister_skciphers:
- 	crypto_unregister_skciphers(aesni_skciphers,
- 				    ARRAY_SIZE(aesni_skciphers));
--unregister_cipher:
--	crypto_unregister_alg(&aesni_cipher_alg);
- 	return err;
- }
- 
- static void __exit aesni_exit(void)
- {
- 	crypto_unregister_aeads(aes_gcm_algs_aesni,
- 				ARRAY_SIZE(aes_gcm_algs_aesni));
- 	crypto_unregister_skciphers(aesni_skciphers,
- 				    ARRAY_SIZE(aesni_skciphers));
--	crypto_unregister_alg(&aesni_cipher_alg);
- 	unregister_avx_algs();
- }
- 
- module_init(aesni_init);
- module_exit(aesni_exit);
+ static int vsc8584_macsec_transformation(struct phy_device *phydev,
+ 					 struct macsec_flow *flow,
 -- 
 2.52.0
 
