@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-15220-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15221-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 93BDCC2A072
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 05:16:49 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 24681C2A062
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 05:16:53 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dl2YZ5cb4z30V4;
-	Mon, 05 Jan 2026 16:15:14 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dl2Yb1cN1z30VZ;
+	Mon, 05 Jan 2026 16:15:15 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767590114;
-	cv=none; b=nbR19x0bMwBDb9r4jp/lrp0RVuebAW967Mmp1tq8e2zovM4igPeaIHMxpwoZ+xUavELPs+Q3PCEcjrWmKk8MTN9O974Fq1CjkH17FC+i8pSZaJTTuVqMx+l4YMpkqCuGlTxeo8+vOYKMM3SxCp1Y8YwMBgNcKpgZj0Ww+L/ekr7YTtQ62d373OktLONjh34pF7wt2HoBKxuYnFCK9WPkbqCGIvqg7ob6E0YC/llfA13xuy96j2WDWximKmqGjkHwiirBVMYfTLvvN0xdZjhI6LTFEyLczyz1MF8RfCffmRzlu48lRnGEhRBWtzw+pVeBAL9NQB8PTY6yjLaBnWoTSQ==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767590115;
+	cv=none; b=OuDbph/y3qhX+24T+A+4BytStePy4IEMBPSjhWHIkVghOSdCkhfh/uqiVGTIXnD0G/Xe5UPVUDpl10euuWCsJAvGbLYXuLUyKnDwv8fyDcv8tFJ7/6dEk94Xp0jJI/S1tawu/cbk8EqGe4b1OnS8SfuVR13D7d3l/mjoh77OeZZor9ZfvlE7gHab2S6QUFtAuHY3RHsjdEKit2qdozTg797mpRwnm6KcLxPe2dYe60flsy/jZGDDfbC5myEOKM4S1CXIBkbkoPxz0xj1lQr6ji4zN5I98GAOQHZPGNoGFwDVJAk9I2u80FPf4D1rzsgjPOGyZHrKZKySNCZkK7TpdA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767590114; c=relaxed/relaxed;
-	bh=3IoOcmuEUFdalI+Xu091qv4e2opViqdVh32nVwOB630=;
+	t=1767590115; c=relaxed/relaxed;
+	bh=mh/d+16pzmf4GdRvtsnQAqjyYw0NOnZbDH3IYZgbLNM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=G4sXYGrbcbTnt2pMP0fgeArrN0++A+0Yz6RV+C1E+cE99MH+diHMPomcuQO7kBlZsKM+qUrUqkP9dyhyg9QGXgwMKzUEh8R+hgsI/QZHSdbERqpJ4vyO8KeEgipfGKA5IWT2C8Vy+Xwpq8Tnvzq/WH9uAYfrUZApZrlWV38ZTVwOKVWxJYfJUK9XtnNHdVvw3PsMl7YMxQYnk+oUMXSaGvj7zzrkG2M6fT+2iz5PF3Vet5T1znV6ayk5XyINPzuclb11fKijQWPCjgohk1mvkltmoT22SD+t11lieHTAWVLiqTJ9AGLUIZ2pQbcJaL8IUIUSyU5y/RxMbCE3S3LZ3w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TH4w7+H/; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=fSSll0sMhGlikeLcl4uQkHEiv3n2RIoxcA3gk4swcqrxhww2uaodwnF+i9NNnNRjh5Okwk2K894EQBZpRrF5b62hvczzpQKCh5Hb1lHEVNMaC1S4awoWrIK4TdxbuYgbybrRiUCfV/3dPKqSFdjHkxAj3/7j87U6ZTea5MLjgLM+tthFzo0KEbLNMEk/TLa1wvdtRiC5tc4Z1lX0vn97rfASrZfLxK+ELreRA5RnjWfyNaV7Nvlgx2BclVq1oDHniqQfk7pz0LIqyGwpg/H83hxeYs65xbVCtwklKMbecPksPKSv32xVwbIteCQlvTXGGR8C7vrDt6rO74L9SSi4HA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WXSvV+Xi; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=TH4w7+H/;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=WXSvV+Xi;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dl2YW3xzmz2yl2
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 16:15:11 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dl2YX1fS4z2yxl
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 16:15:12 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 3926B44357;
+	by sea.source.kernel.org (Postfix) with ESMTP id 9282944132;
+	Mon,  5 Jan 2026 05:15:09 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E9F59C2BC9E;
 	Mon,  5 Jan 2026 05:15:08 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7216BC2BCB1;
-	Mon,  5 Jan 2026 05:15:07 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767590108;
-	bh=CEvjFtjQNPUEArHuTq+3s4Z3LAXNjA8ATEyzFR/Xb40=;
+	s=k20201202; t=1767590109;
+	bh=51MqJUw9vLPBjNhyqGm5KNGeBpiM474Yq2fJhY4WaSs=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=TH4w7+H/0TkVDsJHMpEQqO72NXoaXdINRgTgmORdg/nBswVAhCJciDqyoaLoEsk0x
-	 KAoH6UDXekrcipmj9EdyeltYyimR8UnDLawkjI+6YrgvtaV4XC6uy9bBcAwrCNOrqo
-	 uvxWBU0GvZbjMMUxcxvyJ9+SSzcidEvS5+fb80pKeNVuf8mx93IcjqYPmo34LlotI8
-	 R5iQTDSnm88aKbHIRjqpZ2geZ/An+n4r2q/siZIBEGFNZM6W0LiU9yHjVWFX3eojlW
-	 chB+ghWLPeuD4EP0rNVXAzy1XU8rRggwi7ZW+xfi4AwjnXFQEHyAbPfYYJvt0v3Ijb
-	 l3FWDTk6gFuFQ==
+	b=WXSvV+XiKYdSDaoLylpVKvfPU5H02g22cONeH1AE5K3CY4QrcH+VLEe11L7WHbJzn
+	 LQSqWGsgWEKCMoMaJYF+Xm5hEC43m4LeRGnKUyEVoUIPotAd44MP8wSybbaCCCat5j
+	 CGqKTFDxES3LadpubNdtviwiZrJmeaUai+ibeYgYsbYGBRLhyHu5ON/yBoS0ncX7MN
+	 Yl52+ZfRZsgz0TFx6YNmC1QuRryhC97RyS1FEX7bJUtKL6X9rXiLOevoqJksUXWwLk
+	 owp7xxBpt2wAiibDSu/dC8MrjseY1KJivEQJxFhwfVwfauU8c3ADjYkexSt0lke601
+	 5A/r1MY4KeGyg==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -59,9 +59,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Holger Dengler <dengler@linux.ibm.com>,
 	Harald Freudenberger <freude@linux.ibm.com>,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH 26/36] crypto: ccp - Use new AES library API
-Date: Sun,  4 Jan 2026 21:12:59 -0800
-Message-ID: <20260105051311.1607207-27-ebiggers@kernel.org>
+Subject: [PATCH 28/36] crypto: crypto4xx - Use new AES library API
+Date: Sun,  4 Jan 2026 21:13:01 -0800
+Message-ID: <20260105051311.1607207-29-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260105051311.1607207-1-ebiggers@kernel.org>
 References: <20260105051311.1607207-1-ebiggers@kernel.org>
@@ -91,46 +91,42 @@ callers of the old aes_encrypt() have been updated.
 
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- drivers/crypto/ccp/ccp-crypto-aes-cmac.c | 6 +++---
- 1 file changed, 3 insertions(+), 3 deletions(-)
+ drivers/crypto/amcc/crypto4xx_alg.c | 10 +++++-----
+ 1 file changed, 5 insertions(+), 5 deletions(-)
 
-diff --git a/drivers/crypto/ccp/ccp-crypto-aes-cmac.c b/drivers/crypto/ccp/ccp-crypto-aes-cmac.c
-index d8426bdf3190..ed5b0f8609f1 100644
---- a/drivers/crypto/ccp/ccp-crypto-aes-cmac.c
-+++ b/drivers/crypto/ccp/ccp-crypto-aes-cmac.c
-@@ -259,11 +259,11 @@ static int ccp_aes_cmac_setkey(struct crypto_ahash *tfm, const u8 *key,
- 	struct ccp_ctx *ctx = crypto_ahash_ctx_dma(tfm);
- 	struct ccp_crypto_ahash_alg *alg =
- 		ccp_crypto_ahash_alg(crypto_ahash_tfm(tfm));
- 	u64 k0_hi, k0_lo, k1_hi, k1_lo, k2_hi, k2_lo;
- 	u64 rb_hi = 0x00, rb_lo = 0x87;
--	struct crypto_aes_ctx aes;
+diff --git a/drivers/crypto/amcc/crypto4xx_alg.c b/drivers/crypto/amcc/crypto4xx_alg.c
+index 38e8a61e9166..1947708334ef 100644
+--- a/drivers/crypto/amcc/crypto4xx_alg.c
++++ b/drivers/crypto/amcc/crypto4xx_alg.c
+@@ -489,23 +489,23 @@ static int crypto4xx_aes_gcm_validate_keylen(unsigned int keylen)
+ }
+ 
+ static int crypto4xx_compute_gcm_hash_key_sw(__le32 *hash_start, const u8 *key,
+ 					     unsigned int keylen)
+ {
+-	struct crypto_aes_ctx ctx;
 +	struct aes_enckey aes;
- 	__be64 *gk;
- 	int ret;
+ 	uint8_t src[16] = { 0 };
+ 	int rc;
  
- 	switch (key_len) {
- 	case AES_KEYSIZE_128:
-@@ -282,17 +282,17 @@ static int ccp_aes_cmac_setkey(struct crypto_ahash *tfm, const u8 *key,
+-	rc = aes_expandkey(&ctx, key, keylen);
++	rc = aes_prepareenckey(&aes, key, keylen);
+ 	if (rc) {
+-		pr_err("aes_expandkey() failed: %d\n", rc);
++		pr_err("aes_prepareenckey() failed: %d\n", rc);
+ 		return rc;
+ 	}
  
- 	/* Set to zero until complete */
- 	ctx->u.aes.key_len = 0;
+-	aes_encrypt(&ctx, src, src);
++	aes_encrypt_new(&aes, src, src);
+ 	crypto4xx_memcpy_to_le32(hash_start, src, 16);
+-	memzero_explicit(&ctx, sizeof(ctx));
++	memzero_explicit(&aes, sizeof(aes));
+ 	return 0;
+ }
  
- 	/* Set the key for the AES cipher used to generate the keys */
--	ret = aes_expandkey(&aes, key, key_len);
-+	ret = aes_prepareenckey(&aes, key, key_len);
- 	if (ret)
- 		return ret;
- 
- 	/* Encrypt a block of zeroes - use key area in context */
- 	memset(ctx->u.aes.key, 0, sizeof(ctx->u.aes.key));
--	aes_encrypt(&aes, ctx->u.aes.key, ctx->u.aes.key);
-+	aes_encrypt_new(&aes, ctx->u.aes.key, ctx->u.aes.key);
- 	memzero_explicit(&aes, sizeof(aes));
- 
- 	/* Generate K1 and K2 */
- 	k0_hi = be64_to_cpu(*((__be64 *)ctx->u.aes.key));
- 	k0_lo = be64_to_cpu(*((__be64 *)ctx->u.aes.key + 1));
+ int crypto4xx_setkey_aes_gcm(struct crypto_aead *cipher,
+ 			     const u8 *key, unsigned int keylen)
 -- 
 2.52.0
 
