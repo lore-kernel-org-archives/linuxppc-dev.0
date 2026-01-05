@@ -1,94 +1,36 @@
-Return-Path: <linuxppc-dev+bounces-15257-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15258-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id E2CA2C2A099
-	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 10:54:28 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 0B192C2A099
+	for <linuxppc-dev@archiver.kernel.org>; Mon,  5 Jan 2026 11:05:57 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dlB4z4Q6kz2xGY;
-	Mon, 05 Jan 2026 21:54:27 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767610467;
-	cv=none; b=kQ71pMKG1kMC3FpK+KG7tnyJfzNd/5RdVnW4kOhWiCmNolLW81bIsivyGsIedYVIvxPRnyVjuYpUwrZKW6Ul3Fa87aijpvSGblL4JrOKcYgA3+8uYrydqWrFl548q65ZLTXAIkjEhmfCkOFnEyv5c0nybZufpFeonG/9BTmHjZN2iRJBXeYjmje8V+ELqg3iJpZkHC9ig78HlsIjEP3waWWqLW6ib1XOZMa7Abj/0aoGRUa5pPSImeb4zgh8FziaeQ1iBARfSnc1Pojgqszzk5WMr947mjFJUfUo/WByKyt9v5iOMVNC3jeJLJD2HuwcucbCRo7YJkRSPXz+R0AzBw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dlBLC4Gk1z2xGY;
+	Mon, 05 Jan 2026 22:05:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=217.140.110.172
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767611155;
+	cv=none; b=Wh0mBAhUmVx3uZW73KlvmDq/cD2V6SBbH1vMgFgZ5VLpP7oyGJIl4yCtbbOYaJZrZHXF8O9XtDoTYrnC5QFlKdPAk2PMZ99/FQMFLRZWhnWAZpddzCtAf5mrvHAu4wLn5FsywxGrZP307LtR6VB6JWOM7JDgfjuwiurNPJhkm9SRZVpqvCvkLtyaxAHuovXFlPRNGbBA8qKeeSej8AKJw3eyvynn6ZlW1DMP0pIRhjrZgnapU9e1vAjPsZHm+Ka+3ngxGqOwkkN2traJL9ukH/MpuE+7URG2qEB53/1JheQpos8XGP7Egk8haCsIJSuTYOXagAfWrLVZVqWSjMPMBA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767610467; c=relaxed/relaxed;
-	bh=oELxnmOGoZA7NMRFko1gjMFUS0erHG3/oMRsIrRf/Sk=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=KD3zNrPZDf2PcjatrpJF4MVEkn1Cr+Pyxe2iGV9dDBeggTMkFcioCuorAEYOoD3+EPvBqIr+loVRPadAJr3o9anQ3PQPr51YHXlTW1/bEQUfkk2tgnQG6Ybq6CIRS4ULDczz2zOTWoJIdT61w62yh1fahzE5d1WyZL1arTkE7q/cTAvZyvC7dglmtSaxmbHxiepd9hK10aqKA0uefvjtc/IV0kQPdo+YSy3+iYysDF8/ScyRBfmY2stbLJzjsCKbq1BKaca46BPLoexW5cB0RzUzxT3nzcSc5xIV+lj2smxdic92kOMSTXRXkkPwMeR4+63SaSqLasxxtCZEZSxUXQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cHk/za8b; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
-Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=cHk/za8b;
-	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=adubey@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
-	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dlB4y6kGCz2x9W
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 21:54:26 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 604LMujJ020721;
-	Mon, 5 Jan 2026 10:52:48 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:date:from:in-reply-to:message-id
-	:mime-version:references:subject:to; s=pp1; bh=oELxnmOGoZA7NMRFk
-	o1gjMFUS0erHG3/oMRsIrRf/Sk=; b=cHk/za8b46wa4PXdDHinlnyYwosmhKYtL
-	a2/4Klje3XhqMV8/XrUV5B8Gb2OEM3oif2KNk76wXdUAJVjJRXs4PAZUF05Xkoq0
-	ecBpoVdVuQB2lQRb/gWDBa+nky6Aw9dKTL/oz7RnpZokFs9DO0FI0trsm+nji6y3
-	ed/kvsr6UZiswuNtWZw3hkLWD9FERd6F3H6DU1BzOh89PEAFoc5SUIMKqN15sXFs
-	RN9Saa494Oian0BSayV6MBxioX7NZWFyFGuY+gV9Q3Ibs1beOkZyQc04b6RVZnVY
-	6LG8vHoal++89f8HtYAA2R5OGukOLxlzQvsKFJvJQ4ClYJVz9OlAw==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4betu5xs4h-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 Jan 2026 10:52:48 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 605AgUGD005433;
-	Mon, 5 Jan 2026 10:52:48 GMT
-Received: from ppma21.wdc07v.mail.ibm.com (5b.69.3da9.ip4.static.sl-reverse.com [169.61.105.91])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4betu5xs4d-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 Jan 2026 10:52:48 +0000 (GMT)
-Received: from pps.filterd (ppma21.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma21.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 605AdmCZ014511;
-	Mon, 5 Jan 2026 10:52:46 GMT
-Received: from smtprelay01.fra02v.mail.ibm.com ([9.218.2.227])
-	by ppma21.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4bfeemn8x8-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Mon, 05 Jan 2026 10:52:46 +0000
-Received: from smtpav06.fra02v.mail.ibm.com (smtpav06.fra02v.mail.ibm.com [10.20.54.105])
-	by smtprelay01.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 605AqhGY62259544
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Mon, 5 Jan 2026 10:52:43 GMT
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id DE93420040;
-	Mon,  5 Jan 2026 10:52:42 +0000 (GMT)
-Received: from smtpav06.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id E788420049;
-	Mon,  5 Jan 2026 10:52:36 +0000 (GMT)
-Received: from abhi.. (unknown [9.124.213.127])
-	by smtpav06.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Mon,  5 Jan 2026 10:52:36 +0000 (GMT)
-From: adubey@linux.ibm.com
-To: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kselftest@vger.kernel.org, linux-kernel@vger.kernel.org
-Cc: hbathini@linux.ibm.com, sachinpb@linux.ibm.com, venkat88@linux.ibm.com,
-        andrii@kernel.org, eddyz87@gmail.com, mykolal@fb.com, ast@kernel.org,
-        daniel@iogearbox.net, martin.lau@linux.dev, song@kernel.org,
-        yonghong.song@linux.dev, john.fastabend@gmail.com, kpsingh@kernel.org,
-        sdf@fomichev.me, haoluo@google.com, jolsa@kernel.org,
-        christophe.leroy@csgroup.eu, naveen@kernel.org, maddy@linux.ibm.com,
-        mpe@ellerman.id.au, npiggin@gmail.com, memxor@gmail.com,
-        iii@linux.ibm.com, shuah@kernel.org,
-        Abhishek Dubey <adubey@linux.ibm.com>
-Subject: [PATCH 2/6] powerpc64/bpf: Tailcall handling with trampolines
-Date: Mon,  5 Jan 2026 16:22:08 +0530
-Message-ID: <20260105105212.136645-3-adubey@linux.ibm.com>
-X-Mailer: git-send-email 2.48.1
-In-Reply-To: <20260105105212.136645-1-adubey@linux.ibm.com>
-References: <20260105105212.136645-1-adubey@linux.ibm.com>
+	t=1767611155; c=relaxed/relaxed;
+	bh=MJYHkYuydpY2/DvHn3CvEN2xXedIpu0NCd5blmdiT8A=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=DPn9NQN6iCRuKJXCqWAs7YuBUaUBcLIBo6ywRA7RfBL0WlKl8XE1XxDG4HS8qqdriXmYhKbDMmC5cLfzl+7Dq0gBOzglkaLbZHqKuQ6vHipe9EhjkvtCy7NTa0dQw9QFpqSiq6z/a1O0kjiKcv3f1kyV3lB2qOuX/lgqXbUJCMsBGs9ucgcOCmhu8cEJHYDFenMHyZV7xcGBjQsui6kD3lr34W8uNnOTuHkt1zq1tn0stEl9mzAyi6mXq8G8mMf4WnWDkp+MlGI39VRbnytplNJM6KL57Nd5LCuXB+xopjCA54d6IubHvHT/k+rbTnbHoVB2phD2OMWr0nPG3jA9EQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com; spf=pass (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org) smtp.mailfrom=arm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=arm.com
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=arm.com (client-ip=217.140.110.172; helo=foss.arm.com; envelope-from=ryan.roberts@arm.com; receiver=lists.ozlabs.org)
+Received: from foss.arm.com (foss.arm.com [217.140.110.172])
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dlBLB4YFYz2x9W
+	for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 22:05:53 +1100 (AEDT)
+Received: from usa-sjc-imap-foss1.foss.arm.com (unknown [10.121.207.14])
+	by usa-sjc-mx-foss1.foss.arm.com (Postfix) with ESMTP id E6BC5497;
+	Mon,  5 Jan 2026 03:05:15 -0800 (PST)
+Received: from [10.1.38.150] (XHFQ2J9959.cambridge.arm.com [10.1.38.150])
+	by usa-sjc-imap-foss1.foss.arm.com (Postfix) with ESMTPSA id 652C93F5A1;
+	Mon,  5 Jan 2026 03:05:19 -0800 (PST)
+Message-ID: <60c5d7b1-1ab7-490c-8cb8-dfd50cf23856@arm.com>
+Date: Mon, 5 Jan 2026 11:05:18 +0000
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -102,133 +44,130 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: oC44ZUBBUuDlwQj2SFPA2Q6q-5-12fUR
-X-Authority-Analysis: v=2.4 cv=QbNrf8bv c=1 sm=1 tr=0 ts=695b9800 cx=c_pps
- a=GFwsV6G8L6GxiO2Y/PsHdQ==:117 a=GFwsV6G8L6GxiO2Y/PsHdQ==:17
- a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22 a=VnNF1IyMAAAA:8
- a=vfcL6nHFD5ed_ebL8FkA:9
-X-Proofpoint-ORIG-GUID: DSRSrrc2IQlsxKvIz-MPgwF59IZVlWb2
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTA1MDA5NSBTYWx0ZWRfX4sONKJqhI0Mo
- BT3bq+2ldmDKk+EoGjCkkFMVs21iP4Qy7kLIgRJA2vA3wDB19yHFyw0z8RKdSwnf7Oj4AimXNy/
- Dx3URNsOOc5UL3+zd13lRVXu/M7ZCi/pijj01opjNHa9NPEvWq8zd0+o9EMwp2bcqL5/heEqNTm
- VJG5hMoNzKwm0YsQNtXScyWaYiirJgT+bgIwULaGrEtmHQr8H7mXMyjgyDKrmHYoTFqpa/FhMPZ
- xtZNDbQZrwTZ7rra14y5HP6yiKd2bodFbBrre1qVr7k3YseybELxb2OnIR4+L0KHCS4PxDTdtTW
- D8z8T/n032HimVFfFw/Q8yV0kpoDX7zy3hAT3MeZAw3AOCsPuSysVeg6LftVHgyEFkC5HVdHkXN
- khbetUDVlMWCYksjeTkuLGIVX7p1cw==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2026-01-05_01,2025-12-31_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 bulkscore=0 suspectscore=0 adultscore=0 lowpriorityscore=0
- phishscore=0 malwarescore=0 classifier=typeunknown authscore=0 authtc=
- authcc= route=outbound adjust=0 reason=mlx scancount=1
- engine=8.19.0-2512120000 definitions=main-2601050095
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH v3 3/3] randomize_kstack: Unify random source across
+ arches
+Content-Language: en-GB
+To: David Laight <david.laight.linux@gmail.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon <will@kernel.org>,
+ Huacai Chen <chenhuacai@kernel.org>,
+ Madhavan Srinivasan <maddy@linux.ibm.com>,
+ Michael Ellerman <mpe@ellerman.id.au>, Paul Walmsley <pjw@kernel.org>,
+ Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou <aou@eecs.berkeley.edu>,
+ Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik <gor@linux.ibm.com>,
+ Alexander Gordeev <agordeev@linux.ibm.com>,
+ Thomas Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>,
+ Borislav Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>,
+ Kees Cook <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>,
+ Arnd Bergmann <arnd@arndb.de>, Mark Rutland <mark.rutland@arm.com>,
+ "Jason A. Donenfeld" <Jason@zx2c4.com>, Ard Biesheuvel <ardb@kernel.org>,
+ Jeremy Linton <jeremy.linton@arm.com>, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-hardening@vger.kernel.org
+References: <20260102131156.3265118-1-ryan.roberts@arm.com>
+ <20260102131156.3265118-4-ryan.roberts@arm.com>
+ <20260104230136.7aaf8886@pumpkin>
+From: Ryan Roberts <ryan.roberts@arm.com>
+In-Reply-To: <20260104230136.7aaf8886@pumpkin>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
 
-From: Abhishek Dubey <adubey@linux.ibm.com>
+On 04/01/2026 23:01, David Laight wrote:
+> On Fri,  2 Jan 2026 13:11:54 +0000
+> Ryan Roberts <ryan.roberts@arm.com> wrote:
+> 
+>> Previously different architectures were using random sources of
+>> differing strength and cost to decide the random kstack offset. A number
+>> of architectures (loongarch, powerpc, s390, x86) were using their
+>> timestamp counter, at whatever the frequency happened to be. Other
+>> arches (arm64, riscv) were using entropy from the crng via
+>> get_random_u16().
+>>
+>> There have been concerns that in some cases the timestamp counters may
+>> be too weak, because they can be easily guessed or influenced by user
+>> space. And get_random_u16() has been shown to be too costly for the
+>> level of protection kstack offset randomization provides.
+>>
+>> So let's use a common, architecture-agnostic source of entropy; a
+>> per-cpu prng, seeded at boot-time from the crng. This has a few
+>> benefits:
+>>
+>>   - We can remove choose_random_kstack_offset(); That was only there to
+>>     try to make the timestamp counter value a bit harder to influence
+>>     from user space.
+>>
+>>   - The architecture code is simplified. All it has to do now is call
+>>     add_random_kstack_offset() in the syscall path.
+>>
+>>   - The strength of the randomness can be reasoned about independently
+>>     of the architecture.
+>>
+>>   - Arches previously using get_random_u16() now have much faster
+>>     syscall paths, see below results.
+>>
+>> There have been some claims that a prng may be less strong than the
+>> timestamp counter if not regularly reseeded. But the prng has a period
+>> of about 2^113. So as long as the prng state remains secret, it should
+>> not be possible to guess. If the prng state can be accessed, we have
+>> bigger problems.
+> 
+> If you have 128 bits of output from consecutive outputs I think you
+> can trivially determine the full state using (almost) 'school boy' maths
+> that could be done on pencil and paper.
+> (Most of the work only has to be done once.)
+> 
+> The underlying problem is that the TAUSWORTHE() transformation is 'linear'
+> So that TAUSWORTHE(x ^ y) == TAUSWORTHE(x) ^ TAUSWORTHE(y).
+> (This is true of a LFSR/CRC and TOUSWORTH() is doing some subset of CRCs.)
+> This means that each output bit is the 'xor' of some of the input bits.
+> The four new 'state' values are just xor of the the bits of the old ones.
+> The final xor of the four states gives a 32bit value with each bit just
+> an xor of some of the 128 state bits.
+> Get four consecutive 32 bit values and you can solve the 128 simultaneous
+> equations (by trivial substitution) and get the initial state.
+> The solution gives you the 128 128bit constants for:
+> 	u128 state = 0;
+> 	u128 val = 'value returned from 4 calls';
+> 	for (int i = 0; i < 128; i++)
+> 		state |= parity(const128[i] ^ val) << i;
 
-The trampoline mechanism sets up its own stack frame and
-an additional dummy frame. We need to have additional JIT
-instructions handling tailcall dereferencing in the
-trampoline's context.
+What is const128[] here?
 
-We don't add the two stack frames pointed above, rather
-add space for conventional 'non-volatile register save area'
-and tail_call_info in trampoline's frame for ppc64. This
-makes the trampoline's frame consistent with layout of all
-other frames.
+> You done need all 32bits, just accumulate 128 bits.  
+> So if you can get the 5bit stack offset from 26 system calls you know the
+> value that will be used for all the subsequent calls.
 
-Signed-off-by: Abhishek Dubey <adubey@linux.ibm.com>
----
- arch/powerpc/net/bpf_jit_comp.c | 48 ++++++++++++++++++++++++++++-----
- 1 file changed, 42 insertions(+), 6 deletions(-)
+It's not immediately obvious to me how user space would do this, but I'll take
+it on faith that it may be possible.
 
-diff --git a/arch/powerpc/net/bpf_jit_comp.c b/arch/powerpc/net/bpf_jit_comp.c
-index 069a8822c30d..4aaa0a287a45 100644
---- a/arch/powerpc/net/bpf_jit_comp.c
-+++ b/arch/powerpc/net/bpf_jit_comp.c
-@@ -606,15 +606,42 @@ static int invoke_bpf_mod_ret(u32 *image, u32 *ro_image, struct codegen_context
- 	return 0;
- }
- 
--static void bpf_trampoline_setup_tail_call_cnt(u32 *image, struct codegen_context *ctx,
--					       int func_frame_offset, int r4_off)
-+/*
-+ * Refer the label 'Generated stack layout' in this file for actual stack
-+ * layout during trampoline invocation.
-+ *
-+ * Refer __arch_prepare_bpf_trampoline() for stack component details.
-+ *
-+ * The tailcall count/reference is present in caller's stack frame. Its required
-+ * to copy the content of tail_call_info before calling the actual function
-+ * to which the trampoline is attached.
-+ *
-+ */
-+
-+static void bpf_trampoline_setup_tail_call_info(u32 *image, struct codegen_context *ctx,
-+					       int func_frame_offset,
-+					       int bpf_dummy_frame_size, int r4_off)
- {
- 	if (IS_ENABLED(CONFIG_PPC64)) {
- 		/* See bpf_jit_stack_tailcallinfo_offset() */
--		int tailcallcnt_offset = 7 * 8;
-+		int tailcallinfo_offset = BPF_PPC_STACK_SAVE + SZL;
-+		/*
-+		 * func_frame_offset =
-+		 * 	bpf_dummy_frame_size + trampoline_frame_size
-+		 */
-+		EMIT(PPC_RAW_LD(_R4, _R1, func_frame_offset));
-+		EMIT(PPC_RAW_LD(_R3, _R4, -tailcallinfo_offset));
-+
-+		/*
-+		 * Setting the tail_call_info in trampoline's frame
-+		 * depending on if previous frame had value or reference.
-+		 */
-+		EMIT(PPC_RAW_CMPLWI(_R3, MAX_TAIL_CALL_CNT));
-+		PPC_COND_BRANCH(COND_GT, CTX_NIA(ctx) + 8);
-+		EMIT(PPC_RAW_ADDI(_R3, _R4, bpf_jit_stack_tailcallinfo_offset(ctx)));
-+		EMIT(PPC_RAW_STL(_R3, _R1, func_frame_offset
-+				- bpf_dummy_frame_size - tailcallinfo_offset));
- 
--		EMIT(PPC_RAW_LL(_R3, _R1, func_frame_offset - tailcallcnt_offset));
--		EMIT(PPC_RAW_STL(_R3, _R1, -tailcallcnt_offset));
- 	} else {
- 		/* See bpf_jit_stack_offsetof() and BPF_PPC_TC */
- 		EMIT(PPC_RAW_LL(_R4, _R1, r4_off));
-@@ -721,6 +748,8 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
- 	 *                              [ r0 save (32-bit)  ]   |
- 	 * dummy frame for unwind       [ back chain 1      ] --
- 	 *                              [ padding           ] align stack frame
-+	 *                              [ r26..r31          ] nvr save : BPF_PPC_STACK_SAVE
-+	 *                              [ tail_call_info    ] non optional - 64-bit powerpc
- 	 *       r4_off                 [ r4 (tailcallcnt)  ] optional - 32-bit powerpc
- 	 *       alt_lr_off             [ real lr (ool stub)] optional - actual lr
- 	 *                              [ r26               ]
-@@ -801,6 +830,12 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
- 		}
- 	}
- 
-+	/* Room for 64-bit tail_call_cnt */
-+	bpf_frame_size += SZL;
-+
-+	/* Room for nvr save area */
-+	bpf_frame_size += BPF_PPC_STACK_SAVE;
-+
- 	/* Padding to align stack frame, if any */
- 	bpf_frame_size = round_up(bpf_frame_size, SZL * 2);
- 
-@@ -902,7 +937,8 @@ static int __arch_prepare_bpf_trampoline(struct bpf_tramp_image *im, void *rw_im
- 
- 		/* Replicate tail_call_cnt before calling the original BPF prog */
- 		if (flags & BPF_TRAMP_F_TAIL_CALL_CTX)
--			bpf_trampoline_setup_tail_call_cnt(image, ctx, func_frame_offset, r4_off);
-+			bpf_trampoline_setup_tail_call_info(image, ctx, func_frame_offset,
-+							   bpf_dummy_frame_size, r4_off);
- 
- 		/* Restore args */
- 		bpf_trampoline_restore_args_stack(image, ctx, func_frame_offset, nr_regs, regs_off);
--- 
-2.48.1
+> 
+> Simply changing the final line to use + not ^ makes the output non-linear
+> and solving the equations a lot harder.
+
+There has been pushback on introducing new primitives [1] but I don't think
+that's a reason not to considder it.
+
+[1] https://lore.kernel.org/all/aRyppb8PCxFKVphr@zx2c4.com/
+
+> 
+> I might sit down tomorrow and see if I can actually code it...
+
+Thanks for the analysis! I look forward to seeing your conclusion... although
+I'm not sure I'll be qualified to evaluate it mathematically.
+
+FWIW, I previously had a go at various schemes using siphash to calculate some
+random bits. I found it to be significantly slower than this prng. I've so far
+taken the view that 6 bits of randomness is not much of a defence against brute
+force so we really shouldn't be spending too many cycles to generate the bits.
+If we can get to approach to work, I think that's best.
+
+Thanks,
+Ryan
+
+> 
+> 	David
+> 
+>  
 
 
