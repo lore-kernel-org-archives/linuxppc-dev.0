@@ -1,107 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-15298-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15299-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2C2DC47BC5
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jan 2026 07:50:31 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 09EBBC47BC5
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jan 2026 08:20:33 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dljyG3ym7z2y7c;
-	Tue, 06 Jan 2026 18:50:30 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=170.10.129.124
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767685830;
-	cv=none; b=Mw5dZUVxqIquMq4D1+oG1ffvnqangHxA3e9rX/p2oNwtG7G/LHOp9jAgAEwTv8w+jZBc5Iq8bt6Vj44VZmGHsHnY9wVBD4UiGRKFAx4w0EYir7Rv8jU7CfZ80+xQdLEOlncxG48afJZ+eIneFXj/t7t9Axc4DLxf5oBL6X2R7wxIZ/EyDD1z7df8jxSGgWos3XrVRRIaYaAG0q3xoV+VfiFYNrhRbk2x5xCW97Ak92/ilwwDUcbtdLVl29uY56rFEgfHGx+IhCMTmDQId6XDAouUuM/GCl7GyEntP7wS2eYy/0WNdZuvoIvbFwRONtLaYRbY7N92306+Y6xjtMMuNQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dlkcw3pz6z2y7c;
+	Tue, 06 Jan 2026 19:20:32 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.210.169
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767675500;
+	cv=none; b=P4TI/d5R6Ll4wIdrWzX90L6nxavOtqam/A9pfVM7iKKvD1Mtik93T8P2xLZCeZDimfWzKRLSmmXM7x5XCxAb7oc8ImIyz72sB6Pfdvcmbcp1JY4F+F4DXpwv3HmFIAIdndxcGRYCMeLiuom4ubSL+UKz5dVpvTSSzylSrxfNFYs8guAguvNtXHCAJZzzr5V98eqJLWNSuZB/yoQ7YU/bk9ABM4BVsYMKoLEhp/075exqZWH8Iy0ZV3r8rGQYEMb6K+pzcV6zDMHo7LkrZ0knQReppZu3Tjt41+Q5gL+OvezV6qACpfleAnvpCtOYy/GbL5LWGmi5qdCVYl20DkQkGw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767685830; c=relaxed/relaxed;
-	bh=iJIbYSfSK52lKhhoL+Hqgsx6BnLJaDz2mdyD5+Wu3vQ=;
+	t=1767675500; c=relaxed/relaxed;
+	bh=oOlNWZ1ASjDiM8/EVArPiKc25ePbXneuyrH70Dm1FmA=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 In-Reply-To:Content-Type:Content-Disposition; b=SfWOChb6qohS7Y4e6H04gpcsP1iGtQbVPD6K6D8Rdy2I/rCPysxjeh8kTUiDvmRHTrY053ostWuCh08rw6Q8lGXYPtA+X60XfX5ltebnAmEGaw1yxhgLUwlbmyRW6U2R1bp7ScZtYq1GBUJsW0gAk0Ep/+99qrX35hMU2yGFzS7mA6eyeNyXsQ6zk3NqiMk/yaLiJ+jQA0mRDseGQ4PVJKemHokE3yfCXCs5Ka0+CpPLm0q3JTOh/ogjFW0T3ctXAsQQba+39gFgXRKHs8v+TsGysCq8OzcGqxrHEbe0GHK5uc1o/dnCboQtn3uLCxYXOkQUjUgkF0CZj5w0e9/NlQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com; dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UYKQflH1; dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UYKQflH1; dkim-atps=neutral; spf=pass (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=coxu@redhat.com; receiver=lists.ozlabs.org) smtp.mailfrom=redhat.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=redhat.com
+	 Content-Type:Content-Disposition:In-Reply-To; b=NbkDnPe0f2RJBmDQipzWfjCCCdrG8oiIrtmLmIpYLToKueRdBqcAEwJkAuho3j4W38luvRETyFJOGDEqfqx9IRi5kchuS+r5hlJ1p9pv6XA584wW6gkdi/b0Gm3Evz94ZWD06QZTLOIlgPCigR/6RJPZGgxZnEEZTzQg2x77tMyTBCiEILSKHFXJf+Qe6TJh5kS57jBMlysyX8HCDeEgSBGZ9nkOazU5E3w+XDWZt1ln9jdaRiGOc+HGWAmmrXK2foagyF5mJZyMAjgnksrQriAhBSw96oLyuKwq0EpbwApM+AWbrIOQHEDzBqjJjxxrVHPktdVTkCz97YGZZprM1A==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org; dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=TFuRtJaI; dkim-atps=neutral; spf=pass (client-ip=209.85.210.169; helo=mail-pf1-f169.google.com; envelope-from=viresh.kumar@linaro.org; receiver=lists.ozlabs.org) smtp.mailfrom=linaro.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linaro.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UYKQflH1;
-	dkim=pass (1024-bit key) header.d=redhat.com header.i=@redhat.com header.a=rsa-sha256 header.s=mimecast20190719 header.b=UYKQflH1;
+	dkim=pass (2048-bit key; unprotected) header.d=linaro.org header.i=@linaro.org header.a=rsa-sha256 header.s=google header.b=TFuRtJaI;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=redhat.com (client-ip=170.10.129.124; helo=us-smtp-delivery-124.mimecast.com; envelope-from=coxu@redhat.com; receiver=lists.ozlabs.org)
-Received: from us-smtp-delivery-124.mimecast.com (us-smtp-delivery-124.mimecast.com [170.10.129.124])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linaro.org (client-ip=209.85.210.169; helo=mail-pf1-f169.google.com; envelope-from=viresh.kumar@linaro.org; receiver=lists.ozlabs.org)
+Received: from mail-pf1-f169.google.com (mail-pf1-f169.google.com [209.85.210.169])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dljyD6gPDz2xSX
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jan 2026 18:50:27 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1767685824;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=iJIbYSfSK52lKhhoL+Hqgsx6BnLJaDz2mdyD5+Wu3vQ=;
-	b=UYKQflH1BcelkAhgGHtc4xMkD9EvXMsO0CA9heSHIv8bh1jxpzXDP65Qhx4YorgeRu0Qnz
-	o9C1EcZY34WWB+rL/5v11nrli3AoH11VWsJY8MtMIYGATC//iXCMnPJWxpa+sGFFOHMl8K
-	uf/VGTU6ne2YjQI94+tKZYPkMKmVico=
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=redhat.com;
-	s=mimecast20190719; t=1767685824;
-	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
-	 to:to:cc:cc:mime-version:mime-version:content-type:content-type:
-	 in-reply-to:in-reply-to:references:references;
-	bh=iJIbYSfSK52lKhhoL+Hqgsx6BnLJaDz2mdyD5+Wu3vQ=;
-	b=UYKQflH1BcelkAhgGHtc4xMkD9EvXMsO0CA9heSHIv8bh1jxpzXDP65Qhx4YorgeRu0Qnz
-	o9C1EcZY34WWB+rL/5v11nrli3AoH11VWsJY8MtMIYGATC//iXCMnPJWxpa+sGFFOHMl8K
-	uf/VGTU6ne2YjQI94+tKZYPkMKmVico=
-Received: from mail-pf1-f200.google.com (mail-pf1-f200.google.com
- [209.85.210.200]) by relay.mimecast.com with ESMTP with STARTTLS
- (version=TLSv1.3, cipher=TLS_AES_256_GCM_SHA384) id
- us-mta-311-usCpQVlBPxaigwPE-hbTVg-1; Tue, 06 Jan 2026 02:50:23 -0500
-X-MC-Unique: usCpQVlBPxaigwPE-hbTVg-1
-X-Mimecast-MFC-AGG-ID: usCpQVlBPxaigwPE-hbTVg_1767685822
-Received: by mail-pf1-f200.google.com with SMTP id d2e1a72fcca58-7c7957d978aso935669b3a.1
-        for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 23:50:22 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dlf7b1Chtz2xqr
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jan 2026 15:58:17 +1100 (AEDT)
+Received: by mail-pf1-f169.google.com with SMTP id d2e1a72fcca58-7b75e366866so271566b3a.2
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 20:58:17 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=linaro.org; s=google; t=1767675435; x=1768280235; darn=lists.ozlabs.org;
+        h=in-reply-to:content-disposition:mime-version:references:message-id
+         :subject:cc:to:from:date:from:to:cc:subject:date:message-id:reply-to;
+        bh=oOlNWZ1ASjDiM8/EVArPiKc25ePbXneuyrH70Dm1FmA=;
+        b=TFuRtJaICtEgKAZlxnUmUJUl8OQChptLngeEb2AokDEYGTm4+Piew6q5Y/+EmIhFlO
+         BM75V6o6YL+CLTwZYsmfj4ChXQ2ub4tr7UfmLyXLG48sMMXocZdfuzv/hMcrqyDiC/KL
+         +/TEoynAgc+4c8t5cC6NVvfB3ruIl5AzaH5InICAWsmoeIk+Lty2j7u8iyVMXGClHGJL
+         L5VjBsipHzol7VFtEehn0A16paHd7EBrCrrVa/eVDydl0zYdlBF3vLSyI0n739rY3tKU
+         MrotWCn70HPlVQLLTa8wiCllyRb9Uv58CmFb+PfqxFere5IWnkeTd7iRgvvA6BH22Io7
+         4ezw==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767685822; x=1768290622;
+        d=1e100.net; s=20230601; t=1767675435; x=1768280235;
         h=in-reply-to:content-disposition:mime-version:references:message-id
          :subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from:to:cc
          :subject:date:message-id:reply-to;
-        bh=iJIbYSfSK52lKhhoL+Hqgsx6BnLJaDz2mdyD5+Wu3vQ=;
-        b=HgcVWHRDGmpSyPsrri4MorHZ1p70Hj47zW9JsU9vtF42MT1AfB2/p0uTl1KTjFA8Wt
-         ksK2iDDrC3Yc4HEFFV6BhPKEn679WLEFkOKpG59SHEzRGhm5SJCotw6srMGQ7P8dnysP
-         glZo5xsKXxET+3oKseVKmQdQUQJ4Dkf4YtNS3R2/NvTWbkHKhmt3onjwy7Hpn62iWsmo
-         FnA/4aaAwHcOVjHc9eudV8nrj5XBaM9H++Ss4IPEAMwRjPdRoHWjUlJGSmFFee8JLLtR
-         Jq/3jO2b6ooxuJFLTGGeP2xpV+AWxh5bi6oF7WHY5QjMnwt1GZP5ptKdDaqE2A4DywQQ
-         u9TQ==
-X-Forwarded-Encrypted: i=1; AJvYcCWQaCbFRxI3iEN+LJeFVBcQeiNeOcQ9mp7XH9k8rNU2gyl/1fYm52gflIc/JY6FBjOxy+82LWWZZUpGH34=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzsqDmZx6dDLUc+bjJqQDeLd8wzKDeGflA66Vhfqofsuh1wC3Mi
-	y6BkvuWUmTjrxhHnqYixRIKOvQBM+PiiJWhnomQS249UdLqWCkBpT3pzzNogMx3yMv2GUfv3lqF
-	r711Si+Zv9Wj6YDRkpAPUxsr6l67+Fl6UmCoZ1oZ1k8Zh0d+Fp6Opkl1vDIfIq7DfbbQ=
-X-Gm-Gg: AY/fxX5uGedkOGetnZcg4mGixwKQV3gmBGMzB7Wmrm3J8QjD9EkPHTxiT3Nyr7G3FwS
-	Ww7cdhazeXB/OZ1meXeX9aRl3QO+226qJEOCeVhz0Epy2SK0rEGx+IZ3aKM9AMOqN4hnUKI1UA3
-	cHEpxJFDKdk8BAmhjq8SNcAp+CQVupboIYCkycOQfmSQT8zWPiA127mO+cdFswhxC4IiCWiVWBD
-	4C7aSLmtydlG0PjiA3h3dWJl807excG2APl7C2T+YfgpPMVhT7i4E14ABUrJnu1bU6Ia87zuVu6
-	XhiFK61tR0PXwqrZoVs/JCxdJHAN/TggKI7UrC4yImLFlwXWa7Uos+cfezRne/MvwBy1KbpMUGJ
-	c
-X-Received: by 2002:a05:6a00:1d25:b0:7e8:4471:8de with SMTP id d2e1a72fcca58-81882ddd7c3mr1845208b3a.63.1767685821900;
-        Mon, 05 Jan 2026 23:50:21 -0800 (PST)
-X-Google-Smtp-Source: AGHT+IFDKsDXMRpPACVaN2GdRV6l0Fy6KDBpzSzhtqSYzxT7W76UAFruKAKNIbDHoNo+0oE4mtloEg==
-X-Received: by 2002:a05:6a00:1d25:b0:7e8:4471:8de with SMTP id d2e1a72fcca58-81882ddd7c3mr1845179b3a.63.1767685821335;
-        Mon, 05 Jan 2026 23:50:21 -0800 (PST)
-Received: from localhost ([209.132.188.88])
-        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-819bb0ddf97sm1263404b3a.19.2026.01.05.23.50.20
+        bh=oOlNWZ1ASjDiM8/EVArPiKc25ePbXneuyrH70Dm1FmA=;
+        b=JwVlnH5ZYxkxYm6SObUzcBQuQAZprnCndpnB3lDM4ylTyXdDtmszmKIrIySFqVbxAg
+         Qch6nZD84o2x8f0xFXStQ7Zv9mrUAI0MVTXkPfOEYavoGZux4J8i8PQsXAIxh2nu0WoQ
+         +7jIXzj8GnSfPi0hJR2eYzCKqkgdVIGBl0dgpoiAMuQYfSsPaw7qxajFnFqZNMTg/qmZ
+         zaxwl3dw50bIC8akDPHoCS+b/sprGx7Inx7Efg3tm9MPGzKOqvecaKgjRJAliX9nzetb
+         Ot6Ob0qK4SKwD22EFgRk4NrygXywXYw0yfUiAWxNGRi7ziPEwsehEFG/i3LCkwAmWaJD
+         C4wQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUxDg7+uwrziyH6GWAGKIA2juVtLlfC7fpK8Mjez0FPm7hFuzJtmV0Q5tgw44/t7ixw0QH57ld8j/L5JtY=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YycUxNyaP95IsbJggO2ysygDjiXw8JVmC1mUtN/KAs8k3QFe82O
+	PAsSoirjJbxo/TPLKoVfs/JyeUsVW8Tm1foSWDj/HJijUs6mCiUg+GrlY9p8nvEJYvA=
+X-Gm-Gg: AY/fxX5nOQLcPvJtVrVr5xL2Cmlo/2P2lGz1TBtkifgkdJDqkLyXE3ZVz1xsnoJ9B7z
+	Ph6EMKTg/AYOvcXOCZnSJgu6zBqK8Ftyn+tFX0d2hGYapCycAztis4A9rEU5nzxavoIIDX5xNwg
+	jI1UThYgLRaxAl20sfPfFs8No3RSiodSZVAUDm/akVirfDTAnQnyxeZLwiEY9YFxOP6+gty5sJS
+	mhpN9AhAzLOKMIXYiaxj4G/M1ugBXsUiYH2/PDeQa7BnybOz3l4jOYjyJkAeSSyBnGDrnlCd4LQ
+	++SE2iRqBVibIXux5q0hooATwWjAFAC50LIW3GmL8jYpriE0WVOQPPI8Tx1+iR7mIu6lGLRrRsR
+	L+WS9RbDyVE+MuHjnys7m5k+v7JpkindCgj7awBMQ1ftw7yorDj4d+QD0T91pmcTUTcjOc9t6iv
+	a0ZbnieX54cWuqqEfQqRNBjw==
+X-Google-Smtp-Source: AGHT+IH1HIV++y2p498uUKeXICIqTonP/XkL+xU6dt4xBDj6CXKEeUOGv7lJojUw920KVFSDaG10IA==
+X-Received: by 2002:a05:6a00:ad86:b0:7e8:43f5:bd3e with SMTP id d2e1a72fcca58-8187f78d9fdmr1867900b3a.42.1767675434866;
+        Mon, 05 Jan 2026 20:57:14 -0800 (PST)
+Received: from localhost ([122.172.80.63])
+        by smtp.gmail.com with ESMTPSA id d2e1a72fcca58-819baa1936dsm727051b3a.12.2026.01.05.20.57.13
         (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
-        Mon, 05 Jan 2026 23:50:20 -0800 (PST)
-Date: Tue, 6 Jan 2026 15:46:57 +0800
-From: Coiby Xu <coxu@redhat.com>
-To: kernel test robot <lkp@intel.com>
-Cc: kexec@lists.infradead.org, linuxppc-dev@lists.ozlabs.org, 
-	llvm@lists.linux.dev, oe-kbuild-all@lists.linux.dev, 
-	Thomas Staudt <tstaudt@de.ibm.com>, Arnaud Lefebvre <arnaud.lefebvre@clever-cloud.com>, 
-	Baoquan he <bhe@redhat.com>, Dave Young <dyoung@redhat.com>, Kairui Song <ryncsn@gmail.com>, 
-	Pingfan Liu <kernelfans@gmail.com>, Andrew Morton <akpm@linux-foundation.org>, 
-	Linux Memory Management List <linux-mm@kvack.org>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
+        Mon, 05 Jan 2026 20:57:14 -0800 (PST)
+Date: Tue, 6 Jan 2026 10:27:12 +0530
+From: Viresh Kumar <viresh.kumar@linaro.org>
+To: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Cc: Miguel Ojeda <ojeda@kernel.org>, Rob Herring <robh@kernel.org>, 
+	Saravana Kannan <saravanak@google.com>, Nathan Chancellor <nathan@kernel.org>, 
+	Nick Desaulniers <nick.desaulniers+lkml@gmail.com>, Bill Wendling <morbo@google.com>, 
+	Justin Stitt <justinstitt@google.com>, Russell King <linux@armlinux.org.uk>, 
+	Nicolas Ferre <nicolas.ferre@microchip.com>, Alexandre Belloni <alexandre.belloni@bootlin.com>, 
+	Claudiu Beznea <claudiu.beznea@tuxon.dev>, Krzysztof Kozlowski <krzk@kernel.org>, 
+	Alim Akhtar <alim.akhtar@samsung.com>, Madhavan Srinivasan <maddy@linux.ibm.com>, 
 	Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>, 
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] powerpc/kdump: pass dm-crypt keys to kdump kernel
-Message-ID: <aVy9qfeSDZyKybIC@Rk>
-References: <20251226140636.1378505-1-coxu@redhat.com>
- <202512272218.ghBaSjzO-lkp@intel.com>
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>, Nipun Gupta <nipun.gupta@amd.com>, 
+	Nikhil Agarwal <nikhil.agarwal@amd.com>, Abel Vesa <abelvesa@kernel.org>, Peng Fan <peng.fan@nxp.com>, 
+	Michael Turquette <mturquette@baylibre.com>, Stephen Boyd <sboyd@kernel.org>, Shawn Guo <shawnguo@kernel.org>, 
+	Sascha Hauer <s.hauer@pengutronix.de>, Pengutronix Kernel Team <kernel@pengutronix.de>, 
+	Fabio Estevam <festevam@gmail.com>, Vinod Koul <vkoul@kernel.org>, 
+	Sylwester Nawrocki <s.nawrocki@samsung.com>, Mauro Carvalho Chehab <mchehab@kernel.org>, 
+	"Rafael J. Wysocki" <rafael@kernel.org>, linux-kernel@vger.kernel.org, devicetree@vger.kernel.org, 
+	llvm@lists.linux.dev, linux-arm-kernel@lists.infradead.org, 
+	linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org, linux-clk@vger.kernel.org, 
+	imx@lists.linux.dev, dmaengine@vger.kernel.org, linux-media@vger.kernel.org, 
+	linux-pm@vger.kernel.org
+Subject: Re: [PATCH 11/11] cpufreq: s5pv210: Simplify with scoped for each OF
+ child loop
+Message-ID: <g4k2qdsihxfawfsi5ie3w2fhbsd2x6z5heifkcte75c2w3sjg3@cofrjgaiilta>
+References: <20260105-of-for-each-compatible-scoped-v1-0-24e99c177164@oss.qualcomm.com>
+ <20260105-of-for-each-compatible-scoped-v1-11-24e99c177164@oss.qualcomm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -115,47 +111,56 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-In-Reply-To: <202512272218.ghBaSjzO-lkp@intel.com>
-X-Mimecast-Spam-Score: 0
-X-Mimecast-MFC-PROC-ID: OYwVVs91wIFwVj6DfZNs6iLMlkaEAePXnRk_hyPs3cA_1767685822
-X-Mimecast-Originator: redhat.com
-Content-Type: text/plain; charset=us-ascii; format=flowed
+Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
+In-Reply-To: <20260105-of-for-each-compatible-scoped-v1-11-24e99c177164@oss.qualcomm.com>
 
-On Sat, Dec 27, 2025 at 10:35:11PM +0800, kernel test robot wrote:
->Hi Coiby,
->
->kernel test robot noticed the following build errors:
->
->[auto build test ERROR on ccd1cdca5cd433c8a5dff78b69a79b31d9b77ee1]
->
->url:    https://github.com/intel-lab-lkp/linux/commits/Coiby-Xu/powerpc-kdump-pass-dm-crypt-keys-to-kdump-kernel/20251226-220726
->base:   ccd1cdca5cd433c8a5dff78b69a79b31d9b77ee1
->patch link:    https://lore.kernel.org/r/20251226140636.1378505-1-coxu%40redhat.com
->patch subject: [PATCH] powerpc/kdump: pass dm-crypt keys to kdump kernel
->config: powerpc64-randconfig-001-20251227 (https://download.01.org/0day-ci/archive/20251227/202512272218.ghBaSjzO-lkp@intel.com/config)
->compiler: clang version 22.0.0git (https://github.com/llvm/llvm-project 4ef602d446057dabf5f61fb221669ecbeda49279)
->reproduce (this is a W=1 build): (https://download.01.org/0day-ci/archive/20251227/202512272218.ghBaSjzO-lkp@intel.com/reproduce)
->
->If you fix the issue in a separate patch/commit (i.e. not just a new version of
->the same patch/commit), kindly add following tags
->| Reported-by: kernel test robot <lkp@intel.com>
->| Closes: https://lore.kernel.org/oe-kbuild-all/202512272218.ghBaSjzO-lkp@intel.com/
->
->All errors (new ones prefixed by >>):
->
->>> arch/powerpc/kexec/elf_64.c:95:9: error: call to undeclared function 'crash_load_dm_crypt_keys'; ISO C99 and later do not support implicit function declarations [-Wimplicit-function-declaration]
->      95 |                 ret = crash_load_dm_crypt_keys(image);
->         |                       ^
->   1 error generated.
+On 05-01-26, 14:33, Krzysztof Kozlowski wrote:
+> Use scoped for-each loop when iterating over device nodes to make code a
+> bit simpler.  Note that there is another part of code using "np"
+> variable, so scoped loop should not shadow it.
+> 
+> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+> 
+> ---
+> 
+> Depends on the first patch.
+> ---
+>  drivers/cpufreq/s5pv210-cpufreq.c | 10 ++++------
+>  1 file changed, 4 insertions(+), 6 deletions(-)
+> 
+> diff --git a/drivers/cpufreq/s5pv210-cpufreq.c b/drivers/cpufreq/s5pv210-cpufreq.c
+> index ba8a1c96427a..e64e84e1ee79 100644
+> --- a/drivers/cpufreq/s5pv210-cpufreq.c
+> +++ b/drivers/cpufreq/s5pv210-cpufreq.c
+> @@ -629,19 +629,17 @@ static int s5pv210_cpufreq_probe(struct platform_device *pdev)
+>  		goto err_clock;
+>  	}
+>  
+> -	for_each_compatible_node(np, NULL, "samsung,s5pv210-dmc") {
+> -		id = of_alias_get_id(np, "dmc");
+> +	for_each_compatible_node_scoped(dmc, NULL, "samsung,s5pv210-dmc") {
+> +		id = of_alias_get_id(dmc, "dmc");
+>  		if (id < 0 || id >= ARRAY_SIZE(dmc_base)) {
+> -			dev_err(dev, "failed to get alias of dmc node '%pOFn'\n", np);
+> -			of_node_put(np);
+> +			dev_err(dev, "failed to get alias of dmc node '%pOFn'\n", dmc);
+>  			result = id;
+>  			goto err_clk_base;
+>  		}
+>  
+> -		dmc_base[id] = of_iomap(np, 0);
+> +		dmc_base[id] = of_iomap(dmc, 0);
+>  		if (!dmc_base[id]) {
+>  			dev_err(dev, "failed to map dmc%d registers\n", id);
+> -			of_node_put(np);
+>  			result = -EFAULT;
+>  			goto err_dmc;
+>  		}
+> 
 
-This issue has been addressed in v2
-https://lore.kernel.org/all/20260106074039.564707-1-coxu@redhat.com/
-
-Thanks!
+Acked-by: Viresh Kumar <viresh.kumar@linaro.org>
 
 -- 
-Best regards,
-Coiby
-
+viresh
 
