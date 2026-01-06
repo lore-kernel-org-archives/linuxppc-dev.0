@@ -1,64 +1,100 @@
-Return-Path: <linuxppc-dev+bounces-15294-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15295-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 996DACD043E
-	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jan 2026 06:58:41 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D7825C79FA0
+	for <linuxppc-dev@archiver.kernel.org>; Tue,  6 Jan 2026 07:11:02 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dlhpS2BR0z2y7c;
-	Tue, 06 Jan 2026 17:58:40 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767682720;
-	cv=none; b=SSVQ9kY63lFeNf1e8hsw7xM3Oht2ja7OKOyaFNzl9q98eHq8x/92invPvKA1heD1AtjoIbQ8cgSH1vtdB73UO36FSDeFSjltj5N89uxg9MunsnhjScGsmCoQPrtIrAbcX0DRquLenLdXoLXAb1O8qzFAkRMt6tbfzPkx5mAQAG/JCT35rLFEpXG33LQb3tF96LKO5SbT6q8ZiZvOcustX2R/0JE5Dcoz0ffrAE8Yv8WN0otNRKbvpLy1lbAm7jngLVfPiPRAeXPr7mF3fP74szgfJk4dRNOtXS0LmenuSpImtfefSR+XfkvBaqvcbQ/dtTUg2exGxpuc9QJaAxWddg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dlj4j2qr6z2y7c;
+	Tue, 06 Jan 2026 18:11:01 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=205.220.168.131
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767683461;
+	cv=none; b=jC96gRtjfCIKXz9ozAwuv1oB2JRktQwmW54kqSg5JSao7UG+xoClfEI8vB68qeBTFvZ2wKB9l+/fRjzPifbg+cMUeymPWcnU3UQnhuxYS0FOzmjqMj90lEzA5BepDvM25PTUPrrncAB9Fu6KEfVAX3ehleX8YXhoLVxhTcbY1gUVjHkEEJMnIhlJFkMgJmeXCAtEqVq/TCZ0E3qAf+toVoBHhqizP7zWpfZE9Ykmqhcd25GaqPIufCNHUGaOlSncAYbuGB88VZR03Cb4QsVc1YgPxn4Cv4N7yJiehIiIWS/MGb8euuQCgoFi/jKwU/FtzmFPfFAnPG8XVNRqG6z3CQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767682720; c=relaxed/relaxed;
-	bh=FpitPUAOqRhHNiQu5/A59labdYmuVavqAeylGVyamP4=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=I4ZPyowAdZHasqMQ0mPkiunfLHRqSKT4dvoq0J1w9M82CVnrI8Ph6Rcte8wxuBlVI1zatdI58f7qNr5YjWKunOCBtyx0gHdAOeSe80/LncjOHR6p047RGxDLdZn5LsbwWHdnfGH7RxzIX1DGdeUThFi2+9uB/J0FS1MIJhPwW5dTIqm5LhY2YO9HNPnRIjoAshLkSJjMhccJvT4GCfMoBu51h4Bth3/s1bhz6SM+CtKIsdushHQx98+oePpeOzJv7ju2+QKNHBzk+cLZJXoLkpJLdq9gyLpnIiacSl9wQsFb1Ir+QGVGgNEHvfSWrGH4cXOtxO/dlgxu95H+6/3+1Q==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gH/mbhwW; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1767683461; c=relaxed/relaxed;
+	bh=yR+2kAsivE/Rvdu/9KWZ7We8zTZVWkvuerZ6CyrQIVY=;
+	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
+	 In-Reply-To:Content-Type; b=BLwQhwxkywMX77LMorTRs/JQ2YET9Hxj4EIFkQjNtcUlyC5k39WB/TLc2prg+Vw6ZueqwfPqbf6PvQXSSE+rU592oDznBju6Lh4kxBKb+xLKVS4MX74ywwBmAjn+3lcwlcHqkSIYlsAoKoAmWKTMB9J4NPpFpANYrjwhpO4SZIvhtF4fmckD64ybyF3VYB6iUnEMQjglfDI1vPwtBWogaSjjgEv/Nv3xnT6ZTj7ojwbYE8jmmDxU/vbwxp1/JjgpGlI3xZq2M2rC00rV/ExIpN6ejdhTkvZQ9K5k0VHB0ryIdhgRDP0fAK+swIeTclwqTsMFKgEQDcPrRBLDKEGrcQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com; dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=X2rhLxsg; dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=gtaqvN3e; dkim-atps=neutral; spf=pass (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org) smtp.mailfrom=oss.qualcomm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=reject dis=none) header.from=oss.qualcomm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gH/mbhwW;
+	dkim=pass (2048-bit key; unprotected) header.d=qualcomm.com header.i=@qualcomm.com header.a=rsa-sha256 header.s=qcppdkim1 header.b=X2rhLxsg;
+	dkim=pass (2048-bit key; unprotected) header.d=oss.qualcomm.com header.i=@oss.qualcomm.com header.a=rsa-sha256 header.s=google header.b=gtaqvN3e;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=oss.qualcomm.com (client-ip=205.220.168.131; helo=mx0a-0031df01.pphosted.com; envelope-from=krzysztof.kozlowski@oss.qualcomm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-0031df01.pphosted.com (mx0a-0031df01.pphosted.com [205.220.168.131])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dlhpR1rswz2xqr
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jan 2026 17:58:39 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id BDCEF6011E;
-	Tue,  6 Jan 2026 06:58:36 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 076F4C116C6;
-	Tue,  6 Jan 2026 06:58:35 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767682716;
-	bh=QQtOk2YRE84AoYQ+kSLZyLAyg4ikVDFr3IES1pY5ozA=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=gH/mbhwWcmbSviWB2aCXqeJKPYzexAoK01Yg6s6cLwpp5mznoR4J9YtzBX0+JaB2Q
-	 RGzl1CWYt5ctBprLFLGJSvPejfop4znvHRnWwqgqpJHcHC0j9ob/Np83XrO9+Cl3TX
-	 VS8m3uLgzCzbvtCwipbPzokR0Dek9Wxm/0Ippytis8vLZ/I6x2I70gfKMwQbmEhFro
-	 NAdguE5T18zqwp0QS2kDwlBde/OWsN6qjyPmGKZIp7wCv7/K32g7gRemPHItu6WY9g
-	 OF83QkAKrc+JLLzKj3XjbpThHQLvD4g3n1HMYbOp1iZmU15u/EOi4JVaYquL+5oCoh
-	 XLNrjl71mrNfw==
-Date: Mon, 5 Jan 2026 22:58:17 -0800
-From: Eric Biggers <ebiggers@kernel.org>
-To: David Laight <david.laight.linux@gmail.com>
-Cc: Andrew Cooper <andrew.cooper3@citrix.com>, Jason@zx2c4.com,
-	ardb@kernel.org, dengler@linux.ibm.com, freude@linux.ibm.com,
-	herbert@gondor.apana.org.au, linux-arm-kernel@lists.infradead.org,
-	linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
-	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
-	linuxppc-dev@lists.ozlabs.org, sparclinux@vger.kernel.org,
-	x86@kernel.org
-Subject: Re: [PATCH 19/36] Bluetooth: SMP: Use new AES library API
-Message-ID: <20260106065817.GB2630@sol>
-References: <20260105051311.1607207-20-ebiggers@kernel.org>
- <859377de-cb72-4e87-8ee5-97f8c58a5720@citrix.com>
- <20260105190503.53cc31dd@pumpkin>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dlj4g4P0qz2xqr
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jan 2026 18:10:58 +1100 (AEDT)
+Received: from pps.filterd (m0279867.ppops.net [127.0.0.1])
+	by mx0a-0031df01.pphosted.com (8.18.1.11/8.18.1.11) with ESMTP id 6063QFB52922792
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 6 Jan 2026 07:10:56 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=qualcomm.com; h=
+	cc:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=qcppdkim1; bh=
+	yR+2kAsivE/Rvdu/9KWZ7We8zTZVWkvuerZ6CyrQIVY=; b=X2rhLxsgYoyoE5AY
+	L4b4cQJTQ3YgIfJCOY2LOJVoBKGe5vLK1LpNNiDsUPfYPZFJrCvR5L6HKf8GR76o
+	8Xem8H7csVtFQUIFSXCaZou94+irylPnnV29sMLXiknpFDdgHOFgL+jg3vNiCh+U
+	u8uJoDzslcYsqpOZb8u3b16lzO2UczbNws/eJs15FDtstTOCjhv8bpMg7IBiBdsU
+	zE7CqkcaOz/1l++v2Uo3JcN+XNUAHfVn3rtogIk4FRDqu1x5eiisquylcuSGquLf
+	JjcY9vRoINW1D1IPJp/i+YibBXgIyJDSEo3kApXRCtijUJfeLCFyzeiGe3OegeMW
+	i1Zuwg==
+Received: from mail-qt1-f198.google.com (mail-qt1-f198.google.com [209.85.160.198])
+	by mx0a-0031df01.pphosted.com (PPS) with ESMTPS id 4bgscy8rcu-1
+	(version=TLSv1.3 cipher=TLS_AES_128_GCM_SHA256 bits=128 verify=NOT)
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 06 Jan 2026 07:10:56 +0000 (GMT)
+Received: by mail-qt1-f198.google.com with SMTP id d75a77b69052e-4ed6ceab125so20290821cf.1
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 05 Jan 2026 23:10:56 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=oss.qualcomm.com; s=google; t=1767683455; x=1768288255; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:from:to:cc:subject:date:message-id:reply-to;
+        bh=yR+2kAsivE/Rvdu/9KWZ7We8zTZVWkvuerZ6CyrQIVY=;
+        b=gtaqvN3ewpCUDzL+j71Ms+1bAZDd7n36siOt+jcwYGm6SXKqah0ada80SlDJuddoIx
+         KU7XN9wbH6nhYT9P+xsI0PE5a4f3Kin+tTYjjt5K/eWwDCvDTFrOVBn+Su18Y9e5UHNC
+         7Pt+80qdGk2tL1m1fmmh1guAgM4suUeelDIrCc67on9F3o/ASIkFJ7Kvtq68JwL1JT8A
+         bFk3TZFqGMxIwI486gBaLZLuJxPnUY/RPawhqSSs489UwBixyadkHBSx/eP8zzKKeVPb
+         2c7ZREujGAs9iWlfWLudBz9SFo3tuXzw1WdpKug72SJ+MAmas4Wi2ADMrOSsXfu9zbhF
+         gT7w==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1767683455; x=1768288255;
+        h=content-transfer-encoding:in-reply-to:autocrypt:content-language
+         :from:references:cc:to:subject:user-agent:mime-version:date
+         :message-id:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=yR+2kAsivE/Rvdu/9KWZ7We8zTZVWkvuerZ6CyrQIVY=;
+        b=TUR8zioEafR/eakS7298jq6o3CsH85FHgxmxF5UjS0udWwjrfXyDuDhmMWD92vOHy7
+         VLF7t9HdN0Z3oJw9EEAmKnbXt8VEWlo8GewnglL7LYx3M679+rHo8hoklOZ7+mQN/KYN
+         k1JYCqYOxz1pd3X6Ln5rXz+JkKjbjjofX4bBdjdgrCffallnHMSFL7IJdnydH3CQI9Dd
+         Dk4QijyX+vVj+jpsJH1xWDxFcLpxu5GxrawMhqEq8/j3LlCvrR381xPM7u4bTpe2nyJ8
+         J3z18O/2veXIa04IVSrUtLkCegGAw358yxbypAphZ94cp27Itf89nd46lx+tVG6rsvVN
+         pUqw==
+X-Forwarded-Encrypted: i=1; AJvYcCVnOO1uMUKG9kS6B/wf/XOQlKKaLdpwVjxesrpsrohC+uX1DKM8klZLt+ZuaG31w8zlMOPt/kJns+U+Agw=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YzPSXcafGNshbD4to1pK+puyAASRjZbhMvhFtsuUQXKJxD4WhIh
+	gJ9v7N+jugZ3FqXbv6+H7vyFmQseWEx0we6uYZSmhXbSCeoP/Q9bCs+SqAIGbEhgwjyVN/4GOkv
+	UxBSgE/wTam8TcA0gFd5+eVv34lKa6HktAteGbTkIYDdDsx39gaNgB3WML7H2qADMm5/Y
+X-Gm-Gg: AY/fxX5Pto3HZHOrE2wl/d7NyPon5l0Fzxg3IjUhvTq9dTs3Vwtd6S6FFX8t7okn9JT
+	GULtZk3pwjvPNvOEF6k6ea1p0kPdB5KOG9+u1livW88OXH7kXT1dyEUO2lbDSdHMCw5czTpsEdw
+	p73/0jBQewKVKVZGKU5Aqhtz5/+19nm0R+umXZcY9t+0BOGVD2/qNcDr8hxyfVSYtCrRlgk6l/a
+	hC2FWrmriAwTxb1iZvc0vyHiaUIUKEXIKibE4ewyMV8xLmMpD4NJjjptC9OE/56NhoWwxZRs4G0
+	MG1lLQ4CpoSRXX7S2/xm7fCziz3keMO22UqxRCyAZltSqZzJtgoxNd2Cm/omNHDtQNZz2ROJPpC
+	hEWTHzZiomGaymr7HccYgBw6fY6ZhpSTJfTsTpw==
+X-Received: by 2002:a05:622a:2449:b0:4ee:ce3:6c9d with SMTP id d75a77b69052e-4ffa76ccec7mr26847751cf.19.1767683455270;
+        Mon, 05 Jan 2026 23:10:55 -0800 (PST)
+X-Google-Smtp-Source: AGHT+IG8XFjy35zyxBfC3DOLW8LBR5cVdZzZlCAUK/f6DleVwXoBDQ8jjn4JwiDCBEIoRdJUfETm7w==
+X-Received: by 2002:a05:622a:2449:b0:4ee:ce3:6c9d with SMTP id d75a77b69052e-4ffa76ccec7mr26847261cf.19.1767683454846;
+        Mon, 05 Jan 2026 23:10:54 -0800 (PST)
+Received: from [192.168.1.29] ([178.197.218.229])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-432bd5ee870sm2690447f8f.36.2026.01.05.23.10.52
+        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
+        Mon, 05 Jan 2026 23:10:54 -0800 (PST)
+Message-ID: <f8e6666c-86cc-4123-b1f5-681b656ccf9d@oss.qualcomm.com>
+Date: Tue, 6 Jan 2026 08:10:51 +0100
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -72,72 +108,142 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
-Content-Transfer-Encoding: 8bit
-In-Reply-To: <20260105190503.53cc31dd@pumpkin>
+User-Agent: Mozilla Thunderbird
+Subject: Re: [PATCH 01/11] of: Add for_each_compatible_node_scoped() helper
+To: Rob Herring <robh@kernel.org>
+Cc: Miguel Ojeda <ojeda@kernel.org>, Saravana Kannan <saravanak@google.com>,
+        Nathan Chancellor <nathan@kernel.org>,
+        Nick Desaulniers <nick.desaulniers+lkml@gmail.com>,
+        Bill Wendling <morbo@google.com>,
+        Justin Stitt <justinstitt@google.com>,
+        Russell King <linux@armlinux.org.uk>,
+        Nicolas Ferre <nicolas.ferre@microchip.com>,
+        Alexandre Belloni <alexandre.belloni@bootlin.com>,
+        Claudiu Beznea <claudiu.beznea@tuxon.dev>,
+        Krzysztof Kozlowski <krzk@kernel.org>,
+        Alim Akhtar
+ <alim.akhtar@samsung.com>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>,
+        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+        Nipun Gupta <nipun.gupta@amd.com>,
+        Nikhil Agarwal <nikhil.agarwal@amd.com>,
+        Abel Vesa <abelvesa@kernel.org>, Peng Fan <peng.fan@nxp.com>,
+        Michael Turquette <mturquette@baylibre.com>,
+        Stephen Boyd
+ <sboyd@kernel.org>, Shawn Guo <shawnguo@kernel.org>,
+        Sascha Hauer <s.hauer@pengutronix.de>,
+        Pengutronix Kernel Team <kernel@pengutronix.de>,
+        Fabio Estevam <festevam@gmail.com>, Vinod Koul <vkoul@kernel.org>,
+        Sylwester Nawrocki <s.nawrocki@samsung.com>,
+        Mauro Carvalho Chehab <mchehab@kernel.org>,
+        "Rafael J. Wysocki" <rafael@kernel.org>,
+        Viresh Kumar <viresh.kumar@linaro.org>, linux-kernel@vger.kernel.org,
+        devicetree@vger.kernel.org, llvm@lists.linux.dev,
+        linux-arm-kernel@lists.infradead.org,
+        linux-samsung-soc@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
+        linux-clk@vger.kernel.org, imx@lists.linux.dev,
+        dmaengine@vger.kernel.org, linux-media@vger.kernel.org,
+        linux-pm@vger.kernel.org,
+        Jonathan Cameron <jonathan.cameron@huawei.com>
+References: <20260105-of-for-each-compatible-scoped-v1-0-24e99c177164@oss.qualcomm.com>
+ <20260105-of-for-each-compatible-scoped-v1-1-24e99c177164@oss.qualcomm.com>
+ <20260105223644.GA3633916-robh@kernel.org>
+From: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+Content-Language: en-US
+Autocrypt: addr=krzysztof.kozlowski@oss.qualcomm.com; keydata=
+ xsFNBFVDQq4BEAC6KeLOfFsAvFMBsrCrJ2bCalhPv5+KQF2PS2+iwZI8BpRZoV+Bd5kWvN79
+ cFgcqTTuNHjAvxtUG8pQgGTHAObYs6xeYJtjUH0ZX6ndJ33FJYf5V3yXqqjcZ30FgHzJCFUu
+ JMp7PSyMPzpUXfU12yfcRYVEMQrmplNZssmYhiTeVicuOOypWugZKVLGNm0IweVCaZ/DJDIH
+ gNbpvVwjcKYrx85m9cBVEBUGaQP6AT7qlVCkrf50v8bofSIyVa2xmubbAwwFA1oxoOusjPIE
+ J3iadrwpFvsZjF5uHAKS+7wHLoW9hVzOnLbX6ajk5Hf8Pb1m+VH/E8bPBNNYKkfTtypTDUCj
+ NYcd27tjnXfG+SDs/EXNUAIRefCyvaRG7oRYF3Ec+2RgQDRnmmjCjoQNbFrJvJkFHlPeHaeS
+ BosGY+XWKydnmsfY7SSnjAzLUGAFhLd/XDVpb1Een2XucPpKvt9ORF+48gy12FA5GduRLhQU
+ vK4tU7ojoem/G23PcowM1CwPurC8sAVsQb9KmwTGh7rVz3ks3w/zfGBy3+WmLg++C2Wct6nM
+ Pd8/6CBVjEWqD06/RjI2AnjIq5fSEH/BIfXXfC68nMp9BZoy3So4ZsbOlBmtAPvMYX6U8VwD
+ TNeBxJu5Ex0Izf1NV9CzC3nNaFUYOY8KfN01X5SExAoVTr09ewARAQABzTpLcnp5c3p0b2Yg
+ S296bG93c2tpIDxrcnp5c3p0b2Yua296bG93c2tpQG9zcy5xdWFsY29tbS5jb20+wsGXBBMB
+ CgBBFiEEm9B+DgxR+NWWd7dUG5NDfTtBYpsFAmkknB4CGwMFCRaWdJoFCwkIBwICIgIGFQoJ
+ CAsCBBYCAwECHgcCF4AACgkQG5NDfTtBYpuCRw/+J19mfHuaPt205FXRSpogs/WWdheqNZ2s
+ i50LIK7OJmBQ8+17LTCOV8MYgFTDRdWdM5PF2OafmVd7CT/K4B3pPfacHATtOqQFHYeHrGPf
+ 2+4QxUyHIfx+Wp4GixnqpbXc76nTDv+rX8EbAB7e+9X35oKSJf/YhLFjGOD1Nl/s1WwHTJtQ
+ a2XSXZ2T9HXa+nKMQfaiQI4WoFXjSt+tsAFXAuq1SLarpct4h52z4Zk//ET6Xs0zCWXm9HEz
+ v4WR/Q7sycHeCGwm2p4thRak/B7yDPFOlZAQNdwBsnCkoFE1qLXI8ZgoWNd4TlcjG9UJSwru
+ s1WTQVprOBYdxPkvUOlaXYjDo2QsSaMilJioyJkrniJnc7sdzcfkwfdWSnC+2DbHd4wxrRtW
+ kajTc7OnJEiM78U3/GfvXgxCwYV297yClzkUIWqVpY2HYLBgkI89ntnN95ePyTnLSQ8WIZJk
+ ug0/WZfTmCxX0SMxfCYt36QwlWsImHpArS6xjTvUwUNTUYN6XxYZuYBmJQF9eLERK2z3KUeY
+ 2Ku5ZTm5axvlraM0VhUn8yv7G5Pciv7oGXJxrA6k4P9CAvHYeJSTXYnrLr/Kabn+6rc0my/l
+ RMq9GeEUL3LbIUadL78yAtpf7HpNavYkVureuFD8xK8HntEHySnf7s2L28+kDbnDi27WR5kn
+ u/POwU0EVUNcNAEQAM2StBhJERQvgPcbCzjokShn0cRA4q2SvCOvOXD+0KapXMRFE+/PZeDy
+ fv4dEKuCqeh0hihSHlaxTzg3TcqUu54w2xYskG8Fq5tg3gm4kh1Gvh1LijIXX99ABA8eHxOG
+ mLPRIBkXHqJYoHtCvPc6sYKNM9xbp6I4yF56xVLmHGJ61KaWKf5KKWYgA9kfHufbja7qR0c6
+ H79LIsiYqf92H1HNq1WlQpu/fh4/XAAaV1axHFt/dY/2kU05tLMj8GjeQDz1fHas7augL4ar
+ gt4e+jum3NwtyupodQBxncKAUbzwKcDrPqUFmfRbJ7ARw8491xQHZDsP82JRj4cOJX32sBg8
+ nO2N5OsFJOcd5IE9v6qfllkZDAh1Rb1h6DFYq9dcdPAHl4zOj9EHq99/CpyccOh7SrtWDNFF
+ knCmLpowhct95ZnlavBrDbOV0W47gO33WkXMFI4il4y1+Bv89979rVYn8aBohEgET41SpyQz
+ 7fMkcaZU+ok/+HYjC/qfDxT7tjKXqBQEscVODaFicsUkjheOD4BfWEcVUqa+XdUEciwG/SgN
+ yxBZepj41oVqFPSVE+Ni2tNrW/e16b8mgXNngHSnbsr6pAIXZH3qFW+4TKPMGZ2rZ6zITrMi
+ p+12jgw4mGjy5y06JZvA02rZT2k9aa7i9dUUFggaanI09jNGbRA/ABEBAAHCwXwEGAEKACYC
+ GwwWIQSb0H4ODFH41ZZ3t1Qbk0N9O0FimwUCaBdQXwUJFpZbKgAKCRAbk0N9O0Fim07TD/92
+ Vcmzn/jaEBcqyT48ODfDIQVvg2nIDW+qbHtJ8DOT0d/qVbBTU7oBuo0xuHo+MTBp0pSTWbTh
+ LsSN1AuyP8wFKChC0JPcwOZZRS0dl3lFgg+c+rdZUHjsa247r+7fvm2zGG1/u+33lBJgnAIH
+ 5lSCjhP4VXiGq5ngCxGRuBq+0jNCKyAOC/vq2cS/dgdXwmf2aL8G7QVREX7mSl0x+CjWyrpF
+ c1D/9NV/zIWBG1NR1fFb+oeOVhRGubYfiS62htUQjGLK7qbTmrd715kH9Noww1U5HH7WQzeP
+ t/SvC0RhQXNjXKBB+lwwM+XulFigmMF1KybRm7MNoLBrGDa3yGpAkHMkJ7NM4iSMdSxYAr60
+ RtThnhKc2kLIzd8GqyBh0nGPIL+1ZVMBDXw1Eu0/Du0rWt1zAKXQYVAfBLCTmkOnPU0fjR7q
+ VT41xdJ6KqQMNGQeV+0o9X91X6VBeK6Na3zt5y4eWkve65DRlk1aoeBmhAteioLZlXkqu0pZ
+ v+PKIVf+zFKuh0At/TN/618e/QVlZPbMeNSp3S3ieMP9Q6y4gw5CfgiDRJ2K9g99m6Rvlx1q
+ wom6QbU06ltbvJE2K9oKd9nPp1NrBfBdEhX8oOwdCLJXEq83vdtOEqE42RxfYta4P3by0BHp
+ cwzYbmi/Et7T2+47PN9NZAOyb771QoVr8A==
+In-Reply-To: <20260105223644.GA3633916-robh@kernel.org>
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 7bit
+X-Proofpoint-GUID: IjaReVwCsyxznI6UFj3OlbrHsYsgRZJu
+X-Authority-Analysis: v=2.4 cv=fOw0HJae c=1 sm=1 tr=0 ts=695cb580 cx=c_pps
+ a=mPf7EqFMSY9/WdsSgAYMbA==:117 a=Eb9f15NH/cHKzfGOmZSO4Q==:17
+ a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=s4-Qcg_JpJYA:10
+ a=VkNPw1HP01LnGYTKEx00:22 a=i0EeH86SAAAA:8 a=EUspDBNiAAAA:8
+ a=o3VLu0Hs6I0nX9ffGz0A:9 a=QEXdDO2ut3YA:10 a=dawVfQjAaf238kedN5IG:22
+X-Proofpoint-ORIG-GUID: IjaReVwCsyxznI6UFj3OlbrHsYsgRZJu
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTA2MDA1OSBTYWx0ZWRfX7eXRSq8FQv6q
+ 08iJB2cmraT8nohEfIUt7/26k4/AD43+x84d4L0Be4ndjXEnn/b0/1oKD/vLI5MbnSaWwJWTAbr
+ Hi2vrzNqSGN7AFMRqApWFFSHRlnXuFpJ+VhNm71C99XJwL5KvIHL998AfrH5jcwCtOwccFg1h2o
+ rnW67F6EcNWQEvOPV92qyN7H6fJ5jstH3yZ4i0dY9MDWFMa7V4xG0jP1qriBw6ZGzjFXS9mLexM
+ eMMv6E7mk3A1gs1Y8TS9Uu7ffsbne9kTvteorlAew79l506Vu9dWm/JBmoMuzTblaaqNkj0BGwG
+ TN/DLkao91lRkHoCF3sA9cAq87+dBfAmlZIbpKjJeO/kOH8aoArnYJjAxY7DvxWHdRAvuvtgscZ
+ tpObC0uwdUL1iZHTbG3F0iUXEvDTy2/dn6AI6Tzjt8PNRBp0ztmXt5B2cBM72lngkU+dGinJdsk
+ UCuTUoA/2N85OwiSQrA==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2026-01-05_02,2026-01-05_01,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 priorityscore=1501 suspectscore=0 bulkscore=0 malwarescore=0
+ lowpriorityscore=0 adultscore=0 phishscore=0 spamscore=0 impostorscore=0
+ classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
+ reason=mlx scancount=1 engine=8.22.0-2512120000 definitions=main-2601060059
 
-On Mon, Jan 05, 2026 at 07:05:03PM +0000, David Laight wrote:
-> On Mon, 5 Jan 2026 15:40:22 +0000
-> Andrew Cooper <andrew.cooper3@citrix.com> wrote:
+On 05/01/2026 23:36, Rob Herring wrote:
+> On Mon, Jan 05, 2026 at 02:33:39PM +0100, Krzysztof Kozlowski wrote:
+>> Just like looping through children and available children, add a scoped
+>> helper for for_each_compatible_node() so error paths can drop
+>> of_node_put() leading to simpler code.
+>>
+>> Suggested-by: Jonathan Cameron <jonathan.cameron@huawei.com>
+>> Signed-off-by: Krzysztof Kozlowski <krzysztof.kozlowski@oss.qualcomm.com>
+>>
+>> ---
+>>
+>> Prerequisite for all further patches.
+>> ---
+>>  .clang-format      | 1 +
+>>  include/linux/of.h | 7 +++++++
+>>  2 files changed, 8 insertions(+)
 > 
-> > >  	/* Most significant octet of plaintextData corresponds to data[0] */
-> > >  	swap_buf(r, data, 16);
-> > >  
-> > > - aes_encrypt(&ctx, data, data); + aes_encrypt_new(&aes, data, data);  
-> > 
-> > One thing you might want to consider, which reduces the churn in the series.
-> > 
-> > You can use _Generic() to do type-based dispatch on the first pointer. 
-> > Something like this:
-> > 
-> > void aes_encrypt(const struct crypto_aes_ctx *ctx, u8 *out, const u8 *in);
-> > void aes_encrypt_new(aes_encrypt_arg key, u8 out[at_least AES_BLOCK_SIZE],
-> >              const u8 in[at_least AES_BLOCK_SIZE]);
-> > 
-> > #define aes_encrypt(ctx, out, in)                                       \
-> >     _Generic(ctx,                                                       \
-> >              const struct crypto_aes_ctx *: aes_encrypt(ctx, out, in),  \
-> >              aes_encrypt_arg: aes_encrypt_new(ctx, out, in))
-> > 
-> > 
-> > i.e. it keeps the _new()-ism in a single header, without needing to
-> > change the drivers a second time.
-> 
-> You'll need to cast the 'ctx' argument in both calls.
-> All the code in an _Generic() must compile cleanly in all the cases.
-> (Totally annoying....)
-> 
-> 	David
+> You need to update scripts/dtc/dt-extract-compatibles
 
-It seems it would actually have to be:
+Right, ack.
 
-#define aes_encrypt(key, out, in) \
-_Generic(key, \
-	 struct crypto_aes_ctx *: aes_encrypt_old((const struct crypto_aes_ctx *)key, out, in), \
-	 const struct crypto_aes_ctx *: aes_encrypt_old((const struct crypto_aes_ctx *)key, out, in), \
-	 struct aes_enckey *: aes_encrypt_new((const struct aes_enckey *)key, out, in), \
-	 const struct aes_enckey *: aes_encrypt_new((const struct aes_enckey *)key, out, in), \
-	 struct aes_key *: aes_encrypt_new((const struct aes_key *)key, out, in), \
-	 const struct aes_key *: aes_encrypt_new((const struct aes_key *)key, out, in))
-
-#define aes_decrypt(key, out, in) \
-_Generic(key, \
-	 struct crypto_aes_ctx *: aes_decrypt_old((const struct crypto_aes_ctx *)key, out, in), \
-	 const struct crypto_aes_ctx *: aes_decrypt_old((const struct crypto_aes_ctx *)key, out, in), \
-	 struct aes_key *: aes_decrypt_new((const struct aes_key *)key, out, in), \
-	 const struct aes_key *: aes_decrypt_new((const struct aes_key *)key, out, in))
-
-Note that both const and non-const args need to be handled.
-
-It also doesn't work for any callers passing a 'void *' or
-'const void *' and relying on an implicit cast.  I didn't notice any,
-but that needs to be considered too.
-
-I guess maybe it would still be worth it to avoid the "*_new" name
-temporarily leaking into too many files.  (It goes away by the end of
-the series anyway.)  It's just not quite as simple as you're suggesting,
-and all the callers have to be checked for compatibility with it.
-
-- Eric
+Best regards,
+Krzysztof
 
