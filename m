@@ -1,70 +1,70 @@
-Return-Path: <linuxppc-dev+bounces-15377-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15378-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2DE47CF6C1B
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jan 2026 09:23:50 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 2F8C6CD5829
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jan 2026 10:02:44 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dmMzS55fSz2yMv;
-	Wed, 07 Jan 2026 20:23:48 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767777828;
-	cv=none; b=HRRpYp7PYxdNqObcqvwU7iV2QihdJBzt8AFyD/L2eOMUlE+ou764P8JmGuH32Vzeyawm0ftmWFjYq0HXQvGrMQofPQtyZ3L7KIs/fKTUDeqN000vHe0L1gx0uUis3iaFrzW2U+kecrU6MSY2lwspdmPqW1xDCHDaHu4oiDwhGA8IBxln93VJSHZBrz/+lNV5zbUZS0mTSdvBMY16/MAi5LjH0AZjhiZZHI41Px+SLU6RhzZgDSqIOtkIqIT1xE6cjg91o00lECGP2GrskaPjk3Tx6TfOBAGH1FrkLAsAPaJ3rc4hwiT5fz7dpQBvHb2IwuG3ngn+Z23ULgjotT//QQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dmNrL4GFdz2xZK;
+	Wed, 07 Jan 2026 21:02:42 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=193.142.43.55
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767780162;
+	cv=none; b=VdP1mBoMUlwwjjODTHGGqI1mYj1VOHJXrVu4LmX7AqPq7+nvPsI1kEn3RV4csf+RaJq/EnUYXh7D3XzZvTOTP9Mlbta9Kgl6hrwiS/qQ6k+ADivVZJ+jPCASTtpyeEgO7D3WihE4I9rP3ekwC+jOKxdBG/HTN5uNz/oecSfJeqMYhI9jLiPgsZ+8fDuczi/fagAdbhQ9OEnkV7fIAIJR1pnmMcS3T6tlcrTQVStjEXNBmmpNAjjEiefw2PktNCh6LhNJkiu4UgBAmfZPr/nOoPKx1GZUITVSk2dLp/ORmmyOcoe1/gVCkC/rKVIO6l7L3nueMO2cZou62IgqmaEbSg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767777828; c=relaxed/relaxed;
-	bh=D74NZhmkxNvjfZirK4yhA980pC1krzYCuzfLlGYAVyo=;
-	h=Message-ID:Date:MIME-Version:From:To:Subject:Cc:Content-Type; b=g7nphLCwPTBB53Z4/gumWuK10IaKn+iiXpx/P0ssU4TVsJWcGi5i4HjdNFjKeRrjmjuZ+2juVwJamCGaXOphZPl9TmLbv5bYH25MNPP71x+VPmdQEuGfh7qUUF9iK2UWyMjYjwiCLaXmJY/KoOus21x7dMHKuwkQqCJSDV/OWy25cVa6O9Eoq++wHHxJ0g7oprQbYJaY9OzzI9CR6SB/TUsLcYji64W+t7RrI/ma+o5Hg2ho5oZrJkHlR7qhKPw+WQ1JXeWsVxnXU+sAyKIWmyqNUrYkf2PZCoQ283DvG7QhMhRx1Gc+1D+lmB9tGluvnv3/1nomnFR5S3Zet0PLHQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tiGcg12L; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1767780162; c=relaxed/relaxed;
+	bh=Qbwx1guxAlbBYM+NGSyz5ENZkElfMSx+ICTxeCbRCcE=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version; b=Gg07wHy24V1HdGayEszejs2DyCrvb81yokNUFhwuTk53LHk46Q+huon9SrL5WVNknYRqM1tbhcIH4YspZCHDfjEAL0MNkjqTTb7s5ttMvzxl59P1FJLscTku3arvzgHhLC19SbAIwT4wzIl2Ebg7S7P0L+ys4hM/OkPoh9VWpOzcNhNbKyIFXflX8fKhXsJz7TQxCFfxeP0kSJYTFgll8nBOoScyEMltGVmf1VCIOJZQn+ScgWxI3aZOikfJmtl0mK/9FB3e4LlQifLRIbi5KCWppzd+gWpDh0CD8vsDDkhTlmFFnMAFFZhVt2kCnVQQwKdUjdVYRBk+oMyud/3oeA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de; dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=uxsTslS5; dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vqMMvItA; dkim-atps=neutral; spf=pass (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=namcao@linutronix.de; receiver=lists.ozlabs.org) smtp.mailfrom=linutronix.de
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linutronix.de
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=tiGcg12L;
+	dkim=pass (2048-bit key; secure) header.d=linutronix.de header.i=@linutronix.de header.a=rsa-sha256 header.s=2020 header.b=uxsTslS5;
+	dkim=pass header.d=linutronix.de header.i=@linutronix.de header.a=ed25519-sha256 header.s=2020e header.b=vqMMvItA;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=sshegde@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linutronix.de (client-ip=193.142.43.55; helo=galois.linutronix.de; envelope-from=namcao@linutronix.de; receiver=lists.ozlabs.org)
+Received: from galois.linutronix.de (Galois.linutronix.de [193.142.43.55])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmMzR70l0z2yGQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jan 2026 20:23:47 +1100 (AEDT)
-Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 606HpTrj009924;
-	Wed, 7 Jan 2026 09:23:44 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:message-id
-	:mime-version:subject:to; s=pp1; bh=D74NZhmkxNvjfZirK4yhA980pC1k
-	rzYCuzfLlGYAVyo=; b=tiGcg12LrmZOpWM28ExKhuZNiMi/5JI7srC8kI8GBwWa
-	EzIzYxF8dNbMrvJtL8pg1nEmgdo3FkPXEX2WQCjXVRS7E9etx553HgctpEUIE7kw
-	oqnmo+nRhPdlKXGKEUlvWgsDKDGEzH0xfc+y6Vfj7Vy1FXctbHIxoxGZz4Gvvw4t
-	Tf7ykLVa85AmGjseJDNq7vvjAbtQt+WHMASYuRr55DJrmC5k3tvUkz5lQbhfByG2
-	HaF7dGyJRR3P2O0G06kqGbZOuOANrsoaM7Pyyb0ICQJ+kaHs4b6eOVHOuU3tiiYI
-	cvxj+n5/EpkEcuu7aCLKRqn71UQPaYcW0SG4lZstEQ==
-Received: from ppma22.wdc07v.mail.ibm.com (5c.69.3da9.ip4.static.sl-reverse.com [169.61.105.92])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4betsq8229-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 Jan 2026 09:23:44 +0000 (GMT)
-Received: from pps.filterd (ppma22.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma22.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60771rcB023487;
-	Wed, 7 Jan 2026 09:23:43 GMT
-Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
-	by ppma22.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4bg3rmcu3a-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 Jan 2026 09:23:42 +0000
-Received: from smtpav02.fra02v.mail.ibm.com (smtpav02.fra02v.mail.ibm.com [10.20.54.101])
-	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6079NcQa30409112
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 7 Jan 2026 09:23:38 GMT
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id BAA832004B;
-	Wed,  7 Jan 2026 09:23:38 +0000 (GMT)
-Received: from smtpav02.fra02v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 4FDA520040;
-	Wed,  7 Jan 2026 09:23:37 +0000 (GMT)
-Received: from [9.124.216.12] (unknown [9.124.216.12])
-	by smtpav02.fra02v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  7 Jan 2026 09:23:37 +0000 (GMT)
-Message-ID: <2a71b853-f461-4327-8d44-ef97564b2b91@linux.ibm.com>
-Date: Wed, 7 Jan 2026 14:53:36 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmNrK04rqz2xLR
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jan 2026 21:02:40 +1100 (AEDT)
+From: Nam Cao <namcao@linutronix.de>
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020; t=1767780158;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=Qbwx1guxAlbBYM+NGSyz5ENZkElfMSx+ICTxeCbRCcE=;
+	b=uxsTslS5EZMVtyPpJcaifJz8HoSgh8luxmkRgBDN3NjEFU5ShaUhAcX+Pig5EqiRfttRF8
+	WIDWR6I14fFP5/8bhF1du2Qlt3CHXF7FH7i7DeH0a+A7AXq+xyvdL37EWjz7hvPX0Renmu
+	WDPe6jTYQJd9bv4nI5qRbGfj8Eb5c0j9lHhKroO7gC6vkrInym3DCThHRNkq+TWBEzy4Np
+	GKtP5Tdfj68JxoPxTw7uzCqzKjM2U+CSAFrBaKauTHgflu48SsNyW7lI3P2lwS097CCML5
+	+ttzPaVOI3e6EXsMmhgP77WKv/KhCbM6wv7F+hw4MMEd2bzFfXnKmQ9meM6uDQ==
+DKIM-Signature: v=1; a=ed25519-sha256; c=relaxed/relaxed; d=linutronix.de;
+	s=2020e; t=1767780158;
+	h=from:from:reply-to:subject:subject:date:date:message-id:message-id:
+	 to:to:cc:cc:mime-version:mime-version:
+	 content-transfer-encoding:content-transfer-encoding;
+	bh=Qbwx1guxAlbBYM+NGSyz5ENZkElfMSx+ICTxeCbRCcE=;
+	b=vqMMvItA0GqmSzUiH63sQjCqgkGfq9XPIteOxXjS6u/nYhP2eLEZilxTzAyAeZSKW9gDxa
+	LZXgY6lrKE42Y0BQ==
+To: Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Christophe Leroy <christophe.leroy@csgroup.eu>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	maz@kernel.org,
+	gautam@linux.ibm.com,
+	Gregory Joyce <gjoyce@ibm.com>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org
+Cc: Nam Cao <namcao@linutronix.de>,
+	Nilay Shroff <nilay@linux.ibm.com>,
+	stable@vger.kernel.org
+Subject: [PATCH v2] powerpc/pseries: Fix MSI-X allocation failure when quota is exceeded
+Date: Wed,  7 Jan 2026 10:02:30 +0000
+Message-ID: <20260107100230.1466093-1-namcao@linutronix.de>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,127 +78,171 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Content-Language: en-US
-From: Shrikanth Hegde <sshegde@linux.ibm.com>
-To: Madhavan Srinivasan <maddy@linux.ibm.com>,
-        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>
-Subject: powerpc: BUG: Kernel NULL pointer when running with bcc tools
-Cc: Ritesh Harjani <riteshh@linux.ibm.com>,
-        Athira Rajeev <atrajeev@linux.ibm.com>,
-        Venkat Rao Bagalkote <venkat88@linux.ibm.com>, hbathini@linux.ibm.com,
-        "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
-X-TM-AS-GCONF: 00
-X-Proofpoint-GUID: shIAPMnyxN0deH0xMKhh3igadqGm-qHJ
-X-Authority-Analysis: v=2.4 cv=Jvf8bc4C c=1 sm=1 tr=0 ts=695e2620 cx=c_pps
- a=5BHTudwdYE3Te8bg5FgnPg==:117 a=5BHTudwdYE3Te8bg5FgnPg==:17
- a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=VwQbUJbxAAAA:8 a=VnNF1IyMAAAA:8 a=Ta_QHltgBEVBiHhf9-EA:9 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: shIAPMnyxN0deH0xMKhh3igadqGm-qHJ
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTA3MDA3NSBTYWx0ZWRfX+TesCD0raQ/c
- of2pA8lMMHi9Wh2yXzv9bNFRCEH5j/y1bhSqr2ZkGY+ERzKdZvXtJbpzwEgdHKs+//bYurNwnss
- EhSGNfnW+72Fq7UBRvL3cLAp71fO5kQp4KCgV86+FsNu5Ix/yIif0HAs8VkbRE1S0XTmeq/dib3
- R2O+cKj72YKOawKmq3cYgNLKfoeeuEDES1SrrXy+TZNIAB+fY+0o9W2nMOdiTbmRWry9Ghm1OMg
- 3g8FB4pLZl5/gKMfaju2Fne1gcU5YH29qxl0or88oAnsuqHhamubgculTI/ib0Np7N69CzW5wgz
- E0oc//1zfLgizNkzi6C97X0k3KMsUN0fIj7yu2zoF6gWf8jRaVEuJGmC5bKSEQOs4/NJ2m6UK60
- nR+qo/tuiP7Zmim522vt6a9+tV6R6pQdI3t4cGS1L/BIjZFYr9oPmf0fiCKp26mx05o/91gVukb
- f+cW4ptDzCYHZ/gKTew==
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2026-01-06_03,2026-01-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- clxscore=1015 suspectscore=0 impostorscore=0 lowpriorityscore=0
- priorityscore=1501 phishscore=0 adultscore=0 spamscore=0 bulkscore=0
- malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
- route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2512120000
- definitions=main-2601070075
+Content-Transfer-Encoding: quoted-printable
 
-Hello.
+Nilay reported that since commit daaa574aba6f ("powerpc/pseries/msi: Switch
+to msi_create_parent_irq_domain()"), the NVMe driver cannot enable MSI-X
+when the device's MSI-X table size is larger than the firmware's MSI quota
+for the device.
 
-While doing some tracing, observed this kernel panic on powerpc.
+This is because the commit changes how rtas_prepare_msi_irqs() is called:
 
-It is quite easy reproduce this.
-- keep it preempt=full/lazy
-- enable some bcc tools. for example: ./stackcount nohz_balance_exit_idle
-- Run some workload such as "hackbench 10 process 1000 loops"
+  - Before, it is called when interrupts are allocated at the global
+    interrupt domain with nvec_in being the number of allocated interrupts.
+    rtas_prepare_msi_irqs() can return a positive number and the allocation
+    will be retried.
 
-I remember seeing this across other bcc tools.
+  - Now, it is called at the creation of per-device interrupt domain with
+    nvec_in being the number of interrupts that the device supports. If
+    rtas_prepare_msi_irqs() returns positive, domain creation just fails.
 
+For Nilay's NVMe driver case, rtas_prepare_msi_irqs() returns a positive
+number (the quota). This causes per-device interrupt domain creation to
+fail and thus the NVMe driver cannot enable MSI-X.
 
+Rework to make this scenario works again:
 
-Seen this on tip/master:
-commit 5d3b0106245d467fd5ba0bd9a373a13356684f6e (HEAD -> master, origin/master, origin/HEAD)
-Merge: 93368366738f e21279b73ef6
-Author: Ingo Molnar <mingo@kernel.org>
-Date:   Tue Jan 6 09:04:47 2026 +0100
+  - pseries_msi_ops_prepare() only prepares as many interrupts as the quota
+    permit.
 
-     Merge branch into tip/master: 'x86/sev'
+  - pseries_irq_domain_alloc() fails if the device's quota is exceeded.
 
+Now, if the quota is exceeded, pseries_msi_ops_prepare() will only prepare
+as allowed by the quota. If device drivers attempt to allocate more
+interrupts than the quota permits, pseries_irq_domain_alloc() will return
+an error code and msi_handle_pci_fail() will allow device drivers a retry.
 
+Reported-by: Nilay Shroff <nilay@linux.ibm.com>
+Closes: https://lore.kernel.org/linuxppc-dev/6af2c4c2-97f6-4758-be33-256638=
+ef39e5@linux.ibm.com/
+Fixes: daaa574aba6f ("powerpc/pseries/msi: Switch to msi_create_parent_irq_=
+domain()")
+Signed-off-by: Nam Cao <namcao@linutronix.de>
+Acked-by: Nilay Shroff <nilay@linux.ibm.com>
+Cc: stable@vger.kernel.org
+---
+v2:
+  - change pseries_msi_ops_prepare()'s allocation logic to match the
+    original logic in __pci_enable_msix_range()
 
-Panic log:
-  attempted to read user page (6b8) - exploit attempt? (uid: 0)
-  BUG: Kernel NULL pointer dereference on read at 0x000006b8
-  Faulting instruction address: 0xc00000000013cf10
-  Oops: Kernel access of bad area, sig: 11 [#1]
-  CPU: 38 UID: 0 PID: 2938 Comm: hackbench Kdump: loaded Not tainted 6.19.0-rc4+ #326 PREEMPT(full)
-  NIP:  c00000000013cf10 LR: c00000000013ced0 CTR: c0000000004a7f08
-  REGS: c0000000a7f96b60 TRAP: 0300   Not tainted  (6.19.0-rc4+)
-  MSR:  8000000000001033 <SF,ME,IR,DR,RI,LE>  CR: 88022828  XER: 20040000
-  CFAR: c00000000050490c DAR: 00000000000006b8 DSISR: 40000000 IRQMASK: 3
-  GPR00: c00000000013ced0 c0000000a7f96e00 c000000001c38100 0000000000000000
-  GPR04: 00007fffda01fea8 0000000000000008 0000000000000000 00007fff94f05e84
-  GPR08: c0000000a7f90000 0000000000000000 00007fffda0205d0 0000000000004000
-  GPR12: c000000002dbdddc c0000017fd891c80 c0000000001e08f4 0000000000000000
-  GPR16: 0000000000000000 0000000000000000 0000000000000000 00000d9842ecbda0
-  GPR20: c0000000c5c54a00 0000000000000026 0000000000000000 0000000000000000
-  GPR24: 0000000000000001 fffffffffffffe00 c0000000c5c54a00 000ffffffffffff8
-  GPR28: 00007fffffffffdf 0000000000000000 00007fffda01fea0 c0000000a7f96ef0
-  NIP [c00000000013cf10] perf_callchain_user_64+0x1b0/0x4f0
-  LR [c00000000013ced0] perf_callchain_user_64+0x170/0x4f0
-  Call Trace:
-  perf_callchain_user_64+0x170/0x4f0 (unreliable)
-  perf_callchain_user+0x20/0x3c
-  get_perf_callchain+0x1b0/0x3dc
-  bpf_get_stackid+0x94/0xec
-  bpf_prog_1ca8f9c0bc38eaa6_trace_count+0x70/0x1bc
-  trace_call_bpf+0x124/0x3c4
-  kprobe_perf_func+0x54/0x2f8
-  kprobe_ftrace_handler+0x1dc/0x298
-  ftrace_regs_call+0x4/0xa0
-  nohz_balance_exit_idle+0x10/0x120
-  nohz_balancer_kick+0x50/0x3e4
-  sched_tick+0x140/0x334
-  update_process_times+0xf0/0x144
-  tick_nohz_handler+0xc4/0x274
-  __hrtimer_run_queues+0x1c4/0x480
-  hrtimer_interrupt+0x12c/0x30c
-  timer_interrupt+0x140/0x394
-  __replay_soft_interrupts+0xa0/0x154
-  arch_local_irq_restore.part.0+0x1ac/0x224
-  _raw_spin_unlock_irqrestore+0x50/0xa0
-  try_to_wake_up+0x3e8/0xa58
-  wake_up_q+0x88/0xe4
-  rwsem_wake.isra.0+0x98/0xd8
-  up_write+0xa8/0xb4
-  unlink_file_vma_batch_process+0xc8/0xf0
-  unlink_file_vma_batch_add+0x5c/0xa4
-  free_pgtables+0x110/0x394
-  exit_mmap+0x1a0/0x5a8
-  __mmput+0x64/0x194
-  exit_mm+0xe0/0x170
-  do_exit+0x21c/0x5d0
-  do_group_exit+0x4c/0xc0
-  pid_child_should_wake+0x0/0x7c
-  system_call_exception+0x128/0x390
-  system_call_vectored_common+0x15c/0x2ec
+  - fix up Nilay's email address
+---
+ arch/powerpc/platforms/pseries/msi.c | 44 ++++++++++++++++++++++++++--
+ 1 file changed, 41 insertions(+), 3 deletions(-)
 
+diff --git a/arch/powerpc/platforms/pseries/msi.c b/arch/powerpc/platforms/=
+pseries/msi.c
+index a82aaa786e9e..edc30cda5dbc 100644
+--- a/arch/powerpc/platforms/pseries/msi.c
++++ b/arch/powerpc/platforms/pseries/msi.c
+@@ -19,6 +19,11 @@
+=20
+ #include "pseries.h"
+=20
++struct pseries_msi_device {
++	unsigned int msi_quota;
++	unsigned int msi_used;
++};
++
+ static int query_token, change_token;
+=20
+ #define RTAS_QUERY_FN		0
+@@ -433,8 +438,28 @@ static int pseries_msi_ops_prepare(struct irq_domain *=
+domain, struct device *dev
+ 	struct msi_domain_info *info =3D domain->host_data;
+ 	struct pci_dev *pdev =3D to_pci_dev(dev);
+ 	int type =3D (info->flags & MSI_FLAG_PCI_MSIX) ? PCI_CAP_ID_MSIX : PCI_CA=
+P_ID_MSI;
++	int ret;
++
++	struct pseries_msi_device *pseries_dev __free(kfree)
++		=3D kmalloc(sizeof(*pseries_dev), GFP_KERNEL);
++	if (!pseries_dev)
++		return -ENOMEM;
++
++	while (1) {
++		ret =3D rtas_prepare_msi_irqs(pdev, nvec, type, arg);
++		if (!ret)
++			break;
++		else if (ret > 0)
++			nvec =3D ret;
++		else
++			return ret;
++	}
+=20
+-	return rtas_prepare_msi_irqs(pdev, nvec, type, arg);
++	pseries_dev->msi_quota =3D nvec;
++	pseries_dev->msi_used =3D 0;
++
++	arg->scratchpad[0].ptr =3D no_free_ptr(pseries_dev);
++	return 0;
+ }
+=20
+ /*
+@@ -443,9 +468,13 @@ static int pseries_msi_ops_prepare(struct irq_domain *=
+domain, struct device *dev
+  */
+ static void pseries_msi_ops_teardown(struct irq_domain *domain, msi_alloc_=
+info_t *arg)
+ {
++	struct pseries_msi_device *pseries_dev =3D arg->scratchpad[0].ptr;
+ 	struct pci_dev *pdev =3D to_pci_dev(domain->dev);
+=20
+ 	rtas_disable_msi(pdev);
++
++	WARN_ON(pseries_dev->msi_used);
++	kfree(pseries_dev);
+ }
+=20
+ static void pseries_msi_shutdown(struct irq_data *d)
+@@ -546,12 +575,18 @@ static int pseries_irq_domain_alloc(struct irq_domain=
+ *domain, unsigned int virq
+ 				    unsigned int nr_irqs, void *arg)
+ {
+ 	struct pci_controller *phb =3D domain->host_data;
++	struct pseries_msi_device *pseries_dev;
+ 	msi_alloc_info_t *info =3D arg;
+ 	struct msi_desc *desc =3D info->desc;
+ 	struct pci_dev *pdev =3D msi_desc_to_pci_dev(desc);
+ 	int hwirq;
+ 	int i, ret;
+=20
++	pseries_dev =3D info->scratchpad[0].ptr;
++
++	if (pseries_dev->msi_used + nr_irqs > pseries_dev->msi_quota)
++		return -ENOSPC;
++
+ 	hwirq =3D rtas_query_irq_number(pci_get_pdn(pdev), desc->msi_index);
+ 	if (hwirq < 0) {
+ 		dev_err(&pdev->dev, "Failed to query HW IRQ: %d\n", hwirq);
+@@ -567,9 +602,10 @@ static int pseries_irq_domain_alloc(struct irq_domain =
+*domain, unsigned int virq
+ 			goto out;
+=20
+ 		irq_domain_set_hwirq_and_chip(domain, virq + i, hwirq + i,
+-					      &pseries_msi_irq_chip, domain->host_data);
++					      &pseries_msi_irq_chip, pseries_dev);
+ 	}
+=20
++	pseries_dev->msi_used++;
+ 	return 0;
+=20
+ out:
+@@ -582,9 +618,11 @@ static void pseries_irq_domain_free(struct irq_domain =
+*domain, unsigned int virq
+ 				    unsigned int nr_irqs)
+ {
+ 	struct irq_data *d =3D irq_domain_get_irq_data(domain, virq);
+-	struct pci_controller *phb =3D irq_data_get_irq_chip_data(d);
++	struct pseries_msi_device *pseries_dev =3D irq_data_get_irq_chip_data(d);
++	struct pci_controller *phb =3D domain->host_data;
+=20
+ 	pr_debug("%s bridge %pOF %d #%d\n", __func__, phb->dn, virq, nr_irqs);
++	pseries_dev->msi_used -=3D nr_irqs;
+ 	irq_domain_free_irqs_parent(domain, virq, nr_irqs);
+ }
+=20
+--=20
+2.51.0
 
-
-Looks like venkat had reported similar one earlier.
-https://lore.kernel.org/all/49cb29fc-003c-422a-98bd-dee8f13aa0b4@linux.ibm.com/
-
-Venkat, can you give above mentioned steps a try on linux-next latest?
 
