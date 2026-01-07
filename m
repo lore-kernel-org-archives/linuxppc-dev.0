@@ -1,89 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-15387-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15388-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id B1B63CFD652
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jan 2026 15:21:22 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id C9E13D0D141
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jan 2026 17:01:45 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dmWw10FzRz2xbQ;
-	Thu, 08 Jan 2026 02:21:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=pass smtp.remote-ip=40.107.200.36 arc.chain=microsoft.com
-ARC-Seal: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767799280;
-	cv=pass; b=D8vLfEpuFgKlgqATZTL7bPFRIMhB/3qSvS9tm7g9M6ZWxP/6+uzaEgdJpuNMRkV4JhkXNh7JPDFz/AxA+8/wuQkW0dLQXExePspUUtAJsbIXxmz0VusUoBWtg/uoGMYpoVsAMUKyXlH0APnfvqPOmXgA0Q9q/hW54Ab1SAezgINvydK5JgceMlE/cmiND0wVe5MKW/4ytmpg6r20vOwL5PHrL8vWpeo9KpjlEXYxFpCtkb49LrLkhvWdwFWGBwLvgO3P4Ip0yx7KIXU6yUTJ0p06GB1hhMm3qtoo+YX1Z3KZKKd6Il+Mo+AE+oPgW5FJ5N1NMKD6ohX3zBfnW0BZlg==
-ARC-Message-Signature: i=2; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767799280; c=relaxed/relaxed;
-	bh=K55JKBo8dSw8+kcUZWr/YgVVbJyvSrh4tZwzE/8AgfU=;
-	h=Message-ID:Date:Subject:To:Cc:References:From:In-Reply-To:
-	 Content-Type:MIME-Version; b=b3DbEgjxV21Xf3j/OyitMO3UrcTTjQLVWTJVy54DNtLRCgMSjD9FVuwcQA7PiKWW6I4RpFtwcCyfDe0Jtya0sH8rSbg8lBZPqBYEOkVz6u3ViSOXRlyYODIw7FxAGLYGoL/sLEc4Q/Y1HN3wl+pMDHALPEEMhGjgIRqecPI2c+BTimwqyT5r/8zvAoEJBS9VOX+NNfGCxxKLjRlQQce3EvhWzQeDCGd6agT9gC+QfGM929op+e9k+SMmYWu87+W8aXWiztf458c4a7fXoD23npUs5EgrH6qEGvO8Gj+BQoYkd8kIzZfCvn+bG2mlkGILwdnB3dDPpoAJuDw9F7+LMA==
-ARC-Authentication-Results: i=2; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com; dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=D3Ea+CEM; dkim-atps=neutral; spf=pass (client-ip=40.107.200.36; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=christian.koenig@amd.com; receiver=lists.ozlabs.org) smtp.mailfrom=amd.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=amd.com
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dmZ7r2SBDz2xbQ;
+	Thu, 08 Jan 2026 04:01:44 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767805304;
+	cv=none; b=Dh1h0nrZSpFFXWge2DMToNqeakZtyKqjXX2ElPLShSA6qm39BqYI0edUGZcRX8cMz7iHIQRckrEk97DX4C+QM6mh22nYhVu2oaFZj/bhISFyhZQ6RUy5iCiA6RLcYT87OdGb7MjIoA5QIJ4TKJOi0enYAhYg7jSZHrkx1tn1iry5xPLd+BEKWJOVO4lLSgb+F8amGW5/Gc7Ttijw7ouYrebUCKzvgqm9Z/CV1WKAdPP0H2rKS+d5BIsQhYZ6ivzV4mn2adGe/K6o0Gn+kzRmQH4fjYNXf5ofRJzt3A1pNiE+Qq7XzL41LzL+lfdwftOFL6ooPD+d8/GtZqV/NZt6ag==
+ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
+	t=1767805304; c=relaxed/relaxed;
+	bh=/0iHqrG/fSpsyvxbDBih5rtjZl9joKUHq9DpgYqHUFA=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version; b=HfzLaoBRITcWPcCQvcFShQFbRceO6H2ZXvKZ9eEbO8aQIFyIxT3X9fR9l//YvTlFbNrqjgA982ugMkLHwBqwshYAcZ6koJMO/XIEuWFIX9e26TLVvai9EbOT8Y3KOSsp4UklO5wdad9qrpUeSy7KnkztoHGt0+Pq4eQ19uKrAmBtnT63aC8mcdX989iPlawInbbHPVe3z7PXt9ivRcuGBsgEGGfumYbhswIA9kU7+cJXi15yDDiAL61HzchvZKqB/q83a0limPAEUNQas1EGnn9lVJ7Hts3L8mHv+CuGlNkdLvdsVoduRHQj48kWJotKfPQt/pAU+YQ4595CA/8L/w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MVNEKDSb; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=amd.com header.i=@amd.com header.a=rsa-sha256 header.s=selector1 header.b=D3Ea+CEM;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MVNEKDSb;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=amd.com (client-ip=40.107.200.36; helo=ch5pr02cu005.outbound.protection.outlook.com; envelope-from=christian.koenig@amd.com; receiver=lists.ozlabs.org)
-Received: from CH5PR02CU005.outbound.protection.outlook.com (mail-northcentralusazon11012036.outbound.protection.outlook.com [40.107.200.36])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange secp256r1 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmWvz6PfZz2xLR
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jan 2026 02:21:19 +1100 (AEDT)
-ARC-Seal: i=1; a=rsa-sha256; s=arcselector10001; d=microsoft.com; cv=none;
- b=VBAa0UIwlYkGK96F6bwxl2XQ6HPR2Bk9/6AfbU8HFzaEgLnRkDJKMqakzirTBDmSH8iYOM1mG3jdK4MHwtOqBbYVNEiCyniIdu61MVD7BnRzG5pR8yzJ2GDLdIhHnDRQqfRMtvA51IjgdyF6sIMuYUBn6CdjwmzbKPy0XB0KDMA/pga+Vh2L5TmeORo5PyIpP/JavvRp4X3IqXGBHSUO25KaMB4EQtZZkGub9uAOK+kGSLD8eBINnbG/5iD5Ukf4dQvsTxaJco2P90D650yFjqh9dV5rsYT6BKq/2jdWSLIrrcl5YSuOzxg5rPe4M7yG5B3XeC2xcD03KK/tz/1Z/w==
-ARC-Message-Signature: i=1; a=rsa-sha256; c=relaxed/relaxed; d=microsoft.com;
- s=arcselector10001;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-AntiSpam-MessageData-ChunkCount:X-MS-Exchange-AntiSpam-MessageData-0:X-MS-Exchange-AntiSpam-MessageData-1;
- bh=K55JKBo8dSw8+kcUZWr/YgVVbJyvSrh4tZwzE/8AgfU=;
- b=L/v7RAwMLboDY2cPVmF1zuhurM/aFmLEkwXQTukLRM45gJNIGh+wbGUINAcXZDRFAxlVBK+k08I2Y2ctM9GFYmdqgKbpBCUzezSPlwapOOZSd2vrLj5prHKC1/S36R5Ul8PM5OkIvZjw2soTBEFyv/MS5PhEmwqTWWuyUNdHCY7DPsXvmToZwobE1rmVO0ZdQQElEXnMSlYLu2iNCRS/dsor9mtIRJkUrlAJC1yOG2TA7T+l0O3BD6BiK0z7XDI1evCPyxjxw5e6+LQLa8T4o/U+tptIPxOurxuQ9smU0gSr2C+1MdfY/PSuFg7fw7WAmzonqXeUq7LzijyDsA7ktw==
-ARC-Authentication-Results: i=1; mx.microsoft.com 1; spf=pass
- smtp.mailfrom=amd.com; dmarc=pass action=none header.from=amd.com; dkim=pass
- header.d=amd.com; arc=none
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=amd.com; s=selector1;
- h=From:Date:Subject:Message-ID:Content-Type:MIME-Version:X-MS-Exchange-SenderADCheck;
- bh=K55JKBo8dSw8+kcUZWr/YgVVbJyvSrh4tZwzE/8AgfU=;
- b=D3Ea+CEM/jwLSXa2LA/9ZrE0do7p+RxJm9Dk/vp6qVy+opCjFVfdjRlAZLrn4fPvETLEWC25Qwyeg8gZxDKOPNv/wKaDby94wkzHWEXnmjqBf9F1QDtRVwPF+leWsVY/CuXPvoTXXEwX78vCSq0yx/qFUieMyhAKbVFxdNjpSW8=
-Authentication-Results: dkim=none (message not signed)
- header.d=none;dmarc=none action=none header.from=amd.com;
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com (2603:10b6:510:13c::22)
- by DM4PR12MB8500.namprd12.prod.outlook.com (2603:10b6:8:190::14) with
- Microsoft SMTP Server (version=TLS1_2,
- cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id 15.20.9499.2; Wed, 7 Jan
- 2026 15:20:33 +0000
-Received: from PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::46fb:96f2:7667:7ca5]) by PH7PR12MB5685.namprd12.prod.outlook.com
- ([fe80::46fb:96f2:7667:7ca5%4]) with mapi id 15.20.9499.002; Wed, 7 Jan 2026
- 15:20:33 +0000
-Message-ID: <15ec03f3-f0cf-45f7-b7f6-98b075533d3e@amd.com>
-Date: Wed, 7 Jan 2026 16:20:25 +0100
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 3/5] drm/radeon: Raise msi_addr_mask to 40 bits for
- pre-Bonaire
-To: Vivian Wang <wangruikang@iscas.ac.cn>,
- Madhavan Srinivasan <maddy@linux.ibm.com>,
- Michael Ellerman <mpe@ellerman.id.au>, Nicholas Piggin <npiggin@gmail.com>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Alex Deucher <alexander.deucher@amd.com>, David Airlie <airlied@gmail.com>,
- Simona Vetter <simona@ffwll.ch>, Brett Creeley <brett.creeley@amd.com>,
- Andrew Lunn <andrew+netdev@lunn.ch>, "David S. Miller"
- <davem@davemloft.net>, Eric Dumazet <edumazet@google.com>,
- Jakub Kicinski <kuba@kernel.org>, Paolo Abeni <pabeni@redhat.com>,
- Bjorn Helgaas <bhelgaas@google.com>, Jaroslav Kysela <perex@perex.cz>,
- Takashi Iwai <tiwai@suse.com>
-Cc: Han Gao <gaohan@iscas.ac.cn>, linuxppc-dev@lists.ozlabs.org,
- linux-kernel@vger.kernel.org, amd-gfx@lists.freedesktop.org,
- dri-devel@lists.freedesktop.org, netdev@vger.kernel.org,
- linux-pci@vger.kernel.org, linux-sound@vger.kernel.org
-References: <20251224-pci-msi-addr-mask-v1-0-05a6fcb4b4c0@iscas.ac.cn>
- <20251224-pci-msi-addr-mask-v1-3-05a6fcb4b4c0@iscas.ac.cn>
-Content-Language: en-US
-From: =?UTF-8?Q?Christian_K=C3=B6nig?= <christian.koenig@amd.com>
-In-Reply-To: <20251224-pci-msi-addr-mask-v1-3-05a6fcb4b4c0@iscas.ac.cn>
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 7bit
-X-ClientProxiedBy: YT4PR01CA0363.CANPRD01.PROD.OUTLOOK.COM
- (2603:10b6:b01:fd::12) To PH7PR12MB5685.namprd12.prod.outlook.com
- (2603:10b6:510:13c::22)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmZ7q0WRlz2xZK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jan 2026 04:01:43 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 171B660007;
+	Wed,  7 Jan 2026 17:01:41 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id D4993C19423;
+	Wed,  7 Jan 2026 17:01:37 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767805300;
+	bh=6uEVhzlmhQI9tsyOAY16BpmJz+ZIZQnfbzuT3IRizoQ=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=MVNEKDSbcRXzlWQNGU3FsWplI+O0TVIBENkGefy9VbrMVJTgkJKa7+2XSkNzjERSb
+	 j6FT0CoXVEjEpqktyD7MFWdDQCP7i2+NvOkMQyxc4/81zI5L5DE/PeLFAygQ9IgPo4
+	 apWHXNQTxlp7uiL+KU0Sbge3suAfAd6YAe8WxmQYtPfL0tmLcfXOaJw+ocoUPy+jYc
+	 9idbEy8AglaqdZBQHRnqHyQuxCVEAWI0fIuq47trnVFaU23ZRjRDVWs6Kmx3whtxu/
+	 gU/N7ZcBaZVoYfkuBSBNsDEkq4emf2GDSKkwblyS468zzWZXdvpRfqmH8B/ZghF8Cb
+	 V0T/nquDfeswA==
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+To: Qiang Zhao <qiang.zhao@nxp.com>,
+	Rob Herring <robh@kernel.org>,
+	Krzysztof Kozlowski <krzk+dt@kernel.org>,
+	Conor Dooley <conor+dt@kernel.org>
+Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-arm-kernel@lists.infradead.org,
+	devicetree@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	Conor Dooley <conor.dooley@microchip.com>
+Subject: [PATCH 2/2] dt-bindings: soc: fsl: qe: Add an interrupt controller for QUICC Engine Ports
+Date: Wed,  7 Jan 2026 17:59:10 +0100
+Message-ID: <7708243d6cca21004de8b3da87369c06dbee3848.1767804922.git.chleroy@kernel.org>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <63f19db21a91729d91b3df336a56a7eb4206e561.1767804922.git.chleroy@kernel.org>
+References: <63f19db21a91729d91b3df336a56a7eb4206e561.1767804922.git.chleroy@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -97,143 +74,82 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-X-MS-PublicTrafficType: Email
-X-MS-TrafficTypeDiagnostic: PH7PR12MB5685:EE_|DM4PR12MB8500:EE_
-X-MS-Office365-Filtering-Correlation-Id: b22c36b0-e083-4677-d100-08de4e004cf4
-X-MS-Exchange-SenderADCheck: 1
-X-MS-Exchange-AntiSpam-Relay: 0
-X-Microsoft-Antispam:
-	BCL:0;ARA:13230040|1800799024|366016|7416014|376014|921020|7053199007;
-X-Microsoft-Antispam-Message-Info:
-	=?utf-8?B?TnptL0pVT0JCdUEzempXS3ZyeW1rbHhxWFlvd3NBMVljSmR0ZVJsa044WlN3?=
- =?utf-8?B?azhVdUVJKzRkaG5WTTJyTEgvUXcyb1hQZnVWZVRxOG5GbHlsZlNadElZQy9R?=
- =?utf-8?B?T2hRanNpSCtTVXlodHo5UTE5dU9iM1U0ZmxOMWpzakdPTmhYOFgybGNTa29M?=
- =?utf-8?B?cG1YdlBreUxaNlBlRDExS3ZSNHJFT1RBQ0ZzdFlKcmY4RmhNRUxkSzAvMS9I?=
- =?utf-8?B?WnZZNnoxME9jWlVDZFBqS3dncnlxUFZRdkdOK21KZXAyVlF4Zi94ZzV6eUtQ?=
- =?utf-8?B?STFRRzFPdCtpT3h1QVkvUWVnZ3dkUFFocFFReDBFY0ZReUlKZ0x6cGRYamtv?=
- =?utf-8?B?QkZLWlRBNU9vL29CUUYrSEFucm0vYS9jaXgrUlloTzJBZ2VpTG5VY04yYWxG?=
- =?utf-8?B?NEo4MG5Eenc0VzJmSHkzT0NZOTRnRXM5clVTUUF2VTRDV1I1blNqU0YrYzlN?=
- =?utf-8?B?VjU2YmJzYmo5allJcndpaU1vVHh1WXljU1Q3UGsrT0NHK2pZVVByQjFjb3Jw?=
- =?utf-8?B?dnh3WmVmRktMQnRtTkdMeGVzV3hQNWJtWGR0UUoyckJOaU1GUlRnenBxOUxR?=
- =?utf-8?B?Qi9vdnZ2VENDN0tlOFhSQTVSdTlFaHp0R3RiczlZejZnY0pXdVFVYkZGTHNB?=
- =?utf-8?B?eGhFNWt3NWRjWXV0aDZvdHN6bnlKY2RKNzRTd3dvU0pQSXRJT0VkQjJzK2RH?=
- =?utf-8?B?eVN6YVhWTTlaaVUxUmpZYzYvQkkvVmQyNkZoNTUyeitvbkpkZVcreFdMOW84?=
- =?utf-8?B?TGdYQ3YyaEwrekUwTXR6T25MeEZDeE1qVXhnazJnMVFrSFlvYkNFU0RZS3Bk?=
- =?utf-8?B?ZktWS282VnkzUFVLbWlMdEZlME5ZOXlXbVVjZS92Q2RRMUZveWxWNkE2cGdk?=
- =?utf-8?B?bGpucFAxcnF3RE9XS2JwNXgxOHlIcVFJdWxNcEphVlQ4ekcwWHZzKzA4RGE1?=
- =?utf-8?B?c1g0a3pNNHYvZzVLVG9CRk1sQlVKSnFuRE1LY2pQYXV5bFB0a1FjUW1RNTdU?=
- =?utf-8?B?ak1aRC8waFBlbjFTaWcreDJ6QUZiSnRYZ0NwYmNxM3BLYWFYTmYyQ3JXVXNt?=
- =?utf-8?B?ZUVrNWttaE42U2ZRa1RoT3VkeDI5bnpVWDRLS3lpWVdiajYzaDNaSUVRNHlO?=
- =?utf-8?B?RHYzZ0xOR3N2Unh6djJTVFFzUFl4UmJJTURmNG1lV0ZQTmFtcm5uU0dXNC9G?=
- =?utf-8?B?cXdLd1RuS0VsQm1jWXNwclVNWnJWYXBPMlFuYzlXTUhVQ3U2NE5mYUliWXZC?=
- =?utf-8?B?Vk84TkVtazZlRFFEWGgvMTJCRmtTbXFLTkdjOTNwdmV4YXB6VnFnOUg1TkF3?=
- =?utf-8?B?L0dtQlR0SWlQelV5dzNmTUJidVNNWi9zbkg5Y0svcXZmeUxWVmJIVGxwaHZ0?=
- =?utf-8?B?UVNRazM3SjRrVjhzNU9hc2hFcnRaTkVjME83eHplU1hFQWRMMVNkSEpEeXZL?=
- =?utf-8?B?MzVLNDZ1UnIrOXZaYzZEN3JRMWw4bzFGV0JReXZQaHAwdDNRdmxsQVhkZVlO?=
- =?utf-8?B?TWhOTERtcjU4MDlXS3FhZzZ5ekk1bjE5L01lZmFwcUZUYkgybDR4YWZERnA5?=
- =?utf-8?B?SjZEZXBOSlRxbzN4bHAyZzdGeG9EcHM1cURXRmkwa2ZIVThoTzNaTzYrTlR4?=
- =?utf-8?B?c0pscUQ4N1BDdndENE94UHJvMmxmU1RjaHc3UTBKNjd2eTB4U0NaWW1vYVVF?=
- =?utf-8?B?ZUk0akYxejgyaFhWQk52Wi95TXRSc3RHY2h5NW1tODZlakE4SWE4S0NXTGkr?=
- =?utf-8?B?SzlsOC9zdkRlRnhSMHNSMlRtOTQ3bUJVUjhEVkx3VEQwVXNqN2IrVHdtSjd2?=
- =?utf-8?B?emJqYkN0K0dCZ28yOURQcUxFcGQxVkk2YmxOdzBzeHFvd0hqU0t5YmZhOGs2?=
- =?utf-8?B?SVlHMXlNeTNiTG1xdXVMc2dnSktKajBteVdLVnJBNUtKMGFNZnhaYnhjN0xF?=
- =?utf-8?B?L0dmNlQzOTRZdkFkZlVZM0NvMm4ycnoxak5xRHNnb29vS3FsYzJQV2lKaGZ3?=
- =?utf-8?Q?NHGfVtlmzKFVXfAH0XdRNiWncAxLfc=3D?=
-X-Forefront-Antispam-Report:
-	CIP:255.255.255.255;CTRY:;LANG:en;SCL:1;SRV:;IPV:NLI;SFV:NSPM;H:PH7PR12MB5685.namprd12.prod.outlook.com;PTR:;CAT:NONE;SFS:(13230040)(1800799024)(366016)(7416014)(376014)(921020)(7053199007);DIR:OUT;SFP:1101;
-X-MS-Exchange-AntiSpam-MessageData-ChunkCount: 1
-X-MS-Exchange-AntiSpam-MessageData-0:
-	=?utf-8?B?VFUxNU52U3NVRGdvaGJTcEZZU25NZU95Qm1XT0w2aVk1MHRDTGk1S3lvN0xT?=
- =?utf-8?B?WTROclpKUVdXeEJudURucWdYbjNNdHRvSkJyR0lVK1NMM054VjBLc1ZuME1z?=
- =?utf-8?B?QTd2eFF3VHBxTE5TSFlkR0doRjlCbnc3aWRxMFZLd29RZGFGNTRiQTF2OEM0?=
- =?utf-8?B?S2JOekZ4RXJBTFk5R3NTMVdmZ09GckJRbElIdXo5ZVNHTmFFVCt4dFYybERP?=
- =?utf-8?B?eTJYUXdnYjRUTnlKNTM5VGZmN2l3M0g1Z2tEVks2NkhpVUQ2eWgrZGM1VDZr?=
- =?utf-8?B?cEV0cFFuWnl4amxwaGRYUlhSV2VxdTAvcVdqRlEvQWFFdG1PWk0zZW9YbFFv?=
- =?utf-8?B?emxFM3c0Wm1FYWpkeTZ3Z0YrZ0tNRVc2am9ZTUM2bDlKR3lsQnBDaEJxdkZk?=
- =?utf-8?B?TDNTcFNxSkVIVm1yMlphd2V6cFdEUDR1YUFnNXRKblJpVFlFZEZzRmU2Tncx?=
- =?utf-8?B?V3g0ZFVWNjZVeVFyT2JkZlhXUXNHTnJOWkcwTUcrOTFvS1JURFZvR0tySmhL?=
- =?utf-8?B?YVZBdkhOdU5idGN3QTRLcFRJdzAyRTY1VlpSVDVvRFFyQVI0WWphelN6VDBL?=
- =?utf-8?B?ZmlxOUVneDBJSUZhS3IyL2Y1Rm8vd3pJOTlxdytmUnF2MnhPWFdQV3JOby9j?=
- =?utf-8?B?aVFuMStPaWxXVEl2N21yMEg4NlE1K1Y5VTdGbnhJZmJwOGM2VC9uUllCdnJ4?=
- =?utf-8?B?Tlh1aEJyZGxWTDcyQ0Z1UVdRMzRuUFNBUmYraUFyMWdSSGQ1Z3RML3pkS3hi?=
- =?utf-8?B?Q3llZzdQdTU2QzdzSGNUK3pBUWhlbk9Kc2k3OXNtYmlWKzgvRW5JOSs5Ymov?=
- =?utf-8?B?dEhMc0lCU1RYOUpoSVV4SUxqWmM0WGdxSy9JdVI3QkE3Qk5PREVrZmk0RUFT?=
- =?utf-8?B?QTFhZ3FYLzNTNFZHMERvT240bXFJMUZBMFNTYmRRdjJnaG00a2libUdDanp2?=
- =?utf-8?B?djhJNFV6dHY0ajVVY2puSERQcHN4bUpmb05KaU1kMDlFMElzWHNBdE9KKzRm?=
- =?utf-8?B?REpGYXBVaHk0S1Z3djR2TS9NUVhPbC9SRTQvTnY5RG56QmpWbE1WdC9YbXBH?=
- =?utf-8?B?SEMzb3FvMnJBa3ZkMm9LYVZNYkVBQTdWZllTTHN4NEtYU2FtalgzVlFlaGli?=
- =?utf-8?B?dEpKZ2dEOXRFR0MxZXJpU05RZVpzTUFTYXU5b2d0WjRnZEkrVHhhZGR1R3Ay?=
- =?utf-8?B?N2NhTXZEL1NiRG5qMFp5akRzOGJBeVk0UlJrck0yUSs5UU1ndUtSZlMvYzQ5?=
- =?utf-8?B?R25mcCs4Q01seDRTSVovQU0wT0JmeEhtUzZpelZabkxtc2NFY250Uk12dE54?=
- =?utf-8?B?Vkc1dTg1V1g2bDFJZHZWaTFTWUJtMXFmRUZsay9aZTVMMUVyTVc0bVVnTFh6?=
- =?utf-8?B?K0hnR3VEUGNzNmFlY0s4d3QwTnhrenVPL0VCUnh6Sk1tYmIrV3VGNUVvWUp4?=
- =?utf-8?B?b3NaN29aTldPSmNuLzRIa3lTOGFDMllSQm4rVjVVSjFEQlU5bWU1RVlUSER6?=
- =?utf-8?B?SUhWWmxrLzFlbzJHaHJjcVcwMzBhQnlZRThtdHM5cWc4c3Jjb2tnU3BZY2lZ?=
- =?utf-8?B?L2Zld0JDaEVMbzY2WnVsNDc5M1l2dTE2ejhjWWFPMzZOcFFBWnZpUlI2RXNa?=
- =?utf-8?B?T2JEYzVYQklFSEhnQ3hqT0NHMTVNRjBpOU5YWTZkenRnL2FicTJVa2JQdmpI?=
- =?utf-8?B?UkcxbVk1MnBncGp4MmdmY2x6STdYZVZQa0E1aE4xNEhITXk3a0FxcXdUVXpn?=
- =?utf-8?B?S1R6TnFzNnUrU0o3emZXMVVUWXAxTFVTRlpZUVM0bmdNODhzRlk4ZE9HWWlP?=
- =?utf-8?B?M2V6SjZ0Zlo5NjN5Y0pISHR5bytMTFVsdjNSUzZhczJ2ZmdMdWVNb3Y0QlZX?=
- =?utf-8?B?TDdyMDZZVlhDVUZGN2NlS0xvZWhoSWJCUlh2cDd6NmVXNXk3V2hNaW0vcndZ?=
- =?utf-8?B?U3VWVzMzdko4amo2a0FMR0lnVkFHZUZ6NHF2TXpTMkRpQ2oxay9CSk9JazJk?=
- =?utf-8?B?cUtZS2JYYWJlK1E0UUxjSUxEV3hzS3lpL1NSdGVVS1M5RGNDTU0vUjdVRndn?=
- =?utf-8?B?R0VibytENXZRbUx6bU9JclRUU3JIQkMyQXdHc3Z5c2luUmFGUkRucXNTVThC?=
- =?utf-8?B?SHc0ZEhhVU5kMXRyMElYOFFHaFExNDJ3aGRlK1puVnZ1ZTVSZWsxakhoV3VC?=
- =?utf-8?B?NEw5V3Z6S2tqNVhIRTNjbkk0Q3pTMEp0VzN5aVNYZlR3YkpoSVFKOW5ycWRV?=
- =?utf-8?B?OENpaVBsazQvTGF5WkV4NmU1V1FNWFg2ajlYOTVMYVlLYzZEaUZTdktJYU9G?=
- =?utf-8?B?SkJrREU0Kzk1RHpjSUcwTXBxeENhYklOMlRqY2kvbWQ5TitPTFVXUT09?=
-X-OriginatorOrg: amd.com
-X-MS-Exchange-CrossTenant-Network-Message-Id: b22c36b0-e083-4677-d100-08de4e004cf4
-X-MS-Exchange-CrossTenant-AuthSource: PH7PR12MB5685.namprd12.prod.outlook.com
-X-MS-Exchange-CrossTenant-AuthAs: Internal
-X-MS-Exchange-CrossTenant-OriginalArrivalTime: 07 Jan 2026 15:20:33.3473
- (UTC)
-X-MS-Exchange-CrossTenant-FromEntityHeader: Hosted
-X-MS-Exchange-CrossTenant-Id: 3dd8961f-e488-4e60-8e11-a82d994e183d
-X-MS-Exchange-CrossTenant-MailboxType: HOSTED
-X-MS-Exchange-CrossTenant-UserPrincipalName: JwwUVtb0hShOtC2gwiYGWQmn5kYsFT7ZADsUBNzkwDOjkWkdY6ModGWEB5S5c2n8
-X-MS-Exchange-Transport-CrossTenantHeadersStamped: DM4PR12MB8500
+X-Developer-Signature: v=1; a=openpgp-sha256; l=2014; i=chleroy@kernel.org; h=from:subject:message-id; bh=6uEVhzlmhQI9tsyOAY16BpmJz+ZIZQnfbzuT3IRizoQ=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWTGTXi0ZH6ii/rF5Gv3G3auNtvOxcIRaz75soCefUC1U G7CofPTO0pZGMS4GGTFFFmO/+feNaPrS2r+1F36MHNYmUCGMHBxCsBEJngxMsyR+cnV+dJpxkmF 6MBDbNOsLnznKOoIymac3rr2/K/PsdMY/vD9MQ9fVOrMVnOn5PVeLut76aE/T638rj3hg6/P9gO f/jMCAA==
+X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
+Content-Transfer-Encoding: 8bit
 
-On 12/24/25 04:10, Vivian Wang wrote:
-> The code was originally written using no_64bit_msi, which restricts the
-> device to 32-bit MSI addresses.
-> 
-> Since msi_addr_mask is introduced, use DMA_BIT_MASK(40) instead of
-> DMA_BIT_MASK(32) here for msi_addr_mask, describing the restriction more
-> precisely and allowing these devices to work on platforms with MSI
-> doorbell address above 32-bit space, as long as it is within the
-> hardware restriction of 40-bit space.
-> 
-> Signed-off-by: Vivian Wang <wangruikang@iscas.ac.cn>
-> ---
->  drivers/gpu/drm/radeon/radeon_irq_kms.c | 4 ++--
->  1 file changed, 2 insertions(+), 2 deletions(-)
-> 
-> diff --git a/drivers/gpu/drm/radeon/radeon_irq_kms.c b/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> index d550554a6f3f..ea519d43348b 100644
-> --- a/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> +++ b/drivers/gpu/drm/radeon/radeon_irq_kms.c
-> @@ -251,8 +251,8 @@ static bool radeon_msi_ok(struct radeon_device *rdev)
->  	 * IBM POWER servers, so we limit them
->  	 */
->  	if (rdev->family < CHIP_BONAIRE) {
-> -		dev_info(rdev->dev, "radeon: MSI limited to 32-bit\n");
-> -		rdev->pdev->msi_addr_mask = DMA_BIT_MASK(32);
-> +		dev_info(rdev->dev, "radeon: MSI limited to 40-bit\n");
-> +		rdev->pdev->msi_addr_mask = DMA_BIT_MASK(40);
+The QUICC Engine provides interrupts for a few I/O ports. This is
+handled via a separate interrupt ID and managed via a triplet of
+dedicated registers hosted by the SoC.
 
-Well, that is not even remotely correct.
+Implement an interrupt driver for it so that those IRQs can then
+be linked to the related GPIOs.
 
-Please move that close to the dma_set_mask_and_coherent() call in radeon_device_init() (file radeon_device.c).
+Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
+Acked-by: Conor Dooley <conor.dooley@microchip.com>
+---
+ .../soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml       | 51 +++++++++++++++++++
+ 1 file changed, 51 insertions(+)
+ create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
 
-The check there is most likely already what you need. Should be pretty straight forward.
-
-Regards,
-Christian.
-
->  	}
->  
->  	/* force MSI on */
-> 
+diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+new file mode 100644
+index 0000000000000..1f3c652b1569d
+--- /dev/null
++++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+@@ -0,0 +1,51 @@
++# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
++%YAML 1.2
++---
++$id: http://devicetree.org/schemas/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml#
++$schema: http://devicetree.org/meta-schemas/core.yaml#
++
++title: Freescale QUICC Engine I/O Ports Interrupt Controller
++
++maintainers:
++  - Christophe Leroy (CS GROUP) <chleroy@kernel.org>
++
++properties:
++  compatible:
++    enum:
++      - fsl,mpc8323-qe-ports-ic
++
++  reg:
++    maxItems: 1
++
++  interrupt-controller: true
++
++  '#address-cells':
++    const: 0
++
++  '#interrupt-cells':
++    const: 1
++
++  interrupts:
++    maxItems: 1
++
++required:
++  - compatible
++  - reg
++  - interrupt-controller
++  - '#address-cells'
++  - '#interrupt-cells'
++  - interrupts
++
++additionalProperties: false
++
++examples:
++  - |
++    interrupt-controller@c00 {
++      compatible = "fsl,mpc8323-qe-ports-ic";
++      reg = <0xc00 0x18>;
++      interrupt-controller;
++      #address-cells = <0>;
++      #interrupt-cells = <1>;
++      interrupts = <74 0x8>;
++      interrupt-parent = <&ipic>;
++    };
+-- 
+2.49.0
 
 
