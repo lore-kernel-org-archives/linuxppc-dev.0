@@ -1,79 +1,66 @@
-Return-Path: <linuxppc-dev+bounces-15347-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15348-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 58074CF6BE2
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jan 2026 03:12:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 46A62CF6BE9
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jan 2026 04:01:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dmCks5wVbz2yFh;
-	Wed, 07 Jan 2026 14:12:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767755541;
-	cv=none; b=EOd/jqUQvx0UInYnqBv7SU14PgaXZvSf5MqFev6BRLhU6TkqLtpcGuaTalh8D26eo5SFLsFflGUOd0CBXq66pJrpI3C7cv5fLJe60EYTAHGmPghHdBHbwSvrhyd99zNiR4XWoSCfBOY2JRjjHk7bJwsDJ9s3zPb5WuZvOczXrx1Acr3BZdwOIFYfy4alcwprMN3OgBqeN43AD9PjtSSE4CPY0Ii5ENdJzNzFPqyYhrM4q9hOGhQ9etYkokRC1k9mOJ/4i/DZXGLxdr+ruOOk43Plsbwo1mFE65n0/jL2q24ljNXcFacEobqYUpKI/M+4qbdU9cg4NZqTSe0UJ1+DOQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dmDr047TSz2xrC;
+	Wed, 07 Jan 2026 15:01:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767758512;
+	cv=none; b=FwQSU0rU5CNZih2mD9gRst51Orda7aIrDXmVFPYk6XYWqJqaFIkiqMj/VtOZ5tJJlWwF3ptPcM2vIJIvT2nbg3M/ZeBY2rmikwkx8DBOc4pKkAcP83/cVzjxzt96ExiW3sS3ma9w3+hrA+H6FlzHR9mA6npQySt+0CjpSiPIqruBaKHXo0e+plYODvnHHlWEkh0kpr4ob2KoKl3rrAIYt7/fUbQzi7ai0SB7JcCxY4zPxwf2DOXuQpyqOHexxOpioTe7bX6JJ21AF5XeXTaX6gmrvokTaIdwjdIw4xKM5xAzPLZS/5ZSQ/JAuRF5qUJYnVjHYiMdZEAJpA/rsgbqjA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767755541; c=relaxed/relaxed;
-	bh=3pdEtf5PGuiqs9+a/E85cEteIo2F6atXr/LDASHbo+I=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=HPP/6KN8Ocb8xNIDrOSbEZL+XeOgXrey8aVjfWddbwRNqT5R+fs5VEf1vUTW3ZJqg0LwGt2FRIskl8lyIMdTB5EsOUvPsFW1JwVvNwKNTmiI0aKbbx89pPfqK6qCEBPG55XD1PsGoffFVlkBkUFbjmxdwouv7bKH7lC5SR8O+D7IXQYjSDVBX6RR+K52DaQeqOeWCPGgxEF5zcn2e30tPMBGYxUhUOcwfHVpNZfhqqA+4PZ7YB1Rt1LmOvjXKby6Nb828nEMPRUiittANONiJ2X5TusQ7+P2m4ahkvt4OZqdMJqetn6LvND5YGY3lVkg6Kx8lpn/gO4T1lzTJWHE5w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ejseCAVR; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
+	t=1767758512; c=relaxed/relaxed;
+	bh=+Dp7GbOzUhbexvyJfL3KW8K7vitNAwAEQvbG+47gD00=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KBHbytjuaxk/dqbiOaQ2rnb5wtDbc7/F363Xv6egGT/9V2Ad5Y9hIRF8Vaep0nM6o7gCaEXHArQH3fwlNBQtttXoLUBjFdrD1m5Gf3TdEanBgzhtGmKLN4xgZlPZCQiK4ScvnL7kHv5BM3eyYGZOJmoVp0GO+Z/I70v/ZsysMVCz971v4e0CNOimJhwjyQQ8Vy4gPT40G9rwE69sD/t8lx9snCUcxbI6rkw2Kq0X2GF5uNzy0UygVvehrVgzyl8XK69ghojuN+RjB2flZklat3XiV3tKvSOeDS/uDpA1My7UcmI2bKgEU9HIb2kgMtPj9xSm7Vqk5eRyUoYIcuQfug==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N7u/AAYT; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=ejseCAVR;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=N7u/AAYT;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=maddy@linux.ibm.com; receiver=lists.ozlabs.org)
-Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmCkr6370z2xrC
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jan 2026 14:12:20 +1100 (AEDT)
-Received: from pps.filterd (m0356517.ppops.net [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 606HKf4c018509;
-	Wed, 7 Jan 2026 03:11:34 GMT
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
-	:content-transfer-encoding:content-type:date:from:in-reply-to
-	:message-id:mime-version:references:subject:to; s=pp1; bh=3pdEtf
-	5PGuiqs9+a/E85cEteIo2F6atXr/LDASHbo+I=; b=ejseCAVRngkEh/zQcGbAVm
-	HxF4BH3etAL9V56hT3cw/DXdlB4ZBQoZWg14v92L+nfK/TEmXOPHJRPNov689vMO
-	CYVem2aP72CWtaITmBXOy7UsNdSxZLobs7A56cDUXG+3RQIsz9aT2beUl58UNTCD
-	rBFKR8FJWMeHI/AgedJK3QwlzbvoQKTA3nmqDF2Ww5gBQqdSP1oV84SYB7HGffCo
-	PcGHfmDXQvZUFUM+dBC6LtQifGFe2LUS5N7ygYNUvC1v5p+7MYokY6JgAHQGuWgw
-	vc0YCOZps3aFmpMe6bDCsykvUm0IpFZm88nI/PCk5oWeAp6nMJMHKKPEDdWBmxWQ
-	==
-Received: from pps.reinject (localhost [127.0.0.1])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4betu66s9j-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 Jan 2026 03:11:34 +0000 (GMT)
-Received: from m0356517.ppops.net (m0356517.ppops.net [127.0.0.1])
-	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 60735nAC011705;
-	Wed, 7 Jan 2026 03:11:34 GMT
-Received: from ppma23.wdc07v.mail.ibm.com (5d.69.3da9.ip4.static.sl-reverse.com [169.61.105.93])
-	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4betu66s9g-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 Jan 2026 03:11:33 +0000 (GMT)
-Received: from pps.filterd (ppma23.wdc07v.mail.ibm.com [127.0.0.1])
-	by ppma23.wdc07v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 60738ece005206;
-	Wed, 7 Jan 2026 03:11:32 GMT
-Received: from smtprelay03.wdc07v.mail.ibm.com ([172.16.1.70])
-	by ppma23.wdc07v.mail.ibm.com (PPS) with ESMTPS id 4bfexk6us5-1
-	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
-	Wed, 07 Jan 2026 03:11:32 +0000
-Received: from smtpav05.wdc07v.mail.ibm.com (smtpav05.wdc07v.mail.ibm.com [10.39.53.232])
-	by smtprelay03.wdc07v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 6073BDA58454670
-	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
-	Wed, 7 Jan 2026 03:11:13 GMT
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 360755826C;
-	Wed,  7 Jan 2026 03:11:31 +0000 (GMT)
-Received: from smtpav05.wdc07v.mail.ibm.com (unknown [127.0.0.1])
-	by IMSVA (Postfix) with ESMTP id 7D1B958263;
-	Wed,  7 Jan 2026 03:11:22 +0000 (GMT)
-Received: from [9.109.209.83] (unknown [9.109.209.83])
-	by smtpav05.wdc07v.mail.ibm.com (Postfix) with ESMTP;
-	Wed,  7 Jan 2026 03:11:22 +0000 (GMT)
-Message-ID: <6419f23b-01bb-4ccd-89a9-2a606bc984eb@linux.ibm.com>
-Date: Wed, 7 Jan 2026 08:41:16 +0530
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmDqz3wrNz2xpg
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jan 2026 15:01:51 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 38EF960007;
+	Wed,  7 Jan 2026 04:01:49 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 7A3E2C4CEF7;
+	Wed,  7 Jan 2026 04:01:48 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767758508;
+	bh=pzuDTI1gGeG5Smd+gX1gaxHlzMDNl358rd8Qrwf1tqc=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=N7u/AAYT3DDEUXzlTMGjqZuODkOKrqMuB9CcWWnECwJA8nhYty4M3NEe4VKElptV2
+	 eGGGvgXAHnfGpC43Cofx6mA0tHqObs3mTQeRxkriecrKIxi1mBUL8I2Kfpo6FR+fnX
+	 BeqLvKAFPHraFwq3GT2AswyWHkWVv/KYfbBi6xqXwW3+AwM/XCLWXwk3sM4kkY13CZ
+	 1UnjB+Z2DT2LjzeUvp14Siz8RA606HwynIlEGPAWB5gSeTXswi5YEYTKJZXUhzUohP
+	 KTTtdS4vQ8wiIHUbm6MfVPEndmvnAyhVGNc5aQQ77O+H8+/xB0DWa/LbwJOpZ7Ae/v
+	 wkVi0bNORnAoQ==
+Date: Tue, 6 Jan 2026 20:01:28 -0800
+From: Eric Biggers <ebiggers@kernel.org>
+To: Qingfang Deng <dqfext@gmail.com>
+Cc: linux-crypto@vger.kernel.org, linux-kernel@vger.kernel.org,
+	Ard Biesheuvel <ardb@kernel.org>,
+	"Jason A. Donenfeld" <Jason@zx2c4.com>,
+	Herbert Xu <herbert@gondor.apana.org.au>,
+	linux-arm-kernel@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+	linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+	sparclinux@vger.kernel.org, x86@kernel.org,
+	Holger Dengler <dengler@linux.ibm.com>,
+	Harald Freudenberger <freude@linux.ibm.com>
+Subject: Re: [PATCH 30/36] crypto: inside-secure - Use new AES library API
+Message-ID: <20260107040128.GC2283@sol>
+References: <20260105051311.1607207-1-ebiggers@kernel.org>
+ <20260105051311.1607207-31-ebiggers@kernel.org>
+ <20260107034834.1447-1-dqfext@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -87,75 +74,49 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH bpf-next v4 0/2] powerpc64/bpf: Inline helper in powerpc
- JIT
-To: Hari Bathini <hbathini@linux.ibm.com>,
-        Andrii Nakryiko <andrii.nakryiko@gmail.com>,
-        Saket Kumar Bhaskar <skb99@linux.ibm.com>
-Cc: bpf@vger.kernel.org, linuxppc-dev@lists.ozlabs.org,
-        linux-kernel@vger.kernel.org, sachinpb@linux.ibm.com,
-        venkat88@linux.ibm.com, andrii@kernel.org, eddyz87@gmail.com,
-        ast@kernel.org, daniel@iogearbox.net, martin.lau@linux.dev,
-        song@kernel.org, yonghong.song@linux.dev, john.fastabend@gmail.com,
-        kpsingh@kernel.org, sdf@fomichev.me, haoluo@google.com,
-        jolsa@kernel.org, christophe.leroy@csgroup.eu, naveen@kernel.org,
-        mpe@ellerman.id.au, npiggin@gmail.com
-References: <cover.1765343385.git.skb99@linux.ibm.com>
- <CAEf4BzbiyJwSoaSRDtSRetze-yST-NQX83FyECSmRex9szx0NQ@mail.gmail.com>
- <aca5ed6d-8d39-4968-aef2-d5ab6c8cfb60@linux.ibm.com>
-Content-Language: en-US
-From: Madhavan Srinivasan <maddy@linux.ibm.com>
-In-Reply-To: <aca5ed6d-8d39-4968-aef2-d5ab6c8cfb60@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
-X-TM-AS-GCONF: 00
-X-Authority-Analysis: v=2.4 cv=QbNrf8bv c=1 sm=1 tr=0 ts=695dcee6 cx=c_pps
- a=3Bg1Hr4SwmMryq2xdFQyZA==:117 a=3Bg1Hr4SwmMryq2xdFQyZA==:17
- a=IkcTkHD0fZMA:10 a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22
- a=VnNF1IyMAAAA:8 a=Z0ByAkKCtCMuyWjYBMoA:9 a=3ZKOabzyN94A:10 a=QEXdDO2ut3YA:10
-X-Proofpoint-ORIG-GUID: gX-3G8r6ILoIAHtb1Ncg7n4IG0NJ5FS6
-X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTA3MDAyMSBTYWx0ZWRfXwTH1qfpW6GPY
- UqlcFcquFTX9rVoZ6S5imz/IeJ0enxiG5VxSxU4ZTHyte8Fb+d2fKKsXXNrBcg1HKV2shxNjU0E
- qpDVoF53QA1bePRzDw0OlEzwru01F0/Yrf3L0StxtXVP0rzRINDAjP4IxV0ALtRRjCiQ2lNQBXn
- 9L8DdtHiYEUJ/aKF/aqlnKqh2oC/nvgPF72nGIHzXwm+WP+B0Z+PPpilmMZqbM/wzd48B1xuEoA
- SwodtZgnm0mDwdlDmrOkSUcJCSpg+Rd5T6qJeRBsAK7oWKdsdqSvta+2VCatuGPoELRG7DY10Gr
- tmcThxdHd+d+v5jCBMCpuNAgkBI68N1Odl6B2SRPGcDtu3cRc9emq1OQsfsDShBMBsHIukqoIdY
- VVRNUlBLRRHs7DXVj3ebwxmjtHJC6PFXbo4BOFV8oOYQtOe9qGA/DgCfV2tax32dhav3z3oCioh
- oCx875ShypZW43ZvLHg==
-X-Proofpoint-GUID: uOONuWptlDBKye8tgyCDCEf4NVW109OR
-X-Proofpoint-Virus-Version: vendor=baseguard
- engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
- definitions=2026-01-06_03,2026-01-06_01,2025-10-01_01
-X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
- spamscore=0 clxscore=1011 bulkscore=0 suspectscore=0 priorityscore=1501
- adultscore=0 lowpriorityscore=0 impostorscore=0 phishscore=0 malwarescore=0
- classifier=typeunknown authscore=0 authtc= authcc= route=outbound adjust=0
- reason=mlx scancount=1 engine=8.19.0-2512120000 definitions=main-2601070021
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <20260107034834.1447-1-dqfext@gmail.com>
 
+On Wed, Jan 07, 2026 at 11:48:33AM +0800, Qingfang Deng wrote:
+> On Sun,  4 Jan 2026 21:13:03 -0800, Eric Biggers wrote:
+> > --- a/drivers/crypto/inside-secure/safexcel_cipher.c
+> > +++ b/drivers/crypto/inside-secure/safexcel_cipher.c
+> > @@ -2505,37 +2505,35 @@ static int safexcel_aead_gcm_setkey(struct crypto_aead *ctfm, const u8 *key,
+> >  				    unsigned int len)
+> >  {
+> >  	struct crypto_tfm *tfm = crypto_aead_tfm(ctfm);
+> >  	struct safexcel_cipher_ctx *ctx = crypto_tfm_ctx(tfm);
+> >  	struct safexcel_crypto_priv *priv = ctx->base.priv;
+> > -	struct crypto_aes_ctx aes;
+> > +	struct aes_enckey aes;
+> >  	u32 hashkey[AES_BLOCK_SIZE >> 2];
+> >  	int ret, i;
+> >  
+> > -	ret = aes_expandkey(&aes, key, len);
+> > -	if (ret) {
+> > -		memzero_explicit(&aes, sizeof(aes));
+> > +	ret = aes_prepareenckey(&aes, key, len);
+> > +	if (ret)
+> >  		return ret;
+> > -	}
+> >  
+> >  	if (priv->flags & EIP197_TRC_CACHE && ctx->base.ctxr_dma) {
+> >  		for (i = 0; i < len / sizeof(u32); i++) {
+> > -			if (le32_to_cpu(ctx->key[i]) != aes.key_enc[i]) {
+> > +			if (ctx->key[i] != get_unaligned((__le32 *)key + i)) {
+> 
+> "key" is big-endian. Casting it to __le32 does not seem correct.
+> Did you mean "get_unaligned_le32", which also convert the endianness?
 
-On 12/17/25 10:43 AM, Hari Bathini wrote:
->
->
-> On 16/12/25 11:46 pm, Andrii Nakryiko wrote:
->> On Tue, Dec 9, 2025 at 10:51 PM Saket Kumar Bhaskar 
->> <skb99@linux.ibm.com> wrote:
->>>
->>> This series add support for internal only per-CPU instructions,
->>> inlines the bpf_get_smp_processor_id() and bpf_get_current_task()
->>> helper calls for powerpc BPF JIT.
->>>
->>
->> This is marked for bpf-next tree, but I think this should actually go
->> through ppc64-specific tree, is that right?
->
-> Yeah.
-> Maddy, can you pick it via powerpc tree?
+No.  Previously, in this driver the 32-bit words of the AES key went
+from little endian in their original byte array in 'key', to CPU endian
+in 'aes.key_enc' (via the get_unaligned_le32() in aes_expandkey()), to
+little endian in 'ctx->key' (via the cpu_to_le32() in this function).
+Note that ctx->key is an array of __le32.
 
-Yep, will pull this via powerpc tree.
-Maddy
+Those two conversions canceled out.  So I've simplified it to just grab
+the little endian words of the key directly.
 
-
->
-> - Hari
+- Eric
 
