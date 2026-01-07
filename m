@@ -1,55 +1,103 @@
-Return-Path: <linuxppc-dev+bounces-15379-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15380-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 4F88ECD5828
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jan 2026 10:04:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id A4C3CCD582B
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jan 2026 10:20:49 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dmNt865V9z2yFh;
-	Wed, 07 Jan 2026 21:04:16 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=83.223.95.100
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767780256;
-	cv=none; b=hfZy9P5bh4jf7wAGGeOn0QJGCdSxndvsaYVmKWZBo2y+367ziq/xojo5hCd/KD1fu3IX7h8cwMRJoJyBzDs9WjSu5kFpxtZ263Ms3j/6C8Wh9v90Ar1SlwN9McOAOBjxqWbr0Ynxip0W3nY9oKXT79NQhWBlJ2pOI1+C/14FiQbiiWBgtW9dhm5mOzMftUbNsM0mEfpJxf4bHtb1BNPBL++n5wKOEdE0yp1MHooGHjYdJCU/7V/ikfbsTc9xxf9Q2uCYkU4y1KZkXElAgVo4bdH3R5O+WaNqHA2SFvTSmd0s7YstIx79BJHi2ZP/rJAG53xEI59sqhoopHveCC+uAw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dmPFD0mMRz2xbQ;
+	Wed, 07 Jan 2026 21:20:48 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767781248;
+	cv=none; b=HGEyP76uTZPiQX5PlC9aXVW9ImU1FjPkH0LrNQ15FYMj0u37yKbJrL4q0lq9sqzfGCQ7+cTOT6qGGMeeP7+UL062QeYnY9mmDZmk+NFmwz+v1ZMQ5jRYJwoJWIqR6DOohnBuwJtU03tGEnptod8SDF0LaM2Wfiw7EaZ2YkSZ2USnZreQp7/P0b+KsI2n46+dekJSG1xYNpOq7XL/0pOv5PXsfFwzIIyOJRYXSx8wptyoIbK8L8Ts0cvvyKNcyzi6A4sCn47QEPoD1600QINCagdUueWRCEEae3v5A3+Qdxamb54bacYrXW2yC0SXS/Lism2F0ahtzc9oHGFni5pzpA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767780256; c=relaxed/relaxed;
-	bh=sCvt8SzGI/CM6Qbw3oeNTx0+CWLOhxX+81HvfIkt6Qc=;
+	t=1767781248; c=relaxed/relaxed;
+	bh=YAjWTfL5/3oXi6ADzeSFQa0DHNLHQ/Gxlrenv2YfAWg=;
 	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=PCtmpSz9korUrY7oOBYt2XxJx9Zwk/J6N1DeKGZfuvzQE0EhE15OEKxvZmf5Vydf281zTWJxy0ZP1gR5EV0kPTs9OVYhKGuAdseMut2q6kjCFN/JbaLxDbudoPiNLohWdywkNnAFiAkPF9EDX/wiQ9Al2TJaon29T+cnljnIbBjXBYcV+XYe98ZfnT6K8B6G9l43QLFV6XmgfLzOR+4j8ZQmiGCHb4MN1PlPcJbYoQ9yf4zFnhem+6xGKr3SmgCuRWwGTkUFcdhujwlvtB562vuM3JknPxx2cbzKAUihq3eTnt2qhENsd4u9EWvR0JimpQ8pY32JrnJVMXGAhA8tTw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de; spf=pass (client-ip=83.223.95.100; helo=bmailout1.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org) smtp.helo=bmailout1.hostsharing.net
-Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=wunner.de
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.helo=bmailout1.hostsharing.net (client-ip=83.223.95.100; helo=bmailout1.hostsharing.net; envelope-from=foo00@h08.hostsharing.net; receiver=lists.ozlabs.org)
-X-Greylist: delayed 429 seconds by postgrey-1.37 at boromir; Wed, 07 Jan 2026 21:04:15 AEDT
-Received: from bmailout1.hostsharing.net (bmailout1.hostsharing.net [83.223.95.100])
+	 Content-Type:Content-Disposition:In-Reply-To; b=FbXFes5yv1rDX93t8kFXxqT8Dqr/mNdqvpZP7ksIBCBh76K3aiDKLfIg98KpAw2vp0GNUgSuSnTrxLWLICaagUXvN3RQz1S2angGr32RbT77+r+EvjjTwhO7HJEyntij1tPFOJfP65L7GvvIu0ArViLGheHmQlc2AfHjHjn4HqLf9E9ipFy0MkBX3OJFKFey2L4ae267ZO2MUuap2Rx13hfTWWd2CRzY+dSev0OQPlaxlhd2OFepBHCHEExhjRInT6/+Ahl4QIH3k35kDb+utk0J9lMMGtW51Cu8vvW/LjPfyq7L735BjRfRUl9Sd+7m1ihbsO4SZ3Hw8US/MOuI3w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HG3UgZmi; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+Authentication-Results: lists.ozlabs.org;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=HG3UgZmi;
+	dkim-atps=neutral
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmNt73JdYz2xbQ
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jan 2026 21:04:15 +1100 (AEDT)
-Received: from h08.hostsharing.net (h08.hostsharing.net [IPv6:2a01:37:1000::53df:5f1c:0])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange X25519 server-signature ECDSA (secp384r1) server-digest SHA384
-	 client-signature ECDSA (secp384r1) client-digest SHA384)
-	(Client CN "*.hostsharing.net", Issuer "GlobalSign GCC R6 AlphaSSL CA 2025" (verified OK))
-	by bmailout1.hostsharing.net (Postfix) with ESMTPS id EDF682C06A86;
-	Wed,  7 Jan 2026 10:56:24 +0100 (CET)
-Received: by h08.hostsharing.net (Postfix, from userid 100393)
-	id D862D30996; Wed,  7 Jan 2026 10:56:24 +0100 (CET)
-Date: Wed, 7 Jan 2026 10:56:24 +0100
-From: Lukas Wunner <lukas@wunner.de>
-To: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
-Cc: Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
-	Oliver O'Halloran <oohall@gmail.com>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
-	Giovanni Cabiddu <giovanni.cabiddu@intel.com>,
-	Feng Tang <feng.tang@linux.alibaba.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-pci@vger.kernel.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH v2] PCI/portdev: Disable AER for Titan Ridge 4C 2018
-Message-ID: <aV4tyKPGioCqXTRr@wunner.de>
-References: <20260107081445.1100-1-atharvatiwarilinuxdev@gmail.com>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmPFC0CKyz2xLR
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jan 2026 21:20:46 +1100 (AEDT)
+Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
+	by tor.source.kernel.org (Postfix) with ESMTP id 3697D60007;
+	Wed,  7 Jan 2026 10:20:44 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 332F3C4CEF7;
+	Wed,  7 Jan 2026 10:20:26 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767781243;
+	bh=2N7QgaN9sMjltiFqaQG4UkyiWR5RDDQ2n4IgHLPouW4=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=HG3UgZmir72YPYFm/emlV/3aORPdbjLAnBvpX04p5XtFP762LStn/wPAzNuqOQyK8
+	 k7OnYBM5tMSwl6jbeHb8PLi19AGtC/53sTnfGuvHRwU1J5fTUCYLII+PuhChCRsuuP
+	 lesNvqozgo8UJHTVTNpJsDervk1O2VsPtftbzvVYNlT5k9C+Ou7zoWZDNLa9w7OL7l
+	 1I+dvThsPPRQrJPx2bNt/P7eQY786Hlh4y2DUZqzVomuI/Tc2vep7bqbTNymx1RDAb
+	 W1AWrPHPHnhn5oDQwiHOAOhH7g90DnMJIt+6Fqkfre323p/NzMyoEh/2zKKa/f4rTg
+	 6GL2C2ybj5rcA==
+Date: Wed, 7 Jan 2026 12:20:23 +0200
+From: Mike Rapoport <rppt@kernel.org>
+To: Ritesh Harjani <ritesh.list@gmail.com>
+Cc: Andrew Morton <akpm@linux-foundation.org>, Alex Shi <alexs@kernel.org>,
+	Alexander Gordeev <agordeev@linux.ibm.com>,
+	Andreas Larsson <andreas@gaisler.com>,
+	Borislav Petkov <bp@alien8.de>, Brian Cain <bcain@kernel.org>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Catalin Marinas <catalin.marinas@arm.com>,
+	"David S. Miller" <davem@davemloft.net>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	David Hildenbrand <david@kernel.org>,
+	Dinh Nguyen <dinguyen@kernel.org>,
+	Geert Uytterhoeven <geert@linux-m68k.org>,
+	Guo Ren <guoren@kernel.org>, Heiko Carstens <hca@linux.ibm.com>,
+	Helge Deller <deller@gmx.de>, Huacai Chen <chenhuacai@kernel.org>,
+	Ingo Molnar <mingo@redhat.com>,
+	Johannes Berg <johannes@sipsolutions.net>,
+	John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
+	Jonathan Corbet <corbet@lwn.net>,
+	"Liam R. Howlett" <Liam.Howlett@oracle.com>,
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	Magnus Lindholm <linmag7@gmail.com>,
+	Matt Turner <mattst88@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	Michal Hocko <mhocko@suse.com>, Michal Simek <monstr@monstr.eu>,
+	Muchun Song <muchun.song@linux.dev>,
+	Oscar Salvador <osalvador@suse.de>,
+	Palmer Dabbelt <palmer@dabbelt.com>,
+	Pratyush Yadav <pratyush@kernel.org>,
+	Richard Weinberger <richard@nod.at>,
+	Russell King <linux@armlinux.org.uk>,
+	Stafford Horne <shorne@gmail.com>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Vasily Gorbik <gor@linux.ibm.com>, Vineet Gupta <vgupta@kernel.org>,
+	Vlastimil Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>,
+	x86@kernel.org, linux-alpha@vger.kernel.org,
+	linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
+	linux-cxl@vger.kernel.org, linux-doc@vger.kernel.org,
+	linux-hexagon@vger.kernel.org, linux-kernel@vger.kernel.org,
+	linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
+	linux-mm@kvack.org, linux-openrisc@vger.kernel.org,
+	linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org,
+	linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
+	linux-snps-arc@lists.infradead.org, linux-um@lists.infradead.org,
+	linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
+	sparclinux@vger.kernel.org
+Subject: Re: [PATCH v2 14/28] powerpc: introduce arch_zone_limits_init()
+Message-ID: <aV4zZ8D5eaLC6K-w@kernel.org>
+References: <20260102070005.65328-1-rppt@kernel.org>
+ <20260102070005.65328-15-rppt@kernel.org>
+ <87ldia9he1.ritesh.list@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -65,61 +113,53 @@ Precedence: list
 MIME-Version: 1.0
 Content-Type: text/plain; charset=us-ascii
 Content-Disposition: inline
-In-Reply-To: <20260107081445.1100-1-atharvatiwarilinuxdev@gmail.com>
+In-Reply-To: <87ldia9he1.ritesh.list@gmail.com>
 
-On Wed, Jan 07, 2026 at 08:14:35AM +0000, Atharva Tiwari wrote:
-> Changes since v1:
-> 	Transferred logic to drivers/pci/quicks.c
+Hi,
 
-This should go below the line with the three dashes
-so that it's not included in the commit when the patch
-is applied to the maintainer's git tree.
-
-> Disable AER for Intel Titan Ridge 4C 2018
-> (used in T2 iMacs, where the warnings appear)
-> that generate continuous pcieport warnings. such as:
+On Wed, Jan 07, 2026 at 09:57:34AM +0530, Ritesh Harjani wrote:
+> Mike Rapoport <rppt@kernel.org> writes:
 > 
-> pcieport 0000:00:1c.4: AER: Correctable error message received from 0000:07:00.0
-> pcieport 0000:07:00.0: PCIe Bus Error: severity=Correctable, type=Data Link Layer, (Receiver ID)
-> pcieport 0000:07:00.0:   device [8086:15ea] error status/mask=00000080/00002000
-> pcieport 0000:07:00.0:    [ 7] BadDLLP
+> > From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
+> >
+> > Move calculations of zone limits to a dedicated arch_zone_limits_init()
+> > function.
+> >
+> > Later MM core will use this function as an architecture specific callback
+> > during nodes and zones initialization and thus there won't be a need to
+> > call free_area_init() from every architecture.
+> >
+> > Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+> > ---
+> >  arch/powerpc/mm/mem.c | 22 ++++++++++++----------
+> >  1 file changed, 12 insertions(+), 10 deletions(-)
+> >
+> > diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
+> > index 3ddbfdbfa941..32c496bfab4f 100644
+> > --- a/arch/powerpc/mm/mem.c
+> > +++ b/arch/powerpc/mm/mem.c
+> > @@ -221,13 +221,23 @@ static int __init mark_nonram_nosave(void)
+> >   * anyway) will take a first dip into ZONE_NORMAL and get otherwise served by
+> >   * ZONE_DMA.
+> >   */
+> > -static unsigned long max_zone_pfns[MAX_NR_ZONES];
+> > +void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
+> > +{
+> > +#ifdef CONFIG_ZONE_DMA
+> > +	max_zone_pfns[ZONE_DMA]	= min(zone_dma_limit, max_low_pfn - 1) + 1;
 > 
-> (see: https://bugzilla.kernel.org/show_bug.cgi?id=220651)
+> Hi Mike, 
+> 
+> This doesn't look correct. Isn't the zone_dma_limit value in bytes actually?
+> Shouldn't it be -
+> 
+>      max_zone_pfns[ZONE_DMA] = min((zone_dma_limit >> PAGE_SHIFT) + 1, max_low_pfn);
 
-Use a Link: or Closes: tag for the bugzilla URL.
+You are right, I'll update it for v3. 
+ 
+> -ritesh
 
-> macOS also disables AER for Thunderbolt devices and controllers in their drivers.
-
-Could you provide a link to the xnu source code
-so that we can double-check what they're doing and why?
-
-> +++ b/drivers/pci/quirks.c
-> @@ -6340,4 +6340,13 @@ static void pci_mask_replay_timer_timeout(struct pci_dev *pdev)
->  }
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_GLI, 0x9750, pci_mask_replay_timer_timeout);
->  DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_GLI, 0x9755, pci_mask_replay_timer_timeout);
-> +
-> +static void pci_disable_aer(struct pci_dev *pdev)
-> +{
-> +	pdev->no_aer = 1;
-> +}
-> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL, 0x15EA, pci_disable_aer);
-> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL, 0x15EB, pci_disable_aer);
-> +DECLARE_PCI_FIXUP_EARLY(PCI_VENDOR_ID_INTEL, 0x15EC, pci_disable_aer);
-> +
-
-This will disable AER on all arches for all users, yet you've claimed
-that the issue is confined to T2 Macs and caused by their firmware.
-
-The proper approach would be to move this quirk to arch/x86/pci/fixups.c
-so that it's not compiled on other arches.  Moreover you need a DMI check
-to constrain this to T2 Macs so that AER stays enabled on other machines.
-
-Since this is a discrete Thunderbolt controller, it is important to cc
-Thunderbolt maintainers to get their feedback, yet your v2 patch wasn't
-cc'ed to them.  Please be sure to include them in any follow-up submissions.
-
-Thanks,
-
-Lukas
+-- 
+Sincerely yours,
+Mike.
 
