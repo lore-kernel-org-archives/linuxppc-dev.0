@@ -1,59 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-15356-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15357-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id CBE05CF6BF4
-	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jan 2026 07:44:19 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id DE60CCF6BF6
+	for <linuxppc-dev@archiver.kernel.org>; Wed,  7 Jan 2026 07:44:31 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dmKmf3spmz2yFh;
-	Wed, 07 Jan 2026 18:44:18 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767771858;
-	cv=none; b=Q1G8yc4JX3lOAi7zNGZBY7CqVHpjCgRxtaDy9OEiWr+sVWpy/9KWNpnV5NO6URjzUts9OwaaF9j7Ye8fEtRWNMvQZ8QqF0iPrfkIM5aoDLtnQ1N+HA+nsQxGeO/0pSXmgXowqPznhOxME2LBOhMi0hEwjv5cjfWTiCBBWeBRBRe14vUxaFlBGjWV9Nu7crOQDo4Iwx6c1yG4d2s2SrhLe8fGyCerqIvjHGCdE5b190Vcz2e9U9c5YzWCxR1SSXnLFb+Hd8kndCND41a5vpRWm624qgeAe5zyZo211pPocpa31N6cFzjbsitdHcrPlvhCyQibN63EpqqOcmwk7qstYw==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dmKmt4XTHz2yFq;
+	Wed, 07 Jan 2026 18:44:30 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767771870;
+	cv=none; b=EzImQXVHO82pVFVpFHlqVHPKMusdltTig5AdRgzxZuVzrsTaSug+anl5rexgepH6XF4TeEes3+zbsDFLcuFSyHn53fx88IXFoDIpUKkucJNiICg4lcTiivungfJTVid17AW8gXRxW3lnodGbiZGaPJ+LyYjeURchaFCwtPDg3f86vF8WTCKca7ZOFLbUQTWRcbptaZsAWK/2SyRrvnH+RK3ALj+BcFRFoTxUI9lk/rNQclBeAOu9lKQBg5DGks+J5ni+iHrNugXMYTRyjZBfN5rzzE/+ARQvJNPGfKx09dFp7FA5yPnEP/D3vCYlkk3q29GrKoEkNvfwLhVxIwge7A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767771858; c=relaxed/relaxed;
-	bh=Kkt4BN1qE8URamoqgKiZSyZuDf5XmvueUtedgUf6C4E=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=mxg7BiJLOvoH/SFzekC4UefPN+SaZ9688BB1DbJ/YweUpXbHpIBiOPo89gANC2Q5ptR9LiFsTp45SBU53mSkFnNL9RIS9APGnsZDUmc2fAOCYg4FRUJt67cSOxyFaL+je6i6MgQT8kWmUVTglp9k3ztKiCKObWTkijODQcc7BQqcsmRr74z7/c/hdVHt9y/rsRZO0EaIsVC/XtF2SBOn9OW7V5Z8U9vhRKWMm2/JkK2ikuDwwft56IJ4vsACxPBLifolM3HN53ijj3y8GwYt8JnvEIPPn2h03vpa+/Jz1TmhzwgesJ3Uh81/TkHJeBdhhBDOLWa7fTgmzC6V9WYvew==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org; dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=qkiAXa7S; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linuxfoundation.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linuxfoundation.org
+	t=1767771870; c=relaxed/relaxed;
+	bh=g1RYmT08G8K8Ydd9n9w9DLDjdom5NdBubPWt3QgCxSs=;
+	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=dXFLykQ92MCaJMpaP7mt2xKRSiAutuST3Zcv0h4nuLmIHGaT8QEGL5uBtlPnVqWCbtyAhrpsaqSYMHne2pIO6HtmDrwSFBq41CtkB7auOk1hJ29WK+OFHhsYn8b6mCAiX2L8KKbSIjiMJwU8u/JZeIrqni+I4ZHP8bqaOCm89t0wI6QWPA2dZLUxPKrvwNdDwJADWSIc/63D6Nw5/O8GKDvFynFILAZ+3pYqNJh4R4qnguNYxoKFV5NDf8zgjkD2zHdVe5eQmF//tlrnzz3q2lGxWHisrOIKN9T05+QHxkFFZ7VMsTm0Md1NkSj5JyhO4VOw9N0+hV9hrn5bc4QF+w==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fgSc0Lle; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=linuxfoundation.org header.i=@linuxfoundation.org header.a=rsa-sha256 header.s=korg header.b=qkiAXa7S;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=fgSc0Lle;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linuxfoundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=gregkh@linuxfoundation.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmKmd16nLz2xHP
-	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jan 2026 18:44:16 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmKmt0XRvz2xbQ
+	for <linuxppc-dev@lists.ozlabs.org>; Wed, 07 Jan 2026 18:44:29 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id C9EBE4195F;
-	Wed,  7 Jan 2026 07:44:14 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 201D6C4CEF7;
-	Wed,  7 Jan 2026 07:44:13 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linuxfoundation.org;
-	s=korg; t=1767771854;
-	bh=wtepG4ALMqKiyvEt0jTluSuqHX787/roVKJbXsbF/j0=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=qkiAXa7S+dmxh6XiyOJ+dURPUcCWvD6eKm660lGoJceLJX0suxTera4dNqRcaUlgh
-	 w9+nwLM9cKZEZ5CTRWMDiezR/GE+amG8FjIGCKiGt7ayLbrignoWbYr41YE+01mW7J
-	 hxisgmoRvkbvxh7x2Li1OKcsBiQ986t3XZURBOtc=
-Date: Wed, 7 Jan 2026 08:44:11 +0100
-From: Greg Kroah-Hartman <gregkh@linuxfoundation.org>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Ioana Ciornei <ioana.ciornei@nxp.com>,
-	Laurentiu Tudor <laurentiu.tudor@nxp.com>,
-	linuxppc-dev@lists.ozlabs.org, linux-arm-kernel@lists.infradead.org,
-	linux-kernel@vger.kernel.org
-Subject: Re: [PATCH] bus: fsl-mc: add missing fsl_mc_bus_dpdbg_type
- declaration
-Message-ID: <2026010738-collie-quarters-5ceb@gregkh>
-References: <fd30e197df618be4444f9d2172ba794e5f49ae87.1767725589.git.chleroy@kernel.org>
- <2026010755-registrar-agreeably-a626@gregkh>
- <a65f4add-f052-4c51-85e9-317b42802df1@kernel.org>
+	by tor.source.kernel.org (Postfix) with ESMTP id AC6F160007;
+	Wed,  7 Jan 2026 07:44:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 32F2CC19421;
+	Wed,  7 Jan 2026 07:44:24 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
+	s=k20201202; t=1767771867;
+	bh=sJ6UFNhgdxznEaPlaWVQBro0xL6d8TpL3PTMM/QEoas=;
+	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
+	b=fgSc0LleW1+4ixYN+EkKOwPYZlY5CH3OyFyjgM6BuNcG6MdnmufiI7IjfZxtmeA6g
+	 6QAvMAbrDP96FQEvvKvfcHUk16ojSpSMSUezysNBFdKNx8qTZvhENyhs+pOdnEgigz
+	 r3a5Z2mh8pFBUce7WHW2U47brDllUi4Qnwf8hD/io15MtcLq1R2L0bGS9wezMzEAjx
+	 00kAmSc6Jkmvos8eozilHT+em7NxGnXAsfPeOoqH7ez6TryDIC9gYnM5SBqWzDOagp
+	 2EO9a6Wy4+ZA958KSVY9BgvJGIpRkqWPOd0hKRRwff7EmAOPLe3nk8k3q6VGMwgwR5
+	 wT7rSufiAim8w==
+From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+To: ioana.ciornei@nxp.com,
+	Gui-Dong Han <hanguidong02@gmail.com>
+Cc: Christophe Leroy <chleroy@kernel.org>,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-kernel@vger.kernel.org,
+	baijiaju1990@gmail.com,
+	stable@vger.kernel.org
+Subject: Re: [PATCH] bus: fsl-mc: fix use-after-free in driver_override_show()
+Date: Wed,  7 Jan 2026 08:41:51 +0100
+Message-ID: <176777167465.2143957.13769286595533147394.b4-ty@kernel.org>
+X-Mailer: git-send-email 2.49.0
+In-Reply-To: <20251202174438.12658-1-hanguidong02@gmail.com>
+References: <20251202174438.12658-1-hanguidong02@gmail.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -67,55 +71,29 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=iso-8859-1
-Content-Disposition: inline
+Content-Type: text/plain; charset="utf-8"
+X-Developer-Signature: v=1; a=openpgp-sha256; l=668; i=chleroy@kernel.org; h=from:subject:message-id; bh=iZF3c2s/gwLPk+6gtKcn3ZoWh+VlN+vu0LbNBwJXh5I=; b=owGbwMvMwCV2d0KB2p7V54MZT6slMWTG8Tk0v5mkmnZl3UEXw1Mh7FJcwlynXj7qbFIrWbqsz 9gy4OqujlIWBjEuBlkxRZbj/7l3zej6kpo/dZc+zBxWJpAhDFycAjCRpUsZGdrDTuusjjk6Re7G mdKVXckp05e7vkx6ur4ynOcUT33/mgcM/7OTJ/BGrJxh5LT30nmtnjcuu/Z/36a2Qpbdtt5/O/N bdnYA
+X-Developer-Key: i=chleroy@kernel.org; a=openpgp; fpr=10FFE6F8B390DE17ACC2632368A92FEB01B8DD78
 Content-Transfer-Encoding: 8bit
-In-Reply-To: <a65f4add-f052-4c51-85e9-317b42802df1@kernel.org>
 
-On Wed, Jan 07, 2026 at 08:39:41AM +0100, Christophe Leroy (CS GROUP) wrote:
-> Hi Ioana,
+
+On Wed, 03 Dec 2025 01:44:38 +0800, Gui-Dong Han wrote:
+> The driver_override_show() function reads the driver_override string
+> without holding the device_lock. However, driver_override_store() uses
+> driver_set_override(), which modifies and frees the string while holding
+> the device_lock.
 > 
-> Le 07/01/2026 à 06:30, Greg Kroah-Hartman a écrit :
-> > On Tue, Jan 06, 2026 at 07:54:21PM +0100, Christophe Leroy (CS GROUP) wrote:
-> > > Fix following sparse warning:
-> > > 
-> > >    CHECK   drivers/bus/fsl-mc/fsl-mc-bus.c
-> > > drivers/bus/fsl-mc/fsl-mc-bus.c:435:26: warning: symbol 'fsl_mc_bus_dpdbg_type' was not declared. Should it be static?
-> > > 
-> > > As it is exported it can't be static. So declare it in mc.h like
-> > > all other similar objects.
-> > > 
-> > > Fixes: e70ba1b06c26 ("bus: fsl-mc: add the dpdbg device type")
-> > > Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-> > > ---
-> > >   include/linux/fsl/mc.h | 1 +
-> > >   1 file changed, 1 insertion(+)
-> > > 
-> > > diff --git a/include/linux/fsl/mc.h b/include/linux/fsl/mc.h
-> > > index 897d6211c1635..28441a456bb48 100644
-> > > --- a/include/linux/fsl/mc.h
-> > > +++ b/include/linux/fsl/mc.h
-> > > @@ -451,6 +451,7 @@ extern const struct device_type fsl_mc_bus_dpdcei_type;
-> > >   extern const struct device_type fsl_mc_bus_dpaiop_type;
-> > >   extern const struct device_type fsl_mc_bus_dpci_type;
-> > >   extern const struct device_type fsl_mc_bus_dpdmai_type;
-> > > +extern const struct device_type fsl_mc_bus_dpdbg_type;
-> > 
-> > As it's obviously not used anywhere, this should not be the fix, please
-> > just mark it static and remove the EXPORT_SYMBOL_GPL() as well.
+> This can result in a concurrent use-after-free if the string is freed
+> by the store function while being read by the show function.
 > 
-> What's your opinion here as Maintainer of this driver, what should we do ?
-> 
-> Greg is right that it is nowhere used, and it is the same for several other
-> types, the only difference being that they have a matching
-> is_fsl_mc_bus_dp..() helper that hides the type, but not all helpers are
-> used, and many of them are not used outside drivers/bus/fsl-mc/ which cannot
-> be built as a module:
+> [...]
 
-Anything that does not need to be exported (i.e. not used by anything
-else in the kernel tree), should be made static.
+Applied, thanks!
 
-thanks,
+[1/1] bus: fsl-mc: fix use-after-free in driver_override_show()
+      commit: 148891e95014b5dc5878acefa57f1940c281c431
 
-greg k-h
+Best regards,
+-- 
+Christophe Leroy (CS GROUP) <chleroy@kernel.org>
 
