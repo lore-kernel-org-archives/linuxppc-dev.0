@@ -1,63 +1,95 @@
-Return-Path: <linuxppc-dev+bounces-15422-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15423-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 29DD8D1D478
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jan 2026 19:02:09 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id ADD26D1D483
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jan 2026 19:19:58 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dnDmH5CF7z2xpt;
-	Fri, 09 Jan 2026 06:02:07 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dnF8s1Sgdz2xpt;
+	Fri, 09 Jan 2026 06:19:57 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767898927;
-	cv=none; b=l/7FLBuyv44/kGPCFspOt/3erztS6C5+jI8ksQSrDUnAkZ6CBuG37+uEPPx743jpLpNidZ89yX1V/xgsKIGTUeYUtpZZOjxNHrDk3+zBNeVzSIeLCWyZQA35Oxqa4m898HREgvTojTIxOEqIf57Ar1yhViB7hwBGujAVJ7sQ8lbwOGBANxs0AhulO9ze17CMOADXptWZvHY1EY81HPxlzISFqkk3X9FjZ9Zu51ad6EDSl9xlW19J2t4nHLNgjEHnq07bMjpT2igXLlHbu1nT7g3tD8ZCdhcY0egrJg3Ax41ZoxBqNOLbr7LD64irCKdC1rV0egwroQmqVK+sR+lr+w==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767899997;
+	cv=none; b=kvdrxzY0LlCNLv+mywgEtNPY22C5FOdTd+K2u/G+BtkZV+aqW4VwuF+WLJqsTGEysY7AAWvX9mii6l6HMOf1MRQ7Bey3c8gbtia506kwqCIgQbjZb1hLAcU0gHwV5nNGryc5QST2CBUKfQkePsIqfFCV8ImnUrc8/Sf5tbAAq656/ZH/wV1Zlwhz3CZQXy/UBbcBxHvGu8xvZs5iDTmK8ydrT52RiRnDeMdTVe0MGDSyn4Gtkh+GTV42VICXfcIpy4BdMYLL9kWPc93wmxqRaMcmTNzT6vFHquJt46bB9YZ0kCXsxYCUdVbJqtTuy+G06MatzOentcVctuf9iWbAUQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767898927; c=relaxed/relaxed;
-	bh=5Egeoauu85j4e+WeXxWLxZq8WExQ6Zh5dl8x5NP2WN0=;
-	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
-	 Content-Type:Content-Disposition:In-Reply-To; b=T4sdvVCveAjYvM492insMxLKZmL9NMkHnteD/B8a03KzcEFrI4hyafCKG+TlaBxRtEkIKtZ+3m003HCxNSLX7zcfnNjgmw8moWIaZtp+fGdkQrYyaLnSF/o9X0WkNTEBX/w1y2Jja18hLdvNbS3JEyZTe3yqeMJhOYd/ESb6VEq5ey+MrQc/us50MdUG86AbnN+sc2tQ0mkmFKmLMvcSllkkin5g9w8xb7oMb0fpMT2IzDa+UmC8EwoXwDnKqcnfMAzT5DnjWsC7thCAR0kZDpdc72HBtc0cVuSVTbQhLuaqGCyNI2tThhwbCVrTLg7SO7Co0vUBAEBFarlyu0U6Kg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gds6PdVt; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1767899997; c=relaxed/relaxed;
+	bh=Tzrq+4BiaeS9zeQ5BXLg5bAaN9WKhQUuxGsqtXMKVv4=;
+	h=Date:From:To:Cc:Subject:Message-Id:In-Reply-To:References:
+	 Mime-Version:Content-Type; b=OKYYEzUU28xLgdSKiFePNXj/H4dXW+DovIGSaaTRkmX0fxzhO7JFBodo/DOgMov38r/Pw7lnbhiPQqRPIW9iTcB4MEPTYDlOlne+aUdrNIXKx7pYlTPN4HoIAyt7n8zQcAEdCKpavDNs+n90QT9JNbGt0UdthGm9pyXaNpzjYfGoPfPXYKfQEYtWYhaiew3LKtLMSDeGPBlswJ//XVPpzC2et7iw7Wq9frX0kRdZPK31m3+r8z+8wqE1mo6ko0Zy5kEFrxiS5I9I9lfPpuwaJvbtWpVUllia9uQpYej9jgLfsssG62YJkcrVOieH7iQz/4dUGGfYWtai+/VhUe5b1g==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org; dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=CVumgl5u; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org) smtp.mailfrom=linux-foundation.org
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=linux-foundation.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=gds6PdVt;
+	dkim=pass (1024-bit key; unprotected) header.d=linux-foundation.org header.i=@linux-foundation.org header.a=rsa-sha256 header.s=korg header.b=CVumgl5u;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=robh@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux-foundation.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=akpm@linux-foundation.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dnDmG4mJwz2xcB
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Jan 2026 06:02:06 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dnF8p517Yz2xGY
+	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Jan 2026 06:19:53 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id EF30140A00;
-	Thu,  8 Jan 2026 19:02:04 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A4478C116C6;
-	Thu,  8 Jan 2026 19:02:04 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767898924;
-	bh=cGVPGNzS5dackujqgZ6gZ4apORen6+dbC4SXpFIwMX8=;
-	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
-	b=gds6PdVtl7nh9hqOKIShu4yNF5qDmklyNOic3poXva+cTt8kxVAIOWhkFHV2Xa5pj
-	 bpx1EvHsEoP3H8+Cs9/i7L+ndXn+UEnKbVjOI1V4pCLxRwsc0VdWav/A308DJB3tfJ
-	 qluxPbP6gsQX3M0vIW6GTkQ/Ogb3KlROpvCNtc9aDsRfPVs3kgddj5+OimSy9hgu8m
-	 OIsykjiXH5OlQp2WNLD9mmY+GGRCtmOgOziJN0g0AX0oVqlgTwf3xwgjgtg6642HRN
-	 THiJlE9WyGfKTcj+8NR0M7HkQp2wM3OODPhvGngwmozWB8VsPIC/0pU1VHOvoG6oav
-	 CfldgY+DC16Cg==
-Date: Thu, 8 Jan 2026 13:02:03 -0600
-From: Rob Herring <robh@kernel.org>
-To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Qiang Zhao <qiang.zhao@nxp.com>,
-	Krzysztof Kozlowski <krzk+dt@kernel.org>,
-	Conor Dooley <conor+dt@kernel.org>, linuxppc-dev@lists.ozlabs.org,
-	linux-arm-kernel@lists.infradead.org, devicetree@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	Conor Dooley <conor.dooley@microchip.com>
-Subject: Re: [PATCH 2/2] dt-bindings: soc: fsl: qe: Add an interrupt
- controller for QUICC Engine Ports
-Message-ID: <20260108190203.GA780464-robh@kernel.org>
-References: <63f19db21a91729d91b3df336a56a7eb4206e561.1767804922.git.chleroy@kernel.org>
- <7708243d6cca21004de8b3da87369c06dbee3848.1767804922.git.chleroy@kernel.org>
+	by sea.source.kernel.org (Postfix) with ESMTP id DD4D240732;
+	Thu,  8 Jan 2026 19:19:21 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id CEE9CC116C6;
+	Thu,  8 Jan 2026 19:19:19 +0000 (UTC)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=linux-foundation.org;
+	s=korg; t=1767899961;
+	bh=fSg1rFUc7Lj8obCBDIiOBzwmsy2PDWnpS6aiVKuno6E=;
+	h=Date:From:To:Cc:Subject:In-Reply-To:References:From;
+	b=CVumgl5uYfQfaLqYgweLov8FT7OgO1ch7qHlwuZbONKicqb+bmGFoLIsYAxoWfRsr
+	 6BxVTZH+QFJx2xSpWVk0NUrA2Ddxjwu2/Wcc1JG/gPIWft2fVjXp2CIt9nEHIpeVml
+	 fnOoO4sO6q/7KPmJQudmyHeHcLC9E7nvlzSuO+ys=
+Date: Thu, 8 Jan 2026 11:19:19 -0800
+From: Andrew Morton <akpm@linux-foundation.org>
+To: Mike Rapoport <rppt@kernel.org>
+Cc: Klara Modin <klarasmodin@gmail.com>, Alex Shi <alexs@kernel.org>,
+ Alexander Gordeev <agordeev@linux.ibm.com>, Andreas Larsson
+ <andreas@gaisler.com>, Borislav Petkov <bp@alien8.de>, Brian Cain
+ <bcain@kernel.org>, "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+ Catalin Marinas <catalin.marinas@arm.com>, "David S. Miller"
+ <davem@davemloft.net>, Dave Hansen <dave.hansen@linux.intel.com>, David
+ Hildenbrand <david@kernel.org>, Dinh Nguyen <dinguyen@kernel.org>, Geert
+ Uytterhoeven <geert@linux-m68k.org>, Guo Ren <guoren@kernel.org>, Heiko
+ Carstens <hca@linux.ibm.com>, Helge Deller <deller@gmx.de>, Huacai Chen
+ <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>, Johannes Berg
+ <johannes@sipsolutions.net>, John Paul Adrian Glaubitz
+ <glaubitz@physik.fu-berlin.de>, Jonathan Corbet <corbet@lwn.net>,
+ "Liam R. Howlett" <Liam.Howlett@oracle.com>, Lorenzo Stoakes
+ <lorenzo.stoakes@oracle.com>, Magnus Lindholm <linmag7@gmail.com>, Matt
+ Turner <mattst88@gmail.com>, Max Filippov <jcmvbkbc@gmail.com>, Michael
+ Ellerman <mpe@ellerman.id.au>, Michal Hocko <mhocko@suse.com>, Michal Simek
+ <monstr@monstr.eu>, Muchun Song <muchun.song@linux.dev>, Oscar Salvador
+ <osalvador@suse.de>, Palmer Dabbelt <palmer@dabbelt.com>, Pratyush Yadav
+ <pratyush@kernel.org>, Richard Weinberger <richard@nod.at>, Russell King
+ <linux@armlinux.org.uk>, Stafford Horne <shorne@gmail.com>, Suren
+ Baghdasaryan <surenb@google.com>, Thomas Bogendoerfer
+ <tsbogend@alpha.franken.de>, Thomas Gleixner <tglx@linutronix.de>, Vasily
+ Gorbik <gor@linux.ibm.com>, Vineet Gupta <vgupta@kernel.org>, Vlastimil
+ Babka <vbabka@suse.cz>, Will Deacon <will@kernel.org>, x86@kernel.org,
+ linux-alpha@vger.kernel.org, linux-arm-kernel@lists.infradead.org,
+ linux-csky@vger.kernel.org, linux-cxl@vger.kernel.org,
+ linux-doc@vger.kernel.org, linux-hexagon@vger.kernel.org,
+ linux-kernel@vger.kernel.org, linux-m68k@lists.linux-m68k.org,
+ linux-mips@vger.kernel.org, linux-mm@kvack.org,
+ linux-openrisc@vger.kernel.org, linux-parisc@vger.kernel.org,
+ linux-riscv@lists.infradead.org, linux-s390@vger.kernel.org,
+ linux-sh@vger.kernel.org, linux-snps-arc@lists.infradead.org,
+ linux-um@lists.infradead.org, linuxppc-dev@lists.ozlabs.org,
+ loongarch@lists.linux.dev, sparclinux@vger.kernel.org
+Subject: Re: [PATCH 3.5] arm: make initialization of zero page independent
+ of the memory map (was Re: [PATCH v2 22/28] arch, mm: consolidate
+ initialization of nodes, zones and memory map)
+Message-Id: <20260108111919.ac5f811132672e760f47fbab@linux-foundation.org>
+In-Reply-To: <aVpWpLV4Dut5Muo2@kernel.org>
+References: <20260102070005.65328-1-rppt@kernel.org>
+	<20260102070005.65328-23-rppt@kernel.org>
+	<aVhN2NgQEKe0yzva@soda.int.kasm.eu>
+	<aVll339wim7dCIaQ@kernel.org>
+	<aVlwOyicOLPB9SOa@parmesan.int.kasm.eu>
+	<aVpWpLV4Dut5Muo2@kernel.org>
+X-Mailer: Sylpheed 3.8.0beta1 (GTK+ 2.24.33; x86_64-pc-linux-gnu)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -70,88 +102,34 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
   <mailto:linuxppc-dev+subscribe-nomail@lists.ozlabs.org>
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
-MIME-Version: 1.0
-Content-Type: text/plain; charset=us-ascii
-Content-Disposition: inline
-In-Reply-To: <7708243d6cca21004de8b3da87369c06dbee3848.1767804922.git.chleroy@kernel.org>
+Mime-Version: 1.0
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-On Wed, Jan 07, 2026 at 05:59:10PM +0100, Christophe Leroy (CS GROUP) wrote:
-> The QUICC Engine provides interrupts for a few I/O ports. This is
-> handled via a separate interrupt ID and managed via a triplet of
-> dedicated registers hosted by the SoC.
+On Sun, 4 Jan 2026 14:01:40 +0200 Mike Rapoport <rppt@kernel.org> wrote:
+
+> Can you please stick this between patch 3 (arm: introduce
+> arch_zone_limits_init()) and patch 4 (arm64: introduce
+> arch_zone_limits_init())?
+
+Did, thanks.  I made this a standalone patch rather than  a
+squashable -fix.
+
+> >From 35d016bbf5da7c08cc5c5547c85558fc50cb63aa Mon Sep 17 00:00:00 2001
+> From: Klara Modin <klarasmodin@gmail.com>
+> Date: Sat, 3 Jan 2026 20:40:09 +0200
+> Subject: [PATCH] arm: make initialization of zero page independent of the
+>  memory map
 > 
-> Implement an interrupt driver for it so that those IRQs can then
-> be linked to the related GPIOs.
+> Unlike most architectures, arm keeps a struct page pointer to the
+> empty_zero_page and to initialize it requires conversion of a virtual
+> address to page which makes it necessary to have memory map initialized
+> before creating the empty_zero_page.
 > 
-> Signed-off-by: Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-> Acked-by: Conor Dooley <conor.dooley@microchip.com>
-
-Already? On a v1?
-
-> ---
->  .../soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml       | 51 +++++++++++++++++++
->  1 file changed, 51 insertions(+)
->  create mode 100644 Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
+> Make empty_zero_page a stataic array in BSS to decouple it's
+> initialization from the initialization of the memory map.
 > 
-> diff --git a/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
-> new file mode 100644
-> index 0000000000000..1f3c652b1569d
-> --- /dev/null
-> +++ b/Documentation/devicetree/bindings/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml
-> @@ -0,0 +1,51 @@
-> +# SPDX-License-Identifier: (GPL-2.0-only OR BSD-2-Clause)
-> +%YAML 1.2
-> +---
-> +$id: http://devicetree.org/schemas/soc/fsl/cpm_qe/fsl,qe-ports-ic.yaml#
-> +$schema: http://devicetree.org/meta-schemas/core.yaml#
-> +
-> +title: Freescale QUICC Engine I/O Ports Interrupt Controller
-> +
-> +maintainers:
-> +  - Christophe Leroy (CS GROUP) <chleroy@kernel.org>
-> +
-> +properties:
-> +  compatible:
-> +    enum:
-> +      - fsl,mpc8323-qe-ports-ic
-> +
-> +  reg:
-> +    maxItems: 1
-> +
-> +  interrupt-controller: true
-> +
-> +  '#address-cells':
-> +    const: 0
-> +
-> +  '#interrupt-cells':
-> +    const: 1
-> +
-> +  interrupts:
-> +    maxItems: 1
-> +
-> +required:
-> +  - compatible
-> +  - reg
-> +  - interrupt-controller
-> +  - '#address-cells'
-> +  - '#interrupt-cells'
-> +  - interrupts
-> +
-> +additionalProperties: false
-> +
-> +examples:
-> +  - |
-> +    interrupt-controller@c00 {
-> +      compatible = "fsl,mpc8323-qe-ports-ic";
-> +      reg = <0xc00 0x18>;
-> +      interrupt-controller;
-> +      #address-cells = <0>;
-> +      #interrupt-cells = <1>;
-> +      interrupts = <74 0x8>;
-> +      interrupt-parent = <&ipic>;
+> This also aligns arm with vast majorty of architectures.
 
-This doesn't look like a separate block, but just part of its parent. So 
-just add interrupt-controller/#interrupt-cells to the parent.
-
-Rob
+Russell, can you please update us on your concerns with this change?
 
