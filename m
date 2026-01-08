@@ -1,80 +1,101 @@
-Return-Path: <linuxppc-dev+bounces-15410-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15411-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 076FDCF6AB4
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jan 2026 09:37:04 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 023F2CF6AB4
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jan 2026 09:38:37 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dn0DH3mJRz2yG3;
-	Thu, 08 Jan 2026 20:37:03 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.167.42
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767864316;
-	cv=none; b=eGJdeTaS/KSr/ivlOifa2cCeJpBOlDvFxJDVjPO5WpBjeLdhhV4JLXRmIjEa62X14h+TcTiJZ8VrOUHqIVGTyubeph4HyE7gK2H4loKpCx7j8aLAR/zh86RgS/B+b4+6Z9FkRaAV37n3ciEGfjvdaHBI2OForcguCriM94IvP6bjy3eEidDCst+ky6n/R7CJvTg0MTNgxhfh3Psz2ACGbVGST+SCa8yYN869P6XdZdr4K33k0IAxPXIS0kyNOejYJnFEOf4JLReRXk3XeUrQcn6/2kKEaDLy4e4IPfHND4G99598P+0Dmba9DktpLTPIlKJetJ272wdNCq8nTVaF2g==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dn0G43r4Cz2yG7;
+	Thu, 08 Jan 2026 20:38:36 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.214.180
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767860787;
+	cv=none; b=VIqchScBYqu/unNgRAiQmJmJ+2wfH5RAIvHurnzQtsSEZUZ9zQI7v0tEFFV5Dzi4rP7U2LTmzED5wrR+mnrIDDxMJhZib22IICElghr8v2r6kUYtsxDU5egeoaXx/VmxGQPmxUBAsyq5fsLYRkKrm2lmHP4orr2KMUmDnOUnfQrtxxuv68RShuOKXFO/jcT7Qcs8BO4TjCBYD4K6KXgzFh7DYJYVhaM3EZSacEOk6ledVaqfx2j59MYlSE0gf5O/OBELr3C9tM1iYIz65e5JOKcVY9u1MkL1KHZgyvT2+SFenpolXUfIxC2+yNmIA88d3jlAAV3w76eIZ47M8M32xg==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767864316; c=relaxed/relaxed;
-	bh=O50KBUnGST61ZefwYqUJR7pUIsjZIrmO+en74z/l02I=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ddsCra4C3v2pEErAPI0yzKf+zifnpeNd7b0V52COzWGo52nWyxrrMe/b2AFhJlInBKiJkWo7h9uybNjS/HG/2PWBRG6U3IjzaWYVg7Z5BviZb2P8/eOCRCIR9dfCXE3j4Snrx3sMFGHJho2Jaq1xG/jpabSjZDYp/3P4UF9qwkL+hEJ1AbvxZcgwBAFiHMh/S4TdYcVCPgF4yl7FSUgMTWpAqH63YAfARxZkhVbyOL0uGgzsoz0r/Ljl6cMjqtweaNreTuI6ivD+Z7Ep+enaPoOqxkKvW6/oPi2N5a8IgpO5t2CFon9PPeSdCbVbIdV3uf5c2U36ocJv8kz93YMR8w==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=MtpfsBPZ; dkim-atps=neutral; spf=pass (client-ip=209.85.167.42; helo=mail-lf1-f42.google.com; envelope-from=kaleposti@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+	t=1767860787; c=relaxed/relaxed;
+	bh=x8t1+RviBZBkQiz1+F0jLoZoAGkcEhuc2rfeggUJxJA=;
+	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=c4XrkOQpXR9pjq/mpS9nljHdlX/tDiQ+AgjD/59q6Mm5t8eZDDUfRpvmKLTtGlfsNQfHwHbdZivFhAw+pizfQ3Grv2Afs2/Vmt56GGjxTOBIB8pZhGgp9vrup5bvWlacyc6gGIeiEjqfHQP0HbyZep6LUr663vsBWmYncHqSXCbBsEDtBGQwYOvSqQ6ePvKmTNrUqGbTcpzSsHEw45L08a8+GjN84SRJf5l4QTCTusP7Dp6I9gzmC3L5Qal+dGlnJ7MeOVPStecj2ALw8vFoeEHoRimiE/g0DIXjgton0M3SROu1aDZUlfmH5Ml4KlO+5NnRE/j9CvqeqntHZzsE+Q==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=VlObGF3v; dkim-atps=neutral; spf=pass (client-ip=209.85.214.180; helo=mail-pl1-f180.google.com; envelope-from=atharvatiwarilinuxdev@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=MtpfsBPZ;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=VlObGF3v;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.167.42; helo=mail-lf1-f42.google.com; envelope-from=kaleposti@gmail.com; receiver=lists.ozlabs.org)
-Received: from mail-lf1-f42.google.com (mail-lf1-f42.google.com [209.85.167.42])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.214.180; helo=mail-pl1-f180.google.com; envelope-from=atharvatiwarilinuxdev@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-pl1-f180.google.com (mail-pl1-f180.google.com [209.85.214.180])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmzyg36Ntz2xZK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jan 2026 20:25:14 +1100 (AEDT)
-Received: by mail-lf1-f42.google.com with SMTP id 2adb3069b0e04-59b76844f89so605329e87.1
-        for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jan 2026 01:25:14 -0800 (PST)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmyfp4sNXz2xZK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jan 2026 19:26:25 +1100 (AEDT)
+Received: by mail-pl1-f180.google.com with SMTP id d9443c01a7336-2a0ac29fca1so22960775ad.2
+        for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jan 2026 00:26:25 -0800 (PST)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=gmail.com; s=20230601; t=1767864251; x=1768469051; darn=lists.ozlabs.org;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :from:to:cc:subject:date:message-id:reply-to;
-        bh=O50KBUnGST61ZefwYqUJR7pUIsjZIrmO+en74z/l02I=;
-        b=MtpfsBPZzVt0EDHxnuEZpgYIQFHBarrbKJFqY8tCzvQ2+REIJ2LmC/3Cp8FxEH2OIr
-         QuisAsasplqx5P0gSu+coBC/kZa2MN6MZapBbzIoyhi6pvrShowDGnAhE+0DTGQFEK2/
-         Z/AZdyMaEOYEnMo4IZx3KVOu7PN3E6nAMq5QNJAoRclUdqZAc6W7TczyHhifdeLdWRlS
-         YRQTmGsOsHtp21jfd3qLNPdTVIylm0yarNzywexfTdnoho8E0/+HzWfaAbWWWuulVl7O
-         eHVvPUZibSjPmEhuBYr6zzIKUKUNqeEheuhszQIXV8GcrhFZqVwLCyUbj7ZYKB0r8eXn
-         u+ww==
+        d=gmail.com; s=20230601; t=1767860724; x=1768465524; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:from:to:cc:subject:date:message-id:reply-to;
+        bh=x8t1+RviBZBkQiz1+F0jLoZoAGkcEhuc2rfeggUJxJA=;
+        b=VlObGF3vYzWEBe6fSRKgdM6wxtXpiZOozioHwfVVrKLzk51rKJS79+pHpYrv+vFAbA
+         7P+mAPOIyhgqpXc6axTHvuqNrmW/1Lb2D1PDhc1o+aQSgsjCDCW7J0a6ZIx10mhnb/Tx
+         XxAzACKnHPVu2m4/9+pAjAS9ySJR6ksYSMQBWSXQ2Yp5I9kgZHqbW9J8RklZdZq36ozo
+         F7uOoH9L2sz1W1tWPSjM2K+zZSZFViiIs1G9jDxNxIgYk0TxPf4F+0xw9o7bxQ2MWnl8
+         H5c8ah+pUVceYFoRkwu/caISnMkDHTf14ZcRc95zEVr3vY/jwynZGL9/T54j5JyVgYqd
+         h/2Q==
 X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
-        d=1e100.net; s=20230601; t=1767864251; x=1768469051;
-        h=content-transfer-encoding:in-reply-to:from:content-language
-         :references:cc:to:subject:user-agent:mime-version:date:message-id
-         :x-gm-gg:x-gm-message-state:from:to:cc:subject:date:message-id
-         :reply-to;
-        bh=O50KBUnGST61ZefwYqUJR7pUIsjZIrmO+en74z/l02I=;
-        b=vPvzpwXzPTfrb0OnrxJ1p1D+OSkDpCe7awLGmOwms6ovvPQhc9NjClpDFwguIfPgaN
-         i1zii6uXOzjtz+MBHdpQuxXqtaCU7UU0uYaV66HlIp/AvP684enHCON2GWK9KzlT37Td
-         v9X/c4N7MzcF10y9IroZxhD5D8d5FFDIhv3kQKyIOcwDSXmwZ4c4y4OvXXuXLqi+Jzbg
-         fjwHsRxjkCC3qZ2jhweJiHLpLWyOR5Ro3TYBtjY5B7sPf9JZjDHlEosfS7vhpBqzqO/W
-         89HJCxGsCAU3urTFJyqp8PJkyVhNIIpW1JyVllmqgNyad/RhlhjrxNcis9yW9dt49map
-         kmOw==
-X-Forwarded-Encrypted: i=1; AJvYcCUQmMxtSDACkijfr1qGMPpCSenBx2mpEtp3yI+CZr2KLKf4xWdcYmOBs1cQ8TEDU8zYh03bI+Rp6zDHaTQ=@lists.ozlabs.org
-X-Gm-Message-State: AOJu0YzRxoHPCMQBDKDh83O7k8SA3/aFYQJVOHtmN+2/zCcfbfsHvIKT
-	dlnzVxIRraCie2RMtEJ0udW3he6RCRsndlaKE758NC+hyXdAJFBS3lZB
-X-Gm-Gg: AY/fxX6tT7CuF6sbrOscCwi9zUIr6sGHFsptlXkBJpqtbZEU+qSmPLc9CSwreCflemX
-	WBNRk3CxSGxhjRSm+qvs61IQ8tC/Je5+YAEU4Py4Om4kcSrlVD/370fMtkM0ZQUAK1wooOuUfkq
-	z2Fz0sljb43+tvTTTLbteXDTAseMsGcdI7su/6Z8J2CNVcrRzgYKCcq3C5SY4SFTpaW/UAU1Lt4
-	Fj6j7vYHXSozvqM+LzQ+9ysa7NPqQymTPPZuCv/rTpuBz4kTU6pEQRHTSRrZGObiYf+MOdvnCk3
-	+VoBrz89H5+wEvwvF1ZorPXXHN/LkxZaRVwbwpnHvq95+3sxOqPqQH40vTNssny4LcjjgU3zZq/
-	cGURLwUtDCIpCvC2H4eZlLxd3W9+sIITqDNZLiBVqD94L7oABVx80/r93Hg2h4aV7UsKikPz4md
-	Wh7q9Jek+aLIwn8A==
-X-Google-Smtp-Source: AGHT+IGdcXNcrSJMUo5rzOhpUERfjTIptDpq2P2C9H1U0wCIgEF/AiEiE+KdQDO/6ObzG0ofCqAsmQ==
-X-Received: by 2002:a05:6512:2350:b0:592:f8c0:c8de with SMTP id 2adb3069b0e04-59b6ef08fffmr1929382e87.13.1767864249992;
-        Thu, 08 Jan 2026 01:24:09 -0800 (PST)
-Received: from [10.38.18.76] ([213.255.186.37])
-        by smtp.gmail.com with ESMTPSA id 2adb3069b0e04-59b6bebfa94sm1498950e87.55.2026.01.08.01.24.08
-        (version=TLS1_3 cipher=TLS_AES_128_GCM_SHA256 bits=128/128);
-        Thu, 08 Jan 2026 01:24:09 -0800 (PST)
-Message-ID: <5f9a0269-f9d5-4ee0-bf57-62148d762f7f@gmail.com>
-Date: Thu, 8 Jan 2026 11:24:07 +0200
+        d=1e100.net; s=20230601; t=1767860724; x=1768465524;
+        h=content-transfer-encoding:mime-version:message-id:date:subject:cc
+         :to:from:x-gm-gg:x-gm-message-state:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=x8t1+RviBZBkQiz1+F0jLoZoAGkcEhuc2rfeggUJxJA=;
+        b=B7f9GE7tq24fDV/VspyfhCx95qMpkE3WDrxdsfRwKtTwuVgLLJY8vz1S0v0Jv3RzWD
+         MfnX6x6SqdSY3JMQVswjRbeJd27ZkTByANBgts76/JfvekXX3tFr4pngE3mIb7+rDlVF
+         UqqiBhwI/qJxmagjWsTWPgWT0kKnN1cV8DGNFxY3XvWqPkBnRmhD2QeR1PF7lSER0PEz
+         FHdsuaOKDXukl9fc10aNjESa5kfzQsjIny2A52dyC2c/lLh92wNffhmHdQfJzMXnXRwn
+         CAvet7itmrTVGirclKdDJpy7A0XU6cm/QbsqffiZa/m0TI2V8knyGXIA07muQlgc2qkS
+         na2Q==
+X-Forwarded-Encrypted: i=1; AJvYcCXEgLaQooEVOZKacWnyVucmwoi1Go0g6HSA7tN6nW3oztoBgZ7E41HGxTOTUin94/jDgbfnZEQRw/ks6ns=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0YwQErf/EWhTeFGI+aTGHfuVSlsKKrCqu5IOHveGf23gfBkU4DIt
+	hYmqK5Bm6NXFQKH8tTpSZ93zJKZ8u2WHeCRuRjb6hDtEWk0Sm0khbA0=
+X-Gm-Gg: AY/fxX59iE9AOoY/rkp6H+vk71MmXlloQiRHfrwS+f/v0VSgMcDDXOimOUHNF4vkvjx
+	aaIXB/uaADZNltGNAEv3LMp2ww5yAbR+e5/sLJqowdQL2HBmggCP7oF4gpZjLi6nLzm6cRZT0wM
+	teufTk9eMn61DbpqId5xZIgQxnSkB26pCzM4i+CDMZWd8Z253sigvXLsa9IflOil9jhGgTQcoRa
+	5LxdmaqTN/FZc3CWkZ6ENaHOBhFLv/c25Zdm3VowOZrVK4sanM1GjyV69xv0Lg0qjUX5tzGyLQT
+	i/3oaKpgpnjcSiD8jKC1qj5GuihVz2jVMq3UVGfS5PdN4Z8hgts25WsZg2q/yR5qeCOk8WKk554
+	7KOSHbSFYvfdyRuzRg0DuCmJJ6Y4OTbNv3mqBT8qtmXf9sF1eaYeD/cAihlr6SmaDkH3i3ZbymH
+	JaVni5lE9mtikqRHM=
+X-Google-Smtp-Source: AGHT+IFlqu/P/5sh9z5DWE3DsjYa1JH40CTlBeUg8uyttdF4r71Kg5WERp3YCavi1Kt+WDXEmDPaOw==
+X-Received: by 2002:a17:903:3c30:b0:2a0:fe4a:d67c with SMTP id d9443c01a7336-2a3ee437a5dmr49953365ad.10.1767860724001;
+        Thu, 08 Jan 2026 00:25:24 -0800 (PST)
+Received: from at.. ([171.61.166.195])
+        by smtp.gmail.com with ESMTPSA id d9443c01a7336-2a3e3c47303sm70625825ad.24.2026.01.08.00.25.18
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Thu, 08 Jan 2026 00:25:23 -0800 (PST)
+From: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
+To: 
+Cc: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Thomas Gleixner <tglx@linutronix.de>,
+	Ingo Molnar <mingo@redhat.com>,
+	Borislav Petkov <bp@alien8.de>,
+	Dave Hansen <dave.hansen@linux.intel.com>,
+	x86@kernel.org,
+	"H. Peter Anvin" <hpa@zytor.com>,
+	Mahesh J Salgaonkar <mahesh@linux.ibm.com>,
+	"Oliver O'Halloran" <oohall@gmail.com>,
+	Andreas Noever <andreas.noever@gmail.com>,
+	Mika Westerberg <westeri@kernel.org>,
+	Yehezkel Bernat <YehezkelShB@gmail.com>,
+	Lukas Wunner <lukas@wunner.de>,
+	Kuppuswamy Sathyanarayanan <sathyanarayanan.kuppuswamy@linux.intel.com>,
+	Feng Tang <feng.tang@linux.alibaba.com>,
+	linux-pci@vger.kernel.org,
+	linux-kernel@vger.kernel.org,
+	linuxppc-dev@lists.ozlabs.org,
+	linux-usb@vger.kernel.org
+Subject: [PATCH v4] PCI/portdev: Disable AER for Titan Ridge 4C 2018
+Date: Thu,  8 Jan 2026 08:25:03 +0000
+Message-ID: <20260108082509.3028-1-atharvatiwarilinuxdev@gmail.com>
+X-Mailer: git-send-email 2.43.0
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -88,887 +109,99 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH v2 22/28] arch, mm: consolidate initialization of nodes,
- zones and memory map
-To: Mike Rapoport <rppt@kernel.org>, Andrew Morton <akpm@linux-foundation.org>
-Cc: Alex Shi <alexs@kernel.org>, Alexander Gordeev <agordeev@linux.ibm.com>,
- Andreas Larsson <andreas@gaisler.com>, Borislav Petkov <bp@alien8.de>,
- Brian Cain <bcain@kernel.org>,
- "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
- Catalin Marinas <catalin.marinas@arm.com>,
- "David S. Miller" <davem@davemloft.net>,
- Dave Hansen <dave.hansen@linux.intel.com>,
- David Hildenbrand <david@kernel.org>, Dinh Nguyen <dinguyen@kernel.org>,
- Geert Uytterhoeven <geert@linux-m68k.org>, Guo Ren <guoren@kernel.org>,
- Heiko Carstens <hca@linux.ibm.com>, Helge Deller <deller@gmx.de>,
- Huacai Chen <chenhuacai@kernel.org>, Ingo Molnar <mingo@redhat.com>,
- Johannes Berg <johannes@sipsolutions.net>,
- John Paul Adrian Glaubitz <glaubitz@physik.fu-berlin.de>,
- Jonathan Corbet <corbet@lwn.net>, "Liam R. Howlett"
- <Liam.Howlett@oracle.com>, Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
- Magnus Lindholm <linmag7@gmail.com>, Matt Turner <mattst88@gmail.com>,
- Max Filippov <jcmvbkbc@gmail.com>, Michael Ellerman <mpe@ellerman.id.au>,
- Michal Hocko <mhocko@suse.com>, Michal Simek <monstr@monstr.eu>,
- Muchun Song <muchun.song@linux.dev>, Oscar Salvador <osalvador@suse.de>,
- Palmer Dabbelt <palmer@dabbelt.com>, Pratyush Yadav <pratyush@kernel.org>,
- Richard Weinberger <richard@nod.at>, Russell King <linux@armlinux.org.uk>,
- Stafford Horne <shorne@gmail.com>, Suren Baghdasaryan <surenb@google.com>,
- Thomas Bogendoerfer <tsbogend@alpha.franken.de>,
- Thomas Gleixner <tglx@linutronix.de>, Vasily Gorbik <gor@linux.ibm.com>,
- Vineet Gupta <vgupta@kernel.org>, Vlastimil Babka <vbabka@suse.cz>,
- Will Deacon <will@kernel.org>, x86@kernel.org, linux-alpha@vger.kernel.org,
- linux-arm-kernel@lists.infradead.org, linux-csky@vger.kernel.org,
- linux-cxl@vger.kernel.org, linux-doc@vger.kernel.org,
- linux-hexagon@vger.kernel.org, linux-kernel@vger.kernel.org,
- linux-m68k@lists.linux-m68k.org, linux-mips@vger.kernel.org,
- linux-mm@kvack.org, linux-openrisc@vger.kernel.org,
- linux-parisc@vger.kernel.org, linux-riscv@lists.infradead.org,
- linux-s390@vger.kernel.org, linux-sh@vger.kernel.org,
- linux-snps-arc@lists.infradead.org, linux-um@lists.infradead.org,
- linuxppc-dev@lists.ozlabs.org, loongarch@lists.linux.dev,
- sparclinux@vger.kernel.org, matti Vaittinen <mazziesaccount@gmail.com>
-References: <20260102070005.65328-1-rppt@kernel.org>
- <20260102070005.65328-23-rppt@kernel.org>
-Content-Language: en-US
-From: Kalle Niemi <kaleposti@gmail.com>
-In-Reply-To: <20260102070005.65328-23-rppt@kernel.org>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 7bit
+Content-Type: text/plain; charset=UTF-8
+Content-Transfer-Encoding: 8bit
 
-On 1/2/26 08:59, Mike Rapoport wrote:
-> From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
-> 
-> To initialize node, zone and memory map data structures every architecture
-> calls free_area_init() during setup_arch() and passes it an array of zone
-> limits.
-> 
-> Beside code duplication it creates "interesting" ordering cases between
-> allocation and initialization of hugetlb and the memory map. Some
-> architectures allocate hugetlb pages very early in setup_arch() in certain
-> cases, some only create hugetlb CMA areas in setup_arch() and sometimes
-> hugetlb allocations happen mm_core_init().
-> 
-> With arch_zone_limits_init() helper available now on all architectures it
-> is no longer necessary to call free_area_init() from architecture setup
-> code. Rather core MM initialization can call arch_zone_limits_init() in a
-> single place.
-> 
-> This allows to unify ordering of hugetlb vs memory map allocation and
-> initialization.
-> 
-> Remove the call to free_area_init() from architecture specific code and
-> place it in a new mm_core_init_early() function that is called immediately
-> after setup_arch().
-> 
-> After this refactoring it is possible to consolidate hugetlb allocations
-> and eliminate differences in ordering of hugetlb and memory map
-> initialization among different architectures.
-> 
-> As the first step of this consolidation move hugetlb_bootmem_alloc() to
-> mm_core_early_init().
-> 
-> Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
-> ---
->   arch/alpha/mm/init.c                 |  9 +--------
->   arch/arc/mm/init.c                   |  5 -----
->   arch/arm/mm/init.c                   | 16 ----------------
->   arch/arm64/mm/init.c                 |  4 ----
->   arch/csky/kernel/setup.c             |  4 ----
->   arch/hexagon/mm/init.c               | 12 ------------
->   arch/loongarch/include/asm/pgtable.h |  2 --
->   arch/loongarch/kernel/setup.c        |  2 --
->   arch/loongarch/mm/init.c             |  8 --------
->   arch/m68k/mm/init.c                  |  3 ---
->   arch/m68k/mm/mcfmmu.c                |  3 ---
->   arch/m68k/mm/motorola.c              |  6 +-----
->   arch/m68k/mm/sun3mmu.c               |  9 ---------
->   arch/microblaze/mm/init.c            |  7 -------
->   arch/mips/loongson64/numa.c          |  4 ----
->   arch/mips/mm/init.c                  |  5 -----
->   arch/mips/sgi-ip27/ip27-memory.c     |  4 ----
->   arch/nios2/mm/init.c                 |  6 ------
->   arch/openrisc/mm/init.c              | 10 ----------
->   arch/parisc/mm/init.c                |  9 ---------
->   arch/powerpc/mm/mem.c                |  4 ----
->   arch/riscv/mm/init.c                 |  9 ---------
->   arch/s390/mm/init.c                  |  5 -----
->   arch/sh/mm/init.c                    |  5 -----
->   arch/sparc/mm/init_64.c              | 11 -----------
->   arch/sparc/mm/srmmu.c                |  7 -------
->   arch/um/kernel/mem.c                 |  5 -----
->   arch/x86/mm/init.c                   | 10 ----------
->   arch/x86/mm/init_32.c                |  1 -
->   arch/x86/mm/init_64.c                |  2 --
->   arch/x86/mm/mm_internal.h            |  1 -
->   arch/xtensa/mm/init.c                |  4 ----
->   include/linux/mm.h                   |  4 ++--
->   init/main.c                          |  1 +
->   mm/mm_init.c                         | 18 ++++++++++--------
->   35 files changed, 15 insertions(+), 200 deletions(-)
-> 
-> diff --git a/arch/alpha/mm/init.c b/arch/alpha/mm/init.c
-> index cd0cb1abde5f..9531cbc761c0 100644
-> --- a/arch/alpha/mm/init.c
-> +++ b/arch/alpha/mm/init.c
-> @@ -220,17 +220,10 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfn)
->   }
->   
->   /*
-> - * paging_init() sets up the memory map.
-> + * paging_init() initializes the kernel's ZERO_PGE.
->    */
->   void __init paging_init(void)
->   {
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = {0, };
-> -
-> -	/* Initialize mem_map[].  */
-> -	arch_zone_limits_init(max_zone_pfn);
-> -	free_area_init(max_zone_pfn);
-> -
-> -	/* Initialize the kernel's ZERO_PGE. */
->   	memset(absolute_pointer(ZERO_PGE), 0, PAGE_SIZE);
->   }
->   
-> diff --git a/arch/arc/mm/init.c b/arch/arc/mm/init.c
-> index ff7974d38011..a5e92f46e5d1 100644
-> --- a/arch/arc/mm/init.c
-> +++ b/arch/arc/mm/init.c
-> @@ -102,8 +102,6 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfn)
->    */
->   void __init setup_arch_memory(void)
->   {
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0 };
-> -
->   	setup_initial_init_mm(_text, _etext, _edata, _end);
->   
->   	/* first page of system - kernel .vector starts here */
-> @@ -158,9 +156,6 @@ void __init setup_arch_memory(void)
->   	arch_pfn_offset = min(min_low_pfn, min_high_pfn);
->   	kmap_init();
->   #endif /* CONFIG_HIGHMEM */
-> -
-> -	arch_zone_limits_init(max_zone_pfn);
-> -	free_area_init(max_zone_pfn);
->   }
->   
->   void __init arch_mm_preinit(void)
-> diff --git a/arch/arm/mm/init.c b/arch/arm/mm/init.c
-> index bdcc3639681f..a8f7b4084715 100644
-> --- a/arch/arm/mm/init.c
-> +++ b/arch/arm/mm/init.c
-> @@ -118,15 +118,6 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfn)
->   #endif
->   }
->   
-> -static void __init zone_sizes_init(unsigned long min, unsigned long max_low,
-> -	unsigned long max_high)
-> -{
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0 };
-> -
-> -	arch_zone_limits_init(max_zone_pfn);
-> -	free_area_init(max_zone_pfn);
-> -}
-> -
->   #ifdef CONFIG_HAVE_ARCH_PFN_VALID
->   int pfn_valid(unsigned long pfn)
->   {
-> @@ -222,13 +213,6 @@ void __init bootmem_init(void)
->   	 * done after the fixed reservations
->   	 */
->   	sparse_init();
-> -
-> -	/*
-> -	 * Now free the memory - free_area_init needs
-> -	 * the sparse mem_map arrays initialized by sparse_init()
-> -	 * for memmap_init_zone(), otherwise all PFNs are invalid.
-> -	 */
-> -	zone_sizes_init(min_low_pfn, max_low_pfn, max_pfn);
->   }
->   
->   /*
-> diff --git a/arch/arm64/mm/init.c b/arch/arm64/mm/init.c
-> index 06815d34cc11..3641e88ea871 100644
-> --- a/arch/arm64/mm/init.c
-> +++ b/arch/arm64/mm/init.c
-> @@ -134,7 +134,6 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->   
->   static void __init dma_limits_init(void)
->   {
-> -	unsigned long max_zone_pfns[MAX_NR_ZONES]  = {0};
->   	phys_addr_t __maybe_unused acpi_zone_dma_limit;
->   	phys_addr_t __maybe_unused dt_zone_dma_limit;
->   	phys_addr_t __maybe_unused dma32_phys_limit =
-> @@ -160,9 +159,6 @@ static void __init dma_limits_init(void)
->   #endif
->   	if (!arm64_dma_phys_limit)
->   		arm64_dma_phys_limit = PHYS_MASK + 1;
-> -
-> -	arch_zone_limits_init(max_zone_pfns);
-> -	free_area_init(max_zone_pfns);
->   }
->   
->   int pfn_is_map_memory(unsigned long pfn)
-> diff --git a/arch/csky/kernel/setup.c b/arch/csky/kernel/setup.c
-> index 8968815d93e6..4bf3c01ead3a 100644
-> --- a/arch/csky/kernel/setup.c
-> +++ b/arch/csky/kernel/setup.c
-> @@ -63,7 +63,6 @@ static void __init csky_memblock_init(void)
->   {
->   	unsigned long lowmem_size = PFN_DOWN(LOWMEM_LIMIT - PHYS_OFFSET_OFFSET);
->   	unsigned long sseg_size = PFN_DOWN(SSEG_SIZE - PHYS_OFFSET_OFFSET);
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0 };
->   	signed long size;
->   
->   	memblock_reserve(__pa(_start), _end - _start);
-> @@ -101,9 +100,6 @@ static void __init csky_memblock_init(void)
->   	memblock_set_current_limit(PFN_PHYS(max_low_pfn));
->   
->   	dma_contiguous_reserve(0);
-> -
-> -	arch_zone_limits_init(max_zone_pfn);
-> -	free_area_init(max_zone_pfn);
->   }
->   
->   void __init setup_arch(char **cmdline_p)
-> diff --git a/arch/hexagon/mm/init.c b/arch/hexagon/mm/init.c
-> index e2c9487d8d34..07086dbd33fd 100644
-> --- a/arch/hexagon/mm/init.c
-> +++ b/arch/hexagon/mm/init.c
-> @@ -66,20 +66,8 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->   	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
->   }
->   
-> -/*
-> - * In order to set up page allocator "nodes",
-> - * somebody has to call free_area_init() for UMA.
-> - *
-> - * In this mode, we only have one pg_data_t
-> - * structure: contig_mem_data.
-> - */
->   static void __init paging_init(void)
->   {
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = {0, };
-> -
-> -	arch_zone_limits_init(max_zone_pfn);
-> -	free_area_init(max_zone_pfn);  /*  sets up the zonelists and mem_map  */
-> -
->   	/*
->   	 * Set the init_mm descriptors "context" value to point to the
->   	 * initial kernel segment table's physical address.
-> diff --git a/arch/loongarch/include/asm/pgtable.h b/arch/loongarch/include/asm/pgtable.h
-> index f41a648a3d9e..c33b3bcb733e 100644
-> --- a/arch/loongarch/include/asm/pgtable.h
-> +++ b/arch/loongarch/include/asm/pgtable.h
-> @@ -353,8 +353,6 @@ static inline pte_t pte_swp_clear_exclusive(pte_t pte)
->   	return pte;
->   }
->   
-> -extern void paging_init(void);
-> -
->   #define pte_none(pte)		(!(pte_val(pte) & ~_PAGE_GLOBAL))
->   #define pte_present(pte)	(pte_val(pte) & (_PAGE_PRESENT | _PAGE_PROTNONE))
->   #define pte_no_exec(pte)	(pte_val(pte) & _PAGE_NO_EXEC)
-> diff --git a/arch/loongarch/kernel/setup.c b/arch/loongarch/kernel/setup.c
-> index 20cb6f306456..708ac025db71 100644
-> --- a/arch/loongarch/kernel/setup.c
-> +++ b/arch/loongarch/kernel/setup.c
-> @@ -621,8 +621,6 @@ void __init setup_arch(char **cmdline_p)
->   	prefill_possible_map();
->   #endif
->   
-> -	paging_init();
-> -
->   #ifdef CONFIG_KASAN
->   	kasan_init();
->   #endif
-> diff --git a/arch/loongarch/mm/init.c b/arch/loongarch/mm/init.c
-> index 17235f87eafb..c331bf69d2ec 100644
-> --- a/arch/loongarch/mm/init.c
-> +++ b/arch/loongarch/mm/init.c
-> @@ -68,14 +68,6 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->   	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
->   }
->   
-> -void __init paging_init(void)
-> -{
-> -	unsigned long max_zone_pfns[MAX_NR_ZONES];
-> -
-> -	arch_zone_limits_init(max_zone_pfns);
-> -	free_area_init(max_zone_pfns);
-> -}
-> -
->   void __ref free_initmem(void)
->   {
->   	free_initmem_default(POISON_FREE_INITMEM);
-> diff --git a/arch/m68k/mm/init.c b/arch/m68k/mm/init.c
-> index 6b1d9d2434b5..53b71f786c27 100644
-> --- a/arch/m68k/mm/init.c
-> +++ b/arch/m68k/mm/init.c
-> @@ -69,13 +69,10 @@ void __init paging_init(void)
->   	 * page_alloc get different views of the world.
->   	 */
->   	unsigned long end_mem = memory_end & PAGE_MASK;
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0, };
->   
->   	high_memory = (void *) end_mem;
->   
->   	empty_zero_page = memblock_alloc_or_panic(PAGE_SIZE, PAGE_SIZE);
-> -	arch_zone_limits_init(max_zone_pfn);
-> -	free_area_init(max_zone_pfn);
->   }
->   
->   #endif /* CONFIG_MMU */
-> diff --git a/arch/m68k/mm/mcfmmu.c b/arch/m68k/mm/mcfmmu.c
-> index 24a6f7bbd1ce..3418fd864237 100644
-> --- a/arch/m68k/mm/mcfmmu.c
-> +++ b/arch/m68k/mm/mcfmmu.c
-> @@ -39,7 +39,6 @@ void __init paging_init(void)
->   	pte_t *pg_table;
->   	unsigned long address, size;
->   	unsigned long next_pgtable;
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0 };
->   	int i;
->   
->   	empty_zero_page = memblock_alloc_or_panic(PAGE_SIZE, PAGE_SIZE);
-> @@ -73,8 +72,6 @@ void __init paging_init(void)
->   	}
->   
->   	current->mm = NULL;
-> -	arch_zone_limits_init(max_zone_pfn);
-> -	free_area_init(max_zone_pfn);
->   }
->   
->   int cf_tlb_miss(struct pt_regs *regs, int write, int dtlb, int extension_word)
-> diff --git a/arch/m68k/mm/motorola.c b/arch/m68k/mm/motorola.c
-> index d6ccd23caf61..127a3fa69f4c 100644
-> --- a/arch/m68k/mm/motorola.c
-> +++ b/arch/m68k/mm/motorola.c
-> @@ -429,7 +429,6 @@ DECLARE_VM_GET_PAGE_PROT
->    */
->   void __init paging_init(void)
->   {
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0, };
->   	unsigned long min_addr, max_addr;
->   	unsigned long addr;
->   	int i;
-> @@ -511,12 +510,9 @@ void __init paging_init(void)
->   	set_fc(USER_DATA);
->   
->   #ifdef DEBUG
-> -	printk ("before free_area_init\n");
-> +	printk ("before node_set_state\n");
->   #endif
->   	for (i = 0; i < m68k_num_memory; i++)
->   		if (node_present_pages(i))
->   			node_set_state(i, N_NORMAL_MEMORY);
-> -
-> -	arch_zone_limits_init(max_zone_pfn);
-> -	free_area_init(max_zone_pfn);
->   }
-> diff --git a/arch/m68k/mm/sun3mmu.c b/arch/m68k/mm/sun3mmu.c
-> index fdd69cc4240c..c801677f7df8 100644
-> --- a/arch/m68k/mm/sun3mmu.c
-> +++ b/arch/m68k/mm/sun3mmu.c
-> @@ -41,7 +41,6 @@ void __init paging_init(void)
->   	unsigned long address;
->   	unsigned long next_pgtable;
->   	unsigned long bootmem_end;
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0, };
->   	unsigned long size;
->   
->   	empty_zero_page = memblock_alloc_or_panic(PAGE_SIZE, PAGE_SIZE);
-> @@ -80,14 +79,6 @@ void __init paging_init(void)
->   	mmu_emu_init(bootmem_end);
->   
->   	current->mm = NULL;
-> -
-> -	/* memory sizing is a hack stolen from motorola.c..  hope it works for us */
-> -	arch_zone_limits_init(max_zone_pfn);
-> -
-> -	/* I really wish I knew why the following change made things better...  -- Sam */
-> -	free_area_init(max_zone_pfn);
-> -
-> -
->   }
->   
->   static const pgprot_t protection_map[16] = {
-> diff --git a/arch/microblaze/mm/init.c b/arch/microblaze/mm/init.c
-> index 54da60b81094..848cdee1380c 100644
-> --- a/arch/microblaze/mm/init.c
-> +++ b/arch/microblaze/mm/init.c
-> @@ -69,22 +69,15 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->    */
->   static void __init paging_init(void)
->   {
-> -	unsigned long zones_size[MAX_NR_ZONES];
->   	int idx;
->   
->   	/* Setup fixmaps */
->   	for (idx = 0; idx < __end_of_fixed_addresses; idx++)
->   		clear_fixmap(idx);
->   
-> -	/* Clean every zones */
-> -	memset(zones_size, 0, sizeof(zones_size));
-> -
->   #ifdef CONFIG_HIGHMEM
->   	highmem_init();
->   #endif
-> -	arch_zone_limits_init(zones_size);
-> -	/* We don't have holes in memory map */
-> -	free_area_init(zones_size);
->   }
->   
->   void __init setup_memory(void)
-> diff --git a/arch/mips/loongson64/numa.c b/arch/mips/loongson64/numa.c
-> index f72a58f87878..2cd95020df08 100644
-> --- a/arch/mips/loongson64/numa.c
-> +++ b/arch/mips/loongson64/numa.c
-> @@ -162,11 +162,7 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->   
->   void __init paging_init(void)
->   {
-> -	unsigned long zones_size[MAX_NR_ZONES] = {0, };
-> -
->   	pagetable_init();
-> -	arch_zone_limits_init(zones_size);
-> -	free_area_init(zones_size);
->   }
->   
->   /* All PCI device belongs to logical Node-0 */
-> diff --git a/arch/mips/mm/init.c b/arch/mips/mm/init.c
-> index ab08249cfede..c479c42141c3 100644
-> --- a/arch/mips/mm/init.c
-> +++ b/arch/mips/mm/init.c
-> @@ -417,12 +417,7 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->   
->   void __init paging_init(void)
->   {
-> -	unsigned long max_zone_pfns[MAX_NR_ZONES];
-> -
->   	pagetable_init();
-> -
-> -	arch_zone_limits_init(max_zone_pfns);
-> -	free_area_init(max_zone_pfns);
->   }
->   
->   #ifdef CONFIG_64BIT
-> diff --git a/arch/mips/sgi-ip27/ip27-memory.c b/arch/mips/sgi-ip27/ip27-memory.c
-> index babeb0e07687..082651facf4f 100644
-> --- a/arch/mips/sgi-ip27/ip27-memory.c
-> +++ b/arch/mips/sgi-ip27/ip27-memory.c
-> @@ -413,9 +413,5 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->   
->   void __init paging_init(void)
->   {
-> -	unsigned long zones_size[MAX_NR_ZONES] = {0, };
-> -
->   	pagetable_init();
-> -	arch_zone_limits_init(zones_size);
-> -	free_area_init(zones_size);
->   }
-> diff --git a/arch/nios2/mm/init.c b/arch/nios2/mm/init.c
-> index 2cb666a65d9e..6b22f1995c16 100644
-> --- a/arch/nios2/mm/init.c
-> +++ b/arch/nios2/mm/init.c
-> @@ -51,15 +51,9 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->    */
->   void __init paging_init(void)
->   {
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0 };
-> -
->   	pagetable_init();
->   	pgd_current = swapper_pg_dir;
->   
-> -	arch_zone_limits_init(max_zone_pfn);
-> -	/* pass the memory from the bootmem allocator to the main allocator */
-> -	free_area_init(max_zone_pfn);
-> -
->   	flush_dcache_range((unsigned long)empty_zero_page,
->   			(unsigned long)empty_zero_page + PAGE_SIZE);
->   }
-> diff --git a/arch/openrisc/mm/init.c b/arch/openrisc/mm/init.c
-> index 67de93e7a685..78fb0734cdbc 100644
-> --- a/arch/openrisc/mm/init.c
-> +++ b/arch/openrisc/mm/init.c
-> @@ -47,14 +47,6 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->   	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
->   }
->   
-> -static void __init zone_sizes_init(void)
-> -{
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0 };
-> -
-> -	arch_zone_limits_init(max_zone_pfn);
-> -	free_area_init(max_zone_pfn);
-> -}
-> -
->   extern const char _s_kernel_ro[], _e_kernel_ro[];
->   
->   /*
-> @@ -145,8 +137,6 @@ void __init paging_init(void)
->   
->   	map_ram();
->   
-> -	zone_sizes_init();
-> -
->   	/* self modifying code ;) */
->   	/* Since the old TLB miss handler has been running up until now,
->   	 * the kernel pages are still all RW, so we can still modify the
-> diff --git a/arch/parisc/mm/init.c b/arch/parisc/mm/init.c
-> index dc5bd3efe738..ce6f09ab7a90 100644
-> --- a/arch/parisc/mm/init.c
-> +++ b/arch/parisc/mm/init.c
-> @@ -698,14 +698,6 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->   	max_zone_pfns[ZONE_NORMAL] = PFN_DOWN(memblock_end_of_DRAM());
->   }
->   
-> -static void __init parisc_bootmem_free(void)
-> -{
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0, };
-> -
-> -	arch_zone_limits_init(max_zone_pfn);
-> -	free_area_init(max_zone_pfn);
-> -}
-> -
->   void __init paging_init(void)
->   {
->   	setup_bootmem();
-> @@ -716,7 +708,6 @@ void __init paging_init(void)
->   	flush_tlb_all_local(NULL);
->   
->   	sparse_init();
-> -	parisc_bootmem_free();
->   }
->   
->   static void alloc_btlb(unsigned long start, unsigned long end, int *slot,
-> diff --git a/arch/powerpc/mm/mem.c b/arch/powerpc/mm/mem.c
-> index 32c496bfab4f..72d4993192a6 100644
-> --- a/arch/powerpc/mm/mem.c
-> +++ b/arch/powerpc/mm/mem.c
-> @@ -237,7 +237,6 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->    */
->   void __init paging_init(void)
->   {
-> -	unsigned long max_zone_pfns[MAX_NR_ZONES];
->   	unsigned long long total_ram = memblock_phys_mem_size();
->   	phys_addr_t top_of_ram = memblock_end_of_DRAM();
->   	int zone_dma_bits;
-> @@ -269,9 +268,6 @@ void __init paging_init(void)
->   
->   	zone_dma_limit = DMA_BIT_MASK(zone_dma_bits);
->   
-> -	arch_zone_limits_init(max_zone_pfns);
-> -	free_area_init(max_zone_pfns);
-> -
->   	mark_nonram_nosave();
->   }
->   
-> diff --git a/arch/riscv/mm/init.c b/arch/riscv/mm/init.c
-> index 97e8661fbcff..79b4792578c4 100644
-> --- a/arch/riscv/mm/init.c
-> +++ b/arch/riscv/mm/init.c
-> @@ -87,14 +87,6 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->   	max_zone_pfns[ZONE_NORMAL] = max_low_pfn;
->   }
->   
-> -static void __init zone_sizes_init(void)
-> -{
-> -	unsigned long max_zone_pfns[MAX_NR_ZONES] = { 0, };
-> -
-> -	arch_zone_limits_init(max_zone_pfns);
-> -	free_area_init(max_zone_pfns);
-> -}
-> -
->   #if defined(CONFIG_MMU) && defined(CONFIG_DEBUG_VM)
->   
->   #define LOG2_SZ_1K  ilog2(SZ_1K)
-> @@ -1443,7 +1435,6 @@ void __init misc_mem_init(void)
->   	/* The entire VMEMMAP region has been populated. Flush TLB for this region */
->   	local_flush_tlb_kernel_range(VMEMMAP_START, VMEMMAP_END);
->   #endif
-> -	zone_sizes_init();
->   	arch_reserve_crashkernel();
->   	memblock_dump_all();
->   }
-> diff --git a/arch/s390/mm/init.c b/arch/s390/mm/init.c
-> index 1c11ad84dddb..9ec608b5cbb1 100644
-> --- a/arch/s390/mm/init.c
-> +++ b/arch/s390/mm/init.c
-> @@ -97,14 +97,9 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->    */
->   void __init paging_init(void)
->   {
-> -	unsigned long max_zone_pfns[MAX_NR_ZONES];
-> -
->   	vmem_map_init();
->   	sparse_init();
->   	zone_dma_limit = DMA_BIT_MASK(31);
-> -	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
-> -	arch_zone_limits_init(max_zone_pfns);
-> -	free_area_init(max_zone_pfns);
->   }
->   
->   void mark_rodata_ro(void)
-> diff --git a/arch/sh/mm/init.c b/arch/sh/mm/init.c
-> index 5e7e63642611..3edee854b755 100644
-> --- a/arch/sh/mm/init.c
-> +++ b/arch/sh/mm/init.c
-> @@ -271,7 +271,6 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->   
->   void __init paging_init(void)
->   {
-> -	unsigned long max_zone_pfns[MAX_NR_ZONES];
->   	unsigned long vaddr, end;
->   
->   	sh_mv.mv_mem_init();
-> @@ -325,10 +324,6 @@ void __init paging_init(void)
->   	page_table_range_init(vaddr, end, swapper_pg_dir);
->   
->   	kmap_coherent_init();
-> -
-> -	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
-> -	arch_zone_limits_init(max_zone_pfns);
-> -	free_area_init(max_zone_pfns);
->   }
->   
->   unsigned int mem_init_done = 0;
-> diff --git a/arch/sparc/mm/init_64.c b/arch/sparc/mm/init_64.c
-> index fbaad449dfc9..931f872ce84a 100644
-> --- a/arch/sparc/mm/init_64.c
-> +++ b/arch/sparc/mm/init_64.c
-> @@ -2459,17 +2459,6 @@ void __init paging_init(void)
->   
->   	kernel_physical_mapping_init();
->   
-> -	{
-> -		unsigned long max_zone_pfns[MAX_NR_ZONES];
-> -
-> -		memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
-> -
-> -		max_zone_pfns[ZONE_NORMAL] = end_pfn;
-> -
-> -		arch_zone_limits_init(max_zone_pfns);
-> -		free_area_init(max_zone_pfns);
-> -	}
-> -
->   	printk("Booting Linux...\n");
->   }
->   
-> diff --git a/arch/sparc/mm/srmmu.c b/arch/sparc/mm/srmmu.c
-> index 81e90151db90..1b24c5e8d73d 100644
-> --- a/arch/sparc/mm/srmmu.c
-> +++ b/arch/sparc/mm/srmmu.c
-> @@ -970,13 +970,6 @@ void __init srmmu_paging_init(void)
->   	flush_tlb_all();
->   
->   	sparc_context_init(num_contexts);
-> -
-> -	{
-> -		unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0 };
-> -
-> -		arch_zone_limits_init(max_zone_pfn);
-> -		free_area_init(max_zone_pfn);
-> -	}
->   }
->   
->   void mmu_info(struct seq_file *m)
-> diff --git a/arch/um/kernel/mem.c b/arch/um/kernel/mem.c
-> index 2ac4e9debedd..89c8c8b94a79 100644
-> --- a/arch/um/kernel/mem.c
-> +++ b/arch/um/kernel/mem.c
-> @@ -91,16 +91,11 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->   
->   void __init paging_init(void)
->   {
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0 };
-> -
->   	empty_zero_page = (unsigned long *) memblock_alloc_low(PAGE_SIZE,
->   							       PAGE_SIZE);
->   	if (!empty_zero_page)
->   		panic("%s: Failed to allocate %lu bytes align=%lx\n",
->   		      __func__, PAGE_SIZE, PAGE_SIZE);
-> -
-> -	arch_zone_limits_init(max_zone_pfn);
-> -	free_area_init(max_zone_pfn);
->   }
->   
->   /*
-> diff --git a/arch/x86/mm/init.c b/arch/x86/mm/init.c
-> index e7ef605a18d6..e52a262d3207 100644
-> --- a/arch/x86/mm/init.c
-> +++ b/arch/x86/mm/init.c
-> @@ -1011,16 +1011,6 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->   #endif
->   }
->   
-> -void __init zone_sizes_init(void)
-> -{
-> -	unsigned long max_zone_pfns[MAX_NR_ZONES];
-> -
-> -	memset(max_zone_pfns, 0, sizeof(max_zone_pfns));
-> -
-> -	arch_zone_limits_init(max_zone_pfns);
-> -	free_area_init(max_zone_pfns);
-> -}
-> -
->   __visible DEFINE_PER_CPU_ALIGNED(struct tlb_state, cpu_tlbstate) = {
->   	.loaded_mm = &init_mm,
->   	.next_asid = 1,
-> diff --git a/arch/x86/mm/init_32.c b/arch/x86/mm/init_32.c
-> index 8a34fff6ab2b..b55172118c91 100644
-> --- a/arch/x86/mm/init_32.c
-> +++ b/arch/x86/mm/init_32.c
-> @@ -655,7 +655,6 @@ void __init paging_init(void)
->   	 */
->   	olpc_dt_build_devicetree();
->   	sparse_init();
-> -	zone_sizes_init();
->   }
->   
->   /*
-> diff --git a/arch/x86/mm/init_64.c b/arch/x86/mm/init_64.c
-> index 9983017ecbe0..4daa40071c9f 100644
-> --- a/arch/x86/mm/init_64.c
-> +++ b/arch/x86/mm/init_64.c
-> @@ -843,8 +843,6 @@ void __init paging_init(void)
->   	 */
->   	node_clear_state(0, N_MEMORY);
->   	node_clear_state(0, N_NORMAL_MEMORY);
-> -
-> -	zone_sizes_init();
->   }
->   
->   #define PAGE_UNUSED 0xFD
-> diff --git a/arch/x86/mm/mm_internal.h b/arch/x86/mm/mm_internal.h
-> index 097aadc250f7..7c4a41235323 100644
-> --- a/arch/x86/mm/mm_internal.h
-> +++ b/arch/x86/mm/mm_internal.h
-> @@ -17,7 +17,6 @@ unsigned long kernel_physical_mapping_init(unsigned long start,
->   unsigned long kernel_physical_mapping_change(unsigned long start,
->   					     unsigned long end,
->   					     unsigned long page_size_mask);
-> -void zone_sizes_init(void);
->   
->   extern int after_bootmem;
->   
-> diff --git a/arch/xtensa/mm/init.c b/arch/xtensa/mm/init.c
-> index 60299f359a3c..fe83a68335da 100644
-> --- a/arch/xtensa/mm/init.c
-> +++ b/arch/xtensa/mm/init.c
-> @@ -126,10 +126,6 @@ void __init arch_zone_limits_init(unsigned long *max_zone_pfns)
->   
->   void __init zones_init(void)
->   {
-> -	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0, };
-> -
-> -	arch_zone_limits_init(max_zone_pfn);
-> -	free_area_init(max_zone_pfn);
->   	print_vm_layout();
->   }
->   
-> diff --git a/include/linux/mm.h b/include/linux/mm.h
-> index 628c0e0ac313..64d6f9c15ef1 100644
-> --- a/include/linux/mm.h
-> +++ b/include/linux/mm.h
-> @@ -45,6 +45,7 @@ struct pt_regs;
->   struct folio_batch;
->   
->   void arch_mm_preinit(void);
-> +void mm_core_init_early(void);
->   void mm_core_init(void);
->   void init_mm_internals(void);
->   
-> @@ -3536,7 +3537,7 @@ static inline unsigned long get_num_physpages(void)
->   }
->   
->   /*
-> - * Using memblock node mappings, an architecture may initialise its
-> + * FIXME: Using memblock node mappings, an architecture may initialise its
->    * zones, allocate the backing mem_map and account for memory holes in an
->    * architecture independent manner.
->    *
-> @@ -3551,7 +3552,6 @@ static inline unsigned long get_num_physpages(void)
->    *	memblock_add_node(base, size, nid, MEMBLOCK_NONE)
->    * free_area_init(max_zone_pfns);
->    */
-> -void free_area_init(unsigned long *max_zone_pfn);
->   void arch_zone_limits_init(unsigned long *max_zone_pfn);
->   unsigned long node_map_pfn_alignment(void);
->   extern unsigned long absent_pages_in_range(unsigned long start_pfn,
-> diff --git a/init/main.c b/init/main.c
-> index b84818ad9685..445b5643ecec 100644
-> --- a/init/main.c
-> +++ b/init/main.c
-> @@ -1025,6 +1025,7 @@ void start_kernel(void)
->   	page_address_init();
->   	pr_notice("%s", linux_banner);
->   	setup_arch(&command_line);
-> +	mm_core_init_early();
->   	/* Static keys and static calls are needed by LSMs */
->   	jump_label_init();
->   	static_call_init();
-> diff --git a/mm/mm_init.c b/mm/mm_init.c
-> index fc2a6f1e518f..ffc4a0f1fee9 100644
-> --- a/mm/mm_init.c
-> +++ b/mm/mm_init.c
-> @@ -1810,7 +1810,6 @@ static void __init set_high_memory(void)
->   
->   /**
->    * free_area_init - Initialise all pg_data_t and zone data
-> - * @max_zone_pfn: an array of max PFNs for each zone
->    *
->    * This will call free_area_init_node() for each active node in the system.
->    * Using the page ranges provided by memblock_set_node(), the size of each
-> @@ -1821,17 +1820,14 @@ static void __init set_high_memory(void)
->    * starts where the previous one ended. For example, ZONE_DMA32 starts
->    * at arch_max_dma_pfn.
->    */
-> -void __init free_area_init(unsigned long *max_zone_pfn)
-> +static void __init free_area_init(void)
->   {
-> +	unsigned long max_zone_pfn[MAX_NR_ZONES] = { 0 };
->   	unsigned long start_pfn, end_pfn;
->   	int i, nid, zone;
->   	bool descending;
->   
-> -	/* Record where the zone boundaries are */
-> -	memset(arch_zone_lowest_possible_pfn, 0,
-> -				sizeof(arch_zone_lowest_possible_pfn));
-> -	memset(arch_zone_highest_possible_pfn, 0,
-> -				sizeof(arch_zone_highest_possible_pfn));
-> +	arch_zone_limits_init(max_zone_pfn);
->   
->   	start_pfn = PHYS_PFN(memblock_start_of_DRAM());
->   	descending = arch_has_descending_max_zone_pfns();
-> @@ -2681,13 +2677,19 @@ void __init __weak mem_init(void)
->   {
->   }
->   
-> +void __init mm_core_init_early(void)
-> +{
-> +	hugetlb_bootmem_alloc();
-> +
-> +	free_area_init();
-> +}
-> +
->   /*
->    * Set up kernel memory allocators
->    */
->   void __init mm_core_init(void)
->   {
->   	arch_mm_preinit();
-> -	hugetlb_bootmem_alloc();
->   
->   	/* Initializations relying on SMP setup */
->   	BUILD_BUG_ON(MAX_ZONELISTS > 2);
-Hello,
+Disable AER for Intel Titan Ridge 4C 2018
+(used in T2 iMacs, where the warnings appear)
+that generate continuous pcieport warnings. such as:
 
-This patch got bisected to cause BeagleBone Black boot failure in 
-linux-next version next-20260107.
+pcieport 0000:00:1c.4: AER: Correctable error message received from 0000:07:00.0
+pcieport 0000:07:00.0: PCIe Bus Error: severity=Correctable, type=Data Link Layer, (Receiver ID)
+pcieport 0000:07:00.0:   device [8086:15ea] error status/mask=00000080/00002000
+pcieport 0000:07:00.0:    [ 7] BadDLLP
 
-At the moment I cannot provide any helpful information about this.
+macOS also disables AER for Thunderbolt devices and controllers in their drivers.
 
-BR
-Kalle
+Closes: https://bugzilla.kernel.org/show_bug.cgi?id=220651
+Signed-off-by: Atharva Tiwari <atharvatiwarilinuxdev@gmail.com>
+
+---
+Chnages since v3:
+- Fixed Grammer mistakes
+Changes since v2:
+- Transferred logic to arch/x86/pci/fixup.c to only target x86
+- Added DMI quirk to only target Apple Systems
+Changes since v1:
+- Transferred logic to drivers/pci/quicks.c
+---
+---
+ arch/x86/pci/fixup.c       | 12 ++++++++++++
+ drivers/pci/pcie/aer.c     |  3 +++
+ drivers/pci/pcie/portdrv.c |  2 +-
+ include/linux/pci.h        |  1 +
+ 4 files changed, 17 insertions(+), 1 deletion(-)
+
+diff --git a/arch/x86/pci/fixup.c b/arch/x86/pci/fixup.c
+index 25076a5acd96..bd72f7cf5db9 100644
+--- a/arch/x86/pci/fixup.c
++++ b/arch/x86/pci/fixup.c
+@@ -1081,3 +1081,15 @@ static void quirk_tuxeo_rp_d3(struct pci_dev *pdev)
+ }
+ DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_AMD, 0x1502, quirk_tuxeo_rp_d3);
+ #endif /* CONFIG_SUSPEND */
++
++#ifdef CONFIG_PCIEAER
++
++static void quirk_disable_aer(struct pci_dev *pdev)
++{
++	if (dmi_match(DMI_SYS_VENDOR, "Apple"))
++		pdev->no_aer = 1;
++}
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x15EA, quirk_disable_aer);
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x15EB, quirk_disable_aer);
++DECLARE_PCI_FIXUP_FINAL(PCI_VENDOR_ID_INTEL, 0x15EC, quirk_disable_aer);
++#endif /* CONFIG_PCIEAER */
+diff --git a/drivers/pci/pcie/aer.c b/drivers/pci/pcie/aer.c
+index e0bcaa896803..45604564ce6f 100644
+--- a/drivers/pci/pcie/aer.c
++++ b/drivers/pci/pcie/aer.c
+@@ -389,6 +389,9 @@ void pci_aer_init(struct pci_dev *dev)
+ {
+ 	int n;
+ 
++	if (dev->no_aer)
++		return;
++
+ 	dev->aer_cap = pci_find_ext_capability(dev, PCI_EXT_CAP_ID_ERR);
+ 	if (!dev->aer_cap)
+ 		return;
+diff --git a/drivers/pci/pcie/portdrv.c b/drivers/pci/pcie/portdrv.c
+index 38a41ccf79b9..ab904a224296 100644
+--- a/drivers/pci/pcie/portdrv.c
++++ b/drivers/pci/pcie/portdrv.c
+@@ -240,7 +240,7 @@ static int get_port_device_capability(struct pci_dev *dev)
+ 	if ((pci_pcie_type(dev) == PCI_EXP_TYPE_ROOT_PORT ||
+              pci_pcie_type(dev) == PCI_EXP_TYPE_RC_EC) &&
+ 	    dev->aer_cap && pci_aer_available() &&
+-	    (pcie_ports_native || host->native_aer))
++	    (pcie_ports_native || host->native_aer) && !dev->no_aer)
+ 		services |= PCIE_PORT_SERVICE_AER;
+ #endif
+ 
+diff --git a/include/linux/pci.h b/include/linux/pci.h
+index 864775651c6f..f447f86c6bdf 100644
+--- a/include/linux/pci.h
++++ b/include/linux/pci.h
+@@ -440,6 +440,7 @@ struct pci_dev {
+ 	unsigned int	multifunction:1;	/* Multi-function device */
+ 
+ 	unsigned int	is_busmaster:1;		/* Is busmaster */
++	unsigned int	no_aer:1;		/* May not use AER */
+ 	unsigned int	no_msi:1;		/* May not use MSI */
+ 	unsigned int	no_64bit_msi:1;		/* May only use 32-bit MSIs */
+ 	unsigned int	block_cfg_access:1;	/* Config space access blocked */
+-- 
+2.43.0
+
 
