@@ -1,65 +1,98 @@
-Return-Path: <linuxppc-dev+bounces-15407-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15408-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 20044CF6A86
-	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jan 2026 08:49:23 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id B5C2DCF6A88
+	for <linuxppc-dev@archiver.kernel.org>; Thu,  8 Jan 2026 09:10:56 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dmz9F2rXwz2xcB;
-	Thu, 08 Jan 2026 19:49:21 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=45.249.212.187
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767862161;
-	cv=none; b=mtFrFn1YfJyiKgOu12KUWSb35UtO1KWDwpseatuLbnjpaMtZ8fpIG/1uFUaDVTKg740S5tS4uhI5AZeyHPKvCpdNxmqkZHAcZLp0Wa/do/lUquDVqFP389DF34yiH7bpTOkybrRKzWkkt08LqDL4pHXU2ay/8aajRG6YyPfbjBjkn0lYIeOv/2yW8xPtMCchoG+f6wxLV4uqAtXRTS+pJ6kCbDSxbUuCD/wghJdtaJhynBzvlUMTLY+rzXGWtXY1hvA9tscw1DoHYRtnFs3h3nMWo5OIoLk2QjHVAHxC32q3knuyghv61KIeUsYfz0kEg5T7TsvuT++dxwWy3zw+Vg==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dmzf71kmBz2xcB;
+	Thu, 08 Jan 2026 20:10:55 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=148.163.156.1
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767863455;
+	cv=none; b=nCJCwGIX61k0alKq4JPMqL7sQmbpzcbf0t+TAsL3aFp2OfHp1IEmrSluhvPPJWZu2IlQvpSt7aj8GBHigTCsHSHB8vGGL8dyoL5Mf2qIbF5ndJ85LytiXZDzorBd9gh33QOtpZkYFj2T2PaoKJGFZ1yfdu6GirHSeWK0O1e3PjKg0w5hzBOe7rj74s2XKa+nGmzD8l1fvFF4XZK4wlM/fvOC1frrmnPqp89ogzHV5dupeOI/gQu/Gdb1oqrXjmurksZqdmvYQKeeeRb8lXvYX2tp9UYfSAIZRgkZC7cbCroCBVu4t0PBWGue4k6hXG3x+sh9lOgd1jSopSGZmpV3gQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767862161; c=relaxed/relaxed;
-	bh=qV54H0G4ZmCM7AZXX+pxayX6mbCwghAJSYuD+KvzN3M=;
-	h=Message-ID:Date:MIME-Version:Subject:To:References:From:
-	 In-Reply-To:Content-Type; b=ETfaeacahdaPod9DvKaUJql5uD5nlkP/xkQHuwNMLAubNaXaGAn7pW8qOZwao0ee70WvkJnlCPULSdxp56D2ZrJSZI941At+gvMU32D10+JF3SBosh1H3JPHY5geJQqeDCuE03Lx+zsPhrwdq36ewI4ykLQTjmRvf452h0gKMqw5W0oBJUCt47w645VhWbR5ll5OH8km8VEWgIP2n2bovg5XURDjb2bTtsh8UZX6mcmCXgGmFR3nIw5C60gPZj9vcMw8Q2ZnI9e7MUEVCk43IKq39JPlG7tDXgjAX1ja5XDYYtf4r1WLNJFcMBeldNFqBaJd6nJ5F5MoxCdnAYU3Qw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com; dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=0W0gCYIS; dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=0W0gCYIS; dkim-atps=neutral; spf=pass (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org) smtp.mailfrom=huawei.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=huawei.com
+	t=1767863455; c=relaxed/relaxed;
+	bh=C3+XNaSDI2xF3PAxj604v/eV3Vxp1rIX5xTH/wFBtxo=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=itE7HrROZGHIMLIkxu32VjUCDCELOw9IDqhZMKFF1CXvopLIIsf64wOnUh680Rk0IXK/+mD57w9O6RmNSwHNfuWwF5IlVtE7+JPImwTFbnznGQNgO7l2LMqXbi1mFxD45uctZvasTQQhcdmwE76YD8SMna5hRHAV7dP99VhG2oGYTvPzl+pfQzQL2EpFxzyKQGpjn+ew5oWz8HokKrRtBd9BCV4oZdy0oXZeHVZs0CgRQMvldyY/ic5Jz2lUiK/xOyacidwqlxTRaeuLXJ9HmowzwXXPl1zEaQgzezR3UbENsMmBWcxpUhhdWdH2xBlDU0iKsn89EwGnGjjPPWWzhw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com; dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FT/D8P2Z; dkim-atps=neutral; spf=pass (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mkchauras@linux.ibm.com; receiver=lists.ozlabs.org) smtp.mailfrom=linux.ibm.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=linux.ibm.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (1024-bit key; unprotected) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=0W0gCYIS;
-	dkim=pass (1024-bit key) header.d=huawei.com header.i=@huawei.com header.a=rsa-sha256 header.s=dkim header.b=0W0gCYIS;
+	dkim=pass (2048-bit key; unprotected) header.d=ibm.com header.i=@ibm.com header.a=rsa-sha256 header.s=pp1 header.b=FT/D8P2Z;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=huawei.com (client-ip=45.249.212.187; helo=szxga01-in.huawei.com; envelope-from=ruanjinjie@huawei.com; receiver=lists.ozlabs.org)
-X-Greylist: delayed 1130 seconds by postgrey-1.37 at boromir; Thu, 08 Jan 2026 19:49:18 AEDT
-Received: from szxga01-in.huawei.com (szxga01-in.huawei.com [45.249.212.187])
-	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=linux.ibm.com (client-ip=148.163.156.1; helo=mx0a-001b2d01.pphosted.com; envelope-from=mkchauras@linux.ibm.com; receiver=lists.ozlabs.org)
+Received: from mx0a-001b2d01.pphosted.com (mx0a-001b2d01.pphosted.com [148.163.156.1])
+	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmz9B25R4z2xZK
-	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jan 2026 19:49:15 +1100 (AEDT)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=qV54H0G4ZmCM7AZXX+pxayX6mbCwghAJSYuD+KvzN3M=;
-	b=0W0gCYIS1FtH5QEvXVClCaotd2mC9Am9vWJCMGDJjGncU6N1xowo2BSnF8dR1xsJxh6jSrcgv
-	vUWPJmhMe5RF4Hfb/Oow87JdZFGLKVX+/gZ3hu2Lr+bnKDZo11Qyjz0jiR1VwEGPZ5mBYsUy1tJ
-	Civ/6FD1PkcA5/SsJ4b1zWU=
-Received: from canpmsgout04.his.huawei.com (unknown [172.19.92.133])
-	by szxga01-in.huawei.com (SkyGuard) with ESMTPS id 4dmykF4rF6z1BFPP
-	for <linuxppc-dev@lists.ozlabs.org>; Thu,  8 Jan 2026 16:29:25 +0800 (CST)
-dkim-signature: v=1; a=rsa-sha256; d=huawei.com; s=dkim;
-	c=relaxed/relaxed; q=dns/txt;
-	h=From;
-	bh=qV54H0G4ZmCM7AZXX+pxayX6mbCwghAJSYuD+KvzN3M=;
-	b=0W0gCYIS1FtH5QEvXVClCaotd2mC9Am9vWJCMGDJjGncU6N1xowo2BSnF8dR1xsJxh6jSrcgv
-	vUWPJmhMe5RF4Hfb/Oow87JdZFGLKVX+/gZ3hu2Lr+bnKDZo11Qyjz0jiR1VwEGPZ5mBYsUy1tJ
-	Civ/6FD1PkcA5/SsJ4b1zWU=
-Received: from mail.maildlp.com (unknown [172.19.162.140])
-	by canpmsgout04.his.huawei.com (SkyGuard) with ESMTPS id 4dmygR67ktz1prm6;
-	Thu,  8 Jan 2026 16:26:59 +0800 (CST)
-Received: from dggpemf500011.china.huawei.com (unknown [7.185.36.131])
-	by mail.maildlp.com (Postfix) with ESMTPS id C9A682012A;
-	Thu,  8 Jan 2026 16:30:17 +0800 (CST)
-Received: from [10.67.109.254] (10.67.109.254) by
- dggpemf500011.china.huawei.com (7.185.36.131) with Microsoft SMTP Server
- (version=TLS1_2, cipher=TLS_ECDHE_RSA_WITH_AES_256_GCM_SHA384) id
- 15.2.1544.11; Thu, 8 Jan 2026 16:30:16 +0800
-Message-ID: <272dc19f-7e6b-9fd7-22c0-de3a4a81dc8f@huawei.com>
-Date: Thu, 8 Jan 2026 16:30:15 +0800
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dmzf568Xbz2xZK
+	for <linuxppc-dev@lists.ozlabs.org>; Thu, 08 Jan 2026 20:10:53 +1100 (AEDT)
+Received: from pps.filterd (m0353729.ppops.net [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (8.18.1.2/8.18.1.2) with ESMTP id 607M5W4g016651;
+	Thu, 8 Jan 2026 09:10:05 GMT
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed; d=ibm.com; h=cc
+	:content-transfer-encoding:content-type:date:from:in-reply-to
+	:message-id:mime-version:references:subject:to; s=pp1; bh=C3+XNa
+	SDI2xF3PAxj604v/eV3Vxp1rIX5xTH/wFBtxo=; b=FT/D8P2ZvPCje+7wZXaPOU
+	6JpP2myP4tg+GJQfNthTtY/cqXL+CiBFyl94t4u1fTD7SQU/aISFjYTeNP5ZHVye
+	1+xcMbIkJvy9goJRm627iK80Ntvy2ncyya5HMB+FuDb8nV29yhR6m26POYf9dLFg
+	tmPw9C6hk5A8TAJjgH7ViJdJilRF6C47MUoaVi9rqlwOSe/p63w7E3V2dYq4IIXV
+	z3xMhqyUR3JiACQJx4EkpljMAfvSZZZmMJ5UzqCxU3QvCsbz+2vNz7C0XR6ev+pi
+	g1xoxi73Frv7jTLYzYO9++dNFjkSJ2klXXQAjg78aCwSE/LiXseyDtHNFW2BIBWA
+	==
+Received: from pps.reinject (localhost [127.0.0.1])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4betsqdf1t-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 08 Jan 2026 09:10:05 +0000 (GMT)
+Received: from m0353729.ppops.net (m0353729.ppops.net [127.0.0.1])
+	by pps.reinject (8.18.1.12/8.18.0.8) with ESMTP id 608969Nu000800;
+	Thu, 8 Jan 2026 09:10:04 GMT
+Received: from ppma11.dal12v.mail.ibm.com (db.9e.1632.ip4.static.sl-reverse.com [50.22.158.219])
+	by mx0a-001b2d01.pphosted.com (PPS) with ESMTPS id 4betsqdf1q-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 08 Jan 2026 09:10:04 +0000 (GMT)
+Received: from pps.filterd (ppma11.dal12v.mail.ibm.com [127.0.0.1])
+	by ppma11.dal12v.mail.ibm.com (8.18.1.2/8.18.1.2) with ESMTP id 6086NFB9019341;
+	Thu, 8 Jan 2026 09:10:03 GMT
+Received: from smtprelay06.fra02v.mail.ibm.com ([9.218.2.230])
+	by ppma11.dal12v.mail.ibm.com (PPS) with ESMTPS id 4bfg51dpcx-1
+	(version=TLSv1.2 cipher=ECDHE-RSA-AES256-GCM-SHA384 bits=256 verify=NOT);
+	Thu, 08 Jan 2026 09:10:03 +0000
+Received: from smtpav01.fra02v.mail.ibm.com (smtpav01.fra02v.mail.ibm.com [10.20.54.100])
+	by smtprelay06.fra02v.mail.ibm.com (8.14.9/8.14.9/NCO v10.0) with ESMTP id 60899xWF21365240
+	(version=TLSv1/SSLv3 cipher=DHE-RSA-AES256-GCM-SHA384 bits=256 verify=OK);
+	Thu, 8 Jan 2026 09:09:59 GMT
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 81BB92004B;
+	Thu,  8 Jan 2026 09:09:59 +0000 (GMT)
+Received: from smtpav01.fra02v.mail.ibm.com (unknown [127.0.0.1])
+	by IMSVA (Postfix) with ESMTP id 49E6E20040;
+	Thu,  8 Jan 2026 09:09:55 +0000 (GMT)
+Received: from li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com (unknown [9.109.250.90])
+	by smtpav01.fra02v.mail.ibm.com (Postfix) with ESMTPS;
+	Thu,  8 Jan 2026 09:09:55 +0000 (GMT)
+Date: Thu, 8 Jan 2026 14:39:53 +0530
+From: Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>
+To: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
+Cc: Venkat <venkat88@linux.ibm.com>, Peter Zijlstra <peterz@infradead.org>,
+        Madhavan Srinivasan <maddy@linux.ibm.com>,
+        Michael Ellerman <mpe@ellerman.id.au>,
+        Nicholas Piggin <npiggin@gmail.com>, oleg@redhat.com, kees@kernel.org,
+        luto@amacapital.net, wad@chromium.org, mchauras@linux.ibm.com,
+        thuth@redhat.com, Shrikanth Hegde <sshegde@linux.ibm.com>,
+        Andrew Morton <akpm@linux-foundation.org>, macro@orcam.me.uk,
+        deller@gmx.de, ldv@strace.io, charlie@rivosinc.com,
+        segher@kernel.crashing.org, bigeasy@linutronix.de,
+        namcao@linutronix.de, Thomas Gleixner <tglx@linutronix.de>,
+        Kan Liang <kan.liang@linux.intel.com>, mark.barnett@arm.com,
+        linuxppc-dev <linuxppc-dev@lists.ozlabs.org>,
+        LKML <linux-kernel@vger.kernel.org>
+Subject: Re: [PATCH v3 0/8] Generic IRQ entry/exit support for powerpc
+Message-ID: <aV90NVNEUjMABRNp@li-1a3e774c-28e4-11b2-a85c-acc9f2883e29.ibm.com>
+References: <20251229045416.3193779-1-mkchauras@linux.ibm.com>
+ <3BBCC728-0BF9-484A-85F9-2760DEFD56BD@linux.ibm.com>
+ <e18ac87b-0034-4297-ae15-0dd0a36abb15@kernel.org>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -73,208 +106,65 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla/5.0 (Windows NT 10.0; Win64; x64; rv:102.0) Gecko/20100101
- Thunderbird/102.2.0
-Subject: Re: [PATCH v3 1/8] powerpc: rename arch_irq_disabled_regs
-Content-Language: en-US
-To: Mukesh Kumar Chaurasiya <mkchauras@linux.ibm.com>, <maddy@linux.ibm.com>,
-	<mpe@ellerman.id.au>, <npiggin@gmail.com>, <chleroy@kernel.org>,
-	<oleg@redhat.com>, <kees@kernel.org>, <luto@amacapital.net>,
-	<wad@chromium.org>, <mchauras@linux.ibm.com>, <thuth@redhat.com>,
-	<sshegde@linux.ibm.com>, <akpm@linux-foundation.org>, <macro@orcam.me.uk>,
-	<deller@gmx.de>, <ldv@strace.io>, <charlie@rivosinc.com>,
-	<segher@kernel.crashing.org>, <bigeasy@linutronix.de>,
-	<peterz@infradead.org>, <namcao@linutronix.de>, <tglx@linutronix.de>,
-	<kan.liang@linux.intel.com>, <mark.barnett@arm.com>,
-	<linuxppc-dev@lists.ozlabs.org>, <linux-kernel@vger.kernel.org>
-References: <20251229045416.3193779-1-mkchauras@linux.ibm.com>
- <20251229045416.3193779-2-mkchauras@linux.ibm.com>
-From: Jinjie Ruan <ruanjinjie@huawei.com>
-In-Reply-To: <20251229045416.3193779-2-mkchauras@linux.ibm.com>
-Content-Type: text/plain; charset="UTF-8"
-Content-Transfer-Encoding: 7bit
-X-Originating-IP: [10.67.109.254]
-X-ClientProxiedBy: kwepems500001.china.huawei.com (7.221.188.70) To
- dggpemf500011.china.huawei.com (7.185.36.131)
+Content-Type: text/plain; charset=iso-8859-1
+Content-Disposition: inline
+Content-Transfer-Encoding: 8bit
+In-Reply-To: <e18ac87b-0034-4297-ae15-0dd0a36abb15@kernel.org>
+X-TM-AS-GCONF: 00
+X-Proofpoint-GUID: kjAhBS6LqblIFnGa8V9aLQIxCDmHlrEB
+X-Authority-Analysis: v=2.4 cv=Jvf8bc4C c=1 sm=1 tr=0 ts=695f746d cx=c_pps
+ a=aDMHemPKRhS1OARIsFnwRA==:117 a=aDMHemPKRhS1OARIsFnwRA==:17
+ a=8nJEP1OIZ-IA:10 a=vUbySO9Y5rIA:10 a=VkNPw1HP01LnGYTKEx00:22
+ a=VwQbUJbxAAAA:8 a=tckgzhkTuugkUmzQtsYA:9 a=3ZKOabzyN94A:10 a=wPNLvfGTeEIA:10
+X-Proofpoint-ORIG-GUID: BqE6XJzG-6CpC_PizBV9atVnQVvHZqFm
+X-Proofpoint-Spam-Details-Enc: AW1haW4tMjYwMTA4MDA1OSBTYWx0ZWRfX5gKYUkSs2rwh
+ +0A3dJ3CEqdIbfWPWU8h1vhRVmTVpaZtrRYWsfqHB1afobdRSSnl7/KqJTZKFFJmkQXAICUPG8G
+ /Mmy3ase8NPhXa7OaUptaY4K8yeDnp3WVyBLT603NFffuOKI3gPQ5kdg8N+xXEqKJ0BqUKvxdd/
+ p/V/zJGGBqRaMGfw5bybzZFxp2VzUl6Xay1qKQs+Nj7JrI88oFGT5d9HLt7uh1WYft4FV/UCEJL
+ AlheuWR2QQd+qkwc0081PBMHIiWDTjKdR0T0OU4YW/i1PSWUs+GTrO/ZVtXGJQSmu3EkHtssOSy
+ ep0c8TqvrM3UpnrI9DabPRI9VC8cdR3/BDCZA889Wg2WOjOTIAC8sNMRbsKiWg2nTq3REUDbyWd
+ QKpLFJM6s1GdeBfEe0MsHchv8FK0RWJOVA/RCzQHtiUxYyUVYET1VkTB5he6JoK/wpa4yTcX/Qe
+ OrxmGjkEot1MGkZhw8Q==
+X-Proofpoint-Virus-Version: vendor=baseguard
+ engine=ICAP:2.0.293,Aquarius:18.0.1121,Hydra:6.1.9,FMLib:17.12.100.49
+ definitions=2026-01-08_01,2026-01-07_03,2025-10-01_01
+X-Proofpoint-Spam-Details: rule=outbound_notspam policy=outbound score=0
+ clxscore=1015 suspectscore=0 impostorscore=0 lowpriorityscore=0
+ priorityscore=1501 phishscore=0 adultscore=0 spamscore=0 bulkscore=0
+ malwarescore=0 classifier=typeunknown authscore=0 authtc= authcc=
+ route=outbound adjust=0 reason=mlx scancount=1 engine=8.19.0-2512120000
+ definitions=main-2601080059
 
-
-
-On 2025/12/29 12:54, Mukesh Kumar Chaurasiya wrote:
-> From: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
+On Thu, Jan 08, 2026 at 07:05:42AM +0100, Christophe Leroy (CS GROUP) wrote:
+> Hi,
 > 
-> Rename arch_irq_disabled_regs() to regs_irqs_disabled() to align with the
-> naming used in the generic irqentry framework. This makes the function
-> available for use both in the PowerPC architecture code and in the
-> common entry/exit paths shared with other architectures.
+> Le 08/01/2026 à 06:16, Venkat a écrit :
+> > With this patch set, build fails.
+> > 
+> > Failure logs:
+> > 
+> > ld: init/main.o: in function `do_one_initcall':
+> > /root/linux/init/main.c:1384: undefined reference to `memcpy'
 > 
-> This is a preparatory change for enabling the generic irqentry framework
-> on PowerPC.
+> I guess you have KASAN enabled ?
 > 
-> Signed-off-by: Mukesh Kumar Chaurasiya <mchauras@linux.ibm.com>
-> Reviewed-by: Shrikanth Hegde <sshegde@linux.ibm.com>
-> ---
->  arch/powerpc/include/asm/hw_irq.h    |  4 ++--
->  arch/powerpc/include/asm/interrupt.h | 16 ++++++++--------
->  arch/powerpc/kernel/interrupt.c      |  4 ++--
->  arch/powerpc/kernel/syscall.c        |  2 +-
->  arch/powerpc/kernel/traps.c          |  2 +-
->  arch/powerpc/kernel/watchdog.c       |  2 +-
->  arch/powerpc/perf/core-book3s.c      |  2 +-
->  7 files changed, 16 insertions(+), 16 deletions(-)
+> See
+> https://lore.kernel.org/all/0947502d-96e3-4179-ae48-603de74dc7b3@kernel.org/
+> 
+> This is because of commit 69d4c0d32186 ("entry, kasan, x86: Disallow
+> overriding mem*() functions") which changed the core behaviour in 2023
+> without taking care of other architectures than x86 who was the only one
+> with CONFIG_GENERIC_ENTRY ?
+> 
+> For powerpc the expected behaviour introduced in 2019 by commit 26deb04342e3
+> ("powerpc: prepare string/mem functions for KASAN") needs to be modified the
+> same way to fit with the core change.
+> 
+> Christophe
+Hey Christophe, Venkat
 
-Reviewed-by: Jinjie Ruan <ruanjinjie@huawei.com>
+I am working on this. I'll send out a new revision soon.
 
-> 
-> diff --git a/arch/powerpc/include/asm/hw_irq.h b/arch/powerpc/include/asm/hw_irq.h
-> index 1078ba88efaf..8dfe36b442a5 100644
-> --- a/arch/powerpc/include/asm/hw_irq.h
-> +++ b/arch/powerpc/include/asm/hw_irq.h
-> @@ -393,7 +393,7 @@ static inline void do_hard_irq_enable(void)
->  	__hard_irq_enable();
->  }
->  
-> -static inline bool arch_irq_disabled_regs(struct pt_regs *regs)
-> +static inline bool regs_irqs_disabled(struct pt_regs *regs)
->  {
->  	return (regs->softe & IRQS_DISABLED);
->  }
-> @@ -466,7 +466,7 @@ static inline bool arch_irqs_disabled(void)
->  
->  #define hard_irq_disable()		arch_local_irq_disable()
->  
-> -static inline bool arch_irq_disabled_regs(struct pt_regs *regs)
-> +static inline bool regs_irqs_disabled(struct pt_regs *regs)
->  {
->  	return !(regs->msr & MSR_EE);
->  }
-> diff --git a/arch/powerpc/include/asm/interrupt.h b/arch/powerpc/include/asm/interrupt.h
-> index eb0e4a20b818..0e2cddf8bd21 100644
-> --- a/arch/powerpc/include/asm/interrupt.h
-> +++ b/arch/powerpc/include/asm/interrupt.h
-> @@ -172,7 +172,7 @@ static inline void interrupt_enter_prepare(struct pt_regs *regs)
->  	/* Enable MSR[RI] early, to support kernel SLB and hash faults */
->  #endif
->  
-> -	if (!arch_irq_disabled_regs(regs))
-> +	if (!regs_irqs_disabled(regs))
->  		trace_hardirqs_off();
->  
->  	if (user_mode(regs)) {
-> @@ -192,11 +192,11 @@ static inline void interrupt_enter_prepare(struct pt_regs *regs)
->  			CT_WARN_ON(ct_state() != CT_STATE_KERNEL &&
->  				   ct_state() != CT_STATE_IDLE);
->  		INT_SOFT_MASK_BUG_ON(regs, is_implicit_soft_masked(regs));
-> -		INT_SOFT_MASK_BUG_ON(regs, arch_irq_disabled_regs(regs) &&
-> -					   search_kernel_restart_table(regs->nip));
-> +		INT_SOFT_MASK_BUG_ON(regs, regs_irqs_disabled(regs) &&
-> +				     search_kernel_restart_table(regs->nip));
->  	}
-> -	INT_SOFT_MASK_BUG_ON(regs, !arch_irq_disabled_regs(regs) &&
-> -				   !(regs->msr & MSR_EE));
-> +	INT_SOFT_MASK_BUG_ON(regs, !regs_irqs_disabled(regs) &&
-> +			     !(regs->msr & MSR_EE));
->  
->  	booke_restore_dbcr0();
->  }
-> @@ -298,7 +298,7 @@ static inline void interrupt_nmi_enter_prepare(struct pt_regs *regs, struct inte
->  		 * Adjust regs->softe to be soft-masked if it had not been
->  		 * reconcied (e.g., interrupt entry with MSR[EE]=0 but softe
->  		 * not yet set disabled), or if it was in an implicit soft
-> -		 * masked state. This makes arch_irq_disabled_regs(regs)
-> +		 * masked state. This makes regs_irqs_disabled(regs)
->  		 * behave as expected.
->  		 */
->  		regs->softe = IRQS_ALL_DISABLED;
-> @@ -372,7 +372,7 @@ static inline void interrupt_nmi_exit_prepare(struct pt_regs *regs, struct inter
->  
->  #ifdef CONFIG_PPC64
->  #ifdef CONFIG_PPC_BOOK3S
-> -	if (arch_irq_disabled_regs(regs)) {
-> +	if (regs_irqs_disabled(regs)) {
->  		unsigned long rst = search_kernel_restart_table(regs->nip);
->  		if (rst)
->  			regs_set_return_ip(regs, rst);
-> @@ -661,7 +661,7 @@ void replay_soft_interrupts(void);
->  
->  static inline void interrupt_cond_local_irq_enable(struct pt_regs *regs)
->  {
-> -	if (!arch_irq_disabled_regs(regs))
-> +	if (!regs_irqs_disabled(regs))
->  		local_irq_enable();
->  }
->  
-> diff --git a/arch/powerpc/kernel/interrupt.c b/arch/powerpc/kernel/interrupt.c
-> index aea6f7e8e9c6..9ce2013e70ae 100644
-> --- a/arch/powerpc/kernel/interrupt.c
-> +++ b/arch/powerpc/kernel/interrupt.c
-> @@ -347,7 +347,7 @@ notrace unsigned long interrupt_exit_user_prepare(struct pt_regs *regs)
->  	unsigned long ret;
->  
->  	BUG_ON(regs_is_unrecoverable(regs));
-> -	BUG_ON(arch_irq_disabled_regs(regs));
-> +	BUG_ON(regs_irqs_disabled(regs));
->  	CT_WARN_ON(ct_state() == CT_STATE_USER);
->  
->  	/*
-> @@ -396,7 +396,7 @@ notrace unsigned long interrupt_exit_kernel_prepare(struct pt_regs *regs)
->  
->  	local_irq_disable();
->  
-> -	if (!arch_irq_disabled_regs(regs)) {
-> +	if (!regs_irqs_disabled(regs)) {
->  		/* Returning to a kernel context with local irqs enabled. */
->  		WARN_ON_ONCE(!(regs->msr & MSR_EE));
->  again:
-> diff --git a/arch/powerpc/kernel/syscall.c b/arch/powerpc/kernel/syscall.c
-> index be159ad4b77b..9f03a6263fb4 100644
-> --- a/arch/powerpc/kernel/syscall.c
-> +++ b/arch/powerpc/kernel/syscall.c
-> @@ -32,7 +32,7 @@ notrace long system_call_exception(struct pt_regs *regs, unsigned long r0)
->  
->  	BUG_ON(regs_is_unrecoverable(regs));
->  	BUG_ON(!user_mode(regs));
-> -	BUG_ON(arch_irq_disabled_regs(regs));
-> +	BUG_ON(regs_irqs_disabled(regs));
->  
->  #ifdef CONFIG_PPC_PKEY
->  	if (mmu_has_feature(MMU_FTR_PKEY)) {
-> diff --git a/arch/powerpc/kernel/traps.c b/arch/powerpc/kernel/traps.c
-> index cb8e9357383e..629f2a2d4780 100644
-> --- a/arch/powerpc/kernel/traps.c
-> +++ b/arch/powerpc/kernel/traps.c
-> @@ -1956,7 +1956,7 @@ DEFINE_INTERRUPT_HANDLER_RAW(performance_monitor_exception)
->  	 * prevent hash faults on user addresses when reading callchains (and
->  	 * looks better from an irq tracing perspective).
->  	 */
-> -	if (IS_ENABLED(CONFIG_PPC64) && unlikely(arch_irq_disabled_regs(regs)))
-> +	if (IS_ENABLED(CONFIG_PPC64) && unlikely(regs_irqs_disabled(regs)))
->  		performance_monitor_exception_nmi(regs);
->  	else
->  		performance_monitor_exception_async(regs);
-> diff --git a/arch/powerpc/kernel/watchdog.c b/arch/powerpc/kernel/watchdog.c
-> index 2429cb1c7baa..6111cbbde069 100644
-> --- a/arch/powerpc/kernel/watchdog.c
-> +++ b/arch/powerpc/kernel/watchdog.c
-> @@ -373,7 +373,7 @@ DEFINE_INTERRUPT_HANDLER_NMI(soft_nmi_interrupt)
->  	u64 tb;
->  
->  	/* should only arrive from kernel, with irqs disabled */
-> -	WARN_ON_ONCE(!arch_irq_disabled_regs(regs));
-> +	WARN_ON_ONCE(!regs_irqs_disabled(regs));
->  
->  	if (!cpumask_test_cpu(cpu, &wd_cpus_enabled))
->  		return 0;
-> diff --git a/arch/powerpc/perf/core-book3s.c b/arch/powerpc/perf/core-book3s.c
-> index 8b0081441f85..f7518b7e3055 100644
-> --- a/arch/powerpc/perf/core-book3s.c
-> +++ b/arch/powerpc/perf/core-book3s.c
-> @@ -2482,7 +2482,7 @@ static void __perf_event_interrupt(struct pt_regs *regs)
->  	 * will trigger a PMI after waking up from idle. Since counter values are _not_
->  	 * saved/restored in idle path, can lead to below "Can't find PMC" message.
->  	 */
-> -	if (unlikely(!found) && !arch_irq_disabled_regs(regs))
-> +	if (unlikely(!found) && !regs_irqs_disabled(regs))
->  		printk_ratelimited(KERN_WARNING "Can't find PMC that caused IRQ\n");
->  
->  	/*
+Regards,
+Mukesh
 
