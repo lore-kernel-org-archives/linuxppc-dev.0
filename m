@@ -1,51 +1,63 @@
-Return-Path: <linuxppc-dev+bounces-15455-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15456-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id F0719D1A613
-	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jan 2026 12:54:45 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D545BD1A627
+	for <linuxppc-dev@archiver.kernel.org>; Fri,  9 Jan 2026 13:52:08 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dnhYw4F08z2xc8;
-	Fri, 09 Jan 2026 23:54:44 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dnjr72XD2z2xc8;
+	Sat, 10 Jan 2026 00:52:07 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767963284;
-	cv=none; b=YnSK9FP6D2q+NxKQivTOxuPR4SUKSh7nzfS01MCIXjU5SLf//T7mUXHTIL9X59x9gDrTG4ixuRsAvUmXVVClU/HVZ2iC2NlkmjB3Mmon+5w/IZ+knVcGgNcvXINKtgIIZ0S2pLhGqkUlHC6DI/2iMcgHken56LENNjQvg/49YrCVo87LN67SMUVwiGq/FZb7XUp+WlGpKl6FpfNWtnVk2vax0v6uvneUr1c0e0i9QdLiUcwf+Kxnc5h9YzyW7pG5ZTk1yF5kVn7VJlAo8RfXf55T9ADh9WwiClQDeiXmbG7S/yDAY7MDgOowXLgVu9ztmAympfuDFz5quo7BQlcp5A==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1767966727;
+	cv=none; b=EJrhCo25026AwRshv5Y/Z4C4EdDq5m0JXzpv7i8aUMIQMB9SCp5RwQVIG99mKIrMy1jcFOAv9E0VRZcT6PguD/4ay9dhELrYbk3koXZIDIywMqj+/ob3HIikILbH9POkBa04pBYWnWWEpj04+pZlt+6XNpPylZC1fHbvPOfnegDruuR3Jn0okZR+CWcqmOJ30Ad7hjorIW8QijIw6u4UZ1cc2H7KHzmkG2bPEJWk9ALIAxt17YpWARz0Jih7KWtyQD3BB0azjhDONiPrr+7OecZaz88iqtVzMFJtRpuslbMIJ9KnHXDe4sFaAVQWaxv7XhJd34US9FL/RE9K/U/J8g==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1767963284; c=relaxed/relaxed;
-	bh=xd4/4nTe3bqvCXdwZfxKgNJZ44GCWQQ0Owd6YaGF0AM=;
-	h=Message-ID:Date:MIME-Version:Subject:To:Cc:References:From:
-	 In-Reply-To:Content-Type; b=ib2iSf61DPrWQNFi9aRTAn0+rCs5CypbMj4Cur9okjgvIRVWX+OE3B1Cvd9ul6KgXoagA7ZxHU8R5ypIgASBM5JGu9m1Pj00WI8gLjEVfWEd6teQOMQMRfuKN8gRR88TeFFuUqSkigsE+OkF2uqIYwKM1pBYOd4C7akIneM+XZskB1RwsXFooOLQSff4LWu27RWSew5/MrDt4kqtNG3F2XCreCCE3mAgosFBEafhBpZluTNi7vZsjwKxq3IXRjCbm72h8C7pdXL+MC4rBZGvtkMEMgLm/cp/s3asDzcan9l9nVDX4/B9pI5pghi7/2ZtH1oomhceS1McepwUL0Hd/A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qJqTBR3O; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	t=1767966727; c=relaxed/relaxed;
+	bh=KJQIdm7+jCE6CHXsOBXIdtscjOnc6Dh54et095b0POU=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=fUmsGfgjGVYKPRAqAY2jAEGY12210YUQKRhIP4X4S6cjWaxbRiTAXlynWYTdNCiUnNq9YoRlRrmuLj+XlBu3o7ArMGJM1wJiy5KXVzv3+ki1wqgL3uS46Tv3XjV9NiikAmF71iqM4Q5+13L3qFrIdrj8PVziDdaA0b0bV6XL+pwyE3y6RpWWlUmU1SsR7eugyV+1TFJkZvi1rwfKn0XYGHO7xZF1sBu4Lt7mKbgB/QgsnpoVOTsPtFE38wsuaAivN58ubRSG6LFle52n7Rft+oBBR3prtkMg3jwdLnzB5vsbNI1IduXQr7PrQyEsDB5Ea1MxkKAqNBB5KwYQmSyTdQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VOuJ4cz9; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=qJqTBR3O;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=VOuJ4cz9;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=chleroy@kernel.org; receiver=lists.ozlabs.org)
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=naveen@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
+	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dnhYv4BbLz2xQ1
-	for <linuxppc-dev@lists.ozlabs.org>; Fri, 09 Jan 2026 23:54:43 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dnjr62mNmz2xP8
+	for <linuxppc-dev@lists.ozlabs.org>; Sat, 10 Jan 2026 00:52:06 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id A47CB40C43;
-	Fri,  9 Jan 2026 12:54:11 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 34E00C4CEF1;
-	Fri,  9 Jan 2026 12:54:08 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 97A224095D;
+	Fri,  9 Jan 2026 13:52:03 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id DFD79C4CEF1;
+	Fri,  9 Jan 2026 13:52:02 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1767963251;
-	bh=/jSn7D7gYks/WiVctkdadSm4g9WcWCWBKKGC88gdReI=;
-	h=Date:Subject:To:Cc:References:From:In-Reply-To:From;
-	b=qJqTBR3OJiA8fsJwCRuRysPDMeQ68a9epeJqavR+Wunf9b7uAqT0+aexwoExnYnXm
-	 jZRfD0C4sebk/wO5AbiwAZQWaQKCU1hgZ4cACmuX0vCKxsdfjNC6YhoH50zy1FuvS7
-	 F1Qz0oQY2LK/WZnhdmgmm2HnceDiYi9BY26XMW4k9WjQf7j86ujaO1I1l0Vu6lhrtG
-	 5jsg0D49lkTPIQWnsNRQs7rR++bAvJlMKP1oFXGUWg6m1aEskVH9+t+0nQM/5yIofs
-	 8H4QaWFpuN9n4dtYKZgAWMmvp8vijPvCA6861nhNkZ9jZIV7mpJALhIVujPqlzqqf8
-	 7v5QV8FEGV1LQ==
-Message-ID: <336d274e-c831-4af9-ae65-42908b3c2c61@kernel.org>
-Date: Fri, 9 Jan 2026 13:54:06 +0100
+	s=k20201202; t=1767966723;
+	bh=JmQoDU+xB61L0vG2xAw8si4DDlJ4kpYKIP6hcBYkDHw=;
+	h=Date:From:To:Cc:Subject:References:In-Reply-To:From;
+	b=VOuJ4cz9fYa82d1d6GkpK6UUxf3+Sy7pmJZyTUwXXj9por6Q9uHTFlfFKmyS136Qs
+	 dr7vgDzlW8nrWJn4VqL+XT25/385bgjfUBtgZrYqS0S3Rb9QUZWvsh8d+FUTHijpAF
+	 ORbnYjrpgGOg8kDPHmc20UzpM5wPx7TThRsrX2WmDfi/ck2qBDHH4TOORR3R40Ky9z
+	 qjdvGE6Ig52LMlCi7t9XAErPJ4si42O35nxRtWKEB4vWVUN2hHVHZ6d/Md5IwvNjt4
+	 bRilLQgGAETr9RumMECFEh/JW10F4c5deie6C/LQCdzU2Tpk665P66uwHEnPCm79C0
+	 yxdQA1QmVoMUQ==
+Date: Fri, 9 Jan 2026 19:20:55 +0530
+From: Naveen N Rao <naveen@kernel.org>
+To: Hari Bathini <hbathini@linux.ibm.com>
+Cc: linuxppc-dev <linuxppc-dev@lists.ozlabs.org>, 
+	Madhavan Srinivasan <maddy@linux.ibm.com>, Christophe Leroy <christophe.leroy@csgroup.eu>, 
+	Michael Ellerman <mpe@ellerman.id.au>, linux-trace-kernel@vger.kernel.org, 
+	Mark Rutland <mark.rutland@arm.com>, Steven Rostedt <rostedt@goodmis.org>, 
+	Masami Hiramatsu <mhiramat@kernel.org>, llvm@lists.linux.dev, Maryam Moghadas <maryammo@ca.ibm.com>
+Subject: Re: [PATCH 1/3] powerpc64: make clang cross-build friendly
+Message-ID: <aWEHPEJFYccmCVQK@blrnaveerao1>
+References: <20251108210405.2375472-1-hbathini@linux.ibm.com>
+ <20251108210405.2375472-2-hbathini@linux.ibm.com>
+ <rtnn6dd6y3refo7myc4crzmrunbuyabr2ewlyk7oe4yx3f2rl2@wzoyvsucfeyf>
+ <8141c6eb-f2b7-4a19-b637-af699bb8d5c4@linux.ibm.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -59,99 +71,52 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-User-Agent: Mozilla Thunderbird
-Subject: Re: [PATCH 0/1] powerpc: Fix kuap warnings
-To: Shrikanth Hegde <sshegde@linux.ibm.com>
-Cc: riteshh@linux.ibm.com, linux-kernel@vger.kernel.org,
- hbathini@linux.ibm.com, maddy@linux.ibm.com, linuxppc-dev@lists.ozlabs.org,
- rostedt@goodmis.org, mhiramat@kernel.org, Nicholas Piggin <npiggin@gmail.com>
-References: <20260109064917.777587-1-sshegde@linux.ibm.com>
- <a42acab4-274b-4e5e-804b-bb07a26058c7@kernel.org>
- <fe9b9c66-d1cd-4570-91fa-54329d8c6a37@linux.ibm.com>
-Content-Language: fr-FR
-From: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-In-Reply-To: <fe9b9c66-d1cd-4570-91fa-54329d8c6a37@linux.ibm.com>
-Content-Type: text/plain; charset=UTF-8; format=flowed
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=us-ascii
+Content-Disposition: inline
+In-Reply-To: <8141c6eb-f2b7-4a19-b637-af699bb8d5c4@linux.ibm.com>
 
-Hi Shrikanth,
-
-Le 09/01/2026 à 13:19, Shrikanth Hegde a écrit :
-> Hi Christophe.
+On Mon, Dec 08, 2025 at 09:32:06PM +0530, Hari Bathini wrote:
+> Thanks for the review, Naveen.
 > 
-> On 1/9/26 1:41 PM, Christophe Leroy (CS GROUP) wrote:
->>
->>
->> Le 09/01/2026 à 07:49, Shrikanth Hegde a écrit :
->>> Recently stumbled upon these kuap warnings. This happens with
->>> preempt=full/lazy kernel with function tracing enabled. What irked
->>> me was kernel compilation was getting failed when i had tracing
->>> enabled. It doesn't fail everytime. While running stress-ng memory class
->>> it threw same warnings. So that helped to narrow it down.
->>> So one possible way is to disable tracing for these enter/exit
->>> vmx_usercopy. That seems to fix the bug/warnings. But that will make
->>> them as non trace-able. If there is a better way to fix these warning 
->>> while
->>> keeping them as trace-able, please let me know.
->>>
->>> Anyone with insights on amr, vmx and tracing, please advise.
->>
->> The main principle with KUAP is to not call subfunctions once 
->> userspace access enabled. There are a few exceptions like 
->> __copy_tofrom_user() that are allowed in order to optimise large 
->> copies. However this needs to be handled very carefully, and in 
->> principle we don't expect __copy_tofrom_user() to call other functions.
->>
+> On 24/11/25 11:19 am, Naveen N Rao wrote:
+> > On Sun, Nov 09, 2025 at 02:34:03AM +0530, Hari Bathini wrote:
+> > > ARCH_USING_PATCHABLE_FUNCTION_ENTRY depends on toolchain support for
+> > > -fpatchable-function-entry option. The current script that checks
+> > > for this support only handles GCC. Rename the script and extend it
+> > > to detect support for -fpatchable-function-entry with Clang as well,
+> > > allowing clean cross-compilation with Clang toolchains.
+> > > 
+> > > Signed-off-by: Hari Bathini <hbathini@linux.ibm.com>
+> > > ---
+> > >   arch/powerpc/Kconfig                                         | 5 +++--
+> > >   ...-function-entry.sh => check-fpatchable-function-entry.sh} | 0
+> > >   2 files changed, 3 insertions(+), 2 deletions(-)
+> > >   rename arch/powerpc/tools/{gcc-check-fpatchable-function-entry.sh => check-fpatchable-function-entry.sh} (100%)
+> > > 
+> > > diff --git a/arch/powerpc/Kconfig b/arch/powerpc/Kconfig
+> > > index 325c1171894d..dfb62e211c92 100644
+> > > --- a/arch/powerpc/Kconfig
+> > > +++ b/arch/powerpc/Kconfig
+> > > @@ -568,8 +568,9 @@ config ARCH_USING_PATCHABLE_FUNCTION_ENTRY
+> > >   	depends on FUNCTION_TRACER && (PPC32 || PPC64_ELF_ABI_V2)
+> > >   	depends on $(cc-option,-fpatchable-function-entry=2)
+> > >   	def_bool y if PPC32
+> > > -	def_bool $(success,$(srctree)/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh $(CC) -mlittle-endian) if PPC64 && CPU_LITTLE_ENDIAN
+> > > -	def_bool $(success,$(srctree)/arch/powerpc/tools/gcc-check-fpatchable-function-entry.sh $(CC) -mbig-endian) if PPC64 && CPU_BIG_ENDIAN
+> > > +	def_bool $(success,$(srctree)/arch/powerpc/tools/check-fpatchable-function-entry.sh $(CC) -mlittle-endian) if PPC64 && CPU_LITTLE_ENDIAN && CC_IS_GCC
+> > > +	def_bool $(success,$(srctree)/arch/powerpc/tools/check-fpatchable-function-entry.sh $(CC) -target ppc64le -mlittle-endian) if PPC64 && CPU_LITTLE_ENDIAN && CC_IS_CLANG
+> > 
+> > Can you instead pass $(CLANG_FLAGS) to retain the same command across
+> > gcc/clang?
 > 
-> I didn't understand. My knowledge is quite limited in this space.
-> Could you please explain how this will help us avoid the warnings?
-> or are you saying we have more callsites which needs to worked upon.
+> Should work, I guess.
+> But do I need to test for any additional clang flags that
+> may interfere with what we are trying to check here?
 
-Read tools/objtool/Documentation/objtool.txt section "Objtool warning" 
-item 9.
+From what I can tell, $(CLANG_FLAGS) includes a fairly static set of 
+flags which will be included alongside other $CFLAGS. So, I don't think 
+anything special should be needed there.
 
-Unfortunately powerpc doesn't yet implement objtool to detect it, but 
-the principle applies anyway.
-
-> 
->> So it might require wider rework but we should narrow as much as 
->> possible the period during which access to userspace is opened, with 
->> something like:
->>
->> raw_coy_to_user_power7()
->> {
->>      enter_vmx_usercopy();
-> 
-> I think the problem is when it comes here, it has some AMR state, but
-> it is preemptible. So shouldn't call schedule IIUC.
-
-See commit 00ff1eaac129 ("powerpc: Fix reschedule bug in KUAP-unlocked 
-user copy")
-
-The problem is because enter_vmx_usercopy() is called _after_ 
-allow_write_to_user() which changes AMR.
-
-If you call enter_vmx_usercopy() _before_ allow_write_to_user() and call 
-exit_vmx_usercopy() _after_ prevent_write_to_user() the problem is solved.
-
-> 
->>      allow_write_to_user(to, n);
->>      ret = __copy_tofrom_user_power7();
->>      prevent_write_to_user(to, n);
->>      exit_vmx_usercopy();
->>      return ret;
->> }
->>
->> raw_copy_to_user()
->> {
->>      if (cpu_has_feature(CPU_FTR_VMX_COPY))
->>          raw_copy_to_user_power7();
->>
->>      allow_write_to_user(to, n);
->>      ret = __copy_tofrom_user(to, (__force const void __user *)from, n);
->>      prevent_write_to_user(to, n);
->>      return ret;
->> }
-> 
+- Naveen
 
 
