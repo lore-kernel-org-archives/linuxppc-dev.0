@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-15495-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15494-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D53D1D25039
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id D1E5DD25037
 	for <linuxppc-dev@archiver.kernel.org>; Sun, 11 Jan 2026 08:22:28 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dppQq2h0Nz2yY1;
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dppQq0Ydxz2yVL;
 	Sun, 11 Jan 2026 19:22:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
 ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768119747;
-	cv=none; b=Oi0Cs4CfmGl2ySJ8qrK/elJ17cn2NUzsz1MnrAI3eLG/EWPFLiYu9xWac6B3n7eOqxbOTanIQli40oPSSoocll7ouA5/j/oy7Xebx0DCqvlffL5PutuPNltaUmKteza3FRGukuOKXVybRsVSJtCISnLdi6ups5q56RQUCDquTPBHql2YI66woe48pAxMr5TxC83JSFAC7EeBOD4r+kY2famktzvNFEIwBnIJNSkDH0DExM1zFeubXJNl5qvDe3SVyRquPNT/I4jDualvI+mbaNncp+6HYtSOciFpKYJ9LL1BkQDSqZM01iIiXedp/7dfo/7laB6kvmL1dKyyHhxHzA==
+	cv=none; b=SiYcfUdNSPKJPNtgz+jnXc7aO0M65jRPqcmgUXBfuzRpPy+PP4qtHN4G7nnmlW9KHFlnmSZMbL4TXjy2+kf3VyDQqMTsmXr8/kJQ88MIRcGxjd9k+iYLPE8rc4WAxlFk0lO123Agt/y7JEgW7KuntxPuL8YFJFgoE6uuFxMKqJP1BkSxfvFdJqEXVKpmGTlTyzEbzLarAC5H3azWM9BRAsPQ0YqDF+0g5IJiFQs8ZnUwfsJhV3LQ6nGOxCTqs5lqApwrrvjt6r7o8XlTjVhHfGH0RnZqz5lYyTpzRIssoxbDTPaQSxhd4KeascfmWF+gO7wJ56GWXRt46bAslClciQ==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
 	t=1768119747; c=relaxed/relaxed;
-	bh=U9EN8P3acoDv0e0P4EVIlls8TUWgxf/J3foZHd7o2bM=;
+	bh=NuAgXuWhuh/4/DqNt5iu0tb5y5LsF0sumazLqdyIUYg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=CC5EqbnR5921BCphdnvl73nR+oFTlbkXQTN9U2aD4tqIod5TKllyEfFhEYeg7pk4h+9RHgQ/Ef1HZIsFJyCEY8C8mod/fF8YP/9IRF19KRi2tsaZCAJQtilQVnwI6NrqBAMrLLzhEgS/RkzluS4oUfwboJWRjiHeeeaY3MfrhpPcJNFwDEUimXDTcrF3x6e8RepDJYgqsI2ExLxxp9DvrLfCoFjWb7aDLmZr6hU5G7PhnGO/zLrEaIBYrknWXNFwsQ7/n/wEZRcJAp6EfeSeht9TH6wquzpZPnSz2RNihEdmrCyVJNrAFo4nzplJk/13tBvw6Y55dS9vT6eERGXlzQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c7lICoEa; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=KKRhj5cWU6nM3Z1rnSH2x3G8iwUJopkPpbK6zgCN5rLCCPNh+PUIIeCj70SfGXinSmd/Mix+MKgQqvIok91GsXWq8X0MnkacTYYCSTlKJTcibBszNeAK7fR3LJcIAPV+PTWMJX21AkXgmEkJ5SnEbttj75ih5exG/eFSdPfG3fQM42dEYIlkAeMFrFOmxPnvXUywpAEBRbm5lqV4kIKSZZWygOsusvrFVEpvpGtE++cV8gZWr28Lqql8uwlHPaTUMfEj3Dkr9VrA2I8Y5yDrIPbVSmL4SGYrTlQj3R8MKhrfoEiQSLODrueIESPTEq871Ip0EVk0nlO+8FPj+oMDzg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DdukbAEx; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=c7lICoEa;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=DdukbAEx;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=rppt@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dppQp43dhz2yVB
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dppQp1wlYz2xdY
 	for <linuxppc-dev@lists.ozlabs.org>; Sun, 11 Jan 2026 19:22:26 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 8612860127;
-	Sun, 11 Jan 2026 08:22:24 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 9A5B3C4CEF7;
-	Sun, 11 Jan 2026 08:22:09 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 4A27D60121;
+	Sun, 11 Jan 2026 08:21:54 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 5C598C4CEF7;
+	Sun, 11 Jan 2026 08:21:39 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768119744;
-	bh=tQxK3c7Hkef7Ih3mT/PwmwcYPHyFic1JpOQ4F9wr//s=;
+	s=k20201202; t=1768119714;
+	bh=8QBv9t8LGsuSX+POQQCKwB4fxaLECpliYPuyEC7/9g8=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=c7lICoEawjuGlfAsC2qFFo0dYZjPTTHf6ZsKHEUok91SlgxJeaE0+xUcEvDNupyt3
-	 5Br9cYXmHoDXcMAya3BF4ypvrXlUGSih9s9+iBDKvjwhuneZTRDmN8ONDbWct/rDHQ
-	 5QoYlxyIJuLHIwjKBtJvt0vr+DnaCDPdkgGm0WnDnqGt5kiFGneMx+DwA0ClLjLb/V
-	 /wEtIezdVvzMPd8UCllgRT69ka6QmeOMOK8t6oMkgPq8KwqkbxZp11vTvUC5GGqoAl
-	 ayAX9QigC5taTQ49Jj6N2sxw6qFmAMp9L7M3/3wbbjKYkatCZdLZOULWFYtqCB5Eas
-	 /JSzikIr1W04w==
+	b=DdukbAExezEnhPD7Fz3wOiEU/vc0M64uJEir3HYWzx4ftF18Ax4Kx16THz6QJsu7G
+	 E7jlAsKeMb+AkrIybQ34sKwp4Ag9HkaBJWByLQtL3mH+3Os/7fMJxySVZHiRW4xVe5
+	 k3QE5dTNYYB+M/SfE0t1/i0VxmYp0VwLJkLcAkEp1g9/uWrRVlpTzL0cbkcs5a3pLw
+	 UwuXLA0sVTL9DaDVBg4Sl2xRgUWXVFQ5KYtJQkT0kDc+lIR7wua8QQPkpV0/Pwyplx
+	 WYfk3IAtXbovl1JeV9CqcFYijlKtF6ZPmguYMVbTa+3iCmyCADI4Ifhnu7KIA4NkzI
+	 ybbHzamQouxpQ==
 From: Mike Rapoport <rppt@kernel.org>
 To: Andrew Morton <akpm@linux-foundation.org>
 Cc: Alex Shi <alexs@kernel.org>,
@@ -112,9 +112,9 @@ Cc: Alex Shi <alexs@kernel.org>,
 	linuxppc-dev@lists.ozlabs.org,
 	loongarch@lists.linux.dev,
 	sparclinux@vger.kernel.org
-Subject: [PATCH v3 04/29] arm: make initialization of zero page independent of the memory map
-Date: Sun, 11 Jan 2026 10:20:38 +0200
-Message-ID: <20260111082105.290734-5-rppt@kernel.org>
+Subject: [PATCH v3 02/29] arc: introduce arch_zone_limits_init()
+Date: Sun, 11 Jan 2026 10:20:36 +0200
+Message-ID: <20260111082105.290734-3-rppt@kernel.org>
 X-Mailer: git-send-email 2.51.0
 In-Reply-To: <20260111082105.290734-1-rppt@kernel.org>
 References: <20260111082105.290734-1-rppt@kernel.org>
@@ -133,109 +133,84 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-From: Klara Modin <klarasmodin@gmail.com>
+From: "Mike Rapoport (Microsoft)" <rppt@kernel.org>
 
-Unlike most architectures, arm keeps a struct page pointer to the
-empty_zero_page and to initialize it requires conversion of a virtual
-address to page which makes it necessary to have memory map initialized
-before creating the empty_zero_page.
+Move calculations of zone limits to a dedicated arch_zone_limits_init()
+function.
 
-Make empty_zero_page a stataic array in BSS to decouple it's
-initialization from the initialization of the memory map.
+Later MM core will use this function as an architecture specific callback
+during nodes and zones initialization and thus there won't be a need to
+call free_area_init() from every architecture.
 
-This also aligns arm with vast majorty of architectures.
-
-Signed-off-by: Klara Modin <klarasmodin@gmail.com>
 Signed-off-by: Mike Rapoport (Microsoft) <rppt@kernel.org>
+Acked-by: Vineet Gupta <vgupta@kernel.org>
 ---
- arch/arm/include/asm/pgtable.h |  4 ++--
- arch/arm/mm/mmu.c              | 10 +---------
- arch/arm/mm/nommu.c            | 10 +---------
- 3 files changed, 4 insertions(+), 20 deletions(-)
+ arch/arc/mm/init.c | 34 ++++++++++++++++++++--------------
+ 1 file changed, 20 insertions(+), 14 deletions(-)
 
-diff --git a/arch/arm/include/asm/pgtable.h b/arch/arm/include/asm/pgtable.h
-index 86378eec7757..6fa9acd6a7f5 100644
---- a/arch/arm/include/asm/pgtable.h
-+++ b/arch/arm/include/asm/pgtable.h
-@@ -15,8 +15,8 @@
-  * ZERO_PAGE is a global shared page that is always zero: used
-  * for zero-mapped memory areas etc..
-  */
--extern struct page *empty_zero_page;
--#define ZERO_PAGE(vaddr)	(empty_zero_page)
-+extern unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)];
-+#define ZERO_PAGE(vaddr)	(virt_to_page(empty_zero_page))
- #endif
- 
- #include <asm-generic/pgtable-nopud.h>
-diff --git a/arch/arm/mm/mmu.c b/arch/arm/mm/mmu.c
-index 8bac96e205ac..518def8314e7 100644
---- a/arch/arm/mm/mmu.c
-+++ b/arch/arm/mm/mmu.c
-@@ -45,7 +45,7 @@ extern unsigned long __atags_pointer;
-  * empty_zero_page is a special page that is used for
-  * zero-initialized data and COW.
-  */
--struct page *empty_zero_page;
-+unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)] __page_aligned_bss;
- EXPORT_SYMBOL(empty_zero_page);
- 
- /*
-@@ -1754,8 +1754,6 @@ static void __init early_fixmap_shutdown(void)
-  */
- void __init paging_init(const struct machine_desc *mdesc)
- {
--	void *zero_page;
--
- #ifdef CONFIG_XIP_KERNEL
- 	/* Store the kernel RW RAM region start/end in these variables */
- 	kernel_sec_start = CONFIG_PHYS_OFFSET & SECTION_MASK;
-@@ -1781,13 +1779,7 @@ void __init paging_init(const struct machine_desc *mdesc)
- 
- 	top_pmd = pmd_off_k(0xffff0000);
- 
--	/* allocate the zero page. */
--	zero_page = early_alloc(PAGE_SIZE);
--
- 	bootmem_init();
--
--	empty_zero_page = virt_to_page(zero_page);
--	__flush_dcache_folio(NULL, page_folio(empty_zero_page));
+diff --git a/arch/arc/mm/init.c b/arch/arc/mm/init.c
+index a73cc94f806e..ff7974d38011 100644
+--- a/arch/arc/mm/init.c
++++ b/arch/arc/mm/init.c
+@@ -75,6 +75,25 @@ void __init early_init_dt_add_memory_arch(u64 base, u64 size)
+ 		base, TO_MB(size), !in_use ? "Not used":"");
  }
  
- void __init early_mm_init(const struct machine_desc *mdesc)
-diff --git a/arch/arm/mm/nommu.c b/arch/arm/mm/nommu.c
-index d638cc87807e..7e42d8accec6 100644
---- a/arch/arm/mm/nommu.c
-+++ b/arch/arm/mm/nommu.c
-@@ -31,7 +31,7 @@ unsigned long vectors_base;
-  * empty_zero_page is a special page that is used for
-  * zero-initialized data and COW.
-  */
--struct page *empty_zero_page;
-+unsigned long empty_zero_page[PAGE_SIZE / sizeof(unsigned long)] __page_aligned_bss;
- EXPORT_SYMBOL(empty_zero_page);
++void __init arch_zone_limits_init(unsigned long *max_zone_pfn)
++{
++	/*----------------- node/zones setup --------------------------*/
++	max_zone_pfn[ZONE_NORMAL] = max_low_pfn;
++
++#ifdef CONFIG_HIGHMEM
++	/*
++	 * max_high_pfn should be ok here for both HIGHMEM and HIGHMEM+PAE.
++	 * For HIGHMEM without PAE max_high_pfn should be less than
++	 * min_low_pfn to guarantee that these two regions don't overlap.
++	 * For PAE case highmem is greater than lowmem, so it is natural
++	 * to use max_high_pfn.
++	 *
++	 * In both cases, holes should be handled by pfn_valid().
++	 */
++	max_zone_pfn[ZONE_HIGHMEM] = max_high_pfn;
++#endif
++}
++
+ /*
+  * First memory setup routine called from setup_arch()
+  * 1. setup swapper's mm @init_mm
+@@ -122,9 +141,6 @@ void __init setup_arch_memory(void)
  
- #ifdef CONFIG_ARM_MPU
-@@ -156,18 +156,10 @@ void __init adjust_lowmem_bounds(void)
-  */
- void __init paging_init(const struct machine_desc *mdesc)
- {
--	void *zero_page;
--
- 	early_trap_init((void *)vectors_base);
- 	mpu_setup();
+ 	memblock_dump_all();
  
--	/* allocate the zero page. */
--	zero_page = (void *)memblock_alloc_or_panic(PAGE_SIZE, PAGE_SIZE);
+-	/*----------------- node/zones setup --------------------------*/
+-	max_zone_pfn[ZONE_NORMAL] = max_low_pfn;
 -
- 	bootmem_init();
+ #ifdef CONFIG_HIGHMEM
+ 	/*
+ 	 * On ARC (w/o PAE) HIGHMEM addresses are actually smaller (0 based)
+@@ -139,21 +155,11 @@ void __init setup_arch_memory(void)
+ 	min_high_pfn = PFN_DOWN(high_mem_start);
+ 	max_high_pfn = PFN_DOWN(high_mem_start + high_mem_sz);
+ 
+-	/*
+-	 * max_high_pfn should be ok here for both HIGHMEM and HIGHMEM+PAE.
+-	 * For HIGHMEM without PAE max_high_pfn should be less than
+-	 * min_low_pfn to guarantee that these two regions don't overlap.
+-	 * For PAE case highmem is greater than lowmem, so it is natural
+-	 * to use max_high_pfn.
+-	 *
+-	 * In both cases, holes should be handled by pfn_valid().
+-	 */
+-	max_zone_pfn[ZONE_HIGHMEM] = max_high_pfn;
 -
--	empty_zero_page = virt_to_page(zero_page);
--	flush_dcache_page(empty_zero_page);
+ 	arch_pfn_offset = min(min_low_pfn, min_high_pfn);
+ 	kmap_init();
+ #endif /* CONFIG_HIGHMEM */
+ 
++	arch_zone_limits_init(max_zone_pfn);
+ 	free_area_init(max_zone_pfn);
  }
  
- /*
 -- 
 2.51.0
 
