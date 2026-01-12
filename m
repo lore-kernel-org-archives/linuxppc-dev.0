@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-15556-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15558-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 00ECFCF45C9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 19:23:33 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 50A2DCF45C5
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 19:23:54 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dqj2z39Slz2yFb;
-	Tue, 13 Jan 2026 06:23:23 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dqj3326Nzz2yYq;
+	Tue, 13 Jan 2026 06:23:27 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768245803;
-	cv=none; b=THjD8OnT46iHv5qGWQyjCLLRPUlG+pKGD+OR27qu5lf+D8Po9M+Bix7ij4Vjf0BAuHIt+8HA29TNBJRNrlxwqePg3LCyf2dMswWWL3kPayTJrphNXjzV9pqKq+Ec8h3/s4uYiWKtAIgeFfNt63pOnJdf8xGUKmPwCLCMIMW4ivY6Zv+U+7TgY8MalNA5ckW6pyTJSKIHLwP0BMffwgwoBYWOB6t3my8S1bFR+0IQN5qLutTeJhvd/zsxfETMRud+dn7bbI06gDI3tTHxiQ0b1kKL6cwkHo9z1yq+qbx39/1gAf1IysIXpAxJlpCrR9Z+sEcecFWEKr4s7w2Q+qW/yw==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768245807;
+	cv=none; b=RZY48DxtwDrtujSh4WAvTlJmUcEh6T3/ElQCzYOtAHMbo3FBIgQH6Vu/45dJfSkPkcNlgEpAduhmoL2Rd1MRcsId3dT7SDD8BGucNeVYxZyyonwFmPJq/DsXHFHVTzsGoaCm5eJhN/Tq/e+LkSCeXG5/QnxsE0sGw7/2/I06B6+QTkgB/0zk8udPshKLcLxZdDfpLPY8z135nqR0MzWWMw0VAtOg6g4422O3zNBXQ8xxIQ8vhNFL8vXcMQ2aoJNs84LnIVhBJ3sAYV9HjHCzBH/oKYxaDX1/9Hm268FtJtbXCTCjnDGCDoJOPVASnHGFaCyq55WUd1VNkDI2R1kM6A==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768245803; c=relaxed/relaxed;
-	bh=X5QVv+pK3Q/Yd8L1PsQakg0si7xNSItbltSuybfv5CA=;
+	t=1768245807; c=relaxed/relaxed;
+	bh=zu1MVvxDMya5cYztKUFcl/O0aMDjSFT+eSqR4qGbIk8=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=D9WHMsJPwv2jiu6N5mHH6/ufjwMg5J63mcOTVM3DNMahNAujiILvFI/13JcPtRzPadgEF0ncCkMNX8OyNbXXaHAQPpxMPFx5KxVOOptS0sJG1KwWqFt5EesSXWo+KUPLvX0DYy5RlX2trjmp2At86eq83gvwUIN4voP/PUg7q0ij8RXR6ZzAQJOQZMHHXfOk/VJOFLQl39D91BFCUbd5Lcd0/AaDF17fxiPbw43fTjBXIIlvQXKcp/AskWyh//ZPVhNzr3Hd7yvPe8T6EaeKmZpvcXlSHm8vby50M2h1n6zDof5e323BrK4WYBCq0lvnXNrapCZ3ujily/ooCRVFIw==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JXIHBvTp; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=G50rcB6qpvtDY6LMFXGt85lyBjxc0SgM/ZAiZbCaiVrtrPc5870yGKQElFbTvDREDiO+FIcmFtq5IQjWDoOQiCM6FOcvkOndmjdNhNkIXayq0JlczqQu+3tWtoiGrl5thY8Aa20TrjcPIbz+jGevmU13JyZqcFLMb9GD1IwQe1USLrTuMKyMl1JDqeyFzVY4/rbiKZ640wssk/GFJi+fgVpiNNVEvNDQfGJ7YUIN5H/JpVddysEwnVQg+M5PP2iwHnC7ssCkQ0hW5TeOe+pvXJ5DX/PhT7EeftzXaVq80UxvUp1NPdujmsjkaErVKxNEL8SrOcO7RfTRQvcYrMWnZw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=balRicSf; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=JXIHBvTp;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=balRicSf;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqj2y6nVYz2xRv
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 06:23:22 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqj321Smkz2yY9
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 06:23:26 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 2D8004430D;
-	Mon, 12 Jan 2026 19:23:21 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id A1EDDC4AF0B;
-	Mon, 12 Jan 2026 19:23:20 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 96F954437B;
+	Mon, 12 Jan 2026 19:23:24 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 07AB2C2BC9E;
+	Mon, 12 Jan 2026 19:23:24 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768245801;
-	bh=jF7KhWSZryEBB0FeZdUnAzVuxZQQQuTKuWy5tUR+OmQ=;
+	s=k20201202; t=1768245804;
+	bh=g5MvkBPONwRVRzJT68NyeO2krV6zGm/Kyvj5zIP7ZvE=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=JXIHBvTpr+H6VX4tbUc+PGAH5U0i1qcPQ/D9pk3S5+zn6TPIK3c9zuSj62qZvCQsW
-	 NezYfkOvYDjk8SDzcWZEm0pV/M/QtoIolJj7BCFE3jieqSwUy9Q8HoTjScWYkKXAIY
-	 EGJyRspSX3ezX38NkMpCfd3FeywvkK6RPpye3nl+z71yk17w1EkE4n91YothPcu5ny
-	 2eys2Ah0khcFVZzHoxmLLiTEmxNFK6hGDOrqjEqHXPvE3pTB/pDb94E0UZhl9nhGQt
-	 fJ17HRRNKm26vQZTwyd3aV5KEua5phkd5XM/D6RbTU0GuDZSgjbkHy5JcvGhgAHnBi
-	 9+Osz6DZLMkzg==
+	b=balRicSfSJLDd+OQNdcwFspAZKFQ0vMK7Jrh+QBLAMP98qACHJ/mV5f4axBUki0YF
+	 eQGho1v4+Am7kHyW5HQODAE9JIHoDqKwU6EFGsBMZHfJuXXgsVTiYsZ6ow7ZVuDqMY
+	 01GaPkrgKYrbVp4p1pjyTIl5wiP71iHuphmb4AJiqxtNm1bohr/viimMvMB16Z9knD
+	 RM/K5YZ/7/aJz8A+/O1x/X4AIkQJEYHgG2lqTC7+PhcMf9IMGZpfkM38pnK6Z/CotM
+	 cQV9ooDK/YJbmZCH7Ge0nJwI+rlonGxTLs4x+P1EvAYwOIPjuT1hMqGPSUu78GRCkp
+	 Ydui6sw9YEG2Q==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -59,9 +59,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Holger Dengler <dengler@linux.ibm.com>,
 	Harald Freudenberger <freude@linux.ibm.com>,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH v2 06/35] crypto: arm64/aes - Select CRYPTO_LIB_SHA256 from correct places
-Date: Mon, 12 Jan 2026 11:20:04 -0800
-Message-ID: <20260112192035.10427-7-ebiggers@kernel.org>
+Subject: [PATCH v2 12/35] lib/crypto: powerpc/aes: Migrate SPE optimized code into library
+Date: Mon, 12 Jan 2026 11:20:10 -0800
+Message-ID: <20260112192035.10427-13-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260112192035.10427-1-ebiggers@kernel.org>
 References: <20260112192035.10427-1-ebiggers@kernel.org>
@@ -80,59 +80,443 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The call to sha256() occurs in code that is built when either
-CRYPTO_AES_ARM64_CE_BLK or CRYPTO_AES_ARM64_NEON_BLK.  The option
-CRYPTO_AES_ARM64 is unrelated, notwithstanding its documentation.  I'll
-be removing CRYPTO_AES_ARM64 soon anyway, but before doing that, fix
-where CRYPTO_LIB_SHA256 is selected from.
+Move the PowerPC SPE AES assembly code into lib/crypto/, wire the key
+expansion and single-block en/decryption functions up to the AES library
+API, and remove the superseded "aes-ppc-spe" crypto_cipher algorithm.
 
-Fixes: 01834444d972 ("crypto: arm64/aes - use SHA-256 library instead of crypto_shash")
+The result is that both the AES library and crypto_cipher APIs are now
+optimized with SPE, whereas previously only crypto_cipher was (and
+optimizations weren't enabled by default, which this commit fixes too).
+
+Note that many of the functions in the PowerPC SPE assembly code are
+still used by the AES mode implementations in arch/powerpc/crypto/.  For
+now, just export these functions.  These exports will go away once the
+AES modes are migrated to the library as well.  (Trying to split up the
+assembly files seemed like much more trouble than it would be worth.)
+
 Acked-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/arm64/crypto/Kconfig | 3 ++-
- 1 file changed, 2 insertions(+), 1 deletion(-)
+ arch/powerpc/crypto/Kconfig                   |  2 +-
+ arch/powerpc/crypto/Makefile                  |  2 +-
+ arch/powerpc/crypto/aes-spe-glue.c            | 88 ++-----------------
+ include/crypto/aes.h                          | 31 +++++++
+ lib/crypto/Kconfig                            |  1 +
+ lib/crypto/Makefile                           |  9 ++
+ .../crypto/powerpc}/aes-spe-core.S            |  0
+ .../crypto/powerpc}/aes-spe-keys.S            |  0
+ .../crypto/powerpc}/aes-spe-modes.S           |  0
+ .../crypto/powerpc}/aes-spe-regs.h            |  0
+ .../crypto/powerpc}/aes-tab-4k.S              |  0
+ lib/crypto/powerpc/aes.h                      | 74 ++++++++++++++++
+ 12 files changed, 122 insertions(+), 85 deletions(-)
+ rename {arch/powerpc/crypto => lib/crypto/powerpc}/aes-spe-core.S (100%)
+ rename {arch/powerpc/crypto => lib/crypto/powerpc}/aes-spe-keys.S (100%)
+ rename {arch/powerpc/crypto => lib/crypto/powerpc}/aes-spe-modes.S (100%)
+ rename {arch/powerpc/crypto => lib/crypto/powerpc}/aes-spe-regs.h (100%)
+ rename {arch/powerpc/crypto => lib/crypto/powerpc}/aes-tab-4k.S (100%)
+ create mode 100644 lib/crypto/powerpc/aes.h
 
-diff --git a/arch/arm64/crypto/Kconfig b/arch/arm64/crypto/Kconfig
-index da1c9ea8ea83..4453dff8f0c1 100644
---- a/arch/arm64/crypto/Kconfig
-+++ b/arch/arm64/crypto/Kconfig
-@@ -38,11 +38,10 @@ config CRYPTO_SM3_ARM64_CE
- 	  - ARMv8.2 Crypto Extensions
+diff --git a/arch/powerpc/crypto/Kconfig b/arch/powerpc/crypto/Kconfig
+index 662aed46f9c7..2d056f1fc90f 100644
+--- a/arch/powerpc/crypto/Kconfig
++++ b/arch/powerpc/crypto/Kconfig
+@@ -3,13 +3,13 @@
+ menu "Accelerated Cryptographic Algorithms for CPU (powerpc)"
  
- config CRYPTO_AES_ARM64
- 	tristate "Ciphers: AES, modes: ECB, CBC, CTR, CTS, XCTR, XTS"
- 	select CRYPTO_AES
--	select CRYPTO_LIB_SHA256
- 	help
- 	  Block ciphers: AES cipher algorithms (FIPS-197)
- 	  Length-preserving ciphers: AES with ECB, CBC, CTR, CTS,
- 	    XCTR, and XTS modes
- 	  AEAD cipher: AES with CBC, ESSIV, and SHA-256
-@@ -64,10 +63,11 @@ config CRYPTO_AES_ARM64_CE
- config CRYPTO_AES_ARM64_CE_BLK
- 	tristate "Ciphers: AES, modes: ECB/CBC/CTR/XTS (ARMv8 Crypto Extensions)"
- 	depends on KERNEL_MODE_NEON
+ config CRYPTO_AES_PPC_SPE
+ 	tristate "Ciphers: AES, modes: ECB/CBC/CTR/XTS (SPE)"
+ 	depends on SPE
++	select CRYPTO_LIB_AES
  	select CRYPTO_SKCIPHER
- 	select CRYPTO_AES_ARM64_CE
-+	select CRYPTO_LIB_SHA256
  	help
- 	  Length-preserving ciphers: AES cipher algorithms (FIPS-197)
- 	  with block cipher modes:
- 	  - ECB (Electronic Codebook) mode (NIST SP800-38A)
- 	  - CBC (Cipher Block Chaining) mode (NIST SP800-38A)
-@@ -81,10 +81,11 @@ config CRYPTO_AES_ARM64_CE_BLK
- config CRYPTO_AES_ARM64_NEON_BLK
- 	tristate "Ciphers: AES, modes: ECB/CBC/CTR/XTS (NEON)"
- 	depends on KERNEL_MODE_NEON
- 	select CRYPTO_SKCIPHER
+-	  Block ciphers: AES cipher algorithms (FIPS-197)
+ 	  Length-preserving ciphers: AES with ECB, CBC, CTR, and XTS modes
+ 
+ 	  Architecture: powerpc using:
+ 	  - SPE (Signal Processing Engine) extensions
+ 
+diff --git a/arch/powerpc/crypto/Makefile b/arch/powerpc/crypto/Makefile
+index 5960e5300db7..e22310da86b5 100644
+--- a/arch/powerpc/crypto/Makefile
++++ b/arch/powerpc/crypto/Makefile
+@@ -7,11 +7,11 @@
+ 
+ obj-$(CONFIG_CRYPTO_AES_PPC_SPE) += aes-ppc-spe.o
+ obj-$(CONFIG_CRYPTO_AES_GCM_P10) += aes-gcm-p10-crypto.o
+ obj-$(CONFIG_CRYPTO_DEV_VMX_ENCRYPT) += vmx-crypto.o
+ 
+-aes-ppc-spe-y := aes-spe-core.o aes-spe-keys.o aes-tab-4k.o aes-spe-modes.o aes-spe-glue.o
++aes-ppc-spe-y := aes-spe-glue.o
+ aes-gcm-p10-crypto-y := aes-gcm-p10-glue.o aes-gcm-p10.o ghashp10-ppc.o aesp10-ppc.o
+ vmx-crypto-objs := vmx.o aesp8-ppc.o ghashp8-ppc.o aes.o aes_cbc.o aes_ctr.o aes_xts.o ghash.o
+ 
+ ifeq ($(CONFIG_CPU_LITTLE_ENDIAN),y)
+ override flavour := linux-ppc64le
+diff --git a/arch/powerpc/crypto/aes-spe-glue.c b/arch/powerpc/crypto/aes-spe-glue.c
+index efab78a3a8f6..7d2827e65240 100644
+--- a/arch/powerpc/crypto/aes-spe-glue.c
++++ b/arch/powerpc/crypto/aes-spe-glue.c
+@@ -49,34 +49,10 @@ struct ppc_xts_ctx {
+ 	u32 key_dec[AES_MAX_KEYLENGTH_U32];
+ 	u32 key_twk[AES_MAX_KEYLENGTH_U32];
+ 	u32 rounds;
+ };
+ 
+-extern void ppc_encrypt_aes(u8 *out, const u8 *in, u32 *key_enc, u32 rounds);
+-extern void ppc_decrypt_aes(u8 *out, const u8 *in, u32 *key_dec, u32 rounds);
+-extern void ppc_encrypt_ecb(u8 *out, const u8 *in, u32 *key_enc, u32 rounds,
+-			    u32 bytes);
+-extern void ppc_decrypt_ecb(u8 *out, const u8 *in, u32 *key_dec, u32 rounds,
+-			    u32 bytes);
+-extern void ppc_encrypt_cbc(u8 *out, const u8 *in, u32 *key_enc, u32 rounds,
+-			    u32 bytes, u8 *iv);
+-extern void ppc_decrypt_cbc(u8 *out, const u8 *in, u32 *key_dec, u32 rounds,
+-			    u32 bytes, u8 *iv);
+-extern void ppc_crypt_ctr  (u8 *out, const u8 *in, u32 *key_enc, u32 rounds,
+-			    u32 bytes, u8 *iv);
+-extern void ppc_encrypt_xts(u8 *out, const u8 *in, u32 *key_enc, u32 rounds,
+-			    u32 bytes, u8 *iv, u32 *key_twk);
+-extern void ppc_decrypt_xts(u8 *out, const u8 *in, u32 *key_dec, u32 rounds,
+-			    u32 bytes, u8 *iv, u32 *key_twk);
+-
+-extern void ppc_expand_key_128(u32 *key_enc, const u8 *key);
+-extern void ppc_expand_key_192(u32 *key_enc, const u8 *key);
+-extern void ppc_expand_key_256(u32 *key_enc, const u8 *key);
+-
+-extern void ppc_generate_decrypt_key(u32 *key_dec,u32 *key_enc,
+-				     unsigned int key_len);
+-
+ static void spe_begin(void)
+ {
+ 	/* disable preemption and save users SPE registers if required */
+ 	preempt_disable();
+ 	enable_kernel_spe();
+@@ -87,14 +63,14 @@ static void spe_end(void)
+ 	disable_kernel_spe();
+ 	/* reenable preemption */
+ 	preempt_enable();
+ }
+ 
+-static int ppc_aes_setkey(struct crypto_tfm *tfm, const u8 *in_key,
+-		unsigned int key_len)
++static int ppc_aes_setkey_skcipher(struct crypto_skcipher *tfm,
++				   const u8 *in_key, unsigned int key_len)
+ {
+-	struct ppc_aes_ctx *ctx = crypto_tfm_ctx(tfm);
++	struct ppc_aes_ctx *ctx = crypto_skcipher_ctx(tfm);
+ 
+ 	switch (key_len) {
+ 	case AES_KEYSIZE_128:
+ 		ctx->rounds = 4;
+ 		ppc_expand_key_128(ctx->key_enc, in_key);
+@@ -114,16 +90,10 @@ static int ppc_aes_setkey(struct crypto_tfm *tfm, const u8 *in_key,
+ 	ppc_generate_decrypt_key(ctx->key_dec, ctx->key_enc, key_len);
+ 
+ 	return 0;
+ }
+ 
+-static int ppc_aes_setkey_skcipher(struct crypto_skcipher *tfm,
+-				   const u8 *in_key, unsigned int key_len)
+-{
+-	return ppc_aes_setkey(crypto_skcipher_tfm(tfm), in_key, key_len);
+-}
+-
+ static int ppc_xts_setkey(struct crypto_skcipher *tfm, const u8 *in_key,
+ 		   unsigned int key_len)
+ {
+ 	struct ppc_xts_ctx *ctx = crypto_skcipher_ctx(tfm);
+ 	int err;
+@@ -157,28 +127,10 @@ static int ppc_xts_setkey(struct crypto_skcipher *tfm, const u8 *in_key,
+ 	ppc_generate_decrypt_key(ctx->key_dec, ctx->key_enc, key_len);
+ 
+ 	return 0;
+ }
+ 
+-static void ppc_aes_encrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
+-{
+-	struct ppc_aes_ctx *ctx = crypto_tfm_ctx(tfm);
+-
+-	spe_begin();
+-	ppc_encrypt_aes(out, in, ctx->key_enc, ctx->rounds);
+-	spe_end();
+-}
+-
+-static void ppc_aes_decrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
+-{
+-	struct ppc_aes_ctx *ctx = crypto_tfm_ctx(tfm);
+-
+-	spe_begin();
+-	ppc_decrypt_aes(out, in, ctx->key_dec, ctx->rounds);
+-	spe_end();
+-}
+-
+ static int ppc_ecb_crypt(struct skcipher_request *req, bool enc)
+ {
+ 	struct crypto_skcipher *tfm = crypto_skcipher_reqtfm(req);
+ 	struct ppc_aes_ctx *ctx = crypto_skcipher_ctx(tfm);
+ 	struct skcipher_walk walk;
+@@ -408,30 +360,10 @@ static int ppc_xts_decrypt(struct skcipher_request *req)
+  * This improves IPsec thoughput by another few percent. Additionally we assume
+  * that AES context is always aligned to at least 8 bytes because it is created
+  * with kmalloc() in the crypto infrastructure
+  */
+ 
+-static struct crypto_alg aes_cipher_alg = {
+-	.cra_name		=	"aes",
+-	.cra_driver_name	=	"aes-ppc-spe",
+-	.cra_priority		=	300,
+-	.cra_flags		=	CRYPTO_ALG_TYPE_CIPHER,
+-	.cra_blocksize		=	AES_BLOCK_SIZE,
+-	.cra_ctxsize		=	sizeof(struct ppc_aes_ctx),
+-	.cra_alignmask		=	0,
+-	.cra_module		=	THIS_MODULE,
+-	.cra_u			=	{
+-		.cipher = {
+-			.cia_min_keysize	=	AES_MIN_KEY_SIZE,
+-			.cia_max_keysize	=	AES_MAX_KEY_SIZE,
+-			.cia_setkey		=	ppc_aes_setkey,
+-			.cia_encrypt		=	ppc_aes_encrypt,
+-			.cia_decrypt		=	ppc_aes_decrypt
+-		}
+-	}
+-};
+-
+ static struct skcipher_alg aes_skcipher_algs[] = {
+ 	{
+ 		.base.cra_name		=	"ecb(aes)",
+ 		.base.cra_driver_name	=	"ecb-ppc-spe",
+ 		.base.cra_priority	=	300,
+@@ -486,26 +418,16 @@ static struct skcipher_alg aes_skcipher_algs[] = {
+ 	}
+ };
+ 
+ static int __init ppc_aes_mod_init(void)
+ {
+-	int err;
+-
+-	err = crypto_register_alg(&aes_cipher_alg);
+-	if (err)
+-		return err;
+-
+-	err = crypto_register_skciphers(aes_skcipher_algs,
+-					ARRAY_SIZE(aes_skcipher_algs));
+-	if (err)
+-		crypto_unregister_alg(&aes_cipher_alg);
+-	return err;
++	return crypto_register_skciphers(aes_skcipher_algs,
++					 ARRAY_SIZE(aes_skcipher_algs));
+ }
+ 
+ static void __exit ppc_aes_mod_fini(void)
+ {
+-	crypto_unregister_alg(&aes_cipher_alg);
+ 	crypto_unregister_skciphers(aes_skcipher_algs,
+ 				    ARRAY_SIZE(aes_skcipher_algs));
+ }
+ 
+ module_init(ppc_aes_mod_init);
+diff --git a/include/crypto/aes.h b/include/crypto/aes.h
+index 18af1acbde58..c893c9214cb7 100644
+--- a/include/crypto/aes.h
++++ b/include/crypto/aes.h
+@@ -18,14 +18,26 @@
+ #define AES_MAX_KEYLENGTH	(15 * 16)
+ #define AES_MAX_KEYLENGTH_U32	(AES_MAX_KEYLENGTH / sizeof(u32))
+ 
+ union aes_enckey_arch {
+ 	u32 rndkeys[AES_MAX_KEYLENGTH_U32];
++#ifdef CONFIG_CRYPTO_LIB_AES_ARCH
++#if defined(CONFIG_PPC) && defined(CONFIG_SPE)
++	/* Used unconditionally (when SPE AES code is enabled in kconfig) */
++	u32 spe_enc_key[AES_MAX_KEYLENGTH_U32] __aligned(8);
++#endif
++#endif /* CONFIG_CRYPTO_LIB_AES_ARCH */
+ };
+ 
+ union aes_invkey_arch {
+ 	u32 inv_rndkeys[AES_MAX_KEYLENGTH_U32];
++#ifdef CONFIG_CRYPTO_LIB_AES_ARCH
++#if defined(CONFIG_PPC) && defined(CONFIG_SPE)
++	/* Used unconditionally (when SPE AES code is enabled in kconfig) */
++	u32 spe_dec_key[AES_MAX_KEYLENGTH_U32] __aligned(8);
++#endif
++#endif /* CONFIG_CRYPTO_LIB_AES_ARCH */
+ };
+ 
+ /**
+  * struct aes_enckey - An AES key prepared for encryption
+  * @len: Key length in bytes: 16 for AES-128, 24 for AES-192, 32 for AES-256.
+@@ -122,10 +134,29 @@ int aes_expandkey(struct crypto_aes_ctx *ctx, const u8 *in_key,
+  * that code is migrated into lib/crypto/.
+  */
+ #ifdef CONFIG_ARM64
+ int ce_aes_expandkey(struct crypto_aes_ctx *ctx, const u8 *in_key,
+ 		     unsigned int key_len);
++#elif defined(CONFIG_PPC)
++void ppc_expand_key_128(u32 *key_enc, const u8 *key);
++void ppc_expand_key_192(u32 *key_enc, const u8 *key);
++void ppc_expand_key_256(u32 *key_enc, const u8 *key);
++void ppc_generate_decrypt_key(u32 *key_dec, u32 *key_enc, unsigned int key_len);
++void ppc_encrypt_ecb(u8 *out, const u8 *in, u32 *key_enc, u32 rounds,
++		     u32 bytes);
++void ppc_decrypt_ecb(u8 *out, const u8 *in, u32 *key_dec, u32 rounds,
++		     u32 bytes);
++void ppc_encrypt_cbc(u8 *out, const u8 *in, u32 *key_enc, u32 rounds, u32 bytes,
++		     u8 *iv);
++void ppc_decrypt_cbc(u8 *out, const u8 *in, u32 *key_dec, u32 rounds, u32 bytes,
++		     u8 *iv);
++void ppc_crypt_ctr(u8 *out, const u8 *in, u32 *key_enc, u32 rounds, u32 bytes,
++		   u8 *iv);
++void ppc_encrypt_xts(u8 *out, const u8 *in, u32 *key_enc, u32 rounds, u32 bytes,
++		     u8 *iv, u32 *key_twk);
++void ppc_decrypt_xts(u8 *out, const u8 *in, u32 *key_dec, u32 rounds, u32 bytes,
++		     u8 *iv, u32 *key_twk);
+ #endif
+ 
+ /**
+  * aes_preparekey() - Prepare an AES key for encryption and decryption
+  * @key: (output) The key structure to initialize
+diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
+index ead47b2a7db6..cfc6171203d0 100644
+--- a/lib/crypto/Kconfig
++++ b/lib/crypto/Kconfig
+@@ -14,10 +14,11 @@ config CRYPTO_LIB_AES
+ config CRYPTO_LIB_AES_ARCH
+ 	bool
+ 	depends on CRYPTO_LIB_AES && !UML && !KMSAN
+ 	default y if ARM
+ 	default y if ARM64
++	default y if PPC && SPE
+ 
+ config CRYPTO_LIB_AESCFB
+ 	tristate
  	select CRYPTO_LIB_AES
-+	select CRYPTO_LIB_SHA256
- 	help
- 	  Length-preserving ciphers: AES cipher algorithms (FIPS-197)
- 	  with block cipher modes:
- 	  - ECB (Electronic Codebook) mode (NIST SP800-38A)
- 	  - CBC (Cipher Block Chaining) mode (NIST SP800-38A)
+ 	select CRYPTO_LIB_UTILS
+diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
+index 1b690c63fafb..d68fde004104 100644
+--- a/lib/crypto/Makefile
++++ b/lib/crypto/Makefile
+@@ -27,10 +27,19 @@ libaes-$(CONFIG_ARM) += arm/aes-cipher-core.o
+ ifeq ($(CONFIG_ARM64),y)
+ libaes-y += arm64/aes-cipher-core.o
+ libaes-$(CONFIG_KERNEL_MODE_NEON) += arm64/aes-ce-core.o
+ endif
+ 
++ifeq ($(CONFIG_PPC),y)
++ifeq ($(CONFIG_SPE),y)
++libaes-y += powerpc/aes-spe-core.o \
++	    powerpc/aes-spe-keys.o \
++	    powerpc/aes-spe-modes.o \
++	    powerpc/aes-tab-4k.o
++endif
++endif # CONFIG_PPC
++
+ endif # CONFIG_CRYPTO_LIB_AES_ARCH
+ 
+ ################################################################################
+ 
+ obj-$(CONFIG_CRYPTO_LIB_AESCFB)			+= libaescfb.o
+diff --git a/arch/powerpc/crypto/aes-spe-core.S b/lib/crypto/powerpc/aes-spe-core.S
+similarity index 100%
+rename from arch/powerpc/crypto/aes-spe-core.S
+rename to lib/crypto/powerpc/aes-spe-core.S
+diff --git a/arch/powerpc/crypto/aes-spe-keys.S b/lib/crypto/powerpc/aes-spe-keys.S
+similarity index 100%
+rename from arch/powerpc/crypto/aes-spe-keys.S
+rename to lib/crypto/powerpc/aes-spe-keys.S
+diff --git a/arch/powerpc/crypto/aes-spe-modes.S b/lib/crypto/powerpc/aes-spe-modes.S
+similarity index 100%
+rename from arch/powerpc/crypto/aes-spe-modes.S
+rename to lib/crypto/powerpc/aes-spe-modes.S
+diff --git a/arch/powerpc/crypto/aes-spe-regs.h b/lib/crypto/powerpc/aes-spe-regs.h
+similarity index 100%
+rename from arch/powerpc/crypto/aes-spe-regs.h
+rename to lib/crypto/powerpc/aes-spe-regs.h
+diff --git a/arch/powerpc/crypto/aes-tab-4k.S b/lib/crypto/powerpc/aes-tab-4k.S
+similarity index 100%
+rename from arch/powerpc/crypto/aes-tab-4k.S
+rename to lib/crypto/powerpc/aes-tab-4k.S
+diff --git a/lib/crypto/powerpc/aes.h b/lib/crypto/powerpc/aes.h
+new file mode 100644
+index 000000000000..cf22020f9050
+--- /dev/null
++++ b/lib/crypto/powerpc/aes.h
+@@ -0,0 +1,74 @@
++/* SPDX-License-Identifier: GPL-2.0-only */
++/*
++ * Copyright (c) 2015 Markus Stockhausen <stockhausen@collogia.de>
++ * Copyright 2026 Google LLC
++ */
++#include <asm/simd.h>
++#include <asm/switch_to.h>
++#include <linux/cpufeature.h>
++#include <linux/jump_label.h>
++#include <linux/preempt.h>
++#include <linux/uaccess.h>
++
++EXPORT_SYMBOL_GPL(ppc_expand_key_128);
++EXPORT_SYMBOL_GPL(ppc_expand_key_192);
++EXPORT_SYMBOL_GPL(ppc_expand_key_256);
++EXPORT_SYMBOL_GPL(ppc_generate_decrypt_key);
++EXPORT_SYMBOL_GPL(ppc_encrypt_ecb);
++EXPORT_SYMBOL_GPL(ppc_decrypt_ecb);
++EXPORT_SYMBOL_GPL(ppc_encrypt_cbc);
++EXPORT_SYMBOL_GPL(ppc_decrypt_cbc);
++EXPORT_SYMBOL_GPL(ppc_crypt_ctr);
++EXPORT_SYMBOL_GPL(ppc_encrypt_xts);
++EXPORT_SYMBOL_GPL(ppc_decrypt_xts);
++
++void ppc_encrypt_aes(u8 *out, const u8 *in, const u32 *key_enc, u32 rounds);
++void ppc_decrypt_aes(u8 *out, const u8 *in, const u32 *key_dec, u32 rounds);
++
++static void spe_begin(void)
++{
++	/* disable preemption and save users SPE registers if required */
++	preempt_disable();
++	enable_kernel_spe();
++}
++
++static void spe_end(void)
++{
++	disable_kernel_spe();
++	/* reenable preemption */
++	preempt_enable();
++}
++
++static void aes_preparekey_arch(union aes_enckey_arch *k,
++				union aes_invkey_arch *inv_k,
++				const u8 *in_key, int key_len, int nrounds)
++{
++	if (key_len == AES_KEYSIZE_128)
++		ppc_expand_key_128(k->spe_enc_key, in_key);
++	else if (key_len == AES_KEYSIZE_192)
++		ppc_expand_key_192(k->spe_enc_key, in_key);
++	else
++		ppc_expand_key_256(k->spe_enc_key, in_key);
++
++	if (inv_k)
++		ppc_generate_decrypt_key(inv_k->spe_dec_key, k->spe_enc_key,
++					 key_len);
++}
++
++static void aes_encrypt_arch(const struct aes_enckey *key,
++			     u8 out[AES_BLOCK_SIZE],
++			     const u8 in[AES_BLOCK_SIZE])
++{
++	spe_begin();
++	ppc_encrypt_aes(out, in, key->k.spe_enc_key, key->nrounds / 2 - 1);
++	spe_end();
++}
++
++static void aes_decrypt_arch(const struct aes_key *key,
++			     u8 out[AES_BLOCK_SIZE],
++			     const u8 in[AES_BLOCK_SIZE])
++{
++	spe_begin();
++	ppc_decrypt_aes(out, in, key->inv_k.spe_dec_key, key->nrounds / 2 - 1);
++	spe_end();
++}
 -- 
 2.52.0
 
