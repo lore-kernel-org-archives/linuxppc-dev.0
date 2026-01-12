@@ -1,70 +1,128 @@
-Return-Path: <linuxppc-dev+bounces-15588-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15589-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 953E3CF45C5
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 19:27:53 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 38F90CF45C8
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 19:29:24 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dqj3m5M4tz3cdZ;
-	Tue, 13 Jan 2026 06:24:04 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768245844;
-	cv=none; b=BassX7r7kPs7oP7rmLbf+TGYXr9tK8Bvz4JTsZL+tlN0yNJOOuM7X5+DOiF0NknZv9dre7NVlhnfo63n3di3cOJUQauUeCR3XNFaCEpgsPYwy+6t3MhO4Iu4LnGlVqVaHXEE94BAZlN/1IkyjCTJQRwzIELgaINZ+c3CXcDCIpnNZzirv5sE2dEOdjQN77dCGxyqg5/70Ukm18+LIqOCPgbjZcMgIo3EwHuI0VUt45nLgbU3PS266LpUntM14OKckaV48rpWHGcdQB2qbUy0M6DYofsnT47pzlkFTKN6id2S/XvhYZcMU3+HqWIbpIosAI9D3oHN9n3TXaqo1BxcTQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dqj9t5dRWz2xRv;
+	Tue, 13 Jan 2026 06:29:22 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.222.182
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768246162;
+	cv=none; b=ZW+05gcPpdKU4xLpXg5CAsfmqpSp27V7+9k8G5L3guECdJEK+sIEhPUMRcSCkI2P6CZwhpdcV4edhF5fSrKbZ17zmQ9Beb38DZiqNnAMzySHpL4NiOJ3RXssqEHovHzCYIVm9hzKKeQkGYRowN8XeAkv9jOcbkuGql3XeYniVa7w6yqWwR0Azn5s3yDR/kOSNxJEkuQ5U2+4yIA4bREGDK+kxFGzZX8fLNk9X0YErO6aI9bQ5uKM+p4rJvJX4mlobDTIjcl4PYaKry1XCs9N6Ns57oye1jDYY1KNVu6LaWUYXZ3HHwwBU9JrtWkGVOuK5CBxzRX91U0dhLRhqc9Npw==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768245844; c=relaxed/relaxed;
-	bh=5djnNqR9mAGGTmyuSWB/iuinQG5VStfmD+eHGjn+2xE=;
-	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=V045HYKQF9dpC/PXzdRaoh89KEg/5C5Ud1MKNCN/3dY82awxSWbRWqJTYSSdetXGmmvAtCPDL88zSiAxbGl9el2RsvwIioAxcMIrgufDPAxjROcbzNC3Rx0eDzS6p0k99Hn9/wpsMn+cEYKWTLEGV5YXs+0/xL4F9viMbk5jBTHsvyieGHP0OssQFLa+s/qCYUUL2rns75X7o3cV2AUrCcRWllXqIaa3VX4R5LIAuPHfdpPIPdJrKXj+naIZ/HxChABfF8Ae0ZuWE1fFxujCLYGJ2IWTDUlyH6Zpob8Da/w75P2EG164j1m5tOX3n4q+7QEgwTfEh0+9JIYiYeXj8g==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f1ZEk5w+; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
+	t=1768246162; c=relaxed/relaxed;
+	bh=a9AdLI7uJUYtOYd89GixDifcE7N5970uW2swaB6ncSw=;
+	h=Date:From:To:Cc:Subject:Message-ID:References:MIME-Version:
+	 Content-Type:Content-Disposition:In-Reply-To; b=KSsF2qFk133GD2d6GuzMDFT3GxtiIDyQANgOjVjc6TqN9VBj3lxEar9P4MHfwMgUvADa2F9CjQXJdyjoArvp5ELTVdXhW4Z+DrXJvcvduRcliEyYLFftNwj7J3jVPEqEoMUb7N0VFaFVo3MuuusjQr1VRrAu+NDb+p7pGTfz0Q/Myj0nUZeQiJC4jDaZFTS6UKx884xAEGPqgwS08GWJFL1XAt76lMf/vvZLq9QXSbZj9sezHQsJFWd5qaTcRlTAH3EhYX86QAOOH424PptDAoTfnZckmQoPJwCfvmKqISfab2H0IXcD0eTxI9nvVjHA/OkGwZboK+Vs6J8lgjIqBg==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca; dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=eqBvhEN4; dkim-atps=neutral; spf=pass (client-ip=209.85.222.182; helo=mail-qk1-f182.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org) smtp.mailfrom=ziepe.ca
+Authentication-Results: lists.ozlabs.org; dmarc=none (p=none dis=none) header.from=ziepe.ca
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=f1ZEk5w+;
+	dkim=pass (2048-bit key; secure) header.d=ziepe.ca header.i=@ziepe.ca header.a=rsa-sha256 header.s=google header.b=eqBvhEN4;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=ziepe.ca (client-ip=209.85.222.182; helo=mail-qk1-f182.google.com; envelope-from=jgg@ziepe.ca; receiver=lists.ozlabs.org)
+Received: from mail-qk1-f182.google.com (mail-qk1-f182.google.com [209.85.222.182])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
-	 key-exchange x25519)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqj3l2skrz3cYb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 06:24:03 +1100 (AEDT)
-Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id D22354426E;
-	Mon, 12 Jan 2026 19:23:31 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id 48A24C19425;
-	Mon, 12 Jan 2026 19:23:31 +0000 (UTC)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768245811;
-	bh=DiZRFCuoZEbDmo8HTN6yQ9s1ZZanJqRCY5hLsI1JYkg=;
-	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=f1ZEk5w+IIz3l2jxL4TbT/+wqxFESp7WOApxHSh1yfq2ClhrqTipgK8Kl1D/VDlj3
-	 gOvZp+olVJPGzjxeEWDyjXMG/rqXyj7UxgXx7SM5D8Xqvzt8bpLy6tc0yn7l7Nco2f
-	 mqzGsWceQ+aBGFPEPCnszH0qKOXIsquOhvtquv60h94bZ6dsdoynRnAkviLKg6FiHK
-	 buh+mIgJsYnjf4ijImB5CZtIrp8Dkfcv59PjfHgMBZ3Rx0Yd6xGxjSeHfNeUJnaUvf
-	 G+bobJee6RA74/qKXOApg9u/DYwOkofTekgzvZg9uvfK7XRzA0DcKQ5ValNinStCOe
-	 rTMBFc/GVAbww==
-From: Eric Biggers <ebiggers@kernel.org>
-To: linux-crypto@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org,
-	Ard Biesheuvel <ardb@kernel.org>,
-	"Jason A . Donenfeld" <Jason@zx2c4.com>,
-	Herbert Xu <herbert@gondor.apana.org.au>,
-	linux-arm-kernel@lists.infradead.org,
-	linuxppc-dev@lists.ozlabs.org,
-	linux-riscv@lists.infradead.org,
-	linux-s390@vger.kernel.org,
-	sparclinux@vger.kernel.org,
-	x86@kernel.org,
-	Holger Dengler <dengler@linux.ibm.com>,
-	Harald Freudenberger <freude@linux.ibm.com>,
-	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH v2 25/35] crypto: x86/aes-gcm - Use new AES library API
-Date: Mon, 12 Jan 2026 11:20:23 -0800
-Message-ID: <20260112192035.10427-26-ebiggers@kernel.org>
-X-Mailer: git-send-email 2.52.0
-In-Reply-To: <20260112192035.10427-1-ebiggers@kernel.org>
-References: <20260112192035.10427-1-ebiggers@kernel.org>
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqj9s3v5nz2xQ1
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 06:29:20 +1100 (AEDT)
+Received: by mail-qk1-f182.google.com with SMTP id af79cd13be357-8b2f0f9e4cbso457310485a.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jan 2026 11:29:20 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=ziepe.ca; s=google; t=1768246098; x=1768850898; darn=lists.ozlabs.org;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:from:to
+         :cc:subject:date:message-id:reply-to;
+        bh=a9AdLI7uJUYtOYd89GixDifcE7N5970uW2swaB6ncSw=;
+        b=eqBvhEN40G19RExnaBJdZE64ehgI0jqoTpWe92BihELdBYtDa9OpeHmN0ECYYKFA1R
+         K080qKn+QLSlaEMN8CshapYqKkJ2ZE0RCwX6zqq14tdvOzsj8w7f3ngdtIlJl71Adn2c
+         dbG4G9skZSel8d5UttKT7U8dMGKuhyN1fWEjyu94GZyYe2Bnr3TV2tVkZZqaywoRYngS
+         rXrFjmOEAfrdLj3IciV343UH8+oSTIq2zYiNj7U3rr8M7It839uXhdPbcKFiy/K/WGsv
+         Z5mIsV9zNfEr0Q69/SROSpfGHs5kESIOoAIRlI1cl12odaG0SpnmLNi5yLCpeLg+ST56
+         Kv1g==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1768246098; x=1768850898;
+        h=in-reply-to:content-transfer-encoding:content-disposition
+         :mime-version:references:message-id:subject:cc:to:from:date:x-gm-gg
+         :x-gm-message-state:from:to:cc:subject:date:message-id:reply-to;
+        bh=a9AdLI7uJUYtOYd89GixDifcE7N5970uW2swaB6ncSw=;
+        b=M9dibZAn/8WhzQC7RWTjOZfbJMzVf9v05Uw+onvAtsbhp+ih58hd8PtMBQqQLItdUe
+         p4/Jc3eSUD3UBDMYNimv8BmjZ5cxvXGBVN55rmwKAtcibpAxtimtKabxk49XNp/DmTFC
+         ksWKYskoSNjmZ5d46qPFfkd+AryCRgRH4TofQyICopX3aMF+zaNd3TJ4licctQ6X5gXy
+         R1qDvH/B3dNj5M0agesLEWeM+4xzH+TP5XIVbmPL3lIWRPUeMqZ/7puSRYgIvCZhhlAP
+         20UqZVsdIlqyaXCw8P2Ncuj14onVMWRdT9haep+BjdR7A1H9W66+/WcNfiPCJ6TWTzFr
+         63GQ==
+X-Forwarded-Encrypted: i=1; AJvYcCUEtP0R2BPBmmDFMq69+s2Op2fdSnRxf6jL51MN2g0repk8kbVUphy0mUlAANv41g3WZETW3Xl3qnHu71s=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yzvw4tjqkwR/Mi+O0M7DslPesgxfwy0BSUdVyDQ7FOSM0c4nrby
+	UKrOPgSxG31zkIJUBUnIBZ6c1lW0RN4Gp8FTovx1hGAbz/frro+++x1yxTcBtoUpxiA=
+X-Gm-Gg: AY/fxX7wcjCm00Z2bC9OuVDGeb4CL9MrWVbDdCcqOPIuv0xr0EBAki/xhy5wi9MN6Y7
+	I0UEhzZo89nSqqNsDCILbloevZpODgHtRM8rAN4OcfFDsQbUOdaK8vIMJ8OrABnSq73h/OPkL5V
+	YoyWsYTjy6My/xVOyeWDFHXakjKT/WBBYK6e5GssNEudwsuvFVvSRspalnL1ibPV34YgU7F+21N
+	+fYK+KUXu22LxGjsei+rkn0JUREms0rImL+MrP9yBXMNlpMAH16vpgz0z23KQ4PfIaoGOuz4rWZ
+	SV+/TXiyUfMa/XaCDzNkDUtudr8xbjy56Wu8yd/2X8RJea70NdSdyVbgv9KEzE+zaptXO7hfT1r
+	7Fe8lA/+gnJdG5DTnnupwXlpVPRCVW/kpEKNmJLJO334hETsXtW9FUZZ3hZ3vMMd+c47PmJXAmy
+	/1e0xtU6ChYVb2YLgD/L5Do1UoBI96WoF8u/KjELrRmUJxT7v0LfFxwxLQF7eq23CeDLQ=
+X-Received: by 2002:a05:620a:1726:b0:8b8:7f8d:c33b with SMTP id af79cd13be357-8c5208f18e3mr71372585a.43.1768246097807;
+        Mon, 12 Jan 2026 11:28:17 -0800 (PST)
+Received: from ziepe.ca (hlfxns017vw-142-162-112-119.dhcp-dynamic.fibreop.ns.bellaliant.net. [142.162.112.119])
+        by smtp.gmail.com with ESMTPSA id af79cd13be357-8c37f4cd7a3sm1609425185a.24.2026.01.12.11.28.16
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 12 Jan 2026 11:28:16 -0800 (PST)
+Received: from jgg by wakko with local (Exim 4.97)
+	(envelope-from <jgg@ziepe.ca>)
+	id 1vfNaK-00000003cxB-192v;
+	Mon, 12 Jan 2026 15:28:16 -0400
+Date: Mon, 12 Jan 2026 15:28:16 -0400
+From: Jason Gunthorpe <jgg@ziepe.ca>
+To: Zi Yan <ziy@nvidia.com>
+Cc: Matthew Wilcox <willy@infradead.org>, Balbir Singh <balbirs@nvidia.com>,
+	Francois Dugast <francois.dugast@intel.com>,
+	intel-xe@lists.freedesktop.org, dri-devel@lists.freedesktop.org,
+	Matthew Brost <matthew.brost@intel.com>,
+	Madhavan Srinivasan <maddy@linux.ibm.com>,
+	Nicholas Piggin <npiggin@gmail.com>,
+	Michael Ellerman <mpe@ellerman.id.au>,
+	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
+	Felix Kuehling <Felix.Kuehling@amd.com>,
+	Alex Deucher <alexander.deucher@amd.com>,
+	Christian =?utf-8?B?S8O2bmln?= <christian.koenig@amd.com>,
+	David Airlie <airlied@gmail.com>, Simona Vetter <simona@ffwll.ch>,
+	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
+	Maxime Ripard <mripard@kernel.org>,
+	Thomas Zimmermann <tzimmermann@suse.de>,
+	Lyude Paul <lyude@redhat.com>, Danilo Krummrich <dakr@kernel.org>,
+	Bjorn Helgaas <bhelgaas@google.com>,
+	Logan Gunthorpe <logang@deltatee.com>,
+	David Hildenbrand <david@kernel.org>,
+	Oscar Salvador <osalvador@suse.de>,
+	Andrew Morton <akpm@linux-foundation.org>,
+	Leon Romanovsky <leon@kernel.org>,
+	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
+	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
+	Vlastimil Babka <vbabka@suse.cz>, Mike Rapoport <rppt@kernel.org>,
+	Suren Baghdasaryan <surenb@google.com>,
+	Michal Hocko <mhocko@suse.com>,
+	Alistair Popple <apopple@nvidia.com>, linuxppc-dev@lists.ozlabs.org,
+	kvm@vger.kernel.org, linux-kernel@vger.kernel.org,
+	amd-gfx@lists.freedesktop.org, nouveau@lists.freedesktop.org,
+	linux-pci@vger.kernel.org, linux-mm@kvack.org,
+	linux-cxl@vger.kernel.org
+Subject: Re: [PATCH v4 1/7] mm/zone_device: Add order argument to folio_free
+ callback
+Message-ID: <20260112192816.GL745888@ziepe.ca>
+References: <20260111205820.830410-2-francois.dugast@intel.com>
+ <aWQlsyIVVGpCvB3y@casper.infradead.org>
+ <874d29da-2008-47e6-9c27-6c00abbf404a@nvidia.com>
+ <0D532F80-6C4D-4800-9473-485B828B55EC@nvidia.com>
+ <20260112134510.GC745888@ziepe.ca>
+ <218D42B0-3E08-4ABC-9FB4-1203BB31E547@nvidia.com>
+ <20260112165001.GG745888@ziepe.ca>
+ <86D91C8B-C3EA-4836-8DC2-829499477618@nvidia.com>
+ <20260112182500.GI745888@ziepe.ca>
+ <6AFCEB51-8EE1-4AC9-8F39-FCA561BE8CB5@nvidia.com>
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -78,484 +136,55 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
+Content-Type: text/plain; charset=utf-8
+Content-Disposition: inline
 Content-Transfer-Encoding: 8bit
+In-Reply-To: <6AFCEB51-8EE1-4AC9-8F39-FCA561BE8CB5@nvidia.com>
 
-Switch from the old AES library functions (which use struct
-crypto_aes_ctx) to the new ones (which use struct aes_enckey).  This
-eliminates the unnecessary computation and caching of the decryption
-round keys.  The new AES en/decryption functions are also much faster
-and use AES instructions when supported by the CPU.
+On Mon, Jan 12, 2026 at 01:55:18PM -0500, Zi Yan wrote:
+> > That's different, I am talking about reaching 0 because it has been
+> > freed, meaning there are no external pointers to it.
+> >
+> > Further, when a page is frozen page_ref_freeze() takes in the number
+> > of references the caller has ownership over and it doesn't succeed if
+> > there are stray references elsewhere.
+> >
+> > This is very important because the entire operating model of split
+> > only works if it has exclusive locks over all the valid pointers into
+> > that page.
+> >
+> > Spurious refcount failures concurrent with split cannot be allowed.
+> >
+> > I don't see how pointing at __folio_freeze_and_split_unmapped() can
+> > justify this series.
+> >
+> 
+> But from anyone looking at the folio state, refcount == 0, compound_head
+> is set, they cannot tell the difference.
 
-Since this changes the format of the AES-GCM key structures that are
-used by the AES-GCM assembly code, the offsets in the assembly code had
-to be updated to match.  Note that the new key structures are smaller,
-since the decryption round keys are no longer unnecessarily included.
+This isn't reliable, nothing correct can be doing it :\
 
-Acked-by: Ard Biesheuvel <ardb@kernel.org>
-Signed-off-by: Eric Biggers <ebiggers@kernel.org>
----
- arch/x86/crypto/aes-gcm-aesni-x86_64.S | 33 +++++++--------
- arch/x86/crypto/aes-gcm-vaes-avx2.S    | 21 +++++-----
- arch/x86/crypto/aes-gcm-vaes-avx512.S  | 25 ++++++-----
- arch/x86/crypto/aesni-intel_glue.c     | 57 +++++++++++---------------
- 4 files changed, 67 insertions(+), 69 deletions(-)
+> If what you said is true, why is free_pages_prepare() needed? No one
+> should touch these free pages. Why bother resetting these states.
 
-diff --git a/arch/x86/crypto/aes-gcm-aesni-x86_64.S b/arch/x86/crypto/aes-gcm-aesni-x86_64.S
-index 7c8a8a32bd3c..6b2abb76827e 100644
---- a/arch/x86/crypto/aes-gcm-aesni-x86_64.S
-+++ b/arch/x86/crypto/aes-gcm-aesni-x86_64.S
-@@ -141,14 +141,15 @@
- .Lzeropad_mask:
- 	.octa	0xffffffffffffffffffffffffffffffff
- 	.octa	0
- 
- // Offsets in struct aes_gcm_key_aesni
--#define OFFSETOF_AESKEYLEN	480
--#define OFFSETOF_H_POWERS	496
--#define OFFSETOF_H_POWERS_XORED	624
--#define OFFSETOF_H_TIMES_X64	688
-+#define OFFSETOF_AESKEYLEN	0
-+#define OFFSETOF_AESROUNDKEYS	16
-+#define OFFSETOF_H_POWERS	272
-+#define OFFSETOF_H_POWERS_XORED	400
-+#define OFFSETOF_H_TIMES_X64	464
- 
- .text
- 
- // Do a vpclmulqdq, or fall back to a movdqa and a pclmulqdq.  The fallback
- // assumes that all operands are distinct and that any mem operand is aligned.
-@@ -503,13 +504,13 @@
- 	.set	H_POW1_X64,	%xmm4	// H^1 * x^64
- 	.set	GFPOLY,		%xmm5
- 
- 	// Encrypt an all-zeroes block to get the raw hash subkey.
- 	movl		OFFSETOF_AESKEYLEN(KEY), %eax
--	lea		6*16(KEY,%rax,4), RNDKEYLAST_PTR
--	movdqa		(KEY), H_POW1  // Zero-th round key XOR all-zeroes block
--	lea		16(KEY), %rax
-+	lea		OFFSETOF_AESROUNDKEYS+6*16(KEY,%rax,4), RNDKEYLAST_PTR
-+	movdqa		OFFSETOF_AESROUNDKEYS(KEY), H_POW1
-+	lea		OFFSETOF_AESROUNDKEYS+16(KEY), %rax
- 1:
- 	aesenc		(%rax), H_POW1
- 	add		$16, %rax
- 	cmp		%rax, RNDKEYLAST_PTR
- 	jne		1b
-@@ -622,11 +623,11 @@
- // Increment LE_CTR eight times to generate eight little-endian counter blocks,
- // swap each to big-endian, and store them in AESDATA[0-7].  Also XOR them with
- // the zero-th AES round key.  Clobbers TMP0 and TMP1.
- .macro	_ctr_begin_8x
- 	movq		.Lone(%rip), TMP0
--	movdqa		(KEY), TMP1		// zero-th round key
-+	movdqa		OFFSETOF_AESROUNDKEYS(KEY), TMP1 // zero-th round key
- .irp i, 0,1,2,3,4,5,6,7
- 	_vpshufb	BSWAP_MASK, LE_CTR, AESDATA\i
- 	pxor		TMP1, AESDATA\i
- 	paddd		TMP0, LE_CTR
- .endr
-@@ -724,11 +725,11 @@
- 	movdqa		.Lbswap_mask(%rip), BSWAP_MASK
- 	movdqu		(GHASH_ACC_PTR), GHASH_ACC
- 	movdqu		(LE_CTR_PTR), LE_CTR
- 
- 	movl		OFFSETOF_AESKEYLEN(KEY), AESKEYLEN
--	lea		6*16(KEY,AESKEYLEN64,4), RNDKEYLAST_PTR
-+	lea		OFFSETOF_AESROUNDKEYS+6*16(KEY,AESKEYLEN64,4), RNDKEYLAST_PTR
- 
- 	// If there are at least 8*16 bytes of data, then continue into the main
- 	// loop, which processes 8*16 bytes of data per iteration.
- 	//
- 	// The main loop interleaves AES and GHASH to improve performance on
-@@ -743,11 +744,11 @@
- 	add		$-8*16, DATALEN
- 	jl		.Lcrypt_loop_8x_done\@
- .if \enc
- 	// Encrypt the first 8 plaintext blocks.
- 	_ctr_begin_8x
--	lea		16(KEY), %rsi
-+	lea		OFFSETOF_AESROUNDKEYS+16(KEY), %rsi
- 	.p2align 4
- 1:
- 	movdqa		(%rsi), TMP0
- 	_aesenc_8x	TMP0
- 	add		$16, %rsi
-@@ -765,11 +766,11 @@
- 	.p2align 4
- .Lcrypt_loop_8x\@:
- 
- 	// Generate the next set of 8 counter blocks and start encrypting them.
- 	_ctr_begin_8x
--	lea		16(KEY), %rsi
-+	lea		OFFSETOF_AESROUNDKEYS+16(KEY), %rsi
- 
- 	// Do a round of AES, and start the GHASH update of 8 ciphertext blocks
- 	// by doing the unreduced multiplication for the first ciphertext block.
- 	movdqa		(%rsi), TMP0
- 	add		$16, %rsi
-@@ -867,11 +868,11 @@
- .Lcrypt_loop_1x\@:
- 
- 	// Encrypt the next counter block.
- 	_vpshufb	BSWAP_MASK, LE_CTR, TMP0
- 	paddd		ONE, LE_CTR
--	pxor		(KEY), TMP0
-+	pxor		OFFSETOF_AESROUNDKEYS(KEY), TMP0
- 	lea		-6*16(RNDKEYLAST_PTR), %rsi	// Reduce code size
- 	cmp		$24, AESKEYLEN
- 	jl		128f	// AES-128?
- 	je		192f	// AES-192?
- 	// AES-256
-@@ -924,12 +925,12 @@
- 
- 	// Process a partial block of length 1 <= DATALEN <= 15.
- 
- 	// Encrypt a counter block for the last time.
- 	pshufb		BSWAP_MASK, LE_CTR
--	pxor		(KEY), LE_CTR
--	lea		16(KEY), %rsi
-+	pxor		OFFSETOF_AESROUNDKEYS(KEY), LE_CTR
-+	lea		OFFSETOF_AESROUNDKEYS+16(KEY), %rsi
- 1:
- 	aesenc		(%rsi), LE_CTR
- 	add		$16, %rsi
- 	cmp		%rsi, RNDKEYLAST_PTR
- 	jne		1b
-@@ -1036,16 +1037,16 @@
- 	movdqa		OFFSETOF_H_TIMES_X64(KEY), H_POW1_X64
- 	movq		.Lgfpoly(%rip), GFPOLY
- 
- 	// Make %rax point to the 6th from last AES round key.  (Using signed
- 	// byte offsets -7*16 through 6*16 decreases code size.)
--	lea		(KEY,AESKEYLEN64,4), %rax
-+	lea		OFFSETOF_AESROUNDKEYS(KEY,AESKEYLEN64,4), %rax
- 
- 	// AES-encrypt the counter block and also multiply GHASH_ACC by H^1.
- 	// Interleave the AES and GHASH instructions to improve performance.
- 	pshufb		BSWAP_MASK, %xmm0
--	pxor		(KEY), %xmm0
-+	pxor		OFFSETOF_AESROUNDKEYS(KEY), %xmm0
- 	cmp		$24, AESKEYLEN
- 	jl		128f	// AES-128?
- 	je		192f	// AES-192?
- 	// AES-256
- 	aesenc		-7*16(%rax), %xmm0
-diff --git a/arch/x86/crypto/aes-gcm-vaes-avx2.S b/arch/x86/crypto/aes-gcm-vaes-avx2.S
-index 93c9504a488f..9cc387957fa9 100644
---- a/arch/x86/crypto/aes-gcm-vaes-avx2.S
-+++ b/arch/x86/crypto/aes-gcm-vaes-avx2.S
-@@ -120,12 +120,13 @@
- 	// The number of AES blocks per vector, as a 128-bit value.
- .Linc_2blocks:
- 	.octa	2
- 
- // Offsets in struct aes_gcm_key_vaes_avx2
--#define OFFSETOF_AESKEYLEN	480
--#define OFFSETOF_H_POWERS	512
-+#define OFFSETOF_AESKEYLEN	0
-+#define OFFSETOF_AESROUNDKEYS	16
-+#define OFFSETOF_H_POWERS	288
- #define NUM_H_POWERS		8
- #define OFFSETOFEND_H_POWERS    (OFFSETOF_H_POWERS + (NUM_H_POWERS * 16))
- #define OFFSETOF_H_POWERS_XORED	OFFSETOFEND_H_POWERS
- 
- .text
-@@ -238,13 +239,13 @@ SYM_FUNC_START(aes_gcm_precompute_vaes_avx2)
- 	.set	GFPOLY,		%ymm6
- 	.set	GFPOLY_XMM,	%xmm6
- 
- 	// Encrypt an all-zeroes block to get the raw hash subkey.
- 	movl		OFFSETOF_AESKEYLEN(KEY), %eax
--	lea		6*16(KEY,%rax,4), RNDKEYLAST_PTR
--	vmovdqu		(KEY), H_CUR_XMM  // Zero-th round key XOR all-zeroes block
--	lea		16(KEY), %rax
-+	lea		OFFSETOF_AESROUNDKEYS+6*16(KEY,%rax,4), RNDKEYLAST_PTR
-+	vmovdqu		OFFSETOF_AESROUNDKEYS(KEY), H_CUR_XMM
-+	lea		OFFSETOF_AESROUNDKEYS+16(KEY), %rax
- 1:
- 	vaesenc		(%rax), H_CUR_XMM, H_CUR_XMM
- 	add		$16, %rax
- 	cmp		%rax, RNDKEYLAST_PTR
- 	jne		1b
-@@ -633,11 +634,11 @@ SYM_FUNC_END(aes_gcm_aad_update_vaes_avx2)
- 
- // Generate and encrypt counter blocks in the given AESDATA vectors, excluding
- // the last AES round.  Clobbers %rax and TMP0.
- .macro	_aesenc_loop	vecs:vararg
- 	_ctr_begin	\vecs
--	lea		16(KEY), %rax
-+	lea		OFFSETOF_AESROUNDKEYS+16(KEY), %rax
- .Laesenc_loop\@:
- 	vbroadcasti128	(%rax), TMP0
- 	_vaesenc	TMP0, \vecs
- 	add		$16, %rax
- 	cmp		%rax, RNDKEYLAST_PTR
-@@ -766,12 +767,12 @@ SYM_FUNC_END(aes_gcm_aad_update_vaes_avx2)
- 	movl		OFFSETOF_AESKEYLEN(KEY), AESKEYLEN
- 
- 	// Make RNDKEYLAST_PTR point to the last AES round key.  This is the
- 	// round key with index 10, 12, or 14 for AES-128, AES-192, or AES-256
- 	// respectively.  Then load the zero-th and last round keys.
--	lea		6*16(KEY,AESKEYLEN64,4), RNDKEYLAST_PTR
--	vbroadcasti128	(KEY), RNDKEY0
-+	lea		OFFSETOF_AESROUNDKEYS+6*16(KEY,AESKEYLEN64,4), RNDKEYLAST_PTR
-+	vbroadcasti128	OFFSETOF_AESROUNDKEYS(KEY), RNDKEY0
- 	vbroadcasti128	(RNDKEYLAST_PTR), RNDKEYLAST
- 
- 	// Finish initializing LE_CTR by adding 1 to the second block.
- 	vpaddd		.Lctr_pattern(%rip), LE_CTR, LE_CTR
- 
-@@ -1067,16 +1068,16 @@ SYM_FUNC_END(aes_gcm_aad_update_vaes_avx2)
- .if !\enc
- 	movl		8(%rsp), TAGLEN
- .endif
- 
- 	// Make %rax point to the last AES round key for the chosen AES variant.
--	lea		6*16(KEY,AESKEYLEN64,4), %rax
-+	lea		OFFSETOF_AESROUNDKEYS+6*16(KEY,AESKEYLEN64,4), %rax
- 
- 	// Start the AES encryption of the counter block by swapping the counter
- 	// block to big-endian and XOR-ing it with the zero-th AES round key.
- 	vpshufb		BSWAP_MASK, LE_CTR, %xmm0
--	vpxor		(KEY), %xmm0, %xmm0
-+	vpxor		OFFSETOF_AESROUNDKEYS(KEY), %xmm0, %xmm0
- 
- 	// Complete the AES encryption and multiply GHASH_ACC by H^1.
- 	// Interleave the AES and GHASH instructions to improve performance.
- 	cmp		$24, AESKEYLEN
- 	jl		128f	// AES-128?
-diff --git a/arch/x86/crypto/aes-gcm-vaes-avx512.S b/arch/x86/crypto/aes-gcm-vaes-avx512.S
-index 06b71314d65c..516747db4659 100644
---- a/arch/x86/crypto/aes-gcm-vaes-avx512.S
-+++ b/arch/x86/crypto/aes-gcm-vaes-avx512.S
-@@ -84,14 +84,17 @@
- // Number of powers of the hash key stored in the key struct.  The powers are
- // stored from highest (H^NUM_H_POWERS) to lowest (H^1).
- #define NUM_H_POWERS		16
- 
- // Offset to AES key length (in bytes) in the key struct
--#define OFFSETOF_AESKEYLEN	480
-+#define OFFSETOF_AESKEYLEN	0
-+
-+// Offset to AES round keys in the key struct
-+#define OFFSETOF_AESROUNDKEYS	16
- 
- // Offset to start of hash key powers array in the key struct
--#define OFFSETOF_H_POWERS	512
-+#define OFFSETOF_H_POWERS	320
- 
- // Offset to end of hash key powers array in the key struct.
- //
- // This is immediately followed by three zeroized padding blocks, which are
- // included so that partial vectors can be handled more easily.  E.g. if two
-@@ -299,13 +302,13 @@ SYM_FUNC_START(aes_gcm_precompute_vaes_avx512)
- 	// Get pointer to lowest set of key powers (located at end of array).
- 	lea		OFFSETOFEND_H_POWERS-64(KEY), POWERS_PTR
- 
- 	// Encrypt an all-zeroes block to get the raw hash subkey.
- 	movl		OFFSETOF_AESKEYLEN(KEY), %eax
--	lea		6*16(KEY,%rax,4), RNDKEYLAST_PTR
--	vmovdqu		(KEY), %xmm0  // Zero-th round key XOR all-zeroes block
--	add		$16, KEY
-+	lea		OFFSETOF_AESROUNDKEYS+6*16(KEY,%rax,4), RNDKEYLAST_PTR
-+	vmovdqu		OFFSETOF_AESROUNDKEYS(KEY), %xmm0
-+	add		$OFFSETOF_AESROUNDKEYS+16, KEY
- 1:
- 	vaesenc		(KEY), %xmm0, %xmm0
- 	add		$16, KEY
- 	cmp		KEY, RNDKEYLAST_PTR
- 	jne		1b
-@@ -788,12 +791,12 @@ SYM_FUNC_END(aes_gcm_aad_update_vaes_avx512)
- 	movl		OFFSETOF_AESKEYLEN(KEY), AESKEYLEN
- 
- 	// Make RNDKEYLAST_PTR point to the last AES round key.  This is the
- 	// round key with index 10, 12, or 14 for AES-128, AES-192, or AES-256
- 	// respectively.  Then load the zero-th and last round keys.
--	lea		6*16(KEY,AESKEYLEN64,4), RNDKEYLAST_PTR
--	vbroadcasti32x4	(KEY), RNDKEY0
-+	lea		OFFSETOF_AESROUNDKEYS+6*16(KEY,AESKEYLEN64,4), RNDKEYLAST_PTR
-+	vbroadcasti32x4	OFFSETOF_AESROUNDKEYS(KEY), RNDKEY0
- 	vbroadcasti32x4	(RNDKEYLAST_PTR), RNDKEYLAST
- 
- 	// Finish initializing LE_CTR by adding [0, 1, ...] to its low words.
- 	vpaddd		.Lctr_pattern(%rip), LE_CTR, LE_CTR
- 
-@@ -832,11 +835,11 @@ SYM_FUNC_END(aes_gcm_aad_update_vaes_avx512)
- 
- .if \enc
- 	// Encrypt the first 4 vectors of plaintext blocks.  Leave the resulting
- 	// ciphertext in GHASHDATA[0-3] for GHASH.
- 	_ctr_begin_4x
--	lea		16(KEY), %rax
-+	lea		OFFSETOF_AESROUNDKEYS+16(KEY), %rax
- 1:
- 	vbroadcasti32x4	(%rax), RNDKEY
- 	_vaesenc_4x	RNDKEY
- 	add		$16, %rax
- 	cmp		%rax, RNDKEYLAST_PTR
-@@ -955,11 +958,11 @@ SYM_FUNC_END(aes_gcm_aad_update_vaes_avx512)
- 
- 	// Encrypt a vector of counter blocks.  This does not need to be masked.
- 	vpshufb		BSWAP_MASK, LE_CTR, %zmm0
- 	vpaddd		LE_CTR_INC, LE_CTR, LE_CTR
- 	vpxord		RNDKEY0, %zmm0, %zmm0
--	lea		16(KEY), %rax
-+	lea		OFFSETOF_AESROUNDKEYS+16(KEY), %rax
- 1:
- 	vbroadcasti32x4	(%rax), RNDKEY
- 	vaesenc		RNDKEY, %zmm0, %zmm0
- 	add		$16, %rax
- 	cmp		%rax, RNDKEYLAST_PTR
-@@ -1085,16 +1088,16 @@ SYM_FUNC_END(aes_gcm_aad_update_vaes_avx512)
- 	bzhi		TAGLEN, %eax, %eax
- 	kmovd		%eax, %k1
- .endif
- 
- 	// Make %rax point to the last AES round key for the chosen AES variant.
--	lea		6*16(KEY,AESKEYLEN64,4), %rax
-+	lea		OFFSETOF_AESROUNDKEYS+6*16(KEY,AESKEYLEN64,4), %rax
- 
- 	// Start the AES encryption of the counter block by swapping the counter
- 	// block to big-endian and XOR-ing it with the zero-th AES round key.
- 	vpshufb		BSWAP_MASK, LE_CTR, %xmm0
--	vpxor		(KEY), %xmm0, %xmm0
-+	vpxor		OFFSETOF_AESROUNDKEYS(KEY), %xmm0, %xmm0
- 
- 	// Complete the AES encryption and multiply GHASH_ACC by H^1.
- 	// Interleave the AES and GHASH instructions to improve performance.
- 	cmp		$24, AESKEYLEN
- 	jl		128f	// AES-128?
-diff --git a/arch/x86/crypto/aesni-intel_glue.c b/arch/x86/crypto/aesni-intel_glue.c
-index 453e0e890041..e6c38d1d8a92 100644
---- a/arch/x86/crypto/aesni-intel_glue.c
-+++ b/arch/x86/crypto/aesni-intel_glue.c
-@@ -778,24 +778,23 @@ DEFINE_AVX_SKCIPHER_ALGS(vaes_avx2, "vaes-avx2", 600);
- DEFINE_AVX_SKCIPHER_ALGS(vaes_avx512, "vaes-avx512", 800);
- 
- /* The common part of the x86_64 AES-GCM key struct */
- struct aes_gcm_key {
- 	/* Expanded AES key and the AES key length in bytes */
--	struct crypto_aes_ctx aes_key;
-+	struct aes_enckey aes_key;
- 
- 	/* RFC4106 nonce (used only by the rfc4106 algorithms) */
- 	u32 rfc4106_nonce;
- };
- 
- /* Key struct used by the AES-NI implementations of AES-GCM */
- struct aes_gcm_key_aesni {
- 	/*
--	 * Common part of the key.  The assembly code requires 16-byte alignment
--	 * for the round keys; we get this by them being located at the start of
--	 * the struct and the whole struct being 16-byte aligned.
-+	 * Common part of the key.  16-byte alignment is required by the
-+	 * assembly code.
- 	 */
--	struct aes_gcm_key base;
-+	struct aes_gcm_key base __aligned(16);
- 
- 	/*
- 	 * Powers of the hash key H^8 through H^1.  These are 128-bit values.
- 	 * They all have an extra factor of x^-1 and are byte-reversed.  16-byte
- 	 * alignment is required by the assembly code.
-@@ -822,14 +821,13 @@ struct aes_gcm_key_aesni {
- 
- /* Key struct used by the VAES + AVX2 implementation of AES-GCM */
- struct aes_gcm_key_vaes_avx2 {
- 	/*
- 	 * Common part of the key.  The assembly code prefers 16-byte alignment
--	 * for the round keys; we get this by them being located at the start of
--	 * the struct and the whole struct being 32-byte aligned.
-+	 * for this.
- 	 */
--	struct aes_gcm_key base;
-+	struct aes_gcm_key base __aligned(16);
- 
- 	/*
- 	 * Powers of the hash key H^8 through H^1.  These are 128-bit values.
- 	 * They all have an extra factor of x^-1 and are byte-reversed.
- 	 * The assembly code prefers 32-byte alignment for this.
-@@ -852,14 +850,13 @@ struct aes_gcm_key_vaes_avx2 {
- 
- /* Key struct used by the VAES + AVX512 implementation of AES-GCM */
- struct aes_gcm_key_vaes_avx512 {
- 	/*
- 	 * Common part of the key.  The assembly code prefers 16-byte alignment
--	 * for the round keys; we get this by them being located at the start of
--	 * the struct and the whole struct being 64-byte aligned.
-+	 * for this.
- 	 */
--	struct aes_gcm_key base;
-+	struct aes_gcm_key base __aligned(16);
- 
- 	/*
- 	 * Powers of the hash key H^16 through H^1.  These are 128-bit values.
- 	 * They all have an extra factor of x^-1 and are byte-reversed.  This
- 	 * array is aligned to a 64-byte boundary to make it naturally aligned
-@@ -1180,30 +1177,30 @@ static int gcm_setkey(struct crypto_aead *tfm, const u8 *raw_key,
- 		keylen -= 4;
- 		key->rfc4106_nonce = get_unaligned_be32(raw_key + keylen);
- 	}
- 
- 	/* The assembly code assumes the following offsets. */
--	BUILD_BUG_ON(offsetof(struct aes_gcm_key_aesni, base.aes_key.key_enc) != 0);
--	BUILD_BUG_ON(offsetof(struct aes_gcm_key_aesni, base.aes_key.key_length) != 480);
--	BUILD_BUG_ON(offsetof(struct aes_gcm_key_aesni, h_powers) != 496);
--	BUILD_BUG_ON(offsetof(struct aes_gcm_key_aesni, h_powers_xored) != 624);
--	BUILD_BUG_ON(offsetof(struct aes_gcm_key_aesni, h_times_x64) != 688);
--	BUILD_BUG_ON(offsetof(struct aes_gcm_key_vaes_avx2, base.aes_key.key_enc) != 0);
--	BUILD_BUG_ON(offsetof(struct aes_gcm_key_vaes_avx2, base.aes_key.key_length) != 480);
--	BUILD_BUG_ON(offsetof(struct aes_gcm_key_vaes_avx2, h_powers) != 512);
--	BUILD_BUG_ON(offsetof(struct aes_gcm_key_vaes_avx2, h_powers_xored) != 640);
--	BUILD_BUG_ON(offsetof(struct aes_gcm_key_vaes_avx512, base.aes_key.key_enc) != 0);
--	BUILD_BUG_ON(offsetof(struct aes_gcm_key_vaes_avx512, base.aes_key.key_length) != 480);
--	BUILD_BUG_ON(offsetof(struct aes_gcm_key_vaes_avx512, h_powers) != 512);
--	BUILD_BUG_ON(offsetof(struct aes_gcm_key_vaes_avx512, padding) != 768);
-+	static_assert(offsetof(struct aes_gcm_key_aesni, base.aes_key.len) == 0);
-+	static_assert(offsetof(struct aes_gcm_key_aesni, base.aes_key.k.rndkeys) == 16);
-+	static_assert(offsetof(struct aes_gcm_key_aesni, h_powers) == 272);
-+	static_assert(offsetof(struct aes_gcm_key_aesni, h_powers_xored) == 400);
-+	static_assert(offsetof(struct aes_gcm_key_aesni, h_times_x64) == 464);
-+	static_assert(offsetof(struct aes_gcm_key_vaes_avx2, base.aes_key.len) == 0);
-+	static_assert(offsetof(struct aes_gcm_key_vaes_avx2, base.aes_key.k.rndkeys) == 16);
-+	static_assert(offsetof(struct aes_gcm_key_vaes_avx2, h_powers) == 288);
-+	static_assert(offsetof(struct aes_gcm_key_vaes_avx2, h_powers_xored) == 416);
-+	static_assert(offsetof(struct aes_gcm_key_vaes_avx512, base.aes_key.len) == 0);
-+	static_assert(offsetof(struct aes_gcm_key_vaes_avx512, base.aes_key.k.rndkeys) == 16);
-+	static_assert(offsetof(struct aes_gcm_key_vaes_avx512, h_powers) == 320);
-+	static_assert(offsetof(struct aes_gcm_key_vaes_avx512, padding) == 576);
-+
-+	err = aes_prepareenckey(&key->aes_key, raw_key, keylen);
-+	if (err)
-+		return err;
- 
- 	if (likely(crypto_simd_usable())) {
--		err = aes_check_keylen(keylen);
--		if (err)
--			return err;
- 		kernel_fpu_begin();
--		aesni_set_key(&key->aes_key, raw_key, keylen);
- 		aes_gcm_precompute(key, flags);
- 		kernel_fpu_end();
- 	} else {
- 		static const u8 x_to_the_minus1[16] __aligned(__alignof__(be128)) = {
- 			[0] = 0xc2, [15] = 1
-@@ -1213,14 +1210,10 @@ static int gcm_setkey(struct crypto_aead *tfm, const u8 *raw_key,
- 		};
- 		be128 h1 = {};
- 		be128 h;
- 		int i;
- 
--		err = aes_expandkey(&key->aes_key, raw_key, keylen);
--		if (err)
--			return err;
--
- 		/* Encrypt the all-zeroes block to get the hash key H^1 */
- 		aes_encrypt(&key->aes_key, (u8 *)&h1, (u8 *)&h1);
- 
- 		/* Compute H^1 * x^-1 */
- 		h = h1;
--- 
-2.52.0
+? that function does alot of stuff, thinks like uncharging the cgroup
+should obviously happen at free time.
 
+What part of it are you looking at?
+
+> > You can't refcount a folio out of nothing. It has to come from a
+> > memory location that already is holding a refcount, and then you can
+> > incr it.
+> 
+> Right. There is also no guarantee that all code is correct and follows
+> this.
+
+Let's concretely point at things that have a problem please.
+
+> My point here is that calling prep_compound_page() on a compound page
+> does not follow core MM’s conventions.
+
+Maybe, but that doesn't mean it isn't the right solution..
+
+Jason
 
