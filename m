@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-15575-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15576-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F8ABCF45CD
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 19:26:18 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 7538ECF45CD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 19:26:26 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dqj3W3BQyz2xS5;
-	Tue, 13 Jan 2026 06:23:51 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768245831;
-	cv=none; b=eH7HaP9S6ZR2kCvxVF3dE2QyHZMIvke7wUg7FfG6mWx6wopw2Ur1a31IFTor+LKy3ADMw6ZrEcOWlPUu4tchAf4LWrCMy4WEAgsbItIxEvpkRx2ZAq9d0YI5U3Mmf1xYY6NAlymihztkKjk8Ec8ORk7A96JhAr7ViqTmOSeGe5JndtpzymNwDUP3WjKBTTCOpXR4GyljweHjOiB2wILn376/p2j6cv69X9rAcAKQ+/AmrccAhCO3pvP1jpDQthLDQ81S038iIXXe5NfymbVSXN2qjL3IteDqkDvrkyiSh6W2R9Gg20V5Yw1w+NnR6XLI2UYbKKw7VfTQVsY33JzRjA==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dqj3X54Dgz2xQs;
+	Tue, 13 Jan 2026 06:23:52 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768245832;
+	cv=none; b=LWrPl0HilkEfEHaac80f0m3sION2YFEIDlk4Txew8MGJmymUdeLrGYH1Cno0AQ2wHYco2vR8F5V/sXjot/QRnp9SzfKD2HDICPSccU1z3mlCwr82XYhJWi3CDQ0N57tW4BNm0U4QDBBDbwn4wXo3WuhvL+gL5jSPz1DYfvMOxDGKoBAy/fvbJ48bJn3IfVQM8sfqKr5lmPvuq9Ho/iX95/q2fWeu1Wj4H3aVSfiyfwlDzdpsvWLoghAlrISO9ngBhGTCVTyi0InOO/o8Xaj5lrsfGMDKo0kz2cV+oOPbF0hGjMgibt6shuQG9kHtmm0GgzCjC3NVirV67qzxCP4L3w==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768245831; c=relaxed/relaxed;
-	bh=e593l6dZYweWWJZwnbJS7ovWKpa7rdp0PhFnwfXn1jM=;
+	t=1768245832; c=relaxed/relaxed;
+	bh=iMYU3wC220z6LEubQrDxOC5v0wDwchogTnHuD2Z5JHg=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=f4GoeEDTNRbrb7Ww3bhyayNtFZKlkrWafb/w4qzP5MfJmccZOe5QDsoLW1GscesrVRH1CwcgVOKombWyPxbjsw/6enhmqHTt5fBYFk8KsRb3DRsYZTQZj5sgl6jGfx6iyOCIjhAYHsHIrY4OzX8xYEHEmF1xKGvDwuEhg7N2gPQv5TFqho8emN7pjJL8vg2rLODtjtNIXEPqXLeVfKTG6DfLCfud97idWfgyqQAIL50vh+IrQqdq7I2OCV82C5DfUApj4wXPXm8eGZmjmpJXrt+Kh8hoegyv/I93V4gXXAmAnrllyTHYkMQiRBbvdth4RfkPw6DaVzI5pmdR8kJFuA==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MQ/vnJyk; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=hFDc3kCRiewxlTXSpdILGqf8IT/CI75U7U/fGvHQ53R7FJA7TV6hz0K41VRtTqyDYU3TslhYfokez9cmLqIcB6/lU0vt/ocY45x8LAP8HAEUgyysMxosCGpLJc6LfAt6Np+qZMiXj3Dq0LJNXXADbQutp9L005NsfzUP2O+uKf5KNGz0V9/889ImgJ0yiNM6/v9wdXAaKMWafU17kVDQO4nzdpJg4ydqCklBEWRAQu5j/x1cybSz5DiJTWrftUWLjc6vlLa4OJawxmJR3AvE4PernqM14OH8J69zkRoHTDlTKpItVT0HLBWAbP07Od4faljXsNflcz+3M9F3Vik3sQ==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=M9YtHnsm; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MQ/vnJyk;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=M9YtHnsm;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
-Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
+Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqj3V4WQwz2xQs
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 06:23:50 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqj3W6by8z3bk1
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 06:23:51 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 9AF51600AA;
-	Mon, 12 Jan 2026 19:23:18 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id E39F0C19424;
-	Mon, 12 Jan 2026 19:23:17 +0000 (UTC)
+	by sea.source.kernel.org (Postfix) with ESMTP id 8B16D44329;
+	Mon, 12 Jan 2026 19:23:19 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id 09E2AC16AAE;
+	Mon, 12 Jan 2026 19:23:19 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768245798;
-	bh=JV1M038y5fd1Fii+AIq80mfwW2VT2ZAZq/Qain419Vk=;
+	s=k20201202; t=1768245799;
+	bh=bpasNFXQc6Wz1acJi7F8zoXotEra0E6njU13yRy/Zpo=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=MQ/vnJyka/X0XFbjFkcVN6G/B0jLA5ZQ6lT1j0NV1HnrydwRrKx6ievF5NaNQeFK2
-	 En2/0NauYq26MK+TbhehCCIBL3ds60TW5Z1dCEMkqmaoNscKya6DAA88yY7Jnmi6ZD
-	 wy86VZQvANV8MRWkR2lAJ7tChvw8hFgI/EgSn9xhjw+0tOcGU1Vwqi5Hu2bsZIMIeE
-	 XLUzLjcQo5a4UFcXXFXdNcf9t+790gS1lKaLfIw7kKI/bp3v3HsnlyJg8MPxluIoS+
-	 N7CgjSk/kPaDpOljRew2l7Ub+WjkD5a94TMHmF9gjmdLXkxvz22UlUSwiS8x2WPWD9
-	 OYTzunf4AtPOg==
+	b=M9YtHnsm+ldZf23bnl1+cxTAchjTl4Cd/yzclRF+f4Oj/et0RausQ5Oadm19mXLwg
+	 BLQELCVbt4AztqKG1kIDz6Bho14907cqL2oynonqpIr8CEPzPvUqcoXXNw0tRXK2kZ
+	 B11s2jXLqUowVR8nlVw1Gjb1kB+QyAmC//kgi7XVs6qrKBgV5041cobEvPE1Lcno4t
+	 jqsMu5edutyGGdux6+UrEsMtxmpdBNCNZrdk8kNkz9CJ0vjJcnow0U8B5LkRpIixkX
+	 zzsrod/0VLmFRXTNk183p/Umtn+c743dVF1MZu+ug045MuLxptHuyFrrkrgJo+BS65
+	 DXTthzlvmNv/Q==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -59,9 +59,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Holger Dengler <dengler@linux.ibm.com>,
 	Harald Freudenberger <freude@linux.ibm.com>,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH v2 01/35] crypto: powerpc/aes - Rename struct aes_key
-Date: Mon, 12 Jan 2026 11:19:59 -0800
-Message-ID: <20260112192035.10427-2-ebiggers@kernel.org>
+Subject: [PATCH v2 03/35] crypto: arm/aes-neonbs - Use AES library for single blocks
+Date: Mon, 12 Jan 2026 11:20:01 -0800
+Message-ID: <20260112192035.10427-4-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260112192035.10427-1-ebiggers@kernel.org>
 References: <20260112192035.10427-1-ebiggers@kernel.org>
@@ -80,174 +80,162 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Rename struct aes_key in aesp8-ppc.h and aes-gcm-p10-glue.c to
-p8_aes_key and p10_aes_key, respectively.  This frees up the name to use
-in the library API in <crypto/aes.h>.
+aes-neonbs-glue.c calls __aes_arm_encrypt() and __aes_arm_decrypt() to
+en/decrypt single blocks for CBC encryption, XTS tweak encryption, and
+XTS ciphertext stealing.  In preparation for making the AES library use
+this same ARM-optimized single-block AES en/decryption code and making
+it an internal implementation detail of the AES library, replace the
+calls to these functions with calls to the AES library.
+
+Note that this reduces the size of the aesbs_cbc_ctx and aesbs_xts_ctx
+structs, since unnecessary decryption round keys are no longer included.
 
 Acked-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/powerpc/crypto/aes-gcm-p10-glue.c |  4 ++--
- arch/powerpc/crypto/aes.c              |  4 ++--
- arch/powerpc/crypto/aes_cbc.c          |  4 ++--
- arch/powerpc/crypto/aes_ctr.c          |  2 +-
- arch/powerpc/crypto/aes_xts.c          |  6 +++---
- arch/powerpc/crypto/aesp8-ppc.h        | 23 ++++++++++++-----------
- 6 files changed, 22 insertions(+), 21 deletions(-)
+ arch/arm/crypto/Kconfig           |  1 -
+ arch/arm/crypto/aes-neonbs-glue.c | 29 ++++++++++++++++-------------
+ 2 files changed, 16 insertions(+), 14 deletions(-)
 
-diff --git a/arch/powerpc/crypto/aes-gcm-p10-glue.c b/arch/powerpc/crypto/aes-gcm-p10-glue.c
-index 85f4fd4b1bdc..f3417436d3f7 100644
---- a/arch/powerpc/crypto/aes-gcm-p10-glue.c
-+++ b/arch/powerpc/crypto/aes-gcm-p10-glue.c
-@@ -42,11 +42,11 @@ asmlinkage void aes_p10_gcm_decrypt(const u8 *in, u8 *out, size_t len,
- asmlinkage void gcm_init_htable(unsigned char htable[], unsigned char Xi[]);
- asmlinkage void gcm_ghash_p10(unsigned char *Xi, unsigned char *Htable,
- 			      unsigned char *aad, unsigned int alen);
- asmlinkage void gcm_update(u8 *iv, void *Xi);
+diff --git a/arch/arm/crypto/Kconfig b/arch/arm/crypto/Kconfig
+index 3eb5071bea14..167a648a9def 100644
+--- a/arch/arm/crypto/Kconfig
++++ b/arch/arm/crypto/Kconfig
+@@ -42,11 +42,10 @@ config CRYPTO_AES_ARM
+ 	  such attacks very difficult.
  
--struct aes_key {
-+struct p10_aes_key {
- 	u8 key[AES_MAX_KEYLENGTH];
- 	u64 rounds;
- };
- 
- struct gcm_ctx {
-@@ -61,11 +61,11 @@ struct Hash_ctx {
- 	u8 H[16];	/* subkey */
- 	u8 Htable[256];	/* Xi, Hash table(offset 32) */
- };
- 
- struct p10_aes_gcm_ctx {
--	struct aes_key enc_key;
-+	struct p10_aes_key enc_key;
- 	u8 nonce[RFC4106_NONCE_SIZE];
- };
- 
- static void vsx_begin(void)
- {
-diff --git a/arch/powerpc/crypto/aes.c b/arch/powerpc/crypto/aes.c
-index 3f1e5e894902..b7192ee719fc 100644
---- a/arch/powerpc/crypto/aes.c
-+++ b/arch/powerpc/crypto/aes.c
-@@ -19,12 +19,12 @@
- 
- #include "aesp8-ppc.h"
- 
- struct p8_aes_ctx {
- 	struct crypto_cipher *fallback;
--	struct aes_key enc_key;
--	struct aes_key dec_key;
-+	struct p8_aes_key enc_key;
-+	struct p8_aes_key dec_key;
- };
- 
- static int p8_aes_init(struct crypto_tfm *tfm)
- {
- 	const char *alg = crypto_tfm_alg_name(tfm);
-diff --git a/arch/powerpc/crypto/aes_cbc.c b/arch/powerpc/crypto/aes_cbc.c
-index 5f2a4f375eef..4a9f285f0970 100644
---- a/arch/powerpc/crypto/aes_cbc.c
-+++ b/arch/powerpc/crypto/aes_cbc.c
-@@ -19,12 +19,12 @@
- 
- #include "aesp8-ppc.h"
- 
- struct p8_aes_cbc_ctx {
- 	struct crypto_skcipher *fallback;
--	struct aes_key enc_key;
--	struct aes_key dec_key;
-+	struct p8_aes_key enc_key;
-+	struct p8_aes_key dec_key;
- };
- 
- static int p8_aes_cbc_init(struct crypto_skcipher *tfm)
- {
- 	struct p8_aes_cbc_ctx *ctx = crypto_skcipher_ctx(tfm);
-diff --git a/arch/powerpc/crypto/aes_ctr.c b/arch/powerpc/crypto/aes_ctr.c
-index e27c4036e711..7dbd06f442db 100644
---- a/arch/powerpc/crypto/aes_ctr.c
-+++ b/arch/powerpc/crypto/aes_ctr.c
-@@ -19,11 +19,11 @@
- 
- #include "aesp8-ppc.h"
- 
- struct p8_aes_ctr_ctx {
- 	struct crypto_skcipher *fallback;
--	struct aes_key enc_key;
-+	struct p8_aes_key enc_key;
- };
- 
- static int p8_aes_ctr_init(struct crypto_skcipher *tfm)
- {
- 	struct p8_aes_ctr_ctx *ctx = crypto_skcipher_ctx(tfm);
-diff --git a/arch/powerpc/crypto/aes_xts.c b/arch/powerpc/crypto/aes_xts.c
-index 9440e771cede..b4c760e465ea 100644
---- a/arch/powerpc/crypto/aes_xts.c
-+++ b/arch/powerpc/crypto/aes_xts.c
-@@ -20,13 +20,13 @@
- 
- #include "aesp8-ppc.h"
- 
- struct p8_aes_xts_ctx {
- 	struct crypto_skcipher *fallback;
--	struct aes_key enc_key;
--	struct aes_key dec_key;
--	struct aes_key tweak_key;
-+	struct p8_aes_key enc_key;
-+	struct p8_aes_key dec_key;
-+	struct p8_aes_key tweak_key;
- };
- 
- static int p8_aes_xts_init(struct crypto_skcipher *tfm)
- {
- 	struct p8_aes_xts_ctx *ctx = crypto_skcipher_ctx(tfm);
-diff --git a/arch/powerpc/crypto/aesp8-ppc.h b/arch/powerpc/crypto/aesp8-ppc.h
-index 5764d4438388..0bea010128cb 100644
---- a/arch/powerpc/crypto/aesp8-ppc.h
-+++ b/arch/powerpc/crypto/aesp8-ppc.h
-@@ -1,10 +1,10 @@
- /* SPDX-License-Identifier: GPL-2.0 */
- #include <linux/types.h>
+ config CRYPTO_AES_ARM_BS
+ 	tristate "Ciphers: AES, modes: ECB/CBC/CTR/XTS (bit-sliced NEON)"
+ 	depends on KERNEL_MODE_NEON
+-	select CRYPTO_AES_ARM
+ 	select CRYPTO_SKCIPHER
+ 	select CRYPTO_LIB_AES
+ 	help
+ 	  Length-preserving ciphers: AES cipher algorithms (FIPS-197)
+ 	  with block cipher modes:
+diff --git a/arch/arm/crypto/aes-neonbs-glue.c b/arch/arm/crypto/aes-neonbs-glue.c
+index df5afe601e4a..c49ddafc54f3 100644
+--- a/arch/arm/crypto/aes-neonbs-glue.c
++++ b/arch/arm/crypto/aes-neonbs-glue.c
+@@ -10,11 +10,10 @@
  #include <crypto/aes.h>
+ #include <crypto/internal/skcipher.h>
+ #include <crypto/scatterwalk.h>
+ #include <crypto/xts.h>
+ #include <linux/module.h>
+-#include "aes-cipher.h"
  
--struct aes_key {
-+struct p8_aes_key {
- 	u8 key[AES_MAX_KEYLENGTH];
- 	int rounds;
+ MODULE_AUTHOR("Ard Biesheuvel <ard.biesheuvel@linaro.org>");
+ MODULE_DESCRIPTION("Bit sliced AES using NEON instructions");
+ MODULE_LICENSE("GPL v2");
+ 
+@@ -46,17 +45,17 @@ struct aesbs_ctx {
+ 	u8	rk[13 * (8 * AES_BLOCK_SIZE) + 32] __aligned(AES_BLOCK_SIZE);
  };
  
- extern struct shash_alg p8_ghash_alg;
-@@ -12,19 +12,20 @@ extern struct crypto_alg p8_aes_alg;
- extern struct skcipher_alg p8_aes_cbc_alg;
- extern struct skcipher_alg p8_aes_ctr_alg;
- extern struct skcipher_alg p8_aes_xts_alg;
+ struct aesbs_cbc_ctx {
+ 	struct aesbs_ctx	key;
+-	struct crypto_aes_ctx	fallback;
++	struct aes_enckey	fallback;
+ };
  
- int aes_p8_set_encrypt_key(const u8 *userKey, const int bits,
--			   struct aes_key *key);
-+			   struct p8_aes_key *key);
- int aes_p8_set_decrypt_key(const u8 *userKey, const int bits,
--			   struct aes_key *key);
--void aes_p8_encrypt(const u8 *in, u8 *out, const struct aes_key *key);
--void aes_p8_decrypt(const u8 *in, u8 *out, const struct aes_key *key);
-+			   struct p8_aes_key *key);
-+void aes_p8_encrypt(const u8 *in, u8 *out, const struct p8_aes_key *key);
-+void aes_p8_decrypt(const u8 *in, u8 *out, const struct p8_aes_key *key);
- void aes_p8_cbc_encrypt(const u8 *in, u8 *out, size_t len,
--			const struct aes_key *key, u8 *iv, const int enc);
--void aes_p8_ctr32_encrypt_blocks(const u8 *in, u8 *out,
--				 size_t len, const struct aes_key *key,
--				 const u8 *iv);
-+			const struct p8_aes_key *key, u8 *iv, const int enc);
-+void aes_p8_ctr32_encrypt_blocks(const u8 *in, u8 *out, size_t len,
-+				 const struct p8_aes_key *key, const u8 *iv);
- void aes_p8_xts_encrypt(const u8 *in, u8 *out, size_t len,
--			const struct aes_key *key1, const struct aes_key *key2, u8 *iv);
-+			const struct p8_aes_key *key1,
-+			const struct p8_aes_key *key2, u8 *iv);
- void aes_p8_xts_decrypt(const u8 *in, u8 *out, size_t len,
--			const struct aes_key *key1, const struct aes_key *key2, u8 *iv);
-+			const struct p8_aes_key *key1,
-+			const struct p8_aes_key *key2, u8 *iv);
+ struct aesbs_xts_ctx {
+ 	struct aesbs_ctx	key;
+-	struct crypto_aes_ctx	fallback;
+-	struct crypto_aes_ctx	tweak_key;
++	struct aes_key		fallback;
++	struct aes_enckey	tweak_key;
+ };
+ 
+ static int aesbs_setkey(struct crypto_skcipher *tfm, const u8 *in_key,
+ 			unsigned int key_len)
+ {
+@@ -120,18 +119,23 @@ static int aesbs_cbc_setkey(struct crypto_skcipher *tfm, const u8 *in_key,
+ 			    unsigned int key_len)
+ {
+ 	struct aesbs_cbc_ctx *ctx = crypto_skcipher_ctx(tfm);
+ 	int err;
+ 
+-	err = aes_expandkey(&ctx->fallback, in_key, key_len);
++	err = aes_prepareenckey(&ctx->fallback, in_key, key_len);
+ 	if (err)
+ 		return err;
+ 
+ 	ctx->key.rounds = 6 + key_len / 4;
+ 
++	/*
++	 * Note: this assumes that the arm implementation of the AES library
++	 * stores the standard round keys in k.rndkeys.
++	 */
+ 	kernel_neon_begin();
+-	aesbs_convert_key(ctx->key.rk, ctx->fallback.key_enc, ctx->key.rounds);
++	aesbs_convert_key(ctx->key.rk, ctx->fallback.k.rndkeys,
++			  ctx->key.rounds);
+ 	kernel_neon_end();
+ 
+ 	return 0;
+ }
+ 
+@@ -150,12 +154,11 @@ static int cbc_encrypt(struct skcipher_request *req)
+ 		u8 *dst = walk.dst.virt.addr;
+ 		u8 *prev = walk.iv;
+ 
+ 		do {
+ 			crypto_xor_cpy(dst, src, prev, AES_BLOCK_SIZE);
+-			__aes_arm_encrypt(ctx->fallback.key_enc,
+-					  ctx->key.rounds, dst, dst);
++			aes_encrypt(&ctx->fallback, dst, dst);
+ 			prev = dst;
+ 			src += AES_BLOCK_SIZE;
+ 			dst += AES_BLOCK_SIZE;
+ 			nbytes -= AES_BLOCK_SIZE;
+ 		} while (nbytes >= AES_BLOCK_SIZE);
+@@ -237,14 +240,14 @@ static int aesbs_xts_setkey(struct crypto_skcipher *tfm, const u8 *in_key,
+ 	err = xts_verify_key(tfm, in_key, key_len);
+ 	if (err)
+ 		return err;
+ 
+ 	key_len /= 2;
+-	err = aes_expandkey(&ctx->fallback, in_key, key_len);
++	err = aes_preparekey(&ctx->fallback, in_key, key_len);
+ 	if (err)
+ 		return err;
+-	err = aes_expandkey(&ctx->tweak_key, in_key + key_len, key_len);
++	err = aes_prepareenckey(&ctx->tweak_key, in_key + key_len, key_len);
+ 	if (err)
+ 		return err;
+ 
+ 	return aesbs_setkey(tfm, in_key, key_len);
+ }
+@@ -277,11 +280,11 @@ static int __xts_crypt(struct skcipher_request *req, bool encrypt,
+ 
+ 	err = skcipher_walk_virt(&walk, req, true);
+ 	if (err)
+ 		return err;
+ 
+-	__aes_arm_encrypt(ctx->tweak_key.key_enc, rounds, walk.iv, walk.iv);
++	aes_encrypt(&ctx->tweak_key, walk.iv, walk.iv);
+ 
+ 	while (walk.nbytes >= AES_BLOCK_SIZE) {
+ 		unsigned int blocks = walk.nbytes / AES_BLOCK_SIZE;
+ 		int reorder_last_tweak = !encrypt && tail > 0;
+ 
+@@ -309,13 +312,13 @@ static int __xts_crypt(struct skcipher_request *req, bool encrypt,
+ 	scatterwalk_map_and_copy(buf, req->src, req->cryptlen, tail, 0);
+ 
+ 	crypto_xor(buf, req->iv, AES_BLOCK_SIZE);
+ 
+ 	if (encrypt)
+-		__aes_arm_encrypt(ctx->fallback.key_enc, rounds, buf, buf);
++		aes_encrypt(&ctx->fallback, buf, buf);
+ 	else
+-		__aes_arm_decrypt(ctx->fallback.key_dec, rounds, buf, buf);
++		aes_decrypt(&ctx->fallback, buf, buf);
+ 
+ 	crypto_xor(buf, req->iv, AES_BLOCK_SIZE);
+ 
+ 	scatterwalk_map_and_copy(buf, req->dst, req->cryptlen - AES_BLOCK_SIZE,
+ 				 AES_BLOCK_SIZE + tail, 1);
 -- 
 2.52.0
 
