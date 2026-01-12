@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-15574-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15575-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D331BCF45C9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 19:26:10 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 6F8ABCF45CD
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 19:26:18 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dqj3J0mlTz30Yb;
-	Tue, 13 Jan 2026 06:23:40 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dqj3W3BQyz2xS5;
+	Tue, 13 Jan 2026 06:23:51 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.105.4.254
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768245820;
-	cv=none; b=gtlTgzXHwkgQuNX9lhBEERbJzbsmA/pKK8OkphBDmpzlP0wrNYfHK5G0893nv2gMlf/Cn7VbBVnKUsKQoSiVzgkIT4xOlZNb2nv6iFixN9H/r4E9KlgycEbS6pQbmrxZhMp+XnkmgyLs5RjWY0hSQVrL7MwTXQtpDW/jGUD4Iyq7Sl7yZH0QVHe6ejGY6TBnMy2LZIPkxtlX8vSI1GRFVCk6BvZ2UbDvulhZaLN8kvHfRHFahMj5dVJReFqhcB553exRxRRM8pNkbhSvr2BzClM39BeVhZSwcBHo52lyuVHZpwwCjPCrUlzxEv//7uCruSlZTZc3BjDDekiNKy/eWA==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768245831;
+	cv=none; b=eH7HaP9S6ZR2kCvxVF3dE2QyHZMIvke7wUg7FfG6mWx6wopw2Ur1a31IFTor+LKy3ADMw6ZrEcOWlPUu4tchAf4LWrCMy4WEAgsbItIxEvpkRx2ZAq9d0YI5U3Mmf1xYY6NAlymihztkKjk8Ec8ORk7A96JhAr7ViqTmOSeGe5JndtpzymNwDUP3WjKBTTCOpXR4GyljweHjOiB2wILn376/p2j6cv69X9rAcAKQ+/AmrccAhCO3pvP1jpDQthLDQ81S038iIXXe5NfymbVSXN2qjL3IteDqkDvrkyiSh6W2R9Gg20V5Yw1w+NnR6XLI2UYbKKw7VfTQVsY33JzRjA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768245820; c=relaxed/relaxed;
-	bh=0SA0X29mU5F0+X6H2Q6w5W2EIk3MslJYeRMNLAqdogo=;
+	t=1768245831; c=relaxed/relaxed;
+	bh=e593l6dZYweWWJZwnbJS7ovWKpa7rdp0PhFnwfXn1jM=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=L/ZgoUMKJU42fxxV2iXnN++VXXSjdRu/BbopIGtYC46FDIviMNLgvoevSAHzi0wCNQefgLtI300DR9Fj25lPsIu8UUs817fHjy2jtM6TKK4+0w8Gi/AgAYqAzQMJvrUHeXxULKj3xMnlvXbTTyVwfphydGr8ZJJZacJWkftcde64m4Fo4qiAlHEySryaBykwNmRjaud9wPt+V/4B4RuWR3Kx5zLKM/nESKZzk0xofWxpKpK3FqUrRhiO1CJwz6W3wUf2qMhUQP6GNdQsEkPSBVQ30vEZHxdGc6OuIBok2DqtjXCcipNDrx5vDfSrroKwotnYOlN1k+cB0xPfEQIW4A==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=a0KxQKZz; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=f4GoeEDTNRbrb7Ww3bhyayNtFZKlkrWafb/w4qzP5MfJmccZOe5QDsoLW1GscesrVRH1CwcgVOKombWyPxbjsw/6enhmqHTt5fBYFk8KsRb3DRsYZTQZj5sgl6jGfx6iyOCIjhAYHsHIrY4OzX8xYEHEmF1xKGvDwuEhg7N2gPQv5TFqho8emN7pjJL8vg2rLODtjtNIXEPqXLeVfKTG6DfLCfud97idWfgyqQAIL50vh+IrQqdq7I2OCV82C5DfUApj4wXPXm8eGZmjmpJXrt+Kh8hoegyv/I93V4gXXAmAnrllyTHYkMQiRBbvdth4RfkPw6DaVzI5pmdR8kJFuA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MQ/vnJyk; dkim-atps=neutral; spf=pass (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=a0KxQKZz;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=MQ/vnJyk;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.105.4.254; helo=tor.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from tor.source.kernel.org (tor.source.kernel.org [172.105.4.254])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqj3H2Ck4z3bkb
-	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 06:23:39 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqj3V4WQwz2xQs
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 06:23:50 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by tor.source.kernel.org (Postfix) with ESMTP id 7B91260130;
-	Mon, 12 Jan 2026 19:23:37 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id BF6FEC2BC87;
-	Mon, 12 Jan 2026 19:23:36 +0000 (UTC)
+	by tor.source.kernel.org (Postfix) with ESMTP id 9AF51600AA;
+	Mon, 12 Jan 2026 19:23:18 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E39F0C19424;
+	Mon, 12 Jan 2026 19:23:17 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768245817;
-	bh=b8+2isc/mWUmlO/3JdSbmkX86zq1F/K7GlRJMz6JOGg=;
+	s=k20201202; t=1768245798;
+	bh=JV1M038y5fd1Fii+AIq80mfwW2VT2ZAZq/Qain419Vk=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=a0KxQKZz4i1RsOIjwLOOJXRfsPl591C6xVTDsyPT/wulXI86KQAv8RU2kd7ep/SaL
-	 zQvgA1Gym7fI7zoT+USMG//U9qE9UXwwME2vdvVHXKVdXjAtx54Ohch2D7CMbhkA5/
-	 X6C0SH88Al9aHufVFNgjnGM96SggfDltB7624aEEJGCeq/fizRgyG19Oi5XUMRgsY3
-	 N5+7hHLYL3IuXtC2+uvsqfw8e5vT743c3gn+zrczsKCTpxZzMemonA8zrSunSiIagR
-	 D96qKtgMHNtpzT799tZxr8HGA0htwIxkqmMFBRFAiCEHlUA9gxLwDwC6SW2U2VaUuN
-	 x3lQpzaJ9SoXw==
+	b=MQ/vnJyka/X0XFbjFkcVN6G/B0jLA5ZQ6lT1j0NV1HnrydwRrKx6ievF5NaNQeFK2
+	 En2/0NauYq26MK+TbhehCCIBL3ds60TW5Z1dCEMkqmaoNscKya6DAA88yY7Jnmi6ZD
+	 wy86VZQvANV8MRWkR2lAJ7tChvw8hFgI/EgSn9xhjw+0tOcGU1Vwqi5Hu2bsZIMIeE
+	 XLUzLjcQo5a4UFcXXFXdNcf9t+790gS1lKaLfIw7kKI/bp3v3HsnlyJg8MPxluIoS+
+	 N7CgjSk/kPaDpOljRew2l7Ub+WjkD5a94TMHmF9gjmdLXkxvz22UlUSwiS8x2WPWD9
+	 OYTzunf4AtPOg==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -59,9 +59,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Holger Dengler <dengler@linux.ibm.com>,
 	Harald Freudenberger <freude@linux.ibm.com>,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH v2 35/35] lib/crypto: aes: Drop 'volatile' from aes_sbox and aes_inv_sbox
-Date: Mon, 12 Jan 2026 11:20:33 -0800
-Message-ID: <20260112192035.10427-36-ebiggers@kernel.org>
+Subject: [PATCH v2 01/35] crypto: powerpc/aes - Rename struct aes_key
+Date: Mon, 12 Jan 2026 11:19:59 -0800
+Message-ID: <20260112192035.10427-2-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260112192035.10427-1-ebiggers@kernel.org>
 References: <20260112192035.10427-1-ebiggers@kernel.org>
@@ -80,64 +80,174 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-The volatile keyword is no longer necessary or useful on aes_sbox and
-aes_inv_sbox, since the table prefetching is now done using a helper
-function that casts to volatile itself and also includes an optimization
-barrier.  Since it prevents some compiler optimizations, remove it.
+Rename struct aes_key in aesp8-ppc.h and aes-gcm-p10-glue.c to
+p8_aes_key and p10_aes_key, respectively.  This frees up the name to use
+in the library API in <crypto/aes.h>.
 
 Acked-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- lib/crypto/aes.c | 10 +++-------
- 1 file changed, 3 insertions(+), 7 deletions(-)
+ arch/powerpc/crypto/aes-gcm-p10-glue.c |  4 ++--
+ arch/powerpc/crypto/aes.c              |  4 ++--
+ arch/powerpc/crypto/aes_cbc.c          |  4 ++--
+ arch/powerpc/crypto/aes_ctr.c          |  2 +-
+ arch/powerpc/crypto/aes_xts.c          |  6 +++---
+ arch/powerpc/crypto/aesp8-ppc.h        | 23 ++++++++++++-----------
+ 6 files changed, 22 insertions(+), 21 deletions(-)
 
-diff --git a/lib/crypto/aes.c b/lib/crypto/aes.c
-index b7ab2d0c4e59..b73e19f1bb95 100644
---- a/lib/crypto/aes.c
-+++ b/lib/crypto/aes.c
-@@ -9,15 +9,11 @@
- #include <linux/crypto.h>
- #include <linux/export.h>
- #include <linux/module.h>
- #include <linux/unaligned.h>
+diff --git a/arch/powerpc/crypto/aes-gcm-p10-glue.c b/arch/powerpc/crypto/aes-gcm-p10-glue.c
+index 85f4fd4b1bdc..f3417436d3f7 100644
+--- a/arch/powerpc/crypto/aes-gcm-p10-glue.c
++++ b/arch/powerpc/crypto/aes-gcm-p10-glue.c
+@@ -42,11 +42,11 @@ asmlinkage void aes_p10_gcm_decrypt(const u8 *in, u8 *out, size_t len,
+ asmlinkage void gcm_init_htable(unsigned char htable[], unsigned char Xi[]);
+ asmlinkage void gcm_ghash_p10(unsigned char *Xi, unsigned char *Htable,
+ 			      unsigned char *aad, unsigned int alen);
+ asmlinkage void gcm_update(u8 *iv, void *Xi);
  
--/*
-- * Emit the sbox as volatile const to prevent the compiler from doing
-- * constant folding on sbox references involving fixed indexes.
-- */
--static volatile const u8 ____cacheline_aligned aes_sbox[] = {
-+static const u8 ____cacheline_aligned aes_sbox[] = {
- 	0x63, 0x7c, 0x77, 0x7b, 0xf2, 0x6b, 0x6f, 0xc5,
- 	0x30, 0x01, 0x67, 0x2b, 0xfe, 0xd7, 0xab, 0x76,
- 	0xca, 0x82, 0xc9, 0x7d, 0xfa, 0x59, 0x47, 0xf0,
- 	0xad, 0xd4, 0xa2, 0xaf, 0x9c, 0xa4, 0x72, 0xc0,
- 	0xb7, 0xfd, 0x93, 0x26, 0x36, 0x3f, 0xf7, 0xcc,
-@@ -48,11 +44,11 @@ static volatile const u8 ____cacheline_aligned aes_sbox[] = {
- 	0x9b, 0x1e, 0x87, 0xe9, 0xce, 0x55, 0x28, 0xdf,
- 	0x8c, 0xa1, 0x89, 0x0d, 0xbf, 0xe6, 0x42, 0x68,
- 	0x41, 0x99, 0x2d, 0x0f, 0xb0, 0x54, 0xbb, 0x16,
+-struct aes_key {
++struct p10_aes_key {
+ 	u8 key[AES_MAX_KEYLENGTH];
+ 	u64 rounds;
  };
  
--static volatile const u8 ____cacheline_aligned aes_inv_sbox[] = {
-+static const u8 ____cacheline_aligned aes_inv_sbox[] = {
- 	0x52, 0x09, 0x6a, 0xd5, 0x30, 0x36, 0xa5, 0x38,
- 	0xbf, 0x40, 0xa3, 0x9e, 0x81, 0xf3, 0xd7, 0xfb,
- 	0x7c, 0xe3, 0x39, 0x82, 0x9b, 0x2f, 0xff, 0x87,
- 	0x34, 0x8e, 0x43, 0x44, 0xc4, 0xde, 0xe9, 0xcb,
- 	0x54, 0x7b, 0x94, 0x32, 0xa6, 0xc2, 0x23, 0x3d,
-@@ -428,11 +424,11 @@ static void __maybe_unused aes_decrypt_generic(const u32 inv_rndkeys[],
- 		w[1] = w1;
- 		w[2] = w2;
- 		w[3] = w3;
- 	} while (--n);
+ struct gcm_ctx {
+@@ -61,11 +61,11 @@ struct Hash_ctx {
+ 	u8 H[16];	/* subkey */
+ 	u8 Htable[256];	/* Xi, Hash table(offset 32) */
+ };
  
--	aes_prefetch((const void *)aes_inv_sbox, sizeof(aes_inv_sbox));
-+	aes_prefetch(aes_inv_sbox, sizeof(aes_inv_sbox));
- 	put_unaligned_le32(declast_quarterround(w, 0, *rkp++), &out[0]);
- 	put_unaligned_le32(declast_quarterround(w, 1, *rkp++), &out[4]);
- 	put_unaligned_le32(declast_quarterround(w, 2, *rkp++), &out[8]);
- 	put_unaligned_le32(declast_quarterround(w, 3, *rkp++), &out[12]);
- }
+ struct p10_aes_gcm_ctx {
+-	struct aes_key enc_key;
++	struct p10_aes_key enc_key;
+ 	u8 nonce[RFC4106_NONCE_SIZE];
+ };
+ 
+ static void vsx_begin(void)
+ {
+diff --git a/arch/powerpc/crypto/aes.c b/arch/powerpc/crypto/aes.c
+index 3f1e5e894902..b7192ee719fc 100644
+--- a/arch/powerpc/crypto/aes.c
++++ b/arch/powerpc/crypto/aes.c
+@@ -19,12 +19,12 @@
+ 
+ #include "aesp8-ppc.h"
+ 
+ struct p8_aes_ctx {
+ 	struct crypto_cipher *fallback;
+-	struct aes_key enc_key;
+-	struct aes_key dec_key;
++	struct p8_aes_key enc_key;
++	struct p8_aes_key dec_key;
+ };
+ 
+ static int p8_aes_init(struct crypto_tfm *tfm)
+ {
+ 	const char *alg = crypto_tfm_alg_name(tfm);
+diff --git a/arch/powerpc/crypto/aes_cbc.c b/arch/powerpc/crypto/aes_cbc.c
+index 5f2a4f375eef..4a9f285f0970 100644
+--- a/arch/powerpc/crypto/aes_cbc.c
++++ b/arch/powerpc/crypto/aes_cbc.c
+@@ -19,12 +19,12 @@
+ 
+ #include "aesp8-ppc.h"
+ 
+ struct p8_aes_cbc_ctx {
+ 	struct crypto_skcipher *fallback;
+-	struct aes_key enc_key;
+-	struct aes_key dec_key;
++	struct p8_aes_key enc_key;
++	struct p8_aes_key dec_key;
+ };
+ 
+ static int p8_aes_cbc_init(struct crypto_skcipher *tfm)
+ {
+ 	struct p8_aes_cbc_ctx *ctx = crypto_skcipher_ctx(tfm);
+diff --git a/arch/powerpc/crypto/aes_ctr.c b/arch/powerpc/crypto/aes_ctr.c
+index e27c4036e711..7dbd06f442db 100644
+--- a/arch/powerpc/crypto/aes_ctr.c
++++ b/arch/powerpc/crypto/aes_ctr.c
+@@ -19,11 +19,11 @@
+ 
+ #include "aesp8-ppc.h"
+ 
+ struct p8_aes_ctr_ctx {
+ 	struct crypto_skcipher *fallback;
+-	struct aes_key enc_key;
++	struct p8_aes_key enc_key;
+ };
+ 
+ static int p8_aes_ctr_init(struct crypto_skcipher *tfm)
+ {
+ 	struct p8_aes_ctr_ctx *ctx = crypto_skcipher_ctx(tfm);
+diff --git a/arch/powerpc/crypto/aes_xts.c b/arch/powerpc/crypto/aes_xts.c
+index 9440e771cede..b4c760e465ea 100644
+--- a/arch/powerpc/crypto/aes_xts.c
++++ b/arch/powerpc/crypto/aes_xts.c
+@@ -20,13 +20,13 @@
+ 
+ #include "aesp8-ppc.h"
+ 
+ struct p8_aes_xts_ctx {
+ 	struct crypto_skcipher *fallback;
+-	struct aes_key enc_key;
+-	struct aes_key dec_key;
+-	struct aes_key tweak_key;
++	struct p8_aes_key enc_key;
++	struct p8_aes_key dec_key;
++	struct p8_aes_key tweak_key;
+ };
+ 
+ static int p8_aes_xts_init(struct crypto_skcipher *tfm)
+ {
+ 	struct p8_aes_xts_ctx *ctx = crypto_skcipher_ctx(tfm);
+diff --git a/arch/powerpc/crypto/aesp8-ppc.h b/arch/powerpc/crypto/aesp8-ppc.h
+index 5764d4438388..0bea010128cb 100644
+--- a/arch/powerpc/crypto/aesp8-ppc.h
++++ b/arch/powerpc/crypto/aesp8-ppc.h
+@@ -1,10 +1,10 @@
+ /* SPDX-License-Identifier: GPL-2.0 */
+ #include <linux/types.h>
+ #include <crypto/aes.h>
+ 
+-struct aes_key {
++struct p8_aes_key {
+ 	u8 key[AES_MAX_KEYLENGTH];
+ 	int rounds;
+ };
+ 
+ extern struct shash_alg p8_ghash_alg;
+@@ -12,19 +12,20 @@ extern struct crypto_alg p8_aes_alg;
+ extern struct skcipher_alg p8_aes_cbc_alg;
+ extern struct skcipher_alg p8_aes_ctr_alg;
+ extern struct skcipher_alg p8_aes_xts_alg;
+ 
+ int aes_p8_set_encrypt_key(const u8 *userKey, const int bits,
+-			   struct aes_key *key);
++			   struct p8_aes_key *key);
+ int aes_p8_set_decrypt_key(const u8 *userKey, const int bits,
+-			   struct aes_key *key);
+-void aes_p8_encrypt(const u8 *in, u8 *out, const struct aes_key *key);
+-void aes_p8_decrypt(const u8 *in, u8 *out, const struct aes_key *key);
++			   struct p8_aes_key *key);
++void aes_p8_encrypt(const u8 *in, u8 *out, const struct p8_aes_key *key);
++void aes_p8_decrypt(const u8 *in, u8 *out, const struct p8_aes_key *key);
+ void aes_p8_cbc_encrypt(const u8 *in, u8 *out, size_t len,
+-			const struct aes_key *key, u8 *iv, const int enc);
+-void aes_p8_ctr32_encrypt_blocks(const u8 *in, u8 *out,
+-				 size_t len, const struct aes_key *key,
+-				 const u8 *iv);
++			const struct p8_aes_key *key, u8 *iv, const int enc);
++void aes_p8_ctr32_encrypt_blocks(const u8 *in, u8 *out, size_t len,
++				 const struct p8_aes_key *key, const u8 *iv);
+ void aes_p8_xts_encrypt(const u8 *in, u8 *out, size_t len,
+-			const struct aes_key *key1, const struct aes_key *key2, u8 *iv);
++			const struct p8_aes_key *key1,
++			const struct p8_aes_key *key2, u8 *iv);
+ void aes_p8_xts_decrypt(const u8 *in, u8 *out, size_t len,
+-			const struct aes_key *key1, const struct aes_key *key2, u8 *iv);
++			const struct p8_aes_key *key1,
++			const struct p8_aes_key *key2, u8 *iv);
 -- 
 2.52.0
 
