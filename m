@@ -1,112 +1,105 @@
-Return-Path: <linuxppc-dev+bounces-15543-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15544-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id D2983C9EC86
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 12:53:29 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 61633C9EC90
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 13:37:29 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dqXP43TQLz30Tf;
-	Mon, 12 Jan 2026 23:53:28 +1100 (AEDT)
-Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=198.175.65.12
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768165152;
-	cv=none; b=i7Y8TnCEkQPKUwyTBNQub3iYBG+2lvvR9HmsLLqz7iOW6bNSl9cIM5PleTM+frgF06xYP8KkGSIvdJ/igHFHKQ+2xIbjHsTiIgmjXbPXHrW1PMPPMkYNxeoopUHpQReS9NY/L7jFmlWtMs7q135WU0JiT2Ox0LIZRWbZZ213pi0F5By6LYC8gx41IFm6Jrl6dMtMD8A5PHDAMGr2vWSVLmoOCdbK9lSkPHTDZEm8kxtr2CuJq7HpjaR9CXi+EOSsIxVzJtA1TiudAi1hObTnLnbLO9VHVdfzUNsFrucK1CbyoPZAfxcf3zJI/3cv6WrTkby3hdtBZgxTAiV8FAlZsQ==
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dqYMq6d5Rz2yR5;
+	Tue, 13 Jan 2026 00:37:27 +1100 (AEDT)
+Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=209.85.221.52
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768225047;
+	cv=none; b=n0j898UTIAV1vA0TGsytQ2iv+nbGiz7VoY0rCiJsYv57m6lkd0OLS0IhCAlGGSx8KkOrIBvPMrqjBVvi5AKJjhYC/sWrQTQOfItUiAgZgYyLeSwO6qvGxp4+EgKn/9jnH+1FNTIMYVLNbOOzIgClIiyT8jtAr7dhVM/5319rqGJ2CboNWjeno5iZdgP4lVj/dsDgQCkktAC+5+wWZq0gPdltPPsZEMuL3qKCjJx+VIzSnDD1dYzVzMSQdcqldBRHL/4O35DPUFAeo0QIqF+foMqRXyzyud8+QL4eIUpOsS9Z1cAycGpmJq5iZRzfjyfCmDh0WbnG2xxjV7xa1/EhOA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768165152; c=relaxed/relaxed;
-	bh=ZEv8icGYn2/NvIbauvVBK2h6w5hpiY+WnWQJBv0zutE=;
-	h=From:To:Cc:Subject:Date:Message-ID:MIME-Version:Content-Type; b=P7VmHj1sT0JcYHt85eOWq20L6txT97ju3I4kmXvFaOn4nrWSPHar50oEVlXVKsSqfH5eBBRsc2aozsv+AWZRSoutZqh8xkf0BlJlhmlabf9d/zFBWvJ5fmTmYmL6w2zON/hAOb6394TYhIqJ6qrS8Jfp1V5jQ6LC1SKYJnFVfzLkAdJFJXm3TBbnTPSjsjh2wJRrsSYi4ENVRAtUAczkgF0qpeoFWdi8vYZvhqLP2WaoP0Djlbs/2qFnqDrPj+s8UpCV5arFxVHuCnXml2o7GJsfxP0NFjjjoBRor07asvZQea4ZjpfwVU7HA+VdOoiGWQA0WrUWzn4eLD2xdkLyNQ==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com; dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DZw9gxN9; dkim-atps=neutral; spf=pass (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=francois.dugast@intel.com; receiver=lists.ozlabs.org) smtp.mailfrom=intel.com
-Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=intel.com
+	t=1768225047; c=relaxed/relaxed;
+	bh=bLo3Abz9wAwu25esY4s8FeJ9KMDvXVIZnqcKTN+SMTE=;
+	h=Date:From:To:Cc:Subject:Message-ID:In-Reply-To:References:
+	 MIME-Version:Content-Type; b=olgPb4OiYR4BX9VkmeiQ11gfxb2118saW2EijAD6sttFdT1c/xJ8zS0B3L/iQPn17ADman11Y7ojs6ssludu2KHVXZMj4yMM2YBLv8nEPaNC9fmnau7OgBMysIXYltwXkpAw5vYgml7m+hO1GDd9DW9jd8BO2r5rxfUKCStvA7B8wE2MQ3Ld1J2NJnTW0Bry8n6Aghao0BbzubOl6C1dAU5kDQO3/pkujEYtwRMA7mw/qiHvbklN6w/mvikYy0aucVArFiqOeNfWNMObtYokem07VyA36w/OfUvmBfnSIs48rdiD3ziQ0/rRVXr/JzbbUVl0tIkcXTA+gphFHxyqOw==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com; dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Mg/4RwW7; dkim-atps=neutral; spf=pass (client-ip=209.85.221.52; helo=mail-wr1-f52.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org) smtp.mailfrom=gmail.com
+Authentication-Results: lists.ozlabs.org; dmarc=pass (p=none dis=none) header.from=gmail.com
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=intel.com header.i=@intel.com header.a=rsa-sha256 header.s=Intel header.b=DZw9gxN9;
+	dkim=pass (2048-bit key; unprotected) header.d=gmail.com header.i=@gmail.com header.a=rsa-sha256 header.s=20230601 header.b=Mg/4RwW7;
 	dkim-atps=neutral
-Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=intel.com (client-ip=198.175.65.12; helo=mgamail.intel.com; envelope-from=francois.dugast@intel.com; receiver=lists.ozlabs.org)
-Received: from mgamail.intel.com (mgamail.intel.com [198.175.65.12])
-	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
+Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=gmail.com (client-ip=209.85.221.52; helo=mail-wr1-f52.google.com; envelope-from=david.laight.linux@gmail.com; receiver=lists.ozlabs.org)
+Received: from mail-wr1-f52.google.com (mail-wr1-f52.google.com [209.85.221.52])
+	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
+	 key-exchange x25519 server-signature RSA-PSS (2048 bits) server-digest SHA256)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dq7Cx3PVMz2yMB
-	for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jan 2026 07:59:07 +1100 (AEDT)
-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple;
-  d=intel.com; i=@intel.com; q=dns/txt; s=Intel;
-  t=1768165150; x=1799701150;
-  h=from:to:cc:subject:date:message-id:mime-version:
-   content-transfer-encoding;
-  bh=JowSG+4tQQyTE47Rbtpcgaez8ldKvXlCh+DCDwat3uA=;
-  b=DZw9gxN9U8en93qsoSvioQPctw7b/H1ES1x6tCRd4uDWxGjUzUYZXAZX
-   UlaWfdWp+Bs+FJU6NPxWGm36FjW8j1TZW9bCobgrDYLLZwgYOlEo9DEHB
-   Rbf52BHqhiyJPIbV+2kNVuXa3suHtuOpPMlWjpE3WEB3Jen7F89m/xTtq
-   8UM2ZtZBFIiPKlDibun9aozOCYVbIpfHbwMLSZ+ffIJGUqeHSuugapvz/
-   y3ullQTofWMUflDbb96G/rw4cFk2Yu3EYJLJTJR3iltClm+tJQm1J3EP2
-   jgOcxbqZzGabW69jXTNfBDsGgxnrwxDEUA3dqTNfJydsRa+KdpvLEOQVr
-   A==;
-X-CSE-ConnectionGUID: RX3Zh7HBT1SPxvcDCFZemQ==
-X-CSE-MsgGUID: 1Z/Nsk9CQsuQNv8JcSZqWw==
-X-IronPort-AV: E=McAfee;i="6800,10657,11668"; a="80904659"
-X-IronPort-AV: E=Sophos;i="6.21,219,1763452800"; 
-   d="scan'208";a="80904659"
-Received: from fmviesa005.fm.intel.com ([10.60.135.145])
-  by orvoesa104.jf.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Jan 2026 12:59:05 -0800
-X-CSE-ConnectionGUID: D5xpyBpvRRC3zs7F9qTySg==
-X-CSE-MsgGUID: /4GjZEskTMOj7ia6RpYfqg==
-X-ExtLoop1: 1
-X-IronPort-AV: E=Sophos;i="6.21,219,1763452800"; 
-   d="scan'208";a="208419944"
-Received: from pgcooper-mobl3.ger.corp.intel.com (HELO fdugast-desk.home) ([10.245.245.11])
-  by fmviesa005-auth.fm.intel.com with ESMTP/TLS/ECDHE-RSA-AES256-GCM-SHA384; 11 Jan 2026 12:58:55 -0800
-From: Francois Dugast <francois.dugast@intel.com>
-To: intel-xe@lists.freedesktop.org
-Cc: dri-devel@lists.freedesktop.org,
-	Francois Dugast <francois.dugast@intel.com>,
-	Zi Yan <ziy@nvidia.com>,
-	Madhavan Srinivasan <maddy@linux.ibm.com>,
-	Alistair Popple <apopple@nvidia.com>,
-	Lorenzo Stoakes <lorenzo.stoakes@oracle.com>,
-	"Liam R . Howlett" <Liam.Howlett@oracle.com>,
-	Suren Baghdasaryan <surenb@google.com>,
-	Michal Hocko <mhocko@suse.com>,
-	Mike Rapoport <rppt@kernel.org>,
-	Vlastimil Babka <vbabka@suse.cz>,
-	Nicholas Piggin <npiggin@gmail.com>,
-	Michael Ellerman <mpe@ellerman.id.au>,
-	"Christophe Leroy (CS GROUP)" <chleroy@kernel.org>,
-	Felix Kuehling <Felix.Kuehling@amd.com>,
-	Alex Deucher <alexander.deucher@amd.com>,
-	=?UTF-8?q?Christian=20K=C3=B6nig?= <christian.koenig@amd.com>,
-	David Airlie <airlied@gmail.com>,
-	Simona Vetter <simona@ffwll.ch>,
-	Maarten Lankhorst <maarten.lankhorst@linux.intel.com>,
-	Maxime Ripard <mripard@kernel.org>,
-	Thomas Zimmermann <tzimmermann@suse.de>,
-	Lyude Paul <lyude@redhat.com>,
-	Danilo Krummrich <dakr@kernel.org>,
-	Bjorn Helgaas <bhelgaas@google.com>,
-	Logan Gunthorpe <logang@deltatee.com>,
-	David Hildenbrand <david@kernel.org>,
-	Oscar Salvador <osalvador@suse.de>,
-	Andrew Morton <akpm@linux-foundation.org>,
-	Jason Gunthorpe <jgg@ziepe.ca>,
-	Leon Romanovsky <leon@kernel.org>,
-	Balbir Singh <balbirs@nvidia.com>,
-	Dan Williams <dan.j.williams@intel.com>,
-	Matthew Wilcox <willy@infradead.org>,
-	Jan Kara <jack@suse.cz>,
-	Alexander Viro <viro@zeniv.linux.org.uk>,
-	Christian Brauner <brauner@kernel.org>,
-	linuxppc-dev@lists.ozlabs.org,
-	kvm@vger.kernel.org,
-	linux-kernel@vger.kernel.org,
-	amd-gfx@lists.freedesktop.org,
-	nouveau@lists.freedesktop.org,
-	linux-pci@vger.kernel.org,
-	linux-mm@kvack.org,
-	linux-cxl@vger.kernel.org,
-	nvdimm@lists.linux.dev,
-	linux-fsdevel@vger.kernel.org
-Subject: [PATCH v4 0/7] Enable THP support in drm_pagemap
-Date: Sun, 11 Jan 2026 21:55:39 +0100
-Message-ID: <20260111205820.830410-1-francois.dugast@intel.com>
-X-Mailer: git-send-email 2.43.0
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqYMp2nkbz2yQJ
+	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 00:37:25 +1100 (AEDT)
+Received: by mail-wr1-f52.google.com with SMTP id ffacd0b85a97d-430f57cd471so3127570f8f.0
+        for <linuxppc-dev@lists.ozlabs.org>; Mon, 12 Jan 2026 05:37:25 -0800 (PST)
+DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=gmail.com; s=20230601; t=1768224982; x=1768829782; darn=lists.ozlabs.org;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:from:to:cc:subject:date
+         :message-id:reply-to;
+        bh=bLo3Abz9wAwu25esY4s8FeJ9KMDvXVIZnqcKTN+SMTE=;
+        b=Mg/4RwW7bikqfDQyB3Lufpp7ZttnBi+2ZgYbDhQCeRKQQkJoXOBdW/WiXMd1HTEyP1
+         wWmdBY7s3nDv8T6pRjyYQ/4a+XUouQGhKwbYisn0cCLiuoJ0TB1Yym1oqXW42Af9Pglr
+         iyLBUkFk26kGTpI7fa2ih6YbADZKlfaDCcCcbnKg4LRMkQIZJS9Ps+OJ0X5zvFsb/wsB
+         73JaEQQk6qnb2/WyMBHSh/PixGUI2f2wXJFFWfcEmmqJHuYVYkkoZU+HnvAstx3WlOIG
+         qgiRtKzN/LR2zco9LUVQBV1jVLdnRAjRVbeCA/jd/VGyJdN1e0zJkoUN8mCwc9WuZlmy
+         wD3Q==
+X-Google-DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/relaxed;
+        d=1e100.net; s=20230601; t=1768224982; x=1768829782;
+        h=content-transfer-encoding:mime-version:references:in-reply-to
+         :message-id:subject:cc:to:from:date:x-gm-gg:x-gm-message-state:from
+         :to:cc:subject:date:message-id:reply-to;
+        bh=bLo3Abz9wAwu25esY4s8FeJ9KMDvXVIZnqcKTN+SMTE=;
+        b=mGEX2agxnBjNsk7EW2s0S6Ze98aYue/xJ99ZaFR08XG/KeUkjtycl38WVWYU7ZWfgW
+         kZUQHlL64LcmHzYLh+Wdb57D8YsKwPHYXxWNscIfHraRs028P8Q7sXFVpCAA6A0bt4mh
+         nnlrTekiKjZu/vZGpcrmE55o8KJ9iocHb5LNUmrHFhXEcat4lVYlH3J8/zF2ifnajbWG
+         owWi76d5BaaUy6paWUs8OmOlI2AtTdOZk63/siReGHuQiqJg1Q6llhj1Rdpe5BGAyGqm
+         dg60NB1zBh+q6m4FWm8Mpqi18x22wMXWY9hBltJBWg5H3g6ENlXqPLxUcJMAW9Uwgi25
+         8xag==
+X-Forwarded-Encrypted: i=1; AJvYcCVdZthm8IJ/vEu5dH6vUICQsJSoHIvvEivZydlgB8iuE0s3FKOqtQ/zxxmijQqdT9eugh1lup63nU0W0Fg=@lists.ozlabs.org
+X-Gm-Message-State: AOJu0Yx2Xs4WrLkN8OlOSm/MGJr6uWJ6/8s44bBYJOOsf0WxQfWd1i5L
+	OBi/3TM1b5FR/0VgtQd2l01SV5/hT+Ql5J17D4vizaGzQbgM0V3pIuox
+X-Gm-Gg: AY/fxX7z2LSJzCpCoH8YXkYAw/j0FgcyNK4njiSZD2+bHf4yCWeRhNSUSi8WyRG+/1F
+	2lQhCHccv/LO3jIgwXE4k9Vwh4gr877ghHoqhzUZB6J6CRiVFpkwhaQ0JJXEDjFXYzzlVclu2Rz
+	vv6KGayUMoRgLwFSFSbJkNKW4dszWlAoNNi54eM230bdiHvdvjEzOgP3AzRk66tHn39u8Cw9SBT
+	In1HkbIMPfiQca7YJal/2mJ/qTT82U8DDsdDP8tMProLGAD45N458J2EPiwwsYpHFr4pnLIAJ9i
+	+vV04BZ5hCfULBzWYWdrQVccntIn6G89Z+6Cvm0nWBeiGj6GKYMJkSgSgsBpPZBknWhNDvfuw5A
+	hV13aNUchAjzWK52P45xBKxLk/aZg5jDrfRmnnOJI5A3pgjrbSFFEdw0JSl/H7sg6povJFGoLQh
+	hDQ0JmCqLlqY/otmjVUKzGAIYABxSgkWweovn1ii4P+qDpKM0L2etv
+X-Google-Smtp-Source: AGHT+IGyxiv2XFt49Pj+G/FCKb6Do+/qO1fvIxMUjWKWGTcpTcAtASoZtqcJMaJZUWyMrmC4TwCROg==
+X-Received: by 2002:a05:6000:40c9:b0:430:fafd:f1d2 with SMTP id ffacd0b85a97d-432c3628374mr22009793f8f.11.1768224982426;
+        Mon, 12 Jan 2026 05:36:22 -0800 (PST)
+Received: from pumpkin (82-69-66-36.dsl.in-addr.zen.co.uk. [82.69.66.36])
+        by smtp.gmail.com with ESMTPSA id ffacd0b85a97d-432bd5df9afsm41054434f8f.24.2026.01.12.05.36.21
+        (version=TLS1_3 cipher=TLS_AES_256_GCM_SHA384 bits=256/256);
+        Mon, 12 Jan 2026 05:36:22 -0800 (PST)
+Date: Mon, 12 Jan 2026 13:36:20 +0000
+From: David Laight <david.laight.linux@gmail.com>
+To: Ryan Roberts <ryan.roberts@arm.com>
+Cc: Catalin Marinas <catalin.marinas@arm.com>, Will Deacon
+ <will@kernel.org>, Huacai Chen <chenhuacai@kernel.org>, Madhavan Srinivasan
+ <maddy@linux.ibm.com>, Michael Ellerman <mpe@ellerman.id.au>, Paul Walmsley
+ <pjw@kernel.org>, Palmer Dabbelt <palmer@dabbelt.com>, Albert Ou
+ <aou@eecs.berkeley.edu>, Heiko Carstens <hca@linux.ibm.com>, Vasily Gorbik
+ <gor@linux.ibm.com>, Alexander Gordeev <agordeev@linux.ibm.com>, Thomas
+ Gleixner <tglx@linutronix.de>, Ingo Molnar <mingo@redhat.com>, Borislav
+ Petkov <bp@alien8.de>, Dave Hansen <dave.hansen@linux.intel.com>, Kees Cook
+ <kees@kernel.org>, "Gustavo A. R. Silva" <gustavoars@kernel.org>, Arnd
+ Bergmann <arnd@arndb.de>, Mark Rutland <mark.rutland@arm.com>, "Jason A.
+ Donenfeld" <Jason@zx2c4.com>, Ard Biesheuvel <ardb@kernel.org>, Jeremy
+ Linton <jeremy.linton@arm.com>, linux-kernel@vger.kernel.org,
+ linux-arm-kernel@lists.infradead.org, loongarch@lists.linux.dev,
+ linuxppc-dev@lists.ozlabs.org, linux-riscv@lists.infradead.org,
+ linux-s390@vger.kernel.org, linux-hardening@vger.kernel.org
+Subject: Re: [PATCH v3 3/3] randomize_kstack: Unify random source across
+ arches
+Message-ID: <20260112133620.2863e1d6@pumpkin>
+In-Reply-To: <09de87bc-d952-41e7-9657-852c2924aaa7@arm.com>
+References: <20260102131156.3265118-1-ryan.roberts@arm.com>
+	<20260102131156.3265118-4-ryan.roberts@arm.com>
+	<20260104230136.7aaf8886@pumpkin>
+	<20260107140533.2b3c46a1@pumpkin>
+	<09de87bc-d952-41e7-9657-852c2924aaa7@arm.com>
+X-Mailer: Claws Mail 4.1.1 (GTK 3.24.38; arm-unknown-linux-gnueabihf)
 X-Mailing-List: linuxppc-dev@lists.ozlabs.org
 List-Id: <linuxppc-dev.lists.ozlabs.org>
 List-Help: <mailto:linuxppc-dev+help@lists.ozlabs.org>
@@ -120,108 +113,76 @@ List-Subscribe: <mailto:linuxppc-dev+subscribe@lists.ozlabs.org>,
 List-Unsubscribe: <mailto:linuxppc-dev+unsubscribe@lists.ozlabs.org>
 Precedence: list
 MIME-Version: 1.0
-Content-Type: text/plain; charset=UTF-8
-Content-Transfer-Encoding: 8bit
+Content-Type: text/plain; charset=US-ASCII
+Content-Transfer-Encoding: 7bit
 
-Use Balbir Singh's series for device-private THP support [1] and
-previous preparation work in drm_pagemap [2] to add 2MB/THP support
-in xe. This leads to significant performance improvements when using
-SVM with 2MB pages.
+On Mon, 12 Jan 2026 12:26:26 +0000
+Ryan Roberts <ryan.roberts@arm.com> wrote:
 
-[1] https://lore.kernel.org/linux-mm/20251001065707.920170-1-balbirs@nvidia.com/
-[2] https://patchwork.freedesktop.org/series/151754/
+> On 07/01/2026 14:05, David Laight wrote:
+> > On Sun, 4 Jan 2026 23:01:36 +0000
+> > David Laight <david.laight.linux@gmail.com> wrote:
+...
+> > I've trimmed the initialiser - it is very boring.
+> > The code to create the initialiser is actually slightly smaller than it is.
+> > Doable by hand provided you can do 128bit shift and xor without making
+> > any mistakes.
+> > 
+> > I've just done a quick search through the kernel sources and haven't found
+> > many uses of prandom_u32_state() outside of test code.
+> > There is sched_rng() which uses a per-cpu rng to throw a 1024 sized die.
+> > bpf also has a per-cpu one for 'unprivileged user space'.
+> > net/sched/sch_netem.c seems to use one - mostly for packet loss generation.
+> > 
+> > Since the randomize_kstack code is now using a per-task rng (initialised
+> > by clone?) that could be used instead of all the others provided they
+> > are run when 'current' is valid.
+> > 
+> > But the existing prandom_u32_state() needs a big health warning that
+> > four outputs leak the entire state.
+> > That is fixable by changing the last line to:
+> >         return state->s1 + state->s2 + state->s3 + state->s4;
+> > That only affects the output value, the period is unchanged.  
+> 
+> Hi David,
+> 
+> This all seems interesting, but I'm not clear that it is a blocker for this
+> series. As I keep saying, we only use 6 bits for offset randmization so it is
+> trival to brute force, regardless of how easy it is to recover the prng state.
+> 
+> Perhaps we can decouple these 2 things and make them independent:
+> 
+>  - this series, which is motivated by speeding up syscalls on arm64; given 6
+>    bits is not hard to brute force, spending a lot of cycles calculating those
+>    bits is unjustified.
+> 
+>  - Your observation that that the current prng could be improved to make
+>    recoving it's state harder.
+> 
+> What do you think?
 
-v2:
-- rebase on top of multi-device SVM
-- add drm_pagemap_cpages() with temporary patch
-- address other feedback from Matt Brost on v1
+They are separate.
+I should have a 'mostly written' patch series for prandom_u32_state().
 
-v3:
-The major change is to remove the dependency to the mm/huge_memory
-helper migrate_device_split_page() that was called explicitely when
-a 2M buddy allocation backed by a large folio would be later reused
-for a smaller allocation (4K or 64K). Instead, the first 3 patches
-provided by Matthew Brost ensure large folios are split at the time
-of freeing.
+If you unconditionally add a per-task prng there are a few places that could
+use it instead of a per-cpu one.
+It could be 'perturbed' during task switch - eg by:
+	s->s1 = (s->s1 ^ something) | 2;
+(The 2 stops the new value being 0 or 1, losing 1 bit wont be significant.)
 
-v4:
-- add order argument to folio_free callback
-- send complete series to linux-mm and MM folks as requested (Zi Yan
-  and Andrew Morton) and cover letter to anyone receiving at least
-  one of the patches (Liam R. Howlett)
+This one is much nearer 'ready' and has an obvious impact.
 
-Cc: Zi Yan <ziy@nvidia.com>
-Cc: Madhavan Srinivasan <maddy@linux.ibm.com>
-Cc: Alistair Popple <apopple@nvidia.com>
-Cc: Lorenzo Stoakes <lorenzo.stoakes@oracle.com>
-Cc: Liam R. Howlett <Liam.Howlett@oracle.com>
-Cc: Suren Baghdasaryan <surenb@google.com>
-Cc: Michal Hocko <mhocko@suse.com>
-Cc: Mike Rapoport <rppt@kernel.org>
-Cc: Vlastimil Babka <vbabka@suse.cz>
-Cc: Nicholas Piggin <npiggin@gmail.com>
-Cc: Michael Ellerman <mpe@ellerman.id.au>
-Cc: "Christophe Leroy (CS GROUP)" <chleroy@kernel.org>
-Cc: Felix Kuehling <Felix.Kuehling@amd.com>
-Cc: Alex Deucher <alexander.deucher@amd.com>
-Cc: "Christian König" <christian.koenig@amd.com>
-Cc: David Airlie <airlied@gmail.com>
-Cc: Simona Vetter <simona@ffwll.ch>
-Cc: Maarten Lankhorst <maarten.lankhorst@linux.intel.com>
-Cc: Maxime Ripard <mripard@kernel.org>
-Cc: Thomas Zimmermann <tzimmermann@suse.de>
-Cc: Lyude Paul <lyude@redhat.com>
-Cc: Danilo Krummrich <dakr@kernel.org>
-Cc: Bjorn Helgaas <bhelgaas@google.com>
-Cc: Logan Gunthorpe <logang@deltatee.com>
-Cc: David Hildenbrand <david@kernel.org>
-Cc: Oscar Salvador <osalvador@suse.de>
-Cc: Andrew Morton <akpm@linux-foundation.org>
-Cc: Jason Gunthorpe <jgg@ziepe.ca>
-Cc: Leon Romanovsky <leon@kernel.org>
-Cc: Balbir Singh <balbirs@nvidia.com>
-Cc: Dan Williams <dan.j.williams@intel.com>
-Cc: Matthew Wilcox <willy@infradead.org>
-Cc: Jan Kara <jack@suse.cz>
-Cc: Alexander Viro <viro@zeniv.linux.org.uk>
-Cc: Christian Brauner <brauner@kernel.org>
-Cc: linuxppc-dev@lists.ozlabs.org
-Cc: kvm@vger.kernel.org
-Cc: linux-kernel@vger.kernel.org
-Cc: amd-gfx@lists.freedesktop.org
-Cc: dri-devel@lists.freedesktop.org
-Cc: nouveau@lists.freedesktop.org
-Cc: linux-pci@vger.kernel.org
-Cc: linux-mm@kvack.org
-Cc: linux-cxl@vger.kernel.org
-Cc: nvdimm@lists.linux.dev
-Cc: linux-fsdevel@vger.kernel.org
+	David
 
-Francois Dugast (3):
-  drm/pagemap: Unlock and put folios when possible
-  drm/pagemap: Add helper to access zone_device_data
-  drm/pagemap: Enable THP support for GPU memory migration
-
-Matthew Brost (4):
-  mm/zone_device: Add order argument to folio_free callback
-  mm/zone_device: Add free_zone_device_folio_prepare() helper
-  fs/dax: Use free_zone_device_folio_prepare() helper
-  drm/pagemap: Correct cpages calculation for migrate_vma_setup
-
- arch/powerpc/kvm/book3s_hv_uvmem.c       |   2 +-
- drivers/gpu/drm/amd/amdkfd/kfd_migrate.c |   2 +-
- drivers/gpu/drm/drm_gpusvm.c             |   7 +-
- drivers/gpu/drm/drm_pagemap.c            | 165 ++++++++++++++++++-----
- drivers/gpu/drm/nouveau/nouveau_dmem.c   |   4 +-
- drivers/pci/p2pdma.c                     |   2 +-
- fs/dax.c                                 |  24 +---
- include/drm/drm_pagemap.h                |  15 +++
- include/linux/memremap.h                 |   8 +-
- lib/test_hmm.c                           |   4 +-
- mm/memremap.c                            |  60 ++++++++-
- 11 files changed, 227 insertions(+), 66 deletions(-)
-
--- 
-2.43.0
+> 
+> Thanks,
+> Ryan
+> 
+> 
+> > 
+> > 	David
+> > 
+> >   
+> 
 
 
