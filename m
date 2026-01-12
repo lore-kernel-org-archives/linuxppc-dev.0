@@ -1,49 +1,49 @@
-Return-Path: <linuxppc-dev+bounces-15559-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
+Return-Path: <linuxppc-dev+bounces-15560-linuxppc-dev=archiver.kernel.org@lists.ozlabs.org>
 X-Spam-Checker-Version: SpamAssassin 3.4.0 (2014-02-07) on
 	aws-us-west-2-korg-lkml-1.web.codeaurora.org
 Received: from lists.ozlabs.org (lists.ozlabs.org [112.213.38.117])
 	(using TLSv1.2 with cipher ECDHE-RSA-AES256-GCM-SHA384 (256/256 bits))
 	(No client certificate requested)
-	by smtp.lore.kernel.org (Postfix) with ESMTPS id 8DA7ACF45C9
-	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 19:24:07 +0000 (UTC)
+	by smtp.lore.kernel.org (Postfix) with ESMTPS id 85B6ACF45C9
+	for <linuxppc-dev@archiver.kernel.org>; Mon, 12 Jan 2026 19:24:12 +0000 (UTC)
 Received: from boromir.ozlabs.org (localhost [127.0.0.1])
-	by lists.ozlabs.org (Postfix) with ESMTP id 4dqj34582hz2yVP;
-	Tue, 13 Jan 2026 06:23:28 +1100 (AEDT)
+	by lists.ozlabs.org (Postfix) with ESMTP id 4dqj352jv4z2ynf;
+	Tue, 13 Jan 2026 06:23:29 +1100 (AEDT)
 Authentication-Results: lists.ozlabs.org; arc=none smtp.remote-ip=172.234.252.31
-ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768245808;
-	cv=none; b=QWlHqZCyi2QQPj3MkV4lY6fUJUr+xxD2cvkqdaPeHHZGYupwvFZcTbSBk8YQ3oAtvualfwWPGIXuiWNsiSwXRbtJqnTrYV31d/wYPVin20FUwkD+qji1envvi+J+F2WZtK6yyJPDNFTSycvnZH+UYFYersZhe/TFPiDT/pbMpCp2ldBf8p9L2a8fqWLc1zabpfU7EQtxzovYtMLgiUalEaDaA9F66bRFjplD58mCoEZoueOCelbgorB51qCDwH2/KjoruiO06N2OhPtz3AvgY/B4h92PpBWxOAqxVJmY1t02D9hJyusMOCe3XCJU3+ArBbUemXX5REW3kP7gOEKRhg==
+ARC-Seal: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707; t=1768245809;
+	cv=none; b=n6B8qiitZjZ31Rea3FnoQfqSFjAMzw9DFqiolxA+GEEqbiikyDzW38tjVmlxMJG5LW4ZhfYXMfI9ayETcfZwb6k6OSmNuWVyt81mFDpGgdJmEcEjhWUAeWsf5wLTHuPuZId3sI7tO3bDPOlZso9nl9Q/1mCxUp+9maoqx8jh3IbmMfrgCwy/uPsuMXDBQyr9omEZCF7QRoF0D1FRpd/6bIrPv7442ekJwowFoN/42CXDGkxITvjosUJhxtSeY7ZMudihMEO6IDwps5kNmz7LeCN5JZEgzdbTZkX7ufOaR8iggHoNpUyoYpkl9MgN+MrOLuTGBwHUOr+LrNSfzJYCjA==
 ARC-Message-Signature: i=1; a=rsa-sha256; d=lists.ozlabs.org; s=201707;
-	t=1768245808; c=relaxed/relaxed;
-	bh=m7vkOKnDugdkCKq4wtl6aVNFQgURrQRIOwd5WtyOcis=;
+	t=1768245809; c=relaxed/relaxed;
+	bh=RWxW1uFuup9ONYA01aeUHR0qAMfLTjJS5PUrW6w5PXk=;
 	h=From:To:Cc:Subject:Date:Message-ID:In-Reply-To:References:
-	 MIME-Version; b=OB9uQB+UHIjZUuxmgiw78QSYBStN6eoQj5EGmZj3sV5kWCal2ZqEOU/XzBeEiskvbBBcpR+vrOlV2ZCTvspr9swpqf+bYPnP4zGEk0JXCUZ6NZlf21XGmY5TtNqfWABBKCfMYZNOWPaeahw6bBgRmrIS/PkkXeowrj32c9Tapr7/fmJHeIxfacf3EnDchaUT5IZOUL3fChLje/dgJ/wloekg1ItwXSfElaiArNoRp1hqJ9/E4Pftz3x1ut1amC+SBg1Xso6fnDdBl4vyXPpST5pThbL+ccxZEvhjV/uMQIr81epnt0ENU7zMIemnT/kcM8vDALnE187VuDzAtpzwxg==
-ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tRrT//dJ; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
+	 MIME-Version; b=PULtMtYwid7bH7My8HIGeREUgc9fHThWEoBn47fH6XatyjdIkTMr29WqyRdU8cJE1W255dne5YgAaSHDLJCLWXFfh0eSB8FMtNgK/jI8cwRTyGeTSFg4KxCLrucPlNJWsLCI39ZUL5CTKztfPKYnCF7BZ8d10UdhCiRqUKeTCbe12vuLik86gnX0GrqcfTQsCYEMoZtnH1JaF74ntkJCdSZPM3GcS1R0F6gv8OW5SQJCBke8vOYIiC6G+35FoADy5pyGGbX10Nf7yxZYKDSf3ZvyNNrHGq4JVqcv2iKM5bDXGPEN+QGPN8cViG1MNq9kCXH4z269gdslKSRdheoNrA==
+ARC-Authentication-Results: i=1; lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org; dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tMd17uhU; dkim-atps=neutral; spf=pass (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org) smtp.mailfrom=kernel.org
 Authentication-Results: lists.ozlabs.org; dmarc=pass (p=quarantine dis=none) header.from=kernel.org
 Authentication-Results: lists.ozlabs.org;
-	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tRrT//dJ;
+	dkim=pass (2048-bit key; unprotected) header.d=kernel.org header.i=@kernel.org header.a=rsa-sha256 header.s=k20201202 header.b=tMd17uhU;
 	dkim-atps=neutral
 Authentication-Results: lists.ozlabs.org; spf=pass (sender SPF authorized) smtp.mailfrom=kernel.org (client-ip=172.234.252.31; helo=sea.source.kernel.org; envelope-from=ebiggers@kernel.org; receiver=lists.ozlabs.org)
 Received: from sea.source.kernel.org (sea.source.kernel.org [172.234.252.31])
 	(using TLSv1.3 with cipher TLS_AES_256_GCM_SHA384 (256/256 bits)
 	 key-exchange x25519)
 	(No client certificate requested)
-	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqj332Bg8z2yYs
+	by lists.ozlabs.org (Postfix) with ESMTPS id 4dqj335TWqz2yft
 	for <linuxppc-dev@lists.ozlabs.org>; Tue, 13 Jan 2026 06:23:27 +1100 (AEDT)
 Received: from smtp.kernel.org (transwarp.subspace.kernel.org [100.75.92.58])
-	by sea.source.kernel.org (Postfix) with ESMTP id 5B77344382;
+	by sea.source.kernel.org (Postfix) with ESMTP id 720444430D;
+	Mon, 12 Jan 2026 19:23:27 +0000 (UTC)
+Received: by smtp.kernel.org (Postfix) with ESMTPSA id E15F7C19424;
 	Mon, 12 Jan 2026 19:23:26 +0000 (UTC)
-Received: by smtp.kernel.org (Postfix) with ESMTPSA id CC557C2BC9E;
-	Mon, 12 Jan 2026 19:23:25 +0000 (UTC)
 DKIM-Signature: v=1; a=rsa-sha256; c=relaxed/simple; d=kernel.org;
-	s=k20201202; t=1768245806;
-	bh=KZ6YNHHvsdIxal21I4zQ8OcS7arQu3vmqdqR8uLdXXY=;
+	s=k20201202; t=1768245807;
+	bh=+Ks/FgLrVIgNh0mVR9LgvhCStXCy1TQy3vUt0BiA4Xw=;
 	h=From:To:Cc:Subject:Date:In-Reply-To:References:From;
-	b=tRrT//dJTBOCkmjfH56jwPUVRsaIHuRNm2ahbv5PVt9YrWAROEBi8+/6zhymwFE+Z
-	 J4UgGBMK8cMfSYPN8krzg+rCencfxT8BM/QW2slVnkR5p428tkRskFhl5yoTsHJ4s6
-	 sgmxjp7wFQoOZLmnecSjDJzZ2V9CQpkwYTagF/i2Odd+sYrYyGD4d4ofEi0YqhosbQ
-	 Y1D5Nzrnm993ukQA+aF52HYb9vQxcxt3fWSpD93G+S5yc+B9pWeKCNO4Sw/AdVm92c
-	 380dtcKmprMIpFdd25S5qpuWgZjN/XDVb9OjUQ8bZIshn/q/QhUX4VANuNidkngMhC
-	 Jknd0YEZiuA2g==
+	b=tMd17uhU6V2tVXPHXhtW3rPuEKtDLWTBQq3CUg8shZ9tcX4/7s+uwYmLr3xdCiUU4
+	 NWxnO8p8r4frohwhvYoDPytgY3v+2LKctzHs67dD+tVCqDlxAXrILzvR2Kk7398VGh
+	 G6vSBWhLUBcRJfvHlxHXEVl4HBZndbrslU1h3gUFaeaxAedZFN2HEjepQZNdUM7xi0
+	 /SJXu6XTfq0uctlyJRu9L/hCrnqynixtUH/sLLl72vZKvQD5pa9G6WvNFy4a/+6k0C
+	 E5cG5ScYUy/u7bOkVsFG0BL/UL4rPc2J3OBSm62jc/9CUGqLPM6byFI5VGUd5CjJM7
+	 lx6+ZPaH3Tv3w==
 From: Eric Biggers <ebiggers@kernel.org>
 To: linux-crypto@vger.kernel.org
 Cc: linux-kernel@vger.kernel.org,
@@ -59,9 +59,9 @@ Cc: linux-kernel@vger.kernel.org,
 	Holger Dengler <dengler@linux.ibm.com>,
 	Harald Freudenberger <freude@linux.ibm.com>,
 	Eric Biggers <ebiggers@kernel.org>
-Subject: [PATCH v2 15/35] lib/crypto: s390/aes: Migrate optimized code into library
-Date: Mon, 12 Jan 2026 11:20:13 -0800
-Message-ID: <20260112192035.10427-16-ebiggers@kernel.org>
+Subject: [PATCH v2 17/35] lib/crypto: x86/aes: Add AES-NI optimization
+Date: Mon, 12 Jan 2026 11:20:15 -0800
+Message-ID: <20260112192035.10427-18-ebiggers@kernel.org>
 X-Mailer: git-send-email 2.52.0
 In-Reply-To: <20260112192035.10427-1-ebiggers@kernel.org>
 References: <20260112192035.10427-1-ebiggers@kernel.org>
@@ -80,382 +80,430 @@ Precedence: list
 MIME-Version: 1.0
 Content-Transfer-Encoding: 8bit
 
-Implement aes_preparekey_arch(), aes_encrypt_arch(), and
-aes_decrypt_arch() using the CPACF AES instructions.
+Optimize the AES library with x86 AES-NI instructions.
 
-Then, remove the superseded "aes-s390" crypto_cipher.
+The relevant existing assembly functions, aesni_set_key(), aesni_enc(),
+and aesni_dec(), are a bit difficult to extract into the library:
 
-The result is that both the AES library and crypto_cipher APIs use the
-CPACF AES instructions, whereas previously only crypto_cipher did (and
-it wasn't enabled by default, which this commit fixes as well).
+- They're coupled to the code for the AES modes.
+- They operate on struct crypto_aes_ctx.  The AES library now uses
+  different structs.
+- They assume the key is 16-byte aligned.  The AES library only
+  *prefers* 16-byte alignment; it doesn't require it.
 
-Note that this preserves the optimization where the AES key is stored in
-raw form rather than expanded form.  CPACF just takes the raw key.
+Moreover, they're not all that great in the first place:
+
+- They use unrolled loops, which isn't a great choice on x86.
+- They use the 'aeskeygenassist' instruction, which is unnecessary, is
+  slow on Intel CPUs, and forces the loop to be unrolled.
+- They have special code for AES-192 key expansion, despite that being
+  kind of useless.  AES-128 and AES-256 are the ones used in practice.
+
+These are small functions anyway.
+
+Therefore, I opted to just write replacements of these functions for the
+library.  They address all the above issues.
 
 Acked-by: Ard Biesheuvel <ardb@kernel.org>
 Signed-off-by: Eric Biggers <ebiggers@kernel.org>
 ---
- arch/s390/crypto/Kconfig    |   2 -
- arch/s390/crypto/aes_s390.c | 113 ------------------------------------
- include/crypto/aes.h        |   3 +
- lib/crypto/Kconfig          |   1 +
- lib/crypto/s390/aes.h       | 106 +++++++++++++++++++++++++++++++++
- 5 files changed, 110 insertions(+), 115 deletions(-)
- create mode 100644 lib/crypto/s390/aes.h
+ lib/crypto/Kconfig         |   1 +
+ lib/crypto/Makefile        |   1 +
+ lib/crypto/x86/aes-aesni.S | 261 +++++++++++++++++++++++++++++++++++++
+ lib/crypto/x86/aes.h       |  85 ++++++++++++
+ 4 files changed, 348 insertions(+)
+ create mode 100644 lib/crypto/x86/aes-aesni.S
+ create mode 100644 lib/crypto/x86/aes.h
 
-diff --git a/arch/s390/crypto/Kconfig b/arch/s390/crypto/Kconfig
-index f838ca055f6d..79a2d0034258 100644
---- a/arch/s390/crypto/Kconfig
-+++ b/arch/s390/crypto/Kconfig
-@@ -12,14 +12,12 @@ config CRYPTO_GHASH_S390
- 
- 	  It is available as of z196.
- 
- config CRYPTO_AES_S390
- 	tristate "Ciphers: AES, modes: ECB, CBC, CTR, XTS, GCM"
--	select CRYPTO_ALGAPI
- 	select CRYPTO_SKCIPHER
- 	help
--	  Block cipher: AES cipher algorithms (FIPS 197)
- 	  AEAD cipher: AES with GCM
- 	  Length-preserving ciphers: AES with ECB, CBC, XTS, and CTR modes
- 
- 	  Architecture: s390
- 
-diff --git a/arch/s390/crypto/aes_s390.c b/arch/s390/crypto/aes_s390.c
-index d0a295435680..62edc66d5478 100644
---- a/arch/s390/crypto/aes_s390.c
-+++ b/arch/s390/crypto/aes_s390.c
-@@ -18,11 +18,10 @@
- 
- #include <crypto/aes.h>
- #include <crypto/algapi.h>
- #include <crypto/ghash.h>
- #include <crypto/internal/aead.h>
--#include <crypto/internal/cipher.h>
- #include <crypto/internal/skcipher.h>
- #include <crypto/scatterwalk.h>
- #include <linux/err.h>
- #include <linux/module.h>
- #include <linux/cpufeature.h>
-@@ -43,11 +42,10 @@ struct s390_aes_ctx {
- 	u8 key[AES_MAX_KEY_SIZE];
- 	int key_len;
- 	unsigned long fc;
- 	union {
- 		struct crypto_skcipher *skcipher;
--		struct crypto_cipher *cip;
- 	} fallback;
- };
- 
- struct s390_xts_ctx {
- 	union {
-@@ -70,113 +68,10 @@ struct gcm_sg_walk {
- 	unsigned int buf_bytes;
- 	u8 *ptr;
- 	unsigned int nbytes;
- };
- 
--static int setkey_fallback_cip(struct crypto_tfm *tfm, const u8 *in_key,
--		unsigned int key_len)
--{
--	struct s390_aes_ctx *sctx = crypto_tfm_ctx(tfm);
--
--	sctx->fallback.cip->base.crt_flags &= ~CRYPTO_TFM_REQ_MASK;
--	sctx->fallback.cip->base.crt_flags |= (tfm->crt_flags &
--			CRYPTO_TFM_REQ_MASK);
--
--	return crypto_cipher_setkey(sctx->fallback.cip, in_key, key_len);
--}
--
--static int aes_set_key(struct crypto_tfm *tfm, const u8 *in_key,
--		       unsigned int key_len)
--{
--	struct s390_aes_ctx *sctx = crypto_tfm_ctx(tfm);
--	unsigned long fc;
--
--	/* Pick the correct function code based on the key length */
--	fc = (key_len == 16) ? CPACF_KM_AES_128 :
--	     (key_len == 24) ? CPACF_KM_AES_192 :
--	     (key_len == 32) ? CPACF_KM_AES_256 : 0;
--
--	/* Check if the function code is available */
--	sctx->fc = (fc && cpacf_test_func(&km_functions, fc)) ? fc : 0;
--	if (!sctx->fc)
--		return setkey_fallback_cip(tfm, in_key, key_len);
--
--	sctx->key_len = key_len;
--	memcpy(sctx->key, in_key, key_len);
--	return 0;
--}
--
--static void crypto_aes_encrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
--{
--	struct s390_aes_ctx *sctx = crypto_tfm_ctx(tfm);
--
--	if (unlikely(!sctx->fc)) {
--		crypto_cipher_encrypt_one(sctx->fallback.cip, out, in);
--		return;
--	}
--	cpacf_km(sctx->fc, &sctx->key, out, in, AES_BLOCK_SIZE);
--}
--
--static void crypto_aes_decrypt(struct crypto_tfm *tfm, u8 *out, const u8 *in)
--{
--	struct s390_aes_ctx *sctx = crypto_tfm_ctx(tfm);
--
--	if (unlikely(!sctx->fc)) {
--		crypto_cipher_decrypt_one(sctx->fallback.cip, out, in);
--		return;
--	}
--	cpacf_km(sctx->fc | CPACF_DECRYPT,
--		 &sctx->key, out, in, AES_BLOCK_SIZE);
--}
--
--static int fallback_init_cip(struct crypto_tfm *tfm)
--{
--	const char *name = tfm->__crt_alg->cra_name;
--	struct s390_aes_ctx *sctx = crypto_tfm_ctx(tfm);
--
--	sctx->fallback.cip = crypto_alloc_cipher(name, 0,
--						 CRYPTO_ALG_NEED_FALLBACK);
--
--	if (IS_ERR(sctx->fallback.cip)) {
--		pr_err("Allocating AES fallback algorithm %s failed\n",
--		       name);
--		return PTR_ERR(sctx->fallback.cip);
--	}
--
--	return 0;
--}
--
--static void fallback_exit_cip(struct crypto_tfm *tfm)
--{
--	struct s390_aes_ctx *sctx = crypto_tfm_ctx(tfm);
--
--	crypto_free_cipher(sctx->fallback.cip);
--	sctx->fallback.cip = NULL;
--}
--
--static struct crypto_alg aes_alg = {
--	.cra_name		=	"aes",
--	.cra_driver_name	=	"aes-s390",
--	.cra_priority		=	300,
--	.cra_flags		=	CRYPTO_ALG_TYPE_CIPHER |
--					CRYPTO_ALG_NEED_FALLBACK,
--	.cra_blocksize		=	AES_BLOCK_SIZE,
--	.cra_ctxsize		=	sizeof(struct s390_aes_ctx),
--	.cra_module		=	THIS_MODULE,
--	.cra_init               =       fallback_init_cip,
--	.cra_exit               =       fallback_exit_cip,
--	.cra_u			=	{
--		.cipher = {
--			.cia_min_keysize	=	AES_MIN_KEY_SIZE,
--			.cia_max_keysize	=	AES_MAX_KEY_SIZE,
--			.cia_setkey		=	aes_set_key,
--			.cia_encrypt		=	crypto_aes_encrypt,
--			.cia_decrypt		=	crypto_aes_decrypt,
--		}
--	}
--};
--
- static int setkey_fallback_skcipher(struct crypto_skcipher *tfm, const u8 *key,
- 				    unsigned int len)
- {
- 	struct s390_aes_ctx *sctx = crypto_skcipher_ctx(tfm);
- 
-@@ -1047,11 +942,10 @@ static struct aead_alg gcm_aes_aead = {
- 		.cra_driver_name	= "gcm-aes-s390",
- 		.cra_module		= THIS_MODULE,
- 	},
- };
- 
--static struct crypto_alg *aes_s390_alg;
- static struct skcipher_alg *aes_s390_skcipher_algs[5];
- static int aes_s390_skciphers_num;
- static struct aead_alg *aes_s390_aead_alg;
- 
- static int aes_s390_register_skcipher(struct skcipher_alg *alg)
-@@ -1064,12 +958,10 @@ static int aes_s390_register_skcipher(struct skcipher_alg *alg)
- 	return ret;
- }
- 
- static void aes_s390_fini(void)
- {
--	if (aes_s390_alg)
--		crypto_unregister_alg(aes_s390_alg);
- 	while (aes_s390_skciphers_num--)
- 		crypto_unregister_skcipher(aes_s390_skcipher_algs[aes_s390_skciphers_num]);
- 	if (ctrblk)
- 		free_page((unsigned long) ctrblk);
- 
-@@ -1088,14 +980,10 @@ static int __init aes_s390_init(void)
- 	cpacf_query(CPACF_KMA, &kma_functions);
- 
- 	if (cpacf_test_func(&km_functions, CPACF_KM_AES_128) ||
- 	    cpacf_test_func(&km_functions, CPACF_KM_AES_192) ||
- 	    cpacf_test_func(&km_functions, CPACF_KM_AES_256)) {
--		ret = crypto_register_alg(&aes_alg);
--		if (ret)
--			goto out_err;
--		aes_s390_alg = &aes_alg;
- 		ret = aes_s390_register_skcipher(&ecb_aes_alg);
- 		if (ret)
- 			goto out_err;
- 	}
- 
-@@ -1154,6 +1042,5 @@ module_exit(aes_s390_fini);
- 
- MODULE_ALIAS_CRYPTO("aes-all");
- 
- MODULE_DESCRIPTION("Rijndael (AES) Cipher Algorithm");
- MODULE_LICENSE("GPL");
--MODULE_IMPORT_NS("CRYPTO_INTERNAL");
-diff --git a/include/crypto/aes.h b/include/crypto/aes.h
-index bff71cfaedeb..19fd99f383fb 100644
---- a/include/crypto/aes.h
-+++ b/include/crypto/aes.h
-@@ -44,10 +44,13 @@ union aes_enckey_arch {
- 	 * when that code is usable at key preparation time.  Otherwise they
- 	 * fall back to rndkeys.  In the latter case, p8.nrounds (which doesn't
- 	 * overlap rndkeys) is set to 0 to differentiate the two formats.
- 	 */
- 	struct p8_aes_key p8;
-+#elif defined(CONFIG_S390)
-+	/* Used when the CPU supports CPACF AES for this key's length */
-+	u8 raw_key[AES_MAX_KEY_SIZE];
- #endif
- #endif /* CONFIG_CRYPTO_LIB_AES_ARCH */
- };
- 
- union aes_invkey_arch {
 diff --git a/lib/crypto/Kconfig b/lib/crypto/Kconfig
-index 2690b5ffc5ca..56a9b4f53b0e 100644
+index 920d96e6b498..032f9755f999 100644
 --- a/lib/crypto/Kconfig
 +++ b/lib/crypto/Kconfig
-@@ -17,10 +17,11 @@ config CRYPTO_LIB_AES_ARCH
- 	default y if ARM
- 	default y if ARM64
+@@ -19,10 +19,11 @@ config CRYPTO_LIB_AES_ARCH
  	default y if PPC && (SPE || (PPC64 && VSX))
  	default y if RISCV && 64BIT && TOOLCHAIN_HAS_VECTOR_CRYPTO && \
  		     RISCV_EFFICIENT_VECTOR_UNALIGNED_ACCESS
-+	default y if S390
+ 	default y if S390
+ 	default y if SPARC64
++	default y if X86
  
  config CRYPTO_LIB_AESCFB
  	tristate
  	select CRYPTO_LIB_AES
  	select CRYPTO_LIB_UTILS
-diff --git a/lib/crypto/s390/aes.h b/lib/crypto/s390/aes.h
+diff --git a/lib/crypto/Makefile b/lib/crypto/Makefile
+index 761d52d91f92..725eef05b758 100644
+--- a/lib/crypto/Makefile
++++ b/lib/crypto/Makefile
+@@ -50,10 +50,11 @@ OBJECT_FILES_NON_STANDARD_powerpc/aesp8-ppc.o := y
+ endif # !CONFIG_SPE
+ endif # CONFIG_PPC
+ 
+ libaes-$(CONFIG_RISCV) += riscv/aes-riscv64-zvkned.o
+ libaes-$(CONFIG_SPARC) += sparc/aes_asm.o
++libaes-$(CONFIG_X86) += x86/aes-aesni.o
+ endif # CONFIG_CRYPTO_LIB_AES_ARCH
+ 
+ ################################################################################
+ 
+ obj-$(CONFIG_CRYPTO_LIB_AESCFB)			+= libaescfb.o
+diff --git a/lib/crypto/x86/aes-aesni.S b/lib/crypto/x86/aes-aesni.S
 new file mode 100644
-index 000000000000..5466f6ecbce7
+index 000000000000..b8c3e104a3be
 --- /dev/null
-+++ b/lib/crypto/s390/aes.h
-@@ -0,0 +1,106 @@
++++ b/lib/crypto/x86/aes-aesni.S
+@@ -0,0 +1,261 @@
++/* SPDX-License-Identifier: GPL-2.0-or-later */
++//
++// AES block cipher using AES-NI instructions
++//
++// Copyright 2026 Google LLC
++//
++// The code in this file supports 32-bit and 64-bit CPUs, and it doesn't require
++// AVX.  It does use up to SSE4.1, which all CPUs with AES-NI have.
++#include <linux/linkage.h>
++
++.section .rodata
++#ifdef __x86_64__
++#define RODATA(label)	label(%rip)
++#else
++#define RODATA(label)	label
++#endif
++
++	// A mask for pshufb that extracts the last dword, rotates it right by 8
++	// bits, and copies the result to all four dwords.
++.p2align 4
++.Lmask:
++	.byte	13, 14, 15, 12, 13, 14, 15, 12, 13, 14, 15, 12, 13, 14, 15, 12
++
++	// The AES round constants, used during key expansion
++.Lrcon:
++	.long	0x01, 0x02, 0x04, 0x08, 0x10, 0x20, 0x40, 0x80, 0x1b, 0x36
++
++.text
++
++// Transform four dwords [a0, a1, a2, a3] in \a into
++// [a0, a0^a1, a0^a1^a2, a0^a1^a2^a3].  \tmp is a temporary xmm register.
++//
++// Note: this could be done in four instructions, shufps + pxor + shufps + pxor,
++// if the temporary register were zero-initialized ahead of time.  We instead do
++// it in an easier-to-understand way that doesn't require zero-initialization
++// and avoids the unusual shufps instruction.  movdqa is usually "free" anyway.
++.macro	_prefix_sum	a, tmp
++	movdqa		\a, \tmp	// [a0, a1, a2, a3]
++	pslldq		$4, \a		// [0, a0, a1, a2]
++	pxor		\tmp, \a	// [a0, a0^a1, a1^a2, a2^a3]
++	movdqa		\a, \tmp
++	pslldq		$8, \a		// [0, 0, a0, a0^a1]
++	pxor		\tmp, \a	// [a0, a0^a1, a0^a1^a2, a0^a1^a2^a3]
++.endm
++
++.macro	_gen_round_key	a, b
++	// Compute four copies of rcon[i] ^ SubBytes(ror32(w, 8)), where w is
++	// the last dword of the previous round key (given in \b).
++	//
++	// 'aesenclast src, dst' does dst = src XOR SubBytes(ShiftRows(dst)).
++	// It is used here solely for the SubBytes and the XOR.  The ShiftRows
++	// is a no-op because all four columns are the same here.
++	//
++	// Don't use the 'aeskeygenassist' instruction, since:
++	//  - On most Intel CPUs it is microcoded, making it have a much higher
++	//    latency and use more execution ports than 'aesenclast'.
++	//  - It cannot be used in a loop, since it requires an immediate.
++	//  - It doesn't do much more than 'aesenclast' in the first place.
++	movdqa		\b, %xmm2
++	pshufb		MASK, %xmm2
++	aesenclast	RCON, %xmm2
++
++	// XOR in the prefix sum of the four dwords of \a, which is the
++	// previous round key (AES-128) or the first round key in the previous
++	// pair of round keys (AES-256).  The result is the next round key.
++	_prefix_sum	\a, tmp=%xmm3
++	pxor		%xmm2, \a
++
++	// Store the next round key to memory.  Also leave it in \a.
++	movdqu		\a, (RNDKEYS)
++.endm
++
++.macro	_aes_expandkey_aesni	is_aes128
++#ifdef __x86_64__
++	// Arguments
++	.set	RNDKEYS,	%rdi
++	.set	INV_RNDKEYS,	%rsi
++	.set	IN_KEY,		%rdx
++
++	// Other local variables
++	.set	RCON_PTR,	%rcx
++	.set	COUNTER,	%eax
++#else
++	// Arguments, assuming -mregparm=3
++	.set	RNDKEYS,	%eax
++	.set	INV_RNDKEYS,	%edx
++	.set	IN_KEY,		%ecx
++
++	// Other local variables
++	.set	RCON_PTR,	%ebx
++	.set	COUNTER,	%esi
++#endif
++	.set	RCON,		%xmm6
++	.set	MASK,		%xmm7
++
++#ifdef __i386__
++	push		%ebx
++	push		%esi
++#endif
++
++.if \is_aes128
++	// AES-128: the first round key is simply a copy of the raw key.
++	movdqu		(IN_KEY), %xmm0
++	movdqu		%xmm0, (RNDKEYS)
++.else
++	// AES-256: the first two round keys are simply a copy of the raw key.
++	movdqu		(IN_KEY), %xmm0
++	movdqu		%xmm0, (RNDKEYS)
++	movdqu		16(IN_KEY), %xmm1
++	movdqu		%xmm1, 16(RNDKEYS)
++	add		$32, RNDKEYS
++.endif
++
++	// Generate the remaining round keys.
++	movdqa		RODATA(.Lmask), MASK
++.if \is_aes128
++	lea		RODATA(.Lrcon), RCON_PTR
++	mov		$10, COUNTER
++.Lgen_next_aes128_round_key:
++	add		$16, RNDKEYS
++	movd		(RCON_PTR), RCON
++	pshufd		$0x00, RCON, RCON
++	add		$4, RCON_PTR
++	_gen_round_key	%xmm0, %xmm0
++	dec		COUNTER
++	jnz		.Lgen_next_aes128_round_key
++.else
++	// AES-256: only the first 7 round constants are needed, so instead of
++	// loading each one from memory, just start by loading [1, 1, 1, 1] and
++	// then generate the rest by doubling.
++	pshufd		$0x00, RODATA(.Lrcon), RCON
++	pxor		%xmm5, %xmm5	// All-zeroes
++	mov		$7, COUNTER
++.Lgen_next_aes256_round_key_pair:
++	// Generate the next AES-256 round key: either the first of a pair of
++	// two, or the last one.
++	_gen_round_key	%xmm0, %xmm1
++
++	dec		COUNTER
++	jz		.Lgen_aes256_round_keys_done
++
++	// Generate the second AES-256 round key of the pair.  Compared to the
++	// first, there's no rotation and no XOR of a round constant.
++	pshufd		$0xff, %xmm0, %xmm2	// Get four copies of last dword
++	aesenclast	%xmm5, %xmm2		// Just does SubBytes
++	_prefix_sum	%xmm1, tmp=%xmm3
++	pxor		%xmm2, %xmm1
++	movdqu		%xmm1, 16(RNDKEYS)
++	add		$32, RNDKEYS
++	paddd		RCON, RCON		// RCON <<= 1
++	jmp		.Lgen_next_aes256_round_key_pair
++.Lgen_aes256_round_keys_done:
++.endif
++
++	// If INV_RNDKEYS is non-NULL, write the round keys for the Equivalent
++	// Inverse Cipher to it.  To do that, reverse the standard round keys,
++	// and apply aesimc (InvMixColumn) to each except the first and last.
++	test		INV_RNDKEYS, INV_RNDKEYS
++	jz		.Ldone\@
++	movdqu		(RNDKEYS), %xmm0	// Last standard round key
++	movdqu		%xmm0, (INV_RNDKEYS)	// => First inverse round key
++.if \is_aes128
++	mov		$9, COUNTER
++.else
++	mov		$13, COUNTER
++.endif
++.Lgen_next_inv_round_key\@:
++	sub		$16, RNDKEYS
++	add		$16, INV_RNDKEYS
++	movdqu		(RNDKEYS), %xmm0
++	aesimc		%xmm0, %xmm0
++	movdqu		%xmm0, (INV_RNDKEYS)
++	dec		COUNTER
++	jnz		.Lgen_next_inv_round_key\@
++	movdqu		-16(RNDKEYS), %xmm0	// First standard round key
++	movdqu		%xmm0, 16(INV_RNDKEYS)	// => Last inverse round key
++
++.Ldone\@:
++#ifdef __i386__
++	pop		%esi
++	pop		%ebx
++#endif
++	RET
++.endm
++
++// void aes128_expandkey_aesni(u32 rndkeys[], u32 *inv_rndkeys,
++//			       const u8 in_key[AES_KEYSIZE_128]);
++SYM_FUNC_START(aes128_expandkey_aesni)
++	_aes_expandkey_aesni	1
++SYM_FUNC_END(aes128_expandkey_aesni)
++
++// void aes256_expandkey_aesni(u32 rndkeys[], u32 *inv_rndkeys,
++//			       const u8 in_key[AES_KEYSIZE_256]);
++SYM_FUNC_START(aes256_expandkey_aesni)
++	_aes_expandkey_aesni	0
++SYM_FUNC_END(aes256_expandkey_aesni)
++
++.macro	_aes_crypt_aesni	enc
++#ifdef __x86_64__
++	.set	RNDKEYS,	%rdi
++	.set	NROUNDS,	%esi
++	.set	OUT,		%rdx
++	.set	IN,		%rcx
++#else
++	// Assuming -mregparm=3
++	.set	RNDKEYS,	%eax
++	.set	NROUNDS,	%edx
++	.set	OUT,		%ecx
++	.set	IN,		%ebx	// Passed on stack
++#endif
++
++#ifdef __i386__
++	push		%ebx
++	mov		8(%esp), %ebx
++#endif
++
++	// Zero-th round
++	movdqu		(IN), %xmm0
++	movdqu		(RNDKEYS), %xmm1
++	pxor		%xmm1, %xmm0
++
++	// Normal rounds
++	add		$16, RNDKEYS
++	dec		NROUNDS
++.Lnext_round\@:
++	movdqu		(RNDKEYS), %xmm1
++.if \enc
++	aesenc		%xmm1, %xmm0
++.else
++	aesdec		%xmm1, %xmm0
++.endif
++	add		$16, RNDKEYS
++	dec		NROUNDS
++	jne		.Lnext_round\@
++
++	// Last round
++	movdqu		(RNDKEYS), %xmm1
++.if \enc
++	aesenclast	%xmm1, %xmm0
++.else
++	aesdeclast	%xmm1, %xmm0
++.endif
++	movdqu		%xmm0, (OUT)
++
++#ifdef __i386__
++	pop		%ebx
++#endif
++	RET
++.endm
++
++// void aes_encrypt_aesni(const u32 rndkeys[], int nrounds,
++//			  u8 out[AES_BLOCK_SIZE], const u8 in[AES_BLOCK_SIZE]);
++SYM_FUNC_START(aes_encrypt_aesni)
++	_aes_crypt_aesni	1
++SYM_FUNC_END(aes_encrypt_aesni)
++
++// void aes_decrypt_aesni(const u32 inv_rndkeys[], int nrounds,
++//			  u8 out[AES_BLOCK_SIZE], const u8 in[AES_BLOCK_SIZE]);
++SYM_FUNC_START(aes_decrypt_aesni)
++	_aes_crypt_aesni	0
++SYM_FUNC_END(aes_decrypt_aesni)
+diff --git a/lib/crypto/x86/aes.h b/lib/crypto/x86/aes.h
+new file mode 100644
+index 000000000000..b047dee94f57
+--- /dev/null
++++ b/lib/crypto/x86/aes.h
+@@ -0,0 +1,85 @@
 +/* SPDX-License-Identifier: GPL-2.0-or-later */
 +/*
-+ * AES optimized using the CP Assist for Cryptographic Functions (CPACF)
++ * AES block cipher using AES-NI instructions
 + *
 + * Copyright 2026 Google LLC
 + */
-+#include <asm/cpacf.h>
-+#include <linux/cpufeature.h>
 +
-+static __ro_after_init DEFINE_STATIC_KEY_FALSE(have_cpacf_aes128);
-+static __ro_after_init DEFINE_STATIC_KEY_FALSE(have_cpacf_aes192);
-+static __ro_after_init DEFINE_STATIC_KEY_FALSE(have_cpacf_aes256);
++#include <asm/fpu/api.h>
++
++static __ro_after_init DEFINE_STATIC_KEY_FALSE(have_aes);
++
++void aes128_expandkey_aesni(u32 rndkeys[], u32 *inv_rndkeys,
++			    const u8 in_key[AES_KEYSIZE_128]);
++void aes256_expandkey_aesni(u32 rndkeys[], u32 *inv_rndkeys,
++			    const u8 in_key[AES_KEYSIZE_256]);
++void aes_encrypt_aesni(const u32 rndkeys[], int nrounds,
++		       u8 out[AES_BLOCK_SIZE], const u8 in[AES_BLOCK_SIZE]);
++void aes_decrypt_aesni(const u32 inv_rndkeys[], int nrounds,
++		       u8 out[AES_BLOCK_SIZE], const u8 in[AES_BLOCK_SIZE]);
 +
 +/*
-+ * When the CPU supports CPACF AES for the requested key length, we need only
-+ * save a copy of the raw AES key, as that's what the CPACF instructions need.
++ * Expand an AES key using AES-NI if supported and usable or generic code
++ * otherwise.  The expanded key format is compatible between the two cases.  The
++ * outputs are @k->rndkeys (required) and @inv_k->inv_rndkeys (optional).
 + *
-+ * When unsupported, fall back to the generic key expansion and en/decryption.
++ * We could just always use the generic key expansion code.  AES key expansion
++ * is usually less performance-critical than AES en/decryption.  However,
++ * there's still *some* value in speed here, as well as in non-key-dependent
++ * execution time which AES-NI provides.  So, do use AES-NI to expand AES-128
++ * and AES-256 keys.  (Don't bother with AES-192, as it's almost never used.)
 + */
 +static void aes_preparekey_arch(union aes_enckey_arch *k,
 +				union aes_invkey_arch *inv_k,
 +				const u8 *in_key, int key_len, int nrounds)
 +{
-+	if (key_len == AES_KEYSIZE_128) {
-+		if (static_branch_likely(&have_cpacf_aes128)) {
-+			memcpy(k->raw_key, in_key, AES_KEYSIZE_128);
-+			return;
-+		}
-+	} else if (key_len == AES_KEYSIZE_192) {
-+		if (static_branch_likely(&have_cpacf_aes192)) {
-+			memcpy(k->raw_key, in_key, AES_KEYSIZE_192);
-+			return;
-+		}
-+	} else {
-+		if (static_branch_likely(&have_cpacf_aes256)) {
-+			memcpy(k->raw_key, in_key, AES_KEYSIZE_256);
-+			return;
-+		}
-+	}
-+	aes_expandkey_generic(k->rndkeys, inv_k ? inv_k->inv_rndkeys : NULL,
-+			      in_key, key_len);
-+}
++	u32 *rndkeys = k->rndkeys;
++	u32 *inv_rndkeys = inv_k ? inv_k->inv_rndkeys : NULL;
 +
-+static inline bool aes_crypt_s390(const struct aes_enckey *key,
-+				  u8 out[AES_BLOCK_SIZE],
-+				  const u8 in[AES_BLOCK_SIZE], int decrypt)
-+{
-+	if (key->len == AES_KEYSIZE_128) {
-+		if (static_branch_likely(&have_cpacf_aes128)) {
-+			cpacf_km(CPACF_KM_AES_128 | decrypt,
-+				 (void *)key->k.raw_key, out, in,
-+				 AES_BLOCK_SIZE);
-+			return true;
-+		}
-+	} else if (key->len == AES_KEYSIZE_192) {
-+		if (static_branch_likely(&have_cpacf_aes192)) {
-+			cpacf_km(CPACF_KM_AES_192 | decrypt,
-+				 (void *)key->k.raw_key, out, in,
-+				 AES_BLOCK_SIZE);
-+			return true;
-+		}
++	if (static_branch_likely(&have_aes) && key_len != AES_KEYSIZE_192 &&
++	    irq_fpu_usable()) {
++		kernel_fpu_begin();
++		if (key_len == AES_KEYSIZE_128)
++			aes128_expandkey_aesni(rndkeys, inv_rndkeys, in_key);
++		else
++			aes256_expandkey_aesni(rndkeys, inv_rndkeys, in_key);
++		kernel_fpu_end();
 +	} else {
-+		if (static_branch_likely(&have_cpacf_aes256)) {
-+			cpacf_km(CPACF_KM_AES_256 | decrypt,
-+				 (void *)key->k.raw_key, out, in,
-+				 AES_BLOCK_SIZE);
-+			return true;
-+		}
++		aes_expandkey_generic(rndkeys, inv_rndkeys, in_key, key_len);
 +	}
-+	return false;
 +}
 +
 +static void aes_encrypt_arch(const struct aes_enckey *key,
 +			     u8 out[AES_BLOCK_SIZE],
 +			     const u8 in[AES_BLOCK_SIZE])
 +{
-+	if (likely(aes_crypt_s390(key, out, in, 0)))
-+		return;
-+	aes_encrypt_generic(key->k.rndkeys, key->nrounds, out, in);
++	if (static_branch_likely(&have_aes) && irq_fpu_usable()) {
++		kernel_fpu_begin();
++		aes_encrypt_aesni(key->k.rndkeys, key->nrounds, out, in);
++		kernel_fpu_end();
++	} else {
++		aes_encrypt_generic(key->k.rndkeys, key->nrounds, out, in);
++	}
 +}
 +
 +static void aes_decrypt_arch(const struct aes_key *key,
 +			     u8 out[AES_BLOCK_SIZE],
 +			     const u8 in[AES_BLOCK_SIZE])
 +{
-+	if (likely(aes_crypt_s390((const struct aes_enckey *)key, out, in,
-+				  CPACF_DECRYPT)))
-+		return;
-+	aes_decrypt_generic(key->inv_k.inv_rndkeys, key->nrounds, out, in);
++	if (static_branch_likely(&have_aes) && irq_fpu_usable()) {
++		kernel_fpu_begin();
++		aes_decrypt_aesni(key->inv_k.inv_rndkeys, key->nrounds,
++				  out, in);
++		kernel_fpu_end();
++	} else {
++		aes_decrypt_generic(key->inv_k.inv_rndkeys, key->nrounds,
++				    out, in);
++	}
 +}
 +
 +#define aes_mod_init_arch aes_mod_init_arch
 +static void aes_mod_init_arch(void)
 +{
-+	if (cpu_have_feature(S390_CPU_FEATURE_MSA)) {
-+		cpacf_mask_t km_functions;
-+
-+		cpacf_query(CPACF_KM, &km_functions);
-+		if (cpacf_test_func(&km_functions, CPACF_KM_AES_128))
-+			static_branch_enable(&have_cpacf_aes128);
-+		if (cpacf_test_func(&km_functions, CPACF_KM_AES_192))
-+			static_branch_enable(&have_cpacf_aes192);
-+		if (cpacf_test_func(&km_functions, CPACF_KM_AES_256))
-+			static_branch_enable(&have_cpacf_aes256);
-+	}
++	if (boot_cpu_has(X86_FEATURE_AES))
++		static_branch_enable(&have_aes);
 +}
 -- 
 2.52.0
